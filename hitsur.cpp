@@ -267,8 +267,13 @@ void HitSur::PolygonImage(const Vector<RenderVertex> &rgv, HBITMAP hbm, const fl
 	}
 
 void HitSur::Polyline(const Vertex2D * const rgv, const int count)
-	{
-	}
+{
+    if (m_pcur == NULL)
+        return;
+
+    for (int i = 0; i < count - 1; ++i)
+        Line(rgv[i].x, rgv[i].y, rgv[i+1].x, rgv[i+1].y);
+}
 
 void HitSur::Arc(const float x, const float y, const float radius, const float pt1x, const float pt1y, const float pt2x, const float pt2y)
 	{

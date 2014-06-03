@@ -185,21 +185,27 @@ void PaintSur::PolygonImage(const Vector<RenderVertex> &rgv, HBITMAP hbm, const 
 	}
 
 void PaintSur::Polyline(const Vertex2D * const rgv, const int count)
-	{
-	POINT * const rgpt = new POINT[count];
+{
+    m_ptCache.resize(count);
 
-	for (int i=0;i<count;i++)
-		{
-		rgpt[i].x = SCALEXf(rgv[i].x);
-		rgpt[i].y = SCALEYf(rgv[i].y);
-		}
+    for (int i=0;i<count;i++)
+    {
+        m_ptCache[i].x = SCALEXf(rgv[i].x);
+        m_ptCache[i].y = SCALEYf(rgv[i].y);
+    }
 
-	SelectObject(m_hdc, m_hpnLine);
+    SelectObject(m_hdc, m_hpnLine);
 
-	::Polyline(m_hdc, rgpt, count);
-	
-	delete [] rgpt;
-	}
+    /*
+     * There seems to be a known GDI bug where drawing very large polylines in one
+     * call freezes the system shortly, so we batch them into groups of 1000.
+     */
+    for (int i = 0; i < count; i += 1000)
+    {
+        const int batchSize = std::min(count - i, 1001);
+        ::Polyline(m_hdc, &m_ptCache[i], batchSize);
+    }
+}
 
 void PaintSur::Arc(const float x, const float y, const float radius, const float pt1x, const float pt1y, const float pt2x, const float pt2y)
 	{

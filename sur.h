@@ -1,8 +1,18 @@
 #pragma once
 
-#define SCALEXf(x) ((int)(((x) - m_offx)*m_zoom + 0.5f))
-#define SCALEYf(y) ((int)(((y) - m_offy)*m_zoom + 0.5f))
-#define SCALEDf(d) ((int)((d)*m_zoom + 0.5f))
+// Much faster float-to-int conversion than standard C cast.
+// Source: http://stereopsis.com/sree/fpu2006.html
+__forceinline int RoundToInt(double val)
+{
+    static const double _xs_doublemagic = 6755399441055744.0;   //2^52 * 1.5, uses limited precision to floor
+    val = val + _xs_doublemagic;
+    return ((int*)&val)[0];
+}
+
+
+#define SCALEXf(x) (RoundToInt(((x) - m_offx)*m_zoom))
+#define SCALEYf(y) (RoundToInt(((y) - m_offy)*m_zoom))
+#define SCALEDf(d) (RoundToInt((d)*m_zoom))
 
 class Sur
 	{
