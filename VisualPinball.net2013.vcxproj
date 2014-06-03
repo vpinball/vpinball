@@ -2455,7 +2455,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <None Include="res\trigger.rgs" />
     <None Include="res\vpinball.rgs" />
     <None Include="res\light.cur" />
-    <None Include="res\table.vpt" />
+    <None Include="res\table.vpx" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\ball.bmp" />

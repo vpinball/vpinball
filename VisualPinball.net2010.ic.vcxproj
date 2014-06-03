@@ -4139,7 +4139,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     <None Include="res\vpinball.rgs" />
     <None Include="res\light.cur" />
     <None Include="res\white.bmp" />
-    <None Include="res\table.vpt" />
+    <None Include="res\table.vpx" />
   </ItemGroup>
   <ItemGroup>
     <Object Include="dispatchpatch32.obj" />
