@@ -127,11 +127,11 @@ void Light::SetDefaults(bool fromMouseClick)
    float fTmp;
    int iTmp;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Light","Radius", &fTmp);
+   hr = GetRegStringAsFloat("DefaultProps\\Light","Falloff", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
-      m_d.m_radius = fTmp;
+      m_d.m_falloff = fTmp;
    else
-      m_d.m_radius = 50;
+      m_d.m_falloff = 50;
 
    hr = GetRegInt("DefaultProps\\Light","LightState", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
@@ -219,11 +219,16 @@ void Light::SetDefaults(bool fromMouseClick)
        m_d.m_BulbLight = iTmp;
    else
        m_d.m_BulbLight = fFalse;
+   hr = GetRegInt("DefaultProps\\Light","ShowFalloff", &iTmp);
+   if ((hr == S_OK) && fromMouseClick)
+       m_d.m_ShowFalloff = iTmp;
+   else
+       m_d.m_ShowFalloff = fTrue;
 }
 
 void Light::WriteRegDefaults()
 {
-   SetRegValueFloat("DefaultProps\\Light","Radius", m_d.m_radius);
+   SetRegValueFloat("DefaultProps\\Light","Falloff", m_d.m_falloff);
    SetRegValue("DefaultProps\\Light","LightState",REG_DWORD,&m_d.m_state,4);
    SetRegValue("DefaultProps\\Light","TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
    SetRegValue("DefaultProps\\Light","TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval, 4);
@@ -240,6 +245,7 @@ void Light::WriteRegDefaults()
    SetRegValueFloat("DefaultProps\\Light","FadeSpeed", m_d.m_fadeSpeed);
    SetRegValueFloat("DefaultProps\\Light","Intensity", m_d.m_intensity);
    SetRegValue("DefaultProps\\Light","Bulb", REG_DWORD, &m_d.m_BulbLight,4);
+   SetRegValue("DefaultProps\\Light","ShowFalloff", REG_DWORD, &m_d.m_ShowFalloff,4);
 }
 
 Texture *Light::GetDisplayTexture()
@@ -344,23 +350,30 @@ void Light::RenderOutline(Sur * const psur)
    switch (m_d.m_shape)
    {
    case ShapeCircle:
-   default: {
-      psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius + m_d.m_borderwidth);
-      break;
-   }
+   default: 
+       {
+          psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_falloff + m_d.m_borderwidth);
+          break;
+       }
 
-   case ShapeCustom: {
-      Vector<RenderVertex> vvertex;
-      GetRgVertex(&vvertex);
+   case ShapeCustom: 
+       {
+          Vector<RenderVertex> vvertex;
+          GetRgVertex(&vvertex);
+          if (m_d.m_ShowFalloff)  
+          {
+              psur->SetBorderColor(RGB(255,0,0),false,0);
+              psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_falloff + m_d.m_borderwidth);
+              psur->SetBorderColor(RGB(0,0,0),false,0);
+          }
+          psur->Polygon(vvertex);
 
-      psur->Polygon(vvertex);
+          for (int i=0;i<vvertex.Size();i++)
+             delete vvertex.ElementAt(i);
 
-      for (int i=0;i<vvertex.Size();i++)
-         delete vvertex.ElementAt(i);
-
-      psur->SetObject((ISelect *)&m_lightcenter);
-      break;
-   }
+          psur->SetObject((ISelect *)&m_lightcenter);
+          break;
+       }
    }
 
    if (m_d.m_shape == ShapeCustom || g_pvp->m_fAlwaysDrawLightCenters)
@@ -402,7 +415,7 @@ void Light::GetHitShapesDebug(Vector<HitObject> * const pvho)
    {
    case ShapeCircle:
    default: {
-      HitObject * const pho = CreateCircularHitPoly(m_d.m_vCenter.x, m_d.m_vCenter.y, height, m_d.m_radius, 32);
+      HitObject * const pho = CreateCircularHitPoly(m_d.m_vCenter.x, m_d.m_vCenter.y, height, m_d.m_falloff, 32);
       pvho->AddElement(pho);
 
 	  break;
@@ -551,7 +564,7 @@ void Light::PostRenderStaticCustom(RenderDevice* pd3dDevice)
     D3DXVECTOR4 diffColor(r,g,b,1.0f);
     m_pInsertShader->Core()->SetVector("lightCenter", &center);
     m_pInsertShader->Core()->SetVector("diffuseMaterial", &diffColor);
-    m_pInsertShader->Core()->SetFloat("maxRange",m_d.m_radius);
+    m_pInsertShader->Core()->SetFloat("maxRange",m_d.m_falloff);
     if ( isOn )
     {
        if (m_d.m_currentIntensity<m_d.m_intensity )
@@ -941,7 +954,7 @@ HRESULT Light::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptke
    BiffWriter bw(pstm, hcrypthash, hcryptkey);
 
    bw.WriteStruct(FID(VCEN), &m_d.m_vCenter, sizeof(Vertex2D));
-   bw.WriteFloat(FID(RADI), m_d.m_radius);
+   bw.WriteFloat(FID(RADI), m_d.m_falloff);
    bw.WriteInt(FID(STAT), m_d.m_state);
    bw.WriteInt(FID(COLR), m_d.m_color);
    bw.WriteBool(FID(TMON), m_d.m_tdr.m_fTimerEnabled);
@@ -961,6 +974,7 @@ HRESULT Light::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptke
    bw.WriteFloat(FID(LIDB), m_d.m_depthBias);
    bw.WriteFloat(FID(FASP), m_d.m_fadeSpeed);
    bw.WriteBool(FID(BULT), m_d.m_BulbLight);
+   bw.WriteBool(FID(SFOF), m_d.m_ShowFalloff);
 
    ISelect::SaveData(pstm, hcrypthash, hcryptkey);
 
@@ -978,7 +992,7 @@ HRESULT Light::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, 
 {
    SetDefaults(false);
 
-   m_d.m_radius = 50;
+   m_d.m_falloff = 50;
    m_d.m_state = LightStateOff;
    m_d.m_shape = ShapeCustom;
 
@@ -1018,7 +1032,7 @@ BOOL Light::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(RADI))
    {
-      pbr->GetFloat(&m_d.m_radius);
+      pbr->GetFloat(&m_d.m_falloff);
    }
    else if (id == FID(STAT))
    {
@@ -1100,6 +1114,10 @@ BOOL Light::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(BULT))
    {
        pbr->GetBool(&m_d.m_BulbLight);
+   }
+   else if (id == FID(SFOF))
+   {
+       pbr->GetBool(&m_d.m_ShowFalloff);
    }
    else
    {
@@ -1234,14 +1252,14 @@ STDMETHODIMP Light::InterfaceSupportsErrorInfo(REFIID riid)
    return S_FALSE;
 }
 
-STDMETHODIMP Light::get_Radius(float *pVal)
+STDMETHODIMP Light::get_Falloff(float *pVal)
 {
-   *pVal = m_d.m_radius;
+   *pVal = m_d.m_falloff;
 
    return S_OK;
 }
 
-STDMETHODIMP Light::put_Radius(float newVal)
+STDMETHODIMP Light::put_Falloff(float newVal)
 {
    if (newVal < 0)
    {
@@ -1250,7 +1268,7 @@ STDMETHODIMP Light::put_Radius(float newVal)
 
    STARTUNDO
 
-   m_d.m_radius = newVal;
+   m_d.m_falloff = newVal;
 
    STOPUNDO
 
@@ -1369,8 +1387,8 @@ void Light::InitShape()
       for( int i=8;i>0;i-- )
       {
          const float angle = (float)(M_PI*2.0/8.0)*(float)i;
-         float xx = x + sinf(angle)*m_d.m_radius;
-         float yy = y - cosf(angle)*m_d.m_radius;
+         float xx = x + sinf(angle)*m_d.m_falloff;
+         float yy = y - cosf(angle)*m_d.m_falloff;
          CComObject<DragPoint>::CreateInstance(&pdp);
          if (pdp)
          {
@@ -1649,6 +1667,24 @@ STDMETHODIMP Light::put_Bulb(int newVal)
     STOPUNDO
 
     return S_OK;
+}
+
+STDMETHODIMP Light::get_ShowFalloff(int *pVal)
+{
+    *pVal = m_d.m_ShowFalloff;
+
+    return S_OK;
+}
+
+STDMETHODIMP Light::put_ShowFalloff(int newVal)
+{
+    STARTUNDO
+
+        m_d.m_ShowFalloff = newVal;
+
+    STOPUNDO
+
+        return S_OK;
 }
 
 void Light::GetDialogPanes(Vector<PropertyPane> *pvproppane)
