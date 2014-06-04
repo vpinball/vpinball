@@ -21,8 +21,8 @@ inline void InitCubicSplineCoeffs(float x0, float x1, float t0, float t1,
 {
     c0 = x0;
     c1 = t0;
-    c2 = -3*x0 + 3*x1 - 2*t0 - t1;
-    c3 = 2*x0 - 2*x1 + t0 + t1;
+    c2 = -3.0f*x0 + 3.0f*x1 - 2.0f*t0 - t1;
+    c3 = 2.0f*x0 - 2.0f*x1 + t0 + t1;
 }
 
 // standard uniform Catmull-Rom splines with tension 0.5

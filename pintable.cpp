@@ -2056,7 +2056,7 @@ HRESULT PinTable::Save(BOOL fSaveAs)
       char *ptr = strstr( m_szFileName, ".vpt");
       if( ptr!=NULL )
       {
-          strcpy(ptr,".vpx");
+          strcpy_s(ptr, 5, ".vpx");
       }
       MAKE_WIDEPTR_FROMANSI(wszCodeFile, m_szFileName);
 

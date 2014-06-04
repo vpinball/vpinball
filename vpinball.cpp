@@ -680,7 +680,7 @@ HMENU VPinball::GetMainMenu(int id)
 {
     HMENU hmenu = GetMenu(m_hwnd);
     const int count = GetMenuItemCount(hmenu);
-    return GetSubMenu(hmenu, id + (count > NUM_MENUS) ? 1 : 0); // MDI has added its stuff (table icon for first menu item)
+    return GetSubMenu(hmenu, id + ((count > NUM_MENUS) ? 1 : 0)); // MDI has added its stuff (table icon for first menu item)
 }
 
 void VPinball::ParseCommand(int code, HWND hwnd, int notify)
@@ -1381,7 +1381,7 @@ void VPinball::LoadFile()
    ofn.hInstance = g_hinst;
    ofn.hwndOwner = g_pvp->m_hwnd;
    // TEXT
-   ofn.lpstrFilter = "Visual Pinball Tables (*.vpx)\0*.vpx\0Old Visual Pinball Tables(*.vpt)\0*.vpt";
+   ofn.lpstrFilter = "Visual Pinball Tables (*.vpx)\0*.vpx\0Old Visual Pinball Tables(*.vpt)\0*.vpt\0";
    ofn.lpstrFile = szFileName;
    ofn.nMaxFile = _MAX_PATH;
    ofn.lpstrDefExt = "vpx";
