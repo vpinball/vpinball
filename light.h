@@ -13,7 +13,6 @@ class LightData
 public:
 	Vertex2D m_vCenter;
 	float m_falloff;
-    BOOL  m_ShowFalloff;
     float m_intensity;
     float m_fadeSpeed;
     float m_currentIntensity;
@@ -221,8 +220,6 @@ public:
    STDMETHOD(put_FadeSpeed)(/*[in]*/ float newVal);
    STDMETHOD(get_Bulb)(/*[out, retval]*/ int *pVal);
    STDMETHOD(put_Bulb)(/*[in]*/ int newVal);
-   STDMETHOD(get_ShowFalloff)(/*[out, retval]*/ int *pVal);
-   STDMETHOD(put_ShowFalloff)(/*[in]*/ int newVal);
 };
 
 #endif // !defined(AFX_LIGHT_H__7445FDB1_1FBE_4975_9AB6_367E6D16098F__INCLUDED_)

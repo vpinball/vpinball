@@ -1251,8 +1251,6 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(377), helpstring("property FadeSpeed")] HRESULT FadeSpeed([in] float newVal);
 		[propget, id(340), helpstring("property Bulb")] HRESULT Bulb([out, retval] int *pVal);
 		[propput, id(340), helpstring("property Bulb")] HRESULT Bulb([in] int newVal);
-		[propget, id(341), helpstring("property ShowFalloff")] HRESULT ShowFalloff([out, retval] int *pVal);
-		[propput, id(341), helpstring("property ShowFalloff")] HRESULT ShowFalloff([in] int newVal);
 	};
 
 	[

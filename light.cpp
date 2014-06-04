@@ -219,11 +219,7 @@ void Light::SetDefaults(bool fromMouseClick)
        m_d.m_BulbLight = iTmp;
    else
        m_d.m_BulbLight = fFalse;
-   hr = GetRegInt("DefaultProps\\Light","ShowFalloff", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-       m_d.m_ShowFalloff = iTmp;
-   else
-       m_d.m_ShowFalloff = fTrue;
+
 }
 
 void Light::WriteRegDefaults()
@@ -245,7 +241,6 @@ void Light::WriteRegDefaults()
    SetRegValueFloat("DefaultProps\\Light","FadeSpeed", m_d.m_fadeSpeed);
    SetRegValueFloat("DefaultProps\\Light","Intensity", m_d.m_intensity);
    SetRegValue("DefaultProps\\Light","Bulb", REG_DWORD, &m_d.m_BulbLight,4);
-   SetRegValue("DefaultProps\\Light","ShowFalloff", REG_DWORD, &m_d.m_ShowFalloff,4);
 }
 
 Texture *Light::GetDisplayTexture()
@@ -360,7 +355,7 @@ void Light::RenderOutline(Sur * const psur)
        {
           Vector<RenderVertex> vvertex;
           GetRgVertex(&vvertex);
-          if (m_d.m_ShowFalloff)  
+          if (m_selectstate != eNotSelected)  
           {
               psur->SetBorderColor(RGB(255,0,0),false,0);
               psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_falloff + m_d.m_borderwidth);
@@ -974,7 +969,6 @@ HRESULT Light::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptke
    bw.WriteFloat(FID(LIDB), m_d.m_depthBias);
    bw.WriteFloat(FID(FASP), m_d.m_fadeSpeed);
    bw.WriteBool(FID(BULT), m_d.m_BulbLight);
-   bw.WriteBool(FID(SFOF), m_d.m_ShowFalloff);
 
    ISelect::SaveData(pstm, hcrypthash, hcryptkey);
 
@@ -1114,10 +1108,6 @@ BOOL Light::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(BULT))
    {
        pbr->GetBool(&m_d.m_BulbLight);
-   }
-   else if (id == FID(SFOF))
-   {
-       pbr->GetBool(&m_d.m_ShowFalloff);
    }
    else
    {
@@ -1667,24 +1657,6 @@ STDMETHODIMP Light::put_Bulb(int newVal)
     STOPUNDO
 
     return S_OK;
-}
-
-STDMETHODIMP Light::get_ShowFalloff(int *pVal)
-{
-    *pVal = m_d.m_ShowFalloff;
-
-    return S_OK;
-}
-
-STDMETHODIMP Light::put_ShowFalloff(int newVal)
-{
-    STARTUNDO
-
-        m_d.m_ShowFalloff = newVal;
-
-    STOPUNDO
-
-        return S_OK;
 }
 
 void Light::GetDialogPanes(Vector<PropertyPane> *pvproppane)
