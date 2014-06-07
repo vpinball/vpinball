@@ -331,20 +331,17 @@ void SetDiffuse(VtxType * const rgv, const int count, const unsigned int color) 
 
 // Calculate if two vectors are flat to each other
 // accuracy is a float greater 4 and smaller 4000000 (tested this out)
-inline bool FlatWithAccuracy(const Vertex2D * const pvt1, const Vertex2D * const pvt2, const Vertex2D * const pvtMid, const float accuracy)
+inline bool FlatWithAccuracy(const Vertex2D & v1, const Vertex2D & v2, const Vertex2D & vMid, float accuracy)
 {
-	const float det1 = pvt1->x*pvtMid->y - pvt1->y*pvtMid->x;
-	const float det2 = pvtMid->x*pvt2->y - pvtMid->y*pvt2->x;
-	const float det3 = pvt2->x*pvt1->y - pvt2->y*pvt1->x;
+    // compute double the signed area of the triangle (v1, vMid, v2)
+    const float dblarea = (vMid.x-v1.x)*(v2.y-v1.y) - (v2.x-v1.x)*(vMid.y-v1.y);
 
-	const float dblarea = det1+det2+det3;
-
-	return (dblarea*dblarea < accuracy);
+    return (dblarea*dblarea < accuracy);
 }
 
-inline bool Flat(const Vertex2D * const pvt1, const Vertex2D * const pvt2, const Vertex2D * const pvtMid)
+inline bool Flat(const Vertex2D & v1, const Vertex2D & v2, const Vertex2D & vMid)
 {
-    return FlatWithAccuracy(pvt1, pvt2, pvtMid, 1.0/(0.5*0.5));
+    return FlatWithAccuracy(v1, v2, vMid, 1.0/(0.5*0.5));
 }
 
 inline void ClosestPointOnPolygon(const Vector<RenderVertex> &rgv, const Vertex2D &pvin, Vertex2D * const pvout, int * const piseg, const bool fClosed)
