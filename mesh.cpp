@@ -15,7 +15,7 @@ void RecurseSmoothLineWithAccuracy(const CatmullCurve2D * const pcc, const float
 	vmid.fSlingshot = false; // Slingshots can't be along curves
 	vmid.fControlPoint = false; // We created this point, so it can't be a control point
 
-	if (FlatWithAccuracy(pvt1, pvt2, &vmid, accuracy))
+	if (FlatWithAccuracy(*pvt1, *pvt2, vmid, accuracy))
 		{
 		// Add first segment point to array.
 		// Last point never gets added by this recursive loop,
