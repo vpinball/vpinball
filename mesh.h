@@ -339,14 +339,9 @@ inline bool FlatWithAccuracy(const Vertex2D & v1, const Vertex2D & v2, const Ver
     return (dblarea*dblarea < accuracy);
 }
 
-inline bool Flat(const Vertex2D & v1, const Vertex2D & v2, const Vertex2D & vMid)
-{
-    return FlatWithAccuracy(v1, v2, vMid, 1.0/(0.5*0.5));
-}
-
 inline void ClosestPointOnPolygon(const Vector<RenderVertex> &rgv, const Vertex2D &pvin, Vertex2D * const pvout, int * const piseg, const bool fClosed)
 {
-	const int count = rgv.Size();
+	const int count = rgv.size();
 
 	float mindist = FLT_MAX;
 	int seg = -1;
@@ -362,11 +357,11 @@ inline void ClosestPointOnPolygon(const Vector<RenderVertex> &rgv, const Vertex2
 	{
 		const int p2 = (i < count-1) ? (i+1) : 0;
 
-		const RenderVertex * const rgvi = rgv.ElementAt(i);
-		const RenderVertex * const rgvp2 = rgv.ElementAt(p2);
-		const float A = rgvi->y - rgvp2->y;
-		const float B = rgvp2->x - rgvi->x;
-		const float C = -(A*rgvi->x + B*rgvi->y);
+		const RenderVertex & rgvi = rgv[i];
+		const RenderVertex & rgvp2 = rgv[p2];
+		const float A = rgvi.y - rgvp2.y;
+		const float B = rgvp2.x - rgvi.x;
+		const float C = -(A*rgvi.x + B*rgvi.y);
 
 		const float dist = fabsf(A*pvin.x + B*pvin.y + C) / sqrtf(A*A + B*B);
 
@@ -385,10 +380,10 @@ inline void ClosestPointOnPolygon(const Vector<RenderVertex> &rgv, const Vertex2
 
 			// If the intersect point lies on the polygon segment
 			// (not out in space), then make this the closest known point
-			if (intersectx >= (min(rgvi->x, rgvp2->x) - 0.1f) &&
-				intersectx <= (max(rgvi->x, rgvp2->x) + 0.1f) &&
-				intersecty >= (min(rgvi->y, rgvp2->y) - 0.1f) &&
-				intersecty <= (max(rgvi->y, rgvp2->y) + 0.1f))
+			if (intersectx >= (min(rgvi.x, rgvp2.x) - 0.1f) &&
+				intersectx <= (max(rgvi.x, rgvp2.x) + 0.1f) &&
+				intersecty >= (min(rgvi.y, rgvp2.y) - 0.1f) &&
+				intersecty <= (max(rgvi.y, rgvp2.y) + 0.1f))
 			{
 				mindist = dist;
 				seg = i;

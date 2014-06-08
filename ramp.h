@@ -95,7 +95,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_RAMP)
 
 	virtual void ClearForOverwrite();
 
-	void GetRgVertex(Vector<RenderVertex> * const pvv);
+    float GetSurfaceHeight(float x, float y);
 
 	virtual void MoveOffset(const float dx, const float dy);
 	virtual void SetObjectPos();
@@ -148,6 +148,8 @@ private:
 	bool dynamicVertexBufferRegenerate;
 
     bool isHabitrail() const;
+
+	void GetCentralCurve(Vector<RenderVertex> * const pvv);
 
 	Vertex2D *GetRampVertex(int &pcvertex, float ** const ppheight, bool ** const ppfCross, float ** const ppratio);
 	void prepareHabitrail(RenderDevice* pd3dDevice);

@@ -80,6 +80,8 @@ public:
 		return m_cSize;
 		}
 
+    int size() const    { return Size(); }      // for compatibility with std::vector
+
 	inline int Capacity() const
 		{
 		return m_cMax;

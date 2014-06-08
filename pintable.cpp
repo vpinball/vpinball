@@ -6765,58 +6765,9 @@ float PinTable::GetSurfaceHeight(char *szName, float x, float y)
             {
             case eItemSurface:
                return ((Surface *)piedit)->m_d.m_heighttop;
-               break;
 
-            case eItemRamp: {
-               Ramp * const pramp = (Ramp *)piedit;
-
-               Vector<RenderVertex> vvertex;
-               pramp->GetRgVertex(&vvertex);
-
-               const int cvertex = vvertex.Size();
-
-               int iSeg;
-               Vertex2D vOut;
-               ClosestPointOnPolygon(vvertex, Vertex2D(x,y), &vOut, &iSeg, false);
-
-               // Go through vertices (including iSeg itself) counting control points until iSeg
-               float totallength = 0.f;
-               float startlength = 0.f;
-               float zheight = 0.f;
-
-               if (iSeg == -1)
-               {
-                  //zheight = 0;
-                  goto HeightError;
-                  //return 0; // Object is not on ramp path
-               }
-
-               for (int i2=1;i2<cvertex;i2++)
-               {
-                  const float dx = vvertex.ElementAt(i2)->x - vvertex.ElementAt(i2-1)->x;
-                  const float dy = vvertex.ElementAt(i2)->y - vvertex.ElementAt(i2-1)->y;
-                  const float len = sqrtf(dx*dx + dy*dy);
-                  if (i2 <= iSeg)
-                  {
-                     startlength += len;
-                  }
-                  totallength += len;
-               }
-
-               {
-                  const float dx = vOut.x - vvertex.ElementAt(iSeg)->x;
-                  const float dy = vOut.y - vvertex.ElementAt(iSeg)->y;
-                  const float len = sqrtf(dx*dx + dy*dy);
-                  startlength += len; // Add the distance the object is between the two closest polyline segments.  Matters mostly for straight edges.
-
-                  zheight = (startlength/totallength) * (pramp->m_d.m_heighttop - pramp->m_d.m_heightbottom) + pramp->m_d.m_heightbottom;
-               }
-HeightError:
-               for (int i2=0;i2<cvertex;i2++)
-                  delete vvertex.ElementAt(i2);
-
-               return zheight;
-               }
+            case eItemRamp:
+               return ((Ramp *)piedit)->GetSurfaceHeight(x, y);
             }
          }
       }
