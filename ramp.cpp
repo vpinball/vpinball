@@ -380,10 +380,10 @@ void Ramp::GetBoundingVertices(Vector<Vertex3Ds> * const pvvertex3D)
 Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** const ppfCross, float ** const ppratio)
 {
    Vector<RenderVertex> vvertex;
-   GetRgVertex(&vvertex);
+   GetCentralCurve(&vvertex);
    // vvertex are the 2D vertices forming the central curve of the ramp as seen from above
 
-   const int cvertex = vvertex.Size();
+   const int cvertex = vvertex.size();
    Vertex2D * const rgvLocal = new Vertex2D[cvertex * 2];
    if (ppheight)
    {
@@ -491,19 +491,17 @@ Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** co
          currentlength += length;
       }
 
-      const float widthcur = (currentlength/totallength) * (m_d.m_widthtop - m_d.m_widthbottom) + m_d.m_widthbottom;
+      const float percentage = currentlength / totallength;
+      const float widthcur = percentage * (m_d.m_widthtop - m_d.m_widthbottom) + m_d.m_widthbottom;
 
       if (ppheight)
       {
-         const float percentage = currentlength / totallength; // ramps have no ends ... a line joint is needed
-         const float heightcur = percentage * (m_d.m_heighttop - m_d.m_heightbottom) + m_d.m_heightbottom;
-         (*ppheight)[i] = heightcur;
+         (*ppheight)[i] = percentage * (m_d.m_heighttop - m_d.m_heightbottom) + m_d.m_heightbottom;
       }
 
       if (ppratio)
       {
-         const float percentage = 1.0f-(currentlength/totallength);
-         (*ppratio)[i] = percentage;
+         (*ppratio)[i] = 1.0f - percentage;
       }
 
       rgvLocal[i] = vmiddle + (widthcur*0.5f) * vnormal;
@@ -523,57 +521,63 @@ Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** co
 
 /*
  * Get an approximation of the curve described by the control points of this ramp.
- *
- * This overrides IHaveDragPoints::GetRgVertex() - the only real difference to that
- * function seems to be the added support for user-defined accuracy, and not closing
- * the loop.
  */
-void Ramp::GetRgVertex(Vector<RenderVertex> * const pvv)
+void Ramp::GetCentralCurve(Vector<RenderVertex> * const pvv)
 {
-   const int cpoint = m_vdpoint.Size();
-   RenderVertex rendv2;
-   if(cpoint < 2) {
-      const CComObject<DragPoint> * const pdp = m_vdpoint.ElementAt(0);
-      rendv2.x = pdp->m_v.x;
-      rendv2.y = pdp->m_v.y;
-   }
+   const float accuracy = m_d.m_transparent ? 4.0f*powf(10.0f, (10.0f-m_ptable->GetAlphaRampsAccuracy())*(float)(1.0/1.5))
+       : (1.0f / (0.5f * 0.5f)); // min = 4, max = 4 * 10^(10/1.5) = 18.000.000
 
-   const float alphaRampsAccuracyValue = 4.0f*powf(10.0f, (10.0f-m_ptable->GetAlphaRampsAccuracy())*(float)(1.0/1.5)); // min = 4, max = 4 * 10^(10/1.5) = 18.000.000
+   IHaveDragPoints::GetRgVertex(pvv, false, accuracy);
+}
 
-   for (int i=0;i<(cpoint-1);i++)
-   {
-      const CComObject<DragPoint> * const pdp1 = m_vdpoint.ElementAt(i);
-      const CComObject<DragPoint> * const pdp2 = m_vdpoint.ElementAt(i+1);
-      const CComObject<DragPoint> * const pdp0 = m_vdpoint.ElementAt((i>0 && pdp1->m_fSmooth) ? i-1 : i);
-      const CComObject<DragPoint> * const pdp3 = m_vdpoint.ElementAt((i<cpoint-2 && pdp2->m_fSmooth) ? i+2 : (i+1));
+float Ramp::GetSurfaceHeight(float x, float y)
+{
+    Vector<RenderVertex> vvertex;
+    GetCentralCurve(&vvertex);
 
-      CatmullCurve2D cc;
-      cc.SetCurve(pdp0->m_v.xy(), pdp1->m_v.xy(), pdp2->m_v.xy(), pdp3->m_v.xy());
+    const int cvertex = vvertex.Size();
 
-      RenderVertex rendv1;
-      rendv1.x = pdp1->m_v.x;
-      rendv1.y = pdp1->m_v.y;
-      rendv1.fSlingshot = (pdp1->m_fSlingshot != 0);
-      rendv1.fSmooth = (pdp1->m_fSmooth != 0);
-      rendv1.fControlPoint = true;
+    int iSeg;
+    Vertex2D vOut;
+    ClosestPointOnPolygon(vvertex, Vertex2D(x,y), &vOut, &iSeg, false);
 
-      // Properties of last point don't matter, because it won't be added to the list on this pass (it'll get added as the first point of the next curve)
-      rendv2.x = pdp2->m_v.x;
-      rendv2.y = pdp2->m_v.y;
+    // Go through vertices (including iSeg itself) counting control points until iSeg
+    float totallength = 0.f;
+    float startlength = 0.f;
+    float zheight = 0.f;
 
-      if (m_d.m_transparent)
-         RecurseSmoothLineWithAccuracy(&cc, 0, 1, &rendv1, &rendv2, pvv, alphaRampsAccuracyValue);
-      else
-         RecurseSmoothLine(&cc, 0, 1, &rendv1, &rendv2, pvv);
-   }
+    if (iSeg == -1)
+    {
+        //zheight = 0;
+        goto HeightError;
+        //return 0; // Object is not on ramp path
+    }
 
-   // Add the very last point to the list because nobody else added it
-   rendv2.fSmooth = true;
-   rendv2.fSlingshot = false;
-   rendv2.fControlPoint = false;
-   RenderVertex * const pvT = new RenderVertex;
-   *pvT = rendv2;
-   pvv->AddElement(pvT);
+    for (int i2=1;i2<cvertex;i2++)
+    {
+        const float dx = vvertex.ElementAt(i2)->x - vvertex.ElementAt(i2-1)->x;
+        const float dy = vvertex.ElementAt(i2)->y - vvertex.ElementAt(i2-1)->y;
+        const float len = sqrtf(dx*dx + dy*dy);
+        if (i2 <= iSeg)
+        {
+            startlength += len;
+        }
+        totallength += len;
+    }
+
+    {
+        const float dx = vOut.x - vvertex.ElementAt(iSeg)->x;
+        const float dy = vOut.y - vvertex.ElementAt(iSeg)->y;
+        const float len = sqrtf(dx*dx + dy*dy);
+        startlength += len; // Add the distance the object is between the two closest polyline segments.  Matters mostly for straight edges.
+
+        zheight = (startlength/totallength) * (m_d.m_heighttop - m_d.m_heightbottom) + m_d.m_heightbottom;
+    }
+HeightError:
+    for (int i2=0;i2<cvertex;i2++)
+        delete vvertex.ElementAt(i2);
+
+    return zheight;
 }
 
 void Ramp::GetTimers(Vector<HitTimer> * const pvht)
@@ -901,8 +905,8 @@ void Ramp::AddLine(Vector<HitObject> * const pvho, const Vertex2D * const pv1, c
 
    plineseg->m_pfe = NULL;
 
-   plineseg->m_rcHitRect.zlow = height1;//m_d.m_heightbottom;
-   plineseg->m_rcHitRect.zhigh = height2;//m_d.m_heighttop;
+   plineseg->m_rcHitRect.zlow = height1;
+   plineseg->m_rcHitRect.zhigh = height2;
 
    plineseg->v1 = *pv1;
    plineseg->v2 = *pv2;
@@ -931,8 +935,8 @@ void Ramp::AddLine(Vector<HitObject> * const pvho, const Vertex2D * const pv1, c
 
          pjoint->m_pfe = NULL;
 
-         pjoint->m_rcHitRect.zlow = height1;//m_d.m_heightbottom;
-         pjoint->m_rcHitRect.zhigh = height2;//m_d.m_heighttop;
+         pjoint->m_rcHitRect.zlow = height1;
+         pjoint->m_rcHitRect.zhigh = height2;
 
          pjoint->center = *pv1;
          pvho->AddElement(pjoint);
@@ -1842,9 +1846,9 @@ void Ramp::DoCommand(int icmd, int x, int y)
          delete phs;
 
          Vector<RenderVertex> vvertex;
-         GetRgVertex(&vvertex);
+         GetCentralCurve(&vvertex);
 
-         const int cvertex = vvertex.Size();
+         const int cvertex = vvertex.size();
          Vertex2D vOut;
          int iSeg;
          ClosestPointOnPolygon(vvertex, v, &vOut, &iSeg, false);

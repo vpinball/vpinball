@@ -237,13 +237,14 @@ void IHaveDragPoints::ReverseOrder()
    m_vdpoint.ElementAt(m_vdpoint.Size()-1)->m_fSlingshot = fSlingshotTemp;
 }
 
-void IHaveDragPoints::GetRgVertex(Vector<RenderVertex> * const pvv)
+void IHaveDragPoints::GetRgVertex(Vector<RenderVertex> * const pvv, bool loop, float accuracy)
 {
    const int cpoint = m_vdpoint.Size();
+   const int endpoint = loop ? cpoint : cpoint-1;
 
-   //cpointCur = 0;
+   RenderVertex rendv2;
 
-   for (int i=0;i<cpoint;i++)
+   for (int i=0; i<endpoint; i++)
    {
       const CComObject<DragPoint> * const pdp1 = m_vdpoint.ElementAt(i);
       const CComObject<DragPoint> * const pdp2 = m_vdpoint.ElementAt((i < cpoint-1) ? (i+1) : 0);
@@ -254,13 +255,21 @@ void IHaveDragPoints::GetRgVertex(Vector<RenderVertex> * const pvv)
          continue;
       }
 
-      const CComObject<DragPoint> * const pdp0 = pdp1->m_fSmooth ? m_vdpoint.ElementAt((i == 0) ? (cpoint-1) : (i-1)) : pdp1;
-      const CComObject<DragPoint> * const pdp3 = pdp2->m_fSmooth ? m_vdpoint.ElementAt((i < cpoint-2) ? (i+2) : ((i+2)-cpoint)) : pdp2;
+      int iprev = (pdp1->m_fSmooth ? i-1 : i);
+      if (iprev < 0)
+          iprev = (loop ? cpoint-1 : 0);
+
+      int inext = (pdp2->m_fSmooth ? i+2 : i+1);
+      if (inext >= cpoint)
+          inext = (loop ? inext-cpoint : cpoint-1);
+
+      const CComObject<DragPoint> * const pdp0 = m_vdpoint.ElementAt(iprev);
+      const CComObject<DragPoint> * const pdp3 = m_vdpoint.ElementAt(inext);
 
       CatmullCurve2D cc;
       cc.SetCurve(pdp0->m_v.xy(), pdp1->m_v.xy(), pdp2->m_v.xy(), pdp3->m_v.xy());
 
-      RenderVertex rendv1, rendv2; // Create these to add the special properties
+      RenderVertex rendv1;
 
       rendv1.x = pdp1->m_v.x;
       rendv1.y = pdp1->m_v.y;
@@ -272,7 +281,18 @@ void IHaveDragPoints::GetRgVertex(Vector<RenderVertex> * const pvv)
       rendv2.x = pdp2->m_v.x;
       rendv2.y = pdp2->m_v.y;
 
-      RecurseSmoothLine(&cc, 0, 1, &rendv1, &rendv2, pvv);
+      RecurseSmoothLineWithAccuracy(&cc, 0, 1, &rendv1, &rendv2, pvv, accuracy);
+   }
+
+   if (!loop)
+   {
+      // Add the very last point to the list because nobody else added it
+      rendv2.fSmooth = true;
+      rendv2.fSlingshot = false;
+      rendv2.fControlPoint = false;
+      RenderVertex * const pvT = new RenderVertex;
+      *pvT = rendv2;
+      pvv->AddElement(pvT);
    }
 }
 
