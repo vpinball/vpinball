@@ -104,6 +104,9 @@ bool WaveFrontObj_Load(const char *filename, bool flipTv, bool convertToLeftHand
    verts.clear();
    faces.clear();
 
+   struct VertInfo { int v; int t; int n; };
+   std::vector<VertInfo> faceVerts;
+
    // need some small data type 
    while ( 1 )
    {
@@ -158,8 +161,7 @@ bool WaveFrontObj_Load(const char *filename, bool flipTv, bool convertToLeftHand
             ShowError("No normals found in obj file, import is impossible!");
             goto Error;
          }
-         struct VertInfo { int v; int t; int n; };
-         std::vector<VertInfo> faceVerts;
+         faceVerts.clear();
          int matches;
          do
          {
