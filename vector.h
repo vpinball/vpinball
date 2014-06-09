@@ -298,6 +298,8 @@ public:
 	Vector() : VectorVoid() {}
 	Vector(const int cSize) : VectorVoid(cSize) {}
 
+    typedef T value_type;
+
 	T *ElementAt(const int iItem) const
 		{
 		return (T *) (m_rg[iItem]);
@@ -305,6 +307,13 @@ public:
 
           T& operator[](const int iItem)        { return *ElementAt(iItem); }
     const T& operator[](const int iItem) const  { return *ElementAt(iItem); }
+
+    // for compatibility with std::vector -- allocates a new copy of elem
+    void push_back(const T& elem)
+    {
+        AddElement(new T(elem));
+    }
+
 	};
 
 template<class T> class VectorInt : public VectorVoid
