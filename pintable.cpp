@@ -5501,8 +5501,6 @@ void PinTable::GetDialogPanes(Vector<PropertyPane> *pvproppane)
 
 LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-   HDC hdc;
-   PAINTSTRUCT ps;
    CComObject<PinTable> *pt;
 
    switch (uMsg)
@@ -5573,7 +5571,8 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
       break;
 
    case WM_PAINT: {
-      hdc = BeginPaint(hwnd,&ps);
+      PAINTSTRUCT ps;
+      HDC hdc = BeginPaint(hwnd,&ps);
       pt = (CComObject<PinTable> *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
       pt->Paint(hdc);
       EndPaint(hwnd,&ps);

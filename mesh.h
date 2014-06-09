@@ -52,8 +52,12 @@ inline void InitNonuniformCatmullCoeffs(float x0, float x1, float x2, float x3, 
     InitCubicSplineCoeffs(x1, x2, t1, t2,  c0, c1, c2, c3);
 }
 
+template <int Dim>
+class CatmullCurve;
+
 // This uses centripetal Catmull-Rom splines for avoiding cusps and smoother results overall
-class CatmullCurve2D
+template <>
+class CatmullCurve<2>
 {
 public:	
 	void SetCurve(const Vertex2D& v0, const Vertex2D& v1, const Vertex2D& v2, const Vertex2D& v3)
@@ -73,6 +77,11 @@ public:
                 cy0, cy1, cy2, cy3);
 	}
 
+	void SetCurve(const Vertex3Ds& v0, const Vertex3Ds& v1, const Vertex3Ds& v2, const Vertex3Ds& v3)
+    {
+        SetCurve(v0.xy(), v1.xy(), v2.xy(), v3.xy());
+    }
+
 	void GetPointAt(float t, Vertex2D * pv) const
 	{
 		const float t2 = t*t;
@@ -88,7 +97,8 @@ private:
 };
 
 
-class CatmullCurve3D
+template <>
+class CatmullCurve<3>
 {
 public:	
 	void SetCurve(const Vertex3Ds& v0, const Vertex3Ds& v1, const Vertex3Ds& v2, const Vertex3Ds& v3)
@@ -130,10 +140,22 @@ private:
 class RenderVertex : public Vertex2D
 {
 public:
+    static const int Dim = 2;
+
 	bool fSmooth;
 	bool fSlingshot;
 	bool fControlPoint; // Whether this point was a control point on the curve
 	bool padd; // Useless padding to align to 4bytes, should enhance access speeds
+};
+
+class RenderVertex3D : public Vertex3Ds
+{
+public:
+    static const int Dim = 3;
+
+	bool fSmooth;
+	bool fSlingshot;
+	bool fControlPoint; // Whether this point was a control point on the curve
 };
 
 
@@ -155,9 +177,29 @@ void SetHUDVertices(VtxType * const rgv, const int count)
 		}
 	}
 
-void RecurseSmoothLine(const CatmullCurve2D * const pcc, const float t1, const float t2, const RenderVertex * const pvt1, const RenderVertex * const pvt2, Vector<RenderVertex> * const pvv);
-void RecurseSmoothLineWithAccuracy(const CatmullCurve2D * const pcc, const float t1, const float t2, const RenderVertex * const pvt1, const RenderVertex * const pvt2, Vector<RenderVertex> * const pvv, const float accuracy);
+template <class CurveType, class VtxType, class VtxContType>
+void RecurseSmoothLine(const CurveType & cc, float t1, float t2, const VtxType & vt1, const VtxType & vt2, VtxContType & vv, float accuracy)
+	{
+	const float tMid = (t1+t2)*0.5f;
+	VtxType vmid;
+	cc.GetPointAt(tMid, &vmid);
+	vmid.fSmooth = true; // Generated points must always be smooth, because they are part of the curve
+	vmid.fSlingshot = false; // Slingshots can't be along curves
+	vmid.fControlPoint = false; // We created this point, so it can't be a control point
 
+	if (FlatWithAccuracy(vt1, vt2, vmid, accuracy))
+		{
+		// Add first segment point to array.
+		// Last point never gets added by this recursive loop,
+		// but that's where it wraps around to the next curve.
+		vv.push_back(vt1);
+		}
+	else
+		{
+		RecurseSmoothLine(cc, t1, tMid, vt1, vmid, vv, accuracy);
+		RecurseSmoothLine(cc, tMid, t2, vmid, vt2, vv, accuracy);
+		} 
+	}
 
 inline float GetDot(const Vertex2D * const pvEnd1, const Vertex2D * const pvJoint, const Vertex2D * const pvEnd2)
 {
@@ -337,6 +379,14 @@ inline bool FlatWithAccuracy(const Vertex2D & v1, const Vertex2D & v2, const Ver
     const float dblarea = (vMid.x-v1.x)*(v2.y-v1.y) - (v2.x-v1.x)*(vMid.y-v1.y);
 
     return (dblarea*dblarea < accuracy);
+}
+
+inline bool FlatWithAccuracy(const Vertex3Ds & v1, const Vertex3Ds & v2, const Vertex3Ds & vMid, float accuracy)
+{
+    // compute the square of double the signed area of the triangle (v1, vMid, v2)
+    const float dblareasq = CrossProduct(vMid-v1, v2-v1).LengthSquared();
+
+    return (dblareasq < accuracy);
 }
 
 inline void ClosestPointOnPolygon(const Vector<RenderVertex> &rgv, const Vertex2D &pvin, Vertex2D * const pvout, int * const piseg, const bool fClosed)
