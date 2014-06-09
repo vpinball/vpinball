@@ -39,6 +39,7 @@ static int isInList( const int vi, const int ti, const int ni )
    return -1;
 }
 
+#if 0
 static void NormalizeNormals()
 {
    for( unsigned int i=0;i<faces.size();i+=3 )
@@ -87,6 +88,7 @@ static void NormalizeNormals()
       seen.clear();
    }
 }
+#endif
 
 bool WaveFrontObj_Load(const char *filename, bool flipTv, bool convertToLeftHanded )
 {
@@ -106,7 +108,7 @@ bool WaveFrontObj_Load(const char *filename, bool flipTv, bool convertToLeftHand
    while ( 1 )
    {
       char lineHeader[128];
-      int res = fscanf_s(f,"%s", lineHeader, 128 );
+      int res = fscanf_s(f,"\n%s", lineHeader, 128 );
       if( res==EOF ) 
       {
          fclose(f);
@@ -144,55 +146,63 @@ bool WaveFrontObj_Load(const char *filename, bool flipTv, bool convertToLeftHand
          if( tmpVerts.size()==0 )
          {
             ShowError("No vertices found in obj file, import is impossible!");
-            tmpNorms.clear();
-            tmpTexel.clear();
-            fclose(f);
-            return false;
+            goto Error;
          }
          if( tmpTexel.size()==0 )
          {
             ShowError("No texture coordinates (UVs) found in obj file, import is impossible!");
-		    tmpVerts.clear();
-            tmpNorms.clear();
-            fclose(f);
-            return false;
+            goto Error;
          }
          if( tmpNorms.size()==0 )
          {
             ShowError("No normals found in obj file, import is impossible!");
-            tmpVerts.clear();
-            tmpTexel.clear();
-			fclose(f);
-            return false;
+            goto Error;
          }
-         MyPoly tmpFace;
-         int matches=0;
-         if ( convertToLeftHanded )
+         struct VertInfo { int v; int t; int n; };
+         std::vector<VertInfo> faceVerts;
+         int matches;
+         do
          {
-            matches = fscanf_s(f, "%d/%d/%d %d/%d/%d %d/%d/%d\n", &tmpFace.vi2, &tmpFace.ti2, &tmpFace.ni2,
-                                                                  &tmpFace.vi1, &tmpFace.ti1, &tmpFace.ni1,
-                                                                  &tmpFace.vi0, &tmpFace.ti0, &tmpFace.ni0);
-         }
-         else
+             VertInfo vi;
+             matches = fscanf_s(f, "%d/%d/%d", &vi.v, &vi.t, &vi.n);
+             if (matches > 0 && matches != 3)
+             {
+                 ShowError("Face information incorrect! Each face needs vertices, UVs and normals!");
+                 goto Error;
+             }
+             if (matches == 3)
+             {
+                 vi.v--; vi.t--; vi.n--;    // convert to 0-based indices
+                 faceVerts.push_back(vi);
+             }
+         } while (matches > 0);
+
+         if (faceVerts.size() < 3)
          {
-            matches = fscanf_s(f, "%d/%d/%d %d/%d/%d %d/%d/%d\n", &tmpFace.vi0, &tmpFace.ti0, &tmpFace.ni0,
-                                                                  &tmpFace.vi1, &tmpFace.ti1, &tmpFace.ni1,
-                                                                  &tmpFace.vi2, &tmpFace.ti2, &tmpFace.ni2);
+             ShowError("Invalid face -- less than 3 vertices!");
+             goto Error;
          }
 
-         if( matches!=9 )
+         if (convertToLeftHanded)
+             std::reverse(faceVerts.begin(), faceVerts.end());
+
+         // triangulate the face (assumes convex face)
+         MyPoly tmpFace;
+         tmpFace.vi0 = faceVerts[0].v;
+         tmpFace.ti0 = faceVerts[0].t;
+         tmpFace.ni0 = faceVerts[0].n;
+         for (unsigned i = 1; i < faceVerts.size() - 1; ++i)
          {
-            ShowError("Face information incorrect! Each face needs vertices, UVs and normals!");
-		    tmpVerts.clear();
-            tmpNorms.clear();
-            tmpTexel.clear();
-            fclose(f);
-            return false;
+             tmpFace.vi1 = faceVerts[i].v;
+             tmpFace.ti1 = faceVerts[i].t;
+             tmpFace.ni1 = faceVerts[i].n;
+
+             tmpFace.vi2 = faceVerts[i+1].v;
+             tmpFace.ti2 = faceVerts[i+1].t;
+             tmpFace.ni2 = faceVerts[i+1].n;
+
+             tmpFaces.push_back(tmpFace);
          }
-         tmpFace.vi0--; tmpFace.vi1--; tmpFace.vi2--;
-         tmpFace.ti0--; tmpFace.ti1--; tmpFace.ti2--;
-         tmpFace.ni0--; tmpFace.ni1--; tmpFace.ni2--;
-         tmpFaces.push_back(tmpFace);
       }
    }
    for( unsigned int i=0;i<tmpFaces.size(); i++ )
@@ -265,6 +275,14 @@ bool WaveFrontObj_Load(const char *filename, bool flipTv, bool convertToLeftHand
    tmpNorms.clear();
    tmpFaces.clear();
    return true;
+
+Error:
+   tmpVerts.clear();
+   tmpTexel.clear();
+   tmpNorms.clear();
+   tmpFaces.clear();
+   fclose(f);
+   return false;
 }
 
 void WaveFrontObj_GetVertices( std::vector<Vertex3D_NoTex2>& objMesh ) // clears temporary storage on the way
