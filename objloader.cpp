@@ -110,8 +110,8 @@ bool WaveFrontObj_Load(const char *filename, bool flipTv, bool convertToLeftHand
    // need some small data type 
    while ( 1 )
    {
-      char lineHeader[128];
-      int res = fscanf_s(f,"\n%s", lineHeader, 128 );
+      char lineHeader[256];
+      int res = fscanf_s(f,"\n%s", lineHeader, 256 );
       if( res==EOF ) 
       {
          fclose(f);
@@ -126,17 +126,17 @@ bool WaveFrontObj_Load(const char *filename, bool flipTv, bool convertToLeftHand
             tmp.z*=-1.0f;
          tmpVerts.push_back(tmp);
       }
-      if( strcmp( lineHeader,"vt") == 0 )
+      else if( strcmp( lineHeader,"vt") == 0 )
       {
          Vertex2D tmp;
-         fscanf_s(f, "%f %f\n",&tmp.x, &tmp.y );
+         fscanf_s(f, "%f %f",&tmp.x, &tmp.y );
          if ( flipTv || convertToLeftHanded )
          {
             tmp.y = 1.f-tmp.y;
          }
          tmpTexel.push_back(tmp);
       }
-      if( strcmp( lineHeader,"vn") == 0 )
+      else if( strcmp( lineHeader,"vn") == 0 )
       {
          Vertex3Ds tmp;
          fscanf_s(f, "%f %f %f\n",&tmp.x, &tmp.y, &tmp.z );
@@ -144,7 +144,7 @@ bool WaveFrontObj_Load(const char *filename, bool flipTv, bool convertToLeftHand
             tmp.z*=-1;
          tmpNorms.push_back(tmp);
       }
-      if( strcmp( lineHeader,"f") == 0 )
+      else if( strcmp( lineHeader,"f") == 0 )
       {
          if( tmpVerts.size()==0 )
          {
@@ -206,7 +206,13 @@ bool WaveFrontObj_Load(const char *filename, bool flipTv, bool convertToLeftHand
              tmpFaces.push_back(tmpFace);
          }
       }
+      else
+      {
+          // unknown line header, skip rest of line
+          fgets(lineHeader, 256, f);
+      }
    }
+
    for( unsigned int i=0;i<tmpFaces.size(); i++ )
    {
       int idx=isInList(tmpFaces[i].vi0, tmpFaces[i].ti0, tmpFaces[i].ni0 );
