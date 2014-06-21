@@ -780,6 +780,8 @@ void Primitive::RenderObject( RenderDevice *pd3dDevice )
         pin->Set( ePictureTexture );
         g_pplayer->m_pin3d.EnableAlphaBlend(1, fFalse);
         g_pplayer->m_pin3d.SetTextureFilter(ePictureTexture, TEXTURE_MODE_TRILINEAR);
+        // accomodate models with UV coords outside of [0,1]
+        pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_WRAP);
     }
     else
     {
@@ -822,6 +824,7 @@ void Primitive::RenderObject( RenderDevice *pd3dDevice )
         pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, 0xffffffff);
     }
 
+    pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_CLAMP);
     g_pplayer->m_pin3d.DisableAlphaBlend();
 }
 
