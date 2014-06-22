@@ -1044,9 +1044,6 @@ bool Ramp::isHabitrail() const
          || m_d.m_type == RampType3WireRight;
 }
 
-#define STEPS 16
-WORD baseTubeIndices[2*(STEPS+1)*3];
-
 void Ramp::RenderStaticHabitrail(RenderDevice* pd3dDevice)
 {
    pd3dDevice->SetRenderState(RenderDevice::SPECULARENABLE, TRUE);
@@ -1070,9 +1067,6 @@ void Ramp::RenderStaticHabitrail(RenderDevice* pd3dDevice)
        g_pplayer->m_pin3d.SetTextureFilter(ePictureTexture, TEXTURE_MODE_TRILINEAR);
 }
 
-//   pd3dDevice->SetRenderState( RenderDevice::CULLMODE, D3DCULL_NONE );
-//   pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLESTRIP, staticVertexBuffer, 0, STEPS*2+2, baseTubeIndices, 2*STEPS*3);
-//   pd3dDevice->SetRenderState( RenderDevice::CULLMODE, D3DCULL_CCW );
    int offset=0;
    for (int i=0; i<rampVertex-1; i++,offset+=32)
    {
