@@ -377,7 +377,7 @@ void Ramp::GetBoundingVertices(Vector<Vertex3Ds> * const pvvertex3D)
  *  ppfCross     - size cvertex, true if i-th vertex corresponds to a control point
  *  ppratio      - how far along the ramp length the i-th vertex is, 1=start=bottom, 0=end=top (??)
  */
-Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** const ppfCross, float ** const ppratio)
+Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** const ppfCross, float ** const ppratio, bool createPath)
 {
    Vector<RenderVertex> vvertex;
    GetCentralCurve(&vvertex);
@@ -504,8 +504,15 @@ Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** co
          (*ppratio)[i] = 1.0f - percentage;
       }
 
-      rgvLocal[i] = vmiddle + (widthcur*0.5f) * vnormal;
-      rgvLocal[cvertex*2 - i - 1] = vmiddle - (widthcur*0.5f) * vnormal;
+      if( createPath )
+      {
+         rgvLocal[i] = vmiddle +  vnormal;
+      }
+      else
+      {
+         rgvLocal[i] = vmiddle + (widthcur*0.5f) * vnormal;
+         rgvLocal[cvertex*2 - i - 1] = vmiddle - (widthcur*0.5f) * vnormal;
+      }
    }
 
    if (ppfCross)
@@ -1037,6 +1044,9 @@ bool Ramp::isHabitrail() const
          || m_d.m_type == RampType3WireRight;
 }
 
+#define STEPS 16
+WORD baseTubeIndices[2*(STEPS+1)*3];
+
 void Ramp::RenderStaticHabitrail(RenderDevice* pd3dDevice)
 {
    pd3dDevice->SetRenderState(RenderDevice::SPECULARENABLE, TRUE);
@@ -1060,6 +1070,9 @@ void Ramp::RenderStaticHabitrail(RenderDevice* pd3dDevice)
        g_pplayer->m_pin3d.SetTextureFilter(ePictureTexture, TEXTURE_MODE_TRILINEAR);
 }
 
+//   pd3dDevice->SetRenderState( RenderDevice::CULLMODE, D3DCULL_NONE );
+//   pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLESTRIP, staticVertexBuffer, 0, STEPS*2+2, baseTubeIndices, 2*STEPS*3);
+//   pd3dDevice->SetRenderState( RenderDevice::CULLMODE, D3DCULL_CCW );
    int offset=0;
    for (int i=0; i<rampVertex-1; i++,offset+=32)
    {
@@ -1085,6 +1098,9 @@ void Ramp::RenderPolygons(RenderDevice* pd3dDevice, int offset, WORD * const rgi
 void Ramp::prepareHabitrail(RenderDevice* pd3dDevice )
 {
    Matrix3D matView = g_pplayer->m_pin3d.GetViewTransform();
+   Vertex3Ds prevTangent;
+
+   rgvInit = GetRampVertex(rampVertex, &rgheightInit, NULL, &rgratioInit, true);
 
    const int numVertices = (rampVertex - 1)*32;
    pd3dDevice->CreateVertexBuffer(numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &staticVertexBuffer);
@@ -1201,53 +1217,22 @@ void Ramp::prepareHabitrail(RenderDevice* pd3dDevice )
          }
       }
 
-      const int p1 = (i==0) ? 0 : (i-1);
-      const int p2 = i;
-      const int p3 = (i==(rampVertex-1)) ? i : (i+1);
-      const int p4 = rampVertex*2 - i - 1; //!! ?? *2 valid?
+      const int pCur = i;
+      const int pNext = (i+1) % rampVertex;
 
-      Vertex3Ds vacross(rgvInit[p4].x - rgvInit[p2].x, rgvInit[p4].y - rgvInit[p2].y, 0.0f);
-
-      // The vacross vector is our local up vector.  Rotate the cross-section
-      // later to match this up
-      vacross.Normalize();
-
-      Vertex3Ds tangent(rgvInit[p3].x - rgvInit[p1].x, rgvInit[p3].y - rgvInit[p1].y, rgheightInit[p3] - rgheightInit[p1]);
-
-      // This is the vector describing the tangent to the ramp at this point
-      tangent.Normalize();
-
-      const Vertex3Ds rotationaxis(tangent.y, -tangent.x, 0.0f);
-      /*
-      Vertex3Ds up(0,0,1.0f);
-      // Get axis of rotation to rotate our cross-section into place
-      CrossProduct(tangent, up, &rotationaxis);*/
-
-      const float dot = tangent.z; //tangent.Dot(&up);
-      const float angle = acosf(dot);
-
-      RotateAround(rotationaxis, rgv3D, 16, angle);
-
-      // vnewup is the beginning up vector of the cross-section
-      const Vertex2D vnewupdef(0.0f,1.0f);
-      const Vertex3Ds vnewup = RotateAround(rotationaxis, vnewupdef, angle);
-
-      // vacross is not out real up vector, but the up vector for the cross-section isn't real either
-      //Vertex3D vrampup;
-      //CrossProduct(&tangent, &vacross, &vrampup);
-      const float dotupcorrection = vnewup.Dot(vacross);
-      float angleupcorrection = acosf(dotupcorrection);
-
-      if (vacross.x >= 0.f)
-         angleupcorrection = -angleupcorrection;
-
-      RotateAround(tangent, rgv3D, 16, -angleupcorrection);
+      Vertex3Ds s(0,0,-1);
+      s.Normalize();
+      Vertex3Ds cur( rgvInit[pCur].x, rgvInit[pCur].y, rgheightInit[pCur]*m_ptable->m_zScale);
+      cur.Normalize();
+      Vertex3Ds r = CrossProduct(s,cur);
+      float angle = acosf(s.Dot(cur));
+      RotateAround(r, rgv3D, 16, angle);
 
       for (int l=0;l<16;l++)
       {
-         rgv3D[l].x += (rgvInit[p2].x + rgvInit[p4].x)*0.5f;
-         rgv3D[l].y += (rgvInit[p2].y + rgvInit[p4].y)*0.5f;
-         rgv3D[l].z += rgheightInit[p2]*m_ptable->m_zScale;
+         rgv3D[l].x += rgvInit[pCur].x;
+         rgv3D[l].y += rgvInit[pCur].y;
+         rgv3D[l].z += rgheightInit[pCur]*m_ptable->m_zScale;
       }
 
       // apply environment texture coords if a texture was assigned to a wired ramp
@@ -1274,6 +1259,8 @@ static const WORD rgiRampStatic1[4] = {0,3,2,1};
 
 void Ramp::prepareStatic(RenderDevice* pd3dDevice)
 {
+   rgvInit = GetRampVertex(rampVertex, &rgheightInit, NULL, &rgratioInit);
+
    const int numVertices = (rampVertex-1)*4*5;
    pd3dDevice->CreateVertexBuffer( numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &staticVertexBuffer);
 
@@ -1473,7 +1460,6 @@ void Ramp::prepareStatic(RenderDevice* pd3dDevice)
 
 void Ramp::RenderSetup(RenderDevice* pd3dDevice)
 {
-   rgvInit = GetRampVertex(rampVertex, &rgheightInit, NULL, &rgratioInit);
 
    solidMaterial.setColor( 1.0f, m_d.m_color );
 
