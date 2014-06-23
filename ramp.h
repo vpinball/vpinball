@@ -151,7 +151,7 @@ private:
 
 	void GetCentralCurve(Vector<RenderVertex> * const pvv);
 
-	Vertex2D *GetRampVertex(int &pcvertex, float ** const ppheight, bool ** const ppfCross, float ** const ppratio, bool createPath=false);
+    Vertex2D *GetRampVertex(int &pcvertex, float ** const ppheight, bool ** const ppfCross, float ** const ppratio, Vertex2D **pMiddlePoints);
 	void prepareHabitrail(RenderDevice* pd3dDevice);
 	void prepareStatic(RenderDevice* pd3dDevice);
 	void CheckJoint(Vector<HitObject> * const pvho, const HitTriangle * const ph3d1, const HitTriangle * const ph3d2);
