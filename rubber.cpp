@@ -108,6 +108,7 @@ void Rubber::SetDefaults(bool fromMouseClick)
    m_d.m_enableLightingImage = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"EnableLightingOnImage", true) : true;
 
    m_d.m_wireDiameter = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"WireDiameter", 60.0f) : 60.0f;
+   m_d.m_transparent=true;
 }
 
 void Rubber::WriteRegDefaults()
@@ -181,27 +182,10 @@ void Rubber::Render(Sur * const psur)
    const Vertex2D *rgvLocal = GetRampVertex(cvertex, NULL, &pfCross, NULL, &middlePoints);
    psur->Polygon(rgvLocal, cvertex*2);
 
-   if( isHabitrail() )
-   {
-       psur->Polyline(middlePoints, cvertex);
-       if (m_d.m_type == RampType4Wire || m_d.m_type == RampType3WireRight)
-       {
-           psur->SetLineColor(RGB(0,0,0),false,3);
-           psur->Polyline(rgvLocal, cvertex);
-       }
-       if (m_d.m_type == RampType4Wire || m_d.m_type == RampType3WireLeft)
-       {
-           psur->SetLineColor(RGB(0,0,0),false,3);
-           psur->Polyline(&rgvLocal[cvertex], cvertex);
-       }
-   }
-   else
-   {
-       for (int i=0;i<cvertex;i++)
-           if (pfCross[i])
-               psur->Line(rgvLocal[i].x, rgvLocal[i].y, rgvLocal[cvertex*2 - i - 1].x, rgvLocal[cvertex*2 - i - 1].y);
+   for (int i=0;i<cvertex;i++)
+       if (pfCross[i])
+           psur->Line(rgvLocal[i].x, rgvLocal[i].y, rgvLocal[cvertex*2 - i - 1].x, rgvLocal[cvertex*2 - i - 1].y);
 
-   }
    
    delete [] rgvLocal;
    delete [] pfCross;
@@ -415,7 +399,7 @@ Vertex2D *Rubber::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** 
    for (int i=0; i<cvertex; i++)
    {
       const RenderVertex & vprev = vvertex[(i>0) ? i-1 : i];
-      const RenderVertex & vnext = vvertex[(i < (cvertex-1)) ? i+1 : i];
+      const RenderVertex & vnext = vvertex[(i < (cvertex-1)) ? i+1 : 0];
       const RenderVertex & vmiddle = vvertex[i];
 
       Vertex2D vnormal;
@@ -602,7 +586,39 @@ void Rubber::GetHitShapes(Vector<HitObject> * const pvho)
    int cvertex;
    float *rgheight1;
    Vertex2D * const rgvLocal = GetRampVertex(cvertex, &rgheight1, NULL, NULL, NULL);
+   float wallheightright=m_d.m_width, wallheightleft=m_d.m_width;
 
+   for (int i=0;i<(cvertex-1);i++)
+   {
+       const Vertex2D * const pv1 = (i>0) ? &rgvLocal[i-1] : NULL;
+       const Vertex2D * const pv2 = &rgvLocal[i];
+       const Vertex2D * const pv3 = &rgvLocal[i+1];
+       const Vertex2D * const pv4 = (i<(cvertex-2)) ? &rgvLocal[i+2] : NULL;
+
+#ifndef RAMPTEST
+       AddLine(pvho, pv2, pv3, pv1, rgheight1[i], rgheight1[i+1]+wallheightright);
+       AddLine(pvho, pv3, pv2, pv4, rgheight1[i], rgheight1[i+1]+wallheightright);
+#else
+       AddSideWall(pvho, pv2, pv3,rgheight1[i], rgheight1[i+1], wallheightright);
+       AddSideWall(pvho, pv3, pv2,rgheight1[i+1], rgheight1[i], wallheightright);
+#endif
+   }
+
+   for (int i=0;i<(cvertex-1);i++)
+   {
+       const Vertex2D * const pv1 = (i>0) ? &rgvLocal[cvertex + i - 1] : NULL;
+       const Vertex2D * const pv2 = &rgvLocal[cvertex + i];
+       const Vertex2D * const pv3 = &rgvLocal[cvertex + i + 1];
+       const Vertex2D * const pv4 = (i<(cvertex-2)) ? &rgvLocal[cvertex + i + 2] : NULL;
+
+#ifndef RAMPTEST
+       AddLine(pvho, pv2, pv3, pv1, rgheight1[cvertex - i - 2], rgheight1[cvertex - i - 1] + wallheightleft);
+       AddLine(pvho, pv3, pv2, pv4, rgheight1[cvertex - i - 2], rgheight1[cvertex - i - 1] + wallheightleft);
+#else
+       AddSideWall(pvho, pv2, pv3, rgheight1[cvertex - i - 1], rgheight1[cvertex - i - 2], wallheightleft);
+       AddSideWall(pvho, pv3, pv2, rgheight1[cvertex - i - 2], rgheight1[cvertex - i - 1], wallheightleft);
+#endif
+   }
 
 #ifndef RAMPTEST
    // Add hit triangles for the ramp floor.
@@ -1212,7 +1228,7 @@ void Rubber::prepareStatic(RenderDevice* pd3dDevice)
 {
    rgvInit = GetRampVertex(rampVertex, &rgheightInit, NULL, &rgratioInit, NULL);
 
-   const int numVertices = (rampVertex-1)*4;
+   const int numVertices = (rampVertex)*4;
    pd3dDevice->CreateVertexBuffer( numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &staticVertexBuffer);
 
    Pin3D *const ppin3d = &g_pplayer->m_pin3d;
@@ -1235,20 +1251,28 @@ void Rubber::prepareStatic(RenderDevice* pd3dDevice)
    staticVertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY);
 
    int offset=0;
-   for (int i=0; i<(rampVertex-1); i++)
+   for (int i=0; i<(rampVertex); i++)
    {
+      int i2=i+1;
+      int i3=i;
+      if( i==(rampVertex-1) )
+      {
+         i3=0;
+         i2=0;
+      }
+
       Vertex3D_NoTex2 rgv3D[4];
       rgv3D[0].x = rgvInit[i].x;
       rgv3D[0].y = rgvInit[i].y;
       rgv3D[0].z = rgheightInit[i]*m_ptable->m_zScale;
 
-      rgv3D[3].x = rgvInit[i+1].x;
-      rgv3D[3].y = rgvInit[i+1].y;
-      rgv3D[3].z = rgheightInit[i+1]*m_ptable->m_zScale;
+      rgv3D[3].x = rgvInit[i2].x;
+      rgv3D[3].y = rgvInit[i2].y;
+      rgv3D[3].z = rgheightInit[i2]*m_ptable->m_zScale;
 
-      rgv3D[2].x = rgvInit[rampVertex*2-i-2].x;
-      rgv3D[2].y = rgvInit[rampVertex*2-i-2].y;
-      rgv3D[2].z = rgheightInit[i+1]*m_ptable->m_zScale;
+      rgv3D[2].x = rgvInit[rampVertex*2-i3-2].x;
+      rgv3D[2].y = rgvInit[rampVertex*2-i3-2].y;
+      rgv3D[2].z = rgheightInit[i2]*m_ptable->m_zScale;
 
       rgv3D[1].x = rgvInit[rampVertex*2-i-1].x;
       rgv3D[1].y = rgvInit[rampVertex*2-i-1].y;
@@ -1274,9 +1298,9 @@ void Rubber::prepareStatic(RenderDevice* pd3dDevice)
             rgv3D[1].tu = 0;
             rgv3D[1].tv = rgratioInit[i];
             rgv3D[2].tu = 0;
-            rgv3D[2].tv = rgratioInit[i+1];
+            rgv3D[2].tv = rgratioInit[i2];
             rgv3D[3].tu = 1.0f;
-            rgv3D[3].tv = rgratioInit[i+1];
+            rgv3D[3].tv = rgratioInit[i2];
          }
       }
 
@@ -1286,7 +1310,14 @@ void Rubber::prepareStatic(RenderDevice* pd3dDevice)
       offset+=4;
    }
    staticVertexBuffer->unlock();  
+
+   delete[] rgvInit;
+   delete[] rgheightInit;
+   delete[] rgratioInit;
+
    assert(offset == numVertices);
+
+
 }
 
 
@@ -1304,9 +1335,6 @@ void Rubber::RenderSetup(RenderDevice* pd3dDevice)
       GenerateVertexBuffer(pd3dDevice);
    }
 
-   delete[] rgvInit;
-   delete[] rgheightInit;
-   delete[] rgratioInit;
 }
 
 void Rubber::RenderStatic(RenderDevice* pd3dDevice)
@@ -1352,7 +1380,7 @@ void Rubber::RenderStatic(RenderDevice* pd3dDevice)
          pd3dDevice->SetMaterial(solidMaterial);
 
       int offset=0;
-      for (int i=0; i<(rampVertex-1); i++,offset+=4)
+      for (int i=0; i<(rampVertex); i++,offset+=4)
          pd3dDevice->DrawPrimitiveVB(D3DPT_TRIANGLEFAN, staticVertexBuffer, offset, 4);
 
       ppin3d->SetTexture(NULL);
@@ -2073,7 +2101,7 @@ void Rubber::PostRenderStatic(RenderDevice* pd3dDevice)
       pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, (m_d.m_opacity << 24) | 0xffffff);
 
       unsigned int offset=0;
-      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, dynamicVertexBuffer, offset, m_numVertices, dynamicIndexBuffer, 0, (rampVertex-1)*6);
+      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, dynamicVertexBuffer, offset, m_numVertices, dynamicIndexBuffer, 0, (rampVertex)*6);
       offset += m_numVertices;
 
       pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
@@ -2098,9 +2126,9 @@ void Rubber::GenerateVertexBuffer(RenderDevice* pd3dDevice)
     const float inv_tablewidth = 1.0f/(m_ptable->m_right - m_ptable->m_left);
     const float inv_tableheight = 1.0f/(m_ptable->m_bottom - m_ptable->m_top);
 
-    m_numVertices=(rampVertex-1)*4;
+    m_numVertices=(rampVertex)*4;
     unsigned int offset=0;
-    const unsigned int rgioffset = (rampVertex-1)*6;
+    const unsigned int rgioffset = (rampVertex)*6;
 
     if (dynamicVertexBuffer)
         dynamicVertexBuffer->release();
@@ -2110,22 +2138,30 @@ void Rubber::GenerateVertexBuffer(RenderDevice* pd3dDevice)
     dynamicVertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY);
 
     Vertex3D_NoTex2* rgvbuf = new Vertex3D_NoTex2[m_numVertices];
-    std::vector<WORD> rgibuf( (rampVertex-1)*6*2*2 );
+    std::vector<WORD> rgibuf( (rampVertex)*6*2*2 );
 
-    for (int i=0;i<(rampVertex-1);i++)
+    for (int i=0;i<(rampVertex);i++)
     {
+        int i2=i+1;
+        int i3=i;
+        if( i==(rampVertex-1) )
+        {
+            i3=0;
+            i2=0;
+        }
+
         Vertex3D_NoTex2 * const rgv3D = &rgvbuf[0]+i*4;
         rgv3D[0].x = rgvLocal[i].x;
         rgv3D[0].y = rgvLocal[i].y;
         rgv3D[0].z = rgheight[i]*m_ptable->m_zScale;
 
-        rgv3D[3].x = rgvLocal[i+1].x;
-        rgv3D[3].y = rgvLocal[i+1].y;
-        rgv3D[3].z = rgheight[i+1]*m_ptable->m_zScale;
+        rgv3D[3].x = rgvLocal[i2].x;
+        rgv3D[3].y = rgvLocal[i2].y;
+        rgv3D[3].z = rgheight[i2]*m_ptable->m_zScale;
 
-        rgv3D[2].x = rgvLocal[rampVertex*2-i-2].x;
-        rgv3D[2].y = rgvLocal[rampVertex*2-i-2].y;
-        rgv3D[2].z = rgheight[i+1]*m_ptable->m_zScale;
+        rgv3D[2].x = rgvLocal[rampVertex*2-i3-2].x;
+        rgv3D[2].y = rgvLocal[rampVertex*2-i3-2].y;
+        rgv3D[2].z = rgheight[i2]*m_ptable->m_zScale;
 
         rgv3D[1].x = rgvLocal[rampVertex*2-i-1].x;
         rgv3D[1].y = rgvLocal[rampVertex*2-i-1].y;
@@ -2151,9 +2187,9 @@ void Rubber::GenerateVertexBuffer(RenderDevice* pd3dDevice)
                 rgv3D[1].tu = 0;
                 rgv3D[1].tv = rgratio[i];
                 rgv3D[2].tu = 0;
-                rgv3D[2].tv = rgratio[i+1];
+                rgv3D[2].tv = rgratio[i2];
                 rgv3D[3].tu = 1.0f;
-                rgv3D[3].tv = rgratio[i+1];
+                rgv3D[3].tv = rgratio[i2];
             }
         }
 
@@ -2194,9 +2230,6 @@ void Rubber::GenerateVertexBuffer(RenderDevice* pd3dDevice)
         dynamicIndexBuffer->release();
     dynamicIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer( rgibuf );
 
-    WORD maxidx = 0;
-    for (unsigned i = 0; i < rgibuf.size(); ++i)
-        maxidx = std::max(maxidx, rgibuf[i]);
     dynamicVertexBuffer->unlock();
 
     delete [] rgvbuf;
