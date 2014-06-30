@@ -2423,6 +2423,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <None Include="res\comcontrol.rgs" />
     <None Include="res\gate.cur" />
     <None Include="res\flasher.cur" />
+    <None Include="res\rubber.cur" />
     <None Include="res\kicker.cur" />
     <None Include="res\spinner.cur" />
     <None Include="res\dispreel.cur" />
