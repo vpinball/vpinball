@@ -97,6 +97,7 @@ static TBBUTTON const g_tbbuttonPalette[] = {
    {21, ID_INSERT_LIGHTSEQ, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_LIGHTSEQ, 15},
    {22, ID_INSERT_PRIMITIVE, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_PRIMITIVE, 16},
    {35, ID_INSERT_FLASHER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_FLASHER, 17},
+   {35, ID_INSERT_RUBBER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_RUBBER, 18},
 };
 
 static TBBUTTON const g_tbbuttonLayers[] = {
@@ -7320,6 +7321,13 @@ INT_PTR CALLBACK DrawingOrderProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                      sprintf_s(textBuf,"%.02f", flasher->m_d.m_height);
                      ListView_SetItemText( listHwnd, i, 1, textBuf);
                      ListView_SetItemText( listHwnd, i, 2, "Flasher");
+                  }
+                  else if ( pedit->GetItemType()==eItemRubber )
+                  {
+                      Rubber *rubber= (Rubber*)pedit;
+                      sprintf_s(textBuf,"%.02f", rubber->m_d.m_height);
+                      ListView_SetItemText( listHwnd, i, 1, textBuf);
+                      ListView_SetItemText( listHwnd, i, 2, "Rubber");
                   }
                   else if ( pedit->GetItemType()==eItemSpinner )
                   {

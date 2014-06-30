@@ -282,6 +282,7 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
             EditableRegistry::RegisterEditable<Plunger>();
             EditableRegistry::RegisterEditable<Primitive>();
             EditableRegistry::RegisterEditable<Ramp>();
+            EditableRegistry::RegisterEditable<Rubber>();
             EditableRegistry::RegisterEditable<Spinner>();
             EditableRegistry::RegisterEditable<Surface>();
             EditableRegistry::RegisterEditable<Textbox>();

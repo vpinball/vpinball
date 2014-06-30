@@ -163,6 +163,7 @@
 #define ID_DRAWINFRONT                  147
 #define IDC_TARGET                      147
 #define IDS_SAVE_CHANGES                147
+#define IDS_TB_RUBBER                   147
 #define ID_DRAWINBACK                   148
 #define IDC_DECAL                       148
 #define IDS_NAME                        148
@@ -318,6 +319,7 @@
 #define IDR_BUMPER1                     278
 #define IDR_PRIMITIVE                   278
 #define IDC_ADDCREDIT                   279
+#define IDR_RUBBER                      279
 #define IDC_BUTTON1                     280
 #define IDC_IN                          280
 #define IDC_STARTGAMEBUTTON             280
@@ -710,6 +712,10 @@
 #define IDC_TABLEAVSYNC                 585
 #define IDC_SOFTWARE_VP                 586
 #define IDD_PROPPOINT_POSITION_WITHZ    601
+#define IDD_PROPRUBBER_PHYSICS          602
+#define IDC_RUBBER                      602
+#define IDD_PROPRUBBER_POSITION         603
+#define IDD_PROPRUBBER_VISUALS          604
 #define DISPID_Gate_Height1             1142
 #define DISPID_Image                    1500
 #define IDC_MESH_FILENAME_EDIT          1601
@@ -808,6 +814,7 @@
 #define ID_VIEW_GRID                    32897
 #define ID_VIEW_BACKDROP                32898
 #define IDC_GRID_SIZE                   32899
+#define ID_INSERT_RUBBER                32990
 #define DZVALUE                         65535
 #define DZName                          65535
 
@@ -815,8 +822,8 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        602
-#define _APS_NEXT_COMMAND_VALUE         32990
+#define _APS_NEXT_RESOURCE_VALUE        603
+#define _APS_NEXT_COMMAND_VALUE         32991
 #define _APS_NEXT_CONTROL_VALUE         426
 #define _APS_NEXT_SYMED_VALUE           188
 #endif

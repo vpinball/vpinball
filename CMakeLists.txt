@@ -143,6 +143,7 @@ set(SOURCES
   propbrowser.cpp
   quadtree.cpp
   ramp.cpp
+  rubber.cpp
   regutil.cpp
   RenderDevice.cpp
   shadowsur.cpp
@@ -224,6 +225,7 @@ set(HEADERS
   propbrowser.h
   quadtree.h
   ramp.h
+  rubber.h
   regutil.h
   resource.h
   shadowsur.h

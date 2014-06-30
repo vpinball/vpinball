@@ -1820,6 +1820,62 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(397), helpstring("property DepthBias")] HRESULT DepthBias([in] float newVal);
 	};
 
+	/////////////////////////////////////////////
+	// Rubber
+	//////////////////////////////////////////
+
+	[
+		object,		
+		uuid(496CC241-134D-4543-9974-5B0DF6BC5D1D),
+		dual,
+		helpstring("IRubber Interface"),
+		pointer_default(unique)
+	]
+	interface IRubber : IDispatch
+	{
+		[propget, id(DISPID_Name), helpstring("property Name")] HRESULT Name([out, retval] BSTR *pVal);
+		[propput, id(DISPID_Name), helpstring("property Name")] HRESULT Name([in] BSTR newVal);
+		[propget, id(2), helpstring("property Height")] HRESULT Height([out, retval] float *pVal);
+		[propput, id(2), helpstring("property Height")] HRESULT Height([in] float newVal);
+		[propget, id(4), helpstring("property Width")] HRESULT Width([out, retval] float *pVal);
+		[propput, id(4), helpstring("property Width")] HRESULT Width([in] float newVal);
+		[propget, id(5), helpstring("property Color")] HRESULT Color([out, retval] OLE_COLOR *pVal);
+		[propput, id(5), helpstring("property Color")] HRESULT Color([in] OLE_COLOR newVal);
+		[propget, id(DISPID_Image), helpstring("property Image")] HRESULT Image([out, retval] BSTR *pVal);
+		[propput, id(DISPID_Image), helpstring("property Image")] HRESULT Image([in] BSTR newVal);
+		[propget, id(8), helpstring("property ImageAlignment")] HRESULT ImageAlignment([out, retval] RampImageAlignment *pVal);
+		[propput, id(8), helpstring("property ImageAlignment")] HRESULT ImageAlignment([in] RampImageAlignment newVal);
+		[propget, id(378), helpstring("property Solid")] HRESULT Solid([out, retval] VARIANT_BOOL *pVal);
+		[propput, id(378), helpstring("property Solid")] HRESULT Solid([in] VARIANT_BOOL newVal);
+		[propget, id(18), helpstring("property Transparent")] HRESULT Transparent([out, retval] VARIANT_BOOL *pVal);
+		[propput, id(18), helpstring("property Transparent")] HRESULT Transparent([in] VARIANT_BOOL newVal);
+		[propget, id(19), helpstring("property Opacity")] HRESULT Opacity([out, retval] int *pVal);
+		[propput, id(19), helpstring("property Opacity")] HRESULT Opacity([in] int newVal);
+		[propget, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([out, retval] VARIANT* pVal);
+		[propput, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([in] VARIANT* newVal);
+		[propget, id(107), helpstring("property CastsShadow")] HRESULT CastsShadow([out, retval] VARIANT_BOOL *pVal);
+		[propput, id(107), helpstring("property CastsShadow")] HRESULT CastsShadow([in] VARIANT_BOOL newVal);
+		[propget, id(110), helpstring("property Elasticity")] HRESULT Elasticity([out, retval] float *pVal);
+		[propput, id(110), helpstring("property Elasticity")] HRESULT Elasticity([in] float newVal);
+		
+		[propget, id(111), helpstring("property Collidable")] HRESULT Collidable([out, retval] VARIANT_BOOL *pVal);
+		[propput, id(111), helpstring("property Collidable")] HRESULT Collidable([in] VARIANT_BOOL newVal);
+
+		[propget, id(112), helpstring("property Visible")] HRESULT Visible([out, retval] VARIANT_BOOL *pVal);
+		[propput, id(112), helpstring("property Visible")] HRESULT Visible([in] VARIANT_BOOL newVal);
+
+		[propget, id(114), helpstring("property Friction")] HRESULT Friction([out, retval] float *pVal);
+		[propput, id(114), helpstring("property Friction")] HRESULT Friction([in] float newVal);
+		[propget, id(115), helpstring("property Scatter")] HRESULT Scatter([out, retval] float *pVal);
+		[propput, id(115), helpstring("property Scatter")] HRESULT Scatter([in] float newVal);
+
+        [propget, id(394), helpstring("property EnableLightingImage")] HRESULT EnableLightingImage([out, retval] VARIANT_BOOL *pVal);
+		[propput, id(394), helpstring("property EnableLightingImage")] HRESULT EnableLightingImage([in] VARIANT_BOOL newVal);
+		
+		[propget, id(397), helpstring("property DepthBias")] HRESULT DepthBias([out, retval] float *pVal);
+		[propput, id(397), helpstring("property DepthBias")] HRESULT DepthBias([in] float newVal);	
+
+	};
    
    
    /////////////////////////////////////////////
@@ -1882,6 +1938,17 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 	uuid(AC861BD8-A2BB-4d29-9EC5-A8E9C49D80FB),
 	]
 	dispinterface IFlasherEvents
+	{
+	properties:
+	methods:
+		[id(DISPID_GameEvents_Init)]  void Init();
+		//[id(DISPID_TimerEvents_Timer)]  void Timer();
+	}
+
+	[
+	uuid(710DDCD8-919C-4B04-815B-4FA8A950B869),
+	]
+	dispinterface IRubberEvents
 	{
 	properties:
 	methods:
@@ -2162,6 +2229,16 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 	{
 		[default] interface IFlasher;
 		[default, source]  dispinterface IFlasherEvents;
+	};
+
+	[
+		uuid(B0715DC0-002F-11E4-9191-0800200C9A66),
+		helpstring("Rubber Class")
+	]
+	coclass Rubber
+	{
+		[default] interface IRubber;
+		[default, source]  dispinterface IRubberEvents;
 	};
 
 	[
