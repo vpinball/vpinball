@@ -14,7 +14,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (U.S.) resources
+// Englisch (USA) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 #ifdef _WIN32
@@ -2197,7 +2197,7 @@ IDC_DISPREEL            CURSOR                  "res\\dispreel.cur"
 IDC_LIGHTSEQ            CURSOR                  "res\\lightseq.cur"
 IDC_PRIMITIVE           CURSOR                  "res\\primitive.cur"
 IDC_FLASHER             CURSOR                  "res\\flasher.cur"
-IDC_RUBBER              CURSOR                  "res\\flasher.cur"
+IDC_RUBBER              CURSOR                  "res\\rubber.cur"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -2391,7 +2391,7 @@ BEGIN
     IDS_STEP                "Step"
 END
 
-#endif    // English (U.S.) resources
+#endif    // Englisch (USA) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
