@@ -7126,6 +7126,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\rubber.cpp"
+				>
+			</File>
+			<File
 				RelativePath="shadowsur.cpp"
 				>
 				<FileConfiguration
@@ -9541,6 +9545,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\rubber.h"
+				>
+			</File>
+			<File
 				RelativePath="shadowsur.h"
 				>
 			</File>
@@ -9901,6 +9909,10 @@
 			</File>
 			<File
 				RelativePath="registry.bin"
+				>
+			</File>
+			<File
+				RelativePath=".\res\rubber.rgs"
 				>
 			</File>
 			<File

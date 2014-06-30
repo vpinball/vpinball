@@ -886,6 +886,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="flasher.cpp" />
+    <ClCompile Include="rubber.cpp" />
     <ClCompile Include="hash.cpp" />
     <ClCompile Include="kdtree.cpp" />
     <ClCompile Include="objloader.cpp" />
@@ -2295,6 +2296,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="buildnumber.h" />
     <ClInclude Include="DongleAPI.h" />
     <ClInclude Include="flasher.h" />
+    <ClInclude Include="rubber.h" />
     <ClInclude Include="hash.h" />
     <ClInclude Include="hidpi.h" />
     <ClInclude Include="hidsdi.h" />
@@ -2440,6 +2442,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <None Include="res\dispreel.rgs" />
     <None Include="res\dragpoint.rgs" />
     <None Include="res\flasher.rgs" />
+    <None Include="res\rubber.rgs" />
     <None Include="res\flipper.rgs" />
     <None Include="res\gate.rgs" />
     <None Include="res\kicker.rgs" />

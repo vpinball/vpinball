@@ -1,0 +1,21 @@
+HKCR
+{
+	VPinball.Rubber.1 = s 'Rubber Class'
+	{               
+		CLSID = s '{B0715DC0-002F-11E4-9191-0800200C9A66}'
+	}
+	VPinball.Rubber = s 'Rubber Class'
+	{
+		CLSID = s '{B0715DC0-002F-11E4-9191-0800200C9A66}'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {B0715DC0-002F-11E4-9191-0800200C9A66} = s 'Rubber Class'
+		{
+			ProgID = s 'VPinball.Rubber.1'
+			VersionIndependentProgID = s 'VPinball.Rubber'
+			val AppID = s '{62843C46-5699-4DF7-80C3-D82827FC0363}'
+			LocalServer32 = s '%Module%'
+		}
+	}
+}
