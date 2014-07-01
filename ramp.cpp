@@ -1328,9 +1328,14 @@ void Ramp::prepareHabitrail(RenderDevice* pd3dDevice )
       }
       memcpy(&rgv3D[16], rgv3D, sizeof(Vertex3D_NoTex2)*16);
    }
-
    staticVertexBuffer->unlock();  
+
+   delete[] rgvInit;
+   delete[] rgheightInit;
+   delete[] rgratioInit;
+
    assert(offset == numVertices);
+
 }
 
 static const WORD rgiRampStatic1[4] = {0,3,2,1};
@@ -1532,6 +1537,11 @@ void Ramp::prepareStatic(RenderDevice* pd3dDevice)
    }
    
    staticVertexBuffer->unlock();  
+
+   delete[] rgvInit;
+   delete[] rgheightInit;
+   delete[] rgratioInit;
+
    assert(offset == numVertices);
 }
 
@@ -1556,9 +1566,6 @@ void Ramp::RenderSetup(RenderDevice* pd3dDevice)
           GenerateVertexBuffer(pd3dDevice);
    }
 
-   delete[] rgvInit;
-   delete[] rgheightInit;
-   delete[] rgratioInit;
 }
 
 void Ramp::RenderStatic(RenderDevice* pd3dDevice)

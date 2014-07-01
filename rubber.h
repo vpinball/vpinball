@@ -13,7 +13,7 @@ public:
 	COLORREF m_color;
 	TimerDataRoot m_tdr;
 	float m_height; 
-	float m_width;
+	int m_width;
 	RampType m_type;
 	char m_szImage[MAXTOKEN];
 	RampImageAlignment m_imagealignment;
@@ -170,8 +170,8 @@ public:
 	STDMETHOD(put_Color)(/*[in]*/ OLE_COLOR newVal);
     STDMETHOD(get_Height)(/*[out, retval]*/ float *pVal);
     STDMETHOD(put_Height)(/*[in]*/ float newVal);
-    STDMETHOD(get_Width)(/*[out, retval]*/ float *pVal);
-    STDMETHOD(put_Width)(/*[in]*/ float newVal);
+    STDMETHOD(get_Width)(/*[out, retval]*/ int *pVal);
+    STDMETHOD(put_Width)(/*[in]*/ int newVal);
 
 	STDMETHOD(get_CastsShadow)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_CastsShadow)(/*[in]*/ VARIANT_BOOL newVal);
