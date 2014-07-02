@@ -108,7 +108,7 @@ void Rubber::SetDefaults(bool fromMouseClick)
    m_d.m_enableLightingImage = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"EnableLightingOnImage", true) : true;
 
    m_d.m_wireDiameter = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"WireDiameter", 60.0f) : 60.0f;
-   m_d.m_transparent=true;
+   m_d.m_staticRendering = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"EnableStaticRendering", true) : true;
 }
 
 void Rubber::WriteRegDefaults()
@@ -134,6 +134,7 @@ void Rubber::WriteRegDefaults()
    SetRegValueBool(strKeyName,"Visible",m_d.m_fVisible);
    SetRegValueBool(strKeyName,"EnableLighingOnImage",m_d.m_enableLightingImage);
    SetRegValueFloat(strKeyName,"WireDiameter", m_d.m_wireDiameter);
+   SetRegValueBool(strKeyName,"EnableStaticRendering",m_d.m_staticRendering);
 }
 
 void Rubber::GetPointDialogPanes(Vector<PropertyPane> *pvproppane)
@@ -966,6 +967,10 @@ void Rubber::RenderSetup(RenderDevice* pd3dDevice)
 
 void Rubber::RenderStatic(RenderDevice* pd3dDevice)
 {	
+   if( m_d.m_staticRendering )
+   {
+      RenderObject(pd3dDevice);
+   }
 }
 
 void Rubber::SetObjectPos()
@@ -1018,6 +1023,7 @@ HRESULT Rubber::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptk
    bw.WriteFloat(FID(RADY), m_d.m_wireDistanceY);
    bw.WriteBool(FID(ALPH), m_d.m_transparent);
    bw.WriteInt(FID(OPAC), m_d.m_opacity);
+   bw.WriteBool(FID(ESTR), m_d.m_staticRendering);
 
    ISelect::SaveData(pstm, hcrypthash, hcryptkey);
 
@@ -1116,6 +1122,10 @@ BOOL Rubber::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(ERLI))
    {
       pbr->GetBool(&m_d.m_enableLightingImage);
+   }
+   else if (id == FID(ESTR))
+   {
+      pbr->GetBool(&m_d.m_staticRendering);
    }
    else if (id == FID(RADB))
    {
@@ -1622,16 +1632,32 @@ STDMETHODIMP Rubber::put_DepthBias(float newVal)
    return S_OK;
 }
 
-// Always called each frame to render over everything else (along with primitives)
-// Same code as RenderStatic (with the exception of the alpha tests).
-// Also has less drawing calls by bundling seperate calls.
-void Rubber::PostRenderStatic(RenderDevice* pd3dDevice)
+STDMETHODIMP Rubber::get_EnableStaticRendering(VARIANT_BOOL *pVal)
+{
+   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_staticRendering);
+
+   return S_OK;
+}
+
+STDMETHODIMP Rubber::put_EnableStaticRendering(VARIANT_BOOL newVal)
+{
+   STARTUNDO
+
+      m_d.m_staticRendering = VBTOF(newVal);
+
+   STOPUNDO
+
+      return S_OK;
+}
+
+
+void Rubber::RenderObject(RenderDevice *pd3dDevice)
 {
    TRACE_FUNCTION();
 
    // don't render if invisible or not a transparent ramp
    if (!m_d.m_fVisible /*|| !m_d.m_transparent*/)
-       return;
+      return;
 
    if ( m_d.m_width==0 )
    {
@@ -1641,7 +1667,7 @@ void Rubber::PostRenderStatic(RenderDevice* pd3dDevice)
 
    // see the comment in RenderStatic() above
    if (m_d.m_imagealignment == ImageModeWrap)
-       pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_CLAMP);
+      pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_CLAMP);
 
    solidMaterial.setColor(1.0f, m_d.m_color );
 
@@ -1679,17 +1705,41 @@ void Rubber::PostRenderStatic(RenderDevice* pd3dDevice)
          pd3dDevice->SetRenderState( RenderDevice::LIGHTING, TRUE );
    }
 }
+// Always called each frame to render over everything else (along with primitives)
+// Same code as RenderStatic (with the exception of the alpha tests).
+// Also has less drawing calls by bundling seperate calls.
+void Rubber::PostRenderStatic(RenderDevice* pd3dDevice)
+{
+   if ( !m_d.m_staticRendering )
+   {
+      RenderObject(pd3dDevice);
+   }
+}
 
 
 void Rubber::GenerateVertexBuffer(RenderDevice* pd3dDevice)
 {
     dynamicVertexBufferRegenerate = false;
-
+    
     Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
     Vertex2D *middlePoints=0;
-    const Vertex2D *rgvLocal = GetRampVertex(rampVertex, NULL, NULL, NULL, &middlePoints);
-    const int numRings=rampVertex;
-    const int numSegments=15;
+    int accuracy=1;
+    if( m_ptable->GetAlphaRampsAccuracy()<5 )
+    {
+       accuracy=6;
+    }
+    else if (m_ptable->GetAlphaRampsAccuracy()>=5 && m_ptable->GetAlphaRampsAccuracy()<8)
+    {
+       accuracy=8;
+    }
+    else
+    {
+       accuracy=(int)(m_ptable->GetAlphaRampsAccuracy()*1.3f);
+    }
+
+    const Vertex2D *rgvLocal = GetRampVertex(splinePoints, NULL, NULL, NULL, &middlePoints);
+    const int numRings=splinePoints;
+    const int numSegments=accuracy;
     const float inv_tablewidth = 1.0f/(m_ptable->m_right - m_ptable->m_left);
     const float inv_tableheight = 1.0f/(m_ptable->m_bottom - m_ptable->m_top);
 
@@ -1708,14 +1758,14 @@ void Rubber::GenerateVertexBuffer(RenderDevice* pd3dDevice)
     std::vector<WORD> rgibuf( m_numIndices );
     
     const float r1=(float)m_d.m_width*0.3f;
-    const float r2=m_d.m_width;
+    const float r2=(float)m_d.m_width;
     for( int i=0, index=0; i<=numRings; i++ )
     {
         const int i1= (i==numRings)? 0: i;
         int si=index;
         for( int j=0;j<=numSegments;j++,index++)
         {
-            float u=(float)i/rampVertex;
+            float u=(float)i/splinePoints;
             float v=(float)(j+u)/numSegments;
             float u_angle = u*2.0f*(float)M_PI;
             float v_angle = v*2.0f*(float)M_PI;
