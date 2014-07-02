@@ -236,20 +236,6 @@ void Rubber::RenderOutline(Sur * const psur)
    const Vertex2D *rgvLocal= GetRampVertex(cvertex, NULL, &pfCross, NULL, &middlePoints);
 
    psur->Polygon(rgvLocal, cvertex*2);
-   if( isHabitrail() )
-   {
-       psur->Polyline(middlePoints, cvertex);
-       if (m_d.m_type == RampType4Wire || m_d.m_type == RampType3WireRight)
-       {
-           psur->SetLineColor(RGB(0,0,0),false,3);
-           psur->Polyline(rgvLocal, cvertex);
-       }
-       if (m_d.m_type == RampType4Wire || m_d.m_type == RampType3WireLeft)
-       {
-           psur->SetLineColor(RGB(0,0,0),false,3);
-           psur->Polyline(&rgvLocal[cvertex], cvertex);
-       }
-   }
 
    for (int i=0;i<cvertex;i++)
       if (pfCross[i])
@@ -486,7 +472,7 @@ Vertex2D *Rubber::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** 
 
       if( pMiddlePoints )
       {
-         (*pMiddlePoints)[i] = vmiddle +  vnormal;
+         (*pMiddlePoints)[i] = vmiddle+vnormal;
       }
       rgvLocal[i] = vmiddle + (widthcur*0.5f) * vnormal;
       rgvLocal[cvertex*2 - i - 1] = vmiddle - (widthcur*0.5f) * vnormal;
@@ -969,429 +955,17 @@ float Rubber::GetDepth(const Vertex3Ds& viewDir)
     return m_d.m_depthBias + viewDir.x * center2D.x + viewDir.y * center2D.y + viewDir.z * centerZ;
 }
 
-
-bool Rubber::isHabitrail() const
-{
-    return false;
-}
-
-void Rubber::RenderStaticHabitrail(RenderDevice* pd3dDevice)
-{
-   pd3dDevice->SetRenderState(RenderDevice::SPECULARENABLE, TRUE);
-   
-   Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-   Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
-
-   if ( !pin )
-   {
-       Material habitrailMaterial;
-       habitrailMaterial.setColor( 1.0f, m_d.m_color );
-       habitrailMaterial.setPower( 8.0f );
-       habitrailMaterial.setSpecular( 1.0f, 1.0f, 1.0f, 1.0f );
-       pd3dDevice->SetMaterial(habitrailMaterial);
-   }
-   else
-   {
-       pin->CreateAlphaChannel();
-       pin->Set( ePictureTexture );
-       pd3dDevice->SetMaterial(textureMaterial);
-       g_pplayer->m_pin3d.SetTextureFilter(ePictureTexture, TEXTURE_MODE_TRILINEAR);
-}
-
-   int offset=0;
-   for (int i=0; i<rampVertex-1; i++,offset+=32)
-   {
-      RenderPolygons(pd3dDevice, offset, (WORD*)rgicrosssection, 0, 16);
-      if (m_d.m_type == RampType4Wire || m_d.m_type == RampType3WireRight)
-         RenderPolygons(pd3dDevice, offset, (WORD*)rgicrosssection, 16, 24);
-
-      if (m_d.m_type == RampType4Wire || m_d.m_type == RampType3WireLeft)
-         RenderPolygons(pd3dDevice, offset, (WORD*)rgicrosssection, 24, 32);
-   }
-
-   pd3dDevice->SetRenderState(RenderDevice::SPECULARENABLE, FALSE);
-}
-
-void Rubber::RenderPolygons(RenderDevice* pd3dDevice, int offset, WORD * const rgi, const int start, const int stop)
-{
-   if (m_d.m_type == RampType1Wire)
-      pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, staticVertexBuffer, offset, 32, rgi+stop/2*3, 3*(stop-stop/2));
-   else
-      pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, staticVertexBuffer, offset, 32, rgi+start*3, 3*(stop-start));
-}
-
-void Rubber::prepareHabitrail(RenderDevice* pd3dDevice )
-{
-   Matrix3D matView = g_pplayer->m_pin3d.GetViewTransform();
-   Vertex3Ds prevTangent;
-   Vertex2D *middlePoints;
-
-   rgvInit = GetRampVertex(rampVertex, &rgheightInit, NULL, &rgratioInit, &middlePoints);
-
-   const int numVertices = (rampVertex - 1)*32;
-   pd3dDevice->CreateVertexBuffer(numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &staticVertexBuffer);
-
-   Vertex3D_NoTex2 *buf;
-   staticVertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY);
-
-   int offset=0;
-   float l;
-   Vertex3D_NoTex2 rgv3D[32];
-   const float halfDiameter=m_d.m_wireDiameter/2.0f;
-   for (int i=0;i<rampVertex;i++)
-   {
-      rgv3D[0].x = -halfDiameter;
-      rgv3D[0].y = -halfDiameter;
-      rgv3D[0].z = 0;
-      rgv3D[0].nx = 1.0f;
-      rgv3D[0].ny = 1.0f;
-      rgv3D[0].nz = 0;
-      l = 1.0f/sqrtf(rgv3D[0].nx*rgv3D[0].nx + rgv3D[0].ny*rgv3D[0].ny + rgv3D[0].nz*rgv3D[0].nz);
-      rgv3D[0].nx *= l;
-      rgv3D[0].ny *= l;
-      rgv3D[0].nz *= l;
-
-      rgv3D[1].x = halfDiameter;
-      rgv3D[1].y = -halfDiameter;
-      rgv3D[1].z = 0;
-      rgv3D[1].nx = -1.0f;
-      rgv3D[1].ny = 1.0f;
-      rgv3D[1].nz = 0;
-      l = 1.0f/sqrtf(rgv3D[1].nx*rgv3D[1].nx + rgv3D[1].ny*rgv3D[1].ny + rgv3D[1].nz*rgv3D[1].nz);
-      rgv3D[1].nx *= l;
-      rgv3D[1].ny *= l;
-      rgv3D[1].nz *= l;
-
-      rgv3D[2].x = halfDiameter;
-      rgv3D[2].y = halfDiameter;
-      rgv3D[2].z = 0;
-      rgv3D[2].nx = -1.0f;
-      rgv3D[2].ny = -1.0f;
-      rgv3D[2].nz = 0;
-      l = 1.0f/sqrtf(rgv3D[2].nx*rgv3D[2].nx + rgv3D[2].ny*rgv3D[2].ny + rgv3D[2].nz*rgv3D[2].nz);
-      rgv3D[2].nx *= l;
-      rgv3D[2].ny *= l;
-      rgv3D[2].nz *= l;
-
-      rgv3D[3].x = -halfDiameter;
-      rgv3D[3].y = halfDiameter;
-      rgv3D[3].z = 0;
-      rgv3D[3].nx = 1.0f;
-      rgv3D[3].ny = -1.0f;
-      rgv3D[3].nz = 0;
-      l = 1.0f/sqrtf(rgv3D[3].nx*rgv3D[3].nx + rgv3D[3].ny*rgv3D[3].ny + rgv3D[3].nz*rgv3D[3].nz);
-      rgv3D[3].nx *= l;
-      rgv3D[3].ny *= l;
-      rgv3D[3].nz *= l;
-
-      const float halfWireDistanceY=m_d.m_wireDistanceY/2.0f;
-      const float halfWireDistanceX=m_d.m_wireDistanceX/2.0f;
-      const float wireOffset=9.5f;
-      if (m_d.m_type != RampType1Wire)
-      {
-         for (int l=0;l<4;l++)
-         {
-            rgv3D[l+ 4].x = rgv3D[l].x + halfWireDistanceY; //44.0f
-            rgv3D[l+ 4].y = rgv3D[l].y - halfWireDistanceX; //22.0f
-            rgv3D[l+ 4].z = rgv3D[l].z;
-            rgv3D[l+ 8].x = rgv3D[l].x + wireOffset;
-            rgv3D[l+ 8].y = rgv3D[l].y + halfWireDistanceX;
-            rgv3D[l+ 8].z = rgv3D[l].z;
-            rgv3D[l+12].x = rgv3D[l].x + halfWireDistanceY;
-            rgv3D[l+12].y = rgv3D[l].y + halfWireDistanceX;
-            rgv3D[l+12].z = rgv3D[l].z;
-
-            rgv3D[l+ 4].nx = rgv3D[l].nx;
-            rgv3D[l+ 4].ny = rgv3D[l].ny;
-            rgv3D[l+ 4].nz = rgv3D[l].nz;
-            rgv3D[l+ 8].nx = rgv3D[l].nx;
-            rgv3D[l+ 8].ny = rgv3D[l].ny;
-            rgv3D[l+ 8].nz = rgv3D[l].nz;
-            rgv3D[l+12].nx = rgv3D[l].nx;
-            rgv3D[l+12].ny = rgv3D[l].ny;
-            rgv3D[l+12].nz = rgv3D[l].nz;
-
-            rgv3D[l+ 4].tu = rgv3D[l].tu;
-            rgv3D[l+ 4].tv = rgv3D[l].tv;
-            rgv3D[l+ 8].tu = rgv3D[l].tu;
-            rgv3D[l+ 8].tv = rgv3D[l].tv;
-            rgv3D[l+12].tu = rgv3D[l].tu;
-            rgv3D[l+12].tv = rgv3D[l].tv;
-         }
-         for (int l=0;l<4;l++)
-         {
-            rgv3D[l].x += wireOffset;
-            rgv3D[l].y += -halfWireDistanceX;
-         }
-      }
-      else
-      {
-         for (int l=0;l<4;l++)
-         {
-            rgv3D[l+ 4].x = rgv3D[l].x+halfWireDistanceY; //44.0f
-            rgv3D[l+ 4].y = rgv3D[l].y;
-            rgv3D[l+ 4].z = rgv3D[l].z;
-            rgv3D[l+ 8].x = rgv3D[l].x + wireOffset;
-            rgv3D[l+ 8].y = rgv3D[l].y;
-            rgv3D[l+ 8].z = rgv3D[l].z;
-            rgv3D[l+12].x = rgv3D[l].x+halfWireDistanceY;
-            rgv3D[l+12].y = rgv3D[l].y;
-            rgv3D[l+12].z = rgv3D[l].z;
-
-            rgv3D[l+ 4].nx = rgv3D[l].nx;
-            rgv3D[l+ 4].ny = rgv3D[l].ny;
-            rgv3D[l+ 4].nz = rgv3D[l].nz;
-            rgv3D[l+ 8].nx = rgv3D[l].nx;
-            rgv3D[l+ 8].ny = rgv3D[l].ny;
-            rgv3D[l+ 8].nz = rgv3D[l].nz;
-            rgv3D[l+12].nx = rgv3D[l].nx;
-            rgv3D[l+12].ny = rgv3D[l].ny;
-            rgv3D[l+12].nz = rgv3D[l].nz;
-
-            rgv3D[l+ 4].tu = rgv3D[l].tu;
-            rgv3D[l+ 4].tv = rgv3D[l].tv;
-            rgv3D[l+ 8].tu = rgv3D[l].tu;
-            rgv3D[l+ 8].tv = rgv3D[l].tv;
-            rgv3D[l+12].tu = rgv3D[l].tu;
-            rgv3D[l+12].tv = rgv3D[l].tv;
-         }
-      }
-
-      const int p1 = (i==0) ? 0 : (i-1);
-      const int p2 = i;
-      const int p3 = (i==(rampVertex-1)) ? i : (i+1);
-      const int p4 = rampVertex*2 - i - 1; //!! ?? *2 valid?
-
-      Vertex3Ds vacross(rgvInit[p4].x - rgvInit[p2].x, rgvInit[p4].y - rgvInit[p2].y, 0.0f);
-
-      // The vacross vector is our local up vector.  Rotate the cross-section
-      // later to match this up
-      vacross.Normalize();
-
-      Vertex3Ds tangent(rgvInit[p3].x - rgvInit[p1].x, rgvInit[p3].y - rgvInit[p1].y, rgheightInit[p3] - rgheightInit[p1]);
-
-      // This is the vector describing the tangent to the ramp at this point
-      tangent.Normalize();
-
-      const Vertex3Ds rotationaxis(tangent.y, -tangent.x, 0.0f);
-      const float dot = tangent.z; //tangent.Dot(&up);
-      const float angle = acosf(dot);
-
-      RotateAround(rotationaxis, rgv3D, 16, angle);
-
-      // vnewup is the beginning up vector of the cross-section
-      const Vertex2D vnewupdef(0.0f,1.0f);
-      const Vertex3Ds vnewup = RotateAround(rotationaxis, vnewupdef, angle);
-
-      // vacross is not out real up vector, but the up vector for the cross-section isn't real either
-      //Vertex3D vrampup;
-      //CrossProduct(&tangent, &vacross, &vrampup);
-      const float dotupcorrection = vnewup.Dot(vacross);
-      float angleupcorrection = acosf(dotupcorrection);
-
-      if (vacross.x >= 0.f)
-         angleupcorrection = -angleupcorrection;
-
-      RotateAround(tangent, rgv3D, 16, -angleupcorrection);
-      for (int l=0;l<16;l++)
-      {
-         rgv3D[l].x += middlePoints[i].x;
-         rgv3D[l].y += middlePoints[i].y;
-         rgv3D[l].z += rgheightInit[i]*m_ptable->m_zScale;
-      }
-
-      // apply environment texture coords if a texture was assigned to a wired ramp
-      for( int k=0;k<16;k++ )
-      {
-          Vertex3Ds norm(rgv3D[k].nx, rgv3D[k].ny, rgv3D[k].nz);
-          matView.MultiplyVectorNoTranslate(norm, norm);
-          rgv3D[k].tu = 0.5f + norm.x*0.5f;
-          rgv3D[k].tv = 0.5f + norm.y*0.5f;
-      }
-      if (i != 0)
-      {
-         memcpy( &buf[offset], rgv3D, sizeof(Vertex3D_NoTex2)*32);
-         offset+=32;
-      }
-      memcpy(&rgv3D[16], rgv3D, sizeof(Vertex3D_NoTex2)*16);
-   }
-
-   staticVertexBuffer->unlock();  
-   assert(offset == numVertices);
-}
-
-static const WORD rgiRampStatic1[4] = {0,3,2,1};
-
-void Rubber::prepareStatic(RenderDevice* pd3dDevice)
-{
-   return;
-
-   rgvInit = GetRampVertex(rampVertex, &rgheightInit, NULL, &rgratioInit, NULL);
-
-   const int numVertices = (rampVertex)*4;
-   pd3dDevice->CreateVertexBuffer( numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &staticVertexBuffer);
-
-   Pin3D *const ppin3d = &g_pplayer->m_pin3d;
-
-   Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
-
-   const float tablewidth = m_ptable->m_right - m_ptable->m_left;
-   const float tableheight = m_ptable->m_bottom - m_ptable->m_top;
-
-   const float scalewidth  = (float) g_pplayer->m_pin3d.m_dwRenderWidth  * (float)(1.0/64.055);		// 64.0f is texture width.			
-   const float scaleheight = (float) g_pplayer->m_pin3d.m_dwRenderHeight * (float)(1.0/64.055);		// 64.0f is texture height.
-
-   const float inv_width = scalewidth / (float)g_pplayer->m_pin3d.m_dwRenderWidth;
-   const float inv_height = scaleheight / (float)g_pplayer->m_pin3d.m_dwRenderHeight;
-
-   const float inv_width2 = 1.0f / tablewidth;
-   const float inv_height2 = 1.0f / tableheight;
-
-   Vertex3D_NoTex2 *buf;
-   staticVertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY);
-
-   int offset=0;
-   for (int i=0; i<(rampVertex); i++)
-   {
-      int i2=i+1;
-      int i3=i;
-      if( i==(rampVertex-1) )
-      {
-         i3=0;
-         i2=0;
-      }
-
-      Vertex3D_NoTex2 rgv3D[4];
-      rgv3D[0].x = rgvInit[i].x;
-      rgv3D[0].y = rgvInit[i].y;
-      rgv3D[0].z = rgheightInit[i]*m_ptable->m_zScale;
-
-      rgv3D[3].x = rgvInit[i2].x;
-      rgv3D[3].y = rgvInit[i2].y;
-      rgv3D[3].z = rgheightInit[i2]*m_ptable->m_zScale;
-
-      rgv3D[2].x = rgvInit[rampVertex*2-i3-2].x;
-      rgv3D[2].y = rgvInit[rampVertex*2-i3-2].y;
-      rgv3D[2].z = rgheightInit[i2]*m_ptable->m_zScale;
-
-      rgv3D[1].x = rgvInit[rampVertex*2-i-1].x;
-      rgv3D[1].y = rgvInit[rampVertex*2-i-1].y;
-      rgv3D[1].z = rgheightInit[i]*m_ptable->m_zScale;
-
-      if (pin)
-      {
-         if (m_d.m_imagealignment == ImageModeWorld)
-         {
-            rgv3D[0].tu = rgv3D[0].x * inv_width2;
-            rgv3D[0].tv = rgv3D[0].y * inv_height2;
-            rgv3D[1].tu = rgv3D[1].x * inv_width2;
-            rgv3D[1].tv = rgv3D[1].y * inv_height2;
-            rgv3D[2].tu = rgv3D[2].x * inv_width2;
-            rgv3D[2].tv = rgv3D[2].y * inv_height2;
-            rgv3D[3].tu = rgv3D[3].x * inv_width2;
-            rgv3D[3].tv = rgv3D[3].y * inv_height2;
-         }
-         else
-         {
-            rgv3D[0].tu = 1.0f;
-            rgv3D[0].tv = rgratioInit[i];
-            rgv3D[1].tu = 0;
-            rgv3D[1].tv = rgratioInit[i];
-            rgv3D[2].tu = 0;
-            rgv3D[2].tv = rgratioInit[i2];
-            rgv3D[3].tu = 1.0f;
-            rgv3D[3].tv = rgratioInit[i2];
-         }
-      }
-
-      SetNormal(rgv3D, rgi0123, 4, NULL, NULL, NULL);
-      // Draw the floor of the ramp.
-      memcpy( &buf[offset], rgv3D, sizeof(Vertex3D_NoTex2)*4 );
-      offset+=4;
-   }
-   staticVertexBuffer->unlock();  
-
-   delete[] rgvInit;
-   delete[] rgheightInit;
-   delete[] rgratioInit;
-
-   assert(offset == numVertices);
-
-
-}
-
-
 void Rubber::RenderSetup(RenderDevice* pd3dDevice)
 {
 
    solidMaterial.setColor( 1.0f, m_d.m_color );
 
-//    if( !staticVertexBuffer && m_d.m_fVisible && !m_d.m_transparent )
-//    {
-//       prepareStatic( pd3dDevice );
-//    }
-//    else if( !dynamicVertexBuffer && m_d.m_fVisible && m_d.m_transparent )
-   {
-      GenerateVertexBuffer(pd3dDevice);
-   }
+   GenerateVertexBuffer(pd3dDevice);
 
 }
 
 void Rubber::RenderStatic(RenderDevice* pd3dDevice)
 {	
-   if (!m_d.m_fVisible) return;		// return if no Visible
-
-   // dont render alpha shaded ramps into static buffer, these are done per frame later-on
-   if (m_d.m_transparent) return;
-
-   /* TODO: This is a misnomer right now, but clamp fixes some visual glitches (single-pixel lines)
-    * with transparent textures. Probably the option should simply be renamed to ImageModeClamp,
-    * since the texture coordinates always stay within [0,1] anyway.
-    */
-   if (m_d.m_imagealignment == ImageModeWrap)
-       pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_CLAMP);
-
-   {
-      Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-      Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
-
-      if (pin)
-      {
-         pin->CreateAlphaChannel();
-         pin->Set( ePictureTexture );
-
-         if (pin->m_fTransparent)
-         {
-            pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
-         }
-         else
-         {
-            pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
-         }
-       ppin3d->EnableAlphaBlend( 1, false );
-
-       ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
-
-       pd3dDevice->SetMaterial(textureMaterial);
-       if ( !m_d.m_enableLightingImage )
-           pd3dDevice->SetRenderState( RenderDevice::LIGHTING, FALSE );
-      }
-      else
-         pd3dDevice->SetMaterial(solidMaterial);
-
-      int offset=0;
-      for (int i=0; i<(rampVertex); i++,offset+=4)
-         pd3dDevice->DrawPrimitiveVB(D3DPT_TRIANGLEFAN, staticVertexBuffer, offset, 4);
-
-      ppin3d->SetTexture(NULL);
-
-      pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
-      ppin3d->DisableAlphaBlend();
-
-      if ( !m_d.m_enableLightingImage && pin!=NULL )
-         pd3dDevice->SetRenderState( RenderDevice::LIGHTING, TRUE );
-      pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
-   }
 }
 
 void Rubber::SetObjectPos()
@@ -2095,46 +1669,11 @@ void Rubber::PostRenderStatic(RenderDevice* pd3dDevice)
       if (!dynamicVertexBuffer || dynamicVertexBufferRegenerate)
          GenerateVertexBuffer(pd3dDevice);
 
-      ppin3d->EnableAlphaBlend( 1, false );
-      pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
-      pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_ALPHAARG2, D3DTA_TFACTOR);
-      pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, (m_d.m_opacity << 24) | 0xffffff);
-
       int idx=0;
 
-      float r,g,b;
-      r = (float)(m_d.m_color & 255) * (float)(1.0/255.0);
-      g = (float)(m_d.m_color & 65280) * (float)(1.0/65280.0);
-      b = (float)(m_d.m_color & 16711680) * (float)(1.0/16711680.0);
-      float halfWidth = (float)m_d.m_width;
-      float step = 15.0f/255.0f;
-      r -= step*halfWidth;
-      if( r<0.0f) r=0.0f;
-      g -= step*halfWidth;
-      if( g<0.0f) g=0.0f;
-      b -= step*halfWidth;
-      if( b<0.0f) b=0.0f;
-      for( int i=0;i<m_d.m_width;i++ )
-      {
-          solidMaterial.setColor(1.0f, r,g,b );
-          pd3dDevice->SetMaterial(solidMaterial);
-          unsigned int offset=0;
-          pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, dynamicVertexBuffer, offset, m_numVertices, dynamicIndexBuffer, idx, (rampVertex)*6);
-          offset += m_numVertices;
-          idx += (rampVertex)*6;
-
-          r += step;
-          if( r>1.0f) r=1.0f;
-          g += step;
-          if( g>1.0f) g=1.0f;
-          b += step;
-          if( b>1.0f) b=1.0f;
-      }
-
-      pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
-      ppin3d->DisableAlphaBlend();
-      pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
-      pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, 0xffffffff);
+      unsigned int offset=0;
+      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLESTRIP, dynamicVertexBuffer, offset, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
+      offset += m_numVertices;
 
       if ( !m_d.m_enableLightingImage && pin!=NULL )
          pd3dDevice->SetRenderState( RenderDevice::LIGHTING, TRUE );
@@ -2147,140 +1686,70 @@ void Rubber::GenerateVertexBuffer(RenderDevice* pd3dDevice)
     dynamicVertexBufferRegenerate = false;
 
     Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
-    float *rgheight, *rgratio;
-    Vertex2D *rgvLocal = GetRampVertex(rampVertex, &rgheight, NULL, &rgratio, NULL);
-
+    Vertex2D *middlePoints=0;
+    const Vertex2D *rgvLocal = GetRampVertex(rampVertex, NULL, NULL, NULL, &middlePoints);
+    const int numRings=rampVertex;
+    const int numSegments=15;
     const float inv_tablewidth = 1.0f/(m_ptable->m_right - m_ptable->m_left);
     const float inv_tableheight = 1.0f/(m_ptable->m_bottom - m_ptable->m_top);
 
-    m_numVertices=(rampVertex)*4;
-    unsigned int offset=0;
-    const unsigned int rgioffset = (rampVertex)*6;
-    
+    m_numVertices=(numRings+1)*(numSegments+1);
+    m_numIndices = m_numVertices*2+2;
+
     if (dynamicVertexBuffer)
         dynamicVertexBuffer->release();
-    pd3dDevice->CreateVertexBuffer(m_numVertices*5*m_d.m_width, 0, MY_D3DFVF_NOTEX2_VERTEX, &dynamicVertexBuffer);
+
+    pd3dDevice->CreateVertexBuffer(m_numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &dynamicVertexBuffer);
 
     Vertex3D_NoTex2 *buf;
     dynamicVertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY);
 
     Vertex3D_NoTex2* rgvbuf = new Vertex3D_NoTex2[m_numVertices];
-    std::vector<WORD> rgibuf( (rampVertex)*6*2*2 *m_d.m_width );
-
-    float zOffset = m_d.m_height/2.0f;
-    int idx=0;
-    float scale = (float)m_d.m_width/2.0f;
-    delete[] rgvLocal;
-    delete[] rgheight;
-    int realwidth = m_d.m_width;
-    for ( int k=0;k<realwidth;k++, zOffset+=1.0f)
+    std::vector<WORD> rgibuf( m_numIndices );
+    
+    const float r1=(float)m_d.m_width*0.3f;
+    const float r2=m_d.m_width;
+    for( int i=0, index=0; i<=numRings; i++ )
     {
-        m_d.m_width = scale;
-        m_d.m_height = zOffset;
-        rgvLocal = GetRampVertex(rampVertex, &rgheight, NULL, NULL, NULL);
-        for (int i=0;i<(rampVertex);i++, idx++)
+        const int i1= (i==numRings)? 0: i;
+        int si=index;
+        for( int j=0;j<=numSegments;j++,index++)
         {
-            int i2=i+1;
-            int i3=i;
-            if( i==(rampVertex-1) )
-            {
-                i3=0;
-                i2=0;
-            }
-
-            Vertex3D_NoTex2 * const rgv3D = &rgvbuf[0]+i*4;
-            rgv3D[0].x = rgvLocal[i].x;
-            rgv3D[0].y = rgvLocal[i].y;
-            rgv3D[0].z = (rgheight[i])*m_ptable->m_zScale;
-
-            rgv3D[3].x = rgvLocal[i2].x;
-            rgv3D[3].y = rgvLocal[i2].y;
-            rgv3D[3].z = (rgheight[i2])*m_ptable->m_zScale;
-
-            rgv3D[2].x = rgvLocal[rampVertex*2-i3-2].x;
-            rgv3D[2].y = rgvLocal[rampVertex*2-i3-2].y;
-            rgv3D[2].z = (rgheight[i2])*m_ptable->m_zScale;
-
-            rgv3D[1].x = rgvLocal[rampVertex*2-i-1].x;
-            rgv3D[1].y = rgvLocal[rampVertex*2-i-1].y;
-            rgv3D[1].z = (rgheight[i])*m_ptable->m_zScale;
-            
-            if (pin)
-            {
-                if (m_d.m_imagealignment == ImageModeWorld)
-                {
-                    rgv3D[0].tu = rgv3D[0].x * inv_tablewidth;
-                    rgv3D[0].tv = rgv3D[0].y * inv_tableheight;
-                    rgv3D[1].tu = rgv3D[1].x * inv_tablewidth;
-                    rgv3D[1].tv = rgv3D[1].y * inv_tableheight;
-                    rgv3D[2].tu = rgv3D[2].x * inv_tablewidth;
-                    rgv3D[2].tv = rgv3D[2].y * inv_tableheight;
-                    rgv3D[3].tu = rgv3D[3].x * inv_tablewidth;
-                    rgv3D[3].tv = rgv3D[3].y * inv_tableheight;
-                }
-                else
-                {
-                    rgv3D[0].tu = 1.0f;
-                    rgv3D[0].tv = rgratio[i];
-                    rgv3D[1].tu = 0;
-                    rgv3D[1].tv = rgratio[i];
-                    rgv3D[2].tu = 0;
-                    rgv3D[2].tv = rgratio[i2];
-                    rgv3D[3].tu = 1.0f;
-                    rgv3D[3].tv = rgratio[i2];
-                }
-            }
-
-            SetNormal(rgv3D, rgi0123, 4, NULL, NULL, NULL);
-            // Draw the floor of the ramp.
-            rgibuf[idx*6]   = idx*4;
-            rgibuf[idx*6+1] = idx*4+1;
-            rgibuf[idx*6+2] = idx*4+2;
-            rgibuf[idx*6+3] = idx*4;
-            rgibuf[idx*6+4] = idx*4+2;
-            rgibuf[idx*6+5] = idx*4+3;
-
-            rgibuf[idx*6+rgioffset]   = idx*4+m_numVertices;
-            rgibuf[idx*6+rgioffset+1] = idx*4+m_numVertices+3;
-            rgibuf[idx*6+rgioffset+2] = idx*4+m_numVertices+2;
-            rgibuf[idx*6+rgioffset+3] = idx*4+m_numVertices;
-            rgibuf[idx*6+rgioffset+4] = idx*4+m_numVertices+2;
-            rgibuf[idx*6+rgioffset+5] = idx*4+m_numVertices+1;
-
-            rgibuf[idx*6+rgioffset*2]   = idx*4+m_numVertices*2;
-            rgibuf[idx*6+rgioffset*2+1] = idx*4+m_numVertices*2+1;
-            rgibuf[idx*6+rgioffset*2+2] = idx*4+m_numVertices*2+2;
-            rgibuf[idx*6+rgioffset*2+3] = idx*4+m_numVertices*2;
-            rgibuf[idx*6+rgioffset*2+4] = idx*4+m_numVertices*2+2;
-            rgibuf[idx*6+rgioffset*2+5] = idx*4+m_numVertices*2+3;
-
-            rgibuf[idx*6+rgioffset*3]   = idx*4+m_numVertices*3;
-            rgibuf[idx*6+rgioffset*3+1] = idx*4+m_numVertices*3+3;
-            rgibuf[idx*6+rgioffset*3+2] = idx*4+m_numVertices*3+2;
-            rgibuf[idx*6+rgioffset*3+3] = idx*4+m_numVertices*3;
-            rgibuf[idx*6+rgioffset*3+4] = idx*4+m_numVertices*3+2;
-            rgibuf[idx*6+rgioffset*3+5] = idx*4+m_numVertices*3+1;
+            float u=(float)i/rampVertex;
+            float v=(float)(j+u)/numSegments;
+            float u_angle = u*2.0f*(float)M_PI;
+            float v_angle = v*2.0f*(float)M_PI;
+            float dist = r1+r2*cosf(v_angle);
+            //position
+            rgvbuf[index].x = middlePoints[i1].x + (sinf(u_angle) * dist);
+            rgvbuf[index].y = middlePoints[i1].y + (cosf(u_angle) * dist);
+            rgvbuf[index].z = m_d.m_height + (sinf(v_angle) * r2);
+            //normal
+            rgvbuf[index].nx = cosf(u_angle)*cosf(v_angle);
+            rgvbuf[index].ny = sinf(u_angle)*cosf(v_angle);
+            rgvbuf[index].nz = sinf(v_angle);
+            //texel
+            rgvbuf[index].tu = u;
+            rgvbuf[index].tv = v;
         }
-        memcpy( &buf[offset], &rgvbuf[0], sizeof(Vertex3D_NoTex2)*m_numVertices );
-        offset+=m_numVertices;
-        delete[] rgvLocal;
-        delete[] rgheight;
-        if( k>realwidth/2 )
-            scale-=1.0f;
-        else
-            scale+=1.0f;
-
-
+        //RotateSpline(rgvLocal, i, rampVertex, &rgvbuf[si], numSegments);
     }
-    m_d.m_width = realwidth;
+        // Draw the floor of the ramp.
+    memcpy( &buf[0], &rgvbuf[0], sizeof(Vertex3D_NoTex2)*m_numVertices );
+    dynamicVertexBuffer->unlock();
+
+    for( int i=0, index=0; i<=m_numVertices;i++ )
+    {
+        rgibuf[index++] = i % m_numVertices;
+        rgibuf[index++] = (i+numSegments+1) % m_numVertices;
+    }
+
     if (dynamicIndexBuffer)
         dynamicIndexBuffer->release();
     dynamicIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer( rgibuf );
 
-    dynamicVertexBuffer->unlock();
 
     delete [] rgvbuf;
-    //delete [] rgvLocal;
-    delete [] rgratio;
-    //delete [] rgheight;
+    delete [] rgvLocal;
+    delete [] middlePoints;
 }
