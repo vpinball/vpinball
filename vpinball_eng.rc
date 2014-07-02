@@ -1716,20 +1716,16 @@ STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     COMBOBOX        1500,7,14,111,60,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    COMBOBOX        8,33,31,85,60,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Enable Lighting for Image",IDC_ENABLE_RAMP_LIGHTING,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,50,96,10
-    CONTROL         "Custom2",5,"ColorControl",WS_TABSTOP,27,65,40,14
-    CONTROL         "Shadows",107,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,85,41,10
-    CONTROL         "Visible",112,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,97,40,10
-    CONTROL         "Transparent",18,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,109,50,10
-    EDITTEXT        19,68,108,20,10,ES_AUTOHSCROLL
-    LTEXT           "Opacity",IDC_STATIC,90,109,35,8
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,33,96,10
+    CONTROL         "Custom2",5,"ColorControl",WS_TABSTOP,27,47,40,14
+    CONTROL         "Shadows",107,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,67,41,10
+    CONTROL         "Visible",112,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,79,40,10
     LTEXT           "&Image:",IDC_STATIC,7,4,22,8
-    LTEXT           "&Mode",IDC_STATIC,7,34,25,8
-    LTEXT           "&Color",IDC_STATIC,7,68,17,8
-    LTEXT           "Depth Bias",IDC_STATIC,83,63,36,8
-    EDITTEXT        IDC_DEPTH_BIAS,83,72,36,14,ES_AUTOHSCROLL
+    LTEXT           "&Color",IDC_STATIC,7,50,17,8
+    LTEXT           "Depth Bias",IDC_STATIC,83,45,36,8
+    EDITTEXT        IDC_DEPTH_BIAS,83,54,36,14,ES_AUTOHSCROLL
+    CONTROL         "Static Rendering",IDC_STATIC_RENDERING_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,90,69,10
 END
 
 

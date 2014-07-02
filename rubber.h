@@ -23,6 +23,7 @@ public:
     float m_wireDiameter;
     float m_wireDistanceX;
     float m_wireDistanceY;
+   bool m_staticRendering;
 
 	bool m_fCollidable;
 	bool m_fVisible;
@@ -125,7 +126,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_RUBBER)
 	RubberData m_d;
 
 private:
-	int rampVertex;
+	int splinePoints;
 	Vertex2D *rgvInit;    // just for setup/static drawing
     float *rgheightInit,*rgratioInit;
 
@@ -154,6 +155,7 @@ private:
 	void AddSideWall(Vector<HitObject> * const pvho, const Vertex2D * const pv1, const Vertex2D * const pv2, const float height1, const float height2, const float wallheight);
 	void AddLine(Vector<HitObject> * const pvho, const Vertex2D * const pv1, const Vertex2D * const pv2, const Vertex2D * const pv3, const float height1, const float height2);
 
+   void RenderObject( RenderDevice *pd3dDevice);
 // IRamp
 public:
 	STDMETHOD(get_Elasticity)(/*[out, retval]*/ float *pVal);
@@ -192,6 +194,8 @@ public:
     STDMETHOD(put_EnableLightingImage)(/*[in]*/ VARIANT_BOOL newVal);
     STDMETHOD(get_DepthBias)(/*[out, retval]*/ float *pVal);
     STDMETHOD(put_DepthBias)(/*[in]*/ float newVal);
+    STDMETHOD(get_EnableStaticRendering)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+    STDMETHOD(put_EnableStaticRendering)(/*[in]*/ VARIANT_BOOL newVal);
 };
 
 #endif // !defined(AFX_RAMP_H__5EFEDEFB_5504_430A_B000_9B6D1903E3FC__INCLUDED_)
