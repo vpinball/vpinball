@@ -130,6 +130,7 @@ private:
     float *rgheightInit,*rgratioInit;
 
     int m_numVertices;      // this goes along with dynamicVertexBuffer
+    int m_numIndices;
 
     Material solidMaterial;
     Material textureMaterial;
@@ -141,16 +142,11 @@ private:
     IndexBuffer *dynamicIndexBuffer;
 	bool dynamicVertexBufferRegenerate;
 
-    bool isHabitrail() const;
-
 	void GetCentralCurve(Vector<RenderVertex> * const pvv);
 
     Vertex2D *GetRampVertex(int &pcvertex, float ** const ppheight, bool ** const ppfCross, float ** const ppratio, Vertex2D **pMiddlePoints);
-	void prepareHabitrail(RenderDevice* pd3dDevice);
-	void prepareStatic(RenderDevice* pd3dDevice);
 	void CheckJoint(Vector<HitObject> * const pvho, const HitTriangle * const ph3d1, const HitTriangle * const ph3d2);
 
-	void RenderStaticHabitrail(RenderDevice* pd3dDevice);
 	void RenderPolygons(RenderDevice* pd3dDevice, int offset, WORD * const rgicrosssection, const int start, const int stop);
 
     void GenerateVertexBuffer(RenderDevice* pd3dDevice);
