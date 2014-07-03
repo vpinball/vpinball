@@ -154,8 +154,21 @@ void Rubber::PreRender(Sur * const psur)
    int cvertex;
    Vertex2D * const rgvLocal = GetRampVertex(cvertex, NULL, NULL, NULL, NULL);
 
-   psur->Polygon(rgvLocal, cvertex*2);
+   Vertex2D *newLocal = new Vertex2D[(cvertex+1)*2];
+   for( int i=0;i<=cvertex;i++ )
+   {
+       int i1=i;
+       if( i==cvertex ) i1=0;
+       newLocal[i].x = rgvLocal[i1].x;
+       newLocal[i].y = rgvLocal[i1].y;
 
+       newLocal[(cvertex+1)*2-i-1].x = rgvLocal[cvertex*2-i1-1].x;
+       newLocal[(cvertex+1)*2-i-1].y = rgvLocal[cvertex*2-i1-1].y;
+   }
+
+   psur->Polygon(newLocal, (cvertex+1)*2);
+
+   delete [] newLocal;
    delete [] rgvLocal;
 }
 
@@ -169,18 +182,29 @@ void Rubber::Render(Sur * const psur)
 
    int cvertex;
    bool *pfCross;
-   Vertex2D *middlePoints;
-   const Vertex2D *rgvLocal = GetRampVertex(cvertex, NULL, &pfCross, NULL, &middlePoints);
-   psur->Polygon(rgvLocal, cvertex*2);
+   const Vertex2D *rgvLocal = GetRampVertex(cvertex, NULL, &pfCross, NULL, NULL);
+   Vertex2D *newLocal = new Vertex2D[(cvertex+1)*2];
+   for( int i=0;i<=cvertex;i++ )
+   {
+       int i1=i;
+       if( i==cvertex ) i1=0;
+       newLocal[i].x = rgvLocal[i1].x;
+       newLocal[i].y = rgvLocal[i1].y;
+
+       newLocal[(cvertex+1)*2-i-1].x = rgvLocal[cvertex*2-i1-1].x;
+       newLocal[(cvertex+1)*2-i-1].y = rgvLocal[cvertex*2-i1-1].y;
+   }
+
+   psur->Polygon(newLocal, (cvertex+1)*2);
+   
+   delete [] newLocal;
 
    for (int i=0;i<cvertex;i++)
        if (pfCross[i])
            psur->Line(rgvLocal[i].x, rgvLocal[i].y, rgvLocal[cvertex*2 - i - 1].x, rgvLocal[cvertex*2 - i - 1].y);
-
    
    delete [] rgvLocal;
    delete [] pfCross;
-   delete [] middlePoints;
 
    bool fDrawDragpoints = ( (m_selectstate != eNotSelected) || (g_pvp->m_fAlwaysDrawDragPoints) );
    // if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
@@ -225,10 +249,23 @@ void Rubber::RenderOutline(Sur * const psur)
 
    int cvertex;
    bool *pfCross;
-   Vertex2D *middlePoints;
-   const Vertex2D *rgvLocal= GetRampVertex(cvertex, NULL, &pfCross, NULL, &middlePoints);
+   const Vertex2D *rgvLocal= GetRampVertex(cvertex, NULL, &pfCross, NULL, NULL);
 
-   psur->Polygon(rgvLocal, cvertex*2);
+   Vertex2D *newLocal = new Vertex2D[(cvertex+1)*2];
+   for( int i=0;i<=cvertex;i++ )
+   {
+       int i1=i;
+       if( i==cvertex ) i1=0;
+       newLocal[i].x = rgvLocal[i1].x;
+       newLocal[i].y = rgvLocal[i1].y;
+
+       newLocal[(cvertex+1)*2-i-1].x = rgvLocal[cvertex*2-i1-1].x;
+       newLocal[(cvertex+1)*2-i-1].y = rgvLocal[cvertex*2-i1-1].y;
+   }
+
+   psur->Polygon(newLocal, (cvertex+1)*2);
+
+   delete [] newLocal;
 
    for (int i=0;i<cvertex;i++)
       if (pfCross[i])
@@ -236,7 +273,6 @@ void Rubber::RenderOutline(Sur * const psur)
 
    delete [] rgvLocal;
    delete [] pfCross;
-   delete [] middlePoints;
 }
 
 void Rubber::RenderBlueprint(Sur *psur)
@@ -465,7 +501,7 @@ Vertex2D *Rubber::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** 
 
       if( pMiddlePoints )
       {
-         (*pMiddlePoints)[i] = vmiddle+vnormal;
+         (*pMiddlePoints)[i] = vmiddle;
       }
       rgvLocal[i] = vmiddle + (widthcur*0.5f) * vnormal;
       rgvLocal[cvertex*2 - i - 1] = vmiddle - (widthcur*0.5f) * vnormal;
