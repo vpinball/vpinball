@@ -84,7 +84,6 @@ void Rubber::SetDefaults(bool fromMouseClick)
    m_d.m_height = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"HeightTop", 25.0f) : 25.0f;
    m_d.m_width = fromMouseClick ? GetRegIntWithDefault(strKeyName,"WidthTop", 8) : 8;
    m_d.m_color = fromMouseClick ? GetRegIntWithDefault(strKeyName,"Color", RGB(50,200,50)) : RGB(50,200,50);
-   m_d.m_type = fromMouseClick ? (RampType)GetRegIntWithDefault(strKeyName,"RampType", RampTypeFlat) : RampTypeFlat;
 
    m_d.m_tdr.m_fTimerEnabled = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"TimerEnabled", false) : false;
    m_d.m_tdr.m_TimerInterval = fromMouseClick ? GetRegIntWithDefault(strKeyName,"TimerInterval", 100) : 100;
@@ -93,10 +92,7 @@ void Rubber::SetDefaults(bool fromMouseClick)
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szImage[0] = 0;
 
-   m_d.m_imagealignment = fromMouseClick ? (RampImageAlignment)GetRegIntWithDefault(strKeyName,"ImageMode", ImageModeWorld) : ImageModeWorld;
    m_d.m_fCastsShadow = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"CastsShadow", true) : true;
-   m_d.m_transparent = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"Transparent", false) : false;
-   m_d.m_opacity = fromMouseClick ? GetRegIntWithDefault(strKeyName,"Opacity", 255) : 255;
 
    m_d.m_elasticity = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"Elasticity", 0.3f) : 0.3f;
    m_d.m_friction = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"Friction", 0) : 0;
@@ -118,15 +114,11 @@ void Rubber::WriteRegDefaults()
    SetRegValueFloat(strKeyName,"HeightTop", m_d.m_height);
    SetRegValueInt(strKeyName,"Width", m_d.m_width);
    SetRegValueInt(strKeyName,"Color", m_d.m_color);
-   SetRegValueInt(strKeyName,"RampType", m_d.m_type);
    SetRegValue(strKeyName,"TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
    SetRegValue(strKeyName,"TimerInterval",REG_DWORD,&m_d.m_tdr.m_TimerInterval,4);
    SetRegValue(strKeyName,"Image", REG_SZ, &m_d.m_szImage, strlen(m_d.m_szImage));
-   SetRegValue(strKeyName,"ImageMode",REG_DWORD,&m_d.m_imagealignment,4);
    SetRegValueBool(strKeyName,"ImageWalls",m_d.m_fImageWalls);
    SetRegValueBool(strKeyName,"CastsShadow",m_d.m_fCastsShadow);
-   SetRegValueBool(strKeyName,"Transparent",m_d.m_transparent);
-   SetRegValueInt(strKeyName,"Opacity", m_d.m_opacity);
    SetRegValueFloat(strKeyName,"Elasticity", m_d.m_elasticity);
    SetRegValueFloat(strKeyName,"Friction", m_d.m_friction);
    SetRegValueFloat(strKeyName,"Scatter", m_d.m_scatter);
@@ -153,7 +145,7 @@ void Rubber::PreRender(Sur * const psur)
 {
    //make 1 wire ramps look unique in editor - uses ramp color
    if (m_ptable->RenderSolid())
-       psur->SetFillColor((m_d.m_type == RampType1Wire) ? m_d.m_color : RGB(192,192,192));
+       psur->SetFillColor( m_d.m_color );
    else
        psur->SetFillColor(-1);
    psur->SetBorderColor(-1,false,0);
@@ -495,9 +487,6 @@ Vertex2D *Rubber::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** 
  */
 void Rubber::GetCentralCurve(Vector<RenderVertex> * const pvv)
 {
-//    const float accuracy = m_d.m_transparent ? 4.0f*powf(10.0f, (10.0f-m_ptable->GetAlphaRampsAccuracy())*(float)(1.0/1.5))
-//        : (1.0f / (0.5f * 0.5f)); // min = 4, max = 4 * 10^(10/1.5) = 18.000.000
-
    IHaveDragPoints::GetRgVertex(pvv);
 }
 
@@ -649,8 +638,7 @@ void Rubber::GetHitShapes(Vector<HitObject> * const pvho)
                 ph3dpoly->SetFriction(m_d.m_friction);
                 ph3dpoly->m_scatter = ANGTORAD(m_d.m_scatter);
 
-                if (m_d.m_type == RampTypeFlat)
-                    ph3dpoly->m_fVisible = fTrue;
+                ph3dpoly->m_fVisible = fTrue;
 
                 pvho->AddElement(ph3dpoly);
 
@@ -681,8 +669,7 @@ void Rubber::GetHitShapes(Vector<HitObject> * const pvho)
              ph3dpoly->SetFriction(m_d.m_friction);
              ph3dpoly->m_scatter = ANGTORAD(m_d.m_scatter);
 
-             if (m_d.m_type == RampTypeFlat)
-                 ph3dpoly->m_fVisible = fTrue;
+             ph3dpoly->m_fVisible = fTrue;
 
              pvho->AddElement(ph3dpoly);
 
@@ -1005,10 +992,8 @@ HRESULT Rubber::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptk
    bw.WriteInt(FID(COLR), m_d.m_color);
    bw.WriteBool(FID(TMON), m_d.m_tdr.m_fTimerEnabled);
    bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
-   bw.WriteInt(FID(TYPE), m_d.m_type);
    bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
    bw.WriteString(FID(IMAG), m_d.m_szImage);
-   bw.WriteInt(FID(ALGN), m_d.m_imagealignment);
    bw.WriteBool(FID(IMGW), m_d.m_fImageWalls);
    bw.WriteBool(FID(CSHD), m_d.m_fCastsShadow);
    bw.WriteFloat(FID(ELAS), m_d.m_elasticity);
@@ -1021,8 +1006,6 @@ HRESULT Rubber::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptk
    bw.WriteFloat(FID(RADI), m_d.m_wireDiameter);
    bw.WriteFloat(FID(RADX), m_d.m_wireDistanceX);
    bw.WriteFloat(FID(RADY), m_d.m_wireDistanceY);
-   bw.WriteBool(FID(ALPH), m_d.m_transparent);
-   bw.WriteInt(FID(OPAC), m_d.m_opacity);
    bw.WriteBool(FID(ESTR), m_d.m_staticRendering);
 
    ISelect::SaveData(pstm, hcrypthash, hcryptkey);
@@ -1075,17 +1058,9 @@ BOOL Rubber::LoadToken(int id, BiffReader *pbr)
    {
       pbr->GetInt(&m_d.m_tdr.m_TimerInterval);
    }
-   else if (id == FID(TYPE))
-   {
-      pbr->GetInt(&m_d.m_type);
-   }
    else if (id == FID(IMAG))
    {
       pbr->GetString(m_d.m_szImage);
-   }
-   else if (id == FID(ALGN))
-   {
-      pbr->GetInt(&m_d.m_imagealignment);
    }
    else if (id == FID(IMGW))
    {
@@ -1142,14 +1117,6 @@ BOOL Rubber::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(RADY))
    {
        pbr->GetFloat(&m_d.m_wireDistanceY);
-   }
-   else if (id == FID(ALPH))
-   {
-      pbr->GetInt(&m_d.m_transparent);
-   }
-   else if (id == FID(OPAC))
-   {
-      pbr->GetInt(&m_d.m_opacity);
    }
    else
    {
@@ -1403,28 +1370,6 @@ STDMETHODIMP Rubber::put_Image(BSTR newVal)
    return S_OK;
 }
 
-STDMETHODIMP Rubber::get_ImageAlignment(RampImageAlignment *pVal)
-{
-   *pVal = m_d.m_imagealignment;
-
-   return S_OK;
-}
-
-STDMETHODIMP Rubber::put_ImageAlignment(RampImageAlignment newVal)
-{
-   if(m_d.m_imagealignment != newVal)
-   {
-	   STARTUNDO
-
-	   m_d.m_imagealignment = newVal;
-	   dynamicVertexBufferRegenerate = true;
-
-	   STOPUNDO
-   }
-
-   return S_OK;
-}
-
 STDMETHODIMP Rubber::get_CastsShadow(VARIANT_BOOL *pVal)
 {
    *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fCastsShadow);
@@ -1437,56 +1382,6 @@ STDMETHODIMP Rubber::put_CastsShadow(VARIANT_BOOL newVal)
    STARTUNDO
    
    m_d.m_fCastsShadow = VBTOF(newVal);
-   
-   STOPUNDO
-
-   return S_OK;
-}
-
-STDMETHODIMP Rubber::get_Transparent(VARIANT_BOOL *pVal)
-{
-   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_transparent);
-   return S_OK;
-}
-
-STDMETHODIMP Rubber::put_Transparent(VARIANT_BOOL newVal)
-{
-   STARTUNDO
-   m_d.m_transparent = !!VBTOF(newVal);
-   STOPUNDO
-
-   return S_OK;
-}
-
-STDMETHODIMP Rubber::get_Opacity(int *pVal)
-{
-   *pVal = m_d.m_opacity;
-   return S_OK;
-}
-
-STDMETHODIMP Rubber::put_Opacity(int newVal)
-{
-   STARTUNDO
-   m_d.m_opacity = clamp(newVal, 0, 255);
-   STOPUNDO
-
-   return S_OK;
-}
-
-STDMETHODIMP Rubber::get_Solid(VARIANT_BOOL *pVal)
-{
-   *pVal = !FTOVB(!m_d.m_transparent);
-   
-   return S_OK;
-}
-
-STDMETHODIMP Rubber::put_Solid(VARIANT_BOOL newVal)
-{
-   STARTUNDO
-  
-   if (VBTOF(newVal)) {
-      m_d.m_transparent = false;
-   }
    
    STOPUNDO
 
@@ -1586,6 +1481,10 @@ STDMETHODIMP Rubber::get_Visible(VARIANT_BOOL *pVal) //temporary value of object
 STDMETHODIMP Rubber::put_Visible(VARIANT_BOOL newVal)
 {
     STARTUNDO
+    if( g_pplayer && m_d.m_staticRendering )
+    {
+        ShowError("Rubber is static! visible not supported!");
+    }
     m_d.m_fVisible = VBTOF(newVal);
     STOPUNDO
 
@@ -1656,7 +1555,7 @@ void Rubber::RenderObject(RenderDevice *pd3dDevice)
    TRACE_FUNCTION();
 
    // don't render if invisible or not a transparent ramp
-   if (!m_d.m_fVisible /*|| !m_d.m_transparent*/)
+   if (!m_d.m_fVisible )
       return;
 
    if ( m_d.m_width==0 )
@@ -1664,10 +1563,7 @@ void Rubber::RenderObject(RenderDevice *pd3dDevice)
       dynamicVertexBufferRegenerate=false;
       return;
    }
-
-   // see the comment in RenderStatic() above
-   if (m_d.m_imagealignment == ImageModeWrap)
-      pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_CLAMP);
+   pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_CLAMP);
 
    solidMaterial.setColor(1.0f, m_d.m_color );
 
