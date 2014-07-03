@@ -14,9 +14,7 @@ public:
 	TimerDataRoot m_tdr;
 	float m_height; 
 	int m_width;
-	RampType m_type;
 	char m_szImage[MAXTOKEN];
-	RampImageAlignment m_imagealignment;
 	float m_elasticity;
 	float m_friction;
 	float m_scatter;
@@ -31,8 +29,6 @@ public:
 	bool m_fImageWalls;
 	bool m_fCastsShadow;
 	bool m_fAcrylic;
-	bool m_transparent;
-    int m_opacity;
     float m_depthBias;      // for determining depth sorting (alpha ramps only)
 };
 
@@ -112,7 +108,6 @@ DECLARE_REGISTRY_RESOURCEID(IDR_RUBBER)
 
 	virtual void GetBoundingVertices(Vector<Vertex3Ds> * const pvvertex3D);
 
-    virtual bool IsTransparent()    { return m_d.m_transparent; }
     virtual float GetDepth(const Vertex3Ds& viewDir);
 
 	void WriteRegDefaults();
@@ -158,10 +153,6 @@ private:
    void RenderObject( RenderDevice *pd3dDevice);
 // IRamp
 public:
-	STDMETHOD(get_Elasticity)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_Elasticity)(/*[in]*/ float newVal);
-	STDMETHOD(get_ImageAlignment)(/*[out, retval]*/ RampImageAlignment *pVal);
-	STDMETHOD(put_ImageAlignment)(/*[in]*/ RampImageAlignment newVal);
 	STDMETHOD(get_Image)(/*[out, retval]*/ BSTR *pVal);
 	STDMETHOD(put_Image)(/*[in]*/ BSTR newVal);
 	STDMETHOD(get_Color)(/*[out, retval]*/ OLE_COLOR *pVal);
@@ -170,32 +161,26 @@ public:
     STDMETHOD(put_Height)(/*[in]*/ float newVal);
     STDMETHOD(get_Width)(/*[out, retval]*/ int *pVal);
     STDMETHOD(put_Width)(/*[in]*/ int newVal);
-
 	STDMETHOD(get_CastsShadow)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_CastsShadow)(/*[in]*/ VARIANT_BOOL newVal);
-
-	STDMETHOD(get_Solid)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-	STDMETHOD(put_Solid)(/*[in]*/ VARIANT_BOOL newVal);
-	STDMETHOD(get_Transparent)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-	STDMETHOD(put_Transparent)(/*[in]*/ VARIANT_BOOL newVal);
 	STDMETHOD(get_Collidable)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_Collidable)(/*[in]*/ VARIANT_BOOL newVal);
 	STDMETHOD(get_Visible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_Visible)(/*[in]*/ VARIANT_BOOL newVal);
-	STDMETHOD(get_Opacity)(/*[out, retval]*/ int *pVal);
-	STDMETHOD(put_Opacity)(/*[in]*/ int newVal);
-
-	STDMETHOD(get_Friction)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_Friction)(/*[in]*/ float newVal);
-	STDMETHOD(get_Scatter)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_Scatter)(/*[in]*/ float newVal);
-
     STDMETHOD(get_EnableLightingImage)(/*[out, retval]*/ VARIANT_BOOL *pVal);
     STDMETHOD(put_EnableLightingImage)(/*[in]*/ VARIANT_BOOL newVal);
     STDMETHOD(get_DepthBias)(/*[out, retval]*/ float *pVal);
     STDMETHOD(put_DepthBias)(/*[in]*/ float newVal);
     STDMETHOD(get_EnableStaticRendering)(/*[out, retval]*/ VARIANT_BOOL *pVal);
     STDMETHOD(put_EnableStaticRendering)(/*[in]*/ VARIANT_BOOL newVal);
+
+    STDMETHOD(get_Elasticity)(/*[out, retval]*/ float *pVal);
+    STDMETHOD(put_Elasticity)(/*[in]*/ float newVal);
+	STDMETHOD(get_Friction)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_Friction)(/*[in]*/ float newVal);
+	STDMETHOD(get_Scatter)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_Scatter)(/*[in]*/ float newVal);
+
 };
 
 #endif // !defined(AFX_RAMP_H__5EFEDEFB_5504_430A_B000_9B6D1903E3FC__INCLUDED_)
