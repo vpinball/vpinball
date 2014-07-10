@@ -4,6 +4,8 @@ VP 9.9.1 Changelog
 
 - texture size limit/downscale now respects aspect ratio (currently disabled)
 
+- script editor updated to use latest scintilla (3.4.4)
+
 VP 9.9.0 Changelog
 ------------------------
 - rendering engine has been ported to DirectX 9 and now takes much better advantage of 3D hardware
