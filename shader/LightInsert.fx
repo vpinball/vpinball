@@ -5,7 +5,7 @@ float4   lightCenter;
 float    maxRange;
 float    intensity=1;
 float4   camera;
-float4 ambient = float4( 0.1f, 0.0f, 0.0f, 1.0f );
+float4 ambient = float4( 0.1, 0.0, 0.0, 1.0 );
 
 texture OffTexture;
 sampler2D texSampler0 : TEXUNIT0 = sampler_state
