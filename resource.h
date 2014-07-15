@@ -518,6 +518,7 @@
 #define IDC_WIRE_DIAMETER               377
 #define IDC_MAX_PRE_FRAMES              377
 #define IDC_FADE_SPEED                  377
+#define IDC_XMAX_EDIT                   377
 #define IDC_HEIGHT_EDIT                 378
 #define IDD_COMLIST                     378
 #define IDC_RADIO1                      378
@@ -563,6 +564,7 @@
 #define IDC_EDIT2                       397
 #define IDC_SIZE_HEIGHT                 397
 #define IDC_DEPTH_BIAS                  397
+#define IDC_YMAX_EDIT                   397
 #define IDC_WIRE_DISTX                  398
 #define IDC_CHECK2                      398
 #define IDC_STATIC_RENDERING_CHECK      398

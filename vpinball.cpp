@@ -5018,6 +5018,16 @@ INT_PTR CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
             key = 150;
          SetDlgItemInt(hwndDlg, IDC_UDAXISGAIN, key, FALSE);
 
+         hr = GetRegInt("Player", "PBWAccelMaxX", &key);
+         if (hr != S_OK)
+            key = JOYRANGEMX;
+         SetDlgItemInt(hwndDlg, IDC_XMAX_EDIT, key, FALSE);
+
+         hr = GetRegInt("Player", "PBWAccelMaxY", &key);
+         if (hr != S_OK)
+            key = JOYRANGEMX;
+         SetDlgItemInt(hwndDlg, IDC_YMAX_EDIT, key, FALSE);
+
          hwndCheck = GetDlgItem(hwndDlg, IDC_ENABLE_MOUSE_PLAYER);
          hr = GetRegInt("Player", "EnableMouseInPlayer", &key);
          if (hr != S_OK)
@@ -5772,6 +5782,16 @@ INT_PTR CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
                   if (newvalue < 0) {newvalue = 0;}
                   if (newvalue > 100) {newvalue = 100;}
                   SetRegValue("Player", "DeadZone", REG_DWORD, &newvalue, 4);
+
+                  newvalue = GetDlgItemInt(hwndDlg, IDC_XMAX_EDIT, NULL, TRUE);
+                  if (newvalue < 0) {newvalue = 0;}
+                  if (newvalue > 1000) {newvalue = 1000;}
+                  SetRegValue("Player", "PBWAccelMaxX", REG_DWORD, &newvalue, 4);
+
+                  newvalue = GetDlgItemInt(hwndDlg, IDC_YMAX_EDIT, NULL, TRUE);
+                  if (newvalue < 0) {newvalue = 0;}
+                  if (newvalue > 1000) {newvalue = 1000;}
+                  SetRegValue("Player", "PBWAccelMaxY", REG_DWORD, &newvalue, 4);
 
                   hwndControl = GetDlgItem(hwndDlg, IDC_DefaultLayout);
                   selected = SendMessage(hwndControl, BM_GETCHECK, 0, 0);

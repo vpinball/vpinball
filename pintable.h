@@ -584,6 +584,8 @@ END_CONNECTION_POINT_MAP()
 	float m_tblAccelAmp;			// Accelerometer gain 
 	float m_tblAccelAmpX;			// Accelerometer gain X axis
 	float m_tblAccelAmpY;			// Accelerometer gain Y axis
+   int   m_tblAccelMaxX;
+   int   m_tblAccelMaxY;
 	float m_tblAccelManualAmp;		// manual input gain, generally from joysticks
     U32 m_tblAutoStart;             // msecs before trying an autostart if doing once-only method .. 0 is automethod
     U32 m_tblAutoStartRetry;        // msecs before retrying to autostart.

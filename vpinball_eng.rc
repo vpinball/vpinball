@@ -14,7 +14,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (U.S.) resources
+// Englisch (USA) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 #ifdef _WIN32
@@ -428,7 +428,7 @@ BEGIN
     COMBOBOX        IDC_JOYPMUP,379,69,50,100,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
     CTEXT           "Enter (0)",IDC_STATIC,438,54,50,14,0,WS_EX_DLGMODALFRAME
     COMBOBOX        IDC_JOYPMENTER,438,69,50,100,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "Axis Assignments",IDC_STATIC,258,101,233,65
+    GROUPBOX        "Axis Assignments",IDC_STATIC,258,101,233,89
     LTEXT           "X Axis (L/R)",IDC_STATIC,265,113,39,8
     COMBOBOX        IDC_LRAXISCOMBO,307,112,50,100,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Reverse Axis",IDC_LRAXISFLIP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,363,113,55,10
@@ -447,13 +447,13 @@ BEGIN
     RTEXT           "Dead Zone",IDC_STATIC,421,149,36,8
     EDITTEXT        IDC_DEADZONEAMT,460,148,20,13,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "%",IDC_STATIC,482,149,8,8
-    GROUPBOX        "Global Options (Changes will not affect open tables)",IDC_STATIC,254,88,241,110
-    CONTROL         "Enable Analog Nudge",IDC_GLOBALACCEL,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,257,171,83,10
-    CONTROL         "Normal Mounting Orientation",IDC_GLOBALNMOUNT,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,380,171,102,10
-    CONTROL         "Tilt Sensitivity",IDC_CBGLOBALTILT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,257,183,55,10
-    EDITTEXT        IDC_GLOBALTILT,314,182,20,12,ES_RIGHT | ES_AUTOHSCROLL
-    CONTROL         "Accelerometer Rotation",IDC_CBGLOBALROTATION,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,380,183,90,10
-    EDITTEXT        IDC_GLOBALROTATION,470,182,20,12,ES_RIGHT | ES_AUTOHSCROLL
+    GROUPBOX        "Global Options (Changes will not affect open tables)",IDC_STATIC,254,88,241,135
+    CONTROL         "Enable Analog Nudge",IDC_GLOBALACCEL,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,257,195,83,10
+    CONTROL         "Normal Mounting Orientation",IDC_GLOBALNMOUNT,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,380,195,102,10
+    CONTROL         "Tilt Sensitivity",IDC_CBGLOBALTILT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,257,207,55,10
+    EDITTEXT        IDC_GLOBALTILT,314,206,20,12,ES_RIGHT | ES_AUTOHSCROLL
+    CONTROL         "Accelerometer Rotation",IDC_CBGLOBALROTATION,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,380,207,90,10
+    EDITTEXT        IDC_GLOBALROTATION,470,206,20,12,ES_RIGHT | ES_AUTOHSCROLL
     PUSHBUTTON      "OK",IDOK,322,246,40,14
     PUSHBUTTON      "Cancel",IDCANCEL,382,246,40,14
     CONTROL         "Disable ESC key",IDC_DisableESC_CB,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,113,215,68,10
@@ -462,7 +462,11 @@ BEGIN
     GROUPBOX        "",IDC_STATIC,262,142,158,21
     LTEXT           "* To assign Custom Keys to Gamepad Buttons, click on the button and select desired key, then choose desired gamepad button from dropdown box.",IDC_STATIC,13,230,168,25
     CONTROL         "Enable Mouse during Play",IDC_ENABLE_MOUSE_PLAYER,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,257,201,100,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,257,227,100,10
+    LTEXT           "X-Maximum",IDC_STATIC,267,167,37,8
+    LTEXT           "Y-Maximum",IDC_STATIC,401,167,37,8
+    EDITTEXT        IDC_XMAX_EDIT,307,164,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_YMAX_EDIT,440,164,40,14,ES_AUTOHSCROLL
 END
 
 IDD_TRANSLATE DIALOGEX 0, 0, 186, 102
@@ -2387,7 +2391,7 @@ BEGIN
     IDS_STEP                "Step"
 END
 
-#endif    // English (U.S.) resources
+#endif    // Englisch (USA) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

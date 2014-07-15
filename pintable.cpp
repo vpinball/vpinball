@@ -737,6 +737,16 @@ PinTable::PinTable()
    if (hr == S_OK)
 	   m_tblAccelAmpY = (float)tmp*(float)(1.0/100.0);
 
+   m_tblAccelMaxX = JOYRANGEMX; 
+   hr = GetRegInt("Player", "PBWAccelMaxX", &tmp);
+   if (hr == S_OK)
+      m_tblAccelMaxX = tmp;
+
+   m_tblAccelMaxY = JOYRANGEMX;
+   hr = GetRegInt("Player", "PBWAccelMaxY", &tmp);
+   if (hr == S_OK)
+      m_tblAccelMaxY = tmp;
+
    m_tblAccelManualAmp = 3.5f;							// manual input gain, generally from joysticks
    hr = GetRegInt("Player", "JoystickGain", &tmp);
    if (hr == S_OK)

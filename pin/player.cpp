@@ -1281,12 +1281,18 @@ void Player::InitWindow()
 
 void Player::UltraNudgeX(const int x, const int j )
 {
-	m_curAccel_x[j] = x;
+   int v=x;
+   if( x>m_ptable->m_tblAccelMaxX) v=m_ptable->m_tblAccelMaxX;
+   if( x<-m_ptable->m_tblAccelMaxX) v=-m_ptable->m_tblAccelMaxX;
+	m_curAccel_x[j] = v;
 }
 
 void Player::UltraNudgeY(const int y, const int j )
 {
-	m_curAccel_y[j] = y;
+   int v=y;
+   if( y>m_ptable->m_tblAccelMaxY) v=m_ptable->m_tblAccelMaxY;
+   if( y<-m_ptable->m_tblAccelMaxY) v=-m_ptable->m_tblAccelMaxY;
+	m_curAccel_y[j] = v;
 }
 
 #define GetUltraNudgeX() (((F32)m_curAccel_x[0]) * (F32)(2.0 / (JOYRANGEMX-JOYRANGEMN))) // Get the -1.0f to +1.0f values from joystick input tilt sensor / ushock
