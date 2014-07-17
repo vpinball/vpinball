@@ -51,23 +51,6 @@ HRESULT Rubber::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
        }
    }
 
-/*   if (pdp)
-   {
-      pdp->AddRef();
-      pdp->Init(this, x, y+length);
-      pdp->m_fSmooth = fTrue;
-      m_vdpoint.AddElement(pdp);
-   }
-
-   CComObject<DragPoint>::CreateInstance(&pdp);
-   if (pdp)
-   {
-      pdp->AddRef();
-      pdp->Init(this, x, y-length);
-      pdp->m_fSmooth = fTrue;
-      m_vdpoint.AddElement(pdp);
-   }
-*/
    SetDefaults(fromMouseClick);
 
    InitVBA(fTrue, 0, NULL);
@@ -152,7 +135,7 @@ void Rubber::PreRender(Sur * const psur)
    psur->SetObject(this);
 
    int cvertex;
-   Vertex2D * const rgvLocal = GetRampVertex(cvertex, NULL, NULL, NULL, NULL);
+   Vertex2D * const rgvLocal = GetSplineVertex(cvertex, NULL, NULL);
 
    Vertex2D *newLocal = new Vertex2D[(cvertex+1)*2];
    for( int i=0;i<=cvertex;i++ )
@@ -182,7 +165,7 @@ void Rubber::Render(Sur * const psur)
 
    int cvertex;
    bool *pfCross;
-   const Vertex2D *rgvLocal = GetRampVertex(cvertex, NULL, &pfCross, NULL, NULL);
+   const Vertex2D *rgvLocal = GetSplineVertex(cvertex, &pfCross, NULL);
    Vertex2D *newLocal = new Vertex2D[(cvertex+1)*2];
    for( int i=0;i<=cvertex;i++ )
    {
@@ -249,7 +232,7 @@ void Rubber::RenderOutline(Sur * const psur)
 
    int cvertex;
    bool *pfCross;
-   const Vertex2D *rgvLocal= GetRampVertex(cvertex, NULL, &pfCross, NULL, NULL);
+   const Vertex2D *rgvLocal= GetSplineVertex(cvertex, &pfCross, NULL);
 
    Vertex2D *newLocal = new Vertex2D[(cvertex+1)*2];
    for( int i=0;i<=cvertex;i++ )
@@ -290,21 +273,12 @@ void Rubber::RenderShadow(ShadowSur * const psur, const float height)
    psur->SetLineColor(RGB(0,0,0),false,2);
    psur->SetObject(this);
 
-   float *rgheight1;
    int cvertex;
-   Vertex2D * const rgvLocal = GetRampVertex(cvertex, &rgheight1, NULL, NULL, NULL);
+   Vertex2D * const rgvLocal = GetSplineVertex(cvertex, NULL, NULL);
 
    // Find the range of vertices to draw a shadow for
    int startvertex = cvertex;
    int stopvertex = 0;
-   for (int i=0;i<cvertex;i++)
-      if (rgheight1[i] >= height)
-      {
-         if(i < startvertex)
-            startvertex = i;
-         stopvertex = i;
-      }
-
    const int range = (stopvertex - startvertex);
 
    if (range > 0)
@@ -316,8 +290,8 @@ void Rubber::RenderShadow(ShadowSur * const psur, const float height)
         {
         rgv2[i] = rgvLocal[i + startvertex];
         rgv2[range*2 - i - 1] = rgvLocal[cvertex*2 - i - 1 - startvertex];
-        rgheight2[i] = rgheight1[i + startvertex];
-        rgheight2[range*2 - i - 1] = rgheight1[i + startvertex];
+        rgheight2[i] = m_d.m_height;
+        rgheight2[range*2 - i - 1] = m_d.m_height;
         }
 
         psur->PolygonSkew(rgv2, range*2, rgheight2);
@@ -327,14 +301,12 @@ void Rubber::RenderShadow(ShadowSur * const psur, const float height)
    }
 
    delete [] rgvLocal;
-   delete [] rgheight1;
 }
 
 void Rubber::GetBoundingVertices(Vector<Vertex3Ds> * const pvvertex3D)
 {
-   float *rgheight1;
    int cvertex;
-   const Vertex2D * const rgvLocal = GetRampVertex(cvertex, &rgheight1, NULL, NULL, NULL );
+   const Vertex2D * const rgvLocal = GetSplineVertex(cvertex, NULL, NULL );
 
    for (int i=0;i<cvertex;i++)
    {
@@ -342,19 +314,18 @@ void Rubber::GetBoundingVertices(Vector<Vertex3Ds> * const pvvertex3D)
          Vertex3Ds * const pv = new Vertex3Ds();
          pv->x = rgvLocal[i].x;
          pv->y = rgvLocal[i].y;
-         pv->z = rgheight1[i]+50.0f; // leave room for ball
+         pv->z = m_d.m_height+50.0f; // leave room for ball
          pvvertex3D->AddElement(pv);
       }
 
       Vertex3Ds * const pv = new Vertex3Ds();
       pv->x = rgvLocal[cvertex*2-i-1].x;
       pv->y = rgvLocal[cvertex*2-i-1].y;
-      pv->z = rgheight1[i]+50.0f; // leave room for ball
+      pv->z = m_d.m_height+50.0f; // leave room for ball
       pvvertex3D->AddElement(pv);
    }
 
    delete [] rgvLocal;
-   delete [] rgheight1;
 }
 
 /*
@@ -368,7 +339,7 @@ void Rubber::GetBoundingVertices(Vector<Vertex3Ds> * const pvvertex3D)
  *  ppfCross     - size cvertex, true if i-th vertex corresponds to a control point
  *  ppratio      - how far along the ramp length the i-th vertex is, 1=start=bottom, 0=end=top (??)
  */
-Vertex2D *Rubber::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** const ppfCross, float ** const ppratio, Vertex2D **pMiddlePoints)
+Vertex2D *Rubber::GetSplineVertex(int &pcvertex, bool ** const ppfCross, Vertex2D **pMiddlePoints)
 {
    Vector<RenderVertex> vvertex;
    GetCentralCurve(&vvertex);
@@ -376,17 +347,9 @@ Vertex2D *Rubber::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** 
 
    const int cvertex = vvertex.size();
    Vertex2D * const rgvLocal = new Vertex2D[cvertex * 2];
-   if (ppheight)
-   {
-      *ppheight = new float[cvertex];
-   }
    if (ppfCross)
    {
       *ppfCross = new bool[cvertex];
-   }
-   if (ppratio)
-   {
-      *ppratio = new float[cvertex];
    }
 
    if( pMiddlePoints )
@@ -489,16 +452,6 @@ Vertex2D *Rubber::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** 
       const float percentage = currentlength / totallength;
       const float widthcur = (float)m_d.m_width;
 
-      if (ppheight)
-      {
-         (*ppheight)[i] = m_d.m_height;
-      }
-
-      if (ppratio)
-      {
-         (*ppratio)[i] = 1.0f - percentage;
-      }
-
       if( pMiddlePoints )
       {
          (*pMiddlePoints)[i] = vmiddle;
@@ -594,8 +547,7 @@ void Rubber::GetTimers(Vector<HitTimer> * const pvht)
 void Rubber::GetHitShapes(Vector<HitObject> * const pvho)
 {
    int cvertex;
-   float *rgheight1;
-   Vertex2D * const rgvLocal = GetRampVertex(cvertex, &rgheight1, NULL, NULL, NULL);
+   Vertex2D * const rgvLocal = GetSplineVertex(cvertex, NULL, NULL);
    float wallheightright=(float)m_d.m_width, wallheightleft=(float)m_d.m_width;
 
    for (int i=0;i<(cvertex-1);i++)
@@ -606,11 +558,11 @@ void Rubber::GetHitShapes(Vector<HitObject> * const pvho)
        const Vertex2D * const pv4 = (i<(cvertex-2)) ? &rgvLocal[i+2] : NULL;
 
 #ifndef RAMPTEST
-       AddLine(pvho, pv2, pv3, pv1, rgheight1[i], rgheight1[i+1]+wallheightright);
-       AddLine(pvho, pv3, pv2, pv4, rgheight1[i], rgheight1[i+1]+wallheightright);
+       AddLine(pvho, pv2, pv3, pv1, m_d.m_height, m_d.m_height+wallheightright);
+       AddLine(pvho, pv3, pv2, pv4, m_d.m_height, m_d.m_height+wallheightright);
 #else
-       AddSideWall(pvho, pv2, pv3,rgheight1[i], rgheight1[i+1], wallheightright);
-       AddSideWall(pvho, pv3, pv2,rgheight1[i+1], rgheight1[i], wallheightright);
+       AddSideWall(pvho, pv2, pv3,m_d.m_height, m_d.m_height, wallheightright);
+       AddSideWall(pvho, pv3, pv2,m_d.m_height, m_d.m_height, wallheightright);
 #endif
    }
 
@@ -622,11 +574,11 @@ void Rubber::GetHitShapes(Vector<HitObject> * const pvho)
        const Vertex2D * const pv4 = (i<(cvertex-2)) ? &rgvLocal[cvertex + i + 2] : NULL;
 
 #ifndef RAMPTEST
-       AddLine(pvho, pv2, pv3, pv1, rgheight1[cvertex - i - 2], rgheight1[cvertex - i - 1] + wallheightleft);
-       AddLine(pvho, pv3, pv2, pv4, rgheight1[cvertex - i - 2], rgheight1[cvertex - i - 1] + wallheightleft);
+       AddLine(pvho, pv2, pv3, pv1, m_d.m_height, m_d.m_height + wallheightleft);
+       AddLine(pvho, pv3, pv2, pv4, m_d.m_height, m_d.m_height + wallheightleft);
 #else
-       AddSideWall(pvho, pv2, pv3, rgheight1[cvertex - i - 1], rgheight1[cvertex - i - 2], wallheightleft);
-       AddSideWall(pvho, pv3, pv2, rgheight1[cvertex - i - 2], rgheight1[cvertex - i - 1], wallheightleft);
+       AddSideWall(pvho, pv2, pv3, m_d.m_height, m_d.m_height, wallheightleft);
+       AddSideWall(pvho, pv3, pv2, m_d.m_height, m_d.m_height, wallheightleft);
 #endif
    }
 
@@ -658,9 +610,9 @@ void Rubber::GetHitShapes(Vector<HitObject> * const pvho)
          {
             // left ramp floor triangle, CCW order
             Vertex3Ds rgv3D[3];
-            rgv3D[0] = Vertex3Ds(pv2->x,pv2->y,rgheight1[i]);
-            rgv3D[1] = Vertex3Ds(pv1->x,pv1->y,rgheight1[i]);
-            rgv3D[2] = Vertex3Ds(pv3->x,pv3->y,rgheight1[i+1]);
+            rgv3D[0] = Vertex3Ds(pv2->x,pv2->y,m_d.m_height);
+            rgv3D[1] = Vertex3Ds(pv1->x,pv1->y,m_d.m_height);
+            rgv3D[2] = Vertex3Ds(pv3->x,pv3->y,m_d.m_height);
 
             HitTriangle * const ph3dpoly = new HitTriangle(rgv3D); //!! this is not efficient at all, use native triangle-soup directly somehow
 
@@ -690,9 +642,9 @@ void Rubber::GetHitShapes(Vector<HitObject> * const pvho)
 
          // right ramp floor triangle, CCW order
          Vertex3Ds rgv3D[3];
-         rgv3D[0] = Vertex3Ds(pv3->x,pv3->y,rgheight1[i+1]);
-         rgv3D[1] = Vertex3Ds(pv1->x,pv1->y,rgheight1[i]);
-         rgv3D[2] = Vertex3Ds(pv4->x,pv4->y,rgheight1[i+1]);
+         rgv3D[0] = Vertex3Ds(pv3->x,pv3->y,m_d.m_height);
+         rgv3D[1] = Vertex3Ds(pv1->x,pv1->y,m_d.m_height);
+         rgv3D[2] = Vertex3Ds(pv4->x,pv4->y,m_d.m_height);
 
          HitTriangle * const ph3dpoly = new HitTriangle(rgv3D);
          if (ph3dpoly->IsDegenerate())
@@ -719,9 +671,9 @@ void Rubber::GetHitShapes(Vector<HitObject> * const pvho)
       }
 
       Vertex3Ds rgv3D[3];
-      rgv3D[0] = Vertex3Ds(pv4->x,pv4->y,rgheight1[cvertex-1]);
-      rgv3D[1] = Vertex3Ds(pv3->x,pv3->y,rgheight1[cvertex-1]);
-      rgv3D[2] = Vertex3Ds(pv1->x,pv1->y,rgheight1[cvertex-1]);
+      rgv3D[0] = Vertex3Ds(pv4->x,pv4->y,m_d.m_height);
+      rgv3D[1] = Vertex3Ds(pv3->x,pv3->y,m_d.m_height);
+      rgv3D[2] = Vertex3Ds(pv1->x,pv1->y,m_d.m_height);
       ph3dpolyOld = new HitTriangle(rgv3D);
 
       CheckJoint(pvho, ph3dpolyOld, ph3dpolyOld);
@@ -745,9 +697,9 @@ void Rubber::GetHitShapes(Vector<HitObject> * const pvho)
       {
          // left ramp triangle, order CW
          Vertex3Ds rgv3D[3];
-         rgv3D[0] = Vertex3Ds(pv1->x,pv1->y,rgheight1[i]);
-         rgv3D[1] = Vertex3Ds(pv2->x,pv2->y,rgheight1[i]);
-         rgv3D[2] = Vertex3Ds(pv3->x,pv3->y,rgheight1[i+1]);
+         rgv3D[0] = Vertex3Ds(pv1->x,pv1->y,m_d.m_height);
+         rgv3D[1] = Vertex3Ds(pv2->x,pv2->y,m_d.m_height);
+         rgv3D[2] = Vertex3Ds(pv3->x,pv3->y,m_d.m_height);
 
          HitTriangle * const ph3dpoly = new HitTriangle(rgv3D);
          if (ph3dpoly->IsDegenerate())
@@ -769,9 +721,9 @@ void Rubber::GetHitShapes(Vector<HitObject> * const pvho)
 
       // right ramp triangle, order CW
       Vertex3Ds rgv3D[3];
-      rgv3D[0] = Vertex3Ds(pv3->x,pv3->y,rgheight1[i+1]);
-      rgv3D[1] = Vertex3Ds(pv4->x,pv4->y,rgheight1[i+1]);
-      rgv3D[2] = Vertex3Ds(pv1->x,pv1->y,rgheight1[i]);
+      rgv3D[0] = Vertex3Ds(pv3->x,pv3->y,m_d.m_height);
+      rgv3D[1] = Vertex3Ds(pv4->x,pv4->y,m_d.m_height);
+      rgv3D[2] = Vertex3Ds(pv1->x,pv1->y,m_d.m_height);
 
       HitTriangle * const ph3dpoly = new HitTriangle(rgv3D);
       if (ph3dpoly->IsDegenerate())
@@ -792,7 +744,6 @@ void Rubber::GetHitShapes(Vector<HitObject> * const pvho)
    }
 #endif
 
-   delete [] rgheight1;
    delete [] rgvLocal;
 }
 
@@ -1630,7 +1581,7 @@ void Rubber::RenderObject(RenderDevice *pd3dDevice)
       int idx=0;
 
       unsigned int offset=0;
-      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLESTRIP, dynamicVertexBuffer, offset, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
+      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, dynamicVertexBuffer, offset, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
       offset += m_numVertices;
 
       if ( !m_d.m_enableLightingImage && pin!=NULL )
@@ -1648,11 +1599,37 @@ void Rubber::PostRenderStatic(RenderDevice* pd3dDevice)
    }
 }
 
+Vertex3Ds GetRotatedAxis( float angle, Vertex3Ds &axis, Vertex3Ds &temp)
+{
+    if(angle==0.0)
+        return Vertex3Ds(0.0f,0.0f,0.0f);
+    
+    axis.Normalize();
+    Vertex3Ds u=axis;
 
+    Vertex3Ds rotMatrixRow0, rotMatrixRow1, rotMatrixRow2;
+
+    float sinAngle=sinf((float)M_PI*angle/180);
+    float cosAngle=cosf((float)M_PI*angle/180);
+    float oneMinusCosAngle=1.0f-cosAngle;
+
+    rotMatrixRow0.x=(u.x)*(u.x) + cosAngle*(1-(u.x)*(u.x));
+    rotMatrixRow0.y=(u.x)*(u.y)*(oneMinusCosAngle) - sinAngle*u.z;
+    rotMatrixRow0.z=(u.x)*(u.z)*(oneMinusCosAngle) + sinAngle*u.y;
+
+    rotMatrixRow1.x=(u.x)*(u.y)*(oneMinusCosAngle) + sinAngle*u.z;
+    rotMatrixRow1.y=(u.y)*(u.y) + cosAngle*(1-(u.y)*(u.y));
+    rotMatrixRow1.z=(u.y)*(u.z)*(oneMinusCosAngle) - sinAngle*u.x;
+
+    rotMatrixRow2.x=(u.x)*(u.z)*(oneMinusCosAngle) - sinAngle*u.y;
+    rotMatrixRow2.y=(u.y)*(u.z)*(oneMinusCosAngle) + sinAngle*u.x;
+    rotMatrixRow2.z=(u.z)*(u.z) + cosAngle*(1-(u.z)*(u.z));
+
+    return Vertex3Ds(temp.Dot(rotMatrixRow0), temp.Dot(rotMatrixRow1), temp.Dot(rotMatrixRow2));
+}
 void Rubber::GenerateVertexBuffer(RenderDevice* pd3dDevice)
 {
     dynamicVertexBufferRegenerate = false;
-    
     Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
     Vertex2D *middlePoints=0;
     int accuracy=1;
@@ -1669,14 +1646,14 @@ void Rubber::GenerateVertexBuffer(RenderDevice* pd3dDevice)
        accuracy=(int)(m_ptable->GetAlphaRampsAccuracy()*1.3f);
     }
 
-    const Vertex2D *rgvLocal = GetRampVertex(splinePoints, NULL, NULL, NULL, &middlePoints);
+    const Vertex2D *rgvLocal = GetSplineVertex(splinePoints, NULL, &middlePoints);
     const int numRings=splinePoints;
     const int numSegments=accuracy;
     const float inv_tablewidth = 1.0f/(m_ptable->m_right - m_ptable->m_left);
     const float inv_tableheight = 1.0f/(m_ptable->m_bottom - m_ptable->m_top);
 
-    m_numVertices=(numRings+1)*(numSegments+1);
-    m_numIndices = m_numVertices*2+2;
+    m_numVertices=(numRings)*(numSegments);
+    m_numIndices = 6*m_numVertices;//m_numVertices*2+2;
 
     if (dynamicVertexBuffer)
         dynamicVertexBuffer->release();
@@ -1689,42 +1666,91 @@ void Rubber::GenerateVertexBuffer(RenderDevice* pd3dDevice)
     Vertex3D_NoTex2* rgvbuf = new Vertex3D_NoTex2[m_numVertices];
     std::vector<WORD> rgibuf( m_numIndices );
     
-    const float r1=(float)m_d.m_width*0.3f;
-    const float r2=(float)m_d.m_width;
-    for( int i=0, index=0; i<=numRings; i++ )
+    Vertex3Ds prevB;
+    Vertex3Ds binorm;
+    Vertex3Ds normal;
+    for( int i=0, index=0; i<numRings; i++ )
     {
-        const int i1= (i==numRings)? 0: i;
-        int si=index;
-        for( int j=0;j<=numSegments;j++,index++)
+        const int i2= (i==numRings-1) ? 0: i+1;
+
+        Vertex3Ds tangent( middlePoints[i2].x-middlePoints[i].x, middlePoints[i2].y-middlePoints[i].y, 0.0f);
+        
+        if ( i==0 )
         {
-            float u=(float)i/splinePoints;
+            Vertex3Ds up( middlePoints[i2].x+middlePoints[i].x, middlePoints[i2].y+middlePoints[i].y, m_d.m_height*2);
+            normal = CrossProduct(tangent,up);     //normal
+            binorm = CrossProduct(tangent, normal);
+        }
+        else
+        {
+            normal = CrossProduct(prevB, tangent);
+            binorm = CrossProduct(tangent, normal);
+        }
+        binorm.Normalize();
+        normal.Normalize();
+        prevB = binorm;
+        int si=index;
+        for( int j=0;j<numSegments;j++,index++)
+        {
+            float u=(float)i/numRings;
             float v=(float)(j+u)/numSegments;
             float u_angle = u*2.0f*(float)M_PI;
             float v_angle = v*2.0f*(float)M_PI;
-            float dist = r1+r2*cosf(v_angle);
-            //position
-            rgvbuf[index].x = middlePoints[i1].x + (sinf(u_angle) * dist);
-            rgvbuf[index].y = middlePoints[i1].y + (cosf(u_angle) * dist);
-            rgvbuf[index].z = m_d.m_height + (sinf(v_angle) * r2);
-            //normal
-            rgvbuf[index].nx = cosf(u_angle)*cosf(v_angle);
-            rgvbuf[index].ny = sinf(u_angle)*cosf(v_angle);
-            rgvbuf[index].nz = sinf(v_angle);
+            Vertex3Ds tmp=GetRotatedAxis( j*360.0f/numSegments, tangent, normal );
+            tmp *= (float)m_d.m_width;
+            rgvbuf[index].x = middlePoints[i].x+tmp.x;
+            rgvbuf[index].y = middlePoints[i].y+tmp.y;
+            rgvbuf[index].z = m_d.m_height     +tmp.z;
             //texel
             rgvbuf[index].tu = u;
             rgvbuf[index].tv = v;
         }
-        //RotateSpline(rgvLocal, i, rampVertex, &rgvbuf[si], numSegments);
     }
-        // Draw the floor of the ramp.
+    // calculate faces
+    for( int i=0;i<numRings;i++ )
+    {
+        for( int j=0;j<numSegments;j++ )
+        {
+            int quad[4];
+            quad[0] = i*numSegments+j;
+
+            if( j!=numSegments-1 )
+                quad[1] = i*numSegments+j+1;
+            else
+                quad[1] = i*numSegments;
+
+            if( i!=numRings-1 )
+            {
+                quad[2] = (i+1)*numSegments+j;
+                if( j!=numSegments-1)
+                    quad[3]=(i+1)*numSegments+j+1;
+                else
+                    quad[3]=(i+1)*numSegments;  
+            }
+            else
+            {
+                quad[2] = j;
+                if(j!=numSegments-1)
+                    quad[3] = j+1;
+                else
+                    quad[3] = 0;
+            }
+            rgibuf[(i*numSegments+j)*6  ] = quad[0];
+            rgibuf[(i*numSegments+j)*6+1] = quad[1];
+            rgibuf[(i*numSegments+j)*6+2] = quad[2];
+            rgibuf[(i*numSegments+j)*6+3] = quad[3];
+            rgibuf[(i*numSegments+j)*6+4] = quad[2];
+            rgibuf[(i*numSegments+j)*6+5] = quad[1];
+        }
+    }
+    //calculate normals
+    for( int i=0;i<m_numIndices;i+=3)
+    {
+        SetNormal( rgvbuf, &rgibuf[i], 3);
+    }
+    // Draw the floor of the ramp.
     memcpy( &buf[0], &rgvbuf[0], sizeof(Vertex3D_NoTex2)*m_numVertices );
     dynamicVertexBuffer->unlock();
-
-    for( int i=0, index=0; i<=m_numVertices;i++ )
-    {
-        rgibuf[index++] = i % m_numVertices;
-        rgibuf[index++] = (i+numSegments+1) % m_numVertices;
-    }
 
     if (dynamicIndexBuffer)
         dynamicIndexBuffer->release();
