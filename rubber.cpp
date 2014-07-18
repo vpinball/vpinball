@@ -135,8 +135,9 @@ void Rubber::PreRender(Sur * const psur)
    psur->SetObject(this);
 
    int cvertex;
-   Vertex2D * const rgvLocal = GetSplineVertex(cvertex, NULL, NULL);
 
+   Vertex2D * const rgvLocal = GetSplineVertex(cvertex, NULL, NULL);
+  
    Vertex2D *newLocal = new Vertex2D[(cvertex+1)*2];
    for( int i=0;i<=cvertex;i++ )
    {
@@ -150,7 +151,6 @@ void Rubber::PreRender(Sur * const psur)
    }
 
    psur->Polygon(newLocal, (cvertex+1)*2);
-
    delete [] newLocal;
    delete [] rgvLocal;
 }
@@ -1167,7 +1167,10 @@ void Rubber::DoCommand(int icmd, int x, int y)
          Vector<RenderVertex> vvertex;
          GetCentralCurve(&vvertex);
 
+         //add the first point again to 'close' the spline
+         vvertex.AddElement(&vvertex[0]);
          const int cvertex = vvertex.size();
+
          Vertex2D vOut;
          int iSeg;
          ClosestPointOnPolygon(vvertex, v, &vOut, &iSeg, false);
