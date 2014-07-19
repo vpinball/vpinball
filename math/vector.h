@@ -230,6 +230,32 @@ inline Vertex3Ds CrossProduct(const Vertex3Ds &pv1, const Vertex3Ds &pv2)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+inline Vertex3Ds GetRotatedAxis( float angle, Vertex3Ds &axis, Vertex3Ds &temp)
+{   
+   axis.Normalize();
+   Vertex3Ds u=axis;
+
+   Vertex3Ds rotMatrixRow0, rotMatrixRow1, rotMatrixRow2;
+
+   float sinAngle=sinf((float)M_PI*angle/180);
+   float cosAngle=cosf((float)M_PI*angle/180);
+   float oneMinusCosAngle=1.0f-cosAngle;
+
+   rotMatrixRow0.x=(u.x)*(u.x) + cosAngle*(1-(u.x)*(u.x));
+   rotMatrixRow0.y=(u.x)*(u.y)*(oneMinusCosAngle) - sinAngle*u.z;
+   rotMatrixRow0.z=(u.x)*(u.z)*(oneMinusCosAngle) + sinAngle*u.y;
+
+   rotMatrixRow1.x=(u.x)*(u.y)*(oneMinusCosAngle) + sinAngle*u.z;
+   rotMatrixRow1.y=(u.y)*(u.y) + cosAngle*(1-(u.y)*(u.y));
+   rotMatrixRow1.z=(u.y)*(u.z)*(oneMinusCosAngle) - sinAngle*u.x;
+
+   rotMatrixRow2.x=(u.x)*(u.z)*(oneMinusCosAngle) - sinAngle*u.y;
+   rotMatrixRow2.y=(u.y)*(u.z)*(oneMinusCosAngle) + sinAngle*u.x;
+   rotMatrixRow2.z=(u.z)*(u.z) + cosAngle*(1-(u.z)*(u.z));
+
+   return Vertex3Ds(temp.Dot(rotMatrixRow0), temp.Dot(rotMatrixRow1), temp.Dot(rotMatrixRow2));
+}
+
 
 inline void RotateAround(const Vertex3Ds &pvAxis, Vertex3D_NoTex * const pvPoint, const int count, const float angle)
 {
