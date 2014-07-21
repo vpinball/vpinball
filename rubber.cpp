@@ -64,8 +64,8 @@ void Rubber::SetDefaults(bool fromMouseClick)
 
    HRESULT hr;
 
-   m_d.m_height = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"HeightTop", 25.0f) : 25.0f;
-   m_d.m_width = fromMouseClick ? GetRegIntWithDefault(strKeyName,"WidthTop", 8) : 8;
+   m_d.m_height = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"Height", 25.0f) : 25.0f;
+   m_d.m_thickness = fromMouseClick ? GetRegIntWithDefault(strKeyName,"Thickness", 8) : 8;
    m_d.m_color = fromMouseClick ? GetRegIntWithDefault(strKeyName,"Color", RGB(50,200,50)) : RGB(50,200,50);
 
    m_d.m_tdr.m_fTimerEnabled = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"TimerEnabled", false) : false;
@@ -94,8 +94,8 @@ void Rubber::WriteRegDefaults()
 {
    static const char strKeyName[] = "DefaultProps\\Rubber";
 
-   SetRegValueFloat(strKeyName,"HeightTop", m_d.m_height);
-   SetRegValueInt(strKeyName,"Width", m_d.m_width);
+   SetRegValueFloat(strKeyName,"Height", m_d.m_height);
+   SetRegValueInt(strKeyName,"Thickness", m_d.m_thickness);
    SetRegValueInt(strKeyName,"Color", m_d.m_color);
    SetRegValue(strKeyName,"TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
    SetRegValue(strKeyName,"TimerInterval",REG_DWORD,&m_d.m_tdr.m_TimerInterval,4);
@@ -450,7 +450,7 @@ Vertex2D *Rubber::GetSplineVertex(int &pcvertex, bool ** const ppfCross, Vertex2
       }
 
       const float percentage = currentlength / totallength;
-      const float widthcur = (float)m_d.m_width;
+      const float widthcur = (float)m_d.m_thickness;
 
       if( pMiddlePoints )
       {
@@ -548,7 +548,7 @@ void Rubber::GetHitShapes(Vector<HitObject> * const pvho)
 {
    int cvertex;
    Vertex2D * const rgvLocal = GetSplineVertex(cvertex, NULL, NULL);
-   float wallheightright=(float)m_d.m_width, wallheightleft=(float)m_d.m_width;
+   float wallheightright=(float)m_d.m_thickness, wallheightleft=(float)m_d.m_thickness;
 
    for (int i=0;i<(cvertex-1);i++)
    {
@@ -975,7 +975,7 @@ HRESULT Rubber::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptk
    BiffWriter bw(pstm, hcrypthash, hcryptkey);
 
    bw.WriteFloat(FID(HTTP), m_d.m_height);
-   bw.WriteInt(FID(WDTP), m_d.m_width);
+   bw.WriteInt(FID(WDTP), m_d.m_thickness);
    bw.WriteInt(FID(COLR), m_d.m_color);
    bw.WriteBool(FID(TMON), m_d.m_tdr.m_fTimerEnabled);
    bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
@@ -1031,7 +1031,7 @@ BOOL Rubber::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(WDTP))
    {
-      pbr->GetInt(&m_d.m_width);
+      pbr->GetInt(&m_d.m_thickness);
    }
    else if (id == FID(COLR))
    {
@@ -1268,20 +1268,20 @@ STDMETHODIMP Rubber::put_Height(float newVal)
 }
 
 
-STDMETHODIMP Rubber::get_Width(int *pVal)
+STDMETHODIMP Rubber::get_Thickness(int *pVal)
 {
-   *pVal = m_d.m_width;
+   *pVal = m_d.m_thickness;
 
    return S_OK;
 }
 
-STDMETHODIMP Rubber::put_Width(int newVal)
+STDMETHODIMP Rubber::put_Thickness(int newVal)
 {
-   if(m_d.m_width != newVal)
+   if(m_d.m_thickness != newVal)
    {
 	   STARTUNDO
 
-	   m_d.m_width = newVal;
+	   m_d.m_thickness = newVal;
 	   dynamicVertexBufferRegenerate = true;
 
 	   STOPUNDO
@@ -1548,7 +1548,7 @@ void Rubber::RenderObject(RenderDevice *pd3dDevice)
    if (!m_d.m_fVisible )
       return;
 
-   if ( m_d.m_width==0 )
+   if ( m_d.m_thickness==0 )
    {
       dynamicVertexBufferRegenerate=false;
       return;
@@ -1672,7 +1672,7 @@ void Rubber::GenerateVertexBuffer(RenderDevice* pd3dDevice)
             float u_angle = u*2.0f*(float)M_PI;
             float v_angle = v*2.0f*(float)M_PI;
             Vertex3Ds tmp=GetRotatedAxis( j*360.0f/numSegments, tangent, normal );
-            tmp *= (float)m_d.m_width;
+            tmp *= (float)(m_d.m_thickness*0.5f);
             rgvbuf[index].x = middlePoints[i].x+tmp.x;
             rgvbuf[index].y = middlePoints[i].y+tmp.y;
             rgvbuf[index].z = m_d.m_height     +tmp.z;
