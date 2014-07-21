@@ -1181,7 +1181,7 @@ void Rubber::DoCommand(int icmd, int x, int y)
             if (vvertex.ElementAt(i)->fControlPoint)
                icp++;
 
-         for (int i=0;i<cvertex;i++)
+         for (int i=0;i<cvertex-1;i++)
             delete vvertex.ElementAt(i);
 
          //if (icp == 0) // need to add point after the last point
