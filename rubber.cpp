@@ -137,21 +137,7 @@ void Rubber::PreRender(Sur * const psur)
    int cvertex;
 
    Vertex2D * const rgvLocal = GetSplineVertex(cvertex, NULL, NULL);
-  
-   Vertex2D *newLocal = new Vertex2D[(cvertex+1)*2];
-   for( int i=0;i<=cvertex;i++ )
-   {
-       int i1=i;
-       if( i==cvertex ) i1=0;
-       newLocal[i].x = rgvLocal[i1].x;
-       newLocal[i].y = rgvLocal[i1].y;
-
-       newLocal[(cvertex+1)*2-i-1].x = rgvLocal[cvertex*2-i1-1].x;
-       newLocal[(cvertex+1)*2-i-1].y = rgvLocal[cvertex*2-i1-1].y;
-   }
-
-   psur->Polygon(newLocal, (cvertex+1)*2);
-   delete [] newLocal;
+   psur->Polygon(rgvLocal, (cvertex)*2);
    delete [] rgvLocal;
 }
 
@@ -166,22 +152,7 @@ void Rubber::Render(Sur * const psur)
    int cvertex;
    bool *pfCross;
    const Vertex2D *rgvLocal = GetSplineVertex(cvertex, &pfCross, NULL);
-   Vertex2D *newLocal = new Vertex2D[(cvertex+1)*2];
-   for( int i=0;i<=cvertex;i++ )
-   {
-       int i1=i;
-       if( i==cvertex ) i1=0;
-       newLocal[i].x = rgvLocal[i1].x;
-       newLocal[i].y = rgvLocal[i1].y;
-
-       newLocal[(cvertex+1)*2-i-1].x = rgvLocal[cvertex*2-i1-1].x;
-       newLocal[(cvertex+1)*2-i-1].y = rgvLocal[cvertex*2-i1-1].y;
-   }
-
-   psur->Polygon(newLocal, (cvertex+1)*2);
-   
-   delete [] newLocal;
-
+   psur->Polygon(rgvLocal, (cvertex)*2);
    for (int i=0;i<cvertex;i++)
        if (pfCross[i])
            psur->Line(rgvLocal[i].x, rgvLocal[i].y, rgvLocal[cvertex*2 - i - 1].x, rgvLocal[cvertex*2 - i - 1].y);
@@ -234,22 +205,7 @@ void Rubber::RenderOutline(Sur * const psur)
    bool *pfCross;
    const Vertex2D *rgvLocal= GetSplineVertex(cvertex, &pfCross, NULL);
 
-   Vertex2D *newLocal = new Vertex2D[(cvertex+1)*2];
-   for( int i=0;i<=cvertex;i++ )
-   {
-       int i1=i;
-       if( i==cvertex ) i1=0;
-       newLocal[i].x = rgvLocal[i1].x;
-       newLocal[i].y = rgvLocal[i1].y;
-
-       newLocal[(cvertex+1)*2-i-1].x = rgvLocal[cvertex*2-i1-1].x;
-       newLocal[(cvertex+1)*2-i-1].y = rgvLocal[cvertex*2-i1-1].y;
-   }
-
-   psur->Polygon(newLocal, (cvertex+1)*2);
-
-   delete [] newLocal;
-
+   psur->Polygon(rgvLocal, (cvertex)*2);
    for (int i=0;i<cvertex;i++)
       if (pfCross[i])
          psur->Line(rgvLocal[i].x, rgvLocal[i].y, rgvLocal[cvertex*2 - i - 1].x, rgvLocal[cvertex*2 - i - 1].y);
@@ -346,32 +302,17 @@ Vertex2D *Rubber::GetSplineVertex(int &pcvertex, bool ** const ppfCross, Vertex2
    // vvertex are the 2D vertices forming the central curve of the ramp as seen from above
 
    const int cvertex = vvertex.size();
-   Vertex2D * const rgvLocal = new Vertex2D[cvertex * 2];
+   Vertex2D * const rgvLocal = new Vertex2D[(cvertex+1) * 2];
    if (ppfCross)
    {
-      *ppfCross = new bool[cvertex];
+      *ppfCross = new bool[cvertex+1];
    }
 
    if( pMiddlePoints )
    {
-       *pMiddlePoints = new Vertex2D[cvertex];
-   }
-   // Compute an approximation to the length of the central curve
-   // by adding up the lengths of the line segments.
-   float totallength = 0;
-   for (int i=0; i<(cvertex-1); i++)
-   {
-      const RenderVertex & v1 = vvertex[i];
-      const RenderVertex & v2 = vvertex[i+1];
-
-      const float dx = v1.x - v2.x;
-      const float dy = v1.y - v2.y;
-      const float length = sqrtf(dx*dx + dy*dy);
-
-      totallength += length;
+       *pMiddlePoints = new Vertex2D[cvertex+1];
    }
 
-   float currentlength = 0;
    for (int i=0; i<cvertex; i++)
    {
       const RenderVertex & vprev = vvertex[(i>0) ? i-1 : i];
@@ -440,34 +381,36 @@ Vertex2D *Rubber::GetSplineVertex(int &pcvertex, bool ** const ppfCross, Vertex2
          }
       }
 
-      // Update current length along the ramp.
-      {
-         const float dx = vprev.x - vmiddle.x;
-         const float dy = vprev.y - vmiddle.y;
-         const float length = sqrtf(dx*dx + dy*dy);
-
-         currentlength += length;
-      }
-
-      const float percentage = currentlength / totallength;
       const float widthcur = (float)m_d.m_thickness;
 
       if( pMiddlePoints )
       {
          (*pMiddlePoints)[i] = vmiddle;
+         if ( i==0 )
+         {
+             (*pMiddlePoints)[cvertex]=vmiddle;
+         }
       }
       rgvLocal[i] = vmiddle + (widthcur*0.5f) * vnormal;
-      rgvLocal[cvertex*2 - i - 1] = vmiddle - (widthcur*0.5f) * vnormal;
+      rgvLocal[(cvertex+1)*2 - i - 1] = vmiddle - (widthcur*0.5f) * vnormal;
+      if ( i==0 )
+      {
+          rgvLocal[cvertex] = vmiddle + (widthcur*0.5f) * vnormal;
+          rgvLocal[(cvertex+1)*2 - cvertex - 1] = vmiddle - (widthcur*0.5f) * vnormal;
+      }
    }
 
+
    if (ppfCross)
+   {
       for (int i=0;i<cvertex;i++)
          (*ppfCross)[i] = vvertex.ElementAt(i)->fControlPoint;
-
+      (*ppfCross)[cvertex] = vvertex.ElementAt(0)->fControlPoint;
+   }
    for (int i=0;i<cvertex;i++)
       delete vvertex.ElementAt(i);
 
-   pcvertex = cvertex;
+   pcvertex = cvertex+1;
    return rgvLocal;
 }
 
@@ -1167,13 +1110,11 @@ void Rubber::DoCommand(int icmd, int x, int y)
          Vector<RenderVertex> vvertex;
          GetCentralCurve(&vvertex);
 
-         //add the first point again to 'close' the spline
-         vvertex.AddElement(&vvertex[0]);
          const int cvertex = vvertex.size();
 
          Vertex2D vOut;
          int iSeg;
-         ClosestPointOnPolygon(vvertex, v, &vOut, &iSeg, false);
+         ClosestPointOnPolygon(vvertex, v, &vOut, &iSeg, true);
 
          // Go through vertices (including iSeg itself) counting control points until iSeg
          int icp = 0;
@@ -1181,7 +1122,7 @@ void Rubber::DoCommand(int icmd, int x, int y)
             if (vvertex.ElementAt(i)->fControlPoint)
                icp++;
 
-         for (int i=0;i<cvertex-1;i++)
+         for (int i=0;i<cvertex;i++)
             delete vvertex.ElementAt(i);
 
          //if (icp == 0) // need to add point after the last point
@@ -1622,11 +1563,8 @@ void Rubber::GenerateVertexBuffer(RenderDevice* pd3dDevice)
     }
 
     const Vertex2D *rgvLocal = GetSplineVertex(splinePoints, NULL, &middlePoints);
-    const int numRings=splinePoints;
+    const int numRings=splinePoints-1;
     const int numSegments=accuracy;
-    const float inv_tablewidth = 1.0f/(m_ptable->m_right - m_ptable->m_left);
-    const float inv_tableheight = 1.0f/(m_ptable->m_bottom - m_ptable->m_top);
-
     m_numVertices=(numRings)*(numSegments);
     m_numIndices = 6*m_numVertices;//m_numVertices*2+2;
 
