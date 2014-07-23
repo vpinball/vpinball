@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source Files">
@@ -34,9 +34,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Pin\collideex.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="comcontrol.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="decal.cpp">
@@ -268,9 +265,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Pin\collideex.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="comcontrol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="decal.h">
@@ -522,6 +516,15 @@
     <ClInclude Include="math\matrix.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="pin\ballMesh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="math\bbox.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="math\vector.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="res\ball.rgs">
@@ -701,13 +704,13 @@
     <None Include="res\white.bmp">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="res\table.vpt" />
     <None Include="res\flasher.cur">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\flasher.rgs">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="res\table.vpx" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuildStep Include="resource.h">
