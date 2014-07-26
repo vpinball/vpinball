@@ -1097,7 +1097,6 @@ void Rubber::DoCommand(int icmd, int x, int y)
 
    case ID_WALLMENU_ADDPOINT:
       {
-         STARTUNDO
 
          RECT rc;
          GetClientRect(m_ptable->m_hwnd, &rc);
@@ -1113,7 +1112,7 @@ void Rubber::DoCommand(int icmd, int x, int y)
          const int cvertex = vvertex.size();
 
          Vertex2D vOut;
-         int iSeg;
+         int iSeg=-1;
          ClosestPointOnPolygon(vvertex, v, &vOut, &iSeg, true);
 
          // Go through vertices (including iSeg itself) counting control points until iSeg
@@ -1125,8 +1124,14 @@ void Rubber::DoCommand(int icmd, int x, int y)
          for (int i=0;i<cvertex;i++)
             delete vvertex.ElementAt(i);
 
+         // ClosestPointOnPolygon() couldn't find a point -> don't try to add a new point 
+         // because that would lead to strange behavior
+         if( iSeg==-1 )
+            return;
+
          //if (icp == 0) // need to add point after the last point
          //icp = m_vdpoint.Size();
+         STARTUNDO
 
          CComObject<DragPoint> *pdp;
          CComObject<DragPoint>::CreateInstance(&pdp);
