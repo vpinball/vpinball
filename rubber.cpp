@@ -11,7 +11,7 @@ Rubber::Rubber()
    dynamicVertexBufferRegenerate = true;
    m_d.m_enableLightingImage = true;
    m_d.m_depthBias = 0.0f;
-   m_d.m_wireDiameter=6.0f;
+   m_d.m_wireDiameter = 6.0f;
    m_d.m_wireDistanceX = 38.0f;
    m_d.m_wireDistanceY = 88.0f;
 }
@@ -33,14 +33,14 @@ HRESULT Rubber::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
    m_ptable = ptable;
    m_d.m_fVisible = true;
 
-   float length = 0.5f * GetRegStringAsFloatWithDefault("DefaultProps\\Rubber", "Length", 400.0f);
+   //float length = 0.5f * GetRegStringAsFloatWithDefault("DefaultProps\\Rubber", "Length", 400.0f);
 
    CComObject<DragPoint> *pdp;
    for( int i=8;i>0;i-- )
    {
        const float angle = (float)(M_PI*2.0/8.0)*(float)i;
-       float xx = x + sinf(angle)*50.0f;
-       float yy = y - cosf(angle)*50.0f;
+       const float xx = x + sinf(angle)*50.0f;
+       const float yy = y - cosf(angle)*50.0f;
        CComObject<DragPoint>::CreateInstance(&pdp);
        if (pdp)
        {
@@ -203,7 +203,7 @@ void Rubber::RenderOutline(Sur * const psur)
 
    int cvertex;
    bool *pfCross;
-   const Vertex2D *rgvLocal= GetSplineVertex(cvertex, &pfCross, NULL);
+   const Vertex2D * const rgvLocal = GetSplineVertex(cvertex, &pfCross, NULL);
 
    psur->Polygon(rgvLocal, (cvertex)*2);
    for (int i=0;i<cvertex;i++)
@@ -244,10 +244,10 @@ void Rubber::RenderShadow(ShadowSur * const psur, const float height)
 
         for (int i=0;i<range;i++)
         {
-        rgv2[i] = rgvLocal[i + startvertex];
-        rgv2[range*2 - i - 1] = rgvLocal[cvertex*2 - i - 1 - startvertex];
-        rgheight2[i] = m_d.m_height;
-        rgheight2[range*2 - i - 1] = m_d.m_height;
+			rgv2[i] = rgvLocal[i + startvertex];
+			rgv2[range*2 - i - 1] = rgvLocal[cvertex*2 - i - 1 - startvertex];
+			rgheight2[i] = m_d.m_height;
+			rgheight2[range*2 - i - 1] = m_d.m_height;
         }
 
         psur->PolygonSkew(rgv2, range*2, rgheight2);
@@ -465,6 +465,7 @@ float Rubber::GetSurfaceHeight(float x, float y)
 
         zheight = (startlength/totallength) * (m_d.m_height );
     }
+
 HeightError:
     for (int i2=0;i2<cvertex;i2++)
         delete vvertex.ElementAt(i2);
@@ -491,7 +492,7 @@ void Rubber::GetHitShapes(Vector<HitObject> * const pvho)
 {
    int cvertex;
    Vertex2D * const rgvLocal = GetSplineVertex(cvertex, NULL, NULL);
-   float wallheightright=(float)m_d.m_thickness, wallheightleft=(float)m_d.m_thickness;
+   const float wallheightright = (float)m_d.m_thickness, wallheightleft = (float)m_d.m_thickness;
 
    for (int i=0;i<(cvertex-1);i++)
    {
@@ -552,10 +553,10 @@ void Rubber::GetHitShapes(Vector<HitObject> * const pvho)
 
          {
             // left ramp floor triangle, CCW order
-            Vertex3Ds rgv3D[3];
-            rgv3D[0] = Vertex3Ds(pv2->x,pv2->y,m_d.m_height);
-            rgv3D[1] = Vertex3Ds(pv1->x,pv1->y,m_d.m_height);
-            rgv3D[2] = Vertex3Ds(pv3->x,pv3->y,m_d.m_height);
+            const Vertex3Ds rgv3D[3] = {
+				Vertex3Ds(pv2->x,pv2->y,m_d.m_height),
+				Vertex3Ds(pv1->x,pv1->y,m_d.m_height),
+				Vertex3Ds(pv3->x,pv3->y,m_d.m_height)};
 
             HitTriangle * const ph3dpoly = new HitTriangle(rgv3D); //!! this is not efficient at all, use native triangle-soup directly somehow
 
@@ -584,10 +585,10 @@ void Rubber::GetHitShapes(Vector<HitObject> * const pvho)
          }
 
          // right ramp floor triangle, CCW order
-         Vertex3Ds rgv3D[3];
-         rgv3D[0] = Vertex3Ds(pv3->x,pv3->y,m_d.m_height);
-         rgv3D[1] = Vertex3Ds(pv1->x,pv1->y,m_d.m_height);
-         rgv3D[2] = Vertex3Ds(pv4->x,pv4->y,m_d.m_height);
+         const Vertex3Ds rgv3D[3] = {
+			Vertex3Ds(pv3->x,pv3->y,m_d.m_height),
+			Vertex3Ds(pv1->x,pv1->y,m_d.m_height),
+			Vertex3Ds(pv4->x,pv4->y,m_d.m_height)};
 
          HitTriangle * const ph3dpoly = new HitTriangle(rgv3D);
          if (ph3dpoly->IsDegenerate())
@@ -613,10 +614,10 @@ void Rubber::GetHitShapes(Vector<HitObject> * const pvho)
          }
       }
 
-      Vertex3Ds rgv3D[3];
-      rgv3D[0] = Vertex3Ds(pv4->x,pv4->y,m_d.m_height);
-      rgv3D[1] = Vertex3Ds(pv3->x,pv3->y,m_d.m_height);
-      rgv3D[2] = Vertex3Ds(pv1->x,pv1->y,m_d.m_height);
+      const Vertex3Ds rgv3D[3] = {
+		Vertex3Ds(pv4->x,pv4->y,m_d.m_height),
+		Vertex3Ds(pv3->x,pv3->y,m_d.m_height),
+		Vertex3Ds(pv1->x,pv1->y,m_d.m_height)};
       ph3dpolyOld = new HitTriangle(rgv3D);
 
       CheckJoint(pvho, ph3dpolyOld, ph3dpolyOld);
@@ -639,10 +640,10 @@ void Rubber::GetHitShapes(Vector<HitObject> * const pvho)
 
       {
          // left ramp triangle, order CW
-         Vertex3Ds rgv3D[3];
-         rgv3D[0] = Vertex3Ds(pv1->x,pv1->y,m_d.m_height);
-         rgv3D[1] = Vertex3Ds(pv2->x,pv2->y,m_d.m_height);
-         rgv3D[2] = Vertex3Ds(pv3->x,pv3->y,m_d.m_height);
+         const Vertex3Ds rgv3D[3] = {
+			Vertex3Ds(pv1->x,pv1->y,m_d.m_height),
+			Vertex3Ds(pv2->x,pv2->y,m_d.m_height),
+			Vertex3Ds(pv3->x,pv3->y,m_d.m_height)};
 
          HitTriangle * const ph3dpoly = new HitTriangle(rgv3D);
          if (ph3dpoly->IsDegenerate())
@@ -663,10 +664,10 @@ void Rubber::GetHitShapes(Vector<HitObject> * const pvho)
       }
 
       // right ramp triangle, order CW
-      Vertex3Ds rgv3D[3];
-      rgv3D[0] = Vertex3Ds(pv3->x,pv3->y,m_d.m_height);
-      rgv3D[1] = Vertex3Ds(pv4->x,pv4->y,m_d.m_height);
-      rgv3D[2] = Vertex3Ds(pv1->x,pv1->y,m_d.m_height);
+      const Vertex3Ds rgv3D[3] = {
+		Vertex3Ds(pv3->x,pv3->y,m_d.m_height),
+		Vertex3Ds(pv4->x,pv4->y,m_d.m_height),
+		Vertex3Ds(pv1->x,pv1->y,m_d.m_height)};
 
       HitTriangle * const ph3dpoly = new HitTriangle(rgv3D);
       if (ph3dpoly->IsDegenerate())
@@ -772,7 +773,7 @@ void Rubber::AddLine(Vector<HitObject> * const pvho, const Vertex2D * const pv1,
 
       const float dot = vt1.x*vt2.y - vt1.y*vt2.x;
 
-      if (dot < 0) // Inside edges don't need joint hit-testing (dot == 0 continuous segments should mathematically never hit)
+      if (dot < 0.f) // Inside edges don't need joint hit-testing (dot == 0 continuous segments should mathematically never hit)
       {
          Joint * const pjoint = new Joint();
          pjoint->m_elasticity = m_d.m_elasticity;
@@ -792,8 +793,8 @@ void Rubber::AddLine(Vector<HitObject> * const pvho, const Vertex2D * const pv1,
 
          // Set up line normal
          const float inv_length = 1.0f/sqrtf(vt2.x * vt2.x + vt2.y * vt2.y);
-         pjoint->normal.x = plineseg->normal.x - vt2.y *inv_length;
-         pjoint->normal.y = vt2.x *inv_length + plineseg->normal.y;
+         pjoint->normal.x = plineseg->normal.x - vt2.y * inv_length;
+         pjoint->normal.y = vt2.x * inv_length + plineseg->normal.y;
 
          // Set up line normal
          const float inv_length2 = 1.0f/sqrtf(pjoint->normal.x * pjoint->normal.x + pjoint->normal.y * pjoint->normal.y);
@@ -824,45 +825,6 @@ void Rubber::EndPlay()
 		dynamicIndexBuffer = 0;
     }
 }
-
-static const WORD rgicrosssection[] = {
-   0,1,16,
-   1,17,16,
-   1,2,17,
-   2,18,17,
-   2,3,18,
-   3,19,18,
-   3,0,19,
-   0,16,19,
-
-   8,9,24,
-   9,25,24,
-   9,10,25,
-   10,26,25,
-   10,11,26,
-   11,27,26,
-   11,8,27,
-   8,24,27,
-
-   4,5,20,
-   5,21,20,
-   5,6,21,
-   6,22,21,
-   6,7,22,
-   7,23,22,
-   7,4,23,
-   4,20,23,
-
-   12,13,28,
-   13,29,28,
-   13,14,29,
-   14,30,29,
-   14,15,30,
-   15,31,30,
-   15,12,31,
-   12,28,31
-};
-
 
 float Rubber::GetDepth(const Vertex3Ds& viewDir)
 {
@@ -1213,7 +1175,6 @@ STDMETHODIMP Rubber::put_Height(float newVal)
    return S_OK;
 }
 
-
 STDMETHODIMP Rubber::get_Thickness(int *pVal)
 {
    *pVal = m_d.m_thickness;
@@ -1277,7 +1238,6 @@ void Rubber::GetDialogPanes(Vector<PropertyPane> *pvproppane)
    pvproppane->AddElement(pproppane);
 }
 
-
 STDMETHODIMP Rubber::get_Image(BSTR *pVal)
 {
    WCHAR wz[512];
@@ -1323,7 +1283,6 @@ STDMETHODIMP Rubber::put_CastsShadow(VARIANT_BOOL newVal)
 
    return S_OK;
 }
-
 
 STDMETHODIMP Rubber::get_Elasticity(float *pVal)
 {
@@ -1485,7 +1444,6 @@ STDMETHODIMP Rubber::put_EnableStaticRendering(VARIANT_BOOL newVal)
       return S_OK;
 }
 
-
 void Rubber::RenderObject(RenderDevice *pd3dDevice)
 {
    TRACE_FUNCTION();
@@ -1527,8 +1485,6 @@ void Rubber::RenderObject(RenderDevice *pd3dDevice)
       if (!dynamicVertexBuffer || dynamicVertexBufferRegenerate)
          GenerateVertexBuffer(pd3dDevice);
 
-      int idx=0;
-
       unsigned int offset=0;
       pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, dynamicVertexBuffer, offset, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
       offset += m_numVertices;
@@ -1537,6 +1493,7 @@ void Rubber::RenderObject(RenderDevice *pd3dDevice)
          pd3dDevice->SetRenderState( RenderDevice::LIGHTING, TRUE );
    }
 }
+
 // Always called each frame to render over everything else (along with primitives)
 // Same code as RenderStatic (with the exception of the alpha tests).
 // Also has less drawing calls by bundling seperate calls.
@@ -1552,7 +1509,7 @@ void Rubber::GenerateVertexBuffer(RenderDevice* pd3dDevice)
 {
     dynamicVertexBufferRegenerate = false;
     Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
-    Vertex2D *middlePoints=0;
+    Vertex2D * middlePoints = 0;
     int accuracy=1;
     if( m_ptable->GetAlphaRampsAccuracy()<5 )
     {
@@ -1610,12 +1567,12 @@ void Rubber::GenerateVertexBuffer(RenderDevice* pd3dDevice)
         int si=index;
         for( int j=0;j<numSegments;j++,index++)
         {
-            float u=(float)i/numRings;
-            float v=(float)(j+u)/numSegments;
-            float u_angle = u*2.0f*(float)M_PI;
-            float v_angle = v*2.0f*(float)M_PI;
-            Vertex3Ds tmp=GetRotatedAxis( j*360.0f/numSegments, tangent, normal );
-            tmp *= (float)(m_d.m_thickness*0.5f);
+            const float u=(float)i/numRings;
+            const float v=((float)j+u)/numSegments;
+            const float u_angle = u*(float)(2.0*M_PI);
+            const float v_angle = v*(float)(2.0*M_PI);
+            const Vertex3Ds tmp = GetRotatedAxis( (float)j*(360.0f/numSegments), tangent, normal )
+							      * ((float)m_d.m_thickness*0.5f);
             rgvbuf[index].x = middlePoints[i].x+tmp.x;
             rgvbuf[index].y = middlePoints[i].y+tmp.y;
             rgvbuf[index].z = m_d.m_height     +tmp.z;
@@ -1673,7 +1630,6 @@ void Rubber::GenerateVertexBuffer(RenderDevice* pd3dDevice)
     if (dynamicIndexBuffer)
         dynamicIndexBuffer->release();
     dynamicIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer( rgibuf );
-
 
     delete [] rgvbuf;
     delete [] rgvLocal;
