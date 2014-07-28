@@ -11,7 +11,7 @@ Ramp::Ramp()
    dynamicVertexBufferRegenerate = true;
    m_d.m_enableLightingImage = true;
    m_d.m_depthBias = 0.0f;
-   m_d.m_wireDiameter=6.0f;
+   m_d.m_wireDiameter = 6.0f;
    m_d.m_wireDistanceX = 38.0f;
    m_d.m_wireDistanceY = 88.0f;
 }
@@ -817,10 +817,10 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
          }
       }
 
-      Vertex3Ds rgv3D[3];
-      rgv3D[0] = Vertex3Ds(pv4->x,pv4->y,rgheight1[cvertex-1]);
-      rgv3D[1] = Vertex3Ds(pv3->x,pv3->y,rgheight1[cvertex-1]);
-      rgv3D[2] = Vertex3Ds(pv1->x,pv1->y,rgheight1[cvertex-1]);
+      const Vertex3Ds rgv3D[3] = {
+		Vertex3Ds(pv4->x,pv4->y,rgheight1[cvertex-1]),
+		Vertex3Ds(pv3->x,pv3->y,rgheight1[cvertex-1]),
+		Vertex3Ds(pv1->x,pv1->y,rgheight1[cvertex-1])};
       ph3dpolyOld = new HitTriangle(rgv3D);
 
       CheckJoint(pvho, ph3dpolyOld, ph3dpolyOld);
@@ -843,10 +843,10 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
 
       {
          // left ramp triangle, order CW
-         Vertex3Ds rgv3D[3];
-         rgv3D[0] = Vertex3Ds(pv1->x,pv1->y,rgheight1[i]);
-         rgv3D[1] = Vertex3Ds(pv2->x,pv2->y,rgheight1[i]);
-         rgv3D[2] = Vertex3Ds(pv3->x,pv3->y,rgheight1[i+1]);
+         const Vertex3Ds rgv3D[3] = {
+			Vertex3Ds(pv1->x,pv1->y,rgheight1[i]),
+			Vertex3Ds(pv2->x,pv2->y,rgheight1[i]),
+			Vertex3Ds(pv3->x,pv3->y,rgheight1[i+1])};
 
          HitTriangle * const ph3dpoly = new HitTriangle(rgv3D);
          if (ph3dpoly->IsDegenerate())
@@ -867,10 +867,10 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
       }
 
       // right ramp triangle, order CW
-      Vertex3Ds rgv3D[3];
-      rgv3D[0] = Vertex3Ds(pv3->x,pv3->y,rgheight1[i+1]);
-      rgv3D[1] = Vertex3Ds(pv4->x,pv4->y,rgheight1[i+1]);
-      rgv3D[2] = Vertex3Ds(pv1->x,pv1->y,rgheight1[i]);
+      const Vertex3Ds rgv3D[3] = {
+		Vertex3Ds(pv3->x,pv3->y,rgheight1[i+1]),
+		Vertex3Ds(pv4->x,pv4->y,rgheight1[i+1]),
+		Vertex3Ds(pv1->x,pv1->y,rgheight1[i])};
 
       HitTriangle * const ph3dpoly = new HitTriangle(rgv3D);
       if (ph3dpoly->IsDegenerate())
@@ -1081,11 +1081,11 @@ float Ramp::GetDepth(const Vertex3Ds& viewDir)
 
 bool Ramp::isHabitrail() const
 {
-    return  m_d.m_type == RampType4Wire
-         || m_d.m_type == RampType1Wire
-         || m_d.m_type == RampType2Wire
-         || m_d.m_type == RampType3WireLeft
-         || m_d.m_type == RampType3WireRight;
+    return m_d.m_type == RampType4Wire
+        || m_d.m_type == RampType1Wire
+        || m_d.m_type == RampType2Wire
+        || m_d.m_type == RampType3WireLeft
+        || m_d.m_type == RampType3WireRight;
 }
 
 void Ramp::RenderStaticHabitrail(RenderDevice* pd3dDevice)
@@ -1545,10 +1545,8 @@ void Ramp::prepareStatic(RenderDevice* pd3dDevice)
    assert(offset == numVertices);
 }
 
-
 void Ramp::RenderSetup(RenderDevice* pd3dDevice)
 {
-
    solidMaterial.setColor( 1.0f, m_d.m_color );
 
    if( !staticVertexBuffer && m_d.m_fVisible && !m_d.m_transparent )
