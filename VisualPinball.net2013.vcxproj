@@ -2269,133 +2269,6 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="buildnum.h" />
-    <ClInclude Include="buildnumber.h" />
-    <ClInclude Include="flasher.h" />
-    <ClInclude Include="rubber.h" />
-    <ClInclude Include="hash.h" />
-    <ClInclude Include="hidpi.h" />
-    <ClInclude Include="hidsdi.h" />
-    <ClInclude Include="hidusage.h" />
-    <ClInclude Include="kdtree.h" />
-    <ClInclude Include="Material.h" />
-    <ClInclude Include="math\bbox.h" />
-    <ClInclude Include="math\matrix.h" />
-    <ClInclude Include="math\vector.h" />
-    <ClInclude Include="physconst.h" />
-    <ClInclude Include="Pin\ball.h" />
-    <ClInclude Include="ballex.h" />
-    <ClInclude Include="bumper.h" />
-    <ClInclude Include="codeview.h" />
-    <ClInclude Include="pin\ballMesh.h" />
-    <ClInclude Include="Pin\collide.h" />
-    <ClInclude Include="Pin\collideex.h" />
-    <ClInclude Include="decal.h" />
-    <ClInclude Include="def.h" />
-    <ClInclude Include="dispid.h" />
-    <ClInclude Include="display.h" />
-    <ClInclude Include="dispreel.h" />
-    <ClInclude Include="disputil.h" />
-    <ClInclude Include="dragpoint.h" />
-    <ClInclude Include="Pin\draw.h" />
-    <ClInclude Include="eventproxy.h" />
-    <ClInclude Include="extern.h" />
-    <ClInclude Include="Media\fileio.h" />
-    <ClInclude Include="flipper.h" />
-    <ClInclude Include="freeimage.h" />
-    <ClInclude Include="gate.h" />
-    <ClInclude Include="helpers.h" />
-    <ClInclude Include="hid.h" />
-    <ClInclude Include="Pin\hitable.h" />
-    <ClInclude Include="Pin\hitflipper.h" />
-    <ClInclude Include="Pin\hitplunger.h" />
-    <ClInclude Include="hitrectsur.h" />
-    <ClInclude Include="hitsur.h" />
-    <ClInclude Include="Pin\hittimer.h" />
-    <ClInclude Include="idebug.h" />
-    <ClInclude Include="ieditable.h" />
-    <ClInclude Include="iselect.h" />
-    <ClInclude Include="kicker.h" />
-    <ClInclude Include="light.h" />
-    <ClInclude Include="lightseq.h" />
-    <ClInclude Include="Media\lzwreader.h" />
-    <ClInclude Include="Media\lzwwriter.h" />
-    <ClInclude Include="main.h" />
-    <ClInclude Include="memutil.h" />
-    <ClInclude Include="mesh.h" />
-    <ClInclude Include="mixer.h" />
-    <ClInclude Include="msscript.h" />
-    <ClInclude Include="paintsur.h" />
-    <ClInclude Include="pin3d.h" />
-    <ClInclude Include="pinbinary.h" />
-    <ClInclude Include="pininput.h" />
-    <ClInclude Include="pinsound.h" />
-    <ClInclude Include="pintable.h" />
-    <ClInclude Include="pintypes.h" />
-    <ClInclude Include="pinundo.h" />
-    <ClInclude Include="Pin\player.h" />
-    <ClInclude Include="plumb.h" />
-    <ClInclude Include="plunger.h" />
-    <ClInclude Include="primitive.h" />
-    <ClInclude Include="propbrowser.h" />
-    <ClInclude Include="quadtree.h" />
-    <ClInclude Include="ramp.h" />
-    <ClInclude Include="regutil.h" />
-    <CustomBuild Include="resource.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='ReleaseTest|Win32'">true</ExcludedFromBuild>
-    </CustomBuild>
-    <ClInclude Include="RenderDevice.h" />
-    <ClInclude Include="shadowsur.h" />
-    <ClInclude Include="slintf.h" />
-    <ClInclude Include="spinner.h" />
-    <ClInclude Include="stdafx.h" />
-    <ClInclude Include="stereo3D.h" />
-    <ClInclude Include="sur.h" />
-    <ClInclude Include="surface.h" />
-    <ClInclude Include="SVNRevision.h" />
-    <ClInclude Include="tableglobal.h" />
-    <ClInclude Include="textbox.h" />
-    <ClInclude Include="Texture.h" />
-    <ClInclude Include="timer.h" />
-    <ClInclude Include="trace.h" />
-    <ClInclude Include="trigger.h" />
-    <ClInclude Include="variant.h" />
-    <ClInclude Include="vpinball_i.h" />
-    <ClInclude Include="vector.h" />
-    <ClInclude Include="vectorsort.h" />
-    <CustomBuild Include="vpinball.h">
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-      </Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">
-      </Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">
-      </Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">
-      </Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|Win32'">
-      </Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release MinSize|Win32'">
-      </Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='ReleaseTestFrench|Win32'">
-      </Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='ReleaseTestGerman|Win32'">
-      </Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='ReleaseTestSpanish|Win32'">
-      </Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='ReleaseTest|Win32'">
-      </Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Unicode Debug|Win32'">
-      </Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Unicode Release MinDependency|Win32'">
-      </Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Unicode Release MinSize|Win32'">
-      </Outputs>
-    </CustomBuild>
-    <ClInclude Include="wintimer.h" />
-    <ClInclude Include="worker.h" />
-    <ClInclude Include="xaudplayer.h" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="res\ball.rgs" />
     <None Include="bin00001.bin" />
     <None Include="res\bumper.rgs" />
@@ -2462,6 +2335,121 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <Image Include="res\toolbar.bmp" />
     <Image Include="toolbardebug.bmp" />
     <Image Include="res\white.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ballex.h" />
+    <ClInclude Include="buildnum.h" />
+    <ClInclude Include="buildnumber.h" />
+    <ClInclude Include="bumper.h" />
+    <ClInclude Include="codeview.h" />
+    <ClInclude Include="decal.h" />
+    <ClInclude Include="def.h" />
+    <ClInclude Include="dispid.h" />
+    <ClInclude Include="display.h" />
+    <ClInclude Include="dispreel.h" />
+    <ClInclude Include="disputil.h" />
+    <ClInclude Include="dragpoint.h" />
+    <ClInclude Include="editablereg.h" />
+    <ClInclude Include="eventproxy.h" />
+    <ClInclude Include="extern.h" />
+    <ClInclude Include="flasher.h" />
+    <ClInclude Include="flipper.h" />
+    <ClInclude Include="gate.h" />
+    <ClInclude Include="hash.h" />
+    <ClInclude Include="helpers.h" />
+    <ClInclude Include="hid.h" />
+    <ClInclude Include="hitrectsur.h" />
+    <ClInclude Include="hitsur.h" />
+    <ClInclude Include="idebug.h" />
+    <ClInclude Include="ieditable.h" />
+    <ClInclude Include="inc\activdbg.h" />
+    <ClInclude Include="inc\activscp.h" />
+    <ClInclude Include="inc\dbghelp.h" />
+    <ClInclude Include="inc\dbgprop.h" />
+    <ClInclude Include="inc\freeimage.h" />
+    <ClInclude Include="inc\hidpi.h" />
+    <ClInclude Include="inc\hidsdi.h" />
+    <ClInclude Include="inc\hidusage.h" />
+    <ClInclude Include="inc\msscript.h" />
+    <ClInclude Include="inc\nvapi.h" />
+    <ClInclude Include="inc\nvapi_lite_common.h" />
+    <ClInclude Include="inc\nvapi_lite_d3dext.h" />
+    <ClInclude Include="inc\nvapi_lite_salend.h" />
+    <ClInclude Include="inc\nvapi_lite_salstart.h" />
+    <ClInclude Include="inc\nvapi_lite_sli.h" />
+    <ClInclude Include="inc\nvapi_lite_stereo.h" />
+    <ClInclude Include="inc\nvapi_lite_surround.h" />
+    <ClInclude Include="inc\scilexer.h" />
+    <ClInclude Include="inc\scintilla.h" />
+    <ClInclude Include="inc\xaudio\aac_codec.h" />
+    <ClInclude Include="inc\xaudio\audio_output.h" />
+    <ClInclude Include="inc\xaudio\control.h" />
+    <ClInclude Include="inc\xaudio\control_win32.h" />
+    <ClInclude Include="inc\xaudio\decoder.h" />
+    <ClInclude Include="inc\xaudio\feedback.h" />
+    <ClInclude Include="inc\xaudio\fft.h" />
+    <ClInclude Include="inc\xaudio\file_input.h" />
+    <ClInclude Include="inc\xaudio\file_output.h" />
+    <ClInclude Include="inc\xaudio\memory_input.h" />
+    <ClInclude Include="inc\xaudio\mpeg_codec.h" />
+    <ClInclude Include="inc\xaudio\player.h" />
+    <ClInclude Include="inc\xaudio\properties.h" />
+    <ClInclude Include="inc\xaudio\resampling_output_filter.h" />
+    <ClInclude Include="inc\xaudio\stream_input.h" />
+    <ClInclude Include="inc\xaudio\wave_codec.h" />
+    <ClInclude Include="inc\xaudio\xanalyze.h" />
+    <ClInclude Include="inc\xaudio\xaudio.h" />
+    <ClInclude Include="iselect.h" />
+    <ClInclude Include="kdtree.h" />
+    <ClInclude Include="kicker.h" />
+    <ClInclude Include="light.h" />
+    <ClInclude Include="lightseq.h" />
+    <ClInclude Include="main.h" />
+    <ClInclude Include="Material.h" />
+    <ClInclude Include="memutil.h" />
+    <ClInclude Include="mesh.h" />
+    <ClInclude Include="mixer.h" />
+    <ClInclude Include="paintsur.h" />
+    <ClInclude Include="physconst.h" />
+    <ClInclude Include="pin3d.h" />
+    <ClInclude Include="pinbinary.h" />
+    <ClInclude Include="pininput.h" />
+    <ClInclude Include="pinsound.h" />
+    <ClInclude Include="pintable.h" />
+    <ClInclude Include="pinundo.h" />
+    <ClInclude Include="plumb.h" />
+    <ClInclude Include="plunger.h" />
+    <ClInclude Include="primitive.h" />
+    <ClInclude Include="propbrowser.h" />
+    <ClInclude Include="quadtree.h" />
+    <ClInclude Include="ramp.h" />
+    <ClInclude Include="regutil.h" />
+    <ClInclude Include="RenderDevice.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="rubber.h" />
+    <ClInclude Include="shadowsur.h" />
+    <ClInclude Include="slintf.h" />
+    <ClInclude Include="spinner.h" />
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="stereo3D.h" />
+    <ClInclude Include="sur.h" />
+    <ClInclude Include="surface.h" />
+    <ClInclude Include="SVNRevision.h" />
+    <ClInclude Include="tableglobal.h" />
+    <ClInclude Include="textbox.h" />
+    <ClInclude Include="Texture.h" />
+    <ClInclude Include="timer.h" />
+    <ClInclude Include="trace.h" />
+    <ClInclude Include="trigger.h" />
+    <ClInclude Include="variant.h" />
+    <ClInclude Include="vector.h" />
+    <ClInclude Include="vectorsort.h" />
+    <ClInclude Include="vpinball.h" />
+    <ClInclude Include="vpinball_i.h" />
+    <ClInclude Include="vpversion.h" />
+    <ClInclude Include="wintimer.h" />
+    <ClInclude Include="worker.h" />
+    <ClInclude Include="xaudplayer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
