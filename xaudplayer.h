@@ -1,7 +1,13 @@
 #pragma once
 
-/* xaudio general includes */
-#include "inc\xaudio\decoder.h"
+#define NO_XAUDIO
+
+#ifndef NO_XAUDIO
+ /* xaudio general includes */
+ #include "inc\xaudio\decoder.h"
+#else
+ #include "inc\bass.h"
+#endif
 
 class XAudPlayer
 {
@@ -19,6 +25,8 @@ public:
 	void Unpause();
 
 private:
+
+#ifndef NO_XAUDIO
 	XA_DecoderInfo *m_decoder;
 
 	FILE *file;
@@ -43,4 +51,7 @@ private:
 
 	DWORD               m_dwBufferSize;
 	DWORD               m_dwNextWriteOffset;
+#else
+	HSTREAM				m_stream;
+#endif
 };

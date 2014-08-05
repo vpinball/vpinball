@@ -331,7 +331,7 @@ void VPinball::Init()
 
    InitRegValues();									// get default values from registry
 
-   int DSidx1 = 0, DSidx2 =0;
+   int DSidx1 = 0, DSidx2 = 0;
    GetRegInt("Player", "SoundDevice", &DSidx1);
    GetRegInt("Player", "SoundDeviceBG", &DSidx2);
 
@@ -6035,7 +6035,7 @@ INT_PTR CALLBACK AudioOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
          hr = GetRegInt("Player", "SoundDevice", &sd);
          if (hr != S_OK)
             sd = 0;
-		  hr = GetRegInt("Player", "SoundDeviceBG", &sdbg);
+	     hr = GetRegInt("Player", "SoundDeviceBG", &sdbg);
          if (hr != S_OK)
          {
             sdbg = 0; // The default
