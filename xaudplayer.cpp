@@ -14,9 +14,9 @@ inline bool fopen_s(FILE** f, const char *fname, const char *attr)
 #ifndef NO_XAUDIO
 
 /* xaudio plug-in modules */
-#include "media\xaudio\memory_input.h"
-#include "media\xaudio\audio_output.h"
-#include "media\xaudio\mpeg_codec.h"
+#include "inc\xaudio\memory_input.h"
+#include "inc\xaudio\audio_output.h"
+#include "inc\xaudio\mpeg_codec.h"
 
 XAudPlayer::XAudPlayer()
 	{

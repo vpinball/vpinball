@@ -1,7 +1,7 @@
 #pragma once
 
 /* xaudio general includes */
-#include "media\xaudio\decoder.h"
+#include "inc\xaudio\decoder.h"
 
 class XAudPlayer
 {
