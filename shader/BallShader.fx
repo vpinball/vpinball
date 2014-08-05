@@ -193,5 +193,3 @@ technique RenderBallReflection
 		pixelshader  = compile ps_2_0 psBallReflection();
 	}
 }
-
-

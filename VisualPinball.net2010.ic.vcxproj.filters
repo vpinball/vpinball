@@ -225,6 +225,9 @@
     <ClCompile Include="quadtree.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="rubber.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="vpinball.idl">
@@ -504,9 +507,6 @@
     <ClInclude Include="buildnumber.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DongleAPI.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="hash.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -550,6 +550,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="pin\ballMesh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="rubber.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -731,13 +734,19 @@
     <None Include="res\white.bmp">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="res\table.vpt" />
     <None Include="res\flasher.cur">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\flasher.rgs">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="res\rubber.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\rubber.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\table.vpx" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuildStep Include="resource.h">

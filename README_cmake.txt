@@ -84,7 +84,7 @@ Random Notes / Troubleshooting:
 - In theory, CMake offers x64 builds of the software.
   In practice this will fail for several reasons. Even if you get to the linking stage, x64 builds
   of all dependent libs are required - some of which are probably not available anywhere
-  (DongleAPI, hid, xaudio, ...).
+  (hid, xaudio, ...).
 
 - If you decide to modify the CMakeLists.txt build script, you may want to delete the cache
   file called "CMakeCache.txt" in your build directory before re-running CMake.
