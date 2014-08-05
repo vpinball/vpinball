@@ -9238,283 +9238,207 @@
 			Filter="h;hpp;hxx;hm;inl"
 			>
 			<File
-				RelativePath="Pin\ball.h"
+				RelativePath=".\ballex.h"
 				>
 			</File>
 			<File
-				RelativePath="ballex.h"
+				RelativePath=".\buildnum.h"
 				>
 			</File>
 			<File
-				RelativePath="buildnum.h"
+				RelativePath=".\buildnumber.h"
 				>
 			</File>
 			<File
-				RelativePath="buildnumber.h"
+				RelativePath=".\bumper.h"
 				>
 			</File>
 			<File
-				RelativePath="bumper.h"
+				RelativePath=".\codeview.h"
 				>
 			</File>
 			<File
-				RelativePath="codeview.h"
+				RelativePath=".\decal.h"
 				>
 			</File>
 			<File
-				RelativePath="Pin\collide.h"
+				RelativePath=".\def.h"
 				>
 			</File>
 			<File
-				RelativePath="Pin\collideex.h"
+				RelativePath=".\dispid.h"
 				>
 			</File>
 			<File
-				RelativePath="comcontrol.h"
+				RelativePath=".\display.h"
 				>
 			</File>
 			<File
-				RelativePath="decal.h"
+				RelativePath=".\dispreel.h"
 				>
 			</File>
 			<File
-				RelativePath="def.h"
+				RelativePath=".\disputil.h"
 				>
 			</File>
 			<File
-				RelativePath="dispid.h"
+				RelativePath=".\dragpoint.h"
 				>
 			</File>
 			<File
-				RelativePath="display.h"
+				RelativePath=".\editablereg.h"
 				>
 			</File>
 			<File
-				RelativePath="dispreel.h"
+				RelativePath=".\eventproxy.h"
 				>
 			</File>
 			<File
-				RelativePath="disputil.h"
+				RelativePath=".\extern.h"
 				>
 			</File>
 			<File
-				RelativePath="dragpoint.h"
+				RelativePath=".\flasher.h"
 				>
 			</File>
 			<File
-				RelativePath="Pin\draw.h"
+				RelativePath=".\flipper.h"
 				>
 			</File>
 			<File
-				RelativePath="eventproxy.h"
+				RelativePath=".\gate.h"
 				>
 			</File>
 			<File
-				RelativePath="extern.h"
+				RelativePath=".\hash.h"
 				>
 			</File>
 			<File
-				RelativePath="Media\fileio.h"
+				RelativePath=".\helpers.h"
 				>
 			</File>
 			<File
-				RelativePath="flasher.h"
+				RelativePath=".\hid.h"
 				>
 			</File>
 			<File
-				RelativePath="flipper.h"
+				RelativePath=".\hitrectsur.h"
 				>
 			</File>
 			<File
-				RelativePath="freeimage.h"
+				RelativePath=".\hitsur.h"
 				>
 			</File>
 			<File
-				RelativePath="gate.h"
+				RelativePath=".\idebug.h"
 				>
 			</File>
 			<File
-				RelativePath="hash.h"
+				RelativePath=".\ieditable.h"
 				>
 			</File>
 			<File
-				RelativePath="helpers.h"
+				RelativePath=".\iselect.h"
 				>
 			</File>
 			<File
-				RelativePath="hid.h"
+				RelativePath=".\kdtree.h"
 				>
 			</File>
 			<File
-				RelativePath="hidpi.h"
+				RelativePath=".\kicker.h"
 				>
 			</File>
 			<File
-				RelativePath="hidsdi.h"
+				RelativePath=".\light.h"
 				>
 			</File>
 			<File
-				RelativePath="hidusage.h"
+				RelativePath=".\lightseq.h"
 				>
 			</File>
 			<File
-				RelativePath="Pin\hitable.h"
+				RelativePath=".\main.h"
 				>
 			</File>
 			<File
-				RelativePath="Pin\hitflipper.h"
+				RelativePath=".\Material.h"
 				>
 			</File>
 			<File
-				RelativePath="Pin\hitplunger.h"
+				RelativePath=".\memutil.h"
 				>
 			</File>
 			<File
-				RelativePath="hitrectsur.h"
+				RelativePath=".\mesh.h"
 				>
 			</File>
 			<File
-				RelativePath="hitsur.h"
+				RelativePath=".\mixer.h"
 				>
 			</File>
 			<File
-				RelativePath="Pin\hittimer.h"
+				RelativePath=".\paintsur.h"
 				>
 			</File>
 			<File
-				RelativePath="idebug.h"
+				RelativePath=".\physconst.h"
 				>
 			</File>
 			<File
-				RelativePath="ieditable.h"
+				RelativePath=".\pin3d.h"
 				>
 			</File>
 			<File
-				RelativePath="iselect.h"
+				RelativePath=".\pinbinary.h"
 				>
 			</File>
 			<File
-				RelativePath="kdtree.h"
+				RelativePath=".\pininput.h"
 				>
 			</File>
 			<File
-				RelativePath="kicker.h"
+				RelativePath=".\pinsound.h"
 				>
 			</File>
 			<File
-				RelativePath="light.h"
+				RelativePath=".\pintable.h"
 				>
 			</File>
 			<File
-				RelativePath="lightseq.h"
+				RelativePath=".\pinundo.h"
 				>
 			</File>
 			<File
-				RelativePath="Media\lzwreader.h"
+				RelativePath=".\plumb.h"
 				>
 			</File>
 			<File
-				RelativePath="Media\lzwwriter.h"
+				RelativePath=".\plunger.h"
 				>
 			</File>
 			<File
-				RelativePath="main.h"
+				RelativePath=".\primitive.h"
 				>
 			</File>
 			<File
-				RelativePath="Material.h"
+				RelativePath=".\propbrowser.h"
 				>
 			</File>
 			<File
-				RelativePath="math\matrix.h"
+				RelativePath=".\quadtree.h"
 				>
 			</File>
 			<File
-				RelativePath="memutil.h"
+				RelativePath=".\ramp.h"
 				>
 			</File>
 			<File
-				RelativePath="mesh.h"
+				RelativePath=".\regutil.h"
 				>
 			</File>
 			<File
-				RelativePath="mixer.h"
-				>
-			</File>
-			<File
-				RelativePath="msscript.h"
-				>
-			</File>
-			<File
-				RelativePath="paintsur.h"
-				>
-			</File>
-			<File
-				RelativePath="physconst.h"
-				>
-			</File>
-			<File
-				RelativePath="pin3d.h"
-				>
-			</File>
-			<File
-				RelativePath="pinbinary.h"
-				>
-			</File>
-			<File
-				RelativePath="pininput.h"
-				>
-			</File>
-			<File
-				RelativePath="pinsound.h"
-				>
-			</File>
-			<File
-				RelativePath="pintable.h"
-				>
-			</File>
-			<File
-				RelativePath="pintypes.h"
-				>
-			</File>
-			<File
-				RelativePath="pinundo.h"
-				>
-			</File>
-			<File
-				RelativePath="Pin\player.h"
-				>
-			</File>
-			<File
-				RelativePath="plumb.h"
-				>
-			</File>
-			<File
-				RelativePath="plunger.h"
-				>
-			</File>
-			<File
-				RelativePath="primitive.h"
-				>
-			</File>
-			<File
-				RelativePath="propbrowser.h"
-				>
-			</File>
-			<File
-				RelativePath="quadtree.h"
-				>
-			</File>
-			<File
-				RelativePath="ramp.h"
-				>
-			</File>
-			<File
-				RelativePath="regutil.h"
-				>
-			</File>
-			<File
-				RelativePath="RenderDevice.h"
+				RelativePath=".\RenderDevice.h"
 				>
 			</File>
 			<File
@@ -9522,242 +9446,257 @@
 				>
 			</File>
 			<File
-				RelativePath="\resource.h"
-				>
-				<FileConfiguration
-					Name="ReleaseTest|Win32"
-					ExcludedFromBuild="true"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath=".\rubber.h"
 				>
 			</File>
 			<File
-				RelativePath="shadowsur.h"
+				RelativePath=".\shadowsur.h"
 				>
 			</File>
 			<File
-				RelativePath="slintf.h"
+				RelativePath=".\slintf.h"
 				>
 			</File>
 			<File
-				RelativePath="spinner.h"
+				RelativePath=".\spinner.h"
 				>
 			</File>
 			<File
-				RelativePath="stdafx.h"
+				RelativePath=".\stdafx.h"
 				>
 			</File>
 			<File
-				RelativePath="stereo3D.h"
+				RelativePath=".\stereo3D.h"
 				>
 			</File>
 			<File
-				RelativePath="sur.h"
+				RelativePath=".\sur.h"
 				>
 			</File>
 			<File
-				RelativePath="surface.h"
+				RelativePath=".\surface.h"
 				>
 			</File>
 			<File
-				RelativePath="SVNRevision.h"
+				RelativePath=".\SVNRevision.h"
 				>
 			</File>
 			<File
-				RelativePath="tableglobal.h"
+				RelativePath=".\tableglobal.h"
 				>
 			</File>
 			<File
-				RelativePath="textbox.h"
+				RelativePath=".\textbox.h"
 				>
 			</File>
 			<File
-				RelativePath="Texture.h"
+				RelativePath=".\Texture.h"
 				>
 			</File>
 			<File
-				RelativePath="timer.h"
+				RelativePath=".\timer.h"
 				>
 			</File>
 			<File
-				RelativePath="trace.h"
+				RelativePath=".\trace.h"
 				>
 			</File>
 			<File
-				RelativePath="trigger.h"
+				RelativePath=".\trigger.h"
 				>
 			</File>
 			<File
-				RelativePath="variant.h"
+				RelativePath=".\variant.h"
 				>
 			</File>
 			<File
-				RelativePath="vector.h"
+				RelativePath=".\vector.h"
 				>
 			</File>
 			<File
-				RelativePath="vectorsort.h"
+				RelativePath=".\vectorsort.h"
 				>
 			</File>
 			<File
-				RelativePath="vpinball.h"
+				RelativePath=".\vpinball.h"
 				>
-				<FileConfiguration
-					Name="Unicode Release MinSize|Win32"
+			</File>
+			<File
+				RelativePath=".\vpinball_i.h"
+				>
+			</File>
+			<File
+				RelativePath=".\vpversion.h"
+				>
+			</File>
+			<File
+				RelativePath=".\wintimer.h"
+				>
+			</File>
+			<File
+				RelativePath=".\worker.h"
+				>
+			</File>
+			<File
+				RelativePath=".\xaudplayer.h"
+				>
+			</File>
+			<Filter
+				Name="inc"
+				>
+				<File
+					RelativePath=".\inc\activdbg.h"
 					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="g:\bin\BuildStamp .\buildnum.h 2000"
-						CommandLine=""
-						Outputs=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release MinDependency|Win32"
+				</File>
+				<File
+					RelativePath=".\inc\activscp.h"
 					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="g:\bin\BuildStamp .\buildnum.h 2000"
-						CommandLine=""
-						Outputs=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="ReleaseTestSpanish|Win32"
+				</File>
+				<File
+					RelativePath=".\inc\dbghelp.h"
 					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="g:\bin\BuildStamp .\buildnum.h 2000"
-						CommandLine=""
-						Outputs=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Unicode Release MinDependency|Win32"
+				</File>
+				<File
+					RelativePath=".\inc\dbgprop.h"
 					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="g:\bin\BuildStamp .\buildnum.h 2000"
-						CommandLine=""
-						Outputs=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release MinSize|Win32"
+				</File>
+				<File
+					RelativePath=".\inc\freeimage.h"
 					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="g:\bin\BuildStamp .\buildnum.h 2000"
-						CommandLine=""
-						Outputs=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Profile|Win32"
+				</File>
+				<File
+					RelativePath=".\inc\hidpi.h"
 					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="rem g:\bin\BuildStamp .\buildnum.h 2000"
-						CommandLine=""
-						Outputs=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Unicode Debug|Win32"
+				</File>
+				<File
+					RelativePath=".\inc\hidsdi.h"
 					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="g:\bin\BuildStamp .\buildnum.h 2000"
-						CommandLine=""
-						Outputs=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="ReleaseTestGerman|Win32"
+				</File>
+				<File
+					RelativePath=".\inc\hidusage.h"
 					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="g:\bin\BuildStamp .\buildnum.h 2000"
-						CommandLine=""
-						Outputs=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="ReleaseTestFrench|Win32"
+				</File>
+				<File
+					RelativePath=".\inc\msscript.h"
 					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="g:\bin\BuildStamp .\buildnum.h 2000"
-						CommandLine=""
-						Outputs=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="ReleaseTest|Win32"
+				</File>
+				<File
+					RelativePath=".\inc\nvapi.h"
 					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="rem g:\bin\BuildStamp .\buildnum.h 2000"
-						CommandLine=""
-						Outputs=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
+				</File>
+				<File
+					RelativePath=".\inc\nvapi_lite_common.h"
 					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="rem g:\bin\BuildStamp .\buildnum.h 2000"
-						CommandLine=""
-						Outputs=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release MinDependency Fast|Win32"
+				</File>
+				<File
+					RelativePath=".\inc\nvapi_lite_d3dext.h"
 					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="g:\bin\BuildStamp .\buildnum.h 2000"
-						CommandLine=""
-						Outputs=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release MinDependency Fast+SSE|Win32"
+				</File>
+				<File
+					RelativePath=".\inc\nvapi_lite_salend.h"
 					>
-					<Tool
-						Name="VCCustomBuildTool"
-						Description="g:\bin\BuildStamp .\buildnum.h 2000"
-						CommandLine=""
-						Outputs=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="wintimer.h"
+				</File>
+				<File
+					RelativePath=".\inc\nvapi_lite_salstart.h"
+					>
+				</File>
+				<File
+					RelativePath=".\inc\nvapi_lite_sli.h"
+					>
+				</File>
+				<File
+					RelativePath=".\inc\nvapi_lite_stereo.h"
+					>
+				</File>
+				<File
+					RelativePath=".\inc\nvapi_lite_surround.h"
+					>
+				</File>
+				<File
+					RelativePath=".\inc\scilexer.h"
+					>
+				</File>
+				<File
+					RelativePath=".\inc\scintilla.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="xaudio"
 				>
-			</File>
-			<File
-				RelativePath="worker.h"
-				>
-			</File>
-			<File
-				RelativePath="xaudplayer.h"
-				>
-			</File>
+				<File
+					RelativePath=".\inc\xaudio\aac_codec.h"
+					>
+				</File>
+				<File
+					RelativePath=".\inc\xaudio\audio_output.h"
+					>
+				</File>
+				<File
+					RelativePath=".\inc\xaudio\control.h"
+					>
+				</File>
+				<File
+					RelativePath=".\inc\xaudio\control_win32.h"
+					>
+				</File>
+				<File
+					RelativePath=".\inc\xaudio\decoder.h"
+					>
+				</File>
+				<File
+					RelativePath=".\inc\xaudio\feedback.h"
+					>
+				</File>
+				<File
+					RelativePath=".\inc\xaudio\fft.h"
+					>
+				</File>
+				<File
+					RelativePath=".\inc\xaudio\file_input.h"
+					>
+				</File>
+				<File
+					RelativePath=".\inc\xaudio\file_output.h"
+					>
+				</File>
+				<File
+					RelativePath=".\inc\xaudio\memory_input.h"
+					>
+				</File>
+				<File
+					RelativePath=".\inc\xaudio\mpeg_codec.h"
+					>
+				</File>
+				<File
+					RelativePath=".\inc\xaudio\player.h"
+					>
+				</File>
+				<File
+					RelativePath=".\inc\xaudio\properties.h"
+					>
+				</File>
+				<File
+					RelativePath=".\inc\xaudio\resampling_output_filter.h"
+					>
+				</File>
+				<File
+					RelativePath=".\inc\xaudio\stream_input.h"
+					>
+				</File>
+				<File
+					RelativePath=".\inc\xaudio\wave_codec.h"
+					>
+				</File>
+				<File
+					RelativePath=".\inc\xaudio\xanalyze.h"
+					>
+				</File>
+				<File
+					RelativePath=".\inc\xaudio\xaudio.h"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Resource Files"

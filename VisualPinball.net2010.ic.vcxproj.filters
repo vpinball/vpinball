@@ -16,6 +16,12 @@
     <Filter Include="Resource Files\Dialogs">
       <UniqueIdentifier>{6eabc231-a6f3-4819-a9e4-deeae11cdbbd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\xaudio">
+      <UniqueIdentifier>{00142fb4-b93e-467b-be90-4f8ee69ac68f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\inc">
+      <UniqueIdentifier>{d3b3a48d-b4ad-43ce-95d5-e2e7195b445a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Pin\ball.cpp">
@@ -252,311 +258,6 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Pin\ball.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ballex.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="bumper.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="codeview.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Pin\collide.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Pin\collideex.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="decal.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="def.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="dispid.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="display.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="dispreel.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="disputil.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="dragpoint.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Pin\draw.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="eventproxy.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="extern.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Media\fileio.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="flipper.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="freeimage.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="gate.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="helpers.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="hid.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Pin\hitable.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Pin\hitflipper.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Pin\hitplunger.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="hitrectsur.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="hitsur.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Pin\hittimer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="idebug.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ieditable.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="iselect.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="kicker.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="light.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="lightseq.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Media\lzwreader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Media\lzwwriter.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="main.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="memutil.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="mesh.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="mixer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="msscript.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="paintsur.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="pin3d.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="pinbinary.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="pininput.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="pinsound.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="pintable.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="pinundo.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Pin\player.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="plumb.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="plunger.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="primitive.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="propbrowser.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ramp.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="regutil.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="shadowsur.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="slintf.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="spinner.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="stdafx.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="sur.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="surface.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="tableglobal.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="textbox.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="timer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="trigger.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="variant.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="vector.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="vectorsort.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="wintimer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="worker.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="xaudplayer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="stereo3D.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="RenderDevice.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Material.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Texture.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="flasher.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\nvapi.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="physconst.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="kdtree.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="math\bbox.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="math\matrix.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="math\vector.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="quadtree.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="buildnum.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="buildnumber.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="hash.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="hidpi.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="hidsdi.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="hidusage.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SVNRevision.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="trace.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="vpinball_i.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\activdbg.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\activscp.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\dbghelp.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\dbgprop.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\scilexer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\scintilla.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="media\wavread.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="pin\ballMesh.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="rubber.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="res\ball.rgs">
       <Filter>Resource Files</Filter>
     </None>
@@ -749,16 +450,347 @@
     <None Include="res\table.vpx" />
   </ItemGroup>
   <ItemGroup>
-    <CustomBuildStep Include="resource.h">
-      <Filter>Header Files</Filter>
-    </CustomBuildStep>
-  </ItemGroup>
-  <ItemGroup>
-    <CustomBuild Include="vpinball.h">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
-  </ItemGroup>
-  <ItemGroup>
     <Object Include="dispatchpatch32.obj" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="inc\xaudio\aac_codec.h">
+      <Filter>Header Files\xaudio</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\xaudio\audio_output.h">
+      <Filter>Header Files\xaudio</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\xaudio\control.h">
+      <Filter>Header Files\xaudio</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\xaudio\control_win32.h">
+      <Filter>Header Files\xaudio</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\xaudio\decoder.h">
+      <Filter>Header Files\xaudio</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\xaudio\feedback.h">
+      <Filter>Header Files\xaudio</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\xaudio\fft.h">
+      <Filter>Header Files\xaudio</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\xaudio\file_input.h">
+      <Filter>Header Files\xaudio</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\xaudio\file_output.h">
+      <Filter>Header Files\xaudio</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\xaudio\memory_input.h">
+      <Filter>Header Files\xaudio</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\xaudio\mpeg_codec.h">
+      <Filter>Header Files\xaudio</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\xaudio\player.h">
+      <Filter>Header Files\xaudio</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\xaudio\properties.h">
+      <Filter>Header Files\xaudio</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\xaudio\resampling_output_filter.h">
+      <Filter>Header Files\xaudio</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\xaudio\stream_input.h">
+      <Filter>Header Files\xaudio</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\xaudio\wave_codec.h">
+      <Filter>Header Files\xaudio</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\xaudio\xanalyze.h">
+      <Filter>Header Files\xaudio</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\xaudio\xaudio.h">
+      <Filter>Header Files\xaudio</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\activdbg.h">
+      <Filter>Header Files\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\activscp.h">
+      <Filter>Header Files\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\dbghelp.h">
+      <Filter>Header Files\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\dbgprop.h">
+      <Filter>Header Files\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\freeimage.h">
+      <Filter>Header Files\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\hidpi.h">
+      <Filter>Header Files\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\hidsdi.h">
+      <Filter>Header Files\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\hidusage.h">
+      <Filter>Header Files\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\msscript.h">
+      <Filter>Header Files\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\nvapi.h">
+      <Filter>Header Files\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\nvapi_lite_common.h">
+      <Filter>Header Files\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\nvapi_lite_d3dext.h">
+      <Filter>Header Files\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\nvapi_lite_salend.h">
+      <Filter>Header Files\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\nvapi_lite_salstart.h">
+      <Filter>Header Files\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\nvapi_lite_sli.h">
+      <Filter>Header Files\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\nvapi_lite_stereo.h">
+      <Filter>Header Files\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\nvapi_lite_surround.h">
+      <Filter>Header Files\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\scilexer.h">
+      <Filter>Header Files\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\scintilla.h">
+      <Filter>Header Files\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="ballex.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="buildnum.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="buildnumber.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="bumper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="codeview.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="decal.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="def.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dispid.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="display.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dispreel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="disputil.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dragpoint.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="editablereg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="eventproxy.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="extern.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="flasher.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="flipper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="gate.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="hash.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="helpers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="hid.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="hitrectsur.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="hitsur.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="idebug.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ieditable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="iselect.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="kdtree.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="kicker.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="light.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lightseq.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="main.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Material.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="memutil.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mesh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mixer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="paintsur.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="physconst.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pin3d.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pinbinary.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pininput.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pinsound.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pintable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pinundo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="plumb.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="plunger.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="primitive.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="propbrowser.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="quadtree.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ramp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="regutil.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderDevice.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="rubber.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="shadowsur.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="slintf.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="spinner.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stereo3D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sur.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="surface.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SVNRevision.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tableglobal.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="textbox.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Texture.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="timer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="trace.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="trigger.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="variant.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="vector.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="vectorsort.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="vpinball.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="vpinball_i.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="vpversion.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="wintimer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="worker.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="xaudplayer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
