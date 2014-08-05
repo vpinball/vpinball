@@ -1,6 +1,4 @@
 #include "StdAfx.h"
-#include "Mmsystem.h"
-
 
 #if _MSC_VER <= 1310 // VC 2003 and before
 inline bool fopen_s(FILE** f, const char *fname, const char *attr)
@@ -10,8 +8,9 @@ inline bool fopen_s(FILE** f, const char *fname, const char *attr)
 }
 #endif
 
-
 #ifndef NO_XAUDIO
+
+#include "Mmsystem.h"
 
 /* xaudio plug-in modules */
 #include "inc\xaudio\memory_input.h"
@@ -300,34 +299,77 @@ HRESULT XAudPlayer::CreateStreamingBuffer(WAVEFORMATEX *pwfx)
 
 #else // no XAudio
 
+static bool bass_init = false; //!! meh
+
 XAudPlayer::XAudPlayer()
 	{
+		m_stream = NULL;
+
+		if(!bass_init)
+		{
+		    int DSidx = -1;
+		    GetRegInt("Player", "SoundDeviceBG", &DSidx);
+			if(DSidx != -1)
+				DSidx++; // as 0 is nosound //!! mapping is otherwise the same or not?!
+			if(!BASS_Init(DSidx, 44100, 0, g_pvp->m_hwnd, NULL))
+			{
+				char bla[128];
+				sprintf(bla,"BASS music/sound library initialization error %d",BASS_ErrorGetCode());
+				MessageBox(g_pvp->m_hwnd,bla,"Error",MB_ICONERROR);
+			}
+			bass_init = true;
+		}
 	}
 
 XAudPlayer::~XAudPlayer()
 	{
+		if(m_stream)
+			BASS_StreamFree(m_stream);
 	}
 
 void XAudPlayer::Pause()
 	{
+		if(m_stream)
+			BASS_ChannelPause(m_stream);
 	}
 
 void XAudPlayer::Unpause()
 	{
+		if(m_stream)
+			BASS_ChannelPlay(m_stream, 0);
 	}
 
 int XAudPlayer::Tick()
 	{
-	return 1;
+	if(m_stream)
+		return (BASS_ChannelIsActive(m_stream) == BASS_ACTIVE_PLAYING);
+	else
+		return 0;
 	}
 
 void XAudPlayer::End()
 	{
+		if(m_stream)
+			BASS_ChannelPause(m_stream); //!! ?
 	}
 
 int XAudPlayer::Init(char * const szFileName, const int volume)
 	{
-    return 1;
+	m_stream = BASS_StreamCreateFile(FALSE, szFileName, 0, 0, /*BASS_SAMPLE_LOOP*/0); //!! ?
+	if(m_stream == NULL)
+	{
+		char bla[128];
+		sprintf(bla,"BASS music/sound library cannot load %s",szFileName);
+		MessageBox(g_pvp->m_hwnd,bla,"Error",MB_ICONERROR);
+		return 0;
+	}
+
+	const float volf = (float)(volume - DSBVOLUME_MIN)*(float)(1.0/(DSBVOLUME_MAX - DSBVOLUME_MIN)); //!!
+	BASS_ChannelSetAttribute(m_stream, BASS_ATTRIB_VOL, volf);
+	
+	BASS_ChannelPlay(m_stream, 0);
+
+	return 1;
 	}
 
 #endif // NO_XAUDIO
