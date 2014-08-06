@@ -985,7 +985,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 	if (m_fDetectScriptHang)
 		g_pvp->PostWorkToWorkerThread(HANG_SNOOP_START, NULL);
 
-    // TODO: the limit should be a GUI option; 0 means disable limiting of drawahead queue
+    // 0 means disable limiting of draw-ahead queue
     m_limiter.Init(m_fMaxPrerenderedFrames);
 
 	Render();
@@ -1825,7 +1825,7 @@ void Player::RenderDynamics()
     * change state to the end of the draw order for lights.
     */
    {
-       const unsigned numLights = m_vLights.size();
+       const size_t numLights = m_vLights.size();
 
        // sort the list of triggered lights so that we can use binary search
        m_sortedTriggeredLights = m_triggeredLights;
@@ -2248,7 +2248,7 @@ void Player::Render()
         {
             PauseMusic();
 
-            int option;
+            size_t option;
 
             if(m_fCloseType == 2) 
             {
@@ -2954,11 +2954,19 @@ void AssignIconToButton(HWND hwnd, int controlid, int resourceid)
 	SendMessage(hwndButton, BM_SETIMAGE, IMAGE_ICON, (LPARAM)hicon);
 }
 
+#ifdef _WIN64
 TBBUTTON const g_tbbuttonDebug[] = {
-	{0, IDC_PLAY, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_PLAY, 0},
-	{1, IDC_PAUSE, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_PAUSE, 1},
-	{2, IDC_STEP, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_STEP, 2},
+	{0, IDC_PLAY, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, 0, 0, 0, 0, IDS_PLAY, 0},
+	{1, IDC_PAUSE, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, 0, 0, 0, 0, IDS_PAUSE, 1},
+	{2, IDC_STEP, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, 0, 0, 0, 0, IDS_STEP, 2},
 };
+#else
+TBBUTTON const g_tbbuttonDebug[] = {
+		{ 0, IDC_PLAY, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_PLAY, 0 },
+		{ 1, IDC_PAUSE, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_PAUSE, 1 },
+		{ 2, IDC_STEP, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_STEP, 2 },
+};
+#endif
 
 INT_PTR CALLBACK DebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -3029,10 +3037,10 @@ INT_PTR CALLBACK DebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 							{
 							SendMessage(pnmh->hwndFrom, SCI_DELETEBACK, 0, 0);
 
-							const int curpos = SendMessage(pnmh->hwndFrom, SCI_GETCURRENTPOS, 0, 0);
-							const int line = SendMessage(pnmh->hwndFrom, SCI_LINEFROMPOSITION, curpos, 0);
-							const int lineStart = SendMessage(pnmh->hwndFrom, SCI_POSITIONFROMLINE, line, 0);
-							const int lineEnd = SendMessage(pnmh->hwndFrom, SCI_GETLINEENDPOSITION, line, 0);
+							const size_t curpos = SendMessage(pnmh->hwndFrom, SCI_GETCURRENTPOS, 0, 0);
+							const size_t line = SendMessage(pnmh->hwndFrom, SCI_LINEFROMPOSITION, curpos, 0);
+							const size_t lineStart = SendMessage(pnmh->hwndFrom, SCI_POSITIONFROMLINE, line, 0);
+							const size_t lineEnd = SendMessage(pnmh->hwndFrom, SCI_GETLINEENDPOSITION, line, 0);
 
 							char * const szText = new char[lineEnd - lineStart + 1];
 							TextRange tr;
@@ -3041,7 +3049,7 @@ INT_PTR CALLBACK DebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 							tr.lpstrText = szText;
 							SendMessage(pnmh->hwndFrom, SCI_GETTEXTRANGE, 0, (LPARAM)&tr);
 
-							const int maxlines = SendMessage(pnmh->hwndFrom, SCI_GETLINECOUNT, 0, 0);
+							const size_t maxlines = SendMessage(pnmh->hwndFrom, SCI_GETLINECOUNT, 0, 0);
 
 							if (maxlines == line+1)
 								{
@@ -3051,7 +3059,7 @@ INT_PTR CALLBACK DebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 								}
 							else
 								{
-								const int pos = SendMessage(pnmh->hwndFrom, SCI_POSITIONFROMLINE, line+1, 0);
+								const size_t pos = SendMessage(pnmh->hwndFrom, SCI_POSITIONFROMLINE, line + 1, 0);
 								SendMessage(pnmh->hwndFrom, SCI_SETCURRENTPOS, pos, 0);	
 								}
 
@@ -3110,7 +3118,7 @@ INT_PTR CALLBACK DebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 			case RESIZE_FROM_EXPAND:
 				{
-				const int state = SendDlgItemMessage(hwndDlg, IDC_EXPAND, BM_GETCHECK, 0, 0);
+				const size_t state = SendDlgItemMessage(hwndDlg, IDC_EXPAND, BM_GETCHECK, 0, 0);
 				HWND hwndSizer1 = GetDlgItem(hwndDlg, IDC_GUIDE1);
 				HWND hwndSizer2 = GetDlgItem(hwndDlg, IDC_GUIDE2);
 				int mult;
@@ -3179,10 +3187,8 @@ INT_PTR CALLBACK DebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 								break;
                      case IDC_BALL_THROWING:
                         {
-                           HWND hwndControl;
-                           int checked;
-                           hwndControl = GetDlgItem(hwndDlg, IDC_BALL_THROWING);
-                           checked = SendMessage(hwndControl, BM_GETCHECK, 0, 0);
+                           HWND hwndControl = GetDlgItem(hwndDlg, IDC_BALL_THROWING);
+                           size_t checked = SendMessage(hwndControl, BM_GETCHECK, 0, 0);
                            g_pplayer->m_fThrowBalls = checked;
                            break;
                         }

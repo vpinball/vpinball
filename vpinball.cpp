@@ -67,50 +67,97 @@ INT_PTR   iString;
 } TBBUTTON, *PTBBUTTON, *LPTBBUTTON;
 */
 
+#ifdef _WIN64
 static TBBUTTON const g_tbbuttonMain[] = {
    // icon number,
-   {14, ID_TABLE_MAGNIFY, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_MAGNIFY, 0},
-   {0, IDC_SELECT, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP | TBSTYLE_DROPDOWN, 0, 0, IDS_TB_SELECT, 1},
-   {13, ID_EDIT_PROPERTIES, TBSTATE_ENABLED, TBSTYLE_CHECK, 0, 0, IDS_TB_PROPERTIES, 2},
-   {18, ID_EDIT_SCRIPT, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0, IDS_TB_SCRIPT, 3},
-   {19, ID_EDIT_BACKGLASSVIEW, TBSTATE_ENABLED, TBSTYLE_CHECK, 0, 0, IDS_TB_BACKGLASS, 4},
-   {2, ID_TABLE_PLAY, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0, IDS_TB_PLAY, 5},
+   {14, ID_TABLE_MAGNIFY, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, 0, 0, 0, 0, IDS_TB_MAGNIFY, 0},
+   {0, IDC_SELECT, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP | TBSTYLE_DROPDOWN, 0, 0, 0, 0, 0, 0, IDS_TB_SELECT, 1},
+   {13, ID_EDIT_PROPERTIES, TBSTATE_ENABLED, TBSTYLE_CHECK, 0, 0, 0, 0, 0, 0, IDS_TB_PROPERTIES, 2},
+   {18, ID_EDIT_SCRIPT, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0, 0, 0, 0, 0, IDS_TB_SCRIPT, 3},
+   {19, ID_EDIT_BACKGLASSVIEW, TBSTATE_ENABLED, TBSTYLE_CHECK, 0, 0, 0, 0, 0, 0, IDS_TB_BACKGLASS, 4},
+   {2, ID_TABLE_PLAY, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0, 0, 0, 0, 0, IDS_TB_PLAY, 5},
 };
 
 static TBBUTTON const g_tbbuttonPalette[] = {
    // icon number,
-   {1, ID_INSERT_WALL, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_WALL, 0},
-   {15, ID_INSERT_GATE, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_GATE, 1},
-   {17, ID_INSERT_RAMP, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_RAMP, 2},
-   {3, ID_INSERT_FLIPPER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_FLIPPER, 3},
-   {5, ID_INSERT_PLUNGER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_PLUNGER, 4},
-   {7, ID_INSERT_BUMPER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_BUMPER, 5},
-   {16, ID_INSERT_SPINNER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_SPINNER, 6},
-   {4, ID_INSERT_TIMER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_TIMER, 7},
-   {8, ID_INSERT_TRIGGER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_TRIGGER, 8},
-   {9, ID_INSERT_LIGHT, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_LIGHT, 9},
-   {10, ID_INSERT_KICKER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_KICKER, 10},
-   {11, ID_INSERT_TARGET, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_TARGET, 11},
-   {12, ID_INSERT_DECAL, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_DECAL, 12},
-   {6, ID_INSERT_TEXTBOX, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_TEXTBOX, 13},
-   {20, ID_INSERT_DISPREEL, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_DISPREEL, 14},
-   {21, ID_INSERT_LIGHTSEQ, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_LIGHTSEQ, 15},
-   {22, ID_INSERT_PRIMITIVE, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_PRIMITIVE, 16},
-   {35, ID_INSERT_FLASHER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_FLASHER, 17},
-   {36, ID_INSERT_RUBBER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_RUBBER, 18},
+   {1, ID_INSERT_WALL, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, 0, 0, 0, 0, IDS_TB_WALL, 0},
+   {15, ID_INSERT_GATE, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, 0, 0, 0, 0, IDS_TB_GATE, 1},
+   {17, ID_INSERT_RAMP, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, 0, 0, 0, 0, IDS_TB_RAMP, 2},
+   {3, ID_INSERT_FLIPPER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, 0, 0, 0, 0, IDS_TB_FLIPPER, 3},
+   {5, ID_INSERT_PLUNGER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, 0, 0, 0, 0, IDS_TB_PLUNGER, 4},
+   {7, ID_INSERT_BUMPER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, 0, 0, 0, 0, IDS_TB_BUMPER, 5},
+   {16, ID_INSERT_SPINNER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, 0, 0, 0, 0, IDS_TB_SPINNER, 6},
+   {4, ID_INSERT_TIMER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, 0, 0, 0, 0, IDS_TB_TIMER, 7},
+   {8, ID_INSERT_TRIGGER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, 0, 0, 0, 0, IDS_TB_TRIGGER, 8},
+   {9, ID_INSERT_LIGHT, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, 0, 0, 0, 0, IDS_TB_LIGHT, 9},
+   {10, ID_INSERT_KICKER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, 0, 0, 0, 0, IDS_TB_KICKER, 10},
+   {11, ID_INSERT_TARGET, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, 0, 0, 0, 0, IDS_TB_TARGET, 11},
+   {12, ID_INSERT_DECAL, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, 0, 0, 0, 0, IDS_TB_DECAL, 12},
+   {6, ID_INSERT_TEXTBOX, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, 0, 0, 0, 0, IDS_TB_TEXTBOX, 13},
+   {20, ID_INSERT_DISPREEL, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, 0, 0, 0, 0, IDS_TB_DISPREEL, 14},
+   {21, ID_INSERT_LIGHTSEQ, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, 0, 0, 0, 0, IDS_TB_LIGHTSEQ, 15},
+   {22, ID_INSERT_PRIMITIVE, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, 0, 0, 0, 0, IDS_TB_PRIMITIVE, 16},
+   {35, ID_INSERT_FLASHER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, 0, 0, 0, 0, IDS_TB_FLASHER, 17},
+   {36, ID_INSERT_RUBBER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, 0, 0, 0, 0, IDS_TB_RUBBER, 18},
 };
 
 static TBBUTTON const g_tbbuttonLayers[] = {
-   {23, ID_LAYER_LAYER1, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, 0, 0, 0, 0},
-   {24, ID_LAYER_LAYER2, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, 0, 0, 0, 1},
-   {25, ID_LAYER_LAYER3, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, 0, 0, 0, 2},
-   {26, ID_LAYER_LAYER4, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, 0, 0, 0, 3},
-   {27, ID_LAYER_LAYER5, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, 0, 0, 0, 4},
-   {28, ID_LAYER_LAYER6, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, 0, 0, 0, 5},
-   {29, ID_LAYER_LAYER7, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, 0, 0, 0, 6},
-   {30, ID_LAYER_LAYER8, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, 0, 0, 0, 7},
-   {31, ID_LAYER_TOGGLEALL, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0, 0, 8},
+   {23, ID_LAYER_LAYER1, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, 0, 0, 0, 0, 0, 0, 0, 0},
+   {24, ID_LAYER_LAYER2, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, 0, 0, 0, 0, 0, 0, 0, 1},
+   {25, ID_LAYER_LAYER3, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, 0, 0, 0, 0, 0, 0, 0, 2},
+   {26, ID_LAYER_LAYER4, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, 0, 0, 0, 0, 0, 0,  0, 3},
+   {27, ID_LAYER_LAYER5, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, 0, 0, 0, 0, 0, 0, 0, 4},
+   {28, ID_LAYER_LAYER6, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, 0, 0, 0, 0, 0, 0, 0, 5},
+   {29, ID_LAYER_LAYER7, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, 0, 0, 0, 0, 0, 0, 0, 6},
+   {30, ID_LAYER_LAYER8, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, 0, 0, 0, 0, 0, 0, 0, 7},
+   {31, ID_LAYER_TOGGLEALL, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0, 0, 0, 0, 0, 0, 8},
 };
+#else
+static TBBUTTON const g_tbbuttonMain[] = {
+	// icon number,
+		{ 14, ID_TABLE_MAGNIFY, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_MAGNIFY, 0 },
+		{ 0, IDC_SELECT, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP | TBSTYLE_DROPDOWN, 0, 0, IDS_TB_SELECT, 1 },
+		{ 13, ID_EDIT_PROPERTIES, TBSTATE_ENABLED, TBSTYLE_CHECK, 0, 0, IDS_TB_PROPERTIES, 2 },
+		{ 18, ID_EDIT_SCRIPT, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0, IDS_TB_SCRIPT, 3 },
+		{ 19, ID_EDIT_BACKGLASSVIEW, TBSTATE_ENABLED, TBSTYLE_CHECK, 0, 0, IDS_TB_BACKGLASS, 4 },
+		{ 2, ID_TABLE_PLAY, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0, IDS_TB_PLAY, 5 },
+};
+
+static TBBUTTON const g_tbbuttonPalette[] = {
+	// icon number,
+		{ 1, ID_INSERT_WALL, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_WALL, 0 },
+		{ 15, ID_INSERT_GATE, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_GATE, 1 },
+		{ 17, ID_INSERT_RAMP, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_RAMP, 2 },
+		{ 3, ID_INSERT_FLIPPER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_FLIPPER, 3 },
+		{ 5, ID_INSERT_PLUNGER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_PLUNGER, 4 },
+		{ 7, ID_INSERT_BUMPER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_BUMPER, 5 },
+		{ 16, ID_INSERT_SPINNER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_SPINNER, 6 },
+		{ 4, ID_INSERT_TIMER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_TIMER, 7 },
+		{ 8, ID_INSERT_TRIGGER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_TRIGGER, 8 },
+		{ 9, ID_INSERT_LIGHT, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_LIGHT, 9 },
+		{ 10, ID_INSERT_KICKER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_KICKER, 10 },
+		{ 11, ID_INSERT_TARGET, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_TARGET, 11 },
+		{ 12, ID_INSERT_DECAL, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_DECAL, 12 },
+		{ 6, ID_INSERT_TEXTBOX, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_TEXTBOX, 13 },
+		{ 20, ID_INSERT_DISPREEL, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_DISPREEL, 14 },
+		{ 21, ID_INSERT_LIGHTSEQ, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_LIGHTSEQ, 15 },
+		{ 22, ID_INSERT_PRIMITIVE, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_PRIMITIVE, 16 },
+		{ 35, ID_INSERT_FLASHER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_FLASHER, 17 },
+		{ 36, ID_INSERT_RUBBER, TBSTATE_ENABLED, TBSTYLE_CHECKGROUP, 0, 0, IDS_TB_RUBBER, 18 },
+};
+
+static TBBUTTON const g_tbbuttonLayers[] = {
+		{ 23, ID_LAYER_LAYER1, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, 0, 0, 0, 0 },
+		{ 24, ID_LAYER_LAYER2, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, 0, 0, 0, 1 },
+		{ 25, ID_LAYER_LAYER3, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, 0, 0, 0, 2 },
+		{ 26, ID_LAYER_LAYER4, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, 0, 0, 0, 3 },
+		{ 27, ID_LAYER_LAYER5, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, 0, 0, 0, 4 },
+		{ 28, ID_LAYER_LAYER6, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, 0, 0, 0, 5 },
+		{ 29, ID_LAYER_LAYER7, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, 0, 0, 0, 6 },
+		{ 30, ID_LAYER_LAYER8, TBSTATE_ENABLED | TBSTATE_CHECKED, TBSTYLE_CHECK, 0, 0, 0, 7 },
+		{ 31, ID_LAYER_TOGGLEALL, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0, 0, 8 },
+};
+#endif
 
 static const int allLayers[8]=
 {
@@ -1439,7 +1486,7 @@ void VPinball::LoadFileName(char *szFileName)
 
       // get the load path from the filename
       PathFromFilename(szFileName, szLoadDir);
-      SetRegValue("RecentDir","LoadDir", REG_SZ, szLoadDir, strlen(szLoadDir));
+      SetRegValue("RecentDir","LoadDir", REG_SZ, szLoadDir, (DWORD)strlen(szLoadDir));
 
       // make sure the load directory is the active directory
       DWORD err = SetCurrentDirectory(szLoadDir);
@@ -1679,7 +1726,7 @@ void VPinball::UpdateRecentFileList(char *szfilename)
          if (m_szRecentTableList[i][0] == 0x00) break;
          // write entry to the registry
          sprintf_s(szRegName, "TableFileName%d", i);
-         SetRegValue("RecentDir", szRegName, REG_SZ, m_szRecentTableList[i], strlen(m_szRecentTableList[i])+1);
+         SetRegValue("RecentDir", szRegName, REG_SZ, m_szRecentTableList[i], (DWORD)strlen(m_szRecentTableList[i])+1);
       }
    } 
 
@@ -1722,7 +1769,7 @@ void VPinball::UpdateRecentFileList(char *szfilename)
          // set the IDM of this menu item
          menuInfo.wID = RECENT_FIRST_MENU_IDM + i;
          menuInfo.dwTypeData = menuname;
-         menuInfo.cch = strlen(menuname);
+         menuInfo.cch = (DWORD)strlen(menuname);
 
          InsertMenuItem(hmenuFile, count, TRUE, &menuInfo);
          count++;
@@ -1972,8 +2019,8 @@ LRESULT CALLBACK VPWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
          // Set scroll info for the palette scrollbar
          SCROLLINFO si;
-         const long padding = SendMessage(g_pvp->m_hwndToolbarPalette, TB_GETPADDING, 0, 0);
-         const long buttonsize = SendMessage(g_pvp->m_hwndToolbarPalette, TB_GETBUTTONSIZE, 0, 0);
+		 const size_t padding = SendMessage(g_pvp->m_hwndToolbarPalette, TB_GETPADDING, 0, 0);
+		 const size_t buttonsize = SendMessage(g_pvp->m_hwndToolbarPalette, TB_GETBUTTONSIZE, 0, 0);
          const int vertpadding = HIWORD(padding);
          const int vertbutsize = HIWORD(buttonsize);
          ZeroMemory(&si,sizeof(SCROLLINFO));
@@ -2058,7 +2105,7 @@ LRESULT CALLBACK VPSideBarWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
                         char szT[64]; // Names can only be 32 characters (plus terminator)
                         WideCharToMultiByte(CP_ACP, 0, pt->m_vedit.ElementAt(i)->GetScriptable()->m_wzName, -1, szT, 64, NULL, NULL);
 
-                        const int index = SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)szT);
+						const size_t index = SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)szT);
                         SendMessage(hwndList, LB_SETITEMDATA, index, i+1);// menu can't have an item with id 0, so bump everything up one
                      }
                   }
@@ -2068,14 +2115,14 @@ LRESULT CALLBACK VPSideBarWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
                      char szT[64]; // Names can only be 32 characters (plus terminator)
                      WideCharToMultiByte(CP_ACP, 0, pt->m_vcollection.ElementAt(i)->m_wzName, -1, szT, 64, NULL, NULL);
 
-                     const int index = SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)szT);
+					 const size_t index = SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)szT);
                      SendMessage(hwndList, LB_SETITEMDATA, index, i | 0x80000000);
                   }
 
-                  const int listcount = SendMessage(hwndList, LB_GETCOUNT, 0, 0);
+				  const size_t listcount = SendMessage(hwndList, LB_GETCOUNT, 0, 0);
 
                   // Take the items from our sorted list and put them into the menu
-                  for (int i=0;i<listcount;i++)
+				  for (size_t i = 0; i<listcount; i++)
                   {
                      char szT[64];
                      int flags = MF_STRING;
@@ -2084,7 +2131,7 @@ LRESULT CALLBACK VPSideBarWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
                         flags |= MF_MENUBARBREAK;
 
                      SendMessage(hwndList, LB_GETTEXT, i, (LPARAM)szT);
-                     const int data = SendMessage(hwndList, LB_GETITEMDATA, i, 0);
+					 const size_t data = SendMessage(hwndList, LB_GETITEMDATA, i, 0);
 
                      AppendMenu(hmenu, flags, data, szT);
                      menucount++;
@@ -2350,7 +2397,7 @@ INT_PTR CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                      szInitialDir[ofn.nFileOffset] = 0;
                      pt->ImportSound(GetDlgItem(hwndDlg, IDC_SOUNDLIST), szFileName, fTrue);
                   }
-                  hr = SetRegValue("RecentDir","SoundDir", REG_SZ, szInitialDir, strlen(szInitialDir));
+                  hr = SetRegValue("RecentDir","SoundDir", REG_SZ, szInitialDir, (DWORD)strlen(szInitialDir));
                   pt->SetNonUndoableDirty(eSaveDirty);
                }
             }
@@ -2501,7 +2548,7 @@ INT_PTR CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                      sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), sel, LVNI_SELECTED); //next selected item
 
                   }
-                  /*const HRESULT hr =*/ SetRegValue("RecentDir","SoundDir", REG_SZ, szInitialDir, strlen(szInitialDir));
+                  /*const HRESULT hr =*/ SetRegValue("RecentDir","SoundDir", REG_SZ, szInitialDir, (DWORD)strlen(szInitialDir));
                   EndDialog(hwndDlg, TRUE);
                }
             }
@@ -2779,7 +2826,7 @@ INT_PTR CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
             const int count = ListView_GetSelectedCount(GetDlgItem(hwndDlg, IDC_SOUNDLIST));
             if (count > 0)
             {
-               int color = SendMessage((HWND)lParam, WM_GETTEXT, 0, 0);
+			   size_t color = SendMessage((HWND)lParam, WM_GETTEXT, 0, 0);
                int sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), -1, LVNI_SELECTED);
                while (sel != -1)
                {							
@@ -2863,7 +2910,7 @@ INT_PTR CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                      szInitialDir[ofn.nFileOffset] = 0;
                      pt->ImportImage(GetDlgItem(hwndDlg, IDC_SOUNDLIST), szFileName);
                   }
-                  hr = SetRegValue("RecentDir","ImageDir", REG_SZ, szInitialDir, strlen(szInitialDir));
+                  hr = SetRegValue("RecentDir","ImageDir", REG_SZ, szInitialDir, (DWORD)strlen(szInitialDir));
                   pt->SetNonUndoableDirty(eSaveDirty);
                }
             }
@@ -2938,7 +2985,7 @@ INT_PTR CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                      }
                      sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), sel, LVNI_SELECTED);
                   } // finished all selected items
-                  SetRegValue("RecentDir","ImageDir", REG_SZ, szInitialDir, strlen(szInitialDir));
+                  SetRegValue("RecentDir","ImageDir", REG_SZ, szInitialDir, (DWORD)strlen(szInitialDir));
                }							
             }	
             break;
@@ -3052,7 +3099,7 @@ INT_PTR CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
 
                         strcpy_s(szInitialDir, sizeof(szInitialDir), szFileName);
                         szInitialDir[ofn.nFileOffset] = 0;
-                        hr = SetRegValue("RecentDir","ImageDir", REG_SZ, szInitialDir, strlen(szInitialDir));
+                        hr = SetRegValue("RecentDir","ImageDir", REG_SZ, szInitialDir, (DWORD)strlen(szInitialDir));
 
                         pt->ReImportImage(GetDlgItem(hwndDlg, IDC_SOUNDLIST), ppi, ofn.lpstrFile);
                         ListView_SetItemText(GetDlgItem(hwndDlg, IDC_SOUNDLIST), sel, 1, ppi->m_szPath);
@@ -3466,11 +3513,11 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
             case IDOK:
                {
                   HWND hwndFullScreen = GetDlgItem(hwndDlg, IDC_FULLSCREEN);
-                  int fullscreen = SendMessage(hwndFullScreen, BM_GETCHECK, 0, 0);
+				  size_t fullscreen = SendMessage(hwndFullScreen, BM_GETCHECK, 0, 0);
                   SetRegValue("Player", "FullScreen", REG_DWORD, &fullscreen, 4);
 
                   HWND hwndList = GetDlgItem(hwndDlg, IDC_SIZELIST);
-                  int index = SendMessage(hwndList, LB_GETCURSEL, 0, 0);
+				  size_t index = SendMessage(hwndList, LB_GETCURSEL, 0, 0);
                   VideoMode* pvm = &allVideoModes[index];
                   SetRegValue("Player", "Width", REG_DWORD, &pvm->width, 4);
                   SetRegValue("Player", "Height", REG_DWORD, &pvm->height, 4);
@@ -3494,23 +3541,23 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                   SetRegValue("Player", "MaxTexDimension", REG_DWORD, &maxTexDim,4);
 
                   HWND hwndShadows = GetDlgItem(hwndDlg, IDC_SHADOW);
-                  int shadow = SendMessage(hwndShadows, BM_GETCHECK, 0, 0);
+				  size_t shadow = SendMessage(hwndShadows, BM_GETCHECK, 0, 0);
                   SetRegValue("Player", "BallShadows", REG_DWORD, &shadow, 4);
 
                   HWND hwndDecals = GetDlgItem(hwndDlg, IDC_DECAL_BUTTON);
-                  int decal = SendMessage(hwndDecals, BM_GETCHECK, 0, 0);
+				  size_t decal = SendMessage(hwndDecals, BM_GETCHECK, 0, 0);
                   SetRegValue("Player", "BallDecals", REG_DWORD, &decal, 4);
 
                   HWND hwndAlias = GetDlgItem(hwndDlg, IDC_ANTIALIAS);
-                  int antialias = SendMessage(hwndAlias, BM_GETCHECK, 0, 0);
+				  size_t antialias = SendMessage(hwndAlias, BM_GETCHECK, 0, 0);
                   SetRegValue("Player", "BallAntialias", REG_DWORD, &antialias, 4);
 
                   HWND hwndReflect = GetDlgItem(hwndDlg, IDC_GLOBAL_REFLECTION_CHECK);
-                  int reflection = SendMessage(hwndReflect, BM_GETCHECK, 0, 0);
+				  size_t reflection = SendMessage(hwndReflect, BM_GETCHECK, 0, 0);
                   SetRegValue("Player", "BallReflection", REG_DWORD, &reflection, 4);
 
                   HWND hwndTrail = GetDlgItem(hwndDlg, IDC_GLOBAL_TRAIL_CHECK);
-                  int trail = SendMessage(hwndTrail, BM_GETCHECK, 0, 0);
+				  size_t trail = SendMessage(hwndTrail, BM_GETCHECK, 0, 0);
                   SetRegValue("Player", "BallTrail", REG_DWORD, &trail, 4);
 
                   int vsync = GetDlgItemInt(hwndDlg, IDC_ADAPTIVE_VSYNC, NULL, TRUE);
@@ -3520,49 +3567,49 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                   SetRegValue("Player","MaxPrerenderedFrames", REG_DWORD, &maxPrerenderedFrames, 4);
 
                   HWND hwndFXAA = GetDlgItem(hwndDlg, IDC_FFXAA);
-                  int ffxaa = SendMessage(hwndFXAA, BM_GETCHECK, 0, 0);
+				  size_t ffxaa = SendMessage(hwndFXAA, BM_GETCHECK, 0, 0);
 				  hwndFXAA = GetDlgItem(hwndDlg, IDC_QFXAA);
-                  int qfxaa = SendMessage(hwndFXAA, BM_GETCHECK, 0, 0)*2;
+				  size_t qfxaa = SendMessage(hwndFXAA, BM_GETCHECK, 0, 0) * 2;
 				  if(qfxaa)
 					SetRegValue("Player", "FXAA", REG_DWORD, &qfxaa, 4);
 				  else
 					SetRegValue("Player", "FXAA", REG_DWORD, &ffxaa, 4);
 
                   HWND hwndUseAA = GetDlgItem(hwndDlg, IDC_AA_ALL_TABLES);
-                  int m_useAA = SendMessage(hwndUseAA, BM_GETCHECK, 0, 0);
+				  size_t m_useAA = SendMessage(hwndUseAA, BM_GETCHECK, 0, 0);
                   SetRegValue("Player", "USEAA", REG_DWORD, &m_useAA, 4);
 
                   HWND hwndStereo3D = GetDlgItem(hwndDlg, IDC_3D_STEREO);
-                  int stereo3D = SendMessage(hwndStereo3D, BM_GETCHECK, 0, 0);
+				  size_t stereo3D = SendMessage(hwndStereo3D, BM_GETCHECK, 0, 0);
                   SetRegValue("Player", "Stereo3D", REG_DWORD, &stereo3D, 4);
                   SetRegValue("Player", "Stereo3DEnabled", REG_DWORD, &stereo3D, 4);
 
                   HWND hwndStereo3DAA = GetDlgItem(hwndDlg, IDC_3D_STEREO_AA);
-                  int stereo3DAA = SendMessage(hwndStereo3DAA, BM_GETCHECK, 0, 0);
+				  size_t stereo3DAA = SendMessage(hwndStereo3DAA, BM_GETCHECK, 0, 0);
                   SetRegValue("Player", "Stereo3DAntialias", REG_DWORD, &stereo3DAA, 4);
 
                   HWND hwndStereo3DY = GetDlgItem(hwndDlg, IDC_3D_STEREO_Y);
-                  int stereo3DY = SendMessage(hwndStereo3DY, BM_GETCHECK, 0, 0);
+				  size_t stereo3DY = SendMessage(hwndStereo3DY, BM_GETCHECK, 0, 0);
                   SetRegValue("Player", "Stereo3DYAxis", REG_DWORD, &stereo3DY, 4);
 
                   HWND hwndForceAniso = GetDlgItem(hwndDlg, IDC_FORCE_ANISO);
-                  int forceAniso = SendMessage(hwndForceAniso, BM_GETCHECK, 0, 0);
+				  size_t forceAniso = SendMessage(hwndForceAniso, BM_GETCHECK, 0, 0);
                   SetRegValue("Player", "ForceAnisotropicFiltering", REG_DWORD, &forceAniso, 4);
 
                   HWND hwndSoftwareVP = GetDlgItem(hwndDlg, IDC_SOFTWARE_VP);
-                  int softwareVP = SendMessage(hwndSoftwareVP, BM_GETCHECK, 0, 0);
+				  size_t softwareVP = SendMessage(hwndSoftwareVP, BM_GETCHECK, 0, 0);
                   SetRegValueBool("Player", "SoftwareVertexProcessing", softwareVP != 0);
 
                   HWND hwndAraSlider = GetDlgItem(hwndDlg, IDC_ARASlider);
-                  int alphaRampsAccuracy = SendMessage(hwndAraSlider, TBM_GETPOS, 0, 0);
+				  size_t alphaRampsAccuracy = SendMessage(hwndAraSlider, TBM_GETPOS, 0, 0);
                   SetRegValue("Player", "AlphaRampAccuracy", REG_DWORD, &alphaRampsAccuracy, 4);
 
 				  char strTmp[256];
 				  GetDlgItemTextA(hwndDlg, IDC_3D_STEREO_MS, strTmp, 256);
-				  SetRegValue("Player", "Stereo3DMaxSeparation", REG_SZ, &strTmp,strlen(strTmp));
+				  SetRegValue("Player", "Stereo3DMaxSeparation", REG_SZ, &strTmp,(DWORD)strlen(strTmp));
 
 				  GetDlgItemTextA(hwndDlg, IDC_3D_STEREO_ZPD, strTmp, 256);
-				  SetRegValue("Player", "Stereo3DZPD", REG_SZ, &strTmp,strlen(strTmp));
+				  SetRegValue("Player", "Stereo3DZPD", REG_SZ, &strTmp,(DWORD)strlen(strTmp));
 
 				  //HWND hwndBallStretchNo = GetDlgItem(hwndDlg, IDC_StretchNo);
                   HWND hwndBallStretchYes = GetDlgItem(hwndDlg, IDC_StretchYes);
@@ -3577,7 +3624,7 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                   // get selected Monitors
                   // Monitors: 4:3, 16:9, 16:10, 21:10
                   HWND hwndBallStretchCombo = GetDlgItem(hwndDlg, IDC_MonitorCombo);
-                  int selected = SendMessage(hwndBallStretchCombo, CB_GETCURSEL, 0, 0);
+				  size_t selected = SendMessage(hwndBallStretchCombo, CB_GETCURSEL, 0, 0);
                   if (selected == LB_ERR)
                      selected = 1; // assume a 16:9 Monitor as standard
                   SetRegValue("Player", "BallStretchMonitor", REG_DWORD, &selected,4);
@@ -3746,13 +3793,13 @@ INT_PTR CALLBACK SecurityOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
                   for (int i=0;i<5;i++)
                   {
                      HWND hwndCheck = GetDlgItem(hwndDlg, rgDlgIDFromSecurityLevel[i]);
-                     int checked = SendMessage(hwndCheck, BM_GETCHECK, 0, 0);
+					 size_t checked = SendMessage(hwndCheck, BM_GETCHECK, 0, 0);
                      if (checked == BST_CHECKED)
                         SetRegValue("Player", "SecurityLevel", REG_DWORD, &i, 4);
                   }
 
                   HWND hwndCheck = GetDlgItem(hwndDlg, IDC_HANGDETECT);
-                  int hangdetect = SendMessage(hwndCheck, BM_GETCHECK, 0, 0);
+				  size_t hangdetect = SendMessage(hwndCheck, BM_GETCHECK, 0, 0);
                   SetRegValue("Player", "DetectHang", REG_DWORD, &hangdetect, 4);
 
                   EndDialog(hwndDlg, TRUE);
@@ -3850,7 +3897,7 @@ INT_PTR CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
                {
                   strcpy_s(szInitialDir, sizeof(szInitialDir), szFileName);
                   szInitialDir[ofn.nFileOffset] = 0;
-                  hr = SetRegValue("RecentDir","FontDir", REG_SZ, szInitialDir, strlen(szInitialDir));
+                  hr = SetRegValue("RecentDir","FontDir", REG_SZ, szInitialDir, (DWORD)strlen(szInitialDir));
                   pt->ImportFont(GetDlgItem(hwndDlg, IDC_SOUNDLIST), ofn.lpstrFile);
                }
             }
@@ -4065,7 +4112,7 @@ INT_PTR CALLBACK CollectManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPAR
                   cds.pcol = pcol;
                   cds.ppt = pt;
 
-                  const int ret = DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_COLLECTION),
+				  const size_t ret = DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_COLLECTION),
                      hwndDlg, CollectionProc, (size_t)&cds/*pcol*/);
 
                   if (ret)
@@ -4211,7 +4258,7 @@ INT_PTR CALLBACK CollectionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
             if (piscript)
             {
                WideCharToMultiByte(CP_ACP, 0, piscript->m_wzName, -1, szT, MAX_PATH, NULL, NULL);
-               const int index = SendMessage(hwndIn, LB_ADDSTRING, 0, (size_t)szT);
+			   const size_t index = SendMessage(hwndIn, LB_ADDSTRING, 0, (size_t)szT);
                SendMessage(hwndIn, LB_SETITEMDATA, index, (size_t)piscript);
             }
          }
@@ -4238,7 +4285,7 @@ INT_PTR CALLBACK CollectionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
                //if (!piedit->m_pcollection)
             {
                WideCharToMultiByte(CP_ACP, 0, piscript->m_wzName, -1, szT, MAX_PATH, NULL, NULL);
-               const int index = SendMessage(hwndOut, LB_ADDSTRING, 0, (size_t)szT);
+			   const size_t index = SendMessage(hwndOut, LB_ADDSTRING, 0, (size_t)szT);
                SendMessage(hwndOut, LB_SETITEMDATA, index, (size_t)piscript);
             }
          }
@@ -4262,8 +4309,8 @@ INT_PTR CALLBACK CollectionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
             {
                // Mode items up or down in the collection list
                HWND hwndList = GetDlgItem(hwndDlg, IDC_INLIST);
-               const int listsize = SendMessage(hwndList, LB_GETCOUNT, 0, 0);
-               const int count = SendMessage(hwndList, LB_GETSELCOUNT, 0, 0);
+			   const size_t listsize = SendMessage(hwndList, LB_GETCOUNT, 0, 0);
+			   const size_t count = SendMessage(hwndList, LB_GETSELCOUNT, 0, 0);
                int * const rgsel = new int[count];
                SendMessage(hwndList, LB_GETSELITEMS, count, (LPARAM)rgsel);
 
@@ -4272,10 +4319,10 @@ INT_PTR CALLBACK CollectionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
                {
                   const int i = (LOWORD(wParam) == IDC_UP) ? loop : (count - loop - 1);
 
-                  const int len = SendMessage(hwndList, LB_GETTEXTLEN, rgsel[i], 0);
+				  const size_t len = SendMessage(hwndList, LB_GETTEXTLEN, rgsel[i], 0);
                   char * const szT = new char[len+1]; // include null terminator
                   SendMessage(hwndList, LB_GETTEXT, rgsel[i], (LPARAM)szT);
-                  const int data = SendMessage(hwndList, LB_GETITEMDATA, rgsel[i], 0);
+				  const size_t data = SendMessage(hwndList, LB_GETITEMDATA, rgsel[i], 0);
 
                   const int newindex = (LOWORD(wParam) == IDC_UP) ? max(rgsel[i]-1, i) : min(rgsel[i]+2, listsize - (count - 1) + i);
                   int oldindex = rgsel[i];
@@ -4283,7 +4330,7 @@ INT_PTR CALLBACK CollectionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
                   if (oldindex > newindex)
                      oldindex++; // old item will be one lower when we try to delete it
 
-                  const int index = SendMessage(hwndList, LB_INSERTSTRING, newindex, (LPARAM)szT);
+				  const size_t index = SendMessage(hwndList, LB_INSERTSTRING, newindex, (LPARAM)szT);
                   SendMessage(hwndList, LB_SETITEMDATA, index, data);
                   // Set the new value to be selected, like the old one was
                   SendMessage(hwndList, LB_SETSEL, TRUE, index);
@@ -4312,17 +4359,17 @@ INT_PTR CALLBACK CollectionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
                   hwndIn = GetDlgItem(hwndDlg, IDC_OUTLIST);
                }
 
-               const int count = SendMessage(hwndOut, LB_GETSELCOUNT, 0, 0);
+			   const size_t count = SendMessage(hwndOut, LB_GETSELCOUNT, 0, 0);
                int * const rgsel = new int[count];
                SendMessage(hwndOut, LB_GETSELITEMS, count, (LPARAM)rgsel);
                for (int i=0;i<count;i++)
                {
-                  const int len = SendMessage(hwndOut, LB_GETTEXTLEN, rgsel[i], 0);
+				  const size_t len = SendMessage(hwndOut, LB_GETTEXTLEN, rgsel[i], 0);
                   char * const szT = new char[len+1]; // include null terminator
                   SendMessage(hwndOut, LB_GETTEXT, rgsel[i], (LPARAM)szT);
-                  const int data = SendMessage(hwndOut, LB_GETITEMDATA, rgsel[i], 0);
+				  const size_t data = SendMessage(hwndOut, LB_GETITEMDATA, rgsel[i], 0);
 
-                  const int index = SendMessage(hwndIn, LB_ADDSTRING, 0, (LPARAM)szT);
+				  const size_t index = SendMessage(hwndIn, LB_ADDSTRING, 0, (LPARAM)szT);
                   SendMessage(hwndIn, LB_SETITEMDATA, index, data);
                   delete [] szT;
                }
@@ -4356,9 +4403,9 @@ INT_PTR CALLBACK CollectionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
 
                HWND hwndIn = GetDlgItem(hwndDlg, IDC_INLIST);
 
-               const int count = SendMessage(hwndIn, LB_GETCOUNT, 0, 0);
+			   const size_t count = SendMessage(hwndIn, LB_GETCOUNT, 0, 0);
 
-               for (int i=0;i<count;i++)
+			   for (size_t i = 0; i<count; i++)
                {
                   IScriptable * const piscript = (IScriptable *)SendMessage(hwndIn, LB_GETITEMDATA, i, 0);
                   ISelect * const pisel = piscript->GetISelect();								
@@ -4371,11 +4418,11 @@ INT_PTR CALLBACK CollectionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
                }
 
                HWND hwndFireEvents = GetDlgItem(hwndDlg, IDC_FIRE);
-               const int fEvents = SendMessage(hwndFireEvents, BM_GETCHECK, 0, 0);
+			   const size_t fEvents = SendMessage(hwndFireEvents, BM_GETCHECK, 0, 0);
                pcol->m_fFireEvents = fEvents;
 
                HWND hwndStopSingle = GetDlgItem(hwndDlg, IDC_SUPPRESS);
-               const int fStopSingle = SendMessage(hwndStopSingle, BM_GETCHECK, 0, 0);
+			   const size_t fStopSingle = SendMessage(hwndStopSingle, BM_GETCHECK, 0, 0);
                pcol->m_fStopSingleEvents = fStopSingle;
 
                char szT[1024];
@@ -5415,7 +5462,7 @@ INT_PTR CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
                if (key == DIK_ESCAPE)
                {
                   // reset key to old value
-                  const int oldkey = GetWindowLongPtr(pksw->hwndKeyControl, GWLP_USERDATA);
+				  const size_t oldkey = GetWindowLongPtr(pksw->hwndKeyControl, GWLP_USERDATA);
                   SetWindowText(pksw->hwndKeyControl, rgszKeyName[oldkey]);
                }
                else
@@ -5574,9 +5621,9 @@ INT_PTR CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
             case IDOK:
                {
                   HWND hwndControl;
-                  int key;
-                  int selected;
-                  int newvalue;
+				  size_t key;
+				  size_t selected;
+				  size_t newvalue;
 
                   hwndControl = GetDlgItem(hwndDlg, IDC_JOYCUSTOM1COMBO);
                   selected = SendMessage(hwndControl, CB_GETCURSEL, 0, 0);
@@ -6056,9 +6103,9 @@ INT_PTR CALLBACK AudioOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
             case IDOK:
                {
                   HWND hwndControl;
-                  int checked;
+				  size_t checked;
                   int fmusic;
-                  int volume;
+				  size_t volume;
 
                   hwndControl = GetDlgItem(hwndDlg, IDC_PLAY_MUSIC);
                   checked = SendMessage(hwndControl, BM_GETCHECK, 0, 0);
@@ -6079,12 +6126,12 @@ INT_PTR CALLBACK AudioOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                   SetRegValue("Player", "SoundVolume", REG_DWORD, &volume, 4);
 
                   HWND hwndSoundList = GetDlgItem(hwndDlg, IDC_SoundList);
-                  int soundindex = SendMessage(hwndSoundList, LB_GETCURSEL, 0, 0);
-                  int sd = (int)SendMessage(hwndSoundList, LB_GETITEMDATA, soundindex, 0);
+				  size_t soundindex = SendMessage(hwndSoundList, LB_GETCURSEL, 0, 0);
+				  size_t sd = SendMessage(hwndSoundList, LB_GETITEMDATA, soundindex, 0);
                   SetRegValue("Player", "SoundDevice", REG_DWORD, &sd, 4);
 				  hwndSoundList = GetDlgItem(hwndDlg, IDC_SoundListBG);
                   soundindex = SendMessage(hwndSoundList, LB_GETCURSEL, 0, 0);
-                  sd = (int)SendMessage(hwndSoundList, LB_GETITEMDATA, soundindex, 0);
+                  sd = SendMessage(hwndSoundList, LB_GETITEMDATA, soundindex, 0);
                   SetRegValue("Player", "SoundDeviceBG", REG_DWORD, &sd, 4);
 
                   EndDialog(hwndDlg, TRUE);
@@ -6097,7 +6144,7 @@ INT_PTR CALLBACK AudioOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
 
             case IDC_PLAY_MUSIC:
                {
-                  const int checked = SendDlgItemMessage(hwndDlg, IDC_PLAY_MUSIC, BM_GETCHECK, 0, 0);
+                  const size_t checked = SendDlgItemMessage(hwndDlg, IDC_PLAY_MUSIC, BM_GETCHECK, 0, 0);
                   HWND hwndSlider = GetDlgItem(hwndDlg, IDC_MUSIC_SLIDER);
                   HWND hwndText = GetDlgItem(hwndDlg, IDC_STATIC_MUSIC);
 
@@ -6108,7 +6155,7 @@ INT_PTR CALLBACK AudioOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
 
             case IDC_PLAY_SOUND:
                {
-                  const int checked = SendDlgItemMessage(hwndDlg, IDC_PLAY_SOUND, BM_GETCHECK, 0, 0);
+				  const size_t checked = SendDlgItemMessage(hwndDlg, IDC_PLAY_SOUND, BM_GETCHECK, 0, 0);
                   HWND hwndSlider = GetDlgItem(hwndDlg, IDC_SOUND_SLIDER);
                   HWND hwndText = GetDlgItem(hwndDlg, IDC_STATIC_SOUND);
 
@@ -6133,9 +6180,9 @@ INT_PTR CALLBACK AudioOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
          {
             for (size_t i=0;i<DSads.size();i++)
             {
-               const int index = SendMessage(hwndList, LB_ADDSTRING, 0, (size_t)DSads[i]->description.c_str());
+			   const size_t index = SendMessage(hwndList, LB_ADDSTRING, 0, (size_t)DSads[i]->description.c_str());
                SendMessage(hwndList, LB_SETITEMDATA, index, (LPARAM)i);
-			   const int indexbg = SendMessage(hwndListBG, LB_ADDSTRING, 0, (size_t)DSads[i]->description.c_str());
+			   const size_t indexbg = SendMessage(hwndListBG, LB_ADDSTRING, 0, (size_t)DSads[i]->description.c_str());
 			   SendMessage(hwndListBG, LB_SETITEMDATA, index, (LPARAM)i);
                delete DSads[i];
             }
@@ -6179,60 +6226,60 @@ void savecurrentphysicssetting(HWND hwndDlg)
 	
 	GetDlgItemTextA(hwndDlg, DISPID_Flipper_Speed, tmp, 256);
     sprintf_s(tmp2,256,"FlipperPhysicsSpeed%u",physicsselection);
-	SetRegValue("Player", tmp2, REG_SZ, tmp, strlen(tmp));	
+	SetRegValue("Player", tmp2, REG_SZ, tmp, (DWORD)strlen(tmp));	
 
 	GetDlgItemTextA(hwndDlg, 19, tmp, 256);
     sprintf_s(tmp2,256,"FlipperPhysicsStrength%u",physicsselection);
-	SetRegValue("Player", tmp2, REG_SZ, tmp, strlen(tmp));	
+	SetRegValue("Player", tmp2, REG_SZ, tmp, (DWORD)strlen(tmp));
 
 	GetDlgItemTextA(hwndDlg, 21, tmp, 256);
     sprintf_s(tmp2,256,"FlipperPhysicsElasticity%u",physicsselection);
-	SetRegValue("Player", tmp2, REG_SZ, tmp, strlen(tmp));	
+	SetRegValue("Player", tmp2, REG_SZ, tmp, (DWORD)strlen(tmp));
 
 	GetDlgItemTextA(hwndDlg, 112, tmp, 256);
     sprintf_s(tmp2,256,"FlipperPhysicsScatter%u",physicsselection);
-	SetRegValue("Player", tmp2, REG_SZ, tmp, strlen(tmp));	
+	SetRegValue("Player", tmp2, REG_SZ, tmp, (DWORD)strlen(tmp));
 
 	GetDlgItemTextA(hwndDlg, 23, tmp, 256);
     sprintf_s(tmp2,256,"FlipperPhysicsReturnStrength%u",physicsselection);
-	SetRegValue("Player", tmp2, REG_SZ, tmp, strlen(tmp));	
+	SetRegValue("Player", tmp2, REG_SZ, tmp, (DWORD)strlen(tmp));
 
 	GetDlgItemTextA(hwndDlg, 22, tmp, 256);
     sprintf_s(tmp2,256,"FlipperPhysicsRecoil%u",physicsselection);
-	SetRegValue("Player", tmp2, REG_SZ, tmp, strlen(tmp));	
+	SetRegValue("Player", tmp2, REG_SZ, tmp, (DWORD)strlen(tmp));
 
 	GetDlgItemTextA(hwndDlg, 109, tmp, 256);
     sprintf_s(tmp2,256,"FlipperPhysicsPowerLaw%u",physicsselection);
-	SetRegValue("Player", tmp2, REG_SZ, tmp, strlen(tmp));	
+	SetRegValue("Player", tmp2, REG_SZ, tmp, (DWORD)strlen(tmp));
 
 	GetDlgItemTextA(hwndDlg, 110, tmp, 256);
     sprintf_s(tmp2,256,"FlipperPhysicsOblique%u",physicsselection);
-	SetRegValue("Player", tmp2, REG_SZ, tmp, strlen(tmp));	
+	SetRegValue("Player", tmp2, REG_SZ, tmp, (DWORD)strlen(tmp));
 
 
 	GetDlgItemTextA(hwndDlg, 1100, tmp, 256);
     sprintf_s(tmp2,256,"TablePhysicsGravityConstant%u",physicsselection);
-	SetRegValue("Player", tmp2, REG_SZ, tmp, strlen(tmp));	
+	SetRegValue("Player", tmp2, REG_SZ, tmp, (DWORD)strlen(tmp));
 
 	GetDlgItemTextA(hwndDlg, 1101, tmp, 256);
     sprintf_s(tmp2,256,"TablePhysicsContactFriction%u",physicsselection);
-	SetRegValue("Player", tmp2, REG_SZ, tmp, strlen(tmp));	
+	SetRegValue("Player", tmp2, REG_SZ, tmp, (DWORD)strlen(tmp));
 
 	GetDlgItemTextA(hwndDlg, 1102, tmp, 256);
     sprintf_s(tmp2,256,"TablePhysicsContactScatterAngle%u",physicsselection);
-	SetRegValue("Player", tmp2, REG_SZ, tmp, strlen(tmp));	
+	SetRegValue("Player", tmp2, REG_SZ, tmp, (DWORD)strlen(tmp));
 
 	GetDlgItemTextA(hwndDlg, 1103, tmp, 256);
     sprintf_s(tmp2,256,"TablePhysicsDampeningSpeed%u",physicsselection);
-	SetRegValue("Player", tmp2, REG_SZ, tmp, strlen(tmp));	
+	SetRegValue("Player", tmp2, REG_SZ, tmp, (DWORD)strlen(tmp));
 
 	GetDlgItemTextA(hwndDlg, 1106, tmp, 256);
     sprintf_s(tmp2,256,"TablePhysicsDampeningFriction%u",physicsselection);
-	SetRegValue("Player", tmp2, REG_SZ, tmp, strlen(tmp));	
+	SetRegValue("Player", tmp2, REG_SZ, tmp, (DWORD)strlen(tmp));
 
 	GetDlgItemTextA(hwndDlg, 1110, tmp, 256);
     sprintf_s(tmp2,256,"PhysicsSetName%u",physicsselection);
-	SetRegValue("Player", tmp2, REG_SZ, tmp, strlen(tmp));
+	SetRegValue("Player", tmp2, REG_SZ, tmp, (DWORD)strlen(tmp));
 }
 
 INT_PTR CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -6258,8 +6305,8 @@ INT_PTR CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPAR
 
          HWND hwndList = GetDlgItem(hwndDlg, IDC_PhysicsList);
 
-		 const int size = SendMessage(hwndList, LB_GETCOUNT, 0, 0);
-         for (int i=0;i<size;i++)
+		 const size_t size = SendMessage(hwndList, LB_GETCOUNT, 0, 0);
+		 for (size_t i = 0; i<size; i++)
          {
 			if(physicsoptions[i])
 				delete [] physicsoptions[i];
@@ -6275,7 +6322,7 @@ INT_PTR CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPAR
 			if(GetRegString("Player", tmp, physicsoptions[i], 256) != S_OK)
 				sprintf_s(physicsoptions[i],256,"Set %u",i+1);
 			sprintf_s(tmp,256,"%u: %s",i+1,physicsoptions[i]);
-            const int index = SendMessage(hwndList, LB_ADDSTRING, 0, (size_t)tmp);
+			const size_t index = SendMessage(hwndList, LB_ADDSTRING, 0, (size_t)tmp);
             int * const sd = new int;
             *sd = i;
             SendMessage(hwndList, LB_SETITEMDATA, index, (LPARAM)sd);
@@ -6615,7 +6662,7 @@ INT_PTR CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPAR
 			{
 				HWND hwndList = GetDlgItem(hwndDlg, IDC_PhysicsList);
 
-				const int tmp = SendMessage(hwndList, LB_GETCURSEL, 0, 0);
+				const size_t tmp = SendMessage(hwndList, LB_GETCURSEL, 0, 0);
 
 				if(tmp != physicsselection)
 				{
@@ -6643,8 +6690,8 @@ INT_PTR CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPAR
    case WM_DESTROY:
 	  {
          HWND hwndList = GetDlgItem(hwndDlg, IDC_PhysicsList);
-         const int size = SendMessage(hwndList, LB_GETCOUNT, 0, 0);
-         for (int i=0;i<size;i++)
+		 const size_t size = SendMessage(hwndList, LB_GETCOUNT, 0, 0);
+		 for (size_t i = 0; i<size; i++)
          {
 			if(physicsoptions[i])
 				delete [] physicsoptions[i];
@@ -6791,7 +6838,7 @@ INT_PTR CALLBACK ProtectTableProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
             case IDC_PROTECT_TOTALLOCK:
                {
                   // if the total lock check box is checked then disable any other options
-                  const int checked = SendDlgItemMessage(hwndDlg, IDC_PROTECT_TOTALLOCK, BM_GETCHECK, 0, 0);
+				  const size_t checked = SendDlgItemMessage(hwndDlg, IDC_PROTECT_TOTALLOCK, BM_GETCHECK, 0, 0);
 
                   HWND hwndScript = GetDlgItem(hwndDlg,IDC_PROTECT_SCRIPT);
                   HWND hwndSaveAs = GetDlgItem(hwndDlg,IDC_PROTECT_SAVEAS);
@@ -6818,7 +6865,7 @@ INT_PTR CALLBACK ProtectTableProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                   HWND hwndPassword = GetDlgItem(hwndDlg, IDC_PROTECT_PASSWORD);
                   HWND hwndPassword2 = GetDlgItem(hwndDlg, IDC_PROTECT_PASSWORD2);
 
-                  const int checked = SendDlgItemMessage(hwndDlg, IDD_PROTECT_SHOWPASSWORD, BM_GETCHECK, 0, 0);
+				  const size_t checked = SendDlgItemMessage(hwndDlg, IDD_PROTECT_SHOWPASSWORD, BM_GETCHECK, 0, 0);
                   if (checked == BST_CHECKED)
                   {
                      SendMessage(hwndPassword,  EM_SETPASSWORDCHAR, 0, 0L);
@@ -6840,21 +6887,21 @@ INT_PTR CALLBACK ProtectTableProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
 
                   // get the check box status(s)
                   unsigned long flags = 0;
-                  const int checked1 = SendDlgItemMessage(hwndDlg, IDC_PROTECT_SAVEAS, BM_GETCHECK, 0, 0);
+				  const size_t checked1 = SendDlgItemMessage(hwndDlg, IDC_PROTECT_SAVEAS, BM_GETCHECK, 0, 0);
                   if (checked1 == BST_CHECKED) flags |= DISABLE_TABLE_SAVE;
-                  const int checked2 = SendDlgItemMessage(hwndDlg, IDC_PROTECT_SAVEASPROT, BM_GETCHECK, 0, 0);
+				  const size_t checked2 = SendDlgItemMessage(hwndDlg, IDC_PROTECT_SAVEASPROT, BM_GETCHECK, 0, 0);
                   if (checked2 == BST_CHECKED) flags |= DISABLE_TABLE_SAVEPROT;
-                  const int checked3 = SendDlgItemMessage(hwndDlg, IDC_PROTECT_SCRIPT, BM_GETCHECK, 0, 0);
+				  const size_t checked3 = SendDlgItemMessage(hwndDlg, IDC_PROTECT_SCRIPT, BM_GETCHECK, 0, 0);
                   if (checked3 == BST_CHECKED) flags |= DISABLE_SCRIPT_EDITING;
-                  const int checked4 = SendDlgItemMessage(hwndDlg, IDC_PROTECT_MANAGERS, BM_GETCHECK, 0, 0);
+				  const size_t checked4 = SendDlgItemMessage(hwndDlg, IDC_PROTECT_MANAGERS, BM_GETCHECK, 0, 0);
                   if (checked4 == BST_CHECKED) flags |= DISABLE_OPEN_MANAGERS;
-                  const int checked5 = SendDlgItemMessage(hwndDlg, IDC_PROTECT_COPY, BM_GETCHECK, 0, 0);
+				  const size_t checked5 = SendDlgItemMessage(hwndDlg, IDC_PROTECT_COPY, BM_GETCHECK, 0, 0);
                   if (checked5 == BST_CHECKED) flags |= DISABLE_CUTCOPYPASTE;
-                  const int checked6 = SendDlgItemMessage(hwndDlg, IDC_PROTECT_VIEWTABLE, BM_GETCHECK, 0, 0);
+				  const size_t checked6 = SendDlgItemMessage(hwndDlg, IDC_PROTECT_VIEWTABLE, BM_GETCHECK, 0, 0);
                   if (checked6 == BST_CHECKED) flags |= DISABLE_TABLEVIEW;
-                  const int checked7 = SendDlgItemMessage(hwndDlg, IDC_PROTECT_DEBUGGER, BM_GETCHECK, 0, 0);
+				  const size_t checked7 = SendDlgItemMessage(hwndDlg, IDC_PROTECT_DEBUGGER, BM_GETCHECK, 0, 0);
                   if (checked7 == BST_CHECKED) flags |= DISABLE_DEBUGGER;
-                  const int checked0 = SendDlgItemMessage(hwndDlg, IDC_PROTECT_TOTALLOCK, BM_GETCHECK, 0, 0);
+				  const size_t checked0 = SendDlgItemMessage(hwndDlg, IDC_PROTECT_TOTALLOCK, BM_GETCHECK, 0, 0);
                   if (checked0 == BST_CHECKED) flags |= DISABLE_EVERYTHING;
 
                   // get the passwords
@@ -7032,7 +7079,7 @@ INT_PTR CALLBACK SearchSelectProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
             if (piscript)
             {
                WideCharToMultiByte(CP_ACP, 0, piscript->m_wzName, -1, szT, MAX_PATH, NULL, NULL);
-               const int index = SendMessage(listBox, LB_ADDSTRING, 0, (size_t)szT);
+			   const size_t index = SendMessage(listBox, LB_ADDSTRING, 0, (size_t)szT);
                SendMessage(listBox, LB_SETITEMDATA, index, (size_t)piscript);
             }
          }
@@ -7054,7 +7101,7 @@ INT_PTR CALLBACK SearchSelectProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
          case IDOK:
             {
                HWND listBox = GetDlgItem(hwndDlg, IDC_ELEMENT_LIST);
-               const int count = SendMessage(listBox, LB_GETSELCOUNT, 0, 0);
+			   const size_t count = SendMessage(listBox, LB_GETSELCOUNT, 0, 0);
                int * const rgsel = new int[count];
                SendMessage(listBox, LB_GETSELITEMS, count, (LPARAM)rgsel);
 
@@ -7062,7 +7109,7 @@ INT_PTR CALLBACK SearchSelectProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                pt->ClearMultiSel();
                for (int i=0;i<count;i++)
                {
-                  const int len = SendMessage(listBox, LB_GETTEXTLEN, rgsel[i], 0);
+				   const size_t len = SendMessage(listBox, LB_GETTEXTLEN, rgsel[i], 0);
                   char * const szT = new char[len+1]; // include null terminator
                   SendMessage(listBox, LB_GETTEXT, rgsel[i], (LPARAM)szT);
                   IScriptable * const piscript = (IScriptable *)SendMessage(listBox, LB_GETITEMDATA, rgsel[i], 0);

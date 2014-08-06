@@ -391,7 +391,7 @@ void Primitive::Render(Sur * const psur)
    }
    else     // large mesh: draw a simplified mesh for performance reasons
    {
-       const unsigned numPts = m_mesh.NumIndices() / 3 + 1;
+       const size_t numPts = m_mesh.NumIndices() / 3 + 1;
        m_drawVertices.clear();
        m_drawVertices.reserve(numPts);
 
@@ -941,10 +941,10 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcry
    if( m_d.use3DMesh )
    {
       bw.WriteString( FID(M3DN), m_d.meshFileName);
-      bw.WriteInt( FID(M3VN), m_mesh.NumVertices() );
-      bw.WriteStruct( FID(M3DX), &m_mesh.m_vertices[0], sizeof(Vertex3D_NoTex2)*m_mesh.NumVertices());
-      bw.WriteInt( FID(M3FN), m_mesh.NumIndices() );
-      bw.WriteStruct( FID(M3DI), &m_mesh.m_indices[0], sizeof(WORD)*m_mesh.NumIndices() );
+      bw.WriteInt( FID(M3VN), (int)m_mesh.NumVertices() );
+      bw.WriteStruct( FID(M3DX), &m_mesh.m_vertices[0], (int)(sizeof(Vertex3D_NoTex2)*m_mesh.NumVertices()) );
+      bw.WriteInt( FID(M3FN), (int)m_mesh.NumIndices() );
+      bw.WriteStruct( FID(M3DI), &m_mesh.m_indices[0], (int)(sizeof(WORD)*m_mesh.NumIndices()) );
    }
    bw.WriteFloat(FID(PIDB), m_d.m_depthBias);
 
@@ -1180,7 +1180,7 @@ bool Primitive::BrowseFor3DMeshFile()
 
    const int ret = GetOpenFileName(&ofn);
    string filename(ofn.lpstrFile);
-   int index = filename.find_last_of("\\");
+   size_t index = filename.find_last_of("\\");
    if( index!=-1 )
    {
       index++;

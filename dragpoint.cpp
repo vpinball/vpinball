@@ -918,7 +918,7 @@ INT_PTR CALLBACK ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
                   char szT[256];
                   GetDlgItemText(hwndDlg, IDC_SCALEFACTOR, szT, 255);
                   const float fx = sz2f(szT);
-                  const int checked = SendDlgItemMessage(hwndDlg, IDC_SQUARE, BM_GETCHECK, 0, 0);
+				  const size_t checked = SendDlgItemMessage(hwndDlg, IDC_SQUARE, BM_GETCHECK, 0, 0);
                   float fy;
                   if (checked)
                   {
@@ -948,7 +948,7 @@ INT_PTR CALLBACK ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
                char szT[256];
                GetDlgItemText(hwndDlg, IDC_SCALEFACTOR, szT, 255);
                const float fx = sz2f(szT);
-               const int checked = SendDlgItemMessage(hwndDlg, IDC_SQUARE, BM_GETCHECK, 0, 0);
+			   const size_t checked = SendDlgItemMessage(hwndDlg, IDC_SQUARE, BM_GETCHECK, 0, 0);
                float fy;
                if (checked)
                {
@@ -992,7 +992,7 @@ INT_PTR CALLBACK ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 
          case IDC_SQUARE:
             {
-               int checked = SendDlgItemMessage(hwndDlg, IDC_SQUARE, BM_GETCHECK, 0, 0);
+			   size_t checked = SendDlgItemMessage(hwndDlg, IDC_SQUARE, BM_GETCHECK, 0, 0);
                HWND hwndEdit = GetDlgItem(hwndDlg, IDC_SCALEY);
                HWND hwndText = GetDlgItem(hwndDlg, IDC_STATIC_SCALEY);
 

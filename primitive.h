@@ -18,8 +18,8 @@ public:
     bool LoadWavefrontObj(const char *fname, bool flipTV, bool convertToLeftHanded);
     void SaveWavefrontObj(const char *fname, const char *description=NULL);
 
-    unsigned NumVertices() const    { return m_vertices.size(); }
-    unsigned NumIndices() const     { return m_indices.size(); }
+    size_t NumVertices() const    { return m_vertices.size(); }
+	size_t NumIndices() const     { return m_indices.size(); }
 };
 
 // Indices for RotAndTra:
