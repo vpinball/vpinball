@@ -37,7 +37,7 @@ BOOL mixer_init( const HWND wnd )
 	{
 		if (::mixerOpen(&m_hMixer,
 						0,
-						reinterpret_cast<DWORD>(wnd),
+						reinterpret_cast<size_t>(wnd),
 						NULL,
 						MIXER_OBJECTF_MIXER | CALLBACK_WINDOW)
 			!= MMSYSERR_NOERROR)

@@ -91,19 +91,19 @@ void IHaveDragPoints::FlipPointX(Vertex2D *pvCenter)
 void IHaveDragPoints::RotateDialog()
 {
    DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_ROTATE),
-      g_pvp->m_hwnd, RotateProc, (long)this->GetIEditable()->GetISelect());//(long)this);
+      g_pvp->m_hwnd, RotateProc, (size_t)this->GetIEditable()->GetISelect());//(long)this);
 }
 
 void IHaveDragPoints::ScaleDialog()
 {
    DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_SCALE),
-      g_pvp->m_hwnd, ScaleProc, (long)this->GetIEditable()->GetISelect());
+      g_pvp->m_hwnd, ScaleProc, (size_t)this->GetIEditable()->GetISelect());
 }
 
 void IHaveDragPoints::TranslateDialog()
 {
    DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_TRANSLATE),
-      g_pvp->m_hwnd, TranslateProc, (long)this->GetIEditable()->GetISelect());
+      g_pvp->m_hwnd, TranslateProc, (size_t)this->GetIEditable()->GetISelect());
 }
 
 void IHaveDragPoints::RotatePoints(float ang, Vertex2D *pvCenter)

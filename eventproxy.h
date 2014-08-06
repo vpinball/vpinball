@@ -63,7 +63,7 @@ public:
 		{
 			Collection * const pcollection = pT->m_vEventCollection.ElementAt(i);
 		
-			CComVariant rgvar[1] = {CComVariant((int)pT->m_viEventCollection.ElementAt(i))};
+			CComVariant rgvar[1] = {CComVariant((size_t)pT->m_viEventCollection.ElementAt(i))};
 				
 			DISPPARAMS dispparams = {rgvar,NULL,1,0};
 

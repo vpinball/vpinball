@@ -306,7 +306,7 @@ void VPinball::Init()
 
    ShowWindow(m_hwnd, SW_SHOW);
 
-   SetWindowLongPtr(m_hwnd, GWLP_USERDATA, (long)this);	// set this class (vpinball) as callback for MDI Child / has to be confirmed
+   SetWindowLongPtr(m_hwnd, GWLP_USERDATA, (size_t)this);	// set this class (vpinball) as callback for MDI Child / has to be confirmed
    // can be a problem for 64 bit compatibility.
    // maybe use SetWindowLongPtr instead
 
@@ -321,7 +321,7 @@ void VPinball::Init()
       m_hwnd,
       1);				// Create Status Line at the bottom
 
-   SendMessage(m_hwndStatusBar, SB_SETPARTS, 4, (long)foo);	// Initialise Status bar with 4 empty cells
+   SendMessage(m_hwndStatusBar, SB_SETPARTS, 4, (size_t)foo);	// Initialise Status bar with 4 empty cells
 
    m_sb.Init(m_hwnd);								// initialize smartbrowser (Property bar on the right) - see propbrowser.cpp
 
@@ -650,26 +650,26 @@ void VPinball::SetCursorCur(HINSTANCE hInstance, LPCTSTR lpCursorName)
 
 void VPinball::SetActionCur(char *szaction)
 {
-   SendMessage(m_hwndStatusBar, SB_SETTEXT, 3 | 0, (long)szaction);
+   SendMessage(m_hwndStatusBar, SB_SETTEXT, 3 | 0, (size_t)szaction);
 }
 
 void VPinball::SetPosCur(float x, float y)
 {
    char szT[256];
    sprintf_s(szT, "%.4f, %.4f", x, y);
-   SendMessage(m_hwndStatusBar, SB_SETTEXT, 0 | 0, (long)szT);
+   SendMessage(m_hwndStatusBar, SB_SETTEXT, 0 | 0, (size_t)szT);
 }
 
 void VPinball::SetObjectPosCur(float x, float y)
 {
    char szT[256];
    sprintf_s(szT, "%.4f, %.4f", x, y);
-   SendMessage(m_hwndStatusBar, SB_SETTEXT, 1 | 0, (long)szT);
+   SendMessage(m_hwndStatusBar, SB_SETTEXT, 1 | 0, (size_t)szT);
 }
 
 void VPinball::ClearObjectPosCur()
 {
-   SendMessage(m_hwndStatusBar, SB_SETTEXT, 1 | 0, (long)"");
+   SendMessage(m_hwndStatusBar, SB_SETTEXT, 1 | 0, (size_t)"");
 }
 
 void VPinball::SetPropSel(Vector<ISelect> *pvsel)
@@ -778,7 +778,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
             ZeroMemory(&tbinfo,sizeof(TBBUTTONINFO));
             tbinfo.cbSize = sizeof(TBBUTTONINFO);
             tbinfo.dwMask = TBIF_STATE;
-            SendMessage(m_hwndToolbarMain,TB_GETBUTTONINFO,ID_EDIT_PROPERTIES,(long)&tbinfo);
+            SendMessage(m_hwndToolbarMain,TB_GETBUTTONINFO,ID_EDIT_PROPERTIES,(size_t)&tbinfo);
 
             if(notify == 2) fShow = (tbinfo.fsState & TBSTATE_CHECKED) != 0;
 
@@ -787,7 +787,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
                tbinfo.fsState ^= TBSTATE_CHECKED;
             }
 
-            SendMessage(m_hwndToolbarMain,TB_SETBUTTONINFO,ID_EDIT_PROPERTIES,(long)&tbinfo);
+            SendMessage(m_hwndToolbarMain,TB_SETBUTTONINFO,ID_EDIT_PROPERTIES,(size_t)&tbinfo);
          }
 
          m_sb.SetVisible(fShow);
@@ -1115,7 +1115,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
          if (ptCur)
          {
             /*const DWORD foo =*/ DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_TABLEINFO),
-               m_hwnd, TableInfoProc, (long)ptCur);
+               m_hwnd, TableInfoProc, (size_t)ptCur);
          }
       }
       break;
@@ -1129,7 +1129,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
                ShowPermissionError();
             else
             {
-               /*const DWORD foo =*/ DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_SOUNDDIALOG),m_hwnd, SoundManagerProc, (long)ptCur);
+               /*const DWORD foo =*/ DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_SOUNDDIALOG),m_hwnd, SoundManagerProc, (size_t)ptCur);
             }
          }
       }
@@ -1144,7 +1144,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
                ShowPermissionError();
             else
             {
-               /*const DWORD foo =*/ DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_IMAGEDIALOG), m_hwnd, ImageManagerProc, (long)ptCur);
+               /*const DWORD foo =*/ DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_IMAGEDIALOG), m_hwnd, ImageManagerProc, (size_t)ptCur);
                m_sb.PopulateDropdowns(); // May need to update list of images
                m_sb.RefreshProperties();
             }
@@ -1162,7 +1162,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
             else
             {
                /*const DWORD foo =*/ DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_FONTDIALOG),
-                  m_hwnd, FontManagerProc, (long)ptCur);
+                  m_hwnd, FontManagerProc, (size_t)ptCur);
             }
          }
       }
@@ -1177,7 +1177,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
                ShowPermissionError();
             else
             {
-               DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_DIMENSION_CALCULATOR), m_hwnd, DimensionProc, (long)ptCur);
+               DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_DIMENSION_CALCULATOR), m_hwnd, DimensionProc, (size_t)ptCur);
             }
          }
       }
@@ -1193,7 +1193,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
             else
             {
                /*const DWORD foo =*/ DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_COLLECTDIALOG),
-                  m_hwnd, CollectManagerProc, (long)ptCur);
+                  m_hwnd, CollectManagerProc, (size_t)ptCur);
 
                m_sb.PopulateDropdowns(); // May need to update list of collections
                m_sb.RefreshProperties();
@@ -4066,7 +4066,7 @@ INT_PTR CALLBACK CollectManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPAR
                   cds.ppt = pt;
 
                   const int ret = DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_COLLECTION),
-                     hwndDlg, CollectionProc, (long)&cds/*pcol*/);
+                     hwndDlg, CollectionProc, (size_t)&cds/*pcol*/);
 
                   if (ret)
                      pt->SetNonUndoableDirty(eSaveDirty);
@@ -4211,8 +4211,8 @@ INT_PTR CALLBACK CollectionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
             if (piscript)
             {
                WideCharToMultiByte(CP_ACP, 0, piscript->m_wzName, -1, szT, MAX_PATH, NULL, NULL);
-               const int index = SendMessage(hwndIn, LB_ADDSTRING, 0, (long)szT);
-               SendMessage(hwndIn, LB_SETITEMDATA, index, (long)piscript);
+               const int index = SendMessage(hwndIn, LB_ADDSTRING, 0, (size_t)szT);
+               SendMessage(hwndIn, LB_SETITEMDATA, index, (size_t)piscript);
             }
          }
 
@@ -4238,8 +4238,8 @@ INT_PTR CALLBACK CollectionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
                //if (!piedit->m_pcollection)
             {
                WideCharToMultiByte(CP_ACP, 0, piscript->m_wzName, -1, szT, MAX_PATH, NULL, NULL);
-               const int index = SendMessage(hwndOut, LB_ADDSTRING, 0, (long)szT);
-               SendMessage(hwndOut, LB_SETITEMDATA, index, (long)piscript);
+               const int index = SendMessage(hwndOut, LB_ADDSTRING, 0, (size_t)szT);
+               SendMessage(hwndOut, LB_SETITEMDATA, index, (size_t)piscript);
             }
          }
 
@@ -5299,94 +5299,94 @@ INT_PTR CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
          KeyWindowStruct * const pksw = new KeyWindowStruct();
          pksw->pi.Init(hwndDlg);
          pksw->m_timerid = 0;
-         SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (long)pksw);
+         SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (size_t)pksw);
 
          // Set buttons to ignore keyboard shortcuts when using DirectInput
          HWND hwndButton;
          hwndButton = GetDlgItem(hwndDlg, IDC_LEFTFLIPPERBUTTON);
          g_ButtonProc = (WNDPROC)GetWindowLongPtr(hwndButton, GWLP_WNDPROC);
-         SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (long)MyKeyButtonProc);
-         SetWindowLongPtr(hwndButton, GWLP_USERDATA, (long)pksw);
+         SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc);
+         SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
 
          hwndButton = GetDlgItem(hwndDlg, IDC_RIGHTFLIPPERBUTTON);
-         SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (long)MyKeyButtonProc);
-         SetWindowLongPtr(hwndButton, GWLP_USERDATA, (long)pksw);
+         SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc);
+         SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
 
          hwndButton = GetDlgItem(hwndDlg, IDC_LEFTTILTBUTTON);
-         SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (long)MyKeyButtonProc);
-         SetWindowLongPtr(hwndButton, GWLP_USERDATA, (long)pksw);
+         SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc);
+         SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
 
          hwndButton = GetDlgItem(hwndDlg, IDC_RIGHTTILTBUTTON);
-         SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (long)MyKeyButtonProc);
-         SetWindowLongPtr(hwndButton, GWLP_USERDATA, (long)pksw);
+         SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc);
+         SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
 
          hwndButton = GetDlgItem(hwndDlg, IDC_CENTERTILTBUTTON);
-         SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (long)MyKeyButtonProc);
-         SetWindowLongPtr(hwndButton, GWLP_USERDATA, (long)pksw);
+         SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc);
+         SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
 
          hwndButton = GetDlgItem(hwndDlg, IDC_PLUNGERBUTTON);
-         SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (long)MyKeyButtonProc);
-         SetWindowLongPtr(hwndButton, GWLP_USERDATA, (long)pksw);
+         SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc);
+         SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
 
          hwndButton = GetDlgItem(hwndDlg, IDC_ADDCREDITBUTTON);
-         SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (long)MyKeyButtonProc);
-         SetWindowLongPtr(hwndButton, GWLP_USERDATA, (long)pksw);
+         SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc);
+         SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
 
          hwndButton = GetDlgItem(hwndDlg, IDC_ADDCREDITBUTTON2);
-         SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (long)MyKeyButtonProc);
-         SetWindowLongPtr(hwndButton, GWLP_USERDATA, (long)pksw);
+         SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc);
+         SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
 
          hwndButton = GetDlgItem(hwndDlg, IDC_STARTGAMEBUTTON);
-         SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (long)MyKeyButtonProc);
-         SetWindowLongPtr(hwndButton, GWLP_USERDATA, (long)pksw);
+         SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc);
+         SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
 
          hwndButton = GetDlgItem(hwndDlg, IDC_EXITGAMEBUTTON);
-         SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (long)MyKeyButtonProc);
-         SetWindowLongPtr(hwndButton, GWLP_USERDATA, (long)pksw);
+         SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc);
+         SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
 
          hwndButton = GetDlgItem(hwndDlg, IDC_FRAMECOUNTBUTTON);
-         SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (long)MyKeyButtonProc);
-         SetWindowLongPtr(hwndButton, GWLP_USERDATA, (long)pksw);
+         SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc);
+         SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
 
          hwndButton = GetDlgItem(hwndDlg, IDC_VOLUPBUTTON);
-         SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (long)MyKeyButtonProc);
-         SetWindowLongPtr(hwndButton, GWLP_USERDATA, (long)pksw);
+         SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc);
+         SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
 
          hwndButton = GetDlgItem(hwndDlg, IDC_VOLDOWNBUTTON);
-         SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (long)MyKeyButtonProc);
-         SetWindowLongPtr(hwndButton, GWLP_USERDATA, (long)pksw);
+         SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc);
+         SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
 
          hwndButton = GetDlgItem(hwndDlg, IDC_DEBUGBALLSBUTTON);
-         SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (long)MyKeyButtonProc);
-         SetWindowLongPtr(hwndButton, GWLP_USERDATA, (long)pksw);
+         SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc);
+         SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
 
          hwndButton = GetDlgItem(hwndDlg, IDC_RMAGSAVEBUTTON);
-         SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (long)MyKeyButtonProc);
-         SetWindowLongPtr(hwndButton, GWLP_USERDATA, (long)pksw);
+         SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc);
+         SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
 
          hwndButton = GetDlgItem(hwndDlg, IDC_LMAGSAVEBUTTON);
-         SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (long)MyKeyButtonProc);
-         SetWindowLongPtr(hwndButton, GWLP_USERDATA, (long)pksw);
+         SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc);
+         SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
 
          hwndButton = GetDlgItem(hwndDlg, IDC_MECHTILTBUTTON);
-         SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (long)MyKeyButtonProc);
-         SetWindowLongPtr(hwndButton, GWLP_USERDATA, (long)pksw);
+         SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc);
+         SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
 
          hwndButton = GetDlgItem(hwndDlg, IDC_JOYCUSTOM1BUTTON);
-         SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (long)MyKeyButtonProc);
-         SetWindowLongPtr(hwndButton, GWLP_USERDATA, (long)pksw);
+         SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc);
+         SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
 
          hwndButton = GetDlgItem(hwndDlg, IDC_JOYCUSTOM2BUTTON);
-         SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (long)MyKeyButtonProc);
-         SetWindowLongPtr(hwndButton, GWLP_USERDATA, (long)pksw);
+         SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc);
+         SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
 
          hwndButton = GetDlgItem(hwndDlg, IDC_JOYCUSTOM3BUTTON);
-         SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (long)MyKeyButtonProc);
-         SetWindowLongPtr(hwndButton, GWLP_USERDATA, (long)pksw);
+         SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc);
+         SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
 
          hwndButton = GetDlgItem(hwndDlg, IDC_JOYCUSTOM4BUTTON);
-         SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (long)MyKeyButtonProc);
-         SetWindowLongPtr(hwndButton, GWLP_USERDATA, (long)pksw);
+         SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc);
+         SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
 
          return TRUE;
       }
@@ -6133,9 +6133,9 @@ INT_PTR CALLBACK AudioOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
          {
             for (size_t i=0;i<DSads.size();i++)
             {
-               const int index = SendMessage(hwndList, LB_ADDSTRING, 0, (long)DSads[i]->description.c_str());
+               const int index = SendMessage(hwndList, LB_ADDSTRING, 0, (size_t)DSads[i]->description.c_str());
                SendMessage(hwndList, LB_SETITEMDATA, index, (LPARAM)i);
-			   const int indexbg = SendMessage(hwndListBG, LB_ADDSTRING, 0, (long)DSads[i]->description.c_str());
+			   const int indexbg = SendMessage(hwndListBG, LB_ADDSTRING, 0, (size_t)DSads[i]->description.c_str());
 			   SendMessage(hwndListBG, LB_SETITEMDATA, index, (LPARAM)i);
                delete DSads[i];
             }
@@ -6275,7 +6275,7 @@ INT_PTR CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPAR
 			if(GetRegString("Player", tmp, physicsoptions[i], 256) != S_OK)
 				sprintf_s(physicsoptions[i],256,"Set %u",i+1);
 			sprintf_s(tmp,256,"%u: %s",i+1,physicsoptions[i]);
-            const int index = SendMessage(hwndList, LB_ADDSTRING, 0, (long)tmp);
+            const int index = SendMessage(hwndList, LB_ADDSTRING, 0, (size_t)tmp);
             int * const sd = new int;
             *sd = i;
             SendMessage(hwndList, LB_SETITEMDATA, index, (LPARAM)sd);
@@ -7032,8 +7032,8 @@ INT_PTR CALLBACK SearchSelectProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
             if (piscript)
             {
                WideCharToMultiByte(CP_ACP, 0, piscript->m_wzName, -1, szT, MAX_PATH, NULL, NULL);
-               const int index = SendMessage(listBox, LB_ADDSTRING, 0, (long)szT);
-               SendMessage(listBox, LB_SETITEMDATA, index, (long)piscript);
+               const int index = SendMessage(listBox, LB_ADDSTRING, 0, (size_t)szT);
+               SendMessage(listBox, LB_SETITEMDATA, index, (size_t)piscript);
             }
          }
 

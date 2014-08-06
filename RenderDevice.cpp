@@ -333,7 +333,6 @@ RenderDevice::RenderDevice(HWND hwnd, int width, int height, bool fullscreen, in
     // create default vertex declarations for shaders
     CreateVertexDeclaration( VertexNormalTexelElement, &m_pVertexNormalTexelDeclaration );
     CreateVertexDeclaration( VertexNormalTexelTexelElement, &m_pVertexNormalTexelTexelDeclaration );
-
 }
 
 #include <d3dx9.h> //!! meh

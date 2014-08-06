@@ -616,7 +616,7 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[id(11), helpstring("method EndMusic")] HRESULT EndMusic();
 		[propget, id(12), helpstring("property StartGameKey")] HRESULT StartGameKey([out, retval] long *pVal);
 		[propget, id(13), helpstring("property UserDirectory")] HRESULT UserDirectory([out, retval] BSTR *pVal);
-		[propget, id(14), helpstring("property GetPlayerHWnd")] HRESULT GetPlayerHWnd([out, retval] long *pVal);
+		[propget, id(14), helpstring("property GetPlayerHWnd")] HRESULT GetPlayerHWnd([out, retval] size_t *pVal);
 		//[id(15), helpstring("method AddObject")] HRESULT AddObject(BSTR Name, IDispatch *pdisp);
 		[id(16), helpstring("method StopSound")] HRESULT StopSound(BSTR Sound);
 		[id(17), helpstring("method SaveValue")] HRESULT SaveValue(BSTR TableName, BSTR ValueName, VARIANT Value);

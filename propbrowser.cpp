@@ -234,10 +234,10 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, Vector<ISelect> *pvsel)
       HWND hwndDialog;
       if (pproppane->dialogid != 0)
          hwndDialog = CreateDialogParam(g_hinst, MAKEINTRESOURCE(pproppane->dialogid),
-            hwndExpand, PropertyProc, (long)this);
+            hwndExpand, PropertyProc, (size_t)this);
       else
          hwndDialog = CreateDialogIndirectParam(g_hinst, pproppane->ptemplate,
-            hwndExpand, PropertyProc, (long)this);
+            hwndExpand, PropertyProc, (size_t)this);
 
       m_vhwndDialog.AddElement(hwndDialog);
 
@@ -327,7 +327,7 @@ BOOL CALLBACK EnumChildInitList(HWND hwnd, LPARAM lParam)
             for (ULONG i=0; i<castr.cElems; i++)
             {
                WideCharToMultiByte(CP_ACP, 0, castr.pElems[i], -1, szT, 512, NULL, NULL);
-               const int index = SendMessage(hwnd, CB_ADDSTRING, 0, (int)szT);
+               const int index = SendMessage(hwnd, CB_ADDSTRING, 0, (size_t)szT);
                SendMessage(hwnd, CB_SETITEMDATA, index, (DWORD)cadw.pElems[i]);
             }
 
@@ -391,7 +391,7 @@ BOOL CALLBACK EnumChildInitList(HWND hwnd, LPARAM lParam)
 
                         // Add enum string to combo control
                         WideCharToMultiByte(CP_ACP, 0, rgstr[0], -1, szT, 512, NULL, NULL);
-                        const int index = SendMessage(hwnd, CB_ADDSTRING, 0, (int)szT);
+                        const int index = SendMessage(hwnd, CB_ADDSTRING, 0, (size_t)szT);
                         SendMessage(hwnd, CB_SETITEMDATA, index, V_I4(pvd->lpvarValue));
 
                         for (unsigned int i2=0; i2 < cnames; i2++)
@@ -433,13 +433,13 @@ BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM lParam)
 void SmartBrowser::PopulateDropdowns()
 {
    for (int i=0;i<m_vhwndDialog.Size();i++)
-      EnumChildWindows(m_vhwndDialog.ElementAt(i), EnumChildInitList, (long)this);
+      EnumChildWindows(m_vhwndDialog.ElementAt(i), EnumChildInitList, (size_t)this);
 }
 
 void SmartBrowser::RefreshProperties()
 {
    for (int i=0;i<m_vhwndDialog.Size();i++)
-      EnumChildWindows(m_vhwndDialog.ElementAt(i), EnumChildProc, (long)this);
+      EnumChildWindows(m_vhwndDialog.ElementAt(i), EnumChildProc, (size_t)this);
 }
 
 void SmartBrowser::SetVisible(BOOL fVisible)
@@ -606,7 +606,7 @@ void SmartBrowser::GetControlValue(HWND hwndControl)
    case eFont:
       {
          VariantChangeType(&var, &var, 0, VT_I4);
-         SendMessage(hwndControl, CHANGE_FONT, (!fNinch) ? 0 : 1, (long)V_DISPATCH(&var));
+         SendMessage(hwndControl, CHANGE_FONT, (!fNinch) ? 0 : 1, (size_t)V_DISPATCH(&var));
       }
       break;
 
@@ -1070,7 +1070,7 @@ LRESULT CALLBACK SBFrameProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
    case WM_CREATE:
       {
          CREATESTRUCT * const pcs = (CREATESTRUCT *)lParam;
-         SetWindowLongPtr(hwnd, GWLP_USERDATA, (long)pcs->lpCreateParams);
+         SetWindowLongPtr(hwnd, GWLP_USERDATA, (size_t)pcs->lpCreateParams);
       }
       break;
 
@@ -1195,7 +1195,7 @@ LRESULT CALLBACK ColorProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                cc.hwndOwner = hwnd;
                cc.hInstance = NULL;
                cc.rgbResult = GetWindowLongPtr(hwnd, GWLP_USERDATA);
-               SendMessage(hwndDlg, GET_COLOR_TABLE, 0, (long)&cc.lpCustColors);
+               SendMessage(hwndDlg, GET_COLOR_TABLE, 0, (size_t)&cc.lpCustColors);
                //cc.lpCustColors = (unsigned long *)SendMessage(hwndDlg, GET_COLOR_TABLE, 0, 0);//psb->m_pisel->GetPTable()->m_rgcolorcustom;//cr;
                cc.Flags = CC_ANYCOLOR | CC_FULLOPEN | CC_RGBINIT;
                cc.lCustData = NULL;
@@ -1232,7 +1232,7 @@ LRESULT CALLBACK FontProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
             ANTIALIASED_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "MS Sans Serif");
 
-         SendMessage(hwndButton, WM_SETFONT, (DWORD)hfontButton, 0);
+         SendMessage(hwndButton, WM_SETFONT, (size_t)hfontButton, 0);
       }
       break;
 
@@ -1334,7 +1334,7 @@ LRESULT CALLBACK FontProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
                   pif2->put_Italic(lf.lfItalic);
 
-                  SendMessage(hwnd, CHANGE_FONT, 0, (long)pifd2);
+                  SendMessage(hwnd, CHANGE_FONT, 0, (size_t)pifd2);
 
                   HWND hwndDlg = GetParent(hwnd);
                   const int id = GetDlgCtrlID(hwnd);
@@ -1360,7 +1360,7 @@ LRESULT CALLBACK ExpandoProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
    case WM_CREATE:
       {
          CREATESTRUCT * const pcs = (CREATESTRUCT *)lParam;
-         SetWindowLongPtr(hwnd, GWLP_USERDATA, (long)pcs->lpCreateParams);
+         SetWindowLongPtr(hwnd, GWLP_USERDATA, (size_t)pcs->lpCreateParams);
          break;
       }
 

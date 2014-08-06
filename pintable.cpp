@@ -347,7 +347,7 @@ STDMETHODIMP ScriptGlobalTable::get_UserDirectory(BSTR *pVal)
    return S_OK;
 }
 
-STDMETHODIMP ScriptGlobalTable::get_GetPlayerHWnd(long *pVal)
+STDMETHODIMP ScriptGlobalTable::get_GetPlayerHWnd(size_t *pVal)
 {
    if (!g_pplayer)
    {
@@ -356,7 +356,7 @@ STDMETHODIMP ScriptGlobalTable::get_GetPlayerHWnd(long *pVal)
    }
    else
    {
-      *pVal = (long)g_pplayer->m_hwnd;
+      *pVal = (size_t)g_pplayer->m_hwnd;
    }
 
    return S_OK;
@@ -853,7 +853,7 @@ PinTable::~PinTable()
    if (IsWindow(m_hwnd))
    {
       //DestroyWindow(m_hwnd);
-      SendMessage(g_pvp->m_hwndWork, WM_MDIDESTROY, (DWORD)m_hwnd, 0);
+      SendMessage(g_pvp->m_hwndWork, WM_MDIDESTROY, (size_t)m_hwnd, 0);
    }
 
    if (m_hbmOffScreen)
@@ -1907,7 +1907,7 @@ void PinTable::CreateTableWindow()
 
    BeginAutoSaveCounter();
 
-   SetWindowLongPtr(m_hwnd, GWLP_USERDATA, (long)this);
+   SetWindowLongPtr(m_hwnd, GWLP_USERDATA, (size_t)this);
 }
 
 
@@ -2121,7 +2121,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
 
    m_savingActive=true;
    RECT rc;
-   SendMessage(g_pvp->m_hwndStatusBar, SB_GETRECT, 2, (long)&rc);
+   SendMessage(g_pvp->m_hwndStatusBar, SB_GETRECT, 2, (size_t)&rc);
 
    HWND hwndProgressBar = CreateWindowEx(0, PROGRESS_CLASS, (LPSTR) NULL,
       WS_CHILD | WS_VISIBLE, rc.left,
@@ -2833,7 +2833,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
    int cloadeditems;
 
    RECT rc;
-   SendMessage(g_pvp->m_hwndStatusBar, SB_GETRECT, 2, (long)&rc);
+   SendMessage(g_pvp->m_hwndStatusBar, SB_GETRECT, 2, (size_t)&rc);
 
    HWND hwndProgressBar = CreateWindowEx(0, PROGRESS_CLASS, (LPSTR) NULL,
       WS_CHILD | WS_VISIBLE, rc.left,
@@ -3775,7 +3775,7 @@ int PinTable::AddListSound(HWND hwndListView, PinSound *pps)
    lvitem.iItem = 0;
    lvitem.iSubItem = 0;
    lvitem.pszText = pps->m_szName;
-   lvitem.lParam = (long)pps;
+   lvitem.lParam = (size_t)pps;
 
    const int index = ListView_InsertItem(hwndListView, &lvitem);
 
@@ -3832,7 +3832,7 @@ int PinTable::AddListBinary(HWND hwndListView, PinBinary *ppb)
    lvitem.iItem = 0;
    lvitem.iSubItem = 0;
    lvitem.pszText = ppb->m_szName;
-   lvitem.lParam = (long)ppb;
+   lvitem.lParam = (size_t)ppb;
 
    const int index = ListView_InsertItem(hwndListView, &lvitem);
 
@@ -3894,7 +3894,7 @@ int PinTable::AddListCollection(HWND hwndListView, CComObject<Collection> *pcol)
    lvitem.iItem = 0;
    lvitem.iSubItem = 0;
    lvitem.pszText = szT;
-   lvitem.lParam = (long)pcol;
+   lvitem.lParam = (size_t)pcol;
 
    const int index = ListView_InsertItem(hwndListView, &lvitem);
 
@@ -4218,7 +4218,7 @@ void PinTable::DoContextMenu(int x, int y, int menuid, ISelect *psel)
       AppendMenu(hmenu, MF_STRING, ID_SETASDEFAULT, ls3.m_szbuffer);
 
       LocalString ls4(IDS_ASSIGNTO);
-      AppendMenu(hmenu, MF_POPUP|MF_STRING, (UINT)subMenu, ls4.m_szbuffer);
+      AppendMenu(hmenu, MF_POPUP|MF_STRING, (size_t)subMenu, ls4.m_szbuffer);
       LocalString ls6(IDS_LAYER1);
       AppendMenu(subMenu, MF_POPUP, ID_ASSIGNTO_LAYER1, ls6.m_szbuffer);
       LocalString ls7(IDS_LAYER2);
@@ -4270,7 +4270,7 @@ void PinTable::DoContextMenu(int x, int y, int menuid, ISelect *psel)
          CheckMenuItem(subMenu, ID_ASSIGNTO_LAYER8, MF_UNCHECKED);  
 
       LocalString ls16(IDS_TO_COLLECTION);
-      AppendMenu(hmenu, MF_POPUP|MF_STRING, (UINT)colSubMenu, ls16.m_szbuffer);
+      AppendMenu(hmenu, MF_POPUP|MF_STRING, (size_t)colSubMenu, ls16.m_szbuffer);
 
       int maxItems = m_vcollection.Size()-1;
       if ( maxItems>32 ) maxItems=32;
@@ -4471,21 +4471,21 @@ void PinTable::DoCommand(int icmd, int x, int y)
    case ID_WALLMENU_ROTATE:
       {
          DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_ROTATE),
-            g_pvp->m_hwnd, RotateProc, (long)(ISelect *)this);
+            g_pvp->m_hwnd, RotateProc, (size_t)(ISelect *)this);
       }
       break;
 
    case ID_WALLMENU_SCALE:
       {
          DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_SCALE),
-            g_pvp->m_hwnd, ScaleProc, (long)(ISelect *)this);
+            g_pvp->m_hwnd, ScaleProc, (size_t)(ISelect *)this);
       }
       break;
 
    case ID_WALLMENU_TRANSLATE:
       {
          DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_TRANSLATE),
-            g_pvp->m_hwnd, TranslateProc, (long)(ISelect *)this);
+            g_pvp->m_hwnd, TranslateProc, (size_t)(ISelect *)this);
       }
       break;
    case ID_ASSIGNTO_LAYER1:
@@ -6360,7 +6360,7 @@ int PinTable::AddListImage(HWND hwndListView, Texture *ppi)
    lvitem.iItem = 0;
    lvitem.iSubItem = 0;
    lvitem.pszText = ppi->m_szName;
-   lvitem.lParam = (long)ppi;
+   lvitem.lParam = (size_t)ppi;
 
    const int index = ListView_InsertItem(hwndListView, &lvitem);
 
