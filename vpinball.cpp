@@ -731,7 +731,7 @@ HMENU VPinball::GetMainMenu(int id)
     return GetSubMenu(hmenu, id + ((count > NUM_MENUS) ? 1 : 0)); // MDI has added its stuff (table icon for first menu item)
 }
 
-void VPinball::ParseCommand(int code, HWND hwnd, int notify)
+void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
 {
    CComObject<PinTable> *ptCur;
 
@@ -977,13 +977,13 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
                ShowPermissionError();
             else
             {
-               int foo = DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_PROTECT_DIALOG),
+               size_t foo = DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_PROTECT_DIALOG),
                   m_hwnd, ProtectTableProc, 0);
                // if the dialog returned ok then perform a normal save as
                if (foo)
                {
-                  foo = ptCur->SaveAs();
-                  if (foo == S_OK)
+                  HRESULT foo2 = ptCur->SaveAs();
+                  if (foo2 == S_OK)
                   {
                      // if the save was succesfull then the permissions take effect immediatly
                      SetEnableToolbar();			// disable any tool bars
@@ -1004,7 +1004,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
          ptCur = GetActiveTable();
          if (ptCur)
          {
-            int foo = DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_UNLOCK_DIALOG),
+            size_t foo = DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_UNLOCK_DIALOG),
                m_hwnd, UnlockTableProc, 0);
             // if the dialog returned ok then table is unlocked
             if (foo)
@@ -1028,7 +1028,7 @@ void VPinball::ParseCommand(int code, HWND hwnd, int notify)
       {
          char	szFileName[MAX_PATH];
          // get the index into the recent list menu
-         const int Index = code - RECENT_FIRST_MENU_IDM;
+         const size_t Index = code - RECENT_FIRST_MENU_IDM;
          // copy it into a temporary string so it can be correctly processed
          memcpy(szFileName, m_szRecentTableList[Index], sizeof(szFileName));
          LoadFileName(szFileName);
@@ -2167,7 +2167,7 @@ LRESULT CALLBACK VPSideBarWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
       break;
 
    case WM_COMMAND:
-      g_pvp->ParseCommand(wParam, (HWND)lParam, (int)hwnd);
+      g_pvp->ParseCommand(wParam, (HWND)lParam, (size_t)hwnd);
       break;
 
    case WM_VSCROLL:
@@ -3651,18 +3651,18 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
 
    case GET_WINDOW_MODES:
       {
-         int indexcur = -1;
-         int widthcur = wParam, heightcur = (int)lParam;
+         size_t indexcur = -1;
+         int widthcur = (int)wParam, heightcur = (int)lParam;
 
          SendMessage(hwndDlg, RESET_SIZELIST_CONTENT, 0, 0);
          HWND hwndList = GetDlgItem(hwndDlg, IDC_SIZELIST);
 
-         const int csize = sizeof(rgwindowsize)/sizeof(int);
+         const size_t csize = sizeof(rgwindowsize)/sizeof(int);
          const int screenwidth = GetSystemMetrics(SM_CXSCREEN);
 
          allVideoModes.clear();
 
-         for (int i=0; i<csize; ++i)
+         for (size_t i=0; i<csize; ++i)
          {
             const int xsize = rgwindowsize[i];
             if (xsize <= screenwidth)
@@ -4311,20 +4311,20 @@ INT_PTR CALLBACK CollectionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
                HWND hwndList = GetDlgItem(hwndDlg, IDC_INLIST);
 			   const size_t listsize = SendMessage(hwndList, LB_GETCOUNT, 0, 0);
 			   const size_t count = SendMessage(hwndList, LB_GETSELCOUNT, 0, 0);
-               int * const rgsel = new int[count];
+               int * const rgsel = new int[count]; //!! size_t?
                SendMessage(hwndList, LB_GETSELITEMS, count, (LPARAM)rgsel);
 
-               for (int loop=0;loop<count;loop++)
+               for (size_t loop=0;loop<count;loop++)
                   //for (i=count-1;i>=0;i--)
                {
-                  const int i = (LOWORD(wParam) == IDC_UP) ? loop : (count - loop - 1);
+                  const size_t i = (LOWORD(wParam) == IDC_UP) ? loop : (count - loop - 1);
 
 				  const size_t len = SendMessage(hwndList, LB_GETTEXTLEN, rgsel[i], 0);
                   char * const szT = new char[len+1]; // include null terminator
                   SendMessage(hwndList, LB_GETTEXT, rgsel[i], (LPARAM)szT);
 				  const size_t data = SendMessage(hwndList, LB_GETITEMDATA, rgsel[i], 0);
 
-                  const int newindex = (LOWORD(wParam) == IDC_UP) ? max(rgsel[i]-1, i) : min(rgsel[i]+2, listsize - (count - 1) + i);
+                  const int newindex = (LOWORD(wParam) == IDC_UP) ? max(rgsel[i]-1, (int)i) : min(rgsel[i]+2, (int)(listsize - (count - 1) + i)); //!! see above
                   int oldindex = rgsel[i];
 
                   if (oldindex > newindex)
@@ -4362,7 +4362,7 @@ INT_PTR CALLBACK CollectionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
 			   const size_t count = SendMessage(hwndOut, LB_GETSELCOUNT, 0, 0);
                int * const rgsel = new int[count];
                SendMessage(hwndOut, LB_GETSELITEMS, count, (LPARAM)rgsel);
-               for (int i=0;i<count;i++)
+               for (size_t i=0;i<count;i++)
                {
 				  const size_t len = SendMessage(hwndOut, LB_GETTEXTLEN, rgsel[i], 0);
                   char * const szT = new char[len+1]; // include null terminator
@@ -4376,7 +4376,7 @@ INT_PTR CALLBACK CollectionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
 
                // Remove the old strings after everything else, to avoid messing up indices
                // Remove things in reverse order, so we don't get messed up inside this loop
-               for (int i=0;i<count;i++)
+               for (size_t i=0;i<count;i++)
                   SendMessage(hwndOut, LB_DELETESTRING, rgsel[count-i-1], 0);
 
                delete [] rgsel;
@@ -5818,25 +5818,25 @@ INT_PTR CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
                   SetRegValue("Player", "UDAxis", REG_DWORD, &selected, 4);
 
                   newvalue = GetDlgItemInt(hwndDlg, IDC_LRAXISGAIN, NULL, TRUE);
-                  if (newvalue < 0)	{newvalue = 0;}
+                  if ((SSIZE_T)newvalue < 0)	{newvalue = 0;}
                   SetRegValue("Player", "PBWAccelGainX", REG_DWORD, &newvalue, 4);
 
                   newvalue = GetDlgItemInt(hwndDlg, IDC_UDAXISGAIN, NULL, TRUE);
-                  if (newvalue < 0)	{newvalue = 0;}
+                  if ((SSIZE_T)newvalue < 0)	{newvalue = 0;}
                   SetRegValue("Player", "PBWAccelGainY", REG_DWORD, &newvalue, 4);
 
                   newvalue = GetDlgItemInt(hwndDlg, IDC_DEADZONEAMT, NULL, TRUE);
-                  if (newvalue < 0) {newvalue = 0;}
+                  if ((SSIZE_T)newvalue < 0) {newvalue = 0;}
                   if (newvalue > 100) {newvalue = 100;}
                   SetRegValue("Player", "DeadZone", REG_DWORD, &newvalue, 4);
 
                   newvalue = GetDlgItemInt(hwndDlg, IDC_XMAX_EDIT, NULL, TRUE);
-                  if (newvalue < 0) {newvalue = 0;}
+                  if ((SSIZE_T)newvalue < 0) {newvalue = 0;}
                   if (newvalue > 1000) {newvalue = 1000;}
                   SetRegValue("Player", "PBWAccelMaxX", REG_DWORD, &newvalue, 4);
 
                   newvalue = GetDlgItemInt(hwndDlg, IDC_YMAX_EDIT, NULL, TRUE);
-                  if (newvalue < 0) {newvalue = 0;}
+                  if ((SSIZE_T)newvalue < 0) {newvalue = 0;}
                   if (newvalue > 1000) {newvalue = 1000;}
                   SetRegValue("Player", "PBWAccelMaxY", REG_DWORD, &newvalue, 4);
 
@@ -5887,7 +5887,7 @@ INT_PTR CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
                   key = SendMessage(hwndControl, BM_GETCHECK, 0, 0);
                   SetRegValue("Player", "TiltSensCB", REG_DWORD, &key, 4);
                   newvalue = GetDlgItemInt(hwndDlg, IDC_GLOBALTILT, NULL, TRUE);
-				  if (newvalue < 0) {newvalue = 0;}
+				  if ((SSIZE_T)newvalue < 0) {newvalue = 0;}
 				  if (newvalue > 1000) {newvalue = 1000;}
                   SetRegValue("Player", "TiltSensValue", REG_DWORD, &newvalue, 4);
                   if (key == 1)
@@ -7107,7 +7107,7 @@ INT_PTR CALLBACK SearchSelectProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
 
                PinTable *pt = g_pvp->GetActiveTable();
                pt->ClearMultiSel();
-               for (int i=0;i<count;i++)
+               for (size_t i=0;i<count;i++)
                {
 				   const size_t len = SendMessage(listBox, LB_GETTEXTLEN, rgsel[i], 0);
                   char * const szT = new char[len+1]; // include null terminator

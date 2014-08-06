@@ -6,7 +6,7 @@
 
 HANDLE g_hWorkerStarted;
 
-int hangsnooptimerid;
+size_t hangsnooptimerid;
 int lasthangsnoopvalue;
 
 VOID CALLBACK HangSnoopProc(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)

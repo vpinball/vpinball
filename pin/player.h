@@ -61,7 +61,7 @@ public:
 
     void Shutdown()
     {
-        for (unsigned i = 0; i < m_buffers.size(); ++i)
+        for (size_t i = 0; i < m_buffers.size(); ++i)
         {
             if (m_buffers[i])
                 m_buffers[i]->release();

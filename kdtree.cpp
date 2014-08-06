@@ -403,7 +403,7 @@ void HitKDNode::HitTestBall(Ball * const pball, CollisionEvent& coll) const
 }
 
 #ifdef KDTREE_SSE_LEAFTEST
-void HitKDNode::HitTestBallSseInner(Ball * const pball, const int i, CollisionEvent& coll) const
+void HitKDNode::HitTestBallSseInner(Ball * const pball, const size_t i, CollisionEvent& coll) const
 {
   HitObject * const pho = m_hitoct->GetItemAt( i );
 

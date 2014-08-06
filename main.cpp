@@ -59,10 +59,10 @@ PCHAR* CommandLineToArgvA(PCHAR CmdLine, int* _argc)
 {
 	PCHAR*  argv;
 	PCHAR   _argv;
-	ULONG   len;
+	size_t  len;
 	ULONG   argc;
 	CHAR    a;
-	ULONG   i, j;
+	size_t  i, j;
 
 	BOOLEAN  in_QM;
 	BOOLEAN  in_TEXT;

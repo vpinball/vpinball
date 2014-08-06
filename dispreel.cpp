@@ -151,7 +151,7 @@ HRESULT DispReel::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 	{
 		size_t len = strlen(&tmp[0]) + 1;
 		fd.lpstrName = (LPOLESTR) malloc(len*sizeof(WCHAR));
-		UNICODE_FROM_ANSI(fd.lpstrName, &tmp[0], len); 
+		UNICODE_FROM_ANSI(fd.lpstrName, &tmp[0], (int)len); 
 		fd.lpstrName[len] = 0;
 	}
 	
@@ -283,7 +283,7 @@ void DispReel::SetDefaults(bool fromMouseClick)
 		{
 			size_t len = strlen(&tmp[0]) + 1;
 			fd.lpstrName = (LPOLESTR) malloc(len*sizeof(WCHAR));
-			UNICODE_FROM_ANSI(fd.lpstrName, &tmp[0], len); 
+			UNICODE_FROM_ANSI(fd.lpstrName, &tmp[0], (int)len); 
 			fd.lpstrName[len] = 0;
 		}
 
@@ -354,7 +354,7 @@ void DispReel::WriteRegDefaults()
 		sprintf_s(strTmp, 40, "%f", fTmp);
 		SetRegValue("DefaultProps\\EMReel","FontSize", REG_SZ, &strTmp,(DWORD)strlen(strTmp));
 		size_t charCnt = wcslen(fd.lpstrName) + 1;
-		WideCharToMultiByte(CP_ACP, 0, fd.lpstrName, charCnt, strTmp, 2*charCnt, NULL, NULL);
+		WideCharToMultiByte(CP_ACP, 0, fd.lpstrName, (int)charCnt, strTmp, (int)(2*charCnt), NULL, NULL);
 		SetRegValue("DefaultProps\\EMReel","FontName", REG_SZ, &strTmp,(DWORD)strlen(strTmp));
 		SetRegValue("DefaultProps\\EMReel","FontWeight",REG_DWORD,&fd.sWeight,4);
 		SetRegValue("DefaultProps\\EMReel","FontCharSet",REG_DWORD,&fd.sCharset,4);

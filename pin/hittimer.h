@@ -1,8 +1,9 @@
 #pragma once
+
 class HitTimer
 	{
 public:
-	int m_nextfire;
 	IFireEvents *m_pfe;
+	int m_nextfire;
 	int m_interval;
 	};

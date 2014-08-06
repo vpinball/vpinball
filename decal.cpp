@@ -98,7 +98,7 @@ void Decal::SetDefaults(bool fromMouseClick)
       {
 		 size_t len = strlen(&tmp[0]) + 1;
          fd.lpstrName = (LPOLESTR) malloc(len*sizeof(WCHAR));
-         UNICODE_FROM_ANSI(fd.lpstrName, &tmp[0], len); 
+         UNICODE_FROM_ANSI(fd.lpstrName, &tmp[0], (int)len); 
          fd.lpstrName[len] = 0;
       }
 
@@ -160,7 +160,7 @@ void Decal::WriteRegDefaults()
 
 	  size_t charCnt = wcslen(fd.lpstrName) + 1;
       char strTmp[MAXTOKEN];
-      WideCharToMultiByte(CP_ACP, 0, fd.lpstrName, charCnt, strTmp, 2*charCnt, NULL, NULL);
+      WideCharToMultiByte(CP_ACP, 0, fd.lpstrName, (int)charCnt, strTmp, (int)(2*charCnt), NULL, NULL);
       SetRegValue("DefaultProps\\Decal","FontName", REG_SZ, &strTmp,(DWORD)strlen(strTmp));
 
       SetRegValue("DefaultProps\\Decal","FontWeight",REG_DWORD,&fd.sWeight,4);
