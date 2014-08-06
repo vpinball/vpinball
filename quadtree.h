@@ -29,7 +29,7 @@ private:
 
     void CreateNextLevel(const FRect3D& bounds);
     void HitTestBallSse(Ball * const pball, CollisionEvent& coll) const;
-    void HitTestBallSseInner(Ball * const pball, const int i, CollisionEvent& coll) const;
+    void HitTestBallSseInner(Ball * const pball, const size_t i, CollisionEvent& coll) const;
 
     std::vector<HitObject*> m_vho;
     HitQuadtree * __restrict m_children[4];

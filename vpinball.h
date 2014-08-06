@@ -36,7 +36,7 @@ public:
 	void CreateMDIClient();
 	HRESULT AddMiniBitmaps();
 
-	void ParseCommand(int code, HWND hwnd, int notify);
+	void ParseCommand(size_t code, HWND hwnd, size_t notify);
     void setLayerStatus( int layerNumber );
 
 	CComObject<PinTable> *GetActiveTable();

@@ -104,8 +104,8 @@ void HitQuadtree::InitSseArrays()
 {
     // build SSE boundary arrays of the local hit-object list
     // (don't init twice)
-    const unsigned padded = ((m_vho.size()+3)/4)*4;
-    const unsigned ssebytes = sizeof(float) * padded;
+    const size_t padded = ((m_vho.size()+3)/4)*4;
+    const size_t ssebytes = sizeof(float) * padded;
     if (ssebytes > 0 && lefts == 0)
     {
         lefts   = (float*)_aligned_malloc(ssebytes, 16);
@@ -115,7 +115,7 @@ void HitQuadtree::InitSseArrays()
         zlows   = (float*)_aligned_malloc(ssebytes, 16);
         zhighs  = (float*)_aligned_malloc(ssebytes, 16);
 
-        for (unsigned j=0; j<m_vho.size(); j++)
+        for (size_t j=0; j<m_vho.size(); j++)
         {
             const FRect3D r = m_vho[j]->m_rcHitRect;
             lefts[j] = r.left;
@@ -126,7 +126,7 @@ void HitQuadtree::InitSseArrays()
             zhighs[j] = r.zhigh;
         }
 
-        for (unsigned j=m_vho.size(); j<padded; j++)
+        for (size_t j=m_vho.size(); j<padded; j++)
         {
             lefts[j] = FLT_MAX;
             rights[j] = -FLT_MAX;
@@ -203,7 +203,7 @@ void HitQuadtree::HitTestBall(Ball * const pball, CollisionEvent& coll) const
 }
 
 
-void HitQuadtree::HitTestBallSseInner(Ball * const pball, const int i, CollisionEvent& coll) const
+void HitQuadtree::HitTestBallSseInner(Ball * const pball, const size_t i, CollisionEvent& coll) const
 {
     // ball can not hit itself
     if (pball == m_vho[i])
@@ -233,8 +233,8 @@ void HitQuadtree::HitTestBallSse(Ball * const pball, CollisionEvent& coll) const
 
         // loop implements 4 collision checks at once
         // (rc1.right >= rc2.left && rc1.bottom >= rc2.top && rc1.left <= rc2.right && rc1.top <= rc2.bottom && rc1.zlow <= rc2.zhigh && rc1.zhigh >= rc2.zlow)
-        const int size = (m_vho.size()+3)/4;
-        for (int i=0; i<size; ++i)
+        const size_t size = (m_vho.size()+3)/4;
+        for (size_t i=0; i<size; ++i)
         {
             // comparisons set bits if bounds miss. if all bits are set, there is no collision. otherwise continue comparisons
             // bits set, there is a bounding box collision

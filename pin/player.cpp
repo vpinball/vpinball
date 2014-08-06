@@ -3189,7 +3189,7 @@ INT_PTR CALLBACK DebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
                         {
                            HWND hwndControl = GetDlgItem(hwndDlg, IDC_BALL_THROWING);
                            size_t checked = SendMessage(hwndControl, BM_GETCHECK, 0, 0);
-                           g_pplayer->m_fThrowBalls = checked;
+                           g_pplayer->m_fThrowBalls = (int)checked;
                            break;
                         }
 							}

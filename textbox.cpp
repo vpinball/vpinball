@@ -76,7 +76,7 @@ void Textbox::SetDefaults(bool fromMouseClick)
         {
 			size_t len = strlen(&tmp[0]) + 1;
             fd.lpstrName = (LPOLESTR) malloc(len*sizeof(WCHAR));
-            UNICODE_FROM_ANSI(fd.lpstrName, &tmp[0], len); 
+            UNICODE_FROM_ANSI(fd.lpstrName, &tmp[0], (int)len); 
             fd.lpstrName[len] = 0;
             free_lpstrName = true;
         }
@@ -121,7 +121,7 @@ void Textbox::WriteRegDefaults()
 	const float fTmp = (float)(fd.cySize.int64 / 10000.0);
 	SetRegValueFloat("DefaultProps\\TextBox","FontSize", fTmp);
 	size_t charCnt = wcslen(fd.lpstrName) + 1;
-	WideCharToMultiByte(CP_ACP, 0, fd.lpstrName, charCnt, strTmp, 2*charCnt, NULL, NULL);
+	WideCharToMultiByte(CP_ACP, 0, fd.lpstrName, (int)charCnt, strTmp, (int)(2*charCnt), NULL, NULL);
 	SetRegValue("DefaultProps\\TextBox","FontName", REG_SZ, &strTmp,(DWORD)strlen(strTmp));
 	SetRegValue("DefaultProps\\TextBox","FontWeight",REG_DWORD,&fd.sWeight,4);
 	SetRegValue("DefaultProps\\TextBox","FontCharSet",REG_DWORD,&fd.sCharset,4);

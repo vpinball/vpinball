@@ -74,7 +74,13 @@ void CodeViewer::Init(IScriptableHost *psh)
 
    m_pScript = NULL;
 
-   InitializeScriptEngine();
+   const HRESULT res = InitializeScriptEngine();
+   if(res != S_OK)
+   {
+       char bla[128];
+       sprintf_s(bla, "Cannot initialize Script Engine %u", res);
+       MessageBox(g_pvp->m_hwnd, bla, "Error", MB_ICONERROR);
+   }
 
    m_sdsDirty = eSaveClean;
    m_fIgnoreDirty = fFalse;
@@ -258,8 +264,8 @@ DEFINE_GUID(IID_IActiveScriptDebug, 0x51973C10, 0xCB0C, 0x11d0, 0xB5, 0xC9, 0x00
 
 STDMETHODIMP CodeViewer::InitializeScriptEngine()
 {
-   if (CoCreateInstance(CLSID_VBScript, 0, CLSCTX_ALL,
-      IID_IActiveScriptParse,	(LPVOID*) &m_pScriptParse) == S_OK)
+   const HRESULT result = CoCreateInstance(CLSID_VBScript, 0, CLSCTX_ALL, IID_IActiveScriptParse, (LPVOID*) &m_pScriptParse);
+   if (result == S_OK)
    {
       m_pScriptParse->QueryInterface(IID_IActiveScript,
          (LPVOID*) &m_pScript);
@@ -286,7 +292,7 @@ STDMETHODIMP CodeViewer::InitializeScriptEngine()
       return S_OK;
    }
 
-   return E_FAIL;
+   return result;
 }
 
 STDMETHODIMP CodeViewer::CleanUpScriptEngine()
@@ -562,6 +568,8 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 
 void CodeViewer::Compile()
 {
+   if( m_pScript )
+   {
    const size_t cchar = SendMessage(m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
 
    char * const szText = new char[cchar+1];
@@ -592,12 +600,14 @@ void CodeViewer::Compile()
 
    delete [] wzText;
    delete [] szText;
+   }
 }
 
 void CodeViewer::Start()
 {
    //ShowError("CodeViewer::Start"); //debug logging BDS
-   m_pScript->SetScriptState(SCRIPTSTATE_CONNECTED);
+   if(m_pScript)
+       m_pScript->SetScriptState(SCRIPTSTATE_CONNECTED);
 }
 
 void CodeViewer::EvaluateScriptStatement(char *szScript)
@@ -821,7 +831,7 @@ void CodeViewer::SaveToStream(IStream *pistream, HCRYPTHASH hcrypthash, HCRYPTKE
    if (hcryptkey != NULL)
    {
       // get the size of the data to encrypt
-      DWORD cryptlen = cchar;
+      DWORD cryptlen = (DWORD)cchar;
 
       // encrypt the script
       CryptEncrypt(hcryptkey,			// key to use
@@ -830,7 +840,7 @@ void CodeViewer::SaveToStream(IStream *pistream, HCRYPTHASH hcrypthash, HCRYPTKE
          0, 				// no flags
          (BYTE *)szText,	// buffer to encrypt
          &cryptlen,			// size of data to encrypt
-         bufferSize);		// maximum size of buffer (includes padding)
+         (DWORD)bufferSize);		// maximum size of buffer (includes padding)
 
       /*const int foo =*/ GetLastError();	// purge any errors
 
@@ -839,10 +849,10 @@ void CodeViewer::SaveToStream(IStream *pistream, HCRYPTHASH hcrypthash, HCRYPTKE
    }
 
    ULONG writ = 0;
-   pistream->Write(&cchar, sizeof(int), &writ);
-   pistream->Write(szText, (cchar)*sizeof(char), &writ);
+   pistream->Write(&cchar, (ULONG)sizeof(int), &writ);
+   pistream->Write(szText, (ULONG)(cchar*sizeof(char)), &writ);
 
-   CryptHashData(hcrypthash, (BYTE *)szText, cchar, 0);
+   CryptHashData(hcrypthash, (BYTE *)szText, (DWORD)cchar, 0);
 
    delete [] szText;
 }
@@ -1070,14 +1080,13 @@ void CodeViewer::FindCodeFromEvent()
       WCHAR wzText[1024];
 
 	  const size_t cchar = SendMessage(m_hwndScintilla, SCI_GETLINE, line, (size_t)szLine);
-      MultiByteToWideChar(CP_ACP, 0, szLine, -1, wzText, cchar);
-      m_pScriptDebug->GetScriptTextAttributes(wzText,
-         cchar, NULL, 0, wzFormat);
+      MultiByteToWideChar(CP_ACP, 0, szLine, -1, wzText, (int)cchar);
+      m_pScriptDebug->GetScriptTextAttributes(wzText, (ULONG)cchar, NULL, 0, wzFormat);
 
 	  const size_t inamechar = posFind - beginchar - 1;
 
-	  size_t i;
-      for (i=inamechar;i>=0;i--)
+	  int i;
+      for (i=(int)inamechar;i>=0;i--)
       {
          if (wzFormat[i] == SOURCETEXT_ATTR_KEYWORD)
             break;
@@ -1767,7 +1776,7 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
       {
          CodeViewer * const pcv = GetCodeViewerPtr(hwndDlg);
 
-		 for (size_t i = wParam; i <= lParam; i++)
+	 for (size_t i = wParam; i <= (size_t)lParam; i++)
             pcv->ColorLine(i);
       }
       break;
