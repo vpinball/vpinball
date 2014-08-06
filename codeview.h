@@ -318,6 +318,6 @@ inline bool FIsWhitespace(const char ch)
 inline void AddEventToList(char * const sz, const int index, const int dispid, const LPARAM lparam)
 {
 	const HWND hwnd = (HWND)lparam;
-	const int listindex = SendMessage(hwnd, CB_ADDSTRING, 0, (int)sz);
+	const int listindex = SendMessage(hwnd, CB_ADDSTRING, 0, (size_t)sz);
 	SendMessage(hwnd, CB_SETITEMDATA, listindex, index);
 }

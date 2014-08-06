@@ -148,7 +148,7 @@ void PinFont::Register()
 	lstrcpy(lf.lfFaceName, "");
 	lf.lfPitchAndFamily = 0;
 
-	EnumFontFamiliesEx(hdcScreen, &lf, (FONTENUMPROC)EnumFontFamExProc, (long)this, 0);
+	EnumFontFamiliesEx(hdcScreen, &lf, (FONTENUMPROC)EnumFontFamExProc, (size_t)this, 0);
 
 	ReleaseDC(NULL, hdcScreen);
 

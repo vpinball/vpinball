@@ -172,8 +172,8 @@ HRESULT CodeViewer::AddItem(IScriptable *piscript, BOOL fGlobal)
    // Add item to dropdown
    char szT[64]; // Names can only be 32 characters (plus terminator)
    WideCharToMultiByte(CP_ACP, 0, pcvd->m_wzName, -1, szT, 64, NULL, NULL);
-   const int index = SendMessage(m_hwndItemList, CB_ADDSTRING, 0, (long)szT);
-   SendMessage(m_hwndItemList, CB_SETITEMDATA, index, (long)piscript);
+   const int index = SendMessage(m_hwndItemList, CB_ADDSTRING, 0, (size_t)szT);
+   SendMessage(m_hwndItemList, CB_SETITEMDATA, index, (size_t)piscript);
 
    return S_OK;
 }
@@ -196,7 +196,7 @@ void CodeViewer::RemoveItem(IScriptable *piscript)
    // Remove item from dropdown
    char szT[64]; // Names can only be 32 characters (plus terminator)
    WideCharToMultiByte(CP_ACP, 0, bstr, -1, szT, 64, NULL, NULL);
-   index = SendMessage(m_hwndItemList, CB_FINDSTRINGEXACT, ~0u, (long)szT);
+   index = SendMessage(m_hwndItemList, CB_FINDSTRINGEXACT, ~0u, (size_t)szT);
    SendMessage(m_hwndItemList, CB_DELETESTRING, index, 0);
 
    delete pcvd;
@@ -210,7 +210,7 @@ void CodeViewer::SelectItem(IScriptable *piscript)
    char szT[64]; // Names can only be 32 characters (plus terminator)
    WideCharToMultiByte(CP_ACP, 0, bstr, -1, szT, 64, NULL, NULL);
 
-   const int index = SendMessage(m_hwndItemList, CB_FINDSTRINGEXACT, ~0u, (long)szT);
+   const int index = SendMessage(m_hwndItemList, CB_FINDSTRINGEXACT, ~0u, (size_t)szT);
    SendMessage(m_hwndItemList, CB_SETCURSEL, index, 0);
 
    ListEventsFromItem();
@@ -239,12 +239,12 @@ HRESULT CodeViewer::ReplaceName(IScriptable *piscript, WCHAR *wzNew)
    // Remove old name from dropdown and replace it with the new
    char szT[64]; // Names can only be 32 characters (plus terminator)
    WideCharToMultiByte(CP_ACP, 0, bstr, -1, szT, 64, NULL, NULL);
-   index = SendMessage(m_hwndItemList, CB_FINDSTRINGEXACT, ~0u, (long)szT);
+   index = SendMessage(m_hwndItemList, CB_FINDSTRINGEXACT, ~0u, (size_t)szT);
    SendMessage(m_hwndItemList, CB_DELETESTRING, index, 0);
 
    WideCharToMultiByte(CP_ACP, 0, wzNew, -1, szT, 64, NULL, NULL);
-   index = SendMessage(m_hwndItemList, CB_ADDSTRING, 0, (long)szT);
-   SendMessage(m_hwndItemList, CB_SETITEMDATA, index, (long)piscript);
+   index = SendMessage(m_hwndItemList, CB_ADDSTRING, 0, (size_t)szT);
+   SendMessage(m_hwndItemList, CB_SETITEMDATA, index, (size_t)piscript);
 
    SendMessage(m_hwndItemList, CB_SETCURSEL, index, 0);
    ListEventsFromItem(); // Just to get us into a good state
@@ -364,7 +364,7 @@ void CodeViewer::Create()
       WS_POPUP | WS_SIZEBOX | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX,
       10, 10, 300, 300, m_hwndMain, NULL, g_hinst, 0);
 
-   SetWindowLongPtr(m_hwndMain, GWLP_USERDATA, (long)this);
+   SetWindowLongPtr(m_hwndMain, GWLP_USERDATA, (size_t)this);
 
    SetWindowPos(m_hwndMain,NULL,
       0, 0, 640, 480, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
@@ -431,7 +431,7 @@ void CodeViewer::Create()
    m_hwndStatus = CreateStatusWindow((WS_CHILD | WS_VISIBLE), "", m_hwndMain, 1);
 
    int foo[4] = {120,300,350,400};
-   SendMessage(m_hwndStatus, SB_SETPARTS, 4, (long)foo);
+   SendMessage(m_hwndStatus, SB_SETPARTS, 4, (size_t)foo);
 
    /////////////////// Compile / Find Buttons
 
@@ -441,19 +441,19 @@ void CodeViewer::Create()
       WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL,
       5, 5, 150, 400, m_hwndMain, NULL, g_hinst, 0);
    SetWindowLong(m_hwndItemList, GWL_ID, IDC_ITEMLIST);
-   SendMessage(m_hwndItemList, WM_SETFONT, (DWORD)GetStockObject(DEFAULT_GUI_FONT), 0);
+   SendMessage(m_hwndItemList, WM_SETFONT, (size_t)GetStockObject(DEFAULT_GUI_FONT), 0);
 
    m_hwndEventList = CreateWindowEx(0, "ComboBox", "Events",
       WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL,
       180 + 5, 5, 150, 400, m_hwndMain, NULL, g_hinst, 0);
    SetWindowLong(m_hwndEventList, GWL_ID, IDC_EVENTLIST);
-   SendMessage(m_hwndEventList, WM_SETFONT, (DWORD)GetStockObject(DEFAULT_GUI_FONT), 0);
+   SendMessage(m_hwndEventList, WM_SETFONT, (size_t)GetStockObject(DEFAULT_GUI_FONT), 0);
 
    m_hwndFunctionList = CreateWindowEx(0, "ComboBox", "Functions",
       WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | WS_VSCROLL,
       360 + 5, 5, 150, 400, m_hwndMain, NULL, g_hinst, 0);
    SetWindowLong(m_hwndFunctionList, GWL_ID, IDC_FUNCTIONLIST);
-   SendMessage(m_hwndFunctionList, WM_SETFONT, (DWORD)GetStockObject(DEFAULT_GUI_FONT), 0);
+   SendMessage(m_hwndFunctionList, WM_SETFONT, (size_t)GetStockObject(DEFAULT_GUI_FONT), 0);
 
    SendMessage(m_hwndMain, WM_SIZE, 0, 0); // Make our window relay itself out
 }
@@ -567,7 +567,7 @@ void CodeViewer::Compile()
    char * const szText = new char[cchar+1];
    WCHAR * const wzText = new WCHAR[cchar+1];
 
-   SendMessage(m_hwndScintilla, SCI_GETTEXT, cchar+1, (long)szText);
+   SendMessage(m_hwndScintilla, SCI_GETTEXT, cchar+1, (size_t)szText);
    MultiByteToWideChar(CP_ACP, 0, szText, -1, wzText, cchar);
    wzText[cchar] = L'\0';
 
@@ -735,11 +735,11 @@ void CodeViewer::Find(FINDREPLACE *pfr)
       SendMessage(m_hwndScintilla, SCI_SETSEL, start, end);
 
       if (!fWrapped)
-         SendMessage(m_hwndStatus, SB_SETTEXT, 1 | 0, (long)"");
+         SendMessage(m_hwndStatus, SB_SETTEXT, 1 | 0, (size_t)"");
       else
       {
          LocalString ls(IDS_FINDLOOPED);
-         SendMessage(m_hwndStatus, SB_SETTEXT, 1 | 0, (long)ls.m_szbuffer);
+         SendMessage(m_hwndStatus, SB_SETTEXT, 1 | 0, (size_t)ls.m_szbuffer);
       }
    }
    else
@@ -751,7 +751,7 @@ void CodeViewer::Find(FINDREPLACE *pfr)
       lstrcat(szT, pfr->lpstrFindWhat);
       lstrcat(szT, ls2.m_szbuffer);
       MessageBeep(MB_ICONEXCLAMATION);
-      SendMessage(m_hwndStatus, SB_SETTEXT, 1 | 0, (long)szT);
+      SendMessage(m_hwndStatus, SB_SETTEXT, 1 | 0, (size_t)szT);
    }
 }
 
@@ -783,7 +783,7 @@ next:
          lstrcat(szT, ft.lpstrText);
          lstrcat(szT, ls2.m_szbuffer);
          MessageBeep(MB_ICONEXCLAMATION);
-         SendMessage(m_hwndStatus, SB_SETTEXT, 1 | 0, (long)szT);
+         SendMessage(m_hwndStatus, SB_SETTEXT, 1 | 0, (size_t)szT);
       }
       else
       {
@@ -792,7 +792,7 @@ next:
          LocalString ls2(IDS_REPLACEALL2);
          wsprintfA(szT, "%s %ld %s", ls.m_szbuffer, cszReplaced, ls2.m_szbuffer);
          MessageBeep(MB_ICONEXCLAMATION);
-         SendMessage(m_hwndStatus, SB_SETTEXT, 1 | 0, (long)szT);
+         SendMessage(m_hwndStatus, SB_SETTEXT, 1 | 0, (size_t)szT);
       }
       return;
    }
@@ -815,7 +815,7 @@ void CodeViewer::SaveToStream(IStream *pistream, HCRYPTHASH hcrypthash, HCRYPTKE
    int cchar = SendMessage(m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
    const int bufferSize = cchar + 32;
    char * const szText = new char[bufferSize+1];
-   SendMessage(m_hwndScintilla, SCI_GETTEXT, cchar+1, (long)szText);
+   SendMessage(m_hwndScintilla, SCI_GETTEXT, cchar+1, (size_t)szText);
 
    // if there is a valid key, then encrypt the script text (now in szText)
    // (must be done before the hash is updated)
@@ -894,7 +894,7 @@ void CodeViewer::LoadFromStream(IStream *pistream, HCRYPTHASH hcrypthash, HCRYPT
       if (szText[i] < 9 || (szText[i] > 10 && szText[i] < 13) || (szText[i] > 13 && szText[i] < 32))
          szText[i] = ' ';
    }
-   SendMessage(m_hwndScintilla, SCI_SETTEXT, 0, (long)szText);
+   SendMessage(m_hwndScintilla, SCI_SETTEXT, 0, (size_t)szText);
    SendMessage(m_hwndScintilla, SCI_EMPTYUNDOBUFFER, 0, 0);
 
    delete [] szText;
@@ -1043,9 +1043,9 @@ void CodeViewer::FindCodeFromEvent()
    char szItemName[512]; // Can't be longer than 32 chars, but use this buffer for concatenating
    char szEventName[512];
    int index = SendMessage(m_hwndItemList, CB_GETCURSEL, 0, 0);
-   SendMessage(m_hwndItemList, CB_GETLBTEXT, index, (long)szItemName);
+   SendMessage(m_hwndItemList, CB_GETLBTEXT, index, (size_t)szItemName);
    index = SendMessage(m_hwndEventList, CB_GETCURSEL, 0, 0);
-   SendMessage(m_hwndEventList, CB_GETLBTEXT, index, (long)szEventName);
+   SendMessage(m_hwndEventList, CB_GETLBTEXT, index, (size_t)szEventName);
    const int iEventIndex = SendMessage(m_hwndEventList, CB_GETITEMDATA, index, 0);
    lstrcat(szItemName,"_"); // VB Specific event names
    lstrcat(szItemName,szEventName);
@@ -1070,7 +1070,7 @@ void CodeViewer::FindCodeFromEvent()
       SOURCE_TEXT_ATTR wzFormat[1024];
       WCHAR wzText[1024];
 
-      const int cchar = SendMessage(m_hwndScintilla, SCI_GETLINE, line, (long)szLine);
+      const int cchar = SendMessage(m_hwndScintilla, SCI_GETLINE, line, (size_t)szLine);
       MultiByteToWideChar(CP_ACP, 0, szLine, -1, wzText, cchar);
       m_pScriptDebug->GetScriptTextAttributes(wzText,
          cchar, NULL, 0, wzFormat);
@@ -1135,19 +1135,19 @@ void CodeViewer::FindCodeFromEvent()
       tr.lpstrText = szEnd;
 
       // Make sure there is at least a one space gap between the last function and this new one
-      SendMessage(m_hwndScintilla, SCI_GETTEXT, 0, (long)&tr);
+      SendMessage(m_hwndScintilla, SCI_GETTEXT, 0, (size_t)&tr);
 
       if (szEnd[0] != '\n')
       {
          SendMessage(m_hwndScintilla, SCI_SETSEL, codelen, codelen);
-         SendMessage(m_hwndScintilla, SCI_REPLACESEL, TRUE, (long)"\n");
+         SendMessage(m_hwndScintilla, SCI_REPLACESEL, TRUE, (size_t)"\n");
          codelen++;
       }
 
       if (szEnd[1] != '\n')
       {
          SendMessage(m_hwndScintilla, SCI_SETSEL, codelen, codelen);
-         SendMessage(m_hwndScintilla, SCI_REPLACESEL, TRUE, (long)"\n");
+         SendMessage(m_hwndScintilla, SCI_REPLACESEL, TRUE, (size_t)"\n");
          codelen++;
       }
 
@@ -1166,7 +1166,7 @@ void CodeViewer::FindCodeFromEvent()
       const int subtitlelen = lstrlen(szNewCode);
       lstrcat(szNewCode, "\nEnd Sub");
 
-      SendMessage(m_hwndScintilla, SCI_REPLACESEL, TRUE, (long)szNewCode);
+      SendMessage(m_hwndScintilla, SCI_REPLACESEL, TRUE, (size_t)szNewCode);
 
       SendMessage(m_hwndScintilla, SCI_SETSEL, codelen+subtitlelen, codelen+subtitlelen);
    }
@@ -1745,7 +1745,7 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
                const DWORD column = SendMessage(hwndRE, SCI_GETCOLUMN, pos, 0);
 
                sprintf_s(szT, "Line %u, Col %u", line, column);
-               SendMessage(pcv->m_hwndStatus, SB_SETTEXT, 0 | 0, (long)szT);
+               SendMessage(pcv->m_hwndStatus, SB_SETTEXT, 0 | 0, (size_t)szT);
             }
             break;
          case SCN_MARGINCLICK:
