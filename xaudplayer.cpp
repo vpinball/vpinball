@@ -314,7 +314,7 @@ XAudPlayer::XAudPlayer()
 			if(!BASS_Init(DSidx, 44100, 0, g_pvp->m_hwnd, NULL))
 			{
 				char bla[128];
-				sprintf(bla,"BASS music/sound library initialization error %d",BASS_ErrorGetCode());
+				sprintf_s(bla,"BASS music/sound library initialization error %d",BASS_ErrorGetCode());
 				MessageBox(g_pvp->m_hwnd,bla,"Error",MB_ICONERROR);
 			}
 			bass_init = true;
@@ -359,7 +359,7 @@ int XAudPlayer::Init(char * const szFileName, const int volume)
 	if(m_stream == NULL)
 	{
 		char bla[128];
-		sprintf(bla,"BASS music/sound library cannot load %s",szFileName);
+		sprintf_s(bla,"BASS music/sound library cannot load %s",szFileName);
 		MessageBox(g_pvp->m_hwnd,bla,"Error",MB_ICONERROR);
 		return 0;
 	}

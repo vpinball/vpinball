@@ -149,7 +149,7 @@ HRESULT DispReel::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 		fd.lpstrName = L"Times New Roman";
 	else
 	{
-		unsigned int len = strlen(&tmp[0])+1;
+		size_t len = strlen(&tmp[0]) + 1;
 		fd.lpstrName = (LPOLESTR) malloc(len*sizeof(WCHAR));
 		UNICODE_FROM_ANSI(fd.lpstrName, &tmp[0], len); 
 		fd.lpstrName[len] = 0;
@@ -281,7 +281,7 @@ void DispReel::SetDefaults(bool fromMouseClick)
 			fd.lpstrName = L"Arial Black";
 		else
 		{
-			unsigned int len = strlen(&tmp[0])+1;
+			size_t len = strlen(&tmp[0]) + 1;
 			fd.lpstrName = (LPOLESTR) malloc(len*sizeof(WCHAR));
 			UNICODE_FROM_ANSI(fd.lpstrName, &tmp[0], len); 
 			fd.lpstrName[len] = 0;
@@ -320,8 +320,8 @@ void DispReel::WriteRegDefaults()
 	char strTmp[MAXTOKEN];
 
 	SetRegValue("DefaultProps\\EMReel","ReelType",REG_DWORD,&m_d.m_reeltype,4);
-	SetRegValue("DefaultProps\\EMReel","Image", REG_SZ, &m_d.m_szImage,strlen(m_d.m_szImage));
-	SetRegValue("DefaultProps\\EMReel","Sound", REG_SZ, &m_d.m_szSound,strlen(m_d.m_szSound));
+	SetRegValue("DefaultProps\\EMReel","Image", REG_SZ, &m_d.m_szImage,(DWORD)strlen(m_d.m_szImage));
+	SetRegValue("DefaultProps\\EMReel","Sound", REG_SZ, &m_d.m_szSound,(DWORD)strlen(m_d.m_szSound));
 	SetRegValue("DefaultProps\\Decal","UseImageGrid",REG_DWORD,&m_d.m_fUseImageGrid,4);
 	SetRegValue("DefaultProps\\Decal","ImagesPerRow",REG_DWORD,&m_d.m_imagesPerGridRow ,4);
 	SetRegValue("DefaultProps\\Decal","Transparent",REG_DWORD,&m_d.m_fTransparent,4);
@@ -352,10 +352,10 @@ void DispReel::WriteRegDefaults()
 		
 		const float fTmp = (float)(fd.cySize.int64 / 10000.0);
 		sprintf_s(strTmp, 40, "%f", fTmp);
-		SetRegValue("DefaultProps\\EMReel","FontSize", REG_SZ, &strTmp,strlen(strTmp));
-		int charCnt = wcslen(fd.lpstrName) +1;
+		SetRegValue("DefaultProps\\EMReel","FontSize", REG_SZ, &strTmp,(DWORD)strlen(strTmp));
+		size_t charCnt = wcslen(fd.lpstrName) + 1;
 		WideCharToMultiByte(CP_ACP, 0, fd.lpstrName, charCnt, strTmp, 2*charCnt, NULL, NULL);
-		SetRegValue("DefaultProps\\EMReel","FontName", REG_SZ, &strTmp,strlen(strTmp));
+		SetRegValue("DefaultProps\\EMReel","FontName", REG_SZ, &strTmp,(DWORD)strlen(strTmp));
 		SetRegValue("DefaultProps\\EMReel","FontWeight",REG_DWORD,&fd.sWeight,4);
 		SetRegValue("DefaultProps\\EMReel","FontCharSet",REG_DWORD,&fd.sCharset,4);
 		SetRegValue("DefaultProps\\EMReel","FontItalic",REG_DWORD,&fd.fItalic,4);

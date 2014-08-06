@@ -347,7 +347,11 @@ STDMETHODIMP ScriptGlobalTable::get_UserDirectory(BSTR *pVal)
    return S_OK;
 }
 
+#ifdef _WIN64
 STDMETHODIMP ScriptGlobalTable::get_GetPlayerHWnd(size_t *pVal)
+#else
+STDMETHODIMP ScriptGlobalTable::get_GetPlayerHWnd(long *pVal)
+#endif
 {
    if (!g_pplayer)
    {
@@ -786,7 +790,7 @@ PinTable::PinTable()
    // This will be read later by the front end.
    char Version[64];
    sprintf_s( Version, "%d", BUILD_NUMBER );
-   SetRegValue ( "Version", "VPinball", REG_SZ, Version, strlen(Version) );
+   SetRegValue("Version", "VPinball", REG_SZ, Version, (DWORD)strlen(Version));
 
    if ( FAILED(GetRegInt("Player", "AlphaRampAccuracy", &m_globalAlphaRampsAccuracy) ) )
    {
@@ -922,7 +926,7 @@ BOOL PinTable::SetupProtectionBlock(unsigned char *pPassword, unsigned long flag
    foo = CryptCreateHash(hcp, CALG_MD5, NULL, 0, &hchkey);
    foo = GetLastError();
    // hash the password
-   foo = CryptHashData(hchkey, pPassword, strlen((char *)pPassword), 0);
+   foo = CryptHashData(hchkey, pPassword, (DWORD)strlen((char *)pPassword), 0);
    foo = GetLastError();
    // Create a block cipher session key based on the hash of the password.
    foo = CryptDeriveKey(hcp, CALG_RC2, hchkey, CRYPT_EXPORTABLE, &hkey);
@@ -981,7 +985,7 @@ BOOL PinTable::UnlockProtectionBlock(unsigned char *pPassword)
    foo = CryptCreateHash(hcp, CALG_MD5, NULL, 0, &hchkey);
    foo = GetLastError();
    // hash the password
-   foo = CryptHashData(hchkey, pPassword, strlen((char *)pPassword), 0);
+   foo = CryptHashData(hchkey, pPassword, (DWORD)strlen((char *)pPassword), 0);
    foo = GetLastError();
    // Create a block cipher session key based on the hash of the password.
    foo = CryptDeriveKey(hcp, CALG_RC2, hchkey, CRYPT_EXPORTABLE, &hkey);
@@ -2039,7 +2043,7 @@ HRESULT PinTable::Save(BOOL fSaveAs)
 
       strcpy_s(szInitialDir, sizeof(szInitialDir), m_szFileName);
       szInitialDir[ofn.nFileOffset] = 0;
-      hr = SetRegValue("RecentDir","LoadDir", REG_SZ, szInitialDir, strlen(szInitialDir));
+	  hr = SetRegValue("RecentDir", "LoadDir", REG_SZ, szInitialDir, (DWORD)strlen(szInitialDir));
 
       {
          MAKE_WIDEPTR_FROMANSI(wszCodeFile, m_szFileName);
@@ -2601,7 +2605,7 @@ HRESULT PinTable::LoadInfo(IStorage* pstg, HCRYPTHASH hcrypthash, int version)
    if ( m_szVersion != NULL )
    {
       // Write the version to the registry.  This will be read later by the front end.
-      SetRegValue ( "Version", m_szTableName, REG_SZ, m_szVersion, strlen(m_szVersion) );
+	  SetRegValue("Version", m_szTableName, REG_SZ, m_szVersion, (DWORD)strlen(m_szVersion));
    }
 
    HRESULT hr;

@@ -99,7 +99,7 @@ void Rubber::WriteRegDefaults()
    SetRegValueInt(strKeyName,"Color", m_d.m_color);
    SetRegValue(strKeyName,"TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
    SetRegValue(strKeyName,"TimerInterval",REG_DWORD,&m_d.m_tdr.m_TimerInterval,4);
-   SetRegValue(strKeyName,"Image", REG_SZ, &m_d.m_szImage, strlen(m_d.m_szImage));
+   SetRegValue(strKeyName,"Image", REG_SZ, &m_d.m_szImage, (DWORD)strlen(m_d.m_szImage));
    SetRegValueBool(strKeyName,"ImageWalls",m_d.m_fImageWalls);
    SetRegValueBool(strKeyName,"CastsShadow",m_d.m_fCastsShadow);
    SetRegValueFloat(strKeyName,"Elasticity", m_d.m_elasticity);

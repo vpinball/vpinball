@@ -327,7 +327,7 @@ BOOL CALLBACK EnumChildInitList(HWND hwnd, LPARAM lParam)
             for (ULONG i=0; i<castr.cElems; i++)
             {
                WideCharToMultiByte(CP_ACP, 0, castr.pElems[i], -1, szT, 512, NULL, NULL);
-               const int index = SendMessage(hwnd, CB_ADDSTRING, 0, (size_t)szT);
+			   const size_t index = SendMessage(hwnd, CB_ADDSTRING, 0, (size_t)szT);
                SendMessage(hwnd, CB_SETITEMDATA, index, (DWORD)cadw.pElems[i]);
             }
 
@@ -391,7 +391,7 @@ BOOL CALLBACK EnumChildInitList(HWND hwnd, LPARAM lParam)
 
                         // Add enum string to combo control
                         WideCharToMultiByte(CP_ACP, 0, rgstr[0], -1, szT, 512, NULL, NULL);
-                        const int index = SendMessage(hwnd, CB_ADDSTRING, 0, (size_t)szT);
+						const size_t index = SendMessage(hwnd, CB_ADDSTRING, 0, (size_t)szT);
                         SendMessage(hwnd, CB_SETITEMDATA, index, V_I4(pvd->lpvarValue));
 
                         for (unsigned int i2=0; i2 < cnames; i2++)
@@ -629,20 +629,19 @@ void SmartBrowser::GetControlValue(HWND hwndControl)
             {
                // Entry must be on the list - search for existing match
 
-               const int index = SendMessage(hwndControl, CB_FINDSTRINGEXACT, ~0u,
-                  (LPARAM)szT);
+               const size_t index = SendMessage(hwndControl, CB_FINDSTRINGEXACT, ~0u, (LPARAM)szT);
 
                if (index == CB_ERR)
                {
                   // No string - look for numerical match in itemdata
                   VariantChangeType(&var, &var, 0, VT_INT);
 
-                  const int data = V_INT(&var);
-                  const int citems = SendMessage(hwndControl, CB_GETCOUNT, 0, 0);
+				  const size_t data = V_INT(&var);
+				  const size_t citems = SendMessage(hwndControl, CB_GETCOUNT, 0, 0);
 
-                  for (int i=0;i<citems;i++)
+				  for (size_t i = 0; i<citems; i++)
                   {
-                     const int matchdata = SendMessage(hwndControl, CB_GETITEMDATA, i, 0);
+                     const size_t matchdata = SendMessage(hwndControl, CB_GETITEMDATA, i, 0);
 
                      if (data == matchdata)
                      {
@@ -879,7 +878,7 @@ INT_PTR CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
                SmartBrowser *psb = (SmartBrowser *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
                if (psb != NULL)
                {
-                  int nPos = SendMessage((HWND)lParam, TBM_GETPOS, 0, 0);
+                  size_t nPos = SendMessage((HWND)lParam, TBM_GETPOS, 0, 0);
 
                   int dispid = GetDlgCtrlID((HWND)lParam);
 
@@ -912,7 +911,7 @@ INT_PTR CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
          case CBN_KILLFOCUS:
             {
                HWND hwndEdit;
-               BOOL fChanged;
+			   size_t fChanged;
 
                if (code == EN_KILLFOCUS)
                {
@@ -990,7 +989,7 @@ INT_PTR CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 			   }
 			   else
                {
-                  const int state = SendMessage((HWND)lParam, BM_GETCHECK, 0, 0);
+                  const size_t state = SendMessage((HWND)lParam, BM_GETCHECK, 0, 0);
 
                   const BOOL fChecked = (state & BST_CHECKED) != 0;
 
@@ -1005,10 +1004,10 @@ INT_PTR CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
          case CBN_SELENDOK://CBN_SELCHANGE:
             {
-               const int sel = SendMessage((HWND)lParam, CB_GETCURSEL, 0, 0);
-               const DWORD cookie = SendMessage((HWND)lParam, CB_GETITEMDATA, sel, 0);
+               const size_t sel = SendMessage((HWND)lParam, CB_GETCURSEL, 0, 0);
+			   const size_t cookie = SendMessage((HWND)lParam, CB_GETITEMDATA, sel, 0);
 
-               const int proptype = GetWindowLongPtr((HWND)lParam, GWLP_USERDATA);
+			   const size_t proptype = GetWindowLongPtr((HWND)lParam, GWLP_USERDATA);
 
                if (proptype == 0)
                {
@@ -1036,7 +1035,7 @@ INT_PTR CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
          case COLOR_CHANGED:
             {
-               const int color = GetWindowLongPtr((HWND)lParam, GWLP_USERDATA);/*SendMessage((HWND)lParam, WM_GETTEXT, 0, 0);*/
+               const size_t color = GetWindowLongPtr((HWND)lParam, GWLP_USERDATA);/*SendMessage((HWND)lParam, WM_GETTEXT, 0, 0);*/
 
                CComVariant var(color);
 

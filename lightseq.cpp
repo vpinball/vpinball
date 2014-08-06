@@ -39,7 +39,7 @@ void LightSeq::SetDefaults(bool fromMouseClick)
 		m_d.m_wzCollection[0] = 0x00;
 	else
 	{
-		UNICODE_FROM_ANSI(m_d.m_wzCollection, tmp, strlen(tmp));
+		UNICODE_FROM_ANSI(m_d.m_wzCollection, tmp, (DWORD)strlen(tmp));
 		m_d.m_wzCollection[strlen(tmp)] = '\0';
 	}
 	hr = GetRegStringAsFloat("DefaultProps\\LightSequence","CenterX", &fTmp);

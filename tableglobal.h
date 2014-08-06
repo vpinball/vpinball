@@ -19,7 +19,11 @@ public:
 		STDMETHOD(SaveValue)(BSTR TableName, BSTR ValueName, VARIANT Value);
 		STDMETHOD(StopSound)(BSTR Sound);
 		STDMETHOD(AddObject)(BSTR Name, IDispatch *pdisp);
-		STDMETHOD(get_GetPlayerHWnd)(/*[out, retval]*/ size_t *pVal);
+#ifdef _WIN64
+		STDMETHOD(get_GetPlayerHWnd)(/*[out, retval]*/ SIZE_T *pVal);
+#else
+		STDMETHOD(get_GetPlayerHWnd)(/*[out, retval]*/ long *pVal);
+#endif
 		STDMETHOD(get_UserDirectory)(/*[out, retval]*/ BSTR *pVal);
 		STDMETHOD(get_StartGameKey)(/*[out, retval]*/ long *pVal);
 		STDMETHOD(EndMusic)();

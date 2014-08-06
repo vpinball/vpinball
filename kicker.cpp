@@ -90,7 +90,7 @@ void Kicker::WriteRegDefaults()
 	SetRegValueFloat("DefaultProps\\Kicker","Radius", m_d.m_radius);
 	SetRegValueFloat("DefaultProps\\Kicker","Scatter", m_d.m_scatter);
 	SetRegValue("DefaultProps\\Kicker","KickerType",REG_DWORD,&m_d.m_kickertype,4);
-	SetRegValue("DefaultProps\\Kicker","Surface", REG_SZ, &m_d.m_szSurface,strlen(m_d.m_szSurface));
+	SetRegValue("DefaultProps\\Kicker","Surface", REG_SZ, &m_d.m_szSurface,(DWORD)strlen(m_d.m_szSurface));
 	}
 
 void Kicker::PreRender(Sur * const psur)
