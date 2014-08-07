@@ -1,12 +1,22 @@
 #include "stdafx.h"
 
 #include <initguid.h>
-#include "MSSCRIPT.H"
+
+
+// The GUID used to identify the coclass of the VB Script engine
+// 	{B54F3741-5B07-11cf-A4B0-00AA004A55E8}
+#define szCLSID_VBScript "{B54F3741-5B07-11cf-A4B0-00AA004A55E8}"
+DEFINE_GUID(CLSID_VBScript, 0xb54f3741, 0x5b07, 0x11cf, 0xa4, 0xb0, 0x0, 0xaa, 0x0, 0x4a, 0x55, 0xe8);
+//DEFINE_GUID(IID_IActiveScriptParse32, 0xbb1a2ae2, 0xa4f9, 0x11cf, 0x8f, 0x20, 0x0, 0x80, 0x5f, 0x2c, 0xd0, 0x64);
+//DEFINE_GUID(IID_IActiveScriptParse64,0xc7ef7658,0xe1ee,0x480e,0x97,0xea,0xd5,0x2c,0xb4,0xd7,0x6d,0x17);
+//DEFINE_GUID(IID_IActiveScriptDebug, 0x51973C10, 0xCB0C, 0x11d0, 0xB5, 0xC9, 0x00, 0xA0, 0x24, 0x4A, 0x0E, 0x7A);
+
 
 #define RECOLOR_LINE	WM_USER+100
 
 #define CONTEXTCOOKIE_NORMAL 1000
 #define CONTEXTCOOKIE_DEBUG 1001
+
 
 UINT g_FindMsgString; // Windows message for the FindText dialog
 const char vbsKeyWords[] = 
@@ -78,7 +88,7 @@ void CodeViewer::Init(IScriptableHost *psh)
    if(res != S_OK)
    {
        char bla[128];
-       sprintf_s(bla, "Cannot initialize Script Engine %u", res);
+       sprintf_s(bla, "Cannot initialize Script Engine 0x%X", res);
        MessageBox(g_pvp->m_hwnd, bla, "Error", MB_ICONERROR);
    }
 
@@ -258,13 +268,9 @@ HRESULT CodeViewer::ReplaceName(IScriptable *piscript, WCHAR *wzNew)
    return S_OK;
 }
 
-DEFINE_GUID(IID_IActiveScriptParse, 0xbb1a2ae2, 0xa4f9, 0x11cf, 0x8f, 0x20, 0x0, 0x80, 0x5f, 0x2c, 0xd0, 0x64);
-
-DEFINE_GUID(IID_IActiveScriptDebug, 0x51973C10, 0xCB0C, 0x11d0, 0xB5, 0xC9, 0x00, 0xA0, 0x24, 0x4A, 0x0E, 0x7A);
-
 STDMETHODIMP CodeViewer::InitializeScriptEngine()
 {
-   const HRESULT result = CoCreateInstance(CLSID_VBScript, 0, CLSCTX_ALL, IID_IActiveScriptParse, (LPVOID*) &m_pScriptParse);
+   const HRESULT result = CoCreateInstance(CLSID_VBScript, 0, CLSCTX_ALL/*CLSCTX_INPROC_SERVER*/, IID_IActiveScriptParse, (LPVOID*) &m_pScriptParse); //!! CLSCTX_INPROC_SERVER good enough?!
    if (result == S_OK)
    {
       m_pScriptParse->QueryInterface(IID_IActiveScript,
