@@ -4,10 +4,9 @@
 
 #include "StdAfx.h"
 
-#include "buildnumber.h"
 #include "resource.h"
 
-#if _MSC_VER <= 1310 // VC 2003 and before
+#if _MSC_VER <= 1310 // VC 2003 and before //!! remove
  #define _itoa_s(a,b,c,d) _itoa(a,b,d)
 #endif
 
@@ -3136,23 +3135,6 @@ INT_PTR CALLBACK AboutProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
             (rcMain.right + rcMain.left)/2 - (rcDlg.right - rcDlg.left)/2,
             (rcMain.bottom + rcMain.top)/2 - (rcDlg.bottom - rcDlg.top)/2,
             0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE/* | SWP_NOMOVE*/);
-
-         char szVersion[256];
-         char szBuild[32];
-         //			char szTime[]=__TIME__;
-         //			char szDate[]=__DATE__; 
-
-         lstrcpy(szVersion, "Version "); // add time and date to compilation version
-         _itoa_s(BUILD_NUMBER, szBuild, sizeof(szBuild), 10);
-         lstrcat(szVersion, szBuild);
-         //			lstrcat(szVersion, "-");
-
-         //			lstrcat(szVersion, szTime);
-         //			lstrcat(szVersion, "-");
-         //			lstrcat(szVersion, szDate);
-
-         HWND hwndVersion = GetDlgItem(hwndDlg, IDC_VERSION);
-         SetWindowText(hwndVersion, szVersion);
 
 #if !(defined(IMSPANISH) | defined(IMGERMAN) | defined(IMFRENCH))
          HWND hwndTransName = GetDlgItem(hwndDlg, IDC_TRANSNAME);

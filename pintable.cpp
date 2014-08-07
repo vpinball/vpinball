@@ -1,6 +1,5 @@
 #include "StdAfx.h"
 #include "vpversion.h"
-#include "buildnumber.h"
 #include "resource.h"
 #include "hash.h"
 #include <algorithm>
@@ -528,15 +527,6 @@ STDMETHODIMP ScriptGlobalTable::get_GameTime(long *pVal)
    return S_OK;
 }
 
-STDMETHODIMP ScriptGlobalTable::get_VPBuildVersion(long *pVal)
-{
-   if (!g_pplayer)
-      return E_POINTER;
-
-   *pVal = BUILD_NUMBER;
-   return S_OK;
-}
-
 STDMETHODIMP ScriptGlobalTable::GetBalls(LPSAFEARRAY *pVal)
 {
     if (!pVal || !g_pplayer)
@@ -786,11 +776,7 @@ PinTable::PinTable()
    if( hr == S_OK )
 	   m_tblExitConfirm = tmp*1000/60;
 
-   // Write the version of this exe to the registry.  
-   // This will be read later by the front end.
-   char Version[64];
-   sprintf_s( Version, "%d", BUILD_NUMBER );
-   SetRegValue("Version", "VPinball", REG_SZ, Version, (DWORD)strlen(Version));
+   SetRegValue("Version", "VPinball", REG_SZ, VP_VERSION_STRING, (DWORD)strlen(VP_VERSION_STRING));
 
    if ( FAILED(GetRegInt("Player", "AlphaRampAccuracy", &m_globalAlphaRampsAccuracy) ) )
    {

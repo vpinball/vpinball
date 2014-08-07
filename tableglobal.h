@@ -34,7 +34,6 @@ public:
 		STDMETHOD(get_LeftTiltKey)(/*[out, retval]*/ long *pVal);
 		STDMETHOD(get_RightFlipperKey)(/*[out, retval]*/ long *pVal);
 		STDMETHOD(get_LeftFlipperKey)(/*[out, retval]*/ long *pVal);
-		STDMETHOD(get_VPBuildVersion)(/*[out, retval]*/ long *pVal);
 
 		STDMETHOD(PlaySound)(BSTR bstr, long LoopCount, float volume, float pan, float randompitch, long pitch, VARIANT_BOOL usesame, VARIANT_BOOL restart);
 		STDMETHOD(FireKnocker)(/*[in]*/ int Count);
