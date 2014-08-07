@@ -1,13 +1,5 @@
 #include "StdAfx.h"
 
-#if _MSC_VER <= 1310 // VC 2003 and before
-inline bool fopen_s(FILE** f, const char *fname, const char *attr)
-{
-	*f = fopen(fname, attr);
-	return (*f == NULL);
-}
-#endif
-
 #ifndef NO_XAUDIO
 
 #include "Mmsystem.h"

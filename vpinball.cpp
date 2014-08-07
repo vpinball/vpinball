@@ -6,10 +6,6 @@
 
 #include "resource.h"
 
-#if _MSC_VER <= 1310 // VC 2003 and before //!! remove
- #define _itoa_s(a,b,c,d) _itoa(a,b,d)
-#endif
-
 #if defined(IMSPANISH)
  #define TOOLBAR_WIDTH 152
 #elif defined(IMGERMAN)
@@ -4537,7 +4533,7 @@ INT_PTR CALLBACK TableInfoProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lP
             {
                char *szCustomName;
                VPGetDialogItemText(hwndDlg, IDC_CUSTOMNAME, &szCustomName);
-               if (lstrlen(szCustomName) > 0)
+               if (szCustomName[0] != '\0')
                {
                   LVFINDINFO lvfi;							
                   lvfi.flags = LVFI_STRING;
@@ -6894,7 +6890,7 @@ INT_PTR CALLBACK ProtectTableProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                   else
                   {
                      // if both strings are empty then bomb out
-                     if ( (strlen(pw) == 0) && (strlen(pw2) == 0) )
+                     if ( (pw[0] == '\0') && (pw2[0] == '\0') )
                      {
                         LocalString ls(IDS_PROTECT_PW_ZEROLEN);
                         MessageBox(hwndDlg, ls.m_szbuffer, "Visual Pinball", MB_ICONWARNING);
@@ -6979,7 +6975,7 @@ INT_PTR CALLBACK UnlockTableProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
                   GetWindowText(hwndPw,  pw,  sizeof(pw));
 
                   // if both password is empty bring up a message box
-                  if (strlen(pw) == 0)
+                  if (pw[0] == '\0')
                   {
                      LocalString ls(IDS_PROTECT_PW_ZEROLEN);
                      MessageBox(hwndDlg, ls.m_szbuffer, "Visual Pinball", MB_ICONWARNING);
