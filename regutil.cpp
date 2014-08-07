@@ -1,6 +1,6 @@
 #include "StdAfx.h"
 
-#define VP_REGKEY  "Software\\Visual Pinball\\DX9\\"
+#define VP_REGKEY  "Software\\Visual Pinball\\VP10\\"
 
 HRESULT GetRegString(const char *szKey, const char *szValue, void *szbuffer, DWORD size)
 {
