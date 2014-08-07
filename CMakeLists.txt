@@ -323,7 +323,7 @@ find_library(LIB_FREEIMAGE freeimage.lib PATHS ${CMAKE_SOURCE_DIR}/lib)
 find_library(LIB_DSOUND dsound.lib PATHS ${DirectX_LIB_DIR})
 find_library(LIB_DINPUT dinput.lib PATHS ${DirectX_LIB_DIR})
 find_library(LIB_D3DX9 d3dx9.lib PATHS ${DirectX_LIB_DIR})
-find_library(LIB_XAUDIO xaudio.lib PATHS ${CMAKE_SOURCE_DIR}/lib)
+find_library(LIB_XAUDIO xaudio.lib PATHS ${CMAKE_SOURCE_DIR}/lib/xaudio)
 find_library(LIB_BASS bass.lib PATHS ${CMAKE_SOURCE_DIR}/lib)
 find_library(LIB_HID hid.lib PATHS ${CMAKE_SOURCE_DIR}/lib)
 
