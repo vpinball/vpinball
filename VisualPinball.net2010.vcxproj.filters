@@ -564,9 +564,6 @@
     <ClInclude Include="ballex.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="buildnum.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="buildnumber.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -741,9 +738,6 @@
     <ClInclude Include="surface.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SVNRevision.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="tableglobal.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -787,6 +781,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="xaudplayer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="buildnum.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
