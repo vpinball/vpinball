@@ -451,6 +451,7 @@
   </ItemGroup>
   <ItemGroup>
     <Object Include="dispatchpatch32.obj" />
+    <Object Include="dispatchpatch64.obj" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\xaudio\aac_codec.h">
@@ -565,9 +566,6 @@
       <Filter>Header Files\inc</Filter>
     </ClInclude>
     <ClInclude Include="ballex.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="buildnum.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="buildnumber.h">
@@ -742,9 +740,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="surface.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SVNRevision.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="tableglobal.h">
