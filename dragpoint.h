@@ -17,7 +17,7 @@ public:
 	virtual IEditable *GetIEditable()=0;
 	virtual PinTable *GetPTable()=0;
 
-	virtual int GetMinimumPoints() {return 3;}
+	virtual int GetMinimumPoints() const {return 3;}
 
 	virtual HRESULT SavePointData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey);
 	//virtual HRESULT InitPointLoad(IStream *pstm, HCRYPTHASH hcrypthash);

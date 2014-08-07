@@ -782,13 +782,10 @@ void Decal::EnsureSize()
       if (m_d.m_decaltype == DecalImage)
       {
          Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
+		 m_realwidth = m_realheight;
          if (pin)
          {
-            m_realwidth = m_realheight * (float)pin->m_width / (float)pin->m_height;
-         }
-         else
-         {
-            m_realwidth = m_realheight;
+            m_realwidth *= (float)pin->m_width / (float)pin->m_height;
          }
       }
       else

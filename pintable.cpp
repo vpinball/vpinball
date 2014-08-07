@@ -5813,7 +5813,7 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
          }
          pt->BeginAutoSaveCounter();
          HANDLE hEvent = (HANDLE)wParam;
-         pt->m_vAsyncHandles.RemoveElement((int)hEvent);
+         pt->m_vAsyncHandles.RemoveElement((int)hEvent); //!! 64bit
          CloseHandle(hEvent);
       }
       break;
@@ -6116,11 +6116,13 @@ STDMETHODIMP PinTable::PlaySound(BSTR bstr, int loopcount, float volume, float p
 }
 
 
-Texture *PinTable::GetImage(char *szName)
+Texture *PinTable::GetImage(const char * const szNameIn) const
 {
-    if (szName == NULL || szName[0] == 0)
+    if (szNameIn == NULL || szNameIn[0] == '\0')
         return NULL;
 
+	char szName[MAXTOKEN];
+	lstrcpy(szName,szNameIn);
     CharLowerBuff(szName, lstrlen(szName));
 
     // during playback, we use the hashtable for lookup
