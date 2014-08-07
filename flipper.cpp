@@ -158,8 +158,8 @@ void Flipper::WriteRegDefaults()
    SetRegValueFloat("DefaultProps\\Flipper","Speed", m_d.m_force);
    SetRegValueFloat("DefaultProps\\Flipper","Elasticity", m_d.m_elasticity);
    SetRegValueFloat("DefaultProps\\Flipper","ScatterAngle", RADTOANG(m_d.m_scatterangle));
-   SetRegValue("DefaultProps\\Flipper","TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
-   SetRegValue("DefaultProps\\Flipper","TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval, 4);
+   SetRegValueInt("DefaultProps\\Flipper","TimerEnabled",m_d.m_tdr.m_fTimerEnabled);
+   SetRegValueInt("DefaultProps\\Flipper","TimerInterval",m_d.m_tdr.m_TimerInterval);
    SetRegValue("DefaultProps\\Flipper","Color", REG_DWORD, &m_d.m_color, 4);
    SetRegValue("DefaultProps\\Flipper","RubberColor", REG_DWORD, &m_d.m_rubbercolor, 4);
    SetRegValue("DefaultProps\\Flipper","Surface", REG_SZ, &m_d.m_szSurface,(DWORD)strlen(m_d.m_szSurface));
@@ -167,12 +167,12 @@ void Flipper::WriteRegDefaults()
    SetRegValueFloat("DefaultProps\\Flipper","PowerLaw", m_d.m_powerlaw);
    SetRegValueFloat("DefaultProps\\Flipper","ObliqueCorrection", m_d.m_obliquecorrection);
    SetRegValueFloat("DefaultProps\\Flipper","Height", m_d.m_height);
-   SetRegValue("DefaultProps\\Flipper","RubberThickness", REG_DWORD, &m_d.m_rubberthickness, 4);
-   SetRegValue("DefaultProps\\Flipper","RubberHeight", REG_DWORD, &m_d.m_rubberheight, 4);
-   SetRegValue("DefaultProps\\Flipper","RubberWidth", REG_DWORD, &m_d.m_rubberwidth, 4);
-   SetRegValue("DefaultProps\\Flipper","Visible",REG_DWORD,&m_d.m_fVisible,4);
-   SetRegValue("DefaultProps\\Flipper","Enabled",REG_DWORD,&m_d.m_fEnabled,4);
-   SetRegValue("DefaultProps\\Flipper","CompatibilityMode",REG_DWORD,&m_d.m_fCompatibility,4);
+   SetRegValueInt("DefaultProps\\Flipper","RubberThickness", m_d.m_rubberthickness);
+   SetRegValueInt("DefaultProps\\Flipper","RubberHeight", m_d.m_rubberheight);
+   SetRegValueInt("DefaultProps\\Flipper","RubberWidth", m_d.m_rubberwidth);
+   SetRegValueInt("DefaultProps\\Flipper","Visible",m_d.m_fVisible);
+   SetRegValueInt("DefaultProps\\Flipper","Enabled",m_d.m_fEnabled);
+   SetRegValueInt("DefaultProps\\Flipper","CompatibilityMode",m_d.m_fCompatibility);
 }
 
 

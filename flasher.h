@@ -17,9 +17,9 @@ public:
     COLORREF m_color;
 	TimerDataRoot m_tdr;
 	float m_rotX,m_rotY,m_rotZ;
-	long m_fAlpha;
-    BOOL m_fDisplayTexture;
+	int m_fAlpha;
     float m_depthBias;      // for determining depth sorting
+    bool m_fDisplayTexture;
 	bool m_IsVisible;
 	bool m_fAddBlend;
 	char m_szImage[MAXTOKEN];
