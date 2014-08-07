@@ -19,7 +19,7 @@ public:
     char        m_szImage[MAXTOKEN];    // image to use for the decals.
     ReelType    m_reeltype;
 	BOOL		m_fUseImageGrid;
-    long		m_imagesPerGridRow;
+    int			m_imagesPerGridRow;
     int			m_reelcount;			// number of individual reel in the set
     float       m_width, m_height;      // size of each reel
     float       m_reelspacing;          // spacing between each reel and the boarders
@@ -27,7 +27,7 @@ public:
 	int			m_digitrange;			// max number of digits per reel (usually 9)
 
     char        m_szSound[MAXTOKEN];    // sound to play for each turn of a digit
-    long        m_updateinterval;       // time in ms between each animation update
+    int	        m_updateinterval;       // time in ms between each animation update
 
     COLORREF    m_backcolor;            // colour of the background
     COLORREF    m_reelcolor;            // colour of the reels (valid if m_reeltype = ReelText)

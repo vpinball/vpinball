@@ -129,8 +129,8 @@ HRESULT SetRegValueInt(const char *szKey, const char *szValue, int val)
 
 HRESULT SetRegValueFloat(const char *szKey, const char *szValue, float val)
 {
-    char buf[40];
-    sprintf_s(buf, 40, "%f", val);
+    char buf[16];
+    sprintf_s(buf, 16, "%f", val);
     return SetRegValue(szKey, szValue, REG_SZ, buf, (DWORD)strlen(buf));
 }
 

@@ -322,21 +322,21 @@ void DispReel::WriteRegDefaults()
 	SetRegValue("DefaultProps\\EMReel","ReelType",REG_DWORD,&m_d.m_reeltype,4);
 	SetRegValue("DefaultProps\\EMReel","Image", REG_SZ, &m_d.m_szImage,(DWORD)strlen(m_d.m_szImage));
 	SetRegValue("DefaultProps\\EMReel","Sound", REG_SZ, &m_d.m_szSound,(DWORD)strlen(m_d.m_szSound));
-	SetRegValue("DefaultProps\\Decal","UseImageGrid",REG_DWORD,&m_d.m_fUseImageGrid,4);
-	SetRegValue("DefaultProps\\Decal","ImagesPerRow",REG_DWORD,&m_d.m_imagesPerGridRow ,4);
-	SetRegValue("DefaultProps\\Decal","Transparent",REG_DWORD,&m_d.m_fTransparent,4);
-	SetRegValue("DefaultProps\\Decal","ReelCount",REG_DWORD,&m_d.m_reelcount ,4);
+	SetRegValueInt("DefaultProps\\Decal","UseImageGrid",m_d.m_fUseImageGrid);
+	SetRegValueInt("DefaultProps\\Decal","ImagesPerRow",m_d.m_imagesPerGridRow);
+	SetRegValueInt("DefaultProps\\Decal","Transparent",m_d.m_fTransparent);
+	SetRegValueInt("DefaultProps\\Decal","ReelCount",m_d.m_reelcount);
 	SetRegValueFloat("DefaultProps\\EMReel","Width", m_d.m_width);
 	SetRegValueFloat("DefaultProps\\EMReel","Height", m_d.m_height);
 	SetRegValueFloat("DefaultProps\\EMReel","ReelSpacing", m_d.m_reelspacing);
 	SetRegValueFloat("DefaultProps\\EMReel","MotorSteps", m_d.m_motorsteps);
-	SetRegValue("DefaultProps\\Decal","DigitRange",REG_DWORD,&m_d.m_digitrange,4);
-	SetRegValue("DefaultProps\\Decal","UpdateInterval",REG_DWORD,&m_d.m_updateinterval,4);
+	SetRegValueInt("DefaultProps\\Decal","DigitRange",m_d.m_digitrange);
+	SetRegValueInt("DefaultProps\\Decal","UpdateInterval",m_d.m_updateinterval);
 	SetRegValue("DefaultProps\\EMReel","BackColor",REG_DWORD,&m_d.m_backcolor,4);
 	SetRegValue("DefaultProps\\EMReel","FontColor",REG_DWORD,&m_d.m_fontcolor,4);
 	SetRegValue("DefaultProps\\EMReel","ReelColor",REG_DWORD,&m_d.m_reelcolor,4);
-	SetRegValue("DefaultProps\\EMReel","TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
-	SetRegValue("DefaultProps\\EMReel","TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval, 4);
+	SetRegValueInt("DefaultProps\\EMReel","TimerEnabled",m_d.m_tdr.m_fTimerEnabled);
+	SetRegValueInt("DefaultProps\\EMReel","TimerInterval",m_d.m_tdr.m_TimerInterval);
 
 	if (m_pIFont)
 		{
@@ -356,8 +356,10 @@ void DispReel::WriteRegDefaults()
 		size_t charCnt = wcslen(fd.lpstrName) + 1;
 		WideCharToMultiByte(CP_ACP, 0, fd.lpstrName, (int)charCnt, strTmp, (int)(2*charCnt), NULL, NULL);
 		SetRegValue("DefaultProps\\EMReel","FontName", REG_SZ, &strTmp,(DWORD)strlen(strTmp));
-		SetRegValue("DefaultProps\\EMReel","FontWeight",REG_DWORD,&fd.sWeight,4);
-		SetRegValue("DefaultProps\\EMReel","FontCharSet",REG_DWORD,&fd.sCharset,4);
+		const int weight = fd.sWeight;
+		const int charset = fd.sCharset;
+		SetRegValueInt("DefaultProps\\EMReel","FontWeight",weight);
+		SetRegValueInt("DefaultProps\\EMReel","FontCharSet",charset);
 		SetRegValue("DefaultProps\\EMReel","FontItalic",REG_DWORD,&fd.fItalic,4);
 		SetRegValue("DefaultProps\\EMReel","FontUnderline",REG_DWORD,&fd.fUnderline,4);
 		SetRegValue("DefaultProps\\EMReel","FontStrikeThrough",REG_DWORD,&fd.fStrikethrough,4);
