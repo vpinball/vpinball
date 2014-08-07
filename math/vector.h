@@ -1,6 +1,5 @@
 #pragma once
 
-
 // 2D vector
 class Vertex2D
 {
@@ -8,92 +7,94 @@ public:
    float x;
    float y;
 
-   Vertex2D() {}
-   Vertex2D(const float _x, const float _y) : x(_x), y(_y) {}
+   inline Vertex2D() {}
+   inline Vertex2D(const float _x, const float _y) : x(_x), y(_y) {}
 
-   Vertex2D operator+ (const Vertex2D& v) const
+   inline Vertex2D operator+ (const Vertex2D& v) const
    {
        return Vertex2D(x + v.x, y + v.y);
    }
-   Vertex2D operator- (const Vertex2D& v) const
+   inline Vertex2D operator- (const Vertex2D& v) const
    {
        return Vertex2D(x - v.x, y - v.y);
    }
-   Vertex2D operator- () const
+   inline Vertex2D operator- () const
    {
        return Vertex2D(-x, -y);
    }
 
-   Vertex2D& operator+= (const Vertex2D& v)
+   inline Vertex2D& operator+= (const Vertex2D& v)
    {
        x += v.x;
        y += v.y;
        return *this;
    }
-   Vertex2D& operator-= (const Vertex2D& v)
+   inline Vertex2D& operator-= (const Vertex2D& v)
    {
        x -= v.x;
        y -= v.y;
        return *this;
    }
 
-   Vertex2D operator* (float s) const
+   inline Vertex2D operator* (const float s) const
    {
        return Vertex2D(s*x, s*y);
    }
-   friend Vertex2D operator* (float s, const Vertex2D& v)
+   inline friend Vertex2D operator* (const float s, const Vertex2D& v)
    {
        return Vertex2D(s*v.x, s*v.y);
    }
-   Vertex2D operator/ (float s) const
+   inline Vertex2D operator/ (const float s) const
    {
-       return Vertex2D(x/s, y/s);
+       const float invs = 1.0f/s;
+       return Vertex2D(x*invs, y*invs);
    }
 
-   Vertex2D& operator*= (float s)
+   inline Vertex2D& operator*= (const float s)
    {
        x *= s;
        y *= s;
        return *this;
    }
-   Vertex2D& operator/= (float s)
+   inline Vertex2D& operator/= (const float s)
    {
-       x /= s;
-       y /= s;
+       const float invs = 1.0f/s;
+       x *= invs;
+       y *= invs;
        return *this;
    }
 
-   float Dot(const Vertex2D &pv) const
+   inline float Dot(const Vertex2D &pv) const
    {
       return x*pv.x + y*pv.y;
    }
 
-   float LengthSquared() const
+   inline float LengthSquared() const
    {
       return x*x + y*y;
    }
 
-   float Length() const
+   inline float Length() const
    {
       return sqrtf(x*x + y*y);
    }
 
-   void Normalize()
+   inline void Normalize()
    {
       const float oneoverlength = 1.0f / Length();
       x *= oneoverlength;
       y *= oneoverlength;
    }
 
-   void NormalizeSafe()
+   inline void NormalizeSafe()
    {
        if (!IsZero())
            Normalize();
    }
 
-   bool IsZero() const
+   inline bool IsZero() const
    {
-       return x == 0 && y == 0;
+       return x == 0.f && y == 0.f;
    }
 };
 
@@ -102,38 +103,34 @@ public:
 class Vertex3Ds
 {
 public:
-   struct {
-      float x;
-      float y;
-      float z;
-   };
+   float x,y,z;
 
-   Vertex3Ds() {}
-   Vertex3Ds(const float _x, const float _y, const float _z) : x(_x), y(_y), z(_z) {}
+   inline Vertex3Ds() {}
+   inline Vertex3Ds(const float _x, const float _y, const float _z) : x(_x), y(_y), z(_z) {}
 
-   void Set(const float a, const float b, const float c) {x=a; y=b; z=c;}
+   inline void Set(const float a, const float b, const float c) {x=a; y=b; z=c;}
 
-   Vertex3Ds operator+ (const Vertex3Ds& v) const
+   inline Vertex3Ds operator+ (const Vertex3Ds& v) const
    {
        return Vertex3Ds(x + v.x, y + v.y, z + v.z);
    }
-   Vertex3Ds operator- (const Vertex3Ds& v) const
+   inline Vertex3Ds operator- (const Vertex3Ds& v) const
    {
        return Vertex3Ds(x - v.x, y - v.y, z - v.z);
    }
-   Vertex3Ds operator- () const
+   inline Vertex3Ds operator- () const
    {
        return Vertex3Ds(-x, -y, -z);
    }
 
-   Vertex3Ds& operator+= (const Vertex3Ds& v)
+   inline Vertex3Ds& operator+= (const Vertex3Ds& v)
    {
        x += v.x;
        y += v.y;
        z += v.z;
        return *this;
    }
-   Vertex3Ds& operator-= (const Vertex3Ds& v)
+   inline Vertex3Ds& operator-= (const Vertex3Ds& v)
    {
        x -= v.x;
        y -= v.y;
@@ -141,42 +138,44 @@ public:
        return *this;
    }
 
-   Vertex3Ds operator* (float s) const
+   inline Vertex3Ds operator* (const float s) const
    {
        return Vertex3Ds(s*x, s*y, s*z);
    }
-   friend Vertex3Ds operator* (float s, const Vertex3Ds& v)
+   inline friend Vertex3Ds operator* (const float s, const Vertex3Ds& v)
    {
        return Vertex3Ds(s*v.x, s*v.y, s*v.z);
    }
-   Vertex3Ds operator/ (float s) const
+   inline Vertex3Ds operator/ (const float s) const
    {
-       return Vertex3Ds(x/s, y/s, z/s);
+       const float invs = 1.0f/s;
+       return Vertex3Ds(x*invs, y*invs, z*invs);
    }
 
-   Vertex3Ds& operator*= (float s)
+   inline Vertex3Ds& operator*= (const float s)
    {
        x *= s;
        y *= s;
        z *= s;
        return *this;
    }
-   Vertex3Ds& operator/= (float s)
+   inline Vertex3Ds& operator/= (const float s)
    {
-       x /= s;
-       y /= s;
-       z /= s;
+       const float invs = 1.0f/s;
+       x *= invs;
+       y *= invs;
+       z *= invs;
        return *this;
    }
 
-   void Normalize()
+   inline void Normalize()
    {
       const float oneoverlength = 1.0f/sqrtf(x*x + y*y + z*z);
       x *= oneoverlength;
       y *= oneoverlength;
       z *= oneoverlength;
    }
-   void Normalize(const float scalar)
+   inline void Normalize(const float scalar)
    {
       const float oneoverlength = scalar/sqrtf(x*x + y*y + z*z);
       x *= oneoverlength;
@@ -184,40 +183,39 @@ public:
       z *= oneoverlength;
    }
 
-   void NormalizeSafe()
+   inline void NormalizeSafe()
    {
        if (!IsZero())
            Normalize();
    }
 
-
-   float Dot(const Vertex3Ds &pv) const
+   inline float Dot(const Vertex3Ds &pv) const
    {
       return x*pv.x + y*pv.y + z*pv.z;
    }
-   float Dot(const Vertex3D &pv) const
+   inline float Dot(const Vertex3D &pv) const
    {
       return x*pv.x + y*pv.y + z*pv.z;
    }
 
-   float LengthSquared() const
+   inline float LengthSquared() const
    {
       return x*x + y*y + z*z;
    }
 
-   float Length() const
+   inline float Length() const
    {
       return sqrtf(x*x + y*y + z*z);
    }
 
-   bool IsZero() const
+   inline bool IsZero() const
    {
-       return x == 0 && y == 0 && z == 0;
+       return x == 0.f && y == 0.f && z == 0.f;
    }
 
    // access the x/y components as a 2D vector
-   Vertex2D& xy()               { return *(reinterpret_cast<Vertex2D*>(&x)); }
-   const Vertex2D& xy() const   { return *(reinterpret_cast<const Vertex2D*>(&x)); }
+   inline Vertex2D& xy()               { return *(reinterpret_cast<Vertex2D*>(&x)); }
+   inline const Vertex2D& xy() const   { return *(reinterpret_cast<const Vertex2D*>(&x)); }
 };
 
 
@@ -230,28 +228,28 @@ inline Vertex3Ds CrossProduct(const Vertex3Ds &pv1, const Vertex3Ds &pv2)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-inline Vertex3Ds GetRotatedAxis( float angle, Vertex3Ds &axis, Vertex3Ds &temp)
+inline Vertex3Ds GetRotatedAxis( const float angle, const Vertex3Ds &axis, const Vertex3Ds &temp)
 {   
-   axis.Normalize();
    Vertex3Ds u=axis;
+   u.Normalize();
+
+   const float sinAngle=sinf((float)(M_PI/180.0)*angle);
+   const float cosAngle=cosf((float)(M_PI/180.0)*angle);
+   const float oneMinusCosAngle=1.0f-cosAngle;
 
    Vertex3Ds rotMatrixRow0, rotMatrixRow1, rotMatrixRow2;
 
-   float sinAngle=sinf((float)M_PI*angle/180);
-   float cosAngle=cosf((float)M_PI*angle/180);
-   float oneMinusCosAngle=1.0f-cosAngle;
+   rotMatrixRow0.x=u.x*u.x + cosAngle*(1.f-u.x*u.x);
+   rotMatrixRow0.y=u.x*u.y*oneMinusCosAngle - sinAngle*u.z;
+   rotMatrixRow0.z=u.x*u.z*oneMinusCosAngle + sinAngle*u.y;
 
-   rotMatrixRow0.x=(u.x)*(u.x) + cosAngle*(1-(u.x)*(u.x));
-   rotMatrixRow0.y=(u.x)*(u.y)*(oneMinusCosAngle) - sinAngle*u.z;
-   rotMatrixRow0.z=(u.x)*(u.z)*(oneMinusCosAngle) + sinAngle*u.y;
+   rotMatrixRow1.x=u.x*u.y*oneMinusCosAngle + sinAngle*u.z;
+   rotMatrixRow1.y=u.y*u.y + cosAngle*(1.f-u.y*u.y);
+   rotMatrixRow1.z=u.y*u.z*oneMinusCosAngle - sinAngle*u.x;
 
-   rotMatrixRow1.x=(u.x)*(u.y)*(oneMinusCosAngle) + sinAngle*u.z;
-   rotMatrixRow1.y=(u.y)*(u.y) + cosAngle*(1-(u.y)*(u.y));
-   rotMatrixRow1.z=(u.y)*(u.z)*(oneMinusCosAngle) - sinAngle*u.x;
-
-   rotMatrixRow2.x=(u.x)*(u.z)*(oneMinusCosAngle) - sinAngle*u.y;
-   rotMatrixRow2.y=(u.y)*(u.z)*(oneMinusCosAngle) + sinAngle*u.x;
-   rotMatrixRow2.z=(u.z)*(u.z) + cosAngle*(1-(u.z)*(u.z));
+   rotMatrixRow2.x=u.x*u.z*oneMinusCosAngle - sinAngle*u.y;
+   rotMatrixRow2.y=u.y*u.z*oneMinusCosAngle + sinAngle*u.x;
+   rotMatrixRow2.z=u.z*u.z + cosAngle*(1.f-u.z*u.z);
 
    return Vertex3Ds(temp.Dot(rotMatrixRow0), temp.Dot(rotMatrixRow1), temp.Dot(rotMatrixRow2));
 }
@@ -394,4 +392,3 @@ inline Vertex3Ds RotateAround(const Vertex3Ds &pvAxis, const Vertex2D &pvPoint, 
       matrix[1][0]*pvPoint.x + matrix[1][1]*pvPoint.y,
       matrix[2][0]*pvPoint.x + matrix[2][1]*pvPoint.y);
 }
-

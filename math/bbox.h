@@ -11,14 +11,14 @@ class FRect3D
 public:
    float left, top, right, bottom, zlow, zhigh;
 
-   void Clear()
+   inline void Clear()
    {
        left = FLT_MAX;  right = -FLT_MAX;
        top = FLT_MAX;   bottom = -FLT_MAX;
        zlow = FLT_MAX;  zhigh = -FLT_MAX;
    }
 
-   void Extend(const FRect3D& other)
+   inline void Extend(const FRect3D& other)
    {
        left = min(left, other.left);
        right = max(right, other.right);
@@ -48,4 +48,3 @@ inline bool fRectIntersect3D(const FRect3D &rc1, const FRect3D &rc2)
 
 	//return (rc1.right >= rc2.left && rc1.bottom >= rc2.top && rc1.left <= rc2.right && rc1.top <= rc2.bottom && rc1.zlow <= rc2.zhigh && rc1.zhigh >= rc2.zlow);
 }
-
