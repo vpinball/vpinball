@@ -4,9 +4,7 @@
 void Matrix3D::Invert()
 //void Gauss (RK8 ** a, RK8 ** b, int n)
 {
-	int ipvt[4];
-	for (int i = 0; i < 4; ++i)
-		ipvt[i] = i;
+	int ipvt[4] = {0,1,2,3};
 
 	for (int k = 0; k < 4; ++k)
 	{
