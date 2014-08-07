@@ -783,8 +783,5 @@
     <ClInclude Include="xaudplayer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="buildnum.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>
