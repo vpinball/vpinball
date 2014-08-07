@@ -1,5 +1,20 @@
-VP 9.9.1 Changelog
+VP 10.0.0 Changelog
 ------------------------
+- add rubber element
+
+- shader based inserts/lights/bulbs
+- shader based mesh ball
+
+- improved smoothness for ramps (centripetal Catmull-Rom splines)
+- changed opacity/transparency handling for ramps (Alpha/Acrylic have been replaced by new props Transparent/Opacity)
+
+- GetElement, GetElementByName, GetBalls added to Table Script methods
+- renaming of IsVisible properties (flasher, ramp) to Visible
+
+- new audio library for music playback (BASS)
+
+- 64bit port (handle with care, might still cause issues)
+
 - DirectX 8 port for input handling (currently disabled)
 
 - texture size limit/downscale now respects aspect ratio (currently disabled)

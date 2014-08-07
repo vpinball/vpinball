@@ -117,10 +117,12 @@ StopShake()
 PlaySound(string, int loopcount, float volume, float pan, float randompitch, int pitch, bool usesame, bool restart)
 FireKnocker(int Count)
 QuitPlayer(int CloseType)
-Version(int) - returns the Visual Pinball version number (i.e. 9.2.0: 9200)
 VersionMajor - major VP version number
 VersionMinor - minor VP version number
 VersionRevision - VP version revision
+GetBalls
+GetElements
+GetElementByName
 
 
 BUMPER
@@ -459,15 +461,15 @@ HasWallImage(bool) - apply image to walls
 LeftWallHeight(float)
 RightWallHeight(float)
 *Solid(bool) - standard solid ramp mode
-*Acrylic(bool) - deprecated acrylic ramp mode, please use alpha instead
-Alpha(bool) - alpha ramp mode, switches ramp from static to dynamic rendering (that also allows for full transparency control)
+Opacity
+Transparent
 UserValue(bool)
 *CastShadow(bool)
 VisibleLeftWallHeight(float)
 VisibleRightWallHeight(float)
 Elasticity(float)
 Collidable(bool)
-IsVisible(bool)
+Visible(bool)
 Friction(float)
 Scatter(float)
 Modify3DStereo(bool) - modifies the depth buffer, which can look confusing if the ramp is used for 2D flasher or GI effects, etc and the Stereo 3D rendering is used, thus it should be disabled for flashers, GI, etc
@@ -581,7 +583,7 @@ Image(string) - texture name
 Alpha - lets you define an alpha factor(0..255) for additive alpha blending and it only works on flashers which 'Additive Alpha Bl.' checked or setting AddBlend(TRUE)
 Color - defines the color of the element in the editor. If 'Additive Alpha Bl.' isn't checked this will colorize the image too. If you don't want to colorize the image set the color to 
         blank white (RGB 255,255,255)
-IsVisible(bool) - shows/hides the flasher
+Visible(bool) - shows/hides the flasher
 AddBlend(bool) - use additive alpha blending instead of classical alpha blending
 
 BALL
