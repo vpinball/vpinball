@@ -742,7 +742,7 @@ void Light::PrepareMoversCustom()
       Texture* pin = NULL;
       if(i == LightStateOff ) 
          pin = m_ptable->GetImage(m_d.m_szOffImage);
-      
+	  else
       if(i == LightStateOn ) 
          pin = m_ptable->GetImage(m_d.m_szOnImage);
 

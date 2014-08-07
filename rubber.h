@@ -93,7 +93,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_RUBBER)
 
 	virtual void DoCommand(int icmd, int x, int y);
 
-	virtual int GetMinimumPoints() {return 2;}
+	virtual int GetMinimumPoints() const {return 2;}
 
 	virtual void FlipY(Vertex2D * const pvCenter);
 	virtual void FlipX(Vertex2D * const pvCenter);
@@ -108,7 +108,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_RUBBER)
 
 	virtual void GetBoundingVertices(Vector<Vertex3Ds> * const pvvertex3D);
 
-    virtual float GetDepth(const Vertex3Ds& viewDir);
+    virtual float GetDepth(const Vertex3Ds& viewDir) const;
 
 	void WriteRegDefaults();
 

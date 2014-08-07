@@ -191,7 +191,7 @@ STDMETHODIMP BallEx::put_Image(BSTR newVal)
 {
 	WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_pball->m_szImage, 32, NULL, NULL);
 
-	m_pball->m_pin = (lstrlen(m_pball->m_szImage) > 0) ? g_pplayer->m_ptable->GetImage(m_pball->m_szImage) : NULL;
+	m_pball->m_pin = g_pplayer->m_ptable->GetImage(m_pball->m_szImage);
     // recalculate texture coords for new texture
     m_pball->RenderSetup();
 	return S_OK;
@@ -226,7 +226,7 @@ STDMETHODIMP BallEx::put_FrontDecal(BSTR newVal)
 {
 	WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_pball->m_szImageFront, 32, NULL, NULL);
 
-	m_pball->m_pinFront = (lstrlen(m_pball->m_szImageFront) > 0) ? g_pplayer->m_ptable->GetImage(m_pball->m_szImageFront) : NULL;
+	m_pball->m_pinFront = g_pplayer->m_ptable->GetImage(m_pball->m_szImageFront);
 
 	return S_OK;
 }
@@ -244,7 +244,7 @@ STDMETHODIMP BallEx::put_BackDecal(BSTR newVal)
 {
 	WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_pball->m_szImageBack, 32, NULL, NULL);
 
-	m_pball->m_pinBack = (lstrlen(m_pball->m_szImageBack) > 0) ? g_pplayer->m_ptable->GetImage(m_pball->m_szImageBack) : NULL;
+	m_pball->m_pinBack = g_pplayer->m_ptable->GetImage(m_pball->m_szImageBack);
 
 	return S_OK;
 }

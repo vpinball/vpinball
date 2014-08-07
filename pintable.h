@@ -343,7 +343,7 @@ public:
 	int AddListImage(HWND hwndListView, Texture *ppi);
 	void RemoveImage(Texture *ppi);
 	HRESULT LoadImageFromStream(IStream *pstm, int version);
-	Texture *GetImage(char *szName);
+	Texture *GetImage(const char * const szName) const;
 	void CreateGDIBackdrop();
 	int GetImageLink(Texture *ppi);
 	PinBinary *PinTable::GetImageLinkBinary(int id);
