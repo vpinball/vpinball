@@ -176,7 +176,6 @@ set(SOURCES
 
 set(HEADERS
   ballex.h
-  buildnum.h
   buildnumber.h
   bumper.h
   codeview.h
@@ -234,7 +233,6 @@ set(HEADERS
   stdafx.h
   sur.h
   surface.h
-  SVNRevision.h
   tableglobal.h
   textbox.h
   timer.h

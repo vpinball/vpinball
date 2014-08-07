@@ -5,7 +5,6 @@
 #include "StdAfx.h"
 
 #include "buildnumber.h"
-//#include "SVNRevision.h"
 #include "resource.h"
 
 #if _MSC_VER <= 1310 // VC 2003 and before
@@ -3143,9 +3142,6 @@ INT_PTR CALLBACK AboutProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
          //			char szTime[]=__TIME__;
          //			char szDate[]=__DATE__; 
 
-         //			char szSVNDate[]= SVNDATE;
-         //			char szSVNRev[]= SVNREVISION;
-
          lstrcpy(szVersion, "Version "); // add time and date to compilation version
          _itoa_s(BUILD_NUMBER, szBuild, sizeof(szBuild), 10);
          lstrcat(szVersion, szBuild);
@@ -3154,15 +3150,6 @@ INT_PTR CALLBACK AboutProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
          //			lstrcat(szVersion, szTime);
          //			lstrcat(szVersion, "-");
          //			lstrcat(szVersion, szDate);
-
-         //			lstrcat(szVersion, ")\n\nSVN");		// place Subversion revision and date in About Dialog
-
-         //			szSVNRev[0]= ' '; szSVNRev[strlen(szSVNRev)-1] = 0; 
-         //			lstrcat(szVersion, szSVNRev);
-         //
-         //			szSVNDate[0] = ' '; szSVNDate[strlen(szSVNDate)-1] = 0;
-         //			lstrcat(szVersion, szSVNDate);
-
 
          HWND hwndVersion = GetDlgItem(hwndDlg, IDC_VERSION);
          SetWindowText(hwndVersion, szVersion);
