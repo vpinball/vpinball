@@ -9,6 +9,9 @@ DX9 renderer known issues:
 *) textures aren't preloaded, can lead to stutter in some cases
 *) screen shake doesn't work
 *) adaptive vsync always falls back to normal vsync (can only be supported if we drop XP)
+
+Not relevant anymore:
+
 *) stereo3D parameters are different
 *) "real" full screen mode doesn't work with VPM/B2S. Instead, use "Windowed fullscreen" mode.
 *) lost devices aren't handled properly (real fullscreen issue only)
