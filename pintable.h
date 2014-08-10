@@ -343,7 +343,7 @@ public:
 	int AddListImage(HWND hwndListView, Texture *ppi);
 	void RemoveImage(Texture *ppi);
 	HRESULT LoadImageFromStream(IStream *pstm, int version);
-	Texture *GetImage(const char * const szName) const;
+	Texture *GetImage(char * const szName) const;
 	void CreateGDIBackdrop();
 	int GetImageLink(Texture *ppi);
 	PinBinary *PinTable::GetImageLinkBinary(int id);
@@ -407,7 +407,7 @@ public:
 
     void ClearMultiSel(ISelect *newSel = NULL);
     bool MultiSelIsEmpty();
-    ISelect *GetSelectedItem()      { return m_vmultisel.ElementAt(0); }
+    ISelect *GetSelectedItem() const { return m_vmultisel.ElementAt(0); }
 	void AddMultiSel(ISelect *psel, bool fAdd, bool fUpdate=true);
 
 	void BeginAutoSaveCounter();

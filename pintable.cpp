@@ -6097,13 +6097,11 @@ STDMETHODIMP PinTable::PlaySound(BSTR bstr, int loopcount, float volume, float p
 }
 
 
-Texture *PinTable::GetImage(const char * const szNameIn) const
+Texture *PinTable::GetImage(char * const szName) const
 {
-    if (szNameIn == NULL || szNameIn[0] == '\0')
+    if (szName == NULL || szName[0] == '\0')
         return NULL;
 
-	char szName[MAXTOKEN];
-	lstrcpy(szName,szNameIn);
     CharLowerBuff(szName, lstrlen(szName));
 
     // during playback, we use the hashtable for lookup

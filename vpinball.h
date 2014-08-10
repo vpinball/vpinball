@@ -34,7 +34,6 @@ public:
     HWND CreateLayerToolbar(HWND hwndParent);
 	HWND CreateToolbar(TBBUTTON *p_tbbutton, int count, HWND hwndParent);
 	void CreateMDIClient();
-	HRESULT AddMiniBitmaps();
 
 	void ParseCommand(size_t code, HWND hwnd, size_t notify);
     void setLayerStatus( int layerNumber );
@@ -119,8 +118,8 @@ public:
 
 	Vector<IStream> m_vstmclipboard;
 
-	PinDirectSound m_pds;
-	PinDirectSound *m_pbackglassds;
+	PinDirectSound m_pds; //!! delete as soon as all on BASS
+	PinDirectSound *m_pbackglassds; //!! delete
 
 	int m_ToolCur; // Palette button currently pressed
 

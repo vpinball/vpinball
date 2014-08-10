@@ -1563,12 +1563,6 @@ BOOL VPinball::CloseTable(PinTable *ppt)
    return fTrue;
 }
 
-
-HRESULT VPinball::AddMiniBitmaps()
-{
-   return S_OK;
-}
-
 void VPinball::ShowPermissionError()
 {
    LocalString ls(IDS_PERMISSION_ERROR);

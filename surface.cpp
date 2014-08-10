@@ -4,6 +4,9 @@ Surface::Surface()
 {
    m_menuid = IDR_SURFACEMENU;
 
+   m_d.m_szImage[0] = 0;
+   m_d.m_szSideImage[0] = 0;
+
    m_d.m_fCollidable = fTrue;
    m_d.m_fSlingshotAnimation = fTrue;
    m_d.m_fInner = fTrue;

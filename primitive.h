@@ -243,7 +243,7 @@ public:
    virtual bool LoadMesh();
    virtual void ExportMesh();
 
-   virtual bool IsTransparent() const;
+   virtual bool IsTransparent();
    virtual float GetDepth(const Vertex3Ds& viewDir) const;
 
    Mesh m_mesh;

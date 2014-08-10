@@ -144,7 +144,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_LIGHT)
 	virtual void DrawFrame(BOOL fOn)  { }
     void PostRenderStaticCustom(RenderDevice* pd3dDevice);
 
-    virtual bool IsTransparent() const { return true; }
+    virtual bool IsTransparent() { return true; }
     virtual float GetDepth(const Vertex3Ds& viewDir) const
       { return m_d.m_depthBias + viewDir.x * m_d.m_vCenter.x + viewDir.y * m_d.m_vCenter.y + viewDir.z * m_surfaceHeight; }
 
