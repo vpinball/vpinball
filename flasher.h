@@ -83,7 +83,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Flasher)
     virtual void GetCenter(Vertex2D * const pv) const {*pv = m_d.m_vCenter;}
     virtual void PutCenter(const Vertex2D * const pv) {m_d.m_vCenter = *pv; m_ptable->SetDirtyDraw();}
 
-    virtual bool IsTransparent() const { return true; }
+    virtual bool IsTransparent() { return true; }
     virtual float GetDepth(const Vertex3Ds& viewDir) const
       { return m_d.m_depthBias + viewDir.x * m_d.m_vCenter.x + viewDir.y * m_d.m_vCenter.y + viewDir.z * m_d.m_height; }
 

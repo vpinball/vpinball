@@ -1319,7 +1319,7 @@ void Primitive::ExportMesh()
    m_mesh.SaveWavefrontObj(ofn.lpstrFile, m_d.use3DMesh ? m_d.meshFileName : "Primitive");
 }
 
-bool Primitive::IsTransparent() const
+bool Primitive::IsTransparent()
 {
     const Texture * const tex = m_ptable->GetImage(m_d.m_szImage);
     return tex && tex->m_fTransparent;
