@@ -263,7 +263,7 @@ BOOL CALLBACK EnumObjectsCallback( const DIDEVICEOBJECTINSTANCE* pdidoi,
 		dipdw.diph.dwHeaderSize = sizeof(DIPROPHEADER); 
 		dipdw.diph.dwObj		= pdidoi->dwType; // Specify the enumerated axis
 		dipdw.diph.dwHow		= DIPH_BYID;
-		dipdw.dwData			= 30;//g_pplayer->m_DeadZ; //allows for 0-100% deadzone in 1% increments
+		dipdw.dwData            = 0; // no dead zone at joystick level
  
 		// Set the deadzone
 		if(FAILED(ppinput->m_pJoystick[ppinput->e_JoyCnt]->SetProperty(DIPROP_DEADZONE, &dipdw.diph)))
@@ -1278,10 +1278,10 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 
 				// Axis Deadzone
 				int deadu = u;
-				if((deadu<=0) && (deadu>=DeadZ2*(-10))){deadu = 0;}
-				if((deadu>=0) && (deadu<=DeadZ2*10)){deadu = 0;}
-				if((deadu<0) && (deadu<DeadZ2*(-10))){deadu = deadu + DeadZ2*10;}
-				if((deadu>0) && (deadu>DeadZ2*10)){deadu = deadu - DeadZ2*10;}
+				if((deadu<=0) && (deadu>=DeadZ2*(-10))) {deadu = 0;}
+				if((deadu>=0) && (deadu<=DeadZ2*10)) {deadu = 0;}
+				if((deadu<0) && (deadu<DeadZ2*(-10))) {deadu += DeadZ2*10;}
+				if((deadu>0) && (deadu>DeadZ2*10)) {deadu -= DeadZ2*10;}
 				
 				switch (input->dwOfs)	// Axis, Sliders and POV
 				{	// with selectable axes added to menu, giving prioity in this order... X Axis (the Left/Right Axis), Y Axis
@@ -1294,21 +1294,21 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 								// Axis Deadzone
 								u = deadu;
 								if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && (m_lr_axis != 0))
-									g_pplayer->UltraNudgeX(-u, joyk); //rotate to match Pinball Wizard
+									g_pplayer->NudgeX(-u, joyk); //rotate to match Pinball Wizard
 								if ((uShockType == USHOCKTYPE_ULTRACADE) && (m_lr_axis != 0))
 								{
 									if (rotLeftManual)
-										g_pplayer->UltraNudgeX(u, joyk);
+										g_pplayer->NudgeX(u, joyk);
 									else
-										g_pplayer->UltraNudgeY(-u, joyk); //rotate to match joystick
+										g_pplayer->NudgeY(-u, joyk); //rotate to match joystick
 								}
 								if ((uShockType == USHOCKTYPE_SIDEWINDER) && (m_lr_axis != 0))
-									g_pplayer->UltraNudgeX((m_lr_axis_reverse == 0) ? u : -u, joyk);
+									g_pplayer->NudgeX((m_lr_axis_reverse == 0) ? u : -u, joyk);
 								if ((m_lr_axis == 1) && (uShockType == USHOCKTYPE_GENERIC))
 								    // giving L/R Axis priority over U/D Axis incase both are assigned to same axis
-									g_pplayer->UltraNudgeX((m_lr_axis_reverse == 0) ? -u : u, joyk);
+									g_pplayer->NudgeX((m_lr_axis_reverse == 0) ? -u : u, joyk);
 								else if ((m_ud_axis == 1) && (uShockType == USHOCKTYPE_GENERIC))
-									g_pplayer->UltraNudgeY((m_ud_axis_reverse == 0) ? u : -u, joyk);
+									g_pplayer->NudgeY((m_ud_axis_reverse == 0) ? u : -u, joyk);
 							}
 							else if (m_plunger_axis == 1)
 							{	// if X or Y ARE NOT chosen for this axis and Plunger IS chosen for this axis...
@@ -1327,20 +1327,20 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 								// Axis Deadzone
 								u = deadu;
 								if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && (m_ud_axis != 0))
-									g_pplayer->UltraNudgeY(u, joyk); //rotate to match Pinball Wizard
+									g_pplayer->NudgeY(u, joyk); //rotate to match Pinball Wizard
 								if ((uShockType == USHOCKTYPE_ULTRACADE) && (m_ud_axis != 0))
 								{
 									if (rotLeftManual)
-										g_pplayer->UltraNudgeY(u, joyk);
+										g_pplayer->NudgeY(u, joyk);
 									else
-										g_pplayer->UltraNudgeX(-u, joyk); //rotate to match joystick
+										g_pplayer->NudgeX(-u, joyk); //rotate to match joystick
 								}
 								if ((uShockType == USHOCKTYPE_SIDEWINDER) && (m_ud_axis != 0))
-									g_pplayer->UltraNudgeY((m_ud_axis_reverse == 0) ? u : -u, joyk);
+									g_pplayer->NudgeY((m_ud_axis_reverse == 0) ? u : -u, joyk);
 								if ((m_lr_axis == 2) && (uShockType == USHOCKTYPE_GENERIC))
-									g_pplayer->UltraNudgeX((m_lr_axis_reverse == 0) ? -u : u, joyk);
+									g_pplayer->NudgeX((m_lr_axis_reverse == 0) ? -u : u, joyk);
 								else if ((m_ud_axis == 2) && (uShockType == USHOCKTYPE_GENERIC))
-									g_pplayer->UltraNudgeY((m_ud_axis_reverse == 0) ? u : -u, joyk);
+									g_pplayer->NudgeY((m_ud_axis_reverse == 0) ? u : -u, joyk);
 							}
 							else if (m_plunger_axis == 2)
 							{	// if X or Y ARE NOT chosen for this axis and Plunger IS chosen for this axis...
@@ -1369,9 +1369,9 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 								// Axis Deadzone
 								u = deadu;
 								if (m_lr_axis == 3)
-									g_pplayer->UltraNudgeX((m_lr_axis_reverse == 0) ? -u : u, joyk);
+									g_pplayer->NudgeX((m_lr_axis_reverse == 0) ? -u : u, joyk);
 								else if (m_ud_axis == 3)
-									g_pplayer->UltraNudgeY((m_ud_axis_reverse == 0) ? u : -u, joyk);
+									g_pplayer->NudgeY((m_ud_axis_reverse == 0) ? u : -u, joyk);
 							}
 							else if (m_plunger_axis == 3)
 							{	// if X or Y ARE NOT chosen for this axis and Plunger IS chosen for this axis...
@@ -1389,9 +1389,9 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 								// Axis Deadzone
 								u = deadu;
 								if (m_lr_axis == 4)
-									g_pplayer->UltraNudgeX((m_lr_axis_reverse == 0) ? -u : u, joyk);
+									g_pplayer->NudgeX((m_lr_axis_reverse == 0) ? -u : u, joyk);
 								else if (m_ud_axis == 4)
-									g_pplayer->UltraNudgeY((m_ud_axis_reverse == 0) ? u : -u, joyk);
+									g_pplayer->NudgeY((m_ud_axis_reverse == 0) ? u : -u, joyk);
 							}
 							else if (m_plunger_axis == 4)
 							{	// if X or Y ARE NOT chosen for this axis and Plunger IS chosen for this axis...
@@ -1409,9 +1409,9 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 								// Axis Deadzone
 								u = deadu;
 								if (m_lr_axis == 5)
-									g_pplayer->UltraNudgeX((m_lr_axis_reverse == 0) ? -u : u, joyk);
+									g_pplayer->NudgeX((m_lr_axis_reverse == 0) ? -u : u, joyk);
 								else if (m_ud_axis == 5)
-									g_pplayer->UltraNudgeY((m_ud_axis_reverse == 0) ? u : -u, joyk);
+									g_pplayer->NudgeY((m_ud_axis_reverse == 0) ? u : -u, joyk);
 							}
 							else if (m_plunger_axis == 5)
 							{	// if X or Y ARE NOT chosen for this axis and Plunger IS chosen for this axis...
@@ -1431,9 +1431,9 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 								// Axis Deadzone
 								u = deadu;
 								if (m_lr_axis == 6)
-									g_pplayer->UltraNudgeX((m_lr_axis_reverse == 0) ? -u : u, joyk);
+									g_pplayer->NudgeX((m_lr_axis_reverse == 0) ? -u : u, joyk);
 								else if (m_ud_axis == 6)
-									g_pplayer->UltraNudgeY((m_ud_axis_reverse == 0) ? u : -u, joyk);
+									g_pplayer->NudgeY((m_ud_axis_reverse == 0) ? u : -u, joyk);
 							}
 							else if (m_plunger_axis == 6)
 							{
@@ -1453,9 +1453,9 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 								// Axis Deadzone
 								u = deadu;
 								if (m_lr_axis == 7)
-									g_pplayer->UltraNudgeX((m_lr_axis_reverse == 0) ? -u : u, joyk);
+									g_pplayer->NudgeX((m_lr_axis_reverse == 0) ? -u : u, joyk);
 								else if (m_ud_axis == 7)
-									g_pplayer->UltraNudgeY((m_ud_axis_reverse == 0) ? u : -u, joyk);
+									g_pplayer->NudgeY((m_ud_axis_reverse == 0) ? u : -u, joyk);
 							}
 							else if (m_plunger_axis == 7)
 							{
@@ -1473,9 +1473,9 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 								// Axis Deadzone
 								u = deadu;
 								if (m_lr_axis == 8)
-									g_pplayer->UltraNudgeX((m_lr_axis_reverse == 0) ? -u : u, joyk);
+									g_pplayer->NudgeX((m_lr_axis_reverse == 0) ? -u : u, joyk);
 								else if (m_ud_axis == 8)
-									g_pplayer->UltraNudgeY((m_ud_axis_reverse == 0) ? u : -u, joyk);
+									g_pplayer->NudgeY((m_ud_axis_reverse == 0) ? u : -u, joyk);
 							}
 							else if (m_plunger_axis == 8)
 							{
