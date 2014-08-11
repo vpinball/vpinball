@@ -760,7 +760,7 @@ STDMETHODIMP Plunger::Position(int *pVal)
 //	return tmp;
 
 //	float range = (float)JOYRANGEMX * (1.0f - m_d.m_parkPosition) - (float)JOYRANGEMN *m_d.m_parkPosition; // final range limit
-//	float tmp = ((float)JOYRANGEMN-1 < 0) ? (float)JOYRANGEMN-1*m_d.m_parkPosition : (float)JOYRANGEMN-1*(1.0f - m_d.m_parkPosition);
+//	float tmp = ((float)(JOYRANGEMN-1) < 0) ? (float)(JOYRANGEMN-1)*m_d.m_parkPosition : (float)(JOYRANGEMN-1)*(1.0f - m_d.m_parkPosition);
 //	tmp = tmp/range + m_d.m_parkPosition;		//scale and offset
 //	*pVal = tmp;
 	return S_OK;
