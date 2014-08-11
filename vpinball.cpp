@@ -5040,6 +5040,12 @@ INT_PTR CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
             key = fTrue;
          SendMessage(hwndCheck, BM_SETCHECK, key ? BST_CHECKED : BST_UNCHECKED, 0);
 
+         hwndCheck = GetDlgItem(hwndDlg, IDC_ENABLE_NUDGE_FILTER);
+         hr = GetRegInt("Player", "EnableNudgeFilter", &key);
+         if (hr != S_OK)
+            key = fFalse;
+         SendMessage(hwndCheck, BM_SETCHECK, key ? BST_CHECKED : BST_UNCHECKED, 0);
+
 		 for(unsigned int i = 0; i <= 28; ++i)
 		 {
 			 int item;
@@ -5947,7 +5953,11 @@ INT_PTR CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
                   selected = SendMessage(hwndControl, BM_GETCHECK, 0, 0);
                   SetRegValue("Player", "EnableMouseInPlayer", REG_DWORD, &selected, 4);
 
-                  EndDialog(hwndDlg, TRUE);
+                  hwndControl = GetDlgItem(hwndDlg, IDC_ENABLE_NUDGE_FILTER);
+                  selected = SendMessage(hwndControl, BM_GETCHECK, 0, 0);
+                  SetRegValue("Player", "EnableNudgeFilter", REG_DWORD, &selected, 4);
+
+				  EndDialog(hwndDlg, TRUE);
                }
                break;
 
