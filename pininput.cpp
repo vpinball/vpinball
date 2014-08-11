@@ -202,7 +202,10 @@ PinInput::PinInput()
 	if (hr == S_OK) m_joydebug = tmp;
 
    hr = GetRegInt("Player", "EnableMouseInPlayer", &tmp);
-   if (hr == S_OK) m_enableMouseInPlayer = tmp==fTrue;
+   if (hr == S_OK) m_enableMouseInPlayer = (tmp==fTrue);
+
+   hr = GetRegInt("Player", "EnableNudgeFilter", &tmp);
+   if (hr == S_OK) g_pplayer->m_enable_nudge_filter = (tmp==fTrue);
 
    m_exit_stamp = 0;
    m_first_stamp = msec();
