@@ -117,6 +117,7 @@ StopShake()
 PlaySound(string, int loopcount, float volume, float pan, float randompitch, int pitch, bool usesame, bool restart)
 FireKnocker(int Count)
 QuitPlayer(int CloseType)
+VPBuildVersion - deprecated
 VersionMajor - major VP version number
 VersionMinor - minor VP version number
 VersionRevision - VP version revision

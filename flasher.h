@@ -78,10 +78,10 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Flasher)
 	virtual void MoveOffset(const float dx, const float dy);
 	virtual void SetObjectPos();
 
-	virtual int GetMinimumPoints() const {return 2;}
+	virtual int GetMinimumPoints() const { return 2; }
 
-    virtual void GetCenter(Vertex2D * const pv) const {*pv = m_d.m_vCenter;}
-    virtual void PutCenter(const Vertex2D * const pv) {m_d.m_vCenter = *pv; m_ptable->SetDirtyDraw();}
+    virtual void GetCenter(Vertex2D * const pv) const { *pv = m_d.m_vCenter; }
+    virtual void PutCenter(const Vertex2D * const pv) { m_d.m_vCenter = *pv; m_ptable->SetDirtyDraw(); }
 
     virtual bool IsTransparent() { return true; }
     virtual float GetDepth(const Vertex3Ds& viewDir) const
