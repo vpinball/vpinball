@@ -483,8 +483,9 @@ void VPinball::InitRegValues()
 {
    HRESULT hr;
 
-   m_DeadZ = GetRegIntWithDefault("Player", "DeadZone", 0);
-   SetRegValueInt("Player", "DeadZone", m_DeadZ);
+   int deadz;
+   deadz = GetRegIntWithDefault("Player", "DeadZone", 0);
+   SetRegValueInt("Player", "DeadZone", deadz);
 
    m_fAlwaysDrawDragPoints = GetRegIntWithDefault("Editor", "ShowDragPoints", fFalse);
    m_fAlwaysDrawLightCenters = GetRegIntWithDefault("Editor", "DrawLightCenters", fFalse);

@@ -1288,10 +1288,6 @@ void PinTable::InitPostLoad(VPinball *pvp)
    m_pcv->AddItem(m_psgt, fTrue);
    m_pcv->AddItem(m_pcv->m_pdm, fFalse);
 
-   const HRESULT hr = GetRegInt("Player", "DeadZone", &m_DeadZ);
-   if (hr != S_OK)
-      g_pplayer->m_DeadZ = 0;
-
    CreateTableWindow();
 
    SetMyScrollInfo();
@@ -8496,10 +8492,11 @@ STDMETHODIMP PinTable::put_AccelerManualAmp(float newVal)
 ///////////////////////////////////////////////////////////
 STDMETHODIMP PinTable::get_DeadSlider(int *pVal)
 {
-   const HRESULT hr = GetRegInt("Player", "DeadZone", &m_DeadZ);
+   int deadz;
+   const HRESULT hr = GetRegInt("Player", "DeadZone", &deadz);
    if (hr != S_OK)
-	   m_DeadZ = 0; // The default
-   *pVal=m_DeadZ;
+	   deadz = 0; // The default
+   *pVal = deadz;
 
    return S_OK;
 }
@@ -8508,33 +8505,20 @@ STDMETHODIMP PinTable::put_DeadSlider(int newVal)
 {
    if (newVal>100) newVal=100;
    if (newVal<0) newVal=0;
-   m_DeadZ=newVal;
 
-   SetRegValue("Player", "DeadZone", REG_DWORD, &m_DeadZ, 4);
-   if (g_pplayer) m_DeadZ = (int)newVal; //VB Script
-   else
-   {						//VP Editor		
-      const HRESULT hr = GetRegInt("Player", "DeadZone", &m_DeadZ);
-      if (hr != S_OK)
-      {
-         STARTUNDO
-         m_DeadZ = newVal;
-         STOPUNDO
-      }
-   }
+   SetRegValue("Player", "DeadZone", REG_DWORD, &newVal, 4);
+
    return S_OK;
 }
 
 STDMETHODIMP PinTable::get_DeadZone(int *pVal)
 {
-   const HRESULT hr = GetRegInt("Player", "DeadZone", &m_DeadZ);
+   int deadz;
+   const HRESULT hr = GetRegInt("Player", "DeadZone", &deadz);
    if (hr != S_OK)
-	   m_DeadZ = 0;
+	   deadz = 0;
 
-   if (*pVal>100) *pVal=100;
-   if (*pVal<0) *pVal=0;
-
-   *pVal = m_DeadZ;
+   *pVal = deadz;
 
    return S_OK;
 }
@@ -8545,17 +8529,7 @@ STDMETHODIMP PinTable::put_DeadZone(int newVal)
    if (newVal<0) newVal=0;
 
    SetRegValue("Player", "DeadZone", REG_DWORD, &newVal, 4);
-   if (g_pplayer) m_DeadZ = (int)newVal; //VB Script
-   else
-   {						//VP Editor		
-      const HRESULT hr = GetRegInt("Player", "DeadZone", &m_DeadZ);
-      if (hr != S_OK)
-      {
-         STARTUNDO
-         m_DeadZ = newVal;
-         STOPUNDO
-      }
-   }
+
    return S_OK;
 }
 

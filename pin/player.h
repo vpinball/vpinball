@@ -211,8 +211,6 @@ public:
 
 	U32 m_time_msec;
 
-	int m_DeadZ;
-
 	Ball *m_pactiveball;		// ball the script user can get with ActiveBall
 	Ball *m_pactiveballDebug;	// ball the debugger will use as Activeball when firing events
 
