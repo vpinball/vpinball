@@ -630,6 +630,7 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propget, id(67), helpstring("property AddCreditKey2")] HRESULT AddCreditKey2([out, retval] long *pVal);
 		[propget, id(22), helpstring("property GameTime")] HRESULT GameTime([out, retval] long *pVal);
 		[id(23), helpstring("method GetTextFile")] HRESULT GetTextFile(BSTR FileName, [out, retval] BSTR *pContents);
+		[propget, id(24), helpstring("property VPBuildVersion")] HRESULT VPBuildVersion([out, retval] long *pVal);
 		[id(25), helpstring("method BeginModal")] HRESULT BeginModal();
 		[id(26), helpstring("method EndModal")] HRESULT EndModal();
 		[id(DISPID_Table_Nudge), helpstring("method Nudge")] HRESULT Nudge([in] float Angle, [in] float Force);

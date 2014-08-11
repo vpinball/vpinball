@@ -522,6 +522,12 @@ STDMETHODIMP ScriptGlobalTable::get_GameTime(long *pVal)
    return S_OK;
 }
 
+STDMETHODIMP ScriptGlobalTable::get_VPBuildVersion(long *pVal)
+{
+   *pVal = VP_VERSION_MAJOR*1000 + VP_VERSION_MINOR*100 + VP_VERSION_REV;
+   return S_OK;
+}
+
 STDMETHODIMP ScriptGlobalTable::GetBalls(LPSAFEARRAY *pVal)
 {
     if (!pVal || !g_pplayer)
@@ -771,7 +777,7 @@ PinTable::PinTable()
    if( hr == S_OK )
 	   m_tblExitConfirm = tmp*1000/60;
 
-   SetRegValue("Version", "VPinball", REG_SZ, VP_VERSION_STRING, (DWORD)strlen(VP_VERSION_STRING));
+   SetRegValue("Version", "VPinball", REG_SZ, VP_VERSION_STRING_DIGITS, (DWORD)strlen(VP_VERSION_STRING_DIGITS));
 
    if ( FAILED(GetRegInt("Player", "AlphaRampAccuracy", &m_globalAlphaRampsAccuracy) ) )
    {

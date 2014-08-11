@@ -102,7 +102,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_RAMP)
 
 	virtual void DoCommand(int icmd, int x, int y);
 
-	virtual int GetMinimumPoints() const {return 2;}
+	virtual int GetMinimumPoints() const { return 2; }
 
 	virtual void FlipY(Vertex2D * const pvCenter);
 	virtual void FlipX(Vertex2D * const pvCenter);

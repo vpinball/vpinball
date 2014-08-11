@@ -136,8 +136,8 @@ DECLARE_REGISTRY_RESOURCEID(IDR_LIGHT)
 	virtual void Translate(Vertex2D *pvOffset);
 
 	// DragPoints
-	virtual void GetCenter(Vertex2D * const pv) const {GetPointCenter(pv);}
-	virtual void PutCenter(const Vertex2D * const pv) {PutPointCenter(pv);}
+	virtual void GetCenter(Vertex2D * const pv) const { GetPointCenter(pv); }
+	virtual void PutCenter(const Vertex2D * const pv) { PutPointCenter(pv); }
 	virtual void GetPointCenter(Vertex2D * const pv) const;
 	virtual void PutPointCenter(const Vertex2D * const pv);
 
