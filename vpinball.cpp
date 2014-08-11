@@ -5026,12 +5026,12 @@ INT_PTR CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
          hr = GetRegInt("Player", "PBWAccelMaxX", &key);
          if (hr != S_OK)
-            key = JOYRANGEMX;
+            key = 1000;
          SetDlgItemInt(hwndDlg, IDC_XMAX_EDIT, key, FALSE);
 
          hr = GetRegInt("Player", "PBWAccelMaxY", &key);
          if (hr != S_OK)
-            key = JOYRANGEMX;
+            key = 1000;
          SetDlgItemInt(hwndDlg, IDC_YMAX_EDIT, key, FALSE);
 
          hwndCheck = GetDlgItem(hwndDlg, IDC_ENABLE_MOUSE_PLAYER);
