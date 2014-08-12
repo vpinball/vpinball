@@ -59,9 +59,9 @@ void Spinner::WriteRegDefaults()
    SetRegValue("DefaultProps\\Spinner","Visible",REG_DWORD,&m_d.m_fVisible,4);
    SetRegValue("DefaultProps\\Spinner","TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
    SetRegValue("DefaultProps\\Spinner","TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval, 4);
-   SetRegValue("DefaultProps\\Spinner","ImageFront", REG_SZ, &m_d.m_szImageFront,(DWORD)strlen(m_d.m_szImageFront));
-   SetRegValue("DefaultProps\\Spinner","ImageBack", REG_SZ, &m_d.m_szImageBack,(DWORD)strlen(m_d.m_szImageBack));
-   SetRegValue("DefaultProps\\Spinner","Surface", REG_SZ, &m_d.m_szSurface,(DWORD)strlen(m_d.m_szSurface));
+   SetRegValue("DefaultProps\\Spinner","ImageFront", REG_SZ, &m_d.m_szImageFront,lstrlen(m_d.m_szImageFront));
+   SetRegValue("DefaultProps\\Spinner","ImageBack", REG_SZ, &m_d.m_szImageBack,lstrlen(m_d.m_szImageBack));
+   SetRegValue("DefaultProps\\Spinner","Surface", REG_SZ, &m_d.m_szSurface,lstrlen(m_d.m_szSurface));
 }
 
 void Spinner::SetDefaults(bool fromMouseClick)

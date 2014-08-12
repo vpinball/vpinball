@@ -22,7 +22,7 @@ HRESULT GetRegStringAsFloat(const char *szKey, const char *szValue, float *pfloa
 	if (type != REG_SZ)
 		return E_FAIL;
 
-	const size_t len = strlen(szbuffer);
+	const int len = lstrlen(szbuffer);
 	if (len == 0)
 		return E_FAIL;
 
@@ -131,10 +131,10 @@ HRESULT SetRegValueFloat(const char *szKey, const char *szValue, float val)
 {
     char buf[16];
     sprintf_s(buf, 16, "%f", val);
-    return SetRegValue(szKey, szValue, REG_SZ, buf, (DWORD)strlen(buf));
+    return SetRegValue(szKey, szValue, REG_SZ, buf, lstrlen(buf));
 }
 
 HRESULT SetRegValueString(const char *szKey, const char *szValue, const char *val)
 {
-    return SetRegValue(szKey, szValue, REG_SZ, val, (DWORD)strlen(val));
+    return SetRegValue(szKey, szValue, REG_SZ, val, lstrlen(val));
 }

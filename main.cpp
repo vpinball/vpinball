@@ -59,7 +59,7 @@ PCHAR* CommandLineToArgvA(PCHAR CmdLine, int* _argc)
 {
 	PCHAR*  argv;
 	PCHAR   _argv;
-	size_t  len;
+	int  len;
 	ULONG   argc;
 	CHAR    a;
 	size_t  i, j;
@@ -68,7 +68,7 @@ PCHAR* CommandLineToArgvA(PCHAR CmdLine, int* _argc)
 	BOOLEAN  in_TEXT;
 	BOOLEAN  in_SPACE;
 
-	len = strlen(CmdLine);
+	len = lstrlen(CmdLine);
 	i = ((len+2)/2)*sizeof(PVOID) + sizeof(PVOID);
 
 	argv = (PCHAR*)malloc(i + (len+2)*sizeof(CHAR));
@@ -200,7 +200,7 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
 			// Remove " "
 			if(filename[0] == '"') {
 				strcpy_s(szTableFileName,filename+1);
-				szTableFileName[strlen(szTableFileName)] = 0;
+				szTableFileName[lstrlen(szTableFileName)] = '\0';
 			}
 			else
 				strcpy_s(szTableFileName,filename);

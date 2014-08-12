@@ -2,8 +2,6 @@
 
 float c_maxBallSpeedSqr = C_SPEEDLIMIT*C_SPEEDLIMIT; 
 float c_dampingFriction = C_DAMPFRICTION;
-float c_plungerNormalize = C_PLUNGERNORMALIZE;
-bool c_plungerFilter = false;
 
 float c_hardScatter = 0.0f;
 float c_hardFriction = 1.0f - C_FRICTIONCONST;

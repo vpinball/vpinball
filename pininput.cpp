@@ -893,7 +893,7 @@ void PinInput::Joy(const unsigned int n, const int updown, const bool start)
 	if (m_joyexitgamekey == n)
 	{
 		if( DISPID_GameEvents_KeyDown == updown ) 
-			g_pplayer->m_fCloseDown = fTrue;
+			g_pplayer->m_fCloseDown = true;
 	}
 	if (m_joyframecount == n)
 	{
@@ -1051,7 +1051,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 				if (input->dwData & 0x80)
 				{
 					g_pplayer->m_DebugBalls = !(g_pplayer->m_DebugBalls);
-					g_pplayer->m_ToggleDebugBalls = fTrue;
+					g_pplayer->m_ToggleDebugBalls = true;
 				}
 			}
 			else if( ((input->dwOfs == DIK_ESCAPE) && (m_disable_esc == 0)) || ( input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eExitGame]) )
@@ -1066,7 +1066,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 				
 					if ((input->dwData & 0x80) == 0) { //on key up only
 						m_exit_stamp = 0;
-						g_pplayer->m_fCloseDown = fTrue;
+						g_pplayer->m_fCloseDown = true;
 					}
 			    }
 			}
@@ -1140,7 +1140,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 			else if (input->dwOfs == DIJOFS_BUTTON6)
 				{
 					if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && (m_override_default_buttons == 0)) // pause menu
-						{if( DISPID_GameEvents_KeyDown == updown ) g_pplayer->m_fCloseDown = fTrue;}
+						{if( DISPID_GameEvents_KeyDown == updown ) g_pplayer->m_fCloseDown = true;}
 					else if ((uShockType == USHOCKTYPE_ULTRACADE) && (m_override_default_buttons == 0)) // volume down
 						FireKeyEvent( updown,g_pplayer->m_rgKeys[eVolumeDown] );
 					else

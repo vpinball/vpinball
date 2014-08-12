@@ -465,7 +465,7 @@ void SmartBrowser::DrawHeader(HDC hdc)
 
    SetBkMode(hdc, TRANSPARENT);
 
-   ExtTextOut(hdc, m_maxdialogwidth>>1, 0, 0, NULL, szText, (UINT)strlen(szText), NULL);
+   ExtTextOut(hdc, m_maxdialogwidth>>1, 0, 0, NULL, szText, lstrlen(szText), NULL);
 
    SelectObject(hdc, hfontOld);
 }

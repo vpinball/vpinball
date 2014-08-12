@@ -699,7 +699,7 @@ void Trigger::WriteRegDefaults()
    SetRegValueFloat("DefaultProps\\Trigger","HitHeight", m_d.m_hit_height);
    SetRegValueFloat("DefaultProps\\Trigger","Radius", m_d.m_radius);
    SetRegValue("DefaultProps\\Trigger","Shape",REG_DWORD,&m_d.m_shape,4);
-   SetRegValue("DefaultProps\\Trigger","Surface", REG_SZ, &m_d.m_szSurface,(DWORD)strlen(m_d.m_szSurface));
+   SetRegValue("DefaultProps\\Trigger","Surface", REG_SZ, &m_d.m_szSurface,lstrlen(m_d.m_szSurface));
 }
 
 HRESULT Trigger::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)

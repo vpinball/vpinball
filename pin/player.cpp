@@ -136,17 +136,10 @@ Player::Player()
 	m_fStep = false;
 	m_fPseudoPause = false;
 	m_pauseRefCount = 0;
-	m_fNoTimeCorrect = fFalse;
+	m_fNoTimeCorrect = false;
 	m_firstFrame = true;
 
 	m_fThrowBalls = false;
-	m_fAccelerometer = fTrue;	// true if electronic Accelerometer enabled 
-	m_AccelNormalMount = fTrue;	// normal mounting (left hand coordinates)
-	m_AccelAngle = 0;			// 0 degrees (GUI is lefthand coordinates)
-	m_AccelAmp = 1.5f;			// Accelerometer gain 
-	m_AccelAmpX = m_AccelAmp;	// Accelerometer gain X axis
-	m_AccelAmpY = m_AccelAmp;   // Accelerometer gain Y axis
-	m_AccelMAmp = 2.5f;			// manual input gain, generally from joysticks
 #ifdef PLAYBACK
 	m_fPlayback = fFalse;
 
@@ -169,24 +162,8 @@ Player::Player()
 
 	m_curPlunger = JOYRANGEMN-1;
 
-	int shadow;
-	HRESULT hr = GetRegInt("Player", "BallShadows", &shadow);
-	if (hr != S_OK)
-		shadow = fTrue; // The default
-	m_fBallShadows = (shadow == 1);
-
-	int decal;
-	hr = GetRegInt("Player", "BallDecals", &decal);
-	if (hr != S_OK)
-		decal = fTrue; // The default
-	m_fBallDecals = (decal == 1);
-
-	int antialias;
-	hr = GetRegInt("Player", "BallAntialias", &antialias);
-	if (hr != S_OK)
-		antialias = fTrue; // The default
-	m_fBallAntialias = (antialias == 1);
-
+	HRESULT hr;
+	
 	int vsync;
 	hr = GetRegInt("Player", "AdaptiveVSync", &vsync);
 	if (hr != S_OK)
@@ -204,17 +181,26 @@ Player::Player()
     if (hr != S_OK)
       m_fFXAA = 0; // The default = off
 
-    hr = GetRegInt("Player", "BallTrail", &m_fTrailForBalls);
+    int trailballs;
+    hr = GetRegInt("Player", "BallTrail", &trailballs);
     if (hr != S_OK)
-      m_fTrailForBalls = fTrue; // The default = on
+      m_fTrailForBalls = true; // The default = on
+    else
+	m_fTrailForBalls = (trailballs == 1);
 
-	hr = GetRegInt("Player", "BallReflection", &m_fReflectionForBalls);
+    int reflballs;
+	hr = GetRegInt("Player", "BallReflection", &reflballs);
     if (hr != S_OK)
-      m_fReflectionForBalls = fTrue; // The default = on
+      m_fReflectionForBalls = true; // The default = on
+    else
+	m_fReflectionForBalls = (reflballs == 1);
 
-    hr = GetRegInt("Player", "USEAA", &m_fAA);
+    int AA;
+    hr = GetRegInt("Player", "USEAA", &AA);
     if (hr != S_OK)
-      m_fAA = fFalse; // The default = off
+      m_fAA = false; // The default = off
+    else
+	m_fAA = (AA == 1); // The default = off
 
 	hr = GetRegInt("Player", "Stereo3D", &m_fStereo3D);
 	if (hr != S_OK)
@@ -244,15 +230,15 @@ Player::Player()
 		detecthang = fFalse; // The default
 	m_fDetectScriptHang = (detecthang == 1);
 
-	m_fShowFPS = fFalse;
+	m_fShowFPS = false;
 
-	m_fCloseDown = fFalse;
+	m_fCloseDown = false;
 	m_fCloseType = 0;
 
-	m_DebugBalls = fFalse;
-	m_ToggleDebugBalls = fFalse;
+	m_DebugBalls = false;
+	m_ToggleDebugBalls = false;
 
-	m_fDebugMode = fFalse;
+	m_fDebugMode = false;
 	m_hwndDebugger = NULL;
 	m_PauseTimeTarget = 0;
 	m_pactiveballDebug = NULL;
@@ -403,7 +389,7 @@ void Player::RecomputePauseState()
 	if (fOldPause && fNewPause)
 		{
 		m_LastKnownGoodCounter++; // So our catcher doesn't catch on the last value
-		m_fNoTimeCorrect = fTrue;
+		m_fNoTimeCorrect = true;
 		}
 
 	m_fPause = fNewPause;
@@ -616,13 +602,19 @@ void Player::InitRegValues()
 {
 	HRESULT hr;
 
-	hr = GetRegInt("Player", "PlayMusic", &m_fPlayMusic);
+	int playmusic;
+	hr = GetRegInt("Player", "PlayMusic", &playmusic);
 	if (hr != S_OK)
-		m_fPlayMusic = 1; // default value
+		m_fPlayMusic = true; // default value
+	else
+	    m_fPlayMusic = (playmusic == 1);
 
-	hr = GetRegInt("Player", "PlaySound", &m_fPlaySound);
+	int playsound;
+	hr = GetRegInt("Player", "PlaySound", &playsound);
 	if (hr != S_OK)
-		m_fPlaySound = 1; // default value
+		m_fPlaySound = true; // default value
+	else
+	    m_fPlaySound = (playsound == 1);
 
 	hr = GetRegInt("Player", "MusicVolume", &m_MusicVolume);
 	if (hr != S_OK)
@@ -721,20 +713,6 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 
 	m_ptable = ptable;
 
-	//accelerometer normal mounting is 90 degrees in left-hand coordinates (1/4 turn counterclockwise)
-	m_fAccelerometer = m_ptable->m_tblAccelerometer;		// true if electronic Accelerometer enabled
-	m_AccelNormalMount = m_ptable->m_tblAccelNormalMount;	// true is normal mounting (left hand coordinates)
-	m_AccelAngle = ANGTORAD(m_ptable->m_tblAccelAngle);     // 0 rotated counterclockwise (GUI is lefthand coordinates)
-	m_AccelAmp = m_ptable->m_tblAccelAmp;					// Accelerometer gain 
-	m_AccelAmpX = m_ptable->m_tblAccelAmpX;
-	m_AccelAmpY = m_ptable->m_tblAccelAmpY;
-	m_AccelMAmp = m_ptable->m_tblAccelManualAmp;			// manual input gain, generally from joysticks
-
-	m_jolt_amount = (U32)m_ptable->m_jolt_amount;
-	m_tilt_amount = (U32)m_ptable->m_tilt_amount;
-	m_jolt_trigger_time = (U32)m_ptable->m_jolt_trigger_time;
-	m_tilt_trigger_time = (U32)m_ptable->m_tilt_trigger_time;
-
     ShadowSur::m_shadowDirX = ptable->m_shadowDirX;
     ShadowSur::m_shadowDirY = ptable->m_shadowDirY;
 
@@ -754,7 +732,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
     const bool stereo3DFXAA = (!!m_fStereo3D) || ((m_fFXAA && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA > 0));
 
 	// width, height, and colordepth are only defined if fullscreen is true.
-    HRESULT hr = m_pin3d.InitPin3D(m_hwnd, m_fFullScreen != 0, m_screenwidth, m_screenheight, m_screendepth,
+    HRESULT hr = m_pin3d.InitPin3D(m_hwnd, m_fFullScreen, m_screenwidth, m_screenheight, m_screendepth,
                    m_refreshrate, vsync, useAA, stereo3DFXAA);
 
 	if (hr != S_OK)
@@ -790,7 +768,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 	m_NudgeX = 0;
 	m_NudgeY = 0;
 	m_nudgetime = 0;
-	m_movedPlunger = 0;	// has plunger moved, must have moved at least three times
+	m_movedPlunger = 0;
 
 	SendMessage(hwndProgress, PBM_SETPOS, 50, 0);
 	SetWindowText(hwndProgressName, "Initalizing Physics...");
@@ -800,7 +778,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 
 #ifdef FPS
     ToggleFPS();
-    m_fShowFPS = FALSE;
+    m_fShowFPS = false;
 #endif
 
 	for (int i=0;i<m_ptable->m_vedit.Size();i++)
@@ -1125,9 +1103,12 @@ void Player::InitWindow()
 	if (hr != S_OK)
 		m_height = m_width *3/4;
 
-	hr = GetRegInt("Player", "FullScreen", &m_fFullScreen);
+	int fullscreen;
+	hr = GetRegInt("Player", "FullScreen", &fullscreen);
 	if (hr != S_OK)
-		m_fFullScreen = fFalse;
+		m_fFullScreen = false;
+	else
+	    m_fFullScreen = (fullscreen == 1);
 
 	int screenwidth;
 	int screenheight;
@@ -1287,7 +1268,7 @@ void Player::NudgeY(const int y, const int j )
 	m_curAccel_y[j] = v;
 }
 
-#define GetNudgeX() (((F32)m_curAccel_x[0]) * (F32)(2.0 / JOYRANGE)) // Get the -1.0f to +1.0f values from joystick input tilt sensor / ushock
+#define GetNudgeX() (((F32)m_curAccel_x[0]) * (F32)(2.0 / JOYRANGE)) // Get the -2 .. 2 values from joystick input tilt sensor / ushock //!! why 2?
 #define GetNudgeY() (((F32)m_curAccel_y[0]) * (F32)(2.0 / JOYRANGE))
 
 #if 0
@@ -1296,27 +1277,28 @@ int Player::NudgeGetTilt()
 	static U32 last_tilt_time;
 	static U32 last_jolt_time;
 
-	if( !m_fAccelerometer || m_NudgeManual >= 0 ||	         //disabled or in joystick test mode
-	     m_tilt_amount == 0 || m_jolt_amount == 0) return 0; //disabled
+	if( !m_ptable->m_tblAccelerometer || m_NudgeManual >= 0 ||	             //disabled or in joystick test mode
+	     m_ptable->m_tilt_amount == 0 || m_ptable->m_jolt_amount == 0) return 0; //disabled
 
 	const U32 ms = msec();
 
 	U32 tilt_2 = 0;
 	for(int j = 0; j < m_pininput.e_JoyCnt; ++j)	//find largest value
 		{
-		tilt_2 = max(tilt_2,(U32)(m_curAccel_x[j] * m_curAccel_x[j] + m_curAccel_y[j] * m_curAccel_y[j])); //always postive numbers
+		tilt_2 = max(tilt_2, (U32)(m_curAccel_x[j] * m_curAccel_x[j] + m_curAccel_y[j] * m_curAccel_y[j])); //always postive numbers
 		}
 
-	if( ( ms - last_jolt_time > m_jolt_trigger_time ) &&
-		( ms - last_tilt_time > m_tilt_trigger_time ) &&
-	   	tilt_2 > ( m_tilt_amount * m_tilt_amount ) )
+	if( ( ms - last_jolt_time > m_ptable->m_jolt_trigger_time ) &&
+		( ms - last_tilt_time > (U32)m_ptable->m_tilt_trigger_time ) &&
+	   	tilt_2 > ( (U32)m_ptable->m_tilt_amount * (U32)m_ptable->m_tilt_amount ) )
 	{
 		last_tilt_time = ms;
 
 		return 1;
 	}
 
-	if( ms - last_jolt_time > m_jolt_trigger_time && tilt_2 > ( m_jolt_amount * m_jolt_amount ) )
+	if( ms - last_jolt_time > (U32)m_ptable->m_jolt_trigger_time && 
+		tilt_2 > ( (U32)m_ptable->m_jolt_amount * (U32)m_ptable->m_jolt_amount ) )
 	{
 		last_jolt_time = ms;
 	}
@@ -1328,9 +1310,9 @@ int Player::NudgeGetTilt()
 void Player::NudgeUpdate()	// called on every integral physics frame
 {
 	if (m_NudgeManual >= 0)			// Only one joystick controls in manual mode
-	{		
-		m_NudgeX = m_AccelMAmp * ((float)m_curAccel_x[m_NudgeManual])*(float)(1.0/JOYRANGE); // * Manual Gain
-		m_NudgeY = m_AccelMAmp * ((float)m_curAccel_y[m_NudgeManual])*(float)(1.0/JOYRANGE);
+	{
+		m_NudgeX = m_ptable->m_tblAccelManualAmp * ((float)m_curAccel_x[m_NudgeManual])*(float)(1.0/JOYRANGE);
+		m_NudgeY = m_ptable->m_tblAccelManualAmp * ((float)m_curAccel_y[m_NudgeManual])*(float)(1.0/JOYRANGE);
 
 		if (m_ptable->m_tblMirrorEnabled)
 			m_NudgeX = -m_NudgeX;
@@ -1338,14 +1320,15 @@ void Player::NudgeUpdate()	// called on every integral physics frame
 		return;
 	}	
 
-	m_NudgeX = 0;	// accumlate over joysticks, these acceleration values are used in update ball velocity calculations
+	m_NudgeX = 0;	// accumulate over joysticks, these acceleration values are used in update ball velocity calculations
 	m_NudgeY = 0;	// and are required to be acceleration values (not velocity or displacement)
 
-	if(!m_fAccelerometer) return;	// uShock is disabled 
+	if(!m_ptable->m_tblAccelerometer) return;	// electronic accelerometer disabled 
 
 	//rotate to match hardware mounting orentation, including left or right coordinates
-	const float cna = cosf(m_AccelAngle);
-	const float sna = sinf(m_AccelAngle);
+	const float a = ANGTORAD(m_ptable->m_tblAccelAngle);
+	const float cna = cosf(a);
+	const float sna = sinf(a);
 
 	for(int j = 0; j < m_pininput.e_JoyCnt; ++j)
 	{		
@@ -1353,9 +1336,9 @@ void Player::NudgeUpdate()	// called on every integral physics frame
 		const float dy = ((float)m_curAccel_y[j])*(float)(1.0/JOYRANGE);	
 		if ( m_ptable->m_tblMirrorEnabled )
 			dx = -dx;
-		m_NudgeX += m_AccelAmpX*(dx*cna + dy*sna) * (1.0f - nudge_get_sensitivity());  //calc Green's transform component for X
-		const float nugY = m_AccelAmpY*(dy*cna - dx*sna) * (1.0f - nudge_get_sensitivity()); // calc Green transform component for Y...
-		m_NudgeY = m_AccelNormalMount ? (m_NudgeY + nugY) : (m_NudgeY - nugY);	// add as left or right hand coordinate system
+		m_NudgeX += m_ptable->m_tblAccelAmpX * (dx*cna + dy*sna) * (1.0f - nudge_get_sensitivity());  //calc Green's transform component for X
+		const float nugY = m_ptable->m_tblAccelAmpY * (dy*cna - dx*sna) * (1.0f - nudge_get_sensitivity()); // calc Green transform component for Y...
+		m_NudgeY = m_ptable->m_tblAccelNormalMount ? (m_NudgeY + nugY) : (m_NudgeY - nugY);	// add as left or right hand coordinate system
 	}
 }
 
@@ -1376,7 +1359,7 @@ const float b [IIR_Order+1] = {
 	-1.0546654f,
 	0.1873795f};
 
-void Player::PlungerUpdate()	// called on every integral physics frame
+void Player::mechPlungerUpdate()	// called on every integral physics frame, only really triggered if before mechPlungerIn() was called, which again relies on USHOCKTYPE_GENERIC,USHOCKTYPE_ULTRACADE,USHOCKTYPE_PBWIZARD,USHOCKTYPE_VIRTUAPIN,USHOCKTYPE_SIDEWINDER being used
 {	
 	static int init = IIR_Order;	// first time call
 	static float x [IIR_Order+1] = {0,0,0,0,0};
@@ -1388,12 +1371,12 @@ void Player::PlungerUpdate()	// called on every integral physics frame
 
 	if (m_movedPlunger < 3) 
 	{
-		//int init = IIR_Order;
+		init = IIR_Order;
 		m_curMechPlungerPos = 0;
 		return;	// not until a real value is entered
 	}
 
-	if (!c_plungerFilter)
+	if (m_ptable->m_plungerFilter == 0)
 	{ 
 		m_curMechPlungerPos = (float)m_curPlunger;
 		return;
@@ -1410,7 +1393,7 @@ void Player::PlungerUpdate()	// called on every integral physics frame
 			x[i] = x[i-1];		//shift 
 			y[i] = y[i-1];		//shift
 		}
-	} while (init--); //loop until all registers are initialized with the first input
+	} while (init-- > 0); //loop until all registers are initialized with the first input
 
 	init = 0;
 
@@ -1422,7 +1405,7 @@ void Player::PlungerUpdate()	// called on every integral physics frame
 // method requires calibration in control panel game controllers to work right
 // calibrated zero value should match the rest position of the mechanical plunger
 // the method below uses a dual - piecewise linear function to map the mechanical pull and push 
-// onto the virtual plunger position from 0..1, the pulunger properties has a ParkPosition setting 
+// onto the virtual plunger position from 0..1, the plunger properties has a ParkPosition setting 
 // that matches the mechanical plunger zero position
 float PlungerAnimObject::mechPlunger() const
 {
@@ -1435,14 +1418,7 @@ void Player::mechPlungerIn(const int z)
 {
 	m_curPlunger = -z; //axis reversal
 
-	if (++m_movedPlunger == 0x7ffffff) m_movedPlunger = 3; //restart at 3
-}
-
-void Player::SetGravity(float slopeDeg, float strength)
-{
-    m_gravity.x = 0;
-    m_gravity.y =  sinf(ANGTORAD(slopeDeg)) * strength;
-    m_gravity.z = -cosf(ANGTORAD(slopeDeg)) * strength;
+	if (++m_movedPlunger == 0xffffffff) m_movedPlunger = 3; //restart at 3
 }
 
 // Accelerometer data filter.
@@ -1637,6 +1613,13 @@ void Player::FilterNudge()
 
 //++++++++++++++++++++++++++++++++++++++++
 
+void Player::SetGravity(float slopeDeg, float strength)
+{
+    m_gravity.x = 0;
+    m_gravity.y =  sinf(ANGTORAD(slopeDeg)) * strength;
+    m_gravity.z = -cosf(ANGTORAD(slopeDeg)) * strength;
+}
+
 #define STATICCNTS 10
 
 void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this time
@@ -1778,7 +1761,7 @@ void Player::UpdatePhysics()
 		m_StartTime_usec += initial_time_usec - m_curPhysicsFrameTime;
 		m_nextPhysicsFrameTime += initial_time_usec - m_curPhysicsFrameTime;
 		m_curPhysicsFrameTime = initial_time_usec; // 0 time frame
-		m_fNoTimeCorrect = fFalse;
+		m_fNoTimeCorrect = false;
 	}
 
 #ifdef STEPPING
@@ -1913,8 +1896,8 @@ void Player::UpdatePhysics()
 		}
 #endif
 		NudgeUpdate();		// physics_diff_time is the balance of time to move from the graphic frame position to the next
-		PlungerUpdate();	// integral physics frame. So the previous graphics frame was (1.0 - physics_diff_time) before 
-							// this integral physics frame. Accelerations and inputs are always physics frame aligned
+		mechPlungerUpdate();	// integral physics frame. So the previous graphics frame was (1.0 - physics_diff_time) before 
+					// this integral physics frame. Accelerations and inputs are always physics frame aligned
 		if (m_nudgetime)
 		{
 			m_nudgetime--;
@@ -2001,7 +1984,7 @@ void Player::RenderDynamics()
          m_pin3d.m_pd3dDevice->SetRenderState ( RenderDevice::ALPHABLENDENABLE, TRUE );
       }
 
-      m_ToggleDebugBalls = fFalse;
+      m_ToggleDebugBalls = false;
    }
 
    /* VP9COMPAT:
@@ -2450,8 +2433,8 @@ void Player::Render()
                 SendMessage(g_pvp->m_hwnd, WM_COMMAND, ID_FILE_EXIT, NULL );
             }
 
-            m_fCloseDown = fFalse;
-            m_fNoTimeCorrect = fTrue; // Skip the time we were in the dialog
+            m_fCloseDown = false;
+            m_fNoTimeCorrect = true; // Skip the time we were in the dialog
             UnpauseMusic();
             if (option == ID_QUIT)
             {
@@ -2613,7 +2596,7 @@ void Player::DrawBalls()
       }
 
       // ball trails //!! misses lighting disabled part!
-      if( ((m_fTrailForBalls && (m_ptable->m_useTrailForBalls == -1)) || (m_ptable->m_useTrailForBalls == 1)) && m_fBallAntialias )
+      if((m_fTrailForBalls && (m_ptable->m_useTrailForBalls == -1)) || (m_ptable->m_useTrailForBalls == 1))
       {
          Vertex3D_NoLighting rgv3D_all[10*2];
          unsigned int num_rgv3D = 0;
@@ -3013,7 +2996,7 @@ LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 
 				g_pplayer->m_fGameWindowActive = true;
 				SetCursor(NULL);
-				g_pplayer->m_fNoTimeCorrect = fTrue;
+				g_pplayer->m_fNoTimeCorrect = true;
 				}
 			break;
 #endif
@@ -3068,7 +3051,7 @@ LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 				{
 				g_pplayer->m_fGameWindowActive = true;
 				SetCursor(NULL);
-				g_pplayer->m_fNoTimeCorrect = fTrue;
+				g_pplayer->m_fNoTimeCorrect = true;
 				g_pplayer->m_fPause = false;
 				}
 			else
@@ -3080,7 +3063,7 @@ LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 			break;
 
 		case WM_EXITMENULOOP:
-			g_pplayer->m_fNoTimeCorrect = fTrue;
+			g_pplayer->m_fNoTimeCorrect = true;
 			break;
 
 		case WM_SETCURSOR:
@@ -3292,7 +3275,7 @@ INT_PTR CALLBACK DebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 				g_pplayer->m_PauseTimeTarget = 0;
 				g_pplayer->m_fUserDebugPaused = false;
 				g_pplayer->RecomputePseudoPauseState();
-				g_pplayer->m_fDebugMode = fFalse;
+				g_pplayer->m_fDebugMode = false;
 				ShowWindow(hwndDlg, SW_HIDE);
 				break;
 
@@ -3423,7 +3406,7 @@ INT_PTR CALLBACK PauseProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 									}
 								else
 									{
-									g_pplayer->m_fDebugMode = fTrue;
+									g_pplayer->m_fDebugMode = true;
 									if (g_pplayer->m_hwndDebugger)
 										{
 										ShowWindow(g_pplayer->m_hwndDebugger, SW_SHOW);
