@@ -139,8 +139,7 @@ Player::Player()
 	m_fNoTimeCorrect = fFalse;
 	m_firstFrame = true;
 
-	m_enable_nudge_filter = false;
-    m_fThrowBalls = false;
+	m_fThrowBalls = false;
 	m_fAccelerometer = fTrue;	// true if electronic Accelerometer enabled 
 	m_AccelNormalMount = fTrue;	// normal mounting (left hand coordinates)
 	m_AccelAngle = 0;			// 0 degrees (GUI is lefthand coordinates)
@@ -1933,7 +1932,7 @@ void Player::UpdatePhysics()
 		}
 
         // Apply our filter to the nudge data
-		if(m_enable_nudge_filter)
+		if(m_pininput.m_enable_nudge_filter)
 	        FilterNudge();
 
 		for (unsigned i=0; i<m_vmover.size(); i++)

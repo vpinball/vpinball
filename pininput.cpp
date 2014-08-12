@@ -74,6 +74,7 @@ PinInput::PinInput()
 	m_pressed_start = 0;
     
 	m_enableMouseInPlayer=true;
+	m_enable_nudge_filter=false;
 
 	HRESULT hr;
 	int tmp;
@@ -205,7 +206,7 @@ PinInput::PinInput()
    if (hr == S_OK) m_enableMouseInPlayer = (tmp==fTrue);
 
    hr = GetRegInt("Player", "EnableNudgeFilter", &tmp);
-   if (hr == S_OK) g_pplayer->m_enable_nudge_filter = (tmp==fTrue);
+   if (hr == S_OK) m_enable_nudge_filter = (tmp==fTrue);
 
    hr = GetRegInt("Player", "DeadZone", &m_deadz);
    if (hr != S_OK)

@@ -219,7 +219,6 @@ public:
 	Vector<HitTimer> m_vht;
 
     bool m_fThrowBalls;
-	bool m_enable_nudge_filter; // enable new nudge filtering code
 	BOOL m_fAccelerometer;		//true if electronic Accelerometer enabled
 	BOOL m_AccelNormalMount;	//true if normal mounting (left hand coordinates)
 	float m_AccelAngle;			// 0 Radians rotated counterclockwise (GUI is lefthand coordinates)
