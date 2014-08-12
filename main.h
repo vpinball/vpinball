@@ -5,21 +5,15 @@
 #include "Richedit.h"
 
 #include <atlcom.h>
-
-
 #include <atlbase.h>
 #include <atlhost.h>
-
+#include <atlctl.h>
 
 #include <assert.h>
 
 #include "math.h"
 
 #include "commctrl.h"
-
-#include <activdbg.h>
-
-#include <atlctl.h>
 
 #ifdef VP10
  #define DIRECTINPUT_VERSION 0x0800
