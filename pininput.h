@@ -85,6 +85,7 @@ public:
     long mouseDY;
     bool leftMouseButtonDown;
     bool rightMouseButtonDown;
+	bool m_enable_nudge_filter; // enable new nudge filtering code
 
 private:
 	int started();
