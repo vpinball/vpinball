@@ -787,7 +787,7 @@ void CodeViewer::Replace(FINDREPLACE *pfr)
    LONG cszReplaced = 0;
 next:
    const size_t cpMatch = SendMessage(m_hwndScintilla, SCI_FINDTEXT, (WPARAM)(pfr->Flags), (LPARAM)&ft);
-   if(cpMatch < 0)
+   if((SSIZE_T)cpMatch < 0)
    {
       if(cszReplaced == 0)
       {
@@ -1513,14 +1513,14 @@ void ParseForFunction( CodeViewer *pcv )
       SendMessage(sciHwnd, SCI_GETLINE, i, (LPARAM)text );
       string line(text);
 	  const size_t idx = upperCase(line).find("SUB");
-      if( idx>=0 )
+      if( (SSIZE_T)idx>=0 )
       {
 		 const size_t endIdx = upperCase(line).find("END", idx - 4);
 		 const size_t exitIdx = upperCase(line).find("EXIT", idx - 5);
 		 const size_t commentIdx = upperCase(line).find("'");
          if( endIdx==-1 && exitIdx==-1 )
          {
-            if ( commentIdx>=0 && commentIdx<idx )
+            if ( (SSIZE_T)commentIdx>=0 && commentIdx<idx )
                continue;
 
 			size_t end = line.find("(", idx);
@@ -1758,7 +1758,7 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 			   const size_t line = SendMessage(hwndRE, SCI_LINEFROMPOSITION, pos, 0) + 1;
 			   const size_t column = SendMessage(hwndRE, SCI_GETCOLUMN, pos, 0);
 
-               sprintf_s(szT, "Line %u, Col %u", line, column);
+               sprintf_s(szT, "Line %u, Col %u", (U32)line, (U32)column);
                SendMessage(pcv->m_hwndStatus, SB_SETTEXT, 0 | 0, (size_t)szT);
             }
             break;

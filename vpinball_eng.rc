@@ -265,9 +265,6 @@ BEGIN
     CONTROL         "At Full Screen anti-stretch the Ball",IDC_StretchMonitor,
                     "Button",BS_AUTORADIOBUTTON,16,232,127,10
     COMBOBOX        IDC_MonitorCombo,73,242,48,71,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Draw Ball &Shadows",IDC_SHADOW,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,18,77,10
-    CONTROL         "Draw Ball &Decals",IDC_DECAL_BUTTON,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,30,70,10
-    CONTROL         "&Antialias Ball",IDC_ANTIALIAS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,42,55,10
     CONTROL         "Reflect Ball on Playfield",IDC_GLOBAL_REFLECTION_CHECK,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,54,91,10
     CONTROL         "Ball Trails/Motion Blur",IDC_GLOBAL_TRAIL_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,66,91,10

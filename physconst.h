@@ -31,7 +31,6 @@
 // Setting this value during testing to 0.1 will insure clearance. After testing set the value to 0.005
 // Default 0.01
 #define PHYS_TOUCH 0.05
-#define C_PLUNGERNORMALIZE ((float)(1.0/13.0)) //match button plunger physics
 // Low Normal speed collison is handled as contact process rather than impulse collision
 #define C_LOWNORMVEL 0.0001f
 #define C_CONTACTVEL 0.099f

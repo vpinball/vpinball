@@ -229,13 +229,13 @@ void Light::WriteRegDefaults()
    SetRegValue("DefaultProps\\Light","TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
    SetRegValue("DefaultProps\\Light","TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval, 4);
    SetRegValue("DefaultProps\\Light","Color",REG_DWORD,&m_d.m_color,4);
-   SetRegValue("DefaultProps\\Light","OffImage", REG_SZ, &m_d.m_szOffImage,(DWORD)strlen(m_d.m_szOffImage));
-   SetRegValue("DefaultProps\\Light","OnImage", REG_SZ, &m_d.m_szOnImage, (DWORD)strlen(m_d.m_szOnImage));
+   SetRegValue("DefaultProps\\Light","OffImage", REG_SZ, &m_d.m_szOffImage,lstrlen(m_d.m_szOffImage));
+   SetRegValue("DefaultProps\\Light","OnImage", REG_SZ, &m_d.m_szOnImage, lstrlen(m_d.m_szOnImage));
    SetRegValue("DefaultProps\\Light","DisplayImage", REG_DWORD, &m_d.m_fDisplayImage,4);
-   SetRegValue("DefaultProps\\Light","BlinkPattern", REG_SZ, &m_rgblinkpattern, (DWORD)strlen(m_rgblinkpattern));
+   SetRegValue("DefaultProps\\Light","BlinkPattern", REG_SZ, &m_rgblinkpattern, lstrlen(m_rgblinkpattern));
    SetRegValue("DefaultProps\\Light","BlinkInterval", REG_DWORD, &m_blinkinterval,4);
    SetRegValue("DefaultProps\\Light","BorderColor", REG_DWORD, &m_d.m_bordercolor,4);
-   SetRegValue("DefaultProps\\Light","Surface", REG_SZ, &m_d.m_szSurface, (DWORD)strlen(m_d.m_szSurface));
+   SetRegValue("DefaultProps\\Light","Surface", REG_SZ, &m_d.m_szSurface, lstrlen(m_d.m_szSurface));
    SetRegValue("DefaultProps\\Light","EnableLighting", REG_DWORD, &m_d.m_EnableLighting,4);
    SetRegValue("DefaultProps\\Light","EnableOffLighting", REG_DWORD, &m_d.m_EnableOffLighting,4);
    SetRegValueFloat("DefaultProps\\Light","FadeSpeed", m_d.m_fadeSpeed);

@@ -1481,7 +1481,7 @@ void VPinball::LoadFileName(char *szFileName)
 
       // get the load path from the filename
       PathFromFilename(szFileName, szLoadDir);
-      SetRegValue("RecentDir","LoadDir", REG_SZ, szLoadDir, (DWORD)strlen(szLoadDir));
+      SetRegValue("RecentDir","LoadDir", REG_SZ, szLoadDir, lstrlen(szLoadDir));
 
       // make sure the load directory is the active directory
       DWORD err = SetCurrentDirectory(szLoadDir);
@@ -1715,7 +1715,7 @@ void VPinball::UpdateRecentFileList(char *szfilename)
          if (m_szRecentTableList[i][0] == 0x00) break;
          // write entry to the registry
          sprintf_s(szRegName, "TableFileName%d", i);
-         SetRegValue("RecentDir", szRegName, REG_SZ, m_szRecentTableList[i], (DWORD)strlen(m_szRecentTableList[i])+1);
+         SetRegValue("RecentDir", szRegName, REG_SZ, m_szRecentTableList[i], lstrlen(m_szRecentTableList[i])+1);
       }
    } 
 
@@ -1758,7 +1758,7 @@ void VPinball::UpdateRecentFileList(char *szfilename)
          // set the IDM of this menu item
          menuInfo.wID = RECENT_FIRST_MENU_IDM + i;
          menuInfo.dwTypeData = menuname;
-         menuInfo.cch = (DWORD)strlen(menuname);
+         menuInfo.cch = lstrlen(menuname);
 
          InsertMenuItem(hmenuFile, count, TRUE, &menuInfo);
          count++;
@@ -2241,7 +2241,7 @@ STDMETHODIMP VPinball::StopShake()
 void VPinball::Quit()
 {
    if( g_pplayer ) {
-	   g_pplayer->m_fCloseDown = fTrue;
+	   g_pplayer->m_fCloseDown = true;
 	   g_pplayer->m_fCloseType = 1;
    }
    else
@@ -2386,7 +2386,7 @@ INT_PTR CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                      szInitialDir[ofn.nFileOffset] = 0;
                      pt->ImportSound(GetDlgItem(hwndDlg, IDC_SOUNDLIST), szFileName, fTrue);
                   }
-                  hr = SetRegValue("RecentDir","SoundDir", REG_SZ, szInitialDir, (DWORD)strlen(szInitialDir));
+                  hr = SetRegValue("RecentDir","SoundDir", REG_SZ, szInitialDir, lstrlen(szInitialDir));
                   pt->SetNonUndoableDirty(eSaveDirty);
                }
             }
@@ -2537,7 +2537,7 @@ INT_PTR CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                      sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), sel, LVNI_SELECTED); //next selected item
 
                   }
-                  /*const HRESULT hr =*/ SetRegValue("RecentDir","SoundDir", REG_SZ, szInitialDir, (DWORD)strlen(szInitialDir));
+                  /*const HRESULT hr =*/ SetRegValue("RecentDir","SoundDir", REG_SZ, szInitialDir, lstrlen(szInitialDir));
                   EndDialog(hwndDlg, TRUE);
                }
             }
@@ -2899,7 +2899,7 @@ INT_PTR CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                      szInitialDir[ofn.nFileOffset] = 0;
                      pt->ImportImage(GetDlgItem(hwndDlg, IDC_SOUNDLIST), szFileName);
                   }
-                  hr = SetRegValue("RecentDir","ImageDir", REG_SZ, szInitialDir, (DWORD)strlen(szInitialDir));
+                  hr = SetRegValue("RecentDir","ImageDir", REG_SZ, szInitialDir, lstrlen(szInitialDir));
                   pt->SetNonUndoableDirty(eSaveDirty);
                }
             }
@@ -2974,7 +2974,7 @@ INT_PTR CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                      }
                      sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), sel, LVNI_SELECTED);
                   } // finished all selected items
-                  SetRegValue("RecentDir","ImageDir", REG_SZ, szInitialDir, (DWORD)strlen(szInitialDir));
+                  SetRegValue("RecentDir","ImageDir", REG_SZ, szInitialDir, lstrlen(szInitialDir));
                }							
             }	
             break;
@@ -3088,7 +3088,7 @@ INT_PTR CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
 
                         strcpy_s(szInitialDir, sizeof(szInitialDir), szFileName);
                         szInitialDir[ofn.nFileOffset] = 0;
-                        hr = SetRegValue("RecentDir","ImageDir", REG_SZ, szInitialDir, (DWORD)strlen(szInitialDir));
+                        hr = SetRegValue("RecentDir","ImageDir", REG_SZ, szInitialDir, lstrlen(szInitialDir));
 
                         pt->ReImportImage(GetDlgItem(hwndDlg, IDC_SOUNDLIST), ppi, ofn.lpstrFile);
                         ListView_SetItemText(GetDlgItem(hwndDlg, IDC_SOUNDLIST), sel, 1, ppi->m_szPath);
@@ -3277,28 +3277,7 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
          default:	SendMessage(GetDlgItem(hwndDlg, IDC_TexUnlimited),BM_SETCHECK, BST_CHECKED,0);
          }
 
-         HWND hwndCheck = GetDlgItem(hwndDlg, IDC_SHADOW);
-         int shadow;
-         hr = GetRegInt("Player", "BallShadows", &shadow);
-         if (hr != S_OK)
-            shadow = fTrue;
-         SendMessage(hwndCheck, BM_SETCHECK, shadow ? BST_CHECKED : BST_UNCHECKED, 0);
-
-         hwndCheck = GetDlgItem(hwndDlg, IDC_DECAL_BUTTON);
-         int decal;
-         hr = GetRegInt("Player", "BallDecals", &decal);
-         if (hr != S_OK)
-            decal = fTrue;
-         SendMessage(hwndCheck, BM_SETCHECK, decal ? BST_CHECKED : BST_UNCHECKED, 0);
-
-         hwndCheck = GetDlgItem(hwndDlg, IDC_ANTIALIAS);
-         int antialias;
-         hr = GetRegInt("Player", "BallAntialias", &antialias);
-         if (hr != S_OK)
-            antialias = fTrue;
-         SendMessage(hwndCheck, BM_SETCHECK, antialias ? BST_CHECKED : BST_UNCHECKED, 0);
-
-         hwndCheck = GetDlgItem(hwndDlg, IDC_GLOBAL_REFLECTION_CHECK);
+         HWND hwndCheck = GetDlgItem(hwndDlg, IDC_GLOBAL_REFLECTION_CHECK);
          int reflection;
          hr = GetRegInt("Player", "BallReflection", &reflection);
          if (hr != S_OK)
@@ -3500,18 +3479,6 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                      maxTexDim = 2048;
                   SetRegValue("Player", "MaxTexDimension", REG_DWORD, &maxTexDim,4);
 
-                  HWND hwndShadows = GetDlgItem(hwndDlg, IDC_SHADOW);
-				  size_t shadow = SendMessage(hwndShadows, BM_GETCHECK, 0, 0);
-                  SetRegValue("Player", "BallShadows", REG_DWORD, &shadow, 4);
-
-                  HWND hwndDecals = GetDlgItem(hwndDlg, IDC_DECAL_BUTTON);
-				  size_t decal = SendMessage(hwndDecals, BM_GETCHECK, 0, 0);
-                  SetRegValue("Player", "BallDecals", REG_DWORD, &decal, 4);
-
-                  HWND hwndAlias = GetDlgItem(hwndDlg, IDC_ANTIALIAS);
-				  size_t antialias = SendMessage(hwndAlias, BM_GETCHECK, 0, 0);
-                  SetRegValue("Player", "BallAntialias", REG_DWORD, &antialias, 4);
-
                   HWND hwndReflect = GetDlgItem(hwndDlg, IDC_GLOBAL_REFLECTION_CHECK);
 				  size_t reflection = SendMessage(hwndReflect, BM_GETCHECK, 0, 0);
                   SetRegValue("Player", "BallReflection", REG_DWORD, &reflection, 4);
@@ -3566,10 +3533,10 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
 
 				  char strTmp[256];
 				  GetDlgItemTextA(hwndDlg, IDC_3D_STEREO_MS, strTmp, 256);
-				  SetRegValue("Player", "Stereo3DMaxSeparation", REG_SZ, &strTmp,(DWORD)strlen(strTmp));
+				  SetRegValue("Player", "Stereo3DMaxSeparation", REG_SZ, &strTmp,lstrlen(strTmp));
 
 				  GetDlgItemTextA(hwndDlg, IDC_3D_STEREO_ZPD, strTmp, 256);
-				  SetRegValue("Player", "Stereo3DZPD", REG_SZ, &strTmp,(DWORD)strlen(strTmp));
+				  SetRegValue("Player", "Stereo3DZPD", REG_SZ, &strTmp,lstrlen(strTmp));
 
 				  //HWND hwndBallStretchNo = GetDlgItem(hwndDlg, IDC_StretchNo);
                   HWND hwndBallStretchYes = GetDlgItem(hwndDlg, IDC_StretchYes);
@@ -3857,7 +3824,7 @@ INT_PTR CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
                {
                   strcpy_s(szInitialDir, sizeof(szInitialDir), szFileName);
                   szInitialDir[ofn.nFileOffset] = 0;
-                  hr = SetRegValue("RecentDir","FontDir", REG_SZ, szInitialDir, (DWORD)strlen(szInitialDir));
+                  hr = SetRegValue("RecentDir","FontDir", REG_SZ, szInitialDir, lstrlen(szInitialDir));
                   pt->ImportFont(GetDlgItem(hwndDlg, IDC_SOUNDLIST), ofn.lpstrFile);
                }
             }
@@ -6196,60 +6163,60 @@ void savecurrentphysicssetting(HWND hwndDlg)
 	
 	GetDlgItemTextA(hwndDlg, DISPID_Flipper_Speed, tmp, 256);
     sprintf_s(tmp2,256,"FlipperPhysicsSpeed%u",physicsselection);
-	SetRegValue("Player", tmp2, REG_SZ, tmp, (DWORD)strlen(tmp));	
+	SetRegValue("Player", tmp2, REG_SZ, tmp, lstrlen(tmp));	
 
 	GetDlgItemTextA(hwndDlg, 19, tmp, 256);
     sprintf_s(tmp2,256,"FlipperPhysicsStrength%u",physicsselection);
-	SetRegValue("Player", tmp2, REG_SZ, tmp, (DWORD)strlen(tmp));
+	SetRegValue("Player", tmp2, REG_SZ, tmp, lstrlen(tmp));
 
 	GetDlgItemTextA(hwndDlg, 21, tmp, 256);
     sprintf_s(tmp2,256,"FlipperPhysicsElasticity%u",physicsselection);
-	SetRegValue("Player", tmp2, REG_SZ, tmp, (DWORD)strlen(tmp));
+	SetRegValue("Player", tmp2, REG_SZ, tmp, lstrlen(tmp));
 
 	GetDlgItemTextA(hwndDlg, 112, tmp, 256);
     sprintf_s(tmp2,256,"FlipperPhysicsScatter%u",physicsselection);
-	SetRegValue("Player", tmp2, REG_SZ, tmp, (DWORD)strlen(tmp));
+	SetRegValue("Player", tmp2, REG_SZ, tmp, lstrlen(tmp));
 
 	GetDlgItemTextA(hwndDlg, 23, tmp, 256);
     sprintf_s(tmp2,256,"FlipperPhysicsReturnStrength%u",physicsselection);
-	SetRegValue("Player", tmp2, REG_SZ, tmp, (DWORD)strlen(tmp));
+	SetRegValue("Player", tmp2, REG_SZ, tmp, lstrlen(tmp));
 
 	GetDlgItemTextA(hwndDlg, 22, tmp, 256);
     sprintf_s(tmp2,256,"FlipperPhysicsRecoil%u",physicsselection);
-	SetRegValue("Player", tmp2, REG_SZ, tmp, (DWORD)strlen(tmp));
+	SetRegValue("Player", tmp2, REG_SZ, tmp, lstrlen(tmp));
 
 	GetDlgItemTextA(hwndDlg, 109, tmp, 256);
     sprintf_s(tmp2,256,"FlipperPhysicsPowerLaw%u",physicsselection);
-	SetRegValue("Player", tmp2, REG_SZ, tmp, (DWORD)strlen(tmp));
+	SetRegValue("Player", tmp2, REG_SZ, tmp, lstrlen(tmp));
 
 	GetDlgItemTextA(hwndDlg, 110, tmp, 256);
     sprintf_s(tmp2,256,"FlipperPhysicsOblique%u",physicsselection);
-	SetRegValue("Player", tmp2, REG_SZ, tmp, (DWORD)strlen(tmp));
+	SetRegValue("Player", tmp2, REG_SZ, tmp, lstrlen(tmp));
 
 
 	GetDlgItemTextA(hwndDlg, 1100, tmp, 256);
     sprintf_s(tmp2,256,"TablePhysicsGravityConstant%u",physicsselection);
-	SetRegValue("Player", tmp2, REG_SZ, tmp, (DWORD)strlen(tmp));
+	SetRegValue("Player", tmp2, REG_SZ, tmp, lstrlen(tmp));
 
 	GetDlgItemTextA(hwndDlg, 1101, tmp, 256);
     sprintf_s(tmp2,256,"TablePhysicsContactFriction%u",physicsselection);
-	SetRegValue("Player", tmp2, REG_SZ, tmp, (DWORD)strlen(tmp));
+	SetRegValue("Player", tmp2, REG_SZ, tmp, lstrlen(tmp));
 
 	GetDlgItemTextA(hwndDlg, 1102, tmp, 256);
     sprintf_s(tmp2,256,"TablePhysicsContactScatterAngle%u",physicsselection);
-	SetRegValue("Player", tmp2, REG_SZ, tmp, (DWORD)strlen(tmp));
+	SetRegValue("Player", tmp2, REG_SZ, tmp, lstrlen(tmp));
 
 	GetDlgItemTextA(hwndDlg, 1103, tmp, 256);
     sprintf_s(tmp2,256,"TablePhysicsDampeningSpeed%u",physicsselection);
-	SetRegValue("Player", tmp2, REG_SZ, tmp, (DWORD)strlen(tmp));
+	SetRegValue("Player", tmp2, REG_SZ, tmp, lstrlen(tmp));
 
 	GetDlgItemTextA(hwndDlg, 1106, tmp, 256);
     sprintf_s(tmp2,256,"TablePhysicsDampeningFriction%u",physicsselection);
-	SetRegValue("Player", tmp2, REG_SZ, tmp, (DWORD)strlen(tmp));
+	SetRegValue("Player", tmp2, REG_SZ, tmp, lstrlen(tmp));
 
 	GetDlgItemTextA(hwndDlg, 1110, tmp, 256);
     sprintf_s(tmp2,256,"PhysicsSetName%u",physicsselection);
-	SetRegValue("Player", tmp2, REG_SZ, tmp, (DWORD)strlen(tmp));
+	SetRegValue("Player", tmp2, REG_SZ, tmp, lstrlen(tmp));
 }
 
 INT_PTR CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)

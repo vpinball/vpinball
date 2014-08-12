@@ -27,7 +27,7 @@ enum EnumAssignKeys
 	eVolumeDown,
 	eEnable3D,
 	eCKeys
-	};
+};
 
 /*
  * Class to limit the length of the GPU command buffer queue to at most 'numFrames' frames.
@@ -190,7 +190,7 @@ public:
 	int  NudgeGetTilt(); // returns non-zero when appropriate to set the tilt switch
 #endif
 
-	void PlungerUpdate();
+	void mechPlungerUpdate();
 	void mechPlungerIn( const int z );		
 
     void SetGravity(float slopeDeg, float strength);
@@ -218,24 +218,16 @@ public:
 	Vector<AnimObject> m_vscreenupdate;
 	Vector<HitTimer> m_vht;
 
-    bool m_fThrowBalls;
-	BOOL m_fAccelerometer;		//true if electronic Accelerometer enabled
-	BOOL m_AccelNormalMount;	//true if normal mounting (left hand coordinates)
-	float m_AccelAngle;			// 0 Radians rotated counterclockwise (GUI is lefthand coordinates)
-	float m_AccelAmp;			// Accelerometer gain 
-	float m_AccelAmpX;			// Accelerometer gain X axis 
-	float m_AccelAmpY;			// Accelerometer gain Y axis
-	float m_AccelMAmp;			// manual input gain, generally from joysticks
-
-	U32 m_jolt_amount;
-	U32 m_tilt_amount;
-	U32 m_jolt_trigger_time;
-	U32 m_tilt_trigger_time;
-
 	Vertex3Ds m_gravity;
 
-	BOOL m_fDetectScriptHang;
-	BOOL m_fNoTimeCorrect;		// Used so the frame after debugging does not do normal time correction
+    bool m_fThrowBalls;
+
+	bool m_fDetectScriptHang;
+	bool m_fNoTimeCorrect;		// Used so the frame after debugging does not do normal time correction
+
+	bool m_fCloseDown;			// Whether to shut down the player at the end of this frame
+	int m_fCloseType;			// if 0 exit player and close application if started minimized, if 1 close application always, 2 is brute force exit
+
 	PinInput m_pininput;
 
 	float m_NudgeX;
@@ -254,9 +246,6 @@ public:
 
 	Vector<CLSID> m_controlclsidsafe; // ActiveX control types which have already been okayed as being safe
 
-	BOOL m_fCloseDown;			// Whether to shut down the player at the end of this frame
-	int m_fCloseType;			// if 0 exit player and close application if started minimized, if 1 close application always, 2 is brute force exit
-
 	int m_sleeptime;			// time to sleep during each frame - can helps side threads like vpinmame
 
 	int m_nudgetime;
@@ -266,23 +255,23 @@ public:
 	int m_fVSync; // targeted refresh rate in Hz, if larger refresh rate it will limit FPS by uSleep() //!! currently does not work adaptively as it would require IDirect3DDevice9Ex which is not supported on WinXP
     int m_fMaxPrerenderedFrames;
 	int m_fFXAA;
-    BOOL m_fAA;
+    bool m_fAA;
 
-	BOOL m_fReflectionForBalls;
-	BOOL m_fTrailForBalls;
+	bool m_fReflectionForBalls;
+	bool m_fTrailForBalls;
 
 	int m_fStereo3D; // 0=off, 1=top/down, 2=interlaced/LG //!! support sidebyside, too?
 	BOOL m_fStereo3Denabled;
 
 	XAudPlayer *m_pxap;
 
-	BOOL m_fDebugMode;
+	bool m_fDebugMode;
 
-	BOOL m_DebugBalls;			 // Draw balls in the foreground.
-	BOOL m_ToggleDebugBalls;
+	bool m_DebugBalls;			 // Draw balls in the foreground.
+	bool m_ToggleDebugBalls;
 
-	BOOL m_fPlayMusic;
-	BOOL m_fPlaySound;
+	bool m_fPlayMusic;
+	bool m_fPlaySound;
 	int m_MusicVolume;
 	int m_SoundVolume;
 
@@ -306,15 +295,15 @@ public:
 
     VertexBuffer * m_ballDebugPoints;
 #endif
-	int m_movedPlunger;			// has plunger moved, must have moved at least three times
+	U32 m_movedPlunger;			// has plunger moved, must have moved at least three times
 	U32 m_LastPlungerHit;		// The last time the plunger was in contact (at least the vicinity) of the ball.
 	int m_Coins;				// The number of coins queued to be inserted.  These were sent from the shell after the load.
 	float m_curMechPlungerPos;
 
-    int m_screenwidth, m_screenheight, m_screendepth, m_refreshrate;
-    BOOL m_fFullScreen;
-
 	int m_width, m_height;
+
+	int m_screenwidth, m_screenheight, m_screendepth, m_refreshrate;
+    bool m_fFullScreen;
 
 	bool m_touchregion_pressed[8]; // status for each touch region to avoid multitouch double triggers (true = finger on, false = finger off)
 
@@ -364,13 +353,6 @@ private:
 	FILE *m_fplaylog;
 #endif
 
-	BOOL m_fBallShadows;
-	BOOL m_fBallDecals;
-	BOOL m_fBallAntialias;
-
-	BOOL m_fStereo3DAA;
-	BOOL m_fStereo3DY;
-
 	float m_BallStretchX;
 	float m_BallStretchY;
 
@@ -412,7 +394,6 @@ private:
 	U64 m_phys_max;
 	U64 m_phys_total_iterations;
 	U64 m_phys_max_iterations;
-	BOOL m_fShowFPS;
 
     FrameQueueLimiter m_limiter;
 
@@ -428,5 +409,9 @@ public:
 #endif
 
 	bool m_firstFrame;
+	bool m_fShowFPS;
+
+	bool m_fStereo3DAA;
+	bool m_fStereo3DY;
 };
 

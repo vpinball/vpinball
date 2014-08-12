@@ -128,13 +128,13 @@ void Bumper::WriteRegDefaults()
    SetRegValueInt("DefaultProps\\Bumper","TimerEnabled", m_d.m_tdr.m_fTimerEnabled);	
    SetRegValueInt("DefaultProps\\Bumper","TimerInterval", m_d.m_tdr.m_TimerInterval);	
    SetRegValue("DefaultProps\\Bumper","LightState", REG_DWORD, &m_d.m_state,4);	
-   SetRegValue("DefaultProps\\Bumper","BlinkPattern", REG_SZ, &m_rgblinkpattern,(DWORD)strlen(m_rgblinkpattern));	
+   SetRegValue("DefaultProps\\Bumper","BlinkPattern", REG_SZ, &m_rgblinkpattern,lstrlen(m_rgblinkpattern));	
    SetRegValueInt("DefaultProps\\Bumper","BlinkInterval", m_blinkinterval);	
    SetRegValueInt("DefaultProps\\Bumper","FlashWhenHit", m_d.m_fFlashWhenHit);	
    SetRegValueInt("DefaultProps\\Bumper","CastsShadow", m_d.m_fCastsShadow);	
    SetRegValueInt("DefaultProps\\Bumper","Visible", m_d.m_fVisible);	
    SetRegValueInt("DefaultProps\\Bumper","SideVisible", m_d.m_fSideVisible);	
-   SetRegValue("DefaultProps\\Bumper", "Surface", REG_SZ, &m_d.m_szSurface, (DWORD)strlen(m_d.m_szSurface));
+   SetRegValue("DefaultProps\\Bumper", "Surface", REG_SZ, &m_d.m_szSurface, lstrlen(m_d.m_szSurface));
 }
 
 STDMETHODIMP Bumper::InterfaceSupportsErrorInfo(REFIID riid)

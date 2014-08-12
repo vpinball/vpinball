@@ -152,10 +152,10 @@ void Plunger::WriteRegDefaults()
 	SetRegValueFloat("DefaultProps\\Plunger","ReleaseSpeed", m_d.m_speedFire);
 	SetRegValue("DefaultProps\\Plunger","PlungerType",REG_DWORD,&m_d.m_type,4);
 	SetRegValue("DefaultProps\\Plunger","Color",REG_DWORD,&m_d.m_color,4);
-	SetRegValue("DefaultProps\\Plunger","Image", REG_SZ, &m_d.m_szImage, (DWORD)strlen(m_d.m_szImage));
+	SetRegValue("DefaultProps\\Plunger","Image", REG_SZ, &m_d.m_szImage, lstrlen(m_d.m_szImage));
 	SetRegValue("DefaultProps\\Plunger","TimerEnabled",REG_DWORD, &m_d.m_tdr.m_fTimerEnabled,4);
 	SetRegValue("DefaultProps\\Plunger","TimerInterval",REG_DWORD, &m_d.m_tdr.m_TimerInterval,4);
-	SetRegValue("DefaultProps\\Plunger","Surface", REG_SZ, &m_d.m_szSurface, (DWORD)strlen(m_d.m_szSurface));
+	SetRegValue("DefaultProps\\Plunger","Surface", REG_SZ, &m_d.m_szSurface, lstrlen(m_d.m_szSurface));
 	SetRegValue("DefaultProps\\Plunger","MechPlunger",REG_DWORD, &m_d.m_mechPlunger,4);
 	SetRegValue("DefaultProps\\Plunger","AutoPlunger",REG_DWORD, &m_d.m_autoPlunger,4);
 	SetRegValueFloat("DefaultProps\\Plunger","MechStrength", m_d.m_mechStrength);

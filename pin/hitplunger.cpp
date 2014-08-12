@@ -176,7 +176,7 @@ void PlungerAnimObject::UpdateVelocities()
 			if (!recock && m_mechTimeOut <= 0)
 				{
 				m_speed = -err_fil*(m_frameEnd - m_frameStart);				//new velocity based on filtered position error
-				m_speed *= m_plunger->m_d.m_mechStrength/m_mass *c_plungerNormalize;	// match button physics
+				m_speed *= m_plunger->m_d.m_mechStrength/m_mass * (float)g_pplayer->m_ptable->m_plungerNormalize*(float)(1.0/1300.0);	// match button physics
 
 				if (m_speed <= -m_breakOverVelocity)						//mechanical speed is too fast, windows will
 					{														// alias at high speed and EOS 

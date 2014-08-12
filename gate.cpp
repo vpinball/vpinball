@@ -158,12 +158,12 @@ void Gate::WriteRegDefaults()
    SetRegValue("DefaultProps\\Gate","Color",REG_DWORD,&m_d.m_color,4);
    SetRegValue("DefaultProps\\Gate","TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
    SetRegValue("DefaultProps\\Gate","TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval, 4);
-   SetRegValue("DefaultProps\\Gate","Surface", REG_SZ, &m_d.m_szSurface,(DWORD)strlen(m_d.m_szSurface));
+   SetRegValue("DefaultProps\\Gate","Surface", REG_SZ, &m_d.m_szSurface,lstrlen(m_d.m_szSurface));
    SetRegValueFloat("DefaultProps\\Gate","Elasticity", m_d.m_elasticity);
    SetRegValueFloat("DefaultProps\\Gate","Friction", m_d.m_friction);
    SetRegValueFloat("DefaultProps\\Gate","Scatter", m_d.m_scatter);
-   SetRegValue("DefaultProps\\Gate","ImageFront", REG_SZ, &m_d.m_szImageFront,(DWORD)strlen(m_d.m_szImageFront));
-   SetRegValue("DefaultProps\\Gate","ImageBack", REG_SZ, &m_d.m_szImageBack,(DWORD)strlen(m_d.m_szImageBack));
+   SetRegValue("DefaultProps\\Gate","ImageFront", REG_SZ, &m_d.m_szImageFront,lstrlen(m_d.m_szImageFront));
+   SetRegValue("DefaultProps\\Gate","ImageBack", REG_SZ, &m_d.m_szImageBack,lstrlen(m_d.m_szImageBack));
    SetRegValue("DefaultProps\\Gate","EnableLighting",REG_DWORD,&m_d.m_fEnableLighting,4);
 }
 

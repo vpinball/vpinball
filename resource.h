@@ -128,12 +128,10 @@
 #define ID_INSERT_TARGET                135
 #define IDS_TB_DECAL                    135
 #define ID_INSERT_DECAL                 136
-#define IDC_DECAL_BUTTON                136
 #define IDS_TB_PROPERTIES               136
 #define ID_TABLE_MAGNIFY                137
 #define IDS_TB_MAGNIFY                  137
 #define IDC_MAGNIFY                     137
-#define IDC_ANTIALIAS                   137
 #define IDS_GATE_DESC                   138
 #define IDC_WALL                        138
 #define IDR_GATE                        139
@@ -366,7 +364,6 @@
 #define IDD_PROPBUMPER_STATE            293
 #define ID_RESUME                       294
 #define ID_DEBUGWINDOW                  295
-#define IDC_SHADOW                      296
 #define IDD_PHYSICS_OPTIONS             297
 #define IDC_VERSION                     302
 #define IDC_TRANSWEBSITE                303

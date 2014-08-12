@@ -162,7 +162,7 @@ void Flipper::WriteRegDefaults()
    SetRegValueInt("DefaultProps\\Flipper","TimerInterval",m_d.m_tdr.m_TimerInterval);
    SetRegValue("DefaultProps\\Flipper","Color", REG_DWORD, &m_d.m_color, 4);
    SetRegValue("DefaultProps\\Flipper","RubberColor", REG_DWORD, &m_d.m_rubbercolor, 4);
-   SetRegValue("DefaultProps\\Flipper","Surface", REG_SZ, &m_d.m_szSurface,(DWORD)strlen(m_d.m_szSurface));
+   SetRegValue("DefaultProps\\Flipper","Surface", REG_SZ, &m_d.m_szSurface,lstrlen(m_d.m_szSurface));
    SetRegValueFloat("DefaultProps\\Flipper","Strength", m_d.m_strength);
    SetRegValueFloat("DefaultProps\\Flipper","PowerLaw", m_d.m_powerlaw);
    SetRegValueFloat("DefaultProps\\Flipper","ObliqueCorrection", m_d.m_obliquecorrection);

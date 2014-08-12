@@ -74,9 +74,9 @@ void Textbox::SetDefaults(bool fromMouseClick)
             fd.lpstrName = L"Arial";
         else
         {
-			size_t len = strlen(&tmp[0]) + 1;
+			int len = lstrlen(&tmp[0]) + 1;
             fd.lpstrName = (LPOLESTR) malloc(len*sizeof(WCHAR));
-            UNICODE_FROM_ANSI(fd.lpstrName, &tmp[0], (int)len); 
+            UNICODE_FROM_ANSI(fd.lpstrName, &tmp[0], len); 
             fd.lpstrName[len] = 0;
             free_lpstrName = true;
         }
@@ -122,7 +122,7 @@ void Textbox::WriteRegDefaults()
 	SetRegValueFloat("DefaultProps\\TextBox","FontSize", fTmp);
 	size_t charCnt = wcslen(fd.lpstrName) + 1;
 	WideCharToMultiByte(CP_ACP, 0, fd.lpstrName, (int)charCnt, strTmp, (int)(2*charCnt), NULL, NULL);
-	SetRegValue("DefaultProps\\TextBox","FontName", REG_SZ, &strTmp,(DWORD)strlen(strTmp));
+	SetRegValue("DefaultProps\\TextBox","FontName", REG_SZ, &strTmp,lstrlen(strTmp));
 	int weight = fd.sWeight;
 	int charset = fd.sCharset;
 	SetRegValueInt("DefaultProps\\TextBox","FontWeight",weight);
@@ -131,7 +131,7 @@ void Textbox::WriteRegDefaults()
 	SetRegValue("DefaultProps\\TextBox","FontUnderline",REG_DWORD,&fd.fUnderline,4);
 	SetRegValue("DefaultProps\\TextBox","FontStrikeThrough",REG_DWORD,&fd.fStrikethrough,4);
 
-	SetRegValue("DefaultProps\\TextBox","Text", REG_SZ, &m_d.sztext,(DWORD)strlen(m_d.sztext));
+	SetRegValue("DefaultProps\\TextBox","Text", REG_SZ, &m_d.sztext,lstrlen(m_d.sztext));
 	}
 
 STDMETHODIMP Textbox::InterfaceSupportsErrorInfo(REFIID riid)

@@ -96,9 +96,9 @@ void Decal::SetDefaults(bool fromMouseClick)
          fd.lpstrName = L"Arial Black";
       else
       {
-		 size_t len = strlen(&tmp[0]) + 1;
+		 int len = lstrlen(&tmp[0]) + 1;
          fd.lpstrName = (LPOLESTR) malloc(len*sizeof(WCHAR));
-         UNICODE_FROM_ANSI(fd.lpstrName, &tmp[0], (int)len); 
+         UNICODE_FROM_ANSI(fd.lpstrName, &tmp[0], len); 
          fd.lpstrName[len] = 0;
       }
 
@@ -135,13 +135,13 @@ void Decal::WriteRegDefaults()
    SetRegValueFloat("DefaultProps\\Decal","Width", m_d.m_width);
    SetRegValueFloat("DefaultProps\\Decal","Height", m_d.m_height);
    SetRegValueFloat("DefaultProps\\Decal","Rotation", m_d.m_rotation);
-   SetRegValue("DefaultProps\\Decal","Image", REG_SZ, &m_d.m_szImage,(DWORD)strlen(m_d.m_szImage));
+   SetRegValue("DefaultProps\\Decal","Image", REG_SZ, &m_d.m_szImage,lstrlen(m_d.m_szImage));
    SetRegValue("DefaultProps\\Decal","DecalType",REG_DWORD,&m_d.m_decaltype,4);
-   SetRegValue("DefaultProps\\Decal","Text", REG_SZ, &m_d.m_sztext,(DWORD)strlen(m_d.m_sztext));
+   SetRegValue("DefaultProps\\Decal","Text", REG_SZ, &m_d.m_sztext,lstrlen(m_d.m_sztext));
    SetRegValue("DefaultProps\\Decal","Sizing",REG_DWORD,&m_d.m_sizingtype,4);
    SetRegValue("DefaultProps\\Decal","Color",REG_DWORD,&m_d.m_color,4);
    SetRegValueInt("DefaultProps\\Decal","VerticalText",m_d.m_fVerticalText);
-   SetRegValue("DefaultProps\\Decal","Surface", REG_SZ, m_d.m_szSurface, (DWORD)strlen(m_d.m_szSurface)); 
+   SetRegValue("DefaultProps\\Decal","Surface", REG_SZ, m_d.m_szSurface, lstrlen(m_d.m_szSurface)); 
 
    if (m_pIFont)
    {
@@ -161,7 +161,7 @@ void Decal::WriteRegDefaults()
 	  size_t charCnt = wcslen(fd.lpstrName) + 1;
       char strTmp[MAXTOKEN];
       WideCharToMultiByte(CP_ACP, 0, fd.lpstrName, (int)charCnt, strTmp, (int)(2*charCnt), NULL, NULL);
-      SetRegValue("DefaultProps\\Decal","FontName", REG_SZ, &strTmp,(DWORD)strlen(strTmp));
+      SetRegValue("DefaultProps\\Decal","FontName", REG_SZ, &strTmp,lstrlen(strTmp));
 	  const int weight = fd.sWeight;
 	  const int charset = fd.sCharset;
       SetRegValueInt("DefaultProps\\Decal","FontWeight",weight);
