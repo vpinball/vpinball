@@ -154,8 +154,6 @@ public:
 
 	STDMETHOD(get_Friction)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Friction)(/*[in]*/ float newVal);
-	STDMETHOD(get_Animations)(/*[out, retval]*/ int *pVal);
-	STDMETHOD(put_Animations)(/*[in]*/ int newVal);
 	STDMETHOD(get_Visible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_Visible)(/*[in]*/ VARIANT_BOOL newVal);
 	STDMETHOD(get_EnableLighting)(/*[out, retval]*/ VARIANT_BOOL *pVal);

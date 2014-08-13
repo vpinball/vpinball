@@ -251,12 +251,6 @@ public:
 	STDMETHOD(get_GlobalDifficulty)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_GlobalDifficulty)(/*[in]*/ float newVal);
 
-	//!! deprecated
-	STDMETHOD(get_HardwareRender)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-	STDMETHOD(put_HardwareRender)(/*[in]*/ VARIANT_BOOL newVal);
-	STDMETHOD(get_AlternateRender)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-	STDMETHOD(put_AlternateRender)(/*[in]*/ VARIANT_BOOL newVal);
-
 	STDMETHOD(get_DeadSlider)(/*[out, retval]*/  int *pVal);
 	STDMETHOD(put_DeadSlider)(/*[in]*/ int newVal);
 	STDMETHOD(get_DeadZone)(/*[out, retval]*/  int *pVal);

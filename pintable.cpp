@@ -8289,31 +8289,6 @@ STDMETHODIMP PinTable::put_GlobalDifficulty(float newVal)
    return S_OK;
 }
 
-STDMETHODIMP PinTable::get_AlternateRender(VARIANT_BOOL *pVal)      // TODO: remove
-{
-   *pVal = (VARIANT_BOOL)FTOVB(false);
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_AlternateRender(VARIANT_BOOL newVal)     // TODO: remove
-{
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::get_HardwareRender(VARIANT_BOOL *pVal)
-{
-	//!! deprecated
-    *pVal = (VARIANT_BOOL)FTOVB((g_pvp) ? true : false); //VP Editor
-
-    return S_OK;
-}
-
-STDMETHODIMP PinTable::put_HardwareRender(VARIANT_BOOL newVal)
-{
-	//!! deprecated
-	return S_OK;
-}
-
 STDMETHODIMP PinTable::get_Accelerometer(VARIANT_BOOL *pVal)
 {
    *pVal = (VARIANT_BOOL)FTOVB(m_tblAccelerometer);

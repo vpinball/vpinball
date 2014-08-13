@@ -800,26 +800,6 @@ STDMETHODIMP Flasher::put_DisplayTexture(VARIANT_BOOL newVal)
    return S_OK;
 }
 
-STDMETHODIMP Flasher::get_UpdateRegions(VARIANT_BOOL *pVal)
-{
-   //!! deprecated
-   *pVal = (VARIANT_BOOL)FTOVB(false);
-
-   return S_OK;
-}
-
-STDMETHODIMP Flasher::put_UpdateRegions(VARIANT_BOOL newVal)
-{
-   //!! deprecated
-   return S_OK;
-}
-
-STDMETHODIMP Flasher::TriggerSingleUpdate() 
-{
-   //!! deprecated
-   return S_OK;
-}
-
 STDMETHODIMP Flasher::get_AddBlend(VARIANT_BOOL *pVal)
 {
    *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fAddBlend);

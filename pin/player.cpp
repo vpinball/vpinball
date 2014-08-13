@@ -163,7 +163,7 @@ Player::Player()
 	m_curPlunger = JOYRANGEMN-1;
 
 	HRESULT hr;
-	
+
 	int vsync;
 	hr = GetRegInt("Player", "AdaptiveVSync", &vsync);
 	if (hr != S_OK)
@@ -1310,7 +1310,7 @@ int Player::NudgeGetTilt()
 void Player::NudgeUpdate()	// called on every integral physics frame
 {
 	if (m_NudgeManual >= 0)			// Only one joystick controls in manual mode
-	{
+	{		
 		m_NudgeX = m_ptable->m_tblAccelManualAmp * ((float)m_curAccel_x[m_NudgeManual])*(float)(1.0/JOYRANGE);
 		m_NudgeY = m_ptable->m_tblAccelManualAmp * ((float)m_curAccel_y[m_NudgeManual])*(float)(1.0/JOYRANGE);
 
@@ -1897,7 +1897,7 @@ void Player::UpdatePhysics()
 #endif
 		NudgeUpdate();		// physics_diff_time is the balance of time to move from the graphic frame position to the next
 		mechPlungerUpdate();	// integral physics frame. So the previous graphics frame was (1.0 - physics_diff_time) before 
-					// this integral physics frame. Accelerations and inputs are always physics frame aligned
+							// this integral physics frame. Accelerations and inputs are always physics frame aligned
 		if (m_nudgetime)
 		{
 			m_nudgetime--;
@@ -1985,43 +1985,6 @@ void Player::RenderDynamics()
       }
 
       m_ToggleDebugBalls = false;
-   }
-
-   /* VP9COMPAT:
-    * Most VP9 tables use several lights layered over each other in order to simulate
-    * fading lights and GI. They rely on the fact that when a light in VP9 changes
-    * state, it is blitted to the backbuffer. We emulate this by putting lights which
-    * change state to the end of the draw order for lights.
-    */
-   {
-       const size_t numLights = m_vLights.size();
-
-       // sort the list of triggered lights so that we can use binary search
-       m_sortedTriggeredLights = m_triggeredLights;
-       std::sort( m_sortedTriggeredLights.begin(), m_sortedTriggeredLights.end() );
-
-       // remove triggered lights from the m_vLights vector
-       m_vLights.erase(
-         std::remove_if( m_vLights.begin(), m_vLights.end(), IsMemberOf<Hitable*>(m_sortedTriggeredLights) ),
-         m_vLights.end() );
-
-       // now re-add the triggered lights at the end in the proper order,
-       // but make sure to add each only once
-       m_alreadyAddedLights.clear();
-       for (unsigned i = 0; i < m_triggeredLights.size(); ++i)
-       {
-           Hitable * cur = m_triggeredLights[i];
-           if (m_alreadyAddedLights.find(cur) == m_alreadyAddedLights.end())       // not yet added?
-           {
-               m_vLights.push_back(cur);
-               m_alreadyAddedLights.insert(cur);
-           }
-       }
-
-       // reset list of triggered lights
-       m_triggeredLights.clear();
-
-       assert( numLights == m_vLights.size() );     // make sure we didn't mess up
    }
 
    // Draw non-transparent objects.

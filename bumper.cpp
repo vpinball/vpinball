@@ -273,12 +273,6 @@ void Bumper::PostRenderStatic(RenderDevice* pd3dDevice)
 {
     TRACE_FUNCTION();
 
-    /* HACK / VP9COMPAT:
-     * Make pure black bumpers invisible for compatibility (e.g., Medusa by PacDude).
-     */
-    if (m_d.m_color == 0 && m_d.m_sidecolor == 0)
-        return;
-
     if(!m_d.m_fVisible)	return;
 
     Pin3D * const ppin3d = &g_pplayer->m_pin3d;
@@ -308,7 +302,7 @@ void Bumper::PostRenderStatic(RenderDevice* pd3dDevice)
         pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, vtxBuf, 32, 8*32, idxBuf, 6*32, 12*32);
     }
 
-    if (m_d.m_fSideVisible && /* VP9COMPAT */ m_d.m_sidecolor != 0)
+    if (m_d.m_fSideVisible)
     {
         if (state == 0)
         {

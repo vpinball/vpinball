@@ -512,10 +512,6 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propget, id(209), helpstring("property GlobalDifficulty")] HRESULT GlobalDifficulty([out, retval] float *pVal);
 		[propput, id(209), helpstring("property GlobalDifficulty")] HRESULT GlobalDifficulty([in] float newVal);
 
-		[propget, id(211), helpstring("property HardwareRender")] HRESULT HardwareRender([out, retval] VARIANT_BOOL *pVal);
-		[propput, id(211), helpstring("property HardwareRender")] HRESULT HardwareRender([in] VARIANT_BOOL newVal);
-		[propget, id(216), helpstring("property AlternateRender")] HRESULT AlternateRender([out, retval] VARIANT_BOOL *pVal);
-		[propput, id(216), helpstring("property AlternateRender")] HRESULT AlternateRender([in] VARIANT_BOOL newVal);
 		[propget, id(214), helpstring("property TableHeight")] HRESULT TableHeight([out, retval] float *pVal);
 		[propput, id(214), helpstring("property TableHeight")] HRESULT TableHeight([in] float newVal);
 
@@ -1397,11 +1393,6 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propget, id(106), helpstring("property Draw Textures Inside")] HRESULT DrawTexturesInside([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(106), helpstring("property Draw Textures Inside")] HRESULT DrawTexturesInside([in] VARIANT_BOOL newVal);
 
-		//!! deprecated
-		[propget, id(584), helpstring("property UpdateRegions")] HRESULT UpdateRegions([out, retval] VARIANT_BOOL *pVal);
-		[propput, id(584), helpstring("property UpdateRegions")] HRESULT UpdateRegions([in] VARIANT_BOOL newVal);
-		[id(1585), helpstring("method TriggerSingleUpdate")] HRESULT TriggerSingleUpdate();
-
 		[propget, id(DISPID_Image), helpstring("property Image")] HRESULT Image([out, retval] BSTR *pVal);
 		[propput, id(DISPID_Image), helpstring("property Image")] HRESULT Image([in] BSTR newVal);
 
@@ -1576,7 +1567,6 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(DISPID_Surface), helpstring("property Surface")] HRESULT Surface([in] BSTR newVal);
 		[propget, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([out, retval] VARIANT* pVal);
 		[propput, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([in] VARIANT* newVal);
-
 		
 		[propget, id(2144), helpstring("property CloseAngle")] HRESULT CloseAngle([out, retval] float *pVal);
 		[propput, id(2144), helpstring("property CloseAngle")] HRESULT CloseAngle([in] float newVal);
@@ -1586,8 +1576,6 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(2146), helpstring("property Collidable")] HRESULT Collidable([in] VARIANT_BOOL newVal);
 		[propget, id(12), helpstring("property Friction")] HRESULT Friction([out, retval] float *pVal);
 		[propput, id(12), helpstring("property Friction")] HRESULT Friction([in] float newVal);
-		[propget, id(13), helpstring("property Animations")] HRESULT Animations([out, retval] int *pVal);
-		[propput, id(13), helpstring("property Animations")] HRESULT Animations([in] int newVal);
 		[propget, id(14), helpstring("property Visible")] HRESULT Visible([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(14), helpstring("property Visible")] HRESULT Visible([in] VARIANT_BOOL newVal);
 		[propget, id(15), helpstring("property Supports")] HRESULT Supports([out, retval] VARIANT_BOOL *pVal);
@@ -1665,8 +1653,6 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(14), helpstring("property AngleMin")] HRESULT AngleMin([in] float newVal);
 		[propget, id(15), helpstring("property Elasticity")] HRESULT Elasticity([out, retval] float *pVal);
 		[propput, id(15), helpstring("property Elasticity")] HRESULT Elasticity([in] float newVal);
-		[propget, id(16), helpstring("property Animations")] HRESULT Animations([out, retval] int *pVal);
-		[propput, id(16), helpstring("property Animations")] HRESULT Animations([in] int newVal);
 		[propget, id(17), helpstring("property Visible")] HRESULT Visible([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(17), helpstring("property Visible")] HRESULT Visible([in] VARIANT_BOOL newVal);
 		[propget, id(18), nonbrowsable, helpstring("property CurrentAngle")] HRESULT CurrentAngle([out, retval] float *pVal);
@@ -1812,11 +1798,6 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propget, id(112), helpstring("property Visible")] HRESULT Visible([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(112), helpstring("property Visible")] HRESULT Visible([in] VARIANT_BOOL newVal);
 
-	    //!! deprecated
-		[propget, id(584), helpstring("property UpdateRegions")] HRESULT UpdateRegions([out, retval] VARIANT_BOOL *pVal);
-		[propput, id(584), helpstring("property UpdateRegions")] HRESULT UpdateRegions([in] VARIANT_BOOL newVal);
-		[id(1584), helpstring("method TriggerSingleUpdate")] HRESULT TriggerSingleUpdate();
-
 		[propget, id(556), helpstring("property AddBlend")] HRESULT AddBlend([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(556), helpstring("property AddBlend")] HRESULT AddBlend([in] VARIANT_BOOL newVal);
 
@@ -1873,7 +1854,6 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 
   		[propget, id(398), helpstring("property static rendering")] HRESULT EnableStaticRendering([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(398), helpstring("property static rendering")] HRESULT EnableStaticRendering([in] VARIANT_BOOL newVal);
-		
 	};
    
    
@@ -1992,8 +1972,6 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(DISPID_Sound), helpstring("property Sound")] HRESULT Sound([in] BSTR newVal);
 		[propget, id(8), helpstring("property Steps")] HRESULT Steps([out, retval] float *pVal);
 		[propput, id(8), helpstring("property Steps")] HRESULT Steps([in] float newVal);
-		[propget, id(13), helpstring("property IsShading")] HRESULT IsShading([out, retval] VARIANT_BOOL *pVal);
-		[propput, id(13), helpstring("property IsShading")] HRESULT IsShading([in] VARIANT_BOOL newVal);
 		[propget, id(DISPID_Timer_Enabled), helpstring("property TimerEnabled")] HRESULT TimerEnabled([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(DISPID_Timer_Enabled), helpstring("property TimerEnabled")] HRESULT TimerEnabled([in] VARIANT_BOOL newVal);
 		[propget, id(DISPID_Timer_Interval), helpstring("property TimerInterval")] HRESULT TimerInterval([out, retval] long *pVal);
