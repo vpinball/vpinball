@@ -47,8 +47,6 @@ public:
 
 	void EnsureOMObject();
 
-	Vertex3D_NoTex2 m_rgv3DShadow[4];			// Last vertices of the ball shadow
-
 	COLORREF m_color;
 
 	// Per frame info
@@ -68,8 +66,6 @@ public:
 
 	int m_fDynamic;			// used to determine static ball conditions and velocity quenching, 
 
-    Material shadowMaterial;
-    Material logoMaterial;
     Material material;
 
 	BallAnimObject m_ballanim;

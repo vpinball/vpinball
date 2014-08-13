@@ -1310,7 +1310,7 @@ int Player::NudgeGetTilt()
 void Player::NudgeUpdate()	// called on every integral physics frame
 {
 	if (m_NudgeManual >= 0)			// Only one joystick controls in manual mode
-	{		
+	{
 		m_NudgeX = m_ptable->m_tblAccelManualAmp * ((float)m_curAccel_x[m_NudgeManual])*(float)(1.0/JOYRANGE);
 		m_NudgeY = m_ptable->m_tblAccelManualAmp * ((float)m_curAccel_y[m_NudgeManual])*(float)(1.0/JOYRANGE);
 
@@ -2489,8 +2489,6 @@ void Player::DrawBalls()
 //       const float radiusX = (pball->radius*0.9f) * m_BallStretchX;
 //       const float radiusY = (pball->radius*0.9f) * m_BallStretchY;
 
-      pball->logoMaterial.setDiffuse( 0.8f, pball->m_color );
-      pball->logoMaterial.setAmbient( 0.8f, pball->m_color );
       pball->material.setColor( 1.0f, pball->m_color );
       m_pin3d.m_pd3dDevice->SetMaterial(pball->material);
 
