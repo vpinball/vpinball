@@ -22,8 +22,6 @@ Ball::Ball()
    m_Event_Pos.x = m_Event_Pos.y = m_Event_Pos.z = -1.0f;
    fFrozen = false;
    m_color = RGB(255,255,255);
-   logoMaterial.setDiffuse( 0.8f, m_color );
-   logoMaterial.setAmbient( 0.8f, m_color );
    material.setColor( 1.0f, m_color );
 
    m_disableLighting = false;
