@@ -57,8 +57,6 @@
 **	put_Sound()
 **	get_Steps()
 **	put_Steps()
-**	get_IsShading()
-**	put_IsShading()
 **	get_Type()
 **	put_Type()
 **	get_Font()
@@ -1240,20 +1238,6 @@ STDMETHODIMP DispReel::put_Steps(float newVal)
 	STOPUNDO
 
     return S_OK;
-}
-
-STDMETHODIMP DispReel::get_IsShading(VARIANT_BOOL *pVal)
-{
-	//!! deprecated
-    *pVal = (VARIANT_BOOL)FTOVB(fFalse);
-
-	return S_OK;
-}
-
-STDMETHODIMP DispReel::put_IsShading(VARIANT_BOOL newVal)
-{
-	//!! deprecated
-	return S_OK;
 }
 
 STDMETHODIMP DispReel::get_Type(ReelType *pVal)

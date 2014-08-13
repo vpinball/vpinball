@@ -157,8 +157,6 @@ public:
 	STDMETHOD(put_Image)(/*[in]*/ BSTR newVal);
     STDMETHOD(get_Sound)(/*[out, retval]*/ BSTR *pVal);
     STDMETHOD(put_Sound)(/*[in]*/ BSTR newVal);
-    STDMETHOD(get_IsShading)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-    STDMETHOD(put_IsShading)(/*[in]*/ VARIANT_BOOL newVal);
     STDMETHOD(get_Steps)(/*[out, retval]*/ float *pVal);
     STDMETHOD(put_Steps)(/*[in]*/ float newVal);
 	STDMETHOD(get_Font)(/*[out, retval]*/ IFontDisp **pVal);

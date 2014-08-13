@@ -606,13 +606,6 @@ void Surface::PostRenderStatic(RenderDevice* pd3dDevice)
 
     RenderSlingshots((RenderDevice*)pd3dDevice);
 
-    /* HACK / VP9COMPAT:
-     * Some VP9 tables (e.g., Twilight Zone [Megapin]) use pure black (invisible)
-     * drop targets as region invalidaters. We don't render such walls to emulate this.
-     */
-    if (m_d.m_sidecolor == 0 && m_d.m_topcolor == 0)
-        return;
-
     if (m_d.m_fDroppable || m_d.m_transparent)
     {
         if (!m_fIsDropped)

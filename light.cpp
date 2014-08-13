@@ -488,16 +488,6 @@ static const WORD rgiLightStatic1[32] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,1
 void Light::PostRenderStatic(RenderDevice* pd3dDevice)
 {
     TRACE_FUNCTION();
-    /* HACK / VP9COMPAT:
-     * In VP9, people commonly used pure black "update lights" whose only function was to refresh
-     * their region. Since lights were blitted using color keying, pure black objects didn't show.
-     * In DX9, there is no native colorkeying, so here we attempt to detect such lights and simply
-     * don't render them.
-     */
-    if ( m_d.m_color == 0
-         && m_ptable->GetImage(m_d.m_szOffImage) == NULL
-         && m_ptable->GetImage(m_d.m_szOnImage) == NULL)
-        return;
 
     if (m_fBackglass && !GetPTable()->GetDecalsEnabled())
         return;
@@ -1704,9 +1694,6 @@ void Light::setLightState(const LightState newVal)
 
       if (g_pplayer)
       {
-         // notify the player that we changed our state (for draw order determination)
-         g_pplayer->m_triggeredLights.push_back(this);
-
          if (m_realState == LightStateBlinking)
          {
             m_timenextblink = g_pplayer->m_time_msec; // Start pattern right away // + m_d.m_blinkinterval;

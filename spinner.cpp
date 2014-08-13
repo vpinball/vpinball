@@ -1149,16 +1149,6 @@ STDMETHODIMP Spinner::put_Elasticity(float newVal)
    return S_OK;
 }
 
-STDMETHODIMP Spinner::get_Animations(int *pVal)     // TODO: obsolete, remove
-{
-    *pVal = 0;
-    return S_OK;
-}
-STDMETHODIMP Spinner::put_Animations(int newVal)    // TODO: obsolete, remove
-{	
-   return S_OK;
-}
-
 STDMETHODIMP Spinner::get_Visible(VARIANT_BOOL *pVal)
 {
    *pVal = (VARIANT_BOOL)FTOVB((g_pplayer) ? m_phitspinner->m_spinneranim.m_fVisible : m_d.m_fVisible);

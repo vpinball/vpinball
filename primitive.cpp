@@ -797,9 +797,8 @@ void Primitive::RenderObject( RenderDevice *pd3dDevice )
         // disable lighting is a default setting
         // it could look odd if you switch lighting on on non mesh primitives
         pd3dDevice->SetRenderState( RenderDevice::LIGHTING, FALSE );
-        // VP9COMPAT: in VP10, the following should be enabled
-        //pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR);
-        //pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, COLORREF_to_D3DCOLOR(m_d.m_TopColor));
+        pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR);
+        pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, COLORREF_to_D3DCOLOR(m_d.m_TopColor));
     }
 
     // set transform
@@ -2184,26 +2183,6 @@ STDMETHODIMP Primitive::put_IsToy(VARIANT_BOOL newVal)
 
    STOPUNDO
 
-   return S_OK;
-}
-
-STDMETHODIMP Primitive::get_UpdateRegions(VARIANT_BOOL *pVal)
-{
-   //!! deprecated
-   *pVal = (VARIANT_BOOL)FTOVB(false);
-
-   return S_OK;
-}
-
-STDMETHODIMP Primitive::put_UpdateRegions(VARIANT_BOOL newVal)
-{
-   //!! deprecated
-   return S_OK;
-}
-
-STDMETHODIMP Primitive::TriggerSingleUpdate() 
-{
-   //!! deprecated
    return S_OK;
 }
 

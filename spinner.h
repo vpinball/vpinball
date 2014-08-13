@@ -147,8 +147,6 @@ public:
 	STDMETHOD (put_AngleMin)(/*[in]*/ float newVal);
 	STDMETHOD (get_Elasticity)(/*[out, retval]*/ float *pVal);
 	STDMETHOD (put_Elasticity)(/*[in]*/ float newVal);
-	STDMETHOD(get_Animations)(/*[out, retval]*/ int *pVal);
-	STDMETHOD(put_Animations)(/*[in]*/ int newVal);
     STDMETHODIMP get_CurrentAngle(float *pVal);
 
 };
