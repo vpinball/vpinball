@@ -1,4 +1,4 @@
-Visual Pinball command Reference v0.1
+Visual Pinball command Reference v0.9
 by Fuzzel
 
 This is a quick overview of all commands/variables VP knows. A lot of them haven't an effect from the script because they have an impact on the pre-rendering only.
@@ -200,7 +200,6 @@ Spacing(float)
 IsTransparent(bool)
 Sound(string)
 Steps(float)
-IsShading(bool)
 TimerEnabled(bool)
 TimerInterval(int)
 UpdateInterval(int)
@@ -288,7 +287,6 @@ UserValue(any)
 *OpenAngle(float)
 Collidable(bool)
 Friction(float)
-Animations(int)
 *Visible(bool)
 Supports(bool)
 *EnableLighting(bool) 
@@ -504,7 +502,6 @@ UserValue(any)
 *AngleMax(float)
 *AngleMin(float)
 Elasticity(float)
-*Animations(int)
 *Visible(bool)
 CurrentAngle(float) - only readable
 
