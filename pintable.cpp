@@ -612,8 +612,8 @@ PinTable::PinTable()
    ClearMultiSel();
 
    m_undo.m_ptable = this;
-   m_fGrid = fTrue;
-   m_fBackdrop = fTrue;
+   m_fGrid = true;
+   m_fBackdrop = true;
    m_fRenderShadows = fTrue;
 
    m_fRenderDecals = fTrue;
@@ -628,7 +628,7 @@ PinTable::PinTable()
    m_dampingFriction = C_DAMPFRICTION;
 
    m_plungerNormalize = 100;  //Mech-Plunger component adjustment or weak spring, aging
-   m_plungerFilter = fFalse;
+   m_plungerFilter = false;
    m_PhysicsMaxLoops = 0xFFFFFFFF;
    /*const HRESULT hr =*/ GetRegInt("Player", "PhysicsMaxLoops", (int*)&m_PhysicsMaxLoops);
 
@@ -702,32 +702,34 @@ PinTable::PinTable()
    if (hr == S_OK)
 	   m_globalDifficulty = (float)tmp*(float)(1.0/100.0);
 
-   m_tblAccelerometer = fTrue;							// true if electronic accelerometer enabled
-   hr = GetRegInt("Player", "PBWEnabled", &m_tblAccelerometer);
-   m_tblAccelerometer = m_tblAccelerometer != fFalse;
+   int accel;
+   hr = GetRegInt("Player", "PBWEnabled", &accel); // true if electronic accelerometer enabled
+   if (hr == S_OK)
+	   m_tblAccelerometer = (accel != fFalse);
+   else
+	   m_tblAccelerometer = true;
 
-   m_tblAccelNormalMount = fTrue;						// true is normal mounting (left hand coordinates)
-   hr = GetRegInt("Player", "PBWNormalMount", &m_tblAccelNormalMount);
-   m_tblAccelNormalMount = m_tblAccelNormalMount != fFalse;
+   hr = GetRegInt("Player", "PBWNormalMount", &accel); // true is normal mounting (left hand coordinates)
+   if (hr == S_OK)
+	   m_tblAccelNormalMount = (accel != fFalse);
+   else
+	   m_tblAccelNormalMount = true;
 
    m_tblAccelAngle = 0.0f;			// 0 degrees rotated counterclockwise (GUI is lefthand coordinates)
-   hr = GetRegInt("Player", "PBWRotation", &tmp);
-   if (hr == S_OK)
-	   m_tblAccelAngle = (float)tmp;
+   hr = GetRegInt("Player", "PBWRotationCB", &accel);
+   if ((hr == S_OK) && accel)
+   {
+	   hr = GetRegInt("Player", "PBWRotationValue", &tmp);
+	   if (hr == S_OK)
+	      m_tblAccelAngle = (float)tmp;
+   }
 
-   m_tblAccelAmp = 1.5f;								// Accelerometer gain 
-   hr = GetRegInt("Player", "PBWAccelGain", &tmp);
-   if (hr == S_OK)
-	   m_tblAccelAmp = (float)tmp*(float)(1.0/100.0);
-
-   // X and Y accelerometer gain implemented as such that if it doesn't exist, use the
-   // PBWAccelGain value as default.
-   m_tblAccelAmpX = 1.5f; //m_tblAccelAmpX = m_tblAccelAmp;
+   m_tblAccelAmpX = 1.5f;
    hr = GetRegInt("Player", "PBWAccelGainX", &tmp);
    if (hr == S_OK)
 	   m_tblAccelAmpX = (float)tmp*(float)(1.0/100.0);
 
-   m_tblAccelAmpY = 1.5f; //m_tblAccelAmpY = m_tblAccelAmp;
+   m_tblAccelAmpY = 1.5f;
    hr = GetRegInt("Player", "PBWAccelGainY", &tmp);
    if (hr == S_OK)
 	   m_tblAccelAmpY = (float)tmp*(float)(1.0/100.0);
@@ -742,11 +744,6 @@ PinTable::PinTable()
    if (hr == S_OK)
       m_tblAccelMaxY = tmp*JOYRANGEMX/100;
 
-   m_tblAccelManualAmp = 3.5f;							// manual input gain, generally from joysticks
-   hr = GetRegInt("Player", "JoystickGain", &tmp);
-   if (hr == S_OK)
-	   m_tblAccelManualAmp = (float)tmp*(float)(1.0/100.0);
-
    m_tblAutoStart = 0;
    hr = GetRegInt("Player", "Autostart", &tmp);
    if( hr == S_OK )
@@ -757,7 +754,7 @@ PinTable::PinTable()
    if( hr == S_OK )
 	   m_tblAutoStartRetry = tmp*10;
 
-   m_tblAutoStartEnabled = 0;
+   m_tblAutoStartEnabled = false;
    hr = GetRegInt("Player", "asenable", &tmp);
    if( hr == S_OK )
 	   m_tblAutoStartEnabled = ( tmp != 0 );
@@ -767,7 +764,7 @@ PinTable::PinTable()
    if( hr == S_OK )
 	   m_tblVolmod = (float)tmp*(float)(1.0/1000.0);
 
-   m_tblMirrorEnabled = 0;
+   m_tblMirrorEnabled = false;
    hr = GetRegInt("Player", "mirror", &tmp);
    if( hr == S_OK )
 	   m_tblMirrorEnabled = ( tmp != 0 );
@@ -798,10 +795,16 @@ PinTable::PinTable()
    m_maxSeparation = 0.03f;
    m_overwriteGlobalStereo3D = fFalse;
 
-   m_jolt_amount = 500;
-   m_tilt_amount = 950;
-   m_jolt_trigger_time = 1000;
-   m_tilt_trigger_time = 10000;
+#ifdef UNUSED_TILT
+   if ( FAILED(GetRegInt("Player", "JoltAmount", &m_jolt_amount) )
+      m_jolt_amount = 500;
+   if ( FAILED(GetRegInt("Player", "TiltAmount", &m_tilt_amount) )
+	  m_tilt_amount = 950;
+   if ( FAILED(GetRegInt("Player", "JoltTriggerTime", &m_jolt_trigger_time) )
+      m_jolt_trigger_time = 1000;
+   if ( FAILED(GetRegInt("Player", "TiltTriggerTime", &m_tilt_trigger_time) )
+      m_tilt_trigger_time = 10000;
+#endif
 
    m_Shake = false;
 }
@@ -2702,20 +2705,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
 
    bw.WriteBool(FID(DSHD), m_fRenderShadows);
 
-   //////////////////
    bw.WriteFloat(FID(TDFT), m_globalDifficulty);
-   bw.WriteBool(FID(ACEL), m_tblAccelerometer);
-   bw.WriteBool(FID(AORD), m_tblAccelNormalMount);
-   bw.WriteFloat(FID(AANG), m_tblAccelAngle);
-   bw.WriteFloat(FID(AAMP), m_tblAccelAmp);
-   bw.WriteFloat(FID(AAMX), m_tblAccelAmpX);
-   bw.WriteFloat(FID(AAMY), m_tblAccelAmpY);
-   bw.WriteFloat(FID(AMAM), m_tblAccelManualAmp);
-   //////////////////
-   bw.WriteInt(FID(JLTA), m_jolt_amount);
-   bw.WriteInt(FID(TLTA), m_tilt_amount);	
-   bw.WriteInt(FID(JLTT), m_jolt_trigger_time);
-   bw.WriteInt(FID(TLTT), m_tilt_trigger_time);
 
    bw.WriteInt(FID(LZAM), m_Light[0].ambient);
    bw.WriteInt(FID(LZDI), m_Light[0].diffuse);
@@ -3544,79 +3534,12 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    {
       pbr->GetBool(&m_fRenderShadows);
    }
-   else if (id == FID(ACEL)) //////////////////
-   {		
-      pbr->GetBool(&m_tblAccelerometer);
-      GetRegInt("Player", "PBWEnabled", &m_tblAccelerometer);
-      m_tblAccelerometer = m_tblAccelerometer != fFalse;
-   }
    else if (id == FID(TDFT))
    {
       pbr->GetFloat(&m_globalDifficulty);
       int tmp;
       HRESULT hr = GetRegInt("Player", "GlobalDifficulty", &tmp);
       if (hr == S_OK) m_globalDifficulty = (float)tmp*(float)(1.0/100.0);		
-   }
-   else if (id == FID(AORD))
-   {
-      pbr->GetBool(&m_tblAccelNormalMount);
-      GetRegInt("Player", "PBWNormalMount", &m_tblAccelNormalMount);
-      m_tblAccelNormalMount = (m_tblAccelNormalMount != fFalse);
-   }
-   else if (id == FID(AANG))
-   {
-      pbr->GetFloat(&m_tblAccelAngle);
-      int tmp;
-      HRESULT hr = GetRegInt("Player", "PBWRotation", &tmp);
-      if (hr == S_OK) m_tblAccelAngle = (float)tmp;		
-   }
-   else if (id == FID(AAMP))
-   {
-      pbr->GetFloat(&m_tblAccelAmp);
-      int tmp;
-      HRESULT hr = GetRegInt("Player", "PBWAccelGain", &tmp);
-      if (hr == S_OK) m_tblAccelAmp = (float)tmp*(float)(1.0/100.0);		
-   }
-   else if (id == FID(AAMX))
-   {
-      pbr->GetFloat(&m_tblAccelAmpX);
-      int tmp;
-      HRESULT hr = GetRegInt("Player", "PBWAccelGainX", &tmp);
-      if (hr == S_OK) m_tblAccelAmpX = (float)tmp*(float)(1.0/100.0);		
-   }
-   else if (id == FID(AAMY))
-   {
-      pbr->GetFloat(&m_tblAccelAmpY);
-      int tmp;
-      HRESULT hr = GetRegInt("Player", "PBWAccelGainY", &tmp);
-      if (hr == S_OK) m_tblAccelAmpY = (float)tmp*(float)(1.0/100.0);		
-   }
-   else if (id == FID(AMAM))
-   {
-      pbr->GetFloat(&m_tblAccelManualAmp);
-      int tmp;
-      HRESULT hr = GetRegInt("Player", "JoystickGain", &tmp);
-      if (hr == S_OK) m_tblAccelManualAmp = (float)tmp*(float)(1.0/100.0);		
-   }	
-   else if (id == FID(JLTA))
-   {
-      pbr->GetInt(&m_jolt_amount);
-      GetRegInt("Player", "JoltAmount", &m_jolt_amount);
-   }
-   else if (id == FID(TLTA))
-   {	
-      pbr->GetInt(&m_tilt_amount);
-      GetRegInt("Player", "TiltAmount", &m_tilt_amount);
-   }	
-   else if (id == FID(JLTT))
-   {
-      pbr->GetInt(&m_jolt_trigger_time);
-      GetRegInt("Player", "JoltTriggerTime", &m_jolt_trigger_time);		
-   }
-   else if (id == FID(TLTT)) 
-   {
-      pbr->GetInt(&m_tilt_trigger_time);
-      GetRegInt("Player", "TiltTriggerTime", &m_tilt_trigger_time);
    }
    else if (id == FID(CUST)) 
    {
@@ -6782,7 +6705,7 @@ STDMETHODIMP PinTable::put_DisplayGrid(VARIANT_BOOL newVal)
 {
    STARTUNDO
 
-   m_fGrid = VBTOF(newVal);
+   m_fGrid = !!newVal;
 
    SetDirtyDraw();
 
@@ -6802,7 +6725,7 @@ STDMETHODIMP PinTable::put_DisplayBackdrop(VARIANT_BOOL newVal)
 {
    STARTUNDO
 
-   m_fBackdrop = VBTOF(newVal);
+   m_fBackdrop = !!newVal;
 
    SetDirtyDraw();
 
@@ -8298,15 +8221,10 @@ STDMETHODIMP PinTable::get_Accelerometer(VARIANT_BOOL *pVal)
 
 STDMETHODIMP PinTable::put_Accelerometer(VARIANT_BOOL newVal)
 {
-   const HRESULT hr = GetRegInt("Player", "PBWEnabled", &m_tblAccelerometer);
-   if (hr == S_OK)
-      m_tblAccelerometer = ((BOOL)m_tblAccelerometer != fFalse);
-   else
-   {
-      STARTUNDO
-      m_tblAccelerometer = VBTOF(newVal);
-      STOPUNDO
-   }
+   STARTUNDO
+   m_tblAccelerometer = !!newVal;
+   STOPUNDO
+
    return S_OK;
 }
 
@@ -8319,15 +8237,10 @@ STDMETHODIMP PinTable::get_AccelNormalMount(VARIANT_BOOL *pVal)
 
 STDMETHODIMP PinTable::put_AccelNormalMount(VARIANT_BOOL newVal)
 {
-   const HRESULT hr = GetRegInt("Player", "PBWNormalMount", &m_tblAccelNormalMount);
-   if (hr == S_OK)
-      m_tblAccelNormalMount = ((BOOL)m_tblAccelNormalMount != fFalse);
-   else
-   {
-      STARTUNDO
-      m_tblAccelNormalMount = VBTOF(newVal);
-      STOPUNDO
-   }
+   STARTUNDO
+   m_tblAccelNormalMount = !!newVal;
+   STOPUNDO
+
    return S_OK;
 }
 
@@ -8340,104 +8253,10 @@ STDMETHODIMP PinTable::get_AccelerometerAngle(float *pVal)
 
 STDMETHODIMP PinTable::put_AccelerometerAngle(float newVal)
 {
-   int tmp;
-   const HRESULT hr = GetRegInt("Player", "PBWRotation", &tmp);
-   if (hr == S_OK)
-      m_tblAccelAngle = (float)tmp;
-   else 
-   {		
-      STARTUNDO
-      m_tblAccelAngle = newVal;
-      STOPUNDO
-   }
-   return S_OK;
-}
+   STARTUNDO
+   m_tblAccelAngle = newVal;
+   STOPUNDO
 
-STDMETHODIMP PinTable::get_AccelerometerAmp(float *pVal)
-{
-   *pVal = m_tblAccelAmp;
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_AccelerometerAmp(float newVal)
-{
-   int tmp;
-   const HRESULT hr = GetRegInt("Player", "PBWAccelGain", &tmp);
-   if (hr == S_OK)
-      m_tblAccelAmp = (float)tmp*(float)(1.0/100.0);
-   else 
-   {
-      STARTUNDO
-      m_tblAccelAmp = newVal;
-      STOPUNDO
-   }
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::get_AccelerometerAmpX(float *pVal)
-{
-   *pVal = m_tblAccelAmpX;
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_AccelerometerAmpX(float newVal)
-{
-   int tmp;
-   const HRESULT hr = GetRegInt("Player", "PBWAccelGainX", &tmp);
-   if (hr == S_OK)
-      m_tblAccelAmpX = (float)tmp*(float)(1.0/100.0);
-   else
-   {
-      STARTUNDO
-      m_tblAccelAmpX = newVal;
-      STOPUNDO
-   }
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::get_AccelerometerAmpY(float *pVal)
-{
-   *pVal = m_tblAccelAmpY;
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_AccelerometerAmpY(float newVal)
-{
-   int tmp;
-   const HRESULT hr = GetRegInt("Player", "PBWAccelGainY", &tmp);
-   if (hr == S_OK)
-      m_tblAccelAmpY = (float)tmp*(float)(1.0/100.0);
-   else
-   {
-      STARTUNDO
-      m_tblAccelAmpY = newVal;
-      STOPUNDO
-   }
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::get_AccelerManualAmp(float *pVal)
-{
-   *pVal = m_tblAccelManualAmp;
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_AccelerManualAmp(float newVal)
-{
-   int tmp;
-   const HRESULT hr = GetRegInt("Player", "JoystickGain", &tmp);
-   if (hr == S_OK)
-      m_tblAccelManualAmp = (float)tmp*(float)(1.0/100.0);
-   else
-   {
-      STARTUNDO
-      m_tblAccelManualAmp = newVal;
-      STOPUNDO
-   }
    return S_OK;
 }
 
@@ -8485,6 +8304,7 @@ STDMETHODIMP PinTable::put_DeadZone(int newVal)
    return S_OK;
 }
 
+#ifdef UNUSED_TILT
 STDMETHODIMP PinTable::get_JoltAmount(int *pVal)
 {
    *pVal = m_jolt_amount;
@@ -8494,13 +8314,10 @@ STDMETHODIMP PinTable::get_JoltAmount(int *pVal)
 
 STDMETHODIMP PinTable::put_JoltAmount(int newVal)
 {
-   const HRESULT hr = GetRegInt("Player", "JoltAmount", &m_jolt_amount);
-   if (hr != S_OK) 
-   {
-      STARTUNDO
-      m_jolt_amount = newVal;
-      STOPUNDO
-   }
+   STARTUNDO
+   m_jolt_amount = newVal;
+   STOPUNDO
+
    return S_OK;
 }
 
@@ -8513,53 +8330,45 @@ STDMETHODIMP PinTable::get_TiltAmount(int *pVal)
 
 STDMETHODIMP PinTable::put_TiltAmount(int newVal)
 {
-   const HRESULT hr = GetRegInt("Player", "TiltAmount", &m_tilt_amount);
-   if (hr != S_OK) 
-   {
-      STARTUNDO
-      m_tilt_amount = newVal;
-      STOPUNDO
-   }
+   STARTUNDO
+   m_tilt_amount = newVal;
+   STOPUNDO
+
    return S_OK;
 }
 
 STDMETHODIMP PinTable::get_JoltTriggerTime(int *pVal)
 {
-   *pVal = m_jolt_trigger_time; //VB Script or VP Editor
+   *pVal = m_jolt_trigger_time;
 
    return S_OK;
 }
 
 STDMETHODIMP PinTable::put_JoltTriggerTime(int newVal)
 {
-   const HRESULT hr = GetRegInt("Player", "JoltTriggerTime", &m_jolt_trigger_time);
-   if (hr != S_OK)
-   {
-      STARTUNDO
-      m_jolt_trigger_time = newVal;
-      STOPUNDO
-   }
+   STARTUNDO
+   m_jolt_trigger_time = newVal;
+   STOPUNDO
+
    return S_OK;
 }
 
 STDMETHODIMP PinTable::get_TiltTriggerTime(int *pVal)
 {
-   *pVal = m_tilt_trigger_time; //VB Script or VP Editor
+   *pVal = m_tilt_trigger_time;
 
    return S_OK;
 }
 
 STDMETHODIMP PinTable::put_TiltTriggerTime(int newVal)
 {
-   const HRESULT hr = GetRegInt("Player", "TiltTriggerTime", &m_tilt_trigger_time);
-   if (hr != S_OK)
-   {
-      STARTUNDO
-      m_tilt_trigger_time = newVal;
-      STOPUNDO
-   }
+   STARTUNDO
+   m_tilt_trigger_time = newVal;
+   STOPUNDO
+
    return S_OK;
 }
+#endif
 
 STDMETHODIMP PinTable::get_BallFrontDecal(BSTR *pVal)
 {

@@ -5804,15 +5804,6 @@ INT_PTR CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
                   SetRegValue("Player", "PBWRotationCB", REG_DWORD, &key, 4);
                   newvalue = GetDlgItemInt(hwndDlg, IDC_GLOBALROTATION, NULL, TRUE);
                   SetRegValue("Player", "PBWRotationValue", REG_DWORD, &newvalue, 4);
-                  if (key == 1)
-                     SetRegValue("Player", "PBWRotation", REG_DWORD, &newvalue, 4);
-                  else
-                  {
-                     HKEY hkey;
-                     RegOpenKey(HKEY_CURRENT_USER, "Software\\Visual Pinball\\Player", &hkey);
-                     RegDeleteValue(hkey, "PBWRotation");
-                     RegCloseKey(hkey);
-                  }
 
                   hwndControl = GetDlgItem(hwndDlg, IDC_CBGLOBALTILT);
                   key = SendMessage(hwndControl, BM_GETCHECK, 0, 0);

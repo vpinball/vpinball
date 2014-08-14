@@ -254,7 +254,6 @@ Player::Player()
 	m_fDrawCursor = false;
 	m_lastcursorx = 0xfffffff;
 	m_lastcursory = 0xfffffff;
-	m_NudgeManual = -1;
 
 #ifdef _DEBUGPHYSICS
 	c_hitcnts = 0;
@@ -1271,7 +1270,7 @@ void Player::NudgeY(const int y, const int j )
 #define GetNudgeX() (((F32)m_curAccel_x[0]) * (F32)(2.0 / JOYRANGE)) // Get the -2 .. 2 values from joystick input tilt sensor / ushock //!! why 2?
 #define GetNudgeY() (((F32)m_curAccel_y[0]) * (F32)(2.0 / JOYRANGE))
 
-#if 0
+#ifdef UNUSED_TILT
 int Player::NudgeGetTilt()
 {
 	static U32 last_tilt_time;
@@ -1309,17 +1308,6 @@ int Player::NudgeGetTilt()
 
 void Player::NudgeUpdate()	// called on every integral physics frame
 {
-	if (m_NudgeManual >= 0)			// Only one joystick controls in manual mode
-	{
-		m_NudgeX = m_ptable->m_tblAccelManualAmp * ((float)m_curAccel_x[m_NudgeManual])*(float)(1.0/JOYRANGE);
-		m_NudgeY = m_ptable->m_tblAccelManualAmp * ((float)m_curAccel_y[m_NudgeManual])*(float)(1.0/JOYRANGE);
-
-		if (m_ptable->m_tblMirrorEnabled)
-			m_NudgeX = -m_NudgeX;
-
-		return;
-	}	
-
 	m_NudgeX = 0;	// accumulate over joysticks, these acceleration values are used in update ball velocity calculations
 	m_NudgeY = 0;	// and are required to be acceleration values (not velocity or displacement)
 
@@ -1334,7 +1322,7 @@ void Player::NudgeUpdate()	// called on every integral physics frame
 	{		
 		float dx = ((float)m_curAccel_x[j])*(float)(1.0/JOYRANGE);		// norm range -1 .. 1	
 		const float dy = ((float)m_curAccel_y[j])*(float)(1.0/JOYRANGE);	
-		if ( m_ptable->m_tblMirrorEnabled )
+		if (m_ptable->m_tblMirrorEnabled)
 			dx = -dx;
 		m_NudgeX += m_ptable->m_tblAccelAmpX * (dx*cna + dy*sna) * (1.0f - nudge_get_sensitivity());  //calc Green's transform component for X
 		const float nugY = m_ptable->m_tblAccelAmpY * (dy*cna - dx*sna) * (1.0f - nudge_get_sensitivity()); // calc Green transform component for Y...
@@ -1376,7 +1364,7 @@ void Player::mechPlungerUpdate()	// called on every integral physics frame, only
 		return;	// not until a real value is entered
 	}
 
-	if (m_ptable->m_plungerFilter == 0)
+	if (!m_ptable->m_plungerFilter)
 	{ 
 		m_curMechPlungerPos = (float)m_curPlunger;
 		return;

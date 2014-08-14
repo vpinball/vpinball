@@ -864,7 +864,7 @@ void PinInput::button_exit( const U32 msecs, const U32 curr_time_msec )
 
 void PinInput::tilt_update()
 {
-	if( !g_pplayer || g_pplayer->m_NudgeManual >= 0) return;
+	if( !g_pplayer ) return;
 
 	const int tmp = m_tilt_updown;
 	m_tilt_updown = plumb_tilted() ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp;
@@ -1057,7 +1057,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 			else if( ((input->dwOfs == DIK_ESCAPE) && (m_disable_esc == 0)) || ( input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eExitGame]) )
 			{
 				// Check if we have started a game yet.
-			    if (started() || (m_ptable->m_tblAutoStartEnabled == false))
+			    if (started() || !m_ptable->m_tblAutoStartEnabled)
 			    {
 					if (input->dwData & 0x80) { //on key down only
 						m_first_stamp = curr_time_msec;
@@ -1151,7 +1151,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 				{
 					if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && (m_override_default_buttons == 0) && (m_disable_esc == 0)) // exit
 						{	// Check if we have started a game yet.
-							if (started() || (m_ptable->m_tblAutoStartEnabled == false))
+							if (started() || !m_ptable->m_tblAutoStartEnabled)
 							{	if( DISPID_GameEvents_KeyDown == updown ) 
 								{	m_first_stamp = curr_time_msec;
 									m_exit_stamp = curr_time_msec;
@@ -1231,7 +1231,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 			else if (input->dwOfs == DIJOFS_BUTTON14)
 				{
 					if ((uShockType == USHOCKTYPE_ULTRACADE) && (m_override_default_buttons == 0)) // exit
-						{	if (started() || (m_ptable->m_tblAutoStartEnabled == false)) // Check if we have started a game yet.
+						{	if (started() || !m_ptable->m_tblAutoStartEnabled) // Check if we have started a game yet.
 							{	if( DISPID_GameEvents_KeyDown == updown ) 
 								{	m_first_stamp = curr_time_msec;
 									m_exit_stamp = curr_time_msec;
