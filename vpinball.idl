@@ -495,11 +495,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 
 		[propget, id(202), helpstring("property AccelerometerAngle")] HRESULT AccelerometerAngle([out, retval] float *pVal);
 		[propput, id(202), helpstring("property AccelerometerAngle")] HRESULT AccelerometerAngle([in] float newVal);
-		[propget, id(203), helpstring("property AccelerometerAmp")] HRESULT AccelerometerAmp([out, retval] float *pVal);
-		[propput, id(203), helpstring("property AccelerometerAmp")] HRESULT AccelerometerAmp([in] float newVal);
-		[propget, id(204), helpstring("property AccelerManualAmp")] HRESULT AccelerManualAmp([out, retval] float *pVal);
-		[propput, id(204), helpstring("property AccelerManualAmp")] HRESULT AccelerManualAmp([in] float newVal);
 
+#ifdef UNUSED_TILT
 		[propget, id(205), helpstring("property JoltAmount")] HRESULT JoltAmount([out, retval] int *pVal);
 		[propput, id(205), helpstring("property JoltAmount")] HRESULT JoltAmount([in] int newVal);
 		[propget, id(206), helpstring("property TiltAmount")] HRESULT TiltAmount([out, retval] int *pVal);
@@ -508,6 +505,7 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(207), helpstring("property JoltTriggerTime")] HRESULT JoltTriggerTime([in] int newVal);
 		[propget, id(208), helpstring("property TiltTriggerTime")] HRESULT TiltTriggerTime([out, retval] int *pVal);
 		[propput, id(208), helpstring("property TiltTriggerTime")] HRESULT TiltTriggerTime([in] int newVal);
+#endif
 
 		[propget, id(209), helpstring("property GlobalDifficulty")] HRESULT GlobalDifficulty([out, retval] float *pVal);
 		[propput, id(209), helpstring("property GlobalDifficulty")] HRESULT GlobalDifficulty([in] float newVal);

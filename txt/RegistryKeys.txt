@@ -10,3 +10,5 @@ This is a quick overview of all non-exposed registry keys VP parses.
 "Player" / "mirror"           mirror playfield (also mirrors keys accordingly) (0 or 1)
 "Player" / "Exitconfirm"      seconds that escape key has to be pressed to exit VP completely
 "Player" / "Volmod"           sets default sound mixer volume (0..1000)
+"Player" / "PlungerFilter"    overrides plunger filter table setting ("Filter Mechanical Plunger")
+"Player" / "PlungerNormalize" overrides plunger adjust table setting ("Mech-Plunger Adjust")

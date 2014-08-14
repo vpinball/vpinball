@@ -72,8 +72,6 @@ PlungerFilter(bool) - default=false
 *Accelerometer(bool) 
 *AccelNormalMount(bool)
 *AccelerometerAngle(float)
-*AccelerometerAmp(float)
-*AccelerManualAmp(float)
 *JoltAmount(int)
 *TiltAmount(int)
 *JoltTriggerTime(int)

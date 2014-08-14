@@ -186,7 +186,7 @@ public:
 	void FilterNudge();
 	void NudgeX( const int x, const int j );
 	void NudgeY( const int y, const int j );
-#if 0
+#ifdef UNUSED_TILT
 	int  NudgeGetTilt(); // returns non-zero when appropriate to set the tilt switch
 #endif
 
@@ -234,7 +234,6 @@ public:
 	float m_NudgeY;
 	float m_NudgeBackX;
 	float m_NudgeBackY;
-	int m_NudgeManual;			//index of joystick that has manual control
 
     NudgeFilterX m_NudgeFilterX;
     NudgeFilterY m_NudgeFilterY;

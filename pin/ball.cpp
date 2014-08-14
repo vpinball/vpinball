@@ -449,29 +449,10 @@ void BallAnimObject::UpdateVelocities()
 void Ball::UpdateVelocities()
 {
 	const float g = g_pplayer->m_gravity.z;
-	float nx = g_pplayer->m_NudgeX;     // TODO: depends on STEPTIME
-	float ny = g_pplayer->m_NudgeY;
+	const float nx = g_pplayer->m_NudgeX;     // TODO: depends on STEPTIME
+	const float ny = g_pplayer->m_NudgeY;
 	
-	if(g_pplayer->m_NudgeManual >= 0) //joystick control of ball roll
-	{
-        vel *= NUDGE_MANUAL_FRICTION;   //rolling losses high for easy manual control
-
-#define JOY_DEADBAND  5.0e-2f
-
-		const float mag = nx*nx + ny*ny;// + nz*nz;
-		if (mag > (JOY_DEADBAND * JOY_DEADBAND)) // joystick dead band, allows hold and very slow motion
-		{
-			const float inv = (mag > 0.0f) ? JOY_DEADBAND/sqrtf(mag) : 0.0f;
-			nx -= nx*inv;	// remove deadband offsets
-			ny -= ny*inv; 
-			//nz -= nz*inv;
-
-			vel.x += nx;
-			vel.y += ny;
-			vel.z += g;
-		}
-	} // manual joystick control
-	else if (!fFrozen)  // Gravity	
+	if (!fFrozen)  // Gravity	
 	{
 		vel.x += g_pplayer->m_gravity.x;
 		vel.y += g_pplayer->m_gravity.y;

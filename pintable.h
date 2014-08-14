@@ -233,28 +233,22 @@ public:
 	STDMETHOD(get_EnableEMReels)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_EnableEMReels)(/*[in]*/ VARIANT_BOOL newVal);
 
-	/////////////////////////////////////////////
-	STDMETHOD(get_Accelerometer)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-	STDMETHOD(put_Accelerometer)(/*[in]*/ VARIANT_BOOL newVal);	
-	STDMETHOD(get_AccelNormalMount)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-	STDMETHOD(put_AccelNormalMount)(/*[in]*/ VARIANT_BOOL newVal);
-	STDMETHOD(get_AccelerometerAngle)(/*[out, retval]*/ float *pVal); 
-	STDMETHOD(put_AccelerometerAngle)(/*[in]*/ float newVal);
-	STDMETHOD(get_AccelerometerAmp)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_AccelerometerAmp)(/*[in]*/ float newVal);
-	STDMETHOD(get_AccelerometerAmpX)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_AccelerometerAmpX)(/*[in]*/ float newVal);
-	STDMETHOD(get_AccelerometerAmpY)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_AccelerometerAmpY)(/*[in]*/ float newVal);
-	STDMETHOD(get_AccelerManualAmp)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_AccelerManualAmp)(/*[in]*/ float newVal);
 	STDMETHOD(get_GlobalDifficulty)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_GlobalDifficulty)(/*[in]*/ float newVal);
 
-	STDMETHOD(get_DeadSlider)(/*[out, retval]*/  int *pVal);
-	STDMETHOD(put_DeadSlider)(/*[in]*/ int newVal);
-	STDMETHOD(get_DeadZone)(/*[out, retval]*/  int *pVal);
-	STDMETHOD(put_DeadZone)(/*[in]*/ int newVal);
+	STDMETHOD(get_Accelerometer)(/*[out, retval]*/ VARIANT_BOOL *pVal); //!! remove?!
+	STDMETHOD(put_Accelerometer)(/*[in]*/ VARIANT_BOOL newVal);	 //!! remove?!
+	STDMETHOD(get_AccelNormalMount)(/*[out, retval]*/ VARIANT_BOOL *pVal); //!! remove?!
+	STDMETHOD(put_AccelNormalMount)(/*[in]*/ VARIANT_BOOL newVal); //!! remove?!
+	STDMETHOD(get_AccelerometerAngle)(/*[out, retval]*/ float *pVal);  //!! remove?!
+	STDMETHOD(put_AccelerometerAngle)(/*[in]*/ float newVal); //!! remove?!
+
+	STDMETHOD(get_DeadSlider)(/*[out, retval]*/  int *pVal); //!! remove?!
+	STDMETHOD(put_DeadSlider)(/*[in]*/ int newVal); //!! remove?!
+	STDMETHOD(get_DeadZone)(/*[out, retval]*/  int *pVal); //!! remove?!
+	STDMETHOD(put_DeadZone)(/*[in]*/ int newVal); //!! remove?!
+
+#ifdef UNUSED_TILT
 	STDMETHOD(get_JoltAmount)(/*[out, retval]*/  int *pVal);
 	STDMETHOD(put_JoltAmount)(/*[in]*/ int newVal);
 	STDMETHOD(get_TiltAmount)(/*[out, retval]*/ int *pVal);
@@ -263,6 +257,7 @@ public:
 	STDMETHOD(put_JoltTriggerTime)(/*[in]*/ int newVal);
 	STDMETHOD(get_TiltTriggerTime)(/*[out, retval]*/ int *pVal);
 	STDMETHOD(put_TiltTriggerTime)(/*[in]*/ int newVal);
+#endif
 
 	STDMETHOD(get_TableSoundVolume)(/*[out, retval]*/ int *pVal);
 	STDMETHOD(put_TableSoundVolume)(/*[in]*/ int newVal);
@@ -567,30 +562,25 @@ END_CONNECTION_POINT_MAP()
 	float m_maxBallSpeed;
 	float m_dampingFriction;
 	int m_plungerNormalize;
-	BOOL m_plungerFilter;
+	bool m_plungerFilter;
 	unsigned int m_PhysicsMaxLoops;
 
-	BOOL m_tblAccelerometer;		// true if electronic accelerometer enabled
-	BOOL m_tblAccelNormalMount;		// true is Normal Mounting (Left Hand Coordinates)
-    BOOL m_tblAutoStartEnabled;
-    BOOL m_tblMirrorEnabled;		// Mirror tables left to right.  This is activated by a cheat during table selection.
+    bool m_tblAutoStartEnabled;
+    bool m_tblMirrorEnabled;		// Mirror tables left to right.  This is activated by a cheat during table selection.
+
+	bool m_tblAccelerometer;		// true if electronic accelerometer enabled
+	bool m_tblAccelNormalMount;		// true is Normal Mounting (Left Hand Coordinates)
 	float m_tblAccelAngle;			// 0 degrees rotated counterclockwise (GUI is lefthand coordinates)
-	float m_tblAccelAmp;			// Accelerometer gain 
 	float m_tblAccelAmpX;			// Accelerometer gain X axis
 	float m_tblAccelAmpY;			// Accelerometer gain Y axis
-   int   m_tblAccelMaxX;
-   int   m_tblAccelMaxY;
-	float m_tblAccelManualAmp;		// manual input gain, generally from joysticks
-    U32 m_tblAutoStart;             // msecs before trying an autostart if doing once-only method .. 0 is automethod
+    int   m_tblAccelMaxX;           // Accelerometer max value X axis
+    int   m_tblAccelMaxY;			// Accelerometer max value Y axis
+    
+	U32 m_tblAutoStart;             // msecs before trying an autostart if doing once-only method .. 0 is automethod
     U32 m_tblAutoStartRetry;        // msecs before retrying to autostart.
     float m_tblVolmod;              // volume modulation for doing audio balancing
     U32 m_tblExitConfirm;           // msecs for esc button to be pressed to exit completely
 	float m_globalDifficulty;		// Table Difficulty Level
-
-	int m_jolt_amount;
-	int m_tilt_amount;
-	int m_jolt_trigger_time;
-	int m_tilt_trigger_time;
 
     short m_oldMousePosX;
     short m_oldMousePosY;
@@ -629,8 +619,8 @@ END_CONNECTION_POINT_MAP()
 
 	int m_TableAdaptiveVSync;
 
-	BOOL m_fGrid; // Display grid or not
-	BOOL m_fBackdrop;
+	bool m_fGrid; // Display grid or not
+	bool m_fBackdrop;
 
 	FRect m_rcDragRect; // Multi-select
 
@@ -691,6 +681,13 @@ END_CONNECTION_POINT_MAP()
     bool m_savingActive;
 
     bool m_renderSolid;
+
+#ifdef UNUSED_TILT //!! currently unused (see NudgeGetTilt())
+	int m_jolt_amount;       
+	int m_tilt_amount;
+	int m_jolt_trigger_time;
+	int m_tilt_trigger_time;
+#endif
 
 private:
     std::tr1::unordered_map<const char*, Texture*, StringHashFunctor, StringComparator> m_textureMap;      // hash table to speed up texture lookup by name
