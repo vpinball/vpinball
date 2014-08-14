@@ -4,7 +4,7 @@ class ShadowSur : public Sur
 	{
 public:
 
-	ShadowSur(const HDC hdc, const float zoom, const float offx, const float offy, const int width, const int height, const float z, ISelect *psel);
+	ShadowSur(const HDC hdc, const float zoom, const float offx, const float offy, const int width, const int height, const float z);
 	virtual ~ShadowSur();
 
 	virtual void Line(const float x, const float y, const float x2, const float y2);
@@ -32,8 +32,6 @@ public:
 	virtual void SetLineColor(const int rgb, const bool fDashed, const int width);
 
 	HPEN m_hpnLine;
-
-	ISelect *m_psel;
 
 	float m_z; //height of this shadow
    static float m_shadowDirX;

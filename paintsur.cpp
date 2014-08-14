@@ -1,6 +1,7 @@
 #include "StdAfx.h"
 
-PaintSur::PaintSur(const HDC hdc, const float zoom, const float offx, const float offy, const int width, const int height, ISelect * const psel) : Sur(hdc, zoom, offx, offy, width, height)
+PaintSur::PaintSur(const HDC hdc, const float zoom, const float offx, const float offy, const int width, const int height, ISelect * const psel)
+         : Sur(hdc, zoom, offx, offy, width, height)
 	{
 	m_hbr = CreateSolidBrush(RGB(255,255,255));
 	m_hpnOutline = CreatePen(PS_SOLID, 1, RGB(0,0,0));

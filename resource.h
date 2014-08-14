@@ -703,7 +703,6 @@
 #define IDC_LIGHT1DY                    575
 #define IDC_LIGHT1DZ                    576
 #define IDC_LIGHT1TYPE                  577
-#define IDC_NORMALIZENORMALS            578
 #define IDC_TABLESOUNDVOLUME            579
 #define IDC_LIGHT1SPECULAR2             579
 #define IDC_SHADOW_COLOR                579

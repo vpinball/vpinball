@@ -564,8 +564,6 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propget, id(577), helpstring("property Light1Type")] HRESULT Light1Type([out, retval] int *pVal);
 		[propput, id(577), helpstring("property Light1Type")] HRESULT Light1Type([in] int newVal);
 
-		[propget, id(578), helpstring("property NormalizeNormals")] HRESULT NormalizeNormals([out, retval] int *pVal);
-		[propput, id(578), helpstring("property NormalizeNormals")] HRESULT NormalizeNormals([in] int newVal);
 		[propget, id(579), helpstring("property TableSoundVolume")] HRESULT TableSoundVolume([out, retval] int *pVal);
 		[propput, id(579), helpstring("property TableSoundVolume")] HRESULT TableSoundVolume([in] int newVal);
 		[propget, id(580), helpstring("property TableMusicVolume")] HRESULT TableMusicVolume([out, retval] int *pVal);

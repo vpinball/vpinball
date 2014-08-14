@@ -1952,7 +1952,7 @@ void Player::RenderDynamics()
    // Start rendering the next frame.
    m_pin3d.m_pd3dDevice->BeginScene();
 
-   m_pin3d.m_pd3dDevice->SetRenderState( RenderDevice::NORMALIZENORMALS, m_ptable->m_NormalizeNormals );
+   m_pin3d.m_pd3dDevice->SetRenderState( RenderDevice::NORMALIZENORMALS, TRUE );
 
    // Check if we are debugging balls
    if (m_ToggleDebugBalls)

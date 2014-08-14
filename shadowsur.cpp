@@ -3,7 +3,8 @@
 float ShadowSur::m_shadowDirX =  1.0f;
 float ShadowSur::m_shadowDirY = -1.0f;
 
-ShadowSur::ShadowSur(const HDC hdc, const float zoom, const float offx, const float offy, const int width, const int height, const float z, ISelect *psel) : Sur(hdc, zoom, offx, offy, width, height)
+ShadowSur::ShadowSur(const HDC hdc, const float zoom, const float offx, const float offy, const int width, const int height, const float z)
+          : Sur(hdc, zoom, offx, offy, width, height)
 {
 	SelectObject(m_hdc, GetStockObject(BLACK_PEN));
 	SelectObject(m_hdc, GetStockObject(BLACK_BRUSH));
@@ -11,8 +12,6 @@ ShadowSur::ShadowSur(const HDC hdc, const float zoom, const float offx, const fl
 	m_hpnLine = CreatePen(PS_SOLID, 1, RGB(0,0,0));
 
 	m_z = z;
-
-	m_psel = psel;
 }
 
 ShadowSur::~ShadowSur()
@@ -42,6 +41,9 @@ void ShadowSur::Rectangle(const float x, const float y, const float x2, float y2
 	const int iy = SCALEYf(y);
 	const int ix2 = SCALEXf(x2);
 	const int iy2 = SCALEYf(y2);
+
+	SelectObject(m_hdc, GetStockObject(BLACK_PEN));
+	SelectObject(m_hdc, GetStockObject(BLACK_BRUSH));
 
 	::Rectangle(m_hdc, ix, iy, ix2, iy2);
 }
@@ -291,8 +293,8 @@ void ShadowSur::Image(const float x, const float y, const float x2, const float 
 
 void ShadowSur::SetObject(ISelect *psel)
 {
-	if ((m_psel != NULL) && (psel == m_psel))
-		m_psel->SetSelectFormat(this);
+	//if ((m_psel != NULL) && (psel == m_psel))
+	//	m_psel->SetSelectFormat(this);
 }
 
 void ShadowSur::SetFillColor(const int rgb)
