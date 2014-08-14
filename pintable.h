@@ -165,8 +165,6 @@ public:
 	STDMETHOD(put_Light1DZ)(/*[in]*/ float newVal);
 	STDMETHOD(get_Light1Type)(/*[out, retval]*/ int *pVal);
 	STDMETHOD(put_Light1Type)(/*[in]*/ int newVal);
-    STDMETHOD(get_NormalizeNormals)(/*[out, retval]*/ int *pVal);
-    STDMETHOD(put_NormalizeNormals)(/*[in]*/ int newVal);
     STDMETHOD(get_BallReflection)(/*[out, retval]*/ int *pVal);
     STDMETHOD(put_BallReflection)(/*[in]*/ int newVal);
     STDMETHOD(get_ReflectionStrength)(/*[out, retval]*/ int *pVal);
@@ -532,8 +530,8 @@ END_CONNECTION_POINT_MAP()
 	float m_glassheight;
 	float m_tableheight;
 
-	BOOL m_fRenderDecals;
-	BOOL m_fRenderEMReels;
+	bool m_fRenderDecals;
+	bool m_fRenderEMReels;
 	float m_rotation;
 	float m_inclination;
 	float m_layback;
@@ -543,7 +541,7 @@ END_CONNECTION_POINT_MAP()
 	float m_globalMaxSeparation;
 	float m_ZPD;
 	float m_globalZPD;
-    BOOL m_overwriteGlobalStereo3D;
+    bool m_overwriteGlobalStereo3D;
 
 	float m_xlatex;
 	float m_xlatey;
@@ -584,7 +582,7 @@ END_CONNECTION_POINT_MAP()
 
     short m_oldMousePosX;
     short m_oldMousePosY;
-	BOOL m_fRenderShadows;
+	bool m_fRenderShadows;
 	_protectionData	m_protectionData;
 
 	char m_szImage[MAXTOKEN];
@@ -625,7 +623,7 @@ END_CONNECTION_POINT_MAP()
 	FRect m_rcDragRect; // Multi-select
 
 	HBITMAP m_hbmOffScreen; // Buffer for drawing the editor window
-	BOOL m_fDirtyDraw; // Whether our background bitmap is up to date
+	bool m_fDirtyDraw; // Whether our background bitmap is up to date
 
 	PinUndo m_undo;
 
@@ -659,10 +657,9 @@ END_CONNECTION_POINT_MAP()
 
     int m_globalAlphaRampsAccuracy;
     int m_userAlphaRampsAccuracy;
-    BOOL m_overwriteGlobalAlphaRampsAccuracy;
+    bool m_overwriteGlobalAlphaRampsAccuracy;
 
 	LightSource m_Light[MAX_LIGHT_SOURCES];
-	BOOL m_NormalizeNormals;
     int m_useReflectionForBalls;
     int m_ballReflectionStrength;
     int m_useTrailForBalls;

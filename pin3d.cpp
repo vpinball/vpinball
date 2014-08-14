@@ -661,17 +661,17 @@ BaseTexture* Pin3D::CreateShadow(const float z)
 	//WriteFile(hfile, &bmi, sizeof(bmi), &foo, NULL);
 
 	HDC hdcScreen = GetDC(NULL);
-	HDC hdc2 = CreateCompatibleDC(hdcScreen);
+	HDC hdc = CreateCompatibleDC(hdcScreen);
 
 	BYTE *pbits;
 	HBITMAP hdib = CreateDIBSection(hdcScreen, &bmi, DIB_RGB_COLORS, (void **)&pbits, NULL, 0);
 
-	HBITMAP hbmOld = (HBITMAP)SelectObject(hdc2, hdib);
+	HBITMAP hbmOld = (HBITMAP)SelectObject(hdc, hdib);
 	const float zoom = (float)shadwidth/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
-	ShadowSur * const psur = new ShadowSur(hdc2, zoom, (g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right)*0.5f, (g_pplayer->m_ptable->m_top + g_pplayer->m_ptable->m_bottom)*0.5f, shadwidth, shadheight, z, NULL);
+	ShadowSur * const psur = new ShadowSur(hdc, zoom, (g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right)*0.5f, (g_pplayer->m_ptable->m_top + g_pplayer->m_ptable->m_bottom)*0.5f, shadwidth, shadheight, z);
 
-	SelectObject(hdc2, GetStockObject(WHITE_BRUSH));
-	PatBlt(hdc2, 0, 0, shadwidth, shadheight, PATCOPY);
+	SelectObject(hdc, GetStockObject(WHITE_BRUSH));
+	PatBlt(hdc, 0, 0, shadwidth, shadheight, PATCOPY);
 
 	for (int i=0; i<g_pplayer->m_ptable->m_vedit.Size(); ++i)
 		g_pplayer->m_ptable->m_vedit.ElementAt(i)->RenderShadow(psur, z);
@@ -681,8 +681,8 @@ BaseTexture* Pin3D::CreateShadow(const float z)
 	BaseTexture* pddsProjectTexture = new MemTexture(shadwidth, shadheight);
 	m_xvShadowMap[(int)z] = pddsProjectTexture;
 
-	SelectObject(hdc2, hbmOld);
-	DeleteDC(hdc2);
+	SelectObject(hdc, hbmOld);
+	DeleteDC(hdc);
 	ReleaseDC(NULL, hdcScreen);
 
     Texture::Blur(pddsProjectTexture, pbits, shadwidth, shadheight);

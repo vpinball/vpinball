@@ -102,7 +102,6 @@ PlungerFilter(bool) - default=false
 *Light1DY(float) - Y direction of light1 (only valid if Light1Type is 0 or 1 (directional))
 *Light1DZ(float) - Z direction of light1 (only valid if Light1Type is 0 or 1 (directional))
 *Light1Type(int) - 0=directional, 1=spot, 2=point
-*NormalizeNormals(int) - Exact lighting on dynamic objects (try on your table on/off and see if the change is dramatic, if it is then better enable it). default=0
 *ShadowX(float) - defines the shadow X direction (-1.0..+1.0) default=0.0, because the shadow generation is a fake this is not 100% accurate (if X and Y are both zero one can have an ambient occlusion like effect)
 *ShadowY(float) - defines the shadow Y direction (-1.0..+1.0) default=0.0, because the shadow generation is a fake this is not 100% accurate
 

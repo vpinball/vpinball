@@ -614,10 +614,10 @@ PinTable::PinTable()
    m_undo.m_ptable = this;
    m_fGrid = true;
    m_fBackdrop = true;
-   m_fRenderShadows = fTrue;
+   m_fRenderShadows = true;
 
-   m_fRenderDecals = fTrue;
-   m_fRenderEMReels = fTrue;
+   m_fRenderDecals = true;
+   m_fRenderEMReels = true;
 
    m_fOverridePhysics = 0;
 
@@ -781,7 +781,7 @@ PinTable::PinTable()
       m_globalAlphaRampsAccuracy = 5;
    }
    m_userAlphaRampsAccuracy=5;
-   m_overwriteGlobalAlphaRampsAccuracy = fFalse;
+   m_overwriteGlobalAlphaRampsAccuracy = false;
 
    if ( FAILED(GetRegStringAsFloat("Player", "Stereo3DZPD", &m_globalZPD) ) )
    {
@@ -793,7 +793,7 @@ PinTable::PinTable()
       m_globalMaxSeparation = 0.03f;
    }
    m_maxSeparation = 0.03f;
-   m_overwriteGlobalStereo3D = fFalse;
+   m_overwriteGlobalStereo3D = false;
 
 #ifdef UNUSED_TILT
    if ( FAILED(GetRegInt("Player", "JoltAmount", &m_jolt_amount) )
@@ -1275,7 +1275,7 @@ void PinTable::InitPostLoad(VPinball *pvp)
    m_pvp = pvp;
 
    m_hbmOffScreen = NULL;
-   m_fDirtyDraw = fTrue;
+   m_fDirtyDraw = true;
 
    m_left = 0;
    m_top = 0;
@@ -1479,13 +1479,13 @@ void PinTable::Render(Sur * const psur)
       psur->SetLineColor(RGB(190,220,240), false, 0);
       for (int i=0;i<(lenx+1);i++)
       {
-         const float x = (beginx+i)*gridsize;
+         const float x = (float)(beginx+i)*gridsize;
          psur->Line(x, rlt.y, x, rrb.y);
       }
 
       for (int i=0;i<(leny+1);i++)
       {
-         const float y = (beginy+i)*gridsize;
+         const float y = (float)(beginy+i)*gridsize;
          psur->Line(rlt.x, y, rrb.x, y);
       }
    }
@@ -1634,7 +1634,7 @@ void PinTable::Paint(HDC hdc)
 
    DeleteDC(hdc2);
 
-   m_fDirtyDraw = fFalse;
+   m_fDirtyDraw = false;
    //DeleteObject(hbmOffScreen);
 }
 
@@ -1696,7 +1696,7 @@ ISelect *PinTable::HitTest(const int x, const int y)
 
 void PinTable::SetDirtyDraw()
 {
-   m_fDirtyDraw = fTrue;
+   m_fDirtyDraw = true;
    InvalidateRect(m_hwnd, NULL, fFalse);
 }
 
@@ -2728,7 +2728,6 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
    bw.WriteFloat(FID(LODZ), m_Light[1].dir.z);
    bw.WriteInt(FID(LOTY), m_Light[1].type);
 
-   bw.WriteInt(FID(NONO), m_NormalizeNormals);
    bw.WriteFloat(FID(SDIX), m_shadowDirX);
    bw.WriteFloat(FID(SDIY), m_shadowDirY);
 
@@ -3142,8 +3141,6 @@ void PinTable::SetLoadDefaults()
    m_angletiltMax = 726.0f;
    m_angletiltMin = 4.5f;
 
-   m_NormalizeNormals = fFalse;
-
    m_useReflectionForBalls = -1;
    m_ballReflectionStrength = 50;
 
@@ -3472,10 +3469,6 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(LOTY))
    {
       pbr->GetInt(&m_Light[1].type);
-   }
-   else if (id == FID(NONO))
-   {
-      pbr->GetInt(&m_NormalizeNormals);
    }
    else if (id == FID(BREF))
    {
@@ -5693,7 +5686,7 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
          if (pt) // Window might have just been created
          {
             pt->SetMyScrollInfo();
-            pt->m_fDirtyDraw = fTrue;
+            pt->m_fDirtyDraw = true;
             // this window command is called whenever the MDI window changes over
             // re-evaluate the toolbar depending on table permissions
             g_pvp->SetEnableToolbar();
@@ -7233,24 +7226,6 @@ STDMETHODIMP PinTable::put_Light1Type(int newVal)
    return S_OK;
 }
 
-STDMETHODIMP PinTable::get_NormalizeNormals(int *pVal)
-{
-   *pVal = m_NormalizeNormals;
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_NormalizeNormals(int newVal )
-{
-   STARTUNDO
-
-   m_NormalizeNormals = newVal;
-
-   STOPUNDO
-
-   return S_OK;
-}
-
 STDMETHODIMP PinTable::get_BallReflection(int *pVal)
 {
    *pVal = m_useReflectionForBalls;
@@ -7416,7 +7391,7 @@ STDMETHODIMP PinTable::put_GlobalAlphaAcc(VARIANT_BOOL newVal )
 {
     STARTUNDO
 
-    m_overwriteGlobalAlphaRampsAccuracy = VBTOF(newVal);
+    m_overwriteGlobalAlphaRampsAccuracy = !!newVal;
     if ( !m_overwriteGlobalAlphaRampsAccuracy )
     {
         m_userAlphaRampsAccuracy = m_globalAlphaRampsAccuracy;
@@ -7438,7 +7413,7 @@ STDMETHODIMP PinTable::put_GlobalStereo3D(VARIANT_BOOL newVal )
 {
     STARTUNDO
 
-    m_overwriteGlobalStereo3D = VBTOF(newVal);
+    m_overwriteGlobalStereo3D = !!newVal;
     if ( !m_overwriteGlobalStereo3D )
     {
 		m_maxSeparation = m_globalMaxSeparation;
@@ -7920,7 +7895,7 @@ STDMETHODIMP PinTable::get_RenderShadows(VARIANT_BOOL *pVal)
 STDMETHODIMP PinTable::put_RenderShadows(VARIANT_BOOL newVal)
 {
    STARTUNDO
-   m_fRenderShadows = VBTOF(newVal);
+   m_fRenderShadows = !!newVal;
    STOPUNDO
 
    return S_OK;
@@ -8162,7 +8137,7 @@ STDMETHODIMP PinTable::get_EnableDecals(VARIANT_BOOL *pVal)
 STDMETHODIMP PinTable::put_EnableDecals(VARIANT_BOOL newVal)
 {
    STARTUNDO
-   m_fRenderDecals = VBTOF(newVal);
+   m_fRenderDecals = !!newVal;
    STOPUNDO
 
    return S_OK;
@@ -8178,12 +8153,11 @@ STDMETHODIMP PinTable::get_EnableEMReels(VARIANT_BOOL *pVal)
 STDMETHODIMP PinTable::put_EnableEMReels(VARIANT_BOOL newVal)
 {
    STARTUNDO
-   m_fRenderEMReels = VBTOF(newVal);
+   m_fRenderEMReels = !!newVal;
    STOPUNDO
 
    return S_OK;
 }
-//////////////////////// uShock Accelerometer controls ///////////////////
 
 STDMETHODIMP PinTable::get_GlobalDifficulty(float *pVal)
 {
@@ -8260,7 +8234,6 @@ STDMETHODIMP PinTable::put_AccelerometerAngle(float newVal)
    return S_OK;
 }
 
-///////////////////////////////////////////////////////////
 STDMETHODIMP PinTable::get_DeadSlider(int *pVal)
 {
    int deadz;
