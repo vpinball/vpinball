@@ -19723,14 +19723,18 @@
 				</File>
 			</Filter>
 		</Filter>
-		<File
-			RelativePath=".\shader\BallShader.fx"
+		<Filter
+			Name="Shader Files"
 			>
-		</File>
-		<File
-			RelativePath=".\shader\LightInsert.fx"
-			>
-		</File>
+			<File
+				RelativePath=".\shader\BallShader.fx"
+				>
+			</File>
+			<File
+				RelativePath=".\shader\LightInsert.fx"
+				>
+			</File>
+		</Filter>
 		<File
 			RelativePath="res\table.vpx"
 			>
