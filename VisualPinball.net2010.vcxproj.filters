@@ -22,6 +22,9 @@
     <Filter Include="Header Files\xaudio">
       <UniqueIdentifier>{95eb0dd3-698b-45cd-91e6-d1b1dca5feb5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shader Files">
+      <UniqueIdentifier>{c8672dd6-537c-494a-89dc-bd06fff07d03}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Pin\ball.cpp">
@@ -447,6 +450,12 @@
     </None>
     <None Include="res\rubber.rgs">
       <Filter>Resource Files</Filter>
+    </None>
+    <None Include="shader\BallShader.fx">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\LightInsert.fx">
+      <Filter>Shader Files</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

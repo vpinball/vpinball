@@ -6990,6 +6990,8 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     <None Include="res\sunburst2.bmp" />
     <None Include="res\surface.rgs" />
     <None Include="res\table.ico" />
+    <None Include="shader\BallShader.fx" />
+    <None Include="shader\LightInsert.fx" />
     <None Include="target.bmp" />
     <None Include="res\textbox.rgs" />
     <None Include="res\timer.rgs" />
