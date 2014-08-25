@@ -117,6 +117,7 @@ END_CONNECTION_POINT_MAP()
 
 private:
     void CurvesToShapes(Vector<HitObject> * const pvho);
+    void SetupHitObject(Vector<HitObject> * pvho, HitObject * obj);
     void AddLine(Vector<HitObject> * const pvho, const RenderVertex * const pv1, const RenderVertex * const pv2, const RenderVertex * const pv3, const bool fSlingshot);
 
     void RenderSlingshots(RenderDevice* pd3dDevice);
@@ -136,10 +137,10 @@ private:
 	PinTable *m_ptable;
 	BSTR m_bstrName;
 
-	Vector<LineSegSlingshot> m_vlinesling;
+    std::vector<LineSegSlingshot*> m_vlinesling;
 
-	Vector<HitObject> m_vhoDrop; // Objects to disable when dropped
-	Vector<HitObject> m_vhoCollidable; // Objects to that may be collide selectable
+    std::vector<HitObject*> m_vhoDrop; // Objects to disable when dropped
+    std::vector<HitObject*> m_vhoCollidable; // Objects to that may be collide selectable
 
 	bool IsWall;
    int numVertices, numPolys;

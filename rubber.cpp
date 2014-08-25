@@ -505,9 +505,14 @@ void Rubber::GetHitShapes(Vector<HitObject> * const pvho)
        AddLine(pvho, pv2, pv3, pv1, m_d.m_height, m_d.m_height+wallheightright);
        AddLine(pvho, pv3, pv2, pv4, m_d.m_height, m_d.m_height+wallheightright);
 #else
-       AddSideWall(pvho, pv2, pv3,m_d.m_height, m_d.m_height, wallheightright);
-       AddSideWall(pvho, pv3, pv2,m_d.m_height, m_d.m_height, wallheightright);
+       AddSideWall(pvho, pv2, pv3, m_d.m_height, m_d.m_height, wallheightright);
+       AddSideWall(pvho, pv3, pv2, m_d.m_height, m_d.m_height, wallheightright);
 #endif
+	   // add joints at start and end of right wall
+	   if (i == 0)
+		   AddJoint2D(pvho, *pv2, m_d.m_height, m_d.m_height + wallheightright);
+	   else if (i == cvertex-2)
+		   AddJoint2D(pvho, *pv3, m_d.m_height, m_d.m_height + wallheightright);
    }
 
    for (int i=0;i<(cvertex-1);i++)
@@ -524,6 +529,11 @@ void Rubber::GetHitShapes(Vector<HitObject> * const pvho)
        AddSideWall(pvho, pv2, pv3, m_d.m_height, m_d.m_height, wallheightleft);
        AddSideWall(pvho, pv3, pv2, m_d.m_height, m_d.m_height, wallheightleft);
 #endif
+	   // add joints at start and end of left wall
+	   if (i == 0)
+		   AddJoint2D(pvho, *pv2, m_d.m_height, m_d.m_height + wallheightleft);
+	   else if (i == cvertex-2)
+		   AddJoint2D(pvho, *pv3, m_d.m_height, m_d.m_height + wallheightleft);
    }
 
 #ifndef RAMPTEST
@@ -531,10 +541,7 @@ void Rubber::GetHitShapes(Vector<HitObject> * const pvho)
    {
       HitTriangle *ph3dpolyOld = NULL;
 
-      const Vertex2D *pv1;
-      const Vertex2D *pv2;
-      const Vertex2D *pv3;
-      const Vertex2D *pv4;
+      const Vertex2D *pv1,*pv2,*pv3,*pv4;
 
       for (int i=0;i<(cvertex-1);i++)
       {
@@ -558,7 +565,14 @@ void Rubber::GetHitShapes(Vector<HitObject> * const pvho)
 				Vertex3Ds(pv1->x,pv1->y,m_d.m_height),
 				Vertex3Ds(pv3->x,pv3->y,m_d.m_height)};
 
-            HitTriangle * const ph3dpoly = new HitTriangle(rgv3D); //!! this is not efficient at all, use native triangle-soup directly somehow
+            // add joint for starting edge of ramp
+            if (i == 0)
+                AddJoint(pvho, rgv3D[0], rgv3D[1]);
+
+            // add joint for left edge
+            AddJoint(pvho, rgv3D[0], rgv3D[2]);
+
+			HitTriangle * const ph3dpoly = new HitTriangle(rgv3D); //!! this is not efficient at all, use native triangle-soup directly somehow
 
             if (ph3dpoly->IsDegenerate())       // degenerate triangles happen if width is 0 at some point
             {
@@ -577,8 +591,7 @@ void Rubber::GetHitShapes(Vector<HitObject> * const pvho)
                 m_vhoCollidable.push_back(ph3dpoly);	//remember hit components of ramp
                 ph3dpoly->m_fEnabled = m_d.m_fCollidable;
 
-                if (ph3dpolyOld)
-                    CheckJoint(pvho, ph3dpolyOld, ph3dpoly);
+                CheckJoint(pvho, ph3dpolyOld, ph3dpoly);
 
                 ph3dpolyOld = ph3dpoly;
             }
@@ -589,6 +602,9 @@ void Rubber::GetHitShapes(Vector<HitObject> * const pvho)
 			Vertex3Ds(pv3->x,pv3->y,m_d.m_height),
 			Vertex3Ds(pv1->x,pv1->y,m_d.m_height),
 			Vertex3Ds(pv4->x,pv4->y,m_d.m_height)};
+
+		 // add joint for right edge
+         AddJoint(pvho, rgv3D[1], rgv3D[2]);
 
          HitTriangle * const ph3dpoly = new HitTriangle(rgv3D);
          if (ph3dpoly->IsDegenerate())
@@ -608,21 +624,17 @@ void Rubber::GetHitShapes(Vector<HitObject> * const pvho)
              m_vhoCollidable.push_back(ph3dpoly);	//remember hit components of ramp
              ph3dpoly->m_fEnabled = m_d.m_fCollidable;
 
-             if (ph3dpolyOld)
-                 CheckJoint(pvho, ph3dpolyOld, ph3dpoly);
+             CheckJoint(pvho, ph3dpolyOld, ph3dpoly);
              ph3dpolyOld = ph3dpoly;
          }
       }
 
-      const Vertex3Ds rgv3D[3] = {
-		Vertex3Ds(pv4->x,pv4->y,m_d.m_height),
-		Vertex3Ds(pv3->x,pv3->y,m_d.m_height),
-		Vertex3Ds(pv1->x,pv1->y,m_d.m_height)};
-      ph3dpolyOld = new HitTriangle(rgv3D);
-
-      CheckJoint(pvho, ph3dpolyOld, ph3dpolyOld);
-      delete ph3dpolyOld;
-      ph3dpolyOld = NULL;
+	  // add joint for final edge of ramp
+      Vertex3Ds v1(pv4->x,pv4->y,m_d.m_height);
+      Vertex3Ds v2(pv3->x,pv3->y,m_d.m_height);
+      AddJoint(pvho, v1, v2);
+	  
+	  ph3dpolyOld = NULL;
    }
 
    // add outside bottom, 
@@ -695,6 +707,7 @@ void Rubber::GetHitShapesDebug(Vector<HitObject> * const pvho)
 {
 }
 
+#ifdef RAMPTEST
 void Rubber::AddSideWall(Vector<HitObject> * const pvho, const Vertex2D * const pv1, const Vertex2D * const pv2, const float height1, const float height2, const float wallheight)
 {
    Vertex3Ds * const rgv3D = new Vertex3Ds[4];
@@ -713,94 +726,72 @@ void Rubber::AddSideWall(Vector<HitObject> * const pvho, const Vertex2D * const 
    m_vhoCollidable.push_back(ph3dpoly);	//remember hit components of ramp
    ph3dpoly->m_fEnabled = m_d.m_fCollidable;
 }
+#endif
 
 void Rubber::CheckJoint(Vector<HitObject> * const pvho, const HitTriangle * const ph3d1, const HitTriangle * const ph3d2)
 {
-   Vertex3Ds vjointnormal = CrossProduct(ph3d1->normal, ph3d2->normal);
-   //vjointnormal.x = ph3d1->normal.x + ph3d2->normal.x;
-   //vjointnormal.y = ph3d1->normal.y + ph3d2->normal.y;
-   //vjointnormal.z = ph3d1->normal.z + ph3d2->normal.z;
-
-   const float sqrlength = vjointnormal.x * vjointnormal.x + vjointnormal.y * vjointnormal.y + vjointnormal.z * vjointnormal.z;
-   if (sqrlength < 1.0e-8f) return;
-
-   const float inv_length = 1.0f/sqrtf(sqrlength);
-   vjointnormal.x *= inv_length;
-   vjointnormal.y *= inv_length;
-   vjointnormal.z *= inv_length;
+   if (ph3d1)   // may be null in case of degenerate triangles
+   {
+       const Vertex3Ds vjointnormal = CrossProduct(ph3d1->normal, ph3d2->normal);
+       if (vjointnormal.LengthSquared() < 1e-8f)
+           return;  // coplanar triangles need no joints
+   }
 
    // By convention of the calling function, points 1 [0] and 2 [1] of the second polygon will
    // be the common-edge points
+   AddJoint(pvho, ph3d2->m_rgv[0], ph3d2->m_rgv[1]);
+}
 
-   Hit3DCylinder * const ph3dc = new Hit3DCylinder(&ph3d2->m_rgv[0], &ph3d2->m_rgv[1], &vjointnormal);
+void Rubber::AddJoint(Vector<HitObject> * pvho, const Vertex3Ds& v1, const Vertex3Ds& v2)
+{
+   HitLine3D * const ph3dc = new HitLine3D(v1, v2);
    ph3dc->m_elasticity = m_d.m_elasticity;
    ph3dc->SetFriction(m_d.m_friction);
    ph3dc->m_scatter = ANGTORAD(m_d.m_scatter);
+   ph3dc->m_fEnabled = m_d.m_fCollidable;
+
    pvho->AddElement(ph3dc);
 
    m_vhoCollidable.push_back(ph3dc);	//remember hit components of ramp
-   ph3dc->m_fEnabled = m_d.m_fCollidable;
 }
 
+void Rubber::AddJoint2D(Vector<HitObject> * pvho, const Vertex2D& p, float zlow, float zhigh)
+{
+    HitLineZ * const pjoint = new HitLineZ(p, zlow, zhigh);
+    pjoint->m_elasticity = m_d.m_elasticity;
+    pjoint->SetFriction(m_d.m_friction);
+    pjoint->m_scatter = ANGTORAD(m_d.m_scatter);
+    pjoint->m_fEnabled = m_d.m_fCollidable;
+
+    pvho->AddElement(pjoint);
+    m_vhoCollidable.push_back(pjoint); //remember hit components of ramp
+}
 
 void Rubber::AddLine(Vector<HitObject> * const pvho, const Vertex2D * const pv1, const Vertex2D * const pv2, const Vertex2D * const pv3, const float height1, const float height2)
 {
-   LineSeg * const plineseg = new LineSeg();
+   LineSeg * const plineseg = new LineSeg(*pv1, *pv2);
    plineseg->m_elasticity = m_d.m_elasticity;
    plineseg->SetFriction(m_d.m_friction);
    plineseg->m_scatter = ANGTORAD(m_d.m_scatter);
+   plineseg->m_fEnabled = m_d.m_fCollidable;
 
    plineseg->m_pfe = NULL;
 
    plineseg->m_rcHitRect.zlow = height1;
    plineseg->m_rcHitRect.zhigh = height2;
 
-   plineseg->v1 = *pv1;
-   plineseg->v2 = *pv2;
-
    pvho->AddElement(plineseg);
 
    m_vhoCollidable.push_back(plineseg);	//remember hit components of ramp
-   plineseg->m_fEnabled = m_d.m_fCollidable;
-
-   plineseg->CalcNormal();
-
-   const Vertex2D vt1(pv1->x - pv2->x, pv1->y - pv2->y);
 
    if (pv3)
    {
-      const Vertex2D vt2(pv1->x - pv3->x, pv1->y - pv3->y);
-
-      const float dot = vt1.x*vt2.y - vt1.y*vt2.x;
+      const Vertex2D vt1 = *pv1 - *pv2;
+      const Vertex2D vt2 = *pv1 - *pv3;
+      const float dot = vt1.Dot(vt2);
 
       if (dot < 0.f) // Inside edges don't need joint hit-testing (dot == 0 continuous segments should mathematically never hit)
-      {
-         Joint * const pjoint = new Joint();
-         pjoint->m_elasticity = m_d.m_elasticity;
-         pjoint->SetFriction(m_d.m_friction);
-         pjoint->m_scatter = ANGTORAD(m_d.m_scatter);
-
-         pjoint->m_pfe = NULL;
-
-         pjoint->m_rcHitRect.zlow = height1;
-         pjoint->m_rcHitRect.zhigh = height2;
-
-         pjoint->center = *pv1;
-         pvho->AddElement(pjoint);
-
-         m_vhoCollidable.push_back(pjoint);	//remember hit components of ramp
-         pjoint->m_fEnabled = m_d.m_fCollidable;
-
-         // Set up line normal
-         const float inv_length = 1.0f/sqrtf(vt2.x * vt2.x + vt2.y * vt2.y);
-         pjoint->normal.x = plineseg->normal.x - vt2.y * inv_length;
-         pjoint->normal.y = vt2.x * inv_length + plineseg->normal.y;
-
-         // Set up line normal
-         const float inv_length2 = 1.0f/sqrtf(pjoint->normal.x * pjoint->normal.x + pjoint->normal.y * pjoint->normal.y);
-         pjoint->normal.x *= inv_length2;
-         pjoint->normal.y *= inv_length2;
-      }
+          AddJoint2D(pvho, *pv1, height1, height2);
    }
 }
 
@@ -841,7 +832,6 @@ void Rubber::RenderSetup(RenderDevice* pd3dDevice)
    solidMaterial.setColor( 1.0f, m_d.m_color );
 
    GenerateVertexBuffer(pd3dDevice);
-
 }
 
 void Rubber::RenderStatic(RenderDevice* pd3dDevice)

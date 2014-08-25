@@ -914,17 +914,17 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
    case IDC_SELECT:
    case ID_TABLE_MAGNIFY:
       {
-          SendMessage(m_hwndToolbarPalette,TB_CHECKBUTTON,m_ToolCur,MAKELONG(FALSE,0));
-          SendMessage(m_hwndToolbarMain,TB_CHECKBUTTON,code,MAKELONG(TRUE,0));
+            SendMessage(m_hwndToolbarPalette,TB_CHECKBUTTON,m_ToolCur,MAKELONG(FALSE,0));
+            SendMessage(m_hwndToolbarMain,TB_CHECKBUTTON,code,MAKELONG(TRUE,0));
 
           m_ToolCur = code;
 
-          if (notify == 1) // accelerator - mouse can be over table already
-          {
-              POINT pt;
-              GetCursorPos(&pt);
-              SetCursorPos(pt.x, pt.y);
-          }
+         if (notify == 1) // accelerator - mouse can be over table already
+         {
+            POINT pt;
+            GetCursorPos(&pt);
+            SetCursorPos(pt.x, pt.y);
+         }
       }
       break;
 
@@ -1357,7 +1357,7 @@ void VPinball::SetEnablePalette()
       // Set menu item state
       HMENU hmenuInsert = GetMainMenu(INSERTMENU);
       EnableMenuItem(hmenuInsert, id, MF_BYCOMMAND | (fEnable ? MF_ENABLED : MF_GRAYED));
-   }
+      }
 }
 
 
@@ -1393,11 +1393,11 @@ void VPinball::SetEnableToolbar()
 
    // set layer button states
    if (ptCur)
-   {
+      {
        for (int i=0; i<8; ++i)
        {
            SendMessage(m_hwndToolbarLayers, TB_CHECKBUTTON, allLayers[i], MAKELONG(ptCur->m_activeLayers[i], 0));
-       }
+      }
    }
 
    SetEnablePalette();
@@ -1864,10 +1864,10 @@ HRESULT VPinball::MainMsgLoop()
 
 HRESULT VPinball::ApcHost_OnIdle(BOOL* pfContinue)
 {
-    g_pplayer->Render();
-    *pfContinue = TRUE;
+      g_pplayer->Render();
+      *pfContinue = TRUE;
 
-    return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP VPinball::QueryInterface(REFIID iid, void **ppvObjOut)
@@ -1937,22 +1937,22 @@ LRESULT CALLBACK VPWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
          BOOL fCanClose = g_pvp->FCanClose();
          if (fCanClose)
          {
-             WINDOWPLACEMENT winpl;
-             winpl.length = sizeof(winpl);
+               WINDOWPLACEMENT winpl;
+               winpl.length = sizeof(winpl);
 
-             if (GetWindowPlacement(hwnd, &winpl))
-             {
-                 SetRegValue("Editor", "WindowLeft", REG_DWORD, &winpl.rcNormalPosition.left, 4);
-                 SetRegValue("Editor", "WindowTop", REG_DWORD, &winpl.rcNormalPosition.top, 4);
-                 SetRegValue("Editor", "WindowRight", REG_DWORD, &winpl.rcNormalPosition.right, 4);
-                 SetRegValue("Editor", "WindowBottom", REG_DWORD, &winpl.rcNormalPosition.bottom, 4);
+               if (GetWindowPlacement(hwnd, &winpl))
+               {
+                  SetRegValue("Editor", "WindowLeft", REG_DWORD, &winpl.rcNormalPosition.left, 4);
+                  SetRegValue("Editor", "WindowTop", REG_DWORD, &winpl.rcNormalPosition.top, 4);
+                  SetRegValue("Editor", "WindowRight", REG_DWORD, &winpl.rcNormalPosition.right, 4);
+                  SetRegValue("Editor", "WindowBottom", REG_DWORD, &winpl.rcNormalPosition.bottom, 4);
 
-                 BOOL fMaximized = IsZoomed(hwnd);
-                 SetRegValue("Editor", "WindowMaximized", REG_DWORD, &fMaximized, 4);
-             }
+                  BOOL fMaximized = IsZoomed(hwnd);
+                  SetRegValue("Editor", "WindowMaximized", REG_DWORD, &fMaximized, 4);
+               }
 
-             DestroyWindow(hwnd);
-         }
+               DestroyWindow(hwnd);
+            }
          return 0;
       }
       break;
@@ -5914,7 +5914,7 @@ INT_PTR CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
                   selected = SendMessage(hwndControl, BM_GETCHECK, 0, 0);
                   SetRegValue("Player", "EnableNudgeFilter", REG_DWORD, &selected, 4);
 
-				  EndDialog(hwndDlg, TRUE);
+                  EndDialog(hwndDlg, TRUE);
                }
                break;
 
@@ -6008,7 +6008,7 @@ INT_PTR CALLBACK AudioOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
          hr = GetRegInt("Player", "SoundDevice", &sd);
          if (hr != S_OK)
             sd = 0;
-	     hr = GetRegInt("Player", "SoundDeviceBG", &sdbg);
+		  hr = GetRegInt("Player", "SoundDeviceBG", &sdbg);
          if (hr != S_OK)
          {
             sdbg = 0; // The default
@@ -6195,14 +6195,6 @@ void savecurrentphysicssetting(HWND hwndDlg)
     sprintf_s(tmp2,256,"TablePhysicsContactScatterAngle%u",physicsselection);
 	SetRegValue("Player", tmp2, REG_SZ, tmp, lstrlen(tmp));
 
-	GetDlgItemTextA(hwndDlg, 1103, tmp, 256);
-    sprintf_s(tmp2,256,"TablePhysicsDampeningSpeed%u",physicsselection);
-	SetRegValue("Player", tmp2, REG_SZ, tmp, lstrlen(tmp));
-
-	GetDlgItemTextA(hwndDlg, 1106, tmp, 256);
-    sprintf_s(tmp2,256,"TablePhysicsDampeningFriction%u",physicsselection);
-	SetRegValue("Player", tmp2, REG_SZ, tmp, lstrlen(tmp));
-
 	GetDlgItemTextA(hwndDlg, 1110, tmp, 256);
     sprintf_s(tmp2,256,"PhysicsSetName%u",physicsselection);
 	SetRegValue("Player", tmp2, REG_SZ, tmp, lstrlen(tmp));
@@ -6358,24 +6350,6 @@ INT_PTR CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPAR
 		 sprintf_s(tmp,256,"%f",TablePhysicsContactScatterAngle);
  		 SetDlgItemTextA(hwndDlg, 1102, tmp);
 
-		 float TablePhysicsDampeningSpeed = DEFAULT_TABLE_DAMPENINGSPEED;
-		 sprintf_s(tmp,256,"TablePhysicsDampeningSpeed%u",physicsselection);
-         hr = GetRegStringAsFloat("Player", tmp, &TablePhysicsDampeningSpeed);
-         if (hr != S_OK)
-            TablePhysicsDampeningSpeed = DEFAULT_TABLE_DAMPENINGSPEED;
-
-		 sprintf_s(tmp,256,"%f",TablePhysicsDampeningSpeed);
- 		 SetDlgItemTextA(hwndDlg, 1103, tmp);
-
-		 float TablePhysicsDampeningFriction = DEFAULT_TABLE_DAMPENINGFRICTION;
-		 sprintf_s(tmp,256,"TablePhysicsDampeningFriction%u",physicsselection);
-         hr = GetRegStringAsFloat("Player", tmp, &TablePhysicsDampeningFriction);
-         if (hr != S_OK)
-            TablePhysicsDampeningFriction = DEFAULT_TABLE_DAMPENINGFRICTION;
-
-		 sprintf_s(tmp,256,"%f",TablePhysicsDampeningFriction);
- 		 SetDlgItemTextA(hwndDlg, 1106, tmp);
-
  		 SetDlgItemTextA(hwndDlg, 1110, physicsoptions[physicsselection]);
 
 		 return TRUE;
@@ -6445,8 +6419,8 @@ INT_PTR CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPAR
 
 			   float FlipperPhysicsSpeed,FlipperPhysicsStrength,FlipperPhysicsElasticity,FlipperPhysicsScatter,FlipperPhysicsReturnStrength,FlipperPhysicsRecoil,FlipperPhysicsPowerLaw,FlipperPhysicsOblique;
 			   fscanf_s(f,"%f %f %f %f %f %f %f %f\n", &FlipperPhysicsSpeed,&FlipperPhysicsStrength,&FlipperPhysicsElasticity,&FlipperPhysicsScatter,&FlipperPhysicsReturnStrength,&FlipperPhysicsRecoil,&FlipperPhysicsPowerLaw,&FlipperPhysicsOblique);
-			   float TablePhysicsGravityConstant,TablePhysicsContactFriction,TablePhysicsContactScatterAngle,TablePhysicsDampeningSpeed,TablePhysicsDampeningFriction;
-			   fscanf_s(f,"%f %f %f %f %f\n", &TablePhysicsGravityConstant,&TablePhysicsContactFriction,&TablePhysicsContactScatterAngle,&TablePhysicsDampeningSpeed,&TablePhysicsDampeningFriction);
+			   float TablePhysicsGravityConstant,TablePhysicsContactFriction,TablePhysicsContactScatterAngle;
+			   fscanf_s(f,"%f %f %f\n", &TablePhysicsGravityConstant,&TablePhysicsContactFriction,&TablePhysicsContactScatterAngle);
 			   fscanf_s(f,"%s",tmp2);
 			   fclose(f);
 
@@ -6482,12 +6456,6 @@ INT_PTR CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPAR
 
 				 sprintf_s(tmp,256,"%f",TablePhysicsContactScatterAngle);
  				 SetDlgItemTextA(hwndDlg, 1102, tmp);
-
-				 sprintf_s(tmp,256,"%f",TablePhysicsDampeningSpeed);
- 				 SetDlgItemTextA(hwndDlg, 1103, tmp);
-
-				 sprintf_s(tmp,256,"%f",TablePhysicsDampeningFriction);
- 				 SetDlgItemTextA(hwndDlg, 1106, tmp);
 
  				 SetDlgItemTextA(hwndDlg, 1110, tmp2);
 			   }

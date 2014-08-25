@@ -3,6 +3,7 @@
 enum
 	{
 	eNull,
+    ePoint,
 	eLineSeg,
 	eJoint,
 	eCircle,
@@ -12,6 +13,7 @@ enum
 	eBall,
 	e3DPoly,
 	eTriangle,
+	ePlane,
 	e3DLine,
 	eGate,
 	eTextbox,
@@ -22,10 +24,7 @@ enum
 	eKicker		// this is done to limit to one test
 	};
 
-extern float c_hardFriction; 
 extern float c_hardScatter; 
-extern float c_maxBallSpeedSqr; 
-extern float c_dampingFriction;
 
 // forward declarations
 class Ball;
@@ -35,6 +34,8 @@ class AnimObject;
 
 struct CollisionEvent
 {
+    CollisionEvent() : ball(0), obj(0), isContact(false) {}
+
     Ball* ball;         // the ball that collided with smth
     HitObject* obj;     // what the ball collided with
 
@@ -48,6 +49,8 @@ struct CollisionEvent
     float hitx, hity;   // position of the ball at hit time (saved to avoid floating point errors with multiple time slices)
 
     bool hitRigid;      // rigid body collision?
+
+    bool isContact;     // set to true if impact velocity is 0
 };
 
 
@@ -66,11 +69,15 @@ public:
 
     virtual void Collide(CollisionEvent *hit) = 0;
 
+    virtual void Contact(CollisionEvent& coll, float dtime)  { }     // apply contact forces for the given time interval
+
 	virtual void CalcHitRect() = 0;
 	
 	virtual AnimObject *GetAnimObject() {return NULL;}
 
-    void SetFriction(float friction)        { m_antifriction = 1.0f - friction; }
+    void SetFriction(float friction)        { m_friction = friction; }
+
+    void FireHitEvent(Ball* pball);
 
 	IFireEvents *m_pfe;
 	float m_threshold;
@@ -84,7 +91,7 @@ public:
 	int   m_ObjType;
 	void* m_pObj;
 	float m_elasticity;
-	float m_antifriction;
+	float m_friction;
 	float m_scatter;
 	};
 
@@ -102,10 +109,14 @@ public:
 class LineSeg : public HitObject
 	{
 public:
+    LineSeg() { }
+    LineSeg(const Vertex2D& p1, const Vertex2D& p2);
+
 	virtual float HitTestBasic(const Ball * pball, const float dtime, CollisionEvent& coll, const bool direction, const bool lateral, const bool rigid);
 	virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
 	virtual int GetType() const {return eLineSeg;}
 	virtual void Collide(CollisionEvent *coll);
+    virtual void Contact(CollisionEvent& coll, float dtime);
 	void CalcNormal();
 	void CalcLength();
 	virtual void CalcHitRect();
@@ -120,14 +131,15 @@ class HitCircle : public HitObject
 public:
 	virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
 
-	float HitTestBasicRadius(const Ball * pball, const float dtime, CollisionEvent& coll,
-									const bool direction, const bool lateral, const bool rigid);
+	float HitTestBasicRadius(const Ball * pball, float dtime, CollisionEvent& coll,
+                             bool direction, bool lateral, bool rigid);
 
 	float HitTestRadius(const Ball * pball, const float dtime, CollisionEvent& coll);
 
 	virtual int GetType() const {return eCircle;}
 
 	virtual void Collide(CollisionEvent *coll);
+    virtual void Contact(CollisionEvent& coll, float dtime);
 
 	virtual void CalcHitRect();
 
@@ -137,23 +149,38 @@ public:
 	float zhigh;
 	};
 
-class Joint : public HitCircle
-	{
+
+// collision object which is a line segment parallel to the z axis
+class HitLineZ : public HitObject
+{
 public:
-	Joint();
+    HitLineZ()      { }
+    HitLineZ(const Vertex2D& xy, float zlow, float zhigh);
 
-	virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
+    virtual void CalcHitRect();
+    virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
+    virtual int GetType() const { return eJoint; }
+    virtual void Collide(CollisionEvent *coll);
+    virtual void Contact(CollisionEvent& coll, float dtime);
 
-	virtual int GetType() const {return eJoint;}
+    Vertex2D m_xy;
+    float m_zlow, m_zhigh;
+};
 
-	virtual void Collide(CollisionEvent *coll);
 
-	virtual void CalcHitRect();
+class HitPoint : public HitObject
+{
+public:
+    HitPoint(const Vertex3Ds& p);
 
-	//Vertex2D v;
-	Vertex2D normal;
-	};
+    virtual void CalcHitRect();
+    virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
+    virtual int GetType() const { return ePoint; }
+    virtual void Collide(CollisionEvent *coll);
+    virtual void Contact(CollisionEvent& coll, float dtime);
 
+    Vertex3Ds m_p;
+};
 
 
 

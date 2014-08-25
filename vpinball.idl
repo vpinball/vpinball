@@ -427,14 +427,12 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(1101), helpstring("property HardFriction")] HRESULT HardFriction([in] float newVal);
 		[propget, id(1102), helpstring("property HardScatter")] HRESULT HardScatter([out, retval] float *pVal);
 		[propput, id(1102), helpstring("property HardScatter")] HRESULT HardScatter([in] float newVal);
-		[propget, id(1103), helpstring("property MaxBallSpeed")] HRESULT MaxBallSpeed([out, retval] float *pVal);
-		[propput, id(1103), helpstring("property MaxBallSpeed")] HRESULT MaxBallSpeed([in] float newVal);
+		[propget, id(1103), helpstring("property NudgeTime")] HRESULT NudgeTime([out, retval] float *pVal);
+		[propput, id(1103), helpstring("property NudgeTime")] HRESULT NudgeTime([in] float newVal);
 		[propget, id(1104), helpstring("property PlungerNormalize")] HRESULT PlungerNormalize([out, retval] int *pVal);
 		[propput, id(1104), helpstring("property PlungerNormalize")] HRESULT PlungerNormalize([in] int newVal);
 		[propget, id(1105), helpstring("property PhysicsLoopTime")] HRESULT PhysicsLoopTime([out, retval] int *pVal);
 		[propput, id(1105), helpstring("property PhysicsLoopTime")] HRESULT PhysicsLoopTime([in] int newVal);
-		[propget, id(1106), helpstring("property DampingFriction")] HRESULT DampingFriction([out, retval] float *pVal);
-		[propput, id(1106), helpstring("property DampingFriction")] HRESULT DampingFriction([in] float newVal);
 
 		[propget, id(1107), helpstring("property PlungerFilter")] HRESULT PlungerFilter([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(1107), helpstring("property PlungerFilter")] HRESULT PlungerFilter([in] VARIANT_BOOL newVal);
@@ -465,7 +463,6 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(DISPID_Table_DisplayGrid), helpstring("property DisplayGrid")] HRESULT DisplayGrid([in] VARIANT_BOOL newVal);
 		[propget, id(DISPID_Table_DisplayBackdrop), helpstring("property DisplayBackdrop")] HRESULT DisplayBackdrop([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(DISPID_Table_DisplayBackdrop), helpstring("property DisplayBackdrop")] HRESULT DisplayBackdrop([in] VARIANT_BOOL newVal);
-		[id(DISPID_Table_Nudge), helpstring("method Nudge")] HRESULT Nudge([in] float Angle, [in] float Force);
 		[propget, id(DISPID_Image), helpstring("property Image")] HRESULT Image([out, retval] BSTR *pVal);
 		[propput, id(DISPID_Image), helpstring("property Image")] HRESULT Image([in] BSTR newVal);
 		[propget, id(DISPID_Name), helpstring("property Name")] HRESULT Name([out, retval] BSTR *pVal);
@@ -861,6 +858,12 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(24), helpstring("property RubberHeight")] HRESULT RubberHeight([in] long newVal);
 		[propget, id(25), helpstring("property RubberWidth")] HRESULT RubberWidth([out, retval] long *pVal);
 		[propput, id(25), helpstring("property RubberWidth")] HRESULT RubberWidth([in] long newVal);
+		[propget, id(26), helpstring("property Friction")] HRESULT Friction([out, retval] float *pVal);
+		[propput, id(26), helpstring("property Friction")] HRESULT Friction([in] float newVal);
+		[propget, id(27), helpstring("property RampUp")] HRESULT RampUp([out, retval] float *pVal);
+		[propput, id(27), helpstring("property RampUp")] HRESULT RampUp([in] float newVal);
+		[propget, id(28), helpstring("property ElasticityFalloff")] HRESULT ElasticityFalloff([out, retval] float *pVal);
+		[propput, id(28), helpstring("property ElasticityFalloff")] HRESULT ElasticityFalloff([in] float newVal);
 		[propget, id(DISPID_Surface), helpstring("property Surface")] HRESULT Surface([out, retval] BSTR *pVal);
 		[propput, id(DISPID_Surface), helpstring("property Surface")] HRESULT Surface([in] BSTR newVal);
 		[propget, id(DISPID_Name), helpstring("property Name")] HRESULT Name([out, retval] BSTR *pVal);
@@ -1889,8 +1892,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(10), helpstring("property BackDecal")] HRESULT BackDecal([in] BSTR newVal);
 		[propget, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([out, retval] VARIANT* pVal);
 		[propput, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([in] VARIANT* newVal);
-		[propget, id(11), helpstring("property CollisionMass")] HRESULT CollisionMass([out, retval] float *pVal);
-		[propput, id(11), helpstring("property CollisionMass")] HRESULT CollisionMass([in] float newVal);
+		[propget, id(11), helpstring("property Mass")] HRESULT Mass([out, retval] float *pVal);
+		[propput, id(11), helpstring("property Mass")] HRESULT Mass([in] float newVal);
 		[propget, id(12), helpstring("property Radius")] HRESULT Radius([out, retval] float *pVal);
 		[propput, id(12), helpstring("property Radius")] HRESULT Radius([in] float newVal);
 		[propget, id(DISPID_Name), helpstring("property Name")] HRESULT Name([out, retval] BSTR *pVal);

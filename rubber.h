@@ -141,6 +141,8 @@ private:
 	void GetCentralCurve(Vector<RenderVertex> * const pvv);
 
     Vertex2D *GetSplineVertex(int &pcvertex, bool ** const ppfCross, Vertex2D **pMiddlePoints);
+    void AddJoint(Vector<HitObject> * pvho, const Vertex3Ds& v1, const Vertex3Ds& v2);
+    void AddJoint2D(Vector<HitObject> * pvho, const Vertex2D& p, float zlow, float zhigh);
 	void CheckJoint(Vector<HitObject> * const pvho, const HitTriangle * const ph3d1, const HitTriangle * const ph3d2);
 
 	void RenderPolygons(RenderDevice* pd3dDevice, int offset, WORD * const rgicrosssection, const int start, const int stop);

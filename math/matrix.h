@@ -47,7 +47,19 @@ public:
 
    template <class VecType>
    inline Vertex3Ds MultiplyVector(const VecType& v) const
-     { return (*this) * v; }
+   {
+	   return (*this) * v;
+   }
+
+   // multiply vector with matrix transpose
+   template <class VecType>
+   inline Vertex3Ds MultiplyVectorT(const VecType& v) const
+   {
+      return Vertex3Ds(
+         m_d[0][0] * v.x + m_d[1][0] * v.y + m_d[2][0] * v.z,
+         m_d[0][1] * v.x + m_d[1][1] * v.y + m_d[2][1] * v.z,
+         m_d[0][2] * v.x + m_d[1][2] * v.y + m_d[2][2] * v.z);
+   }
 
    inline void MultiplyMatrix(const Matrix3 * const pmat1, const Matrix3 * const pmat2)
    {
@@ -103,6 +115,27 @@ public:
       m_d[0][1] = m_d[0][2] = 
          m_d[1][0] = m_d[1][2] = 
          m_d[2][0] = m_d[2][1] = 0.0f;
+   }
+
+   // Create matrix for rotating around an arbitrary vector
+   // NB: axis must be normalized
+   // NB: this actually rotates by -angle in right-handed coordinates
+   void RotationAroundAxis(const Vertex3Ds& axis, const float angle)
+   {
+       const float rsin = sinf(angle);
+       const float rcos = cosf(angle);
+
+       m_d[0][0] = axis.x*axis.x + rcos*(1.0f-axis.x*axis.x);
+       m_d[1][0] = axis.x*axis.y*(1.0f-rcos) - axis.z*rsin;
+       m_d[2][0] = axis.z*axis.x*(1.0f-rcos) + axis.y*rsin;
+
+       m_d[0][1] = axis.x*axis.y*(1.0f-rcos) + axis.z*rsin;
+       m_d[1][1] = axis.y*axis.y + rcos*(1.0f-axis.y*axis.y);
+       m_d[2][1] = axis.y*axis.z*(1.0f-rcos) - axis.x*rsin;
+
+       m_d[0][2] = axis.z*axis.x*(1.0f-rcos) - axis.y*rsin;
+       m_d[1][2] = axis.y*axis.z*(1.0f-rcos) + axis.x*rsin;
+       m_d[2][2] = axis.z*axis.z + rcos*(1.0f-axis.z*axis.z);
    }
 
    float m_d[3][3];

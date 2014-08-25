@@ -11,6 +11,14 @@ class FRect3D
 public:
    float left, top, right, bottom, zlow, zhigh;
 
+   inline FRect3D()    { }
+
+   inline FRect3D(const float x1, const float x2, const float y1, const float y2, const float z1, const float z2)
+       : left(x1), right(x2),
+         top(y1), bottom(y2),
+         zlow(z1), zhigh(z2)
+   { }
+
    inline void Clear()
    {
        left = FLT_MAX;  right = -FLT_MAX;

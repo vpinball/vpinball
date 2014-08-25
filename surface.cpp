@@ -445,16 +445,27 @@ void Surface::CurvesToShapes(Vector<HitObject> * const pvho)
       delete vvertex.ElementAt(i);
 
    Hit3DPoly * const ph3dpoly = new Hit3DPoly(rgv3D,count);
-   ph3dpoly->m_pfe = (IFireEvents *)this;
    ph3dpoly->m_fVisible = fTrue;
-   ph3dpoly->m_fEnabled = m_d.m_fCollidable;
+   SetupHitObject(pvho, ph3dpoly);
+}
 
-   pvho->AddElement(ph3dpoly);
+void Surface::SetupHitObject(Vector<HitObject> * pvho, HitObject * obj)
+{
+    obj->m_elasticity = m_d.m_elasticity;
+    obj->SetFriction(m_d.m_friction);
+    obj->m_scatter = ANGTORAD(m_d.m_scatter);
+    obj->m_fEnabled = m_d.m_fCollidable;
 
-   m_vhoCollidable.AddElement(ph3dpoly);
+    if (m_d.m_fHitEvent)
+    {
+        obj->m_pfe = (IFireEvents *)this;
+        obj->m_threshold = m_d.m_threshold;
+    }
 
-   if (m_d.m_fDroppable)
-       m_vhoDrop.AddElement(ph3dpoly);
+    pvho->AddElement(obj);
+    m_vhoCollidable.push_back(obj);	//remember hit components of wall
+    if (m_d.m_fDroppable)
+        m_vhoDrop.push_back(obj);
 }
 
 void Surface::AddLine(Vector<HitObject> * const pvho, const RenderVertex * const pv1, const RenderVertex * const pv2, const RenderVertex * const pv3, const bool fSlingshot)
@@ -485,78 +496,54 @@ void Surface::AddLine(Vector<HitObject> * const pvho, const RenderVertex * const
       plinesling->m_force = m_d.m_slingshotforce;
       plinesling->m_psurface = this;
 
-      m_vlinesling.AddElement(plinesling);
+      m_vlinesling.push_back(plinesling);
    }
 
    plineseg->m_rcHitRect.zlow = m_d.m_heightbottom;
    plineseg->m_rcHitRect.zhigh = m_d.m_heighttop;
 
-   plineseg->v1.x = pv1->x;
-   plineseg->v1.y = pv1->y;
-   plineseg->v2.x = pv2->x;
-   plineseg->v2.y = pv2->y;
+   plineseg->v1 = *pv1;
+   plineseg->v2 = *pv2;
 
    plineseg->m_elasticity = m_d.m_elasticity;
    plineseg->SetFriction(m_d.m_friction);
    plineseg->m_scatter = ANGTORAD(m_d.m_scatter);
 
-   pvho->AddElement(plineseg);
-   if (m_d.m_fDroppable)
-      m_vhoDrop.AddElement(plineseg);
-
-   m_vhoCollidable.AddElement(plineseg);
+   plineseg->CalcNormal();
    plineseg->m_fEnabled = m_d.m_fCollidable;
 
-   plineseg->CalcNormal();
+   pvho->AddElement(plineseg);
+   if (m_d.m_fDroppable)
+      m_vhoDrop.push_back(plineseg);
+   m_vhoCollidable.push_back(plineseg);
 
-   const Vertex2D vt1(pv1->x - pv2->x, pv1->y - pv2->y);
-   const Vertex2D vt2(pv1->x - pv3->x, pv1->y - pv3->y);
-
-   const float dot = vt1.x*vt2.y - vt1.y*vt2.x;
-
-   if (dot < 0.f) // Inside edges don't need joint hit-testing (dot == 0 continuous segments should mathematically never hit)
+   if (m_d.m_heightbottom != 0)
    {
-      Joint * const pjoint = new Joint();
+       // add lower edge as a line
+       Vertex3Ds v1(pv1->x, pv1->y, m_d.m_heightbottom);
+       Vertex3Ds v2(pv2->x, pv2->y, m_d.m_heightbottom);
+       SetupHitObject(pvho, new HitLine3D(v1, v2));
+   }
+   {
+       // add upper edge as a line
+       Vertex3Ds v1(pv1->x, pv1->y, m_d.m_heighttop);
+       Vertex3Ds v2(pv2->x, pv2->y, m_d.m_heighttop);
+       SetupHitObject(pvho, new HitLine3D(v1, v2));
+   }
 
-      if (m_d.m_fHitEvent)
-      {
-         pjoint->m_pfe = (IFireEvents *)this;
-         pjoint->m_threshold = m_d.m_threshold;
-      }
-      else
-         pjoint->m_pfe = NULL;
+   const Vertex2D vt1 = *pv1 - *pv2;
+   const Vertex2D vt2 = *pv1 - *pv3;
 
-      pjoint->m_rcHitRect.zlow = m_d.m_heightbottom;
-      pjoint->m_rcHitRect.zhigh = m_d.m_heighttop;
+   const float dot = vt1.Dot(vt2);
 
-      pjoint->m_elasticity = m_d.m_elasticity;
-      pjoint->SetFriction(m_d.m_friction);
-      pjoint->m_scatter = ANGTORAD(m_d.m_scatter);
+   if (dot != 0.f) // continuous segments should mathematically never hit
+   {
+       SetupHitObject(pvho, new HitLineZ(*pv1, m_d.m_heightbottom, m_d.m_heighttop));
 
-      pjoint->center.x = pv1->x;
-      pjoint->center.y = pv1->y;
-      pvho->AddElement(pjoint);
-      if (m_d.m_fDroppable)
-      {
-         m_vhoDrop.AddElement(pjoint);
-      }
-
-      m_vhoCollidable.AddElement(pjoint);
-      pjoint->m_fEnabled = m_d.m_fCollidable;
-
-      // Set up line normal
-      {
-         const float inv_length = 1.0f/sqrtf(vt2.x * vt2.x + vt2.y * vt2.y);
-         pjoint->normal.x = plineseg->normal.x - vt2.y * inv_length;
-         pjoint->normal.y = plineseg->normal.y + vt2.x * inv_length;
-      }
-
-      // Set up line normal
-      {
-         const float inv_length = 1.0f/sqrtf(pjoint->normal.x * pjoint->normal.x + pjoint->normal.y * pjoint->normal.y);
-         pjoint->normal.x *= inv_length;
-         pjoint->normal.y *= inv_length;
-      }
+       // add upper and lower end points of line
+       if (m_d.m_heightbottom != 0)
+           SetupHitObject(pvho, new HitPoint(Vertex3Ds(pv1->x, pv1->y, m_d.m_heightbottom)));
+       SetupHitObject(pvho, new HitPoint(Vertex3Ds(pv1->x, pv1->y, m_d.m_heighttop)));
    }
 }
 
@@ -577,9 +564,9 @@ void Surface::EndPlay()
 {
    IEditable::EndPlay();
 
-   m_vlinesling.RemoveAllElements();
-   m_vhoDrop.RemoveAllElements();
-   m_vhoCollidable.RemoveAllElements();
+   m_vlinesling.clear();
+   m_vhoDrop.clear();
+   m_vhoCollidable.clear();
 
    FreeBuffers();
 }
@@ -863,9 +850,9 @@ void Surface::PrepareSlingshots( RenderDevice *pd3dDevice )
    Vertex3D *buf;
    slingshotVBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY);
    int offset=0;
-   for (int i=0;i<m_vlinesling.Size();i++)
+   for (unsigned i=0; i<m_vlinesling.size(); i++)
    {
-      LineSegSlingshot * const plinesling = m_vlinesling.ElementAt(i);
+      LineSegSlingshot * const plinesling = m_vlinesling[i];
       plinesling->m_slingshotanim.m_fAnimations = (m_d.m_fSlingshotAnimation != 0);
 
       Vertex3D rgv3D[12];
@@ -947,10 +934,10 @@ void Surface::RenderSetup(RenderDevice* pd3dDevice)
 
    m_d.m_heightbottom *= m_ptable->m_zScale;
    m_d.m_heighttop *= m_ptable->m_zScale;
-   if( m_vlinesling.Size()>0 )
+   if( !m_vlinesling.empty() )
    {
       if( !slingshotVBuffer )
-         pd3dDevice->CreateVertexBuffer(m_vlinesling.Size()*24, 0, MY_D3DFVF_VERTEX, &slingshotVBuffer);
+         pd3dDevice->CreateVertexBuffer(m_vlinesling.size()*24, 0, MY_D3DFVF_VERTEX, &slingshotVBuffer);
 
       slingShotMaterial.setColor( 1.0f, m_d.m_slingshotColor );
       PrepareSlingshots(pd3dDevice);
@@ -1019,9 +1006,9 @@ void Surface::RenderSlingshots(RenderDevice* pd3dDevice)
    const float slingbottom = (m_d.m_heighttop - m_d.m_heightbottom) * 0.2f + m_d.m_heightbottom;
    const float slingtop    = (m_d.m_heighttop - m_d.m_heightbottom) * 0.8f + m_d.m_heightbottom;
 
-   for (int i=0;i<m_vlinesling.Size();i++)
+   for (unsigned i=0; i<m_vlinesling.size(); i++)
    {
-      LineSegSlingshot * const plinesling = m_vlinesling.ElementAt(i);
+      LineSegSlingshot * const plinesling = m_vlinesling[i];
       if (plinesling->m_slingshotanim.m_iframe != 1)
           continue;
 
@@ -1780,8 +1767,8 @@ STDMETHODIMP Surface::put_IsDropped(VARIANT_BOOL newVal)
    {
       m_fIsDropped = fNewVal;
 
-      for (int i=0;i<m_vhoDrop.Size();i++)
-         m_vhoDrop.ElementAt(i)->m_fEnabled = !m_fIsDropped && m_d.m_fCollidable; //disable hit on enities composing the object 
+      for (unsigned i=0; i<m_vhoDrop.size(); i++)
+         m_vhoDrop[i]->m_fEnabled = !m_fIsDropped && m_d.m_fCollidable; //disable hit on enities composing the object 
    }
 
    return S_OK;
@@ -2009,10 +1996,10 @@ STDMETHODIMP Surface::put_Collidable(VARIANT_BOOL newVal)
 
    m_d.m_fCollidable = fNewVal;
 
-   for (int i=0;i<m_vhoCollidable.Size();i++)
+   for (unsigned i=0; i<m_vhoCollidable.size(); i++)
    {
-      if (m_d.m_fDroppable) m_vhoCollidable.ElementAt(i)->m_fEnabled = fNewVal && !m_fIsDropped;
-      else m_vhoCollidable.ElementAt(i)->m_fEnabled = fNewVal; //copy to hit checking on enities composing the object 
+      if (m_d.m_fDroppable) m_vhoCollidable[i]->m_fEnabled = fNewVal && !m_fIsDropped;
+      else m_vhoCollidable[i]->m_fEnabled = fNewVal; //copy to hit checking on enities composing the object 
    }	
 
    STOPUNDO
