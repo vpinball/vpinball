@@ -556,15 +556,16 @@ STDMETHODIMP Kicker::KickXYZ(float angle, float speed, float inclination, float 
 		if (fabsf(inclination) > (float)(M_PI/2.0))		// radians or degrees?  if greater PI/2 assume degrees
 			inclination *= (float)(M_PI/180.0);			// convert to radians
 		
-		float scatterAngle = (m_d.m_scatter <= 0.0f) ? c_hardScatter : ANGTORAD(m_d.m_scatter); // if <= 0 use global value
-		scatterAngle *= g_pplayer->m_ptable->m_globalDifficulty;		// apply dificulty weighting
+        // TODO: reenable scatter if desired
+		//float scatterAngle = (m_d.m_scatter <= 0.0f) ? c_hardScatter : ANGTORAD(m_d.m_scatter); // if <= 0 use global value
+		//scatterAngle *= g_pplayer->m_ptable->m_globalDifficulty;		// apply dificulty weighting
 
-		if (scatterAngle > 1.0e-5f)										// ignore near zero angles
-			{
-			float scatter = rand_mt_m11();								// -1.0f..1.0f
-			scatter *= (1.0f - scatter*scatter)*2.59808f * scatterAngle;// shape quadratic distribution and scale
-			anglerad += scatter;
-			}
+		//if (scatterAngle > 1.0e-5f)										// ignore near zero angles
+		//	{
+		//	float scatter = rand_mt_m11();								// -1.0f..1.0f
+		//	scatter *= (1.0f - scatter*scatter)*2.59808f * scatterAngle;// shape quadratic distribution and scale
+		//	anglerad += scatter;
+		//	}
 		
 		const float speedz = sinf(inclination) * speed;
 
@@ -797,6 +798,11 @@ KickerHitCircle::KickerHitCircle()
 	m_pball = NULL;
 	}
 
+float KickerHitCircle::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
+{
+	return HitTestBasicRadius(pball, dtime, coll, false, false, false); //any face, not-lateral, non-rigid
+}
+
 void KickerHitCircle::DoCollide(Ball * const pball, Vertex3Ds * const phitnormal)
 	{
 	if (m_pball) return;								// a previous ball already in kicker
@@ -823,9 +829,7 @@ void KickerHitCircle::DoCollide(Ball * const pball, Vertex3Ds * const phitnormal
 			if (pball->fFrozen)	// script may have unfrozen the ball
 				{
 				// Only mess with variables if ball was not kicked during event
-				pball->vel.x = 0;
-				pball->vel.y = 0;
-				pball->vel.z = 0;
+				pball->vel.SetZero();
 				pball->pos.x = center.x;
 				pball->pos.y = center.y;
 				pball->pos.z = m_zheight + pball->radius;

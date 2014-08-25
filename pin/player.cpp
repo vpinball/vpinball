@@ -279,6 +279,9 @@ Player::Player()
 #ifdef DEBUG_FPS
 	ToggleFPS();
 #endif
+
+    m_fRecordContacts = false;
+    m_contacts.reserve(8);
 }
 
 Player::~Player()
@@ -464,6 +467,14 @@ void Player::CreateBoundingHitShapes(Vector<HitObject> *pvho)
 	Hit3DPoly * const ph3dpoly = new Hit3DPoly(rgv3D,4); //!!
 
 	pvho->AddElement(ph3dpoly);
+
+    m_hitPlayfield = HitPlane( Vertex3Ds(0,0,1), m_ptable->m_tableheight );
+    m_hitPlayfield.SetFriction(m_ptable->m_hardFriction);
+    m_hitPlayfield.m_elasticity = 0.2f;
+
+    m_hitTopGlass  = HitPlane( Vertex3Ds(0,0,-1), m_ptable->m_glassheight );
+    m_hitTopGlass.SetFriction(0.3f);
+    m_hitTopGlass.m_elasticity = 0.2f;
 }
 
 void Player::InitKeys()
@@ -766,11 +777,39 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 
 	m_NudgeX = 0;
 	m_NudgeY = 0;
-	m_nudgetime = 0;
 	m_movedPlunger = 0;
 
 	SendMessage(hwndProgress, PBM_SETPOS, 50, 0);
 	SetWindowText(hwndProgressName, "Initalizing Physics...");
+
+    {
+        // Initialize new nudging.
+        m_tableVel.SetZero();
+        m_tableDisplacement.SetZero();
+        m_tableVelOld.SetZero();
+        m_tableVelDelta.SetZero();
+
+        // Table movement (displacement u) is modeled as a mass-spring-damper system
+        //   u'' = -k u - c u'
+        // with a spring constant k and a damping coefficient c.
+        // See http://en.wikipedia.org/wiki/Damping#Linear_damping
+
+        const float nudgeTime = m_ptable->m_nudgeTime;      // T
+        const float dampingRatio = 0.5f;                    // zeta
+
+        // time for one half period (one swing and swing back):
+        //   T = pi / omega_d,
+        // where
+        //   omega_d = omega_0 * sqrt(1 - zeta^2)       (damped frequency)
+        //   omega_0 = sqrt(k)                          (undamped frequency)
+        // Solving for the spring constant k, we get
+        m_nudgeSpring = (float)(M_PI*M_PI) / (nudgeTime*nudgeTime * (1.0f - dampingRatio*dampingRatio));
+
+        // The formula for the damping ratio is
+        //   zeta = c / (2 sqrt(k)).
+        // Solving for the damping coefficient c, we get
+        m_nudgeDamping = 2.0f * sqrtf(m_nudgeSpring) * dampingRatio;
+    }
 
 	// Need to set timecur here, for init functions that set timers
 	m_time_msec = 0;
@@ -813,6 +852,8 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
         if (((pho->GetType() == e3DPoly) && ((Hit3DPoly *)pho)->m_fVisible) ||
             ((pho->GetType() == eTriangle) && ((HitTriangle *)pho)->m_fVisible) )
             m_shadowoctree.AddElement(pho);
+        else if (pho->GetType() == eFlipper)
+            m_vFlippers.push_back((HitFlipper*)pho);
 
         AnimObject *pao = pho->GetAnimObject();
         if (pao)
@@ -874,7 +915,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 
 	SendMessage(hwndProgress, PBM_SETPOS, 90, 0);
 
-#ifdef _DEBUGPHYSICS
+#ifdef DEBUG_BALL_SPIN
     {
         std::vector< Vertex3D_NoLighting > ballDbgVtx;
         for (int j = -1; j <= 1; ++j)
@@ -938,10 +979,10 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 
 	SetWindowText(hwndProgressName, "Starting...");
 
-    // Show the window.
-    ShowWindow(m_hwnd, SW_SHOW);
-    SetForegroundWindow(m_hwnd);
-    SetFocus(m_hwnd);
+		// Show the window.
+		ShowWindow(m_hwnd, SW_SHOW);
+		SetForegroundWindow(m_hwnd);
+		SetFocus(m_hwnd);
 
 	// Call Init -- TODO: what's the relation to ptable->FireVoidEvent() above?
 	for (unsigned i=0; i < m_vhitables.size(); ++i)
@@ -1154,14 +1195,14 @@ void Player::InitWindow()
 	const int captionheight = GetSystemMetrics(SM_CYCAPTION);
 
 	if (!m_fFullScreen && (screenheight - m_height >= (captionheight*2))) // We have enough room for a frame
-    {
-        // Add a pretty window border and standard control boxes.
-        windowflags = WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_CLIPCHILDREN;
-        windowflagsex = WS_EX_OVERLAPPEDWINDOW;
+	{
+			// Add a pretty window border and standard control boxes.
+			windowflags = WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_CLIPCHILDREN;
+			windowflagsex = WS_EX_OVERLAPPEDWINDOW;
 
-        y -= captionheight;
-        m_height += captionheight;
-    }
+			y -= captionheight;
+			m_height += captionheight;
+		}
 
 	int ballStretchMode;
 	hr = GetRegInt("Player", "BallStretchMode", &ballStretchMode);
@@ -1626,6 +1667,17 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
 #endif
 		hittime = dtime;	//begin time search from now ...  until delta ends
 
+        // find earliest time where a flipper collides with its stop
+        for (unsigned i = 0; i < m_vFlippers.size(); ++i)
+        {
+            const float fliphit = m_vFlippers[i]->GetHitTime();
+            if (fliphit >= 0 && fliphit < hittime)
+                hittime = fliphit;
+        }
+
+        m_fRecordContacts = true;
+        m_contacts.clear();
+
 		for (unsigned i = 0; i < m_vball.size(); i++)
 		{
 			Ball * const pball = m_vball[i];
@@ -1635,6 +1687,9 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
 				pball->m_coll.hittime = hittime;		// search upto current hittime
 				pball->m_coll.obj = NULL;
 
+                // always check for playfield and top glass
+                DoHitTest(pball, &m_hitPlayfield, pball->m_coll);
+                DoHitTest(pball, &m_hitTopGlass, pball->m_coll);
                 m_hitoctree_dynamic.HitTestBall(pball, pball->m_coll);  // dynamic objects
 				m_hitoctree.HitTestBall(pball, pball->m_coll);  // find the hit objects and hit times
 
@@ -1665,8 +1720,10 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
 						}
 					}
 				}
-			}				
-		}
+			}
+		}   // end loop over all balls
+
+        m_fRecordContacts = false;
 
 		// hittime now set ... or full frame if no hit 
 		// now update displacements to collide-contact or end of physics frame
@@ -1709,9 +1766,6 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
 					// is this ball static? .. set static and quench	
 					if (pball->m_coll.hitRigid && pball->m_coll.distance < (float)PHYS_TOUCH) //rigid and close distance contacts
 					{
-#ifdef _DEBUGPHYSICS
-						c_contactcnt++;
-#endif
 						const float mag = pball->vel.x*pball->vel.x + pball->vel.y*pball->vel.y; // values below are taken from simulation
 						if (pball->drsq < 8.0e-5f && mag < 1.0e-3f && fabsf(pball->vel.z) < 0.2f)
 						{
@@ -1728,6 +1782,24 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
 				}
 			}
 		}
+
+#ifdef _DEBUGPHYSICS
+        c_contactcnt = m_contacts.size();
+#endif
+        /*
+         * Now handle contacts.
+         *
+         * At this point UpdateDisplacements() was already called, so the state is different
+         * from that at HitTest(). However, contacts have zero relative velocity, so
+         * hopefully nothing catastrophic has happened in the meanwhile.
+         *
+         * Maybe a two-phase setup where we first process only contacts, then only collisions
+         * could also work.
+         */
+        for (unsigned i = 0; i < m_contacts.size(); ++i)
+            m_contacts[i].obj->Contact(m_contacts[i], hittime);
+
+        m_contacts.clear();
 
 		dtime -= hittime;	//new delta .. i.e. time remaining
 
@@ -1840,15 +1912,15 @@ void Player::UpdatePhysics()
 		// If the frame is the next thing to happen, update physics to that
 		// point next update acceleration, and continue loop
 
-		const float physics_diff_time =       (float)((double)(m_nextPhysicsFrameTime - m_curPhysicsFrameTime)*(1.0/PHYSICS_STEPTIME));
-		const float physics_to_graphic_diff_time = (float)((double)(initial_time_usec - m_curPhysicsFrameTime)*(1.0/PHYSICS_STEPTIME));
+		const float physics_diff_time =       (float)((double)(m_nextPhysicsFrameTime - m_curPhysicsFrameTime)*(1.0/DEFAULT_STEPTIME));
+		const float physics_to_graphic_diff_time = (float)((double)(initial_time_usec - m_curPhysicsFrameTime)*(1.0/DEFAULT_STEPTIME));
 
-		if (physics_to_graphic_diff_time < physics_diff_time)		 // is graphic frame time next???
-		{
-			PhysicsSimulateCycle(physics_to_graphic_diff_time);      // advance physics to this time
-			m_curPhysicsFrameTime = initial_time_usec;				 // now current to the wall clock
-			break;	//this is the common exit from the loop			 // exit skipping accelerate
-		}			// some rare cases will exit from while()
+		//if (physics_to_graphic_diff_time < physics_diff_time)		 // is graphic frame time next???
+		//{
+		//	PhysicsSimulateCycle(physics_to_graphic_diff_time);      // advance physics to this time
+		//	m_curPhysicsFrameTime = initial_time_usec;				 // now current to the wall clock
+		//	break;	//this is the common exit from the loop			 // exit skipping accelerate
+		//}			// some rare cases will exit from while()
 
 		const U64 cur_time_usec = usec();
 		if ((cur_time_usec - initial_time_usec > 200000) || (phys_iterations > ((m_ptable->m_PhysicsMaxLoops == 0) ? 0xFFFFFFFFu : m_ptable->m_PhysicsMaxLoops/*2*/))) // hung in the physics loop over 200 milliseconds or the number of physics iterations to catch up on is high (i.e. very low/unplayable FPS)
@@ -1885,32 +1957,30 @@ void Player::UpdatePhysics()
 #endif
 		NudgeUpdate();		// physics_diff_time is the balance of time to move from the graphic frame position to the next
 		mechPlungerUpdate();	// integral physics frame. So the previous graphics frame was (1.0 - physics_diff_time) before 
-							// this integral physics frame. Accelerations and inputs are always physics frame aligned
-		if (m_nudgetime)
-		{
-			m_nudgetime--;
+									// this integral physics frame. Accelerations and inputs are always physics frame aligned
+        {
+            // table movement is modeled as a mass-spring-damper system
+            //   u'' = -k u - c u'
+            // with a spring constant k and a damping coefficient c
+            Vertex3Ds force = -m_nudgeSpring * m_tableDisplacement - m_nudgeDamping * m_tableVel;
+            m_tableVel += PHYS_FACTOR * force;
+            m_tableDisplacement += PHYS_FACTOR * m_tableVel;
+            //if (m_tableVel.LengthSquared() >= 1e-5f)
+            //    slintf("Table shake: %.2f  %.2f\n", m_tableDisplacement.x, m_tableVel.x);
 
-			if (m_nudgetime == 5)
-			{
-				m_NudgeX = -m_NudgeBackX * 2.0f;
-				m_NudgeY =  m_NudgeBackY * 2.0f;
-			}
-			else if (m_nudgetime == 0)
-			{
-				m_NudgeX =  m_NudgeBackX;
-				m_NudgeY = -m_NudgeBackY;
-			}
-		}
+            m_tableVelDelta = m_tableVel - m_tableVelOld;
+            m_tableVelOld = m_tableVel;
+        }
 
         // Apply our filter to the nudge data
 		if(m_pininput.m_enable_nudge_filter)
 	        FilterNudge();
 
 		for (unsigned i=0; i<m_vmover.size(); i++)
-			m_vmover[i]->UpdateVelocities();	 // always on integral physics frame boundary
+			m_vmover[i]->UpdateVelocities();	// always on integral physics frame boundary
 
 		//primary physics loop
-		PhysicsSimulateCycle(physics_diff_time); // main simulator call
+		PhysicsSimulateCycle(physics_diff_time);	    // main simulator call
 
 		//ball trail, keep old pos of balls
 		for (unsigned i=0; i < m_vball.size(); i++)
@@ -2034,15 +2104,7 @@ void Player::CheckAndUpdateRegions()
 
 void Player::FlipVideoBuffersNormal( const bool vsync )
 {
-	if ( m_nudgetime &&			// Table is being nudged.
-		 m_ptable->m_Shake )	// The "EarthShaker" effect is active. //!! make configurable (cab vs desktop)
-	{
-		// Draw with an offset to shake the display.
-        // TODO: this doesn't work in DX9, have to handle shake some other way.
-		m_pin3d.Flip( /*(int)m_NudgeBackX, (int)m_NudgeBackY,*/ vsync);
-	}
-    else
-        m_pin3d.Flip(vsync);
+    m_pin3d.Flip(vsync);
 }
 
 static const float quadVerts[4*5] =
@@ -2441,20 +2503,20 @@ void Player::UnpauseMusic()
 
 void Player::DrawBalls()
 {
-   bool drawReflection = ((m_fReflectionForBalls && (m_ptable->m_useReflectionForBalls == -1)) || (m_ptable->m_useReflectionForBalls == 1));
+    bool drawReflection = ((m_fReflectionForBalls && (m_ptable->m_useReflectionForBalls == -1)) || (m_ptable->m_useReflectionForBalls == 1));
 
-   // m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::TEXTUREPERSPECTIVE, FALSE ); // this is always on in DX9
-   m_pin3d.m_pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP);
-   m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_COLOROP, D3DTOP_MODULATE);
-   m_pin3d.m_pd3dDevice->SetTextureFilter(0, TEXTURE_MODE_TRILINEAR);
+    // m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::TEXTUREPERSPECTIVE, FALSE ); // this is always on in DX9
+    m_pin3d.m_pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP);
+    m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_COLOROP, D3DTOP_MODULATE);
+    m_pin3d.m_pd3dDevice->SetTextureFilter(0, TEXTURE_MODE_TRILINEAR);
 
    m_pin3d.m_pd3dDevice->SetVertexDeclaration( m_pin3d.m_pd3dDevice->m_pVertexNormalTexelDeclaration );
 
-   for (unsigned i=0; i<m_vball.size(); i++)
-   {
-      Ball * const pball = m_vball[i];
-      // just calculate the vertices once!
-      float zheight = (!pball->fFrozen) ? pball->pos.z : (pball->pos.z - pball->radius);
+    for (unsigned i=0; i<m_vball.size(); i++)
+    {
+        Ball * const pball = m_vball[i];
+        // just calculate the vertices once!
+        float zheight = (!pball->fFrozen) ? pball->pos.z : (pball->pos.z - pball->radius);
 
       float maxz = pball->defaultZ+3.0f;
       float minz = pball->defaultZ;
@@ -2482,15 +2544,15 @@ void Player::DrawBalls()
 
       Texture * const playfield = m_ptable->GetImage((char *)m_ptable->m_szImage);
       if( playfield )
-      {
+        {
           ballShader->Core()->SetTexture("Texture1",m_pin3d.m_pd3dDevice->m_texMan.LoadTexture(playfield->m_pdsBuffer));
-      }
+        }
 
       if(pball->m_disableLighting)
-      {
+        {
          m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, COLORREF_to_D3DCOLOR(pball->m_color));
          m_pin3d.m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR); // do not modify tex by diffuse lighting
-      }
+            }
 
       // ************************* draw the ball itself ****************************
       m_pin3d.EnableAlphaBlend(1);
@@ -2505,20 +2567,20 @@ void Player::DrawBalls()
       ballShader->Core()->SetFloat("radius", pball->radius );
       if ( !pball->m_pin )
           ballShader->Core()->SetTexture("Texture0",m_pin3d.m_pd3dDevice->m_texMan.LoadTexture(m_pin3d.ballTexture.m_pdsBufferColorKey));
-      else
+        else
           ballShader->Core()->SetTexture("Texture0",m_pin3d.m_pd3dDevice->m_texMan.LoadTexture(pball->m_pin->m_pdsBufferColorKey));
 
       if( pball->m_pinFront )
-      {
+        {
           ballShader->Core()->SetTexture("Texture2",m_pin3d.m_pd3dDevice->m_texMan.LoadTexture(pball->m_pinFront->m_pdsBufferColorKey));
-      }
+        }
       UINT cPasses=0;
       if ( drawReflection )
-      {
+        {
           ballShader->Core()->SetFloat("reflectionStrength", (float)m_ptable->m_ballReflectionStrength/255.0f );
-          m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
-          m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
-          m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_DESTALPHA);
+            m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
+            m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
+            m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_DESTALPHA);
           ballShader->Core()->SetTechnique("RenderBallReflection");
           ballShader->Core()->Begin(&cPasses,0);
           ballShader->Core()->BeginPass(0);
@@ -2526,9 +2588,9 @@ void Player::DrawBalls()
           ballShader->Core()->EndPass();
           ballShader->Core()->End();
 
-          m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-          m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_INVSRCALPHA);
-      }
+            m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+            m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_INVSRCALPHA);
+        }
 
       ballShader->Core()->SetTechnique("RenderBall");
       cPasses=0;
@@ -2538,151 +2600,151 @@ void Player::DrawBalls()
       ballShader->Core()->EndPass();
       ballShader->Core()->End();
 
-      if(pball->m_disableLighting)
-      {
-         m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, 0xffffffff);
-         m_pin3d.m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
-      }
+        if(pball->m_disableLighting)
+        {
+            m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, 0xffffffff);
+            m_pin3d.m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
+        }
 
-      // ball trails //!! misses lighting disabled part!
+        // ball trails //!! misses lighting disabled part!
       if((m_fTrailForBalls && (m_ptable->m_useTrailForBalls == -1)) || (m_ptable->m_useTrailForBalls == 1))
-      {
-         Vertex3D_NoLighting rgv3D_all[10*2];
-         unsigned int num_rgv3D = 0;
+        {
+            Vertex3D_NoLighting rgv3D_all[10*2];
+            unsigned int num_rgv3D = 0;
 
-         for(int i2 = 0; i2 < 10-1; ++i2)
-         {
-            int i = pball->ringcounter_oldpos-1-i2;
-            if(i<0)
-               i += 10;
-            int io = i-1;
-            if(io<0)
-               io += 10;
+			for(int i2 = 0; i2 < 10-1; ++i2)
+			{
+				int i = pball->ringcounter_oldpos-1-i2;
+				if(i<0)
+					i += 10;
+				int io = i-1;
+				if(io<0)
+					io += 10;
 
-            if((pball->oldpos[i].x != FLT_MAX) && (pball->oldpos[io].x != FLT_MAX)) // only if already initialized
-            {
-               Vertex3Ds vec;
-               vec.x = pball->oldpos[io].x-pball->oldpos[i].x;
-               vec.y = pball->oldpos[io].y-pball->oldpos[i].y;
-               vec.z = pball->oldpos[io].z-pball->oldpos[i].z;
-               const unsigned int bc = (unsigned int)((float)m_ptable->m_ballTrailStrength * powf(1.f-1.f/max(vec.Length(), 1.0f), 16.0f)); //!! 16=magic alpha falloff
-               const float r = min(pball->radius*0.9f, 2.0f*pball->radius/powf((float)(i2+2), 0.6f)); //!! consts are for magic radius falloff
+				if((pball->oldpos[i].x != FLT_MAX) && (pball->oldpos[io].x != FLT_MAX)) // only if already initialized
+				{
+					Vertex3Ds vec;
+					vec.x = pball->oldpos[io].x-pball->oldpos[i].x;
+					vec.y = pball->oldpos[io].y-pball->oldpos[i].y;
+					vec.z = pball->oldpos[io].z-pball->oldpos[i].z;
+					const unsigned int bc = (unsigned int)((float)m_ptable->m_ballTrailStrength * powf(1.f-1.f/max(vec.Length(), 1.0f), 16.0f)); //!! 16=magic alpha falloff
+					const float r = min(pball->radius*0.9f, 2.0f*pball->radius/powf((float)(i2+2), 0.6f)); //!! consts are for magic radius falloff
 
-               if(bc > 0 && r > FLT_MIN)
-               {
-                  Vertex3Ds v = vec;
-                  v.Normalize();
-                  Vertex3Ds up;
-                  up.x = 0.f;
-                  up.y = 0.f;
-                  up.z = 1.f;
-                  Vertex3Ds n = CrossProduct(v,up);
-                  n.x *= r;
-                  n.y *= r;
-                  n.z *= r;
+					if(bc > 0 && r > FLT_MIN)
+					{
+						Vertex3Ds v = vec;
+						v.Normalize();
+						Vertex3Ds up;
+						up.x = 0.f;
+						up.y = 0.f;
+						up.z = 1.f;
+						Vertex3Ds n = CrossProduct(v,up);
+						n.x *= r;
+						n.y *= r;
+						n.z *= r;
 
-                  Vertex3D_NoLighting rgv3D[4];
-                  rgv3D[0].x = pball->oldpos[i].x - n.x;
-                  rgv3D[0].y = pball->oldpos[i].y - n.y;
-                  rgv3D[0].z = pball->oldpos[i].z - n.z;
-                  rgv3D[1].x = pball->oldpos[i].x + n.x;
-                  rgv3D[1].y = pball->oldpos[i].y + n.y;
-                  rgv3D[1].z = pball->oldpos[i].z + n.z;
-                  rgv3D[2].x = pball->oldpos[io].x + n.x;
-                  rgv3D[2].y = pball->oldpos[io].y + n.y;
-                  rgv3D[2].z = pball->oldpos[io].z + n.z;
-                  rgv3D[3].x = pball->oldpos[io].x - n.x;
-                  rgv3D[3].y = pball->oldpos[io].y - n.y;
-                  rgv3D[3].z = pball->oldpos[io].z - n.z;
+						Vertex3D_NoLighting rgv3D[4];
+						rgv3D[0].x = pball->oldpos[i].x - n.x;
+						rgv3D[0].y = pball->oldpos[i].y - n.y;
+						rgv3D[0].z = pball->oldpos[i].z - n.z;
+						rgv3D[1].x = pball->oldpos[i].x + n.x;
+						rgv3D[1].y = pball->oldpos[i].y + n.y;
+						rgv3D[1].z = pball->oldpos[i].z + n.z;
+						rgv3D[2].x = pball->oldpos[io].x + n.x;
+						rgv3D[2].y = pball->oldpos[io].y + n.y;
+						rgv3D[2].z = pball->oldpos[io].z + n.z;
+						rgv3D[3].x = pball->oldpos[io].x - n.x;
+						rgv3D[3].y = pball->oldpos[io].y - n.y;
+						rgv3D[3].z = pball->oldpos[io].z - n.z;
 
-                  rgv3D[0].color = rgv3D[1].color = rgv3D[2].color = rgv3D[3].color = bc | (bc<<8) | (bc<<16) | (bc<<24);
+						rgv3D[0].color = rgv3D[1].color = rgv3D[2].color = rgv3D[3].color = bc | (bc<<8) | (bc<<16) | (bc<<24);
 
-                  rgv3D[0].tu = 0.5f+(float)(i2)*(float)(1.0/(2.0*(10-1)));
-                  rgv3D[0].tv = 0.f;
-                  rgv3D[1].tu = rgv3D[0].tu;
-                  rgv3D[1].tv = 1.f;
-                  rgv3D[2].tu = 0.5f+(float)(i2+1)*(float)(1.0/(2.0*(10-1)));
-                  rgv3D[2].tv = 1.f;
-                  rgv3D[3].tu = rgv3D[2].tu;
-                  rgv3D[3].tv = 0.f;
+						rgv3D[0].tu = 0.5f+(float)(i2)*(float)(1.0/(2.0*(10-1)));
+						rgv3D[0].tv = 0.f;
+						rgv3D[1].tu = rgv3D[0].tu;
+						rgv3D[1].tv = 1.f;
+						rgv3D[2].tu = 0.5f+(float)(i2+1)*(float)(1.0/(2.0*(10-1)));
+						rgv3D[2].tv = 1.f;
+						rgv3D[3].tu = rgv3D[2].tu;
+						rgv3D[3].tv = 0.f;
 
-                  if(num_rgv3D == 0)
-                  {
-                     rgv3D_all[0] = rgv3D[0];
-                     rgv3D_all[1] = rgv3D[1];
-                     rgv3D_all[2] = rgv3D[3];
-                     rgv3D_all[3] = rgv3D[2];
-                  }
-                  else
-                  {
-                     rgv3D_all[num_rgv3D-2].x = (rgv3D[0].x+rgv3D_all[num_rgv3D-2].x)*0.5f;
-                     rgv3D_all[num_rgv3D-2].y = (rgv3D[0].y+rgv3D_all[num_rgv3D-2].y)*0.5f;
-                     rgv3D_all[num_rgv3D-2].z = (rgv3D[0].z+rgv3D_all[num_rgv3D-2].z)*0.5f;
-                     rgv3D_all[num_rgv3D-1].x = (rgv3D[1].x+rgv3D_all[num_rgv3D-1].x)*0.5f;
-                     rgv3D_all[num_rgv3D-1].y = (rgv3D[1].y+rgv3D_all[num_rgv3D-1].y)*0.5f;
-                     rgv3D_all[num_rgv3D-1].z = (rgv3D[1].z+rgv3D_all[num_rgv3D-1].z)*0.5f;
-                     rgv3D_all[num_rgv3D] = rgv3D[3];
-                     rgv3D_all[num_rgv3D+1] = rgv3D[2];
-                  }
+						if(num_rgv3D == 0)
+						{
+							rgv3D_all[0] = rgv3D[0];
+							rgv3D_all[1] = rgv3D[1];
+							rgv3D_all[2] = rgv3D[3];
+							rgv3D_all[3] = rgv3D[2];
+						}
+						else
+						{
+							rgv3D_all[num_rgv3D-2].x = (rgv3D[0].x+rgv3D_all[num_rgv3D-2].x)*0.5f;
+							rgv3D_all[num_rgv3D-2].y = (rgv3D[0].y+rgv3D_all[num_rgv3D-2].y)*0.5f;
+							rgv3D_all[num_rgv3D-2].z = (rgv3D[0].z+rgv3D_all[num_rgv3D-2].z)*0.5f;
+							rgv3D_all[num_rgv3D-1].x = (rgv3D[1].x+rgv3D_all[num_rgv3D-1].x)*0.5f;
+							rgv3D_all[num_rgv3D-1].y = (rgv3D[1].y+rgv3D_all[num_rgv3D-1].y)*0.5f;
+							rgv3D_all[num_rgv3D-1].z = (rgv3D[1].z+rgv3D_all[num_rgv3D-1].z)*0.5f;
+							rgv3D_all[num_rgv3D] = rgv3D[3];
+							rgv3D_all[num_rgv3D+1] = rgv3D[2];
+						}
 
-                  if(num_rgv3D == 0)
-                     num_rgv3D += 4;
-                  else
-                     num_rgv3D += 2;
-               }
+                        if(num_rgv3D == 0)
+                            num_rgv3D += 4;
+                        else
+                            num_rgv3D += 2;
+                    }
+                }
             }
-         }
 
-         static const WORD rgi_all[10*2] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19};
+            static const WORD rgi_all[10*2] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19};
 
-         if(num_rgv3D > 0)
-         {
-            m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
-            m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
-            m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_DESTALPHA);
+            if(num_rgv3D > 0)
+            {
+                m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
+                m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
+                m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_DESTALPHA);
+                m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::LIGHTING, FALSE);
+
+                m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_NOLIGHTING_VERTEX, rgv3D_all, num_rgv3D, (LPWORD)rgi_all, num_rgv3D);
+
+                m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::LIGHTING, TRUE);
+                m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+                m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_INVSRCALPHA);
+            }
+        }
+
+
+#ifdef DEBUG_BALL_SPIN        // draw debug points for visualizing ball rotation
+        if (m_fShowFPS)
+        {
+            // set transform
+            Matrix3D matOrig, matNew, matRot;
+            matOrig = m_pin3d.GetWorldTransform();
+            matNew.SetTranslation(pball->pos);
+            matOrig.Multiply(matNew, matNew);
+            matRot.SetIdentity();
+            for (int j = 0; j < 3; ++j)
+                for (int k = 0; k < 3; ++k)
+                    matRot.m[j][k] = pball->m_orientation.m_d[k][j];
+            matNew.Multiply(matRot, matNew);
+            m_pin3d.m_pd3dDevice->SetTransform(TRANSFORMSTATE_WORLD, &matNew);
+
+            // draw points
+            m_pin3d.SetTexture(NULL);
+            float ptsize = 5.0f;
+            m_pin3d.m_pd3dDevice->SetRenderState((RenderDevice::RenderStates)D3DRS_POINTSIZE, *((DWORD*)&ptsize));
             m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::LIGHTING, FALSE);
-
-            m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_NOLIGHTING_VERTEX, rgv3D_all, num_rgv3D, (LPWORD)rgi_all, num_rgv3D);
-
+            m_pin3d.m_pd3dDevice->DrawPrimitiveVB( D3DPT_POINTLIST, m_ballDebugPoints, 0, 12 );
             m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::LIGHTING, TRUE);
-            m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-            m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_INVSRCALPHA);
-         }
-      }
 
-
-#ifdef _DEBUGPHYSICS        // draw debug points for visualizing ball rotation
-      if (m_fShowFPS)
-      {
-         // set transform
-         Matrix3D matOrig, matNew, matRot;
-         matOrig = m_pin3d.GetWorldTransform();
-         matNew.SetTranslation(pball->pos);
-         matOrig.Multiply(matNew, matNew);
-         matRot.SetIdentity();
-         for (int j = 0; j < 3; ++j)
-            for (int k = 0; k < 3; ++k)
-               matRot.m[j][k] = pball->m_orientation.m_d[k][j];
-         matNew.Multiply(matRot, matNew);
-         m_pin3d.m_pd3dDevice->SetTransform(TRANSFORMSTATE_WORLD, &matNew);
-
-         // draw points
-         m_pin3d.SetTexture(NULL);
-         float ptsize = 5.0f;
-         m_pin3d.m_pd3dDevice->SetRenderState((RenderDevice::RenderStates)D3DRS_POINTSIZE, *((DWORD*)&ptsize));
-         m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::LIGHTING, FALSE);
-         m_pin3d.m_pd3dDevice->DrawPrimitiveVB( D3DPT_POINTLIST, m_ballDebugPoints, 0, 12 );
-         m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::LIGHTING, TRUE);
-
-         // reset transform
-         m_pin3d.m_pd3dDevice->SetTransform(TRANSFORMSTATE_WORLD, &matOrig);
-      }
+            // reset transform
+            m_pin3d.m_pd3dDevice->SetTransform(TRANSFORMSTATE_WORLD, &matOrig);
+        }
 #endif
 
-   }   // end loop over all balls
+    }   // end loop over all balls
 
-   m_pin3d.m_pd3dDevice->SetTexture(0, NULL);
-   m_pin3d.DisableAlphaBlend();
+    m_pin3d.m_pd3dDevice->SetTexture(0, NULL);
+    m_pin3d.DisableAlphaBlend();
 }
 
 struct DebugMenuItem

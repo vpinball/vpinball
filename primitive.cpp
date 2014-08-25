@@ -262,23 +262,16 @@ void Primitive::GetHitShapesDebug(Vector<HitObject> * const pvho)
 
 void Primitive::CheckJoint(Vector<HitObject> * const pvho, const HitTriangle * const ph3d1, const HitTriangle * const ph3d2)
 {
-   Vertex3Ds vjointnormal = CrossProduct(ph3d1->normal, ph3d2->normal);
-   //vjointnormal.x = ph3d1->normal.x + ph3d2->normal.x;
-   //vjointnormal.y = ph3d1->normal.y + ph3d2->normal.y;
-   //vjointnormal.z = ph3d1->normal.z + ph3d2->normal.z;
-
-   const float sqrlength = vjointnormal.x * vjointnormal.x + vjointnormal.y * vjointnormal.y + vjointnormal.z * vjointnormal.z;
-   if (sqrlength < 1.0e-8f) return;
-
-   const float inv_length = 1.0f/sqrtf(sqrlength);
-   vjointnormal.x *= inv_length;
-   vjointnormal.y *= inv_length;
-   vjointnormal.z *= inv_length;
+   const Vertex3Ds vjointnormal = CrossProduct(ph3d1->normal, ph3d2->normal);
+   if (vjointnormal.LengthSquared() < 1e-8f)
+       return;  // coplanar triangles need no joints
 
    // By convention of the calling function, points 1 [0] and 2 [1] of the second polygon will
    // be the common-edge points
+   // BUG/TODO: this is wrong! This code was blindly copy-pasted from the ramp code without
+   // checking this assumption, which is not true for a general triangle mesh.
 
-   Hit3DCylinder * const ph3dc = new Hit3DCylinder(&ph3d2->m_rgv[0], &ph3d2->m_rgv[1], &vjointnormal);
+   HitLine3D * const ph3dc = new HitLine3D(ph3d2->m_rgv[0], ph3d2->m_rgv[1]);
    ph3dc->m_elasticity = m_d.m_elasticity;
    ph3dc->SetFriction(m_d.m_friction);
    ph3dc->m_scatter = ANGTORAD(m_d.m_scatter);

@@ -63,7 +63,7 @@ void Flipper::SetDefaults(bool fromMouseClick)
    m_d.m_angleEOS = 0;		//disabled
 
    hr = GetRegStringAsFloat("DefaultProps\\Flipper","ReturnStrength", &fTmp);
-   m_d.m_return = (hr == S_OK) && fromMouseClick ? fTmp : 0.09f;		// match existing physics, return equals stroke 
+   m_d.m_return = (hr == S_OK) && fromMouseClick ? fTmp : 0.09f;
 
    hr = GetRegStringAsFloat("DefaultProps\\Flipper","Speed", &fTmp);
    m_d.m_force = (hr == S_OK) && fromMouseClick ? fTmp : 0.15f;
@@ -71,13 +71,12 @@ void Flipper::SetDefaults(bool fromMouseClick)
    hr = GetRegStringAsFloat("DefaultProps\\Flipper","Elasticity", &fTmp);
    m_d.m_elasticity = (hr == S_OK) && fromMouseClick ? fTmp : 0.55f;
 
+   m_d.m_elasticityFalloff = GetRegStringAsFloatWithDefault("DefaultProps\\Flipper","ElasticityFalloff", 0.43f);
+
    m_d.m_OverridePhysics = 0;
 
-   //hr = GetRegStringAsFloat("DefaultProps\\Flipper","Friction", &fTmp);
-   //if (hr == S_OK)
-   //	m_d.m_friction = fTmp;
-   //else
-   m_d.m_friction = 0;	//zero uses global value
+   m_d.m_friction = GetRegStringAsFloatWithDefault("DefaultProps\\Flipper","Friction", 0.8f);
+   m_d.m_rampUp = GetRegStringAsFloatWithDefault("DefaultProps\\Flipper","RampUp", 0.0f);
 
    m_d.m_scatter = 0.0;	//zero uses global value
 
@@ -147,32 +146,42 @@ void Flipper::SetDefaults(bool fromMouseClick)
 
 void Flipper::WriteRegDefaults()
 {
-   SetRegValueFloat("DefaultProps\\Flipper","BaseRadius", m_d.m_BaseRadius);
-   SetRegValueFloat("DefaultProps\\Flipper","EndRadius", m_d.m_EndRadius);
-   SetRegValueFloat("DefaultProps\\Flipper","StartAngle", m_d.m_StartAngle);
-   SetRegValueFloat("DefaultProps\\Flipper","EndAngle", m_d.m_EndAngle);
-   SetRegValueFloat("DefaultProps\\Flipper","Length", m_d.m_FlipperRadiusMax);
-   SetRegValueFloat("DefaultProps\\Flipper","MaxDifLength", m_d.m_FlipperRadiusMin);
-   SetRegValueFloat("DefaultProps\\Flipper","RecoilVelocity", m_d.m_recoil);
-   SetRegValueFloat("DefaultProps\\Flipper","ReturnStrength", m_d.m_return);
-   SetRegValueFloat("DefaultProps\\Flipper","Speed", m_d.m_force);
-   SetRegValueFloat("DefaultProps\\Flipper","Elasticity", m_d.m_elasticity);
-   SetRegValueFloat("DefaultProps\\Flipper","ScatterAngle", RADTOANG(m_d.m_scatterangle));
-   SetRegValueInt("DefaultProps\\Flipper","TimerEnabled",m_d.m_tdr.m_fTimerEnabled);
-   SetRegValueInt("DefaultProps\\Flipper","TimerInterval",m_d.m_tdr.m_TimerInterval);
-   SetRegValue("DefaultProps\\Flipper","Color", REG_DWORD, &m_d.m_color, 4);
-   SetRegValue("DefaultProps\\Flipper","RubberColor", REG_DWORD, &m_d.m_rubbercolor, 4);
-   SetRegValue("DefaultProps\\Flipper","Surface", REG_SZ, &m_d.m_szSurface,lstrlen(m_d.m_szSurface));
-   SetRegValueFloat("DefaultProps\\Flipper","Strength", m_d.m_strength);
-   SetRegValueFloat("DefaultProps\\Flipper","PowerLaw", m_d.m_powerlaw);
-   SetRegValueFloat("DefaultProps\\Flipper","ObliqueCorrection", m_d.m_obliquecorrection);
-   SetRegValueFloat("DefaultProps\\Flipper","Height", m_d.m_height);
-   SetRegValueInt("DefaultProps\\Flipper","RubberThickness", m_d.m_rubberthickness);
-   SetRegValueInt("DefaultProps\\Flipper","RubberHeight", m_d.m_rubberheight);
-   SetRegValueInt("DefaultProps\\Flipper","RubberWidth", m_d.m_rubberwidth);
-   SetRegValueInt("DefaultProps\\Flipper","Visible",m_d.m_fVisible);
-   SetRegValueInt("DefaultProps\\Flipper","Enabled",m_d.m_fEnabled);
-   SetRegValueInt("DefaultProps\\Flipper","CompatibilityMode",m_d.m_fCompatibility);
+   static const char regKey[] = "DefaultProps\\Flipper";
+
+   SetRegValueFloat(regKey,"BaseRadius", m_d.m_BaseRadius);
+   SetRegValueFloat(regKey,"StartAngle", m_d.m_StartAngle);
+   SetRegValueFloat(regKey,"EndAngle", m_d.m_EndAngle);
+   SetRegValueFloat(regKey,"BaseRadius", m_d.m_BaseRadius);
+   SetRegValueFloat(regKey,"MaxDifLength", m_d.m_FlipperRadiusMin);
+   SetRegValueFloat(regKey,"EndRadius", m_d.m_EndRadius);
+   SetRegValueFloat(regKey,"ReturnStrength", m_d.m_return);
+   SetRegValueFloat(regKey,"StartAngle", m_d.m_StartAngle);
+   SetRegValueFloat(regKey,"EndAngle", m_d.m_EndAngle);
+   SetRegValueFloat(regKey,"Length", m_d.m_FlipperRadiusMax);
+   SetRegValueFloat(regKey,"MaxDifLength", m_d.m_FlipperRadiusMin);
+   SetRegValueFloat(regKey,"RecoilVelocity", m_d.m_recoil);
+   SetRegValueFloat(regKey,"ReturnStrength", m_d.m_return);
+   SetRegValueFloat(regKey,"Speed", m_d.m_force);
+   SetRegValueFloat(regKey,"Elasticity", m_d.m_elasticity);
+   SetRegValueFloat(regKey,"ElasticityFalloff", m_d.m_elasticityFalloff);
+   SetRegValueFloat(regKey, "Friction", m_d.m_friction);
+   SetRegValueFloat(regKey, "RampUp", m_d.m_rampUp);
+   SetRegValue(regKey,"TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
+   SetRegValue(regKey,"TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval, 4);
+   SetRegValue(regKey,"Color", REG_DWORD, &m_d.m_color, 4);
+   SetRegValue(regKey,"RubberColor", REG_DWORD, &m_d.m_rubbercolor, 4);
+   SetRegValue(regKey,"Surface", REG_SZ, &m_d.m_szSurface,strlen(m_d.m_szSurface));
+   SetRegValueFloat(regKey,"Strength", m_d.m_strength);
+   SetRegValueFloat(regKey,"Height", m_d.m_height);
+   SetRegValueFloat(regKey,"PowerLaw", m_d.m_powerlaw);
+   SetRegValueFloat(regKey,"ObliqueCorrection", m_d.m_obliquecorrection);
+   SetRegValueFloat(regKey,"Height", m_d.m_height);
+   SetRegValue(regKey,"RubberThickness", REG_DWORD, &m_d.m_rubberthickness, 4);
+   SetRegValue(regKey,"RubberHeight", REG_DWORD, &m_d.m_rubberheight, 4);
+   SetRegValue(regKey,"RubberWidth", REG_DWORD, &m_d.m_rubberwidth, 4);
+   SetRegValue(regKey,"Visible",REG_DWORD,&m_d.m_fVisible,4);
+   SetRegValue(regKey,"Enabled",REG_DWORD,&m_d.m_fEnabled,4);
+   SetRegValue(regKey,"CompatibilityMode",REG_DWORD,&m_d.m_fCompatibility,4);
 }
 
 
@@ -260,21 +269,23 @@ void Flipper::GetHitShapes(Vector<HitObject> * const pvho)
    }
    else m_d.m_FlipperRadius = m_d.m_FlipperRadiusMax;
 
-   HitFlipper * const phf = new HitFlipper(m_d.m_Center.x, m_d.m_Center.y, m_d.m_BaseRadius, m_d.m_EndRadius,
-	   m_d.m_FlipperRadius, ANGTORAD(m_d.m_StartAngle), height, height + m_d.m_height, (m_d.m_OverridePhysics ? m_d.m_OverrideStrength : m_d.m_strength), m_d.m_mass);
+   const float strength = m_d.m_OverridePhysics ? m_d.m_OverrideStrength : m_d.m_strength;
+
+   HitFlipper * const phf = new HitFlipper(m_d.m_Center, m_d.m_BaseRadius, m_d.m_EndRadius,
+	   m_d.m_FlipperRadius, ANGTORAD(m_d.m_StartAngle), ANGTORAD(m_d.m_EndAngle), height, height + m_d.m_height,
+       strength, m_d.m_force, m_d.m_return);     // HACK: use "Speed" (m_force) as mass
 
    phf->m_elasticity = (m_d.m_OverridePhysics ? m_d.m_OverrideElasticity : m_d.m_elasticity);
    phf->SetFriction(m_d.m_friction);
    phf->m_scatter = m_d.m_scatter;
 
+   if (m_d.m_rampUp <= 0)
+       phf->m_flipperanim.m_torqueRampupSpeed = 1e6f;       // set very high for instant coil response
+   else
+       phf->m_flipperanim.m_torqueRampupSpeed = strength / m_d.m_rampUp;
+
    phf->m_flipperanim.m_EnableRotateEvent = 0;
-
    phf->m_pfe = NULL;
-
-   const float angStart = ANGTORAD(m_d.m_StartAngle);
-   const float angEnd = ANGTORAD(m_d.m_EndAngle);
-   phf->m_flipperanim.m_angleMin = min(angStart, angEnd);
-   phf->m_flipperanim.m_angleMax = max(angStart, angEnd);
 
    phf->m_flipperanim.m_fEnabled = (m_d.m_fEnabled != 0);
    phf->m_flipperanim.m_fVisible = (m_d.m_fVisible != 0);
@@ -546,18 +557,7 @@ STDMETHODIMP Flipper::RotateToEnd() //power stroke to hit ball
    {
       const float endAng = ANGTORAD(m_d.m_EndAngle);
       m_phitflipper->m_flipperanim.m_EnableRotateEvent = 1;
-      m_phitflipper->m_flipperanim.m_angleEnd = endAng;
-
-      if (fabsf(endAng - m_phitflipper->m_flipperanim.m_angleCur) < 1.0e-5f)   //already there?
-      {
-         m_phitflipper->m_flipperanim.m_fAcc = 0;
-         m_phitflipper->m_flipperanim.m_anglespeed = 0;
-      }
-      else m_phitflipper->m_flipperanim.m_fAcc = (endAng > m_phitflipper->m_flipperanim.m_angleCur) ? +1 : -1;
-
-	  m_phitflipper->m_flipperanim.m_maxvelocity = (m_d.m_OverridePhysics ? m_d.m_OverrideSpeed : m_d.m_force) * 4.5f;
-      m_phitflipper->m_flipperanim.m_force = (m_d.m_OverridePhysics ? m_d.m_OverrideSpeed : m_d.m_force);
-      m_phitflipper->m_forcemass = (m_d.m_OverridePhysics ? m_d.m_OverrideStrength : m_d.m_strength);
+      m_phitflipper->m_flipperanim.SetSolenoidState(true);
    }
    return S_OK;
 }
@@ -568,22 +568,7 @@ STDMETHODIMP Flipper::RotateToStart() // return to park
    {
       const float startAng =  ANGTORAD(m_d.m_StartAngle);		
       m_phitflipper->m_flipperanim.m_EnableRotateEvent = -1;
-      m_phitflipper->m_flipperanim.m_angleEnd = startAng;
-
-      if (fabsf(startAng - m_phitflipper->m_flipperanim.m_angleCur) < 1.0e-5f)//already there?
-      {
-         m_phitflipper->m_flipperanim.m_fAcc = 0;
-         m_phitflipper->m_flipperanim.m_anglespeed = 0;
-      }
-      else m_phitflipper->m_flipperanim.m_fAcc = (startAng > m_phitflipper->m_flipperanim.m_angleCur) ? +1 : -1;
-
-      m_phitflipper->m_flipperanim.m_maxvelocity = (m_d.m_OverridePhysics ? m_d.m_OverrideSpeed : m_d.m_force) * 4.5f;
-
-      float rtn = (m_d.m_OverridePhysics ? m_d.m_OverrideReturnStrength : m_d.m_return);
-      if (rtn <= 0.f) rtn = 1.0f;
-
-      m_phitflipper->m_flipperanim.m_force = (m_d.m_OverridePhysics ? m_d.m_OverrideSpeed : m_d.m_force) * rtn;
-      m_phitflipper->m_forcemass = (m_d.m_OverridePhysics ? m_d.m_OverrideStrength : m_d.m_strength) * rtn;		
+      m_phitflipper->m_flipperanim.SetSolenoidState(false);
    }
    return S_OK;
 }
@@ -885,6 +870,9 @@ HRESULT Flipper::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
    bw.WriteInt(FID(RWDT), m_d.m_rubberwidth);
    bw.WriteFloat(FID(STRG), m_d.m_strength);
    bw.WriteFloat(FID(ELAS), m_d.m_elasticity);
+   bw.WriteFloat(FID(ELFO), m_d.m_elasticityFalloff);
+   bw.WriteFloat(FID(FRIC), m_d.m_friction);
+   bw.WriteFloat(FID(RPUP), m_d.m_rampUp);
    bw.WriteBool(FID(VSBL), m_d.m_fVisible);
    bw.WriteBool(FID(ENBL), m_d.m_fEnabled);
    bw.WriteBool(FID(COMP), m_d.m_fCompatibility);
@@ -1012,6 +1000,18 @@ BOOL Flipper::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(ELAS))
    {
       pbr->GetFloat(&m_d.m_elasticity);
+   }
+   else if (id == FID(ELFO))
+   {
+      pbr->GetFloat(&m_d.m_elasticityFalloff);
+   }
+   else if (id == FID(FRIC))
+   {
+      pbr->GetFloat(&m_d.m_friction);
+   }
+   else if (id == FID(RPUP))
+   {
+      pbr->GetFloat(&m_d.m_rampUp);
    }
    else if (id == FID(FPWL))
    {
@@ -1521,6 +1521,58 @@ STDMETHODIMP Flipper::put_Elasticity(float newVal)
    return S_OK;
 }
 
+STDMETHODIMP Flipper::get_ElasticityFalloff(float *pVal)
+{
+    *pVal = m_d.m_elasticityFalloff;
+    return S_OK;
+}
+
+STDMETHODIMP Flipper::put_ElasticityFalloff(float newVal)
+{
+    STARTUNDO
+    m_d.m_elasticityFalloff = newVal;
+    STOPUNDO
+    return S_OK;
+}
+
+STDMETHODIMP Flipper::get_Friction(float *pVal)
+{
+   *pVal = (m_phitflipper) ? m_phitflipper->m_friction : m_d.m_friction;
+
+   return S_OK;
+}
+
+STDMETHODIMP Flipper::put_Friction(float newVal)
+{
+   if (m_phitflipper)
+   {
+      m_phitflipper->m_friction = newVal;
+   }
+   else
+   {
+      STARTUNDO
+      m_d.m_friction = newVal;
+      STOPUNDO
+   }
+
+   return S_OK;
+}
+
+STDMETHODIMP Flipper::get_RampUp(float *pVal)
+{
+   *pVal = m_d.m_rampUp;
+   return S_OK;
+}
+
+STDMETHODIMP Flipper::put_RampUp(float newVal)
+{
+   STARTUNDO
+   m_d.m_rampUp = newVal;
+   STOPUNDO
+
+   return S_OK;
+}
+
 STDMETHODIMP Flipper::get_Height(float *pVal)
 {
    *pVal = m_d.m_height;
@@ -1568,10 +1620,7 @@ STDMETHODIMP Flipper::put_Return(float newVal)
 {
    STARTUNDO
 
-   if (newVal < 0.f) newVal = 0.f;
-      else if (newVal > 1.0f) newVal = 1.0f;
-
-   m_d.m_return = newVal;
+   m_d.m_return = clamp(newVal, 0.0f, 1.0f);
 
    STOPUNDO
 

@@ -11,8 +11,6 @@
 
 #include <assert.h>
 
-#include "math.h"
-
 #include "commctrl.h"
 
 #ifdef VP10
@@ -43,6 +41,7 @@ using namespace std;
 
 #include "def.h"
 
+#include "math/math.h"
 #include "math/vector.h"
 #include "math/matrix.h"
 #include "math/bbox.h"
