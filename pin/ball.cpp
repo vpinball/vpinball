@@ -51,7 +51,7 @@ void Ball::Init()
    m_invMass = 1.0f / m_mass;
 
    m_orientation.Identity();
-   m_inertia = (2.0f * radius*radius * m_mass) / 5.0f;
+   m_inertia = (float)(2.0/5.0) * radius*radius * m_mass;
    m_angularvelocity.Set(0,0,0);
    m_angularmomentum.Set(0,0,0);
 
@@ -167,7 +167,7 @@ void Ball::Collide3DWall(const Vertex3Ds& hitNormal, const float elasticity, flo
         ApplySurfaceImpulse(surfP, jt * tangent);
     }
 
-    // TODO: reenable scatter if needed
+    //!! TODO: reenable scatter if needed
 	//if (scatter_angle <= 0.0f) scatter_angle = c_hardScatter;			// if <= 0 use global value
 	//scatter_angle *= g_pplayer->m_ptable->m_globalDifficulty;			// apply difficulty weighting
 
@@ -308,7 +308,7 @@ void Ball::Collide(CollisionEvent *coll)
 #endif
 
     const float myInvMass = fFrozen ? 0.0f : m_invMass; // frozen ball has infinite mass
-    const float impulse = -(1.0f + 0.8f) * dot / (myInvMass + pball->m_invMass);    // resitution = 0.8
+    const float impulse = -(float)(1.0 + 0.8) * dot / (myInvMass + pball->m_invMass);    // resitution = 0.8
 
     if (!fFrozen)
     {
@@ -466,7 +466,7 @@ void Ball::UpdateVelocities()
 	
 	if (!fFrozen)  // Gravity	
 	{
-		vel += PHYS_FACTOR * g_pplayer->m_gravity;
+		vel += (float)PHYS_FACTOR * g_pplayer->m_gravity;
 
 		vel.x += nx;
 		vel.y += ny;

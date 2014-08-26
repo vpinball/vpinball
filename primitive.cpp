@@ -268,7 +268,7 @@ void Primitive::CheckJoint(Vector<HitObject> * const pvho, const HitTriangle * c
 
    // By convention of the calling function, points 1 [0] and 2 [1] of the second polygon will
    // be the common-edge points
-   // BUG/TODO: this is wrong! This code was blindly copy-pasted from the ramp code without
+   //!! BUG/TODO: this is wrong! This code was blindly copy-pasted from the ramp code without
    // checking this assumption, which is not true for a general triangle mesh.
 
    HitLine3D * const ph3dc = new HitLine3D(ph3d2->m_rgv[0], ph3d2->m_rgv[1]);
@@ -727,7 +727,7 @@ void Primitive::UpdateMesh()
    {
       Matrix3D matView = g_pplayer->m_pin3d.GetViewTransform();
       matView.Multiply(rotMatrix, rotMatrix);
-      // TODO/BUG: this should compute the inverse transpose of the rotational part
+      //!! TODO/BUG: this should compute the inverse transpose of the rotational part
    }
 
    for (unsigned i = 0; i < m_mesh.NumVertices(); i++)

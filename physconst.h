@@ -4,10 +4,10 @@
 //#define PHYSICS_STEPTIME    10000	// usecs to go between each physics update
 #define PHYSICS_STEPTIME    1000	// usecs to go between each physics update
 
-#define PHYSICS_STEPTIME_S  ((float)(PHYSICS_STEPTIME * 1e-6))     // step time in seconds
+#define PHYSICS_STEPTIME_S  (PHYSICS_STEPTIME * 1e-6)     // step time in seconds
 
 #define DEFAULT_STEPTIME      10000      // default physics rate: 100Hz
-#define DEFAULT_STEPTIME_S    0.01f      // default physics rate: 100Hz
+#define DEFAULT_STEPTIME_S    0.01       // default physics rate: 100Hz
 
 #define PHYS_FACTOR         (PHYSICS_STEPTIME_S / DEFAULT_STEPTIME_S)
 
