@@ -146,7 +146,7 @@ float LineSeg::HitTestBasic(const Ball * pball, const float dtime, CollisionEven
 	coll.hitRigid = rigid;				// collision type
 
     // check for contact
-    if (fabsf(bnv) <= C_CONTACTVEL && fabsf(bnd) <= PHYS_TOUCH)
+    if (fabsf(bnv) <= C_CONTACTVEL && fabsf(bnd) <= (float)PHYS_TOUCH)
     {
         coll.isContact = true;
         coll.normal[1].z = bnv;

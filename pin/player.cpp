@@ -1963,8 +1963,8 @@ void Player::UpdatePhysics()
             //   u'' = -k u - c u'
             // with a spring constant k and a damping coefficient c
             Vertex3Ds force = -m_nudgeSpring * m_tableDisplacement - m_nudgeDamping * m_tableVel;
-            m_tableVel += PHYS_FACTOR * force;
-            m_tableDisplacement += PHYS_FACTOR * m_tableVel;
+            m_tableVel += (float)PHYS_FACTOR * force;
+            m_tableDisplacement += (float)PHYS_FACTOR * m_tableVel;
             //if (m_tableVel.LengthSquared() >= 1e-5f)
             //    slintf("Table shake: %.2f  %.2f\n", m_tableDisplacement.x, m_tableVel.x);
 

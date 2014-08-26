@@ -240,9 +240,9 @@ void FlipperAnimObject::UpdateVelocities()
     // update current torque linearly towards desired torque
     // (simple model for coil hysteresis)
     if (desiredTorque >= m_curTorque)
-        m_curTorque = std::min(m_curTorque + m_torqueRampupSpeed * PHYS_FACTOR, desiredTorque);
+        m_curTorque = std::min(m_curTorque + m_torqueRampupSpeed * (float)PHYS_FACTOR, desiredTorque);
     else
-        m_curTorque = std::max(m_curTorque - m_torqueRampupSpeed * PHYS_FACTOR, desiredTorque);
+        m_curTorque = std::max(m_curTorque - m_torqueRampupSpeed * (float)PHYS_FACTOR, desiredTorque);
 
     // resolve contacts with stoppers
     float torque = m_curTorque;
@@ -265,7 +265,7 @@ void FlipperAnimObject::UpdateVelocities()
         }
     }
 
-    m_angularMomentum += PHYS_FACTOR * torque;
+    m_angularMomentum += (float)PHYS_FACTOR * torque;
     m_anglespeed = m_angularMomentum / m_inertia;
     m_angularAcceleration = torque / m_inertia;
 }
@@ -520,7 +520,7 @@ float HitFlipper::HitTestFlipperEnd(const Ball * pball, const float dtime, Colli
 
    const float bnv = dv.x*coll.normal[0].x + dv.y*coll.normal[0].y;  //dot Normal to delta v
 
-   if (fabsf(bnv) <= C_CONTACTVEL && bfend <= PHYS_TOUCH)
+   if (fabsf(bnv) <= C_CONTACTVEL && bfend <= (float)PHYS_TOUCH)
    {
        coll.isContact = true;
        coll.normal[3].z = bnv;
@@ -679,7 +679,7 @@ float HitFlipper::HitTestFlipperFace(const Ball * pball, const float dtime, Coll
 
    const float bnv = dv.x*coll.normal[0].x + dv.y*coll.normal[0].y;  //dot Normal to delta v
 
-   if (fabsf(bnv) <= C_CONTACTVEL && bffnd <= PHYS_TOUCH)
+   if (fabsf(bnv) <= C_CONTACTVEL && bffnd <= (float)PHYS_TOUCH)
    {
        coll.isContact = true;
        coll.normal[3].z = bnv;

@@ -264,7 +264,7 @@ HitSpinner::HitSpinner(Spinner * const pspinner, const float height)
 	m_spinneranim.m_angle = clamp(0.0f, m_spinneranim.m_angleMin, m_spinneranim.m_angleMax);
 	m_spinneranim.m_anglespeed = 0;
     // compute proper damping factor for physics framerate
-    m_spinneranim.m_damping = powf(pspinner->m_d.m_antifriction, PHYS_FACTOR);
+    m_spinneranim.m_damping = powf(pspinner->m_d.m_antifriction, (float)PHYS_FACTOR);
 
 	m_spinneranim.m_elasticity = pspinner->m_d.m_elasticity;
 	m_spinneranim.m_fVisible = pspinner->m_d.m_fVisible;	
@@ -373,7 +373,7 @@ void SpinnerAnimObject::UpdateDisplacements(const float dtime)
 
 void SpinnerAnimObject::UpdateVelocities()
 {
-	m_anglespeed -= sinf(m_angle) * (0.0025f * PHYS_FACTOR); // Center of gravity towards bottom of object, makes it stop vertical
+	m_anglespeed -= sinf(m_angle) * (float)(0.0025 * PHYS_FACTOR); // Center of gravity towards bottom of object, makes it stop vertical
 
 	m_anglespeed *= m_damping;
 }
@@ -601,7 +601,7 @@ void Hit3DPoly::CalcHitRect()
 	}
 }
 
-HitTriangle::HitTriangle(const Vertex3Ds rgv[3])
+HitTriangle::HitTriangle(const Vertex3Ds rgv[3]) //!! triangle soup instead
 {
 	m_rgv[0] = rgv[0];
 	m_rgv[1] = rgv[1];

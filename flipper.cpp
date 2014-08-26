@@ -166,22 +166,22 @@ void Flipper::WriteRegDefaults()
    SetRegValueFloat(regKey,"ElasticityFalloff", m_d.m_elasticityFalloff);
    SetRegValueFloat(regKey, "Friction", m_d.m_friction);
    SetRegValueFloat(regKey, "RampUp", m_d.m_rampUp);
-   SetRegValue(regKey,"TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
-   SetRegValue(regKey,"TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval, 4);
-   SetRegValue(regKey,"Color", REG_DWORD, &m_d.m_color, 4);
-   SetRegValue(regKey,"RubberColor", REG_DWORD, &m_d.m_rubbercolor, 4);
+   SetRegValueInt(regKey,"TimerEnabled", m_d.m_tdr.m_fTimerEnabled);
+   SetRegValueInt(regKey,"TimerInterval", m_d.m_tdr.m_TimerInterval);
+   SetRegValueInt(regKey,"Color", m_d.m_color);
+   SetRegValueInt(regKey,"RubberColor", m_d.m_rubbercolor);
    SetRegValue(regKey,"Surface", REG_SZ, &m_d.m_szSurface,strlen(m_d.m_szSurface));
    SetRegValueFloat(regKey,"Strength", m_d.m_strength);
    SetRegValueFloat(regKey,"Height", m_d.m_height);
    SetRegValueFloat(regKey,"PowerLaw", m_d.m_powerlaw);
    SetRegValueFloat(regKey,"ObliqueCorrection", m_d.m_obliquecorrection);
    SetRegValueFloat(regKey,"Height", m_d.m_height);
-   SetRegValue(regKey,"RubberThickness", REG_DWORD, &m_d.m_rubberthickness, 4);
-   SetRegValue(regKey,"RubberHeight", REG_DWORD, &m_d.m_rubberheight, 4);
-   SetRegValue(regKey,"RubberWidth", REG_DWORD, &m_d.m_rubberwidth, 4);
-   SetRegValue(regKey,"Visible",REG_DWORD,&m_d.m_fVisible,4);
-   SetRegValue(regKey,"Enabled",REG_DWORD,&m_d.m_fEnabled,4);
-   SetRegValue(regKey,"CompatibilityMode",REG_DWORD,&m_d.m_fCompatibility,4);
+   SetRegValueInt(regKey,"RubberThickness", m_d.m_rubberthickness);
+   SetRegValueInt(regKey,"RubberHeight", m_d.m_rubberheight);
+   SetRegValueInt(regKey,"RubberWidth", m_d.m_rubberwidth);
+   SetRegValueInt(regKey,"Visible", m_d.m_fVisible);
+   SetRegValueInt(regKey,"Enabled", m_d.m_fEnabled);
+   SetRegValueInt(regKey,"CompatibilityMode", m_d.m_fCompatibility);
 }
 
 

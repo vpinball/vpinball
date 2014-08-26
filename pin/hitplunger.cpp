@@ -141,7 +141,7 @@ void PlungerAnimObject::UpdateVelocities()
 	{	
 	if (m_fAcc)
 		{
-		m_speed += PHYS_FACTOR * (m_force/m_mass);
+		m_speed += (float)PHYS_FACTOR * (m_force/m_mass);
 		}
 	else if (!m_plunger->m_d.m_mechPlunger)
         m_mechTimeOut = 0;// disallow mechanical plunger control
