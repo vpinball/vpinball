@@ -79,12 +79,15 @@ public:
 	int e_JoyCnt;
 	int uShockDevice;	// only one uShock device
 	int uShockType;
-    int mouseX;
+
+	int mouseX;
     int mouseY;
     long mouseDX;
     long mouseDY;
     bool leftMouseButtonDown;
     bool rightMouseButtonDown;
+
+	bool m_linearPlunger;
 	bool m_enable_nudge_filter; // enable new nudge filtering code
 
 private:
