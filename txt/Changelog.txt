@@ -1,5 +1,11 @@
 VP 10.0.0 Changelog
 ------------------------
+- this release breaks a lot of backwards compatibility for ramps, lights, physics, and more
+  most existing VP9 and VP8 tables will not work correctly or will get script errors when run
+
+- physics mostly redone (also known as 'physmod(5)')
+  sidenote: due to this it is now also possible to enable vsync without sideeffects or stutter (set FPS limiter to 1)
+
 - add rubber element
 
 - shader based inserts/lights/bulbs
@@ -17,6 +23,8 @@ VP 10.0.0 Changelog
 - new audio library for music playback (BASS)
 
 - 64bit port (handle with care, might still cause issues)
+
+- native support for the Pinscape Controller
 
 - DirectX 8 port for input handling (currently disabled)
 

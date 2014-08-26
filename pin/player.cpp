@@ -1438,9 +1438,24 @@ void Player::mechPlungerUpdate()	// called on every integral physics frame, only
 // that matches the mechanical plunger zero position
 float PlungerAnimObject::mechPlunger() const
 {
-	const float range = (float)JOYRANGEMX * (1.0f - m_parkPosition) - (float)JOYRANGEMN *m_parkPosition; // final range limit
-	const float tmp = (g_pplayer->m_curMechPlungerPos < 0) ? g_pplayer->m_curMechPlungerPos*m_parkPosition : g_pplayer->m_curMechPlungerPos*(1.0f - m_parkPosition);
-	return tmp/range + m_parkPosition;		//scale and offset
+    if (g_pplayer->m_pininput.m_linearPlunger)
+    {
+        // Replace the two-part scaling function with a single linear scaling.  This keeps
+        // the same constraints on the physical plunger calibration for the rest position
+        // (zero on the joystick) and full retraction (maximum positive on the joystick),
+        // but removes the constraint on the negative (push) side.  Instead, we assume
+        // that the response on the negative side is a linear extension of the positive
+        // side.  Calculate the scaling function as mx+b - the calibration constraints
+        // give us the following:
+        const float m = (1.0f - m_parkPosition)*(float)(1.0/JOYRANGEMX), b = m_parkPosition;
+        return m*g_pplayer->m_curMechPlungerPos + b;
+    }
+    else
+    {
+		const float range = (float)JOYRANGEMX * (1.0f - m_parkPosition) - (float)JOYRANGEMN *m_parkPosition; // final range limit
+		const float tmp = (g_pplayer->m_curMechPlungerPos < 0) ? g_pplayer->m_curMechPlungerPos*m_parkPosition : g_pplayer->m_curMechPlungerPos*(1.0f - m_parkPosition);
+		return tmp/range + m_parkPosition;		//scale and offset
+	}
 }
 
 void Player::mechPlungerIn(const int z)

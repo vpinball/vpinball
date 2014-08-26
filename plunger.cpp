@@ -751,9 +751,34 @@ STDMETHODIMP Plunger::Position(int *pVal)
 
 	if (g_pplayer->m_pininput.uShockType == USHOCKTYPE_GENERIC)
 	{
-		const float range = (float)JOYRANGEMX * (1.0f - m_d.m_parkPosition) - (float)JOYRANGEMN *m_d.m_parkPosition; // final range limit
-		float tmp = (g_pplayer->m_curMechPlungerPos < 0.f) ? g_pplayer->m_curMechPlungerPos*m_d.m_parkPosition : (g_pplayer->m_curMechPlungerPos*(1.0f - m_d.m_parkPosition));
-		tmp = tmp/range + m_d.m_parkPosition;		//scale and offset
+		float tmp;
+		if (g_pplayer->m_pininput.m_linearPlunger)
+		{
+			// Use a single linear scaling function.  Constrain the line to the physical
+			// plunger calibration, which we define as follows: the rest position is at 0,
+			// the fully retracted position is at JOYRANGEMX.  The fully compressed position
+			// is *not* part of the calibration, since that would over-constrain the
+			// calibration.  Instead, assume that the response on the negative (compression)
+			// side is a linear extension of the positive (retraction) side.  Calculate
+			// the scaling function as mx+b - the calibration constraints give us the following
+			// parameters:
+			const float m = (1.0f - m_d.m_parkPosition)*(float)(1.0/JOYRANGEMX), b = m_d.m_parkPosition;
+
+			// calculate the rescaled value
+			tmp = m*g_pplayer->m_curMechPlungerPos + b;
+
+			// Because we don't have a calibration constraint on the negative side of the
+			// axis, the physical plunger could report a negative value that goes beyond
+			// the minimum on the virtual plunger.  Force it into range.
+			if (tmp < 0.0f)
+				tmp = 0.0f;
+		}
+		else
+		{
+			tmp = (g_pplayer->m_curMechPlungerPos < 0.f) ? g_pplayer->m_curMechPlungerPos*m_d.m_parkPosition : (g_pplayer->m_curMechPlungerPos*(1.0f - m_d.m_parkPosition));
+			const float range = (float)JOYRANGEMX * (1.0f - m_d.m_parkPosition) - (float)JOYRANGEMN *m_d.m_parkPosition; // final range limit
+			tmp = tmp/range + m_d.m_parkPosition;		//scale and offset
+		}
 		*pVal = (int)(tmp*(float)(1.0/0.04));
 	}
 
