@@ -32,7 +32,7 @@ VP 10.0.0 Changelog
 
 - script editor updated to use latest scintilla (3.4.4)
 
-- technical note: make sure to install Microsoft SDK 5.0,7.0A,7.1 or 7.1A, if you compile VP and get missing header errors
+- technical note: make sure to install Microsoft SDK 5.0,7.0A,7.1 or 7.1A, if you compile VP and get missing header errors (optionally set the include path inc\winsdk)
 
 VP 9.9.0 Changelog
 ------------------------
