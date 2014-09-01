@@ -665,6 +665,54 @@ static bool CompareHitableDepth(Hitable* h1, Hitable* h2)
     return h1->GetDepth(g_viewDir) >= h2->GetDepth(g_viewDir);
 }
 
+void Player::UpdateBasicShaderMatrix()
+{
+    D3DMATRIX worldMat;
+    D3DMATRIX viewMat;
+    D3DMATRIX projMat;
+    m_pin3d.m_pd3dDevice->GetTransform(TRANSFORMSTATE_WORLD, &worldMat );
+    m_pin3d.m_pd3dDevice->GetTransform(TRANSFORMSTATE_VIEW, &viewMat);
+    m_pin3d.m_pd3dDevice->GetTransform(TRANSFORMSTATE_PROJECTION, &projMat);
+
+    D3DXMATRIX matProj(projMat);
+    D3DXMATRIX matView(viewMat);
+    D3DXMATRIX matWorld(worldMat);
+    D3DXMATRIX worldViewProj = matWorld * matView * matProj;
+
+    m_pin3d.m_pd3dDevice->basicShader->Core()->SetMatrix("matWorldViewProj", &worldViewProj);
+    m_pin3d.m_pd3dDevice->basicShader->Core()->SetMatrix("matWorld", &matWorld);
+    D3DXMATRIX matComp = matWorld*matView;
+    m_pin3d.m_pd3dDevice->basicShader->Core()->SetMatrix("matWorldView", &matComp);
+    D3DXMATRIX matInv;
+    D3DXMatrixInverse( &matInv, NULL, &matComp );
+    D3DXMatrixTranspose( &matInv, &matInv);
+    m_pin3d.m_pd3dDevice->basicShader->Core()->SetMatrix("matWorldViewIT", &matInv);
+
+}
+
+void Player::InitShader()
+{
+   D3DMATRIX worldMat;
+   D3DMATRIX viewMat;
+   D3DMATRIX projMat;
+   m_pin3d.m_pd3dDevice->GetTransform(TRANSFORMSTATE_WORLD, &worldMat );
+   m_pin3d.m_pd3dDevice->GetTransform(TRANSFORMSTATE_VIEW, &viewMat);
+   m_pin3d.m_pd3dDevice->GetTransform(TRANSFORMSTATE_PROJECTION, &projMat);
+
+   D3DXMATRIX matProj(projMat);
+   D3DXMATRIX matView(viewMat);
+   D3DXMATRIX matWorld(worldMat);
+   D3DXMATRIX worldViewProj = matWorld * matView * matProj;
+
+   D3DXMATRIX matInv;
+   D3DXMatrixInverse( &matInv, NULL, &matView);
+   D3DXMatrixTranspose( &matInv, &matInv);
+   m_pin3d.m_pd3dDevice->basicShader->Core()->SetMatrix("matViewIT", &matInv);
+   m_pin3d.m_pd3dDevice->basicShader->Core()->SetMatrix("matProj", &matProj);
+   UpdateBasicShaderMatrix();
+
+   InitBallShader();
+}
 void Player::InitBallShader()
 {
    ballShader = new Shader(m_pin3d.m_pd3dDevice );
@@ -882,6 +930,8 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 	SendMessage(hwndProgress, PBM_SETPOS, 60, 0);
 	SetWindowText(hwndProgressName, "Rendering Table...");
 
+    InitShader();
+
 	// Pre-render all non-changing elements such as 
 	// static walls, rails, backdrops, etc.
 	InitStatic(hwndProgress);
@@ -908,7 +958,6 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
     g_viewDir = Vertex3Ds(0, 0, -1.0f);
     std::sort( m_vHitTrans.begin(), m_vHitTrans.end(), CompareHitableDepth );
 
-    InitBallShader();
 
 	// Direct all renders to the back buffer.
     m_pin3d.SetRenderTarget(m_pin3d.m_pddsBackBuffer, m_pin3d.m_pddsZBuffer);

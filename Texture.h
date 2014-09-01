@@ -19,6 +19,15 @@ static inline D3DCOLOR COLORREF_to_D3DCOLOR(COLORREF c)
     return b | (g << 8) | (r << 16) | 0xff000000;
 }
 
+static inline D3DXVECTOR4 COLORREF_to_D3DXVECTOR4( COLORREF c)
+{
+    D3DXVECTOR4 cv;
+    cv.x = (float)(c & 16711680) * (float)(1.0/16711680.0);
+    cv.y = (float)(c & 65280) * (float)(1.0/65280.0);
+    cv.z = (float)(c & 255) * (float)(1.0/255.0);
+    cv.w = 1.0f;
+    return cv;
+}
 
 struct FIBITMAP;
 class RenderDevice;

@@ -23,6 +23,7 @@ const VertexElement VertexNormalTexelTexelElement[] =
 };
 
 VertexDeclaration* RenderDevice::m_pVertexNormalTexelTexelDeclaration = NULL;
+
 void ReportError(const HRESULT hr, const char *file, const int line)
 {
     char msg[128];
@@ -330,6 +331,11 @@ RenderDevice::RenderDevice(HWND hwnd, int width, int height, bool fullscreen, in
     m_curStateChanges = m_frameStateChanges = 0;
     m_curTextureChanges = m_frameTextureChanges = 0;
 
+    basicShader = new Shader(this);
+//    basicShader->Load("c:\\projects\\vp9_dx9\\shader\\BasicShader.fx", true );
+
+    basicShader->Load("BasicShader.fx", false );
+
     // create default vertex declarations for shaders
     CreateVertexDeclaration( VertexNormalTexelElement, &m_pVertexNormalTexelDeclaration );
     CreateVertexDeclaration( VertexNormalTexelTexelElement, &m_pVertexNormalTexelTexelDeclaration );
@@ -383,6 +389,11 @@ RenderDevice::~RenderDevice()
 	shader_cache = NULL;
 
 	//
+    if (basicShader)
+    {
+        delete basicShader;
+        basicShader=0;
+    }
 
     m_pD3DDevice->SetStreamSource(0, NULL, 0, 0);
     m_pD3DDevice->SetIndices(NULL);
@@ -969,4 +980,27 @@ void Shader::Unload()
         m_shader->Release();
         m_shader=0;
     }
+}
+
+void Shader::Begin( unsigned int pass )
+{
+   unsigned int cPasses;
+   m_shader->Begin(&cPasses,0);
+   m_shader->BeginPass(pass);  
+
+}
+
+void Shader::End()
+{
+   m_shader->EndPass();  
+   m_shader->End();  
+
+}
+
+void Shader::SetTexture( D3DXHANDLE texelName, Texture *texel)
+{
+   if ( texel->m_pdsBufferColorKey )
+      m_shader->SetTexture(texelName,m_renderDevice->m_texMan.LoadTexture(texel->m_pdsBufferColorKey));
+   else if (texel->m_pdsBuffer )
+      m_shader->SetTexture(texelName,m_renderDevice->m_texMan.LoadTexture(texel->m_pdsBuffer));
 }

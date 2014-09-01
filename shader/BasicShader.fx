@@ -29,8 +29,7 @@ CLight lights[NUM_LIGHTS] = {                         //NUM_LIGHTS == 2
       float4(0.0f, 0.0f, 0.0f, 0.0f),        //diffuse 
       float4(0.0f, 0.0f, 0.0f, 0.0f),        //specular 
       500.f,                                //range 
-      float3(1.f, 0.0001f, 0.0f),                 //attenuation 
-//      float3(1.f, 0.0f, 0.0f),                 //attenuation 
+      float3(0.6f, 0.0000005f, 0.0000009f),                 //attenuation 
    }, 
    { 
       float3(0.0f, 0.0f, 0.0f),              //position 
@@ -39,8 +38,7 @@ CLight lights[NUM_LIGHTS] = {                         //NUM_LIGHTS == 2
       float4(0.0f, 0.0f, 0.0f, 0.0f),        //diffuse 
       float4(0.0f, 0.0f, 0.0f, 0.0f),        //specular 
       500.f,                                //range 
-      float3(1.f, 0.0001f, 0.0f),                 //attenuation 
-//      float3(1.f, 0.0f, 0.0f),                 //attenuation 
+      float3(0.6f, 0.0000005f, 0.0000009f),                 //attenuation 
    } 
 }; 
  
@@ -84,7 +82,8 @@ struct COLOR_PAIR
 COLOR_PAIR DoPointLight(float4 vPosition, float3 N, float3 V, int i) 
 { 
    float3 pos=(float3)mul(matWorld,vPosition);
-   float3 lightDir = lights[i].vPos-pos;
+   float3 light = lights[i].vPos;
+   float3 lightDir = light-pos;
    float3 L = normalize(lightDir); 
    COLOR_PAIR Out; 
    float NdotL = dot(N, L); 
@@ -104,19 +103,13 @@ COLOR_PAIR DoPointLight(float4 vPosition, float3 N, float3 V, int i)
       } 
  
       float LD = length(lightDir); 
-      if(LD > lights[i].fRange) 
-      { 
-         fAtten = 0.f; 
-      } 
-      else 
-      { 
-         fAtten *= 1.f/(lights[i].vAttenuation.x + lights[i].vAttenuation.y*LD + lights[i].vAttenuation.z*LD*LD); 
-      }          
-      Out.Color *= fAtten; 
-      Out.ColorSpec *= fAtten; 
+      fAtten = 1.f/(lights[i].vAttenuation.x + lights[i].vAttenuation.y*LD + lights[i].vAttenuation.z*LD*LD); 
+      Out.Color.rgb *= fAtten; 
+      Out.ColorSpec.rgb *= fAtten; 
    } 
    return Out; 
 } 
+
  
 //----------------------------------------------------------------------------- 
 // Name: vs_main() 
@@ -146,7 +139,7 @@ VS_OUTPUT vs_main (float4 vPosition  : POSITION0,
    int i;
    //directional lights 
    //point lights 
-   for( i = 0; i < iLightPointNum; i++) 
+   for( i = 0; i < iLightPointNum; i++)  
    { 
       COLOR_PAIR ColOut = DoPointLight(vPosition, N, V, i); 
       Out.Color += ColOut.Color; 
@@ -158,8 +151,8 @@ VS_OUTPUT vs_main (float4 vPosition  : POSITION0,
    Out.ColorSpec *= vMaterialColor; 
  
    //saturate 
-   Out.Color = min(1, Out.Color); 
-   Out.ColorSpec = min(1, Out.ColorSpec); 
+   Out.Color = saturate(Out.Color); 
+   Out.ColorSpec = saturate(Out.ColorSpec); 
  
    return Out; 
 } 

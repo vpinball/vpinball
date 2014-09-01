@@ -326,6 +326,15 @@ void Spinner::PostRenderStatic(RenderDevice* pd3dDevice)
 
     Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
+    pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelTexelDeclaration );
+
+    float r = (float)(m_d.m_color & 255) * (float)(1.0/255.0);
+    float g = (float)(m_d.m_color & 65280) * (float)(1.0/65280.0);
+    float b = (float)(m_d.m_color & 16711680) * (float)(1.0/16711680.0);
+    D3DXVECTOR4 matColor(r,g,b,1.0f);   
+    pd3dDevice->basicShader->Core()->SetFloat("vMaterialPower",0.0f);
+    pd3dDevice->basicShader->Core()->SetVector("vMaterialColor",&matColor);
+
     COLORREF rgbTransparent = RGB(255,0,255); //RGB(0,0,0);
 
     Texture * const pinback = m_ptable->GetImage(m_d.m_szImageBack);
@@ -350,7 +359,7 @@ void Spinner::PostRenderStatic(RenderDevice* pd3dDevice)
     matNew.Multiply(matTemp, matNew);
 
     pd3dDevice->SetTransform(TRANSFORMSTATE_WORLD, &matNew);
-    //
+    g_pplayer->UpdateBasicShaderMatrix();
 
     // Draw Backside
     if (pinback)
@@ -372,20 +381,25 @@ void Spinner::PostRenderStatic(RenderDevice* pd3dDevice)
             pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
 
         g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
-        pd3dDevice->SetMaterial(textureMaterial);
+//        pd3dDevice->SetMaterial(textureMaterial);
+        pd3dDevice->basicShader->SetTexture("Texture0",pinback);
+        pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
     }
     else // No image by that name
     {
-        ppin3d->SetTexture(NULL);
-        pd3dDevice->SetMaterial(solidMaterial);
+        //ppin3d->SetTexture(NULL);
+        //pd3dDevice->SetMaterial(solidMaterial);
+       pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
     }
 
+    pd3dDevice->basicShader->Begin(0);
     pd3dDevice->DrawPrimitiveVB(D3DPT_TRIANGLEFAN, vtxBuf, 0, 4);
+    pd3dDevice->basicShader->End();
 
     // Draw Frontside
     if (pinfront)
     {
-        pinfront->Set( ePictureTexture );
+        //pinfront->Set( ePictureTexture );
         if (pinfront->m_fTransparent)
         {
             pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);	
@@ -402,25 +416,31 @@ void Spinner::PostRenderStatic(RenderDevice* pd3dDevice)
             pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
 
         g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
-        pd3dDevice->SetMaterial(textureMaterial);
+        pd3dDevice->basicShader->SetTexture("Texture0",pinfront);
+        pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
     }
     else // No image by that name
     {
-        ppin3d->SetTexture(NULL);
-        pd3dDevice->SetMaterial(solidMaterial);
+//         ppin3d->SetTexture(NULL);
+//         pd3dDevice->SetMaterial(solidMaterial);
+        pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
     }
 
+    pd3dDevice->basicShader->Begin(0);
     pd3dDevice->DrawPrimitiveVB(D3DPT_TRIANGLEFAN, vtxBuf, 4, 4);
-
-    pd3dDevice->SetMaterial(solidMaterial);
+    pd3dDevice->basicShader->End();
 
     if (m_d.m_color != rgbTransparent && m_d.m_color != NOTRANSCOLOR)
     {
-        ppin3d->SetTexture(NULL);
+//        ppin3d->SetTexture(NULL);
+        pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
+        pd3dDevice->basicShader->Begin(0);
         pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, vtxBuf, 8, 16, idxBuf, 0, 24);
+        pd3dDevice->basicShader->End();
     }
 
     pd3dDevice->SetTransform(TRANSFORMSTATE_WORLD, &matOrig);
+    g_pplayer->UpdateBasicShaderMatrix();
 
     pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
     pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, FALSE);
@@ -603,16 +623,24 @@ void Spinner::RenderStatic(RenderDevice* pd3dDevice)
    if(!m_d.m_fSupports) return;
 
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+   pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelTexelDeclaration );
 
-   pd3dDevice->SetMaterial(staticMaterial);
+   //pd3dDevice->SetMaterial(staticMaterial);
+   D3DXVECTOR4 matColor(0.6f,0.6f,0.6f,1.0f);   
+   pd3dDevice->basicShader->Core()->SetFloat("vMaterialPower",0.0f);
+   pd3dDevice->basicShader->Core()->SetVector("vMaterialColor",&matColor);
+   pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
+
    Vertex3D rgv3D[8];
    memcpy( rgv3D, staticVertices, sizeof(Vertex3D)*8);
-
+   
+   pd3dDevice->basicShader->Begin(0);
    SetNormal(rgv3D, rgiSpinnerNormal, 3, rgv3D, rgiSpinner0, 8);
    pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_VERTEX, rgv3D, 8, rgiSpinner0, 8);
 
    SetNormal(rgv3D, rgiSpinnerNormal, 3, rgv3D, rgiSpinner1, 8);
    pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_VERTEX, rgv3D, 8, rgiSpinner1, 8);
+   pd3dDevice->basicShader->End();
 }
 
 void Spinner::SetObjectPos()

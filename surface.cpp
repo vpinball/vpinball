@@ -1027,6 +1027,7 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
 
     // render side
 
+/*
     if(!m_d.m_fEnableLighting)
     {
        pd3dDevice->SetRenderState(RenderDevice::LIGHTING, FALSE);
@@ -1035,12 +1036,32 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
        tfactor = COLORREF_to_D3DCOLOR(m_d.m_sidecolor);
        pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, tfactor);
     }
+*/
+    pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelTexelDeclaration );
+
+    float r = (float)(m_d.m_sidecolor & 255) * (float)(1.0/255.0);
+    float g = (float)(m_d.m_sidecolor & 65280) * (float)(1.0/65280.0);
+    float b = (float)(m_d.m_sidecolor & 16711680) * (float)(1.0/16711680.0);
+    D3DXVECTOR4 matColor(r,g,b,1.0f);   
+    pd3dDevice->basicShader->Core()->SetFloat("vMaterialPower",0.0f);
+    if( m_d.m_transparent )
+    {
+        pd3dDevice->basicShader->Core()->SetFloat("materialAlpha", (float)(m_d.m_opacity/255.0f));
+    }
 
     Texture * const pinSide = m_ptable->GetImage(m_d.m_szSideImage);
     if (pinSide)
     {
         pinSide->CreateAlphaChannel();
-        pinSide->Set( ePictureTexture );
+        //pinSide->Set( ePictureTexture );
+        if ( pinSide->m_pdsBufferColorKey )
+            pd3dDevice->basicShader->Core()->SetTexture("Texture0",pd3dDevice->m_texMan.LoadTexture(pinSide->m_pdsBufferColorKey));
+        else if (pinSide->m_pdsBuffer )
+            pd3dDevice->basicShader->Core()->SetTexture("Texture0",pd3dDevice->m_texMan.LoadTexture(pinSide->m_pdsBuffer));
+        pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
+        pd3dDevice->basicShader->Core()->SetVector("vMaterialColor",&matColor);
+        D3DXVECTOR4 color(1.0f,1.0f,1.0f,1.0f);   
+        pd3dDevice->basicShader->Core()->SetVector("vMaterialColor",&color);
 
         if (pinSide->m_fTransparent)
         {
@@ -1055,8 +1076,11 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
         g_pplayer->m_pin3d.SetTextureFilter( ePictureTexture, TEXTURE_MODE_TRILINEAR );
     }
     else
+    {
         g_pplayer->m_pin3d.SetTexture(NULL);
-
+        pd3dDevice->basicShader->Core()->SetVector("vMaterialColor",&matColor);
+        pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
+    }
     pd3dDevice->SetMaterial(sideMaterial);
 
     if (m_d.m_transparent)
@@ -1072,18 +1096,39 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
     if (!fDrop && m_d.m_fSideVisible && (numVertices > 0)) // Don't need to render walls if dropped
     {
         // combine drawcalls into one (hopefully faster)
+        unsigned int cPasses;
+        pd3dDevice->basicShader->Core()->Begin(&cPasses,0);
+        pd3dDevice->basicShader->Core()->BeginPass(0);  
+
         pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, sideVBuffer, 0, numVertices*4, sideIBuffer, 0, numVertices*6);
+
+        pd3dDevice->basicShader->Core()->EndPass();  
+        pd3dDevice->basicShader->Core()->End();  
     }
 
     // render top
 
     if (m_d.m_fVisible)
     {
+        float r = (float)(m_d.m_topcolor & 255) * (float)(1.0/255.0);
+        float g = (float)(m_d.m_topcolor & 65280) * (float)(1.0/65280.0);
+        float b = (float)(m_d.m_topcolor & 16711680) * (float)(1.0/16711680.0);
+        D3DXVECTOR4 matTopColor(r,g,b,1.0f);   
+        pd3dDevice->basicShader->Core()->SetFloat("vMaterialPower",0.0f);
+
         Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
         if (pin)
         {
             pin->CreateAlphaChannel();
-            pin->Set( ePictureTexture );
+            //pin->Set( ePictureTexture );
+            if ( pin->m_pdsBufferColorKey )
+                pd3dDevice->basicShader->Core()->SetTexture("Texture0",pd3dDevice->m_texMan.LoadTexture(pin->m_pdsBufferColorKey));
+            else if (pin->m_pdsBuffer )
+                pd3dDevice->basicShader->Core()->SetTexture("Texture0",pd3dDevice->m_texMan.LoadTexture(pin->m_pdsBuffer));
+
+            pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
+            D3DXVECTOR4 color(1.0f,1.0f,1.0f,1.0f);   
+            pd3dDevice->basicShader->Core()->SetVector("vMaterialColor",&color);
 
             if (pin->m_fTransparent)
             {
@@ -1099,9 +1144,13 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
             g_pplayer->m_pin3d.SetTextureFilter( ePictureTexture, TEXTURE_MODE_TRILINEAR );
         }
         else
+        {
             ppin3d->SetTexture(NULL);
-
+            pd3dDevice->basicShader->Core()->SetVector("vMaterialColor",&matTopColor);
+            pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
+        }
         pd3dDevice->SetMaterial(topMaterial);
+/*
         if (m_d.m_fEnableLighting)
             ppin3d->EnableLightMap(fDrop ? m_d.m_heightbottom : m_d.m_heighttop);
         else
@@ -1109,6 +1158,7 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
             ppin3d->DisableLightMap();
             tfactor = COLORREF_to_D3DCOLOR(m_d.m_topcolor);
         }
+*/
 
         if (m_d.m_transparent)
         {
@@ -1122,7 +1172,14 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
 
         if(numPolys > 0)
         {
+            unsigned int cPasses;
+            pd3dDevice->basicShader->Core()->Begin(&cPasses,0);
+            pd3dDevice->basicShader->Core()->BeginPass(0);  
+
             pd3dDevice->DrawPrimitiveVB( D3DPT_TRIANGLELIST, topVBuffer, !fDrop ? 0 : 3*numPolys, numPolys*3);
+
+            pd3dDevice->basicShader->Core()->EndPass();  
+            pd3dDevice->basicShader->Core()->End();  
         }
     }
 
@@ -1134,6 +1191,11 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
     pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
     pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
     pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, 0xffffffff);
+    if ( m_d.m_transparent )
+    {
+        pd3dDevice->basicShader->Core()->SetFloat("materialAlpha", 1.0f);
+    }
+
 }
 
 void Surface::DoCommand(int icmd, int x, int y)

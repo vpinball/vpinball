@@ -31,7 +31,7 @@
 
 #define LIGHTSEQQUEUESIZE	100
 
-#define MAX_LIGHT_SOURCES   8
+#define MAX_LIGHT_SOURCES   2
 
 //
 

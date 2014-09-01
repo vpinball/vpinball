@@ -1757,6 +1757,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="flasher.cpp" />
+    <ClCompile Include="math\math.cpp" />
     <ClCompile Include="rubber.cpp" />
     <ClCompile Include="hash.cpp" />
     <ClCompile Include="kdtree.cpp" />
@@ -6991,6 +6992,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     <None Include="res\surface.rgs" />
     <None Include="res\table.ico" />
     <None Include="shader\BallShader.fx" />
+    <None Include="shader\BasicShader.fx" />
     <None Include="shader\LightInsert.fx" />
     <None Include="target.bmp" />
     <None Include="res\textbox.rgs" />
@@ -7072,6 +7074,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     <ClInclude Include="lightseq.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="Material.h" />
+    <ClInclude Include="math\math.h" />
     <ClInclude Include="memutil.h" />
     <ClInclude Include="mesh.h" />
     <ClInclude Include="mixer.h" />

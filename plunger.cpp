@@ -275,6 +275,12 @@ void Plunger::PostRenderStatic(RenderDevice* pd3dDevice)
     Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
     pd3dDevice->SetMaterial(material);
+    float r = (float)(m_d.m_color & 255) * (float)(1.0/255.0);
+    float g = (float)(m_d.m_color & 65280) * (float)(1.0/65280.0);
+    float b = (float)(m_d.m_color & 16711680) * (float)(1.0/16711680.0);
+    D3DXVECTOR4 matColor(r,g,b,1.0f);   
+    pd3dDevice->basicShader->Core()->SetFloat("vMaterialPower",8.0f);
+    pd3dDevice->basicShader->Core()->SetVector("vMaterialColor",&matColor);
 
     if (m_d.m_type == PlungerTypeModern)
     {
@@ -283,12 +289,16 @@ void Plunger::PostRenderStatic(RenderDevice* pd3dDevice)
         {
             //render a simple rectangle as an embedded alpha ramp plunger ;)
             pin->CreateAlphaChannel();
-            pin->Set(ePictureTexture);
+            //pin->Set(ePictureTexture);
+            pd3dDevice->basicShader->SetTexture("Texture0",pin);
+            pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
             pd3dDevice->SetRenderState(RenderDevice::LIGHTING, FALSE );
             ppin3d->EnableAlphaBlend( 1, fFalse );
             ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
             static const WORD idx[6] = {0,1,2,2,3,0};
+            pd3dDevice->basicShader->Begin(0);
             pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, vertexBuffer, frame*4, 4, (LPWORD)idx, 6);
+            pd3dDevice->basicShader->End();
             pin->Unset(ePictureTexture);
             pd3dDevice->SetRenderState(RenderDevice::LIGHTING, TRUE );
         }
@@ -297,19 +307,24 @@ void Plunger::PostRenderStatic(RenderDevice* pd3dDevice)
             if ( pin )
             {
                 pin->CreateAlphaChannel();
-                pin->Set(ePictureTexture);
-                pd3dDevice->SetRenderState(RenderDevice::LIGHTING, FALSE );
+                //pin->Set(ePictureTexture);
+                pd3dDevice->basicShader->SetTexture("Texture0",pin);
+                pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
+                //pd3dDevice->SetRenderState(RenderDevice::LIGHTING, FALSE );
                 ppin3d->EnableAlphaBlend( 1, fFalse );
                 ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
             }
             else
-                ppin3d->SetTexture(NULL);
-
+            {
+                //ppin3d->SetTexture(NULL);
+                pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
+            }
+            pd3dDevice->basicShader->Begin(0);
             pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, vertexBuffer, frame*(16*PLUNGEPOINTS1), 16*PLUNGEPOINTS1, indexBuffer, 0, 16*6*(PLUNGEPOINTS1-1));
-
+            pd3dDevice->basicShader->End();
             if ( pin )
             {
-                pd3dDevice->SetRenderState(RenderDevice::LIGHTING, TRUE );
+                //pd3dDevice->SetRenderState(RenderDevice::LIGHTING, TRUE );
             }
         }
     }
