@@ -525,8 +525,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(559), helpstring("property Light0Diffuse")] HRESULT Light0Diffuse([in] OLE_COLOR newVal);
 		[propget, id(560), helpstring("property Light0Specular")] HRESULT Light0Specular([out, retval] OLE_COLOR *pVal);
 		[propput, id(560), helpstring("property Light0Specular")] HRESULT Light0Specular([in] OLE_COLOR newVal);
-		[propget, id(564), helpstring("property LightHight")] HRESULT LightHight([out, retval] float *pVal);
-		[propput, id(564), helpstring("property LightHight")] HRESULT LightHight([in] float newVal);
+		[propget, id(564), helpstring("property LightHeight")] HRESULT LightHeight([out, retval] float *pVal);
+		[propput, id(564), helpstring("property LightHeight")] HRESULT LightHeight([in] float newVal);
 
 		[propget, id(579), helpstring("property TableSoundVolume")] HRESULT TableSoundVolume([out, retval] int *pVal);
 		[propput, id(579), helpstring("property TableSoundVolume")] HRESULT TableSoundVolume([in] int newVal);

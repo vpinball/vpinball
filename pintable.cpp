@@ -6791,14 +6791,14 @@ STDMETHODIMP PinTable::put_Light0Specular(OLE_COLOR newVal)
    return S_OK;
 }
 
-STDMETHODIMP PinTable::get_LightHight(float *pVal)
+STDMETHODIMP PinTable::get_LightHeight(float *pVal)
 {
    *pVal = m_Light[0].pos.x;
 
    return S_OK;
 }
 
-STDMETHODIMP PinTable::put_LightHight(float newVal)
+STDMETHODIMP PinTable::put_LightHeight(float newVal)
 {
    STARTUNDO
 

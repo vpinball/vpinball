@@ -8,7 +8,7 @@
 
 #define NOTRANSCOLOR  RGB(123,123,123)
 
-static inline D3DCOLOR COLORREF_to_D3DCOLOR(COLORREF c)
+static inline D3DCOLOR COLORREF_to_D3DCOLOR(const COLORREF c)
 {
     // COLORREF: 0x00BBGGRR
     // D3DCOLOR: 0xAARRGGBB
@@ -19,7 +19,7 @@ static inline D3DCOLOR COLORREF_to_D3DCOLOR(COLORREF c)
     return b | (g << 8) | (r << 16) | 0xff000000;
 }
 
-static inline D3DXVECTOR4 COLORREF_to_D3DXVECTOR4( COLORREF c)
+static inline D3DXVECTOR4 COLORREF_to_D3DXVECTOR4(const COLORREF c)
 {
     D3DXVECTOR4 cv;
     cv.x = (float)(c & 16711680) * (float)(1.0/16711680.0);
