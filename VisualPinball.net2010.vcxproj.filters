@@ -237,6 +237,9 @@
     <ClCompile Include="rubber.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="math\math.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="vpinball.idl">
@@ -455,6 +458,9 @@
       <Filter>Shader Files</Filter>
     </None>
     <None Include="shader\LightInsert.fx">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\BasicShader.fx">
       <Filter>Shader Files</Filter>
     </None>
   </ItemGroup>
@@ -790,6 +796,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="xaudplayer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="math\math.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

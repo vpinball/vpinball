@@ -405,6 +405,8 @@ private:
 
 public:
 	void ToggleFPS();
+    void UpdateBasicShaderMatrix();
+    void InitShader();
 #endif
 
 #ifdef STEPPING

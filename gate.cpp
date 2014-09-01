@@ -373,6 +373,14 @@ void Gate::PostRenderStatic(RenderDevice* pd3dDevice)
 
     if (!m_phitgate->m_gateanim.m_fVisible)
         return;
+    pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelTexelDeclaration );
+
+    const float r = (float)(m_d.m_color & 255) * (float)(1.0/255.0);
+    const float g = (float)(m_d.m_color & 65280) * (float)(1.0/65280.0);
+    const float b = (float)(m_d.m_color & 16711680) * (float)(1.0/16711680.0);
+    D3DXVECTOR4 matColor(r,g,b,1.0f);   
+    pd3dDevice->basicShader->Core()->SetFloat("vMaterialPower",0.0f);
+    pd3dDevice->basicShader->Core()->SetVector("vMaterialColor",&matColor);
 
     Pin3D * const ppin3d = &g_pplayer->m_pin3d;
     COLORREF rgbTransparent = RGB(255,0,255); //RGB(0,0,0);
@@ -387,8 +395,8 @@ void Gate::PostRenderStatic(RenderDevice* pd3dDevice)
     // Set texture to mirror, so the alpha state of the texture blends correctly to the outside
     pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_MIRROR);
 
-    if(!m_d.m_fEnableLighting)
-        pd3dDevice->SetRenderState(RenderDevice::LIGHTING, FALSE);
+//     if(!m_d.m_fEnableLighting)
+//         pd3dDevice->SetRenderState(RenderDevice::LIGHTING, FALSE);
 
     // set world transform
     Matrix3D matOrig, matNew, matTemp;
@@ -404,20 +412,24 @@ void Gate::PostRenderStatic(RenderDevice* pd3dDevice)
     matNew.Multiply(matTemp, matNew);
 
     pd3dDevice->SetTransform(TRANSFORMSTATE_WORLD, &matNew);
+    g_pplayer->UpdateBasicShaderMatrix();
     //
 
-    if (!m_d.m_fEnableLighting)
-    {
-        // replace Diffuse arg by constant color
-        pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR);
-        pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, COLORREF_to_D3DCOLOR(m_d.m_color));
-    }
+//     if (!m_d.m_fEnableLighting)
+//     {
+//         // replace Diffuse arg by constant color
+//         pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR);
+//         pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, COLORREF_to_D3DCOLOR(m_d.m_color));
+//     }
 
     // Draw Backside
     if (pinback)
     {
         pinback->CreateAlphaChannel();
-        pinback->Set( ePictureTexture );
+//        pinback->Set( ePictureTexture );
+        
+        pd3dDevice->basicShader->SetTexture("Texture0",pinback);
+        pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
 
         if (pinback->m_fTransparent)
         {
@@ -435,17 +447,21 @@ void Gate::PostRenderStatic(RenderDevice* pd3dDevice)
     }
     else // No image by that name
     {
-        ppin3d->SetTexture(NULL);
-        pd3dDevice->SetMaterial(solidMaterial);
+//        ppin3d->SetTexture(NULL);
+//        pd3dDevice->SetMaterial(solidMaterial);
+        pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
     }
-
+    pd3dDevice->basicShader->Begin(0);
     pd3dDevice->DrawPrimitiveVB(D3DPT_TRIANGLEFAN, vtxBuf, 0, 4);
+    pd3dDevice->basicShader->End();  
 
     // Draw Frontside
     if (pinfront)
     {
         pinfront->CreateAlphaChannel();
-        pinfront->Set( ePictureTexture );
+        //pinfront->Set( ePictureTexture );
+        pd3dDevice->basicShader->SetTexture("Texture0", pinfront);
+        pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
 
         if (pinfront->m_fTransparent)
         {
@@ -459,35 +475,42 @@ void Gate::PostRenderStatic(RenderDevice* pd3dDevice)
         pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
         ppin3d->SetTextureFilter( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 
-        pd3dDevice->SetMaterial(textureMaterial);
+        //pd3dDevice->SetMaterial(textureMaterial);
     }
     else // No image by that name
     {
-        ppin3d->SetTexture(NULL);
-        pd3dDevice->SetMaterial(solidMaterial);
+//         ppin3d->SetTexture(NULL);
+//         pd3dDevice->SetMaterial(solidMaterial);
+        pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
     }
 
+    pd3dDevice->basicShader->Begin(0);
     pd3dDevice->DrawPrimitiveVB(D3DPT_TRIANGLEFAN, vtxBuf, 4, 4);
+    pd3dDevice->basicShader->End();  
 
-    pd3dDevice->SetMaterial(solidMaterial);
+
+    //pd3dDevice->SetMaterial(solidMaterial);
 
     if (m_d.m_color != rgbTransparent && m_d.m_color != NOTRANSCOLOR)
     {
-        ppin3d->SetTexture(NULL);
+       pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
+        pd3dDevice->basicShader->Begin(0);
         pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, vtxBuf, 8, 16, idxBuf, 0, 24);
     }
+    pd3dDevice->basicShader->End();  
 
     pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, FALSE);
     pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_WRAP);
 
-    if(!m_d.m_fEnableLighting)
-    {
-        pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
-        pd3dDevice->SetRenderState(RenderDevice::LIGHTING, TRUE);
-    }
+//     if(!m_d.m_fEnableLighting)
+//     {
+//         pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
+//         pd3dDevice->SetRenderState(RenderDevice::LIGHTING, TRUE);
+//     }
     pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 
     pd3dDevice->SetTransform(TRANSFORMSTATE_WORLD, &matOrig);
+    g_pplayer->UpdateBasicShaderMatrix();
 }
 
 void Gate::PrepareStatic(RenderDevice* pd3dDevice)
@@ -653,19 +676,27 @@ void Gate::RenderSetup(RenderDevice* pd3dDevice)
 void Gate::RenderStatic(RenderDevice* pd3dDevice) // only the support structures are rendered here
 {
    if(!m_d.m_fSupports) return; // no support structures are allocated ... therefore render none
+   
+   pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelTexelDeclaration );
 
    pd3dDevice->SetMaterial(staticMaterial);
+   D3DXVECTOR4 matColor(0.6f,0.6f,0.6f,1.0f);   
+   pd3dDevice->basicShader->Core()->SetFloat("vMaterialPower",0.0f);
+   pd3dDevice->basicShader->Core()->SetVector("vMaterialColor",&matColor);
+   pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
    Vertex3D *rgv3D = &staticVertices[0];
 
    static const WORD rgiGate0[8] = {0,1,2,3,6,7,4,5};
    static const WORD rgiGate1[8] = {4,5,6,7,2,3,0,1};
    static const WORD rgiGateNormal[3] = {0,1,3};
-
+   
+   pd3dDevice->basicShader->Begin(0);
    SetNormal(rgv3D, rgiGateNormal, 3, rgv3D, rgiGate0, 8);
    pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_VERTEX, rgv3D, 8, (LPWORD)rgiGate0, 8);
 
    SetNormal(rgv3D, rgiGateNormal, 3, rgv3D, rgiGate1, 8);
    pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_VERTEX, rgv3D, 8, (LPWORD)rgiGate1, 8);
+   pd3dDevice->basicShader->End();  
 }
 
 void Gate::SetObjectPos()

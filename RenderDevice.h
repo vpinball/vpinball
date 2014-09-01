@@ -202,7 +202,7 @@ private:
     IndexBuffer();      // disable default constructor
 };
 
-
+class Shader;
 class RenderDevice
 {
 public:
@@ -358,6 +358,7 @@ private:
    unsigned m_curTextureChanges, m_frameTextureChanges;
 
 public:
+   Shader *basicShader;
    TextureManager m_texMan;
 
    static VertexDeclaration* m_pVertexNormalTexelDeclaration;
@@ -377,6 +378,9 @@ public:
     {
         return m_shader;
     }
+    void Begin( unsigned int pass );
+    void End();
+    void SetTexture( D3DXHANDLE texelName, Texture *texel);
 
 private:
     ID3DXEffect* m_shader;

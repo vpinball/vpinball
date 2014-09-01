@@ -1449,7 +1449,14 @@ void Rubber::RenderObject(RenderDevice *pd3dDevice)
    }
    pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_CLAMP);
 
-   solidMaterial.setColor(1.0f, m_d.m_color );
+   pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelDeclaration );
+
+   const float r = (float)(m_d.m_color & 255) * (float)(1.0/255.0);
+   const float g = (float)(m_d.m_color & 65280) * (float)(1.0/65280.0);
+   const float b = (float)(m_d.m_color & 16711680) * (float)(1.0/16711680.0);
+   D3DXVECTOR4 matColor(r,g,b,1.0f);   
+   pd3dDevice->basicShader->Core()->SetFloat("vMaterialPower",0.0f);
+   pd3dDevice->basicShader->Core()->SetVector("vMaterialColor",&matColor);
 
    {
       Pin3D * const ppin3d = &g_pplayer->m_pin3d;
@@ -1458,29 +1465,26 @@ void Rubber::RenderObject(RenderDevice *pd3dDevice)
       if (pin)
       {
          pin->CreateAlphaChannel();
-         pin->Set( ePictureTexture );
+//         pin->Set( ePictureTexture );
 
          ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 
-         pd3dDevice->SetMaterial(textureMaterial);
-         if ( !m_d.m_enableLightingImage )
-            pd3dDevice->SetRenderState( RenderDevice::LIGHTING, FALSE );
+         pd3dDevice->basicShader->SetTexture("Texture0", pin);
+         pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
       }
       else
       {
-         ppin3d->SetTexture(NULL);
-         pd3dDevice->SetMaterial(solidMaterial);
+          pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
       }
 
       if (!dynamicVertexBuffer || dynamicVertexBufferRegenerate)
          GenerateVertexBuffer(pd3dDevice);
 
+      pd3dDevice->basicShader->Begin(0);
       unsigned int offset=0;
       pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, dynamicVertexBuffer, offset, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
       offset += m_numVertices;
-
-      if ( !m_d.m_enableLightingImage && pin!=NULL )
-         pd3dDevice->SetRenderState( RenderDevice::LIGHTING, TRUE );
+      pd3dDevice->basicShader->End();  
    }
 }
 

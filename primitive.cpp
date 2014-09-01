@@ -764,13 +764,26 @@ void Primitive::RenderObject( RenderDevice *pd3dDevice )
         vertexBufferRegenerate = false;
         UpdateMesh();
     }
+    pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelDeclaration );
+
+    const float r = (float)(m_d.m_TopColor & 255) * (float)(1.0/255.0);
+    const float g = (float)(m_d.m_TopColor & 65280) * (float)(1.0/65280.0);
+    const float b = (float)(m_d.m_TopColor & 16711680) * (float)(1.0/16711680.0);
+    D3DXVECTOR4 matColor(r,g,b,1.0f);   
+    pd3dDevice->basicShader->Core()->SetFloat("vMaterialPower",0.0f);
+    pd3dDevice->basicShader->Core()->SetFloat("materialAlpha",1.0f);
 
     Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
 
     if (pin)
     {
         pin->CreateAlphaChannel();
-        pin->Set( ePictureTexture );
+        //pin->Set( ePictureTexture );
+        pd3dDevice->basicShader->SetTexture("Texture0", pin);
+        pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
+        D3DXVECTOR4 color(1.0f,1.0f,1.0f,1.0f);   
+        pd3dDevice->basicShader->Core()->SetVector("vMaterialColor",&color);
+
         g_pplayer->m_pin3d.EnableAlphaBlend(1, fFalse);
         g_pplayer->m_pin3d.SetTextureFilter(ePictureTexture, TEXTURE_MODE_TRILINEAR);
         // accomodate models with UV coords outside of [0,1]
@@ -778,21 +791,23 @@ void Primitive::RenderObject( RenderDevice *pd3dDevice )
     }
     else
     {
+        pd3dDevice->basicShader->Core()->SetVector("vMaterialColor",&matColor);
         g_pplayer->m_pin3d.SetTexture(NULL);
+        pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
         if( vertexBufferRegenerate )
             material.setColor( 1.0f, m_d.m_TopColor );
     }
 
     pd3dDevice->SetMaterial(material);
 
-    if ( !m_d.useLighting )
-    {
-        // disable lighting is a default setting
-        // it could look odd if you switch lighting on on non mesh primitives
-        pd3dDevice->SetRenderState( RenderDevice::LIGHTING, FALSE );
-        pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR);
-        pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, COLORREF_to_D3DCOLOR(m_d.m_TopColor));
-    }
+//     if ( !m_d.useLighting )
+//     {
+//         // disable lighting is a default setting
+//         // it could look odd if you switch lighting on on non mesh primitives
+//         pd3dDevice->SetRenderState( RenderDevice::LIGHTING, FALSE );
+//         pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR);
+//         pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, COLORREF_to_D3DCOLOR(m_d.m_TopColor));
+//     }
 
     // set transform
     Matrix3D matOrig, matNew;
@@ -801,20 +816,24 @@ void Primitive::RenderObject( RenderDevice *pd3dDevice )
     //matNew.Multiply(matTemp, matNew);
     matOrig.Multiply(fullMatrix, matNew);
     pd3dDevice->SetTransform(TRANSFORMSTATE_WORLD, &matNew);
+    g_pplayer->UpdateBasicShaderMatrix();
 
+    pd3dDevice->basicShader->Begin(0);
     // draw the mesh
     pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, vertexBuffer, 0, m_mesh.NumVertices(), indexBuffer, 0, m_mesh.NumIndices() );
+    pd3dDevice->basicShader->End();  
 
     // reset transform
     pd3dDevice->SetTransform(TRANSFORMSTATE_WORLD, &matOrig);
+    g_pplayer->UpdateBasicShaderMatrix();
 
     // reset render states
-    if ( !m_d.useLighting )
-    {
-        pd3dDevice->SetRenderState(RenderDevice::LIGHTING, TRUE);
-        pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
-        pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, 0xffffffff);
-    }
+//     if ( !m_d.useLighting )
+//     {
+//         pd3dDevice->SetRenderState(RenderDevice::LIGHTING, TRUE);
+//         pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
+//         pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, 0xffffffff);
+//     }
 
     pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_CLAMP);
     g_pplayer->m_pin3d.DisableAlphaBlend();

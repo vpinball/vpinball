@@ -2696,24 +2696,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
    bw.WriteInt(FID(LZAM), m_Light[0].ambient);
    bw.WriteInt(FID(LZDI), m_Light[0].diffuse);
    bw.WriteInt(FID(LZSP), m_Light[0].specular);
-   bw.WriteFloat(FID(LZPX), m_Light[0].pos.x);
-   bw.WriteFloat(FID(LZPY), m_Light[0].pos.y);
-   bw.WriteFloat(FID(LZPZ), m_Light[0].pos.z);
-   bw.WriteFloat(FID(LZDX), m_Light[0].dir.x);
-   bw.WriteFloat(FID(LZDY), m_Light[0].dir.y);
-   bw.WriteFloat(FID(LZDZ), m_Light[0].dir.z);
-   bw.WriteInt(FID(LZTY), m_Light[0].type);
-   bw.WriteInt(FID(LOAM), m_Light[1].ambient);
-   bw.WriteInt(FID(LODI), m_Light[1].diffuse);
-   bw.WriteInt(FID(LOSP), m_Light[1].specular);
-   bw.WriteFloat(FID(LOPX), m_Light[1].pos.x);
-   bw.WriteFloat(FID(LOPY), m_Light[1].pos.y);
-   bw.WriteFloat(FID(LOPZ), m_Light[1].pos.z);
-   bw.WriteFloat(FID(LODX), m_Light[1].dir.x);
-   bw.WriteFloat(FID(LODY), m_Light[1].dir.y);
-   bw.WriteFloat(FID(LODZ), m_Light[1].dir.z);
-   bw.WriteInt(FID(LOTY), m_Light[1].type);
-
+   bw.WriteFloat(FID(LZHI), m_Light[0].pos.z);
    bw.WriteFloat(FID(SDIX), m_shadowDirX);
    bw.WriteFloat(FID(SDIY), m_shadowDirY);
 
@@ -3109,20 +3092,9 @@ void PinTable::SetLoadDefaults()
    m_Light[0].ambient = RGB((int)(0.1*255),(int)(0.1*255),(int)(0.1*255));
    m_Light[0].diffuse = RGB((int)(0.4*255),(int)(0.4*255),(int)(0.4*255));
    m_Light[0].specular = RGB((int)(0.0*255),(int)(0.0*255),(int)(0.0*255));
-   m_Light[0].pos = Vertex3Ds(0,0,0);
+   m_Light[0].pos = Vertex3Ds(0,0,400);
    m_Light[0].dir = Vertex3Ds(0,0,0); // 0,0,0 = backwards compatible mode
-   m_Light[0].type = LIGHT_DIRECTIONAL;
    m_Light[0].enabled = true;
-   m_Light[1].ambient = RGB((int)(0.1*255),(int)(0.1*255),(int)(0.1*255));
-   m_Light[1].diffuse = RGB((int)(0.6*255),(int)(0.6*255),(int)(0.6*255));
-   m_Light[1].specular = RGB((int)(1.0*255),(int)(1.0*255),(int)(1.0*255));
-   m_Light[1].pos = Vertex3Ds(0,0,0);
-   m_Light[1].dir = Vertex3Ds(0,0,0); // 0,0,0 = backwards compatible mode
-   m_Light[1].type = LIGHT_DIRECTIONAL;
-   m_Light[1].enabled = true;
-
-   for(int i = 2; i < MAX_LIGHT_SOURCES; ++i)
-      m_Light[i].enabled = false; //!! expose, too, in UI?! //!!  use remaining 6 lightsources for objects? (detect nearest lightsources for each!) //!! enable these lightsources via/for VP 'lights' via optional flag -> problem that animated stuff won't react to these changes (yet)
 
    m_angletiltMax = 726.0f;
    m_angletiltMin = 4.5f;
@@ -3384,73 +3356,9 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    {
       pbr->GetInt(&m_Light[0].specular);
    }
-   else if (id == FID(LZPX))
-   {
-      pbr->GetFloat(&m_Light[0].pos.x);
-   }
-   else if (id == FID(LZPY))
-   {
-      pbr->GetFloat(&m_Light[0].pos.y);
-   }
-   else if (id == FID(LZPZ))
+   else if (id == FID(LZHI))
    {
       pbr->GetFloat(&m_Light[0].pos.z);
-   }
-   else if (id == FID(LZDX))
-   {
-      pbr->GetFloat(&m_Light[0].dir.x);
-   }
-   else if (id == FID(LZDY))
-   {
-      pbr->GetFloat(&m_Light[0].dir.y);
-   }
-   else if (id == FID(LZDZ))
-   {
-      pbr->GetFloat(&m_Light[0].dir.z);
-   }
-   else if (id == FID(LZTY))
-   {
-      pbr->GetInt(&m_Light[0].type);
-   }
-   else if (id == FID(LOAM))
-   {
-      pbr->GetInt(&m_Light[1].ambient);
-   }
-   else if (id == FID(LODI))
-   {
-      pbr->GetInt(&m_Light[1].diffuse);
-   }
-   else if (id == FID(LOSP))
-   {
-      pbr->GetInt(&m_Light[1].specular);
-   }
-   else if (id == FID(LOPX))
-   {
-      pbr->GetFloat(&m_Light[1].pos.x);
-   }
-   else if (id == FID(LOPY))
-   {
-      pbr->GetFloat(&m_Light[1].pos.y);
-   }
-   else if (id == FID(LOPZ))
-   {
-      pbr->GetFloat(&m_Light[1].pos.z);
-   }
-   else if (id == FID(LODX))
-   {
-      pbr->GetFloat(&m_Light[1].dir.x);
-   }
-   else if (id == FID(LODY))
-   {
-      pbr->GetFloat(&m_Light[1].dir.y);
-   }
-   else if (id == FID(LODZ))
-   {
-      pbr->GetFloat(&m_Light[1].dir.z);
-   }
-   else if (id == FID(LOTY))
-   {
-      pbr->GetInt(&m_Light[1].type);
    }
    else if (id == FID(BREF))
    {
@@ -6883,14 +6791,14 @@ STDMETHODIMP PinTable::put_Light0Specular(OLE_COLOR newVal)
    return S_OK;
 }
 
-STDMETHODIMP PinTable::get_Light0PX(float *pVal)
+STDMETHODIMP PinTable::get_LightHight(float *pVal)
 {
    *pVal = m_Light[0].pos.x;
 
    return S_OK;
 }
 
-STDMETHODIMP PinTable::put_Light0PX(float newVal)
+STDMETHODIMP PinTable::put_LightHight(float newVal)
 {
    STARTUNDO
 
@@ -6901,293 +6809,6 @@ STDMETHODIMP PinTable::put_Light0PX(float newVal)
    return S_OK;
 }
 
-STDMETHODIMP PinTable::get_Light0PY(float *pVal)
-{
-   *pVal = m_Light[0].pos.y;
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_Light0PY(float newVal)
-{
-   STARTUNDO
-
-   m_Light[0].pos.y = newVal;
-
-   STOPUNDO
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::get_Light0PZ(float *pVal)
-{
-   *pVal = m_Light[0].pos.z;
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_Light0PZ(float newVal)
-{
-   STARTUNDO
-
-   m_Light[0].pos.z = newVal;
-
-   STOPUNDO
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::get_Light0DX(float *pVal)
-{
-   *pVal = m_Light[0].dir.x;
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_Light0DX(float newVal)
-{
-   STARTUNDO
-
-   m_Light[0].dir.x = newVal;
-
-   STOPUNDO
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::get_Light0DY(float *pVal)
-{
-   *pVal = m_Light[0].dir.y;
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_Light0DY(float newVal)
-{
-   STARTUNDO
-
-   m_Light[0].dir.y = newVal;
-
-   STOPUNDO
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::get_Light0DZ(float *pVal)
-{
-   *pVal = m_Light[0].dir.z;
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_Light0DZ(float newVal)
-{
-   STARTUNDO
-
-   m_Light[0].dir.z = newVal;
-
-   STOPUNDO
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::get_Light0Type(int *pVal)
-{
-   *pVal = m_Light[0].type;
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_Light0Type(int newVal)
-{
-   STARTUNDO
-
-   m_Light[0].type = (LightType)newVal;
-
-   STOPUNDO
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::get_Light1Ambient(OLE_COLOR *pVal)
-{
-   *pVal = m_Light[1].ambient;
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_Light1Ambient(OLE_COLOR newVal)
-{
-   STARTUNDO
-
-   m_Light[1].ambient = newVal;
-
-   STOPUNDO
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::get_Light1Diffuse(OLE_COLOR *pVal)
-{
-   *pVal = m_Light[1].diffuse;
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_Light1Diffuse(OLE_COLOR newVal)
-{
-   STARTUNDO
-
-   m_Light[1].diffuse = newVal;
-
-   STOPUNDO
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::get_Light1Specular(OLE_COLOR *pVal)
-{
-   *pVal = m_Light[1].specular;
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_Light1Specular(OLE_COLOR newVal)
-{
-   STARTUNDO
-
-   m_Light[1].specular = newVal;
-
-   STOPUNDO
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::get_Light1PX(float *pVal)
-{
-   *pVal = m_Light[1].pos.x;
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_Light1PX(float newVal)
-{
-   STARTUNDO
-
-   m_Light[1].pos.x = newVal;
-
-   STOPUNDO
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::get_Light1PY(float *pVal)
-{
-   *pVal = m_Light[1].pos.y;
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_Light1PY(float newVal)
-{
-   STARTUNDO
-
-   m_Light[1].pos.y = newVal;
-
-   STOPUNDO
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::get_Light1PZ(float *pVal)
-{
-   *pVal = m_Light[1].pos.z;
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_Light1PZ(float newVal)
-{
-   STARTUNDO
-
-   m_Light[1].pos.z = newVal;
-
-   STOPUNDO
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::get_Light1DX(float *pVal)
-{
-   *pVal = m_Light[1].dir.x;
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_Light1DX(float newVal)
-{
-   STARTUNDO
-
-   m_Light[1].dir.x = newVal;
-
-   STOPUNDO
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::get_Light1DY(float *pVal)
-{
-   *pVal = m_Light[1].dir.y;
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_Light1DY(float newVal)
-{
-   STARTUNDO
-
-   m_Light[1].dir.y = newVal;
-
-   STOPUNDO
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::get_Light1DZ(float *pVal)
-{
-   *pVal = m_Light[1].dir.z;
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_Light1DZ(float newVal)
-{
-   STARTUNDO
-
-   m_Light[1].dir.z = newVal;
-
-   STOPUNDO
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::get_Light1Type(int *pVal)
-{
-   *pVal = m_Light[1].type;
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_Light1Type(int newVal)
-{
-   STARTUNDO
-
-   m_Light[1].type = (LightType)newVal;
-
-   STOPUNDO
-
-   return S_OK;
-}
 
 STDMETHODIMP PinTable::get_BallReflection(int *pVal)
 {

@@ -14,13 +14,11 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Englisch (USA) resources
+// English (United States) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
-#ifdef _WIN32
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 #pragma code_page(1252)
-#endif //_WIN32
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -142,7 +140,7 @@ BEGIN
     LTEXT           "Scale Y",IDC_STATIC_SCALEY,19,35,26,8
 END
 
-IDD_PROGRESS DIALOG  0, 0, 167, 44
+IDD_PROGRESS DIALOG 0, 0, 167, 44
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Preparing Table"
 FONT 8, "MS Sans Serif"
@@ -302,7 +300,7 @@ BEGIN
     LTEXT           "to my Monitor:",IDC_STATIC,27,244,45,8
 END
 
-IDD_FONTDIALOG DIALOG  0, 0, 316, 167
+IDD_FONTDIALOG DIALOG 0, 0, 316, 167
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Font Manager"
 FONT 8, "MS Sans Serif"
@@ -449,8 +447,7 @@ BEGIN
     EDITTEXT        IDC_DEADZONEAMT,462,148,18,13,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "%",IDC_STATIC,482,149,8,8
     GROUPBOX        "Global Options (Changes will not affect open tables)",IDC_STATIC,254,90,241,133
-    CONTROL         "Enable Nudge Filter",IDC_ENABLE_NUDGE_FILTER,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,257,183,100,10
+    CONTROL         "Enable Nudge Filter",IDC_ENABLE_NUDGE_FILTER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,257,183,100,10
     CONTROL         "Enable Analog Nudge",IDC_GLOBALACCEL,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,257,195,83,10
     CONTROL         "Normal Mounting Orientation",IDC_GLOBALNMOUNT,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,380,195,102,10
     CONTROL         "Tilt Sensitivity",IDC_CBGLOBALTILT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,257,207,55,10
@@ -520,8 +517,6 @@ BEGIN
     EDITTEXT        1100,83,161,40,12,ES_AUTOHSCROLL
     EDITTEXT        1101,83,175,40,12,ES_AUTOHSCROLL
     EDITTEXT        1102,83,188,40,12,ES_AUTOHSCROLL
-    //EDITTEXT        1103,83,202,40,12,ES_AUTOHSCROLL
-    //EDITTEXT        1106,83,216,40,12,ES_AUTOHSCROLL
     EDITTEXT        1110,43,242,80,12,ES_AUTOHSCROLL
     LISTBOX         IDC_PhysicsList,5,260,180,35,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
     PUSHBUTTON      "&Cancel",IDCANCEL,144,28,50,14
@@ -538,8 +533,6 @@ BEGIN
     LTEXT           "Gravity Constant",IDC_STATIC,11,163,69,8
     LTEXT           "Playfield Friction",IDC_STATIC,11,177,69,8
     LTEXT           "Contact Scatter Angle",IDC_STATIC,11,191,69,8
-    //LTEXT           "Dampening Speed",IDC_STATIC,11,205,69,8
-    //LTEXT           "Dampening Friction",IDC_STATIC,11,219,69,8
     GROUPBOX        "Flipper Settings",IDC_STATIC,5,10,127,129
     GROUPBOX        "Table Settings",IDC_STATIC,5,148,127,87
     LTEXT           "Set Name",IDC_STATIC,5,245,35,8
@@ -587,7 +580,7 @@ BEGIN
     PUSHBUTTON      "&Down",IDC_COL_DOWN_BUTTON,259,66,50,14
 END
 
-IDD_COLLECTION DIALOG  0, 0, 232, 231
+IDD_COLLECTION DIALOG 0, 0, 232, 231
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Collection"
 FONT 8, "MS Sans Serif"
@@ -648,7 +641,7 @@ BEGIN
     LTEXT           "Please reenter your Password",IDC_STATIC,7,182,99,8
 END
 
-IDD_UNLOCK_DIALOG DIALOG  0, 0, 164, 53
+IDD_UNLOCK_DIALOG DIALOG 0, 0, 164, 53
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Unlock Protected Table"
 FONT 8, "MS Sans Serif"
@@ -968,8 +961,6 @@ BEGIN
     EDITTEXT        26,76,67,40,12,ES_AUTOHSCROLL
     EDITTEXT        23,76,82,40,12,ES_AUTOHSCROLL
     EDITTEXT        27,76,97,40,12,ES_AUTOHSCROLL
-    //EDITTEXT        109,76,97,40,12,ES_AUTOHSCROLL
-    //EDITTEXT        110,76,112,40,12,ES_AUTOHSCROLL
     EDITTEXT        1044,106,130,10,12,ES_AUTOHSCROLL
     LTEXT           "Override by Global Physics Set",-1,7,132,98,8
     LTEXT           "&Mass",-1,7,9,66,8
@@ -979,8 +970,6 @@ BEGIN
     LTEXT           "Friction",-1,7,69,66,8
     LTEXT           "Coil Ramp Up",-1,7,99,66,8
     LTEXT           "Return Strength Ratio",-1,7,84,66,8
-    //LTEXT           "Oblique Correction",-1,7,114,66,8
-    //LTEXT           "Power-Law",-1,7,99,66,8
 END
 
 IDD_PROPPLUNGER_PHYSICS DIALOGEX 0, 0, 125, 125
@@ -1301,48 +1290,23 @@ BEGIN
     LTEXT           "&Global Difficulty Level",-1,7,92,73,8
 END
 
-IDD_PROPTABLE_LIGHTSOURCES DIALOGEX 0, 0, 125, 265
+IDD_PROPTABLE_LIGHTSOURCES DIALOGEX 0, 0, 125, 126
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     CONTROL         "Custom2",IDC_LIGHT0AMBIENT,"ColorControl",WS_TABSTOP,47,7,40,14
     CONTROL         "Custom2",IDC_LIGHT0DIFFUSE,"ColorControl",WS_TABSTOP,47,22,40,14
     CONTROL         "Custom2",IDC_LIGHT0SPECULAR,"ColorControl",WS_TABSTOP,47,37,40,14
-    CONTROL         "Custom2",IDC_LIGHT1AMBIENT,"ColorControl",WS_TABSTOP,47,52,40,14
-    CONTROL         "Custom2",IDC_LIGHT1DIFFUSE,"ColorControl",WS_TABSTOP,47,67,40,14
-    CONTROL         "Custom2",IDC_LIGHT1SPECULAR,"ColorControl",WS_TABSTOP,47,82,40,14
-    EDITTEXT        IDC_LIGHT0PX,47,97,24,12,ES_AUTOHSCROLL
-    EDITTEXT        IDC_LIGHT0PY,73,97,24,12,ES_AUTOHSCROLL
-    EDITTEXT        IDC_LIGHT0PZ,99,97,24,12,ES_AUTOHSCROLL
-    EDITTEXT        IDC_LIGHT0DX,47,112,24,12,ES_AUTOHSCROLL
-    EDITTEXT        IDC_LIGHT0DY,73,112,24,12,ES_AUTOHSCROLL
-    EDITTEXT        IDC_LIGHT0DZ,99,112,24,12,ES_AUTOHSCROLL
-    EDITTEXT        IDC_LIGHT0TYPE,47,127,24,12,ES_AUTOHSCROLL
-    EDITTEXT        IDC_LIGHT1PX,47,142,24,12,ES_AUTOHSCROLL
-    EDITTEXT        IDC_LIGHT1PY,73,142,24,12,ES_AUTOHSCROLL
-    EDITTEXT        IDC_LIGHT1PZ,99,142,24,12,ES_AUTOHSCROLL
-    EDITTEXT        IDC_LIGHT1DX,47,157,24,12,ES_AUTOHSCROLL
-    EDITTEXT        IDC_LIGHT1DY,73,157,24,12,ES_AUTOHSCROLL
-    EDITTEXT        IDC_LIGHT1DZ,99,157,24,12,ES_AUTOHSCROLL
-    EDITTEXT        IDC_LIGHT1TYPE,47,172,24,12,ES_AUTOHSCROLL
-    EDITTEXT        IDC_SHADOW_X,22,231,24,12,ES_AUTOHSCROLL
-    EDITTEXT        IDC_SHADOW_Y,22,247,24,12,ES_AUTOHSCROLL
-    LTEXT           "(Type 0: Directional, 1: Spot, 2: Point)",IDC_STATIC,3,190,120,9
+    EDITTEXT        IDC_LIGHT0PX,47,55,24,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_SHADOW_X,22,90,24,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_SHADOW_Y,22,106,24,12,ES_AUTOHSCROLL
     LTEXT           "L0 Ambient",IDC_STATIC,7,10,40,9
     LTEXT           "L0 Diffuse",IDC_STATIC,7,25,40,9
     LTEXT           "L0 Specular",IDC_STATIC,7,40,40,9
-    LTEXT           "L1 Ambient",IDC_STATIC,7,55,40,9
-    LTEXT           "L1 Diffuse",IDC_STATIC,7,70,40,9
-    LTEXT           "L1 Specular",IDC_STATIC,7,85,40,9
-    LTEXT           "L0 Pos XYZ",IDC_STATIC,7,100,40,9
-    LTEXT           "L0 Dir XYZ",IDC_STATIC,7,115,40,9
-    LTEXT           "L0 Type",IDC_STATIC,7,130,40,9
-    LTEXT           "L1 Pos XYZ",IDC_STATIC,7,145,40,9
-    LTEXT           "L1 Dir XYZ",IDC_STATIC,7,160,40,9
-    LTEXT           "L1 Type",IDC_STATIC,7,175,40,9
-    GROUPBOX        "Shadow Direction (-1.0..+1.0) ",IDC_STATIC,5,222,117,42
-    LTEXT           "X",IDC_STATIC,13,233,8,8
-    LTEXT           "Y",IDC_STATIC,13,249,8,8
+    LTEXT           "Light Hight",IDC_STATIC,7,58,40,9
+    GROUPBOX        "Shadow Direction (-1.0..+1.0) ",IDC_STATIC,5,79,117,42
+    LTEXT           "X",IDC_STATIC,13,92,8,8
+    LTEXT           "Y",IDC_STATIC,13,108,8,8
 END
 
 IDD_PROPTABLE_BALL DIALOGEX 0, 0, 125, 151
@@ -1403,7 +1367,6 @@ BEGIN
     EDITTEXT        1101,80,21,40,12,ES_AUTOHSCROLL
     EDITTEXT        1102,80,34,40,12,ES_AUTOHSCROLL
     EDITTEXT        1103,80,48,40,12,ES_AUTOHSCROLL
-    //EDITTEXT        1106,80,62,40,12,ES_AUTOHSCROLL
     EDITTEXT        1105,80,76,40,12,ES_AUTOHSCROLL
     EDITTEXT        1104,80,90,40,12,ES_AUTOHSCROLL
     CONTROL         "Filter Mechanical Plunger",1107,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,106,111,9
@@ -1517,7 +1480,7 @@ BEGIN
     CONTROL         "Throw Balls in Player",IDC_BALL_THROWING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,27,81,10
 END
 
-IDD_COMLIST DIALOG  0, 0, 287, 190
+IDD_COMLIST DIALOG 0, 0, 287, 190
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Component List"
 FONT 8, "MS Sans Serif"
@@ -1737,7 +1700,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
+GUIDELINES DESIGNINFO
 BEGIN
     IDD_DIMENSION_CALCULATOR, DIALOG
     BEGIN
@@ -1899,7 +1862,7 @@ IDR_RUBBER              REGISTRY                "res\\rubber.rgs"
 // Menu
 //
 
-IDR_APPMENU MENU 
+IDR_APPMENU MENU
 BEGIN
     POPUP "&File"
     BEGIN
@@ -2014,7 +1977,7 @@ BEGIN
     END
 END
 
-IDR_POINTMENU MENU 
+IDR_POINTMENU MENU
 BEGIN
     POPUP "PointMenu"
     BEGIN
@@ -2023,7 +1986,7 @@ BEGIN
     END
 END
 
-IDR_SURFACEMENU MENU 
+IDR_SURFACEMENU MENU
 BEGIN
     POPUP "WallMenu"
     BEGIN
@@ -2036,7 +1999,7 @@ BEGIN
     END
 END
 
-IDR_MULTIMENU MENU 
+IDR_MULTIMENU MENU
 BEGIN
     POPUP "WallMenu"
     BEGIN
@@ -2048,7 +2011,7 @@ BEGIN
     END
 END
 
-IDR_SCRIPTMENU MENU 
+IDR_SCRIPTMENU MENU
 BEGIN
     POPUP "&Script"
     BEGIN
@@ -2071,7 +2034,7 @@ BEGIN
     END
 END
 
-IDR_TABLEMENU MENU 
+IDR_TABLEMENU MENU
 BEGIN
     POPUP "Table Menu"
     BEGIN
@@ -2104,13 +2067,14 @@ IDB_CHEVRON             BITMAP                  "res\\chevron.bmp"
 
 BALLSHADER.FX           RCDATA                  "shader\\BallShader.fx"
 LIGHTINSERT.FX          RCDATA                  "shader\\LightInsert.fx"
+BASICSHADER.FX          RCDATA                  "shader\\BasicShader.fx"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Accelerator
 //
 
-IDR_VPACCEL ACCELERATORS 
+IDR_VPACCEL ACCELERATORS
 BEGIN
     VK_DELETE,      ID_DELETE,              VIRTKEY, NOINVERT
     "D",            ID_EDIT_DRAWINGORDER_HIT, VIRTKEY, SHIFT, CONTROL, NOINVERT
@@ -2145,7 +2109,7 @@ BEGIN
     "H",            ID_INSERT_FLASHER,      VIRTKEY, CONTROL, NOINVERT
 END
 
-IDR_CODEVIEWACCEL ACCELERATORS 
+IDR_CODEVIEWACCEL ACCELERATORS
 BEGIN
     "W",            ID_ADD_COMMENT,         VIRTKEY, CONTROL, NOINVERT
     VK_F3,          ID_EDIT_FINDNEXT,       VIRTKEY, NOINVERT
@@ -2228,7 +2192,7 @@ END
 // String Table
 //
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_PROJNAME            "Visual Pinball"
     IDS_TB_TIMER            "Timer"
@@ -2244,14 +2208,14 @@ BEGIN
     IDS_LAYER3              "Layer&3"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_TB_LIGHTSEQ         "LightSeq"
     IDS_REPLACEALL          "Replaced"
     IDS_REPLACEALL2         "occurrences in script."
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_NEED_DD9            "Visual Pinball requires DirectX 9.0 or higher from Microsoft."
     IDS_LOCK                "&Lock"
@@ -2265,12 +2229,12 @@ BEGIN
     IDS_POSITION_TRANSLATION "Position & Translation"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_VISUALS_SOUND       "Colors, Sound & Graphics"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_PHYSICSGFX          "Physics & Graphics"
     IDS_DIMENSIONSSLOPE     "Dimensions & Slope"
@@ -2278,7 +2242,7 @@ BEGIN
     IDS_INPUT               "Input"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_TIMER_DESC          "Timer Class"
     IDS_LAYER4              "Layer&4"
@@ -2298,7 +2262,7 @@ BEGIN
     IDS_TB_TRIGGER          "Trigger"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_LAYER8              "Layer&8"
     IDS_LIGHT_DESC          "Light Class"
@@ -2318,12 +2282,12 @@ BEGIN
     IDS_TO_COLLECTION       "To &Collection"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_DRAWING_ORDER_SELECT "D&rawing Order (Select)"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_RAMP_DESC           "Ramp Class"
     IDS_TB_RAMP             "Ramp"
@@ -2343,7 +2307,7 @@ BEGIN
     IDS_DRAWINFRONT         "Draw In &Front"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_PERMISSION_ERROR    "This table is protected.\n\nThe table author has requested that this option be restricted."
     IDS_PROTECT_ONETICKED   "You must tick at least one protection option."
@@ -2353,7 +2317,7 @@ BEGIN
     IDS_UNLOCK_SUCCESS      "This table has been successfully unlocked."
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_DRAWINBACK          "Draw In &Back"
     IDS_SAVEERROR           "There was an error saving the file."
@@ -2371,7 +2335,7 @@ BEGIN
     IDS_COLLECTION          "Collection"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_EDITOR              "Editor"
     IDS_DEFAULTBALL         "Ball"
@@ -2389,7 +2353,7 @@ BEGIN
     IDS_STEP                "Step"
 END
 
-#endif    // Englisch (USA) resources
+#endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

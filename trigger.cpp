@@ -483,10 +483,18 @@ void Trigger::RenderStatic(RenderDevice* pd3dDevice)
 
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
+
+   pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelTexelDeclaration );
+
    ppin3d->EnableLightMap(height);
 
    pd3dDevice->SetMaterial(material);
-
+   D3DXVECTOR4 matColor(0.5f, 0.5f, 0.5,1.0f);   
+   pd3dDevice->basicShader->Core()->SetFloat("vMaterialPower",0.0f);
+   pd3dDevice->basicShader->Core()->SetVector("vMaterialColor",&matColor);
+   pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
+   
+   pd3dDevice->basicShader->Begin(0);
    for (int i=0;i<4;i++)
    {
       const int offset = i*10;
@@ -505,7 +513,7 @@ void Trigger::RenderStatic(RenderDevice* pd3dDevice)
          pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLEFAN, vertexBuffer, offset, 10, (LPWORD)rgi, cpt);
       }
    }
-
+   pd3dDevice->basicShader->End();
    ppin3d->DisableLightMap();
 }
 

@@ -213,6 +213,7 @@ void Kicker::PreRenderStatic( RenderDevice* pd3dDevice)
       return;
 
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+   pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelTexelDeclaration );
 
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
@@ -224,8 +225,15 @@ void Kicker::PreRenderStatic( RenderDevice* pd3dDevice)
    const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
 
    Material colorMaterial, blackMaterial;
-   colorMaterial.setColor( 0.0f, m_d.m_color );
    blackMaterial.setColor( 0.0f, 0.0f, 0.0f, 0.0f );
+   
+   float r = (float)(m_d.m_color & 255) * (float)(1.0/255.0);
+   float g = (float)(m_d.m_color & 65280) * (float)(1.0/65280.0);
+   float b = (float)(m_d.m_color & 16711680) * (float)(1.0/16711680.0);
+   D3DXVECTOR4 matColor(r,g,b,1.0f);   
+   pd3dDevice->basicShader->Core()->SetFloat("vMaterialPower",0.0f);
+   pd3dDevice->basicShader->Core()->SetVector("vMaterialColor",&matColor);
+   pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
 
    ppin3d->EnableLightMap(height);
 
@@ -253,11 +261,16 @@ void Kicker::PreRenderStatic( RenderDevice* pd3dDevice)
 
             SetNormal(vertices, rgiNormal, 3, NULL, rgi, 2);
             SetNormal(vertices, &rgiNormal[3], 3, NULL, &rgi[2], 2);
+            pd3dDevice->basicShader->Begin(0);
             pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLEFAN, MY_D3DFVF_VERTEX,vertices, 32, rgi, 4);
+            pd3dDevice->basicShader->End();
          }
 
          pd3dDevice->SetMaterial(blackMaterial);
-
+         matColor.x=0.0f;
+         matColor.y=0.0f;
+         matColor.z=0.0f;
+         pd3dDevice->basicShader->Core()->SetVector("vMaterialColor",&matColor);
          // Draw the bottom of the kicker hole
          WORD rgi[3*14];
          for (int l=0;l<14;++l)
@@ -268,7 +281,9 @@ void Kicker::PreRenderStatic( RenderDevice* pd3dDevice)
 
             SetNormal(vertices, rgi+l*3, 3, NULL, NULL, 0);
          }
+         pd3dDevice->basicShader->Begin(0);
          pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX,vertices, 16, rgi, 3*14);
+         pd3dDevice->basicShader->End();
 
          // Draw the top "lid" of the kicker hole invisibly (for the depth buffer)
          for (int l=0;l<14;++l)
@@ -278,7 +293,9 @@ void Kicker::PreRenderStatic( RenderDevice* pd3dDevice)
          float depthbias = -1e-4f;
          pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, *((DWORD*)&depthbias));
          pd3dDevice->SetRenderState(RenderDevice::COLORWRITEENABLE, 0);         // write only to depth buffer
+         pd3dDevice->basicShader->Begin(0);
          pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX, vertices+16, 16, rgi, 3*14);
+         pd3dDevice->basicShader->End();
          pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
          pd3dDevice->SetRenderState(RenderDevice::COLORWRITEENABLE, 0x0f);      // re-enable color writes
          break;
@@ -303,8 +320,9 @@ void Kicker::PreRenderStatic( RenderDevice* pd3dDevice)
             vertices[48].ny = 0;
             vertices[48].nz = 1.0f;
          }
+         pd3dDevice->basicShader->Begin(0);
          pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX, vertices+16, 49-16, rgi, 3*16);
-
+         
          // Draw outer ring
          for (int l=0; l<16; ++l)
          {
@@ -319,7 +337,7 @@ void Kicker::PreRenderStatic( RenderDevice* pd3dDevice)
             SetNormal(vertices+16, rgi+l*6, 6, NULL, NULL, 0);
          }
          pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX, vertices+16, 32, rgi, 2*3*16);
-
+         pd3dDevice->basicShader->End();
          // Draw the top "lid" of the kicker hole invisibly (for the depth buffer)
          for (int l=0; l<14; ++l)
          {
@@ -332,7 +350,9 @@ void Kicker::PreRenderStatic( RenderDevice* pd3dDevice)
          float depthbias = -1e-4f;
          pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, *((DWORD*)&depthbias));
          pd3dDevice->SetRenderState(RenderDevice::COLORWRITEENABLE, 0);         // write only to depth buffer
+         pd3dDevice->basicShader->Begin(0);
          pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX, vertices+32, 16, rgi, 3*14);
+         pd3dDevice->basicShader->End();
          pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
          pd3dDevice->SetRenderState(RenderDevice::COLORWRITEENABLE, 0x0f);      // re-enable color writes
          break;

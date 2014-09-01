@@ -1182,7 +1182,7 @@
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="&quot;$(DXSDK_DIR)\Include&quot;;inc;pin;media"
+				AdditionalIncludeDirectories="&quot;$(DXSDK_DIR)\Include&quot;;inc;pin;media;inc\winsdk"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
 				StringPooling="true"
 				ExceptionHandling="0"
@@ -10153,6 +10153,10 @@
 						PreprocessorDefinitions=""
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\math\math.cpp"
+				>
 			</File>
 			<File
 				RelativePath="math\matrix.cpp"
@@ -19728,6 +19732,10 @@
 			>
 			<File
 				RelativePath=".\shader\BallShader.fx"
+				>
+			</File>
+			<File
+				RelativePath=".\shader\BasicShader.fx"
 				>
 			</File>
 			<File

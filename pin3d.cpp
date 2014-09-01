@@ -272,7 +272,55 @@ void Pin3D::DrawBackground()
 
 void Pin3D::InitLights()
 {
-	for(unsigned int i = 0; i < MAX_LIGHT_SOURCES; ++i)
+    D3DLIGHT9 lights[2];
+    m_pd3dDevice->basicShader->Core()->SetInt("iLightPointNum",2);
+
+    lights[0].Position.x = g_pplayer->m_ptable->m_right/2.0f;
+    lights[1].Position.x = g_pplayer->m_ptable->m_right/2.0f;
+    lights[0].Position.y = g_pplayer->m_ptable->m_bottom/3.0f;
+    lights[1].Position.y = (g_pplayer->m_ptable->m_bottom/3.0f)*2.0f;
+    lights[0].Position.z = (g_pplayer->m_ptable->m_glassheight*5.0f);
+    lights[1].Position.z = (g_pplayer->m_ptable->m_glassheight*5.0f);
+    D3DXVECTOR4 ambient = COLORREF_to_D3DXVECTOR4(g_pplayer->m_ptable->m_Light[0].ambient);
+    lights[0].Ambient.a = 1.0f;
+    lights[0].Ambient.r = ambient.z;
+    lights[0].Ambient.g = ambient.y;
+    lights[0].Ambient.b = ambient.x;
+    D3DXVECTOR4 diffuse = COLORREF_to_D3DXVECTOR4(g_pplayer->m_ptable->m_Light[0].diffuse);
+    lights[0].Diffuse.a = 1.0f;
+    lights[0].Diffuse.r = diffuse.z;
+    lights[0].Diffuse.g = diffuse.y;
+    lights[0].Diffuse.b = diffuse.x;
+    D3DXVECTOR4 specular = COLORREF_to_D3DXVECTOR4(g_pplayer->m_ptable->m_Light[0].specular);
+    lights[0].Specular.a = 1.0f;
+    lights[0].Specular.r = specular.z;
+    lights[0].Specular.g = specular.y;
+    lights[0].Specular.b = specular.x;
+
+    char tmp[64];
+    float range = g_pplayer->m_ptable->m_glassheight*10.0f;
+    sprintf_s(tmp,"lights[0].vPos");
+    m_pd3dDevice->basicShader->Core()->SetValue(tmp, (void*)&lights[0].Position, sizeof(D3DVECTOR));
+    sprintf_s(tmp,"lights[0].fRange");
+    m_pd3dDevice->basicShader->Core()->SetValue(tmp, (void*)&range, sizeof(D3DVECTOR));
+    sprintf_s(tmp,"lights[1].vPos");
+    m_pd3dDevice->basicShader->Core()->SetValue(tmp, (void*)&lights[1].Position, sizeof(D3DVECTOR));
+    sprintf_s(tmp,"lights[1].fRange");
+    m_pd3dDevice->basicShader->Core()->SetValue(tmp, (void*)&range, sizeof(D3DVECTOR));
+    sprintf_s(tmp,"lights[0].vAmbient");
+    m_pd3dDevice->basicShader->Core()->SetValue(tmp, (void*)&lights[0].Ambient, sizeof(D3DCOLORVALUE));
+    sprintf_s(tmp,"lights[1].vAmbient");
+    m_pd3dDevice->basicShader->Core()->SetValue(tmp, (void*)&lights[0].Ambient, sizeof(D3DCOLORVALUE));
+    sprintf_s(tmp,"lights[0].vDiffuse");
+    m_pd3dDevice->basicShader->Core()->SetValue(tmp, (void*)&lights[0].Diffuse, sizeof(D3DCOLORVALUE));
+    sprintf_s(tmp,"lights[1].vDiffuse");
+    m_pd3dDevice->basicShader->Core()->SetValue(tmp, (void*)&lights[0].Diffuse, sizeof(D3DCOLORVALUE));
+    sprintf_s(tmp,"lights[0].vSpecular");
+    m_pd3dDevice->basicShader->Core()->SetValue(tmp, (void*)&lights[0].Specular, sizeof(D3DCOLORVALUE));
+    sprintf_s(tmp,"lights[1].vSpecular");
+    m_pd3dDevice->basicShader->Core()->SetValue(tmp, (void*)&lights[0].Specular, sizeof(D3DCOLORVALUE));
+/*
+    for(unsigned int i = 0; i < MAX_LIGHT_SOURCES; ++i)
     {
         const LightSource& lgts = g_pplayer->m_ptable->m_Light[i];
 
@@ -284,17 +332,17 @@ void Pin3D::InitLights()
             light.setAmbient(COLORREF_to_D3DCOLOR(lgts.ambient));
             light.setDiffuse(COLORREF_to_D3DCOLOR(lgts.diffuse));
             light.setSpecular(COLORREF_to_D3DCOLOR(lgts.specular));
-            light.setRange( /*(light.getType() == D3DLIGHT_POINT) ? lgts.pointRange :*/
-                    /* DX9 D3DLIGHT_RANGE_MAX */ 1e6f); //!!  expose?
+            light.setRange( / *(light.getType() == D3DLIGHT_POINT) ? lgts.pointRange :* /
+                    / * DX9 D3DLIGHT_RANGE_MAX * / 1e6f); //!!  expose?
 
             if((light.getType() == D3DLIGHT_POINT) || (light.getType() == D3DLIGHT_SPOT))
                 light.setAttenuation2(0.0000025f); //!!  expose? //!! real world: light.dvAttenuation2 = 1.0f; but due to low dynamic 255-level-RGB lighting, we have to stick with the old crap
 
             if(light.getType() == D3DLIGHT_SPOT)
             {
-                light.setFalloff( /*lgts.spotExponent;*/ 1.0f ); //!!  expose?
-                light.setPhi    ( /*lgts.spotMin*/ (float)(60*M_PI/180.0) ); //!!  expose?
-                light.setTheta  ( /*lgts.spotMax*/ (float)(20*M_PI/180.0) ); //!!  expose?
+                light.setFalloff( / *lgts.spotExponent;* / 1.0f ); //!!  expose?
+                light.setPhi    ( / *lgts.spotMin* / (float)(60*M_PI/180.0) ); //!!  expose?
+                light.setTheta  ( / *lgts.spotMax* / (float)(20*M_PI/180.0) ); //!!  expose?
             }
 
             // transform dir & pos with world trafo to be always aligned with table (so that user trafos don't change the lighting!)
@@ -342,7 +390,7 @@ void Pin3D::InitLights()
         else
             m_pd3dDevice->LightEnable(i, FALSE);
     }
-
+*/
 	m_pd3dDevice->SetRenderState(RenderDevice::LIGHTING, TRUE);
 }
 
@@ -435,6 +483,7 @@ void Pin3D::RenderPlayfieldGraphics()
 	//rgv[7].x=g_pplayer->m_ptable->m_right;    rgv[7].y=g_pplayer->m_ptable->m_top;      rgv[7].z=50.0f;
 
 	Texture * const pin = g_pplayer->m_ptable->GetImage((char *)g_pplayer->m_ptable->m_szImage);
+   m_pd3dDevice->SetVertexDeclaration( m_pd3dDevice->m_pVertexNormalTexelTexelDeclaration );
 
 	EnableLightMap(0);
 
@@ -507,33 +556,47 @@ void Pin3D::RenderPlayfieldGraphics()
 	EnableLightMap(0);
 
 	Material mtrl;
+   float r = (float)(g_pplayer->m_ptable->m_colorplayfield & 255) * (float)(1.0/255.0);
+   float g = (float)(g_pplayer->m_ptable->m_colorplayfield & 65280) * (float)(1.0/65280.0);
+   float b = (float)(g_pplayer->m_ptable->m_colorplayfield & 16711680) * (float)(1.0/16711680.0);
+   D3DXVECTOR4 matColor(r,g,b,1.0f);   
+   m_pd3dDevice->basicShader->Core()->SetFloat("vMaterialPower",0.0f);
+   m_pd3dDevice->basicShader->Core()->SetVector("vMaterialColor",&matColor);
 
 	if (pin)
 	{
-		SetTexture(pin);
-        SetTextureFilter(ePictureTexture, TEXTURE_MODE_ANISOTROPIC);
+//		SetTexture(pin);
+      SetTextureFilter(ePictureTexture, TEXTURE_MODE_ANISOTROPIC);
+      m_pd3dDevice->basicShader->SetTexture("Texture0",pin);
+      m_pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
 	}
 	else // No image by that name
 	{
 		SetTexture(NULL);
 		mtrl.setColor( 1.0f, g_pplayer->m_ptable->m_colorplayfield );
+      m_pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
 	}
 	m_pd3dDevice->SetMaterial(mtrl);
 
-    assert(tableIBuffer == NULL);
-    tableIBuffer = m_pd3dDevice->CreateAndFillIndexBuffer(playfieldPolyIndices);
+   assert(tableIBuffer == NULL);
+   tableIBuffer = m_pd3dDevice->CreateAndFillIndexBuffer(playfieldPolyIndices);
+   m_pd3dDevice->basicShader->Begin(0);
 	m_pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, tableVBuffer, 0, numVerts, tableIBuffer, 0, numIndices);
+   m_pd3dDevice->basicShader->End();  
 
 	DisableLightMap();
 	SetTexture(NULL);
     if (pin)
     {
-        m_pd3dDevice->SetTexture(0, NULL);
+        //m_pd3dDevice->SetTexture(0, NULL);
         m_pd3dDevice->m_texMan.UnloadTexture(pin->m_pdsBuffer);
         SetTextureFilter(ePictureTexture, TEXTURE_MODE_TRILINEAR);
+        m_pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
     }
 
-	m_pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLEFAN, tableVBuffer, numVerts, 7, (LPWORD)rgiPin3D1, 4);
+    m_pd3dDevice->basicShader->Begin(0);
+    m_pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLEFAN, tableVBuffer, numVerts, 7, (LPWORD)rgiPin3D1, 4);
+    m_pd3dDevice->basicShader->End();  
 
     // Apparently, releasing the vertex buffer here immediately can cause rendering glitches in
     // later rendering steps, so we keep it around for now.

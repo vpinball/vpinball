@@ -1087,18 +1087,29 @@ void Ramp::RenderStaticHabitrail(RenderDevice* pd3dDevice)
    if ( !pin )
    {
        Material habitrailMaterial;
-       habitrailMaterial.setColor( 1.0f, m_d.m_color );
-       habitrailMaterial.setPower( 8.0f );
-       habitrailMaterial.setSpecular( 1.0f, 1.0f, 1.0f, 1.0f );
-       pd3dDevice->SetMaterial(habitrailMaterial);
+//        habitrailMaterial.setColor( 1.0f, m_d.m_color );
+//        habitrailMaterial.setPower( 8.0f );
+//        habitrailMaterial.setSpecular( 1.0f, 1.0f, 1.0f, 1.0f );
+//        pd3dDevice->SetMaterial(habitrailMaterial);
+       pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
    }
    else
    {
        pin->CreateAlphaChannel();
-       pin->Set( ePictureTexture );
-       pd3dDevice->SetMaterial(textureMaterial);
+//       pin->Set( ePictureTexture );
+//       pd3dDevice->SetMaterial(textureMaterial);
+       if ( pin->m_pdsBufferColorKey )
+           pd3dDevice->basicShader->Core()->SetTexture("Texture0",pd3dDevice->m_texMan.LoadTexture(pin->m_pdsBufferColorKey));
+       else if (pin->m_pdsBuffer )
+           pd3dDevice->basicShader->Core()->SetTexture("Texture0",pd3dDevice->m_texMan.LoadTexture(pin->m_pdsBuffer));
+
+       pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
+
        g_pplayer->m_pin3d.SetTextureFilter(ePictureTexture, TEXTURE_MODE_TRILINEAR);
 }
+   unsigned int cPasses;
+   pd3dDevice->basicShader->Core()->Begin(&cPasses,0);
+   pd3dDevice->basicShader->Core()->BeginPass(0);  
 
    int offset=0;
    for (int i=0; i<rampVertex-1; i++,offset+=32)
@@ -1110,6 +1121,8 @@ void Ramp::RenderStaticHabitrail(RenderDevice* pd3dDevice)
       if (m_d.m_type == RampType4Wire || m_d.m_type == RampType3WireLeft)
          RenderPolygons(pd3dDevice, offset, (WORD*)rgicrosssection, 24, 32);
    }
+   pd3dDevice->basicShader->Core()->EndPass();  
+   pd3dDevice->basicShader->Core()->End();  
 
    pd3dDevice->SetRenderState(RenderDevice::SPECULARENABLE, FALSE);
 }
@@ -1577,6 +1590,14 @@ void Ramp::RenderStatic(RenderDevice* pd3dDevice)
    if (m_d.m_imagealignment == ImageModeWrap)
        pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_CLAMP);
 
+   const float r = (float)(m_d.m_color & 255) * (float)(1.0/255.0);
+   const float g = (float)(m_d.m_color & 65280) * (float)(1.0/65280.0);
+   const float b = (float)(m_d.m_color & 16711680) * (float)(1.0/16711680.0);
+   D3DXVECTOR4 matColor(r,g,b,1.0f);   
+   pd3dDevice->basicShader->Core()->SetFloat("vMaterialPower",0.0f);
+
+   pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelDeclaration );
+
    if (isHabitrail())
    {
       RenderStaticHabitrail(pd3dDevice);
@@ -1589,7 +1610,12 @@ void Ramp::RenderStatic(RenderDevice* pd3dDevice)
       if (pin)
       {
          pin->CreateAlphaChannel();
-         pin->Set( ePictureTexture );
+         //pin->Set( ePictureTexture );
+
+         pd3dDevice->basicShader->SetTexture("Texture0", pin );
+         pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
+         D3DXVECTOR4 color(1.0f,1.0f,1.0f,1.0f);   
+         pd3dDevice->basicShader->Core()->SetVector("vMaterialColor",&color);
 
          if (pin->m_fTransparent)
          {
@@ -1599,29 +1625,38 @@ void Ramp::RenderStatic(RenderDevice* pd3dDevice)
          {
             pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
          }
-       ppin3d->EnableAlphaBlend( 1, false );
+         ppin3d->EnableAlphaBlend( 1, false );
 
-            ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
+         ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 
          pd3dDevice->SetMaterial(textureMaterial);
-         if ( !m_d.m_enableLightingImage )
-            pd3dDevice->SetRenderState( RenderDevice::LIGHTING, FALSE );
+//          if ( !m_d.m_enableLightingImage )
+//             pd3dDevice->SetRenderState( RenderDevice::LIGHTING, FALSE );
       }
       else
+      {
          pd3dDevice->SetMaterial(solidMaterial);
+         pd3dDevice->basicShader->Core()->SetVector("vMaterialColor",&matColor);
+         pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
+      }
+
+      pd3dDevice->basicShader->Begin(0);
 
       int offset=0;
       for (int i=0; i<(rampVertex-1); i++,offset+=4)
          pd3dDevice->DrawPrimitiveVB(D3DPT_TRIANGLEFAN, staticVertexBuffer, offset, 4);
+      pd3dDevice->basicShader->End();  
 
       if (pin && !m_d.m_fImageWalls)
       {
          ppin3d->SetTexture(NULL);
-         pd3dDevice->SetMaterial(solidMaterial);
-         if ( !m_d.m_enableLightingImage )
-            pd3dDevice->SetRenderState( RenderDevice::LIGHTING, TRUE );
+         pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
+//         pd3dDevice->SetMaterial(solidMaterial);
+//         if ( !m_d.m_enableLightingImage )
+//            pd3dDevice->SetRenderState( RenderDevice::LIGHTING, TRUE );
       }
 
+      pd3dDevice->basicShader->Begin(0);
       for (int i=0;i<(rampVertex-1);i++)
       {
          pd3dDevice->DrawPrimitiveVB(D3DPT_TRIANGLEFAN, staticVertexBuffer, offset, 4);
@@ -1637,14 +1672,15 @@ void Ramp::RenderStatic(RenderDevice* pd3dDevice)
          pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLEFAN, staticVertexBuffer, offset, 4, rgiRampStatic1, 4);
          offset+=4;
       }
+      pd3dDevice->basicShader->End();  
 
       ppin3d->SetTexture(NULL);
 
       pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
       ppin3d->DisableAlphaBlend();
 
-      if ( !m_d.m_enableLightingImage && pin!=NULL )
-         pd3dDevice->SetRenderState( RenderDevice::LIGHTING, TRUE );
+//       if ( !m_d.m_enableLightingImage && pin!=NULL )
+//          pd3dDevice->SetRenderState( RenderDevice::LIGHTING, TRUE );
       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
    }
 }
@@ -2591,11 +2627,18 @@ void Ramp::PostRenderStatic(RenderDevice* pd3dDevice)
       return;
    }
 
+   pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelDeclaration );
+
    // see the comment in RenderStatic() above
    if (m_d.m_imagealignment == ImageModeWrap)
        pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_CLAMP);
 
    solidMaterial.setColor(1.0f, m_d.m_color );
+   const float r = (float)(m_d.m_color & 255) * (float)(1.0/255.0);
+   const float g = (float)(m_d.m_color & 65280) * (float)(1.0/65280.0);
+   const float b = (float)(m_d.m_color & 16711680) * (float)(1.0/16711680.0);
+   D3DXVECTOR4 matColor(r,g,b,1.0f);   
+   pd3dDevice->basicShader->Core()->SetFloat("vMaterialPower",0.0f);
 
    if (isHabitrail())
    {
@@ -2609,41 +2652,57 @@ void Ramp::PostRenderStatic(RenderDevice* pd3dDevice)
       if (pin)
       {
          pin->CreateAlphaChannel();
-         pin->Set( ePictureTexture );
+         //pin->Set( ePictureTexture );
+
+         pd3dDevice->basicShader->SetTexture( "Texture0", pin );
+         pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
+         D3DXVECTOR4 color(1.0f,1.0f,1.0f,1.0f);   
+         pd3dDevice->basicShader->Core()->SetVector("vMaterialColor",&color);
 
          ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 
          pd3dDevice->SetMaterial(textureMaterial);
-         if ( !m_d.m_enableLightingImage )
-            pd3dDevice->SetRenderState( RenderDevice::LIGHTING, FALSE );
+//          if ( !m_d.m_enableLightingImage )
+//             pd3dDevice->SetRenderState( RenderDevice::LIGHTING, FALSE );
       }
       else
       {
          ppin3d->SetTexture(NULL);
-         pd3dDevice->SetMaterial(solidMaterial);
+         pd3dDevice->basicShader->Core()->SetVector("vMaterialColor",&matColor);
+         pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
+         //pd3dDevice->SetMaterial(solidMaterial);
       }
 
       if (!dynamicVertexBuffer || dynamicVertexBufferRegenerate)
          GenerateVertexBuffer(pd3dDevice);
 
       ppin3d->EnableAlphaBlend( 1, false );
+
+      //pd3dDevice->basicShader->Core()->SetFloat("materialAlpha", (float)(m_d.m_opacity/255.0f));
+
       pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
       pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_ALPHAARG2, D3DTA_TFACTOR);
       pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, (m_d.m_opacity << 24) | 0xffffff);
 
       unsigned int offset=0;
+      pd3dDevice->basicShader->Begin(0);
       pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, dynamicVertexBuffer, offset, m_numVertices, dynamicIndexBuffer, 0, (rampVertex-1)*6);
+      pd3dDevice->basicShader->End();  
+
       offset += m_numVertices;
 
       if (pin && !m_d.m_fImageWalls)
       {
          ppin3d->SetTexture(NULL);
-         pd3dDevice->SetMaterial(solidMaterial);
-         if ( !m_d.m_enableLightingImage )
-            pd3dDevice->SetRenderState( RenderDevice::LIGHTING, TRUE );
+         //pd3dDevice->SetMaterial(solidMaterial);
+         pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
+//          if ( !m_d.m_enableLightingImage )
+//             pd3dDevice->SetRenderState( RenderDevice::LIGHTING, TRUE );
       }
 
-	  if(m_d.m_rightwallheightvisible!=0.f && m_d.m_leftwallheightvisible!=0.f) //only render left & right side if the height is >0
+      pd3dDevice->basicShader->Begin(0);
+
+      if(m_d.m_rightwallheightvisible!=0.f && m_d.m_leftwallheightvisible!=0.f) //only render left & right side if the height is >0
       {
          pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, dynamicVertexBuffer, offset, m_numVertices*2*2, dynamicIndexBuffer, 0, (rampVertex-1)*6*2*2);
       }
@@ -2660,14 +2719,16 @@ void Ramp::PostRenderStatic(RenderDevice* pd3dDevice)
 			pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, dynamicVertexBuffer, offset, m_numVertices*2, dynamicIndexBuffer, 0, (rampVertex-1)*6*2);
         }
 	  }
+      pd3dDevice->basicShader->End();  
 
-      pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
       ppin3d->DisableAlphaBlend();
-      pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
-      pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, 0xffffffff);
 
-      if ( !m_d.m_enableLightingImage && pin!=NULL )
-         pd3dDevice->SetRenderState( RenderDevice::LIGHTING, TRUE );
+//       pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
+//       pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
+//       pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, 0xffffffff);
+
+//       if ( !m_d.m_enableLightingImage && pin!=NULL )
+//          pd3dDevice->SetRenderState( RenderDevice::LIGHTING, TRUE );
    }
 }
 

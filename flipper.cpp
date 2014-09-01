@@ -583,6 +583,8 @@ void Flipper::PostRenderStatic(RenderDevice* pd3dDevice)
         return;
     if (m_phitflipper == NULL && !m_d.m_fVisible)
         return;
+    
+    pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelTexelDeclaration );
 
     pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE);
     pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
@@ -594,9 +596,16 @@ void Flipper::PostRenderStatic(RenderDevice* pd3dDevice)
     Material mat;
     mat.setColor( 1.0f, m_d.m_color);
     pd3dDevice->SetMaterial(mat);
+    float r = (float)(m_d.m_color & 255) * (float)(1.0/255.0);
+    float g = (float)(m_d.m_color & 65280) * (float)(1.0/65280.0);
+    float b = (float)(m_d.m_color & 16711680) * (float)(1.0/16711680.0);
+    D3DXVECTOR4 matColor(r,g,b,1.0f);   
+    pd3dDevice->basicShader->Core()->SetFloat("vMaterialPower",0.0f);
+    pd3dDevice->basicShader->Core()->SetVector("vMaterialColor",&matColor);
+    pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
 
     Matrix3D matOrig, matNew, matTemp;
-	pd3dDevice->GetTransform(TRANSFORMSTATE_WORLD, &matOrig);
+    pd3dDevice->GetTransform(TRANSFORMSTATE_WORLD, &matOrig);
 
     matTemp.SetIdentity();
     matTemp._41 = m_d.m_Center.x;
@@ -607,20 +616,32 @@ void Flipper::PostRenderStatic(RenderDevice* pd3dDevice)
     matNew.Multiply(matTemp, matNew);
 
     pd3dDevice->SetTransform(TRANSFORMSTATE_WORLD, &matNew);
-
+    g_pplayer->UpdateBasicShaderMatrix();
+    
+    pd3dDevice->basicShader->Begin(0);
     // render flipper
     pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, vertexBuffer, 0, 108, indexBuffer, 0, numIndices );
+    pd3dDevice->basicShader->End();  
 
     // render rubber
     if (m_d.m_rubberthickness > 0)
     {
-        mat.setColor( 1.0f, m_d.m_rubbercolor);
-        pd3dDevice->SetMaterial(mat);
+       float r = (float)(m_d.m_rubbercolor & 255) * (float)(1.0/255.0);
+       float g = (float)(m_d.m_rubbercolor & 65280) * (float)(1.0/65280.0);
+       float b = (float)(m_d.m_rubbercolor & 16711680) * (float)(1.0/16711680.0);
+       D3DXVECTOR4 matColor(r,g,b,1.0f);   
+       pd3dDevice->basicShader->Core()->SetVector("vMaterialColor",&matColor);
 
-        pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, vertexBuffer, 108, 108, indexBuffer, 0, numIndices );
+       mat.setColor( 1.0f, m_d.m_rubbercolor);
+       pd3dDevice->SetMaterial(mat);
+
+       pd3dDevice->basicShader->Begin(0);
+       pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, vertexBuffer, 108, 108, indexBuffer, 0, numIndices );
+       pd3dDevice->basicShader->End();  
     }
 
     pd3dDevice->SetTransform(TRANSFORMSTATE_WORLD, &matOrig);
+    g_pplayer->UpdateBasicShaderMatrix();
 }
 
 
