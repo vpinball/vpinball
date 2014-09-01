@@ -1039,9 +1039,9 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
 */
     pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelTexelDeclaration );
 
-    float r = (float)(m_d.m_sidecolor & 255) * (float)(1.0/255.0);
-    float g = (float)(m_d.m_sidecolor & 65280) * (float)(1.0/65280.0);
-    float b = (float)(m_d.m_sidecolor & 16711680) * (float)(1.0/16711680.0);
+    const float r = (float)(m_d.m_sidecolor & 255) * (float)(1.0/255.0);
+    const float g = (float)(m_d.m_sidecolor & 65280) * (float)(1.0/65280.0);
+    const float b = (float)(m_d.m_sidecolor & 16711680) * (float)(1.0/16711680.0);
     D3DXVECTOR4 matColor(r,g,b,1.0f);   
     pd3dDevice->basicShader->Core()->SetFloat("vMaterialPower",0.0f);
     if( m_d.m_transparent )
@@ -1110,9 +1110,9 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
 
     if (m_d.m_fVisible)
     {
-        float r = (float)(m_d.m_topcolor & 255) * (float)(1.0/255.0);
-        float g = (float)(m_d.m_topcolor & 65280) * (float)(1.0/65280.0);
-        float b = (float)(m_d.m_topcolor & 16711680) * (float)(1.0/16711680.0);
+        const float r = (float)(m_d.m_topcolor & 255) * (float)(1.0/255.0);
+        const float g = (float)(m_d.m_topcolor & 65280) * (float)(1.0/65280.0);
+        const float b = (float)(m_d.m_topcolor & 16711680) * (float)(1.0/16711680.0);
         D3DXVECTOR4 matTopColor(r,g,b,1.0f);   
         pd3dDevice->basicShader->Core()->SetFloat("vMaterialPower",0.0f);
 
