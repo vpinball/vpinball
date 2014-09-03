@@ -322,6 +322,12 @@ public:
     bool m_fRecordContacts;             // flag for DoHitTest()
     std::vector< CollisionEvent > m_contacts;
 
+	int m_dmdx;
+	int m_dmdy;
+	std::vector<unsigned int> m_rawdmd; //!! needs to be char only, but texpipeline so far only for 32bit //!! store only in texdmd?
+	MemTexture* m_texdmd;
+	D3DTexture* m_device_texdmd;
+
 private:
 	Vector<HitObject> m_vho;
     std::vector< AnimObject* > m_vmover;    // moving objects for physics simulation

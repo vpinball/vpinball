@@ -282,6 +282,11 @@ Player::Player()
 
     m_fRecordContacts = false;
     m_contacts.reserve(8);
+
+	m_dmdx = 0;
+	m_dmdx = 0;
+	m_texdmd = NULL;
+	m_device_texdmd = NULL;
 }
 
 Player::~Player()
@@ -340,6 +345,17 @@ void Player::Shutdown()
 	//m_vho_dynamic.RemoveAllElements();
 
 	m_vball.clear();
+
+	m_dmdx = 0;
+	m_dmdy = 0;
+	m_rawdmd.clear();
+	if(m_texdmd)
+	{
+		m_pin3d.m_pd3dDevice->m_texMan.UnloadTexture(g_pplayer->m_texdmd);
+		delete m_texdmd;
+		m_texdmd = NULL;
+	}
+	m_device_texdmd = NULL;
 
 #ifdef LOG
 	if (m_flog)
