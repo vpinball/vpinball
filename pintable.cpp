@@ -523,6 +523,55 @@ STDMETHODIMP ScriptGlobalTable::get_VPBuildVersion(long *pVal)
    return S_OK;
 }
 
+STDMETHODIMP ScriptGlobalTable::put_DMDWidth(int pVal)
+{
+   if(g_pplayer)
+	   g_pplayer->m_dmdx = pVal;
+   return S_OK;
+}
+
+STDMETHODIMP ScriptGlobalTable::put_DMDHeight(int pVal)
+{
+   if(g_pplayer)
+	   g_pplayer->m_dmdy = pVal;
+   return S_OK;
+}
+
+STDMETHODIMP ScriptGlobalTable::put_DMDPixels(VARIANT pVal) //!! use 64bit instead of 8bit to reduce overhead??
+{
+	SAFEARRAY *psa = pVal.parray;
+
+	if(psa && g_pplayer && g_pplayer->m_dmdx > 0 && g_pplayer->m_dmdy > 0)
+	{
+		const unsigned int size = g_pplayer->m_dmdx*g_pplayer->m_dmdy;
+		if(g_pplayer->m_rawdmd.size() != size)
+		{
+			g_pplayer->m_rawdmd.resize(size);
+			if(g_pplayer->m_texdmd)
+			{
+				g_pplayer->m_pin3d.m_pd3dDevice->m_texMan.UnloadTexture(g_pplayer->m_texdmd);
+				delete g_pplayer->m_texdmd;
+			}
+			g_pplayer->m_texdmd = new MemTexture(g_pplayer->m_dmdx,g_pplayer->m_dmdy);
+		}
+
+		VARIANT DMDState;
+		DMDState.vt = VT_UI8;
+		
+		for(LONG ofs = 0; ofs < size; ++ofs)
+		{
+			SafeArrayGetElement(psa, &ofs, &DMDState);
+			g_pplayer->m_rawdmd[ofs] = DMDState.uintVal; // store raw values, let shader do the rest
+		}
+
+		g_pplayer->m_texdmd->CopyBits(&g_pplayer->m_rawdmd[0]); //!! store directly only in texdmd?
+		g_pplayer->m_device_texdmd = g_pplayer->m_pin3d.m_pd3dDevice->m_texMan.LoadTexture(g_pplayer->m_texdmd);
+		g_pplayer->m_pin3d.m_pd3dDevice->m_texMan.SetDirty(g_pplayer->m_texdmd);
+	}
+		
+	return S_OK;
+}
+
 STDMETHODIMP ScriptGlobalTable::GetBalls(LPSAFEARRAY *pVal)
 {
     if (!pVal || !g_pplayer)
