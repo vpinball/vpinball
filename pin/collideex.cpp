@@ -891,9 +891,6 @@ void HitLine3D::CalcHitRect()
 }
 
 
-
-
-
 // this function is called every frame to see if the object needs updating
 //
 void DispReelAnimObject::Check3D()
@@ -905,6 +902,7 @@ void DispReelAnimObject::Check3D()
 void DispReelAnimObject::Reset()
 {
 }
+
 
 // this function is called every frame to see if the object needs updating
 //

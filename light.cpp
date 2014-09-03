@@ -495,12 +495,6 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
     if (m_realState == LightStateBlinking)
         UpdateBlinker(g_pplayer->m_time_msec);
 
-    PostRenderStaticCustom(pd3dDevice);
-}
-
-
-void Light::PostRenderStaticCustom(RenderDevice* pd3dDevice)
-{
     Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
     pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
@@ -583,7 +577,6 @@ void Light::PostRenderStaticCustom(RenderDevice* pd3dDevice)
     pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
     pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
 }
-
 
 void Light::PrepareStaticCustom()
 {
@@ -851,14 +844,6 @@ void Light::RenderSetup(RenderDevice* pd3dDevice)
        m_d.m_currentIntensity = m_d.m_intensity;
     else
        m_d.m_currentIntensity = 0.0f;
-
-    // VP9COMPAT
-    Texture *tex;
-    if ((tex = m_ptable->GetImage(m_d.m_szOffImage)) != NULL)
-        tex->CreateAlphaChannel();
-    if ((tex = m_ptable->GetImage(m_d.m_szOnImage)) != NULL)
-        tex->CreateAlphaChannel();
-    // end compat
 
     if( m_pInsertShader==NULL )
     {
