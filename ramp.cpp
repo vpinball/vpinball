@@ -1087,29 +1087,21 @@ void Ramp::RenderStaticHabitrail(RenderDevice* pd3dDevice)
    if ( !pin )
    {
        Material habitrailMaterial;
-//        habitrailMaterial.setColor( 1.0f, m_d.m_color );
-//        habitrailMaterial.setPower( 8.0f );
-//        habitrailMaterial.setSpecular( 1.0f, 1.0f, 1.0f, 1.0f );
-//        pd3dDevice->SetMaterial(habitrailMaterial);
+       pd3dDevice->basicShader->Core()->SetFloat("vMaterialPower",8.0f);
+       pd3dDevice->basicShader->Core()->SetBool("bSpecular", true);
        pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
    }
    else
    {
        pin->CreateAlphaChannel();
-//       pin->Set( ePictureTexture );
-//       pd3dDevice->SetMaterial(textureMaterial);
-       if ( pin->m_pdsBufferColorKey )
-           pd3dDevice->basicShader->Core()->SetTexture("Texture0",pd3dDevice->m_texMan.LoadTexture(pin->m_pdsBufferColorKey));
-       else if (pin->m_pdsBuffer )
-           pd3dDevice->basicShader->Core()->SetTexture("Texture0",pd3dDevice->m_texMan.LoadTexture(pin->m_pdsBuffer));
-
+       D3DXVECTOR4 color(1.0f,1.0f,1.0f,1.0f);   
+       pd3dDevice->basicShader->Core()->SetVector("vMaterialColor",&color);
+       pd3dDevice->basicShader->SetTexture("Texture0",pin);
        pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
 
        g_pplayer->m_pin3d.SetTextureFilter(ePictureTexture, TEXTURE_MODE_TRILINEAR);
 }
-   unsigned int cPasses;
-   pd3dDevice->basicShader->Core()->Begin(&cPasses,0);
-   pd3dDevice->basicShader->Core()->BeginPass(0);  
+   pd3dDevice->basicShader->Begin(0);
 
    int offset=0;
    for (int i=0; i<rampVertex-1; i++,offset+=32)
@@ -1121,10 +1113,12 @@ void Ramp::RenderStaticHabitrail(RenderDevice* pd3dDevice)
       if (m_d.m_type == RampType4Wire || m_d.m_type == RampType3WireLeft)
          RenderPolygons(pd3dDevice, offset, (WORD*)rgicrosssection, 24, 32);
    }
-   pd3dDevice->basicShader->Core()->EndPass();  
-   pd3dDevice->basicShader->Core()->End();  
+   pd3dDevice->basicShader->End();  
 
    pd3dDevice->SetRenderState(RenderDevice::SPECULARENABLE, FALSE);
+   if ( !pin )
+       pd3dDevice->basicShader->Core()->SetBool("bSpecular", false);
+
 }
 
 void Ramp::RenderPolygons(RenderDevice* pd3dDevice, int offset, WORD * const rgi, const int start, const int stop)
@@ -1594,9 +1588,9 @@ void Ramp::RenderStatic(RenderDevice* pd3dDevice)
    const float g = (float)(m_d.m_color & 65280) * (float)(1.0/65280.0);
    const float b = (float)(m_d.m_color & 16711680) * (float)(1.0/16711680.0);
    D3DXVECTOR4 matColor(r,g,b,1.0f);   
-   pd3dDevice->basicShader->Core()->SetFloat("vMaterialPower",0.0f);
 
    pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelDeclaration );
+   pd3dDevice->basicShader->Core()->SetVector("vMaterialColor",&matColor);
 
    if (isHabitrail())
    {
@@ -1606,6 +1600,7 @@ void Ramp::RenderStatic(RenderDevice* pd3dDevice)
    {
       Pin3D * const ppin3d = &g_pplayer->m_pin3d;
       Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
+      pd3dDevice->basicShader->Core()->SetFloat("vMaterialPower",0.0f);
 
       if (pin)
       {
@@ -1635,8 +1630,6 @@ void Ramp::RenderStatic(RenderDevice* pd3dDevice)
       }
       else
       {
-         pd3dDevice->SetMaterial(solidMaterial);
-         pd3dDevice->basicShader->Core()->SetVector("vMaterialColor",&matColor);
          pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
       }
 
@@ -2638,7 +2631,7 @@ void Ramp::PostRenderStatic(RenderDevice* pd3dDevice)
    const float g = (float)(m_d.m_color & 65280) * (float)(1.0/65280.0);
    const float b = (float)(m_d.m_color & 16711680) * (float)(1.0/16711680.0);
    D3DXVECTOR4 matColor(r,g,b,1.0f);   
-   pd3dDevice->basicShader->Core()->SetFloat("vMaterialPower",0.0f);
+   pd3dDevice->basicShader->Core()->SetVector("vMaterialColor",&matColor);
 
    if (isHabitrail())
    {
@@ -2646,6 +2639,9 @@ void Ramp::PostRenderStatic(RenderDevice* pd3dDevice)
    }
    else
    {
+      pd3dDevice->basicShader->Core()->SetVector("vMaterialColor",&matColor);
+      pd3dDevice->basicShader->Core()->SetFloat("vMaterialPower",0.0f);
+
       Pin3D * const ppin3d = &g_pplayer->m_pin3d;
       Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
 
@@ -2661,24 +2657,19 @@ void Ramp::PostRenderStatic(RenderDevice* pd3dDevice)
 
          ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 
-         pd3dDevice->SetMaterial(textureMaterial);
 //          if ( !m_d.m_enableLightingImage )
 //             pd3dDevice->SetRenderState( RenderDevice::LIGHTING, FALSE );
       }
       else
       {
          ppin3d->SetTexture(NULL);
-         pd3dDevice->basicShader->Core()->SetVector("vMaterialColor",&matColor);
          pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
-         //pd3dDevice->SetMaterial(solidMaterial);
       }
 
       if (!dynamicVertexBuffer || dynamicVertexBufferRegenerate)
          GenerateVertexBuffer(pd3dDevice);
 
       ppin3d->EnableAlphaBlend( 1, false );
-
-      //pd3dDevice->basicShader->Core()->SetFloat("materialAlpha", (float)(m_d.m_opacity/255.0f));
 
       pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
       pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_ALPHAARG2, D3DTA_TFACTOR);
@@ -2694,7 +2685,6 @@ void Ramp::PostRenderStatic(RenderDevice* pd3dDevice)
       if (pin && !m_d.m_fImageWalls)
       {
          ppin3d->SetTexture(NULL);
-         //pd3dDevice->SetMaterial(solidMaterial);
          pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
 //          if ( !m_d.m_enableLightingImage )
 //             pd3dDevice->SetRenderState( RenderDevice::LIGHTING, TRUE );

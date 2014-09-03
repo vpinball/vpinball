@@ -279,8 +279,8 @@ void Plunger::PostRenderStatic(RenderDevice* pd3dDevice)
     const float g = (float)(m_d.m_color & 65280) * (float)(1.0/65280.0);
     const float b = (float)(m_d.m_color & 16711680) * (float)(1.0/16711680.0);
     D3DXVECTOR4 matColor(r,g,b,1.0f);   
-    pd3dDevice->basicShader->Core()->SetFloat("vMaterialPower",8.0f);
-    pd3dDevice->basicShader->Core()->SetVector("vMaterialColor",&matColor);
+    pd3dDevice->basicShader->Core()->SetFloat("vMaterialPower",16.0f);
+    pd3dDevice->basicShader->Core()->SetBool("bSpecular",true);
 
     if (m_d.m_type == PlungerTypeModern)
     {
@@ -289,10 +289,11 @@ void Plunger::PostRenderStatic(RenderDevice* pd3dDevice)
         {
             //render a simple rectangle as an embedded alpha ramp plunger ;)
             pin->CreateAlphaChannel();
-            //pin->Set(ePictureTexture);
+            D3DXVECTOR4 color(1.0f,1.0f,1.0f,1.0f);
+            pd3dDevice->basicShader->Core()->SetVector("vMaterialColor",&color);
             pd3dDevice->basicShader->SetTexture("Texture0",pin);
             pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
-            pd3dDevice->SetRenderState(RenderDevice::LIGHTING, FALSE );
+            //pd3dDevice->SetRenderState(RenderDevice::LIGHTING, FALSE );
             ppin3d->EnableAlphaBlend( 1, fFalse );
             ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
             static const WORD idx[6] = {0,1,2,2,3,0};
@@ -307,7 +308,8 @@ void Plunger::PostRenderStatic(RenderDevice* pd3dDevice)
             if ( pin )
             {
                 pin->CreateAlphaChannel();
-                //pin->Set(ePictureTexture);
+                D3DXVECTOR4 color(1.0f,1.0f,1.0f,1.0f);
+                pd3dDevice->basicShader->Core()->SetVector("vMaterialColor",&color);
                 pd3dDevice->basicShader->SetTexture("Texture0",pin);
                 pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
                 //pd3dDevice->SetRenderState(RenderDevice::LIGHTING, FALSE );
@@ -317,6 +319,7 @@ void Plunger::PostRenderStatic(RenderDevice* pd3dDevice)
             else
             {
                 //ppin3d->SetTexture(NULL);
+                pd3dDevice->basicShader->Core()->SetVector("vMaterialColor",&matColor);
                 pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
             }
             pd3dDevice->basicShader->Begin(0);
@@ -330,10 +333,14 @@ void Plunger::PostRenderStatic(RenderDevice* pd3dDevice)
     }
     else if (m_d.m_type == PlungerTypeOrig)
     {
-        ppin3d->SetTexture(NULL);
+        pd3dDevice->basicShader->Core()->SetVector("vMaterialColor",&matColor);
         ppin3d->DisableAlphaBlend();
+        pd3dDevice->basicShader->Begin(0);
         pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, vertexBuffer, frame*(16*PLUNGEPOINTS0), 16*PLUNGEPOINTS0, indexBuffer, 0, 16*6*(PLUNGEPOINTS0-1));
+        pd3dDevice->basicShader->End();
     }
+    pd3dDevice->basicShader->Core()->SetBool("bSpecular",false);
+
 }
 
 const float rgcrossplunger0[][2] =

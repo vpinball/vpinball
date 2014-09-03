@@ -624,6 +624,7 @@ END_CONNECTION_POINT_MAP()
     bool m_overwriteGlobalAlphaRampsAccuracy;
 
 	LightSource m_Light[MAX_LIGHT_SOURCES];
+    float m_lightHeight;
     int m_useReflectionForBalls;
     int m_ballReflectionStrength;
     int m_useTrailForBalls;
