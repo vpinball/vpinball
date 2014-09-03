@@ -279,8 +279,8 @@ void Pin3D::InitLights()
     lights[1].Position.x = g_pplayer->m_ptable->m_right/2.0f;
     lights[0].Position.y = g_pplayer->m_ptable->m_bottom/3.0f;
     lights[1].Position.y = (g_pplayer->m_ptable->m_bottom/3.0f)*2.0f;
-    lights[0].Position.z = (g_pplayer->m_ptable->m_glassheight*5.0f);
-    lights[1].Position.z = (g_pplayer->m_ptable->m_glassheight*5.0f);
+    lights[0].Position.z = (g_pplayer->m_ptable->m_lightHeight);
+    lights[1].Position.z = (g_pplayer->m_ptable->m_lightHeight);
     D3DXVECTOR4 ambient = COLORREF_to_D3DXVECTOR4(g_pplayer->m_ptable->m_Light[0].ambient);
     lights[0].Ambient.a = 1.0f;
     lights[0].Ambient.r = ambient.z;

@@ -974,7 +974,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="$(DXSDK_DIR)Include;inc;pin;media"
+				AdditionalIncludeDirectories="$(DXSDK_DIR)Include;inc;pin;media;inc\winsdk"
 				PreprocessorDefinitions="COR_ENABLE_PROFILING;WIN32;_DEBUG;_WINDOWS;MYDEBUG;_DEBUGPHYSICS"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"

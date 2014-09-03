@@ -6,7 +6,7 @@ float fMaterialPower = 16.f;
  
 float4 vAmbientColor = float4(128.f/255.f, 128.f/255.f, 128.f/255.f, 1.f); 
 float  materialAlpha = 1.0f;
-
+float4   camera;
 bool bSpecular = false; 
  
 struct CLight 
@@ -99,7 +99,7 @@ COLOR_PAIR DoPointLight(float4 vPosition, float3 N, float3 V, int i)
       if(bSpecular) 
       { 
          float3 H = normalize(L + V);   //half vector 
-         Out.ColorSpec = pow(max(0, dot(H, N)), fMaterialPower) * lights[i].vSpecular; 
+         Out.ColorSpec = pow(max(0, dot(H,N)), fMaterialPower) * lights[i].vSpecular; 
       } 
  
       float LD = length(lightDir); 
@@ -128,7 +128,8 @@ VS_OUTPUT vs_main (float4 vPosition  : POSITION0,
    float3 P = mul(matWorldView,vPosition).xyz;           //position in view space 
    float4 nn = float4(vNormal,0.0f);
    float3 N = normalize(mul(matWorld,nn).xyz);
-   float3 V = -normalize(P);                          //viewer 
+   float3 C = mul(matWorldView,camera).xyz;
+   float3 V = -normalize(C-P);                          //viewer 
  
    Out.Tex0 = tc; 
  
@@ -159,7 +160,7 @@ VS_OUTPUT vs_main (float4 vPosition  : POSITION0,
 
 float4 ps_main( in VS_OUTPUT IN) : COLOR
 {	
-	return IN.Color*float4(1,1,1,materialAlpha);
+	return saturate(IN.Color+IN.ColorSpec)*float4(1,1,1,materialAlpha);
 }
 
 float4 Overlay (float4 cBase, float4 cBlend)

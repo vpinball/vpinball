@@ -1002,9 +1002,16 @@ void Surface::RenderSlingshots(RenderDevice* pd3dDevice)
 
    if ( ! m_d.m_fSideVisible )
       return;
+   pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelTexelDeclaration );
 
    const float slingbottom = (m_d.m_heighttop - m_d.m_heightbottom) * 0.2f + m_d.m_heightbottom;
    const float slingtop    = (m_d.m_heighttop - m_d.m_heightbottom) * 0.8f + m_d.m_heightbottom;
+   const float r = (float)(m_d.m_slingshotColor & 255) * (float)(1.0/255.0);
+   const float g = (float)(m_d.m_slingshotColor & 65280) * (float)(1.0/65280.0);
+   const float b = (float)(m_d.m_slingshotColor & 16711680) * (float)(1.0/16711680.0);
+   D3DXVECTOR4 matColor(r,g,b,1.0f);   
+   pd3dDevice->basicShader->Core()->SetFloat("vMaterialPower",0.0f);
+   pd3dDevice->basicShader->Core()->SetVector("vMaterialColor",&matColor);
 
    for (unsigned i=0; i<m_vlinesling.size(); i++)
    {
@@ -1012,10 +1019,11 @@ void Surface::RenderSlingshots(RenderDevice* pd3dDevice)
       if (plinesling->m_slingshotanim.m_iframe != 1)
           continue;
 
-      ppin3d->SetTexture(NULL);
-      pd3dDevice->SetMaterial(slingShotMaterial);
+      pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
 
+      pd3dDevice->basicShader->Begin(0);
       pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, slingshotVBuffer, i*24, 24, slingIBuffer, 0, 36);
+      pd3dDevice->basicShader->End();
    }
 }
 
@@ -1059,7 +1067,6 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
         else if (pinSide->m_pdsBuffer )
             pd3dDevice->basicShader->Core()->SetTexture("Texture0",pd3dDevice->m_texMan.LoadTexture(pinSide->m_pdsBuffer));
         pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
-        pd3dDevice->basicShader->Core()->SetVector("vMaterialColor",&matColor);
         D3DXVECTOR4 color(1.0f,1.0f,1.0f,1.0f);   
         pd3dDevice->basicShader->Core()->SetVector("vMaterialColor",&color);
 

@@ -709,7 +709,10 @@ void Player::InitShader()
    D3DXMatrixTranspose( &matInv, &matInv);
    m_pin3d.m_pd3dDevice->basicShader->Core()->SetMatrix("matViewIT", &matInv);
    m_pin3d.m_pd3dDevice->basicShader->Core()->SetMatrix("matProj", &matProj);
+
    UpdateBasicShaderMatrix();
+   D3DXVECTOR4 cam( worldViewProj._41, worldViewProj._42, worldViewProj._43, 0 );
+   m_pin3d.m_pd3dDevice->basicShader->Core()->SetVector("camera", &cam);
 
    InitBallShader();
 }
@@ -2583,7 +2586,7 @@ void Player::DrawBalls()
         float zheight = (!pball->fFrozen) ? pball->pos.z : (pball->pos.z - pball->radius);
 
       float maxz = pball->defaultZ+3.0f;
-      float minz = pball->defaultZ;
+      float minz = pball->defaultZ-0.1f;
       if((m_fReflectionForBalls && (m_ptable->m_useReflectionForBalls == -1)) || (m_ptable->m_useReflectionForBalls == 1))
       {
          // don't draw reflection if the ball is not on the playfield (e.g. on a ramp/kicker)
@@ -2599,9 +2602,6 @@ void Player::DrawBalls()
          if ( m_ptable->m_zScale!=1.0f )
             zheight *= (m_ptable->m_zScale*0.96f); 
       }
-
-//       const float radiusX = (pball->radius*0.9f) * m_BallStretchX;
-//       const float radiusY = (pball->radius*0.9f) * m_BallStretchY;
 
       pball->material.setColor( 1.0f, pball->m_color );
       m_pin3d.m_pd3dDevice->SetMaterial(pball->material);
