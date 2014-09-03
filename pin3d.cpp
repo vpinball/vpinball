@@ -275,12 +275,12 @@ void Pin3D::InitLights()
     D3DLIGHT9 lights[2];
     m_pd3dDevice->basicShader->Core()->SetInt("iLightPointNum",2);
 
-    lights[0].Position.x = g_pplayer->m_ptable->m_right/2.0f;
-    lights[1].Position.x = g_pplayer->m_ptable->m_right/2.0f;
-    lights[0].Position.y = g_pplayer->m_ptable->m_bottom/3.0f;
-    lights[1].Position.y = (g_pplayer->m_ptable->m_bottom/3.0f)*2.0f;
-    lights[0].Position.z = (g_pplayer->m_ptable->m_lightHeight);
-    lights[1].Position.z = (g_pplayer->m_ptable->m_lightHeight);
+    lights[0].Position.x = g_pplayer->m_ptable->m_right*0.5f;
+    lights[1].Position.x = g_pplayer->m_ptable->m_right*0.5f;
+    lights[0].Position.y = g_pplayer->m_ptable->m_bottom*(float)(1.0/3.0);
+    lights[1].Position.y = g_pplayer->m_ptable->m_bottom*(float)(2.0/3.0);
+    lights[0].Position.z = g_pplayer->m_ptable->m_lightHeight;
+    lights[1].Position.z = g_pplayer->m_ptable->m_lightHeight;
     D3DXVECTOR4 ambient = COLORREF_to_D3DXVECTOR4(g_pplayer->m_ptable->m_Light[0].ambient);
     lights[0].Ambient.a = 1.0f;
     lights[0].Ambient.r = ambient.z;
@@ -430,7 +430,7 @@ void Pin3D::InitLayout()
 	for (int i=0; i<g_pplayer->m_ptable->m_vedit.Size(); ++i)
 		g_pplayer->m_ptable->m_vedit.ElementAt(i)->GetBoundingVertices(&vvertex3D);
 
-	const float aspect = 4.0f/3.0f;//((float)m_dwRenderWidth)/m_dwRenderHeight;
+	const float aspect = (float)(4.0/3.0);//((float)m_dwRenderWidth)/m_dwRenderHeight;
 
     m_proj.FitCameraToVertices(&vvertex3D, aspect, rotation, inclination, FOV, g_pplayer->m_ptable->m_xlatez, g_pplayer->m_ptable->m_layback);
     m_proj.SetFieldOfView(FOV, aspect, m_proj.m_rznear, m_proj.m_rzfar);
@@ -556,9 +556,9 @@ void Pin3D::RenderPlayfieldGraphics()
 	EnableLightMap(0);
 
 	Material mtrl;
-   float r = (float)(g_pplayer->m_ptable->m_colorplayfield & 255) * (float)(1.0/255.0);
-   float g = (float)(g_pplayer->m_ptable->m_colorplayfield & 65280) * (float)(1.0/65280.0);
-   float b = (float)(g_pplayer->m_ptable->m_colorplayfield & 16711680) * (float)(1.0/16711680.0);
+   const float r = (float)(g_pplayer->m_ptable->m_colorplayfield & 255) * (float)(1.0/255.0);
+   const float g = (float)(g_pplayer->m_ptable->m_colorplayfield & 65280) * (float)(1.0/65280.0);
+   const float b = (float)(g_pplayer->m_ptable->m_colorplayfield & 16711680) * (float)(1.0/16711680.0);
    D3DXVECTOR4 matColor(r,g,b,1.0f);   
    m_pd3dDevice->basicShader->Core()->SetFloat("vMaterialPower",0.0f);
    m_pd3dDevice->basicShader->Core()->SetVector("vMaterialColor",&matColor);

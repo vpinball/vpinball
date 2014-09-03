@@ -6,10 +6,13 @@ VP 10.0.0 Changelog
 - physics mostly redone (also known as 'physmod(5)')
   sidenote: due to this it is now also possible to enable vsync without sideeffects or stutter (set FPS limiter to 1)
 
+- lighting mostly redone
+
 - add rubber element
 
 - shader based inserts/lights/bulbs
 - shader based mesh ball
+- shader based materials/lighting
 
 - improved smoothness for ramps (centripetal Catmull-Rom splines)
 - changed opacity/transparency handling for ramps (Alpha/Acrylic have been replaced by new props Transparent/Opacity)

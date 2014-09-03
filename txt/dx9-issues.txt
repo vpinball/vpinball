@@ -7,11 +7,11 @@ DX9 renderer known issues:
 *) Stereo 3D only works on NVIDIA so far
 *) AA hardwired to 4xMSAA, flickers
 *) textures aren't preloaded, can lead to stutter in some cases
-*) screen shake doesn't work
 *) adaptive vsync always falls back to normal vsync (can only be supported if we drop XP)
 
 Not relevant anymore:
 
+*) screen shake doesn't work
 *) stereo3D parameters are different
 *) "real" full screen mode doesn't work with VPM/B2S. Instead, use "Windowed fullscreen" mode.
 *) lost devices aren't handled properly (real fullscreen issue only)

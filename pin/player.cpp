@@ -859,7 +859,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
         // The formula for the damping ratio is
         //   zeta = c / (2 sqrt(k)).
         // Solving for the damping coefficient c, we get
-        m_nudgeDamping = 2.0f * sqrtf(m_nudgeSpring) * dampingRatio;
+        m_nudgeDamping = dampingRatio * 2.0f * sqrtf(m_nudgeSpring);
     }
 
 	// Need to set timecur here, for init functions that set timers
@@ -946,11 +946,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 		if (ph)
 		{
             // sort into proper categories
-            if (pe->GetItemType() == eItemLight)
-                m_vLights.push_back(ph);            // VP9COMPAT: special treatment for lights
-            else if (pe->m_fBackglass)
-                m_vHitBackglass.push_back(ph);      // VP9COMPAT: fixes Homer head on TSPP, remove in VP10
-            else if (ph->IsTransparent())
+            if (ph->IsTransparent())
                 m_vHitTrans.push_back(ph);
             else
                 m_vHitNonTrans.push_back(ph);
@@ -2022,14 +2018,14 @@ void Player::UpdatePhysics()
 			}
 		}
 #endif
-		NudgeUpdate();		// physics_diff_time is the balance of time to move from the graphic frame position to the next
-		mechPlungerUpdate();	// integral physics frame. So the previous graphics frame was (1.0 - physics_diff_time) before 
-									// this integral physics frame. Accelerations and inputs are always physics frame aligned
+		NudgeUpdate();		 // physics_diff_time is the balance of time to move from the graphic frame position to the next
+		mechPlungerUpdate(); // integral physics frame. So the previous graphics frame was (1.0 - physics_diff_time) before 
+							 // this integral physics frame. Accelerations and inputs are always physics frame aligned
         {
             // table movement is modeled as a mass-spring-damper system
             //   u'' = -k u - c u'
             // with a spring constant k and a damping coefficient c
-            Vertex3Ds force = -m_nudgeSpring * m_tableDisplacement - m_nudgeDamping * m_tableVel;
+            const Vertex3Ds force = -m_nudgeSpring * m_tableDisplacement - m_nudgeDamping * m_tableVel;
             m_tableVel += (float)PHYS_FACTOR * force;
             m_tableDisplacement += (float)PHYS_FACTOR * m_tableVel;
             //if (m_tableVel.LengthSquared() >= 1e-5f)
@@ -2116,20 +2112,9 @@ void Player::RenderDynamics()
    for (unsigned i=0; i < m_vHitNonTrans.size(); ++i)
        m_vHitNonTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
 
-   // Draw balls before lights are drawn. If (bulb)-light is higher than a
-   // ball it will brighten it.
    DrawBalls();
 
-   // Draw Light objects (VP9COMPAT)
-   for (unsigned i=0; i < m_vLights.size(); ++i)
-       m_vLights[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
-
-   // Draw backglass objects (VP9COMPAT)
-   for (unsigned i=0; i < m_vHitBackglass.size(); ++i)
-       m_vHitBackglass[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
-
-
-   m_limiter.Execute(m_pin3d.m_pd3dDevice);
+   m_limiter.Execute(m_pin3d.m_pd3dDevice); //!! move below other draw calls??
 
    // Draw transparent objects.
    for (unsigned i=0; i < m_vHitTrans.size(); ++i)
@@ -2137,7 +2122,7 @@ void Player::RenderDynamics()
 
    // Draw the mixer volume.
    mixer_draw();
-   // Debug draw of plumb
+   // Debug draw of plumb.
    plumb_draw();
 
    m_pin3d.m_pd3dDevice->SetRenderState( RenderDevice::NORMALIZENORMALS, TRUE );
