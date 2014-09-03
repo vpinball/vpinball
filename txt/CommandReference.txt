@@ -30,6 +30,10 @@ Variables
 *BackDropColor(OLE_COLOR)
 BackdropImage(string)
 
+DMDWidth(int) - set width of DMD
+DMDHeight(int) - set height of DMD
+DMDPixels(VARIANT) - set array of (byte-)values (0..100), size needs to match the previously set width and height
+
 *SlopeMax(float) - Angle of Playfield within Cabinet (used for Physics only)
 *SlopeMin(float) - Angle of Playfield within Cabinet (used for Physics only)
 *GlobalDifficulty(float) - Mainly chooses/weights between SlopeMax and SlopeMin, but also affects precision of flippers/scattering
@@ -83,23 +87,7 @@ PlungerFilter(bool) - default=false
 *Light0Ambient(OLE_COLOR) - changes the ambient color contribution for each material from light0
 *Light0Diffuse(OLE_COLOR) - changes the diffuse color contribution for each material from light0
 *Light0Specular(OLE_COLOR) - changes the specular color contribution for each material from light0
-*Light0PX(float) - X position of light0 (PXPYPZ and DXDYDZ being both 0,0,0 means to use the old defaults of VP) 
-*Light0PY(float) - Y position of light0 (PX and PY are relative to the playfield width and height)
-*Light0PZ(float) - Z position of light0 (PZ varies the height of the light)
-*Light0DX(float) - X direction of light0 (only valid if Light0Type is 0 or 1 (directional)) (DXDYDZ being 0,0,-1 means that the light shines directly from above)
-*Light0DY(float) - Y direction of light0 (only valid if Light0Type is 0 or 1 (directional))
-*Light0DZ(float) - Z direction of light0 (only valid if Light0Type is 0 or 1 (directional))
-*Light0Type(int) - 0=directional, 1=spot, 2=point
-*Light1Ambient(OLE_COLOR) - changes the ambient color contribution for each material from light1
-*Light1Diffuse(OLE_COLOR) - changes the diffuse color contribution for each material from light1
-*Light1Specular(OLE_COLOR) - changes the specular color contribution for each material from light1
-*Light1PX(float) - X position of light1 (PXPYPZ and DXDYDZ being both 0,0,0 means to use the old defaults of VP)
-*Light1PY(float) - Y position of light1 (PX and PY are relative to the playfield width and height)
-*Light1PZ(float) - Z position of light1 (PZ varies the height of the light)
-*Light1DX(float) - X direction of light1 (only valid if Light1Type is 0 or 1 (directional)) (DXDYDZ being 0,0,-1 means that the light shines directly from above)
-*Light1DY(float) - Y direction of light1 (only valid if Light1Type is 0 or 1 (directional))
-*Light1DZ(float) - Z direction of light1 (only valid if Light1Type is 0 or 1 (directional))
-*Light1Type(int) - 0=directional, 1=spot, 2=point
+*LightHeight(float) - height of light0
 *ShadowX(float) - defines the shadow X direction (-1.0..+1.0) default=0.0, because the shadow generation is a fake this is not 100% accurate (if X and Y are both zero one can have an ambient occlusion like effect)
 *ShadowY(float) - defines the shadow Y direction (-1.0..+1.0) default=0.0, because the shadow generation is a fake this is not 100% accurate
 
