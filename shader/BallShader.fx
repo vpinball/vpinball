@@ -36,7 +36,7 @@ CLight lights[NUM_LIGHTS] = {                         //NUM_LIGHTS == 2
 
 float4x4 matWorldViewProj   : WORLDVIEWPROJ;
 float4x4 matWorld           : WORLD;
-float4   diffuseMaterial    = float4(1,1,1,0.1);
+float4   diffuseMaterial    = float4(1.0f,1.0f,1.0f,0.1f);
 float    invTableHeight;
 float    invTableWidth;
 float4   position;
@@ -121,16 +121,17 @@ vout vsBall( in vin IN )
 	pos += position;
 	
     //convert to world space and pass along to our output
-    OUT.position    = mul(pos, matWorldViewProj);
+    OUT.position = mul(pos, matWorldViewProj);
     
 	// apply spinning to the normals too to get the sphere mapping effect
 	float4 npos = float4(IN.normal,0.0);
 	npos = mul(npos,orientation);
     float4 normal = normalize(mul(npos, matWorld));
-	float4 eye = -normalize(c-v);
-	float4 r=reflect(eye,normal);
+	float4 eye = normalize(v-c);
+	float4 r = reflect(eye,normal);
     //pass along texture info
 	OUT.tex0		= r.xyz;
+	OUT.tex2		= IN.tex0;
 	OUT.normal      = normal;
 	OUT.eye         = eye;
 	OUT.worldPos    = pos;
@@ -141,7 +142,7 @@ vout vsBallReflection( in vin IN )
 {
 	//init our output data to all zeros
 	vout OUT = (vout)0;
-	float sizeY = radius*2;
+	float sizeY = radius*2.0f;
 
 	// apply spinning and move the ball to it's actual position
 	float4x4 orientation = {m1,m2,m3,float4(0,0,0,0)};
@@ -152,14 +153,14 @@ vout vsBallReflection( in vin IN )
 	pos.y *= ballStretchY;
 	pos += position;
 
-	// this is no a 100% ball reflection on the table due to the quirky camera setup
+	// this is not a 100% ball reflection on the table due to the quirky camera setup
 	// the ball is moved a bit down and rendered again
-	pos.y += sizeY*0.35;
-	pos.z = (pos.z*0.5)-10;
+	pos.y += sizeY*0.35f;
+	pos.z = pos.z*0.5f - 10.0f;
     //convert to world space and pass along to our output
-    OUT.position    = mul(pos, matWorldViewProj);
+    OUT.position = mul(pos, matWorldViewProj);
     
-	float4 npos = float4(IN.normal,0.0);
+	float4 npos = float4(IN.normal,0.0f);
 	npos = mul(npos,orientation);
     float4 normal = normalize(mul(npos, matWorld));
 	float4 eye = normalize(pos);
@@ -173,7 +174,7 @@ vout vsBallReflection( in vin IN )
 
 float4 DoPointLight(float4 vPosition, float3 N, float3 V, int i) 
 { 
-   float3 pos=(float3)mul(matWorld,vPosition);
+   float3 pos = (float3)mul(matWorld,vPosition);
    float3 light = lights[i].vPos;
    float3 lightDir = light-pos;
    float3 L = normalize(lightDir); 
@@ -205,43 +206,44 @@ float4 DoPointLight(float4 vPosition, float3 N, float3 V, int i)
 float4 psBall( in vout IN ) : COLOR
 {
 	float2 uv = float2(0,0);
-	uv.x = IN.tex0.x*0.5+0.5;
-	uv.y = IN.tex0.y*0.5+0.5;
+	uv.x = IN.tex0.x*0.5f+0.5f;
+	uv.y = IN.tex0.y*0.5f+0.5f;
 	float4 ballImageColor = tex2D( texSampler0, uv );
 	float4 decalColor = tex2D( texSampler2, IN.tex2 );
     
     float4 r=(reflect(IN.eye,IN.normal));
 	uv.x = position.x * invTableWidth;
 	uv.y = position.y * invTableHeight;
-	uv.x = uv.x + (r.x/(1+r.z))*0.02;
-	uv.y = uv.y + (r.y/(1+r.z))*0.02;
+	uv.x = uv.x + (r.x/(1.0f+r.z))*0.02f;
+	uv.y = uv.y + (r.y/(1.0f+r.z))*0.02f;
 	float4 playfieldColor = tex2D( texSampler1, uv );
 	
-	if( r.z<-0.4 )
+	playfieldColor.a = /*sqrt(((position.z-IN.worldPos.z)/radius+1.0f)*0.5f)**/saturate(r.y)*sqrt(saturate(1.0f-(1.0f+r.z)/0.8f));
+	/*if( r.z<-0.4f )
 	{
 		playfieldColor.a = saturate(r.y)*0.4f;
 	}
 	else
 	{
 		playfieldColor.a = 0;
-	}
+	}*/
+
 	float4 lightColor = float4(0.0f, 0.0f, 0.0f, 1.0f);
-    lightColor = DoPointLight(IN.worldPos, IN.normal, IN.eye, 0); 
-    lightColor += DoPointLight(IN.worldPos, IN.normal, IN.eye, 1); 
+    lightColor = DoPointLight(IN.worldPos, IN.normal, IN.eye, 0);
+    lightColor += DoPointLight(IN.worldPos, IN.normal, IN.eye, 1);
     lightColor.a=1.0f;
-	float4 result = ((decalColor.a)*decalColor)+(ballImageColor +  (playfieldColor * playfieldColor.a));	
-	return result*lightColor;
-	
+	float4 result = decalColor.a*decalColor + ballImageColor;
+	return result*lightColor + playfieldColor*playfieldColor.a;
 }
 
 
 float4 psBallReflection( in vout IN ) : COLOR
 {
-	float2 uv = IN.tex0.xy*0.5+0.5;
-	float4 ballImageColor = tex2D( texSampler0, IN.tex0 );
-	float sizeY = radius*2*0.9;
-	float alpha = ((IN.tex1.y-position.y)/(sizeY*0.4));
-	ballImageColor.a = saturate( alpha )*reflectionStrength*2;
+	float4 ballImageColor = tex2D( texSampler0, IN.tex0.xy );
+	float sizeY = radius*(2.0f*0.9f);
+	float alpha = (IN.tex1.y-position.y)/sizeY;
+	alpha = (alpha*alpha)*(alpha*alpha)/0.4f;
+	ballImageColor.a = saturate( alpha )*reflectionStrength*2.0f;
 	return ballImageColor;
 }
 
