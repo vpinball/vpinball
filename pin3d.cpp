@@ -297,6 +297,13 @@ void Pin3D::InitLights()
     lights[0].Specular.g = specular.y;
     lights[0].Specular.b = specular.x;
 
+    g_pplayer->m_ptable->m_Light[0].pos.x = lights[0].Position.x;
+    g_pplayer->m_ptable->m_Light[0].pos.y = lights[0].Position.y;
+    g_pplayer->m_ptable->m_Light[0].pos.z = lights[0].Position.z;
+    g_pplayer->m_ptable->m_Light[1].pos.x = lights[1].Position.x;
+    g_pplayer->m_ptable->m_Light[1].pos.y = lights[1].Position.y;
+    g_pplayer->m_ptable->m_Light[1].pos.z = lights[1].Position.z;
+
     char tmp[64];
     float range = g_pplayer->m_ptable->m_glassheight*10.0f;
     sprintf_s(tmp,"lights[0].vPos");
