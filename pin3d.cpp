@@ -478,7 +478,6 @@ void Pin3D::InitLayout()
 void Pin3D::RenderPlayfieldGraphics()
 {
     TRACE_FUNCTION();
-#define TRIANGULATE_BACK 100
 
 	Vertex3D rgv[7];
 	rgv[0].x=g_pplayer->m_ptable->m_left;     rgv[0].y=g_pplayer->m_ptable->m_top;      rgv[0].z=0;
@@ -509,57 +508,34 @@ void Pin3D::RenderPlayfieldGraphics()
 	
 	CalcShadowCoordinates(rgv,4);
 
-	// triangulate for better vertex based lighting //!! disable/set to 0 as soon as pixel shaders do the lighting
-
-	const DWORD numVerts = (TRIANGULATE_BACK+1)*(TRIANGULATE_BACK+1);
-	const DWORD numIndices = TRIANGULATE_BACK*TRIANGULATE_BACK*6;
-
     assert(tableVBuffer == NULL);
-    m_pd3dDevice->CreateVertexBuffer( numVerts+7, 0, MY_D3DFVF_VERTEX, &tableVBuffer); //+7 verts for second rendering step
+    m_pd3dDevice->CreateVertexBuffer( 4+7, 0, MY_D3DFVF_VERTEX, &tableVBuffer); //+7 verts for second rendering step
 
     Vertex3D *buffer;
 	tableVBuffer->lock(0,0,(void**)&buffer, VertexBuffer::WRITEONLY);
 
-	const float inv_tb = (float)(1.0/TRIANGULATE_BACK);
 	unsigned int offs = 0;
-	for(unsigned int y = 0; y <= TRIANGULATE_BACK; ++y)
-	{
-		for(unsigned int x = 0; x <= TRIANGULATE_BACK; ++x,++offs) //!! triangulate more in y then in x?
+	for(unsigned int y = 0; y <= 1; ++y)
+		for(unsigned int x = 0; x <= 1; ++x,++offs)
 		{
 			Vertex3D &tmp = buffer[offs];
-			tmp.x = rgv[0].x + (rgv[1].x-rgv[0].x) * ((float)x*inv_tb);
-			tmp.y = rgv[0].y + (rgv[2].y-rgv[0].y) * ((float)y*inv_tb);
+			tmp.x = (x&1) ? rgv[1].x : rgv[0].x;
+			tmp.y = (y&1) ? rgv[2].y : rgv[0].y;
 			tmp.z = rgv[0].z;
 
-			tmp.tu = rgv[0].tu + (rgv[1].tu-rgv[0].tu) * ((float)x*inv_tb);
-			tmp.tv = rgv[0].tv + (rgv[2].tv-rgv[0].tv) * ((float)y*inv_tb);
+			tmp.tu = (x&1) ? rgv[1].tu : rgv[0].tu;
+			tmp.tv = (y&1) ? rgv[2].tv : rgv[0].tv;
 
 			tmp.nx = rgv[0].nx;
 			tmp.ny = rgv[0].ny;
 			tmp.nz = rgv[0].nz;
 		}
-	}
 
-	CalcShadowCoordinates(buffer,numVerts);
-
-    std::vector<WORD> playfieldPolyIndices(numIndices);
-
-	offs = 0;
-	for(int y = 0; y < TRIANGULATE_BACK; ++y)
-	{
-        unsigned int offs2 = y * (TRIANGULATE_BACK+1);
-		for(int x = 0; x < TRIANGULATE_BACK; ++x,offs+=6,++offs2)
-		{
-			WORD *tmp = &playfieldPolyIndices[offs];
-			tmp[3] = tmp[0] = offs2;
-			tmp[1] = offs2+1;
-			tmp[4] = tmp[2] = offs2+1+(TRIANGULATE_BACK+1);
-			tmp[5] = offs2+(TRIANGULATE_BACK+1);
-		}
-	}
+	CalcShadowCoordinates(buffer,4);
 
 	SetNormal(rgv, rgiPin3D1, 4, NULL, NULL, 0);
-	memcpy( buffer+numVerts, rgv, 7*sizeof(Vertex3D));
+
+	memcpy(buffer+4, rgv, 7*sizeof(Vertex3D));
 
 	tableVBuffer->unlock();
 
@@ -589,10 +565,11 @@ void Pin3D::RenderPlayfieldGraphics()
 	m_pd3dDevice->SetMaterial(mtrl);
 
    assert(tableIBuffer == NULL);
-   tableIBuffer = m_pd3dDevice->CreateAndFillIndexBuffer(playfieldPolyIndices);
+   const WORD playfieldPolyIndices[6] = {0,1,3,0,3,2};
+   tableIBuffer = m_pd3dDevice->CreateAndFillIndexBuffer(6,playfieldPolyIndices);
    m_pd3dDevice->basicShader->Begin(0);
-	m_pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, tableVBuffer, 0, numVerts, tableIBuffer, 0, numIndices);
-   m_pd3dDevice->basicShader->End();  
+	m_pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, tableVBuffer, 0, 4, tableIBuffer, 0, 6);
+   m_pd3dDevice->basicShader->End();
 
 	DisableLightMap();
 	SetTexture(NULL);
@@ -605,7 +582,7 @@ void Pin3D::RenderPlayfieldGraphics()
     }
 
     m_pd3dDevice->basicShader->Begin(0);
-    m_pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLEFAN, tableVBuffer, numVerts, 7, (LPWORD)rgiPin3D1, 4);
+    m_pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLEFAN, tableVBuffer, 4, 7, (LPWORD)rgiPin3D1, 4);
     m_pd3dDevice->basicShader->End();  
 
     // Apparently, releasing the vertex buffer here immediately can cause rendering glitches in
