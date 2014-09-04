@@ -1,3 +1,39 @@
+#define NUM_LIGHTS               2 
+ 
+float4 vMaterialColor = float4(192.f/255.f, 128.f/255.f, 96.f/255.f, 1.f); 
+float fMaterialPower = 16.f; 
+ 
+float4 vAmbientColor = float4(128.f/255.f, 128.f/255.f, 128.f/255.f, 1.f); 
+float  materialAlpha = 1.0f;
+bool bSpecular = false; 
+ 
+struct CLight 
+{ 
+   float3 vPos; 
+   float4 vAmbient; 
+   float4 vDiffuse; 
+   float4 vSpecular; 
+   float3 vAttenuation; //1, D, D^2; 
+}; 
+ 
+int iLightPointNum=2; 
+CLight lights[NUM_LIGHTS] = {                         //NUM_LIGHTS == 2
+   { 
+      float3(0.0f, 0.0f, 0.0f),              //position 
+      float4(0.0f, 0.0f, 0.0f, 1.0f),        //ambient 
+      float4(0.0f, 0.0f, 0.0f, 1.0f),        //diffuse 
+      float4(0.0f, 0.0f, 0.0f, 1.0f),        //specular 
+      float3(0.6f, 0.0000005f, 0.0000009f),                 //attenuation 
+   }, 
+   { 
+      float3(0.0f, 0.0f, 0.0f),              //position 
+      float4(0.0f, 0.0f, 0.0f, 1.0f),        //ambient 
+      float4(0.0f, 0.0f, 0.0f, 1.0f),        //diffuse 
+      float4(0.0f, 0.0f, 0.0f, 1.0f),        //specular 
+      float3(0.6f, 0.0000005f, 0.0000009f),                 //attenuation 
+   } 
+}; 
+
 float4x4 matWorldViewProj   : WORLDVIEWPROJ;
 float4x4 matWorld           : WORLD;
 float4   diffuseMaterial    = float4(1,1,1,0.1);
@@ -60,8 +96,11 @@ struct vout
 {
     float4 position	   : POSITION0;
     float3 tex0        : TEXCOORD0;
-	float4 tex1        : TEXCOORD1;
-	float2 tex2        : TEXCOORD2;
+	float4 normal      : TEXCOORD1;
+	float4 eye         : TEXCOORD2;
+	float4 tex1        : TEXCOORD3;
+	float2 tex2        : TEXCOORD4;
+	float4 worldPos    : TEXCOORD5;
 };
 
 //VERTEX SHADER
@@ -78,6 +117,7 @@ vout vsBall( in vin IN )
 	pos.x *= ballStretchX;
 	pos.y *= ballStretchY;
 	float4 v = mul(pos,matWorld);
+	float4 c = mul(camera, matWorld);
 	pos += position;
 	
     //convert to world space and pass along to our output
@@ -87,12 +127,13 @@ vout vsBall( in vin IN )
 	float4 npos = float4(IN.normal,0.0);
 	npos = mul(npos,orientation);
     float4 normal = normalize(mul(npos, matWorld));
-	float4 eye = normalize(v);
-	float4 r=normalize(reflect(eye,normal));
+	float4 eye = -normalize(c-v);
+	float4 r=reflect(eye,normal);
     //pass along texture info
 	OUT.tex0		= r.xyz;
-	OUT.tex1        = r;
-	OUT.tex2        = IN.tex0;
+	OUT.normal      = normal;
+	OUT.eye         = eye;
+	OUT.worldPos    = pos;
 	return OUT;
 }
 
@@ -130,37 +171,67 @@ vout vsBallReflection( in vin IN )
 	return OUT;
 }
 
+float4 DoPointLight(float4 vPosition, float3 N, float3 V, int i) 
+{ 
+   float3 pos=(float3)mul(matWorld,vPosition);
+   float3 light = lights[i].vPos;
+   float3 lightDir = light-pos;
+   float3 L = normalize(lightDir); 
+   float NdotL = dot(N, L); 
+   float4 color = lights[i].vAmbient; 
+   float4 colorSpec = float4(0.0f,0.0f,0.0f,1.0f); 
+   float fAtten = 1.f; 
+   if(NdotL >= 0.f) 
+   { 
+      //compute diffuse color 
+      color += NdotL * lights[i].vDiffuse; 
+ 
+      //add specular component 
+      //if(bSpecular) 
+      { 
+         float3 H = normalize(L + V);   //half vector 
+         colorSpec = pow(max(0, dot(H,N)), fMaterialPower) * lights[i].vSpecular; 
+      } 
+ 
+      float LD = length(lightDir); 
+      fAtten = 1.f/(lights[i].vAttenuation.x + lights[i].vAttenuation.y*LD + lights[i].vAttenuation.z*LD*LD); 
+      color.rgb *= fAtten; 
+      colorSpec.rgb *= fAtten; 
+   } 
+   return saturate(color+colorSpec); 
+} 
 
 //PIXEL SHADER
 float4 psBall( in vout IN ) : COLOR
 {
-	// the reflection of the playfield on the ball is another hack at the moment
-	// for a correct reflection we need a dynamic cube map, but generating this is not feasible at the moment 
-	// because of the render pipeline!
 	float2 uv = float2(0,0);
 	uv.x = IN.tex0.x*0.5+0.5;
 	uv.y = IN.tex0.y*0.5+0.5;
 	float4 ballImageColor = tex2D( texSampler0, uv );
 	float4 decalColor = tex2D( texSampler2, IN.tex2 );
-	
-/*	uv.x = position.x * invTableWidth;
+    
+    float4 r=(reflect(IN.eye,IN.normal));
+	uv.x = position.x * invTableWidth;
 	uv.y = position.y * invTableHeight;
-	uv.x = uv.x + (IN.tex1.x/(1+IN.tex1.z))*0.05;
-	uv.y = uv.y + (IN.tex1.y/(1+IN.tex1.z))*0.05;
+	uv.x = uv.x + (r.x/(1+r.z))*0.02;
+	uv.y = uv.y + (r.y/(1+r.z))*0.02;
 	float4 playfieldColor = tex2D( texSampler1, uv );
 	
-	if( IN.tex1.y>0.0 )
+	if( r.z<-0.4 )
 	{
-		playfieldColor.a = saturate(IN.tex1.y)*0.5;
+		playfieldColor.a = saturate(r.y)*0.4f;
 	}
 	else
 	{
 		playfieldColor.a = 0;
 	}
-	return ((decalColor.a)*decalColor)+(ballImageColor +  (playfieldColor * playfieldColor.a));	
-*/	
-	ballImageColor.a=1.0;
-	return ((decalColor.a)*decalColor)+ballImageColor;	
+	float4 lightColor = float4(0.0f, 0.0f, 0.0f, 1.0f);
+    lightColor = DoPointLight(IN.worldPos, IN.normal, IN.eye, 0); 
+    lightColor += DoPointLight(IN.worldPos, IN.normal, IN.eye, 1); 
+    lightColor.a=1.0f;
+	float4 result = ((decalColor.a)*decalColor)+(ballImageColor +  (playfieldColor * playfieldColor.a));	
+	return result*lightColor;
+	
 }
 
 
@@ -179,8 +250,8 @@ technique RenderBall
 {
 	pass p0 
 	{		
-		vertexshader = compile vs_2_0 vsBall();
-		pixelshader  = compile ps_2_0 psBall();
+		vertexshader = compile vs_3_0 vsBall();
+		pixelshader  = compile ps_3_0 psBall();
 
 	}
 }
@@ -189,7 +260,7 @@ technique RenderBallReflection
 {
 	pass p0 
 	{		
-		vertexshader = compile vs_2_0 vsBallReflection();
-		pixelshader  = compile ps_2_0 psBallReflection();
+		vertexshader = compile vs_3_0 vsBallReflection();
+		pixelshader  = compile ps_3_0 psBallReflection();
 	}
 }

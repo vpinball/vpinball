@@ -725,7 +725,7 @@ void Player::InitBallShader()
 {
    ballShader = new Shader(m_pin3d.m_pd3dDevice );
 
-//   ballShader->Load("c:\\projects\\vp9_dx9\\shader\\BallShader.fx", true );
+//   ballShader->Load("c:\\projects\\vp\\shader\\BallShader.fx", true );
 
    ballShader->Load("BallShader.fx", false );
 
@@ -741,7 +741,7 @@ void Player::InitBallShader()
    D3DXMATRIX matWorld(worldMat);
    D3DXMATRIX worldViewProj = matWorld * matView * matProj;
    ballShader->Core()->SetMatrix("matWorldViewProj", &worldViewProj);
-   ballShader->Core()->SetMatrix("matWorld",  &matView);
+   ballShader->Core()->SetMatrix("matWorld",  &matWorld);
 
    const float inv_tablewidth = 1.0f/(m_ptable->m_right - m_ptable->m_left);
    const float inv_tableheight = 1.0f/(m_ptable->m_bottom - m_ptable->m_top);
@@ -768,6 +768,47 @@ void Player::InitBallShader()
    ballVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
    memcpy( buf, basicBall, sizeof(Vertex3D_NoTex2)*basicBallNumVertices );
    ballVertexBuffer->unlock();
+
+   D3DLIGHT9 lights[MAX_LIGHT_SOURCES];
+
+   D3DXVECTOR4 ambient = COLORREF_to_D3DXVECTOR4(g_pplayer->m_ptable->m_Light[0].ambient);
+   lights[0].Ambient.a = 1.0f;
+   lights[0].Ambient.r = ambient.z;
+   lights[0].Ambient.g = ambient.y;
+   lights[0].Ambient.b = ambient.x;
+   D3DXVECTOR4 diffuse = COLORREF_to_D3DXVECTOR4(g_pplayer->m_ptable->m_Light[0].diffuse);
+   lights[0].Diffuse.a = 1.0f;
+   lights[0].Diffuse.r = diffuse.z;
+   lights[0].Diffuse.g = diffuse.y;
+   lights[0].Diffuse.b = diffuse.x;
+   D3DXVECTOR4 specular = COLORREF_to_D3DXVECTOR4(g_pplayer->m_ptable->m_Light[0].specular);
+   lights[0].Specular.a = 1.0f;
+   lights[0].Specular.r = specular.z;
+   lights[0].Specular.g = specular.y;
+   lights[0].Specular.b = specular.x;
+   lights[0].Position.x = m_ptable->m_Light[0].pos.x;
+   lights[0].Position.y = m_ptable->m_Light[0].pos.y;
+   lights[0].Position.z = m_ptable->m_Light[0].pos.z;
+   lights[1].Position.x = m_ptable->m_Light[1].pos.x;
+   lights[1].Position.y = m_ptable->m_Light[1].pos.y;
+   lights[1].Position.z = m_ptable->m_Light[1].pos.z;
+   char tmp[64];
+   sprintf_s(tmp,"lights[0].vPos");
+   ballShader->Core()->SetValue(tmp, (void*)&lights[0].Position, sizeof(D3DVECTOR));
+   sprintf_s(tmp,"lights[1].vPos");
+   ballShader->Core()->SetValue(tmp, (void*)&lights[1].Position, sizeof(D3DVECTOR));
+   sprintf_s(tmp,"lights[0].vAmbient");
+   ballShader->Core()->SetValue(tmp, (void*)&lights[0].Ambient, sizeof(D3DCOLORVALUE));
+   sprintf_s(tmp,"lights[1].vAmbient");
+   ballShader->Core()->SetValue(tmp, (void*)&lights[0].Ambient, sizeof(D3DCOLORVALUE));
+   sprintf_s(tmp,"lights[0].vDiffuse");
+   ballShader->Core()->SetValue(tmp, (void*)&lights[0].Diffuse, sizeof(D3DCOLORVALUE));
+   sprintf_s(tmp,"lights[1].vDiffuse");
+   ballShader->Core()->SetValue(tmp, (void*)&lights[0].Diffuse, sizeof(D3DCOLORVALUE));
+   sprintf_s(tmp,"lights[0].vSpecular");
+   ballShader->Core()->SetValue(tmp, (void*)&lights[0].Specular, sizeof(D3DCOLORVALUE));
+   sprintf_s(tmp,"lights[1].vSpecular");
+   ballShader->Core()->SetValue(tmp, (void*)&lights[0].Specular, sizeof(D3DCOLORVALUE));
 
 }
 
@@ -2599,7 +2640,7 @@ void Player::DrawBalls()
       Texture * const playfield = m_ptable->GetImage((char *)m_ptable->m_szImage);
       if( playfield )
         {
-          ballShader->Core()->SetTexture("Texture1",m_pin3d.m_pd3dDevice->m_texMan.LoadTexture(playfield->m_pdsBuffer));
+          ballShader->SetTexture("Texture1", playfield );
         }
 
       if(pball->m_disableLighting)
@@ -2620,14 +2661,14 @@ void Player::DrawBalls()
       ballShader->Core()->SetVector("position", &pos );
       ballShader->Core()->SetFloat("radius", pball->radius );
       if ( !pball->m_pin )
-          ballShader->Core()->SetTexture("Texture0",m_pin3d.m_pd3dDevice->m_texMan.LoadTexture(m_pin3d.ballTexture.m_pdsBufferColorKey));
-        else
-          ballShader->Core()->SetTexture("Texture0",m_pin3d.m_pd3dDevice->m_texMan.LoadTexture(pball->m_pin->m_pdsBufferColorKey));
+          ballShader->SetTexture("Texture0", &m_pin3d.ballTexture);
+      else
+          ballShader->SetTexture("Texture0",pball->m_pin);
 
       if( pball->m_pinFront )
-        {
-          ballShader->Core()->SetTexture("Texture2",m_pin3d.m_pd3dDevice->m_texMan.LoadTexture(pball->m_pinFront->m_pdsBufferColorKey));
-        }
+      {
+         ballShader->SetTexture("Texture2",pball->m_pinFront);
+      }
       UINT cPasses=0;
       if ( drawReflection )
         {

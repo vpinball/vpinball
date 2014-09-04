@@ -12,11 +12,9 @@ bool bSpecular = false;
 struct CLight 
 { 
    float3 vPos; 
-   float3 vDir; 
    float4 vAmbient; 
    float4 vDiffuse; 
    float4 vSpecular; 
-   float  fRange; 
    float3 vAttenuation; //1, D, D^2; 
 }; 
  
@@ -24,20 +22,16 @@ int iLightPointNum;
 CLight lights[NUM_LIGHTS] = {                         //NUM_LIGHTS == 2
    { 
       float3(0.0f, 0.0f, 0.0f),              //position 
-      float3(0.0f, 0.0f, 0.0f),              //direction 
       float4(0.0f, 0.0f, 0.0f, 0.0f),        //ambient 
       float4(0.0f, 0.0f, 0.0f, 0.0f),        //diffuse 
       float4(0.0f, 0.0f, 0.0f, 0.0f),        //specular 
-      500.f,                                //range 
       float3(0.6f, 0.0000005f, 0.0000009f),                 //attenuation 
    }, 
    { 
       float3(0.0f, 0.0f, 0.0f),              //position 
-      float3(0.0f, 0.0f, 0.0f),              //direction 
       float4(0.0f, 0.0f, 0.0f, 0.0f),        //ambient 
       float4(0.0f, 0.0f, 0.0f, 0.0f),        //diffuse 
       float4(0.0f, 0.0f, 0.0f, 0.0f),        //specular 
-      500.f,                                //range 
       float3(0.6f, 0.0000005f, 0.0000009f),                 //attenuation 
    } 
 }; 
