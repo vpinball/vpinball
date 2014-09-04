@@ -29,7 +29,6 @@ public:
 	void FitCameraToVertices(Vector<Vertex3Ds> * const pvvertex3D, float aspect, float rotation, float inclination, float FOV, float xlatez, float layback);
 	void CacheTransform();      // compute m_matrixTotal = m_World * m_View * m_Proj
 	void TransformVertices(const Vertex3D * const rgv, const WORD * const rgi, const int count, Vertex2D * const rgvout) const;
-	void SetFieldOfView(float rFOV, float raspect, float rznear, float rzfar);
 	void SetupProjectionMatrix(float rFOV, float raspect, float rznear, float rzfar);
 
     void ComputeNearFarPlane(const Vector<Vertex3Ds>& verts);

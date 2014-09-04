@@ -433,7 +433,8 @@ void Pin3D::InitLayout()
 	const float aspect = (float)(4.0/3.0);//((float)m_dwRenderWidth)/m_dwRenderHeight;
 
     m_proj.FitCameraToVertices(&vvertex3D, aspect, rotation, inclination, FOV, g_pplayer->m_ptable->m_xlatez, g_pplayer->m_ptable->m_layback);
-    m_proj.SetFieldOfView(FOV, aspect, m_proj.m_rznear, m_proj.m_rzfar);
+    m_proj.m_matView.RotateXMatrix((float)M_PI);  // convert Z=out to Z=in (D3D coordinate system)
+    m_proj.m_matWorld.SetIdentity();
 
     m_proj.ScaleView(g_pplayer->m_ptable->m_scalex, g_pplayer->m_ptable->m_scaley, 1.0f);
     m_proj.TranslateView(g_pplayer->m_ptable->m_xlatex-m_proj.m_vertexcamera.x, g_pplayer->m_ptable->m_xlatey-m_proj.m_vertexcamera.y, -m_proj.m_vertexcamera.z);
@@ -443,7 +444,9 @@ void Pin3D::InitLayout()
 
     // recompute near and far plane (workaround for VP9 FitCameraToVertices bugs)
     m_proj.ComputeNearFarPlane(vvertex3D);
-    m_proj.SetupProjectionMatrix(FOV, aspect, m_proj.m_rznear, m_proj.m_rzfar);
+    D3DXMATRIX proj;
+    D3DXMatrixPerspectiveFovLH(&proj, ANGTORAD(FOV), aspect, m_proj.m_rznear, m_proj.m_rzfar);
+    memcpy(m_proj.m_matProj.m, proj.m, sizeof(float)*4*4);
 
 	for (int i=0; i<vvertex3D.Size(); ++i)
 		delete vvertex3D.ElementAt(i);
@@ -978,12 +981,6 @@ void PinProjection::ComputeNearFarPlane(const Vector<Vertex3Ds>& verts)
     m_rzfar *= 1.01f;
 }
 
-void PinProjection::SetFieldOfView(float rFOV, float raspect, float rznear, float rzfar)
-{
-    SetupProjectionMatrix(rFOV, raspect, rznear, rzfar);
-    m_matView.RotateXMatrix((float)M_PI);  // convert Z=out to Z=in (D3D coordinate system)
-    m_matWorld.SetIdentity();
-}
 
 void PinProjection::SetupProjectionMatrix(float rFOV, float raspect, float rznear, float rzfar)
 {
