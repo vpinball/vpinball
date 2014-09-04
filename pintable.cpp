@@ -1597,7 +1597,13 @@ void PinTable::Render3DProjection(Sur * const psur)
    const float aspect = 4.0f/3.0f;
 
    pinproj.FitCameraToVertices(&vvertex3D, aspect, rotation, inclination, FOV, m_xlatez, m_layback);
-   pinproj.SetFieldOfView(FOV, aspect, pinproj.m_rznear, pinproj.m_rzfar);
+   pinproj.m_matView.RotateXMatrix((float)M_PI);  // convert Z=out to Z=in (D3D coordinate system)
+   pinproj.m_matWorld.SetIdentity();
+   D3DXMATRIX proj;
+   D3DXMatrixPerspectiveFovLH(&proj, ANGTORAD(FOV), aspect, pinproj.m_rznear, pinproj.m_rzfar);
+   memcpy(pinproj.m_matProj.m, proj.m, sizeof(float)*4*4);
+
+   //pinproj.SetFieldOfView(FOV, aspect, pinproj.m_rznear, pinproj.m_rzfar);
 
    pinproj.ScaleView(m_scalex, m_scaley, 1.0f);
    pinproj.TranslateView(m_xlatex-pinproj.m_vertexcamera.x, m_xlatey-pinproj.m_vertexcamera.y, -pinproj.m_vertexcamera.z);
