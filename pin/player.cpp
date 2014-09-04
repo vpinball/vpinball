@@ -699,11 +699,6 @@ void Player::UpdateBasicShaderMatrix()
     m_pin3d.m_pd3dDevice->basicShader->Core()->SetMatrix("matWorld", &matWorld);
     D3DXMATRIX matComp = matWorld*matView;
     m_pin3d.m_pd3dDevice->basicShader->Core()->SetMatrix("matWorldView", &matComp);
-    D3DXMATRIX matInv;
-    D3DXMatrixInverse( &matInv, NULL, &matComp );
-    D3DXMatrixTranspose( &matInv, &matInv);
-    m_pin3d.m_pd3dDevice->basicShader->Core()->SetMatrix("matWorldViewIT", &matInv);
-
 }
 
 void Player::InitShader()
@@ -719,12 +714,6 @@ void Player::InitShader()
    D3DXMATRIX matView(viewMat);
    D3DXMATRIX matWorld(worldMat);
    D3DXMATRIX worldViewProj = matWorld * matView * matProj;
-
-   D3DXMATRIX matInv;
-   D3DXMatrixInverse( &matInv, NULL, &matView);
-   D3DXMatrixTranspose( &matInv, &matInv);
-   m_pin3d.m_pd3dDevice->basicShader->Core()->SetMatrix("matViewIT", &matInv);
-   m_pin3d.m_pd3dDevice->basicShader->Core()->SetMatrix("matProj", &matProj);
 
    UpdateBasicShaderMatrix();
    D3DXVECTOR4 cam( worldViewProj._41, worldViewProj._42, worldViewProj._43, 0 );

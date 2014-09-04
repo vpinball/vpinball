@@ -46,8 +46,6 @@ CLight lights[NUM_LIGHTS] = {                         //NUM_LIGHTS == 2
 float4x4 matWorldViewProj  : WORLDVIEWPROJ; 
 float4x4 matWorldView      : WORLDVIEW; 
 float4x4 matWorld          : WORLD; 
-float4x4 matWorldViewIT; 
-float4x4 matViewIT; 
 
 texture Texture0;
 
@@ -63,9 +61,10 @@ sampler2D texSampler0 : TEXUNIT0 = sampler_state
 struct VS_OUTPUT 
 { 
    float4 Pos           : POSITION; 
-   float4 Color         : COLOR0; 
-   float4 ColorSpec     : COLOR1; 
    float2 Tex0          : TEXCOORD0; 
+   float3 worldPos      : TEXCOORD1; 
+   float3 normal        : TEXCOORD2;
+   float3 viewPos       : TEXCOORD3;
 }; 
  
 struct COLOR_PAIR 
@@ -79,7 +78,7 @@ struct COLOR_PAIR
 // Name: DoPointLight() 
 // Desc: Point light computation 
 //----------------------------------------------------------------------------- 
-COLOR_PAIR DoPointLight(float4 vPosition, float3 N, float3 V, int i) 
+COLOR_PAIR DoPointLight(float3 vPosition, float3 N, float3 V, int i) 
 { 
    float3 pos=(float3)mul(matWorld,vPosition);
    float3 light = lights[i].vPos;
@@ -126,72 +125,55 @@ VS_OUTPUT vs_main (float4 vPosition  : POSITION0,
    Out.Pos = mul(vPosition, matWorldViewProj); 
  
    float3 P = mul(matWorldView,vPosition).xyz;           //position in view space 
-   float4 nn = float4(vNormal,0.0f);
+   float4 nn = float4(vNormal,1.0f);
    float3 N = normalize(mul(matWorld,nn).xyz);
    float3 C = mul(matWorldView,camera).xyz;
    float3 V = -normalize(C-P);                          //viewer 
  
    Out.Tex0 = tc; 
- 
-   //light computation 
-   Out.Color = 0;
-   Out.ColorSpec = 0; 
- 
-   int i;
-   //directional lights 
-   //point lights 
-   for( i = 0; i < iLightPointNum; i++)  
-   { 
-      COLOR_PAIR ColOut = DoPointLight(vPosition, N, V, i); 
-      Out.Color += ColOut.Color; 
-      Out.ColorSpec += ColOut.ColorSpec; 
-   } 
- 
-   //apply material color 
-   Out.Color *= vMaterialColor; 
-   Out.ColorSpec *= vMaterialColor; 
- 
-   //saturate 
-   Out.Color = saturate(Out.Color); 
-   Out.ColorSpec = saturate(Out.ColorSpec); 
- 
+   Out.worldPos = vPosition.xyz;
+   Out.normal = N;
+   Out.viewPos = V;
+   
    return Out; 
 } 
 
 float4 ps_main( in VS_OUTPUT IN) : COLOR
 {	
-	return saturate(IN.Color+IN.ColorSpec)*float4(1,1,1,materialAlpha);
-}
-
-float4 Overlay (float4 cBase, float4 cBlend)
-{
-	// Vectorized (easier for compiler)
-	float4 cNew;
-	
-	// overlay has two output possbilities
-	// which is taken is decided if pixel value
-	// is below half or not
-
-	cNew = step(0.5,cBase);
-	
-	// we pick either solution
-	// depending on pixel
-	
-	// first is case of < 0.5
-	// second is case for >= 0.5
-	
-	// interpolate between the two, 
-	// using color as influence value
-	cNew= lerp((cBase*cBlend*2),(1.0-(2.0*(1.0-cBase)*(1.0-cBlend))),cNew);
-
-	cNew.a = 1.0;
-	return cNew;
+   int i;
+   float4 color = float4(0.0f, 0.0f, 0.0f,1.0f);
+   float4 colorSpec = float4(0.0f, 0.0f, 0.0f,1.0f);
+   for( i = 0; i < iLightPointNum; i++)  
+   { 
+      COLOR_PAIR ColOut = DoPointLight(IN.worldPos, IN.normal, IN.viewPos, i); 
+      color += ColOut.Color; 
+      colorSpec += ColOut.ColorSpec; 
+   } 
+ 
+   //apply material color 
+   color *= vMaterialColor; 
+   colorSpec *= vMaterialColor; 
+  
+   return saturate(color+colorSpec)*float4(1,1,1,materialAlpha);
 }
 
 float4 ps_main_texture( in VS_OUTPUT IN) : COLOR
 {
-	//return Overlay(IN.Color,tex2D(texSampler0,IN.Tex0));
-	return IN.Color * tex2D(texSampler0,IN.Tex0) * float4(1,1,1,materialAlpha);
+   int i;
+   float4 color = float4(0.0f, 0.0f, 0.0f,1.0f);
+   float4 colorSpec = float4(0.0f, 0.0f, 0.0f,1.0f);
+   for( i = 0; i < iLightPointNum; i++)  
+   { 
+      COLOR_PAIR ColOut = DoPointLight(IN.worldPos, IN.normal, IN.viewPos, i); 
+      color += ColOut.Color; 
+      colorSpec += ColOut.ColorSpec; 
+   } 
+ 
+   //apply material color 
+   color *= vMaterialColor; 
+   colorSpec *= vMaterialColor; 
+	
+   return saturate(color+colorSpec) * tex2D(texSampler0,IN.Tex0) * float4(1,1,1,materialAlpha);
 }
 
 // Techniques 
