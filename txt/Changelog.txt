@@ -14,6 +14,9 @@ VP 10.0.0 Changelog
 - shader based mesh ball
 - shader based materials/lighting
 
+- internal DMD (access via script, input levels are 0..100)
+  DMDWidth, DMDHeight, DMDPixels added to Table Script methods
+
 - improved smoothness for ramps (centripetal Catmull-Rom splines)
 - changed opacity/transparency handling for ramps (Alpha/Acrylic have been replaced by new props Transparent/Opacity)
 
