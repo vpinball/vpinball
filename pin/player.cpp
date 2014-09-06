@@ -725,7 +725,7 @@ void Player::InitBallShader()
 {
    ballShader = new Shader(m_pin3d.m_pd3dDevice );
 
-//   ballShader->Load("c:\\projects\\vp\\shader\\BallShader.fx", true );
+//   ballShader->Load("c:\\projects\\vp9_dx9\\shader\\BallShader.fx", true );
 
    ballShader->Load("BallShader.fx", false );
 
@@ -752,9 +752,9 @@ void Player::InitBallShader()
    ballShader->Core()->SetFloat("invTableWidth", inv_tablewidth );
    ballShader->Core()->SetFloat("invTableHeight", inv_tableheight );
 
-   D3DXVECTOR4 cam( worldViewProj._41, worldViewProj._42, worldViewProj._43, 0 );
+   D3DXVECTOR4 cam( matView._41, matView._42, matView._43, 0 );
    ballShader->Core()->SetVector("camera", &cam);
-   //ballShader->SetMatrix("matWorldI", &matWorldI);
+
    vector<WORD> indexList;
    indexList.resize(basicBallNumFaces);
    memcpy(&indexList[0],basicBallIndices, sizeof(WORD)*basicBallNumFaces);
