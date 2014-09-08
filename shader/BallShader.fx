@@ -185,13 +185,13 @@ float3 DoPointLight(float4 vPosition, float3 N, float3 V, float3 diffuse, float3
    float NdotL = dot(N, L); 
    float3 Out = float3(0.0f,0.0f,0.0f); 
    
-   if(NdotL >= 0.f)
+   if(NdotL + fWrap > 0.0f)
    { 
       //compute diffuse color 
       Out = /*NdotL * lights[i].vDiffuse * diffuse; //*saturate(4.0f*NdotL); //!! /*/ lights[i].vDiffuse * diffuse * (NdotL + fWrap)/((1.0f+fWrap) * (1.0f+fWrap));
  
       //add specular component 
-      if(bSpecular) 
+      if(bSpecular && (NdotL > 0.0f)) 
       { 
 		 float3 H = normalize(L + V);   //half vector 
          Out += FresnelSchlick(lights[i].vSpecular * specular, L, H) * ((fMaterialPower + 2.0f) / 8.0f ) * pow(saturate(dot(N, H)), fMaterialPower) * NdotL * lights[i].vSpecular * specular;
