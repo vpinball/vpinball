@@ -290,7 +290,7 @@ void Plunger::PostRenderStatic(RenderDevice* pd3dDevice)
             //render a simple rectangle as an embedded alpha ramp plunger ;)
             pin->CreateAlphaChannel();
             D3DXVECTOR4 color(1.0f,1.0f,1.0f,1.0f);
-            pd3dDevice->basicShader->Core()->SetVector("vMaterialColor",&color);
+            pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&color);
             pd3dDevice->basicShader->SetTexture("Texture0",pin);
             pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
             //pd3dDevice->SetRenderState(RenderDevice::LIGHTING, FALSE );
@@ -309,7 +309,7 @@ void Plunger::PostRenderStatic(RenderDevice* pd3dDevice)
             {
                 pin->CreateAlphaChannel();
                 D3DXVECTOR4 color(1.0f,1.0f,1.0f,1.0f);
-                pd3dDevice->basicShader->Core()->SetVector("vMaterialColor",&color);
+                pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&color);
                 pd3dDevice->basicShader->SetTexture("Texture0",pin);
                 pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
                 //pd3dDevice->SetRenderState(RenderDevice::LIGHTING, FALSE );
@@ -319,7 +319,7 @@ void Plunger::PostRenderStatic(RenderDevice* pd3dDevice)
             else
             {
                 //ppin3d->SetTexture(NULL);
-                pd3dDevice->basicShader->Core()->SetVector("vMaterialColor",&matColor);
+                pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&matColor);
                 pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
             }
             pd3dDevice->basicShader->Begin(0);
@@ -333,7 +333,7 @@ void Plunger::PostRenderStatic(RenderDevice* pd3dDevice)
     }
     else if (m_d.m_type == PlungerTypeOrig)
     {
-        pd3dDevice->basicShader->Core()->SetVector("vMaterialColor",&matColor);
+        pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&matColor);
         ppin3d->DisableAlphaBlend();
         pd3dDevice->basicShader->Begin(0);
         pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, vertexBuffer, frame*(16*PLUNGEPOINTS0), 16*PLUNGEPOINTS0, indexBuffer, 0, 16*6*(PLUNGEPOINTS0-1));

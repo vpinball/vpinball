@@ -782,7 +782,7 @@ void Primitive::RenderObject( RenderDevice *pd3dDevice )
         pd3dDevice->basicShader->SetTexture("Texture0", pin);
         pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
         D3DXVECTOR4 color(1.0f,1.0f,1.0f,1.0f);   
-        pd3dDevice->basicShader->Core()->SetVector("vMaterialColor",&color);
+        pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&color);
 
         g_pplayer->m_pin3d.EnableAlphaBlend(1, fFalse);
         g_pplayer->m_pin3d.SetTextureFilter(ePictureTexture, TEXTURE_MODE_TRILINEAR);
@@ -791,7 +791,7 @@ void Primitive::RenderObject( RenderDevice *pd3dDevice )
     }
     else
     {
-        pd3dDevice->basicShader->Core()->SetVector("vMaterialColor",&matColor);
+        pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&matColor);
         g_pplayer->m_pin3d.SetTexture(NULL);
         pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
         if( vertexBufferRegenerate )

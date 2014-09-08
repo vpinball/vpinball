@@ -1095,7 +1095,7 @@ void Ramp::RenderStaticHabitrail(RenderDevice* pd3dDevice)
    {
        pin->CreateAlphaChannel();
        D3DXVECTOR4 color(1.0f,1.0f,1.0f,1.0f);   
-       pd3dDevice->basicShader->Core()->SetVector("vMaterialColor",&color);
+       pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&color);
        pd3dDevice->basicShader->SetTexture("Texture0",pin);
        pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
 
@@ -1590,7 +1590,7 @@ void Ramp::RenderStatic(RenderDevice* pd3dDevice)
    D3DXVECTOR4 matColor(r,g,b,1.0f);   
 
    pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelDeclaration );
-   pd3dDevice->basicShader->Core()->SetVector("vMaterialColor",&matColor);
+   pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&matColor);
 
    if (isHabitrail())
    {
@@ -1610,7 +1610,7 @@ void Ramp::RenderStatic(RenderDevice* pd3dDevice)
          pd3dDevice->basicShader->SetTexture("Texture0", pin );
          pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
          D3DXVECTOR4 color(1.0f,1.0f,1.0f,1.0f);   
-         pd3dDevice->basicShader->Core()->SetVector("vMaterialColor",&color);
+         pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&color);
 
          if (pin->m_fTransparent)
          {
@@ -2631,7 +2631,7 @@ void Ramp::PostRenderStatic(RenderDevice* pd3dDevice)
    const float g = (float)(m_d.m_color & 65280) * (float)(1.0/65280.0);
    const float b = (float)(m_d.m_color & 16711680) * (float)(1.0/16711680.0);
    D3DXVECTOR4 matColor(r,g,b,1.0f);   
-   pd3dDevice->basicShader->Core()->SetVector("vMaterialColor",&matColor);
+   pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&matColor);
 
    if (isHabitrail())
    {
@@ -2639,7 +2639,7 @@ void Ramp::PostRenderStatic(RenderDevice* pd3dDevice)
    }
    else
    {
-      pd3dDevice->basicShader->Core()->SetVector("vMaterialColor",&matColor);
+      pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&matColor);
       pd3dDevice->basicShader->Core()->SetFloat("vMaterialPower",0.0f);
 
       Pin3D * const ppin3d = &g_pplayer->m_pin3d;
@@ -2653,7 +2653,7 @@ void Ramp::PostRenderStatic(RenderDevice* pd3dDevice)
          pd3dDevice->basicShader->SetTexture( "Texture0", pin );
          pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
          D3DXVECTOR4 color(1.0f,1.0f,1.0f,1.0f);   
-         pd3dDevice->basicShader->Core()->SetVector("vMaterialColor",&color);
+         pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&color);
 
          ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 

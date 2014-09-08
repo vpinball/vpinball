@@ -1,44 +1,40 @@
-#define NUM_LIGHTS               2 
- 
-float4 vMaterialColor = float4(192.f/255.f, 128.f/255.f, 96.f/255.f, 1.f); 
-float fMaterialPower = 16.f; 
- 
-float4 vAmbientColor = float4(128.f/255.f, 128.f/255.f, 128.f/255.f, 1.f); 
-float  materialAlpha = 1.0f;
-bool   bSpecular = false; 
-float  lightRange=3000.0f;
+//!! change to PB model, 2layer? (for clearcoat)
+//!! change all to float3 pipeline
+
+#define NUM_LIGHTS 2
+
+float3 vSpecularColor = float3(1.0f, 1.0f, 1.0f); //!! pass from material & texture?
+float  fMaterialPower = 16.f;
+bool   bSpecular = false;
+float  fWrap = 0.5f; //!! pass from material, w in [0..1] for wrap lighting
+
+float3 vAmbient = float3(0.0f,0.0f,0.0f);
+float  lightRange = 3000.0f;
 
 struct CLight 
 { 
    float3 vPos; 
-   float4 vAmbient; 
-   float4 vDiffuse; 
-   float4 vSpecular; 
-   float3 vAttenuation; //1, D, D^2; 
+   float3 vDiffuse; //!! only have one emission
+   float3 vSpecular; 
 }; 
  
-int iLightPointNum=2; 
-CLight lights[NUM_LIGHTS] = {                         //NUM_LIGHTS == 2
+int iLightPointNum = NUM_LIGHTS;
+CLight lights[NUM_LIGHTS] = {          //NUM_LIGHTS == 2
    { 
-      float3(0.0f, 0.0f, 0.0f),              //position 
-      float4(0.0f, 0.0f, 0.0f, 1.0f),        //ambient 
-      float4(0.0f, 0.0f, 0.0f, 1.0f),        //diffuse 
-      float4(0.0f, 0.0f, 0.0f, 1.0f),        //specular 
-      float3(0.6f, 0.0000005f, 0.0000009f),                 //attenuation 
+      float3(0.0f, 0.0f, 0.0f),        //position 
+      float3(0.0f, 0.0f, 0.0f),        //diffuse 
+      float3(0.0f, 0.0f, 0.0f),        //specular 
    }, 
    { 
-      float3(0.0f, 0.0f, 0.0f),              //position 
-      float4(0.0f, 0.0f, 0.0f, 1.0f),        //ambient 
-      float4(0.0f, 0.0f, 0.0f, 1.0f),        //diffuse 
-      float4(0.0f, 0.0f, 0.0f, 1.0f),        //specular 
-      float3(0.6f, 0.0000005f, 0.0000009f),                 //attenuation 
-   } 
+      float3(0.0f, 0.0f, 0.0f),        //position 
+      float3(0.0f, 0.0f, 0.0f),        //diffuse 
+      float3(0.0f, 0.0f, 0.0f),        //specular 
+   }
 }; 
 
 float4x4 matWorldViewProj   : WORLDVIEWPROJ;
 float4x4 matWorld           : WORLD;
 float4x4 matWorldView       : WORLD;
-float4   diffuseMaterial    = float4(1.0f,1.0f,1.0f,0.1f);
 float    invTableHeight;
 float    invTableWidth;
 float4   position;
@@ -126,7 +122,7 @@ vout vsBall( in vin IN )
     OUT.position = mul(pos, matWorldViewProj);
     
 	// apply spinning to the normals too to get the sphere mapping effect
-	float4 npos = float4(IN.normal,0.0);
+	float4 npos = float4(IN.normal,0.0f);
 	npos = mul(npos,orientation);
     float4 normal = normalize(mul(npos, matWorld));
 	float4 eye = normalize(v-c);
@@ -174,33 +170,40 @@ vout vsBallReflection( in vin IN )
 	return OUT;
 }
 
-float4 DoPointLight(float4 vPosition, float3 N, float3 V, int i) 
+float3 FresnelSchlick(float3 spec, float3 E, float3 H)
+{
+    return spec + (1.0f - spec) * pow(1.0f - saturate(dot(E, H)), 5);
+}
+
+// assumes all light input premultiplied by PI
+float3 DoPointLight(float4 vPosition, float3 N, float3 V, float3 diffuse, float3 specular, int i) 
 { 
-   float3 pos = (float3)mul(matWorld,vPosition);
+   float3 pos = mul(matWorld,vPosition).xyz;
    float3 light = lights[i].vPos;
    float3 lightDir = light-pos;
    float3 L = normalize(lightDir); 
    float NdotL = dot(N, L); 
-   float4 color = lights[i].vAmbient; 
-   float4 colorSpec = float4(0.0f,0.0f,0.0f,1.0f); 
-   float fAtten = 1.f; 
-   if(NdotL >= 0.f) 
+   float3 Out = float3(0.0f,0.0f,0.0f); 
+   
+   if(NdotL >= 0.f)
    { 
       //compute diffuse color 
-      color += (NdotL * lights[i].vDiffuse)*saturate(4.0f*NdotL); 
+      Out = /*NdotL * lights[i].vDiffuse * diffuse; //*saturate(4.0f*NdotL); //!! /*/ lights[i].vDiffuse * diffuse * (NdotL + fWrap)/((1.0f+fWrap) * (1.0f+fWrap));
  
       //add specular component 
       if(bSpecular) 
       { 
-         float3 H = normalize(L + V);   //half vector 
-         colorSpec = pow(max(0, dot(H,N)), fMaterialPower) * lights[i].vSpecular; 
+		 float3 H = normalize(L + V);   //half vector 
+         Out += FresnelSchlick(lights[i].vSpecular * specular, L, H) * ((fMaterialPower + 2.0f) / 8.0f ) * pow(saturate(dot(N, H)), fMaterialPower) * NdotL * lights[i].vSpecular * specular;
+         //Out += pow(max(0.f, dot(H,N)), fMaterialPower) * lights[i].vSpecular; 
       } 
  
-      fAtten = saturate( 1.0f - dot(lightDir/lightRange, lightDir/lightRange) );
-      color.rgb *= fAtten; 
-      colorSpec.rgb *= fAtten; 
-   } 
-   return saturate(color+colorSpec); 
+      float fAtten = saturate( 1.0f - dot(lightDir/lightRange, lightDir/lightRange) ); //!!
+  	  //float fAtten = lightRange*lightRange/dot(lightDir,lightDir);
+      Out *= fAtten; 
+   }
+   
+   return Out;
 } 
 
 //PIXEL SHADER
@@ -212,14 +215,14 @@ float4 psBall( in vout IN ) : COLOR
 	float4 ballImageColor = tex2D( texSampler0, uv );
 	float4 decalColor = tex2D( texSampler2, IN.tex2 );
     
-    float4 r=(reflect(IN.eye,IN.normal));
+    float4 r = reflect(IN.eye,IN.normal);
 	uv.x = position.x * invTableWidth;
 	uv.y = position.y * invTableHeight;
 	uv.x = uv.x + (r.x/(1.0f+r.z))*0.02f;
 	uv.y = uv.y + (r.y/(1.0f+r.z))*0.02f;
 	float4 playfieldColor = tex2D( texSampler1, uv );
 	
-	playfieldColor.a = /*sqrt(((position.z-IN.worldPos.z)/radius+1.0f)*0.5f)**/saturate(r.y)*sqrt(saturate(1.0f-(1.0f+r.z)/0.8f));
+	playfieldColor.a = /*sqrt(((position.z-IN.worldPos.z)/radius+1.0f)*0.5f) **/ saturate(r.y)*sqrt(saturate(1.0f-(1.0f+r.z)/0.8f));
 	playfieldColor.a=0;
 	/*if( r.z<-0.4f )
 	{
@@ -230,12 +233,14 @@ float4 psBall( in vout IN ) : COLOR
 		playfieldColor.a = 0;
 	}*/
 
-	float4 lightColor = float4(0.0f, 0.0f, 0.0f, 1.0f);
-    lightColor = DoPointLight(IN.worldPos, IN.normal, IN.eye, 0);
-    lightColor += DoPointLight(IN.worldPos, IN.normal, IN.eye, 1);
-    lightColor.a=1.0f;
-	float4 result = decalColor.a*decalColor + ballImageColor;
-	return result*lightColor + playfieldColor*playfieldColor.a;
+    float3 color = float3(0.0f, 0.0f, 0.0f);
+    
+	for(int i = 0; i < iLightPointNum; i++)  
+    { 
+      color += DoPointLight(IN.worldPos, IN.normal, IN.eye, ballImageColor + decalColor.a*decalColor, vSpecularColor * decalColor.a*decalColor, i); //!! decal vs spec vs playfield??
+    } 
+    
+	return float4(saturate(color + playfieldColor*playfieldColor.a + vAmbient),1);
 }
 
 
@@ -250,13 +255,13 @@ float4 psBallReflection( in vout IN ) : COLOR
 }
 
 //------------------------------------
+
 technique RenderBall
 {
 	pass p0 
 	{		
 		vertexshader = compile vs_3_0 vsBall();
 		pixelshader  = compile ps_3_0 psBall();
-
 	}
 }
 

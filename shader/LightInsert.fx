@@ -3,9 +3,9 @@ float4x4 matWorld           : WORLD;
 float4   diffuseMaterial    = float4(1,1,1,1);
 float4   lightCenter;
 float    maxRange;
-float    intensity=1;
+float    intensity=1.0f;
 float4   camera;
-float4 ambient = float4( 0.1, 0.0, 0.0, 1.0 );
+float4 ambient = float4( 0.1f, 0.0, 0.0, 1.0f );
 
 texture OffTexture;
 sampler2D texSampler0 : TEXUNIT0 = sampler_state
@@ -49,7 +49,7 @@ vout VS( in vin IN )
 }
 float4 Screen (float4 cBase, float4 cBlend)
 {
-	return (1 - (1 - cBase) * (1 - cBlend));
+	return (1.0f - (1.0f - cBase) * (1.0f - cBlend));
 }
 float4 Multiply (float4 cBase, float4 cBlend)
 {
@@ -64,7 +64,7 @@ float4 Overlay (float4 cBase, float4 cBlend)
 	// which is taken is decided if pixel value
 	// is below half or not
 
-	cNew = step(0.5,cBase);
+	cNew = step(0.5f,cBase);
 	
 	// we pick either solution
 	// depending on pixel
@@ -74,9 +74,9 @@ float4 Overlay (float4 cBase, float4 cBlend)
 	
 	// interpolate between the two, 
 	// using color as influence value
-	cNew= lerp((cBase*cBlend*2),(1.0-(2.0*(1.0-cBase)*(1.0-cBlend))),cNew);
+	cNew= lerp((cBase*cBlend*2.0f),(1.0f-(2.0f*(1.0f-cBase)*(1.0f-cBlend))),cNew);
 
-	cNew.a = 1.0;
+	cNew.a = 1.0f;
 	return cNew;
 }
 //PIXEL SHADER
@@ -84,7 +84,7 @@ float4 PS_WithTexel(in vout IN ) : COLOR
 {	
 	float len = length(lightCenter.xyz-IN.worldPos.xyz);
 	float f=0;//maxRange*0.01;
-	float intens = 1-saturate((len-f)/maxRange);
+	float intens = 1.0f-saturate((len-f)/maxRange);
 	
 	intens = pow(intens,2);
 	float4 result = saturate((diffuseMaterial*intens)*intensity);	
@@ -98,12 +98,12 @@ float4 PS_WithoutTexel(in vout IN ) : COLOR
 {	
 	float len = length(lightCenter.xyz-IN.worldPos.xyz);
 	float f=0;//maxRange*0.01;
-	float intens = 1-saturate((len-f)/maxRange);
+	float intens = 1.0f-saturate((len-f)/maxRange);
 	
-	intens = pow(intens,2);
+	intens *= intens;
 	float4 result = saturate((diffuseMaterial*intens)*intensity);	
 	result.a = intens;	
-	float4 color=diffuseMaterial*0.2;
+	float4 color=diffuseMaterial*0.2f;
     return Screen( color, result );
 }
 
@@ -111,9 +111,9 @@ float4 PS_BulbLight( in vout IN ) : COLOR
 {
 	float len = length(lightCenter.xyz-IN.worldPos.xyz);
 	float f=0;//maxRange*0.01;
-	float intens = 1-saturate((len-f)/maxRange);
+	float intens = 1.0f-saturate((len-f)/maxRange);
 	
-	intens = pow(intens,2);
+	intens *= intens;
 	float4 result = saturate((diffuseMaterial*intens)*intensity);	
 	float4 texel = tex2D( texSampler0, IN.tex0 );
 	result.a = intens;	
