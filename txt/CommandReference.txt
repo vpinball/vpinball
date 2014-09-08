@@ -88,6 +88,7 @@ PlungerFilter(bool) - default=false
 *Light0Diffuse(OLE_COLOR) - changes the diffuse color contribution for each material from light0
 *Light0Specular(OLE_COLOR) - changes the specular color contribution for each material from light0
 *LightHeight(float) - height of light0
+*LightRange(float)
 *ShadowX(float) - defines the shadow X direction (-1.0..+1.0) default=0.0, because the shadow generation is a fake this is not 100% accurate (if X and Y are both zero one can have an ambient occlusion like effect)
 *ShadowY(float) - defines the shadow Y direction (-1.0..+1.0) default=0.0, because the shadow generation is a fake this is not 100% accurate
 
