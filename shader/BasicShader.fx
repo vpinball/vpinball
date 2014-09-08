@@ -1,39 +1,38 @@
-#define PI  3.14f 
-#define NUM_LIGHTS               2 
+//!! change to PB model, 2layer? (for clearcoat)
+//!! change all to float3 pipeline
+
+#define NUM_LIGHTS 2
+
+#define PI 3.1415926535897932384626433832795f
  
-float4 vMaterialColor = float4(192.f/255.f, 128.f/255.f, 96.f/255.f, 1.f); 
-float fMaterialPower = 16.f; 
- 
-float4 vAmbientColor = float4(128.f/255.f, 128.f/255.f, 128.f/255.f, 1.f); 
-float  materialAlpha = 1.0f;
-float4   camera;
-bool bSpecular = false; 
-float  lightRange=3000.0f;
+float3 vDiffuseColor = float3(192.f/255.f, 128.f/255.f, 96.f/255.f);
+float3 vSpecularColor = float3(1.0f, 1.0f, 1.0f); //!! pass from material & texture
+float  fMaterialPower = 16.f; //!! allow for texture
+float  materialAlpha = 1.0f; //!! allow for texture
+bool   bSpecular = false; 
+float  fWrap = 0.5f; //!! pass from material, w in [0..1] for wrap lighting
+      
+float3 vAmbient = float3(0.0f,0.0f,0.0f);
+float  lightRange = 3000.0f;
 
 struct CLight 
 { 
    float3 vPos; 
-   float4 vAmbient; 
-   float4 vDiffuse; 
-   float4 vSpecular; 
-   float3 vAttenuation; //1, D, D^2; 
+   float3 vDiffuse; //!! only have one emission
+   float3 vSpecular; 
 }; 
  
-int iLightPointNum; 
-CLight lights[NUM_LIGHTS] = {                         //NUM_LIGHTS == 2
+int iLightPointNum=NUM_LIGHTS; 
+CLight lights[NUM_LIGHTS] = {          //NUM_LIGHTS == 2
    { 
-      float3(0.0f, 0.0f, 0.0f),              //position 
-      float4(0.0f, 0.0f, 0.0f, 0.0f),        //ambient 
-      float4(0.0f, 0.0f, 0.0f, 0.0f),        //diffuse 
-      float4(0.0f, 0.0f, 0.0f, 0.0f),        //specular 
-      float3(0.6f, 0.0000005f, 0.0000009f),                 //attenuation 
+      float3(0.0f, 0.0f, 0.0f),        //position 
+      float3(0.0f, 0.0f, 0.0f),        //diffuse 
+      float3(0.0f, 0.0f, 0.0f),        //specular 
    }, 
    { 
-      float3(0.0f, 0.0f, 0.0f),              //position 
-      float4(0.0f, 0.0f, 0.0f, 0.0f),        //ambient 
-      float4(0.0f, 0.0f, 0.0f, 0.0f),        //diffuse 
-      float4(0.0f, 0.0f, 0.0f, 0.0f),        //specular 
-      float3(0.6f, 0.0000005f, 0.0000009f),                 //attenuation 
+      float3(0.0f, 0.0f, 0.0f),        //position 
+      float3(0.0f, 0.0f, 0.0f),        //diffuse 
+      float3(0.0f, 0.0f, 0.0f),        //specular 
    } 
 }; 
  
@@ -41,6 +40,8 @@ CLight lights[NUM_LIGHTS] = {                         //NUM_LIGHTS == 2
 float4x4 matWorldViewProj  : WORLDVIEWPROJ; 
 float4x4 matWorldView      : WORLDVIEW; 
 float4x4 matWorld          : WORLD; 
+
+float4 camera;
 
 texture Texture0;
 
@@ -62,44 +63,39 @@ struct VS_OUTPUT
    float3 viewPos       : TEXCOORD3;
 }; 
  
-struct COLOR_PAIR 
-{ 
-   float4 Color         : COLOR0; 
-   float4 ColorSpec     : COLOR1; 
-}; 
- 
+float3 FresnelSchlick(float3 spec, float3 E, float3 H)
+{
+    return spec + (1.0f - spec) * pow(1.0f - saturate(dot(E, H)), 5);
+}
 
-//----------------------------------------------------------------------------- 
-// Name: DoPointLight() 
-// Desc: Point light computation 
-//----------------------------------------------------------------------------- 
-COLOR_PAIR DoPointLight(float3 vPosition, float3 N, float3 V, int i) 
+// assumes all light input premultiplied by PI
+float3 DoPointLight(float3 vPosition, float3 N, float3 V, float3 diffuse, float3 specular, int i) 
 { 
-   float3 pos=mul(matWorld,vPosition).xyz;
+   float3 pos = (float3)mul(matWorld,vPosition);
    float3 light = lights[i].vPos;
    float3 lightDir = light-pos;
    float3 L = normalize(lightDir); 
-   COLOR_PAIR Out; 
    float NdotL = dot(N, L); 
-   Out.Color = lights[i].vAmbient; 
-   Out.ColorSpec = 0; 
-   float fAtten = 1.f; 
+   float3 Out = float3(0.0f,0.0f,0.0f);
+   
    if(NdotL >= 0.f) 
    { 
       //compute diffuse color 
-      Out.Color += (NdotL * lights[i].vDiffuse)*saturate(4.0f*NdotL); 
+      Out = /*(NdotL * lights[i].vDiffuse * diffuse); /*/ lights[i].vDiffuse * diffuse * (NdotL + fWrap)/((1.0f+fWrap) * (1.0f+fWrap));
  
       //add specular component 
       if(bSpecular) 
       { 
-         float3 H = normalize(L + V);   //half vector 
-         Out.ColorSpec = pow(max(0, dot(H,N)), fMaterialPower) * lights[i].vSpecular; 
+		 float3 H = normalize(L + V);   //half vector 
+         Out += FresnelSchlick(lights[i].vSpecular * specular, L, H) * ((fMaterialPower + 2.0f) / 8.0f ) * pow(saturate(dot(N, H)), fMaterialPower) * NdotL * lights[i].vSpecular * specular;
+         //Out += pow(max(0.f, dot(H,N)), fMaterialPower) * lights[i].vSpecular * specular; 
       } 
  
-      fAtten = saturate( 1.0f - dot(lightDir/lightRange, lightDir/lightRange) );
-      Out.Color.rgb *= fAtten; 
-      Out.ColorSpec.rgb *= fAtten; 
+      float fAtten = saturate( 1.0f - dot(lightDir/lightRange, lightDir/lightRange) ); //!!
+  	  //float fAtten = lightRange*lightRange/dot(lightDir,lightDir);
+      Out *= fAtten; 
    } 
+   
    return Out; 
 } 
 
@@ -119,10 +115,10 @@ VS_OUTPUT vs_main (float4 vPosition  : POSITION0,
    Out.Pos = mul(vPosition, matWorldViewProj); 
  
    float3 P = mul(matWorldView,vPosition).xyz;           //position in view space 
-   float4 nn = float4(vNormal,1.0f);
+   float4 nn = float4(vNormal,0.0f);
    float3 N = normalize(mul(matWorld,nn).xyz);
    float3 C = mul(matWorldView,camera).xyz;
-   float3 V = -normalize(C-P);                          //viewer 
+   float3 V = normalize(P-C);                          //viewer
  
    Out.Tex0 = tc; 
    Out.worldPos = vPosition.xyz;
@@ -134,40 +130,26 @@ VS_OUTPUT vs_main (float4 vPosition  : POSITION0,
 
 float4 ps_main( in VS_OUTPUT IN) : COLOR
 {	
-   int i;
-   float4 color = float4(0.0f, 0.0f, 0.0f,1.0f);
-   float4 colorSpec = float4(0.0f, 0.0f, 0.0f,1.0f);
-   for( i = 0; i < iLightPointNum; i++)  
+   float3 color = float3(0.0f, 0.0f, 0.0f);
+   
+   for(int i = 0; i < iLightPointNum; i++)  
    { 
-      COLOR_PAIR ColOut = DoPointLight(IN.worldPos, IN.normal, IN.viewPos, i); 
-      color += ColOut.Color; 
-      colorSpec += ColOut.ColorSpec; 
+      color += DoPointLight(IN.worldPos, IN.normal, IN.viewPos, vDiffuseColor, vSpecularColor, i); 
    } 
- 
-   //apply material color 
-   color *= vMaterialColor; 
-   colorSpec *= vMaterialColor; 
   
-   return saturate(color+colorSpec)*float4(1,1,1,materialAlpha);
+   return float4(saturate(vAmbient + color), materialAlpha);
 }
 
 float4 ps_main_texture( in VS_OUTPUT IN) : COLOR
 {
-   int i;
-   float4 color = float4(0.0f, 0.0f, 0.0f,1.0f);
-   float4 colorSpec = float4(0.0f, 0.0f, 0.0f,1.0f);
-   for( i = 0; i < iLightPointNum; i++)  
+   float3 color = float3(0.0f, 0.0f, 0.0f);
+   
+   for(int i = 0; i < iLightPointNum; i++)  
    { 
-      COLOR_PAIR ColOut = DoPointLight(IN.worldPos, IN.normal, IN.viewPos, i); 
-      color += ColOut.Color; 
-      colorSpec += ColOut.ColorSpec; 
+      color += DoPointLight(IN.worldPos, IN.normal, IN.viewPos, vDiffuseColor*tex2D(texSampler0,IN.Tex0), vSpecularColor, i); 
    } 
  
-   //apply material color 
-   color *= vMaterialColor; 
-   colorSpec *= vMaterialColor; 
-	
-   return saturate(color+colorSpec) * tex2D(texSampler0,IN.Tex0) * float4(1,1,1,materialAlpha);
+   return float4(saturate(vAmbient + color), materialAlpha);
 }
 
 // Techniques 
@@ -179,7 +161,8 @@ technique basic_without_texture
       VertexShader = compile vs_3_0 vs_main(); 
 	  PixelShader = compile ps_3_0 ps_main();
    } 
-} 
+}
+
 technique basic_with_texture
 { 
    pass P0 

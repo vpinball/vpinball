@@ -491,7 +491,7 @@ void Trigger::RenderStatic(RenderDevice* pd3dDevice)
    pd3dDevice->SetMaterial(material);
    D3DXVECTOR4 matColor(0.5f, 0.5f, 0.5,1.0f);   
    pd3dDevice->basicShader->Core()->SetFloat("vMaterialPower",0.0f);
-   pd3dDevice->basicShader->Core()->SetVector("vMaterialColor",&matColor);
+   pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&matColor);
    pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
    
    pd3dDevice->basicShader->Begin(0);

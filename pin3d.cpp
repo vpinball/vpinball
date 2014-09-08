@@ -305,27 +305,22 @@ void Pin3D::InitLights()
     g_pplayer->m_ptable->m_Light[1].pos.z = lights[1].Position.z;
 
     char tmp[64];
-    float range = g_pplayer->m_ptable->m_glassheight*10.0f;
     sprintf_s(tmp,"lights[0].vPos");
     m_pd3dDevice->basicShader->Core()->SetValue(tmp, (void*)&lights[0].Position, sizeof(D3DVECTOR));
-    sprintf_s(tmp,"lights[0].fRange");
-    m_pd3dDevice->basicShader->Core()->SetValue(tmp, (void*)&range, sizeof(D3DVECTOR));
     sprintf_s(tmp,"lights[1].vPos");
     m_pd3dDevice->basicShader->Core()->SetValue(tmp, (void*)&lights[1].Position, sizeof(D3DVECTOR));
-    sprintf_s(tmp,"lights[1].fRange");
-    m_pd3dDevice->basicShader->Core()->SetValue(tmp, (void*)&range, sizeof(D3DVECTOR));
-    sprintf_s(tmp,"lights[0].vAmbient");
-    m_pd3dDevice->basicShader->Core()->SetValue(tmp, (void*)&lights[0].Ambient, sizeof(D3DCOLORVALUE));
-    sprintf_s(tmp,"lights[1].vAmbient");
-    m_pd3dDevice->basicShader->Core()->SetValue(tmp, (void*)&lights[0].Ambient, sizeof(D3DCOLORVALUE));
     sprintf_s(tmp,"lights[0].vDiffuse");
-    m_pd3dDevice->basicShader->Core()->SetValue(tmp, (void*)&lights[0].Diffuse, sizeof(D3DCOLORVALUE));
+    m_pd3dDevice->basicShader->Core()->SetValue(tmp, (void*)&lights[0].Diffuse, sizeof(float)*3);
     sprintf_s(tmp,"lights[1].vDiffuse");
-    m_pd3dDevice->basicShader->Core()->SetValue(tmp, (void*)&lights[0].Diffuse, sizeof(D3DCOLORVALUE));
+    m_pd3dDevice->basicShader->Core()->SetValue(tmp, (void*)&lights[0].Diffuse, sizeof(float)*3);
     sprintf_s(tmp,"lights[0].vSpecular");
-    m_pd3dDevice->basicShader->Core()->SetValue(tmp, (void*)&lights[0].Specular, sizeof(D3DCOLORVALUE));
+    m_pd3dDevice->basicShader->Core()->SetValue(tmp, (void*)&lights[0].Specular, sizeof(float)*3);
     sprintf_s(tmp,"lights[1].vSpecular");
-    m_pd3dDevice->basicShader->Core()->SetValue(tmp, (void*)&lights[0].Specular, sizeof(D3DCOLORVALUE));
+    m_pd3dDevice->basicShader->Core()->SetValue(tmp, (void*)&lights[0].Specular, sizeof(float)*3);
+    sprintf_s(tmp,"vAmbient");
+    m_pd3dDevice->basicShader->Core()->SetValue(tmp, (void*)&lights[0].Ambient, sizeof(float)*3);
+    sprintf_s(tmp,"lightRange");
+    m_pd3dDevice->basicShader->Core()->SetValue(tmp, (void*)&g_pplayer->m_ptable->m_lightRange, sizeof(float));
 /*
     for(unsigned int i = 0; i < MAX_LIGHT_SOURCES; ++i)
     {
@@ -547,7 +542,7 @@ void Pin3D::RenderPlayfieldGraphics()
    const float b = (float)(g_pplayer->m_ptable->m_colorplayfield & 16711680) * (float)(1.0/16711680.0);
    D3DXVECTOR4 matColor(r,g,b,1.0f);   
    m_pd3dDevice->basicShader->Core()->SetFloat("vMaterialPower",0.0f);
-   m_pd3dDevice->basicShader->Core()->SetVector("vMaterialColor",&matColor);
+   m_pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&matColor);
 
 	if (pin)
 	{

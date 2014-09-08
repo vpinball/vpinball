@@ -333,7 +333,7 @@ void Spinner::PostRenderStatic(RenderDevice* pd3dDevice)
     const float b = (float)(m_d.m_color & 16711680) * (float)(1.0/16711680.0);
     D3DXVECTOR4 matColor(r,g,b,1.0f);   
     pd3dDevice->basicShader->Core()->SetFloat("vMaterialPower",0.0f);
-    pd3dDevice->basicShader->Core()->SetVector("vMaterialColor",&matColor);
+    pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&matColor);
 
     COLORREF rgbTransparent = RGB(255,0,255); //RGB(0,0,0);
 
@@ -628,7 +628,7 @@ void Spinner::RenderStatic(RenderDevice* pd3dDevice)
    //pd3dDevice->SetMaterial(staticMaterial);
    D3DXVECTOR4 matColor(0.6f,0.6f,0.6f,1.0f);   
    pd3dDevice->basicShader->Core()->SetFloat("vMaterialPower",0.0f);
-   pd3dDevice->basicShader->Core()->SetVector("vMaterialColor",&matColor);
+   pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&matColor);
    pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
 
    Vertex3D rgv3D[8];

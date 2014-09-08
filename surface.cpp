@@ -1011,7 +1011,7 @@ void Surface::RenderSlingshots(RenderDevice* pd3dDevice)
    const float b = (float)(m_d.m_slingshotColor & 16711680) * (float)(1.0/16711680.0);
    D3DXVECTOR4 matColor(r,g,b,1.0f);   
    pd3dDevice->basicShader->Core()->SetFloat("vMaterialPower",0.0f);
-   pd3dDevice->basicShader->Core()->SetVector("vMaterialColor",&matColor);
+   pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&matColor);
 
    for (unsigned i=0; i<m_vlinesling.size(); i++)
    {
@@ -1068,7 +1068,7 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
             pd3dDevice->basicShader->Core()->SetTexture("Texture0",pd3dDevice->m_texMan.LoadTexture(pinSide->m_pdsBuffer));
         pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
         D3DXVECTOR4 color(1.0f,1.0f,1.0f,1.0f);   
-        pd3dDevice->basicShader->Core()->SetVector("vMaterialColor",&color);
+        pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&color);
 
         if (pinSide->m_fTransparent)
         {
@@ -1085,7 +1085,7 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
     else
     {
         g_pplayer->m_pin3d.SetTexture(NULL);
-        pd3dDevice->basicShader->Core()->SetVector("vMaterialColor",&matColor);
+        pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&matColor);
         pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
     }
     pd3dDevice->SetMaterial(sideMaterial);
@@ -1135,7 +1135,7 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
 
             pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
             D3DXVECTOR4 color(1.0f,1.0f,1.0f,1.0f);   
-            pd3dDevice->basicShader->Core()->SetVector("vMaterialColor",&color);
+            pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&color);
 
             if (pin->m_fTransparent)
             {
@@ -1153,7 +1153,7 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
         else
         {
             ppin3d->SetTexture(NULL);
-            pd3dDevice->basicShader->Core()->SetVector("vMaterialColor",&matTopColor);
+            pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&matTopColor);
             pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
         }
         pd3dDevice->SetMaterial(topMaterial);

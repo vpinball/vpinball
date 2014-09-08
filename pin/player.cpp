@@ -799,21 +799,19 @@ void Player::InitBallShader()
    ballShader->Core()->SetValue(tmp, (void*)&lights[0].Position, sizeof(D3DVECTOR));
    sprintf_s(tmp,"lights[1].vPos");
    ballShader->Core()->SetValue(tmp, (void*)&lights[1].Position, sizeof(D3DVECTOR));
-   sprintf_s(tmp,"lights[0].vAmbient");
-   ballShader->Core()->SetValue(tmp, (void*)&lights[0].Ambient, sizeof(D3DCOLORVALUE));
-   sprintf_s(tmp,"lights[1].vAmbient");
-   ballShader->Core()->SetValue(tmp, (void*)&lights[0].Ambient, sizeof(D3DCOLORVALUE));
    sprintf_s(tmp,"lights[0].vDiffuse");
-   ballShader->Core()->SetValue(tmp, (void*)&lights[0].Diffuse, sizeof(D3DCOLORVALUE));
+   ballShader->Core()->SetValue(tmp, (void*)&lights[0].Diffuse, sizeof(float)*3);
    sprintf_s(tmp,"lights[1].vDiffuse");
-   ballShader->Core()->SetValue(tmp, (void*)&lights[0].Diffuse, sizeof(D3DCOLORVALUE));
+   ballShader->Core()->SetValue(tmp, (void*)&lights[0].Diffuse, sizeof(float)*3);
    sprintf_s(tmp,"lights[0].vSpecular");
-   ballShader->Core()->SetValue(tmp, (void*)&lights[0].Specular, sizeof(D3DCOLORVALUE));
+   ballShader->Core()->SetValue(tmp, (void*)&lights[0].Specular, sizeof(float)*3);
    sprintf_s(tmp,"lights[1].vSpecular");
-   ballShader->Core()->SetValue(tmp, (void*)&lights[0].Specular, sizeof(D3DCOLORVALUE));
-
+   ballShader->Core()->SetValue(tmp, (void*)&lights[0].Specular, sizeof(float)*3);
+   sprintf_s(tmp,"vAmbient");
+   ballShader->Core()->SetValue(tmp, (void*)&lights[0].Ambient, sizeof(float)*3);
+   sprintf_s(tmp,"lightRange");
+   ballShader->Core()->SetValue(tmp, (void*)&g_pplayer->m_ptable->m_lightRange, sizeof(float));
 }
-
 
 
 HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWND hwndProgressName)
