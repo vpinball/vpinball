@@ -129,8 +129,10 @@ public:
 	STDMETHOD(put_Light0Diffuse)(/*[in]*/ OLE_COLOR newVal);
 	STDMETHOD(get_Light0Specular)(/*[out, retval]*/ OLE_COLOR *pVal);
 	STDMETHOD(put_Light0Specular)(/*[in]*/ OLE_COLOR newVal);
-	STDMETHOD(get_LightHeight)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_LightHeight)(/*[in]*/ float newVal);
+    STDMETHOD(get_LightHeight)(/*[out, retval]*/ float *pVal);
+    STDMETHOD(put_LightHeight)(/*[in]*/ float newVal);
+    STDMETHOD(get_LightRange)(/*[out, retval]*/ float *pVal);
+    STDMETHOD(put_LightRange)(/*[in]*/ float newVal);
     STDMETHOD(get_BallReflection)(/*[out, retval]*/ int *pVal);
     STDMETHOD(put_BallReflection)(/*[in]*/ int newVal);
     STDMETHOD(get_ReflectionStrength)(/*[out, retval]*/ int *pVal);
@@ -625,6 +627,7 @@ END_CONNECTION_POINT_MAP()
 
 	LightSource m_Light[MAX_LIGHT_SOURCES];
     float m_lightHeight;
+    float m_lightRange;
     int m_useReflectionForBalls;
     int m_ballReflectionStrength;
     int m_useTrailForBalls;

@@ -719,6 +719,7 @@ void Player::InitShader()
    D3DXVECTOR4 cam( worldViewProj._41, worldViewProj._42, worldViewProj._43, 0 );
    m_pin3d.m_pd3dDevice->basicShader->Core()->SetVector("camera", &cam);
 
+   m_pin3d.m_pd3dDevice->basicShader->Core()->SetFloat("lightRange",m_ptable->m_lightRange);
    InitBallShader();
 }
 void Player::InitBallShader()
@@ -754,6 +755,7 @@ void Player::InitBallShader()
 
    D3DXVECTOR4 cam( matView._41, matView._42, matView._43, 0 );
    ballShader->Core()->SetVector("camera", &cam);
+   ballShader->Core()->SetFloat("lightRange",m_ptable->m_lightRange);
 
    vector<WORD> indexList;
    indexList.resize(basicBallNumFaces);

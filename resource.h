@@ -690,7 +690,7 @@
 #define IDC_LIGHT1DIFFUSE               562
 #define IDC_LIGHT1SPECULAR              563
 #define IDC_LIGHT0PX                    564
-#define IDC_LIGHT0PY                    565
+#define IDC_LIGHTRANGE                  565
 #define IDC_LIGHT0PZ                    566
 #define IDC_LIGHT0DX                    567
 #define IDC_LIGHT0DY                    568

@@ -2752,6 +2752,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
    bw.WriteInt(FID(LZDI), m_Light[0].diffuse);
    bw.WriteInt(FID(LZSP), m_Light[0].specular);
    bw.WriteFloat(FID(LZHI), m_lightHeight);
+   bw.WriteFloat(FID(LZRA), m_lightRange);
    bw.WriteFloat(FID(SDIX), m_shadowDirX);
    bw.WriteFloat(FID(SDIY), m_shadowDirY);
 
@@ -3151,7 +3152,8 @@ void PinTable::SetLoadDefaults()
    m_Light[0].dir = Vertex3Ds(0,0,0); // 0,0,0 = backwards compatible mode
    m_Light[0].enabled = true;
 
-   m_lightHeight=1000.0f;
+   m_lightHeight = 1000.0f;
+   m_lightRange = 3000.0f;
    m_angletiltMax = 726.0f;
    m_angletiltMin = 4.5f;
 
@@ -3415,6 +3417,10 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(LZHI))
    {
       pbr->GetFloat(&m_lightHeight);
+   }
+   else if (id == FID(LZRA))
+   {
+       pbr->GetFloat(&m_lightRange);
    }
    else if (id == FID(BREF))
    {
@@ -6865,6 +6871,23 @@ STDMETHODIMP PinTable::put_LightHeight(float newVal)
    return S_OK;
 }
 
+STDMETHODIMP PinTable::get_LightRange(float *pVal)
+{
+    *pVal = m_lightRange;
+
+    return S_OK;
+}
+
+STDMETHODIMP PinTable::put_LightRange(float newVal)
+{
+    STARTUNDO
+
+    m_lightRange = newVal;
+
+    STOPUNDO
+
+        return S_OK;
+}
 
 STDMETHODIMP PinTable::get_BallReflection(int *pVal)
 {
