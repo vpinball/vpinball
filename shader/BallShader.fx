@@ -5,8 +5,9 @@ float fMaterialPower = 16.f;
  
 float4 vAmbientColor = float4(128.f/255.f, 128.f/255.f, 128.f/255.f, 1.f); 
 float  materialAlpha = 1.0f;
-bool bSpecular = false; 
- 
+bool   bSpecular = false; 
+float  lightRange=3000.0f;
+
 struct CLight 
 { 
    float3 vPos; 
@@ -36,6 +37,7 @@ CLight lights[NUM_LIGHTS] = {                         //NUM_LIGHTS == 2
 
 float4x4 matWorldViewProj   : WORLDVIEWPROJ;
 float4x4 matWorld           : WORLD;
+float4x4 matWorldView       : WORLD;
 float4   diffuseMaterial    = float4(1.0f,1.0f,1.0f,0.1f);
 float    invTableHeight;
 float    invTableWidth;
@@ -185,17 +187,16 @@ float4 DoPointLight(float4 vPosition, float3 N, float3 V, int i)
    if(NdotL >= 0.f) 
    { 
       //compute diffuse color 
-      color += NdotL * lights[i].vDiffuse; 
+      color += (NdotL * lights[i].vDiffuse)*saturate(4.0f*NdotL); 
  
       //add specular component 
-      //if(bSpecular) 
+      if(bSpecular) 
       { 
          float3 H = normalize(L + V);   //half vector 
          colorSpec = pow(max(0, dot(H,N)), fMaterialPower) * lights[i].vSpecular; 
       } 
  
-      float LD = length(lightDir); 
-      fAtten = 1.f/(lights[i].vAttenuation.x + lights[i].vAttenuation.y*LD + lights[i].vAttenuation.z*LD*LD); 
+      fAtten = saturate( 1.0f - dot(lightDir/lightRange, lightDir/lightRange) );
       color.rgb *= fAtten; 
       colorSpec.rgb *= fAtten; 
    } 
@@ -219,6 +220,7 @@ float4 psBall( in vout IN ) : COLOR
 	float4 playfieldColor = tex2D( texSampler1, uv );
 	
 	playfieldColor.a = /*sqrt(((position.z-IN.worldPos.z)/radius+1.0f)*0.5f)**/saturate(r.y)*sqrt(saturate(1.0f-(1.0f+r.z)/0.8f));
+	playfieldColor.a=0;
 	/*if( r.z<-0.4f )
 	{
 		playfieldColor.a = saturate(r.y)*0.4f;

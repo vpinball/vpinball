@@ -8,7 +8,8 @@ float4 vAmbientColor = float4(128.f/255.f, 128.f/255.f, 128.f/255.f, 1.f);
 float  materialAlpha = 1.0f;
 float4   camera;
 bool bSpecular = false; 
- 
+float  lightRange=3000.0f;
+
 struct CLight 
 { 
    float3 vPos; 
@@ -74,7 +75,7 @@ struct COLOR_PAIR
 //----------------------------------------------------------------------------- 
 COLOR_PAIR DoPointLight(float3 vPosition, float3 N, float3 V, int i) 
 { 
-   float3 pos=(float3)mul(matWorld,vPosition);
+   float3 pos=mul(matWorld,vPosition).xyz;
    float3 light = lights[i].vPos;
    float3 lightDir = light-pos;
    float3 L = normalize(lightDir); 
@@ -86,7 +87,7 @@ COLOR_PAIR DoPointLight(float3 vPosition, float3 N, float3 V, int i)
    if(NdotL >= 0.f) 
    { 
       //compute diffuse color 
-      Out.Color += NdotL * lights[i].vDiffuse; 
+      Out.Color += (NdotL * lights[i].vDiffuse)*saturate(4.0f*NdotL); 
  
       //add specular component 
       if(bSpecular) 
@@ -95,8 +96,7 @@ COLOR_PAIR DoPointLight(float3 vPosition, float3 N, float3 V, int i)
          Out.ColorSpec = pow(max(0, dot(H,N)), fMaterialPower) * lights[i].vSpecular; 
       } 
  
-      float LD = length(lightDir); 
-      fAtten = 1.f/(lights[i].vAttenuation.x + lights[i].vAttenuation.y*LD + lights[i].vAttenuation.z*LD*LD); 
+      fAtten = saturate( 1.0f - dot(lightDir/lightRange, lightDir/lightRange) );
       Out.Color.rgb *= fAtten; 
       Out.ColorSpec.rgb *= fAtten; 
    } 
