@@ -543,7 +543,7 @@ STDMETHODIMP ScriptGlobalTable::put_DMDPixels(VARIANT pVal) //!! use 64bit inste
 
 	if(psa && g_pplayer && g_pplayer->m_dmdx > 0 && g_pplayer->m_dmdy > 0)
 	{
-		const unsigned int size = g_pplayer->m_dmdx*g_pplayer->m_dmdy;
+		const LONG size = g_pplayer->m_dmdx*g_pplayer->m_dmdy;
 		if(g_pplayer->m_rawdmd.size() != size)
 		{
 			g_pplayer->m_rawdmd.resize(size);
