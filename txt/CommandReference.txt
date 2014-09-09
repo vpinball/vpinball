@@ -84,11 +84,10 @@ PlungerFilter(bool) - default=false
 *TableSoundVolume(int) - Scales the global sound volume (in percent). default=100
 *TableMusicVolume(int) - Scales the global music volume (in percent). default=100
 
-*Light0Ambient(OLE_COLOR) - changes the ambient color contribution for each material from light0
-*Light0Diffuse(OLE_COLOR) - changes the diffuse color contribution for each material from light0
-*Light0Specular(OLE_COLOR) - changes the specular color contribution for each material from light0
-*LightHeight(float) - height of light0
-*LightRange(float)
+*LightAmbient(OLE_COLOR) - changes the ambient light contribution for each material
+*Light0Emission(OLE_COLOR) - changes the light contribution for each material (currently light0 emission is copied to light1, too)
+*LightHeight(float) - height of lights
+*LightRange(float) - range of lights
 *ShadowX(float) - defines the shadow X direction (-1.0..+1.0) default=0.0, because the shadow generation is a fake this is not 100% accurate (if X and Y are both zero one can have an ambient occlusion like effect)
 *ShadowY(float) - defines the shadow Y direction (-1.0..+1.0) default=0.0, because the shadow generation is a fake this is not 100% accurate
 

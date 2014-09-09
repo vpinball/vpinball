@@ -1118,7 +1118,6 @@ void Ramp::RenderStaticHabitrail(RenderDevice* pd3dDevice)
    pd3dDevice->SetRenderState(RenderDevice::SPECULARENABLE, FALSE);
    if ( !pin )
        pd3dDevice->basicShader->Core()->SetBool("bSpecular", false);
-
 }
 
 void Ramp::RenderPolygons(RenderDevice* pd3dDevice, int offset, WORD * const rgi, const int start, const int stop)

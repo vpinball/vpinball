@@ -272,127 +272,40 @@ void Pin3D::DrawBackground()
 
 void Pin3D::InitLights()
 {
-    D3DLIGHT9 lights[2];
-    m_pd3dDevice->basicShader->Core()->SetInt("iLightPointNum",2);
+    m_pd3dDevice->basicShader->Core()->SetInt("iLightPointNum",MAX_LIGHT_SOURCES);
 
-    lights[0].Position.x = g_pplayer->m_ptable->m_right*0.5f;
-    lights[1].Position.x = g_pplayer->m_ptable->m_right*0.5f;
-    lights[0].Position.y = g_pplayer->m_ptable->m_bottom*(float)(1.0/3.0);
-    lights[1].Position.y = g_pplayer->m_ptable->m_bottom*(float)(2.0/3.0);
-    lights[0].Position.z = g_pplayer->m_ptable->m_lightHeight;
-    lights[1].Position.z = g_pplayer->m_ptable->m_lightHeight;
-    D3DXVECTOR4 ambient = COLORREF_to_D3DXVECTOR4(g_pplayer->m_ptable->m_Light[0].ambient);
-    lights[0].Ambient.a = 1.0f;
-    lights[0].Ambient.r = ambient.z;
-    lights[0].Ambient.g = ambient.y;
-    lights[0].Ambient.b = ambient.x;
-    D3DXVECTOR4 diffuse = COLORREF_to_D3DXVECTOR4(g_pplayer->m_ptable->m_Light[0].diffuse);
-    lights[0].Diffuse.a = 1.0f;
-    lights[0].Diffuse.r = diffuse.z;
-    lights[0].Diffuse.g = diffuse.y;
-    lights[0].Diffuse.b = diffuse.x;
-    D3DXVECTOR4 specular = COLORREF_to_D3DXVECTOR4(g_pplayer->m_ptable->m_Light[0].specular);
-    lights[0].Specular.a = 1.0f;
-    lights[0].Specular.r = specular.z;
-    lights[0].Specular.g = specular.y;
-    lights[0].Specular.b = specular.x;
-
-    g_pplayer->m_ptable->m_Light[0].pos.x = lights[0].Position.x;
-    g_pplayer->m_ptable->m_Light[0].pos.y = lights[0].Position.y;
-    g_pplayer->m_ptable->m_Light[0].pos.z = lights[0].Position.z;
-    g_pplayer->m_ptable->m_Light[1].pos.x = lights[1].Position.x;
-    g_pplayer->m_ptable->m_Light[1].pos.y = lights[1].Position.y;
-    g_pplayer->m_ptable->m_Light[1].pos.z = lights[1].Position.z;
+    g_pplayer->m_ptable->m_Light[0].pos.x = g_pplayer->m_ptable->m_right*0.5f;
+    g_pplayer->m_ptable->m_Light[1].pos.x = g_pplayer->m_ptable->m_right*0.5f;
+    g_pplayer->m_ptable->m_Light[0].pos.y = g_pplayer->m_ptable->m_bottom*(float)(1.0/3.0);
+    g_pplayer->m_ptable->m_Light[1].pos.y = g_pplayer->m_ptable->m_bottom*(float)(2.0/3.0);
+    g_pplayer->m_ptable->m_Light[0].pos.z = g_pplayer->m_ptable->m_lightHeight;
+    g_pplayer->m_ptable->m_Light[1].pos.z = g_pplayer->m_ptable->m_lightHeight;
+    
+	const D3DXVECTOR4 ambient = COLORREF_to_D3DXVECTOR4(g_pplayer->m_ptable->m_lightAmbient);
+    D3DCOLORVALUE amb_rgb;
+    amb_rgb.r = ambient.z;
+    amb_rgb.g = ambient.y;
+    amb_rgb.b = ambient.x;
+    const D3DXVECTOR4 emission= COLORREF_to_D3DXVECTOR4(g_pplayer->m_ptable->m_Light[0].emission);
+    D3DCOLORVALUE emission_rgb;
+    emission_rgb.r = emission.z;
+    emission_rgb.g = emission.y;
+    emission_rgb.b = emission.x;
 
     char tmp[64];
     sprintf_s(tmp,"lights[0].vPos");
-    m_pd3dDevice->basicShader->Core()->SetValue(tmp, (void*)&lights[0].Position, sizeof(D3DVECTOR));
+    m_pd3dDevice->basicShader->Core()->SetValue(tmp, (void*)&g_pplayer->m_ptable->m_Light[0].pos, sizeof(float)*3);
     sprintf_s(tmp,"lights[1].vPos");
-    m_pd3dDevice->basicShader->Core()->SetValue(tmp, (void*)&lights[1].Position, sizeof(D3DVECTOR));
-    sprintf_s(tmp,"lights[0].vDiffuse");
-    m_pd3dDevice->basicShader->Core()->SetValue(tmp, (void*)&lights[0].Diffuse, sizeof(float)*3);
-    sprintf_s(tmp,"lights[1].vDiffuse");
-    m_pd3dDevice->basicShader->Core()->SetValue(tmp, (void*)&lights[0].Diffuse, sizeof(float)*3);
-    sprintf_s(tmp,"lights[0].vSpecular");
-    m_pd3dDevice->basicShader->Core()->SetValue(tmp, (void*)&lights[0].Specular, sizeof(float)*3);
-    sprintf_s(tmp,"lights[1].vSpecular");
-    m_pd3dDevice->basicShader->Core()->SetValue(tmp, (void*)&lights[0].Specular, sizeof(float)*3);
+    m_pd3dDevice->basicShader->Core()->SetValue(tmp, (void*)&g_pplayer->m_ptable->m_Light[1].pos, sizeof(float)*3);
+    sprintf_s(tmp,"lights[0].vEmission");
+    m_pd3dDevice->basicShader->Core()->SetValue(tmp, (void*)&emission_rgb, sizeof(float)*3);
+    sprintf_s(tmp,"lights[1].vEmission");
+    m_pd3dDevice->basicShader->Core()->SetValue(tmp, (void*)&emission_rgb, sizeof(float)*3);
     sprintf_s(tmp,"vAmbient");
-    m_pd3dDevice->basicShader->Core()->SetValue(tmp, (void*)&lights[0].Ambient, sizeof(float)*3);
-    sprintf_s(tmp,"lightRange");
+    m_pd3dDevice->basicShader->Core()->SetValue(tmp, (void*)&amb_rgb, sizeof(float)*3);
+    sprintf_s(tmp,"flightRange");
     m_pd3dDevice->basicShader->Core()->SetValue(tmp, (void*)&g_pplayer->m_ptable->m_lightRange, sizeof(float));
-/*
-    for(unsigned int i = 0; i < MAX_LIGHT_SOURCES; ++i)
-    {
-        const LightSource& lgts = g_pplayer->m_ptable->m_Light[i];
 
-        if (lgts.enabled)
-        {
-            BaseLight light;
-            light.setType((lgts.type == LIGHT_DIRECTIONAL) ? D3DLIGHT_DIRECTIONAL
-                    : ((lgts.type == LIGHT_POINT) ? D3DLIGHT_POINT : D3DLIGHT_SPOT));
-            light.setAmbient(COLORREF_to_D3DCOLOR(lgts.ambient));
-            light.setDiffuse(COLORREF_to_D3DCOLOR(lgts.diffuse));
-            light.setSpecular(COLORREF_to_D3DCOLOR(lgts.specular));
-            light.setRange( / *(light.getType() == D3DLIGHT_POINT) ? lgts.pointRange :* /
-                    / * DX9 D3DLIGHT_RANGE_MAX * / 1e6f); //!!  expose?
-
-            if((light.getType() == D3DLIGHT_POINT) || (light.getType() == D3DLIGHT_SPOT))
-                light.setAttenuation2(0.0000025f); //!!  expose? //!! real world: light.dvAttenuation2 = 1.0f; but due to low dynamic 255-level-RGB lighting, we have to stick with the old crap
-
-            if(light.getType() == D3DLIGHT_SPOT)
-            {
-                light.setFalloff( / *lgts.spotExponent;* / 1.0f ); //!!  expose?
-                light.setPhi    ( / *lgts.spotMin* / (float)(60*M_PI/180.0) ); //!!  expose?
-                light.setTheta  ( / *lgts.spotMax* / (float)(20*M_PI/180.0) ); //!!  expose?
-            }
-
-            // transform dir & pos with world trafo to be always aligned with table (so that user trafos don't change the lighting!)
-            if((lgts.dir.x == 0.0f) && (lgts.dir.y == 0.0f) &&
-                    (lgts.dir.z == 0.0f) && (i < 2) && (light.getType() == D3DLIGHT_DIRECTIONAL))
-            {
-                // backwards compatibilty
-                light.setAmbient(0.1f, 0.1f, 0.1f);
-                light.setDiffuse(0.4f, 0.4f, 0.4f);
-                light.setSpecular(0, 0, 0);
-                light.setAttenuation0(0.0f);
-                light.setAttenuation1(0.0f);
-                light.setAttenuation2(0.0f);
-
-                const float sn = sinf((float)(M_PI - (M_PI*3.0/16.0)));
-                const float cs = cosf((float)(M_PI - (M_PI*3.0/16.0)));
-
-                if ( i==0 )
-                {
-                    light.setDirection(5.0f, sn * 21.0f, cs * 21.0f);
-                }
-                else
-                {
-                    light.setDirection(-8.0f, sn * 11.0f, cs * 11.0f); 
-                    light.setDiffuse(0.6f, 0.6f, 0.6f);
-                    light.setSpecular(1.0f, 1.0f, 1.0f);
-                }
-
-            }
-            else 
-            {
-                light.setDirection(lgts.dir.x, lgts.dir.y, lgts.dir.z);
-            }
-
-            light.setPosition(lgts.pos.x, lgts.pos.y, lgts.pos.z);
-
-            m_pd3dDevice->SetLight(i, &light);
-            if (light.getAmbient().r  > 0.0f || light.getAmbient().g  > 0.0f || light.getAmbient().b  > 0.0f ||
-                light.getDiffuse().r  > 0.0f || light.getDiffuse().g  > 0.0f || light.getDiffuse().b  > 0.0f ||
-                light.getSpecular().r > 0.0f || light.getSpecular().g > 0.0f || light.getSpecular().b > 0.0f)
-                m_pd3dDevice->LightEnable(i, TRUE);
-            else
-                m_pd3dDevice->LightEnable(i, FALSE);
-        }
-        else
-            m_pd3dDevice->LightEnable(i, FALSE);
-    }
-*/
 	m_pd3dDevice->SetRenderState(RenderDevice::LIGHTING, TRUE);
 }
 

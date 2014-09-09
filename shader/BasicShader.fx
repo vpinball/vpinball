@@ -7,32 +7,29 @@
  
 float3 vDiffuseColor = float3(192.f/255.f, 128.f/255.f, 96.f/255.f);
 float3 vSpecularColor = float3(1.0f, 1.0f, 1.0f); //!! pass from material & texture
-float  fMaterialPower = 16.f; //!! allow for texture
-float  materialAlpha = 1.0f; //!! allow for texture
-bool   bSpecular = false; 
+float  fMaterialPower = 16.f; //!! pass from material
+float  fmaterialAlpha = 1.0f; //!! allow for texture
+bool   bSpecular = false; //!! remove, steer from specular
 float  fWrap = 0.5f; //!! pass from material, w in [0..1] for wrap lighting
       
 float3 vAmbient = float3(0.0f,0.0f,0.0f);
-float  lightRange = 3000.0f;
+float  flightRange = 3000.0f;
 
 struct CLight 
 { 
    float3 vPos; 
-   float3 vDiffuse; //!! only have one emission
-   float3 vSpecular; 
+   float3 vEmission;
 }; 
  
 int iLightPointNum=NUM_LIGHTS; 
 CLight lights[NUM_LIGHTS] = {          //NUM_LIGHTS == 2
    { 
       float3(0.0f, 0.0f, 0.0f),        //position 
-      float3(0.0f, 0.0f, 0.0f),        //diffuse 
-      float3(0.0f, 0.0f, 0.0f),        //specular 
+      float3(0.0f, 0.0f, 0.0f),        //emission 
    }, 
    { 
       float3(0.0f, 0.0f, 0.0f),        //position 
-      float3(0.0f, 0.0f, 0.0f),        //diffuse 
-      float3(0.0f, 0.0f, 0.0f),        //specular 
+      float3(0.0f, 0.0f, 0.0f),        //emission 
    } 
 }; 
  
@@ -81,19 +78,19 @@ float3 DoPointLight(float3 vPosition, float3 N, float3 V, float3 diffuse, float3
    if(NdotL + fWrap > 0.0f)
    { 
       //compute diffuse color 
-      Out = /*(NdotL * lights[i].vDiffuse * diffuse); /*/ lights[i].vDiffuse * diffuse * (NdotL + fWrap)/((1.0f+fWrap) * (1.0f+fWrap));
+      Out = /*NdotL * diffuse; /*/ diffuse * (NdotL + fWrap)/((1.0f+fWrap) * (1.0f+fWrap));
  
       //add specular component 
       if(bSpecular && (NdotL > 0.0f)) 
       { 
 		 float3 H = normalize(L + V);   //half vector 
-         Out += FresnelSchlick(lights[i].vSpecular * specular, L, H) * ((fMaterialPower + 2.0f) / 8.0f ) * pow(saturate(dot(N, H)), fMaterialPower) * NdotL * lights[i].vSpecular * specular;
-         //Out += pow(max(0.f, dot(H,N)), fMaterialPower) * lights[i].vSpecular * specular; 
+         Out += FresnelSchlick(specular, L, H) * ((fMaterialPower + 2.0f) / 8.0f ) * pow(saturate(dot(N, H)), fMaterialPower) * NdotL * specular;
+         //Out += pow(max(0.f, dot(H,N)), fMaterialPower) * specular; 
       } 
  
-      float fAtten = saturate( 1.0f - dot(lightDir/lightRange, lightDir/lightRange) ); //!!
-  	  //float fAtten = lightRange*lightRange/dot(lightDir,lightDir);
-      Out *= fAtten; 
+      float fAtten = saturate( 1.0f - dot(lightDir/flightRange, lightDir/flightRange) ); //!!
+  	  //float fAtten = flightRange*flightRange/dot(lightDir,lightDir);
+      Out *= lights[i].vEmission * fAtten; 
    } 
    
    return Out; 
@@ -137,19 +134,19 @@ float4 ps_main( in VS_OUTPUT IN) : COLOR
       color += DoPointLight(IN.worldPos, IN.normal, IN.viewPos, vDiffuseColor, vSpecularColor, i); 
    } 
   
-   return float4(saturate(vAmbient + color), materialAlpha);
+   return float4(saturate(vAmbient + color), fmaterialAlpha);
 }
 
 float4 ps_main_texture( in VS_OUTPUT IN) : COLOR
 {
    float3 color = float3(0.0f, 0.0f, 0.0f);
    
-   for(int i = 0; i < iLightPointNum; i++)  
+   for(int i = 0; i < iLightPointNum; i++)
    { 
       color += DoPointLight(IN.worldPos, IN.normal, IN.viewPos, vDiffuseColor*tex2D(texSampler0,IN.Tex0), vSpecularColor, i); 
    } 
  
-   return float4(saturate(vAmbient + color), materialAlpha);
+   return float4(saturate(vAmbient + color), fmaterialAlpha);
 }
 
 // Techniques 

@@ -30,20 +30,9 @@
 #define	PROT_CIPHER_LENGTH		PROT_PASSWORD_LENGTH+8
 #define	PROT_KEYVERSION			0
 
-enum LightType {
-	LIGHT_DIRECTIONAL = 0,
-	LIGHT_SPOT = 1,
-	LIGHT_POINT = 2
-};
-
 struct LightSource {
-	COLORREF ambient;
-	COLORREF diffuse;
-	COLORREF specular;
+	COLORREF emission;
 	Vertex3Ds pos;
-	Vertex3Ds dir;
-	LightType type;
-	bool enabled;
 };
 
 typedef struct {
@@ -123,12 +112,10 @@ public:
 	STDMETHOD(get_PlayfieldColor)(/*[out, retval]*/ OLE_COLOR *pVal);
 	STDMETHOD(put_PlayfieldColor)(/*[in]*/ OLE_COLOR newVal);
 
-	STDMETHOD(get_Light0Ambient)(/*[out, retval]*/ OLE_COLOR *pVal);
-	STDMETHOD(put_Light0Ambient)(/*[in]*/ OLE_COLOR newVal);
-	STDMETHOD(get_Light0Diffuse)(/*[out, retval]*/ OLE_COLOR *pVal);
-	STDMETHOD(put_Light0Diffuse)(/*[in]*/ OLE_COLOR newVal);
-	STDMETHOD(get_Light0Specular)(/*[out, retval]*/ OLE_COLOR *pVal);
-	STDMETHOD(put_Light0Specular)(/*[in]*/ OLE_COLOR newVal);
+	STDMETHOD(get_LightAmbient)(/*[out, retval]*/ OLE_COLOR *pVal);
+	STDMETHOD(put_LightAmbient)(/*[in]*/ OLE_COLOR newVal);
+	STDMETHOD(get_Light0Emission)(/*[out, retval]*/ OLE_COLOR *pVal);
+	STDMETHOD(put_Light0Emission)(/*[in]*/ OLE_COLOR newVal);
     STDMETHOD(get_LightHeight)(/*[out, retval]*/ float *pVal);
     STDMETHOD(put_LightHeight)(/*[in]*/ float newVal);
     STDMETHOD(get_LightRange)(/*[out, retval]*/ float *pVal);
@@ -626,6 +613,7 @@ END_CONNECTION_POINT_MAP()
     bool m_overwriteGlobalAlphaRampsAccuracy;
 
 	LightSource m_Light[MAX_LIGHT_SOURCES];
+	COLORREF m_lightAmbient;
     float m_lightHeight;
     float m_lightRange;
     int m_useReflectionForBalls;

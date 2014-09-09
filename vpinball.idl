@@ -519,12 +519,10 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[id(35), helpstring("method StartShake")] HRESULT StartShake([defaultvalue(1)] void);
 		[id(36), helpstring("method StopShake")] HRESULT StopShake([defaultvalue(1)] void);
 
-		[propget, id(558), helpstring("property Light0Ambient")] HRESULT Light0Ambient([out, retval] OLE_COLOR *pVal);
-		[propput, id(558), helpstring("property Light0Ambient")] HRESULT Light0Ambient([in] OLE_COLOR newVal);
-		[propget, id(559), helpstring("property Light0Diffuse")] HRESULT Light0Diffuse([out, retval] OLE_COLOR *pVal);
-		[propput, id(559), helpstring("property Light0Diffuse")] HRESULT Light0Diffuse([in] OLE_COLOR newVal);
-		[propget, id(560), helpstring("property Light0Specular")] HRESULT Light0Specular([out, retval] OLE_COLOR *pVal);
-		[propput, id(560), helpstring("property Light0Specular")] HRESULT Light0Specular([in] OLE_COLOR newVal);
+		[propget, id(558), helpstring("property LightAmbient")] HRESULT LightAmbient([out, retval] OLE_COLOR *pVal);
+		[propput, id(558), helpstring("property LightAmbient")] HRESULT LightAmbient([in] OLE_COLOR newVal);
+		[propget, id(559), helpstring("property Light0Emission")] HRESULT Light0Emission([out, retval] OLE_COLOR *pVal);
+		[propput, id(559), helpstring("property Light0Emission")] HRESULT Light0Emission([in] OLE_COLOR newVal);
 		[propget, id(564), helpstring("property LightHeight")] HRESULT LightHeight([out, retval] float *pVal);
 		[propput, id(564), helpstring("property LightHeight")] HRESULT LightHeight([in] float newVal);
 		[propget, id(565), helpstring("property LightRange")] HRESULT LightRange([out, retval] float *pVal);
