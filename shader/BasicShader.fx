@@ -1,5 +1,4 @@
 //!! change to PB model, 2layer? (for clearcoat)
-//!! change all to float3 pipeline
 
 #define NUM_LIGHTS 2
 
@@ -25,18 +24,19 @@ int iLightPointNum=NUM_LIGHTS;
 CLight lights[NUM_LIGHTS] = {          //NUM_LIGHTS == 2
    { 
       float3(0.0f, 0.0f, 0.0f),        //position 
-      float3(0.0f, 0.0f, 0.0f),        //emission 
+      float3(0.0f, 0.0f, 0.0f)         //emission 
    }, 
    { 
       float3(0.0f, 0.0f, 0.0f),        //position 
-      float3(0.0f, 0.0f, 0.0f),        //emission 
+      float3(0.0f, 0.0f, 0.0f)         //emission 
    } 
 }; 
  
 //transformation matrices 
 float4x4 matWorldViewProj  : WORLDVIEWPROJ; 
-float4x4 matWorldView      : WORLDVIEW; 
+//float4x4 matWorldView      : WORLDVIEW; 
 float4x4 matWorld          : WORLD; 
+float4x4 matWorldInverseTranspose; 
 
 float4 camera;
 
@@ -53,100 +53,107 @@ sampler2D texSampler0 : TEXUNIT0 = sampler_state
 //function output structures 
 struct VS_OUTPUT 
 { 
-   float4 Pos           : POSITION; 
-   float2 Tex0          : TEXCOORD0; 
+   float4 pos           : POSITION; 
+   float2 tex0          : TEXCOORD0; 
    float3 worldPos      : TEXCOORD1; 
    float3 normal        : TEXCOORD2;
-   float3 viewPos       : TEXCOORD3;
+   float3 viewDir       : TEXCOORD3;
 }; 
+
  
-float3 FresnelSchlick(float3 spec, float3 E, float3 H)
+float3 FresnelSchlick(float3 spec, float LdotH)
 {
-    return spec + (1.0f - spec) * pow(1.0f - saturate(dot(E, H)), 5);
+    return spec + (1.0f - spec) * pow(1.0f - LdotH, 5);
 }
 
 // assumes all light input premultiplied by PI
-float3 DoPointLight(float3 vPosition, float3 N, float3 V, float3 diffuse, float3 specular, int i) 
+float3 DoPointLight(float3 pos, float3 N, float3 V, float3 diffuse, float3 specular, int i) 
 { 
-   float3 pos = (float3)mul(matWorld,vPosition);
-   float3 light = lights[i].vPos;
-   float3 lightDir = light-pos;
-   float3 L = normalize(lightDir); 
-   float NdotL = dot(N, L); 
+   float3 lightDir = lights[i].vPos - pos;
+   float3 L = normalize(lightDir);
+   float NdotL = dot(N, L);
    float3 Out = float3(0.0f,0.0f,0.0f);
    
    if(NdotL + fWrap > 0.0f)
    { 
       //compute diffuse color 
-      Out = /*NdotL * diffuse; /*/ diffuse * (NdotL + fWrap)/((1.0f+fWrap) * (1.0f+fWrap));
+      Out = diffuse * ((NdotL + fWrap) / ((1.0f+fWrap) * (1.0f+fWrap)));
  
       //add specular component 
       if(bSpecular && (NdotL > 0.0f)) 
       { 
 		 float3 H = normalize(L + V);   //half vector 
-         Out += FresnelSchlick(specular, L, H) * ((fMaterialPower + 2.0f) / 8.0f ) * pow(saturate(dot(N, H)), fMaterialPower) * NdotL * specular;
-         //Out += pow(max(0.f, dot(H,N)), fMaterialPower) * specular; 
-      } 
+		 float NdotH = dot(N, H);
+		 float LdotH = dot(L, H);
+		 if((NdotH > 0.0f) && (LdotH > 0.0f))
+			Out += specular * FresnelSchlick(specular, LdotH) * (((fMaterialPower + 1.0f) / (8.0f*dot(H,V))) * pow(NdotH, fMaterialPower));
+      }
  
       float fAtten = saturate( 1.0f - dot(lightDir/flightRange, lightDir/flightRange) ); //!!
-  	  //float fAtten = flightRange*flightRange/dot(lightDir,lightDir);
+  	  //float fAtten = flightRange/dot(lightDir,lightDir);
       Out *= lights[i].vEmission * fAtten; 
    } 
    
    return Out; 
 } 
 
- 
-//----------------------------------------------------------------------------- 
-// Name: vs_main() 
-// Desc: The vertex shader 
-//----------------------------------------------------------------------------- 
-VS_OUTPUT vs_main (float4 vPosition  : POSITION0,  
-                   float3 vNormal    : NORMAL0,  
-                   float2 tc         : TEXCOORD0, 
-                   float2 tc2        : TEXCOORD1) 
-{ 
-   VS_OUTPUT Out = (VS_OUTPUT) 0; 
- 
-   vNormal = normalize(vNormal); 
-   Out.Pos = mul(vPosition, matWorldViewProj); 
- 
-   float3 P = mul(matWorldView,vPosition).xyz;           //position in view space 
-   float4 nn = float4(vNormal,0.0f);
-   float3 N = normalize(mul(matWorld,nn).xyz);
-   float3 C = mul(matWorldView,camera).xyz;
-   float3 V = normalize(P-C);                          //viewer
- 
-   Out.Tex0 = tc; 
-   Out.worldPos = vPosition.xyz;
-   Out.normal = N;
-   Out.viewPos = V;
-   
-   return Out; 
-} 
+float4 lightLoop(float3 pos, float3 N, float3 V, float3 diffuse, float3 specular)
+{
+   //!! normalize spec diffuse
 
-float4 ps_main( in VS_OUTPUT IN) : COLOR
-{	
+   N = normalize(N);
+   V = normalize(V);
+
+   //if(dot(N,V) < 0.0f) //!! ?
+   //    N = -N;
+
    float3 color = float3(0.0f, 0.0f, 0.0f);
    
    for(int i = 0; i < iLightPointNum; i++)  
    { 
-      color += DoPointLight(IN.worldPos, IN.normal, IN.viewPos, vDiffuseColor, vSpecularColor, i); 
+      color += DoPointLight(pos, N, V, diffuse, specular, i); 
    } 
   
    return float4(saturate(vAmbient + color), fmaterialAlpha);
 }
 
+
+VS_OUTPUT vs_main (float4 vPosition  : POSITION0,  
+                   float3 vNormal    : NORMAL0,  
+                   float2 tc         : TEXCOORD0, 
+                   float2 tc2        : TEXCOORD1) 
+{ 
+   VS_OUTPUT Out = (VS_OUTPUT)0;
+
+   //trafo all into world space
+   float3 P = mul(vPosition,matWorld).xyz;
+   float3 C = mul(camera,matWorld).xyz;
+   float3 N = normalize(mul(float4(vNormal,0.0f),matWorldInverseTranspose).xyz);
+   float3 V = normalize(C-P); //view direction
+
+   Out.pos = mul(vPosition, matWorldViewProj);
+   Out.tex0 = tc;
+   Out.worldPos = P;
+   Out.normal = N;
+   Out.viewDir = V;
+   
+   return Out; 
+} 
+
+float4 ps_main( in VS_OUTPUT IN) : COLOR
+{
+   float3 diffuse = vDiffuseColor;
+   float3 specular = vSpecularColor;
+   
+   return lightLoop(IN.worldPos, IN.normal, IN.viewDir, diffuse, specular);
+}
+
 float4 ps_main_texture( in VS_OUTPUT IN) : COLOR
 {
-   float3 color = float3(0.0f, 0.0f, 0.0f);
+   float3 diffuse = vDiffuseColor * tex2D(texSampler0, IN.tex0);
+   float3 specular = vSpecularColor;
    
-   for(int i = 0; i < iLightPointNum; i++)
-   { 
-      color += DoPointLight(IN.worldPos, IN.normal, IN.viewPos, vDiffuseColor*tex2D(texSampler0,IN.Tex0), vSpecularColor, i); 
-   } 
- 
-   return float4(saturate(vAmbient + color), fmaterialAlpha);
+   return lightLoop(IN.worldPos, IN.normal, IN.viewDir, diffuse, specular);
 }
 
 // Techniques 
@@ -168,4 +175,4 @@ technique basic_with_texture
       VertexShader = compile vs_3_0 vs_main(); 
 	  PixelShader = compile ps_3_0 ps_main_texture();
    } 
-} 
+}

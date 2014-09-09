@@ -291,4 +291,17 @@ public:
     }
 
     void Invert();
+
+   inline void Transpose()
+   {
+	  Matrix3D tmp;
+      for(int i=0; i<4; ++i)
+      {
+         tmp.m[0][i] = m[i][0];
+         tmp.m[1][i] = m[i][1];
+         tmp.m[2][i] = m[i][2];
+         tmp.m[3][i] = m[i][3];
+      }
+	  memcpy(&this->_11,&tmp._11,4*4*sizeof(float));
+   }
 };

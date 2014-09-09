@@ -697,6 +697,15 @@ void Player::UpdateBasicShaderMatrix()
 
     m_pin3d.m_pd3dDevice->basicShader->Core()->SetMatrix("matWorldViewProj", &worldViewProj);
     m_pin3d.m_pd3dDevice->basicShader->Core()->SetMatrix("matWorld", &matWorld);
+	
+    D3DXMATRIX matWorldInvTrans(matWorld);
+	Matrix3D temp;
+	memcpy(&temp._11,matWorldInvTrans,4*4*sizeof(float));
+    temp.Invert();
+	temp.Transpose();
+	memcpy(matWorldInvTrans,&temp._11,4*4*sizeof(float));
+    
+    m_pin3d.m_pd3dDevice->basicShader->Core()->SetMatrix("matWorldInverseTranspose", &matWorldInvTrans);
     D3DXMATRIX matComp = matWorld*matView;
     m_pin3d.m_pd3dDevice->basicShader->Core()->SetMatrix("matWorldView", &matComp);
 }
@@ -716,7 +725,7 @@ void Player::InitShader()
    D3DXMATRIX worldViewProj = matWorld * matView * matProj;
 
    UpdateBasicShaderMatrix();
-   D3DXVECTOR4 cam( worldViewProj._41, worldViewProj._42, worldViewProj._43, 0 );
+   D3DXVECTOR4 cam( worldViewProj._41, worldViewProj._42, worldViewProj._43, 1 );
    m_pin3d.m_pd3dDevice->basicShader->Core()->SetVector("camera", &cam);
 
    m_pin3d.m_pd3dDevice->basicShader->Core()->SetFloat("flightRange",m_ptable->m_lightRange);
@@ -753,7 +762,7 @@ void Player::InitBallShader()
    ballShader->Core()->SetFloat("invTableWidth", inv_tablewidth );
    ballShader->Core()->SetFloat("invTableHeight", inv_tableheight );
 
-   D3DXVECTOR4 cam( matView._41, matView._42, matView._43, 0 );
+   D3DXVECTOR4 cam( matView._41, matView._42, matView._43, 1 );
    ballShader->Core()->SetVector("camera", &cam);
    ballShader->Core()->SetFloat("flightRange",m_ptable->m_lightRange);
    ballShader->Core()->SetInt("iLightPointNum",MAX_LIGHT_SOURCES);
