@@ -719,7 +719,7 @@ void Player::InitShader()
    D3DXVECTOR4 cam( worldViewProj._41, worldViewProj._42, worldViewProj._43, 0 );
    m_pin3d.m_pd3dDevice->basicShader->Core()->SetVector("camera", &cam);
 
-   m_pin3d.m_pd3dDevice->basicShader->Core()->SetFloat("lightRange",m_ptable->m_lightRange);
+   m_pin3d.m_pd3dDevice->basicShader->Core()->SetFloat("flightRange",m_ptable->m_lightRange);
    InitBallShader();
 }
 void Player::InitBallShader()
@@ -755,7 +755,8 @@ void Player::InitBallShader()
 
    D3DXVECTOR4 cam( matView._41, matView._42, matView._43, 0 );
    ballShader->Core()->SetVector("camera", &cam);
-   ballShader->Core()->SetFloat("lightRange",m_ptable->m_lightRange);
+   ballShader->Core()->SetFloat("flightRange",m_ptable->m_lightRange);
+   ballShader->Core()->SetInt("iLightPointNum",MAX_LIGHT_SOURCES);
 
    vector<WORD> indexList;
    indexList.resize(basicBallNumFaces);
@@ -771,46 +772,28 @@ void Player::InitBallShader()
    memcpy( buf, basicBall, sizeof(Vertex3D_NoTex2)*basicBallNumVertices );
    ballVertexBuffer->unlock();
 
-   D3DLIGHT9 lights[MAX_LIGHT_SOURCES];
+   const D3DXVECTOR4 ambient = COLORREF_to_D3DXVECTOR4(g_pplayer->m_ptable->m_lightAmbient);
+   D3DCOLORVALUE amb_rgb;
+   amb_rgb.r = ambient.z;
+   amb_rgb.g = ambient.y;
+   amb_rgb.b = ambient.x;
+   const D3DXVECTOR4 emission = COLORREF_to_D3DXVECTOR4(g_pplayer->m_ptable->m_Light[0].emission);
+   D3DCOLORVALUE emission_rgb;
+   emission_rgb.r = emission.z;
+   emission_rgb.g = emission.y;
+   emission_rgb.b = emission.x;
 
-   D3DXVECTOR4 ambient = COLORREF_to_D3DXVECTOR4(g_pplayer->m_ptable->m_Light[0].ambient);
-   lights[0].Ambient.a = 1.0f;
-   lights[0].Ambient.r = ambient.z;
-   lights[0].Ambient.g = ambient.y;
-   lights[0].Ambient.b = ambient.x;
-   D3DXVECTOR4 diffuse = COLORREF_to_D3DXVECTOR4(g_pplayer->m_ptable->m_Light[0].diffuse);
-   lights[0].Diffuse.a = 1.0f;
-   lights[0].Diffuse.r = diffuse.z;
-   lights[0].Diffuse.g = diffuse.y;
-   lights[0].Diffuse.b = diffuse.x;
-   D3DXVECTOR4 specular = COLORREF_to_D3DXVECTOR4(g_pplayer->m_ptable->m_Light[0].specular);
-   lights[0].Specular.a = 1.0f;
-   lights[0].Specular.r = specular.z;
-   lights[0].Specular.g = specular.y;
-   lights[0].Specular.b = specular.x;
-   lights[0].Position.x = m_ptable->m_Light[0].pos.x;
-   lights[0].Position.y = m_ptable->m_Light[0].pos.y;
-   lights[0].Position.z = m_ptable->m_Light[0].pos.z;
-   lights[1].Position.x = m_ptable->m_Light[1].pos.x;
-   lights[1].Position.y = m_ptable->m_Light[1].pos.y;
-   lights[1].Position.z = m_ptable->m_Light[1].pos.z;
    char tmp[64];
    sprintf_s(tmp,"lights[0].vPos");
-   ballShader->Core()->SetValue(tmp, (void*)&lights[0].Position, sizeof(D3DVECTOR));
+   ballShader->Core()->SetValue(tmp, (void*)&m_ptable->m_Light[0].pos, sizeof(float)*3);
    sprintf_s(tmp,"lights[1].vPos");
-   ballShader->Core()->SetValue(tmp, (void*)&lights[1].Position, sizeof(D3DVECTOR));
-   sprintf_s(tmp,"lights[0].vDiffuse");
-   ballShader->Core()->SetValue(tmp, (void*)&lights[0].Diffuse, sizeof(float)*3);
-   sprintf_s(tmp,"lights[1].vDiffuse");
-   ballShader->Core()->SetValue(tmp, (void*)&lights[0].Diffuse, sizeof(float)*3);
-   sprintf_s(tmp,"lights[0].vSpecular");
-   ballShader->Core()->SetValue(tmp, (void*)&lights[0].Specular, sizeof(float)*3);
-   sprintf_s(tmp,"lights[1].vSpecular");
-   ballShader->Core()->SetValue(tmp, (void*)&lights[0].Specular, sizeof(float)*3);
+   ballShader->Core()->SetValue(tmp, (void*)&m_ptable->m_Light[1].pos, sizeof(float)*3);
+   sprintf_s(tmp,"lights[0].vEmission");
+   ballShader->Core()->SetValue(tmp, (void*)&emission_rgb, sizeof(float)*3);
+   sprintf_s(tmp,"lights[1].vEmission");
+   ballShader->Core()->SetValue(tmp, (void*)&emission_rgb, sizeof(float)*3);
    sprintf_s(tmp,"vAmbient");
-   ballShader->Core()->SetValue(tmp, (void*)&lights[0].Ambient, sizeof(float)*3);
-   sprintf_s(tmp,"lightRange");
-   ballShader->Core()->SetValue(tmp, (void*)&g_pplayer->m_ptable->m_lightRange, sizeof(float));
+   ballShader->Core()->SetValue(tmp, (void*)&amb_rgb, sizeof(float)*3);
 }
 
 

@@ -2748,9 +2748,8 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
 
    bw.WriteFloat(FID(TDFT), m_globalDifficulty);
 
-   bw.WriteInt(FID(LZAM), m_Light[0].ambient);
-   bw.WriteInt(FID(LZDI), m_Light[0].diffuse);
-   bw.WriteInt(FID(LZSP), m_Light[0].specular);
+   bw.WriteInt(FID(LZAM), m_lightAmbient);
+   bw.WriteInt(FID(LZDI), m_Light[0].emission);
    bw.WriteFloat(FID(LZHI), m_lightHeight);
    bw.WriteFloat(FID(LZRA), m_lightRange);
    bw.WriteFloat(FID(SDIX), m_shadowDirX);
@@ -3145,12 +3144,12 @@ void PinTable::SetLoadDefaults()
    m_colorplayfield = RGB(128,128,128);
    m_colorbackdrop = RGB(0x62,0x6E,0x8E);
 
-   m_Light[0].ambient = RGB((int)(0.1*255),(int)(0.1*255),(int)(0.1*255));
-   m_Light[0].diffuse = RGB((int)(0.4*255),(int)(0.4*255),(int)(0.4*255));
-   m_Light[0].specular = RGB((int)(0.0*255),(int)(0.0*255),(int)(0.0*255));
-   m_Light[0].pos = Vertex3Ds(0,0,400);
-   m_Light[0].dir = Vertex3Ds(0,0,0); // 0,0,0 = backwards compatible mode
-   m_Light[0].enabled = true;
+   m_lightAmbient = RGB((int)(0.1*255),(int)(0.1*255),(int)(0.1*255));
+   for(unsigned int i = 0; i < MAX_LIGHT_SOURCES; ++i)
+   {
+	   m_Light[i].emission = RGB((int)(0.4*255),(int)(0.4*255),(int)(0.4*255));
+	   m_Light[i].pos = Vertex3Ds(0.f,0.f,400.0f);
+   }
 
    m_lightHeight = 1000.0f;
    m_lightRange = 3000.0f;
@@ -3404,15 +3403,11 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(LZAM))
    {
-      pbr->GetInt(&m_Light[0].ambient);
+      pbr->GetInt(&m_lightAmbient);
    }
    else if (id == FID(LZDI))
    {
-      pbr->GetInt(&m_Light[0].diffuse);
-   }
-   else if (id == FID(LZSP))
-   {
-      pbr->GetInt(&m_Light[0].specular);
+      pbr->GetInt(&m_Light[0].emission);
    }
    else if (id == FID(LZHI))
    {
@@ -6799,54 +6794,36 @@ STDMETHODIMP PinTable::put_PlayfieldColor(OLE_COLOR newVal)
    return S_OK;
 }
 
-STDMETHODIMP PinTable::get_Light0Ambient(OLE_COLOR *pVal)
+STDMETHODIMP PinTable::get_LightAmbient(OLE_COLOR *pVal)
 {
-   *pVal = m_Light[0].ambient;
+   *pVal = m_lightAmbient;
 
    return S_OK;
 }
 
-STDMETHODIMP PinTable::put_Light0Ambient(OLE_COLOR newVal)
+STDMETHODIMP PinTable::put_LightAmbient(OLE_COLOR newVal)
 {
    STARTUNDO
 
-   m_Light[0].ambient = newVal;
+   m_lightAmbient = newVal;
 
    STOPUNDO
 
    return S_OK;
 }
 
-STDMETHODIMP PinTable::get_Light0Diffuse(OLE_COLOR *pVal)
+STDMETHODIMP PinTable::get_Light0Emission(OLE_COLOR *pVal)
 {
-   *pVal = m_Light[0].diffuse;
+   *pVal = m_Light[0].emission;
 
    return S_OK;
 }
 
-STDMETHODIMP PinTable::put_Light0Diffuse(OLE_COLOR newVal)
+STDMETHODIMP PinTable::put_Light0Emission(OLE_COLOR newVal)
 {
    STARTUNDO
 
-   m_Light[0].diffuse = newVal;
-
-   STOPUNDO
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::get_Light0Specular(OLE_COLOR *pVal)
-{
-   *pVal = m_Light[0].specular;
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_Light0Specular(OLE_COLOR newVal)
-{
-   STARTUNDO
-
-   m_Light[0].specular = newVal;
+   m_Light[0].emission = newVal;
 
    STOPUNDO
 

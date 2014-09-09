@@ -340,7 +340,6 @@ void Plunger::PostRenderStatic(RenderDevice* pd3dDevice)
         pd3dDevice->basicShader->End();
     }
     pd3dDevice->basicShader->Core()->SetBool("bSpecular",false);
-
 }
 
 const float rgcrossplunger0[][2] =

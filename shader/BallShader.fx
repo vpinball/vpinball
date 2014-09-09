@@ -4,31 +4,28 @@
 #define NUM_LIGHTS 2
 
 float3 vSpecularColor = float3(1.0f, 1.0f, 1.0f); //!! pass from material & texture?
-float  fMaterialPower = 16.f;
-bool   bSpecular = false;
+float  fMaterialPower = 16.f; //!! pass from material
+bool   bSpecular = false; //!! remove, steer from specular
 float  fWrap = 0.5f; //!! pass from material, w in [0..1] for wrap lighting
 
 float3 vAmbient = float3(0.0f,0.0f,0.0f);
-float  lightRange = 3000.0f;
+float  flightRange = 3000.0f;
 
 struct CLight 
 { 
    float3 vPos; 
-   float3 vDiffuse; //!! only have one emission
-   float3 vSpecular; 
+   float3 vEmission;
 }; 
  
 int iLightPointNum = NUM_LIGHTS;
 CLight lights[NUM_LIGHTS] = {          //NUM_LIGHTS == 2
    { 
       float3(0.0f, 0.0f, 0.0f),        //position 
-      float3(0.0f, 0.0f, 0.0f),        //diffuse 
-      float3(0.0f, 0.0f, 0.0f),        //specular 
+      float3(0.0f, 0.0f, 0.0f),        //emission
    }, 
    { 
       float3(0.0f, 0.0f, 0.0f),        //position 
-      float3(0.0f, 0.0f, 0.0f),        //diffuse 
-      float3(0.0f, 0.0f, 0.0f),        //specular 
+      float3(0.0f, 0.0f, 0.0f),        //emission
    }
 }; 
 
@@ -188,19 +185,19 @@ float3 DoPointLight(float4 vPosition, float3 N, float3 V, float3 diffuse, float3
    if(NdotL + fWrap > 0.0f)
    { 
       //compute diffuse color 
-      Out = /*NdotL * lights[i].vDiffuse * diffuse; //*saturate(4.0f*NdotL); //!! /*/ lights[i].vDiffuse * diffuse * (NdotL + fWrap)/((1.0f+fWrap) * (1.0f+fWrap));
+      Out = /*NdotL * diffuse; //*saturate(4.0f*NdotL); //!! /*/ diffuse * (NdotL + fWrap)/((1.0f+fWrap) * (1.0f+fWrap));
  
       //add specular component 
       if(bSpecular && (NdotL > 0.0f)) 
       { 
 		 float3 H = normalize(L + V);   //half vector 
-         Out += FresnelSchlick(lights[i].vSpecular * specular, L, H) * ((fMaterialPower + 2.0f) / 8.0f ) * pow(saturate(dot(N, H)), fMaterialPower) * NdotL * lights[i].vSpecular * specular;
-         //Out += pow(max(0.f, dot(H,N)), fMaterialPower) * lights[i].vSpecular; 
+         Out += FresnelSchlick(specular, L, H) * ((fMaterialPower + 2.0f) / 8.0f ) * pow(saturate(dot(N, H)), fMaterialPower) * NdotL * specular;
+         //Out += pow(max(0.f, dot(H,N)), fMaterialPower) * specular;
       } 
  
-      float fAtten = saturate( 1.0f - dot(lightDir/lightRange, lightDir/lightRange) ); //!!
-  	  //float fAtten = lightRange*lightRange/dot(lightDir,lightDir);
-      Out *= fAtten; 
+      float fAtten = saturate( 1.0f - dot(lightDir/flightRange, lightDir/flightRange) ); //!!
+  	  //float fAtten = flightRange*flightRange/dot(lightDir,lightDir);
+      Out *= lights[i].vEmission * fAtten; 
    }
    
    return Out;
@@ -222,6 +219,7 @@ float4 psBall( in vout IN ) : COLOR
 	uv.y = uv.y + (r.y/(1.0f+r.z))*0.02f;
 	float4 playfieldColor = tex2D( texSampler1, uv );
 	
+	// !! fix these hacks!!
 	playfieldColor.a = /*sqrt(((position.z-IN.worldPos.z)/radius+1.0f)*0.5f) **/ saturate(r.y)*sqrt(saturate(1.0f-(1.0f+r.z)/0.8f));
 	playfieldColor.a=0;
 	/*if( r.z<-0.4f )

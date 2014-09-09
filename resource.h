@@ -683,10 +683,9 @@
 #define IDC_MODIFY3DSTEREO              554
 #define IDC_ADDBLEND                    556
 #define IDC_ENABLELIGHTING              557
-#define IDC_LIGHT0AMBIENT               558
-#define IDC_LIGHT0DIFFUSE               559
-#define IDC_LIGHT0SPECULAR              560
-#define IDC_LIGHTHEIGHT		        564
+#define IDC_LIGHTAMBIENT                558
+#define IDC_LIGHT0EMISSION              559
+#define IDC_LIGHTHEIGHT		            564
 #define IDC_LIGHTRANGE	                565
 #define IDC_TABLESOUNDVOLUME            579
 #define IDC_SHADOW_COLOR                579

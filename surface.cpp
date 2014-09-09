@@ -1054,7 +1054,7 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
     pd3dDevice->basicShader->Core()->SetFloat("vMaterialPower",0.0f);
     if( m_d.m_transparent )
     {
-        pd3dDevice->basicShader->Core()->SetFloat("materialAlpha", (float)(m_d.m_opacity/255.0f));
+        pd3dDevice->basicShader->Core()->SetFloat("fmaterialAlpha", (float)(m_d.m_opacity/255.0f));
     }
 
     Texture * const pinSide = m_ptable->GetImage(m_d.m_szSideImage);
@@ -1199,10 +1199,7 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
     pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
     pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, 0xffffffff);
     if ( m_d.m_transparent )
-    {
-        pd3dDevice->basicShader->Core()->SetFloat("materialAlpha", 1.0f);
-    }
-
+        pd3dDevice->basicShader->Core()->SetFloat("fmaterialAlpha", 1.0f);
 }
 
 void Surface::DoCommand(int icmd, int x, int y)
