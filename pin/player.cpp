@@ -677,7 +677,7 @@ Vertex3Ds g_viewDir;
 
 static bool CompareHitableDepth(Hitable* h1, Hitable* h2)
 {
-    //  GetDepth approximates direction in view distance to camera; sort ascending
+    // GetDepth approximates direction in view distance to camera; sort ascending
     return h1->GetDepth(g_viewDir) >= h2->GetDepth(g_viewDir);
 }
 
@@ -686,33 +686,33 @@ void Player::UpdateBasicShaderMatrix()
     D3DMATRIX worldMat;
     D3DMATRIX viewMat;
     D3DMATRIX projMat;
-    m_pin3d.m_pd3dDevice->GetTransform(TRANSFORMSTATE_WORLD, &worldMat );
+    m_pin3d.m_pd3dDevice->GetTransform(TRANSFORMSTATE_WORLD, &worldMat);
     m_pin3d.m_pd3dDevice->GetTransform(TRANSFORMSTATE_VIEW, &viewMat);
     m_pin3d.m_pd3dDevice->GetTransform(TRANSFORMSTATE_PROJECTION, &projMat);
 
     D3DXMATRIX matProj(projMat);
     D3DXMATRIX matView(viewMat);
     D3DXMATRIX matWorld(worldMat);
-    D3DXMATRIX worldViewProj = matWorld * matView * matProj;
 
-    m_pin3d.m_pd3dDevice->basicShader->Core()->SetMatrix("matWorldViewProj", &worldViewProj);
-    m_pin3d.m_pd3dDevice->basicShader->Core()->SetMatrix("matWorld", &matWorld);
-	
-	Matrix3D temp;
-	memcpy(temp.m,matWorld.m,4*4*sizeof(float));
-    temp.Invert();
-	temp.Transpose();
-    D3DXMATRIX matWorldInvTrans;
-	memcpy(matWorldInvTrans.m,temp.m,4*4*sizeof(float));
+    D3DXMATRIX matWorldView = matWorld * matView;
+    D3DXMATRIX matWorldViewProj = matWorldView * matProj;
     
-    m_pin3d.m_pd3dDevice->basicShader->Core()->SetMatrix("matWorldInverseTranspose", &matWorldInvTrans);
-    D3DXMATRIX matComp = matWorld*matView;
-    m_pin3d.m_pd3dDevice->basicShader->Core()->SetMatrix("matWorldView", &matComp);
+    Matrix3D temp;
+    memcpy(temp.m,matWorldView.m,4*4*sizeof(float));
+    temp.Invert();
+    temp.Transpose();
+    D3DXMATRIX matWorldViewInvTrans;
+    memcpy(matWorldViewInvTrans.m,temp.m,4*4*sizeof(float));
+    
+    m_pin3d.m_pd3dDevice->basicShader->Core()->SetMatrix("matWorldViewProj", &matWorldViewProj);
+    m_pin3d.m_pd3dDevice->basicShader->Core()->SetMatrix("matWorldView", &matWorldView);
+    m_pin3d.m_pd3dDevice->basicShader->Core()->SetMatrix("matWorldViewInverseTranspose", &matWorldViewInvTrans);
+    //m_pin3d.m_pd3dDevice->basicShader->Core()->SetMatrix("matWorld", &matWorld);
 }
 
 void Player::InitShader()
 {
-   D3DMATRIX worldMat;
+   /*D3DMATRIX worldMat;
    D3DMATRIX viewMat;
    D3DMATRIX projMat;
    m_pin3d.m_pd3dDevice->GetTransform(TRANSFORMSTATE_WORLD, &worldMat );
@@ -722,11 +722,11 @@ void Player::InitShader()
    D3DXMATRIX matProj(projMat);
    D3DXMATRIX matView(viewMat);
    D3DXMATRIX matWorld(worldMat);
-   D3DXMATRIX worldViewProj = matWorld * matView * matProj;
+   D3DXMATRIX worldViewProj = matWorld * matView * matProj;*/
 
    UpdateBasicShaderMatrix();
-   D3DXVECTOR4 cam( worldViewProj._41, worldViewProj._42, worldViewProj._43, 1 );
-   m_pin3d.m_pd3dDevice->basicShader->Core()->SetVector("camera", &cam);
+   //D3DXVECTOR4 cam( worldViewProj._41, worldViewProj._42, worldViewProj._43, 1 );
+   //m_pin3d.m_pd3dDevice->basicShader->Core()->SetVector("camera", &cam);
 
    m_pin3d.m_pd3dDevice->basicShader->Core()->SetFloat("flightRange",m_ptable->m_lightRange);
    InitBallShader();
@@ -750,21 +750,33 @@ void Player::InitBallShader()
    D3DXMATRIX matProj(projMat);
    D3DXMATRIX matView(viewMat);
    D3DXMATRIX matWorld(worldMat);
-   D3DXMATRIX worldViewProj = matWorld * matView * matProj;
-   ballShader->Core()->SetMatrix("matWorldViewProj", &worldViewProj);
+   D3DXMATRIX matWorldView = matWorld * matView;
+   D3DXMATRIX matWorldViewProj = matWorldView * matProj;
+
+   ballShader->Core()->SetMatrix("matWorldViewProj", &matWorldViewProj);
+   ballShader->Core()->SetMatrix("matWorldView",  &matWorldView);
    ballShader->Core()->SetMatrix("matWorld",  &matWorld);
+
+   Matrix3D temp;
+   memcpy(temp.m,matWorldView.m,4*4*sizeof(float));
+   temp.Invert();
+   temp.Transpose();
+   D3DXMATRIX matWorldViewInvTrans;
+   memcpy(matWorldViewInvTrans.m,temp.m,4*4*sizeof(float));
+    
+   ballShader->Core()->SetMatrix("matWorldViewInverseTranspose", &matWorldViewInvTrans);
 
    const float inv_tablewidth = 1.0f/(m_ptable->m_right - m_ptable->m_left);
    const float inv_tableheight = 1.0f/(m_ptable->m_bottom - m_ptable->m_top);
-   const float inclination = ANGTORAD(g_pplayer->m_ptable->m_inclination);
+   //const float inclination = ANGTORAD(g_pplayer->m_ptable->m_inclination);
 
    ballShader->Core()->SetFloat("ballStretchX", m_BallStretchX );
    ballShader->Core()->SetFloat("ballStretchY", m_BallStretchY );
    ballShader->Core()->SetFloat("invTableWidth", inv_tablewidth );
    ballShader->Core()->SetFloat("invTableHeight", inv_tableheight );
 
-   D3DXVECTOR4 cam( matView._41, matView._42, matView._43, 1 );
-   ballShader->Core()->SetVector("camera", &cam);
+   //D3DXVECTOR4 cam( matView._41, matView._42, matView._43, 1 );
+   //ballShader->Core()->SetVector("camera", &cam);
    ballShader->Core()->SetFloat("flightRange",m_ptable->m_lightRange);
    ballShader->Core()->SetInt("iLightPointNum",MAX_LIGHT_SOURCES);
 

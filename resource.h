@@ -330,7 +330,6 @@
 #define IDC_TRANSLATE_APPLY_BUTTON      280
 #define IDC_DRAWING_ORDER_UP            280
 #define IDC_COL_UP_BUTTON               280
-#define IDC_ADD_BUTTON1                 280
 #define IDC_ADD_BUTTON                  280
 #define IDC_ITEMLIST                    281
 #define IDC_OUT                         281

@@ -1,4 +1,4 @@
-//!! change to PB model, 2layer? (for clearcoat)
+//!! adapt to changes in BasicShader.fx!
 
 #define NUM_LIGHTS 2
 
@@ -29,8 +29,9 @@ CLight lights[NUM_LIGHTS] = {          //NUM_LIGHTS == 2
 }; 
 
 float4x4 matWorldViewProj   : WORLDVIEWPROJ;
-float4x4 matWorld           : WORLD;
-float4x4 matWorldView       : WORLD;
+float4x4 matWorldView       : WORLDVIEW;
+//float4x4 matWorld           : WORLD;
+float4x4 matWorldViewInverseTranspose;
 
 float    invTableHeight;
 float    invTableWidth;
@@ -39,7 +40,7 @@ float    radius;
 float    reflectionStrength;
 float    ballStretchX;
 float    ballStretchY;
-float4   camera;
+//float4   camera;
 
 // this is used for the orientation matrix
 float4   m1;
@@ -90,11 +91,10 @@ struct vin
 struct vout
 {
     float4 position	   : POSITION0;
-    float3 tex0        : TEXCOORD0;
-	float3 normal      : TEXCOORD1;
-	float3 viewDir     : TEXCOORD2;
-	float2 tex1        : TEXCOORD3;
-	float3 worldPos    : TEXCOORD4;
+    float3 r           : TEXCOORD0;
+	float2 tex0        : TEXCOORD1;
+	float3 normal      : TEXCOORD2;
+	float3 worldPos    : TEXCOORD3;
 };
 
 //VERTEX SHADER
@@ -110,25 +110,19 @@ vout vsBall( in vin IN )
 	pos *= radius;
 	pos.x *= ballStretchX;
 	pos.y *= ballStretchY;
-	float3 v = mul(pos, matWorld).xyz;
-	float3 c = mul(camera, matWorld).xyz;
 	pos += position;
+	float3 p = mul(pos, matWorldView).xyz;
 	
-    //convert to world space and pass along to our output
-    OUT.position = mul(pos, matWorldViewProj);
-    
 	// apply spinning to the normals too to get the sphere mapping effect
-	float4 npos = float4(IN.normal,0.0f);
-	npos = mul(npos, orientation);
-    float3 normal = normalize(mul(npos, matWorld)).xyz;
-	float3 eye = normalize(c-v);
-	float3 r = normalize(reflect(eye, normal));
+	float4 nspin = mul(float4(IN.normal,0.0f), orientation);
+    float3 normal = normalize(mul(nspin, matWorldView/*InverseTranspose*/)).xyz; //!!?
+	float3 r = normalize(reflect(normalize(/*camera=0,0,0,1 - -*/p), normal));
 	
-    OUT.tex0		= -r;
-	OUT.normal      = normal;
-	OUT.viewDir     = eye;
-	OUT.worldPos    = mul(pos, matWorld).xyz;
-	OUT.tex1		= IN.tex0;
+    OUT.position = mul(pos, matWorldViewProj);
+    OUT.r	     = r;
+	OUT.tex0	 = IN.tex0;
+	OUT.normal   = normal;
+	OUT.worldPos = p;
 	return OUT;
 }
 
@@ -156,12 +150,12 @@ vout vsBallReflection( in vin IN )
     
 	float4 npos = float4(IN.normal,0.0f);
 	npos = mul(npos,orientation);
-    float3 normal = normalize(mul(npos, matWorld).xyz);
+    float3 normal = normalize(mul(npos, matWorldViewInverseTranspose).xyz);
 	float3 eye = normalize(pos.xyz);
 	float3 r = normalize(reflect(eye,normal));
 
-    OUT.tex0		= r;
-	OUT.tex1	    = pos.xy;
+    OUT.r			= r;
+	OUT.tex0	    = pos.xy;
 	return OUT;
 }
 
@@ -173,7 +167,7 @@ float3 FresnelSchlick(float3 spec, float LdotH)
 // assumes all light input premultiplied by PI
 float3 DoPointLight(float3 pos, float3 N, float3 V, float3 diffuse, float3 specular, int i) 
 { 
-   float3 lightDir = lights[i].vPos - pos;
+   float3 lightDir = mul(float4(lights[i].vPos,1), matWorldView).xyz - pos;
    float3 L = normalize(lightDir); 
    float NdotL = dot(N, L); 
    float3 Out = float3(0.0f,0.0f,0.0f); 
@@ -225,22 +219,22 @@ float4 lightLoop(float3 pos, float3 N, float3 V, float3 diffuse, float3 specular
 float4 psBall( in vout IN ) : COLOR
 {
 	float2 uv;
-	uv.x = IN.tex0.x*0.5f+0.5f;
-	uv.y = IN.tex0.y*0.5f+0.5f;
+	uv.x = IN.r.x*0.5f+0.5f;
+	uv.y = IN.r.y*0.5f+0.5f;
 	float3 ballImageColor = tex2D( texSampler0, uv );
-	
-	float4 decalColor = tex2D( texSampler2, IN.tex1 );
+
+	float4 decalColor = tex2D( texSampler2, IN.tex0 );
 	decalColor.xyz *= decalColor.a;
-    
-	uv.x = position.x * invTableWidth  + (IN.tex0.x/(1.0f+IN.tex0.z))*0.02f;
-	uv.y = position.y * invTableHeight + (IN.tex0.y/(1.0f+IN.tex0.z))*0.02f;
+
+	uv.x = position.x * invTableWidth  + (IN.r.x/(1.0f+IN.r.z))*0.02f;
+	uv.y = position.y * invTableHeight + (IN.r.y/(1.0f+IN.r.z))*0.02f;
 	float3 playfieldColor = tex2D( texSampler1, uv );
 	
 	//!! fix these hacks!!
-	float a = /*sqrt(((position.z-IN.worldPos.z)/radius+1.0f)*0.5f) **/ saturate(IN.tex0.y)*sqrt(saturate(1.0f-(1.0f+IN.tex0.z)/0.8f));
-	/*if( IN.tex0.z<-0.4f )
+	float a = saturate(-IN.r.y);
+	/*if( IN.r.z<-0.4f )
 	{
-		a = saturate(IN.tex0.y)*0.4f;
+		a = saturate(IN.r.y)*0.4f;
 	}
 	else
 	{
@@ -251,15 +245,15 @@ float4 psBall( in vout IN ) : COLOR
     float3 diffuse = ballImageColor + decalColor.xyz; //!!
     float3 specular = vSpecularColor * decalColor.xyz; //!! decal vs spec vs playfield??
    
-    return lightLoop(IN.worldPos, IN.normal, IN.viewDir, diffuse, specular, playfieldColor);
+    return lightLoop(IN.worldPos, IN.normal, normalize(/*camera=0,0,0,1*/-IN.worldPos), diffuse, specular, playfieldColor);
 }
 
 
 float4 psBallReflection( in vout IN ) : COLOR
 {
-	float4 ballImageColor = tex2D( texSampler0, IN.tex0.xy );
+	float4 ballImageColor = tex2D( texSampler0, IN.r.xy );
 	float sizeY = radius*(2.0f*0.9f);
-	float alpha = (IN.tex1.y-position.y)/sizeY;
+	float alpha = (IN.tex0.y-position.y)/sizeY;
 	alpha = (alpha*alpha)*(alpha*alpha)/0.4f;
 	ballImageColor.a = saturate( alpha )*reflectionStrength*2.0f;
 	return ballImageColor;
