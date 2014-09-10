@@ -57,7 +57,6 @@ struct VS_OUTPUT
    float2 tex0          : TEXCOORD0; 
    float3 worldPos      : TEXCOORD1; 
    float3 normal        : TEXCOORD2;
-   float3 viewDir       : TEXCOORD3;
 }; 
 
  
@@ -126,16 +125,13 @@ VS_OUTPUT vs_main (float4 vPosition  : POSITION0,
    VS_OUTPUT Out = (VS_OUTPUT)0;
 
    //trafo all into world space
-   float3 P = mul(vPosition,matWorld).xyz;
-   float3 C = mul(camera,matWorld).xyz;
-   float3 N = normalize(mul(float4(vNormal,0.0f),matWorldInverseTranspose).xyz);
-   float3 V = normalize(C-P); //view direction
+   float3 P = mul(vPosition, matWorld).xyz;
+   float3 N = normalize(mul(float4(vNormal,0.0f), matWorldInverseTranspose).xyz);
 
    Out.pos = mul(vPosition, matWorldViewProj);
    Out.tex0 = tc;
    Out.worldPos = P;
    Out.normal = N;
-   Out.viewDir = V;
    
    return Out; 
 } 
@@ -145,7 +141,7 @@ float4 ps_main( in VS_OUTPUT IN) : COLOR
    float3 diffuse = vDiffuseColor;
    float3 specular = vSpecularColor;
    
-   return lightLoop(IN.worldPos, IN.normal, IN.viewDir, diffuse, specular);
+   return lightLoop(IN.worldPos, IN.normal, camera.xyz-IN.worldPos, diffuse, specular);
 }
 
 float4 ps_main_texture( in VS_OUTPUT IN) : COLOR
@@ -153,7 +149,7 @@ float4 ps_main_texture( in VS_OUTPUT IN) : COLOR
    float3 diffuse = vDiffuseColor * tex2D(texSampler0, IN.tex0);
    float3 specular = vSpecularColor;
    
-   return lightLoop(IN.worldPos, IN.normal, IN.viewDir, diffuse, specular);
+   return lightLoop(IN.worldPos, IN.normal, camera.xyz-IN.worldPos, diffuse, specular);
 }
 
 // Techniques 

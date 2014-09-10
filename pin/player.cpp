@@ -698,12 +698,12 @@ void Player::UpdateBasicShaderMatrix()
     m_pin3d.m_pd3dDevice->basicShader->Core()->SetMatrix("matWorldViewProj", &worldViewProj);
     m_pin3d.m_pd3dDevice->basicShader->Core()->SetMatrix("matWorld", &matWorld);
 	
-    D3DXMATRIX matWorldInvTrans(matWorld);
 	Matrix3D temp;
-	memcpy(&temp._11,matWorldInvTrans,4*4*sizeof(float));
+	memcpy(temp.m,matWorld.m,4*4*sizeof(float));
     temp.Invert();
 	temp.Transpose();
-	memcpy(matWorldInvTrans,&temp._11,4*4*sizeof(float));
+    D3DXMATRIX matWorldInvTrans;
+	memcpy(matWorldInvTrans.m,temp.m,4*4*sizeof(float));
     
     m_pin3d.m_pd3dDevice->basicShader->Core()->SetMatrix("matWorldInverseTranspose", &matWorldInvTrans);
     D3DXMATRIX matComp = matWorld*matView;
@@ -731,6 +731,7 @@ void Player::InitShader()
    m_pin3d.m_pd3dDevice->basicShader->Core()->SetFloat("flightRange",m_ptable->m_lightRange);
    InitBallShader();
 }
+
 void Player::InitBallShader()
 {
    ballShader = new Shader(m_pin3d.m_pd3dDevice );
