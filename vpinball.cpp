@@ -2276,6 +2276,7 @@ INT_PTR CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
          SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
          LVCOLUMN lvcol;
 
+         ListView_SetExtendedListViewStyle(GetDlgItem(hwndDlg, IDC_SOUNDLIST), LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
          lvcol.mask = LVCF_TEXT | LVCF_WIDTH;
          LocalString ls(IDS_NAME);
          lvcol.pszText = ls.m_szbuffer;// = "Name";
@@ -2656,6 +2657,7 @@ INT_PTR CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
       {
          SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
          LVCOLUMN lvcol;
+         ListView_SetExtendedListViewStyle(GetDlgItem(hwndDlg, IDC_SOUNDLIST), LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
 
          lvcol.mask = LVCF_TEXT | LVCF_WIDTH;
          LocalString ls(IDS_NAME);
@@ -3138,15 +3140,16 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
             SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
             LVCOLUMN lvcol;
 
+            ListView_SetExtendedListViewStyle(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST), LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
             lvcol.mask = LVCF_TEXT | LVCF_WIDTH;
             LocalString ls(IDS_NAME);
             lvcol.pszText = ls.m_szbuffer;// = "Name";
-            lvcol.cx = 100;
-            ListView_InsertColumn(GetDlgItem(hwndDlg, IDC_SOUNDLIST), 0, &lvcol);
+            lvcol.cx = 280;
+            ListView_InsertColumn(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST), 0, &lvcol);
 
             pt = (CCO(PinTable) *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
             pt->ListMaterials(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST));
-
+            ListView_SetItemState(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST), 0, LVIS_SELECTED, LVIS_SELECTED)
             return TRUE;
         }
         case WM_CLOSE:
@@ -3179,16 +3182,16 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
                     lvitem.iItem = pinfo->item.iItem;
                     lvitem.iSubItem = 0;
                     ListView_GetItem(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST), &lvitem);
-                    Texture * const ppi = (Texture *)lvitem.lParam;
-                    lstrcpy(ppi->m_szName, pinfo->item.pszText);
-                    lstrcpy(ppi->m_szInternalName, pinfo->item.pszText);
-                    CharLowerBuff(ppi->m_szInternalName, lstrlen(ppi->m_szInternalName));
+                    Material * const pmat = (Material*)lvitem.lParam;
+                    lstrcpy(pmat->m_szName, pinfo->item.pszText);
+                    lstrcpy(pmat->m_szInternalName, pinfo->item.pszText);
+                    CharLowerBuff(pmat->m_szInternalName, lstrlen(pmat->m_szInternalName));
                     pt->SetNonUndoableDirty(eSaveDirty);
                     return TRUE;
                 }
                 case LVN_ITEMCHANGING:
                 {
-                    NMLISTVIEW * const plistview = (LPNMLISTVIEW)lParam;
+                    NMLISTVIEW * const plistview = (LPNMLISTVIEW)lParam;                    
                     if ((plistview->uNewState & LVIS_SELECTED) != (plistview->uOldState & LVIS_SELECTED))
                     {
                         if (plistview->uNewState & LVIS_SELECTED)
@@ -3199,17 +3202,54 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
                             lvitem.iItem = sel;
                             lvitem.iSubItem = 0;
                             ListView_GetItem(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST), &lvitem);
-                            Texture * const ppi = (Texture *)lvitem.lParam;
+                            Material * const pmat = (Material*)lvitem.lParam;
                             HWND hwndColor = GetDlgItem(hwndDlg, IDC_COLOR);
-                            //SendMessage(hwndColor, CHANGE_COLOR, 0, ppi->m_rgbTransparent);
+                            SendMessage(hwndColor, CHANGE_COLOR, 0, pmat->m_color);
+                            char textBuf[256];
+                            f2sz(pmat->m_fDiffuse,textBuf);
+                            SetDlgItemText(hwndDlg, IDC_DIFFUSE_EDIT, textBuf);
+                            f2sz(pmat->m_fGlossy,textBuf);
+                            SetDlgItemText(hwndDlg, IDC_GLOSSY_EDIT, textBuf);
+                            f2sz(pmat->m_fSpecular,textBuf);
+                            SetDlgItemText(hwndDlg, IDC_SPECULAR_EDIT, textBuf);
+
                             InvalidateRect(hwndColor, NULL, FALSE);
                         }
                     }
                 }
                 break;
-
                 case LVN_ITEMCHANGED:
                 {
+                    NMLISTVIEW * const plistview = (LPNMLISTVIEW)lParam;                    
+                    const int sel = plistview->iItem;
+                    LVITEM lvitem;
+                    lvitem.mask = LVIF_PARAM;
+                    lvitem.iItem = sel;
+                    lvitem.iSubItem = 0;
+                    ListView_GetItem(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST), &lvitem);
+                    Material * const pmat = (Material*)lvitem.lParam;
+                    if( (plistview->uNewState & LVIS_SELECTED)==0 )
+                    {
+                        char textBuf[256];
+                        GetDlgItemText(hwndDlg, IDC_DIFFUSE_EDIT, textBuf, 31);
+                        pmat->m_fDiffuse = sz2f(textBuf);
+                        GetDlgItemText(hwndDlg, IDC_GLOSSY_EDIT, textBuf, 31);
+                        pmat->m_fGlossy = sz2f(textBuf);
+                        GetDlgItemText(hwndDlg, IDC_SPECULAR_EDIT, textBuf, 31);
+                        pmat->m_fSpecular = sz2f(textBuf);
+                    }
+                    else
+                    {
+                        HWND hwndColor = GetDlgItem(hwndDlg, IDC_COLOR);
+                        SendMessage(hwndColor, CHANGE_COLOR, 0, pmat->m_color);
+                        char textBuf[256];
+                        f2sz(pmat->m_fDiffuse,textBuf);
+                        SetDlgItemText(hwndDlg, IDC_DIFFUSE_EDIT, textBuf);
+                        f2sz(pmat->m_fGlossy,textBuf);
+                        SetDlgItemText(hwndDlg, IDC_GLOSSY_EDIT, textBuf);
+                        f2sz(pmat->m_fSpecular,textBuf);
+                        SetDlgItemText(hwndDlg, IDC_SPECULAR_EDIT, textBuf);
+                    }
                     const int count = ListView_GetSelectedCount(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST));
                     const int fEnable = !(count > 1);
                     EnableWindow(GetDlgItem(hwndDlg, IDC_RENAME), fEnable);
@@ -3258,7 +3298,8 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
                             lvitem.iItem = sel;
                             lvitem.iSubItem = 0;
                             ListView_GetItem(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST), &lvitem);
-
+                            Material * const pmat = (Material*)lvitem.lParam;
+                            pmat->m_color = color;
                             // The previous selection is now deleted, so look again from the top of the list
                             sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST), sel, LVNI_SELECTED);
                         }
@@ -3285,9 +3326,9 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
                         case IDC_ADD_BUTTON:
                         {
                             Material *pmat = new Material();
-                            strcpy_s(pmat->m_szName,"Material");
                             pt = (CCO(PinTable) *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
-                            pt->m_materials.AddElement(pmat);
+                
+                            pt->AddMaterial( pmat );
                             pt->AddListMaterial(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST), pmat);
                         
                             break;
@@ -3327,6 +3368,7 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
                                 const int ans = MessageBox(hwndDlg, ls.m_szbuffer/*"Are you sure you want to remove this material?"*/, "Visual Pinball", MB_YESNO | MB_DEFBUTTON2);
                                 if (ans == IDYES)
                                 {
+                                    pt = (CCO(PinTable) *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
                                     int sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST), -1, LVNI_SELECTED);
                                     while (sel != -1)
                                     {										
@@ -3336,7 +3378,8 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
                                         lvitem.iSubItem = 0;
                                         ListView_GetItem(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST), &lvitem);
                                         ListView_DeleteItem(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST), sel);
-
+                                        Material * const pmat = (Material*)lvitem.lParam;
+                                        pt->RemoveMaterial( pmat );
                                         // The previous selection is now deleted, so look again from the top of the list
                                         sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST), -1, LVNI_SELECTED);
                                     }
@@ -3345,7 +3388,6 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
                             }
                         }
                         break;
-
                     }
                     break;
                 }

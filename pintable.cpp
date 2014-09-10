@@ -725,6 +725,7 @@ PinTable::PinTable()
 
    m_pbTempScreenshot = NULL;
 
+   m_numMaterials=0;
    HRESULT hr;
    int tmp;
 
@@ -2769,7 +2770,20 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
 
    bw.WriteInt(FID(UAAL), m_useAA );
    bw.WriteInt(FID(UFXA), m_useFXAA );
-
+   bw.WriteInt(FID(MASI), m_materials.Size());
+   if( m_materials.Size()>0 )
+   {
+       SaveMaterial *mats = (SaveMaterial*)malloc(sizeof(SaveMaterial)*m_materials.Size());
+       for( int i=0;i<m_materials.Size();i++ )
+       {
+           mats[i].color = m_materials.ElementAt(i)->m_color;
+           mats[i].fDiffuse = m_materials.ElementAt(i)->m_fDiffuse;
+           mats[i].fGlossy = m_materials.ElementAt(i)->m_fGlossy;
+           mats[i].fSpecular = m_materials.ElementAt(i)->m_fSpecular;
+           strcpy_s(mats[i].szName, m_materials.ElementAt(i)->m_szName);
+       }
+       bw.WriteStruct( FID(MATE), mats, sizeof(SaveMaterial)*m_materials.Size());
+   }
    // HACK!!!! - Don't save special values when copying for undo.  For instance, don't reset the code.
    // Someday save these values into there own stream, used only when saving to file.
 
@@ -3509,6 +3523,28 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    else if ( id == FID(ARAC))
    {      
       pbr->GetInt(&m_userAlphaRampsAccuracy);
+   }
+   else if ( id == FID(MASI) )
+   {
+       pbr->GetInt( &m_numMaterials );
+   }
+   else if( id == FID(MATE))
+   {
+       SaveMaterial *mats = (SaveMaterial*)malloc(sizeof(SaveMaterial)*m_numMaterials);
+       pbr->GetStruct( mats, sizeof(SaveMaterial)*m_numMaterials );
+       m_materials.Reset();
+       for( int i=0; i<m_numMaterials; i++ )
+       {
+           Material *pmat=new Material();
+           pmat->m_color = mats[i].color;
+           pmat->m_fDiffuse = mats[i].fDiffuse;
+           pmat->m_fGlossy = mats[i].fGlossy;
+           pmat->m_fSpecular = mats[i].fSpecular;
+           strcpy_s(pmat->m_szName, mats[i].szName);
+           lstrcpy(pmat->m_szInternalName, pmat->m_szName);
+           CharLowerBuff(pmat->m_szInternalName, lstrlen(pmat->m_szInternalName));
+           m_materials.AddElement( pmat );
+       }
    }
    return fTrue;
 }
@@ -6230,6 +6266,33 @@ void PinTable::ListMaterials( HWND hwndListView )
     {
         AddListMaterial(hwndListView, m_materials.ElementAt(i));
     }
+}
+
+bool PinTable::IsMaterialNameUnique( char *name )
+{
+    for( int i=0;i<m_materials.Size();i++ )
+    {
+        if( !strcmp(m_materials.ElementAt(i)->m_szName, name) )
+            return false;
+    }    
+    return true;
+}
+
+void PinTable::AddMaterial( Material *pmat)
+{
+    int suffix=1;
+    strcpy_s(pmat->m_szName,"Material");
+
+    char textBuf[128];
+    do 
+    {
+        sprintf_s(textBuf,"%s%i",pmat->m_szName,suffix);
+        suffix++;
+    } while (!IsMaterialNameUnique(textBuf));
+    lstrcpy(pmat->m_szName, textBuf);
+    lstrcpy(pmat->m_szInternalName, pmat->m_szName);
+    CharLowerBuff(pmat->m_szInternalName, lstrlen(pmat->m_szInternalName));
+    m_materials.AddElement( pmat );
 }
 
 int PinTable::AddListMaterial(HWND hwndListView, Material *pmat)

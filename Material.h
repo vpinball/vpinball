@@ -25,6 +25,16 @@ struct BaseMaterial
    };
 };
 
+// only used for loading and saving
+struct SaveMaterial
+{
+    char szName[128];
+    COLORREF color;
+    float fDiffuse;
+    float fGlossy;
+    float fSpecular;
+};
+
 class RenderDevice;
 
 class Material
@@ -50,6 +60,11 @@ public:
       mat.ambient.g = 1.0f;
       mat.ambient.b = 1.0f;      
       mat.ambient.a = 1.0f;
+
+      m_fDiffuse=0.8f;
+      m_fGlossy=0.0f;
+      m_fSpecular=0.0f;
+      m_color=0xFFFFFFFF;
    }
 
    inline Material( const D3DCOLORVALUE _diffuse, const D3DCOLORVALUE _ambient, const D3DCOLORVALUE _specular, const D3DCOLORVALUE _emissive, const D3DVALUE _power )
@@ -178,8 +193,24 @@ public:
    {
        return mat;
    }
-
+   inline void setDiffuse( float fValue ) 
+   {
+       m_fDiffuse = fValue;
+   }
+   inline void setGlossy( float fValue )
+   {
+       m_fGlossy = fValue;
+   }
+   inline void setSpecular( float fValue )
+   {
+       m_fSpecular = fValue;
+   }
    char m_szName[128];
+   char m_szInternalName[128];
+   float m_fDiffuse;
+   float m_fGlossy;
+   float m_fSpecular;
+   COLORREF m_color;
 private:
    BaseMaterial mat;
 };
