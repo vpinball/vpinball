@@ -332,9 +332,9 @@ RenderDevice::RenderDevice(HWND hwnd, int width, int height, bool fullscreen, in
     m_curTextureChanges = m_frameTextureChanges = 0;
 
     basicShader = new Shader(this);
-//    basicShader->Load("c:\\projects\\vp\\shader\\BasicShader.fx", true );
+    basicShader->Load("c:\\projects\\vp\\shader\\BasicShader.fx", true );
 
-    basicShader->Load("BasicShader.fx", false );
+//    basicShader->Load("BasicShader.fx", false );
 
     // create default vertex declarations for shaders
     CreateVertexDeclaration( VertexNormalTexelElement, &m_pVertexNormalTexelDeclaration );

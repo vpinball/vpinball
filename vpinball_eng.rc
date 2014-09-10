@@ -1695,6 +1695,29 @@ BEGIN
     CONTROL         "Static Rendering",IDC_STATIC_RENDERING_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,90,69,10
 END
 
+IDD_MATERIALDIALOG DIALOGEX 0, 0, 463, 172
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Material Manager"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,408,151,50,14
+    CONTROL         "List1",IDC_MATERIAL_LIST,"SysListView32",LVS_LIST | LVS_SHOWSELALWAYS | LVS_SORTASCENDING | LVS_EDITLABELS | WS_BORDER | WS_TABSTOP,6,8,204,158
+    PUSHBUTTON      "&Import",IDC_IMPORT,408,26,50,14
+    PUSHBUTTON      "&Delete",IDC_DELETE,408,74,50,14
+    PUSHBUTTON      "&Rename",IDC_RENAME,408,58,50,14
+    PUSHBUTTON      "&Export",IDC_EXPORT,408,42,50,14
+    GROUPBOX        "Settings",IDC_STATIC,217,7,184,76
+    LTEXT           "Color",IDC_STATIC,222,22,17,8
+    CONTROL         "Custom2",IDC_COLOR,"ColorControl",WS_TABSTOP,256,18,40,19
+    LTEXT           "Diffuse",IDC_STATIC,326,22,23,8
+    EDITTEXT        IDC_DIFFUSE_EDIT,352,18,40,14,ES_AUTOHSCROLL
+    LTEXT           "Glossy",IDC_STATIC,327,38,22,8
+    EDITTEXT        IDC_GLOSSY_EDIT,352,35,40,14,ES_AUTOHSCROLL
+    LTEXT           "Specular",IDC_STATIC,320,56,29,8
+    EDITTEXT        IDC_SPECULAR_EDIT,352,52,40,14,ES_AUTOHSCROLL
+    PUSHBUTTON      "&Add",IDC_ADD_BUTTON,408,10,50,14
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1765,6 +1788,12 @@ BEGIN
     IDD_PROPPRIMITIVE_PHYSICS, DIALOG
     BEGIN
         BOTTOMMARGIN, 87
+    END
+
+    IDD_MATERIALDIALOG, DIALOG
+    BEGIN
+        RIGHTMARGIN, 458
+        RIGHTMARGIN, 456
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -1939,6 +1968,7 @@ BEGIN
         MENUITEM "&Table Info...",              ID_TABLE_TABLEINFO
         MENUITEM "&Sound Manager...",           ID_TABLE_SOUNDMANAGER
         MENUITEM "&Image Manager...",           ID_TABLE_IMAGEMANAGER
+        MENUITEM "M&aterial Manager",           ID_TABLE_MATERIALMANAGER
         MENUITEM "&Font Manager...",            ID_TABLE_FONTMANAGER
         MENUITEM "&Dimensions Manager...",      ID_TABLE_DIMENSIONMANAGER
         MENUITEM "&Collection Manager...",      ID_TABLE_COLLECTIONMANAGER
@@ -2332,6 +2362,7 @@ BEGIN
     IDS_SETASDEFAULT        "Set as Default"
     IDS_FINDFAILED2         "'"
     IDS_CONTROLPOINT        "Control Point"
+    IDS_REMOVEMATERIAL      "Are you sure you want to remove the selected materials(s)?"
     IDS_CORRUPTFILE         "This file is corrupt and can not be loaded."
     IDS_UNSECURECONTROL1    "This table is attempting to create an object of type '"
     IDS_UNSECURECONTROL2    "'.  This object may not be safe.  Do you want to allow this object to be created?  Only answer Yes if you trust the author of this table."

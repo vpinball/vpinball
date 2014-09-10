@@ -179,6 +179,7 @@ public:
        return mat;
    }
 
+   char m_szName[128];
 private:
    BaseMaterial mat;
 };
