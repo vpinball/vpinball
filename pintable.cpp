@@ -2783,6 +2783,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
            strcpy_s(mats[i].szName, m_materials.ElementAt(i)->m_szName);
        }
        bw.WriteStruct( FID(MATE), mats, sizeof(SaveMaterial)*m_materials.Size());
+       free(mats);
    }
    // HACK!!!! - Don't save special values when copying for undo.  For instance, don't reset the code.
    // Someday save these values into there own stream, used only when saving to file.
@@ -3545,6 +3546,7 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
            CharLowerBuff(pmat->m_szInternalName, lstrlen(pmat->m_szInternalName));
            m_materials.AddElement( pmat );
        }
+       free(mats);
    }
    return fTrue;
 }
