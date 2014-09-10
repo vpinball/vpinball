@@ -20,6 +20,7 @@
 #define DISPID_SIZE_Y                   6
 #define DISPID_Surface_SideColor2       7
 #define DISPID_POSITION_X               7
+#define IDC_GET_COLOR_TABLE             7
 #define DISPID_Gate_Rotation3           8
 #define DISPID_POSITION_Y               8
 #define DISPID_Decal_SizingType         9
@@ -191,6 +192,7 @@
 #define IDS_FINDFAILED2                 168
 #define ID_INSERT_DISPREEL              168
 #define IDS_CONTROLPOINT                169
+#define IDS_REMOVEMATERIAL              170
 #define IDS_CORRUPTFILE                 171
 #define IDC_DISPREEL                    171
 #define IDS_UNSECURECONTROL1            172
@@ -212,6 +214,7 @@
 #define IDS_DRAWING_ORDER_SELECT        200
 #define IDR_APPMENU                     201
 #define IDC_SOUNDLIST                   201
+#define IDC_MATERIAL_LIST               201
 #define IDR_POINTMENU                   202
 #define IDC_IMPORT                      203
 #define IDC_REIMPORT                    204
@@ -327,6 +330,8 @@
 #define IDC_TRANSLATE_APPLY_BUTTON      280
 #define IDC_DRAWING_ORDER_UP            280
 #define IDC_COL_UP_BUTTON               280
+#define IDC_ADD_BUTTON1                 280
+#define IDC_ADD_BUTTON                  280
 #define IDC_ITEMLIST                    281
 #define IDC_OUT                         281
 #define IDC_SENDMAIL                    281
@@ -516,12 +521,15 @@
 #define IDC_MAX_PRE_FRAMES              377
 #define IDC_FADE_SPEED                  377
 #define IDC_XMAX_EDIT                   377
+#define IDC_DIFFUSE_EDIT                377
 #define IDC_HEIGHT_EDIT                 378
 #define IDD_COMLIST                     378
 #define IDC_RADIO1                      378
 #define DISPID_SIDES                    378
+#define IDC_GLOSSY_EDIT                 378
 #define IDD_PROPKICKER_STATE            379
 #define IDC_RADIO2                      379
+#define IDC_SPECULAR_EDIT               379
 #define IDC_RADIO3                      380
 #define IDD_PROPPRIMITIVE_POSITION      380
 #define IDD_PROPPRIMITIVE_VISUALS       381
@@ -685,8 +693,8 @@
 #define IDC_ENABLELIGHTING              557
 #define IDC_LIGHTAMBIENT                558
 #define IDC_LIGHT0EMISSION              559
-#define IDC_LIGHTHEIGHT		            564
-#define IDC_LIGHTRANGE	                565
+#define IDC_LIGHTHEIGHT                 564
+#define IDC_LIGHTRANGE                  565
 #define IDC_TABLESOUNDVOLUME            579
 #define IDC_SHADOW_COLOR                579
 #define IDC_TABLEMUSICVOLUME            580
@@ -698,6 +706,7 @@
 #define IDC_RUBBER                      602
 #define IDD_PROPRUBBER_POSITION         603
 #define IDD_PROPRUBBER_VISUALS          604
+#define IDD_MATERIALDIALOG              605
 #define DISPID_Gate_Height1             1142
 #define DISPID_Image                    1500
 #define IDC_MESH_FILENAME_EDIT          1601
@@ -797,6 +806,7 @@
 #define ID_VIEW_BACKDROP                32898
 #define IDC_GRID_SIZE                   32899
 #define ID_INSERT_RUBBER                32990
+#define ID_TABLE_MATERIALMANAGER        32991
 #define DZVALUE                         65535
 #define DZName                          65535
 
@@ -805,7 +815,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        603
-#define _APS_NEXT_COMMAND_VALUE         32991
+#define _APS_NEXT_COMMAND_VALUE         32992
 #define _APS_NEXT_CONTROL_VALUE         426
 #define _APS_NEXT_SYMED_VALUE           188
 #endif

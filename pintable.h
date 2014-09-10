@@ -463,8 +463,11 @@ END_COM_MAP()
 BEGIN_CONNECTION_POINT_MAP(PinTable)
 	CONNECTION_POINT_ENTRY(DIID_ITableEvents)
 END_CONNECTION_POINT_MAP()
+    void ListMaterials( HWND hwndListView );
+    int AddListMaterial(HWND hwndListView, Material *pmat);
+    void RemoveMaterial(Material *pmat);
 
-	char m_szFileName[_MAX_PATH];
+    char m_szFileName[_MAX_PATH];
 	char m_szBlueprintFileName[_MAX_PATH];
 	char m_szTitle[1024];
 
@@ -554,6 +557,8 @@ END_CONNECTION_POINT_MAP()
     Vector< ISelect > m_allHitElements;
       
 	Vector< Texture > m_vimage;
+
+    Vector< Material > m_materials;
 
 	Vector< PinSound > m_vsound;
 

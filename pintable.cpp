@@ -6224,6 +6224,33 @@ void PinTable::RemoveImage(Texture *ppi)
    delete ppi;
 }
 
+void PinTable::ListMaterials( HWND hwndListView )
+{
+    for (int i=0;i<m_materials.Size();i++)
+    {
+        AddListMaterial(hwndListView, m_materials.ElementAt(i));
+    }
+}
+
+int PinTable::AddListMaterial(HWND hwndListView, Material *pmat)
+{
+    LVITEM lvitem;
+    lvitem.mask = LVIF_DI_SETITEM | LVIF_TEXT | LVIF_PARAM;
+    lvitem.iItem = 0;
+    lvitem.iSubItem = 0;
+    lvitem.pszText = pmat->m_szName;
+    lvitem.lParam = (size_t)pmat;
+
+    const int index = ListView_InsertItem(hwndListView, &lvitem);
+    return index;
+}
+
+void PinTable::RemoveMaterial(Material *pmat)
+{
+    m_materials.RemoveElement(pmat);
+    delete pmat;
+}
+
 int PinTable::GetImageLink(Texture *ppi)
 {
    if (!lstrcmp(ppi->m_szInternalName, m_szScreenShot))
