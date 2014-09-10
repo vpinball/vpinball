@@ -3542,8 +3542,6 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
            pmat->m_fGlossy = mats[i].fGlossy;
            pmat->m_fSpecular = mats[i].fSpecular;
            strcpy_s(pmat->m_szName, mats[i].szName);
-           lstrcpy(pmat->m_szInternalName, pmat->m_szName);
-           CharLowerBuff(pmat->m_szInternalName, lstrlen(pmat->m_szInternalName));
            m_materials.AddElement( pmat );
        }
        free(mats);
@@ -6285,15 +6283,13 @@ void PinTable::AddMaterial( Material *pmat)
     int suffix=1;
     strcpy_s(pmat->m_szName,"Material");
 
-    char textBuf[128];
+    char textBuf[32];
     do 
     {
         sprintf_s(textBuf,"%s%i",pmat->m_szName,suffix);
         suffix++;
     } while (!IsMaterialNameUnique(textBuf));
     lstrcpy(pmat->m_szName, textBuf);
-    lstrcpy(pmat->m_szInternalName, pmat->m_szName);
-    CharLowerBuff(pmat->m_szInternalName, lstrlen(pmat->m_szInternalName));
     m_materials.AddElement( pmat );
 }
 

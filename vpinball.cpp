@@ -3184,8 +3184,6 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
                     ListView_GetItem(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST), &lvitem);
                     Material * const pmat = (Material*)lvitem.lParam;
                     lstrcpy(pmat->m_szName, pinfo->item.pszText);
-                    lstrcpy(pmat->m_szInternalName, pinfo->item.pszText);
-                    CharLowerBuff(pmat->m_szInternalName, lstrlen(pmat->m_szInternalName));
                     pt->SetNonUndoableDirty(eSaveDirty);
                     return TRUE;
                 }
