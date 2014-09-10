@@ -205,8 +205,7 @@ public:
    {
        m_fSpecular = fValue;
    }
-   char m_szName[128];
-   char m_szInternalName[128];
+   char m_szName[32];
    float m_fDiffuse;
    float m_fGlossy;
    float m_fSpecular;
