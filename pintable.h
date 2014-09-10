@@ -466,7 +466,8 @@ END_CONNECTION_POINT_MAP()
     void ListMaterials( HWND hwndListView );
     int AddListMaterial(HWND hwndListView, Material *pmat);
     void RemoveMaterial(Material *pmat);
-
+    void AddMaterial( Material *pmat);
+    bool IsMaterialNameUnique( char *name );
     char m_szFileName[_MAX_PATH];
 	char m_szBlueprintFileName[_MAX_PATH];
 	char m_szTitle[1024];
@@ -558,6 +559,7 @@ END_CONNECTION_POINT_MAP()
       
 	Vector< Texture > m_vimage;
 
+    int m_numMaterials;
     Vector< Material > m_materials;
 
 	Vector< PinSound > m_vsound;
