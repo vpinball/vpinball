@@ -1,6 +1,6 @@
 #pragma once
 
-
+//!! remove as soon as all is changed to shader 
 // NB: this has the same layout as D3DMATERIAL7/9
 struct BaseMaterial
 {
@@ -22,6 +22,7 @@ struct BaseMaterial
    };
    union {
       D3DVALUE        power;          /* Sharpness if specular highlight */
+      __m128          p;
    };
 };
 

@@ -2362,7 +2362,7 @@ BEGIN
     IDS_SETASDEFAULT        "Set as Default"
     IDS_FINDFAILED2         "'"
     IDS_CONTROLPOINT        "Control Point"
-    IDS_REMOVEMATERIAL      "Are you sure you want to remove the selected materials(s)?"
+    IDS_REMOVEMATERIAL      "Are you sure you want to remove the selected material(s)?"
     IDS_CORRUPTFILE         "This file is corrupt and can not be loaded."
     IDS_UNSECURECONTROL1    "This table is attempting to create an object of type '"
     IDS_UNSECURECONTROL2    "'.  This object may not be safe.  Do you want to allow this object to be created?  Only answer Yes if you trust the author of this table."

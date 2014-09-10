@@ -3351,7 +3351,7 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
                         {
                             if(ListView_GetSelectedCount(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST)))	// if some items are selected???
                             {
-                                char szInitialDir[2096];
+                                //char szInitialDir[2096];
                                 int sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST), -1, LVNI_SELECTED);								
                             }							
                         }	
