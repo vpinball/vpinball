@@ -348,9 +348,10 @@ void Pin3D::InitLayout()
 	const float aspect = (float)(4.0/3.0);//((float)m_dwRenderWidth)/m_dwRenderHeight;
 
     m_proj.FitCameraToVertices(&vvertex3D, aspect, rotation, inclination, FOV, g_pplayer->m_ptable->m_xlatez, g_pplayer->m_ptable->m_layback);
-    m_proj.m_matView.RotateXMatrix((float)M_PI);  // convert Z=out to Z=in (D3D coordinate system)
-    m_proj.m_matWorld.SetIdentity();
 
+	m_proj.m_matWorld.SetIdentity();
+
+    m_proj.m_matView.RotateXMatrix((float)M_PI);  // convert Z=out to Z=in (D3D coordinate system)
     m_proj.ScaleView(g_pplayer->m_ptable->m_scalex, g_pplayer->m_ptable->m_scaley, 1.0f);
     m_proj.TranslateView(g_pplayer->m_ptable->m_xlatex-m_proj.m_vertexcamera.x, g_pplayer->m_ptable->m_xlatey-m_proj.m_vertexcamera.y, -m_proj.m_vertexcamera.z);
     m_proj.RotateView(0, 0, rotation);
@@ -373,12 +374,12 @@ void Pin3D::InitLayout()
 	m_proj.CacheTransform();
 
     // Compute view vector
-    Matrix3D temp, viewRot;
+    /*Matrix3D temp, viewRot;
     temp = m_proj.m_matView;
     temp.Invert();
     temp.GetRotationPart( viewRot );
     viewRot.MultiplyVector(Vertex3Ds(0, 0, 1), m_viewVec);
-    m_viewVec.Normalize();
+    m_viewVec.Normalize();*/
 
 	InitLights();
 }
@@ -456,6 +457,7 @@ void Pin3D::RenderPlayfieldGraphics()
    D3DXVECTOR4 matColor(r,g,b,1.0f);   
    m_pd3dDevice->basicShader->Core()->SetFloat("vMaterialPower",0.0f);
    m_pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&matColor);
+   //m_pd3dDevice->basicShader->Core()->SetBool("bSpecular",true);
 
 	if (pin)
 	{
@@ -495,6 +497,7 @@ void Pin3D::RenderPlayfieldGraphics()
 
     // Apparently, releasing the vertex buffer here immediately can cause rendering glitches in
     // later rendering steps, so we keep it around for now.
+   //m_pd3dDevice->basicShader->Core()->SetBool("bSpecular",false);
 }
 
 const int rgfilterwindow[7][7] =

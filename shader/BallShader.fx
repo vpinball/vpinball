@@ -1,5 +1,4 @@
 //!! change to PB model, 2layer? (for clearcoat)
-//!! change all to float3 pipeline
 
 #define NUM_LIGHTS 2
 

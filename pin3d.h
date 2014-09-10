@@ -118,7 +118,7 @@ public:
 
 	HWND m_hwnd;
 
-    Vertex3Ds m_viewVec;        // direction the camera is facing
+    //Vertex3Ds m_viewVec;        // direction the camera is facing
 
     //bool fullscreen;
     ViewPort vp;

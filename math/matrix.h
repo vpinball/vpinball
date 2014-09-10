@@ -302,6 +302,6 @@ public:
          tmp.m[2][i] = m[i][2];
          tmp.m[3][i] = m[i][3];
       }
-	  memcpy(&this->_11,&tmp._11,4*4*sizeof(float));
+	  memcpy(this->m,tmp.m,4*4*sizeof(float));
    }
 };

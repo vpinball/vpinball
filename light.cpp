@@ -850,6 +850,7 @@ void Light::RenderSetup(RenderDevice* pd3dDevice)
       m_pInsertShader = new Shader(g_pplayer->m_pin3d.m_pd3dDevice);
 //      m_pInsertShader->Load("c:\\projects\\vp\\shader\\LightInsert.fx",true );
       m_pInsertShader->Load("LightInsert.fx",false );
+
       D3DMATRIX worldMat;
       D3DMATRIX viewMat;
       D3DMATRIX projMat;
@@ -861,6 +862,7 @@ void Light::RenderSetup(RenderDevice* pd3dDevice)
       D3DXMATRIX matView(viewMat);
       D3DXMATRIX matWorld(worldMat);
       D3DXMATRIX worldViewProj = matWorld * matView * matProj;
+
       m_pInsertShader->Core()->SetMatrix("matWorldViewProj", &worldViewProj);
       m_pInsertShader->Core()->SetMatrix("matWorld",  &matView);
       D3DXVECTOR4 cam( worldViewProj._41, worldViewProj._42, worldViewProj._43, 1 );
