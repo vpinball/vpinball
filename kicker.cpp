@@ -231,7 +231,7 @@ void Kicker::PreRenderStatic( RenderDevice* pd3dDevice)
    const float g = (float)(m_d.m_color & 65280) * (float)(1.0/65280.0);
    const float b = (float)(m_d.m_color & 16711680) * (float)(1.0/16711680.0);
    D3DXVECTOR4 matColor(r,g,b,1.0f);   
-   pd3dDevice->basicShader->Core()->SetFloat("vMaterialPower",0.0f);
+   pd3dDevice->basicShader->Core()->SetFloat("fGlossyPower",0.0f);
    pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&matColor);
    pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
 

@@ -454,10 +454,13 @@ void Pin3D::RenderPlayfieldGraphics()
    const float r = (float)(g_pplayer->m_ptable->m_colorplayfield & 255) * (float)(1.0/255.0);
    const float g = (float)(g_pplayer->m_ptable->m_colorplayfield & 65280) * (float)(1.0/65280.0);
    const float b = (float)(g_pplayer->m_ptable->m_colorplayfield & 16711680) * (float)(1.0/16711680.0);
-   D3DXVECTOR4 matColor(r,g,b,1.0f);   
-   m_pd3dDevice->basicShader->Core()->SetFloat("vMaterialPower",0.0f);
-   m_pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&matColor);
-   //m_pd3dDevice->basicShader->Core()->SetBool("bSpecular",true);
+   D3DXVECTOR4 diffColor(r,g,b,1.0f);
+   D3DXVECTOR4 glossyColor(0.5f,0.5f,0.5f,1.0f);
+   m_pd3dDevice->basicShader->Core()->SetVector("vGlossyColor",&glossyColor);
+   m_pd3dDevice->basicShader->Core()->SetFloat("fGlossyPower",8.0f);
+   m_pd3dDevice->basicShader->Core()->SetFloat("fDiffuseWrap",0.0f);
+   m_pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&diffColor);
+   m_pd3dDevice->basicShader->Core()->SetBool("bGlossy",true);
 
 	if (pin)
 	{
@@ -497,7 +500,9 @@ void Pin3D::RenderPlayfieldGraphics()
 
     // Apparently, releasing the vertex buffer here immediately can cause rendering glitches in
     // later rendering steps, so we keep it around for now.
-   //m_pd3dDevice->basicShader->Core()->SetBool("bSpecular",false);
+    m_pd3dDevice->basicShader->Core()->SetBool("bGlossy",false);
+   m_pd3dDevice->basicShader->Core()->SetFloat("fGlossyPower",16.0f);
+   m_pd3dDevice->basicShader->Core()->SetFloat("fDiffuseWrap",0.5f);
 }
 
 const int rgfilterwindow[7][7] =

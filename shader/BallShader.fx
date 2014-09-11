@@ -1,8 +1,8 @@
 #define NUM_LIGHTS 2
 
-float3 vDiffuseColor = float3(0.1f,0.1f,0.1f); //!! pass from material!
-float  fDiffuseWrap = 0.5f; //!! pass from material?, w in [0..1] for wrap lighting
-float  fGlossyPower = 16.f; //!! pass from material?
+float3 vDiffuseColor = float3(0.05f,0.05f,0.05f); //!! pass from material!
+float  fDiffuseWrap = 0.25f; //!! pass from material?, w in [0..1] for wrap lighting
+float  fGlossyPower = 8.f; //!! pass from material?
 float  fmaterialAlpha = 1.0f; //!! remove?
 
 bool   bDiffuse  = true; //!! remove, steer from diffuse?  (performance?)
