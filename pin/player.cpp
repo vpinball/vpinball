@@ -754,8 +754,8 @@ void Player::InitBallShader()
    D3DXMATRIX matWorldViewProj = matWorldView * matProj;
 
    ballShader->Core()->SetMatrix("matWorldViewProj", &matWorldViewProj);
-   ballShader->Core()->SetMatrix("matWorldView",  &matWorldView);
-   ballShader->Core()->SetMatrix("matWorld",  &matWorld);
+   ballShader->Core()->SetMatrix("matWorldView", &matWorldView);
+   ballShader->Core()->SetMatrix("matWorld", &matWorld);
 
    Matrix3D temp;
    memcpy(temp.m,matWorldView.m,4*4*sizeof(float));
@@ -2677,7 +2677,7 @@ void Player::DrawBalls()
       UINT cPasses=0;
       if ( drawReflection )
         {
-          ballShader->Core()->SetFloat("reflectionStrength", (float)m_ptable->m_ballReflectionStrength/255.0f );
+          ballShader->Core()->SetFloat("freflectionStrength", (float)m_ptable->m_ballReflectionStrength/255.0f );
             m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
             m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
             m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_DESTALPHA);
