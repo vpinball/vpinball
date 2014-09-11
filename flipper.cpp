@@ -597,18 +597,18 @@ void Flipper::PostRenderStatic(RenderDevice* pd3dDevice)
     D3DXVECTOR4 glossyColor( 0.5f, 0.5f, 0.5f, 1.0f );
     D3DXVECTOR4 specularColor( 1.0f, 1.0f, 1.0f, 1.0f );
     float diffuseWrap = 0.5f;
-    float glossyWrap = 16.0f;
+    float glossyPower = 16.0f;
     if( mat )
     {
         diffuseColor = mat->getDiffuseColor();
         glossyColor = mat->getGlossyColor();
         specularColor = mat->getSpecularColor();
         diffuseWrap = mat->m_fDiffuse;
-        glossyWrap = mat->m_fGlossy;
+        glossyPower = mat->m_fGlossy;
     }
 
     pd3dDevice->basicShader->Core()->SetFloat("fDiffuseWrap",diffuseWrap);
-    pd3dDevice->basicShader->Core()->SetFloat("fGlossyPower",glossyWrap);
+    pd3dDevice->basicShader->Core()->SetFloat("fGlossyPower",glossyPower);
     pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&diffuseColor);
     pd3dDevice->basicShader->Core()->SetVector("vGlossyColor",&glossyColor);
     pd3dDevice->basicShader->Core()->SetVector("vSpecularColor",&specularColor);
@@ -644,13 +644,13 @@ void Flipper::PostRenderStatic(RenderDevice* pd3dDevice)
            glossyColor = mat->getGlossyColor();
            specularColor = mat->getSpecularColor();
            diffuseWrap = mat->m_fDiffuse;
-           glossyWrap = mat->m_fGlossy;
+           glossyPower = mat->m_fGlossy;
        }
        pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&diffuseColor);
        pd3dDevice->basicShader->Core()->SetVector("vGlossyColor",&glossyColor);
        pd3dDevice->basicShader->Core()->SetVector("vSpecularColor",&specularColor);
        pd3dDevice->basicShader->Core()->SetFloat("fDiffuseWrap",diffuseWrap);
-       pd3dDevice->basicShader->Core()->SetFloat("fGlossyPower",glossyWrap);
+       pd3dDevice->basicShader->Core()->SetFloat("fGlossyPower",glossyPower);
 
        pd3dDevice->basicShader->Begin(0);
        pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, vertexBuffer, 108, 108, indexBuffer, 0, numIndices );

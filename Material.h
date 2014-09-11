@@ -1,7 +1,6 @@
 #pragma once
 
-//!! remove as soon as all is changed to shader 
-// NB: this has the same layout as D3DMATERIAL7/9
+//!! remove as soon as all is changed to shader based material
 struct BaseMaterial
 {
    union {
@@ -233,13 +232,21 @@ public:
        D3DXVECTOR4 matColor(r,g,b,1.0f);   
        return matColor; 
    }
-   char m_szName[32];
-   float m_fDiffuse;
-   float m_fGlossy;
-   float m_fSpecular;
-   COLORREF m_diffuseColor;
-   COLORREF m_glossyColor;
-   COLORREF m_specularColor;
+
+   union {
+	struct{
+	char m_szName[32];
+	float m_fDiffuse;
+	float m_fGlossy;
+	float m_fSpecular;
+	COLORREF m_diffuseColor;
+	COLORREF m_glossyColor;
+	COLORREF m_specularColor;
+	};
+	struct{
+	__m128 i0,i1,i2,i3; //!! remove as soon as BaseMaterial vanishes
+	};
+   };
 private:
    BaseMaterial mat;
 };

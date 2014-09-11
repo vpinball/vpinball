@@ -105,7 +105,7 @@ float3 DoPointLight(float3 pos, float3 N, float3 V, float3 diffuse, float3 gloss
 //!! PI?
 float3 DoEnvmap(float3 pos, float3 N, float3 V, float3 diffuse, float3 specular)
 {
-   return float4(0,0,0,0); //!!
+   return float3(0,0,0); //!!
 }
 
 float4 lightLoop(float3 pos, float3 N, float3 V, float3 diffuse, float3 glossy, float3 specular)
@@ -132,11 +132,11 @@ float4 lightLoop(float3 pos, float3 N, float3 V, float3 diffuse, float3 glossy, 
 
    float3 color = float3(0.0f, 0.0f, 0.0f);
       
-   if(bDiffuse || bGlossy)
+   if((bDiffuse && diffuseMax > 0.0f) || (bGlossy && glossyMax > 0.0f))
       for(int i = 0; i < iLightPointNum; i++)  
          color += DoPointLight(pos, N, V, diffuse, glossy, i); // no specular needed as only pointlights so far
          
-   if(bDiffuse || bSpecular)
+   if((bDiffuse && diffuseMax > 0.0f) || (bSpecular && specularMax > 0.0f))
       color += DoEnvmap(pos, N, V, diffuse, specular); // no glossy, as it's the most hacky one //!! -> use mipmap-hacks for glossy?
   
    return float4(saturate(vAmbient + color), fmaterialAlpha); //!! in case of HDR out later on, remove saturate
@@ -148,7 +148,7 @@ VS_OUTPUT vs_main (float4 vPosition  : POSITION0,
                    float2 tc         : TEXCOORD0, 
                    float2 tc2        : TEXCOORD1) 
 { 
-   VS_OUTPUT Out = (VS_OUTPUT)0;
+   VS_OUTPUT Out;
 
    // trafo all into worldview space (as most of the weird trafos happen in view, world is identity so far)
    float3 P = mul(vPosition, matWorldView).xyz;
