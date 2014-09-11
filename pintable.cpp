@@ -1807,7 +1807,12 @@ void PinTable::Play()
       {
           m_textureMap[ m_vimage.ElementAt(i)->m_szInternalName ] = m_vimage.ElementAt(i);
       }
+      m_materialMap.clear();
+      for (int i=0;i<m_materials.Size();i++)
+      {
 
+          m_materialMap[ m_materials.ElementAt(i)->m_szName ] = m_materials.ElementAt(i);
+      }
       g_pplayer = new Player();
       HRESULT hr = g_pplayer->Init(this, hwndProgressBar, hwndStatusName);
       if (!m_pcv->m_fScriptError) 
@@ -1901,6 +1906,7 @@ void PinTable::StopPlaying()
    m_pcv->EndSession();
 
    m_textureMap.clear();
+   m_materialMap.clear();
 
    ShowWindow(g_pvp->m_hwndWork, SW_SHOW);
    //	EnableWindow(g_pvp->m_hwndWork, fTrue); // Disable modal state after game ends
@@ -2776,7 +2782,9 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
        SaveMaterial *mats = (SaveMaterial*)malloc(sizeof(SaveMaterial)*m_materials.Size());
        for( int i=0;i<m_materials.Size();i++ )
        {
-           mats[i].color = m_materials.ElementAt(i)->m_color;
+           mats[i].diffuseColor = m_materials.ElementAt(i)->m_diffuseColor;
+           mats[i].glossyColor = m_materials.ElementAt(i)->m_glossyColor;
+           mats[i].specularColor = m_materials.ElementAt(i)->m_specularColor;
            mats[i].fDiffuse = m_materials.ElementAt(i)->m_fDiffuse;
            mats[i].fGlossy = m_materials.ElementAt(i)->m_fGlossy;
            mats[i].fSpecular = m_materials.ElementAt(i)->m_fSpecular;
@@ -3537,7 +3545,9 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
        for( int i=0; i<m_numMaterials; i++ )
        {
            Material *pmat=new Material();
-           pmat->m_color = mats[i].color;
+           pmat->m_diffuseColor = mats[i].diffuseColor;
+           pmat->m_glossyColor= mats[i].glossyColor;
+           pmat->m_specularColor = mats[i].specularColor;
            pmat->m_fDiffuse = mats[i].fDiffuse;
            pmat->m_fGlossy = mats[i].fGlossy;
            pmat->m_fSpecular = mats[i].fSpecular;
@@ -6278,6 +6288,34 @@ bool PinTable::IsMaterialNameUnique( char *name )
     return true;
 }
 
+Material* PinTable::GetMaterial( char * const szName) const
+{
+    if (szName == NULL || szName[0] == '\0')
+        return NULL;
+
+    // during playback, we use the hashtable for lookup
+    if (!m_materialMap.empty())
+    {
+        std::tr1::unordered_map<const char*, Material*, StringHashFunctor, StringComparator>::const_iterator
+            it = m_materialMap.find(szName);
+        if (it != m_materialMap.end())
+            return it->second;
+        else
+            return NULL;
+    }
+
+    for (int i=0;i<m_materials.Size();i++)
+    {
+        if (!lstrcmp(m_materials.ElementAt(i)->m_szName, szName))
+        {
+            return m_materials.ElementAt(i);
+        }
+    }
+
+    return NULL;
+
+}
+
 void PinTable::AddMaterial( Material *pmat)
 {
     int suffix=1;
@@ -6468,7 +6506,37 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
          cvar++;
       }
       break;
+   case IDC_MATERIAL_COMBO:
+   case IDC_MATERIAL_COMBO2:
+       {
+            cvar = m_materials.Size();
+            rgstr = (WCHAR **) CoTaskMemAlloc((cvar+1) * sizeof(WCHAR *));
+            rgdw = (DWORD *) CoTaskMemAlloc((cvar+1) * sizeof(DWORD));
 
+            wzDst = (WCHAR *) CoTaskMemAlloc(7*sizeof(WCHAR));
+            // TEXT
+            LocalString ls(IDS_NONE);
+            MultiByteToWideChar(CP_ACP, 0, ls.m_szbuffer, -1, wzDst, 7);
+            rgstr[0] = wzDst;
+            rgdw[0] = ~0u;
+
+            for (int ivar = 0 ; ivar < cvar ; ivar++)
+            {
+                char *szSrc = m_materials.ElementAt(ivar)->m_szName;
+                DWORD cwch = lstrlen(szSrc)+1;
+                wzDst = (WCHAR *) CoTaskMemAlloc(cwch*sizeof(WCHAR));
+                if (wzDst == NULL)
+                    ShowError("IDC_MATERIAL_COMBO alloc failed");
+
+                MultiByteToWideChar(CP_ACP, 0, szSrc, -1, wzDst, cwch);
+
+                //MsoWzCopy(szSrc,szDst);
+                rgstr[ivar+1] = wzDst;
+                rgdw[ivar+1] = ivar;
+            }
+            cvar++;
+            break;
+       }
    case DISPID_Sound:
       {
          cvar = m_vsound.Size();
@@ -6623,6 +6691,24 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
          }
       }
       break;
+   case IDC_MATERIAL_COMBO:
+   case IDC_MATERIAL_COMBO2:
+       {
+           if (dwCookie == -1)
+           {
+               wzDst = (WCHAR *) CoTaskMemAlloc(1*sizeof(WCHAR));
+               wzDst[0] = L'\0';
+           }
+           else
+           {
+               char *szSrc = m_materials.ElementAt(dwCookie)->m_szName;
+               DWORD cwch = lstrlen(szSrc)+1;
+               wzDst = (WCHAR *) CoTaskMemAlloc(cwch*sizeof(WCHAR));
+
+               MultiByteToWideChar(CP_ACP, 0, szSrc, -1, wzDst, cwch);
+           }
+           break;
+       }
    case DISPID_Sound:
       {
          if (dwCookie == -1)

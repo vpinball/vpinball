@@ -45,8 +45,10 @@
 #define DISPID_Flipper_Speed            16
 #define DISPID_TRANSPOSITION_Y          16
 #define DISPID_ROTRA5                   16
+#define IDC_COLOR2                      16
 #define DISPID_TRANSPOSITION_Z          17
 #define DISPID_ROTRA6                   17
+#define IDC_COLOR3                      17
 #define DISPID_SIDECOLOR                18
 #define DISPID_AXISSCALE_YZ             18
 #define DISPID_SIDEVISIBLE              19
@@ -435,9 +437,11 @@
 #define IDC_MonitorCombo                340
 #define IDC_FUNCTIONLIST                340
 #define IDC_LIGHT_TYPE_CHECKBOX         340
+#define IDC_MATERIAL_COMBO              340
 #define IDC_COMBO2                      341
 #define IDD_PROPSPINNER_VISUALS         341
 #define IDS_DEBUGNOCONVERT              341
+#define IDC_MATERIAL_COMBO2             341
 #define IDB_CHEVRON                     342
 #define IDD_PROPSPINNER_POSITION        342
 #define IDS_UNDOPASTSAVE                342
