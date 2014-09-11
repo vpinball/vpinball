@@ -1010,7 +1010,7 @@ void Surface::RenderSlingshots(RenderDevice* pd3dDevice)
    const float g = (float)(m_d.m_slingshotColor & 65280) * (float)(1.0/65280.0);
    const float b = (float)(m_d.m_slingshotColor & 16711680) * (float)(1.0/16711680.0);
    D3DXVECTOR4 matColor(r,g,b,1.0f);   
-   pd3dDevice->basicShader->Core()->SetFloat("vMaterialPower",0.0f);
+   pd3dDevice->basicShader->Core()->SetFloat("fGlossyPower",0.0f);
    pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&matColor);
 
    for (unsigned i=0; i<m_vlinesling.size(); i++)
@@ -1051,7 +1051,7 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
     const float g = (float)(m_d.m_sidecolor & 65280) * (float)(1.0/65280.0);
     const float b = (float)(m_d.m_sidecolor & 16711680) * (float)(1.0/16711680.0);
     D3DXVECTOR4 matColor(r,g,b,1.0f);   
-    pd3dDevice->basicShader->Core()->SetFloat("vMaterialPower",0.0f);
+    pd3dDevice->basicShader->Core()->SetFloat("fGlossyPower",0.0f);
     if( m_d.m_transparent )
     {
         pd3dDevice->basicShader->Core()->SetFloat("fmaterialAlpha", (float)(m_d.m_opacity/255.0f));
@@ -1121,7 +1121,7 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
         const float g = (float)(m_d.m_topcolor & 65280) * (float)(1.0/65280.0);
         const float b = (float)(m_d.m_topcolor & 16711680) * (float)(1.0/16711680.0);
         D3DXVECTOR4 matTopColor(r,g,b,1.0f);   
-        pd3dDevice->basicShader->Core()->SetFloat("vMaterialPower",0.0f);
+        pd3dDevice->basicShader->Core()->SetFloat("fGlossyPower",0.0f);
 
         Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
         if (pin)

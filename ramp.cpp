@@ -1087,7 +1087,7 @@ void Ramp::RenderStaticHabitrail(RenderDevice* pd3dDevice)
    if ( !pin )
    {
        Material habitrailMaterial;
-       pd3dDevice->basicShader->Core()->SetFloat("vMaterialPower",8.0f);
+       pd3dDevice->basicShader->Core()->SetFloat("fGlossyPower",8.0f);
        pd3dDevice->basicShader->Core()->SetBool("bSpecular", true);
        pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
    }
@@ -1599,7 +1599,7 @@ void Ramp::RenderStatic(RenderDevice* pd3dDevice)
    {
       Pin3D * const ppin3d = &g_pplayer->m_pin3d;
       Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
-      pd3dDevice->basicShader->Core()->SetFloat("vMaterialPower",0.0f);
+      pd3dDevice->basicShader->Core()->SetFloat("fGlossyPower",0.0f);
 
       if (pin)
       {
@@ -2639,7 +2639,7 @@ void Ramp::PostRenderStatic(RenderDevice* pd3dDevice)
    else
    {
       pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&matColor);
-      pd3dDevice->basicShader->Core()->SetFloat("vMaterialPower",0.0f);
+      pd3dDevice->basicShader->Core()->SetFloat("fGlossyPower",0.0f);
 
       Pin3D * const ppin3d = &g_pplayer->m_pin3d;
       Texture * const pin = m_ptable->GetImage(m_d.m_szImage);

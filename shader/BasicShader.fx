@@ -5,10 +5,10 @@
 float3 vDiffuseColor = float3(192.f/255.f, 128.f/255.f, 96.f/255.f);
 float  fDiffuseWrap = 0.5f; //!! pass from material, w in [0..1] for rim/wrap lighting
 
-float3 vGlossyColor = float3(1.0f, 1.0f, 1.0f); //!! pass from material/texture
+float3 vGlossyColor = float3(0.1f, 0.1f, 0.1f); //!! pass from material/texture
 float  fGlossyPower = 16.f; //!! pass from material(/texture?)
 
-float3 vSpecularColor = float3(1.0f, 1.0f, 1.0f); //!! pass from material/texture
+float3 vSpecularColor = float3(0.1f, 0.1f, 0.1f); //!! pass from material/texture
 
 float  fmaterialAlpha = 1.0f; //!! allow for texture?
 
