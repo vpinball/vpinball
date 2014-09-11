@@ -22,7 +22,9 @@ public:
 	TimerDataRoot m_tdr;
 	char m_szSurface[MAXTOKEN];
 	COLORREF m_color;
+    char m_szMaterial[32];
 	COLORREF m_rubbercolor;
+    char m_szRubberMaterial[32];
 	float m_force;
 	int m_rubberthickness;
 	int m_rubberheight;
@@ -146,14 +148,14 @@ public:
 	STDMETHOD(put_RubberWidth)(/*[in]*/ long newVal);
 	STDMETHOD(get_RubberHeight)(/*[out, retval]*/ long *pVal);
 	STDMETHOD(put_RubberHeight)(/*[in]*/ long newVal);
-	STDMETHOD(get_RubberColor)(/*[out, retval]*/ OLE_COLOR *pVal);
-	STDMETHOD(put_RubberColor)(/*[in]*/ OLE_COLOR newVal);
+	STDMETHOD(get_RubberMaterial)(/*[out, retval]*/ BSTR *pVal);
+	STDMETHOD(put_RubberMaterial)(/*[in]*/ BSTR newVal);
 	STDMETHOD(get_Speed)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Speed)(/*[in]*/ float newVal);
 	STDMETHOD(get_OverridePhysics)(/*[out, retval]*/ long *pVal);
     STDMETHOD(put_OverridePhysics)(/*[in]*/ long newVal);
-	STDMETHOD(get_Color)(/*[out, retval]*/ OLE_COLOR *pVal);
-	STDMETHOD(put_Color)(/*[in]*/ OLE_COLOR newVal);
+	STDMETHOD(get_Material)(/*[out, retval]*/ BSTR *pVal);
+	STDMETHOD(put_Material)(/*[in]*/ BSTR newVal);
 	STDMETHOD(get_Surface)(/*[out, retval]*/ BSTR *pVal);
 	STDMETHOD(put_Surface)(/*[in]*/ BSTR newVal);
 	STDMETHOD(get_Y)(/*[out, retval]*/ float *pVal);

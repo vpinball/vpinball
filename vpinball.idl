@@ -801,14 +801,14 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(13), helpstring("property X")] HRESULT X([in] float newVal);
 		[propget, id(14), helpstring("property Y")] HRESULT Y([out, retval] float *pVal);
 		[propput, id(14), helpstring("property Y")] HRESULT Y([in] float newVal);
-		[propget, id(15), helpstring("property Color")] HRESULT Color([out, retval] OLE_COLOR *pVal);
-		[propput, id(15), helpstring("property Color")] HRESULT Color([in] OLE_COLOR newVal);
+		[propget, id(340), helpstring("property Material")] HRESULT Material([out, retval] BSTR *pVal);
+		[propput, id(340), helpstring("property Material")] HRESULT Material([in] BSTR newVal);
 		[propget, id(DISPID_Flipper_Speed), helpstring("property Speed")] HRESULT Speed([out, retval] float *pVal);
 		[propput, id(DISPID_Flipper_Speed), helpstring("property Speed")] HRESULT Speed([in] float newVal);
 		[propget, id(DISPID_Flipper_OverridePhysics), helpstring("property OverridePhysics")] HRESULT OverridePhysics([out, retval] long *pVal);
 		[propput, id(DISPID_Flipper_OverridePhysics), helpstring("property OverridePhysics")] HRESULT OverridePhysics([in] long newVal);
-		[propget, id(17), helpstring("property RubberColor")] HRESULT RubberColor([out, retval] OLE_COLOR *pVal);
-		[propput, id(17), helpstring("property RubberColor")] HRESULT RubberColor([in] OLE_COLOR newVal);
+		[propget, id(341), helpstring("property RubberMaterial")] HRESULT RubberMaterial([out, retval] BSTR *pVal);
+		[propput, id(341), helpstring("property RubberMaterial")] HRESULT RubberMaterial([in] BSTR newVal);
 		[propget, id(18), helpstring("property RubberThickness")] HRESULT RubberThickness([out, retval] long *pVal);
 		[propput, id(18), helpstring("property RubberThickness")] HRESULT RubberThickness([in] long newVal);
 		[propget, id(19), helpstring("property Strength")] HRESULT Strength([out, retval] float *pVal);

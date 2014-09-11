@@ -29,8 +29,10 @@ struct BaseMaterial
 // only used for loading and saving
 struct SaveMaterial
 {
-    char szName[128];
-    COLORREF color;
+    char szName[32];
+    COLORREF diffuseColor;
+    COLORREF glossyColor;
+    COLORREF specularColor;
     float fDiffuse;
     float fGlossy;
     float fSpecular;
@@ -65,7 +67,7 @@ public:
       m_fDiffuse=0.8f;
       m_fGlossy=0.0f;
       m_fSpecular=0.0f;
-      m_color=0xFFFFFFFF;
+      m_diffuseColor=0xFFFFFFFF;
    }
 
    inline Material( const D3DCOLORVALUE _diffuse, const D3DCOLORVALUE _ambient, const D3DCOLORVALUE _specular, const D3DCOLORVALUE _emissive, const D3DVALUE _power )
@@ -206,11 +208,38 @@ public:
    {
        m_fSpecular = fValue;
    }
+
+   inline D3DXVECTOR4 getDiffuseColor()
+   {
+       const float r = (float)(m_diffuseColor & 255) * (float)(1.0/255.0);
+       const float g = (float)(m_diffuseColor & 65280) * (float)(1.0/65280.0);
+       const float b = (float)(m_diffuseColor & 16711680) * (float)(1.0/16711680.0);
+       D3DXVECTOR4 matColor(r,g,b,1.0f);   
+       return matColor; 
+   }
+   inline D3DXVECTOR4 getGlossyColor()
+   {
+       const float r = (float)(m_glossyColor & 255) * (float)(1.0/255.0);
+       const float g = (float)(m_glossyColor & 65280) * (float)(1.0/65280.0);
+       const float b = (float)(m_glossyColor & 16711680) * (float)(1.0/16711680.0);
+       D3DXVECTOR4 matColor(r,g,b,1.0f);   
+       return matColor; 
+   }
+   inline D3DXVECTOR4 getSpecularColor()
+   {
+       const float r = (float)(m_specularColor & 255) * (float)(1.0/255.0);
+       const float g = (float)(m_specularColor & 65280) * (float)(1.0/65280.0);
+       const float b = (float)(m_specularColor & 16711680) * (float)(1.0/16711680.0);
+       D3DXVECTOR4 matColor(r,g,b,1.0f);   
+       return matColor; 
+   }
    char m_szName[32];
    float m_fDiffuse;
    float m_fGlossy;
    float m_fSpecular;
-   COLORREF m_color;
+   COLORREF m_diffuseColor;
+   COLORREF m_glossyColor;
+   COLORREF m_specularColor;
 private:
    BaseMaterial mat;
 };

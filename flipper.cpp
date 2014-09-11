@@ -591,18 +591,29 @@ void Flipper::PostRenderStatic(RenderDevice* pd3dDevice)
     pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
 
     Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-    ppin3d->SetTexture(NULL);
 
-    Material mat;
-    mat.setColor( 1.0f, m_d.m_color);
-    pd3dDevice->SetMaterial(mat);
-    const float r = (float)(m_d.m_color & 255) * (float)(1.0/255.0);
-    const float g = (float)(m_d.m_color & 65280) * (float)(1.0/65280.0);
-    const float b = (float)(m_d.m_color & 16711680) * (float)(1.0/16711680.0);
-    D3DXVECTOR4 matColor(r,g,b,1.0f);   
-    pd3dDevice->basicShader->Core()->SetFloat("vMaterialPower",0.0f);
-    pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&matColor);
+    Material *mat = m_ptable->GetMaterial( m_d.m_szMaterial);
+    D3DXVECTOR4 diffuseColor( 0.5f, 0.5f, 0.5f, 1.0f );
+    D3DXVECTOR4 glossyColor( 0.5f, 0.5f, 0.5f, 1.0f );
+    D3DXVECTOR4 specularColor( 1.0f, 1.0f, 1.0f, 1.0f );
+    float diffuseWrap = 0.5f;
+    float glossyWrap = 16.0f;
+    if( mat )
+    {
+        diffuseColor = mat->getDiffuseColor();
+        glossyColor = mat->getGlossyColor();
+        specularColor = mat->getSpecularColor();
+        diffuseWrap = mat->m_fDiffuse;
+        glossyWrap = mat->m_fGlossy;
+    }
+
+    pd3dDevice->basicShader->Core()->SetFloat("fDiffuseWrap",diffuseWrap);
+    pd3dDevice->basicShader->Core()->SetFloat("fGlossyPower",glossyWrap);
+    pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&diffuseColor);
+    pd3dDevice->basicShader->Core()->SetVector("vGlossyColor",&glossyColor);
+    pd3dDevice->basicShader->Core()->SetVector("vSpecularColor",&specularColor);
     pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
+    pd3dDevice->basicShader->Core()->SetBool("bGlossy",true);
 
     Matrix3D matOrig, matNew, matTemp;
     pd3dDevice->GetTransform(TRANSFORMSTATE_WORLD, &matOrig);
@@ -626,14 +637,20 @@ void Flipper::PostRenderStatic(RenderDevice* pd3dDevice)
     // render rubber
     if (m_d.m_rubberthickness > 0)
     {
-       const float r = (float)(m_d.m_rubbercolor & 255) * (float)(1.0/255.0);
-       const float g = (float)(m_d.m_rubbercolor & 65280) * (float)(1.0/65280.0);
-       const float b = (float)(m_d.m_rubbercolor & 16711680) * (float)(1.0/16711680.0);
-       D3DXVECTOR4 matColor(r,g,b,1.0f);   
-       pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&matColor);
-
-       mat.setColor( 1.0f, m_d.m_rubbercolor);
-       pd3dDevice->SetMaterial(mat);
+       mat =  m_ptable->GetMaterial( m_d.m_szRubberMaterial );
+       if ( mat )
+       {
+           diffuseColor = mat->getDiffuseColor();
+           glossyColor = mat->getGlossyColor();
+           specularColor = mat->getSpecularColor();
+           diffuseWrap = mat->m_fDiffuse;
+           glossyWrap = mat->m_fGlossy;
+       }
+       pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&diffuseColor);
+       pd3dDevice->basicShader->Core()->SetVector("vGlossyColor",&glossyColor);
+       pd3dDevice->basicShader->Core()->SetVector("vSpecularColor",&specularColor);
+       pd3dDevice->basicShader->Core()->SetFloat("fDiffuseWrap",diffuseWrap);
+       pd3dDevice->basicShader->Core()->SetFloat("fGlossyPower",glossyWrap);
 
        pd3dDevice->basicShader->Begin(0);
        pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, vertexBuffer, 108, 108, indexBuffer, 0, numIndices );
@@ -660,8 +677,6 @@ void Flipper::RenderSetup(RenderDevice* pd3dDevice)
 
     const float anglerad = ANGTORAD(m_d.m_StartAngle);
     const float anglerad2 = ANGTORAD(m_d.m_EndAngle);
-
-    ppin3d->SetTexture(NULL);
 
     if (!vertexBuffer)
     {
@@ -883,9 +898,9 @@ HRESULT Flipper::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
    bw.WriteBool(FID(TMON), m_d.m_tdr.m_fTimerEnabled);
    bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
    bw.WriteString(FID(SURF), m_d.m_szSurface);
-   bw.WriteInt(FID(COLR), m_d.m_color);
+   bw.WriteString(FID(MATR), m_d.m_szMaterial);
    bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
-   bw.WriteInt(FID(FCLR), m_d.m_rubbercolor);
+   bw.WriteString(FID(RUMA), m_d.m_szRubberMaterial);
    bw.WriteInt(FID(RTHK), m_d.m_rubberthickness);
    bw.WriteInt(FID(RHGT), m_d.m_rubberheight);
    bw.WriteInt(FID(RWDT), m_d.m_rubberwidth);
@@ -986,13 +1001,13 @@ BOOL Flipper::LoadToken(int id, BiffReader *pbr)
    {
       pbr->GetString(m_d.m_szSurface);
    }
-   else if (id == FID(COLR))
+   else if (id == FID(MATR))
    {
-      pbr->GetInt(&m_d.m_color);
+      pbr->GetString(m_d.m_szMaterial);
    }
-   else if (id == FID(FCLR))
+   else if (id == FID(RUMA))
    {
-      pbr->GetInt(&m_d.m_rubbercolor);
+      pbr->GetString(m_d.m_szRubberMaterial);
    }
    else if (id == FID(NAME))
    {
@@ -1240,18 +1255,21 @@ STDMETHODIMP Flipper::put_Surface(BSTR newVal)
    return S_OK;
 }
 
-STDMETHODIMP Flipper::get_Color(OLE_COLOR *pVal)
+STDMETHODIMP Flipper::get_Material(BSTR *pVal)
 {
-   *pVal = m_d.m_color;
+    WCHAR wz[512];
+
+    MultiByteToWideChar(CP_ACP, 0, m_d.m_szMaterial, -1, wz, 32);
+    *pVal = SysAllocString(wz);
 
    return S_OK;
 }
 
-STDMETHODIMP Flipper::put_Color(OLE_COLOR newVal)
+STDMETHODIMP Flipper::put_Material(BSTR newVal)
 {
    STARTUNDO
 
-   m_d.m_color = newVal;
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szMaterial, 32, NULL, NULL);
 
    STOPUNDO
 
@@ -1357,18 +1375,21 @@ STDMETHODIMP Flipper::put_OverridePhysics(long newVal)
    return S_OK;
 }
 
-STDMETHODIMP Flipper::get_RubberColor(OLE_COLOR *pVal)
+STDMETHODIMP Flipper::get_RubberMaterial(BSTR *pVal)
 {
-   *pVal = m_d.m_rubbercolor;
+    WCHAR wz[512];
 
-   return S_OK;
+    MultiByteToWideChar(CP_ACP, 0, m_d.m_szRubberMaterial, -1, wz, 32);
+    *pVal = SysAllocString(wz);
+
+    return S_OK;
 }
 
-STDMETHODIMP Flipper::put_RubberColor(OLE_COLOR newVal)
+STDMETHODIMP Flipper::put_RubberMaterial(BSTR newVal)
 {
    STARTUNDO
 
-   m_d.m_rubbercolor = newVal;
+       WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szRubberMaterial, 32, NULL, NULL);
 
    STOPUNDO
 

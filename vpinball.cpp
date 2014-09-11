@@ -3202,7 +3202,11 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
                             ListView_GetItem(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST), &lvitem);
                             Material * const pmat = (Material*)lvitem.lParam;
                             HWND hwndColor = GetDlgItem(hwndDlg, IDC_COLOR);
-                            SendMessage(hwndColor, CHANGE_COLOR, 0, pmat->m_color);
+                            SendMessage(hwndColor, CHANGE_COLOR, 0, pmat->m_diffuseColor);
+                            hwndColor = GetDlgItem(hwndDlg, IDC_COLOR2);
+                            SendMessage(hwndColor, CHANGE_COLOR, 0, pmat->m_glossyColor);
+                            hwndColor = GetDlgItem(hwndDlg, IDC_COLOR3);
+                            SendMessage(hwndColor, CHANGE_COLOR, 0, pmat->m_specularColor);
                             char textBuf[256];
                             f2sz(pmat->m_fDiffuse,textBuf);
                             SetDlgItemText(hwndDlg, IDC_DIFFUSE_EDIT, textBuf);
@@ -3239,7 +3243,11 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
                     else
                     {
                         HWND hwndColor = GetDlgItem(hwndDlg, IDC_COLOR);
-                        SendMessage(hwndColor, CHANGE_COLOR, 0, pmat->m_color);
+                        SendMessage(hwndColor, CHANGE_COLOR, 0, pmat->m_diffuseColor);
+                        hwndColor = GetDlgItem(hwndDlg, IDC_COLOR2);
+                        SendMessage(hwndColor, CHANGE_COLOR, 0, pmat->m_glossyColor);
+                        hwndColor = GetDlgItem(hwndDlg, IDC_COLOR3);
+                        SendMessage(hwndColor, CHANGE_COLOR, 0, pmat->m_specularColor);
                         char textBuf[256];
                         f2sz(pmat->m_fDiffuse,textBuf);
                         SetDlgItemText(hwndDlg, IDC_DIFFUSE_EDIT, textBuf);
@@ -3287,6 +3295,9 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
                     const int count = ListView_GetSelectedCount(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST));
                     if (count > 0)
                     {
+                        HWND hwndcolor1 = GetDlgItem(hwndDlg, IDC_COLOR);
+                        HWND hwndcolor2 = GetDlgItem(hwndDlg, IDC_COLOR2);
+                        HWND hwndcolor3 = GetDlgItem(hwndDlg, IDC_COLOR3);
                         size_t color = SendMessage((HWND)lParam, WM_GETTEXT, 0, 0);
                         int sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST), -1, LVNI_SELECTED);
                         while (sel != -1)
@@ -3297,7 +3308,13 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
                             lvitem.iSubItem = 0;
                             ListView_GetItem(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST), &lvitem);
                             Material * const pmat = (Material*)lvitem.lParam;
-                            pmat->m_color = color;
+                            if( hwndcolor1 == (HWND)lParam )
+                                pmat->m_diffuseColor = color;
+                            else if( hwndcolor2 == (HWND)lParam )
+                                pmat->m_glossyColor = color;
+                            else if( hwndcolor3 == (HWND)lParam )
+                                pmat->m_specularColor = color;
+
                             // The previous selection is now deleted, so look again from the top of the list
                             sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST), sel, LVNI_SELECTED);
                         }
@@ -3313,6 +3330,29 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
                     {
                         case IDOK:
                         {
+                            const int count = ListView_GetSelectedCount(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST));
+                            if (count > 0)
+                            {
+                                int sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST), -1, LVNI_SELECTED);
+                                while (sel != -1)
+                                {							
+                                    LVITEM lvitem;
+                                    lvitem.mask = LVIF_PARAM;
+                                    lvitem.iItem = sel;
+                                    lvitem.iSubItem = 0;
+                                    ListView_GetItem(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST), &lvitem);
+                                    Material * const pmat = (Material*)lvitem.lParam;
+                                    char textBuf[256];
+                                    GetDlgItemText(hwndDlg, IDC_DIFFUSE_EDIT, textBuf, 31);
+                                    pmat->m_fDiffuse = sz2f(textBuf);
+                                    GetDlgItemText(hwndDlg, IDC_GLOSSY_EDIT, textBuf, 31);
+                                    pmat->m_fGlossy = sz2f(textBuf);
+                                    GetDlgItemText(hwndDlg, IDC_SPECULAR_EDIT, textBuf, 31);
+                                    pmat->m_fSpecular = sz2f(textBuf);
+                                    // The previous selection is now deleted, so look again from the top of the list
+                                    sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST), sel, LVNI_SELECTED);
+                                }
+                            }
                             EndDialog(hwndDlg, TRUE);
                             break;
                         }
