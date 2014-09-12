@@ -20,7 +20,6 @@
 #define DISPID_SIZE_Y                   6
 #define DISPID_Surface_SideColor2       7
 #define DISPID_POSITION_X               7
-#define IDC_GET_COLOR_TABLE             7
 #define DISPID_Gate_Rotation3           8
 #define DISPID_POSITION_Y               8
 #define DISPID_Decal_SizingType         9
@@ -627,6 +626,7 @@
 #define IDC_EDIT3                       425
 #define IDC_WIRE_DISTY                  425
 #define IDC_QFXAA                       426
+#define IDC_MATERIAL_COMBO3             426
 #define IDC_GLOBAL_3DSTEREO             427
 #define IDC_3D_STEREO_MS                428
 #define IDC_3D_STEREO_ZPD               429
@@ -819,7 +819,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        603
 #define _APS_NEXT_COMMAND_VALUE         32992
-#define _APS_NEXT_CONTROL_VALUE         426
+#define _APS_NEXT_CONTROL_VALUE         427
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif

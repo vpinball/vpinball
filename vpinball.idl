@@ -667,16 +667,16 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(4), helpstring("property Threshold")] HRESULT Threshold([in] float newVal);
 		[propget, id(DISPID_Image), helpstring("property Image")] HRESULT Image([out, retval] BSTR *pVal);
 		[propput, id(DISPID_Image), helpstring("property Image")] HRESULT Image([in] BSTR newVal);
-		[propget, id(6), helpstring("property SideColor")] HRESULT SideColor([out, retval] OLE_COLOR *pVal);
-		[propput, id(6), helpstring("property SideColor")] HRESULT SideColor([in] OLE_COLOR newVal);
+		[propget, id(341), helpstring("property SideMaterial")] HRESULT SideMaterial([out, retval] BSTR *pVal);
+		[propput, id(341), helpstring("property SideMaterial")] HRESULT SideMaterial([in] BSTR newVal);
 		[propget, id(7), helpstring("property ImageAlignment")] HRESULT ImageAlignment([out, retval] ImageAlignment *pVal);
 		[propput, id(7), helpstring("property ImageAlignment")] HRESULT ImageAlignment([in] ImageAlignment newVal);
 		[propget, id(8), helpstring("property HeightBottom")] HRESULT HeightBottom([out, retval] float *pVal);
 		[propput, id(8), helpstring("property HeightBottom")] HRESULT HeightBottom([in] float newVal);
 		[propget, id(9), helpstring("property HeightTop")] HRESULT HeightTop([out, retval] float *pVal);
 		[propput, id(9), helpstring("property HeightTop")] HRESULT HeightTop([in] float newVal);
-		[propget, id(10), helpstring("property FaceColor")] HRESULT FaceColor([out, retval] OLE_COLOR *pVal);
-		[propput, id(10), helpstring("property FaceColor")] HRESULT FaceColor([in] OLE_COLOR newVal);
+		[propget, id(340), helpstring("property TopMaterial")] HRESULT TopMaterial([out, retval] BSTR *pVal);
+		[propput, id(340), helpstring("property TopMaterial")] HRESULT TopMaterial([in] BSTR newVal);
 		[propget, id(11), helpstring("property CanDrop")] HRESULT CanDrop([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(11), helpstring("property CanDrop")] HRESULT CanDrop([in] VARIANT_BOOL newVal);
 		
@@ -703,8 +703,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(109), helpstring("property SideVisible")] HRESULT SideVisible([in] VARIANT_BOOL newVal);
 		[propget, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([out, retval] VARIANT* pVal);
 		[propput, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([in] VARIANT* newVal);
-		[propget, id(17), helpstring("property SlingshotColor")] HRESULT SlingshotColor([out, retval] OLE_COLOR *pVal);
-		[propput, id(17), helpstring("property SlingshotColor")] HRESULT SlingshotColor([in] OLE_COLOR newVal);
+		[propget, id(426), helpstring("property SlingshotMaterial")] HRESULT SlingshotMaterial([out, retval] BSTR *pVal);
+		[propput, id(426), helpstring("property SlingshotMaterial")] HRESULT SlingshotMaterial([in] BSTR newVal);
 		[propget, id(111), helpstring("property SlingshotThreshold")] HRESULT SlingshotThreshold([out, retval] float *pVal);
 		[propput, id(111), helpstring("property SlingshotThreshold")] HRESULT SlingshotThreshold([in] float newVal);
 		[propget, id(112), helpstring("property SlingshotAnimation")] HRESULT SlingshotAnimation([out, retval] VARIANT_BOOL *pVal);
@@ -944,8 +944,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([in] VARIANT* newVal);
 		[propget, id(390), helpstring("property Type")] HRESULT Type([out, retval] PlungerType *pVal);
 		[propput, id(390), helpstring("property Type")] HRESULT Type([in] PlungerType newVal);
-		[propget, id(391), helpstring("property Color")] HRESULT Color([out, retval] OLE_COLOR *pVal);
-		[propput, id(391), helpstring("property Color")] HRESULT Color([in] OLE_COLOR newVal);
+		[propget, id(340), helpstring("property Material")] HRESULT Material([out, retval] BSTR *pVal);
+		[propput, id(340), helpstring("property Material")] HRESULT Material([in] BSTR newVal);
 		[propget, id(DISPID_Image), helpstring("property Image")] HRESULT Image([out, retval] BSTR *pVal);
 		[propput, id(DISPID_Image), helpstring("property Image")] HRESULT Image([in] BSTR newVal);
 

@@ -11,6 +11,7 @@ class PlungerData
 	{
 public:
 	COLORREF m_color;
+   char m_szMaterial[32];
 	Vertex2D m_v;
 	float m_width;
 	float m_height;
@@ -125,8 +126,8 @@ public:
 	STDMETHOD(PullBack)();
 	STDMETHOD(get_Type)(/*[out, retval]*/ PlungerType *pVal);
 	STDMETHOD(put_Type)(/*[in]*/ PlungerType newVal);
-	STDMETHOD(get_Color)(/*[out, retval]*/ OLE_COLOR *pVal);
-	STDMETHOD(put_Color)(/*[in]*/ OLE_COLOR newVal);
+	STDMETHOD(get_Material)(/*[out, retval]*/ BSTR *pVal);
+	STDMETHOD(put_Material)(/*[in]*/ BSTR newVal);
 	STDMETHOD(get_Image)(/*[out, retval]*/ BSTR *pVal);
 	STDMETHOD(put_Image)(/*[in]*/ BSTR newVal);
 	STDMETHOD(get_MechPlunger)(/*[out, retval]*/ VARIANT_BOOL *pVal);

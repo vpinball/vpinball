@@ -16,10 +16,11 @@ public:
 	float m_slingshot_threshold;	// speed at which ball needs to trigger slingshot 
 	char m_szImage[MAXTOKEN];
 	char m_szSideImage[MAXTOKEN];
-	COLORREF m_sidecolor;
+   char m_szTopMaterial[32];
+   char m_szSideMaterial[32];
+   char m_szSlingShotMaterial[32];
 	float m_heightbottom;
 	float m_heighttop;
-	COLORREF m_topcolor;
 	BOOL m_fDroppable;
 	BOOL m_fFlipbook;           // if enabled, dropped walls are not rendered
 	BOOL m_fDisplayTexture;     // in editor
@@ -34,7 +35,6 @@ public:
 	BOOL m_fEnabled;
 	BOOL m_fCollidable; //wall must be droppable too!
 	BOOL m_fSlingshotAnimation;
-	COLORREF m_slingshotColor;
     bool m_transparent;
     int m_opacity;
 
@@ -180,16 +180,16 @@ public:
 	STDMETHOD(put_CanDrop)(/*[in]*/ VARIANT_BOOL newVal);
 	STDMETHOD(get_FlipbookAnimation)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_FlipbookAnimation)(/*[in]*/ VARIANT_BOOL newVal);
-	STDMETHOD(get_FaceColor)(/*[out, retval]*/ OLE_COLOR *pVal);
-	STDMETHOD(put_FaceColor)(/*[in]*/ OLE_COLOR newVal);
+	STDMETHOD(get_TopMaterial)(/*[out, retval]*/ BSTR *pVal);
+	STDMETHOD(put_TopMaterial)(/*[in]*/ BSTR newVal);
 	STDMETHOD(get_HeightTop)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_HeightTop)(/*[in]*/ float newVal);
 	STDMETHOD(get_HeightBottom)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_HeightBottom)(/*[in]*/ float newVal);
 	STDMETHOD(get_ImageAlignment)(/*[out, retval]*/ ImageAlignment *pVal);
 	STDMETHOD(put_ImageAlignment)(/*[in]*/ ImageAlignment newVal);
-	STDMETHOD(get_SideColor)(/*[out, retval]*/ OLE_COLOR *pVal);
-	STDMETHOD(put_SideColor)(/*[in]*/ OLE_COLOR newVal);
+	STDMETHOD(get_SideMaterial)(/*[out, retval]*/ BSTR *pVal);
+	STDMETHOD(put_SideMaterial)(/*[in]*/ BSTR newVal);
 	STDMETHOD(get_Image)(/*[out, retval]*/ BSTR *pVal);
 	STDMETHOD(put_Image)(/*[in]*/ BSTR newVal);
 	STDMETHOD(get_Threshold)(/*[out, retval]*/ float *pVal);
@@ -211,8 +211,8 @@ public:
 	STDMETHOD (put_SlingshotThreshold)(/*[in]*/ float newVal);
 	STDMETHOD (get_SlingshotAnimation)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD (put_SlingshotAnimation)(/*[in]*/ VARIANT_BOOL newVal);
-	STDMETHOD(get_SlingshotColor)(/*[out, retval]*/ OLE_COLOR *pVal);
-	STDMETHOD(put_SlingshotColor)(/*[in]*/ OLE_COLOR newVal);
+	STDMETHOD(get_SlingshotMaterial)(/*[out, retval]*/ BSTR *pVal);
+	STDMETHOD(put_SlingshotMaterial)(/*[in]*/ BSTR newVal);
 
 	STDMETHOD(get_EnableLighting)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_EnableLighting)(/*[in]*/ VARIANT_BOOL newVal);

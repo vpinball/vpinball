@@ -14,7 +14,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (U.S.) resources
+// Englisch (USA) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 #ifdef _WIN32
@@ -779,30 +779,30 @@ BEGIN
     LTEXT           "Blink Inter&val",-1,7,43,41,9
 END
 
-IDD_PROPWALL_VISUALS DIALOGEX 0, 0, 125, 202
+IDD_PROPWALL_VISUALS DIALOGEX 0, 0, 125, 224
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    CONTROL         "Top &Visible",16,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,51,10
-    COMBOBOX        DISPID_Image,7,28,111,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Display &Image in Editor",13,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,43,87,10
-    CONTROL         "Custom2",DISPID_Surface_FaceColor,"ColorControl",WS_TABSTOP,62,54,40,14
-    CONTROL         "Side Visi&ble",109,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,70,52,10
-    COMBOBOX        DISPID_Image2,7,93,111,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Custom2",DISPID_Surface_SideColor,"ColorControl",WS_TABSTOP,62,108,40,14
-    CONTROL         "Custom2",17,"ColorControl",WS_TABSTOP,62,127,40,14
-    CONTROL         "Casts S&hadow",107,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,145,111,10
-    CONTROL         "Enable Lighting",557,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,156,111,10
-    CONTROL         "Animate Slingshot",112,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,167,111,10
-    CONTROL         "Flipbook Animation",113,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,178,111,10
-    CONTROL         "Transparent",18,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,189,50,10
-    EDITTEXT        19,68,188,20,10,ES_AUTOHSCROLL
-    LTEXT           "Opacity",-1,90,189,35,8
-    LTEXT           "Top I&mage:",-1,7,18,35,8
-    LTEXT           "Top &Color",-1,7,56,32,8
-    LTEXT           "Side Co&lor",-1,7,111,33,8
-    LTEXT           "Si&de Image:",-1,7,82,37,8
-    LTEXT           "Slin&gshot Color",-1,7,129,48,8
+    CONTROL         "Top &Visible",16,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,69,6,51,10
+    COMBOBOX        DISPID_Image,7,18,111,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Display &Image in Editor",13,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,31,87,10
+    CONTROL         "Side Visi&ble",109,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,62,76,52,10
+    COMBOBOX        DISPID_Image2,7,89,111,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Casts S&hadow",107,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,162,111,10
+    CONTROL         "Enable Lighting",557,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,173,111,10
+    CONTROL         "Animate Slingshot",112,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,184,111,10
+    CONTROL         "Flipbook Animation",113,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,195,111,10
+    CONTROL         "Transparent",18,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,206,50,10
+    EDITTEXT        19,68,205,20,12,ES_AUTOHSCROLL
+    LTEXT           "Opacity",-1,90,206,35,8
+    LTEXT           "Top Image",-1,7,8,35,8
+    LTEXT           "Top Material",-1,7,43,40,8
+    LTEXT           "Side Material",-1,7,104,42,8
+    LTEXT           "Si&de Image:",-1,7,78,37,8
+    LTEXT           "Slingshot Material",-1,7,135,56,8
+    COMBOBOX        IDC_MATERIAL_COMBO3,7,143,111,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_MATERIAL_COMBO2,7,112,111,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_MATERIAL_COMBO,7,54,111,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
 END
 
 IDD_PROPWALL_PHYSICS DIALOGEX 0, 0, 125, 120
@@ -1593,10 +1593,10 @@ FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     COMBOBOX        390,34,7,85,60,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     COMBOBOX        DISPID_Image,7,31,113,60,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Custom2",391,"ColorControl",WS_TABSTOP,27,49,40,14
     LTEXT           "&Type",-1,7,9,25,8
-    LTEXT           "&Color",-1,7,52,17,8
+    LTEXT           "Material",-1,7,52,26,8
     LTEXT           "&Image:",-1,7,21,22,8
+    COMBOBOX        IDC_MATERIAL_COMBO,7,61,109,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
 END
 
 IDD_PROPFLASHER_VISUALS DIALOGEX 0, 0, 125, 102
@@ -1771,6 +1771,11 @@ BEGIN
     IDD_PROPLIGHT_VISUALS, DIALOG
     BEGIN
         BOTTOMMARGIN, 144
+    END
+
+    IDD_PROPWALL_VISUALS, DIALOG
+    BEGIN
+        BOTTOMMARGIN, 202
     END
 
     IDD_PROPTABLE_LIGHTSOURCES, DIALOG
@@ -2391,7 +2396,7 @@ BEGIN
     IDS_STEP                "Step"
 END
 
-#endif    // English (U.S.) resources
+#endif    // Englisch (USA) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

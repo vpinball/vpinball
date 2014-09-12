@@ -524,10 +524,7 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
         if ((offTexel = m_ptable->GetImage(m_d.m_szOffImage)) != NULL)
         {
             m_pInsertShader->Core()->SetTechnique("BasicLightWithTexture");
-            if ( offTexel->m_pdsBufferColorKey )
-                m_pInsertShader->Core()->SetTexture("OffTexture",ppin3d->m_pd3dDevice->m_texMan.LoadTexture(offTexel->m_pdsBufferColorKey));
-            else if (offTexel->m_pdsBuffer )
-                m_pInsertShader->Core()->SetTexture("OffTexture",ppin3d->m_pd3dDevice->m_texMan.LoadTexture(offTexel->m_pdsBuffer));
+            m_pInsertShader->SetTexture("OffTexture", offTexel );
         }
         else
         {

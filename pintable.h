@@ -469,6 +469,7 @@ END_CONNECTION_POINT_MAP()
     void AddMaterial( Material *pmat);
     bool IsMaterialNameUnique( char *name );
     Material* GetMaterial( char * const szName) const;
+   // Material* GetSurfaceMaterial( char *szName, float x, float y);
     char m_szFileName[_MAX_PATH];
 	char m_szBlueprintFileName[_MAX_PATH];
 	char m_szTitle[1024];
