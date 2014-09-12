@@ -2833,7 +2833,7 @@ INT_PTR CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
             const int count = ListView_GetSelectedCount(GetDlgItem(hwndDlg, IDC_SOUNDLIST));
             if (count > 0)
             {
-			   size_t color = SendMessage((HWND)lParam, WM_GETTEXT, 0, 0);
+               const size_t color = GetWindowLongPtr((HWND)lParam, GWLP_USERDATA);
                int sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), -1, LVNI_SELECTED);
                while (sel != -1)
                {							
@@ -3295,10 +3295,10 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
                     const int count = ListView_GetSelectedCount(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST));
                     if (count > 0)
                     {
+                       const size_t color = GetWindowLongPtr((HWND)lParam, GWLP_USERDATA);
                         HWND hwndcolor1 = GetDlgItem(hwndDlg, IDC_COLOR);
                         HWND hwndcolor2 = GetDlgItem(hwndDlg, IDC_COLOR2);
                         HWND hwndcolor3 = GetDlgItem(hwndDlg, IDC_COLOR3);
-                        size_t color = SendMessage((HWND)lParam, WM_GETTEXT, 0, 0);
                         int sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST), -1, LVNI_SELECTED);
                         while (sel != -1)
                         {							

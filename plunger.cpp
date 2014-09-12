@@ -274,12 +274,26 @@ void Plunger::PostRenderStatic(RenderDevice* pd3dDevice)
 
     Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
-    pd3dDevice->SetMaterial(material);
-    const float r = (float)(m_d.m_color & 255) * (float)(1.0/255.0);
-    const float g = (float)(m_d.m_color & 65280) * (float)(1.0/65280.0);
-    const float b = (float)(m_d.m_color & 16711680) * (float)(1.0/16711680.0);
-    D3DXVECTOR4 matColor(r,g,b,1.0f);   
-    pd3dDevice->basicShader->Core()->SetFloat("fGlossyPower",16.0f);
+    Material *mat = m_ptable->GetMaterial( m_d.m_szMaterial);
+    D3DXVECTOR4 diffuseColor( 0.5f, 0.5f, 0.5f, 1.0f );
+    D3DXVECTOR4 glossyColor( 0.5f, 0.5f, 0.5f, 1.0f );
+    D3DXVECTOR4 specularColor( 1.0f, 1.0f, 1.0f, 1.0f );
+    float diffuseWrap = 0.5f;
+    float glossyPower = 16.0f;
+    if( mat )
+    {
+       diffuseColor = mat->getDiffuseColor();
+       glossyColor = mat->getGlossyColor();
+       specularColor = mat->getSpecularColor();
+       diffuseWrap = mat->m_fDiffuse;
+       glossyPower = mat->m_fGlossy;
+    }
+
+    pd3dDevice->basicShader->Core()->SetFloat("fDiffuseWrap",diffuseWrap);
+    pd3dDevice->basicShader->Core()->SetFloat("fGlossyPower",glossyPower);
+    pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&diffuseColor);
+    pd3dDevice->basicShader->Core()->SetVector("vGlossyColor",&glossyColor);
+    pd3dDevice->basicShader->Core()->SetVector("vSpecularColor",&specularColor);
     pd3dDevice->basicShader->Core()->SetBool("bSpecular",true);
 
     if (m_d.m_type == PlungerTypeModern)
@@ -289,18 +303,16 @@ void Plunger::PostRenderStatic(RenderDevice* pd3dDevice)
         {
             //render a simple rectangle as an embedded alpha ramp plunger ;)
             pin->CreateAlphaChannel();
-            D3DXVECTOR4 color(1.0f,1.0f,1.0f,1.0f);
-            pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&color);
+//            D3DXVECTOR4 color(1.0f,1.0f,1.0f,1.0f);
+//            pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&color);
             pd3dDevice->basicShader->SetTexture("Texture0",pin);
             pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
-            //pd3dDevice->SetRenderState(RenderDevice::LIGHTING, FALSE );
             ppin3d->EnableAlphaBlend( 1, fFalse );
             ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
             static const WORD idx[6] = {0,1,2,2,3,0};
             pd3dDevice->basicShader->Begin(0);
             pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, vertexBuffer, frame*4, 4, (LPWORD)idx, 6);
             pd3dDevice->basicShader->End();
-            pin->Unset(ePictureTexture);
             pd3dDevice->SetRenderState(RenderDevice::LIGHTING, TRUE );
         }
         else
@@ -308,32 +320,25 @@ void Plunger::PostRenderStatic(RenderDevice* pd3dDevice)
             if ( pin )
             {
                 pin->CreateAlphaChannel();
-                D3DXVECTOR4 color(1.0f,1.0f,1.0f,1.0f);
-                pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&color);
+//                 D3DXVECTOR4 color(1.0f,1.0f,1.0f,1.0f);
+//                 pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&color);
                 pd3dDevice->basicShader->SetTexture("Texture0",pin);
                 pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
-                //pd3dDevice->SetRenderState(RenderDevice::LIGHTING, FALSE );
                 ppin3d->EnableAlphaBlend( 1, fFalse );
                 ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
             }
             else
             {
                 //ppin3d->SetTexture(NULL);
-                pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&matColor);
                 pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
             }
             pd3dDevice->basicShader->Begin(0);
             pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, vertexBuffer, frame*(16*PLUNGEPOINTS1), 16*PLUNGEPOINTS1, indexBuffer, 0, 16*6*(PLUNGEPOINTS1-1));
             pd3dDevice->basicShader->End();
-            if ( pin )
-            {
-                //pd3dDevice->SetRenderState(RenderDevice::LIGHTING, TRUE );
-            }
         }
     }
     else if (m_d.m_type == PlungerTypeOrig)
     {
-        pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&matColor);
         ppin3d->DisableAlphaBlend();
         pd3dDevice->basicShader->Begin(0);
         pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, vertexBuffer, frame*(16*PLUNGEPOINTS0), 16*PLUNGEPOINTS0, indexBuffer, 0, 16*6*(PLUNGEPOINTS0-1));
@@ -575,7 +580,7 @@ HRESULT Plunger::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
 	bw.WriteFloat(FID(SPDP), m_d.m_speedPull);
 	bw.WriteFloat(FID(SPDF), m_d.m_speedFire);
 	bw.WriteInt(FID(TYPE), m_d.m_type);
-	bw.WriteInt(FID(COLR), m_d.m_color);
+	bw.WriteString(FID(MATR), m_d.m_szMaterial);
 	bw.WriteString(FID(IMAG), m_d.m_szImage);
 
 	bw.WriteFloat(FID(MESTH), m_d.m_mechStrength);
@@ -683,9 +688,9 @@ BOOL Plunger::LoadToken(int id, BiffReader *pbr)
 		{
 		pbr->GetInt(&m_d.m_type);
 		}
-	else if (id == FID(COLR))
+	else if (id == FID(MATR))
 		{
-		pbr->GetInt(&m_d.m_color);
+		pbr->GetString(m_d.m_szMaterial);
 		}
 	else if (id == FID(IMAG))
 		{
@@ -906,18 +911,22 @@ STDMETHODIMP Plunger::put_Type(PlungerType newVal)
 	return S_OK;
 }
 
-STDMETHODIMP Plunger::get_Color(OLE_COLOR *pVal)
+STDMETHODIMP Plunger::get_Material(BSTR *pVal)
 {
-	*pVal = m_d.m_color;
+   WCHAR wz[512];
+
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_szMaterial, -1, wz, 32);
+   *pVal = SysAllocString(wz);
+
 
 	return S_OK;
 }
 
-STDMETHODIMP Plunger::put_Color(OLE_COLOR newVal)
+STDMETHODIMP Plunger::put_Material(BSTR newVal)
 {
 	STARTUNDO
 
-	m_d.m_color = newVal;
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szMaterial, 32, NULL, NULL);
 
 	STOPUNDO
 
