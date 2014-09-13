@@ -46,7 +46,7 @@ public:
    char m_szImage[MAXTOKEN];
    char meshFileName[256];
 
-   COLORREF m_TopColor;
+   char m_szMaterial[32];
    COLORREF m_SideColor;
 
    TimerDataRoot m_tdr;
@@ -92,8 +92,8 @@ public:
 
    STDMETHOD(get_Sides)(/*[out, retval]*/ int *pVal);
    STDMETHOD(put_Sides)(/*[in]*/ int newVal);
-   STDMETHOD(get_TopColor)(/*[out, retval]*/ OLE_COLOR *pVal);
-   STDMETHOD(put_TopColor)(/*[in]*/ OLE_COLOR newVal);
+   STDMETHOD(get_Material)(/*[out, retval]*/ BSTR *pVal);
+   STDMETHOD(put_Material)(/*[in]*/ BSTR newVal);
    STDMETHOD(get_SideColor)(/*[out, retval]*/ OLE_COLOR *pVal);
    STDMETHOD(put_SideColor)(/*[in]*/ OLE_COLOR newVal);
    STDMETHOD(get_DrawTexturesInside)(/*[out, retval]*/ VARIANT_BOOL *pVal);

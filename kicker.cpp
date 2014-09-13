@@ -73,16 +73,10 @@ void Kicker::SetDefaults(bool fromMouseClick)
 	else
 		m_d.m_kickertype = KickerHole;
 
-	hr = GetRegInt("DefaultProps\\Kicker","Color", &iTmp);
-	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_color = iTmp;
-	else
-		m_d.m_color = RGB(100,100,100);
 	}
 
 void Kicker::WriteRegDefaults()
 	{
-	SetRegValue("DefaultProps\\Kicker","Color",REG_DWORD,&m_d.m_color,4);
 	SetRegValue("DefaultProps\\Kicker","TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
 	SetRegValue("DefaultProps\\Kicker","TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval, 4);
 	SetRegValue("DefaultProps\\Kicker","Enabled",REG_DWORD,&m_d.m_fEnabled,4);
@@ -224,15 +218,26 @@ void Kicker::PreRenderStatic( RenderDevice* pd3dDevice)
    const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
    const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
 
-   Material colorMaterial, blackMaterial;
-   blackMaterial.setColor( 0.0f, 0.0f, 0.0f, 0.0f );
-   
-   const float r = (float)(m_d.m_color & 255) * (float)(1.0/255.0);
-   const float g = (float)(m_d.m_color & 65280) * (float)(1.0/65280.0);
-   const float b = (float)(m_d.m_color & 16711680) * (float)(1.0/16711680.0);
-   D3DXVECTOR4 matColor(r,g,b,1.0f);   
-   pd3dDevice->basicShader->Core()->SetFloat("fGlossyPower",0.0f);
-   pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&matColor);
+   Material *mat = m_ptable->GetMaterial( m_d.m_szMaterial);
+   D3DXVECTOR4 diffuseColor( 0.5f, 0.5f, 0.5f, 1.0f );
+   D3DXVECTOR4 glossyColor( 0.5f, 0.5f, 0.5f, 1.0f );
+   D3DXVECTOR4 specularColor( 1.0f, 1.0f, 1.0f, 1.0f );
+   float diffuseWrap = 0.5f;
+   float glossyPower = 16.0f;
+   if( mat )
+   {
+      diffuseColor = mat->getDiffuseColor();
+      glossyColor = mat->getGlossyColor();
+      specularColor = mat->getSpecularColor();
+      diffuseWrap = mat->m_fDiffuse;
+      glossyPower = mat->m_fGlossy;
+   }
+
+   pd3dDevice->basicShader->Core()->SetFloat("fDiffuseWrap",diffuseWrap);
+   pd3dDevice->basicShader->Core()->SetFloat("fGlossyPower",glossyPower);
+   pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&diffuseColor);
+   pd3dDevice->basicShader->Core()->SetVector("vGlossyColor",&glossyColor);
+   pd3dDevice->basicShader->Core()->SetVector("vSpecularColor",&specularColor);
    pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
 
    ppin3d->EnableLightMap(height);
@@ -242,7 +247,6 @@ void Kicker::PreRenderStatic( RenderDevice* pd3dDevice)
    {
       case KickerHole: 
       {
-         pd3dDevice->SetMaterial(colorMaterial);
          for (int l=0;l<16;++l)
          {
             WORD rgiNormal[6] = {
@@ -266,11 +270,8 @@ void Kicker::PreRenderStatic( RenderDevice* pd3dDevice)
             pd3dDevice->basicShader->End();
          }
 
-         pd3dDevice->SetMaterial(blackMaterial);
-         matColor.x=0.0f;
-         matColor.y=0.0f;
-         matColor.z=0.0f;
-         pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&matColor);
+         diffuseColor = D3DXVECTOR4(0.0f, 0.0f, 0.0f, 1.0f);
+         pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&diffuseColor);
          // Draw the bottom of the kicker hole
          WORD rgi[3*14];
          for (int l=0;l<14;++l)
@@ -303,8 +304,6 @@ void Kicker::PreRenderStatic( RenderDevice* pd3dDevice)
 
       case KickerCup: 
       {
-         pd3dDevice->SetMaterial(colorMaterial);
-
          WORD rgi[2*3*16];
 
          // Draw cup
@@ -400,7 +399,7 @@ HRESULT Kicker::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptk
 	bw.WriteFloat(FID(RADI), m_d.m_radius);
 	bw.WriteBool(FID(TMON), m_d.m_tdr.m_fTimerEnabled);
 	bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
-	bw.WriteInt(FID(COLR), m_d.m_color);
+	bw.WriteString(FID(MATR), m_d.m_szMaterial);
 	bw.WriteString(FID(SURF), m_d.m_szSurface);
 	bw.WriteBool(FID(EBLD), m_d.m_fEnabled);
 	bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
@@ -449,9 +448,9 @@ BOOL Kicker::LoadToken(int id, BiffReader *pbr)
 		{
 		pbr->GetFloat(&m_d.m_hit_height);
 		}
-	else if (id == FID(COLR))
+	else if (id == FID(MATR))
 		{
-		pbr->GetInt(&m_d.m_color);
+		pbr->GetString(m_d.m_szMaterial);
 		}
 	else if (id == FID(TMON))
 		{
@@ -772,18 +771,21 @@ STDMETHODIMP Kicker::put_DrawStyle(KickerType newVal)
 	return S_OK;
 }
 
-STDMETHODIMP Kicker::get_Color(OLE_COLOR *pVal)
+STDMETHODIMP Kicker::get_Material(BSTR *pVal)
 {
-	*pVal = m_d.m_color;
+   WCHAR wz[512];
+
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_szMaterial, -1, wz, 32);
+   *pVal = SysAllocString(wz);
 
 	return S_OK;
 }
 
-STDMETHODIMP Kicker::put_Color(OLE_COLOR newVal)
+STDMETHODIMP Kicker::put_Material(BSTR newVal)
 {
 	STARTUNDO
 
-	m_d.m_color = newVal;
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szMaterial, 32, NULL, NULL);
 
 	STOPUNDO
 

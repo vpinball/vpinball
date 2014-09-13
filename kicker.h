@@ -12,7 +12,7 @@ class KickerData
 public:
 	Vertex2D m_vCenter;
 	float m_radius;
-	COLORREF m_color;
+   char m_szMaterial[32];
 	TimerDataRoot m_tdr;
 	char m_szSurface[MAXTOKEN];
 	BOOL m_fEnabled;
@@ -89,8 +89,8 @@ DECLARE_REGISTRY_RESOURCEID(IDR_KICKER)
 
 // IKicker
 public:
-	STDMETHOD(get_Color)(/*[out, retval]*/ OLE_COLOR *pVal);
-	STDMETHOD(put_Color)(/*[in]*/ OLE_COLOR newVal);
+	STDMETHOD(get_Material)(/*[out, retval]*/ BSTR *pVal);
+	STDMETHOD(put_Material)(/*[in]*/ BSTR newVal);
 	STDMETHOD(get_DrawStyle)(/*[out, retval]*/ KickerType *pVal);
 	STDMETHOD(put_DrawStyle)(/*[in]*/ KickerType newVal);
 	STDMETHOD(get_Enabled)(/*[out, retval]*/ VARIANT_BOOL *pVal);
