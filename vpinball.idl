@@ -1268,8 +1268,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(DISPID_Enabled), helpstring("property Enabled")] HRESULT Enabled([in] VARIANT_BOOL newVal);
 		[propget, id(9), helpstring("property DrawStyle")] HRESULT DrawStyle([out, retval] KickerType *pVal);
 		[propput, id(9), helpstring("property DrawStyle")] HRESULT DrawStyle([in] KickerType newVal);
-		[propget, id(10), helpstring("property Color")] HRESULT Color([out, retval] OLE_COLOR *pVal);
-		[propput, id(10), helpstring("property Color")] HRESULT Color([in] OLE_COLOR newVal);
+		[propget, id(340), helpstring("property Material")] HRESULT Material([out, retval] BSTR *pVal);
+		[propput, id(340), helpstring("property Material")] HRESULT Material([in] BSTR newVal);
 		[propget, id(DISPID_Surface), helpstring("property Surface")] HRESULT Surface([out, retval] BSTR *pVal);
 		[propput, id(DISPID_Surface), helpstring("property Surface")] HRESULT Surface([in] BSTR newVal);
 		[propget, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([out, retval] VARIANT* pVal);
@@ -1356,8 +1356,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(101), helpstring("property Sides")] HRESULT Sides([in] int newVal);
 		[propget, id(103), helpstring("property Top Visible")] HRESULT Visible([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(103), helpstring("property Top Visible")] HRESULT Visible([in] VARIANT_BOOL newVal);
-		[propget, id(102), helpstring("property Top Color")] HRESULT TopColor([out, retval] OLE_COLOR *pVal);
-		[propput, id(102), helpstring("property Top Color")] HRESULT TopColor([in] OLE_COLOR newVal);
+		[propget, id(340), helpstring("property Material")] HRESULT Material([out, retval] BSTR *pVal);
+		[propput, id(340), helpstring("property Material")] HRESULT Material([in] BSTR newVal);
 		[propget, id(104), helpstring("property Side Color")] HRESULT SideColor([out, retval] OLE_COLOR *pVal);
 		[propput, id(104), helpstring("property Side Color")] HRESULT SideColor([in] OLE_COLOR newVal);
 		[propget, id(106), helpstring("property Draw Textures Inside")] HRESULT DrawTexturesInside([out, retval] VARIANT_BOOL *pVal);

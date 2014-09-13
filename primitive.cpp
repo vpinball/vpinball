@@ -101,7 +101,6 @@ void Primitive::SetDefaults(bool fromMouseClick)
       m_d.m_Sides = Max_Primitive_Sides;
 
    // colors
-   m_d.m_TopColor = fromMouseClick ? GetRegIntWithDefault(strKeyName, "TopColor", RGB(100,100,100)) : RGB(100,100,100);
    m_d.m_SideColor = fromMouseClick ? GetRegIntWithDefault(strKeyName, "SideColor", RGB(150,150,150)) : RGB(150,150,150);
 
    m_d.m_fVisible = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "Visible", true) : true;
@@ -174,7 +173,6 @@ void Primitive::WriteRegDefaults()
 {
    static const char strKeyName[] = "DefaultProps\\Primitive";
 
-   SetRegValueInt(strKeyName,"TopColor", m_d.m_TopColor);
    SetRegValueInt(strKeyName,"SideColor", m_d.m_SideColor);
    SetRegValueBool(strKeyName,"Visible", m_d.m_fVisible);
    SetRegValueBool(strKeyName,"UseLighting", m_d.useLighting);
@@ -766,11 +764,26 @@ void Primitive::RenderObject( RenderDevice *pd3dDevice )
     }
     pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelDeclaration );
 
-    const float r = (float)(m_d.m_TopColor & 255) * (float)(1.0/255.0);
-    const float g = (float)(m_d.m_TopColor & 65280) * (float)(1.0/65280.0);
-    const float b = (float)(m_d.m_TopColor & 16711680) * (float)(1.0/16711680.0);
-    D3DXVECTOR4 matColor(r,g,b,1.0f);   
-    pd3dDevice->basicShader->Core()->SetFloat("fGlossyPower",0.0f);
+    Material *mat = m_ptable->GetMaterial( m_d.m_szMaterial);
+    D3DXVECTOR4 diffuseColor( 0.5f, 0.5f, 0.5f, 1.0f );
+    D3DXVECTOR4 glossyColor( 0.5f, 0.5f, 0.5f, 1.0f );
+    D3DXVECTOR4 specularColor( 1.0f, 1.0f, 1.0f, 1.0f );
+    float diffuseWrap = 0.5f;
+    float glossyPower = 16.0f;
+    if( mat )
+    {
+       diffuseColor = mat->getDiffuseColor();
+       glossyColor = mat->getGlossyColor();
+       specularColor = mat->getSpecularColor();
+       diffuseWrap = mat->m_fDiffuse;
+       glossyPower = mat->m_fGlossy;
+    }
+
+    pd3dDevice->basicShader->Core()->SetFloat("fDiffuseWrap",diffuseWrap);
+    pd3dDevice->basicShader->Core()->SetFloat("fGlossyPower",glossyPower);
+    pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&diffuseColor);
+    pd3dDevice->basicShader->Core()->SetVector("vGlossyColor",&glossyColor);
+    pd3dDevice->basicShader->Core()->SetVector("vSpecularColor",&specularColor);
     pd3dDevice->basicShader->Core()->SetFloat("fmaterialAlpha",1.0f);
 
     Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
@@ -778,11 +791,10 @@ void Primitive::RenderObject( RenderDevice *pd3dDevice )
     if (pin)
     {
         pin->CreateAlphaChannel();
-        //pin->Set( ePictureTexture );
         pd3dDevice->basicShader->SetTexture("Texture0", pin);
         pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
-        D3DXVECTOR4 color(1.0f,1.0f,1.0f,1.0f);   
-        pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&color);
+         D3DXVECTOR4 color(1.0f,1.0f,1.0f,1.0f);   
+         pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&color);
 
         g_pplayer->m_pin3d.EnableAlphaBlend(1, fFalse);
         g_pplayer->m_pin3d.SetTextureFilter(ePictureTexture, TEXTURE_MODE_TRILINEAR);
@@ -791,23 +803,8 @@ void Primitive::RenderObject( RenderDevice *pd3dDevice )
     }
     else
     {
-        pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&matColor);
-        g_pplayer->m_pin3d.SetTexture(NULL);
         pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
-        if( vertexBufferRegenerate )
-            material.setColor( 1.0f, m_d.m_TopColor );
     }
-
-    pd3dDevice->SetMaterial(material);
-
-//     if ( !m_d.useLighting )
-//     {
-//         // disable lighting is a default setting
-//         // it could look odd if you switch lighting on on non mesh primitives
-//         pd3dDevice->SetRenderState( RenderDevice::LIGHTING, FALSE );
-//         pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR);
-//         pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, COLORREF_to_D3DCOLOR(m_d.m_TopColor));
-//     }
 
     // set transform
     Matrix3D matOrig, matNew;
@@ -826,14 +823,6 @@ void Primitive::RenderObject( RenderDevice *pd3dDevice )
     // reset transform
     pd3dDevice->SetTransform(TRANSFORMSTATE_WORLD, &matOrig);
     g_pplayer->UpdateBasicShaderMatrix();
-
-    // reset render states
-//     if ( !m_d.useLighting )
-//     {
-//         pd3dDevice->SetRenderState(RenderDevice::LIGHTING, TRUE);
-//         pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
-//         pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, 0xffffffff);
-//     }
 
     pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_CLAMP);
     g_pplayer->m_pin3d.DisableAlphaBlend();
@@ -867,7 +856,6 @@ void Primitive::RenderStatic(RenderDevice* pd3dDevice)
    if( m_d.staticRendering )
    {
       RenderObject(pd3dDevice);
-      g_pplayer->m_pin3d.SetTexture(NULL);
    }
 }
 
@@ -934,7 +922,7 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcry
    bw.WriteString(FID(IMAG), m_d.m_szImage);
    bw.WriteInt(FID(SIDS), m_d.m_Sides);
    bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
-   bw.WriteInt(FID(TCOL), m_d.m_TopColor);
+   bw.WriteString(FID(MATR), m_d.m_szMaterial);
    bw.WriteInt(FID(SCOL), m_d.m_SideColor);
    bw.WriteBool(FID(TVIS), m_d.m_fVisible);
    bw.WriteBool(FID(DTXI), m_d.m_DrawTexturesInside);
@@ -1053,9 +1041,9 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
    {
       pbr->GetWideString((WCHAR *)m_wzName);
    }
-   else if (id == FID(TCOL))
+   else if (id == FID(MATR))
    {
-      pbr->GetInt(&m_d.m_TopColor);
+      pbr->GetString(m_d.m_szMaterial);
    }
    else if (id == FID(SCOL))
    {
@@ -1372,21 +1360,21 @@ STDMETHODIMP Primitive::put_Sides(int newVal)
     return S_OK;
 }
 
-STDMETHODIMP Primitive::get_TopColor(OLE_COLOR *pVal)
+STDMETHODIMP Primitive::get_Material(BSTR *pVal)
 {
-   *pVal = m_d.m_TopColor;
+   WCHAR wz[512];
+
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_szMaterial, -1, wz, 32);
+   *pVal = SysAllocString(wz);
 
    return S_OK;
 }
 
-STDMETHODIMP Primitive::put_TopColor(OLE_COLOR newVal)
+STDMETHODIMP Primitive::put_Material(BSTR newVal)
 {
-   if(m_d.m_TopColor != newVal)
-   {
-	   STARTUNDO
-	   m_d.m_TopColor = newVal;
-	   STOPUNDO
-   }
+   STARTUNDO
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szMaterial, 32, NULL, NULL);
+   STOPUNDO
 
    return S_OK;
 }
