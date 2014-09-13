@@ -19,7 +19,7 @@ public:
 	float m_rotation;
 	BOOL m_fSupports;
 	BOOL m_fCollidable;
-	COLORREF m_color;
+   char m_szMaterial[32];
 	TimerDataRoot m_tdr;
 	float m_elasticity;
 	float m_friction;
@@ -108,10 +108,6 @@ private:
    VertexBuffer *vtxBuf;
    IndexBuffer *idxBuf;
 
-   Material staticMaterial;
-   Material solidMaterial;
-   Material textureMaterial;
-
 // IGate
 public:
 	STDMETHOD(get_Elasticity)(/*[out, retval]*/ float *pVal);
@@ -131,8 +127,8 @@ public:
 	STDMETHOD(get_Length)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Length)(/*[in]*/ float newVal);
 //>>> added by chris
-	STDMETHOD(get_Color)(/*[out, retval]*/ OLE_COLOR *pVal);
-	STDMETHOD(put_Color)(/*[in]*/ OLE_COLOR newVal);
+	STDMETHOD(get_Material)(/*[out, retval]*/ BSTR *pVal);
+	STDMETHOD(put_Material)(/*[in]*/ BSTR newVal);
 //<<<
 	STDMETHOD(get_ImageBack)(/*[out, retval]*/ BSTR *pVal);
 	STDMETHOD(put_ImageBack)(/*[in]*/ BSTR newVal);

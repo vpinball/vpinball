@@ -109,8 +109,8 @@ public:
 	STDMETHOD(put_BackdropImage)(/*[in]*/ BSTR newVal);
 	STDMETHOD(get_BackdropColor)(/*[out, retval]*/ OLE_COLOR *pVal);
 	STDMETHOD(put_BackdropColor)(/*[in]*/ OLE_COLOR newVal);
-	STDMETHOD(get_PlayfieldColor)(/*[out, retval]*/ OLE_COLOR *pVal);
-	STDMETHOD(put_PlayfieldColor)(/*[in]*/ OLE_COLOR newVal);
+	STDMETHOD(get_PlayfieldMaterial)(/*[out, retval]*/ BSTR *pVal);
+	STDMETHOD(put_PlayfieldMaterial)(/*[in]*/ BSTR newVal);
 
 	STDMETHOD(get_LightAmbient)(/*[out, retval]*/ OLE_COLOR *pVal);
 	STDMETHOD(put_LightAmbient)(/*[in]*/ OLE_COLOR newVal);
@@ -546,7 +546,7 @@ END_CONNECTION_POINT_MAP()
 
 	char m_szImage[MAXTOKEN];
 	char m_szImageBackdrop[MAXTOKEN];
-	COLORREF m_colorplayfield;
+   char m_szPlayfieldMaterial[32];
 	COLORREF m_colorbackdrop;
 
 	char m_szBallImage[MAXTOKEN];

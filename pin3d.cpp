@@ -450,32 +450,38 @@ void Pin3D::RenderPlayfieldGraphics()
 
 	EnableLightMap(0);
 
-	Material mtrl;
-   const float r = (float)(g_pplayer->m_ptable->m_colorplayfield & 255) * (float)(1.0/255.0);
-   const float g = (float)(g_pplayer->m_ptable->m_colorplayfield & 65280) * (float)(1.0/65280.0);
-   const float b = (float)(g_pplayer->m_ptable->m_colorplayfield & 16711680) * (float)(1.0/16711680.0);
-   D3DXVECTOR4 diffColor(r,g,b,1.0f);
-   D3DXVECTOR4 glossyColor(0.5f,0.5f,0.5f,1.0f);
+   Material *mat = g_pplayer->m_ptable->GetMaterial( g_pplayer->m_ptable->m_szPlayfieldMaterial);
+   D3DXVECTOR4 diffuseColor( 0.5f, 0.5f, 0.5f, 1.0f );
+   D3DXVECTOR4 glossyColor( 0.5f, 0.5f, 0.5f, 1.0f );
+   D3DXVECTOR4 specularColor( 1.0f, 1.0f, 1.0f, 1.0f );
+   float diffuseWrap = 0.0f;
+   float glossyPower = 8.0f;
+   if( mat )
+   {
+      diffuseColor = mat->getDiffuseColor();
+      glossyColor = mat->getGlossyColor();
+      specularColor = mat->getSpecularColor();
+      diffuseWrap = mat->m_fDiffuse;
+      glossyPower = mat->m_fGlossy;
+   }
+
+   m_pd3dDevice->basicShader->Core()->SetFloat("fDiffuseWrap",diffuseWrap);
+   m_pd3dDevice->basicShader->Core()->SetFloat("fGlossyPower",glossyPower);
+   m_pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&diffuseColor);
    m_pd3dDevice->basicShader->Core()->SetVector("vGlossyColor",&glossyColor);
-   m_pd3dDevice->basicShader->Core()->SetFloat("fGlossyPower",8.0f);
-   m_pd3dDevice->basicShader->Core()->SetFloat("fDiffuseWrap",0.0f);
-   m_pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&diffColor);
+   m_pd3dDevice->basicShader->Core()->SetVector("vSpecularColor",&specularColor);
    m_pd3dDevice->basicShader->Core()->SetBool("bGlossy",true);
 
 	if (pin)
 	{
-//		SetTexture(pin);
       SetTextureFilter(ePictureTexture, TEXTURE_MODE_ANISOTROPIC);
       m_pd3dDevice->basicShader->SetTexture("Texture0",pin);
       m_pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
 	}
 	else // No image by that name
 	{
-		SetTexture(NULL);
-		mtrl.setColor( 1.0f, g_pplayer->m_ptable->m_colorplayfield );
       m_pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
 	}
-	m_pd3dDevice->SetMaterial(mtrl);
 
    assert(tableIBuffer == NULL);
    const WORD playfieldPolyIndices[6] = {0,1,3,0,3,2};
@@ -501,8 +507,8 @@ void Pin3D::RenderPlayfieldGraphics()
     // Apparently, releasing the vertex buffer here immediately can cause rendering glitches in
     // later rendering steps, so we keep it around for now.
     m_pd3dDevice->basicShader->Core()->SetBool("bGlossy",false);
-   m_pd3dDevice->basicShader->Core()->SetFloat("fGlossyPower",16.0f);
-   m_pd3dDevice->basicShader->Core()->SetFloat("fDiffuseWrap",0.5f);
+    m_pd3dDevice->basicShader->Core()->SetFloat("fGlossyPower",16.0f);
+    m_pd3dDevice->basicShader->Core()->SetFloat("fDiffuseWrap",0.5f);
 }
 
 const int rgfilterwindow[7][7] =

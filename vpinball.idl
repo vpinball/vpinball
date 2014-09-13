@@ -398,8 +398,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		//HRESULT Parent([out, retval] IVPinball **Parent);
 		[propget, id(3), helpstring("property GlassHeight")] HRESULT GlassHeight([out, retval] float *pVal);
 		[propput, id(3), helpstring("property GlassHeight")] HRESULT GlassHeight([in] float newVal);
-		[propget, id(4), helpstring("property PlayfieldColor")] HRESULT PlayfieldColor([out, retval] OLE_COLOR *pVal);
-		[propput, id(4), helpstring("property PlayfieldColor")] HRESULT PlayfieldColor([in] OLE_COLOR newVal);
+		[propget, id(340), helpstring("property PlayfieldMaterial")] HRESULT PlayfieldMaterial([out, retval] BSTR *pVal);
+		[propput, id(340), helpstring("property PlayfieldMaterial")] HRESULT PlayfieldMaterial([in] BSTR newVal);
 		[propget, id(5), helpstring("property BackdropColor")] HRESULT BackdropColor([out, retval] OLE_COLOR *pVal);
 		[propput, id(5), helpstring("property BackdropColor")] HRESULT BackdropColor([in] OLE_COLOR newVal);
 		[propget, id(215), helpstring("property SlopeMax")] HRESULT SlopeMax([out, retval] float *pVal);
@@ -1529,8 +1529,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(DISPID_Image), helpstring("property ImageFront")] HRESULT ImageFront([in] BSTR newVal);
 		[propget, id(DISPID_Image2), helpstring("property ImageBack")] HRESULT ImageBack([out, retval] BSTR *pVal);
 		[propput, id(DISPID_Image2), helpstring("property ImageBack")] HRESULT ImageBack([in] BSTR newVal);
-		[propget, id(10), helpstring("property Color")] HRESULT Color([out, retval] OLE_COLOR *pVal);
-		[propput, id(10), helpstring("property Color")] HRESULT Color([in] OLE_COLOR newVal);
+		[propget, id(340), helpstring("property Material")] HRESULT Material([out, retval] BSTR *pVal);
+		[propput, id(340), helpstring("property Material")] HRESULT Material([in] BSTR newVal);
 		[propget, id(11), helpstring("property Elasticity")] HRESULT Elasticity([out, retval] float *pVal);
 		[propput, id(11), helpstring("property Elasticity")] HRESULT Elasticity([in] float newVal);
 		[propget, id(DISPID_Surface), helpstring("property Surface")] HRESULT Surface([out, retval] BSTR *pVal);

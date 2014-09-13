@@ -5,8 +5,6 @@ Gate::Gate()
    m_phitgate = NULL;
    m_plineseg = NULL;
    m_d.m_fEnableLighting = fTrue;
-   staticMaterial.setAmbient(0.0f, 0.6f, 0.6f, 0.6f );
-   staticMaterial.setDiffuse(0.0f, 0.6f, 0.6f, 0.6f );
    vtxBuf = NULL;
    idxBuf = NULL;
 }
@@ -89,12 +87,6 @@ void Gate::SetDefaults(bool fromMouseClick)
    else
       m_d.m_fVisible = fTrue;
 
-   hr = GetRegInt("DefaultProps\\Gate","Color", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_color = iTmp;
-   else
-      m_d.m_color = RGB(128,128,128);
-
    hr = GetRegInt("DefaultProps\\Gate","TimerEnabled", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? fFalse : fTrue;
@@ -155,7 +147,6 @@ void Gate::WriteRegDefaults()
    SetRegValueFloat("DefaultProps\\Gate","AngleMin", m_d.m_angleMin);
    SetRegValueFloat("DefaultProps\\Gate","AngleMax", m_d.m_angleMax);
    SetRegValue("DefaultProps\\Gate","Visible",REG_DWORD,&m_d.m_fVisible,4);
-   SetRegValue("DefaultProps\\Gate","Color",REG_DWORD,&m_d.m_color,4);
    SetRegValue("DefaultProps\\Gate","TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
    SetRegValue("DefaultProps\\Gate","TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval, 4);
    SetRegValue("DefaultProps\\Gate","Surface", REG_SZ, &m_d.m_szSurface,lstrlen(m_d.m_szSurface));
@@ -375,12 +366,26 @@ void Gate::PostRenderStatic(RenderDevice* pd3dDevice)
         return;
     pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelTexelDeclaration );
 
-    const float r = (float)(m_d.m_color & 255) * (float)(1.0/255.0);
-    const float g = (float)(m_d.m_color & 65280) * (float)(1.0/65280.0);
-    const float b = (float)(m_d.m_color & 16711680) * (float)(1.0/16711680.0);
-    D3DXVECTOR4 matColor(r,g,b,1.0f);   
-    pd3dDevice->basicShader->Core()->SetFloat("fGlossyPower",0.0f);
-    pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&matColor);
+    Material *mat = m_ptable->GetMaterial( m_d.m_szMaterial);
+    D3DXVECTOR4 diffuseColor( 0.5f, 0.5f, 0.5f, 1.0f );
+    D3DXVECTOR4 glossyColor( 0.5f, 0.5f, 0.5f, 1.0f );
+    D3DXVECTOR4 specularColor( 1.0f, 1.0f, 1.0f, 1.0f );
+    float diffuseWrap = 0.5f;
+    float glossyPower = 16.0f;
+    if( mat )
+    {
+       diffuseColor = mat->getDiffuseColor();
+       glossyColor = mat->getGlossyColor();
+       specularColor = mat->getSpecularColor();
+       diffuseWrap = mat->m_fDiffuse;
+       glossyPower = mat->m_fGlossy;
+    }
+
+    pd3dDevice->basicShader->Core()->SetFloat("fDiffuseWrap",diffuseWrap);
+    pd3dDevice->basicShader->Core()->SetFloat("fGlossyPower",glossyPower);
+    pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&diffuseColor);
+    pd3dDevice->basicShader->Core()->SetVector("vGlossyColor",&glossyColor);
+    pd3dDevice->basicShader->Core()->SetVector("vSpecularColor",&specularColor);
 
     Pin3D * const ppin3d = &g_pplayer->m_pin3d;
     COLORREF rgbTransparent = RGB(255,0,255); //RGB(0,0,0);
@@ -394,9 +399,6 @@ void Gate::PostRenderStatic(RenderDevice* pd3dDevice)
 
     // Set texture to mirror, so the alpha state of the texture blends correctly to the outside
     pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_MIRROR);
-
-//     if(!m_d.m_fEnableLighting)
-//         pd3dDevice->SetRenderState(RenderDevice::LIGHTING, FALSE);
 
     // set world transform
     Matrix3D matOrig, matNew, matTemp;
@@ -414,19 +416,16 @@ void Gate::PostRenderStatic(RenderDevice* pd3dDevice)
     pd3dDevice->SetTransform(TRANSFORMSTATE_WORLD, &matNew);
     g_pplayer->UpdateBasicShaderMatrix();
     //
-
-//     if (!m_d.m_fEnableLighting)
-//     {
-//         // replace Diffuse arg by constant color
-//         pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR);
-//         pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, COLORREF_to_D3DCOLOR(m_d.m_color));
-//     }
+    COLORREF diffColor=NOTRANSCOLOR; //
+    if ( mat )
+    {
+       diffColor = mat->m_diffuseColor;
+    }
 
     // Draw Backside
     if (pinback)
     {
         pinback->CreateAlphaChannel();
-//        pinback->Set( ePictureTexture );
         
         pd3dDevice->basicShader->SetTexture("Texture0",pinback);
         pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
@@ -434,21 +433,17 @@ void Gate::PostRenderStatic(RenderDevice* pd3dDevice)
         if (pinback->m_fTransparent)
         {
             pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
-            if (m_d.m_color != rgbTransparent)
-                rgbTransparent = pinback->m_rgbTransparent;
+            if (diffColor != rgbTransparent)
+               rgbTransparent = pinback->m_rgbTransparent;
         }
         ppin3d->EnableAlphaBlend( 0x80, fFalse );
 
-        pd3dDevice->SetRenderState(RenderDevice::CULLMODE, (m_d.m_color == rgbTransparent || m_d.m_color == NOTRANSCOLOR) ? D3DCULL_CCW : D3DCULL_NONE);
+        pd3dDevice->SetRenderState(RenderDevice::CULLMODE, (diffColor == rgbTransparent || diffColor == NOTRANSCOLOR) ? D3DCULL_CCW : D3DCULL_NONE);
         pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
         ppin3d->SetTextureFilter( ePictureTexture, TEXTURE_MODE_TRILINEAR );
-
-        pd3dDevice->SetMaterial(textureMaterial);
     }
     else // No image by that name
     {
-//        ppin3d->SetTexture(NULL);
-//        pd3dDevice->SetMaterial(solidMaterial);
         pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
     }
     pd3dDevice->basicShader->Begin(0);
@@ -459,28 +454,24 @@ void Gate::PostRenderStatic(RenderDevice* pd3dDevice)
     if (pinfront)
     {
         pinfront->CreateAlphaChannel();
-        //pinfront->Set( ePictureTexture );
         pd3dDevice->basicShader->SetTexture("Texture0", pinfront);
         pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
 
         if (pinfront->m_fTransparent)
         {
             pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
-            if (m_d.m_color != rgbTransparent)
+            if (diffColor != rgbTransparent)
                 rgbTransparent = pinfront->m_rgbTransparent;
         }
         ppin3d->EnableAlphaBlend( 0x80, fFalse );
 
-        pd3dDevice->SetRenderState(RenderDevice::CULLMODE, (m_d.m_color == rgbTransparent || m_d.m_color == NOTRANSCOLOR) ? D3DCULL_CCW : D3DCULL_NONE);
+        pd3dDevice->SetRenderState(RenderDevice::CULLMODE, (diffColor == rgbTransparent || diffColor == NOTRANSCOLOR) ? D3DCULL_CCW : D3DCULL_NONE);
         pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
         ppin3d->SetTextureFilter( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 
-        //pd3dDevice->SetMaterial(textureMaterial);
     }
     else // No image by that name
     {
-//         ppin3d->SetTexture(NULL);
-//         pd3dDevice->SetMaterial(solidMaterial);
         pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
     }
 
@@ -488,10 +479,7 @@ void Gate::PostRenderStatic(RenderDevice* pd3dDevice)
     pd3dDevice->DrawPrimitiveVB(D3DPT_TRIANGLEFAN, vtxBuf, 4, 4);
     pd3dDevice->basicShader->End();  
 
-
-    //pd3dDevice->SetMaterial(solidMaterial);
-
-    if (m_d.m_color != rgbTransparent && m_d.m_color != NOTRANSCOLOR)
+    if (diffColor != rgbTransparent && diffColor != NOTRANSCOLOR)
     {
        pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
         pd3dDevice->basicShader->Begin(0);
@@ -502,11 +490,6 @@ void Gate::PostRenderStatic(RenderDevice* pd3dDevice)
     pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, FALSE);
     pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_WRAP);
 
-//     if(!m_d.m_fEnableLighting)
-//     {
-//         pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
-//         pd3dDevice->SetRenderState(RenderDevice::LIGHTING, TRUE);
-//     }
     pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 
     pd3dDevice->SetTransform(TRANSFORMSTATE_WORLD, &matOrig);
@@ -665,7 +648,6 @@ void Gate::PrepareMovers(RenderDevice* pd3dDevice )
 
 void Gate::RenderSetup(RenderDevice* pd3dDevice)
 {
-   solidMaterial.setColor( 1.0f, m_d.m_color );
    PrepareStatic(pd3dDevice);
    PrepareMovers(pd3dDevice);
 
@@ -679,10 +661,26 @@ void Gate::RenderStatic(RenderDevice* pd3dDevice) // only the support structures
    
    pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelTexelDeclaration );
 
-   pd3dDevice->SetMaterial(staticMaterial);
-   D3DXVECTOR4 matColor(0.6f,0.6f,0.6f,1.0f);   
-   pd3dDevice->basicShader->Core()->SetFloat("fGlossyPower",0.0f);
-   pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&matColor);
+   Material *mat = m_ptable->GetMaterial( m_d.m_szMaterial);
+   D3DXVECTOR4 diffuseColor( 0.6f, 0.6f, 0.6f, 1.0f );
+   D3DXVECTOR4 glossyColor( 0.5f, 0.5f, 0.5f, 1.0f );
+   D3DXVECTOR4 specularColor( 1.0f, 1.0f, 1.0f, 1.0f );
+   float diffuseWrap = 0.8f;
+   float glossyPower = 16.0f;
+   if( mat )
+   {
+      diffuseColor = mat->getDiffuseColor();
+      glossyColor = mat->getGlossyColor();
+      specularColor = mat->getSpecularColor();
+      diffuseWrap = mat->m_fDiffuse;
+      glossyPower = mat->m_fGlossy;
+   }
+
+   pd3dDevice->basicShader->Core()->SetFloat("fDiffuseWrap",diffuseWrap);
+   pd3dDevice->basicShader->Core()->SetFloat("fGlossyPower",glossyPower);
+   pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&diffuseColor);
+   pd3dDevice->basicShader->Core()->SetVector("vGlossyColor",&glossyColor);
+   pd3dDevice->basicShader->Core()->SetVector("vSpecularColor",&specularColor);
    pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
    Vertex3D *rgv3D = &staticVertices[0];
 
@@ -732,7 +730,7 @@ HRESULT Gate::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey
    bw.WriteFloat(FID(LGTH), m_d.m_length);
    bw.WriteFloat(FID(HGTH), m_d.m_height);
    bw.WriteFloat(FID(ROTA), m_d.m_rotation);
-   bw.WriteInt(FID(COLR), m_d.m_color);
+   bw.WriteString(FID(MATR), m_d.m_szMaterial);
    bw.WriteBool(FID(TMON), m_d.m_tdr.m_fTimerEnabled);
    bw.WriteBool(FID(GSUPT), m_d.m_fSupports);
    bw.WriteBool(FID(GCOLD), m_d.m_fCollidable);
@@ -789,9 +787,9 @@ BOOL Gate::LoadToken(int id, BiffReader *pbr)
    {
       pbr->GetFloat(&m_d.m_rotation);
    }
-   else if (id == FID(COLR))
+   else if (id == FID(MATR))
    {
-      pbr->GetInt(&m_d.m_color);
+      pbr->GetString(m_d.m_szMaterial);
    }
    else if (id == FID(TMON))
    {
@@ -987,18 +985,21 @@ STDMETHODIMP Gate::put_Surface(BSTR newVal)
       return S_OK;
 }
 
-STDMETHODIMP Gate::get_Color(OLE_COLOR *pVal)
+STDMETHODIMP Gate::get_Material(BSTR *pVal)
 {
-   *pVal = m_d.m_color;
+   WCHAR wz[512];
+
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_szMaterial, -1, wz, 32);
+   *pVal = SysAllocString(wz);
 
    return S_OK;
 }
 
-STDMETHODIMP Gate::put_Color(OLE_COLOR newVal)
+STDMETHODIMP Gate::put_Material(BSTR newVal)
 {
    STARTUNDO
 
-      m_d.m_color = newVal;
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szMaterial, 32, NULL, NULL);
 
    STOPUNDO
 

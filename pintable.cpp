@@ -2748,7 +2748,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
    bw.WriteFloat(FID(GLAS), m_glassheight);
    bw.WriteFloat(FID(TBLH), m_tableheight);
 
-   bw.WriteInt(FID(COLR), m_colorplayfield);
+   bw.WriteString(FID(PLMA), m_szPlayfieldMaterial);
    bw.WriteInt(FID(BCLR), m_colorbackdrop);
 
    bw.WriteBool(FID(DSHD), m_fRenderShadows);
@@ -3164,7 +3164,6 @@ void PinTable::SetLoadDefaults()
 
    m_szScreenShot[0] = 0;
 
-   m_colorplayfield = RGB(128,128,128);
    m_colorbackdrop = RGB(0x62,0x6E,0x8E);
 
    m_lightAmbient = RGB((int)(0.1*255),(int)(0.1*255),(int)(0.1*255));
@@ -3420,9 +3419,9 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    {
       pbr->GetString(m_szImageBackdrop);
    }
-   else if (id == FID(COLR))
+   else if (id == FID(PLMA))
    {
-      pbr->GetInt(&m_colorplayfield);
+      pbr->GetString(m_szPlayfieldMaterial);
    }
    else if (id == FID(LZAM))
    {
@@ -6984,18 +6983,21 @@ STDMETHODIMP PinTable::put_Height(float newVal)
    return S_OK;
 }
 
-STDMETHODIMP PinTable::get_PlayfieldColor(OLE_COLOR *pVal)
+STDMETHODIMP PinTable::get_PlayfieldMaterial(BSTR *pVal)
 {
-   *pVal = m_colorplayfield;
+   WCHAR wz[512];
+
+   MultiByteToWideChar(CP_ACP, 0, m_szPlayfieldMaterial, -1, wz, 32);
+   *pVal = SysAllocString(wz);
 
    return S_OK;
 }
 
-STDMETHODIMP PinTable::put_PlayfieldColor(OLE_COLOR newVal)
+STDMETHODIMP PinTable::put_PlayfieldMaterial(BSTR newVal)
 {
    STARTUNDO
 
-   m_colorplayfield = newVal;
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_szPlayfieldMaterial, 32, NULL, NULL);
 
    STOPUNDO
 
