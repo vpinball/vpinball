@@ -615,19 +615,13 @@ void Flipper::PostRenderStatic(RenderDevice* pd3dDevice)
     pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
     pd3dDevice->basicShader->Core()->SetBool("bGlossy",true);
 
-    Matrix3D matOrig, matNew, matTemp;
-    pd3dDevice->GetTransform(TRANSFORMSTATE_WORLD, &matOrig);
-
-    matTemp.SetIdentity();
-    matTemp._41 = m_d.m_Center.x;
-    matTemp._42 = m_d.m_Center.y;
-    matOrig.Multiply(matTemp, matNew);
-
+    Matrix3D matTrafo, matTemp;
+    matTrafo.SetIdentity();
+    matTrafo._41 = m_d.m_Center.x;
+    matTrafo._42 = m_d.m_Center.y;
     matTemp.RotateZMatrix(m_phitflipper->m_flipperanim.m_angleCur);
-    matNew.Multiply(matTemp, matNew);
-
-    pd3dDevice->SetTransform(TRANSFORMSTATE_WORLD, &matNew);
-    g_pplayer->UpdateBasicShaderMatrix();
+    matTrafo.Multiply(matTemp, matTrafo);
+    g_pplayer->UpdateBasicShaderMatrix(matTrafo);
     
     pd3dDevice->basicShader->Begin(0);
     // render flipper
@@ -657,7 +651,6 @@ void Flipper::PostRenderStatic(RenderDevice* pd3dDevice)
        pd3dDevice->basicShader->End();  
     }
 
-    pd3dDevice->SetTransform(TRANSFORMSTATE_WORLD, &matOrig);
     g_pplayer->UpdateBasicShaderMatrix();
 }
 
