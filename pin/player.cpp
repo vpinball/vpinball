@@ -681,7 +681,7 @@ static bool CompareHitableDepth(Hitable* h1, Hitable* h2)
     return h1->GetDepth(g_viewDir) >= h2->GetDepth(g_viewDir);
 }
 
-void Player::UpdateBasicShaderMatrix()
+void Player::UpdateBasicShaderMatrix(const Matrix3D objectTrafo)
 {
     D3DMATRIX worldMat;
     D3DMATRIX viewMat;
@@ -693,8 +693,9 @@ void Player::UpdateBasicShaderMatrix()
     D3DXMATRIX matProj(projMat);
     D3DXMATRIX matView(viewMat);
     D3DXMATRIX matWorld(worldMat);
+	D3DXMATRIX matObject(objectTrafo);
 
-    D3DXMATRIX matWorldView = matWorld * matView;
+    D3DXMATRIX matWorldView = matObject * matWorld * matView;
     D3DXMATRIX matWorldViewProj = matWorldView * matProj;
     
     Matrix3D temp;
@@ -708,6 +709,7 @@ void Player::UpdateBasicShaderMatrix()
     m_pin3d.m_pd3dDevice->basicShader->Core()->SetMatrix("matWorldView", &matWorldView);
     m_pin3d.m_pd3dDevice->basicShader->Core()->SetMatrix("matWorldViewInverseTranspose", &matWorldViewInvTrans);
     //m_pin3d.m_pd3dDevice->basicShader->Core()->SetMatrix("matWorld", &matWorld);
+    m_pin3d.m_pd3dDevice->basicShader->Core()->SetMatrix("matView", &matView);
 }
 
 void Player::InitShader()
@@ -755,7 +757,8 @@ void Player::InitBallShader()
 
    ballShader->Core()->SetMatrix("matWorldViewProj", &matWorldViewProj);
    ballShader->Core()->SetMatrix("matWorldView", &matWorldView);
-   ballShader->Core()->SetMatrix("matWorld", &matWorld);
+   //ballShader->Core()->SetMatrix("matWorld", &matWorld);
+   ballShader->Core()->SetMatrix("matView", &matView);
 
    Matrix3D temp;
    memcpy(temp.m,matWorldView.m,4*4*sizeof(float));

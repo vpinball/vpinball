@@ -463,7 +463,7 @@ void Plunger::RenderSetup(RenderDevice* pd3dDevice )
                   ptr[m + offset].z = (rgcrossplunger1[m][0] * (cs * m_d.m_width) + m_d.m_width + zheight) * m_ptable->m_zScale;
                   ptr[m + offset].nx = rgcrossplungerNormal1[m][0] * sn;
                   ptr[m + offset].ny = rgcrossplungerNormal1[m][1];
-                  ptr[m + offset].nz = -rgcrossplungerNormal1[m][0] * cs;
+                  ptr[m + offset].nz = rgcrossplungerNormal1[m][0] * cs;
                   ptr[m + offset].tu = tu;
                   ptr[m + offset].tv = rgcrossplunger1[m][2];
                }

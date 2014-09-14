@@ -807,21 +807,21 @@ void Primitive::RenderObject( RenderDevice *pd3dDevice )
     }
 
     // set transform
-    Matrix3D matOrig, matNew;
-    matOrig = g_pplayer->m_pin3d.GetWorldTransform();
+    //Matrix3D matOrig, matNew;
+    //matOrig = g_pplayer->m_pin3d.GetWorldTransform();
     //matTemp.SetScaling(1.0f, 1.0f, m_ptable->m_zScale); // TODO: z-scaling? causes distortions
     //matNew.Multiply(matTemp, matNew);
-    matOrig.Multiply(fullMatrix, matNew);
-    pd3dDevice->SetTransform(TRANSFORMSTATE_WORLD, &matNew);
-    g_pplayer->UpdateBasicShaderMatrix();
+    //matOrig.Multiply(fullMatrix, matNew);
+    //pd3dDevice->SetTransform(TRANSFORMSTATE_WORLD, &matNew);
+    g_pplayer->UpdateBasicShaderMatrix(fullMatrix);
 
     pd3dDevice->basicShader->Begin(0);
     // draw the mesh
     pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, vertexBuffer, 0, m_mesh.NumVertices(), indexBuffer, 0, m_mesh.NumIndices() );
-    pd3dDevice->basicShader->End();  
+    pd3dDevice->basicShader->End();
 
     // reset transform
-    pd3dDevice->SetTransform(TRANSFORMSTATE_WORLD, &matOrig);
+    //pd3dDevice->SetTransform(TRANSFORMSTATE_WORLD, &matOrig);
     g_pplayer->UpdateBasicShaderMatrix();
 
     pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_CLAMP);
