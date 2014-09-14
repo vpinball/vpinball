@@ -1665,8 +1665,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(3), helpstring("property WidthBottom")] HRESULT WidthBottom([in] float newVal);
 		[propget, id(4), helpstring("property WidthTop")] HRESULT WidthTop([out, retval] float *pVal);
 		[propput, id(4), helpstring("property WidthTop")] HRESULT WidthTop([in] float newVal);
-		[propget, id(5), helpstring("property Color")] HRESULT Color([out, retval] OLE_COLOR *pVal);
-		[propput, id(5), helpstring("property Color")] HRESULT Color([in] OLE_COLOR newVal);
+		[propget, id(340), helpstring("property Material")] HRESULT Material([out, retval] BSTR *pVal);
+		[propput, id(340), helpstring("property Material")] HRESULT Material([in] BSTR newVal);
 		[propget, id(6), helpstring("property Type")] HRESULT Type([out, retval] RampType *pVal);
 		[propput, id(6), helpstring("property Type")] HRESULT Type([in] RampType newVal);
 		[propget, id(DISPID_Image), helpstring("property Image")] HRESULT Image([out, retval] BSTR *pVal);
