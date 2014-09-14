@@ -149,6 +149,9 @@ public:
 class Matrix3D : public D3DMATRIX
 {
 public:
+	inline Matrix3D() {}
+	inline Matrix3D(const float Scale) { SetScaling(Scale,Scale,Scale); }
+
     // premultiply the given matrix, i.e., result = mult * (*this)
     inline void Multiply(const Matrix3D &mult, Matrix3D &result) const
     {

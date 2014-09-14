@@ -43,6 +43,7 @@ float4x4 matWorldViewProj  : WORLDVIEWPROJ;
 float4x4 matWorldView      : WORLDVIEW;
 //float4x4 matWorld          : WORLD;
 float4x4 matWorldViewInverseTranspose;
+float4x4 matView;
 
 //float4 camera;
 
@@ -74,7 +75,7 @@ float3 FresnelSchlick(float3 spec, float LdotH)
 // assumes all light emission is premultiplied by PI
 float3 DoPointLight(float3 pos, float3 N, float3 V, float3 diffuse, float3 glossy, int i) 
 { 
-   float3 lightDir = mul(float4(lights[i].vPos,1.0f), matWorldView).xyz - pos; //!! do in vertex shader?!
+   float3 lightDir = mul(float4(lights[i].vPos,1.0f), matView).xyz - pos; //!! do in vertex shader?! or completely before?!
    float3 L = normalize(lightDir);
    float NdotL = dot(N, L);
    float3 Out = float3(0.0f,0.0f,0.0f);
@@ -160,7 +161,7 @@ VS_OUTPUT vs_main (float4 vPosition  : POSITION0,
    Out.normal = N;
    
    return Out; 
-} 
+}
 
 float4 ps_main( in VS_OUTPUT IN) : COLOR
 {

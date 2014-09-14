@@ -6,13 +6,13 @@ VP 10.0.0 Changelog
 - physics mostly redone (also known as 'physmod(5)')
   sidenote: due to this it is now also possible to enable vsync without sideeffects or stutter (set FPS limiter to 1)
 
-- lighting mostly redone
+- added material editor
 
 - add rubber element
 
 - shader based inserts/lights/bulbs
 - shader based mesh ball
-- shader based materials/lighting
+- shader based materials/lighting (mostly redone from scratch)
 
 - internal DMD (access via script, input levels are 0..100)
   DMDWidth, DMDHeight, DMDPixels added to Table Script methods
@@ -36,7 +36,7 @@ VP 10.0.0 Changelog
 
 - texture size limit/downscale now respects aspect ratio (currently disabled)
 
-- script editor updated to use latest scintilla (3.4.4)
+- script editor updated to use latest scintilla (3.5.0)
 
 - technical note: make sure to install Microsoft SDK 5.0,7.0A,7.1 or 7.1A, if you compile VP and get missing header errors (optionally set the include path inc\winsdk)
 
