@@ -563,11 +563,14 @@
 #define IDC_ENABLE_MOUSE_PLAYER         394
 #define IDC_ENABLED                     394
 #define IDC_FLIPPER_ENABLED             394
+#define IDC_DIFFUSE_CHECK               394
 #define IDC_PRIMITIVE_IS_TOY            395
 #define IDC_ENABLE_FXAA                 395
 #define IDR_REGISTRY4                   395
+#define IDC_GLOSSY_CHECK                395
 #define IDC_CHECK3                      396
 #define IDC_PRIM_ENV_MAP                396
+#define IDC_SPECULAR_CHECK              396
 #define IDC_EDIT2                       397
 #define IDC_SIZE_HEIGHT                 397
 #define IDC_DEPTH_BIAS                  397

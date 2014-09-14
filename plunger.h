@@ -103,7 +103,6 @@ DECLARE_REGISTRY_RESOURCEID(IDR_PLUNGER)
     IndexBuffer *indexBuffer;
 
 	HitPlunger *m_phitplunger;
-    Material material;
 
     bool renderNewPlunger;
 

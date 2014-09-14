@@ -224,6 +224,9 @@ void Kicker::PreRenderStatic( RenderDevice* pd3dDevice)
    D3DXVECTOR4 specularColor( 1.0f, 1.0f, 1.0f, 1.0f );
    float diffuseWrap = 0.5f;
    float glossyPower = 16.0f;
+   bool  bDiffActive=true;
+   bool  bGlossyActive = false;
+   bool  bSpecActive = false;
    if( mat )
    {
       diffuseColor = mat->getDiffuseColor();
@@ -231,6 +234,9 @@ void Kicker::PreRenderStatic( RenderDevice* pd3dDevice)
       specularColor = mat->getSpecularColor();
       diffuseWrap = mat->m_fDiffuse;
       glossyPower = mat->m_fGlossy;
+      bDiffActive = mat->m_bDiffuseActive;
+      bGlossyActive = mat->m_bGlossyActive;
+      bSpecActive = mat->m_bSpecularActive;
    }
 
    pd3dDevice->basicShader->Core()->SetFloat("fDiffuseWrap",diffuseWrap);
@@ -238,6 +244,9 @@ void Kicker::PreRenderStatic( RenderDevice* pd3dDevice)
    pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&diffuseColor);
    pd3dDevice->basicShader->Core()->SetVector("vGlossyColor",&glossyColor);
    pd3dDevice->basicShader->Core()->SetVector("vSpecularColor",&specularColor);
+   pd3dDevice->basicShader->Core()->SetBool("bDiffuse", bDiffActive);
+   pd3dDevice->basicShader->Core()->SetBool("bGlossy", bGlossyActive);
+   pd3dDevice->basicShader->Core()->SetBool("bSpecular", bSpecActive);
    pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
 
    ppin3d->EnableLightMap(height);

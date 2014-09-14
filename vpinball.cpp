@@ -3215,6 +3215,13 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
                             f2sz(pmat->m_fSpecular,textBuf);
                             SetDlgItemText(hwndDlg, IDC_SPECULAR_EDIT, textBuf);
 
+                            HWND checkboxHwnd = GetDlgItem(hwndDlg, IDC_DIFFUSE_CHECK);
+                            SendMessage(checkboxHwnd, BM_SETCHECK, pmat->m_bDiffuseActive ? BST_CHECKED : BST_UNCHECKED, 0);
+                            checkboxHwnd = GetDlgItem(hwndDlg, IDC_GLOSSY_CHECK);
+                            SendMessage(checkboxHwnd, BM_SETCHECK, pmat->m_bGlossyActive ? BST_CHECKED : BST_UNCHECKED, 0);
+                            checkboxHwnd = GetDlgItem(hwndDlg, IDC_SPECULAR_CHECK);
+                            SendMessage(checkboxHwnd, BM_SETCHECK, pmat->m_bSpecularActive ? BST_CHECKED : BST_UNCHECKED, 0);
+
                             InvalidateRect(hwndColor, NULL, FALSE);
                         }
                     }
@@ -3239,6 +3246,12 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
                         pmat->m_fGlossy = sz2f(textBuf);
                         GetDlgItemText(hwndDlg, IDC_SPECULAR_EDIT, textBuf, 31);
                         pmat->m_fSpecular = sz2f(textBuf);
+                        size_t checked = SendDlgItemMessage(hwndDlg, IDC_DIFFUSE_CHECK, BM_GETCHECK, 0, 0);
+                        pmat->m_bDiffuseActive = checked==1;
+                        checked = SendDlgItemMessage(hwndDlg, IDC_GLOSSY_CHECK, BM_GETCHECK, 0, 0);
+                        pmat->m_bGlossyActive = checked==1;
+                        checked = SendDlgItemMessage(hwndDlg, IDC_SPECULAR_CHECK, BM_GETCHECK, 0, 0);
+                        pmat->m_bSpecularActive = checked==1;
                     }
                     else
                     {
@@ -3255,6 +3268,12 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
                         SetDlgItemText(hwndDlg, IDC_GLOSSY_EDIT, textBuf);
                         f2sz(pmat->m_fSpecular,textBuf);
                         SetDlgItemText(hwndDlg, IDC_SPECULAR_EDIT, textBuf);
+                        HWND checkboxHwnd = GetDlgItem(hwndDlg, IDC_DIFFUSE_CHECK);
+                        SendMessage(checkboxHwnd, BM_SETCHECK, pmat->m_bDiffuseActive ? BST_CHECKED : BST_UNCHECKED, 0);
+                        checkboxHwnd = GetDlgItem(hwndDlg, IDC_GLOSSY_CHECK);
+                        SendMessage(checkboxHwnd, BM_SETCHECK, pmat->m_bGlossyActive ? BST_CHECKED : BST_UNCHECKED, 0);
+                        checkboxHwnd = GetDlgItem(hwndDlg, IDC_SPECULAR_CHECK);
+                        SendMessage(checkboxHwnd, BM_SETCHECK, pmat->m_bSpecularActive ? BST_CHECKED : BST_UNCHECKED, 0);
                     }
                     const int count = ListView_GetSelectedCount(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST));
                     const int fEnable = !(count > 1);
@@ -3349,6 +3368,13 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
                                     pmat->m_fGlossy = sz2f(textBuf);
                                     GetDlgItemText(hwndDlg, IDC_SPECULAR_EDIT, textBuf, 31);
                                     pmat->m_fSpecular = sz2f(textBuf);
+
+                                    size_t checked = SendDlgItemMessage(hwndDlg, IDC_DIFFUSE_CHECK, BM_GETCHECK, 0, 0);
+                                    pmat->m_bDiffuseActive = checked==1;
+                                    checked = SendDlgItemMessage(hwndDlg, IDC_GLOSSY_CHECK, BM_GETCHECK, 0, 0);
+                                    pmat->m_bGlossyActive = checked==1;
+                                    checked = SendDlgItemMessage(hwndDlg, IDC_SPECULAR_CHECK, BM_GETCHECK, 0, 0);
+                                    pmat->m_bSpecularActive = checked==1;
                                     // The previous selection is now deleted, so look again from the top of the list
                                     sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST), sel, LVNI_SELECTED);
                                 }
