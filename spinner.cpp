@@ -345,21 +345,17 @@ void Spinner::PostRenderStatic(RenderDevice* pd3dDevice)
     // Set texture to mirror, so the alpha state of the texture blends correctly to the outside
     pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_MIRROR);
 
-    // set world transform
-    Matrix3D matOrig, matNew, matTemp;
-    pd3dDevice->GetTransform(TRANSFORMSTATE_WORLD, &matOrig);
-
-    matTemp.SetTranslation(m_d.m_vCenter.x, m_d.m_vCenter.y, m_posZ);
-    matOrig.Multiply(matTemp, matNew);
+    // set obj->world transform
+    Matrix3D matTrafo, matTemp;
+    matTrafo.SetTranslation(m_d.m_vCenter.x, m_d.m_vCenter.y, m_posZ);
 
     matTemp.RotateZMatrix(ANGTORAD(m_d.m_rotation));
-    matNew.Multiply(matTemp, matNew);
+    matTrafo.Multiply(matTemp, matTrafo);
 
     matTemp.RotateXMatrix(-m_phitspinner->m_spinneranim.m_angle);
-    matNew.Multiply(matTemp, matNew);
+    matTrafo.Multiply(matTemp, matTrafo);
 
-    pd3dDevice->SetTransform(TRANSFORMSTATE_WORLD, &matNew);
-    g_pplayer->UpdateBasicShaderMatrix();
+    g_pplayer->UpdateBasicShaderMatrix(matTrafo);
 
     // Draw Backside
     if (pinback)
@@ -439,7 +435,6 @@ void Spinner::PostRenderStatic(RenderDevice* pd3dDevice)
         pd3dDevice->basicShader->End();
     }
 
-    pd3dDevice->SetTransform(TRANSFORMSTATE_WORLD, &matOrig);
     g_pplayer->UpdateBasicShaderMatrix();
 
     pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);

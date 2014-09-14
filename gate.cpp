@@ -401,22 +401,18 @@ void Gate::PostRenderStatic(RenderDevice* pd3dDevice)
     pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_MIRROR);
 
     // set world transform
-    Matrix3D matOrig, matNew, matTemp;
-    pd3dDevice->GetTransform(TRANSFORMSTATE_WORLD, &matOrig);
-
-    matTemp.SetTranslation(m_d.m_vCenter.x, m_d.m_vCenter.y, m_posZ);
-    matOrig.Multiply(matTemp, matNew);
+    Matrix3D matTrafo, matTemp;
+    matTrafo.SetTranslation(m_d.m_vCenter.x, m_d.m_vCenter.y, m_posZ);
 
     matTemp.RotateZMatrix(ANGTORAD(m_d.m_rotation));
-    matNew.Multiply(matTemp, matNew);
+    matTrafo.Multiply(matTemp, matTrafo);
 
     matTemp.RotateXMatrix(-m_phitgate->m_gateanim.m_angle);
-    matNew.Multiply(matTemp, matNew);
+    matTrafo.Multiply(matTemp, matTrafo);
 
-    pd3dDevice->SetTransform(TRANSFORMSTATE_WORLD, &matNew);
-    g_pplayer->UpdateBasicShaderMatrix();
-    //
-    COLORREF diffColor=NOTRANSCOLOR; //
+    g_pplayer->UpdateBasicShaderMatrix(matTrafo);
+
+	COLORREF diffColor=NOTRANSCOLOR;
     if ( mat )
     {
        diffColor = mat->m_diffuseColor;
@@ -492,7 +488,6 @@ void Gate::PostRenderStatic(RenderDevice* pd3dDevice)
 
     pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 
-    pd3dDevice->SetTransform(TRANSFORMSTATE_WORLD, &matOrig);
     g_pplayer->UpdateBasicShaderMatrix();
 }
 
