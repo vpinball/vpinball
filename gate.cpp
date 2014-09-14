@@ -372,6 +372,9 @@ void Gate::PostRenderStatic(RenderDevice* pd3dDevice)
     D3DXVECTOR4 specularColor( 1.0f, 1.0f, 1.0f, 1.0f );
     float diffuseWrap = 0.5f;
     float glossyPower = 16.0f;
+    bool  bDiffActive=true;
+    bool  bGlossyActive = false;
+    bool  bSpecActive = false;
     if( mat )
     {
        diffuseColor = mat->getDiffuseColor();
@@ -379,6 +382,9 @@ void Gate::PostRenderStatic(RenderDevice* pd3dDevice)
        specularColor = mat->getSpecularColor();
        diffuseWrap = mat->m_fDiffuse;
        glossyPower = mat->m_fGlossy;
+       bDiffActive = mat->m_bDiffuseActive;
+       bGlossyActive = mat->m_bGlossyActive;
+       bSpecActive = mat->m_bSpecularActive;
     }
 
     pd3dDevice->basicShader->Core()->SetFloat("fDiffuseWrap",diffuseWrap);
@@ -386,6 +392,9 @@ void Gate::PostRenderStatic(RenderDevice* pd3dDevice)
     pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&diffuseColor);
     pd3dDevice->basicShader->Core()->SetVector("vGlossyColor",&glossyColor);
     pd3dDevice->basicShader->Core()->SetVector("vSpecularColor",&specularColor);
+    pd3dDevice->basicShader->Core()->SetBool("bDiffuse", bDiffActive);
+    pd3dDevice->basicShader->Core()->SetBool("bGlossy", bGlossyActive);
+    pd3dDevice->basicShader->Core()->SetBool("bSpecular", bSpecActive);
 
     Pin3D * const ppin3d = &g_pplayer->m_pin3d;
     COLORREF rgbTransparent = RGB(255,0,255); //RGB(0,0,0);

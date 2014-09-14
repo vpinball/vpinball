@@ -280,6 +280,9 @@ void Plunger::PostRenderStatic(RenderDevice* pd3dDevice)
     D3DXVECTOR4 specularColor( 1.0f, 1.0f, 1.0f, 1.0f );
     float diffuseWrap = 0.5f;
     float glossyPower = 16.0f;
+    bool  bDiffActive=true;
+    bool  bGlossyActive = false;
+    bool  bSpecActive = true;
     if( mat )
     {
        diffuseColor = mat->getDiffuseColor();
@@ -287,6 +290,12 @@ void Plunger::PostRenderStatic(RenderDevice* pd3dDevice)
        specularColor = mat->getSpecularColor();
        diffuseWrap = mat->m_fDiffuse;
        glossyPower = mat->m_fGlossy;
+       bDiffActive = mat->m_bDiffuseActive;
+       bGlossyActive = mat->m_bGlossyActive;
+       bSpecActive = mat->m_bSpecularActive;
+       pd3dDevice->basicShader->Core()->SetBool("bDiffuse", bDiffActive);
+       pd3dDevice->basicShader->Core()->SetBool("bGlossy", bGlossyActive);
+       pd3dDevice->basicShader->Core()->SetBool("bSpecular", bSpecActive);
     }
 
     pd3dDevice->basicShader->Core()->SetFloat("fDiffuseWrap",diffuseWrap);
@@ -294,7 +303,9 @@ void Plunger::PostRenderStatic(RenderDevice* pd3dDevice)
     pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&diffuseColor);
     pd3dDevice->basicShader->Core()->SetVector("vGlossyColor",&glossyColor);
     pd3dDevice->basicShader->Core()->SetVector("vSpecularColor",&specularColor);
-    pd3dDevice->basicShader->Core()->SetBool("bSpecular",true);
+    pd3dDevice->basicShader->Core()->SetBool("bDiffuse", bDiffActive);
+    pd3dDevice->basicShader->Core()->SetBool("bGlossy", bGlossyActive);
+    pd3dDevice->basicShader->Core()->SetBool("bSpecular", bSpecActive);
 
     if (m_d.m_type == PlungerTypeModern)
     {
@@ -542,12 +553,6 @@ void Plunger::RenderSetup(RenderDevice* pd3dDevice )
            indexBuffer->release();
        indexBuffer = pd3dDevice->CreateAndFillIndexBuffer(k, indices);
    }
-
-
-   // set up material
-   material.setColor( 1.f, m_d.m_color );
-   material.setPower( 8.0f );
-   material.setSpecular( 1.0f, 1.0f, 1.0f, 1.0f );
 }
 
 void Plunger::RenderStatic(RenderDevice* pd3dDevice)

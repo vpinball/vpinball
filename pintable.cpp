@@ -2786,8 +2786,11 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
            mats[i].glossyColor = m_materials.ElementAt(i)->m_glossyColor;
            mats[i].specularColor = m_materials.ElementAt(i)->m_specularColor;
            mats[i].fDiffuse = m_materials.ElementAt(i)->m_fDiffuse;
+           mats[i].bDiffuseActive = m_materials.ElementAt(i)->m_bDiffuseActive;
            mats[i].fGlossy = m_materials.ElementAt(i)->m_fGlossy;
+           mats[i].bGlossyActive = m_materials.ElementAt(i)->m_bGlossyActive;
            mats[i].fSpecular = m_materials.ElementAt(i)->m_fSpecular;
+           mats[i].bSpecularActive = m_materials.ElementAt(i)->m_bSpecularActive;
            strcpy_s(mats[i].szName, m_materials.ElementAt(i)->m_szName);
        }
        bw.WriteStruct( FID(MATE), mats, sizeof(SaveMaterial)*m_materials.Size());
@@ -3548,8 +3551,11 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
            pmat->m_glossyColor= mats[i].glossyColor;
            pmat->m_specularColor = mats[i].specularColor;
            pmat->m_fDiffuse = mats[i].fDiffuse;
+           pmat->m_bDiffuseActive = mats[i].bDiffuseActive;
            pmat->m_fGlossy = mats[i].fGlossy;
+           pmat->m_bGlossyActive = mats[i].bGlossyActive;
            pmat->m_fSpecular = mats[i].fSpecular;
+           pmat->m_bSpecularActive = mats[i].bSpecularActive;
            strcpy_s(pmat->m_szName, mats[i].szName);
            m_materials.AddElement( pmat );
        }

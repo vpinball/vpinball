@@ -28,13 +28,16 @@ struct BaseMaterial
 // only used for loading and saving
 struct SaveMaterial
 {
-    char szName[32];
-    COLORREF diffuseColor;
-    COLORREF glossyColor;
-    COLORREF specularColor;
-    float fDiffuse;
-    float fGlossy;
-    float fSpecular;
+   char szName[32];
+   COLORREF diffuseColor;
+   COLORREF glossyColor;
+   COLORREF specularColor;
+   float fDiffuse;
+   bool  bDiffuseActive;
+   float fGlossy;
+   bool  bGlossyActive;
+   float fSpecular;
+   bool  bSpecularActive;
 };
 
 class RenderDevice;
@@ -239,12 +242,16 @@ public:
 	float m_fDiffuse;
 	float m_fGlossy;
 	float m_fSpecular;
+   bool m_bDiffuseActive;
+   bool m_bGlossyActive;
+   bool m_bSpecularActive;
+   bool m_reserved;
 	COLORREF m_diffuseColor;
 	COLORREF m_glossyColor;
 	COLORREF m_specularColor;
 	};
 	struct{
-	__m128 i0,i1,i2,i3; //!! remove as soon as BaseMaterial vanishes
+	__m128 i0,i1,i2; //!! remove as soon as BaseMaterial vanishes
 	};
    };
 private:
