@@ -10,7 +10,7 @@
 class RampData
 {
 public:
-	COLORREF m_color;
+   char m_szMaterial[32];
 	TimerDataRoot m_tdr;
 	float m_heightbottom;
 	float m_heighttop;
@@ -137,9 +137,6 @@ private:
 
     int m_numVertices;      // this goes along with dynamicVertexBuffer
 
-    Material solidMaterial;
-    Material textureMaterial;
-
     std::vector<HitObject*> m_vhoCollidable; // Objects to that may be collide selectable
 
 	VertexBuffer *staticVertexBuffer;
@@ -186,8 +183,8 @@ public:
 	STDMETHOD(put_Image)(/*[in]*/ BSTR newVal);
 	STDMETHOD(get_Type)(/*[out, retval]*/ RampType *pVal);
 	STDMETHOD(put_Type)(/*[in]*/ RampType newVal);
-	STDMETHOD(get_Color)(/*[out, retval]*/ OLE_COLOR *pVal);
-	STDMETHOD(put_Color)(/*[in]*/ OLE_COLOR newVal);
+	STDMETHOD(get_Material)(/*[out, retval]*/ BSTR *pVal);
+	STDMETHOD(put_Material)(/*[in]*/ BSTR newVal);
 	STDMETHOD(get_WidthTop)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_WidthTop)(/*[in]*/ float newVal);
 	STDMETHOD(get_WidthBottom)(/*[out, retval]*/ float *pVal);

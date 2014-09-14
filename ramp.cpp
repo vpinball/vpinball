@@ -71,7 +71,6 @@ void Ramp::SetDefaults(bool fromMouseClick)
    m_d.m_heighttop = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"HeightTop", 50.0f) : 50.0f;
    m_d.m_widthbottom = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"WidthBottom", 75.0f) : 75.0f;
    m_d.m_widthtop = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"WidthTop", 60.0f) : 60.0f;
-   m_d.m_color = fromMouseClick ? GetRegIntWithDefault(strKeyName,"Color", RGB(50,200,50)) : RGB(50,200,50);
    m_d.m_type = fromMouseClick ? (RampType)GetRegIntWithDefault(strKeyName,"RampType", RampTypeFlat) : RampTypeFlat;
 
    m_d.m_tdr.m_fTimerEnabled = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"TimerEnabled", false) : false;
@@ -114,7 +113,6 @@ void Ramp::WriteRegDefaults()
    SetRegValueFloat(strKeyName,"HeightTop", m_d.m_heighttop);
    SetRegValueFloat(strKeyName,"WidthBottom", m_d.m_widthbottom);
    SetRegValueFloat(strKeyName,"WidthTop", m_d.m_widthtop);
-   SetRegValueInt(strKeyName,"Color", m_d.m_color);
    SetRegValueInt(strKeyName,"RampType", m_d.m_type);
    SetRegValue(strKeyName,"TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
    SetRegValue(strKeyName,"TimerInterval",REG_DWORD,&m_d.m_tdr.m_TimerInterval,4);
@@ -155,7 +153,7 @@ void Ramp::PreRender(Sur * const psur)
 {
    //make 1 wire ramps look unique in editor - uses ramp color
    if (m_ptable->RenderSolid())
-   psur->SetFillColor((m_d.m_type == RampType1Wire) ? m_d.m_color : RGB(192,192,192));
+   psur->SetFillColor(RGB(192,192,192));
    else
        psur->SetFillColor(-1);
    psur->SetBorderColor(-1,false,0);
@@ -1086,16 +1084,11 @@ void Ramp::RenderStaticHabitrail(RenderDevice* pd3dDevice)
 
    if ( !pin )
    {
-       Material habitrailMaterial;
-       pd3dDevice->basicShader->Core()->SetFloat("fGlossyPower",8.0f);
-       pd3dDevice->basicShader->Core()->SetBool("bSpecular", true);
        pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
    }
    else
    {
        pin->CreateAlphaChannel();
-       D3DXVECTOR4 color(1.0f,1.0f,1.0f,1.0f);   
-       pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&color);
        pd3dDevice->basicShader->SetTexture("Texture0",pin);
        pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
 
@@ -1550,8 +1543,6 @@ void Ramp::prepareStatic(RenderDevice* pd3dDevice)
 
 void Ramp::RenderSetup(RenderDevice* pd3dDevice)
 {
-   solidMaterial.setColor( 1.0f, m_d.m_color );
-
    if( !staticVertexBuffer && m_d.m_fVisible && !m_d.m_transparent )
    {
       if (isHabitrail())
@@ -1583,13 +1574,37 @@ void Ramp::RenderStatic(RenderDevice* pd3dDevice)
    if (m_d.m_imagealignment == ImageModeWrap)
        pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_CLAMP);
 
-   const float r = (float)(m_d.m_color & 255) * (float)(1.0/255.0);
-   const float g = (float)(m_d.m_color & 65280) * (float)(1.0/65280.0);
-   const float b = (float)(m_d.m_color & 16711680) * (float)(1.0/16711680.0);
-   D3DXVECTOR4 matColor(r,g,b,1.0f);   
-
    pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelDeclaration );
-   pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&matColor);
+
+   Material *mat = m_ptable->GetMaterial( m_d.m_szMaterial);
+   D3DXVECTOR4 diffuseColor( 0.5f, 0.5f, 0.5f, 1.0f );
+   D3DXVECTOR4 glossyColor( 0.5f, 0.5f, 0.5f, 1.0f );
+   D3DXVECTOR4 specularColor( 1.0f, 1.0f, 1.0f, 1.0f );
+   float diffuseWrap = 0.5f;
+   float glossyPower = 16.0f;
+   bool  bDiffActive=true;
+   bool  bGlossyActive = false;
+   bool  bSpecActive = false;
+   if( mat )
+   {
+      diffuseColor = mat->getDiffuseColor();
+      glossyColor = mat->getGlossyColor();
+      specularColor = mat->getSpecularColor();
+      diffuseWrap = mat->m_fDiffuse;
+      glossyPower = mat->m_fGlossy;
+      bDiffActive = mat->m_bDiffuseActive;
+      bGlossyActive = mat->m_bGlossyActive;
+      bSpecActive = mat->m_bSpecularActive;
+   }
+
+   pd3dDevice->basicShader->Core()->SetFloat("fDiffuseWrap",diffuseWrap);
+   pd3dDevice->basicShader->Core()->SetFloat("fGlossyPower",glossyPower);
+   pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&diffuseColor);
+   pd3dDevice->basicShader->Core()->SetVector("vGlossyColor",&glossyColor);
+   pd3dDevice->basicShader->Core()->SetVector("vSpecularColor",&specularColor);
+   pd3dDevice->basicShader->Core()->SetBool("bDiffuse", bDiffActive);
+   pd3dDevice->basicShader->Core()->SetBool("bGlossy", bGlossyActive);
+   pd3dDevice->basicShader->Core()->SetBool("bSpecular", bSpecActive);
 
    if (isHabitrail())
    {
@@ -1599,18 +1614,12 @@ void Ramp::RenderStatic(RenderDevice* pd3dDevice)
    {
       Pin3D * const ppin3d = &g_pplayer->m_pin3d;
       Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
-      pd3dDevice->basicShader->Core()->SetFloat("fGlossyPower",0.0f);
-
       if (pin)
       {
          pin->CreateAlphaChannel();
-         //pin->Set( ePictureTexture );
 
          pd3dDevice->basicShader->SetTexture("Texture0", pin );
          pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
-         D3DXVECTOR4 color(1.0f,1.0f,1.0f,1.0f);   
-         pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&color);
-
          if (pin->m_fTransparent)
          {
             pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
@@ -1622,10 +1631,6 @@ void Ramp::RenderStatic(RenderDevice* pd3dDevice)
          ppin3d->EnableAlphaBlend( 1, false );
 
          ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
-
-         pd3dDevice->SetMaterial(textureMaterial);
-//          if ( !m_d.m_enableLightingImage )
-//             pd3dDevice->SetRenderState( RenderDevice::LIGHTING, FALSE );
       }
       else
       {
@@ -1641,11 +1646,7 @@ void Ramp::RenderStatic(RenderDevice* pd3dDevice)
 
       if (pin && !m_d.m_fImageWalls)
       {
-         ppin3d->SetTexture(NULL);
          pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
-//         pd3dDevice->SetMaterial(solidMaterial);
-//         if ( !m_d.m_enableLightingImage )
-//            pd3dDevice->SetRenderState( RenderDevice::LIGHTING, TRUE );
       }
 
       pd3dDevice->basicShader->Begin(0);
@@ -1671,8 +1672,6 @@ void Ramp::RenderStatic(RenderDevice* pd3dDevice)
       pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
       ppin3d->DisableAlphaBlend();
 
-//       if ( !m_d.m_enableLightingImage && pin!=NULL )
-//          pd3dDevice->SetRenderState( RenderDevice::LIGHTING, TRUE );
       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
    }
 }
@@ -1708,7 +1707,7 @@ HRESULT Ramp::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey
    bw.WriteFloat(FID(HTTP), m_d.m_heighttop);
    bw.WriteFloat(FID(WDBT), m_d.m_widthbottom);
    bw.WriteFloat(FID(WDTP), m_d.m_widthtop);
-   bw.WriteInt(FID(COLR), m_d.m_color);
+   bw.WriteString(FID(MATR), m_d.m_szMaterial);
    bw.WriteBool(FID(TMON), m_d.m_tdr.m_fTimerEnabled);
    bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
    bw.WriteInt(FID(TYPE), m_d.m_type);
@@ -1780,9 +1779,9 @@ BOOL Ramp::LoadToken(int id, BiffReader *pbr)
    {
       pbr->GetFloat(&m_d.m_widthtop);
    }
-   else if (id == FID(COLR))
+   else if (id == FID(MATR))
    {
-      pbr->GetInt(&m_d.m_color);
+      pbr->GetString(m_d.m_szMaterial);
    }
    else if (id == FID(TMON))
    {
@@ -2104,23 +2103,24 @@ STDMETHODIMP Ramp::put_WidthTop(float newVal)
    return S_OK;
 }
 
-STDMETHODIMP Ramp::get_Color(OLE_COLOR *pVal)
+STDMETHODIMP Ramp::get_Material(BSTR *pVal)
 {
-   *pVal = m_d.m_color;
+   WCHAR wz[512];
+
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_szMaterial, -1, wz, 32);
+   *pVal = SysAllocString(wz);
 
    return S_OK;
 }
 
-STDMETHODIMP Ramp::put_Color(OLE_COLOR newVal)
+STDMETHODIMP Ramp::put_Material(BSTR newVal)
 {
-   if(m_d.m_color != newVal)
-   {
-	   STARTUNDO
+   STARTUNDO
 
-	   m_d.m_color = newVal;
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szMaterial, 32, NULL, NULL);
 
-	   STOPUNDO
-   }
+   STOPUNDO
+
 
    return S_OK;
 }
@@ -2625,12 +2625,39 @@ void Ramp::PostRenderStatic(RenderDevice* pd3dDevice)
    if (m_d.m_imagealignment == ImageModeWrap)
        pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_CLAMP);
 
-   solidMaterial.setColor(1.0f, m_d.m_color );
-   const float r = (float)(m_d.m_color & 255) * (float)(1.0/255.0);
-   const float g = (float)(m_d.m_color & 65280) * (float)(1.0/65280.0);
-   const float b = (float)(m_d.m_color & 16711680) * (float)(1.0/16711680.0);
-   D3DXVECTOR4 matColor(r,g,b,1.0f);   
-   pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&matColor);
+   Material *mat = m_ptable->GetMaterial( m_d.m_szMaterial);
+   D3DXVECTOR4 diffuseColor( 0.5f, 0.5f, 0.5f, 1.0f );
+   D3DXVECTOR4 glossyColor( 0.5f, 0.5f, 0.5f, 1.0f );
+   D3DXVECTOR4 specularColor( 1.0f, 1.0f, 1.0f, 1.0f );
+   float diffuseWrap = 0.5f;
+   float glossyPower = 16.0f;
+   bool  bDiffActive=true;
+   bool  bGlossyActive = false;
+   bool  bSpecActive = false;
+   if( mat )
+   {
+      diffuseColor = mat->getDiffuseColor();
+      glossyColor = mat->getGlossyColor();
+      specularColor = mat->getSpecularColor();
+      diffuseWrap = mat->m_fDiffuse;
+      glossyPower = mat->m_fGlossy;
+      bDiffActive = mat->m_bDiffuseActive;
+      bGlossyActive = mat->m_bGlossyActive;
+      bSpecActive = mat->m_bSpecularActive;
+   }
+
+   pd3dDevice->basicShader->Core()->SetFloat("fDiffuseWrap",diffuseWrap);
+   pd3dDevice->basicShader->Core()->SetFloat("fGlossyPower",glossyPower);
+   pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&diffuseColor);
+   pd3dDevice->basicShader->Core()->SetVector("vGlossyColor",&glossyColor);
+   pd3dDevice->basicShader->Core()->SetVector("vSpecularColor",&specularColor);
+   pd3dDevice->basicShader->Core()->SetBool("bDiffuse", bDiffActive);
+   pd3dDevice->basicShader->Core()->SetBool("bGlossy", bGlossyActive);
+   pd3dDevice->basicShader->Core()->SetBool("bSpecular", bSpecActive);
+   if( m_d.m_transparent )
+      pd3dDevice->basicShader->Core()->SetFloat("fmaterialAlpha", m_d.m_opacity/255.0f);
+   else
+      pd3dDevice->basicShader->Core()->SetFloat("fmaterialAlpha", 1.0f);
 
    if (isHabitrail())
    {
@@ -2638,26 +2665,18 @@ void Ramp::PostRenderStatic(RenderDevice* pd3dDevice)
    }
    else
    {
-      pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&matColor);
-      pd3dDevice->basicShader->Core()->SetFloat("fGlossyPower",0.0f);
-
       Pin3D * const ppin3d = &g_pplayer->m_pin3d;
       Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
 
       if (pin)
       {
          pin->CreateAlphaChannel();
-         //pin->Set( ePictureTexture );
-
          pd3dDevice->basicShader->SetTexture( "Texture0", pin );
          pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
-         D3DXVECTOR4 color(1.0f,1.0f,1.0f,1.0f);   
-         pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&color);
+//          D3DXVECTOR4 color(1.0f,1.0f,1.0f,1.0f);   
+//          pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&color);
 
          ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
-
-//          if ( !m_d.m_enableLightingImage )
-//             pd3dDevice->SetRenderState( RenderDevice::LIGHTING, FALSE );
       }
       else
       {
@@ -2683,10 +2702,7 @@ void Ramp::PostRenderStatic(RenderDevice* pd3dDevice)
 
       if (pin && !m_d.m_fImageWalls)
       {
-         ppin3d->SetTexture(NULL);
          pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
-//          if ( !m_d.m_enableLightingImage )
-//             pd3dDevice->SetRenderState( RenderDevice::LIGHTING, TRUE );
       }
 
       pd3dDevice->basicShader->Begin(0);
@@ -2711,14 +2727,9 @@ void Ramp::PostRenderStatic(RenderDevice* pd3dDevice)
       pd3dDevice->basicShader->End();  
 
       ppin3d->DisableAlphaBlend();
-
-//       pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
-//       pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
-//       pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, 0xffffffff);
-
-//       if ( !m_d.m_enableLightingImage && pin!=NULL )
-//          pd3dDevice->SetRenderState( RenderDevice::LIGHTING, TRUE );
    }
+   pd3dDevice->basicShader->Core()->SetFloat("fmaterialAlpha", 1.0f);
+
 }
 
 
