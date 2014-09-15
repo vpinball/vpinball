@@ -251,7 +251,7 @@ public:
 	COLORREF m_specularColor;
 	};
 	struct{
-	__m128 i0,i1,i2; //!! remove as soon as BaseMaterial vanishes
+	__m128 i0,i1,i2,i3; //!! remove as soon as BaseMaterial vanishes
 	};
    };
 private:
