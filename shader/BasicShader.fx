@@ -181,6 +181,11 @@ float4 ps_main_texture( in VS_OUTPUT IN) : COLOR
    return lightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular);
 }
 
+float4 ps_main_texture_no_lighting( in VS_OUTPUT IN) : COLOR
+{
+   return tex2D(texSampler0, IN.tex0);
+}
+
 // Techniques 
 technique basic_without_texture
 { 
@@ -199,5 +204,15 @@ technique basic_with_texture
       //SPECULARENABLE = (bSpecular);
       VertexShader = compile vs_3_0 vs_main(); 
 	  PixelShader = compile ps_3_0 ps_main_texture();
+   } 
+}
+
+technique basic_with_texture_no_lighting
+{ 
+   pass P0 
+   { 
+      //SPECULARENABLE = (bSpecular);
+      VertexShader = compile vs_3_0 vs_main(); 
+	  PixelShader = compile ps_3_0 ps_main_texture_no_lighting();
    } 
 }
