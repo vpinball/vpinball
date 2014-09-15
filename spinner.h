@@ -14,7 +14,7 @@ public:
 	float m_length;
 	float m_rotation;
 	BOOL m_fSupports; 
-	COLORREF m_color;
+    char m_szMaterial[32];
 	TimerDataRoot m_tdr;
 	float m_overhang;
     float m_height;
@@ -103,9 +103,6 @@ private:
    Vertex3D staticVertices[8];
    VertexBuffer *vtxBuf;
    IndexBuffer *idxBuf;
-   Material staticMaterial;
-   Material textureMaterial;
-   Material solidMaterial;
 
 // ISpinner
 public:
@@ -115,8 +112,8 @@ public:
 	STDMETHOD(put_Y)(/*[in]*/ float newVal);
 	STDMETHOD(get_X)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_X)(/*[in]*/ float newVal);
-	STDMETHOD(get_Color)(/*[out, retval]*/ OLE_COLOR *pVal);
-	STDMETHOD(put_Color)(/*[in]*/ OLE_COLOR newVal);
+	STDMETHOD(get_Material)(/*[out, retval]*/ BSTR *pVal);
+	STDMETHOD(put_Material)(/*[in]*/ BSTR newVal);
 	STDMETHOD(get_ImageBack)(/*[out, retval]*/ BSTR *pVal);
 	STDMETHOD(put_ImageBack)(/*[in]*/ BSTR newVal);
 	STDMETHOD(get_ImageFront)(/*[out, retval]*/ BSTR *pVal);

@@ -10,7 +10,7 @@
 class RubberData
 {
 public:
-	COLORREF m_color;
+    char m_szMaterial[32];
 	TimerDataRoot m_tdr;
 	float m_height; 
 	int m_thickness;
@@ -128,9 +128,6 @@ private:
     int m_numVertices;      // this goes along with dynamicVertexBuffer
     int m_numIndices;
 
-    Material solidMaterial;
-    Material textureMaterial;
-
     std::vector<HitObject*> m_vhoCollidable; // Objects to that may be collide selectable
 
 	VertexBuffer *staticVertexBuffer;
@@ -157,8 +154,8 @@ private:
 public:
 	STDMETHOD(get_Image)(/*[out, retval]*/ BSTR *pVal);
 	STDMETHOD(put_Image)(/*[in]*/ BSTR newVal);
-	STDMETHOD(get_Color)(/*[out, retval]*/ OLE_COLOR *pVal);
-	STDMETHOD(put_Color)(/*[in]*/ OLE_COLOR newVal);
+	STDMETHOD(get_Material)(/*[out, retval]*/ BSTR *pVal);
+	STDMETHOD(put_Material)(/*[in]*/ BSTR newVal);
     STDMETHOD(get_Height)(/*[out, retval]*/ float *pVal);
     STDMETHOD(put_Height)(/*[in]*/ float newVal);
     STDMETHOD(get_Thickness)(/*[out, retval]*/ int *pVal);
