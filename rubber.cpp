@@ -66,7 +66,6 @@ void Rubber::SetDefaults(bool fromMouseClick)
 
    m_d.m_height = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"Height", 25.0f) : 25.0f;
    m_d.m_thickness = fromMouseClick ? GetRegIntWithDefault(strKeyName,"Thickness", 8) : 8;
-   m_d.m_color = fromMouseClick ? GetRegIntWithDefault(strKeyName,"Color", RGB(50,200,50)) : RGB(50,200,50);
 
    m_d.m_tdr.m_fTimerEnabled = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"TimerEnabled", false) : false;
    m_d.m_tdr.m_TimerInterval = fromMouseClick ? GetRegIntWithDefault(strKeyName,"TimerInterval", 100) : 100;
@@ -96,7 +95,6 @@ void Rubber::WriteRegDefaults()
 
    SetRegValueFloat(strKeyName,"Height", m_d.m_height);
    SetRegValueInt(strKeyName,"Thickness", m_d.m_thickness);
-   SetRegValueInt(strKeyName,"Color", m_d.m_color);
    SetRegValue(strKeyName,"TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
    SetRegValue(strKeyName,"TimerInterval",REG_DWORD,&m_d.m_tdr.m_TimerInterval,4);
    SetRegValue(strKeyName,"Image", REG_SZ, &m_d.m_szImage, lstrlen(m_d.m_szImage));
@@ -128,7 +126,7 @@ void Rubber::PreRender(Sur * const psur)
 {
    //make 1 wire ramps look unique in editor - uses ramp color
    if (m_ptable->RenderSolid())
-       psur->SetFillColor( m_d.m_color );
+       psur->SetFillColor( RGB(192,192,192) );
    else
        psur->SetFillColor(-1);
    psur->SetBorderColor(-1,false,0);
@@ -828,9 +826,6 @@ float Rubber::GetDepth(const Vertex3Ds& viewDir) const
 
 void Rubber::RenderSetup(RenderDevice* pd3dDevice)
 {
-
-   solidMaterial.setColor( 1.0f, m_d.m_color );
-
    GenerateVertexBuffer(pd3dDevice);
 }
 
@@ -871,7 +866,7 @@ HRESULT Rubber::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptk
 
    bw.WriteFloat(FID(HTTP), m_d.m_height);
    bw.WriteInt(FID(WDTP), m_d.m_thickness);
-   bw.WriteInt(FID(COLR), m_d.m_color);
+   bw.WriteString(FID(MATR), m_d.m_szMaterial);
    bw.WriteBool(FID(TMON), m_d.m_tdr.m_fTimerEnabled);
    bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
    bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
@@ -928,9 +923,9 @@ BOOL Rubber::LoadToken(int id, BiffReader *pbr)
    {
       pbr->GetInt(&m_d.m_thickness);
    }
-   else if (id == FID(COLR))
+   else if (id == FID(MATR))
    {
-      pbr->GetInt(&m_d.m_color);
+      pbr->GetString(m_d.m_szMaterial);
    }
    else if (id == FID(TMON))
    {
@@ -1187,23 +1182,23 @@ STDMETHODIMP Rubber::put_Thickness(int newVal)
    return S_OK;
 }
 
-STDMETHODIMP Rubber::get_Color(OLE_COLOR *pVal)
+STDMETHODIMP Rubber::get_Material(BSTR *pVal)
 {
-   *pVal = m_d.m_color;
+    WCHAR wz[512];
+
+    MultiByteToWideChar(CP_ACP, 0, m_d.m_szMaterial, -1, wz, 32);
+    *pVal = SysAllocString(wz);
 
    return S_OK;
 }
 
-STDMETHODIMP Rubber::put_Color(OLE_COLOR newVal)
+STDMETHODIMP Rubber::put_Material(BSTR newVal)
 {
-   if(m_d.m_color != newVal)
-   {
-	   STARTUNDO
+   STARTUNDO
 
-	   m_d.m_color = newVal;
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szMaterial, 32, NULL, NULL);
 
-	   STOPUNDO
-   }
+   STOPUNDO
 
    return S_OK;
 }
@@ -1451,12 +1446,35 @@ void Rubber::RenderObject(RenderDevice *pd3dDevice)
 
    pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelDeclaration );
 
-   const float r = (float)(m_d.m_color & 255) * (float)(1.0/255.0);
-   const float g = (float)(m_d.m_color & 65280) * (float)(1.0/65280.0);
-   const float b = (float)(m_d.m_color & 16711680) * (float)(1.0/16711680.0);
-   D3DXVECTOR4 matColor(r,g,b,1.0f);   
-   pd3dDevice->basicShader->Core()->SetFloat("fGlossyPower",0.0f);
-   pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&matColor);
+   Material *mat = m_ptable->GetMaterial( m_d.m_szMaterial);
+   D3DXVECTOR4 diffuseColor( 0.5f, 0.5f, 0.5f, 1.0f );
+   D3DXVECTOR4 glossyColor( 0.5f, 0.5f, 0.5f, 1.0f );
+   D3DXVECTOR4 specularColor( 1.0f, 1.0f, 1.0f, 1.0f );
+   float diffuseWrap = 0.5f;
+   float glossyPower = 16.0f;
+   bool  bDiffActive=true;
+   bool  bGlossyActive = false;
+   bool  bSpecActive = false;
+   if( mat )
+   {
+       diffuseColor = mat->getDiffuseColor();
+       glossyColor = mat->getGlossyColor();
+       specularColor = mat->getSpecularColor();
+       diffuseWrap = mat->m_fDiffuse;
+       glossyPower = mat->m_fGlossy;
+       bDiffActive = mat->m_bDiffuseActive;
+       bGlossyActive = mat->m_bGlossyActive;
+       bSpecActive = mat->m_bSpecularActive;
+   }
+
+   pd3dDevice->basicShader->Core()->SetFloat("fDiffuseWrap",diffuseWrap);
+   pd3dDevice->basicShader->Core()->SetFloat("fGlossyPower",glossyPower);
+   pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&diffuseColor);
+   pd3dDevice->basicShader->Core()->SetVector("vGlossyColor",&glossyColor);
+   pd3dDevice->basicShader->Core()->SetVector("vSpecularColor",&specularColor);
+   pd3dDevice->basicShader->Core()->SetBool("bDiffuse", bDiffActive);
+   pd3dDevice->basicShader->Core()->SetBool("bGlossy", bGlossyActive);
+   pd3dDevice->basicShader->Core()->SetBool("bSpecular", bSpecActive);
 
    {
       Pin3D * const ppin3d = &g_pplayer->m_pin3d;

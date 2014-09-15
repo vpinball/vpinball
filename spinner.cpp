@@ -3,12 +3,6 @@
 Spinner::Spinner()
 {
    m_phitspinner = NULL;
-   staticMaterial.setDiffuse( 0.0f, 0.6f, 0.6f, 0.6f );
-   staticMaterial.setAmbient( 0.0f, 0.6f, 0.6f, 0.6f );
-   staticMaterial.setSpecular( 0.0f, 0.0f, 0.0f, 0.0f );
-   staticMaterial.setEmissive( 0.0f, 0.0f, 0.0f, 0.0f );
-   staticMaterial.setPower( 0.0f );
-
    vtxBuf = 0;
    idxBuf = 0;
 }
@@ -49,7 +43,6 @@ void Spinner::WriteRegDefaults()
    SetRegValue("DefaultProps\\Spinner","Supports",REG_DWORD,&m_d.m_fSupports,4);
    SetRegValueFloat("DefaultProps\\Spinner","Height", m_d.m_height);
    SetRegValueFloat("DefaultProps\\Spinner","Overhang", m_d.m_overhang);
-   SetRegValue("DefaultProps\\Spinner","Color", REG_DWORD, &m_d.m_color, 4);
    SetRegValue("DefaultProps\\Spinner","CastsShadow",REG_DWORD,&m_d.m_fCastsShadow,4);
    SetRegValueFloat("DefaultProps\\Spinner","AngleMax", m_d.m_angleMax);
    SetRegValueFloat("DefaultProps\\Spinner","AngleMin", m_d.m_angleMin);
@@ -99,12 +92,6 @@ void Spinner::SetDefaults(bool fromMouseClick)
       m_d.m_overhang = fTmp;
    else
       m_d.m_overhang = 10;
-
-   hr = GetRegInt("DefaultProps\\Spinner","Color", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_color = iTmp;
-   else
-      m_d.m_color = RGB(50,200,50);
 
    hr = GetRegInt("DefaultProps\\Spinner","CastsShadow", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
@@ -328,12 +315,37 @@ void Spinner::PostRenderStatic(RenderDevice* pd3dDevice)
 
     pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelTexelDeclaration );
 
-    const float r = (float)(m_d.m_color & 255) * (float)(1.0/255.0);
-    const float g = (float)(m_d.m_color & 65280) * (float)(1.0/65280.0);
-    const float b = (float)(m_d.m_color & 16711680) * (float)(1.0/16711680.0);
-    D3DXVECTOR4 matColor(r,g,b,1.0f);   
-    pd3dDevice->basicShader->Core()->SetFloat("fGlossyPower",0.0f);
-    pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&matColor);
+    Material *mat = m_ptable->GetMaterial( m_d.m_szMaterial);
+    D3DXVECTOR4 diffuseColor( 0.6f, 0.6f, 0.6f, 1.0f );
+    D3DXVECTOR4 glossyColor( 0.5f, 0.5f, 0.5f, 1.0f );
+    D3DXVECTOR4 specularColor( 1.0f, 1.0f, 1.0f, 1.0f );
+    float diffuseWrap = 0.5f;
+    float glossyPower = 16.0f;
+    bool  bDiffActive=true;
+    bool  bGlossyActive = false;
+    bool  bSpecActive = false;
+    COLORREF diffColor = NOTRANSCOLOR;
+    if( mat )
+    {
+        diffuseColor = mat->getDiffuseColor();
+        glossyColor = mat->getGlossyColor();
+        specularColor = mat->getSpecularColor();
+        diffuseWrap = mat->m_fDiffuse;
+        glossyPower = mat->m_fGlossy;
+        bDiffActive = mat->m_bDiffuseActive;
+        bGlossyActive = mat->m_bGlossyActive;
+        bSpecActive = mat->m_bSpecularActive;
+        diffColor = mat->m_diffuseColor;
+    }
+
+    pd3dDevice->basicShader->Core()->SetFloat("fDiffuseWrap",diffuseWrap);
+    pd3dDevice->basicShader->Core()->SetFloat("fGlossyPower",glossyPower);
+    pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&diffuseColor);
+    pd3dDevice->basicShader->Core()->SetVector("vGlossyColor",&glossyColor);
+    pd3dDevice->basicShader->Core()->SetVector("vSpecularColor",&specularColor);
+    pd3dDevice->basicShader->Core()->SetBool("bDiffuse", bDiffActive);
+    pd3dDevice->basicShader->Core()->SetBool("bGlossy", bGlossyActive);
+    pd3dDevice->basicShader->Core()->SetBool("bSpecular", bSpecActive);
 
     COLORREF rgbTransparent = RGB(255,0,255); //RGB(0,0,0);
 
@@ -364,20 +376,19 @@ void Spinner::PostRenderStatic(RenderDevice* pd3dDevice)
         if (pinback->m_fTransparent)
         {
             pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
-            if (m_d.m_color != rgbTransparent) rgbTransparent = pinback->m_rgbTransparent;
+            if (diffColor != rgbTransparent) rgbTransparent = pinback->m_rgbTransparent;
         }
         else 
         {
             g_pplayer->m_pin3d.EnableAlphaBlend( 1, fFalse );
         } 
 
-        if (m_d.m_color == rgbTransparent || m_d.m_color == NOTRANSCOLOR) 
+        if (diffColor == rgbTransparent || diffColor == NOTRANSCOLOR) 
             pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
         else
             pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
 
         g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
-//        pd3dDevice->SetMaterial(textureMaterial);
         pd3dDevice->basicShader->SetTexture("Texture0",pinback);
         pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
     }
@@ -399,14 +410,14 @@ void Spinner::PostRenderStatic(RenderDevice* pd3dDevice)
         if (pinfront->m_fTransparent)
         {
             pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);	
-            if (m_d.m_color != rgbTransparent) rgbTransparent = pinfront->m_rgbTransparent;
+            if (diffColor != rgbTransparent) rgbTransparent = pinfront->m_rgbTransparent;
         }
         else 
         {
             g_pplayer->m_pin3d.EnableAlphaBlend( 1, fFalse );
         }
 
-        if (m_d.m_color == rgbTransparent || m_d.m_color == NOTRANSCOLOR) 
+        if (diffColor == rgbTransparent || diffColor == NOTRANSCOLOR) 
             pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
         else
             pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
@@ -417,8 +428,6 @@ void Spinner::PostRenderStatic(RenderDevice* pd3dDevice)
     }
     else // No image by that name
     {
-//         ppin3d->SetTexture(NULL);
-//         pd3dDevice->SetMaterial(solidMaterial);
         pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
     }
 
@@ -426,9 +435,8 @@ void Spinner::PostRenderStatic(RenderDevice* pd3dDevice)
     pd3dDevice->DrawPrimitiveVB(D3DPT_TRIANGLEFAN, vtxBuf, 4, 4);
     pd3dDevice->basicShader->End();
 
-    if (m_d.m_color != rgbTransparent && m_d.m_color != NOTRANSCOLOR)
+    if (diffColor != rgbTransparent && diffColor != NOTRANSCOLOR)
     {
-//        ppin3d->SetTexture(NULL);
         pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
         pd3dDevice->basicShader->Begin(0);
         pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, vtxBuf, 8, 16, idxBuf, 0, 24);
@@ -521,10 +529,6 @@ void Spinner::PrepareMovers( RenderDevice* pd3dDevice )
    const float halflength = m_d.m_length * 0.5f;
    const float halfwidth = m_d.m_height * 0.5f;
 
-   const float r = (float)(m_d.m_color & 255) * (float)(1.0/255.0);
-   const float g = (float)(m_d.m_color & 65280) * (float)(1.0/65280.0);
-   const float b = (float)(m_d.m_color & 16711680) * (float)(1.0/16711680.0);
-
    const float minx = -halflength;
    const float maxx = halflength;
    const float miny = -3.0f;
@@ -600,7 +604,6 @@ void Spinner::RenderSetup(RenderDevice* pd3dDevice)
    PrepareStatic( pd3dDevice );
    Texture* const pinback = m_ptable->GetImage(m_d.m_szImageBack);
    Texture* const pinfront = m_ptable->GetImage(m_d.m_szImageFront);
-   solidMaterial.setColor( 1.0f, m_d.m_color );
 
    if ( pinback )
    {
@@ -681,7 +684,7 @@ HRESULT Spinner::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
    bw.WriteInt(FID(SVIS), m_d.m_fVisible);
    bw.WriteBool(FID(SSUPT), m_d.m_fSupports);
    bw.WriteFloat(FID(OVRH), m_d.m_overhang);
-   bw.WriteInt(FID(COLR), m_d.m_color);
+   bw.WriteString(FID(MATR), m_d.m_szMaterial);
    bw.WriteBool(FID(CSHD), m_d.m_fCastsShadow);	//<<< added by Chris
    bw.WriteString(FID(IMGF), m_d.m_szImageFront);
    bw.WriteString(FID(IMGB), m_d.m_szImageBack);
@@ -721,9 +724,9 @@ BOOL Spinner::LoadToken(int id, BiffReader *pbr)
    {
       pbr->GetFloat(&m_d.m_rotation);
    }
-   else if (id == FID(COLR))
+   else if (id == FID(MATR))
    {
-      pbr->GetInt(&m_d.m_color);
+      pbr->GetString(m_d.m_szMaterial);
    }
    else if (id == FID(TMON))
    {
@@ -907,18 +910,21 @@ STDMETHODIMP Spinner::put_Friction(float newVal)
       return S_OK;
 }
 
-STDMETHODIMP Spinner::get_Color(OLE_COLOR *pVal)
+STDMETHODIMP Spinner::get_Material(BSTR *pVal)
 {
-   *pVal = m_d.m_color;
+    WCHAR wz[512];
+
+    MultiByteToWideChar(CP_ACP, 0, m_d.m_szMaterial, -1, wz, 32);
+    *pVal = SysAllocString(wz);
 
    return S_OK;
 }
 
-STDMETHODIMP Spinner::put_Color(OLE_COLOR newVal)
+STDMETHODIMP Spinner::put_Material(BSTR newVal)
 {
    STARTUNDO
 
-      m_d.m_color = newVal;
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szMaterial, 32, NULL, NULL);
 
    STOPUNDO
 
