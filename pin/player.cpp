@@ -348,7 +348,6 @@ void Player::Shutdown()
 
 	m_dmdx = 0;
 	m_dmdy = 0;
-	m_rawdmd.clear();
 	if(m_texdmd)
 	{
 		m_pin3d.m_pd3dDevice->m_texMan.UnloadTexture(g_pplayer->m_texdmd);

@@ -544,9 +544,8 @@ STDMETHODIMP ScriptGlobalTable::put_DMDPixels(VARIANT pVal) //!! use 64bit inste
 	if(psa && g_pplayer && g_pplayer->m_dmdx > 0 && g_pplayer->m_dmdy > 0)
 	{
 		const LONG size = g_pplayer->m_dmdx*g_pplayer->m_dmdy;
-		if(g_pplayer->m_rawdmd.size() != size)
+		if(!g_pplayer->m_texdmd || (g_pplayer->m_texdmd->width()*g_pplayer->m_texdmd->height() != size))
 		{
-			g_pplayer->m_rawdmd.resize(size);
 			if(g_pplayer->m_texdmd)
 			{
 				g_pplayer->m_pin3d.m_pd3dDevice->m_texMan.UnloadTexture(g_pplayer->m_texdmd);
@@ -555,16 +554,17 @@ STDMETHODIMP ScriptGlobalTable::put_DMDPixels(VARIANT pVal) //!! use 64bit inste
 			g_pplayer->m_texdmd = new MemTexture(g_pplayer->m_dmdx,g_pplayer->m_dmdy);
 		}
 
+		DWORD* const data = (DWORD*)g_pplayer->m_texdmd->data(); //!! assumes tex data to be always 32bit
+
 		VARIANT DMDState;
 		DMDState.vt = VT_UI8;
 		
 		for(LONG ofs = 0; ofs < size; ++ofs)
 		{
 			SafeArrayGetElement(psa, &ofs, &DMDState);
-			g_pplayer->m_rawdmd[ofs] = DMDState.uintVal; // store raw values, let shader do the rest
+			data[ofs] = DMDState.uintVal; // store raw values (0..100), let shader do the rest
 		}
 
-		g_pplayer->m_texdmd->CopyBits(&g_pplayer->m_rawdmd[0]); //!! store directly only in texdmd?
 		g_pplayer->m_device_texdmd = g_pplayer->m_pin3d.m_pd3dDevice->m_texMan.LoadTexture(g_pplayer->m_texdmd);
 		g_pplayer->m_pin3d.m_pd3dDevice->m_texMan.SetDirty(g_pplayer->m_texdmd);
 	}

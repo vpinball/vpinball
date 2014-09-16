@@ -324,7 +324,6 @@ public:
 
 	int m_dmdx;
 	int m_dmdy;
-	std::vector<unsigned int> m_rawdmd; //!! needs to be char only, but texpipeline so far only for 32bit //!! store only in texdmd?
 	MemTexture* m_texdmd;
 	D3DTexture* m_device_texdmd;
 
