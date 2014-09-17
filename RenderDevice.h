@@ -359,8 +359,10 @@ private:
 
 public:
    Shader *basicShader;
+   Shader *DMDShader;
    TextureManager m_texMan;
 
+   static VertexDeclaration* m_pVertexTexelDeclaration;
    static VertexDeclaration* m_pVertexNormalTexelDeclaration;
    static VertexDeclaration* m_pVertexNormalTexelTexelDeclaration;
 };
@@ -381,6 +383,7 @@ public:
     void Begin( unsigned int pass );
     void End();
     void SetTexture( D3DXHANDLE texelName, Texture *texel);
+    void SetTexture( D3DXHANDLE texelName, D3DTexture *texel);
 
 private:
     ID3DXEffect* m_shader;
