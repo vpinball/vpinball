@@ -2177,6 +2177,10 @@ void Player::DMDdraw()
     m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, FALSE);
 
     m_pin3d.m_pd3dDevice->SetVertexDeclaration( m_pin3d.m_pd3dDevice->m_pVertexTexelDeclaration );
+    m_pin3d.m_pd3dDevice->DMDShader->Core()->SetFloat("fResX",g_pplayer->m_dmdx);
+    m_pin3d.m_pd3dDevice->DMDShader->Core()->SetFloat("fResY",g_pplayer->m_dmdy);
+    D3DXVECTOR4 DMDColor( 1.0f, 1.0f, 1.0f, 1.0f );
+    m_pin3d.m_pd3dDevice->DMDShader->Core()->SetVector("vColor",&DMDColor);
     m_pin3d.m_pd3dDevice->DMDShader->Core()->SetTechnique("basic");
     m_pin3d.m_pd3dDevice->DMDShader->SetTexture("Texture0", g_pplayer->m_device_texdmd);
     m_pin3d.m_pd3dDevice->DMDShader->Begin(0);
