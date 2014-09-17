@@ -1,8 +1,11 @@
+//!! always adapt to changes from BasicShader.fx
+//!! add playfield color, glossy, etc for more precise reflections of playfield
+
 #define NUM_LIGHTS 2
 
 float3 vDiffuseColor = float3(0.05f,0.05f,0.05f); //!! pass from material!
 float  fDiffuseWrap = 0.25f; //!! pass from material?, w in [0..1] for wrap lighting
-float  fGlossyPower = 8.f; //!! pass from material?
+float  fGlossyPower = 0.8f; //!! pass from material?
 float  fmaterialAlpha = 1.0f; //!! remove?
 
 bool   bDiffuse  = true; //!! remove, steer from diffuse?  (performance?)
@@ -12,6 +15,9 @@ bool   bSpecular = true; //!! remove, steer from specular? (performance?)
 float  freflectionStrength;
 
 float3 vAmbient = float3(0.0f,0.0f,0.0f);
+
+float EnvEmissionScale = 10.0f; //!! also have envmap of fixed size?
+float LightEmissionScale = 1000000.0f; //!! remove! put into emission below
 
 float  flightRange = 3000.0f;
 
@@ -25,7 +31,7 @@ int iLightPointNum = NUM_LIGHTS;
 CLight lights[NUM_LIGHTS] = {          //NUM_LIGHTS == 2
    { 
       float3(0.0f, 0.0f, 0.0f),        //position 
-      float3(0.0f, 0.0f, 0.0f)         //emission
+      float3(0.0f, 0.0f, 0.0f)         //emission //!! have emission > 1.0f
    }, 
    { 
       float3(0.0f, 0.0f, 0.0f),        //position 
@@ -111,8 +117,9 @@ struct voutReflection
 	float3 r           : TEXCOORD1;
 };
 
+//------------------------------------
+// VERTEX SHADER
 
-//VERTEX SHADER
 vout vsBall( in vin IN )
 {
     vout OUT;
@@ -170,13 +177,35 @@ voutReflection vsBallReflection( in vin IN )
 	return OUT;
 }
 
+//------------------------------------
+
 float3 FresnelSchlick(float3 spec, float LdotH)
 {
-    return spec + (1.0f - spec) * pow(1.0f - LdotH, 5);
+    return spec + (float3(1.0f,1.0f,1.0f) - spec) * pow(1.0f - LdotH, 5);
+}
+
+float3 InvGamma(float3 color) //!! use hardware support? D3DSAMP_SRGBTEXTURE,etc
+{
+	return pow(color,2.2f);
+}
+
+float3 Gamma(float3 color) //!! use hardware support? D3DSAMP_SRGBTEXTURE,etc
+{
+	return pow(color,1.0f/2.2f);
+}
+
+float3 ToneMap(float3 color)
+{
+    float burnhighlights = 0.2f;
+    
+    float l = color.x*0.176204f + color.y*0.812985f + color.z*0.0108109f;
+    return color * ((l*burnhighlights + 1.0f) / (l + 1.0f));
+    
+    //return saturate(color);
 }
 
 // assumes all light emission is premultiplied by PI
-float3 DoPointLight(float3 pos, float3 N, float3 V, float3 diffuse, float3 glossy, int i) 
+float3 DoPointLight(float3 pos, float3 N, float3 V, float3 diffuse, float3 glossy, float glossyPower, int i) 
 { 
    float3 lightDir = mul(float4(lights[i].vPos,1.0f), matView).xyz - pos; //!! do in vertex shader?! or completely before?!
    float3 L = normalize(lightDir);
@@ -193,15 +222,19 @@ float3 DoPointLight(float3 pos, float3 N, float3 V, float3 diffuse, float3 gloss
 	 float3 H = normalize(L + V); // half vector
 	 float NdotH = dot(N, H);
 	 float LdotH = dot(L, H);
-	 float VdotH = dot(V ,H);
+	 float VdotH = dot(V, H);
 	 if((NdotH > 0.0f) && (LdotH > 0.0f) && (VdotH > 0.0f))
-		Out += glossy * FresnelSchlick(glossy, LdotH) * (((fGlossyPower + 1.0f) / (8.0f*VdotH)) * pow(NdotH, fGlossyPower));
+		Out += FresnelSchlick(glossy, LdotH) * (((glossyPower + 1.0f) / (8.0f*VdotH)) * pow(NdotH, glossyPower));
    }
  
-   float fAtten = saturate( 1.0f - dot(lightDir/flightRange, lightDir/flightRange) ); //!!
-   //float fAtten = flightRange/dot(lightDir,lightDir);
+   //float fAtten = saturate( 1.0f - dot(lightDir/flightRange, lightDir/flightRange) );
+   //float fAtten = 1.0f/dot(lightDir,lightDir); // original/correct falloff
+   
+   float sqrl_lightDir = dot(lightDir,lightDir); // tweaked falloff to have ranged lightsources
+   float fAtten = saturate(1.0f - sqrl_lightDir*sqrl_lightDir/(flightRange*flightRange*flightRange*flightRange)); //!! pre-mult/invert flightRange?
+   fAtten = fAtten*fAtten/(sqrl_lightDir + 1.0f);
 
-   Out *= lights[i].vEmission * fAtten;
+   Out *= lights[i].vEmission * LightEmissionScale * fAtten;
    
    return Out; 
 }
@@ -212,17 +245,17 @@ float4 lightLoop(float3 pos, float3 N, float3 V, float3 diffuse, float3 glossy, 
    N = normalize(N);
    V = normalize(V);
    
-   // normalize BRDF layer inputs
+   // normalize BRDF layer inputs //!! use diffuse = (1-glossy)*diffuse instead?
    float diffuseMax = bDiffuse ? max(diffuse.x,max(diffuse.y,diffuse.z)) : 0.0f;
    float glossyMax = bGlossy ? max(glossy.x,max(glossy.y,glossy.z)) : 0.0f;
-   float specularMax = bSpecular ? max(specular.x,max(specular.y,specular.z)) : 0.0f;
-   float sum = diffuseMax + glossyMax + specularMax;
+   //float specularMax = bSpecular ? max(specular.x,max(specular.y,specular.z)) : 0.0f; //!! not needed as 2nd layer only so far
+   float sum = diffuseMax + glossyMax /*+ specularMax*/;
    if(sum > 1.0f)
    {
       float invsum = 1.0f/sum;
       diffuse  *= invsum;
       glossy   *= invsum;
-      specular *= invsum;
+      //specular *= invsum;
    }
 
    //if(dot(N,V) < 0.0f) //!! flip normal in case of wrong orientation? (backside lighting)
@@ -231,19 +264,21 @@ float4 lightLoop(float3 pos, float3 N, float3 V, float3 diffuse, float3 glossy, 
    float3 color = float3(0.0f, 0.0f, 0.0f);
       
    if((bDiffuse && diffuseMax > 0.0f) || (bGlossy && glossyMax > 0.0f))
+   {
+      float glossyPower = exp2(10.0f * fGlossyPower + 1.0f); // map from 0..1 to 2..2048 //!! precalc?
       for(int i = 0; i < iLightPointNum; i++)  
-         color += DoPointLight(pos, N, V, diffuse, glossy, i); // no specular needed as only pointlights so far
-         
-   //if((bDiffuse && diffuseMax > 0.0f) || (bSpecular && specularMax > 0.0f))
-   //   color += DoEnvmap(pos, N, V, diffuse, specular); // no glossy, as it's the most hacky one //!! -> use mipmap-hacks for glossy?
-   
-   if(bSpecular && specularMax > 0.0f)
-      color += specular; //!! blend?
+         color += DoPointLight(pos, N, V, diffuse, glossy, glossyPower, i); // no specular needed as only pointlights so far
+   }
+
+   if(bSpecular /*&& specularMax > 0.0f*/)
+      color += specular; //!! blend? //!! Fresnel with 1st layer?
   
-   return float4(saturate(vAmbient + color), fmaterialAlpha); //!! in case of HDR out later on, remove saturate
+   return float4(Gamma(ToneMap(vAmbient + color)), fmaterialAlpha); //!! in case of HDR out later on, remove tonemap and gamma //!! also problematic for alpha blends
 }
 
-//PIXEL SHADER
+//------------------------------------
+// PIXEL SHADER
+
 float4 psBall( in vout IN ) : COLOR
 {
     float3 r = reflect(normalize(/*camera=0,0,0,1*/-IN.worldPos), normalize(IN.normal));
@@ -251,10 +286,10 @@ float4 psBall( in vout IN ) : COLOR
 	float2 uv0;
 	uv0.x = r.x*0.5f+0.5f;
 	uv0.y = r.y*0.5f+0.5f;
-	float3 ballImageColor = tex2D( texSampler0, uv0 ).xyz;
+	float3 ballImageColor = InvGamma(tex2D( texSampler0, uv0 ).xyz)*EnvEmissionScale;
 
 	float4 decalColor = tex2D( texSampler2, IN.tex0 );
-	decalColor.xyz *= decalColor.a;
+	decalColor.xyz = InvGamma(decalColor.xyz)*decalColor.a;
 	
 	/*float3 normal = float3(0,0,1);
 	float NdotR = dot(normal,r);*/
@@ -276,7 +311,7 @@ float4 psBall( in vout IN ) : COLOR
        float2 uv;
 	   uv.x = (position.x + hit.x) * invTableWidth;
 	   uv.y = (position.y + hit.y) * invTableHeight;
-	   playfieldColor = tex2D( texSampler1, uv ).xyz;
+	   playfieldColor = InvGamma(tex2D( texSampler1, uv ).xyz);
 	   
 	   //!! hack to get some lighting on sample
 	   playfieldColor = lightLoop(mid, mul(float4(/*normal=*/0,0,1,0), matWorldView).xyz, /*camera=0,0,0,1*/-IN.worldPos, playfieldColor, float3(0,0,0), float3(0,0,0)).xyz;
@@ -306,6 +341,7 @@ float4 psBallReflection( in voutReflection IN ) : COLOR
 }
 
 //------------------------------------
+// Techniques
 
 technique RenderBall
 {

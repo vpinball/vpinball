@@ -719,6 +719,13 @@ void Player::UpdateBasicShaderMatrix(const Matrix3D objectTrafo)
     m_pin3d.m_pd3dDevice->basicShader->Core()->SetMatrix("matWorldViewInverseTranspose", &matWorldViewInvTrans);
     //m_pin3d.m_pd3dDevice->basicShader->Core()->SetMatrix("matWorld", &matWorld);
     m_pin3d.m_pd3dDevice->basicShader->Core()->SetMatrix("matView", &matView);
+
+    memcpy(temp.m,matView.m,4*4*sizeof(float));
+    temp.Invert();
+    D3DXMATRIX matViewInv;
+    memcpy(matViewInv.m,temp.m,4*4*sizeof(float));
+
+    m_pin3d.m_pd3dDevice->basicShader->Core()->SetMatrix("matViewInverse", &matViewInv);
 }
 
 void Player::InitShader()

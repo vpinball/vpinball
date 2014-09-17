@@ -220,10 +220,10 @@ void Kicker::PreRenderStatic( RenderDevice* pd3dDevice)
 
    Material *mat = m_ptable->GetMaterial( m_d.m_szMaterial);
    D3DXVECTOR4 diffuseColor( 0.5f, 0.5f, 0.5f, 1.0f );
-   D3DXVECTOR4 glossyColor( 0.5f, 0.5f, 0.5f, 1.0f );
-   D3DXVECTOR4 specularColor( 1.0f, 1.0f, 1.0f, 1.0f );
+   D3DXVECTOR4 glossyColor( 0.04f, 0.04f, 0.04f, 1.0f );
+   D3DXVECTOR4 specularColor( 0.04f, 0.04f, 0.04f, 1.0f );
    float diffuseWrap = 0.5f;
-   float glossyPower = 16.0f;
+   float glossyPower = 0.1f;
    bool  bDiffActive=true;
    bool  bGlossyActive = false;
    bool  bSpecActive = false;
