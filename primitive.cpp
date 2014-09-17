@@ -766,10 +766,10 @@ void Primitive::RenderObject( RenderDevice *pd3dDevice )
 
     Material *mat = m_ptable->GetMaterial( m_d.m_szMaterial);
     D3DXVECTOR4 diffuseColor( 0.5f, 0.5f, 0.5f, 1.0f );
-    D3DXVECTOR4 glossyColor( 0.5f, 0.5f, 0.5f, 1.0f );
-    D3DXVECTOR4 specularColor( 1.0f, 1.0f, 1.0f, 1.0f );
+    D3DXVECTOR4 glossyColor( 0.04f, 0.04f, 0.04f, 1.0f );
+    D3DXVECTOR4 specularColor( 0.04f, 0.04f, 0.04f, 1.0f );
     float diffuseWrap = 0.5f;
-    float glossyPower = 16.0f;
+    float glossyPower = 0.1f;
     bool  bDiffActive=true;
     bool  bGlossyActive = false;
     bool  bSpecActive = false;
@@ -816,12 +816,6 @@ void Primitive::RenderObject( RenderDevice *pd3dDevice )
     }
 
     // set transform
-    //Matrix3D matOrig, matNew;
-    //matOrig = g_pplayer->m_pin3d.GetWorldTransform();
-    //matTemp.SetScaling(1.0f, 1.0f, m_ptable->m_zScale); // TODO: z-scaling? causes distortions
-    //matNew.Multiply(matTemp, matNew);
-    //matOrig.Multiply(fullMatrix, matNew);
-    //pd3dDevice->SetTransform(TRANSFORMSTATE_WORLD, &matNew);
     g_pplayer->UpdateBasicShaderMatrix(fullMatrix);
 
     pd3dDevice->basicShader->Begin(0);
@@ -830,7 +824,6 @@ void Primitive::RenderObject( RenderDevice *pd3dDevice )
     pd3dDevice->basicShader->End();
 
     // reset transform
-    //pd3dDevice->SetTransform(TRANSFORMSTATE_WORLD, &matOrig);
     g_pplayer->UpdateBasicShaderMatrix();
 
     pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_CLAMP);

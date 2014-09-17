@@ -66,10 +66,17 @@ public:
       mat.ambient.b = 1.0f;      
       mat.ambient.a = 1.0f;
 
-      m_fDiffuse=0.8f;
-      m_fGlossy=0.0f;
+      m_fDiffuse=0.5f;
+      m_fGlossy=0.1f;
       m_fSpecular=0.0f;
-      m_diffuseColor=0xFFFFFFFF;
+
+      m_bDiffuseActive = true;
+      m_bGlossyActive = true;
+      m_bSpecularActive = false;
+
+      m_diffuseColor=0;
+      m_glossyColor=0;
+      m_specularColor=0;
    }
 
    inline Material( const D3DCOLORVALUE _diffuse, const D3DCOLORVALUE _ambient, const D3DCOLORVALUE _specular, const D3DCOLORVALUE _emissive, const D3DVALUE _power )

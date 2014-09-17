@@ -992,10 +992,10 @@ void Surface::RenderSlingshots(RenderDevice* pd3dDevice)
    const float slingtop    = (m_d.m_heighttop - m_d.m_heightbottom) * 0.8f + m_d.m_heightbottom;
    Material *mat = m_ptable->GetMaterial( m_d.m_szSlingShotMaterial);
    D3DXVECTOR4 diffuseColor( 0.5f, 0.5f, 0.5f, 1.0f );
-   D3DXVECTOR4 glossyColor( 0.5f, 0.5f, 0.5f, 1.0f );
-   D3DXVECTOR4 specularColor( 1.0f, 1.0f, 1.0f, 1.0f );
+   D3DXVECTOR4 glossyColor( 0.04f, 0.04f, 0.04f, 1.0f );
+   D3DXVECTOR4 specularColor( 0.04f, 0.04f, 0.04f, 1.0f );
    float diffuseWrap = 0.5f;
-   float glossyPower = 16.0f;
+   float glossyPower = 0.1f;
    if( mat )
    {
       diffuseColor = mat->getDiffuseColor();
@@ -1036,10 +1036,10 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
 
     Material *mat = m_ptable->GetMaterial( m_d.m_szSideMaterial);
     D3DXVECTOR4 diffuseColor( 0.5f, 0.5f, 0.5f, 1.0f );
-    D3DXVECTOR4 glossyColor( 0.5f, 0.5f, 0.5f, 1.0f );
-    D3DXVECTOR4 specularColor( 1.0f, 1.0f, 1.0f, 1.0f );
+    D3DXVECTOR4 glossyColor( 0.04f, 0.04f, 0.04f, 1.0f );
+    D3DXVECTOR4 specularColor( 0.04f, 0.04f, 0.04f, 1.0f );
     float diffuseWrap = 0.5f;
-    float glossyPower = 16.0f;
+    float glossyPower = 0.1f;
     if( mat )
     {
        diffuseColor = mat->getDiffuseColor();
@@ -1117,10 +1117,10 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
     {
        mat = m_ptable->GetMaterial( m_d.m_szTopMaterial);
        diffuseColor = D3DXVECTOR4( 0.5f, 0.5f, 0.5f, 1.0f );
-       glossyColor = D3DXVECTOR4( 0.5f, 0.5f, 0.5f, 1.0f );
-       specularColor = D3DXVECTOR4( 1.0f, 1.0f, 1.0f, 1.0f );
+       glossyColor = D3DXVECTOR4( 0.04f, 0.04f, 0.04f, 1.0f );
+       specularColor = D3DXVECTOR4( 0.04f, 0.04f, 0.04f, 1.0f );
        float diffuseWrap = 0.5f;
-       float glossyPower = 16.0f;
+       float glossyPower = 0.1f;
        if( mat )
        {
           diffuseColor = mat->getDiffuseColor();

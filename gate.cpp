@@ -368,10 +368,10 @@ void Gate::PostRenderStatic(RenderDevice* pd3dDevice)
 
     Material *mat = m_ptable->GetMaterial( m_d.m_szMaterial);
     D3DXVECTOR4 diffuseColor( 0.5f, 0.5f, 0.5f, 1.0f );
-    D3DXVECTOR4 glossyColor( 0.5f, 0.5f, 0.5f, 1.0f );
-    D3DXVECTOR4 specularColor( 1.0f, 1.0f, 1.0f, 1.0f );
+    D3DXVECTOR4 glossyColor( 0.04f, 0.04f, 0.04f, 1.0f );
+    D3DXVECTOR4 specularColor( 0.04f, 0.04f, 0.04f, 1.0f );
     float diffuseWrap = 0.5f;
-    float glossyPower = 16.0f;
+    float glossyPower = 0.1;
     bool  bDiffActive=true;
     bool  bGlossyActive = false;
     bool  bSpecActive = false;
@@ -666,11 +666,11 @@ void Gate::RenderStatic(RenderDevice* pd3dDevice) // only the support structures
    pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelTexelDeclaration );
 
    Material *mat = m_ptable->GetMaterial( m_d.m_szMaterial);
-   D3DXVECTOR4 diffuseColor( 0.6f, 0.6f, 0.6f, 1.0f );
-   D3DXVECTOR4 glossyColor( 0.5f, 0.5f, 0.5f, 1.0f );
-   D3DXVECTOR4 specularColor( 1.0f, 1.0f, 1.0f, 1.0f );
+   D3DXVECTOR4 diffuseColor( 0.5f, 0.5f, 0.5f, 1.0f );
+   D3DXVECTOR4 glossyColor( 0.04f, 0.04f, 0.04f, 1.0f );
+   D3DXVECTOR4 specularColor( 0.04f, 0.04f, 0.04f, 1.0f );
    float diffuseWrap = 0.8f;
-   float glossyPower = 16.0f;
+   float glossyPower = 0.1f;
    if( mat )
    {
       diffuseColor = mat->getDiffuseColor();

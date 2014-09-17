@@ -452,10 +452,10 @@ void Pin3D::RenderPlayfieldGraphics()
 
    Material *mat = g_pplayer->m_ptable->GetMaterial( g_pplayer->m_ptable->m_szPlayfieldMaterial);
    D3DXVECTOR4 diffuseColor( 0.5f, 0.5f, 0.5f, 1.0f );
-   D3DXVECTOR4 glossyColor( 0.5f, 0.5f, 0.5f, 1.0f );
-   D3DXVECTOR4 specularColor( 1.0f, 1.0f, 1.0f, 1.0f );
+   D3DXVECTOR4 glossyColor( 0.04f, 0.04f, 0.04f, 1.0f );
+   D3DXVECTOR4 specularColor( 0.04f, 0.04f, 0.04f, 1.0f );
    float diffuseWrap = 0.0f;
-   float glossyPower = 8.0f;
+   float glossyPower = 0.1f;
    bool  bDiffActive=true;
    bool  bGlossyActive = true;
    bool  bSpecActive = false;
@@ -514,9 +514,6 @@ void Pin3D::RenderPlayfieldGraphics()
 
     // Apparently, releasing the vertex buffer here immediately can cause rendering glitches in
     // later rendering steps, so we keep it around for now.
-    m_pd3dDevice->basicShader->Core()->SetBool("bGlossy",false);
-    m_pd3dDevice->basicShader->Core()->SetFloat("fGlossyPower",16.0f);
-    m_pd3dDevice->basicShader->Core()->SetFloat("fDiffuseWrap",0.5f);
 }
 
 const int rgfilterwindow[7][7] =
