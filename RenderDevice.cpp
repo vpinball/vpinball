@@ -4,6 +4,14 @@
 
 #pragma comment(lib, "d3d9.lib")        // TODO: put into build system
 
+const VertexElement VertexTexelElement[] = 
+{
+   { 0, 0  * sizeof(float),D3DDECLTYPE_FLOAT3,   D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },  // pos
+   { 0, 3  * sizeof(float),D3DDECLTYPE_FLOAT2,   D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },  // tex0
+   D3DDECL_END()
+};
+VertexDeclaration* RenderDevice::m_pVertexTexelDeclaration	= NULL;
+
 const VertexElement VertexNormalTexelElement[] = 
 {
    { 0, 0  * sizeof(float),D3DDECLTYPE_FLOAT3,   D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },  // pos
@@ -333,10 +341,13 @@ RenderDevice::RenderDevice(HWND hwnd, int width, int height, bool fullscreen, in
 
     basicShader = new Shader(this);
 //    basicShader->Load("c:\\projects\\vp\\shader\\BasicShader.fx", true );
-
     basicShader->Load("BasicShader.fx", false );
 
-    // create default vertex declarations for shaders
+    DMDShader = new Shader(this);
+    DMDShader->Load("DMDShader.fx", false );
+
+	// create default vertex declarations for shaders
+    CreateVertexDeclaration( VertexTexelElement, &m_pVertexTexelDeclaration );
     CreateVertexDeclaration( VertexNormalTexelElement, &m_pVertexNormalTexelDeclaration );
     CreateVertexDeclaration( VertexNormalTexelTexelElement, &m_pVertexNormalTexelTexelDeclaration );
 }
@@ -394,12 +405,18 @@ RenderDevice::~RenderDevice()
         delete basicShader;
         basicShader=0;
     }
+    if (DMDShader)
+    {
+        delete DMDShader;
+        DMDShader=0;
+    }
 
     m_pD3DDevice->SetStreamSource(0, NULL, 0, 0);
     m_pD3DDevice->SetIndices(NULL);
 
     SAFE_RELEASE(m_dynIndexBuffer);
 
+    SAFE_RELEASE(m_pVertexTexelDeclaration);
     SAFE_RELEASE(m_pVertexNormalTexelDeclaration);
     SAFE_RELEASE(m_pVertexNormalTexelTexelDeclaration);
 
@@ -1003,4 +1020,9 @@ void Shader::SetTexture( D3DXHANDLE texelName, Texture *texel)
       m_shader->SetTexture(texelName,m_renderDevice->m_texMan.LoadTexture(texel->m_pdsBufferColorKey));
    else if (texel->m_pdsBuffer )
       m_shader->SetTexture(texelName,m_renderDevice->m_texMan.LoadTexture(texel->m_pdsBuffer));
+}
+
+void Shader::SetTexture( D3DXHANDLE texelName, D3DTexture *texel)
+{
+   m_shader->SetTexture(texelName,texel);
 }

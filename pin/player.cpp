@@ -102,6 +102,16 @@ ePlungerKey};
 
 //
 
+static const float quadVerts[4*5] =
+{
+  1.0f, 1.0f,0.0f,1.0f,0.0f,
+ -1.0f, 1.0f,0.0f,0.0f,0.0f,
+  1.0f,-1.0f,0.0f,1.0f,1.0f,
+ -1.0f,-1.0f,0.0f,0.0f,1.0f
+};
+
+//
+
 #include "..\stereo3D.h"
 
 #define RECOMPUTEBUTTONCHECK WM_USER+100
@@ -2131,6 +2141,48 @@ struct IsMemberOf
     const std::vector<T>& v;
 };
 
+void Player::DMDdraw()
+{
+  if(g_pplayer->m_device_texdmd)
+  {
+	float DMDVerts[4*5] =
+	{
+	  1.0f, 1.0f,0.0f,1.0f,0.0f,
+	 -1.0f, 1.0f,0.0f,0.0f,0.0f,
+	  1.0f,-1.0f,0.0f,1.0f,1.0f,
+	 -1.0f,-1.0f,0.0f,0.0f,1.0f
+	};
+
+	const float DMDwidth = 0.25f; //!! global,etc
+	const float DMDheight = 0.125f;
+	const float DMDposx = 0.0f;
+	const float DMDposy = 0.0f;
+
+	for(unsigned int i = 0; i < 4; ++i)
+	{
+		DMDVerts[i*5] = (((DMDVerts[i*5]+1.0f)*0.5f)*DMDwidth + DMDposx)*2.0f-1.0f;
+		DMDVerts[i*5+1] = (((DMDVerts[i*5+1]+1.0f)*0.5f)*DMDheight + DMDposy)*2.0f-1.0f;
+	}
+
+	m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
+    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
+    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::LIGHTING, FALSE);
+    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, FALSE);
+
+    m_pin3d.m_pd3dDevice->SetVertexDeclaration( m_pin3d.m_pd3dDevice->m_pVertexTexelDeclaration );
+    m_pin3d.m_pd3dDevice->DMDShader->Core()->SetTechnique("basic");
+    m_pin3d.m_pd3dDevice->DMDShader->SetTexture("Texture0", g_pplayer->m_device_texdmd);
+    m_pin3d.m_pd3dDevice->DMDShader->Begin(0);
+    m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_TEX, (LPVOID)DMDVerts, 4);
+    m_pin3d.m_pd3dDevice->DMDShader->End();
+
+   	m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, TRUE);
+    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::LIGHTING, TRUE);
+    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+	m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+  }
+}
+
 void Player::RenderDynamics()
 {
     TRACE_FUNCTION();
@@ -2178,6 +2230,8 @@ void Player::RenderDynamics()
    // Debug draw of plumb.
    plumb_draw();
 
+   DMDdraw();
+
    m_pin3d.m_pd3dDevice->SetRenderState( RenderDevice::NORMALIZENORMALS, TRUE );
 
    // Finish rendering the next frame.
@@ -2211,14 +2265,6 @@ void Player::FlipVideoBuffersNormal( const bool vsync )
 {
     m_pin3d.Flip(vsync);
 }
-
-static const float quadVerts[4*5] =
-{
-  1.0f, 1.0f,0.0f,1.0f,0.0f,
- -1.0f, 1.0f,0.0f,0.0f,0.0f,
-  1.0f,-1.0f,0.0f,1.0f,1.0f,
- -1.0f,-1.0f,0.0f,0.0f,1.0f
-};
 
 void Player::FlipVideoBuffers3DFXAA( const bool vsync ) //!! SMAA, luma sharpen, dither
 {

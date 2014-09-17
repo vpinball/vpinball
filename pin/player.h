@@ -199,6 +199,8 @@ public:
 	float ParseLog(LARGE_INTEGER *pli1, LARGE_INTEGER *pli2);
 #endif
 
+	void DMDdraw();
+
 	HWND m_hwnd;
 
     Shader      *ballShader;
