@@ -56,8 +56,8 @@ float4x4 matViewInverse;
 //float4 camera;
 
 texture Texture0; // diffuse
-texture Texture1; // glossy //!!
-texture Texture2; // specular //!!
+//texture Texture1; // glossy //!!
+//texture Texture2; // specular //!!
 texture Texture3; // envmap
 
 sampler2D texSampler0 : TEXUNIT0 = sampler_state
@@ -68,7 +68,7 @@ sampler2D texSampler0 : TEXUNIT0 = sampler_state
     MINFILTER = LINEAR;
 };
 
-sampler2D texSampler1 : TEXUNIT1 = sampler_state
+/*sampler2D texSampler1 : TEXUNIT1 = sampler_state
 {
 	Texture	  = (Texture1);
     MIPFILTER = LINEAR;
@@ -82,7 +82,7 @@ sampler2D texSampler2 : TEXUNIT2 = sampler_state
     MIPFILTER = LINEAR;
     MAGFILTER = LINEAR;
     MINFILTER = LINEAR;
-};
+};*/
 
 sampler2D texSampler3 : TEXUNIT3 = sampler_state
 {
@@ -257,9 +257,10 @@ float4 ps_main( in VS_OUTPUT IN) : COLOR
 
 float4 ps_main_texture( in VS_OUTPUT IN) : COLOR
 {
-   float3 diffuse  = vDiffuseColor * InvGamma(tex2D(texSampler0, IN.tex0).xyz);
-   float3 glossy   = vGlossyColor;
-   float3 specular = vSpecularColor;
+   float3 t = InvGamma(tex2D(texSampler0, IN.tex0).xyz);
+   float3 diffuse  = vDiffuseColor*t;
+   float3 glossy   = vGlossyColor*t;
+   float3 specular = vSpecularColor; //!! texture?
    
    return lightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular);
 }
