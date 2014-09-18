@@ -19744,6 +19744,10 @@
 			</File>
 		</Filter>
 		<File
+			RelativePath=".\shader\DMDShader.fx"
+			>
+		</File>
+		<File
 			RelativePath="res\table.vpx"
 			>
 		</File>

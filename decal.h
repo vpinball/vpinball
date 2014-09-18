@@ -20,6 +20,7 @@ public:
 	//BOOL m_fAutoSize;
 	//BOOL m_fAutoAspect;
 	COLORREF m_color;
+    char m_szMaterial[32];
 	BOOL m_fVerticalText;
 };
 
@@ -39,6 +40,8 @@ public:
 	STDMETHOD(putref_Font)(/*[in]*/ IFontDisp *newVal);
 	STDMETHOD(get_FontColor)(/*[out, retval]*/ OLE_COLOR *pVal);
 	STDMETHOD(put_FontColor)(/*[in]*/ OLE_COLOR newVal);
+    STDMETHOD(get_Material)(/*[out, retval]*/ BSTR *pVal);
+    STDMETHOD(put_Material)(/*[in]*/ BSTR newVal);
 	STDMETHOD(get_SizingType)(/*[out, retval]*/ SizingType *pVal);
 	STDMETHOD(put_SizingType)(/*[in]*/ SizingType newVal);
 	STDMETHOD(get_Text)(/*[out, retval]*/ BSTR *pVal);

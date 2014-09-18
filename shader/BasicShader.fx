@@ -19,6 +19,9 @@ float  fmaterialAlpha = 1.0f; //!! allow for texture? -> use from diffuse? and/o
 bool   bDiffuse  = true;  //!! remove, steer from diffuse?  (performance?)
 bool   bGlossy   = false; //!! remove, steer from glossy?   (performance?)
 bool   bSpecular = false; //!! remove, steer from specular? (performance?)
+
+bool   bPerformAlphaTest = false;
+float  fAlphaTestValue = 128.0f/255.0f;
       
 float3 vAmbient = float3(0.0f,0.0f,0.0f); //!! remove completely, just rely on envmap/IBL?
 
@@ -257,7 +260,12 @@ float4 ps_main( in VS_OUTPUT IN) : COLOR
 
 float4 ps_main_texture( in VS_OUTPUT IN) : COLOR
 {
-   float3 t = InvGamma(tex2D(texSampler0, IN.tex0).xyz);
+   float4 pixel = tex2D(texSampler0, IN.tex0);
+   
+   if (bPerformAlphaTest && pixel.a<=fAlphaTestValue )
+    clip(-1);           //stop the pixel shader if alpha test should reject pixel
+    
+   float3 t = InvGamma(pixel.xyz);
    float3 diffuse  = vDiffuseColor*t;
    float3 glossy   = vGlossyColor*t;
    float3 specular = vSpecularColor; //!! texture?
@@ -292,6 +300,7 @@ technique basic_with_texture
 	  PixelShader = compile ps_3_0 ps_main_texture();
    } 
 }
+
 
 technique basic_with_texture_no_lighting
 { 

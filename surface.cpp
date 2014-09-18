@@ -1072,13 +1072,14 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
 
         if (pinSide->m_fTransparent)
         {
-            g_pplayer->m_pin3d.EnableAlphaTestReference(128);
             pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
         }
         else
         {
             pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
         }
+        pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", true);
+        pd3dDevice->basicShader->Core()->SetFloat("fAlphaTestValue", 128.0f/255.0f);
         g_pplayer->m_pin3d.EnableAlphaBlend( 128, FALSE );
         g_pplayer->m_pin3d.SetTextureFilter( ePictureTexture, TEXTURE_MODE_TRILINEAR );
     }
@@ -1196,7 +1197,10 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
     pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
     pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, 0xffffffff);
     if ( m_d.m_transparent )
+    {
         pd3dDevice->basicShader->Core()->SetFloat("fmaterialAlpha", 1.0f);
+        pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", false);
+    }
 }
 
 void Surface::DoCommand(int icmd, int x, int y)

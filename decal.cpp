@@ -448,8 +448,6 @@ void Decal::RenderSetup(RenderDevice* pd3dDevice )
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
    Vertex3D_NoTex2 vertices[4];
 
-   material.setAmbient(0.5f, 1.0f, 1.0f, 1.0f);
-   material.setDiffuse(0.5f, 1.0f, 1.0f, 1.0f);
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_zScale;
 
    float leading, descent; // For fonts
@@ -534,10 +532,47 @@ void Decal::RenderStatic(RenderDevice* pd3dDevice)
 
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
-   pd3dDevice->SetMaterial(material);
+   pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelDeclaration );
+
+   Material *mat = m_ptable->GetMaterial( m_d.m_szMaterial);
+   D3DXVECTOR4 diffuseColor( 0.5f, 0.5f, 0.5f, 1.0f );
+   D3DXVECTOR4 glossyColor( 0.04f, 0.04f, 0.04f, 1.0f );
+   D3DXVECTOR4 specularColor( 0.04f, 0.04f, 0.04f, 1.0f );
+   float diffuseWrap = 0.5f;
+   float glossyPower = 0.1f;
+   bool  bDiffActive=true;
+   bool  bGlossyActive = false;
+   bool  bSpecActive = false;
+   if( mat )
+   {
+       diffuseColor = mat->getDiffuseColor();
+       glossyColor = mat->getGlossyColor();
+       specularColor = mat->getSpecularColor();
+       diffuseWrap = mat->m_fDiffuse;
+       glossyPower = mat->m_fGlossy;
+       bDiffActive = mat->m_bDiffuseActive;
+       bGlossyActive = mat->m_bGlossyActive;
+       bSpecActive = mat->m_bSpecularActive;
+   }
+
+   pd3dDevice->basicShader->Core()->SetFloat("fDiffuseWrap",diffuseWrap);
+   pd3dDevice->basicShader->Core()->SetFloat("fGlossyPower",glossyPower);
+   pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&diffuseColor);
+   pd3dDevice->basicShader->Core()->SetVector("vGlossyColor",&glossyColor);
+   pd3dDevice->basicShader->Core()->SetVector("vSpecularColor",&specularColor);
+   pd3dDevice->basicShader->Core()->SetBool("bDiffuse", bDiffActive);
+   pd3dDevice->basicShader->Core()->SetBool("bGlossy", bGlossyActive);
+   pd3dDevice->basicShader->Core()->SetBool("bSpecular", bSpecActive);
+   pd3dDevice->basicShader->Core()->SetFloat("fmaterialAlpha",1.0f);
+   pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
+   pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", true);
+   const float alphaRef=128.0f / 255.0f;
+   pd3dDevice->basicShader->Core()->SetFloat("fAlphaTestValue", 128.0f/255.0f);
+
    if (m_d.m_decaltype != DecalImage)
    {
        ppin3d->SetBaseTexture(ePictureTexture, m_textImg);
+       //pd3dDevice->basicShader->SetTexture("Texture0", pin);
    }
    else
    {
@@ -545,39 +580,33 @@ void Decal::RenderStatic(RenderDevice* pd3dDevice)
       if (pin)
       {
           pin->CreateAlphaChannel();
-          pin->Set( ePictureTexture );
+          pd3dDevice->basicShader->SetTexture("Texture0", pin);
       }
    }
 
    // Set texture to mirror, so the alpha state of the texture blends correctly to the outside
-   pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_MIRROR);
+//   pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_MIRROR);
 
    ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
    pd3dDevice->SetRenderState( RenderDevice::ALPHABLENDENABLE, TRUE);
-
-   // Perform alpha test so that we don't write to the depth buffer on transparent pixels.
-   ppin3d->EnableAlphaTestReference(0x80);
-
-   // Turn on anisotopic filtering.
-   ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_ANISOTROPIC );
 
    if (!m_fBackglass)
    {
        float depthbias = -5 * BASEDEPTHBIAS;
        pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, *((DWORD*)&depthbias));
    }
-
+   pd3dDevice->basicShader->Begin(0);
    pd3dDevice->DrawPrimitiveVB( D3DPT_TRIANGLEFAN, vertexBuffer, 0, 4 );
+   pd3dDevice->basicShader->End();
 
    pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
 
-   // Set the texture state.
-   pd3dDevice->SetTexture(ePictureTexture, NULL);
    ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 
    // Set the render state.
    pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
    pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_WRAP);
+   pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", false);
 }
 
 void Decal::SetObjectPos()
@@ -625,7 +654,7 @@ HRESULT Decal::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptke
    bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
    bw.WriteString(FID(TEXT), m_d.m_sztext);
    bw.WriteInt(FID(TYPE), m_d.m_decaltype);
-
+   bw.WriteString(FID(MATR), m_d.m_szMaterial); 
    bw.WriteInt(FID(COLR), m_d.m_color);
    bw.WriteInt(FID(SIZE), m_d.m_sizingtype);
 
@@ -702,6 +731,10 @@ BOOL Decal::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(COLR))
    {
       pbr->GetInt(&m_d.m_color);
+   }
+   else if (id == FID(MATR))
+   {
+       pbr->GetString(m_d.m_szMaterial);
    }
    else if (id == FID(SIZE))
    {
@@ -1070,6 +1103,27 @@ STDMETHODIMP Decal::put_FontColor(OLE_COLOR newVal)
    STOPUNDO
 
    return S_OK;
+}
+
+STDMETHODIMP Decal::get_Material(BSTR *pVal)
+{
+    WCHAR wz[512];
+
+    MultiByteToWideChar(CP_ACP, 0, m_d.m_szMaterial, -1, wz, 32);
+    *pVal = SysAllocString(wz);
+
+    return S_OK;
+}
+
+STDMETHODIMP Decal::put_Material(BSTR newVal)
+{
+    STARTUNDO
+
+    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szMaterial, 32, NULL, NULL);
+
+    STOPUNDO
+
+        return S_OK;
 }
 
 STDMETHODIMP Decal::get_Font(IFontDisp **pVal)
