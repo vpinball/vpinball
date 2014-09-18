@@ -19739,14 +19739,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\shader\DMDShader.fx"
+				>
+			</File>
+			<File
 				RelativePath=".\shader\LightInsert.fx"
 				>
 			</File>
 		</Filter>
-		<File
-			RelativePath=".\shader\DMDShader.fx"
-			>
-		</File>
 		<File
 			RelativePath="res\table.vpx"
 			>
