@@ -1992,12 +1992,12 @@ BEGIN
         MENUITEM "&Play\tF5",                   ID_TABLE_PLAY
         MENUITEM SEPARATOR
         MENUITEM "&Table Info...",              ID_TABLE_TABLEINFO
-        MENUITEM "&Sound Manager...",           ID_TABLE_SOUNDMANAGER
-        MENUITEM "&Image Manager...",           ID_TABLE_IMAGEMANAGER
-        MENUITEM "M&aterial Manager",           ID_TABLE_MATERIALMANAGER
+        MENUITEM "&Sound Manager...\tF2",       ID_TABLE_SOUNDMANAGER
+        MENUITEM "&Image Manager...\tF3",       ID_TABLE_IMAGEMANAGER
+        MENUITEM "M&aterial Manager...\tF4",    ID_TABLE_MATERIALMANAGER
         MENUITEM "&Font Manager...",            ID_TABLE_FONTMANAGER
         MENUITEM "&Dimensions Manager...",      ID_TABLE_DIMENSIONMANAGER
-        MENUITEM "&Collection Manager...",      ID_TABLE_COLLECTIONMANAGER
+        MENUITEM "&Collection Manager...\tF8",  ID_TABLE_COLLECTIONMANAGER
         MENUITEM SEPARATOR
         MENUITEM "&Magnify",                    ID_TABLE_MAGNIFY
     END
@@ -2141,32 +2141,36 @@ BEGIN
     "S",            ID_EDIT_DRAWINGORDER_SELECT, VIRTKEY, SHIFT, CONTROL, NOINVERT
     "E",            ID_EDIT_SEARCH,         VIRTKEY, SHIFT, CONTROL, NOINVERT
     "Z",            ID_EDIT_UNDO,           VIRTKEY, CONTROL, NOINVERT
-    VK_F5,          ID_TABLE_PLAY,          VIRTKEY, NOINVERT
     "B",            ID_INSERT_BUMPER,       VIRTKEY, CONTROL, NOINVERT
-    "C",            IDC_COPY,               VIRTKEY, CONTROL, NOINVERT
     "D",            ID_INSERT_DECAL,        VIRTKEY, CONTROL, NOINVERT
     "Y",            ID_INSERT_DISPREEL,     VIRTKEY, CONTROL, NOINVERT
+    "H",            ID_INSERT_FLASHER,      VIRTKEY, CONTROL, NOINVERT
     "F",            ID_INSERT_FLIPPER,      VIRTKEY, CONTROL, NOINVERT
     "G",            ID_INSERT_GATE,         VIRTKEY, CONTROL, NOINVERT
     "K",            ID_INSERT_KICKER,       VIRTKEY, CONTROL, NOINVERT
     "L",            ID_INSERT_LIGHT,        VIRTKEY, CONTROL, NOINVERT
     "Q",            ID_INSERT_LIGHTSEQ,     VIRTKEY, CONTROL, NOINVERT
-    "V",            IDC_PASTE,              VIRTKEY, CONTROL, NOINVERT
-    "V",            IDC_PASTEAT,            VIRTKEY, SHIFT, CONTROL, NOINVERT
     "P",            ID_INSERT_PLUNGER,      VIRTKEY, CONTROL, NOINVERT
     "J",            ID_INSERT_PRIMITIVE,    VIRTKEY, CONTROL, NOINVERT
     "R",            ID_INSERT_RAMP,         VIRTKEY, CONTROL, NOINVERT
-    VK_ESCAPE,      IDC_SELECT,             VIRTKEY, NOINVERT
     "I",            ID_INSERT_SPINNER,      VIRTKEY, CONTROL, NOINVERT
     "A",            ID_INSERT_TARGET,       VIRTKEY, CONTROL, NOINVERT
     "E",            ID_INSERT_TEXTBOX,      VIRTKEY, CONTROL, NOINVERT
     "M",            ID_INSERT_TIMER,        VIRTKEY, CONTROL, NOINVERT
     "T",            ID_INSERT_TRIGGER,      VIRTKEY, CONTROL, NOINVERT
     "W",            ID_INSERT_WALL,         VIRTKEY, CONTROL, NOINVERT
+    VK_F5,          ID_TABLE_PLAY,          VIRTKEY, NOINVERT
+    "C",            IDC_COPY,               VIRTKEY, CONTROL, NOINVERT
+    "V",            IDC_PASTE,              VIRTKEY, CONTROL, NOINVERT
+    "V",            IDC_PASTEAT,            VIRTKEY, SHIFT, CONTROL, NOINVERT
+    VK_ESCAPE,      IDC_SELECT,             VIRTKEY, NOINVERT
     "N",            IDM_NEW,                VIRTKEY, CONTROL, NOINVERT
     "O",            IDM_OPEN,               VIRTKEY, CONTROL, NOINVERT
     "S",            IDM_SAVE,               VIRTKEY, CONTROL, NOINVERT
-    "H",            ID_INSERT_FLASHER,      VIRTKEY, CONTROL, NOINVERT
+    VK_F4,          IDM_MATERIAL_EDITOR,    VIRTKEY, NOINVERT
+    VK_F3,          IDM_IMAGE_EDITOR,       VIRTKEY, NOINVERT
+    VK_F2,          IDM_SOUND_EDITOR,       VIRTKEY, NOINVERT
+    VK_F8,          IDM_COLLECTION_EDITOR,  VIRTKEY, NOINVERT
 END
 
 IDR_CODEVIEWACCEL ACCELERATORS 

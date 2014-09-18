@@ -1162,7 +1162,7 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
          }
       }
       break;
-
+   case IDM_SOUND_EDITOR:
    case ID_TABLE_SOUNDMANAGER:
       {
          ptCur = GetActiveTable();
@@ -1178,6 +1178,7 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
       }
       break;
 
+   case IDM_IMAGE_EDITOR:
    case ID_TABLE_IMAGEMANAGER:
       {
          ptCur = GetActiveTable();
@@ -1195,6 +1196,7 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
       }
       break;
 
+   case IDM_MATERIAL_EDITOR:
    case ID_TABLE_MATERIALMANAGER:
        {
            ptCur = GetActiveTable();
@@ -1243,6 +1245,7 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
       }
       break;
 
+   case IDM_COLLECTION_EDITOR:
    case ID_TABLE_COLLECTIONMANAGER:
       {
          ptCur = GetActiveTable();
