@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "RenderDevice.h"
 #include "nvapi.h"
-
+#include "Material.h"
 #pragma comment(lib, "d3d9.lib")        // TODO: put into build system
 
 const VertexElement VertexTexelElement[] = 
@@ -1025,4 +1025,34 @@ void Shader::SetTexture( D3DXHANDLE texelName, Texture *texel)
 void Shader::SetTexture( D3DXHANDLE texelName, D3DTexture *texel)
 {
    m_shader->SetTexture(texelName,texel);
+}
+
+void Shader::SetMaterial( Material *mat, 
+                          D3DXVECTOR4 diffuseColor, 
+                          D3DXVECTOR4 glossyColor, 
+                          D3DXVECTOR4 specularColor,
+                          float diffuseWrap, float glossyPower,
+                          bool bDiffActive, bool bGlossyActive, bool bSpecActive )
+{
+    if( mat )
+    {
+        diffuseColor = mat->getDiffuseColor();
+        glossyColor = mat->getGlossyColor();
+        specularColor = mat->getSpecularColor();
+        diffuseWrap = mat->m_fDiffuse;
+        glossyPower = mat->m_fGlossy;
+        bDiffActive = mat->m_bDiffuseActive;
+        bGlossyActive = mat->m_bGlossyActive;
+        bSpecActive = mat->m_bSpecularActive;
+    }
+
+    m_shader->SetFloat("fDiffuseWrap",diffuseWrap);
+    m_shader->SetFloat("fGlossyPower",glossyPower);
+    m_shader->SetVector("vDiffuseColor",&diffuseColor);
+    m_shader->SetVector("vGlossyColor",&glossyColor);
+    m_shader->SetVector("vSpecularColor",&specularColor);
+    m_shader->SetBool("bDiffuse", bDiffActive);
+    m_shader->SetBool("bGlossy", bGlossyActive);
+    m_shader->SetBool("bSpecular", bSpecActive);
+
 }

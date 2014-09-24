@@ -57,12 +57,6 @@ void Bumper::SetDefaults(bool fromMouseClick)
    hr = GetRegStringAsFloat("DefaultProps\\Bumper","Overhang", &fTmp);
    m_d.m_overhang = (hr == S_OK) && fromMouseClick ? fTmp : 25;
 
-   hr = GetRegInt("DefaultProps\\Bumper","Color", &iTmp);
-   m_d.m_color = (hr == S_OK) && fromMouseClick ? iTmp : RGB(255,0,0);
-
-   hr = GetRegInt("DefaultProps\\Bumper","SideColor", &iTmp);
-   m_d.m_sidecolor = (hr == S_OK) && fromMouseClick ? iTmp : RGB(255,255,255);
-
    hr = GetRegString("DefaultProps\\Bumper","Image", m_d.m_szImage, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szImage[0] = 0;
@@ -122,8 +116,6 @@ void Bumper::WriteRegDefaults()
    SetRegValueFloat("DefaultProps\\Bumper","HeightOffset", m_d.m_heightoffset);
    SetRegValueFloat("DefaultProps\\Bumper","Threshold", m_d.m_threshold);
    SetRegValueFloat("DefaultProps\\Bumper","Overhang", m_d.m_overhang);
-   SetRegValue("DefaultProps\\Bumper","Color", REG_DWORD, &m_d.m_color,4);	
-   SetRegValue("DefaultProps\\Bumper","SideColor", REG_DWORD, &m_d.m_sidecolor,4);	
    SetRegValue("DefaultProps\\Bumper","Image", REG_SZ, &m_d.m_szImage,lstrlen(m_d.m_szImage));	
    SetRegValueInt("DefaultProps\\Bumper","TimerEnabled", m_d.m_tdr.m_fTimerEnabled);	
    SetRegValueInt("DefaultProps\\Bumper","TimerInterval", m_d.m_tdr.m_TimerInterval);	
@@ -155,7 +147,7 @@ STDMETHODIMP Bumper::InterfaceSupportsErrorInfo(REFIID riid)
 void Bumper::PreRender(Sur * const psur)
 {
    psur->SetBorderColor(-1,false,0);
-   psur->SetFillColor(m_ptable->RenderSolid() ? m_d.m_color : -1);
+   psur->SetFillColor(m_ptable->RenderSolid() ? RGB(192,192,192) : -1);
    psur->SetObject(this);
 
    psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius);
@@ -282,62 +274,73 @@ void Bumper::PostRenderStatic(RenderDevice* pd3dDevice)
     m_pbumperhitcircle->m_bumperanim.UpdateAnimation();
     const int state = m_pbumperhitcircle->m_bumperanim.m_iframe ? 1 : 0;    // 0 = off, 1 = lit
 
+    pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelTexelDeclaration );
+
+    Material *mat = m_ptable->GetMaterial( m_d.m_szCapMaterial);
+    pd3dDevice->basicShader->SetMaterial(mat);
+
     Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
     if (!pin) // Top solid color
     {
+        pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
         if (state == 0) // off
         {
-            ppin3d->SetTexture(NULL);
-            pd3dDevice->SetMaterial(topNonLitMaterial);
+//            pd3dDevice->SetMaterial(topNonLitMaterial);
         }
         else            // on
         {
-            ppin3d->lightTexture[0].Set( ePictureTexture );
-            pd3dDevice->SetMaterial(topLitMaterial);
+//            pd3dDevice->SetMaterial(topLitMaterial);
         }
 
+        pd3dDevice->basicShader->Begin(0);
         // render the top circle
         pd3dDevice->DrawPrimitiveVB(D3DPT_TRIANGLEFAN, vtxBuf, 0, 32);
         // render the "mushroom"
         pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, vtxBuf, 32, 8*32, idxBuf, 6*32, 12*32);
+        pd3dDevice->basicShader->End();
     }
 
     if (m_d.m_fSideVisible)
     {
+        mat = m_ptable->GetMaterial( m_d.m_szBaseMaterial);
+        pd3dDevice->basicShader->SetMaterial(mat);
         if (state == 0)
         {
-            ppin3d->SetTexture(NULL);
-            pd3dDevice->SetMaterial(sideNonLitMaterial);
+//            pd3dDevice->SetMaterial(sideNonLitMaterial);
         }
         else
         {
-            ppin3d->lightTexture[0].Set( ePictureTexture );
-            pd3dDevice->SetMaterial(sideLitMaterial);
+//            pd3dDevice->SetMaterial(sideLitMaterial);
         }
 
+        pd3dDevice->basicShader->Begin(0);
         // render the side walls
         pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, vtxBuf, 32+8*32, 2*32, idxBuf, 0, 6*32);
+        pd3dDevice->basicShader->End();
     }
 
     if (pin)
     {
-        pin->EnsureBackdrop(m_d.m_color);
+        pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
         pin->SetBackDrop( ePictureTexture );
-
+        pd3dDevice->basicShader->SetTexture("Texture0",pin);
+        mat = m_ptable->GetMaterial( m_d.m_szCapMaterial);
+        pd3dDevice->basicShader->SetMaterial(mat);
         if (state == 0)
         {
-            pd3dDevice->SetMaterial(nonLitMaterial);
+//            pd3dDevice->SetMaterial(nonLitMaterial);
         }
         else
         {
-            ppin3d->lightTexture[0].Set( eLightProject1 );
-            pd3dDevice->SetMaterial(litMaterial);
+//            pd3dDevice->SetMaterial(litMaterial);
         }
 
+        pd3dDevice->basicShader->Begin(0);
         // render the top circle
         pd3dDevice->DrawPrimitiveVB(D3DPT_TRIANGLEFAN, vtxBuf, 0, 32);
         // render the "mushroom"
         pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, vtxBuf, 32, 8*32, idxBuf, 6*32, 12*32);
+        pd3dDevice->basicShader->End();
 
         // Reset all the texture coordinates
         if (state == 1)
@@ -357,32 +360,6 @@ void Bumper::RenderSetup(RenderDevice* pd3dDevice )
 
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
    Texture * const pin = m_ptable->GetImage(m_d.m_szImage);	
-
-   float r = (float)(m_d.m_color & 255) * (float) (1.0/255.0);
-   float g = (float)(m_d.m_color & 65280) * (float) (1.0/65280.0);
-   float b = (float)(m_d.m_color & 16711680) * (float) (1.0/16711680.0);
-   topNonLitMaterial.setAmbient( 1.0f, r*0.5f, g*0.5f, b*0.5f );
-   topNonLitMaterial.setDiffuse( 1.0f, r*0.5f, g*0.5f, b*0.5f );
-   topLitMaterial.setAmbient(1.0f, 0.0f, 0.0f, 0.0f );
-   topLitMaterial.setDiffuse(1.0f, 0.0f, 0.0f, 0.0f );
-   topLitMaterial.setEmissive( 0.0f, r, g, b );
-
-   r = (float)(m_d.m_sidecolor & 255) * (float) (1.0/255.0);
-   g = (float)(m_d.m_sidecolor & 65280) * (float) (1.0/65280.0);
-   b = (float)(m_d.m_sidecolor & 16711680) * (float) (1.0/16711680.0);
-   sideNonLitMaterial.setAmbient( 1.0f, r*0.5f, g*0.5f, b*0.5f );
-   sideNonLitMaterial.setDiffuse( 1.0f, r*0.5f, g*0.5f, b*0.5f );
-   sideLitMaterial.setAmbient(1.0f, 0.0f, 0.0f, 0.0f );
-   sideLitMaterial.setDiffuse(1.0f, 0.0f, 0.0f, 0.0f );
-   sideLitMaterial.setEmissive( 0.0f, r, g, b );
-
-   nonLitMaterial.setAmbient( 1.0f, 0.5f, 0.5f, 0.5f );
-   nonLitMaterial.setDiffuse( 1.0f, 0.5f, 0.5f, 0.5f );
-   nonLitMaterial.setEmissive(0.0f, 0.0f, 0.0f, 0.0f );
-
-   litMaterial.setAmbient( 1.0f, 0.0f, 0.0f, 0.0f );
-   litMaterial.setDiffuse( 1.0f, 0.0f, 0.0f, 0.0f );
-   litMaterial.setEmissive(0.0f, 1.0f, 1.0f, 1.0f );
 
    Vertex3D moverVertices[5*32];
    WORD     indices[4*32];
@@ -570,8 +547,8 @@ HRESULT Bumper::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptk
    bw.WriteFloat(FID(FORC), m_d.m_force);
    bw.WriteFloat(FID(HOFF), m_d.m_heightoffset);
    bw.WriteFloat(FID(OVRH), m_d.m_overhang);
-   bw.WriteInt(FID(COLR), m_d.m_color);
-   bw.WriteInt(FID(SCLR), m_d.m_sidecolor);
+   bw.WriteString(FID(MATR), m_d.m_szCapMaterial);
+   bw.WriteString(FID(BAMA), m_d.m_szBaseMaterial);
    bw.WriteString(FID(IMAG), m_d.m_szImage);
    bw.WriteString(FID(SURF), m_d.m_szSurface);
    bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
@@ -605,9 +582,6 @@ HRESULT Bumper::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version,
 
    br.Load();
 
-   if (version < 41)
-      m_d.m_sidecolor = m_d.m_color; // So tables look like they did before
-
    return S_OK;
 }
 
@@ -625,13 +599,13 @@ BOOL Bumper::LoadToken(int id, BiffReader *pbr)
    {
       pbr->GetFloat(&m_d.m_radius);
    }
-   else if (id == FID(COLR))
+   else if (id == FID(MATR))
    {
-      pbr->GetInt(&m_d.m_color);
+      pbr->GetString(m_d.m_szCapMaterial);
    }
-   else if (id == FID(SCLR))
+   else if (id == FID(BAMA))
    {
-      pbr->GetInt(&m_d.m_sidecolor);
+      pbr->GetString(m_d.m_szBaseMaterial);
    }
    else if (id == FID(TMON))
    {
@@ -805,36 +779,42 @@ STDMETHODIMP Bumper::put_Overhang(float newVal)
    return S_OK;
 }
 
-STDMETHODIMP Bumper::get_Color(OLE_COLOR *pVal)
+STDMETHODIMP Bumper::get_CapMaterial(BSTR *pVal)
 {
-   *pVal = m_d.m_color;
+   WCHAR wz[512];
+
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_szCapMaterial, -1, wz, 32);
+   *pVal = SysAllocString(wz);
 
    return S_OK;
 }
 
-STDMETHODIMP Bumper::put_Color(OLE_COLOR newVal)
+STDMETHODIMP Bumper::put_CapMaterial(BSTR newVal)
 {
    STARTUNDO
 
-   m_d.m_color = newVal;
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szCapMaterial, 32, NULL, NULL);
 
    STOPUNDO
 
    return S_OK;
 }
 
-STDMETHODIMP Bumper::get_SideColor(OLE_COLOR *pVal)
+STDMETHODIMP Bumper::get_BaseMaterial(BSTR *pVal)
 {
-   *pVal = m_d.m_sidecolor;
+    WCHAR wz[512];
+
+    MultiByteToWideChar(CP_ACP, 0, m_d.m_szBaseMaterial, -1, wz, 32);
+    *pVal = SysAllocString(wz);
 
    return S_OK;
 }
 
-STDMETHODIMP Bumper::put_SideColor(OLE_COLOR newVal)
+STDMETHODIMP Bumper::put_BaseMaterial(BSTR newVal )
 {
    STARTUNDO
 
-   m_d.m_sidecolor = newVal;
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szBaseMaterial, 32, NULL, NULL);
 
    STOPUNDO
 

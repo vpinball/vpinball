@@ -384,7 +384,12 @@ public:
     void End();
     void SetTexture( D3DXHANDLE texelName, Texture *texel);
     void SetTexture( D3DXHANDLE texelName, D3DTexture *texel);
-
+    void SetMaterial( Material *mat, 
+                      D3DXVECTOR4 diffuseColor=D3DXVECTOR4( 0.5f, 0.5f, 0.5f, 1.0f ),
+                      D3DXVECTOR4 glossyColor=D3DXVECTOR4( 0.04f, 0.04f, 0.04f, 1.0f ),
+                      D3DXVECTOR4 specularColor=D3DXVECTOR4( 0.04f, 0.04f, 0.04f, 1.0f ),
+                      float diffuseWrap=0.5f, float glossyPower=0.1f,
+                      bool bDiffActive=true, bool bGlossyActive=false, bool bSpecActive=false);
 private:
     ID3DXEffect* m_shader;
     RenderDevice *m_renderDevice;

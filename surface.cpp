@@ -991,25 +991,7 @@ void Surface::RenderSlingshots(RenderDevice* pd3dDevice)
    const float slingbottom = (m_d.m_heighttop - m_d.m_heightbottom) * 0.2f + m_d.m_heightbottom;
    const float slingtop    = (m_d.m_heighttop - m_d.m_heightbottom) * 0.8f + m_d.m_heightbottom;
    Material *mat = m_ptable->GetMaterial( m_d.m_szSlingShotMaterial);
-   D3DXVECTOR4 diffuseColor( 0.5f, 0.5f, 0.5f, 1.0f );
-   D3DXVECTOR4 glossyColor( 0.04f, 0.04f, 0.04f, 1.0f );
-   D3DXVECTOR4 specularColor( 0.04f, 0.04f, 0.04f, 1.0f );
-   float diffuseWrap = 0.5f;
-   float glossyPower = 0.1f;
-   if( mat )
-   {
-      diffuseColor = mat->getDiffuseColor();
-      glossyColor = mat->getGlossyColor();
-      specularColor = mat->getSpecularColor();
-      diffuseWrap = mat->m_fDiffuse;
-      glossyPower = mat->m_fGlossy;
-   }
-
-   pd3dDevice->basicShader->Core()->SetFloat("fDiffuseWrap",diffuseWrap);
-   pd3dDevice->basicShader->Core()->SetFloat("fGlossyPower",glossyPower);
-   pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&diffuseColor);
-   pd3dDevice->basicShader->Core()->SetVector("vGlossyColor",&glossyColor);
-   pd3dDevice->basicShader->Core()->SetVector("vSpecularColor",&specularColor);
+   pd3dDevice->basicShader->SetMaterial(mat);
 
    for (unsigned i=0; i<m_vlinesling.size(); i++)
    {
@@ -1035,25 +1017,7 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
     pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelTexelDeclaration );
 
     Material *mat = m_ptable->GetMaterial( m_d.m_szSideMaterial);
-    D3DXVECTOR4 diffuseColor( 0.5f, 0.5f, 0.5f, 1.0f );
-    D3DXVECTOR4 glossyColor( 0.04f, 0.04f, 0.04f, 1.0f );
-    D3DXVECTOR4 specularColor( 0.04f, 0.04f, 0.04f, 1.0f );
-    float diffuseWrap = 0.5f;
-    float glossyPower = 0.1f;
-    if( mat )
-    {
-       diffuseColor = mat->getDiffuseColor();
-       glossyColor = mat->getGlossyColor();
-       specularColor = mat->getSpecularColor();
-       diffuseWrap = mat->m_fDiffuse;
-       glossyPower = mat->m_fGlossy;
-    }
-
-    pd3dDevice->basicShader->Core()->SetFloat("fDiffuseWrap",diffuseWrap);
-    pd3dDevice->basicShader->Core()->SetFloat("fGlossyPower",glossyPower);
-    pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&diffuseColor);
-    pd3dDevice->basicShader->Core()->SetVector("vGlossyColor",&glossyColor);
-    pd3dDevice->basicShader->Core()->SetVector("vSpecularColor",&specularColor);
+    pd3dDevice->basicShader->SetMaterial(mat);
 
     if( m_d.m_transparent )
     {
@@ -1080,7 +1044,6 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
         }
         pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", true);
         pd3dDevice->basicShader->Core()->SetFloat("fAlphaTestValue", 128.0f/255.0f);
-        g_pplayer->m_pin3d.EnableAlphaBlend( 128, FALSE );
         g_pplayer->m_pin3d.SetTextureFilter( ePictureTexture, TEXTURE_MODE_TRILINEAR );
     }
     else
@@ -1117,26 +1080,7 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
     if (m_d.m_fVisible)
     {
        mat = m_ptable->GetMaterial( m_d.m_szTopMaterial);
-       diffuseColor = D3DXVECTOR4( 0.5f, 0.5f, 0.5f, 1.0f );
-       glossyColor = D3DXVECTOR4( 0.04f, 0.04f, 0.04f, 1.0f );
-       specularColor = D3DXVECTOR4( 0.04f, 0.04f, 0.04f, 1.0f );
-       float diffuseWrap = 0.5f;
-       float glossyPower = 0.1f;
-       if( mat )
-       {
-          diffuseColor = mat->getDiffuseColor();
-          glossyColor = mat->getGlossyColor();
-          specularColor = mat->getSpecularColor();
-          diffuseWrap = mat->m_fDiffuse;
-          glossyPower = mat->m_fGlossy;
-       }
-
-       pd3dDevice->basicShader->Core()->SetFloat("fDiffuseWrap",diffuseWrap);
-       pd3dDevice->basicShader->Core()->SetFloat("fGlossyPower",glossyPower);
-       pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&diffuseColor);
-       pd3dDevice->basicShader->Core()->SetVector("vGlossyColor",&glossyColor);
-       pd3dDevice->basicShader->Core()->SetVector("vSpecularColor",&specularColor);
-
+       pd3dDevice->basicShader->SetMaterial(mat);
         Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
         if (pin)
         {
@@ -1146,6 +1090,9 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
             pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
             D3DXVECTOR4 color(1.0f,1.0f,1.0f,1.0f);   
             pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&color);
+            pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", true);
+            const float alphaRef=128.0f / 255.0f;
+            pd3dDevice->basicShader->Core()->SetFloat("fAlphaTestValue", 128.0f/255.0f);
 
             if (pin->m_fTransparent)
             {
@@ -1157,7 +1104,6 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
                 pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
             }
 
-            g_pplayer->m_pin3d.EnableAlphaBlend( 128, FALSE );
             g_pplayer->m_pin3d.SetTextureFilter( ePictureTexture, TEXTURE_MODE_TRILINEAR );
         }
         else
