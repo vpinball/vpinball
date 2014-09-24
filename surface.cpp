@@ -244,7 +244,7 @@ void Surface::SetDefaults(bool fromMouseClick)
    m_d.m_fSlingshotAnimation = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"SlingshotAnimation", true) : true;
 
    m_d.m_elasticity = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"Elasticity", 0.3f) : 0.3f;
-   m_d.m_friction = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"Friction", 0) : 0;
+   m_d.m_friction = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"Friction", 0.3f) : 0.3f;
    m_d.m_scatter = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"Scatter", 0) : 0;
 
    m_d.m_fVisible = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"Visible", true) : true;
@@ -1025,14 +1025,16 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
     }
 
     Texture * const pinSide = m_ptable->GetImage(m_d.m_szSideImage);
+    pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
+    pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
+    pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", true);
+    pd3dDevice->basicShader->Core()->SetFloat("fAlphaTestValue", 128.0f/255.0f);
+
     if (pinSide)
     {
         pinSide->CreateAlphaChannel();
-        //pinSide->Set( ePictureTexture );
         pd3dDevice->basicShader->SetTexture("Texture0",pinSide);
         pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
-//        D3DXVECTOR4 color(1.0f,1.0f,1.0f,1.0f);   
-//        pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&color);
 
         if (pinSide->m_fTransparent)
         {
@@ -1042,22 +1044,11 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
         {
             pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
         }
-        pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", true);
-        pd3dDevice->basicShader->Core()->SetFloat("fAlphaTestValue", 128.0f/255.0f);
         g_pplayer->m_pin3d.SetTextureFilter( ePictureTexture, TEXTURE_MODE_TRILINEAR );
     }
     else
     {
-        g_pplayer->m_pin3d.SetTexture(NULL);
         pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
-    }
-
-    if (m_d.m_transparent)
-    {
-        ppin3d->EnableAlphaBlend( 1, FALSE );
-        pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
-        pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_ALPHAARG2, D3DTA_TFACTOR);
-        tfactor = (m_d.m_opacity << 24) | (tfactor & 0xffffff);
     }
 
     pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, tfactor);
@@ -1088,15 +1079,9 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
             pd3dDevice->basicShader->SetTexture("Texture0",pin);
 
             pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
-            D3DXVECTOR4 color(1.0f,1.0f,1.0f,1.0f);   
-            pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&color);
-            pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", true);
-            const float alphaRef=128.0f / 255.0f;
-            pd3dDevice->basicShader->Core()->SetFloat("fAlphaTestValue", 128.0f/255.0f);
 
             if (pin->m_fTransparent)
             {
-                g_pplayer->m_pin3d.EnableAlphaTestReference(128);
                 pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
             }
             else
@@ -1109,14 +1094,6 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
         else
         {
             pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
-        }
-
-        if (m_d.m_transparent)
-        {
-            ppin3d->EnableAlphaBlend( 1, FALSE );
-            pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
-            pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_ALPHAARG2, D3DTA_TFACTOR);
-            tfactor = (m_d.m_opacity << 24) | (tfactor & 0xffffff);
         }
 
         pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, tfactor);
@@ -1136,7 +1113,8 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
 
     // reset render states
     ppin3d->DisableLightMap();
-    ppin3d->DisableAlphaBlend();
+    pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
+    pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", false);
     pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
     pd3dDevice->SetRenderState(RenderDevice::LIGHTING, TRUE);
     pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
@@ -1145,7 +1123,6 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
     if ( m_d.m_transparent )
     {
         pd3dDevice->basicShader->Core()->SetFloat("fmaterialAlpha", 1.0f);
-        pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", false);
     }
 }
 

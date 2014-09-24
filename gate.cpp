@@ -113,7 +113,7 @@ void Gate::SetDefaults(bool fromMouseClick)
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_friction =  fTmp;
    else
-      m_d.m_friction = 0;	//zero uses global value
+      m_d.m_friction = 0.3f;	
 
    hr = GetRegStringAsFloat("DefaultProps\\Gate","Scatter", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
@@ -367,34 +367,7 @@ void Gate::PostRenderStatic(RenderDevice* pd3dDevice)
     pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelTexelDeclaration );
 
     Material *mat = m_ptable->GetMaterial( m_d.m_szMaterial);
-    D3DXVECTOR4 diffuseColor( 0.5f, 0.5f, 0.5f, 1.0f );
-    D3DXVECTOR4 glossyColor( 0.04f, 0.04f, 0.04f, 1.0f );
-    D3DXVECTOR4 specularColor( 0.04f, 0.04f, 0.04f, 1.0f );
-    float diffuseWrap = 0.5f;
-    float glossyPower = 0.1;
-    bool  bDiffActive=true;
-    bool  bGlossyActive = false;
-    bool  bSpecActive = false;
-    if( mat )
-    {
-       diffuseColor = mat->getDiffuseColor();
-       glossyColor = mat->getGlossyColor();
-       specularColor = mat->getSpecularColor();
-       diffuseWrap = mat->m_fDiffuse;
-       glossyPower = mat->m_fGlossy;
-       bDiffActive = mat->m_bDiffuseActive;
-       bGlossyActive = mat->m_bGlossyActive;
-       bSpecActive = mat->m_bSpecularActive;
-    }
-
-    pd3dDevice->basicShader->Core()->SetFloat("fDiffuseWrap",diffuseWrap);
-    pd3dDevice->basicShader->Core()->SetFloat("fGlossyPower",glossyPower);
-    pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&diffuseColor);
-    pd3dDevice->basicShader->Core()->SetVector("vGlossyColor",&glossyColor);
-    pd3dDevice->basicShader->Core()->SetVector("vSpecularColor",&specularColor);
-    pd3dDevice->basicShader->Core()->SetBool("bDiffuse", bDiffActive);
-    pd3dDevice->basicShader->Core()->SetBool("bGlossy", bGlossyActive);
-    pd3dDevice->basicShader->Core()->SetBool("bSpecular", bSpecActive);
+    pd3dDevice->basicShader->SetMaterial(mat);
 
     Pin3D * const ppin3d = &g_pplayer->m_pin3d;
     COLORREF rgbTransparent = RGB(255,0,255); //RGB(0,0,0);
