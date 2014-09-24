@@ -747,6 +747,9 @@ void Player::InitShader()
    //m_pin3d.m_pd3dDevice->basicShader->Core()->SetVector("camera", &cam);
 
    m_pin3d.m_pd3dDevice->basicShader->Core()->SetFloat("flightRange",m_ptable->m_lightRange);
+   m_pin3d.m_pd3dDevice->basicShader->SetTexture("Texture1", &m_pin3d.envTexture);
+   m_pin3d.m_pd3dDevice->basicShader->SetTexture("Texture2", m_pin3d.m_device_envRadianceTexture);
+
    InitBallShader();
 }
 
