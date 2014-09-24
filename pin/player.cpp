@@ -2137,17 +2137,6 @@ void Player::UpdatePhysics()
 #endif
 }
 
-template <typename T>
-struct IsMemberOf
-{
-    IsMemberOf(const std::vector<T>& _v) : v(_v) { }
-
-    bool operator()(const T& val) const
-    { return std::binary_search(v.begin(), v.end(), val); }
-
-    const std::vector<T>& v;
-};
-
 void Player::DMDdraw()
 {
   if(g_pplayer->m_device_texdmd)
@@ -2177,8 +2166,8 @@ void Player::DMDdraw()
     m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, FALSE);
 
     m_pin3d.m_pd3dDevice->SetVertexDeclaration( m_pin3d.m_pd3dDevice->m_pVertexTexelDeclaration );
-    m_pin3d.m_pd3dDevice->DMDShader->Core()->SetFloat("fResX",g_pplayer->m_dmdx);
-    m_pin3d.m_pd3dDevice->DMDShader->Core()->SetFloat("fResY",g_pplayer->m_dmdy);
+    m_pin3d.m_pd3dDevice->DMDShader->Core()->SetFloat("fResX",(float)g_pplayer->m_dmdx);
+    m_pin3d.m_pd3dDevice->DMDShader->Core()->SetFloat("fResY",(float)g_pplayer->m_dmdy);
     D3DXVECTOR4 DMDColor( 1.0f, 1.0f, 1.0f, 1.0f );
     m_pin3d.m_pd3dDevice->DMDShader->Core()->SetVector("vColor",&DMDColor);
     m_pin3d.m_pd3dDevice->DMDShader->Core()->SetTechnique("basic");

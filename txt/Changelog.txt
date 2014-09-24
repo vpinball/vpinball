@@ -8,6 +8,8 @@ VP 10.0.0 Changelog
 
 - added material editor
 
+- assign sound-,image-,material- and collection-manager to hot keys (F2,F3,F4 and F8)
+
 - add rubber element
 
 - shader based inserts/lights/bulbs

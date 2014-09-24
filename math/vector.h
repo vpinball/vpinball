@@ -263,3 +263,29 @@ void RotateAround(const Vertex3Ds &pvAxis, Vertex3D_NoTex2 * const pvPoint, int 
 void RotateAround(const Vertex3Ds &pvAxis, Vertex3Ds * const pvPoint, int count, float angle);
 Vertex3Ds RotateAround(const Vertex3Ds &pvAxis, const Vertex2D &pvPoint, float angle);
 
+// uniformly distributed vector over sphere
+inline Vertex3Ds sphere_sample(const float u, const float v) // u,v in [0..1)
+{
+     const float phi = v * (float)(2.0 * M_PI);
+     const float z = 1.0f - (u+u);
+     const float r = sqrtf(1.0f - z * z);
+     return Vertex3Ds(cosf(phi) * r, sinf(phi) * r, z);
+}
+
+// uniformly distributed vector over hemisphere
+inline Vertex3Ds hemisphere_sample(const float u, const float v) // u,v in [0..1)
+{
+     const float phi = v * (float)(2.0 * M_PI);
+     const float cosTheta = 1.0f - u;
+     const float sinTheta = sqrtf(1.0f - cosTheta * cosTheta);
+     return Vertex3Ds(cosf(phi) * sinTheta, sinf(phi) * sinTheta, cosTheta);
+}
+
+// cosine distributed vector over hemisphere
+inline Vertex3Ds cos_hemisphere_sample(const float u, const float v) // u,v in [0..1)
+{
+     const float phi = v * (float)(2.0 * M_PI);
+     const float cosTheta = sqrtf(1.0f - u);
+     const float sinTheta = sqrtf(1.0f - cosTheta * cosTheta);
+     return Vertex3Ds(cosf(phi) * sinTheta, sinf(phi) * sinTheta, cosTheta);
+}
