@@ -225,7 +225,7 @@ float4 lightLoop(float3 pos, float3 N, float3 V, float3 diffuse, float3 glossy, 
    if(bSpecular /*&& specularMax > 0.0f*/)
       color = DoEnvmap2ndLayer(color, pos, N, V, specular);
   
-   return float4(Gamma(ToneMap(vAmbient + color)), fmaterialAlpha); //!! in case of HDR out later on, remove tonemap and gamma //!! also problematic for alpha blends
+   return float4(Gamma(ToneMap(vAmbient + color)), 1.0f); //!! in case of HDR out later on, remove tonemap and gamma //!! also problematic for alpha blends
 }
 
 //------------------------------------
@@ -255,7 +255,9 @@ float4 ps_main( in VS_OUTPUT IN) : COLOR
    float3 glossy   = vGlossyColor;
    float3 specular = vSpecularColor;
    
-   return lightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
+   float4 result=lightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
+   result.a *= fmaterialAlpha;
+   return result;
 }
 
 float4 ps_main_texture( in VS_OUTPUT IN) : COLOR
@@ -264,13 +266,13 @@ float4 ps_main_texture( in VS_OUTPUT IN) : COLOR
    
    if (bPerformAlphaTest && pixel.a<=fAlphaTestValue )
     clip(-1);           //stop the pixel shader if alpha test should reject pixel
-    
    float3 t = InvGamma(pixel.xyz);
    float3 diffuse  = vDiffuseColor*t;
    float3 glossy   = vGlossyColor*t;
    float3 specular = vSpecularColor; //!! texture?
-   
-   return lightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular);
+   float4 result = lightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular);
+   result.a *= fmaterialAlpha;
+   return result;
 }
 
 float4 ps_main_texture_no_lighting( in VS_OUTPUT IN) : COLOR

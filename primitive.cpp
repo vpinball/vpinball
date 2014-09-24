@@ -162,7 +162,7 @@ void Primitive::SetDefaults(bool fromMouseClick)
 
    m_d.m_threshold = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"HitThreshold", 2.0f) : 2.0f;
    m_d.m_elasticity = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"Elasticity", 0.3f) : 0.3f;
-   m_d.m_friction = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"Friction", 0) : 0;
+   m_d.m_friction = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"Friction", 0.3f) : 0.3f;
    m_d.m_scatter = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"Scatter", 0) : 0;
 
    m_d.m_fCollidable = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"Collidable", true) : true;
@@ -765,34 +765,7 @@ void Primitive::RenderObject( RenderDevice *pd3dDevice )
     pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelDeclaration );
 
     Material *mat = m_ptable->GetMaterial( m_d.m_szMaterial);
-    D3DXVECTOR4 diffuseColor( 0.5f, 0.5f, 0.5f, 1.0f );
-    D3DXVECTOR4 glossyColor( 0.04f, 0.04f, 0.04f, 1.0f );
-    D3DXVECTOR4 specularColor( 0.04f, 0.04f, 0.04f, 1.0f );
-    float diffuseWrap = 0.5f;
-    float glossyPower = 0.1f;
-    bool  bDiffActive=true;
-    bool  bGlossyActive = false;
-    bool  bSpecActive = false;
-    if( mat )
-    {
-       diffuseColor = mat->getDiffuseColor();
-       glossyColor = mat->getGlossyColor();
-       specularColor = mat->getSpecularColor();
-       diffuseWrap = mat->m_fDiffuse;
-       glossyPower = mat->m_fGlossy;
-       bDiffActive = mat->m_bDiffuseActive;
-       bGlossyActive = mat->m_bGlossyActive;
-       bSpecActive = mat->m_bSpecularActive;
-    }
-
-    pd3dDevice->basicShader->Core()->SetFloat("fDiffuseWrap",diffuseWrap);
-    pd3dDevice->basicShader->Core()->SetFloat("fGlossyPower",glossyPower);
-    pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&diffuseColor);
-    pd3dDevice->basicShader->Core()->SetVector("vGlossyColor",&glossyColor);
-    pd3dDevice->basicShader->Core()->SetVector("vSpecularColor",&specularColor);
-    pd3dDevice->basicShader->Core()->SetBool("bDiffuse", bDiffActive);
-    pd3dDevice->basicShader->Core()->SetBool("bGlossy", bGlossyActive);
-    pd3dDevice->basicShader->Core()->SetBool("bSpecular", bSpecActive);
+    pd3dDevice->basicShader->SetMaterial(mat);
     pd3dDevice->basicShader->Core()->SetFloat("fmaterialAlpha",1.0f);
 
     Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
@@ -802,10 +775,11 @@ void Primitive::RenderObject( RenderDevice *pd3dDevice )
         pin->CreateAlphaChannel();
         pd3dDevice->basicShader->SetTexture("Texture0", pin);
         pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
-         D3DXVECTOR4 color(1.0f,1.0f,1.0f,1.0f);   
-         pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&color);
+        pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
+        pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
+        pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", true);
+        pd3dDevice->basicShader->Core()->SetFloat("fAlphaTestValue", 128.0f/255.0f);
 
-        g_pplayer->m_pin3d.EnableAlphaBlend(1, fFalse);
         g_pplayer->m_pin3d.SetTextureFilter(ePictureTexture, TEXTURE_MODE_TRILINEAR);
         // accomodate models with UV coords outside of [0,1]
         pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_WRAP);
@@ -827,7 +801,9 @@ void Primitive::RenderObject( RenderDevice *pd3dDevice )
     g_pplayer->UpdateBasicShaderMatrix();
 
     pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_CLAMP);
-    g_pplayer->m_pin3d.DisableAlphaBlend();
+    pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", false);
+    pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
+
 }
 
 // Always called each frame to render over everything else (along with alpha ramps)

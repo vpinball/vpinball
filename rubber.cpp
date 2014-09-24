@@ -76,8 +76,8 @@ void Rubber::SetDefaults(bool fromMouseClick)
 
    m_d.m_fCastsShadow = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"CastsShadow", true) : true;
 
-   m_d.m_elasticity = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"Elasticity", 0.3f) : 0.3f;
-   m_d.m_friction = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"Friction", 0) : 0;
+   m_d.m_elasticity = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"Elasticity", 0.8f) : 0.8f;
+   m_d.m_friction = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"Friction", 0.3f) : 0.3f;
    m_d.m_scatter = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"Scatter", 0) : 0;
 
    m_d.m_fVisible = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"Visible", true) : true;
@@ -1447,35 +1447,7 @@ void Rubber::RenderObject(RenderDevice *pd3dDevice)
    pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelDeclaration );
 
    Material *mat = m_ptable->GetMaterial( m_d.m_szMaterial);
-   D3DXVECTOR4 diffuseColor( 0.5f, 0.5f, 0.5f, 1.0f );
-   D3DXVECTOR4 glossyColor( 0.04f, 0.04f, 0.04f, 1.0f );
-   D3DXVECTOR4 specularColor( 0.04f, 0.04f, 0.04f, 1.0f );
-   float diffuseWrap = 0.5f;
-   float glossyPower = 0.1f;
-   bool  bDiffActive=true;
-   bool  bGlossyActive = false;
-   bool  bSpecActive = false;
-   if( mat )
-   {
-       diffuseColor = mat->getDiffuseColor();
-       glossyColor = mat->getGlossyColor();
-       specularColor = mat->getSpecularColor();
-       diffuseWrap = mat->m_fDiffuse;
-       glossyPower = mat->m_fGlossy;
-       bDiffActive = mat->m_bDiffuseActive;
-       bGlossyActive = mat->m_bGlossyActive;
-       bSpecActive = mat->m_bSpecularActive;
-   }
-
-   pd3dDevice->basicShader->Core()->SetFloat("fDiffuseWrap",diffuseWrap);
-   pd3dDevice->basicShader->Core()->SetFloat("fGlossyPower",glossyPower);
-   pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&diffuseColor);
-   pd3dDevice->basicShader->Core()->SetVector("vGlossyColor",&glossyColor);
-   pd3dDevice->basicShader->Core()->SetVector("vSpecularColor",&specularColor);
-   pd3dDevice->basicShader->Core()->SetBool("bDiffuse", bDiffActive);
-   pd3dDevice->basicShader->Core()->SetBool("bGlossy", bGlossyActive);
-   pd3dDevice->basicShader->Core()->SetBool("bSpecular", bSpecActive);
-
+   pd3dDevice->basicShader->SetMaterial(mat);
    {
       Pin3D * const ppin3d = &g_pplayer->m_pin3d;
       Texture * const pin = m_ptable->GetImage(m_d.m_szImage);

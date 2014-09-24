@@ -19,7 +19,7 @@ void BumperHitCircle::Collide(CollisionEvent* coll)
 
 	const float dot = hitnormal.x * pball->vel.x + hitnormal.y * pball->vel.y;
 
-	pball->CollideWall(hitnormal, m_elasticity, /*m_friction*/ 0.3f, m_scatter);	//reflect ball from wall
+	pball->CollideWall(hitnormal, m_elasticity, m_friction /*0.3f*/, m_scatter);	//reflect ball from wall
 
 	// if the bumper is disabled then don't activate the bumper
 	if (m_pbumper->m_fDisabled)
@@ -111,7 +111,7 @@ void LineSegSlingshot::Collide(CollisionEvent* coll)
 		pball->vel.y -= hitnormal.y * force;	// allow CollideWall to handle the remainder
 	}
 
-	pball->CollideWall(hitnormal, m_elasticity, /*m_friction*/ 0.3f, m_scatter);
+	pball->CollideWall(hitnormal, m_elasticity, m_friction /*0.3f*/, m_scatter);
 
     if (m_pfe && !m_psurface->m_fDisabled && threshold)
     {
@@ -552,7 +552,7 @@ void Hit3DPoly::Collide(CollisionEvent *coll)
    {
       const float dot = hitnormal.x * pball->vel.x + hitnormal.y * pball->vel.y;
 
-      pball->Collide3DWall(normal, m_elasticity, /*m_friction*/ 0.3f, m_scatter);
+      pball->Collide3DWall(normal, m_elasticity, m_friction /*0.3f*/, m_scatter);
 
       if (m_ObjType == ePrimitive && dot <= -m_threshold)
           FireHitEvent(pball);
@@ -710,7 +710,7 @@ void HitTriangle::Collide(CollisionEvent* coll)
 
     const float dot = hitnormal.Dot(pball->vel);
 
-    pball->Collide3DWall(normal, m_elasticity, /*m_friction*/ 0.3f, m_scatter);
+    pball->Collide3DWall(normal, m_elasticity, m_friction /*0.3f*/, m_scatter);
 
     if (m_ObjType == ePrimitive && dot <= -m_threshold)
         FireHitEvent(pball);
@@ -718,7 +718,7 @@ void HitTriangle::Collide(CollisionEvent* coll)
 
 void HitTriangle::Contact(CollisionEvent& coll, float dtime)
 {
-    coll.ball->HandleStaticContact(coll.normal[0], coll.normal[1].z, /*m_friction*/ 0.3f, dtime);
+    coll.ball->HandleStaticContact(coll.normal[0], coll.normal[1].z, m_friction /*0.3f*/, dtime);
 }
 
 void HitTriangle::CalcHitRect()
@@ -879,7 +879,7 @@ void HitLine3D::Collide(CollisionEvent* coll)
     const Vertex3Ds& hitnormal = coll->normal[0];
 
     const float dot = hitnormal.Dot(pball->vel);
-    pball->Collide3DWall(hitnormal, m_elasticity, /*m_friction*/ 0.3f, m_scatter);
+    pball->Collide3DWall(hitnormal, m_elasticity, m_friction /*0.3f*/, m_scatter);
 
     if (m_ObjType == ePrimitive && dot <= -m_threshold)
         FireHitEvent(pball);

@@ -92,7 +92,7 @@ void Ramp::SetDefaults(bool fromMouseClick)
    m_d.m_rightwallheightvisible = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"RightWallHeightVisible", 30.0f) : 30.0f;
 
    m_d.m_elasticity = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"Elasticity", 0.3f) : 0.3f;
-   m_d.m_friction = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"Friction", 0) : 0;
+   m_d.m_friction = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"Friction", 0.3f) : 0.3f;
    m_d.m_scatter = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"Scatter", 0) : 0;
 
    m_d.m_fVisible = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"Visible", true) : true;
@@ -2626,36 +2626,11 @@ void Ramp::PostRenderStatic(RenderDevice* pd3dDevice)
        pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_CLAMP);
 
    Material *mat = m_ptable->GetMaterial( m_d.m_szMaterial);
-   D3DXVECTOR4 diffuseColor( 0.5f, 0.5f, 0.5f, 1.0f );
-   D3DXVECTOR4 glossyColor( 0.04f, 0.04f, 0.04f, 1.0f );
-   D3DXVECTOR4 specularColor( 0.04f, 0.04f, 0.04f, 1.0f );
-   float diffuseWrap = 0.5f;
-   float glossyPower = 0.1f;
-   bool  bDiffActive=true;
-   bool  bGlossyActive = false;
-   bool  bSpecActive = false;
-   if( mat )
-   {
-      diffuseColor = mat->getDiffuseColor();
-      glossyColor = mat->getGlossyColor();
-      specularColor = mat->getSpecularColor();
-      diffuseWrap = mat->m_fDiffuse;
-      glossyPower = mat->m_fGlossy;
-      bDiffActive = mat->m_bDiffuseActive;
-      bGlossyActive = mat->m_bGlossyActive;
-      bSpecActive = mat->m_bSpecularActive;
-   }
-
-   pd3dDevice->basicShader->Core()->SetFloat("fDiffuseWrap",diffuseWrap);
-   pd3dDevice->basicShader->Core()->SetFloat("fGlossyPower",glossyPower);
-   pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&diffuseColor);
-   pd3dDevice->basicShader->Core()->SetVector("vGlossyColor",&glossyColor);
-   pd3dDevice->basicShader->Core()->SetVector("vSpecularColor",&specularColor);
-   pd3dDevice->basicShader->Core()->SetBool("bDiffuse", bDiffActive);
-   pd3dDevice->basicShader->Core()->SetBool("bGlossy", bGlossyActive);
-   pd3dDevice->basicShader->Core()->SetBool("bSpecular", bSpecActive);
+   pd3dDevice->basicShader->SetMaterial(mat);
    if( m_d.m_transparent )
-      pd3dDevice->basicShader->Core()->SetFloat("fmaterialAlpha", m_d.m_opacity/255.0f);
+   {
+      pd3dDevice->basicShader->Core()->SetFloat("fmaterialAlpha", (float)m_d.m_opacity/255.0f);
+   }
    else
       pd3dDevice->basicShader->Core()->SetFloat("fmaterialAlpha", 1.0f);
 
@@ -2673,25 +2648,25 @@ void Ramp::PostRenderStatic(RenderDevice* pd3dDevice)
          pin->CreateAlphaChannel();
          pd3dDevice->basicShader->SetTexture( "Texture0", pin );
          pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
-//          D3DXVECTOR4 color(1.0f,1.0f,1.0f,1.0f);   
-//          pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&color);
 
          ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
       }
       else
       {
-         ppin3d->SetTexture(NULL);
          pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
       }
 
       if (!dynamicVertexBuffer || dynamicVertexBufferRegenerate)
          GenerateVertexBuffer(pd3dDevice);
 
-      ppin3d->EnableAlphaBlend( 1, false );
+      pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
+      pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
+      pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", true);
+      pd3dDevice->basicShader->Core()->SetFloat("fAlphaTestValue", 128.0f/255.0f);
 
-      pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
-      pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_ALPHAARG2, D3DTA_TFACTOR);
-      pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, (m_d.m_opacity << 24) | 0xffffff);
+//       pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
+//       pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_ALPHAARG2, D3DTA_TFACTOR);
+//       pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, (m_d.m_opacity << 24) | 0xffffff);
 
       unsigned int offset=0;
       pd3dDevice->basicShader->Begin(0);
@@ -2726,9 +2701,11 @@ void Ramp::PostRenderStatic(RenderDevice* pd3dDevice)
 	  }
       pd3dDevice->basicShader->End();  
 
-      ppin3d->DisableAlphaBlend();
+      pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", false);
+      pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
    }
-   pd3dDevice->basicShader->Core()->SetFloat("fmaterialAlpha", 1.0f);
+   if( m_d.m_transparent )
+      pd3dDevice->basicShader->Core()->SetFloat("fmaterialAlpha", 1.0f);
 
 }
 
