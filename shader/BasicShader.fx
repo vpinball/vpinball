@@ -59,10 +59,8 @@ float4x4 matViewInverse;
 //float4 camera;
 
 texture Texture0; // diffuse
-//texture Texture1; // glossy //!!
-//texture Texture2; // specular //!!
-texture Texture3; // envmap
-texture Texture4; // envmap radiance
+texture Texture1; // envmap
+texture Texture2; // envmap radiance
 
 sampler2D texSampler0 : TEXUNIT0 = sampler_state
 {
@@ -72,7 +70,7 @@ sampler2D texSampler0 : TEXUNIT0 = sampler_state
     MINFILTER = LINEAR;
 };
 
-/*sampler2D texSampler1 : TEXUNIT1 = sampler_state
+sampler2D texSampler1 : TEXUNIT1 = sampler_state
 {
 	Texture	  = (Texture1);
     MIPFILTER = LINEAR;
@@ -83,22 +81,6 @@ sampler2D texSampler0 : TEXUNIT0 = sampler_state
 sampler2D texSampler2 : TEXUNIT2 = sampler_state
 {
 	Texture	  = (Texture2);
-    MIPFILTER = LINEAR;
-    MAGFILTER = LINEAR;
-    MINFILTER = LINEAR;
-};*/
-
-sampler2D texSampler3 : TEXUNIT3 = sampler_state
-{
-	Texture	  = (Texture3);
-    MIPFILTER = LINEAR;
-    MAGFILTER = LINEAR;
-    MINFILTER = LINEAR;
-};
- 
-sampler2D texSampler4 : TEXUNIT4 = sampler_state
-{
-	Texture	  = (Texture4);
     MIPFILTER = LINEAR;
     MAGFILTER = LINEAR;
     MINFILTER = LINEAR;
@@ -182,7 +164,7 @@ float3 DoEnvmapDiffuse(float3 N, float3 diffuse)
 		atan2(N.y, N.x) * (0.5f/PI) + 0.5f,
 	    acos(N.z) * (1.0f/PI));
 
-   return diffuse * InvGamma(tex2D(texSampler4, uv).xyz)*EnvEmissionScale; //!! replace by real HDR instead? -> remove invgamma then
+   return diffuse * InvGamma(tex2D(texSampler2, uv).xyz)*EnvEmissionScale; //!! replace by real HDR instead? -> remove invgamma then
 }
 
 //!! PI?
@@ -195,7 +177,7 @@ float3 DoEnvmap2ndLayer(float3 color1stLayer, float3 pos, float3 N, float3 V, fl
 	    acos(r.z) * (1.0f/PI));
 	    
    float3 w = FresnelSchlick(specular, dot(V, N)); //!! ?
-   return lerp(color1stLayer, InvGamma(tex2D(texSampler3, uv).xyz)*EnvEmissionScale, w); // weight (optional) lower diffuse/glossy layer with clearcoat/specular //!! replace by real HDR instead? -> remove invgamma then
+   return lerp(color1stLayer, InvGamma(tex2D(texSampler1, uv).xyz)*EnvEmissionScale, w); // weight (optional) lower diffuse/glossy layer with clearcoat/specular //!! replace by real HDR instead? -> remove invgamma then
 }
 
 float4 lightLoop(float3 pos, float3 N, float3 V, float3 diffuse, float3 glossy, float3 specular)
