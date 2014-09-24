@@ -62,6 +62,7 @@ texture Texture0; // diffuse
 //texture Texture1; // glossy //!!
 //texture Texture2; // specular //!!
 texture Texture3; // envmap
+texture Texture4; // envmap radiance
 
 sampler2D texSampler0 : TEXUNIT0 = sampler_state
 {
@@ -95,6 +96,14 @@ sampler2D texSampler3 : TEXUNIT3 = sampler_state
     MINFILTER = LINEAR;
 };
  
+sampler2D texSampler4 : TEXUNIT4 = sampler_state
+{
+	Texture	  = (Texture4);
+    MIPFILTER = LINEAR;
+    MAGFILTER = LINEAR;
+    MINFILTER = LINEAR;
+};
+
 //function output structures 
 struct VS_OUTPUT 
 { 
@@ -166,11 +175,14 @@ float3 DoPointLight(float3 pos, float3 N, float3 V, float3 diffuse, float3 gloss
    return Out; 
 }
 
-//!! diffuse missing so far -> needs LUT with normal(->2D mapped) input
-//!! PI?
+// does /PI-corrected lookup/final color already
 float3 DoEnvmapDiffuse(float3 N, float3 diffuse)
 {
-   return float3(0,0,0); //!!
+   float2 uv = float2( // remap to 2D envmap coords
+		atan2(N.y, N.x) * (0.5f/PI) + 0.5f,
+	    acos(N.z) * (1.0f/PI));
+
+   return diffuse * InvGamma(tex2D(texSampler4, uv).xyz)*EnvEmissionScale; //!! replace by real HDR instead? -> remove invgamma then
 }
 
 //!! PI?
