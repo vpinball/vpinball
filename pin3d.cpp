@@ -13,6 +13,8 @@ Pin3D::Pin3D()
 	m_pddsStatic = NULL;
 	m_pddsStaticZ = NULL;
     ballShadowTexture = NULL;
+	m_envRadianceTexture = NULL;
+	m_device_envRadianceTexture = NULL;
 	backgroundVBuffer = NULL;
     tableVBuffer = NULL;
     tableIBuffer = NULL;
@@ -33,6 +35,17 @@ Pin3D::~Pin3D()
 
    delete ballShadowTexture;
    ballTexture.FreeStuff();
+
+   envTexture.FreeStuff();
+
+   if(m_envRadianceTexture)
+   {
+	  m_pd3dDevice->m_texMan.UnloadTexture(m_envRadianceTexture);
+	  delete m_envRadianceTexture;
+	  m_envRadianceTexture = NULL;
+   }
+   m_device_envRadianceTexture = NULL;
+
    lightTexture[0].FreeStuff();
    lightTexture[1].FreeStuff();
 
@@ -84,6 +97,60 @@ void Pin3D::TransformVertices(const Vertex3D_NoTex2 * rgv, const WORD * rgi, int
 	}
 }
 
+void EnvmapPrecalc(const DWORD* const __restrict envmap, const DWORD env_xres, const DWORD env_yres, DWORD* const __restrict rad_envmap, const DWORD rad_env_xres, const DWORD rad_env_yres)
+{
+	// brute force sampling over hemisphere for each normal direction of the to-be-(ir)radiance-baked environment
+	// not the fastest solution, could do a "cosine convolution" over the picture instead (where also just 1024 or x samples could be used per pixel)
+	// but with this implementation one can also have custom maps/LUTs for glossy, etc. later-on
+	for(unsigned int y = 0; y < rad_env_yres; ++y)
+		for(unsigned int x = 0; x < rad_env_xres; ++x)
+		{
+			// trafo from envmap to normal direction
+			const float phi = (float)x/(float)rad_env_xres * (float)(2.0*M_PI) + M_PI;
+			const float theta = (float)y/(float)rad_env_yres * (float)M_PI;
+			const Vertex3Ds n(sinf(theta) * cosf(phi), sinf(theta) * sinf(phi), cosf(theta));
+
+			// draw x samples over hemisphere and collect cosine weighted environment map samples
+			float sum[3];
+			sum[0] = sum[1] = sum[2] = 0.0f;
+
+			const unsigned int num_samples = 64;
+			for(unsigned int s = 0; s < num_samples; ++s)
+			{
+				//!! could use cos_hemisphere_sample instead and trafo result to normal coord system, but as we do not use importance sampling on the environment, just not being smart -could- be better for high frequency environments anyhow
+				Vertex3Ds l = sphere_sample((float)s*(float)(1.0/num_samples), radical_inverse(s)); // QMC hammersley point set
+				float NdotL = l.Dot(n);
+				if(NdotL < 0.0f) // flip if on backside of hemisphere
+				{
+					NdotL = -NdotL;
+					l = -l;
+				}
+
+				// trafo from light direction to envmap
+				const float u = atan2f(l.y, l.x) * (float)(0.5/M_PI) + 0.5f;
+				const float v = acosf(l.z) * (float)(1.0/M_PI);
+				
+				const DWORD rgb = envmap[(int)(u*(float)env_xres)+(int)(v*(float)env_yres)*env_xres];
+				const float r = powf((float)(rgb & 255) * (float)(1.0/255.0), 2.2f); //!! remove invgamma as soon as HDR
+			    const float g = powf((float)(rgb & 65280) * (float)(1.0/65280.0), 2.2f);
+				const float b = powf((float)(rgb & 16711680) * (float)(1.0/16711680.0), 2.2f);
+				
+				sum[0] += r * NdotL;
+				sum[1] += g * NdotL;
+				sum[2] += b * NdotL;
+			}
+
+			// average all samples
+			sum[0] *= (float)(1.0/(M_PI*num_samples)); // pre-divides by PI for final radiance/color lookup in shader
+			sum[1] *= (float)(1.0/(M_PI*num_samples)); // pre-divides by PI for final radiance/color lookup in shader
+			sum[2] *= (float)(1.0/(M_PI*num_samples)); // pre-divides by PI for final radiance/color lookup in shader
+			sum[0] = powf(sum[0],(float)(1.0/2.2)); //!! remove gamma as soon as HDR
+			sum[1] = powf(sum[1],(float)(1.0/2.2));
+			sum[2] = powf(sum[2],(float)(1.0/2.2));
+			rad_envmap[y*rad_env_xres+x] = ((int)(sum[0]*255.0f)) | (((int)(sum[1]*255.0f))<<8) | (((int)(sum[2]*255.0f))<<16);
+		}
+}
+
 HRESULT Pin3D::InitPin3D(const HWND hwnd, const bool fFullScreen, const int screenwidth, const int screenheight, const int colordepth, int &refreshrate, const int VSync, const bool useAA, const bool stereo3DFXAA)
 {
     m_hwnd = hwnd;
@@ -130,6 +197,18 @@ HRESULT Pin3D::InitPin3D(const HWND hwnd, const bool fFullScreen, const int scre
 
     ballTexture.CreateFromResource(IDB_BALL);
     ballTexture.SetAlpha(RGB(0,0,0));
+
+	envTexture.CreateFromResource(IDB_ENV);
+    envTexture.SetAlpha(RGB(0,0,0));
+
+	m_envRadianceTexture = new MemTexture(envTexture.m_pdsBufferColorKey->width(),envTexture.m_pdsBufferColorKey->height());
+
+	EnvmapPrecalc((DWORD*)envTexture.m_pdsBufferColorKey->data(),envTexture.m_pdsBufferColorKey->width(),envTexture.m_pdsBufferColorKey->height(),
+				  (DWORD*)m_envRadianceTexture->data(),envTexture.m_pdsBufferColorKey->width(),envTexture.m_pdsBufferColorKey->height());
+
+	
+	m_device_envRadianceTexture = m_pd3dDevice->m_texMan.LoadTexture(m_envRadianceTexture);
+	m_pd3dDevice->m_texMan.SetDirty(m_envRadianceTexture);
 
     lightTexture[0].CreateFromResource(IDB_SUNBURST);
     lightTexture[0].SetAlpha(RGB(0,0,0));

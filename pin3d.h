@@ -104,10 +104,15 @@ public:
 	RenderTarget* m_pddsStatic;
 	RenderTarget* m_pddsStaticZ;
 
-   RenderTarget* m_bloomTexture;
+    //RenderTarget* m_bloomTexture;
 
 	Texture ballTexture;
 	MemTexture *ballShadowTexture;
+
+	Texture envTexture;
+	MemTexture* m_envRadianceTexture;
+	D3DTexture* m_device_envRadianceTexture;
+
 	Texture lightTexture[2]; // 0=bumper, 1=lights
 	Texture m_pddsLightWhite;
 
@@ -128,7 +133,6 @@ private:
     VertexBuffer *tableVBuffer;
     IndexBuffer *tableIBuffer;
     std::map<int, MemTexture*> m_xvShadowMap;
-
 };
 
 Matrix3D ComputeLaybackTransform(float layback);
