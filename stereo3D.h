@@ -48,6 +48,17 @@ static const char stereo3Dshader[] = \
 #else
 "float4 w_h_height : register(c1);"
 "sampler2D depth : register(s1);" //INTZ
+"float2 hash(float2 gridcell)" // gridcell is assumed to be an integer coordinate
+"{"
+"const float3 o = float3(26.0f, 161.0f, 26.0f);"
+"const float d = 71.0f;"
+"const float lf = 1.0f/951.135664f;"
+"float3 P = float3(gridcell.x,gridcell.y,gridcell.x+1.0f);"
+"P = P - floor(P * ( 1.0f / d )) * d;"
+"P += o;"
+"P *= P;"
+"return frac( P.xz * P.yy * lf );"
+"}"
 "float3 get_normal(float depth0, float2 u)" // use neighboring pixels
 "{"
 "const float depth1 = tex2D(depth, float2(u.x, u.y+w_h_height.y)).x;"
@@ -64,7 +75,7 @@ static const char stereo3Dshader[] = \
 "float4 ps_main(float2 uorg:texcoord):color"
 "{"
 "const float2 u = uorg + w_h_height.xy*0.5;"
-"const float2 ushift = float2(u.x*371.324,u.y*111.101)*w_h_height.w;" // mul/offset by time //!! +w_h_height.w instead?
+"const float2 ushift = hash(uorg*w_h_height.z)+w_h_height.w;" // jitter samples via hash of position on screen and then jitter samples by time //!! see below for non-shifted variant
 "const float total_strength = 1.38;" //!!
 "const float base = 0.2;" //!!
 "const float area = 0.07;" //!!
@@ -76,7 +87,7 @@ static const char stereo3Dshader[] = \
 "const float radius_depth = radius/depth0;"
 "float occlusion = 0.0;"
 "for(int i=0; i < samples; ++i) {"
-"const float2 r = float2(i*(1.0 / samples), i*(2.0 / samples));" //1,5,2,8,13,7 korobov,fibonacci
+"const float2 r = float2(i*(1.0 / samples), i*(2.0 / samples));" //1,5,2,8,13,7 korobov,fibonacci //!! could also use progressive/extensible lattice via rad_inv(i)*(1501825329, 359975893) (check precision though as this should be done in double or uint64)
 "const float3 ray = radius_depth * sphere_sample(frac(r+ushift));" // shift lattice
 "const float2 hemi_ray = u + sign(dot(ray,normal)) * ray.xy;"
 "const float occ_depth = tex2D(depth, hemi_ray).x;"

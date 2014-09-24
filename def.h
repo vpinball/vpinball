@@ -3,7 +3,6 @@
 #ifndef __DEF_H__
 #define __DEF_H__
 
-
 #ifdef min
 #undef min
 #endif
@@ -362,6 +361,19 @@ extern unsigned long long tinymt64state[2];
 
 inline float rand_mt_01()  { return int_as_float(0x3F800000u | (unsigned int)(tinymtu(tinymt64state) >> 41)) - 1.0f; }
 inline float rand_mt_m11() { return int_as_float(0x3F800000u | (unsigned int)(tinymtu(tinymt64state) >> 41))*2.0f - 3.0f; }
+
+//
+
+// flip bits on decimal point (bit reversal)/van der Corput/radical inverse
+inline float radical_inverse(unsigned int v)
+{
+     v = (v << 16) | (v >> 16);
+     v = ((v & 0x55555555u) << 1) | ((v & 0xAAAAAAAAu) >> 1);
+     v = ((v & 0x33333333u) << 2) | ((v & 0xCCCCCCCCu) >> 2);
+     v = ((v & 0x0F0F0F0Fu) << 4) | ((v & 0xF0F0F0F0u) >> 4);
+     v = ((v & 0x00FF00FFu) << 8) | ((v & 0xFF00FF00u) >> 8);
+     return (float)v * 0.00000000023283064365386962890625f; // /2^32
+}
 
 //
 
