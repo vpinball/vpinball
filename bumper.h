@@ -56,8 +56,8 @@ public:
 	float m_heightoffset;
 	TimerDataRoot m_tdr;
 	float m_overhang;
-	COLORREF m_color;
-	COLORREF m_sidecolor;
+    char m_szCapMaterial[32];
+    char m_szBaseMaterial[32];
 	char m_szImage[MAXTOKEN];
 	char m_szSurface[MAXTOKEN];
 	LightState m_state;
@@ -151,19 +151,12 @@ private:
     VertexBuffer *vtxBuf;
     IndexBuffer *idxBuf;
 
-    Material topLitMaterial;
-    Material topNonLitMaterial;
-    Material sideLitMaterial;
-    Material sideNonLitMaterial;
-    Material litMaterial;
-    Material nonLitMaterial;
-
 	bool m_fLockedByLS;
 
 // IBumper
 public:
-	STDMETHOD(get_SideColor)(/*[out, retval]*/ OLE_COLOR *pVal);
-	STDMETHOD(put_SideColor)(/*[in]*/ OLE_COLOR newVal);
+	STDMETHOD(get_BaseMaterial)(/*[out, retval]*/ BSTR *pVal);
+	STDMETHOD(put_BaseMaterial)(/*[in]*/ BSTR newVal);
 	STDMETHOD(get_FlashWhenHit)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_FlashWhenHit)(/*[in]*/ VARIANT_BOOL newVal);
 	STDMETHOD(get_BlinkInterval)(/*[out, retval]*/ long *pVal);
@@ -180,8 +173,8 @@ public:
 	STDMETHOD(put_X)(/*[in]*/ float newVal);
 	STDMETHOD(get_Image)(/*[out, retval]*/ BSTR *pVal);
 	STDMETHOD(put_Image)(/*[in]*/ BSTR newVal);
-	STDMETHOD(get_Color)(/*[out, retval]*/ OLE_COLOR *pVal);
-	STDMETHOD(put_Color)(/*[in]*/ OLE_COLOR newVal);
+	STDMETHOD(get_CapMaterial)(/*[out, retval]*/ BSTR *pVal);
+	STDMETHOD(put_CapMaterial)(/*[in]*/ BSTR newVal);
 	STDMETHOD(get_Overhang)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Overhang)(/*[in]*/ float newVal);
 	STDMETHOD(get_Threshold)(/*[out, retval]*/ float *pVal);
