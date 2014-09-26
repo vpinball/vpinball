@@ -1005,8 +1005,6 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
 {
     Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
-    D3DCOLOR tfactor = 0xffffffff;
-
     // render side
     pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelTexelDeclaration );
 
@@ -1040,19 +1038,15 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
         pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
     }
 
-    pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, tfactor);
-
     if (!fDrop && m_d.m_fSideVisible && (numVertices > 0)) // Don't need to render walls if dropped
     {
         // combine drawcalls into one (hopefully faster)
         unsigned int cPasses;
-        pd3dDevice->basicShader->Core()->Begin(&cPasses,0);
-        pd3dDevice->basicShader->Core()->BeginPass(0);  
+        pd3dDevice->basicShader->Begin(0);
 
         pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, sideVBuffer, 0, numVertices*4, sideIBuffer, 0, numVertices*6);
 
-        pd3dDevice->basicShader->Core()->EndPass();  
-        pd3dDevice->basicShader->Core()->End();  
+        pd3dDevice->basicShader->End();  
     }
 
     // render top
@@ -1085,18 +1079,12 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
             pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
         }
 
-        pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, tfactor);
-
         if(numPolys > 0)
         {
             unsigned int cPasses;
-            pd3dDevice->basicShader->Core()->Begin(&cPasses,0);
-            pd3dDevice->basicShader->Core()->BeginPass(0);  
-
+            pd3dDevice->basicShader->Begin(0);
             pd3dDevice->DrawPrimitiveVB( D3DPT_TRIANGLELIST, topVBuffer, !fDrop ? 0 : 3*numPolys, numPolys*3);
-
-            pd3dDevice->basicShader->Core()->EndPass();  
-            pd3dDevice->basicShader->Core()->End();  
+            pd3dDevice->basicShader->End();  
         }
     }
 
@@ -1106,9 +1094,6 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
     pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", false);
     pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
     pd3dDevice->SetRenderState(RenderDevice::LIGHTING, TRUE);
-    pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
-    pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
-    pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, 0xffffffff);
 }
 
 void Surface::DoCommand(int icmd, int x, int y)

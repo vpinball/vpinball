@@ -1060,4 +1060,8 @@ void Shader::SetMaterial( Material *mat,
     {
        m_shader->SetFloat("fmaterialAlpha",opacity);
     }
+    else
+    {
+       m_shader->SetFloat("fmaterialAlpha",1.0f);
+    }
 }
