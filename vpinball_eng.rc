@@ -14,7 +14,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (U.S.) resources
+// Englisch (USA) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 #ifdef _WIN32
@@ -1694,7 +1694,7 @@ BEGIN
     COMBOBOX        IDC_MATERIAL_COMBO,7,49,111,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
 END
 
-IDD_MATERIALDIALOG DIALOGEX 0, 0, 463, 172
+IDD_MATERIALDIALOG DIALOGEX 0, 0, 463, 186
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Material Manager"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
@@ -1710,12 +1710,12 @@ BEGIN
     LTEXT           "Wrap",IDC_STATIC,294,24,25,8
     EDITTEXT        IDC_DIFFUSE_EDIT,327,23,21,14,ES_AUTOHSCROLL
     EDITTEXT        IDC_GLOSSY_EDIT,327,65,21,14,ES_AUTOHSCROLL
-    EDITTEXT        IDC_SPECULAR_EDIT,327,111,21,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_SPECULAR_EDIT,327,110,21,14,ES_AUTOHSCROLL
     PUSHBUTTON      "&Add",IDC_ADD_BUTTON,408,10,50,14
     CONTROL         "Custom2",IDC_COLOR2,"ColorControl",WS_TABSTOP,242,66,40,19
     LTEXT           "Color",IDC_STATIC,222,71,17,8
-    CONTROL         "Custom2",IDC_COLOR3,"ColorControl",WS_TABSTOP,242,111,40,19
-    LTEXT           "Color",IDC_STATIC,222,116,17,8
+    CONTROL         "Custom2",IDC_COLOR3,"ColorControl",WS_TABSTOP,242,110,40,19
+    LTEXT           "Color",IDC_STATIC,222,115,17,8
     GROUPBOX        "Diffuse",IDC_STATIC,214,10,189,40
     LTEXT           "(0..1)",IDC_STATIC,296,31,17,8
     CONTROL         "Active",IDC_DIFFUSE_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,357,25,36,10
@@ -1723,10 +1723,15 @@ BEGIN
     LTEXT           "Shininess",IDC_STATIC,294,66,32,8
     LTEXT           "(0..1)",IDC_STATIC,296,74,25,8
     CONTROL         "Active",IDC_GLOSSY_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,357,69,36,10
-    GROUPBOX        "Specular",IDC_STATIC,214,97,189,40
-    LTEXT           "Not used yet",IDC_STATIC,294,113,25,8
+    GROUPBOX        "Specular",IDC_STATIC,214,96,189,40
+    LTEXT           "Not used yet",IDC_STATIC,294,112,25,8
     LTEXT           "(0..1)",IDC_STATIC,296,121,17,8
-    CONTROL         "Active",IDC_SPECULAR_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,357,114,36,10
+    CONTROL         "Active",IDC_SPECULAR_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,357,111,36,10
+    GROUPBOX        "Transparency",IDC_STATIC,214,138,189,40
+    CONTROL         "Active",IDC_OPACITY_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,357,155,36,10
+    LTEXT           "Amount",IDC_STATIC,274,156,25,8
+    EDITTEXT        IDC_OPACITY_EDIT,327,153,21,14,ES_AUTOHSCROLL
+    LTEXT           "(0-100)",IDC_STATIC,301,156,23,8
 END
 
 
@@ -1820,6 +1825,7 @@ BEGIN
     BEGIN
         RIGHTMARGIN, 458
         RIGHTMARGIN, 456
+        BOTTOMMARGIN, 172
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -2419,7 +2425,7 @@ BEGIN
     IDS_STEP                "Step"
 END
 
-#endif    // English (U.S.) resources
+#endif    // Englisch (USA) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
