@@ -38,6 +38,8 @@ struct SaveMaterial
    bool  bGlossyActive;
    float fSpecular;
    bool  bSpecularActive;
+   float fOpacity;
+   bool  bOpacityActive;
 };
 
 class RenderDevice;
@@ -69,11 +71,12 @@ public:
       m_fDiffuse=0.5f;
       m_fGlossy=0.1f;
       m_fSpecular=0.0f;
+      m_fOpacity=0.0f;
 
       m_bDiffuseActive = true;
       m_bGlossyActive = true;
       m_bSpecularActive = false;
-
+      m_bOpacityActive = false;
       m_diffuseColor=0;
       m_glossyColor=0;
       m_specularColor=0;
@@ -249,10 +252,11 @@ public:
 	float m_fDiffuse;
 	float m_fGlossy;
 	float m_fSpecular;
+   float m_fOpacity;
    bool m_bDiffuseActive;
    bool m_bGlossyActive;
    bool m_bSpecularActive;
-   bool m_reserved;
+   bool m_bOpacityActive;
 	COLORREF m_diffuseColor;
 	COLORREF m_glossyColor;
 	COLORREF m_specularColor;

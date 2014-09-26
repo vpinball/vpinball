@@ -250,7 +250,7 @@ public:
     WCHAR str[256];
 };
 
-#define M_PI 3.1415926535897932384626433832795
+#define M_PI 3.1415926535897932384626433832795f
 
 #define ANGTORAD(x) ((x) *(float)(M_PI/180.0))
 #define RADTOANG(x) ((x) *(float)(180.0/M_PI))

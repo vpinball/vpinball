@@ -534,6 +534,7 @@
 #define IDC_SPECULAR_EDIT               379
 #define IDC_RADIO3                      380
 #define IDD_PROPPRIMITIVE_POSITION      380
+#define IDC_OPACITY_EDIT                380
 #define IDD_PROPPRIMITIVE_VISUALS       381
 #define IDD_PROPRAMP_VISUALS1           382
 #define IDD_PROPPLUNGER_VISUALS         382
@@ -582,6 +583,7 @@
 #define IDC_AA_ALL_TABLES               398
 #define IDC_FLIPPER_COMPATIBILITY_MODE  398
 #define IDC_GLOBAL_ALPHA_ACC            398
+#define IDC_OPACITY_CHECK               398
 #define IDC_JOYMECHTILTCOMBO            399
 #define IDC_FLASHER                     399
 #define IDC_ADDCREDITBUTTON2            400
