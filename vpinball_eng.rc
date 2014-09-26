@@ -779,7 +779,7 @@ BEGIN
     LTEXT           "Blink Inter&val",-1,7,43,41,9
 END
 
-IDD_PROPWALL_VISUALS DIALOGEX 0, 0, 125, 224
+IDD_PROPWALL_VISUALS DIALOGEX 0, 0, 125, 207
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
@@ -792,9 +792,6 @@ BEGIN
     CONTROL         "Enable Lighting",557,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,173,111,10
     CONTROL         "Animate Slingshot",112,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,184,111,10
     CONTROL         "Flipbook Animation",113,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,195,111,10
-    CONTROL         "Transparent",18,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,206,50,10
-    EDITTEXT        19,68,205,20,12,ES_AUTOHSCROLL
-    LTEXT           "Opacity",-1,90,206,35,8
     LTEXT           "Top Image",-1,7,8,35,8
     LTEXT           "Top Material",-1,7,43,40,8
     LTEXT           "Side Material",-1,7,104,42,8
@@ -1783,11 +1780,6 @@ BEGIN
     IDD_PROPLIGHT_VISUALS, DIALOG
     BEGIN
         BOTTOMMARGIN, 144
-    END
-
-    IDD_PROPWALL_VISUALS, DIALOG
-    BEGIN
-        BOTTOMMARGIN, 202
     END
 
     IDD_PROPKICKER_VISUALS, DIALOG

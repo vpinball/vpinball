@@ -35,8 +35,6 @@ public:
 	BOOL m_fEnabled;
 	BOOL m_fCollidable; //wall must be droppable too!
 	BOOL m_fSlingshotAnimation;
-    bool m_transparent;
-    int m_opacity;
 
 	BOOL m_fInner; //!! Deprecated, do not use! Always true after loading! (was: Inside or outside wall)
 	};
@@ -112,7 +110,6 @@ END_CONNECTION_POINT_MAP()
     virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
     // end ISelect
 
-    virtual bool IsTransparent() { return m_d.m_transparent; }
     virtual float GetDepth(const Vertex3Ds& viewDir) const { return viewDir.z * m_d.m_heighttop; }
 
 private:
@@ -202,10 +199,6 @@ public:
 	STDMETHOD(put_Disabled)(/*[in]*/ VARIANT_BOOL newVal);
 	STDMETHOD(get_Collidable)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_Collidable)(/*[in]*/ VARIANT_BOOL newVal);
-	STDMETHOD(get_Transparent)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-	STDMETHOD(put_Transparent)(/*[in]*/ VARIANT_BOOL newVal);
-	STDMETHOD(get_Opacity)(/*[out, retval]*/ int *pVal);
-	STDMETHOD(put_Opacity)(/*[in]*/ int newVal);
 
 	STDMETHOD (get_SlingshotThreshold)(/*[out, retval]*/ float *pVal);
 	STDMETHOD (put_SlingshotThreshold)(/*[in]*/ float newVal);

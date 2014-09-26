@@ -11,8 +11,6 @@ Surface::Surface()
    m_d.m_fSlingshotAnimation = fTrue;
    m_d.m_fInner = fTrue;
    m_d.m_fEnableLighting = fTrue;
-   m_d.m_transparent = false;
-   m_d.m_opacity = 255;
    slingshotVBuffer=0;
    sideVBuffer = 0;
    topVBuffer = 0;
@@ -106,8 +104,6 @@ void Surface::WriteRegDefaults()
    SetRegValueBool(strKeyName,"SideVisible", !!m_d.m_fSideVisible);
    SetRegValueBool(strKeyName,"Collidable", !!m_d.m_fCollidable);
    SetRegValueBool(strKeyName,"EnableLighting", !!m_d.m_fEnableLighting);
-   SetRegValueBool(strKeyName,"Transparent", m_d.m_transparent);
-   SetRegValueInt(strKeyName,"Opacity", m_d.m_opacity);
 }
 
 
@@ -205,9 +201,6 @@ HRESULT Surface::InitTarget(PinTable * const ptable, const float x, const float 
    m_d.m_fSideVisible = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"SideVisible", true) : true;
    m_d.m_fCollidable = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"Collidable", true) : true;
 
-   m_d.m_transparent = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"Transparent", false) : false;
-   m_d.m_opacity = fromMouseClick ? GetRegIntWithDefault(strKeyName,"Opacity", 255) : 255;
-
    return InitVBA(fTrue, 0, NULL);
 }
 
@@ -250,9 +243,6 @@ void Surface::SetDefaults(bool fromMouseClick)
    m_d.m_fVisible = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"Visible", true) : true;
    m_d.m_fSideVisible = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"SideVisible", true) : true;
    m_d.m_fCollidable = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"Collidable", true) : true;
-
-   m_d.m_transparent = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"Transparent", false) : false;
-   m_d.m_opacity = fromMouseClick ? GetRegIntWithDefault(strKeyName,"Opacity", 255) : 255;
 }
 
 
@@ -581,8 +571,9 @@ void Surface::PostRenderStatic(RenderDevice* pd3dDevice)
         return;
 
     RenderSlingshots((RenderDevice*)pd3dDevice);
-
-    if (m_d.m_fDroppable || m_d.m_transparent)
+    Material *mat = m_ptable->GetMaterial( m_d.m_szSideMaterial);
+    
+    if ( mat!=0 && (m_d.m_fDroppable || mat->m_bOpacityActive) )
     {
         if (!m_fIsDropped)
         {
@@ -972,7 +963,10 @@ void Surface::FreeBuffers()
 
 void Surface::RenderStatic(RenderDevice* pd3dDevice)
 {
-   if (!m_d.m_fDroppable && !m_d.m_transparent)
+   RenderSlingshots((RenderDevice*)pd3dDevice);
+   Material *mat = m_ptable->GetMaterial( m_d.m_szSideMaterial);
+
+   if ( mat!=0 && !m_d.m_fDroppable && !mat->m_bOpacityActive )
    {
       RenderWallsAtHeight( (RenderDevice*)pd3dDevice, fFalse);
       g_pplayer->m_pin3d.SetTexture(NULL);
@@ -1018,11 +1012,6 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
 
     Material *mat = m_ptable->GetMaterial( m_d.m_szSideMaterial);
     pd3dDevice->basicShader->SetMaterial(mat);
-
-    if( m_d.m_transparent )
-    {
-        pd3dDevice->basicShader->Core()->SetFloat("fmaterialAlpha", (float)(m_d.m_opacity/255.0f));
-    }
 
     Texture * const pinSide = m_ptable->GetImage(m_d.m_szSideImage);
     pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
@@ -1120,10 +1109,6 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
     pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
     pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
     pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, 0xffffffff);
-    if ( m_d.m_transparent )
-    {
-        pd3dDevice->basicShader->Core()->SetFloat("fmaterialAlpha", 1.0f);
-    }
 }
 
 void Surface::DoCommand(int icmd, int x, int y)
@@ -1261,8 +1246,6 @@ HRESULT Surface::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
    bw.WriteBool(FID(SLGA), m_d.m_fSlingshotAnimation);
    bw.WriteBool(FID(SVBL), m_d.m_fSideVisible);
    bw.WriteBool(FID(ELIT), m_d.m_fEnableLighting);
-   bw.WriteBool(FID(TRSP), m_d.m_transparent);
-   bw.WriteInt(FID(OPAC), m_d.m_opacity);
 
    ISelect::SaveData(pstm, hcrypthash, hcryptkey);
 
@@ -1487,14 +1470,6 @@ BOOL Surface::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(SVBL))
    {
       pbr->GetBool(&m_d.m_fSideVisible);
-   }
-   else if (id == FID(TRSP))
-   {
-      pbr->GetBool(&m_d.m_transparent);
-   }
-   else if (id == FID(OPAC))
-   {
-      pbr->GetInt(&m_d.m_opacity);
    }
    else
    {
@@ -2001,36 +1976,6 @@ STDMETHODIMP Surface::put_Collidable(VARIANT_BOOL newVal)
       else m_vhoCollidable[i]->m_fEnabled = fNewVal; //copy to hit checking on enities composing the object 
    }	
 
-   STOPUNDO
-
-   return S_OK;
-}
-
-STDMETHODIMP Surface::get_Transparent(VARIANT_BOOL *pVal)
-{
-   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_transparent);
-   return S_OK;
-}
-
-STDMETHODIMP Surface::put_Transparent(VARIANT_BOOL newVal)
-{
-   STARTUNDO
-   m_d.m_transparent = !!newVal;
-   STOPUNDO
-
-   return S_OK;
-}
-
-STDMETHODIMP Surface::get_Opacity(int *pVal)
-{
-   *pVal = m_d.m_opacity;
-   return S_OK;
-}
-
-STDMETHODIMP Surface::put_Opacity(int newVal)
-{
-   STARTUNDO
-   m_d.m_opacity = clamp(newVal, 0, 255);
    STOPUNDO
 
    return S_OK;

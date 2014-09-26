@@ -340,7 +340,7 @@ RenderDevice::RenderDevice(HWND hwnd, int width, int height, bool fullscreen, in
     m_curTextureChanges = m_frameTextureChanges = 0;
 
     basicShader = new Shader(this);
-//    basicShader->Load("c:\\projects\\vp\\shader\\BasicShader.fx", true );
+//    basicShader->Load("c:\\projects\\vp9_dx9\\shader\\BasicShader.fx", true );
     basicShader->Load("BasicShader.fx", false );
 
     DMDShader = new Shader(this);
@@ -1031,8 +1031,8 @@ void Shader::SetMaterial( Material *mat,
                           D3DXVECTOR4 diffuseColor, 
                           D3DXVECTOR4 glossyColor, 
                           D3DXVECTOR4 specularColor,
-                          float diffuseWrap, float glossyPower,
-                          bool bDiffActive, bool bGlossyActive, bool bSpecActive )
+                          float diffuseWrap, float glossyPower, float opacity,
+                          bool bDiffActive, bool bGlossyActive, bool bSpecActive, bool bOpacityActive )
 {
     if( mat )
     {
@@ -1044,6 +1044,8 @@ void Shader::SetMaterial( Material *mat,
         bDiffActive = mat->m_bDiffuseActive;
         bGlossyActive = mat->m_bGlossyActive;
         bSpecActive = mat->m_bSpecularActive;
+        opacity = mat->m_fOpacity;
+        bOpacityActive = mat->m_bOpacityActive;
     }
 
     m_shader->SetFloat("fDiffuseWrap",diffuseWrap);
@@ -1054,5 +1056,8 @@ void Shader::SetMaterial( Material *mat,
     m_shader->SetBool("bDiffuse", bDiffActive);
     m_shader->SetBool("bGlossy", bGlossyActive);
     m_shader->SetBool("bSpecular", bSpecActive);
-
+    if ( bOpacityActive )
+    {
+       m_shader->SetFloat("fmaterialAlpha",opacity);
+    }
 }
