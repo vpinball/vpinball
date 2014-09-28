@@ -1406,7 +1406,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)\lib;$(DXSDK_DIR)\Include;inc;pin;media;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(DXSDK_DIR)\lib;$(DXSDK_DIR)\Include;inc;pin;media;shader;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>COR_ENABLE_PROFILING;WIN32;_DEBUG;_WINDOWS;MYDEBUG;_DEBUGPHYSICS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -1633,7 +1633,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)\Include;inc;pin;media;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(DXSDK_DIR)\Include;inc;pin;media;shader;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>false</ExceptionHandling>
@@ -6991,9 +6991,34 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     <None Include="res\sunburst2.bmp" />
     <None Include="res\surface.rgs" />
     <None Include="res\table.ico" />
-    <None Include="shader\BallShader.fx" />
-    <None Include="shader\BasicShader.fx" />
-    <None Include="shader\LightInsert.fx" />
+    <CustomBuild Include="shader\BallShader.fx">
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">fxc /Od /T fx_2_0 /Vn ballShaderCode /Fh shader\BallShader.h shader\BallShader.fx</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">BallShader.h</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">fxc /O3 /T fx_2_0 /Vn ballShaderCode /Fh shader\BallShader.h shader\BallShader.fx</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">BallShader.h</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="shader\BasicShader.fx">
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">fxc /Od /T fx_2_0 /Vn basicShaderCode /Fh shader\BasicShader.h shader\BasicShader.fx</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">BasicShader.h</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">fxc /O3 /T fx_2_0 /Vn basicShaderCode /Fh shader\BasicShader.h shader\BasicShader.fx</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">BasicShader.h</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="shader\LightInsert.fx">
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">fxc /Od /Zi /T fx_2_0 /Vn lightInsertShaderCode /Fh shader\LightInsert.h shader\LightInsert.fx</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">LightInsert.h</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">fxc /O3 /Zi /T fx_2_0 /Vn lightInsertShaderCode /Fh shader\LightInsert.h shader\LightInsert.fx</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">LightInsert.h</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="shader\DMDShader.fx">
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">fxc /Od /T fx_2_0 /Vn dmdShaderCode /Fh shader\DMDShader.h shader\DMDShader.fx</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">DMDShader.h</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">fxc /O3 /T fx_2_0 /Vn dmdShaderCode /Fh shader\DMDShader.h shader\DMDShader.fx</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">DMDShader.h</Outputs>
+    </CustomBuild>
     <None Include="target.bmp" />
     <None Include="res\textbox.rgs" />
     <None Include="res\timer.rgs" />

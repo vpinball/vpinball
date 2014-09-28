@@ -974,7 +974,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="$(DXSDK_DIR)Include;inc;pin;media;inc\winsdk"
+				AdditionalIncludeDirectories="$(DXSDK_DIR)Include;inc;pin;media;inc\winsdk;shader"
 				PreprocessorDefinitions="COR_ENABLE_PROFILING;WIN32;_DEBUG;_WINDOWS;MYDEBUG;_DEBUGPHYSICS"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -1182,7 +1182,7 @@
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="&quot;$(DXSDK_DIR)\Include&quot;;inc;pin;media;inc\winsdk"
+				AdditionalIncludeDirectories="&quot;$(DXSDK_DIR)\Include&quot;;inc;pin;media;inc\winsdk;shader"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
 				StringPooling="true"
 				ExceptionHandling="0"
@@ -18667,6 +18667,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\res\envmap.bmp"
+				>
+			</File>
+			<File
 				RelativePath="res\flasher.cur"
 				>
 			</File>
@@ -19733,18 +19737,89 @@
 			<File
 				RelativePath=".\shader\BallShader.fx"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="fxc /Od /T fx_2_0 /Vn ballShaderCode /Fh shader\BallShader.h shader\BallShader.fx"
+						Outputs="BallShader.h"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release MinDependency Fast+SSE|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="fxc /O3 /T fx_2_0 /Vn ballShaderCode /Fh shader\BallShader.h shader\BallShader.fx"
+						Outputs="BallShader.h"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\shader\BasicShader.fx"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="fxc /Od /T fx_2_0 /Vn basicShaderCode /Fh shader\BasicShader.h shader\BasicShader.fx&#x0D;&#x0A;"
+						Outputs="BasicShader.h"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release MinDependency Fast+SSE|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="fxc /O3 /T fx_2_0 /Vn basicShaderCode /Fh shader\BasicShader.h shader\BasicShader.fx"
+						Outputs="BasicShader.h"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\shader\DMDShader.fx"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="fxc /Od /T fx_2_0 /Vn dmdShaderCode /Fh shader\DMDShader.h shader\DMDShader.fx"
+						Outputs="DMDShader.h"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release MinDependency Fast+SSE|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="fxc /O3 /T fx_2_0 /Vn dmdShaderCode /Fh shader\DMDShader.h shader\DMDShader.fx"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\shader\LightInsert.fx"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="fxc /Od /Zi /T fx_2_0 /Vn lightInsertShaderCode /Fh shader\LightInsert.h shader\LightInsert.fx&#x0D;&#x0A;"
+						Outputs="LightInsert.h"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release MinDependency Fast+SSE|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="fxc /O3 /T fx_2_0 /Vn lightInsertShaderCode /Fh shader\LightInsert.h shader\LightInsert.fx&#x0D;&#x0A;"
+						Outputs="LightInsert.h"
+					/>
+				</FileConfiguration>
 			</File>
 		</Filter>
 		<File

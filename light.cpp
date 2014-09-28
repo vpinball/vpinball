@@ -1,4 +1,5 @@
 #include "StdAfx.h"
+#include "LightInsert.h"
 
 LightCenter::LightCenter(Light *plight)
 {
@@ -845,8 +846,7 @@ void Light::RenderSetup(RenderDevice* pd3dDevice)
     if( m_pInsertShader==NULL )
     {
       m_pInsertShader = new Shader(g_pplayer->m_pin3d.m_pd3dDevice);
-//      m_pInsertShader->Load("c:\\projects\\vp\\shader\\LightInsert.fx",true );
-      m_pInsertShader->Load("LightInsert.fx",false );
+      m_pInsertShader->Load(lightInsertShaderCode, sizeof(lightInsertShaderCode));
 
       D3DMATRIX worldMat;
       D3DMATRIX viewMat;
