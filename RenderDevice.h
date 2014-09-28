@@ -373,7 +373,7 @@ public:
     Shader(RenderDevice *renderDevice);
     ~Shader();
 
-    bool Load( char* shaderName, const bool fromFile );
+    bool Load( const BYTE* shaderCodeName, UINT codeSize );
     void Unload();
 
     ID3DXEffect *Core()

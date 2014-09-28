@@ -2,6 +2,9 @@
 #include "RenderDevice.h"
 #include "nvapi.h"
 #include "Material.h"
+#include "BasicShader.h"
+#include "DMDShader.h"
+
 #pragma comment(lib, "d3d9.lib")        // TODO: put into build system
 
 const VertexElement VertexTexelElement[] = 
@@ -340,11 +343,10 @@ RenderDevice::RenderDevice(HWND hwnd, int width, int height, bool fullscreen, in
     m_curTextureChanges = m_frameTextureChanges = 0;
 
     basicShader = new Shader(this);
-//    basicShader->Load("c:\\projects\\vp9_dx9\\shader\\BasicShader.fx", true );
-    basicShader->Load("BasicShader.fx", false );
+    basicShader->Load(basicShaderCode, sizeof(basicShaderCode));
 
     DMDShader = new Shader(this);
-    DMDShader->Load("DMDShader.fx", false );
+    DMDShader->Load( dmdShaderCode, sizeof(dmdShaderCode) );
 
 	// create default vertex declarations for shaders
     CreateVertexDeclaration( VertexTexelElement, &m_pVertexTexelDeclaration );
@@ -948,11 +950,12 @@ Shader::~Shader()
 // loads an HLSL effect file
 // if fromFile is true the shaderName should point to the full filename (with path) to the .fx file
 // if fromFile is false the shaderName should be the resource name not the IDC_XX_YY value. Search vpinball_eng.rc for ".fx" to see an example
-bool Shader::Load( char* shaderName, const bool fromFile )
+bool Shader::Load( const BYTE* shaderCodeName, UINT codeSize )
 {
     LPD3DXBUFFER pBufferErrors;
     DWORD dwShaderFlags = D3DXSHADER_PARTIALPRECISION;
     HRESULT hr;
+/*
     if ( fromFile )
     {
             dwShaderFlags = D3DXSHADER_DEBUG|D3DXSHADER_SKIPOPTIMIZATION;
@@ -978,6 +981,8 @@ bool Shader::Load( char* shaderName, const bool fromFile )
             &pBufferErrors);	// ppCompilationErrors
 
     }
+*/
+    hr=D3DXCreateEffect( m_renderDevice->GetCoreDevice(), shaderCodeName, codeSize,NULL,NULL,dwShaderFlags,NULL, &m_shader, &pBufferErrors);
     if(FAILED(hr) )
     {
         if ( pBufferErrors )

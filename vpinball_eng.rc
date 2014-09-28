@@ -871,7 +871,7 @@ BEGIN
     LTEXT           "Close Angle",-1,7,96,38,8
 END
 
-IDD_PROPRAMP_VISUALS DIALOGEX 0, 0, 125, 142
+IDD_PROPRAMP_VISUALS DIALOGEX 0, 0, 125, 131
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
@@ -883,13 +883,9 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,93,96,10
     CONTROL         "Shadows",107,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,105,41,10
     CONTROL         "Visible",112,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,117,40,10
-    CONTROL         "Transparent",18,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,129,50,10
-    EDITTEXT        19,68,129,20,10,ES_AUTOHSCROLL
-    LTEXT           "Opacity",IDC_STATIC,90,131,35,8
     LTEXT           "&Type",IDC_STATIC,7,6,25,8
     LTEXT           "&Image:",IDC_STATIC,7,40,22,8
     LTEXT           "&Mode",IDC_STATIC,7,68,25,8
-    LTEXT           "",IDC_STATIC,68,170,70,10
     LTEXT           "Depth Bias",IDC_STATIC,83,105,36,8
     EDITTEXT        IDC_DEPTH_BIAS,83,113,36,12,ES_AUTOHSCROLL
     LTEXT           "Material",IDC_STATIC,7,18,26,8
@@ -2122,11 +2118,6 @@ IDB_CHEVRON             BITMAP                  "res\\chevron.bmp"
 //
 // RCDATA
 //
-
-BALLSHADER.FX           RCDATA                  "shader\\BallShader.fx"
-LIGHTINSERT.FX          RCDATA                  "shader\\LightInsert.fx"
-BASICSHADER.FX          RCDATA                  "shader\\BasicShader.fx"
-DMDSHADER.FX            RCDATA                  "shader\\DMDShader.fx"
 
 /////////////////////////////////////////////////////////////////////////////
 //

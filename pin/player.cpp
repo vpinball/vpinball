@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include <algorithm>
 #include "ballMesh.h"
-
+#include "BallShader.h"
 // touch defines, delete as soon as we can get rid of old compilers and use new ones that have these natively
 
 //#define TEST_TOUCH_WITH_MOUSE
@@ -757,9 +757,7 @@ void Player::InitBallShader()
 {
    ballShader = new Shader(m_pin3d.m_pd3dDevice );
 
-//   ballShader->Load("c:\\projects\\vp9_dx9\\shader\\BallShader.fx", true );
-
-   ballShader->Load("BallShader.fx", false );
+   ballShader->Load( ballShaderCode, sizeof(ballShaderCode) );
 
    D3DMATRIX worldMat;
    D3DMATRIX viewMat;
