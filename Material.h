@@ -80,6 +80,7 @@ public:
       m_diffuseColor=0;
       m_glossyColor=0;
       m_specularColor=0;
+      memset( m_szName, 0, 32 );
    }
 
    inline Material( const D3DCOLORVALUE _diffuse, const D3DCOLORVALUE _ambient, const D3DCOLORVALUE _specular, const D3DCOLORVALUE _emissive, const D3DVALUE _power )
