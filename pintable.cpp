@@ -3568,6 +3568,7 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    return fTrue;
 }
 
+
 bool PinTable::ExportSound(HWND hwndListView, PinSound *pps,char *szfilename)
 {
    MMIOINFO mmio;
@@ -6328,15 +6329,21 @@ Material* PinTable::GetMaterial( char * const szName) const
 void PinTable::AddMaterial( Material *pmat)
 {
     int suffix=1;
-    strcpy_s(pmat->m_szName,"Material");
-
-    char textBuf[32];
-    do 
+    if( pmat->m_szName[0]==0 )
     {
-        sprintf_s(textBuf,"%s%i",pmat->m_szName,suffix);
-        suffix++;
-    } while (!IsMaterialNameUnique(textBuf));
-    lstrcpy(pmat->m_szName, textBuf);
+        strcpy_s(pmat->m_szName,"Material");
+    }
+
+    if ( !IsMaterialNameUnique(pmat->m_szName) || !strcmp(pmat->m_szName,"Material"))
+    {
+        char textBuf[32];
+        do 
+        {
+            sprintf_s(textBuf,"%s%i",pmat->m_szName,suffix);
+            suffix++;
+        } while (!IsMaterialNameUnique(textBuf));
+        lstrcpy(pmat->m_szName, textBuf);
+    }
     m_materials.AddElement( pmat );
 }
 

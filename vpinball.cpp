@@ -3425,6 +3425,70 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
                         }
                         case IDC_IMPORT:
                         {
+                            char szFileName[10240];
+                            char szInitialDir[10240];
+                            char szT[10240];
+                            szFileName[0] = '\0';
+
+                            OPENFILENAME ofn;
+                            ZeroMemory(&ofn, sizeof(OPENFILENAME));
+                            ofn.lStructSize = sizeof(OPENFILENAME);
+                            ofn.hInstance = g_hinst;
+                            ofn.hwndOwner = g_pvp->m_hwnd;
+
+                            ofn.lpstrFilter = "Material Files (.mat)\0*.mat\0";
+                            ofn.lpstrFile = szFileName;
+                            ofn.nMaxFile = 10240;
+                            ofn.lpstrDefExt = "mat";
+                            ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY | OFN_EXPLORER ;
+
+                            HRESULT hr = GetRegString("RecentDir","ImageDir", szInitialDir, 1024);
+                            ofn.lpstrInitialDir = (hr == S_OK) ? szInitialDir : NULL;
+
+                            const int ret = GetOpenFileName(&ofn);
+
+                            if(ret)
+                            {
+                                int materialCount=0;
+                                int versionNumber=0;
+                                FILE *f;
+                                fopen_s(&f,ofn.lpstrFile,"rb");
+
+                                fread(&versionNumber,1,4,f);
+                                if( versionNumber!=1 )
+                                {
+                                    ShowError("Materials are not compatible with this version!");
+                                    fclose(f);
+                                    break;
+                                }
+                                fread(&materialCount,1 ,4,f );
+                                for( int i=0;i<materialCount;i++ )
+                                {
+                                    Material *pmat = new Material();
+                                    SaveMaterial mat;
+
+                                    fread(&mat, 1, sizeof(SaveMaterial),f);
+                                    pmat->m_diffuseColor = mat.diffuseColor;
+                                    pmat->m_glossyColor = mat.glossyColor;
+                                    pmat->m_specularColor = mat.specularColor;
+                                    pmat->m_fDiffuse = mat.fDiffuse;
+                                    pmat->m_bDiffuseActive = mat.bDiffuseActive;
+                                    pmat->m_fGlossy = mat.fGlossy;
+                                    pmat->m_bGlossyActive = mat.bGlossyActive;
+                                    pmat->m_fSpecular = mat.fSpecular;
+                                    pmat->m_bSpecularActive = mat.bSpecularActive;
+                                    pmat->m_fOpacity = mat.fOpacity;
+                                    pmat->m_bOpacityActive = mat.bOpacityActive;
+                                    memcpy(pmat->m_szName, mat.szName,32);
+                                    pt = (CCO(PinTable) *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
+                                    
+                                    pt->AddMaterial( pmat );
+                                    pt->AddListMaterial(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST), pmat);
+                                }
+
+                                hr = SetRegValue("RecentDir","MaterialDir", REG_SZ, szInitialDir, lstrlen(szInitialDir));
+                                pt->SetNonUndoableDirty(eSaveDirty);
+                            }
                             break;
                         }
 
@@ -3443,8 +3507,70 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
                         {
                             if(ListView_GetSelectedCount(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST)))	// if some items are selected???
                             {
-                                //char szInitialDir[2096];
-                                int sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST), -1, LVNI_SELECTED);								
+                                char szFileName[10240];
+                                char szInitialDir[2096];
+                                int sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST), -1, LVNI_SELECTED);	
+                                int selCount = ListView_GetSelectedCount(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST));
+                                if( sel==-1 )
+                                    break;
+
+                                strcpy_s( szFileName,"Materials.mat" );
+                                OPENFILENAME ofn;
+                                ZeroMemory(&ofn, sizeof(OPENFILENAME));
+                                ofn.lStructSize = sizeof(OPENFILENAME);
+                                ofn.hInstance = g_hinst;
+                                ofn.hwndOwner = g_pvp->m_hwnd;
+                                ofn.lpstrFile = szFileName;
+                                //TEXT
+                                ofn.lpstrFilter = "*.mat\0";
+                                ofn.nMaxFile = 2096;
+                                ofn.lpstrDefExt = "mat";
+
+                                const HRESULT hr = GetRegString("RecentDir","MaterialDir", szInitialDir, 2096);
+
+                                if (hr == S_OK)ofn.lpstrInitialDir = szInitialDir;
+                                else ofn.lpstrInitialDir = NULL;	
+
+                                ofn.lpstrTitle = "Export materials";
+                                ofn.Flags = OFN_NOREADONLYRETURN | OFN_CREATEPROMPT | OFN_OVERWRITEPROMPT | OFN_EXPLORER;
+
+                                szInitialDir[ofn.nFileOffset] = 0;
+
+                                if (GetSaveFileName(&ofn))	//Get filename from user
+                                {					
+                                    FILE *f;
+                                    fopen_s(&f,ofn.lpstrFile,"wb");
+                                    const int MATERIAL_VERSION=1;
+                                    fwrite(&MATERIAL_VERSION,1,4,f);
+                                    fwrite(&selCount,1 ,4,f );
+                                    while (sel != -1)
+                                    {									
+                                        LVITEM lvitem;
+                                        lvitem.mask = LVIF_PARAM;
+                                        lvitem.iItem = sel;
+                                        lvitem.iSubItem = 0;
+                                        ListView_GetItem(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST), &lvitem);
+                                        Material * const pmat = (Material*)lvitem.lParam;									
+                                        SaveMaterial mat;
+                                        mat.diffuseColor = pmat->m_diffuseColor;
+                                        mat.glossyColor = pmat->m_glossyColor;
+                                        mat.specularColor = pmat->m_specularColor;
+                                        mat.fDiffuse = pmat->m_fDiffuse;
+                                        mat.bDiffuseActive = pmat->m_bDiffuseActive;
+                                        mat.fGlossy = pmat->m_fGlossy;
+                                        mat.bGlossyActive = pmat->m_bGlossyActive;
+                                        mat.fSpecular = pmat->m_fSpecular;
+                                        mat.bSpecularActive = pmat->m_bSpecularActive;
+                                        mat.fOpacity = pmat->m_fOpacity;
+                                        mat.bOpacityActive = pmat->m_bOpacityActive;
+                                        memcpy(mat.szName, pmat->m_szName, 32 );
+                                        fwrite(&mat, 1, sizeof(SaveMaterial), f );
+
+                                        sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST), sel, LVNI_SELECTED);
+                                    }
+                                    fclose(f);
+                                }
+                                SetRegValue("RecentDir","MaterialDir", REG_SZ, szInitialDir, lstrlen(szInitialDir));
                             }							
                         }	
                         break;
