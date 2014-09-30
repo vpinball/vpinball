@@ -1,50 +1,8 @@
 //!! always adapt to changes from BasicShader.fx
 //!! add playfield color, glossy, etc for more precise reflections of playfield
+#include "Globals.fxh"
 
-#define NUM_LIGHTS 2
-
-float3 vDiffuseColor = float3(0.05f,0.05f,0.05f); //!! pass from material!
-float  fDiffuseWrap = 0.25f; //!! pass from material?, w in [0..1] for wrap lighting
-float  fGlossyPower = 0.8f; //!! pass from material?
-float  fmaterialAlpha = 1.0f; //!! remove?
-
-bool   bDiffuse  = true; //!! remove, steer from diffuse?  (performance?)
-bool   bGlossy   = true; //!! remove, steer from glossy?   (performance?)
-bool   bSpecular = true; //!! remove, steer from specular? (performance?)
-
-float  freflectionStrength;
-
-float3 vAmbient = float3(0.0f,0.0f,0.0f);
-
-float EnvEmissionScale = 10.0f; //!! also have envmap of fixed size?
-float LightEmissionScale = 1000000.0f; //!! remove! put into emission below
-
-float  flightRange = 3000.0f;
-
-struct CLight 
-{ 
-   float3 vPos; 
-   float3 vEmission;
-}; 
- 
-int iLightPointNum = NUM_LIGHTS;
-CLight lights[NUM_LIGHTS] = {          //NUM_LIGHTS == 2
-   { 
-      float3(0.0f, 0.0f, 0.0f),        //position 
-      float3(0.0f, 0.0f, 0.0f)         //emission //!! have emission > 1.0f
-   }, 
-   { 
-      float3(0.0f, 0.0f, 0.0f),        //position 
-      float3(0.0f, 0.0f, 0.0f)         //emission
-   }
-}; 
-
-float4x4 matWorldViewProj   : WORLDVIEWPROJ;
-float4x4 matWorldView       : WORLDVIEW;
-//float4x4 matWorld           : WORLD;
-float4x4 matWorldViewInverseTranspose;
-float4x4 matView;
-
+float    freflectionStrength;
 float    invTableHeight;
 float    invTableWidth;
 
@@ -59,36 +17,6 @@ float    ballStretchY;
 float4   m1;
 float4   m2;
 float4   m3;
-
-texture Texture0;
-texture Texture1;
-texture Texture2;
-
-sampler2D texSampler0 : TEXUNIT0 = sampler_state
-{
-	Texture	  = (Texture0);
-    MIPFILTER = LINEAR;
-    MAGFILTER = LINEAR;
-    MINFILTER = LINEAR;
-};
-
-sampler2D texSampler1 : TEXUNIT1 = sampler_state
-{
-	Texture	  = (Texture1);
-    MIPFILTER = LINEAR;
-    MAGFILTER = LINEAR;
-    MINFILTER = LINEAR;
-	AddressU = Mirror;
-	AddressV = Mirror;
-};
-
-sampler2D texSampler2 : TEXUNIT2 = sampler_state
-{
-	Texture	  = (Texture2);
-    MIPFILTER = LINEAR;
-    MAGFILTER = LINEAR;
-    MINFILTER = LINEAR;
-};
 
 //------------------------------------
 
@@ -179,67 +107,7 @@ voutReflection vsBallReflection( in vin IN )
 
 //------------------------------------
 
-float3 FresnelSchlick(float3 spec, float LdotH)
-{
-    return spec + (float3(1.0f,1.0f,1.0f) - spec) * pow(1.0f - LdotH, 5);
-}
-
-float3 InvGamma(float3 color) //!! use hardware support? D3DSAMP_SRGBTEXTURE,etc
-{
-	return pow(color,2.2f);
-}
-
-float3 Gamma(float3 color) //!! use hardware support? D3DSAMP_SRGBTEXTURE,etc
-{
-	return pow(color,1.0f/2.2f);
-}
-
-float3 ToneMap(float3 color)
-{
-    float burnhighlights = 0.2f;
-    
-    float l = color.x*0.176204f + color.y*0.812985f + color.z*0.0108109f;
-    return color * ((l*burnhighlights + 1.0f) / (l + 1.0f));
-    
-    //return saturate(color);
-}
-
-// assumes all light emission is premultiplied by PI
-float3 DoPointLight(float3 pos, float3 N, float3 V, float3 diffuse, float3 glossy, float glossyPower, int i) 
-{ 
-   float3 lightDir = mul(float4(lights[i].vPos,1.0f), matView).xyz - pos; //!! do in vertex shader?! or completely before?!
-   float3 L = normalize(lightDir);
-   float NdotL = dot(N, L);
-   float3 Out = float3(0.0f,0.0f,0.0f);
-   
-   // compute diffuse color (lambert with optional rim/wrap component)
-   if(bDiffuse && (NdotL + fDiffuseWrap > 0.0f))
-      Out = diffuse * ((NdotL + fDiffuseWrap) / ((1.0f+fDiffuseWrap) * (1.0f+fDiffuseWrap)));
- 
-   // add glossy component (modified ashikhmin/blinn bastard), not fully energy conserving, but good enough
-   if(bGlossy && (NdotL > 0.0f))
-   { 
-	 float3 H = normalize(L + V); // half vector
-	 float NdotH = dot(N, H);
-	 float LdotH = dot(L, H);
-	 float VdotH = dot(V, H);
-	 if((NdotH > 0.0f) && (LdotH > 0.0f) && (VdotH > 0.0f))
-		Out += FresnelSchlick(glossy, LdotH) * (((glossyPower + 1.0f) / (8.0f*VdotH)) * pow(NdotH, glossyPower));
-   }
- 
-   //float fAtten = saturate( 1.0f - dot(lightDir/flightRange, lightDir/flightRange) );
-   //float fAtten = 1.0f/dot(lightDir,lightDir); // original/correct falloff
-   
-   float sqrl_lightDir = dot(lightDir,lightDir); // tweaked falloff to have ranged lightsources
-   float fAtten = saturate(1.0f - sqrl_lightDir*sqrl_lightDir/(flightRange*flightRange*flightRange*flightRange)); //!! pre-mult/invert flightRange?
-   fAtten = fAtten*fAtten/(sqrl_lightDir + 1.0f);
-
-   Out *= lights[i].vEmission * LightEmissionScale * fAtten;
-   
-   return Out; 
-}
-
-float4 lightLoop(float3 pos, float3 N, float3 V, float3 diffuse, float3 glossy, float3 specular)
+float4 ballLightLoop(float3 pos, float3 N, float3 V, float3 diffuse, float3 glossy, float3 specular)
 {
    // normalize input vectors for BRDF evals
    N = normalize(N);
@@ -249,7 +117,7 @@ float4 lightLoop(float3 pos, float3 N, float3 V, float3 diffuse, float3 glossy, 
    float diffuseMax = bDiffuse ? max(diffuse.x,max(diffuse.y,diffuse.z)) : 0.0f;
    float glossyMax = bGlossy ? max(glossy.x,max(glossy.y,glossy.z)) : 0.0f;
    //float specularMax = bSpecular ? max(specular.x,max(specular.y,specular.z)) : 0.0f; //!! not needed as 2nd layer only so far
-   float sum = diffuseMax + glossyMax /*+ specularMax*/;
+   float sum = diffuseMax + glossyMax; //+ specularMax
    if(sum > 1.0f)
    {
       float invsum = 1.0f/sum;
@@ -275,6 +143,7 @@ float4 lightLoop(float3 pos, float3 N, float3 V, float3 diffuse, float3 glossy, 
   
    return float4(Gamma(ToneMap(vAmbient + color)), fmaterialAlpha); //!! in case of HDR out later on, remove tonemap and gamma //!! also problematic for alpha blends
 }
+
 
 //------------------------------------
 // PIXEL SHADER
@@ -314,7 +183,7 @@ float4 psBall( in vout IN ) : COLOR
 	   playfieldColor = InvGamma(tex2D( texSampler1, uv ).xyz);
 	   
 	   //!! hack to get some lighting on sample
-	   playfieldColor = lightLoop(mid, mul(float4(/*normal=*/0,0,1,0), matWorldView).xyz, /*camera=0,0,0,1*/-IN.worldPos, playfieldColor, float3(0,0,0), float3(0,0,0)).xyz;
+	   playfieldColor = ballLightLoop(mid, mul(float4(/*normal=*/0,0,1,0), matWorldView).xyz, /*camera=0,0,0,1*/-IN.worldPos, playfieldColor, float3(0,0,0), float3(0,0,0)).xyz;
 	   
 	   //!! magic falloff & weight the rest in from the ballImage
 	   float weight = freflectionStrength*sqrt(-NdotR);
@@ -328,7 +197,7 @@ float4 psBall( in vout IN ) : COLOR
     float3 glossy   = diffuse;
     float3 specular = playfieldColor;
    
-    return lightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular);
+    return ballLightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular);
 }
 
 
