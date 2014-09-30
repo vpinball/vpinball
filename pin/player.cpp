@@ -800,6 +800,13 @@ void Player::InitBallShader()
    ballShader->Core()->SetFloat("flightRange",m_ptable->m_lightRange);
    ballShader->Core()->SetInt("iLightPointNum",MAX_LIGHT_SOURCES);
 
+   ballShader->Core()->SetFloat("fDiffuseWrap", 0.25f);
+   ballShader->Core()->SetFloat("fGlossyPower", 0.8f);
+   ballShader->Core()->SetBool("bDiffuse", true);
+   ballShader->Core()->SetBool("bGlossy", true);
+   ballShader->Core()->SetBool("bSpecular", true);
+
+
    vector<WORD> indexList;
    indexList.resize(basicBallNumFaces);
    memcpy(&indexList[0],basicBallIndices, sizeof(WORD)*basicBallNumFaces);
