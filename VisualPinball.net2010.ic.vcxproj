@@ -1721,7 +1721,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)\Include;inc;pin;media;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(DXSDK_DIR)\Include;inc;pin;media;shader;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>false</ExceptionHandling>
@@ -1824,7 +1824,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;bass.lib;setupapi.lib;hid.lib;nvapi64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;bass.lib;setupapi.lib;hid.lib;nvapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)vpinball.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x64;.\lib\x64\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -1998,6 +1998,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="flasher.cpp" />
+    <ClCompile Include="math\math.cpp" />
     <ClCompile Include="rubber.cpp" />
     <ClCompile Include="hash.cpp" />
     <ClCompile Include="kdtree.cpp" />
@@ -7583,8 +7584,26 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     <None Include="res\sunburst2.bmp" />
     <None Include="res\surface.rgs" />
     <None Include="res\table.ico" />
-    <None Include="shader\BallShader.fx" />
-    <None Include="shader\LightInsert.fx" />
+    <CustomBuild Include="shader\BallShader.fx">
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">fxc /O3 /T fx_2_0 /Vn ballShaderCode /Fh shader\BallShader.h shader\BallShader.fx</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">BallShader.h</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="shader\BasicShader.fx">
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">fxc /O3 /T fx_2_0 /Vn basicShaderCode /Fh shader\BasicShader.h shader\BasicShader.fx</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">BasicShader.h</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="shader\LightInsert.fx">
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">fxc /O3 /Zi /T fx_2_0 /Vn lightInsertShaderCode /Fh shader\LightInsert.h shader\LightInsert.fx</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">LightInsert.h</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="shader\DMDShader.fx">
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">fxc /O3 /T fx_2_0 /Vn dmdShaderCode /Fh shader\DMDShader.h shader\DMDShader.fx</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">DMDShader.h</Outputs>
+    </CustomBuild>
     <None Include="target.bmp" />
     <None Include="res\textbox.rgs" />
     <None Include="res\timer.rgs" />
@@ -7602,11 +7621,11 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     </Object>
     <Object Include="dispatchpatch64.obj">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </Object>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ballex.h" />
-    <ClInclude Include="buildnumber.h" />
     <ClInclude Include="bumper.h" />
     <ClInclude Include="codeview.h" />
     <ClInclude Include="decal.h" />
@@ -7629,15 +7648,10 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     <ClInclude Include="hitsur.h" />
     <ClInclude Include="idebug.h" />
     <ClInclude Include="ieditable.h" />
-    <ClInclude Include="inc\activdbg.h" />
-    <ClInclude Include="inc\activscp.h" />
-    <ClInclude Include="inc\dbghelp.h" />
-    <ClInclude Include="inc\dbgprop.h" />
     <ClInclude Include="inc\freeimage.h" />
     <ClInclude Include="inc\hidpi.h" />
     <ClInclude Include="inc\hidsdi.h" />
     <ClInclude Include="inc\hidusage.h" />
-    <ClInclude Include="inc\msscript.h" />
     <ClInclude Include="inc\nvapi.h" />
     <ClInclude Include="inc\nvapi_lite_common.h" />
     <ClInclude Include="inc\nvapi_lite_d3dext.h" />
@@ -7673,6 +7687,10 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     <ClInclude Include="lightseq.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="Material.h" />
+    <ClInclude Include="math\bbox.h" />
+    <ClInclude Include="math\math.h" />
+    <ClInclude Include="math\matrix.h" />
+    <ClInclude Include="math\vector.h" />
     <ClInclude Include="memutil.h" />
     <ClInclude Include="mesh.h" />
     <ClInclude Include="mixer.h" />
@@ -7684,6 +7702,15 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     <ClInclude Include="pinsound.h" />
     <ClInclude Include="pintable.h" />
     <ClInclude Include="pinundo.h" />
+    <ClInclude Include="pin\ball.h" />
+    <ClInclude Include="pin\ballMesh.h" />
+    <ClInclude Include="pin\collide.h" />
+    <ClInclude Include="pin\collideex.h" />
+    <ClInclude Include="pin\hitable.h" />
+    <ClInclude Include="pin\hitflipper.h" />
+    <ClInclude Include="pin\hitplunger.h" />
+    <ClInclude Include="pin\hittimer.h" />
+    <ClInclude Include="pin\player.h" />
     <ClInclude Include="plumb.h" />
     <ClInclude Include="plunger.h" />
     <ClInclude Include="primitive.h" />

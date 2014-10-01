@@ -234,6 +234,9 @@
     <ClCompile Include="rubber.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="math\math.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="vpinball.idl">
@@ -508,18 +511,6 @@
     <ClInclude Include="inc\xaudio\xaudio.h">
       <Filter>Header Files\xaudio</Filter>
     </ClInclude>
-    <ClInclude Include="inc\activdbg.h">
-      <Filter>Header Files\inc</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\activscp.h">
-      <Filter>Header Files\inc</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\dbghelp.h">
-      <Filter>Header Files\inc</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\dbgprop.h">
-      <Filter>Header Files\inc</Filter>
-    </ClInclude>
     <ClInclude Include="inc\freeimage.h">
       <Filter>Header Files\inc</Filter>
     </ClInclude>
@@ -530,9 +521,6 @@
       <Filter>Header Files\inc</Filter>
     </ClInclude>
     <ClInclude Include="inc\hidusage.h">
-      <Filter>Header Files\inc</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\msscript.h">
       <Filter>Header Files\inc</Filter>
     </ClInclude>
     <ClInclude Include="inc\nvapi.h">
@@ -566,9 +554,6 @@
       <Filter>Header Files\inc</Filter>
     </ClInclude>
     <ClInclude Include="ballex.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="buildnumber.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="bumper.h">
@@ -787,5 +772,50 @@
     <ClInclude Include="xaudplayer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="pin\ball.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pin\ballMesh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pin\collide.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pin\collideex.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pin\hitable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pin\hitflipper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pin\hitplunger.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pin\hittimer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pin\player.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="math\bbox.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="math\matrix.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="math\vector.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="math\math.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="shader\BallShader.fx" />
+    <CustomBuild Include="shader\BasicShader.fx" />
+    <CustomBuild Include="shader\LightInsert.fx" />
+    <CustomBuild Include="shader\DMDShader.fx" />
   </ItemGroup>
 </Project>

@@ -180,10 +180,10 @@ float4 psBall( in vout IN ) : COLOR
        float2 uv;
 	   uv.x = (position.x + hit.x) * invTableWidth;
 	   uv.y = (position.y + hit.y) * invTableHeight;
-	   playfieldColor = InvGamma(tex2D( texSampler1, uv ).xyz);
+	   playfieldColor = InvGamma(tex2D( texSampler1, uv ).xyz); //!! rather use screen space sample from previous frame??
 	   
 	   //!! hack to get some lighting on sample
-	   playfieldColor = ballLightLoop(mid, mul(float4(/*normal=*/0,0,1,0), matWorldView).xyz, /*camera=0,0,0,1*/-IN.worldPos, playfieldColor, float3(0,0,0), float3(0,0,0)).xyz;
+	   playfieldColor = lightLoop(mid, mul(float4(/*normal=*/0,0,1,0), matWorldView).xyz, /*camera=0,0,0,1*/-IN.worldPos, playfieldColor, float3(0,0,0), float3(0,0,0)).xyz;
 	   
 	   //!! magic falloff & weight the rest in from the ballImage
 	   float weight = freflectionStrength*sqrt(-NdotR);
