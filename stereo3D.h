@@ -46,6 +46,7 @@ static const char stereo3Dshader[] = \
 "return (col + tex2D(back,u + (yaxis ? float2(0.0,parallax+w_h_height.y) : float2(parallax,w_h_height.y))))*0.5;"
 "}";
 #else
+//!! add reflection direction occlusion, so that that will be used for blocking reflection/envmap?
 "float4 w_h_height : register(c1);"
 "sampler2D depth : register(s1);" //INTZ
 "float2 hash(float2 gridcell)" // gridcell is assumed to be an integer coordinate
@@ -67,40 +68,40 @@ static const char stereo3Dshader[] = \
 "}"
 "float3 sphere_sample(float2 t)"
 "{"
-"const float z = t.x*2.0-1.0;"
-"const float tt = t.y*(2.0*3.1415926535897932384626433832795);"
-"const float r = sqrt(1.0-z*z);"
-"return float3(r*cos(tt),r*sin(tt),z);"
+"const float phi = t.y * (2.0*3.1415926535897932384626433832795);"
+"const float z = 1.0 - t.x*2.0;"
+"const float r = sqrt(1.0 - z*z);"
+"return float3(cos(phi)*r, sin(phi)*r, z);"
 "}"
 "float4 ps_main(float2 uorg:texcoord):color"
 "{"
 "const float2 u = uorg + w_h_height.xy*0.5;"
-"const float2 ushift = hash(uorg*w_h_height.z)+w_h_height.w;" // jitter samples via hash of position on screen and then jitter samples by time //!! see below for non-shifted variant
-"const float total_strength = 1.38;" //!!
-"const float base = 0.2;" //!!
+"const float2 ushift = hash(uorg*w_h_height.z)*w_h_height.w;" // jitter samples via hash of position on screen and then jitter samples by time //!! see below for non-shifted variant
+"const float total_strength = 1.75;" //!!
+"/*const float base = 0.0;*/"
 "const float area = 0.07;" //!!
 "const float falloff = 0.000002;" //!!
 "const float radius = 0.006;" //!!
 "const int samples = 9;" //4,8,9,13,21,25 korobov,fibonacci
 "const float depth0 = tex2D(depth, u).x;"
+"if((depth0 == 1.0f) || (depth0 == 0.0f))" //!! early out if depth too large (=BG) or too small (=DMD,etc)
+" return float4(1.0f,1.0f,1.0f,1.0f);"
 "const float3 normal = get_normal(depth0, u);"
 "const float radius_depth = radius/depth0;"
 "float occlusion = 0.0;"
 "for(int i=0; i < samples; ++i) {"
 "const float2 r = float2(i*(1.0 / samples), i*(2.0 / samples));" //1,5,2,8,13,7 korobov,fibonacci //!! could also use progressive/extensible lattice via rad_inv(i)*(1501825329, 359975893) (check precision though as this should be done in double or uint64)
-"const float3 ray = radius_depth * sphere_sample(frac(r+ushift));" // shift lattice
-"const float2 hemi_ray = u + sign(dot(ray,normal)) * ray.xy;"
+"const float3 ray = sphere_sample(frac(r+ushift));" // shift lattice
+"const float rdotn = dot(ray,normal);"
+"const float2 hemi_ray = u + (radius_depth * sign(rdotn)) * ray.xy;" //!! use cosine sampling instead? would fit better with IBL, but then remove abs(rdotn) below
 "const float occ_depth = tex2D(depth, hemi_ray).x;"
 "const float3 occ_normal = get_normal(occ_depth, hemi_ray);"
 "const float diff_depth = depth0 - occ_depth;"
-"float diff_norm = dot(occ_normal,normal);"
-"diff_norm *= diff_norm;"
-"diff_norm *= diff_norm;" //!!
-"diff_norm = 1.0-diff_norm*diff_norm;"
-"occlusion += step(falloff, diff_depth) * diff_norm * (1.0-smoothstep(falloff, area, diff_depth));"
+"const float diff_norm = dot(occ_normal,normal);"
+"occlusion += step(falloff, diff_depth) * abs(rdotn) * (1.0f-diff_norm*diff_norm) * (1.0-smoothstep(falloff, area, diff_depth));"
 "}"
 "const float ao = 1.0 - total_strength * occlusion * (1.0 / samples);"
-"return saturate(ao + base);"
+"return saturate(ao/* + base*/);"
 "}";
 #endif
 
