@@ -91,7 +91,6 @@
 #define DISPID_Sound 1506
 #define DISPID_Collection 1507
 #define DISPID_Image4 1508
-#define DISPID_Image5 1509
 
 // Primitive DispIDs
 #define DISPID_SIDES                    378

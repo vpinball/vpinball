@@ -61,8 +61,6 @@ class PinTable :
 	public IPerPropertyBrowsing	// Ability to fill in dropdown in property browser
 {
 public:
-	STDMETHOD(get_BallBackDecal)(/*[out, retval]*/ BSTR *pVal);
-	STDMETHOD(put_BallBackDecal)(/*[in]*/ BSTR newVal);
 	STDMETHOD(get_BallFrontDecal)(/*[out, retval]*/ BSTR *pVal);
 	STDMETHOD(put_BallFrontDecal)(/*[in]*/ BSTR newVal);
 	STDMETHOD(get_YieldTime)(/*[out, retval]*/ long *pVal);
@@ -551,7 +549,6 @@ END_CONNECTION_POINT_MAP()
 
 	char m_szBallImage[MAXTOKEN];
 	char m_szBallImageFront[MAXTOKEN];
-	char m_szBallImageBack[MAXTOKEN];
 
 	//CComObject<Surface> *m_psur;
 

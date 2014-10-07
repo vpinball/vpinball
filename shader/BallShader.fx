@@ -45,6 +45,14 @@ struct voutReflection
 	float3 r           : TEXCOORD1;
 };
 
+//vertex to pixel shader structure
+struct voutTrail
+{
+    float4 position	   : POSITION0;
+	float2 tex0        : TEXCOORD0;
+	float  alpha       : TEXCOORD1;
+};
+
 //------------------------------------
 // VERTEX SHADER
 
@@ -100,8 +108,18 @@ voutReflection vsBallReflection( in vin IN )
 	float3 r = normalize(reflect(normalize(/*camera=0,0,0,1*/-p), normal));
 
     OUT.position = mul(pos, matWorldViewProj);
-    OUT.r		 = r;
 	OUT.tex0	 = pos.xy;
+    OUT.r		 = r;
+	return OUT;
+}
+
+voutTrail vsBallTrail( in vin IN )
+{
+    voutTrail OUT;
+    
+    OUT.position = mul(IN.position, matWorldViewProj);
+	OUT.tex0	 = IN.tex0;
+    OUT.alpha	 = IN.normal.x; //!! abuses normal for now
 	return OUT;
 }
 
@@ -209,6 +227,11 @@ float4 psBallReflection( in voutReflection IN ) : COLOR
 	return float4(saturate(ballImageColor),alpha);
 }
 
+float4 psBallTrail( in voutTrail IN ) : COLOR
+{
+	return saturate((float4(vDiffuseColor,0.0f) + tex2D( texSampler0, IN.tex0 ))*IN.alpha); //!! just add the ballcolor in, this is a whacky reflection anyhow
+}
+
 //------------------------------------
 // Techniques
 
@@ -227,5 +250,14 @@ technique RenderBallReflection
 	{		
 		vertexshader = compile vs_3_0 vsBallReflection();
 		pixelshader  = compile ps_3_0 psBallReflection();
+	}
+}
+
+technique RenderBallTrail
+{
+	pass p0 
+	{		
+		vertexshader = compile vs_3_0 vsBallTrail();
+		pixelshader  = compile ps_3_0 psBallTrail();
 	}
 }

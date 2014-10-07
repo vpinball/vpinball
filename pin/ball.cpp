@@ -16,7 +16,6 @@ Ball::Ball()
    m_pballex = NULL;
    m_vpVolObjs = NULL; // should be NULL ... only real balls have this value
    m_pin=NULL;
-   m_pinBack=NULL;
    m_pinFront=NULL;
    defaultZ = 25.0f;
    m_Event_Pos.x = m_Event_Pos.y = m_Event_Pos.z = -1.0f;
@@ -24,10 +23,8 @@ Ball::Ball()
    m_color = RGB(255,255,255);
    material.setColor( 1.0f, m_color );
 
-   m_disableLighting = false;
-
    ringcounter_oldpos = 0;
-   for(int i = 0; i < 10; ++i)
+   for(int i = 0; i < BALL_TRAIL_NUM_POS; ++i)
 	   oldpos[i].x = FLT_MAX;
 }
 
@@ -38,10 +35,6 @@ Ball::~Ball()
 
 void Ball::RenderSetup()
 {
-   if (m_pin)
-      m_pin->CreateAlphaChannel();
-   if ( m_pinFront )
-      m_pinFront->CreateAlphaChannel();
 }
 
 void Ball::Init()
@@ -67,8 +60,6 @@ void Ball::Init()
    m_vpVolObjs = new VectorVoid;
 
    m_color = RGB(255,255,255);
-
-   m_disableLighting = false;
 
    if (g_pplayer->m_ptable->m_szBallImage[0] == '\0')
    {

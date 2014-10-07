@@ -2739,7 +2739,6 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
    bw.WriteString(FID(BIMG), m_szImageBackdrop);
    bw.WriteString(FID(BLIM), m_szBallImage);
    bw.WriteString(FID(BLIF), m_szBallImageFront);
-   bw.WriteString(FID(BLIB), m_szBallImageBack);
 
    bw.WriteString(FID(SSHT), m_szScreenShot);
 
@@ -3165,7 +3164,6 @@ void PinTable::SetLoadDefaults()
    m_szImageBackdrop[0] = 0;
    m_szBallImage[0] = 0;
    m_szBallImageFront[0] = 0;
-   m_szBallImageBack[0] = 0;
 
    m_szScreenShot[0] = 0;
 
@@ -3383,10 +3381,6 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(BLIF))
    {
       pbr->GetString(m_szBallImageFront);
-   }
-   else if (id == FID(BLIB))
-   {
-      pbr->GetString(m_szBallImageBack);
    }
    else if (id == FID(SSHT))
    {
@@ -6491,7 +6485,6 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
    case DISPID_Image2:
    case DISPID_Image3:
    case DISPID_Image4:
-   case DISPID_Image5:
       {
          cvar = m_vimage.Size();
 
@@ -6691,7 +6684,6 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
    case DISPID_Image2:
    case DISPID_Image3:
    case DISPID_Image4:
-   case DISPID_Image5:
       {
          if (dwCookie == -1)
          {
@@ -8196,27 +8188,6 @@ STDMETHODIMP PinTable::put_BallFrontDecal(BSTR newVal)
    STARTUNDO
 
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_szBallImageFront, 32, NULL, NULL);
-
-   STOPUNDO
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::get_BallBackDecal(BSTR *pVal)
-{
-   WCHAR wz[512];
-
-   MultiByteToWideChar(CP_ACP, 0, m_szBallImageBack, -1, wz, 32);
-   *pVal = SysAllocString(wz);
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_BallBackDecal(BSTR newVal)
-{
-   STARTUNDO
-
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_szBallImageBack, 32, NULL, NULL);
 
    STOPUNDO
 

@@ -51,7 +51,6 @@ YieldTime(int) - time in milliseconds to sleep during each frame - can help side
 
 BallImage(string) 
 BallFrontDecal(string) - image of the ball front decal
-BallBackDecal(string) - image of the ball back decal
 
 *DisplayGrid(bool) - default=true
 *DisplayBackdrop(bool) - displays backdrop image in editor. default=true
@@ -573,5 +572,4 @@ BALL
 Variables
 ---------
 
-DisableLighting(bool) - enables/disables lighting of the ball
-Color(OLE_COLOR) - if lighting disabled, sets color of ball
+Color(OLE_COLOR) - sets color of ball

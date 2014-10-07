@@ -94,7 +94,7 @@ public:
    BaseTexture *CreateFromHBitmap(HBITMAP hbm, int * const pwidth, int * const pheight);
    void CreateFromResource(const int id, int * const pwidth = NULL, int * const pheight = NULL);
 
-   BOOL SetAlpha(const COLORREF rgbTransparent);
+   void SetAlpha(const COLORREF rgbTransparent);
 
    static void SetOpaque(BaseTexture* pdds);
    static void SetOpaqueBackdrop(BaseTexture* pdds, const COLORREF rgbTransparent, const COLORREF rgbBackdrop);
