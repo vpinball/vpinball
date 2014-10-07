@@ -70,7 +70,6 @@ public:
 	bool m_fEnabled;
    bool m_fVisible;
 	bool m_lastHitFace;
-   bool m_fCompatibility;
 
 #ifdef DEBUG_FLIPPERS
     U32 m_startTime;
