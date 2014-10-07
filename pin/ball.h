@@ -60,11 +60,9 @@ public:
 
 	char m_szImage[MAXTOKEN];
 	char m_szImageFront[MAXTOKEN];
-	char m_szImageBack[MAXTOKEN];
 
 	Texture *m_pin;
 	Texture *m_pinFront;
-	Texture *m_pinBack;
 
 	VectorVoid* m_vpVolObjs;// vector of triggers we are now inside
 
@@ -79,7 +77,8 @@ public:
     Vertex3Ds pos;
 	float defaultZ;   //normal height of the ball //!! remove
 
-	Vertex3Ds oldpos[10]; // for the optional ball trails
+#define BALL_TRAIL_NUM_POS 10
+	Vertex3Ds oldpos[BALL_TRAIL_NUM_POS]; // for the optional ball trails
 	unsigned int ringcounter_oldpos;
 
     Vertex3Ds vel;      // ball velocity
@@ -90,7 +89,7 @@ public:
     float m_mass;
     float m_invMass;
 
-	Vertex3Ds m_Event_Pos;
+	Vertex3Ds m_Event_Pos; // last hit event position (to filter hit 'equal' hit events)
 	
 	Matrix3 m_orientation;
 	Vertex3Ds m_angularmomentum;
@@ -99,7 +98,5 @@ public:
 
 	bool fFrozen;
 
-	bool m_disableLighting;
-   
     static int ballsInUse;
 };

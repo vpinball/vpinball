@@ -1,12 +1,16 @@
 VP 10.0.0 Changelog
 ------------------------
 - this release breaks a lot of backwards compatibility for ramps, lights, physics, and more
-  most existing VP9 and VP8 tables will not work correctly or will get script errors when run
+  most existing VP9 and VP8 tables will not work correctly or will get script errors when run (but they will load)
 
-- physics mostly redone (also known as 'physmod(5)')
-  sidenote: due to this it is now also possible to enable vsync without sideeffects or stutter (set FPS limiter to 1)
+  -> conversion hints:
+     - pull lightsources->ambient down to 0,0,0
+     - crank up lightsources->emission to 255,255,255
 
-- added material editor
+- physics mostly redone (also previously known as 'physmod(5)')
+  due to this it is now also possible to enable vsync without physics sideeffects like stutter or bad aiming (set FPS limiter to 1)
+
+- add material editor
 
 - assign sound-,image-,material- and collection-manager to hot keys (F2,F3,F4 and F8)
 
@@ -17,7 +21,7 @@ VP 10.0.0 Changelog
 - shader based materials/lighting (mostly redone from scratch)
 
 - internal DMD (access via script, input levels are 0..100)
-  DMDWidth, DMDHeight, DMDPixels added to Table Script methods
+- DMDWidth, DMDHeight, DMDPixels added to Table Script methods
 
 - improved smoothness for ramps (centripetal Catmull-Rom splines)
 - changed opacity/transparency handling for ramps (Alpha/Acrylic have been replaced by new props Transparent/Opacity)
@@ -28,7 +32,7 @@ VP 10.0.0 Changelog
 - include optional nudge filtering (selectable in the keys dialog)
   and remove implicit dead zone handling (if you have the dead zone setting at 0% and now experience problems, set it to at least 1%)
 
-- new audio library for music playback (BASS)
+- new external audio library for music playback (BASS)
 
 - 64bit port (handle with care, might still cause issues)
 

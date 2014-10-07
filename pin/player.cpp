@@ -2122,10 +2122,10 @@ void Player::UpdatePhysics()
 		for (unsigned i=0; i < m_vball.size(); i++)
 		{
 			Ball * const pball = m_vball[i];
-            pball->oldpos[pball->ringcounter_oldpos] = pball->pos;
+            pball->oldpos[pball->ringcounter_oldpos/(10000/PHYSICS_STEPTIME)] = pball->pos;
 
 			pball->ringcounter_oldpos++;
-			if(pball->ringcounter_oldpos == 10)
+			if(pball->ringcounter_oldpos == BALL_TRAIL_NUM_POS*(10000/PHYSICS_STEPTIME))
 				pball->ringcounter_oldpos = 0;
 		}
 
@@ -2698,12 +2698,6 @@ void Player::DrawBalls()
           ballShader->SetTexture("Texture1", playfield );
         }
 
-      if(pball->m_disableLighting)
-        {
-         m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, COLORREF_to_D3DCOLOR(pball->m_color));
-         m_pin3d.m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR); // do not modify tex by diffuse lighting
-            }
-
       // ************************* draw the ball itself ****************************
       m_pin3d.EnableAlphaBlend(1);
       D3DXVECTOR4 m1(pball->m_orientation.m_d[0][0], pball->m_orientation.m_d[1][0], pball->m_orientation.m_d[2][0], 0.0f );
@@ -2721,9 +2715,8 @@ void Player::DrawBalls()
           ballShader->SetTexture("Texture0",pball->m_pin);
 
       if( pball->m_pinFront )
-      {
-         ballShader->SetTexture("Texture2",pball->m_pinFront);
-      }
+          ballShader->SetTexture("Texture2",pball->m_pinFront);
+
       UINT cPasses=0;
       if ( drawReflection )
         {
@@ -2731,6 +2724,7 @@ void Player::DrawBalls()
             m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
             m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
             m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_DESTALPHA);
+
           ballShader->Core()->SetTechnique("RenderBallReflection");
           ballShader->Core()->Begin(&cPasses,0);
           ballShader->Core()->BeginPass(0);
@@ -2750,26 +2744,20 @@ void Player::DrawBalls()
       ballShader->Core()->EndPass();
       ballShader->Core()->End();
 
-        if(pball->m_disableLighting)
-        {
-            m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, 0xffffffff);
-            m_pin3d.m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
-        }
-
-        // ball trails //!! misses lighting disabled part!
+      // ball trails
       if((m_fTrailForBalls && (m_ptable->m_useTrailForBalls == -1)) || (m_ptable->m_useTrailForBalls == 1))
         {
-            Vertex3D_NoLighting rgv3D_all[10*2];
+            Vertex3D_NoTex2 rgv3D_all[BALL_TRAIL_NUM_POS*2];
             unsigned int num_rgv3D = 0;
 
-			for(int i2 = 0; i2 < 10-1; ++i2)
+			for(int i2 = 0; i2 < BALL_TRAIL_NUM_POS-1; ++i2)
 			{
-				int i = pball->ringcounter_oldpos-1-i2;
+				int i = pball->ringcounter_oldpos/(10000/PHYSICS_STEPTIME)-1-i2;
 				if(i<0)
-					i += 10;
+					i += BALL_TRAIL_NUM_POS;
 				int io = i-1;
 				if(io<0)
-					io += 10;
+					io += BALL_TRAIL_NUM_POS;
 
 				if((pball->oldpos[i].x != FLT_MAX) && (pball->oldpos[io].x != FLT_MAX)) // only if already initialized
 				{
@@ -2777,10 +2765,10 @@ void Player::DrawBalls()
 					vec.x = pball->oldpos[io].x-pball->oldpos[i].x;
 					vec.y = pball->oldpos[io].y-pball->oldpos[i].y;
 					vec.z = pball->oldpos[io].z-pball->oldpos[i].z;
-					const unsigned int bc = (unsigned int)((float)m_ptable->m_ballTrailStrength * powf(1.f-1.f/max(vec.Length(), 1.0f), 16.0f)); //!! 16=magic alpha falloff
+					const float bc = (float)m_ptable->m_ballTrailStrength * powf(1.f-1.f/max(vec.Length(), 1.0f), 16.0f); //!! 16=magic alpha falloff
 					const float r = min(pball->radius*0.9f, 2.0f*pball->radius/powf((float)(i2+2), 0.6f)); //!! consts are for magic radius falloff
 
-					if(bc > 0 && r > FLT_MIN)
+					if(bc > 0.f && r > FLT_MIN)
 					{
 						Vertex3Ds v = vec;
 						v.Normalize();
@@ -2793,7 +2781,7 @@ void Player::DrawBalls()
 						n.y *= r;
 						n.z *= r;
 
-						Vertex3D_NoLighting rgv3D[4];
+						Vertex3D_NoTex2 rgv3D[4];
 						rgv3D[0].x = pball->oldpos[i].x - n.x;
 						rgv3D[0].y = pball->oldpos[i].y - n.y;
 						rgv3D[0].z = pball->oldpos[i].z - n.z;
@@ -2807,13 +2795,13 @@ void Player::DrawBalls()
 						rgv3D[3].y = pball->oldpos[io].y - n.y;
 						rgv3D[3].z = pball->oldpos[io].z - n.z;
 
-						rgv3D[0].color = rgv3D[1].color = rgv3D[2].color = rgv3D[3].color = bc | (bc<<8) | (bc<<16) | (bc<<24);
+						rgv3D[0].nx = rgv3D[1].nx = rgv3D[2].nx = rgv3D[3].nx = bc*(float)(1.0/255.0); //!! abuses normal for now for the color/alpha
 
-						rgv3D[0].tu = 0.5f+(float)(i2)*(float)(1.0/(2.0*(10-1)));
+						rgv3D[0].tu = 0.5f+(float)(i2)*(float)(1.0/(2.0*(BALL_TRAIL_NUM_POS-1)));
 						rgv3D[0].tv = 0.f;
 						rgv3D[1].tu = rgv3D[0].tu;
 						rgv3D[1].tv = 1.f;
-						rgv3D[2].tu = 0.5f+(float)(i2+1)*(float)(1.0/(2.0*(10-1)));
+						rgv3D[2].tu = 0.5f+(float)(i2+1)*(float)(1.0/(2.0*(BALL_TRAIL_NUM_POS-1)));
 						rgv3D[2].tv = 1.f;
 						rgv3D[3].tu = rgv3D[2].tu;
 						rgv3D[3].tv = 0.f;
@@ -2845,18 +2833,22 @@ void Player::DrawBalls()
                 }
             }
 
-            static const WORD rgi_all[10*2] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19};
+            static const WORD rgi_all[BALL_TRAIL_NUM_POS*2] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19};
 
             if(num_rgv3D > 0)
             {
                 m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
                 m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
                 m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_DESTALPHA);
-                m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::LIGHTING, FALSE);
 
-                m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_NOLIGHTING_VERTEX, rgv3D_all, num_rgv3D, (LPWORD)rgi_all, num_rgv3D);
+                ballShader->Core()->SetTechnique("RenderBallTrail");
+                cPasses=0;
+				ballShader->Core()->Begin(&cPasses,0);
+				ballShader->Core()->BeginPass(0);
+                m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_NOTEX2_VERTEX, rgv3D_all, num_rgv3D, (LPWORD)rgi_all, num_rgv3D);
+                ballShader->Core()->EndPass();
+				ballShader->Core()->End();
 
-                m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::LIGHTING, TRUE);
                 m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
                 m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_INVSRCALPHA);
             }

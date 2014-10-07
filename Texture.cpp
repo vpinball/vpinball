@@ -485,15 +485,13 @@ void Texture::SetOpaqueBackdrop(BaseTexture* pdds, const COLORREF rgbTransparent
    }
 }
 
-BOOL Texture::SetAlpha(const COLORREF rgbTransparent)
+void Texture::SetAlpha(const COLORREF rgbTransparent)
 {
     if (!m_pdsBufferColorKey)
-        return FALSE;
-    else
-        return Texture::SetAlpha(m_pdsBufferColorKey, rgbTransparent);
+        return;
+    
+	Texture::SetAlpha(m_pdsBufferColorKey, rgbTransparent);
 }
-
-
 
 BOOL Texture::SetAlpha(BaseTexture* pdds, const COLORREF rgbTransparent)
 {

@@ -160,24 +160,6 @@ STDMETHODIMP BallEx::put_Color(OLE_COLOR newVal)
 	return S_OK;
 }
 
-STDMETHODIMP BallEx::get_DisableLighting(VARIANT_BOOL *pVal)
-{
-	CHECKSTALEBALL
-
-	*pVal = (VARIANT_BOOL)FTOVB(m_pball->m_disableLighting);
-
-	return S_OK;
-}
-
-STDMETHODIMP BallEx::put_DisableLighting(VARIANT_BOOL newVal)
-{
-	CHECKSTALEBALL
-
-	m_pball->m_disableLighting = VBTOF(newVal);
-
-	return S_OK;
-}
-
 STDMETHODIMP BallEx::get_Image(BSTR *pVal)
 {
 	WCHAR wz[512];
@@ -227,24 +209,6 @@ STDMETHODIMP BallEx::put_FrontDecal(BSTR newVal)
 	WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_pball->m_szImageFront, 32, NULL, NULL);
 
 	m_pball->m_pinFront = g_pplayer->m_ptable->GetImage(m_pball->m_szImageFront);
-
-	return S_OK;
-}
-
-STDMETHODIMP BallEx::get_BackDecal(BSTR *pVal)
-{
-	WCHAR wz[512];
-
-	MultiByteToWideChar(CP_ACP, 0, m_pball->m_szImageBack, -1, wz, 32);
-	*pVal = SysAllocString(wz);
-	return S_OK;
-}
-
-STDMETHODIMP BallEx::put_BackDecal(BSTR newVal)
-{
-	WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_pball->m_szImageBack, 32, NULL, NULL);
-
-	m_pball->m_pinBack = g_pplayer->m_ptable->GetImage(m_pball->m_szImageBack);
 
 	return S_OK;
 }

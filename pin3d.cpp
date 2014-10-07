@@ -192,10 +192,8 @@ HRESULT Pin3D::InitPin3D(const HWND hwnd, const bool fFullScreen, const int scre
         return E_FAIL;
 
     ballTexture.CreateFromResource(IDB_BALL);
-    ballTexture.SetAlpha(RGB(0,0,0));
 
 	envTexture.CreateFromResource(IDB_ENV);
-    envTexture.SetAlpha(RGB(0,0,0));
 
 	m_envRadianceTexture = new MemTexture(envTexture.m_pdsBufferColorKey->width(),envTexture.m_pdsBufferColorKey->height());
 
