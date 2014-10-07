@@ -2273,7 +2273,7 @@ BEGIN
     IDS_LIGHTSEQ_DESC       "LightSequencer Class"
     IDS_VISUALS             "Colors & Formatting"
     IDS_POSITION            "Position"
-    IDS_STATE               "State"
+    IDS_STATE               "State & Physics"
     IDS_PHYSICS             "Physics"
     IDS_TB_PRIMITIVE        "Primitive"
     IDS_POSITION_TRANSLATION "Position & Translation"
