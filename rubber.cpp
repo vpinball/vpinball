@@ -9,7 +9,6 @@ Rubber::Rubber()
    dynamicVertexBuffer = 0;
    dynamicIndexBuffer = 0;
    dynamicVertexBufferRegenerate = true;
-   m_d.m_enableLightingImage = true;
    m_d.m_depthBias = 0.0f;
    m_d.m_wireDiameter = 6.0f;
    m_d.m_wireDistanceX = 38.0f;
@@ -83,8 +82,6 @@ void Rubber::SetDefaults(bool fromMouseClick)
    m_d.m_fVisible = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"Visible", true) : true;
    m_d.m_fCollidable = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"Collidable", true) : true;
 
-   m_d.m_enableLightingImage = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"EnableLightingOnImage", true) : true;
-
    m_d.m_wireDiameter = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"WireDiameter", 60.0f) : 60.0f;
    m_d.m_staticRendering = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"EnableStaticRendering", true) : true;
 }
@@ -105,7 +102,6 @@ void Rubber::WriteRegDefaults()
    SetRegValueFloat(strKeyName,"Scatter", m_d.m_scatter);
    SetRegValueBool(strKeyName,"Collidable",m_d.m_fCollidable);
    SetRegValueBool(strKeyName,"Visible",m_d.m_fVisible);
-   SetRegValueBool(strKeyName,"EnableLighingOnImage",m_d.m_enableLightingImage);
    SetRegValueFloat(strKeyName,"WireDiameter", m_d.m_wireDiameter);
    SetRegValueBool(strKeyName,"EnableStaticRendering",m_d.m_staticRendering);
 }
@@ -874,7 +870,6 @@ HRESULT Rubber::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptk
    bw.WriteFloat(FID(RSCT), m_d.m_scatter);
    bw.WriteBool(FID(CLDRP), m_d.m_fCollidable);
    bw.WriteBool(FID(RVIS), m_d.m_fVisible);
-   bw.WriteBool(FID(ERLI), m_d.m_enableLightingImage);
    bw.WriteFloat(FID(RADB), m_d.m_depthBias);
    bw.WriteFloat(FID(RADI), m_d.m_wireDiameter);
    bw.WriteFloat(FID(RADX), m_d.m_wireDistanceX);
@@ -966,10 +961,6 @@ BOOL Rubber::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(RVIS))
    {
       pbr->GetBool(&m_d.m_fVisible);
-   }
-   else if (id == FID(ERLI))
-   {
-      pbr->GetBool(&m_d.m_enableLightingImage);
    }
    else if (id == FID(ESTR))
    {
@@ -1365,24 +1356,6 @@ STDMETHODIMP Rubber::put_Visible(VARIANT_BOOL newVal)
     STOPUNDO
 
     return S_OK;
-}
-
-STDMETHODIMP Rubber::get_EnableLightingImage(VARIANT_BOOL *pVal)
-{
-   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_enableLightingImage);
-
-   return S_OK;
-}
-
-STDMETHODIMP Rubber::put_EnableLightingImage(VARIANT_BOOL newVal)
-{
-   STARTUNDO
-
-   m_d.m_enableLightingImage= VBTOF(newVal);
-
-   STOPUNDO
-
-   return S_OK;
 }
 
 STDMETHODIMP Rubber::get_DepthBias(float *pVal)

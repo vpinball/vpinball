@@ -25,7 +25,6 @@ public:
 
 	bool m_fCollidable;
 	bool m_fVisible;
-    bool m_enableLightingImage;
 	bool m_fImageWalls;
 	bool m_fCastsShadow;
 	bool m_fAcrylic;
@@ -166,8 +165,6 @@ public:
 	STDMETHOD(put_Collidable)(/*[in]*/ VARIANT_BOOL newVal);
 	STDMETHOD(get_Visible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_Visible)(/*[in]*/ VARIANT_BOOL newVal);
-    STDMETHOD(get_EnableLightingImage)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-    STDMETHOD(put_EnableLightingImage)(/*[in]*/ VARIANT_BOOL newVal);
     STDMETHOD(get_DepthBias)(/*[out, retval]*/ float *pVal);
     STDMETHOD(put_DepthBias)(/*[in]*/ float newVal);
     STDMETHOD(get_EnableStaticRendering)(/*[out, retval]*/ VARIANT_BOOL *pVal);

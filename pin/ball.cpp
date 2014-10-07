@@ -20,8 +20,7 @@ Ball::Ball()
    defaultZ = 25.0f;
    m_Event_Pos.x = m_Event_Pos.y = m_Event_Pos.z = -1.0f;
    fFrozen = false;
-   m_color = RGB(255,255,255);
-   material.setColor( 1.0f, m_color );
+   m_color = RGB(0,0,0);
 
    ringcounter_oldpos = 0;
    for(int i = 0; i < BALL_TRAIL_NUM_POS; ++i)
@@ -59,7 +58,7 @@ void Ball::Init()
 
    m_vpVolObjs = new VectorVoid;
 
-   m_color = RGB(255,255,255);
+   m_color = RGB(0,0,0);
 
    if (g_pplayer->m_ptable->m_szBallImage[0] == '\0')
    {

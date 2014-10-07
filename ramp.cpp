@@ -9,7 +9,6 @@ Ramp::Ramp()
    dynamicVertexBuffer = 0;
    dynamicIndexBuffer = 0;
    dynamicVertexBufferRegenerate = true;
-   m_d.m_enableLightingImage = true;
    m_d.m_depthBias = 0.0f;
    m_d.m_wireDiameter = 6.0f;
    m_d.m_wireDistanceX = 38.0f;
@@ -98,8 +97,6 @@ void Ramp::SetDefaults(bool fromMouseClick)
    m_d.m_fVisible = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"Visible", true) : true;
    m_d.m_fCollidable = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"Collidable", true) : true;
 
-   m_d.m_enableLightingImage = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"EnableLightingOnImage", true) : true;
-
    m_d.m_wireDiameter = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"WireDiameter", 60.0f) : 60.0f;
    m_d.m_wireDistanceX = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"WireDistanceX", 38.0f) : 38.0f;
    m_d.m_wireDistanceY = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"WireDistanceY", 88.0f) : 88.0f;
@@ -131,7 +128,6 @@ void Ramp::WriteRegDefaults()
    SetRegValueFloat(strKeyName,"Scatter", m_d.m_scatter);
    SetRegValueBool(strKeyName,"Collidable",m_d.m_fCollidable);
    SetRegValueBool(strKeyName,"Visible",m_d.m_fVisible);
-   SetRegValueBool(strKeyName,"EnableLighingOnImage",m_d.m_enableLightingImage);
    SetRegValueFloat(strKeyName,"WireDiameter", m_d.m_wireDiameter);
    SetRegValueFloat(strKeyName,"WireDistanceX", m_d.m_wireDistanceX);
    SetRegValueFloat(strKeyName,"WireDistanceY", m_d.m_wireDistanceY);
@@ -1719,7 +1715,6 @@ HRESULT Ramp::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey
    bw.WriteFloat(FID(RSCT), m_d.m_scatter);
    bw.WriteBool(FID(CLDRP), m_d.m_fCollidable);
    bw.WriteBool(FID(RVIS), m_d.m_fVisible);
-   bw.WriteBool(FID(ERLI), m_d.m_enableLightingImage);
    bw.WriteFloat(FID(RADB), m_d.m_depthBias);
    bw.WriteFloat(FID(RADI), m_d.m_wireDiameter);
    bw.WriteFloat(FID(RADX), m_d.m_wireDistanceX);
@@ -1844,10 +1839,6 @@ BOOL Ramp::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(RVIS))
    {
       pbr->GetBool(&m_d.m_fVisible);
-   }
-   else if (id == FID(ERLI))
-   {
-      pbr->GetBool(&m_d.m_enableLightingImage);
    }
    else if (id == FID(RADB))
    {
@@ -2489,24 +2480,6 @@ STDMETHODIMP Ramp::put_Visible(VARIANT_BOOL newVal)
       STARTUNDO
     m_d.m_fVisible = VBTOF(newVal);
 	  STOPUNDO
-
-   return S_OK;
-}
-
-STDMETHODIMP Ramp::get_EnableLightingImage(VARIANT_BOOL *pVal)
-{
-   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_enableLightingImage);
-
-   return S_OK;
-}
-
-STDMETHODIMP Ramp::put_EnableLightingImage(VARIANT_BOOL newVal)
-{
-   STARTUNDO
-
-   m_d.m_enableLightingImage= VBTOF(newVal);
-
-   STOPUNDO
 
    return S_OK;
 }

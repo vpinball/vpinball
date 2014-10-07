@@ -70,8 +70,6 @@ public:
 
 	int m_fDynamic;			// used to determine static ball conditions and velocity quenching, 
 
-    Material material;
-
 	BallAnimObject m_ballanim;
 
     Vertex3Ds pos;

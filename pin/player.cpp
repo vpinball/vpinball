@@ -2689,9 +2689,6 @@ void Player::DrawBalls()
             zheight *= (m_ptable->m_zScale*0.96f); 
       }
 
-      pball->material.setColor( 1.0f, pball->m_color );
-      m_pin3d.m_pd3dDevice->SetMaterial(pball->material);
-
       Texture * const playfield = m_ptable->GetImage((char *)m_ptable->m_szImage);
       if( playfield )
         {
@@ -2703,6 +2700,8 @@ void Player::DrawBalls()
       D3DXVECTOR4 m1(pball->m_orientation.m_d[0][0], pball->m_orientation.m_d[1][0], pball->m_orientation.m_d[2][0], 0.0f );
       D3DXVECTOR4 m2(pball->m_orientation.m_d[0][1], pball->m_orientation.m_d[1][1], pball->m_orientation.m_d[2][1], 0.0f );
       D3DXVECTOR4 m3(pball->m_orientation.m_d[0][2], pball->m_orientation.m_d[1][2], pball->m_orientation.m_d[2][2], 0.0f );
+	  const D3DXVECTOR4 diffuse = COLORREF_to_D3DXVECTOR4(pball->m_color);
+	  ballShader->Core()->SetVector("vDiffuseColor",&diffuse);
       ballShader->Core()->SetVector("m1",&m1);
       ballShader->Core()->SetVector("m2",&m2);
       ballShader->Core()->SetVector("m3",&m3);

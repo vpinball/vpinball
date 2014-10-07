@@ -293,7 +293,6 @@ void Flipper::GetHitShapes(Vector<HitObject> * const pvho)
    pvho->AddElement(phf);
    phf->m_pflipper = this;
    phf->m_flipperanim.m_pflipper = this;
-   phf->m_flipperanim.m_fCompatibility = (m_d.m_fCompatibility==fTrue);
    m_phitflipper = phf;	
 }
 

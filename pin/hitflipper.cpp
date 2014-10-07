@@ -4,7 +4,6 @@ FlipperAnimObject::FlipperAnimObject(const Vertex2D& center, float baser, float 
                       float zlow, float zhigh, float strength, float mass, float returnRatio)
 {
    m_height = zhigh - zlow;
-   m_fCompatibility=fTrue;
 
    m_hitcircleBase.m_pfe = NULL;
    m_hitcircleEnd.m_pfe = NULL;
