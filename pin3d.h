@@ -89,7 +89,6 @@ private:
 	void Identity();
    
 	BaseTexture* CreateShadow(const float height);
-	void CreateBallShadow();
 
 	// Data members
 public:
@@ -107,7 +106,6 @@ public:
     //RenderTarget* m_bloomTexture;
 
 	Texture ballTexture;
-	MemTexture *ballShadowTexture;
 
 	Texture envTexture;
 	MemTexture* m_envRadianceTexture;

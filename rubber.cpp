@@ -582,8 +582,6 @@ void Rubber::GetHitShapes(Vector<HitObject> * const pvho)
                 ph3dpoly->SetFriction(m_d.m_friction);
                 ph3dpoly->m_scatter = ANGTORAD(m_d.m_scatter);
 
-                ph3dpoly->m_fVisible = fTrue;
-
                 pvho->AddElement(ph3dpoly);
 
                 m_vhoCollidable.push_back(ph3dpoly);	//remember hit components of ramp
@@ -614,8 +612,6 @@ void Rubber::GetHitShapes(Vector<HitObject> * const pvho)
              ph3dpoly->m_elasticity = m_d.m_elasticity;
              ph3dpoly->SetFriction(m_d.m_friction);
              ph3dpoly->m_scatter = ANGTORAD(m_d.m_scatter);
-
-             ph3dpoly->m_fVisible = fTrue;
 
              pvho->AddElement(ph3dpoly);
 

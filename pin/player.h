@@ -336,7 +336,6 @@ private:
     std::vector<Ball*> m_vballDelete;	// Balls to free at the end of the frame
 
 	HitQuadtree m_hitoctree;
-	HitQuadtree m_shadowoctree;
 
 	Vector<HitObject> m_vdebugho;
 	HitQuadtree m_debugoctree;

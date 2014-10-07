@@ -12,7 +12,6 @@ Pin3D::Pin3D()
 	m_pd3dDevice = NULL;
 	m_pddsStatic = NULL;
 	m_pddsStaticZ = NULL;
-    ballShadowTexture = NULL;
 	m_envRadianceTexture = NULL;
 	m_device_envRadianceTexture = NULL;
 	backgroundVBuffer = NULL;
@@ -33,7 +32,6 @@ Pin3D::~Pin3D()
     for (std::map<int,MemTexture*>::iterator it = m_xvShadowMap.begin(); it != m_xvShadowMap.end(); ++it)
         delete it->second;
 
-   delete ballShadowTexture;
    ballTexture.FreeStuff();
 
    envTexture.FreeStuff();
@@ -192,8 +190,6 @@ HRESULT Pin3D::InitPin3D(const HWND hwnd, const bool fFullScreen, const int scre
     m_pddsStaticZ = m_pd3dDevice->AttachZBufferTo(m_pddsStatic);
     if (!m_pddsZBuffer || !m_pddsStatic)
         return E_FAIL;
-
-    CreateBallShadow();
 
     ballTexture.CreateFromResource(IDB_BALL);
     ballTexture.SetAlpha(RGB(0,0,0));
@@ -593,85 +589,6 @@ void Pin3D::RenderPlayfieldGraphics()
 
     // Apparently, releasing the vertex buffer here immediately can cause rendering glitches in
     // later rendering steps, so we keep it around for now.
-}
-
-const int rgfilterwindow[7][7] =
-   {1, 4, 8, 10, 8, 4, 1,
-	4, 12, 25, 29, 25, 12, 4,
-	8, 25, 49, 58, 49, 25, 8,
-	10, 29, 58, 67, 58, 29, 10,
-	8, 25, 49, 58, 49, 25, 8,
-	4, 12, 25, 29, 25, 12, 4,
-	1, 4, 8, 10, 8, 4, 1};
-
-void Pin3D::CreateBallShadow()
-{
-	ballShadowTexture = new MemTexture(16, 16);
-
-	const int pitch = ballShadowTexture->pitch();
-	const int width = ballShadowTexture->width();
-	const int height = ballShadowTexture->height();
-	BYTE * const pc = ballShadowTexture->data();
-
-	// Sharp Shadow
-	int offset = 0;
-	for (int y=0; y<height; ++y)
-	{
-		for (int x=0; x<width; ++x)
-		{
-			const int dx = 8-x;
-			const int dy = 8-y;
-			const int dist = dx*dx + dy*dy;
-			pc[offset+x*4] = (dist <= 32) ? (BYTE)255 : (BYTE)0;
-		}
-		offset += pitch;
-	}
-
-	int totalwindow = 0;
-	for (int i=0;i<7;++i)
-		for (int l=0;l<7;++l)
-			totalwindow += rgfilterwindow[i][l];
-
-	for (int i=0;i<height;i++)
-	{
-		for (int l=0;l<width;l++)
-		{
-			int value = 0;
-			for (int n=0;n<7;n++)
-			{
-				const int y = i+n-3;
-				if(/*y>=0 &&*/ (unsigned int)y<=15)
-				{
-					BYTE * const pcy = pc + pitch*y;
-					for (int m=0;m<7;m++)
-					{
-						const int x = l+m-3;
-						if (/*x>=0 &&*/ (unsigned int)x<=15)
-							value += (int)(*(pcy + 4*x)) * rgfilterwindow[m][n];
-					}
-				}
-			}
-
-			value /= totalwindow;
-
-			value = (value*5)>>3;
-
-			*(pc + pitch*i + l*4 + 3) = (BYTE)value;
-		}
-	}
-
-	// Black out color channel
-	offset = 0;
-	for (int y=0; y<height; ++y)
-	{
-		for (int x=0; x<width*4; x+=4)
-		{
-			pc[offset+x  ] = 0;
-			pc[offset+x+1] = 0;
-			pc[offset+x+2] = 0;
-		}
-		offset += pitch;
-	}
 }
 
 void Pin3D::CalcShadowCoordinates(Vertex3D * const pv, const unsigned int count) const

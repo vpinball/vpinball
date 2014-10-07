@@ -72,7 +72,6 @@ public:
 	Vertex3Ds *m_rgv;
 	Vertex3Ds normal;
 	int m_cvertex;
-	BOOL m_fVisible; // for ball shadows
 };
 
 class HitTriangle : public HitObject
@@ -90,7 +89,6 @@ public:
 
 	Vertex3Ds m_rgv[3];
 	Vertex3Ds normal;
-	BOOL m_fVisible; // for ball shadows
 };
 
 
