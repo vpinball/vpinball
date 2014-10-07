@@ -333,8 +333,6 @@ void Trigger::CurvesToShapes(Vector<HitObject> * const pvho)
 
 #if 1	
    Hit3DPoly * const ph3dpoly = new Hit3DPoly(rgv3D,count);
-
-   ph3dpoly->m_fVisible = fTrue;
    ph3dpoly->m_ObjType = eTrigger;
    ph3dpoly->m_pObj = (void*) this;
 

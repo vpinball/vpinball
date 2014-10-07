@@ -411,7 +411,6 @@ Hit3DPoly::Hit3DPoly(Vertex3Ds * const rgv, const int count) : m_rgv(rgv),m_cver
 	normal.y *= inv_len;
 	normal.z *= inv_len;
 
-	m_fVisible = fFalse;
 	m_elasticity = 0.3f;
     SetFriction(0.0f);
 	m_scatter = 0;
@@ -612,7 +611,6 @@ HitTriangle::HitTriangle(const Vertex3Ds rgv[3]) //!! triangle soup instead
 	normal = CrossProduct(e0,e1);
     normal.NormalizeSafe();
 
-	m_fVisible = fFalse;
 	m_elasticity = 0.3f;
     SetFriction(0.0f);
 	m_scatter = 0;

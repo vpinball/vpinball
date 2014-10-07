@@ -237,7 +237,6 @@ void Primitive::GetHitShapes(Vector<HitObject> * const pvho)
       ph3dpoly->m_elasticity = m_d.m_elasticity;
       ph3dpoly->SetFriction(m_d.m_friction);
       ph3dpoly->m_scatter = ANGTORAD(m_d.m_scatter);
-      ph3dpoly->m_fVisible=fTrue;
       ph3dpoly->m_threshold = m_d.m_threshold;
       ph3dpoly->m_fEnabled=m_d.m_fCollidable;
       ph3dpoly->m_ObjType = ePrimitive;

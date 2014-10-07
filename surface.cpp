@@ -424,7 +424,6 @@ void Surface::CurvesToShapes(Vector<HitObject> * const pvho)
       delete vvertex.ElementAt(i);
 
    Hit3DPoly * const ph3dpoly = new Hit3DPoly(rgv3D,count);
-   ph3dpoly->m_fVisible = fTrue;
    SetupHitObject(pvho, ph3dpoly);
 }
 

@@ -978,10 +978,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 
         m_hitoctree.AddElement(pho);
 
-        if (((pho->GetType() == e3DPoly) && ((Hit3DPoly *)pho)->m_fVisible) ||
-            ((pho->GetType() == eTriangle) && ((HitTriangle *)pho)->m_fVisible) )
-            m_shadowoctree.AddElement(pho);
-        else if (pho->GetType() == eFlipper)
+        if (pho->GetType() == eFlipper)
             m_vFlippers.push_back((HitFlipper*)pho);
 
         AnimObject *pao = pho->GetAnimObject();
@@ -998,8 +995,6 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 #ifndef NDEBUG
     m_hitoctree.DumpTree(0);
 #endif
-
-    m_shadowoctree.Initialize(tableBounds);
 
     // initialize hit structure for dynamic objects
     m_hitoctree_dynamic.FillFromVector( m_vho_dynamic );
@@ -2674,7 +2669,6 @@ void Player::DrawBalls()
     for (unsigned i=0; i<m_vball.size(); i++)
     {
         Ball * const pball = m_vball[i];
-        // just calculate the vertices once!
         float zheight = (!pball->fFrozen) ? pball->pos.z : (pball->pos.z - pball->radius);
 
       float maxz = pball->defaultZ+3.0f;
