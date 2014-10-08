@@ -449,7 +449,7 @@ float HitFlipper::HitTestFlipperEnd(const Ball * pball, const float dtime, Colli
 
       if (k == 1)   // end of pass one ... set full interval pass, t = dtime
       { // test for extreme conditions
-         if (bfend < -((float)PHYS_SKIN + feRadius)) return -1.0f;	// too deeply embedded, ambigious position
+         if (bfend < -(pball->radius + feRadius)) return -1.0f;	// too deeply embedded, ambigious position
          if (bfend <= (float)PHYS_TOUCH) 
             break; // inside the clearance limits
 
@@ -477,7 +477,7 @@ float HitFlipper::HitTestFlipperEnd(const Ball * pball, const float dtime, Colli
 
    if (t < 0 || t > dtime							// time is outside this frame ... no collision
       ||
-      ((k > C_INTERATIONS) && (fabsf(bfend) > (float)(PHYS_SKIN/4.0)))) // last ditch effort to accept a solution
+      ((k > C_INTERATIONS) && (fabsf(bfend) > pball->radius*0.25f))) // last ditch effort to accept a solution
       return -1.0f; // no solution
 
    // here ball and flipper end are in contact .. well in most cases, near and embedded solutions need calculations	
@@ -599,7 +599,7 @@ float HitFlipper::HitTestFlipperFace(const Ball * pball, const float dtime, Coll
 
       if (k == 1)   // end of pass one ... set full interval pass, t = dtime
       {    // test for already inside flipper plane, either embedded or beyond the face endpoints
-         if (bffnd < -((float)PHYS_SKIN + feRadius)) return -1.0f;		// wrong side of face, or too deeply embedded			
+         if (bffnd < -(pball->radius + feRadius)) return -1.0f;		// wrong side of face, or too deeply embedded			
          if (bffnd <= (float)PHYS_TOUCH) 
             break; // inside the clearance limits, go check face endpoints
 
@@ -626,7 +626,7 @@ float HitFlipper::HitTestFlipperFace(const Ball * pball, const float dtime, Coll
 
    if (t < 0 || t > dtime								// time is outside this frame ... no collision
       ||
-      ((k > C_INTERATIONS) && (fabsf(bffnd) > (float)(PHYS_SKIN/4.0)))) // last ditch effort to accept a near solution
+      ((k > C_INTERATIONS) && (fabsf(bffnd) > pball->radius*0.25f))) // last ditch effort to accept a near solution
       return -1.0f; // no solution
 
    // here ball and flipper face are in contact... past the endpoints, also, don't forget embedded and near soultion

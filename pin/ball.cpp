@@ -17,7 +17,7 @@ Ball::Ball()
    m_vpVolObjs = NULL; // should be NULL ... only real balls have this value
    m_pin=NULL;
    m_pinFront=NULL;
-   defaultZ = 25.0f;
+   defaultZ = 25.0f; //!! assumes ball radius 25
    m_Event_Pos.x = m_Event_Pos.y = m_Event_Pos.z = -1.0f;
    fFrozen = false;
    m_color = RGB(0,0,0);
@@ -207,8 +207,8 @@ float Ball::HitTest(const Ball * pball_, float dtime, CollisionEvent& coll)
 	float hittime;
 	if (bnd < (float)PHYS_TOUCH)			// in contact??? 
 	{
-		if (bnd <= (float)(-PHYS_SKIN*2.0))
-			return -1.0f;					// embedded too deep
+		if (bnd <= pball->radius*-2.0f)
+			return -1.0f;					// embedded too deep?
 
 		if ((fabsf(bnv) > C_CONTACTVEL)			// >fast velocity, return zero time
 												//zero time for rigid fast bodies

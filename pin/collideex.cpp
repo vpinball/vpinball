@@ -245,7 +245,7 @@ HitSpinner::HitSpinner(Spinner * const pspinner, const float height)
 	m_lineseg[0].m_pfe = NULL;
 	m_lineseg[1].m_pfe = NULL;
 
-	m_lineseg[0].v2.x = pspinner->m_d.m_vCenter.x + cs*(halflength + (float)PHYS_SKIN); //oversize  by the ball radius
+	m_lineseg[0].v2.x = pspinner->m_d.m_vCenter.x + cs*(halflength + (float)PHYS_SKIN); //oversize by the ball radius
 	m_lineseg[0].v2.y = pspinner->m_d.m_vCenter.y + sn*(halflength + (float)PHYS_SKIN); //this will prevent clipping
 	m_lineseg[0].v1.x = pspinner->m_d.m_vCenter.x - cs*(halflength + (float)PHYS_SKIN); //through the edge of the
 	m_lineseg[0].v1.y = pspinner->m_d.m_vCenter.y - sn*(halflength + (float)PHYS_SKIN); //spinner
@@ -443,7 +443,7 @@ float Hit3DPoly::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 	float hittime;
 	if (rigid) //rigid polygon
 	{
-		if (bnd < (float)(-PHYS_SKIN)) return -1.0f;	// (ball normal distance) excessive pentratration of object skin ... no collision HACK
+		if (bnd < -pball->radius/**2.0f*/) return -1.0f;	// (ball normal distance) excessive pentratration of object skin ... no collision HACK //!! *2 necessary?
 			
 		if (bnd <= (float)PHYS_TOUCH)
 		{
@@ -465,8 +465,8 @@ float Hit3DPoly::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 		{
 			if((m_ObjType != eTrigger) ||				// not a trigger
 			   (!pball->m_vpVolObjs) ||					// temporary ball
-			   (fabsf(bnd) >= (float)(PHYS_SKIN/2.0)) ||		// not to close ... nor to far away
-			   (inside != (pball->m_vpVolObjs->IndexOf(m_pObj) < 0)))// ...ball outside and hit set or  ball inside and no hit set
+			   (fabsf(bnd) >= pball->radius*0.5f) ||		// not too close ... nor too far away
+			   (inside != (pball->m_vpVolObjs->IndexOf(m_pObj) < 0)))// ...ball outside and hit set or ball inside and no hit set
 				return -1.0f;
 
 			hittime = 0;
@@ -633,7 +633,7 @@ float HitTriangle::HitTest(const Ball * pball, float dtime, CollisionEvent& coll
 
 	float hittime;
 
-    if (bnd < (float)(-PHYS_SKIN))
+    if (bnd < -pball->radius/**2.0f*/) //!! *2 necessary?
         return -1.0f;	// (ball normal distance) excessive pentratration of object skin ... no collision HACK
 
     bool isContact = false;
@@ -752,7 +752,7 @@ float HitPlane::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 
     const float bnd = normal.Dot( pball->pos ) - pball->radius - d; // distance from plane to ball surface
 
-    if (bnd < (float)(-PHYS_SKIN))
+    if (bnd < pball->radius*-2.0f) //!! solely responsible for ball through playfield?? check other places, too (radius*2??)
         return -1.0f;   // excessive penetration of plane ... no collision HACK
 
     // slow moving ball? then either contact or no collision at all

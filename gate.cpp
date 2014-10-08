@@ -261,7 +261,7 @@ void Gate::GetHitShapes(Vector<HitObject> * const pvho)
       m_plineseg->m_pfe = NULL;
 
       m_plineseg->m_rcHitRect.zlow = height;
-      m_plineseg->m_rcHitRect.zhigh = height + (float)(2.0*PHYS_SKIN); //+50.0f //ball diameter
+      m_plineseg->m_rcHitRect.zhigh = height + (float)(2.0*PHYS_SKIN); //!! = ball diameter
 
       m_plineseg->v1.x = rgv[0].x;
       m_plineseg->v1.y = rgv[0].y;
