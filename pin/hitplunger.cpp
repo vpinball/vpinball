@@ -334,12 +334,12 @@ void HitPlunger::Collide(CollisionEvent *coll)
 
 	const float scatter_vel = m_plungeranim.m_scatterVelocity * g_pplayer->m_ptable->m_globalDifficulty;// apply dificulty weighting
 
-	if (scatter_vel > 0 && fabsf(pball->vel.y) > scatter_vel) //skip if low velocity 
-		{
+	if (scatter_vel > 0.f && fabsf(pball->vel.y) > scatter_vel) //skip if low velocity 
+	{
 		float scatter = rand_mt_m11();								// -1.0f..1.0f
 		scatter *= (1.0f - scatter*scatter)*2.59808f * scatter_vel;	// shape quadratic distribution and scale
 		pball->vel.y += scatter;
-		}
+	}
 
 	pball->m_fDynamic = C_DYNAMIC;
 

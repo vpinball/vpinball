@@ -12,6 +12,7 @@ VP 10.0.0 Changelog
 
   -> additional changes since physmod5:
      - friction is no longer ignored (e.g. it was always 0.3) on the playfield, walls, slingshots, primitives, ramps, gates (and more?!)
+     - scatter is no longer ignored for kickers and all kinds of collisions, but changed fallback behavior: only if scatter < 0 then the global scatter is used
      - collision heuristics are adapted for ball sizes different from the default 25
      - (hopefully) no more ball-falling-through-playfield problem
 

@@ -815,8 +815,6 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(398), helpstring("property Compatibility")] HRESULT CompatibilityMode([in] VARIANT_BOOL newVal);
 		[propget, id(21), helpstring("property Elasticity")] HRESULT Elasticity([out, retval] float *pVal);
 		[propput, id(21), helpstring("property Elasticity")] HRESULT Elasticity([in] float newVal);
-		[propget, id(22), helpstring("property Recoil")] HRESULT Recoil([out, retval] float *pVal);
-		[propput, id(22), helpstring("property Recoil")] HRESULT Recoil([in] float newVal);
 		[propget, id(23), helpstring("property Return")] HRESULT Return([out, retval] float *pVal);
 		[propput, id(23), helpstring("property Return")] HRESULT Return([in] float newVal);
 		[propget, id(24), helpstring("property RubberHeight")] HRESULT RubberHeight([out, retval] long *pVal);
@@ -838,17 +836,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propget, id(107), helpstring("property Height")] HRESULT Height([out, retval] float *pVal);
 		[propput, id(107), helpstring("property Height")] HRESULT Height([in] float newVal);
 
-		//[propget, id(108), helpstring("property Mass")] HRESULT Mass([out, retval] float *pVal);
-		//[propput, id(108), helpstring("property Mass")] HRESULT Mass([in] float newVal);
-
-		[propget, id(109), helpstring("property PowerLaw")] HRESULT PowerLaw([out, retval] float *pVal);
-		[propput, id(109), helpstring("property PowerLaw")] HRESULT PowerLaw([in] float newVal);
-		[propget, id(110), helpstring("property ObliqueCorrection")] HRESULT ObliqueCorrection([out, retval] float *pVal);
-		[propput, id(110), helpstring("property ObliqueCorrection")] HRESULT ObliqueCorrection([in] float newVal);
 		[propget, id(111), helpstring("property FlipperRadiusMin")] HRESULT FlipperRadiusMin([out, retval] float *pVal);
 		[propput, id(111), helpstring("property FlipperRadiusMin")] HRESULT FlipperRadiusMin([in] float newVal);
-		[propget, id(112), helpstring("property ScatterAngle")] HRESULT ScatterAngle([out, retval] float *pVal);
-		[propput, id(112), helpstring("property ScatterAngle")] HRESULT ScatterAngle([in] float newVal);
 	};
 
 	[

@@ -214,14 +214,12 @@ Variables
 *FlipperRadiusMin(float)
 CurrentAngle(float) - only readable
 
-Mass(float)
-PowerLaw(float)
-*ObliqueCorrection(float)
-ScatterAngle(float)
+Friction(float)
+RampUp(float)
 Elasticity(float)
-Recoil(float)
+ElasticityFalloff(float)
 Return(float)
-*Speed(float)
+*Speed(float) - this is nowadays exposed as Mass in the UI
 *Strength(float)
 OverridePhysics(int) - overrides the flipper physics settings with pre defined settings defined under Preferences -> Physics Options.
                        You can define up to 8 different physics settings for the table and the flippers. Save them to one of the 8 slots and

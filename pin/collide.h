@@ -75,7 +75,7 @@ public:
 	
 	virtual AnimObject *GetAnimObject() {return NULL;}
 
-    void SetFriction(float friction)        { m_friction = friction; }
+    void SetFriction(const float friction)        { m_friction = friction; }
 
     void FireHitEvent(Ball* pball);
 

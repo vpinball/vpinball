@@ -19,7 +19,7 @@ void BumperHitCircle::Collide(CollisionEvent* coll)
 
 	const float dot = hitnormal.x * pball->vel.x + hitnormal.y * pball->vel.y;
 
-	pball->CollideWall(hitnormal, m_elasticity, m_friction /*0.3f*/, m_scatter);	//reflect ball from wall
+	pball->Collide2DWall(hitnormal, m_elasticity, m_friction /*0.3f*/, m_scatter);	//reflect ball from wall
 
 	// if the bumper is disabled then don't activate the bumper
 	if (m_pbumper->m_fDisabled)
@@ -111,7 +111,7 @@ void LineSegSlingshot::Collide(CollisionEvent* coll)
 		pball->vel.y -= hitnormal.y * force;	// allow CollideWall to handle the remainder
 	}
 
-	pball->CollideWall(hitnormal, m_elasticity, m_friction /*0.3f*/, m_scatter);
+	pball->Collide2DWall(hitnormal, m_elasticity, m_friction /*0.3f*/, m_scatter);
 
     if (m_pfe && !m_psurface->m_fDisabled && threshold)
     {
@@ -790,7 +790,7 @@ void HitPlane::Collide(CollisionEvent* coll)
     //slintf("Playfield COLLISION - (%f %f %f) - (%f %f %f)\n",
     //        coll->ball->pos.x, coll->ball->pos.y, coll->ball->pos.z,
     //        coll->ball->vel.x, coll->ball->vel.y, coll->ball->vel.z);
-    coll->ball->Collide3DWall(coll->normal[0], m_elasticity, m_friction, /*m_scatter*/ 0.0f);
+    coll->ball->Collide3DWall(coll->normal[0], m_elasticity, m_friction, m_scatter /*0.0f*/);
 
     // if ball has penetrated, push it out of the plane
     const float bnd = normal.Dot( coll->ball->pos ) - coll->ball->radius - d; // distance from plane to ball surface

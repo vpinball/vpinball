@@ -315,7 +315,7 @@ void LineSeg::Collide(CollisionEvent *coll)
     const Vertex3Ds& hitnormal = coll->normal[0];
 
     const float dot = hitnormal.x * pball->vel.x + hitnormal.y * pball->vel.y;
-    pball->CollideWall(hitnormal, m_elasticity, m_friction /*0.3f*/, m_scatter);
+    pball->Collide2DWall(hitnormal, m_elasticity, m_friction /*0.3f*/, m_scatter);
 
     if (dot <= -m_threshold)
         FireHitEvent(pball);
@@ -352,7 +352,7 @@ float HitCircle::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 
 void HitCircle::Collide(CollisionEvent *coll)
 {
-    coll->ball->CollideWall(coll->normal[0], m_elasticity, m_friction /*0.3f*/, m_scatter);
+    coll->ball->Collide2DWall(coll->normal[0], m_elasticity, m_friction /*0.3f*/, m_scatter);
 }
 
 void HitCircle::Contact(CollisionEvent& coll, float dtime)

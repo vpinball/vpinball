@@ -37,25 +37,14 @@ public:
     float m_elasticityFalloff;
 	float m_friction;
     float m_rampUp;
-	float m_scatter;
+	float m_scatter; //!! expose? scatter on hit
 	float m_height;
-	float m_mass;
-	float m_powerlaw;
-	float m_obliquecorrection;
-	float m_scatterangle;
 	float m_FlipperRadiusMin;	// the flipper length reduction at maximum difficulty 
-	float m_recoil;
 	float m_return;
-	float m_angleEOS;	//angle at which EOS switch opens, as measured from EOS parked position
+	float m_angleEOS;	//angle at which EOS switch opens, as measured from EOS parked position //!! disabled
 
-	float m_OverrideSpeed;
 	float m_OverrideStrength;
  	float m_OverrideElasticity;
-  	float m_OverrideScatter;
-  	float m_OverrideReturnStrength;
-	float m_OverrideRecoil;
-  	float m_OverridePowerLaw;
-	float m_OverrideOblique;
 	int m_OverridePhysics;
 };
 
@@ -177,22 +166,12 @@ public:
 	STDMETHOD(put_BaseRadius)(/*[in]*/ float newVal);
 	STDMETHOD(get_Height)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Height)(/*[in]*/ float newVal);
-	STDMETHOD(get_Mass)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_Mass)(/*[in]*/ float newVal);
-	STDMETHOD(get_Recoil)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_Recoil)(/*[in]*/ float newVal);
 	STDMETHOD(get_Return)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Return)(/*[in]*/ float newVal);
 	STDMETHOD(get_AngleEOS)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_AngleEOS)(/*[in]*/ float newVal);
-	STDMETHOD(get_PowerLaw)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_PowerLaw)(/*[in]*/ float newVal);
-	STDMETHOD(get_ObliqueCorrection)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_ObliqueCorrection)(/*[in]*/ float newVal);
 	STDMETHOD(get_FlipperRadiusMin)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_FlipperRadiusMin)(/*[in]*/ float newVal);
-	STDMETHOD(get_ScatterAngle)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_ScatterAngle)(/*[in]*/ float newVal);
 };
 
 #endif // !defined(AFX_FLIPPER_H__D65AA2A2_9F89_4AA4_88F3_D325B1001825__INCLUDED_)

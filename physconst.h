@@ -62,7 +62,6 @@
 
 #define NUDGE_MANUAL_FRICTION 0.92f     // TODO: depends on STEPTIME
 
-
 //Flippers:
 #define C_INTERATIONS 20 // Precision level and cycles for interative calculations // acceptable contact time ... near zero time
 
@@ -71,4 +70,3 @@
 
 //Plumb:
 #define	VELOCITY_EPSILON 0.05f	// The threshold for zero velocity.
-

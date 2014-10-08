@@ -38,7 +38,7 @@ public:
 	virtual AnimObject *GetAnimObject() {return &m_ballanim;}
 
     //semi-generic collide methods
-    void CollideWall(const Vertex3Ds& hitNormal, const float elasticity, float friction, float scatter_angle)
+    void Collide2DWall(const Vertex3Ds& hitNormal, const float elasticity, float friction, float scatter_angle)
       { Collide3DWall( Vertex3Ds(hitNormal.x, hitNormal.y, 0), elasticity, friction, scatter_angle); }
 
     void Collide3DWall(const Vertex3Ds& hitNormal, const float elasticity, float friction, float scatter_angle);
@@ -68,7 +68,7 @@ public:
 
     CollisionEvent m_coll;  // collision information, may not be a actual hit if something else happens first
 
-	int m_fDynamic;			// used to determine static ball conditions and velocity quenching, 
+	int m_fDynamic;			// used to determine static ball conditions and velocity quenching
 
 	BallAnimObject m_ballanim;
 
