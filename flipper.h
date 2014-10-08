@@ -14,37 +14,44 @@ class FlipperData
 public:
 	float m_BaseRadius;
 	float m_EndRadius;
+	float m_FlipperRadiusMin; // the flipper length reduction at maximum difficulty 
 	float m_FlipperRadiusMax;  
 	float m_FlipperRadius;
 	float m_StartAngle;
 	float m_EndAngle;
 	Vertex2D m_Center;
+	
 	TimerDataRoot m_tdr;
+	
 	char m_szSurface[MAXTOKEN];
 	COLORREF m_color;
     char m_szMaterial[32];
+	
 	COLORREF m_rubbercolor;
     char m_szRubberMaterial[32];
-	float m_force;
 	int m_rubberthickness;
 	int m_rubberheight;
 	int m_rubberwidth;
-	float m_strength;
+
 	BOOL  m_fVisible;
     BOOL  m_fEnabled;
     BOOL  m_fCompatibility;
+
+	float m_strength;
+	float m_mass;
 	float m_elasticity;
     float m_elasticityFalloff;
 	float m_friction;
     float m_rampUp;
 	float m_scatter; //!! expose? scatter on hit
 	float m_height;
-	float m_FlipperRadiusMin;	// the flipper length reduction at maximum difficulty 
 	float m_return;
-	float m_angleEOS;	//angle at which EOS switch opens, as measured from EOS parked position //!! disabled
+	float m_angleEOS; // angle at which EOS switch opens, as measured from EOS parked position //!! disabled/not wired
 
+	float m_OverrideMass;
 	float m_OverrideStrength;
  	float m_OverrideElasticity;
+	float m_OverrideReturnStrength;
 	int m_OverridePhysics;
 };
 
@@ -139,8 +146,8 @@ public:
 	STDMETHOD(put_RubberHeight)(/*[in]*/ long newVal);
 	STDMETHOD(get_RubberMaterial)(/*[out, retval]*/ BSTR *pVal);
 	STDMETHOD(put_RubberMaterial)(/*[in]*/ BSTR newVal);
-	STDMETHOD(get_Speed)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_Speed)(/*[in]*/ float newVal);
+	STDMETHOD(get_Mass)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_Mass)(/*[in]*/ float newVal);
 	STDMETHOD(get_OverridePhysics)(/*[out, retval]*/ long *pVal);
     STDMETHOD(put_OverridePhysics)(/*[in]*/ long newVal);
 	STDMETHOD(get_Material)(/*[out, retval]*/ BSTR *pVal);

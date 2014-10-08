@@ -511,11 +511,11 @@ BEGIN
     EDITTEXT        DISPID_Flipper_Speed,83,21,40,12,ES_AUTOHSCROLL
     EDITTEXT        19,83,36,40,12,ES_AUTOHSCROLL
     EDITTEXT        21,83,51,40,12,ES_AUTOHSCROLL
-    EDITTEXT        112,83,65,40,12,ES_AUTOHSCROLL
+    //EDITTEXT        112,83,65,40,12,ES_AUTOHSCROLL
     EDITTEXT        23,83,79,40,12,ES_AUTOHSCROLL
-    EDITTEXT        22,83,94,40,12,ES_AUTOHSCROLL
-    EDITTEXT        109,83,109,40,12,ES_AUTOHSCROLL
-    EDITTEXT        110,83,122,40,12,ES_AUTOHSCROLL
+    //EDITTEXT        22,83,94,40,12,ES_AUTOHSCROLL
+    //EDITTEXT        109,83,109,40,12,ES_AUTOHSCROLL
+    //EDITTEXT        110,83,122,40,12,ES_AUTOHSCROLL
     EDITTEXT        1100,83,161,40,12,ES_AUTOHSCROLL
     EDITTEXT        1101,83,175,40,12,ES_AUTOHSCROLL
     EDITTEXT        1102,83,188,40,12,ES_AUTOHSCROLL
@@ -524,14 +524,14 @@ BEGIN
     PUSHBUTTON      "&Cancel",IDCANCEL,144,28,50,14
     PUSHBUTTON      "&Import Set",1111,144,220,50,14
     PUSHBUTTON      "&Export Set",1112,144,238,50,14
-    LTEXT           "S&peed",IDC_STATIC,11,23,66,8
+    LTEXT           "Mass",IDC_STATIC,11,23,66,8
     LTEXT           "Stre&ngth",IDC_STATIC,11,38,66,8
     LTEXT           "Elast&icity",IDC_STATIC,11,53,66,8
-    LTEXT           "Scatter Angle",IDC_STATIC,11,67,66,8
+    //LTEXT           "Scatter Angle",IDC_STATIC,11,67,66,8
     LTEXT           "Return Strength Ratio",IDC_STATIC,11,81,66,8
-    LTEXT           "Recoil Velocity",IDC_STATIC,11,96,66,8
-    LTEXT           "Power-Law",IDC_STATIC,11,111,66,8
-    LTEXT           "Oblique Correction",IDC_STATIC,11,124,66,8
+    //LTEXT           "Recoil Velocity",IDC_STATIC,11,96,66,8
+    //LTEXT           "Power-Law",IDC_STATIC,11,111,66,8
+    //LTEXT           "Oblique Correction",IDC_STATIC,11,124,66,8
     LTEXT           "Gravity Constant",IDC_STATIC,11,163,69,8
     LTEXT           "Playfield Friction",IDC_STATIC,11,177,69,8
     LTEXT           "Contact Scatter Angle",IDC_STATIC,11,191,69,8

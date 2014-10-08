@@ -63,7 +63,7 @@ void Flipper::SetDefaults(bool fromMouseClick)
    m_d.m_return = (hr == S_OK) && fromMouseClick ? fTmp : 0.09f;
 
    hr = GetRegStringAsFloat("DefaultProps\\Flipper","Speed", &fTmp);
-   m_d.m_force = (hr == S_OK) && fromMouseClick ? fTmp : 0.15f;
+   m_d.m_mass = (hr == S_OK) && fromMouseClick ? fTmp : 0.15f;
 
    hr = GetRegStringAsFloat("DefaultProps\\Flipper","Elasticity", &fTmp);
    m_d.m_elasticity = (hr == S_OK) && fromMouseClick ? fTmp : 0.55f;
@@ -146,7 +146,7 @@ void Flipper::WriteRegDefaults()
    SetRegValueFloat(regKey,"Length", m_d.m_FlipperRadiusMax);
    SetRegValueFloat(regKey,"MaxDifLength", m_d.m_FlipperRadiusMin);
    SetRegValueFloat(regKey,"ReturnStrength", m_d.m_return);
-   SetRegValueFloat(regKey,"Speed", m_d.m_force);
+   SetRegValueFloat(regKey,"Speed", m_d.m_mass);
    SetRegValueFloat(regKey,"Elasticity", m_d.m_elasticity);
    SetRegValueFloat(regKey,"ElasticityFalloff", m_d.m_elasticityFalloff);
    SetRegValueFloat(regKey, "Friction", m_d.m_friction);
@@ -190,9 +190,15 @@ void Flipper::GetHitShapes(Vector<HitObject> * const pvho)
    if(m_d.m_OverridePhysics)
    {
 	     char tmp[256];
+ 		 m_d.m_OverrideMass = 0.15f;
+	     sprintf_s(tmp,256,"FlipperPhysicsSpeed%d",m_d.m_OverridePhysics-1);
+         HRESULT hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideMass);
+         if (hr != S_OK)
+            m_d.m_OverrideMass = 0.15f;
+
 		 m_d.m_OverrideStrength = 3.f;
 	     sprintf_s(tmp,256,"FlipperPhysicsStrength%d",m_d.m_OverridePhysics-1);
-         HRESULT hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideStrength);
+         hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideStrength);
          if (hr != S_OK)
             m_d.m_OverrideStrength = 3.f;
 
@@ -201,6 +207,12 @@ void Flipper::GetHitShapes(Vector<HitObject> * const pvho)
          hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideElasticity);
          if (hr != S_OK)
             m_d.m_OverrideElasticity = 0.55f;
+		 
+		 m_d.m_OverrideReturnStrength = 0.09f;
+	     sprintf_s(tmp,256,"FlipperPhysicsReturnStrength%d",m_d.m_OverridePhysics-1);
+         hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideReturnStrength);
+         if (hr != S_OK)
+            m_d.m_OverrideReturnStrength = 0.09f;
    }
 
    //
@@ -215,12 +227,14 @@ void Flipper::GetHitShapes(Vector<HitObject> * const pvho)
    else m_d.m_FlipperRadius = m_d.m_FlipperRadiusMax;
 
    const float strength = m_d.m_OverridePhysics ? m_d.m_OverrideStrength : m_d.m_strength;
+   const float return_ratio = m_d.m_OverridePhysics ? m_d.m_OverrideReturnStrength : m_d.m_return;
+   const float mass = m_d.m_OverridePhysics ? m_d.m_OverrideMass : m_d.m_mass;
 
    HitFlipper * const phf = new HitFlipper(m_d.m_Center, m_d.m_BaseRadius, m_d.m_EndRadius,
 	   m_d.m_FlipperRadius, ANGTORAD(m_d.m_StartAngle), ANGTORAD(m_d.m_EndAngle), height, height + m_d.m_height,
-       strength, m_d.m_force, m_d.m_return);     // HACK: use "Speed" (m_force) as mass
+       strength, mass, return_ratio);
 
-   phf->m_elasticity = (m_d.m_OverridePhysics ? m_d.m_OverrideElasticity : m_d.m_elasticity);
+   phf->m_elasticity = m_d.m_OverridePhysics ? m_d.m_OverrideElasticity : m_d.m_elasticity;
    phf->SetFriction(m_d.m_friction);
    phf->m_scatter = m_d.m_scatter;
 
@@ -844,7 +858,7 @@ HRESULT Flipper::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
    bw.WriteFloat(FID(ANGS), m_d.m_StartAngle);
    bw.WriteFloat(FID(ANGE), m_d.m_EndAngle);
    bw.WriteInt(FID(OVRP), m_d.m_OverridePhysics);
-   bw.WriteFloat(FID(FORC), m_d.m_force);
+   bw.WriteFloat(FID(FORC), m_d.m_mass);
    bw.WriteBool(FID(TMON), m_d.m_tdr.m_fTimerEnabled);
    bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
    bw.WriteString(FID(SURF), m_d.m_szSurface);
@@ -928,7 +942,7 @@ BOOL Flipper::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(FORC))
    {
-      pbr->GetFloat(&m_d.m_force);
+      pbr->GetFloat(&m_d.m_mass);
    }
    else if (id == FID(TMON))
    {
@@ -1245,29 +1259,18 @@ void Flipper::GetDialogPanes(Vector<PropertyPane> *pvproppane)
    pvproppane->AddElement(pproppane);
 }
 
-STDMETHODIMP Flipper::get_Speed(float *pVal)
+STDMETHODIMP Flipper::get_Mass(float *pVal)
 {
-   /*	if (m_phitflipper)
-   {
-   *pVal = m_phitflipper->m_flipperanim.m_anglespeed * 180.0f /PI;
-   }
-   else*/ *pVal = m_d.m_force;
+   *pVal = m_d.m_mass;
 
    return S_OK;
 }
 
-STDMETHODIMP Flipper::put_Speed(float newVal)
+STDMETHODIMP Flipper::put_Mass(float newVal)
 {
-   /*	if (m_phitflipper)
-   {
-	  m_phitflipper->m_flipperanim.m_anglespeed = newVal *PI/180.0f;
-   }
-   else*/
-   {
-      STARTUNDO
-      m_d.m_force = newVal;
-      STOPUNDO
-   }
+   STARTUNDO
+   m_d.m_mass = newVal;
+   STOPUNDO
 
    return S_OK;
 }

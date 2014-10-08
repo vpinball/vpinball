@@ -797,8 +797,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(14), helpstring("property Y")] HRESULT Y([in] float newVal);
 		[propget, id(340), helpstring("property Material")] HRESULT Material([out, retval] BSTR *pVal);
 		[propput, id(340), helpstring("property Material")] HRESULT Material([in] BSTR newVal);
-		[propget, id(DISPID_Flipper_Speed), helpstring("property Speed")] HRESULT Speed([out, retval] float *pVal);
-		[propput, id(DISPID_Flipper_Speed), helpstring("property Speed")] HRESULT Speed([in] float newVal);
+		[propget, id(DISPID_Flipper_Speed), helpstring("property Mass")] HRESULT Mass([out, retval] float *pVal);
+		[propput, id(DISPID_Flipper_Speed), helpstring("property Mass")] HRESULT Mass([in] float newVal);
 		[propget, id(DISPID_Flipper_OverridePhysics), helpstring("property OverridePhysics")] HRESULT OverridePhysics([out, retval] long *pVal);
 		[propput, id(DISPID_Flipper_OverridePhysics), helpstring("property OverridePhysics")] HRESULT OverridePhysics([in] long newVal);
 		[propget, id(341), helpstring("property RubberMaterial")] HRESULT RubberMaterial([out, retval] BSTR *pVal);
