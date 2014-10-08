@@ -87,7 +87,7 @@ float LineSeg::HitTestBasic(const Ball * pball, const float dtime, CollisionEven
 	float hittime;
 	if (rigid)
 		{
-		if (bnd < (float)(-PHYS_SKIN) || (lateral && bcpd < 0)) return -1.0f;	// (ball normal distance) excessive pentratration of object skin ... no collision HACK
+		if ((bnd < -pball->radius/**2.0f*/) || (lateral && bcpd < 0)) return -1.0f;	// (ball normal distance) excessive pentratration of object skin ... no collision HACK //!! *2 necessary?
 			
 		if (lateral && (bnd <= (float)PHYS_TOUCH))
 			{
@@ -108,8 +108,8 @@ float LineSeg::HitTestBasic(const Ball * pball, const float dtime, CollisionEven
 			{
 			if ((m_ObjType != eTrigger) ||						// no a trigger
 			    (!pball->m_vpVolObjs) ||
-			    (fabsf(bnd) >= (float)(PHYS_SKIN/2.0)) ||		// not to close ... nor to far away
-			    (inside != (pball->m_vpVolObjs->IndexOf(m_pObj) < 0))) // ...ball outside and hit set or  ball inside and no hit set
+			    (fabsf(bnd) >= pball->radius*0.5f) ||		    // not too close ... nor too far away
+			    (inside != (pball->m_vpVolObjs->IndexOf(m_pObj) < 0))) // ...ball outside and hit set or ball inside and no hit set
 				return -1.0f;
 			
 			hittime = 0;
@@ -224,7 +224,7 @@ float HitCircle::HitTestBasicRadius(const Ball * pball, float dtime, CollisionEv
 
 	if (rigid && bnd < (float)PHYS_TOUCH)		// positive: contact possible in future ... Negative: objects in contact now
     {
-		if (bnd < (float)(-PHYS_SKIN))
+		if (bnd < -pball->radius/**2.0f*/)  //!! *2 necessary?
             return -1.0f;
         else if (fabsf(bnv) <= C_CONTACTVEL)
         {

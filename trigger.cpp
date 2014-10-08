@@ -282,7 +282,7 @@ void Trigger::GetHitShapesDebug(Vector<HitObject> * const pvho)
          {
             rgv3d[i].x = vvertex.ElementAt(i)->x;
             rgv3d[i].y = vvertex.ElementAt(i)->y;
-            rgv3d[i].z = height + (float)(PHYS_SKIN*2.0);// + 10.0f;
+            rgv3d[i].z = height + (float)(PHYS_SKIN*2.0);
             delete vvertex.ElementAt(i);
          }
 
@@ -318,7 +318,7 @@ void Trigger::CurvesToShapes(Vector<HitObject> * const pvho)
       delete vvertex.ElementAt(i);
       rgv3D[i].x = rgv[i].x;
       rgv3D[i].y = rgv[i].y;
-      rgv3D[i].z = height + (float)(PHYS_SKIN*2.0);// + 50.0f; 
+      rgv3D[i].z = height + (float)(PHYS_SKIN*2.0);
    }
 #if 1	
    for (int i=0;i<count;i++)	

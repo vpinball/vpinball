@@ -41,7 +41,7 @@
 // Physical Skin ... postive contact layer. Any contact (collision) in this layer reports zero time.
 // layer is used to calculate contact effects ... beyond this and objects pass through each other
 // Default 25.0
-#define PHYS_SKIN 25.0
+#define PHYS_SKIN 25.0 //!! seems like this mimics the radius of the ball -> replace with radius where possible?
 // Layer outside object which increases it's size for contact measurements. Used to determine clearances.
 // Setting this value during testing to 0.1 will insure clearance. After testing set the value to 0.005
 // Default 0.01
