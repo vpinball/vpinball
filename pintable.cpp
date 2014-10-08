@@ -7838,7 +7838,7 @@ STDMETHODIMP PinTable::ImportPhysics()
 		if (m_vedit.ElementAt(i)->GetItemType() == eItemFlipper)
 		{
 			Flipper * const flipper = (Flipper *)m_vedit.ElementAt(i);
-			flipper->put_Speed(FlipperPhysicsSpeed);
+			flipper->put_Mass(FlipperPhysicsSpeed); // was speed previously
 			flipper->put_Strength(FlipperPhysicsStrength);
 			flipper->put_Elasticity(FlipperPhysicsElasticity);
 			flipper->put_Return(FlipperPhysicsReturnStrength);
@@ -7911,7 +7911,7 @@ STDMETHODIMP PinTable::ExportPhysics()
 
 	float val;
 
-	flipper->get_Speed(&val);
+	flipper->get_Mass(&val); // was speed
 	fprintf_s(f,"%f ",val);
 
 	flipper->get_Strength(&val);
