@@ -56,7 +56,6 @@
 // Contact displacement corrections, hard ridgid contacts i.e. steel on hard plastic or hard wood
 #define C_DISP_GAIN 0.9875f
 #define C_DISP_LIMIT 5.0f
-#define C_FRICTIONCONST 2.5e-3f
 #define C_DYNAMIC 2
 //trigger/kicker boundary crossing hysterisis
 #define STATICTIME 0.005f

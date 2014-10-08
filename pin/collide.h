@@ -43,8 +43,8 @@ struct CollisionEvent
     float distance;     // hit distance 
 
     // additional collision information; typical use (not always the same):
-    // 0: hit normal, 1: hit object velocity, 2: monent and angular rate, 4: contact distance
-    Vertex3Ds normal[5];
+    // 0: hit normal, 1: hit object velocity and 2: moment and angular rate (unused currently, hitflipper assigned it only, thus removed)
+    Vertex3Ds normal[2];
 
     float hitx, hity;   // position of the ball at hit time (saved to avoid floating point errors with multiple time slices)
 

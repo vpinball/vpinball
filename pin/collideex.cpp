@@ -733,7 +733,7 @@ void HitTriangle::CalcHitRect()
 ////////////////////////////////////////////////////////////////////////////////
 
 
-HitPlane::HitPlane(const Vertex3Ds& normal_, float d_)
+HitPlane::HitPlane(const Vertex3Ds& normal_, const float d_)
     : normal(normal_), d(d_)
 {
     m_elasticity = 0.2f;
@@ -772,7 +772,7 @@ float HitPlane::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
     }
 
     float hittime = bnd / (-bnv);                   // rate ok for safe divide
-    if (hittime < 0)
+    if (hittime < 0.f)
         hittime = 0.0f;     // already penetrating? then collide immediately
 
     if (infNaN(hittime) || hittime > dtime)

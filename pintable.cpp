@@ -666,7 +666,7 @@ PinTable::PinTable()
    m_fOverridePhysics = 0;
 
    m_Gravity = GRAVITYCONST;
-   m_hardFriction = C_FRICTIONCONST;
+   m_hardFriction = 0.3f;
    m_hardScatter = 0;
    m_nudgeTime = 5.0f;
 
