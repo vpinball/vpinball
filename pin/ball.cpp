@@ -157,21 +157,20 @@ void Ball::Collide3DWall(const Vertex3Ds& hitNormal, const float elasticity, flo
         ApplySurfaceImpulse(surfP, jt * tangent);
     }
 
-    //!! TODO: reenable scatter if needed
-	//if (scatter_angle <= 0.0f) scatter_angle = c_hardScatter;			// if <= 0 use global value
-	//scatter_angle *= g_pplayer->m_ptable->m_globalDifficulty;			// apply difficulty weighting
+    if (scatter_angle < 0.0f) scatter_angle = c_hardScatter;			// if < 0 use global value
+	scatter_angle *= g_pplayer->m_ptable->m_globalDifficulty;			// apply difficulty weighting
 
-	//if (dot > 1.0f && scatter_angle > 1.0e-5f) //no scatter at low velocity
-	//{
-	//	float scatter = rand_mt_m11();									// -1.0f..1.0f
-	//	scatter *= (1.0f - scatter*scatter)*2.59808f * scatter_angle;	// shape quadratic distribution and scale
-	//	const float radsin = sinf(scatter); // Green's transform matrix... rotate angle delta
-	//	const float radcos = cosf(scatter); // rotational transform from current position to position at time t
-	//	const float vxt = vel.x;
-	//	const float vyt = vel.y;
-	//	vel.x = vxt *radcos - vyt *radsin;  // rotate to random scatter angle
-	//	vel.y = vyt *radcos + vxt *radsin;
-	//}
+	if (dot > 1.0f && scatter_angle > 1.0e-5f) //no scatter at low velocity
+	{
+		float scatter = rand_mt_m11();									// -1.0f..1.0f
+		scatter *= (1.0f - scatter*scatter)*2.59808f * scatter_angle;	// shape quadratic distribution and scale
+		const float radsin = sinf(scatter); // Green's transform matrix... rotate angle delta
+		const float radcos = cosf(scatter); // rotational transform from current position to position at time t
+		const float vxt = vel.x;
+		const float vyt = vel.y;
+		vel.x = vxt *radcos - vyt *radsin;  // rotate to random scatter angle
+		vel.y = vyt *radcos + vxt *radsin;
+	}
 }
 
 float Ball::HitTest(const Ball * pball_, float dtime, CollisionEvent& coll)

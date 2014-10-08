@@ -119,7 +119,7 @@ void Gate::SetDefaults(bool fromMouseClick)
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_scatter = fTmp;
    else
-      m_d.m_scatter = 0;	//zero uses global value
+      m_d.m_scatter = 0;
 
    hr = GetRegString("DefaultProps\\Gate","ImageFront", &m_d.m_szImageFront, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)

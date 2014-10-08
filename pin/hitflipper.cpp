@@ -767,7 +767,7 @@ void HitFlipper::Collide(CollisionEvent *coll)
     * We use a heuristic model which decreases the COR according to a falloff parameter:
     * 0 = no falloff, 1 = half the COR at 1 m/s (18.53 speed units)
     */
-   const float epsilon = m_elasticity / (1.0f + m_pflipper->m_d.m_elasticityFalloff/18.53f * fabsf(bnv));
+   const float epsilon = m_elasticity / (1.0f + m_pflipper->m_d.m_elasticityFalloff*(float)(1.0/18.53) * fabsf(bnv));
 
    float impulse = -(1.0f + epsilon) * bnv
        / (pball->m_invMass + normal.Dot(CrossProduct(angResp / m_flipperanim.m_inertia, rF)));

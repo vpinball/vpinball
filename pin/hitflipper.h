@@ -12,9 +12,9 @@ public:
 	virtual void UpdateDisplacements(const float dtime);
 	virtual void UpdateVelocities();
 
-	virtual bool FMover() const {return true;}
+	virtual bool FMover() const { return true; }
 
-	virtual void Check3D()                              { }
+	virtual void Check3D() { }
 
     void SetSolenoidState(bool s);
     float GetStrokeRatio() const;
@@ -34,7 +34,7 @@ public:
 	HitCircle m_hitcircleEnd;
 	HitCircle m_hitcircleBase;
 	float m_endradius;
-	float faceNormOffset; 
+	float faceNormOffset;
 
 	// New Flipper motion basis, uses Green's transform to rotate these valuse to curAngle
 	Vertex2D m_leftFaceNormal, m_rightFaceNormal, m_leftFaceBase, m_rightFaceBase;
@@ -68,7 +68,7 @@ public:
 	Vertex2D zeroAngNorm; // base norms at zero degrees	
 
 	bool m_fEnabled;
-   bool m_fVisible;
+	bool m_fVisible;
 	bool m_lastHitFace;
 
 #ifdef DEBUG_FLIPPERS

@@ -57,9 +57,6 @@ void Flipper::SetDefaults(bool fromMouseClick)
 
    m_d.m_FlipperRadius = m_d.m_FlipperRadiusMax;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Flipper","RecoilVelocity", &fTmp);
-   m_d.m_recoil = (hr == S_OK) && fromMouseClick ? fTmp : 2;		// disabled
-
    m_d.m_angleEOS = 0;		//disabled
 
    hr = GetRegStringAsFloat("DefaultProps\\Flipper","ReturnStrength", &fTmp);
@@ -78,7 +75,7 @@ void Flipper::SetDefaults(bool fromMouseClick)
    m_d.m_friction = GetRegStringAsFloatWithDefault("DefaultProps\\Flipper","Friction", 0.8f);
    m_d.m_rampUp = GetRegStringAsFloatWithDefault("DefaultProps\\Flipper","RampUp", 0.0f);
 
-   m_d.m_scatter = 0.0;	//zero uses global value
+   m_d.m_scatter = 0.0;
 
    hr = GetRegInt("DefaultProps\\Flipper","TimerEnabled", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
@@ -102,15 +99,6 @@ void Flipper::SetDefaults(bool fromMouseClick)
    hr = GetRegStringAsFloat("DefaultProps\\Flipper","Strength", &fTmp);
    m_d.m_strength = (hr == S_OK) && fromMouseClick ? fTmp : 3.0f;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Flipper","PowerLaw", &fTmp);
-   m_d.m_powerlaw = (hr == S_OK) && fromMouseClick ? fTmp : 1.0f;
-
-   hr = GetRegStringAsFloat("DefaultProps\\Flipper","ObliqueCorrection", &fTmp);
-   m_d.m_obliquecorrection = (hr == S_OK) && fromMouseClick ? fTmp : ANGTORAD(3.0f); //flipper face correction 
-
-   hr = GetRegStringAsFloat("DefaultProps\\Flipper","ScatterAngle", &fTmp);
-   m_d.m_scatterangle = ANGTORAD((hr == S_OK) && fromMouseClick ? fTmp : -11.0f); //flipper scatter angle
-
    hr = GetRegStringAsFloat("DefaultProps\\Flipper","Height", &fTmp);
    m_d.m_height = (hr == S_OK) && fromMouseClick ? fTmp : 50;
 
@@ -122,8 +110,6 @@ void Flipper::SetDefaults(bool fromMouseClick)
 
    hr = GetRegInt("DefaultProps\\Flipper","RubberWidth", &iTmp);
    m_d.m_rubberwidth = (hr == S_OK) && fromMouseClick ? iTmp : 24;
-
-   m_d.m_mass = 1;
 
    hr = GetRegInt("DefaultProps\\Flipper","Visible", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
@@ -159,7 +145,6 @@ void Flipper::WriteRegDefaults()
    SetRegValueFloat(regKey,"EndAngle", m_d.m_EndAngle);
    SetRegValueFloat(regKey,"Length", m_d.m_FlipperRadiusMax);
    SetRegValueFloat(regKey,"MaxDifLength", m_d.m_FlipperRadiusMin);
-   SetRegValueFloat(regKey,"RecoilVelocity", m_d.m_recoil);
    SetRegValueFloat(regKey,"ReturnStrength", m_d.m_return);
    SetRegValueFloat(regKey,"Speed", m_d.m_force);
    SetRegValueFloat(regKey,"Elasticity", m_d.m_elasticity);
@@ -173,8 +158,6 @@ void Flipper::WriteRegDefaults()
    SetRegValue(regKey,"Surface", REG_SZ, &m_d.m_szSurface,strlen(m_d.m_szSurface));
    SetRegValueFloat(regKey,"Strength", m_d.m_strength);
    SetRegValueFloat(regKey,"Height", m_d.m_height);
-   SetRegValueFloat(regKey,"PowerLaw", m_d.m_powerlaw);
-   SetRegValueFloat(regKey,"ObliqueCorrection", m_d.m_obliquecorrection);
    SetRegValueFloat(regKey,"Height", m_d.m_height);
    SetRegValueInt(regKey,"RubberThickness", m_d.m_rubberthickness);
    SetRegValueInt(regKey,"RubberHeight", m_d.m_rubberheight);
@@ -207,15 +190,9 @@ void Flipper::GetHitShapes(Vector<HitObject> * const pvho)
    if(m_d.m_OverridePhysics)
    {
 	     char tmp[256];
-		 m_d.m_OverrideSpeed = 0.15f;
-	     sprintf_s(tmp,256,"FlipperPhysicsSpeed%d",m_d.m_OverridePhysics-1);
-         HRESULT hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideSpeed);
-         if (hr != S_OK)
-            m_d.m_OverrideSpeed = 0.15f;
-
 		 m_d.m_OverrideStrength = 3.f;
 	     sprintf_s(tmp,256,"FlipperPhysicsStrength%d",m_d.m_OverridePhysics-1);
-         hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideStrength);
+         HRESULT hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideStrength);
          if (hr != S_OK)
             m_d.m_OverrideStrength = 3.f;
 
@@ -224,38 +201,6 @@ void Flipper::GetHitShapes(Vector<HitObject> * const pvho)
          hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideElasticity);
          if (hr != S_OK)
             m_d.m_OverrideElasticity = 0.55f;
-
-  		 m_d.m_OverrideScatter = -11.f;
-	     sprintf_s(tmp,256,"FlipperPhysicsScatter%d",m_d.m_OverridePhysics-1);
-         hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideScatter);
-         if (hr != S_OK)
-            m_d.m_OverrideScatter = -11.f;
-		 m_d.m_OverrideScatter = ANGTORAD(m_d.m_OverrideScatter);
-
-  		 m_d.m_OverrideReturnStrength = 0.09f;
-	     sprintf_s(tmp,256,"FlipperPhysicsReturnStrength%d",m_d.m_OverridePhysics-1);
-         hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideReturnStrength);
-         if (hr != S_OK)
-            m_d.m_OverrideReturnStrength = 0.09f;
-
-		 m_d.m_OverrideRecoil = 2.f;
-	     sprintf_s(tmp,256,"FlipperPhysicsRecoil%d",m_d.m_OverridePhysics-1);
-         hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideRecoil);
-         if (hr != S_OK)
-            m_d.m_OverrideRecoil = 2.f;
-
-  		 m_d.m_OverridePowerLaw = 1.f;
-	     sprintf_s(tmp,256,"FlipperPhysicsPowerLaw%d",m_d.m_OverridePhysics-1);
-         hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverridePowerLaw);
-         if (hr != S_OK)
-            m_d.m_OverridePowerLaw = 1.f;
-
-		 m_d.m_OverrideOblique = 3.f;
-	     sprintf_s(tmp,256,"FlipperPhysicsOblique%d",m_d.m_OverridePhysics-1);
-         hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideOblique);
-         if (hr != S_OK)
-            m_d.m_OverrideOblique = 3.f;
-		 m_d.m_OverrideOblique = ANGTORAD(m_d.m_OverrideOblique);
    }
 
    //
@@ -894,7 +839,6 @@ HRESULT Flipper::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
    bw.WriteFloat(FID(BASR), m_d.m_BaseRadius);
    bw.WriteFloat(FID(ENDR), m_d.m_EndRadius);
    bw.WriteFloat(FID(FLPR), m_d.m_FlipperRadiusMax);
-   bw.WriteFloat(FID(FCOIL), m_d.m_recoil);
    bw.WriteFloat(FID(FAEOS), m_d.m_angleEOS);
    bw.WriteFloat(FID(FRTN), m_d.m_return);
    bw.WriteFloat(FID(ANGS), m_d.m_StartAngle);
@@ -918,9 +862,6 @@ HRESULT Flipper::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
    bw.WriteBool(FID(VSBL), m_d.m_fVisible);
    bw.WriteBool(FID(ENBL), m_d.m_fEnabled);
    bw.WriteBool(FID(COMP), m_d.m_fCompatibility);
-   bw.WriteFloat(FID(FPWL), m_d.m_powerlaw);	
-   bw.WriteFloat(FID(FOCR), m_d.m_obliquecorrection);	
-   bw.WriteFloat(FID(FSCT), m_d.m_scatterangle);	
    bw.WriteFloat(FID(FRMN), m_d.m_FlipperRadiusMin);		
    bw.WriteFloat(FID(FHGT), m_d.m_height);
 
@@ -964,10 +905,6 @@ BOOL Flipper::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(FLPR))
    {
       pbr->GetFloat(&m_d.m_FlipperRadiusMax);
-   }
-   else if (id == FID(FCOIL))
-   {
-      pbr->GetFloat(&m_d.m_recoil);
    }
    else if (id == FID(FAEOS))
    {
@@ -1054,18 +991,6 @@ BOOL Flipper::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(RPUP))
    {
       pbr->GetFloat(&m_d.m_rampUp);
-   }
-   else if (id == FID(FPWL))
-   {
-      pbr->GetFloat(&m_d.m_powerlaw);
-   }
-   else if (id == FID(FOCR))
-   {
-      pbr->GetFloat(&m_d.m_obliquecorrection); 
-   }
-   else if (id == FID(FSCT))
-   {
-      pbr->GetFloat(&m_d.m_scatterangle);
    }
    else if (id == FID(FRMN))
    {
@@ -1276,24 +1201,6 @@ STDMETHODIMP Flipper::put_Material(BSTR newVal)
    STARTUNDO
 
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szMaterial, 32, NULL, NULL);
-
-   STOPUNDO
-
-   return S_OK;
-}
-
-STDMETHODIMP Flipper::get_Recoil(float *pVal)
-{
-   *pVal = m_d.m_recoil;
-
-   return S_OK;
-}
-
-STDMETHODIMP Flipper::put_Recoil(float newVal)
-{
-   STARTUNDO
-
-   m_d.m_recoil = newVal;
 
    STOPUNDO
 
@@ -1639,24 +1546,6 @@ STDMETHODIMP Flipper::put_Height(float newVal)
    return S_OK;
 }
 
-STDMETHODIMP Flipper::get_Mass(float *pVal)
-{
-   *pVal = m_d.m_mass;
-
-   return S_OK;
-}
-
-STDMETHODIMP Flipper::put_Mass(float newVal)
-{
-   STARTUNDO
-
-   m_d.m_mass = newVal;
-
-   STOPUNDO
-
-   return S_OK;
-}
-
 STDMETHODIMP Flipper::get_Return(float *pVal)
 {
    *pVal = m_d.m_return;
@@ -1669,63 +1558,6 @@ STDMETHODIMP Flipper::put_Return(float newVal)
    STARTUNDO
 
    m_d.m_return = clamp(newVal, 0.0f, 1.0f);
-
-   STOPUNDO
-
-   return S_OK;
-}
-
-STDMETHODIMP Flipper::get_PowerLaw(float *pVal)
-{
-   *pVal = m_d.m_powerlaw;
-
-   return S_OK;
-}
-
-STDMETHODIMP Flipper::put_PowerLaw(float newVal)
-{
-   STARTUNDO
-
-   if (newVal < 0.0f) newVal = 0.0f;
-      else if (newVal > 4.0f) newVal = 4.0f;
-
-   m_d.m_powerlaw = newVal;
-
-   STOPUNDO
-
-   return S_OK;
-}
-
-STDMETHODIMP Flipper::get_ObliqueCorrection(float *pVal)
-{
-   *pVal = RADTOANG(m_d.m_obliquecorrection);
-
-   return S_OK;
-}
-
-STDMETHODIMP Flipper::put_ScatterAngle(float newVal)
-{
-   STARTUNDO
-
-   m_d.m_scatterangle = ANGTORAD(newVal);
-
-   STOPUNDO
-
-   return S_OK;
-}
-
-STDMETHODIMP Flipper::get_ScatterAngle(float *pVal)
-{
-   *pVal = RADTOANG(m_d.m_scatterangle);
-
-   return S_OK;
-}
-
-STDMETHODIMP Flipper::put_ObliqueCorrection(float newVal)
-{
-   STARTUNDO
-
-   m_d.m_obliquecorrection = ANGTORAD(newVal);
 
    STOPUNDO
 
