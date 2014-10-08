@@ -376,13 +376,13 @@ float HitFlipper::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
       coll.normal[1].x = 0;			//Tangent velocity of contact point (rotate Normal right)
       coll.normal[1].y = 0;			//units: rad*d/t (Radians*diameter/time
 
-      coll.normal[2].x = 0;			//moment is zero ... only friction
-      coll.normal[2].y = 0;			//radians/time at collison
+      //!! unused coll.normal[2].x = 0;			//moment is zero ... only friction
+      //!! unused coll.normal[2].y = 0;			//radians/time at collison
 
-      // Flipper::Contact() expects origNormVel in normal[3].z,
+      // Flipper::Contact() expects origNormVel,
       // but HitCircle puts it in normal[1].z
       if (coll.isContact)
-          coll.normal[3].z = coll.normal[1].z;
+          origNormVel = coll.normal[1].z;
 
       return hittime;
    }
@@ -509,8 +509,8 @@ float HitFlipper::HitTestFlipperEnd(const Ball * pball, const float dtime, Colli
    coll.normal[1].x = -dist.y*inv_distance; //Unit Tangent vector velocity of contact point(rotate normal right)
    coll.normal[1].y =  dist.x*inv_distance;
 
-   coll.normal[2].x = distance;				//moment arm diameter
-   coll.normal[2].y = anglespeed;			//radians/time at collison
+   //!! unused coll.normal[2].x = distance;				//moment arm diameter
+   //!! unused coll.normal[2].y = anglespeed;			//radians/time at collison
 
    //recheck using actual contact angle of velocity direction
    const Vertex2D dv(
@@ -522,7 +522,7 @@ float HitFlipper::HitTestFlipperEnd(const Ball * pball, const float dtime, Colli
    if (fabsf(bnv) <= C_CONTACTVEL && bfend <= (float)PHYS_TOUCH)
    {
        coll.isContact = true;
-       coll.normal[3].z = bnv;
+       origNormVel = bnv;
    }
    if (bnv >= 0) 
       return -1.0f; // not hit ... ball is receding from face already, must have been embedded or shallow angled
@@ -669,8 +669,8 @@ float HitFlipper::HitTestFlipperFace(const Ball * pball, const float dtime, Coll
    if (contactAng >= angleMax && anglespeed > 0 || contactAng <= angleMin && anglespeed < 0)	// hit limits ??? 
       anglespeed = 0.0f;							// rotation stopped
 
-   coll.normal[2].x = distance;				//moment arm diameter
-   coll.normal[2].y = anglespeed;			//radians/time at collison
+   //!! unused coll.normal[2].x = distance;				//moment arm diameter
+   //!! unused coll.normal[2].y = anglespeed;			//radians/time at collison
 
    const Vertex2D dv(
       (ballvx - coll.normal[1].x *anglespeed*distance), 
@@ -681,7 +681,7 @@ float HitFlipper::HitTestFlipperFace(const Ball * pball, const float dtime, Coll
    if (fabsf(bnv) <= C_CONTACTVEL && bffnd <= (float)PHYS_TOUCH)
    {
        coll.isContact = true;
-       coll.normal[3].z = bnv;
+       origNormVel = bnv;
    }
    else if (bnv > C_LOWNORMVEL)
       return -1.0f; // not hit ... ball is receding from endradius already, must have been embedded
@@ -857,7 +857,6 @@ void HitFlipper::Contact(CollisionEvent& coll, float dtime)
 {
     Ball * pball = coll.ball;
     const Vertex3Ds normal = coll.normal[0];
-    const float origNormVel = coll.normal[3].z;
 
     const Vertex3Ds rB = -pball->radius * normal;
     const Vertex3Ds hitPos = pball->pos + rB;

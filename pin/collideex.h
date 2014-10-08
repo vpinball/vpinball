@@ -96,7 +96,7 @@ class HitPlane : public HitObject
 {
 public:
     HitPlane() {}
-    HitPlane(const Vertex3Ds& normal_, float d_);
+    HitPlane(const Vertex3Ds& normal_, const float d_);
 
     virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
     virtual int GetType() const { return ePlane; }

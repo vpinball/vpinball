@@ -120,12 +120,6 @@ void Spinner::SetDefaults(bool fromMouseClick)
    else
       m_d.m_elasticity = 0.3f;
 
-   //hr = GetRegStringAsFloat("DefaultProps\\Spinner","Friction", &fTmp);
-   //if ((hr == S_OK) && fromMouseClick)
-   //   m_d.m_friction = fTmp;
-   //else
-   //   m_d.m_friction = 0;	//zero uses global value
-
    hr = GetRegInt("DefaultProps\\Spinner","Visible", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_fVisible = iTmp == 0 ? false : true;
