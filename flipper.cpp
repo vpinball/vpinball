@@ -191,7 +191,7 @@ void Flipper::GetHitShapes(Vector<HitObject> * const pvho)
    {
 	     char tmp[256];
  		 m_d.m_OverrideMass = 0.15f;
-	     sprintf_s(tmp,256,"FlipperPhysicsSpeed%d",m_d.m_OverridePhysics-1);
+	     sprintf_s(tmp,256,"FlipperPhysicsMass%d",m_d.m_OverridePhysics-1);
          HRESULT hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideMass);
          if (hr != S_OK)
             m_d.m_OverrideMass = 0.15f;
@@ -215,19 +215,19 @@ void Flipper::GetHitShapes(Vector<HitObject> * const pvho)
             m_d.m_OverrideReturnStrength = 0.09f;
 
 		 m_d.m_OverrideElasticityFalloff = 0.43f;
-	     sprintf_s(tmp,256,"FlipperPhysicsRecoil%d",m_d.m_OverridePhysics-1);
+	     sprintf_s(tmp,256,"FlipperPhysicsElasticityFalloff%d",m_d.m_OverridePhysics-1);
          hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideElasticityFalloff);
          if (hr != S_OK)
             m_d.m_OverrideElasticityFalloff = 0.43f;
 
   		 m_d.m_OverrideFriction = 0.8;
-	     sprintf_s(tmp,256,"FlipperPhysicsPowerLaw%d",m_d.m_OverridePhysics-1);
+	     sprintf_s(tmp,256,"FlipperPhysicsFriction%d",m_d.m_OverridePhysics-1);
          hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideFriction);
          if (hr != S_OK)
             m_d.m_OverrideFriction = 0.8f;
 
 		 m_d.m_OverrideCoilRampUp = 0.f;
-	     sprintf_s(tmp,256,"FlipperPhysicsOblique%d",m_d.m_OverridePhysics-1);
+	     sprintf_s(tmp,256,"FlipperPhysicsCoilRampUp%d",m_d.m_OverridePhysics-1);
          hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideCoilRampUp);
          if (hr != S_OK)
             m_d.m_OverrideCoilRampUp = 0.f;
