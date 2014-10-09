@@ -6804,29 +6804,29 @@ INT_PTR CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPAR
 		 sprintf_s(tmp,256,"%f",FlipperPhysicsReturnStrength);
  		 SetDlgItemTextA(hwndDlg, 23, tmp);
 
-		 float FlipperPhysicsRecoil = 2.f;
+		 float FlipperPhysicsRecoil = 0.43f;
 		 sprintf_s(tmp,256,"FlipperPhysicsRecoil%u",physicsselection);
          hr = GetRegStringAsFloat("Player", tmp, &FlipperPhysicsRecoil);
          if (hr != S_OK)
-            FlipperPhysicsRecoil = 2.f;
+            FlipperPhysicsRecoil = 0.43f;
 
 		 sprintf_s(tmp,256,"%f",FlipperPhysicsRecoil);
  		 SetDlgItemTextA(hwndDlg, 22, tmp);
 
-  		 float FlipperPhysicsPowerLaw = 1.f;
+  		 float FlipperPhysicsPowerLaw = 0.8f;
 		 sprintf_s(tmp,256,"FlipperPhysicsPowerLaw%u",physicsselection);
          hr = GetRegStringAsFloat("Player", tmp, &FlipperPhysicsPowerLaw);
          if (hr != S_OK)
-            FlipperPhysicsPowerLaw = 1.f;
+            FlipperPhysicsPowerLaw = 0.8f;
 
 		 sprintf_s(tmp,256,"%f",FlipperPhysicsPowerLaw);
  		 SetDlgItemTextA(hwndDlg, 109, tmp);
 
-		 float FlipperPhysicsOblique = 3.f;
+		 float FlipperPhysicsOblique = 0.f;
 		 sprintf_s(tmp,256,"FlipperPhysicsOblique%u",physicsselection);
          hr = GetRegStringAsFloat("Player", tmp, &FlipperPhysicsOblique);
          if (hr != S_OK)
-            FlipperPhysicsOblique = 3.f;
+            FlipperPhysicsOblique = 0.f;
 
 		 sprintf_s(tmp,256,"%f",FlipperPhysicsOblique);
  		 SetDlgItemTextA(hwndDlg, 110, tmp);

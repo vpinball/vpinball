@@ -1,20 +1,25 @@
 VP 10.0.0 Changelog
 ------------------------
-- this release breaks a lot of backwards compatibility for ramps, lights, physics, and more
-  most existing VP9 and VP8 tables will not work correctly or will get script errors when run (but they will load)
+- this release breaks a lot of backwards compatibility for ramps, lights, physics, colors/images/materials, and more
+  most existing VP9 and VP8 tables will not work correctly or will output script errors when run (but they will load)
 
-  -> conversion hints:
+  -> TL.DR up-front conversion hints:
      - pull lightsources->ambient down to 0,0,0
      - crank up lightsources->emission to 255,255,255
+     - revisit all physics settings, even if you used VP9Physmod(5) before (only friction and scatter in the physmod5 case though)
+     - use flashers when doing special lighting effects/night mods, otherwise try to stick with the newly redone light element
+
 
 - physics mostly redone (also previously known as 'physmod(5)')
   due to this it is now also possible to enable vsync without physics sideeffects like stutter or bad aiming (set FPS limiter to 1)
 
-  -> additional changes since physmod5:
-     - friction is no longer ignored (e.g. it was always 0.3) on the playfield, walls, slingshots, primitives, ramps, gates (and more?!)
-     - scatter is no longer ignored for kickers and all kinds of collisions, but changed fallback behavior: only if scatter < 0 then the global scatter is used
+  -> additional changes since physmod5, note that these will also force you to revisit existing physmod5 physics table settings:
+     - friction is no longer ignored (e.g. it was always 0.3 before) on the playfield, walls, slingshots, primitives, ramps, gates (and more?!)
+     - scatter is no longer ignored for kickers and all kinds of collisions. also the fallback behavior was changed: only if scatter < 0 then the global scatter is used
      - collision heuristics are adapted for ball sizes different from the default 25
      - (hopefully) no more ball-falling-through-playfield problem
+
+  -> the data-format of the physics sets (*.vpp files) is basically the same, although the parameters inside are different, so unfortunately you need to set them up newly
 
 - add material editor
 
