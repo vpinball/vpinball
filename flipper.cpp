@@ -57,7 +57,7 @@ void Flipper::SetDefaults(bool fromMouseClick)
 
    m_d.m_FlipperRadius = m_d.m_FlipperRadiusMax;
 
-   m_d.m_angleEOS = 0;		//disabled
+   //m_d.m_angleEOS = 0; //!! reenable?
 
    hr = GetRegStringAsFloat("DefaultProps\\Flipper","ReturnStrength", &fTmp);
    m_d.m_return = (hr == S_OK) && fromMouseClick ? fTmp : 0.09f;
@@ -873,7 +873,7 @@ HRESULT Flipper::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
    bw.WriteFloat(FID(BASR), m_d.m_BaseRadius);
    bw.WriteFloat(FID(ENDR), m_d.m_EndRadius);
    bw.WriteFloat(FID(FLPR), m_d.m_FlipperRadiusMax);
-   bw.WriteFloat(FID(FAEOS), m_d.m_angleEOS);
+   //bw.WriteFloat(FID(FAEOS), m_d.m_angleEOS);
    bw.WriteFloat(FID(FRTN), m_d.m_return);
    bw.WriteFloat(FID(ANGS), m_d.m_StartAngle);
    bw.WriteFloat(FID(ANGE), m_d.m_EndAngle);
@@ -940,10 +940,10 @@ BOOL Flipper::LoadToken(int id, BiffReader *pbr)
    {
       pbr->GetFloat(&m_d.m_FlipperRadiusMax);
    }
-   else if (id == FID(FAEOS))
+   /*else if (id == FID(FAEOS))
    {
       pbr->GetFloat(&m_d.m_angleEOS);
-   }
+   }*/
    else if (id == FID(FRTN))
    {
       pbr->GetFloat(&m_d.m_return);
@@ -1241,7 +1241,7 @@ STDMETHODIMP Flipper::put_Material(BSTR newVal)
    return S_OK;
 }
 
-STDMETHODIMP Flipper::get_AngleEOS(float *pVal)
+/*STDMETHODIMP Flipper::get_AngleEOS(float *pVal)
 {
    *pVal = m_d.m_angleEOS;
 
@@ -1257,7 +1257,7 @@ STDMETHODIMP Flipper::put_AngleEOS(float newVal)
    STOPUNDO
 
    return S_OK;
-}
+}*/
 
 void Flipper::GetDialogPanes(Vector<PropertyPane> *pvproppane)
 {
