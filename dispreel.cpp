@@ -1,102 +1,7 @@
-/******************************************************************************
-**
-** Module name   : DispReel.c
-** Module type   : Component source file
-** Compiler(s)   : Microsoft Visual C++
-** Environment(s): Intel 386 and above
-** Author        : Chris Leathley
-**
-** Description:
-**
-** This file provides the functionality for the Electro Mechanical Reel Display
-**
-** Contents:
-**  DispReel()
-**  ~DispReel()
-**  Init()
-**  SetDefaults()
-**  InterfaceSupportsErrorInfo()
-**
-**  PreRender()
-**  Render()
-**
-**	GetTimers()
-**	GetHitShapes()
-**	EndPlay()
-**	RenderStatic()
-**	RenderAnimation()
-**
-**	SetObjectPos()
-**	MoveOffset()
-**	GetCenter()
-**	PutCenter()
-**	SaveData()
-**	InitLoad()
-**	LoadToken()
-**	InitPostLoad()
-**
-**	get_BackColor()					Access methods for properties (from VBS & Editor)
-**	put_BackColor()
-**	get_Reels()
-**	put_Reels()
-**  get_Width()
-**	put_Width()
-**  get_Height()
-**	put_Height()
-**  get_X()
-**	put_X()
-**  get_Y()
-**	put_X()
-**	get_IsTransparent()
-**	put_IsTransparent
-**	get_Image()
-**	put_Image()
-**	get_Spacing()
-**	put_Spacing()
-**	get_Sound()
-**	put_Sound()
-**	get_Steps()
-**	put_Steps()
-**	get_Type()
-**	put_Type()
-**	get_Font()
-**	put_Font()
-**	putref_Font()
-**	get_FontColor()
-**	put_FontColor()
-**	get_ReelColor()
-**	put_ReelColor()
-**	get_Range()
-**	put_Range()
-**	get_UpdateInterval()
-**	put_UpdateInterval()
-**
-**	AddValue()						Object control Methods (from VBS)
-**	ResetToZero()
-**	SpinReel()
-**	SetValue()
-**
-**	getBoxWidth()					Private functions
-**	getBoxHeight()
-**
-** REVISION HISTORY:
-** -----------------
-**
-** v0.0  15/11/01  CL   Created
-** v0.1	 28/11/01  CL   Released to Randy
-** v0.2	  1/12/01  CL   Changed ReelImage to use a horizontal strip to
-**						allow creation of vertical strips greater than
-**						1000 pixels (you cannot import a bitmap > 1000)
-**
-******************************************************************************/
-
 #include "stdafx.h"
 
 const char REEL_NUMBER_TEXT[] = "01234567890";
 
-
-// Constructor
-//
 DispReel::DispReel()
 {
     m_pIFont = NULL;
@@ -104,9 +9,6 @@ DispReel::DispReel()
     vertexBuffer = NULL;
 }
 
-
-// Destructor
-//
 DispReel::~DispReel()
 {
     m_pIFont->Release();
@@ -116,7 +18,6 @@ DispReel::~DispReel()
         vertexBuffer=0;
     }
 }
-
 
 // This function is called when ever a new instance of this object is created
 // (along with the constructor (above))
@@ -183,8 +84,6 @@ HRESULT DispReel::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 	OleCreateFontIndirect(&fd, IID_IFont, (void **)&m_pIFont);
    return InitVBA(fTrue, 0, NULL);
 }
-
-
 
 // set the defaults for the objects persistent data (m_d.*) in case this
 // is a new instance of this object or there is a backwards compatability
@@ -380,8 +279,6 @@ STDMETHODIMP DispReel::InterfaceSupportsErrorInfo(REFIID riid)
 	return S_FALSE;
 }
 
-
-
 // this function draws the shape of the object with a solid fill
 // only used in the editor and not the game
 //
@@ -412,7 +309,6 @@ void DispReel::PreRender(Sur * const psur)
         psur->Polygon(rgv, 4);
     }
 }
-
 
 // this function draws the shape of the object with a black outline (no solid fill)
 // only used in the editor and not the game
@@ -517,8 +413,6 @@ void DispReel::PostRenderStatic(RenderDevice* pd3dDevice)
 
     Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
-    pd3dDevice->SetRenderState(RenderDevice::ZENABLE, FALSE);
-
     // Set up the reel strip (either using bitmaps or fonts)
     if (m_d.m_reeltype == ReelImage)
     {
@@ -531,8 +425,6 @@ void DispReel::PostRenderStatic(RenderDevice* pd3dDevice)
         Material mat;
         mat.setColor( 1.0f, 1.0f, 1.0f, 1.0f );
         pd3dDevice->SetMaterial(mat);
-
-        pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
 
         // Set texture to mirror, so the alpha state of the texture blends correctly to the outside
         pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_MIRROR);
@@ -563,15 +455,12 @@ void DispReel::PostRenderStatic(RenderDevice* pd3dDevice)
         pd3dDevice->SetTexture(ePictureTexture, NULL);
         ppin3d->SetTextureFilter(ePictureTexture, TEXTURE_MODE_TRILINEAR);
         pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
-        pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
         pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_WRAP);
     }
     else
     {
         // TODO: ReelText not supported yet
     }
-
-    pd3dDevice->SetRenderState(RenderDevice::ZENABLE, TRUE);
 }
 
 void DispReel::RenderSetup(RenderDevice* pd3dDevice)
@@ -795,7 +684,6 @@ bool DispReel::RenderAnimation()
 
 	return rc;
 }
-
 
 
 void DispReel::SetObjectPos()
@@ -1512,7 +1400,7 @@ float DispReel::getBoxHeight() const
 }
 
 
-void DispReel::SetVerticesForReel(int reelNum, int digit, Vertex3D_NoTex2 * v)
+void DispReel::SetVerticesForReel(const int reelNum, const int digit, Vertex3D_NoTex2 * const v)
 {
     v[0].x = v[3].x = (float)ReelInfo[reelNum].position.left;
     v[1].x = v[2].x = (float)ReelInfo[reelNum].position.right;
@@ -1520,7 +1408,7 @@ void DispReel::SetVerticesForReel(int reelNum, int digit, Vertex3D_NoTex2 * v)
     v[0].y = v[1].y = (float)ReelInfo[reelNum].position.top;
     v[2].y = v[3].y = (float)ReelInfo[reelNum].position.bottom;
 
-    v[0].z = v[1].z = v[2].z = v[3].z = 1.0f;
+    v[0].z = v[1].z = v[2].z = v[3].z = 0.0f;
     v[0].rhw = v[1].rhw = v[2].rhw = v[3].rhw = 1.0f;
 
     v[0].tu = v[3].tu = m_digitTexCoords[digit].u_min;
@@ -1531,4 +1419,3 @@ void DispReel::SetVerticesForReel(int reelNum, int digit, Vertex3D_NoTex2 * v)
 
     v[0].color = v[1].color = v[2].color = v[3].color = 0xffffffff;
 }
-

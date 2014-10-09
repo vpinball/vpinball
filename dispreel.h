@@ -183,7 +183,7 @@ public:
 private:
     float   getBoxWidth() const;
     float   getBoxHeight() const;
-    void    SetVerticesForReel(int reelNum, int digit, Vertex3D_NoTex2 * v);
+    void    SetVerticesForReel(const int reelNum, const int digit, Vertex3D_NoTex2 * const v);
 };
 
 #endif // !defined(AFX_DISPREEL_H__1052EB33_4F53_460B_AAB8_09D3C517F225__INCLUDED_)
