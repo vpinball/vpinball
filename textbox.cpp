@@ -227,9 +227,6 @@ void Textbox::PostRenderStatic(RenderDevice* pd3dDevice)
 
     Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
-    pd3dDevice->SetRenderState(RenderDevice::ZENABLE, FALSE);
-    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
-
     Material mat;
     mat.setColor( 1.0f, 1.0f, 1.0f, 1.0f );
     pd3dDevice->SetMaterial(mat);
@@ -252,8 +249,6 @@ void Textbox::PostRenderStatic(RenderDevice* pd3dDevice)
     ppin3d->SetTextureFilter(ePictureTexture, TEXTURE_MODE_TRILINEAR);
     pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_WRAP);
     pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
-    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-    pd3dDevice->SetRenderState(RenderDevice::ZENABLE, TRUE);
 }
 
 void Textbox::RenderSetup(RenderDevice* pd3dDevice)
@@ -292,7 +287,7 @@ void Textbox::RenderSetup(RenderDevice* pd3dDevice)
 
     SetHUDVertices(rgv3D, 4);
 
-    rgv3D[0].z = rgv3D[1].z = rgv3D[2].z = rgv3D[3].z = 1.0f;
+    rgv3D[0].z = rgv3D[1].z = rgv3D[2].z = rgv3D[3].z = 0.0f;
     rgv3D[0].rhw = rgv3D[1].rhw = rgv3D[2].rhw = rgv3D[3].rhw = 1.0f;
 
     m_pIFont->Clone(&m_pIFontPlay);
