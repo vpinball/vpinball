@@ -7842,6 +7842,9 @@ STDMETHODIMP PinTable::ImportPhysics()
 			flipper->put_Strength(FlipperPhysicsStrength);
 			flipper->put_Elasticity(FlipperPhysicsElasticity);
 			flipper->put_Return(FlipperPhysicsReturnStrength);
+			flipper->put_ElasticityFalloff(FlipperPhysicsRecoil);
+			flipper->put_Friction(FlipperPhysicsPowerLaw);
+			flipper->put_RampUp(FlipperPhysicsOblique);
 		}
 
 	put_Gravity(TablePhysicsGravityConstant);
@@ -7926,13 +7929,13 @@ STDMETHODIMP PinTable::ExportPhysics()
 	flipper->get_Return(&val);
 	fprintf_s(f,"%f ",val);
 
-	val = 0.0f; // was recoil
+	flipper->get_ElasticityFalloff(&val);
 	fprintf_s(f,"%f ",val);
 
-	val = 0.0f; // was powerlaw
+	flipper->get_Friction(&val);
 	fprintf_s(f,"%f ",val);
 
-	val = 0.0f; // was oblique correction
+	flipper->get_RampUp(&val);
 	fprintf_s(f,"%f\n",val);
 
 

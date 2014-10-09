@@ -213,6 +213,24 @@ void Flipper::GetHitShapes(Vector<HitObject> * const pvho)
          hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideReturnStrength);
          if (hr != S_OK)
             m_d.m_OverrideReturnStrength = 0.09f;
+
+		 m_d.m_OverrideElasticityFalloff = 0.43f;
+	     sprintf_s(tmp,256,"FlipperPhysicsRecoil%d",m_d.m_OverridePhysics-1);
+         hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideElasticityFalloff);
+         if (hr != S_OK)
+            m_d.m_OverrideElasticityFalloff = 0.43f;
+
+  		 m_d.m_OverrideFriction = 0.8;
+	     sprintf_s(tmp,256,"FlipperPhysicsPowerLaw%d",m_d.m_OverridePhysics-1);
+         hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideFriction);
+         if (hr != S_OK)
+            m_d.m_OverrideFriction = 0.8f;
+
+		 m_d.m_OverrideCoilRampUp = 0.f;
+	     sprintf_s(tmp,256,"FlipperPhysicsOblique%d",m_d.m_OverridePhysics-1);
+         hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideCoilRampUp);
+         if (hr != S_OK)
+            m_d.m_OverrideCoilRampUp = 0.f;
    }
 
    //
@@ -235,13 +253,15 @@ void Flipper::GetHitShapes(Vector<HitObject> * const pvho)
        strength, mass, return_ratio);
 
    phf->m_elasticity = m_d.m_OverridePhysics ? m_d.m_OverrideElasticity : m_d.m_elasticity;
-   phf->SetFriction(m_d.m_friction);
+   phf->SetFriction(m_d.m_OverridePhysics ? m_d.m_OverrideFriction : m_d.m_friction);
    phf->m_scatter = m_d.m_scatter;
 
-   if (m_d.m_rampUp <= 0)
-       phf->m_flipperanim.m_torqueRampupSpeed = 1e6f;       // set very high for instant coil response
+   const float coil_ramp_up = m_d.m_OverridePhysics ? m_d.m_OverrideCoilRampUp : m_d.m_rampUp;
+
+   if (coil_ramp_up <= 0.f)
+       phf->m_flipperanim.m_torqueRampupSpeed = 1e6f; // set very high for instant coil response
    else
-       phf->m_flipperanim.m_torqueRampupSpeed = strength / m_d.m_rampUp;
+       phf->m_flipperanim.m_torqueRampupSpeed = strength / coil_ramp_up;
 
    phf->m_flipperanim.m_EnableRotateEvent = 0;
    phf->m_pfe = NULL;

@@ -511,10 +511,10 @@ BEGIN
     EDITTEXT        DISPID_Flipper_Speed,83,21,40,12,ES_AUTOHSCROLL
     EDITTEXT        19,83,36,40,12,ES_AUTOHSCROLL
     EDITTEXT        21,83,51,40,12,ES_AUTOHSCROLL
-    //EDITTEXT        112,83,65,40,12,ES_AUTOHSCROLL
+    EDITTEXT        112,83,65,40,12,ES_AUTOHSCROLL
     EDITTEXT        23,83,79,40,12,ES_AUTOHSCROLL
-    //EDITTEXT        22,83,94,40,12,ES_AUTOHSCROLL
-    //EDITTEXT        109,83,109,40,12,ES_AUTOHSCROLL
+    EDITTEXT        22,83,94,40,12,ES_AUTOHSCROLL
+    EDITTEXT        109,83,109,40,12,ES_AUTOHSCROLL
     //EDITTEXT        110,83,122,40,12,ES_AUTOHSCROLL
     EDITTEXT        1100,83,161,40,12,ES_AUTOHSCROLL
     EDITTEXT        1101,83,175,40,12,ES_AUTOHSCROLL
@@ -525,12 +525,12 @@ BEGIN
     PUSHBUTTON      "&Import Set",1111,144,220,50,14
     PUSHBUTTON      "&Export Set",1112,144,238,50,14
     LTEXT           "Mass",IDC_STATIC,11,23,66,8
-    LTEXT           "Stre&ngth",IDC_STATIC,11,38,66,8
-    LTEXT           "Elast&icity",IDC_STATIC,11,53,66,8
-    //LTEXT           "Scatter Angle",IDC_STATIC,11,67,66,8
+    LTEXT           "Strength",IDC_STATIC,11,38,66,8
+    LTEXT           "Elasticity",IDC_STATIC,11,53,66,8
+    LTEXT           "Elasticity Falloff",IDC_STATIC,11,67,66,8
     LTEXT           "Return Strength Ratio",IDC_STATIC,11,81,66,8
-    //LTEXT           "Recoil Velocity",IDC_STATIC,11,96,66,8
-    //LTEXT           "Power-Law",IDC_STATIC,11,111,66,8
+    LTEXT           "Friction",IDC_STATIC,11,96,66,8
+    LTEXT           "Coil Ramp Up",IDC_STATIC,11,111,66,8
     //LTEXT           "Oblique Correction",IDC_STATIC,11,124,66,8
     LTEXT           "Gravity Constant",IDC_STATIC,11,163,69,8
     LTEXT           "Playfield Friction",IDC_STATIC,11,177,69,8
@@ -955,9 +955,9 @@ BEGIN
     EDITTEXT        27,76,97,40,12,ES_AUTOHSCROLL
     EDITTEXT        1044,106,130,10,12,ES_AUTOHSCROLL
     LTEXT           "Override by Global Physics Set",-1,7,132,98,8
-    LTEXT           "&Mass",-1,7,9,66,8
-    LTEXT           "Stre&ngth",-1,7,24,66,8
-    LTEXT           "Elast&icity",-1,7,39,66,8
+    LTEXT           "Mass",-1,7,9,66,8
+    LTEXT           "Strength",-1,7,24,66,8
+    LTEXT           "Elasticity",-1,7,39,66,8
     LTEXT           "Elasticity Falloff",-1,7,54,66,8
     LTEXT           "Friction",-1,7,69,66,8
     LTEXT           "Coil Ramp Up",-1,7,99,66,8

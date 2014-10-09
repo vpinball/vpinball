@@ -19,6 +19,7 @@ public:
 	float m_FlipperRadius;
 	float m_StartAngle;
 	float m_EndAngle;
+	float m_height;
 	Vertex2D m_Center;
 	
 	TimerDataRoot m_tdr;
@@ -37,21 +38,24 @@ public:
     BOOL  m_fEnabled;
     BOOL  m_fCompatibility;
 
-	float m_strength;
 	float m_mass;
+	float m_strength;
 	float m_elasticity;
     float m_elasticityFalloff;
 	float m_friction;
-    float m_rampUp;
-	float m_scatter; //!! expose? scatter on hit
-	float m_height;
 	float m_return;
+    float m_rampUp;
+
+	float m_scatter; //!! expose? scatter on hit
 	float m_angleEOS; // angle at which EOS switch opens, as measured from EOS parked position //!! disabled/not wired
 
 	float m_OverrideMass;
 	float m_OverrideStrength;
  	float m_OverrideElasticity;
+ 	float m_OverrideElasticityFalloff;
+ 	float m_OverrideFriction;
 	float m_OverrideReturnStrength;
+	float m_OverrideCoilRampUp;
 	int m_OverridePhysics;
 };
 
