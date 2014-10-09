@@ -199,7 +199,7 @@ public:
 	float ParseLog(LARGE_INTEGER *pli1, LARGE_INTEGER *pli2);
 #endif
 
-	void DMDdraw();
+	void DMDdraw(const float DMDposx, const float DMDposy, const float DMDwidth, const float DMDheight, const COLORREF DMDcolor);
 
 	HWND m_hwnd;
 

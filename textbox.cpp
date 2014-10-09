@@ -211,7 +211,18 @@ void Textbox::PostRenderStatic(RenderDevice* pd3dDevice)
 {
     TRACE_FUNCTION();
 
-    if (!m_texture)
+	if(strstr(m_d.sztext,"DMD") != NULL) //!! meh
+	{
+		const float mult = (float)(1.0/EDITOR_BG_WIDTH);
+		const float ymult = (float)(1.0/EDITOR_BG_WIDTH * 4.0/3.0);
+		g_pplayer->DMDdraw((float)m_rect.left*mult, (float)m_rect.top*ymult,
+						   (float)(m_rect.right - m_rect.left)*mult, (float)(m_rect.bottom - m_rect.top)*ymult,
+						   m_d.m_fontcolor); //!! replace??!
+
+		return;
+	}
+
+	if (!m_texture)
         return;
 
     Pin3D * const ppin3d = &g_pplayer->m_pin3d;

@@ -885,11 +885,11 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 	if (m_fFullScreen)
 		{
 		SetWindowPos(m_hwnd, NULL, 0, 0, m_screenwidth, m_screenheight, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE);
-		m_pixelaspectratio = ((float)m_screenwidth / (float)m_screenheight) / (4.0f/3.0f);
+		m_pixelaspectratio = ((float)m_screenwidth / (float)m_screenheight) / (float)(4.0/3.0);
 		}
 	else
 		{
-		m_pixelaspectratio = ((float)m_width / (float)m_height) / (4.0f/3.0f);
+		m_pixelaspectratio = ((float)m_width / (float)m_height) / (float)(4.0/3.0);
 		}
 
 	m_pininput.Init(m_hwnd);
@@ -2140,27 +2140,22 @@ void Player::UpdatePhysics()
 #endif
 }
 
-void Player::DMDdraw()
+void Player::DMDdraw(const float DMDposx, const float DMDposy, const float DMDwidth, const float DMDheight, const COLORREF DMDcolor)
 {
   if(g_pplayer->m_device_texdmd)
   {
 	float DMDVerts[4*5] =
 	{
-	  1.0f, 1.0f,0.0f,1.0f,0.0f,
-	 -1.0f, 1.0f,0.0f,0.0f,0.0f,
-	  1.0f,-1.0f,0.0f,1.0f,1.0f,
-	 -1.0f,-1.0f,0.0f,0.0f,1.0f
+	  1.0f,1.0f,0.0f,1.0f,1.0f,
+	  0.0f,1.0f,0.0f,0.0f,1.0f,
+	  1.0f,0.0f,0.0f,1.0f,0.0f,
+	  0.0f,0.0f,0.0f,0.0f,0.0f
 	};
-
-	const float DMDwidth = 0.25f; //!! global,etc
-	const float DMDheight = 0.125f;
-	const float DMDposx = 0.0f;
-	const float DMDposy = 0.0f;
 
 	for(unsigned int i = 0; i < 4; ++i)
 	{
-		DMDVerts[i*5] = (((DMDVerts[i*5]+1.0f)*0.5f)*DMDwidth + DMDposx)*2.0f-1.0f;
-		DMDVerts[i*5+1] = (((DMDVerts[i*5+1]+1.0f)*0.5f)*DMDheight + DMDposy)*2.0f-1.0f;
+		DMDVerts[i*5] = (DMDVerts[i*5]*DMDwidth + DMDposx)*2.0f-1.0f;
+		DMDVerts[i*5+1] = 1.0f-(DMDVerts[i*5+1]*DMDheight + DMDposy)*2.0f;
 	}
 
 	m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
@@ -2171,8 +2166,8 @@ void Player::DMDdraw()
     m_pin3d.m_pd3dDevice->SetVertexDeclaration( m_pin3d.m_pd3dDevice->m_pVertexTexelDeclaration );
     m_pin3d.m_pd3dDevice->DMDShader->Core()->SetFloat("fResX",(float)g_pplayer->m_dmdx);
     m_pin3d.m_pd3dDevice->DMDShader->Core()->SetFloat("fResY",(float)g_pplayer->m_dmdy);
-    D3DXVECTOR4 DMDColor( 1.0f, 1.0f, 1.0f, 1.0f );
-    m_pin3d.m_pd3dDevice->DMDShader->Core()->SetVector("vColor",&DMDColor);
+    const D3DXVECTOR4 c = COLORREF_to_D3DXVECTOR4(DMDcolor);
+    m_pin3d.m_pd3dDevice->DMDShader->Core()->SetVector("vColor",&c);
     m_pin3d.m_pd3dDevice->DMDShader->Core()->SetTechnique("basic");
     m_pin3d.m_pd3dDevice->DMDShader->SetTexture("Texture0", g_pplayer->m_device_texdmd);
     m_pin3d.m_pd3dDevice->DMDShader->Begin(0);
@@ -2232,8 +2227,6 @@ void Player::RenderDynamics()
    mixer_draw();
    // Debug draw of plumb.
    plumb_draw();
-
-   DMDdraw();
 
    m_pin3d.m_pd3dDevice->SetRenderState( RenderDevice::NORMALIZENORMALS, TRUE );
 
