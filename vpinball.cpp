@@ -6659,7 +6659,7 @@ void savecurrentphysicssetting(HWND hwndDlg)
     char tmp2[256];
 	
 	GetDlgItemTextA(hwndDlg, DISPID_Flipper_Speed, tmp, 256);
-    sprintf_s(tmp2,256,"FlipperPhysicsSpeed%u",physicsselection);
+    sprintf_s(tmp2,256,"FlipperPhysicsMass%u",physicsselection);
 	SetRegValue("Player", tmp2, REG_SZ, tmp, lstrlen(tmp));	
 
 	GetDlgItemTextA(hwndDlg, 19, tmp, 256);
@@ -6679,15 +6679,15 @@ void savecurrentphysicssetting(HWND hwndDlg)
 	SetRegValue("Player", tmp2, REG_SZ, tmp, lstrlen(tmp));
 
 	GetDlgItemTextA(hwndDlg, 22, tmp, 256);
-    sprintf_s(tmp2,256,"FlipperPhysicsRecoil%u",physicsselection);
+    sprintf_s(tmp2,256,"FlipperPhysicsElasticityFalloff%u",physicsselection);
 	SetRegValue("Player", tmp2, REG_SZ, tmp, lstrlen(tmp));
 
 	GetDlgItemTextA(hwndDlg, 109, tmp, 256);
-    sprintf_s(tmp2,256,"FlipperPhysicsPowerLaw%u",physicsselection);
+    sprintf_s(tmp2,256,"FlipperPhysicsFriction%u",physicsselection);
 	SetRegValue("Player", tmp2, REG_SZ, tmp, lstrlen(tmp));
 
 	GetDlgItemTextA(hwndDlg, 110, tmp, 256);
-    sprintf_s(tmp2,256,"FlipperPhysicsOblique%u",physicsselection);
+    sprintf_s(tmp2,256,"FlipperPhysicsCoilRampUp%u",physicsselection);
 	SetRegValue("Player", tmp2, REG_SZ, tmp, lstrlen(tmp));
 
 
@@ -6759,13 +6759,13 @@ INT_PTR CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPAR
 
          HRESULT hr;
 
-		 float FlipperPhysicsSpeed = 0.15f;
-		 sprintf_s(tmp,256,"FlipperPhysicsSpeed%u",physicsselection);
-         hr = GetRegStringAsFloat("Player", tmp, &FlipperPhysicsSpeed);
+		 float FlipperPhysicsMass = 0.15f;
+		 sprintf_s(tmp,256,"FlipperPhysicsMass%u",physicsselection);
+         hr = GetRegStringAsFloat("Player", tmp, &FlipperPhysicsMass);
          if (hr != S_OK)
-            FlipperPhysicsSpeed = 0.15f;
+            FlipperPhysicsMass = 0.15f;
 
-		 sprintf_s(tmp,256,"%f",FlipperPhysicsSpeed);
+		 sprintf_s(tmp,256,"%f",FlipperPhysicsMass);
  		 SetDlgItemTextA(hwndDlg, DISPID_Flipper_Speed, tmp);
 
 		 float FlipperPhysicsStrength = 3.f;
@@ -6804,31 +6804,31 @@ INT_PTR CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPAR
 		 sprintf_s(tmp,256,"%f",FlipperPhysicsReturnStrength);
  		 SetDlgItemTextA(hwndDlg, 23, tmp);
 
-		 float FlipperPhysicsRecoil = 0.43f;
-		 sprintf_s(tmp,256,"FlipperPhysicsRecoil%u",physicsselection);
-         hr = GetRegStringAsFloat("Player", tmp, &FlipperPhysicsRecoil);
+		 float FlipperPhysicsElasticityFalloff = 0.43f;
+		 sprintf_s(tmp,256,"FlipperPhysicsElasticityFalloff%u",physicsselection);
+         hr = GetRegStringAsFloat("Player", tmp, &FlipperPhysicsElasticityFalloff);
          if (hr != S_OK)
-            FlipperPhysicsRecoil = 0.43f;
+            FlipperPhysicsElasticityFalloff = 0.43f;
 
-		 sprintf_s(tmp,256,"%f",FlipperPhysicsRecoil);
+		 sprintf_s(tmp,256,"%f",FlipperPhysicsElasticityFalloff);
  		 SetDlgItemTextA(hwndDlg, 22, tmp);
 
-  		 float FlipperPhysicsPowerLaw = 0.8f;
-		 sprintf_s(tmp,256,"FlipperPhysicsPowerLaw%u",physicsselection);
-         hr = GetRegStringAsFloat("Player", tmp, &FlipperPhysicsPowerLaw);
+  		 float FlipperPhysicsFriction = 0.8f;
+		 sprintf_s(tmp,256,"FlipperPhysicsFriction%u",physicsselection);
+         hr = GetRegStringAsFloat("Player", tmp, &FlipperPhysicsFriction);
          if (hr != S_OK)
-            FlipperPhysicsPowerLaw = 0.8f;
+            FlipperPhysicsFriction = 0.8f;
 
-		 sprintf_s(tmp,256,"%f",FlipperPhysicsPowerLaw);
+		 sprintf_s(tmp,256,"%f",FlipperPhysicsFriction);
  		 SetDlgItemTextA(hwndDlg, 109, tmp);
 
-		 float FlipperPhysicsOblique = 0.f;
-		 sprintf_s(tmp,256,"FlipperPhysicsOblique%u",physicsselection);
-         hr = GetRegStringAsFloat("Player", tmp, &FlipperPhysicsOblique);
+		 float FlipperPhysicsCoilRampUp = 0.f;
+		 sprintf_s(tmp,256,"FlipperPhysicsCoilRampUp%u",physicsselection);
+         hr = GetRegStringAsFloat("Player", tmp, &FlipperPhysicsCoilRampUp);
          if (hr != S_OK)
-            FlipperPhysicsOblique = 0.f;
+            FlipperPhysicsCoilRampUp = 0.f;
 
-		 sprintf_s(tmp,256,"%f",FlipperPhysicsOblique);
+		 sprintf_s(tmp,256,"%f",FlipperPhysicsCoilRampUp);
  		 SetDlgItemTextA(hwndDlg, 110, tmp);
 
 		 float TablePhysicsGravityConstant = DEFAULT_TABLE_GRAVITY;
@@ -6925,14 +6925,14 @@ INT_PTR CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPAR
 			   char tmp[256];
 			   char tmp2[256];
 
-			   float FlipperPhysicsSpeed,FlipperPhysicsStrength,FlipperPhysicsElasticity,FlipperPhysicsScatter,FlipperPhysicsReturnStrength,FlipperPhysicsRecoil,FlipperPhysicsPowerLaw,FlipperPhysicsOblique;
-			   fscanf_s(f,"%f %f %f %f %f %f %f %f\n", &FlipperPhysicsSpeed,&FlipperPhysicsStrength,&FlipperPhysicsElasticity,&FlipperPhysicsScatter,&FlipperPhysicsReturnStrength,&FlipperPhysicsRecoil,&FlipperPhysicsPowerLaw,&FlipperPhysicsOblique);
+			   float FlipperPhysicsMass,FlipperPhysicsStrength,FlipperPhysicsElasticity,FlipperPhysicsScatter,FlipperPhysicsReturnStrength,FlipperPhysicsElasticityFalloff,FlipperPhysicsFriction,FlipperPhysicsCoilRampUp;
+			   fscanf_s(f,"%f %f %f %f %f %f %f %f\n", &FlipperPhysicsMass,&FlipperPhysicsStrength,&FlipperPhysicsElasticity,&FlipperPhysicsScatter,&FlipperPhysicsReturnStrength,&FlipperPhysicsElasticityFalloff,&FlipperPhysicsFriction,&FlipperPhysicsCoilRampUp);
 			   float TablePhysicsGravityConstant,TablePhysicsContactFriction,TablePhysicsContactScatterAngle;
 			   fscanf_s(f,"%f %f %f\n", &TablePhysicsGravityConstant,&TablePhysicsContactFriction,&TablePhysicsContactScatterAngle);
 			   fscanf_s(f,"%s",tmp2);
 			   fclose(f);
 
-   				 sprintf_s(tmp,256,"%f",FlipperPhysicsSpeed);
+   				 sprintf_s(tmp,256,"%f",FlipperPhysicsMass);
  				 SetDlgItemTextA(hwndDlg, DISPID_Flipper_Speed, tmp);
 
 				 sprintf_s(tmp,256,"%f",FlipperPhysicsStrength);
@@ -6947,13 +6947,13 @@ INT_PTR CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPAR
 				 sprintf_s(tmp,256,"%f",FlipperPhysicsReturnStrength);
  				 SetDlgItemTextA(hwndDlg, 23, tmp);
 
-				 sprintf_s(tmp,256,"%f",FlipperPhysicsRecoil);
+				 sprintf_s(tmp,256,"%f",FlipperPhysicsElasticityFalloff);
  				 SetDlgItemTextA(hwndDlg, 22, tmp);
 
-				 sprintf_s(tmp,256,"%f",FlipperPhysicsPowerLaw);
+				 sprintf_s(tmp,256,"%f",FlipperPhysicsFriction);
  				 SetDlgItemTextA(hwndDlg, 109, tmp);
 
-				 sprintf_s(tmp,256,"%f",FlipperPhysicsOblique);
+				 sprintf_s(tmp,256,"%f",FlipperPhysicsCoilRampUp);
  				 SetDlgItemTextA(hwndDlg, 110, tmp);
 
 				 sprintf_s(tmp,256,"%f",TablePhysicsGravityConstant);

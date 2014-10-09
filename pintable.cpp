@@ -7826,8 +7826,8 @@ STDMETHODIMP PinTable::ImportPhysics()
 	if( !f )
 		return S_OK;
 
-	float FlipperPhysicsSpeed,FlipperPhysicsStrength,FlipperPhysicsElasticity,FlipperPhysicsScatter,FlipperPhysicsReturnStrength,FlipperPhysicsRecoil,FlipperPhysicsPowerLaw,FlipperPhysicsOblique;
-	fscanf_s(f,"%f %f %f %f %f %f %f %f\n", &FlipperPhysicsSpeed,&FlipperPhysicsStrength,&FlipperPhysicsElasticity,&FlipperPhysicsScatter,&FlipperPhysicsReturnStrength,&FlipperPhysicsRecoil,&FlipperPhysicsPowerLaw,&FlipperPhysicsOblique);
+	float FlipperPhysicsMass,FlipperPhysicsStrength,FlipperPhysicsElasticity,FlipperPhysicsScatter,FlipperPhysicsReturnStrength,FlipperPhysicsElasticityFalloff,FlipperPhysicsFriction,FlipperPhysicsCoilRampUp;
+	fscanf_s(f,"%f %f %f %f %f %f %f %f\n", &FlipperPhysicsMass,&FlipperPhysicsStrength,&FlipperPhysicsElasticity,&FlipperPhysicsScatter,&FlipperPhysicsReturnStrength,&FlipperPhysicsElasticityFalloff,&FlipperPhysicsFriction,&FlipperPhysicsCoilRampUp);
 	float TablePhysicsGravityConstant,TablePhysicsContactFriction,TablePhysicsContactScatterAngle;
 	fscanf_s(f,"%f %f %f\n", &TablePhysicsGravityConstant,&TablePhysicsContactFriction,&TablePhysicsContactScatterAngle);
 	//char tmp2[256]; // not used here
@@ -7838,13 +7838,13 @@ STDMETHODIMP PinTable::ImportPhysics()
 		if (m_vedit.ElementAt(i)->GetItemType() == eItemFlipper)
 		{
 			Flipper * const flipper = (Flipper *)m_vedit.ElementAt(i);
-			flipper->put_Mass(FlipperPhysicsSpeed); // was speed previously
+			flipper->put_Mass(FlipperPhysicsMass); // was speed previously
 			flipper->put_Strength(FlipperPhysicsStrength);
 			flipper->put_Elasticity(FlipperPhysicsElasticity);
 			flipper->put_Return(FlipperPhysicsReturnStrength);
-			flipper->put_ElasticityFalloff(FlipperPhysicsRecoil);
-			flipper->put_Friction(FlipperPhysicsPowerLaw);
-			flipper->put_RampUp(FlipperPhysicsOblique);
+			flipper->put_ElasticityFalloff(FlipperPhysicsElasticityFalloff);
+			flipper->put_Friction(FlipperPhysicsFriction);
+			flipper->put_RampUp(FlipperPhysicsCoilRampUp);
 		}
 
 	put_Gravity(TablePhysicsGravityConstant);
