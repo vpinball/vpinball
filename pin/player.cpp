@@ -2158,11 +2158,6 @@ void Player::DMDdraw(const float DMDposx, const float DMDposy, const float DMDwi
 		DMDVerts[i*5+1] = 1.0f-(DMDVerts[i*5+1]*DMDheight + DMDposy)*2.0f;
 	}
 
-	m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
-    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
-    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::LIGHTING, FALSE);
-    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, FALSE);
-
     m_pin3d.m_pd3dDevice->SetVertexDeclaration( m_pin3d.m_pd3dDevice->m_pVertexTexelDeclaration );
     m_pin3d.m_pd3dDevice->DMDShader->Core()->SetFloat("fResX",(float)g_pplayer->m_dmdx);
     m_pin3d.m_pd3dDevice->DMDShader->Core()->SetFloat("fResY",(float)g_pplayer->m_dmdy);
@@ -2173,11 +2168,6 @@ void Player::DMDdraw(const float DMDposx, const float DMDposy, const float DMDwi
     m_pin3d.m_pd3dDevice->DMDShader->Begin(0);
     m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_TEX, (LPVOID)DMDVerts, 4);
     m_pin3d.m_pd3dDevice->DMDShader->End();
-
-   	m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, TRUE);
-    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::LIGHTING, TRUE);
-    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
-	m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
   }
 }
 
