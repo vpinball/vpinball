@@ -46,8 +46,8 @@ public:
 	float m_return;
     float m_rampUp;
 
-	float m_scatter; //!! expose? scatter on hit
-	float m_angleEOS; // angle at which EOS switch opens, as measured from EOS parked position //!! disabled/not wired
+	float m_scatter; //!! expose? scatter on hit, currently hardwired to 0
+	//float m_angleEOS; // angle at which EOS switch opens, as measured from EOS parked position //!! reenable?
 
 	float m_OverrideMass;
 	float m_OverrideStrength;
@@ -179,8 +179,8 @@ public:
 	STDMETHOD(put_Height)(/*[in]*/ float newVal);
 	STDMETHOD(get_Return)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Return)(/*[in]*/ float newVal);
-	STDMETHOD(get_AngleEOS)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_AngleEOS)(/*[in]*/ float newVal);
+	//STDMETHOD(get_AngleEOS)(/*[out, retval]*/ float *pVal);
+	//STDMETHOD(put_AngleEOS)(/*[in]*/ float newVal);
 	STDMETHOD(get_FlipperRadiusMin)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_FlipperRadiusMin)(/*[in]*/ float newVal);
 };
