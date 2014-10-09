@@ -32,6 +32,7 @@ VP 10.0.0 Changelog
 - shader based materials/lighting (mostly redone from scratch)
 
 - internal DMD (access via script, input levels are 0..100)
+  display the DMD via the TextBox (use "DMD" as text)
 - DMDWidth, DMDHeight, DMDPixels added to Table Script methods
 
 - improved smoothness for ramps (centripetal Catmull-Rom splines)
