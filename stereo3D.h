@@ -66,23 +66,44 @@ static const char stereo3Dshader[] = \
 "const float depth2 = tex2D(depth, float2(u.x+w_h_height.x, u.y)).x;"
 "return normalize(float3(w_h_height.y * (depth2 - depth0), (depth1 - depth0) * w_h_height.x, w_h_height.y * w_h_height.x));" //!!
 "}"
-"float3 sphere_sample(float2 t)"
+//"float3 sphere_sample(float2 t)"
+//"{"
+//"const float phi = t.y * (2.0*3.1415926535897932384626433832795);"
+//"const float z = 1.0 - t.x*2.0;"
+//"const float r = sqrt(1.0 - z*z);"
+//"return float3(cos(phi)*r, z, sin(phi)*r);"
+//"}"
+"float3 cos_hemisphere_sample(float2 t)" // u,v in [0..1), returns y-up
 "{"
 "const float phi = t.y * (2.0*3.1415926535897932384626433832795);"
-"const float z = 1.0 - t.x*2.0;"
-"const float r = sqrt(1.0 - z*z);"
-"return float3(cos(phi)*r, sin(phi)*r, z);"
+"const float cosTheta = sqrt(1.0 - t.x);"
+"const float sinTheta = sqrt(1.0 - cosTheta * cosTheta);"
+"return float3(cos(phi) * sinTheta, cosTheta, sin(phi) * sinTheta);"
+"}"
+"float3 rotate_to_vector(float3 vec, float3 normal)"
+"{"
+"if(normal.y > -0.99999)"
+"{"
+"const float h = 1.0/(1.0+normal.y);"
+"const float hz = h*normal.z;"
+"const float hzx = hz*normal.x;"
+"return float3("
+"vec.x * (normal.y+hz*normal.z) + vec.y * normal.x - vec.z * hzx,"
+"vec.y * normal.y - vec.x * normal.x - vec.z * normal.z,"
+"vec.y * normal.z - vec.x * hzx + vec.z * (normal.y+h*normal.x*normal.x));"
+"}"
+"else return -vec;"
 "}"
 "float4 ps_main(float2 uorg:texcoord):color"
 "{"
 "const float2 u = uorg + w_h_height.xy*0.5;"
 "const float2 ushift = hash(uorg*w_h_height.z)*w_h_height.w;" // jitter samples via hash of position on screen and then jitter samples by time //!! see below for non-shifted variant
-"const float total_strength = 1.75;" //!!
-"/*const float base = 0.0;*/"
+//"const float base = 0.0;"
 "const float area = 0.07;" //!!
 "const float falloff = 0.000002;" //!!
 "const float radius = 0.006;" //!!
 "const int samples = 9;" //4,8,9,13,21,25 korobov,fibonacci
+"const float total_strength = 1.75 * (/*1.0 for uniform*/0.5 / samples);" //!!
 "const float depth0 = tex2D(depth, u).x;"
 "if((depth0 == 1.0f) || (depth0 == 0.0f))" //!! early out if depth too large (=BG) or too small (=DMD,etc)
 " return float4(1.0f,1.0f,1.0f,1.0f);"
@@ -91,16 +112,17 @@ static const char stereo3Dshader[] = \
 "float occlusion = 0.0;"
 "for(int i=0; i < samples; ++i) {"
 "const float2 r = float2(i*(1.0 / samples), i*(2.0 / samples));" //1,5,2,8,13,7 korobov,fibonacci //!! could also use progressive/extensible lattice via rad_inv(i)*(1501825329, 359975893) (check precision though as this should be done in double or uint64)
-"const float3 ray = sphere_sample(frac(r+ushift));" // shift lattice
-"const float rdotn = dot(ray,normal);"
-"const float2 hemi_ray = u + (radius_depth * sign(rdotn)) * ray.xy;" //!! use cosine sampling instead? would fit better with IBL, but then remove abs(rdotn) below
+//"const float3 ray = sphere_sample(frac(r+ushift));" // shift lattice // uniform variant
+"const float2 ray = rotate_to_vector(cos_hemisphere_sample(frac(r+ushift)), normal).xy;" // shift lattice
+//"const float rdotn = dot(ray,normal);"
+"const float2 hemi_ray = u + (radius_depth /** sign(rdotn) for uniform*/) * ray.xy;"
 "const float occ_depth = tex2D(depth, hemi_ray).x;"
 "const float3 occ_normal = get_normal(occ_depth, hemi_ray);"
 "const float diff_depth = depth0 - occ_depth;"
 "const float diff_norm = dot(occ_normal,normal);"
-"occlusion += step(falloff, diff_depth) * abs(rdotn) * (1.0f-diff_norm*diff_norm) * (1.0-smoothstep(falloff, area, diff_depth));"
+"occlusion += step(falloff, diff_depth) * /*abs(rdotn)* for uniform*/ (1.0f-diff_norm*diff_norm) * (1.0-smoothstep(falloff, area, diff_depth));"
 "}"
-"const float ao = 1.0 - total_strength * occlusion * (1.0 / samples);"
+"const float ao = 1.0 - total_strength * occlusion;"
 "return saturate(ao/* + base*/);"
 "}";
 #endif
