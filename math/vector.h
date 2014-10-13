@@ -264,28 +264,57 @@ void RotateAround(const Vertex3Ds &pvAxis, Vertex3Ds * const pvPoint, int count,
 Vertex3Ds RotateAround(const Vertex3Ds &pvAxis, const Vertex2D &pvPoint, float angle);
 
 // uniformly distributed vector over sphere
-inline Vertex3Ds sphere_sample(const float u, const float v) // u,v in [0..1)
+inline Vertex3Ds sphere_sample(const float u, const float v) // u,v in [0..1), poles on y-axis
 {
      const float phi = v * (float)(2.0 * M_PI);
      const float z = 1.0f - (u+u);
      const float r = sqrtf(1.0f - z * z);
-     return Vertex3Ds(cosf(phi) * r, sinf(phi) * r, z);
+     return Vertex3Ds(cosf(phi) * r, z, sinf(phi) * r);
 }
 
 // uniformly distributed vector over hemisphere
-inline Vertex3Ds hemisphere_sample(const float u, const float v) // u,v in [0..1)
+inline Vertex3Ds hemisphere_sample(const float u, const float v) // u,v in [0..1), returns y-up
 {
      const float phi = v * (float)(2.0 * M_PI);
      const float cosTheta = 1.0f - u;
      const float sinTheta = sqrtf(1.0f - cosTheta * cosTheta);
-     return Vertex3Ds(cosf(phi) * sinTheta, sinf(phi) * sinTheta, cosTheta);
+     return Vertex3Ds(cosf(phi) * sinTheta, cosTheta, sinf(phi) * sinTheta);
 }
 
 // cosine distributed vector over hemisphere
-inline Vertex3Ds cos_hemisphere_sample(const float u, const float v) // u,v in [0..1)
+inline Vertex3Ds cos_hemisphere_sample(const float u, const float v) // u,v in [0..1), returns y-up
 {
      const float phi = v * (float)(2.0 * M_PI);
      const float cosTheta = sqrtf(1.0f - u);
      const float sinTheta = sqrtf(1.0f - cosTheta * cosTheta);
-     return Vertex3Ds(cosf(phi) * sinTheta, sinf(phi) * sinTheta, cosTheta);
+     return Vertex3Ds(cosf(phi) * sinTheta, cosTheta, sinf(phi) * sinTheta);
+}
+
+// rotate vec from world space to local space (defined f.e. by the normal of a surface and its implicit/orthogonal tangents),
+// can be useful for orientating a hemisphere to a normal and the like (only if orientation of tangents can be arbitrary -> e.g. AO, diffuse) (see Moeller/Hughes)
+inline Vertex3Ds rotate_to_vector(const Vertex3Ds &vec, const Vertex3Ds &normal)
+{
+	/*const float c = Vertex3Ds(0,1,0).Dot(normal);
+	if(fabsf(c) < 0.999f)
+	{
+	    const Vertex3Ds v = CrossProduct(Vertex3Ds(0,1,0),normal);
+	    const float h = (1.0f-c)/(v.Dot(v));
+	    return mul(vec, Vertex3Ds(c+h*v.xyz.x*v.xyz.x, h*v.xyz.x*v.xyz.y+v.xyz.z, h*v.xyz.x*v.xyz.z-v.xyz.y),
+		                Vertex3Ds(h*v.xyz.x*v.xyz.y-v.xyz.z, c+h*v.xyz.y*v.xyz.y, h*v.xyz.y*v.xyz.z+v.xyz.x),
+						Vertex3Ds(h*v.xyz.x*v.xyz.z+v.xyz.y, h*v.xyz.y*v.xyz.z-v.xyz.x, c+h*v.xyz.z*v.xyz.z));
+	}
+	else
+	    return (c < 0.0f) ? -vec : vec;*/
+	if(normal.y > -0.99999f)
+	{
+	    const float h = 1.0f/(1.0f+normal.y);
+	    const float hz = h*normal.z;
+	    const float hzx = hz*normal.x;
+	    return Vertex3Ds(
+			vec.x * (normal.y+hz*normal.z) + vec.y * normal.x - vec.z * hzx,
+			vec.y * normal.y - vec.x * normal.x - vec.z * normal.z,
+			vec.y * normal.z - vec.x * hzx + vec.z * (normal.y+h*normal.x*normal.x));
+	}
+	else
+	    return -vec;
 }
