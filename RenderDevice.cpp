@@ -461,7 +461,9 @@ void RenderDevice::CreatePixelShader( const char* shader )
 			gShader = NULL;
 		}
 		ID3DXBuffer *tmp;
-		CHECKD3D(D3DXCompileShader( shader, lstrlen(shader), 0, 0, "ps_main", "ps_2_a", D3DXSHADER_OPTIMIZATION_LEVEL3|D3DXSHADER_PREFER_FLOW_CONTROL, &tmp, 0, 0 ));
+		//ID3DXBuffer *error;
+		CHECKD3D(D3DXCompileShader( shader, lstrlen(shader), 0, 0, "ps_main", "ps_2_a", D3DXSHADER_OPTIMIZATION_LEVEL3|D3DXSHADER_PREFER_FLOW_CONTROL, &tmp, /*&error*/0, 0 ));
+		//MessageBox(NULL,(LPCSTR)(error->GetBufferPointer()),"bla",MB_OK);
 		CHECKD3D(m_pD3DDevice->CreatePixelShader( (DWORD*)tmp->GetBufferPointer(), &gShader ));
 		shader_cache = shader;
 	}
