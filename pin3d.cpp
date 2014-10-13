@@ -115,7 +115,10 @@ void EnvmapPrecalc(const DWORD* const __restrict envmap, const DWORD env_xres, c
 			const unsigned int num_samples = 64;
 			for(unsigned int s = 0; s < num_samples; ++s)
 			{
-				//!! could use cos_hemisphere_sample instead and trafo result to normal coord system, but as we do not use importance sampling on the environment, just not being smart -could- be better for high frequency environments anyhow
+				//!! discard directions pointing below the playfield?? or give them another "average playfield" color??
+#define USE_ENVMAP_PRECALC_COSINE
+#ifndef USE_ENVMAP_PRECALC_COSINE
+				//!! as we do not use importance sampling on the environment, just not being smart -could- be better for high frequency environments
 				Vertex3Ds l = sphere_sample((float)s*(float)(1.0/num_samples), radical_inverse(s)); // QMC hammersley point set
 				float NdotL = l.Dot(n);
 				if(NdotL < 0.0f) // flip if on backside of hemisphere
@@ -123,7 +126,9 @@ void EnvmapPrecalc(const DWORD* const __restrict envmap, const DWORD env_xres, c
 					NdotL = -NdotL;
 					l = -l;
 				}
-
+#else
+				const Vertex3Ds l = rotate_to_vector(cos_hemisphere_sample((float)s*(float)(1.0/num_samples), radical_inverse(s)), n); // QMC hammersley point set
+#endif
 				// trafo from light direction to envmap
 				const float u = atan2f(l.y, l.x) * (float)(0.5/M_PI) + 0.5f;
 				const float v = acosf(l.z) * (float)(1.0/M_PI);
@@ -132,16 +137,27 @@ void EnvmapPrecalc(const DWORD* const __restrict envmap, const DWORD env_xres, c
 				const float r = powf((float)(rgb & 255) * (float)(1.0/255.0), 2.2f); //!! remove invgamma as soon as HDR
 			    const float g = powf((float)(rgb & 65280) * (float)(1.0/65280.0), 2.2f);
 				const float b = powf((float)(rgb & 16711680) * (float)(1.0/16711680.0), 2.2f);
-				
+#ifndef USE_ENVMAP_PRECALC_COSINE
 				sum[0] += r * NdotL;
 				sum[1] += g * NdotL;
 				sum[2] += b * NdotL;
+#else
+				sum[0] += r;
+				sum[1] += g;
+				sum[2] += b;
+#endif
 			}
 
 			// average all samples
+#ifndef USE_ENVMAP_PRECALC_COSINE
 			sum[0] *= (float)(1.0/(M_PI*num_samples)); // pre-divides by PI for final radiance/color lookup in shader
 			sum[1] *= (float)(1.0/(M_PI*num_samples)); // pre-divides by PI for final radiance/color lookup in shader
 			sum[2] *= (float)(1.0/(M_PI*num_samples)); // pre-divides by PI for final radiance/color lookup in shader
+#else
+			sum[0] *= (float)(0.5/(M_PI*num_samples)); // pre-divides by PI for final radiance/color lookup in shader
+			sum[1] *= (float)(0.5/(M_PI*num_samples)); // pre-divides by PI for final radiance/color lookup in shader
+			sum[2] *= (float)(0.5/(M_PI*num_samples)); // pre-divides by PI for final radiance/color lookup in shader
+#endif
 			sum[0] = powf(sum[0],(float)(1.0/2.2)); //!! remove gamma as soon as HDR
 			sum[1] = powf(sum[1],(float)(1.0/2.2));
 			sum[2] = powf(sum[2],(float)(1.0/2.2));
@@ -340,8 +356,6 @@ void Pin3D::DrawBackground()
 		m_pd3dDevice->Clear( 0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, d3dcolor, 1.0f, 0L );
 	}
 }
-
-
 
 void Pin3D::InitLights()
 {
