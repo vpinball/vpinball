@@ -13,6 +13,10 @@
  extern "C" {
 	__declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
  }
+#else
+ extern "C" {
+	__declspec(dllexport) DWORD NvOptimusEnablement = 0x00000000;
+ }
 #endif
 
 #if (WINVER <= 0x0601 /* _WIN32_WINNT_WIN7 */ )
