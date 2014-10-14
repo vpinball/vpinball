@@ -22,6 +22,7 @@ public:
 	bool m_IsVisible;
 	bool m_fAddBlend;
 	char m_szImage[MAXTOKEN];
+   Filters m_filter;
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -140,6 +141,8 @@ public:
     STDMETHOD(put_DepthBias)(/*[in]*/ float newVal);
     STDMETHOD(get_ImageAlignment)(/*[out, retval]*/ RampImageAlignment *pVal);
     STDMETHOD(put_ImageAlignment)(/*[in]*/ RampImageAlignment newVal);
+    STDMETHOD(get_Filter)(/*[out, retval]*/ Filters *pVal);
+    STDMETHOD(put_Filter)(/*[in]*/ Filters newVal);
    };
 
 #endif // !defined(AFX_FLASHER_H__87DAB93E_7D6F_4fe4_A5F9_632FD82BDB4A__INCLUDED_)

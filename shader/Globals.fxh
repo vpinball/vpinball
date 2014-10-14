@@ -195,6 +195,11 @@ float4 lightLoop(float3 pos, float3 N, float3 V, float3 diffuse, float3 glossy, 
    return float4(Gamma(ToneMap(vAmbient + color)), 1.0f); //!! in case of HDR out later on, remove tonemap and gamma //!! also problematic for alpha blends
 }
 
+float4 Additive(float4 cBase, float4 cBlend)
+{
+   return (cBase+cBlend);
+}
+
 float4 Screen (float4 cBase, float4 cBlend)
 {
 	return (1.0f - (1.0f - cBase) * (1.0f - cBlend));

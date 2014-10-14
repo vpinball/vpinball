@@ -820,6 +820,7 @@
 #define IDM_IMAGE_EDITOR                32993
 #define IDM_SOUND_EDITOR                32994
 #define IDM_COLLECTION_EDITOR           32995
+#define IDC_EFFECT_COMBO                32996
 #define DZVALUE                         65535
 #define DZName                          65535
 
