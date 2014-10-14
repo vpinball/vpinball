@@ -29,52 +29,58 @@ public:
 // Flasher
 
 class Flasher :
-	public IDispatchImpl<IFlasher, &IID_IFlasher, &LIBID_VPinballLib>,
-	public ISupportErrorInfo,
-	public CComObjectRoot,
-	public CComCoClass<Flasher,&CLSID_Flasher>,
-	public EventProxy<Flasher, &DIID_IFlasherEvents>,
-	public IConnectionPointContainerImpl<Flasher>,
-	public IProvideClassInfo2Impl<&CLSID_Flasher, &DIID_IFlasherEvents, &LIBID_VPinballLib>,
-	public ISelect,
-	public IEditable,
-	public Hitable,
-	public IScriptable,
-	public IFireEvents,
-	public IPerPropertyBrowsing // Ability to fill in dropdown in property browser
+   public CComObjectRootEx<CComSingleThreadModel>,
+   public CComCoClass<Flasher, &CLSID_Flasher>,
+   public IDispatchImpl<IFlasher, &IID_IFlasher, &LIBID_VPinballLib>,
+   public EventProxy<Flasher, &DIID_IFlasherEvents>,
+   public IConnectionPointContainerImpl<Flasher>,
+   public IProvideClassInfo2Impl<&CLSID_Flasher, &DIID_IFlasherEvents, &LIBID_VPinballLib>,
+   public ISelect,
+   public IEditable,
+   public Hitable,
+   public IHaveDragPoints,
+   public IScriptable,
+   public IFireEvents,
+   public IPerPropertyBrowsing // Ability to fill in dropdown in property browser
 {
 public:
 	Flasher();
 	virtual ~Flasher();
 
+   STANDARD_EDITABLE_DECLARES(Flasher, eItemFlasher, FLASHER, 1)
+
 BEGIN_COM_MAP(Flasher)
+   COM_INTERFACE_ENTRY(IFlasher)
 	COM_INTERFACE_ENTRY(IDispatch)
-	COM_INTERFACE_ENTRY(IFlasher)
-	//COM_INTERFACE_ENTRY(ISupportErrorInfo)
 	COM_INTERFACE_ENTRY_IMPL(IConnectionPointContainer)
 	COM_INTERFACE_ENTRY(IPerPropertyBrowsing)
 	COM_INTERFACE_ENTRY(IProvideClassInfo)
 	COM_INTERFACE_ENTRY(IProvideClassInfo2)
 END_COM_MAP()
 
+DECLARE_REGISTRY_RESOURCEID(IDR_Flasher)
+
+DECLARE_PROTECT_FINAL_CONSTRUCT()
+
 BEGIN_CONNECTION_POINT_MAP(Flasher)
 	CONNECTION_POINT_ENTRY(DIID_IFlasherEvents)
 END_CONNECTION_POINT_MAP()
 
-STANDARD_EDITABLE_DECLARES(Flasher, eItemFlasher, FLASHER, 1)
 
-//DECLARE_NOT_AGGREGATABLE(Flasher)
-// Remove the comment from the line above if you don't want your object to
-// support aggregation.
-
-DECLARE_REGISTRY_RESOURCEID(IDR_Flasher)
 // ISupportsErrorInfo
 	STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
 	virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
+   virtual void GetPointDialogPanes(Vector<PropertyPane> *pvproppane);
+   virtual void ClearForOverwrite();
 
 	virtual void RenderBlueprint(Sur *psur);
 
+   virtual void FlipY(Vertex2D * const pvCenter);
+   virtual void FlipX(Vertex2D * const pvCenter);
+   virtual void Rotate(float ang, Vertex2D *pvCenter);
+   virtual void Scale(float scalex, float scaley, Vertex2D *pvCenter);
+   virtual void Translate(Vertex2D *pvOffset);
 	virtual void MoveOffset(const float dx, const float dy);
 	virtual void SetObjectPos();
 
@@ -82,21 +88,26 @@ DECLARE_REGISTRY_RESOURCEID(IDR_Flasher)
 
     virtual void GetCenter(Vertex2D * const pv) const { *pv = m_d.m_vCenter; }
     virtual void PutCenter(const Vertex2D * const pv) { m_d.m_vCenter = *pv; m_ptable->SetDirtyDraw(); }
+    virtual void DoCommand(int icmd, int x, int y);
 
     virtual bool IsTransparent() { return true; }
     virtual float GetDepth(const Vertex3Ds& viewDir) const
       { return m_d.m_depthBias + viewDir.x * m_d.m_vCenter.x + viewDir.y * m_d.m_vCenter.y + viewDir.z * m_d.m_height; }
 
 	void WriteRegDefaults();
+   void UpdateMesh();
+   void InitShape();
 
 	PinTable *m_ptable;
 
 	FlasherData m_d;
-
+   int numVertices, numPolys;
+   float minx,maxx,miny,maxy;
+   Vertex3D_NoLighting *vertices;
+   
 	VertexBuffer *dynamicVertexBuffer;
     Material solidMaterial;
     Material textureMaterial;
-    Vertex3D_NoLighting vertices[4];
 	bool dynamicVertexBufferRegenerate;
 
 // IFlasher
@@ -132,6 +143,6 @@ public:
     STDMETHOD(put_AddBlend)(/*[in]*/ VARIANT_BOOL newVal);
     STDMETHOD(get_DepthBias)(/*[out, retval]*/ float *pVal);
     STDMETHOD(put_DepthBias)(/*[in]*/ float newVal);
-};
+   };
 
 #endif // !defined(AFX_FLASHER_H__87DAB93E_7D6F_4fe4_A5F9_632FD82BDB4A__INCLUDED_)
