@@ -11,15 +11,14 @@ class FlasherData
 {
 public:
     Vertex2D m_vCenter;
-    float m_sizeX; 
-    float m_sizeY;
     float m_height;
     COLORREF m_color;
 	TimerDataRoot m_tdr;
 	float m_rotX,m_rotY,m_rotZ;
 	int m_fAlpha;
-    float m_depthBias;      // for determining depth sorting
-    bool m_fDisplayTexture;
+   float m_depthBias;      // for determining depth sorting
+   bool m_fDisplayTexture;
+   RampImageAlignment m_imagealignment;
 	bool m_IsVisible;
 	bool m_fAddBlend;
 	char m_szImage[MAXTOKEN];
@@ -116,10 +115,6 @@ public:
 	STDMETHOD(put_Image)(/*[in]*/ BSTR newVal);
 	STDMETHOD(get_Color)(/*[out, retval]*/ OLE_COLOR *pVal);
 	STDMETHOD(put_Color)(/*[in]*/ OLE_COLOR newVal);
-	STDMETHOD(get_SizeX)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_SizeX)(/*[in]*/ float newVal);
-    STDMETHOD(get_SizeY)(/*[out, retval]*/ float *pVal);
-    STDMETHOD(put_SizeY)(/*[in]*/ float newVal);
     STDMETHOD(get_Height)(/*[out, retval]*/ float *pVal);
     STDMETHOD(put_Height)(/*[in]*/ float newVal);
 	STDMETHOD(get_X)(/*[out, retval]*/ float *pVal);
@@ -143,6 +138,8 @@ public:
     STDMETHOD(put_AddBlend)(/*[in]*/ VARIANT_BOOL newVal);
     STDMETHOD(get_DepthBias)(/*[out, retval]*/ float *pVal);
     STDMETHOD(put_DepthBias)(/*[in]*/ float newVal);
+    STDMETHOD(get_ImageAlignment)(/*[out, retval]*/ RampImageAlignment *pVal);
+    STDMETHOD(put_ImageAlignment)(/*[in]*/ RampImageAlignment newVal);
    };
 
 #endif // !defined(AFX_FLASHER_H__87DAB93E_7D6F_4fe4_A5F9_632FD82BDB4A__INCLUDED_)

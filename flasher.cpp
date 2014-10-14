@@ -24,13 +24,14 @@ void Flasher::InitShape()
       // First time shape has been set to custom - set up some points
       const float x = m_d.m_vCenter.x;
       const float y = m_d.m_vCenter.y;
-
+      const float size = 100.0f;
+      
       CComObject<DragPoint> *pdp;
       CComObject<DragPoint>::CreateInstance(&pdp);
       if (pdp)
       {
          pdp->AddRef();
-         pdp->Init(this, x-m_d.m_sizeX*0.5f, y-m_d.m_sizeY*0.5f);
+         pdp->Init(this, x-size*0.5f, y-size*0.5f);
          pdp->m_fSmooth = FALSE;
          m_vdpoint.AddElement(pdp);
       }
@@ -38,7 +39,7 @@ void Flasher::InitShape()
       if (pdp)
       {
          pdp->AddRef();
-         pdp->Init(this, x-m_d.m_sizeX*0.5f, y+m_d.m_sizeY*0.5f);
+         pdp->Init(this, x-size*0.5f, y+size*0.5f);
          pdp->m_fSmooth = FALSE;
          m_vdpoint.AddElement(pdp);
       }
@@ -46,7 +47,7 @@ void Flasher::InitShape()
       if (pdp)
       {
          pdp->AddRef();
-         pdp->Init(this, x+m_d.m_sizeX*0.5f, y+m_d.m_sizeY*0.5f);
+         pdp->Init(this, x+size*0.5f, y+size*0.5f);
          pdp->m_fSmooth = FALSE;
          m_vdpoint.AddElement(pdp);
       }
@@ -54,7 +55,7 @@ void Flasher::InitShape()
       if (pdp)
       {
          pdp->AddRef();
-         pdp->Init(this, x+m_d.m_sizeX*0.5f, y-m_d.m_sizeY*0.5f);
+         pdp->Init(this, x+size*0.5f, y-size*0.5f);
          pdp->m_fSmooth = FALSE;
          m_vdpoint.AddElement(pdp);
       }
@@ -92,18 +93,6 @@ void Flasher::SetDefaults(bool fromMouseClick)
       m_d.m_height = fTmp;
    else
       m_d.m_height = 50.0f;
-
-   hr = GetRegStringAsFloat("DefaultProps\\Flasher","SizeX", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_sizeX = fTmp;
-   else
-      m_d.m_sizeX = 100.0f;
-
-   hr = GetRegStringAsFloat("DefaultProps\\Flasher","SizeY", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_sizeY = fTmp;
-   else
-      m_d.m_sizeY = 100.0f;
 
    hr = GetRegStringAsFloat("DefaultProps\\Flasher","RotX", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
@@ -169,13 +158,12 @@ void Flasher::SetDefaults(bool fromMouseClick)
    else
        m_d.m_fDisplayTexture = false;
 
+   m_d.m_imagealignment = fromMouseClick ? (RampImageAlignment)GetRegIntWithDefault("DefaultProps\\Flasher","ImageMode", ImageModeWrap) : ImageModeWrap;
 }
 
 void Flasher::WriteRegDefaults()
 {
    SetRegValueFloat("DefaultProps\\Flasher","Height", m_d.m_height);
-   SetRegValueFloat("DefaultProps\\Flasher","SizeX", m_d.m_sizeX);
-   SetRegValueFloat("DefaultProps\\Flasher","SizeY", m_d.m_sizeY);
    SetRegValueFloat("DefaultProps\\Flasher","RotX", m_d.m_rotX);
    SetRegValueFloat("DefaultProps\\Flasher","RotY", m_d.m_rotY);
    SetRegValueFloat("DefaultProps\\Flasher","RotZ", m_d.m_rotZ);
@@ -187,6 +175,7 @@ void Flasher::WriteRegDefaults()
    SetRegValueBool("DefaultProps\\Flasher","Visible",m_d.m_IsVisible);
    SetRegValueBool("DefaultProps\\Flasher","AddBlend",m_d.m_fAddBlend);
    SetRegValueBool("DefaultProps\\Flasher","DisplayTexture",m_d.m_fDisplayTexture);
+   SetRegValue("DefaultProps\\Flasher","ImageMode",REG_DWORD,&m_d.m_imagealignment,4);
 }
 
 void Flasher::PreRender(Sur * const psur)
@@ -397,13 +386,6 @@ void Flasher::RenderSetup(RenderDevice* pd3dDevice)
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
    Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
 
-   float inv_imageWith=0.0f;
-   float inv_imageHeight=0.0f;
-   if ( pin )
-   {
-      inv_imageWith = 1.0f / pin->m_width;
-      inv_imageHeight = 1.0f / pin->m_height;
-   }
    minx=20000000000.0f;
    miny=20000000000.0f;
    maxx=-20000000000.0f;;
@@ -429,15 +411,6 @@ void Flasher::RenderSetup(RenderDevice* pd3dDevice)
          vertices[offset+1].x=pv2->x;   vertices[offset+1].y=pv2->y;   vertices[offset+1].z=0;
          if( pv2->x>maxx ) maxx=pv2->x; if( pv2->x<minx ) minx=pv2->x;
          if( pv2->y>maxy ) maxy=pv2->y; if( pv2->y<miny ) miny=pv2->y;
-/*
-         vertices[offset  ].tu = vertices[offset  ].x *inv_tablewidth;
-         vertices[offset  ].tv = vertices[offset  ].y *inv_tableheight;
-         vertices[offset+1].tu = vertices[offset+1].x *inv_tablewidth;
-         vertices[offset+1].tv = vertices[offset+1].y *inv_tableheight;
-         vertices[offset+2].tu = vertices[offset+2].x *inv_tablewidth;
-         vertices[offset+2].tv = vertices[offset+2].y *inv_tableheight;
-*/
-
          vertices[offset  ].color = m_d.m_color;
          vertices[offset+1].color = m_d.m_color;
          vertices[offset+2].color = m_d.m_color;
@@ -450,8 +423,16 @@ void Flasher::RenderSetup(RenderDevice* pd3dDevice)
    float height = maxy-miny;
    for( int i=0;i<numPolys*3;i++)
    {
-      vertices[i].tu = (vertices[i].x-minx)/width;
-      vertices[i].tv = (vertices[i].y-miny)/height;
+      if (m_d.m_imagealignment == ImageModeWrap)
+      {
+         vertices[i].tu = (vertices[i].x-minx)/width;
+         vertices[i].tv = (vertices[i].y-miny)/height;
+      }
+      else
+      {
+         vertices[i].tu = vertices[i].x*inv_tablewidth;
+         vertices[i].tv = vertices[i].y*inv_tableheight;
+      }
    }
    for (int i=0;i<numVertices;i++)
       delete vvertex.ElementAt(i);
@@ -591,8 +572,6 @@ HRESULT Flasher::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
    BiffWriter bw(pstm, hcrypthash, hcryptkey);
 
    bw.WriteFloat(FID(FHEI), m_d.m_height);
-   bw.WriteFloat(FID(FSIX), m_d.m_sizeX);
-   bw.WriteFloat(FID(FSIY), m_d.m_sizeY);
    bw.WriteFloat(FID(FLAX), m_d.m_vCenter.x);
    bw.WriteFloat(FID(FLAY), m_d.m_vCenter.y);
    bw.WriteFloat(FID(FROX), m_d.m_rotX);
@@ -608,6 +587,7 @@ HRESULT Flasher::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
    bw.WriteBool(FID(ADDB), m_d.m_fAddBlend);
    bw.WriteBool(FID(DSPT), m_d.m_fDisplayTexture);
    bw.WriteFloat(FID(FLDB), m_d.m_depthBias);
+   bw.WriteInt(FID(ALGN), m_d.m_imagealignment);
    
    ISelect::SaveData(pstm, hcrypthash, hcryptkey);
    HRESULT hr;
@@ -646,14 +626,6 @@ BOOL Flasher::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(FHEI))
    {
       pbr->GetFloat(&m_d.m_height);
-   }
-   else if (id == FID(FSIX))
-   {
-      pbr->GetFloat(&m_d.m_sizeX);
-   }
-   else if (id == FID(FSIY))
-   {
-      pbr->GetFloat(&m_d.m_sizeY);
    }
    else if (id == FID(FLAX))
    {
@@ -720,6 +692,10 @@ BOOL Flasher::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(FLDB))
    {
       pbr->GetFloat(&m_d.m_depthBias);
+   }
+   else if (id == FID(ALGN))
+   {
+      pbr->GetInt(&m_d.m_imagealignment);
    }
    else
    {
@@ -850,50 +826,6 @@ STDMETHODIMP Flasher::put_RotZ(float newVal)
       STARTUNDO
 
       m_d.m_rotZ = newVal;
-      dynamicVertexBufferRegenerate = true;
-
-      STOPUNDO
-   }
-
-   return S_OK;
-}
-
-STDMETHODIMP Flasher::get_SizeX(float *pVal)
-{
-   *pVal = m_d.m_sizeX;
-
-   return S_OK;
-}
-
-STDMETHODIMP Flasher::put_SizeX(float newVal)
-{
-   if(m_d.m_sizeX != newVal)
-   {
-	   STARTUNDO
-
-	   m_d.m_sizeX = newVal;
-	   dynamicVertexBufferRegenerate = true;
-
-	   STOPUNDO
-   }
-
-   return S_OK;
-}
-
-STDMETHODIMP Flasher::get_SizeY(float *pVal)
-{
-   *pVal = m_d.m_sizeY;
-
-   return S_OK;
-}
-
-STDMETHODIMP Flasher::put_SizeY(float newVal)
-{
-   if(m_d.m_sizeY != newVal)
-   {
-      STARTUNDO
-
-         m_d.m_sizeY = newVal;
       dynamicVertexBufferRegenerate = true;
 
       STOPUNDO
@@ -1102,6 +1034,28 @@ STDMETHODIMP Flasher::put_DepthBias(float newVal)
    return S_OK;
 }
 
+STDMETHODIMP Flasher::get_ImageAlignment(RampImageAlignment *pVal)
+{
+   *pVal = m_d.m_imagealignment;
+
+   return S_OK;
+}
+
+STDMETHODIMP Flasher::put_ImageAlignment(RampImageAlignment newVal)
+{
+   if(m_d.m_imagealignment != newVal)
+   {
+      STARTUNDO
+
+      m_d.m_imagealignment = newVal;
+      dynamicVertexBufferRegenerate = true;
+
+      STOPUNDO
+   }
+
+   return S_OK;
+}
+
 // Always called each frame to render over everything else (along with primitives)
 // Same code as RenderStatic (with the exception of the alpha tests).
 // Also has less drawing calls by bundling seperate calls.
@@ -1111,12 +1065,6 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
    // Don't render if invisible.
    if(!m_d.m_IsVisible) 
       return;
-
-   if ( m_d.m_sizeX==0.0f && m_d.m_sizeY==0.0f )
-   {
-      dynamicVertexBufferRegenerate=false;
-      return;
-   }
 
       Pin3D * const ppin3d = &g_pplayer->m_pin3d;
       Texture * const pin = m_ptable->GetImage(m_d.m_szImage);

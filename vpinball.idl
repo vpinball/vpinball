@@ -1724,10 +1724,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(5), helpstring("property X")] HRESULT X([in] float newVal);
 		[propget, id(6), helpstring("property Y")] HRESULT Y([out, retval] float *pVal);
 		[propput, id(6), helpstring("property Y")] HRESULT Y([in] float newVal);
-		[propget, id(3), helpstring("property SizeX")] HRESULT SizeX([out, retval] float *pVal);
-		[propput, id(3), helpstring("property SizeX")] HRESULT SizeX([in] float newVal);
-		[propget, id(4), helpstring("property SizeY")] HRESULT SizeY([out, retval] float *pVal);
-		[propput, id(4), helpstring("property SizeY")] HRESULT SizeY([in] float newVal);
+		[propget, id(8), helpstring("property ImageAlignment")] HRESULT ImageAlignment([out, retval] RampImageAlignment *pVal);
+		[propput, id(8), helpstring("property ImageAlignment")] HRESULT ImageAlignment([in] RampImageAlignment newVal);
 		[propget, id(378), helpstring("property Height")] HRESULT Height([out, retval] float *pVal);
 		[propput, id(378), helpstring("property Height")] HRESULT Height([in] float newVal);
 		[propget, id(1), helpstring("property RotZ")] HRESULT RotZ([out, retval] float *pVal);
