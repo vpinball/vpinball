@@ -159,6 +159,7 @@ void Flasher::SetDefaults(bool fromMouseClick)
        m_d.m_fDisplayTexture = false;
 
    m_d.m_imagealignment = fromMouseClick ? (RampImageAlignment)GetRegIntWithDefault("DefaultProps\\Flasher","ImageMode", ImageModeWrap) : ImageModeWrap;
+   m_d.m_filter = fromMouseClick ? (Filters)GetRegIntWithDefault("DefaultProps\\Flasher","Filter", Filter_None) : Filter_None;
 }
 
 void Flasher::WriteRegDefaults()
@@ -176,6 +177,7 @@ void Flasher::WriteRegDefaults()
    SetRegValueBool("DefaultProps\\Flasher","AddBlend",m_d.m_fAddBlend);
    SetRegValueBool("DefaultProps\\Flasher","DisplayTexture",m_d.m_fDisplayTexture);
    SetRegValue("DefaultProps\\Flasher","ImageMode",REG_DWORD,&m_d.m_imagealignment,4);
+   SetRegValue("DefaultProps\\Flasher","Filter",REG_DWORD,&m_d.m_filter,4);
 }
 
 void Flasher::PreRender(Sur * const psur)
@@ -607,7 +609,7 @@ HRESULT Flasher::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
    bw.WriteBool(FID(DSPT), m_d.m_fDisplayTexture);
    bw.WriteFloat(FID(FLDB), m_d.m_depthBias);
    bw.WriteInt(FID(ALGN), m_d.m_imagealignment);
-   
+   bw.WriteInt(FID(FILT), m_d.m_filter);   
    ISelect::SaveData(pstm, hcrypthash, hcryptkey);
    HRESULT hr;
    if(FAILED(hr = SavePointData(pstm, hcrypthash, hcryptkey)))
@@ -715,6 +717,10 @@ BOOL Flasher::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(ALGN))
    {
       pbr->GetInt(&m_d.m_imagealignment);
+   }
+   else if (id == FID(FILT))
+   {
+      pbr->GetInt(&m_d.m_filter);
    }
    else
    {
@@ -948,6 +954,24 @@ STDMETHODIMP Flasher::put_Image(BSTR newVal)
 
 	   STOPUNDO
    }
+
+   return S_OK;
+}
+
+STDMETHODIMP Flasher::get_Filter(Filters *pVal)
+{
+   *pVal = m_d.m_filter;
+
+   return S_OK;
+}
+
+STDMETHODIMP Flasher::put_Filter(Filters newVal)
+{
+   STARTUNDO
+
+      m_d.m_filter = newVal;
+      dynamicVertexBufferRegenerate=true;
+   STOPUNDO
 
    return S_OK;
 }

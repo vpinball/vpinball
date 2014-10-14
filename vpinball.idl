@@ -42,6 +42,17 @@ typedef [uuid(0C49D03B-76F1-47be-A139-B1A4AFB17A37)]
 		}
 		LightState;
 
+typedef [uuid(7AB6EE50-539C-11E4-916C-0800200C9A66)]
+	enum Filters
+		{
+		Filter_None = 0,
+		Filter_Additive = 1,
+		Filter_Multiply = 2,
+		Filter_Overlay = 3,
+		Filter_Screen = 3,
+		}
+		Filters;
+
 typedef [uuid(CF09B5B7-2DD1-4ba3-ADE7-2F08AB27FCA0)]
 	enum ImageAlignment
 		{
@@ -1753,6 +1764,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 
 		[propget, id(397), helpstring("property DepthBias")] HRESULT DepthBias([out, retval] float *pVal);
 		[propput, id(397), helpstring("property DepthBias")] HRESULT DepthBias([in] float newVal);
+		[propget, id(32996), helpstring("property Filter")] HRESULT Filter([out, retval] Filters *pVal);
+		[propput, id(32996), helpstring("property Filter")] HRESULT Filter([in] Filters newVal);
 	};
 
 	/////////////////////////////////////////////
