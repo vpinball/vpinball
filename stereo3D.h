@@ -80,7 +80,7 @@ static const char stereo3Dshader[] = \
 "const float sinTheta = sqrt(1.0 - cosTheta * cosTheta);"
 "return float3(cos(phi) * sinTheta, cosTheta, sin(phi) * sinTheta);"
 "}"
-"float3 rotate_to_vector(float3 vec, float3 normal)"
+"float3 rotate_to_vector_upper(float3 vec, float3 normal)"
 "{"
 "if(normal.y > -0.99999)"
 "{"
@@ -113,7 +113,7 @@ static const char stereo3Dshader[] = \
 "for(int i=0; i < samples; ++i) {"
 "const float2 r = float2(i*(1.0 / samples), i*(2.0 / samples));" //1,5,2,8,13,7 korobov,fibonacci //!! could also use progressive/extensible lattice via rad_inv(i)*(1501825329, 359975893) (check precision though as this should be done in double or uint64)
 //"const float3 ray = sphere_sample(frac(r+ushift));" // shift lattice // uniform variant
-"const float2 ray = rotate_to_vector(cos_hemisphere_sample(frac(r+ushift)), normal).xy;" // shift lattice
+"const float2 ray = rotate_to_vector_upper(cos_hemisphere_sample(frac(r+ushift)), normal).xy;" // shift lattice
 //"const float rdotn = dot(ray,normal);"
 "const float2 hemi_ray = u + (radius_depth /** sign(rdotn) for uniform*/) * ray.xy;"
 "const float occ_depth = tex2D(depth, hemi_ray).x;"

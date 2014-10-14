@@ -127,7 +127,7 @@ void EnvmapPrecalc(const DWORD* const __restrict envmap, const DWORD env_xres, c
 					l = -l;
 				}
 #else
-				const Vertex3Ds l = rotate_to_vector(cos_hemisphere_sample((float)s*(float)(1.0/num_samples), radical_inverse(s)), n); // QMC hammersley point set
+				const Vertex3Ds l = rotate_to_vector_upper(cos_hemisphere_sample((float)s*(float)(1.0/num_samples), radical_inverse(s)), n); // QMC hammersley point set
 #endif
 				// trafo from light direction to envmap
 				const float u = atan2f(l.y, l.x) * (float)(0.5/M_PI) + 0.5f;
