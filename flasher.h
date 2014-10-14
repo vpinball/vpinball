@@ -20,7 +20,6 @@ public:
    bool m_fDisplayTexture;
    RampImageAlignment m_imagealignment;
 	bool m_IsVisible;
-	bool m_fAddBlend;
 	char m_szImage[MAXTOKEN];
    Filters m_filter;
 };
@@ -103,11 +102,9 @@ END_CONNECTION_POINT_MAP()
 	FlasherData m_d;
    int numVertices, numPolys;
    float minx,maxx,miny,maxy;
-   Vertex3D_NoLighting *vertices;
+   Vertex3D_TexelOnly *vertices;
    
 	VertexBuffer *dynamicVertexBuffer;
-    Material solidMaterial;
-    Material textureMaterial;
 	bool dynamicVertexBufferRegenerate;
 
 // IFlasher
@@ -128,15 +125,13 @@ public:
     STDMETHOD(put_RotY)(/*[in]*/ float newVal);
     STDMETHOD(get_RotZ)(/*[out, retval]*/ float *pVal);
     STDMETHOD(put_RotZ)(/*[in]*/ float newVal);
-	STDMETHOD(get_Alpha)(/*[out, retval]*/ long *pVal);
-	STDMETHOD(put_Alpha)(/*[in]*/ long newVal);
+	 STDMETHOD(get_Alpha)(/*[out, retval]*/ long *pVal);
+	 STDMETHOD(put_Alpha)(/*[in]*/ long newVal);
     STDMETHOD(get_Visible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
     STDMETHOD(put_Visible)(/*[in]*/ VARIANT_BOOL newVal);
     STDMETHOD(get_DisplayTexture)(/*[out, retval]*/ VARIANT_BOOL *pVal);
     STDMETHOD(put_DisplayTexture)(/*[in]*/ VARIANT_BOOL newVal);
 
-	STDMETHOD(get_AddBlend)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-    STDMETHOD(put_AddBlend)(/*[in]*/ VARIANT_BOOL newVal);
     STDMETHOD(get_DepthBias)(/*[out, retval]*/ float *pVal);
     STDMETHOD(put_DepthBias)(/*[in]*/ float newVal);
     STDMETHOD(get_ImageAlignment)(/*[out, retval]*/ RampImageAlignment *pVal);
