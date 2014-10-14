@@ -1,4 +1,5 @@
-float4x4 matWorldViewProj   : WORLDVIEWPROJ;
+#include "Globals.fxh"
+
 float4x4 matWorld           : WORLD;
 float4   diffuseMaterial    = float4(1,1,1,1);
 float4   lightCenter;
@@ -6,15 +7,6 @@ float    maxRange;
 float    intensity=1.0f;
 float4   camera;
 float4 ambient = float4( 0.1f, 0.0, 0.0, 1.0f );
-
-texture OffTexture;
-sampler2D texSampler0 : TEXUNIT0 = sampler_state
-{
-	Texture	  = (OffTexture);
-    MIPFILTER = LINEAR;
-    MAGFILTER = LINEAR;
-    MINFILTER = LINEAR;
-};
 
 struct vin
 { 
@@ -46,38 +38,6 @@ vout VS( in vin IN )
 	OUT.normal = normalize( mul(IN.normal, matWorld) );
 	OUT.viewDir = camera-worldPos;
 	return OUT;
-}
-float4 Screen (float4 cBase, float4 cBlend)
-{
-	return (1.0f - (1.0f - cBase) * (1.0f - cBlend));
-}
-float4 Multiply (float4 cBase, float4 cBlend)
-{
-	return (cBase * cBlend);
-}
-float4 Overlay (float4 cBase, float4 cBlend)
-{
-	// Vectorized (easier for compiler)
-	float4 cNew;
-	
-	// overlay has two output possbilities
-	// which is taken is decided if pixel value
-	// is below half or not
-
-	cNew = step(0.5f,cBase);
-	
-	// we pick either solution
-	// depending on pixel
-	
-	// first is case of < 0.5
-	// second is case for >= 0.5
-	
-	// interpolate between the two, 
-	// using color as influence value
-	cNew= lerp((cBase*cBlend*2.0f),(1.0f-(2.0f*(1.0f-cBase)*(1.0f-cBlend))),cNew);
-
-	cNew.a = 1.0f;
-	return cNew;
 }
 //PIXEL SHADER
 float4 PS_WithTexel(in vout IN ) : COLOR

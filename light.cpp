@@ -525,7 +525,7 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
         if ((offTexel = m_ptable->GetImage(m_d.m_szOffImage)) != NULL)
         {
             m_pInsertShader->Core()->SetTechnique("BasicLightWithTexture");
-            m_pInsertShader->SetTexture("OffTexture", offTexel );
+            m_pInsertShader->SetTexture("Texture0", offTexel );
         }
         else
         {
