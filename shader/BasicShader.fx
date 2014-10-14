@@ -66,10 +66,42 @@ float4 ps_main_texture( in VS_OUTPUT IN) : COLOR
    return result;
 }
 
-float4 ps_main_texture_no_lighting( in VS_OUTPUT IN) : COLOR
-{
-   return tex2D(texSampler0, IN.tex0);
+// ****** simple shader for rendering without lighting *******
+float4 staticColor=float4(1,1,1,1);
+float  fAlpha=1.0f;
+struct VS_SIMPLE_OUTPUT 
+{ 
+   float4 pos           : POSITION; 
+   float2 tex0          : TEXCOORD0; 
+};
+
+VS_SIMPLE_OUTPUT vs_simple_main (float4 vPosition  : POSITION0,  
+                                 float2 tc         : TEXCOORD0)
+{ 
+   VS_SIMPLE_OUTPUT Out;
+
+   Out.pos = mul(vPosition, matWorldViewProj);
+   Out.tex0 = tc;
+   
+   return Out; 
 }
+
+float4 ps_main_texture_noLight( in VS_SIMPLE_OUTPUT IN) : COLOR
+{
+   float4 pixel = tex2D(texSampler0, IN.tex0);
+   if (bPerformAlphaTest && pixel.a<=fAlphaTestValue )
+    clip(-1);           //stop the pixel shader if alpha test should reject pixel
+
+   float4 result = staticColor*pixel;
+   result.a *= fAlpha;
+   return result;
+}
+
+float4 ps_main_noLight( in VS_SIMPLE_OUTPUT IN) : COLOR
+{
+   return staticColor;
+}
+
 
 //------------------------------------
 // Techniques
@@ -95,12 +127,19 @@ technique basic_with_texture
 }
 
 
-technique basic_with_texture_no_lighting
+technique basic_with_texture_noLight
 { 
    pass P0 
    { 
-      //SPECULARENABLE = (bSpecular);
-      VertexShader = compile vs_3_0 vs_main(); 
-	  PixelShader = compile ps_3_0 ps_main_texture_no_lighting();
+     VertexShader = compile vs_3_0 vs_simple_main(); 
+	  PixelShader = compile ps_3_0 ps_main_texture_noLight();
+   } 
+}
+technique basic_with_noLight
+{ 
+   pass P0 
+   { 
+     VertexShader = compile vs_3_0 vs_simple_main(); 
+	  PixelShader = compile ps_3_0 ps_main_noLight();
    } 
 }

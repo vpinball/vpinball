@@ -47,9 +47,7 @@ typedef [uuid(7AB6EE50-539C-11E4-916C-0800200C9A66)]
 		{
 		Filter_None = 0,
 		Filter_Additive = 1,
-		Filter_Multiply = 2,
-		Filter_Overlay = 3,
-		Filter_Screen = 3,
+		Filter_Overlay = 2,
 		}
 		Filters;
 
@@ -1758,9 +1756,6 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 
 		[propget, id(112), helpstring("property Visible")] HRESULT Visible([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(112), helpstring("property Visible")] HRESULT Visible([in] VARIANT_BOOL newVal);
-
-		[propget, id(556), helpstring("property AddBlend")] HRESULT AddBlend([out, retval] VARIANT_BOOL *pVal);
-		[propput, id(556), helpstring("property AddBlend")] HRESULT AddBlend([in] VARIANT_BOOL newVal);
 
 		[propget, id(397), helpstring("property DepthBias")] HRESULT DepthBias([out, retval] float *pVal);
 		[propput, id(397), helpstring("property DepthBias")] HRESULT DepthBias([in] float newVal);

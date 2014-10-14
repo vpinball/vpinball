@@ -170,6 +170,20 @@ public:
    D3DVALUE tv;
 };
 
+class Vertex3D_TexelOnly // for rendering, uses MY_D3DFVF_NOLIGHTING_VERTEX
+{
+public:
+   // Position
+   D3DVALUE x; 
+   D3DVALUE y; 
+   D3DVALUE z;
+
+   // Texture coordinates
+   D3DVALUE tu;
+   D3DVALUE tv;
+};
+
+
 // NB: this struct MUST NOT BE CHANGED as the Primitive class uses it for file I/O...
 class Vertex3D_NoTex2 // for rendering, uses MY_D3DFVF_NOTEX2_VERTEX or MY_D3DTRANSFORMED_NOTEX2_VERTEX
 {
