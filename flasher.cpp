@@ -2,6 +2,7 @@
 
 Flasher::Flasher()
 {
+   m_menuid = IDR_SURFACEMENU;
    m_d.m_IsVisible = true;
    m_d.m_depthBias = 0.0f;
    dynamicVertexBuffer = 0;
@@ -16,6 +17,50 @@ Flasher::~Flasher()
 	}
 }
 
+void Flasher::InitShape()
+{
+   if ( m_vdpoint.Size() == 0 )
+   {
+      // First time shape has been set to custom - set up some points
+      const float x = m_d.m_vCenter.x;
+      const float y = m_d.m_vCenter.y;
+
+      CComObject<DragPoint> *pdp;
+      CComObject<DragPoint>::CreateInstance(&pdp);
+      if (pdp)
+      {
+         pdp->AddRef();
+         pdp->Init(this, x-m_d.m_sizeX*0.5f, y-m_d.m_sizeY*0.5f);
+         pdp->m_fSmooth = FALSE;
+         m_vdpoint.AddElement(pdp);
+      }
+      CComObject<DragPoint>::CreateInstance(&pdp);
+      if (pdp)
+      {
+         pdp->AddRef();
+         pdp->Init(this, x-m_d.m_sizeX*0.5f, y+m_d.m_sizeY*0.5f);
+         pdp->m_fSmooth = FALSE;
+         m_vdpoint.AddElement(pdp);
+      }
+      CComObject<DragPoint>::CreateInstance(&pdp);
+      if (pdp)
+      {
+         pdp->AddRef();
+         pdp->Init(this, x+m_d.m_sizeX*0.5f, y+m_d.m_sizeY*0.5f);
+         pdp->m_fSmooth = FALSE;
+         m_vdpoint.AddElement(pdp);
+      }
+      CComObject<DragPoint>::CreateInstance(&pdp);
+      if (pdp)
+      {
+         pdp->AddRef();
+         pdp->Init(this, x+m_d.m_sizeX*0.5f, y-m_d.m_sizeY*0.5f);
+         pdp->m_fSmooth = FALSE;
+         m_vdpoint.AddElement(pdp);
+      }
+   }
+}
+
 HRESULT Flasher::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 {
    m_ptable = ptable;
@@ -28,6 +73,8 @@ HRESULT Flasher::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
    m_d.m_rotY=0.0f;
    m_d.m_rotZ=0.0f;
    SetDefaults(fromMouseClick);
+
+   InitShape();
 
    InitVBA(fTrue, 0, NULL);
 
@@ -144,109 +191,83 @@ void Flasher::WriteRegDefaults()
 
 void Flasher::PreRender(Sur * const psur)
 {
-   //make 1 wire ramps look unique in editor - uses ramp color
-   psur->SetFillColor(m_ptable->RenderSolid() ? m_d.m_color : -1);
-   psur->SetBorderColor(-1,false,0);
+   if ( m_vdpoint.Size() == 0 )
+   InitShape();
+
+   psur->SetFillColor(m_ptable->RenderSolid() ? RGB(192,192,192) : -1);
    psur->SetObject(this);
+   // Don't want border color to be over-ridden when selected - that will be drawn later
+   psur->SetBorderColor(-1,false,0);
 
-   const float halfwidth = m_d.m_sizeX * 0.5f;
-   const float halfheight = m_d.m_sizeY * 0.5f;
-
-   const float radangle = ANGTORAD(m_d.m_rotZ);
-   const float sn = sinf(radangle);
-   const float cs = cosf(radangle);
-   float minx=FLT_MAX;
-   float miny=FLT_MAX;
-   float maxx=-FLT_MAX;
-   float maxy=-FLT_MAX;
-
-   const Vertex2D rgv[4] = 
-   {
-      Vertex2D(m_d.m_vCenter.x + sn*halfheight - cs*halfwidth,
-      m_d.m_vCenter.y - cs*halfheight - sn*halfwidth),
-
-      Vertex2D(m_d.m_vCenter.x + sn*halfheight + cs*halfwidth,
-      m_d.m_vCenter.y - cs*halfheight + sn*halfwidth),
-
-      Vertex2D(m_d.m_vCenter.x - sn*halfheight + cs*halfwidth,
-      m_d.m_vCenter.y + cs*halfheight + sn*halfwidth),
-
-      Vertex2D(m_d.m_vCenter.x - sn*halfheight - cs*halfwidth,
-      m_d.m_vCenter.y + cs*halfheight - sn*halfwidth)
-   };
+   Vector<RenderVertex> vvertex;
+   GetRgVertex(&vvertex);
    Texture *ppi;
-   if (m_d.m_fDisplayTexture && (ppi = m_ptable->GetImage(m_d.m_szImage)))
+   if (m_ptable->RenderSolid() && m_d.m_fDisplayTexture && (ppi = m_ptable->GetImage(m_d.m_szImage)))
    {
-      for( int i=0;i<4;i++ )
-      {
-         if( rgv[i].x<minx) minx=rgv[i].x;
-         if( rgv[i].x>maxx) maxx=rgv[i].x;
-         if( rgv[i].y<miny) miny=rgv[i].y;
-         if( rgv[i].y>maxy) maxy=rgv[i].y;
-      }
-
-      Vector<RenderVertex> verts;
-      RenderVertex * const v1 = new RenderVertex;
-      v1->x = rgv[0].x; v1->y = rgv[0].y; 
-      verts.AddElement(v1);
-      RenderVertex * const v2 = new RenderVertex;
-      v2->x = rgv[1].x; v2->y = rgv[1].y; 
-      verts.AddElement(v2);
-      RenderVertex * const v3 = new RenderVertex;
-      v3->x = rgv[2].x; v3->y = rgv[2].y; 
-      verts.AddElement(v3);
-      RenderVertex * const v4 = new RenderVertex;
-      v4->x = rgv[3].x; v4->y = rgv[3].y; 
-      verts.AddElement(v4);
       ppi->EnsureHBitmap();
       if (ppi->m_hbmGDIVersion)
-         psur->PolygonImage(verts, ppi->m_hbmGDIVersion, minx, miny, minx+(maxx-minx), miny+(maxy-miny), ppi->m_width, ppi->m_height);
-      //psur->PolygonImage(verts, ppi->m_hbmGDIVersion, m_ptable->m_left, m_ptable->m_top, m_ptable->m_right, m_ptable->m_bottom, ppi->m_width, ppi->m_height);
+         psur->PolygonImage(vvertex, ppi->m_hbmGDIVersion, m_ptable->m_left, m_ptable->m_top, m_ptable->m_right, m_ptable->m_bottom, ppi->m_width, ppi->m_height);
       else
       {
          // Do nothing for now to indicate to user that there is a problem
       }
-      for( int i=0;i<verts.Size();i++) 
-         delete(verts.ElementAt(i));
    }
    else
-      psur->Polygon(rgv, 4);
+      psur->Polygon(vvertex);
 
+   for (int i=0;i<vvertex.Size();i++) //!! keep for render()
+      delete vvertex.ElementAt(i);
 }
 
 void Flasher::Render(Sur * const psur)
 {
-   psur->SetBorderColor(RGB(0,0,0),false,0);
-   psur->SetLineColor(RGB(0,0,0),false,0);
    psur->SetFillColor(-1);
-   psur->SetObject(this);
+   psur->SetBorderColor(RGB(0,0,0),false,0);
+   psur->SetObject(this); // For selected formatting
    psur->SetObject(NULL);
 
-   const float halfwidth = m_d.m_sizeX * 0.5f;
-   const float halfheight = m_d.m_sizeY * 0.5f;
+   Vector<RenderVertex> vvertex; //!! check/reuse from prerender
+   GetRgVertex(&vvertex);
 
-   const float radangle = ANGTORAD(m_d.m_rotZ);
-   const float sn = sinf(radangle);
-   const float cs = cosf(radangle);
+   psur->Polygon(vvertex);
 
-   const Vertex2D rgv[4] = 
+   for (int i=0;i<vvertex.Size();i++)
+      delete vvertex.ElementAt(i);
+
+   // if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
+   bool fDrawDragpoints = ( (m_selectstate != eNotSelected) || g_pvp->m_fAlwaysDrawDragPoints );
+
+   if (!fDrawDragpoints)
    {
-      Vertex2D(m_d.m_vCenter.x + sn*halfheight - cs*halfwidth,
-      m_d.m_vCenter.y - cs*halfheight - sn*halfwidth),
+      // if any of the dragpoints of this object are selected then draw all the dragpoints
+      for (int i=0;i<m_vdpoint.Size();i++)
+      {
+         const CComObject<DragPoint> * const pdp = m_vdpoint.ElementAt(i);
+         if (pdp->m_selectstate != eNotSelected)
+         {
+            fDrawDragpoints = true;
+            break;
+         }
+      }
+   }
+   for (int i=0;i<m_vdpoint.Size();i++)
+   {
+      CComObject<DragPoint> * const pdp = m_vdpoint.ElementAt(i);
+      psur->SetFillColor(-1);
+      psur->SetBorderColor(RGB(255,0,0),false,0);
 
-      Vertex2D(m_d.m_vCenter.x + sn*halfheight + cs*halfwidth,
-      m_d.m_vCenter.y - cs*halfheight + sn*halfwidth),
-
-      Vertex2D(m_d.m_vCenter.x - sn*halfheight + cs*halfwidth,
-      m_d.m_vCenter.y + cs*halfheight + sn*halfwidth),
-
-      Vertex2D(m_d.m_vCenter.x - sn*halfheight - cs*halfwidth,
-      m_d.m_vCenter.y + cs*halfheight - sn*halfwidth)
-   };
-
-      psur->Polygon(rgv, 4);
-
+      if (pdp->m_fDragging)
+      {
+         psur->SetBorderColor(RGB(0,255,0),false,0);
+      }
+      if (fDrawDragpoints)
+      {
+         psur->SetObject(pdp);
+         psur->Ellipse2(pdp->m_v.x, pdp->m_v.y, 8);
+      }
+   }
 }
+
 
 void Flasher::RenderBlueprint(Sur *psur)
 {
@@ -286,45 +307,155 @@ void Flasher::EndPlay()
 		dynamicVertexBuffer = 0;
 		dynamicVertexBufferRegenerate = true;
 	}
+   if( vertices )
+   {
+      delete[] vertices;
+      vertices=0;
+   }
+}
+
+void Flasher::UpdateMesh()
+{
+   Vertex3D_NoLighting *buf;
+   dynamicVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
+   Vertex3D_NoLighting verts[3];
+
+   const float height = m_d.m_height*m_ptable->m_zScale;
+   const float movx=minx+((maxx-minx)*0.5f);
+   const float movy=miny+((maxy-miny)*0.5f);
+
+   int offset=0;
+   for (int i=0;i<numPolys;i++, offset+=3)
+   {
+      Matrix3D tempMatrix,RTmatrix,TMatrix,T2Matrix;
+      RTmatrix.SetIdentity();
+      TMatrix.SetIdentity();
+      T2Matrix.SetIdentity();
+      T2Matrix._41 = -movx;//-m_d.m_vCenter.x;
+      T2Matrix._42 = -movy;//-m_d.m_vCenter.y;
+      T2Matrix._43 = 0;
+      TMatrix._41 = movx;//m_d.m_vCenter.x;
+      TMatrix._42 = movy;//m_d.m_vCenter.y;
+      TMatrix._43 = height;
+
+      tempMatrix.SetIdentity();
+      tempMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotZ));
+      tempMatrix.Multiply(RTmatrix, RTmatrix);
+      tempMatrix.RotateYMatrix(ANGTORAD(m_d.m_rotY));
+      tempMatrix.Multiply(RTmatrix, RTmatrix);
+      tempMatrix.RotateXMatrix(ANGTORAD(m_d.m_rotX));
+      tempMatrix.Multiply(RTmatrix, RTmatrix);
+      for( int i=0;i<3;i++ )
+      {      
+         memcpy( &verts[i], &vertices[offset+i], sizeof(Vertex3D_NoLighting));
+         T2Matrix.MultiplyVector(verts[i], verts[i]);
+         RTmatrix.MultiplyVector(verts[i], verts[i]);
+         TMatrix.MultiplyVector(verts[i], verts[i]);
+      }
+      memcpy( &buf[offset], verts, sizeof(Vertex3D_NoLighting)*3 );
+   }
+
+   dynamicVertexBuffer->unlock();
 }
 
 void Flasher::RenderSetup(RenderDevice* pd3dDevice)
 {
-   pd3dDevice->CreateVertexBuffer(4, 0, MY_D3DFVF_NOLIGHTING_VERTEX, &dynamicVertexBuffer);
-   NumVideoBytes += 4*sizeof(Vertex3D_NoLighting);     
-   solidMaterial.setColor( 1.0f, m_d.m_color );
+   Vector<RenderVertex> vvertex;
+   GetRgVertex(&vvertex);
 
-   const float halfwidth = m_d.m_sizeX*0.5f;
-   const float halfheight = m_d.m_sizeY*0.5f;
-   const float height = m_d.m_height*m_ptable->m_zScale;
+   numVertices = vvertex.Size();
 
-   vertices[0].x = m_d.m_vCenter.x - halfwidth;
-   vertices[0].y = m_d.m_vCenter.y - halfheight;
-   vertices[0].z = height;
-   vertices[0].color = m_d.m_color;
-   vertices[0].tu = 0;
-   vertices[0].tv = 0;
+   VectorVoid vpoly;
 
-   vertices[1].x = m_d.m_vCenter.x + halfwidth;
-   vertices[1].y = m_d.m_vCenter.y - halfheight;
-   vertices[1].z = height;
-   vertices[1].color = m_d.m_color;
-   vertices[1].tu = 1.0f;
-   vertices[1].tv = 0;
+   for (int i=0;i<numVertices;i++)
+      vpoly.AddElement((void *)i);
 
-   vertices[2].x = m_d.m_vCenter.x + halfwidth;
-   vertices[2].y = m_d.m_vCenter.y + halfheight;
-   vertices[2].z = height;
-   vertices[2].color = m_d.m_color;
-   vertices[2].tu = 1.0f;
-   vertices[2].tv = 1.0f;
+   Vector<Triangle> vtri;
+   PolygonToTriangles(vvertex, &vpoly, &vtri);
 
-   vertices[3].x = m_d.m_vCenter.x - halfwidth;
-   vertices[3].y = m_d.m_vCenter.y + halfheight;
-   vertices[3].z = height;
-   vertices[3].color = m_d.m_color;
-   vertices[3].tu = 0;
-   vertices[3].tv = 1.0f;
+   numPolys = vtri.Size();
+   if( numPolys==0 )
+   {         
+      for (int i=0;i<numVertices;i++)
+         delete vvertex.ElementAt(i);
+
+      // no polys to render leave vertex buffer undefined 
+      return;
+   }
+   const float inv_tablewidth = 1.0f/(m_ptable->m_right - m_ptable->m_left);
+   const float inv_tableheight = 1.0f/(m_ptable->m_bottom - m_ptable->m_top);
+
+
+   if( dynamicVertexBuffer )
+      dynamicVertexBuffer->release();
+
+   pd3dDevice->CreateVertexBuffer( numPolys*3, 0, MY_D3DFVF_NOLIGHTING_VERTEX, &dynamicVertexBuffer );
+   NumVideoBytes += numPolys*3*sizeof(Vertex3D_NoLighting);     
+   
+   vertices = new Vertex3D_NoLighting[numPolys*3];
+
+   Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+   Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
+
+   float inv_imageWith=0.0f;
+   float inv_imageHeight=0.0f;
+   if ( pin )
+   {
+      inv_imageWith = 1.0f / pin->m_width;
+      inv_imageHeight = 1.0f / pin->m_height;
+   }
+   minx=20000000000.0f;
+   miny=20000000000.0f;
+   maxx=-20000000000.0f;;
+   maxy=-20000000000.0f;;
+   int offset=0;
+   for (int i=0;i<numPolys;i++, offset+=3)
+   {
+      const Triangle * const ptri = vtri.ElementAt(i);
+
+      const RenderVertex * const pv0 = vvertex.ElementAt(ptri->a);
+      const RenderVertex * const pv1 = vvertex.ElementAt(ptri->b);
+      const RenderVertex * const pv2 = vvertex.ElementAt(ptri->c);
+
+      {
+         vertices[offset  ].x=pv0->x;   vertices[offset  ].y=pv0->y;   vertices[offset  ].z=0;
+         if( pv0->x>maxx ) maxx=pv0->x; if( pv0->x<minx ) minx=pv0->x;
+         if( pv0->y>maxy ) maxy=pv0->y; if( pv0->y<miny ) miny=pv0->y;
+         
+         vertices[offset+2].x=pv1->x;   vertices[offset+2].y=pv1->y;   vertices[offset+2].z=0;
+         if( pv1->x>maxx ) maxx=pv1->x; if( pv1->x<minx ) minx=pv1->x;
+         if( pv1->y>maxy ) maxy=pv1->y; if( pv1->y<miny ) miny=pv1->y;
+
+         vertices[offset+1].x=pv2->x;   vertices[offset+1].y=pv2->y;   vertices[offset+1].z=0;
+         if( pv2->x>maxx ) maxx=pv2->x; if( pv2->x<minx ) minx=pv2->x;
+         if( pv2->y>maxy ) maxy=pv2->y; if( pv2->y<miny ) miny=pv2->y;
+/*
+         vertices[offset  ].tu = vertices[offset  ].x *inv_tablewidth;
+         vertices[offset  ].tv = vertices[offset  ].y *inv_tableheight;
+         vertices[offset+1].tu = vertices[offset+1].x *inv_tablewidth;
+         vertices[offset+1].tv = vertices[offset+1].y *inv_tableheight;
+         vertices[offset+2].tu = vertices[offset+2].x *inv_tablewidth;
+         vertices[offset+2].tv = vertices[offset+2].y *inv_tableheight;
+*/
+
+         vertices[offset  ].color = m_d.m_color;
+         vertices[offset+1].color = m_d.m_color;
+         vertices[offset+2].color = m_d.m_color;
+
+      }
+      delete vtri.ElementAt(i);
+   }
+
+   float width = maxx-minx;
+   float height = maxy-miny;
+   for( int i=0;i<numPolys*3;i++)
+   {
+      vertices[i].tu = (vertices[i].x-minx)/width;
+      vertices[i].tv = (vertices[i].y-miny)/height;
+   }
+   for (int i=0;i<numVertices;i++)
+      delete vvertex.ElementAt(i);
+
 }
 
 void Flasher::RenderStatic(RenderDevice* pd3dDevice)
@@ -336,12 +467,123 @@ void Flasher::SetObjectPos()
    g_pvp->SetObjectPosCur(0, 0);
 }
 
+void Flasher::FlipY(Vertex2D * const pvCenter)
+{
+   IHaveDragPoints::FlipPointY(pvCenter);
+}
+
+void Flasher::FlipX(Vertex2D * const pvCenter)
+{
+   IHaveDragPoints::FlipPointX(pvCenter);
+}
+
+void Flasher::Rotate(float ang, Vertex2D *pvCenter)
+{
+   IHaveDragPoints::RotatePoints(ang, pvCenter);
+}
+
+void Flasher::Scale(float scalex, float scaley, Vertex2D *pvCenter)
+{
+   IHaveDragPoints::ScalePoints(scalex, scaley, pvCenter);
+}
+
+void Flasher::Translate(Vertex2D *pvOffset)
+{
+   IHaveDragPoints::TranslatePoints(pvOffset);
+}
+
 void Flasher::MoveOffset(const float dx, const float dy)
 {
    m_d.m_vCenter.x += dx;
    m_d.m_vCenter.y += dy;
+   for (int i=0;i<m_vdpoint.Size();i++)
+   {
+      CComObject<DragPoint> * const pdp = m_vdpoint.ElementAt(i);
+
+      pdp->m_v.x += dx;
+      pdp->m_v.y += dy;
+   }
 
    m_ptable->SetDirtyDraw();
+}
+
+void Flasher::DoCommand(int icmd, int x, int y)
+{
+   ISelect::DoCommand(icmd, x, y);
+
+   switch (icmd)
+   {
+   case ID_WALLMENU_FLIP:
+      {
+         Vertex2D vCenter;
+         GetPointCenter(&vCenter);
+         FlipPointY(&vCenter);
+      }
+      break;
+
+   case ID_WALLMENU_MIRROR:
+      {
+         Vertex2D vCenter;
+         GetPointCenter(&vCenter);
+         FlipPointX(&vCenter);
+      }
+      break;
+
+   case ID_WALLMENU_ROTATE:
+      RotateDialog();
+      break;
+
+   case ID_WALLMENU_SCALE:
+      ScaleDialog();
+      break;
+
+   case ID_WALLMENU_TRANSLATE:
+      TranslateDialog();
+      break;
+
+   case ID_WALLMENU_ADDPOINT:
+      {
+         STARTUNDO
+
+            RECT rc;
+         GetClientRect(m_ptable->m_hwnd, &rc);
+
+         HitSur * const phs = new HitSur(NULL, m_ptable->m_zoom, m_ptable->m_offsetx, m_ptable->m_offsety, rc.right - rc.left, rc.bottom - rc.top, 0, 0, NULL);
+
+         const Vertex2D v = phs->ScreenToSurface(x, y);
+         delete phs;
+
+         Vector<RenderVertex> vvertex;
+         GetRgVertex(&vvertex);
+
+         Vertex2D vOut;
+         int iSeg;
+         ClosestPointOnPolygon(vvertex, v, &vOut, &iSeg, true);
+
+         // Go through vertices (including iSeg itself) counting control points until iSeg
+         int icp = 0;
+         for (int i=0;i<(iSeg+1);i++)
+            if (vvertex.ElementAt(i)->fControlPoint)
+               icp++;
+
+         for (int i=0;i<vvertex.Size();i++)
+            delete vvertex.ElementAt(i);
+
+         CComObject<DragPoint> *pdp;
+         CComObject<DragPoint>::CreateInstance(&pdp);
+         if (pdp)
+         {
+            pdp->AddRef();
+            pdp->Init(this, vOut.x, vOut.y);
+            m_vdpoint.InsertElementAt(pdp, icp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
+         }
+
+         SetDirtyDraw();
+
+         STOPUNDO
+      }
+      break;
+   }
 }
 
 HRESULT Flasher::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
@@ -366,13 +608,22 @@ HRESULT Flasher::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
    bw.WriteBool(FID(ADDB), m_d.m_fAddBlend);
    bw.WriteBool(FID(DSPT), m_d.m_fDisplayTexture);
    bw.WriteFloat(FID(FLDB), m_d.m_depthBias);
-
+   
    ISelect::SaveData(pstm, hcrypthash, hcryptkey);
+   HRESULT hr;
+   if(FAILED(hr = SavePointData(pstm, hcrypthash, hcryptkey)))
+      return hr;
 
    bw.WriteTag(FID(ENDB));
 
    return S_OK;
 }
+
+void Flasher::ClearForOverwrite()
+{
+   ClearPointsForOverwrite();
+}
+
 
 HRESULT Flasher::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
 {
@@ -472,6 +723,7 @@ BOOL Flasher::LoadToken(int id, BiffReader *pbr)
    }
    else
    {
+      LoadPointToken(id, pbr, pbr->m_version);
       ISelect::LoadToken(id, pbr);
    }
    return fTrue;
@@ -711,6 +963,16 @@ void Flasher::GetDialogPanes(Vector<PropertyPane> *pvproppane)
    pvproppane->AddElement(pproppane);
 }
 
+void Flasher::GetPointDialogPanes(Vector<PropertyPane> *pvproppane)
+{
+   PropertyPane *pproppane;
+
+   pproppane = new PropertyPane(IDD_PROPPOINT_VISUALSWTEX, IDS_VISUALS);
+   pvproppane->AddElement(pproppane);
+
+   pproppane = new PropertyPane(IDD_PROPPOINT_POSITION, IDS_POSITION);
+   pvproppane->AddElement(pproppane);
+}
 
 STDMETHODIMP Flasher::get_Image(BSTR *pVal)
 {
@@ -878,71 +1140,7 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
       if(dynamicVertexBufferRegenerate)
       {
          dynamicVertexBufferRegenerate = false;
-
-         Vertex3D_NoLighting *buf;
-         dynamicVertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY);
-
-         const float halfwidth = m_d.m_sizeX*0.5f;
-         const float halfheight = m_d.m_sizeY*0.5f;
-         const float height = m_d.m_height*m_ptable->m_zScale;
-
-         Vertex3D_NoLighting lvertices[4];
-         lvertices[0].x = m_d.m_vCenter.x - halfwidth;
-         lvertices[0].y = m_d.m_vCenter.y - halfheight;
-         lvertices[0].z = height;
-         lvertices[0].color = m_d.m_color;
-         lvertices[0].tu = 0;
-         lvertices[0].tv = 0;
-
-         lvertices[1].x = m_d.m_vCenter.x + halfwidth;
-         lvertices[1].y = m_d.m_vCenter.y - halfheight;
-         lvertices[1].z = height;
-         lvertices[1].color = m_d.m_color;
-         lvertices[1].tu = 1.0f;
-         lvertices[1].tv = 0;
-
-         lvertices[2].x = m_d.m_vCenter.x + halfwidth;
-         lvertices[2].y = m_d.m_vCenter.y + halfheight;
-         lvertices[2].z = height;
-         lvertices[2].color = m_d.m_color;
-         lvertices[2].tu = 1.0f;
-         lvertices[2].tv = 1.0f;
-
-         lvertices[3].x = m_d.m_vCenter.x - halfwidth;
-         lvertices[3].y = m_d.m_vCenter.y + halfheight;
-         lvertices[3].z = height;
-         lvertices[3].color = m_d.m_color;
-         lvertices[3].tu = 0;
-         lvertices[3].tv = 1.0f;
-
-         Matrix3D tempMatrix,RTmatrix,TMatrix,T2Matrix;
-         RTmatrix.SetIdentity();
-         TMatrix.SetIdentity();
-         T2Matrix.SetIdentity();
-         T2Matrix._41 = -m_d.m_vCenter.x;
-         T2Matrix._42 = -m_d.m_vCenter.y;
-         T2Matrix._43 = -height;
-         TMatrix._41 = m_d.m_vCenter.x;
-         TMatrix._42 = m_d.m_vCenter.y;
-         TMatrix._43 = height;
-
-         tempMatrix.SetIdentity();
-         tempMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotZ));
-         tempMatrix.Multiply(RTmatrix, RTmatrix);
-         tempMatrix.RotateYMatrix(ANGTORAD(m_d.m_rotY));
-         tempMatrix.Multiply(RTmatrix, RTmatrix);
-         tempMatrix.RotateXMatrix(ANGTORAD(m_d.m_rotX));
-         tempMatrix.Multiply(RTmatrix, RTmatrix);
-         for( int i=0;i<4;i++ )
-         {      
-            T2Matrix.MultiplyVector(lvertices[i], lvertices[i]);
-            RTmatrix.MultiplyVector(lvertices[i], lvertices[i]);
-            TMatrix.MultiplyVector(lvertices[i], lvertices[i]);
-         }
-
-         memcpy( buf, lvertices, sizeof(Vertex3D_NoLighting)*4 );
-     
-		 dynamicVertexBuffer->unlock();
+         UpdateMesh();
       }
 
       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
@@ -956,7 +1154,7 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
       pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
       pd3dDevice->SetRenderState( RenderDevice::LIGHTING, FALSE );
 
-      pd3dDevice->DrawPrimitiveVB( D3DPT_TRIANGLEFAN, dynamicVertexBuffer, 0, 4 );
+      pd3dDevice->DrawPrimitiveVB( D3DPT_TRIANGLELIST, dynamicVertexBuffer, 0, numPolys*3);
 
       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
       pd3dDevice->SetRenderState( RenderDevice::LIGHTING, TRUE );
