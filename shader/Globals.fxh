@@ -194,3 +194,36 @@ float4 lightLoop(float3 pos, float3 N, float3 V, float3 diffuse, float3 glossy, 
   
    return float4(Gamma(ToneMap(vAmbient + color)), 1.0f); //!! in case of HDR out later on, remove tonemap and gamma //!! also problematic for alpha blends
 }
+
+float4 Screen (float4 cBase, float4 cBlend)
+{
+	return (1.0f - (1.0f - cBase) * (1.0f - cBlend));
+}
+float4 Multiply (float4 cBase, float4 cBlend)
+{
+	return (cBase * cBlend);
+}
+float4 Overlay (float4 cBase, float4 cBlend)
+{
+	// Vectorized (easier for compiler)
+	float4 cNew;
+	
+	// overlay has two output possbilities
+	// which is taken is decided if pixel value
+	// is below half or not
+
+	cNew = step(0.5f,cBase);
+	
+	// we pick either solution
+	// depending on pixel
+	
+	// first is case of < 0.5
+	// second is case for >= 0.5
+	
+	// interpolate between the two, 
+	// using color as influence value
+	cNew= lerp((cBase*cBlend*2.0f),(1.0f-(2.0f*(1.0f-cBase)*(1.0f-cBlend))),cNew);
+
+	cNew.a = 1.0f;
+	return cNew;
+}
