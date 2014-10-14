@@ -272,6 +272,13 @@ RenderDevice::RenderDevice(HWND hwnd, int width, int height, bool fullscreen, in
 	if(m_autogen_mipmap)
 		m_autogen_mipmap = (m_pD3D->CheckDeviceFormat(m_adapter, devtype, params.BackBufferFormat, D3DUSAGE_AUTOGENMIPMAP, D3DRTYPE_TEXTURE, D3DFMT_A8R8G8B8)) == D3D_OK;
 
+	// Determine if RESZ is supported
+	m_RESZ_support = (m_pD3D->CheckDeviceFormat(m_adapter, devtype, params.BackBufferFormat,
+					  D3DUSAGE_RENDERTARGET, D3DRTYPE_SURFACE, ((D3DFORMAT)(MAKEFOURCC('R','E','S','Z'))))) == D3D_OK;
+
+	if(!m_RESZ_support)
+		MessageBox(NULL,"No RESZ","No RESZ",MB_OK); //!! remove again!
+
 	// check if requested MSAA is possible
     DWORD MultiSampleQualityLevels;
     if( !SUCCEEDED(m_pD3D->CheckDeviceMultiSampleType( m_adapter, 
@@ -554,28 +561,72 @@ void RenderDevice::CopySurface(D3DTexture* dest, RenderTarget* src)
 
 void RenderDevice::CopyDepth(D3DTexture* dest, RenderTarget* src)
 {
-	if(!NVAPIinit)
+	if(!m_RESZ_support)
 	{
-		 CHECKNVAPI(NvAPI_Initialize()); //!! meh
-		 NVAPIinit = true;
-	}
-	if(src != src_cache)
-	{
-		if(src_cache != NULL)
-			CHECKNVAPI(NvAPI_D3D9_UnregisterResource(src_cache)); //!! meh
-		CHECKNVAPI(NvAPI_D3D9_RegisterResource(src)); //!! meh
-		src_cache = src;
-	}
-	if(dest != dest_cache)
-	{
-		if(dest_cache != NULL)
-			CHECKNVAPI(NvAPI_D3D9_UnregisterResource(dest_cache)); //!! meh
-		CHECKNVAPI(NvAPI_D3D9_RegisterResource(dest)); //!! meh
-		dest_cache = dest;
-	}
+		if(!NVAPIinit)
+		{
+			 CHECKNVAPI(NvAPI_Initialize()); //!! meh
+			 NVAPIinit = true;
+		}
+		if(src != src_cache)
+		{
+			if(src_cache != NULL)
+				CHECKNVAPI(NvAPI_D3D9_UnregisterResource(src_cache)); //!! meh
+			CHECKNVAPI(NvAPI_D3D9_RegisterResource(src)); //!! meh
+			src_cache = src;
+		}
+		if(dest != dest_cache)
+		{
+			if(dest_cache != NULL)
+				CHECKNVAPI(NvAPI_D3D9_UnregisterResource(dest_cache)); //!! meh
+			CHECKNVAPI(NvAPI_D3D9_RegisterResource(dest)); //!! meh
+			dest_cache = dest;
+		}
 
-	//CHECKNVAPI(NvAPI_D3D9_AliasSurfaceAsTexture(m_pD3DDevice,src,dest,0));
-	CHECKNVAPI(NvAPI_D3D9_StretchRectEx(m_pD3DDevice, src, NULL, dest, NULL, D3DTEXF_NONE));
+		//CHECKNVAPI(NvAPI_D3D9_AliasSurfaceAsTexture(m_pD3DDevice,src,dest,0));
+		CHECKNVAPI(NvAPI_D3D9_StretchRectEx(m_pD3DDevice, src, NULL, dest, NULL, D3DTEXF_NONE));
+	}
+	else
+	{
+#define RESZ_CODE 0x7fa05000
+		IDirect3DSurface9 *pINTZDSTSurface;
+		dest->GetSurfaceLevel(0, &pINTZDSTSurface);
+		// Bind depth buffer
+		m_pD3DDevice->SetDepthStencilSurface(pINTZDSTSurface);
+
+		m_pD3DDevice->BeginScene();
+
+		m_pD3DDevice->SetVertexShader(NULL);
+		m_pD3DDevice->SetPixelShader(NULL);
+		m_pD3DDevice->SetFVF(D3DFVF_XYZ);
+
+		// Bind depth stencil texture to texture sampler 0
+		m_pD3DDevice->SetTexture(0, dest);
+
+		// Perform a dummy draw call to ensure texture sampler 0 is set before the resolve is triggered
+		// Vertex declaration and shaders may need to me adjusted to ensure no debug
+		// error message is produced
+		m_pD3DDevice->SetRenderState(D3DRS_ZENABLE, FALSE);
+		m_pD3DDevice->SetRenderState(D3DRS_ZWRITEENABLE, FALSE);
+		m_pD3DDevice->SetRenderState(D3DRS_COLORWRITEENABLE, 0);
+		D3DXVECTOR3 vDummyPoint(0.0f, 0.0f, 0.0f);
+		m_pD3DDevice->DrawPrimitiveUP(D3DPT_POINTLIST, 1, vDummyPoint, sizeof(D3DXVECTOR3));
+		m_pD3DDevice->SetRenderState(D3DRS_ZWRITEENABLE, TRUE);
+		m_pD3DDevice->SetRenderState(D3DRS_ZENABLE, TRUE);
+		m_pD3DDevice->SetRenderState(D3DRS_COLORWRITEENABLE, 0x0F);
+
+		// Trigger the depth buffer resolve; after this call texture sampler 0
+		// will contain the contents of the resolve operation
+		m_pD3DDevice->SetRenderState(D3DRS_POINTSIZE, RESZ_CODE);
+
+		// This hack to fix resz hack, has been found by Maksym Bezus!!!
+		// Without this line resz will be resolved only for first frame
+		m_pD3DDevice->SetRenderState(D3DRS_POINTSIZE, 0); // TROLOLO!!!
+
+		m_pD3DDevice->EndScene();
+
+		pINTZDSTSurface->Release();
+	}
 }
 
 D3DTexture* RenderDevice::CreateSystemTexture(MemTexture* surf)
