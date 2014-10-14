@@ -194,11 +194,30 @@ void Flasher::PreRender(Sur * const psur)
    if (m_ptable->RenderSolid() && m_d.m_fDisplayTexture && (ppi = m_ptable->GetImage(m_d.m_szImage)))
    {
       ppi->EnsureHBitmap();
-      if (ppi->m_hbmGDIVersion)
-         psur->PolygonImage(vvertex, ppi->m_hbmGDIVersion, m_ptable->m_left, m_ptable->m_top, m_ptable->m_right, m_ptable->m_bottom, ppi->m_width, ppi->m_height);
+      if ( m_d.m_imagealignment == ImageModeWrap )
+      {
+         float minx=FLT_MAX;
+         float miny=FLT_MAX;
+         float maxx=-FLT_MAX;
+         float maxy=-FLT_MAX;
+         for( int i=0;i<vvertex.Size();i++ )
+         {
+            if( vvertex.ElementAt(i)->x<minx) minx=vvertex.ElementAt(i)->x;
+            if( vvertex.ElementAt(i)->x>maxx) maxx=vvertex.ElementAt(i)->x;
+            if( vvertex.ElementAt(i)->y<miny) miny=vvertex.ElementAt(i)->y;
+            if( vvertex.ElementAt(i)->y>maxy) maxy=vvertex.ElementAt(i)->y;
+         }
+         if (ppi->m_hbmGDIVersion)
+            psur->PolygonImage(vvertex, ppi->m_hbmGDIVersion, minx, miny, minx+(maxx-minx), miny+(maxy-miny), ppi->m_width, ppi->m_height);
+      }
       else
       {
-         // Do nothing for now to indicate to user that there is a problem
+         if (ppi->m_hbmGDIVersion)
+            psur->PolygonImage(vvertex, ppi->m_hbmGDIVersion, m_ptable->m_left, m_ptable->m_top, m_ptable->m_right, m_ptable->m_bottom, ppi->m_width, ppi->m_height);
+         else
+         {
+            // Do nothing for now to indicate to user that there is a problem
+         }
       }
    }
    else
@@ -386,10 +405,10 @@ void Flasher::RenderSetup(RenderDevice* pd3dDevice)
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
    Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
 
-   minx=20000000000.0f;
-   miny=20000000000.0f;
-   maxx=-20000000000.0f;;
-   maxy=-20000000000.0f;;
+   minx=FLT_MAX;
+   miny=FLT_MAX;
+   maxx=-FLT_MAX;
+   maxy=-FLT_MAX;
    int offset=0;
    for (int i=0;i<numPolys;i++, offset+=3)
    {
