@@ -290,8 +290,8 @@ inline Vertex3Ds cos_hemisphere_sample(const float u, const float v) // u,v in [
      return Vertex3Ds(cosf(phi) * sinTheta, cosTheta, sinf(phi) * sinTheta);
 }
 
-// rotate vec from world space to local space (defined f.e. by the normal of a surface and its implicit/orthogonal tangents),
-// can be useful for orientating a hemisphere to a normal and the like (only if orientation of tangents can be arbitrary -> e.g. AO, diffuse) (see Moeller/Hughes)
+// rotate vec from world space (y-up) to local space (defined f.e. by the normal of a surface and its implicit/orthogonal tangents),
+// can be useful for orienting a hemisphere to a normal and the like (only if orientation of tangents can be arbitrary -> e.g. AO, diffuse) (see Moeller/Hughes)
 inline Vertex3Ds rotate_to_vector(const Vertex3Ds &vec, const Vertex3Ds &normal)
 {
 	/*const float c = Vertex3Ds(0,1,0).Dot(normal);

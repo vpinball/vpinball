@@ -349,6 +349,7 @@ private:
    bool m_mag_aniso;
 
    bool m_autogen_mipmap;
+   bool m_RESZ_support;
 
    bool m_force_aniso;
 
