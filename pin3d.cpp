@@ -150,13 +150,13 @@ void EnvmapPrecalc(const DWORD* const __restrict envmap, const DWORD env_xres, c
 
 			// average all samples
 #ifndef USE_ENVMAP_PRECALC_COSINE
-			sum[0] *= (float)(1.0/(M_PI*num_samples)); // pre-divides by PI for final radiance/color lookup in shader
-			sum[1] *= (float)(1.0/(M_PI*num_samples)); // pre-divides by PI for final radiance/color lookup in shader
-			sum[2] *= (float)(1.0/(M_PI*num_samples)); // pre-divides by PI for final radiance/color lookup in shader
+			sum[0] *= (float)(2.0/num_samples); // pre-divides by PI for final radiance/color lookup in shader
+			sum[1] *= (float)(2.0/num_samples);
+			sum[2] *= (float)(2.0/num_samples);
 #else
-			sum[0] *= (float)(0.5/(M_PI*num_samples)); // pre-divides by PI for final radiance/color lookup in shader
-			sum[1] *= (float)(0.5/(M_PI*num_samples)); // pre-divides by PI for final radiance/color lookup in shader
-			sum[2] *= (float)(0.5/(M_PI*num_samples)); // pre-divides by PI for final radiance/color lookup in shader
+			sum[0] *= (float)(1.0/num_samples); // pre-divides by PI for final radiance/color lookup in shader
+			sum[1] *= (float)(1.0/num_samples);
+			sum[2] *= (float)(1.0/num_samples);
 #endif
 			sum[0] = powf(sum[0],(float)(1.0/2.2)); //!! remove gamma as soon as HDR
 			sum[1] = powf(sum[1],(float)(1.0/2.2));
