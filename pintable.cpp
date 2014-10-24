@@ -6787,38 +6787,6 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
 
    return var.Detach(pVarOut);
 }
-/*
-
-Material* PinTable::GetSurfaceMaterial( char *szName, float x, float y) 
-{
-   if (szName == NULL || szName[0] == 0)
-      return 0.0f;
-
-   for (int i=0;i<m_vedit.Size();i++)
-   {
-      IEditable *item=m_vedit.ElementAt(i);
-      if (item->GetItemType() == eItemSurface || item->GetItemType() == eItemRamp)
-      {
-         CComBSTR bstr;
-         item->GetScriptable()->get_Name(&bstr);
-         if (!WzSzStrCmp(bstr, szName))
-         {
-            IEditable * const piedit = item;
-            switch (piedit->GetItemType())
-            {
-            case eItemSurface:
-               return ((Surface *)piedit)->m_d.m_heighttop;
-
-            case eItemRamp:
-               return ((Ramp *)piedit)->GetSurfaceHeight(x, y);
-            }
-         }
-      }
-   }
-   return 0;
-
-}
-*/
 
 float PinTable::GetSurfaceHeight(char *szName, float x, float y)
 {
@@ -6847,6 +6815,35 @@ float PinTable::GetSurfaceHeight(char *szName, float x, float y)
       }
    }
    return 0;
+}
+
+Material* PinTable::GetSurfaceMaterial( char *szName, float x, float y)
+{
+    if (szName == NULL || szName[0] == 0)
+        return GetMaterial(m_szPlayfieldMaterial);
+
+    for (int i=0;i<m_vedit.Size();i++)
+    {
+        IEditable *item=m_vedit.ElementAt(i);
+        if (item->GetItemType() == eItemSurface || item->GetItemType() == eItemRamp)
+        {
+            CComBSTR bstr;
+            item->GetScriptable()->get_Name(&bstr);
+            if (!WzSzStrCmp(bstr, szName))
+            {
+                IEditable * const piedit = item;
+                switch (piedit->GetItemType())
+                {
+                case eItemSurface:
+                    return GetMaterial(((Surface *)piedit)->m_d.m_szTopMaterial);
+
+                case eItemRamp:
+                    return GetMaterial(((Ramp *)piedit)->m_d.m_szMaterial);
+                }
+            }
+        }
+    }
+    return GetMaterial(m_szPlayfieldMaterial);
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
