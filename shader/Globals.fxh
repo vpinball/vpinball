@@ -195,20 +195,20 @@ float4 lightLoop(float3 pos, float3 N, float3 V, float3 diffuse, float3 glossy, 
    return float4(Gamma(ToneMap(vAmbient + color)), 1.0f); //!! in case of HDR out later on, remove tonemap and gamma //!! also problematic for alpha blends
 }
 
-float4 Additive(float4 cBase, float4 cBlend)
+float4 Additive(float4 cBase, float4 cBlend, float percent)
 {
-   return (cBase+cBlend);
+   return (cBase+cBlend*percent);
 }
 
-float4 Screen (float4 cBase, float4 cBlend)
+float4 Screen (float4 cBase, float4 cBlend, float percent)
 {
 	return (1.0f - (1.0f - cBase) * (1.0f - cBlend));
 }
-float4 Multiply (float4 cBase, float4 cBlend)
+float4 Multiply (float4 cBase, float4 cBlend, float percent)
 {
-	return (cBase * cBlend);
+	return (cBase * (cBlend*percent));
 }
-float4 Overlay (float4 cBase, float4 cBlend)
+float4 Overlay (float4 cBase, float4 cBlend, float percent)
 {
 	// Vectorized (easier for compiler)
 	float4 cNew;
@@ -227,7 +227,8 @@ float4 Overlay (float4 cBase, float4 cBlend)
 	
 	// interpolate between the two, 
 	// using color as influence value
-	cNew= lerp((cBase*cBlend*2.0f),(1.0f-(2.0f*(1.0f-cBase)*(1.0f-cBlend))),cNew);
+	float4 blend = cBlend;
+	cNew= lerp((cBase*blend*2.0f),(1.0f-(2.0f*(1.0f-cBase)*(1.0f-blend))),cNew);
 
 	cNew.a = 1.0f;
 	return cNew;

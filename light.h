@@ -165,6 +165,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_LIGHT)
 	// Run-time
 private:
     float m_surfaceHeight;
+    Material *surfaceMaterial;
 
 	LightCenter m_lightcenter;
 

@@ -48,6 +48,8 @@ typedef [uuid(7AB6EE50-539C-11E4-916C-0800200C9A66)]
 		Filter_None = 0,
 		Filter_Additive = 1,
 		Filter_Overlay = 2,
+		Filter_Multiply = 3,
+		Filter_Screen = 4,
 		}
 		Filters;
 
@@ -1741,12 +1743,14 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(1), helpstring("property RotZ")] HRESULT RotZ([in] float newVal);
 		[propget, id(2), helpstring("property RotY")] HRESULT RotY([out, retval] float *pVal);
 		[propput, id(2), helpstring("property RotY")] HRESULT RotY([in] float newVal);
-		[propget, id(7), helpstring("property RotX")] HRESULT RotX([out, retval] float *pVal);
-		[propput, id(7), helpstring("property RotX")] HRESULT RotX([in] float newVal);
+		[propget, id(9), helpstring("property RotX")] HRESULT RotX([out, retval] float *pVal);
+		[propput, id(9), helpstring("property RotX")] HRESULT RotX([in] float newVal);
 		[propget, id(11), helpstring("property Color")] HRESULT Color([out, retval] OLE_COLOR *pVal);
 		[propput, id(11), helpstring("property Color")] HRESULT Color([in] OLE_COLOR newVal);
-		[propget, id(DISPID_Image), helpstring("property Image")] HRESULT Image([out, retval] BSTR *pVal);
-		[propput, id(DISPID_Image), helpstring("property Image")] HRESULT Image([in] BSTR newVal);
+		[propget, id(DISPID_Image), helpstring("property ImageA")] HRESULT ImageA([out, retval] BSTR *pVal);
+		[propput, id(DISPID_Image), helpstring("property ImageA")] HRESULT ImageA([in] BSTR newVal);
+		[propget, id(DISPID_Image2), helpstring("property ImageB")] HRESULT ImageB([out, retval] BSTR *pVal);
+		[propput, id(DISPID_Image2), helpstring("property ImageB")] HRESULT ImageB([in] BSTR newVal);
 		[propget, id(13), helpstring("property DisplayTexture")] HRESULT DisplayTexture([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(13), helpstring("property DisplayTexture")] HRESULT DisplayTexture([in] VARIANT_BOOL newVal);
 		[propget, id(377), helpstring("property Alpha")] HRESULT Alpha([out, retval] long *pVal);
@@ -1759,8 +1763,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 
 		[propget, id(397), helpstring("property DepthBias")] HRESULT DepthBias([out, retval] float *pVal);
 		[propput, id(397), helpstring("property DepthBias")] HRESULT DepthBias([in] float newVal);
-		[propget, id(32996), helpstring("property Filter")] HRESULT Filter([out, retval] Filters *pVal);
-		[propput, id(32996), helpstring("property Filter")] HRESULT Filter([in] Filters newVal);
+		[propget, id(7), helpstring("property Filter")] HRESULT Filter([out, retval] Filters *pVal);
+		[propput, id(7), helpstring("property Filter")] HRESULT Filter([in] Filters newVal);
 	};
 
 	/////////////////////////////////////////////

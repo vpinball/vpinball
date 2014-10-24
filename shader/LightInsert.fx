@@ -50,8 +50,8 @@ float4 PS_WithTexel(in vout IN ) : COLOR
 	float4 result = saturate((diffuseMaterial*intens)*intensity);	
 	result.a = intens;	
 	float4 texel = tex2D( texSampler0, IN.tex0 );
-	result = Overlay( texel, result );
-    return Screen( texel, result );
+	result = Overlay( texel, result, 1.0f );
+    return Screen( texel, result, 1.0f );
 }
 
 float4 PS_WithoutTexel(in vout IN ) : COLOR
@@ -64,7 +64,7 @@ float4 PS_WithoutTexel(in vout IN ) : COLOR
 	float4 result = saturate((diffuseMaterial*intens)*intensity);	
 	result.a = intens;	
 	float4 color=diffuseMaterial*0.2f;
-    return Screen( color, result );
+    return Screen( color, result,1.0f );
 }
 
 float4 PS_BulbLight( in vout IN ) : COLOR
