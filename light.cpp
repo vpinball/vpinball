@@ -511,37 +511,41 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
 
     Texture* pin = NULL;
     Material mtrl;
-    ppin3d->DisableLightMap();
+    //ppin3d->DisableLightMap();
     if (!m_fBackglass)
     {
         float depthbias = -BASEDEPTHBIAS;
         pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, *((DWORD*)&depthbias));
     }
-   pd3dDevice->SetVertexDeclaration(pd3dDevice->m_pVertexNormalTexelTexelDeclaration);
+    pd3dDevice->SetVertexDeclaration(pd3dDevice->m_pVertexNormalTexelTexelDeclaration);
+    if (surfaceMaterial)
+    {
+        pd3dDevice->basicShader->SetMaterial(surfaceMaterial);
+    }
     ppin3d->EnableAlphaTestReference(1);        // don't alpha blend, but do honor transparent pixels
     Texture *offTexel=NULL;
     if ( !m_d.m_BulbLight )
     {
         if ((offTexel = m_ptable->GetImage(m_d.m_szOffImage)) != NULL)
         {
-            m_pInsertShader->Core()->SetTechnique("BasicLightWithTexture");
-            m_pInsertShader->SetTexture("Texture0", offTexel );
+            pd3dDevice->basicShader->Core()->SetTechnique("light_with_texture");
+            pd3dDevice->basicShader->SetTexture("Texture0", offTexel );
         }
         else
         {
-            m_pInsertShader->Core()->SetTechnique("BasicLightWithoutTexture");
+            pd3dDevice->basicShader->Core()->SetTechnique("light_without_texture");
         }
     }
     else
     {
-        m_pInsertShader->Core()->SetTechnique("BulbLight");
+        pd3dDevice->basicShader->Core()->SetTechnique("bulb_light");
     }
     UINT cPasses=0;
     D3DXVECTOR4 center(m_d.m_vCenter.x, m_d.m_vCenter.y, m_surfaceHeight+0.05f, 0.0f);
     D3DXVECTOR4 diffColor(r,g,b,1.0f);
-    m_pInsertShader->Core()->SetVector("lightCenter", &center);
-    m_pInsertShader->Core()->SetVector("diffuseMaterial", &diffColor);
-    m_pInsertShader->Core()->SetFloat("maxRange",m_d.m_falloff);
+    pd3dDevice->basicShader->Core()->SetVector("lightCenter", &center);
+    pd3dDevice->basicShader->Core()->SetVector("lightColor", &diffColor);
+    pd3dDevice->basicShader->Core()->SetFloat("maxRange",m_d.m_falloff);
     if ( isOn )
     {
        if (m_d.m_currentIntensity<m_d.m_intensity )
@@ -560,14 +564,14 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
              m_d.m_currentIntensity=0.0f;
        }
     }
-    m_pInsertShader->Core()->SetFloat("intensity",m_d.m_currentIntensity);
-    m_pInsertShader->Core()->Begin(&cPasses,0);
-    m_pInsertShader->Core()->BeginPass(0);
+    pd3dDevice->basicShader->Core()->SetFloat("intensity",m_d.m_currentIntensity);
+    pd3dDevice->basicShader->Core()->Begin(&cPasses,0);
+    pd3dDevice->basicShader->Core()->BeginPass(0);
 
     pd3dDevice->DrawPrimitiveVB(D3DPT_TRIANGLELIST, customMoverVBuffer, 0, customMoverVertexNum);
 
-    m_pInsertShader->Core()->EndPass();
-    m_pInsertShader->Core()->End();
+    pd3dDevice->basicShader->Core()->EndPass();
+    pd3dDevice->basicShader->Core()->End();
 
     pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
     pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, FALSE);
@@ -833,6 +837,7 @@ void Light::PrepareMoversCustom()
 void Light::RenderSetup(RenderDevice* pd3dDevice)
 {
     m_surfaceHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_zScale;
+    surfaceMaterial = m_ptable->GetSurfaceMaterial(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
     if (m_realState == LightStateBlinking)
         RestartBlinker(g_pplayer->m_time_msec);
@@ -843,6 +848,7 @@ void Light::RenderSetup(RenderDevice* pd3dDevice)
     else
        m_d.m_currentIntensity = 0.0f;
 
+/*
     if( m_pInsertShader==NULL )
     {
       m_pInsertShader = new Shader(g_pplayer->m_pin3d.m_pd3dDevice);
@@ -865,6 +871,7 @@ void Light::RenderSetup(RenderDevice* pd3dDevice)
       D3DXVECTOR4 cam( worldViewProj._41, worldViewProj._42, worldViewProj._43, 1 );
       m_pInsertShader->Core()->SetVector("camera", &cam);
     }
+*/
 
     m_d.m_currentIntensity = 0.0f;
     PrepareStaticCustom();

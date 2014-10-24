@@ -130,9 +130,13 @@ void Flasher::SetDefaults(bool fromMouseClick)
    else
       m_d.m_tdr.m_TimerInterval = 100;
 
-   hr = GetRegString("DefaultProps\\Flasher","Image", m_d.m_szImage, MAXTOKEN);
+   hr = GetRegString("DefaultProps\\Flasher","ImageA", m_d.m_szImageA, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
-      m_d.m_szImage[0] = 0;
+      m_d.m_szImageA[0] = 0;
+
+   hr = GetRegString("DefaultProps\\Flasher","ImageB", m_d.m_szImageB, MAXTOKEN);
+   if ((hr != S_OK) || !fromMouseClick)
+      m_d.m_szImageB[0] = 0;
 
    hr = GetRegInt("DefaultProps\\Flasher","Alpha", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
@@ -165,7 +169,8 @@ void Flasher::WriteRegDefaults()
    SetRegValue("DefaultProps\\Flasher","Color",REG_DWORD,&m_d.m_color,4);
    SetRegValueBool("DefaultProps\\Flasher","TimerEnabled",!!m_d.m_tdr.m_fTimerEnabled);
    SetRegValueInt("DefaultProps\\Flasher","TimerInterval",m_d.m_tdr.m_TimerInterval);
-   SetRegValue("DefaultProps\\Flasher","Image", REG_SZ, &m_d.m_szImage, lstrlen(m_d.m_szImage));
+   SetRegValue("DefaultProps\\Flasher","ImageA", REG_SZ, &m_d.m_szImageA, lstrlen(m_d.m_szImageA));
+   SetRegValue("DefaultProps\\Flasher","ImageB", REG_SZ, &m_d.m_szImageB, lstrlen(m_d.m_szImageB));
    SetRegValueInt("DefaultProps\\Flasher","Alpha",m_d.m_fAlpha);
    SetRegValueBool("DefaultProps\\Flasher","Visible",m_d.m_IsVisible);
    SetRegValueBool("DefaultProps\\Flasher","DisplayTexture",m_d.m_fDisplayTexture);
@@ -186,7 +191,7 @@ void Flasher::PreRender(Sur * const psur)
    Vector<RenderVertex> vvertex;
    GetRgVertex(&vvertex);
    Texture *ppi;
-   if (m_ptable->RenderSolid() && m_d.m_fDisplayTexture && (ppi = m_ptable->GetImage(m_d.m_szImage)))
+   if (m_ptable->RenderSolid() && m_d.m_fDisplayTexture && (ppi = m_ptable->GetImage(m_d.m_szImageA)))
    {
       ppi->EnsureHBitmap();
       if ( m_d.m_imagealignment == ImageModeWrap )
@@ -398,7 +403,7 @@ void Flasher::RenderSetup(RenderDevice* pd3dDevice)
    vertices = new Vertex3D_TexelOnly[numPolys*3];
 
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-   Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
+   Texture * const pin = m_ptable->GetImage(m_d.m_szImageA);
 
    minx=FLT_MAX;
    miny=FLT_MAX;
@@ -591,7 +596,8 @@ HRESULT Flasher::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
    bw.WriteBool(FID(TMON), m_d.m_tdr.m_fTimerEnabled);
    bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
    bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
-   bw.WriteString(FID(IMAG), m_d.m_szImage);
+   bw.WriteString(FID(IMAG), m_d.m_szImageA);
+   bw.WriteString(FID(IMAB), m_d.m_szImageB);
    bw.WriteInt(FID(FALP), m_d.m_fAlpha);
    bw.WriteBool(FID(FVIS), m_d.m_IsVisible);
    bw.WriteBool(FID(DSPT), m_d.m_fDisplayTexture);
@@ -670,7 +676,11 @@ BOOL Flasher::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(IMAG))
    {
-      pbr->GetString(m_d.m_szImage);
+      pbr->GetString(m_d.m_szImageA);
+   }
+   else if (id == FID(IMAB))
+   {
+      pbr->GetString(m_d.m_szImageB);
    }
    else if (id == FID(FALP))
    {
@@ -921,28 +931,55 @@ void Flasher::GetPointDialogPanes(Vector<PropertyPane> *pvproppane)
    pvproppane->AddElement(pproppane);
 }
 
-STDMETHODIMP Flasher::get_Image(BSTR *pVal)
+STDMETHODIMP Flasher::get_ImageA(BSTR *pVal)
 {
    WCHAR wz[512];
 
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szImage, -1, wz, 32);
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_szImageA, -1, wz, 32);
    *pVal = SysAllocString(wz);
 
    return S_OK;
 }
 
-STDMETHODIMP Flasher::put_Image(BSTR newVal)
+STDMETHODIMP Flasher::put_ImageA(BSTR newVal)
 {
    char m_szImage[MAXTOKEN];
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_szImage, 32, NULL, NULL);
 
-   if(strcmp(m_szImage,m_d.m_szImage) != 0)
+   if(strcmp(m_szImage,m_d.m_szImageA) != 0)
    {
 	   STARTUNDO
 
-	   strcpy_s(m_d.m_szImage, MAXTOKEN, m_szImage);
+	   strcpy_s(m_d.m_szImageA, MAXTOKEN, m_szImage);
 
 	   STOPUNDO
+   }
+
+   return S_OK;
+}
+
+STDMETHODIMP Flasher::get_ImageB(BSTR *pVal)
+{
+   WCHAR wz[512];
+
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_szImageB, -1, wz, 32);
+   *pVal = SysAllocString(wz);
+
+   return S_OK;
+}
+
+STDMETHODIMP Flasher::put_ImageB(BSTR newVal)
+{
+   char m_szImage[MAXTOKEN];
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_szImage, 32, NULL, NULL);
+
+   if(strcmp(m_szImage,m_d.m_szImageB) != 0)
+   {
+      STARTUNDO
+
+         strcpy_s(m_d.m_szImageB, MAXTOKEN, m_szImage);
+
+      STOPUNDO
    }
 
    return S_OK;
@@ -1084,26 +1121,55 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
    pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexTexelDeclaration );
 
       Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-      Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
+      Texture * const pinA = m_ptable->GetImage(m_d.m_szImageA);
+      Texture * const pinB = m_ptable->GetImage(m_d.m_szImageB);
 
       const D3DXVECTOR4 color = COLORREF_to_D3DXVECTOR4(m_d.m_color);
-      pd3dDevice->basicShader->Core()->SetFloat("fAlpha",(float)m_d.m_fAlpha/100.0f);
+      //pd3dDevice->basicShader->Core()->SetFloat("fAlpha",(float)m_d.m_fAlpha/100.0f);
+      pd3dDevice->basicShader->Core()->SetFloat("fAlpha",(float)1.0f);
+      pd3dDevice->basicShader->Core()->SetFloat("fFilterAmount",(float)m_d.m_fAlpha/100.0f);
       pd3dDevice->basicShader->Core()->SetVector("staticColor",&color);
       pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", true);
       pd3dDevice->basicShader->Core()->SetFloat("fAlphaTestValue", 1.0f/255.0f);
+      if( m_d.m_filter == Filter_Additive )
+         pd3dDevice->basicShader->Core()->SetBool("bAdditive", true);
+      if( m_d.m_filter == Filter_Overlay )
+         pd3dDevice->basicShader->Core()->SetBool("bOverlay", true);
+      if( m_d.m_filter == Filter_Multiply )
+         pd3dDevice->basicShader->Core()->SetBool("bMultiply", true);
+      if( m_d.m_filter == Filter_Screen )
+         pd3dDevice->basicShader->Core()->SetBool("bScreen", true);
 
-      if (pin)
+      if (pinA && !pinB)
       {
-         pin->CreateAlphaChannel();
-         pd3dDevice->basicShader->SetTexture("Texture0", pin);
-         pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture_noLight");
+         pinA->CreateAlphaChannel();
+         pd3dDevice->basicShader->SetTexture("Texture0", pinA);
+         pd3dDevice->basicShader->Core()->SetTechnique("basic_with_textureOne_noLight");
 
 		   ppin3d->SetTextureFilter( ePictureTexture, TEXTURE_MODE_TRILINEAR );
       }
+      else if (!pinA && pinB)
+      {
+         pinA->CreateAlphaChannel();
+         pd3dDevice->basicShader->SetTexture("Texture0", pinB);
+         pd3dDevice->basicShader->Core()->SetTechnique("basic_with_textureOne_noLight");
+
+         ppin3d->SetTextureFilter( ePictureTexture, TEXTURE_MODE_TRILINEAR );
+      }
+      else if (pinA && pinB)
+      {
+         pinA->CreateAlphaChannel();
+         pinB->CreateAlphaChannel();
+         pd3dDevice->basicShader->SetTexture("Texture0", pinA);
+         pd3dDevice->basicShader->SetTexture("Texture1", pinB);
+         pd3dDevice->basicShader->Core()->SetTechnique("basic_with_textureAB_noLight");
+
+         ppin3d->SetTextureFilter( ePictureTexture, TEXTURE_MODE_TRILINEAR );
+      }
       else
-	  {
-        pd3dDevice->basicShader->Core()->SetTechnique("basic_with_noLight");
-	  }
+	   {
+         pd3dDevice->basicShader->Core()->SetTechnique("basic_with_noLight");
+	   }
 
       if(dynamicVertexBufferRegenerate)
       {
@@ -1112,13 +1178,13 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
       }
 
       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
-      if ( m_d.m_filter==Filter_Additive )
-      {
-         pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
-         pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
-         pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_ONE );
-      }
-      else if ( m_d.m_filter==Filter_Overlay )
+//       if ( m_d.m_filter==Filter_Additive )
+//       {
+//          pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
+//          pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
+//          pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_ONE );
+//       }
+//       else if ( m_d.m_filter==Filter_Overlay )
       {
          pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
          pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);

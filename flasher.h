@@ -20,7 +20,8 @@ public:
    bool m_fDisplayTexture;
    RampImageAlignment m_imagealignment;
 	bool m_IsVisible;
-	char m_szImage[MAXTOKEN];
+   char m_szImageA[MAXTOKEN];
+   char m_szImageB[MAXTOKEN];
    Filters m_filter;
 };
 
@@ -109,8 +110,10 @@ END_CONNECTION_POINT_MAP()
 
 // IFlasher
 public:
-	STDMETHOD(get_Image)(/*[out, retval]*/ BSTR *pVal);
-	STDMETHOD(put_Image)(/*[in]*/ BSTR newVal);
+   STDMETHOD(get_ImageA)(/*[out, retval]*/ BSTR *pVal);
+   STDMETHOD(put_ImageA)(/*[in]*/ BSTR newVal);
+   STDMETHOD(get_ImageB)(/*[out, retval]*/ BSTR *pVal);
+   STDMETHOD(put_ImageB)(/*[in]*/ BSTR newVal);
 	STDMETHOD(get_Color)(/*[out, retval]*/ OLE_COLOR *pVal);
 	STDMETHOD(put_Color)(/*[in]*/ OLE_COLOR newVal);
     STDMETHOD(get_Height)(/*[out, retval]*/ float *pVal);
