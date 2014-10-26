@@ -168,22 +168,22 @@ VS_LIGHT_OUTPUT vs_light_main (float4 vPosition  : POSITION0,
 
 float4 PS_LightWithTexel(in VS_LIGHT_OUTPUT IN ) : COLOR
 {	
-    float4 pixel = tex2D(texSampler0, IN.tex0);
-   
+    float4 pixel = tex2D(texSampler0, IN.tex0);  
     float3 t = InvGamma(pixel.xyz);
-    float3 diffuse  = vDiffuseColor;
-    float3 glossy   = vGlossyColor;
+
+    float3 diffuse  = vDiffuseColor*t;
+    float3 glossy   = vGlossyColor*t;
     float3 specular = vSpecularColor; //!! texture?
 
 	float len = length(lightCenter.xyz-IN.tablePos.xyz);
 	float f=0;//maxRange*0.01;
 	float intens = 1.0f-saturate((len-f)/maxRange);
 	
-	intens = pow(intens,2);
-	float4 color = saturate((lightColor*intens)*intensity);	
-	color.a = intens;
-    float4 result = lightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular);
-    result.a *= fmaterialAlpha;
+	intens *= intens;
+	float4 result = saturate((lightColor*intens)*intensity);
+	result.a = intens;
+    float4 color = lightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
+    color.a *= fmaterialAlpha;
 	color += result; 
 	color = Overlay(pixel,color, 1.0f);
 	color = Screen(pixel,color, 1.0f);
@@ -219,8 +219,8 @@ float4 PS_BulbLight( in VS_LIGHT_OUTPUT IN ) : COLOR
 	
 	intens *= intens;
 	float4 result = saturate((lightColor*intens)*intensity);	
-	float4 texel = tex2D( texSampler0, IN.tex0 );
 	result.a = intens;	
+	//!! float4 texel = tex2D( texSampler0, IN.tex0 );
 	return result;
 }
 
@@ -246,7 +246,6 @@ technique basic_with_texture
 	  PixelShader = compile ps_3_0 ps_main_texture();
    } 
 }
-
 
 technique basic_with_textureOne_noLight
 { 
