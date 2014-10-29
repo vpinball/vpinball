@@ -230,6 +230,6 @@ float4 Overlay (float4 cBase, float4 cBlend, float percent)
 	float4 blend = cBlend;
 	cNew= lerp((cBase*blend*2.0f),(1.0f-(2.0f*(1.0f-cBase)*(1.0f-blend))),cNew);
 
-	cNew.a = 1.0f;
+	//cNew.a = 1.0f;
 	return cNew;
 }
