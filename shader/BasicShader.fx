@@ -177,11 +177,13 @@ float4 PS_LightWithTexel(in VS_LIGHT_OUTPUT IN ) : COLOR
 
 	float len = length(lightCenter.xyz-IN.tablePos.xyz);
 	float f=0;//maxRange*0.01;
-	float intens = 1.0f-saturate((len-f)/maxRange);
+	float intens = 1.0f-saturate((len-f)/max(maxRange,0.1f));
 	
 	intens *= intens;
 	float4 result = saturate((lightColor*intens)*intensity);
+	result *=1.1f;
 	result.a = intens;
+	
     float4 color = lightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
     color.a *= fmaterialAlpha;
 	color += result; 
@@ -198,14 +200,15 @@ float4 PS_LightWithoutTexel(in VS_LIGHT_OUTPUT IN ) : COLOR
 
 	float len = length(lightCenter.xyz-IN.tablePos.xyz);
 	float f=0;//maxRange*0.01;
-	float intens = 1.0f-saturate((len-f)/maxRange);
+	float intens = 1.0f-saturate((len-f)/max(maxRange,0.1f));
 	
 	intens *= intens;
 	float4 result = saturate((lightColor*intens)*intensity);	
+    result *=1.1f;
+
 	result.a = intens;	
     float4 color=lightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
     color.a *= fmaterialAlpha;
-	//float4 color=lightColor*0.2f;
     color += result;
     return color;
 
@@ -220,7 +223,6 @@ float4 PS_BulbLight( in VS_LIGHT_OUTPUT IN ) : COLOR
 	intens *= intens;
 	float4 result = saturate((lightColor*intens)*intensity);	
 	result.a = intens;	
-	//!! float4 texel = tex2D( texSampler0, IN.tex0 );
 	return result;
 }
 
