@@ -556,11 +556,14 @@ Variables
 *Name(string)
 TimerEnabled(bool)
 TimerInterval(int)
-Image(string) - texture name
+ImageA(string) - texture name for image A
+ImageB(string) - texture name for image B
+Filter(string) - use one of the following filters to blend ImageA > ImageB: 'None', 'Additive', 'Multiply', 'Overlay', 'Screen' (filter names are case sensitive!)
+                 this feature only works if you defined both images
+Mode           - 0=ImageModeWorld, 1=ImageModeWrap
 *DisplayTexture(bool)
-Alpha - lets you define an alpha factor(0..255) for additive alpha blending and it only works on flashers which 'Additive Alpha Bl.' checked or setting AddBlend(TRUE)
-Color - defines the color of the element in the editor. If 'Additive Alpha Bl.' isn't checked this will colorize the image too. If you don't want to colorize the image set the color to 
-        blank white (RGB 255,255,255)
+Opacity - lets you define the blend amount 0..100%
+Color - defines the color of the element in the editor. If you don't want to colorize the image set the color to blank white (RGB 255,255,255)
 Visible(bool) - shows/hides the flasher
 AddBlend(bool) - use additive alpha blending instead of classical alpha blending
 

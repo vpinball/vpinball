@@ -140,15 +140,21 @@ void Flasher::SetDefaults(bool fromMouseClick)
 
    hr = GetRegInt("DefaultProps\\Flasher","Alpha", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
-      m_d.m_fAlpha = iTmp;
+       m_d.m_fAlpha = iTmp;
    else
-      m_d.m_fAlpha = 255;
+       m_d.m_fAlpha = 255;
 
    hr = GetRegInt("DefaultProps\\Flasher","Visible", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_IsVisible = iTmp == 0 ? false : true;
    else
       m_d.m_IsVisible = true;
+
+   hr = GetRegInt("DefaultProps\\Flasher","AddBlend", &iTmp);
+   if ((hr == S_OK) && fromMouseClick)
+       m_d.m_fAddBlend = iTmp == 0 ? false : true;
+   else
+       m_d.m_fAddBlend = false;
 
    hr = GetRegInt("DefaultProps\\Flasher","DisplayTexture", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
@@ -174,6 +180,7 @@ void Flasher::WriteRegDefaults()
    SetRegValueInt("DefaultProps\\Flasher","Alpha",m_d.m_fAlpha);
    SetRegValueBool("DefaultProps\\Flasher","Visible",m_d.m_IsVisible);
    SetRegValueBool("DefaultProps\\Flasher","DisplayTexture",m_d.m_fDisplayTexture);
+   SetRegValueBool("DefaultProps\\Flasher","AddBlend",m_d.m_fAddBlend);
    SetRegValue("DefaultProps\\Flasher","ImageMode",REG_DWORD,&m_d.m_imagealignment,4);
    SetRegValue("DefaultProps\\Flasher","Filter",REG_DWORD,&m_d.m_filter,4);
 }
@@ -601,6 +608,7 @@ HRESULT Flasher::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
    bw.WriteInt(FID(FALP), m_d.m_fAlpha);
    bw.WriteBool(FID(FVIS), m_d.m_IsVisible);
    bw.WriteBool(FID(DSPT), m_d.m_fDisplayTexture);
+   bw.WriteBool(FID(ADDB), m_d.m_fAddBlend);
    bw.WriteFloat(FID(FLDB), m_d.m_depthBias);
    bw.WriteInt(FID(ALGN), m_d.m_imagealignment);
    bw.WriteInt(FID(FILT), m_d.m_filter);   
@@ -702,9 +710,9 @@ BOOL Flasher::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(ADDB))
    {
-      BOOL iTmp;
-      pbr->GetBool(&iTmp);
-      if ( iTmp==1 ) m_d.m_filter=Filter_Additive;
+       BOOL iTmp;
+       pbr->GetBool(&iTmp);
+       m_d.m_fAddBlend = (iTmp==1);
    }
    else if (id == FID(DSPT))
    {
@@ -985,20 +993,84 @@ STDMETHODIMP Flasher::put_ImageB(BSTR newVal)
    return S_OK;
 }
 
-STDMETHODIMP Flasher::get_Filter(Filters *pVal)
+STDMETHODIMP Flasher::get_Filter(BSTR *pVal)
 {
-   *pVal = m_d.m_filter;
+    WCHAR wz[512];
+
+    switch( m_d.m_filter )
+    {
+    case Filter_Additive:
+        {
+            MultiByteToWideChar(CP_ACP, 0, "Additive", -1, wz, 32);
+            break;
+        }
+    case Filter_Multiply:
+        {
+            MultiByteToWideChar(CP_ACP, 0, "Multiply", -1, wz, 32);
+            break;
+        }
+    case Filter_Overlay:
+        {
+            MultiByteToWideChar(CP_ACP, 0, "Overlay", -1, wz, 32);
+            break;
+        }
+    case Filter_Screen:
+        {
+            MultiByteToWideChar(CP_ACP, 0, "Screen", -1, wz, 32);
+            break;
+        }
+    default:
+    case Filter_None:
+        {
+            MultiByteToWideChar(CP_ACP, 0, "None", -1, wz, 32);
+            break;
+        }
+    }
+    *pVal = SysAllocString(wz);
 
    return S_OK;
 }
 
-STDMETHODIMP Flasher::put_Filter(Filters newVal)
+STDMETHODIMP Flasher::put_Filter(BSTR newVal)
 {
-   STARTUNDO
+   char m_szFilter[32];
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_szFilter, 32, NULL, NULL);
 
-      m_d.m_filter = newVal;
-      dynamicVertexBufferRegenerate=true;
-   STOPUNDO
+   if(strcmp(m_szFilter,"Additive") == 0 && m_d.m_filter!=Filter_Additive)
+   {
+       STARTUNDO
+            m_d.m_filter = Filter_Additive;
+       STOPUNDO
+       dynamicVertexBufferRegenerate=true;
+   }
+   else if(strcmp(m_szFilter,"Multiply") == 0 && m_d.m_filter!=Filter_Multiply)
+   {
+       STARTUNDO
+           m_d.m_filter = Filter_Multiply;
+       STOPUNDO
+           dynamicVertexBufferRegenerate=true;
+   }
+   else if(strcmp(m_szFilter,"Overlay") == 0 && m_d.m_filter!=Filter_Overlay)
+   {
+       STARTUNDO
+           m_d.m_filter = Filter_Overlay;
+       STOPUNDO
+           dynamicVertexBufferRegenerate=true;
+   }
+   else if(strcmp(m_szFilter,"Screen") == 0 && m_d.m_filter!=Filter_Screen)
+   {
+       STARTUNDO
+           m_d.m_filter = Filter_Screen;
+       STOPUNDO
+           dynamicVertexBufferRegenerate=true;
+   }
+   else if(strcmp(m_szFilter,"None") == 0 && m_d.m_filter!=Filter_None)
+   {
+       STARTUNDO
+           m_d.m_filter = Filter_None;
+       STOPUNDO
+           dynamicVertexBufferRegenerate=true;
+   }
 
    return S_OK;
 }
@@ -1062,6 +1134,24 @@ STDMETHODIMP Flasher::put_DisplayTexture(VARIANT_BOOL newVal)
    }
 
    return S_OK;
+}
+
+STDMETHODIMP Flasher::get_AddBlend(VARIANT_BOOL *pVal) //temporary value of object
+{
+    *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fAddBlend);
+
+    return S_OK;
+}
+
+STDMETHODIMP Flasher::put_AddBlend(VARIANT_BOOL newVal)
+{	
+    STARTUNDO
+
+        m_d.m_fAddBlend = VBTOF(newVal);			
+
+    STOPUNDO
+
+    return S_OK;
 }
 
 STDMETHODIMP Flasher::get_DepthBias(float *pVal)
@@ -1133,11 +1223,11 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
       pd3dDevice->basicShader->Core()->SetFloat("fAlphaTestValue", 1.0f/255.0f);
       if( m_d.m_filter == Filter_Additive )
          pd3dDevice->basicShader->Core()->SetBool("bAdditive", true);
-      if( m_d.m_filter == Filter_Overlay )
+      else if( m_d.m_filter == Filter_Overlay )
          pd3dDevice->basicShader->Core()->SetBool("bOverlay", true);
-      if( m_d.m_filter == Filter_Multiply )
+      else if( m_d.m_filter == Filter_Multiply )
          pd3dDevice->basicShader->Core()->SetBool("bMultiply", true);
-      if( m_d.m_filter == Filter_Screen )
+      else if( m_d.m_filter == Filter_Screen )
          pd3dDevice->basicShader->Core()->SetBool("bScreen", true);
 
       if (pinA && !pinB)
@@ -1178,17 +1268,17 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
       }
 
       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
-//       if ( m_d.m_filter==Filter_Additive )
-//       {
-//          pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
-//          pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
-//          pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_ONE );
-//       }
-//       else if ( m_d.m_filter==Filter_Overlay )
+      if ( m_d.m_fAddBlend )
       {
          pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
          pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
-         pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_INVSRCALPHA);
+         pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_ONE );
+      }
+      else
+      {
+          pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
+          pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
+          pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_INVSRCALPHA);
       }
 
       pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);

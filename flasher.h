@@ -23,6 +23,7 @@ public:
    char m_szImageA[MAXTOKEN];
    char m_szImageB[MAXTOKEN];
    Filters m_filter;
+   bool m_fAddBlend;
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -134,13 +135,15 @@ public:
     STDMETHOD(put_Visible)(/*[in]*/ VARIANT_BOOL newVal);
     STDMETHOD(get_DisplayTexture)(/*[out, retval]*/ VARIANT_BOOL *pVal);
     STDMETHOD(put_DisplayTexture)(/*[in]*/ VARIANT_BOOL newVal);
+    STDMETHOD(get_AddBlend)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+    STDMETHOD(put_AddBlend)(/*[in]*/ VARIANT_BOOL newVal);
 
     STDMETHOD(get_DepthBias)(/*[out, retval]*/ float *pVal);
     STDMETHOD(put_DepthBias)(/*[in]*/ float newVal);
     STDMETHOD(get_ImageAlignment)(/*[out, retval]*/ RampImageAlignment *pVal);
     STDMETHOD(put_ImageAlignment)(/*[in]*/ RampImageAlignment newVal);
-    STDMETHOD(get_Filter)(/*[out, retval]*/ Filters *pVal);
-    STDMETHOD(put_Filter)(/*[in]*/ Filters newVal);
+    STDMETHOD(get_Filter)(/*[out, retval]*/ BSTR *pVal);
+    STDMETHOD(put_Filter)(/*[in]*/ BSTR newVal);
    };
 
 #endif // !defined(AFX_FLASHER_H__87DAB93E_7D6F_4fe4_A5F9_632FD82BDB4A__INCLUDED_)
