@@ -1760,11 +1760,13 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 
 		[propget, id(112), helpstring("property Visible")] HRESULT Visible([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(112), helpstring("property Visible")] HRESULT Visible([in] VARIANT_BOOL newVal);
+		[propget, id(556), helpstring("property AddBlend")] HRESULT AddBlend([out, retval] VARIANT_BOOL *pVal);
+		[propput, id(556), helpstring("property AddBlend")] HRESULT AddBlend([in] VARIANT_BOOL newVal);
 
 		[propget, id(397), helpstring("property DepthBias")] HRESULT DepthBias([out, retval] float *pVal);
 		[propput, id(397), helpstring("property DepthBias")] HRESULT DepthBias([in] float newVal);
-		[propget, id(7), helpstring("property Filter")] HRESULT Filter([out, retval] Filters *pVal);
-		[propput, id(7), helpstring("property Filter")] HRESULT Filter([in] Filters newVal);
+		[propget, id(32996), helpstring("property Filter")] HRESULT Filter([out, retval] BSTR *pVal);
+		[propput, id(32996), helpstring("property Filter")] HRESULT Filter([in] BSTR newVal);
 	};
 
 	/////////////////////////////////////////////

@@ -14,7 +14,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Englisch (USA) resources
+// English (U.S.) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 #ifdef _WIN32
@@ -1587,26 +1587,28 @@ BEGIN
     COMBOBOX        IDC_MATERIAL_COMBO,7,61,109,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
 END
 
-IDD_PROPFLASHER_VISUALS DIALOGEX 0, 0, 125, 154
+IDD_PROPFLASHER_VISUALS DIALOGEX 0, 0, 125, 173
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     COMBOBOX        DISPID_Image,7,25,111,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     LTEXT           "ImageA",IDC_STATIC,7,16,25,8
     CONTROL         "Visible",112,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,5,40,8
-    EDITTEXT        IDC_ALPHA_EDIT,83,101,25,12,ES_AUTOHSCROLL
-    CONTROL         "Custom2",11,"ColorControl",WS_TABSTOP,27,120,40,14
-    LTEXT           "&Color",IDC_STATIC,7,123,17,8
+    EDITTEXT        IDC_ALPHA_EDIT,83,121,25,12,ES_AUTOHSCROLL
+    CONTROL         "Custom2",11,"ColorControl",WS_TABSTOP,27,145,40,14
+    LTEXT           "&Color",IDC_STATIC,7,148,17,8
     CONTROL         "Display &Image in Editor",13,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,39,87,10
-    LTEXT           "Depth Bias",IDC_STATIC,83,118,36,8
-    EDITTEXT        IDC_DEPTH_BIAS,83,126,36,14,ES_AUTOHSCROLL
+    LTEXT           "Depth Bias",IDC_STATIC,83,142,36,8
+    EDITTEXT        IDC_DEPTH_BIAS,83,151,36,14,ES_AUTOHSCROLL
     COMBOBOX        8,33,73,85,60,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     LTEXT           "&Mode",IDC_STATIC,7,76,25,8
-    COMBOBOX        7,7,101,72,43,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_EFFECT_COMBO,7,101,72,79,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Filter Image A-B",IDC_STATIC,7,91,50,8
-    LTEXT           "%",IDC_STATIC,110,104,8,8
+    LTEXT           "%",IDC_STATIC,110,124,8,8
     COMBOBOX        DISPID_Image2,7,59,111,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     LTEXT           "ImageB",IDC_STATIC,7,51,25,8
+    CONTROL         "Additive Blend",IDC_ADDBLEND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,122,61,10
+    LTEXT           "Opacity",IDC_STATIC,83,113,25,8
 END
 
 IDD_PROPFLASHER_POSITION DIALOGEX 0, 0, 125, 93
@@ -1796,7 +1798,7 @@ BEGIN
 
     IDD_PROPFLASHER_VISUALS, DIALOG
     BEGIN
-        BOTTOMMARGIN, 150
+        BOTTOMMARGIN, 169
     END
 
     IDD_PROPPRIMITIVE_PHYSICS, DIALOG
@@ -2398,7 +2400,7 @@ BEGIN
     IDS_STEP                "Step"
 END
 
-#endif    // Englisch (USA) resources
+#endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

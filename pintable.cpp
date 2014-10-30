@@ -6657,7 +6657,38 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
          }
       }
       break;
+   case IDC_EFFECT_COMBO:
+       {
+           cvar = 5;
 
+           rgstr = (WCHAR **) CoTaskMemAlloc((cvar) * sizeof(WCHAR *));
+           rgdw = (DWORD *) CoTaskMemAlloc((cvar) * sizeof(DWORD));
+           rgstr = (WCHAR **) CoTaskMemAlloc(5 * sizeof(WCHAR *));
+           rgdw = (DWORD *) CoTaskMemAlloc(5 * sizeof(DWORD));
+
+           wzDst = (WCHAR *) CoTaskMemAlloc(5*sizeof(WCHAR));
+           MultiByteToWideChar(CP_ACP, 0, "None", -1, wzDst, 5);
+           rgstr[0] = wzDst;
+           rgdw[0] = ~0u;
+           wzDst = (WCHAR *) CoTaskMemAlloc(9*sizeof(WCHAR));
+           MultiByteToWideChar(CP_ACP, 0, "Additive", -1, wzDst, 9);
+           rgstr[1] = wzDst;
+           rgdw[1] = 1;
+           wzDst = (WCHAR *) CoTaskMemAlloc(9*sizeof(WCHAR));
+           MultiByteToWideChar(CP_ACP, 0, "Multiply", -1, wzDst, 9);
+           rgstr[2] = wzDst;
+           rgdw[2] = 2;
+           wzDst = (WCHAR *) CoTaskMemAlloc(8*sizeof(WCHAR));
+           MultiByteToWideChar(CP_ACP, 0, "Overlay", -1, wzDst, 8);
+           rgstr[3] = wzDst;
+           rgdw[3] = 3;
+           wzDst = (WCHAR *) CoTaskMemAlloc(7*sizeof(WCHAR));
+           MultiByteToWideChar(CP_ACP, 0, "Screen", -1, wzDst, 7);
+           rgstr[4] = wzDst;
+           rgdw[4] = 4;
+
+           break;
+       }
    default:
       return E_NOTIMPL;
    }
@@ -6754,6 +6785,20 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
          }
       }
       break;
+   case IDC_EFFECT_COMBO:
+       {
+           int idx=dwCookie;
+           char *filterNames[5]={"None","Additive","Multiply","Overlay","Screen"};
+           if (dwCookie == -1)
+           {
+               idx=0;
+           }
+           DWORD cwch = lstrlen(filterNames[idx])+1;
+           wzDst = (WCHAR *) CoTaskMemAlloc(cwch*sizeof(WCHAR));
+
+           MultiByteToWideChar(CP_ACP, 0, filterNames[idx], -1, wzDst, cwch);
+           break;
+       }
    case DISPID_Surface:
       {
          if (dwCookie == -1)

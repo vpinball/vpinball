@@ -58,6 +58,8 @@ VP 10.0.0 Changelog
 
 - technical note: make sure to install Microsoft SDK 5.0,7.0A,7.1 or 7.1A, if you compile VP and get missing header errors (optionally set the include path inc\winsdk)
 
+- Flasher supports custom shapes and multi texturing. You can define two separate images and define a filter to blend these two images.
+
 VP 9.9.0 Changelog
 ------------------------
 - rendering engine has been ported to DirectX 9 and now takes much better advantage of 3D hardware
