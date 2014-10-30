@@ -880,6 +880,7 @@ void Light::RenderSetup(RenderDevice* pd3dDevice)
 
 void Light::RenderStatic(RenderDevice* pd3dDevice)
 {
+/*
     if (m_d.m_borderwidth > 0)
     {
         const float height = m_surfaceHeight;
@@ -902,6 +903,7 @@ void Light::RenderStatic(RenderDevice* pd3dDevice)
 
         ppin3d->DisableLightMap();
     }
+*/
 }
 
 void Light::SetObjectPos()
