@@ -529,10 +529,10 @@
 #define IDC_RADIO1                      378
 #define DISPID_SIDES                    378
 #define IDC_GLOSSY_EDIT                 378
+#define IDC_ALPHA_EDIT2                 378
+#define IDC_FILTERAMOUNT_EDIT           379
 #define IDD_PROPKICKER_STATE            379
-#define IDC_RADIO2                      379
 #define IDC_SPECULAR_EDIT               379
-#define IDC_RADIO3                      380
 #define IDD_PROPPRIMITIVE_POSITION      380
 #define IDC_OPACITY_EDIT                380
 #define IDD_PROPPRIMITIVE_VISUALS       381

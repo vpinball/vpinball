@@ -138,11 +138,17 @@ void Flasher::SetDefaults(bool fromMouseClick)
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szImageB[0] = 0;
 
-   hr = GetRegInt("DefaultProps\\Flasher","Alpha", &iTmp);
+   hr = GetRegInt("DefaultProps\\Flasher","Opacity", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
        m_d.m_fAlpha = iTmp;
    else
-       m_d.m_fAlpha = 255;
+       m_d.m_fAlpha = 100;
+
+   hr = GetRegInt("DefaultProps\\Flasher","FilterAmount", &iTmp);
+   if ((hr == S_OK) && fromMouseClick)
+       m_d.m_fFilterAmount = iTmp;
+   else
+       m_d.m_fFilterAmount = 100;
 
    hr = GetRegInt("DefaultProps\\Flasher","Visible", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
@@ -183,6 +189,7 @@ void Flasher::WriteRegDefaults()
    SetRegValueBool("DefaultProps\\Flasher","AddBlend",m_d.m_fAddBlend);
    SetRegValue("DefaultProps\\Flasher","ImageMode",REG_DWORD,&m_d.m_imagealignment,4);
    SetRegValue("DefaultProps\\Flasher","Filter",REG_DWORD,&m_d.m_filter,4);
+   SetRegValueInt("DefaultProps\\Flasher","FilterAmount",&m_d.m_fFilterAmount);
 }
 
 void Flasher::PreRender(Sur * const psur)
@@ -612,6 +619,7 @@ HRESULT Flasher::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
    bw.WriteFloat(FID(FLDB), m_d.m_depthBias);
    bw.WriteInt(FID(ALGN), m_d.m_imagealignment);
    bw.WriteInt(FID(FILT), m_d.m_filter);   
+   bw.WriteInt(FID(FIAM), m_d.m_fFilterAmount);   
    ISelect::SaveData(pstm, hcrypthash, hcryptkey);
    HRESULT hr;
    if(FAILED(hr = SavePointData(pstm, hcrypthash, hcryptkey)))
@@ -728,7 +736,11 @@ BOOL Flasher::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(FILT))
    {
-      pbr->GetInt(&m_d.m_filter);
+       pbr->GetInt(&m_d.m_filter);
+   }
+   else if (id == FID(FIAM))
+   {
+       pbr->GetInt(&m_d.m_fFilterAmount);
    }
    else
    {
@@ -1094,6 +1106,24 @@ STDMETHODIMP Flasher::put_Opacity(long newVal)
    return S_OK;
 }
 
+STDMETHODIMP Flasher::get_Amount(long *pVal)
+{
+    *pVal = m_d.m_fFilterAmount;
+    return S_OK;
+}
+
+STDMETHODIMP Flasher::put_Amount(long newVal)
+{
+    STARTUNDO
+
+        m_d.m_fFilterAmount = newVal;
+    if (m_d.m_fFilterAmount>100 ) m_d.m_fFilterAmount=100;
+    if (m_d.m_fFilterAmount<0 ) m_d.m_fFilterAmount=0;
+
+    STOPUNDO
+
+        return S_OK;
+}
 
 STDMETHODIMP Flasher::get_Visible(VARIANT_BOOL *pVal) //temporary value of object
 {
@@ -1216,8 +1246,8 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
 
       const D3DXVECTOR4 color = COLORREF_to_D3DXVECTOR4(m_d.m_color);
       //pd3dDevice->basicShader->Core()->SetFloat("fAlpha",(float)m_d.m_fAlpha/100.0f);
-      pd3dDevice->basicShader->Core()->SetFloat("fAlpha",(float)1.0f);
-      pd3dDevice->basicShader->Core()->SetFloat("fFilterAmount",(float)m_d.m_fAlpha/100.0f);
+      pd3dDevice->basicShader->Core()->SetFloat("fAlpha",(float)m_d.m_fAlpha/100.0f);
+      pd3dDevice->basicShader->Core()->SetFloat("fFilterAmount",(float)m_d.m_fFilterAmount/100.0f);
       pd3dDevice->basicShader->Core()->SetVector("staticColor",&color);
       pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", true);
       pd3dDevice->basicShader->Core()->SetFloat("fAlphaTestValue", 1.0f/255.0f);

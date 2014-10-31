@@ -23,6 +23,7 @@ public:
    char m_szImageA[MAXTOKEN];
    char m_szImageB[MAXTOKEN];
    Filters m_filter;
+   int  m_fFilterAmount;
    bool m_fAddBlend;
 };
 
@@ -129,8 +130,8 @@ public:
     STDMETHOD(put_RotY)(/*[in]*/ float newVal);
     STDMETHOD(get_RotZ)(/*[out, retval]*/ float *pVal);
     STDMETHOD(put_RotZ)(/*[in]*/ float newVal);
-	 STDMETHOD(get_Opacity)(/*[out, retval]*/ long *pVal);
-	 STDMETHOD(put_Opacity)(/*[in]*/ long newVal);
+    STDMETHOD(get_Opacity)(/*[out, retval]*/ long *pVal);
+    STDMETHOD(put_Opacity)(/*[in]*/ long newVal);
     STDMETHOD(get_Visible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
     STDMETHOD(put_Visible)(/*[in]*/ VARIANT_BOOL newVal);
     STDMETHOD(get_DisplayTexture)(/*[out, retval]*/ VARIANT_BOOL *pVal);
@@ -144,6 +145,8 @@ public:
     STDMETHOD(put_ImageAlignment)(/*[in]*/ RampImageAlignment newVal);
     STDMETHOD(get_Filter)(/*[out, retval]*/ BSTR *pVal);
     STDMETHOD(put_Filter)(/*[in]*/ BSTR newVal);
+    STDMETHOD(get_Amount)(/*[out, retval]*/ long *pVal);
+    STDMETHOD(put_Amount)(/*[in]*/ long newVal);
    };
 
 #endif // !defined(AFX_FLASHER_H__87DAB93E_7D6F_4fe4_A5F9_632FD82BDB4A__INCLUDED_)

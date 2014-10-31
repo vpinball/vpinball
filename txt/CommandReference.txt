@@ -560,6 +560,7 @@ ImageA(string) - texture name for image A
 ImageB(string) - texture name for image B
 Filter(string) - use one of the following filters to blend ImageA > ImageB: 'None', 'Additive', 'Multiply', 'Overlay', 'Screen' (filter names are case sensitive!)
                  this feature only works if you defined both images
+Amount(int)    - defines the filter amount how much of ImageB is filtered over ImageA in percent (0..100)
 Mode           - 0=ImageModeWorld, 1=ImageModeWrap
 *DisplayTexture(bool)
 Opacity - lets you define the blend amount 0..100%
