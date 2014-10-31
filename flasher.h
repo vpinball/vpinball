@@ -129,8 +129,8 @@ public:
     STDMETHOD(put_RotY)(/*[in]*/ float newVal);
     STDMETHOD(get_RotZ)(/*[out, retval]*/ float *pVal);
     STDMETHOD(put_RotZ)(/*[in]*/ float newVal);
-	 STDMETHOD(get_Alpha)(/*[out, retval]*/ long *pVal);
-	 STDMETHOD(put_Alpha)(/*[in]*/ long newVal);
+	 STDMETHOD(get_Opacity)(/*[out, retval]*/ long *pVal);
+	 STDMETHOD(put_Opacity)(/*[in]*/ long newVal);
     STDMETHOD(get_Visible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
     STDMETHOD(put_Visible)(/*[in]*/ VARIANT_BOOL newVal);
     STDMETHOD(get_DisplayTexture)(/*[out, retval]*/ VARIANT_BOOL *pVal);

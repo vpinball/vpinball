@@ -1075,13 +1075,13 @@ STDMETHODIMP Flasher::put_Filter(BSTR newVal)
    return S_OK;
 }
 
-STDMETHODIMP Flasher::get_Alpha(long *pVal)
+STDMETHODIMP Flasher::get_Opacity(long *pVal)
 {
    *pVal = m_d.m_fAlpha;
    return S_OK;
 }
 
-STDMETHODIMP Flasher::put_Alpha(long newVal)
+STDMETHODIMP Flasher::put_Opacity(long newVal)
 {
    STARTUNDO
 

@@ -1753,8 +1753,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(DISPID_Image2), helpstring("property ImageB")] HRESULT ImageB([in] BSTR newVal);
 		[propget, id(13), helpstring("property DisplayTexture")] HRESULT DisplayTexture([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(13), helpstring("property DisplayTexture")] HRESULT DisplayTexture([in] VARIANT_BOOL newVal);
-		[propget, id(377), helpstring("property Alpha")] HRESULT Alpha([out, retval] long *pVal);
-		[propput, id(377), helpstring("property Alpha")] HRESULT Alpha([in] long newVal);
+		[propget, id(377), helpstring("property Opacity")] HRESULT Opacity([out, retval] long *pVal);
+		[propput, id(377), helpstring("property Opacity")] HRESULT Opacity([in] long newVal);
 		[propget, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([out, retval] VARIANT* pVal);
 		[propput, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([in] VARIANT* newVal);
 
