@@ -159,6 +159,25 @@ Variables
 *Surface(string)
 
 
+TEXTBOX
+==============================================================================================================================================
+
+BackColor
+FontColor
+Text
+Font
+Width
+Height
+Alignment
+IsTransparent
+TimerEnabled
+TimerInterval
+X
+Y
+Name
+UserValue
+
+
 EMREEL
 ==============================================================================================================================================
 
@@ -567,6 +586,7 @@ Opacity - lets you define the blend amount 0..100%
 Color - defines the color of the element in the editor. If you don't want to colorize the image set the color to blank white (RGB 255,255,255)
 Visible(bool) - shows/hides the flasher
 AddBlend(bool) - use additive alpha blending instead of classical alpha blending
+ImageAlignment
 
 BALL
 ==============================================================================================================================================

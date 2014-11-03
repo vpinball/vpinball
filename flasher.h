@@ -17,14 +17,14 @@ public:
 	float m_rotX,m_rotY,m_rotZ;
 	int m_fAlpha;
    float m_depthBias;      // for determining depth sorting
-   bool m_fDisplayTexture;
+   int  m_fFilterAmount;
+   Filters m_filter;
    RampImageAlignment m_imagealignment;
+   bool m_fDisplayTexture;
 	bool m_IsVisible;
+   bool m_fAddBlend;
    char m_szImageA[MAXTOKEN];
    char m_szImageB[MAXTOKEN];
-   Filters m_filter;
-   int  m_fFilterAmount;
-   bool m_fAddBlend;
 };
 
 /////////////////////////////////////////////////////////////////////////////
