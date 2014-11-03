@@ -3427,7 +3427,6 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
                         {
                             char szFileName[10240];
                             char szInitialDir[10240];
-                            char szT[10240];
                             szFileName[0] = '\0';
 
                             OPENFILENAME ofn;

@@ -189,7 +189,7 @@ void Flasher::WriteRegDefaults()
    SetRegValueBool("DefaultProps\\Flasher","AddBlend",m_d.m_fAddBlend);
    SetRegValue("DefaultProps\\Flasher","ImageMode",REG_DWORD,&m_d.m_imagealignment,4);
    SetRegValue("DefaultProps\\Flasher","Filter",REG_DWORD,&m_d.m_filter,4);
-   SetRegValueInt("DefaultProps\\Flasher","FilterAmount",&m_d.m_fFilterAmount);
+   SetRegValueInt("DefaultProps\\Flasher","FilterAmount",m_d.m_fFilterAmount);
 }
 
 void Flasher::PreRender(Sur * const psur)

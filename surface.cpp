@@ -1040,7 +1040,6 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
     if (!fDrop && m_d.m_fSideVisible && (numVertices > 0)) // Don't need to render walls if dropped
     {
         // combine drawcalls into one (hopefully faster)
-        unsigned int cPasses;
         pd3dDevice->basicShader->Begin(0);
 
         pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, sideVBuffer, 0, numVertices*4, sideIBuffer, 0, numVertices*6);
@@ -1080,7 +1079,6 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
 
         if(numPolys > 0)
         {
-            unsigned int cPasses;
             pd3dDevice->basicShader->Begin(0);
             pd3dDevice->DrawPrimitiveVB( D3DPT_TRIANGLELIST, topVBuffer, !fDrop ? 0 : 3*numPolys, numPolys*3);
             pd3dDevice->basicShader->End();  
