@@ -16,7 +16,7 @@ VP 10.0.0 Changelog
   -> additional changes since physmod5, note that these will also force you to revisit existing physmod5 physics table settings:
      - friction is no longer ignored (e.g. it was always 0.3 before) on the playfield, walls, slingshots, primitives, ramps, gates (and more?!)
      - scatter is no longer ignored for kickers and all kinds of collisions. also the fallback behavior was changed: only if scatter < 0 then the global scatter is used
-     - collision heuristics are adapted for ball sizes different from the default 25
+     - collision heuristics are adapted for ball sizes different from the default radius of 25, so it should be safer to use strange ball sizes
      - (hopefully) no more ball-falling-through-playfield problem
 
   -> the data-format of the physics sets (*.vpp files) is basically the same, although the parameters inside are different, so unfortunately you need to set them up newly
@@ -41,22 +41,28 @@ VP 10.0.0 Changelog
 - GetElement, GetElementByName, GetBalls added to Table Script methods
 - renaming of IsVisible properties (flasher, ramp) to Visible
 
-- include optional nudge filtering (selectable in the keys dialog)
-  and remove implicit dead zone handling (if you have the dead zone setting at 0% and now experience problems, set it to at least 1%)
-
 - new external audio library for music playback (BASS)
 
 - 64bit port (handle with care, might still cause issues)
-
-- native support for the Pinscape Controller
 
 - DirectX 8 port for input handling (currently disabled)
 
 - texture size limit/downscale now respects aspect ratio (currently disabled)
 
-- script editor updated to use latest scintilla (3.5.1)
-
 - technical note: make sure to install Microsoft SDK 5.0,7.0A,7.1 or 7.1A, if you compile VP and get missing header errors (optionally set the include path inc\winsdk)
+
+VP 9.9.1 Changelog
+------------------------
+- fixed some memory leaks
+
+- fixed rendering of overlapping balls
+
+- include optional nudge filtering (selectable in the keys dialog)
+  and remove implicit dead zone handling (if you have the dead zone setting at 0% and now experience problems, set it to at least 1%)
+
+- native support for the Pinscape Controller
+
+- script editor updated to use latest scintilla (3.5.1)
 
 - Flasher supports custom shapes and multi texturing. You can define two separate images and define a filter to blend these two images.
 
