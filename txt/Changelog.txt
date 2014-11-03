@@ -41,6 +41,9 @@ VP 10.0.0 Changelog
 - GetElement, GetElementByName, GetBalls added to Table Script methods
 - renaming of IsVisible properties (flasher, ramp) to Visible
 
+- Flasher supports custom shapes and multi texturing. You can define two separate images and define a filter to blend these two images.
+  look into the CommandReference.txt for additional changes to the functions that can be used
+
 - new external audio library for music playback (BASS)
 
 - 64bit port (handle with care, might still cause issues)
@@ -63,8 +66,6 @@ VP 9.9.1 Changelog
 - native support for the Pinscape Controller
 
 - script editor updated to use latest scintilla (3.5.1)
-
-- Flasher supports custom shapes and multi texturing. You can define two separate images and define a filter to blend these two images.
 
 VP 9.9.0 Changelog
 ------------------------
