@@ -276,9 +276,6 @@ RenderDevice::RenderDevice(HWND hwnd, int width, int height, bool fullscreen, in
 	m_RESZ_support = (m_pD3D->CheckDeviceFormat(m_adapter, devtype, params.BackBufferFormat,
 					  D3DUSAGE_RENDERTARGET, D3DRTYPE_SURFACE, ((D3DFORMAT)(MAKEFOURCC('R','E','S','Z'))))) == D3D_OK;
 
-	if(!m_RESZ_support)
-		MessageBox(NULL,"No RESZ","No RESZ",MB_OK); //!! remove again!
-
 	// check if requested MSAA is possible
     DWORD MultiSampleQualityLevels;
     if( !SUCCEEDED(m_pD3D->CheckDeviceMultiSampleType( m_adapter, 
