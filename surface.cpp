@@ -570,9 +570,7 @@ void Surface::PostRenderStatic(RenderDevice* pd3dDevice)
         return;
 
     RenderSlingshots((RenderDevice*)pd3dDevice);
-    Material *mat = m_ptable->GetMaterial( m_d.m_szSideMaterial);
-    
-    if ( mat!=0 && (m_d.m_fDroppable || mat->m_bOpacityActive) )
+    if ( m_d.m_fDroppable )
     {
         if (!m_fIsDropped)
         {
@@ -963,9 +961,7 @@ void Surface::FreeBuffers()
 void Surface::RenderStatic(RenderDevice* pd3dDevice)
 {
    RenderSlingshots((RenderDevice*)pd3dDevice);
-   Material *mat = m_ptable->GetMaterial( m_d.m_szSideMaterial);
-
-   if ( mat!=0 && !m_d.m_fDroppable && !mat->m_bOpacityActive )
+   if ( !m_d.m_fDroppable )
    {
       RenderWallsAtHeight( (RenderDevice*)pd3dDevice, fFalse);
       g_pplayer->m_pin3d.SetTexture(NULL);
@@ -1003,52 +999,53 @@ void Surface::RenderSlingshots(RenderDevice* pd3dDevice)
 void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
 {
     Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-
+    Material *mat=0;
     // render side
     pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelTexelDeclaration );
 
-    Material *mat = m_ptable->GetMaterial( m_d.m_szSideMaterial);
-    pd3dDevice->basicShader->SetMaterial(mat);
-
-    Texture * const pinSide = m_ptable->GetImage(m_d.m_szSideImage);
-    pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
-    pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
+    ppin3d->EnableAlphaBlend(1,false);
     pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", true);
     pd3dDevice->basicShader->Core()->SetFloat("fAlphaTestValue", 128.0f/255.0f);
-
-    if (pinSide)
+    if ( m_d.m_fSideVisible )
     {
-        pinSide->CreateAlphaChannel();
-        pd3dDevice->basicShader->SetTexture("Texture0",pinSide);
-        pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
+        mat = m_ptable->GetMaterial( m_d.m_szSideMaterial);
+        pd3dDevice->basicShader->SetMaterial(mat);
 
-        if (pinSide->m_fTransparent)
+        Texture * const pinSide = m_ptable->GetImage(m_d.m_szSideImage);
+
+        if (pinSide)
         {
-            pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
+            pinSide->CreateAlphaChannel();
+            pd3dDevice->basicShader->SetTexture("Texture0",pinSide);
+            pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
+
+            if (mat->m_bOpacityActive && mat->m_fOpacity!=1.0f)
+            {
+                pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
+            }
+            else
+            {
+                pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+            }
+            g_pplayer->m_pin3d.SetTextureFilter( ePictureTexture, TEXTURE_MODE_TRILINEAR );
         }
         else
         {
-            pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+            pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
         }
-        g_pplayer->m_pin3d.SetTextureFilter( ePictureTexture, TEXTURE_MODE_TRILINEAR );
-    }
-    else
-    {
-        pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
-    }
 
-    if (!fDrop && m_d.m_fSideVisible && (numVertices > 0)) // Don't need to render walls if dropped
-    {
-        // combine drawcalls into one (hopefully faster)
-        pd3dDevice->basicShader->Begin(0);
+        if (!fDrop && (numVertices > 0)) // Don't need to render walls if dropped
+        {
+            // combine drawcalls into one (hopefully faster)
+            pd3dDevice->basicShader->Begin(0);
 
-        pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, sideVBuffer, 0, numVertices*4, sideIBuffer, 0, numVertices*6);
+            pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, sideVBuffer, 0, numVertices*4, sideIBuffer, 0, numVertices*6);
 
-        pd3dDevice->basicShader->End();  
+            pd3dDevice->basicShader->End();  
+        }
     }
 
     // render top
-
     if (m_d.m_fVisible)
     {
        mat = m_ptable->GetMaterial( m_d.m_szTopMaterial);
@@ -1061,7 +1058,7 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
 
             pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
 
-            if (pin->m_fTransparent)
+            if (mat->m_bOpacityActive && mat->m_fOpacity!=1.0f)
             {
                 pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
             }
