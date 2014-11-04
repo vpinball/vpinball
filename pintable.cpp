@@ -6292,10 +6292,11 @@ bool PinTable::IsMaterialNameUnique( char *name )
     return true;
 }
 
+Material dummyMaterial;
 Material* PinTable::GetMaterial( char * const szName) const
 {
     if (szName == NULL || szName[0] == '\0')
-        return NULL;
+        return &dummyMaterial;
 
     // during playback, we use the hashtable for lookup
     if (!m_materialMap.empty())
@@ -6305,7 +6306,7 @@ Material* PinTable::GetMaterial( char * const szName) const
         if (it != m_materialMap.end())
             return it->second;
         else
-            return NULL;
+            return &dummyMaterial;
     }
 
     for (int i=0;i<m_materials.Size();i++)
@@ -6316,14 +6317,14 @@ Material* PinTable::GetMaterial( char * const szName) const
         }
     }
 
-    return NULL;
+    return &dummyMaterial;
 
 }
 
 void PinTable::AddMaterial( Material *pmat)
 {
     int suffix=1;
-    if( pmat->m_szName[0]==0 )
+    if( pmat->m_szName[0]==0 || !strcmp(pmat->m_szName,"dummyMaterial"))
     {
         strcpy_s(pmat->m_szName,"Material");
     }

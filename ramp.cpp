@@ -1533,14 +1533,15 @@ void Ramp::prepareStatic(RenderDevice* pd3dDevice)
 
 void Ramp::RenderSetup(RenderDevice* pd3dDevice)
 {
-   if( !staticVertexBuffer && m_d.m_fVisible && !m_d.m_transparent )
+   Material *mat = m_ptable->GetMaterial( m_d.m_szMaterial);
+   if( !staticVertexBuffer && m_d.m_fVisible && (mat && !mat->m_bOpacityActive) )
    {
       if (isHabitrail())
          prepareHabitrail( pd3dDevice );
       else
          prepareStatic( pd3dDevice );
    }
-   else if( !dynamicVertexBuffer && m_d.m_fVisible && m_d.m_transparent )
+   else if( !dynamicVertexBuffer && m_d.m_fVisible )
    {
       if (isHabitrail())
          prepareHabitrail( pd3dDevice );
