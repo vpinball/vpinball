@@ -375,9 +375,13 @@ void Gate::PostRenderStatic(RenderDevice* pd3dDevice)
     Texture * const pinback = m_ptable->GetImage(m_d.m_szImageBack);
     Texture * const pinfront = m_ptable->GetImage(m_d.m_szImageFront);
 
-    pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, 0x80);
-    pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATER);
-    pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE);
+    ppin3d->EnableAlphaBlend(1,false);
+    pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", true);
+    pd3dDevice->basicShader->Core()->SetFloat("fAlphaTestValue", 128.0f/255.0f);
+
+//     pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, 0x80);
+//     pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATER);
+//     pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE);
 
     // Set texture to mirror, so the alpha state of the texture blends correctly to the outside
     pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_MIRROR);
@@ -414,7 +418,6 @@ void Gate::PostRenderStatic(RenderDevice* pd3dDevice)
             if (diffColor != rgbTransparent)
                rgbTransparent = pinback->m_rgbTransparent;
         }
-        ppin3d->EnableAlphaBlend( 0x80, fFalse );
 
         pd3dDevice->SetRenderState(RenderDevice::CULLMODE, (diffColor == rgbTransparent || diffColor == NOTRANSCOLOR) ? D3DCULL_CCW : D3DCULL_NONE);
         pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
@@ -441,7 +444,6 @@ void Gate::PostRenderStatic(RenderDevice* pd3dDevice)
             if (diffColor != rgbTransparent)
                 rgbTransparent = pinfront->m_rgbTransparent;
         }
-        ppin3d->EnableAlphaBlend( 0x80, fFalse );
 
         pd3dDevice->SetRenderState(RenderDevice::CULLMODE, (diffColor == rgbTransparent || diffColor == NOTRANSCOLOR) ? D3DCULL_CCW : D3DCULL_NONE);
         pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
@@ -469,8 +471,10 @@ void Gate::PostRenderStatic(RenderDevice* pd3dDevice)
     pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_WRAP);
 
     pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+    pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", false);
 
     g_pplayer->UpdateBasicShaderMatrix();
+
 }
 
 void Gate::PrepareStatic(RenderDevice* pd3dDevice)
@@ -634,30 +638,14 @@ void Gate::RenderSetup(RenderDevice* pd3dDevice)
 
 void Gate::RenderStatic(RenderDevice* pd3dDevice) // only the support structures are rendered here
 {
+    return;
    if(!m_d.m_fSupports) return; // no support structures are allocated ... therefore render none
    
    pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelTexelDeclaration );
 
    Material *mat = m_ptable->GetMaterial( m_d.m_szMaterial);
-   D3DXVECTOR4 diffuseColor( 0.5f, 0.5f, 0.5f, 1.0f );
-   D3DXVECTOR4 glossyColor( 0.04f, 0.04f, 0.04f, 1.0f );
-   D3DXVECTOR4 specularColor( 0.04f, 0.04f, 0.04f, 1.0f );
-   float diffuseWrap = 0.8f;
-   float glossyPower = 0.1f;
-   if( mat )
-   {
-      diffuseColor = mat->getDiffuseColor();
-      glossyColor = mat->getGlossyColor();
-      specularColor = mat->getSpecularColor();
-      diffuseWrap = mat->m_fDiffuse;
-      glossyPower = mat->m_fGlossy;
-   }
+   pd3dDevice->basicShader->SetMaterial(mat);
 
-   pd3dDevice->basicShader->Core()->SetFloat("fDiffuseWrap",diffuseWrap);
-   pd3dDevice->basicShader->Core()->SetFloat("fGlossyPower",glossyPower);
-   pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&diffuseColor);
-   pd3dDevice->basicShader->Core()->SetVector("vGlossyColor",&glossyColor);
-   pd3dDevice->basicShader->Core()->SetVector("vSpecularColor",&specularColor);
    pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
    Vertex3D *rgv3D = &staticVertices[0];
 
