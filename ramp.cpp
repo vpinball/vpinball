@@ -2637,8 +2637,6 @@ void Ramp::PostRenderStatic(RenderDevice* pd3dDevice)
       pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", false);
       pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
    }
-   if( m_d.m_transparent )
-      pd3dDevice->basicShader->Core()->SetFloat("fmaterialAlpha", 1.0f);
 
 }
 
