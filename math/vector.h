@@ -1,6 +1,5 @@
 #pragma once
 
-
 // 2D vector
 class Vertex2D
 {
@@ -8,92 +7,94 @@ public:
    float x;
    float y;
 
-   Vertex2D() {}
-   Vertex2D(const float _x, const float _y) : x(_x), y(_y) {}
+   inline Vertex2D() {}
+   inline Vertex2D(const float _x, const float _y) : x(_x), y(_y) {}
 
-   Vertex2D operator+ (const Vertex2D& v) const
+   inline Vertex2D operator+ (const Vertex2D& v) const
    {
        return Vertex2D(x + v.x, y + v.y);
    }
-   Vertex2D operator- (const Vertex2D& v) const
+   inline Vertex2D operator- (const Vertex2D& v) const
    {
        return Vertex2D(x - v.x, y - v.y);
    }
-   Vertex2D operator- () const
+   inline Vertex2D operator- () const
    {
        return Vertex2D(-x, -y);
    }
 
-   Vertex2D& operator+= (const Vertex2D& v)
+   inline Vertex2D& operator+= (const Vertex2D& v)
    {
        x += v.x;
        y += v.y;
        return *this;
    }
-   Vertex2D& operator-= (const Vertex2D& v)
+   inline Vertex2D& operator-= (const Vertex2D& v)
    {
        x -= v.x;
        y -= v.y;
        return *this;
    }
 
-   Vertex2D operator* (float s) const
+   inline Vertex2D operator* (const float s) const
    {
        return Vertex2D(s*x, s*y);
    }
-   friend Vertex2D operator* (float s, const Vertex2D& v)
+   inline friend Vertex2D operator* (const float s, const Vertex2D& v)
    {
        return Vertex2D(s*v.x, s*v.y);
    }
-   Vertex2D operator/ (float s) const
+   inline Vertex2D operator/ (const float s) const
    {
-       return Vertex2D(x/s, y/s);
+       const float invs = 1.0f/s;
+       return Vertex2D(x*invs, y*invs);
    }
 
-   Vertex2D& operator*= (float s)
+   inline Vertex2D& operator*= (const float s)
    {
        x *= s;
        y *= s;
        return *this;
    }
-   Vertex2D& operator/= (float s)
+   inline Vertex2D& operator/= (const float s)
    {
-       x /= s;
-       y /= s;
+       const float invs = 1.0f/s;
+       x *= invs;
+       y *= invs;
        return *this;
    }
 
-   float Dot(const Vertex2D &pv) const
+   inline float Dot(const Vertex2D &pv) const
    {
       return x*pv.x + y*pv.y;
    }
 
-   float LengthSquared() const
+   inline float LengthSquared() const
    {
       return x*x + y*y;
    }
 
-   float Length() const
+   inline float Length() const
    {
       return sqrtf(x*x + y*y);
    }
 
-   void Normalize()
+   inline void Normalize()
    {
       const float oneoverlength = 1.0f / Length();
       x *= oneoverlength;
       y *= oneoverlength;
    }
 
-   void NormalizeSafe()
+   inline void NormalizeSafe()
    {
        if (!IsZero())
            Normalize();
    }
 
-   bool IsZero() const
+   inline bool IsZero() const
    {
-       return x == 0 && y == 0;
+       return x == 0.f && y == 0.f;
    }
 };
 
@@ -102,38 +103,34 @@ public:
 class Vertex3Ds
 {
 public:
-   struct {
-      float x;
-      float y;
-      float z;
-   };
+   float x,y,z;
 
-   Vertex3Ds() {}
-   Vertex3Ds(const float _x, const float _y, const float _z) : x(_x), y(_y), z(_z) {}
+   inline Vertex3Ds() {}
+   inline Vertex3Ds(const float _x, const float _y, const float _z) : x(_x), y(_y), z(_z) {}
 
-   void Set(const float a, const float b, const float c) {x=a; y=b; z=c;}
+   inline void Set(const float a, const float b, const float c) {x=a; y=b; z=c;}
 
-   Vertex3Ds operator+ (const Vertex3Ds& v) const
+   inline Vertex3Ds operator+ (const Vertex3Ds& v) const
    {
        return Vertex3Ds(x + v.x, y + v.y, z + v.z);
    }
-   Vertex3Ds operator- (const Vertex3Ds& v) const
+   inline Vertex3Ds operator- (const Vertex3Ds& v) const
    {
        return Vertex3Ds(x - v.x, y - v.y, z - v.z);
    }
-   Vertex3Ds operator- () const
+   inline Vertex3Ds operator- () const
    {
        return Vertex3Ds(-x, -y, -z);
    }
 
-   Vertex3Ds& operator+= (const Vertex3Ds& v)
+   inline Vertex3Ds& operator+= (const Vertex3Ds& v)
    {
        x += v.x;
        y += v.y;
        z += v.z;
        return *this;
    }
-   Vertex3Ds& operator-= (const Vertex3Ds& v)
+   inline Vertex3Ds& operator-= (const Vertex3Ds& v)
    {
        x -= v.x;
        y -= v.y;
@@ -141,42 +138,44 @@ public:
        return *this;
    }
 
-   Vertex3Ds operator* (float s) const
+   inline Vertex3Ds operator* (const float s) const
    {
        return Vertex3Ds(s*x, s*y, s*z);
    }
-   friend Vertex3Ds operator* (float s, const Vertex3Ds& v)
+   inline friend Vertex3Ds operator* (const float s, const Vertex3Ds& v)
    {
        return Vertex3Ds(s*v.x, s*v.y, s*v.z);
    }
-   Vertex3Ds operator/ (float s) const
+   inline Vertex3Ds operator/ (const float s) const
    {
-       return Vertex3Ds(x/s, y/s, z/s);
+       const float invs = 1.0f/s;
+       return Vertex3Ds(x*invs, y*invs, z*invs);
    }
 
-   Vertex3Ds& operator*= (float s)
+   inline Vertex3Ds& operator*= (const float s)
    {
        x *= s;
        y *= s;
        z *= s;
        return *this;
    }
-   Vertex3Ds& operator/= (float s)
+   inline Vertex3Ds& operator/= (const float s)
    {
-       x /= s;
-       y /= s;
-       z /= s;
+       const float invs = 1.0f/s;
+       x *= invs;
+       y *= invs;
+       z *= invs;
        return *this;
    }
 
-   void Normalize()
+   inline void Normalize()
    {
       const float oneoverlength = 1.0f/sqrtf(x*x + y*y + z*z);
       x *= oneoverlength;
       y *= oneoverlength;
       z *= oneoverlength;
    }
-   void Normalize(const float scalar)
+   inline void Normalize(const float scalar)
    {
       const float oneoverlength = scalar/sqrtf(x*x + y*y + z*z);
       x *= oneoverlength;
@@ -184,35 +183,34 @@ public:
       z *= oneoverlength;
    }
 
-   void NormalizeSafe()
+   inline void NormalizeSafe()
    {
        if (!IsZero())
            Normalize();
    }
 
-
-   float Dot(const Vertex3Ds &pv) const
+   inline float Dot(const Vertex3Ds &pv) const
    {
       return x*pv.x + y*pv.y + z*pv.z;
    }
-   float Dot(const Vertex3D &pv) const
+   inline float Dot(const Vertex3D &pv) const
    {
       return x*pv.x + y*pv.y + z*pv.z;
    }
 
-   float LengthSquared() const
+   inline float LengthSquared() const
    {
       return x*x + y*y + z*z;
    }
 
-   float Length() const
+   inline float Length() const
    {
       return sqrtf(x*x + y*y + z*z);
    }
 
-   bool IsZero() const
+   inline bool IsZero() const
    {
-       return x == 0 && y == 0 && z == 0;
+       return x == 0.f && y == 0.f && z == 0.f;
    }
 };
 

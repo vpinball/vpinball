@@ -59,7 +59,7 @@ public:
         m_curIdx = 0;
     }
 
-    ~FrameQueueLimiter()
+    void Shutdown()
     {
         for (unsigned i = 0; i < m_buffers.size(); ++i)
         {
@@ -95,9 +95,49 @@ private:
     unsigned m_curIdx;
 };
 
-
 ////////////////////////////////////////////////////////////////////////////////
 
+#ifdef DEBUG_NUDGE
+# define IF_DEBUG_NUDGE(code) code
+#else
+# define IF_DEBUG_NUDGE(code)
+#endif
+
+class NudgeFilter
+{
+public:
+    NudgeFilter();
+
+    // adjust an acceleration sample (m_NudgeX or m_NudgeY)
+    void sample(float &a, const U64 frameTime);
+
+private:
+    // debug output
+    IF_DEBUG_NUDGE(void dbg(const char *fmt, ...);)
+    IF_DEBUG_NUDGE(virtual const char *axis() const = 0;)
+
+    // running total of samples
+    float m_sum;
+
+    // previous sample
+    float m_prv;
+
+    // timestamp of last zero crossing in the raw acceleration data
+    U64 m_tzc;
+
+    // timestamp of last correction inserted into the data
+    U64 m_tCorr;
+
+    // timestamp of last motion == start of rest
+    U64 m_tMotion;
+};
+
+class NudgeFilterX: public NudgeFilter
+   { const char *axis() const { return "x"; } };
+class NudgeFilterY: public NudgeFilter
+   { const char *axis() const { return "y"; } };
+
+////////////////////////////////////////////////////////////////////////////////
 
 class Player
 {
@@ -112,6 +152,8 @@ public:
 #endif
 	void InitKeys();
 	void InitRegValues();
+
+    void Shutdown();
 
 	virtual IEditable *GetIEditable() { return (IEditable*)this; }
 
@@ -149,14 +191,15 @@ public:
 	void RecomputePauseState();
 	void RecomputePseudoPauseState();
 
-	void UltraNudge_update();
-	void UltraNudgeX( const int x, const int j );
-	void UltraNudgeY( const int y, const int j );
+	void NudgeUpdate();
+	void FilterNudge();
+	void NudgeX( const int x, const int j );
+	void NudgeY( const int y, const int j );
 #if 0
-	int  UltraNudgeGetTilt(); // returns non-zero when appropriate to set the tilt switch
+	int  NudgeGetTilt(); // returns non-zero when appropriate to set the tilt switch
 #endif
 
-	void UltraPlunger_update();
+	void PlungerUpdate();
 	void mechPlungerIn( const int z );		
 
     void SetGravity(float slopeDeg, float strength);
@@ -176,8 +219,6 @@ public:
 
 	U32 m_time_msec;
 
-	int m_DeadZ;
-
 	Ball *m_pactiveball;		// ball the script user can get with ActiveBall
 	Ball *m_pactiveballDebug;	// ball the debugger will use as Activeball when firing events
 
@@ -185,7 +226,7 @@ public:
 	Vector<AnimObject> m_vscreenupdate;
 	Vector<HitTimer> m_vht;
 
-    BOOL m_fThrowBalls;
+    bool m_fThrowBalls;
 	BOOL m_fAccelerometer;		//true if electronic Accelerometer enabled
 	BOOL m_AccelNormalMount;	//true if normal mounting (left hand coordinates)
 	float m_AccelAngle;			// 0 Radians rotated counterclockwise (GUI is lefthand coordinates)
@@ -211,7 +252,10 @@ public:
 	float m_NudgeBackY;
 	int m_NudgeManual;			//index of joystick that has manual control
 
-	EnumAssignKeys m_rgKeys[eCKeys]; //Player's key assignments
+    NudgeFilterX m_NudgeFilterX;
+    NudgeFilterY m_NudgeFilterY;
+
+    EnumAssignKeys m_rgKeys[eCKeys]; //Player's key assignments
 
 	HWND m_hwndDebugOutput;
 	HWND m_hwndDebugger;

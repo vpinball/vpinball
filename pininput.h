@@ -19,10 +19,10 @@
 // handle multiple joysticks, APP_JOYSTICKMN..APP_JOYSTICKMX
 #define PININ_JOYMXCNT 4
 
-#define JOYRANGEMN (-1000)
-#define JOYRANGEMX (+1000)
+#define JOYRANGEMN (-65536)
+#define JOYRANGEMX (+65536)
 
-#define JOYRANGE (JOYRANGEMX - JOYRANGEMN)
+#define JOYRANGE ((JOYRANGEMX) - (JOYRANGEMN) + 1)
 
 #define APP_JOYSTICKMX (APP_JOYSTICKMN + PININ_JOYMXCNT -1)
 #define APP_JOYSTICK(n) (APP_JOYSTICKMN + n)
@@ -82,12 +82,16 @@ public:
 	int e_JoyCnt;
 	int uShockDevice;	// only one uShock device
 	int uShockType;
-    int mouseX;
+
+	int mouseX;
     int mouseY;
     long mouseDX;
     long mouseDY;
     bool leftMouseButtonDown;
     bool rightMouseButtonDown;
+
+	bool m_linearPlunger;
+	bool m_enable_nudge_filter; // enable new nudge filtering code
 
 private:
 	int started();
@@ -137,6 +141,7 @@ private:
 	int m_joyaddcreditkey2, m_joyframecount, m_joyvolumeup, m_joyvolumedown, m_joylefttilt, m_joycentertilt, m_joyrighttilt, m_joypmbuyin;
 	int m_joypmcoin3, m_joypmcoin4, m_joypmcoindoor, m_joypmcancel, m_joypmdown, m_joypmup, m_joypmenter, m_joydebug, m_joymechtilt;
 	int m_joycustom1, m_joycustom1key, m_joycustom2, m_joycustom2key, m_joycustom3, m_joycustom3key, m_joycustom4, m_joycustom4key;
+	int m_deadz;
     bool m_enableMouseInPlayer;
 };
 

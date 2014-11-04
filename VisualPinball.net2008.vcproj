@@ -5150,6 +5150,144 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="main.cpp"
+				>
+				<FileConfiguration
+					Name="Unicode Release MinSize|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_UNICODE;_ATL_DLL;_ATL_MIN_CRT;$(NoInherit)"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release MinDependency|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseTestSpanish|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Unicode Release MinDependency|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_UNICODE;_ATL_STATIC_REGISTRY;_ATL_MIN_CRT;$(NoInherit)"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release MinSize|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Profile|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Unicode Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_UNICODE;$(NoInherit)"
+						BasicRuntimeChecks="3"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseTestGerman|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseTestFrench|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseTest|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BrowseInformation="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						BasicRuntimeChecks="3"
+						BrowseInformation="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release MinDependency Fast|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release MinDependency Fast+SSE|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="1"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="math\matrix.cpp"
 				>
 			</File>
@@ -8397,7 +8535,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="main.cpp"
+				RelativePath="vpinball.cpp"
 				>
 				<FileConfiguration
 					Name="Unicode Release MinSize|Win32"
@@ -8799,144 +8937,6 @@
 						Name="VCResourceCompilerTool"
 						PreprocessorDefinitions=""
 						AdditionalIncludeDirectories="$(OUTDIR)"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="vpinball.cpp"
-				>
-				<FileConfiguration
-					Name="Unicode Release MinSize|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_UNICODE;_ATL_DLL;_ATL_MIN_CRT;$(NoInherit)"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release MinDependency|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="ReleaseTestSpanish|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Unicode Release MinDependency|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_UNICODE;_ATL_STATIC_REGISTRY;_ATL_MIN_CRT;$(NoInherit)"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release MinSize|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Profile|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Unicode Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_UNICODE;$(NoInherit)"
-						BasicRuntimeChecks="3"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="ReleaseTestGerman|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="ReleaseTestFrench|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="ReleaseTest|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						BasicRuntimeChecks="3"
-						BrowseInformation="1"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release MinDependency Fast|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release MinDependency Fast+SSE|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="1"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
 					/>
 				</FileConfiguration>
 			</File>
@@ -9894,15 +9894,19 @@
 			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 			>
 			<File
-				RelativePath="res\ball.rgs"
-				>
-			</File>
-			<File
 				RelativePath="res\ball.bmp"
 				>
 			</File>
 			<File
+				RelativePath="res\ball.rgs"
+				>
+			</File>
+			<File
 				RelativePath="bin00001.bin"
+				>
+			</File>
+			<File
+				RelativePath="res\bumper.cur"
 				>
 			</File>
 			<File
@@ -9918,75 +9922,11 @@
 				>
 			</File>
 			<File
-				RelativePath="res\gate.cur"
-				>
-			</File>
-			<File
-				RelativePath="res\flasher.cur"
-				>
-			</File>
-			<File
-				RelativePath="res\kicker.cur"
-				>
-			</File>
-			<File
-				RelativePath="res\spinner.cur"
-				>
-			</File>
-			<File
-				RelativePath="res\dispreel.cur"
-				>
-			</File>
-			<File
-				RelativePath="res\trigger.cur"
-				>
-			</File>
-			<File
-				RelativePath="res\timer.cur"
-				>
-			</File>
-			<File
-				RelativePath="res\target.cur"
-				>
-			</File>
-			<File
-				RelativePath="res\flipper.cur"
-				>
-			</File>
-			<File
-				RelativePath="res\lightseq.cur"
-				>
-			</File>
-			<File
-				RelativePath="res\textbox.cur"
-				>
-			</File>
-			<File
-				RelativePath="res\primitive.cur"
-				>
-			</File>
-			<File
-				RelativePath="res\ramp.cur"
-				>
-			</File>
-			<File
 				RelativePath="res\decal.cur"
 				>
 			</File>
 			<File
-				RelativePath="res\bumper.cur"
-				>
-			</File>
-			<File
-				RelativePath="res\plunger.cur"
-				>
-			</File>
-			<File
-				RelativePath="res\wall.cur"
-				>
-			</File>
-			<File
-				RelativePath="res\magnify.cur"
+				RelativePath="res\dispreel.cur"
 				>
 			</File>
 			<File
@@ -9998,23 +9938,11 @@
 				>
 			</File>
 			<File
+				RelativePath="res\flasher.cur"
+				>
+			</File>
+			<File
 				RelativePath="res\flasher.rgs"
-				>
-			</File>
-			<File
-				RelativePath="res\flipper.rgs"
-				>
-			</File>
-			<File
-				RelativePath="res\gate.rgs"
-				>
-			</File>
-			<File
-				RelativePath="res\script.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\vpinball.ico"
 				>
 			</File>
 			<File
@@ -10022,15 +9950,23 @@
 				>
 			</File>
 			<File
-				RelativePath="res\light.bmp"
+				RelativePath="res\flipper.cur"
 				>
 			</File>
 			<File
-				RelativePath="res\timer.bmp"
+				RelativePath="res\flipper.rgs"
 				>
 			</File>
 			<File
-				RelativePath="res\trigger.bmp"
+				RelativePath="res\gate.cur"
+				>
+			</File>
+			<File
+				RelativePath="res\gate.rgs"
+				>
+			</File>
+			<File
+				RelativePath="res\kicker.cur"
 				>
 			</File>
 			<File
@@ -10038,7 +9974,19 @@
 				>
 			</File>
 			<File
+				RelativePath="res\light.bmp"
+				>
+			</File>
+			<File
+				RelativePath="res\light.cur"
+				>
+			</File>
+			<File
 				RelativePath="res\light.rgs"
+				>
+			</File>
+			<File
+				RelativePath="res\lightseq.cur"
 				>
 			</File>
 			<File
@@ -10050,11 +9998,7 @@
 				>
 			</File>
 			<File
-				RelativePath="res\step.ico"
-				>
-			</File>
-			<File
-				RelativePath="res\pieventhandler.rgs"
+				RelativePath="res\magnify.cur"
 				>
 			</File>
 			<File
@@ -10062,11 +10006,31 @@
 				>
 			</File>
 			<File
+				RelativePath="res\pieventhandler.rgs"
+				>
+			</File>
+			<File
+				RelativePath="res\play.ico"
+				>
+			</File>
+			<File
+				RelativePath="res\plunger.cur"
+				>
+			</File>
+			<File
 				RelativePath="res\plunger.rgs"
 				>
 			</File>
 			<File
+				RelativePath="res\primitive.cur"
+				>
+			</File>
+			<File
 				RelativePath="res\primitive.rgs"
+				>
+			</File>
+			<File
+				RelativePath="res\ramp.cur"
 				>
 			</File>
 			<File
@@ -10078,11 +10042,19 @@
 				>
 			</File>
 			<File
+				RelativePath="res\script.ico"
+				>
+			</File>
+			<File
+				RelativePath="res\spinner.cur"
+				>
+			</File>
+			<File
 				RelativePath="res\spinner.rgs"
 				>
 			</File>
 			<File
-				RelativePath="res\play.ico"
+				RelativePath="res\step.ico"
 				>
 			</File>
 			<File
@@ -10106,7 +10078,23 @@
 				>
 			</File>
 			<File
+				RelativePath="res\target.cur"
+				>
+			</File>
+			<File
+				RelativePath="res\textbox.cur"
+				>
+			</File>
+			<File
 				RelativePath="res\textbox.rgs"
+				>
+			</File>
+			<File
+				RelativePath="res\timer.bmp"
+				>
+			</File>
+			<File
+				RelativePath="res\timer.cur"
 				>
 			</File>
 			<File
@@ -10122,7 +10110,19 @@
 				>
 			</File>
 			<File
+				RelativePath="res\trigger.bmp"
+				>
+			</File>
+			<File
+				RelativePath="res\trigger.cur"
+				>
+			</File>
+			<File
 				RelativePath="res\trigger.rgs"
+				>
+			</File>
+			<File
+				RelativePath="res\vpinball.ico"
 				>
 			</File>
 			<File
@@ -10130,7 +10130,7 @@
 				>
 			</File>
 			<File
-				RelativePath="res\light.cur"
+				RelativePath="res\wall.cur"
 				>
 			</File>
 			<File

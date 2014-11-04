@@ -600,7 +600,6 @@ END_CONNECTION_POINT_MAP()
 
 	int m_jolt_amount;
 	int m_tilt_amount;
-	int m_DeadZ;
 	int m_jolt_trigger_time;
 	int m_tilt_trigger_time;
 

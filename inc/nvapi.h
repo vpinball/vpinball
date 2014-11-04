@@ -1,47 +1,51 @@
- /************************************************************************************************************************************\
-|*                                                                                                                                    *|
-|*     Copyright © 2012 NVIDIA Corporation.  All rights reserved.                                                                     *|
-|*                                                                                                                                    *|
-|*  NOTICE TO USER:                                                                                                                   *|
-|*                                                                                                                                    *|
-|*  This software is subject to NVIDIA ownership rights under U.S. and international Copyright laws.                                  *|
-|*                                                                                                                                    *|
-|*  This software and the information contained herein are PROPRIETARY and CONFIDENTIAL to NVIDIA                                     *|
-|*  and are being provided solely under the terms and conditions of an NVIDIA software license agreement.                             *|
-|*  Otherwise, you have no rights to use or access this software in any manner.                                                       *|
-|*                                                                                                                                    *|
-|*  If not covered by the applicable NVIDIA software license agreement:                                                               *|
-|*  NVIDIA MAKES NO REPRESENTATION ABOUT THE SUITABILITY OF THIS SOFTWARE FOR ANY PURPOSE.                                            *|
-|*  IT IS PROVIDED "AS IS" WITHOUT EXPRESS OR IMPLIED WARRANTY OF ANY KIND.                                                           *|
-|*  NVIDIA DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,                                                                     *|
-|*  INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY, NONINFRINGEMENT, AND FITNESS FOR A PARTICULAR PURPOSE.                       *|
-|*  IN NO EVENT SHALL NVIDIA BE LIABLE FOR ANY SPECIAL, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL DAMAGES,                               *|
-|*  OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,  WHETHER IN AN ACTION OF CONTRACT,                         *|
-|*  NEGLIGENCE OR OTHER TORTIOUS ACTION,  ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOURCE CODE.            *|
-|*                                                                                                                                    *|
-|*  U.S. Government End Users.                                                                                                        *|
-|*  This software is a "commercial item" as that term is defined at 48 C.F.R. 2.101 (OCT 1995),                                       *|
-|*  consisting  of "commercial computer  software"  and "commercial computer software documentation"                                  *|
-|*  as such terms are  used in 48 C.F.R. 12.212 (SEPT 1995) and is provided to the U.S. Government only as a commercial end item.     *|
-|*  Consistent with 48 C.F.R.12.212 and 48 C.F.R. 227.7202-1 through 227.7202-4 (JUNE 1995),                                          *|
-|*  all U.S. Government End Users acquire the software with only those rights set forth herein.                                       *|
-|*                                                                                                                                    *|
-|*  Any use of this software in individual and commercial software must include,                                                      *|
-|*  in the user documentation and internal comments to the code,                                                                      *|
-|*  the above Disclaimer (as applicable) and U.S. Government End Users Notice.                                                        *|
-|*                                                                                                                                    *|
- \************************************************************************************************************************************/
-
 #include"nvapi_lite_salstart.h"
 #include"nvapi_lite_common.h"
 #include"nvapi_lite_sli.h"
 #include"nvapi_lite_surround.h"
 #include"nvapi_lite_stereo.h"
 #include"nvapi_lite_d3dext.h"
+ /***************************************************************************\
+|*                                                                           *|
+|*      Copyright 2005-2010 NVIDIA Corporation.  All rights reserved.        *|
+|*                                                                           *|     
+|*   NOTICE TO USER:                                                         *|                 
+|*                                                                           *|
+|*   This source code is subject to NVIDIA ownership rights under U.S.       *|
+|*   and international Copyright laws.  Users and possessors of this         *| 
+|*   source code are hereby granted a nonexclusive, royalty-free             *|
+|*   license to use this code in individual and commercial software.         *|
+|*                                                                           *|
+|*   NVIDIA MAKES NO REPRESENTATION ABOUT THE SUITABILITY OF THIS SOURCE     *|
+|*   CODE FOR ANY PURPOSE. IT IS PROVIDED "AS IS" WITHOUT EXPRESS OR         *|
+|*   IMPLIED WARRANTY OF ANY KIND. NVIDIA DISCLAIMS ALL WARRANTIES WITH      *|
+|*   REGARD TO THIS SOURCE CODE, INCLUDING ALL IMPLIED WARRANTIES OF         *|
+|*   MERCHANTABILITY, NONINFRINGEMENT, AND FITNESS FOR A PARTICULAR          *|
+|*   PURPOSE. IN NO EVENT SHALL NVIDIA BE LIABLE FOR ANY SPECIAL,            *|
+|*   INDIRECT, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES          *|
+|*   WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN      *|
+|*   AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING     *|
+|*   OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOURCE      *| 
+|*   CODE.                                                                   *|
+|*                                                                           *|
+|*   U.S. Government End Users. This source code is a "commercial item"      *|
+|*   as that term is defined at 48 C.F.R. 2.101 (OCT 1995), consisting       *|
+|*   of "commercial computer  software" and "commercial computer software    *|
+|*   documentation" as such terms are used in 48 C.F.R. 12.212 (SEPT 1995)   *|
+|*   and is provided to the U.S. Government only as a commercial end item.   *|
+|*   Consistent with 48 C.F.R.12.212 and 48 C.F.R. 227.7202-1 through        *|
+|*   227.7202-4 (JUNE 1995), all U.S. Government End Users acquire the       *|
+|*   source code with only those rights set forth herein.                    *|
+|*                                                                           *|
+|*   Any use of this source code in individual and commercial software must  *| 
+|*   include, in the user documentation and internal comments to the code,   *| 
+|*   the above Disclaimer and U.S. Government End Users Notice.              *|
+|*                                                                           *|
+|*                                                                           *|
+ \***************************************************************************/
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Date: Feb 23, 2014 
+// Date: Sep 30, 2014 
 // File: nvapi.h
 //
 // NvAPI provides an interface to NVIDIA devices. This file contains the 
@@ -378,9 +382,19 @@ typedef enum _NV_DISPLAY_TV_FORMAT
     NV_DISPLAY_TV_FORMAT_HD_1080i50         = 0x00020000,
     NV_DISPLAY_TV_FORMAT_HD_1080p50         = 0x00040000,
     NV_DISPLAY_TV_FORMAT_UHD_4Kp30          = 0x00080000,
+    NV_DISPLAY_TV_FORMAT_UHD_4Kp30_3840     = NV_DISPLAY_TV_FORMAT_UHD_4Kp30,
     NV_DISPLAY_TV_FORMAT_UHD_4Kp25          = 0x00100000,
+    NV_DISPLAY_TV_FORMAT_UHD_4Kp25_3840     = NV_DISPLAY_TV_FORMAT_UHD_4Kp25,
     NV_DISPLAY_TV_FORMAT_UHD_4Kp24          = 0x00200000,
+    NV_DISPLAY_TV_FORMAT_UHD_4Kp24_3840     = NV_DISPLAY_TV_FORMAT_UHD_4Kp24,
     NV_DISPLAY_TV_FORMAT_UHD_4Kp24_SMPTE    = 0x00400000,
+    NV_DISPLAY_TV_FORMAT_UHD_4Kp50_3840     = 0x00800000,
+    NV_DISPLAY_TV_FORMAT_UHD_4Kp60_3840     = 0x00900000,
+    NV_DISPLAY_TV_FORMAT_UHD_4Kp30_4096     = 0x00A00000,
+    NV_DISPLAY_TV_FORMAT_UHD_4Kp25_4096     = 0x00B00000,
+    NV_DISPLAY_TV_FORMAT_UHD_4Kp24_4096     = 0x00C00000,
+    NV_DISPLAY_TV_FORMAT_UHD_4Kp50_4096     = 0x00D00000,
+    NV_DISPLAY_TV_FORMAT_UHD_4Kp60_4096     = 0x00E00000,
 
     NV_DISPLAY_TV_FORMAT_SD_OTHER           = 0x01000000,
     NV_DISPLAY_TV_FORMAT_ED_OTHER           = 0x02000000,
@@ -815,6 +829,10 @@ typedef struct _NV_DISPLAYCONFIG_PATH_ADVANCED_TARGET_INFO_V1
     // TV format information
     NV_GPU_CONNECTOR_TYPE   connector;      //!< Specify connector type. For TV only, ignored if tvFormat == NV_DISPLAY_TV_FORMAT_NONE
     NV_DISPLAY_TV_FORMAT    tvFormat;       //!< (IN) to choose the last TV format set this value to NV_DISPLAY_TV_FORMAT_NONE
+                                            //!< In case of NvAPI_DISP_GetDisplayConfig(), this field will indicate the currently applied TV format;
+                                            //!< if no TV format is applied, this field will have NV_DISPLAY_TV_FORMAT_NONE value.
+                                            //!< In case of NvAPI_DISP_SetDisplayConfig(), this field should only be set in case of TVs; 
+                                            //!< for other displays this field will be ignored and resolution & refresh rate specified in input will be used to apply the TV format.
 
     // Backend (raster) timing standard
     NV_TIMING_OVERRIDE      timingOverride;     //!< Ignored if timingOverride == NV_TIMING_OVERRIDE_CURRENT
@@ -1487,7 +1505,7 @@ typedef struct _NV_GPU_DISPLAYIDS
     NvU32    isOSVisible:1;             //!< if bit is set, then this display is reported to the OS
     NvU32    isWFD:1;                   //!< if bit is set, then this display is wireless 
     NvU32    isConnected:1;             //!< if bit is set, then this display is connected
-    NvU32    reserved: 23;              //!< must be zero
+    NvU32    reserved: 22;              //!< must be zero
 } NV_GPU_DISPLAYIDS;
 
 //! \ingroup gpu
@@ -3276,6 +3294,8 @@ NVAPI_INTERFACE NvAPI_GPU_GetTachReading(NvPhysicalGpuHandle hPhysicalGPU, NvU32
 //! SUPPORTED OS:  Windows XP and higher
 //!
 //!
+//! TCC_SUPPORTED
+//!
 //! \param [in]      hPhysicalGpu      A handle identifying the physical GPU for which ECC 
 //!                                    status information is to be retrieved.
 //! \param [out]     pECCStatusInfo    A pointer to an ECC status structure.
@@ -3330,6 +3350,8 @@ NVAPI_INTERFACE NvAPI_GPU_GetECCStatusInfo(NvPhysicalGpuHandle hPhysicalGpu,
 //! SUPPORTED OS:  Windows XP and higher
 //!
 //!
+//! TCC_SUPPORTED
+//!
 //! \param [in]      hPhysicalGpu  A handle identifying the physical GPU for
 //!                                which ECC error information is to be
 //!                                retrieved.
@@ -3380,6 +3402,8 @@ NVAPI_INTERFACE NvAPI_GPU_GetECCErrorInfo(NvPhysicalGpuHandle hPhysicalGpu,
 //!
 //! SUPPORTED OS:  Windows XP and higher
 //!
+//!
+//! TCC_SUPPORTED
 //!
 //! \param [in]     hPhysicalGpu     A handle identifying the physical GPU for
 //!                                  which ECC error information is to be
@@ -4306,19 +4330,65 @@ NVAPI_INTERFACE NvAPI_SetDisplayPort(NvDisplayHandle hNvDisplay, NvU32 outputId,
 
 
 
+//! \ingroup dispcontrol
+//! Used in NvAPI_GetHDMISupportInfo().
+typedef struct _NV_HDMI_SUPPORT_INFO_V1
+{
+    NvU32      version;                     //!< Structure version
+
+    NvU32      isGpuHDMICapable       : 1;  //!< If the GPU can handle HDMI
+    NvU32      isMonUnderscanCapable  : 1;  //!< If the monitor supports underscan
+    NvU32      isMonBasicAudioCapable : 1;  //!< If the monitor supports basic audio
+    NvU32      isMonYCbCr444Capable   : 1;  //!< If YCbCr 4:4:4 is supported
+    NvU32      isMonYCbCr422Capable   : 1;  //!< If YCbCr 4:2:2 is supported
+    NvU32      isMonxvYCC601Capable   : 1;  //!< If xvYCC 601 is supported
+    NvU32      isMonxvYCC709Capable   : 1;  //!< If xvYCC 709 is supported
+    NvU32      isMonHDMI              : 1;  //!< If the monitor is HDMI (with IEEE's HDMI registry ID)
+    NvU32      reserved               : 24; //!< Reserved. 
+
+    NvU32      EDID861ExtRev;               //!< Revision number of the EDID 861 extension
+ } NV_HDMI_SUPPORT_INFO_V1; 
+
+typedef struct _NV_HDMI_SUPPORT_INFO_V2
+{
+    NvU32      version;                      //!< Structure version
+
+    NvU32      isGpuHDMICapable        : 1;  //!< If the GPU can handle HDMI
+    NvU32      isMonUnderscanCapable   : 1;  //!< If the monitor supports underscan
+    NvU32      isMonBasicAudioCapable  : 1;  //!< If the monitor supports basic audio
+    NvU32      isMonYCbCr444Capable    : 1;  //!< If YCbCr 4:4:4 is supported
+    NvU32      isMonYCbCr422Capable    : 1;  //!< If YCbCr 4:2:2 is supported
+    NvU32      isMonxvYCC601Capable    : 1;  //!< If xvYCC extended colorimetry 601 is supported
+    NvU32      isMonxvYCC709Capable    : 1;  //!< If xvYCC extended colorimetry 709 is supported
+    NvU32      isMonHDMI               : 1;  //!< If the monitor is HDMI (with IEEE's HDMI registry ID)
+    NvU32      isMonsYCC601Capable     : 1;  //!< if sYCC601 extended colorimetry is supported
+    NvU32      isMonAdobeYCC601Capable : 1;  //!< if AdobeYCC601 extended colorimetry is supported
+    NvU32      isMonAdobeRGBCapable    : 1;  //!< if AdobeRGB extended colorimetry is supported
+    NvU32      reserved                : 21; //!< Reserved. 
+
+    NvU32      EDID861ExtRev;                //!< Revision number of the EDID 861 extension
+ } NV_HDMI_SUPPORT_INFO_V2; 
+
+#define NV_HDMI_SUPPORT_INFO_VER1  MAKE_NVAPI_VERSION(NV_HDMI_SUPPORT_INFO_V1, 1)
+#define NV_HDMI_SUPPORT_INFO_VER2  MAKE_NVAPI_VERSION(NV_HDMI_SUPPORT_INFO_V2, 2)
 
 
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#ifndef NV_HDMI_SUPPORT_INFO_VER
 
+typedef NV_HDMI_SUPPORT_INFO_V2    NV_HDMI_SUPPORT_INFO;
+#define NV_HDMI_SUPPORT_INFO_VER   NV_HDMI_SUPPORT_INFO_VER2
+
+#endif
+
+
+//! SUPPORTED OS:  Windows Vista and higher
+//!
 ///////////////////////////////////////////////////////////////////////////////
 // FUNCTION NAME:   NvAPI_GetHDMISupportInfo
 //
 //! \fn NvAPI_GetHDMISupportInfo(__in_opt NvDisplayHandle hNvDisplay, __in NvU32 outputId, __inout NV_HDMI_SUPPORT_INFO *pInfo)
 //!   This API returns the current infoframe data on the specified device(monitor).
-//!
-//! SUPPORTED OS:  Windows Vista and higher
-//!
 //!
 //! \since Release: 95
 //!
@@ -4333,27 +4403,6 @@ NVAPI_INTERFACE NvAPI_SetDisplayPort(NvDisplayHandle hNvDisplay, NvU32 outputId,
 //! \retval  NVAPI_ERROR             Miscellaneous error occurred
 //! \retval  NVAPI_INVALID_ARGUMENT  Invalid input parameter.
 ///////////////////////////////////////////////////////////////////////////////
-
-//! \ingroup dispcontrol
-//! Used in NvAPI_GetHDMISupportInfo().
-typedef struct
-{
-    NvU32      version;                     //!< Structure version
-    NvU32      isGpuHDMICapable       : 1;  //!< If the GPU can handle HDMI
-    NvU32      isMonUnderscanCapable  : 1;  //!< If the monitor supports underscan
-    NvU32      isMonBasicAudioCapable : 1;  //!< If the monitor supports basic audio
-    NvU32      isMonYCbCr444Capable   : 1;  //!< If YCbCr 4:4:4 is supported
-    NvU32      isMonYCbCr422Capable   : 1;  //!< If YCbCr 4:2:2 is supported
-    NvU32      isMonxvYCC601Capable   : 1;  //!< If xvYCC 601 is supported
-    NvU32      isMonxvYCC709Capable   : 1;  //!< If xvYCC 709 is supported
-    NvU32      isMonHDMI              : 1;  //!< If the monitor is HDMI (with IEEE's HDMI registry ID)
-    NvU32      EDID861ExtRev;               //!< Revision number of the EDID 861 extension
- } NV_HDMI_SUPPORT_INFO; 
-
-
-//! \ingroup dispcontrol
-#define NV_HDMI_SUPPORT_INFO_VER  MAKE_NVAPI_VERSION(NV_HDMI_SUPPORT_INFO,1)
-
 
 
 //! \ingroup dispcontrol
@@ -6851,6 +6900,7 @@ NVAPI_INTERFACE NvAPI_GSync_GetStatusParameters(NvGSyncDeviceHandle hNvGSyncDevi
 
 
 
+
 #if defined(_D3D9_H_)
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -7116,6 +7166,119 @@ NVAPI_INTERFACE NvAPI_D3D9_VideoSetStereoInfo(IDirect3DDevice9 *pDev,
 
 
 
+
+#if defined (__cplusplus) && (defined(__d3d11_h__) || defined(__d3d11_1_h__))
+///////////////////////////////////////////////////////////////////////////////
+//
+// FUNCTION NAME: NvAPI_D3D11_IsNvShaderExtnOpCodeSupported
+//
+//!   DESCRIPTION: This function checks if a nv HLSL shader extension opcode is 
+//!                supported on current hardware. List of opcodes is in nvShaderExtnEnums.h
+//!                To use Nvidia HLSL extensions the application must include nvHLSLExtns.h 
+//!                in the hlsl shader code. See nvHLSLExtns.h for more details on supported opcodes.
+//! SUPPORTED OS:  Windows Vista and higher
+//!
+//!
+//! \param [in]        pDev         The device on which to query for support,
+//!                                 should be a ID3D11Device+ device
+//! \param [in]        opCode       the opcode to check
+//! \param [out]       pSupported   true if supported, false otherwise
+//!
+//! RETURN STATUS:     This API can return any of the error codes enumerated in #NvAPI_Status. 
+//!                    If there are return error codes with specific meaning for this API, they are listed below.
+//! \retval ::         NVAPI_OK if the call succeeded
+//!
+//! \ingroup dx
+///////////////////////////////////////////////////////////////////////////////
+NVAPI_INTERFACE NvAPI_D3D11_IsNvShaderExtnOpCodeSupported(__in  IUnknown *pDev,
+                                                          __in  NvU32 opCode,
+													      __out bool *pSupported);
+
+#endif //defined (__cplusplus) && (defined(__d3d11_h__) || defined(__d3d11_1_h__))
+
+#if defined (__cplusplus) && (defined(__d3d11_h__) || defined(__d3d11_1_h__))
+///////////////////////////////////////////////////////////////////////////////
+//
+// FUNCTION NAME: NvAPI_D3D11_SetNvShaderExtnSlot
+//
+//!   DESCRIPTION: This function sets the fake UAV slot that is used by Nvidia HLSL
+//!                shader extensions. All createShader calls made to the driver after
+//!                setting this slot would treat writes/reads to this UAV in a 
+//!                different way. Applications are expected to bind null UAV to this slot.
+//!                The same slot is used for all shader stages.
+//!                To disable shader extensions the app may set this uav slot
+//!                to some value that is bigger than the max allowed slot index
+//!                e.g, 128 or 0xFFFFFFFF.
+//!                To use Nvidia HLSL extensions the application must include nvHLSLExtns.h 
+//!                in the hlsl shader code. See nvHLSLExtns.h for more details.
+//!
+//! SUPPORTED OS:  Windows Vista and higher
+//!
+//!
+//! \param [in]        pDev         The device for which to set the extension slot
+//!                                 should be a ID3D11Device+ device
+//! \param [in]        uavSlot      the uav slot to use
+//!
+//! RETURN STATUS:     This API can return any of the error codes enumerated in #NvAPI_Status. 
+//!                    If there are return error codes with specific meaning for this API, they are listed below.
+//! \retval ::         NVAPI_OK    : success, the uavSlot was set sucessfully
+//!
+//! \ingroup dx
+///////////////////////////////////////////////////////////////////////////////
+NVAPI_INTERFACE NvAPI_D3D11_SetNvShaderExtnSlot(__in IUnknown *pDev,
+                                                __in NvU32 uavSlot);
+
+#endif //defined (__cplusplus) && (defined(__d3d11_h__) || defined(__d3d11_1_h__))
+
+
+#if defined (__cplusplus) && (defined(__d3d11_h__) || defined(__d3d11_1_h__))
+///////////////////////////////////////////////////////////////////////////////
+//
+// FUNCTION NAME: NvAPI_D3D11_BeginUAVOverlap
+//
+//!   DESCRIPTION: Causes the driver to skip synchronization that is normally needed when accessing UAVs.
+//!                Applications must use this with caution otherwise this might cause data hazards when
+//!                multiple draw calls/compute shader launches are accessing same memory locations
+//!
+//! SUPPORTED OS:  Windows Vista and higher
+//!
+//!
+//! \param [in]        *pDeviceOrContext     pointer to D3D11 device, or D3D11 device context
+//!
+//! RETURN STATUS:     This API can return any of the error codes enumerated in #NvAPI_Status. 
+//!                    If there are return error codes with specific meaning for this API, they are listed below.
+//!
+//! \ingroup dx
+///////////////////////////////////////////////////////////////////////////////
+NVAPI_INTERFACE NvAPI_D3D11_BeginUAVOverlap(__in  IUnknown *pDeviceOrContext);
+
+#endif //defined (__cplusplus) && (defined(__d3d11_h__) || defined(__d3d11_1_h__))
+
+#if defined (__cplusplus) && (defined(__d3d11_h__) || defined(__d3d11_1_h__))
+///////////////////////////////////////////////////////////////////////////////
+//
+// FUNCTION NAME: NvAPI_D3D11_EndUAVOverlap
+//
+//!   DESCRIPTION: Re-enables driver synchronization between calls that access same UAVs
+//!                See NvAPI_D3D_BeginUAVOverlap for more details.
+//!
+//! SUPPORTED OS:  Windows Vista and higher
+//!
+//!
+//! \param [in]        *pDeviceOrContext     pointer to D3D11 device, or D3D11 device context
+//!
+//! RETURN STATUS:     This API can return any of the error codes enumerated in #NvAPI_Status. 
+//!                    If there are return error codes with specific meaning for this API, they are listed below.
+//!
+//! \ingroup dx
+///////////////////////////////////////////////////////////////////////////////
+NVAPI_INTERFACE NvAPI_D3D11_EndUAVOverlap(__in  IUnknown *pDeviceOrContext);
+
+#endif //defined (__cplusplus) && (defined(__d3d11_h__) || defined(__d3d11_1_h__))
+
+//-----------------------------------------------------------------------------
+// Private Direct3D11 APIs
+//-----------------------------------------------------------------------------
 #if defined(_D3D9_H_) || defined(__d3d10_h__) || defined(__d3d10_1_h__) || defined(__d3d11_h__)
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -7138,6 +7301,153 @@ NVAPI_INTERFACE NvAPI_D3D_SetFPSIndicatorState(IUnknown *pDev, NvU8 doEnable);
 
 #endif //if defined(_D3D9_H_) || defined(__d3d10_h__) || defined(__d3d10_1_h__) || defined(__d3d11_h__)
 
+
+//! SUPPORTED OS:  Windows Vista and higher
+//!
+
+#if defined (__cplusplus) && (defined(__d3d11_h__) || defined(__d3d11_1_h__))
+
+enum NVAPI_QUAD_FILLMODE
+{
+    NVAPI_QUAD_FILLMODE_DISABLED = 0,
+    NVAPI_QUAD_FILLMODE_BBOX = 1,
+    NVAPI_QUAD_FILLMODE_FULL_VIEWPORT = 2,
+};
+
+typedef struct NvAPI_D3D11_RASTERIZER_DESC_EX : public D3D11_RASTERIZER_DESC
+{
+    NvU32 ForcedSampleCount;                 //<! Added DX 11.1, part of _DESC1 version of this struct.
+    bool ProgrammableSamplePositionsEnable;  //<! enable Programmable Samples feature
+    bool InterleavedSamplingEnable;          //<! when jitter is enabled, an app need to fill the whole arrays below, otherwise only as much entries as samples
+    NvU8 SampleCount;                        //<! number of samples. In TIR N->1 it needs to match N, in non-TIR it needs to match RT sample count. Ignored if ForcePerSampleInterlock is set
+    NvU8 SamplePositionsX[16];               //<! x positions in API sample order
+    NvU8 SamplePositionsY[16];               //<! y positions in API sample order
+    bool ConservativeRasterEnable;           //<! rasterize all pixels a primitive touches in any way instead of just those with the centroid covered. 
+    NVAPI_QUAD_FILLMODE QuadFillMode;        //<! Fill a triangle outside its bounds as a screen-aligned quad, matching the tri's bounding-box or filling the full viewport.
+    bool PostZCoverageEnable;                //<! Enable pixel-shader input SV_COVERAGE to account for z-test in early-z mode.
+    bool CoverageToColorEnable;              //<! Enable output of coverage to a color render-target.
+    NvU8 CoverageToColorRTIndex;             //<! Index of RT for coverage-to-color.
+    NvU32 reserved[16];                      //<! reserved for expansion, set to zero.
+} NvAPI_D3D11_RASTERIZER_DESC_EX;
+ 
+///////////////////////////////////////////////////////////////////////////////
+//
+// FUNCTION NAME: NvAPI_D3D11_CreateRasterizerState
+//
+//! \code
+//!   DESCRIPTION: This function is an extension of ID3D11Device::CreateRasterizerState with additional raster states
+//!
+//!         \param [in]        pDevice             current d3d device
+//!         \param [in]        pRasterizerDesc     Rasterizer state description of type NVAPI_D3D11_RASTERIZER_DESC_EX
+//!         \param [out]       ppRasterizerState   ID3D11RasterizerState 
+//!
+//!
+//! \return ::NVAPI_OK     if the call succeeds.
+//! \endcode
+//! \ingroup dx
+///////////////////////////////////////////////////////////////////////////////
+NVAPI_INTERFACE NvAPI_D3D11_CreateRasterizerState(__in ID3D11Device *pDevice,
+                                                  __in const NvAPI_D3D11_RASTERIZER_DESC_EX *pRasterizerDesc,
+                                                  __out ID3D11RasterizerState **ppRasterizerState);
+
+#endif //defined(__cplusplus) && defined(__d3d11_h__)
+
+
+//! SUPPORTED OS:  Windows Vista and higher
+//!
+
+#if defined (__cplusplus) && (defined(__d3d11_h__) || defined(__d3d11_1_h__))
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// FUNCTION NAME: NvAPI_D3D11_AliasMSAATexture2DAsNonMSAA
+//
+//! \code
+//!   DESCRIPTION: This function allows creating (aliasing) a non-MSAA Texture2D object using the same memory as the given multi-sampled
+//!                texture (pInputTex). The surface created would be bloated in width and height but it will have SampleCount = 1
+//!                For 2X MSAA: OutTex.Width = InputTex.Width * 2, outTex.Height = InputTex.Height
+//!                For 4X MSAA: OutTex.Width = InputTex.Width * 2, outTex.Height = InputTex.Height * 2
+//!                For 8X MSAA: OutTex.Width = InputTex.Width * 4, outTex.Height = InputTex.Height * 2
+//!                Only textures SampleQuality = 0 can be aliased as Non MSAA
+//!                The app should ensure that original texture is released only after the aliased copy is released.
+//!
+//!         \param [in]        pDevice             current d3d device
+//!         \param [in]        pInputTex           The MultiSampled Texture2D resource that is being aliased
+//!         \param [out]       ppOutTex            The aliased non AA copy MultiSampled Texture2D resource
+//!
+//!
+//! \return :: NVAPI_OK                   if the call succeeds.
+//! \endcode
+//! \ingroup dx
+///////////////////////////////////////////////////////////////////////////////
+NVAPI_INTERFACE NvAPI_D3D11_AliasMSAATexture2DAsNonMSAA(__in ID3D11Device *pDevice,
+														__in ID3D11Texture2D *pInputTex,
+														__out ID3D11Texture2D **ppOutTex);
+
+#endif //defined(__cplusplus) && defined(__d3d11_h__)
+
+//! SUPPORTED OS:  Windows Vista and higher
+//!
+
+#if defined (__cplusplus) && defined(__d3d11_h__)
+
+typedef UINT NvAPI_D3D11_SWIZZLE_MODE;
+ 
+typedef struct NvAPI_D3D11_VIEWPORT_EX : public D3D11_VIEWPORT
+{
+    bool bUseSubpixelBits;  // Define the number of bits used for sub-pixel snap. 8 is standard. 
+                            // The rest is integer pixel coordinate. Leaving fewer bits than necessary to represent 
+                            // entire range of int(width) or int(height) produces in undefined results.
+    UINT NumSubpixelBits;   
+    bool bUseCoordinateSwizzle;
+    NvAPI_D3D11_SWIZZLE_MODE CoordinateSwizzle;       // Defines how clip-space (x,y,z,w) is swizzled and negated to produce output (x,y,z,w)
+}NvAPI_D3D11_VIEWPORT_EX;
+///////////////////////////////////////////////////////////////////////////////
+//
+// FUNCTION NAME: NvAPI_D3D11_RSSetViewports
+//
+//! \code
+//!   DESCRIPTION: This function is an extension of ID3D11DeviceContext::RSSetViewports with additional per viewport properties
+//!
+//!         \param [in]        pDevice             current d3d device
+//!         \param [in]        NumViewports        Number of viewports to bind
+//!         \param [in]        pViewports          Viewport declaration of type NVAPI_D3D11_VIEWPORT_EX 
+//!
+//!
+//! \return ::NVAPI_OK     if the call succeeds.
+//! \endcode
+//! \ingroup dx
+///////////////////////////////////////////////////////////////////////////////
+NVAPI_INTERFACE NvAPI_D3D11_RSSetViewports(__in ID3D11Device *pDevice,
+                                           __in UINT NumViewports,
+                                           __in const NvAPI_D3D11_VIEWPORT_EX *pViewports);
+
+#endif //defined(__cplusplus) && defined(__d3d11_h__)
+
+//! SUPPORTED OS:  Windows Vista and higher
+//!
+#if defined (__cplusplus) && ( defined(__d3d10_h__) || defined(__d3d10_1_h__) ||defined(__d3d11_h__) ) 
+///////////////////////////////////////////////////////////////////////////////
+//
+// FUNCTION NAME: NvAPI_D3D1x_DisableShaderDiskCache
+//
+//! DESCRIPTION: Disables driver managed caching of shader compilations to disk
+//!
+//! \param [in]    pDevice               Device to disabled the shader disk cache on
+//!
+//!
+//! \retval ::NVAPI_OK                   Shader disk cache was disabled
+//! \retval ::NVAPI_ERROR                The operation failed.
+//! \retval ::NVAPI_INVALID_ARGUMENT     Argument passed in is invalid.
+//! \ingroup dx
+///////////////////////////////////////////////////////////////////////////////
+NVAPI_INTERFACE NvAPI_D3D1x_DisableShaderDiskCache(IUnknown *pDevice);
+
+#endif //defined(__cplusplus) && ( defined(__d3d10_h__) || defined(__d3d10_1_h__) ||defined(__d3d11_h__) )
+
+/////////////////////////////////////////////////////////////////////////
+// Video Input Output (VIO) API
+/////////////////////////////////////////////////////////////////////////
 
 
 

@@ -463,7 +463,9 @@ BEGIN
     GROUPBOX        "",IDC_STATIC,262,142,158,21
     LTEXT           "* To assign Custom Keys to Gamepad Buttons, click on the button and select desired key, then choose desired gamepad button from dropdown box.",IDC_STATIC,13,230,168,25
     CONTROL         "Enable Mouse during Play",IDC_ENABLE_MOUSE_PLAYER,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,257,201,100,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,257,227,100,10
+    CONTROL         "Enable Nudge Filter",IDC_ENABLE_NUDGE_FILTER,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,257,200,100,10
 END
 
 IDD_TRANSLATE DIALOGEX 0, 0, 186, 102

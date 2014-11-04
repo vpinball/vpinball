@@ -616,6 +616,7 @@
 #define IDC_GLOBAL_3DSTEREO             427
 #define IDC_3D_STEREO_MS                428
 #define IDC_3D_STEREO_ZPD               429
+#define IDC_ENABLE_NUDGE_FILTER         430
 #define IDC_JOYLFLIPCOMBO               501
 #define IDC_JOYRFLIPCOMBO               502
 #define IDC_JOYPLUNGERCOMBO             503

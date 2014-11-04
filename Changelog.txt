@@ -1,8 +1,15 @@
 VP 9.9.1 Changelog
 ------------------------
-- DirectX 8 port for input handling (currently disabled)
+- fixed some memory leaks
 
-- texture size limit/downscale now respects aspect ratio (currently disabled)
+- fixed rendering of overlapping balls
+
+- include optional nudge filtering (selectable in the keys dialog)
+  and remove implicit dead zone handling (if you have the dead zone setting at 0% and now experience problems, set it to at least 1%)
+
+- native support for the Pinscape Controller
+
+- script editor updated to use latest scintilla (3.5.1)
 
 VP 9.9.0 Changelog
 ------------------------
