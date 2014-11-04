@@ -1553,9 +1553,10 @@ void Ramp::RenderSetup(RenderDevice* pd3dDevice)
 void Ramp::RenderStatic(RenderDevice* pd3dDevice)
 {	
    if (!m_d.m_fVisible) return;		// return if no Visible
+   Material *mat = m_ptable->GetMaterial( m_d.m_szMaterial);
 
    // dont render alpha shaded ramps into static buffer, these are done per frame later-on
-   if (m_d.m_transparent) return;
+   if (mat->m_bOpacityActive && mat->m_fOpacity!=1.0f) return;
 
    /* TODO: This is a misnomer right now, but clamp fixes some visual glitches (single-pixel lines)
     * with transparent textures. Probably the option should simply be renamed to ImageModeClamp,
@@ -1566,36 +1567,7 @@ void Ramp::RenderStatic(RenderDevice* pd3dDevice)
 
    pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelDeclaration );
 
-   Material *mat = m_ptable->GetMaterial( m_d.m_szMaterial);
-   D3DXVECTOR4 diffuseColor( 0.5f, 0.5f, 0.5f, 1.0f );
-   D3DXVECTOR4 glossyColor( 0.04f, 0.04f, 0.04f, 1.0f );
-   D3DXVECTOR4 specularColor( 0.04f, 0.04f, 0.04f, 1.0f );
-   float diffuseWrap = 0.5f;
-   float glossyPower = 0.1f;
-   bool  bDiffActive=true;
-   bool  bGlossyActive = false;
-   bool  bSpecActive = false;
-   if( mat )
-   {
-      diffuseColor = mat->getDiffuseColor();
-      glossyColor = mat->getGlossyColor();
-      specularColor = mat->getSpecularColor();
-      diffuseWrap = mat->m_fDiffuse;
-      glossyPower = mat->m_fGlossy;
-      bDiffActive = mat->m_bDiffuseActive;
-      bGlossyActive = mat->m_bGlossyActive;
-      bSpecActive = mat->m_bSpecularActive;
-   }
-
-   pd3dDevice->basicShader->Core()->SetFloat("fDiffuseWrap",diffuseWrap);
-   pd3dDevice->basicShader->Core()->SetFloat("fGlossyPower",glossyPower);
-   pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&diffuseColor);
-   pd3dDevice->basicShader->Core()->SetVector("vGlossyColor",&glossyColor);
-   pd3dDevice->basicShader->Core()->SetVector("vSpecularColor",&specularColor);
-   pd3dDevice->basicShader->Core()->SetBool("bDiffuse", bDiffActive);
-   pd3dDevice->basicShader->Core()->SetBool("bGlossy", bGlossyActive);
-   pd3dDevice->basicShader->Core()->SetBool("bSpecular", bSpecActive);
-
+   pd3dDevice->basicShader->SetMaterial(mat);
    if (isHabitrail())
    {
       RenderStaticHabitrail(pd3dDevice);
@@ -1619,6 +1591,8 @@ void Ramp::RenderStatic(RenderDevice* pd3dDevice)
             pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
          }
          ppin3d->EnableAlphaBlend( 1, false );
+         pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", true);
+         pd3dDevice->basicShader->Core()->SetFloat("fAlphaTestValue", 128.0f/255.0f);
 
          ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
       }
@@ -2575,9 +2549,10 @@ STDMETHODIMP Ramp::put_WireDistanceY(float newVal)
 void Ramp::PostRenderStatic(RenderDevice* pd3dDevice)
 {
     TRACE_FUNCTION();
+    Material *mat = m_ptable->GetMaterial( m_d.m_szMaterial);
 
    // don't render if invisible or not a transparent ramp
-   if (!m_d.m_fVisible || !m_d.m_transparent)
+   if (!m_d.m_fVisible || (!mat->m_bOpacityActive && mat->m_fOpacity==1.0f) )
        return;
 
    if ( m_d.m_widthbottom==0.0f && m_d.m_widthtop==0.0f )
@@ -2592,15 +2567,7 @@ void Ramp::PostRenderStatic(RenderDevice* pd3dDevice)
    if (m_d.m_imagealignment == ImageModeWrap)
        pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_CLAMP);
 
-   Material *mat = m_ptable->GetMaterial( m_d.m_szMaterial);
    pd3dDevice->basicShader->SetMaterial(mat);
-   if( m_d.m_transparent )
-   {
-      pd3dDevice->basicShader->Core()->SetFloat("fmaterialAlpha", (float)m_d.m_opacity/255.0f);
-   }
-   else
-      pd3dDevice->basicShader->Core()->SetFloat("fmaterialAlpha", 1.0f);
-
    if (isHabitrail())
    {
       RenderStaticHabitrail(pd3dDevice);
@@ -2626,8 +2593,7 @@ void Ramp::PostRenderStatic(RenderDevice* pd3dDevice)
       if (!dynamicVertexBuffer || dynamicVertexBufferRegenerate)
          GenerateVertexBuffer(pd3dDevice);
 
-      pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
-      pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
+      ppin3d->EnableAlphaBlend( 1, false );
       pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", true);
       pd3dDevice->basicShader->Core()->SetFloat("fAlphaTestValue", 128.0f/255.0f);
 
