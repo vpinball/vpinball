@@ -1556,7 +1556,7 @@ void Ramp::RenderStatic(RenderDevice* pd3dDevice)
    Material *mat = m_ptable->GetMaterial( m_d.m_szMaterial);
 
    // dont render alpha shaded ramps into static buffer, these are done per frame later-on
-   if (mat->m_bOpacityActive && mat->m_fOpacity!=1.0f) return;
+   if (mat && mat->m_bOpacityActive && mat->m_fOpacity!=1.0f) return;
 
    /* TODO: This is a misnomer right now, but clamp fixes some visual glitches (single-pixel lines)
     * with transparent textures. Probably the option should simply be renamed to ImageModeClamp,
@@ -2550,6 +2550,9 @@ void Ramp::PostRenderStatic(RenderDevice* pd3dDevice)
 {
     TRACE_FUNCTION();
     Material *mat = m_ptable->GetMaterial( m_d.m_szMaterial);
+
+    if ( !mat )
+        return;
 
    // don't render if invisible or not a transparent ramp
    if (!m_d.m_fVisible || (!mat->m_bOpacityActive && mat->m_fOpacity==1.0f) )

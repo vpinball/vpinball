@@ -1019,7 +1019,7 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
             pd3dDevice->basicShader->SetTexture("Texture0",pinSide);
             pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
 
-            if (mat->m_bOpacityActive && mat->m_fOpacity!=1.0f)
+            if (mat && mat->m_bOpacityActive && mat->m_fOpacity!=1.0f)
             {
                 pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
             }
@@ -1058,7 +1058,7 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
 
             pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
 
-            if (mat->m_bOpacityActive && mat->m_fOpacity!=1.0f)
+            if (mat && mat->m_bOpacityActive && mat->m_fOpacity!=1.0f)
             {
                 pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
             }
