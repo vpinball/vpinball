@@ -325,6 +325,34 @@ void WaveFrontObj_Save(const char *filename, const char *description, const Mesh
    fopen_s(&f,filename,"wt");
    if( !f )
       return ;
+    
+   fprintf_s(f,"const unsigned int bumperBaseNumVertices=%i;\n",mesh.NumIndices());
+   fprintf_s(f,"const unsigned int bumperBaseNumFaces=%i;\n", mesh.NumIndices());
+   fprintf_s(f,"Vertex3D_NoTex2 bumperBase[%i]=\n{\n",mesh.NumVertices());
+
+   for( int i=0;i<mesh.NumVertices();i++ )
+   {
+       fprintf_s(f,"{ %ff,%ff,%ff, %ff,%ff,%ff, %ff,%ff},\n",mesh.m_vertices[i].x, mesh.m_vertices[i].y,mesh.m_vertices[i].z,
+                                                             mesh.m_vertices[i].nx, mesh.m_vertices[i].ny,mesh.m_vertices[i].nz,
+                                                             mesh.m_vertices[i].tu, mesh.m_vertices[i].tv);
+   }
+
+   fprintf_s(f,"};\nWORD bumperBaseIndices[%i]=\n{\n   ",mesh.NumIndices());
+
+   int ofs=0;
+   for( int i=0;i<mesh.NumIndices();i++ )
+   {
+        fprintf_s(f,"%i,",mesh.m_indices[i]);
+        ofs++;
+        if( ofs==15 )
+        {
+            ofs=0;
+            fprintf_s(f,"\n   ");
+        }
+   }
+   fprintf_s(f,"\n};");
+   fclose(f);
+   return;
 
    fprintf_s(f,"# Visual Pinball OBJ file\n");
    fprintf_s(f,"# numVerts: %u numFaces: %u\n", mesh.NumVertices(), mesh.NumIndices() );

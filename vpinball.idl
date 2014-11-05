@@ -1070,26 +1070,20 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(DISPID_Timer_Enabled), helpstring("property TimerEnabled")] HRESULT TimerEnabled([in] VARIANT_BOOL newVal);
 		[propget, id(DISPID_Timer_Interval), helpstring("property TimerInterval")] HRESULT TimerInterval([out, retval] long *pVal);
 		[propput, id(DISPID_Timer_Interval), helpstring("property TimerInterval")] HRESULT TimerInterval([in] long newVal);
-		[propget, id(6), helpstring("property Overhang")] HRESULT Overhang([out, retval] float *pVal);
-		[propput, id(6), helpstring("property Overhang")] HRESULT Overhang([in] float newVal);
 		[propget, id(340), helpstring("property CapMaterial")] HRESULT CapMaterial([out, retval] BSTR *pVal);
 		[propput, id(340), helpstring("property CapMaterial")] HRESULT CapMaterial([in] BSTR newVal);
-		[propget, id(24), helpstring("property HeightOffset")] HRESULT HeightOffset([out, retval] float *pVal);
-		[propput, id(24), helpstring("property HeightOffset")] HRESULT HeightOffset([in] float newVal);
-		[propget, id(DISPID_Image), helpstring("property Image")] HRESULT Image([out, retval] BSTR *pVal);
-		[propput, id(DISPID_Image), helpstring("property Image")] HRESULT Image([in] BSTR newVal);
+		[propget, id(24), helpstring("property HeightScale")] HRESULT HeightScale([out, retval] float *pVal);
+		[propput, id(24), helpstring("property HeightScale")] HRESULT HeightScale([in] float newVal);
 		[propget, id(DISPID_Name), helpstring("property Name")] HRESULT Name([out, retval] BSTR *pVal);
 		[propput, id(DISPID_Name), helpstring("property Name")] HRESULT Name([in] BSTR newVal);
-//>>> added by chris
 		[propget, id(107), helpstring("property CastsShadow")] HRESULT CastsShadow([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(107), helpstring("property CastsShadow")] HRESULT CastsShadow([in] VARIANT_BOOL newVal);
 		[propget, id(108), helpstring("property Disabled")] HRESULT Disabled([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(108), helpstring("property Disabled")] HRESULT Disabled([in] VARIANT_BOOL newVal);
-		[propget, id(109), helpstring("property Visible")] HRESULT Visible([out, retval] VARIANT_BOOL *pVal);
-		[propput, id(109), helpstring("property Visible")] HRESULT Visible([in] VARIANT_BOOL newVal);
-		[propget, id(110), helpstring("property SideVisible")] HRESULT SideVisible([out, retval] VARIANT_BOOL *pVal);
-		[propput, id(110), helpstring("property SideVisible")] HRESULT SideVisible([in] VARIANT_BOOL newVal);
-//<<<
+		[propget, id(109), helpstring("property CapVisible")] HRESULT CapVisible([out, retval] VARIANT_BOOL *pVal);
+		[propput, id(109), helpstring("property CapVisible")] HRESULT CapVisible([in] VARIANT_BOOL newVal);
+		[propget, id(110), helpstring("property BaseVisible")] HRESULT BaseVisible([out, retval] VARIANT_BOOL *pVal);
+		[propput, id(110), helpstring("property BaseVisible")] HRESULT BaseVisible([in] VARIANT_BOOL newVal);
 	};
 
 	[

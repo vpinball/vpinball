@@ -53,18 +53,16 @@ public:
 	float m_radius;
 	float m_threshold; // speed at which ball needs to hit to register a hit
 	float m_force; // force the bumper kicks back with
-	float m_heightoffset;
+	float m_heightScale;
 	TimerDataRoot m_tdr;
-	float m_overhang;
     char m_szCapMaterial[32];
     char m_szBaseMaterial[32];
-	char m_szImage[MAXTOKEN];
 	char m_szSurface[MAXTOKEN];
 	LightState m_state;
 	BOOL m_fFlashWhenHit; // Hacky flag for cool auto-behavior
 	BOOL m_fCastsShadow;
-	BOOL m_fVisible;
-	BOOL m_fSideVisible;
+	BOOL m_fCapVisible;
+	BOOL m_fBaseVisible;
 	//char m_rgblinkpattern[33];
 	//int m_blinkinterval;
 	};
@@ -148,8 +146,26 @@ DECLARE_REGISTRY_RESOURCEID(IDR_BUMPER)
 //<<<
 
 private:
-    VertexBuffer *vtxBuf;
-    IndexBuffer *idxBuf;
+    void UpdateRing(RenderDevice *pd3dDevice );
+
+    VertexBuffer *baseVertexBuffer;
+    IndexBuffer *baseIndexBuffer;
+
+    VertexBuffer *ringVertexBuffer;
+    IndexBuffer *ringIndexBuffer;
+
+    Matrix3D fullMatrix;
+
+    Vertex3D_NoTex2 *baseVertices;
+    Vertex3D_NoTex2 *ringVertices;
+    Texture baseTexture;
+    Texture ringTexture;
+    Material ringMaterial;
+
+    float   ringAnimHeightOffset;
+    float   baseHeight;
+    bool    ringDown;
+    bool    ringAnimate;
 
 	bool m_fLockedByLS;
 
@@ -171,28 +187,24 @@ public:
 	STDMETHOD(put_Y)(/*[in]*/ float newVal);
 	STDMETHOD(get_X)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_X)(/*[in]*/ float newVal);
-	STDMETHOD(get_Image)(/*[out, retval]*/ BSTR *pVal);
-	STDMETHOD(put_Image)(/*[in]*/ BSTR newVal);
 	STDMETHOD(get_CapMaterial)(/*[out, retval]*/ BSTR *pVal);
 	STDMETHOD(put_CapMaterial)(/*[in]*/ BSTR newVal);
-	STDMETHOD(get_Overhang)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_Overhang)(/*[in]*/ float newVal);
 	STDMETHOD(get_Threshold)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Threshold)(/*[in]*/ float newVal);
 	STDMETHOD(get_Force)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Force)(/*[in]*/ float newVal);
-	STDMETHOD(get_HeightOffset)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_HeightOffset)(/*[in]*/ float newVal);
+	STDMETHOD(get_HeightScale)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_HeightScale)(/*[in]*/ float newVal);
 	STDMETHOD(get_Radius)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Radius)(/*[in]*/ float newVal);
 	STDMETHOD(get_CastsShadow)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_CastsShadow)(/*[in]*/ VARIANT_BOOL newVal);
 	STDMETHOD(get_Disabled)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_Disabled)(/*[in]*/ VARIANT_BOOL newVal);
-	STDMETHOD(get_Visible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-	STDMETHOD(put_Visible)(/*[in]*/ VARIANT_BOOL newVal);
-	STDMETHOD(get_SideVisible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-	STDMETHOD(put_SideVisible)(/*[in]*/ VARIANT_BOOL newVal);
+	STDMETHOD(get_CapVisible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+	STDMETHOD(put_CapVisible)(/*[in]*/ VARIANT_BOOL newVal);
+	STDMETHOD(get_BaseVisible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+	STDMETHOD(put_BaseVisible)(/*[in]*/ VARIANT_BOOL newVal);
 };
 
 #endif // !defined(AFX_BUMPER_H__9A202FF0_7FAE_49BF_AA4C_C01C692E6DD9__INCLUDED_)
