@@ -310,43 +310,15 @@ void Spinner::PostRenderStatic(RenderDevice* pd3dDevice)
     pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelTexelDeclaration );
 
     Material *mat = m_ptable->GetMaterial( m_d.m_szMaterial);
-    D3DXVECTOR4 diffuseColor( 0.5f, 0.5f, 0.5f, 1.0f );
-    D3DXVECTOR4 glossyColor( 0.04f, 0.04f, 0.04f, 1.0f );
-    D3DXVECTOR4 specularColor( 0.04f, 0.04f, 0.04f, 1.0f );
-    float diffuseWrap = 0.5f;
-    float glossyPower = 0.1f;
-    bool  bDiffActive=true;
-    bool  bGlossyActive = false;
-    bool  bSpecActive = false;
+    pd3dDevice->basicShader->SetMaterial(mat);
     COLORREF diffColor = NOTRANSCOLOR;
-    if( mat )
-    {
-        diffuseColor = mat->getDiffuseColor();
-        glossyColor = mat->getGlossyColor();
-        specularColor = mat->getSpecularColor();
-        diffuseWrap = mat->m_fDiffuse;
-        glossyPower = mat->m_fGlossy;
-        bDiffActive = mat->m_bDiffuseActive;
-        bGlossyActive = mat->m_bGlossyActive;
-        bSpecActive = mat->m_bSpecularActive;
-        diffColor = mat->m_diffuseColor;
-    }
-
-    pd3dDevice->basicShader->Core()->SetFloat("fDiffuseWrap",diffuseWrap);
-    pd3dDevice->basicShader->Core()->SetFloat("fGlossyPower",glossyPower);
-    pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&diffuseColor);
-    pd3dDevice->basicShader->Core()->SetVector("vGlossyColor",&glossyColor);
-    pd3dDevice->basicShader->Core()->SetVector("vSpecularColor",&specularColor);
-    pd3dDevice->basicShader->Core()->SetBool("bDiffuse", bDiffActive);
-    pd3dDevice->basicShader->Core()->SetBool("bGlossy", bGlossyActive);
-    pd3dDevice->basicShader->Core()->SetBool("bSpecular", bSpecActive);
-
     COLORREF rgbTransparent = RGB(255,0,255); //RGB(0,0,0);
 
     Texture * const pinback = m_ptable->GetImage(m_d.m_szImageBack);
     Texture * const pinfront = m_ptable->GetImage(m_d.m_szImageFront);
 
-    g_pplayer->m_pin3d.EnableAlphaTestReference(0x80);
+    pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", true);
+    pd3dDevice->basicShader->Core()->SetFloat("fAlphaTestValue", 128.0f/255.0f);
 
     // Set texture to mirror, so the alpha state of the texture blends correctly to the outside
     pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_MIRROR);
