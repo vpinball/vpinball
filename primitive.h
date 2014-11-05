@@ -57,6 +57,8 @@ public:
    float m_friction;
    float m_scatter;
 
+   float m_depthBias;      // for determining depth sorting
+
    bool use3DMesh;
    bool m_fVisible;
    bool m_DrawTexturesInside;
@@ -66,7 +68,6 @@ public:
 
    bool m_fCollidable;
    bool m_fToy;
-   float m_depthBias;      // for determining depth sorting
 };
 
 class Primitive :

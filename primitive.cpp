@@ -727,6 +727,8 @@ void Primitive::UpdateMesh()
       //!! TODO/BUG: this should compute the inverse transpose of the rotational part
    }
 
+#define PRIMITIVE_NORMAL_HACK
+
    for (unsigned i = 0; i < m_mesh.NumVertices(); i++)
    {
       Vertex3D_NoTex2 * const tempVert = &objMesh[i];
@@ -738,7 +740,44 @@ void Primitive::UpdateMesh()
          tempVert->tv = 0.5f + norm.y*0.5f;
       }
       TransformVertex(*tempVert);
+#ifdef PRIMITIVE_NORMAL_HACK
+	  tempVert->nx = tempVert->ny = tempVert->nz = 0.0f;
+#endif
    }
+
+#ifdef PRIMITIVE_NORMAL_HACK
+   for(unsigned i = 0; i < m_mesh.NumIndices(); i+=3)
+   {
+	   Vertex3D_NoTex2 * const A = &objMesh[m_mesh.m_indices[i]  ];
+       Vertex3D_NoTex2 * const B = &objMesh[m_mesh.m_indices[i+1]];
+       Vertex3D_NoTex2 * const C = &objMesh[m_mesh.m_indices[i+2]];         
+
+	    Vertex3Ds normal;
+	   	const Vertex3Ds e0(C->x - A->x,C->y-A->y,C->z-A->z);
+		const Vertex3Ds e1(B->x - A->x,B->y-A->y,B->z-A->z);
+		normal = CrossProduct(e0,e1);
+		normal.NormalizeSafe();
+
+		A->nx += normal.x;
+		A->ny += normal.y;
+		A->nz += normal.z;
+		B->nx += normal.x;
+		B->ny += normal.y;
+		B->nz += normal.z;
+		C->nx += normal.x;
+		C->ny += normal.y;
+		C->nz += normal.z;
+   }
+
+   for (unsigned i = 0; i < m_mesh.NumVertices(); i++)
+   {
+      Vertex3D_NoTex2 * const tempVert = &objMesh[i];
+	  const float inv_l = -1.0f/sqrtf(tempVert->nx*tempVert->nx+tempVert->ny*tempVert->ny+tempVert->nz*tempVert->nz);
+	  tempVert->nx *= inv_l;
+	  tempVert->ny *= inv_l;
+	  tempVert->nz *= inv_l;
+   }
+#endif
 
    Vertex3D_NoTex2 *buf;
    vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY);
