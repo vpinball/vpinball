@@ -32,7 +32,7 @@ void BumperHitCircle::Collide(CollisionEvent* coll)
 
 		if (m_pbumper->m_d.m_fFlashWhenHit)
 		{
-			m_bumperanim.m_TimeReset = g_pplayer->m_time_msec + 100;
+			m_bumperanim.m_TimeReset = g_pplayer->m_time_msec;// + 100;
 			m_bumperanim.m_fAutoTurnedOff = fTrue;
 		}
 
