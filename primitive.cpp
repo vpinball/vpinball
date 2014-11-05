@@ -804,7 +804,6 @@ void Primitive::RenderObject( RenderDevice *pd3dDevice )
 
     Material *mat = m_ptable->GetMaterial( m_d.m_szMaterial);
     pd3dDevice->basicShader->SetMaterial(mat);
-    pd3dDevice->basicShader->Core()->SetFloat("fmaterialAlpha",1.0f);
 
     Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
 
@@ -813,8 +812,7 @@ void Primitive::RenderObject( RenderDevice *pd3dDevice )
         pin->CreateAlphaChannel();
         pd3dDevice->basicShader->SetTexture("Texture0", pin);
         pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
-        pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
-        pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
+        g_pplayer->m_pin3d.EnableAlphaBlend(1,false);
         pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", true);
         pd3dDevice->basicShader->Core()->SetFloat("fAlphaTestValue", 128.0f/255.0f);
 
