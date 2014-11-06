@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "bumperBaseMesh.h"
 #include "bumperRingMesh.h"
+#include "bumperCapMesh.h"
 
 Bumper::Bumper()
 {
@@ -9,6 +10,8 @@ Bumper::Bumper()
    baseIndexBuffer = NULL;
    ringVertexBuffer = NULL;
    ringIndexBuffer = NULL;
+   capVertexBuffer = NULL;
+   capIndexBuffer = NULL;
    ringMaterial.m_diffuseColor = 0xFFFFFFFF;
    ringMaterial.m_bGlossyActive = false;
 }
@@ -67,6 +70,9 @@ void Bumper::SetDefaults(bool fromMouseClick)
    hr = GetRegStringAsFloat("DefaultProps\\Bumper","HeightScale", &fTmp);
    m_d.m_heightScale = (hr == S_OK) && fromMouseClick ? fTmp : 1.0f;
 
+   hr = GetRegStringAsFloat("DefaultProps\\Bumper","Orientation", &fTmp);
+   m_d.m_orientation = (hr == S_OK) && fromMouseClick ? fTmp : 0.0f;
+
    hr = GetRegStringAsFloat("DefaultProps\\Bumper","Threshold", &fTmp);
    m_d.m_threshold = (hr == S_OK) && fromMouseClick ? fTmp : 1;
 
@@ -123,6 +129,7 @@ void Bumper::WriteRegDefaults()
    SetRegValueFloat("DefaultProps\\Bumper","Radius", m_d.m_radius);
    SetRegValueFloat("DefaultProps\\Bumper","Force", m_d.m_force);
    SetRegValueFloat("DefaultProps\\Bumper","HeightScale", m_d.m_heightScale);
+   SetRegValueFloat("DefaultProps\\Bumper","Orientation", m_d.m_orientation);
    SetRegValueFloat("DefaultProps\\Bumper","Threshold", m_d.m_threshold);
    SetRegValueInt("DefaultProps\\Bumper","TimerEnabled", m_d.m_tdr.m_fTimerEnabled);	
    SetRegValueInt("DefaultProps\\Bumper","TimerInterval", m_d.m_tdr.m_TimerInterval);	
@@ -261,6 +268,7 @@ void Bumper::EndPlay()
     {
         baseIndexBuffer->release();
         baseIndexBuffer = 0;
+        baseTexture.FreeStuff();
     }
     if (ringVertexBuffer)
     {
@@ -271,9 +279,19 @@ void Bumper::EndPlay()
     {
         ringIndexBuffer->release();
         ringIndexBuffer = 0;
+        ringTexture.FreeStuff();
     }
-    baseTexture.FreeStuff();
-    ringTexture.FreeStuff();
+    if (capIndexBuffer)
+    {
+        capIndexBuffer->release();
+        capIndexBuffer = 0;
+        capTexture.FreeStuff();
+    }
+    if (capVertexBuffer)
+    {
+        capVertexBuffer->release();
+        capVertexBuffer = 0;
+    }
     delete ringVertices;
 }
 
@@ -293,6 +311,40 @@ void Bumper::UpdateRing(RenderDevice *pd3dDevice )
         buf[i].tv = ringVertices[i].tv;
     }
     ringVertexBuffer->unlock();
+}
+
+
+void Bumper::RenderBase(RenderDevice *pd3dDevice, Material *baseMaterial )
+{
+    pd3dDevice->basicShader->SetMaterial(baseMaterial);
+    pd3dDevice->basicShader->SetTexture("Texture0", &baseTexture);
+    g_pplayer->m_pin3d.EnableAlphaBlend(1,false);
+    pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", true);
+    pd3dDevice->basicShader->Core()->SetFloat("fAlphaTestValue", 128.0f/255.0f);
+
+    pd3dDevice->basicShader->Begin(0);
+    // render base
+    pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, baseVertexBuffer, 0, bumperBaseNumVertices, baseIndexBuffer, 0, bumperBaseNumFaces );
+    pd3dDevice->basicShader->End();
+    pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", true);
+    pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
+    
+}
+
+void Bumper::RenderCap( RenderDevice *pd3dDevice, Material *capMaterial )
+{
+    pd3dDevice->basicShader->SetMaterial(capMaterial);
+    pd3dDevice->basicShader->SetTexture("Texture0", &capTexture);
+    g_pplayer->m_pin3d.EnableAlphaBlend(1,false);
+    pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", true);
+    pd3dDevice->basicShader->Core()->SetFloat("fAlphaTestValue", 128.0f/255.0f);
+
+    pd3dDevice->basicShader->Begin(0);
+    // render cap
+    pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, capVertexBuffer, 0, bumperCapNumVertices, capIndexBuffer, 0, bumperCapNumFaces );
+    pd3dDevice->basicShader->End();
+    pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", true);
+    pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
 }
 
 void Bumper::PostRenderStatic(RenderDevice* pd3dDevice)
@@ -358,54 +410,34 @@ void Bumper::PostRenderStatic(RenderDevice* pd3dDevice)
 
     if (m_d.m_fBaseVisible)
     {
-        mat = m_ptable->GetMaterial( m_d.m_szBaseMaterial);
-        pd3dDevice->basicShader->SetMaterial(mat);
-        pd3dDevice->basicShader->SetTexture("Texture0", &baseTexture);
         pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
-
-        pd3dDevice->basicShader->Begin(0);
-        // render base
-        pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, baseVertexBuffer, 0, bumperBaseNumVertices, baseIndexBuffer, 0, bumperBaseNumFaces );
-        pd3dDevice->basicShader->End();
-
         pd3dDevice->basicShader->SetMaterial(&ringMaterial);
         pd3dDevice->basicShader->SetTexture("Texture0", &ringTexture);
         pd3dDevice->basicShader->Begin(0);
         // render ring
         pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, ringVertexBuffer, 0, bumperRingNumVertices, ringIndexBuffer, 0, bumperRingNumFaces );
         pd3dDevice->basicShader->End();
+
+        mat = m_ptable->GetMaterial(m_d.m_szBaseMaterial);
+        if ( mat->m_bOpacityActive )
+        {
+            pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
+            RenderBase(pd3dDevice, mat);
+            pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+        }
     }
-/*
-    if (pin)
+    if ( m_d.m_fCapVisible )
     {
         pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
-        pin->SetBackDrop( ePictureTexture );
-        pd3dDevice->basicShader->SetTexture("Texture0",pin);
-        mat = m_ptable->GetMaterial( m_d.m_szCapMaterial);
-        pd3dDevice->basicShader->SetMaterial(mat);
-        if (state == 0)
+        mat = m_ptable->GetMaterial(m_d.m_szCapMaterial);
+        if ( mat->m_bOpacityActive )
         {
-//            pd3dDevice->SetMaterial(nonLitMaterial);
-        }
-        else
-        {
-//            pd3dDevice->SetMaterial(litMaterial);
+            pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
+            RenderCap(pd3dDevice, mat);
+            pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
         }
 
-//         pd3dDevice->basicShader->Begin(0);
-//         // render the top circle
-//         pd3dDevice->DrawPrimitiveVB(D3DPT_TRIANGLEFAN, vtxBuf, 0, 32);
-//         // render the "mushroom"
-//         pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, vtxBuf, 32, 8*32, idxBuf, 6*32, 12*32);
-//         pd3dDevice->basicShader->End();
-// 
-//         // Reset all the texture coordinates
-//         if (state == 1)
-//         {
-//             ppin3d->DisableLightMap();
-//         }
     }
-*/
 }
 
 void Bumper::RenderSetup(RenderDevice* pd3dDevice )
@@ -416,12 +448,16 @@ void Bumper::RenderSetup(RenderDevice* pd3dDevice )
 //   const float outerradius = m_d.m_radius + m_d.m_overhang;
    baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_zScale;
 
+   std::vector<WORD> indices(bumperBaseNumFaces);
+   const float scalexy = m_d.m_radius*2.0f;
+   const float scalez = m_d.m_radius*m_d.m_heightScale*2.0f*m_ptable->m_zScale;
+   Vertex3D_NoTex2 *buf;
+
    if ( m_d.m_fBaseVisible )
    {
        baseTexture.CreateFromResource(IDB_BUMPERBASE);
        ringTexture.CreateFromResource(IDB_RINGENVMAP);
 
-       std::vector<WORD> indices(bumperBaseNumFaces);
        for( int i=0;i<bumperBaseNumFaces;i++ ) indices[i] = bumperBaseIndices[i];
 
        if (baseIndexBuffer)
@@ -432,13 +468,10 @@ void Bumper::RenderSetup(RenderDevice* pd3dDevice )
        if (!baseVertexBuffer)
            pd3dDevice->CreateVertexBuffer(bumperBaseNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &baseVertexBuffer);
 
-       const float scalexy = m_d.m_radius*2.0f;
-       const float scalez = m_d.m_radius*m_d.m_heightScale*2.0f*m_ptable->m_zScale;
 
-       fullMatrix.RotateZMatrix(ANGTORAD(90));
+       fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_orientation));
 
        baseVertices = new Vertex3D_NoTex2[bumperBaseNumVertices];
-       Vertex3D_NoTex2 *buf;
        baseVertexBuffer->lock(0, 0, (void**)&buf, 0);
        for( int i=0;i<bumperBaseNumVertices;i++ )
        {
@@ -490,12 +523,59 @@ void Bumper::RenderSetup(RenderDevice* pd3dDevice )
        ringVertexBuffer->unlock();
    }
 
+   if ( m_d.m_fCapVisible )
+   {
+       capTexture.CreateFromResource(IDB_BUMPERCAP);
+       indices.clear();
+       indices.resize( bumperCapNumFaces );
+       for( int i=0;i<bumperCapNumFaces;i++ ) indices[i] = bumperCapIndices[i];
+
+       if (capIndexBuffer)
+           capIndexBuffer->release();
+       capIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer( indices );
+
+       if (!capVertexBuffer)
+           pd3dDevice->CreateVertexBuffer(bumperCapNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &capVertexBuffer);
+
+       capVertexBuffer->lock(0, 0, (void**)&buf, 0);
+       for( int i=0;i<bumperCapNumVertices;i++ )
+       {
+           buf[i].x = (bumperCap[i].x*m_d.m_radius*2.0f)+m_d.m_vCenter.x;
+           buf[i].y = (bumperCap[i].y*m_d.m_radius*2.0f)+m_d.m_vCenter.y;
+           buf[i].z = (bumperCap[i].z*m_d.m_radius*m_d.m_heightScale*2.0f*m_ptable->m_zScale+30.0f)+baseHeight;
+           buf[i].nx = bumperCap[i].nx;
+           buf[i].ny = bumperCap[i].ny;
+           buf[i].nz = bumperCap[i].nz;
+           buf[i].tu = bumperCap[i].tu;
+           buf[i].tv = bumperCap[i].tv;
+       }
+       capVertexBuffer->unlock();
+   }
+
    // ensure we are not disabled at game start
    m_fDisabled = fFalse;
 }
 
 void Bumper::RenderStatic(RenderDevice* pd3dDevice)
 {
+    if (m_d.m_fBaseVisible)
+    {
+        Material *mat = m_ptable->GetMaterial(m_d.m_szBaseMaterial);
+        if ( !mat->m_bOpacityActive )
+        {
+            pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
+            RenderBase(pd3dDevice, mat);
+        }
+    }
+    if (m_d.m_fCapVisible)
+    {
+        Material *mat = m_ptable->GetMaterial(m_d.m_szCapMaterial);
+        if ( !mat->m_bOpacityActive )
+        {
+            pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
+            RenderCap(pd3dDevice, mat);
+        }
+    }
 }
 
 void Bumper::SetObjectPos()
@@ -534,6 +614,7 @@ HRESULT Bumper::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptk
    bw.WriteFloat(FID(THRS), m_d.m_threshold);
    bw.WriteFloat(FID(FORC), m_d.m_force);
    bw.WriteFloat(FID(HISC), m_d.m_heightScale);
+   bw.WriteFloat(FID(ORIN), m_d.m_orientation);
    bw.WriteString(FID(MATR), m_d.m_szCapMaterial);
    bw.WriteString(FID(BAMA), m_d.m_szBaseMaterial);
    bw.WriteString(FID(SURF), m_d.m_szSurface);
@@ -612,6 +693,10 @@ BOOL Bumper::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(HISC))
    {
       pbr->GetFloat(&m_d.m_heightScale);
+   }
+   else if (id == FID(ORIN))
+   {
+       pbr->GetFloat(&m_d.m_orientation);
    }
    else if (id == FID(SURF))
    {
@@ -713,20 +798,38 @@ STDMETHODIMP Bumper::put_Force(float newVal)
 
 STDMETHODIMP Bumper::get_HeightScale(float *pVal)
 {
-   *pVal = m_d.m_heightScale;
+    *pVal = m_d.m_heightScale;
 
-   return S_OK;
+    return S_OK;
 }
 
 STDMETHODIMP Bumper::put_HeightScale(float newVal)
 {
-   STARTUNDO
+    STARTUNDO
 
-   m_d.m_heightScale = newVal;
+        m_d.m_heightScale = newVal;
 
-   STOPUNDO
+    STOPUNDO
 
-   return S_OK;
+        return S_OK;
+}
+
+STDMETHODIMP Bumper::get_Orientation(float *pVal)
+{
+    *pVal = m_d.m_orientation;
+
+    return S_OK;
+}
+
+STDMETHODIMP Bumper::put_Orientation(float newVal)
+{
+    STARTUNDO
+
+        m_d.m_orientation = newVal;
+
+    STOPUNDO
+
+        return S_OK;
 }
 
 STDMETHODIMP Bumper::get_Threshold(float *pVal)
@@ -858,9 +961,6 @@ void Bumper::GetDialogPanes(Vector<PropertyPane> *pvproppane)
    pvproppane->AddElement(pproppane);
 
    pproppane = new PropertyPane(IDD_PROPLIGHT_POSITION, IDS_POSITION);
-   pvproppane->AddElement(pproppane);
-
-   pproppane = new PropertyPane(IDD_PROPBUMPER_STATE, IDS_STATE);
    pvproppane->AddElement(pproppane);
 
    pproppane = new PropertyPane(IDD_PROPBUMPER_PHYSICS, IDS_PHYSICS);

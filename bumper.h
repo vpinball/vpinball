@@ -54,6 +54,7 @@ public:
 	float m_threshold; // speed at which ball needs to hit to register a hit
 	float m_force; // force the bumper kicks back with
 	float m_heightScale;
+    float m_orientation;
 	TimerDataRoot m_tdr;
     char m_szCapMaterial[32];
     char m_szBaseMaterial[32];
@@ -146,6 +147,8 @@ DECLARE_REGISTRY_RESOURCEID(IDR_BUMPER)
 //<<<
 
 private:
+    void RenderBase(RenderDevice *pd3dDevice, Material *baseMaterial );
+    void RenderCap( RenderDevice *pd3dDevice, Material *capMaterial );
     void UpdateRing(RenderDevice *pd3dDevice );
 
     VertexBuffer *baseVertexBuffer;
@@ -154,12 +157,16 @@ private:
     VertexBuffer *ringVertexBuffer;
     IndexBuffer *ringIndexBuffer;
 
+    VertexBuffer *capVertexBuffer;
+    IndexBuffer *capIndexBuffer;
+
     Matrix3D fullMatrix;
 
     Vertex3D_NoTex2 *baseVertices;
     Vertex3D_NoTex2 *ringVertices;
     Texture baseTexture;
     Texture ringTexture;
+    Texture capTexture;
     Material ringMaterial;
 
     float   ringAnimHeightOffset;
@@ -193,8 +200,10 @@ public:
 	STDMETHOD(put_Threshold)(/*[in]*/ float newVal);
 	STDMETHOD(get_Force)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Force)(/*[in]*/ float newVal);
-	STDMETHOD(get_HeightScale)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_HeightScale)(/*[in]*/ float newVal);
+    STDMETHOD(get_HeightScale)(/*[out, retval]*/ float *pVal);
+    STDMETHOD(put_HeightScale)(/*[in]*/ float newVal);
+    STDMETHOD(get_Orientation)(/*[out, retval]*/ float *pVal);
+    STDMETHOD(put_Orientation)(/*[in]*/ float newVal);
 	STDMETHOD(get_Radius)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Radius)(/*[in]*/ float newVal);
 	STDMETHOD(get_CastsShadow)(/*[out, retval]*/ VARIANT_BOOL *pVal);
