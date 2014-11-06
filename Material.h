@@ -71,7 +71,7 @@ public:
       m_fDiffuse=0.5f;
       m_fGlossy=0.1f;
       m_fSpecular=0.0f;
-      m_fOpacity=0.0f;
+      m_fOpacity=1.0f;
 
       m_bDiffuseActive = true;
       m_bGlossyActive = true;
@@ -81,6 +81,7 @@ public:
       m_glossyColor=0;
       m_specularColor=0;
       memset( m_szName, 0, 32 );
+      strcat_s( m_szName, "dummyMaterial");
    }
 
    inline Material( const D3DCOLORVALUE _diffuse, const D3DCOLORVALUE _ambient, const D3DCOLORVALUE _specular, const D3DCOLORVALUE _emissive, const D3DVALUE _power )
