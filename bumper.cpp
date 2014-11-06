@@ -38,6 +38,16 @@ Bumper::~Bumper()
         ringIndexBuffer->release();
         ringIndexBuffer = 0;
     }
+    if (capIndexBuffer)
+    {
+        capIndexBuffer->release();
+        capIndexBuffer = 0;
+    }
+    if (capVertexBuffer)
+    {
+        capVertexBuffer->release();
+        capVertexBuffer = 0;
+    }
 }
 
 HRESULT Bumper::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
@@ -968,94 +978,6 @@ void Bumper::GetDialogPanes(Vector<PropertyPane> *pvproppane)
 
    pproppane = new PropertyPane(IDD_PROP_TIMER, IDS_MISC);
    pvproppane->AddElement(pproppane);
-}
-
-STDMETHODIMP Bumper::get_State(LightState *pVal)
-{
-   *pVal = m_d.m_state;
-
-   return S_OK;
-}
-
-STDMETHODIMP Bumper::put_State(LightState newVal)
-{
-   STARTUNDO
-
-   // if the light is locked by the LS then just change the state and don't change the actual light
-   if (!m_fLockedByLS)
-      setLightState(newVal);
-   m_d.m_state = newVal;
-
-   STOPUNDO
-
-   return S_OK;
-}
-
-STDMETHODIMP Bumper::get_BlinkPattern(BSTR *pVal)
-{
-   WCHAR wz[512];
-
-   MultiByteToWideChar(CP_ACP, 0, m_rgblinkpattern, -1, wz, 32);
-   *pVal = SysAllocString(wz);
-
-   return S_OK;
-}
-
-STDMETHODIMP Bumper::put_BlinkPattern(BSTR newVal)
-{
-   STARTUNDO
-
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_rgblinkpattern, 32, NULL, NULL);
-
-   if (m_rgblinkpattern[0] == '\0')
-   {
-      m_rgblinkpattern[0] = '0';
-      m_rgblinkpattern[1] = '\0';
-   }
-
-   if (g_pplayer)
-   {
-       RestartBlinker(g_pplayer->m_time_msec);
-   }
-
-   STOPUNDO
-
-   return S_OK;
-}
-
-STDMETHODIMP Bumper::get_BlinkInterval(long *pVal)
-{
-   *pVal = m_blinkinterval;
-
-   return S_OK;
-}
-
-STDMETHODIMP Bumper::put_BlinkInterval(long newVal)
-{
-   STARTUNDO
-
-   m_blinkinterval = newVal;
-
-   if (g_pplayer)
-      m_timenextblink = g_pplayer->m_time_msec + m_blinkinterval;
-
-   STOPUNDO
-
-   return S_OK;
-}
-
-STDMETHODIMP Bumper::get_FlashWhenHit(VARIANT_BOOL *pVal)
-{
-   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fFlashWhenHit);
-
-   return S_OK;
-}
-
-STDMETHODIMP Bumper::put_FlashWhenHit(VARIANT_BOOL newVal)
-{
-   m_d.m_fFlashWhenHit = VBTOF(newVal);
-
-   return S_OK;
 }
 
 STDMETHODIMP Bumper::get_CastsShadow(VARIANT_BOOL *pVal)

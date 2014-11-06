@@ -180,14 +180,6 @@ private:
 public:
 	STDMETHOD(get_BaseMaterial)(/*[out, retval]*/ BSTR *pVal);
 	STDMETHOD(put_BaseMaterial)(/*[in]*/ BSTR newVal);
-	STDMETHOD(get_FlashWhenHit)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-	STDMETHOD(put_FlashWhenHit)(/*[in]*/ VARIANT_BOOL newVal);
-	STDMETHOD(get_BlinkInterval)(/*[out, retval]*/ long *pVal);
-	STDMETHOD(put_BlinkInterval)(/*[in]*/ long newVal);
-	STDMETHOD(get_BlinkPattern)(/*[out, retval]*/ BSTR *pVal);
-	STDMETHOD(put_BlinkPattern)(/*[in]*/ BSTR newVal);
-	STDMETHOD(get_State)(/*[out, retval]*/ LightState *pVal);
-	STDMETHOD(put_State)(/*[in]*/ LightState newVal);
 	STDMETHOD(get_Surface)(/*[out, retval]*/ BSTR *pVal);
 	STDMETHOD(put_Surface)(/*[in]*/ BSTR newVal);
 	STDMETHOD(get_Y)(/*[out, retval]*/ float *pVal);

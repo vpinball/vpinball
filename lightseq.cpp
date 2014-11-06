@@ -730,7 +730,7 @@ STDMETHODIMP LightSeq::StopPlay()
 				pLight->get_State(&state);
 				pLight->put_State(state);
 			}
-			else if (type == eItemBumper)
+/*			else if (type == eItemBumper)
 			{
 				Bumper * const pBumper = (Bumper *)m_pcollection->m_visel.ElementAt(i);
 				pBumper->unLockLight();
@@ -738,6 +738,7 @@ STDMETHODIMP LightSeq::StopPlay()
 				pBumper->get_State(&state);
 				pBumper->put_State(state);
 			}
+*/
 		}
 	}
 	return S_OK;
