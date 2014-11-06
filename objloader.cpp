@@ -325,7 +325,7 @@ void WaveFrontObj_Save(const char *filename, const char *description, const Mesh
    fopen_s(&f,filename,"wt");
    if( !f )
       return ;
-    
+/*    
    fprintf_s(f,"const unsigned int bumperBaseNumVertices=%i;\n",mesh.NumIndices());
    fprintf_s(f,"const unsigned int bumperBaseNumFaces=%i;\n", mesh.NumIndices());
    fprintf_s(f,"Vertex3D_NoTex2 bumperBase[%i]=\n{\n",mesh.NumVertices());
@@ -353,7 +353,7 @@ void WaveFrontObj_Save(const char *filename, const char *description, const Mesh
    fprintf_s(f,"\n};");
    fclose(f);
    return;
-
+*/
    fprintf_s(f,"# Visual Pinball OBJ file\n");
    fprintf_s(f,"# numVerts: %u numFaces: %u\n", mesh.NumVertices(), mesh.NumIndices() );
    fprintf_s(f,"o %s\n", description );
