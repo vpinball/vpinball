@@ -1048,14 +1048,6 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(DISPID_X), helpstring("property X")] HRESULT X([in] float newVal);
 		[propget, id(DISPID_Y), helpstring("property Y")] HRESULT Y([out, retval] float *pVal);
 		[propput, id(DISPID_Y), helpstring("property Y")] HRESULT Y([in] float newVal);
-		[propget, id(11), helpstring("property State")] HRESULT State([out, retval] LightState *pVal);
-		[propput, id(11), helpstring("property State")] HRESULT State([in] LightState newVal);
-		[propget, id(12), helpstring("property BlinkPattern")] HRESULT BlinkPattern([out, retval] BSTR *pVal);
-		[propput, id(12), helpstring("property BlinkPattern")] HRESULT BlinkPattern([in] BSTR newVal);
-		[propget, id(13), helpstring("property BlinkInterval")] HRESULT BlinkInterval([out, retval] long *pVal);
-		[propput, id(13), helpstring("property BlinkInterval")] HRESULT BlinkInterval([in] long newVal);
-		[propget, id(14), helpstring("property FlashWhenHit")] HRESULT FlashWhenHit([out, retval] VARIANT_BOOL *pVal);
-		[propput, id(14), helpstring("property FlashWhenHit")] HRESULT FlashWhenHit([in] VARIANT_BOOL newVal);
 		[propget, id(341), helpstring("property BaseMaterial")] HRESULT BaseMaterial([out, retval] BSTR *pVal);
 		[propput, id(341), helpstring("property BaseMaterial")] HRESULT BaseMaterial([in] BSTR newVal);
 		[propget, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([out, retval] VARIANT* pVal);
