@@ -183,21 +183,23 @@ BEGIN
     COMBOBOX        IDC_MATERIAL_COMBO2,7,37,109,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
 END
 
-IDD_PROPBUMPER_VISUALS DIALOGEX 0, 0, 125, 106
+IDD_PROPBUMPER_VISUALS DIALOGEX 0, 0, 125, 134
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     EDITTEXT        8,60,51,40,12,ES_AUTOHSCROLL
-    EDITTEXT        24,60,66,40,12,ES_AUTOHSCROLL
-    CONTROL         "Casts Shadow",107,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,81,61,10
-    CONTROL         "Cap Visible",109,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,91,61,10
-    CONTROL         "Base Visible",110,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,60,91,61,10
+    EDITTEXT        24,60,65,40,12,ES_AUTOHSCROLL
+    CONTROL         "Casts Shadow",107,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,107,61,10
+    CONTROL         "Cap Visible",109,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,117,61,10
+    CONTROL         "Base Visible",110,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,60,117,61,10
     LTEXT           "Cap Material",IDC_STATIC,7,2,45,9
     LTEXT           "&Radius",IDC_STATIC,7,53,23,9
     LTEXT           "Height Scale",IDC_STATIC,7,66,50,9
     COMBOBOX        IDC_MATERIAL_COMBO,7,11,111,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     COMBOBOX        IDC_MATERIAL_COMBO2,7,34,111,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Base Material",IDC_STATIC,7,26,44,8
+    EDITTEXT        IDC_ORIENTATION_EDIT,60,80,40,12,ES_AUTOHSCROLL
+    LTEXT           "Orientation",IDC_STATIC,7,81,35,8
 END
 
 IDD_CODEVIEW DIALOGEX 0, 0, 419, 215
@@ -1753,6 +1755,11 @@ BEGIN
         BOTTOMMARGIN, 129
     END
 
+    IDD_PROPBUMPER_VISUALS, DIALOG
+    BEGIN
+        BOTTOMMARGIN, 106
+    END
+
     IDD_CODEVIEW, DIALOG
     BEGIN
         RIGHTMARGIN, 413
@@ -2111,6 +2118,7 @@ IDB_LOGO                BITMAP                  "res\\logo.bmp"
 IDB_CHEVRON             BITMAP                  "res\\chevron.bmp"
 IDB_BUMPERBASE          BITMAP                  "res\\bumperbase.bmp"
 IDB_RINGENVMAP          BITMAP                  "res\\ringenvmap.bmp"
+IDB_BUMPERCAP           BITMAP                  "res\\bumperCap.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //

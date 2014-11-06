@@ -60,6 +60,7 @@
 #define DISPID_ROTRA8                   22
 #define DISPID_ROTRA9                   23
 #define DISPID_HEIGHTOFFSET             24
+#define IDC_ORIENTATION_EDIT            25
 #define IDS_PROJNAME                    100
 #define IDR_VPINBALL                    100
 #define IDR_SURFACE                     101
@@ -717,8 +718,9 @@
 #define IDD_MATERIALDIALOG              605
 #define IDB_BITMAP1                     608
 #define IDB_BUMPERBASE                  608
-#define IDB_BITMAP2                     609
 #define IDB_RINGENVMAP                  609
+#define IDB_BITMAP2                     610
+#define IDB_BUMPERCAP                   610
 #define DISPID_Gate_Height1             1142
 #define DISPID_Image                    1500
 #define IDC_MESH_FILENAME_EDIT          1601
@@ -832,7 +834,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        610
+#define _APS_NEXT_RESOURCE_VALUE        611
 #define _APS_NEXT_COMMAND_VALUE         32997
 #define _APS_NEXT_CONTROL_VALUE         427
 #define _APS_NEXT_SYMED_VALUE           188
