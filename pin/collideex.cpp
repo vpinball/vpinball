@@ -30,11 +30,8 @@ void BumperHitCircle::Collide(CollisionEvent* coll)
 		pball->vel.x += hitnormal.x * m_pbumper->m_d.m_force; // add a chunk of velocity to drive ball away
 		pball->vel.y += hitnormal.y * m_pbumper->m_d.m_force;
 
-		if (m_pbumper->m_d.m_fFlashWhenHit)
-		{
-			m_bumperanim.m_TimeReset = g_pplayer->m_time_msec;// + 100;
-			m_bumperanim.m_fAutoTurnedOff = fTrue;
-		}
+		m_bumperanim.m_TimeReset = g_pplayer->m_time_msec;// + 100;
+		m_bumperanim.m_fAutoTurnedOff = fTrue;
 
 		m_pbumper->FireGroupEvent(DISPID_HitEvents_Hit);
 	}
@@ -42,8 +39,8 @@ void BumperHitCircle::Collide(CollisionEvent* coll)
 
 void BumperAnimObject::UpdateAnimation()
 {
-	if(!m_fVisible)
-		return;
+// 	if(!m_fVisible)
+// 		return;
 	
 	if ((m_iframe == 0) && (m_TimeReset != 0))
 	{
