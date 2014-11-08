@@ -2,6 +2,7 @@
 #include "bumperBaseMesh.h"
 #include "bumperRingMesh.h"
 #include "bumperCapMesh.h"
+#include "bumperSocketMesh.h"
 
 Bumper::Bumper()
 {
@@ -12,6 +13,8 @@ Bumper::Bumper()
    ringIndexBuffer = NULL;
    capVertexBuffer = NULL;
    capIndexBuffer = NULL;
+   socketIndexBuffer = NULL;
+   socketVertexBuffer = NULL;
    ringMaterial.m_diffuseColor = 0xFFFFFFFF;
    ringMaterial.m_bGlossyActive = false;
 }
@@ -48,6 +51,16 @@ Bumper::~Bumper()
         capVertexBuffer->release();
         capVertexBuffer = 0;
     }
+    if (socketIndexBuffer)
+    {
+       socketIndexBuffer->release();
+       socketIndexBuffer = 0;
+    }
+    if (socketVertexBuffer)
+    {
+       socketVertexBuffer->release();
+       socketVertexBuffer = 0;
+    }
 }
 
 HRESULT Bumper::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
@@ -79,6 +92,9 @@ void Bumper::SetDefaults(bool fromMouseClick)
 
    hr = GetRegStringAsFloat("DefaultProps\\Bumper","HeightScale", &fTmp);
    m_d.m_heightScale = (hr == S_OK) && fromMouseClick ? fTmp : 1.0f;
+
+   hr = GetRegStringAsFloat("DefaultProps\\Bumper","RingSpeed", &fTmp);
+   m_d.m_ringSpeed = (hr == S_OK) && fromMouseClick ? fTmp : 5.0f;
 
    hr = GetRegStringAsFloat("DefaultProps\\Bumper","Orientation", &fTmp);
    m_d.m_orientation = (hr == S_OK) && fromMouseClick ? fTmp : 0.0f;
@@ -139,6 +155,7 @@ void Bumper::WriteRegDefaults()
    SetRegValueFloat("DefaultProps\\Bumper","Radius", m_d.m_radius);
    SetRegValueFloat("DefaultProps\\Bumper","Force", m_d.m_force);
    SetRegValueFloat("DefaultProps\\Bumper","HeightScale", m_d.m_heightScale);
+   SetRegValueFloat("DefaultProps\\Bumper","RingSpeed", m_d.m_ringSpeed);
    SetRegValueFloat("DefaultProps\\Bumper","Orientation", m_d.m_orientation);
    SetRegValueFloat("DefaultProps\\Bumper","Threshold", m_d.m_threshold);
    SetRegValueInt("DefaultProps\\Bumper","TimerEnabled", m_d.m_tdr.m_fTimerEnabled);	
@@ -290,6 +307,7 @@ void Bumper::EndPlay()
         ringIndexBuffer->release();
         ringIndexBuffer = 0;
         ringTexture.FreeStuff();
+        delete ringVertices;
     }
     if (capIndexBuffer)
     {
@@ -302,7 +320,19 @@ void Bumper::EndPlay()
         capVertexBuffer->release();
         capVertexBuffer = 0;
     }
-    delete ringVertices;
+
+    if (socketIndexBuffer)
+    {
+       socketIndexBuffer->release();
+       socketIndexBuffer = 0;
+       socketTexture.FreeStuff();
+    }
+    if (socketVertexBuffer)
+    {
+       socketVertexBuffer->release();
+       socketVertexBuffer = 0;
+    }
+
 }
 
 void Bumper::UpdateRing(RenderDevice *pd3dDevice )
@@ -339,6 +369,23 @@ void Bumper::RenderBase(RenderDevice *pd3dDevice, Material *baseMaterial )
     pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", true);
     pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
     
+}
+
+void Bumper::RenderSocket(RenderDevice *pd3dDevice, Material *baseMaterial )
+{
+   pd3dDevice->basicShader->SetMaterial(baseMaterial);
+   pd3dDevice->basicShader->SetTexture("Texture0", &socketTexture);
+   g_pplayer->m_pin3d.EnableAlphaBlend(1,false);
+   pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", true);
+   pd3dDevice->basicShader->Core()->SetFloat("fAlphaTestValue", 128.0f/255.0f);
+
+   pd3dDevice->basicShader->Begin(0);
+   // render base
+   pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, socketVertexBuffer, 0, bumperSocketNumVertices, socketIndexBuffer, 0, bumperSocketNumFaces );
+   pd3dDevice->basicShader->End();
+   pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", true);
+   pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
+
 }
 
 void Bumper::RenderCap( RenderDevice *pd3dDevice, Material *capMaterial )
@@ -379,7 +426,7 @@ void Bumper::PostRenderStatic(RenderDevice* pd3dDevice)
 
     if( ringAnimate )
     {
-        const float step = 10.0f*m_ptable->m_zScale*m_d.m_heightScale;
+        const float step = m_d.m_ringSpeed*m_ptable->m_zScale*m_d.m_heightScale;
         const float limit = 45*m_ptable->m_zScale*m_d.m_heightScale;
 
         if( ringDown ) 
@@ -421,6 +468,7 @@ void Bumper::PostRenderStatic(RenderDevice* pd3dDevice)
         if ( mat->m_bOpacityActive )
         {
             pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
+            RenderSocket(pd3dDevice, mat);
             RenderBase(pd3dDevice, mat);
             pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
         }
@@ -454,6 +502,10 @@ void Bumper::RenderSetup(RenderDevice* pd3dDevice )
        baseTexture.CreateFromResource(IDB_BUMPERBASE);
        baseTexture.m_rgbTransparent = 0xFFFFFFFF;
        baseTexture.CreateAlphaChannel();
+       socketTexture.CreateFromResource(IDB_BUMPERSOCKET);
+       socketTexture.m_rgbTransparent = 0xFFFFFFFF;
+       socketTexture.CreateAlphaChannel();
+
        ringTexture.CreateFromResource(IDB_RINGENVMAP);
 
        for( int i=0;i<bumperBaseNumFaces;i++ ) indices[i] = bumperBaseIndices[i];
@@ -461,7 +513,6 @@ void Bumper::RenderSetup(RenderDevice* pd3dDevice )
        if (baseIndexBuffer)
            baseIndexBuffer->release();
        baseIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer( indices );
-
 
        if (!baseVertexBuffer)
            pd3dDevice->CreateVertexBuffer(bumperBaseNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &baseVertexBuffer);
@@ -478,7 +529,9 @@ void Bumper::RenderSetup(RenderDevice* pd3dDevice )
 
            buf[i].x = (vert.x*m_d.m_radius*2.0f)+m_d.m_vCenter.x;
            buf[i].y = (vert.y*m_d.m_radius*2.0f)+m_d.m_vCenter.y;
-           buf[i].z = (vert.z*m_d.m_radius*m_d.m_heightScale*2.0f*m_ptable->m_zScale)+baseHeight;
+           buf[i].z = (vert.z*m_d.m_radius*2.0f*m_ptable->m_zScale);
+           buf[i].z *= m_d.m_heightScale;
+           buf[i].z += baseHeight;
            vert = Vertex3Ds( bumperBase[i].nx, bumperBase[i].ny, bumperBase[i].nz );
            vert = fullMatrix.MultiplyVectorNoTranslate(vert);
            buf[i].nx = vert.x;
@@ -491,13 +544,44 @@ void Bumper::RenderSetup(RenderDevice* pd3dDevice )
        delete baseVertices;
 
        indices.clear();
+       indices.resize( bumperSocketNumFaces);
+       for( int i=0;i<bumperSocketNumFaces;i++ ) indices[i] = bumperSocketIndices[i];
+
+       if (socketIndexBuffer)
+          socketIndexBuffer->release();
+       socketIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer( indices );
+
+       if (!socketVertexBuffer)
+          pd3dDevice->CreateVertexBuffer(bumperSocketNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &socketVertexBuffer);
+
+       baseVertices = new Vertex3D_NoTex2[bumperSocketNumVertices];
+       socketVertexBuffer->lock(0, 0, (void**)&buf, 0);
+       for( int i=0;i<bumperSocketNumVertices;i++ )
+       {
+          Vertex3Ds vert(bumperSocket[i].x,bumperSocket[i].y,bumperSocket[i].z);
+          vert = fullMatrix.MultiplyVector(vert);
+
+          buf[i].x = (vert.x*scalexy)+m_d.m_vCenter.x;
+          buf[i].y = (vert.y*scalexy)+m_d.m_vCenter.y;
+          buf[i].z = (vert.z*scalexy*m_ptable->m_zScale)+baseHeight;
+          vert = Vertex3Ds( bumperSocket[i].nx, bumperSocket[i].ny, bumperSocket[i].nz );
+          vert = fullMatrix.MultiplyVectorNoTranslate(vert);
+          buf[i].nx = vert.x;
+          buf[i].ny = vert.y;
+          buf[i].nz = vert.z;
+          buf[i].tu = bumperSocket[i].tu;
+          buf[i].tv = bumperSocket[i].tv;
+       }
+       socketVertexBuffer->unlock();
+       delete baseVertices;
+
+       indices.clear();
        indices.resize( bumperRingNumFaces);
        for( int i=0;i<bumperRingNumFaces;i++ ) indices[i] = bumperRingIndices[i];
 
        if (ringIndexBuffer)
            ringIndexBuffer->release();
        ringIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer( indices );
-
 
        if (!ringVertexBuffer)
            pd3dDevice->CreateVertexBuffer(bumperRingNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &ringVertexBuffer);
@@ -510,9 +594,11 @@ void Bumper::RenderSetup(RenderDevice* pd3dDevice )
        {
            Vertex3Ds vert(bumperRing[i].x,bumperRing[i].y,bumperRing[i].z);
            vert = fullMatrix.MultiplyVector(vert);
-           ringVertices[i].x = (vert.x*m_d.m_radius*2.0f)+m_d.m_vCenter.x;
-           ringVertices[i].y = (vert.y*m_d.m_radius*2.0f)+m_d.m_vCenter.y;
-           ringVertices[i].z = (vert.z*m_d.m_radius*m_d.m_heightScale*2.0f*m_ptable->m_zScale)+baseHeight;
+           ringVertices[i].x = (vert.x*scalexy)+m_d.m_vCenter.x;
+           ringVertices[i].y = (vert.y*scalexy)+m_d.m_vCenter.y;
+           ringVertices[i].z = (vert.z*scalexy*m_ptable->m_zScale);
+           ringVertices[i].z *= m_d.m_heightScale;
+           ringVertices[i].z += (baseHeight);
            vert = Vertex3Ds( bumperRing[i].nx, bumperRing[i].ny, bumperRing[i].nz );
            vert = fullMatrix.MultiplyVectorNoTranslate(vert);
            ringVertices[i].nx = vert.x;
@@ -545,9 +631,10 @@ void Bumper::RenderSetup(RenderDevice* pd3dDevice )
        {
           Vertex3Ds vert(bumperCap[i].x,bumperCap[i].y,bumperCap[i].z);
           vert = fullMatrix.MultiplyVector(vert);
-          vertBuf[i].x = (vert.x*m_d.m_radius*1.8f)+m_d.m_vCenter.x;
-          vertBuf[i].y = (vert.y*m_d.m_radius*1.8f)+m_d.m_vCenter.y;
-          vertBuf[i].z = (vert.z*m_d.m_radius*m_d.m_heightScale*1.8f*m_ptable->m_zScale+30.0f)+baseHeight;
+          vertBuf[i].x = (vert.x*scalexy)+m_d.m_vCenter.x;
+          vertBuf[i].y = (vert.y*scalexy)+m_d.m_vCenter.y;
+          vertBuf[i].z = (vert.z*scalexy*m_ptable->m_zScale);
+          vertBuf[i].z += (baseHeight+84.5f)*m_d.m_heightScale;
           vert = Vertex3Ds( bumperCap[i].nx, bumperCap[i].ny, bumperCap[i].nz );
           vert = fullMatrix.MultiplyVectorNoTranslate(vert);
           vertBuf[i].nx = vert.x;
@@ -573,6 +660,7 @@ void Bumper::RenderStatic(RenderDevice* pd3dDevice)
         if ( !mat->m_bOpacityActive )
         {
             pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
+            RenderSocket(pd3dDevice, mat);
             RenderBase(pd3dDevice, mat);
         }
     }
@@ -623,6 +711,7 @@ HRESULT Bumper::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptk
    bw.WriteFloat(FID(THRS), m_d.m_threshold);
    bw.WriteFloat(FID(FORC), m_d.m_force);
    bw.WriteFloat(FID(HISC), m_d.m_heightScale);
+   bw.WriteFloat(FID(RISP), m_d.m_ringSpeed);
    bw.WriteFloat(FID(ORIN), m_d.m_orientation);
    bw.WriteString(FID(MATR), m_d.m_szCapMaterial);
    bw.WriteString(FID(BAMA), m_d.m_szBaseMaterial);
@@ -702,6 +791,10 @@ BOOL Bumper::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(HISC))
    {
       pbr->GetFloat(&m_d.m_heightScale);
+   }
+   else if (id == FID(RISP))
+   {
+      pbr->GetFloat(&m_d.m_ringSpeed);
    }
    else if (id == FID(ORIN))
    {
@@ -821,6 +914,24 @@ STDMETHODIMP Bumper::put_HeightScale(float newVal)
     STOPUNDO
 
         return S_OK;
+}
+
+STDMETHODIMP Bumper::get_RingSpeed(float *pVal)
+{
+   *pVal = m_d.m_ringSpeed;
+
+   return S_OK;
+}
+
+STDMETHODIMP Bumper::put_RingSpeed(float newVal)
+{
+   STARTUNDO
+
+      m_d.m_ringSpeed = newVal;
+
+   STOPUNDO
+
+      return S_OK;
 }
 
 STDMETHODIMP Bumper::get_Orientation(float *pVal)

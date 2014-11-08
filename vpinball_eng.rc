@@ -14,7 +14,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (U.S.) resources
+// Englisch (USA) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 #ifdef _WIN32
@@ -183,15 +183,15 @@ BEGIN
     COMBOBOX        IDC_MATERIAL_COMBO2,7,37,109,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
 END
 
-IDD_PROPBUMPER_VISUALS DIALOGEX 0, 0, 125, 134
+IDD_PROPBUMPER_VISUALS DIALOGEX 0, 0, 125, 142
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     EDITTEXT        8,60,51,40,12,ES_AUTOHSCROLL
     EDITTEXT        24,60,65,40,12,ES_AUTOHSCROLL
-    CONTROL         "Casts Shadow",107,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,107,61,10
-    CONTROL         "Cap Visible",109,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,117,61,10
-    CONTROL         "Base Visible",110,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,60,117,61,10
+    CONTROL         "Casts Shadow",107,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,115,61,10
+    CONTROL         "Cap Visible",109,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,125,61,10
+    CONTROL         "Base Visible",110,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,60,125,61,10
     LTEXT           "Cap Material",IDC_STATIC,7,2,45,9
     LTEXT           "&Radius",IDC_STATIC,7,53,23,9
     LTEXT           "Height Scale",IDC_STATIC,7,66,50,9
@@ -200,6 +200,8 @@ BEGIN
     LTEXT           "Base Material",IDC_STATIC,7,26,44,8
     EDITTEXT        IDC_ORIENTATION_EDIT,60,80,40,12,ES_AUTOHSCROLL
     LTEXT           "Orientation",IDC_STATIC,7,81,35,8
+    EDITTEXT        IDC_RINGSPEED_EDIT,60,94,40,12,ES_AUTOHSCROLL
+    LTEXT           "Ring Speed",IDC_STATIC,7,96,38,8
 END
 
 IDD_CODEVIEW DIALOGEX 0, 0, 419, 215
@@ -1757,7 +1759,7 @@ BEGIN
 
     IDD_PROPBUMPER_VISUALS, DIALOG
     BEGIN
-        BOTTOMMARGIN, 106
+        BOTTOMMARGIN, 134
     END
 
     IDD_CODEVIEW, DIALOG
@@ -2119,6 +2121,7 @@ IDB_CHEVRON             BITMAP                  "res\\chevron.bmp"
 IDB_BUMPERBASE          BITMAP                  "res\\bumperbase.bmp"
 IDB_RINGENVMAP          BITMAP                  "res\\ringenvmap.bmp"
 IDB_BUMPERCAP           BITMAP                  "res\\bumperCap.bmp"
+IDB_BUMPERSOCKET        BITMAP                  "res\\bumperSocket.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -2409,7 +2412,7 @@ BEGIN
     IDS_STEP                "Step"
 END
 
-#endif    // English (U.S.) resources
+#endif    // Englisch (USA) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
