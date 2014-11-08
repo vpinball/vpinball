@@ -1068,6 +1068,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(24), helpstring("property HeightScale")] HRESULT HeightScale([in] float newVal);
 		[propget, id(25), helpstring("property Orientation")] HRESULT Orientation([out, retval] float *pVal);
 		[propput, id(25), helpstring("property Orientation")] HRESULT Orientation([in] float newVal);
+		[propget, id(26), helpstring("property RingSpeed")] HRESULT RingSpeed([out, retval] float *pVal);
+		[propput, id(26), helpstring("property RingSpeed")] HRESULT RingSpeed([in] float newVal);
 		[propget, id(DISPID_Name), helpstring("property Name")] HRESULT Name([out, retval] BSTR *pVal);
 		[propput, id(DISPID_Name), helpstring("property Name")] HRESULT Name([in] BSTR newVal);
 		[propget, id(107), helpstring("property CastsShadow")] HRESULT CastsShadow([out, retval] VARIANT_BOOL *pVal);
