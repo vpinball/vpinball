@@ -54,6 +54,8 @@ sampler2D texSampler0 : TEXUNIT0 = sampler_state
     MIPFILTER = LINEAR;
     MAGFILTER = LINEAR;
     MINFILTER = LINEAR;
+	//ADDRESSU  = Wrap;
+	//ADDRESSV  = Wrap;
 };
 
 sampler2D texSampler1 : TEXUNIT1 = sampler_state
@@ -62,6 +64,8 @@ sampler2D texSampler1 : TEXUNIT1 = sampler_state
     MIPFILTER = LINEAR;
     MAGFILTER = LINEAR;
     MINFILTER = LINEAR;
+	ADDRESSU  = Wrap;
+	ADDRESSV  = Wrap;
 };
 
 sampler2D texSampler2 : TEXUNIT2 = sampler_state
@@ -70,6 +74,8 @@ sampler2D texSampler2 : TEXUNIT2 = sampler_state
     MIPFILTER = LINEAR;
     MAGFILTER = LINEAR;
     MINFILTER = LINEAR;
+	ADDRESSU  = Wrap;
+	ADDRESSV  = Wrap;
 };
 
 
