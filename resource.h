@@ -705,6 +705,8 @@
 #define IDC_LIGHT0EMISSION              559
 #define IDC_LIGHTHEIGHT                 564
 #define IDC_LIGHTRANGE                  565
+#define IDC_ENVEMISSIONSCALE            566
+#define IDC_LIGHTEMISSIONSCALE          567
 #define IDC_TABLESOUNDVOLUME            579
 #define IDC_SHADOW_COLOR                579
 #define IDC_TABLEMUSICVOLUME            580

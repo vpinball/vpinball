@@ -118,6 +118,10 @@ public:
     STDMETHOD(put_LightHeight)(/*[in]*/ float newVal);
     STDMETHOD(get_LightRange)(/*[out, retval]*/ float *pVal);
     STDMETHOD(put_LightRange)(/*[in]*/ float newVal);
+    STDMETHOD(get_EnvironmentEmissionScale)(/*[out, retval]*/ float *pVal);
+    STDMETHOD(put_EnvironmentEmissionScale)(/*[in]*/ float newVal);
+    STDMETHOD(get_LightEmissionScale)(/*[out, retval]*/ float *pVal);
+    STDMETHOD(put_LightEmissionScale)(/*[in]*/ float newVal);
     STDMETHOD(get_BallReflection)(/*[out, retval]*/ int *pVal);
     STDMETHOD(put_BallReflection)(/*[in]*/ int newVal);
     STDMETHOD(get_ReflectionStrength)(/*[out, retval]*/ int *pVal);
@@ -544,7 +548,7 @@ END_CONNECTION_POINT_MAP()
 
 	char m_szImage[MAXTOKEN];
 	char m_szImageBackdrop[MAXTOKEN];
-   char m_szPlayfieldMaterial[32];
+    char m_szPlayfieldMaterial[32];
 	COLORREF m_colorbackdrop;
 
 	char m_szBallImage[MAXTOKEN];
@@ -622,6 +626,9 @@ END_CONNECTION_POINT_MAP()
 	COLORREF m_lightAmbient;
     float m_lightHeight;
     float m_lightRange;
+	float m_lightEmissionScale;
+	float m_envEmissionScale;
+
     int m_useReflectionForBalls;
     int m_ballReflectionStrength;
     int m_useTrailForBalls;

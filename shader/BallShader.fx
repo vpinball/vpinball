@@ -173,7 +173,7 @@ float4 psBall( in vout IN ) : COLOR
 	float2 uv0;
 	uv0.x = r.x*0.5f+0.5f;
 	uv0.y = r.y*0.5f+0.5f;
-	float3 ballImageColor = InvGamma(tex2D( texSampler0, uv0 ).xyz)*EnvEmissionScale;
+	float3 ballImageColor = InvGamma(tex2D( texSampler0, uv0 ).xyz)*fenvEmissionScale;
 
 	float4 decalColor = tex2D( texSampler2, IN.tex0 );
 	decalColor.xyz = InvGamma(decalColor.xyz)*decalColor.a;
