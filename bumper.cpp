@@ -426,8 +426,8 @@ void Bumper::PostRenderStatic(RenderDevice* pd3dDevice)
 
     if( ringAnimate )
     {
-        const float step = m_d.m_ringSpeed*m_ptable->m_zScale*m_d.m_heightScale;
-        const float limit = 45*m_ptable->m_zScale*m_d.m_heightScale;
+        const float step = m_d.m_ringSpeed*(m_ptable->m_zScale*m_d.m_heightScale);
+        const float limit = 45.f*(m_ptable->m_zScale*m_d.m_heightScale);
 
         if( ringDown ) 
         {
@@ -471,7 +471,7 @@ void Bumper::PostRenderStatic(RenderDevice* pd3dDevice)
             RenderSocket(pd3dDevice, mat);
             RenderBase(pd3dDevice, mat);
             pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
-        }
+    }
     }
     if ( m_d.m_fCapVisible )
     {
@@ -900,20 +900,20 @@ STDMETHODIMP Bumper::put_Force(float newVal)
 
 STDMETHODIMP Bumper::get_HeightScale(float *pVal)
 {
-    *pVal = m_d.m_heightScale;
+   *pVal = m_d.m_heightScale;
 
-    return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Bumper::put_HeightScale(float newVal)
 {
-    STARTUNDO
+   STARTUNDO
 
-        m_d.m_heightScale = newVal;
+   m_d.m_heightScale = newVal;
 
-    STOPUNDO
+   STOPUNDO
 
-        return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Bumper::get_RingSpeed(float *pVal)

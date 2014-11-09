@@ -4,9 +4,9 @@ VP 10.0.0 Changelog
   most existing VP9 and VP8 tables will not work correctly or will output script errors when run (but they will load)
 
   -> TL.DR up-front conversion hints:
-     - pull lightsources->ambient down to 0,0,0
-     - crank up lightsources->emission to 255,255,255
-     - revisit all physics settings, even if you used VP9Physmod(5) before (only friction and scatter in the physmod5 case though)
+     - pull lightsources->ambient down to 0,0,0 (otherwise table will look 'hazy')
+     - crank up lightsources->emission to 255,255,255 (to get a good contrast on the shading)
+     - revisit all physics settings, even if you used VP9Physmod(5) before (only the re-enabled friction and scatter in the physmod5 case though)
      - use flashers when doing special lighting effects/night mods, otherwise try to stick with the newly redone light element
 
 
