@@ -1179,7 +1179,7 @@ bool Primitive::BrowseFor3DMeshFile()
    ofn.lpstrDefExt = "obj";
    ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
-   const HRESULT hr = GetRegString("RecentDir","LoadDir", szInitialDir, 1024);
+   const HRESULT hr = GetRegString("RecentDir","ImportDir", szInitialDir, 1024);
    char szFoo[MAX_PATH];
    if (hr == S_OK)
    {
@@ -1204,6 +1204,7 @@ bool Primitive::BrowseFor3DMeshFile()
    {
       return false;
    }
+   SetRegValue("RecentDir","ImportDir", REG_SZ, szInitialDir, lstrlen(szInitialDir));
    m_mesh.Clear();
    objMesh.clear();
    m_d.use3DMesh=false;
