@@ -15,7 +15,9 @@ float EnvEmissionScale = 10.0f; //!! also have envmap of fixed size?
 float LightEmissionScale = 1000000.0f; //!! remove! put into emission below
 float  flightRange = 3000.0f;
 
-float  fmaterialAlpha = 1.0f; //!! allow for texture? -> use from diffuse? and/or glossy,etc?
+float fmaterialAlpha = 1.0f; //!! allow for texture? -> use from diffuse? and/or glossy,etc?
+
+float fenvTexWidth;
 
 // transformation matrices 
 float4x4 matWorldViewProj  : WORLDVIEWPROJ;
@@ -109,7 +111,7 @@ float3 DoPointLight(float3 pos, float3 N, float3 V, float3 diffuse, float3 gloss
  
    // add glossy component (modified ashikhmin/blinn bastard), not fully energy conserving, but good enough
    if(bGlossy && (NdotL > 0.0f))
-   { 
+   {
 	 float3 H = normalize(L + V); // half vector
 	 float NdotH = dot(N, H);
 	 float LdotH = dot(L, H);
@@ -141,10 +143,27 @@ float3 DoEnvmapDiffuse(float3 N, float3 diffuse)
 }
 
 //!! PI?
+// very very crude approximation by abusing miplevels
+float3 DoEnvmapGlossy(float3 N, float3 V, float3 glossy, float glossyPower)
+{
+   float3 r = reflect(-V,N);
+   r = normalize(mul(float4(r,0.0f), matViewInverse).xyz); // trafo back to world
+
+   float mip = log2(fenvTexWidth * sqrt(3.0f)) - 0.5f*log2(glossyPower + 1.0f);
+
+   float2 uv = float2( // remap to 2D envmap coords
+		atan2(r.y, r.x) * (0.5f/PI) + 0.5f,
+	    acos(r.z) * (1.0f/PI));
+
+   return glossy * InvGamma(tex2Dlod(texSampler1, float4(uv, 0, mip)).xyz)*EnvEmissionScale; //!! replace by real HDR instead? -> remove invgamma then
+}
+
+//!! PI?
 float3 DoEnvmap2ndLayer(float3 color1stLayer, float3 pos, float3 N, float3 V, float3 specular)
 {
    float3 r = reflect(-V,N);
    r = normalize(mul(float4(r,0.0f), matViewInverse).xyz); // trafo back to world
+
    float2 uv = float2( // remap to 2D envmap coords
 		atan2(r.y, r.x) * (0.5f/PI) + 0.5f,
 	    acos(r.z) * (1.0f/PI));
@@ -186,8 +205,14 @@ float4 lightLoop(float3 pos, float3 N, float3 V, float3 diffuse, float3 glossy, 
    }
          
    if(bDiffuse && diffuseMax > 0.0f)
-      color += DoEnvmapDiffuse(N, diffuse); // no glossy, as it's the most hacky one //!! -> use mipmap-hacks for glossy?
-         
+      color += DoEnvmapDiffuse(N, diffuse);
+
+   if(bGlossy && glossyMax > 0.0f)
+   {
+      float glossyPower = exp2(10.0f * fGlossyPower + 1.0f); // map from 0..1 to 2..2048 //!! precalc?
+      color += DoEnvmapGlossy(N, V, glossy, glossyPower);
+   }
+
    // 2nd Layer
    if(bSpecular /*&& specularMax > 0.0f*/)
       color = DoEnvmap2ndLayer(color, pos, N, V, specular);
