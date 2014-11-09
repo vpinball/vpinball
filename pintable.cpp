@@ -2758,6 +2758,8 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
    bw.WriteInt(FID(LZDI), m_Light[0].emission);
    bw.WriteFloat(FID(LZHI), m_lightHeight);
    bw.WriteFloat(FID(LZRA), m_lightRange);
+   bw.WriteFloat(FID(LIES), m_lightEmissionScale);
+   bw.WriteFloat(FID(ENES), m_envEmissionScale);
    bw.WriteFloat(FID(SDIX), m_shadowDirX);
    bw.WriteFloat(FID(SDIY), m_shadowDirY);
 
@@ -3178,6 +3180,8 @@ void PinTable::SetLoadDefaults()
 
    m_lightHeight = 1000.0f;
    m_lightRange = 3000.0f;
+   m_lightEmissionScale = 1000000.0f;
+   m_envEmissionScale = 10.0f;
    m_angletiltMax = 726.0f;
    m_angletiltMin = 4.5f;
 
@@ -3437,6 +3441,14 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(LZRA))
    {
        pbr->GetFloat(&m_lightRange);
+   }
+   else if (id == FID(LIES))
+   {
+       pbr->GetFloat(&m_lightEmissionScale);
+   }
+   else if (id == FID(ENES))
+   {
+       pbr->GetFloat(&m_envEmissionScale);
    }
    else if (id == FID(BREF))
    {
@@ -7125,7 +7137,43 @@ STDMETHODIMP PinTable::put_LightRange(float newVal)
 
     STOPUNDO
 
-        return S_OK;
+    return S_OK;
+}
+
+STDMETHODIMP PinTable::get_LightEmissionScale(float *pVal)
+{
+    *pVal = m_lightEmissionScale;
+
+    return S_OK;
+}
+
+STDMETHODIMP PinTable::put_LightEmissionScale(float newVal)
+{
+    STARTUNDO
+
+    m_lightEmissionScale = newVal;
+
+    STOPUNDO
+
+    return S_OK;
+}
+
+STDMETHODIMP PinTable::get_EnvironmentEmissionScale(float *pVal)
+{
+    *pVal = m_envEmissionScale;
+
+    return S_OK;
+}
+
+STDMETHODIMP PinTable::put_EnvironmentEmissionScale(float newVal)
+{
+    STARTUNDO
+
+    m_envEmissionScale = newVal;
+
+    STOPUNDO
+
+    return S_OK;
 }
 
 STDMETHODIMP PinTable::get_BallReflection(int *pVal)

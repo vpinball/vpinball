@@ -11,9 +11,8 @@ float  fDiffuseWrap = 0.5f; //!! pass from material, w in [0..1] for rim/wrap li
 float  fGlossyPower = 0.1f; //!! pass from material(/texture?)
 float3 vAmbient = float3(0.0f,0.0f,0.0f); //!! remove completely, just rely on envmap/IBL?
 
-float EnvEmissionScale = 10.0f; //!! also have envmap of fixed size?
-float LightEmissionScale = 1000000.0f; //!! remove! put into emission below
-float  flightRange = 3000.0f;
+float fenvEmissionScale;
+float flightRange;
 
 float fmaterialAlpha = 1.0f; //!! allow for texture? -> use from diffuse? and/or glossy,etc?
 
@@ -133,7 +132,7 @@ float3 DoPointLight(float3 pos, float3 N, float3 V, float3 diffuse, float3 gloss
    float fAtten = saturate(1.0f - sqrl_lightDir*sqrl_lightDir/(flightRange*flightRange*flightRange*flightRange)); //!! pre-mult/invert flightRange?
    fAtten = fAtten*fAtten/(sqrl_lightDir + 1.0f);
 
-   Out *= lights[i].vEmission * LightEmissionScale * fAtten;
+   Out *= lights[i].vEmission * fAtten;
    
    return Out; 
 }
@@ -145,7 +144,7 @@ float3 DoEnvmapDiffuse(float3 N, float3 diffuse)
 		atan2(N.y, N.x) * (0.5f/PI) + 0.5f,
 	    acos(N.z) * (1.0f/PI));
 
-   return diffuse * InvGamma(tex2D(texSampler2, uv).xyz)*EnvEmissionScale; //!! replace by real HDR instead? -> remove invgamma then
+   return diffuse * InvGamma(tex2D(texSampler2, uv).xyz)*fenvEmissionScale; //!! replace by real HDR instead? -> remove invgamma then
 }
 
 //!! PI?
@@ -161,7 +160,7 @@ float3 DoEnvmapGlossy(float3 N, float3 V, float3 glossy, float glossyPower)
 		atan2(r.y, r.x) * (0.5f/PI) + 0.5f,
 	    acos(r.z) * (1.0f/PI));
 
-   return glossy * InvGamma(tex2Dlod(texSampler1, float4(uv, 0, mip)).xyz)*EnvEmissionScale; //!! replace by real HDR instead? -> remove invgamma then
+   return glossy * InvGamma(tex2Dlod(texSampler1, float4(uv, 0, mip)).xyz)*fenvEmissionScale; //!! replace by real HDR instead? -> remove invgamma then
 }
 
 //!! PI?
@@ -175,7 +174,7 @@ float3 DoEnvmap2ndLayer(float3 color1stLayer, float3 pos, float3 N, float3 V, fl
 	    acos(r.z) * (1.0f/PI));
 	    
    float3 w = FresnelSchlick(specular, dot(V, N)); //!! ?
-   return lerp(color1stLayer, InvGamma(tex2D(texSampler1, uv).xyz)*EnvEmissionScale, w); // weight (optional) lower diffuse/glossy layer with clearcoat/specular //!! replace by real HDR instead? -> remove invgamma then
+   return lerp(color1stLayer, InvGamma(tex2D(texSampler1, uv).xyz)*fenvEmissionScale, w); // weight (optional) lower diffuse/glossy layer with clearcoat/specular //!! replace by real HDR instead? -> remove invgamma then
 }
 
 float4 lightLoop(float3 pos, float3 N, float3 V, float3 diffuse, float3 glossy, float3 specular)

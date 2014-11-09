@@ -750,6 +750,7 @@ void Player::InitShader()
    m_pin3d.m_pd3dDevice->basicShader->SetTexture("Texture1", &m_pin3d.envTexture);
    m_pin3d.m_pd3dDevice->basicShader->SetTexture("Texture2", m_pin3d.m_device_envRadianceTexture);
    m_pin3d.m_pd3dDevice->basicShader->Core()->SetFloat("fenvTexWidth", m_pin3d.envTexture.m_height/*+m_pin3d.envTexture.m_width)*0.5f*/);
+   m_pin3d.m_pd3dDevice->basicShader->Core()->SetFloat("fenvEmissionScale", m_ptable->m_envEmissionScale);
 
    InitBallShader();
 }
@@ -799,6 +800,7 @@ void Player::InitBallShader()
    //D3DXVECTOR4 cam( matView._41, matView._42, matView._43, 1 );
    //ballShader->Core()->SetVector("camera", &cam);
    ballShader->Core()->SetFloat("flightRange",m_ptable->m_lightRange);
+   ballShader->Core()->SetFloat("fenvEmissionScale",m_ptable->m_envEmissionScale);
    ballShader->Core()->SetInt("iLightPointNum",MAX_LIGHT_SOURCES);
 
    ballShader->Core()->SetFloat("fDiffuseWrap", 0.25f);
