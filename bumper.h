@@ -54,11 +54,12 @@ public:
 	float m_threshold; // speed at which ball needs to hit to register a hit
 	float m_force; // force the bumper kicks back with
 	float m_heightScale;
-   float m_orientation;
-   float m_ringSpeed;
+    float m_orientation;
+    float m_ringSpeed;
 	TimerDataRoot m_tdr;
-   char m_szCapMaterial[32];
-   char m_szBaseMaterial[32];
+    char m_szCapMaterial[32];
+    char m_szBaseMaterial[32];
+    char m_szSkirtMaterial[32];
 	char m_szSurface[MAXTOKEN];
 	LightState m_state;
 	BOOL m_fFlashWhenHit; // Hacky flag for cool auto-behavior
@@ -184,8 +185,10 @@ private:
 
 // IBumper
 public:
-	STDMETHOD(get_BaseMaterial)(/*[out, retval]*/ BSTR *pVal);
-	STDMETHOD(put_BaseMaterial)(/*[in]*/ BSTR newVal);
+    STDMETHOD(get_BaseMaterial)(/*[out, retval]*/ BSTR *pVal);
+    STDMETHOD(put_BaseMaterial)(/*[in]*/ BSTR newVal);
+    STDMETHOD(get_SkirtMaterial)(/*[out, retval]*/ BSTR *pVal);
+    STDMETHOD(put_SkirtMaterial)(/*[in]*/ BSTR newVal);
 	STDMETHOD(get_Surface)(/*[out, retval]*/ BSTR *pVal);
 	STDMETHOD(put_Surface)(/*[in]*/ BSTR newVal);
 	STDMETHOD(get_Y)(/*[out, retval]*/ float *pVal);

@@ -499,14 +499,20 @@ void Bumper::PostRenderStatic(RenderDevice* pd3dDevice)
         pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, ringVertexBuffer, 0, bumperRingNumVertices, ringIndexBuffer, 0, bumperRingNumFaces );
         pd3dDevice->basicShader->End();
 
-        mat = m_ptable->GetMaterial(m_d.m_szBaseMaterial);
+        mat = m_ptable->GetMaterial(m_d.m_szSkirtMaterial);
         if ( mat->m_bOpacityActive )
         {
             pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
             RenderSocket(pd3dDevice, mat);
+            pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+        }
+        mat = m_ptable->GetMaterial(m_d.m_szBaseMaterial);
+        if ( mat->m_bOpacityActive )
+        {
+            pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
             RenderBase(pd3dDevice, mat);
             pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
-    }
+        }
     }
     if ( m_d.m_fCapVisible )
     {
@@ -691,11 +697,15 @@ void Bumper::RenderStatic(RenderDevice* pd3dDevice)
 {
     if (m_d.m_fBaseVisible)
     {
-        Material *mat = m_ptable->GetMaterial(m_d.m_szBaseMaterial);
+        Material *mat = m_ptable->GetMaterial(m_d.m_szSkirtMaterial);
+        pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
         if ( !mat->m_bOpacityActive )
         {
-            pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
             RenderSocket(pd3dDevice, mat);
+        }
+        mat = m_ptable->GetMaterial(m_d.m_szBaseMaterial);
+        if ( !mat->m_bOpacityActive )
+        {
             RenderBase(pd3dDevice, mat);
         }
     }
@@ -750,6 +760,7 @@ HRESULT Bumper::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptk
    bw.WriteFloat(FID(ORIN), m_d.m_orientation);
    bw.WriteString(FID(MATR), m_d.m_szCapMaterial);
    bw.WriteString(FID(BAMA), m_d.m_szBaseMaterial);
+   bw.WriteString(FID(SKMA), m_d.m_szSkirtMaterial);
    bw.WriteString(FID(SURF), m_d.m_szSurface);
    bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
    bw.WriteInt(FID(STAT), m_d.m_state);
@@ -805,7 +816,11 @@ BOOL Bumper::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(BAMA))
    {
-      pbr->GetString(m_d.m_szBaseMaterial);
+       pbr->GetString(m_d.m_szBaseMaterial);
+   }
+   else if (id == FID(SKMA))
+   {
+       pbr->GetString(m_d.m_szSkirtMaterial);
    }
    else if (id == FID(TMON))
    {
@@ -1047,6 +1062,26 @@ STDMETHODIMP Bumper::put_BaseMaterial(BSTR newVal )
    return S_OK;
 }
 
+STDMETHODIMP Bumper::get_SkirtMaterial(BSTR *pVal)
+{
+    WCHAR wz[512];
+
+    MultiByteToWideChar(CP_ACP, 0, m_d.m_szSkirtMaterial, -1, wz, 32);
+    *pVal = SysAllocString(wz);
+
+    return S_OK;
+}
+
+STDMETHODIMP Bumper::put_SkirtMaterial(BSTR newVal )
+{
+    STARTUNDO
+
+        WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSkirtMaterial, 32, NULL, NULL);
+
+    STOPUNDO
+
+        return S_OK;
+}
 
 STDMETHODIMP Bumper::get_X(float *pVal)
 {
