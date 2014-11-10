@@ -14,7 +14,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Englisch (USA) resources
+// English (U.S.) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 #ifdef _WIN32
@@ -183,25 +183,27 @@ BEGIN
     COMBOBOX        IDC_MATERIAL_COMBO2,7,37,109,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
 END
 
-IDD_PROPBUMPER_VISUALS DIALOGEX 0, 0, 125, 142
+IDD_PROPBUMPER_VISUALS DIALOGEX 0, 0, 125, 170
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    EDITTEXT        8,60,51,40,12,ES_AUTOHSCROLL
-    EDITTEXT        24,60,65,40,12,ES_AUTOHSCROLL
-    CONTROL         "Casts Shadow",107,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,115,61,10
-    CONTROL         "Cap Visible",109,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,125,61,10
-    CONTROL         "Base Visible",110,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,60,125,61,10
+    EDITTEXT        8,60,74,40,12,ES_AUTOHSCROLL
+    EDITTEXT        24,60,88,40,12,ES_AUTOHSCROLL
+    CONTROL         "Casts Shadow",107,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,138,61,10
+    CONTROL         "Cap Visible",109,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,148,61,10
+    CONTROL         "Base Visible",110,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,60,148,61,10
     LTEXT           "Cap Material",IDC_STATIC,7,2,45,9
-    LTEXT           "&Radius",IDC_STATIC,7,53,23,9
-    LTEXT           "Height Scale",IDC_STATIC,7,66,50,9
+    LTEXT           "&Radius",IDC_STATIC,7,76,23,9
+    LTEXT           "Height Scale",IDC_STATIC,7,89,50,9
     COMBOBOX        IDC_MATERIAL_COMBO,7,11,111,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     COMBOBOX        IDC_MATERIAL_COMBO2,7,34,111,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Base Material",IDC_STATIC,7,26,44,8
-    EDITTEXT        IDC_ORIENTATION_EDIT,60,80,40,12,ES_AUTOHSCROLL
-    LTEXT           "Orientation",IDC_STATIC,7,81,35,8
-    EDITTEXT        IDC_RINGSPEED_EDIT,60,94,40,12,ES_AUTOHSCROLL
-    LTEXT           "Ring Speed",IDC_STATIC,7,96,38,8
+    EDITTEXT        IDC_ORIENTATION_EDIT,60,103,40,12,ES_AUTOHSCROLL
+    LTEXT           "Orientation",IDC_STATIC,7,104,35,8
+    EDITTEXT        IDC_RINGSPEED_EDIT,60,117,40,12,ES_AUTOHSCROLL
+    LTEXT           "Ring Speed",IDC_STATIC,7,119,38,8
+    COMBOBOX        IDC_MATERIAL_COMBO3,7,56,111,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Skirt Material",IDC_STATIC,7,48,42,8
 END
 
 IDD_CODEVIEW DIALOGEX 0, 0, 419, 215
@@ -1763,7 +1765,7 @@ BEGIN
 
     IDD_PROPBUMPER_VISUALS, DIALOG
     BEGIN
-        BOTTOMMARGIN, 134
+        BOTTOMMARGIN, 162
     END
 
     IDD_CODEVIEW, DIALOG
@@ -2416,7 +2418,7 @@ BEGIN
     IDS_STEP                "Step"
 END
 
-#endif    // Englisch (USA) resources
+#endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
