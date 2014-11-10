@@ -2,10 +2,10 @@
 
 BumperHitCircle::BumperHitCircle()
 {
-	m_bumperanim.m_iframe = 0;
+	m_bumperanim.m_fHeight = 0;
 	m_bumperanim.m_TimeReset = 0;
 	m_bumperanim.m_iframedesired = 0;
-	m_bumperanim.m_fAutoTurnedOff = fFalse;
+	m_bumperanim.m_fHitEvent = fFalse;
 	m_elasticity = 0.3f;
     SetFriction(0.3f);
 	m_scatter = 0;
@@ -30,37 +30,15 @@ void BumperHitCircle::Collide(CollisionEvent* coll)
 		pball->vel.x += hitnormal.x * m_pbumper->m_d.m_force; // add a chunk of velocity to drive ball away
 		pball->vel.y += hitnormal.y * m_pbumper->m_d.m_force;
 
-		m_bumperanim.m_TimeReset = g_pplayer->m_time_msec;// + 100;
-		m_bumperanim.m_fAutoTurnedOff = fTrue;
+		m_bumperanim.m_fHitEvent = fTrue;
 
 		m_pbumper->FireGroupEvent(DISPID_HitEvents_Hit);
 	}
 }
 
-void BumperAnimObject::UpdateAnimation()
-{
-// 	if(!m_fVisible)
-// 		return;
-	
-	if ((m_iframe == 0) && (m_TimeReset != 0))
-	{
-		m_iframe = 1;
-	}
-	else if (m_fAutoTurnedOff && (m_iframe == 1) && (m_TimeReset < g_pplayer->m_time_msec) && (m_iframe != m_iframedesired))
-	{
-		m_iframe = m_iframedesired;
-		m_TimeReset = 0;
-		m_fAutoTurnedOff = fFalse;
-	}
-	else if (!m_fAutoTurnedOff && (m_iframe != m_iframedesired))
-	{
-		m_iframe = m_iframedesired;
-	}
-}
-
 void BumperAnimObject::Reset()
 {
-	m_iframe = 0;
+	m_fHeight = 0;
 }
 
 LineSegSlingshot::LineSegSlingshot()
