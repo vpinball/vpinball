@@ -17,25 +17,15 @@ static vector<int> faces;
 static int isInList( const int vi, const int ti, const int ni )
 {
    for( unsigned int i=0;i<verts.size();i++ )
-   {
-      int result=0;
-      if( verts[i].x==tmpVerts[vi].x && verts[i].y==tmpVerts[vi].y && verts[i].z==tmpVerts[vi].z )
-      {
-         result|=1;
-      }
-      if( verts[i].tu==tmpTexel[ti].x && verts[i].tv==tmpTexel[ti].y )
-      {
-         result|=2;
-      }
-      if( verts[i].nx==tmpNorms[ni].x && verts[i].ny==tmpNorms[ni].y && verts[i].nz==tmpNorms[ni].z )
-      {
-         result|=4;
-      }
-      if( result==7 )
+      if( verts[i].x==tmpVerts[vi].x && verts[i].y==tmpVerts[vi].y && verts[i].z==tmpVerts[vi].z 
+	  &&
+	  verts[i].tu==tmpTexel[ti].x && verts[i].tv==tmpTexel[ti].y 
+	  &&
+	  verts[i].nx==tmpNorms[ni].x && verts[i].ny==tmpNorms[ni].y && verts[i].nz==tmpNorms[ni].z )
       {
          return i;
       }
-   }
+
    return -1;
 }
 
