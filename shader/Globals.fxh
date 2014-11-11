@@ -70,7 +70,7 @@ sampler2D texSampler1 : TEXUNIT1 = sampler_state
 sampler2D texSampler2 : TEXUNIT2 = sampler_state
 {
 	Texture	  = (Texture2);
-    MIPFILTER = LINEAR;
+    MIPFILTER = NONE;
     MAGFILTER = LINEAR;
     MINFILTER = LINEAR;
 	ADDRESSU  = Wrap;
@@ -174,7 +174,7 @@ float3 DoEnvmap2ndLayer(float3 color1stLayer, float3 pos, float3 N, float3 V, fl
 	    acos(r.z) * (1.0f/PI));
 	    
    float3 w = FresnelSchlick(specular, dot(V, N)); //!! ?
-   return lerp(color1stLayer, InvGamma(tex2D(texSampler1, uv).xyz)*fenvEmissionScale, w); // weight (optional) lower diffuse/glossy layer with clearcoat/specular //!! replace by real HDR instead? -> remove invgamma then
+   return lerp(color1stLayer, InvGamma(tex2Dlod(texSampler1, float4(uv, 0, 0)).xyz)*fenvEmissionScale, w); // weight (optional) lower diffuse/glossy layer with clearcoat/specular //!! replace by real HDR instead? -> remove invgamma then
 }
 
 float4 lightLoop(float3 pos, float3 N, float3 V, float3 diffuse, float3 glossy, float3 specular)
