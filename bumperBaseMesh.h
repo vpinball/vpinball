@@ -1,4 +1,4 @@
-const unsigned int bumperBaseNumVertices=1848;
+const unsigned int bumperBaseNumVertices=1157;
 const unsigned int bumperBaseNumFaces=1848;
 Vertex3D_NoTex2 bumperBase[1157]=
 {
