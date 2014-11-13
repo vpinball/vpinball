@@ -1,5 +1,6 @@
 #include "StdAfx.h"
 #include "triggerSimpleMesh.h"
+#include "triggerStarMesh.h"
 
 Trigger::Trigger()
 {
@@ -51,6 +52,13 @@ void Trigger::UpdateEditorView()
             faceIndices = triggerSimpleIndices;
             meshVertices = triggerSimple;
         }
+        if( m_d.m_shape==TriggerStar )
+        {
+            numVertices=triggerStarNumVertices;
+            numFaces=triggerStarNumFaces;
+            faceIndices = triggerStarIndices;
+            meshVertices = triggerStar;
+        }
         vertices.resize(numVertices);
         Matrix3D fullMatrix;
         fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotation));
@@ -58,8 +66,16 @@ void Trigger::UpdateEditorView()
         {
             Vertex3Ds vert(meshVertices[i].x,meshVertices[i].y,meshVertices[i].z);
             fullMatrix.MultiplyVector(vert, vertices[i]);
-            vertices[i].x *= m_d.m_scaleX;
-            vertices[i].y *= m_d.m_scaleY;
+            if ( m_d.m_shape!=TriggerStar )
+            {
+                vertices[i].x *= m_d.m_scaleX;
+                vertices[i].y *= m_d.m_scaleY;
+            }
+            else
+            {
+                vertices[i].x *= m_d.m_radius;
+                vertices[i].y *= m_d.m_radius;
+            }
             vertices[i].x += m_d.m_vCenter.x;
             vertices[i].y += m_d.m_vCenter.y;
             if( vertices[i].x>maxx ) maxx=vertices[i].x;
@@ -331,7 +347,7 @@ void Trigger::Render(Sur * const psur)
        psur->Line(m_d.m_vCenter.x - r2, m_d.m_vCenter.y + r2, m_d.m_vCenter.x + r2, m_d.m_vCenter.y - r2);
    }
 
-   if( m_d.m_shape!=TriggerNone )
+   if( m_d.m_shape==TriggerSimple )
    {
        const size_t numPts = numVertices / 3 + 1;
        m_drawVertices.clear();
@@ -554,6 +570,10 @@ void Trigger::PostRenderStatic(RenderDevice* pd3dDevice)
     if (!m_d.m_fVisible || m_d.m_shape==TriggerNone)
         return;
 
+    float animLimit=38.0f;
+    if( m_d.m_shape==TriggerStar )
+        animLimit=13.0f;
+
     pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelDeclaration );
     pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
 
@@ -575,14 +595,14 @@ void Trigger::PostRenderStatic(RenderDevice* pd3dDevice)
         doAnimation=fTrue;
         unhitEvent=fFalse;
         hitEvent=fFalse;
-        animHeightOffset=38.0f;
+        animHeightOffset=animLimit;
         moveDown=fFalse;
     }
 
     if ( doAnimation)
     {
         const float step = 1.0f*(m_ptable->m_zScale);
-        const float limit = 38.f*(m_ptable->m_zScale);
+        const float limit = animLimit*(m_ptable->m_zScale);
 
         if( moveDown ) 
         {
@@ -643,6 +663,15 @@ void Trigger::RenderSetup(RenderDevice* pd3dDevice)
        for( int i=0;i<numFaces;i++ ) indices[i] = triggerSimpleIndices[i];
        triggerVertices = new Vertex3D_NoTex2[numVertices];
    }
+   if ( m_d.m_shape==TriggerStar)
+   {
+       indices.resize(triggerStarNumFaces);
+       numVertices = triggerStarNumVertices;
+       numFaces = triggerStarNumFaces;
+       verts = triggerStar;
+       for( int i=0;i<numFaces;i++ ) indices[i] = triggerStarIndices[i];
+       triggerVertices = new Vertex3D_NoTex2[numVertices];
+   }
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
    const float baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
@@ -664,9 +693,18 @@ void Trigger::RenderSetup(RenderDevice* pd3dDevice)
        Vertex3Ds vert(verts[i].x,verts[i].y,verts[i].z);
        vert = fullMatrix.MultiplyVector(vert);
 
-       triggerVertices[i].x = (vert.x*m_d.m_scaleX)+m_d.m_vCenter.x;
-       triggerVertices[i].y = (vert.y*m_d.m_scaleY)+m_d.m_vCenter.y;
-       triggerVertices[i].z = (vert.z*1.0f*m_ptable->m_zScale)+baseHeight;
+       if ( m_d.m_shape!=TriggerStar )
+       {
+           triggerVertices[i].x = (vert.x*m_d.m_scaleX)+m_d.m_vCenter.x;
+           triggerVertices[i].y = (vert.y*m_d.m_scaleY)+m_d.m_vCenter.y;
+           triggerVertices[i].z = (vert.z*1.0f*m_ptable->m_zScale)+baseHeight;
+       }
+       else
+       {
+           triggerVertices[i].x = (vert.x*m_d.m_radius)+m_d.m_vCenter.x;
+           triggerVertices[i].y = (vert.y*m_d.m_radius)+m_d.m_vCenter.y;
+           triggerVertices[i].z = (vert.z*m_d.m_radius*m_ptable->m_zScale)+baseHeight;
+       }
        vert = Vertex3Ds( verts[i].nx, verts[i].ny, verts[i].nz );
        vert = fullMatrix.MultiplyVectorNoTranslate(vert);
        triggerVertices[i].nx = vert.x;
@@ -682,20 +720,6 @@ void Trigger::RenderSetup(RenderDevice* pd3dDevice)
 
 void Trigger::RenderStatic(RenderDevice* pd3dDevice)
 {
-/*    if (!m_d.m_fVisible || m_d.m_shape==TriggerNone)
-      return;
-
-   pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelDeclaration );
-
-   Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-
-   Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
-   pd3dDevice->basicShader->SetMaterial(mat);
-
-   pd3dDevice->basicShader->Begin(0);
-   pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, vertexBuffer, 0, numVertices, triggerIndexBuffer, 0, numFaces );
-   pd3dDevice->basicShader->End();
-*/
 }
 
 void Trigger::SetObjectPos()
