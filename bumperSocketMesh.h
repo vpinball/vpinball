@@ -1,4 +1,4 @@
-const unsigned int bumperSocketNumVertices=576;
+const unsigned int bumperSocketNumVertices=217;
 const unsigned int bumperSocketNumFaces=576;
 Vertex3D_NoTex2 bumperSocket[217]=
 {

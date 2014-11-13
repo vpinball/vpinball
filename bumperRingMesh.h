@@ -1,4 +1,4 @@
-const unsigned int bumperRingNumVertices=1008;
+const unsigned int bumperRingNumVertices=358;
 const unsigned int bumperRingNumFaces=1008;
 Vertex3D_NoTex2 bumperRing[358]=
 {
