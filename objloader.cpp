@@ -316,7 +316,7 @@ void WaveFrontObj_Save(const char *filename, const char *description, const Mesh
    if( !f )
       return ;
 /*    
-   fprintf_s(f,"const unsigned int bumperBaseNumVertices=%i;\n",mesh.NumIndices());
+   fprintf_s(f,"const unsigned int bumperBaseNumVertices=%i;\n",mesh.NumVertices());
    fprintf_s(f,"const unsigned int bumperBaseNumFaces=%i;\n", mesh.NumIndices());
    fprintf_s(f,"Vertex3D_NoTex2 bumperBase[%i]=\n{\n",mesh.NumVertices());
 
