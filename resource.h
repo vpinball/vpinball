@@ -464,6 +464,8 @@
 #define IDC_ACTIVEX3                    346
 #define IDS_HANG                        346
 #define IDC_COMBO7                      346
+#define IDC_ROTATION_EDIT2              346
+#define IDC_STAR_RADIUS_EDIT            346
 #define IDD_PROPKICKER_VISUALS          347
 #define IDC_ACTIVEX4                    347
 #define IDC_CUSTOMNAME                  347

@@ -1123,8 +1123,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 	]
 	interface ITrigger : IDispatch
 	{
-		[propget, id(1), helpstring("property Radius")] HRESULT Radius([out, retval] float *pVal);
-		[propput, id(1), helpstring("property Radius")] HRESULT Radius([in] float newVal);
+		[propget, id(346), helpstring("property Radius")] HRESULT Radius([out, retval] float *pVal);
+		[propput, id(346), helpstring("property Radius")] HRESULT Radius([in] float newVal);
 		[propget, id(DISPID_Timer_Enabled), helpstring("property TimerEnabled")] HRESULT TimerEnabled([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(DISPID_Timer_Enabled), helpstring("property TimerEnabled")] HRESULT TimerEnabled([in] VARIANT_BOOL newVal);
 		[propget, id(DISPID_Timer_Interval), helpstring("property TimerInterval")] HRESULT TimerInterval([out, retval] long *pVal);

@@ -14,7 +14,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (U.S.) resources
+// Englisch (USA) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 #ifdef _WIN32
@@ -1065,10 +1065,12 @@ BEGIN
     COMBOBOX        1503,37,18,81,60,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     CONTROL         "&Visible",7,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,6,36,10
     LTEXT           "S&hape:",IDC_STATIC,7,21,22,8
-    LTEXT           "Rotation",IDC_STATIC,7,36,28,8
-    EDITTEXT        IDC_ROTATION_EDIT,37,34,40,14,ES_AUTOHSCROLL
-    LTEXT           "Material",IDC_STATIC,7,53,26,8
-    COMBOBOX        IDC_MATERIAL_COMBO,7,61,111,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Rotation",IDC_STATIC,7,51,28,8
+    EDITTEXT        IDC_ROTATION_EDIT,46,49,40,14,ES_AUTOHSCROLL
+    LTEXT           "Material",IDC_STATIC,7,65,26,8
+    COMBOBOX        IDC_MATERIAL_COMBO,7,73,111,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Star Radius",IDC_STATIC,7,36,38,8
+    EDITTEXT        IDC_STAR_RADIUS_EDIT,46,33,40,14,ES_AUTOHSCROLL
 END
 
 IDD_PROPTRIGGER_STATE DIALOGEX 0, 0, 125, 34
@@ -2420,7 +2422,7 @@ BEGIN
     IDS_STEP                "Step"
 END
 
-#endif    // English (U.S.) resources
+#endif    // Englisch (USA) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
