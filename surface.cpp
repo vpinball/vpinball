@@ -566,11 +566,11 @@ void Surface::PostRenderStatic(RenderDevice* pd3dDevice)
 {
     TRACE_FUNCTION();
 
-    if (!m_d.m_fVisible)
+    if (!m_d.m_fVisible )
         return;
 
     RenderSlingshots((RenderDevice*)pd3dDevice);
-    if ( m_d.m_fDroppable )
+    if ( m_d.m_fDroppable || isDynamic )
     {
         if (!m_fIsDropped)
         {
@@ -920,8 +920,21 @@ void Surface::RenderSetup(RenderDevice* pd3dDevice)
    }
 
    Texture * const pinSide = m_ptable->GetImage(m_d.m_szSideImage);
-
    Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
+   Material *mat=0;
+   isDynamic=false;
+   if ( m_d.m_fSideVisible )
+   {
+      mat=m_ptable->GetMaterial(m_d.m_szSideMaterial);
+      if( mat->m_bOpacityActive )
+         isDynamic=true;
+   }
+   if( m_d.m_fVisible )
+   {
+      mat=m_ptable->GetMaterial(m_d.m_szTopMaterial);
+      if( mat->m_bOpacityActive )
+         isDynamic=true;
+   }
 
    // create all vertices for dropped and non-dropped surface
    PrepareWallsAtHeight( pd3dDevice );
@@ -961,7 +974,7 @@ void Surface::FreeBuffers()
 void Surface::RenderStatic(RenderDevice* pd3dDevice)
 {
    RenderSlingshots((RenderDevice*)pd3dDevice);
-   if ( !m_d.m_fDroppable )
+   if ( !m_d.m_fDroppable && !isDynamic)
    {
       RenderWallsAtHeight( (RenderDevice*)pd3dDevice, fFalse);
       g_pplayer->m_pin3d.SetTexture(NULL);
@@ -1010,6 +1023,14 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
     {
         mat = m_ptable->GetMaterial( m_d.m_szSideMaterial);
         pd3dDevice->basicShader->SetMaterial(mat);
+        if (mat && mat->m_bOpacityActive && mat->m_fOpacity!=1.0f)
+        {
+           pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
+        }
+        else
+        {
+           pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+        }
 
         Texture * const pinSide = m_ptable->GetImage(m_d.m_szSideImage);
 
@@ -1019,14 +1040,6 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
             pd3dDevice->basicShader->SetTexture("Texture0",pinSide);
             pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
 
-            if (mat && mat->m_bOpacityActive && mat->m_fOpacity!=1.0f)
-            {
-                pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
-            }
-            else
-            {
-                pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
-            }
             g_pplayer->m_pin3d.SetTextureFilter( ePictureTexture, TEXTURE_MODE_TRILINEAR );
         }
         else
@@ -1050,36 +1063,35 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
     {
        mat = m_ptable->GetMaterial( m_d.m_szTopMaterial);
        pd3dDevice->basicShader->SetMaterial(mat);
-        Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
-        if (pin)
-        {
-            pin->CreateAlphaChannel();
-            pd3dDevice->basicShader->SetTexture("Texture0",pin);
+       if (mat && mat->m_bOpacityActive && mat->m_fOpacity!=1.0f)
+       {
+          pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
+       }
+       else
+       {
+          pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+       }
+       Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
+       if (pin)
+       {
+          pin->CreateAlphaChannel();
+          pd3dDevice->basicShader->SetTexture("Texture0",pin);  
 
-            pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
+          pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
 
-            if (mat && mat->m_bOpacityActive && mat->m_fOpacity!=1.0f)
-            {
-                pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
-            }
-            else
-            {
-                pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
-            }
+          g_pplayer->m_pin3d.SetTextureFilter( ePictureTexture, TEXTURE_MODE_TRILINEAR );
+       }
+       else
+       {
+          pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
+       }
 
-            g_pplayer->m_pin3d.SetTextureFilter( ePictureTexture, TEXTURE_MODE_TRILINEAR );
-        }
-        else
-        {
-            pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
-        }
-
-        if(numPolys > 0)
-        {
-            pd3dDevice->basicShader->Begin(0);
-            pd3dDevice->DrawPrimitiveVB( D3DPT_TRIANGLELIST, topVBuffer, !fDrop ? 0 : 3*numPolys, numPolys*3);
-            pd3dDevice->basicShader->End();  
-        }
+       if(numPolys > 0)
+       {
+          pd3dDevice->basicShader->Begin(0);
+          pd3dDevice->DrawPrimitiveVB( D3DPT_TRIANGLELIST, topVBuffer, !fDrop ? 0 : 3*numPolys, numPolys*3);
+          pd3dDevice->basicShader->End();  
+       }
     }
 
     // reset render states

@@ -3441,7 +3441,7 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
                             ofn.lpstrDefExt = "mat";
                             ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY | OFN_EXPLORER ;
 
-                            HRESULT hr = GetRegString("RecentDir","ImageDir", szInitialDir, 1024);
+                            HRESULT hr = GetRegString("RecentDir","MaterialDir", szInitialDir, 1024);
                             ofn.lpstrInitialDir = (hr == S_OK) ? szInitialDir : NULL;
 
                             const int ret = GetOpenFileName(&ofn);
