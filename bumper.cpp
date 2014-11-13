@@ -695,6 +695,7 @@ void Bumper::RenderSetup(RenderDevice* pd3dDevice )
 
 void Bumper::RenderStatic(RenderDevice* pd3dDevice)
 {
+    pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelDeclaration );
     if (m_d.m_fBaseVisible)
     {
         Material *mat = m_ptable->GetMaterial(m_d.m_szSkirtMaterial);
