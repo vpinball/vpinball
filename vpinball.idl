@@ -70,6 +70,15 @@ typedef [uuid(5323810C-F833-48ef-B049-D07506A179B5)]
 		}
 		Shape;
 
+typedef [uuid(28F7715B-E800-49B6-B86E-A0C55898297E)]
+	enum TriggerShape
+		{
+		TriggerNone = 0,
+		TriggerSimple = 1,
+        TriggerStar = 2,
+		}
+		TriggerShape;
+
 typedef [uuid(E15D60BC-7E32-4cc5-BA16-E5C368D5891B)]
 	enum RampType
 		{
@@ -1128,8 +1137,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(DISPID_Enabled), helpstring("property Enabled")] HRESULT Enabled([in] VARIANT_BOOL newVal);
 		[propget, id(7), helpstring("property Visible")] HRESULT Visible([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(7), helpstring("property Visible")] HRESULT Visible([in] VARIANT_BOOL newVal);
-		[propget, id(DISPID_Shape), helpstring("property Shape")] HRESULT Shape([out, retval] Shape *pVal);
-		[propput, id(DISPID_Shape), helpstring("property Shape")] HRESULT Shape([in] Shape newVal);
+		[propget, id(DISPID_Shape), helpstring("property TriggerShape")] HRESULT TriggerShape([out, retval] TriggerShape *pVal);
+		[propput, id(DISPID_Shape), helpstring("property TriggerShape")] HRESULT TriggerShape([in] TriggerShape newVal);
 		[propget, id(DISPID_Surface), helpstring("property Surface")] HRESULT Surface([out, retval] BSTR *pVal);
 		[propput, id(DISPID_Surface), helpstring("property Surface")] HRESULT Surface([in] BSTR newVal);
 		[propget, id(DISPID_Name), helpstring("property Name")] HRESULT Name([out, retval] BSTR *pVal);
@@ -1140,6 +1149,10 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[id(313), helpstring("method DestroyBall")] HRESULT DestroyBall([out, retval] int *pVal);
 		[propget, id(314), helpstring("property HitHeight")] HRESULT HitHeight([out, retval] float *pVal);
 		[propput, id(314), helpstring("property HitHeight")] HRESULT HitHeight([in] float newVal);
+		[propget, id(340), helpstring("property Material")] HRESULT Material([out, retval] BSTR *pVal);
+		[propput, id(340), helpstring("property Material")] HRESULT Material([in] BSTR newVal);
+		[propget, id(345), helpstring("property Rotation")] HRESULT Rotation([out, retval] float *pVal);
+		[propput, id(345), helpstring("property Rotation")] HRESULT Rotation([in] float newVal);
 	};
 
 	[
