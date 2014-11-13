@@ -910,11 +910,14 @@ void TriggerLineSeg::Collide(CollisionEvent* coll)
 		if (i < 0)
 		{	
 			pball->m_vpVolObjs->AddElement(m_pObj);
-			((Trigger*)m_pObj)->FireGroupEvent(DISPID_HitEvents_Hit);			
+			((Trigger*)m_pObj)->TriggerAnimationHit();
+            ((Trigger*)m_pObj)->FireGroupEvent(DISPID_HitEvents_Hit);			
+
 		}		
 		else			
 		{
 			pball->m_vpVolObjs->RemoveElementAt(i);
+            ((Trigger*)m_pObj)->TriggerAnimationUnhit();
 			((Trigger*)m_pObj)->FireGroupEvent(DISPID_HitEvents_Unhit);			
 		}
 	}	
@@ -942,11 +945,13 @@ void TriggerHitCircle::Collide(CollisionEvent* coll)
 		if (i < 0)
 		{
 			pball->m_vpVolObjs->AddElement(m_pObj);
+            ((Trigger*)m_pObj)->TriggerAnimationHit();
 			((Trigger*)m_pObj)->FireGroupEvent(DISPID_HitEvents_Hit);
 		}
 		else
 		{
 			pball->m_vpVolObjs->RemoveElementAt(i);
+            ((Trigger*)m_pObj)->TriggerAnimationUnhit();
 			((Trigger*)m_pObj)->FireGroupEvent(DISPID_HitEvents_Unhit);
 		}
 	}

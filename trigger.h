@@ -16,7 +16,11 @@ public:
 	char m_szSurface[MAXTOKEN];
 	BOOL m_fEnabled;
 	BOOL m_fVisible;
-	Shape m_shape;
+	TriggerShape m_shape;
+    char m_szMaterial[32];
+    float m_rotation;
+    float m_scaleX;
+    float m_scaleY;
 	float m_hit_height; //trigger hit object height ... default 50
 	};
 
@@ -93,21 +97,38 @@ DECLARE_REGISTRY_RESOURCEID(IDR_TRIGGER)
 	virtual void ClearForOverwrite();
 
 	void WriteRegDefaults();
+    void InitShape( float x, float y );
+    void UpdateEditorView();
+    void TriggerAnimationHit();
+    void TriggerAnimationUnhit();
 
 	PinTable *m_ptable;
 
 	TriggerData m_d;
+    Vector<HitObject> m_vhoCollidable; // Objects to that may be collide selectable
 
 	TriggerHitCircle *m_ptriggerhitcircle;
 
 	BOOL m_hitEnabled;		// for custom shape triggers
-   Material material;
-   VertexBuffer *vertexBuffer;
+    int numVertices;
+    int numFaces;
+    float animHeightOffset;
+    BOOL  hitEvent;
+    BOOL  unhitEvent;
+    BOOL  doAnimation;
+    BOOL  moveDown;
+
+    VertexBuffer *vertexBuffer;
+    IndexBuffer *triggerIndexBuffer;
+    std::vector<Vertex2D> m_drawVertices;
+    std::vector<Vertex3Ds> vertices;
+    WORD *faceIndices;
+    Vertex3D_NoTex2 *triggerVertices;
 
 // ITrigger
 public:
-	STDMETHOD(get_Shape)(/*[out, retval]*/ Shape *pVal);
-	STDMETHOD(put_Shape)(/*[in]*/ Shape newVal);
+	STDMETHOD(get_TriggerShape)(/*[out, retval]*/ TriggerShape *pVal);
+	STDMETHOD(put_TriggerShape)(/*[in]*/ TriggerShape newVal);
 	STDMETHOD(get_Visible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_Visible)(/*[in]*/ VARIANT_BOOL newVal);
 	STDMETHOD(get_Enabled)(/*[out, retval]*/ VARIANT_BOOL *pVal);
@@ -122,8 +143,12 @@ public:
 	STDMETHOD(put_Radius)(/*[in]*/ float newVal);
 	STDMETHOD(BallCntOver)(/*[out, retval]*/ int *pVal);
 	STDMETHOD(DestroyBall)(/*[out, retval]*/ int *pVal);
-	STDMETHOD(get_HitHeight)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_HitHeight)(/*[in]*/ float newVal);
-};
+    STDMETHOD(get_HitHeight)(/*[out, retval]*/ float *pVal);
+    STDMETHOD(put_HitHeight)(/*[in]*/ float newVal);
+    STDMETHOD(get_Rotation)(/*[out, retval]*/ float *pVal);
+    STDMETHOD(put_Rotation)(/*[in]*/ float newVal);
+    STDMETHOD(get_Material)(/*[out, retval]*/ BSTR *pVal);
+    STDMETHOD(put_Material)(/*[in]*/ BSTR newVal);
+    };
 
 #endif // !defined(AFX_TRIGGER_H__2CA7256C_4072_43C3_9D65_AE091B601377__INCLUDED_)

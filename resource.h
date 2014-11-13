@@ -459,6 +459,7 @@
 #define IDC_ACTIVEX2                    345
 #define IDS_AUTOSAVING                  345
 #define IDC_COMBO6                      345
+#define IDC_ROTATION_EDIT               345
 #define IDD_PROPTRIGGER_STATE           346
 #define IDC_ACTIVEX3                    346
 #define IDS_HANG                        346
