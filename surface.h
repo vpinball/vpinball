@@ -140,6 +140,7 @@ private:
     std::vector<HitObject*> m_vhoCollidable; // Objects to that may be collide selectable
 
 	bool IsWall;
+   bool isDynamic;
    int numVertices, numPolys;
 
    // TODO: all these vertex buffers should be combined into one
