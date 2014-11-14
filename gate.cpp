@@ -1,20 +1,40 @@
 #include "StdAfx.h"
+#include "gateBracketMesh.h"
+#include "gateWireMesh.h"
 
 Gate::Gate()
 {
    m_phitgate = NULL;
    m_plineseg = NULL;
    m_d.m_fEnableLighting = fTrue;
-   vtxBuf = NULL;
-   idxBuf = NULL;
+   bracketIndexBuffer=NULL;
+   bracketVertexBuffer=NULL;
+   wireIndexBuffer=NULL;
+   wireVertexBuffer=NULL;
 }
 
 Gate::~Gate()
 {
-   if (vtxBuf)
-       vtxBuf->release();
-   if (idxBuf)
-       idxBuf->release();
+    if (bracketVertexBuffer)
+    {
+        bracketVertexBuffer->release();
+        bracketVertexBuffer = NULL;
+    }
+    if (bracketIndexBuffer)
+    {
+        bracketIndexBuffer->release();
+        bracketIndexBuffer = NULL;
+    }
+    if (wireIndexBuffer)
+    {
+        wireIndexBuffer->release();
+        wireIndexBuffer = NULL;
+    }
+    if (wireVertexBuffer)
+    {
+        wireVertexBuffer->release();
+        wireVertexBuffer = NULL;
+    }
 }
 
 HRESULT Gate::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
@@ -338,18 +358,60 @@ void Gate::EndPlay()
    m_phitgate = NULL;
    m_plineseg = NULL;
 
-   if (vtxBuf)
+   if (bracketVertexBuffer)
    {
-       vtxBuf->release();
-       vtxBuf = NULL;
+       bracketVertexBuffer->release();
+       bracketVertexBuffer = NULL;
    }
-   if (idxBuf)
+   if (bracketIndexBuffer)
    {
-       idxBuf->release();
-       idxBuf = NULL;
+       bracketIndexBuffer->release();
+       bracketIndexBuffer = NULL;
+   }
+   if (wireIndexBuffer)
+   {
+       wireIndexBuffer->release();
+       wireIndexBuffer = NULL;
+   }
+   if (wireVertexBuffer)
+   {
+       wireVertexBuffer->release();
+       wireVertexBuffer = NULL;
    }
 }
 
+void Gate::UpdateWire( RenderDevice *pd3dDevice )
+{
+    Matrix3D fullMatrix;
+    Matrix3D rotzMat,rotyMat;
+    Vertex3D_NoTex2 *buf;
+
+    rotzMat.RotateZMatrix(ANGTORAD(m_d.m_rotation));
+    rotzMat.Multiply(fullMatrix,fullMatrix);
+    rotyMat.RotateYMatrix(ANGTORAD(-m_phitgate->m_gateanim.m_angle));
+    rotyMat.Multiply(fullMatrix, fullMatrix);
+
+    wireVertexBuffer->lock(0, 0, (void**)&buf, 0);
+    for( int i=0;i<gateWireNumVertices;i++ )
+    {
+        Vertex3Ds vert(gateWire[i].x,gateWire[i].y,gateWire[i].z);
+        vert = fullMatrix.MultiplyVector(vert);
+
+        buf[i].x = (vert.x*m_d.m_length)+m_d.m_vCenter.x;
+        buf[i].y = (vert.y*m_d.m_length)+m_d.m_vCenter.y;
+        buf[i].z = (vert.z*m_d.m_length*m_ptable->m_zScale);
+        buf[i].z += m_d.m_height+baseHeight;
+        vert = Vertex3Ds( gateWire[i].nx, gateWire[i].ny, gateWire[i].nz );
+        vert = fullMatrix.MultiplyVectorNoTranslate(vert);
+        buf[i].nx = vert.x;
+        buf[i].ny = vert.y;
+        buf[i].nz = vert.z;
+        buf[i].tu = gateWire[i].tu;
+        buf[i].tv = gateWire[i].tv;
+    }
+    wireVertexBuffer->unlock();
+
+}
 
 static const WORD rgiGate2[4] = {0,1,5,4};      // back
 static const WORD rgiGate3[4] = {2,6,7,3};      // front
@@ -364,16 +426,13 @@ void Gate::PostRenderStatic(RenderDevice* pd3dDevice)
 
     if (!m_phitgate->m_gateanim.m_fVisible)
         return;
-    pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelTexelDeclaration );
+    pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelDeclaration );
 
     Material *mat = m_ptable->GetMaterial( m_d.m_szMaterial);
     pd3dDevice->basicShader->SetMaterial(mat);
 
     Pin3D * const ppin3d = &g_pplayer->m_pin3d;
     COLORREF rgbTransparent = RGB(255,0,255); //RGB(0,0,0);
-
-    Texture * const pinback = m_ptable->GetImage(m_d.m_szImageBack);
-    Texture * const pinfront = m_ptable->GetImage(m_d.m_szImageFront);
 
     ppin3d->EnableAlphaBlend(1,false);
     pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", true);
@@ -386,94 +445,24 @@ void Gate::PostRenderStatic(RenderDevice* pd3dDevice)
     // Set texture to mirror, so the alpha state of the texture blends correctly to the outside
     pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_MIRROR);
 
-    // set world transform
-    Matrix3D matTrafo, matTemp;
-    matTrafo.SetTranslation(m_d.m_vCenter.x, m_d.m_vCenter.y, m_posZ);
+    pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
 
-    matTemp.RotateZMatrix(ANGTORAD(m_d.m_rotation));
-    matTrafo.Multiply(matTemp, matTrafo);
-
-    matTemp.RotateXMatrix(-m_phitgate->m_gateanim.m_angle);
-    matTrafo.Multiply(matTemp, matTrafo);
-
-    g_pplayer->UpdateBasicShaderMatrix(matTrafo);
-
-	COLORREF diffColor=NOTRANSCOLOR;
-    if ( mat )
-    {
-       diffColor = mat->m_diffuseColor;
-    }
-
-    // Draw Backside
-    if (pinback)
-    {
-        pinback->CreateAlphaChannel();
-        
-        pd3dDevice->basicShader->SetTexture("Texture0",pinback);
-        pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
-
-        if (pinback->m_fTransparent)
-        {
-            pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
-            if (diffColor != rgbTransparent)
-               rgbTransparent = pinback->m_rgbTransparent;
-        }
-
-        pd3dDevice->SetRenderState(RenderDevice::CULLMODE, (diffColor == rgbTransparent || diffColor == NOTRANSCOLOR) ? D3DCULL_CCW : D3DCULL_NONE);
-        pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-        ppin3d->SetTextureFilter( ePictureTexture, TEXTURE_MODE_TRILINEAR );
-    }
-    else // No image by that name
-    {
-        pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
-    }
+    // render bracket
     pd3dDevice->basicShader->Begin(0);
-    pd3dDevice->DrawPrimitiveVB(D3DPT_TRIANGLEFAN, vtxBuf, 0, 4);
-    pd3dDevice->basicShader->End();  
+    pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, bracketVertexBuffer, 0, gateBracketNumVertices, bracketIndexBuffer, 0, gateBracketNumFaces );
+    pd3dDevice->basicShader->End();
 
-    // Draw Frontside
-    if (pinfront)
-    {
-        pinfront->CreateAlphaChannel();
-        pd3dDevice->basicShader->SetTexture("Texture0", pinfront);
-        pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
-
-        if (pinfront->m_fTransparent)
-        {
-            pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
-            if (diffColor != rgbTransparent)
-                rgbTransparent = pinfront->m_rgbTransparent;
-        }
-
-        pd3dDevice->SetRenderState(RenderDevice::CULLMODE, (diffColor == rgbTransparent || diffColor == NOTRANSCOLOR) ? D3DCULL_CCW : D3DCULL_NONE);
-        pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-        ppin3d->SetTextureFilter( ePictureTexture, TEXTURE_MODE_TRILINEAR );
-
-    }
-    else // No image by that name
-    {
-        pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
-    }
-
+    //UpdateWire(pd3dDevice);
+    // render wire
     pd3dDevice->basicShader->Begin(0);
-    pd3dDevice->DrawPrimitiveVB(D3DPT_TRIANGLEFAN, vtxBuf, 4, 4);
-    pd3dDevice->basicShader->End();  
-
-    if (diffColor != rgbTransparent && diffColor != NOTRANSCOLOR)
-    {
-       pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
-        pd3dDevice->basicShader->Begin(0);
-        pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, vtxBuf, 8, 16, idxBuf, 0, 24);
-    }
-    pd3dDevice->basicShader->End();  
+    pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, wireVertexBuffer, 0, gateWireNumVertices, wireIndexBuffer, 0, gateWireNumFaces);
+    pd3dDevice->basicShader->End();
 
     pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, FALSE);
     pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_WRAP);
 
     pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
     pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", false);
-
-    g_pplayer->UpdateBasicShaderMatrix();
 
 }
 
@@ -620,26 +609,93 @@ void Gate::PrepareMovers(RenderDevice* pd3dDevice )
     for (int i = 0; i < 4; ++i)
         vbVerts.push_back( rgv3D[rgiGate7[i]] );
 
-    pd3dDevice->CreateVertexBuffer(vbVerts.size(), 0, MY_D3DFVF_VERTEX, &vtxBuf);
-    void *buf;
-    vtxBuf->lock(0, 0, &buf, 0);
-    memcpy(buf, &vbVerts[0], vbVerts.size() * sizeof(vbVerts[0]));
-    vtxBuf->unlock();
+//     pd3dDevice->CreateVertexBuffer(vbVerts.size(), 0, MY_D3DFVF_VERTEX, &vtxBuf);
+//     void *buf;
+//     vtxBuf->lock(0, 0, &buf, 0);
+//     memcpy(buf, &vbVerts[0], vbVerts.size() * sizeof(vbVerts[0]));
+//     vtxBuf->unlock();
 }
 
 void Gate::RenderSetup(RenderDevice* pd3dDevice)
 {
-   PrepareStatic(pd3dDevice);
-   PrepareMovers(pd3dDevice);
+//    PrepareStatic(pd3dDevice);
+//    PrepareMovers(pd3dDevice);
+// 
+//    static const WORD idx[24] = {0,1,2,0,2,3, 4,5,6,4,6,7, 8,9,10,8,10,11, 12,13,14,12,14,15 };
+//    idxBuf = pd3dDevice->CreateAndFillIndexBuffer(24, idx);
+    baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
+    std::vector<WORD> indices(gateBracketNumFaces);
 
-   static const WORD idx[24] = {0,1,2,0,2,3, 4,5,6,4,6,7, 8,9,10,8,10,11, 12,13,14,12,14,15 };
-   idxBuf = pd3dDevice->CreateAndFillIndexBuffer(24, idx);
+    for( int i=0;i<gateBracketNumFaces;i++ ) indices[i] = gateBracketIndices[i];
+    if (bracketIndexBuffer)
+        bracketIndexBuffer->release();
+    bracketIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer( indices );
+
+    if (!bracketVertexBuffer)
+        pd3dDevice->CreateVertexBuffer(gateBracketNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &bracketVertexBuffer);
+
+    Matrix3D fullMatrix;
+    fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotation));
+
+    Vertex3D_NoTex2 *buf;
+    bracketVertexBuffer->lock(0, 0, (void**)&buf, 0);
+    for( int i=0;i<gateBracketNumVertices;i++ )
+    {
+        Vertex3Ds vert(gateBracket[i].x,gateBracket[i].y,gateBracket[i].z);
+        vert = fullMatrix.MultiplyVector(vert);
+
+        buf[i].x = (vert.x*m_d.m_length)+m_d.m_vCenter.x;
+        buf[i].y = (vert.y*m_d.m_length)+m_d.m_vCenter.y;
+        buf[i].z = (vert.z*m_d.m_length*m_ptable->m_zScale);
+        buf[i].z += m_d.m_height+baseHeight;
+        vert = Vertex3Ds( gateBracket[i].nx, gateBracket[i].ny, gateBracket[i].nz );
+        vert = fullMatrix.MultiplyVectorNoTranslate(vert);
+        buf[i].nx = vert.x;
+        buf[i].ny = vert.y;
+        buf[i].nz = vert.z;
+        buf[i].tu = gateBracket[i].tu;
+        buf[i].tv = gateBracket[i].tv;
+    }
+    bracketVertexBuffer->unlock();
+
+    indices.clear();
+    indices.resize(gateWireNumFaces);
+    for( int i=0;i<gateWireNumFaces;i++ ) indices[i] = gateWireIndices[i];
+    if (wireIndexBuffer)
+        wireIndexBuffer->release();
+    wireIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer( indices );
+
+    if (!wireVertexBuffer)
+        pd3dDevice->CreateVertexBuffer(gateWireNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &wireVertexBuffer);
+
+    wireVertices = new Vertex3D_NoTex2[gateWireNumVertices];
+    for( int i=0;i<gateWireNumVertices;i++ )
+    {
+        Vertex3Ds vert(gateWire[i].x,gateWire[i].y,gateWire[i].z);
+        vert = fullMatrix.MultiplyVector(vert);
+
+        wireVertices[i].x = (vert.x*m_d.m_length)+m_d.m_vCenter.x;
+        wireVertices[i].y = (vert.y*m_d.m_length)+m_d.m_vCenter.y;
+        wireVertices[i].z = (vert.z*m_d.m_length*m_ptable->m_zScale);
+        wireVertices[i].z += m_d.m_height+baseHeight;
+        vert = Vertex3Ds( gateWire[i].nx, gateWire[i].ny, gateWire[i].nz );
+        vert = fullMatrix.MultiplyVectorNoTranslate(vert);
+        wireVertices[i].nx = vert.x;
+        wireVertices[i].ny = vert.y;
+        wireVertices[i].nz = vert.z;
+        wireVertices[i].tu = gateWire[i].tu;
+        wireVertices[i].tv = gateWire[i].tv;
+    }
+    wireVertexBuffer->lock(0, 0, (void**)&buf, 0);
+    memcpy( buf, wireVertices, sizeof(Vertex3D_NoTex2)*gateWireNumVertices);
+    wireVertexBuffer->unlock();
+
 }
 
 void Gate::RenderStatic(RenderDevice* pd3dDevice) // only the support structures are rendered here
 {
     return;
-   if(!m_d.m_fSupports) return; // no support structures are allocated ... therefore render none
+/*   if(!m_d.m_fSupports) return; // no support structures are allocated ... therefore render none
    
    pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelTexelDeclaration );
 
@@ -660,6 +716,7 @@ void Gate::RenderStatic(RenderDevice* pd3dDevice) // only the support structures
    SetNormal(rgv3D, rgiGateNormal, 3, rgv3D, rgiGate1, 8);
    pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_VERTEX, rgv3D, 8, (LPWORD)rgiGate1, 8);
    pd3dDevice->basicShader->End();  
+*/
 }
 
 void Gate::SetObjectPos()
