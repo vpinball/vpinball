@@ -94,6 +94,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_GATE)
     int angleToFrame(float angle) const;
 
 	void WriteRegDefaults();
+    void UpdateWire( RenderDevice *pd3dDevice );
 	PinTable *m_ptable;
 
 	GateData m_d;
@@ -101,13 +102,16 @@ DECLARE_REGISTRY_RESOURCEID(IDR_GATE)
 private:
 	LineSeg *m_plineseg;
 	HitGate *m_phitgate;
-   Vertex3D staticVertices[8];
+    Vertex3D staticVertices[8];
 
    float m_posZ;        // z coordinate for rendering
 
-   VertexBuffer *vtxBuf;
-   IndexBuffer *idxBuf;
-
+   VertexBuffer *wireVertexBuffer;
+   IndexBuffer *wireIndexBuffer;
+   VertexBuffer *bracketVertexBuffer;
+   IndexBuffer *bracketIndexBuffer;
+   Vertex3D_NoTex2 *wireVertices;
+   float baseHeight;
 // IGate
 public:
 	STDMETHOD(get_Elasticity)(/*[out, retval]*/ float *pVal);
