@@ -45,7 +45,7 @@ void Trigger::UpdateEditorView()
         float maxy=-FLT_MAX;
         float miny=FLT_MAX;
 
-        if( m_d.m_shape==TriggerSimple )
+        if( m_d.m_shape==TriggerWire )
         {
             numVertices=triggerSimpleNumVertices;
             numFaces=triggerSimpleNumFaces;
@@ -246,7 +246,7 @@ void Trigger::SetDefaults(bool fromMouseClick)
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_shape = (enum TriggerShape)iTmp;
    else
-      m_d.m_shape = TriggerSimple;
+      m_d.m_shape = TriggerWire;
    hr = GetRegString("DefaultProps\\Trigger","Surface", &m_d.m_szSurface, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szSurface[0] = 0;
@@ -347,7 +347,7 @@ void Trigger::Render(Sur * const psur)
        psur->Line(m_d.m_vCenter.x - r2, m_d.m_vCenter.y + r2, m_d.m_vCenter.x + r2, m_d.m_vCenter.y - r2);
    }
 
-   if( m_d.m_shape==TriggerSimple )
+   if( m_d.m_shape==TriggerWire )
    {
        const size_t numPts = numVertices / 3 + 1;
        m_drawVertices.clear();
@@ -443,7 +443,7 @@ void Trigger::GetHitShapesDebug(Vector<HitObject> * const pvho)
       }
 
    default:
-   case TriggerSimple:
+   case TriggerWire:
       {
          Vector<RenderVertex> vvertex;
          GetRgVertex(&vvertex);
@@ -654,7 +654,7 @@ void Trigger::RenderSetup(RenderDevice* pd3dDevice)
    Vertex3D_NoTex2 *buf;
    Vertex3D_NoTex2 *verts;
    std::vector<WORD> indices;
-   if ( m_d.m_shape==TriggerSimple)
+   if ( m_d.m_shape==TriggerWire)
    {
        indices.resize(triggerSimpleNumFaces);
        numVertices = triggerSimpleNumVertices;

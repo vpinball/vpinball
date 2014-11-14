@@ -62,7 +62,7 @@ float4 ps_main_texture( in VS_OUTPUT IN) : COLOR
    float3 glossy   = vGlossyColor*t;
    float3 specular = vSpecularColor; //!! texture?
    float4 result = lightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular);
-   result.a *= fmaterialAlpha;
+   result.a = pixel.a*fmaterialAlpha;
    return result;
 }
 
