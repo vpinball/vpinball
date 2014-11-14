@@ -1335,8 +1335,8 @@ void Primitive::ExportMesh()
 
 bool Primitive::IsTransparent()
 {
-    const Texture * const tex = m_ptable->GetImage(m_d.m_szImage);
-    return tex && tex->m_fTransparent;
+    Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
+    return mat->m_bOpacityActive;
 }
 
 float Primitive::GetDepth(const Vertex3Ds& viewDir) const

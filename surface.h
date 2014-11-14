@@ -111,6 +111,7 @@ END_CONNECTION_POINT_MAP()
     // end ISelect
 
     virtual float GetDepth(const Vertex3Ds& viewDir) const { return viewDir.z * m_d.m_heighttop; }
+    virtual bool IsTransparent();
 
 private:
     void CurvesToShapes(Vector<HitObject> * const pvho);

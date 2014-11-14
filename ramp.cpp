@@ -27,6 +27,13 @@ Ramp::~Ramp()
         dynamicIndexBuffer->release();
 }
 
+
+bool Ramp::IsTransparent()
+{
+    Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
+    return mat->m_bOpacityActive;
+}
+
 HRESULT Ramp::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 {
    m_ptable = ptable;
@@ -1534,7 +1541,7 @@ void Ramp::prepareStatic(RenderDevice* pd3dDevice)
 void Ramp::RenderSetup(RenderDevice* pd3dDevice)
 {
    Material *mat = m_ptable->GetMaterial( m_d.m_szMaterial);
-   if( !staticVertexBuffer && m_d.m_fVisible && (mat && !mat->m_bOpacityActive) )
+   if( !staticVertexBuffer && m_d.m_fVisible && (!mat->m_bOpacityActive) )
    {
       if (isHabitrail())
          prepareHabitrail( pd3dDevice );
@@ -1557,7 +1564,7 @@ void Ramp::RenderStatic(RenderDevice* pd3dDevice)
    Material *mat = m_ptable->GetMaterial( m_d.m_szMaterial);
 
    // dont render alpha shaded ramps into static buffer, these are done per frame later-on
-   if (mat && mat->m_bOpacityActive && mat->m_fOpacity!=1.0f) return;
+   if (mat->m_bOpacityActive) return;
 
    /* TODO: This is a misnomer right now, but clamp fixes some visual glitches (single-pixel lines)
     * with transparent textures. Probably the option should simply be renamed to ImageModeClamp,
