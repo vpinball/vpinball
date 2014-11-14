@@ -383,13 +383,14 @@ void Gate::EndPlay()
 void Gate::UpdateWire( RenderDevice *pd3dDevice )
 {
     Matrix3D fullMatrix;
-    Matrix3D rotzMat,rotyMat;
+    Matrix3D rotzMat,rotxMat;
     Vertex3D_NoTex2 *buf;
 
+    fullMatrix.SetIdentity();
     rotzMat.RotateZMatrix(ANGTORAD(m_d.m_rotation));
     rotzMat.Multiply(fullMatrix,fullMatrix);
-    rotyMat.RotateYMatrix(ANGTORAD(-m_phitgate->m_gateanim.m_angle));
-    rotyMat.Multiply(fullMatrix, fullMatrix);
+    rotxMat.RotateXMatrix(ANGTORAD(-m_phitgate->m_gateanim.m_angle));
+    rotxMat.Multiply(fullMatrix, fullMatrix);
 
     wireVertexBuffer->lock(0, 0, (void**)&buf, 0);
     for( int i=0;i<gateWireNumVertices;i++ )
@@ -452,7 +453,7 @@ void Gate::PostRenderStatic(RenderDevice* pd3dDevice)
     pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, bracketVertexBuffer, 0, gateBracketNumVertices, bracketIndexBuffer, 0, gateBracketNumFaces );
     pd3dDevice->basicShader->End();
 
-    //UpdateWire(pd3dDevice);
+    UpdateWire(pd3dDevice);
     // render wire
     pd3dDevice->basicShader->Begin(0);
     pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, wireVertexBuffer, 0, gateWireNumVertices, wireIndexBuffer, 0, gateWireNumFaces);
@@ -689,7 +690,7 @@ void Gate::RenderSetup(RenderDevice* pd3dDevice)
     wireVertexBuffer->lock(0, 0, (void**)&buf, 0);
     memcpy( buf, wireVertices, sizeof(Vertex3D_NoTex2)*gateWireNumVertices);
     wireVertexBuffer->unlock();
-
+   delete(wireVertices);
 }
 
 void Gate::RenderStatic(RenderDevice* pd3dDevice) // only the support structures are rendered here
