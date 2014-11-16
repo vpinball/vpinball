@@ -33,7 +33,7 @@ Trigger::~Trigger()
    }
 }
 
-void Trigger::UpdateEditorView()
+void Trigger::UpdateEditorView(const bool initPoints)
 {
     if( m_d.m_shape!=TriggerNone )
     {
@@ -83,41 +83,44 @@ void Trigger::UpdateEditorView()
             if( vertices[i].y>maxy ) maxy=vertices[i].y;
             if( vertices[i].y<miny ) miny=vertices[i].y;
         }
-        lengthX = (maxx-minx)*0.5f;
-        lengthY = (maxy-miny)*0.5f;
-        if ( lengthX<8.0f ) lengthX=8.0f;
-        if ( lengthY<8.0f ) lengthY=8.0f;
+        if( initPoints )
+        {
+           lengthX = (maxx-minx)*0.5f;
+           lengthY = (maxy-miny)*0.5f;
+           if ( lengthX<8.0f ) lengthX=8.0f;
+           if ( lengthY<8.0f ) lengthY=8.0f;
 
 
-        m_vdpoint.RemoveAllElements();
-        CComObject<DragPoint> *pdp;
-        CComObject<DragPoint>::CreateInstance(&pdp);
-        if (pdp)
-        {
-            pdp->AddRef();
-            pdp->Init(this, m_d.m_vCenter.x-lengthX, m_d.m_vCenter.y-lengthY);
-            m_vdpoint.AddElement(pdp);
-        }
-        CComObject<DragPoint>::CreateInstance(&pdp);
-        if (pdp)
-        {
-            pdp->AddRef();
-            pdp->Init(this, m_d.m_vCenter.x-lengthX, m_d.m_vCenter.y+lengthY);
-            m_vdpoint.AddElement(pdp);
-        }
-        CComObject<DragPoint>::CreateInstance(&pdp);
-        if (pdp)
-        {
-            pdp->AddRef();
-            pdp->Init(this, m_d.m_vCenter.x+lengthX, m_d.m_vCenter.y+lengthY);
-            m_vdpoint.AddElement(pdp);
-        }
-        CComObject<DragPoint>::CreateInstance(&pdp);
-        if (pdp)
-        {
-            pdp->AddRef();
-            pdp->Init(this, m_d.m_vCenter.x+lengthX, m_d.m_vCenter.y-lengthY);
-            m_vdpoint.AddElement(pdp);
+           m_vdpoint.RemoveAllElements();
+           CComObject<DragPoint> *pdp;
+           CComObject<DragPoint>::CreateInstance(&pdp);
+           if (pdp)
+           {
+              pdp->AddRef();
+              pdp->Init(this, m_d.m_vCenter.x-lengthX, m_d.m_vCenter.y-lengthY);
+              m_vdpoint.AddElement(pdp);
+           }
+           CComObject<DragPoint>::CreateInstance(&pdp);
+           if (pdp)
+           {
+              pdp->AddRef();
+              pdp->Init(this, m_d.m_vCenter.x-lengthX, m_d.m_vCenter.y+lengthY);
+              m_vdpoint.AddElement(pdp);
+           }
+           CComObject<DragPoint>::CreateInstance(&pdp);
+           if (pdp)
+           {
+              pdp->AddRef();
+              pdp->Init(this, m_d.m_vCenter.x+lengthX, m_d.m_vCenter.y+lengthY);
+              m_vdpoint.AddElement(pdp);
+           }
+           CComObject<DragPoint>::CreateInstance(&pdp);
+           if (pdp)
+           {
+              pdp->AddRef();
+              pdp->Init(this, m_d.m_vCenter.x+lengthX, m_d.m_vCenter.y-lengthY);
+              m_vdpoint.AddElement(pdp);
+           }
         }
     }
 }
@@ -126,7 +129,7 @@ void Trigger::InitShape( float x, float y )
 {
     float lengthX=30.0f;
     float lengthY=30.0f;
-    UpdateEditorView();
+    UpdateEditorView(true);
     if ( m_d.m_shape==TriggerNone )
     {
         for (int i=0;i<m_vdpoint.Size();i++)
