@@ -98,7 +98,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_TRIGGER)
 
 	void WriteRegDefaults();
     void InitShape( float x, float y );
-    void UpdateEditorView();
+    void UpdateEditorView(const bool initPoints=false);
     void TriggerAnimationHit();
     void TriggerAnimationUnhit();
 
