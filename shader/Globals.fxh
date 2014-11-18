@@ -164,7 +164,7 @@ float3 DoEnvmapGlossy(float3 N, float3 V, float3 glossy, float glossyPower)
 }
 
 //!! PI?
-float3 DoEnvmap2ndLayer(float3 color1stLayer, float3 pos, float3 N, float3 V, float3 specular, float3 edge)
+float3 DoEnvmap2ndLayer(float3 color1stLayer, float3 pos, float3 N, float3 V, float3 specular)
 {
    float3 r = reflect(-V,N);
    r = normalize(mul(float4(r,0.0f), matViewInverse).xyz); // trafo back to world
@@ -173,7 +173,7 @@ float3 DoEnvmap2ndLayer(float3 color1stLayer, float3 pos, float3 N, float3 V, fl
 		atan2(r.y, r.x) * (0.5f/PI) + 0.5f,
 	    acos(r.z) * (1.0f/PI));
 	    
-   float3 w = FresnelSchlick(specular, dot(V, N), edge); //!! ?
+   float3 w = FresnelSchlick(specular, dot(V, N), float3(fEdge, fEdge, fEdge)); //!! ?
    return lerp(color1stLayer, InvGamma(tex2Dlod(texSampler1, float4(uv, 0, 0)).xyz)*fenvEmissionScale, w); // weight (optional) lower diffuse/glossy layer with clearcoat/specular //!! replace by real HDR instead? -> remove invgamma then
 }
 
@@ -216,7 +216,7 @@ float4 lightLoop(float3 pos, float3 N, float3 V, float3 diffuse, float3 glossy, 
 
    // 2nd Layer
    if(specularMax > 0.0f)
-      color = DoEnvmap2ndLayer(color, pos, N, V, specular, edge);
+      color = DoEnvmap2ndLayer(color, pos, N, V, specular);
   
    return float4(Gamma(ToneMap(vAmbient + color)), 1.0f); //!! in case of HDR out later on, remove tonemap and gamma //!! also problematic for alpha blends
 }
