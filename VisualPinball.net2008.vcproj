@@ -1183,7 +1183,7 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				AdditionalIncludeDirectories="&quot;$(DXSDK_DIR)\Include&quot;;inc;pin;media;inc\winsdk;shader"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;DEBUG_BALL_SPIN"
 				StringPooling="true"
 				ExceptionHandling="0"
 				RuntimeLibrary="0"
@@ -18647,6 +18647,18 @@
 				>
 			</File>
 			<File
+				RelativePath=".\res\bumperbase.bmp"
+				>
+			</File>
+			<File
+				RelativePath=".\res\bumperCap.bmp"
+				>
+			</File>
+			<File
+				RelativePath=".\res\bumperSocket.bmp"
+				>
+			</File>
+			<File
 				RelativePath="res\chevron.bmp"
 				>
 			</File>
@@ -18772,6 +18784,10 @@
 			</File>
 			<File
 				RelativePath="registry.bin"
+				>
+			</File>
+			<File
+				RelativePath=".\res\ringenvmap.bmp"
 				>
 			</File>
 			<File
@@ -19742,7 +19758,8 @@
 					>
 					<Tool
 						Name="VCCustomBuildTool"
-						CommandLine="fxc /Od /T fx_2_0 /Vn ballShaderCode /Fh shader\BallShader.h shader\BallShader.fx"
+						CommandLine="fxc /Od /T fx_2_0 /Vn ballShaderCode /Fh shader\BallShader.h shader\BallShader.fx&#x0D;&#x0A;"
+						AdditionalDependencies="shader\BallShader.h"
 						Outputs="BallShader.h"
 					/>
 				</FileConfiguration>
@@ -19751,7 +19768,7 @@
 					>
 					<Tool
 						Name="VCCustomBuildTool"
-						CommandLine="fxc /O3 /T fx_2_0 /Vn ballShaderCode /Fh shader\BallShader.h shader\BallShader.fx"
+						CommandLine="fxc /O3 /T fx_2_0 /Vn ballShaderCode /Fh shader\BallShader.h shader\BallShader.fx&#x0D;&#x0A;"
 						Outputs="BallShader.h"
 					/>
 				</FileConfiguration>
@@ -19765,6 +19782,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						CommandLine="fxc /Od /T fx_2_0 /Vn basicShaderCode /Fh shader\BasicShader.h shader\BasicShader.fx&#x0D;&#x0A;"
+						AdditionalDependencies="shader\BasicShader.h"
 						Outputs="BasicShader.h"
 					/>
 				</FileConfiguration>
@@ -19773,7 +19791,7 @@
 					>
 					<Tool
 						Name="VCCustomBuildTool"
-						CommandLine="fxc /O3 /T fx_2_0 /Vn basicShaderCode /Fh shader\BasicShader.h shader\BasicShader.fx"
+						CommandLine="fxc /O3 /T fx_2_0 /Vn basicShaderCode /Fh shader\BasicShader.h shader\BasicShader.fx&#x0D;&#x0A;"
 						Outputs="BasicShader.h"
 					/>
 				</FileConfiguration>
@@ -19786,7 +19804,7 @@
 					>
 					<Tool
 						Name="VCCustomBuildTool"
-						CommandLine="fxc /Od /T fx_2_0 /Vn dmdShaderCode /Fh shader\DMDShader.h shader\DMDShader.fx"
+						CommandLine="fxc /Od /T fx_2_0 /Vn dmdShaderCode /Fh shader\DMDShader.h shader\DMDShader.fx&#x0D;&#x0A;"
 						Outputs="DMDShader.h"
 					/>
 				</FileConfiguration>
@@ -19795,9 +19813,13 @@
 					>
 					<Tool
 						Name="VCCustomBuildTool"
-						CommandLine="fxc /O3 /T fx_2_0 /Vn dmdShaderCode /Fh shader\DMDShader.h shader\DMDShader.fx"
+						CommandLine="fxc /O3 /T fx_2_0 /Vn dmdShaderCode /Fh shader\DMDShader.h shader\DMDShader.fx&#x0D;&#x0A;"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\shader\Globals.fxh"
+				>
 			</File>
 			<File
 				RelativePath=".\shader\LightInsert.fx"
