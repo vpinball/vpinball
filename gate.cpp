@@ -133,7 +133,7 @@ void Gate::SetDefaults(bool fromMouseClick)
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_friction =  fTmp;
    else
-      m_d.m_friction = 0.3f;	
+      m_d.m_friction = 0.04f;	
 
    hr = GetRegStringAsFloat("DefaultProps\\Gate","Scatter", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
@@ -389,7 +389,7 @@ void Gate::UpdateWire( RenderDevice *pd3dDevice )
     fullMatrix.SetIdentity();
     rotzMat.RotateZMatrix(ANGTORAD(m_d.m_rotation));
     rotzMat.Multiply(fullMatrix, fullMatrix);
-    rotxMat.RotateXMatrix(-m_phitgate->m_gateanim.m_angle);
+    rotxMat.RotateXMatrix(-(m_phitgate->m_gateanim.m_angle));
     rotxMat.Multiply(fullMatrix, fullMatrix);
 
     wireVertexBuffer->lock(0, 0, (void**)&buf, 0);
