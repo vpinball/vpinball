@@ -109,16 +109,17 @@ DECLARE_REGISTRY_RESOURCEID(IDR_TRIGGER)
 
 	TriggerHitCircle *m_ptriggerhitcircle;
 
-	BOOL m_hitEnabled;		// for custom shape triggers
     int numVertices;
     int numFaces;
     float animHeightOffset;
-    BOOL  hitEvent;
-    BOOL  unhitEvent;
-    BOOL  doAnimation;
-    BOOL  moveDown;
+	bool hitEvent;
+    bool unhitEvent;
+    bool doAnimation;
+    bool moveDown;
 
-    VertexBuffer *vertexBuffer;
+    bool m_hitEnabled;		// for custom shape triggers
+    
+	VertexBuffer *vertexBuffer;
     IndexBuffer *triggerIndexBuffer;
     std::vector<Vertex2D> m_drawVertices;
     std::vector<Vertex3Ds> vertices;

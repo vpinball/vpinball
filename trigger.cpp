@@ -6,7 +6,12 @@ Trigger::Trigger()
 {
    m_ptriggerhitcircle = NULL;
 
-   m_hitEnabled = fTrue;
+   hitEvent = false;
+   unhitEvent = false;
+   doAnimation = false;
+   moveDown = false;
+
+   m_hitEnabled = true;
    vertexBuffer = NULL;
    triggerIndexBuffer=NULL;
    vertexBuffer=NULL;
@@ -560,12 +565,12 @@ void Trigger::EndPlay()
 
 void Trigger::TriggerAnimationHit()
 {
-    hitEvent=fTrue;
+    hitEvent=true;
 }
 
 void Trigger::TriggerAnimationUnhit()
 {
-    unhitEvent=fTrue;
+    unhitEvent=true;
 }
 
 void Trigger::PostRenderStatic(RenderDevice* pd3dDevice)
@@ -587,19 +592,19 @@ void Trigger::PostRenderStatic(RenderDevice* pd3dDevice)
 
     if ( hitEvent )
     {
-        doAnimation=fTrue;
-        hitEvent=fFalse;
-        unhitEvent=fFalse;
+        doAnimation=true;
+        hitEvent=false;
+        unhitEvent=false;
         animHeightOffset=0.0f;
-        moveDown=fTrue;
+        moveDown=true;
     }
     if ( unhitEvent )
     {
-        doAnimation=fTrue;
-        unhitEvent=fFalse;
-        hitEvent=fFalse;
+        doAnimation=true;
+        unhitEvent=false;
+        hitEvent=false;
         animHeightOffset=animLimit;
-        moveDown=fFalse;
+        moveDown=false;
     }
 
     if ( doAnimation)
@@ -613,7 +618,7 @@ void Trigger::PostRenderStatic(RenderDevice* pd3dDevice)
             if( animHeightOffset<-limit )
             {
                 animHeightOffset=-limit;
-                doAnimation=fFalse;
+                doAnimation=false;
             }
         }
         else
@@ -622,7 +627,7 @@ void Trigger::PostRenderStatic(RenderDevice* pd3dDevice)
             if( animHeightOffset>=0.0f )
             {
                 animHeightOffset=0.0f;
-                doAnimation=fFalse;
+                doAnimation=false;
             }
         }
         Vertex3D_NoTex2 *buf;
