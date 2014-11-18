@@ -387,10 +387,10 @@ void Gate::UpdateWire( RenderDevice *pd3dDevice )
     Vertex3D_NoTex2 *buf;
 
     fullMatrix.SetIdentity();
-    rotzMat.RotateZMatrix(ANGTORAD(m_d.m_rotation));
-    rotzMat.Multiply(fullMatrix, fullMatrix);
     rotxMat.RotateXMatrix(-(m_phitgate->m_gateanim.m_angle));
     rotxMat.Multiply(fullMatrix, fullMatrix);
+    rotzMat.RotateZMatrix(ANGTORAD(m_d.m_rotation));
+    rotzMat.Multiply(fullMatrix, fullMatrix);
 
     wireVertexBuffer->lock(0, 0, (void**)&buf, 0);
     for( int i=0;i<gateWireNumVertices;i++ )
