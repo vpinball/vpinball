@@ -70,8 +70,8 @@ public:
     void EnableLightMap(const float z);
     void DisableLightMap();
 
-	void EnableAlphaTestReference(DWORD alphaRefValue) const;
-    void EnableAlphaBlend( DWORD alphaRefValue, BOOL additiveBlending=fFalse );
+	void EnableAlphaTestReference(const DWORD alphaRefValue) const;
+    void EnableAlphaBlend(const DWORD alphaRefValue, const bool additiveBlending) const;
     void DisableAlphaBlend();
 
     void DrawBackground();

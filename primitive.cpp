@@ -837,9 +837,8 @@ void Primitive::RenderObject( RenderDevice *pd3dDevice )
     g_pplayer->UpdateBasicShaderMatrix();
 
     pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_CLAMP);
+    g_pplayer->m_pin3d.DisableAlphaBlend();
     pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", false);
-    pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
-
 }
 
 // Always called each frame to render over everything else (along with alpha ramps)

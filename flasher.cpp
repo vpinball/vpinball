@@ -1298,18 +1298,7 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
       }
 
       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
-      if ( m_d.m_fAddBlend )
-      {
-         pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
-         pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
-         pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_ONE );
-      }
-      else
-      {
-          pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
-          pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
-          pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_INVSRCALPHA);
-      }
+	  g_pplayer->m_pin3d.EnableAlphaBlend(1, m_d.m_fAddBlend);
 
       pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
 
@@ -1319,6 +1308,6 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
 
       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
       pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-      pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE); 	
+	  g_pplayer->m_pin3d.DisableAlphaBlend();
       pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", false);
 }
