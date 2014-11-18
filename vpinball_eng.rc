@@ -14,11 +14,13 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (United States) resources
+// English (U.S.) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 #pragma code_page(1252)
+#endif //_WIN32
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -140,7 +142,7 @@ BEGIN
     LTEXT           "Scale Y",IDC_STATIC_SCALEY,19,35,26,8
 END
 
-IDD_PROGRESS DIALOG 0, 0, 167, 44
+IDD_PROGRESS DIALOG  0, 0, 167, 44
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Preparing Table"
 FONT 8, "MS Sans Serif"
@@ -302,7 +304,7 @@ BEGIN
     LTEXT           "to my Monitor:",IDC_STATIC,27,244,45,8
 END
 
-IDD_FONTDIALOG DIALOG 0, 0, 316, 167
+IDD_FONTDIALOG DIALOG  0, 0, 316, 167
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Font Manager"
 FONT 8, "MS Sans Serif"
@@ -580,7 +582,7 @@ BEGIN
     PUSHBUTTON      "&Down",IDC_COL_DOWN_BUTTON,259,66,50,14
 END
 
-IDD_COLLECTION DIALOG 0, 0, 232, 231
+IDD_COLLECTION DIALOG  0, 0, 232, 231
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Collection"
 FONT 8, "MS Sans Serif"
@@ -641,7 +643,7 @@ BEGIN
     LTEXT           "Please reenter your Password",IDC_STATIC,7,182,99,8
 END
 
-IDD_UNLOCK_DIALOG DIALOG 0, 0, 164, 53
+IDD_UNLOCK_DIALOG DIALOG  0, 0, 164, 53
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Unlock Protected Table"
 FONT 8, "MS Sans Serif"
@@ -1480,7 +1482,7 @@ BEGIN
     CONTROL         "Throw Balls in Player",IDC_BALL_THROWING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,27,81,10
 END
 
-IDD_COMLIST DIALOG 0, 0, 287, 190
+IDD_COMLIST DIALOG  0, 0, 287, 190
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Component List"
 FONT 8, "MS Sans Serif"
@@ -1695,43 +1697,42 @@ BEGIN
     COMBOBOX        IDC_MATERIAL_COMBO,7,49,111,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
 END
 
-IDD_MATERIALDIALOG DIALOGEX 0, 0, 463, 186
+IDD_MATERIALDIALOG DIALOGEX 0, 0, 478, 193
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Material Manager"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,408,151,50,14
-    CONTROL         "List1",IDC_MATERIAL_LIST,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | LVS_SORTASCENDING | LVS_EDITLABELS | WS_BORDER | WS_TABSTOP,6,8,204,158
-    PUSHBUTTON      "&Import",IDC_IMPORT,408,26,50,14
-    PUSHBUTTON      "&Delete",IDC_DELETE,408,74,50,14
-    PUSHBUTTON      "&Rename",IDC_RENAME,408,58,50,14
-    PUSHBUTTON      "&Export",IDC_EXPORT,408,42,50,14
+    DEFPUSHBUTTON   "OK",IDOK,421,165,50,14
+    CONTROL         "List1",IDC_MATERIAL_LIST,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | LVS_SORTASCENDING | LVS_EDITLABELS | WS_BORDER | WS_TABSTOP,6,8,204,171
+    PUSHBUTTON      "&Import",IDC_IMPORT,423,26,50,14
+    PUSHBUTTON      "&Delete",IDC_DELETE,423,74,50,14
+    PUSHBUTTON      "&Rename",IDC_RENAME,423,58,50,14
+    PUSHBUTTON      "&Export",IDC_EXPORT,423,42,50,14
     CONTROL         "Custom2",IDC_COLOR,"ColorControl",WS_TABSTOP,220,30,40,19
-    EDITTEXT        IDC_DIFFUSE_EDIT,292,31,21,14,ES_AUTOHSCROLL
-    EDITTEXT        IDC_GLOSSY_EDIT,301,76,21,14,ES_AUTOHSCROLL
-    EDITTEXT        IDC_SPECULAR_EDIT,311,120,21,14,ES_AUTOHSCROLL
-    PUSHBUTTON      "&Add",IDC_ADD_BUTTON,408,10,50,14
-    CONTROL         "Custom2",IDC_COLOR2,"ColorControl",WS_TABSTOP,220,75,40,19
-    CONTROL         "Custom2",IDC_COLOR3,"ColorControl",WS_TABSTOP,220,119,40,19
-    GROUPBOX        "Base Color (can be replaced by Image on Object)",IDC_STATIC,214,19,192,43
-    LTEXT           "Wrap",IDC_STATIC,270,33,21,8
-    LTEXT           "(0..1)",IDC_STATIC,272,41,17,8
+    EDITTEXT        IDC_DIFFUSE_EDIT,299,31,21,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_GLOSSY_EDIT,299,80,21,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_SPECULAR_EDIT,299,127,21,14,ES_AUTOHSCROLL
+    PUSHBUTTON      "&Add",IDC_ADD_BUTTON,423,10,50,14
+    CONTROL         "Custom2",IDC_COLOR2,"ColorControl",WS_TABSTOP,220,79,40,19
+    CONTROL         "Custom2",IDC_COLOR3,"ColorControl",WS_TABSTOP,220,126,40,19
+    GROUPBOX        "Base Color (can be replaced by Image on Object)",IDC_STATIC,214,19,202,43
+    LTEXT           "Wrap",IDC_STATIC,265,33,21,8
+    LTEXT           "(0..1)",IDC_STATIC,265,41,17,8
     CONTROL         "Metal Material (disables Glossy and has strong reflectivity)",IDC_DIFFUSE_CHECK,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,215,7,192,10
-    GROUPBOX        "Glossy Layer (adds subtle Reflections to Objects)",IDC_STATIC,214,62,192,43
-    LTEXT           "Shininess",IDC_STATIC,269,78,32,8
-    LTEXT           "(0..1)",IDC_STATIC,271,86,25,8
-    GROUPBOX        "Clearcoat Layer",IDC_STATIC,214,105,60,40
-    LTEXT           "Edge Brig.",IDC_STATIC,277,121,34,8
-    LTEXT           "(0..1)",IDC_STATIC,279,130,17,8
-    GROUPBOX        "Opacity",IDC_STATIC,214,145,158,21
-    CONTROL         "Active",IDC_OPACITY_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,331,152,36,10
-    LTEXT           "Amount",IDC_STATIC,250,153,25,8
-    EDITTEXT        IDC_OPACITY_EDIT,303,151,21,14,ES_AUTOHSCROLL
-    LTEXT           "(0-100)",IDC_STATIC,277,153,23,8
-    LTEXT           "Steers the basic Color of an Object. Wrap allows for light even if object is only lit from behind (0=natural)",IDC_STATIC,317,28,85,32
-    LTEXT           "Dims the Edge ""glow"" when using Glossy or Clearcoat Layers (1=natural, 0=dark)",IDC_STATIC,338,111,71,34
-    LTEXT           "Allows to have very dull (Shininess low) or perfect (Shininess high) reflections",IDC_STATIC,327,71,75,32
+    GROUPBOX        "Glossy Layer (adds subtle Reflections to Objects)",IDC_STATIC,214,66,202,43
+    LTEXT           "Shininess",IDC_STATIC,265,82,32,8
+    LTEXT           "(0..1)",IDC_STATIC,265,91,25,8
+    GROUPBOX        "Clearcoat Layer",IDC_STATIC,214,112,202,40
+    LTEXT           "Edge Brig.",IDC_STATIC,265,128,34,8
+    LTEXT           "(0..1)",IDC_STATIC,265,138,17,8
+    GROUPBOX        "Opacity",IDC_STATIC,214,158,202,21
+    CONTROL         "Active",IDC_OPACITY_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,328,165,36,10
+    LTEXT           "Amount (0..100)",IDC_STATIC,248,166,51,8
+    EDITTEXT        IDC_OPACITY_EDIT,299,164,21,14,ES_AUTOHSCROLL
+    LTEXT           "Steers the basic Color of an Object. Wrap allows for light even if object is only lit from behind (0=natural)",IDC_STATIC,328,28,85,32
+    LTEXT           "Dims the Edge ""glow"" when using Glossy or Clearcoat Layers (1=natural, 0=dark)",IDC_STATIC,328,117,71,34
+    LTEXT           "Allows to have very dull (Shininess low) or perfect (Shininess high) reflections",IDC_STATIC,328,75,75,32
 END
 
 
@@ -1741,7 +1742,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO
+GUIDELINES DESIGNINFO 
 BEGIN
     IDD_DIMENSION_CALCULATOR, DIALOG
     BEGIN
@@ -1823,9 +1824,9 @@ BEGIN
 
     IDD_MATERIALDIALOG, DIALOG
     BEGIN
-        RIGHTMARGIN, 458
-        RIGHTMARGIN, 456
-        BOTTOMMARGIN, 172
+        RIGHTMARGIN, 471
+        RIGHTMARGIN, 473
+        BOTTOMMARGIN, 179
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -1926,7 +1927,7 @@ IDR_RUBBER              REGISTRY                "res\\rubber.rgs"
 // Menu
 //
 
-IDR_APPMENU MENU
+IDR_APPMENU MENU 
 BEGIN
     POPUP "&File"
     BEGIN
@@ -2042,7 +2043,7 @@ BEGIN
     END
 END
 
-IDR_POINTMENU MENU
+IDR_POINTMENU MENU 
 BEGIN
     POPUP "PointMenu"
     BEGIN
@@ -2051,7 +2052,7 @@ BEGIN
     END
 END
 
-IDR_SURFACEMENU MENU
+IDR_SURFACEMENU MENU 
 BEGIN
     POPUP "WallMenu"
     BEGIN
@@ -2064,7 +2065,7 @@ BEGIN
     END
 END
 
-IDR_MULTIMENU MENU
+IDR_MULTIMENU MENU 
 BEGIN
     POPUP "WallMenu"
     BEGIN
@@ -2076,7 +2077,7 @@ BEGIN
     END
 END
 
-IDR_SCRIPTMENU MENU
+IDR_SCRIPTMENU MENU 
 BEGIN
     POPUP "&Script"
     BEGIN
@@ -2099,7 +2100,7 @@ BEGIN
     END
 END
 
-IDR_TABLEMENU MENU
+IDR_TABLEMENU MENU 
 BEGIN
     POPUP "Table Menu"
     BEGIN
@@ -2135,7 +2136,7 @@ IDB_BUMPERSOCKET        BITMAP                  "res\\bumperSocket.bmp"
 // Accelerator
 //
 
-IDR_VPACCEL ACCELERATORS
+IDR_VPACCEL ACCELERATORS 
 BEGIN
     VK_DELETE,      ID_DELETE,              VIRTKEY, NOINVERT
     "D",            ID_EDIT_DRAWINGORDER_HIT, VIRTKEY, SHIFT, CONTROL, NOINVERT
@@ -2174,7 +2175,7 @@ BEGIN
     VK_F8,          IDM_COLLECTION_EDITOR,  VIRTKEY, NOINVERT
 END
 
-IDR_CODEVIEWACCEL ACCELERATORS
+IDR_CODEVIEWACCEL ACCELERATORS 
 BEGIN
     "W",            ID_ADD_COMMENT,         VIRTKEY, CONTROL, NOINVERT
     VK_F3,          ID_EDIT_FINDNEXT,       VIRTKEY, NOINVERT
@@ -2257,7 +2258,7 @@ END
 // String Table
 //
 
-STRINGTABLE
+STRINGTABLE 
 BEGIN
     IDS_PROJNAME            "Visual Pinball"
     IDS_TB_TIMER            "Timer"
@@ -2273,14 +2274,14 @@ BEGIN
     IDS_LAYER3              "Layer&3"
 END
 
-STRINGTABLE
+STRINGTABLE 
 BEGIN
     IDS_TB_LIGHTSEQ         "LightSeq"
     IDS_REPLACEALL          "Replaced"
     IDS_REPLACEALL2         "occurrences in script."
 END
 
-STRINGTABLE
+STRINGTABLE 
 BEGIN
     IDS_NEED_DD9            "Visual Pinball requires DirectX 9.0 or higher from Microsoft."
     IDS_LOCK                "&Lock"
@@ -2294,12 +2295,12 @@ BEGIN
     IDS_POSITION_TRANSLATION "Position & Translation"
 END
 
-STRINGTABLE
+STRINGTABLE 
 BEGIN
     IDS_VISUALS_SOUND       "Colors, Sound & Graphics"
 END
 
-STRINGTABLE
+STRINGTABLE 
 BEGIN
     IDS_PHYSICSGFX          "Physics & Graphics"
     IDS_DIMENSIONSSLOPE     "Dimensions & Slope"
@@ -2307,7 +2308,7 @@ BEGIN
     IDS_INPUT               "Input"
 END
 
-STRINGTABLE
+STRINGTABLE 
 BEGIN
     IDS_TIMER_DESC          "Timer Class"
     IDS_LAYER4              "Layer&4"
@@ -2327,7 +2328,7 @@ BEGIN
     IDS_TB_TRIGGER          "Trigger"
 END
 
-STRINGTABLE
+STRINGTABLE 
 BEGIN
     IDS_LAYER8              "Layer&8"
     IDS_LIGHT_DESC          "Light Class"
@@ -2347,12 +2348,12 @@ BEGIN
     IDS_TO_COLLECTION       "To &Collection"
 END
 
-STRINGTABLE
+STRINGTABLE 
 BEGIN
     IDS_DRAWING_ORDER_SELECT "D&rawing Order (Select)"
 END
 
-STRINGTABLE
+STRINGTABLE 
 BEGIN
     IDS_RAMP_DESC           "Ramp Class"
     IDS_TB_RAMP             "Ramp"
@@ -2372,7 +2373,7 @@ BEGIN
     IDS_DRAWINFRONT         "Draw In &Front"
 END
 
-STRINGTABLE
+STRINGTABLE 
 BEGIN
     IDS_PERMISSION_ERROR    "This table is protected.\n\nThe table author has requested that this option be restricted."
     IDS_PROTECT_ONETICKED   "You must tick at least one protection option."
@@ -2382,7 +2383,7 @@ BEGIN
     IDS_UNLOCK_SUCCESS      "This table has been successfully unlocked."
 END
 
-STRINGTABLE
+STRINGTABLE 
 BEGIN
     IDS_DRAWINBACK          "Draw In &Back"
     IDS_SAVEERROR           "There was an error saving the file."
@@ -2401,7 +2402,7 @@ BEGIN
     IDS_COLLECTION          "Collection"
 END
 
-STRINGTABLE
+STRINGTABLE 
 BEGIN
     IDS_EDITOR              "Editor"
     IDS_DEFAULTBALL         "Ball"
@@ -2419,7 +2420,7 @@ BEGIN
     IDS_STEP                "Step"
 END
 
-#endif    // English (United States) resources
+#endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
