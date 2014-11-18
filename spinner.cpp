@@ -341,12 +341,12 @@ void Spinner::PostRenderStatic(RenderDevice* pd3dDevice)
         pinback->Set( ePictureTexture );
         if (pinback->m_fTransparent)
         {
-            pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
+			g_pplayer->m_pin3d.DisableAlphaBlend();
             if (diffColor != rgbTransparent) rgbTransparent = pinback->m_rgbTransparent;
         }
         else 
         {
-            g_pplayer->m_pin3d.EnableAlphaBlend( 1, fFalse );
+            g_pplayer->m_pin3d.EnableAlphaBlend(1, false);
         } 
 
         if (diffColor == rgbTransparent || diffColor == NOTRANSCOLOR) 
@@ -360,8 +360,6 @@ void Spinner::PostRenderStatic(RenderDevice* pd3dDevice)
     }
     else // No image by that name
     {
-        //ppin3d->SetTexture(NULL);
-        //pd3dDevice->SetMaterial(solidMaterial);
        pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
     }
 
@@ -375,12 +373,12 @@ void Spinner::PostRenderStatic(RenderDevice* pd3dDevice)
         //pinfront->Set( ePictureTexture );
         if (pinfront->m_fTransparent)
         {
-            pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);	
+			g_pplayer->m_pin3d.DisableAlphaBlend();
             if (diffColor != rgbTransparent) rgbTransparent = pinfront->m_rgbTransparent;
         }
         else 
         {
-            g_pplayer->m_pin3d.EnableAlphaBlend( 1, fFalse );
+            g_pplayer->m_pin3d.EnableAlphaBlend(1, false);
         }
 
         if (diffColor == rgbTransparent || diffColor == NOTRANSCOLOR) 
@@ -414,6 +412,7 @@ void Spinner::PostRenderStatic(RenderDevice* pd3dDevice)
     pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
     pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, FALSE);
     pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_WRAP);
+    pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", false);
 }
 
 void Spinner::PrepareStatic( RenderDevice* pd3dDevice )
@@ -589,11 +588,8 @@ void Spinner::RenderStatic(RenderDevice* pd3dDevice)
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
    pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelTexelDeclaration );
 
-   //pd3dDevice->SetMaterial(staticMaterial); //!!
-   D3DXVECTOR4 matColor(0.6f,0.6f,0.6f,1.0f);
-   const float Roughness = 0.5f;
-   pd3dDevice->basicShader->Core()->SetFloat("fRoughness", exp2f(10.0f * Roughness + 1.0f));
-   pd3dDevice->basicShader->Core()->SetVector("cBase",&matColor);
+   Material *mat = m_ptable->GetMaterial( m_d.m_szMaterial);
+   pd3dDevice->basicShader->SetMaterial(mat);
    pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
 
    Vertex3D rgv3D[8];

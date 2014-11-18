@@ -211,8 +211,7 @@ void Kicker::PreRenderStatic( RenderDevice* pd3dDevice)
 
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
-   pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, FALSE);	
-   pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);	
+   g_pplayer->m_pin3d.DisableAlphaBlend();
    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
 
    const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);

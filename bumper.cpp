@@ -400,11 +400,10 @@ void Bumper::RenderBase(RenderDevice *pd3dDevice, Material *baseMaterial )
     pd3dDevice->basicShader->Core()->SetFloat("fAlphaTestValue", 128.0f/255.0f);
 
     pd3dDevice->basicShader->Begin(0);
-    // render base
     pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, baseVertexBuffer, 0, bumperBaseNumVertices, baseIndexBuffer, 0, bumperBaseNumFaces );
     pd3dDevice->basicShader->End();
-    pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", true);
-    pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
+    pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", false);
+    g_pplayer->m_pin3d.DisableAlphaBlend();
 }
 
 void Bumper::RenderSocket(RenderDevice *pd3dDevice, Material *baseMaterial )
@@ -416,12 +415,10 @@ void Bumper::RenderSocket(RenderDevice *pd3dDevice, Material *baseMaterial )
    pd3dDevice->basicShader->Core()->SetFloat("fAlphaTestValue", 128.0f/255.0f);
 
    pd3dDevice->basicShader->Begin(0);
-   // render base
    pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, socketVertexBuffer, 0, bumperSocketNumVertices, socketIndexBuffer, 0, bumperSocketNumFaces );
    pd3dDevice->basicShader->End();
-   pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", true);
-   pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
-
+   pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", false);
+   g_pplayer->m_pin3d.DisableAlphaBlend();
 }
 
 void Bumper::RenderCap( RenderDevice *pd3dDevice, Material *capMaterial )
@@ -433,11 +430,10 @@ void Bumper::RenderCap( RenderDevice *pd3dDevice, Material *capMaterial )
     pd3dDevice->basicShader->Core()->SetFloat("fAlphaTestValue", 128.0f/255.0f);
 
     pd3dDevice->basicShader->Begin(0);
-    // render cap
     pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, capVertexBuffer, 0, bumperCapNumVertices, capIndexBuffer, 0, bumperCapNumFaces );
     pd3dDevice->basicShader->End();
-    pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", true);
-    pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
+    pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", false);
+    g_pplayer->m_pin3d.DisableAlphaBlend();
 }
 
 void Bumper::PostRenderStatic(RenderDevice* pd3dDevice)

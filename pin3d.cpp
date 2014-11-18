@@ -261,9 +261,7 @@ void Pin3D::SetRenderTarget(RenderTarget* pddsSurface, RenderTarget* pddsZ) cons
 
 void Pin3D::InitRenderState() 
 {
-	m_pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
-	m_pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA );
-	m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_INVSRCALPHA );
+	g_pplayer->m_pin3d.EnableAlphaBlend(1, false);
 
 	m_pd3dDevice->SetRenderState(RenderDevice::SPECULARENABLE, FALSE);
 
@@ -688,9 +686,10 @@ void Pin3D::EnableAlphaTestReference(DWORD alphaRefValue) const
 	m_pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATEREQUAL);
 }
 
-void Pin3D::EnableAlphaBlend( DWORD alphaRefValue, BOOL additiveBlending )
+void Pin3D::EnableAlphaBlend( const DWORD alphaRefValue, const bool additiveBlending ) const
 {
-	EnableAlphaTestReference( alphaRefValue );
+	if(alphaRefValue != 1)
+		EnableAlphaTestReference(alphaRefValue);
 	m_pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
 	m_pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
 	m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, additiveBlending ? D3DBLEND_ONE : D3DBLEND_INVSRCALPHA);

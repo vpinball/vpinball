@@ -452,7 +452,7 @@ void DispReel::PostRenderStatic(RenderDevice* pd3dDevice)
 
         pd3dDevice->SetTexture(ePictureTexture, NULL);
         ppin3d->SetTextureFilter(ePictureTexture, TEXTURE_MODE_TRILINEAR);
-        pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
+		g_pplayer->m_pin3d.DisableAlphaBlend();
         pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_WRAP);
     }
     else

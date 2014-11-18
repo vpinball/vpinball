@@ -540,7 +540,6 @@ void Decal::RenderStatic(RenderDevice* pd3dDevice)
    pd3dDevice->basicShader->Core()->SetFloat("fmaterialAlpha",1.0f);
    pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
    pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", true);
-   const float alphaRef=128.0f / 255.0f;
    pd3dDevice->basicShader->Core()->SetFloat("fAlphaTestValue", 128.0f/255.0f);
 
    if (m_d.m_decaltype != DecalImage)
@@ -562,25 +561,24 @@ void Decal::RenderStatic(RenderDevice* pd3dDevice)
 //   pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_MIRROR);
 
    ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
-   pd3dDevice->SetRenderState( RenderDevice::ALPHABLENDENABLE, TRUE);
+   g_pplayer->m_pin3d.EnableAlphaBlend(1,false);
 
    if (!m_fBackglass)
    {
        float depthbias = -5 * BASEDEPTHBIAS;
        pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, *((DWORD*)&depthbias));
    }
+
    pd3dDevice->basicShader->Begin(0);
    pd3dDevice->DrawPrimitiveVB( D3DPT_TRIANGLEFAN, vertexBuffer, 0, 4 );
    pd3dDevice->basicShader->End();
 
    pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
 
-   ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
-
    // Set the render state.
-   pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
    pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_WRAP);
    pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", false);
+   g_pplayer->m_pin3d.DisableAlphaBlend();
 }
 
 void Decal::SetObjectPos()

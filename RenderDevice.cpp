@@ -1087,8 +1087,8 @@ void Shader::SetMaterial( const Material * const mat,
     m_shader->SetVector("cClearcoat",&cClearcoat);
 	m_shader->SetBool("bIsMetal", bIsMetal);
     m_shader->SetFloat("fmaterialAlpha", bOpacityActive ? fOpacity : 1.0f);
-    if(bOpacityActive && (fOpacity < 1.0f))
-	g_pplayer->m_pin3d.EnableAlphaBlend(1,false);
+    if(bOpacityActive /*&& (fOpacity < 1.0f)*/)
+		g_pplayer->m_pin3d.EnableAlphaBlend(1,false);
     else
-	g_pplayer->m_pin3d.DisableAlphaBlend();
+		g_pplayer->m_pin3d.DisableAlphaBlend();
 }

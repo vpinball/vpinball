@@ -288,7 +288,7 @@ void Plunger::PostRenderStatic(RenderDevice* pd3dDevice)
 //            pd3dDevice->basicShader->Core()->SetVector("cBase",&color);
             pd3dDevice->basicShader->SetTexture("Texture0",pin);
             pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
-            ppin3d->EnableAlphaBlend( 1, fFalse );
+            ppin3d->EnableAlphaBlend( 1, false );
             ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
             static const WORD idx[6] = {0,1,2,2,3,0};
             pd3dDevice->basicShader->Begin(0);
@@ -305,7 +305,7 @@ void Plunger::PostRenderStatic(RenderDevice* pd3dDevice)
 //                 pd3dDevice->basicShader->Core()->SetVector("cBase",&color);
                 pd3dDevice->basicShader->SetTexture("Texture0",pin);
                 pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
-                ppin3d->EnableAlphaBlend( 1, fFalse );
+                ppin3d->EnableAlphaBlend( 1, false );
                 ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
             }
             else

@@ -1642,6 +1642,7 @@ void Ramp::RenderStatic(RenderDevice* pd3dDevice)
       ppin3d->SetTexture(NULL);
 
       pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
+      pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", false);
       ppin3d->DisableAlphaBlend();
 
       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
@@ -2645,10 +2646,9 @@ void Ramp::PostRenderStatic(RenderDevice* pd3dDevice)
 	  }
       pd3dDevice->basicShader->End();  
 
+	  g_pplayer->m_pin3d.DisableAlphaBlend();
       pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", false);
-      pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
    }
-
 }
 
 
