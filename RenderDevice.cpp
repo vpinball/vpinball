@@ -1080,11 +1080,15 @@ void Shader::SetMaterial( const Material * const mat,
     }
 
     m_shader->SetFloat("fWrapLighting",fWrapLighting);
-    m_shader->SetFloat("fRoughness",exp2f(10.0f * fRoughness*fRoughness + 1.0f)); // map from 0..1 to 2..2048
-    m_shader->SetFloat("fEdge",fEdge); //!! wire up
+    m_shader->SetFloat("fRoughness",exp2f(10.0f * fRoughness + 1.0f)); // map from 0..1 to 2..2048
+    m_shader->SetFloat("fEdge",fEdge);
     m_shader->SetVector("cBase",&cBase);
     m_shader->SetVector("cGlossy",&cGlossy);
     m_shader->SetVector("cClearcoat",&cClearcoat);
 	m_shader->SetBool("bIsMetal", bIsMetal);
     m_shader->SetFloat("fmaterialAlpha", bOpacityActive ? fOpacity : 1.0f);
+    if(bOpacityActive && (fOpacity < 1.0f))
+	g_pplayer->m_pin3d.EnableAlphaBlend(1,false);
+    else
+	g_pplayer->m_pin3d.DisableAlphaBlend();
 }

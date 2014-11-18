@@ -1731,7 +1731,7 @@ BEGIN
     LTEXT           "(0-100)",IDC_STATIC,277,236,23,8
     LTEXT           "Steers the basic Color of an Object. Wrap allows for light even if object is only lit from behind (0=natural)",IDC_STATIC,317,28,85,32
     LTEXT           "Dims the Edge ""glow"" when using Glossy or Clearcoat Layers (1=natural, 0=dark)",IDC_STATIC,317,183,71,34
-    LTEXT           "Sets from very dull (Shininess low) to perfect/mirror-like (Shininess high) reflections",IDC_STATIC,317,107,75,32
+    LTEXT           "Sets from very dull (Shininess low) to perfect/mirror-like (Shininess high) reflections (for glossy layer or metal only)",IDC_STATIC,317,107,91,32
     LTEXT           "Add subtle reflections on non-metal materials (leave at non-black for most natural behavior)",IDC_STATIC,317,69,85,32
     LTEXT           "Add an additional thin clearcoat layer on top of the material",IDC_STATIC,317,148,75,26
 END

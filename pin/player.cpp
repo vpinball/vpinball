@@ -804,7 +804,8 @@ void Player::InitBallShader()
    ballShader->Core()->SetInt("iLightPointNum",MAX_LIGHT_SOURCES);
 
    ballShader->Core()->SetFloat("fWrapLighting", 0.25f);
-   ballShader->Core()->SetFloat("fRoughness", exp2f(10.0f * 0.8f*0.8f + 1.0f));
+   const float Roughness = 0.8f;
+   ballShader->Core()->SetFloat("fRoughness", exp2f(10.0f * Roughness + 1.0f));
    ballShader->Core()->SetFloat("fEdge", 1.0f);
    ballShader->Core()->SetBool("bIsMetal", true);
 

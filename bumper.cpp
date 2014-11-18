@@ -405,7 +405,6 @@ void Bumper::RenderBase(RenderDevice *pd3dDevice, Material *baseMaterial )
     pd3dDevice->basicShader->End();
     pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", true);
     pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
-    
 }
 
 void Bumper::RenderSocket(RenderDevice *pd3dDevice, Material *baseMaterial )

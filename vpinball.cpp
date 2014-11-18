@@ -3217,7 +3217,7 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
                             SetDlgItemText(hwndDlg, IDC_GLOSSY_EDIT, textBuf);
                             f2sz(pmat->m_fEdge,textBuf);
                             SetDlgItemText(hwndDlg, IDC_SPECULAR_EDIT, textBuf);
-                            int op = (int)(pmat->m_fOpacity*100.0f);
+                            int op = (int)(pmat->m_fOpacity*100.0f+0.5f);
                             _itoa_s( op, textBuf, 10 );
                             SetDlgItemText(hwndDlg, IDC_OPACITY_EDIT, textBuf);
 
@@ -3275,7 +3275,7 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
                         SetDlgItemText(hwndDlg, IDC_GLOSSY_EDIT, textBuf);
                         f2sz(pmat->m_fEdge,textBuf);
                         SetDlgItemText(hwndDlg, IDC_SPECULAR_EDIT, textBuf);
-                        int op = (int)(pmat->m_fOpacity*100.0f);
+                        int op = (int)(pmat->m_fOpacity*100.0f+0.5f);
                         _itoa_s( op, textBuf, 10 );
                         SetDlgItemText(hwndDlg, IDC_OPACITY_EDIT, textBuf);
                         HWND checkboxHwnd = GetDlgItem(hwndDlg, IDC_DIFFUSE_CHECK);
