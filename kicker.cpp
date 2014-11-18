@@ -218,35 +218,8 @@ void Kicker::PreRenderStatic( RenderDevice* pd3dDevice)
    const float inv_width  = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
    const float inv_height = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
 
-   Material *mat = m_ptable->GetMaterial( m_d.m_szMaterial);
-   D3DXVECTOR4 diffuseColor( 0.5f, 0.5f, 0.5f, 1.0f );
-   D3DXVECTOR4 glossyColor( 0.04f, 0.04f, 0.04f, 1.0f );
-   D3DXVECTOR4 specularColor( 0.04f, 0.04f, 0.04f, 1.0f );
-   float diffuseWrap = 0.5f;
-   float glossyPower = 0.1f;
-   bool  bDiffActive=true;
-   bool  bGlossyActive = false;
-   bool  bSpecActive = false;
-   if( mat )
-   {
-      diffuseColor = mat->getDiffuseColor();
-      glossyColor = mat->getGlossyColor();
-      specularColor = mat->getSpecularColor();
-      diffuseWrap = mat->m_fDiffuse;
-      glossyPower = mat->m_fGlossy;
-      bDiffActive = mat->m_bDiffuseActive;
-      bGlossyActive = mat->m_bGlossyActive;
-      bSpecActive = mat->m_bSpecularActive;
-   }
-
-   pd3dDevice->basicShader->Core()->SetFloat("fDiffuseWrap",diffuseWrap);
-   pd3dDevice->basicShader->Core()->SetFloat("fGlossyPower",glossyPower);
-   pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&diffuseColor);
-   pd3dDevice->basicShader->Core()->SetVector("vGlossyColor",&glossyColor);
-   pd3dDevice->basicShader->Core()->SetVector("vSpecularColor",&specularColor);
-   pd3dDevice->basicShader->Core()->SetBool("bDiffuse", bDiffActive);
-   pd3dDevice->basicShader->Core()->SetBool("bGlossy", bGlossyActive);
-   pd3dDevice->basicShader->Core()->SetBool("bSpecular", bSpecActive);
+   Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
+   pd3dDevice->basicShader->SetMaterial(mat);
    pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
 
    ppin3d->EnableLightMap(height);
@@ -279,8 +252,8 @@ void Kicker::PreRenderStatic( RenderDevice* pd3dDevice)
             pd3dDevice->basicShader->End();
          }
 
-         diffuseColor = D3DXVECTOR4(0.0f, 0.0f, 0.0f, 1.0f);
-         pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&diffuseColor);
+         D3DXVECTOR4 diffuseColor = D3DXVECTOR4(0.0f, 0.0f, 0.0f, 1.0f);
+         pd3dDevice->basicShader->Core()->SetVector("cBase",&diffuseColor);
          // Draw the bottom of the kicker hole
          WORD rgi[3*14];
          for (int l=0;l<14;++l)

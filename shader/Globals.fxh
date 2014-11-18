@@ -1,14 +1,14 @@
 #define PI 3.1415926535897932384626433832795f
 #define NUM_LIGHTS 2
 
-bool   bDiffuse  = true;  //!! remove, steer from diffuse?  (performance?)
-bool   bGlossy   = false; //!! remove, steer from glossy?   (performance?)
-bool   bSpecular = false; //!! remove, steer from specular? (performance?)
+float3 cBase = float3(0.5f, 0.5f, 0.5f); //!! 0.04-0.95 in RGB
 
-float3 vDiffuseColor = float3(0.5f, 0.5f, 0.5f); //!! 0.04-0.95 in RGB
+float  fEdge = 1.0f;
+float  fWrapLighting = 0.5f; // w in [0..1] for rim/wrap lighting
+float  fRoughness = 4.0f;
 
-float  fDiffuseWrap = 0.5f; //!! pass from material, w in [0..1] for rim/wrap lighting
-float  fGlossyPower = 0.1f; //!! pass from material(/texture?)
+bool   bIsMetal = false;
+
 float3 vAmbient = float3(0.0f,0.0f,0.0f); //!! remove completely, just rely on envmap/IBL?
 
 float fenvEmissionScale;
@@ -19,8 +19,8 @@ float fmaterialAlpha = 1.0f; //!! allow for texture? -> use from diffuse? and/or
 float fenvTexWidth;
 
 // transformation matrices 
-float4x4 matWorldViewProj  : WORLDVIEWPROJ;
-float4x4 matWorldView      : WORLDVIEW;
+float4x4 matWorldViewProj : WORLDVIEWPROJ;
+float4x4 matWorldView     : WORLDVIEW;
 float4x4 matWorldViewInverseTranspose;
 float4x4 matView;
 float4x4 matViewInverse;
@@ -78,9 +78,9 @@ sampler2D texSampler2 : TEXUNIT2 = sampler_state
 };
 
 
-float3 FresnelSchlick(float3 spec, float LdotH)
+float3 FresnelSchlick(float3 spec, float LdotH, float3 edge)
 {
-    return spec + (float3(1.0f,1.0f,1.0f) - spec) * pow(1.0f - LdotH, 5);
+    return spec + (edge - spec) * pow(1.0f - LdotH, 5);
 }
 
 float3 InvGamma(float3 color) //!! use hardware support? D3DSAMP_SRGBTEXTURE,etc
@@ -103,7 +103,7 @@ float3 ToneMap(float3 color)
     //return saturate(color);
 }
 
-float3 DoPointLight(float3 pos, float3 N, float3 V, float3 diffuse, float3 glossy, float glossyPower, int i) 
+float3 DoPointLight(float3 pos, float3 N, float3 V, float3 diffuse, float3 glossy, float3 edge, float glossyPower, int i) 
 { 
    float3 lightDir = mul(float4(lights[i].vPos,1.0f), matView).xyz - pos; //!! do in vertex shader?! or completely before?!
    float3 L = normalize(lightDir);
@@ -111,18 +111,18 @@ float3 DoPointLight(float3 pos, float3 N, float3 V, float3 diffuse, float3 gloss
    float3 Out = float3(0.0f,0.0f,0.0f);
    
    // compute diffuse color (lambert with optional rim/wrap component)
-   if(bDiffuse && (NdotL + fDiffuseWrap > 0.0f))
-      Out = diffuse * ((NdotL + fDiffuseWrap) / ((1.0f+fDiffuseWrap) * (1.0f+fDiffuseWrap)));
+   if(!bIsMetal && (NdotL + fWrapLighting > 0.0f))
+      Out = diffuse * ((NdotL + fWrapLighting) / ((1.0f+fWrapLighting) * (1.0f+fWrapLighting)));
  
    // add glossy component (modified ashikhmin/blinn bastard), not fully energy conserving, but good enough
-   if(bGlossy && (NdotL > 0.0f))
+   if(NdotL > 0.0f)
    {
 	 float3 H = normalize(L + V); // half vector
 	 float NdotH = dot(N, H);
 	 float LdotH = dot(L, H);
 	 float VdotH = dot(V, H);
 	 if((NdotH > 0.0f) && (LdotH > 0.0f) && (VdotH > 0.0f))
-		Out += FresnelSchlick(glossy, LdotH) * (((glossyPower + 1.0f) / (8.0f*VdotH)) * pow(NdotH, glossyPower));
+		Out += FresnelSchlick(glossy, LdotH, edge) * (((glossyPower + 1.0f) / (8.0f*VdotH)) * pow(NdotH, glossyPower));
    }
  
    //float fAtten = saturate( 1.0f - dot(lightDir/flightRange, lightDir/flightRange) );
@@ -164,7 +164,7 @@ float3 DoEnvmapGlossy(float3 N, float3 V, float3 glossy, float glossyPower)
 }
 
 //!! PI?
-float3 DoEnvmap2ndLayer(float3 color1stLayer, float3 pos, float3 N, float3 V, float3 specular)
+float3 DoEnvmap2ndLayer(float3 color1stLayer, float3 pos, float3 N, float3 V, float3 specular, float3 edge)
 {
    float3 r = reflect(-V,N);
    r = normalize(mul(float4(r,0.0f), matViewInverse).xyz); // trafo back to world
@@ -173,20 +173,20 @@ float3 DoEnvmap2ndLayer(float3 color1stLayer, float3 pos, float3 N, float3 V, fl
 		atan2(r.y, r.x) * (0.5f/PI) + 0.5f,
 	    acos(r.z) * (1.0f/PI));
 	    
-   float3 w = FresnelSchlick(specular, dot(V, N)); //!! ?
+   float3 w = FresnelSchlick(specular, dot(V, N), edge); //!! ?
    return lerp(color1stLayer, InvGamma(tex2Dlod(texSampler1, float4(uv, 0, 0)).xyz)*fenvEmissionScale, w); // weight (optional) lower diffuse/glossy layer with clearcoat/specular //!! replace by real HDR instead? -> remove invgamma then
 }
 
-float4 lightLoop(float3 pos, float3 N, float3 V, float3 diffuse, float3 glossy, float3 specular)
+float4 lightLoop(float3 pos, float3 N, float3 V, float3 diffuse, float3 glossy, float3 specular, float3 edge)
 {
    // normalize input vectors for BRDF evals
    N = normalize(N);
    V = normalize(V);
    
    // normalize BRDF layer inputs //!! use diffuse = (1-glossy)*diffuse instead?
-   float diffuseMax = bDiffuse ? max(diffuse.x,max(diffuse.y,diffuse.z)) : 0.0f;
-   float glossyMax = bGlossy ? max(glossy.x,max(glossy.y,glossy.z)) : 0.0f;
-   //float specularMax = bSpecular ? max(specular.x,max(specular.y,specular.z)) : 0.0f; //!! not needed as 2nd layer only so far
+   float diffuseMax = max(diffuse.x,max(diffuse.y,diffuse.z));
+   float glossyMax = max(glossy.x,max(glossy.y,glossy.z));
+   float specularMax = max(specular.x,max(specular.y,specular.z)); //!! not needed as 2nd layer only so far
    float sum = diffuseMax + glossyMax /*+ specularMax*/;
    if(sum > 1.0f)
    {
@@ -202,42 +202,40 @@ float4 lightLoop(float3 pos, float3 N, float3 V, float3 diffuse, float3 glossy, 
    float3 color = float3(0.0f, 0.0f, 0.0f);
       
    // 1st Layer
-   if((bDiffuse && diffuseMax > 0.0f) || (bGlossy && glossyMax > 0.0f))
+   if((!bIsMetal && (diffuseMax > 0.0f)) || (glossyMax > 0.0f))
    {
-      float glossyPower = exp2(10.0f * fGlossyPower + 1.0f); // map from 0..1 to 2..2048 //!! precalc?
       for(int i = 0; i < iLightPointNum; i++)
-         color += DoPointLight(pos, N, V, diffuse, glossy, glossyPower, i); // no specular needed as only pointlights so far
+         color += DoPointLight(pos, N, V, diffuse, glossy, edge, fRoughness, i); // no specular needed as only pointlights so far
    }
          
-   if(bDiffuse && diffuseMax > 0.0f)
+   if(!bIsMetal && (diffuseMax > 0.0f))
       color += DoEnvmapDiffuse(N, diffuse);
 
-   if(bGlossy && glossyMax > 0.0f)
-   {
-      float glossyPower = exp2(10.0f * fGlossyPower + 1.0f); // map from 0..1 to 2..2048 //!! precalc?
-      color += DoEnvmapGlossy(N, V, glossy, glossyPower);
-   }
+   if(glossyMax > 0.0f)
+      color += DoEnvmapGlossy(N, V, glossy, fRoughness);
 
    // 2nd Layer
-   if(bSpecular /*&& specularMax > 0.0f*/)
-      color = DoEnvmap2ndLayer(color, pos, N, V, specular);
+   if(specularMax > 0.0f)
+      color = DoEnvmap2ndLayer(color, pos, N, V, specular, edge);
   
    return float4(Gamma(ToneMap(vAmbient + color)), 1.0f); //!! in case of HDR out later on, remove tonemap and gamma //!! also problematic for alpha blends
 }
 
 float4 Additive(float4 cBase, float4 cBlend, float percent)
 {
-   return (cBase+cBlend*percent);
+   return cBase + cBlend*percent;
 }
 
 float4 Screen (float4 cBase, float4 cBlend, float percent)
 {
-	return (1.0f - (1.0f - cBase) * (1.0f - cBlend));
+	return 1.0f - (1.0f - cBase) * (1.0f - cBlend);
 }
+
 float4 Multiply (float4 cBase, float4 cBlend, float percent)
 {
-	return (cBase * (cBlend*percent));
+	return cBase * (cBlend*percent);
 }
+
 float4 Overlay (float4 cBase, float4 cBlend, float percent)
 {
 	// Vectorized (easier for compiler)
@@ -258,7 +256,7 @@ float4 Overlay (float4 cBase, float4 cBlend, float percent)
 	// interpolate between the two, 
 	// using color as influence value
 	float4 blend = cBlend;
-	cNew= lerp((cBase*blend*2.0f),(1.0f-(2.0f*(1.0f-cBase)*(1.0f-blend))),cNew);
+	cNew= lerp(cBase*blend*2.0f, 1.0f-2.0f*(1.0f-cBase)*(1.0f-blend), cNew);
 
 	//cNew.a = 1.0f;
 	return cNew;

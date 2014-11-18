@@ -1,272 +1,64 @@
 #pragma once
 
-//!! remove as soon as all is changed to shader based material
-struct BaseMaterial
-{
-   union {
-      D3DCOLORVALUE   diffuse;        /* Diffuse color RGBA */
-      __m128          d;
-   };
-   union {
-      D3DCOLORVALUE   ambient;        /* Ambient color RGB */
-      __m128          a;
-   };
-   union {
-      D3DCOLORVALUE   specular;       /* Specular 'shininess' */
-      __m128          s;
-   };
-   union {
-      D3DCOLORVALUE   emissive;       /* Emissive color RGB */
-      __m128          e;
-   };
-   union {
-      D3DVALUE        power;          /* Sharpness if specular highlight */
-      __m128          p;
-   };
-};
-
 // only used for loading and saving
 struct SaveMaterial
 {
    char szName[32];
-   COLORREF diffuseColor;
-   COLORREF glossyColor;
-   COLORREF specularColor;
-   float fDiffuse;
-   bool  bDiffuseActive;
-   float fGlossy;
-   bool  bGlossyActive;
-   float fSpecular;
-   bool  bSpecularActive;
-   float fOpacity;
+   COLORREF cBase; // can be overriden by texture on object itself
+   COLORREF cGlossy; // specular of glossy layer
+   COLORREF cClearcoat; // specular of clearcoat layer
+   float fWrapLighting; // wrap/rim lighting factor (0(off)..1(full))
+   bool  bIsMetal; // is a metal material or not
+   float fRoughness; // roughness of glossy layer (0(diffuse)..1(specular))
+   bool  bUnused1;
+   float fEdge; // edge weight/brightness for glossy and clearcoat (0(dark edges)..1(full fresnel))
+   bool  bUnused2;
+   float fOpacity; // opacity (0..1)
    bool  bOpacityActive;
 };
 
-class RenderDevice;
+inline D3DXVECTOR4 convertColor(const COLORREF c)
+{
+	const float r = (float)(c & 255) * (float)(1.0/255.0);
+	const float g = (float)(c & 65280) * (float)(1.0/65280.0);
+	const float b = (float)(c & 16711680) * (float)(1.0/16711680.0);
+	D3DXVECTOR4 d(r,g,b,1.0f);
+	return d;
+}
+
+inline COLORREF convertColor(const D3DXVECTOR4 d)
+{
+	return ((unsigned int)(d.x*255.0f)) | (((unsigned int)(d.y*255.0f))<<8) | (((unsigned int)(d.z*255.0f))<<16);
+}
 
 class Material
 {
 public:
 
-   inline Material()
-   {
-      mat.specular.r = 0.0f;
-      mat.specular.g = 0.0f;
-      mat.specular.b = 0.0f;
-      mat.specular.a = 0.0f;
-      mat.emissive.r = 0.0f;
-      mat.emissive.g = 0.0f;
-      mat.emissive.b = 0.0f;
-      mat.emissive.a = 0.0f;
-      mat.power = 0.0f;
-      mat.diffuse.r = 1.0f;
-      mat.diffuse.g = 1.0f;
-      mat.diffuse.b = 1.0f;
-      mat.diffuse.a = 1.0f;
-      mat.ambient.r = 1.0f;
-      mat.ambient.g = 1.0f;
-      mat.ambient.b = 1.0f;      
-      mat.ambient.a = 1.0f;
-
-      m_fDiffuse=0.5f;
-      m_fGlossy=0.1f;
-      m_fSpecular=0.0f;
-      m_fOpacity=1.0f;
-
-      m_bDiffuseActive = true;
-      m_bGlossyActive = true;
-      m_bSpecularActive = false;
+	inline Material()
+	{
+      m_fWrapLighting = 0.5f;
+      m_fRoughness = 0.0f;
+      m_fEdge = 1.0f;
+      m_fOpacity = 1.0f;
+      m_cBase = 0;
+      m_cGlossy = 0;
+      m_cClearcoat = 0;
+      m_bIsMetal = false;
       m_bOpacityActive = false;
-      m_diffuseColor=0;
-      m_glossyColor=0;
-      m_specularColor=0;
+
       memset( m_szName, 0, 32 );
       strcat_s( m_szName, "dummyMaterial");
-   }
+	}
 
-   inline Material( const D3DCOLORVALUE _diffuse, const D3DCOLORVALUE _ambient, const D3DCOLORVALUE _specular, const D3DCOLORVALUE _emissive, const D3DVALUE _power )
-   {
-      mat.diffuse = _diffuse;
-      mat.ambient = _ambient;
-      mat.specular = _specular;
-      mat.emissive = _emissive;
-      mat.power = _power;
-   }
-
-   inline D3DCOLORVALUE getDiffuse() const
-   {
-      return mat.diffuse;
-   }
-   inline D3DCOLORVALUE getAmbient() const
-   {
-      return mat.ambient;
-   }
-   inline D3DCOLORVALUE getSpecular() const
-   {
-      return mat.specular;
-   }
-   inline D3DCOLORVALUE getEmissive() const
-   {
-      return mat.emissive;
-   }
-   inline D3DVALUE getPower() const
-   {
-      return mat.power;
-   }
-
-   inline void setDiffuse( const D3DCOLORVALUE &_diffuse )
-   {
-      mat.diffuse = _diffuse;
-   }
-   inline void setDiffuse( const D3DVALUE a, const D3DVALUE r, const D3DVALUE g, const D3DVALUE b )
-   {
-      mat.diffuse.r = r;
-      mat.diffuse.g = g;
-      mat.diffuse.b = b;
-      mat.diffuse.a = a;
-   }
-   inline void setDiffuse( const D3DVALUE a, const COLORREF _color )
-   {
-      mat.diffuse.r = (float)(_color & 255) * (float)(1.0/255.0);
-      mat.diffuse.g = (float)(_color & 65280) * (float)(1.0/65280.0);
-      mat.diffuse.b = (float)(_color & 16711680) * (float)(1.0/16711680.0);
-	  mat.diffuse.a = a;
-   }
-   inline void setAmbient( const D3DCOLORVALUE &_ambient )
-   {
-      mat.ambient = _ambient;
-   }
-   inline void setAmbient( const D3DVALUE a, const D3DVALUE r, const D3DVALUE g, const D3DVALUE b )
-   {
-      mat.ambient.r = r;
-      mat.ambient.g = g;
-      mat.ambient.b = b;
-	  mat.ambient.a = a;
-   }
-   inline void setAmbient( const D3DVALUE a, const COLORREF _color )
-   {
-      mat.ambient.r = (float)(_color & 255) * (float)(1.0/255.0);
-      mat.ambient.g = (float)(_color & 65280) * (float)(1.0/65280.0);
-      mat.ambient.b = (float)(_color & 16711680) * (float)(1.0/16711680.0);
-      mat.ambient.a = a;
-   }
-   inline void setEmissive( const D3DCOLORVALUE &_emissive )
-   {
-      mat.emissive = _emissive;
-   }
-   inline void setEmissive( const D3DVALUE a, const D3DVALUE r, const D3DVALUE g, const D3DVALUE b )
-   {
-      mat.emissive.r = r;
-      mat.emissive.g = g;
-      mat.emissive.b = b;
-      mat.emissive.a = a;
-   }
-   inline void setSpecular( const D3DCOLORVALUE &_specular )
-   {
-      mat.specular = _specular;
-   }
-   inline void setSpecular( const D3DVALUE a, const D3DVALUE r, const D3DVALUE g, const D3DVALUE b )
-   {
-      mat.specular.r = r;
-      mat.specular.g = g;
-      mat.specular.b = b;
-      mat.specular.a = a;
-   }
-   inline void setPower( const D3DVALUE _power )
-   {
-      mat.power = _power;
-   }
-   inline void setColor( const float a, const float r, const float g, const float b ) //!! meh
-   {
-      mat.specular.r = 0.0f;
-      mat.specular.g = 0.0f;
-      mat.specular.b = 0.0f;
-      mat.specular.a = 0.0f;
-      mat.emissive.r = 0.0f;
-      mat.emissive.g = 0.0f;
-      mat.emissive.b = 0.0f;
-      mat.emissive.a = 0.0f;
-      mat.power = 0.0f;
-      mat.diffuse.r = r;
-      mat.diffuse.g = g;
-      mat.diffuse.b = b;
-      mat.diffuse.a = a;
-      mat.ambient.r = r;
-      mat.ambient.g = g;
-      mat.ambient.b = b;
-      mat.ambient.a = a;
-   }
-   inline void setColor( const float a, const COLORREF _color ) //!! meh
-   {
-      setColor( a, (float)(_color & 255) * (float)(1.0/255.0),
-                   (float)(_color & 65280) * (float)(1.0/65280.0),
-                   (float)(_color & 16711680) * (float)(1.0/16711680.0) );
-   }
-   inline void setBaseMaterial( const BaseMaterial &_base )
-   {
-      mat = _base;
-   }
-   const BaseMaterial& getBaseMaterial() const
-   {
-       return mat;
-   }
-   inline void setDiffuse( float fValue ) 
-   {
-       m_fDiffuse = fValue;
-   }
-   inline void setGlossy( float fValue )
-   {
-       m_fGlossy = fValue;
-   }
-   inline void setSpecular( float fValue )
-   {
-       m_fSpecular = fValue;
-   }
-
-   inline D3DXVECTOR4 getDiffuseColor()
-   {
-       const float r = (float)(m_diffuseColor & 255) * (float)(1.0/255.0);
-       const float g = (float)(m_diffuseColor & 65280) * (float)(1.0/65280.0);
-       const float b = (float)(m_diffuseColor & 16711680) * (float)(1.0/16711680.0);
-       D3DXVECTOR4 matColor(r,g,b,1.0f);   
-       return matColor; 
-   }
-   inline D3DXVECTOR4 getGlossyColor()
-   {
-       const float r = (float)(m_glossyColor & 255) * (float)(1.0/255.0);
-       const float g = (float)(m_glossyColor & 65280) * (float)(1.0/65280.0);
-       const float b = (float)(m_glossyColor & 16711680) * (float)(1.0/16711680.0);
-       D3DXVECTOR4 matColor(r,g,b,1.0f);   
-       return matColor; 
-   }
-   inline D3DXVECTOR4 getSpecularColor()
-   {
-       const float r = (float)(m_specularColor & 255) * (float)(1.0/255.0);
-       const float g = (float)(m_specularColor & 65280) * (float)(1.0/65280.0);
-       const float b = (float)(m_specularColor & 16711680) * (float)(1.0/16711680.0);
-       D3DXVECTOR4 matColor(r,g,b,1.0f);   
-       return matColor; 
-   }
-
-   union {
-	struct{
 	char m_szName[32];
-	float m_fDiffuse;
-	float m_fGlossy;
-	float m_fSpecular;
-   float m_fOpacity;
-   bool m_bDiffuseActive;
-   bool m_bGlossyActive;
-   bool m_bSpecularActive;
-   bool m_bOpacityActive;
-	COLORREF m_diffuseColor;
-	COLORREF m_glossyColor;
-	COLORREF m_specularColor;
-	};
-	struct{
-	__m128 i0,i1,i2,i3; //!! remove as soon as BaseMaterial vanishes
-	};
-   };
-private:
-   BaseMaterial mat;
+	float m_fWrapLighting;
+	float m_fRoughness;
+	float m_fEdge;
+	float m_fOpacity;
+	COLORREF m_cBase;
+	COLORREF m_cGlossy;
+	COLORREF m_cClearcoat;
+	bool m_bIsMetal;
+	bool m_bOpacityActive;
 };

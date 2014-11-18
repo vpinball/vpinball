@@ -2783,16 +2783,14 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
        SaveMaterial *mats = (SaveMaterial*)malloc(sizeof(SaveMaterial)*m_materials.Size());
        for( int i=0;i<m_materials.Size();i++ )
        {
-           mats[i].diffuseColor = m_materials.ElementAt(i)->m_diffuseColor;
-           mats[i].glossyColor = m_materials.ElementAt(i)->m_glossyColor;
-           mats[i].specularColor = m_materials.ElementAt(i)->m_specularColor;
-           mats[i].fDiffuse = m_materials.ElementAt(i)->m_fDiffuse;
-           mats[i].bDiffuseActive = m_materials.ElementAt(i)->m_bDiffuseActive;
-           mats[i].fGlossy = m_materials.ElementAt(i)->m_fGlossy;
-           mats[i].bGlossyActive = m_materials.ElementAt(i)->m_bGlossyActive;
-           mats[i].fSpecular = m_materials.ElementAt(i)->m_fSpecular;
-           mats[i].bSpecularActive = m_materials.ElementAt(i)->m_bSpecularActive;
+           mats[i].cBase = m_materials.ElementAt(i)->m_cBase;
+           mats[i].cGlossy = m_materials.ElementAt(i)->m_cGlossy;
+           mats[i].cClearcoat = m_materials.ElementAt(i)->m_cClearcoat;
+           mats[i].fWrapLighting = m_materials.ElementAt(i)->m_fWrapLighting;
+           mats[i].fRoughness = m_materials.ElementAt(i)->m_fRoughness;
+           mats[i].fEdge = m_materials.ElementAt(i)->m_fEdge;
            mats[i].fOpacity = m_materials.ElementAt(i)->m_fOpacity;
+           mats[i].bIsMetal = m_materials.ElementAt(i)->m_bIsMetal;
            mats[i].bOpacityActive = m_materials.ElementAt(i)->m_bOpacityActive;
            strcpy_s(mats[i].szName, m_materials.ElementAt(i)->m_szName);
        }
@@ -3554,17 +3552,15 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
        m_materials.Reset();
        for( int i=0; i<m_numMaterials; i++ )
        {
-           Material *pmat=new Material();
-           pmat->m_diffuseColor = mats[i].diffuseColor;
-           pmat->m_glossyColor= mats[i].glossyColor;
-           pmat->m_specularColor = mats[i].specularColor;
-           pmat->m_fDiffuse = mats[i].fDiffuse;
-           pmat->m_bDiffuseActive = mats[i].bDiffuseActive;
-           pmat->m_fGlossy = mats[i].fGlossy;
-           pmat->m_bGlossyActive = mats[i].bGlossyActive;
-           pmat->m_fSpecular = mats[i].fSpecular;
-           pmat->m_bSpecularActive = mats[i].bSpecularActive;
+           Material *pmat = new Material();
+           pmat->m_cBase = mats[i].cBase;
+           pmat->m_cGlossy= mats[i].cGlossy;
+           pmat->m_cClearcoat = mats[i].cClearcoat;
+           pmat->m_fWrapLighting = mats[i].fWrapLighting;
+           pmat->m_fRoughness = mats[i].fRoughness;
+           pmat->m_fEdge = mats[i].fEdge;
            pmat->m_fOpacity = mats[i].fOpacity;
+           pmat->m_bIsMetal = mats[i].bIsMetal;
            pmat->m_bOpacityActive = mats[i].bOpacityActive;
            strcpy_s(pmat->m_szName, mats[i].szName);
            m_materials.AddElement( pmat );
@@ -6304,7 +6300,8 @@ bool PinTable::IsMaterialNameUnique( char *name )
     return true;
 }
 
-Material dummyMaterial;
+Material dummyMaterial; //!!
+
 Material* PinTable::GetMaterial( char * const szName) const
 {
     if (szName == NULL || szName[0] == '\0')
@@ -6330,7 +6327,6 @@ Material* PinTable::GetMaterial( char * const szName) const
     }
 
     return &dummyMaterial;
-
 }
 
 void PinTable::AddMaterial( Material *pmat)
@@ -6376,11 +6372,9 @@ void PinTable::RemoveMaterial(Material *pmat)
 int PinTable::GetImageLink(Texture *ppi)
 {
    if (!lstrcmp(ppi->m_szInternalName, m_szScreenShot))
-   {
       return 1;
-   }
-
-   return 0;
+   else
+	  return 0;
 }
 
 PinBinary *PinTable::GetImageLinkBinary(int id)

@@ -272,9 +272,9 @@ RenderDevice::RenderDevice(HWND hwnd, int width, int height, bool fullscreen, in
 	if(m_autogen_mipmap)
 		m_autogen_mipmap = (m_pD3D->CheckDeviceFormat(m_adapter, devtype, params.BackBufferFormat, D3DUSAGE_AUTOGENMIPMAP, D3DRTYPE_TEXTURE, D3DFMT_A8R8G8B8)) == D3D_OK;
 
-	// Determine if RESZ is supported
-	m_RESZ_support = (m_pD3D->CheckDeviceFormat(m_adapter, devtype, params.BackBufferFormat,
-					  D3DUSAGE_RENDERTARGET, D3DRTYPE_SURFACE, ((D3DFORMAT)(MAKEFOURCC('R','E','S','Z'))))) == D3D_OK;
+		// Determine if RESZ is supported
+		m_RESZ_support = (m_pD3D->CheckDeviceFormat(m_adapter, devtype, params.BackBufferFormat,
+						  D3DUSAGE_RENDERTARGET, D3DRTYPE_SURFACE, ((D3DFORMAT)(MAKEFOURCC('R','E','S','Z'))))) == D3D_OK;
 
 	// check if requested MSAA is possible
     DWORD MultiSampleQualityLevels;
@@ -339,7 +339,7 @@ RenderDevice::RenderDevice(HWND hwnd, int width, int height, bool fullscreen, in
     // fill state caches with dummy values
     memset( renderStateCache, 0xCC, sizeof(DWORD)*RENDER_STATE_CACHE_SIZE);
     memset( textureStateCache, 0xCC, sizeof(DWORD)*8*TEXTURE_STATE_CACHE_SIZE);
-    memset(&materialStateCache, 0xCC, sizeof(Material));
+    //!! memset(&materialStateCache, 0xCC, sizeof(Material));
 
     // initialize performance counters
     m_curDrawCalls = m_frameDrawCalls = 0;
@@ -754,28 +754,6 @@ void RenderDevice::SetTextureStageState( DWORD p1, D3DTEXTURESTAGESTATETYPE p2, 
    m_curStateChanges++;
 }
 
-void RenderDevice::SetMaterial( const BaseMaterial * const _material )
-{
-#if !defined(DEBUG_XXX) && !defined(_CRTDBG_MAP_ALLOC)
-    // this produces a crash if BaseMaterial isn't proper aligned to 16byte (in main.cpp new/delete is overloaded for that)
-    if((_mm_movemask_ps(_mm_and_ps(
-        _mm_and_ps(_mm_cmpeq_ps(_material->d,materialStateCache.d),_mm_cmpeq_ps(_material->a,materialStateCache.a)),
-        _mm_and_ps(_mm_cmpeq_ps(_material->s,materialStateCache.s),_mm_cmpeq_ps(_material->e,materialStateCache.e)))) == 15)
-            &&
-            (_material->power == materialStateCache.power))
-        return;
-
-    materialStateCache.d = _material->d;
-    materialStateCache.a = _material->a;
-    materialStateCache.e = _material->e;
-    materialStateCache.s = _material->s;
-    materialStateCache.power = _material->power;
-#endif
-
-    CHECKD3D(m_pD3DDevice->SetMaterial((D3DMATERIAL9*)_material));
-}
-
-
 void RenderDevice::SetRenderTarget( RenderTarget* surf)
 {
     CHECKD3D(m_pD3DDevice->SetRenderTarget(0, surf));
@@ -952,11 +930,6 @@ void RenderDevice::GetTransform( TransformStateType p1, D3DMATRIX* p2)
    CHECKD3D(m_pD3DDevice->GetTransform((D3DTRANSFORMSTATETYPE)p1, p2));
 }
 
-void RenderDevice::GetMaterial( BaseMaterial *_material )
-{
-   m_pD3DDevice->GetMaterial((D3DMATERIAL9*)_material);
-}
-
 void RenderDevice::SetLight( DWORD p1, BaseLight* p2)
 {
    m_pD3DDevice->SetLight(p1,p2);
@@ -1086,41 +1059,32 @@ void Shader::SetTexture( D3DXHANDLE texelName, D3DTexture *texel)
    m_shader->SetTexture(texelName,texel);
 }
 
-void Shader::SetMaterial( Material *mat, 
-                          D3DXVECTOR4 diffuseColor, 
-                          D3DXVECTOR4 glossyColor, 
-                          D3DXVECTOR4 specularColor,
-                          float diffuseWrap, float glossyPower, float opacity,
-                          bool bDiffActive, bool bGlossyActive, bool bSpecActive, bool bOpacityActive )
+void Shader::SetMaterial( const Material * const mat, 
+                          D3DXVECTOR4 cBase, 
+                          D3DXVECTOR4 cGlossy, 
+                          D3DXVECTOR4 cClearcoat,
+                          float fWrapLighting, float fRoughness, float fEdge, float fOpacity,
+                          bool bIsMetal, bool bOpacityActive )
 {
     if( mat )
     {
-        diffuseColor = mat->getDiffuseColor();
-        glossyColor = mat->getGlossyColor();
-        specularColor = mat->getSpecularColor();
-        diffuseWrap = mat->m_fDiffuse;
-        glossyPower = mat->m_fGlossy;
-        bDiffActive = mat->m_bDiffuseActive;
-        bGlossyActive = mat->m_bGlossyActive;
-        bSpecActive = mat->m_bSpecularActive;
-        opacity = mat->m_fOpacity;
-        bOpacityActive = mat->m_bOpacityActive;
+		fWrapLighting = mat->m_fWrapLighting;
+		fRoughness = mat->m_fRoughness;
+		fEdge = mat->m_fEdge;
+		fOpacity = mat->m_fOpacity;
+		cBase = convertColor(mat->m_cBase);
+		cGlossy = convertColor(mat->m_cGlossy);
+		cClearcoat = convertColor(mat->m_cClearcoat);
+		bIsMetal = mat->m_bIsMetal;
+		bOpacityActive = mat->m_bOpacityActive;
     }
 
-    m_shader->SetFloat("fDiffuseWrap",diffuseWrap);
-    m_shader->SetFloat("fGlossyPower",glossyPower);
-    m_shader->SetVector("vDiffuseColor",&diffuseColor);
-    m_shader->SetVector("vGlossyColor",&glossyColor);
-    m_shader->SetVector("vSpecularColor",&specularColor);
-    m_shader->SetBool("bDiffuse", bDiffActive);
-    m_shader->SetBool("bGlossy", bGlossyActive);
-    m_shader->SetBool("bSpecular", bSpecActive);
-    if ( bOpacityActive )
-    {
-       m_shader->SetFloat("fmaterialAlpha",opacity);
-    }
-    else
-    {
-       m_shader->SetFloat("fmaterialAlpha",1.0f);
-    }
+    m_shader->SetFloat("fWrapLighting",fWrapLighting);
+    m_shader->SetFloat("fRoughness",exp2f(10.0f * fRoughness*fRoughness + 1.0f)); // map from 0..1 to 2..2048
+    m_shader->SetFloat("fEdge",fEdge); //!! wire up
+    m_shader->SetVector("cBase",&cBase);
+    m_shader->SetVector("cGlossy",&cGlossy);
+    m_shader->SetVector("cClearcoat",&cClearcoat);
+	m_shader->SetBool("bIsMetal", bIsMetal);
+    m_shader->SetFloat("fmaterialAlpha", bOpacityActive ? fOpacity : 1.0f);
 }

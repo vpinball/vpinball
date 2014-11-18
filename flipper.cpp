@@ -571,34 +571,7 @@ void Flipper::PostRenderStatic(RenderDevice* pd3dDevice)
     Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
     Material *mat = m_ptable->GetMaterial( m_d.m_szMaterial);
-    D3DXVECTOR4 diffuseColor( 0.5f, 0.5f, 0.5f, 1.0f );
-    D3DXVECTOR4 glossyColor( 0.04f, 0.04f, 0.04f, 1.0f );
-    D3DXVECTOR4 specularColor( 0.04f, 0.04f, 0.04f, 1.0f );
-    float diffuseWrap = 0.5f;
-    float glossyPower = 0.1f;
-    bool  bDiffActive=true;
-    bool  bGlossyActive = true;
-    bool  bSpecActive = false;
-    if( mat )
-    {
-        diffuseColor = mat->getDiffuseColor();
-        glossyColor = mat->getGlossyColor();
-        specularColor = mat->getSpecularColor();
-        diffuseWrap = mat->m_fDiffuse;
-        glossyPower = mat->m_fGlossy;
-        bDiffActive = mat->m_bDiffuseActive;
-        bGlossyActive = mat->m_bGlossyActive;
-        bSpecActive = mat->m_bSpecularActive;
-    }
-
-    pd3dDevice->basicShader->Core()->SetFloat("fDiffuseWrap",diffuseWrap);
-    pd3dDevice->basicShader->Core()->SetFloat("fGlossyPower",glossyPower);
-    pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&diffuseColor);
-    pd3dDevice->basicShader->Core()->SetVector("vGlossyColor",&glossyColor);
-    pd3dDevice->basicShader->Core()->SetVector("vSpecularColor",&specularColor);
-    pd3dDevice->basicShader->Core()->SetBool("bDiffuse", bDiffActive);
-    pd3dDevice->basicShader->Core()->SetBool("bGlossy", bGlossyActive);
-    pd3dDevice->basicShader->Core()->SetBool("bSpecular", bSpecActive);
+    pd3dDevice->basicShader->SetMaterial(mat);
     pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
 
     Matrix3D matTrafo, matTemp;
@@ -618,25 +591,7 @@ void Flipper::PostRenderStatic(RenderDevice* pd3dDevice)
     if (m_d.m_rubberthickness > 0)
     {
        mat =  m_ptable->GetMaterial( m_d.m_szRubberMaterial );
-       if ( mat )
-       {
-           diffuseColor = mat->getDiffuseColor();
-           glossyColor = mat->getGlossyColor();
-           specularColor = mat->getSpecularColor();
-           diffuseWrap = mat->m_fDiffuse;
-           glossyPower = mat->m_fGlossy;
-           bDiffActive = mat->m_bDiffuseActive;
-           bGlossyActive = mat->m_bGlossyActive;
-           bSpecActive = mat->m_bSpecularActive;
-       }
-       pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&diffuseColor);
-       pd3dDevice->basicShader->Core()->SetVector("vGlossyColor",&glossyColor);
-       pd3dDevice->basicShader->Core()->SetVector("vSpecularColor",&specularColor);
-       pd3dDevice->basicShader->Core()->SetFloat("fDiffuseWrap",diffuseWrap);
-       pd3dDevice->basicShader->Core()->SetFloat("fGlossyPower",glossyPower);
-       pd3dDevice->basicShader->Core()->SetBool("bDiffuse", bDiffActive);
-       pd3dDevice->basicShader->Core()->SetBool("bGlossy", bGlossyActive);
-       pd3dDevice->basicShader->Core()->SetBool("bSpecular", bSpecActive);
+       pd3dDevice->basicShader->SetMaterial(mat);
 
        pd3dDevice->basicShader->Begin(0);
        pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, vertexBuffer, 108, 108, indexBuffer, 0, numIndices );

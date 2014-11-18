@@ -715,8 +715,6 @@ void Light::PrepareMoversCustom()
       g_pplayer->m_pin3d.m_pd3dDevice->CreateVertexBuffer( customMoverVertexNum*2, 0, vertexType, &customMoverVBuffer);
    }
 
-   Material mtrl;
-
    const float r = (float)(m_d.m_color & 255) * (float)(1.0/255.0);
    const float g = (float)(m_d.m_color & 65280) * (float)(1.0/65280.0);
    const float b = (float)(m_d.m_color & 16711680) * (float)(1.0/16711680.0);
@@ -776,22 +774,20 @@ void Light::PrepareMoversCustom()
             SetHUDVertices(&customMoverVertex[i][k], 3);
       }
 
+	  D3DXVECTOR4 diffuse;
+
       if(i == LightStateOff) 
       {
          // Check if the light has an "off" texture.
          if ( pin == NULL )
          {
             // Set the texture to a default.
-            mtrl.setAmbient( 1.0f, r*0.3f, g*0.3f, b*0.3f );
-            mtrl.setDiffuse( 1.0f, r*0.3f, g*0.3f, b*0.3f );
-            mtrl.setEmissive(0.0f, 0.0f, 0.0f, 0.0f );
+            diffuse = D3DXVECTOR4( r*0.3f, g*0.3f, b*0.3f, 1.0f );
          }
          else
          {
             // Set the texture to the one defined in the editor.
-            mtrl.setAmbient( 1.0f, 1.0f, 1.0f, 1.0f );
-            mtrl.setDiffuse( 1.0f, 1.0f, 1.0f, 1.0f );
-            mtrl.setEmissive(0.0f, 0.0f, 0.0f, 0.0f );
+            diffuse = D3DXVECTOR4( 1.0f, 1.0f, 1.0f, 1.0f );
          }
       } 
       else //LightStateOn 
@@ -800,20 +796,16 @@ void Light::PrepareMoversCustom()
          if ( pin == NULL )
          {
             // Set the texture to a default.
-            mtrl.setAmbient( 1.0f, 0.0f, 0.0f, 0.0f );
-            mtrl.setDiffuse( 1.0f, 0.0f, 0.0f, 0.0f );
-            mtrl.setEmissive(0.0f, r, g, b );
+            diffuse = D3DXVECTOR4( 0.0f, 0.0f, 0.0f, 1.0f );
          }
          else
          {
             // Set the texture to the one defined in the editor.
-            mtrl.setAmbient( 1.0f, 1.0f, 1.0f, 1.0f );
-            mtrl.setDiffuse( 1.0f, 1.0f, 1.0f, 1.0f );
-            mtrl.setEmissive(0.0f, 0.0f, 0.0f, 0.0f );
+            diffuse = D3DXVECTOR4( 1.0f, 1.0f, 1.0f, 1.0f );
          }
       }
       if (m_fBackglass && GetPTable()->GetDecalsEnabled())
-         SetDiffuseFromMaterial(customMoverVertex[i], customMoverVertexNum, &mtrl);
+         SetDiffuse(customMoverVertex[i], customMoverVertexNum, convertColor(diffuse));
 
    }//for(i=0;i<2...)
 

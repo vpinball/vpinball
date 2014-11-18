@@ -591,8 +591,8 @@ void Spinner::RenderStatic(RenderDevice* pd3dDevice)
 
    //pd3dDevice->SetMaterial(staticMaterial);
    D3DXVECTOR4 matColor(0.6f,0.6f,0.6f,1.0f);   
-   pd3dDevice->basicShader->Core()->SetFloat("fGlossyPower",0.0f);
-   pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&matColor);
+   pd3dDevice->basicShader->Core()->SetFloat("fRoughness", exp2f(10.0f * 0.0f*0.0f + 1.0f));
+   pd3dDevice->basicShader->Core()->SetVector("cBase",&matColor);
    pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
 
    Vertex3D rgv3D[8];

@@ -265,8 +265,6 @@ public:
    void SetTextureFilter(DWORD texUnit, DWORD mode);
    void SetTextureAddressMode(DWORD texUnit, TextureAddressMode mode);
    void SetTextureStageState(DWORD stage, D3DTEXTURESTAGESTATETYPE type, DWORD value);
-   void SetMaterial( const BaseMaterial * const material );
-   void SetMaterial( const Material & material )        { SetMaterial(&material.getBaseMaterial()); }
 
    void CreateVertexBuffer( unsigned int numVerts, DWORD usage, DWORD fvf, VertexBuffer **vBuffer );
    void CreateIndexBuffer(unsigned int numIndices, DWORD usage, IndexBuffer::Format format, IndexBuffer **idxBuffer);
@@ -279,8 +277,6 @@ public:
    void DrawPrimitiveVB(D3DPRIMITIVETYPE type, VertexBuffer* vb, DWORD startVertex, DWORD vertexCount);
    void DrawIndexedPrimitiveVB(D3DPRIMITIVETYPE type, VertexBuffer* vb, DWORD startVertex, DWORD vertexCount, const WORD* indices, DWORD indexCount);
    void DrawIndexedPrimitiveVB(D3DPRIMITIVETYPE type, VertexBuffer* vb, DWORD startVertex, DWORD vertexCount, IndexBuffer* ib, DWORD startIndex, DWORD indexCount);
-
-   void GetMaterial( BaseMaterial *_material );
 
    void LightEnable( DWORD, BOOL );
    void SetLight( DWORD, BaseLight* );
@@ -339,7 +335,7 @@ private:
 
    DWORD renderStateCache[RENDER_STATE_CACHE_SIZE];
    DWORD textureStateCache[8][TEXTURE_STATE_CACHE_SIZE];
-   BaseMaterial materialStateCache;
+   //!! Material materialStateCache;
 
    VertexBuffer* m_curVertexBuffer;     // for caching
    IndexBuffer* m_curIndexBuffer;       // for caching
@@ -381,16 +377,17 @@ public:
     {
         return m_shader;
     }
+
     void Begin( unsigned int pass );
     void End();
     void SetTexture( D3DXHANDLE texelName, Texture *texel);
     void SetTexture( D3DXHANDLE texelName, D3DTexture *texel);
-    void SetMaterial( Material *mat, 
-                      D3DXVECTOR4 diffuseColor=D3DXVECTOR4( 0.5f, 0.5f, 0.5f, 1.0f ),
-                      D3DXVECTOR4 glossyColor=D3DXVECTOR4( 0.04f, 0.04f, 0.04f, 1.0f ),
-                      D3DXVECTOR4 specularColor=D3DXVECTOR4( 0.04f, 0.04f, 0.04f, 1.0f ),
-                      float diffuseWrap=0.5f, float glossyPower=0.1f, float opacity=1.0f,
-                      bool bDiffActive=true, bool bGlossyActive=false, bool bSpecActive=false, bool bOpacityActive=false);
+    void SetMaterial( const Material * const mat, 
+                      D3DXVECTOR4 cBase=D3DXVECTOR4( 0.5f, 0.5f, 0.5f, 1.0f ),
+                      D3DXVECTOR4 cGlossy=D3DXVECTOR4( 0.5f, 0.5f, 0.5f, 1.0f ),
+                      D3DXVECTOR4 cClearcoat=D3DXVECTOR4( 0.5f, 0.5f, 0.5f, 1.0f ),
+                      float fWrapLighting=0.5f, float fRoughness=0.1f, float fEdge=1.0f, float fOpacity=1.0f,
+                      bool bIsMetal=false, bool bOpacityActive=false);
 private:
     ID3DXEffect* m_shader;
     RenderDevice *m_renderDevice;
