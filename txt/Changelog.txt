@@ -31,9 +31,9 @@ VP 10.0.0 Changelog
        (note that this can/will be replaced by the (optional) image on your object(s) later-on)
 
      - If you selected a non-metal material you can now in addition add some subtle reflectivity via the glossy layer color
-       (otherwise simply set it to full black, leave at full white for most natural behavior)
+       (otherwise simply set it to full black, leave at grey to full white for natural behavior)
 
-     - Then select the shininess of your material (0 means very very dull reflections, 1 means perfect mirror-like reflections)
+     - Then select the shininess of your material (0 means very very dull reflections, 1 means perfect mirror-like reflections), of course this only has an effect on metals or if you use the glossy layer
 
      - For some materials it can now also be realistic to add an additional clearcoat layer on top of everything
        (otherwise simply set it to full black)
