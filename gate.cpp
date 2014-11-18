@@ -414,19 +414,8 @@ void Gate::UpdateWire( RenderDevice *pd3dDevice )
 
 }
 
-static const WORD rgiGate2[4] = {0,1,5,4};      // back
-static const WORD rgiGate3[4] = {2,6,7,3};      // front
-static const WORD rgiGate4[4] = {0,2,3,1};      // bottom
-static const WORD rgiGate5[4] = {4,5,7,6};      // top
-static const WORD rgiGate6[4] = {0,4,6,2};      // left
-static const WORD rgiGate7[4] = {1,3,7,5};      // right
-
-void Gate::PostRenderStatic(RenderDevice* pd3dDevice)
+void Gate::RenderObject( RenderDevice* pd3dDevice)
 {
-    TRACE_FUNCTION();
-
-    if (!m_phitgate->m_gateanim.m_fVisible)
-        return;
     pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelDeclaration );
 
     Material *mat = m_ptable->GetMaterial( m_d.m_szMaterial);
@@ -436,15 +425,6 @@ void Gate::PostRenderStatic(RenderDevice* pd3dDevice)
     COLORREF rgbTransparent = RGB(255,0,255); //RGB(0,0,0);
 
     ppin3d->EnableAlphaBlend(1,false);
-    pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", true);
-    pd3dDevice->basicShader->Core()->SetFloat("fAlphaTestValue", 128.0f/255.0f);
-
-//     pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, 0x80);
-//     pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATER);
-//     pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE);
-
-    // Set texture to mirror, so the alpha state of the texture blends correctly to the outside
-    pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_MIRROR);
 
     pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
 
@@ -458,172 +438,19 @@ void Gate::PostRenderStatic(RenderDevice* pd3dDevice)
     pd3dDevice->basicShader->Begin(0);
     pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, wireVertexBuffer, 0, gateWireNumVertices, wireIndexBuffer, 0, gateWireNumFaces);
     pd3dDevice->basicShader->End();
-
-    pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, FALSE);
-    pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_WRAP);
-
-    pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
-    pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", false);
-
 }
 
-void Gate::PrepareStatic(RenderDevice* pd3dDevice)
+void Gate::PostRenderStatic(RenderDevice* pd3dDevice)
 {
-   if(!m_d.m_fSupports) return; // no support structures are allocated ... therefore render none
+    TRACE_FUNCTION();
 
-   const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
-
-   Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-
-   const float halflength = m_d.m_length * 0.5f;// + m_d.m_overhang;
-   const float halfthick = 2.0f;
-   const float h = m_d.m_height;
-
-   const float radangle = ANGTORAD(m_d.m_rotation);
-   const float snY = sinf(radangle);
-   const float csY = cosf(radangle);
-
-   staticVertices[0].x = -halflength + halfthick;
-   staticVertices[0].y = 0;
-   staticVertices[0].z = 0;
-
-   staticVertices[1].x = -halflength - halfthick;
-   staticVertices[1].y = 0;
-   staticVertices[1].z = 0;
-
-   staticVertices[2].x = -halflength + halfthick;
-   staticVertices[2].y = 0;
-   staticVertices[2].z = h - halfthick;
-
-   staticVertices[3].x = -halflength - halfthick;
-   staticVertices[3].y = 0;
-   staticVertices[3].z = h + halfthick;
-
-   staticVertices[4].x = halflength - halfthick;
-   staticVertices[4].y = 0;
-   staticVertices[4].z = 0;
-
-   staticVertices[5].x = halflength + halfthick;
-   staticVertices[5].y = 0;
-   staticVertices[5].z = 0;
-
-   staticVertices[6].x = halflength - halfthick;
-   staticVertices[6].y = 0;
-   staticVertices[6].z = h - halfthick;
-
-   staticVertices[7].x = halflength + halfthick;
-   staticVertices[7].y = 0;
-   staticVertices[7].z = h + halfthick;
-
-   for (int l=0;l<8;l++)
-   {
-      const float temp = staticVertices[l].x;
-      staticVertices[l].x = csY*temp - snY*staticVertices[l].y;
-      staticVertices[l].y = csY*staticVertices[l].y + snY*temp;
-
-      staticVertices[l].x += m_d.m_vCenter.x;
-      staticVertices[l].y += m_d.m_vCenter.y;
-      staticVertices[l].z += height*m_ptable->m_zScale;
-   }
-   ppin3d->CalcShadowCoordinates(staticVertices,8);
-}
-
-void Gate::PrepareMovers(RenderDevice* pd3dDevice )
-{
-    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-    COLORREF rgbTransparent = RGB(255,0,255); //RGB(0,0,0);
-
-    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);//surface gate is on
-    const float h = m_d.m_height;		//relative height of the gate
-
-    m_posZ = (height + h) * m_ptable->m_zScale;  // remember for renderer
-
-    Texture * const pinback = m_ptable->GetImage(m_d.m_szImageBack);
-    if (pinback)
-        pinback->CreateAlphaChannel();
-
-    Texture * const pinfront = m_ptable->GetImage(m_d.m_szImageFront);
-    if (pinfront)
-        pinfront->CreateAlphaChannel();
-
-    const float halflength = m_d.m_length * 0.5f;
-    const float halfwidth =  m_d.m_height; //50;
-    const float minx = -halflength;
-    const float maxx = halflength;
-    const float miny = -1.0f;
-    const float maxy = 1.0f;
-    const float minz = -halfwidth * m_ptable->m_zScale;
-    const float maxz = 0;
-
-    // compute the 8 corner vertices for the mover
-    Vertex3D rgv3D[8];
-
-    for (int l=0;l<8;l++)
-    {
-        rgv3D[l].x = (l & 1) ? maxx : minx;
-        rgv3D[l].y = (l & 2) ? maxy : miny;
-        rgv3D[l].z = (l & 4) ? maxz : minz;
-
-        if (l & 2)
-        {
-            rgv3D[l].tu = (l & 1) ? 1.0f : 0.f;
-            rgv3D[l].tv = (l & 4) ? 0.f : 1.0f;
-        }
-        else
-        {
-            rgv3D[l].tu = (l & 1) ? 1.0f : 0.f;
-            rgv3D[l].tv = (l & 4) ? 1.0f : 0.f;
-        }
-    }
-    ppin3d->CalcShadowCoordinates(rgv3D,8);
-
-    // create vertex buffer
-    std::vector<Vertex3D> vbVerts;
-
-    // back
-    SetNormal(rgv3D, rgiGate2, 4);
-    for (int i = 0; i < 4; ++i)
-        vbVerts.push_back( rgv3D[rgiGate2[i]] );
-
-    // front
-    SetNormal(rgv3D, rgiGate3, 4);
-    for (int i = 0; i < 4; ++i)
-        vbVerts.push_back( rgv3D[rgiGate3[i]] );
-
-    // bottom
-    SetNormal(rgv3D, rgiGate4, 4);
-    for (int i = 0; i < 4; ++i)
-        vbVerts.push_back( rgv3D[rgiGate4[i]] );
-
-    // top
-    SetNormal(rgv3D, rgiGate5, 4);
-    for (int i = 0; i < 4; ++i)
-        vbVerts.push_back( rgv3D[rgiGate5[i]] );
-
-    // left
-    SetNormal(rgv3D, rgiGate6, 4);
-    for (int i = 0; i < 4; ++i)
-        vbVerts.push_back( rgv3D[rgiGate6[i]] );
-
-    // right
-    SetNormal(rgv3D, rgiGate7, 4);
-    for (int i = 0; i < 4; ++i)
-        vbVerts.push_back( rgv3D[rgiGate7[i]] );
-
-//     pd3dDevice->CreateVertexBuffer(vbVerts.size(), 0, MY_D3DFVF_VERTEX, &vtxBuf);
-//     void *buf;
-//     vtxBuf->lock(0, 0, &buf, 0);
-//     memcpy(buf, &vbVerts[0], vbVerts.size() * sizeof(vbVerts[0]));
-//     vtxBuf->unlock();
+    if (!m_phitgate->m_gateanim.m_fVisible)
+        return;
+    RenderObject(pd3dDevice);
 }
 
 void Gate::RenderSetup(RenderDevice* pd3dDevice)
 {
-//    PrepareStatic(pd3dDevice);
-//    PrepareMovers(pd3dDevice);
-// 
-//    static const WORD idx[24] = {0,1,2,0,2,3, 4,5,6,4,6,7, 8,9,10,8,10,11, 12,13,14,12,14,15 };
-//    idxBuf = pd3dDevice->CreateAndFillIndexBuffer(24, idx);
     baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
     std::vector<WORD> indices(gateBracketNumFaces);
 
@@ -695,29 +522,6 @@ void Gate::RenderSetup(RenderDevice* pd3dDevice)
 
 void Gate::RenderStatic(RenderDevice* pd3dDevice) // only the support structures are rendered here
 {
-    return;
-/*   if(!m_d.m_fSupports) return; // no support structures are allocated ... therefore render none
-   
-   pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelTexelDeclaration );
-
-   Material *mat = m_ptable->GetMaterial( m_d.m_szMaterial);
-   pd3dDevice->basicShader->SetMaterial(mat);
-
-   pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
-   Vertex3D *rgv3D = &staticVertices[0];
-
-   static const WORD rgiGate0[8] = {0,1,2,3,6,7,4,5};
-   static const WORD rgiGate1[8] = {4,5,6,7,2,3,0,1};
-   static const WORD rgiGateNormal[3] = {0,1,3};
-   
-   pd3dDevice->basicShader->Begin(0);
-   SetNormal(rgv3D, rgiGateNormal, 3, rgv3D, rgiGate0, 8);
-   pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_VERTEX, rgv3D, 8, (LPWORD)rgiGate0, 8);
-
-   SetNormal(rgv3D, rgiGateNormal, 3, rgv3D, rgiGate1, 8);
-   pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_VERTEX, rgv3D, 8, (LPWORD)rgiGate1, 8);
-   pd3dDevice->basicShader->End();  
-*/
 }
 
 void Gate::SetObjectPos()
