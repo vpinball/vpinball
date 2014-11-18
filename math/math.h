@@ -2,6 +2,11 @@
 
 #include <math.h>
 
+inline float exp2f(const float e)
+{
+	return powf(2.0f,e);
+}
+
 // Math stuff which doesn't fit elsewhere
 
 // Solve the quadratic equation ax^2 + bx + c = 0.

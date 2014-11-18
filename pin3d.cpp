@@ -538,34 +538,7 @@ void Pin3D::RenderPlayfieldGraphics()
 	EnableLightMap(0);
 
    Material *mat = g_pplayer->m_ptable->GetMaterial( g_pplayer->m_ptable->m_szPlayfieldMaterial);
-   D3DXVECTOR4 diffuseColor( 0.5f, 0.5f, 0.5f, 1.0f );
-   D3DXVECTOR4 glossyColor( 0.04f, 0.04f, 0.04f, 1.0f );
-   D3DXVECTOR4 specularColor( 0.04f, 0.04f, 0.04f, 1.0f );
-   float diffuseWrap = 0.0f;
-   float glossyPower = 0.1f;
-   bool  bDiffActive=true;
-   bool  bGlossyActive = true;
-   bool  bSpecActive = false;
-   if( mat )
-   {
-      diffuseColor = mat->getDiffuseColor();
-      glossyColor = mat->getGlossyColor();
-      specularColor = mat->getSpecularColor();
-      diffuseWrap = mat->m_fDiffuse;
-      glossyPower = mat->m_fGlossy;
-      bDiffActive = mat->m_bDiffuseActive;
-      bGlossyActive = mat->m_bGlossyActive;
-      bSpecActive = mat->m_bSpecularActive;
-   }
-
-   m_pd3dDevice->basicShader->Core()->SetFloat("fDiffuseWrap",diffuseWrap);
-   m_pd3dDevice->basicShader->Core()->SetFloat("fGlossyPower",glossyPower);
-   m_pd3dDevice->basicShader->Core()->SetVector("vDiffuseColor",&diffuseColor);
-   m_pd3dDevice->basicShader->Core()->SetVector("vGlossyColor",&glossyColor);
-   m_pd3dDevice->basicShader->Core()->SetVector("vSpecularColor",&specularColor);
-   m_pd3dDevice->basicShader->Core()->SetBool("bDiffuse", bDiffActive);
-   m_pd3dDevice->basicShader->Core()->SetBool("bGlossy", bGlossyActive);
-   m_pd3dDevice->basicShader->Core()->SetBool("bSpecular", bSpecActive);
+   m_pd3dDevice->basicShader->SetMaterial(mat);
 
 	if (pin)
 	{

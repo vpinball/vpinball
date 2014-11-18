@@ -803,12 +803,10 @@ void Player::InitBallShader()
    ballShader->Core()->SetFloat("fenvEmissionScale",m_ptable->m_envEmissionScale);
    ballShader->Core()->SetInt("iLightPointNum",MAX_LIGHT_SOURCES);
 
-   ballShader->Core()->SetFloat("fDiffuseWrap", 0.25f);
-   ballShader->Core()->SetFloat("fGlossyPower", 0.8f);
-   ballShader->Core()->SetBool("bDiffuse", true);
-   ballShader->Core()->SetBool("bGlossy", true);
-   ballShader->Core()->SetBool("bSpecular", true);
-
+   ballShader->Core()->SetFloat("fWrapLighting", 0.25f);
+   ballShader->Core()->SetFloat("fRoughness", exp2f(10.0f * 0.8f*0.8f + 1.0f));
+   ballShader->Core()->SetFloat("fEdge", 1.0f);
+   ballShader->Core()->SetBool("bIsMetal", true);
 
    vector<WORD> indexList;
    indexList.resize(basicBallNumFaces);
@@ -2687,7 +2685,7 @@ void Player::DrawBalls()
       D3DXVECTOR4 m2(pball->m_orientation.m_d[0][1], pball->m_orientation.m_d[1][1], pball->m_orientation.m_d[2][1], 0.0f );
       D3DXVECTOR4 m3(pball->m_orientation.m_d[0][2], pball->m_orientation.m_d[1][2], pball->m_orientation.m_d[2][2], 0.0f );
 	  const D3DXVECTOR4 diffuse = COLORREF_to_D3DXVECTOR4(pball->m_color);
-	  ballShader->Core()->SetVector("vDiffuseColor",&diffuse);
+	  ballShader->Core()->SetVector("cBase",&diffuse);
       ballShader->Core()->SetVector("m1",&m1);
       ballShader->Core()->SetVector("m2",&m2);
       ballShader->Core()->SetVector("m3",&m3);

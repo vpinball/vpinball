@@ -15,8 +15,8 @@ Bumper::Bumper()
    capIndexBuffer = NULL;
    socketIndexBuffer = NULL;
    socketVertexBuffer = NULL;
-   ringMaterial.m_diffuseColor = 0xFFFFFFFF;
-   ringMaterial.m_bGlossyActive = false;
+   ringMaterial.m_cBase = 0xFFFFFFFF;
+   ringMaterial.m_cGlossy = 0;
 }
 
 Bumper::~Bumper()
@@ -194,17 +194,17 @@ void Bumper::PreRender(Sur * const psur)
    const float sn = sinf(radangle);
    const float cs = cosf(radangle);
 
-   float x1=m_d.m_vCenter.x-cs*(m_d.m_radius+10);
-   float y1=m_d.m_vCenter.y-sn*(m_d.m_radius+10);
-   float x2=m_d.m_vCenter.x+cs*(m_d.m_radius+10);
-   float y2=m_d.m_vCenter.y+sn*(m_d.m_radius+10);
+   float x1=m_d.m_vCenter.x-cs*(m_d.m_radius+10.f);
+   float y1=m_d.m_vCenter.y-sn*(m_d.m_radius+10.f);
+   float x2=m_d.m_vCenter.x+cs*(m_d.m_radius+10.f);
+   float y2=m_d.m_vCenter.y+sn*(m_d.m_radius+10.f);
    psur->Ellipse(x1, y1, 10.0f);
    psur->Ellipse(x2, y2, 10.0f);
 
    if ( m_ptable->m_renderSolid )
    {
        Material *mat = m_ptable->GetMaterial(m_d.m_szCapMaterial);
-       psur->SetFillColor(mat->m_diffuseColor);
+       psur->SetFillColor(mat->m_cBase);
    }
    else
        psur->SetFillColor(-1);
@@ -213,7 +213,7 @@ void Bumper::PreRender(Sur * const psur)
    if ( m_ptable->m_renderSolid )
    {
        Material *mat = m_ptable->GetMaterial(m_d.m_szBaseMaterial);
-       psur->SetFillColor(mat->m_diffuseColor);
+       psur->SetFillColor(mat->m_cBase);
    }
    else
        psur->SetFillColor(-1);
@@ -231,10 +231,10 @@ void Bumper::Render(Sur * const psur)
    const float sn = sinf(radangle);
    const float cs = cosf(radangle);
 
-   float x1=m_d.m_vCenter.x-cs*(m_d.m_radius+10);
-   float y1=m_d.m_vCenter.y-sn*(m_d.m_radius+10);
-   float x2=m_d.m_vCenter.x+cs*(m_d.m_radius+10);
-   float y2=m_d.m_vCenter.y+sn*(m_d.m_radius+10);
+   float x1=m_d.m_vCenter.x-cs*(m_d.m_radius+10.f);
+   float y1=m_d.m_vCenter.y-sn*(m_d.m_radius+10.f);
+   float x2=m_d.m_vCenter.x+cs*(m_d.m_radius+10.f);
+   float y2=m_d.m_vCenter.y+sn*(m_d.m_radius+10.f);
    psur->Ellipse(x1, y1, 10.0f);
    psur->Ellipse(x2, y2, 10.0f);
    psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius*1.5f);

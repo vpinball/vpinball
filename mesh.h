@@ -351,21 +351,6 @@ void SetNormal(VtxType * const rgv, const WORD * const rgi, const int count, voi
 }
 
 template <class VtxType>
-void SetDiffuseFromMaterial(VtxType *rgv, int count, Material *pmtrl) // get rid of this?
-{
-   D3DCOLORVALUE diffuse = pmtrl->getDiffuse();
-   D3DCOLORVALUE emissive = pmtrl->getEmissive();
-   unsigned int r = (int)(((diffuse.r + emissive.r) * 255.0f) + 0.5f);
-   unsigned int g = (int)(((diffuse.g + emissive.g) * 255.0f) + 0.5f);
-   unsigned int b = (int)(((diffuse.b + emissive.b) * 255.0f) + 0.5f);
-
-   unsigned int color = (r<<16) | (g<<8) | b;
-
-   for (int i=0; i<count; ++i)
-      rgv[i].color = color;
-}
-
-template <class VtxType>
 void SetDiffuse(VtxType * const rgv, const int count, const unsigned int color) // get rid of this?
 {
 	for (int i=0; i<count; ++i)
@@ -374,7 +359,7 @@ void SetDiffuse(VtxType * const rgv, const int count, const unsigned int color) 
 
 // Calculate if two vectors are flat to each other
 // accuracy is a float greater 4 and smaller 4000000 (tested this out)
-inline bool FlatWithAccuracy(const Vertex2D & v1, const Vertex2D & v2, const Vertex2D & vMid, float accuracy)
+inline bool FlatWithAccuracy(const Vertex2D & v1, const Vertex2D & v2, const Vertex2D & vMid, const float accuracy)
 {
     // compute double the signed area of the triangle (v1, vMid, v2)
     const float dblarea = (vMid.x-v1.x)*(v2.y-v1.y) - (v2.x-v1.x)*(vMid.y-v1.y);
@@ -382,7 +367,7 @@ inline bool FlatWithAccuracy(const Vertex2D & v1, const Vertex2D & v2, const Ver
     return (dblarea*dblarea < accuracy);
 }
 
-inline bool FlatWithAccuracy(const Vertex3Ds & v1, const Vertex3Ds & v2, const Vertex3Ds & vMid, float accuracy)
+inline bool FlatWithAccuracy(const Vertex3Ds & v1, const Vertex3Ds & v2, const Vertex3Ds & vMid, const float accuracy)
 {
     // compute the square of double the signed area of the triangle (v1, vMid, v2)
     const float dblareasq = CrossProduct(vMid-v1, v2-v1).LengthSquared();

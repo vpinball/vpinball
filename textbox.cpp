@@ -227,9 +227,7 @@ void Textbox::PostRenderStatic(RenderDevice* pd3dDevice)
 
     Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
-    Material mat;
-    mat.setColor( 1.0f, 1.0f, 1.0f, 1.0f );
-    pd3dDevice->SetMaterial(mat);
+	pd3dDevice->basicShader->SetMaterial(NULL,D3DXVECTOR4(1,1,1,1),D3DXVECTOR4(0,0,0,0),D3DXVECTOR4(0,0,0,0),0.f,0.f,1.f,1.f,false,false);
 
     // Set texture to mirror, so the alpha state of the texture blends correctly to the outside
     pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_MIRROR);

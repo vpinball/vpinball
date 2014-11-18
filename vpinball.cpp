@@ -3205,28 +3205,24 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
                             ListView_GetItem(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST), &lvitem);
                             Material * const pmat = (Material*)lvitem.lParam;
                             HWND hwndColor = GetDlgItem(hwndDlg, IDC_COLOR);
-                            SendMessage(hwndColor, CHANGE_COLOR, 0, pmat->m_diffuseColor);
+                            SendMessage(hwndColor, CHANGE_COLOR, 0, pmat->m_cBase);
                             hwndColor = GetDlgItem(hwndDlg, IDC_COLOR2);
-                            SendMessage(hwndColor, CHANGE_COLOR, 0, pmat->m_glossyColor);
+                            SendMessage(hwndColor, CHANGE_COLOR, 0, pmat->m_cGlossy);
                             hwndColor = GetDlgItem(hwndDlg, IDC_COLOR3);
-                            SendMessage(hwndColor, CHANGE_COLOR, 0, pmat->m_specularColor);
+                            SendMessage(hwndColor, CHANGE_COLOR, 0, pmat->m_cClearcoat);
                             char textBuf[256];
-                            f2sz(pmat->m_fDiffuse,textBuf);
+                            f2sz(pmat->m_fWrapLighting,textBuf);
                             SetDlgItemText(hwndDlg, IDC_DIFFUSE_EDIT, textBuf);
-                            f2sz(pmat->m_fGlossy,textBuf);
+                            f2sz(pmat->m_fRoughness,textBuf);
                             SetDlgItemText(hwndDlg, IDC_GLOSSY_EDIT, textBuf);
-                            f2sz(pmat->m_fSpecular,textBuf);
+                            f2sz(pmat->m_fEdge,textBuf);
                             SetDlgItemText(hwndDlg, IDC_SPECULAR_EDIT, textBuf);
                             int op = (int)(pmat->m_fOpacity*100.0f);
                             _itoa_s( op, textBuf, 10 );
                             SetDlgItemText(hwndDlg, IDC_OPACITY_EDIT, textBuf);
 
                             HWND checkboxHwnd = GetDlgItem(hwndDlg, IDC_DIFFUSE_CHECK);
-                            SendMessage(checkboxHwnd, BM_SETCHECK, pmat->m_bDiffuseActive ? BST_CHECKED : BST_UNCHECKED, 0);
-                            checkboxHwnd = GetDlgItem(hwndDlg, IDC_GLOSSY_CHECK);
-                            SendMessage(checkboxHwnd, BM_SETCHECK, pmat->m_bGlossyActive ? BST_CHECKED : BST_UNCHECKED, 0);
-                            checkboxHwnd = GetDlgItem(hwndDlg, IDC_SPECULAR_CHECK);
-                            SendMessage(checkboxHwnd, BM_SETCHECK, pmat->m_bSpecularActive ? BST_CHECKED : BST_UNCHECKED, 0);
+                            SendMessage(checkboxHwnd, BM_SETCHECK, pmat->m_bIsMetal ? BST_CHECKED : BST_UNCHECKED, 0);
                             checkboxHwnd = GetDlgItem(hwndDlg, IDC_OPACITY_CHECK);
                             SendMessage(checkboxHwnd, BM_SETCHECK, pmat->m_bOpacityActive ? BST_CHECKED : BST_UNCHECKED, 0);
 
@@ -3249,49 +3245,41 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
                     {
                         char textBuf[256];
                         GetDlgItemText(hwndDlg, IDC_DIFFUSE_EDIT, textBuf, 31);
-                        pmat->m_fDiffuse = sz2f(textBuf);
+                        pmat->m_fWrapLighting = sz2f(textBuf);
                         GetDlgItemText(hwndDlg, IDC_GLOSSY_EDIT, textBuf, 31);
-                        pmat->m_fGlossy = sz2f(textBuf);
+                        pmat->m_fRoughness = sz2f(textBuf);
                         GetDlgItemText(hwndDlg, IDC_SPECULAR_EDIT, textBuf, 31);
-                        pmat->m_fSpecular = sz2f(textBuf);
+                        pmat->m_fEdge = sz2f(textBuf);
                         GetDlgItemText(hwndDlg, IDC_OPACITY_EDIT, textBuf, 31);
                         int op = atoi(textBuf);
                         if( op>100 ) op=100;
                         if( op<0 ) op=0;
                         pmat->m_fOpacity = (float)op/100.0f;
                         size_t checked = SendDlgItemMessage(hwndDlg, IDC_DIFFUSE_CHECK, BM_GETCHECK, 0, 0);
-                        pmat->m_bDiffuseActive = checked==1;
-                        checked = SendDlgItemMessage(hwndDlg, IDC_GLOSSY_CHECK, BM_GETCHECK, 0, 0);
-                        pmat->m_bGlossyActive = checked==1;
-                        checked = SendDlgItemMessage(hwndDlg, IDC_SPECULAR_CHECK, BM_GETCHECK, 0, 0);
-                        pmat->m_bSpecularActive = checked==1;
+                        pmat->m_bIsMetal = checked==1;
                         checked = SendDlgItemMessage(hwndDlg, IDC_OPACITY_CHECK, BM_GETCHECK, 0, 0);
                         pmat->m_bOpacityActive = checked==1;
                     }
                     else
                     {
                         HWND hwndColor = GetDlgItem(hwndDlg, IDC_COLOR);
-                        SendMessage(hwndColor, CHANGE_COLOR, 0, pmat->m_diffuseColor);
+                        SendMessage(hwndColor, CHANGE_COLOR, 0, pmat->m_cBase);
                         hwndColor = GetDlgItem(hwndDlg, IDC_COLOR2);
-                        SendMessage(hwndColor, CHANGE_COLOR, 0, pmat->m_glossyColor);
+                        SendMessage(hwndColor, CHANGE_COLOR, 0, pmat->m_cGlossy);
                         hwndColor = GetDlgItem(hwndDlg, IDC_COLOR3);
-                        SendMessage(hwndColor, CHANGE_COLOR, 0, pmat->m_specularColor);
+                        SendMessage(hwndColor, CHANGE_COLOR, 0, pmat->m_cClearcoat);
                         char textBuf[256];
-                        f2sz(pmat->m_fDiffuse,textBuf);
+                        f2sz(pmat->m_fWrapLighting,textBuf);
                         SetDlgItemText(hwndDlg, IDC_DIFFUSE_EDIT, textBuf);
-                        f2sz(pmat->m_fGlossy,textBuf);
+                        f2sz(pmat->m_fRoughness,textBuf);
                         SetDlgItemText(hwndDlg, IDC_GLOSSY_EDIT, textBuf);
-                        f2sz(pmat->m_fSpecular,textBuf);
+                        f2sz(pmat->m_fEdge,textBuf);
                         SetDlgItemText(hwndDlg, IDC_SPECULAR_EDIT, textBuf);
                         int op = (int)(pmat->m_fOpacity*100.0f);
                         _itoa_s( op, textBuf, 10 );
                         SetDlgItemText(hwndDlg, IDC_OPACITY_EDIT, textBuf);
                         HWND checkboxHwnd = GetDlgItem(hwndDlg, IDC_DIFFUSE_CHECK);
-                        SendMessage(checkboxHwnd, BM_SETCHECK, pmat->m_bDiffuseActive ? BST_CHECKED : BST_UNCHECKED, 0);
-                        checkboxHwnd = GetDlgItem(hwndDlg, IDC_GLOSSY_CHECK);
-                        SendMessage(checkboxHwnd, BM_SETCHECK, pmat->m_bGlossyActive ? BST_CHECKED : BST_UNCHECKED, 0);
-                        checkboxHwnd = GetDlgItem(hwndDlg, IDC_SPECULAR_CHECK);
-                        SendMessage(checkboxHwnd, BM_SETCHECK, pmat->m_bSpecularActive ? BST_CHECKED : BST_UNCHECKED, 0);
+                        SendMessage(checkboxHwnd, BM_SETCHECK, pmat->m_bIsMetal ? BST_CHECKED : BST_UNCHECKED, 0);
                         checkboxHwnd = GetDlgItem(hwndDlg, IDC_OPACITY_CHECK);
                         SendMessage(checkboxHwnd, BM_SETCHECK, pmat->m_bOpacityActive ? BST_CHECKED : BST_UNCHECKED, 0);
                     }
@@ -3348,11 +3336,11 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
                             ListView_GetItem(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST), &lvitem);
                             Material * const pmat = (Material*)lvitem.lParam;
                             if( hwndcolor1 == (HWND)lParam )
-                                pmat->m_diffuseColor = color;
+                                pmat->m_cBase = color;
                             else if( hwndcolor2 == (HWND)lParam )
-                                pmat->m_glossyColor = color;
+                                pmat->m_cGlossy = color;
                             else if( hwndcolor3 == (HWND)lParam )
-                                pmat->m_specularColor = color;
+                                pmat->m_cClearcoat = color;
 
                             // The previous selection is now deleted, so look again from the top of the list
                             sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST), sel, LVNI_SELECTED);
@@ -3383,22 +3371,18 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
                                     Material * const pmat = (Material*)lvitem.lParam;
                                     char textBuf[256];
                                     GetDlgItemText(hwndDlg, IDC_DIFFUSE_EDIT, textBuf, 31);
-                                    pmat->m_fDiffuse = sz2f(textBuf);
+                                    pmat->m_fWrapLighting = sz2f(textBuf);
                                     GetDlgItemText(hwndDlg, IDC_GLOSSY_EDIT, textBuf, 31);
-                                    pmat->m_fGlossy = sz2f(textBuf);
+                                    pmat->m_fRoughness = sz2f(textBuf);
                                     GetDlgItemText(hwndDlg, IDC_SPECULAR_EDIT, textBuf, 31);
-                                    pmat->m_fSpecular = sz2f(textBuf);
+                                    pmat->m_fEdge = sz2f(textBuf);
                                     GetDlgItemText(hwndDlg, IDC_OPACITY_EDIT, textBuf, 31);
                                     int op = atoi(textBuf);
                                     if( op>100 ) op=100;
                                     if( op<0 ) op=0;
                                     pmat->m_fOpacity = (float)op/100.0f;
                                     size_t checked = SendDlgItemMessage(hwndDlg, IDC_DIFFUSE_CHECK, BM_GETCHECK, 0, 0);
-                                    pmat->m_bDiffuseActive = checked==1;
-                                    checked = SendDlgItemMessage(hwndDlg, IDC_GLOSSY_CHECK, BM_GETCHECK, 0, 0);
-                                    pmat->m_bGlossyActive = checked==1;
-                                    checked = SendDlgItemMessage(hwndDlg, IDC_SPECULAR_CHECK, BM_GETCHECK, 0, 0);
-                                    pmat->m_bSpecularActive = checked==1;
+                                    pmat->m_bIsMetal = checked==1;
                                     checked = SendDlgItemMessage(hwndDlg, IDC_OPACITY_CHECK, BM_GETCHECK, 0, 0);
                                     pmat->m_bOpacityActive = checked==1;
                                     // The previous selection is now deleted, so look again from the top of the list
@@ -3466,21 +3450,19 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
                                     Material *pmat = new Material();
                                     SaveMaterial mat;
 
-                                    fread(&mat, 1, sizeof(SaveMaterial),f);
-                                    pmat->m_diffuseColor = mat.diffuseColor;
-                                    pmat->m_glossyColor = mat.glossyColor;
-                                    pmat->m_specularColor = mat.specularColor;
-                                    pmat->m_fDiffuse = mat.fDiffuse;
-                                    pmat->m_bDiffuseActive = mat.bDiffuseActive;
-                                    pmat->m_fGlossy = mat.fGlossy;
-                                    pmat->m_bGlossyActive = mat.bGlossyActive;
-                                    pmat->m_fSpecular = mat.fSpecular;
-                                    pmat->m_bSpecularActive = mat.bSpecularActive;
+                                    fread(&mat, 1, sizeof(SaveMaterial), f);
+                                    pmat->m_cBase = mat.cBase;
+                                    pmat->m_cGlossy = mat.cGlossy;
+                                    pmat->m_cClearcoat = mat.cClearcoat;
+									pmat->m_fWrapLighting = mat.fWrapLighting;
+                                    pmat->m_fRoughness = mat.fRoughness;
+                                    pmat->m_fEdge = mat.fEdge;
+                                    pmat->m_bIsMetal = mat.bIsMetal;
                                     pmat->m_fOpacity = mat.fOpacity;
                                     pmat->m_bOpacityActive = mat.bOpacityActive;
                                     memcpy(pmat->m_szName, mat.szName,32);
                                     pt = (CCO(PinTable) *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
-                                    
+
                                     pt->AddMaterial( pmat );
                                     pt->AddListMaterial(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST), pmat);
                                 }
@@ -3551,15 +3533,13 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
                                         ListView_GetItem(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST), &lvitem);
                                         Material * const pmat = (Material*)lvitem.lParam;									
                                         SaveMaterial mat;
-                                        mat.diffuseColor = pmat->m_diffuseColor;
-                                        mat.glossyColor = pmat->m_glossyColor;
-                                        mat.specularColor = pmat->m_specularColor;
-                                        mat.fDiffuse = pmat->m_fDiffuse;
-                                        mat.bDiffuseActive = pmat->m_bDiffuseActive;
-                                        mat.fGlossy = pmat->m_fGlossy;
-                                        mat.bGlossyActive = pmat->m_bGlossyActive;
-                                        mat.fSpecular = pmat->m_fSpecular;
-                                        mat.bSpecularActive = pmat->m_bSpecularActive;
+                                        mat.cBase = pmat->m_cBase;
+                                        mat.cGlossy = pmat->m_cGlossy;
+                                        mat.cClearcoat = pmat->m_cClearcoat;
+                                        mat.fRoughness = pmat->m_fRoughness;
+                                        mat.fEdge = pmat->m_fEdge;
+                                        mat.fWrapLighting = pmat->m_fWrapLighting;
+                                        mat.bIsMetal = pmat->m_bIsMetal;
                                         mat.fOpacity = pmat->m_fOpacity;
                                         mat.bOpacityActive = pmat->m_bOpacityActive;
                                         memcpy(mat.szName, pmat->m_szName, 32 );

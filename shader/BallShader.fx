@@ -125,16 +125,16 @@ voutTrail vsBallTrail( in vin IN )
 
 //------------------------------------
 
-float4 ballLightLoop(float3 pos, float3 N, float3 V, float3 diffuse, float3 glossy, float3 specular)
+float4 ballLightLoop(float3 pos, float3 N, float3 V, float3 diffuse, float3 glossy, float3 specular, float3 edge)
 {
    // normalize input vectors for BRDF evals
    N = normalize(N);
    V = normalize(V);
    
    // normalize BRDF layer inputs //!! use diffuse = (1-glossy)*diffuse instead?
-   float diffuseMax = bDiffuse ? max(diffuse.x,max(diffuse.y,diffuse.z)) : 0.0f;
-   float glossyMax = bGlossy ? max(glossy.x,max(glossy.y,glossy.z)) : 0.0f;
-   //float specularMax = bSpecular ? max(specular.x,max(specular.y,specular.z)) : 0.0f; //!! not needed as 2nd layer only so far
+   float diffuseMax = max(diffuse.x,max(diffuse.y,diffuse.z));
+   float glossyMax = max(glossy.x,max(glossy.y,glossy.z));
+   float specularMax = max(specular.x,max(specular.y,specular.z)); //!! not needed as 2nd layer only so far
    float sum = diffuseMax + glossyMax; //+ specularMax
    if(sum > 1.0f)
    {
@@ -149,14 +149,13 @@ float4 ballLightLoop(float3 pos, float3 N, float3 V, float3 diffuse, float3 glos
 
    float3 color = float3(0.0f, 0.0f, 0.0f);
       
-   if((bDiffuse && diffuseMax > 0.0f) || (bGlossy && glossyMax > 0.0f))
+   if((!bIsMetal && (diffuseMax > 0.0f)) || (glossyMax > 0.0f))
    {
-      float glossyPower = exp2(10.0f * fGlossyPower + 1.0f); // map from 0..1 to 2..2048 //!! precalc?
       for(int i = 0; i < iLightPointNum; i++)  
-         color += DoPointLight(pos, N, V, diffuse, glossy, glossyPower, i); // no specular needed as only pointlights so far
+         color += DoPointLight(pos, N, V, diffuse, glossy, edge, fRoughness, i); // no specular needed as only pointlights so far
    }
 
-   if(bSpecular /*&& specularMax > 0.0f*/)
+   if(specularMax > 0.0f)
       color += specular; //!! blend? //!! Fresnel with 1st layer?
   
    return float4(Gamma(ToneMap(vAmbient + color)), fmaterialAlpha); //!! in case of HDR out later on, remove tonemap and gamma //!! also problematic for alpha blends
@@ -201,7 +200,7 @@ float4 psBall( in vout IN ) : COLOR
 	   playfieldColor = InvGamma(tex2D( texSampler1, uv ).xyz); //!! rather use screen space sample from previous frame??
 	   
 	   //!! hack to get some lighting on sample
-	   playfieldColor = lightLoop(mid, mul(float4(/*normal=*/0,0,1,0), matWorldView).xyz, /*camera=0,0,0,1*/-IN.worldPos, playfieldColor, float3(0,0,0), float3(0,0,0)).xyz;
+	   playfieldColor = lightLoop(mid, mul(float4(/*normal=*/0,0,1,0), matWorldView).xyz, /*camera=0,0,0,1*/-IN.worldPos, playfieldColor, float3(0,0,0), float3(0,0,0), float3(1,1,1)).xyz;
 	   
 	   //!! magic falloff & weight the rest in from the ballImage
 	   float weight = freflectionStrength*sqrt(-NdotR);
@@ -211,17 +210,18 @@ float4 psBall( in vout IN ) : COLOR
 	else
 	   playfieldColor = ballImageColor;
 
-	float3 diffuse  = vDiffuseColor + decalColor.xyz; // assume that decal is used for scratches and/or stickers/logos
+	float3 diffuse  = cBase + decalColor.xyz; // assume that decal is used for scratches and/or stickers/logos
     float3 glossy   = diffuse;
     float3 specular = playfieldColor;
+	float3 edge     = float3(1,1,1);
    
-    return ballLightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular);
+    return ballLightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular, edge);
 }
 
 
 float4 psBallReflection( in voutReflection IN ) : COLOR
 {
-	float3 ballImageColor = vDiffuseColor + tex2D( texSampler0, IN.r.xy ).xyz; //!! just add the ballcolor in, this is a whacky reflection anyhow
+	float3 ballImageColor = cBase + tex2D( texSampler0, IN.r.xy ).xyz; //!! just add the ballcolor in, this is a whacky reflection anyhow
 	float alpha = saturate((IN.tex0.y-position.y)/radius);
 	alpha = (alpha*alpha)*(alpha*alpha)*freflectionStrength;
 	return float4(saturate(ballImageColor),alpha);
@@ -229,7 +229,7 @@ float4 psBallReflection( in voutReflection IN ) : COLOR
 
 float4 psBallTrail( in voutTrail IN ) : COLOR
 {
-	return saturate((float4(vDiffuseColor,0.0f) + tex2D( texSampler0, IN.tex0 ))*IN.alpha); //!! just add the ballcolor in, this is a whacky reflection anyhow
+	return saturate((float4(cBase,0.0f) + tex2D( texSampler0, IN.tex0 ))*IN.alpha); //!! just add the ballcolor in, this is a whacky reflection anyhow
 }
 
 //------------------------------------
