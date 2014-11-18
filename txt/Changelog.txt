@@ -22,6 +22,27 @@ VP 10.0.0 Changelog
   -> the data-format of the physics sets (*.vpp files) is basically the same, although the parameters inside are different, so unfortunately you need to set them up newly
 
 - add material editor
+  
+  -> quick and basic explanation:
+     - First of all select if you want to design a metal material (steel, gold, silver, etc)
+       or any other one (plastic, wood, rubber, etc)
+
+     - Then select the base color of your material
+       (note that this can/will be replaced by the (optional) image on your object(s) later-on)
+
+     - If you selected a non-metal material you can now in addition add some subtle reflectivity via the glossy field
+       (otherwise simply set it to full black)
+       - First select the color of your reflections (leave at full white for most natural behavior)
+       - Then select the shininess of your material (0 means very very dull reflections, 1 means perfect mirror-like reflections)
+
+     - For some materials it can now also be realistic to add an additional clearcoat layer on top of everything
+       (otherwise simply set it to full black)
+
+     - After testing the look of the material on an object (use a curved one if possible, e.g. the default rubber or a complex primitive),
+       tweak the edge brightness parameter: Usually it should just be left at 1, but if you think the edges are unnaturally bright, reduce it
+
+  -> pro tip:
+     - In nature, each object has a bit of glossy, so try to never set the glossy to full black!
 
 - assign sound-,image-,material- and collection-manager to hot keys (F2,F3,F4 and F8)
 
