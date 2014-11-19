@@ -28,7 +28,9 @@ VP 10.0.0 Changelog
        or any other one (plastic, wood, rubber, etc)
 
      - Then select the base color of your material
-       (note that this can/will be replaced by the (optional) image on your object(s) later-on)
+       (note that this can/will be modulated by the (optional) image on your object(s) later-on,
+        so if you need your object image to look as true to the original as possible, set the base color to full white,
+        otherwise you can use the base color to change the brightness or colors of the object image)
 
      - If you selected a non-metal material you can now in addition add some subtle reflectivity via the glossy layer color
        (otherwise simply set it to full black, leave at grey to full white for natural behavior)
