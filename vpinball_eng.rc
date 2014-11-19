@@ -1713,7 +1713,7 @@ BEGIN
     PUSHBUTTON      "&Add",IDC_ADD_BUTTON,408,22,50,14
     CONTROL         "Custom2",IDC_COLOR2,"ColorControl",WS_TABSTOP,220,75,40,19
     CONTROL         "Custom2",IDC_COLOR3,"ColorControl",WS_TABSTOP,220,153,40,19
-    GROUPBOX        "Base Color (can be replaced by Image on Object)",IDC_STATIC,214,19,192,43
+    GROUPBOX        "Base Color (can be modulated by Image on Object)",IDC_STATIC,214,19,192,43
     LTEXT           "Wrap",IDC_STATIC,270,33,21,8
     LTEXT           "(0..1)",IDC_STATIC,272,41,17,8
     CONTROL         "Metal Material (disables Glossy and has stronger reflectivity)",IDC_DIFFUSE_CHECK,
