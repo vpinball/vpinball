@@ -16,7 +16,11 @@ public:
     float m_intensity;
     float m_fadeSpeed;
     float m_currentIntensity;
-	LightState m_state;
+    float m_meshRadius;
+    BOOL  m_showBulbMesh;
+    float m_meshIntensity;
+    float m_meshFadeSpeed;
+    LightState m_state;
 	COLORREF m_color;
 	TimerDataRoot m_tdr;
 	Shape m_shape;
@@ -30,11 +34,7 @@ public:
    //float normalR,normalG,normalB;
    //float borderR,borderG,borderB;
 	char m_szSurface[MAXTOKEN];
-	char m_szOnImage[MAXTOKEN];
 	char m_szOffImage[MAXTOKEN];
-	BOOL m_fDisplayImage;
-	BOOL m_EnableLighting;
-   BOOL m_EnableOffLighting;
    float m_depthBias;      // for determining depth sorting
 };
 
@@ -148,20 +148,20 @@ DECLARE_REGISTRY_RESOURCEID(IDR_LIGHT)
       { return m_d.m_depthBias + viewDir.x * m_d.m_vCenter.x + viewDir.y * m_d.m_vCenter.y + viewDir.z * m_surfaceHeight; }
 
 	void WriteRegDefaults();
-   void FreeBuffers();
+    void FreeBuffers();
 
-   void     InitShape();
+    void        InitShape();
 	void		lockLight();
 	void		unLockLight();
 	void		setLightStateBypass(const LightState newVal);
 	void		setLightState(const LightState newVal);
+    void        RenderBulbMesh(RenderDevice *pd3dDevice, COLORREF color, bool isOn);
 
 	PinTable *m_ptable;
 
 	LightData m_d;
 	LightState 	m_realState;
 
-   static Shader   *m_pInsertShader;
 	// Run-time
 private:
     float m_surfaceHeight;
@@ -176,9 +176,12 @@ private:
    int staticCustomVertexNum;
    int customMoverVertexNum;
    VertexBuffer *customVBuffer;
-   VertexBuffer *normalVBuffer;
    VertexBuffer *customMoverVBuffer;
-   VertexBuffer *normalMoverVBuffer;
+   VertexBuffer *bulbLightVBuffer;
+   IndexBuffer  *bulbLightIndexBuffer;
+   VertexBuffer *bulbSocketVBuffer;
+   IndexBuffer  *bulbSocketIndexBuffer;
+
 // ILight
 
    Texture *GetDisplayTexture();
@@ -206,20 +209,16 @@ public:
 	STDMETHOD(put_Falloff)(/*[in]*/ float newVal);
 	STDMETHOD(get_OffImage)(/*[out, retval]*/ BSTR *pVal);
 	STDMETHOD(put_OffImage)(/*[in]*/ BSTR newVal);
-	STDMETHOD(get_OnImage)(/*[out, retval]*/ BSTR *pVal);
-	STDMETHOD(put_OnImage)(/*[in]*/ BSTR newVal);
-	STDMETHOD(get_DisplayImage)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-	STDMETHOD(put_DisplayImage)(/*[in]*/ VARIANT_BOOL newVal);
-   STDMETHOD(get_EnableLighting)(/*[out, retval]*/ int *pVal);
-   STDMETHOD(put_EnableLighting)(/*[in]*/ int newVal);
-   STDMETHOD(get_EnableOffLighting)(/*[out, retval]*/ int *pVal);
-   STDMETHOD(put_EnableOffLighting)(/*[in]*/ int newVal);
    STDMETHOD(get_DepthBias)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_DepthBias)(/*[in]*/ float newVal);
    STDMETHOD(get_FadeSpeed)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_FadeSpeed)(/*[in]*/ float newVal);
    STDMETHOD(get_Bulb)(/*[out, retval]*/ int *pVal);
    STDMETHOD(put_Bulb)(/*[in]*/ int newVal);
+   STDMETHOD(get_ShowBulbMesh)(/*[out, retval]*/ int *pVal);
+   STDMETHOD(put_ShowBulbMesh)(/*[in]*/ int newVal);
+   STDMETHOD(get_ScaleBulbMesh)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_ScaleBulbMesh)(/*[in]*/ float newVal);
 };
 
 #endif // !defined(AFX_LIGHT_H__7445FDB1_1FBE_4975_9AB6_367E6D16098F__INCLUDED_)

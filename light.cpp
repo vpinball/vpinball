@@ -1,5 +1,7 @@
 #include "StdAfx.h"
 #include "LightInsert.h"
+#include "bulbLightMesh.h"
+#include "bulbSocketMesh.h"
 
 LightCenter::LightCenter(Light *plight)
 {
@@ -65,17 +67,16 @@ int LightCenter::GetSelectLevel()
 }
 
 
-Shader   *Light::m_pInsertShader=NULL;
-
 Light::Light() : m_lightcenter(this)
 {
    m_menuid = IDR_SURFACEMENU;
    customVBuffer = NULL;
-   normalVBuffer = NULL;
    customMoverVBuffer = NULL;
-   normalMoverVBuffer = NULL;
+   bulbLightIndexBuffer = NULL;
+   bulbLightVBuffer = NULL;
+   bulbSocketIndexBuffer=NULL;
+   bulbSocketVBuffer=NULL;
    m_d.m_szOffImage[0]=0;
-   m_d.m_szOnImage[0]=0;
    m_d.m_depthBias = 0.0f;
    m_d.m_shape = ShapeCustom;
    m_roundLight=false;
@@ -88,20 +89,10 @@ Light::~Light()
       customVBuffer->release();
       customVBuffer=0;
    }
-   if( normalVBuffer )
-   {
-      normalVBuffer->release();
-      normalVBuffer=0;
-   }
    if( customMoverVBuffer )
    {
       customMoverVBuffer->release();
       customMoverVBuffer=0;
-   }
-   if( normalMoverVBuffer )
-   {
-      normalMoverVBuffer->release();
-      normalMoverVBuffer=0;
    }
 }
 
@@ -164,16 +155,6 @@ void Light::SetDefaults(bool fromMouseClick)
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szOffImage[0] = 0;
 
-   hr = GetRegString("DefaultProps\\Light","OnImage", m_d.m_szOnImage, MAXTOKEN);
-   if ((hr != S_OK) || !fromMouseClick)
-      m_d.m_szOnImage[0] = 0;
-
-   hr = GetRegInt("DefaultProps\\Light","DisplayImage", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_fDisplayImage = iTmp == 0 ? false : true;
-   else
-      m_d.m_fDisplayImage = fFalse;
-
    hr = GetRegString("DefaultProps\\Light","BlinkPattern", m_rgblinkpattern, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
       strcpy_s(m_rgblinkpattern, sizeof(m_rgblinkpattern), "10");
@@ -200,16 +181,6 @@ void Light::SetDefaults(bool fromMouseClick)
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szSurface[0] = 0;
 
-   hr = GetRegInt("DefaultProps\\Light","EnableLighting", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_EnableLighting = iTmp;
-   else
-      m_d.m_EnableLighting = fTrue;
-   hr = GetRegInt("DefaultProps\\Light","EnableOffLighting", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_EnableOffLighting = iTmp;
-   else
-      m_d.m_EnableOffLighting = fTrue;
    hr = GetRegStringAsFloat("DefaultProps\\Light","FadeSpeed", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_fadeSpeed = fTmp;
@@ -220,7 +191,17 @@ void Light::SetDefaults(bool fromMouseClick)
        m_d.m_BulbLight = iTmp;
    else
        m_d.m_BulbLight = fFalse;
+   hr = GetRegInt("DefaultProps\\Light","ShowBulbMesh", &iTmp);
+   if ((hr == S_OK) && fromMouseClick)
+       m_d.m_showBulbMesh = iTmp;
+   else
+       m_d.m_showBulbMesh = fFalse;
 
+   hr = GetRegStringAsFloat("DefaultProps\\Light","ScaleBulbMesh", &fTmp);
+   if ((hr == S_OK) && fromMouseClick)
+       m_d.m_meshRadius = fTmp;
+   else
+       m_d.m_meshRadius = 20.0f;
 }
 
 void Light::WriteRegDefaults()
@@ -231,17 +212,15 @@ void Light::WriteRegDefaults()
    SetRegValue("DefaultProps\\Light","TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval, 4);
    SetRegValue("DefaultProps\\Light","Color",REG_DWORD,&m_d.m_color,4);
    SetRegValue("DefaultProps\\Light","OffImage", REG_SZ, &m_d.m_szOffImage,lstrlen(m_d.m_szOffImage));
-   SetRegValue("DefaultProps\\Light","OnImage", REG_SZ, &m_d.m_szOnImage, lstrlen(m_d.m_szOnImage));
-   SetRegValue("DefaultProps\\Light","DisplayImage", REG_DWORD, &m_d.m_fDisplayImage,4);
    SetRegValue("DefaultProps\\Light","BlinkPattern", REG_SZ, &m_rgblinkpattern, lstrlen(m_rgblinkpattern));
    SetRegValue("DefaultProps\\Light","BlinkInterval", REG_DWORD, &m_blinkinterval,4);
    SetRegValue("DefaultProps\\Light","BorderColor", REG_DWORD, &m_d.m_bordercolor,4);
    SetRegValue("DefaultProps\\Light","Surface", REG_SZ, &m_d.m_szSurface, lstrlen(m_d.m_szSurface));
-   SetRegValue("DefaultProps\\Light","EnableLighting", REG_DWORD, &m_d.m_EnableLighting,4);
-   SetRegValue("DefaultProps\\Light","EnableOffLighting", REG_DWORD, &m_d.m_EnableOffLighting,4);
    SetRegValueFloat("DefaultProps\\Light","FadeSpeed", m_d.m_fadeSpeed);
    SetRegValueFloat("DefaultProps\\Light","Intensity", m_d.m_intensity);
    SetRegValue("DefaultProps\\Light","Bulb", REG_DWORD, &m_d.m_BulbLight,4);
+   SetRegValue("DefaultProps\\Light","ShowBulbMesh", REG_DWORD, &m_d.m_showBulbMesh,4);
+   SetRegValueFloat("DefaultProps\\Light","ScaleBulbMesh", m_d.m_meshRadius);
 }
 
 Texture *Light::GetDisplayTexture()
@@ -249,7 +228,6 @@ Texture *Light::GetDisplayTexture()
     switch (m_d.m_state)
     {
         case LightStateOff: return m_ptable->GetImage(m_d.m_szOffImage);
-        case LightStateOn:  return m_ptable->GetImage(m_d.m_szOnImage);
         default:            return NULL;
     }
 }
@@ -259,8 +237,6 @@ void Light::PreRender(Sur * const psur)
    psur->SetBorderColor(-1,false,0);
    psur->SetFillColor(m_ptable->RenderSolid() ? m_d.m_color : -1);
    psur->SetObject(this);
-
-   Texture *ppi;
 
    // workaround for the old round light object
    // after loading m_roundLight is true if an pre VP10 table was loaded
@@ -278,16 +254,7 @@ void Light::PreRender(Sur * const psur)
        GetRgVertex(&vvertex);
 
        // Check if we should display the image in the editor.
-       if (m_ptable->RenderSolid() && m_d.m_fDisplayImage && (ppi = GetDisplayTexture()))
-       {
-           ppi->EnsureHBitmap();
-           if (ppi->m_hbmGDIVersion)
-               // Draw the polygon with an image applied.
-               psur->PolygonImage(vvertex, ppi->m_hbmGDIVersion,
-                   m_ptable->m_left, m_ptable->m_top, m_ptable->m_right, m_ptable->m_bottom, ppi->m_width, ppi->m_height);
-       }
-       else
-           psur->Polygon(vvertex);
+       psur->Polygon(vvertex);
 
        for (int i=0;i<vvertex.Size();i++)
            delete vvertex.ElementAt(i);
@@ -447,25 +414,30 @@ void Light::FreeBuffers()
       customVBuffer->release();
       customVBuffer=0;
    }
-   if( normalVBuffer )
-   {
-      normalVBuffer->release();
-      normalVBuffer=0;
-   }
    if( customMoverVBuffer )
    {
       customMoverVBuffer->release();
       customMoverVBuffer=0;
    }
-   if( normalMoverVBuffer )
+   if( bulbLightIndexBuffer )
    {
-      normalMoverVBuffer->release();
-      normalMoverVBuffer=0;
+       bulbLightIndexBuffer->release();
+       bulbLightIndexBuffer=0;
    }
-   if( m_pInsertShader )
+   if( bulbLightVBuffer )
    {
-      delete( m_pInsertShader );
-      m_pInsertShader=0;
+       bulbLightVBuffer->release();
+       bulbLightVBuffer=0;
+   }
+   if( bulbSocketIndexBuffer )
+   {
+       bulbSocketIndexBuffer->release();
+       bulbSocketIndexBuffer=0;
+   }
+   if( bulbSocketVBuffer )
+   {
+       bulbSocketVBuffer->release();
+       bulbSocketVBuffer=0;
    }
 }
 
@@ -483,8 +455,37 @@ void Light::ClearForOverwrite()
    ClearPointsForOverwrite();
 }
 
-//static const WORD rgiLightStatic0[3] = {0,1,2};
-static const WORD rgiLightStatic1[32] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31};
+void Light::RenderBulbMesh(RenderDevice *pd3dDevice, COLORREF color, bool isOn)
+{
+    pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelDeclaration );
+    pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
+    Material mat;
+    mat.m_cBase = 0;
+    mat.m_fWrapLighting=0.5f;
+    mat.m_bOpacityActive=false;
+    mat.m_fOpacity = 1.0f;
+    mat.m_cGlossy=0xFFB4B4B4;
+    mat.m_bIsMetal=false;
+    mat.m_fEdge=0.0f;
+    mat.m_fRoughness = 0.9f;
+    pd3dDevice->basicShader->SetMaterial(&mat);
+
+    pd3dDevice->basicShader->Begin(0);
+    pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, bulbSocketVBuffer, 0, bulbSocketNumVertices, bulbSocketIndexBuffer, 0, bulbSocketNumFaces );
+    pd3dDevice->basicShader->End();
+
+    mat.m_cBase = 0xFFA0A0A0;
+    mat.m_bOpacityActive=true;
+    mat.m_fOpacity = 0.6f;
+    mat.m_bIsMetal=false;
+    mat.m_fEdge=1.0f;
+    mat.m_cGlossy = 0xFF020202;
+    mat.m_fRoughness = 0.8f;
+    pd3dDevice->basicShader->SetMaterial(&mat);
+    pd3dDevice->basicShader->Begin(0);
+    pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, bulbLightVBuffer, 0, bulbLightNumVertices, bulbLightIndexBuffer, 0, bulbLightNumFaces );
+    pd3dDevice->basicShader->End();
+}
 
 void Light::PostRenderStatic(RenderDevice* pd3dDevice)
 {
@@ -509,37 +510,12 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
     const float g = (float)(m_d.m_color & 65280) * (float)(1.0/65280.0);
     const float b = (float)(m_d.m_color & 16711680) * (float)(1.0/16711680.0);
 
-    Texture* pin = NULL;
-    Material mtrl;
-    //ppin3d->DisableLightMap();
     if (!m_fBackglass)
     {
         float depthbias = -BASEDEPTHBIAS;
         pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, *((DWORD*)&depthbias));
     }
-    pd3dDevice->SetVertexDeclaration(pd3dDevice->m_pVertexNormalTexelTexelDeclaration);
-    if (surfaceMaterial)
-    {
-        pd3dDevice->basicShader->SetMaterial(surfaceMaterial);
-    }
-    ppin3d->EnableAlphaTestReference(1);        // don't alpha blend, but do honor transparent pixels
-    Texture *offTexel=NULL;
-    if ( !m_d.m_BulbLight )
-    {
-        if ((offTexel = m_ptable->GetImage(m_d.m_szOffImage)) != NULL)
-        {
-            pd3dDevice->basicShader->Core()->SetTechnique("light_with_texture");
-            pd3dDevice->basicShader->SetTexture("Texture0", offTexel );
-        }
-        else
-        {
-            pd3dDevice->basicShader->Core()->SetTechnique("light_without_texture");
-        }
-    }
-    else
-    {
-        pd3dDevice->basicShader->Core()->SetTechnique("bulb_light");
-    }
+    //ppin3d->EnableAlphaTestReference(1);        // don't alpha blend, but do honor transparent pixels
     UINT cPasses=0;
     D3DXVECTOR4 center(m_d.m_vCenter.x, m_d.m_vCenter.y, m_surfaceHeight+0.05f, 0.0f);
     D3DXVECTOR4 diffColor(r,g,b,1.0f);
@@ -565,13 +541,33 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
        }
     }
     pd3dDevice->basicShader->Core()->SetFloat("intensity",m_d.m_currentIntensity);
-    pd3dDevice->basicShader->Core()->Begin(&cPasses,0);
-    pd3dDevice->basicShader->Core()->BeginPass(0);
+    Texture *offTexel=NULL;
+    if ( !m_d.m_BulbLight )
+    {
+        if (surfaceMaterial)
+        {
+            pd3dDevice->basicShader->SetMaterial(surfaceMaterial);
+        }
+        if ((offTexel = m_ptable->GetImage(m_d.m_szOffImage)) != NULL)
+        {
+            pd3dDevice->basicShader->Core()->SetTechnique("light_with_texture");
+            pd3dDevice->basicShader->SetTexture("Texture0", offTexel );
+        }
+        else
+        {
+            pd3dDevice->basicShader->Core()->SetTechnique("light_without_texture");
+        }
+    }
+    else
+    {
+        pd3dDevice->basicShader->Core()->SetTechnique("bulb_light");
+    }
+    pd3dDevice->SetVertexDeclaration(pd3dDevice->m_pVertexNormalTexelTexelDeclaration);
 
+    pd3dDevice->basicShader->Begin(0);
     pd3dDevice->DrawPrimitiveVB(D3DPT_TRIANGLELIST, customMoverVBuffer, 0, customMoverVertexNum);
+    pd3dDevice->basicShader->End();
 
-    pd3dDevice->basicShader->Core()->EndPass();
-    pd3dDevice->basicShader->Core()->End();
 
     pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
     pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, FALSE);
@@ -700,7 +696,11 @@ void Light::PrepareMoversCustom()
    Vector<Triangle> vtri;
    PolygonToTriangles(vvertex, &vpoly, &vtri);
 
-   const float height = m_surfaceHeight;
+   float height = m_surfaceHeight;
+   if ( m_d.m_BulbLight && m_d.m_showBulbMesh )
+   {
+       height += ((1.4f*m_d.m_meshRadius)*m_ptable->m_zScale);
+   }
 
    Vertex3D *customMoverVertex[2];
 
@@ -722,11 +722,7 @@ void Light::PrepareMoversCustom()
    for(int i=0; i<2; i++)
    {
       Texture* pin = NULL;
-      if(i == LightStateOff ) 
-         pin = m_ptable->GetImage(m_d.m_szOffImage);
-	  else
-      if(i == LightStateOn ) 
-         pin = m_ptable->GetImage(m_d.m_szOnImage);
+      pin = m_ptable->GetImage(m_d.m_szOffImage);
 
       int k=0;
       for (int t=0;t<vtri.Size();t++,k+=3)
@@ -835,66 +831,74 @@ void Light::RenderSetup(RenderDevice* pd3dDevice)
 
     const bool isOn = (m_realState == LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : !!m_realState;
     if( isOn )
+    {
        m_d.m_currentIntensity = m_d.m_intensity;
+    }
     else
        m_d.m_currentIntensity = 0.0f;
 
-/*
-    if( m_pInsertShader==NULL )
-    {
-      m_pInsertShader = new Shader(g_pplayer->m_pin3d.m_pd3dDevice);
-      m_pInsertShader->Load(lightInsertShaderCode, sizeof(lightInsertShaderCode));
-
-      D3DMATRIX worldMat;
-      D3DMATRIX viewMat;
-      D3DMATRIX projMat;
-      g_pplayer->m_pin3d.m_pd3dDevice->GetTransform(TRANSFORMSTATE_WORLD, &worldMat );
-      g_pplayer->m_pin3d.m_pd3dDevice->GetTransform(TRANSFORMSTATE_VIEW, &viewMat);
-      g_pplayer->m_pin3d.m_pd3dDevice->GetTransform(TRANSFORMSTATE_PROJECTION, &projMat);
-
-      D3DXMATRIX matProj(projMat);
-      D3DXMATRIX matView(viewMat);
-      D3DXMATRIX matWorld(worldMat);
-      D3DXMATRIX worldViewProj = matWorld * matView * matProj;
-
-      m_pInsertShader->Core()->SetMatrix("matWorldViewProj", &worldViewProj);
-      m_pInsertShader->Core()->SetMatrix("matWorld",  &matView);
-      D3DXVECTOR4 cam( worldViewProj._41, worldViewProj._42, worldViewProj._43, 1 );
-      m_pInsertShader->Core()->SetVector("camera", &cam);
-    }
-*/
-
     m_d.m_currentIntensity = 0.0f;
+
+    if ( m_d.m_BulbLight && m_d.m_showBulbMesh )
+    {
+        std::vector<WORD> indices(bulbLightNumFaces);
+        Vertex3D_NoTex2 *buf;
+        for( int i=0;i<bulbLightNumFaces;i++ ) indices[i] = bulbLightIndices[i];
+        if (bulbLightIndexBuffer)
+            bulbLightIndexBuffer->release();
+        bulbLightIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer( indices );
+
+        if (!bulbLightVBuffer)
+            pd3dDevice->CreateVertexBuffer(bulbLightNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &bulbLightVBuffer);
+
+        bulbLightVBuffer->lock(0, 0, (void**)&buf, 0);
+        for( int i=0;i<bulbLightNumVertices;i++ )
+        {
+            buf[i].x = (bulbLight[i].x*m_d.m_meshRadius)+m_d.m_vCenter.x;
+            buf[i].y = (bulbLight[i].y*m_d.m_meshRadius)+m_d.m_vCenter.y;
+            buf[i].z = (bulbLight[i].z*m_d.m_meshRadius*m_ptable->m_zScale);
+            buf[i].z += m_surfaceHeight;
+            buf[i].nx = bulbLight[i].nx;
+            buf[i].ny = bulbLight[i].ny;
+            buf[i].nz = bulbLight[i].nz;
+            buf[i].tu = bulbLight[i].tu;
+            buf[i].tv = bulbLight[i].tv;
+        }
+        bulbLightVBuffer->unlock();
+        indices.clear();
+        indices.resize(bulbSocketNumFaces);
+        for( int i=0;i<bulbSocketNumFaces;i++ ) indices[i] = bulbSocketIndices[i];
+        if (bulbSocketIndexBuffer)
+            bulbSocketIndexBuffer->release();
+        bulbSocketIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer( indices );
+
+        if (!bulbSocketVBuffer)
+            pd3dDevice->CreateVertexBuffer(bulbSocketNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &bulbSocketVBuffer);
+
+        bulbSocketVBuffer->lock(0, 0, (void**)&buf, 0);
+        for( int i=0;i<bulbSocketNumVertices;i++ )
+        {
+            buf[i].x = (bulbSocket[i].x*m_d.m_meshRadius)+m_d.m_vCenter.x;
+            buf[i].y = (bulbSocket[i].y*m_d.m_meshRadius)+m_d.m_vCenter.y;
+            buf[i].z = (bulbSocket[i].z*m_d.m_meshRadius*m_ptable->m_zScale);
+            buf[i].z += m_surfaceHeight;
+            buf[i].nx = bulbSocket[i].nx;
+            buf[i].ny = bulbSocket[i].ny;
+            buf[i].nz = bulbSocket[i].nz;
+            buf[i].tu = bulbSocket[i].tu;
+            buf[i].tv = bulbSocket[i].tv;
+        }
+        bulbSocketVBuffer->unlock();
+    }
     PrepareStaticCustom();
     PrepareMoversCustom();
+
 }
 
 void Light::RenderStatic(RenderDevice* pd3dDevice)
 {
-/*
-    if (m_d.m_borderwidth > 0)
-    {
-        const float height = m_surfaceHeight;
-        Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-        if (!m_fBackglass)
-            ppin3d->EnableLightMap(height);
-
-        Material mtrl;
-        mtrl.setColor( 1.0f, m_d.m_bordercolor );
-
-        pd3dDevice->SetMaterial(mtrl);
-
-        if((!m_fBackglass) || GetPTable()->GetDecalsEnabled())
-        {
-            if(m_d.m_shape == ShapeCustom)
-                pd3dDevice->DrawPrimitiveVB(D3DPT_TRIANGLELIST, customVBuffer, 0, staticCustomVertexNum);
-            else
-                pd3dDevice->DrawPrimitiveVB(D3DPT_TRIANGLEFAN, normalVBuffer, 0, 32 );
-        }
-
-        ppin3d->DisableLightMap();
-    }
-*/
+    if ( m_d.m_BulbLight && m_d.m_showBulbMesh)
+        RenderBulbMesh(pd3dDevice,0,false);
 }
 
 void Light::SetObjectPos()
@@ -927,22 +931,20 @@ HRESULT Light::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptke
    bw.WriteInt(FID(STAT), m_d.m_state);
    bw.WriteInt(FID(COLR), m_d.m_color);
    bw.WriteBool(FID(TMON), m_d.m_tdr.m_fTimerEnabled);
-   bw.WriteBool(FID(DISP), m_d.m_fDisplayImage);
    bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
    bw.WriteString(FID(BPAT), m_rgblinkpattern);
    bw.WriteString(FID(IMG1), m_d.m_szOffImage);
-   bw.WriteString(FID(IMG2), m_d.m_szOnImage);
    bw.WriteInt(FID(BINT), m_blinkinterval);
    bw.WriteInt(FID(BCOL), m_d.m_bordercolor);
    bw.WriteFloat(FID(BWTH), m_d.m_intensity);
    bw.WriteString(FID(SURF), m_d.m_szSurface);
    bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
    bw.WriteBool(FID(BGLS), m_fBackglass);
-   bw.WriteBool(FID(ENLI), m_d.m_EnableLighting);
-   bw.WriteBool(FID(ENOL), m_d.m_EnableOffLighting);
    bw.WriteFloat(FID(LIDB), m_d.m_depthBias);
    bw.WriteFloat(FID(FASP), m_d.m_fadeSpeed);
    bw.WriteBool(FID(BULT), m_d.m_BulbLight);
+   bw.WriteBool(FID(SHBM), m_d.m_showBulbMesh);
+   bw.WriteFloat(FID(BMSC), m_d.m_meshRadius);
 
    ISelect::SaveData(pstm, hcrypthash, hcryptkey);
 
@@ -981,9 +983,6 @@ HRESULT Light::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, 
    m_fLockedByLS = false;			//>>> added by chris
    m_realState	= m_d.m_state;		//>>> added by chris
 
-   m_d.m_EnableLighting = fTrue;
-   m_d.m_EnableOffLighting = fTrue;
-
    br.Load();
    return S_OK;
 }
@@ -1015,17 +1014,9 @@ BOOL Light::LoadToken(int id, BiffReader *pbr)
    {
       pbr->GetString(m_d.m_szOffImage);
    }
-   else if (id == FID(IMG2))
-   {
-      pbr->GetString(m_d.m_szOnImage);
-   }
    else if (id == FID(TMON))
    {
       pbr->GetBool(&m_d.m_tdr.m_fTimerEnabled);
-   }
-   else if (id == FID(DISP))
-   {
-      pbr->GetBool(&m_d.m_fDisplayImage);
    }
    else if (id == FID(TMIN))
    {
@@ -1063,14 +1054,6 @@ BOOL Light::LoadToken(int id, BiffReader *pbr)
    {
       pbr->GetBool(&m_fBackglass);
    }
-   if (id == FID(ENLI))
-   {
-      pbr->GetBool(&m_d.m_EnableLighting);
-   }
-   else if (id == FID(ENOL))
-   {
-      pbr->GetBool(&m_d.m_EnableOffLighting);
-   }
    else if (id == FID(LIDB))
    {
       pbr->GetFloat(&m_d.m_depthBias);
@@ -1082,6 +1065,14 @@ BOOL Light::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(BULT))
    {
        pbr->GetBool(&m_d.m_BulbLight);
+   }
+   else if (id == FID(SHBM))
+   {
+       pbr->GetBool(&m_d.m_showBulbMesh);
+   }
+   else if (id == FID(BMSC))
+   {
+       pbr->GetFloat(&m_d.m_meshRadius);
    }
    else
    {
@@ -1501,84 +1492,6 @@ STDMETHODIMP Light::put_OffImage(BSTR newVal)
    return S_OK;
 }
 
-
-
-STDMETHODIMP Light::get_OnImage(BSTR *pVal)
-{
-   WCHAR wz[512];
-
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szOnImage, -1, wz, 32);
-   *pVal = SysAllocString(wz);
-
-   return S_OK;
-}
-
-STDMETHODIMP Light::put_OnImage(BSTR newVal)
-{
-   STARTUNDO
-
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szOnImage, 32, NULL, NULL);
-
-   STOPUNDO
-
-   return S_OK;
-}
-
-STDMETHODIMP Light::get_DisplayImage(VARIANT_BOOL *pVal)
-{
-   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fDisplayImage);
-
-   return S_OK;
-}
-
-STDMETHODIMP Light::put_DisplayImage(VARIANT_BOOL newVal)
-{
-   STARTUNDO
-
-   m_d.m_fDisplayImage = VBTOF(newVal);
-
-   STOPUNDO
-
-   return S_OK;
-}
-
-STDMETHODIMP Light::get_EnableLighting(int *pVal)
-{
-   *pVal = m_d.m_EnableLighting;
-
-   return S_OK;
-}
-
-STDMETHODIMP Light::put_EnableLighting(int newVal)
-{
-   STARTUNDO
-
-   m_d.m_EnableLighting = newVal;
-
-   STOPUNDO
-
-   return S_OK;
-}
-
-STDMETHODIMP Light::get_EnableOffLighting(int *pVal)
-{
-   *pVal = m_d.m_EnableOffLighting;
-
-   return S_OK;
-}
-
-STDMETHODIMP Light::put_EnableOffLighting(int newVal)
-{
-   STARTUNDO
-
-      m_d.m_EnableOffLighting = newVal;
-
-   STOPUNDO
-
-      return S_OK;
-}
-
-
 STDMETHODIMP Light::get_DepthBias(float *pVal)
 {
    *pVal = m_d.m_depthBias;
@@ -1630,7 +1543,43 @@ STDMETHODIMP Light::put_Bulb(int newVal)
 
     STOPUNDO
 
+        return S_OK;
+}
+
+STDMETHODIMP Light::get_ShowBulbMesh(int *pVal)
+{
+    *pVal = m_d.m_showBulbMesh;
+
     return S_OK;
+}
+
+STDMETHODIMP Light::put_ShowBulbMesh(int newVal)
+{
+    STARTUNDO
+
+        m_d.m_showBulbMesh = newVal;
+
+    STOPUNDO
+
+        return S_OK;
+}
+
+STDMETHODIMP Light::get_ScaleBulbMesh(float *pVal)
+{
+    *pVal = m_d.m_meshRadius;
+
+    return S_OK;
+}
+
+STDMETHODIMP Light::put_ScaleBulbMesh(float newVal)
+{
+    STARTUNDO
+
+        m_d.m_meshRadius = newVal;
+
+    STOPUNDO
+
+        return S_OK;
 }
 
 void Light::GetDialogPanes(Vector<PropertyPane> *pvproppane)
