@@ -235,18 +235,13 @@ void Textbox::PostRenderStatic(RenderDevice* pd3dDevice)
     ppin3d->SetBaseTexture(ePictureTexture, m_texture);
 
     ppin3d->SetTextureFilter(ePictureTexture, TEXTURE_MODE_BILINEAR);
-    ppin3d->EnableAlphaTestReference(0x80);
-
-    pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR); // default tfactor: 1,1,1,1
 
     pd3dDevice->DrawPrimitive( D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_NOTEX2_VERTEX, rgv3D, 4);
 
     // reset render state
-    ppin3d->DisableAlphaBlend();
     pd3dDevice->SetTexture(ePictureTexture, NULL);
     ppin3d->SetTextureFilter(ePictureTexture, TEXTURE_MODE_TRILINEAR);
     pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_WRAP);
-    pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
 }
 
 void Textbox::RenderSetup(RenderDevice* pd3dDevice)

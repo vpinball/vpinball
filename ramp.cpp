@@ -1074,8 +1074,6 @@ bool Ramp::isHabitrail() const
 
 void Ramp::RenderStaticHabitrail(RenderDevice* pd3dDevice)
 {
-   pd3dDevice->SetRenderState(RenderDevice::SPECULARENABLE, TRUE);
-   
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
    Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
 
@@ -1104,10 +1102,6 @@ void Ramp::RenderStaticHabitrail(RenderDevice* pd3dDevice)
          RenderPolygons(pd3dDevice, offset, (WORD*)rgicrosssection, 24, 32);
    }
    pd3dDevice->basicShader->End();  
-
-   pd3dDevice->SetRenderState(RenderDevice::SPECULARENABLE, FALSE);
-   if ( !pin )
-       pd3dDevice->basicShader->Core()->SetBool("bSpecular", false);
 }
 
 void Ramp::RenderPolygons(RenderDevice* pd3dDevice, int offset, WORD * const rgi, const int start, const int stop)
@@ -1641,7 +1635,6 @@ void Ramp::RenderStatic(RenderDevice* pd3dDevice)
 
       ppin3d->SetTexture(NULL);
 
-      pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
       pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", false);
       ppin3d->DisableAlphaBlend();
 

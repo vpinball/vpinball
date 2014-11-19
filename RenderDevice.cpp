@@ -102,13 +102,10 @@ static unsigned int fvfToSize(DWORD fvf)
         case MY_D3DFVF_VERTEX:
         case MY_D3DTRANSFORMED_VERTEX:
             return sizeof(Vertex3D);
-        case MY_D3DFVF_NOLIGHTING_VERTEX:
-            return sizeof(Vertex3D_NoLighting);
         case MY_D3DFVF_NOTEX2_VERTEX:
         case MY_D3DTRANSFORMED_NOTEX2_VERTEX:
             return sizeof(Vertex3D_NoTex2);
         case MY_D3DFVF_NOTEX_VERTEX:
-        case MY_D3DTRANSFORMED_NOTEX_VERTEX:
             return sizeof(Vertex3D_NoTex);
 		case MY_D3DFVF_TEX:
 			return 5*sizeof(float);
@@ -477,11 +474,6 @@ void RenderDevice::CreatePixelShader( const char* shader )
 void RenderDevice::SetPixelShaderConstants(const float* constantData, const unsigned int numFloat4s)
 {
     m_pD3DDevice->SetPixelShaderConstantF(0, constantData, numFloat4s);
-}
-
-void RenderDevice::RevertPixelShaderToFixedFunction()
-{
-    m_pD3DDevice->SetPixelShader( NULL );
 }
 
 static void FlushGPUCommandBuffer(IDirect3DDevice9* pd3dDevice)

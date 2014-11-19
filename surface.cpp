@@ -1116,7 +1116,6 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
     g_pplayer->m_pin3d.DisableAlphaBlend();
     pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", false);
     pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
-    pd3dDevice->SetRenderState(RenderDevice::LIGHTING, TRUE);
 }
 
 void Surface::DoCommand(int icmd, int x, int y)

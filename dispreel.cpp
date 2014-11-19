@@ -449,6 +449,7 @@ void DispReel::PostRenderStatic(RenderDevice* pd3dDevice)
         // reset render state
 
         pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, FALSE);
+		pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, 1);
 
         pd3dDevice->SetTexture(ePictureTexture, NULL);
         ppin3d->SetTextureFilter(ePictureTexture, TEXTURE_MODE_TRILINEAR);

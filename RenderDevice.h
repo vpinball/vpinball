@@ -217,12 +217,10 @@ public:
       CULLMODE           = D3DRS_CULLMODE,
       DESTBLEND          = D3DRS_DESTBLEND,
       LIGHTING           = D3DRS_LIGHTING,
-      SPECULARENABLE     = D3DRS_SPECULARENABLE,
       SRCBLEND           = D3DRS_SRCBLEND,
       ZENABLE            = D3DRS_ZENABLE,
       ZFUNC              = D3DRS_ZFUNC,
       ZWRITEENABLE       = D3DRS_ZWRITEENABLE,
-	  NORMALIZENORMALS   = D3DRS_NORMALIZENORMALS,
       TEXTUREFACTOR      = D3DRS_TEXTUREFACTOR,
       DEPTHBIAS          = D3DRS_DEPTHBIAS,
       COLORWRITEENABLE   = D3DRS_COLORWRITEENABLE
@@ -289,8 +287,6 @@ public:
 
    void CreatePixelShader( const char* shader );
    void SetPixelShaderConstants(const float* constantData, const unsigned int numFloat4s);
-
-   void RevertPixelShaderToFixedFunction();
 
    void ForceAnisotropicFiltering( const bool enable ) { m_force_aniso = enable; }
 

@@ -238,7 +238,6 @@ technique basic_without_texture
 { 
    pass P0 
    { 
-      //SPECULARENABLE = (bSpecular);
       VertexShader = compile vs_3_0 vs_main(); 
 	  PixelShader = compile ps_3_0 ps_main();
    } 
@@ -248,7 +247,6 @@ technique basic_with_texture
 { 
    pass P0 
    { 
-      //SPECULARENABLE = (bSpecular);
       VertexShader = compile vs_3_0 vs_main(); 
 	  PixelShader = compile ps_3_0 ps_main_texture();
    } 
@@ -284,7 +282,6 @@ technique light_with_texture
 { 
    pass P0 
    { 
-      //SPECULARENABLE = (bSpecular);
       VertexShader = compile vs_3_0 vs_light_main(); 
 	  PixelShader = compile ps_3_0 PS_LightWithTexel();
    } 
@@ -294,7 +291,6 @@ technique light_without_texture
 { 
    pass P0 
    { 
-      //SPECULARENABLE = (bSpecular);
       VertexShader = compile vs_3_0 vs_light_main(); 
 	  PixelShader = compile ps_3_0 PS_LightWithoutTexel();
    } 
