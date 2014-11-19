@@ -59,8 +59,8 @@ float4 ps_main_texture(in VS_OUTPUT IN) : COLOR
    if (bPerformAlphaTest && pixel.a<=fAlphaTestValue )
     clip(-1);           //stop the pixel shader if alpha test should reject pixel
    float3 t = InvGamma(pixel.xyz);
-   float3 diffuse  = t;
-   float3 glossy   = bIsMetal ? t : t*cGlossy*0.08f; //!! use AO for glossy? specular?
+   float3 diffuse  = t*cBase;
+   float3 glossy   = bIsMetal ? diffuse : t*cGlossy*0.08f; //!! use AO for glossy? specular?
    float3 specular = cClearcoat*0.08f;
    float3 edge = bIsMetal ? float3(1,1,1) : float3(fEdge,fEdge,fEdge);
 
@@ -174,8 +174,8 @@ float4 PS_LightWithTexel(in VS_LIGHT_OUTPUT IN ) : COLOR
     float4 pixel = tex2D(texSampler0, IN.tex0);  
     float3 t = InvGamma(pixel.xyz);
 
-    float3 diffuse  = t;
-    float3 glossy   = bIsMetal ? t : t*cGlossy*0.08f;
+    float3 diffuse  = t*cBase;
+    float3 glossy   = bIsMetal ? diffuse : t*cGlossy*0.08f;
     float3 specular = cClearcoat*0.08f;
 	float3 edge = bIsMetal ? float3(1,1,1) : float3(fEdge,fEdge,fEdge);
 
@@ -258,7 +258,7 @@ technique basic_with_textureOne_noLight
 { 
    pass P0 
    { 
-     VertexShader = compile vs_3_0 vs_simple_main(); 
+      VertexShader = compile vs_3_0 vs_simple_main(); 
 	  PixelShader = compile ps_3_0 ps_main_textureOne_noLight();
    } 
 }
@@ -267,7 +267,7 @@ technique basic_with_textureAB_noLight
 { 
    pass P0 
    { 
-     VertexShader = compile vs_3_0 vs_simple_main(); 
+      VertexShader = compile vs_3_0 vs_simple_main(); 
 	  PixelShader = compile ps_3_0 ps_main_textureAB_noLight();
    } 
 }
@@ -275,7 +275,7 @@ technique basic_with_noLight
 { 
    pass P0 
    { 
-     VertexShader = compile vs_3_0 vs_simple_main(); 
+      VertexShader = compile vs_3_0 vs_simple_main(); 
 	  PixelShader = compile ps_3_0 ps_main_noLight();
    } 
 }
