@@ -179,14 +179,12 @@ float4 PS_LightWithTexel(in VS_LIGHT_OUTPUT IN ) : COLOR
     float3 specular = cClearcoat*0.08f;
 	float3 edge = bIsMetal ? float3(1,1,1) : float3(fEdge,fEdge,fEdge);
 
-	float len = length(lightCenter.xyz-IN.tablePos.xyz);
-	float f=0;//maxRange*0.01;
-	float intens = 1.0f-saturate((len-f)/max(maxRange,0.1f));
-	
-	intens *= intens;
-	float4 result = saturate((lightColor*intens)*intensity);
-	result *=1.1f;
-	result.a = intens;
+	float len = length(lightCenter.xyz-IN.tablePos.xyz)/max(maxRange,0.1f);
+    float atten = 1.0f-saturate(len);
+    atten*=atten;
+	float4 lcolor = lerp(float4(1.0f,1.0f,1.0f,1.0f),lightColor, pow(len,0.5f));
+	float4 result = saturate((lcolor*atten)*intensity);	
+	result.a = atten;	
 	
     float4 color = lightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular, edge); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
     color.a *= fmaterialAlpha;
@@ -203,15 +201,13 @@ float4 PS_LightWithoutTexel(in VS_LIGHT_OUTPUT IN ) : COLOR
     float3 specular = cClearcoat*0.08f;
 	float3 edge = bIsMetal ? float3(1,1,1) : float3(fEdge, fEdge, fEdge);
 
-	float len = length(lightCenter.xyz-IN.tablePos.xyz);
-	float f=0;//maxRange*0.01;
-	float intens = 1.0f-saturate((len-f)/max(maxRange,0.1f));
+	float len = length(lightCenter.xyz-IN.tablePos.xyz)/max(maxRange,0.1f);
+    float atten = 1.0f-saturate(len);
+    atten*=atten;
+	float4 lcolor = lerp(float4(1.0f,1.0f,1.0f,1.0f),lightColor, pow(len,0.5f));
+	float4 result = saturate((lcolor*atten)*intensity);	
+	result.a = atten;	
 	
-	intens *= intens;
-	float4 result = saturate((lightColor*intens)*intensity);	
-    result *=1.1f;
-
-	result.a = intens;	
     float4 color=lightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular, edge); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
     color.a *= fmaterialAlpha;
     color += result;
@@ -221,13 +217,12 @@ float4 PS_LightWithoutTexel(in VS_LIGHT_OUTPUT IN ) : COLOR
 
 float4 PS_BulbLight( in VS_LIGHT_OUTPUT IN ) : COLOR
 {
-	float len = length(lightCenter.xyz-IN.tablePos.xyz);
-	float f=0;//maxRange*0.01;
-	float intens = 1.0f-saturate((len-f)/maxRange);
-	
-	intens *= intens;
-	float4 result = saturate((lightColor*intens)*intensity);	
-	result.a = intens;	
+	float len = length(lightCenter.xyz-IN.tablePos.xyz)/max(maxRange,0.1f);
+    float atten = 1.0f-saturate(len);
+    atten*=atten;
+	float4 color = lerp(float4(1.0f,1.0f,1.0f,1.0f),lightColor, pow(len,0.5f));
+	float4 result = saturate((color*atten)*intensity);	
+	result.a = atten;	
 	return result;
 }
 

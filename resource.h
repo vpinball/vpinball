@@ -568,6 +568,7 @@
 #define IDC_ENABLED                     394
 #define IDC_FLIPPER_ENABLED             394
 #define IDC_DIFFUSE_CHECK               394
+#define IDC_SHOW_BULB_MESH              394
 #define IDC_PRIMITIVE_IS_TOY            395
 #define IDC_ENABLE_FXAA                 395
 #define IDR_REGISTRY4                   395
@@ -631,6 +632,7 @@
 #define IDC_FORCE_ANISO                 425
 #define IDC_EDIT3                       425
 #define IDC_WIRE_DISTY                  425
+#define IDC_SCALE_BULB_MESH             425
 #define IDC_QFXAA                       426
 #define IDC_MATERIAL_COMBO3             426
 #define IDC_GLOBAL_3DSTEREO             427
