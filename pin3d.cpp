@@ -44,9 +44,6 @@ Pin3D::~Pin3D()
    }
    m_device_envRadianceTexture = NULL;
 
-   lightTexture[0].FreeStuff();
-   lightTexture[1].FreeStuff();
-
 	if(backgroundVBuffer)
 		backgroundVBuffer->release();
     if (tableVBuffer)
@@ -219,12 +216,7 @@ HRESULT Pin3D::InitPin3D(const HWND hwnd, const bool fFullScreen, const int scre
 	
 	m_device_envRadianceTexture = m_pd3dDevice->m_texMan.LoadTexture(m_envRadianceTexture);
 	m_pd3dDevice->m_texMan.SetDirty(m_envRadianceTexture);
-
-    lightTexture[0].CreateFromResource(IDB_SUNBURST);
-    lightTexture[0].SetAlpha(RGB(0,0,0));
-
-    lightTexture[1].CreateFromResource(IDB_SUNBURST2);
-    lightTexture[1].SetAlpha(RGB(0,0,0));
+	
 
     m_pddsLightWhite.CreateFromResource(IDB_WHITE);
     m_pddsLightWhite.SetAlpha(RGB(0,0,0));
@@ -261,9 +253,9 @@ void Pin3D::SetRenderTarget(RenderTarget* pddsSurface, RenderTarget* pddsZ) cons
 
 void Pin3D::InitRenderState() 
 {
-	g_pplayer->m_pin3d.EnableAlphaBlend(1, false);
+	g_pplayer->m_pin3d.DisableAlphaBlend();
 
-	m_pd3dDevice->SetRenderState(RenderDevice::SPECULARENABLE, FALSE);
+	m_pd3dDevice->SetRenderState(RenderDevice::LIGHTING, FALSE);
 
 	m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, TRUE);
 	m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
@@ -271,8 +263,6 @@ void Pin3D::InitRenderState()
 
 	m_pd3dDevice->SetRenderState( RenderDevice::CLIPPING, FALSE );
 	m_pd3dDevice->SetRenderState( RenderDevice::CLIPPLANEENABLE, 0 );
-
-	m_pd3dDevice->SetRenderState( RenderDevice::NORMALIZENORMALS, TRUE );
 
     // initialize first texture stage
     m_pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_CLAMP/*WRAP*/);
@@ -282,7 +272,7 @@ void Pin3D::InitRenderState()
 	m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_TEXCOORDINDEX, 0);
 	m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLOROP, D3DTOP_MODULATE);
 	m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG1, D3DTA_TEXTURE);
-	m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
+	m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR); // default tfactor: 1,1,1,1
 	m_pd3dDevice->SetTexture(ePictureTexture, NULL);
 
     // initialize second texture stage (light map)
@@ -340,13 +330,11 @@ void Pin3D::DrawBackground()
 		m_pd3dDevice->Clear( 0, NULL, D3DCLEAR_ZBUFFER, 0, 1.0f, 0L );
 
 		m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
-        m_pd3dDevice->SetRenderState(RenderDevice::LIGHTING, FALSE);
 
 		SetTexture(pin);
 		m_pd3dDevice->DrawPrimitiveVB(D3DPT_TRIANGLEFAN, backgroundVBuffer, 0, 4);
 
 		m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-        m_pd3dDevice->SetRenderState(RenderDevice::LIGHTING, TRUE);
 	}
 	else
 	{
@@ -390,8 +378,6 @@ void Pin3D::InitLights()
     m_pd3dDevice->basicShader->Core()->SetValue(tmp, (void*)&amb_rgb, sizeof(float)*3);
     sprintf_s(tmp,"flightRange");
     m_pd3dDevice->basicShader->Core()->SetValue(tmp, (void*)&g_pplayer->m_ptable->m_lightRange, sizeof(float));
-
-	m_pd3dDevice->SetRenderState(RenderDevice::LIGHTING, TRUE);
 }
 
 // currently unused
@@ -679,7 +665,7 @@ void Pin3D::DisableLightMap()
     m_pd3dDevice->SetTexture(eLightProject1, NULL);
 }
 
-void Pin3D::EnableAlphaTestReference(DWORD alphaRefValue) const
+void Pin3D::EnableAlphaTestReference(const DWORD alphaRefValue) const
 {
 	m_pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, alphaRefValue);
 	m_pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE); 
@@ -688,13 +674,11 @@ void Pin3D::EnableAlphaTestReference(DWORD alphaRefValue) const
 
 void Pin3D::EnableAlphaBlend( const DWORD alphaRefValue, const bool additiveBlending ) const
 {
-	if(alphaRefValue != 1)
+	//if(alphaRefValue != 1) //!! ?? what makes more sense?
 		EnableAlphaTestReference(alphaRefValue);
 	m_pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
 	m_pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
 	m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, additiveBlending ? D3DBLEND_ONE : D3DBLEND_INVSRCALPHA);
-	if(additiveBlending)
-		m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR); // factor is 1,1,1,1
 }
 
 void Pin3D::DisableAlphaBlend()

@@ -294,7 +294,6 @@ void Plunger::PostRenderStatic(RenderDevice* pd3dDevice)
             pd3dDevice->basicShader->Begin(0);
             pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, vertexBuffer, frame*4, 4, (LPWORD)idx, 6);
             pd3dDevice->basicShader->End();
-            pd3dDevice->SetRenderState(RenderDevice::LIGHTING, TRUE );
         }
         else
         {
@@ -325,7 +324,6 @@ void Plunger::PostRenderStatic(RenderDevice* pd3dDevice)
         pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, vertexBuffer, frame*(16*PLUNGEPOINTS0), 16*PLUNGEPOINTS0, indexBuffer, 0, 16*6*(PLUNGEPOINTS0-1));
         pd3dDevice->basicShader->End();
     }
-    pd3dDevice->basicShader->Core()->SetBool("bSpecular",false);
 }
 
 const float rgcrossplunger0[][2] =

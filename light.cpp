@@ -577,7 +577,6 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
     pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, FALSE);
 
     pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-    pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
 }
 
 void Light::PrepareStaticCustom()

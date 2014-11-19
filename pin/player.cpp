@@ -1040,7 +1040,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 
 #ifdef DEBUG_BALL_SPIN
     {
-        std::vector< Vertex3D_NoLighting > ballDbgVtx;
+        std::vector< Vertex3D_TexelOnly > ballDbgVtx;
         for (int j = -1; j <= 1; ++j)
         {
             const int numPts = (j==0) ? 6 : 3;
@@ -1048,16 +1048,15 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
             for (int i = 0; i < numPts; ++i)
             {
                 const float phi = (float)(i * 2 * M_PI / numPts);
-                Vertex3D_NoLighting vtx;
+                Vertex3D_TexelOnly vtx;
                 vtx.x = 25.0f * cosf(theta) * cosf(phi);
                 vtx.y = 25.0f * cosf(theta) * sinf(phi);
                 vtx.z = 25.0f * sinf(theta);
-                vtx.color = 0xFF00FF00;
                 ballDbgVtx.push_back(vtx);
             }
         }
 
-        m_pin3d.m_pd3dDevice->CreateVertexBuffer( ballDbgVtx.size(), 0, MY_D3DFVF_NOLIGHTING_VERTEX, &m_ballDebugPoints );
+        m_pin3d.m_pd3dDevice->CreateVertexBuffer( ballDbgVtx.size(), 0, MY_D3DFVF_TEX, &m_ballDebugPoints );
         void *buf;
         m_ballDebugPoints->lock(0, 0, &buf, 0);
         memcpy(buf, &ballDbgVtx[0], ballDbgVtx.size() * sizeof(ballDbgVtx[0]));
@@ -2180,8 +2179,6 @@ void Player::RenderDynamics()
    // Start rendering the next frame.
    m_pin3d.m_pd3dDevice->BeginScene();
 
-   m_pin3d.m_pd3dDevice->SetRenderState( RenderDevice::NORMALIZENORMALS, TRUE );
-
    // Check if we are debugging balls
    if (m_ToggleDebugBalls)
    {
@@ -2219,8 +2216,6 @@ void Player::RenderDynamics()
    mixer_draw();
    // Debug draw of plumb.
    plumb_draw();
-
-   m_pin3d.m_pd3dDevice->SetRenderState( RenderDevice::NORMALIZENORMALS, TRUE );
 
    // Finish rendering the next frame.
    m_pin3d.m_pd3dDevice->EndScene();
@@ -2269,7 +2264,6 @@ void Player::FlipVideoBuffers3DFXAA( const bool vsync ) //!! SMAA, luma sharpen,
 
 	m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
     m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
-    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::LIGHTING, FALSE);
     m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, FALSE);
 
 	m_pin3d.m_pd3dDevice->SetTexture(0,m_pin3d.m_pdds3DBackBuffer);
@@ -2307,8 +2301,6 @@ void Player::FlipVideoBuffers3DFXAA( const bool vsync ) //!! SMAA, luma sharpen,
 	}
     m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_TEX, (LPVOID)quadVerts, 4);
 	
-	m_pin3d.m_pd3dDevice->RevertPixelShaderToFixedFunction();
-
 	m_pin3d.m_pd3dDevice->SetTransform( TRANSFORMSTATE_WORLD,      &matWorld );
 	m_pin3d.m_pd3dDevice->SetTransform( TRANSFORMSTATE_VIEW,       &matView );
 	m_pin3d.m_pd3dDevice->SetTransform( TRANSFORMSTATE_PROJECTION, &matProj );
@@ -2322,7 +2314,6 @@ void Player::FlipVideoBuffers3DFXAA( const bool vsync ) //!! SMAA, luma sharpen,
 	}
 
 	m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, TRUE);
-    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::LIGHTING, TRUE);
     m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 	m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
 
@@ -2646,7 +2637,6 @@ void Player::DrawBalls()
 
     // m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::TEXTUREPERSPECTIVE, FALSE ); // this is always on in DX9
     m_pin3d.m_pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP);
-    m_pin3d.m_pd3dDevice->SetTextureStageState( 0, D3DTSS_COLOROP, D3DTOP_MODULATE);
     m_pin3d.m_pd3dDevice->SetTextureFilter(0, TEXTURE_MODE_TRILINEAR);
 
    m_pin3d.m_pd3dDevice->SetVertexDeclaration( m_pin3d.m_pd3dDevice->m_pVertexNormalTexelDeclaration );
@@ -2858,9 +2848,7 @@ void Player::DrawBalls()
             m_pin3d.SetTexture(NULL);
             float ptsize = 5.0f;
             m_pin3d.m_pd3dDevice->SetRenderState((RenderDevice::RenderStates)D3DRS_POINTSIZE, *((DWORD*)&ptsize));
-            m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::LIGHTING, FALSE);
             m_pin3d.m_pd3dDevice->DrawPrimitiveVB( D3DPT_POINTLIST, m_ballDebugPoints, 0, 12 );
-            m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::LIGHTING, TRUE);
 
             // reset transform
             m_pin3d.m_pd3dDevice->SetTransform(TRANSFORMSTATE_WORLD, &matOrig);

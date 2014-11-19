@@ -111,7 +111,6 @@ public:
 	MemTexture* m_envRadianceTexture;
 	D3DTexture* m_device_envRadianceTexture;
 
-	Texture lightTexture[2]; // 0=bumper, 1=lights
 	Texture m_pddsLightWhite;
 
     PinProjection m_proj;

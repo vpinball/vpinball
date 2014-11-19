@@ -109,12 +109,9 @@ enum SaveDirtyState
 #define MY_D3DFVF_TEX					(D3DFVF_XYZ | D3DFVF_TEX1)
 
 #define MY_D3DFVF_NOTEX_VERTEX          (D3DFVF_XYZ    | D3DFVF_NORMAL                    | D3DFVF_TEX0)
-#define MY_D3DTRANSFORMED_NOTEX_VERTEX  (D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_SPECULAR | D3DFVF_TEX0)
 
 #define MY_D3DFVF_NOTEX2_VERTEX         (D3DFVF_XYZ    | D3DFVF_NORMAL                    | D3DFVF_TEX1)
 #define MY_D3DTRANSFORMED_NOTEX2_VERTEX (D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_SPECULAR | D3DFVF_TEX1)
-
-#define MY_D3DFVF_NOLIGHTING_VERTEX     (D3DFVF_XYZ    | D3DFVF_DIFFUSE | D3DFVF_TEX1)
 
 #define MY_D3DFVF_VERTEX                (D3DFVF_XYZ    | D3DFVF_NORMAL                    | D3DFVF_TEX2)
 #define MY_D3DTRANSFORMED_VERTEX        (D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_SPECULAR | D3DFVF_TEX2)
@@ -153,21 +150,6 @@ public:
 
    D3DVALUE tu2;
    D3DVALUE tv2;
-};
-
-class Vertex3D_NoLighting // for rendering, uses MY_D3DFVF_NOLIGHTING_VERTEX
-{
-public:
-   // Position
-   D3DVALUE x; 
-   D3DVALUE y; 
-   D3DVALUE z;
-
-   D3DCOLOR color;
-
-   // Texture coordinates
-   D3DVALUE tu;
-   D3DVALUE tv;
 };
 
 class Vertex3D_TexelOnly // for rendering, uses MY_D3DFVF_NOLIGHTING_VERTEX
@@ -264,7 +246,7 @@ public:
     WCHAR str[256];
 };
 
-#define M_PI 3.1415926535897932384626433832795f
+#define M_PI 3.1415926535897932384626433832795
 
 #define ANGTORAD(x) ((x) *(float)(M_PI/180.0))
 #define RADTOANG(x) ((x) *(float)(180.0/M_PI))
