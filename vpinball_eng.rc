@@ -14,11 +14,13 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (United States) resources
+// English (U.S.) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 #pragma code_page(1252)
+#endif //_WIN32
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -140,7 +142,7 @@ BEGIN
     LTEXT           "Scale Y",IDC_STATIC_SCALEY,19,35,26,8
 END
 
-IDD_PROGRESS DIALOG 0, 0, 167, 44
+IDD_PROGRESS DIALOG  0, 0, 167, 44
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Preparing Table"
 FONT 8, "MS Sans Serif"
@@ -302,7 +304,7 @@ BEGIN
     LTEXT           "to my Monitor:",IDC_STATIC,27,244,45,8
 END
 
-IDD_FONTDIALOG DIALOG 0, 0, 316, 167
+IDD_FONTDIALOG DIALOG  0, 0, 316, 167
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Font Manager"
 FONT 8, "MS Sans Serif"
@@ -580,7 +582,7 @@ BEGIN
     PUSHBUTTON      "&Down",IDC_COL_DOWN_BUTTON,259,66,50,14
 END
 
-IDD_COLLECTION DIALOG 0, 0, 232, 231
+IDD_COLLECTION DIALOG  0, 0, 232, 231
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Collection"
 FONT 8, "MS Sans Serif"
@@ -641,7 +643,7 @@ BEGIN
     LTEXT           "Please reenter your Password",IDC_STATIC,7,182,99,8
 END
 
-IDD_UNLOCK_DIALOG DIALOG 0, 0, 164, 53
+IDD_UNLOCK_DIALOG DIALOG  0, 0, 164, 53
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Unlock Protected Table"
 FONT 8, "MS Sans Serif"
@@ -831,20 +833,14 @@ BEGIN
     LTEXT           "&Bottom Height",-1,7,25,47,8
 END
 
-IDD_PROPGATE_VISUALS DIALOGEX 0, 0, 125, 130
+IDD_PROPGATE_VISUALS DIALOGEX 0, 0, 125, 53
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    COMBOBOX        DISPID_Image,7,13,111,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    COMBOBOX        DISPID_Image2,7,38,111,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Supports",15,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,86,61,10
-    CONTROL         "Visible",14,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,97,61,10
-    EDITTEXT        13,74,110,44,12,ES_AUTOHSCROLL
-    LTEXT           "Material",-1,7,55,26,8
-    LTEXT           "Front I&mage:",-1,7,4,38,8
-    LTEXT           "&Back Image:",-1,7,29,39,8
-    LTEXT           "Animation Frames",-1,7,113,60,8
-    COMBOBOX        IDC_MATERIAL_COMBO,7,64,111,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Supports",15,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,79,7,39,10
+    CONTROL         "Visible",14,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,35,10
+    LTEXT           "Material",-1,7,21,26,8
+    COMBOBOX        IDC_MATERIAL_COMBO,7,30,111,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
 END
 
 IDD_PROPGATE_POSITION DIALOGEX 0, 0, 125, 136
@@ -1480,7 +1476,7 @@ BEGIN
     CONTROL         "Throw Balls in Player",IDC_BALL_THROWING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,27,81,10
 END
 
-IDD_COMLIST DIALOG 0, 0, 287, 190
+IDD_COMLIST DIALOG  0, 0, 287, 190
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Component List"
 FONT 8, "MS Sans Serif"
@@ -1743,7 +1739,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO
+GUIDELINES DESIGNINFO 
 BEGIN
     IDD_DIMENSION_CALCULATOR, DIALOG
     BEGIN
@@ -1928,7 +1924,7 @@ IDR_RUBBER              REGISTRY                "res\\rubber.rgs"
 // Menu
 //
 
-IDR_APPMENU MENU
+IDR_APPMENU MENU 
 BEGIN
     POPUP "&File"
     BEGIN
@@ -2044,7 +2040,7 @@ BEGIN
     END
 END
 
-IDR_POINTMENU MENU
+IDR_POINTMENU MENU 
 BEGIN
     POPUP "PointMenu"
     BEGIN
@@ -2053,7 +2049,7 @@ BEGIN
     END
 END
 
-IDR_SURFACEMENU MENU
+IDR_SURFACEMENU MENU 
 BEGIN
     POPUP "WallMenu"
     BEGIN
@@ -2066,7 +2062,7 @@ BEGIN
     END
 END
 
-IDR_MULTIMENU MENU
+IDR_MULTIMENU MENU 
 BEGIN
     POPUP "WallMenu"
     BEGIN
@@ -2078,7 +2074,7 @@ BEGIN
     END
 END
 
-IDR_SCRIPTMENU MENU
+IDR_SCRIPTMENU MENU 
 BEGIN
     POPUP "&Script"
     BEGIN
@@ -2101,7 +2097,7 @@ BEGIN
     END
 END
 
-IDR_TABLEMENU MENU
+IDR_TABLEMENU MENU 
 BEGIN
     POPUP "Table Menu"
     BEGIN
@@ -2137,7 +2133,7 @@ IDB_BUMPERSOCKET        BITMAP                  "res\\bumperSocket.bmp"
 // Accelerator
 //
 
-IDR_VPACCEL ACCELERATORS
+IDR_VPACCEL ACCELERATORS 
 BEGIN
     VK_DELETE,      ID_DELETE,              VIRTKEY, NOINVERT
     "D",            ID_EDIT_DRAWINGORDER_HIT, VIRTKEY, SHIFT, CONTROL, NOINVERT
@@ -2176,7 +2172,7 @@ BEGIN
     VK_F8,          IDM_COLLECTION_EDITOR,  VIRTKEY, NOINVERT
 END
 
-IDR_CODEVIEWACCEL ACCELERATORS
+IDR_CODEVIEWACCEL ACCELERATORS 
 BEGIN
     "W",            ID_ADD_COMMENT,         VIRTKEY, CONTROL, NOINVERT
     VK_F3,          ID_EDIT_FINDNEXT,       VIRTKEY, NOINVERT
@@ -2259,7 +2255,7 @@ END
 // String Table
 //
 
-STRINGTABLE
+STRINGTABLE 
 BEGIN
     IDS_PROJNAME            "Visual Pinball"
     IDS_TB_TIMER            "Timer"
@@ -2275,14 +2271,14 @@ BEGIN
     IDS_LAYER3              "Layer&3"
 END
 
-STRINGTABLE
+STRINGTABLE 
 BEGIN
     IDS_TB_LIGHTSEQ         "LightSeq"
     IDS_REPLACEALL          "Replaced"
     IDS_REPLACEALL2         "occurrences in script."
 END
 
-STRINGTABLE
+STRINGTABLE 
 BEGIN
     IDS_NEED_DD9            "Visual Pinball requires DirectX 9.0 or higher from Microsoft."
     IDS_LOCK                "&Lock"
@@ -2296,12 +2292,12 @@ BEGIN
     IDS_POSITION_TRANSLATION "Position & Translation"
 END
 
-STRINGTABLE
+STRINGTABLE 
 BEGIN
     IDS_VISUALS_SOUND       "Colors, Sound & Graphics"
 END
 
-STRINGTABLE
+STRINGTABLE 
 BEGIN
     IDS_PHYSICSGFX          "Physics & Graphics"
     IDS_DIMENSIONSSLOPE     "Dimensions & Slope"
@@ -2309,7 +2305,7 @@ BEGIN
     IDS_INPUT               "Input"
 END
 
-STRINGTABLE
+STRINGTABLE 
 BEGIN
     IDS_TIMER_DESC          "Timer Class"
     IDS_LAYER4              "Layer&4"
@@ -2329,7 +2325,7 @@ BEGIN
     IDS_TB_TRIGGER          "Trigger"
 END
 
-STRINGTABLE
+STRINGTABLE 
 BEGIN
     IDS_LAYER8              "Layer&8"
     IDS_LIGHT_DESC          "Light Class"
@@ -2349,12 +2345,12 @@ BEGIN
     IDS_TO_COLLECTION       "To &Collection"
 END
 
-STRINGTABLE
+STRINGTABLE 
 BEGIN
     IDS_DRAWING_ORDER_SELECT "D&rawing Order (Select)"
 END
 
-STRINGTABLE
+STRINGTABLE 
 BEGIN
     IDS_RAMP_DESC           "Ramp Class"
     IDS_TB_RAMP             "Ramp"
@@ -2374,7 +2370,7 @@ BEGIN
     IDS_DRAWINFRONT         "Draw In &Front"
 END
 
-STRINGTABLE
+STRINGTABLE 
 BEGIN
     IDS_PERMISSION_ERROR    "This table is protected.\n\nThe table author has requested that this option be restricted."
     IDS_PROTECT_ONETICKED   "You must tick at least one protection option."
@@ -2384,7 +2380,7 @@ BEGIN
     IDS_UNLOCK_SUCCESS      "This table has been successfully unlocked."
 END
 
-STRINGTABLE
+STRINGTABLE 
 BEGIN
     IDS_DRAWINBACK          "Draw In &Back"
     IDS_SAVEERROR           "There was an error saving the file."
@@ -2403,7 +2399,7 @@ BEGIN
     IDS_COLLECTION          "Collection"
 END
 
-STRINGTABLE
+STRINGTABLE 
 BEGIN
     IDS_EDITOR              "Editor"
     IDS_DEFAULTBALL         "Ball"
@@ -2421,7 +2417,7 @@ BEGIN
     IDS_STEP                "Step"
 END
 
-#endif    // English (United States) resources
+#endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

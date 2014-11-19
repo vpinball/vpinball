@@ -1531,10 +1531,6 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 
 		[id(2147), helpstring("method Move")] HRESULT Move(int dir, [defaultvalue(0)] float speed, [defaultvalue(0)] float angle);
 
-		[propget, id(DISPID_Image), helpstring("property ImageFront")] HRESULT ImageFront([out, retval] BSTR *pVal);
-		[propput, id(DISPID_Image), helpstring("property ImageFront")] HRESULT ImageFront([in] BSTR newVal);
-		[propget, id(DISPID_Image2), helpstring("property ImageBack")] HRESULT ImageBack([out, retval] BSTR *pVal);
-		[propput, id(DISPID_Image2), helpstring("property ImageBack")] HRESULT ImageBack([in] BSTR newVal);
 		[propget, id(340), helpstring("property Material")] HRESULT Material([out, retval] BSTR *pVal);
 		[propput, id(340), helpstring("property Material")] HRESULT Material([in] BSTR newVal);
 		[propget, id(11), helpstring("property Elasticity")] HRESULT Elasticity([out, retval] float *pVal);
@@ -1557,8 +1553,6 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propget, id(15), helpstring("property Supports")] HRESULT Supports([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(15), helpstring("property Supports")] HRESULT Supports([in] VARIANT_BOOL newVal);
 		[propget, id(16), nonbrowsable, helpstring("property CurrentAngle")] HRESULT CurrentAngle([out, retval] float *pVal);
-		[propget, id(557), helpstring("property EnableLighting")] HRESULT EnableLighting([out, retval] VARIANT_BOOL *pVal);
-		[propput, id(557), helpstring("property EnableLighting")] HRESULT EnableLighting([in] VARIANT_BOOL newVal);
 	};
 
 	[
