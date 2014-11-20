@@ -50,7 +50,6 @@ Primitive::Primitive()
    m_d.meshFileName[0]=0;
    m_d.useLighting=false;
    m_d.staticRendering=false;
-   m_d.sphereMapping=false;
    m_d.m_depthBias = 0.0f;
    numIndices = 0;
    numVertices = 0;
@@ -59,10 +58,7 @@ Primitive::Primitive()
 Primitive::~Primitive() 
 {
     if(vertexBuffer)
-    {
         vertexBuffer->release();
-        vertexBuffer = 0;
-    }
     if (indexBuffer)
         indexBuffer->release();
 }
@@ -106,7 +102,6 @@ void Primitive::SetDefaults(bool fromMouseClick)
    m_d.m_fVisible = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "Visible", true) : true;
    m_d.useLighting = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "UseLighting", false) : false;
    m_d.staticRendering = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "StaticRendering", true) : true;
-   m_d.sphereMapping = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "SphereMapping", false) : false;
    m_d.m_DrawTexturesInside = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "DrawTexturesInside", false) : false;
 
    // Position (X and Y is already set by the click of the user)
@@ -116,17 +111,6 @@ void Primitive::SetDefaults(bool fromMouseClick)
    m_d.m_vSize.x = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "Size_X", 100.0f) : 100.0f;
    m_d.m_vSize.y = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "Size_Y", 100.0f) : 100.0f;
    m_d.m_vSize.z = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "Size_Z", 100.0f) : 100.0f;
-
-   // Axis Scale
-   m_d.m_vAxisScaleX.x = 1.0f;
-   m_d.m_vAxisScaleY.y = 1.0f;
-   m_d.m_vAxisScaleZ.z = 1.0f;
-   m_d.m_vAxisScaleX.y = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "AxisScale_X_Y", 1.0f) : 1.0f;
-   m_d.m_vAxisScaleX.z = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "AxisScale_X_Z", 1.0f) : 1.0f;
-   m_d.m_vAxisScaleY.x = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "AxisScale_Y_X", 1.0f) : 1.0f;
-   m_d.m_vAxisScaleY.z = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "AxisScale_Y_Z", 1.0f) : 1.0f;
-   m_d.m_vAxisScaleZ.x = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "AxisScale_Z_X", 1.0f) : 1.0f;
-   m_d.m_vAxisScaleZ.y = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "AxisScale_Z_Y", 1.0f) : 1.0f;
 
    // Rotation and Transposition
    m_d.m_aRotAndTra[0] = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"RotAndTra0", 0.0f) : 0.0f;
@@ -138,23 +122,6 @@ void Primitive::SetDefaults(bool fromMouseClick)
    m_d.m_aRotAndTra[6] = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"RotAndTra6", 0.0f) : 0.0f;
    m_d.m_aRotAndTra[7] = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"RotAndTra7", 0.0f) : 0.0f;
    m_d.m_aRotAndTra[8] = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"RotAndTra8", 0.0f) : 0.0f;
-
-   /*
-   hr = GetRegStringAsFloat(strKeyName,"Rotation_X", &fTmp);
-   m_d.m_vRotation.x = (hr == S_OK) ? fTmp : 0;
-   hr = GetRegStringAsFloat(strKeyName,"Rotation_Y", &fTmp);
-   m_d.m_vRotation.y = (hr == S_OK) ? fTmp : 0;
-   hr = GetRegStringAsFloat(strKeyName,"Rotation_Z", &fTmp);
-   m_d.m_vRotation.z = (hr == S_OK) ? fTmp : 0;
-
-   //Transposition
-   hr = GetRegStringAsFloat(strKeyName,"Transposition_X", &fTmp);
-   m_d.m_vTransposition.x = (hr == S_OK) ? fTmp : 0;
-   hr = GetRegStringAsFloat(strKeyName,"Transposition_Y", &fTmp);
-   m_d.m_vTransposition.y = (hr == S_OK) ? fTmp : 0;
-   hr = GetRegStringAsFloat(strKeyName,"Transposition_Z", &fTmp);
-   m_d.m_vTransposition.z = (hr == S_OK) ? fTmp : 0;
-   */
 
    hr = GetRegString(strKeyName,"Image", m_d.m_szImage, MAXTOKEN);
    if ((hr != S_OK) && fromMouseClick)
@@ -177,7 +144,6 @@ void Primitive::WriteRegDefaults()
    SetRegValueBool(strKeyName,"Visible", m_d.m_fVisible);
    SetRegValueBool(strKeyName,"UseLighting", m_d.useLighting);
    SetRegValueBool(strKeyName,"StaticRendering", m_d.staticRendering);
-   SetRegValueBool(strKeyName,"SphereMapping", m_d.sphereMapping);
    SetRegValueBool(strKeyName,"DrawTexturesInside", m_d.m_DrawTexturesInside);
 
    SetRegValueFloat(strKeyName,"Position_Z", m_d.m_vPosition.z);
@@ -185,13 +151,6 @@ void Primitive::WriteRegDefaults()
    SetRegValueFloat(strKeyName,"Size_X", m_d.m_vSize.x);
    SetRegValueFloat(strKeyName,"Size_Y", m_d.m_vSize.y);
    SetRegValueFloat(strKeyName,"Size_Z", m_d.m_vSize.z);
-
-   SetRegValueFloat(strKeyName,"AxisScaleXY", m_d.m_vAxisScaleX.y);
-   SetRegValueFloat(strKeyName,"AxisScaleXZ", m_d.m_vAxisScaleX.z);
-   SetRegValueFloat(strKeyName,"AxisScaleYX", m_d.m_vAxisScaleY.x);
-   SetRegValueFloat(strKeyName,"AxisScaleYZ", m_d.m_vAxisScaleY.z);
-   SetRegValueFloat(strKeyName,"AxisScaleZX", m_d.m_vAxisScaleZ.x);
-   SetRegValueFloat(strKeyName,"AxisScaleZY", m_d.m_vAxisScaleZ.y);
 
    SetRegValueFloat(strKeyName,"RotAndTra0", m_d.m_aRotAndTra[0]);
    SetRegValueFloat(strKeyName,"RotAndTra1", m_d.m_aRotAndTra[1]);
@@ -287,6 +246,7 @@ void Primitive::CheckJoint(Vector<HitObject> * const pvho, const HitTriangle * c
 void Primitive::EndPlay()
 {
    m_vhoCollidable.RemoveAllElements();
+
 	if(vertexBuffer)
 	{
 		vertexBuffer->release();
@@ -298,8 +258,6 @@ void Primitive::EndPlay()
         indexBuffer->release();
         indexBuffer = 0;
     }
-
-    objMesh.clear();
 }
 
 //////////////////////////////
@@ -310,7 +268,7 @@ void Primitive::RecalculateMatrices()
 {
    // scale matrix
    Matrix3D Smatrix;
-   Smatrix.SetScaling( m_d.m_vSize.x, m_d.m_vSize.y, m_d.m_vSize.z );
+   Smatrix.SetScaling( m_d.m_vSize.x, m_d.m_vSize.y, m_d.m_vSize.z * m_ptable->m_zScale );
 
    // translation matrix
    Matrix3D Tmatrix;
@@ -334,8 +292,6 @@ void Primitive::RecalculateMatrices()
    tempMatrix.Multiply(RTmatrix, RTmatrix);
    tempMatrix.RotateXMatrix(ANGTORAD(m_d.m_aRotAndTra[6]));
    tempMatrix.Multiply(RTmatrix, RTmatrix);
-
-   rotMatrix = RTmatrix;
 
    fullMatrix = Smatrix;
    RTmatrix.Multiply(fullMatrix, fullMatrix);
@@ -382,23 +338,21 @@ void Primitive::Render(Sur * const psur)
    else     // large mesh: draw a simplified mesh for performance reasons
    {
        const size_t numPts = m_mesh.NumIndices() / 3 + 1;
-       m_drawVertices.clear();
-       m_drawVertices.reserve(numPts);
+       std::vector<Vertex2D> drawVertices(numPts);
 
        if (numPts > 0)
        {
            const Vertex3Ds * const A = &vertices[m_mesh.m_indices[0]];
-           m_drawVertices.push_back(A->xy());
+           drawVertices.push_back(A->xy());
        }
 
        for (unsigned i=0; i<m_mesh.NumIndices(); i+=3)
        {
-           const Vertex3Ds * const A = &vertices[m_mesh.m_indices[i]  ];
            const Vertex3Ds * const B = &vertices[m_mesh.m_indices[i+1]];
-           m_drawVertices.push_back(B->xy());
+           drawVertices.push_back(B->xy());
        }
 
-       psur->Polyline(&m_drawVertices[0], m_drawVertices.size());
+       psur->Polyline(&drawVertices[0], drawVertices.size());
    }
 
    // draw center marker
@@ -570,187 +524,26 @@ void Primitive::CalculateBuiltinOriginal()
       }
    }
 
-   // BUG: SetNormal only works for plane polygons
+   //!! BUG: SetNormal only works for plane polygons
    //SetNormal(&m_mesh.m_vertices[0], &m_mesh.m_indices[0], m_mesh.NumIndices());
-}
-
-#if 0
-void Primitive::UpdateMeshBuiltin()
-{
-   // 1 copy vertices
-   objMesh = m_mesh.m_vertices;
-
-   // 2 apply matrix trafo
-   for (int i = 0; i < (m_d.m_Sides*4 + 2); i++)
-   {
-      TransformVertex( objMesh[i] );
-   }
-
-   // store in vertex buffer
-   Vertex3D_NoTex2 *buf;
-   vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY);
-   memcpy( buf, &objMesh[0], sizeof(Vertex3D_NoTex2)*objMesh.size() );
-   vertexBuffer->unlock();
-
-#if 0   // depth sorting of polygons: this probably serves no practical purpose, better to keep the index buffer constant
-   // 3 depth calculation / sorting
-
-   // I need m_sides values at top
-   // I need m_sides values at bottom
-   // I need m_sides values at the side, since i use only one depth value for each side instead of two.
-   // in the implementation i will use shell sort like implemented at wikipedia.
-   // Other algorithms are better at presorted things, but i will have some reverse sorted elements between the presorted here. 
-   // That's why insertion or bubble sort does not work fast here...
-   // input: an array a of length n with array elements numbered 0 to n ? 1
-
-   const float zMultiplicator = cosf(ANGTORAD(m_ptable->m_inclination));
-   const float yMultiplicator = sinf(ANGTORAD(m_ptable->m_inclination));
-
-   // depth calculation
-   // Since we are compiling with SSE, I'll use Floating points for comparison.
-   // I need m_sides values at top
-   // I need m_sides values at bottom
-   // I need m_sides * 2 values at the side
-   // in the implementation i will use shell sort like implemented at wikipedia.
-   // Other algorithms are better at presorted things, but i will have some reverse sorted elements between the presorted here. 
-   // That's why insertion or bubble sort does not work fast here...
-   std::vector<float> builtin_depth(m_d.m_Sides * 4);
-
-   // get depths
-   if (!m_d.m_DrawTexturesInside)
-   {
-      // top and bottom
-      for (int i = 0; i < m_d.m_Sides * 2; i++)
-      {
-         //!! this is wrong!
-         builtin_depth[i] = 
-            zMultiplicator*objMesh[m_mesh.m_indices[i*3  ]].z+
-            zMultiplicator*objMesh[m_mesh.m_indices[i*3+1]].z+
-            zMultiplicator*objMesh[m_mesh.m_indices[i*3+2]].z+
-            yMultiplicator*objMesh[m_mesh.m_indices[i*3  ]].y+
-            yMultiplicator*objMesh[m_mesh.m_indices[i*3+1]].y+
-            yMultiplicator*objMesh[m_mesh.m_indices[i*3+2]].y;
-      }
-   } else {
-      const float zM13 = (float)(1.0/3.0) * zMultiplicator;
-      const float yM13 = (float)(1.0/3.0) * yMultiplicator;
-      // top and bottom
-      for (int i = 0; i < m_d.m_Sides * 2; i++)
-      {
-         builtin_depth[i] = 
-            (objMesh[m_mesh.m_indices[i*6  ]].z+
-             objMesh[m_mesh.m_indices[i*6+1]].z+
-             objMesh[m_mesh.m_indices[i*6+2]].z) 
-            * zM13 +
-            (objMesh[m_mesh.m_indices[i*6  ]].y+
-             objMesh[m_mesh.m_indices[i*6+1]].y+
-             objMesh[m_mesh.m_indices[i*6+2]].y) 
-            * yM13;
-      }
-
-      const float zM05 = 0.5f * zMultiplicator;
-      const float yM05 = 0.5f * yMultiplicator;
-      for (int i = m_d.m_Sides; i < m_d.m_Sides * 2; i++)
-      {
-         builtin_depth[i*2] = 
-         builtin_depth[i*2+1] = 
-            (objMesh[m_mesh.m_indices[i*12  ]].z+
-             objMesh[m_mesh.m_indices[i*12+1]].z)
-            * zM05 +
-            (objMesh[m_mesh.m_indices[i*12  ]].y+
-             objMesh[m_mesh.m_indices[i*12+1]].y)
-            * yM05;
-      }
-   }
-
-   // now shell sort using 2.2 gaps
-   if (m_d.m_DrawTexturesInside)
-   {
-      int inc = (m_d.m_Sides*4)/2;
-      while (inc > 0)
-      {
-         for (int i = inc; i < m_d.m_Sides*4; i++)
-         {
-            // store temp
-            const float tempDepth = builtin_depth[i];
-            int tempIndices[6];
-            for (int tempI = 0; tempI < 6; tempI++)
-               tempIndices[tempI] = m_mesh.m_indices[i*6 + tempI];
-
-            int j = i;
-            while ((j >= inc) && (builtin_depth[j-inc] > tempDepth))
-            {
-               builtin_depth[j] = builtin_depth[j-inc];
-               for (int tempI = 0; tempI < 6; tempI++)
-                  m_mesh.m_indices[j*6+tempI] = m_mesh.m_indices[(j-inc)*6 + tempI];
-               j -= inc;
-            }
-
-            builtin_depth[j] = tempDepth;
-            for (int tempI = 0; tempI < 6; tempI++)
-               m_mesh.m_indices[j*6+tempI] = tempIndices[tempI];
-         }
-
-         if(inc == 2)
-            inc = 1;
-         else
-            inc = (int)((float)inc*(float)(1.0/2.2));
-      }
-   } //else { //!! this is missing completely!!???
-   //}
-#endif
-}
-#endif
-
-void Primitive::TransformVertex(Vertex3D_NoTex2& v) const
-{
-    // NB: most transformations are now handled by the
-    // proper world transform matrix, only shear scaling
-    // stays here for now.
-    v.y *= 1.0f + (m_d.m_vAxisScaleX.y - 1.0f)*(v.x+0.5f);
-    v.z *= 1.0f + (m_d.m_vAxisScaleX.z - 1.0f)*(v.x+0.5f);
-    v.x *= 1.0f + (m_d.m_vAxisScaleY.x - 1.0f)*(v.y+0.5f);
-    v.z *= 1.0f + (m_d.m_vAxisScaleY.z - 1.0f)*(v.y+0.5f);
-    v.x *= 1.0f + (m_d.m_vAxisScaleZ.x - 1.0f)*(v.z+0.5f);
-    v.y *= 1.0f + (m_d.m_vAxisScaleZ.y - 1.0f)*(v.z+0.5f);
-    v.z *= m_ptable->m_zScale;
 }
 
 void Primitive::UpdateMesh()
 {
-   objMesh = m_mesh.m_vertices;
-
-   if ( m_d.sphereMapping )
-   {
-      Matrix3D matView = g_pplayer->m_pin3d.GetViewTransform();
-      matView.Multiply(rotMatrix, rotMatrix);
-      //!! TODO/BUG: this should compute the inverse transpose of the rotational part
-   }
-
 #define PRIMITIVE_NORMAL_HACK
 
+#ifdef PRIMITIVE_NORMAL_HACK
    for (unsigned i = 0; i < m_mesh.NumVertices(); i++)
    {
-      Vertex3D_NoTex2 * const tempVert = &objMesh[i];
-      if ( m_d.sphereMapping )
-      {
-         Vertex3Ds norm(tempVert->nx, tempVert->ny, tempVert->nz);
-         rotMatrix.MultiplyVectorNoTranslate(norm, norm);
-         tempVert->tu = 0.5f + norm.x*0.5f;
-         tempVert->tv = 0.5f + norm.y*0.5f;
-      }
-      TransformVertex(*tempVert);
-#ifdef PRIMITIVE_NORMAL_HACK
-	  tempVert->nx = tempVert->ny = tempVert->nz = 0.0f;
-#endif
+      Vertex3D_NoTex2& tempVert = m_mesh.m_vertices[i];
+	  tempVert.nx = tempVert.ny = tempVert.nz = 0.0f;
    }
 
-#ifdef PRIMITIVE_NORMAL_HACK
    for(unsigned i = 0; i < m_mesh.NumIndices(); i+=3)
    {
-	   Vertex3D_NoTex2 * const A = &objMesh[m_mesh.m_indices[i]  ];
-       Vertex3D_NoTex2 * const B = &objMesh[m_mesh.m_indices[i+1]];
-       Vertex3D_NoTex2 * const C = &objMesh[m_mesh.m_indices[i+2]];         
+	   Vertex3D_NoTex2 * const A = &m_mesh.m_vertices[m_mesh.m_indices[i]  ];
+       Vertex3D_NoTex2 * const B = &m_mesh.m_vertices[m_mesh.m_indices[i+1]];
+       Vertex3D_NoTex2 * const C = &m_mesh.m_vertices[m_mesh.m_indices[i+2]];         
 
 	    Vertex3Ds normal;
 	   	const Vertex3Ds e0(C->x - A->x,C->y-A->y,C->z-A->z);
@@ -771,7 +564,7 @@ void Primitive::UpdateMesh()
 
    for (unsigned i = 0; i < m_mesh.NumVertices(); i++)
    {
-      Vertex3D_NoTex2 * const tempVert = &objMesh[i];
+      Vertex3D_NoTex2 * const tempVert = &m_mesh.m_vertices[i];
 	  const float inv_l = -1.0f/sqrtf(tempVert->nx*tempVert->nx+tempVert->ny*tempVert->ny+tempVert->nz*tempVert->nz);
 	  tempVert->nx *= inv_l;
 	  tempVert->ny *= inv_l;
@@ -781,7 +574,7 @@ void Primitive::UpdateMesh()
 
    Vertex3D_NoTex2 *buf;
    vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY);
-   memcpy( buf, &objMesh[0], sizeof(Vertex3D_NoTex2)*objMesh.size() );
+   memcpy( buf, &m_mesh.m_vertices[0], sizeof(Vertex3D_NoTex2)*m_mesh.m_vertices.size() );
    vertexBuffer->unlock();
 }
 
@@ -920,9 +713,6 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcry
     */
    bw.WriteVector3Padded(FID(VPOS), &m_d.m_vPosition);
    bw.WriteVector3Padded(FID(VSIZ), &m_d.m_vSize);
-   bw.WriteVector3Padded(FID(AXSX), &m_d.m_vAxisScaleX);
-   bw.WriteVector3Padded(FID(AXSY), &m_d.m_vAxisScaleY);
-   bw.WriteVector3Padded(FID(AXSZ), &m_d.m_vAxisScaleZ);
    bw.WriteFloat(FID(RTV0), m_d.m_aRotAndTra[0]);
    bw.WriteFloat(FID(RTV1), m_d.m_aRotAndTra[1]);
    bw.WriteFloat(FID(RTV2), m_d.m_aRotAndTra[2]);
@@ -949,7 +739,6 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcry
    bw.WriteBool(FID(ENLI), m_d.useLighting);
    bw.WriteBool(FID(U3DM), m_d.use3DMesh);
    bw.WriteBool(FID(STRE), m_d.staticRendering);
-   bw.WriteBool(FID(EVMP), m_d.sphereMapping);
    if( m_d.use3DMesh )
    {
       bw.WriteString( FID(M3DN), m_d.meshFileName);
@@ -993,18 +782,6 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(VSIZ))
    {
       pbr->GetVector3Padded(&m_d.m_vSize);
-   }
-   else if (id == FID(AXSX))
-   {
-      pbr->GetVector3Padded(&m_d.m_vAxisScaleX);
-   }
-   else if (id == FID(AXSY))
-   {
-      pbr->GetVector3Padded(&m_d.m_vAxisScaleY);
-   }
-   else if (id == FID(AXSZ))
-   {
-      pbr->GetVector3Padded(&m_d.m_vAxisScaleZ);
    }
    else if (id == FID(RTV0))
    {
@@ -1106,10 +883,6 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
    {
       pbr->GetBool(&m_d.staticRendering);
    }
-   else if (id == FID(EVMP))
-   {
-      pbr->GetBool(&m_d.sphereMapping);
-   }
    else if ( id == FID(U3DM))
    {
       pbr->GetBool(&m_d.use3DMesh);
@@ -1124,7 +897,6 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
    }
    else if( id == FID(M3DX) )
    {
-      objMesh.clear();
       m_mesh.m_vertices.clear();
       m_mesh.m_vertices.resize(numVertices);
       pbr->GetStruct( &m_mesh.m_vertices[0], sizeof(Vertex3D_NoTex2)*numVertices);
@@ -1205,7 +977,6 @@ bool Primitive::BrowseFor3DMeshFile()
    }
    SetRegValue("RecentDir","ImportDir", REG_SZ, szInitialDir, lstrlen(szInitialDir));
    m_mesh.Clear();
-   objMesh.clear();
    m_d.use3DMesh=false;
    if( vertexBuffer )
    {
@@ -1581,156 +1352,6 @@ STDMETHODIMP Primitive::put_Size_Z(float newVal)
    return S_OK;
 }
 
-STDMETHODIMP Primitive::get_AxisScaleX_Y(float *pVal)
-{
-   *pVal = m_d.m_vAxisScaleX.y;
-
-   return S_OK;
-}
-
-STDMETHODIMP Primitive::put_AxisScaleX_Y(float newVal)
-{
-   if(m_d.m_vAxisScaleX.y != newVal)
-   {
-	   STARTUNDO
-
-	   m_d.m_vAxisScaleX.y = newVal;
-	   vertexBufferRegenerate = true;
-
-	   STOPUNDO
-
-       if (!g_pplayer)
-           UpdateEditorView();
-   }
-
-   return S_OK;
-}
-
-STDMETHODIMP Primitive::get_AxisScaleX_Z(float *pVal)
-{
-   *pVal = m_d.m_vAxisScaleX.z;
-
-   return S_OK;
-}
-
-STDMETHODIMP Primitive::put_AxisScaleX_Z(float newVal)
-{
-   if(m_d.m_vAxisScaleX.z != newVal)
-   {
-	   STARTUNDO
-
-	   m_d.m_vAxisScaleX.z = newVal;
-	   vertexBufferRegenerate = true;
-
-	   STOPUNDO
-
-       if (!g_pplayer)
-           UpdateEditorView();
-   }
-
-   return S_OK;
-}
-
-STDMETHODIMP Primitive::get_AxisScaleY_X(float *pVal)
-{
-   *pVal = m_d.m_vAxisScaleY.x;
-
-   return S_OK;
-}
-
-STDMETHODIMP Primitive::put_AxisScaleY_X(float newVal)
-{
-   if(m_d.m_vAxisScaleY.x != newVal)
-   {
-	   STARTUNDO
-
-	   m_d.m_vAxisScaleY.x = newVal;
-	   vertexBufferRegenerate = true;
-
-	   STOPUNDO
-
-       if (!g_pplayer)
-           UpdateEditorView();
-   }
-
-   return S_OK;
-}
-
-STDMETHODIMP Primitive::get_AxisScaleY_Z(float *pVal)
-{
-   *pVal = m_d.m_vAxisScaleY.z;
-
-   return S_OK;
-}
-
-STDMETHODIMP Primitive::put_AxisScaleY_Z(float newVal)
-{
-   if(m_d.m_vAxisScaleY.z != newVal)
-   {
-	   STARTUNDO
-
-	   m_d.m_vAxisScaleY.z = newVal;
-	   vertexBufferRegenerate = true;
-
-	   STOPUNDO
-
-       if (!g_pplayer)
-           UpdateEditorView();
-   }
-
-   return S_OK;
-}
-
-STDMETHODIMP Primitive::get_AxisScaleZ_X(float *pVal)
-{
-   *pVal = m_d.m_vAxisScaleZ.x;
-
-   return S_OK;
-}
-
-STDMETHODIMP Primitive::put_AxisScaleZ_X(float newVal)
-{
-   if(m_d.m_vAxisScaleZ.x != newVal)
-   {
-	   STARTUNDO
-
-	   m_d.m_vAxisScaleZ.x = newVal;
-	   vertexBufferRegenerate = true;
-
-	   STOPUNDO
-
-       if (!g_pplayer)
-           UpdateEditorView();
-   }
-
-   return S_OK;
-}
-
-STDMETHODIMP Primitive::get_AxisScaleZ_Y(float *pVal)
-{
-   *pVal = m_d.m_vAxisScaleZ.y;
-
-   return S_OK;
-}
-
-STDMETHODIMP Primitive::put_AxisScaleZ_Y(float newVal)
-{
-   if(m_d.m_vAxisScaleZ.y != newVal)
-   {
-	   STARTUNDO
-
-	   m_d.m_vAxisScaleZ.y = newVal;
-	   vertexBufferRegenerate = true;
-
-	   STOPUNDO
-
-       if (!g_pplayer)
-           UpdateEditorView();
-   }
-
-   return S_OK;
-}
-
 STDMETHODIMP Primitive::get_RotAndTra0(float *pVal)
 {
     return get_RotX(pVal);
@@ -2040,24 +1661,6 @@ STDMETHODIMP Primitive::put_EnableStaticRendering(VARIANT_BOOL newVal)
    STARTUNDO
 
    m_d.staticRendering = VBTOF(newVal);
-
-   STOPUNDO
-
-   return S_OK;
-}
-
-STDMETHODIMP Primitive::get_EnableSphereMapping(VARIANT_BOOL *pVal)
-{
-   *pVal = (VARIANT_BOOL)FTOVB(m_d.sphereMapping);
-
-   return S_OK;
-}
-
-STDMETHODIMP Primitive::put_EnableSphereMapping(VARIANT_BOOL newVal)
-{
-   STARTUNDO
-
-   m_d.sphereMapping = VBTOF(newVal);
 
    STOPUNDO
 
