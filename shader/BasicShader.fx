@@ -182,8 +182,8 @@ float4 PS_LightWithTexel(in VS_LIGHT_OUTPUT IN ) : COLOR
 	float len = length(lightCenter.xyz-IN.tablePos.xyz)/max(maxRange,0.1f);
     float atten = 1.0f-saturate(len);
     atten*=atten;
-	float4 lcolor = lerp(float4(1.0f,1.0f,1.0f,1.0f),lightColor, pow(len,0.5f));
-	float4 result = saturate((lcolor*atten)*intensity);	
+	float4 lcolor = lerp(float4(1.0f,1.0f,1.0f,1.0f),lightColor, sqrt(len));
+	float4 result = saturate(lcolor*(atten*intensity));	
 	result.a = atten;	
 	
     float4 color = lightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular, edge); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
@@ -204,8 +204,8 @@ float4 PS_LightWithoutTexel(in VS_LIGHT_OUTPUT IN ) : COLOR
 	float len = length(lightCenter.xyz-IN.tablePos.xyz)/max(maxRange,0.1f);
     float atten = 1.0f-saturate(len);
     atten*=atten;
-	float4 lcolor = lerp(float4(1.0f,1.0f,1.0f,1.0f),lightColor, pow(len,0.5f));
-	float4 result = saturate((lcolor*atten)*intensity);	
+	float4 lcolor = lerp(float4(1.0f,1.0f,1.0f,1.0f),lightColor, sqrt(len));
+	float4 result = saturate(lcolor*(atten*intensity));	
 	result.a = atten;	
 	
     float4 color=lightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular, edge); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
@@ -220,8 +220,8 @@ float4 PS_BulbLight( in VS_LIGHT_OUTPUT IN ) : COLOR
 	float len = length(lightCenter.xyz-IN.tablePos.xyz)/max(maxRange,0.1f);
     float atten = 1.0f-saturate(len);
     atten*=atten;
-	float4 color = lerp(float4(1.0f,1.0f,1.0f,1.0f),lightColor, pow(len,0.5f));
-	float4 result = saturate((color*atten)*intensity);	
+	float4 lcolor = lerp(float4(1.0f,1.0f,1.0f,1.0f),lightColor, sqrt(len));
+	float4 result = saturate(lcolor*(atten*intensity));
 	result.a = atten;	
 	return result;
 }
