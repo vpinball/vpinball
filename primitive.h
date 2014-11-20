@@ -39,9 +39,6 @@ public:
    int m_Sides;
    Vertex3Ds m_vPosition;
    Vertex3Ds m_vSize;
-   Vertex3Ds m_vAxisScaleX;
-   Vertex3Ds m_vAxisScaleY;
-   Vertex3Ds m_vAxisScaleZ;
    float m_aRotAndTra[9];
    char m_szImage[MAXTOKEN];
    char meshFileName[256];
@@ -64,7 +61,6 @@ public:
    bool m_DrawTexturesInside;
    bool useLighting;
    bool staticRendering;
-   bool sphereMapping;
 
    bool m_fCollidable;
    bool m_fToy;
@@ -115,18 +111,6 @@ public:
    STDMETHOD(put_Size_Y)(/*[in]*/ float newVal);
    STDMETHOD(get_Size_Z)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_Size_Z)(/*[in]*/ float newVal);
-   STDMETHOD(get_AxisScaleX_Y)(/*[out, retval]*/ float *pVal);
-   STDMETHOD(put_AxisScaleX_Y)(/*[in]*/ float newVal);
-   STDMETHOD(get_AxisScaleX_Z)(/*[out, retval]*/ float *pVal);
-   STDMETHOD(put_AxisScaleX_Z)(/*[in]*/ float newVal);
-   STDMETHOD(get_AxisScaleY_X)(/*[out, retval]*/ float *pVal);
-   STDMETHOD(put_AxisScaleY_X)(/*[in]*/ float newVal);
-   STDMETHOD(get_AxisScaleY_Z)(/*[out, retval]*/ float *pVal);
-   STDMETHOD(put_AxisScaleY_Z)(/*[in]*/ float newVal);
-   STDMETHOD(get_AxisScaleZ_X)(/*[out, retval]*/ float *pVal);
-   STDMETHOD(put_AxisScaleZ_X)(/*[in]*/ float newVal);
-   STDMETHOD(get_AxisScaleZ_Y)(/*[out, retval]*/ float *pVal);
-   STDMETHOD(put_AxisScaleZ_Y)(/*[in]*/ float newVal);
 
    STDMETHOD(get_RotAndTra0)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_RotAndTra0)(/*[in]*/ float newVal);
@@ -174,8 +158,6 @@ public:
    STDMETHOD(put_EnableLighting)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_EnableStaticRendering)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_EnableStaticRendering)(/*[in]*/ VARIANT_BOOL newVal);
-   STDMETHOD(get_EnableSphereMapping)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-   STDMETHOD(put_EnableSphereMapping)(/*[in]*/ VARIANT_BOOL newVal);
 
    STDMETHOD(get_HasHitEvent)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_HasHitEvent)(/*[in]*/ VARIANT_BOOL newVal);
@@ -243,7 +225,6 @@ public:
    virtual float GetDepth(const Vertex3Ds& viewDir) const;
 
    Mesh m_mesh;
-   std::vector<Vertex3D_NoTex2> objMesh;
 
    PrimitiveData m_d;
 
@@ -262,9 +243,6 @@ private:        // private member functions
    void CheckJoint(Vector<HitObject> * const pvho, const HitTriangle * const ph3d1, const HitTriangle * const ph3d2);
 
    void CalculateBuiltinOriginal();
-   void UpdateMeshBuiltin();
-
-   inline void TransformVertex(Vertex3D_NoTex2& v) const;
 
 private:        // private data members
 
@@ -315,9 +293,8 @@ private:        // private data members
 
    // Vertices for editor display
    std::vector<Vertex3Ds> vertices;
-   std::vector<Vertex2D> m_drawVertices;
 
-   Matrix3D fullMatrix, rotMatrix;
+   Matrix3D fullMatrix;
 
    VertexBuffer *vertexBuffer;
    IndexBuffer *indexBuffer;

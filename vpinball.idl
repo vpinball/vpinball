@@ -1380,18 +1380,6 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(DISPID_SIZE_Y), helpstring("property Size Y")] HRESULT Size_Y([in] float newVal);
 		[propget, id(DISPID_SIZE_Z), helpstring("property Size Z")] HRESULT Size_Z([out, retval] float *pVal);
 		[propput, id(DISPID_SIZE_Z), helpstring("property Size Z")] HRESULT Size_Z([in] float newVal);
-		[propget, id(DISPID_AXISSCALE_XY), helpstring("property AxisScale X->Y")] HRESULT AxisScaleX_Y([out, retval] float *pVal);
-		[propput, id(DISPID_AXISSCALE_XY), helpstring("property AxisScale X->Y")] HRESULT AxisScaleX_Y([in] float newVal);
-		[propget, id(DISPID_AXISSCALE_XZ), helpstring("property AxisScale X->Z")] HRESULT AxisScaleX_Z([out, retval] float *pVal);
-		[propput, id(DISPID_AXISSCALE_XZ), helpstring("property AxisScale X->Z")] HRESULT AxisScaleX_Z([in] float newVal);
-		[propget, id(DISPID_AXISSCALE_YX), helpstring("property AxisScale Y->X")] HRESULT AxisScaleY_X([out, retval] float *pVal);
-		[propput, id(DISPID_AXISSCALE_YX), helpstring("property AxisScale Y->X")] HRESULT AxisScaleY_X([in] float newVal);
-		[propget, id(DISPID_AXISSCALE_YZ), helpstring("property AxisScale Y->Z")] HRESULT AxisScaleY_Z([out, retval] float *pVal);
-		[propput, id(DISPID_AXISSCALE_YZ), helpstring("property AxisScale Y->Z")] HRESULT AxisScaleY_Z([in] float newVal);
-		[propget, id(DISPID_AXISSCALE_ZX), helpstring("property AxisScale Z->X")] HRESULT AxisScaleZ_X([out, retval] float *pVal);
-		[propput, id(DISPID_AXISSCALE_ZX), helpstring("property AxisScale Z->X")] HRESULT AxisScaleZ_X([in] float newVal);
-		[propget, id(DISPID_AXISSCALE_ZY), helpstring("property AxisScale Z->Y")] HRESULT AxisScaleZ_Y([out, retval] float *pVal);
-		[propput, id(DISPID_AXISSCALE_ZY), helpstring("property AxisScale Z->Y")] HRESULT AxisScaleZ_Y([in] float newVal);
 
 		[propget, id(DISPID_ROTRA1), helpstring("property Rot and Tra 1")] HRESULT RotAndTra0([out, retval] float *pVal);
 		[propput, id(DISPID_ROTRA1), helpstring("property Rot and Tra 1")] HRESULT RotAndTra0([in] float newVal);
@@ -1438,27 +1426,12 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propget, id(DISPID_OBJROT_Z), helpstring("property Rot and Tra 9")] HRESULT ObjRotZ([out, retval] float *pVal);
 		[propput, id(DISPID_OBJROT_Z), helpstring("property Rot and Tra 9")] HRESULT ObjRotZ([in] float newVal);
 
-		/*
-		[propget, id(DISPID_ROTATION_X), helpstring("property Rotation X")] HRESULT Rotation_X([out, retval] float *pVal);
-		[propput, id(DISPID_ROTATION_X), helpstring("property Rotation X")] HRESULT Rotation_X([in] float newVal);
-		[propget, id(DISPID_ROTATION_Y), helpstring("property Rotation Y")] HRESULT Rotation_Y([out, retval] float *pVal);
-		[propput, id(DISPID_ROTATION_Y), helpstring("property Rotation Y")] HRESULT Rotation_Y([in] float newVal);
-		[propget, id(DISPID_ROTATION_Z), helpstring("property Rotation Z")] HRESULT Rotation_Z([out, retval] float *pVal);
-		[propput, id(DISPID_ROTATION_Z), helpstring("property Rotation Z")] HRESULT Rotation_Z([in] float newVal);
-		[propget, id(DISPID_TRANSPOSITION_X), helpstring("property Transposition X")] HRESULT Transposition_X([out, retval] float *pVal);
-		[propput, id(DISPID_TRANSPOSITION_X), helpstring("property Transposition X")] HRESULT Transposition_X([in] float newVal);
-		[propget, id(DISPID_TRANSPOSITION_Y), helpstring("property Transposition Y")] HRESULT Transposition_Y([out, retval] float *pVal);
-		[propput, id(DISPID_TRANSPOSITION_Y), helpstring("property Transposition Y")] HRESULT Transposition_Y([in] float newVal);
-		[propget, id(DISPID_TRANSPOSITION_Z), helpstring("property Transposition Z")] HRESULT Transposition_Z([out, retval] float *pVal);
-		[propput, id(DISPID_TRANSPOSITION_Z), helpstring("property Transposition Z")] HRESULT Transposition_Z([in] float newVal);*/
 		[propget, id(DISPID_Name), helpstring("property Name")] HRESULT Name([out, retval] BSTR *pVal);
 		[propput, id(DISPID_Name), helpstring("property Name")] HRESULT Name([in] BSTR newVal);
   		[propget, id(394), helpstring("property enable lighting")] HRESULT EnableLighting([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(394), helpstring("property enable lighting")] HRESULT EnableLighting([in] VARIANT_BOOL newVal);
   		[propget, id(398), helpstring("property static rendering")] HRESULT EnableStaticRendering([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(398), helpstring("property static rendering")] HRESULT EnableStaticRendering([in] VARIANT_BOOL newVal);
-  		[propget, id(396), helpstring("property sphere mapping")] HRESULT EnableSphereMapping([out, retval] VARIANT_BOOL *pVal);
-		[propput, id(396), helpstring("property sphere mapping")] HRESULT EnableSphereMapping([in] VARIANT_BOOL newVal);
 
   		[propget, id(110), helpstring("property Elasticity")] HRESULT Elasticity([out, retval] float *pVal);
 		[propput, id(110), helpstring("property Elasticity")] HRESULT Elasticity([in] float newVal);
