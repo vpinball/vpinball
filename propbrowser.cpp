@@ -961,7 +961,7 @@ INT_PTR CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
                if (dispid == IDOK)
                {
                   //(The user pressed enter)
-                  // BUG!!!!!!
+                  //!! BUG!!!!!!
                   // If the object has a boolean at dispid 1 (IDOK),
                   // This will override the correct behavior
                   PostMessage(hwndDlg, WM_NEXTDLGCTL, 0, 0L) ;

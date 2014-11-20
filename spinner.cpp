@@ -311,7 +311,6 @@ void Spinner::PostRenderStatic(RenderDevice* pd3dDevice)
 
     Material *mat = m_ptable->GetMaterial( m_d.m_szMaterial);
     pd3dDevice->basicShader->SetMaterial(mat);
-    COLORREF diffColor = NOTRANSCOLOR;
     COLORREF rgbTransparent = RGB(255,0,255); //RGB(0,0,0);
 
     Texture * const pinback = m_ptable->GetImage(m_d.m_szImageBack);
@@ -342,14 +341,14 @@ void Spinner::PostRenderStatic(RenderDevice* pd3dDevice)
         if (pinback->m_fTransparent)
         {
 			g_pplayer->m_pin3d.DisableAlphaBlend();
-            if (diffColor != rgbTransparent) rgbTransparent = pinback->m_rgbTransparent;
+            rgbTransparent = pinback->m_rgbTransparent;
         }
         else 
         {
             g_pplayer->m_pin3d.EnableAlphaBlend(1, false);
         } 
 
-        if (diffColor == rgbTransparent || diffColor == NOTRANSCOLOR) 
+        if (NOTRANSCOLOR == rgbTransparent) 
             pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
         else
             pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
@@ -374,14 +373,14 @@ void Spinner::PostRenderStatic(RenderDevice* pd3dDevice)
         if (pinfront->m_fTransparent)
         {
 			g_pplayer->m_pin3d.DisableAlphaBlend();
-            if (diffColor != rgbTransparent) rgbTransparent = pinfront->m_rgbTransparent;
+            rgbTransparent = pinfront->m_rgbTransparent;
         }
         else 
         {
             g_pplayer->m_pin3d.EnableAlphaBlend(1, false);
         }
 
-        if (diffColor == rgbTransparent || diffColor == NOTRANSCOLOR) 
+        if (NOTRANSCOLOR == rgbTransparent) 
             pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
         else
             pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
@@ -399,7 +398,7 @@ void Spinner::PostRenderStatic(RenderDevice* pd3dDevice)
     pd3dDevice->DrawPrimitiveVB(D3DPT_TRIANGLEFAN, vtxBuf, 4, 4);
     pd3dDevice->basicShader->End();
 
-    if (diffColor != rgbTransparent && diffColor != NOTRANSCOLOR)
+    if (NOTRANSCOLOR != rgbTransparent)
     {
         pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
         pd3dDevice->basicShader->Begin(0);
@@ -488,7 +487,7 @@ void Spinner::PrepareMovers( RenderDevice* pd3dDevice )
    COLORREF rgbTransparent = RGB(255,0,255); //RGB(0,0,0);
 
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
-   const float h = (m_d.m_height*0.5f + 30.0f);
+   const float h = m_d.m_height*0.5f + 30.0f;
    m_posZ = (h + height) * m_ptable->m_zScale;
 
    const float halflength = m_d.m_length * 0.5f;

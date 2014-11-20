@@ -26,7 +26,7 @@ inline D3DXVECTOR4 convertColor(const COLORREF c)
 	return d;
 }
 
-inline COLORREF convertColor(const D3DXVECTOR4 d)
+inline COLORREF convertColor(const D3DXVECTOR4& d)
 {
 	return ((unsigned int)(d.x*255.0f)) | (((unsigned int)(d.y*255.0f))<<8) | (((unsigned int)(d.z*255.0f))<<16);
 }

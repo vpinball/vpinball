@@ -228,16 +228,20 @@ void Textbox::PostRenderStatic(RenderDevice* pd3dDevice)
     Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
 	pd3dDevice->basicShader->SetMaterial(NULL,D3DXVECTOR4(1,1,1,1),D3DXVECTOR4(0,0,0,0),D3DXVECTOR4(0,0,0,0),0.f,0.f,1.f,1.f,false,false);
+	pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
 
     // Set texture to mirror, so the alpha state of the texture blends correctly to the outside
     pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_MIRROR);
 
-    ppin3d->SetBaseTexture(ePictureTexture, m_texture);
+    pd3dDevice->basicShader->SetTexture("Texture0", pd3dDevice->m_texMan.LoadTexture(m_texture));
 
     ppin3d->SetTextureFilter(ePictureTexture, TEXTURE_MODE_BILINEAR);
+    //!! ppin3d->EnableAlphaTestReference(0x80); ??
 
+    pd3dDevice->basicShader->Begin(0);
     pd3dDevice->DrawPrimitive( D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_NOTEX2_VERTEX, rgv3D, 4);
-
+    pd3dDevice->basicShader->End();
+    
     // reset render state
     pd3dDevice->SetTexture(ePictureTexture, NULL);
     ppin3d->SetTextureFilter(ePictureTexture, TEXTURE_MODE_TRILINEAR);

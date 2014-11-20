@@ -739,7 +739,7 @@ void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
 
    // draw top
    SAFE_VECTOR_DELETE(rgtexcoord);
-   if (m_d.m_fVisible)      // BUG? Visible could still be set later if rendered dynamically?
+   if (m_d.m_fVisible)      //!! BUG? Visible could still be set later if rendered dynamically?
    {
       VectorVoid vpoly;
 

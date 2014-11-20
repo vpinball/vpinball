@@ -340,11 +340,10 @@ void Flasher::UpdateMesh()
 {
    Vertex3D_TexelOnly *buf;
    dynamicVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
-   Vertex3D_TexelOnly verts[3];
 
    const float height = m_d.m_height*m_ptable->m_zScale;
-   const float movx=minx+((maxx-minx)*0.5f);
-   const float movy=miny+((maxy-miny)*0.5f);
+   const float movx = minx+((maxx-minx)*0.5f);
+   const float movy = miny+((maxy-miny)*0.5f);
 
    int offset=0;
    for (int i=0;i<numPolys;i++, offset+=3)
@@ -367,6 +366,8 @@ void Flasher::UpdateMesh()
       tempMatrix.Multiply(RTmatrix, RTmatrix);
       tempMatrix.RotateXMatrix(ANGTORAD(m_d.m_rotX));
       tempMatrix.Multiply(RTmatrix, RTmatrix);
+
+      Vertex3D_TexelOnly verts[3];
       for( int i=0;i<3;i++ )
       {      
          memcpy( &verts[i], &vertices[offset+i], sizeof(Vertex3D_TexelOnly));
@@ -404,9 +405,6 @@ void Flasher::RenderSetup(RenderDevice* pd3dDevice)
       // no polys to render leave vertex buffer undefined 
       return;
    }
-   const float inv_tablewidth = 1.0f/(m_ptable->m_right - m_ptable->m_left);
-   const float inv_tableheight = 1.0f/(m_ptable->m_bottom - m_ptable->m_top);
-
 
    if( dynamicVertexBuffer )
       dynamicVertexBuffer->release();
@@ -448,14 +446,17 @@ void Flasher::RenderSetup(RenderDevice* pd3dDevice)
       delete vtri.ElementAt(i);
    }
 
-   float width = maxx-minx;
-   float height = maxy-miny;
+   const float inv_width = 1.0f/(maxx-minx);
+   const float inv_height = 1.0f/(maxy-miny);
+   const float inv_tablewidth = 1.0f/(m_ptable->m_right - m_ptable->m_left);
+   const float inv_tableheight = 1.0f/(m_ptable->m_bottom - m_ptable->m_top);
+
    for( int i=0;i<numPolys*3;i++)
    {
       if (m_d.m_imagealignment == ImageModeWrap)
       {
-         vertices[i].tu = (vertices[i].x-minx)/width;
-         vertices[i].tv = (vertices[i].y-miny)/height;
+         vertices[i].tu = (vertices[i].x-minx)*inv_width;
+         vertices[i].tv = (vertices[i].y-miny)*inv_height;
       }
       else
       {
@@ -465,7 +466,6 @@ void Flasher::RenderSetup(RenderDevice* pd3dDevice)
    }
    for (int i=0;i<numVertices;i++)
       delete vvertex.ElementAt(i);
-
 }
 
 void Flasher::RenderStatic(RenderDevice* pd3dDevice)

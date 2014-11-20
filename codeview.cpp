@@ -1881,7 +1881,7 @@ BOOL Collection::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(ITEM))
    {
-      // BUG - item list must be up to date in table (loaded) for the reverse name lookup to work
+      //!! BUG - item list must be up to date in table (loaded) for the reverse name lookup to work
       PinTable * const ppt = (PinTable *)pbr->m_pdata;
 
       WCHAR wzT[MAXNAMEBUFFER];

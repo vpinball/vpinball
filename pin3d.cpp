@@ -101,7 +101,7 @@ void EnvmapPrecalc(const DWORD* const __restrict envmap, const DWORD env_xres, c
 		for(unsigned int x = 0; x < rad_env_xres; ++x)
 		{
 			// trafo from envmap to normal direction
-			const float phi = (float)x/(float)rad_env_xres * (float)(2.0*M_PI) + M_PI;
+			const float phi = (float)x/(float)rad_env_xres * (float)(2.0*M_PI) + (float)M_PI;
 			const float theta = (float)y/(float)rad_env_yres * (float)M_PI;
 			const Vertex3Ds n(sinf(theta) * cosf(phi), sinf(theta) * sinf(phi), cosf(theta));
 
