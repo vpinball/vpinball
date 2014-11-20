@@ -376,8 +376,8 @@ float HitFlipper::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
       coll.normal[1].x = 0;			//Tangent velocity of contact point (rotate Normal right)
       coll.normal[1].y = 0;			//units: rad*d/t (Radians*diameter/time
 
-      //!! unused coll.normal[2].x = 0;			//moment is zero ... only friction
-      //!! unused coll.normal[2].y = 0;			//radians/time at collison
+      coll.normal[2].x = 0;			//moment is zero ... only friction
+      coll.normal[2].y = 0;			//radians/time at collison //!! unused?
 
       // Flipper::Contact() expects origNormVel,
       // but HitCircle puts it in normal[1].z
@@ -509,8 +509,8 @@ float HitFlipper::HitTestFlipperEnd(const Ball * pball, const float dtime, Colli
    coll.normal[1].x = -dist.y*inv_distance; //Unit Tangent vector velocity of contact point(rotate normal right)
    coll.normal[1].y =  dist.x*inv_distance;
 
-   //!! unused coll.normal[2].x = distance;				//moment arm diameter
-   //!! unused coll.normal[2].y = anglespeed;			//radians/time at collison
+   coll.normal[2].x = distance;				//moment arm diameter
+   coll.normal[2].y = anglespeed;			//radians/time at collison //!! unused?
 
    //recheck using actual contact angle of velocity direction
    const Vertex2D dv(
@@ -669,8 +669,8 @@ float HitFlipper::HitTestFlipperFace(const Ball * pball, const float dtime, Coll
    if (contactAng >= angleMax && anglespeed > 0 || contactAng <= angleMin && anglespeed < 0)	// hit limits ??? 
       anglespeed = 0.0f;							// rotation stopped
 
-   //!! unused coll.normal[2].x = distance;				//moment arm diameter
-   //!! unused coll.normal[2].y = anglespeed;			//radians/time at collison
+   coll.normal[2].x = distance;				//moment arm diameter
+   coll.normal[2].y = anglespeed;			//radians/time at collison //!! unused?
 
    const Vertex2D dv(
       (ballvx - coll.normal[1].x *anglespeed*distance), 
@@ -838,7 +838,7 @@ void HitFlipper::Collide(CollisionEvent *coll)
    {
        const float distance = phitnormal[2].x;                     // moment .... and the flipper response
        const float flipperHit = (distance == 0.0f) ? -1.0f : -bnv; // move event processing to end of collision handler...
-       if (flipperHit < 0)
+       if (flipperHit < 0.f)
            m_pflipper->FireGroupEvent(DISPID_HitEvents_Hit);        // simple hit event
        else
            m_pflipper->FireVoidEventParm(DISPID_FlipperEvents_Collide, flipperHit); // collision velocity (normal to face)
