@@ -234,15 +234,15 @@ void Trigger::SetDefaults(bool fromMouseClick)
 
    hr = GetRegInt("DefaultProps\\Trigger","Enabled", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
-      m_d.m_fEnabled = iTmp == 0 ? fFalse : fTrue;
+      m_d.m_fEnabled = iTmp == 0 ? false : true;
    else
-      m_d.m_fEnabled = fTrue;
+      m_d.m_fEnabled = true;
 
    hr = GetRegInt("DefaultProps\\Trigger","Visible", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
-      m_d.m_fVisible = iTmp == 0 ? fFalse : fTrue;
+      m_d.m_fVisible = iTmp == 0 ? false : true;
    else
-      m_d.m_fVisible = fTrue;
+      m_d.m_fVisible = true;
 
    hr = GetRegStringAsFloat("DefaultProps\\Trigger","HitHeight", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
@@ -472,7 +472,7 @@ void Trigger::GetHitShapesDebug(Vector<HitObject> * const pvho)
          ph3dp->m_pObj = (void*) this;
 
          pvho->AddElement(ph3dp);
-         //ph3dp->m_fEnabled = fFalse;	//rlc error: disable hit process on polygon body, only trigger edges 
+         //ph3dp->m_fEnabled = false;	//rlc error: disable hit process on polygon body, only trigger edges 
          break;
       }
    }
@@ -765,11 +765,11 @@ void Trigger::PutPointCenter(const Vertex2D * const pv)
 
 void Trigger::EditMenu(HMENU hmenu)
 {
-   EnableMenuItem(hmenu, ID_WALLMENU_FLIP, MF_BYCOMMAND | ((m_d.m_shape != ShapeCustom) ? MF_GRAYED : MF_ENABLED));
-   EnableMenuItem(hmenu, ID_WALLMENU_MIRROR, MF_BYCOMMAND | ((m_d.m_shape != ShapeCustom) ? MF_GRAYED : MF_ENABLED));
-   EnableMenuItem(hmenu, ID_WALLMENU_ROTATE, MF_BYCOMMAND | ((m_d.m_shape != ShapeCustom) ? MF_GRAYED : MF_ENABLED));
-   EnableMenuItem(hmenu, ID_WALLMENU_SCALE, MF_BYCOMMAND | ((m_d.m_shape != ShapeCustom) ? MF_GRAYED : MF_ENABLED));
-   EnableMenuItem(hmenu, ID_WALLMENU_ADDPOINT, MF_BYCOMMAND | ((m_d.m_shape != ShapeCustom) ? MF_GRAYED : MF_ENABLED));
+   EnableMenuItem(hmenu, ID_WALLMENU_FLIP, MF_BYCOMMAND | MF_ENABLED);
+   EnableMenuItem(hmenu, ID_WALLMENU_MIRROR, MF_BYCOMMAND | MF_ENABLED);
+   EnableMenuItem(hmenu, ID_WALLMENU_ROTATE, MF_BYCOMMAND | MF_ENABLED);
+   EnableMenuItem(hmenu, ID_WALLMENU_SCALE, MF_BYCOMMAND | MF_ENABLED);
+   EnableMenuItem(hmenu, ID_WALLMENU_ADDPOINT, MF_BYCOMMAND | MF_ENABLED);
 }
 
 void Trigger::DoCommand(int icmd, int x, int y)
@@ -934,8 +934,8 @@ void Trigger::WriteRegDefaults()
 {
    SetRegValue("DefaultProps\\Trigger","TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
    SetRegValue("DefaultProps\\Trigger","TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval, 4);
-   SetRegValue("DefaultProps\\Trigger","Enabled",REG_DWORD,&m_d.m_fEnabled,4);
-   SetRegValue("DefaultProps\\Trigger","Visible",REG_DWORD,&m_d.m_fVisible,4);
+   SetRegValueBool("DefaultProps\\Trigger","Enabled",m_d.m_fEnabled);
+   SetRegValueBool("DefaultProps\\Trigger","Visible",m_d.m_fVisible);
    SetRegValueFloat("DefaultProps\\Trigger","HitHeight", m_d.m_hit_height);
    SetRegValueFloat("DefaultProps\\Trigger","Radius", m_d.m_radius);
    SetRegValueFloat("DefaultProps\\Trigger","Rotation", m_d.m_rotation);
@@ -1142,7 +1142,7 @@ STDMETHODIMP Trigger::put_Enabled(VARIANT_BOOL newVal)
    {
       STARTUNDO
 
-         m_d.m_fEnabled = VBTOF(newVal);
+      m_d.m_fEnabled = VBTOF(newVal);
       m_hitEnabled = m_d.m_fEnabled;
 
       STOPUNDO

@@ -370,7 +370,7 @@ short LZWReader::Decoder()
 			}
 		}
 
-	// BUG - is all this necessary?  Is it correct?
+	//!! BUG - is all this necessary?  Is it correct?
 	int toofar = m_readahead - m_cfilebuffer; // bytes we already read that we shouldn't have
 	toofar--;  // m_readahead == the byte we just read, so we actually used up one more than the math shows
 	LARGE_INTEGER li;

@@ -294,7 +294,7 @@ Player::Player()
     m_contacts.reserve(8);
 
 	m_dmdx = 0;
-	m_dmdx = 0;
+	m_dmdy = 0;
 	m_texdmd = NULL;
 	m_device_texdmd = NULL;
 }

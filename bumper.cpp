@@ -369,7 +369,6 @@ void Bumper::EndPlay()
        socketVertexBuffer->release();
        socketVertexBuffer = 0;
     }
-
 }
 
 void Bumper::UpdateRing(RenderDevice *pd3dDevice )
@@ -649,7 +648,7 @@ void Bumper::RenderSetup(RenderDevice* pd3dDevice )
 
    if ( m_d.m_fCapVisible )
    {
-      Vertex3D_NoTex2 *vertBuf= new Vertex3D_NoTex2[bumperBaseNumVertices];
+      Vertex3D_NoTex2 *vertBuf= new Vertex3D_NoTex2[bumperCapNumVertices];
        capTexture.CreateFromResource(IDB_BUMPERCAP);
        indices.clear();
        indices.resize( bumperCapNumFaces );

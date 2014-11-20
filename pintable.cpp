@@ -4931,7 +4931,7 @@ void PinTable::Copy()
 
       IEditable *pe = m_vmultisel.ElementAt(i)->GetIEditable();
 
-      //////// BUG!  With multi-select, if you have multiple dragpoints on
+      ////////!! BUG!  With multi-select, if you have multiple dragpoints on
       //////// a surface selected, the surface will get copied multiple times
       const int type = pe->GetItemType();
       pstm->Write(&type, sizeof(int), &writ);
@@ -6670,8 +6670,6 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
 
            rgstr = (WCHAR **) CoTaskMemAlloc((cvar) * sizeof(WCHAR *));
            rgdw = (DWORD *) CoTaskMemAlloc((cvar) * sizeof(DWORD));
-           rgstr = (WCHAR **) CoTaskMemAlloc(5 * sizeof(WCHAR *));
-           rgdw = (DWORD *) CoTaskMemAlloc(5 * sizeof(DWORD));
 
            wzDst = (WCHAR *) CoTaskMemAlloc(5*sizeof(WCHAR));
            MultiByteToWideChar(CP_ACP, 0, "None", -1, wzDst, 5);

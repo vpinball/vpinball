@@ -131,7 +131,7 @@ bool WaveFrontObj_Load(const char *filename, bool flipTv, bool convertToLeftHand
          Vertex3Ds tmp;
          fscanf_s(f, "%f %f %f\n",&tmp.x, &tmp.y, &tmp.z );
          if ( convertToLeftHanded )
-            tmp.z*=-1;
+            tmp.z*=-1.f;
          tmpNorms.push_back(tmp);
       }
       else if( strcmp( lineHeader,"f") == 0 )

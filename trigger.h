@@ -14,14 +14,14 @@ public:
 	float m_radius;
 	TimerDataRoot m_tdr;
 	char m_szSurface[MAXTOKEN];
-	BOOL m_fEnabled;
-	BOOL m_fVisible;
 	TriggerShape m_shape;
     char m_szMaterial[32];
     float m_rotation;
     float m_scaleX;
     float m_scaleY;
 	float m_hit_height; //trigger hit object height ... default 50
+	bool m_fEnabled;
+	bool m_fVisible;
 	};
 
 /////////////////////////////////////////////////////////////////////////////
