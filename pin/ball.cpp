@@ -107,7 +107,7 @@ void Ball::Collide3DWall(const Vertex3Ds& hitNormal, const float elasticity, flo
 		if (dot > C_LOWNORMVEL) return;					//is this velocity clearly receding (i.e must > a minimum)
 
 #ifdef C_EMBEDDED
-		if (m_coll.distance < -C_EMBEDDED)
+		if (m_coll.hitdistance < -C_EMBEDDED)
 			dot = -C_EMBEDSHOT;							// has ball become embedded???, give it a kick
 		else return;
 #endif
@@ -115,7 +115,7 @@ void Ball::Collide3DWall(const Vertex3Ds& hitNormal, const float elasticity, flo
 		
 #ifdef C_DISP_GAIN 
 	// correct displacements, mostly from low velocity, alternative to acceleration processing
-	float hdist = -C_DISP_GAIN * m_coll.distance;	// limit delta noise crossing ramps,
+	float hdist = -C_DISP_GAIN * m_coll.hitdistance;	// limit delta noise crossing ramps,
 	if (hdist > 1.0e-4f)					// when hit detection checked it what was the displacement
 	{
 		if (hdist > C_DISP_LIMIT) 
@@ -241,10 +241,10 @@ float Ball::HitTest(const Ball * pball_, float dtime, CollisionEvent& coll)
     const Vertex3Ds hitPos = pball->pos + hittime * dv; // new ball position
 
     //calc unit normal of collision
-	coll.normal[0] = hitPos - pos;
-    coll.normal[0].Normalize();
+	coll.hitnormal = hitPos - pos;
+    coll.hitnormal.Normalize();
 
-	coll.distance = bnd;					//actual contact distance
+	coll.hitdistance = bnd;					//actual contact distance
 	coll.hitRigid = true;					//rigid collision type
 
 	return hittime;	
@@ -261,7 +261,7 @@ void Ball::Collide(CollisionEvent *coll)
 
     // target ball to object ball delta velocity
     const Vertex3Ds vrel = pball->vel - vel;
-	const Vertex3Ds vnormal = coll->normal[0];
+	const Vertex3Ds vnormal = coll->hitnormal;
 	float dot = vrel.Dot(vnormal);
 
 	// correct displacements, mostly from low velocity, alternative to true acceleration processing
@@ -269,14 +269,14 @@ void Ball::Collide(CollisionEvent *coll)
 	{														// otherwise if clearly approaching .. process the collision
 		if (dot > C_LOWNORMVEL) return;						//is this velocity clearly receding (i.e must > a minimum)		
 #ifdef C_EMBEDDED
-		if (coll->distance < -C_EMBEDDED)
+		if (coll->hitdistance < -C_EMBEDDED)
 			dot = -C_EMBEDSHOT;		// has ball become embedded???, give it a kick
 		else return;
 #endif
 	}
 
 #ifdef C_DISP_GAIN
-	float edist = -C_DISP_GAIN * coll->distance;
+	float edist = -C_DISP_GAIN * coll->hitdistance;
 	if (edist > 1.0e-4f)
 	{										
 		if (edist > C_DISP_LIMIT) 
@@ -286,7 +286,7 @@ void Ball::Collide(CollisionEvent *coll)
         // use the norm, but is not correct, but cheaply handled
 	}
 
-	edist = -C_DISP_GAIN * m_coll.distance;	// noisy value .... needs investigation
+	edist = -C_DISP_GAIN * m_coll.hitdistance;	// noisy value .... needs investigation
 	if (!fFrozen && edist > 1.0e-4f)
 	{ 
 		if (edist > C_DISP_LIMIT) 
