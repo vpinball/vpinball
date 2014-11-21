@@ -15,7 +15,7 @@ public:
     std::vector<unsigned int> m_indices;
 
     void Clear();
-    bool LoadWavefrontObj(const char *fname, bool flipTV, bool convertToLeftHanded);
+    bool LoadWavefrontObj(const char *fname, const bool flipTV, const bool convertToLeftHanded);
     void SaveWavefrontObj(const char *fname, const char *description=NULL);
 
     size_t NumVertices() const    { return m_vertices.size(); }
@@ -235,7 +235,7 @@ private:        // private member functions
 
    void RecalculateMatrices();
    void TransformVertices();
-   void UpdateMesh();
+   void UpdateMesh( const bool force_rebuild_normals, const bool upload_vbuffer );
    void UpdateEditorView();
 
    bool BrowseFor3DMeshFile();

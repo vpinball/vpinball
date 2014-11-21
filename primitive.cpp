@@ -18,7 +18,7 @@ void Mesh::Clear()
     m_indices.clear();
 }
 
-bool Mesh::LoadWavefrontObj(const char *fname, bool flipTV, bool convertToLeftHanded)
+bool Mesh::LoadWavefrontObj(const char *fname, const bool flipTV, const bool convertToLeftHanded)
 {
     Clear();
 
@@ -505,7 +505,7 @@ void Primitive::CalculateBuiltinOriginal()
          m_mesh.m_indices[i*3+2] = i + 1;
          m_mesh.m_indices[i*3+1] = tmp;
 
-         SetNormal(&m_mesh.m_vertices[0], &m_mesh.m_indices[i+3], 3);
+         //SetNormal(&m_mesh.m_vertices[0], &m_mesh.m_indices[i+3], 3); // see below
 
          const int tmp2 = tmp+1;
          // bottom
@@ -513,7 +513,7 @@ void Primitive::CalculateBuiltinOriginal()
          m_mesh.m_indices[3 * (i + m_d.m_Sides) + 1] = m_d.m_Sides + 2 + i;
          m_mesh.m_indices[3 * (i + m_d.m_Sides) + 2] = m_d.m_Sides + tmp2;
 
-         SetNormal(&m_mesh.m_vertices[0], &m_mesh.m_indices[3*(i+m_d.m_Sides)], 3);
+         //SetNormal(&m_mesh.m_vertices[0], &m_mesh.m_indices[3*(i+m_d.m_Sides)], 3); // see below
 
          // sides
          m_mesh.m_indices[6 * (i + m_d.m_Sides)    ] = m_d.m_Sides*2 + tmp2;
@@ -525,15 +525,20 @@ void Primitive::CalculateBuiltinOriginal()
       }
    }
 
-   //!! BUG: SetNormal only works for plane polygons
-   //SetNormal(&m_mesh.m_vertices[0], &m_mesh.m_indices[0], m_mesh.NumIndices());
+   //SetNormal(&m_mesh.m_vertices[0], &m_mesh.m_indices[0], m_mesh.NumIndices()); // SetNormal only works for plane polygons
+   UpdateMesh(true,false);
 }
 
-void Primitive::UpdateMesh()
+void Primitive::UpdateMesh( const bool force_rebuild_normals, const bool upload_vbuffer )
 {
-#define PRIMITIVE_NORMAL_HACK
+//#define PRIMITIVE_NORMAL_HACK // seems to be not necessary! at least 3ds max exported stuff looks correct, even under rotation //!! or add flip normal flag?
 
 #ifdef PRIMITIVE_NORMAL_HACK
+   force_rebuild_normals = true;
+#endif
+
+   if(force_rebuild_normals)
+   {
    for (unsigned i = 0; i < m_mesh.NumVertices(); i++)
    {
       Vertex3D_NoTex2& tempVert = m_mesh.m_vertices[i];
@@ -571,12 +576,15 @@ void Primitive::UpdateMesh()
 	  tempVert->ny *= inv_l;
 	  tempVert->nz *= inv_l;
    }
-#endif
+   }
 
+   if(upload_vbuffer)
+   {
    Vertex3D_NoTex2 *buf;
    vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY);
    memcpy( buf, &m_mesh.m_vertices[0], sizeof(Vertex3D_NoTex2)*m_mesh.m_vertices.size() );
    vertexBuffer->unlock();
+   }
 }
 
 void Primitive::UpdateEditorView()
@@ -592,7 +600,7 @@ void Primitive::RenderObject( RenderDevice *pd3dDevice )
     if (vertexBufferRegenerate)
     {
         vertexBufferRegenerate = false;
-        UpdateMesh();
+        UpdateMesh(false,true);
     }
     pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelDeclaration );
 
@@ -925,7 +933,7 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
 	  {
   		  std::vector<WORD> tmp(numIndices);
 	      pbr->GetStruct( &tmp[0], sizeof(WORD)*numIndices);
-		  for(unsigned int i = 0; i < numIndices; ++i)
+		  for(int i = 0; i < numIndices; ++i)
 			  m_mesh.m_indices[i] = tmp[i];
 	  }
    }
