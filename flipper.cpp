@@ -122,12 +122,6 @@ void Flipper::SetDefaults(bool fromMouseClick)
       m_d.m_fEnabled = iTmp == 0 ? false : true;
    else
       m_d.m_fEnabled = fTrue;
-
-   hr = GetRegInt("DefaultProps\\Flipper","CompatibilityMode", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_fCompatibility = iTmp == 0 ? false : true;
-   else
-      m_d.m_fCompatibility = fTrue;
 }
 
 void Flipper::WriteRegDefaults()
@@ -164,7 +158,6 @@ void Flipper::WriteRegDefaults()
    SetRegValueInt(regKey,"RubberWidth", m_d.m_rubberwidth);
    SetRegValueInt(regKey,"Visible", m_d.m_fVisible);
    SetRegValueInt(regKey,"Enabled", m_d.m_fEnabled);
-   SetRegValueInt(regKey,"CompatibilityMode", m_d.m_fCompatibility);
 }
 
 
@@ -555,8 +548,6 @@ void Flipper::PostRenderStatic(RenderDevice* pd3dDevice)
 {
     TRACE_FUNCTION();
 
-    //if( m_d.m_fCompatibility )
-    //    return;
     if (m_phitflipper && !m_phitflipper->m_flipperanim.m_fVisible)
         return;
     if (m_phitflipper == NULL && !m_d.m_fVisible)
@@ -609,10 +600,6 @@ void Flipper::RenderSetup(RenderDevice* pd3dDevice)
     _ASSERTE(m_phitflipper);
     Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
-    if ( m_d.m_fCompatibility )
-    {
-        m_d.m_fEnabled = m_d.m_fVisible;
-    }
     const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_Center.x, m_d.m_Center.y);
 
     const float anglerad = ANGTORAD(m_d.m_StartAngle);
@@ -850,7 +837,6 @@ HRESULT Flipper::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
    bw.WriteFloat(FID(RPUP), m_d.m_rampUp);
    bw.WriteBool(FID(VSBL), m_d.m_fVisible);
    bw.WriteBool(FID(ENBL), m_d.m_fEnabled);
-   bw.WriteBool(FID(COMP), m_d.m_fCompatibility);
    bw.WriteFloat(FID(FRMN), m_d.m_FlipperRadiusMin);		
    bw.WriteFloat(FID(FHGT), m_d.m_height);
 
@@ -992,10 +978,6 @@ BOOL Flipper::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(ENBL))
    {
       pbr->GetBool(&m_d.m_fEnabled);
-   }
-   else if (id == FID(COMP))
-   {
-      pbr->GetBool(&m_d.m_fCompatibility);
    }
    else
    {
@@ -1375,19 +1357,11 @@ STDMETHODIMP Flipper::put_Visible(VARIANT_BOOL newVal)
    {
       //m_phitflipper->m_flipperanim.m_fEnabled = m_d.m_fVisible; //rlc error 
       m_phitflipper->m_flipperanim.m_fVisible = VBTOF(newVal);
-      if( m_d.m_fCompatibility )
-      {
-         m_phitflipper->m_flipperanim.m_fEnabled = VBTOF(newVal);
-      }
    }
    else
    {
       STARTUNDO
       m_d.m_fVisible = VBTOF(newVal);
-      if( m_d.m_fCompatibility )
-      {
-         m_d.m_fEnabled = m_d.m_fVisible;
-      }
       STOPUNDO
    }
    return S_OK;
@@ -1413,21 +1387,6 @@ STDMETHODIMP Flipper::put_Enabled(VARIANT_BOOL newVal)
          m_d.m_fEnabled = VBTOF(newVal);
       STOPUNDO
    }
-   return S_OK;
-}
-
-STDMETHODIMP Flipper::get_CompatibilityMode(VARIANT_BOOL *pVal)
-{
-   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fCompatibility);
-
-   return S_OK;
-}
-
-STDMETHODIMP Flipper::put_CompatibilityMode(VARIANT_BOOL newVal)
-{
-   STARTUNDO
-      m_d.m_fCompatibility = VBTOF(newVal);
-   STOPUNDO
    return S_OK;
 }
 

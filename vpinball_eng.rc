@@ -176,9 +176,6 @@ BEGIN
     LTEXT           "Rubber &Width",IDC_STATIC,7,83,45,8
     LTEXT           "Rubber Offset &Height",IDC_STATIC,7,69,68,8
     CONTROL         "Enabled",IDC_FLIPPER_ENABLED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,76,95,43,10
-    CONTROL         "Compatibility Mode",IDC_FLIPPER_COMPATIBILITY_MODE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,107,75,10
-    LTEXT           "(If set flippers aren't dynamic and the Visible flag disables the flipper)",IDC_STATIC,17,117,89,25
     COMBOBOX        IDC_MATERIAL_COMBO,7,13,109,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     COMBOBOX        IDC_MATERIAL_COMBO2,7,37,109,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
 END

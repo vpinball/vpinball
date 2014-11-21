@@ -36,7 +36,6 @@ public:
 
 	BOOL  m_fVisible;
     BOOL  m_fEnabled;
-    BOOL  m_fCompatibility;
 
 	float m_mass;
 	float m_strength;
@@ -138,8 +137,6 @@ public:
     STDMETHOD(put_Visible)(/*[in]*/ VARIANT_BOOL newVal);
     STDMETHOD(get_Enabled)(/*[out, retval]*/ VARIANT_BOOL *pVal);
     STDMETHOD(put_Enabled)(/*[in]*/ VARIANT_BOOL newVal);
-    STDMETHOD(get_CompatibilityMode)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-    STDMETHOD(put_CompatibilityMode)(/*[in]*/ VARIANT_BOOL newVal);
 	STDMETHOD(get_Strength)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Strength)(/*[in]*/ float newVal);
 	STDMETHOD(get_RubberThickness)(/*[out, retval]*/ long *pVal);
