@@ -27,8 +27,8 @@ public:
 	bool m_fVisible;
 	bool m_fImageWalls;
 	bool m_fCastsShadow;
-	bool m_fAcrylic;
-    float m_depthBias;      // for determining depth sorting (alpha ramps only)
+	//bool m_fAcrylic;
+    float m_depthBias;      // for determining depth sorting
 };
 
 /////////////////////////////////////////////////////////////////////////////
