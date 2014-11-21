@@ -24,7 +24,7 @@ public:
 	~Ball();
 
     static int GetBallsInUse();
-	void Init();
+	void Init(const float mass = 1.0f);
     void RenderSetup();
 
 	virtual void UpdateDisplacements(const float dtime);

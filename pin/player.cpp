@@ -1185,7 +1185,7 @@ void Player::InitStatic(HWND hwndProgress)
 	m_pin3d.m_pd3dDevice->EndScene();
 }
 
-Ball *Player::CreateBall(const float x, const float y, const float z, const float vx, const float vy, const float vz, const float radius)
+Ball *Player::CreateBall(const float x, const float y, const float z, const float vx, const float vy, const float vz, const float radius, const float mass)
 {
 	Ball * const pball = new Ball();
 	pball->radius = radius;
@@ -1197,7 +1197,7 @@ Ball *Player::CreateBall(const float x, const float y, const float z, const floa
 	pball->vel.x = vx;
 	pball->vel.y = vy;
 	pball->vel.z = vz;
-	pball->Init(); // Call this after radius set to get proper inertial tensor set up
+	pball->Init(mass); // Call this after radius set to get proper inertial tensor set up
 
 	pball->EnsureOMObject();
 
