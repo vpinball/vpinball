@@ -121,7 +121,6 @@ DECLARE_REGISTRY_RESOURCEID(IDR_TRIGGER)
     
 	VertexBuffer *vertexBuffer;
     IndexBuffer *triggerIndexBuffer;
-    std::vector<Vertex2D> m_drawVertices;
     std::vector<Vertex3Ds> vertices;
     WORD *faceIndices;
     Vertex3D_NoTex2 *triggerVertices;

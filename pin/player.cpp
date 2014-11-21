@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include <algorithm>
-#include "ballMesh.h"
+#include "../meshes/ballMesh.h"
 #include "BallShader.h"
 // touch defines, delete as soon as we can get rid of old compilers and use new ones that have these natively
 
@@ -690,7 +690,7 @@ static bool CompareHitableDepth(Hitable* h1, Hitable* h2)
     return h1->GetDepth(g_viewDir) >= h2->GetDepth(g_viewDir);
 }
 
-void Player::UpdateBasicShaderMatrix(const Matrix3D objectTrafo)
+void Player::UpdateBasicShaderMatrix(const Matrix3D& objectTrafo)
 {
     D3DMATRIX worldMat;
     D3DMATRIX viewMat;
