@@ -537,7 +537,7 @@ void Primitive::UpdateMesh()
    {
       Vertex3D_NoTex2& tempVert = m_mesh.m_vertices[i];
 	  tempVert.nx = tempVert.ny = tempVert.nz = 0.0f;
-   }
+      }
 
    for(unsigned i = 0; i < m_mesh.NumIndices(); i+=3)
    {
@@ -609,7 +609,7 @@ void Primitive::RenderObject( RenderDevice *pd3dDevice )
         pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", true);
         pd3dDevice->basicShader->Core()->SetFloat("fAlphaTestValue", 128.0f/255.0f);
 
-        g_pplayer->m_pin3d.SetTextureFilter(ePictureTexture, TEXTURE_MODE_TRILINEAR);
+        //g_pplayer->m_pin3d.SetTextureFilter(ePictureTexture, TEXTURE_MODE_TRILINEAR);
         // accomodate models with UV coords outside of [0,1]
         pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_WRAP);
     }

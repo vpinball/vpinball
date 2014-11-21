@@ -1087,7 +1087,7 @@ void Ramp::RenderStaticHabitrail(RenderDevice* pd3dDevice)
        pd3dDevice->basicShader->SetTexture("Texture0",pin);
        pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
 
-       g_pplayer->m_pin3d.SetTextureFilter(ePictureTexture, TEXTURE_MODE_TRILINEAR);
+       //g_pplayer->m_pin3d.SetTextureFilter(ePictureTexture, TEXTURE_MODE_TRILINEAR);
 }
    pd3dDevice->basicShader->Begin(0);
 
@@ -1596,7 +1596,7 @@ void Ramp::RenderStatic(RenderDevice* pd3dDevice)
          pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", true);
          pd3dDevice->basicShader->Core()->SetFloat("fAlphaTestValue", 128.0f/255.0f);
 
-         ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
+         //ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
       }
       else
       {
@@ -1608,6 +1608,7 @@ void Ramp::RenderStatic(RenderDevice* pd3dDevice)
       int offset=0;
       for (int i=0; i<(rampVertex-1); i++,offset+=4)
          pd3dDevice->DrawPrimitiveVB(D3DPT_TRIANGLEFAN, staticVertexBuffer, offset, 4);
+
       pd3dDevice->basicShader->End();  
 
       if (pin && !m_d.m_fImageWalls)
@@ -2588,7 +2589,7 @@ void Ramp::PostRenderStatic(RenderDevice* pd3dDevice)
          pd3dDevice->basicShader->SetTexture( "Texture0", pin );
          pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
 
-         ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
+         //ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
       }
       else
       {

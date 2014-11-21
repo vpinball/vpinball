@@ -353,7 +353,7 @@ void Spinner::PostRenderStatic(RenderDevice* pd3dDevice)
         else
             pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
 
-        g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
+        //g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
         pd3dDevice->basicShader->SetTexture("Texture0",pinback);
         pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
     }
@@ -385,7 +385,7 @@ void Spinner::PostRenderStatic(RenderDevice* pd3dDevice)
         else
             pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
 
-        g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
+        //g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
         pd3dDevice->basicShader->SetTexture("Texture0",pinfront);
         pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
     }

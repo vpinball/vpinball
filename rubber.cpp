@@ -1426,7 +1426,7 @@ void Rubber::RenderObject(RenderDevice *pd3dDevice)
          pin->CreateAlphaChannel();
 //         pin->Set( ePictureTexture );
 
-         ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
+         //ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 
          pd3dDevice->basicShader->SetTexture("Texture0", pin);
          pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
