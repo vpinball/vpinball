@@ -560,7 +560,7 @@ void Decal::RenderStatic(RenderDevice* pd3dDevice)
    // Set texture to mirror, so the alpha state of the texture blends correctly to the outside
 //   pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_MIRROR);
 
-   ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
+   //ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
    g_pplayer->m_pin3d.EnableAlphaBlend(1,false);
 
    if (!m_fBackglass)
