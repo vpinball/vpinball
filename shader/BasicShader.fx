@@ -45,7 +45,7 @@ float4 ps_main( in VS_OUTPUT IN) : COLOR
    float3 diffuse  = cBase;
    float3 glossy   = bIsMetal ? cBase : cGlossy*0.08f;
    float3 specular = cClearcoat*0.08f;
-   float3 edge = bIsMetal ? float3(1,1,1) : float3(fEdge,fEdge,fEdge);
+   float edge = bIsMetal ? 1.0f : fEdge;
    
    float4 result=lightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular, edge); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
    result.a *= fmaterialAlpha;
@@ -62,7 +62,7 @@ float4 ps_main_texture(in VS_OUTPUT IN) : COLOR
    float3 diffuse  = t*cBase;
    float3 glossy   = bIsMetal ? diffuse : t*cGlossy*0.08f; //!! use AO for glossy? specular?
    float3 specular = cClearcoat*0.08f;
-   float3 edge = bIsMetal ? float3(1,1,1) : float3(fEdge,fEdge,fEdge);
+   float edge = bIsMetal ? 1.0f : fEdge;
 
    float4 result = lightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular, edge);
    result.a = pixel.a*fmaterialAlpha;
@@ -177,7 +177,7 @@ float4 PS_LightWithTexel(in VS_LIGHT_OUTPUT IN ) : COLOR
     float3 diffuse  = t*cBase;
     float3 glossy   = bIsMetal ? diffuse : t*cGlossy*0.08f;
     float3 specular = cClearcoat*0.08f;
-	float3 edge = bIsMetal ? float3(1,1,1) : float3(fEdge,fEdge,fEdge);
+	float edge = bIsMetal ? 1.0f : fEdge;
 
 	float len = length(lightCenter.xyz-IN.tablePos.xyz)/max(maxRange,0.1f);
     float atten = 1.0f-saturate(len);
@@ -199,7 +199,7 @@ float4 PS_LightWithoutTexel(in VS_LIGHT_OUTPUT IN ) : COLOR
     float3 diffuse  = cBase;
     float3 glossy   = bIsMetal ? cBase : cGlossy*0.08f;
     float3 specular = cClearcoat*0.08f;
-	float3 edge = bIsMetal ? float3(1,1,1) : float3(fEdge, fEdge, fEdge);
+	float edge = bIsMetal ? 1.0f : fEdge;
 
 	float len = length(lightCenter.xyz-IN.tablePos.xyz)/max(maxRange,0.1f);
     float atten = 1.0f-saturate(len);
