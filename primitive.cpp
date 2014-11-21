@@ -5,9 +5,9 @@
 #include "stdafx.h" 
 
 // defined in objloader.cpp
-extern bool WaveFrontObj_Load(const char *filename, bool flipTv, bool convertToLeftHanded );
+extern bool WaveFrontObj_Load(const char *filename, const bool flipTv, const bool convertToLeftHanded );
 extern void WaveFrontObj_GetVertices( std::vector<Vertex3D_NoTex2>& verts );
-extern void WaveFrontObj_GetIndices( std::vector<WORD>& list );
+extern void WaveFrontObj_GetIndices( std::vector<unsigned int>& list );
 extern void WaveFrontObj_Save(const char *filename, const char *description, const Mesh& mesh);
 //
 
@@ -337,22 +337,22 @@ void Primitive::Render(Sur * const psur)
    }
    else     // large mesh: draw a simplified mesh for performance reasons
    {
-       const size_t numPts = m_mesh.NumIndices() / 3 + 1;
-       std::vector<Vertex2D> drawVertices(numPts);
-
-       if (numPts > 0)
+       if (m_mesh.NumIndices() > 0)
        {
+           const size_t numPts = m_mesh.NumIndices() / 3 + 1;
+           std::vector<Vertex2D> drawVertices(numPts);
+
            const Vertex3Ds * const A = &vertices[m_mesh.m_indices[0]];
            drawVertices.push_back(A->xy());
-       }
 
-       for (unsigned i=0; i<m_mesh.NumIndices(); i+=3)
-       {
-           const Vertex3Ds * const B = &vertices[m_mesh.m_indices[i+1]];
-           drawVertices.push_back(B->xy());
-       }
+           for (unsigned i=0; i<m_mesh.NumIndices(); i+=3)
+           {
+              const Vertex3Ds * const B = &vertices[m_mesh.m_indices[i+1]];
+              drawVertices.push_back(B->xy());
+           }
 
-       psur->Polyline(&drawVertices[0], drawVertices.size());
+           psur->Polyline(&drawVertices[0], drawVertices.size());
+       }
    }
 
    // draw center marker
@@ -537,7 +537,7 @@ void Primitive::UpdateMesh()
    {
       Vertex3D_NoTex2& tempVert = m_mesh.m_vertices[i];
 	  tempVert.nx = tempVert.ny = tempVert.nz = 0.0f;
-      }
+   }
 
    for(unsigned i = 0; i < m_mesh.NumIndices(); i+=3)
    {
@@ -745,7 +745,17 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcry
       bw.WriteInt( FID(M3VN), (int)m_mesh.NumVertices() );
       bw.WriteStruct( FID(M3DX), &m_mesh.m_vertices[0], (int)(sizeof(Vertex3D_NoTex2)*m_mesh.NumVertices()) );
       bw.WriteInt( FID(M3FN), (int)m_mesh.NumIndices() );
-      bw.WriteStruct( FID(M3DI), &m_mesh.m_indices[0], (int)(sizeof(WORD)*m_mesh.NumIndices()) );
+	  if(m_mesh.NumIndices() > 65535)
+	  {
+	      bw.WriteStruct( FID(M3DI), &m_mesh.m_indices[0], (int)(sizeof(unsigned int)*m_mesh.NumIndices()) );
+	  }
+	  else
+	  {
+		  std::vector<WORD> tmp(m_mesh.NumIndices());
+		  for(unsigned int i = 0; i < m_mesh.NumIndices(); ++i)
+			  tmp[i] = m_mesh.m_indices[i];
+	      bw.WriteStruct( FID(M3DI), &tmp[0], (int)(sizeof(WORD)*m_mesh.NumIndices()) );
+	  }
    }
    bw.WriteFloat(FID(PIDB), m_d.m_depthBias);
 
@@ -908,7 +918,15 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
    else if( id == FID(M3DI) )
    {
       m_mesh.m_indices.resize( numIndices );
-      pbr->GetStruct( &m_mesh.m_indices[0], sizeof(WORD)*numIndices);
+	  if(numIndices > 65535)
+	      pbr->GetStruct( &m_mesh.m_indices[0], sizeof(unsigned int)*numIndices);
+	  else
+	  {
+  		  std::vector<WORD> tmp(numIndices);
+	      pbr->GetStruct( &tmp[0], sizeof(WORD)*numIndices);
+		  for(unsigned int i = 0; i < numIndices; ++i)
+			  m_mesh.m_indices[i] = tmp[i];
+	  }
    }
    else if (id == FID(PIDB))
    {

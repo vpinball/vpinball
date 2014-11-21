@@ -709,23 +709,23 @@ void Flipper::RenderAtThickness(RenderDevice* pd3dDevice, float angle, float hei
 
     unsigned long offset = 0;
 
-    SetNormal(rgv3D, rgi0123, 3, NULL, NULL, 4);
+    SetNormal<Vertex3D,WORD>(rgv3D, rgi0123, 3, NULL, NULL, 4);
     // Draw top.
-    buf[offset ] = rgv3D[0];
+    buf[offset    ] = rgv3D[0];
     buf[offset + 1] = rgv3D[1];
     buf[offset + 2] = rgv3D[2];
     buf[offset + 3] = rgv3D[3];
     offset+=4;
-    SetNormal(rgv3D, rgiFlipper1, 3, NULL, NULL, 4);
+    SetNormal<Vertex3D,WORD>(rgv3D, rgiFlipper1, 3, NULL, NULL, 4);
     // Draw front side wall.
-    buf[offset ] = rgv3D[0];
+    buf[offset    ] = rgv3D[0];
     buf[offset + 1] = rgv3D[4];
     buf[offset + 2] = rgv3D[5];
     buf[offset + 3] = rgv3D[1];
     offset+=4;
-    SetNormal(rgv3D, rgiFlipper2, 3, NULL, NULL, 4);
+    SetNormal<Vertex3D,WORD>(rgv3D, rgiFlipper2, 3, NULL, NULL, 4);
     // Draw back side wall.
-    buf[offset ] = rgv3D[2];
+    buf[offset    ] = rgv3D[2];
     buf[offset + 1] = rgv3D[6];
     buf[offset + 2] = rgv3D[7];
     buf[offset + 3] = rgv3D[3];
@@ -752,10 +752,10 @@ void Flipper::RenderAtThickness(RenderDevice* pd3dDevice, float angle, float hei
     WORD endCapsIndex[3*14];
     for (int l=0;l<14;l++)
     {
-        endCapsIndex[l*3 ] = 0;
+        endCapsIndex[l*3  ] = 0;
         endCapsIndex[l*3+1] = l+1;
         endCapsIndex[l*3+2] = l+2;
-        SetNormal(rgv3D, endCapsIndex+l*3, 3, NULL, NULL, 0);
+        SetNormal(rgv3D, endCapsIndex+l*3, 3);
     }
     memcpy( &buf[offset], rgv3D, sizeof(Vertex3D)*16 );
     offset += 16;
@@ -796,7 +796,7 @@ void Flipper::RenderAtThickness(RenderDevice* pd3dDevice, float angle, float hei
     // Draw end caps to vertical cylinder at small end.
     for (int l=0;l<14;l++)
     {
-        SetNormal(rgv3D, endCapsIndex+l*3, 3, NULL, NULL, 0);
+        SetNormal(rgv3D, endCapsIndex+l*3, 3);
     }
     memcpy( &buf[offset], rgv3D, sizeof(Vertex3D)*16 );
     offset += 16;

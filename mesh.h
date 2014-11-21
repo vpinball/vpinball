@@ -315,8 +315,8 @@ inline float GetAngle(const Vertex2D * const pvEnd1, const Vertex2D * const pvJo
 // This functions uses Newell's method to compute the normal. It produces the correct result for
 // a clockwise polygon in a left-handed coordinate system, or for a counterclockwise polygon in
 // a right-handed coordinate system.
-template <class VtxType>
-void SetNormal(VtxType * const rgv, const WORD * const rgi, const int count, void * prgvApply=NULL, const WORD * rgiApply=NULL, int applycount=NULL)
+template <class VtxType, class IdxType>
+void SetNormal(VtxType * const rgv, const IdxType * const rgi, const int count, void * prgvApply=NULL, const IdxType * rgiApply=NULL, int applycount=0)
 {
 	// If apply-to array is null, just apply the resulting normal to incoming array
     VtxType * rgvApply = prgvApply ? (VtxType*)prgvApply : rgv;

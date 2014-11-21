@@ -261,7 +261,7 @@ void Kicker::PreRenderStatic( RenderDevice* pd3dDevice)
             rgi[l*3+1] = l+1;
             rgi[l*3+2] = l+2;
 
-            SetNormal(vertices, rgi+l*3, 3, NULL, NULL, 0);
+            SetNormal(vertices, rgi+l*3, 3);
          }
          pd3dDevice->basicShader->Begin(0);
          pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX,vertices, 16, rgi, 3*14);
@@ -269,10 +269,9 @@ void Kicker::PreRenderStatic( RenderDevice* pd3dDevice)
 
          // Draw the top "lid" of the kicker hole invisibly (for the depth buffer)
          for (int l=0;l<14;++l)
-         {
-            SetNormal(vertices+16, rgi+l*3, 3, NULL, NULL, 0);
-         }
-         float depthbias = -1e-4f;
+            SetNormal(vertices+16, rgi+l*3, 3);
+
+		 float depthbias = -1e-4f;
          pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, *((DWORD*)&depthbias));
          pd3dDevice->SetRenderState(RenderDevice::COLORWRITEENABLE, 0);         // write only to depth buffer
          pd3dDevice->basicShader->Begin(0);
@@ -294,7 +293,7 @@ void Kicker::PreRenderStatic( RenderDevice* pd3dDevice)
             rgi[l*3+1] = l;
             rgi[l*3+2] = (l + 1)%16;
 
-            SetNormal(vertices+16, rgi+l*3, 3, NULL, NULL, 0);
+            SetNormal(vertices+16, rgi+l*3, 3);
 
             vertices[48].nx = 0;
             vertices[48].ny = 0;
@@ -314,7 +313,7 @@ void Kicker::PreRenderStatic( RenderDevice* pd3dDevice)
             rgi[l*6+4] = 16 + (l + 1)%16;
             rgi[l*6+5] = (l + 1)%16;
 
-            SetNormal(vertices+16, rgi+l*6, 6, NULL, NULL, 0);
+            SetNormal(vertices+16, rgi+l*6, 6);
          }
          pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_VERTEX, vertices+16, 32, rgi, 2*3*16);
          pd3dDevice->basicShader->End();
@@ -325,7 +324,7 @@ void Kicker::PreRenderStatic( RenderDevice* pd3dDevice)
             rgi[l*3+1] = l+1;
             rgi[l*3+2] = l+2;
 
-            SetNormal(vertices+32, rgi+l*3, 3, NULL, NULL, 0);
+            SetNormal(vertices+32, rgi+l*3, 3);
          }
          float depthbias = -1e-4f;
          pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, *((DWORD*)&depthbias));

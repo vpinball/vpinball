@@ -80,7 +80,7 @@ static void NormalizeNormals()
 }
 #endif
 
-bool WaveFrontObj_Load(const char *filename, bool flipTv, bool convertToLeftHanded )
+bool WaveFrontObj_Load(const char *filename, const bool flipTv, const bool convertToLeftHanded )
 {
    FILE *f;
    fopen_s(&f,filename,"r");
@@ -300,11 +300,11 @@ void WaveFrontObj_GetVertices( std::vector<Vertex3D_NoTex2>& objMesh ) // clears
    verts.clear();
 }
 
-void WaveFrontObj_GetIndices( std::vector<WORD>& list ) // clears temporary storage on the way
+void WaveFrontObj_GetIndices( std::vector<unsigned int>& list ) // clears temporary storage on the way
 {
    list.resize( faces.size() );
    for( unsigned int i=0; i<faces.size(); i++ )
-      list[i] = (WORD)faces[i];
+      list[i] = faces[i];
    faces.clear();
 }
 
