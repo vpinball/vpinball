@@ -318,9 +318,10 @@ HitHeight(float)
 Methods
 -------
 
-CreateBall(IBall **ball)
-CreateSizedBall(IBall **ball)
-DestroyBall( int ballId)
+CreateBall()
+CreateSizedBall(float radius)
+CreateSizedBallWithMass(float radius, float mass)
+DestroyBall(int ballId)
 Kick(float angle, float speed, float inclination)
 KickXYZ(float angle, float speed, float inclination, float x, float y, float z)
 KickZ(float angle, float speed, float inclination, float heightz)

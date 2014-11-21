@@ -36,10 +36,10 @@ void Ball::RenderSetup()
 {
 }
 
-void Ball::Init()
+void Ball::Init(const float mass)
 {
    // Only called by real balls, not temporary objects created for physics/rendering
-   m_mass = 1.0f;
+   m_mass = mass;
    m_invMass = 1.0f / m_mass;
 
    m_orientation.Identity();
