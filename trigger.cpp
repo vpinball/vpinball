@@ -365,7 +365,7 @@ void Trigger::Render(Sur * const psur)
            const Vertex3Ds& A = vertices[faceIndices[0]];
            drawVertices[0] = Vertex2D(A.x,A.y);
 
-	   size_t o = 1;
+		   size_t o = 1;
            for (int i=0; i<numFaces; i+=3,++o)
            {
               const Vertex3Ds& B = vertices[faceIndices[i+1]];

@@ -591,3 +591,11 @@ Variables
 
 Color(OLE_COLOR) - sets color of ball
 Mass(float)
+Radius(float)
+X(float)
+Y(float)
+Z(float)
+VelX(float)
+VelY(float)
+VelZ(float)
+Image(string)
