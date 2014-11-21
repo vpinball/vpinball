@@ -126,7 +126,6 @@ public:
     ViewPort vp;
 
 private:
-    VertexBuffer *backgroundVBuffer;
     VertexBuffer *tableVBuffer;
     IndexBuffer *tableIBuffer;
     std::map<int, MemTexture*> m_xvShadowMap;

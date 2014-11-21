@@ -98,7 +98,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_DISP_REEL)
 
     bool        RenderAnimation();
 
-	void WriteRegDefaults();
+	void		WriteRegDefaults();
 
     PinTable    *m_ptable;
 
@@ -108,7 +108,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_DISP_REEL)
 
     DispReelUpdater *m_ptu;
     
-    float          m_renderwidth, m_renderheight;     // size of each reel (rendered)
+    float       m_renderwidth, m_renderheight;     // size of each reel (rendered)
 
 private:
     // rendering information (after scaling to render resolution)
@@ -122,7 +122,6 @@ private:
     float       m_reeldigitheight;
     U32         m_timenextupdate;
     bool        m_fforceupdate;
-    VertexBuffer *vertexBuffer;
 
     struct TexCoordRect
     {
@@ -183,7 +182,6 @@ public:
 private:
     float   getBoxWidth() const;
     float   getBoxHeight() const;
-    void    SetVerticesForReel(const int reelNum, const int digit, Vertex3D_NoTex2 * const v);
 };
 
 #endif // !defined(AFX_DISPREEL_H__1052EB33_4F53_460B_AAB8_09D3C517F225__INCLUDED_)
