@@ -477,7 +477,7 @@ void Pin3D::RenderPlayfieldGraphics()
 
 	CalcShadowCoordinates(buffer,4);
 
-	SetNormal(rgv, rgiPin3D1, 4, NULL, NULL, 0);
+	SetNormal(rgv, rgiPin3D1, 4);
 
 	memcpy(buffer+4, rgv, 7*sizeof(Vertex3D));
 

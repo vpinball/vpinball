@@ -1399,7 +1399,7 @@ void Ramp::prepareStatic(RenderDevice* pd3dDevice)
          }
       }
 
-      SetNormal(rgv3D, rgi0123, 4, NULL, NULL, NULL);
+      SetNormal(rgv3D, rgi0123, 4);
       // Draw the floor of the ramp.
       memcpy( &buf[offset], rgv3D, sizeof(Vertex3D_NoTex2)*4 );
       offset+=4;
@@ -1453,12 +1453,12 @@ void Ramp::prepareStatic(RenderDevice* pd3dDevice)
       }
 
       // 2-Sided polygon
-      SetNormal(rgv3D, rgi0123, 4, NULL, NULL, NULL);
+      SetNormal(rgv3D, rgi0123, 4);
       // Draw the wall of the ramp.
       memcpy( &buf[offset], rgv3D, sizeof(Vertex3D_NoTex2)*4 );
       offset+=4;
 
-      SetNormal(rgv3D, rgiRampStatic1, 4, NULL, NULL, NULL);
+      SetNormal(rgv3D, rgiRampStatic1, 4);
       // Draw the wall of the ramp.
       memcpy( &buf[offset], rgv3D, sizeof(Vertex3D_NoTex2)*4 );
       offset+=4;
@@ -1512,12 +1512,12 @@ void Ramp::prepareStatic(RenderDevice* pd3dDevice)
       }
 
       // 2-Sided polygon
-      SetNormal(rgv3D, rgi0123, 4, NULL, NULL, NULL);
+      SetNormal(rgv3D, rgi0123, 4);
       // Draw the wall of the ramp.
       memcpy( &buf[offset], rgv3D, sizeof(Vertex3D_NoTex2)*4 );
       offset+=4;
 
-      SetNormal(rgv3D, rgiRampStatic1, 4, NULL, NULL, NULL);
+      SetNormal(rgv3D, rgiRampStatic1, 4);
       // Draw the wall of the ramp.
       memcpy( &buf[offset], rgv3D, sizeof(Vertex3D_NoTex2)*4 );
       offset+=4;
@@ -2716,7 +2716,7 @@ void Ramp::GenerateVertexBuffer(RenderDevice* pd3dDevice)
             }
         }
 
-        SetNormal(rgv3D, rgi0123, 4, NULL, NULL, NULL);
+        SetNormal(rgv3D, rgi0123, 4);
         // Draw the floor of the ramp.
         rgibuf[i*6]   = i*4;
         rgibuf[i*6+1] = i*4+1;
@@ -2854,7 +2854,7 @@ void Ramp::GenerateVertexBuffer(RenderDevice* pd3dDevice)
             }
 
             // 2-Sided polygon
-            SetNormal(rgv3D, rgi0123, 4, NULL, NULL, NULL);
+            SetNormal(rgv3D, rgi0123, 4);
         }
         memcpy( &buf[offset], &rgvbuf[0], sizeof(Vertex3D_NoTex2)*m_numVertices );
         offset+=m_numVertices;

@@ -267,7 +267,9 @@ public:
    void CreateVertexBuffer( unsigned int numVerts, DWORD usage, DWORD fvf, VertexBuffer **vBuffer );
    void CreateIndexBuffer(unsigned int numIndices, DWORD usage, IndexBuffer::Format format, IndexBuffer **idxBuffer);
 
+   IndexBuffer* CreateAndFillIndexBuffer(unsigned int numIndices, const unsigned int * indices);
    IndexBuffer* CreateAndFillIndexBuffer(unsigned int numIndices, const WORD * indices);
+   IndexBuffer* CreateAndFillIndexBuffer(const std::vector<unsigned int>& indices);
    IndexBuffer* CreateAndFillIndexBuffer(const std::vector<WORD>& indices);
 
    void DrawPrimitive(D3DPRIMITIVETYPE type, DWORD fvf, const void* vertices, DWORD vertexCount);

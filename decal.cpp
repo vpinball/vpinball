@@ -499,7 +499,7 @@ void Decal::RenderSetup(RenderDevice* pd3dDevice )
 
    if (!m_fBackglass)
    {
-      SetNormal(vertices, rgi0123, 4, NULL, NULL, 0);
+      SetNormal(vertices, rgi0123, 4);
    }
    else
    {

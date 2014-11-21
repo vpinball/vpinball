@@ -67,6 +67,8 @@ VP 10.0.0 Changelog
 - Flasher supports custom shapes and multi texturing. You can define two separate images and define a filter to blend these two images.
   look into the CommandReference.txt for additional changes to the functions that can be used
 
+- support primitive vertex sizes > 65535
+
 - new external audio library for music playback (BASS)
 
 - 64bit port (handle with care, might still cause issues)

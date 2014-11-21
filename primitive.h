@@ -12,7 +12,7 @@ class Mesh
 {
 public:
     std::vector<Vertex3D_NoTex2> m_vertices;
-    std::vector<WORD> m_indices;
+    std::vector<unsigned int> m_indices;
 
     void Clear();
     bool LoadWavefrontObj(const char *fname, bool flipTV, bool convertToLeftHanded);

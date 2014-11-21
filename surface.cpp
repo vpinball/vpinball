@@ -878,37 +878,37 @@ void Surface::PrepareSlingshots( RenderDevice *pd3dDevice )
 
       ppin3d->CalcShadowCoordinates(rgv3D,12);
       
-      SetNormal(rgv3D, rgiSlingshot0, 4, NULL, NULL, NULL);
+      SetNormal(rgv3D, rgiSlingshot0, 4);
       buf[offset++] = rgv3D[rgiSlingshot0[0]];
       buf[offset++] = rgv3D[rgiSlingshot0[1]];
       buf[offset++] = rgv3D[rgiSlingshot0[2]];
       buf[offset++] = rgv3D[rgiSlingshot0[3]];
 
-      SetNormal(rgv3D, rgiSlingshot1, 4, NULL, NULL, NULL);
+      SetNormal(rgv3D, rgiSlingshot1, 4);
       buf[offset++] = rgv3D[rgiSlingshot1[0]];
       buf[offset++] = rgv3D[rgiSlingshot1[1]];
       buf[offset++] = rgv3D[rgiSlingshot1[2]];
       buf[offset++] = rgv3D[rgiSlingshot1[3]];
 
-      SetNormal(rgv3D, rgiSlingshot2, 4, NULL, NULL, NULL);
+      SetNormal(rgv3D, rgiSlingshot2, 4);
       buf[offset++] = rgv3D[rgiSlingshot2[0]];
       buf[offset++] = rgv3D[rgiSlingshot2[1]];
       buf[offset++] = rgv3D[rgiSlingshot2[2]];
       buf[offset++] = rgv3D[rgiSlingshot2[3]];
 
-      SetNormal(rgv3D, rgiSlingshot3, 4, NULL, NULL, NULL);
+      SetNormal(rgv3D, rgiSlingshot3, 4);
       buf[offset++] = rgv3D[rgiSlingshot3[0]];
       buf[offset++] = rgv3D[rgiSlingshot3[1]];
       buf[offset++] = rgv3D[rgiSlingshot3[2]];
       buf[offset++] = rgv3D[rgiSlingshot3[3]];
 
-      SetNormal(rgv3D, rgiSlingshot4, 4, NULL, NULL, NULL);
+      SetNormal(rgv3D, rgiSlingshot4, 4);
       buf[offset++] = rgv3D[rgiSlingshot4[0]];
       buf[offset++] = rgv3D[rgiSlingshot4[1]];
       buf[offset++] = rgv3D[rgiSlingshot4[2]];
       buf[offset++] = rgv3D[rgiSlingshot4[3]];
 
-      SetNormal(rgv3D, rgiSlingshot5, 4, NULL, NULL, NULL);
+      SetNormal(rgv3D, rgiSlingshot5, 4);
       buf[offset++] = rgv3D[rgiSlingshot5[0]];
       buf[offset++] = rgv3D[rgiSlingshot5[1]];
       buf[offset++] = rgv3D[rgiSlingshot5[2]];

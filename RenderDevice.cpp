@@ -809,10 +809,29 @@ IndexBuffer* RenderDevice::CreateAndFillIndexBuffer(unsigned int numIndices, con
     return ib;
 }
 
+IndexBuffer* RenderDevice::CreateAndFillIndexBuffer(unsigned int numIndices, const unsigned int * indices)
+{
+    IndexBuffer* ib;
+    CreateIndexBuffer(numIndices, 0, IndexBuffer::FMT_INDEX32, &ib);
+
+    void* buf;
+    ib->lock(0, 0, &buf, 0);
+    memcpy(buf, indices, numIndices * sizeof(indices[0]));
+    ib->unlock();
+
+    return ib;
+}
+
 IndexBuffer* RenderDevice::CreateAndFillIndexBuffer(const std::vector<WORD>& indices)
 {
     return CreateAndFillIndexBuffer(indices.size(), &indices[0]);
 }
+
+IndexBuffer* RenderDevice::CreateAndFillIndexBuffer(const std::vector<unsigned int>& indices)
+{
+    return CreateAndFillIndexBuffer(indices.size(), &indices[0]);
+}
+
 
 RenderTarget* RenderDevice::AttachZBufferTo(RenderTarget* surf)
 {
