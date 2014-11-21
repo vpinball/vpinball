@@ -1,6 +1,6 @@
 #include "StdAfx.h"
-#include "triggerSimpleMesh.h"
-#include "triggerStarMesh.h"
+#include "meshes/triggerSimpleMesh.h"
+#include "meshes/triggerStarMesh.h"
 
 Trigger::Trigger()
 {
@@ -357,24 +357,23 @@ void Trigger::Render(Sur * const psur)
 
    if( m_d.m_shape==TriggerWire )
    {
-       const size_t numPts = numVertices / 3 + 1;
-       m_drawVertices.clear();
-       m_drawVertices.reserve(numPts);
-
-       if (numPts > 0)
+       if (numFaces > 0)
        {
-           const Vertex3Ds * const A = &vertices[faceIndices[0]];
-           m_drawVertices.push_back(A->xy());
-       }
+           const size_t numPts = numFaces / 3 + 1;
+           std::vector<Vertex2D> drawVertices(numPts);
 
-       for (int i=0; i<numFaces; i+=3)
-       {
-           const Vertex3Ds * const A = &vertices[faceIndices[i]  ];
-           const Vertex3Ds * const B = &vertices[faceIndices[i+1]];
-           m_drawVertices.push_back(B->xy());
-       }
+           const Vertex3Ds& A = vertices[faceIndices[0]];
+           drawVertices[0] = Vertex2D(A.x,A.y);
 
-       psur->Polyline(&m_drawVertices[0], m_drawVertices.size());
+	   size_t o = 1;
+           for (int i=0; i<numFaces; i+=3,++o)
+           {
+              const Vertex3Ds& B = vertices[faceIndices[i+1]];
+              drawVertices[o] = Vertex2D(B.x,B.y);
+           }
+
+           psur->Polyline(&drawVertices[0], drawVertices.size());
+       }
    }
 }
 

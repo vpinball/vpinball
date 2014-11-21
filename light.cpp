@@ -1,7 +1,7 @@
 #include "StdAfx.h"
 #include "LightInsert.h"
-#include "bulbLightMesh.h"
-#include "bulbSocketMesh.h"
+#include "meshes/bulbLightMesh.h"
+#include "meshes/bulbSocketMesh.h"
 
 LightCenter::LightCenter(Light *plight)
 {

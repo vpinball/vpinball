@@ -1,8 +1,8 @@
 #include "stdafx.h"
-#include "bumperBaseMesh.h"
-#include "bumperRingMesh.h"
-#include "bumperCapMesh.h"
-#include "bumperSocketMesh.h"
+#include "meshes/bumperBaseMesh.h"
+#include "meshes/bumperRingMesh.h"
+#include "meshes/bumperCapMesh.h"
+#include "meshes/bumperSocketMesh.h"
 
 Bumper::Bumper()
 {
@@ -680,7 +680,7 @@ void Bumper::RenderSetup(RenderDevice* pd3dDevice )
        }
        memcpy( buf, vertBuf, bumperCapNumVertices*sizeof(Vertex3D_NoTex2));
        capVertexBuffer->unlock();
-       delete vertBuf;
+       delete [] vertBuf;
    }
 
    // ensure we are not disabled at game start

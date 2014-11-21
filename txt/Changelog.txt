@@ -1,61 +1,66 @@
 VP 10.0.0 Changelog
 ------------------------
-- this release breaks a lot of backwards compatibility for ramps, lights, physics, colors/images/materials, and more
+- this release breaks a lot of backwards compatibility for ramps, lights, physics, colors/images/materials, and more, so
   most existing VP9 and VP8 tables will not work correctly or will output script errors when run (but they will load)
 
   -> TL.DR up-front conversion hints:
      - pull lightsources->ambient down to 0,0,0 (otherwise table will look 'hazy')
      - crank up lightsources->emission to 255,255,255 (to get a good contrast on the shading)
      - revisit all physics settings, even if you used VP9Physmod(5) before (only the re-enabled friction and scatter in the physmod5 case though)
-     - use flashers when doing special lighting effects/night mods, otherwise try to stick with the newly redone light element
+     - assign a material to each object on the table
+     - use flashers when doing special lighting effects/night mods, otherwise try to stick with the newly redone light elements
+     - revisit CommandReference.txt for all commands that have changed names/behavior, were replaced or deleted
 
 
 - physics mostly redone (also previously known as 'physmod(5)')
   due to this it is now also possible to enable vsync without physics sideeffects like stutter or bad aiming (set FPS limiter to 1)
 
-  -> additional changes since physmod5, note that these will also force you to revisit existing physmod5 physics table settings:
-     - friction is no longer ignored (e.g. it was always 0.3 before) on the playfield, walls, slingshots, primitives, ramps, gates (and more?!)
-     - scatter is no longer ignored for kickers and all kinds of collisions. also the fallback behavior was changed: only if scatter < 0 then the global scatter is used
-     - collision heuristics are adapted for ball sizes different from the default radius of 25, so it should be safer to use strange ball sizes
-     - (hopefully) no more ball-falling-through-playfield problem
+  -> additional changes since physmod5, note that these will also -force- you to revisit existing physmod5 physics table settings:
+     - friction is no longer ignored (e.g. it was always constant at 0.3 before) on the playfield, walls, slingshots, primitives, ramps, gates (and more?!)
+     - scatter is no longer ignored for kickers and all kinds of collisions. also the global fallback behavior was changed: only if scatter < 0 then the global scatter value is used
+     - collision heuristics are adapted for all ball sizes (e.g. different from the default radius of 25), so it should be safer to use strange ball sizes now
+       (note: remember to always also tweak the ball mass if changing the ball radius, as otherwise you will get a "floaty" ball (mass = k*radius^3)),
+       thus (hopefully) no more ball-falling-through-playfield problem
 
-  -> the data-format of the physics sets (*.vpp files) is basically the same, although the parameters inside are different, so unfortunately you need to set them up newly
+  -> the data-format of the physics sets (*.vpp files) is basically the same, although the parameters inside are different, so unfortunately you need to set them up from scratch again
 
 - add material editor
   
   -> quick and basic explanation:
-     - First of all select if you want to design a metal material (steel, gold, silver, etc)
+     - First of all select if you want to design a metal material (steel, gold, silver, aluminium, etc)
        or any other one (plastic, wood, rubber, etc)
 
      - Then select the base color of your material
        (note that this can/will be modulated by the (optional) image on your object(s) later-on,
         so if you need your object image to look as true to the original as possible, set the base color to full white,
-        otherwise you can use the base color to change the brightness or colors of the object image)
+        otherwise you can also just use the base color to change the brightness or colors of the object image)
 
      - If you selected a non-metal material you can now in addition add some subtle reflectivity via the glossy layer color
-       (otherwise simply set it to full black, leave at grey to full white for natural behavior)
+       (otherwise simply set it to full black, but leave at grey to full white for a more natural behavior)
 
-     - Then select the shininess of your material (0 means very very dull reflections, 1 means perfect mirror-like reflections), of course this only has an effect on metals or if you use the glossy layer
+     - Then select the shininess of your material (0.0 means very very dull reflections, 1.0 means perfect mirror-like reflections),
+       of course this only has an effect on metals or if you used the glossy layer
 
      - For some materials it can now also be realistic to add an additional clearcoat layer on top of everything
        (otherwise simply set it to full black)
 
-     - After testing the look of the material on an object (use a curved one if possible, e.g. the default rubber or a complex primitive),
-       tweak the edge brightness parameter: Usually it should just be left at 1, but if you think the edges are unnaturally bright, reduce it
+     - After testing the look of the material on an object (use a curved one if possible, e.g. the default rubber (with thickness >30) or a complex primitive),
+       you can tweak the edge brightness parameter: Usually it should just be left at 1, but if you think the edges are unnaturally bright, reduce it
 
   -> pro tip:
-     - In nature, each object has a bit of glossy, so try to never set the glossy to full black!
+     - In nature, each object has a bit of glossy, so try to -never- set the glossy to full black on non-metal materials!
 
 - assign sound-,image-,material- and collection-manager to hot keys (F2,F3,F4 and F8)
 
 - add rubber element
 
-- shader based inserts/lights/bulbs
-- shader based mesh ball
-- shader based materials/lighting (mostly redone from scratch)
+- new shader based inserts/lights/bulbs
+- new shader based mesh ball
+- new shader based materials/lighting
 
 - internal DMD (access via script, input levels are 0..100)
-  display the DMD via the TextBox (use "DMD" as text)
+  to display the DMD, use a TextBox with the magic keyword "DMD" as text
+  to be able to connect to VPM, use a recent VPM and also core.vbs and follow the instructions there
 - DMDWidth, DMDHeight, DMDPixels added to Table Script methods
 
 - improved smoothness for ramps (centripetal Catmull-Rom splines)

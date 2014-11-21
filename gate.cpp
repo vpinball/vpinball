@@ -1,6 +1,6 @@
 #include "StdAfx.h"
-#include "gateBracketMesh.h"
-#include "gateWireMesh.h"
+#include "meshes/gateBracketMesh.h"
+#include "meshes/gateWireMesh.h"
 
 Gate::Gate()
 {

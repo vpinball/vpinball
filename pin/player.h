@@ -411,7 +411,7 @@ private:
 
 public:
 	void ToggleFPS();
-    void UpdateBasicShaderMatrix(const Matrix3D objectTrafo = Matrix3D(1.0f));
+    void UpdateBasicShaderMatrix(const Matrix3D& objectTrafo = Matrix3D(1.0f));
     void InitShader();
 #endif
 
