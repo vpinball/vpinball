@@ -82,7 +82,6 @@ private:
 	TextboxData m_d;
 
     RECT m_rect;
-    Vertex3D_NoTex2 rgv3D[4];
     MemTexture *m_texture;
 
 	IFont *m_pIFont;

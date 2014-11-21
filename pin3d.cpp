@@ -14,7 +14,6 @@ Pin3D::Pin3D()
 	m_pddsStaticZ = NULL;
 	m_envRadianceTexture = NULL;
 	m_device_envRadianceTexture = NULL;
-	backgroundVBuffer = NULL;
     tableVBuffer = NULL;
     tableIBuffer = NULL;
 }
@@ -44,8 +43,6 @@ Pin3D::~Pin3D()
    }
    m_device_envRadianceTexture = NULL;
 
-	if(backgroundVBuffer)
-		backgroundVBuffer->release();
     if (tableVBuffer)
         tableVBuffer->release();
     if (tableIBuffer)
@@ -216,7 +213,7 @@ HRESULT Pin3D::InitPin3D(const HWND hwnd, const bool fFullScreen, const int scre
 	
 	m_device_envRadianceTexture = m_pd3dDevice->m_texMan.LoadTexture(m_envRadianceTexture);
 	m_pd3dDevice->m_texMan.SetDirty(m_envRadianceTexture);
-	
+
 
     m_pddsLightWhite.CreateFromResource(IDB_WHITE);
     m_pddsLightWhite.SetAlpha(RGB(0,0,0));
@@ -295,44 +292,11 @@ void Pin3D::DrawBackground()
 	Texture * const pin = ptable->GetDecalsEnabled() ? ptable->GetImage((char *)g_pplayer->m_ptable->m_szImageBackdrop) : NULL;
 	if (pin)
 	{
-		Vertex3D_NoTex2 rgv3D[4];
-		rgv3D[0].x = 0;
-		rgv3D[0].y = 0;
-		rgv3D[0].tu = 0;
-		rgv3D[0].tv = 0;
-
-		rgv3D[1].x = (float)EDITOR_BG_WIDTH;
-		rgv3D[1].y = 0;
-		rgv3D[1].tu = 1.0f;
-		rgv3D[1].tv = 0;
-
-		rgv3D[2].x = (float)EDITOR_BG_WIDTH;
-		rgv3D[2].y = (float)EDITOR_BG_HEIGHT;
-		rgv3D[2].tu = 1.0f;
-		rgv3D[2].tv = 1.0f;
-
-		rgv3D[3].x = 0;
-		rgv3D[3].y = (float)EDITOR_BG_HEIGHT;
-		rgv3D[3].tu = 0;
-		rgv3D[3].tv = 1.0f;
-
-		SetHUDVertices(rgv3D, 4);
-		SetDiffuse(rgv3D, 4, 0xFFFFFF);
-		Vertex3D_NoTex2 *buf;
-
-		//init background
-		if( !backgroundVBuffer )
-			m_pd3dDevice->CreateVertexBuffer( 4, 0, MY_D3DTRANSFORMED_NOTEX2_VERTEX, &backgroundVBuffer);
-		backgroundVBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY);
-		memcpy( buf, rgv3D, sizeof(Vertex3D_NoTex2)*4);
-		backgroundVBuffer->unlock();
-
 		m_pd3dDevice->Clear( 0, NULL, D3DCLEAR_ZBUFFER, 0, 1.0f, 0L );
 
 		m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
 
-		SetTexture(pin);
-		m_pd3dDevice->DrawPrimitiveVB(D3DPT_TRIANGLEFAN, backgroundVBuffer, 0, 4);
+		g_pplayer->Spritedraw(0.f,0.f,1.f,1.f,0xFFFFFFFF,pin);
 
 		m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
 	}

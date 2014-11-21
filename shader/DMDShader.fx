@@ -12,6 +12,18 @@ sampler2D texSampler0 : TEXUNIT0 = sampler_state
     MINFILTER = POINT;
 };
 
+sampler2D texSampler1 : TEXUNIT0 = sampler_state
+{
+	Texture	  = (Texture0);
+    MIPFILTER = LINEAR;
+    MAGFILTER = LINEAR;
+    MINFILTER = LINEAR;
+    // Set texture to mirror, so the alpha state of the texture blends correctly to the outside
+	ADDRESSU  = MIRROR;
+	ADDRESSV  = MIRROR;
+};
+
+
 //function output structures 
 struct VS_OUTPUT 
 { 
@@ -33,7 +45,7 @@ VS_OUTPUT vs_main (float4 vPosition  : POSITION0,
 float4 ps_main( in VS_OUTPUT IN) : COLOR
 {
    float l = tex2D(texSampler0, IN.tex0).z*(255.9f/100.f);
-   float3 color = float3(l,l,l);
+   float3 color = l*vColor; //!! create function that resembles LUT from VPM?
 
    float2 xy = IN.tex0 * float2(fResX,fResY);
    float2 dist = (xy-floor(xy))*2.2f-1.1f;
@@ -51,11 +63,27 @@ float4 ps_main( in VS_OUTPUT IN) : COLOR
    return float4(color+color2,1);
 }
 
+float4 ps_main_noDMD( in VS_OUTPUT IN) : COLOR
+{
+   float4 l = tex2D(texSampler1, IN.tex0);
+
+   return float4(l.xyz*vColor,l.w);
+}
+
 technique basic
 { 
    pass P0 
    { 
       VertexShader = compile vs_3_0 vs_main(); 
 	  PixelShader = compile ps_3_0 ps_main();
+   } 
+}
+
+technique basic_noDMD
+{ 
+   pass P0 
+   { 
+      VertexShader = compile vs_3_0 vs_main(); 
+	  PixelShader = compile ps_3_0 ps_main_noDMD();
    } 
 }

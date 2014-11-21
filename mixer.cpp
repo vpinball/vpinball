@@ -263,11 +263,10 @@ void mixer_draw()
 		DWORD col = RGBA_TO_D3DARGB ( r, g, b, a ); //!! meh
 
 		// Draw the tick mark.  (Reversed x and y to match coordinate system of front end.)
-		Display_DrawSprite( g_pplayer->m_pin3d.m_pd3dDevice, 
-							(fY + 1.0f), (fX + 1.0f),
-							(Height - 2.0f), (Width - 2.0f), 
-							col,
-							NULL, 1.0f, 1.0f );
+		g_pplayer->Spritedraw( (fY + 1.0f), (fX + 1.0f),
+							   (Height - 2.0f), (Width - 2.0f), 
+							   col,
+							   (Texture*)NULL); //!!
 
 		// Set the color.
 		r = ((float) ((color             ) >> 24)) * (float)(1.0/255.0);
@@ -277,11 +276,10 @@ void mixer_draw()
 		col = RGBA_TO_D3DARGB ( r, g, b, a ); //!! meh
 
 		// Draw the tick mark.  (Reversed x and y to match coordinate system of front end.)
-		Display_DrawSprite( g_pplayer->m_pin3d.m_pd3dDevice, 
-							fY, fX,
-							Height, Width, 
-							col,
-							NULL, 1.0f, 1.0f );
+		g_pplayer->Spritedraw( fY, fX,
+							   Height, Width, 
+							   col,
+							   (Texture*)NULL); //!!
 	}
 
 	// Restore the render states.

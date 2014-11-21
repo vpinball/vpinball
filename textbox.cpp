@@ -211,12 +211,17 @@ void Textbox::PostRenderStatic(RenderDevice* pd3dDevice)
 {
     TRACE_FUNCTION();
 
+	const float mult = (float)(1.0/EDITOR_BG_WIDTH);
+	const float ymult = (float)(1.0/EDITOR_BG_WIDTH * 4.0/3.0);
+
+	const float x = (float)m_rect.left*mult;
+	const float y = (float)m_rect.top*ymult;
+	const float width = (float)(m_rect.right - m_rect.left)*mult;
+	const float height = (float)(m_rect.bottom - m_rect.top)*ymult;
+
 	if(strstr(m_d.sztext,"DMD") != NULL) //!! meh
 	{
-		const float mult = (float)(1.0/EDITOR_BG_WIDTH);
-		const float ymult = (float)(1.0/EDITOR_BG_WIDTH * 4.0/3.0);
-		g_pplayer->DMDdraw((float)m_rect.left*mult, (float)m_rect.top*ymult,
-						   (float)(m_rect.right - m_rect.left)*mult, (float)(m_rect.bottom - m_rect.top)*ymult,
+		g_pplayer->DMDdraw(x, y, width, height,
 						   m_d.m_fontcolor); //!! replace??!
 
 		return;
@@ -225,27 +230,11 @@ void Textbox::PostRenderStatic(RenderDevice* pd3dDevice)
 	if (!m_texture)
         return;
 
-    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+	g_pplayer->m_pin3d.EnableAlphaBlend(0x80, false);
 
-	pd3dDevice->basicShader->SetMaterial(NULL,D3DXVECTOR4(1,1,1,1),D3DXVECTOR4(0,0,0,0),D3DXVECTOR4(0,0,0,0),0.f,0.f,1.f,1.f,false,false);
-	pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
+	g_pplayer->Spritedraw(x, y, width, height, 0xFFFFFFFF, pd3dDevice->m_texMan.LoadTexture(m_texture));
 
-    // Set texture to mirror, so the alpha state of the texture blends correctly to the outside
-    pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_MIRROR);
-
-    pd3dDevice->basicShader->SetTexture("Texture0", pd3dDevice->m_texMan.LoadTexture(m_texture));
-
-    ppin3d->SetTextureFilter(ePictureTexture, TEXTURE_MODE_BILINEAR);
-    //!! ppin3d->EnableAlphaTestReference(0x80); ??
-
-    pd3dDevice->basicShader->Begin(0);
-    pd3dDevice->DrawPrimitive( D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_NOTEX2_VERTEX, rgv3D, 4);
-    pd3dDevice->basicShader->End();
-    
-    // reset render state
-    pd3dDevice->SetTexture(ePictureTexture, NULL);
-    ppin3d->SetTextureFilter(ePictureTexture, TEXTURE_MODE_TRILINEAR);
-    pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_WRAP);
+	g_pplayer->m_pin3d.DisableAlphaBlend();
 }
 
 void Textbox::RenderSetup(RenderDevice* pd3dDevice)
@@ -262,36 +251,11 @@ void Textbox::RenderSetup(RenderDevice* pd3dDevice)
     m_rect.right  = (int)right;
     m_rect.bottom = (int)bottom;
 
-    rgv3D[0].x = left;
-    rgv3D[0].y = top;
-    rgv3D[0].tu = 0;
-    rgv3D[0].tv = 0;
-
-    rgv3D[1].x = right;
-    rgv3D[1].y = top;
-    rgv3D[1].tu = 1;
-    rgv3D[1].tv = 0;
-
-    rgv3D[2].x = right;
-    rgv3D[2].y = bottom;
-    rgv3D[2].tu = 1;
-    rgv3D[2].tv = 1;
-
-    rgv3D[3].x = left;
-    rgv3D[3].y = bottom;
-    rgv3D[3].tu = 0;
-    rgv3D[3].tv = 1;
-
-    SetHUDVertices(rgv3D, 4);
-
-    rgv3D[0].z = rgv3D[1].z = rgv3D[2].z = rgv3D[3].z = 0.0f;
-    rgv3D[0].rhw = rgv3D[1].rhw = rgv3D[2].rhw = rgv3D[3].rhw = 1.0f;
-
     m_pIFont->Clone(&m_pIFontPlay);
 
     CY size;
     m_pIFontPlay->get_Size(&size);
-    size.int64 = (LONGLONG)(size.int64 / 1.5f*ppin3d->m_dwRenderHeight * ppin3d->m_dwRenderWidth);
+    size.int64 = (LONGLONG)(size.int64 / 1.5f * ppin3d->m_dwRenderHeight * ppin3d->m_dwRenderWidth);
     m_pIFontPlay->put_Size(size);
 
     RenderText();

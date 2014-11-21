@@ -122,11 +122,10 @@ void draw_transparent_box( F32 sx, F32 sy, const F32 x, const F32 y, const U32 c
     const F32 a = ((float) ((color & 0x000000ff)      )) *(float)(1.0/255.0);
 	const DWORD col = RGBA_TO_D3DARGB ( r, g, b, a ); //!! meh
 
-    Display_DrawSprite( g_pplayer->m_pin3d.m_pd3dDevice, 
-                        y, x,
-                        sy, sx,
-                        col,
-                        NULL, 1.0f, 1.0f );
+    g_pplayer->Spritedraw( y, x,
+                           sy, sx,
+                           col,
+						   (Texture*)NULL ); //!!
 }
 
 F32 sPlumbPos[2] = { 300, 100 };

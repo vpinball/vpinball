@@ -6,17 +6,11 @@ DispReel::DispReel()
 {
     m_pIFont = NULL;
     m_ptu = NULL;
-    vertexBuffer = NULL;
 }
 
 DispReel::~DispReel()
 {
     m_pIFont->Release();
-    if( vertexBuffer )
-    {
-        vertexBuffer->release();
-        vertexBuffer=0;
-    }
 }
 
 // This function is called when ever a new instance of this object is created
@@ -396,12 +390,6 @@ void DispReel::EndPlay()
 		m_ptu = NULL;
 	}
 
-   if( vertexBuffer )
-   {
-      vertexBuffer->release();
-      vertexBuffer=0;
-   }
-
 	IEditable::EndPlay();
 }
 
@@ -422,39 +410,24 @@ void DispReel::PostRenderStatic(RenderDevice* pd3dDevice)
         if (!pin)
             return;
 
-		pd3dDevice->basicShader->SetMaterial(NULL,D3DXVECTOR4(1,1,1,1),D3DXVECTOR4(0,0,0,0),D3DXVECTOR4(0,0,0,0),0.f,0.f,1.f,1.f,false,false);
-
-        // Set texture to mirror, so the alpha state of the texture blends correctly to the outside
-        pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_MIRROR);
-
         pin->CreateAlphaChannel();
-        pin->Set( ePictureTexture );
 
-        ppin3d->SetTextureFilter(ePictureTexture, TEXTURE_MODE_TRILINEAR);
-
-        pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE);
-        pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, 0xe0);
-        pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATER);
+		g_pplayer->m_pin3d.EnableAlphaBlend(0xe0, false);
+        pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATER); //!! still necessary?
 
         ppin3d->DisableLightMap();
 
-        Vertex3D_NoTex2 rgv3D[4];
-
         for (int i = 0; i < m_d.m_reelcount; ++i)
         {
-            SetVerticesForReel(i, ReelInfo[i].currentValue, rgv3D);
-            pd3dDevice->DrawPrimitive( D3DPT_TRIANGLEFAN, MY_D3DTRANSFORMED_NOTEX2_VERTEX, rgv3D, 4);
+			g_pplayer->Spritedraw(ReelInfo[i].position.left, ReelInfo[i].position.top,
+								  ReelInfo[i].position.right,
+								  ReelInfo[i].position.bottom,
+								  0xFFFFFFFF, pin,
+								  m_digitTexCoords[ReelInfo[i].currentValue].u_min,m_digitTexCoords[ReelInfo[i].currentValue].v_min,
+								  m_digitTexCoords[ReelInfo[i].currentValue].u_max,m_digitTexCoords[ReelInfo[i].currentValue].v_max);
         }
 
-        // reset render state
-
-        pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, FALSE);
-		pd3dDevice->SetRenderState(RenderDevice::ALPHAREF, 1);
-
-        pd3dDevice->SetTexture(ePictureTexture, NULL);
-        ppin3d->SetTextureFilter(ePictureTexture, TEXTURE_MODE_TRILINEAR);
 		g_pplayer->m_pin3d.DisableAlphaBlend();
-        pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_WRAP);
     }
     else
     {
@@ -466,26 +439,23 @@ void DispReel::RenderSetup(RenderDevice* pd3dDevice)
 {
     Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
-    //if ( vertexBuffer==NULL )
-    //    pd3dDevice->CreateVertexBuffer( 4, 0, MY_D3DTRANSFORMED_NOTEX2_VERTEX, &vertexBuffer );
-
     // get the render sizes of the objects (reels and frame)
-    m_renderwidth  = max(0.0f, (m_d.m_width / (float)EDITOR_BG_WIDTH) * ppin3d->m_dwRenderWidth);
-    m_renderheight = max(0.0f, (m_d.m_height / (float)EDITOR_BG_HEIGHT) * ppin3d->m_dwRenderHeight);
-    const float m_renderspacingx = max(0.0f, (m_d.m_reelspacing / (float)EDITOR_BG_WIDTH) * ppin3d->m_dwRenderWidth);
-    const float m_renderspacingy = max(0.0f, (m_d.m_reelspacing / (float)EDITOR_BG_HEIGHT)  * ppin3d->m_dwRenderHeight);
+    m_renderwidth  = max(0.0f, m_d.m_width / (float)EDITOR_BG_WIDTH);
+    m_renderheight = max(0.0f, m_d.m_height / (float)EDITOR_BG_HEIGHT);
+    const float m_renderspacingx = max(0.0f, m_d.m_reelspacing / (float)EDITOR_BG_WIDTH);
+    const float m_renderspacingy = max(0.0f, m_d.m_reelspacing / (float)EDITOR_BG_HEIGHT);
 
     // set up all the reel positions within the object frame
-    const float x0 = (m_d.m_v1.x / (float)EDITOR_BG_WIDTH) * ppin3d->m_dwRenderWidth;
-    const float y0 = (m_d.m_v1.y / (float)EDITOR_BG_HEIGHT) * ppin3d->m_dwRenderHeight;
+    const float x0 = m_d.m_v1.x / (float)EDITOR_BG_WIDTH;
+    const float y0 = m_d.m_v1.y / (float)EDITOR_BG_HEIGHT;
     float x1 = x0 + m_renderspacingx;
 
     for (int i=0; i<m_d.m_reelcount; ++i)
     {
         ReelInfo[i].position.left	= x1;
-        ReelInfo[i].position.right	= x1 + m_renderwidth;
+        ReelInfo[i].position.right	= m_renderwidth;
         ReelInfo[i].position.top	= y0 + m_renderspacingy;
-        ReelInfo[i].position.bottom	= y0 + m_renderspacingy + m_renderheight;
+        ReelInfo[i].position.bottom	= m_renderheight;
 
         ReelInfo[i].currentValue	= 0;
         ReelInfo[i].motorPulses		= 0;
@@ -1396,25 +1366,4 @@ float DispReel::getBoxHeight() const
 					   + m_d.m_reelspacing + m_d.m_reelspacing; // spacing also includes edges
 
     return height;
-}
-
-
-void DispReel::SetVerticesForReel(const int reelNum, const int digit, Vertex3D_NoTex2 * const v)
-{
-    v[0].x = v[3].x = (float)ReelInfo[reelNum].position.left;
-    v[1].x = v[2].x = (float)ReelInfo[reelNum].position.right;
-
-    v[0].y = v[1].y = (float)ReelInfo[reelNum].position.top;
-    v[2].y = v[3].y = (float)ReelInfo[reelNum].position.bottom;
-
-    v[0].z = v[1].z = v[2].z = v[3].z = 0.0f;
-    v[0].rhw = v[1].rhw = v[2].rhw = v[3].rhw = 1.0f;
-
-    v[0].tu = v[3].tu = m_digitTexCoords[digit].u_min;
-    v[0].tv = v[1].tv = m_digitTexCoords[digit].v_min;
-
-    v[1].tu = v[2].tu = m_digitTexCoords[digit].u_max;
-    v[2].tv = v[3].tv = m_digitTexCoords[digit].v_max;
-
-    v[0].color = v[1].color = v[2].color = v[3].color = 0xffffffff;
 }

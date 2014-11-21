@@ -2172,6 +2172,64 @@ void Player::DMDdraw(const float DMDposx, const float DMDposy, const float DMDwi
   }
 }
 
+void Player::Spritedraw(const float posx, const float posy, const float width, const float height, const COLORREF color, Texture * const tex, const float u0, const float v0, const float u1, const float v1)
+{
+  if(tex)
+  {
+	float Verts[4*5] =
+	{
+	  1.0f,1.0f,0.0f,u1,v1,
+	  0.0f,1.0f,0.0f,u0,v1,
+	  1.0f,0.0f,0.0f,u1,v0,
+	  0.0f,0.0f,0.0f,u0,v0
+	};
+
+	for(unsigned int i = 0; i < 4; ++i)
+	{
+		Verts[i*5] = (Verts[i*5]*width + posx)*2.0f-1.0f;
+		Verts[i*5+1] = 1.0f-(Verts[i*5+1]*height + posy)*2.0f;
+	}
+
+    m_pin3d.m_pd3dDevice->SetVertexDeclaration( m_pin3d.m_pd3dDevice->m_pVertexTexelDeclaration );
+    const D3DXVECTOR4 c = COLORREF_to_D3DXVECTOR4(color);
+    m_pin3d.m_pd3dDevice->DMDShader->Core()->SetVector("vColor",&c);
+    m_pin3d.m_pd3dDevice->DMDShader->Core()->SetTechnique("basic_noDMD");
+    m_pin3d.m_pd3dDevice->DMDShader->SetTexture("Texture0", tex);
+    m_pin3d.m_pd3dDevice->DMDShader->Begin(0);
+    m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_TEX, (LPVOID)Verts, 4);
+    m_pin3d.m_pd3dDevice->DMDShader->End();
+  }
+}
+
+void Player::Spritedraw(const float posx, const float posy, const float width, const float height, const COLORREF color, D3DTexture * const tex)
+{
+  if(tex)
+  {
+	float Verts[4*5] =
+	{
+	  1.0f,1.0f,0.0f,1.0f,1.0f,
+	  0.0f,1.0f,0.0f,0.0f,1.0f,
+	  1.0f,0.0f,0.0f,1.0f,0.0f,
+	  0.0f,0.0f,0.0f,0.0f,0.0f
+	};
+
+	for(unsigned int i = 0; i < 4; ++i)
+	{
+		Verts[i*5] = (Verts[i*5]*width + posx)*2.0f-1.0f;
+		Verts[i*5+1] = 1.0f-(Verts[i*5+1]*height + posy)*2.0f;
+	}
+
+    m_pin3d.m_pd3dDevice->SetVertexDeclaration( m_pin3d.m_pd3dDevice->m_pVertexTexelDeclaration );
+    const D3DXVECTOR4 c = COLORREF_to_D3DXVECTOR4(color);
+    m_pin3d.m_pd3dDevice->DMDShader->Core()->SetVector("vColor",&c);
+    m_pin3d.m_pd3dDevice->DMDShader->Core()->SetTechnique("basic_noDMD");
+    m_pin3d.m_pd3dDevice->DMDShader->SetTexture("Texture0", tex);
+    m_pin3d.m_pd3dDevice->DMDShader->Begin(0);
+    m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_TEX, (LPVOID)Verts, 4);
+    m_pin3d.m_pd3dDevice->DMDShader->End();
+  }
+}
+
 void Player::RenderDynamics()
 {
     TRACE_FUNCTION();
