@@ -78,9 +78,9 @@ sampler2D texSampler2 : TEXUNIT2 = sampler_state
 };
 
 
-float3 FresnelSchlick(float3 spec, float LdotH, float3 edge)
+float3 FresnelSchlick(float3 spec, float LdotH, float edge)
 {
-    return spec + (edge - spec) * pow(1.0f - LdotH, 5);
+    return spec + (float3(edge,edge,edge) - spec) * pow(1.0f - LdotH, 5);
 }
 
 float3 InvGamma(float3 color) //!! use hardware support? D3DSAMP_SRGBTEXTURE,etc
@@ -103,7 +103,7 @@ float3 ToneMap(float3 color)
     //return saturate(color);
 }
 
-float3 DoPointLight(float3 pos, float3 N, float3 V, float3 diffuse, float3 glossy, float3 edge, float glossyPower, int i) 
+float3 DoPointLight(float3 pos, float3 N, float3 V, float3 diffuse, float3 glossy, float edge, float glossyPower, int i) 
 { 
    float3 lightDir = mul(float4(lights[i].vPos,1.0f), matView).xyz - pos; //!! do in vertex shader?! or completely before?!
    float3 L = normalize(lightDir);
@@ -173,11 +173,11 @@ float3 DoEnvmap2ndLayer(float3 color1stLayer, float3 pos, float3 N, float3 V, fl
 		atan2(r.y, r.x) * (0.5f/PI) + 0.5f,
 	    acos(r.z) * (1.0f/PI));
 	    
-   float3 w = FresnelSchlick(specular, dot(V, N), float3(fEdge, fEdge, fEdge)); //!! ?
+   float3 w = FresnelSchlick(specular, dot(V, N), fEdge); //!! ?
    return lerp(color1stLayer, InvGamma(tex2Dlod(texSampler1, float4(uv, 0, 0)).xyz)*fenvEmissionScale, w); // weight (optional) lower diffuse/glossy layer with clearcoat/specular //!! replace by real HDR instead? -> remove invgamma then
 }
 
-float4 lightLoop(float3 pos, float3 N, float3 V, float3 diffuse, float3 glossy, float3 specular, float3 edge)
+float4 lightLoop(float3 pos, float3 N, float3 V, float3 diffuse, float3 glossy, float3 specular, float edge)
 {
    // normalize input vectors for BRDF evals
    N = normalize(N);
@@ -205,7 +205,7 @@ float4 lightLoop(float3 pos, float3 N, float3 V, float3 diffuse, float3 glossy, 
    if((!bIsMetal && (diffuseMax > 0.0f)) || (glossyMax > 0.0f))
    {
       for(int i = 0; i < iLightPointNum; i++)
-         color += DoPointLight(pos, N, V, diffuse, glossy, edge, fRoughness, i); // no specular needed as only pointlights so far
+         color += DoPointLight(pos, N, V, diffuse, glossy, edge, fRoughness, i); // no clearcoat needed as only pointlights so far
    }
          
    if(!bIsMetal && (diffuseMax > 0.0f))

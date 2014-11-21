@@ -125,7 +125,7 @@ voutTrail vsBallTrail( in vin IN )
 
 //------------------------------------
 
-float4 ballLightLoop(float3 pos, float3 N, float3 V, float3 diffuse, float3 glossy, float3 specular, float3 edge)
+float4 ballLightLoop(float3 pos, float3 N, float3 V, float3 diffuse, float3 glossy, float3 specular, float edge)
 {
    // normalize input vectors for BRDF evals
    N = normalize(N);
@@ -152,7 +152,7 @@ float4 ballLightLoop(float3 pos, float3 N, float3 V, float3 diffuse, float3 glos
    if((!bIsMetal && (diffuseMax > 0.0f)) || (glossyMax > 0.0f))
    {
       for(int i = 0; i < iLightPointNum; i++)  
-         color += DoPointLight(pos, N, V, diffuse, glossy, edge, fRoughness, i); // no specular needed as only pointlights so far
+         color += DoPointLight(pos, N, V, diffuse, glossy, edge, fRoughness, i); // no clearcoat needed as only pointlights so far
    }
 
    if(specularMax > 0.0f)
@@ -200,7 +200,7 @@ float4 psBall( in vout IN ) : COLOR
 	   playfieldColor = InvGamma(tex2D( texSampler1, uv ).xyz); //!! rather use screen space sample from previous frame??
 	   
 	   //!! hack to get some lighting on sample
-	   playfieldColor = lightLoop(mid, mul(float4(/*normal=*/0,0,1,0), matWorldView).xyz, /*camera=0,0,0,1*/-IN.worldPos, playfieldColor, float3(0,0,0), float3(0,0,0), float3(1,1,1)).xyz;
+	   playfieldColor = lightLoop(mid, mul(float4(/*normal=*/0,0,1,0), matWorldView).xyz, /*camera=0,0,0,1*/-IN.worldPos, playfieldColor, float3(0,0,0), float3(0,0,0), 1.0f).xyz;
 	   
 	   //!! magic falloff & weight the rest in from the ballImage
 	   float weight = freflectionStrength*sqrt(-NdotR);
@@ -213,9 +213,8 @@ float4 psBall( in vout IN ) : COLOR
 	float3 diffuse  = cBase + decalColor.xyz; // assume that decal is used for scratches and/or stickers/logos
     float3 glossy   = diffuse;
     float3 specular = playfieldColor;
-	float3 edge     = float3(1,1,1);
    
-    return ballLightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular, edge);
+    return ballLightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular, 1.0f);
 }
 
 
