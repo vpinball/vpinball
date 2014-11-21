@@ -129,7 +129,7 @@ float LineSeg::HitTestBasic(const Ball * pball, const float dtime, CollisionEven
 		return -1.0f;
 
 	if (!rigid)												  // non rigid body collision? return direction
-		coll.normal[1].x = bUnHit ? 1.0f : 0.0f;				  // UnHit signal is receding from outside target
+		coll.hitvelocity.x = bUnHit ? 1.0f : 0.0f;				  // UnHit signal is receding from outside target
 	
 	const float ballr = pball->radius;
 	const float hitz = pball->pos.z - ballr + pball->vel.z*hittime;  // check too high or low relative to ball rolling point at hittime
@@ -138,18 +138,18 @@ float LineSeg::HitTestBasic(const Ball * pball, const float dtime, CollisionEven
 		|| hitz + ballr * 0.5f > m_rcHitRect.zhigh)
 		return -1.0f;
 
-	coll.normal[0].x = normal.x;				// hit normal is same as line segment normal
-	coll.normal[0].y = normal.y;
-    coll.normal[0].z = 0.0f;
+	coll.hitnormal.x = normal.x;				// hit normal is same as line segment normal
+	coll.hitnormal.y = normal.y;
+    coll.hitnormal.z = 0.0f;
 		
-	coll.distance = bnd;					// actual contact distance ...
+	coll.hitdistance = bnd;					// actual contact distance ...
 	coll.hitRigid = rigid;				// collision type
 
     // check for contact
     if (fabsf(bnv) <= C_CONTACTVEL && fabsf(bnd) <= (float)PHYS_TOUCH)
     {
         coll.isContact = true;
-        coll.normal[1].z = bnv;
+        coll.hitvelocity.z = bnv;
     }
 
 	return hittime;
@@ -162,7 +162,7 @@ float LineSeg::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 
 void LineSeg::Contact(CollisionEvent& coll, float dtime)
 {
-    coll.ball->HandleStaticContact(coll.normal[0], coll.normal[1].z, m_friction /*0.3f*/, dtime);
+    coll.ball->HandleStaticContact(coll.hitnormal, coll.hitvelocity.z, m_friction /*0.3f*/, dtime);
 }
 
 
@@ -275,28 +275,28 @@ float HitCircle::HitTestBasicRadius(const Ball * pball, float dtime, CollisionEv
 
 	const float sqrlen = (hitx - c.x)*(hitx - c.x) + (hity - c.y)*(hity - c.y);
 
-	 if (sqrlen > 1.0e-8f) // over center???
-		{//no
+	if (sqrlen > 1.0e-8f) // over center???
+	{ // no
 		const float inv_len = 1.0f/sqrtf(sqrlen);
-		coll.normal->x = (hitx - c.x)*inv_len;
-		coll.normal->y = (hity - c.y)*inv_len;
-        coll.normal->z = 0.0f;
-		}
-	 else 
-		{//yes over center
-		coll.normal->x = 0; // make up a value, any direction is ok
-		coll.normal->y = 1.0f;
-        coll.normal->z = 0.0f;
-		}
+		coll.hitnormal.x = (hitx - c.x)*inv_len;
+		coll.hitnormal.y = (hity - c.y)*inv_len;
+        coll.hitnormal.z = 0.0f;
+	}
+	else 
+	{ // yes, over center
+		coll.hitnormal.x = 0.0f; // make up a value, any direction is ok
+		coll.hitnormal.y = 1.0f;
+        coll.hitnormal.z = 0.0f;
+	}
 	
 	if (!rigid)											// non rigid body collision? return direction
-		coll.normal[1].x = fUnhit ? 1.0f : 0.0f;			// UnHit signal	is receding from target
+		coll.hitvelocity.x = fUnhit ? 1.0f : 0.0f;		// UnHit signal	is receding from target
 
     coll.isContact = isContact;
     if (isContact)
-        coll.normal[1].z = bnv;
+        coll.hitvelocity.z = bnv;
 
-	coll.distance = bnd;					//actual contact distance ... 
+	coll.hitdistance = bnd;				//actual contact distance ... 
 	coll.hitRigid = rigid;				// collision type
 
 	return hittime;
@@ -311,14 +311,11 @@ float HitCircle::HitTestRadius(const Ball *pball, float dtime, CollisionEvent& c
 
 void LineSeg::Collide(CollisionEvent *coll)
 {
-    Ball *pball = coll->ball;
-    const Vertex3Ds& hitnormal = coll->normal[0];
-
-    const float dot = hitnormal.x * pball->vel.x + hitnormal.y * pball->vel.y;
-    pball->Collide2DWall(hitnormal, m_elasticity, m_friction /*0.3f*/, m_scatter);
+    const float dot = coll->hitnormal.x * coll->ball->vel.x + coll->hitnormal.y * coll->ball->vel.y;
+    coll->ball->Collide2DWall(coll->hitnormal, m_elasticity, m_friction /*0.3f*/, m_scatter);
 
     if (dot <= -m_threshold)
-        FireHitEvent(pball);
+        FireHitEvent(coll->ball);
 }
 
 void LineSeg::CalcNormal()
@@ -352,12 +349,12 @@ float HitCircle::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 
 void HitCircle::Collide(CollisionEvent *coll)
 {
-    coll->ball->Collide2DWall(coll->normal[0], m_elasticity, m_friction /*0.3f*/, m_scatter);
+    coll->ball->Collide2DWall(coll->hitnormal, m_elasticity, m_friction /*0.3f*/, m_scatter);
 }
 
 void HitCircle::Contact(CollisionEvent& coll, float dtime)
 {
-    coll.ball->HandleStaticContact(coll.normal[0], coll.normal[1].z, m_friction /*0.3f*/, dtime);
+    coll.ball->HandleStaticContact(coll.hitnormal, coll.hitvelocity.z, m_friction /*0.3f*/, dtime);
 }
 
 
@@ -431,13 +428,13 @@ float HitLineZ::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 
     Vertex2D norm(hitx - m_xy.x, hity - m_xy.y);
     norm.Normalize();
-    coll.normal->Set(norm.x, norm.y, 0.0f);
+    coll.hitnormal.Set(norm.x, norm.y, 0.0f);
 
     coll.isContact = isContact;
     if (isContact)
-        coll.normal[1].z = bnv;
+        coll.hitvelocity.z = bnv;
 
-    coll.distance = bnd;                    // actual contact distance
+    coll.hitdistance = bnd;                    // actual contact distance
     coll.hitRigid = true;
 
     return hittime;
@@ -450,19 +447,16 @@ void HitLineZ::CalcHitRect()
 
 void HitLineZ::Collide(CollisionEvent *coll)
 {
-    Ball *pball = coll->ball;
-    const Vertex3Ds& hitnormal = coll->normal[0];
-
-    const float dot = hitnormal.Dot(pball->vel);
-    pball->Collide3DWall(hitnormal, m_elasticity, m_friction /*0.3f*/, m_scatter);
+    const float dot = coll->hitnormal.Dot(coll->ball->vel);
+    coll->ball->Collide3DWall(coll->hitnormal, m_elasticity, m_friction /*0.3f*/, m_scatter);
 
     if (dot <= -m_threshold)
-        FireHitEvent(pball);
+        FireHitEvent(coll->ball);
 }
 
 void HitLineZ::Contact(CollisionEvent& coll, float dtime)
 {
-    coll.ball->HandleStaticContact(coll.normal[0], coll.normal[1].z, m_friction /*0.3f*/, dtime);
+    coll.ball->HandleStaticContact(coll.hitnormal, coll.hitvelocity.z, m_friction /*0.3f*/, dtime);
 }
 
 
@@ -525,14 +519,14 @@ float HitPoint::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
         return -1.0f; // contact out of physics frame
 
     const Vertex3Ds hitPos = pball->pos + hittime * pball->vel;
-    coll.normal[0] = hitPos - m_p;
-    coll.normal[0].Normalize();
+    coll.hitnormal = hitPos - m_p;
+    coll.hitnormal.Normalize();
 
     coll.isContact = isContact;
     if (isContact)
-        coll.normal[1].z = bnv;
+        coll.hitvelocity.z = bnv;
 
-    coll.distance = bnd;                    // actual contact distance
+    coll.hitdistance = bnd;                    // actual contact distance
     coll.hitRigid = true;
 
     return hittime;
@@ -545,19 +539,16 @@ void HitPoint::CalcHitRect()
 
 void HitPoint::Collide(CollisionEvent *coll)
 {
-    Ball *pball = coll->ball;
-    const Vertex3Ds& hitnormal = coll->normal[0];
-
-    const float dot = hitnormal.Dot(pball->vel);
-    pball->Collide3DWall(hitnormal, m_elasticity, m_friction /*0.3f*/, m_scatter);
+    const float dot = coll->hitnormal.Dot(coll->ball->vel);
+    coll->ball->Collide3DWall(coll->hitnormal, m_elasticity, m_friction /*0.3f*/, m_scatter);
 
     if (dot <= -m_threshold)
-        FireHitEvent(pball);
+        FireHitEvent(coll->ball);
 }
 
 void HitPoint::Contact(CollisionEvent& coll, float dtime)
 {
-    coll.ball->HandleStaticContact(coll.normal[0], coll.normal[1].z, m_friction /*0.3f*/, dtime);
+    coll.ball->HandleStaticContact(coll.hitnormal, coll.hitvelocity.z, m_friction /*0.3f*/, dtime);
 }
 
 

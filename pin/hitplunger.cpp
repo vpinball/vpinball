@@ -237,8 +237,8 @@ float HitPlunger::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 		fHit = true;
 		hittime = newtime;
         coll = hit;
-		coll.normal[1].x = 0;
-		coll.normal[1].y = 0;
+		coll.hitvelocity.x = 0;
+		coll.hitvelocity.y = 0;
 		}
 
 	for (int i=0;i<2;i++)
@@ -249,8 +249,8 @@ float HitPlunger::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 			fHit = true;
 			hittime = newtime;
             coll = hit;
-			coll.normal[1].x = 0;
-			coll.normal[1].y = 0;
+			coll.hitvelocity.x = 0;
+			coll.hitvelocity.y = 0;
 			}
 
 		newtime = m_plungeranim.m_jointBase[i].HitTest(&BallT, hittime, hit);
@@ -259,8 +259,8 @@ float HitPlunger::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 			fHit = true;
 			hittime = newtime;
             coll = hit;
-			coll.normal[1].x = 0;
-			coll.normal[1].y = 0;
+			coll.hitvelocity.x = 0;
+			coll.hitvelocity.y = 0;
 			}
 		}
 
@@ -274,8 +274,8 @@ float HitPlunger::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 		fHit = true;
 		hittime = newtime;
         coll = hit;
-		coll.normal[1].x = 0;
-		coll.normal[1].y = deltay;	 //m_speed;		//>>> changed by chris
+		coll.hitvelocity.x = 0;
+		coll.hitvelocity.y = deltay;	 //m_speed;		//>>> changed by chris
 		}
 
 	for (int i=0;i<2;i++)
@@ -286,8 +286,8 @@ float HitPlunger::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 			fHit = true;
 			hittime = newtime;
             coll = hit;
-			coll.normal[1].x = 0;
-			coll.normal[1].y = deltay;	 //m_speed;		//>>> changed by chris
+			coll.hitvelocity.x = 0;
+			coll.hitvelocity.y = deltay;	 //m_speed;		//>>> changed by chris
 			}
 		}
 
@@ -298,15 +298,14 @@ float HitPlunger::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 void HitPlunger::Collide(CollisionEvent *coll)
 	{
     Ball *pball = coll->ball;
-    Vertex3Ds *phitnormal = coll->normal;
 
-	float dot = (pball->vel.x - phitnormal[1].x)* phitnormal->x + (pball->vel.y - phitnormal[1].y) * phitnormal->y;
+	float dot = (pball->vel.x - coll->hitvelocity.x)* coll->hitnormal.x + (pball->vel.y - coll->hitvelocity.y) * coll->hitnormal.y;
 
 	if (dot >= -C_LOWNORMVEL )								// nearly receding ... make sure of conditions
 		{													// otherwise if clearly approaching .. process the collision
 		if (dot > C_LOWNORMVEL) return;						// is this velocity clearly receding (i.e must > a minimum)		
 #ifdef C_EMBEDDED
-		if (coll->distance < -C_EMBEDDED)
+		if (coll->hitdistance < -C_EMBEDDED)
 			dot = -C_EMBEDSHOT;		// has ball become embedded???, give it a kick
 		else return;
 #endif
@@ -314,21 +313,21 @@ void HitPlunger::Collide(CollisionEvent *coll)
 		
 #ifdef C_DISP_GAIN 
 		// correct displacements, mostly from low velocity blidness, an alternative to true acceleration processing	
-		float hdist = -C_DISP_GAIN * coll->distance;				// distance found in hit detection
+		float hdist = -C_DISP_GAIN * coll->hitdistance;		// distance found in hit detection
 		if (hdist > 1.0e-4f)
-			{													// magnitude of jump
+			{												// magnitude of jump
 			if (hdist > C_DISP_LIMIT) 
-				{hdist = C_DISP_LIMIT;}		// crossing ramps, delta noise
-			pball->pos.x += hdist * phitnormal->x;					// push along norm, back to free area
-			pball->pos.y += hdist * phitnormal->y;					// use the norm, but is not correct
+				{hdist = C_DISP_LIMIT;}						// crossing ramps, delta noise
+			pball->pos.x += hdist * coll->hitnormal.x;		// push along norm, back to free area
+			pball->pos.y += hdist * coll->hitnormal.y;		// use the norm, but is not correct
 			}
 #endif
 			
 
 	const float impulse = dot * -1.45f/(1.0f+1.0f/m_plungeranim.m_mass);
 
-	pball->vel.x += impulse *phitnormal->x;  
-	pball->vel.y += impulse *phitnormal->y; 
+	pball->vel.x += impulse * coll->hitnormal.x;  
+	pball->vel.y += impulse * coll->hitnormal.y; 
 
 	pball->vel *= 0.999f;           //friction all axiz     // TODO: fix this
 
@@ -343,7 +342,7 @@ void HitPlunger::Collide(CollisionEvent *coll)
 
 	pball->m_fDynamic = C_DYNAMIC;
 
-	const Vertex3Ds vnormal(phitnormal->x, phitnormal->y, 0.0f);
+	const Vertex3Ds vnormal(coll->hitnormal.x, coll->hitnormal.y, 0.0f);
 	}
 
 void HitPlunger::Contact(CollisionEvent& coll, float dtime)

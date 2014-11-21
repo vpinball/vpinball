@@ -501,8 +501,10 @@ STDMETHODIMP Kicker::CreateSizedBall(/*[in]*/float radius, /*out, retval]*/ IBal
 		*pBallEx = pball->m_pballex;
 		pball->m_pballex->AddRef();
 
-		pball->m_coll.normal[1].x = 1.0f;           // HACK: avoid capture leaving kicker
-		m_phitkickercircle->DoCollide(pball, NULL); //
+		pball->m_coll.hitvelocity.x = 1.0f;           // HACK: avoid capture leaving kicker
+		Vertex3Ds hitnormal(FLT_MAX,FLT_MAX,FLT_MAX);
+		Vertex3Ds hitvelocity(FLT_MAX,FLT_MAX,FLT_MAX);
+		m_phitkickercircle->DoCollide(pball, hitnormal, hitvelocity);
 		}
 
 	return S_OK;
@@ -521,8 +523,10 @@ STDMETHODIMP Kicker::CreateBall(IBall **pBallEx)
 		*pBallEx = pball->m_pballex;
 		pball->m_pballex->AddRef();
 
-		pball->m_coll.normal[1].x = 1.0f;           // HACK: avoid capture leaving kicker
-		m_phitkickercircle->DoCollide(pball, NULL); //
+		pball->m_coll.hitvelocity.x = 1.0f;           // HACK: avoid capture leaving kicker
+		Vertex3Ds hitnormal(FLT_MAX,FLT_MAX,FLT_MAX);
+		Vertex3Ds hitvelocity(FLT_MAX,FLT_MAX,FLT_MAX);
+		m_phitkickercircle->DoCollide(pball, hitnormal, hitvelocity);
 		}
 
 	return S_OK;
@@ -805,13 +809,13 @@ float KickerHitCircle::HitTest(const Ball * pball, float dtime, CollisionEvent& 
 	return HitTestBasicRadius(pball, dtime, coll, false, false, false); //any face, not-lateral, non-rigid
 }
 
-void KickerHitCircle::DoCollide(Ball * const pball, Vertex3Ds * const phitnormal)
+void KickerHitCircle::DoCollide(Ball * const pball, Vertex3Ds& hitnormal, Vertex3Ds& hitvelocity)
 	{
 	if (m_pball) return;								// a previous ball already in kicker
 
 	const int i = pball->m_vpVolObjs->IndexOf(m_pObj);	// check if kicker in ball's volume set
 
-	if (!phitnormal || ((phitnormal[1].x < 1) == (i < 0))) // New or (Hit && !Vol || UnHit && Vol)
+	if ((hitnormal.x == FLT_MAX) || ((hitvelocity.x < 1.f) == (i < 0))) // New or (Hit && !Vol || UnHit && Vol)
 		{
         pball->pos += STATICTIME * pball->vel;          // move ball slightly forward
 
@@ -825,7 +829,7 @@ void KickerHitCircle::DoCollide(Ball * const pball, Vertex3Ds * const phitnormal
 			// Don't fire the hit event if the ball was just created
 			// Fire the event before changing ball attributes, so scripters can get a useful ball state
 
-			if (phitnormal) // pointer will be NULL if just created
+			if (hitnormal.x != FLT_MAX) // FLT_MAX if just created
 				{m_pkicker->FireGroupEvent(DISPID_HitEvents_Hit);}
 		
 			if (pball->fFrozen)	// script may have unfrozen the ball

@@ -40,11 +40,13 @@ struct CollisionEvent
     HitObject* obj;     // what the ball collided with
 
     float hittime;      // when the collision happens (relative to current physics state)
-    float distance;     // hit distance 
+    float hitdistance;  // hit distance 
 
-    // additional collision information; typical use (not always the same):
-    // 0: hit normal, 1: hit object velocity and 2: moment and angular rate (angular rate is only assigned but never used?)
-    Vertex3Ds normal[3];
+    // additional collision information
+    Vertex3Ds hitnormal;
+	Vertex3Ds hitvelocity; //!! sometimes abused ?! (f.e. z = original normal velocity)
+	float hitmoment;
+	//float hitangularrate; //!! angular rate is only assigned but never used
 
     float hitx, hity;   // position of the ball at hit time (saved to avoid floating point errors with multiple time slices)
 

@@ -1044,10 +1044,10 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
         for (int j = -1; j <= 1; ++j)
         {
             const int numPts = (j==0) ? 6 : 3;
-            const float theta = (float)(j * M_PI / 4.0f);
+            const float theta = (float)(j * (M_PI / 4.0));
             for (int i = 0; i < numPts; ++i)
             {
-                const float phi = (float)(i * 2 * M_PI / numPts);
+                const float phi = (float)(i * (2.0 * M_PI) / numPts);
                 Vertex3D_TexelOnly vtx;
                 vtx.x = 25.0f * cosf(theta) * cosf(phi);
                 vtx.y = 25.0f * cosf(theta) * sinf(phi);
@@ -1901,18 +1901,18 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
 					pball->CalcHitRect();		// do new boundings 
 
 					// is this ball static? .. set static and quench	
-					if (pball->m_coll.hitRigid && pball->m_coll.distance < (float)PHYS_TOUCH) //rigid and close distance contacts
+					if (pball->m_coll.hitRigid && (pball->m_coll.hitdistance < (float)PHYS_TOUCH)) //rigid and close distance contacts
 					{
-						const float mag = pball->vel.x*pball->vel.x + pball->vel.y*pball->vel.y; // values below are taken from simulation
+						const float mag = pball->vel.x*pball->vel.x + pball->vel.y*pball->vel.y;   // values below are taken from simulation
 						if (pball->drsq < 8.0e-5f && mag < 1.0e-3f && fabsf(pball->vel.z) < 0.2f)
 						{
-							if(--pball->m_fDynamic <= 0)						//... ball static, cancels next gravity increment
-							{													// m_fDynamic is cleared in ball gravity section
+							if(--pball->m_fDynamic <= 0)		//... ball static, cancels next gravity increment
+							{									// m_fDynamic is cleared in ball gravity section
 								pball->m_fDynamic = 0;
 #ifdef _DEBUGPHYSICS
 								c_staticcnt++;
 #endif
-								pball->vel.x = pball->vel.y = pball->vel.z = 0.f;		//quench the remaing velocity and set ...
+								pball->vel.x = pball->vel.y = pball->vel.z = 0.f; //quench the remaing velocity and set ...
 							}
 						}
 					}
