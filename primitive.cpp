@@ -342,13 +342,14 @@ void Primitive::Render(Sur * const psur)
            const size_t numPts = m_mesh.NumIndices() / 3 + 1;
            std::vector<Vertex2D> drawVertices(numPts);
 
-           const Vertex3Ds * const A = &vertices[m_mesh.m_indices[0]];
-           drawVertices.push_back(A->xy());
+           const Vertex3Ds& A = vertices[m_mesh.m_indices[0]];
+           drawVertices[0] = Vertex2D(A.x,A.y);
 
-           for (unsigned i=0; i<m_mesh.NumIndices(); i+=3)
+		   unsigned int o = 1;
+           for (size_t i=0; i<m_mesh.NumIndices(); i+=3,++o)
            {
-              const Vertex3Ds * const B = &vertices[m_mesh.m_indices[i+1]];
-              drawVertices.push_back(B->xy());
+              const Vertex3Ds& B = vertices[m_mesh.m_indices[i+1]];
+              drawVertices[o] = Vertex2D(B.x,B.y);
            }
 
            psur->Polyline(&drawVertices[0], drawVertices.size());
