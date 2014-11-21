@@ -194,7 +194,6 @@ HRESULT BallEx::put_UserValue(VARIANT *newVal)
 	return S_OK;
 }
 
-
 STDMETHODIMP BallEx::get_FrontDecal(BSTR *pVal)
 {
 	WCHAR wz[512];
@@ -240,6 +239,8 @@ STDMETHODIMP BallEx::put_Mass(float newVal)
 	m_pball->m_mass = newVal;
     m_pball->m_invMass = 1.0f / newVal;
 
+	m_pball->m_inertia = (float)(2.0/5.0) * m_pball->radius*m_pball->radius * m_pball->m_mass;
+
 	return S_OK;
 }
 
@@ -257,6 +258,7 @@ STDMETHODIMP BallEx::put_Radius(float newVal)
 	CHECKSTALEBALL
 
 	m_pball->radius = newVal;
+	m_pball->m_inertia = (float)(2.0/5.0) * m_pball->radius*m_pball->radius * m_pball->m_mass;
 
 	m_pball->CalcHitRect();
 
