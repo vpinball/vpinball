@@ -975,7 +975,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="$(DXSDK_DIR)Include;inc;pin;media;inc\winsdk;shader"
-				PreprocessorDefinitions="COR_ENABLE_PROFILING;WIN32;_DEBUG;_WINDOWS;MYDEBUG;_DEBUGPHYSICS"
+				PreprocessorDefinitions="COR_ENABLE_PROFILING;WIN32;_DEBUG;_WINDOWS;MYDEBUG;"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				UsePrecompiledHeader="2"
@@ -19814,6 +19814,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						CommandLine="fxc /O3 /T fx_2_0 /Vn dmdShaderCode /Fh shader\DMDShader.h shader\DMDShader.fx&#x0D;&#x0A;"
+						Outputs="DMDShader.h"
 					/>
 				</FileConfiguration>
 			</File>
