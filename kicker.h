@@ -85,7 +85,10 @@ DECLARE_REGISTRY_RESOURCEID(IDR_KICKER)
 	KickerData m_d;
 
 	KickerHitCircle *m_phitkickercircle;
-   Vertex3D vertices[49];
+   VertexBuffer *vertexBuffer;
+   IndexBuffer  *indexBuffer;
+   unsigned int numVertices;
+   unsigned int numFaces;
 
 // IKicker
 public:

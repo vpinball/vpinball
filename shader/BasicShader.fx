@@ -226,6 +226,31 @@ float4 PS_BulbLight( in VS_LIGHT_OUTPUT IN ) : COLOR
 	return result;
 }
 
+
+//------------------------------------------
+// Kicker boolean vertex shader
+VS_OUTPUT vs_kicker (float4 vPosition  : POSITION0,  
+                     float3 vNormal    : NORMAL0,  
+                     float2 tc         : TEXCOORD0, 
+                     float2 tc2        : TEXCOORD1) 
+{ 
+   VS_OUTPUT Out;
+   float3 P = mul(vPosition, matWorldView).xyz;
+   float4 P2 = vPosition;
+   float3 N = normalize(mul(float4(vNormal,0.0f), matWorldViewInverseTranspose).xyz);
+
+   Out.pos = mul(vPosition, matWorldViewProj);
+   P2.z -= 100.0f;
+   P2 = mul(P2, matWorldViewProj);
+   Out.pos.z = P2.z;
+   Out.tex0 = tc;
+   Out.worldPos = P;
+   Out.normal = N;
+   
+   return Out; 
+}
+
+
 //------------------------------------
 // Techniques
 
@@ -302,5 +327,15 @@ technique bulb_light
 		AlphaTestEnable=true;
 		AlphaBlendEnable=true;
 		BlendOp=Add;
+   } 
+}
+
+technique kickerBoolean
+{ 
+   pass P0 
+   { 
+     //ZWriteEnable=TRUE;
+     VertexShader = compile vs_3_0 vs_kicker(); 
+	  PixelShader = compile ps_3_0 ps_main();
    } 
 }
