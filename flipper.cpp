@@ -115,13 +115,13 @@ void Flipper::SetDefaults(bool fromMouseClick)
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_fVisible = iTmp == 0 ? false : true;
    else
-      m_d.m_fVisible = fTrue;
+      m_d.m_fVisible = true;
 
    hr = GetRegInt("DefaultProps\\Flipper","Enabled", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_fEnabled = iTmp == 0 ? false : true;
    else
-      m_d.m_fEnabled = fTrue;
+      m_d.m_fEnabled = true;
 }
 
 void Flipper::WriteRegDefaults()
@@ -156,8 +156,8 @@ void Flipper::WriteRegDefaults()
    SetRegValueInt(regKey,"RubberThickness", m_d.m_rubberthickness);
    SetRegValueInt(regKey,"RubberHeight", m_d.m_rubberheight);
    SetRegValueInt(regKey,"RubberWidth", m_d.m_rubberwidth);
-   SetRegValueInt(regKey,"Visible", m_d.m_fVisible);
-   SetRegValueInt(regKey,"Enabled", m_d.m_fEnabled);
+   SetRegValueBool(regKey,"Visible", m_d.m_fVisible);
+   SetRegValueBool(regKey,"Enabled", m_d.m_fEnabled);
 }
 
 
@@ -259,8 +259,8 @@ void Flipper::GetHitShapes(Vector<HitObject> * const pvho)
    phf->m_flipperanim.m_EnableRotateEvent = 0;
    phf->m_pfe = NULL;
 
-   phf->m_flipperanim.m_fEnabled = (m_d.m_fEnabled != 0);
-   phf->m_flipperanim.m_fVisible = (m_d.m_fVisible != 0);
+   phf->m_flipperanim.m_fEnabled = m_d.m_fEnabled;
+   phf->m_flipperanim.m_fVisible = m_d.m_fVisible;
 
    pvho->AddElement(phf);
    phf->m_pflipper = this;
@@ -1355,7 +1355,7 @@ STDMETHODIMP Flipper::put_Visible(VARIANT_BOOL newVal)
 {
    if (m_phitflipper)
    {
-      //m_phitflipper->m_flipperanim.m_fEnabled = m_d.m_fVisible; //rlc error 
+      //m_phitflipper->m_flipperanim.m_fEnabled = m_d.m_fVisible;
       m_phitflipper->m_flipperanim.m_fVisible = VBTOF(newVal);
    }
    else
@@ -1378,7 +1378,7 @@ STDMETHODIMP Flipper::put_Enabled(VARIANT_BOOL newVal)
 {
    if (m_phitflipper)
    {
-      //m_phitflipper->m_flipperanim.m_fEnabled = m_d.m_fVisible; //rlc error 
+      //m_phitflipper->m_flipperanim.m_fEnabled = m_d.m_fVisible;
       m_phitflipper->m_flipperanim.m_fEnabled = VBTOF(newVal);
    }
    else

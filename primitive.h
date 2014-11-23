@@ -48,7 +48,6 @@ public:
 
    TimerDataRoot m_tdr;
 
-   BOOL m_fHitEvent;
    float m_threshold;			// speed at which ball needs to hit to register a hit
    float m_elasticity;
    float m_friction;
@@ -62,6 +61,7 @@ public:
    bool useLighting;
    bool staticRendering;
 
+   bool m_fHitEvent;
    bool m_fCollidable;
    bool m_fToy;
 };

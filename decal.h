@@ -14,14 +14,11 @@ public:
 	char m_szImage[MAXTOKEN];
 	char m_szSurface[MAXTOKEN];
 	DecalType m_decaltype;
-	//BOOL m_fImage;
 	char m_sztext[MAXSTRING];
 	SizingType m_sizingtype;
-	//BOOL m_fAutoSize;
-	//BOOL m_fAutoAspect;
 	COLORREF m_color;
     char m_szMaterial[32];
-	BOOL m_fVerticalText;
+	bool m_fVerticalText;
 };
 
 class Decal :

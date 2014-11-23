@@ -6,7 +6,7 @@ Gate::Gate()
 {
    m_phitgate = NULL;
    m_plineseg = NULL;
-   m_d.m_fEnableLighting = fTrue;
+   m_d.m_fEnableLighting = true;
    bracketIndexBuffer=NULL;
    bracketVertexBuffer=NULL;
    wireIndexBuffer=NULL;
@@ -87,7 +87,7 @@ void Gate::SetDefaults(bool fromMouseClick)
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_fCollidable = iTmp == 0 ? false : true;
    else
-      m_d.m_fCollidable = fTrue;
+      m_d.m_fCollidable = true;
 
    hr = GetRegStringAsFloat("DefaultProps\\Gate","AngleMin", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
@@ -105,7 +105,7 @@ void Gate::SetDefaults(bool fromMouseClick)
    if ((hr == S_OK)  && fromMouseClick)
       m_d.m_fVisible = iTmp == 0 ? false : true;
    else
-      m_d.m_fVisible = fTrue;
+      m_d.m_fVisible = true;
 
    hr = GetRegInt("DefaultProps\\Gate","TimerEnabled", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
@@ -151,9 +151,9 @@ void Gate::SetDefaults(bool fromMouseClick)
 
    hr = GetRegInt("DefaultProps\\Gate","EnableLighting", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
-      m_d.m_fEnableLighting = iTmp == 0 ? fFalse : fTrue;
+      m_d.m_fEnableLighting = iTmp == 0 ? false : true;
    else
-      m_d.m_fEnableLighting = fTrue;
+      m_d.m_fEnableLighting = true;
 }
 
 
@@ -163,10 +163,10 @@ void Gate::WriteRegDefaults()
    SetRegValueFloat("DefaultProps\\Gate","Height", m_d.m_height);
    SetRegValueFloat("DefaultProps\\Gate","Rotation", m_d.m_rotation);
    SetRegValue("DefaultProps\\Gate","Supports",REG_DWORD,&m_d.m_fSupports,4);
-   SetRegValue("DefaultProps\\Gate","Collidable",REG_DWORD,&m_d.m_fCollidable,4);
+   SetRegValueBool("DefaultProps\\Gate","Collidable", m_d.m_fCollidable);
    SetRegValueFloat("DefaultProps\\Gate","AngleMin", m_d.m_angleMin);
    SetRegValueFloat("DefaultProps\\Gate","AngleMax", m_d.m_angleMax);
-   SetRegValue("DefaultProps\\Gate","Visible",REG_DWORD,&m_d.m_fVisible,4);
+   SetRegValueBool("DefaultProps\\Gate","Visible", m_d.m_fVisible);
    SetRegValue("DefaultProps\\Gate","TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
    SetRegValue("DefaultProps\\Gate","TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval, 4);
    SetRegValue("DefaultProps\\Gate","Surface", REG_SZ, &m_d.m_szSurface,lstrlen(m_d.m_szSurface));
@@ -175,7 +175,7 @@ void Gate::WriteRegDefaults()
    SetRegValueFloat("DefaultProps\\Gate","Scatter", m_d.m_scatter);
    SetRegValue("DefaultProps\\Gate","ImageFront", REG_SZ, &m_d.m_szImageFront,lstrlen(m_d.m_szImageFront));
    SetRegValue("DefaultProps\\Gate","ImageBack", REG_SZ, &m_d.m_szImageBack,lstrlen(m_d.m_szImageBack));
-   SetRegValue("DefaultProps\\Gate","EnableLighting",REG_DWORD,&m_d.m_fEnableLighting,4);
+   SetRegValueBool("DefaultProps\\Gate","EnableLighting", m_d.m_fEnableLighting);
 }
 
 void Gate::PreRender(Sur * const psur)
@@ -877,7 +877,7 @@ STDMETHODIMP Gate::put_ImageBack(BSTR newVal)
 
 STDMETHODIMP Gate::get_Open(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB((m_phitgate) ? m_phitgate->m_gateanim.m_fOpen : fFalse);
+   *pVal = (VARIANT_BOOL)FTOVB((m_phitgate) ? m_phitgate->m_gateanim.m_fOpen : false);
 
    return S_OK;
 }
@@ -891,16 +891,16 @@ STDMETHODIMP Gate::put_Open(VARIANT_BOOL newVal)
 
       if (newVal)
       {
-         m_phitgate->m_gateanim.m_fOpen = fTrue;
-         m_phitgate->m_fEnabled = fFalse;
-         m_plineseg->m_fEnabled = fFalse;
+         m_phitgate->m_gateanim.m_fOpen = true;
+         m_phitgate->m_fEnabled = false;
+         m_plineseg->m_fEnabled = false;
 
          if (m_phitgate->m_gateanim.m_angle < m_phitgate->m_gateanim.m_angleMax)
             m_phitgate->m_gateanim.m_anglespeed = 0.2f;
       }
       else
       {
-         m_phitgate->m_gateanim.m_fOpen = fFalse;
+         m_phitgate->m_gateanim.m_fOpen = false;
 
          m_phitgate->m_fEnabled = m_d.m_fCollidable;
          m_plineseg->m_fEnabled = m_d.m_fCollidable;					
@@ -1052,14 +1052,14 @@ STDMETHODIMP Gate::Move(int dir, float speed, float angle)//move non-collidable 
 {
    if (g_pplayer)
    {
-      m_phitgate->m_gateanim.m_fOpen = fTrue;	// move always turns off natural swing
-      m_phitgate->m_fEnabled = fFalse;		// and collidable off
-      m_plineseg->m_fEnabled = fFalse;		
+      m_phitgate->m_gateanim.m_fOpen = true;// move always turns off natural swing
+      m_phitgate->m_fEnabled = false;		// and collidable off
+      m_plineseg->m_fEnabled = false;		
 
       if (speed <= 0.0f) speed = 0.2f;		//default gate angle speed
-      else speed *= (float)(M_PI/180.0);		// convert to radians
+      else speed *= (float)(M_PI/180.0);	// convert to radians
 
-      if (!dir || angle != 0)					// if no direction or non-zero angle
+      if (!dir || angle != 0)				// if no direction or non-zero angle
       {
          angle *= (float)(M_PI/180.0);		// convert to radians
 

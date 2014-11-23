@@ -1,7 +1,7 @@
 #pragma once
 
 class ShadowSur : public Sur
-	{
+{
 public:
 
 	ShadowSur(const HDC hdc, const float zoom, const float offx, const float offy, const int width, const int height, const float z);
@@ -34,6 +34,7 @@ public:
 	HPEN m_hpnLine;
 
 	float m_z; //height of this shadow
-   static float m_shadowDirX;
-   static float m_shadowDirY;
-	};
+   
+	static float m_shadowDirX;
+    static float m_shadowDirY;
+};

@@ -12,13 +12,13 @@ class KickerData
 public:
 	Vertex2D m_vCenter;
 	float m_radius;
-   char m_szMaterial[32];
+    char m_szMaterial[32];
 	TimerDataRoot m_tdr;
 	char m_szSurface[MAXTOKEN];
-	BOOL m_fEnabled;
 	KickerType m_kickertype;
 	float m_scatter;
 	float m_hit_height; //kicker hit object height ... default 40
+	bool m_fEnabled;
 	};
 
 class KickerHitCircle;

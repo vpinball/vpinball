@@ -8,9 +8,9 @@ Surface::Surface()
    m_d.m_szSideImage[0] = 0;
 
    m_d.m_fCollidable = fTrue;
-   m_d.m_fSlingshotAnimation = fTrue;
+   m_d.m_fSlingshotAnimation = true;
    m_d.m_fInner = fTrue;
-   m_d.m_fEnableLighting = fTrue;
+   m_d.m_fEnableLighting = true;
    slingshotVBuffer=0;
    sideVBuffer = 0;
    topVBuffer = 0;
@@ -58,7 +58,7 @@ HRESULT Surface::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_fEnableLighting = (iTmp == 0) ? false : true;
    else
-      m_d.m_fEnableLighting = fTrue;
+      m_d.m_fEnableLighting = true;
 
    CComObject<DragPoint> *pdp;
    CComObject<DragPoint>::CreateInstance(&pdp);
@@ -101,13 +101,13 @@ void Surface::WriteRegDefaults()
 
    SetRegValueBool(strKeyName,"TimerEnabled", !!m_d.m_tdr.m_fTimerEnabled);
    SetRegValueInt(strKeyName,"TimerInterval", m_d.m_tdr.m_TimerInterval);
-   SetRegValueBool(strKeyName,"HitEvent", !!m_d.m_fHitEvent);
+   SetRegValueBool(strKeyName,"HitEvent", m_d.m_fHitEvent);
    SetRegValueFloat(strKeyName,"HitThreshold", m_d.m_threshold);
    SetRegValueFloat(strKeyName,"SlingshotThreshold", m_d.m_slingshot_threshold);
    SetRegValueString(strKeyName,"TopImage", m_d.m_szImage);
    SetRegValueString(strKeyName,"SideImage", m_d.m_szSideImage);
-   SetRegValueBool(strKeyName,"Droppable", !!m_d.m_fDroppable);
-   SetRegValueBool(strKeyName,"Flipbook", !!m_d.m_fFlipbook);
+   SetRegValueBool(strKeyName,"Droppable", m_d.m_fDroppable);
+   SetRegValueBool(strKeyName,"Flipbook", m_d.m_fFlipbook);
    SetRegValueBool(strKeyName,"CastsShadow", !!m_d.m_fCastsShadow);
    SetRegValueFloat(strKeyName,"HeightBottom", m_d.m_heightbottom);
    SetRegValueFloat(strKeyName,"HeightTop", m_d.m_heighttop);
@@ -118,9 +118,9 @@ void Surface::WriteRegDefaults()
    SetRegValueFloat(strKeyName,"Friction", m_d.m_friction);
    SetRegValueFloat(strKeyName,"Scatter", m_d.m_scatter);
    SetRegValueBool(strKeyName,"Visible", !!m_d.m_fVisible);
-   SetRegValueBool(strKeyName,"SideVisible", !!m_d.m_fSideVisible);
+   SetRegValueBool(strKeyName,"SideVisible", m_d.m_fSideVisible);
    SetRegValueBool(strKeyName,"Collidable", !!m_d.m_fCollidable);
-   SetRegValueBool(strKeyName,"EnableLighting", !!m_d.m_fEnableLighting);
+   SetRegValueBool(strKeyName,"EnableLighting", m_d.m_fEnableLighting);
 }
 
 
@@ -145,7 +145,7 @@ HRESULT Surface::InitTarget(PinTable * const ptable, const float x, const float 
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_fEnableLighting = (iTmp == 0) ? false : true;
    else
-      m_d.m_fEnableLighting = fTrue;
+      m_d.m_fEnableLighting = true;
 
    CComObject<DragPoint> *pdp;
    CComObject<DragPoint>::CreateInstance(&pdp);
@@ -189,7 +189,7 @@ HRESULT Surface::InitTarget(PinTable * const ptable, const float x, const float 
    m_d.m_fHitEvent = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"HitEvent", true) : true;
    m_d.m_threshold = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"HitThreshold", 2.0f) : 2.0f;
    m_d.m_slingshot_threshold = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"SlingshotThreshold", 0.0f) : 0.0f;
-   m_d.m_fInner = fTrue; //!! Deprecated, do not use anymore
+   m_d.m_fInner = true; //!! Deprecated, do not use anymore
 
    hr = GetRegString(strKeyName,"TopImage", m_d.m_szImage, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
@@ -232,7 +232,7 @@ void Surface::SetDefaults(bool fromMouseClick)
    m_d.m_fHitEvent = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"HitEvent", false) : false;
    m_d.m_threshold = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"HitThreshold", 2.0f) : 2.0f;
    m_d.m_slingshot_threshold = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"SlingshotThreshold", 0.0f) : 0.0f;
-   m_d.m_fInner = fTrue; //!! Deprecated, do not use anymore
+   m_d.m_fInner = true; //!! Deprecated, do not use anymore
 
    hr = GetRegString(strKeyName,"TopImage", m_d.m_szImage, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
@@ -408,7 +408,7 @@ void Surface::GetHitShapes(Vector<HitObject> * const pvho)
    CurvesToShapes(pvho);
 
    m_fIsDropped = fFalse;
-   m_fDisabled = fFalse;
+   m_fDisabled = false;
 }
 
 void Surface::GetHitShapesDebug(Vector<HitObject> * const pvho)
@@ -1357,7 +1357,7 @@ HRESULT Surface::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version
          m_vdpoint.InsertElementAt(pdp, cvertex-minyindex-1);
       }
 
-      m_d.m_fInner = fTrue;
+      m_d.m_fInner = true;
    }
 
    return S_OK;

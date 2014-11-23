@@ -130,7 +130,6 @@ class PinBinary;
 #include "Ramp.h"
 #include "flasher.h"
 #include "rubber.h"
-#include "display.h"
 #include "mixer.h"
 #include "hid.h"
 #include "plumb.h"

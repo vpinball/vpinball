@@ -15,7 +15,6 @@ class DispReelData
 {
 public:
     Vertex2D    m_v1, m_v2;             // position on map (top right corner)
-    BOOL        m_fTransparent;         // is the background transparent
     char        m_szImage[MAXTOKEN];    // image to use for the decals.
     ReelType    m_reeltype;
 	BOOL		m_fUseImageGrid;
@@ -35,6 +34,7 @@ public:
     char        szfont[MAXSTRING];
 
     TimerDataRoot m_tdr;                // timer information
+    bool        m_fTransparent;         // is the background transparent
 };
 
 typedef struct {

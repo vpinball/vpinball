@@ -163,7 +163,7 @@ void Primitive::WriteRegDefaults()
    SetRegValueFloat(strKeyName,"RotAndTra8", m_d.m_aRotAndTra[8]);
 
    SetRegValueString(strKeyName,"Image", m_d.m_szImage);
-   SetRegValueBool(strKeyName,"HitEvent", !!m_d.m_fHitEvent);
+   SetRegValueBool(strKeyName,"HitEvent", m_d.m_fHitEvent);
    SetRegValueFloat(strKeyName,"HitThreshold", m_d.m_threshold);
    SetRegValueFloat(strKeyName,"Elasticity", m_d.m_elasticity);
    SetRegValueFloat(strKeyName,"Friction", m_d.m_friction);

@@ -47,7 +47,7 @@ public:
 	};
 
 class BumperData
-	{
+{
 public:
 	Vertex2D m_vCenter;
 	float m_radius;
@@ -62,12 +62,12 @@ public:
     char m_szSkirtMaterial[32];
 	char m_szSurface[MAXTOKEN];
 	LightState m_state;
-	BOOL m_fCastsShadow;
-	BOOL m_fCapVisible;
-	BOOL m_fBaseVisible;
 	//char m_rgblinkpattern[33];
 	//int m_blinkinterval;
-	};
+	bool m_fCapVisible;
+	bool m_fBaseVisible;
+	bool m_fCastsShadow;
+};
 
 /////////////////////////////////////////////////////////////////////////////
 // Bumper
@@ -139,10 +139,8 @@ DECLARE_REGISTRY_RESOURCEID(IDR_BUMPER)
 	BumperHitCircle *m_pbumperhitcircle;
 
 //>>> Added By Chris
-	BOOL		m_fDisabled;
+	bool		m_fDisabled;
 	LightState 	m_realState;
-	void		lockLight();
-	void		unLockLight();
 	void		setLightStateBypass(const LightState newVal);
 	void		setLightState(const LightState newVal);
 //<<<
@@ -179,8 +177,6 @@ private:
     float   baseHeight;
     bool    ringDown;
     bool    ringAnimate;
-
-	bool m_fLockedByLS;
 
 // IBumper
 public:

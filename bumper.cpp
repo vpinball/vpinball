@@ -72,7 +72,6 @@ HRESULT Bumper::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
    m_d.m_vCenter.x = x;
    m_d.m_vCenter.y = y;
 
-   m_fLockedByLS = false;			//>>> added by chris
    m_realState	= m_d.m_state;		//>>> added by chris
 
    return InitVBA(fTrue, 0, NULL);
@@ -129,19 +128,19 @@ void Bumper::SetDefaults(bool fromMouseClick)
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_fCastsShadow = iTmp == 0 ? false : true;
    else
-      m_d.m_fCastsShadow = fTrue;
+      m_d.m_fCastsShadow = true;
 
    hr = GetRegInt("DefaultProps\\Bumper","CapVisible", &iTmp);
    if ((hr == S_OK)&& fromMouseClick)
       m_d.m_fCapVisible = iTmp == 0 ? false : true;
    else
-      m_d.m_fCapVisible = fTrue;
+      m_d.m_fCapVisible = true;
 
    hr = GetRegInt("DefaultProps\\Bumper","BaseVisible", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_fBaseVisible = iTmp == 0 ? false : true;
    else
-      m_d.m_fBaseVisible = fTrue;
+      m_d.m_fBaseVisible = true;
 }
 
 void Bumper::WriteRegDefaults()
@@ -157,8 +156,8 @@ void Bumper::WriteRegDefaults()
    SetRegValue("DefaultProps\\Bumper","LightState", REG_DWORD, &m_d.m_state,4);	
    SetRegValue("DefaultProps\\Bumper","BlinkPattern", REG_SZ, &m_rgblinkpattern,lstrlen(m_rgblinkpattern));	
    SetRegValueInt("DefaultProps\\Bumper","BlinkInterval", m_blinkinterval);	
-   SetRegValueInt("DefaultProps\\Bumper","CastsShadow", m_d.m_fCastsShadow);	
-   SetRegValueInt("DefaultProps\\Bumper","CapVisible", m_d.m_fCapVisible);	
+   SetRegValueBool("DefaultProps\\Bumper","CastsShadow", m_d.m_fCastsShadow);	
+   SetRegValueBool("DefaultProps\\Bumper","CapVisible", m_d.m_fCapVisible);	
    SetRegValueInt("DefaultProps\\Bumper","BaseVisible", m_d.m_fBaseVisible);	
    SetRegValue("DefaultProps\\Bumper", "Surface", REG_SZ, &m_d.m_szSurface, lstrlen(m_d.m_szSurface));
 }
@@ -311,9 +310,6 @@ void Bumper::EndPlay()
 {
     IEditable::EndPlay();
 
-    // ensure not locked just incase the player exits during a LS sequence
-    m_fLockedByLS = false;
-
     m_pbumperhitcircle = NULL;
 
     if (baseVertexBuffer)
@@ -443,7 +439,7 @@ void Bumper::PostRenderStatic(RenderDevice* pd3dDevice)
         ringAnimate=true;
         ringDown=true;
         ringAnimHeightOffset=0.0f;
-        m_pbumperhitcircle->m_bumperanim.m_fHitEvent=fFalse;
+        m_pbumperhitcircle->m_bumperanim.m_fHitEvent = false;
     }
 
     if( ringAnimate )
@@ -677,7 +673,7 @@ void Bumper::RenderSetup(RenderDevice* pd3dDevice )
    }
 
    // ensure we are not disabled at game start
-   m_fDisabled = fFalse;
+   m_fDisabled = false;
 }
 
 void Bumper::RenderStatic(RenderDevice* pd3dDevice)
@@ -774,7 +770,6 @@ HRESULT Bumper::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version,
 
    m_ptable = ptable;
 
-   m_fLockedByLS = false;			//>>> added by chris
    m_realState	= m_d.m_state;		//>>> added by chris
 
    br.Load();
@@ -1206,19 +1201,8 @@ STDMETHODIMP Bumper::put_BaseVisible(VARIANT_BOOL newVal)
    return S_OK;
 }
 
-void Bumper::lockLight()
-{
-   m_fLockedByLS = true;
-}
-
-void Bumper::unLockLight()
-{
-   m_fLockedByLS = false;
-}
-
 void Bumper::setLightStateBypass(const LightState newVal)
 {
-   lockLight();
    setLightState(newVal);
 }
 

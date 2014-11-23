@@ -117,7 +117,7 @@ void DispReel::SetDefaults(bool fromMouseClick)
 	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_fTransparent = iTmp == 0 ? false : true;
 	else
-		m_d.m_fTransparent = fFalse;
+		m_d.m_fTransparent = false;
     
 	hr = GetRegInt("DefaultProps\\EMReel","ReelCount", &iTmp);
 	m_d.m_reelcount = (hr == S_OK) && fromMouseClick ? iTmp : 5;
@@ -215,7 +215,7 @@ void DispReel::WriteRegDefaults()
 	SetRegValue("DefaultProps\\EMReel","Sound", REG_SZ, &m_d.m_szSound,lstrlen(m_d.m_szSound));
 	SetRegValueInt("DefaultProps\\Decal","UseImageGrid",m_d.m_fUseImageGrid);
 	SetRegValueInt("DefaultProps\\Decal","ImagesPerRow",m_d.m_imagesPerGridRow);
-	SetRegValueInt("DefaultProps\\Decal","Transparent",m_d.m_fTransparent);
+	SetRegValueBool("DefaultProps\\Decal","Transparent",m_d.m_fTransparent);
 	SetRegValueInt("DefaultProps\\Decal","ReelCount",m_d.m_reelcount);
 	SetRegValueFloat("DefaultProps\\EMReel","Width", m_d.m_width);
 	SetRegValueFloat("DefaultProps\\EMReel","Height", m_d.m_height);

@@ -24,7 +24,7 @@ public:
 	TimerDataRoot m_tdr;
 	BOOL m_mechPlunger;
 	BOOL m_autoPlunger;
-	BOOL m_fVisible;
+	bool m_fVisible;
 	float m_parkPosition;
 	char m_szSurface[MAXTOKEN];
 	float m_scatterVelocity;

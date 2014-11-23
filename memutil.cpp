@@ -1,6 +1,6 @@
 #include "StdAfx.h"
 
-#ifdef DEBUG_XXX  //rlc remove these method in perference to DevPartner
+#ifdef DEBUG_XXX  // remove method in perference to DevPartner
 
 #pragma comment(lib, "dbghelp.lib")
 #include "dbghelp.h"

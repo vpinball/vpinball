@@ -63,7 +63,7 @@ void Kicker::SetDefaults(bool fromMouseClick)
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_fEnabled = iTmp == 0 ? false : true;
    else
-      m_d.m_fEnabled = fTrue;
+      m_d.m_fEnabled = true;
 
    hr = GetRegStringAsFloat("DefaultProps\\Kicker","Scatter", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
@@ -93,7 +93,7 @@ void Kicker::WriteRegDefaults()
 {
    SetRegValue("DefaultProps\\Kicker","TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
    SetRegValue("DefaultProps\\Kicker","TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval, 4);
-   SetRegValue("DefaultProps\\Kicker","Enabled",REG_DWORD,&m_d.m_fEnabled,4);
+   SetRegValueBool("DefaultProps\\Kicker","Enabled", m_d.m_fEnabled);
    SetRegValueFloat("DefaultProps\\Kicker","HitHeight", m_d.m_hit_height);
    SetRegValueFloat("DefaultProps\\Kicker","Radius", m_d.m_radius);
    SetRegValueFloat("DefaultProps\\Kicker","Scatter", m_d.m_scatter);

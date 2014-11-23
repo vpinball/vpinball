@@ -30,14 +30,15 @@ public:
     float m_wireDistanceX;
     float m_wireDistanceY;
 
+    int m_opacity;
+    float m_depthBias;      // for determining depth sorting (alpha ramps only)
+
 	bool m_fCollidable;
 	bool m_fVisible;
 	bool m_fImageWalls;
 	bool m_fCastsShadow;
 	//bool m_fAcrylic;
 	bool m_transparent;
-    int m_opacity;
-    float m_depthBias;      // for determining depth sorting (alpha ramps only)
 };
 
 /////////////////////////////////////////////////////////////////////////////

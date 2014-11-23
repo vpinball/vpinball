@@ -80,7 +80,7 @@ void Decal::SetDefaults(bool fromMouseClick)
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_fVerticalText = iTmp == 0 ? false : true;
    else
-      m_d.m_fVerticalText = fFalse;
+      m_d.m_fVerticalText = false;
 
    if (!m_pIFont)
    {
@@ -140,7 +140,7 @@ void Decal::WriteRegDefaults()
    SetRegValue("DefaultProps\\Decal","Text", REG_SZ, &m_d.m_sztext,lstrlen(m_d.m_sztext));
    SetRegValue("DefaultProps\\Decal","Sizing",REG_DWORD,&m_d.m_sizingtype,4);
    SetRegValue("DefaultProps\\Decal","Color",REG_DWORD,&m_d.m_color,4);
-   SetRegValueInt("DefaultProps\\Decal","VerticalText",m_d.m_fVerticalText);
+   SetRegValueBool("DefaultProps\\Decal","VerticalText",m_d.m_fVerticalText);
    SetRegValue("DefaultProps\\Decal","Surface", REG_SZ, m_d.m_szSurface, lstrlen(m_d.m_szSurface)); 
 
    if (m_pIFont)

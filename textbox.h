@@ -21,7 +21,7 @@ public:
 	char sztext[MAXSTRING];
 	TimerDataRoot m_tdr;
 	TextAlignment m_talign;
-	BOOL m_fTransparent;
+	bool m_fTransparent;
 	};
 
 class Textbox :

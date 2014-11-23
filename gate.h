@@ -18,8 +18,7 @@ public:
 	float m_height;
 	float m_rotation;
 	BOOL m_fSupports;
-	BOOL m_fCollidable;
-   char m_szMaterial[32];
+    char m_szMaterial[32];
 	TimerDataRoot m_tdr;
 	float m_elasticity;
 	float m_friction;
@@ -29,8 +28,9 @@ public:
 	char m_szImageBack[MAXTOKEN];
 	float m_angleMin;
 	float m_angleMax;
-	BOOL m_fVisible;
-	BOOL m_fEnableLighting;
+	bool m_fCollidable;
+	bool m_fVisible;
+	bool m_fEnableLighting;
 	};
 
 class Gate :
