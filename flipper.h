@@ -34,9 +34,6 @@ public:
 	int m_rubberheight;
 	int m_rubberwidth;
 
-	bool  m_fVisible;
-    bool  m_fEnabled;
-
 	float m_mass;
 	float m_strength;
 	float m_elasticity;
@@ -56,6 +53,9 @@ public:
 	float m_OverrideReturnStrength;
 	float m_OverrideCoilRampUp;
 	int m_OverridePhysics;
+
+	bool  m_fVisible;
+    bool  m_fEnabled;
 };
 
 class Flipper : 

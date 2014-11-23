@@ -17,7 +17,6 @@ public:
     Vertex2D    m_v1, m_v2;             // position on map (top right corner)
     char        m_szImage[MAXTOKEN];    // image to use for the decals.
     ReelType    m_reeltype;
-	BOOL		m_fUseImageGrid;
     int			m_imagesPerGridRow;
     int			m_reelcount;			// number of individual reel in the set
     float       m_width, m_height;      // size of each reel
@@ -35,6 +34,7 @@ public:
 
     TimerDataRoot m_tdr;                // timer information
     bool        m_fTransparent;         // is the background transparent
+	bool		m_fUseImageGrid;
 };
 
 typedef struct {

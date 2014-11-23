@@ -81,7 +81,7 @@ void Gate::SetDefaults(bool fromMouseClick)
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_fSupports = iTmp == 0 ? false : true;
    else
-      m_d.m_fSupports = fTrue;
+      m_d.m_fSupports = true;
 
    hr = GetRegInt("DefaultProps\\Gate","Collidable", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
@@ -162,7 +162,7 @@ void Gate::WriteRegDefaults()
    SetRegValueFloat("DefaultProps\\Gate","Length", m_d.m_length);
    SetRegValueFloat("DefaultProps\\Gate","Height", m_d.m_height);
    SetRegValueFloat("DefaultProps\\Gate","Rotation", m_d.m_rotation);
-   SetRegValue("DefaultProps\\Gate","Supports",REG_DWORD,&m_d.m_fSupports,4);
+   SetRegValueBool("DefaultProps\\Gate","Supports", m_d.m_fSupports);
    SetRegValueBool("DefaultProps\\Gate","Collidable", m_d.m_fCollidable);
    SetRegValueFloat("DefaultProps\\Gate","AngleMin", m_d.m_angleMin);
    SetRegValueFloat("DefaultProps\\Gate","AngleMax", m_d.m_angleMax);

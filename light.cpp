@@ -186,16 +186,18 @@ void Light::SetDefaults(bool fromMouseClick)
       m_d.m_fadeSpeed = fTmp;
    else
       m_d.m_fadeSpeed = 0.2f;
+
    hr = GetRegInt("DefaultProps\\Light","Bulb", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
-       m_d.m_BulbLight = iTmp;
+       m_d.m_BulbLight = iTmp ? true : false;
    else
-       m_d.m_BulbLight = fFalse;
+       m_d.m_BulbLight = false;
+
    hr = GetRegInt("DefaultProps\\Light","ShowBulbMesh", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
-       m_d.m_showBulbMesh = iTmp;
+       m_d.m_showBulbMesh = iTmp ? true : false;
    else
-       m_d.m_showBulbMesh = fFalse;
+       m_d.m_showBulbMesh = false;
 
    hr = GetRegStringAsFloat("DefaultProps\\Light","ScaleBulbMesh", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
@@ -218,8 +220,8 @@ void Light::WriteRegDefaults()
    SetRegValue("DefaultProps\\Light","Surface", REG_SZ, &m_d.m_szSurface, lstrlen(m_d.m_szSurface));
    SetRegValueFloat("DefaultProps\\Light","FadeSpeed", m_d.m_fadeSpeed);
    SetRegValueFloat("DefaultProps\\Light","Intensity", m_d.m_intensity);
-   SetRegValue("DefaultProps\\Light","Bulb", REG_DWORD, &m_d.m_BulbLight,4);
-   SetRegValue("DefaultProps\\Light","ShowBulbMesh", REG_DWORD, &m_d.m_showBulbMesh,4);
+   SetRegValueBool("DefaultProps\\Light","Bulb", m_d.m_BulbLight);
+   SetRegValueBool("DefaultProps\\Light","ShowBulbMesh", m_d.m_showBulbMesh);
    SetRegValueFloat("DefaultProps\\Light","ScaleBulbMesh", m_d.m_meshRadius);
 }
 

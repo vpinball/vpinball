@@ -240,7 +240,7 @@ public:
 	// Optimizations for in-game
 	Vector<Collection> m_vEventCollection;
 	Vector<int> m_viEventCollection;
-	BOOL m_fSingleEvents;
+	bool m_fSingleEvents;
 
-   bool isVisible;
+    bool isVisible;
 	};

@@ -44,7 +44,7 @@ public:
 
 	void SetCleanPoint(SaveDirtyState sds);
 
-	BOOL m_cUndoLayer;
+	int m_cUndoLayer;
 
 	SaveDirtyState m_sdsDirty; // Dirty flag for saving on close
 

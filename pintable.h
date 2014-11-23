@@ -492,8 +492,6 @@ END_CONNECTION_POINT_MAP()
 	float m_glassheight;
 	float m_tableheight;
 
-	bool m_fRenderDecals;
-	bool m_fRenderEMReels;
 	float m_rotation;
 	float m_inclination;
 	float m_layback;
@@ -503,7 +501,6 @@ END_CONNECTION_POINT_MAP()
 	float m_globalMaxSeparation;
 	float m_ZPD;
 	float m_globalZPD;
-    bool m_overwriteGlobalStereo3D;
 
 	float m_xlatex;
 	float m_xlatey;
@@ -516,13 +513,14 @@ END_CONNECTION_POINT_MAP()
 	int m_fOverridePhysics;
     float m_fOverrideGravityConstant;
 
+	unsigned int m_PhysicsMaxLoops;
+
 	float m_Gravity;
 	float m_hardFriction;
 	float m_hardScatter;
     float m_nudgeTime;
 	int m_plungerNormalize;
 	bool m_plungerFilter;
-	unsigned int m_PhysicsMaxLoops;
 
     bool m_tblAutoStartEnabled;
     bool m_tblMirrorEnabled;		// Mirror tables left to right.  This is activated by a cheat during table selection.
@@ -543,7 +541,6 @@ END_CONNECTION_POINT_MAP()
 
     short m_oldMousePosX;
     short m_oldMousePosY;
-	bool m_fRenderShadows;
 	_protectionData	m_protectionData;
 
 	char m_szImage[MAXTOKEN];
@@ -579,9 +576,6 @@ END_CONNECTION_POINT_MAP()
 	float m_TableMusicVolume;
 
 	int m_TableAdaptiveVSync;
-
-	bool m_fGrid; // Display grid or not
-	bool m_fBackdrop;
 
 	FRect m_rcDragRect; // Multi-select
 
@@ -647,6 +641,13 @@ END_CONNECTION_POINT_MAP()
     bool m_savingActive;
 
     bool m_renderSolid;
+
+	bool m_fGrid; // Display grid or not
+	bool m_fBackdrop;
+	bool m_fRenderShadows;
+	bool m_fRenderDecals;
+	bool m_fRenderEMReels;
+    bool m_overwriteGlobalStereo3D;
 
 #ifdef UNUSED_TILT //!! currently unused (see NudgeGetTilt())
 	int m_jolt_amount;       

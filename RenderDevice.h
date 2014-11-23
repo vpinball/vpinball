@@ -84,74 +84,6 @@ static void SetFromD3DCOLOR(D3DCOLORVALUE& cv, D3DCOLOR c)
     cv.b = (float)(c & 255) * (float)(1.0/255.0);
 }
 
-// adds simple setters and getters on top of D3DLIGHT9, for compatibility
-struct BaseLight : public D3DLIGHT9
-{
-    BaseLight()
-    {
-		ZeroMemory(this, sizeof(*this));
-    }
-
-    D3DLIGHTTYPE getType()          { return Type; }
-    void setType(D3DLIGHTTYPE lt)   { Type = lt; }
-
-    const D3DCOLORVALUE& getDiffuse()      { return Diffuse; }
-    const D3DCOLORVALUE& getSpecular()     { return Specular; }
-    const D3DCOLORVALUE& getAmbient()      { return Ambient; }
-
-    void setDiffuse(float r, float g, float b)
-    {
-        Diffuse.r = r;
-        Diffuse.g = g;
-        Diffuse.b = b;
-    }
-    void setDiffuse(D3DCOLOR c)
-    {
-        SetFromD3DCOLOR(Diffuse, c);
-    }
-    void setSpecular(float r, float g, float b)
-    {
-        Specular.r = r;
-        Specular.g = g;
-        Specular.b = b;
-    }
-    void setSpecular(D3DCOLOR c)
-    {
-        SetFromD3DCOLOR(Specular, c);
-    }
-    void setAmbient(float r, float g, float b)
-    {
-        Ambient.r = r;
-        Ambient.g = g;
-        Ambient.b = b;
-    }
-    void setAmbient(D3DCOLOR c)
-    {
-        SetFromD3DCOLOR(Ambient, c);
-    }
-    void setPosition(float x, float y, float z)
-    {
-        Position.x = x;
-        Position.y = y;
-        Position.z = z;
-    }
-    void setDirection(float x, float y, float z)
-    {
-        Direction.x = x;
-        Direction.y = y;
-        Direction.z = z;
-    }
-    void setRange(float r)          { Range = r; }
-    void setFalloff(float r)        { Falloff = r; }
-    void setAttenuation0(float r)   { Attenuation0 = r; }
-    void setAttenuation1(float r)   { Attenuation1 = r; }
-    void setAttenuation2(float r)   { Attenuation2 = r; }
-    void setTheta(float r)          { Theta = r; }
-    void setPhi(float r)            { Phi = r; }
-};
-
-
-
 class VertexBuffer : public IDirect3DVertexBuffer9
 {
 public:
@@ -285,9 +217,6 @@ public:
    void DrawIndexedPrimitiveVB(D3DPRIMITIVETYPE type, VertexBuffer* vb, DWORD startVertex, DWORD vertexCount, const WORD* indices, DWORD indexCount);
    void DrawIndexedPrimitiveVB(D3DPRIMITIVETYPE type, VertexBuffer* vb, DWORD startVertex, DWORD vertexCount, IndexBuffer* ib, DWORD startIndex, DWORD indexCount);
 
-   void LightEnable( DWORD, BOOL );
-   void SetLight( DWORD, BaseLight* );
-   void GetLight( DWORD, BaseLight* );
    void SetViewport( ViewPort* );
    void GetViewport( ViewPort* );
 

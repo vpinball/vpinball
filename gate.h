@@ -17,7 +17,6 @@ public:
 	float m_length;
 	float m_height;
 	float m_rotation;
-	BOOL m_fSupports;
     char m_szMaterial[32];
 	TimerDataRoot m_tdr;
 	float m_elasticity;
@@ -28,6 +27,7 @@ public:
 	char m_szImageBack[MAXTOKEN];
 	float m_angleMin;
 	float m_angleMax;
+	bool m_fSupports;
 	bool m_fCollidable;
 	bool m_fVisible;
 	bool m_fEnableLighting;

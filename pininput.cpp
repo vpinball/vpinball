@@ -1050,7 +1050,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 				if (input->dwData & 0x80)
 				{
 					g_pplayer->m_fStereo3Denabled = !g_pplayer->m_fStereo3Denabled;
-					SetRegValue("Player", "Stereo3DEnabled", REG_DWORD, &g_pplayer->m_fStereo3Denabled, 4);
+					SetRegValueBool("Player", "Stereo3DEnabled", g_pplayer->m_fStereo3Denabled);
 				}
 			}
 			else if( input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eDBGBalls])

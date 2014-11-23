@@ -4236,7 +4236,7 @@ void PinTable::DoContextMenu(int x, int y, int menuid, ISelect *psel)
             }
          }
       }
-      BOOL fLocked = psel->m_fLocked;
+      bool fLocked = psel->m_fLocked;
       // HACK
       if (psel == this) // multi-select case
       {
@@ -4335,7 +4335,7 @@ void PinTable::DoCommand(int icmd, int x, int y)
    case ID_LOCK:
       {
          BeginUndo();
-         BOOL fLock = FMutilSelLocked() ? fFalse : fTrue;
+         bool fLock = FMutilSelLocked() ? false : true;
          for (int i=0;i<m_vmultisel.Size();i++)
          {
             ISelect *psel;
@@ -5299,7 +5299,7 @@ void PinTable::OnLButtonDown(int x, int y)
    m_rcDragRect.top = v.y;
    m_rcDragRect.bottom = v.y;
 
-   m_fDragging = fTrue;
+   m_fDragging = true;
 
    SetCapture(GetPTable()->m_hwnd);
 
@@ -5310,7 +5310,7 @@ void PinTable::OnLButtonUp(int x, int y)
 {
    if (m_fDragging)
    {
-      m_fDragging = fFalse;
+      m_fDragging = false;
       ReleaseCapture();
       if ((m_rcDragRect.left != m_rcDragRect.right) || (m_rcDragRect.top != m_rcDragRect.bottom))
       {

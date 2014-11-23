@@ -127,10 +127,10 @@ public:
 
 	CodeViewer *m_pcv; // Currently active code window
 
-	BOOL m_fBackglassView; // Whether viewing the playfield or screen layout
+	bool m_fBackglassView; // Whether viewing the playfield or screen layout
 
-	BOOL m_fAlwaysDrawDragPoints;
-	BOOL m_fAlwaysDrawLightCenters;
+	bool m_fAlwaysDrawDragPoints;
+	bool m_fAlwaysDrawLightCenters;
     int m_gridSize;
 
 	int m_securitylevel;

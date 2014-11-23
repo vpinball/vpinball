@@ -941,21 +941,6 @@ void RenderDevice::GetTransform( TransformStateType p1, D3DMATRIX* p2)
    CHECKD3D(m_pD3DDevice->GetTransform((D3DTRANSFORMSTATETYPE)p1, p2));
 }
 
-void RenderDevice::SetLight( DWORD p1, BaseLight* p2)
-{
-   m_pD3DDevice->SetLight(p1,p2);
-}
-
-void RenderDevice::GetLight( DWORD p1, BaseLight* p2 )
-{
-   m_pD3DDevice->GetLight(p1,p2);
-}
-
-void RenderDevice::LightEnable( DWORD p1, BOOL p2)
-{
-   m_pD3DDevice->LightEnable(p1,p2);
-}
-
 void RenderDevice::Clear(DWORD numRects, D3DRECT* rects, DWORD flags, D3DCOLOR color, D3DVALUE z, DWORD stencil)
 {
    m_pD3DDevice->Clear(numRects, rects, flags, color, z, stencil);

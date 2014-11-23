@@ -105,13 +105,14 @@ public:
     virtual void ExportMesh(){};
 
 	POINT m_ptLast;
-	BOOL m_fDragging;
-	BOOL m_fMarkedForUndo;
 
 	SelectState m_selectstate;
 
 	int m_menuid;  // context menu to use
 
-	BOOL m_fLocked; // Can not be dragged in the editor
-   int layerIndex;
+    int layerIndex;
+
+	bool m_fDragging;
+	bool m_fMarkedForUndo;
+	bool m_fLocked; // Can not be dragged in the editor
 	};

@@ -119,7 +119,7 @@ void IEditable::BeginPlay()
 	m_vEventCollection.RemoveAllElements();
 	m_viEventCollection.RemoveAllElements();
 
-	m_fSingleEvents = fTrue;
+	m_fSingleEvents = true;
 	for(int i=0;i<m_vCollection.Size();i++)
 		{
 		Collection *pcol = m_vCollection.ElementAt(i);
@@ -129,7 +129,7 @@ void IEditable::BeginPlay()
 			m_viEventCollection.AddElement(m_viCollection.ElementAt(i));
 			}
 		if (pcol->m_fStopSingleEvents)
-			m_fSingleEvents = fFalse;
+			m_fSingleEvents = false;
 		}
 	}
 
