@@ -40,7 +40,7 @@ void Spinner::WriteRegDefaults()
 {
    SetRegValueFloat("DefaultProps\\Spinner","Length", m_d.m_length);
    SetRegValueFloat("DefaultProps\\Spinner","Rotation", m_d.m_rotation);
-   SetRegValue("DefaultProps\\Spinner","Supports",REG_DWORD,&m_d.m_fSupports,4);
+   SetRegValueBool("DefaultProps\\Spinner","Supports", m_d.m_fSupports);
    SetRegValueFloat("DefaultProps\\Spinner","Height", m_d.m_height);
    SetRegValueFloat("DefaultProps\\Spinner","Overhang", m_d.m_overhang);
    SetRegValue("DefaultProps\\Spinner","CastsShadow",REG_DWORD,&m_d.m_fCastsShadow,4);
@@ -79,7 +79,7 @@ void Spinner::SetDefaults(bool fromMouseClick)
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_fSupports = iTmp == 0 ? false : true;
    else
-      m_d.m_fSupports = fTrue;
+      m_d.m_fSupports = true;
 
    hr = GetRegInt("DefaultProps\\Spinner","Height", &iTmp);
    if ((hr == S_OK) && fromMouseClick)

@@ -13,7 +13,6 @@ public:
 	Vertex2D m_vCenter;
 	float m_length;
 	float m_rotation;
-	BOOL m_fSupports; 
     char m_szMaterial[32];
 	TimerDataRoot m_tdr;
 	float m_overhang;
@@ -27,6 +26,7 @@ public:
 	char m_szImageFront[MAXTOKEN];
 	char m_szImageBack[MAXTOKEN];
 	char m_szSurface[MAXTOKEN];
+	bool m_fSupports; 
 	bool m_fCastsShadow;		//>>> added by Chris
 	bool m_fVisible;
 };

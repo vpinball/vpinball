@@ -226,14 +226,6 @@ public:
 
 	Vertex3Ds m_gravity;
 
-    bool m_fThrowBalls;
-
-	bool m_fDetectScriptHang;
-	bool m_fNoTimeCorrect;		// Used so the frame after debugging does not do normal time correction
-
-	bool m_fCloseDown;			// Whether to shut down the player at the end of this frame
-	int m_fCloseType;			// if 0 exit player and close application if started minimized, if 1 close application always, 2 is brute force exit
-
 	PinInput m_pininput;
 
 	float m_NudgeX;
@@ -266,18 +258,10 @@ public:
 	int m_fFXAA;
     bool m_fAA;
 
-	bool m_fReflectionForBalls;
-	bool m_fTrailForBalls;
-
+	bool m_fStereo3Denabled;
 	int m_fStereo3D; // 0=off, 1=top/down, 2=interlaced/LG //!! support sidebyside, too?
-	BOOL m_fStereo3Denabled;
 
 	XAudPlayer *m_pxap;
-
-	bool m_fDebugMode;
-
-	bool m_DebugBalls;			 // Draw balls in the foreground.
-	bool m_ToggleDebugBalls;
 
 	bool m_fPlayMusic;
 	bool m_fPlaySound;
@@ -288,6 +272,22 @@ public:
 
 	int m_LastKnownGoodCounter;
 	int m_ModalRefCount;
+
+	int m_fCloseType;			// if 0 exit player and close application if started minimized, if 1 close application always, 2 is brute force exit
+	bool m_fCloseDown;			// Whether to shut down the player at the end of this frame
+
+	bool m_fReflectionForBalls;
+	bool m_fTrailForBalls;
+
+	bool m_fThrowBalls;
+
+	bool m_fDetectScriptHang;
+	bool m_fNoTimeCorrect;		// Used so the frame after debugging does not do normal time correction
+
+	bool m_fDebugMode;
+
+	bool m_DebugBalls;			 // Draw balls in the foreground.
+	bool m_ToggleDebugBalls;
 
 #ifdef _DEBUGPHYSICS
 	U32 c_hitcnts;

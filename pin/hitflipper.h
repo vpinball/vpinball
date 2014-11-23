@@ -52,8 +52,6 @@ public:
 	float m_height;
 
     int m_dir;
-    bool m_solState;        // is solenoid enabled?
-    bool m_isInContact;
     float m_curTorque;
     float m_contactTorque;
     float m_torqueRampupSpeed;
@@ -66,6 +64,9 @@ public:
 	int m_EnableRotateEvent;
 
 	Vertex2D zeroAngNorm; // base norms at zero degrees	
+
+    bool m_solState;        // is solenoid enabled?
+    bool m_isInContact;
 
 	bool m_fEnabled;
 	bool m_fVisible;

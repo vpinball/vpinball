@@ -3,11 +3,11 @@
 
 ISelect::ISelect()
 	{
-	m_fDragging = fFalse;
-	m_fMarkedForUndo = fFalse;
+	m_fDragging = false;
+	m_fMarkedForUndo = false;
 	m_selectstate = eNotSelected;
 
-	m_fLocked = fFalse;
+	m_fLocked = false;
 
 	m_menuid = -1;
    layerIndex=0;
@@ -20,8 +20,8 @@ void ISelect::SetObjectPos()
 
 void ISelect::OnLButtonDown(int x, int y)
 	{
-	m_fDragging = fTrue;
-	m_fMarkedForUndo = fFalse; // So we will be marked when and if we are dragged
+	m_fDragging = true;
+	m_fMarkedForUndo = false; // So we will be marked when and if we are dragged
 	m_ptLast.x = x;
 	m_ptLast.y = y;
 
@@ -32,13 +32,13 @@ void ISelect::OnLButtonDown(int x, int y)
 
 void ISelect::OnLButtonUp(int x, int y)
 	{
-	m_fDragging = fFalse;
+	m_fDragging = false;
 
 	ReleaseCapture();
 
 	if (m_fMarkedForUndo)
 		{
-		m_fMarkedForUndo = fFalse;
+		m_fMarkedForUndo = false;
 		GetIEditable()->EndUndo();
 		}
 	}
@@ -65,7 +65,7 @@ void ISelect::OnMouseMove(int x, int y)
 		{
 		if (!m_fMarkedForUndo)
 			{
-			m_fMarkedForUndo = fTrue;
+			m_fMarkedForUndo = true;
 			GetIEditable()->BeginUndo();
 			GetIEditable()->MarkForUndo();
 			}

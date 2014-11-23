@@ -24,11 +24,11 @@ public:
 	TimerDataRoot m_tdr;
 	BOOL m_mechPlunger;
 	BOOL m_autoPlunger;
-	bool m_fVisible;
 	float m_parkPosition;
 	char m_szSurface[MAXTOKEN];
 	float m_scatterVelocity;
 	float m_breakOverVelocity;
+	bool m_fVisible;
 	};
 
 /////////////////////////////////////////////////////////////////////////////

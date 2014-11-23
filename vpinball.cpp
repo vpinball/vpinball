@@ -388,7 +388,7 @@ void VPinball::Init()
 	   m_pbackglassds->InitDirectSound(m_hwnd, true);
    }
 
-   m_fBackglassView = fFalse;						// we are viewing Pinfield and not the backglass at first
+   m_fBackglassView = false;						// we are viewing Pinfield and not the backglass at first
 
    SetEnableToolbar();
 
@@ -488,8 +488,8 @@ void VPinball::InitRegValues()
    deadz = GetRegIntWithDefault("Player", "DeadZone", 0);
    SetRegValueInt("Player", "DeadZone", deadz);
 
-   m_fAlwaysDrawDragPoints = GetRegIntWithDefault("Editor", "ShowDragPoints", fFalse);
-   m_fAlwaysDrawLightCenters = GetRegIntWithDefault("Editor", "DrawLightCenters", fFalse);
+   m_fAlwaysDrawDragPoints = GetRegBoolWithDefault("Editor", "ShowDragPoints", false);
+   m_fAlwaysDrawLightCenters = GetRegBoolWithDefault("Editor", "DrawLightCenters", false);
    m_gridSize = GetRegIntWithDefault("Editor", "GridSize", 50);
 
    BOOL fAutoSave = GetRegIntWithDefault("Editor", "AutoSaveOn", fTrue);
@@ -850,7 +850,7 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
 
    case ID_EDIT_BACKGLASSVIEW:
       {
-         const BOOL fShow = !m_fBackglassView;
+         const bool fShow = !m_fBackglassView;
 
          SendMessage(m_hwndToolbarMain, TB_CHECKBUTTON, ID_EDIT_BACKGLASSVIEW, MAKELONG(fShow,0));
 

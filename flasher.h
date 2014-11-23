@@ -16,15 +16,15 @@ public:
 	TimerDataRoot m_tdr;
 	float m_rotX,m_rotY,m_rotZ;
 	int m_fAlpha;
-   float m_depthBias;      // for determining depth sorting
-   int  m_fFilterAmount;
-   Filters m_filter;
-   RampImageAlignment m_imagealignment;
-   bool m_fDisplayTexture;
+    float m_depthBias;      // for determining depth sorting
+    int  m_fFilterAmount;
+    Filters m_filter;
+    RampImageAlignment m_imagealignment;
+    char m_szImageA[MAXTOKEN];
+    char m_szImageB[MAXTOKEN];
+    bool m_fDisplayTexture;
 	bool m_IsVisible;
-   bool m_fAddBlend;
-   char m_szImageA[MAXTOKEN];
-   char m_szImageB[MAXTOKEN];
+    bool m_fAddBlend;
 };
 
 /////////////////////////////////////////////////////////////////////////////

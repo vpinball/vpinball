@@ -17,14 +17,12 @@ public:
     float m_fadeSpeed;
     float m_currentIntensity;
     float m_meshRadius;
-    BOOL  m_showBulbMesh;
     float m_meshIntensity;
     float m_meshFadeSpeed;
     LightState m_state;
 	COLORREF m_color;
 	TimerDataRoot m_tdr;
 	Shape m_shape;
-    BOOL m_BulbLight;
 	//char m_rgblinkpattern[33];
 	//int m_blinkinterval;
 	float m_borderwidth;
@@ -35,7 +33,11 @@ public:
    //float borderR,borderG,borderB;
 	char m_szSurface[MAXTOKEN];
 	char m_szOffImage[MAXTOKEN];
-   float m_depthBias;      // for determining depth sorting
+
+    float m_depthBias;      // for determining depth sorting
+	
+    bool m_BulbLight;
+	bool m_showBulbMesh;
 };
 
 class LightCenter : public ISelect

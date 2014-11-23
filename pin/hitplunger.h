@@ -7,7 +7,7 @@ public:
 
 	virtual bool FMover() const {return true;}
 
-	virtual void Check3D()                                  { }
+	virtual void Check3D() { }
 
 	void SetObjects(const float len);
 
