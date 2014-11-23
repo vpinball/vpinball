@@ -1188,15 +1188,15 @@ void Player::InitStatic(HWND hwndProgress)
 Ball *Player::CreateBall(const float x, const float y, const float z, const float vx, const float vy, const float vz, const float radius, const float mass)
 {
 	Ball * const pball = new Ball();
-	pball->radius = radius;
-	pball->pos.x = x;
-	pball->pos.y = y;
-	pball->pos.z = z+pball->radius;
+	pball->m_radius = radius;
+	pball->m_pos.x = x;
+	pball->m_pos.y = y;
+	pball->m_pos.z = z+pball->m_radius;
 
 	//pball->z = z;
-	pball->vel.x = vx;
-	pball->vel.y = vy;
-	pball->vel.z = vz;
+	pball->m_vel.x = vx;
+	pball->m_vel.y = vy;
+	pball->m_vel.z = vz;
 	pball->Init(mass); // Call this after radius set to get proper inertial tensor set up
 
 	pball->EnsureOMObject();
@@ -1214,7 +1214,7 @@ Ball *Player::CreateBall(const float x, const float y, const float z, const floa
 	if (!m_pactiveballDebug)
 		m_pactiveballDebug = pball;
 
-	pball->defaultZ = pball->pos.z;
+	pball->m_defaultZ = pball->m_pos.z;
 	
 	return pball;
 }
@@ -1808,7 +1808,7 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
         for (unsigned i = 0; i < m_vFlippers.size(); ++i)
         {
             const float fliphit = m_vFlippers[i]->GetHitTime();
-            if (fliphit >= 0 && fliphit < hittime)
+            if (fliphit >= 0.f && fliphit < hittime)
                 hittime = fliphit;
         }
 
@@ -1819,7 +1819,7 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
 		{
 			Ball * const pball = m_vball[i];
 
-			if (!pball->fFrozen && pball->m_fDynamic > 0) // don't play with frozen balls
+			if (!pball->m_frozen && pball->m_dynamic > 0) // don't play with frozen balls
 			{
 				pball->m_coll.hittime = hittime;		// search upto current hittime
 				pball->m_coll.obj = NULL;
@@ -1877,7 +1877,7 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
 		{
 			Ball * const pball = m_vball[i];
 
-			if (pball->m_fDynamic > 0 && pball->m_coll.obj && pball->m_coll.hittime <= hittime) // find balls with hit objects and minimum time			
+			if (pball->m_dynamic > 0 && pball->m_coll.obj && pball->m_coll.hittime <= hittime) // find balls with hit objects and minimum time			
 			{
 				// now collision, contact and script reactions on active ball (object)+++++++++
 				HitObject * const pho = pball->m_coll.obj;// object that ball hit in trials
@@ -1903,16 +1903,16 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
 					// is this ball static? .. set static and quench	
 					if (pball->m_coll.hitRigid && (pball->m_coll.hitdistance < (float)PHYS_TOUCH)) //rigid and close distance contacts
 					{
-						const float mag = pball->vel.x*pball->vel.x + pball->vel.y*pball->vel.y;   // values below are taken from simulation
-						if (pball->drsq < 8.0e-5f && mag < 1.0e-3f && fabsf(pball->vel.z) < 0.2f)
+						const float mag = pball->m_vel.x*pball->m_vel.x + pball->m_vel.y*pball->m_vel.y; // values below are taken from simulation
+						if (pball->m_drsq < 8.0e-5f && mag < 1.0e-3f && fabsf(pball->m_vel.z) < 0.2f)
 						{
-							if(--pball->m_fDynamic <= 0)		//... ball static, cancels next gravity increment
-							{									// m_fDynamic is cleared in ball gravity section
-								pball->m_fDynamic = 0;
+							if(--pball->m_dynamic <= 0)		//... ball static, cancels next gravity increment
+							{									// m_dynamic is cleared in ball gravity section
+								pball->m_dynamic = 0;
 #ifdef _DEBUGPHYSICS
 								c_staticcnt++;
 #endif
-								pball->vel.x = pball->vel.y = pball->vel.z = 0.f; //quench the remaing velocity and set ...
+								pball->m_vel.x = pball->m_vel.y = pball->m_vel.z = 0.f; //quench the remaing velocity and set ...
 							}
 						}
 					}
@@ -2123,11 +2123,11 @@ void Player::UpdatePhysics()
 		for (unsigned i=0; i < m_vball.size(); i++)
 		{
 			Ball * const pball = m_vball[i];
-            pball->oldpos[pball->ringcounter_oldpos/(10000/PHYSICS_STEPTIME)] = pball->pos;
+            pball->m_oldpos[pball->m_ringcounter_oldpos/(10000/PHYSICS_STEPTIME)] = pball->m_pos;
 
-			pball->ringcounter_oldpos++;
-			if(pball->ringcounter_oldpos == BALL_TRAIL_NUM_POS*(10000/PHYSICS_STEPTIME))
-				pball->ringcounter_oldpos = 0;
+			pball->m_ringcounter_oldpos++;
+			if(pball->m_ringcounter_oldpos == BALL_TRAIL_NUM_POS*(10000/PHYSICS_STEPTIME))
+				pball->m_ringcounter_oldpos = 0;
 		}
 
 		//slintf( "PT: %f %f %u %u %u\n", physics_diff_time, physics_to_graphic_diff_time, (U32)(m_curPhysicsFrameTime/1000), (U32)(initial_time_usec/1000), cur_time_msec );
@@ -2702,19 +2702,19 @@ void Player::DrawBalls()
     for (unsigned i=0; i<m_vball.size(); i++)
     {
         Ball * const pball = m_vball[i];
-        float zheight = (!pball->fFrozen) ? pball->pos.z : (pball->pos.z - pball->radius);
+        float zheight = (!pball->m_frozen) ? pball->m_pos.z : (pball->m_pos.z - pball->m_radius);
 
-      float maxz = pball->defaultZ+3.0f;
-      float minz = pball->defaultZ-0.1f;
+      float maxz = pball->m_defaultZ+3.0f;
+      float minz = pball->m_defaultZ-0.1f;
       if((m_fReflectionForBalls && (m_ptable->m_useReflectionForBalls == -1)) || (m_ptable->m_useReflectionForBalls == 1))
       {
          // don't draw reflection if the ball is not on the playfield (e.g. on a ramp/kicker)
-         if( (zheight > maxz) || (pball->fFrozen) || pball->pos.z<minz)
+         if( (zheight > maxz) || (pball->m_frozen) || pball->m_pos.z<minz)
             drawReflection=false;
          else
             drawReflection=true;
       }
-      if( (zheight > maxz) || (pball->pos.z < minz) )
+      if( (zheight > maxz) || (pball->m_pos.z < minz) )
       {
          // scaling the ball height by the z scale value results in a flying ball over the playfield/ramp
          // by reducing it with 0.96f (a factor found by trial'n error) the ball is on the ramp again
@@ -2724,9 +2724,9 @@ void Player::DrawBalls()
 
       Texture * const playfield = m_ptable->GetImage((char *)m_ptable->m_szImage);
       if( playfield )
-        {
+      {
           ballShader->SetTexture("Texture1", playfield );
-        }
+      }
 
       // ************************* draw the ball itself ****************************
       m_pin3d.EnableAlphaBlend(1, false);
@@ -2738,9 +2738,9 @@ void Player::DrawBalls()
       ballShader->Core()->SetVector("m1",&m1);
       ballShader->Core()->SetVector("m2",&m2);
       ballShader->Core()->SetVector("m3",&m3);
-      D3DXVECTOR4 pos( pball->pos.x, pball->pos.y, zheight, 1.0f );
+      D3DXVECTOR4 pos( pball->m_pos.x, pball->m_pos.y, zheight, 1.0f );
       ballShader->Core()->SetVector("position", &pos );
-      ballShader->Core()->SetFloat("radius", pball->radius );
+      ballShader->Core()->SetFloat("radius", pball->m_radius );
       if ( !pball->m_pin )
           ballShader->SetTexture("Texture0", &m_pin3d.ballTexture);
       else
@@ -2784,21 +2784,21 @@ void Player::DrawBalls()
 
 			for(int i2 = 0; i2 < BALL_TRAIL_NUM_POS-1; ++i2)
 			{
-				int i = pball->ringcounter_oldpos/(10000/PHYSICS_STEPTIME)-1-i2;
+				int i = pball->m_ringcounter_oldpos/(10000/PHYSICS_STEPTIME)-1-i2;
 				if(i<0)
 					i += BALL_TRAIL_NUM_POS;
 				int io = i-1;
 				if(io<0)
 					io += BALL_TRAIL_NUM_POS;
 
-				if((pball->oldpos[i].x != FLT_MAX) && (pball->oldpos[io].x != FLT_MAX)) // only if already initialized
+				if((pball->m_oldpos[i].x != FLT_MAX) && (pball->m_oldpos[io].x != FLT_MAX)) // only if already initialized
 				{
 					Vertex3Ds vec;
-					vec.x = pball->oldpos[io].x-pball->oldpos[i].x;
-					vec.y = pball->oldpos[io].y-pball->oldpos[i].y;
-					vec.z = pball->oldpos[io].z-pball->oldpos[i].z;
+					vec.x = pball->m_oldpos[io].x-pball->m_oldpos[i].x;
+					vec.y = pball->m_oldpos[io].y-pball->m_oldpos[i].y;
+					vec.z = pball->m_oldpos[io].z-pball->m_oldpos[i].z;
 					const float bc = (float)m_ptable->m_ballTrailStrength * powf(1.f-1.f/max(vec.Length(), 1.0f), 16.0f); //!! 16=magic alpha falloff
-					const float r = min(pball->radius*0.9f, 2.0f*pball->radius/powf((float)(i2+2), 0.6f)); //!! consts are for magic radius falloff
+					const float r = min(pball->m_radius*0.9f, 2.0f*pball->m_radius/powf((float)(i2+2), 0.6f)); //!! consts are for magic radius falloff
 
 					if(bc > 0.f && r > FLT_MIN)
 					{
@@ -2814,18 +2814,18 @@ void Player::DrawBalls()
 						n.z *= r;
 
 						Vertex3D_NoTex2 rgv3D[4];
-						rgv3D[0].x = pball->oldpos[i].x - n.x;
-						rgv3D[0].y = pball->oldpos[i].y - n.y;
-						rgv3D[0].z = pball->oldpos[i].z - n.z;
-						rgv3D[1].x = pball->oldpos[i].x + n.x;
-						rgv3D[1].y = pball->oldpos[i].y + n.y;
-						rgv3D[1].z = pball->oldpos[i].z + n.z;
-						rgv3D[2].x = pball->oldpos[io].x + n.x;
-						rgv3D[2].y = pball->oldpos[io].y + n.y;
-						rgv3D[2].z = pball->oldpos[io].z + n.z;
-						rgv3D[3].x = pball->oldpos[io].x - n.x;
-						rgv3D[3].y = pball->oldpos[io].y - n.y;
-						rgv3D[3].z = pball->oldpos[io].z - n.z;
+						rgv3D[0].x = pball->m_oldpos[i].x - n.x;
+						rgv3D[0].y = pball->m_oldpos[i].y - n.y;
+						rgv3D[0].z = pball->m_oldpos[i].z - n.z;
+						rgv3D[1].x = pball->m_oldpos[i].x + n.x;
+						rgv3D[1].y = pball->m_oldpos[i].y + n.y;
+						rgv3D[1].z = pball->m_oldpos[i].z + n.z;
+						rgv3D[2].x = pball->m_oldpos[io].x + n.x;
+						rgv3D[2].y = pball->m_oldpos[io].y + n.y;
+						rgv3D[2].z = pball->m_oldpos[io].z + n.z;
+						rgv3D[3].x = pball->m_oldpos[io].x - n.x;
+						rgv3D[3].y = pball->m_oldpos[io].y - n.y;
+						rgv3D[3].z = pball->m_oldpos[io].z - n.z;
 
 						rgv3D[0].nx = rgv3D[1].nx = rgv3D[2].nx = rgv3D[3].nx = bc*(float)(1.0/255.0); //!! abuses normal for now for the color/alpha
 
@@ -2893,7 +2893,7 @@ void Player::DrawBalls()
             // set transform
             Matrix3D matOrig, matNew, matRot;
             matOrig = m_pin3d.GetWorldTransform();
-            matNew.SetTranslation(pball->pos);
+            matNew.SetTranslation(pball->m_pos);
             matOrig.Multiply(matNew, matNew);
             matRot.SetIdentity();
             for (int j = 0; j < 3; ++j)
@@ -2967,9 +2967,9 @@ void Player::DoDebugObjectMenu(int x, int y)
 	// the near clipping plane to the far clipping plane, and find what
 	// it intersects with.
 	Ball ballT;
-    ballT.pos = v3d;
-	ballT.vel = v3d2 - v3d;
-	ballT.radius = 0;
+    ballT.m_pos = v3d;
+	ballT.m_vel = v3d2 - v3d;
+	ballT.m_radius = 0;
 	ballT.m_coll.hittime = 1.0f;
 	ballT.CalcHitRect();
 
