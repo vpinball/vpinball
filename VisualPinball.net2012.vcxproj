@@ -1708,6 +1708,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="flasher.cpp" />
+    <ClCompile Include="math\math.cpp" />
     <ClCompile Include="rubber.cpp" />
     <ClCompile Include="hash.cpp" />
     <ClCompile Include="kdtree.cpp" />
@@ -4425,6 +4426,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="ieditable.h" />
     <ClInclude Include="inc\activdbg.h" />
     <ClInclude Include="inc\activscp.h" />
+    <ClInclude Include="inc\bass.h" />
     <ClInclude Include="inc\dbghelp.h" />
     <ClInclude Include="inc\dbgprop.h" />
     <ClInclude Include="inc\freeimage.h" />
@@ -4467,6 +4469,14 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="lightseq.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="Material.h" />
+    <ClInclude Include="math\bbox.h" />
+    <ClInclude Include="math\math.h" />
+    <ClInclude Include="math\matrix.h" />
+    <ClInclude Include="math\vector.h" />
+    <ClInclude Include="media\fileio.h" />
+    <ClInclude Include="media\lzwreader.h" />
+    <ClInclude Include="media\lzwwriter.h" />
+    <ClInclude Include="media\wavread.h" />
     <ClInclude Include="memutil.h" />
     <ClInclude Include="mesh.h" />
     <ClInclude Include="mixer.h" />
@@ -4478,6 +4488,14 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="pinsound.h" />
     <ClInclude Include="pintable.h" />
     <ClInclude Include="pinundo.h" />
+    <ClInclude Include="pin\ball.h" />
+    <ClInclude Include="pin\collide.h" />
+    <ClInclude Include="pin\collideex.h" />
+    <ClInclude Include="pin\hitable.h" />
+    <ClInclude Include="pin\hitflipper.h" />
+    <ClInclude Include="pin\hitplunger.h" />
+    <ClInclude Include="pin\hittimer.h" />
+    <ClInclude Include="pin\player.h" />
     <ClInclude Include="plumb.h" />
     <ClInclude Include="plunger.h" />
     <ClInclude Include="primitive.h" />
