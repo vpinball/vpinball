@@ -125,12 +125,6 @@ void Bumper::SetDefaults(bool fromMouseClick)
    hr = GetRegInt("DefaultProps\\Bumper","BlinkInterval", &iTmp);
    m_blinkinterval = (hr == S_OK) && fromMouseClick ? iTmp : 125;
 
-   hr = GetRegInt("DefaultProps\\Bumper","FlashWhenHit", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_fFlashWhenHit = iTmp == 0 ? false : true;
-   else
-      m_d.m_fFlashWhenHit = fTrue;
-
    hr = GetRegInt("DefaultProps\\Bumper","CastsShadow", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_fCastsShadow = iTmp == 0 ? false : true;
@@ -163,7 +157,6 @@ void Bumper::WriteRegDefaults()
    SetRegValue("DefaultProps\\Bumper","LightState", REG_DWORD, &m_d.m_state,4);	
    SetRegValue("DefaultProps\\Bumper","BlinkPattern", REG_SZ, &m_rgblinkpattern,lstrlen(m_rgblinkpattern));	
    SetRegValueInt("DefaultProps\\Bumper","BlinkInterval", m_blinkinterval);	
-   SetRegValueInt("DefaultProps\\Bumper","FlashWhenHit", m_d.m_fFlashWhenHit);	
    SetRegValueInt("DefaultProps\\Bumper","CastsShadow", m_d.m_fCastsShadow);	
    SetRegValueInt("DefaultProps\\Bumper","CapVisible", m_d.m_fCapVisible);	
    SetRegValueInt("DefaultProps\\Bumper","BaseVisible", m_d.m_fBaseVisible);	
@@ -762,8 +755,6 @@ HRESULT Bumper::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptk
    bw.WriteString(FID(BPAT), m_rgblinkpattern);
    bw.WriteInt(FID(BINT), m_blinkinterval);
 
-   bw.WriteBool(FID(TRNS), m_d.m_fFlashWhenHit);
-
    bw.WriteBool(FID(CSHD), m_d.m_fCastsShadow);
    bw.WriteBool(FID(CAVI), m_d.m_fCapVisible);
    bw.WriteBool(FID(BSVS), m_d.m_fBaseVisible);
@@ -865,10 +856,6 @@ BOOL Bumper::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(BINT))
    {
       pbr->GetInt(&m_blinkinterval);
-   }
-   else if (id == FID(TRNS))
-   {
-      pbr->GetBool(&m_d.m_fFlashWhenHit);
    }
    else if (id == FID(CSHD))
    {

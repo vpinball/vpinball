@@ -68,22 +68,22 @@ public:
 
     CollisionEvent m_coll;  // collision information, may not be a actual hit if something else happens first
 
-	int m_fDynamic;			// used to determine static ball conditions and velocity quenching
+	int m_dynamic;			// used to determine static ball conditions and velocity quenching
 
 	BallAnimObject m_ballanim;
 
-    Vertex3Ds pos;
-	float defaultZ;   //normal height of the ball //!! remove
+    Vertex3Ds m_pos;
+	float m_defaultZ;   //normal height of the ball //!! remove
 
 #define BALL_TRAIL_NUM_POS 10
-	Vertex3Ds oldpos[BALL_TRAIL_NUM_POS]; // for the optional ball trails
-	unsigned int ringcounter_oldpos;
+	Vertex3Ds m_oldpos[BALL_TRAIL_NUM_POS]; // for the optional ball trails
+	unsigned int m_ringcounter_oldpos;
 
-    Vertex3Ds vel;      // ball velocity
+    Vertex3Ds m_vel;      // ball velocity
 
-	float drsq;	// square of distance moved
+	float m_drsq;	// square of distance moved
 
-	float radius;
+	float m_radius;
     float m_mass;
     float m_invMass;
 
@@ -94,7 +94,7 @@ public:
 	Vertex3Ds m_angularvelocity;
     float m_inertia;
 
-	bool fFrozen;
+	bool m_frozen;
 
     static int ballsInUse;
 };

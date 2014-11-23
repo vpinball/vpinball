@@ -149,7 +149,7 @@ void Kicker::GetHitShapes(Vector<HitObject> * const pvho)
 
    phitcircle->zhigh = height + m_d.m_hit_height;	// height of kicker hit cylinder  
 
-   phitcircle->m_zheight = height;		//height for Kicker locked ball + ball->radius
+   phitcircle->m_zheight = height;		//height for Kicker locked ball + ball->m_radius
 
    phitcircle->m_fEnabled = m_d.m_fEnabled;
 
@@ -514,8 +514,7 @@ STDMETHODIMP Kicker::CreateBall(IBall **pBallEx)
 
       const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
-      Ball * const pball = g_pplayer->CreateBall(m_phitkickercircle->center.x,
-         m_phitkickercircle->center.y, height, 0.1f, 0, 0);
+      Ball * const pball = g_pplayer->CreateBall(m_phitkickercircle->center.x, m_phitkickercircle->center.y, height, 0.1f, 0, 0);
 
       *pBallEx = pball->m_pballex;
       pball->m_pballex->AddRef();
@@ -572,14 +571,14 @@ STDMETHODIMP Kicker::KickXYZ(float angle, float speed, float inclination, float 
       if (speedz > 0.f)
          speed = cosf(inclination) * speed;
 
-      m_phitkickercircle->m_pball->pos.x += x; // brian's suggestion
-      m_phitkickercircle->m_pball->pos.y += y; 
-      m_phitkickercircle->m_pball->pos.z += z; 
+      m_phitkickercircle->m_pball->m_pos.x += x; // brian's suggestion
+      m_phitkickercircle->m_pball->m_pos.y += y; 
+      m_phitkickercircle->m_pball->m_pos.z += z; 
 
-      m_phitkickercircle->m_pball->vel.x =  sinf(anglerad) * speed;
-      m_phitkickercircle->m_pball->vel.y = -cosf(anglerad) * speed;
-      m_phitkickercircle->m_pball->vel.z = speedz;
-      m_phitkickercircle->m_pball->fFrozen = false;
+      m_phitkickercircle->m_pball->m_vel.x =  sinf(anglerad) * speed;
+      m_phitkickercircle->m_pball->m_vel.y = -cosf(anglerad) * speed;
+      m_phitkickercircle->m_pball->m_vel.z = speedz;
+      m_phitkickercircle->m_pball->m_frozen = false;
       m_phitkickercircle->m_pball = NULL;
    }
 
@@ -808,20 +807,20 @@ float KickerHitCircle::HitTest(const Ball * pball, float dtime, CollisionEvent& 
 
 void KickerHitCircle::DoCollide(Ball * const pball, Vertex3Ds& hitnormal, Vertex3Ds& hitvelocity)
 {
-   if (m_pball) return;								// a previous ball already in kicker
+   if (m_pball) return;								    // a previous ball already in kicker
 
    const int i = pball->m_vpVolObjs->IndexOf(m_pObj);	// check if kicker in ball's volume set
 
    if ((hitnormal.x == FLT_MAX) || ((hitvelocity.x < 1.f) == (i < 0))) // New or (Hit && !Vol || UnHit && Vol)
    {
-      pball->pos += STATICTIME * pball->vel;          // move ball slightly forward
+      pball->m_pos += STATICTIME * pball->m_vel;        // move ball slightly forward
 
       if (i < 0)	//entering Kickers volume
       { 
          pball->m_vpVolObjs->AddElement(m_pObj);		// add kicker to ball's volume set
 
          m_pball = pball;
-         pball->fFrozen = true;			
+         pball->m_frozen = true;			
 
          // Don't fire the hit event if the ball was just created
          // Fire the event before changing ball attributes, so scripters can get a useful ball state
@@ -829,15 +828,15 @@ void KickerHitCircle::DoCollide(Ball * const pball, Vertex3Ds& hitnormal, Vertex
          if (hitnormal.x != FLT_MAX) // FLT_MAX if just created
          {m_pkicker->FireGroupEvent(DISPID_HitEvents_Hit);}
 
-         if (pball->fFrozen)	// script may have unfrozen the ball
+         if (pball->m_frozen)	// script may have unfrozen the ball
          {
             // Only mess with variables if ball was not kicked during event
-            pball->vel.SetZero();
-            pball->pos.x = center.x;
-            pball->pos.y = center.y;
-            pball->pos.z = m_zheight + pball->radius;
+            pball->m_vel.SetZero();
+            pball->m_pos.x = center.x;
+            pball->m_pos.y = center.y;
+            pball->m_pos.z = m_zheight + pball->m_radius;
          }
-         else m_pball = NULL;		// make sure 
+         else m_pball = NULL;		// make sure
       }
       else // exiting kickers volume
       {				

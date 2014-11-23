@@ -993,8 +993,8 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
                for( unsigned i=0; i<g_pplayer->m_vball.size(); i++ )
                {
                   Ball * const pBall = g_pplayer->m_vball[i];
-                  const float dx = fabsf(vertex.x - pBall->pos.x);
-                  const float dy = fabsf(vertex.y - pBall->pos.y);
+                  const float dx = fabsf(vertex.x - pBall->m_pos.x);
+                  const float dy = fabsf(vertex.y - pBall->m_pos.y);
                   if ( dx<50.f && dy<50.f )
                   {
                      POINT newPoint;
@@ -1003,10 +1003,10 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
                      const Vertex3Ds vert = g_pplayer->m_pin3d.Get3DPointFrom2D(&newPoint);
 
                      ballGrabbed=true;
-                     pBall->pos.x = vert.x;
-                     pBall->pos.y = vert.y;
-                     pBall->vel.x = vx;
-                     pBall->vel.y = vy;
+                     pBall->m_pos.x = vert.x;
+                     pBall->m_pos.y = vert.y;
+                     pBall->m_vel.x = vx;
+                     pBall->m_vel.y = vy;
                      pBall->Init();
                      break;
                   }
@@ -1026,8 +1026,8 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
                for( unsigned i=0; i<g_pplayer->m_vball.size(); i++ )
                {
                   Ball *pBall = g_pplayer->m_vball[i];
-                  const float dx = fabsf(vertex.x - pBall->pos.x);
-                  const float dy = fabsf(vertex.y - pBall->pos.y);
+                  const float dx = fabsf(vertex.x - pBall->m_pos.x);
+                  const float dy = fabsf(vertex.y - pBall->m_pos.y);
                   if ( dx<50.f && dy<50.f )
                   {
                      g_pplayer->DestroyBall(pBall);

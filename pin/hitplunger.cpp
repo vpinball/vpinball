@@ -3,61 +3,60 @@
 #define PLUNGERHEIGHT 50.0f
 
 HitPlunger::HitPlunger(const float x, const float y, const float x2, const float pos, const float zheight, Plunger * const pPlunger)
-		{
-		m_plungeranim.m_plunger = pPlunger;
-		m_plungeranim.m_x = x;
-		m_plungeranim.m_x2 = x2;
-		m_plungeranim.m_y = y;
+{
+	m_plungeranim.m_plunger = pPlunger;
+	m_plungeranim.m_x = x;
+	m_plungeranim.m_x2 = x2;
+	m_plungeranim.m_y = y;
 
-		m_plungeranim.m_pos = pos;
-		m_plungeranim.m_posdesired = pos;
+	m_plungeranim.m_pos = pos;
+	m_plungeranim.m_posdesired = pos;
 
-		
-		m_plungeranim.recock = false;
-		m_plungeranim.err_fil = 0;	// integrate error over multiple update periods 
+	m_plungeranim.recock = false;
+	m_plungeranim.err_fil = 0;	// integrate error over multiple update periods 
 
-		m_plungeranim.m_force = 0;
-		m_plungeranim.m_mechTimeOut = 0;	//must be zero at game start, scripts will cock button plungers
-		
-		m_plungeranim.m_mass = 30.0f;
-		m_plungeranim.m_fAcc = false;
-		m_plungeranim.m_speed = 0;
-		m_plungeranim.m_parkPosition = pPlunger->m_d.m_parkPosition;
-		m_plungeranim.m_scatterVelocity = pPlunger->m_d.m_scatterVelocity;
-		m_plungeranim.m_breakOverVelocity = pPlunger->m_d.m_breakOverVelocity;
+	m_plungeranim.m_force = 0;
+	m_plungeranim.m_mechTimeOut = 0;	//must be zero at game start, scripts will cock button plungers
 
-		m_plungeranim.m_linesegBase.m_pfe = NULL;
-		m_plungeranim.m_jointBase[0].m_pfe = NULL;
-		m_plungeranim.m_jointBase[1].m_pfe = NULL;
-		m_plungeranim.m_linesegSide[0].m_pfe = NULL;
-		m_plungeranim.m_linesegSide[1].m_pfe = NULL;
-		m_plungeranim.m_linesegEnd.m_pfe = NULL;
-		m_plungeranim.m_jointEnd[0].m_pfe = NULL;
-		m_plungeranim.m_jointEnd[1].m_pfe = NULL;
+	m_plungeranim.m_mass = 30.0f;
+	m_plungeranim.m_fAcc = false;
+	m_plungeranim.m_speed = 0;
+	m_plungeranim.m_parkPosition = pPlunger->m_d.m_parkPosition;
+	m_plungeranim.m_scatterVelocity = pPlunger->m_d.m_scatterVelocity;
+	m_plungeranim.m_breakOverVelocity = pPlunger->m_d.m_breakOverVelocity;
 
-		m_rcHitRect.zlow = zheight;
-		m_rcHitRect.zhigh = zheight+PLUNGERHEIGHT;
+	m_plungeranim.m_linesegBase.m_pfe = NULL;
+	m_plungeranim.m_jointBase[0].m_pfe = NULL;
+	m_plungeranim.m_jointBase[1].m_pfe = NULL;
+	m_plungeranim.m_linesegSide[0].m_pfe = NULL;
+	m_plungeranim.m_linesegSide[1].m_pfe = NULL;
+	m_plungeranim.m_linesegEnd.m_pfe = NULL;
+	m_plungeranim.m_jointEnd[0].m_pfe = NULL;
+	m_plungeranim.m_jointEnd[1].m_pfe = NULL;
 
-		m_plungeranim.m_linesegBase.m_rcHitRect.zlow = zheight;
-		m_plungeranim.m_linesegBase.m_rcHitRect.zhigh = zheight+PLUNGERHEIGHT;
-		m_plungeranim.m_linesegSide[0].m_rcHitRect.zlow = zheight;
-		m_plungeranim.m_linesegSide[0].m_rcHitRect.zhigh = zheight+PLUNGERHEIGHT;
-		m_plungeranim.m_linesegSide[1].m_rcHitRect.zlow = zheight;
-		m_plungeranim.m_linesegSide[1].m_rcHitRect.zhigh = zheight+PLUNGERHEIGHT;
-		m_plungeranim.m_linesegEnd.m_rcHitRect.zlow = zheight;
-		m_plungeranim.m_linesegEnd.m_rcHitRect.zhigh = zheight+PLUNGERHEIGHT;
+	m_rcHitRect.zlow = zheight;
+	m_rcHitRect.zhigh = zheight+PLUNGERHEIGHT;
 
-		m_plungeranim.m_jointBase[0].m_zlow = zheight;
-		m_plungeranim.m_jointBase[0].m_zhigh = zheight+PLUNGERHEIGHT;
-		m_plungeranim.m_jointBase[1].m_zlow = zheight;
-		m_plungeranim.m_jointBase[1].m_zhigh = zheight+PLUNGERHEIGHT;
-		m_plungeranim.m_jointEnd[0].m_zlow = zheight;
-		m_plungeranim.m_jointEnd[0].m_zhigh = zheight+PLUNGERHEIGHT;
-		m_plungeranim.m_jointEnd[1].m_zlow = zheight;
-		m_plungeranim.m_jointEnd[1].m_zhigh = zheight+PLUNGERHEIGHT;
+	m_plungeranim.m_linesegBase.m_rcHitRect.zlow = zheight;
+	m_plungeranim.m_linesegBase.m_rcHitRect.zhigh = zheight+PLUNGERHEIGHT;
+	m_plungeranim.m_linesegSide[0].m_rcHitRect.zlow = zheight;
+	m_plungeranim.m_linesegSide[0].m_rcHitRect.zhigh = zheight+PLUNGERHEIGHT;
+	m_plungeranim.m_linesegSide[1].m_rcHitRect.zlow = zheight;
+	m_plungeranim.m_linesegSide[1].m_rcHitRect.zhigh = zheight+PLUNGERHEIGHT;
+	m_plungeranim.m_linesegEnd.m_rcHitRect.zlow = zheight;
+	m_plungeranim.m_linesegEnd.m_rcHitRect.zhigh = zheight+PLUNGERHEIGHT;
 
-		m_plungeranim.SetObjects(m_plungeranim.m_pos);
-		}
+	m_plungeranim.m_jointBase[0].m_zlow = zheight;
+	m_plungeranim.m_jointBase[0].m_zhigh = zheight+PLUNGERHEIGHT;
+	m_plungeranim.m_jointBase[1].m_zlow = zheight;
+	m_plungeranim.m_jointBase[1].m_zhigh = zheight+PLUNGERHEIGHT;
+	m_plungeranim.m_jointEnd[0].m_zlow = zheight;
+	m_plungeranim.m_jointEnd[0].m_zhigh = zheight+PLUNGERHEIGHT;
+	m_plungeranim.m_jointEnd[1].m_zlow = zheight;
+	m_plungeranim.m_jointEnd[1].m_zhigh = zheight+PLUNGERHEIGHT;
+
+	m_plungeranim.SetObjects(m_plungeranim.m_pos);
+}
 
 void HitPlunger::CalcHitRect()
 	{
@@ -266,7 +265,7 @@ float HitPlunger::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 
 	const float deltay = m_plungeranim.m_speed;
 	
-	BallT.vel.y -= deltay;
+	BallT.m_vel.y -= deltay;
 
 	newtime = m_plungeranim.m_linesegEnd.HitTest(&BallT, hittime, hit);
 	if (newtime >= 0 && newtime <= hittime)
@@ -299,7 +298,7 @@ void HitPlunger::Collide(CollisionEvent *coll)
 	{
     Ball *pball = coll->ball;
 
-	float dot = (pball->vel.x - coll->hitvelocity.x)* coll->hitnormal.x + (pball->vel.y - coll->hitvelocity.y) * coll->hitnormal.y;
+	float dot = (pball->m_vel.x - coll->hitvelocity.x)* coll->hitnormal.x + (pball->m_vel.y - coll->hitvelocity.y) * coll->hitnormal.y;
 
 	if (dot >= -C_LOWNORMVEL )								// nearly receding ... make sure of conditions
 		{													// otherwise if clearly approaching .. process the collision
@@ -318,29 +317,29 @@ void HitPlunger::Collide(CollisionEvent *coll)
 			{												// magnitude of jump
 			if (hdist > C_DISP_LIMIT) 
 				{hdist = C_DISP_LIMIT;}						// crossing ramps, delta noise
-			pball->pos.x += hdist * coll->hitnormal.x;		// push along norm, back to free area
-			pball->pos.y += hdist * coll->hitnormal.y;		// use the norm, but is not correct
+			pball->m_pos.x += hdist * coll->hitnormal.x;	// push along norm, back to free area
+			pball->m_pos.y += hdist * coll->hitnormal.y;	// use the norm, but is not correct
 			}
 #endif
 			
 
 	const float impulse = dot * -1.45f/(1.0f+1.0f/m_plungeranim.m_mass);
 
-	pball->vel.x += impulse * coll->hitnormal.x;  
-	pball->vel.y += impulse * coll->hitnormal.y; 
+	pball->m_vel.x += impulse * coll->hitnormal.x;  
+	pball->m_vel.y += impulse * coll->hitnormal.y; 
 
-	pball->vel *= 0.999f;           //friction all axiz     // TODO: fix this
+	pball->m_vel *= 0.999f;           //friction all axiz     // TODO: fix this
 
 	const float scatter_vel = m_plungeranim.m_scatterVelocity * g_pplayer->m_ptable->m_globalDifficulty;// apply dificulty weighting
 
-	if (scatter_vel > 0.f && fabsf(pball->vel.y) > scatter_vel) //skip if low velocity 
+	if (scatter_vel > 0.f && fabsf(pball->m_vel.y) > scatter_vel) //skip if low velocity 
 	{
 		float scatter = rand_mt_m11();								// -1.0f..1.0f
 		scatter *= (1.0f - scatter*scatter)*2.59808f * scatter_vel;	// shape quadratic distribution and scale
-		pball->vel.y += scatter;
+		pball->m_vel.y += scatter;
 	}
 
-	pball->m_fDynamic = C_DYNAMIC;
+	pball->m_dynamic = C_DYNAMIC;
 
 	const Vertex3Ds vnormal(coll->hitnormal.x, coll->hitnormal.y, 0.0f);
 	}

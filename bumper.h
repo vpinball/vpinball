@@ -62,7 +62,6 @@ public:
     char m_szSkirtMaterial[32];
 	char m_szSurface[MAXTOKEN];
 	LightState m_state;
-	BOOL m_fFlashWhenHit; // Hacky flag for cool auto-behavior
 	BOOL m_fCastsShadow;
 	BOOL m_fCapVisible;
 	BOOL m_fBaseVisible;
