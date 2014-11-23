@@ -90,7 +90,7 @@ Function vpmKeyDown(ByVal keycode)
 			Case StartGameKey    .Switch(swStartButton) = True
 			Case keySoundDiag    .Switch(swSoundDiag)   = True
 			Case keySlamDoorHit  .Switch(swSlamTilt)    = True
-			Case keyCoinDoor     vpmCoinDoor = Not vpmCoinDoor
+			Case keyCoinDoor     If toggleKeyCoinDoor Then vpmCoinDoor = Not vpmCoinDoor Else vpmCoinDoor = True
 			Case keyCPUDiag      .Switch(swCPUDiag)     = vpmCoinDoor
 			Case 82              .Switch(swKP0)         = vpmCoinDoor
 			Case 79              .Switch(swKP1)         = vpmCoinDoor
@@ -130,6 +130,7 @@ Function vpmKeyUp(ByVal keycode)
 			Case keyCPUDiag      .Switch(swCPUDiag)     = False
 			Case keySoundDiag    .Switch(swSoundDiag)   = False
 			Case keySlamDoorHit  .Switch(swSlamTilt)    = False
+			Case keyCoinDoor     If toggleKeyCoinDoor = False Then vpmCoinDoor = False
 			Case 82              .Switch(swKP0)         = False
 			Case 79              .Switch(swKP1)         = False
 			Case 80              .Switch(swKP2)         = False

@@ -1,8 +1,19 @@
 Option Explicit
-Const VPinMAMEDriverVer = 3.43
+Const VPinMAMEDriverVer = 3.44
 '=======================
 ' VPinMAME driver core.
 '=======================
+' New in 3.44 (Update by Toxie & Manofwar)
+' - (Core changes)
+'	- Added ability to define default ball mass (in VP Units) inside table script.
+'		Defaults to 1 unit if undefined. Example...
+'			Const BallMass = 2 '(place before LoadVPM, or otherwise calling core.vbs)
+'       Note that this should be used if changing the ball size via BallSize, as the mass is of course proportional to the radius of the ball (m=k*r^3)	
+'   - Add UseVPMDMD = true to the table script (place before LoadVPM, or otherwise calling core.vbs)
+'     to automatically pass the raw DMD data (levels from 0..100) from VPM to VP (see VP10+ for details on how to display it)
+'   - Add toggleKeyCoinDoor in VPMKeys.vbs to choose between a real coindoor setup (e.g. cabinets) and the 'classic' on/off behaviour (e.g desktops/keyboards)
+'   - Increase maximum number of balls/conMaxBalls to 13 and conStackSw to 8 (for Apollo 13), use InitSw8() then instead of InitSw()
+'   - Incorporated Manofwar's changes: XXX
 ' New in 3.43 (Update by Koadic)
 ' - (Core Changes)
 '	- Minor adjustment to vbs loading via LoadScript to account for files in nonstandard locations
@@ -278,7 +289,8 @@ Dim GICallback2     ' Called for each changed GI String
 Dim MotorCallback   ' Called after solenoids are updated
 Dim vpmCreateBall   ' Called whenever a vpm class needs to create a ball
 Dim BSize:If IsEmpty(Eval("BallSize"))=true Then BSize=25 Else BSize = BallSize/2
-
+Dim BMass:If IsEmpty(Eval("BallMass"))=true Then BMass=1 Else BMass = BallMass
+Dim UseDMD:If IsEmpty(Eval("UseVPMDMD"))=true Then UseDMD=false Else UseDMD = UseVPMDMD
 
 ' Assign Null Default Sub so script won't error if only one is defined in a script (should redefine in your script)
 Set GICallback = GetRef("NullSub")
@@ -510,8 +522,8 @@ Dim vpmShowDips     ' Show DIPs function
 '-----------------------------------------------------
 Private Const PinMameInterval = 1
 
-Private Const conStackSw    = 7  ' Stack switches
-Private Const conMaxBalls   = 10
+Private Const conStackSw    = 8  ' Stack switches
+Private Const conMaxBalls   = 13 ' Because of Apollo 13
 Private Const conMaxTimers  = 20 ' Spinners can generate a lot of timers
 Private Const conTimerPulse = 40 ' Timer runs at 25Hz
 Private Const conFastTicks  = 4  ' Fast is 4 times per timer pulse
@@ -838,7 +850,13 @@ Class cvpmBallStack
 
 	Public Sub InitSw(aEntry, aSw1, aSw2, aSw3, aSw4, aSw5, aSw6, aSw7)
 		mEntrySw = aEntry : mSw(1) = aSw1 : mSw(2) = aSw2 : mSw(3) = aSw3 : mSw(4) = aSw4
-		mSw(5) = aSw5 : mSw(6) = aSw6 : mSw(7) = aSw7
+		mSw(5) = aSw5 : mSw(6) = aSw6 : mSw(7) = aSw7 : mSw(8) = 0
+		If Not IsObject(vpmTrough) Then Set vpmTrough = Me
+	End Sub
+
+	Public Sub InitSw8(aEntry, aSw1, aSw2, aSw3, aSw4, aSw5, aSw6, aSw7, aSw8)
+		mEntrySw = aEntry : mSw(1) = aSw1 : mSw(2) = aSw2 : mSw(3) = aSw3 : mSw(4) = aSw4
+		mSw(5) = aSw5 : mSw(6) = aSw6 : mSw(7) = aSw7 : mSw(8) = aSw8
 		If Not IsObject(vpmTrough) Then Set vpmTrough = Me
 	End Sub
 
@@ -884,6 +902,8 @@ Class cvpmBallStack
 		Next
 		If mSaucer And aBalls > 0 And mBalls = 0 Then vpmCreateBall mExitKicker
 		mBalls = aBalls : NeedUpdate = True
+
+		Redim BallsInTable(UBound(BallsInTable)+mballs)
 	End Property
 
 	Public Default Property Get Balls : Balls = mBalls         : End Property
@@ -1743,16 +1763,75 @@ Public Sub vpmExit : End Sub
 ' Assign vpmCreateBall if you want a custom function
 '------------------------------------------------------
 Private Function vpmDefCreateBall(aKicker)
-	If Not IsEmpty(vpmBallImage) Then aKicker.Createball.Image = vpmBallImage Else aKicker.Createball : End If
+	'code replaced
+	'If Not IsEmpty(vpmBallImage) Then aKicker.CreateBall.Image = vpmBallImage Else aKicker.CreateBall : End If
+dim IDBall,onlycontrol
+	For IDBall= 0 to UBound(BallsInTable)-1
+		On Error Resume Next
+		onlycontrol=BallsInTable(IDBall).X
+		If Err.number<>0 then Exit For
+	Next
+
+	If Not IsEmpty(vpmBallImage) Then 
+		Set BallsInTable(IDBall)=aKicker.CreateBall.Image = vpmBallImage 
+	Else 
+		Set BallsInTable(IDBall)=aKicker.CreateBall
+	End If
+
+	BallsInTable(IDBall).UserValue=IDBall
+	
 	Set vpmDefCreateBall = aKicker
 End Function
 
 Private Function vpmDefCreateBall2(aKicker)
-	If Not IsEmpty(vpmBallImage) Then aKicker.Createsizedball(BSize).Image = vpmBallImage Else aKicker.Createsizedball(BSize) : End If
+	'code replaced
+	'If Not IsEmpty(vpmBallImage) Then aKicker.Createsizedball(BSize).Image = vpmBallImage Else aKicker.Createsizedball(BSize) : End If
+dim IDBall,onlycontrol
+	For IDBall= 0 to UBound(BallsInTable)-1
+		On Error Resume Next
+		onlycontrol=BallsInTable(IDBall).X
+		If Err.number<>0 then Exit For
+	Next
+
+	If Not IsEmpty(vpmBallImage) Then 
+		Set BallsInTable(IDBall)=aKicker.Createsizedball(BSize).Image = vpmBallImage 
+	Else 
+		Set BallsInTable(IDBall)=aKicker.Createsizedball(BSize)
+	End If
+
+	BallsInTable(IDBall).UserValue=IDBall
+	
 	Set vpmDefCreateBall2 = aKicker
 End Function
 
-If VPBuildVersion > 909 And vpmVPVer >= 90 Then Set vpmCreateBall = GetRef("vpmDefCreateBall2") Else Set vpmCreateBall = GetRef("vpmDefCreateBall")
+Private Function vpmDefCreateBall3(aKicker)
+	'code replaced
+	'If Not IsEmpty(vpmBallImage) Then aKicker.Createsizedballwithmass(BSize,BMass).Image = vpmBallImage Else aKicker.Createsizedballwithmass(BSize,BMass) : End If
+dim IDBall,onlycontrol
+	For IDBall= 0 to UBound(BallsInTable)-1
+		On Error Resume Next
+		onlycontrol=BallsInTable(IDBall).X
+		If Err.number<>0 then Exit For
+	Next
+
+	If Not IsEmpty(vpmBallImage) Then 
+		Set BallsInTable(IDBall)=aKicker.Createsizedballwithmass(BSize,BMass).Image = vpmBallImage 
+	Else 
+		Set BallsInTable(IDBall)=aKicker.Createsizedballwithmass(BSize,BMass)
+	End If
+
+	BallsInTable(IDBall).UserValue=IDBall
+	
+	Set vpmDefCreateBall3 = aKicker
+End Function
+
+If VPBuildVersion >= 10000 Then
+	Set vpmCreateBall = GetRef("vpmDefCreateBall3")
+ElseIf VPBuildVersion > 909 And vpmVPVer >= 90 Then
+    Set vpmCreateBall = GetRef("vpmDefCreateBall2")
+Else
+	Set vpmCreateBall = GetRef("vpmDefCreateBall")
+End If
 
 Private vpmTrough ' Default Trough. Used to clear up missing balls
 Private vpmTable  ' Table object
@@ -1764,6 +1843,23 @@ Private Const CHGNO = 0
 Private Const CHGSTATE = 1
 Private vpmTrueFalse : vpmTrueFalse = Array(" True", " False"," True")
 
+Private Const ID = "ID"
+Private Const PosX = "X"
+Private Const PosY = "Y"
+Private Const PosZ = "Z"
+Private Const VelX = "VelX"
+Private Const VelY = "VelY"
+Private Const VelZ = "VelZ"
+
+Public BallsInTable()
+Redim BallsInTable(1)
+
+Public Function Balls(aNoBall, aParam)
+	Balls=-1
+	On Error Resume Next
+	Execute "Balls=BallsInTable(" & aNoBall & ")." & aParam
+End Function
+
 Sub vpmDoSolCallback(aNo, aEnabled)
 	If SolCallback(aNo) <> "" Then Execute SolCallback(aNo) & vpmTrueFalse(aEnabled+1)
 End Sub
@@ -1774,10 +1870,20 @@ End Sub
 
 Sub PinMAMETimer_Timer
 	Dim ChgLamp,ChgSol,ChgGI, ii, tmp, idx
+	Dim DMDp
+	
 	Me.Enabled = False
 	On Error Resume Next
+		If UseDMD Then
+			DMDp = Controller.RawDmdPixels
+			If Not IsEmpty(DMDp) Then 
+				DMDWidth = Controller.RawDmdWidth
+				DMDHeight = Controller.RawDmdHeight
+				DMDPixels = DMDp
+			End If
+		End If
 		If UseLamps Then ChgLamp = Controller.ChangedLamps Else LampCallback
-		If UseSolenoids Then ChgSol  = Controller.ChangedSolenoids
+		If UseSolenoids Then ChgSol = Controller.ChangedSolenoids
 		If isObject(GICallback) or isObject (GICallback2) Then ChgGI = Controller.ChangedGIStrings
 		MotorCallback
 	On Error Goto 0
