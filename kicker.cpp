@@ -77,6 +77,12 @@ void Kicker::SetDefaults(bool fromMouseClick)
    else
       m_d.m_hit_height = 40;
 
+   hr = GetRegStringAsFloat("DefaultProps\\Kicker","Orientation", &fTmp);
+   if ((hr == S_OK) && fromMouseClick)
+      m_d.m_orientation = fTmp;
+   else
+      m_d.m_orientation = 0.0f;
+
    hr = GetRegString("DefaultProps\\Kicker", "Surface", &m_d.m_szSurface, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szSurface[0] = 0;
@@ -95,6 +101,7 @@ void Kicker::WriteRegDefaults()
    SetRegValue("DefaultProps\\Kicker","TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval, 4);
    SetRegValueBool("DefaultProps\\Kicker","Enabled", m_d.m_fEnabled);
    SetRegValueFloat("DefaultProps\\Kicker","HitHeight", m_d.m_hit_height);
+   SetRegValueFloat("DefaultProps\\Kicker","Orientation", m_d.m_orientation);
    SetRegValueFloat("DefaultProps\\Kicker","Radius", m_d.m_radius);
    SetRegValueFloat("DefaultProps\\Kicker","Scatter", m_d.m_scatter);
    SetRegValue("DefaultProps\\Kicker","KickerType",REG_DWORD,&m_d.m_kickertype,4);
@@ -215,7 +222,7 @@ void Kicker::RenderSetup(RenderDevice* pd3dDevice)
 
 
       Matrix3D fullMatrix;
-      fullMatrix.RotateZMatrix(ANGTORAD(0));
+      fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_orientation));
 
       vertexBuffer->lock(0, 0, (void**)&buf, 0);
       for( int i=0;i<kickerCupNumVertices;i++ )
@@ -363,6 +370,7 @@ HRESULT Kicker::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptk
    bw.WriteInt(FID(TYPE), m_d.m_kickertype);
    bw.WriteFloat(FID(KSCT), m_d.m_scatter);
    bw.WriteFloat(FID(KHOT), m_d.m_hit_height);
+   bw.WriteFloat(FID(KORI), m_d.m_orientation);
 
    ISelect::SaveData(pstm, hcrypthash, hcryptkey);
 
@@ -404,6 +412,10 @@ BOOL Kicker::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(KHOT))
    {
       pbr->GetFloat(&m_d.m_hit_height);
+   }
+   else if (id == FID(KORI))
+   {
+      pbr->GetFloat(&m_d.m_orientation);
    }
    else if (id == FID(MATR))
    {
@@ -712,6 +724,41 @@ STDMETHODIMP Kicker::put_HitHeight(float newVal)
       return S_OK;
 }
 
+STDMETHODIMP Kicker::get_Orientation(float *pVal)
+{
+   *pVal = m_d.m_orientation;
+
+   return S_OK;
+}
+
+STDMETHODIMP Kicker::put_Orientation(float newVal)
+{
+   STARTUNDO
+
+      m_d.m_orientation = newVal;
+
+   STOPUNDO
+
+      return S_OK;
+}
+
+STDMETHODIMP Kicker::get_Radius(float *pVal)
+{
+   *pVal = m_d.m_radius;
+
+   return S_OK;
+}
+
+STDMETHODIMP Kicker::put_Radius(float newVal)
+{
+   STARTUNDO
+
+      m_d.m_radius = newVal;
+
+   STOPUNDO
+
+      return S_OK;
+}
 
 void Kicker::GetDialogPanes(Vector<PropertyPane> *pvproppane)
 {
