@@ -8,7 +8,7 @@
 #include "resource.h"       // main symbols
 
 class SpinnerData
-	{
+{
 public:
 	Vertex2D m_vCenter;
 	float m_length;
@@ -24,12 +24,12 @@ public:
 	float m_elasticity;
 	//float m_friction;
 	float m_scatter;
-	BOOL m_fVisible;
-	BOOL m_fCastsShadow;		//>>> added by Chris
 	char m_szImageFront[MAXTOKEN];
 	char m_szImageBack[MAXTOKEN];
 	char m_szSurface[MAXTOKEN];
-	};
+	bool m_fCastsShadow;		//>>> added by Chris
+	bool m_fVisible;
+};
 
 class HitSpinner;
 

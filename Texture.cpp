@@ -308,7 +308,7 @@ BOOL Texture::LoadToken(int id, BiffReader *pbr)
 
 void Texture::SetTransparentColor(const COLORREF color)
 {
-   m_fTransparent = fFalse;
+   m_fTransparent = false;
    if (m_rgbTransparent != color)
    {
       m_rgbTransparent = color;
@@ -493,13 +493,13 @@ void Texture::SetAlpha(const COLORREF rgbTransparent)
 	Texture::SetAlpha(m_pdsBufferColorKey, rgbTransparent);
 }
 
-BOOL Texture::SetAlpha(BaseTexture* pdds, const COLORREF rgbTransparent)
+bool Texture::SetAlpha(BaseTexture* pdds, const COLORREF rgbTransparent)
 {
     // Set alpha of each pixel
     const int width = pdds->width();
     const int height = pdds->height();
 
-    BOOL fTransparent = fFalse;
+    bool fTransparent = false;
 
     const int pitch = pdds->pitch();
 
@@ -541,7 +541,7 @@ AlphaCheckDone:
                 if (tc == bgrTransparent )
                 {
                     *(unsigned int *)pch = 0x00000000;		// set transparent colorkey to black and alpha transparent
-                    fTransparent = fTrue;					// colorkey is true
+                    fTransparent = true;					// colorkey is true
                 }
                 else if (!hasAlphaChannel)       // if there is no alpha-channel info in the image, set to opaque
                     *(D3DCOLOR*)pch = tc;

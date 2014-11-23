@@ -21,14 +21,15 @@ public:
     float m_wireDiameter;
     float m_wireDistanceX;
     float m_wireDistanceY;
-   bool m_staticRendering;
+    float m_depthBias;      // for determining depth sorting
+
+	bool m_staticRendering;
 
 	bool m_fCollidable;
 	bool m_fVisible;
 	bool m_fImageWalls;
 	bool m_fCastsShadow;
 	//bool m_fAcrylic;
-    float m_depthBias;      // for determining depth sorting
 };
 
 /////////////////////////////////////////////////////////////////////////////

@@ -11,9 +11,9 @@ public:
 	float m_fHeight;
 	U32 m_TimeReset; // Time at which to turn off light
 	int m_iframedesired;
-	BOOL m_fHitEvent;
-	BOOL m_fDisabled;
-	BOOL m_fVisible;
+	bool m_fHitEvent;
+	bool m_fDisabled;
+	bool m_fVisible;
 };
 
 class BumperHitCircle : public HitCircle
@@ -126,7 +126,7 @@ public:
 	float m_angleMin;
 	float m_elasticity;
     float m_damping;
-	BOOL m_fVisible;
+	bool m_fVisible;
 };
 
 class HitSpinner : public HitObject
@@ -165,9 +165,9 @@ public:
 	float m_angle;
 	float m_angleMin, m_angleMax;
 	float m_friction;
-	BOOL m_fVisible; 
+	bool m_fVisible; 
 	
-	BOOL m_fOpen; // True when the table logic is opening the gate, not just the ball passing through
+	bool m_fOpen; // True when the table logic is opening the gate, not just the ball passing through
 };
 
 class HitGate : public LineSeg

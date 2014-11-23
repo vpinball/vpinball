@@ -98,7 +98,7 @@ public:
 
    static void SetOpaque(BaseTexture* pdds);
    static void SetOpaqueBackdrop(BaseTexture* pdds, const COLORREF rgbTransparent, const COLORREF rgbBackdrop);
-   static BOOL SetAlpha(BaseTexture* pdds, const COLORREF rgbTransparent);
+   static bool SetAlpha(BaseTexture* pdds, const COLORREF rgbTransparent);
    static void Blur(BaseTexture* pdds, const BYTE * const pbits, const int shadwidth, const int shadheight);
 
    // create/release a DC which contains a (read-only) copy of the texture; for editor use
@@ -120,9 +120,6 @@ public:
    // of dd surface, since the surface can be limited to smaller sizes by the user
    int m_width, m_height;
 
-   COLORREF m_rgbTransparent;
-   BOOL m_fTransparent; // Whether this picture actually contains transparent bits
-
    BaseTexture* m_pdsBuffer;
    BaseTexture* m_pdsBufferColorKey;
 
@@ -132,6 +129,9 @@ public:
    char m_szName[MAXTOKEN];
    char m_szInternalName[MAXTOKEN];
    char m_szPath[MAX_PATH];
+
+   COLORREF m_rgbTransparent;
+   bool m_fTransparent; // Whether this picture actually contains transparent bits
 
 private:
    COLORREF m_rgbBackdropCur;

@@ -128,7 +128,7 @@ void Plunger::SetDefaults(bool fromMouseClick)
 	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_fVisible = iTmp == 0 ? false : true;
 	else
-		m_d.m_fVisible = fTrue;
+		m_d.m_fVisible = true;
 
 	hr = GetRegStringAsFloat("DefaultProps\\Plunger","ScatterVelocity", &fTmp);
 	if ((hr == S_OK) && fromMouseClick)
@@ -160,7 +160,7 @@ void Plunger::WriteRegDefaults()
 	SetRegValue("DefaultProps\\Plunger","AutoPlunger",REG_DWORD, &m_d.m_autoPlunger,4);
 	SetRegValueFloat("DefaultProps\\Plunger","MechStrength", m_d.m_mechStrength);
 	SetRegValueFloat("DefaultProps\\Plunger","ParkPosition", m_d.m_parkPosition);
-	SetRegValue("DefaultProps\\Plunger","Visible",REG_DWORD, &m_d.m_fVisible,4);
+	SetRegValueBool("DefaultProps\\Plunger","Visible", m_d.m_fVisible);
 	SetRegValueFloat("DefaultProps\\Plunger","ScatterVelocity", m_d.m_scatterVelocity);
 	SetRegValueFloat("DefaultProps\\Plunger","BreakOverVelocity", m_d.m_breakOverVelocity);
 	}

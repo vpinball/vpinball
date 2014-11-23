@@ -97,7 +97,7 @@ void Spinner::SetDefaults(bool fromMouseClick)
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_fCastsShadow = iTmp == 0 ? false : true;
    else
-      m_d.m_fCastsShadow = fTrue;			//<<< added by Chris
+      m_d.m_fCastsShadow = true;			//<<< added by Chris
 
    // Anti-friction is 1-friction (throughput)
    m_d.m_antifriction = 0.99f;
@@ -124,7 +124,7 @@ void Spinner::SetDefaults(bool fromMouseClick)
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_fVisible = iTmp == 0 ? false : true;
    else
-      m_d.m_fVisible = fTrue;
+      m_d.m_fVisible = true;
 
    hr = GetRegInt("DefaultProps\\Spinner","TimerEnabled", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
@@ -643,7 +643,7 @@ HRESULT Spinner::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
    bw.WriteFloat(FID(SMAX), m_d.m_angleMax);
    bw.WriteFloat(FID(SMIN), m_d.m_angleMin);
    bw.WriteFloat(FID(SELA), m_d.m_elasticity);
-   bw.WriteInt(FID(SVIS), m_d.m_fVisible);
+   bw.WriteBool(FID(SVIS), m_d.m_fVisible);
    bw.WriteBool(FID(SSUPT), m_d.m_fSupports);
    bw.WriteFloat(FID(OVRH), m_d.m_overhang);
    bw.WriteString(FID(MATR), m_d.m_szMaterial);
@@ -728,7 +728,7 @@ BOOL Spinner::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(SVIS))
    {
-      pbr->GetInt(&m_d.m_fVisible);
+      pbr->GetBool(&m_d.m_fVisible);
    }
    else if (id == FID(OVRH))
    {

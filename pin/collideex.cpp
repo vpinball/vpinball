@@ -5,11 +5,11 @@ BumperHitCircle::BumperHitCircle()
 	m_bumperanim.m_fHeight = 0;
 	m_bumperanim.m_TimeReset = 0;
 	m_bumperanim.m_iframedesired = 0;
-	m_bumperanim.m_fHitEvent = fFalse;
+	m_bumperanim.m_fHitEvent = false;
 	m_elasticity = 0.3f;
     SetFriction(0.3f);
 	m_scatter = 0;
-	m_bumperanim.m_fVisible = fTrue;
+	m_bumperanim.m_fVisible = true;
 }
 
 void BumperHitCircle::Collide(CollisionEvent* coll)
@@ -30,7 +30,7 @@ void BumperHitCircle::Collide(CollisionEvent* coll)
 		pball->m_vel.x += hitnormal.x * m_pbumper->m_d.m_force; // add a chunk of velocity to drive ball away
 		pball->m_vel.y += hitnormal.y * m_pbumper->m_d.m_force;
 
-		m_bumperanim.m_fHitEvent = fTrue;
+		m_bumperanim.m_fHitEvent = true;
 
 		m_pbumper->FireGroupEvent(DISPID_HitEvents_Hit);
 	}
@@ -134,7 +134,7 @@ HitGate::HitGate(Gate * const pgate)
 	m_gateanim.m_anglespeed = 0;
 
 	m_gateanim.m_pgate = pgate;
-	m_gateanim.m_fOpen = fFalse;
+	m_gateanim.m_fOpen = false;
 }
 
 float HitGate::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
@@ -886,9 +886,9 @@ void LightSeqAnimObject::Check3D()
 }
 
 
-float TriggerLineSeg::HitTest(const Ball * pball, float dtime, CollisionEvent& coll) //rlc problem-5
+float TriggerLineSeg::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 {
-	if (!m_ptrigger->m_hitEnabled) return -1.0f;				//rlc custom shape trigger
+	if (!m_ptrigger->m_hitEnabled) return -1.0f;
 	
     // approach either face, not lateral-rolling point (assume center), not a rigid body contact
 	return this->HitTestBasic(pball, dtime, coll, false,false, false);

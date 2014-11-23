@@ -34,8 +34,8 @@ public:
 	int m_rubberheight;
 	int m_rubberwidth;
 
-	BOOL  m_fVisible;
-    BOOL  m_fEnabled;
+	bool  m_fVisible;
+    bool  m_fEnabled;
 
 	float m_mass;
 	float m_strength;

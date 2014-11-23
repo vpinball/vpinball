@@ -11,7 +11,6 @@ class SurfaceData
 public:
 	Vertex2D m_Center;
 	TimerDataRoot m_tdr;
-	BOOL m_fHitEvent;
 	float m_threshold;			// speed at which ball needs to hit to register a hit
 	float m_slingshot_threshold;	// speed at which ball needs to trigger slingshot 
 	char m_szImage[MAXTOKEN];
@@ -21,22 +20,23 @@ public:
    char m_szSlingShotMaterial[32];
 	float m_heightbottom;
 	float m_heighttop;
-	BOOL m_fDroppable;
-	BOOL m_fFlipbook;           // if enabled, dropped walls are not rendered
-	BOOL m_fDisplayTexture;     // in editor
 	float m_slingshotforce;
 	float m_elasticity;
 	float m_friction;
 	float m_scatter;
-	BOOL m_fCastsShadow;
-	BOOL m_fEnableLighting;
-	BOOL m_fVisible;
-	BOOL m_fSideVisible;
-	BOOL m_fEnabled;
-	BOOL m_fCollidable; //wall must be droppable too!
-	BOOL m_fSlingshotAnimation;
+	bool m_fDroppable;
+	bool m_fFlipbook;           // if enabled, dropped walls are not rendered
+	bool m_fDisplayTexture;     // in editor
+	bool m_fEnableLighting;
+	bool m_fSideVisible;
+	bool m_fEnabled;
+	bool m_fCollidable; //wall must be droppable too!
+	bool m_fSlingshotAnimation;
 
-	BOOL m_fInner; //!! Deprecated, do not use! Always true after loading! (was: Inside or outside wall)
+	bool m_fInner; //!! Deprecated, do not use! Always true after loading! (was: Inside or outside wall)
+	bool m_fCastsShadow;
+	bool m_fVisible;
+	bool m_fHitEvent;
 	};
 
 /////////////////////////////////////////////////////////////////////////////
@@ -129,7 +129,7 @@ public:
 	SurfaceData m_d;
 
 	BOOL m_fIsDropped;
-	BOOL m_fDisabled;
+	bool m_fDisabled;
 	
 private:
 	PinTable *m_ptable;

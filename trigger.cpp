@@ -471,7 +471,7 @@ void Trigger::GetHitShapesDebug(Vector<HitObject> * const pvho)
          ph3dp->m_pObj = (void*) this;
 
          pvho->AddElement(ph3dp);
-         //ph3dp->m_fEnabled = false;	//rlc error: disable hit process on polygon body, only trigger edges 
+         //ph3dp->m_fEnabled = false;	//!! disable hit process on polygon body, only trigger edges 
          break;
       }
    }

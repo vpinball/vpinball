@@ -44,7 +44,7 @@ void Textbox::SetDefaults(bool fromMouseClick)
         m_d.m_tdr.m_fTimerEnabled = false;
         m_d.m_tdr.m_TimerInterval = 100;
         m_d.m_talign = TextAlignRight;
-        m_d.m_fTransparent = FALSE;
+        m_d.m_fTransparent = false;
         lstrcpy(m_d.sztext,"0");
 
         fd.cySize.int64 = (LONGLONG)(14.25f * 10000.0f);
@@ -62,7 +62,7 @@ void Textbox::SetDefaults(bool fromMouseClick)
         m_d.m_tdr.m_fTimerEnabled = GetRegIntWithDefault("DefaultProps\\TextBox","TimerEnabled", 0) ? true : false;
         m_d.m_tdr.m_TimerInterval = GetRegIntWithDefault("DefaultProps\\TextBox","TimerInterval", 100);
         m_d.m_talign = (TextAlignment)GetRegIntWithDefault("DefaultProps\\TextBox","TextAlignment", TextAlignRight);
-        m_d.m_fTransparent = GetRegIntWithDefault("DefaultProps\\TextBox","Transparent", 0);
+        m_d.m_fTransparent = GetRegBoolWithDefault("DefaultProps\\TextBox","Transparent", false);
 
         const float fontSize = GetRegStringAsFloatWithDefault("DefaultProps\\TextBox","FontSize", 14.25f);
         fd.cySize.int64 = (LONGLONG)(fontSize * 10000.0f);
@@ -106,7 +106,7 @@ void Textbox::WriteRegDefaults()
 	SetRegValue("DefaultProps\\TextBox","TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
 	SetRegValue("DefaultProps\\TextBox","TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval, 4);
 	SetRegValue("DefaultProps\\TextBox","FontColor", REG_DWORD, &m_d.m_fontcolor, 4);
-	SetRegValue("DefaultProps\\TextBox","Transparent",REG_DWORD,&m_d.m_fTransparent,4);
+	SetRegValueBool("DefaultProps\\TextBox","Transparent", m_d.m_fTransparent);
 
 	FONTDESC fd;
 	fd.cbSizeofstruct = sizeof(FONTDESC);
