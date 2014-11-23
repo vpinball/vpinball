@@ -811,6 +811,9 @@
     <ClInclude Include="math\math.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="inc\bass.h">
+      <Filter>Header Files\inc</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="shader\BallShader.fx" />
