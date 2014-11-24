@@ -1022,7 +1022,7 @@ STDMETHODIMP Spinner::put_Supports(VARIANT_BOOL newVal)
 {	
    STARTUNDO
 
-      m_d.m_fSupports = newVal;
+      m_d.m_fSupports = VBTOF(newVal);
 
    STOPUNDO
 
@@ -1137,13 +1137,13 @@ STDMETHODIMP Spinner::put_Visible(VARIANT_BOOL newVal)
 {	
    if (g_pplayer)
    {
-      m_phitspinner->m_spinneranim.m_fVisible = newVal;// && m_d.m_fVisible;
+      m_phitspinner->m_spinneranim.m_fVisible = VBTOF(newVal);// && m_d.m_fVisible;
    }
    else
    {
       STARTUNDO
 
-         m_d.m_fVisible = newVal;
+         m_d.m_fVisible = VBTOF(newVal);
 
       STOPUNDO
    }

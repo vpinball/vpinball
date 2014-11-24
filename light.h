@@ -215,10 +215,10 @@ public:
    STDMETHOD(put_DepthBias)(/*[in]*/ float newVal);
    STDMETHOD(get_FadeSpeed)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_FadeSpeed)(/*[in]*/ float newVal);
-   STDMETHOD(get_Bulb)(/*[out, retval]*/ int *pVal);
-   STDMETHOD(put_Bulb)(/*[in]*/ int newVal);
-   STDMETHOD(get_ShowBulbMesh)(/*[out, retval]*/ int *pVal);
-   STDMETHOD(put_ShowBulbMesh)(/*[in]*/ int newVal);
+   STDMETHOD(get_Bulb)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   STDMETHOD(put_Bulb)(/*[in]*/ VARIANT_BOOL newVal);
+   STDMETHOD(get_ShowBulbMesh)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   STDMETHOD(put_ShowBulbMesh)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_ScaleBulbMesh)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_ScaleBulbMesh)(/*[in]*/ float newVal);
 };

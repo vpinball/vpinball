@@ -2440,7 +2440,7 @@ STDMETHODIMP Ramp::put_Collidable(VARIANT_BOOL newVal)
    }
    else
 	   for (unsigned i=0; i < m_vhoCollidable.size(); i++)
-	      m_vhoCollidable[i]->m_fEnabled = fNewVal;	//copy to hit checking on enities composing the object
+	      m_vhoCollidable[i]->m_fEnabled = VBTOF(fNewVal);	//copy to hit checking on enities composing the object
 
    return S_OK;
 }
