@@ -9,7 +9,7 @@
     return ((int*)&val)[0];
 }*/
 
-#if _MSC_VER >= 1800 || defined(__INTEL_COMPILER)
+#if _MSC_VER >= 1800
  #define RoundToInt lround
 #else
 __forceinline int RoundToInt(const float val)

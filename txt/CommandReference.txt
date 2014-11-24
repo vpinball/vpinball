@@ -106,9 +106,9 @@ VPBuildVersion - deprecated
 VersionMajor - major VP version number
 VersionMinor - minor VP version number
 VersionRevision - VP version revision
-GetBalls
-GetElements
-GetElementByName
+GetBalls(Ball) - returns all Balls on the table
+GetElements(Editable) - returns all Elements on the table
+GetElementByName(string) - returns a certain Element, based on the name
 
 
 BUMPER
@@ -174,7 +174,7 @@ TimerInterval
 X
 Y
 Name
-UserValue
+UserValue(any)
 
 
 EMREEL
@@ -314,6 +314,8 @@ Enabled(bool)
 UserValue(any)
 Scatter(float)
 HitHeight(float)
+Orientation(float)
+Radius(float)
 
 Methods
 -------
@@ -446,16 +448,13 @@ HeightBottom(float)
 HeightTop(float)
 WidthBottom(float)
 WidthTop(float)
-Color(OLE_COLOR)
 *Type(RampType) - 0=Flat, 1=4Wire, 2=2Wire, 3=3WireLeft, 4=3WireRight, 5=Wire
 Image(string) - texture name
 ImageAlignment(RampImageAlignment) - 0=ImageModeWorld, 1=ImageModeWrap
 HasWallImage(bool) - apply image to walls
 LeftWallHeight(float)
 RightWallHeight(float)
-*Solid(bool) - standard solid ramp mode
-Transparent
-UserValue(bool)
+UserValue(any)
 *CastShadow(bool)
 VisibleLeftWallHeight(float)
 VisibleRightWallHeight(float)
@@ -464,9 +463,6 @@ Collidable(bool)
 Visible(bool)
 Friction(float)
 Scatter(float)
-Modify3DStereo(bool) - modifies the depth buffer, which can look confusing if the ramp is used for 2D flasher or GI effects, etc and the Stereo 3D rendering is used, thus it should be disabled for flashers, GI, etc
-AddBlend(bool) - use additive blending instead of classical alpha blending
-EnableLightingImage(bool) - defines if the image/ramp should be shaded or not
 
 
 SPINNER

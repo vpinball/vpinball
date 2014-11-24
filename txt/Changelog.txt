@@ -69,7 +69,7 @@ VP 10.0.0 Changelog
 - improved smoothness for ramps (centripetal Catmull-Rom splines)
 - changed opacity/transparency handling for ramps (Alpha/Acrylic have been deleted, so use the material opacity value now)
 
-- GetElement, GetElementByName, GetBalls added to Table Script methods
+- GetElement, GetElementByName, GetBalls added to Table Script methods to have simple access to the elements and all active balls on the table
 - renaming of IsVisible properties (flasher, ramp) to Visible
 
 - Flasher supports custom shapes and multi texturing. You can define two separate images and define a filter to blend these two images.
