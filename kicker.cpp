@@ -151,12 +151,16 @@ void Kicker::GetHitShapes(Vector<HitObject> * const pvho)
 
    phitcircle->center.x = m_d.m_vCenter.x;
    phitcircle->center.y = m_d.m_vCenter.y;
-   phitcircle->radius = m_d.m_radius;
+   phitcircle->radius = m_d.m_radius*0.6f; // reduce the hit circle radius because only the inner circle of the 
+                                           // kicker should start a hit event
    phitcircle->zlow = height;
 
    phitcircle->zhigh = height + m_d.m_hit_height;	// height of kicker hit cylinder  
 
-   phitcircle->m_zheight = height;		//height for Kicker locked ball + ball->m_radius
+   if ( m_d.m_kickertype == KickerHole )
+      phitcircle->m_zheight = height-40.0f;		//holes are deeper
+   else
+      phitcircle->m_zheight = height;		//height for Kicker locked ball + ball->m_radius
 
    phitcircle->m_fEnabled = m_d.m_fEnabled;
 
