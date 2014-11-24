@@ -3,7 +3,7 @@ Const VPinMAMEDriverVer = 3.44
 '=======================
 ' VPinMAME driver core.
 '=======================
-' New in 3.44 (Update by Toxie & Manofwar)
+' New in 3.44 (Update by Toxie)
 ' - (Core changes)
 '	- Added ability to define default ball mass (in VP Units) inside table script.
 '		Defaults to 1 unit if undefined. Example...
@@ -13,7 +13,6 @@ Const VPinMAMEDriverVer = 3.44
 '     to automatically pass the raw DMD data (levels from 0..100) from VPM to VP (see VP10+ for details on how to display it)
 '   - Add toggleKeyCoinDoor in VPMKeys.vbs to choose between a real coindoor setup (e.g. cabinets) and the 'classic' on/off behaviour (e.g desktops/keyboards)
 '   - Increase maximum number of balls/conMaxBalls to 13 and conStackSw to 8 (for Apollo 13), use InitSw8() then instead of InitSw()
-'   - Incorporated Manofwar's changes: XXX
 ' New in 3.43 (Update by Koadic)
 ' - (Core Changes)
 '	- Minor adjustment to vbs loading via LoadScript to account for files in nonstandard locations
@@ -902,8 +901,6 @@ Class cvpmBallStack
 		Next
 		If mSaucer And aBalls > 0 And mBalls = 0 Then vpmCreateBall mExitKicker
 		mBalls = aBalls : NeedUpdate = True
-
-		Redim BallsInTable(UBound(BallsInTable)+mballs)
 	End Property
 
 	Public Default Property Get Balls : Balls = mBalls         : End Property
@@ -1763,65 +1760,17 @@ Public Sub vpmExit : End Sub
 ' Assign vpmCreateBall if you want a custom function
 '------------------------------------------------------
 Private Function vpmDefCreateBall(aKicker)
-	'code replaced
-	'If Not IsEmpty(vpmBallImage) Then aKicker.CreateBall.Image = vpmBallImage Else aKicker.CreateBall : End If
-dim IDBall,onlycontrol
-	For IDBall= 0 to UBound(BallsInTable)-1
-		On Error Resume Next
-		onlycontrol=BallsInTable(IDBall).X
-		If Err.number<>0 then Exit For
-	Next
-
-	If Not IsEmpty(vpmBallImage) Then 
-		Set BallsInTable(IDBall)=aKicker.CreateBall.Image = vpmBallImage 
-	Else 
-		Set BallsInTable(IDBall)=aKicker.CreateBall
-	End If
-
-	BallsInTable(IDBall).UserValue=IDBall
-	
+	If Not IsEmpty(vpmBallImage) Then aKicker.Createball.Image = vpmBallImage Else aKicker.Createball : End If
 	Set vpmDefCreateBall = aKicker
 End Function
 
 Private Function vpmDefCreateBall2(aKicker)
-	'code replaced
-	'If Not IsEmpty(vpmBallImage) Then aKicker.Createsizedball(BSize).Image = vpmBallImage Else aKicker.Createsizedball(BSize) : End If
-dim IDBall,onlycontrol
-	For IDBall= 0 to UBound(BallsInTable)-1
-		On Error Resume Next
-		onlycontrol=BallsInTable(IDBall).X
-		If Err.number<>0 then Exit For
-	Next
-
-	If Not IsEmpty(vpmBallImage) Then 
-		Set BallsInTable(IDBall)=aKicker.Createsizedball(BSize).Image = vpmBallImage 
-	Else 
-		Set BallsInTable(IDBall)=aKicker.Createsizedball(BSize)
-	End If
-
-	BallsInTable(IDBall).UserValue=IDBall
-	
+	If Not IsEmpty(vpmBallImage) Then aKicker.Createsizedball(BSize).Image = vpmBallImage Else aKicker.Createsizedball(BSize) : End If
 	Set vpmDefCreateBall2 = aKicker
 End Function
 
 Private Function vpmDefCreateBall3(aKicker)
-	'code replaced
-	'If Not IsEmpty(vpmBallImage) Then aKicker.Createsizedballwithmass(BSize,BMass).Image = vpmBallImage Else aKicker.Createsizedballwithmass(BSize,BMass) : End If
-dim IDBall,onlycontrol
-	For IDBall= 0 to UBound(BallsInTable)-1
-		On Error Resume Next
-		onlycontrol=BallsInTable(IDBall).X
-		If Err.number<>0 then Exit For
-	Next
-
-	If Not IsEmpty(vpmBallImage) Then 
-		Set BallsInTable(IDBall)=aKicker.Createsizedballwithmass(BSize,BMass).Image = vpmBallImage 
-	Else 
-		Set BallsInTable(IDBall)=aKicker.Createsizedballwithmass(BSize,BMass)
-	End If
-
-	BallsInTable(IDBall).UserValue=IDBall
-	
+	If Not IsEmpty(vpmBallImage) Then aKicker.CreateSizedBallWithMass(BSize,BMass).Image = vpmBallImage Else aKicker.CreateSizedBallWithMass(BSize,BMass)(BSize) : End If
 	Set vpmDefCreateBall3 = aKicker
 End Function
 
@@ -1842,23 +1791,6 @@ Private vpmTable  ' Table object
 Private Const CHGNO = 0
 Private Const CHGSTATE = 1
 Private vpmTrueFalse : vpmTrueFalse = Array(" True", " False"," True")
-
-Private Const ID = "ID"
-Private Const PosX = "X"
-Private Const PosY = "Y"
-Private Const PosZ = "Z"
-Private Const VelX = "VelX"
-Private Const VelY = "VelY"
-Private Const VelZ = "VelZ"
-
-Public BallsInTable()
-Redim BallsInTable(1)
-
-Public Function Balls(aNoBall, aParam)
-	Balls=-1
-	On Error Resume Next
-	Execute "Balls=BallsInTable(" & aNoBall & ")." & aParam
-End Function
 
 Sub vpmDoSolCallback(aNo, aEnabled)
 	If SolCallback(aNo) <> "" Then Execute SolCallback(aNo) & vpmTrueFalse(aEnabled+1)
