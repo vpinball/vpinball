@@ -942,7 +942,7 @@ STDMETHODIMP Gate::put_Supports(VARIANT_BOOL newVal)
 {
    STARTUNDO
 
-      m_d.m_fSupports = newVal;
+      m_d.m_fSupports = VBTOF(newVal);
 
    STOPUNDO
 
@@ -1027,8 +1027,8 @@ STDMETHODIMP Gate::put_Collidable(VARIANT_BOOL newVal)
 {	
    if (g_pplayer)
    {
-      m_phitgate->m_fEnabled = newVal;
-      m_plineseg->m_fEnabled = newVal;
+      m_phitgate->m_fEnabled = VBTOF(newVal);
+      m_plineseg->m_fEnabled = VBTOF(newVal);
       m_phitgate->m_gateanim.m_angleMax = m_d.m_angleMax;
       m_phitgate->m_gateanim.m_angleMin = m_d.m_angleMin;
 
@@ -1038,7 +1038,7 @@ STDMETHODIMP Gate::put_Collidable(VARIANT_BOOL newVal)
    {
       STARTUNDO
 
-         m_d.m_fCollidable = newVal;
+         m_d.m_fCollidable = VBTOF(newVal);
 
       if (newVal) m_d.m_angleMin = 0;	
 
@@ -1136,13 +1136,13 @@ STDMETHODIMP Gate::put_Visible(VARIANT_BOOL newVal)
 {
    if (g_pplayer)
    {
-      m_phitgate->m_gateanim.m_fVisible = newVal;
+      m_phitgate->m_gateanim.m_fVisible = VBTOF(newVal);
    }
    else
    {
       STARTUNDO
 
-         m_d.m_fVisible = newVal;
+         m_d.m_fVisible = VBTOF(newVal);
 
       STOPUNDO
    }
@@ -1161,7 +1161,7 @@ STDMETHODIMP Gate::put_EnableLighting(VARIANT_BOOL newVal)
 {	
    STARTUNDO
 
-      m_d.m_fEnableLighting = newVal;
+      m_d.m_fEnableLighting = VBTOF(newVal);
 
    STOPUNDO
 

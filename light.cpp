@@ -1530,36 +1530,36 @@ STDMETHODIMP Light::put_FadeSpeed(float newVal)
       return S_OK;
 }
 
-STDMETHODIMP Light::get_Bulb(int *pVal)
+STDMETHODIMP Light::get_Bulb(VARIANT_BOOL *pVal)
 {
     *pVal = m_d.m_BulbLight;
 
     return S_OK;
 }
 
-STDMETHODIMP Light::put_Bulb(int newVal)
+STDMETHODIMP Light::put_Bulb(VARIANT_BOOL newVal)
 {
     STARTUNDO
 
-        m_d.m_BulbLight = newVal;
+        m_d.m_BulbLight = VBTOF(newVal);
 
     STOPUNDO
 
         return S_OK;
 }
 
-STDMETHODIMP Light::get_ShowBulbMesh(int *pVal)
+STDMETHODIMP Light::get_ShowBulbMesh(VARIANT_BOOL *pVal)
 {
     *pVal = m_d.m_showBulbMesh;
 
     return S_OK;
 }
 
-STDMETHODIMP Light::put_ShowBulbMesh(int newVal)
+STDMETHODIMP Light::put_ShowBulbMesh(VARIANT_BOOL newVal)
 {
     STARTUNDO
 
-        m_d.m_showBulbMesh = newVal;
+        m_d.m_showBulbMesh = VBTOF(newVal);
 
     STOPUNDO
 

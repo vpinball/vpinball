@@ -1213,10 +1213,10 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(397), helpstring("property DepthBias")] HRESULT DepthBias([in] float newVal);
 		[propget, id(377), helpstring("property FadeSpeed")] HRESULT FadeSpeed([out, retval] float *pVal);
 		[propput, id(377), helpstring("property FadeSpeed")] HRESULT FadeSpeed([in] float newVal);
-		[propget, id(340), helpstring("property Bulb")] HRESULT Bulb([out, retval] int *pVal);
-		[propput, id(340), helpstring("property Bulb")] HRESULT Bulb([in] int newVal);
-		[propget, id(394), helpstring("property ShowBulbMesh")] HRESULT ShowBulbMesh([out, retval] int *pVal);
-		[propput, id(394), helpstring("property ShowBulbMesh")] HRESULT ShowBulbMesh([in] int newVal);
+		[propget, id(340), helpstring("property Bulb")] HRESULT Bulb([out, retval] VARIANT_BOOL *pVal);
+		[propput, id(340), helpstring("property Bulb")] HRESULT Bulb([in] VARIANT_BOOL newVal);
+		[propget, id(394), helpstring("property ShowBulbMesh")] HRESULT ShowBulbMesh([out, retval] VARIANT_BOOL *pVal);
+		[propput, id(394), helpstring("property ShowBulbMesh")] HRESULT ShowBulbMesh([in] VARIANT_BOOL newVal);
 		[propget, id(425), helpstring("property ScaleBulbMesh")] HRESULT ScaleBulbMesh([out, retval] float *pVal);
 		[propput, id(425), helpstring("property ScaleBulbMesh")] HRESULT ScaleBulbMesh([in] float newVal);
 	};

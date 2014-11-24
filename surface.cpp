@@ -1975,12 +1975,12 @@ STDMETHODIMP Surface::put_Collidable(VARIANT_BOOL newVal)
 
    STARTUNDO
 
-   m_d.m_fCollidable = fNewVal;
+   m_d.m_fCollidable = VBTOF(fNewVal);
 
    for (unsigned i=0; i<m_vhoCollidable.size(); i++)
    {
       if (m_d.m_fDroppable) m_vhoCollidable[i]->m_fEnabled = fNewVal && !m_fIsDropped;
-      else m_vhoCollidable[i]->m_fEnabled = fNewVal; //copy to hit checking on enities composing the object 
+      else m_vhoCollidable[i]->m_fEnabled = VBTOF(fNewVal); //copy to hit checking on enities composing the object 
    }	
 
    STOPUNDO
