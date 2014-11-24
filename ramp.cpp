@@ -89,7 +89,6 @@ void Ramp::SetDefaults(bool fromMouseClick)
    m_d.m_imagealignment = fromMouseClick ? (RampImageAlignment)GetRegIntWithDefault(strKeyName,"ImageMode", ImageModeWorld) : ImageModeWorld;
    m_d.m_fImageWalls = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"ImageWalls", true) : true;
    m_d.m_fCastsShadow = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"CastsShadow", true) : true;
-   m_d.m_transparent = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"Transparent", false) : false;
 
    m_d.m_leftwallheight = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"LeftWallHeight", 62.0f) : 62.0f;
    m_d.m_rightwallheight = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"RightWallHeight", 62.0f) : 62.0f;
@@ -123,7 +122,6 @@ void Ramp::WriteRegDefaults()
    SetRegValue(strKeyName,"ImageMode",REG_DWORD,&m_d.m_imagealignment,4);
    SetRegValueBool(strKeyName,"ImageWalls",m_d.m_fImageWalls);
    SetRegValueBool(strKeyName,"CastsShadow",m_d.m_fCastsShadow);
-   SetRegValueBool(strKeyName,"Transparent",m_d.m_transparent);
    SetRegValueFloat(strKeyName,"LeftWallHeight", m_d.m_leftwallheight);
    SetRegValueFloat(strKeyName,"RightWallHeight", m_d.m_rightwallheight);
    SetRegValueFloat(strKeyName,"LeftWallHeightVisible",m_d.m_leftwallheightvisible);
@@ -574,8 +572,7 @@ Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** co
  */
 void Ramp::GetCentralCurve(Vector<RenderVertex> * const pvv)
 {
-   const float accuracy = m_d.m_transparent ? 4.0f*powf(10.0f, (10.0f-m_ptable->GetAlphaRampsAccuracy())*(float)(1.0/1.5))
-       : (1.0f / (0.5f * 0.5f)); // min = 4, max = 4 * 10^(10/1.5) = 18.000.000
+   const float accuracy = 4.0f*powf(10.0f, (10.0f-m_ptable->GetAlphaRampsAccuracy())*(float)(1.0/1.5)); // min = 4, max = 4 * 10^(10/1.5) = 18.000.000
 
    IHaveDragPoints::GetRgVertex(pvv, false, accuracy);
 }
@@ -1694,7 +1691,6 @@ HRESULT Ramp::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey
    bw.WriteFloat(FID(RADI), m_d.m_wireDiameter);
    bw.WriteFloat(FID(RADX), m_d.m_wireDistanceX);
    bw.WriteFloat(FID(RADY), m_d.m_wireDistanceY);
-   bw.WriteBool(FID(ALPH), m_d.m_transparent);
 
    ISelect::SaveData(pstm, hcrypthash, hcryptkey);
 
@@ -1829,10 +1825,6 @@ BOOL Ramp::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(RADY))
    {
        pbr->GetFloat(&m_d.m_wireDistanceY);
-   }
-   else if (id == FID(ALPH))
-   {
-      pbr->GetInt(&m_d.m_transparent);
    }
    else
    {
@@ -2204,41 +2196,6 @@ STDMETHODIMP Ramp::put_CastsShadow(VARIANT_BOOL newVal)
    STARTUNDO
    
    m_d.m_fCastsShadow = VBTOF(newVal);
-   
-   STOPUNDO
-
-   return S_OK;
-}
-
-STDMETHODIMP Ramp::get_Transparent(VARIANT_BOOL *pVal)
-{
-   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_transparent);
-   return S_OK;
-}
-
-STDMETHODIMP Ramp::put_Transparent(VARIANT_BOOL newVal)
-{
-   STARTUNDO
-   m_d.m_transparent = !!VBTOF(newVal);
-   STOPUNDO
-
-   return S_OK;
-}
-
-STDMETHODIMP Ramp::get_Solid(VARIANT_BOOL *pVal)
-{
-   *pVal = !FTOVB(!m_d.m_transparent);
-   
-   return S_OK;
-}
-
-STDMETHODIMP Ramp::put_Solid(VARIANT_BOOL newVal)
-{
-   STARTUNDO
-  
-   if (VBTOF(newVal)) {
-      m_d.m_transparent = false;
-   }
    
    STOPUNDO
 

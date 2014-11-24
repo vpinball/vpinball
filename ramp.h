@@ -36,8 +36,6 @@ public:
 	bool m_fVisible;
 	bool m_fImageWalls;
 	bool m_fCastsShadow;
-	//bool m_fAcrylic;
-	bool m_transparent;
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -196,16 +194,12 @@ public:
 	STDMETHOD(get_CastsShadow)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_CastsShadow)(/*[in]*/ VARIANT_BOOL newVal);
 
-	STDMETHOD(get_Solid)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-	STDMETHOD(put_Solid)(/*[in]*/ VARIANT_BOOL newVal);
-	STDMETHOD(get_Transparent)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-	STDMETHOD(put_Transparent)(/*[in]*/ VARIANT_BOOL newVal);
 	STDMETHOD(get_Collidable)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_Collidable)(/*[in]*/ VARIANT_BOOL newVal);
 	STDMETHOD(get_Visible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_Visible)(/*[in]*/ VARIANT_BOOL newVal);
 
-        STDMETHOD(get_Friction)(/*[out, retval]*/ float *pVal);
+    STDMETHOD(get_Friction)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Friction)(/*[in]*/ float newVal);
 	STDMETHOD(get_Scatter)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Scatter)(/*[in]*/ float newVal);
