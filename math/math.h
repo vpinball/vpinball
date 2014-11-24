@@ -2,10 +2,12 @@
 
 #include <math.h>
 
+#if _MSC_VER < 1800
 inline float exp2f(const float e)
 {
 	return powf(2.0f,e);
 }
+#endif
 
 // Math stuff which doesn't fit elsewhere
 
