@@ -758,8 +758,11 @@ void Player::InitShader()
 void Player::InitBallShader()
 {
    ballShader = new Shader(m_pin3d.m_pd3dDevice );
-
+#if _MSC_VER >= 1700
+   ballShader->Load( g_ballShaderCode, sizeof(g_ballShaderCode) );
+#else
    ballShader->Load( ballShaderCode, sizeof(ballShaderCode) );
+#endif
 
    D3DMATRIX worldMat;
    D3DMATRIX viewMat;

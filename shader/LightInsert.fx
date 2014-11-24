@@ -6,7 +6,7 @@ float4   lightCenter;
 float    maxRange;
 float    intensity=1.0f;
 float4   camera;
-float4 ambient = float4( 0.1f, 0.0, 0.0, 1.0f );
+float4   ambient = float4( 0.1f, 0.0, 0.0, 1.0f );
 
 struct vin
 { 
@@ -35,7 +35,7 @@ vout VS( in vin IN )
 
 	OUT.tex0 = IN.tex0;
 	OUT.worldPos = worldPos;
-	OUT.normal = normalize( mul(IN.normal, matWorld) );
+	OUT.normal = normalize( mul(float4(IN.normal,0.0f), matWorld).xyz ); //!! matWorldViewInverseTranspose
 	OUT.viewDir = camera-worldPos;
 	return OUT;
 }
