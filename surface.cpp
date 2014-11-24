@@ -7,9 +7,9 @@ Surface::Surface()
    m_d.m_szImage[0] = 0;
    m_d.m_szSideImage[0] = 0;
 
-   m_d.m_fCollidable = fTrue;
+   m_d.m_fCollidable = true;
    m_d.m_fSlingshotAnimation = true;
-   m_d.m_fInner = fTrue;
+   m_d.m_fInner = true;
    m_d.m_fEnableLighting = true;
    slingshotVBuffer=0;
    sideVBuffer = 0;

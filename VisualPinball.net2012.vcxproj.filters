@@ -272,6 +272,9 @@
     <None Include="res\gate.rgs">
       <Filter>res</Filter>
     </None>
+    <None Include="shader\Globals.fxh">
+      <Filter>shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="inc">
@@ -285,6 +288,9 @@
     </Filter>
     <Filter Include="res">
       <UniqueIdentifier>{87c7f133-4bd1-41ab-9dfb-44a8684f0f53}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="shaders">
+      <UniqueIdentifier>{951ea5ae-543e-4fde-aca0-fdc7105aa730}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -672,5 +678,19 @@
     <ClInclude Include="media\wavread.h">
       <Filter>headers</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="shader\BallShader.fx">
+      <Filter>shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\BasicShader.fx">
+      <Filter>shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\DMDShader.fx">
+      <Filter>shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\LightInsert.fx">
+      <Filter>shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

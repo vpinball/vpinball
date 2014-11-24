@@ -7534,10 +7534,15 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     <None Include="res\ball.bmp" />
     <None Include="bin00001.bin" />
     <None Include="res\bumper.rgs" />
+    <None Include="res\bumperbase.bmp" />
+    <None Include="res\bumperCap.bmp" />
+    <None Include="res\bumperSocket.bmp" />
     <None Include="res\chevron.bmp" />
     <None Include="res\comcontrol.rgs" />
+    <None Include="res\envmap.bmp" />
     <None Include="res\gate.cur" />
     <None Include="res\flasher.cur" />
+    <None Include="res\ringenvmap.bmp" />
     <None Include="res\rubber.cur" />
     <None Include="res\kicker.cur" />
     <None Include="res\spinner.cur" />
@@ -7604,6 +7609,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
       <Command Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">fxc /O3 /T fx_2_0 /Vn dmdShaderCode /Fh shader\DMDShader.h shader\DMDShader.fx</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">DMDShader.h</Outputs>
     </CustomBuild>
+    <None Include="shader\Globals.fxh" />
     <None Include="target.bmp" />
     <None Include="res\textbox.rgs" />
     <None Include="res\timer.rgs" />

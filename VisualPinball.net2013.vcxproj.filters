@@ -274,6 +274,9 @@
     <None Include="res\wall.cur">
       <Filter>res</Filter>
     </None>
+    <None Include="shader\Globals.fxh">
+      <Filter>shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="inc">
@@ -677,5 +680,19 @@
     <ClInclude Include="media\wavread.h">
       <Filter>headers</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="shader\BallShader.fx">
+      <Filter>shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\BasicShader.fx">
+      <Filter>shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\DMDShader.fx">
+      <Filter>shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\LightInsert.fx">
+      <Filter>shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

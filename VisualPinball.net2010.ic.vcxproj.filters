@@ -451,6 +451,22 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\table.vpx" />
+    <None Include="shader\Globals.fxh" />
+    <None Include="res\envmap.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\bumperbase.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\ringenvmap.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\bumperCap.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\bumperSocket.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Object Include="dispatchpatch32.obj" />
