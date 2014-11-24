@@ -67,7 +67,7 @@ VP 10.0.0 Changelog
 - DMDWidth, DMDHeight, DMDPixels added to Table Script methods
 
 - improved smoothness for ramps (centripetal Catmull-Rom splines)
-- changed opacity/transparency handling for ramps (Alpha/Acrylic have been replaced by new props Transparent/Opacity)
+- changed opacity/transparency handling for ramps (Alpha/Acrylic have been deleted, so use the material opacity value now)
 
 - GetElement, GetElementByName, GetBalls added to Table Script methods
 - renaming of IsVisible properties (flasher, ramp) to Visible

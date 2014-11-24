@@ -2,17 +2,25 @@
 
 // Much faster float-to-int conversion than standard C cast.
 // Source: http://stereopsis.com/sree/fpu2006.html
-__forceinline int RoundToInt(double val)
+/*__forceinline int RoundToInt(double val)
 {
     static const double _xs_doublemagic = 6755399441055744.0;   //2^52 * 1.5, uses limited precision to floor
     val = val + _xs_doublemagic;
     return ((int*)&val)[0];
+}*/
+
+#if _MSC_VER >= 1800 || defined(__INTEL_COMPILER)
+ #define RoundToInt lround
+#else
+__forceinline int RoundToInt(const float val)
+{
+    return (int)(val + ((val < 0.0f) ? -0.5f : 0.5f));
 }
+#endif
 
-
-#define SCALEXf(x) (RoundToInt(((x) - m_offx)*m_zoom))
-#define SCALEYf(y) (RoundToInt(((y) - m_offy)*m_zoom))
-#define SCALEDf(d) (RoundToInt((d)*m_zoom))
+#define SCALEXf(x) RoundToInt(((x) - m_offx)*m_zoom)
+#define SCALEYf(y) RoundToInt(((y) - m_offy)*m_zoom)
+#define SCALEDf(d) RoundToInt((d)*m_zoom)
 
 class Sur
 	{

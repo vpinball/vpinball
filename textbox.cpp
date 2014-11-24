@@ -31,7 +31,7 @@ HRESULT Textbox::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 void Textbox::SetDefaults(bool fromMouseClick)
 {
     //Textbox is always located on backdrop
-    m_fBackglass = fTrue;
+    m_fBackglass = true;
 
     FONTDESC fd;
     fd.cbSizeofstruct = sizeof(FONTDESC);

@@ -244,6 +244,24 @@ STDMETHODIMP BallEx::put_Mass(float newVal)
 	return S_OK;
 }
 
+STDMETHODIMP BallEx::get_ID(int *pVal)
+{
+	CHECKSTALEBALL
+
+	*pVal = m_pball->m_id;
+
+	return S_OK;
+}
+
+STDMETHODIMP BallEx::put_ID(int newVal)
+{
+	CHECKSTALEBALL
+
+	m_pball->m_id = newVal;
+
+	return S_OK;
+}
+
 STDMETHODIMP BallEx::get_Radius(float *pVal)
 {
 	CHECKSTALEBALL

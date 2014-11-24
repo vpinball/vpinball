@@ -4,6 +4,8 @@
 
 //#define USE_D3D9EX // if enabled can use extended API, does not work on XP though // currently only allows to enable adaptive vsync again
 
+//#define FP_RESET_AFTER_D3D // resets FPU after D3D, shouldn't be really useful nowadays anymore (and if it is we should rather fix it where it happens)
+
 //#define _CRTDBG_MAP_ALLOC
 #ifdef _CRTDBG_MAP_ALLOC
  #include <crtdbg.h>
@@ -23,15 +25,17 @@
 
 //
 
-#define MAX_REELS           32
+#define MAX_BALL_TRAIL_POS 10
 
-#define LIGHTSEQGRIDSCALE	20
-#define	LIGHTSEQGRIDWIDTH	EDITOR_BG_WIDTH/LIGHTSEQGRIDSCALE
-#define	LIGHTSEQGRIDHEIGHT	(2*EDITOR_BG_WIDTH)/LIGHTSEQGRIDSCALE
+#define MAX_REELS          32
 
-#define LIGHTSEQQUEUESIZE	100
+#define LIGHTSEQGRIDSCALE  20
+#define	LIGHTSEQGRIDWIDTH  EDITOR_BG_WIDTH/LIGHTSEQGRIDSCALE
+#define	LIGHTSEQGRIDHEIGHT (2*EDITOR_BG_WIDTH)/LIGHTSEQGRIDSCALE
 
-#define MAX_LIGHT_SOURCES   2
+#define LIGHTSEQQUEUESIZE  100
+
+#define MAX_LIGHT_SOURCES  2
 
 //
 

@@ -5,8 +5,8 @@ IEditable::IEditable()
 	{
 	m_phittimer = NULL;
 
-	m_fBackglass = fFalse;
-	isVisible = true;
+	m_fBackglass = false;
+	m_isVisible = true;
 	VariantInit(&m_uservalue);
 	}
 

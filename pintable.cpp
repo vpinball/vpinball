@@ -1086,7 +1086,7 @@ void PinTable::SwitchToLayer(int layerNumber )
          for( int t=0;t<m_layer[i].Size();t++ )
          {
             IEditable *piedit = m_layer[i].ElementAt(t);
-            piedit->isVisible=true;
+            piedit->m_isVisible=true;
          }
       }
       else
@@ -1094,7 +1094,7 @@ void PinTable::SwitchToLayer(int layerNumber )
          for( int t=0;t<m_layer[i].Size();t++ )
          {
             IEditable *piedit = m_layer[i].ElementAt(t);
-            piedit->isVisible=false;
+            piedit->m_isVisible=false;
          }
       }
    }
@@ -1105,7 +1105,7 @@ void PinTable::SwitchToLayer(int layerNumber )
 void PinTable::AssignToLayer(IEditable *obj, int layerNumber )
 {
    if( !m_activeLayers[layerNumber] )
-      obj->isVisible=false;
+      obj->m_isVisible=false;
    m_layer[obj->GetISelect()->layerIndex].RemoveElement(obj);
    obj->GetISelect()->layerIndex=layerNumber;
    m_layer[layerNumber].InsertElementAt(obj,0);
@@ -1155,7 +1155,7 @@ void PinTable::BackupLayers()
       for( int i=0;i<m_layer[t].Size();i++ )
       {
          IEditable *piedit = m_layer[t].ElementAt(i);
-         piedit->isVisible=true;
+         piedit->m_isVisible=true;
       }
    }
 }
@@ -1169,7 +1169,7 @@ void PinTable::RestoreLayers()
          for( int t=0;t<m_layer[i].Size();t++ )
          {
             IEditable *piedit = m_layer[i].ElementAt(t);
-            piedit->isVisible=true;
+            piedit->m_isVisible=true;
          }
       }
       else
@@ -1177,7 +1177,7 @@ void PinTable::RestoreLayers()
          for( int t=0;t<m_layer[i].Size();t++ )
          {
             IEditable *piedit = m_layer[i].ElementAt(t);
-            piedit->isVisible=false;
+            piedit->m_isVisible=false;
          }
       }
    }
@@ -1497,7 +1497,7 @@ void PinTable::Render(Sur * const psur)
       IEditable *ptr = m_vedit.ElementAt(i);
       if (ptr->m_fBackglass == g_pvp->m_fBackglassView)
       {
-         if ( ptr->isVisible )
+         if ( ptr->m_isVisible )
             ptr->PreRender(psur);
       }
    }
@@ -1538,7 +1538,7 @@ void PinTable::Render(Sur * const psur)
    {
       if (m_vedit.ElementAt(i)->m_fBackglass == g_pvp->m_fBackglassView)
       {
-         if( m_vedit.ElementAt(i)->isVisible )
+         if( m_vedit.ElementAt(i)->m_isVisible )
             m_vedit.ElementAt(i)->Render(psur);
       }
    }
@@ -4208,7 +4208,7 @@ void PinTable::DoContextMenu(int x, int y, int menuid, ISelect *psel)
       AppendMenu(hmenu, MF_SEPARATOR, ~0u, "");
       for( int i=0; i<m_allHitElements.Size(); i++ ) 
       {
-         if( !m_allHitElements.ElementAt(i)->GetIEditable()->isVisible )
+         if( !m_allHitElements.ElementAt(i)->GetIEditable()->m_isVisible )
          {
             continue;
          }
@@ -4286,15 +4286,15 @@ char *PinTable::GetElementName( IEditable *pedit )
    return NULL;
 }
 
-BOOL PinTable::FMutilSelLocked()
+bool PinTable::FMutilSelLocked()
 {
-   BOOL fLocked = fFalse;
+   bool fLocked = false;
 
    for (int i=0;i<m_vmultisel.Size();i++)
    {
       if (m_vmultisel.ElementAt(i)->m_fLocked)
       {
-         fLocked = fTrue;
+         fLocked = true;
          break;
       }
    }
@@ -4748,7 +4748,7 @@ void PinTable::ExportBlueprint()
    for (int i=0;i<m_vedit.Size();i++)
    {
       IEditable *ptr = m_vedit.ElementAt(i);
-      if (ptr->isVisible && ptr->m_fBackglass == g_pvp->m_fBackglassView)
+      if (ptr->m_isVisible && ptr->m_fBackglass == g_pvp->m_fBackglassView)
       {
          ptr->RenderBlueprint(psur);
       }

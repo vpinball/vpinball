@@ -90,7 +90,6 @@ void Ramp::SetDefaults(bool fromMouseClick)
    m_d.m_fImageWalls = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"ImageWalls", true) : true;
    m_d.m_fCastsShadow = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"CastsShadow", true) : true;
    m_d.m_transparent = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"Transparent", false) : false;
-   m_d.m_opacity = fromMouseClick ? GetRegIntWithDefault(strKeyName,"Opacity", 255) : 255;
 
    m_d.m_leftwallheight = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"LeftWallHeight", 62.0f) : 62.0f;
    m_d.m_rightwallheight = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"RightWallHeight", 62.0f) : 62.0f;
@@ -125,7 +124,6 @@ void Ramp::WriteRegDefaults()
    SetRegValueBool(strKeyName,"ImageWalls",m_d.m_fImageWalls);
    SetRegValueBool(strKeyName,"CastsShadow",m_d.m_fCastsShadow);
    SetRegValueBool(strKeyName,"Transparent",m_d.m_transparent);
-   SetRegValueInt(strKeyName,"Opacity", m_d.m_opacity);
    SetRegValueFloat(strKeyName,"LeftWallHeight", m_d.m_leftwallheight);
    SetRegValueFloat(strKeyName,"RightWallHeight", m_d.m_rightwallheight);
    SetRegValueFloat(strKeyName,"LeftWallHeightVisible",m_d.m_leftwallheightvisible);
@@ -1697,7 +1695,6 @@ HRESULT Ramp::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey
    bw.WriteFloat(FID(RADX), m_d.m_wireDistanceX);
    bw.WriteFloat(FID(RADY), m_d.m_wireDistanceY);
    bw.WriteBool(FID(ALPH), m_d.m_transparent);
-   bw.WriteInt(FID(OPAC), m_d.m_opacity);
 
    ISelect::SaveData(pstm, hcrypthash, hcryptkey);
 
@@ -1836,10 +1833,6 @@ BOOL Ramp::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(ALPH))
    {
       pbr->GetInt(&m_d.m_transparent);
-   }
-   else if (id == FID(OPAC))
-   {
-      pbr->GetInt(&m_d.m_opacity);
    }
    else
    {
@@ -2232,21 +2225,6 @@ STDMETHODIMP Ramp::put_Transparent(VARIANT_BOOL newVal)
    return S_OK;
 }
 
-STDMETHODIMP Ramp::get_Opacity(int *pVal)
-{
-   *pVal = m_d.m_opacity;
-   return S_OK;
-}
-
-STDMETHODIMP Ramp::put_Opacity(int newVal)
-{
-   STARTUNDO
-   m_d.m_opacity = clamp(newVal, 0, 255);
-   STOPUNDO
-
-   return S_OK;
-}
-
 STDMETHODIMP Ramp::get_Solid(VARIANT_BOOL *pVal)
 {
    *pVal = !FTOVB(!m_d.m_transparent);
@@ -2602,10 +2580,6 @@ void Ramp::PostRenderStatic(RenderDevice* pd3dDevice)
       ppin3d->EnableAlphaBlend( 1, false );
       pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", true);
       pd3dDevice->basicShader->Core()->SetFloat("fAlphaTestValue", 128.0f/255.0f);
-
-//       pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
-//       pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_ALPHAARG2, D3DTA_TFACTOR);
-//       pd3dDevice->SetRenderState(RenderDevice::TEXTUREFACTOR, (m_d.m_opacity << 24) | 0xffffff);
 
       unsigned int offset=0;
       pd3dDevice->basicShader->Begin(0);

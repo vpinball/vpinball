@@ -228,8 +228,6 @@ public:
 	void BeginPlay();
 	void EndPlay();
 
-	int m_fBackglass; // if the light is on the table (0) or a backglass view
-
 	HitTimer *m_phittimer;
 
 	VARIANT m_uservalue;
@@ -242,5 +240,6 @@ public:
 	Vector<int> m_viEventCollection;
 	bool m_fSingleEvents;
 
-    bool isVisible;
+        bool m_fBackglass; // if the light is on the table (false) or a backglass view
+        bool m_isVisible;
 	};

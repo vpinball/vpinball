@@ -1655,8 +1655,6 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(378), helpstring("property Solid")] HRESULT Solid([in] VARIANT_BOOL newVal);
 		[propget, id(18), helpstring("property Transparent")] HRESULT Transparent([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(18), helpstring("property Transparent")] HRESULT Transparent([in] VARIANT_BOOL newVal);
-		[propget, id(19), helpstring("property Opacity")] HRESULT Opacity([out, retval] int *pVal);
-		[propput, id(19), helpstring("property Opacity")] HRESULT Opacity([in] int newVal);
 		[propget, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([out, retval] VARIANT* pVal);
 		[propput, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([in] VARIANT* newVal);
 		[propget, id(107), helpstring("property CastsShadow")] HRESULT CastsShadow([out, retval] VARIANT_BOOL *pVal);
@@ -1832,6 +1830,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(11), helpstring("property Mass")] HRESULT Mass([in] float newVal);
 		[propget, id(12), helpstring("property Radius")] HRESULT Radius([out, retval] float *pVal);
 		[propput, id(12), helpstring("property Radius")] HRESULT Radius([in] float newVal);
+		[propget, id(13), helpstring("property ID")] HRESULT ID([out, retval] int *pVal);
+		[propput, id(13), helpstring("property ID")] HRESULT ID([in] int newVal);
 		[propget, id(DISPID_Name), helpstring("property Name")] HRESULT Name([out, retval] BSTR *pVal);
 		[propput, id(DISPID_Name), helpstring("property Name")] HRESULT Name([in] BSTR newVal);	
 		[id(100), helpstring("method DestroyBall")] HRESULT DestroyBall([out, retval] int *pVal);

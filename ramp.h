@@ -30,7 +30,6 @@ public:
     float m_wireDistanceX;
     float m_wireDistanceY;
 
-    int m_opacity;
     float m_depthBias;      // for determining depth sorting (alpha ramps only)
 
 	bool m_fCollidable;
@@ -205,10 +204,8 @@ public:
 	STDMETHOD(put_Collidable)(/*[in]*/ VARIANT_BOOL newVal);
 	STDMETHOD(get_Visible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_Visible)(/*[in]*/ VARIANT_BOOL newVal);
-	STDMETHOD(get_Opacity)(/*[out, retval]*/ int *pVal);
-	STDMETHOD(put_Opacity)(/*[in]*/ int newVal);
 
-	STDMETHOD(get_Friction)(/*[out, retval]*/ float *pVal);
+        STDMETHOD(get_Friction)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Friction)(/*[in]*/ float newVal);
 	STDMETHOD(get_Scatter)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Scatter)(/*[in]*/ float newVal);

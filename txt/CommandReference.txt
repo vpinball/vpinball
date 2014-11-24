@@ -454,7 +454,6 @@ HasWallImage(bool) - apply image to walls
 LeftWallHeight(float)
 RightWallHeight(float)
 *Solid(bool) - standard solid ramp mode
-Opacity
 Transparent
 UserValue(bool)
 *CastShadow(bool)

@@ -307,7 +307,7 @@ public:
 
 	void DoContextMenu(int x, int y, int menuid, ISelect *psel);
 	virtual void DoCommand(int icmd, int x, int y);
-	BOOL FMutilSelLocked();
+	bool FMutilSelLocked();
 
 	virtual void SelectItem(IScriptable *piscript);
 	virtual void DoCodeViewCommand(int command);
