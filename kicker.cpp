@@ -252,7 +252,7 @@ void Kicker::RenderSetup(RenderDevice* pd3dDevice)
    {
       std::vector<WORD> indices(kickerHoleNumFaces);
       Vertex3D_NoTex2 *buf;
-      for( int i=0;i<kickerHoleNumFaces;i++ ) indices[i] = kickerHoleIndices[i];
+      for( unsigned int i=0;i<kickerHoleNumFaces;i++ ) indices[i] = kickerHoleIndices[i];
 
       numFaces = kickerHoleNumFaces;
       numVertices = kickerHoleNumVertices;
@@ -269,7 +269,7 @@ void Kicker::RenderSetup(RenderDevice* pd3dDevice)
       fullMatrix.RotateZMatrix(ANGTORAD(0));
 
       vertexBuffer->lock(0, 0, (void**)&buf, 0);
-      for( int i=0;i<numVertices;i++ )
+      for( unsigned int i=0;i<numVertices;i++ )
       {
          Vertex3Ds vert(kickerHole[i].x,kickerHole[i].y,kickerHole[i].z);
          vert = fullMatrix.MultiplyVector(vert);

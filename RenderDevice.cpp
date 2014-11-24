@@ -437,9 +437,11 @@ RenderDevice::~RenderDevice()
     /*
      * D3D sets the FPU to single precision mode when it's initialized, but doesn't
      * bother to reset the FPU when it's destroyed. This creates some precision issues
-     * and messes with the RoundToInt function, so we reset it manually here.
+     * and messed with the old RoundToInt function, so we reset it manually here.
      */
+#ifdef FP_RESET_AFTER_D3D
     _fpreset();
+#endif
 }
 
 void RenderDevice::BeginScene()

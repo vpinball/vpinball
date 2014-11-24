@@ -86,7 +86,7 @@ HRESULT DispReel::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 void DispReel::SetDefaults(bool fromMouseClick)
 {
     // object is only available on the backglass
-	m_fBackglass = fTrue;
+	m_fBackglass = true;
 
     // set all the Data defaults
 	HRESULT hr;

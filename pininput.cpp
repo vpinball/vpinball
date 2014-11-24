@@ -753,7 +753,7 @@ int PinInput::started()
 	if( m_pressed_start ) 
 		return 1;
 
-    if ( Ball::GetBallsInUse() > 0 )
+        if ( g_pplayer->m_vball.size() > 0 )
 	{
 		m_pressed_start = 1;
 		return 1;

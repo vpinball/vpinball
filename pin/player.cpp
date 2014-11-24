@@ -1001,8 +1001,6 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
     // initialize hit structure for dynamic objects
     m_hitoctree_dynamic.FillFromVector( m_vho_dynamic );
 
-    Ball::ballsInUse=0;
-
 	//----------------------------------------------------------------------------------
 
 	SendMessage(hwndProgress, PBM_SETPOS, 60, 0);
@@ -2126,7 +2124,7 @@ void Player::UpdatePhysics()
             pball->m_oldpos[pball->m_ringcounter_oldpos/(10000/PHYSICS_STEPTIME)] = pball->m_pos;
 
 			pball->m_ringcounter_oldpos++;
-			if(pball->m_ringcounter_oldpos == BALL_TRAIL_NUM_POS*(10000/PHYSICS_STEPTIME))
+			if(pball->m_ringcounter_oldpos == MAX_BALL_TRAIL_POS*(10000/PHYSICS_STEPTIME))
 				pball->m_ringcounter_oldpos = 0;
 		}
 
@@ -2779,17 +2777,17 @@ void Player::DrawBalls()
       // ball trails
       if((m_fTrailForBalls && (m_ptable->m_useTrailForBalls == -1)) || (m_ptable->m_useTrailForBalls == 1))
         {
-            Vertex3D_NoTex2 rgv3D_all[BALL_TRAIL_NUM_POS*2];
+            Vertex3D_NoTex2 rgv3D_all[MAX_BALL_TRAIL_POS*2];
             unsigned int num_rgv3D = 0;
 
-			for(int i2 = 0; i2 < BALL_TRAIL_NUM_POS-1; ++i2)
+			for(int i2 = 0; i2 < MAX_BALL_TRAIL_POS-1; ++i2)
 			{
 				int i = pball->m_ringcounter_oldpos/(10000/PHYSICS_STEPTIME)-1-i2;
 				if(i<0)
-					i += BALL_TRAIL_NUM_POS;
+					i += MAX_BALL_TRAIL_POS;
 				int io = i-1;
 				if(io<0)
-					io += BALL_TRAIL_NUM_POS;
+					io += MAX_BALL_TRAIL_POS;
 
 				if((pball->m_oldpos[i].x != FLT_MAX) && (pball->m_oldpos[io].x != FLT_MAX)) // only if already initialized
 				{
@@ -2829,11 +2827,11 @@ void Player::DrawBalls()
 
 						rgv3D[0].nx = rgv3D[1].nx = rgv3D[2].nx = rgv3D[3].nx = bc*(float)(1.0/255.0); //!! abuses normal for now for the color/alpha
 
-						rgv3D[0].tu = 0.5f+(float)(i2)*(float)(1.0/(2.0*(BALL_TRAIL_NUM_POS-1)));
+						rgv3D[0].tu = 0.5f+(float)(i2)*(float)(1.0/(2.0*(MAX_BALL_TRAIL_POS-1)));
 						rgv3D[0].tv = 0.f;
 						rgv3D[1].tu = rgv3D[0].tu;
 						rgv3D[1].tv = 1.f;
-						rgv3D[2].tu = 0.5f+(float)(i2+1)*(float)(1.0/(2.0*(BALL_TRAIL_NUM_POS-1)));
+						rgv3D[2].tu = 0.5f+(float)(i2+1)*(float)(1.0/(2.0*(MAX_BALL_TRAIL_POS-1)));
 						rgv3D[2].tv = 1.f;
 						rgv3D[3].tu = rgv3D[2].tu;
 						rgv3D[3].tv = 0.f;
@@ -2865,7 +2863,7 @@ void Player::DrawBalls()
                 }
             }
 
-            static const WORD rgi_all[BALL_TRAIL_NUM_POS*2] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19};
+            static const WORD rgi_all[MAX_BALL_TRAIL_POS*2] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19};
 
             if(num_rgv3D > 0)
             {

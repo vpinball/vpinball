@@ -55,8 +55,10 @@ public:
 	STDMETHOD(put_Radius)(/*[in]*/ float newVal);
 	STDMETHOD(get_Mass)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Mass)(/*[in]*/ float newVal);
-	STDMETHOD(get_UserValue)(VARIANT *pVal);
+	STDMETHOD(get_UserValue)(/*[out, retval]*/ VARIANT *pVal);
 	STDMETHOD(put_UserValue)(VARIANT *newVal);
+	STDMETHOD(get_ID)(/*[out, retval]*/ int *pVal);
+	STDMETHOD(put_ID)(/*[in]*/ int newVal);
 	STDMETHOD(DestroyBall)(/*[out, retval]*/ int *pVal);
 
 	virtual void FireGroupEvent(int dispid) {}

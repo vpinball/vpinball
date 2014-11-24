@@ -1,15 +1,11 @@
 #include "stdafx.h"
 
-int Ball::ballsInUse=0;
-
-int Ball::GetBallsInUse()
-{
-    return ballsInUse;
-}
+unsigned int Ball::ballID=0;
 
 Ball::Ball()
 {
-   ballsInUse++;
+   m_id = ballID;
+   ballID++;
 
    m_coll.ball = this;      // TODO: this needs to move somewhere else
    m_coll.obj = NULL;
@@ -23,13 +19,8 @@ Ball::Ball()
    m_color = RGB(0,0,0);
 
    m_ringcounter_oldpos = 0;
-   for(int i = 0; i < BALL_TRAIL_NUM_POS; ++i)
+   for(int i = 0; i < MAX_BALL_TRAIL_POS; ++i)
 	   m_oldpos[i].x = FLT_MAX;
-}
-
-Ball::~Ball()
-{
-	ballsInUse--; //Added by JEP.  Need to keep track of number of balls on table for autostart to work.
 }
 
 void Ball::RenderSetup()

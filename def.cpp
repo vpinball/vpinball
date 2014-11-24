@@ -12,8 +12,7 @@ float sz2f(char *sz)
 
 	VariantChangeType(&var, &var, 0, VT_R8); 
 
-	const double r = V_R8(&var);
-	return (float)r;
+	return V_R4(&var);
 	}
 
 void f2sz(const float f, char *sz)
