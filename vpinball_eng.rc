@@ -14,7 +14,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Englisch (USA) resources
+// English (U.S.) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 #ifdef _WIN32
@@ -1490,15 +1490,16 @@ BEGIN
     LISTBOX         IDC_LIST,7,7,218,176,LBS_SORT | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
 END
 
-IDD_PROPKICKER_STATE DIALOGEX 0, 0, 125, 53
+IDD_PROPKICKER_STATE DIALOGEX 0, 0, 125, 65
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    CONTROL         "&Enabled",DISPID_Enabled,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,111,11
-    EDITTEXT        313,63,20,55,12,ES_AUTOHSCROLL
-    EDITTEXT        314,63,34,55,12,ES_AUTOHSCROLL
-    LTEXT           "Scatter Angle",-1,7,22,56,8
-    LTEXT           "Hit Height",-1,7,36,56,8
+    CONTROL         "&Enabled",DISPID_Enabled,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,39,11
+    EDITTEXT        313,63,34,55,12,ES_AUTOHSCROLL
+    EDITTEXT        314,63,48,55,12,ES_AUTOHSCROLL
+    LTEXT           "Scatter Angle",-1,7,36,56,8
+    LTEXT           "Hit Height",-1,7,50,56,8
+    CONTROL         "Fall through",IDC_FALL_THROUGH_HOLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,19,53,10
 END
 
 IDD_PROPPRIMITIVE_POSITION DIALOGEX 0, 0, 125, 305
@@ -1798,6 +1799,11 @@ BEGIN
     IDD_PROPBACKGLASS_VISUALS, DIALOG
     BEGIN
         BOTTOMMARGIN, 185
+    END
+
+    IDD_PROPKICKER_STATE, DIALOG
+    BEGIN
+        BOTTOMMARGIN, 53
     END
 
     IDD_PROPFLASHER_VISUALS, DIALOG
@@ -2116,6 +2122,7 @@ IDB_BUMPERBASE          BITMAP                  "res\\bumperbase.bmp"
 IDB_RINGENVMAP          BITMAP                  "res\\ringenvmap.bmp"
 IDB_BUMPERCAP           BITMAP                  "res\\bumperCap.bmp"
 IDB_BUMPERSOCKET        BITMAP                  "res\\bumperSocket.bmp"
+IDB_KICKER_HOLE_WOOD    BITMAP                  "res\\kickerHoleWood.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -2406,7 +2413,7 @@ BEGIN
     IDS_STEP                "Step"
 END
 
-#endif    // Englisch (USA) resources
+#endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

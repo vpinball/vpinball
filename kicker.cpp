@@ -93,6 +93,12 @@ void Kicker::SetDefaults(bool fromMouseClick)
    else
       m_d.m_kickertype = KickerHole;
 
+   hr = GetRegInt("DefaultProps\\Kicker","FallThrough", &iTmp);
+   if ((hr == S_OK) && fromMouseClick)
+       m_d.m_fFallThrough = iTmp == 0 ? false : true;
+   else
+       m_d.m_fFallThrough = false;
+
 }
 
 void Kicker::WriteRegDefaults()
@@ -106,6 +112,7 @@ void Kicker::WriteRegDefaults()
    SetRegValueFloat("DefaultProps\\Kicker","Scatter", m_d.m_scatter);
    SetRegValue("DefaultProps\\Kicker","KickerType",REG_DWORD,&m_d.m_kickertype,4);
    SetRegValue("DefaultProps\\Kicker","Surface", REG_SZ, &m_d.m_szSurface,lstrlen(m_d.m_szSurface));
+   SetRegValueBool("DefaultProps\\Kicker","FallThrough", m_d.m_fFallThrough);
 }
 
 void Kicker::PreRender(Sur * const psur)
@@ -151,14 +158,23 @@ void Kicker::GetHitShapes(Vector<HitObject> * const pvho)
 
    phitcircle->center.x = m_d.m_vCenter.x;
    phitcircle->center.y = m_d.m_vCenter.y;
-   phitcircle->radius = m_d.m_radius*0.6f; // reduce the hit circle radius because only the inner circle of the 
+   if ( m_d.m_kickertype==KickerHole)
+   {
+       phitcircle->radius = m_d.m_radius*0.85f; // reduce the hit circle radius because only the inner circle of the 
+   }
+   else
+   {
+       phitcircle->radius = m_d.m_radius*0.6f; // reduce the hit circle radius because only the inner circle of the 
+   }
+
                                            // kicker should start a hit event
    phitcircle->zlow = height;
-
    phitcircle->zhigh = height + m_d.m_hit_height;	// height of kicker hit cylinder  
 
+   
+
    if ( m_d.m_kickertype == KickerHole )
-      phitcircle->m_zheight = height-40.0f;		//holes are deeper
+      phitcircle->m_zheight = height-40.0f;		
    else
       phitcircle->m_zheight = height;		//height for Kicker locked ball + ball->m_radius
 
@@ -375,6 +391,7 @@ HRESULT Kicker::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptk
    bw.WriteFloat(FID(KSCT), m_d.m_scatter);
    bw.WriteFloat(FID(KHOT), m_d.m_hit_height);
    bw.WriteFloat(FID(KORI), m_d.m_orientation);
+   bw.WriteBool(FID(FATH), m_d.m_fFallThrough);
 
    ISelect::SaveData(pstm, hcrypthash, hcryptkey);
 
@@ -448,6 +465,10 @@ BOOL Kicker::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(NAME))
    {
       pbr->GetWideString((WCHAR *)m_wzName);
+   }
+   else if (id == FID(FATH))
+   {
+       pbr->GetBool(&m_d.m_fFallThrough);
    }
    else
    {
@@ -764,6 +785,24 @@ STDMETHODIMP Kicker::put_Radius(float newVal)
       return S_OK;
 }
 
+STDMETHODIMP Kicker::get_FallThrough(VARIANT_BOOL *pVal)
+{
+    *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fFallThrough);
+
+    return S_OK;
+}
+
+STDMETHODIMP Kicker::put_FallThrough(VARIANT_BOOL newVal)
+{
+    STARTUNDO
+
+        m_d.m_fFallThrough = VBTOF(newVal);
+
+    STOPUNDO
+
+        return S_OK;
+}
+
 void Kicker::GetDialogPanes(Vector<PropertyPane> *pvproppane)
 {
    PropertyPane *pproppane;
@@ -868,19 +907,25 @@ void KickerHitCircle::DoCollide(Ball * const pball, Vertex3Ds& hitnormal, Vertex
 
       if (i < 0)	//entering Kickers volume
       { 
-         pball->m_vpVolObjs->AddElement(m_pObj);		// add kicker to ball's volume set
+            pball->m_vpVolObjs->AddElement(m_pObj);		// add kicker to ball's volume set
 
          m_pball = pball;
-         pball->m_frozen = true;			
+         if( m_pkicker->m_d.m_fFallThrough )
+             pball->m_frozen = false;
+         else
+             pball->m_frozen = true;			
 
          // Don't fire the hit event if the ball was just created
          // Fire the event before changing ball attributes, so scripters can get a useful ball state
+         if (hitnormal.x != FLT_MAX ) // FLT_MAX if just created
+            m_pkicker->FireGroupEvent(DISPID_HitEvents_Hit);
 
-         if (hitnormal.x != FLT_MAX) // FLT_MAX if just created
-         {m_pkicker->FireGroupEvent(DISPID_HitEvents_Hit);}
-
-         if (pball->m_frozen)	// script may have unfrozen the ball
+         if (pball->m_frozen || m_pkicker->m_d.m_fFallThrough)	// script may have unfrozen the ball
          {
+            // if ball falls through hole, we fake the collision algo by changing the ball height
+            // in HitTestBasicRadius() the z-position of the ball is check if it is >= to the hit cylinder
+            // if we don't change the height of the ball we get a lot of hit events while the ball is falling!!
+
             // Only mess with variables if ball was not kicked during event
             pball->m_vel.SetZero();
             pball->m_pos.x = center.x;
