@@ -544,7 +544,6 @@
 #define IDD_SEARCH_SELECT_ELEMENT       391
 #define IDD_DRAWING_ORDER               392
 #define IDR_Flasher                     393
-#define IDC_CHECK1                      394
 #define IDC_CHECK_PRIMITIVE_LIGHTING    394
 #define IDC_GLOBAL_REFLECTION_CHECK     394
 #define IDC_ENABLE_OFF_LIGHTING         394
@@ -557,16 +556,14 @@
 #define IDC_FLIPPER_ENABLED             394
 #define IDC_DIFFUSE_CHECK               394
 #define IDC_SHOW_BULB_MESH              394
+#define IDC_FALL_THROUGH_HOLE           394
 #define IDC_PRIMITIVE_IS_TOY            395
 #define IDC_ENABLE_FXAA                 395
 #define IDR_REGISTRY4                   395
-#define IDC_CHECK3                      396
-#define IDC_EDIT2                       397
 #define IDC_SIZE_HEIGHT                 397
 #define IDC_DEPTH_BIAS                  397
 #define IDC_YMAX_EDIT                   397
 #define IDC_WIRE_DISTX                  398
-#define IDC_CHECK2                      398
 #define IDC_STATIC_RENDERING_CHECK      398
 #define IDC_ON_LIGHT_LIGHTMAP           398
 #define IDC_AA_ALL_TABLES               398
@@ -614,9 +611,7 @@
 #define IDC_VP_WIDTH                    421
 #define IDC_VP_HEIGHT                   422
 #define IDC_TABLE_DIM_LIST              423
-#define IDC_LIST3                       424
 #define IDC_FORCE_ANISO                 425
-#define IDC_EDIT3                       425
 #define IDC_WIRE_DISTY                  425
 #define IDC_SCALE_BULB_MESH             425
 #define IDC_QFXAA                       426
@@ -712,6 +707,7 @@
 #define IDB_BITMAP2                     610
 #define IDB_BUMPERCAP                   610
 #define IDB_BUMPERSOCKET                611
+#define IDB_KICKER_HOLE_WOOD            612
 #define DISPID_Gate_Height1             1142
 #define DISPID_Image                    1500
 #define IDC_MESH_FILENAME_EDIT          1601
@@ -825,7 +821,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        612
+#define _APS_NEXT_RESOURCE_VALUE        613
 #define _APS_NEXT_COMMAND_VALUE         32997
 #define _APS_NEXT_CONTROL_VALUE         427
 #define _APS_NEXT_SYMED_VALUE           188
