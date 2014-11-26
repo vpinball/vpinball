@@ -24,6 +24,9 @@ VP 10.0.0 Changelog
 
   -> the data-format of the physics sets (*.vpp files) is basically the same, although the parameters inside are different, so unfortunately you need to set them up from scratch again
 
+- kickers are mesh based. In the kicker settings you can set "Fall through" so that if a ball hits a kicker(hole) the ball will fall through the 
+  surface which is attached to it. This only works if the wall is higher than the playfield, it won't work if the hole is on the playfield.
+  
 - add material editor
   
   -> quick and basic explanation:

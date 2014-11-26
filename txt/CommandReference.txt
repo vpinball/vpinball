@@ -313,9 +313,10 @@ Enabled(bool)
 *Surface(string)
 UserValue(any)
 Scatter(float)
+Fall Through(bool) - if checked the ball will fall through the surface assigned to the kicker, only if the surface is higher than the playfield
 HitHeight(float)
-Orientation(float)
-Radius(float)
+*Orientation(float)
+*Radius(float)
 
 Methods
 -------
