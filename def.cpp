@@ -10,7 +10,7 @@ float sz2f(char *sz)
 
 	CComVariant var = wzT;
 
-	VariantChangeType(&var, &var, 0, VT_R8); 
+	VariantChangeType(&var, &var, 0, VT_R4); 
 
 	return V_R4(&var);
 	}
