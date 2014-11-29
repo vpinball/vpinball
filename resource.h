@@ -708,6 +708,8 @@
 #define IDB_BUMPERCAP                   610
 #define IDB_BUMPERSOCKET                611
 #define IDB_KICKER_HOLE_WOOD            612
+#define IDB_BITMAP3                     613
+#define IDB_KICKER_CUP                  613
 #define DISPID_Gate_Height1             1142
 #define DISPID_Image                    1500
 #define IDC_MESH_FILENAME_EDIT          1601
@@ -821,7 +823,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        613
+#define _APS_NEXT_RESOURCE_VALUE        614
 #define _APS_NEXT_COMMAND_VALUE         32997
 #define _APS_NEXT_CONTROL_VALUE         427
 #define _APS_NEXT_SYMED_VALUE           188

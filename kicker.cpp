@@ -230,6 +230,10 @@ void Kicker::RenderSetup(RenderDevice* pd3dDevice)
       Vertex3D_NoTex2 *buf;
       for( int i=0;i<kickerCupNumFaces;i++ ) indices[i] = kickerCupIndices[i];
 
+      texture.CreateFromResource(IDB_KICKER_CUP);
+      texture.m_rgbTransparent = 0xFFFFFFFF;
+      texture.CreateAlphaChannel();
+
       numFaces = kickerCupNumFaces;
       numVertices = kickerCupNumVertices;
 
@@ -270,6 +274,10 @@ void Kicker::RenderSetup(RenderDevice* pd3dDevice)
       Vertex3D_NoTex2 *buf;
       for( unsigned int i=0;i<kickerHoleNumFaces;i++ ) indices[i] = kickerHoleIndices[i];
 
+      texture.CreateFromResource(IDB_KICKER_HOLE_WOOD);
+      texture.m_rgbTransparent = 0xFFFFFFFF;
+      texture.CreateAlphaChannel();
+
       numFaces = kickerHoleNumFaces;
       numVertices = kickerHoleNumVertices;
 
@@ -290,9 +298,9 @@ void Kicker::RenderSetup(RenderDevice* pd3dDevice)
          Vertex3Ds vert(kickerHole[i].x,kickerHole[i].y,kickerHole[i].z);
          vert = fullMatrix.MultiplyVector(vert);
 
-         buf[i].x = (vert.x*m_d.m_radius)+m_d.m_vCenter.x;
-         buf[i].y = (vert.y*m_d.m_radius)+m_d.m_vCenter.y;
-         buf[i].z = (vert.z*m_d.m_radius*m_ptable->m_zScale);
+         buf[i].x = (vert.x*(m_d.m_radius+0.5f))+m_d.m_vCenter.x;
+         buf[i].y = (vert.y*(m_d.m_radius+0.5f))+m_d.m_vCenter.y;
+         buf[i].z = (vert.z*(m_d.m_radius+0.5f)*m_ptable->m_zScale);
          buf[i].z += height;
          vert = Vertex3Ds( kickerHole[i].nx, kickerHole[i].ny, kickerHole[i].nz );
          vert = fullMatrix.MultiplyVectorNoTranslate(vert);
@@ -322,9 +330,9 @@ void Kicker::RenderStatic(RenderDevice* pd3dDevice)
       Vertex3D_NoTex2 *buf = new Vertex3D_NoTex2[kickerPlateNumVertices];
       for ( unsigned int i=0;i<kickerPlateNumVertices;i++ )
       {
-         buf[i].x = (kickerPlate[i].x*m_d.m_radius)+m_d.m_vCenter.x;
-         buf[i].y = (kickerPlate[i].y*m_d.m_radius)+m_d.m_vCenter.y;
-         buf[i].z = (kickerPlate[i].z*m_d.m_radius*m_ptable->m_zScale);
+         buf[i].x = (kickerPlate[i].x*(m_d.m_radius-0.1f))+m_d.m_vCenter.x;
+         buf[i].y = (kickerPlate[i].y*(m_d.m_radius-0.1f))+m_d.m_vCenter.y;
+         buf[i].z = (kickerPlate[i].z*(m_d.m_radius-0.1f))*m_ptable->m_zScale;
          buf[i].z += height;
          buf[i].nx = kickerPlate[i].nx;
          buf[i].ny = kickerPlate[i].ny;
@@ -341,11 +349,27 @@ void Kicker::RenderStatic(RenderDevice* pd3dDevice)
       pd3dDevice->basicShader->End();
       pd3dDevice->SetRenderState(RenderDevice::ZFUNC, D3DCMP_LESSEQUAL );
       delete buf;
-      
-      pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
-      pd3dDevice->basicShader->Begin(0);
-      pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, vertexBuffer, 0, numVertices, indexBuffer, 0, numFaces);
-      pd3dDevice->basicShader->End();
+
+//      if ( m_d.m_kickertype == KickerHole )
+      {
+         pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
+         pd3dDevice->basicShader->SetTexture("Texture0", &texture);
+         g_pplayer->m_pin3d.EnableAlphaBlend(1,false);
+         //pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", true);
+         //pd3dDevice->basicShader->Core()->SetFloat("fAlphaTestValue", 128.0f/255.0f);
+         pd3dDevice->basicShader->Begin(0);
+         pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, vertexBuffer, 0, numVertices, indexBuffer, 0, numFaces);
+         pd3dDevice->basicShader->End();
+         //pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", false);
+         g_pplayer->m_pin3d.DisableAlphaBlend();
+      }
+//       else
+//       {
+//          pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
+//          pd3dDevice->basicShader->Begin(0);
+//          pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, vertexBuffer, 0, numVertices, indexBuffer, 0, numFaces);
+//          pd3dDevice->basicShader->End();
+//       }
    }
 }
 
