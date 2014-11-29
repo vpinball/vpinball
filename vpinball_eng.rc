@@ -14,7 +14,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (U.S.) resources
+// Englisch (USA) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 #ifdef _WIN32
@@ -2123,6 +2123,7 @@ IDB_RINGENVMAP          BITMAP                  "res\\ringenvmap.bmp"
 IDB_BUMPERCAP           BITMAP                  "res\\bumperCap.bmp"
 IDB_BUMPERSOCKET        BITMAP                  "res\\bumperSocket.bmp"
 IDB_KICKER_HOLE_WOOD    BITMAP                  "res\\kickerHoleWood.bmp"
+IDB_KICKER_CUP          BITMAP                  "res\\kickerCup.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -2413,7 +2414,7 @@ BEGIN
     IDS_STEP                "Step"
 END
 
-#endif    // English (U.S.) resources
+#endif    // Englisch (USA) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

@@ -91,7 +91,7 @@ public:
     IndexBuffer  *indexBuffer;
     unsigned int numVertices;
     unsigned int numFaces;
-    Texture woodTexture;
+    Texture texture;
     // IKicker
 public:
     STDMETHOD(get_Material)(/*[out, retval]*/ BSTR *pVal);
