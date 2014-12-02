@@ -913,6 +913,8 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 	m_NudgeY = 0;
 	m_movedPlunger = 0;
 
+    Ball::ballID=0;
+
 	SendMessage(hwndProgress, PBM_SETPOS, 50, 0);
 	SetWindowText(hwndProgressName, "Initalizing Physics...");
 
