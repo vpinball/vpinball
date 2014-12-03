@@ -2458,7 +2458,7 @@ void Player::UpdateBackdropSettings(bool up )
         }
     case 8:
         {
-            m_ptable->m_xlatez+=(0.01f*thesign);
+            m_ptable->m_xlatez+=(thesign);
             break;
         }
 
@@ -2469,61 +2469,66 @@ void Player::UpdateCameraModeDisplay()
     HDC hdcNull = GetDC(NULL);
     char szFoo[128];
     int len;
-    len = sprintf_s(szFoo,"Camera Mode");
+    len = sprintf_s(szFoo,"Camera Mode                                         ");
     TextOut(hdcNull, 10, 30, szFoo, len);
+    len = sprintf_s(szFoo,"Left / Right flipper key = decrease / increase value");
+    TextOut(hdcNull, 10, 50, szFoo, len);
+    len = sprintf_s(szFoo,"Left / Right magna save key = previous / next option");
+    TextOut(hdcNull, 10, 70, szFoo, len);
+
     switch( backdropSettingActive )
     {
     case 0:
         {
-            len = sprintf_s(szFoo,"Inclination: %f",m_ptable->m_inclination);
+            len = sprintf_s(szFoo,"Inclination: %f          ",m_ptable->m_inclination);
             break;
         }
     case 1:
         {
-            len = sprintf_s(szFoo,"Field Of View: %f",m_ptable->m_FOV);
+            len = sprintf_s(szFoo,"Field Of View: %f        ",m_ptable->m_FOV);
             break;
         }
     case 2:
         {
-            len = sprintf_s(szFoo,"Layback: %f",m_ptable->m_layback);
+            len = sprintf_s(szFoo,"Layback: %f              ",m_ptable->m_layback);
             break;
         }
     case 3:
         {
-            len = sprintf_s(szFoo,"X Scale: %f",m_ptable->m_scalex);
+            len = sprintf_s(szFoo,"X Scale: %f              ",m_ptable->m_scalex);
             break;
         }
     case 4:
         {
-            len = sprintf_s(szFoo,"Y Scale: %f",m_ptable->m_scaley);
+            len = sprintf_s(szFoo,"Y Scale: %f              ",m_ptable->m_scaley);
             break;
         }
     case 5:
         {
-            len = sprintf_s(szFoo,"Z Scale: %f",m_ptable->m_zScale);
+            len = sprintf_s(szFoo,"Z Scale: %f              ",m_ptable->m_zScale);
             break;
         }
     case 6:
         {
-            len = sprintf_s(szFoo,"X Offset: %f",m_ptable->m_xlatex);
+            len = sprintf_s(szFoo,"X Offset: %f             ",m_ptable->m_xlatex);
             break;
         }
     case 7:
         {
-            len = sprintf_s(szFoo,"Y Offset: %f",m_ptable->m_xlatey);
+            len = sprintf_s(szFoo,"Y Offset: %f            ",m_ptable->m_xlatey);
             break;
         }
     case 8:
         {
-            len = sprintf_s(szFoo,"Z Offset: %f",m_ptable->m_xlatez);
+            len = sprintf_s(szFoo,"Z Offset: %f           ",m_ptable->m_xlatez);
             break;
         }
     default:
         {
-            len = sprintf_s(szFoo,"unknown");
+            len = sprintf_s(szFoo,"unknown                ");
         }
     }
-    TextOut(hdcNull, 10, 50, szFoo, len);
+    TextOut(hdcNull, 10, 100, szFoo, len);
     ReleaseDC(NULL, hdcNull);
     m_pin3d.InitLayout();
 }
