@@ -18639,6 +18639,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\res\bitmap3.bmp"
+				>
+			</File>
+			<File
 				RelativePath="res\bumper.cur"
 				>
 			</File>
@@ -18716,6 +18720,14 @@
 			</File>
 			<File
 				RelativePath="res\kicker.rgs"
+				>
+			</File>
+			<File
+				RelativePath=".\res\kickerCup.bmp"
+				>
+			</File>
+			<File
+				RelativePath=".\res\kickerHoleWood.bmp"
 				>
 			</File>
 			<File
@@ -19821,28 +19833,6 @@
 			<File
 				RelativePath=".\shader\Globals.fxh"
 				>
-			</File>
-			<File
-				RelativePath=".\shader\LightInsert.fx"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						CommandLine="fxc /Od /Zi /T fx_2_0 /Vn lightInsertShaderCode /Fh shader\LightInsert.h shader\LightInsert.fx&#x0D;&#x0A;"
-						Outputs="LightInsert.h"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release MinDependency Fast+SSE|Win32"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-						CommandLine="fxc /O3 /T fx_2_0 /Vn lightInsertShaderCode /Fh shader\LightInsert.h shader\LightInsert.fx&#x0D;&#x0A;"
-						Outputs="LightInsert.h"
-					/>
-				</FileConfiguration>
 			</File>
 		</Filter>
 		<File
