@@ -427,6 +427,9 @@ Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** co
    // Compute an approximation to the length of the central curve
    // by adding up the lengths of the line segments.
    float totallength = 0;
+   const float bottomHeight=m_d.m_heightbottom+m_ptable->m_tableheight;
+   const float topHeight = m_d.m_heighttop+m_ptable->m_tableheight;
+
    for (int i=0; i<(cvertex-1); i++)
    {
       const RenderVertex & v1 = vvertex[i];
@@ -522,7 +525,7 @@ Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** co
 
       if (ppheight)
       {
-         (*ppheight)[i] = percentage * (m_d.m_heighttop - m_d.m_heightbottom) + m_d.m_heightbottom;
+         (*ppheight)[i] = percentage * (topHeight - bottomHeight) + bottomHeight;
       }
 
       if (ppratio)

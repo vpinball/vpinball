@@ -6841,7 +6841,7 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
 float PinTable::GetSurfaceHeight(char *szName, float x, float y)
 {
    if (szName == NULL || szName[0] == 0)
-       return 0.0f;
+       return m_tableheight;
 
    for (int i=0;i<m_vedit.Size();i++)
    {
@@ -6856,15 +6856,15 @@ float PinTable::GetSurfaceHeight(char *szName, float x, float y)
             switch (piedit->GetItemType())
             {
             case eItemSurface:
-               return ((Surface *)piedit)->m_d.m_heighttop;
+               return ((Surface *)piedit)->m_d.m_heighttop+m_tableheight;
 
             case eItemRamp:
-               return ((Ramp *)piedit)->GetSurfaceHeight(x, y);
+               return ((Ramp *)piedit)->GetSurfaceHeight(x, y)+m_tableheight;
             }
          }
       }
    }
-   return 0;
+   return m_tableheight;
 }
 
 Material* PinTable::GetSurfaceMaterial( char *szName, float x, float y)

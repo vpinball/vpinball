@@ -429,7 +429,7 @@ void Surface::CurvesToShapes(Vector<HitObject> * const pvho)
 
       rgv3D[i].x = pv1->x;
       rgv3D[i].y = pv1->y;
-      rgv3D[i].z = m_d.m_heighttop;
+      rgv3D[i].z = m_d.m_heighttop+m_ptable->m_tableheight;
 
       const RenderVertex * const pv2 = vvertex.ElementAt((i < count-1) ? (i+1) : 0);
       const RenderVertex * const pv3 = vvertex.ElementAt((i < count-2) ? (i+2) : (i+2-count));
@@ -494,8 +494,8 @@ void Surface::AddLine(Vector<HitObject> * const pvho, const RenderVertex * const
       m_vlinesling.push_back(plinesling);
    }
 
-   plineseg->m_rcHitRect.zlow = m_d.m_heightbottom;
-   plineseg->m_rcHitRect.zhigh = m_d.m_heighttop;
+   plineseg->m_rcHitRect.zlow = m_d.m_heightbottom+m_ptable->m_tableheight;
+   plineseg->m_rcHitRect.zhigh = m_d.m_heighttop+m_ptable->m_tableheight;
 
    plineseg->v1 = *pv1;
    plineseg->v2 = *pv2;
@@ -515,14 +515,14 @@ void Surface::AddLine(Vector<HitObject> * const pvho, const RenderVertex * const
    if (m_d.m_heightbottom != 0)
    {
        // add lower edge as a line
-       Vertex3Ds v1(pv1->x, pv1->y, m_d.m_heightbottom);
-       Vertex3Ds v2(pv2->x, pv2->y, m_d.m_heightbottom);
+       Vertex3Ds v1(pv1->x, pv1->y, m_d.m_heightbottom+m_ptable->m_tableheight);
+       Vertex3Ds v2(pv2->x, pv2->y, m_d.m_heightbottom+m_ptable->m_tableheight);
        SetupHitObject(pvho, new HitLine3D(v1, v2));
    }
    {
        // add upper edge as a line
-       Vertex3Ds v1(pv1->x, pv1->y, m_d.m_heighttop);
-       Vertex3Ds v2(pv2->x, pv2->y, m_d.m_heighttop);
+       Vertex3Ds v1(pv1->x, pv1->y, m_d.m_heighttop+m_ptable->m_tableheight);
+       Vertex3Ds v2(pv2->x, pv2->y, m_d.m_heighttop+m_ptable->m_tableheight);
        SetupHitObject(pvho, new HitLine3D(v1, v2));
    }
 
@@ -533,12 +533,12 @@ void Surface::AddLine(Vector<HitObject> * const pvho, const RenderVertex * const
 
    if (dot != 0.f) // continuous segments should mathematically never hit
    {
-       SetupHitObject(pvho, new HitLineZ(*pv1, m_d.m_heightbottom, m_d.m_heighttop));
+       SetupHitObject(pvho, new HitLineZ(*pv1, m_d.m_heightbottom+m_ptable->m_tableheight, m_d.m_heighttop+m_ptable->m_tableheight));
 
        // add upper and lower end points of line
        if (m_d.m_heightbottom != 0)
-           SetupHitObject(pvho, new HitPoint(Vertex3Ds(pv1->x, pv1->y, m_d.m_heightbottom)));
-       SetupHitObject(pvho, new HitPoint(Vertex3Ds(pv1->x, pv1->y, m_d.m_heighttop)));
+           SetupHitObject(pvho, new HitPoint(Vertex3Ds(pv1->x, pv1->y, m_d.m_heightbottom+m_ptable->m_tableheight)));
+       SetupHitObject(pvho, new HitPoint(Vertex3Ds(pv1->x, pv1->y, m_d.m_heighttop+m_ptable->m_tableheight)));
    }
 }
 
@@ -682,10 +682,10 @@ void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
       vnormal[1].Normalize();
 
       {
-         verts[offset].x=pv1->x;     verts[offset].y=pv1->y;     verts[offset].z=m_d.m_heightbottom;
-         verts[offset+1].x=pv1->x;   verts[offset+1].y=pv1->y;   verts[offset+1].z=m_d.m_heighttop;
-         verts[offset+2].x=pv2->x;   verts[offset+2].y=pv2->y;   verts[offset+2].z=m_d.m_heighttop;
-         verts[offset+3].x=pv2->x;   verts[offset+3].y=pv2->y;   verts[offset+3].z=m_d.m_heightbottom;
+         verts[offset].x=pv1->x;     verts[offset].y=pv1->y;     verts[offset].z=m_d.m_heightbottom+m_ptable->m_tableheight;
+         verts[offset+1].x=pv1->x;   verts[offset+1].y=pv1->y;   verts[offset+1].z=m_d.m_heighttop+m_ptable->m_tableheight;
+         verts[offset+2].x=pv2->x;   verts[offset+2].y=pv2->y;   verts[offset+2].z=m_d.m_heighttop+m_ptable->m_tableheight;
+         verts[offset+3].x=pv2->x;   verts[offset+3].y=pv2->y;   verts[offset+3].z=m_d.m_heightbottom+m_ptable->m_tableheight;
          if (pinSide)
          {
             verts[offset].tu = rgtexcoord[i];
@@ -785,9 +785,9 @@ void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
          const RenderVertex * const pv2 = vvertex.ElementAt(ptri->c);
 
          {
-            vertsTop[0][offset].x=pv0->x;   vertsTop[0][offset].y=pv0->y;   vertsTop[0][offset].z=heightNotDropped;
-            vertsTop[0][offset+2].x=pv1->x;   vertsTop[0][offset+2].y=pv1->y;   vertsTop[0][offset+2].z=heightNotDropped;
-            vertsTop[0][offset+1].x=pv2->x;   vertsTop[0][offset+1].y=pv2->y;   vertsTop[0][offset+1].z=heightNotDropped;
+            vertsTop[0][offset].x=pv0->x;   vertsTop[0][offset].y=pv0->y;   vertsTop[0][offset].z=heightNotDropped+m_ptable->m_tableheight;
+            vertsTop[0][offset+2].x=pv1->x;   vertsTop[0][offset+2].y=pv1->y;   vertsTop[0][offset+2].z=heightNotDropped+m_ptable->m_tableheight;
+            vertsTop[0][offset+1].x=pv2->x;   vertsTop[0][offset+1].y=pv2->y;   vertsTop[0][offset+1].z=heightNotDropped+m_ptable->m_tableheight;
 
             vertsTop[0][offset].tu = vertsTop[0][offset].x *inv_tablewidth;
             vertsTop[0][offset].tv = vertsTop[0][offset].y *inv_tableheight;
@@ -852,21 +852,21 @@ void Surface::PrepareSlingshots( RenderDevice *pd3dDevice )
       Vertex3D rgv3D[12];
       rgv3D[0].x = plinesling->v1.x;
       rgv3D[0].y = plinesling->v1.y;
-      rgv3D[0].z = slingbottom;
+      rgv3D[0].z = slingbottom+m_ptable->m_tableheight;
 
       rgv3D[1].x = (plinesling->v1.x + plinesling->v2.x)*0.5f + plinesling->normal.x*(m_d.m_slingshotforce * 0.25f);//40;//20;
       rgv3D[1].y = (plinesling->v1.y + plinesling->v2.y)*0.5f + plinesling->normal.y*(m_d.m_slingshotforce * 0.25f);//20;
-      rgv3D[1].z = slingbottom;
+      rgv3D[1].z = slingbottom+m_ptable->m_tableheight;
 
       rgv3D[2].x = plinesling->v2.x;
       rgv3D[2].y = plinesling->v2.y;
-      rgv3D[2].z = slingbottom;
+      rgv3D[2].z = slingbottom+m_ptable->m_tableheight;
 
       for (int l=0;l<3;l++)
       {
          rgv3D[l+3].x = rgv3D[l].x;
          rgv3D[l+3].y = rgv3D[l].y;
-         rgv3D[l+3].z = slingtop;
+         rgv3D[l+3].z = slingtop+m_ptable->m_tableheight;
       }
 
       for (int l=0;l<6;l++)
@@ -1007,8 +1007,6 @@ void Surface::RenderSlingshots(RenderDevice* pd3dDevice)
       return;
    pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelTexelDeclaration );
 
-   const float slingbottom = (m_d.m_heighttop - m_d.m_heightbottom) * 0.2f + m_d.m_heightbottom;
-   const float slingtop    = (m_d.m_heighttop - m_d.m_heightbottom) * 0.8f + m_d.m_heightbottom;
    Material *mat = m_ptable->GetMaterial( m_d.m_szSlingShotMaterial);
    pd3dDevice->basicShader->SetMaterial(mat);
 
