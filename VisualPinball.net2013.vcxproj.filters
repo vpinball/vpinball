@@ -691,8 +691,5 @@
     <FxCompile Include="shader\DMDShader.fx">
       <Filter>shaders</Filter>
     </FxCompile>
-    <FxCompile Include="shader\LightInsert.fx">
-      <Filter>shaders</Filter>
-    </FxCompile>
   </ItemGroup>
 </Project>
