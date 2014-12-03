@@ -430,6 +430,8 @@ void Bumper::PostRenderStatic(RenderDevice* pd3dDevice)
 
     if(!m_d.m_fCapVisible && !m_d.m_fBaseVisible)	return;
 
+    if ( ringVertexBuffer==NULL ) return;
+
     Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
     const int state = m_pbumperhitcircle->m_bumperanim.m_fHitEvent ? 1 : 0;    // 0 = not hit, 1 = hit
