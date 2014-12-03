@@ -1,5 +1,6 @@
 VP 10.0.0 Changelog
 ------------------------
+
 - this release breaks a lot of backwards compatibility for ramps, lights, physics, colors/images/materials, and more, so
   most existing VP9 and VP8 tables will not work correctly or will output script errors when run (but they will load)
 
@@ -23,6 +24,9 @@ VP 10.0.0 Changelog
        as otherwise you will get a "floaty" ball (mass = k*radius^3)), thus (hopefully) no more ball-falling-through-playfield problem
 
   -> the data-format of the physics sets (*.vpp files) is basically the same, although the parameters inside are different, so unfortunately you need to set them up from scratch again
+  
+- Table field height setting in the "Dimension & Slope Settings" you can define the playfield height. If this value is raised all elements on the table
+  are also moved by that amount. For example: "table field height"=50 means everything on the table is raised by 50 units.
 
 - kickers are mesh based. In the kicker settings you can set "Fall through" so that if a ball hits a kicker(hole) the ball will fall through the 
   surface which is attached to it. This only works if the wall is higher than the playfield, it won't work if the hole is on the playfield.

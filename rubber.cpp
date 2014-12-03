@@ -487,7 +487,7 @@ void Rubber::GetHitShapes(Vector<HitObject> * const pvho)
    int cvertex;
    Vertex2D * const rgvLocal = GetSplineVertex(cvertex, NULL, NULL);
    const float wallheightright = (float)m_d.m_thickness, wallheightleft = (float)m_d.m_thickness;
-
+   const float height = m_d.m_height+m_ptable->m_tableheight;
    for (int i=0;i<(cvertex-1);i++)
    {
        const Vertex2D * const pv1 = (i>0) ? &rgvLocal[i-1] : NULL;
@@ -496,17 +496,17 @@ void Rubber::GetHitShapes(Vector<HitObject> * const pvho)
        const Vertex2D * const pv4 = (i<(cvertex-2)) ? &rgvLocal[i+2] : NULL;
 
 #ifndef RAMPTEST
-       AddLine(pvho, pv2, pv3, pv1, m_d.m_height, m_d.m_height+wallheightright);
-       AddLine(pvho, pv3, pv2, pv4, m_d.m_height, m_d.m_height+wallheightright);
+       AddLine(pvho, pv2, pv3, pv1, height, height+wallheightright);
+       AddLine(pvho, pv3, pv2, pv4, height, height+wallheightright);
 #else
-       AddSideWall(pvho, pv2, pv3, m_d.m_height, m_d.m_height, wallheightright);
-       AddSideWall(pvho, pv3, pv2, m_d.m_height, m_d.m_height, wallheightright);
+       AddSideWall(pvho, pv2, pv3, height, eight, wallheightright);
+       AddSideWall(pvho, pv3, pv2, height, height, wallheightright);
 #endif
 	   // add joints at start and end of right wall
 	   if (i == 0)
-		   AddJoint2D(pvho, *pv2, m_d.m_height, m_d.m_height + wallheightright);
+		   AddJoint2D(pvho, *pv2, height, height + wallheightright);
 	   else if (i == cvertex-2)
-		   AddJoint2D(pvho, *pv3, m_d.m_height, m_d.m_height + wallheightright);
+		   AddJoint2D(pvho, *pv3, height, height + wallheightright);
    }
 
    for (int i=0;i<(cvertex-1);i++)
@@ -517,17 +517,17 @@ void Rubber::GetHitShapes(Vector<HitObject> * const pvho)
        const Vertex2D * const pv4 = (i<(cvertex-2)) ? &rgvLocal[cvertex + i + 2] : NULL;
 
 #ifndef RAMPTEST
-       AddLine(pvho, pv2, pv3, pv1, m_d.m_height, m_d.m_height + wallheightleft);
-       AddLine(pvho, pv3, pv2, pv4, m_d.m_height, m_d.m_height + wallheightleft);
+       AddLine(pvho, pv2, pv3, pv1, height, height + wallheightleft);
+       AddLine(pvho, pv3, pv2, pv4, height, height + wallheightleft);
 #else
-       AddSideWall(pvho, pv2, pv3, m_d.m_height, m_d.m_height, wallheightleft);
-       AddSideWall(pvho, pv3, pv2, m_d.m_height, m_d.m_height, wallheightleft);
+       AddSideWall(pvho, pv2, pv3, height, height, wallheightleft);
+       AddSideWall(pvho, pv3, pv2, height, height, wallheightleft);
 #endif
 	   // add joints at start and end of left wall
 	   if (i == 0)
-		   AddJoint2D(pvho, *pv2, m_d.m_height, m_d.m_height + wallheightleft);
+		   AddJoint2D(pvho, *pv2, height, height + wallheightleft);
 	   else if (i == cvertex-2)
-		   AddJoint2D(pvho, *pv3, m_d.m_height, m_d.m_height + wallheightleft);
+		   AddJoint2D(pvho, *pv3, height, height + wallheightleft);
    }
 
 #ifndef RAMPTEST
@@ -555,9 +555,9 @@ void Rubber::GetHitShapes(Vector<HitObject> * const pvho)
          {
             // left ramp floor triangle, CCW order
             const Vertex3Ds rgv3D[3] = {
-				Vertex3Ds(pv2->x,pv2->y,m_d.m_height),
-				Vertex3Ds(pv1->x,pv1->y,m_d.m_height),
-				Vertex3Ds(pv3->x,pv3->y,m_d.m_height)};
+				Vertex3Ds(pv2->x,pv2->y,height),
+				Vertex3Ds(pv1->x,pv1->y,height),
+				Vertex3Ds(pv3->x,pv3->y,height)};
 
             // add joint for starting edge of ramp
             if (i == 0)
@@ -591,9 +591,9 @@ void Rubber::GetHitShapes(Vector<HitObject> * const pvho)
 
          // right ramp floor triangle, CCW order
          const Vertex3Ds rgv3D[3] = {
-			Vertex3Ds(pv3->x,pv3->y,m_d.m_height),
-			Vertex3Ds(pv1->x,pv1->y,m_d.m_height),
-			Vertex3Ds(pv4->x,pv4->y,m_d.m_height)};
+			Vertex3Ds(pv3->x,pv3->y,height),
+			Vertex3Ds(pv1->x,pv1->y,height),
+			Vertex3Ds(pv4->x,pv4->y,height)};
 
 		 // add joint for right edge
          AddJoint(pvho, rgv3D[1], rgv3D[2]);
@@ -643,9 +643,9 @@ void Rubber::GetHitShapes(Vector<HitObject> * const pvho)
       {
          // left ramp triangle, order CW
          const Vertex3Ds rgv3D[3] = {
-			Vertex3Ds(pv1->x,pv1->y,m_d.m_height),
-			Vertex3Ds(pv2->x,pv2->y,m_d.m_height),
-			Vertex3Ds(pv3->x,pv3->y,m_d.m_height)};
+			Vertex3Ds(pv1->x,pv1->y,height),
+			Vertex3Ds(pv2->x,pv2->y,height),
+			Vertex3Ds(pv3->x,pv3->y,height)};
 
          HitTriangle * const ph3dpoly = new HitTriangle(rgv3D);
          if (ph3dpoly->IsDegenerate())
@@ -667,9 +667,9 @@ void Rubber::GetHitShapes(Vector<HitObject> * const pvho)
 
       // right ramp triangle, order CW
       const Vertex3Ds rgv3D[3] = {
-		Vertex3Ds(pv3->x,pv3->y,m_d.m_height),
-		Vertex3Ds(pv4->x,pv4->y,m_d.m_height),
-		Vertex3Ds(pv1->x,pv1->y,m_d.m_height)};
+		Vertex3Ds(pv3->x,pv3->y,height),
+		Vertex3Ds(pv4->x,pv4->y,height),
+		Vertex3Ds(pv1->x,pv1->y,height)};
 
       HitTriangle * const ph3dpoly = new HitTriangle(rgv3D);
       if (ph3dpoly->IsDegenerate())
@@ -1493,7 +1493,8 @@ void Rubber::GenerateVertexBuffer(RenderDevice* pd3dDevice)
 
     Vertex3D_NoTex2* rgvbuf = new Vertex3D_NoTex2[m_numVertices];
     std::vector<WORD> rgibuf( m_numIndices );
-    
+    const float height = m_d.m_height+m_ptable->m_tableheight;
+
     Vertex3Ds prevB;
     Vertex3Ds binorm;
     Vertex3Ds normal;
@@ -1505,7 +1506,7 @@ void Rubber::GenerateVertexBuffer(RenderDevice* pd3dDevice)
         
         if ( i==0 )
         {
-            Vertex3Ds up( middlePoints[i2].x+middlePoints[i].x, middlePoints[i2].y+middlePoints[i].y, m_d.m_height*2);
+            Vertex3Ds up( middlePoints[i2].x+middlePoints[i].x, middlePoints[i2].y+middlePoints[i].y, height*2);
             normal = CrossProduct(tangent,up);     //normal
             binorm = CrossProduct(tangent, normal);
         }
@@ -1528,7 +1529,7 @@ void Rubber::GenerateVertexBuffer(RenderDevice* pd3dDevice)
 							      * ((float)m_d.m_thickness*0.5f);
             rgvbuf[index].x = middlePoints[i].x+tmp.x;
             rgvbuf[index].y = middlePoints[i].y+tmp.y;
-            rgvbuf[index].z = m_d.m_height     +tmp.z;
+            rgvbuf[index].z = height     +tmp.z;
             //texel
             rgvbuf[index].tu = u;
             rgvbuf[index].tv = v;

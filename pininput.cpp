@@ -1013,7 +1013,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
                }
                if ( !ballGrabbed )
                {
-                  Ball * const pball = g_pplayer->CreateBall(vertex.x, vertex.y, 1.0f, vx, vy, 0);
+                  Ball * const pball = g_pplayer->CreateBall(vertex.x, vertex.y, g_pplayer->m_ptable->m_tableheight, vx, vy, 0);
                   pball->m_pballex->AddRef();
                }
             }

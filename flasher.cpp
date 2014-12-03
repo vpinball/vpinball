@@ -341,7 +341,7 @@ void Flasher::UpdateMesh()
    Vertex3D_TexelOnly *buf;
    dynamicVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
 
-   const float height = m_d.m_height*m_ptable->m_zScale;
+   const float height = (m_d.m_height+m_ptable->m_tableheight)*m_ptable->m_zScale;
    const float movx = minx+((maxx-minx)*0.5f);
    const float movy = miny+((maxy-miny)*0.5f);
 
