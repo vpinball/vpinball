@@ -418,73 +418,76 @@ void Pin3D::InitLayout()
 
 	InitLights();
 }
-
-void Pin3D::RenderPlayfieldGraphics()
+void Pin3D::InitPlayfieldGraphics()
 {
-    TRACE_FUNCTION();
+    Vertex3D rgv[7];
+    rgv[0].x=g_pplayer->m_ptable->m_left;     rgv[0].y=g_pplayer->m_ptable->m_top;      rgv[0].z=g_pplayer->m_ptable->m_tableheight;
+    rgv[1].x=g_pplayer->m_ptable->m_right;    rgv[1].y=g_pplayer->m_ptable->m_top;      rgv[1].z=g_pplayer->m_ptable->m_tableheight;
+    rgv[2].x=g_pplayer->m_ptable->m_right;    rgv[2].y=g_pplayer->m_ptable->m_bottom;   rgv[2].z=g_pplayer->m_ptable->m_tableheight;
+    rgv[3].x=g_pplayer->m_ptable->m_left;     rgv[3].y=g_pplayer->m_ptable->m_bottom;   rgv[3].z=g_pplayer->m_ptable->m_tableheight;
 
-	Vertex3D rgv[7];
-	rgv[0].x=g_pplayer->m_ptable->m_left;     rgv[0].y=g_pplayer->m_ptable->m_top;      rgv[0].z=g_pplayer->m_ptable->m_tableheight;
-	rgv[1].x=g_pplayer->m_ptable->m_right;    rgv[1].y=g_pplayer->m_ptable->m_top;      rgv[1].z=g_pplayer->m_ptable->m_tableheight;
-	rgv[2].x=g_pplayer->m_ptable->m_right;    rgv[2].y=g_pplayer->m_ptable->m_bottom;   rgv[2].z=g_pplayer->m_ptable->m_tableheight;
-	rgv[3].x=g_pplayer->m_ptable->m_left;     rgv[3].y=g_pplayer->m_ptable->m_bottom;   rgv[3].z=g_pplayer->m_ptable->m_tableheight;
+    // These next 4 vertices are used just to set the extents
+    rgv[4].x=g_pplayer->m_ptable->m_left;     rgv[4].y=g_pplayer->m_ptable->m_top;      rgv[4].z=g_pplayer->m_ptable->m_tableheight+50.0f;
+    rgv[5].x=g_pplayer->m_ptable->m_left;     rgv[5].y=g_pplayer->m_ptable->m_bottom;   rgv[5].z=g_pplayer->m_ptable->m_tableheight+50.0f;
+    rgv[6].x=g_pplayer->m_ptable->m_right;    rgv[6].y=g_pplayer->m_ptable->m_bottom;   rgv[6].z=g_pplayer->m_ptable->m_tableheight+50.0f;
+    //rgv[7].x=g_pplayer->m_ptable->m_right;    rgv[7].y=g_pplayer->m_ptable->m_top;      rgv[7].z=50.0f;
 
-	// These next 4 vertices are used just to set the extents
-	rgv[4].x=g_pplayer->m_ptable->m_left;     rgv[4].y=g_pplayer->m_ptable->m_top;      rgv[4].z=g_pplayer->m_ptable->m_tableheight+50.0f;
-	rgv[5].x=g_pplayer->m_ptable->m_left;     rgv[5].y=g_pplayer->m_ptable->m_bottom;   rgv[5].z=g_pplayer->m_ptable->m_tableheight+50.0f;
-	rgv[6].x=g_pplayer->m_ptable->m_right;    rgv[6].y=g_pplayer->m_ptable->m_bottom;   rgv[6].z=g_pplayer->m_ptable->m_tableheight+50.0f;
-	//rgv[7].x=g_pplayer->m_ptable->m_right;    rgv[7].y=g_pplayer->m_ptable->m_top;      rgv[7].z=50.0f;
+    m_pd3dDevice->SetVertexDeclaration( m_pd3dDevice->m_pVertexNormalTexelTexelDeclaration );
 
-	Texture * const pin = g_pplayer->m_ptable->GetImage((char *)g_pplayer->m_ptable->m_szImage);
-   m_pd3dDevice->SetVertexDeclaration( m_pd3dDevice->m_pVertexNormalTexelTexelDeclaration );
+    EnableLightMap(0);
 
-	EnableLightMap(0);
+    for (int i=0; i<4; ++i)
+    {
+        rgv[i].nx = 0;
+        rgv[i].ny = 0;
+        rgv[i].nz = 1.0f;
 
-	for (int i=0; i<4; ++i)
-	{
-		rgv[i].nx = 0;
-		rgv[i].ny = 0;
-		rgv[i].nz = 1.0f;
+        rgv[i].tv = (i&2) ? 1.0f : 0.f;
+        rgv[i].tu = (i==1 || i==2) ? 1.0f : 0.f;
+    }
 
-		rgv[i].tv = (i&2) ? 1.0f : 0.f;
-		rgv[i].tu = (i==1 || i==2) ? 1.0f : 0.f;
-	}
-	
-	CalcShadowCoordinates(rgv,4);
+    CalcShadowCoordinates(rgv,4);
+    const WORD playfieldPolyIndices[6] = {0,1,3,0,3,2};
+    tableIBuffer = m_pd3dDevice->CreateAndFillIndexBuffer(6,playfieldPolyIndices);
 
     assert(tableVBuffer == NULL);
     m_pd3dDevice->CreateVertexBuffer( 4+7, 0, MY_D3DFVF_VERTEX, &tableVBuffer); //+7 verts for second rendering step
 
     Vertex3D *buffer;
-	tableVBuffer->lock(0,0,(void**)&buffer, VertexBuffer::WRITEONLY);
+    tableVBuffer->lock(0,0,(void**)&buffer, VertexBuffer::WRITEONLY);
 
-	unsigned int offs = 0;
-	for(unsigned int y = 0; y <= 1; ++y)
-		for(unsigned int x = 0; x <= 1; ++x,++offs)
-		{
-			Vertex3D &tmp = buffer[offs];
-			tmp.x = (x&1) ? rgv[1].x : rgv[0].x;
-			tmp.y = (y&1) ? rgv[2].y : rgv[0].y;
-			tmp.z = rgv[0].z;
+    unsigned int offs = 0;
+    for(unsigned int y = 0; y <= 1; ++y)
+        for(unsigned int x = 0; x <= 1; ++x,++offs)
+        {
+            Vertex3D &tmp = buffer[offs];
+            tmp.x = (x&1) ? rgv[1].x : rgv[0].x;
+            tmp.y = (y&1) ? rgv[2].y : rgv[0].y;
+            tmp.z = rgv[0].z;
 
-			tmp.tu = (x&1) ? rgv[1].tu : rgv[0].tu;
-			tmp.tv = (y&1) ? rgv[2].tv : rgv[0].tv;
+            tmp.tu = (x&1) ? rgv[1].tu : rgv[0].tu;
+            tmp.tv = (y&1) ? rgv[2].tv : rgv[0].tv;
 
-			tmp.nx = rgv[0].nx;
-			tmp.ny = rgv[0].ny;
-			tmp.nz = rgv[0].nz;
-		}
+            tmp.nx = rgv[0].nx;
+            tmp.ny = rgv[0].ny;
+            tmp.nz = rgv[0].nz;
+        }
 
-	CalcShadowCoordinates(buffer,4);
+    CalcShadowCoordinates(buffer,4);
 
-	SetNormal(rgv, rgiPin3D1, 4);
+    SetNormal(rgv, rgiPin3D1, 4);
 
-	memcpy(buffer+4, rgv, 7*sizeof(Vertex3D));
+    memcpy(buffer+4, rgv, 7*sizeof(Vertex3D));
 
-	tableVBuffer->unlock();
+    tableVBuffer->unlock();
 
-	EnableLightMap(0);
+}
 
+void Pin3D::RenderPlayfieldGraphics()
+{
+   TRACE_FUNCTION();
+   EnableLightMap(0);
+   Texture * const pin = g_pplayer->m_ptable->GetImage((char *)g_pplayer->m_ptable->m_szImage);
    Material *mat = g_pplayer->m_ptable->GetMaterial( g_pplayer->m_ptable->m_szPlayfieldMaterial);
    m_pd3dDevice->basicShader->SetMaterial(mat);
 
@@ -499,9 +502,8 @@ void Pin3D::RenderPlayfieldGraphics()
       m_pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
 	}
 
-   assert(tableIBuffer == NULL);
-   const WORD playfieldPolyIndices[6] = {0,1,3,0,3,2};
-   tableIBuffer = m_pd3dDevice->CreateAndFillIndexBuffer(6,playfieldPolyIndices);
+   assert(tableVBuffer != NULL);
+   assert(tableIBuffer != NULL);
    m_pd3dDevice->basicShader->Begin(0);
 	m_pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, tableVBuffer, 0, 4, tableIBuffer, 0, 6);
    m_pd3dDevice->basicShader->End();

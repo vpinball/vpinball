@@ -123,7 +123,7 @@ LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 INT_PTR CALLBACK PauseProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 INT_PTR CALLBACK DebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-Player::Player()
+Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
 {
 	bool SSE2_supported;
 	{
@@ -297,6 +297,7 @@ Player::Player()
 	m_dmdy = 0;
 	m_texdmd = NULL;
 	m_device_texdmd = NULL;
+    backdropSettingActive=0;
 }
 
 Player::~Player()
@@ -1152,37 +1153,41 @@ void Player::InitStatic(HWND hwndProgress)
         ph->PreRenderStatic(m_pin3d.m_pd3dDevice);
     }
 
-    m_pin3d.RenderPlayfieldGraphics();
+    m_pin3d.InitPlayfieldGraphics();
+    if ( !cameraMode )
+    {
+        m_pin3d.RenderPlayfieldGraphics();
 
-	// Draw stuff
-	for (int i=0;i<m_ptable->m_vedit.Size();i++)
-		{
-		if (m_ptable->m_vedit.ElementAt(i)->GetItemType() != eItemDecal)
-			{
-			Hitable * const ph = m_ptable->m_vedit.ElementAt(i)->GetIHitable();
-			if (ph)
-				{
-				ph->RenderStatic(m_pin3d.m_pd3dDevice);
-				if (hwndProgress)
-					SendMessage(hwndProgress, PBM_SETPOS, 60 + ((15*i)/m_ptable->m_vedit.Size()), 0);
-				}
-			}
-		}
+        // Draw stuff
+        for (int i=0;i<m_ptable->m_vedit.Size();i++)
+        {
+            if (m_ptable->m_vedit.ElementAt(i)->GetItemType() != eItemDecal)
+            {
+                Hitable * const ph = m_ptable->m_vedit.ElementAt(i)->GetIHitable();
+                if (ph)
+                {
+                    ph->RenderStatic(m_pin3d.m_pd3dDevice);
+                    if (hwndProgress)
+                        SendMessage(hwndProgress, PBM_SETPOS, 60 + ((15*i)/m_ptable->m_vedit.Size()), 0);
+                }
+            }
+        }
 
-	// Draw decals (they have transparency, so they have to be drawn after the wall they are on)
-	for (int i=0;i<m_ptable->m_vedit.Size();i++)
-		{
-		if (m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemDecal)
-			{
-			Hitable * const ph = m_ptable->m_vedit.ElementAt(i)->GetIHitable();
-			if (ph)
-				{
-				ph->RenderStatic(m_pin3d.m_pd3dDevice);
-				if (hwndProgress)
-					SendMessage(hwndProgress, PBM_SETPOS, 75 + ((15*i)/m_ptable->m_vedit.Size()), 0);
-				}
-			}
-		}
+        // Draw decals (they have transparency, so they have to be drawn after the wall they are on)
+        for (int i=0;i<m_ptable->m_vedit.Size();i++)
+        {
+            if (m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemDecal)
+            {
+                Hitable * const ph = m_ptable->m_vedit.ElementAt(i)->GetIHitable();
+                if (ph)
+                {
+                    ph->RenderStatic(m_pin3d.m_pd3dDevice);
+                    if (hwndProgress)
+                        SendMessage(hwndProgress, PBM_SETPOS, 75 + ((15*i)/m_ptable->m_vedit.Size()), 0);
+                }
+            }
+        }
+    }
 
 	// Finish the frame.
 	m_pin3d.m_pd3dDevice->EndScene();
@@ -2240,6 +2245,22 @@ void Player::RenderDynamics()
    // Start rendering the next frame.
    m_pin3d.m_pd3dDevice->BeginScene();
 
+   if( cameraMode )
+   {
+       m_pin3d.RenderPlayfieldGraphics();
+       for (int i=0;i<m_ptable->m_vedit.Size();i++)
+       {
+           if (m_ptable->m_vedit.ElementAt(i)->GetItemType() != eItemDecal)
+           {
+               Hitable * const ph = m_ptable->m_vedit.ElementAt(i)->GetIHitable();
+               if (ph)
+               {
+                   ph->RenderStatic(m_pin3d.m_pd3dDevice);
+               }
+           }
+       }
+
+   }
    // Check if we are debugging balls
    if (m_ToggleDebugBalls)
    {
@@ -2265,7 +2286,8 @@ void Player::RenderDynamics()
    for (unsigned i=0; i < m_vHitNonTrans.size(); ++i)
        m_vHitNonTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
 
-   DrawBalls();
+   if( !cameraMode )
+      DrawBalls();
 
    m_limiter.Execute(m_pin3d.m_pd3dDevice); //!! move below other draw calls??
 
@@ -2273,10 +2295,13 @@ void Player::RenderDynamics()
    for (unsigned i=0; i < m_vHitTrans.size(); ++i)
        m_vHitTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
 
-   // Draw the mixer volume.
-   mixer_draw();
-   // Debug draw of plumb.
-   plumb_draw();
+   if( !cameraMode )
+   {
+       // Draw the mixer volume.
+       mixer_draw();
+       // Debug draw of plumb.
+       plumb_draw();
+   }
 
    // Finish rendering the next frame.
    m_pin3d.m_pd3dDevice->EndScene();
@@ -2383,6 +2408,126 @@ void Player::FlipVideoBuffers3DFXAA( const bool vsync ) //!! SMAA, luma sharpen,
 	m_pin3d.m_pd3dDevice->Flip(vsync);
 }
 
+void Player::UpdateBackdropSettings(bool up )
+{
+    float thesign=1.0f;
+    if( !up )
+        thesign=-1.0f;
+
+    switch( backdropSettingActive )
+    {
+    case 0:
+        {
+            m_ptable->m_inclination+=thesign;
+            break;
+        }
+    case 1:
+        {
+            m_ptable->m_FOV+=thesign;
+            break;
+        }
+    case 2:
+        {
+            m_ptable->m_layback+=thesign;
+            break;
+        }
+    case 3:
+        {
+            m_ptable->m_scalex+=(0.01f*thesign);
+            break;
+        }
+    case 4:
+        {
+            m_ptable->m_scaley+=(0.01f*thesign);
+            break;
+        }
+    case 5:
+        {
+            m_ptable->m_zScale+=(0.01f*thesign);
+            break;
+        }
+    case 6:
+        {
+            m_ptable->m_xlatex+=(0.01f*thesign);
+            break;
+        }
+    case 7:
+        {
+            m_ptable->m_xlatey+=(0.01f*thesign);
+            break;
+        }
+    case 8:
+        {
+            m_ptable->m_xlatez+=(0.01f*thesign);
+            break;
+        }
+
+    }
+}
+void Player::UpdateCameraModeDisplay()
+{
+    HDC hdcNull = GetDC(NULL);
+    char szFoo[128];
+    int len;
+    len = sprintf_s(szFoo,"Camera Mode");
+    TextOut(hdcNull, 10, 30, szFoo, len);
+    switch( backdropSettingActive )
+    {
+    case 0:
+        {
+            len = sprintf_s(szFoo,"Inclination: %f",m_ptable->m_inclination);
+            break;
+        }
+    case 1:
+        {
+            len = sprintf_s(szFoo,"Field Of View: %f",m_ptable->m_FOV);
+            break;
+        }
+    case 2:
+        {
+            len = sprintf_s(szFoo,"Layback: %f",m_ptable->m_layback);
+            break;
+        }
+    case 3:
+        {
+            len = sprintf_s(szFoo,"X Scale: %f",m_ptable->m_scalex);
+            break;
+        }
+    case 4:
+        {
+            len = sprintf_s(szFoo,"Y Scale: %f",m_ptable->m_scaley);
+            break;
+        }
+    case 5:
+        {
+            len = sprintf_s(szFoo,"Z Scale: %f",m_ptable->m_zScale);
+            break;
+        }
+    case 6:
+        {
+            len = sprintf_s(szFoo,"X Offset: %f",m_ptable->m_xlatex);
+            break;
+        }
+    case 7:
+        {
+            len = sprintf_s(szFoo,"Y Offset: %f",m_ptable->m_xlatey);
+            break;
+        }
+    case 8:
+        {
+            len = sprintf_s(szFoo,"Z Offset: %f",m_ptable->m_xlatez);
+            break;
+        }
+    default:
+        {
+            len = sprintf_s(szFoo,"unknown");
+        }
+    }
+    TextOut(hdcNull, 10, 50, szFoo, len);
+    ReleaseDC(NULL, hdcNull);
+    m_pin3d.InitLayout();
+}
+
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void Player::Render()
 {
@@ -2417,8 +2562,10 @@ void Player::Render()
 #endif
 
     ///+++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-    UpdatePhysics();
+    //if ( !cameraMode )
+    {
+        UpdatePhysics();
+    }
 
     m_LastKnownGoodCounter++;
 
@@ -2491,8 +2638,11 @@ void Player::Render()
 
 	m_firstFrame = false;
 
+    if ( cameraMode )
+        UpdateCameraModeDisplay();
+
 #ifdef FPS
-    if (m_fShowFPS)
+    if (m_fShowFPS && !cameraMode)
     {
         HDC hdcNull = GetDC(NULL);
         char szFoo[128];

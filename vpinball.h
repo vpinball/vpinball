@@ -47,7 +47,7 @@ public:
 
 	BOOL FCanClose();
 
-	void DoPlay();
+	void DoPlay(bool _cameraMode=false);
 
 	void SetPosCur(float x, float y);
 	void SetObjectPosCur(float x, float y);
