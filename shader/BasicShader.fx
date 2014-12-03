@@ -184,7 +184,7 @@ float4 PS_LightWithTexel(in VS_LIGHT_OUTPUT IN ) : COLOR
     atten*=atten;
 	float4 lcolor = lerp(float4(1.0f,1.0f,1.0f,1.0f),lightColor, sqrt(len));
 	float4 result = saturate(lcolor*(atten*intensity));	
-	result.a = atten;	
+	result.a = saturate(atten*intensity);	
 	
     float4 color = lightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular, edge); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
     color.a *= fmaterialAlpha;
@@ -206,7 +206,7 @@ float4 PS_LightWithoutTexel(in VS_LIGHT_OUTPUT IN ) : COLOR
     atten*=atten;
 	float4 lcolor = lerp(float4(1.0f,1.0f,1.0f,1.0f),lightColor, sqrt(len));
 	float4 result = saturate(lcolor*(atten*intensity));	
-	result.a = atten;	
+	result.a = saturate(atten*intensity);	
 	
     float4 color=lightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular, edge); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
     color.a *= fmaterialAlpha;
@@ -222,7 +222,7 @@ float4 PS_BulbLight( in VS_LIGHT_OUTPUT IN ) : COLOR
     atten*=atten;
 	float4 lcolor = lerp(float4(1.0f,1.0f,1.0f,1.0f),lightColor, sqrt(len));
 	float4 result = saturate(lcolor*(atten*intensity));
-	result.a = atten;	
+	result.a = saturate(atten*intensity);	
 	return result;
 }
 
