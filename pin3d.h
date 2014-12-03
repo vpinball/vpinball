@@ -81,6 +81,7 @@ public:
 
     const Matrix3D& GetWorldTransform() const   { return m_proj.m_matWorld; }
     const Matrix3D& GetViewTransform() const    { return m_proj.m_matView; }
+    void         InitPlayfieldGraphics();
 
 private:
     void InitRenderState();
@@ -89,7 +90,6 @@ private:
 	void Identity();
    
 	BaseTexture* CreateShadow(const float height);
-
 	// Data members
 public:
 	RenderDevice* m_pd3dDevice;

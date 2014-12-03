@@ -267,7 +267,7 @@ public:
 	//void FireVoidEvent(int dispid);
 	void FireKeyEvent(int dispid, int keycode);
 
-	void Play();
+	void Play(bool _cameraMode=false);
 	void StopPlaying();
 
 	void ImportSound(HWND hwndListView, char *filename, BOOL fPlay);
@@ -648,6 +648,7 @@ END_CONNECTION_POINT_MAP()
 	bool m_fRenderDecals;
 	bool m_fRenderEMReels;
     bool m_overwriteGlobalStereo3D;
+    bool m_cameraMode;
 
 #ifdef UNUSED_TILT //!! currently unused (see NudgeGetTilt())
 	int m_jolt_amount;       

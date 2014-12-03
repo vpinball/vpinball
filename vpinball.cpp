@@ -776,6 +776,9 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
       }
       break;
 
+   case ID_TABLE_CAMERAMODE:
+      DoPlay(true);
+      break;
    case ID_TABLE_PLAY:
       DoPlay();
       break;
@@ -1425,12 +1428,12 @@ void VPinball::SetEnableToolbar()
    ParseCommand(ID_EDIT_PROPERTIES, m_hwnd, 2);//redisplay 
 }
 
-void VPinball::DoPlay()
+void VPinball::DoPlay(bool _cameraMode)
 {
    NumVideoBytes = 0;
    CComObject<PinTable> * const ptCur = GetActiveTable();
    if (ptCur)
-      ptCur->Play();
+      ptCur->Play(_cameraMode);
 }
 
 void VPinball::LoadFile()

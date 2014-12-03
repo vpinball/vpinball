@@ -25,6 +25,12 @@ VP 10.0.0 Changelog
 
   -> the data-format of the physics sets (*.vpp files) is basically the same, although the parameters inside are different, so unfortunately you need to set them up from scratch again
   
+- New Camera Mode added to the Table menu. This mode starts the player in a special mode where you can change backdrop settings with the following keys:
+     left flipper key = decrease value
+     right flipper key = increase value
+     left magna save key = previous backdrop option
+     right magna save key = next backdrop option
+
 - Table field height setting in the "Dimension & Slope Settings" you can define the playfield height. If this value is raised all elements on the table
   are also moved by that amount. For example: "table field height"=50 means everything on the table is raised by 50 units.
 

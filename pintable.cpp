@@ -1760,11 +1760,12 @@ inline float frictionToCoeff(double fric)
 }*/
 
 
-void PinTable::Play()
+void PinTable::Play(bool _cameraMode)
 {
    if (g_pplayer)
       return; // Can't play twice
 
+   m_cameraMode = _cameraMode;
    mixer_get_volume();
 
    EndAutoSaveCounter();
@@ -1813,7 +1814,7 @@ void PinTable::Play()
 
           m_materialMap[ m_materials.ElementAt(i)->m_szName ] = m_materials.ElementAt(i);
       }
-      g_pplayer = new Player();
+      g_pplayer = new Player(_cameraMode);
       HRESULT hr = g_pplayer->Init(this, hwndProgressBar, hwndStatusName);
       if (!m_pcv->m_fScriptError) 
       {
@@ -1908,16 +1909,37 @@ void PinTable::StopPlaying()
    m_textureMap.clear();
    m_materialMap.clear();
 
-   ShowWindow(g_pvp->m_hwndWork, SW_SHOW);
    //	EnableWindow(g_pvp->m_hwndWork, fTrue); // Disable modal state after game ends
 
 
    // This was causing the application to crash 
    // if the simulation was run without a save first.
    // But I'm not sure how to fix it... - JEP
+   
+   float inclination = m_inclination;
+   float fov = m_FOV;
+   float layback = m_layback;
+   float xlatex = m_xlatex;
+   float xlatey = m_xlatey;
+   float xlatez = m_xlatez;
+   float xscale = m_scalex;
+   float yscale = m_scaley;
+   float zscale = m_zScale;
+
    RestoreBackup();
 
+   m_inclination = inclination;
+   m_FOV = fov;
+   m_layback = layback;
+   m_xlatex = xlatex;
+   m_xlatey = xlatey;
+   m_xlatez = xlatez;
+   m_scalex = xscale;
+   m_scaley = yscale;
+   m_zScale = zscale;
    g_fKeepUndoRecords = fTrue;
+
+   ShowWindow(g_pvp->m_hwndWork, SW_SHOW);
 
    BeginAutoSaveCounter();
 }
@@ -4803,9 +4825,13 @@ void PinTable::DoCodeViewCommand(int command)
          TableSave();
       }
       break;
-
+   case ID_TABLE_CAMERAMODE:
+       {
+           Play(true);
+           break;
+       }
    case ID_TABLE_PLAY:
-      Play();
+      Play(false);
       break;
    }
 }

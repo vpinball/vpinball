@@ -142,7 +142,7 @@ class NudgeFilterY: public NudgeFilter
 class Player
 {
 public:
-	Player();
+	Player(bool _cameraMode);
 	virtual ~Player();
 
 	HRESULT Init(PinTable * const ptable, const HWND hwndProgress, const HWND hwndProgressName);
@@ -210,6 +210,8 @@ public:
     VertexBuffer *ballVertexBuffer;
 
 	PinTable *m_ptable;
+    bool cameraMode;
+    int backdropSettingActive;
 
 	Pin3D m_pin3d;
 
@@ -413,6 +415,8 @@ public:
 	void ToggleFPS();
     void UpdateBasicShaderMatrix(const Matrix3D& objectTrafo = Matrix3D(1.0f));
     void InitShader();
+    void UpdateCameraModeDisplay();
+    void UpdateBackdropSettings(bool up );
 #endif
 
 #ifdef STEPPING
