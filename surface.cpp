@@ -579,30 +579,31 @@ void Surface::MoveOffset(const float dx, const float dy)
    m_ptable->SetDirtyDraw();
 }
 
-void Surface::RenderObject( RenderDevice *pd3dDevice )
-{
-    if (!m_fIsDropped)
-    {
-        // Render wall raised.
-        RenderWallsAtHeight((RenderDevice*)pd3dDevice, fFalse);
-    }
-    else    // is dropped
-    {
-        // if this wall is part of flipbook animation, do not render when dropped
-        if (!m_d.m_fFlipbook)
-        {
-            // Render wall dropped (smashed to a pancake at bottom height).
-            RenderWallsAtHeight((RenderDevice*)pd3dDevice, fTrue);
-        }
-    }
-}
-
 void Surface::PostRenderStatic(RenderDevice* pd3dDevice)
 {
     TRACE_FUNCTION();
+
+    if (!m_d.m_fVisible)
+        return;
+
     RenderSlingshots((RenderDevice*)pd3dDevice);
-    if ( m_d.m_fDroppable || isDynamic )
-        RenderObject( pd3dDevice );
+    if (m_d.m_fDroppable || isDynamic)
+    {
+        if (!m_fIsDropped)
+        {
+            // Render wall raised.
+            RenderWallsAtHeight((RenderDevice*)pd3dDevice, fFalse);
+        }
+        else    // is dropped
+        {
+            // if this wall is part of flipbook animation, do not render when dropped
+            if (!m_d.m_fFlipbook)
+            {
+                // Render wall dropped (smashed to a pancake at bottom height).
+                RenderWallsAtHeight((RenderDevice*)pd3dDevice, fTrue);
+            }
+        }
+    }
 }
 
 void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
@@ -990,7 +991,11 @@ void Surface::FreeBuffers()
 void Surface::RenderStatic(RenderDevice* pd3dDevice)
 {
    RenderSlingshots((RenderDevice*)pd3dDevice);
-   RenderObject(pd3dDevice);
+   if (!m_d.m_fDroppable && !isDynamic)
+   {
+       RenderWallsAtHeight((RenderDevice*)pd3dDevice, fFalse);
+       g_pplayer->m_pin3d.SetTexture(NULL);
+   }
 }
 
 

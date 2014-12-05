@@ -7,13 +7,15 @@ class BumperAnimObject : public AnimObject
 public:
 	virtual void Check3D()   { }
 	virtual void Reset();
-
+    void UpdateAnimation();
 	float m_fHeight;
 	U32 m_TimeReset; // Time at which to turn off light
 	int m_iframedesired;
 	bool m_fHitEvent;
 	bool m_fDisabled;
 	bool m_fVisible;
+    float m_ringAnimOffset;
+    float m_ringAnimStep;
 };
 
 class BumperHitCircle : public HitCircle

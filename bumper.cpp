@@ -368,7 +368,7 @@ void Bumper::UpdateRing(RenderDevice *pd3dDevice )
     {
         buf[i].x = ringVertices[i].x;
         buf[i].y = ringVertices[i].y;
-        buf[i].z = ringVertices[i].z+ringAnimHeightOffset;
+        buf[i].z = ringVertices[i].z + m_pbumperhitcircle->m_bumperanim.m_ringAnimOffset;
         buf[i].nx = ringVertices[i].nx;
         buf[i].ny = ringVertices[i].ny;
         buf[i].nz = ringVertices[i].nz;
@@ -448,22 +448,26 @@ void Bumper::PostRenderStatic(RenderDevice* pd3dDevice)
     {
         const float step = m_d.m_ringSpeed*(m_ptable->m_zScale*m_d.m_heightScale);
         const float limit = 45.f*(m_ptable->m_zScale*m_d.m_heightScale);
-
+        float _sign = 1.0f;
+        if (ringDown)
+        {
+            _sign = -1.0f;
+        }
+        m_pbumperhitcircle->m_bumperanim.m_ringAnimStep = step * _sign;
+        m_pbumperhitcircle->m_bumperanim.UpdateAnimation();
         if( ringDown ) 
         {
-            ringAnimHeightOffset-=step;
-            if( ringAnimHeightOffset<-limit )
+            if (m_pbumperhitcircle->m_bumperanim.m_ringAnimOffset<-limit)
             {
-                ringAnimHeightOffset=-limit;
+                m_pbumperhitcircle->m_bumperanim.m_ringAnimOffset = -limit;
                 ringDown=false;
             }
         }
         else
         {
-            ringAnimHeightOffset+=step;
-            if( ringAnimHeightOffset>=0.0f )
+            if (m_pbumperhitcircle->m_bumperanim.m_ringAnimOffset >= 0.0f)
             {
-                ringAnimHeightOffset=0.0f;
+                m_pbumperhitcircle->m_bumperanim.m_ringAnimOffset = 0.0f;
                 ringAnimate=false;
             }
         }
