@@ -344,11 +344,19 @@ RenderDevice::RenderDevice(HWND hwnd, int width, int height, bool fullscreen, in
     m_curTextureChanges = m_frameTextureChanges = 0;
 
     basicShader = new Shader(this);
+#if _MSC_VER >= 1700
+    basicShader->Load(g_basicShaderCode, sizeof(g_basicShaderCode));
+#else
     basicShader->Load(basicShaderCode, sizeof(basicShaderCode));
+#endif
 
     DMDShader = new Shader(this);
-	DMDShader->Load( dmdShaderCode, sizeof(dmdShaderCode) );
-	// create default vertex declarations for shaders
+#if _MSC_VER >= 1700
+    DMDShader->Load(g_dmdShaderCode, sizeof(g_dmdShaderCode));
+#else
+    DMDShader->Load(dmdShaderCode, sizeof(dmdShaderCode));
+#endif
+    // create default vertex declarations for shaders
     CreateVertexDeclaration( VertexTexelElement, &m_pVertexTexelDeclaration );
     CreateVertexDeclaration( VertexNormalTexelElement, &m_pVertexNormalTexelDeclaration );
     CreateVertexDeclaration( VertexNormalTexelTexelElement, &m_pVertexNormalTexelTexelDeclaration );
