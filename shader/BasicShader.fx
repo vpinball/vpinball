@@ -173,24 +173,31 @@ float4 PS_LightWithTexel(in VS_LIGHT_OUTPUT IN ) : COLOR
 {	
     float4 pixel = tex2D(texSampler0, IN.tex0);  
     float3 t = InvGamma(pixel.xyz);
-
-    float3 diffuse  = t*cBase;
-    float3 glossy   = bIsMetal ? diffuse : t*cGlossy*0.08f;
+    float3 diffuse = t*cBase;
+    float3 glossy = bIsMetal ? diffuse : t*cGlossy*0.08f; //!! use AO for glossy? specular?
     float3 specular = cClearcoat*0.08f;
-	float edge = bIsMetal ? 1.0f : fEdge;
-
-	float len = length(lightCenter.xyz-IN.tablePos.xyz)/max(maxRange,0.1f);
-    float atten = 1.0f-saturate(len);
-    atten*=atten;
-	float4 lcolor = lerp(float4(1.0f,1.0f,1.0f,1.0f),lightColor, sqrt(len));
-	float4 result = saturate(lcolor*(atten*intensity));	
-	result.a = saturate(atten*intensity);	
-	
+    float edge = bIsMetal ? 1.0f : fEdge;
+    float4 result = float4(0.0f, 0.0f, 0.0f, 0.0f);
     float4 color = lightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular, edge); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
-    color.a *= fmaterialAlpha;
-	color += result; 
-	color = Overlay(pixel,color, 1.0f);
-	color = Screen(pixel,color, 1.0f);
+
+    if ( intensity!=0.0f )
+    {
+        float len = length(lightCenter.xyz - IN.tablePos.xyz) / max(maxRange, 0.1f);
+        float atten = 1.0f - saturate(len);
+        atten *= atten;
+        float4 lcolor = lerp(float4(1.0f, 1.0f, 1.0f, 1.0f), lightColor, sqrt(len));
+        result = saturate(lcolor*(atten*intensity));
+        result.a = saturate(atten*intensity);
+        color.a *= fmaterialAlpha;
+        color += result;
+        color = Overlay(pixel, color, 1.0f);
+        color = Screen(pixel, color, 1.0f);
+    }
+    else
+    {
+        color.a = pixel.a*fmaterialAlpha;
+    }
+	
     return color;
 }
 
@@ -200,14 +207,17 @@ float4 PS_LightWithoutTexel(in VS_LIGHT_OUTPUT IN ) : COLOR
     float3 glossy   = bIsMetal ? cBase : cGlossy*0.08f;
     float3 specular = cClearcoat*0.08f;
 	float edge = bIsMetal ? 1.0f : fEdge;
+    float4 result = float4(0.0f, 0.0f, 0.0f, 0.0f);
 
-	float len = length(lightCenter.xyz-IN.tablePos.xyz)/max(maxRange,0.1f);
-    float atten = 1.0f-saturate(len);
-    atten*=atten;
-	float4 lcolor = lerp(float4(1.0f,1.0f,1.0f,1.0f),lightColor, sqrt(len));
-	float4 result = saturate(lcolor*(atten*intensity));	
-	result.a = saturate(atten*intensity);	
-	
+    if (intensity != 0.0f)
+    {
+        float len = length(lightCenter.xyz - IN.tablePos.xyz) / max(maxRange, 0.1f);
+        float atten = 1.0f - saturate(len);
+        atten *= atten;
+        float4 lcolor = lerp(float4(1.0f, 1.0f, 1.0f, 1.0f), lightColor, sqrt(len));
+        result = saturate(lcolor*(atten*intensity));
+        result.a = saturate(atten*intensity);
+    }
     float4 color=lightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular, edge); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
     color.a *= fmaterialAlpha;
     color += result;
