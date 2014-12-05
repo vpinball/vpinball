@@ -122,7 +122,6 @@ private:
     void RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop);
     void PrepareWallsAtHeight( RenderDevice* pd3dDevice );
     void PrepareSlingshots( RenderDevice *pd3dDevice );
-    void RenderObject( RenderDevice *pd3dDevice );
 
     void FreeBuffers();
 
