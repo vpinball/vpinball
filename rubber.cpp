@@ -5,6 +5,7 @@ Rubber::Rubber()
    m_menuid = IDR_SURFACEMENU;
    m_d.m_fCollidable = true;
    m_d.m_fVisible = true;
+   m_d.m_fHitEvent = false;
    staticVertexBuffer = 0;
    dynamicVertexBuffer = 0;
    dynamicIndexBuffer = 0;
@@ -73,7 +74,8 @@ void Rubber::SetDefaults(bool fromMouseClick)
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szImage[0] = 0;
 
-   m_d.m_fCastsShadow = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"CastsShadow", true) : true;
+   m_d.m_fCastsShadow = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "CastsShadow", true) : true;
+   m_d.m_fHitEvent = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "HitEvent", true) : false;
 
    m_d.m_elasticity = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"Elasticity", 0.8f) : 0.8f;
    m_d.m_friction = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"Friction", 0.3f) : 0.3f;
@@ -92,7 +94,8 @@ void Rubber::WriteRegDefaults()
 
    SetRegValueFloat(strKeyName,"Height", m_d.m_height);
    SetRegValueInt(strKeyName,"Thickness", m_d.m_thickness);
-   SetRegValue(strKeyName,"TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
+   SetRegValueBool(strKeyName, "HitEvent", m_d.m_fHitEvent);
+   SetRegValue(strKeyName, "TimerEnabled", REG_DWORD, &m_d.m_tdr.m_fTimerEnabled, 4);
    SetRegValue(strKeyName,"TimerInterval",REG_DWORD,&m_d.m_tdr.m_TimerInterval,4);
    SetRegValue(strKeyName,"Image", REG_SZ, &m_d.m_szImage, lstrlen(m_d.m_szImage));
    SetRegValueBool(strKeyName,"ImageWalls",m_d.m_fImageWalls);
@@ -577,6 +580,12 @@ void Rubber::GetHitShapes(Vector<HitObject> * const pvho)
                 ph3dpoly->m_elasticity = m_d.m_elasticity;
                 ph3dpoly->SetFriction(m_d.m_friction);
                 ph3dpoly->m_scatter = ANGTORAD(m_d.m_scatter);
+                if (m_d.m_fHitEvent)
+                {
+                   ph3dpoly->m_pfe = (IFireEvents *)this;
+                }
+                else
+                   ph3dpoly->m_pfe = NULL;
 
                 pvho->AddElement(ph3dpoly);
 
@@ -608,6 +617,12 @@ void Rubber::GetHitShapes(Vector<HitObject> * const pvho)
              ph3dpoly->m_elasticity = m_d.m_elasticity;
              ph3dpoly->SetFriction(m_d.m_friction);
              ph3dpoly->m_scatter = ANGTORAD(m_d.m_scatter);
+             if (m_d.m_fHitEvent)
+             {
+                ph3dpoly->m_pfe = (IFireEvents *)this;
+             }
+             else
+                ph3dpoly->m_pfe = NULL;
 
              pvho->AddElement(ph3dpoly);
 
@@ -657,6 +672,12 @@ void Rubber::GetHitShapes(Vector<HitObject> * const pvho)
              ph3dpoly->m_elasticity = m_d.m_elasticity;
              ph3dpoly->SetFriction(m_d.m_friction);
              ph3dpoly->m_scatter = ANGTORAD(m_d.m_scatter);
+             if (m_d.m_fHitEvent)
+             {
+                ph3dpoly->m_pfe = (IFireEvents *)this;
+             }
+             else
+                ph3dpoly->m_pfe = NULL;
 
              pvho->AddElement(ph3dpoly);
 
@@ -681,6 +702,12 @@ void Rubber::GetHitShapes(Vector<HitObject> * const pvho)
           ph3dpoly->m_elasticity = m_d.m_elasticity;
           ph3dpoly->SetFriction(m_d.m_friction);
           ph3dpoly->m_scatter = ANGTORAD(m_d.m_scatter);
+          if (m_d.m_fHitEvent)
+          {
+             ph3dpoly->m_pfe = (IFireEvents *)this;
+          }
+          else
+             ph3dpoly->m_pfe = NULL;
 
           pvho->AddElement(ph3dpoly);
 
@@ -740,6 +767,13 @@ void Rubber::AddJoint(Vector<HitObject> * pvho, const Vertex3Ds& v1, const Verte
    ph3dc->m_scatter = ANGTORAD(m_d.m_scatter);
    ph3dc->m_fEnabled = m_d.m_fCollidable;
 
+   if (m_d.m_fHitEvent)
+   {
+      ph3dc->m_pfe = (IFireEvents *)this;
+   }
+   else
+      ph3dc->m_pfe = NULL;
+
    pvho->AddElement(ph3dc);
 
    m_vhoCollidable.push_back(ph3dc);	//remember hit components of ramp
@@ -753,6 +787,13 @@ void Rubber::AddJoint2D(Vector<HitObject> * pvho, const Vertex2D& p, float zlow,
     pjoint->m_scatter = ANGTORAD(m_d.m_scatter);
     pjoint->m_fEnabled = m_d.m_fCollidable;
 
+    if (m_d.m_fHitEvent)
+    {
+       pjoint->m_pfe = (IFireEvents *)this;
+    }
+    else
+       pjoint->m_pfe = NULL;
+
     pvho->AddElement(pjoint);
     m_vhoCollidable.push_back(pjoint); //remember hit components of ramp
 }
@@ -765,7 +806,12 @@ void Rubber::AddLine(Vector<HitObject> * const pvho, const Vertex2D * const pv1,
    plineseg->m_scatter = ANGTORAD(m_d.m_scatter);
    plineseg->m_fEnabled = m_d.m_fCollidable;
 
-   plineseg->m_pfe = NULL;
+   if (m_d.m_fHitEvent)
+   {
+      plineseg->m_pfe = (IFireEvents *)this;
+   }
+   else
+      plineseg->m_pfe = NULL;
 
    plineseg->m_rcHitRect.zlow = height1;
    plineseg->m_rcHitRect.zhigh = height2;
@@ -858,6 +904,7 @@ HRESULT Rubber::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptk
 
    bw.WriteFloat(FID(HTTP), m_d.m_height);
    bw.WriteInt(FID(WDTP), m_d.m_thickness);
+   bw.WriteBool(FID(HTEV), m_d.m_fHitEvent);
    bw.WriteString(FID(MATR), m_d.m_szMaterial);
    bw.WriteBool(FID(TMON), m_d.m_tdr.m_fTimerEnabled);
    bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
@@ -913,6 +960,10 @@ BOOL Rubber::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(WDTP))
    {
       pbr->GetInt(&m_d.m_thickness);
+   }
+   else if (id == FID(HTEV))
+   {
+      pbr->GetBool(&m_d.m_fHitEvent);
    }
    else if (id == FID(MATR))
    {
@@ -1254,6 +1305,24 @@ STDMETHODIMP Rubber::put_CastsShadow(VARIANT_BOOL newVal)
    STOPUNDO
 
    return S_OK;
+}
+
+STDMETHODIMP Rubber::get_HasHitEvent(VARIANT_BOOL *pVal)
+{
+   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fHitEvent);
+
+   return S_OK;
+}
+
+STDMETHODIMP Rubber::put_HasHitEvent(VARIANT_BOOL newVal)
+{
+   STARTUNDO
+
+      m_d.m_fHitEvent = VBTOF(newVal);
+
+   STOPUNDO
+
+      return S_OK;
 }
 
 STDMETHODIMP Rubber::get_Elasticity(float *pVal)

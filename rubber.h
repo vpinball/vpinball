@@ -18,11 +18,11 @@ public:
 	float m_elasticity;
 	float m_friction;
 	float m_scatter;
-    float m_wireDiameter;
-    float m_wireDistanceX;
-    float m_wireDistanceY;
-    float m_depthBias;      // for determining depth sorting
-
+   float m_wireDiameter;
+   float m_wireDistanceX;
+   float m_wireDistanceY;
+   float m_depthBias;      // for determining depth sorting
+   bool m_fHitEvent;
 	bool m_staticRendering;
 
 	bool m_fCollidable;
@@ -160,9 +160,11 @@ public:
     STDMETHOD(put_Height)(/*[in]*/ float newVal);
     STDMETHOD(get_Thickness)(/*[out, retval]*/ int *pVal);
     STDMETHOD(put_Thickness)(/*[in]*/ int newVal);
-	STDMETHOD(get_CastsShadow)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-	STDMETHOD(put_CastsShadow)(/*[in]*/ VARIANT_BOOL newVal);
-	STDMETHOD(get_Collidable)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+    STDMETHOD(get_CastsShadow)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+    STDMETHOD(put_CastsShadow)(/*[in]*/ VARIANT_BOOL newVal);
+    STDMETHOD(get_HasHitEvent)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+    STDMETHOD(put_HasHitEvent)(/*[in]*/ VARIANT_BOOL newVal);
+    STDMETHOD(get_Collidable)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_Collidable)(/*[in]*/ VARIANT_BOOL newVal);
 	STDMETHOD(get_Visible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_Visible)(/*[in]*/ VARIANT_BOOL newVal);
