@@ -1,5 +1,4 @@
 #include "StdAfx.h"
-#include "LightInsert.h"
 #include "meshes/bulbLightMesh.h"
 #include "meshes/bulbSocketMesh.h"
 

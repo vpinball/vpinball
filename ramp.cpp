@@ -586,6 +586,8 @@ float Ramp::GetSurfaceHeight(float x, float y)
     GetCentralCurve(&vvertex);
 
     const int cvertex = vvertex.Size();
+    const float topHeight = m_d.m_heighttop + m_ptable->m_tableheight;
+    const float bottomHeight = m_d.m_heightbottom + m_ptable->m_tableheight;
 
     int iSeg;
     Vertex2D vOut;
@@ -621,7 +623,7 @@ float Ramp::GetSurfaceHeight(float x, float y)
         const float len = sqrtf(dx*dx + dy*dy);
         startlength += len; // Add the distance the object is between the two closest polyline segments.  Matters mostly for straight edges.
 
-        zheight = (startlength/totallength) * (m_d.m_heighttop - m_d.m_heightbottom) + m_d.m_heightbottom;
+        zheight = (startlength/totallength) * (topHeight - bottomHeight) + bottomHeight;
    }
 HeightError:
     for (int i2=0;i2<cvertex;i2++)

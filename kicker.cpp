@@ -158,25 +158,17 @@ void Kicker::GetHitShapes(Vector<HitObject> * const pvho)
 
    phitcircle->center.x = m_d.m_vCenter.x;
    phitcircle->center.y = m_d.m_vCenter.y;
-   if ( m_d.m_kickertype==KickerHole)
+   if ( m_d.m_fFallThrough )
    {
-       phitcircle->radius = m_d.m_radius*0.85f; // reduce the hit circle radius because only the inner circle of the 
+       phitcircle->radius = m_d.m_radius * 0.75f;
    }
    else
-   {
-       phitcircle->radius = m_d.m_radius*0.6f; // reduce the hit circle radius because only the inner circle of the 
-   }
-
-                                           // kicker should start a hit event
+    phitcircle->radius = m_d.m_radius*0.6f; // reduce the hit circle radius because only the inner circle of the 
+                                            // kicker should start a hit event
    phitcircle->zlow = height;
    phitcircle->zhigh = height + m_d.m_hit_height;	// height of kicker hit cylinder  
 
-   
-
-   if ( m_d.m_kickertype == KickerHole )
-      phitcircle->m_zheight = height-40.0f;		
-   else
-      phitcircle->m_zheight = height;		//height for Kicker locked ball + ball->m_radius
+   phitcircle->m_zheight = height;		//height for Kicker locked ball + ball->m_radius
 
    phitcircle->m_fEnabled = m_d.m_fEnabled;
 
@@ -931,13 +923,14 @@ void KickerHitCircle::DoCollide(Ball * const pball, Vertex3Ds& hitnormal, Vertex
 
       if (i < 0)	//entering Kickers volume
       { 
-            pball->m_vpVolObjs->AddElement(m_pObj);		// add kicker to ball's volume set
-
-         m_pball = pball;
-         if( m_pkicker->m_d.m_fFallThrough )
+         if (m_pkicker->m_d.m_fFallThrough)
              pball->m_frozen = false;
          else
-             pball->m_frozen = true;			
+         {
+             pball->m_frozen = true;
+             pball->m_vpVolObjs->AddElement(m_pObj);		// add kicker to ball's volume set
+             m_pball = pball;
+         }
 
          // Don't fire the hit event if the ball was just created
          // Fire the event before changing ball attributes, so scripters can get a useful ball state
@@ -954,7 +947,7 @@ void KickerHitCircle::DoCollide(Ball * const pball, Vertex3Ds& hitnormal, Vertex
             pball->m_vel.SetZero();
             pball->m_pos.x = center.x;
             pball->m_pos.y = center.y;
-            pball->m_pos.z = m_zheight + pball->m_radius;
+            pball->m_pos.z = m_zheight-pball->m_radius-5.0f;
          }
          else m_pball = NULL;		// make sure
       }
