@@ -947,7 +947,11 @@ void KickerHitCircle::DoCollide(Ball * const pball, Vertex3Ds& hitnormal, Vertex
             pball->m_vel.SetZero();
             pball->m_pos.x = center.x;
             pball->m_pos.y = center.y;
-            pball->m_pos.z = m_zheight-pball->m_radius-5.0f;
+            if ( m_pkicker->m_d.m_fFallThrough )
+               pball->m_pos.z = m_zheight-pball->m_radius-5.0f;
+            else
+               pball->m_pos.z = m_zheight+pball->m_radius;
+
          }
          else m_pball = NULL;		// make sure
       }
