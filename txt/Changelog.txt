@@ -34,6 +34,8 @@ VP 10.0.0 Changelog
 - Table field height setting in the "Dimension & Slope Settings" you can define the playfield height. If this value is raised all elements on the table
   are also moved by that amount. For example: "table field height"=50 means everything on the table is raised by 50 units.
 
+- spinners are mesh based. If the spinner bracket isn't the right one disable the "Show Bracket" settings and you will only see the spinner plate.
+  
 - kickers are mesh based. In the kicker settings you can set "Fall through" so that if a ball hits a kicker(hole) the ball will fall through the 
   surface which is attached to it. This only works if the wall is higher than the playfield, it won't work if the hole is on the playfield.
   

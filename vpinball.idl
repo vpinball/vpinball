@@ -1572,10 +1572,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(6), helpstring("property Overhang")] HRESULT Overhang([in] float newVal);
 		[propget, id(7), helpstring("property Friction")] HRESULT Friction([out, retval] float *pVal);
 		[propput, id(7), helpstring("property Friction")] HRESULT Friction([in] float newVal);
-		[propget, id(DISPID_Image), helpstring("property ImageFront")] HRESULT ImageFront([out, retval] BSTR *pVal);
-		[propput, id(DISPID_Image), helpstring("property ImageFront")] HRESULT ImageFront([in] BSTR newVal);
-		[propget, id(DISPID_Image2), helpstring("property ImageBack")] HRESULT ImageBack([out, retval] BSTR *pVal);
-		[propput, id(DISPID_Image2), helpstring("property ImageBack")] HRESULT ImageBack([in] BSTR newVal);
+		[propget, id(DISPID_Image), helpstring("property Image")] HRESULT Image([out, retval] BSTR *pVal);
+		[propput, id(DISPID_Image), helpstring("property Image")] HRESULT Image([in] BSTR newVal);
 		[propget, id(340), helpstring("property Material")] HRESULT Material([out, retval] BSTR *pVal);
 		[propput, id(340), helpstring("property Material")] HRESULT Material([in] BSTR newVal);
 		[propget, id(11), helpstring("property X")] HRESULT X([out, retval] float *pVal);
@@ -1588,8 +1586,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([in] VARIANT* newVal);
 		[propget, id(107), helpstring("property CastsShadow")] HRESULT CastsShadow([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(107), helpstring("property CastsShadow")] HRESULT CastsShadow([in] VARIANT_BOOL newVal);
-		[propget, id(108), helpstring("property Supports")] HRESULT Supports([out, retval] VARIANT_BOOL *pVal);
-		[propput, id(108), helpstring("property Supports")] HRESULT Supports([in] VARIANT_BOOL newVal);
+		[propget, id(108), helpstring("property ShowBracket")] HRESULT ShowBracket([out, retval] VARIANT_BOOL *pVal);
+		[propput, id(108), helpstring("property ShowBracket")] HRESULT ShowBracket([in] VARIANT_BOOL newVal);
 
 		[propget, id(13), helpstring("property AngleMax")] HRESULT AngleMax([out, retval] float *pVal);
 		[propput, id(13), helpstring("property AngleMax")] HRESULT AngleMax([in] float newVal);
