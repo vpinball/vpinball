@@ -23,10 +23,9 @@ public:
 	float m_elasticity;
 	//float m_friction;
 	float m_scatter;
-	char m_szImageFront[MAXTOKEN];
-	char m_szImageBack[MAXTOKEN];
+	char m_szImage[MAXTOKEN];
 	char m_szSurface[MAXTOKEN];
-	bool m_fSupports; 
+	bool m_fShowBracket; 
 	bool m_fCastsShadow;		//>>> added by Chris
 	bool m_fVisible;
 };
@@ -87,10 +86,8 @@ DECLARE_REGISTRY_RESOURCEID(IDR_SPINNER)
 
 	virtual void RenderShadow(ShadowSur * const psur, const float height);
 
-   void PrepareStatic( RenderDevice* pd3dDevice );
-   void PrepareMovers( RenderDevice* pd3dDevice );
-
 	void WriteRegDefaults();
+    void UpdatePlate( RenderDevice *pd3dDevice );
 
 	PinTable *m_ptable;
 
@@ -101,8 +98,11 @@ DECLARE_REGISTRY_RESOURCEID(IDR_SPINNER)
 
 private:
    Vertex3D staticVertices[8];
-   VertexBuffer *vtxBuf;
-   IndexBuffer *idxBuf;
+   VertexBuffer *bracketVertexBuffer;
+   IndexBuffer *bracketIndexBuffer;
+   VertexBuffer *plateVertexBuffer;
+   IndexBuffer *plateIndexBuffer;
+   Matrix3D fullMatrix;
 
 // ISpinner
 public:
@@ -114,10 +114,8 @@ public:
 	STDMETHOD(put_X)(/*[in]*/ float newVal);
 	STDMETHOD(get_Material)(/*[out, retval]*/ BSTR *pVal);
 	STDMETHOD(put_Material)(/*[in]*/ BSTR newVal);
-	STDMETHOD(get_ImageBack)(/*[out, retval]*/ BSTR *pVal);
-	STDMETHOD(put_ImageBack)(/*[in]*/ BSTR newVal);
-	STDMETHOD(get_ImageFront)(/*[out, retval]*/ BSTR *pVal);
-	STDMETHOD(put_ImageFront)(/*[in]*/ BSTR newVal);
+	STDMETHOD(get_Image)(/*[out, retval]*/ BSTR *pVal);
+	STDMETHOD(put_Image)(/*[in]*/ BSTR newVal);
 	STDMETHOD(get_Friction)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Friction)(/*[in]*/ float newVal);
 	STDMETHOD(get_Overhang)(/*[out, retval]*/ float *pVal);
@@ -135,8 +133,8 @@ public:
 	
 	STDMETHOD(get_Visible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_Visible)(/*[in]*/ VARIANT_BOOL newVal);
-	STDMETHOD(get_Supports)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-	STDMETHOD(put_Supports)(/*[in]*/ VARIANT_BOOL newVal);
+	STDMETHOD(get_ShowBracket)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+	STDMETHOD(put_ShowBracket)(/*[in]*/ VARIANT_BOOL newVal);
 
 	STDMETHOD (get_AngleMax)(/*[out, retval]*/ float *pVal);
 	STDMETHOD (put_AngleMax)(/*[in]*/ float newVal);	
@@ -145,7 +143,6 @@ public:
 	STDMETHOD (get_Elasticity)(/*[out, retval]*/ float *pVal);
 	STDMETHOD (put_Elasticity)(/*[in]*/ float newVal);
     STDMETHODIMP get_CurrentAngle(float *pVal);
-
 };
 
 #endif // !defined(AFX_SPINNER_H__8D8CB0E1_8C8F_49BF_A639_4DFA12DD4C3C__INCLUDED_)

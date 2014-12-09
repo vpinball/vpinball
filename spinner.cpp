@@ -1,23 +1,37 @@
 #include "StdAfx.h"
+#include "meshes/spinnerBracketMesh.h"
+#include "meshes/spinnerPlateMesh.h"
 
 Spinner::Spinner()
 {
    m_phitspinner = NULL;
-   vtxBuf = 0;
-   idxBuf = 0;
+   bracketVertexBuffer = 0;
+   bracketIndexBuffer = 0;
+   plateVertexBuffer = 0;
+   plateIndexBuffer = 0;
 }
 
 Spinner::~Spinner()
 {
-   if (vtxBuf)
+   if (bracketVertexBuffer)
    {
-       vtxBuf->release();
-       vtxBuf = 0;
+       bracketVertexBuffer->release();
+       bracketVertexBuffer = 0;
    }
-   if (idxBuf)
+   if (bracketIndexBuffer)
    {
-       idxBuf->release();
-       idxBuf = 0;
+       bracketIndexBuffer->release();
+       bracketIndexBuffer = 0;
+   }
+   if (plateVertexBuffer)
+   {
+       plateVertexBuffer->release();
+       plateVertexBuffer = 0;
+   }
+   if (plateIndexBuffer)
+   {
+       plateIndexBuffer->release();
+       plateIndexBuffer = 0;
    }
 }
 
@@ -40,7 +54,7 @@ void Spinner::WriteRegDefaults()
 {
    SetRegValueFloat("DefaultProps\\Spinner","Length", m_d.m_length);
    SetRegValueFloat("DefaultProps\\Spinner","Rotation", m_d.m_rotation);
-   SetRegValueBool("DefaultProps\\Spinner","Supports", m_d.m_fSupports);
+   SetRegValueBool("DefaultProps\\Spinner","ShowBracket", m_d.m_fShowBracket);
    SetRegValueFloat("DefaultProps\\Spinner","Height", m_d.m_height);
    SetRegValueFloat("DefaultProps\\Spinner","Overhang", m_d.m_overhang);
    SetRegValue("DefaultProps\\Spinner","CastsShadow",REG_DWORD,&m_d.m_fCastsShadow,4);
@@ -52,8 +66,7 @@ void Spinner::WriteRegDefaults()
    SetRegValue("DefaultProps\\Spinner","Visible",REG_DWORD,&m_d.m_fVisible,4);
    SetRegValue("DefaultProps\\Spinner","TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
    SetRegValue("DefaultProps\\Spinner","TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval, 4);
-   SetRegValue("DefaultProps\\Spinner","ImageFront", REG_SZ, &m_d.m_szImageFront,lstrlen(m_d.m_szImageFront));
-   SetRegValue("DefaultProps\\Spinner","ImageBack", REG_SZ, &m_d.m_szImageBack,lstrlen(m_d.m_szImageBack));
+   SetRegValue("DefaultProps\\Spinner","Image", REG_SZ, &m_d.m_szImage,lstrlen(m_d.m_szImage));
    SetRegValue("DefaultProps\\Spinner","Surface", REG_SZ, &m_d.m_szSurface,lstrlen(m_d.m_szSurface));
 }
 
@@ -75,11 +88,11 @@ void Spinner::SetDefaults(bool fromMouseClick)
    else
       m_d.m_rotation = 0;
 
-   hr = GetRegInt("DefaultProps\\Spinner","Supports", &iTmp);
+   hr = GetRegInt("DefaultProps\\Spinner","ShowBracket", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
-      m_d.m_fSupports = iTmp == 0 ? false : true;
+      m_d.m_fShowBracket = iTmp == 0 ? false : true;
    else
-      m_d.m_fSupports = true;
+      m_d.m_fShowBracket = true;
 
    hr = GetRegInt("DefaultProps\\Spinner","Height", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
@@ -138,13 +151,9 @@ void Spinner::SetDefaults(bool fromMouseClick)
    else
       m_d.m_tdr.m_TimerInterval = 100;
 
-   hr = GetRegString("DefaultProps\\Spinner","ImageFront", m_d.m_szImageFront, MAXTOKEN);
+   hr = GetRegString("DefaultProps\\Spinner","Image", m_d.m_szImage, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
-      m_d.m_szImageFront[0] = 0;
-
-   hr = GetRegString("DefaultProps\\Spinner","ImageBack", m_d.m_szImageBack, MAXTOKEN);
-   if ((hr != S_OK) || !fromMouseClick)
-      m_d.m_szImageBack[0] = 0;
+      m_d.m_szImage[0] = 0;
 
    hr = GetRegString("DefaultProps\\Spinner","Surface", &m_d.m_szSurface, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
@@ -237,7 +246,7 @@ void Spinner::GetHitShapes(Vector<HitObject> * const pvho)
 
    pvho->AddElement(phitspinner);
 
-   if(m_d.m_fSupports)
+   if(m_d.m_fShowBracket)
    {
       float halflength = m_d.m_length * 0.5f;
       const float radangle = ANGTORAD(m_d.m_rotation);
@@ -276,330 +285,205 @@ void Spinner::EndPlay()
    IEditable::EndPlay();
    m_phitspinner = NULL;
 
-   if (vtxBuf)
+   if (bracketVertexBuffer)
    {
-       vtxBuf->release();
-       vtxBuf = 0;
+       bracketVertexBuffer->release();
+       bracketVertexBuffer = 0;
    }
-   if (idxBuf)
+   if (bracketIndexBuffer)
    {
-       idxBuf->release();
-       idxBuf = 0;
+       bracketIndexBuffer->release();
+       bracketIndexBuffer = 0;
+   }
+   if (plateVertexBuffer)
+   {
+       plateVertexBuffer->release();
+       plateVertexBuffer = 0;
+   }
+   if (plateIndexBuffer)
+   {
+       plateIndexBuffer->release();
+       plateIndexBuffer = 0;
    }
 }
 
-static const WORD rgiSpinner0[8] = {0,1,2,3,6,7,4,5};
-static const WORD rgiSpinner1[8] = {4,5,6,7,2,3,0,1};
-static const WORD rgiSpinnerNormal[3] = {0,1,3};
+void Spinner::UpdatePlate( RenderDevice *pd3dDevice )
+{
+    Matrix3D fullMatrix;
+    Matrix3D rotzMat,rotxMat;
+    Vertex3D_NoTex2 *buf;
 
-static const WORD rgiSpinner2[4] = {0,1,5,4};      // back
-static const WORD rgiSpinner3[4] = {2,6,7,3};      // front
-static const WORD rgiSpinner4[4] = {0,2,3,1};      // bottom
-static const WORD rgiSpinner5[4] = {4,5,7,6};      // top
-static const WORD rgiSpinner6[4] = {0,4,6,2};      // left
-static const WORD rgiSpinner7[4] = {1,3,7,5};      // right
+    fullMatrix.SetIdentity();
+    rotxMat.RotateXMatrix(-m_phitspinner->m_spinneranim.m_angle);
+    rotxMat.Multiply(fullMatrix, fullMatrix);
+    rotzMat.RotateZMatrix(ANGTORAD(m_d.m_rotation));
+    rotzMat.Multiply(fullMatrix, fullMatrix);
+
+    plateVertexBuffer->lock(0, 0, (void**)&buf, 0);
+    for( int i=0;i<spinnerPlateNumVertices;i++ )
+    {
+        Vertex3Ds vert(spinnerPlate[i].x,spinnerPlate[i].y,spinnerPlate[i].z);
+        vert = fullMatrix.MultiplyVector(vert);
+
+        buf[i].x = (vert.x*m_d.m_length)+m_d.m_vCenter.x;
+        buf[i].y = (vert.y*m_d.m_length)+m_d.m_vCenter.y;
+        buf[i].z = (vert.z*m_d.m_length*m_ptable->m_zScale);
+        buf[i].z += m_posZ;
+        vert = Vertex3Ds( spinnerPlate[i].nx, spinnerPlate[i].ny, spinnerPlate[i].nz );
+        vert = fullMatrix.MultiplyVectorNoTranslate(vert);
+        buf[i].nx = vert.x;
+        buf[i].ny = vert.y;
+        buf[i].nz = vert.z;
+        buf[i].tu = spinnerPlate[i].tu;
+        buf[i].tv = spinnerPlate[i].tv;
+    }
+    plateVertexBuffer->unlock();
+
+}
 
 void Spinner::PostRenderStatic(RenderDevice* pd3dDevice)
 {
+
     TRACE_FUNCTION();
-    if (!m_phitspinner->m_spinneranim.m_fVisible)
+    if (!m_phitspinner->m_spinneranim.m_fVisible || !m_d.m_fVisible)
         return;
 
     Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-
-    pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelTexelDeclaration );
+    pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelDeclaration );
 
     Material *mat = m_ptable->GetMaterial( m_d.m_szMaterial);
     pd3dDevice->basicShader->SetMaterial(mat);
-    COLORREF rgbTransparent = RGB(255,0,255); //RGB(0,0,0);
 
-    Texture * const pinback = m_ptable->GetImage(m_d.m_szImageBack);
-    Texture * const pinfront = m_ptable->GetImage(m_d.m_szImageFront);
+    Texture * const image = m_ptable->GetImage(m_d.m_szImage);
 
     pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", true);
     pd3dDevice->basicShader->Core()->SetFloat("fAlphaTestValue", 128.0f/255.0f);
 
-    // Set texture to mirror, so the alpha state of the texture blends correctly to the outside
-    pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_MIRROR);
-
-    // set obj->world transform
-    Matrix3D matTrafo, matTemp;
-    matTrafo.SetTranslation(m_d.m_vCenter.x, m_d.m_vCenter.y, m_posZ);
-
-    matTemp.RotateZMatrix(ANGTORAD(m_d.m_rotation));
-    matTrafo.Multiply(matTemp, matTrafo);
-
-    matTemp.RotateXMatrix(-m_phitspinner->m_spinneranim.m_angle);
-    matTrafo.Multiply(matTemp, matTrafo);
-
-    g_pplayer->UpdateBasicShaderMatrix(matTrafo);
-
-    // Draw Backside
-    if (pinback)
+    UpdatePlate(pd3dDevice);
+    if ( image )
     {
-        pinback->Set( ePictureTexture );
-        if (pinback->m_fTransparent)
-        {
-			g_pplayer->m_pin3d.DisableAlphaBlend();
-            rgbTransparent = pinback->m_rgbTransparent;
-        }
-        else 
-        {
-            g_pplayer->m_pin3d.EnableAlphaBlend(1, false);
-        } 
-
-        if (NOTRANSCOLOR == rgbTransparent) 
-            pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
-        else
-            pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
-
-        //g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
-        pd3dDevice->basicShader->SetTexture("Texture0",pinback);
-        pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
-    }
-    else // No image by that name
-    {
-       pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
-    }
-
-    pd3dDevice->basicShader->Begin(0);
-    pd3dDevice->DrawPrimitiveVB(D3DPT_TRIANGLEFAN, vtxBuf, 0, 4);
-    pd3dDevice->basicShader->End();
-
-    // Draw Frontside
-    if (pinfront)
-    {
-        //pinfront->Set( ePictureTexture );
-        if (pinfront->m_fTransparent)
-        {
-			g_pplayer->m_pin3d.DisableAlphaBlend();
-            rgbTransparent = pinfront->m_rgbTransparent;
-        }
-        else 
-        {
-            g_pplayer->m_pin3d.EnableAlphaBlend(1, false);
-        }
-
-        if (NOTRANSCOLOR == rgbTransparent) 
-            pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
-        else
-            pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
-
-        //g_pplayer->m_pin3d.SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
-        pd3dDevice->basicShader->SetTexture("Texture0",pinfront);
+        image->CreateAlphaChannel();
+        g_pplayer->m_pin3d.EnableAlphaBlend(1, false);
+        pd3dDevice->basicShader->SetTexture("Texture0",image);
         pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
     }
     else // No image by that name
     {
         pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
     }
-
     pd3dDevice->basicShader->Begin(0);
-    pd3dDevice->DrawPrimitiveVB(D3DPT_TRIANGLEFAN, vtxBuf, 4, 4);
+    pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, plateVertexBuffer, 0, spinnerPlateNumVertices, plateIndexBuffer, 0, spinnerPlateNumFaces);
     pd3dDevice->basicShader->End();
 
-    if (NOTRANSCOLOR != rgbTransparent)
-    {
-        pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
-        pd3dDevice->basicShader->Begin(0);
-        pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, vtxBuf, 8, 16, idxBuf, 0, 24);
-        pd3dDevice->basicShader->End();
-    }
-
-    g_pplayer->UpdateBasicShaderMatrix();
+//    g_pplayer->UpdateBasicShaderMatrix();
 
     pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
     pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, FALSE);
-    pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_WRAP);
     pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", false);
+
 }
 
-void Spinner::PrepareStatic( RenderDevice* pd3dDevice )
-{
-   if(!m_d.m_fSupports) return;
-
-   const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
-
-   Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-
-   const float halflength = m_d.m_length * 0.5f + m_d.m_overhang;
-   const float halfthick = 2.0f;
-   const float h = m_d.m_height*0.5f + 30.0f;
-
-   staticVertices[0].x = -halflength + halfthick;
-   staticVertices[0].y = 0;
-   staticVertices[0].z = 0;
-
-   staticVertices[1].x = -halflength - halfthick;
-   staticVertices[1].y = 0;
-   staticVertices[1].z = 0;
-
-   staticVertices[2].x = -halflength + halfthick;
-   staticVertices[2].y = 0;
-   //rgv3D[2].z = 60.0f - halfthick;
-   staticVertices[2].z = h - halfthick;
-
-   staticVertices[3].x = -halflength - halfthick;
-   staticVertices[3].y = 0;
-   //rgv3D[3].z = 60.0f + halfthick;
-   staticVertices[3].z = h + halfthick;
-
-   staticVertices[4].x = halflength - halfthick;
-   staticVertices[4].y = 0;
-   staticVertices[4].z = 0;
-
-   staticVertices[5].x = halflength + halfthick;
-   staticVertices[5].y = 0;
-   staticVertices[5].z = 0;
-
-   staticVertices[6].x = halflength - halfthick;
-   staticVertices[6].y = 0;
-   //rgv3D[6].z = 60.0f - halfthick;
-   staticVertices[6].z = h - halfthick;
-
-   staticVertices[7].x = halflength + halfthick;
-   staticVertices[7].y = 0;
-   //rgv3D[7].z = 60.0f + halfthick;
-   staticVertices[7].z = h + halfthick;
-
-   const float radangle = ANGTORAD(m_d.m_rotation);
-   const float snY = sinf(radangle);
-   const float csY = cosf(radangle);
-
-   for (int l=0;l<8;l++)
-   {
-      const float temp = staticVertices[l].x;
-      staticVertices[l].x = csY*temp - snY*staticVertices[l].y;
-      staticVertices[l].y = csY*staticVertices[l].y + snY*temp;
-
-      staticVertices[l].x += m_d.m_vCenter.x;
-      staticVertices[l].y += m_d.m_vCenter.y;
-      staticVertices[l].z += height;
-      staticVertices[l].z *= m_ptable->m_zScale;
-   }
-   ppin3d->CalcShadowCoordinates(staticVertices,8);
-}
-
-void Spinner::PrepareMovers( RenderDevice* pd3dDevice )
-{
-   Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-
-   COLORREF rgbTransparent = RGB(255,0,255); //RGB(0,0,0);
-
-   const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
-   const float h = m_d.m_height*0.5f + 30.0f;
-   m_posZ = (h + height) * m_ptable->m_zScale;
-
-   const float halflength = m_d.m_length * 0.5f;
-   const float halfwidth = m_d.m_height * 0.5f;
-
-   const float minx = -halflength;
-   const float maxx = halflength;
-   const float miny = -3.0f;
-   const float maxy = 3.0f;
-   const float minz = -halfwidth;
-   const float maxz = halfwidth;
-
-   Vertex3D moverVertices[8];
-
-   for (int l=0;l<8;l++)
-   {
-       moverVertices[l].x = (l & 1) ? maxx : minx;
-       moverVertices[l].y = (l & 2) ? maxy : miny;
-       moverVertices[l].z = (l & 4) ? maxz : minz;
-
-       if (l & 2)
-       {
-           moverVertices[l].tu = (l & 1) ? 1.0f : 0.f;
-           moverVertices[l].tv = (l & 4) ? 0.f : 1.0f;
-       }
-       else
-       {
-           moverVertices[l].tu = (l & 1) ? 1.0f : 0.f;
-           moverVertices[l].tv = (l & 4) ? 1.0f : 0.f;
-       }
-   }
-
-   ppin3d->CalcShadowCoordinates(moverVertices, 8);
-
-   std::vector< Vertex3D > vbVerts;
-   vbVerts.reserve(6*4);
-
-   SetNormal(moverVertices, rgiSpinner2, 4);        // back
-   for (int i = 0; i < 4; ++i)
-       vbVerts.push_back( moverVertices[ rgiSpinner2[i] ] );
-
-   SetNormal(moverVertices, rgiSpinner3, 4);        // front
-   for (int i = 0; i < 4; ++i)
-       vbVerts.push_back( moverVertices[ rgiSpinner3[i] ] );
-
-   SetNormal(moverVertices, rgiSpinner4, 4);        // bottom
-   for (int i = 0; i < 4; ++i)
-       vbVerts.push_back( moverVertices[ rgiSpinner4[i] ] );
-
-   SetNormal(moverVertices, rgiSpinner5, 4);        // top
-   for (int i = 0; i < 4; ++i)
-       vbVerts.push_back( moverVertices[ rgiSpinner5[i] ] );
-
-   SetNormal(moverVertices, rgiSpinner6, 4);        // left
-   for (int i = 0; i < 4; ++i)
-       vbVerts.push_back( moverVertices[ rgiSpinner6[i] ] );
-
-   SetNormal(moverVertices, rgiSpinner7, 4);        // right
-   for (int i = 0; i < 4; ++i)
-       vbVerts.push_back( moverVertices[ rgiSpinner7[i] ] );
-
-   if (vtxBuf)
-       vtxBuf->release();
-   pd3dDevice->CreateVertexBuffer(vbVerts.size(), 0, MY_D3DFVF_VERTEX, &vtxBuf);
-   void *buf;
-   vtxBuf->lock(0, 0, &buf, 0);
-   memcpy(buf, &vbVerts[0], vbVerts.size() * sizeof(vbVerts[0]));
-   vtxBuf->unlock();
-
-   if (idxBuf)
-       idxBuf->release();
-   static const WORD idx[24] = {0,1,2,0,2,3, 4,5,6,4,6,7, 8,9,10,8,10,11, 12,13,14,12,14,15 };
-   idxBuf = pd3dDevice->CreateAndFillIndexBuffer(24, idx);
-}
 
 void Spinner::RenderSetup(RenderDevice* pd3dDevice)
 {
-   PrepareStatic( pd3dDevice );
-   Texture* const pinback = m_ptable->GetImage(m_d.m_szImageBack);
-   Texture* const pinfront = m_ptable->GetImage(m_d.m_szImageFront);
+   if ( !m_d.m_fVisible )
+    return;
 
-   if ( pinback )
+   Texture* const image = m_ptable->GetImage(m_d.m_szImage);
+
+   if( image )
    {
-      pinback->CreateAlphaChannel();
+      image->CreateAlphaChannel();
    }
-   if( pinfront )
+   const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
+   std::vector<WORD> indices(spinnerBracketNumFaces);
+   Vertex3D_NoTex2 *buf;
+   for( int i=0;i<spinnerBracketNumFaces;i++ ) indices[i] = spinnerBracketIndices[i];
+
+   if (bracketIndexBuffer)
+       bracketIndexBuffer->release();
+   bracketIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer( indices );
+
+   if (!bracketVertexBuffer)
+       pd3dDevice->CreateVertexBuffer(spinnerBracketNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &bracketVertexBuffer);
+
+   fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotation));
+
+   bracketVertexBuffer->lock(0, 0, (void**)&buf, 0);
+   for( int i=0;i<spinnerBracketNumVertices;i++ )
    {
-      pinfront->CreateAlphaChannel();
+       Vertex3Ds vert(spinnerBracket[i].x,spinnerBracket[i].y,spinnerBracket[i].z);
+       vert = fullMatrix.MultiplyVector(vert);
+
+       buf[i].x = (vert.x*m_d.m_length)+m_d.m_vCenter.x;
+       buf[i].y = (vert.y*m_d.m_length)+m_d.m_vCenter.y;
+       buf[i].z = (vert.z*m_d.m_length*m_ptable->m_zScale);
+       buf[i].z += (height+m_d.m_height);
+       vert = Vertex3Ds( spinnerBracket[i].nx, spinnerBracket[i].ny, spinnerBracket[i].nz );
+       vert = fullMatrix.MultiplyVectorNoTranslate(vert);
+       buf[i].nx = vert.x;
+       buf[i].ny = vert.y;
+       buf[i].nz = vert.z;
+       buf[i].tu = spinnerBracket[i].tu;
+       buf[i].tv = spinnerBracket[i].tv;
    }
-   PrepareMovers( pd3dDevice );
+   bracketVertexBuffer->unlock();
+
+   indices.clear();
+   indices.resize(spinnerPlateNumFaces);
+   for( int i=0;i<spinnerPlateNumFaces;i++ ) indices[i] = spinnerPlateIndices[i];
+
+   if (plateIndexBuffer)
+       plateIndexBuffer->release();
+   plateIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer( indices );
+
+   if (!plateVertexBuffer)
+       pd3dDevice->CreateVertexBuffer(spinnerBracketNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &plateVertexBuffer);
+
+   plateVertexBuffer->lock(0, 0, (void**)&buf, 0);
+   for( int i=0;i<spinnerPlateNumVertices;i++ )
+   {
+       Vertex3Ds vert(spinnerPlate[i].x, spinnerPlate[i].y, spinnerPlate[i].z);
+       vert = fullMatrix.MultiplyVector(vert);
+
+       buf[i].x = (vert.x*m_d.m_length);//+m_d.m_vCenter.x;
+       buf[i].y = (vert.y*m_d.m_length);//+m_d.m_vCenter.y;
+       buf[i].z = (vert.z*m_d.m_length*m_ptable->m_zScale);
+       //buf[i].z += (height+m_d.m_height);
+       m_posZ = height+m_d.m_height;
+
+       vert = Vertex3Ds( spinnerPlate[i].nx, spinnerPlate[i].ny, spinnerPlate[i].nz );
+       vert = fullMatrix.MultiplyVectorNoTranslate(vert);
+       buf[i].nx = vert.x;
+       buf[i].ny = vert.y;
+       buf[i].nz = vert.z;
+       buf[i].tu = spinnerPlate[i].tu;
+       buf[i].tv = spinnerPlate[i].tv;
+   }
+   plateVertexBuffer->unlock();
 }
 
 void Spinner::RenderStatic(RenderDevice* pd3dDevice)
 {
-   if(!m_d.m_fSupports) return;
+   if(!m_d.m_fShowBracket || !m_d.m_fVisible) return;
 
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-   pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelTexelDeclaration );
+   pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelDeclaration );
 
-   Material *mat = m_ptable->GetMaterial( m_d.m_szMaterial);
-   pd3dDevice->basicShader->SetMaterial(mat);
+   Material mat;
+   mat.m_bIsMetal = true;
+   mat.m_cBase = 0x20202020;
+   mat.m_fWrapLighting = 0.9f;
+   mat.m_cGlossy = 0x60606060;
+   mat.m_fRoughness = 0.4f;
+   mat.m_cClearcoat = 0x20202020;
+   mat.m_fEdge=1.0f;
+   pd3dDevice->basicShader->SetMaterial(&mat);
    pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
+   ppin3d->EnableAlphaBlend(1,false);
 
-   Vertex3D rgv3D[8];
-   memcpy( rgv3D, staticVertices, sizeof(Vertex3D)*8);
-   
    pd3dDevice->basicShader->Begin(0);
-   SetNormal(rgv3D, rgiSpinnerNormal, 3, rgv3D, rgiSpinner0, 8);
-   pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_VERTEX, rgv3D, 8, rgiSpinner0, 8);
-
-   SetNormal(rgv3D, rgiSpinnerNormal, 3, rgv3D, rgiSpinner1, 8);
-   pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_VERTEX, rgv3D, 8, rgiSpinner1, 8);
+   pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, bracketVertexBuffer, 0, spinnerBracketNumVertices, bracketIndexBuffer, 0, spinnerBracketNumFaces );
    pd3dDevice->basicShader->End();
 }
 
@@ -644,12 +528,11 @@ HRESULT Spinner::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
    bw.WriteFloat(FID(SMIN), m_d.m_angleMin);
    bw.WriteFloat(FID(SELA), m_d.m_elasticity);
    bw.WriteBool(FID(SVIS), m_d.m_fVisible);
-   bw.WriteBool(FID(SSUPT), m_d.m_fSupports);
+   bw.WriteBool(FID(SSUPT), m_d.m_fShowBracket);
    bw.WriteFloat(FID(OVRH), m_d.m_overhang);
    bw.WriteString(FID(MATR), m_d.m_szMaterial);
    bw.WriteBool(FID(CSHD), m_d.m_fCastsShadow);	//<<< added by Chris
-   bw.WriteString(FID(IMGF), m_d.m_szImageFront);
-   bw.WriteString(FID(IMGB), m_d.m_szImageBack);
+   bw.WriteString(FID(IMGF), m_d.m_szImage);
    bw.WriteString(FID(SURF), m_d.m_szSurface);
    bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
 
@@ -700,7 +583,7 @@ BOOL Spinner::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(SSUPT))
    {
-      pbr->GetBool(&m_d.m_fSupports); 
+      pbr->GetBool(&m_d.m_fShowBracket); 
    }
    else if (id == FID(HIGH))
    {
@@ -736,11 +619,7 @@ BOOL Spinner::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(IMGF))
    {
-      pbr->GetString(m_d.m_szImageFront);
-   }
-   else if (id == FID(IMGB))
-   {
-      pbr->GetString(m_d.m_szImageBack);
+      pbr->GetString(m_d.m_szImage);
    }
    else if (id == FID(SURF))
    {
@@ -893,42 +772,21 @@ STDMETHODIMP Spinner::put_Material(BSTR newVal)
       return S_OK;
 }
 
-STDMETHODIMP Spinner::get_ImageFront(BSTR *pVal)
+STDMETHODIMP Spinner::get_Image(BSTR *pVal)
 {
    WCHAR wz[512];
 
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szImageFront, -1, wz, 32);
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_szImage, -1, wz, 32);
    *pVal = SysAllocString(wz);
 
    return S_OK;
 }
 
-STDMETHODIMP Spinner::put_ImageFront(BSTR newVal)
+STDMETHODIMP Spinner::put_Image(BSTR newVal)
 {
    STARTUNDO
 
-      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szImageFront, 32, NULL, NULL);
-
-   STOPUNDO
-
-      return S_OK;
-}
-
-STDMETHODIMP Spinner::get_ImageBack(BSTR *pVal)
-{
-   WCHAR wz[512];
-
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szImageBack, -1, wz, 32);
-   *pVal = SysAllocString(wz);
-
-   return S_OK;
-}
-
-STDMETHODIMP Spinner::put_ImageBack(BSTR newVal)
-{
-   STARTUNDO
-
-      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szImageBack, 32, NULL, NULL);
+      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szImage, 32, NULL, NULL);
 
    STOPUNDO
 
@@ -1011,18 +869,18 @@ STDMETHODIMP Spinner::put_CastsShadow(VARIANT_BOOL newVal)
       return S_OK;
 }
 
-STDMETHODIMP Spinner::get_Supports(VARIANT_BOOL *pVal)
+STDMETHODIMP Spinner::get_ShowBracket(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fSupports);
+   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fShowBracket);
 
    return S_OK;
 }
 
-STDMETHODIMP Spinner::put_Supports(VARIANT_BOOL newVal)
+STDMETHODIMP Spinner::put_ShowBracket(VARIANT_BOOL newVal)
 {	
    STARTUNDO
 
-      m_d.m_fSupports = VBTOF(newVal);
+      m_d.m_fShowBracket = VBTOF(newVal);
 
    STOPUNDO
 
