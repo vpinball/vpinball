@@ -27,7 +27,7 @@ public:
 	char m_szImageBack[MAXTOKEN];
 	float m_angleMin;
 	float m_angleMax;
-	bool m_fSupports;
+	bool m_fShowBracket;
 	bool m_fCollidable;
 	bool m_fVisible;
 	bool m_fEnableLighting;
@@ -131,18 +131,12 @@ public:
 	STDMETHOD(put_Rotation)(/*[in]*/ float newVal);
 	STDMETHOD(get_Length)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Length)(/*[in]*/ float newVal);
-//>>> added by chris
 	STDMETHOD(get_Material)(/*[out, retval]*/ BSTR *pVal);
 	STDMETHOD(put_Material)(/*[in]*/ BSTR newVal);
-//<<<
-	STDMETHOD(get_ImageBack)(/*[out, retval]*/ BSTR *pVal);
-	STDMETHOD(put_ImageBack)(/*[in]*/ BSTR newVal);
-	STDMETHOD(get_ImageFront)(/*[out, retval]*/ BSTR *pVal);
-	STDMETHOD(put_ImageFront)(/*[in]*/ BSTR newVal);
 	STDMETHOD(get_Height)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Height)(/*[in]*/ float newVal);
-	STDMETHOD(get_Supports)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-	STDMETHOD(put_Supports)(/*[in]*/ VARIANT_BOOL newVal);
+	STDMETHOD(get_ShowBracket)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+	STDMETHOD(put_ShowBracket)(/*[in]*/ VARIANT_BOOL newVal);
 
 	STDMETHOD(get_CloseAngle)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_CloseAngle)(/*[in]*/ float newVal);

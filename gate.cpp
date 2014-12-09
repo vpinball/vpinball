@@ -77,11 +77,11 @@ void Gate::SetDefaults(bool fromMouseClick)
    else
       m_d.m_rotation = -90;
 
-   hr = GetRegInt("DefaultProps\\Gate","Supports", &iTmp);
+   hr = GetRegInt("DefaultProps\\Gate","ShowBracket", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
-      m_d.m_fSupports = iTmp == 0 ? false : true;
+      m_d.m_fShowBracket = iTmp == 0 ? false : true;
    else
-      m_d.m_fSupports = true;
+      m_d.m_fShowBracket = true;
 
    hr = GetRegInt("DefaultProps\\Gate","Collidable", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
@@ -162,7 +162,7 @@ void Gate::WriteRegDefaults()
    SetRegValueFloat("DefaultProps\\Gate","Length", m_d.m_length);
    SetRegValueFloat("DefaultProps\\Gate","Height", m_d.m_height);
    SetRegValueFloat("DefaultProps\\Gate","Rotation", m_d.m_rotation);
-   SetRegValueBool("DefaultProps\\Gate","Supports", m_d.m_fSupports);
+   SetRegValueBool("DefaultProps\\Gate","ShowBracket", m_d.m_fShowBracket);
    SetRegValueBool("DefaultProps\\Gate","Collidable", m_d.m_fCollidable);
    SetRegValueFloat("DefaultProps\\Gate","AngleMin", m_d.m_angleMin);
    SetRegValueFloat("DefaultProps\\Gate","AngleMax", m_d.m_angleMax);
@@ -322,7 +322,7 @@ void Gate::GetHitShapes(Vector<HitObject> * const pvho)
 
       m_phitgate->m_fEnabled = m_d.m_fCollidable;
 
-      if(m_d.m_fSupports)
+      if(m_d.m_fShowBracket)
       {
          {
             HitCircle * const phitcircle = new HitCircle();
@@ -427,11 +427,13 @@ void Gate::RenderObject( RenderDevice* pd3dDevice)
     ppin3d->EnableAlphaBlend(1,false);
 
     pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
-
-    // render bracket
-    pd3dDevice->basicShader->Begin(0);
-    pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, bracketVertexBuffer, 0, gateBracketNumVertices, bracketIndexBuffer, 0, gateBracketNumFaces );
-    pd3dDevice->basicShader->End();
+    if ( m_d.m_fShowBracket )
+    {
+        // render bracket
+        pd3dDevice->basicShader->Begin(0);
+        pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, bracketVertexBuffer, 0, gateBracketNumVertices, bracketIndexBuffer, 0, gateBracketNumFaces );
+        pd3dDevice->basicShader->End();
+    }
 
     UpdateWire(pd3dDevice);
     // render wire
@@ -559,7 +561,7 @@ HRESULT Gate::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey
    bw.WriteFloat(FID(ROTA), m_d.m_rotation);
    bw.WriteString(FID(MATR), m_d.m_szMaterial);
    bw.WriteBool(FID(TMON), m_d.m_tdr.m_fTimerEnabled);
-   bw.WriteBool(FID(GSUPT), m_d.m_fSupports);
+   bw.WriteBool(FID(GSUPT), m_d.m_fShowBracket);
    bw.WriteBool(FID(GCOLD), m_d.m_fCollidable);
    bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
    bw.WriteString(FID(IMGF), m_d.m_szImageFront);
@@ -624,7 +626,7 @@ BOOL Gate::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(GSUPT))
    {
-      pbr->GetBool(&m_d.m_fSupports); 
+      pbr->GetBool(&m_d.m_fShowBracket); 
    }
    else if (id == FID(GCOLD))
    {
@@ -833,48 +835,6 @@ STDMETHODIMP Gate::put_Material(BSTR newVal)
       return S_OK;
 }
 
-STDMETHODIMP Gate::get_ImageFront(BSTR *pVal)
-{
-   WCHAR wz[512];
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szImageFront, -1, wz, 32);
-   *pVal = SysAllocString(wz);
-
-   return S_OK;
-}
-
-STDMETHODIMP Gate::put_ImageFront(BSTR newVal)
-{
-   STARTUNDO
-
-      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szImageFront, 32, NULL, NULL);
-
-   STOPUNDO
-
-      return S_OK;
-}
-
-STDMETHODIMP Gate::get_ImageBack(BSTR *pVal)
-{
-   WCHAR wz[512];
-
-   MultiByteToWideChar(CP_ACP, 0, m_d.m_szImageBack, -1, wz, 32);
-   *pVal = SysAllocString(wz);
-
-   return S_OK;
-}
-
-STDMETHODIMP Gate::put_ImageBack(BSTR newVal)
-{
-   STARTUNDO
-
-      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szImageBack, 32, NULL, NULL);
-
-   STOPUNDO
-
-      return S_OK;
-}
-
-
 STDMETHODIMP Gate::get_Open(VARIANT_BOOL *pVal)
 {
    *pVal = (VARIANT_BOOL)FTOVB((m_phitgate) ? m_phitgate->m_gateanim.m_fOpen : false);
@@ -931,18 +891,18 @@ STDMETHODIMP Gate::put_Elasticity(float newVal)
       return S_OK;
 }
 
-STDMETHODIMP Gate::get_Supports(VARIANT_BOOL *pVal)
+STDMETHODIMP Gate::get_ShowBracket(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fSupports);
+   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fShowBracket);
 
    return S_OK;
 }
 
-STDMETHODIMP Gate::put_Supports(VARIANT_BOOL newVal)
+STDMETHODIMP Gate::put_ShowBracket(VARIANT_BOOL newVal)
 {
    STARTUNDO
 
-      m_d.m_fSupports = VBTOF(newVal);
+      m_d.m_fShowBracket = VBTOF(newVal);
 
    STOPUNDO
 
