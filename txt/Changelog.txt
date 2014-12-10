@@ -39,6 +39,8 @@ VP 10.0.0 Changelog
 - kickers are mesh based. In the kicker settings you can set "Fall through" so that if a ball hits a kicker(hole) the ball will fall through the 
   surface which is attached to it. This only works if the wall is higher than the playfield, it won't work if the hole is on the playfield.
   
+- gates are mesh based. Another option was added to the gate element "Two Way" if set the ball can roll from both sides through the gate
+
 - add material editor
   
   -> quick and basic explanation:
