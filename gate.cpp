@@ -149,11 +149,12 @@ void Gate::SetDefaults(bool fromMouseClick)
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szImageBack[0] = 0;
 
-   hr = GetRegInt("DefaultProps\\Gate","EnableLighting", &iTmp);
+   hr = GetRegInt("DefaultProps\\Gate","TwoWay", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
-      m_d.m_fEnableLighting = iTmp == 0 ? false : true;
+       m_d.m_twoWay = iTmp == 0 ? false : true;
    else
-      m_d.m_fEnableLighting = true;
+       m_d.m_twoWay = true;
+
 }
 
 
@@ -175,7 +176,7 @@ void Gate::WriteRegDefaults()
    SetRegValueFloat("DefaultProps\\Gate","Scatter", m_d.m_scatter);
    SetRegValue("DefaultProps\\Gate","ImageFront", REG_SZ, &m_d.m_szImageFront,lstrlen(m_d.m_szImageFront));
    SetRegValue("DefaultProps\\Gate","ImageBack", REG_SZ, &m_d.m_szImageBack,lstrlen(m_d.m_szImageBack));
-   SetRegValueBool("DefaultProps\\Gate","EnableLighting", m_d.m_fEnableLighting);
+   SetRegValueBool("DefaultProps\\Gate","TwoWay", m_d.m_twoWay);
 }
 
 void Gate::PreRender(Sur * const psur)
@@ -188,7 +189,8 @@ void Gate::Render(Sur * const psur)
    psur->SetObject(this);
 
    float halflength = m_d.m_length * 0.5f;	
-
+   float len1 = halflength *0.5f;
+   float len2 = len1*0.5f;
    Vertex2D tmp;
 
    const float radangle = ANGTORAD(m_d.m_rotation);
@@ -200,19 +202,14 @@ void Gate::Render(Sur * const psur)
          m_d.m_vCenter.x - cs*halflength, m_d.m_vCenter.y - sn*halflength);
 
       // Draw Arrow
-
       psur->SetLineColor(RGB(0,0,0),false,1);
 
-      halflength *= 0.5f;
-
-      tmp.x = m_d.m_vCenter.x + sn*halflength;
-      tmp.y = m_d.m_vCenter.y - cs*halflength;
+      tmp.x = m_d.m_vCenter.x + sn*len1;
+      tmp.y = m_d.m_vCenter.y - cs*len1;
 
       psur->Line(tmp.x, tmp.y,
          m_d.m_vCenter.x, m_d.m_vCenter.y);
    }
-
-   halflength *= 0.5f;
 
    {
       const float arrowang = radangle+0.6f;
@@ -220,7 +217,7 @@ void Gate::Render(Sur * const psur)
       const float cs = cosf(arrowang);
 
       psur->Line(tmp.x, tmp.y,
-         m_d.m_vCenter.x + sn*halflength, m_d.m_vCenter.y - cs*halflength);
+         m_d.m_vCenter.x + sn*len2, m_d.m_vCenter.y - cs*len2);
    }
 
    const float arrowang = radangle-0.6f;
@@ -228,7 +225,42 @@ void Gate::Render(Sur * const psur)
    const float cs = cosf(arrowang);
 
    psur->Line(tmp.x, tmp.y,
-      m_d.m_vCenter.x + sn*halflength, m_d.m_vCenter.y - cs*halflength);
+      m_d.m_vCenter.x + sn*len2, m_d.m_vCenter.y - cs*len2);
+
+   if ( m_d.m_twoWay )
+   {
+       const float radangle = ANGTORAD(m_d.m_rotation-180);
+       {
+           const float sn = sinf(radangle);
+           const float cs = cosf(radangle);
+
+           // Draw Arrow
+           psur->SetLineColor(RGB(0,0,0),false,1);
+
+           tmp.x = m_d.m_vCenter.x + sn*len1;
+           tmp.y = m_d.m_vCenter.y - cs*len1;
+
+           psur->Line(tmp.x, tmp.y,
+               m_d.m_vCenter.x, m_d.m_vCenter.y);
+       }
+
+       {
+           const float arrowang = radangle+0.6f;
+           const float sn = sinf(arrowang);
+           const float cs = cosf(arrowang);
+
+           psur->Line(tmp.x, tmp.y,
+               m_d.m_vCenter.x + sn*len2, m_d.m_vCenter.y - cs*len2);
+       }
+
+       const float arrowang = radangle-0.6f;
+       const float sn = sinf(arrowang);
+       const float cs = cosf(arrowang);
+
+       psur->Line(tmp.x, tmp.y,
+           m_d.m_vCenter.x + sn*len2, m_d.m_vCenter.y - cs*len2);
+
+   }
 }
 
 void Gate::RenderBlueprint(Sur *psur)
@@ -276,48 +308,32 @@ void Gate::GetHitShapes(Vector<HitObject> * const pvho)
       Vertex2D(m_d.m_vCenter.x - cs*(halflength + (float)PHYS_SKIN),//the gate's edge
       m_d.m_vCenter.y - sn*(halflength + (float)PHYS_SKIN))};
 
-      m_plineseg = new LineSeg();
+      if ( !m_d.m_twoWay )
+      {
+          m_plineseg = new LineSeg();
 
-      m_plineseg->m_pfe = NULL;
+          m_plineseg->m_pfe = NULL;
 
-      m_plineseg->m_rcHitRect.zlow = height;
-      m_plineseg->m_rcHitRect.zhigh = height + (float)(2.0*PHYS_SKIN); //!! = ball diameter
+          m_plineseg->m_rcHitRect.zlow = height;
+          m_plineseg->m_rcHitRect.zhigh = height + (float)(2.0*PHYS_SKIN); //!! = ball diameter
 
-      m_plineseg->v1.x = rgv[0].x;
-      m_plineseg->v1.y = rgv[0].y;
+          m_plineseg->v1.x = rgv[0].x;
+          m_plineseg->v1.y = rgv[0].y;
 
-      m_plineseg->v2.x = rgv[1].x;
-      m_plineseg->v2.y = rgv[1].y;
+          m_plineseg->v2.x = rgv[1].x;
+          m_plineseg->v2.y = rgv[1].y;
 
-      m_plineseg->CalcNormal();
+          m_plineseg->CalcNormal();
 
-      m_plineseg->m_elasticity = m_d.m_elasticity;
-      m_plineseg->SetFriction(m_d.m_friction);
-      m_plineseg->m_scatter = m_d.m_scatter;
+          m_plineseg->m_elasticity = m_d.m_elasticity;
+          m_plineseg->SetFriction(m_d.m_friction);
+          m_plineseg->m_scatter = m_d.m_scatter;
 
-      pvho->AddElement(m_plineseg);
-
-      m_plineseg->m_fEnabled = m_d.m_fCollidable;	
-
-      m_phitgate = new HitGate(this);
-
+          pvho->AddElement(m_plineseg);
+      }
+      m_phitgate = new HitGate(this, height);
+      m_phitgate->m_twoWay = m_d.m_twoWay;
       m_phitgate->m_pfe = (IFireEvents *)this;
-
-      m_phitgate->m_rcHitRect.zlow = height;
-      m_phitgate->m_rcHitRect.zhigh = height + h; //+50;
-
-      m_phitgate->v1.x = rgv[1].x;
-      m_phitgate->v1.y = rgv[1].y;
-
-      m_phitgate->v2.x = rgv[0].x;
-      m_phitgate->v2.y = rgv[0].y;
-
-      m_phitgate->CalcNormal();
-
-      m_phitgate->m_elasticity = m_d.m_elasticity;
-      m_phitgate->SetFriction(m_d.m_friction);
-      m_phitgate->m_scatter = m_d.m_scatter;
-
       pvho->AddElement(m_phitgate);
 
       m_phitgate->m_fEnabled = m_d.m_fCollidable;
@@ -387,7 +403,11 @@ void Gate::UpdateWire( RenderDevice *pd3dDevice )
     Vertex3D_NoTex2 *buf;
 
     fullMatrix.SetIdentity();
-    rotxMat.RotateXMatrix(-(m_phitgate->m_gateanim.m_angle));
+    if ( m_d.m_twoWay )
+        rotxMat.RotateXMatrix((m_phitgate->m_gateanim.m_angle));
+    else
+        rotxMat.RotateXMatrix(-(m_phitgate->m_gateanim.m_angle));
+
     rotxMat.Multiply(fullMatrix, fullMatrix);
     rotzMat.RotateZMatrix(ANGTORAD(m_d.m_rotation));
     rotzMat.Multiply(fullMatrix, fullMatrix);
@@ -573,7 +593,7 @@ HRESULT Gate::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey
    bw.WriteFloat(FID(GFRCT), m_d.m_friction);
    bw.WriteBool(FID(GVSBL), m_d.m_fVisible);
    bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
-   bw.WriteBool(FID(ELIT), m_d.m_fEnableLighting);
+   bw.WriteBool(FID(TWWA), m_d.m_twoWay);
 
    ISelect::SaveData(pstm, hcrypthash, hcryptkey);
 
@@ -632,9 +652,9 @@ BOOL Gate::LoadToken(int id, BiffReader *pbr)
    {
       pbr->GetBool(&m_d.m_fCollidable); 
    }
-   else if (id == FID(ELIT))
+   else if (id == FID(TWWA))
    {
-      pbr->GetBool(&m_d.m_fEnableLighting); 
+      pbr->GetBool(&m_d.m_twoWay); 
    }
    else if (id == FID(GVSBL))
    {
@@ -1110,21 +1130,27 @@ STDMETHODIMP Gate::put_Visible(VARIANT_BOOL newVal)
    return S_OK;
 }
 
-STDMETHODIMP Gate::get_EnableLighting(VARIANT_BOOL *pVal)
+STDMETHODIMP Gate::get_TwoWay(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fEnableLighting);
+   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_twoWay);
 
    return S_OK;
 }
 
-STDMETHODIMP Gate::put_EnableLighting(VARIANT_BOOL newVal)
+STDMETHODIMP Gate::put_TwoWay(VARIANT_BOOL newVal)
 {	
-   STARTUNDO
+    if (g_pplayer)
+    {
+        m_phitgate->m_twoWay = VBTOF(newVal);
+    }
+    else
+    {
+       STARTUNDO
 
-      m_d.m_fEnableLighting = VBTOF(newVal);
+          m_d.m_twoWay = VBTOF(newVal);
 
-   STOPUNDO
-
+       STOPUNDO
+    }
       return S_OK;
 }
 

@@ -172,22 +172,24 @@ public:
 	bool m_fOpen; // True when the table logic is opening the gate, not just the ball passing through
 };
 
-class HitGate : public LineSeg
+class HitGate : public HitObject
 {
 public:
-	HitGate(Gate * const pgate);
+	HitGate(Gate * const pgate, const float height);
 
 	virtual int GetType() const {return eGate;}
 
 	virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
 
 	virtual void Collide(CollisionEvent* coll);
+    virtual void CalcHitRect();
 
 	virtual AnimObject *GetAnimObject() {return &m_gateanim;}
 
 	Gate *m_pgate;
-	
-	GateAnimObject m_gateanim;
+    LineSeg m_lineseg[3];
+    bool m_twoWay;
+    GateAnimObject m_gateanim;
 };
 
 class TriggerLineSeg : public LineSeg

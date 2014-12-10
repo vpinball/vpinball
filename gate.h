@@ -31,6 +31,7 @@ public:
 	bool m_fCollidable;
 	bool m_fVisible;
 	bool m_fEnableLighting;
+    bool m_twoWay;
 	};
 
 class Gate :
@@ -151,8 +152,8 @@ public:
 	STDMETHOD(put_Friction)(/*[in]*/ float newVal);
 	STDMETHOD(get_Visible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_Visible)(/*[in]*/ VARIANT_BOOL newVal);
-	STDMETHOD(get_EnableLighting)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-    STDMETHOD(put_EnableLighting)(/*[in]*/ VARIANT_BOOL newVal);
+	STDMETHOD(get_TwoWay)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+    STDMETHOD(put_TwoWay)(/*[in]*/ VARIANT_BOOL newVal);
     STDMETHOD(get_CurrentAngle)(/*[out, retval]*/ float *pVal);
 };
 

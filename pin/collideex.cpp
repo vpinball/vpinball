@@ -135,9 +135,39 @@ void SlingshotAnimObject::Reset()
 	// Do nothing right now - just let it draw as not hit
 }
 
-HitGate::HitGate(Gate * const pgate)
+HitGate::HitGate(Gate * const pgate, const float height)
 {
 	m_pgate = pgate;
+    const float halflength = pgate->m_d.m_length * 0.5f;
+
+    const float radangle = ANGTORAD(pgate->m_d.m_rotation);
+    const float sn = sinf(radangle);
+    const float cs = cosf(radangle);
+
+    m_lineseg[0].m_rcHitRect.zlow = height;
+    m_lineseg[0].m_rcHitRect.zhigh = height + 50.0f;
+    m_lineseg[1].m_rcHitRect.zlow = height;
+    m_lineseg[1].m_rcHitRect.zhigh = height + 50.0f;
+
+    m_lineseg[0].m_pfe = NULL;
+    m_lineseg[1].m_pfe = NULL;
+
+    m_lineseg[0].v2.x = pgate->m_d.m_vCenter.x + cs*(halflength + (float)PHYS_SKIN); //oversize by the ball radius
+    m_lineseg[0].v2.y = pgate->m_d.m_vCenter.y + sn*(halflength + (float)PHYS_SKIN); //this will prevent clipping
+    m_lineseg[0].v1.x = pgate->m_d.m_vCenter.x - cs*(halflength + (float)PHYS_SKIN); //through the edge of the
+    m_lineseg[0].v1.y = pgate->m_d.m_vCenter.y - sn*(halflength + (float)PHYS_SKIN); //spinner
+
+    m_lineseg[1].v1.x = m_lineseg[0].v2.x;
+    m_lineseg[1].v1.y = m_lineseg[0].v2.y;
+    m_lineseg[1].v2.x = m_lineseg[0].v1.x;
+    m_lineseg[1].v2.y = m_lineseg[0].v1.y;
+
+
+    m_lineseg[0].CalcNormal();
+    m_lineseg[1].CalcNormal();
+
+    m_gateanim.m_angleMax = ANGTORAD(pgate->m_d.m_angleMax);
+    m_gateanim.m_angleMin = ANGTORAD(pgate->m_d.m_angleMin);
 
 	m_gateanim.m_angleMin = pgate->m_d.m_angleMin;
 	m_gateanim.m_angleMax = pgate->m_d.m_angleMax;
@@ -150,13 +180,38 @@ HitGate::HitGate(Gate * const pgate)
 
 	m_gateanim.m_pgate = pgate;
 	m_gateanim.m_fOpen = false;
+    m_twoWay=false;
 }
 
 float HitGate::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 {	
-	if (!m_fEnabled) return -1.0f;		
+// 	if (!m_fEnabled) return -1.0f;		
+// 
+// 	return HitTestBasic(pball, dtime, coll, true, true, false); // normal face, lateral, non-rigid
+    if (!m_fEnabled) return -1.0f;	
 
-	return HitTestBasic(pball, dtime, coll, true, true, false); // normal face, lateral, non-rigid
+//     if ( !m_twoWay )
+//     {
+//         const float hittime = m_lineseg[2].HitTestBasic(pball, dtime, coll, true, true, false);// any face, lateral, non-rigid
+//         return hittime;
+//     }
+    {
+        const float hittime = m_lineseg[0].HitTestBasic(pball, dtime, coll, false, true, false);// any face, lateral, non-rigid
+        if (hittime >= 0.f)
+        {
+            coll.hitvelocity.x = 1.0f;
+            coll.hitvelocity.y = 0.0f;
+
+            return hittime;
+        }
+    }
+
+    const float hittime = m_lineseg[1].HitTestBasic(pball, dtime, coll, false, true, false);// any face, lateral, non-rigid
+    if (hittime >= 0.f)
+        coll.hitvelocity.x = 0.0f;
+
+    return hittime;
+
 }
 
 void HitGate::Collide(CollisionEvent* coll)
@@ -165,7 +220,7 @@ void HitGate::Collide(CollisionEvent* coll)
     const Vertex3Ds& hitnormal = coll->hitnormal;
 
 	const float dot = pball->m_vel.x * hitnormal.x + pball->m_vel.y * hitnormal.y;
-	if (dot > 0.0f) return;	//hit from back doesn't count
+	if (dot > 0.0f && !m_twoWay) return;	//hit from back doesn't count
 
 	const float h = m_pgate->m_d.m_height;
 
@@ -173,32 +228,59 @@ void HitGate::Collide(CollisionEvent* coll)
 	//angular speed = linear/radius (height of hit)
 
 	// h is the height of the gate axis.
-	m_gateanim.m_anglespeed = fabsf(dot); // use this until a better value comes along
+    m_gateanim.m_anglespeed = fabsf(dot); // use this until a better value comes along
 
 	if (fabsf(h - pball->m_radius) > 1.0f)				// avoid divide by zero
 		m_gateanim.m_anglespeed /= h - pball->m_radius;
 
+    // We encoded which side of the spinner the ball hit
+    if (coll->hitvelocity.x==0.0f && m_twoWay)
+        m_gateanim.m_anglespeed = -m_gateanim.m_anglespeed; 
+
     FireHitEvent(pball);
+}
+
+void HitGate::CalcHitRect()
+{
+    // Bounding rect for both lines will be the same
+    m_lineseg[0].CalcHitRect();
+    m_rcHitRect = m_lineseg[0].m_rcHitRect;
 }
 
 void GateAnimObject::UpdateDisplacements(const float dtime)
 {
 	m_angle += m_anglespeed * dtime;
 
-	if (m_angle > m_angleMax)
-	{
-		m_angle = m_angleMax;
-		m_pgate->FireVoidEventParm(DISPID_LimitEvents_EOS, fabsf(RADTOANG(m_anglespeed)));	// send EOS event
-		if (m_anglespeed > 0.0f)
-			m_anglespeed = 0.0f;
-	}
-	if (m_angle < m_angleMin)
-	{
-		m_angle = m_angleMin;
-		m_pgate->FireVoidEventParm(DISPID_LimitEvents_BOS, fabsf(RADTOANG(m_anglespeed)));	// send Park event
-		if (m_anglespeed < 0.0f)
-			m_anglespeed = 0.0f;
-	}
+    if ( m_pgate->m_d.m_twoWay )
+    {
+	    if (fabsf(m_angle) > m_angleMax)
+	    {
+            if ( m_angle<0.0f )
+		        m_angle = -m_angleMax;
+            else
+                m_angle = m_angleMax;
+		    m_pgate->FireVoidEventParm(DISPID_LimitEvents_EOS, fabsf(RADTOANG(m_anglespeed)));	// send EOS event
+		    if (m_anglespeed > 0.0f)
+			    m_anglespeed = 0.0f;
+	    }
+    }
+    else
+    {
+        if (m_angle > m_angleMax)
+        {
+            m_angle = m_angleMax;
+            m_pgate->FireVoidEventParm(DISPID_LimitEvents_EOS, fabsf(RADTOANG(m_anglespeed)));	// send EOS event
+            if (m_anglespeed > 0.0f)
+                m_anglespeed = 0.0f;
+        }
+        if (m_angle < m_angleMin)
+        {
+            m_angle = m_angleMin;
+            m_pgate->FireVoidEventParm(DISPID_LimitEvents_BOS, fabsf(RADTOANG(m_anglespeed)));	// send Park event
+            if (m_anglespeed < 0.0f)
+                m_anglespeed = 0.0f;
+        }
+    }
 }
 
 void GateAnimObject::UpdateVelocities()

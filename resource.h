@@ -617,6 +617,7 @@
 #define IDC_QFXAA                       426
 #define IDC_MATERIAL_COMBO3             426
 #define IDC_GLOBAL_3DSTEREO             427
+#define IDC_TWO_WAY_CHECK               427
 #define IDC_3D_STEREO_MS                428
 #define IDC_3D_STEREO_ZPD               429
 #define IDC_ENABLE_NUDGE_FILTER         430
@@ -826,7 +827,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        614
 #define _APS_NEXT_COMMAND_VALUE         32998
-#define _APS_NEXT_CONTROL_VALUE         427
+#define _APS_NEXT_CONTROL_VALUE         428
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif
