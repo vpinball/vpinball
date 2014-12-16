@@ -2258,6 +2258,18 @@ void Player::RenderDynamics()
                    ph->RenderStatic(m_pin3d.m_pd3dDevice);
                }
            }
+       } 
+       // Draw decals (they have transparency, so they have to be drawn after the wall they are on)
+       for (int i=0;i<m_ptable->m_vedit.Size();i++)
+       {
+           if (m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemDecal)
+           {
+               Hitable * const ph = m_ptable->m_vedit.ElementAt(i)->GetIHitable();
+               if (ph)
+               {
+                   ph->RenderStatic(m_pin3d.m_pd3dDevice);
+               }
+           }
        }
 
    }
