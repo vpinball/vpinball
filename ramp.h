@@ -128,11 +128,13 @@ DECLARE_REGISTRY_RESOURCEID(IDR_RAMP)
 	RampData m_d;
 
 private:
+    int splinePoints;
 	int rampVertex;
 	Vertex2D *rgvInit;    // just for setup/static drawing
     float *rgheightInit,*rgratioInit;
 
     int m_numVertices;      // this goes along with dynamicVertexBuffer
+    int m_numIndices;
 
     std::vector<HitObject*> m_vhoCollidable; // Objects to that may be collide selectable
 

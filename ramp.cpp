@@ -102,7 +102,7 @@ void Ramp::SetDefaults(bool fromMouseClick)
    m_d.m_fVisible = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"Visible", true) : true;
    m_d.m_fCollidable = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"Collidable", true) : true;
 
-   m_d.m_wireDiameter = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"WireDiameter", 60.0f) : 60.0f;
+   m_d.m_wireDiameter = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"WireDiameter", 8.0f) : 8.0f;
    m_d.m_wireDistanceX = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"WireDistanceX", 38.0f) : 38.0f;
    m_d.m_wireDistanceY = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"WireDistanceY", 88.0f) : 88.0f;
 }
@@ -168,6 +168,7 @@ void Ramp::PreRender(Sur * const psur)
 
 void Ramp::Render(Sur * const psur)
 {
+    int k=0;
    psur->SetFillColor(-1);
    psur->SetBorderColor(RGB(0,0,0),false,0);
    psur->SetLineColor(RGB(0,0,0),false,0);
@@ -178,21 +179,21 @@ void Ramp::Render(Sur * const psur)
    bool *pfCross;
    Vertex2D *middlePoints;
    const Vertex2D *rgvLocal = GetRampVertex(cvertex, NULL, &pfCross, NULL, &middlePoints);
-   psur->Polygon(rgvLocal, cvertex*2);
-
+   psur->Polygon(rgvLocal, (cvertex)*2);
+    
    if( isHabitrail() )
    {
-       psur->Polyline(middlePoints, cvertex);
-   if (m_d.m_type == RampType4Wire || m_d.m_type == RampType3WireRight)
-   {
-      psur->SetLineColor(RGB(0,0,0),false,3);
-      psur->Polyline(rgvLocal, cvertex);
-   }
-   if (m_d.m_type == RampType4Wire || m_d.m_type == RampType3WireLeft)
-   {
-      psur->SetLineColor(RGB(0,0,0),false,3);
-      psur->Polyline(&rgvLocal[cvertex], cvertex);
-   }
+       psur->Polyline(middlePoints, cvertex-1);
+       if (m_d.m_type == RampType4Wire || m_d.m_type == RampType3WireRight)
+       {
+          psur->SetLineColor(RGB(0,0,0),false,3);
+          psur->Polyline(rgvLocal, cvertex);
+       }
+       if (m_d.m_type == RampType4Wire || m_d.m_type == RampType3WireLeft)
+       {
+          psur->SetLineColor(RGB(0,0,0),false,3);
+          psur->Polyline(&rgvLocal[cvertex], cvertex);
+       }
    }
    else
    {
@@ -255,7 +256,7 @@ void Ramp::RenderOutline(Sur * const psur)
    psur->Polygon(rgvLocal, cvertex*2);
    if( isHabitrail() )
    {
-       psur->Polyline(middlePoints, cvertex);
+       psur->Polyline(middlePoints, cvertex-1);
        if (m_d.m_type == RampType4Wire || m_d.m_type == RampType3WireRight)
        {
            psur->SetLineColor(RGB(0,0,0),false,3);
@@ -406,7 +407,12 @@ Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** co
    // vvertex are the 2D vertices forming the central curve of the ramp as seen from above
 
    const int cvertex = vvertex.size();
-   Vertex2D * const rgvLocal = new Vertex2D[cvertex * 2];
+   Vertex2D * rgvLocal = NULL;
+   if ( m_d.m_type!=RampTypeFlat )
+       rgvLocal = new Vertex2D[(cvertex+1) * 2];
+   else
+       rgvLocal = new Vertex2D[cvertex * 2];
+
    if (ppheight)
    {
       *ppheight = new float[cvertex];
@@ -556,7 +562,7 @@ Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** co
       {
       rgvLocal[i] = vmiddle + (widthcur*0.5f) * vnormal;
       rgvLocal[cvertex*2 - i - 1] = vmiddle - (widthcur*0.5f) * vnormal;
-   }
+    }
    }
 
    if (ppfCross)
@@ -1091,7 +1097,7 @@ void Ramp::RenderStaticHabitrail(RenderDevice* pd3dDevice)
 }
    pd3dDevice->basicShader->Begin(0);
 
-   int offset=0;
+/*   int offset=0;
    for (int i=0; i<rampVertex-1; i++,offset+=32)
    {
       RenderPolygons(pd3dDevice, offset, (WORD*)rgicrosssection, 0, 16);
@@ -1102,6 +1108,13 @@ void Ramp::RenderStaticHabitrail(RenderDevice* pd3dDevice)
          RenderPolygons(pd3dDevice, offset, (WORD*)rgicrosssection, 24, 32);
    }
    pd3dDevice->basicShader->End();  
+*/
+   pd3dDevice->basicShader->Begin(0);
+   unsigned int offset=0;
+   pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, dynamicVertexBuffer, offset, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
+   offset += m_numVertices;
+   pd3dDevice->basicShader->End();  
+
 }
 
 void Ramp::RenderPolygons(RenderDevice* pd3dDevice, int offset, WORD * const rgi, const int start, const int stop)
@@ -1111,7 +1124,7 @@ void Ramp::RenderPolygons(RenderDevice* pd3dDevice, int offset, WORD * const rgi
    else
       pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, staticVertexBuffer, offset, 32, rgi+start*3, 3*(stop-start));
 }
-
+/*
 void Ramp::prepareHabitrail(RenderDevice* pd3dDevice )
 {
    Matrix3D matView = g_pplayer->m_pin3d.GetViewTransform();
@@ -1265,9 +1278,6 @@ void Ramp::prepareHabitrail(RenderDevice* pd3dDevice )
       // This is the vector describing the tangent to the ramp at this point
       tangent.Normalize();
 
-      /* Vertex3Ds up(0,0,1);
-      // Get axis of rotation to rotate our cross-section into place
-      CrossProduct(tangent, up, &rotationaxis);*/
       Vertex3Ds rotationaxis(tangent.y, -tangent.x, 0.0f);
       if (rotationaxis.LengthSquared() <= 1e-6f)
           rotationaxis.Set(1, 0, 0);
@@ -1324,7 +1334,143 @@ void Ramp::prepareHabitrail(RenderDevice* pd3dDevice )
    assert(offset == numVertices);
 
 }
+*/
 
+void Ramp::prepareHabitrail(RenderDevice* pd3dDevice)
+{
+    dynamicVertexBufferRegenerate = false;
+    Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
+    Vertex2D * middlePoints = 0;
+    int accuracy=1;
+    if( m_ptable->GetAlphaRampsAccuracy()<5 )
+    {
+        accuracy=6;
+    }
+    else if (m_ptable->GetAlphaRampsAccuracy()>=5 && m_ptable->GetAlphaRampsAccuracy()<8)
+    {
+        accuracy=8;
+    }
+    else
+    {
+        accuracy=(int)(m_ptable->GetAlphaRampsAccuracy()*1.3f);
+    }
+
+    const Vertex2D *rgvLocal = GetRampVertex(splinePoints, &rgheightInit, NULL, &rgratioInit, &middlePoints);
+
+    const int numRings=splinePoints;
+    const int numSegments=accuracy;
+    m_numVertices=(numRings)*(numSegments);
+    m_numIndices = 6*m_numVertices;//m_numVertices*2+2;
+
+    if (dynamicVertexBuffer)
+        dynamicVertexBuffer->release();
+
+    pd3dDevice->CreateVertexBuffer(m_numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &dynamicVertexBuffer);
+
+    Vertex3D_NoTex2 *buf;
+    dynamicVertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY);
+
+    Vertex3D_NoTex2* rgvbuf = new Vertex3D_NoTex2[m_numVertices];
+    std::vector<WORD> rgibuf( m_numIndices );
+    //const float height = m_d.m_height+m_ptable->m_tableheight;
+
+    Vertex3Ds prevB;
+    Vertex3Ds binorm;
+    Vertex3Ds normal;
+    float height=0;
+    for( int i=0, index=0; i<numRings; i++ )
+    {
+        const int i2= (i==(numRings-1)) ? i : i+1;
+        height = rgheightInit[i]+m_ptable->m_tableheight;    
+
+        Vertex3Ds tangent( middlePoints[i2].x-middlePoints[i].x, middlePoints[i2].y-middlePoints[i].y, 0.0f);
+
+        if ( i==0 )
+        {
+            Vertex3Ds up( middlePoints[i2].x+middlePoints[i].x, middlePoints[i2].y+middlePoints[i].y, rgheightInit[i2]-rgheightInit[i]);
+            normal = CrossProduct(tangent,up);     //normal
+            binorm = CrossProduct(tangent, normal);
+        }
+        else
+        {
+            normal = CrossProduct(prevB, tangent);
+            binorm = CrossProduct(tangent, normal);
+        }
+        binorm.Normalize();
+        normal.Normalize();
+        prevB = binorm;
+        int si=index;
+        for( int j=0;j<numSegments;j++,index++)
+        {
+            const float u=(float)i/numRings;
+            const float v=((float)j+u)/numSegments;
+            const float u_angle = u*(float)(2.0*M_PI);
+            const float v_angle = v*(float)(2.0*M_PI);
+            const Vertex3Ds tmp = GetRotatedAxis( (float)j*(360.0f/numSegments), tangent, normal ) 
+                * ((float)m_d.m_wireDiameter*0.5f);
+            rgvbuf[index].x = middlePoints[i].x+tmp.x;
+            rgvbuf[index].y = middlePoints[i].y+tmp.y;
+            rgvbuf[index].z = height  +tmp.z;
+            //texel
+            rgvbuf[index].tu = u;
+            rgvbuf[index].tv = v;
+        }
+    }
+    // calculate faces
+    for( int i=0;i<numRings-1;i++ )
+    {
+        for( int j=0;j<numSegments;j++ )
+        {
+            int quad[4];
+            quad[0] = i*numSegments+j;
+
+            if( j!=numSegments-1 )
+                quad[1] = i*numSegments+j+1;
+            else
+                quad[1] = i*numSegments;
+
+            if( i!=numRings-1 )
+            {
+                quad[2] = (i+1)*numSegments+j;
+                if( j!=numSegments-1)
+                    quad[3]=(i+1)*numSegments+j+1;
+                else
+                    quad[3]=(i+1)*numSegments;  
+            }
+            else
+            {
+                quad[2] = j;
+                if(j!=numSegments-1)
+                    quad[3] = j+1;
+                else
+                    quad[3] = 0;
+            }
+            rgibuf[(i*numSegments+j)*6  ] = quad[0];
+            rgibuf[(i*numSegments+j)*6+1] = quad[1];
+            rgibuf[(i*numSegments+j)*6+2] = quad[2];
+            rgibuf[(i*numSegments+j)*6+3] = quad[3];
+            rgibuf[(i*numSegments+j)*6+4] = quad[2];
+            rgibuf[(i*numSegments+j)*6+5] = quad[1];
+        }
+    }
+    //calculate normals
+    for( int i=0;i<m_numIndices;i+=3)
+    {
+        SetNormal( rgvbuf, &rgibuf[i], 3);
+    }
+    // Draw the floor of the ramp.
+    memcpy( &buf[0], &rgvbuf[0], sizeof(Vertex3D_NoTex2)*m_numVertices );
+    dynamicVertexBuffer->unlock();
+
+    if (dynamicIndexBuffer)
+        dynamicIndexBuffer->release();
+    dynamicIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer( rgibuf );
+
+    delete [] rgvbuf;
+    delete [] rgvLocal;
+    delete [] middlePoints;
+
+}
 static const WORD rgiRampStatic1[4] = {0,3,2,1};
 
 void Ramp::prepareStatic(RenderDevice* pd3dDevice)
