@@ -451,6 +451,12 @@ void Light::EndPlay()
    FreeBuffers();
 }
 
+float Light::GetDepth(const Vertex3Ds& viewDir) 
+{ 
+   return m_d.m_depthBias + viewDir.x * m_d.m_vCenter.x + viewDir.y * m_d.m_vCenter.y + viewDir.z * m_surfaceHeight; 
+}
+
+
 void Light::ClearForOverwrite()
 {
    ClearPointsForOverwrite();
