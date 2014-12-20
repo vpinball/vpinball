@@ -93,7 +93,7 @@ END_CONNECTION_POINT_MAP()
     virtual void DoCommand(int icmd, int x, int y);
 
     virtual bool IsTransparent() { return true; }
-    virtual float GetDepth(const Vertex3Ds& viewDir) const
+    virtual float GetDepth(const Vertex3Ds& viewDir)
       { return m_d.m_depthBias + viewDir.x * m_d.m_vCenter.x + viewDir.y * m_d.m_vCenter.y + viewDir.z * m_d.m_height; }
 
 	void WriteRegDefaults();
