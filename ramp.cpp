@@ -1059,7 +1059,7 @@ static const WORD rgicrosssection[] = {
 };
 
 
-float Ramp::GetDepth(const Vertex3Ds& viewDir) const
+float Ramp::GetDepth(const Vertex3Ds& viewDir) 
 {
     // TODO: improve
     Vertex2D center2D;
