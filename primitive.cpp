@@ -1136,7 +1136,7 @@ bool Primitive::IsTransparent()
     return mat->m_bOpacityActive;
 }
 
-float Primitive::GetDepth(const Vertex3Ds& viewDir) const
+float Primitive::GetDepth(const Vertex3Ds& viewDir)
 {
     return m_d.m_depthBias + m_d.m_vPosition.Dot( viewDir );
 }
