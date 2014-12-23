@@ -30,6 +30,7 @@ public:
 	bool m_fSideVisible;
 	bool m_fEnabled;
 	bool m_fCollidable; //wall must be droppable too!
+	bool m_fIsBottomSolid; //is the bottom closed (lower side of the 'cube') or not (legacy behavior has bottom open, e.g. balls can drop into walls from below, or leave them if inside walls (if bottom area is large enough of course))
 	bool m_fSlingshotAnimation;
 
 	bool m_fCastsShadow;
@@ -179,6 +180,8 @@ public:
 	STDMETHOD(put_CanDrop)(/*[in]*/ VARIANT_BOOL newVal);
 	STDMETHOD(get_FlipbookAnimation)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_FlipbookAnimation)(/*[in]*/ VARIANT_BOOL newVal);
+	STDMETHOD(get_IsBottomSolid)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+	STDMETHOD(put_IsBottomSolid)(/*[in]*/ VARIANT_BOOL newVal);
 	STDMETHOD(get_TopMaterial)(/*[out, retval]*/ BSTR *pVal);
 	STDMETHOD(put_TopMaterial)(/*[in]*/ BSTR newVal);
 	STDMETHOD(get_HeightTop)(/*[out, retval]*/ float *pVal);

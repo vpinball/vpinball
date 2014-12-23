@@ -100,7 +100,8 @@ void Surface::WriteRegDefaults()
    SetRegValueString(strKeyName,"SideImage", m_d.m_szSideImage);
    SetRegValueBool(strKeyName,"Droppable", m_d.m_fDroppable);
    SetRegValueBool(strKeyName,"Flipbook", m_d.m_fFlipbook);
-   SetRegValueBool(strKeyName,"CastsShadow", !!m_d.m_fCastsShadow);
+   SetRegValueBool(strKeyName,"IsBottomSolid", m_d.m_fIsBottomSolid);
+   SetRegValueBool(strKeyName,"CastsShadow", m_d.m_fCastsShadow);
    SetRegValueFloat(strKeyName,"HeightBottom", m_d.m_heightbottom);
    SetRegValueFloat(strKeyName,"HeightTop", m_d.m_heighttop);
    SetRegValueBool(strKeyName,"DisplayTexture", m_d.m_fDisplayTexture);
@@ -186,6 +187,7 @@ HRESULT Surface::InitTarget(PinTable * const ptable, const float x, const float 
 
    m_d.m_fDroppable = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"Droppable", false) : false;
    m_d.m_fFlipbook = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"Flipbook", false) : false;
+   m_d.m_fIsBottomSolid = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"IsBottomSolid", false) : false;
    m_d.m_fCastsShadow = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"CastsShadow", true) : true;
 
    m_d.m_heightbottom = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"HeightBottom", 0.0f) : 0.0f;
@@ -229,6 +231,7 @@ void Surface::SetDefaults(bool fromMouseClick)
 
    m_d.m_fDroppable = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"Droppable", false) : false;
    m_d.m_fFlipbook = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"Flipbook", false) : false;
+   m_d.m_fIsBottomSolid = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"IsBottomSolid", false) : false;
    m_d.m_fCastsShadow = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"CastsShadow", true) : true;
 
    m_d.m_heightbottom = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"HeightBottom", 0.0f) : 0.0f;
@@ -406,15 +409,23 @@ void Surface::CurvesToShapes(Vector<HitObject> * const pvho)
    GetRgVertex(&vvertex);
 
    const int count = vvertex.Size();
-   Vertex3Ds * const rgv3D = new Vertex3Ds[count];
+   Vertex3Ds * const rgv3Dt = new Vertex3Ds[count];
+   Vertex3Ds * const rgv3Db = m_d.m_fIsBottomSolid ? new Vertex3Ds[count] : NULL;
 
    for (int i=0;i<count;i++)
    {
       const RenderVertex * const pv1 = vvertex.ElementAt(i);
 
-      rgv3D[i].x = pv1->x;
-      rgv3D[i].y = pv1->y;
-      rgv3D[i].z = m_d.m_heighttop+m_ptable->m_tableheight;
+      rgv3Dt[i].x = pv1->x;
+      rgv3Dt[i].y = pv1->y;
+      rgv3Dt[i].z = m_d.m_heighttop+m_ptable->m_tableheight;
+
+	  if(m_d.m_fIsBottomSolid)
+	  {
+		  rgv3Db[count-1-i].x = pv1->x;
+		  rgv3Db[count-1-i].y = pv1->y;
+		  rgv3Db[count-1-i].z = m_d.m_heightbottom+m_ptable->m_tableheight;
+	  }
 
       const RenderVertex * const pv2 = vvertex.ElementAt((i < count-1) ? (i+1) : 0);
       const RenderVertex * const pv3 = vvertex.ElementAt((i < count-2) ? (i+2) : (i+2-count));
@@ -425,8 +436,14 @@ void Surface::CurvesToShapes(Vector<HitObject> * const pvho)
    for (int i=0;i<count;i++)
       delete vvertex.ElementAt(i);
 
-   Hit3DPoly * const ph3dpoly = new Hit3DPoly(rgv3D,count);
-   SetupHitObject(pvho, ph3dpoly);
+   Hit3DPoly * const ph3dpolyt = new Hit3DPoly(rgv3Dt,count);
+   SetupHitObject(pvho, ph3dpolyt);
+   
+   if(m_d.m_fIsBottomSolid)
+   {
+	   Hit3DPoly * const ph3dpolyb = new Hit3DPoly(rgv3Db,count);
+	   SetupHitObject(pvho, ph3dpolyb);
+   }
 }
 
 void Surface::SetupHitObject(Vector<HitObject> * pvho, HitObject * obj)
@@ -1212,6 +1229,7 @@ HRESULT Surface::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
    bw.WriteBool(FID(HTEV), m_d.m_fHitEvent);
    bw.WriteBool(FID(DROP), m_d.m_fDroppable);
    bw.WriteBool(FID(FLIP), m_d.m_fFlipbook);
+   bw.WriteBool(FID(ISBS), m_d.m_fIsBottomSolid);
    bw.WriteBool(FID(CLDW), m_d.m_fCollidable);
    bw.WriteBool(FID(TMON), m_d.m_tdr.m_fTimerEnabled);
    bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
@@ -1362,6 +1380,10 @@ BOOL Surface::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(FLIP))
    {
       pbr->GetBool(&m_d.m_fFlipbook);
+   }
+   else if (id == FID(ISBS))
+   {
+      pbr->GetBool(&m_d.m_fIsBottomSolid);
    }
    else if (id == FID(CLDW))
    {
@@ -1699,6 +1721,24 @@ STDMETHODIMP Surface::put_FlipbookAnimation(VARIANT_BOOL newVal)
    STARTUNDO
 
    m_d.m_fFlipbook = VBTOF(newVal);
+
+   STOPUNDO
+
+   return S_OK;
+}
+
+STDMETHODIMP Surface::get_IsBottomSolid(VARIANT_BOOL *pVal)
+{
+   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fIsBottomSolid);
+
+   return S_OK;
+}
+
+STDMETHODIMP Surface::put_IsBottomSolid(VARIANT_BOOL newVal)
+{
+   STARTUNDO
+
+   m_d.m_fIsBottomSolid = VBTOF(newVal);
 
    STOPUNDO
 
