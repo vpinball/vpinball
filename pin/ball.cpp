@@ -1,6 +1,6 @@
 #include "stdafx.h"
 
-unsigned int Ball::ballID=0; //count backwards, so that in case a table assigns own/overwrites the builtin IDs, there might be less conflicts
+unsigned int Ball::ballID=0;
 
 Ball::Ball()
 {

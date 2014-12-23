@@ -7,7 +7,7 @@
 #include "resource.h"       // main symbols
 
 class SurfaceData
-	{
+{
 public:
 	Vertex2D m_Center;
 	TimerDataRoot m_tdr;
@@ -27,17 +27,17 @@ public:
 	bool m_fDroppable;
 	bool m_fFlipbook;           // if enabled, dropped walls are not rendered
 	bool m_fDisplayTexture;     // in editor
-	bool m_fEnableLighting;
 	bool m_fSideVisible;
 	bool m_fEnabled;
 	bool m_fCollidable; //wall must be droppable too!
 	bool m_fSlingshotAnimation;
 
-	bool m_fInner; //!! Deprecated, do not use! Always true after loading! (was: Inside or outside wall)
 	bool m_fCastsShadow;
 	bool m_fVisible;
 	bool m_fHitEvent;
-	};
+
+	bool m_fInner; //!! Deprecated, do not use! Always true after loading! (was: Inside or outside wall)
+};
 
 /////////////////////////////////////////////////////////////////////////////
 // Surface
@@ -208,9 +208,6 @@ public:
 	STDMETHOD (put_SlingshotAnimation)(/*[in]*/ VARIANT_BOOL newVal);
 	STDMETHOD(get_SlingshotMaterial)(/*[out, retval]*/ BSTR *pVal);
 	STDMETHOD(put_SlingshotMaterial)(/*[in]*/ BSTR newVal);
-
-	STDMETHOD(get_EnableLighting)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-	STDMETHOD(put_EnableLighting)(/*[in]*/ VARIANT_BOOL newVal);
 };
 
 #endif //__SURFACE_H_

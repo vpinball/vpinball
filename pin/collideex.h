@@ -11,11 +11,11 @@ public:
 	float m_fHeight;
 	U32 m_TimeReset; // Time at which to turn off light
 	int m_iframedesired;
+    float m_ringAnimOffset;
+    float m_ringAnimStep;
 	bool m_fHitEvent;
 	bool m_fDisabled;
 	bool m_fVisible;
-    float m_ringAnimOffset;
-    float m_ringAnimStep;
 };
 
 class BumperHitCircle : public HitCircle
@@ -188,8 +188,8 @@ public:
 
 	Gate *m_pgate;
     LineSeg m_lineseg[3];
-    bool m_twoWay;
     GateAnimObject m_gateanim;
+    bool m_twoWay;
 };
 
 class TriggerLineSeg : public LineSeg

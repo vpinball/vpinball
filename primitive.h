@@ -58,7 +58,6 @@ public:
    bool use3DMesh;
    bool m_fVisible;
    bool m_DrawTexturesInside;
-   bool useLighting;
    bool staticRendering;
 
    bool m_fHitEvent;
@@ -154,8 +153,6 @@ public:
    STDMETHOD(put_Image)(/*[in]*/ BSTR newVal);
    STDMETHOD(get_MeshFileName)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(put_MeshFileName)(/*[in]*/ BSTR newVal);
-   STDMETHOD(get_EnableLighting)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-   STDMETHOD(put_EnableLighting)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_EnableStaticRendering)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_EnableStaticRendering)(/*[in]*/ VARIANT_BOOL newVal);
 

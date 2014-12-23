@@ -544,7 +544,6 @@
 #define IDD_SEARCH_SELECT_ELEMENT       391
 #define IDD_DRAWING_ORDER               392
 #define IDR_Flasher                     393
-#define IDC_CHECK_PRIMITIVE_LIGHTING    394
 #define IDC_GLOBAL_REFLECTION_CHECK     394
 #define IDC_ENABLE_OFF_LIGHTING         394
 #define IDC_ENABLE_RAMP_LIGHTING        394
@@ -683,7 +682,6 @@
 #define IDS_HIDE                        553
 #define IDC_MODIFY3DSTEREO              554
 #define IDC_ADDBLEND                    556
-#define IDC_ENABLELIGHTING              557
 #define IDC_LIGHTAMBIENT                558
 #define IDC_LIGHT0EMISSION              559
 #define IDC_LIGHTHEIGHT                 564

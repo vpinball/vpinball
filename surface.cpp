@@ -10,7 +10,6 @@ Surface::Surface()
    m_d.m_fCollidable = true;
    m_d.m_fSlingshotAnimation = true;
    m_d.m_fInner = true;
-   m_d.m_fEnableLighting = true;
    slingshotVBuffer=0;
    sideVBuffer = 0;
    topVBuffer = 0;
@@ -52,13 +51,6 @@ HRESULT Surface::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
    hr = GetRegStringAsFloat("DefaultProps\\Wall", "Length", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
       length = fTmp;
-
-   int iTmp;
-   hr = GetRegInt("DefaultProps\\Wall", "EnableLighting", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_fEnableLighting = (iTmp == 0) ? false : true;
-   else
-      m_d.m_fEnableLighting = true;
 
    CComObject<DragPoint> *pdp;
    CComObject<DragPoint>::CreateInstance(&pdp);
@@ -111,16 +103,15 @@ void Surface::WriteRegDefaults()
    SetRegValueBool(strKeyName,"CastsShadow", !!m_d.m_fCastsShadow);
    SetRegValueFloat(strKeyName,"HeightBottom", m_d.m_heightbottom);
    SetRegValueFloat(strKeyName,"HeightTop", m_d.m_heighttop);
-   SetRegValueBool(strKeyName,"DisplayTexture", !!m_d.m_fDisplayTexture);
+   SetRegValueBool(strKeyName,"DisplayTexture", m_d.m_fDisplayTexture);
    SetRegValueFloat(strKeyName,"SlingshotForce", m_d.m_slingshotforce);
-   SetRegValueBool(strKeyName,"SlingshotAnimation", !!m_d.m_fSlingshotAnimation);
+   SetRegValueBool(strKeyName,"SlingshotAnimation", m_d.m_fSlingshotAnimation);
    SetRegValueFloat(strKeyName,"Elasticity", m_d.m_elasticity);
    SetRegValueFloat(strKeyName,"Friction", m_d.m_friction);
    SetRegValueFloat(strKeyName,"Scatter", m_d.m_scatter);
-   SetRegValueBool(strKeyName,"Visible", !!m_d.m_fVisible);
+   SetRegValueBool(strKeyName,"Visible", m_d.m_fVisible);
    SetRegValueBool(strKeyName,"SideVisible", m_d.m_fSideVisible);
-   SetRegValueBool(strKeyName,"Collidable", !!m_d.m_fCollidable);
-   SetRegValueBool(strKeyName,"EnableLighting", m_d.m_fEnableLighting);
+   SetRegValueBool(strKeyName,"Collidable", m_d.m_fCollidable);
 }
 
 
@@ -140,12 +131,6 @@ HRESULT Surface::InitTarget(PinTable * const ptable, const float x, const float 
    hr = GetRegStringAsFloat(strKeyName, "Length", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
       length = fTmp;
-
-   hr = GetRegInt(strKeyName, "EnableLighting", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_fEnableLighting = (iTmp == 0) ? false : true;
-   else
-      m_d.m_fEnableLighting = true;
 
    CComObject<DragPoint> *pdp;
    CComObject<DragPoint>::CreateInstance(&pdp);
@@ -512,7 +497,7 @@ void Surface::AddLine(Vector<HitObject> * const pvho, const RenderVertex * const
       m_vhoDrop.push_back(plineseg);
    m_vhoCollidable.push_back(plineseg);
 
-   if (m_d.m_heightbottom != 0)
+   if (m_d.m_heightbottom != 0.f)
    {
        // add lower edge as a line
        Vertex3Ds v1(pv1->x, pv1->y, m_d.m_heightbottom+m_ptable->m_tableheight);
@@ -1250,7 +1235,6 @@ HRESULT Surface::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
    bw.WriteBool(FID(VSBL), m_d.m_fVisible);
    bw.WriteBool(FID(SLGA), m_d.m_fSlingshotAnimation);
    bw.WriteBool(FID(SVBL), m_d.m_fSideVisible);
-   bw.WriteBool(FID(ELIT), m_d.m_fEnableLighting);
 
    ISelect::SaveData(pstm, hcrypthash, hcryptkey);
 
@@ -1459,10 +1443,6 @@ BOOL Surface::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(CSHD))
    {
       pbr->GetBool(&m_d.m_fCastsShadow);
-   }
-   else if (id == FID(ELIT))
-   {
-      pbr->GetBool(&m_d.m_fEnableLighting);
    }
    else if (id == FID(VSBL))
    {
@@ -1861,24 +1841,6 @@ STDMETHODIMP Surface::put_CastsShadow(VARIANT_BOOL newVal)
    STARTUNDO
 
    m_d.m_fCastsShadow = VBTOF(newVal);
-
-   STOPUNDO
-
-   return S_OK;
-}
-
-STDMETHODIMP Surface::get_EnableLighting(VARIANT_BOOL *pVal)
-{
-   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fEnableLighting);
-
-   return S_OK;
-}
-
-STDMETHODIMP Surface::put_EnableLighting(VARIANT_BOOL newVal)
-{
-   STARTUNDO
-
-   m_d.m_fEnableLighting = VBTOF(newVal);
 
    STOPUNDO
 
