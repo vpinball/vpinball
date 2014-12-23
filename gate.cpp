@@ -6,7 +6,6 @@ Gate::Gate()
 {
    m_phitgate = NULL;
    m_plineseg = NULL;
-   m_d.m_fEnableLighting = true;
    bracketIndexBuffer=NULL;
    bracketVertexBuffer=NULL;
    wireIndexBuffer=NULL;
@@ -229,7 +228,7 @@ void Gate::Render(Sur * const psur)
 
    if ( m_d.m_twoWay )
    {
-       const float radangle = ANGTORAD(m_d.m_rotation-180);
+       const float radangle = ANGTORAD(m_d.m_rotation-180.f);
        {
            const float sn = sinf(radangle);
            const float cs = cosf(radangle);
@@ -403,11 +402,7 @@ void Gate::UpdateWire( RenderDevice *pd3dDevice )
     Vertex3D_NoTex2 *buf;
 
     fullMatrix.SetIdentity();
-    if ( m_d.m_twoWay )
-        rotxMat.RotateXMatrix((m_phitgate->m_gateanim.m_angle));
-    else
-        rotxMat.RotateXMatrix(-(m_phitgate->m_gateanim.m_angle));
-
+    rotxMat.RotateXMatrix(m_d.m_twoWay ? m_phitgate->m_gateanim.m_angle : -m_phitgate->m_gateanim.m_angle);
     rotxMat.Multiply(fullMatrix, fullMatrix);
     rotzMat.RotateZMatrix(ANGTORAD(m_d.m_rotation));
     rotzMat.Multiply(fullMatrix, fullMatrix);

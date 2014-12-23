@@ -30,7 +30,6 @@ public:
 	bool m_fShowBracket;
 	bool m_fCollidable;
 	bool m_fVisible;
-	bool m_fEnableLighting;
     bool m_twoWay;
 	};
 

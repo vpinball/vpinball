@@ -87,7 +87,7 @@ float LineSeg::HitTestBasic(const Ball * pball, const float dtime, CollisionEven
 	float hittime;
 	if (rigid)
 		{
-		if ((bnd < -pball->m_radius/**2.0f*/) || (lateral && bcpd < 0)) return -1.0f;	// (ball normal distance) excessive pentratration of object skin ... no collision HACK //!! *2 necessary?
+		if ((bnd < -pball->m_radius/**2.0f*/) || (lateral && bcpd < 0.f)) return -1.0f;	// (ball normal distance) excessive pentratration of object skin ... no collision HACK //!! *2 necessary?
 			
 		if (lateral && (bnd <= (float)PHYS_TOUCH))
 			{
@@ -104,7 +104,7 @@ float LineSeg::HitTestBasic(const Ball * pball, const float dtime, CollisionEven
 		}
 	else //non-rigid ... target hits
 		{
-		if (bnv * bnd >= 0)										// outside-receding || inside-approaching
+		if (bnv * bnd >= 0.f)									// outside-receding || inside-approaching
 			{
 			if ((m_ObjType != eTrigger) ||						// no a trigger
 			    (!pball->m_vpVolObjs) ||
@@ -119,7 +119,7 @@ float LineSeg::HitTestBasic(const Ball * pball, const float dtime, CollisionEven
 			hittime = bnd/(-bnv);	
 		}
 
-	if (infNaN(hittime) || hittime < 0 || hittime > dtime) return -1.0f; // time is outside this frame ... no collision
+	if (infNaN(hittime) || hittime < 0.f || hittime > dtime) return -1.0f; // time is outside this frame ... no collision
 
 	const float btv = ballvx*normal.y - ballvy*normal.x;				 //ball velocity tangent to segment with respect to direction from V1 to V2
 	const float btd = (ballx - v1.x)*normal.y - (bally - v1.y)*normal.x  // ball tangent distance 

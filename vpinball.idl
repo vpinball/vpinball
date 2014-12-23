@@ -739,9 +739,6 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(114), helpstring("property Friction")] HRESULT Friction([in] float newVal);
 		[propget, id(115), helpstring("property Scatter")] HRESULT Scatter([out, retval] float *pVal);
 		[propput, id(115), helpstring("property Scatter")] HRESULT Scatter([in] float newVal);
-
-		[propget, id(557), helpstring("property EnableLighting")] HRESULT EnableLighting([out, retval] VARIANT_BOOL *pVal);
-		[propput, id(557), helpstring("property EnableLighting")] HRESULT EnableLighting([in] VARIANT_BOOL newVal);
 	};
 
 	[
@@ -1433,8 +1430,6 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 
 		[propget, id(DISPID_Name), helpstring("property Name")] HRESULT Name([out, retval] BSTR *pVal);
 		[propput, id(DISPID_Name), helpstring("property Name")] HRESULT Name([in] BSTR newVal);
-  		[propget, id(394), helpstring("property enable lighting")] HRESULT EnableLighting([out, retval] VARIANT_BOOL *pVal);
-		[propput, id(394), helpstring("property enable lighting")] HRESULT EnableLighting([in] VARIANT_BOOL newVal);
   		[propget, id(398), helpstring("property static rendering")] HRESULT EnableStaticRendering([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(398), helpstring("property static rendering")] HRESULT EnableStaticRendering([in] VARIANT_BOOL newVal);
 

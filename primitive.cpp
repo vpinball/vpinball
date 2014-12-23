@@ -48,7 +48,6 @@ Primitive::Primitive()
    indexBuffer = 0;
    m_d.use3DMesh=false;
    m_d.meshFileName[0]=0;
-   m_d.useLighting=false;
    m_d.staticRendering=false;
    m_d.m_depthBias = 0.0f;
    numIndices = 0;
@@ -100,7 +99,6 @@ void Primitive::SetDefaults(bool fromMouseClick)
    m_d.m_SideColor = fromMouseClick ? GetRegIntWithDefault(strKeyName, "SideColor", RGB(150,150,150)) : RGB(150,150,150);
 
    m_d.m_fVisible = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "Visible", true) : true;
-   m_d.useLighting = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "UseLighting", false) : false;
    m_d.staticRendering = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "StaticRendering", true) : true;
    m_d.m_DrawTexturesInside = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "DrawTexturesInside", false) : false;
 
@@ -142,7 +140,6 @@ void Primitive::WriteRegDefaults()
 
    SetRegValueInt(strKeyName,"SideColor", m_d.m_SideColor);
    SetRegValueBool(strKeyName,"Visible", m_d.m_fVisible);
-   SetRegValueBool(strKeyName,"UseLighting", m_d.useLighting);
    SetRegValueBool(strKeyName,"StaticRendering", m_d.staticRendering);
    SetRegValueBool(strKeyName,"DrawTexturesInside", m_d.m_DrawTexturesInside);
 
@@ -539,51 +536,51 @@ void Primitive::UpdateMesh( const bool force_rebuild_normals, const bool upload_
 
    if(force_rebuild_normals)
    {
-   for (unsigned i = 0; i < m_mesh.NumVertices(); i++)
-   {
-      Vertex3D_NoTex2& tempVert = m_mesh.m_vertices[i];
-	  tempVert.nx = tempVert.ny = tempVert.nz = 0.0f;
-   }
+	   for (unsigned i = 0; i < m_mesh.NumVertices(); i++)
+	   {
+		  Vertex3D_NoTex2& tempVert = m_mesh.m_vertices[i];
+		  tempVert.nx = tempVert.ny = tempVert.nz = 0.0f;
+	   }
 
-   for(unsigned i = 0; i < m_mesh.NumIndices(); i+=3)
-   {
-	   Vertex3D_NoTex2 * const A = &m_mesh.m_vertices[m_mesh.m_indices[i]  ];
-       Vertex3D_NoTex2 * const B = &m_mesh.m_vertices[m_mesh.m_indices[i+1]];
-       Vertex3D_NoTex2 * const C = &m_mesh.m_vertices[m_mesh.m_indices[i+2]];         
+	   for(unsigned i = 0; i < m_mesh.NumIndices(); i+=3)
+	   {
+		   Vertex3D_NoTex2 * const A = &m_mesh.m_vertices[m_mesh.m_indices[i]  ];
+		   Vertex3D_NoTex2 * const B = &m_mesh.m_vertices[m_mesh.m_indices[i+1]];
+		   Vertex3D_NoTex2 * const C = &m_mesh.m_vertices[m_mesh.m_indices[i+2]];         
 
-	    Vertex3Ds normal;
-	   	const Vertex3Ds e0(C->x - A->x,C->y-A->y,C->z-A->z);
-		const Vertex3Ds e1(B->x - A->x,B->y-A->y,B->z-A->z);
-		normal = CrossProduct(e0,e1);
-		normal.NormalizeSafe();
+			Vertex3Ds normal;
+	   		const Vertex3Ds e0(C->x - A->x,C->y-A->y,C->z-A->z);
+			const Vertex3Ds e1(B->x - A->x,B->y-A->y,B->z-A->z);
+			normal = CrossProduct(e0,e1);
+			normal.NormalizeSafe();
 
-		A->nx += normal.x;
-		A->ny += normal.y;
-		A->nz += normal.z;
-		B->nx += normal.x;
-		B->ny += normal.y;
-		B->nz += normal.z;
-		C->nx += normal.x;
-		C->ny += normal.y;
-		C->nz += normal.z;
-   }
+			A->nx += normal.x;
+			A->ny += normal.y;
+			A->nz += normal.z;
+			B->nx += normal.x;
+			B->ny += normal.y;
+			B->nz += normal.z;
+			C->nx += normal.x;
+			C->ny += normal.y;
+			C->nz += normal.z;
+	   }
 
-   for (unsigned i = 0; i < m_mesh.NumVertices(); i++)
-   {
-      Vertex3D_NoTex2 * const tempVert = &m_mesh.m_vertices[i];
-	  const float inv_l = -1.0f/sqrtf(tempVert->nx*tempVert->nx+tempVert->ny*tempVert->ny+tempVert->nz*tempVert->nz);
-	  tempVert->nx *= inv_l;
-	  tempVert->ny *= inv_l;
-	  tempVert->nz *= inv_l;
-   }
+	   for (unsigned i = 0; i < m_mesh.NumVertices(); i++)
+	   {
+		  Vertex3D_NoTex2 * const tempVert = &m_mesh.m_vertices[i];
+		  const float inv_l = -1.0f/sqrtf(tempVert->nx*tempVert->nx+tempVert->ny*tempVert->ny+tempVert->nz*tempVert->nz);
+		  tempVert->nx *= inv_l;
+		  tempVert->ny *= inv_l;
+		  tempVert->nz *= inv_l;
+	   }
    }
 
    if(upload_vbuffer)
    {
-   Vertex3D_NoTex2 *buf;
-   vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY);
-   memcpy( buf, &m_mesh.m_vertices[0], sizeof(Vertex3D_NoTex2)*m_mesh.m_vertices.size() );
-   vertexBuffer->unlock();
+	   Vertex3D_NoTex2 *buf;
+	   vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY);
+	   memcpy( buf, &m_mesh.m_vertices[0], sizeof(Vertex3D_NoTex2)*m_mesh.m_vertices.size() );
+	   vertexBuffer->unlock();
    }
 }
 
@@ -745,7 +742,6 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcry
    bw.WriteFloat(FID(RSCT), m_d.m_scatter);
    bw.WriteBool(FID(CLDRP), m_d.m_fCollidable);
    bw.WriteBool(FID(ISTO), m_d.m_fToy);
-   bw.WriteBool(FID(ENLI), m_d.useLighting);
    bw.WriteBool(FID(U3DM), m_d.use3DMesh);
    bw.WriteBool(FID(STRE), m_d.staticRendering);
    if( m_d.use3DMesh )
@@ -893,10 +889,6 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(ISTO))
    {
       pbr->GetBool(&m_d.m_fToy);
-   }
-   else if (id == FID(ENLI))
-   {
-      pbr->GetBool(&m_d.useLighting);
    }
    else if (id == FID(STRE))
    {
@@ -1654,24 +1646,6 @@ STDMETHODIMP Primitive::put_ObjRotZ(float newVal)
        if (!g_pplayer)
            UpdateEditorView();
    }
-
-   return S_OK;
-}
-
-STDMETHODIMP Primitive::get_EnableLighting(VARIANT_BOOL *pVal)
-{
-   *pVal = (VARIANT_BOOL)FTOVB(m_d.useLighting);
-
-   return S_OK;
-}
-
-STDMETHODIMP Primitive::put_EnableLighting(VARIANT_BOOL newVal)
-{
-   STARTUNDO
-
-   m_d.useLighting = VBTOF(newVal);
-
-   STOPUNDO
 
    return S_OK;
 }
