@@ -22,6 +22,7 @@ VP 10.0.0 Changelog
      - collision heuristics are adapted for all ball sizes (e.g. different from the default radius of 25), so it should be safer to use strange ball sizes now
        (note: remember to always also tweak the ball mass if changing the ball radius (the kicker now supports CreateSizedBallWithMass),
        as otherwise you will get a "floaty" ball (mass = k*radius^3)), thus (hopefully) no more ball-falling-through-playfield problem
+     - add IsBottomSolid to Walls to have Walls optionally completely closed (bottom was always open)
 
   -> the data-format of the physics sets (*.vpp files) is basically the same, although the parameters inside are different, so unfortunately you need to set them up from scratch again
   
@@ -97,6 +98,8 @@ VP 10.0.0 Changelog
 - new external audio library for music playback (BASS)
 
 - 64bit port (handle with care, might still cause issues)
+
+- script editor updated to use latest scintilla (3.5.2)
 
 - DirectX 8 port for input handling (currently disabled)
 

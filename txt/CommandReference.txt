@@ -285,7 +285,6 @@ Collidable(bool)
 Friction(float)
 *Visible(bool)
 ShowBracket(bool)
-*EnableLighting(bool) 
 CurrentAngle(float) - only readable, it returns the current open angle
 
 Methods
@@ -424,7 +423,6 @@ RotAndTra5(float) or TransZ(float) - translates the primitive along it's Z axis
 RotAndTra6(float) or ObjRotX(float) - rotates the X axis of the primitive's local coordinate system. This is used to orientate the object first, after that RotXYZ will rotate the object around this rotated coordinate system
 RotAndTra7(float) or ObjRotY(float) - rotates the Y axis of the primitive's local coordinate system. This is used to orientate the object first, after that RotXYZ will rotate the object around this rotated coordinate system
 RotAndTra8(float) or ObjRotZ(float) - rotates the Z axis of the primitive's local coordinate system. This is used to orientate the object first, after that RotXYZ will rotate the object around this rotated coordinate system
-EnableLighting(bool) - enable/disable lighting for this primitive. You should use the table lights 0/1 to get best results
 *EnableStaticRendering(bool) - if set the primitive is only rendered once (like walls) any dynamic changes later 
                                won't have an effect. This is useful for objects like posts or static toys, because this won't have an impact of the perfomance
 HasHitEvent(bool) - enables the support for a hit event in the script (it's the same as for walls)
@@ -538,6 +536,7 @@ Threshold(float)
 *FaceColor(OLE_COLOR)
 *CanDrop(bool)
 Collideable(bool)
+IsBottomSolid(bool)
 IsDropped(bool)
 *DisplayTexture(bool)
 Elasticity(float)
@@ -553,7 +552,6 @@ SlingshotThreshold(float)
 *FlipbookAnimation(bool)
 Friction(float)
 Scatter(float)
-*EnableLighting(bool) - defines if the image/wall should be shaded or not
 
 FLASHER
 ==============================================================================================================================================
