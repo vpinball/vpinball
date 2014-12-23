@@ -10,6 +10,7 @@ Surface::Surface()
    m_d.m_fCollidable = true;
    m_d.m_fSlingshotAnimation = true;
    m_d.m_fInner = true;
+   m_d.m_fIsBottomSolid = false;
    slingshotVBuffer=0;
    sideVBuffer = 0;
    topVBuffer = 0;
@@ -187,7 +188,7 @@ HRESULT Surface::InitTarget(PinTable * const ptable, const float x, const float 
 
    m_d.m_fDroppable = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"Droppable", false) : false;
    m_d.m_fFlipbook = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"Flipbook", false) : false;
-   m_d.m_fIsBottomSolid = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"IsBottomSolid", false) : false;
+   m_d.m_fIsBottomSolid = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"IsBottomSolid", true) : false;
    m_d.m_fCastsShadow = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"CastsShadow", true) : true;
 
    m_d.m_heightbottom = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"HeightBottom", 0.0f) : 0.0f;
@@ -231,7 +232,7 @@ void Surface::SetDefaults(bool fromMouseClick)
 
    m_d.m_fDroppable = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"Droppable", false) : false;
    m_d.m_fFlipbook = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"Flipbook", false) : false;
-   m_d.m_fIsBottomSolid = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"IsBottomSolid", false) : false;
+   m_d.m_fIsBottomSolid = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"IsBottomSolid", true) : false;
    m_d.m_fCastsShadow = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"CastsShadow", true) : true;
 
    m_d.m_heightbottom = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"HeightBottom", 0.0f) : 0.0f;
