@@ -159,9 +159,6 @@
     <ClCompile Include="regutil.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="shadowsur.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="slintf.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -720,9 +717,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="rubber.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="shadowsur.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="slintf.h">

@@ -54,7 +54,6 @@
     <ClCompile Include="ramp.cpp" />
     <ClCompile Include="regutil.cpp" />
     <ClCompile Include="RenderDevice.cpp" />
-    <ClCompile Include="shadowsur.cpp" />
     <ClCompile Include="slintf.cpp" />
     <ClCompile Include="spinner.cpp" />
     <ClCompile Include="stdafx.cpp" />
@@ -561,9 +560,6 @@
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="rubber.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="shadowsur.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="slintf.h">

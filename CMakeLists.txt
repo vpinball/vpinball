@@ -146,7 +146,6 @@ set(SOURCES
   rubber.cpp
   regutil.cpp
   RenderDevice.cpp
-  shadowsur.cpp
   slintf.cpp
   spinner.cpp
   surface.cpp
@@ -228,7 +227,6 @@ set(HEADERS
   rubber.h
   regutil.h
   resource.h
-  shadowsur.h
   slintf.h
   spinner.h
   stdafx.h
