@@ -811,7 +811,7 @@ void Player::InitBallShader()
    const float Roughness = 0.8f;
    ballShader->Core()->SetFloat("fRoughness", exp2f(10.0f * Roughness + 1.0f));
    ballShader->Core()->SetFloat("fEdge", 1.0f);
-   ballShader->Core()->SetBool("bIsMetal", true);
+   ballShader->Core()->SetBool("bIsMetal", false); // as ball collects the diffuse playfield which uses this flag!
 
    vector<WORD> indexList;
    indexList.resize(basicBallNumFaces);
@@ -2860,7 +2860,6 @@ void Player::DrawBalls()
 {
     bool drawReflection = ((m_fReflectionForBalls && (m_ptable->m_useReflectionForBalls == -1)) || (m_ptable->m_useReflectionForBalls == 1));
 
-    // m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::TEXTUREPERSPECTIVE, FALSE ); // this is always on in DX9
     //m_pin3d.m_pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP);
     //m_pin3d.m_pd3dDevice->SetTextureFilter(0, TEXTURE_MODE_TRILINEAR);
 
