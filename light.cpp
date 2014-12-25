@@ -241,6 +241,7 @@ void Light::PreRender(Sur * const psur)
       InitShape();
       m_roundLight=false;
    }
+
    switch (m_d.m_shape)
    {
    default:
@@ -445,7 +446,6 @@ float Light::GetDepth(const Vertex3Ds& viewDir)
    return m_d.m_depthBias + viewDir.x * m_d.m_vCenter.x + viewDir.y * m_d.m_vCenter.y + viewDir.z * m_surfaceHeight; 
 }
 
-
 void Light::ClearForOverwrite()
 {
    ClearPointsForOverwrite();
@@ -497,8 +497,6 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
 
     pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
 
-    bool useLightmap = false;
-
     const bool isOn = (m_realState == LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : !!m_realState;
     const float height = m_surfaceHeight;
 
@@ -511,8 +509,8 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
         float depthbias = -BASEDEPTHBIAS;
         pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, *((DWORD*)&depthbias));
     }
-    //ppin3d->EnableAlphaTestReference(1);        // don't alpha blend, but do honor transparent pixels
-    UINT cPasses=0;
+
+	//ppin3d->EnableAlphaTestReference(1);        // don't alpha blend, but do honor transparent pixels
     D3DXVECTOR4 center(m_d.m_vCenter.x, m_d.m_vCenter.y, m_surfaceHeight+0.05f, 0.0f);
     D3DXVECTOR4 diffColor(r,g,b,1.0f);
     pd3dDevice->basicShader->Core()->SetVector("lightCenter", &center);
@@ -636,13 +634,11 @@ void Light::PrepareMoversCustom()
    float height = m_surfaceHeight;
    if ( m_d.m_BulbLight && m_d.m_showBulbMesh )
    {
-       height += ((1.4f*m_d.m_meshRadius)*m_ptable->m_zScale);
+       height += (1.4f*m_d.m_meshRadius)*m_ptable->m_zScale;
    }
 
-   Vertex3D *customMoverVertex;
-
    customMoverVertexNum = vtri.Size()*3;
-   customMoverVertex = new Vertex3D[customMoverVertexNum];
+   Vertex3D *customMoverVertex = new Vertex3D[customMoverVertexNum];
 
    if ( customMoverVBuffer==NULL )
    {
@@ -650,13 +646,8 @@ void Light::PrepareMoversCustom()
       g_pplayer->m_pin3d.m_pd3dDevice->CreateVertexBuffer( customMoverVertexNum, 0, vertexType, &customMoverVBuffer);
    }
 
-   const float r = (float)(m_d.m_color & 255) * (float)(1.0/255.0);
-   const float g = (float)(m_d.m_color & 65280) * (float)(1.0/65280.0);
-   const float b = (float)(m_d.m_color & 16711680) * (float)(1.0/16711680.0);
-
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-   Texture* pin = NULL;
-   pin = m_ptable->GetImage(m_d.m_szOffImage);
+   Texture* pin = m_ptable->GetImage(m_d.m_szOffImage);
 
    int k=0;
    for (int t=0;t<vtri.Size();t++,k+=3)
@@ -727,13 +718,9 @@ void Light::RenderSetup(RenderDevice* pd3dDevice)
 
     const bool isOn = (m_realState == LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : !!m_realState;
     if( isOn )
-    {
        m_d.m_currentIntensity = m_d.m_intensity;
-    }
     else
        m_d.m_currentIntensity = 0.0f;
-
-    m_d.m_currentIntensity = 0.0f;
 
     if ( m_d.m_BulbLight && m_d.m_showBulbMesh )
     {
@@ -1199,11 +1186,11 @@ STDMETHODIMP Light::put_X(float newVal)
 {
    STARTUNDO
 
-      m_d.m_vCenter.x = newVal;
+   m_d.m_vCenter.x = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Light::get_Y(float *pVal)
@@ -1217,11 +1204,11 @@ STDMETHODIMP Light::put_Y(float newVal)
 {
    STARTUNDO
 
-      m_d.m_vCenter.y = newVal;
+   m_d.m_vCenter.y = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 void Light::InitShape()
@@ -1276,9 +1263,7 @@ STDMETHODIMP Light::put_BlinkPattern(BSTR newVal)
    }
 
    if (g_pplayer)
-   {
        RestartBlinker(g_pplayer->m_time_msec);
-   }
 
    STOPUNDO
 
@@ -1416,11 +1401,11 @@ STDMETHODIMP Light::put_FadeSpeed(float newVal)
 {
    STARTUNDO
 
-      m_d.m_fadeSpeed = newVal;
+   m_d.m_fadeSpeed = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Light::get_Bulb(VARIANT_BOOL *pVal)
@@ -1434,11 +1419,11 @@ STDMETHODIMP Light::put_Bulb(VARIANT_BOOL newVal)
 {
     STARTUNDO
 
-        m_d.m_BulbLight = VBTOF(newVal);
+    m_d.m_BulbLight = VBTOF(newVal);
 
     STOPUNDO
 
-        return S_OK;
+    return S_OK;
 }
 
 STDMETHODIMP Light::get_ShowBulbMesh(VARIANT_BOOL *pVal)
@@ -1452,11 +1437,11 @@ STDMETHODIMP Light::put_ShowBulbMesh(VARIANT_BOOL newVal)
 {
     STARTUNDO
 
-        m_d.m_showBulbMesh = VBTOF(newVal);
+    m_d.m_showBulbMesh = VBTOF(newVal);
 
     STOPUNDO
 
-        return S_OK;
+    return S_OK;
 }
 
 STDMETHODIMP Light::get_ScaleBulbMesh(float *pVal)
@@ -1470,11 +1455,11 @@ STDMETHODIMP Light::put_ScaleBulbMesh(float newVal)
 {
     STARTUNDO
 
-        m_d.m_meshRadius = newVal;
+    m_d.m_meshRadius = newVal;
 
     STOPUNDO
 
-        return S_OK;
+    return S_OK;
 }
 
 void Light::GetDialogPanes(Vector<PropertyPane> *pvproppane)
