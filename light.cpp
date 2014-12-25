@@ -551,44 +551,6 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
         {
             pd3dDevice->basicShader->Core()->SetTechnique("light_without_texture");
         }
-		if(m_fBackglass)
-		{
-			Texture* pin = NULL;
-			pin = m_ptable->GetImage(m_d.m_szOffImage);
-
-			D3DXVECTOR4 BackglassColor;
-
-			if(!isOn) 
-			{
-				// Check if the light has an "off" texture.
-				if ( pin == NULL )
-				{
-					// Set the texture to a default.
-					BackglassColor = D3DXVECTOR4( r*0.3f, g*0.3f, b*0.3f, 1.0f );
-				}
-				else
-				{
-					// Set the texture to the one defined in the editor.
-					BackglassColor = D3DXVECTOR4( 1.0f, 1.0f, 1.0f, 1.0f );
-				}
-			} 
-			else //LightStateOn 
-			{
-				// Check if the light has an "on" texture.
-				if ( pin == NULL )
-				{
-					// Set the texture to a default.
-					BackglassColor = D3DXVECTOR4( r, g, b, 1.0f );
-				}
-				else
-				{
-					// Set the texture to the one defined in the editor.
-					BackglassColor = D3DXVECTOR4( 1.0f, 1.0f, 1.0f, 1.0f );
-				}
-			}
-
-			pd3dDevice->basicShader->Core()->SetVector("staticColor", &BackglassColor);
-		}
     }
     else
     {
