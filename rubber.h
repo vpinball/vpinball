@@ -18,18 +18,13 @@ public:
 	float m_elasticity;
 	float m_friction;
 	float m_scatter;
-   float m_wireDiameter;
-   float m_wireDistanceX;
-   float m_wireDistanceY;
    float m_depthBias;      // for determining depth sorting
    bool m_fHitEvent;
 	bool m_staticRendering;
 
 	bool m_fCollidable;
 	bool m_fVisible;
-	bool m_fImageWalls;
 	bool m_fCastsShadow;
-	//bool m_fAcrylic;
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -142,11 +137,8 @@ private:
     void AddJoint2D(Vector<HitObject> * pvho, const Vertex2D& p, float zlow, float zhigh);
 	void CheckJoint(Vector<HitObject> * const pvho, const HitTriangle * const ph3d1, const HitTriangle * const ph3d2);
 
-	void RenderPolygons(RenderDevice* pd3dDevice, int offset, WORD * const rgicrosssection, const int start, const int stop);
-
     void GenerateVertexBuffer(RenderDevice* pd3dDevice);
    
-	void AddSideWall(Vector<HitObject> * const pvho, const Vertex2D * const pv1, const Vertex2D * const pv2, const float height1, const float height2, const float wallheight);
 	void AddLine(Vector<HitObject> * const pvho, const Vertex2D * const pv1, const Vertex2D * const pv2, const Vertex2D * const pv3, const float height1, const float height2);
 
    void RenderObject( RenderDevice *pd3dDevice);
@@ -179,7 +171,6 @@ public:
 	STDMETHOD(put_Friction)(/*[in]*/ float newVal);
 	STDMETHOD(get_Scatter)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Scatter)(/*[in]*/ float newVal);
-
 };
 
 #endif // !defined(AFX_RAMP_H__5EFEDEFB_5504_430A_B000_9B6D1903E3FC__INCLUDED_)

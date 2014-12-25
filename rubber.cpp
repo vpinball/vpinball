@@ -11,9 +11,6 @@ Rubber::Rubber()
    dynamicIndexBuffer = 0;
    dynamicVertexBufferRegenerate = true;
    m_d.m_depthBias = 0.0f;
-   m_d.m_wireDiameter = 6.0f;
-   m_d.m_wireDistanceX = 38.0f;
-   m_d.m_wireDistanceY = 88.0f;
 }
 
 Rubber::~Rubber()
@@ -84,7 +81,6 @@ void Rubber::SetDefaults(bool fromMouseClick)
    m_d.m_fVisible = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"Visible", true) : true;
    m_d.m_fCollidable = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"Collidable", true) : true;
 
-   m_d.m_wireDiameter = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"WireDiameter", 60.0f) : 60.0f;
    m_d.m_staticRendering = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"EnableStaticRendering", true) : true;
 }
 
@@ -98,14 +94,12 @@ void Rubber::WriteRegDefaults()
    SetRegValue(strKeyName, "TimerEnabled", REG_DWORD, &m_d.m_tdr.m_fTimerEnabled, 4);
    SetRegValue(strKeyName,"TimerInterval",REG_DWORD,&m_d.m_tdr.m_TimerInterval,4);
    SetRegValue(strKeyName,"Image", REG_SZ, &m_d.m_szImage, lstrlen(m_d.m_szImage));
-   SetRegValueBool(strKeyName,"ImageWalls",m_d.m_fImageWalls);
    SetRegValueBool(strKeyName,"CastsShadow",m_d.m_fCastsShadow);
    SetRegValueFloat(strKeyName,"Elasticity", m_d.m_elasticity);
    SetRegValueFloat(strKeyName,"Friction", m_d.m_friction);
    SetRegValueFloat(strKeyName,"Scatter", m_d.m_scatter);
    SetRegValueBool(strKeyName,"Collidable",m_d.m_fCollidable);
    SetRegValueBool(strKeyName,"Visible",m_d.m_fVisible);
-   SetRegValueFloat(strKeyName,"WireDiameter", m_d.m_wireDiameter);
    SetRegValueBool(strKeyName,"EnableStaticRendering",m_d.m_staticRendering);
 }
 
@@ -464,13 +458,9 @@ void Rubber::GetHitShapes(Vector<HitObject> * const pvho)
        const Vertex2D * const pv3 = &rgvLocal[i+1];
        const Vertex2D * const pv4 = (i<(cvertex-2)) ? &rgvLocal[i+2] : NULL;
 
-#ifndef RAMPTEST
        AddLine(pvho, pv2, pv3, pv1, height, height+wallheightright);
        AddLine(pvho, pv3, pv2, pv4, height, height+wallheightright);
-#else
-       AddSideWall(pvho, pv2, pv3, height, eight, wallheightright);
-       AddSideWall(pvho, pv3, pv2, height, height, wallheightright);
-#endif
+
 	   // add joints at start and end of right wall
 	   if (i == 0)
 		   AddJoint2D(pvho, *pv2, height, height + wallheightright);
@@ -485,13 +475,9 @@ void Rubber::GetHitShapes(Vector<HitObject> * const pvho)
        const Vertex2D * const pv3 = &rgvLocal[cvertex + i + 1];
        const Vertex2D * const pv4 = (i<(cvertex-2)) ? &rgvLocal[cvertex + i + 2] : NULL;
 
-#ifndef RAMPTEST
        AddLine(pvho, pv2, pv3, pv1, height, height + wallheightleft);
        AddLine(pvho, pv3, pv2, pv4, height, height + wallheightleft);
-#else
-       AddSideWall(pvho, pv2, pv3, height, height, wallheightleft);
-       AddSideWall(pvho, pv3, pv2, height, height, wallheightleft);
-#endif
+
 	   // add joints at start and end of left wall
 	   if (i == 0)
 		   AddJoint2D(pvho, *pv2, height, height + wallheightleft);
@@ -499,7 +485,6 @@ void Rubber::GetHitShapes(Vector<HitObject> * const pvho)
 		   AddJoint2D(pvho, *pv3, height, height + wallheightleft);
    }
 
-#ifndef RAMPTEST
    // Add hit triangles for the ramp floor.
    {
       HitTriangle *ph3dpolyOld = NULL;
@@ -681,7 +666,6 @@ void Rubber::GetHitShapes(Vector<HitObject> * const pvho)
           ph3dpoly->m_fEnabled = m_d.m_fCollidable;
       }
    }
-#endif
 
    delete [] rgvLocal;
 }
@@ -689,27 +673,6 @@ void Rubber::GetHitShapes(Vector<HitObject> * const pvho)
 void Rubber::GetHitShapesDebug(Vector<HitObject> * const pvho)
 {
 }
-
-#ifdef RAMPTEST
-void Rubber::AddSideWall(Vector<HitObject> * const pvho, const Vertex2D * const pv1, const Vertex2D * const pv2, const float height1, const float height2, const float wallheight)
-{
-   Vertex3Ds * const rgv3D = new Vertex3Ds[4];
-   rgv3D[0] = Vertex3Ds(pv1->x,pv1->y,height1 - (float)PHYS_SKIN);
-   rgv3D[1] = Vertex3Ds(pv2->x,pv2->y,height2 - (float)PHYS_SKIN);
-   rgv3D[2] = Vertex3Ds(pv2->x + WALLTILT,pv2->y + WALLTILT,height2 + wallheight);
-   rgv3D[3] = Vertex3Ds(pv1->x + WALLTILT,pv1->y + WALLTILT,height1 + wallheight);
-
-   Hit3DPoly * const ph3dpoly = new Hit3DPoly(rgv3D,4); //!!
-   ph3dpoly->m_elasticity = m_d.m_elasticity;
-   ph3dpoly->SetFriction(m_d.m_friction);
-   ph3dpoly->m_scatter = ANGTORAD(m_d.m_scatter);
-
-   pvho->AddElement(ph3dpoly);
-
-   m_vhoCollidable.push_back(ph3dpoly);	//remember hit components of ramp
-   ph3dpoly->m_fEnabled = m_d.m_fCollidable;
-}
-#endif
 
 void Rubber::CheckJoint(Vector<HitObject> * const pvho, const HitTriangle * const ph3d1, const HitTriangle * const ph3d2)
 {
@@ -876,7 +839,6 @@ HRESULT Rubber::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptk
    bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
    bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
    bw.WriteString(FID(IMAG), m_d.m_szImage);
-   bw.WriteBool(FID(IMGW), m_d.m_fImageWalls);
    bw.WriteBool(FID(CSHD), m_d.m_fCastsShadow);
    bw.WriteFloat(FID(ELAS), m_d.m_elasticity);
    bw.WriteFloat(FID(RFCT), m_d.m_friction);
@@ -884,9 +846,6 @@ HRESULT Rubber::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptk
    bw.WriteBool(FID(CLDRP), m_d.m_fCollidable);
    bw.WriteBool(FID(RVIS), m_d.m_fVisible);
    bw.WriteFloat(FID(RADB), m_d.m_depthBias);
-   bw.WriteFloat(FID(RADI), m_d.m_wireDiameter);
-   bw.WriteFloat(FID(RADX), m_d.m_wireDistanceX);
-   bw.WriteFloat(FID(RADY), m_d.m_wireDistanceY);
    bw.WriteBool(FID(ESTR), m_d.m_staticRendering);
 
    ISelect::SaveData(pstm, hcrypthash, hcryptkey);
@@ -947,10 +906,6 @@ BOOL Rubber::LoadToken(int id, BiffReader *pbr)
    {
       pbr->GetString(m_d.m_szImage);
    }
-   else if (id == FID(IMGW))
-   {
-      pbr->GetBool(&m_d.m_fImageWalls);
-   }
    else if (id == FID(CSHD))
    {
       pbr->GetBool(&m_d.m_fCastsShadow);
@@ -986,18 +941,6 @@ BOOL Rubber::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(RADB))
    {
       pbr->GetFloat(&m_d.m_depthBias);
-   }
-   else if (id == FID(RADI))
-   {
-       pbr->GetFloat(&m_d.m_wireDiameter);
-   }
-   else if (id == FID(RADX))
-   {
-       pbr->GetFloat(&m_d.m_wireDistanceX);
-   }
-   else if (id == FID(RADY))
-   {
-       pbr->GetFloat(&m_d.m_wireDistanceY);
    }
    else
    {

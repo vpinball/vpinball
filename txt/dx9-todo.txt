@@ -1,3 +1,0 @@
-Things which have to be done before the official DX9 release:
-
-*) fix text reels

@@ -243,7 +243,7 @@ float Ball::HitTest(const Ball * pball_, float dtime, CollisionEvent& coll)
 
 void Ball::Collide(CollisionEvent *coll)
 {
-    Ball *pball = coll->ball;
+    Ball * const pball = coll->ball;
 
     // make sure we process each ball/ball collision only once
     // (but if we are frozen, there won't be a second collision event, so deal with it now!)
@@ -299,7 +299,7 @@ void Ball::Collide(CollisionEvent *coll)
     pball->m_dynamic = C_DYNAMIC;
 }
 
-void Ball::HandleStaticContact(const Vertex3Ds& normal, float origNormVel, float friction, float dtime)
+void Ball::HandleStaticContact(const Vertex3Ds& normal, const float origNormVel, const float friction, const float dtime)
 {
     const float normVel = m_vel.Dot(normal);   // this should be zero, but only up to +/- C_CONTACTVEL
 
@@ -317,7 +317,7 @@ void Ball::HandleStaticContact(const Vertex3Ds& normal, float origNormVel, float
     }
 }
 
-void Ball::ApplyFriction(const Vertex3Ds& hitnormal, float dtime, float fricCoeff)
+void Ball::ApplyFriction(const Vertex3Ds& hitnormal, const float dtime, const float fricCoeff)
 {
     const Vertex3Ds surfP = -m_radius * hitnormal;    // surface contact point relative to center of mass
 
