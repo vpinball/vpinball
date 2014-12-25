@@ -11,8 +11,8 @@ Ball::Ball()
    m_coll.obj = NULL;
    m_pballex = NULL;
    m_vpVolObjs = NULL; // should be NULL ... only real balls have this value
-   m_pin=NULL;
-   m_pinFront=NULL;
+   m_pinballEnv=NULL;
+   m_pinballDecal=NULL;
    m_defaultZ = 25.0f; //!! assumes ball radius 25
    m_Event_Pos.x = m_Event_Pos.y = m_Event_Pos.z = -1.0f;
    m_frozen = false;
@@ -54,23 +54,23 @@ void Ball::Init(const float mass)
    if (g_pplayer->m_ptable->m_szBallImage[0] == '\0')
    {
       m_szImage[0] = '\0';
-      m_pin = NULL;
+      m_pinballEnv = NULL;
    }
    else
    {
       lstrcpy(m_szImage, g_pplayer->m_ptable->m_szBallImage);
-      m_pin = g_pplayer->m_ptable->GetImage(m_szImage);
+      m_pinballEnv = g_pplayer->m_ptable->GetImage(m_szImage);
    }
 
    if (g_pplayer->m_ptable->m_szBallImageFront[0] == '\0')
    {
       m_szImageFront[0] = '\0';
-      m_pinFront = NULL;
+      m_pinballDecal = NULL;
    }
    else
    {
       lstrcpy(m_szImageFront, g_pplayer->m_ptable->m_szBallImageFront);
-      m_pinFront = g_pplayer->m_ptable->GetImage(m_szImageFront);
+      m_pinballDecal = g_pplayer->m_ptable->GetImage(m_szImageFront);
    }
 
 	RenderSetup();

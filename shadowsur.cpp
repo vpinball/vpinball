@@ -140,18 +140,6 @@ void ShadowSur::Polygon(const Vector<RenderVertex> &rgv)
 	delete [] rgpt;
 }
 
-void ShadowSur::EllipseImage(const float centerx, const float centery, const float radius, HBITMAP hbm, const float left, const float top, const float right, const float bottom, const int bitmapwidth, const int bitmapheight)
-{
-	const int ix = SCALEXf(centerx);
-	const int iy = SCALEYf(centery);
-	const int ir = SCALEDf(radius);
-
-	SelectObject(m_hdc, GetStockObject(BLACK_PEN));
-	SelectObject(m_hdc, GetStockObject(BLACK_BRUSH));
-
-	::Ellipse(m_hdc, ix - ir, iy - ir, ix + ir, iy + ir);
-}
-
 void ShadowSur::PolygonImage(const Vector<RenderVertex> &rgv, HBITMAP hbm, const float left, const float top, const float right, const float bottom, const int bitmapwidth, const int bitmapheight)
 {
 	Polygon(rgv);

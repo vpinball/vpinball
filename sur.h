@@ -23,7 +23,7 @@ __forceinline int RoundToInt(const float val)
 #define SCALEDf(d) RoundToInt((d)*m_zoom)
 
 class Sur
-	{
+{
 public:
 
 	inline Sur(const HDC hdc, const float zoom, const float offx, const float offy, const int width, const int height)
@@ -41,7 +41,6 @@ public:
 	virtual void Rectangle2(const int x, const int y, const int x2, const int y2) = 0;
 	virtual void Ellipse(const float centerx, const float centery, const float radius) = 0;
 	virtual void Ellipse2(const float centerx, const float centery, const int radius) = 0;
-	virtual void EllipseImage(const float centerx, const float centery, const float radius, HBITMAP hbm, const float left, const float top, const float right, const float bottom, const int bitmapwidth, const int bitmapheight) = 0;
 	virtual void Polygon(const Vertex2D * const rgv, const int count) = 0;
 	virtual void Polygon(const Vector<RenderVertex> &rgv) = 0;
 	virtual void PolygonImage(const Vector<RenderVertex> &rgv, HBITMAP hbm, const float left, const float top, const float right, const float bottom, const int bitmapwidth, const int bitmapheight) = 0;
@@ -64,13 +63,7 @@ public:
 		return result;
 	}
 
-	inline void SurfaceToScreen(const float fx, const float fy, int * const screenx, int * const screeny) const
-	{
-		*screenx = SCALEXf(fx);
-		*screeny = SCALEYf(fy);
-	}
-
 	HDC m_hdc;
 	float m_zoom;
 	float m_offx, m_offy;
-	};
+};

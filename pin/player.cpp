@@ -2911,13 +2911,13 @@ void Player::DrawBalls()
       D3DXVECTOR4 pos( pball->m_pos.x, pball->m_pos.y, zheight, 1.0f );
       ballShader->Core()->SetVector("position", &pos );
       ballShader->Core()->SetFloat("radius", pball->m_radius );
-      if ( !pball->m_pin )
-          ballShader->SetTexture("Texture0", &m_pin3d.ballTexture);
+      if ( !pball->m_pinballEnv )
+          ballShader->SetTexture("Texture0", &m_pin3d.pinballEnvTexture);
       else
-          ballShader->SetTexture("Texture0",pball->m_pin);
+          ballShader->SetTexture("Texture0",pball->m_pinballEnv);
 
-      if( pball->m_pinFront )
-          ballShader->SetTexture("Texture2",pball->m_pinFront);
+      if( pball->m_pinballDecal )
+          ballShader->SetTexture("Texture2",pball->m_pinballDecal);
 
       UINT cPasses=0;
       if ( drawReflection )

@@ -59,8 +59,8 @@ public:
     char m_szImage[MAXTOKEN];
     char m_szImageFront[MAXTOKEN];
 
-    Texture *m_pin;
-    Texture *m_pinFront;
+    Texture *m_pinballEnv;
+    Texture *m_pinballDecal;
 
     VectorVoid* m_vpVolObjs;// vector of triggers we are now inside
 

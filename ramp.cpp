@@ -1400,13 +1400,15 @@ void Ramp::prepareHabitrail(RenderDevice* pd3dDevice)
         normal.Normalize();
         prevB = binorm;
         int si=index;
+		const float inv_numRings = 1.0f/(float)numRings;
+		const float inv_numSegments = 1.0f/(float)numSegments;
         for( int j=0;j<numSegments;j++,index++)
         {
-            const float u=(float)i/numRings;
-            const float v=((float)j+u)/numSegments;
+            const float u=(float)i*inv_numRings;
+            const float v=((float)j+u)*inv_numSegments;
             const float u_angle = u*(float)(2.0*M_PI);
             const float v_angle = v*(float)(2.0*M_PI);
-            const Vertex3Ds tmp = GetRotatedAxis( (float)j*(360.0f/numSegments), tangent, normal ) 
+            const Vertex3Ds tmp = GetRotatedAxis( (float)j*(360.0f*inv_numSegments), tangent, normal ) 
                 * ((float)m_d.m_wireDiameter*0.5f);
             rgvbuf[index].x = middlePoints[i].x+tmp.x;
             rgvbuf[index].y = middlePoints[i].y+tmp.y;
@@ -1469,8 +1471,8 @@ void Ramp::prepareHabitrail(RenderDevice* pd3dDevice)
     delete [] rgvbuf;
     delete [] rgvLocal;
     delete [] middlePoints;
-
 }
+
 static const WORD rgiRampStatic1[4] = {0,3,2,1};
 
 void Ramp::prepareStatic(RenderDevice* pd3dDevice)
@@ -1730,7 +1732,7 @@ void Ramp::RenderStatic(RenderDevice* pd3dDevice)
 
          pd3dDevice->basicShader->SetTexture("Texture0", pin );
          pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
-         if (pin->m_fTransparent)
+         if (pin->m_rgbTransparent == NOTRANSCOLOR)
          {
             pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
          }

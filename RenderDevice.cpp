@@ -327,8 +327,6 @@ RenderDevice::RenderDevice(HWND hwnd, int width, int height, bool fullscreen, in
     // Set up a dynamic index buffer to cache passed indices in
     CreateIndexBuffer(MY_IDX_BUF_SIZE, D3DUSAGE_DYNAMIC, IndexBuffer::FMT_INDEX16, &m_dynIndexBuffer);
 
-    Texture::SetRenderDevice(this);
-
     m_curIndexBuffer = 0;
     m_curVertexBuffer = 0;
     memset(m_curTexture, 0, 8*sizeof(m_curTexture[0]));
@@ -566,7 +564,7 @@ void RenderDevice::CopyDepth(D3DTexture* dest, RenderTarget* src)
 	if(!m_RESZ_support)
 	{
 		if(!NVAPIinit)
-		{
+	{
 			 CHECKNVAPI(NvAPI_Initialize()); //!! meh
 			 NVAPIinit = true;
 		}

@@ -85,37 +85,6 @@ void PaintSur::Ellipse2(const float centerx, const float centery, const int radi
 	::Ellipse(m_hdc, ix - ir, iy - ir, ix + ir + 1, iy + ir + 1);
 	}
 
-void PaintSur::EllipseImage(const float centerx, const float centery, const float radius, HBITMAP hbm, const float left, const float top, const float right, const float bottom, const int bitmapwidth, const int bitmapheight)
-	{
-	const float ir = radius;
-
-	const int ix = SCALEXf(left);
-	const int iy = SCALEYf(top);
-	const int ix2 = SCALEXf(right);
-	const int iy2 = SCALEYf(bottom);
-
-	const int dx = SCALEXf(centerx-ir);
-	const int dy = SCALEYf(centery-ir);
-	const int dx2 = SCALEXf(centerx+ir);
-	const int dy2 = SCALEYf(centery+ir);
-
-	HDC hdcNew = CreateCompatibleDC(m_hdc);
-	HBITMAP hbmOld = (HBITMAP)SelectObject(hdcNew, hbm);
-	
-	StretchBlt(m_hdc, ix, iy, ix2-ix, iy2-iy, hdcNew, 0, 0, bitmapwidth, bitmapheight, SRCINVERT);
-
-	SelectObject(m_hdc, GetStockObject(BLACK_BRUSH));
-	SelectObject(m_hdc, GetStockObject(NULL_PEN));
-
-	::Ellipse(m_hdc, dx, dy, dx2+1, dy2+1);
-			
-	StretchBlt(m_hdc, ix, iy, ix2-ix, iy2-iy, hdcNew, 0, 0, bitmapwidth, bitmapheight, SRCINVERT);
-
-	SelectObject(hdcNew, hbmOld);
-
-	DeleteDC(hdcNew);
-	}
-
 void PaintSur::Polygon(const Vertex2D * const rgv, const int count)
 	{
 	POINT * const rgpt = new POINT[count];
