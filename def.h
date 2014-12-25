@@ -48,7 +48,7 @@ inline unsigned int max(const unsigned int x, const unsigned int y)
 }
 
 template <typename T>
-T clamp(T x, T min, T max)
+inline T clamp(T x, T min, T max)
 {
     if (x < min)
         return min;
@@ -59,7 +59,7 @@ T clamp(T x, T min, T max)
 }
 
 template <typename T>
-void RemoveFromVector(std::vector<T>& v, const T& val)
+inline void RemoveFromVector(std::vector<T>& v, const T& val)
 {
     v.erase( std::remove( v.begin(), v.end(), val ), v.end() );
 }
