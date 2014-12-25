@@ -504,11 +504,6 @@ void Decal::RenderSetup(RenderDevice* pd3dDevice )
    else
    {
       SetHUDVertices(vertices, 4);
-      SetDiffuse(vertices, 4, 0xFFFFFFFF);
-
-      // make sure depth is very small so that we render in front of table
-      for (int i = 0; i < 4; ++i)
-          vertices[i].rhw = 1e5f;
    }
 
    if ( vertexBuffer== NULL )
@@ -558,7 +553,7 @@ void Decal::RenderStatic(RenderDevice* pd3dDevice)
    }
 
    // Set texture to mirror, so the alpha state of the texture blends correctly to the outside
-//   pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_MIRROR);
+//!!   pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_MIRROR);
 
    //ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
    g_pplayer->m_pin3d.EnableAlphaBlend(1,false);
@@ -568,6 +563,11 @@ void Decal::RenderStatic(RenderDevice* pd3dDevice)
        float depthbias = -5 * BASEDEPTHBIAS;
        pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, *((DWORD*)&depthbias));
    }
+   else
+   {
+	   const D3DXVECTOR4 staticColor(1.0f,1.0f,1.0f,1.0f);
+	   pd3dDevice->basicShader->Core()->SetVector("staticColor", &staticColor);
+   }
 
    pd3dDevice->basicShader->Begin(0);
    pd3dDevice->DrawPrimitiveVB( D3DPT_TRIANGLEFAN, vertexBuffer, 0, 4 );
@@ -576,7 +576,7 @@ void Decal::RenderStatic(RenderDevice* pd3dDevice)
    pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
 
    // Set the render state.
-   pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_WRAP);
+   //pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_WRAP);
    pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", false);
    g_pplayer->m_pin3d.DisableAlphaBlend();
 }

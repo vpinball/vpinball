@@ -102,6 +102,7 @@ void PaintSur::Polygon(const Vertex2D * const rgv, const int count)
 	
 	delete [] rgpt;
 	}
+
 // copy-pasted from above
 void PaintSur::Polygon(const Vector<RenderVertex> &rgv)
 	{

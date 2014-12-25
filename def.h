@@ -126,23 +126,9 @@ public:
    D3DVALUE z;
 
    // Normals
-   union
-   {
-      D3DVALUE nx;
-      D3DVALUE rhw;
-   };
-
-   union
-   {
-      D3DVALUE ny;
-      D3DCOLOR color;
-   };
-
-   union
-   {
-      D3DVALUE nz;
-      D3DCOLOR specular;
-   };
+   D3DVALUE nx;
+   D3DVALUE ny;
+   D3DVALUE nz;
 
    // Texture coordinates
    D3DVALUE tu;
@@ -170,35 +156,19 @@ public:
 class Vertex3D_NoTex2 // for rendering, uses MY_D3DFVF_NOTEX2_VERTEX or MY_D3DTRANSFORMED_NOTEX2_VERTEX
 {
 public:
-   struct{
       // Position
       D3DVALUE x;
       D3DVALUE y;
       D3DVALUE z;
 
       // Normals
-      union
-      {
-         D3DVALUE nx;
-         D3DVALUE rhw;
-      };
-
-      union
-      {
-         D3DVALUE ny;
-         D3DCOLOR color;
-      };
-
-      union
-      {
-         D3DVALUE nz;
-         D3DCOLOR specular;
-      };
-
-      // Texture coordinates
+      D3DVALUE nx;
+      D3DVALUE ny;
+      D3DVALUE nz;
+      
+	  // Texture coordinates
       D3DVALUE tu;
       D3DVALUE tv;
-   };
 };
 
 class Vertex3D_NoTex // for rendering, uses MY_D3DFVF_NOTEX_VERTEX or MY_D3DTRANSFORMED_NOTEX_VERTEX
@@ -210,23 +180,9 @@ public:
    D3DVALUE z;
 
    // Normals
-   union
-   {
-      D3DVALUE nx;
-      D3DVALUE rhw;
-   };
-
-   union
-   {
-      D3DVALUE ny;
-      D3DCOLOR color;
-   };
-
-   union
-   {
-      D3DVALUE nz;
-      D3DCOLOR specular;
-   };
+   D3DVALUE nx;
+   D3DVALUE ny;
+   D3DVALUE nz;
 };
 
 

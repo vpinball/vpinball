@@ -172,9 +172,11 @@ void SetHUDVertices(VtxType * const rgv, const int count)
 		rgv[i].y *= ymult;
 		rgv[i].x -= 0.5f;
 		rgv[i].y -= 0.5f;
-		rgv[i].z = 0;//1.0f;
-		rgv[i].rhw = 0.1f;
-		rgv[i].specular = 0;
+		rgv[i].z = 0.f;
+
+		rgv[i].nx = 0.0f;
+		rgv[i].ny = 0.0f;
+		rgv[i].nz = 0.0f;
 		}
 	}
 
@@ -348,13 +350,6 @@ void SetNormal(VtxType * const rgv, const IdxType * const rgi, const int count, 
 		rgvApply[l].ny = vnormal.y;
 		rgvApply[l].nz = vnormal.z;
 	}
-}
-
-template <class VtxType>
-void SetDiffuse(VtxType * const rgv, const int count, const unsigned int color) // get rid of this?
-{
-	for (int i=0; i<count; ++i)
-		rgv[i].color = color;
 }
 
 // Calculate if two vectors are flat to each other

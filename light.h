@@ -125,7 +125,6 @@ DECLARE_REGISTRY_RESOURCEID(IDR_LIGHT)
 
 	virtual void ClearForOverwrite();
 
-	void PrepareStaticCustom();
     void PrepareMoversCustom();
 
 	virtual void EditMenu(HMENU hmenu);
@@ -174,9 +173,8 @@ private:
 	bool		m_fLockedByLS;
    bool     m_roundLight;
 //<<<
-   int staticCustomVertexNum;
+
    int customMoverVertexNum;
-   VertexBuffer *customVBuffer;
    VertexBuffer *customMoverVBuffer;
    VertexBuffer *bulbLightVBuffer;
    IndexBuffer  *bulbLightIndexBuffer;

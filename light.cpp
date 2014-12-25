@@ -69,7 +69,6 @@ int LightCenter::GetSelectLevel()
 Light::Light() : m_lightcenter(this)
 {
    m_menuid = IDR_SURFACEMENU;
-   customVBuffer = NULL;
    customMoverVBuffer = NULL;
    bulbLightIndexBuffer = NULL;
    bulbLightVBuffer = NULL;
@@ -83,11 +82,6 @@ Light::Light() : m_lightcenter(this)
 
 Light::~Light()
 {
-   if( customVBuffer )
-   {
-      customVBuffer->release();
-      customVBuffer=0;
-   }
    if( customMoverVBuffer )
    {
       customMoverVBuffer->release();
@@ -410,11 +404,6 @@ void Light::GetHitShapesDebug(Vector<HitObject> * const pvho)
 
 void Light::FreeBuffers()
 {
-   if( customVBuffer )
-   {
-      customVBuffer->release();
-      customVBuffer=0;
-   }
    if( customMoverVBuffer )
    {
       customMoverVBuffer->release();
@@ -564,6 +553,44 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
         {
             pd3dDevice->basicShader->Core()->SetTechnique("light_without_texture");
         }
+		if(m_fBackglass)
+		{
+			Texture* pin = NULL;
+			pin = m_ptable->GetImage(m_d.m_szOffImage);
+
+			D3DXVECTOR4 BackglassColor;
+
+			if(!isOn) 
+			{
+				// Check if the light has an "off" texture.
+				if ( pin == NULL )
+				{
+					// Set the texture to a default.
+					BackglassColor = D3DXVECTOR4( r*0.3f, g*0.3f, b*0.3f, 1.0f );
+				}
+				else
+				{
+					// Set the texture to the one defined in the editor.
+					BackglassColor = D3DXVECTOR4( 1.0f, 1.0f, 1.0f, 1.0f );
+				}
+			} 
+			else //LightStateOn 
+			{
+				// Check if the light has an "on" texture.
+				if ( pin == NULL )
+				{
+					// Set the texture to a default.
+					BackglassColor = D3DXVECTOR4( r, g, b, 1.0f );
+				}
+				else
+				{
+					// Set the texture to the one defined in the editor.
+					BackglassColor = D3DXVECTOR4( 1.0f, 1.0f, 1.0f, 1.0f );
+				}
+			}
+
+			pd3dDevice->basicShader->Core()->SetVector("staticColor", &BackglassColor);
+		}
     }
     else
     {
@@ -575,107 +602,10 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
     pd3dDevice->DrawPrimitiveVB(D3DPT_TRIANGLELIST, customMoverVBuffer, 0, customMoverVertexNum);
     pd3dDevice->basicShader->End();
 
-
     pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
     pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, FALSE);
 
     pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-}
-
-void Light::PrepareStaticCustom()
-{
-   const float height = m_surfaceHeight;
-   const float inv_tablewidth = 1.0f/(m_ptable->m_right - m_ptable->m_left);
-   const float inv_tableheight = 1.0f/(m_ptable->m_bottom - m_ptable->m_top);
-
-   // prepare static custom object
-   Vector<RenderVertex> vvertex;
-   GetRgVertex(&vvertex);
-
-   const int cvertex = vvertex.Size();
-   std::vector<RenderVertex> rgv(cvertex);
-
-   for (int i=0; i<cvertex; ++i)
-   {
-      const int p1 = (i == 0) ? (cvertex-1) : (i-1);
-      const int p2 = (i < cvertex-1) ? (i+1) : 0;
-
-      const Vertex2D v1 = *vvertex.ElementAt(p1);
-      const Vertex2D v2 = *vvertex.ElementAt(p2);
-      const Vertex2D vmiddle = *vvertex.ElementAt(i);
-
-      const float A = v1.y - vmiddle.y;
-      const float B = vmiddle.x - v1.x;
-      const float D = v2.y - vmiddle.y;
-      const float E = vmiddle.x - v2.x;
-
-	  // Find intersection of the two edges meeting this points, but
-      // shift those lines outwards along their normals
-
-      // Shift line along the normal
-      const float C = vmiddle.y*v1.x - vmiddle.x*v1.y;/* - sqrtf(A*A + B*B)*m_d.m_borderwidth;*/
-
-      // Shift line along the normal
-      const float F = vmiddle.y*v2.x - vmiddle.x*v2.y;/* + sqrtf(D*D + E*E)*m_d.m_borderwidth;*/
-
-      const float inv_det = 1.0f/(A*E - B*D);
-
-      rgv[i].x = (B*F-E*C)*inv_det;
-      rgv[i].y = (C*D-A*F)*inv_det;
-   }
-
-   for (int i=0; i<cvertex; i++)
-      delete vvertex.ElementAt(i);
-
-   VectorVoid vpoly;
-   for (int i=0; i<cvertex; i++)
-      vpoly.AddElement((void *)i);
-
-   Vector<Triangle> vtri;
-   PolygonToTriangles(rgv, &vpoly, &vtri);
-   staticCustomVertexNum = vtri.Size()*3;
-   std::vector<Vertex3D> staticCustomVertex(staticCustomVertexNum);
-
-   if ( customVBuffer==NULL )
-   {
-      DWORD vertexType = (!m_fBackglass) ? MY_D3DFVF_VERTEX : MY_D3DTRANSFORMED_VERTEX;
-      g_pplayer->m_pin3d.m_pd3dDevice->CreateVertexBuffer( staticCustomVertexNum, 0, vertexType, &customVBuffer);
-   }
-
-   Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-   int k=0;
-   for (int t=0; t<vtri.Size(); t++,k+=3)
-   {
-      const Triangle * const ptri = vtri.ElementAt(t);
-
-      const RenderVertex * const pv0 = &rgv[ptri->a];
-      const RenderVertex * const pv1 = &rgv[ptri->c];
-      const RenderVertex * const pv2 = &rgv[ptri->b];
-
-      staticCustomVertex[k  ].x = pv0->x;   staticCustomVertex[k  ].y = pv0->y;   staticCustomVertex[k  ].z = height+0.05f;
-      staticCustomVertex[k+1].x = pv1->x;   staticCustomVertex[k+1].y = pv1->y;   staticCustomVertex[k+1].z = height+0.05f;
-      staticCustomVertex[k+2].x = pv2->x;   staticCustomVertex[k+2].y = pv2->y;   staticCustomVertex[k+2].z = height+0.05f;
-
-      if (!m_fBackglass)
-      {
-         staticCustomVertex[k  ].nx = 0;    staticCustomVertex[k  ].ny = 0;    staticCustomVertex[k  ].nz = 1.0f;
-         staticCustomVertex[k+1].nx = 0;    staticCustomVertex[k+1].ny = 0;    staticCustomVertex[k+1].nz = 1.0f;
-         staticCustomVertex[k+2].nx = 0;    staticCustomVertex[k+2].ny = 0;    staticCustomVertex[k+2].nz = 1.0f;
-
-         ppin3d->CalcShadowCoordinates(&staticCustomVertex[k],3);
-      }
-      else
-      {
-         SetDiffuse(&staticCustomVertex[k], 3, RGB_TO_BGR(m_d.m_bordercolor));
-         SetHUDVertices(&staticCustomVertex[k], 3);
-      }
-	  delete vtri.ElementAt(t);
-   }
-
-   Vertex3D *buf;
-   customVBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY);
-   memcpy( buf, &staticCustomVertex[0], staticCustomVertexNum*sizeof(Vertex3D));
-   customVBuffer->unlock();
 }
 
 void Light::PrepareMoversCustom()
@@ -709,16 +639,15 @@ void Light::PrepareMoversCustom()
        height += ((1.4f*m_d.m_meshRadius)*m_ptable->m_zScale);
    }
 
-   Vertex3D *customMoverVertex[2];
+   Vertex3D *customMoverVertex;
 
    customMoverVertexNum = vtri.Size()*3;
-   customMoverVertex[0] = new Vertex3D[customMoverVertexNum];
-   customMoverVertex[1] = new Vertex3D[customMoverVertexNum];
+   customMoverVertex = new Vertex3D[customMoverVertexNum];
 
    if ( customMoverVBuffer==NULL )
    {
       DWORD vertexType = (!m_fBackglass) ? MY_D3DFVF_VERTEX : MY_D3DTRANSFORMED_VERTEX;
-      g_pplayer->m_pin3d.m_pd3dDevice->CreateVertexBuffer( customMoverVertexNum*2, 0, vertexType, &customMoverVBuffer);
+      g_pplayer->m_pin3d.m_pd3dDevice->CreateVertexBuffer( customMoverVertexNum, 0, vertexType, &customMoverVBuffer);
    }
 
    const float r = (float)(m_d.m_color & 255) * (float)(1.0/255.0);
@@ -726,100 +655,60 @@ void Light::PrepareMoversCustom()
    const float b = (float)(m_d.m_color & 16711680) * (float)(1.0/16711680.0);
 
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-   for(int i=0; i<2; i++)
+   Texture* pin = NULL;
+   pin = m_ptable->GetImage(m_d.m_szOffImage);
+
+   int k=0;
+   for (int t=0;t<vtri.Size();t++,k+=3)
    {
-      Texture* pin = NULL;
-      pin = m_ptable->GetImage(m_d.m_szOffImage);
+	   const Triangle * const ptri = vtri.ElementAt(t);
 
-      int k=0;
-      for (int t=0;t<vtri.Size();t++,k+=3)
-      {
-         const Triangle * const ptri = vtri.ElementAt(t);
+	   const RenderVertex * const pv0 = vvertex.ElementAt(ptri->a);
+	   const RenderVertex * const pv1 = vvertex.ElementAt(ptri->c);
+	   const RenderVertex * const pv2 = vvertex.ElementAt(ptri->b);
 
-         const RenderVertex * const pv0 = vvertex.ElementAt(ptri->a);
-         const RenderVertex * const pv1 = vvertex.ElementAt(ptri->c);
-         const RenderVertex * const pv2 = vvertex.ElementAt(ptri->b);
+	   customMoverVertex[k  ].x = pv0->x;   customMoverVertex[k  ].y = pv0->y;   customMoverVertex[k  ].z = height+0.1f;
+	   customMoverVertex[k+1].x = pv1->x;   customMoverVertex[k+1].y = pv1->y;   customMoverVertex[k+1].z = height+0.1f;
+	   customMoverVertex[k+2].x = pv2->x;   customMoverVertex[k+2].y = pv2->y;   customMoverVertex[k+2].z = height+0.1f;
 
-         customMoverVertex[i][k  ].x = pv0->x;   customMoverVertex[i][k  ].y = pv0->y;   customMoverVertex[i][k  ].z = height+0.1f;
-         customMoverVertex[i][k+1].x = pv1->x;   customMoverVertex[i][k+1].y = pv1->y;   customMoverVertex[i][k+1].z = height+0.1f;
-         customMoverVertex[i][k+2].x = pv2->x;   customMoverVertex[i][k+2].y = pv2->y;   customMoverVertex[i][k+2].z = height+0.1f;
+	   if(!m_fBackglass)
+	   {
+		   customMoverVertex[k  ].nx = 0; customMoverVertex[k  ].ny = 0; customMoverVertex[k  ].nz = 1.0f;
+		   customMoverVertex[k+1].nx = 0; customMoverVertex[k+1].ny = 0; customMoverVertex[k+1].nz = 1.0f;
+		   customMoverVertex[k+2].nx = 0; customMoverVertex[k+2].ny = 0; customMoverVertex[k+2].nz = 1.0f;
+	   }
 
-         if(!m_fBackglass)
-         {
-            customMoverVertex[i][k  ].nx = 0; customMoverVertex[i][k  ].ny = 0; customMoverVertex[i][k  ].nz = 1.0f;
-            customMoverVertex[i][k+1].nx = 0; customMoverVertex[i][k+1].ny = 0; customMoverVertex[i][k+1].nz = 1.0f;
-            customMoverVertex[i][k+2].nx = 0; customMoverVertex[i][k+2].ny = 0; customMoverVertex[i][k+2].nz = 1.0f;
-         }
+	   for (int l=0;l<3;l++)
+	   {
+		   if (!m_fBackglass)
+			   ppin3d->CalcShadowCoordinates(&customMoverVertex[k+l],1);
 
-         for (int l=0;l<3;l++)
-         {
-            if (!m_fBackglass)
-               ppin3d->CalcShadowCoordinates(&customMoverVertex[i][k+l],1);
+		   // Check if we are using a custom texture.
+		   if (pin != NULL)
+		   {
+			   customMoverVertex[k+l].tu = customMoverVertex[k+l].x * inv_tablewidth;
+			   customMoverVertex[k+l].tv = customMoverVertex[k+l].y * inv_tableheight;
+		   }
+		   else
+		   {
+			   // Set texture coordinates for default light.
+			   const float dx = customMoverVertex[k+l].x - m_d.m_vCenter.x;
+			   const float dy = customMoverVertex[k+l].y - m_d.m_vCenter.y;
+			   customMoverVertex[k+l].tu = 0.5f + dx * inv_maxdist;
+			   customMoverVertex[k+l].tv = 0.5f + dy * inv_maxdist;
+		   }
+	   }
 
-            // Check if we are using a custom texture.
-            if (pin != NULL)
-            {
-               customMoverVertex[i][k+l].tu = customMoverVertex[i][k+l].x * inv_tablewidth;
-               customMoverVertex[i][k+l].tv = customMoverVertex[i][k+l].y * inv_tableheight;
-            }
-            else
-            {
-               // Set texture coordinates for default light.
-               const float dx = customMoverVertex[i][k+l].x - m_d.m_vCenter.x;
-               const float dy = customMoverVertex[i][k+l].y - m_d.m_vCenter.y;
-               customMoverVertex[i][k+l].tu = 0.5f + dx * inv_maxdist;
-               customMoverVertex[i][k+l].tv = 0.5f + dy * inv_maxdist;
-            }
-         }
-
-         if (m_fBackglass)
-            SetHUDVertices(&customMoverVertex[i][k], 3);
-      }
-
-	  D3DXVECTOR4 diffuse;
-
-      if(i == LightStateOff) 
-      {
-         // Check if the light has an "off" texture.
-         if ( pin == NULL )
-         {
-            // Set the texture to a default.
-            diffuse = D3DXVECTOR4( r*0.3f, g*0.3f, b*0.3f, 1.0f );
-         }
-         else
-         {
-            // Set the texture to the one defined in the editor.
-            diffuse = D3DXVECTOR4( 1.0f, 1.0f, 1.0f, 1.0f );
-         }
-      } 
-      else //LightStateOn 
-      {
-         // Check if the light has an "on" texture.
-         if ( pin == NULL )
-         {
-            // Set the texture to a default.
-            diffuse = D3DXVECTOR4( 0.0f, 0.0f, 0.0f, 1.0f );
-         }
-         else
-         {
-            // Set the texture to the one defined in the editor.
-            diffuse = D3DXVECTOR4( 1.0f, 1.0f, 1.0f, 1.0f );
-         }
-      }
-      if (m_fBackglass && GetPTable()->GetDecalsEnabled())
-         SetDiffuse(customMoverVertex[i], customMoverVertexNum, convertColor(diffuse));
-
-   }//for(i=0;i<2...)
-
+	   if (m_fBackglass)
+		   SetHUDVertices(&customMoverVertex[k], 3);
+   }
 
    Vertex3D *buf;
    customMoverVBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY);
-   memcpy( buf, customMoverVertex[0], customMoverVertexNum*sizeof(Vertex3D));
-   memcpy( &buf[customMoverVertexNum], customMoverVertex[1], customMoverVertexNum*sizeof(Vertex3D));
+   memcpy( buf, customMoverVertex, customMoverVertexNum*sizeof(Vertex3D));
    customMoverVBuffer->unlock();
 
-   delete [] customMoverVertex[0];
-   delete [] customMoverVertex[1];
+   delete [] customMoverVertex;
 
    for (int i=0;i<cvertex;i++)
       delete vvertex.ElementAt(i);
@@ -897,9 +786,8 @@ void Light::RenderSetup(RenderDevice* pd3dDevice)
         }
         bulbSocketVBuffer->unlock();
     }
-    PrepareStaticCustom();
-    PrepareMoversCustom();
 
+    PrepareMoversCustom();
 }
 
 void Light::RenderStatic(RenderDevice* pd3dDevice)
