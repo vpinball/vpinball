@@ -8,6 +8,7 @@ float3 cClearcoat = float3(0.5f, 0.5f, 0.5f);
 //!! Metals have high specular reflectance:  0.5-1.0
 
 bool   bPerformAlphaTest = false;
+float4 staticColor=float4(1,1,1,1);
 float  fAlphaTestValue = 128.0f/255.0f;
 
 //function output structures 
@@ -55,9 +56,15 @@ float4 ps_main( in VS_OUTPUT IN) : COLOR
 float4 ps_main_texture(in VS_OUTPUT IN) : COLOR
 {
    float4 pixel = tex2D(texSampler0, IN.tex0);
-   
+   pixel.a *= fmaterialAlpha;
+
    if (bPerformAlphaTest && pixel.a<=fAlphaTestValue )
     clip(-1);           //stop the pixel shader if alpha test should reject pixel
+
+   // early out if no normal set (e.g. HUD vertices)
+   if(IN.normal.x == 0.0f && IN.normal.y == 0.0f && IN.normal.z == 0.0f)
+    return pixel*staticColor;
+
    float3 t = InvGamma(pixel.xyz);
    float3 diffuse  = t*cBase;
    float3 glossy   = bIsMetal ? diffuse : t*cGlossy*0.08f; //!! use AO for glossy? specular?
@@ -65,12 +72,11 @@ float4 ps_main_texture(in VS_OUTPUT IN) : COLOR
    float edge = bIsMetal ? 1.0f : fEdge;
 
    float4 result = lightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular, edge);
-   result.a = pixel.a*fmaterialAlpha;
+   result.a = pixel.a;
    return result;
 }
 
 // ****** simple shader for rendering without lighting *******
-float4 staticColor=float4(1,1,1,1);
 float  fAlpha=1.0f;
 float  fFilterAmount=1.0f;
 bool   bMultiply=false;
@@ -178,7 +184,13 @@ float4 PS_LightWithTexel(in VS_LIGHT_OUTPUT IN ) : COLOR
     float3 specular = cClearcoat*0.08f;
     float edge = bIsMetal ? 1.0f : fEdge;
     float4 result = float4(0.0f, 0.0f, 0.0f, 0.0f);
-    float4 color = lightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular, edge); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
+    float4 color;
+
+	// early out if no normal set (e.g. HUD vertices)
+    if(IN.normal.x == 0.0f && IN.normal.y == 0.0f && IN.normal.z == 0.0f)
+     color = pixel*staticColor;
+    else
+	 color = lightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular, edge); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
 
     if ( intensity!=0.0f )
     {
@@ -218,7 +230,14 @@ float4 PS_LightWithoutTexel(in VS_LIGHT_OUTPUT IN ) : COLOR
         result = saturate(lcolor*(atten*intensity));
         result.a = saturate(atten*intensity);
     }
-    float4 color=lightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular, edge); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
+    
+	float4 color;
+	// early out if no normal set (e.g. HUD vertices)
+    if(IN.normal.x == 0.0f && IN.normal.y == 0.0f && IN.normal.z == 0.0f)
+     color = staticColor;
+    else
+	 color = lightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular, edge); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
+
     color.a *= fmaterialAlpha;
     color += result;
     return color;
