@@ -358,24 +358,11 @@ void Surface::RenderBlueprint(Sur *psur)
       delete vvertex.ElementAt(i);
 }
 
-void Surface::RenderShadow(ShadowSur * const psur, const float height)
+/*void Surface::RenderShadow(ShadowSur * const psur, const float height)
 {
    if ( (!m_d.m_fCastsShadow) || (!m_ptable->m_fRenderShadows) )
       return;
-
-   psur->SetFillColor(RGB(0,0,0));
-   psur->SetBorderColor(-1,false,0);
-   psur->SetObject(this); // For selected formatting
-   psur->SetObject(NULL);
-
-   Vector<RenderVertex> vvertex;
-   GetRgVertex(&vvertex);
-
-   psur->PolygonSkew(vvertex, m_d.m_heightbottom, m_d.m_heighttop);
-
-   for (int i=0;i<vvertex.Size();i++)
-      delete vvertex.ElementAt(i);
-}
+}*/
 
 void Surface::GetTimers(Vector<HitTimer> * const pvht)
 {
@@ -1113,7 +1100,7 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
     }
 
     // reset render states
-    ppin3d->DisableLightMap();
+    //!! ppin3d->DisableLightMap();
     g_pplayer->m_pin3d.DisableAlphaBlend();
     pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", false);
     pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);

@@ -84,7 +84,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_SPINNER)
 	virtual void GetCenter(Vertex2D * const pv) const;
 	virtual void PutCenter(const Vertex2D * const pv);
 
-	virtual void RenderShadow(ShadowSur * const psur, const float height);
+	//virtual void RenderShadow(ShadowSur * const psur, const float height);
 
 	void WriteRegDefaults();
     void UpdatePlate( RenderDevice *pd3dDevice );

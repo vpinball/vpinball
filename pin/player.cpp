@@ -858,9 +858,6 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 
 	m_ptable = ptable;
 
-    ShadowSur::m_shadowDirX = ptable->m_shadowDirX;
-    ShadowSur::m_shadowDirY = ptable->m_shadowDirY;
-
     //m_hSongCompletionEvent = CreateEvent( NULL, TRUE, FALSE, NULL );
 
 	SendMessage(hwndProgress, PBM_SETPOS, 40, 0);
@@ -1142,8 +1139,8 @@ void Player::InitStatic(HWND hwndProgress)
     m_pin3d.DrawBackground();
 
     // HACK: make sure m_maxtu and m_maxtv are set before calling RenderSetup() on the Hitables
-    m_pin3d.EnableLightMap(0.0f);
-    m_pin3d.DisableLightMap();
+    //!! m_pin3d.EnableLightMap(0.0f);
+    //!! m_pin3d.DisableLightMap();
 
     // perform render setup and give elements a chance to render before the playfield
 	for (unsigned i=0; i < m_vhitables.size(); ++i)

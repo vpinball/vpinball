@@ -99,7 +99,6 @@ class PinBinary;
 #include "paintsur.h"
 #include "hitsur.h"
 #include "hitrectsur.h"
-#include "shadowsur.h"
 
 #include "BallEx.h"
 

@@ -147,9 +147,9 @@ void IEditable::RenderBlueprint(Sur *psur)
 	Render(psur);
 	}
 
-void IEditable::RenderShadow(ShadowSur * const psur, const float height)
+/*void IEditable::RenderShadow(ShadowSur * const psur, const float height)
 	{
-	}
+	}*/
 
 void IEditable::BeginUndo()
 	{

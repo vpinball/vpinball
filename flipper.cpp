@@ -478,10 +478,6 @@ void Flipper::Render(Sur * const psur)
    m_d.m_FlipperRadius = m_d.m_FlipperRadiusMax;
 }
 
-void Flipper::RenderShadow(ShadowSur * const psur, const float height)
-{
-}
-
 void Flipper::SetObjectPos()
 {
    g_pvp->SetObjectPosCur(m_d.m_Center.x, m_d.m_Center.y);

@@ -90,7 +90,7 @@ END_CONNECTION_POINT_MAP()
     // IEditable
     virtual void WriteRegDefaults();
     virtual void RenderBlueprint(Sur *psur);
-    virtual void RenderShadow(ShadowSur * const psur, const float height);
+    //virtual void RenderShadow(ShadowSur * const psur, const float height);
     virtual void GetBoundingVertices(Vector<Vertex3Ds> * const pvvertex3D);
     virtual void ClearForOverwrite();
     // end IEditable

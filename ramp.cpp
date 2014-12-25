@@ -283,84 +283,11 @@ void Ramp::RenderBlueprint(Sur *psur)
    RenderOutline(psur);
 }
 
-void Ramp::RenderShadow(ShadowSur * const psur, const float height)
+/*void Ramp::RenderShadow(ShadowSur * const psur, const float height)
 {
    if (!m_d.m_fCastsShadow || !m_ptable->m_fRenderShadows || !m_d.m_fVisible) 
       return; //skip render if not visible
-
-   psur->SetFillColor(RGB(0,0,0));
-   psur->SetBorderColor(-1,false,0);
-   psur->SetLineColor(RGB(0,0,0),false,2);
-   psur->SetObject(this);
-
-   float *rgheight1;
-   int cvertex;
-   Vertex2D * const rgvLocal = GetRampVertex(cvertex, &rgheight1, NULL, NULL, NULL);
-
-   // Find the range of vertices to draw a shadow for
-   int startvertex = cvertex;
-   int stopvertex = 0;
-   for (int i=0;i<cvertex;i++)
-      if (rgheight1[i] >= height)
-      {
-         if(i < startvertex)
-            startvertex = i;
-         stopvertex = i;
-      }
-
-   const int range = (stopvertex - startvertex);
-
-   if (range > 0)
-   {
-      if (isHabitrail())
-      {
-         float * const rgheight2 = new float[cvertex];
-
-         for (int i=0;i<cvertex;i++)
-            rgheight2[i] = rgheight1[cvertex - i - 1];
-
-         if (m_d.m_type != RampType1Wire)
-            psur->PolylineSkew(rgvLocal, cvertex, rgheight1, 0, 0);
-
-         psur->PolylineSkew(&rgvLocal[cvertex], cvertex, rgheight2, 0, 0);
-
-         for (int i=0;i<cvertex;i++)
-         {
-            rgheight1[i] += 44.0f;
-            rgheight2[i] += 44.0f;
-         }
-
-         if (m_d.m_type == RampType4Wire || m_d.m_type == RampType3WireRight)
-            psur->PolylineSkew(rgvLocal, cvertex, rgheight1, 0, 0);
-
-         if (m_d.m_type == RampType4Wire || m_d.m_type == RampType3WireLeft)
-            psur->PolylineSkew(&rgvLocal[cvertex], cvertex, rgheight2, 0, 0);
-
-         delete [] rgheight2;
-      }
-      else
-      {
-         Vertex2D * const rgv2 = new Vertex2D[range*2];
-         float * const rgheight2 = new float[range*2];
-
-         for (int i=0;i<range;i++)
-         {
-            rgv2[i] = rgvLocal[i + startvertex];
-            rgv2[range*2 - i - 1] = rgvLocal[cvertex*2 - i - 1 - startvertex];
-            rgheight2[i] = rgheight1[i + startvertex];
-            rgheight2[range*2 - i - 1] = rgheight1[i + startvertex];
-         }
-
-         psur->PolygonSkew(rgv2, range*2, rgheight2);
-
-         delete [] rgv2;
-         delete [] rgheight2;
-      }
-   }
-
-   delete [] rgvLocal;
-   delete [] rgheight1;
-}
+}*/
 
 void Ramp::GetBoundingVertices(Vector<Vertex3Ds> * const pvvertex3D)
 {
