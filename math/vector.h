@@ -258,7 +258,6 @@ inline Vertex3Ds GetRotatedAxis(const float angle, const Vertex3Ds &axis, const 
    return Vertex3Ds(temp.Dot(rotMatrixRow0), temp.Dot(rotMatrixRow1), temp.Dot(rotMatrixRow2));
 }
 
-void RotateAround(const Vertex3Ds &pvAxis, Vertex3D_NoTex * const pvPoint, int count, float angle);
 void RotateAround(const Vertex3Ds &pvAxis, Vertex3D_NoTex2 * const pvPoint, int count, float angle);
 void RotateAround(const Vertex3Ds &pvAxis, Vertex3Ds * const pvPoint, int count, float angle);
 Vertex3Ds RotateAround(const Vertex3Ds &pvAxis, const Vertex2D &pvPoint, float angle);

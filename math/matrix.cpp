@@ -63,38 +63,6 @@ void Matrix3D::Invert()
 	m[3][0] = mat3D.m[3][0]; m[3][1] = mat3D.m[3][1]; m[3][2] = mat3D.m[3][2]; m[3][3] = mat3D.m[3][3];
 }
 
-
-
-void RotateAround(const Vertex3Ds &pvAxis, Vertex3D_NoTex * const pvPoint, const int count, const float angle)
-{
-    const float rsin = sinf(angle);
-    const float rcos = cosf(angle);
-
-    Matrix3 mat;
-    mat.RotationAroundAxis(pvAxis, angle);
-
-    for (int i=0; i<count; ++i)
-    {
-        const float result[3] = {
-            mat.m_d[0][0]*pvPoint[i].x + mat.m_d[0][1]*pvPoint[i].y + mat.m_d[0][2]*pvPoint[i].z,
-            mat.m_d[1][0]*pvPoint[i].x + mat.m_d[1][1]*pvPoint[i].y + mat.m_d[1][2]*pvPoint[i].z,
-            mat.m_d[2][0]*pvPoint[i].x + mat.m_d[2][1]*pvPoint[i].y + mat.m_d[2][2]*pvPoint[i].z};
-
-            pvPoint[i].x = result[0];
-            pvPoint[i].y = result[1];
-            pvPoint[i].z = result[2];
-
-        const float resultn[3] = {
-            mat.m_d[0][0]*pvPoint[i].nx + mat.m_d[0][1]*pvPoint[i].ny + mat.m_d[0][2]*pvPoint[i].nz,
-            mat.m_d[1][0]*pvPoint[i].nx + mat.m_d[1][1]*pvPoint[i].ny + mat.m_d[1][2]*pvPoint[i].nz,
-            mat.m_d[2][0]*pvPoint[i].nx + mat.m_d[2][1]*pvPoint[i].ny + mat.m_d[2][2]*pvPoint[i].nz};
-
-            pvPoint[i].nx = resultn[0];
-            pvPoint[i].ny = resultn[1];
-            pvPoint[i].nz = resultn[2];
-    }
-}
-
 void RotateAround(const Vertex3Ds &pvAxis, Vertex3D_NoTex2 * const pvPoint, const int count, const float angle)
 {
     const float rsin = sinf(angle);
