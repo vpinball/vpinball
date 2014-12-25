@@ -239,19 +239,11 @@ void Bumper::Render(Sur * const psur)
    }
 }
 
-void Bumper::RenderShadow(ShadowSur * const psur, const float z)
+/*void Bumper::RenderShadow(ShadowSur * const psur, const float z)
 {
    if ( (!m_d.m_fCastsShadow) || (!m_ptable->m_fRenderShadows) )
       return;
-
-   psur->SetBorderColor(-1,false,0);
-   psur->SetFillColor(RGB(0,0,0));
-
-   const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
-
-   psur->EllipseSkew(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius, height, height+40.0f+m_d.m_heightScale);
-
-}
+}*/
 
 void Bumper::GetTimers(Vector<HitTimer> * const pvht)
 {

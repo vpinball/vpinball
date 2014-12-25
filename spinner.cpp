@@ -187,31 +187,11 @@ void Spinner::Render(Sur * const psur)
       m_d.m_vCenter.x - cs*halflength, m_d.m_vCenter.y - sn*halflength);
 }
 
-void Spinner::RenderShadow(ShadowSur * const psur, const float height)
+/*void Spinner::RenderShadow(ShadowSur * const psur, const float height)
 {
    if ( (!m_d.m_fCastsShadow) || (!m_ptable->m_fRenderShadows) )
       return;
-
-   psur->SetLineColor(RGB(0,0,0),false,4);
-   psur->SetObject(this);
-
-   float halflength = m_d.m_length * 0.5f;
-
-   const float radangle = m_d.m_rotation * (float)(M_PI*2.0/360.0);
-   const float sn = sinf(radangle);
-   const float cs = cosf(radangle);
-
-   psur->Line(m_d.m_vCenter.x + cs*halflength, m_d.m_vCenter.y + sn*halflength,
-      m_d.m_vCenter.x - cs*halflength, m_d.m_vCenter.y - sn*halflength);
-
-   psur->SetLineColor(RGB(0,0,0),false,1);
-   psur->SetObject(this);
-
-   halflength += m_d.m_overhang;
-
-   psur->Line(m_d.m_vCenter.x + cs*halflength, m_d.m_vCenter.y + sn*halflength,
-      m_d.m_vCenter.x - cs*halflength, m_d.m_vCenter.y - sn*halflength);
-}
+}*/
 
 void Spinner::GetTimers(Vector<HitTimer> * const pvht)
 {
@@ -363,13 +343,13 @@ void Spinner::PostRenderStatic(RenderDevice* pd3dDevice)
     if ( image )
     {
         image->CreateAlphaChannel();
-        g_pplayer->m_pin3d.EnableAlphaBlend(1, false);
+            g_pplayer->m_pin3d.EnableAlphaBlend(1, false);
         pd3dDevice->basicShader->SetTexture("Texture0",image);
         pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
     }
     else // No image by that name
     {
-        pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
+       pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
     }
     pd3dDevice->basicShader->Begin(0);
     pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, plateVertexBuffer, 0, spinnerPlateNumVertices, plateIndexBuffer, 0, spinnerPlateNumFaces);
@@ -377,7 +357,7 @@ void Spinner::PostRenderStatic(RenderDevice* pd3dDevice)
 
 //    g_pplayer->UpdateBasicShaderMatrix();
 
-    pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+            pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
     pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, FALSE);
     pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", false);
 
@@ -426,7 +406,7 @@ void Spinner::RenderSetup(RenderDevice* pd3dDevice)
        buf[i].nz = vert.z;
        buf[i].tu = spinnerBracket[i].tu;
        buf[i].tv = spinnerBracket[i].tv;
-   }
+       }
    bracketVertexBuffer->unlock();
 
    indices.clear();

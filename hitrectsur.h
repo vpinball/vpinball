@@ -34,7 +34,7 @@ private:
 
 	FRect m_rcRect;
 	Vector<ISelect> *m_pvsel;
-	Vector<ISelect> m_vselFailed;	
+	Vector<ISelect> m_vselFailed;
 
 	bool m_fFailedAlready; // Object has already been discounted from selection
 };

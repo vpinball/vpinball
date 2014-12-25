@@ -101,8 +101,6 @@ END_CONNECTION_POINT_MAP()
 	virtual void GetCenter(Vertex2D * const pv) const;
 	virtual void PutCenter(const Vertex2D * const pv);
 
-	virtual void RenderShadow(ShadowSur * const psur, const float height);
-
     void RenderAtThickness(RenderDevice* pd3dDevice, float angle, float height, float baseradius, float endradius, float flipperheight, Vertex3D* buf);
 
 	void WriteRegDefaults();

@@ -216,45 +216,11 @@ void Rubber::RenderBlueprint(Sur *psur)
    RenderOutline(psur);
 }
 
-void Rubber::RenderShadow(ShadowSur * const psur, const float height)
+/*void Rubber::RenderShadow(ShadowSur * const psur, const float height)
 {
    if (!m_d.m_fCastsShadow || !m_ptable->m_fRenderShadows || !m_d.m_fVisible) 
       return; //skip render if not visible
-
-   psur->SetFillColor(RGB(0,0,0));
-   psur->SetBorderColor(-1,false,0);
-   psur->SetLineColor(RGB(0,0,0),false,2);
-   psur->SetObject(this);
-
-   int cvertex;
-   Vertex2D * const rgvLocal = GetSplineVertex(cvertex, NULL, NULL);
-
-   // Find the range of vertices to draw a shadow for
-   int startvertex = cvertex;
-   int stopvertex = 0;
-   const int range = (stopvertex - startvertex);
-
-   if (range > 0)
-   {
-        Vertex2D * const rgv2 = new Vertex2D[range*2];
-        float * const rgheight2 = new float[range*2];
-
-        for (int i=0;i<range;i++)
-        {
-			rgv2[i] = rgvLocal[i + startvertex];
-			rgv2[range*2 - i - 1] = rgvLocal[cvertex*2 - i - 1 - startvertex];
-			rgheight2[i] = m_d.m_height;
-			rgheight2[range*2 - i - 1] = m_d.m_height;
-        }
-
-        psur->PolygonSkew(rgv2, range*2, rgheight2);
-
-        delete [] rgv2;
-        delete [] rgheight2;
-   }
-
-   delete [] rgvLocal;
-}
+}*/
 
 void Rubber::GetBoundingVertices(Vector<Vertex3Ds> * const pvvertex3D)
 {
@@ -1575,7 +1541,7 @@ void Rubber::GenerateVertexBuffer(RenderDevice* pd3dDevice)
         
         if ( i==0 )
         {
-            Vertex3Ds up( middlePoints[i2].x+middlePoints[i].x, middlePoints[i2].y+middlePoints[i].y, height*2);
+            Vertex3Ds up( middlePoints[i2].x+middlePoints[i].x, middlePoints[i2].y+middlePoints[i].y, height*2.f);
             normal = CrossProduct(tangent,up);     //normal
             binorm = CrossProduct(tangent, normal);
         }

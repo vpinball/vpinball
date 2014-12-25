@@ -435,7 +435,7 @@ void Pin3D::InitPlayfieldGraphics()
 
     m_pd3dDevice->SetVertexDeclaration( m_pd3dDevice->m_pVertexNormalTexelTexelDeclaration );
 
-    EnableLightMap(0);
+    //!! EnableLightMap(0);
 
     for (int i=0; i<4; ++i)
     {
@@ -487,7 +487,7 @@ void Pin3D::InitPlayfieldGraphics()
 void Pin3D::RenderPlayfieldGraphics()
 {
    TRACE_FUNCTION();
-   EnableLightMap(0);
+   //!! EnableLightMap(0);
    Texture * const pin = g_pplayer->m_ptable->GetImage((char *)g_pplayer->m_ptable->m_szImage);
    Material *mat = g_pplayer->m_ptable->GetMaterial( g_pplayer->m_ptable->m_szPlayfieldMaterial);
    m_pd3dDevice->basicShader->SetMaterial(mat);
@@ -509,7 +509,7 @@ void Pin3D::RenderPlayfieldGraphics()
 	m_pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, tableVBuffer, 0, 4, tableIBuffer, 0, 6);
    m_pd3dDevice->basicShader->End();
 
-	DisableLightMap();
+	//!! DisableLightMap();
 	SetTexture(NULL);
     if (pin)
     {
@@ -577,7 +577,7 @@ BaseTexture* Pin3D::CreateShadow(const float z)
 
 	HBITMAP hbmOld = (HBITMAP)SelectObject(hdc, hdib);
 	const float zoom = (float)shadwidth/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
-	ShadowSur * const psur = new ShadowSur(hdc, zoom, (g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right)*0.5f, (g_pplayer->m_ptable->m_top + g_pplayer->m_ptable->m_bottom)*0.5f, shadwidth, shadheight, z);
+	/*ShadowSur * const psur = new ShadowSur(hdc, zoom, (g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right)*0.5f, (g_pplayer->m_ptable->m_top + g_pplayer->m_ptable->m_bottom)*0.5f, shadwidth, shadheight, z);
 
 	SelectObject(hdc, GetStockObject(WHITE_BRUSH));
 	PatBlt(hdc, 0, 0, shadwidth, shadheight, PATCOPY);
@@ -585,7 +585,7 @@ BaseTexture* Pin3D::CreateShadow(const float z)
 	for (int i=0; i<g_pplayer->m_ptable->m_vedit.Size(); ++i)
 		g_pplayer->m_ptable->m_vedit.ElementAt(i)->RenderShadow(psur, z);
 
-	delete psur;
+	delete psur;*/
 
 	BaseTexture* pddsProjectTexture = new MemTexture(shadwidth, shadheight);
 	m_xvShadowMap[(int)z] = pddsProjectTexture;
