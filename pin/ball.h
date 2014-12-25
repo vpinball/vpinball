@@ -30,10 +30,10 @@ public:
 
     // From HitObject
     virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
-    virtual int GetType() const {return eBall;}
+    virtual int GetType() const { return eBall; }
     virtual void Collide(CollisionEvent *coll);
     virtual void CalcHitRect();
-    virtual AnimObject *GetAnimObject() {return &m_ballanim;}
+    virtual AnimObject *GetAnimObject() { return &m_ballanim; }
 
     //semi-generic collide methods
     void Collide2DWall(const Vertex3Ds& hitNormal, const float elasticity, float friction, float scatter_angle)
@@ -41,8 +41,8 @@ public:
 
     void Collide3DWall(const Vertex3Ds& hitNormal, const float elasticity, float friction, float scatter_angle);
 
-    void ApplyFriction(const Vertex3Ds& hitnormal, float dtime, float fricCoeff);
-    void HandleStaticContact(const Vertex3Ds& normal, float origNormVel, float friction, float dtime);
+    void ApplyFriction(const Vertex3Ds& hitnormal, const float dtime, const float fricCoeff);
+    void HandleStaticContact(const Vertex3Ds& normal, const float origNormVel, const float friction, const float dtime);
 
     Vertex3Ds SurfaceVelocity(const Vertex3Ds& surfP) const;
     Vertex3Ds SurfaceAcceleration(const Vertex3Ds& surfP) const;
