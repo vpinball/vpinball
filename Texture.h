@@ -77,13 +77,10 @@ public:
    HRESULT LoadFromStream(IStream *pstream, int version, PinTable *pt);
 
    void CreateAlphaChannel();
-   void EnsureBackdrop(const COLORREF color);
    void FreeStuff();
    void SetTransparentColor(const COLORREF color);
 
-   static void SetRenderDevice( RenderDevice *_device );
    void Set(DWORD textureChannel);
-   void SetBackDrop(DWORD textureChannel);
    void Unset(DWORD textureChannel);
 
    void Release();
@@ -97,9 +94,7 @@ public:
    void SetAlpha(const COLORREF rgbTransparent);
 
    static void SetOpaque(BaseTexture* pdds);
-   static void SetOpaqueBackdrop(BaseTexture* pdds, const COLORREF rgbTransparent, const COLORREF rgbBackdrop);
    static bool SetAlpha(BaseTexture* pdds, const COLORREF rgbTransparent);
-   static void Blur(BaseTexture* pdds, const BYTE * const pbits, const int shadwidth, const int shadheight);
 
    // create/release a DC which contains a (read-only) copy of the texture; for editor use
    void GetTextureDC(HDC *pdc);
@@ -130,15 +125,8 @@ public:
    char m_szInternalName[MAXTOKEN];
    char m_szPath[MAX_PATH];
 
-   COLORREF m_rgbTransparent;
-   bool m_fTransparent; // Whether this picture actually contains transparent bits
+   COLORREF m_rgbTransparent; // if NOTRANSCOLOR then no transparency in picture
 
 private:
-   COLORREF m_rgbBackdropCur;
-
-   BaseTexture* m_pdsBufferBackdrop;
-
-   static RenderDevice *renderDevice;
-
    HBITMAP m_oldHBM;        // this is to cache the result of SelectObject()
 };

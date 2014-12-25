@@ -974,7 +974,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
             {
                POINT point = {mouseX,mouseY};
                ScreenToClient(m_hwnd, &point);
-               const Vertex3Ds vertex = g_pplayer->m_pin3d.Get3DPointFrom2D(&point);
+               const Vertex3Ds vertex = g_pplayer->m_pin3d.Get3DPointFrom2D(point);
 
                float vx = (float)mouseDX*0.1f;
                float vy = (float)mouseDY*0.1f;
@@ -1000,7 +1000,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
                      POINT newPoint;
                      GetCursorPos(&newPoint);
                      ScreenToClient(m_hwnd, &newPoint);
-                     const Vertex3Ds vert = g_pplayer->m_pin3d.Get3DPointFrom2D(&newPoint);
+                     const Vertex3Ds vert = g_pplayer->m_pin3d.Get3DPointFrom2D(newPoint);
 
                      ballGrabbed=true;
                      pBall->m_pos.x = vert.x;
@@ -1021,7 +1021,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
             {
                POINT point = {mouseX,mouseY};
                ScreenToClient(m_hwnd, &point);
-               const Vertex3Ds vertex = g_pplayer->m_pin3d.Get3DPointFrom2D(&point);
+               const Vertex3Ds vertex = g_pplayer->m_pin3d.Get3DPointFrom2D(point);
 
                for( unsigned i=0; i<g_pplayer->m_vball.size(); i++ )
                {

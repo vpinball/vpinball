@@ -31,7 +31,7 @@ Pin3D::~Pin3D()
     for (std::map<int,MemTexture*>::iterator it = m_xvShadowMap.begin(); it != m_xvShadowMap.end(); ++it)
         delete it->second;
 
-   ballTexture.FreeStuff();
+   pinballEnvTexture.FreeStuff();
 
    envTexture.FreeStuff();
 
@@ -201,7 +201,7 @@ HRESULT Pin3D::InitPin3D(const HWND hwnd, const bool fFullScreen, const int scre
     if (!m_pddsZBuffer || !m_pddsStatic)
         return E_FAIL;
 
-    ballTexture.CreateFromResource(IDB_BALL);
+    pinballEnvTexture.CreateFromResource(IDB_BALL);
 
 	envTexture.CreateFromResource(IDB_ENV);
 
@@ -418,6 +418,7 @@ void Pin3D::InitLayout()
 
 	InitLights();
 }
+
 void Pin3D::InitPlayfieldGraphics()
 {
     Vertex3D rgv[7];
@@ -593,8 +594,6 @@ BaseTexture* Pin3D::CreateShadow(const float z)
 	DeleteDC(hdc);
 	ReleaseDC(NULL, hdcScreen);
 
-    Texture::Blur(pddsProjectTexture, pbits, shadwidth, shadheight);
-
 	DeleteObject(hdib);
 
 	return pddsProjectTexture;
@@ -658,7 +657,7 @@ void Pin3D::Flip(bool vsync)
     m_pd3dDevice->Flip(vsync);
 }
 
-Vertex3Ds Pin3D::Unproject( Vertex3Ds *point)
+Vertex3Ds Pin3D::Unproject( const Vertex3Ds& point)
 {
    m_proj.CacheTransform(); // compute m_matrixTotal
 
@@ -666,20 +665,20 @@ Vertex3Ds Pin3D::Unproject( Vertex3Ds *point)
    m2.Invert();
    Vertex3Ds p,p3;
 
-   p.x = 2.0f * (point->x-g_pplayer->m_pin3d.vp.X) / g_pplayer->m_pin3d.vp.Width - 1.0f; 
-   p.y = 1.0f - 2.0f * (point->y-g_pplayer->m_pin3d.vp.Y) / g_pplayer->m_pin3d.vp.Height; 
-   p.z = (point->z - g_pplayer->m_pin3d.vp.MinZ) / (g_pplayer->m_pin3d.vp.MaxZ-g_pplayer->m_pin3d.vp.MinZ);
+   p.x = 2.0f * (point.x-g_pplayer->m_pin3d.vp.X) / g_pplayer->m_pin3d.vp.Width - 1.0f; 
+   p.y = 1.0f - 2.0f * (point.y-g_pplayer->m_pin3d.vp.Y) / g_pplayer->m_pin3d.vp.Height; 
+   p.z = (point.z - g_pplayer->m_pin3d.vp.MinZ) / (g_pplayer->m_pin3d.vp.MaxZ-g_pplayer->m_pin3d.vp.MinZ);
    p3 = m2.MultiplyVector( p );
    return p3;
 }
 
-Vertex3Ds Pin3D::Get3DPointFrom2D( POINT *p )
+Vertex3Ds Pin3D::Get3DPointFrom2D( const POINT& p )
 {
    Vertex3Ds p1,p2,pNear,pFar;
-   pNear.x = (float)p->x; pNear.y = (float)p->y; pNear.z = (float)vp.MinZ;
-   pFar.x = (float)p->x; pFar.y = (float)p->y; pFar.z = (float)vp.MaxZ;
-   p1 = Unproject( &pNear );
-   p2 = Unproject( &pFar);
+   pNear.x = (float)p.x; pNear.y = (float)p.y; pNear.z = (float)vp.MinZ;
+   pFar.x = (float)p.x; pFar.y = (float)p.y; pFar.z = (float)vp.MaxZ;
+   p1 = Unproject( pNear );
+   p2 = Unproject( pFar);
    float wz = g_pplayer->m_ptable->m_tableheight;
    float wx = ((wz-p1.z)*(p2.x-p1.x))/(p2.z-p1.z) + p1.x;
    float wy = ((wz-p1.z)*(p2.y-p1.y))/(p2.z-p1.z) + p1.y;
@@ -820,40 +819,6 @@ void PinProjection::ComputeNearFarPlane(const Vector<Vertex3Ds>& verts)
 
     m_rznear *= 0.99f;
     m_rzfar *= 1.01f;
-}
-
-
-void PinProjection::SetupProjectionMatrix(float rFOV, float raspect, float rznear, float rzfar)
-{
-    m_matProj.SetIdentity();
-
-#ifdef VP10
-    if (rFOV < 1.0)     // orthographic? -- disabled, not compatible with old tables
-    {
-        const float yrange = EDITOR_BG_HEIGHT;
-        const float xrange = yrange * raspect; //width/height
-        const float zdist = rzfar - rznear;
-
-        m_matProj._11 = (float)(1.0 / xrange);
-        m_matProj._22 = (float)(1.0 / yrange);
-        m_matProj._33 = (float)(1.0 / zdist);
-        m_matProj._43 = (float)(-rznear / zdist);
-        m_matProj._44 = 1.0f;
-    }
-    else
-#endif
-    {
-        // From the Field Of View and far z clipping plane, determine the front clipping plane size
-        const float yrange = tan(ANGTORAD(rFOV*0.5f));
-        const float xrange = yrange * raspect; //width/height
-        const float Q = rzfar / ( rzfar - rznear );
-
-        m_matProj._11 = (float)(1.0 / xrange);
-        m_matProj._22 = (float)(1.0 / yrange);
-        m_matProj._33 = (float)Q;
-        m_matProj._43 = (float)(-Q*rznear);
-        m_matProj._34 = 1.0f;
-    }
 }
 
 void PinProjection::CacheTransform()

@@ -2,8 +2,6 @@
 #include "Texture.h"
 #include "freeimage.h"
 
-RenderDevice *Texture::renderDevice=0;
-
 #define MIN_TEXTURE_SIZE 8
 
 MemTexture* MemTexture::CreateFromFreeImage(FIBITMAP* dib)
@@ -125,7 +123,6 @@ Texture::Texture()
 {
    m_pdsBuffer = NULL;
    m_pdsBufferColorKey = NULL;
-   m_pdsBufferBackdrop = NULL;
    m_rgbTransparent = RGB(255,255,255);
    m_hbmGDIVersion = NULL;
    m_ppb = NULL;
@@ -136,11 +133,6 @@ Texture::~Texture()
    FreeStuff();
 }
 
-void Texture::SetRenderDevice( RenderDevice *_device )
-{
-   renderDevice = _device;
-}
-
 void Texture::Release()
 {
 }
@@ -148,11 +140,6 @@ void Texture::Release()
 void Texture::Set(DWORD textureChannel)
 {
     g_pplayer->m_pin3d.SetBaseTexture( textureChannel, m_pdsBufferColorKey);
-}
-
-void Texture::SetBackDrop( DWORD textureChannel )
-{
-    g_pplayer->m_pin3d.SetBaseTexture( textureChannel, m_pdsBufferBackdrop ? m_pdsBufferBackdrop : NULL);
 }
 
 void Texture::Unset( DWORD textureChannel )
@@ -308,12 +295,10 @@ BOOL Texture::LoadToken(int id, BiffReader *pbr)
 
 void Texture::SetTransparentColor(const COLORREF color)
 {
-   m_fTransparent = false;
    if (m_rgbTransparent != color)
    {
       m_rgbTransparent = color;
       delete m_pdsBufferColorKey; m_pdsBufferColorKey = NULL;
-      delete m_pdsBufferBackdrop; m_pdsBufferBackdrop = NULL;
    }
 }
 
@@ -323,23 +308,8 @@ void Texture::CreateAlphaChannel()
    {
       // copy buffer into new color key buffer
       m_pdsBufferColorKey = new MemTexture(*m_pdsBuffer);
-      m_fTransparent = Texture::SetAlpha(m_pdsBufferColorKey, m_rgbTransparent);
-      if (!m_fTransparent)
+      if (!Texture::SetAlpha(m_pdsBufferColorKey, m_rgbTransparent))
          m_rgbTransparent = NOTRANSCOLOR; // set to magic color to disable future checking
-   }
-}
-
-void Texture::EnsureBackdrop(const COLORREF color)
-{
-   if (!m_pdsBufferBackdrop || color != m_rgbBackdropCur)
-   {
-      if (!m_pdsBufferBackdrop)
-      {
-          m_pdsBufferBackdrop = new MemTexture;
-      }
-      *m_pdsBufferBackdrop = *m_pdsBuffer;  // copy texture
-      SetOpaqueBackdrop(m_pdsBufferBackdrop, m_rgbTransparent, color);
-      m_rgbBackdropCur = color;
    }
 }
 
@@ -347,7 +317,6 @@ void Texture::FreeStuff()
 {
    delete m_pdsBuffer; m_pdsBuffer = NULL;
    delete m_pdsBufferColorKey; m_pdsBufferColorKey = NULL;
-   delete m_pdsBufferBackdrop; m_pdsBufferBackdrop = NULL;
    if (m_hbmGDIVersion)
    {
       DeleteObject(m_hbmGDIVersion);
@@ -456,35 +425,6 @@ void Texture::SetOpaque(BaseTexture* pdds)
     }
 }
 
-void Texture::SetOpaqueBackdrop(BaseTexture* pdds, const COLORREF rgbTransparent, const COLORREF rgbBackdrop)
-{
-   const int width = pdds->width();
-   const int height = pdds->height();
-   const int lpitch = pdds->pitch();
-
-   const D3DCOLOR rgbBd = COLORREF_to_D3DCOLOR(rgbBackdrop);
-
-   // Assume our 32 bit color structure
-   BYTE *pch = pdds->data();
-
-   for (int i=0;i<height;i++)
-   {
-      for (int l=0;l<width;l++)
-      {
-         if ((*(unsigned int *)pch & 0xffffff) != rgbTransparent)
-         {
-            pch[3] = 0xff;
-         }
-         else
-         {
-            *(unsigned int *)pch = rgbBd;
-         }
-         pch += 4;
-      }
-      pch += lpitch-(width*4);
-   }
-}
-
 void Texture::SetAlpha(const COLORREF rgbTransparent)
 {
     if (!m_pdsBufferColorKey)
@@ -552,98 +492,4 @@ AlphaCheckDone:
     }
 
     return fTransparent;
-}
-
-
-static const int rgfilterwindow[7][7] =
-{
-    1,  4,  8, 10,  8,  4,  1,
-    4, 12, 25, 29, 25, 12,  4,
-    8, 25, 49, 58, 49, 25,  8,
-   10, 29, 58, 67, 58, 29, 10,
-    8, 25, 49, 58, 49, 25,  8,
-    4, 12, 25, 29, 25, 12,  4,
-    1,  4,  8, 10,  8,  4,  1
-};
-
-void Texture::Blur(BaseTexture* pdds, const BYTE * const pbits, const int shadwidth, const int shadheight)
-{
-    if (!pbits) return;	// found this pointer to be NULL after some graphics errors
-
-    const int width = pdds->width();
-    const int height = pdds->height();
-    const int pitch = pdds->pitch();
-
-/*  int window[7][7]; // custom filter kernel
-    for (int i=0;i<4;i++)
-    {
-      window[0][i] = i+1;
-      window[0][6-i] = i+1;
-      window[i][0] = i+1;
-      window[6-i][0] = i+1;
-    }  */
-
-    int totalwindow = 0;
-    for (int i=0;i<7;i++)
-    {
-        for (int l=0;l<7;l++)
-        {
-            //window[i][l] = window[0][l] * window[i][0];
-            totalwindow += rgfilterwindow[i][l];
-        }
-    }
-
-    // Gaussian Blur the sharp shadows
-
-    const int pitchSharp = 256*3;
-    BYTE *pc = pdds->data();
-
-    for (int i=0;i<shadheight;i++)
-    {
-        for (int l=0;l<shadwidth;l++)
-        {
-            int value = 0;
-            int totalvalue = totalwindow;
-
-            for (int n=0;n<7;n++)
-            {
-                const int y = i+n-3;
-                if(/*y>=0 &&*/ (unsigned int)y<(unsigned int)shadheight) // unsigned arithmetic trick includes check for >= zero
-                {
-                    const BYTE *const py = pbits + pitchSharp*y;
-                    for (int m=0;m<7;m++)
-                    {
-                        const int x = l+m-3;
-                        if (/*x>=0 &&*/ (unsigned int)x<(unsigned int)shadwidth) // dto. //!! opt.
-                        {
-                            value += (int)(*(py + x*3)) * rgfilterwindow[m][n];
-                        }
-                        else
-                        {
-                            totalvalue -= rgfilterwindow[m][n];
-                        }
-                    }
-                }
-                else
-                {
-                    for (int m=0;m<7;m++)
-                    {
-                        const int x = l+m-3;
-                        if (/*x<0 ||*/ (unsigned int)x>=(unsigned int)shadwidth) // dto.
-                        {
-                            totalvalue -= rgfilterwindow[m][n];
-                        }
-                    }
-                }
-            }
-
-            value /= totalvalue; //totalwindow;
-
-            const unsigned int valueu = 127 + (value>>1);
-            *((unsigned int*)pc) = valueu | (valueu<<8) | (valueu<<16) | (valueu<<24); // all R,G,B,A get same value
-            pc += 4;
-        }
-
-        pc += pitch - shadwidth*4;
-    }
 }
