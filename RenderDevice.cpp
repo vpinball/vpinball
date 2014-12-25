@@ -105,8 +105,6 @@ static unsigned int fvfToSize(DWORD fvf)
         case MY_D3DFVF_NOTEX2_VERTEX:
         case MY_D3DTRANSFORMED_NOTEX2_VERTEX:
             return sizeof(Vertex3D_NoTex2);
-        case MY_D3DFVF_NOTEX_VERTEX:
-            return sizeof(Vertex3D_NoTex);
 		case MY_D3DFVF_TEX:
 			return 5*sizeof(float);
         default:

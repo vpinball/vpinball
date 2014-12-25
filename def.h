@@ -108,8 +108,6 @@ enum SaveDirtyState
 
 #define MY_D3DFVF_TEX					(D3DFVF_XYZ | D3DFVF_TEX1)
 
-#define MY_D3DFVF_NOTEX_VERTEX          (D3DFVF_XYZ    | D3DFVF_NORMAL                    | D3DFVF_TEX0)
-
 #define MY_D3DFVF_NOTEX2_VERTEX         (D3DFVF_XYZ    | D3DFVF_NORMAL                    | D3DFVF_TEX1)
 #define MY_D3DTRANSFORMED_NOTEX2_VERTEX (D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_SPECULAR | D3DFVF_TEX1)
 
@@ -170,21 +168,6 @@ public:
       D3DVALUE tu;
       D3DVALUE tv;
 };
-
-class Vertex3D_NoTex // for rendering, uses MY_D3DFVF_NOTEX_VERTEX or MY_D3DTRANSFORMED_NOTEX_VERTEX
-{
-public:
-   // Position
-   D3DVALUE x; 
-   D3DVALUE y; 
-   D3DVALUE z;
-
-   // Normals
-   D3DVALUE nx;
-   D3DVALUE ny;
-   D3DVALUE nz;
-};
-
 
 class LocalString
 {
