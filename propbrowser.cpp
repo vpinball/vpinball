@@ -1099,13 +1099,7 @@ LRESULT CALLBACK ColorProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
          RECT rc;
          GetClientRect(hwnd, &rc);
 
-         int colorkey;
-         const HRESULT hr = GetRegInt("Editor", "TransparentColorKey", &colorkey);
-         if (hr != S_OK)
-			 colorkey = (int)NOTRANSCOLOR; //not set assign no transparent color 	
-
          /*const HWND hwndButton =*/ CreateWindow("BUTTON","Color",WS_VISIBLE | WS_CHILD | BS_OWNERDRAW, 0, 0, rc.right - rc.left, rc.bottom - rc.top, hwnd, NULL, g_hinst, 0);
-         SetWindowLongPtr(hwnd, GWLP_USERDATA, colorkey); // get cached colorkey
       }
       break;
 

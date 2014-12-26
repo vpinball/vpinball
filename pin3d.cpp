@@ -205,18 +205,16 @@ HRESULT Pin3D::InitPin3D(const HWND hwnd, const bool fFullScreen, const int scre
 
 	envTexture.CreateFromResource(IDB_ENV);
 
-	m_envRadianceTexture = new MemTexture(envTexture.m_pdsBufferColorKey->width(),envTexture.m_pdsBufferColorKey->height());
+	m_envRadianceTexture = new MemTexture(envTexture.m_pdsBuffer->width(),envTexture.m_pdsBuffer->height());
 
-	EnvmapPrecalc((DWORD*)envTexture.m_pdsBufferColorKey->data(),envTexture.m_pdsBufferColorKey->width(),envTexture.m_pdsBufferColorKey->height(),
-				  (DWORD*)m_envRadianceTexture->data(),envTexture.m_pdsBufferColorKey->width(),envTexture.m_pdsBufferColorKey->height());
-
+	EnvmapPrecalc((DWORD*)envTexture.m_pdsBuffer->data(),envTexture.m_pdsBuffer->width(),envTexture.m_pdsBuffer->height(),
+				  (DWORD*)m_envRadianceTexture->data(),envTexture.m_pdsBuffer->width(),envTexture.m_pdsBuffer->height());
 	
+
 	m_device_envRadianceTexture = m_pd3dDevice->m_texMan.LoadTexture(m_envRadianceTexture);
 	m_pd3dDevice->m_texMan.SetDirty(m_envRadianceTexture);
 
-
     m_pddsLightWhite.CreateFromResource(IDB_WHITE);
-    m_pddsLightWhite.SetAlpha(RGB(0,0,0));
 
     if(stereo3DFXAA) {
 		m_pdds3DBackBuffer = m_pd3dDevice->DuplicateTexture(m_pddsBackBuffer);
@@ -603,18 +601,14 @@ void Pin3D::SetTexture(Texture* pTexture)
 {
     BaseTexture* tex = NULL;
     if (pTexture)
-    {
-        tex = pTexture->m_pdsBufferColorKey;
-        if (tex == NULL)
-            tex = pTexture->m_pdsBuffer;
-    }
+        tex = pTexture->m_pdsBuffer;
     SetBaseTexture(ePictureTexture, tex);
 }
 
 void Pin3D::SetBaseTexture(DWORD texUnit, BaseTexture* pddsTexture)
 {
     m_pd3dDevice->SetTexture(texUnit,
-            m_pd3dDevice->m_texMan.LoadTexture((pddsTexture == NULL) ? m_pddsLightWhite.m_pdsBufferColorKey : pddsTexture));
+            m_pd3dDevice->m_texMan.LoadTexture((pddsTexture == NULL) ? m_pddsLightWhite.m_pdsBuffer : pddsTexture));
 }
 
 void Pin3D::EnableLightMap(const float z)

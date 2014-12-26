@@ -1036,22 +1036,18 @@ void Shader::Begin( unsigned int pass )
 {
    unsigned int cPasses;
    m_shader->Begin(&cPasses,0);
-   m_shader->BeginPass(pass);  
-
+   m_shader->BeginPass(pass);
 }
 
 void Shader::End()
 {
-   m_shader->EndPass();  
-   m_shader->End();  
-
+   m_shader->EndPass();
+   m_shader->End();
 }
 
 void Shader::SetTexture( D3DXHANDLE texelName, Texture *texel)
 {
-   if ( texel->m_pdsBufferColorKey )
-      m_shader->SetTexture(texelName,m_renderDevice->m_texMan.LoadTexture(texel->m_pdsBufferColorKey));
-   else if (texel->m_pdsBuffer )
+   if (texel->m_pdsBuffer )
       m_shader->SetTexture(texelName,m_renderDevice->m_texMan.LoadTexture(texel->m_pdsBuffer));
 }
 

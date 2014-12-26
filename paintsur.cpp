@@ -132,6 +132,7 @@ void PaintSur::PolygonImage(const Vector<RenderVertex> &rgv, HBITMAP hbm, const 
 	HDC hdcNew = CreateCompatibleDC(m_hdc);
 	HBITMAP hbmOld = (HBITMAP)SelectObject(hdcNew, hbm);
 	
+	SetStretchBltMode(m_hdc, HALFTONE); // somehow enables filtering
 	StretchBlt(m_hdc, ix, iy, ix2-ix, iy2-iy, hdcNew, 0, 0, bitmapwidth, bitmapheight, SRCINVERT);
 
 	SelectObject(m_hdc, GetStockObject(BLACK_BRUSH));
@@ -147,6 +148,7 @@ void PaintSur::PolygonImage(const Vector<RenderVertex> &rgv, HBITMAP hbm, const 
 
 	::Polygon(m_hdc, rgpt, rgv.Size());
 			
+	SetStretchBltMode(m_hdc, HALFTONE); // somehow enables filtering
 	StretchBlt(m_hdc, ix, iy, ix2-ix, iy2-iy, hdcNew, 0, 0, bitmapwidth, bitmapheight, SRCINVERT);
 	
 	SelectObject(hdcNew, hbmOld);
@@ -201,6 +203,7 @@ void PaintSur::Image(const float x, const float y, const float x2, const float y
 	const int ix2 = SCALEXf(x2);
 	const int iy2 = SCALEYf(y2);
 	
+	SetStretchBltMode(m_hdc, HALFTONE); // somehow enables filtering
 	StretchBlt(m_hdc, ix, iy, ix2-ix, iy2-iy, hdcSrc, 0, 0, width, height, SRCCOPY);
 	}
 

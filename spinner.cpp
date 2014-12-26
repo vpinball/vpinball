@@ -342,8 +342,7 @@ void Spinner::PostRenderStatic(RenderDevice* pd3dDevice)
     UpdatePlate(pd3dDevice);
     if ( image )
     {
-        image->CreateAlphaChannel();
-            g_pplayer->m_pin3d.EnableAlphaBlend(1, false);
+        g_pplayer->m_pin3d.EnableAlphaBlend(1, false);
         pd3dDevice->basicShader->SetTexture("Texture0",image);
         pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
     }
@@ -369,12 +368,6 @@ void Spinner::RenderSetup(RenderDevice* pd3dDevice)
    if ( !m_d.m_fVisible )
     return;
 
-   Texture* const image = m_ptable->GetImage(m_d.m_szImage);
-
-   if( image )
-   {
-      image->CreateAlphaChannel();
-   }
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
    std::vector<WORD> indices(spinnerBracketNumFaces);
    Vertex3D_NoTex2 *buf;

@@ -122,8 +122,6 @@ MemTexture* MemTexture::CreateFromHBitmap(HBITMAP hbm)
 Texture::Texture()
 {
    m_pdsBuffer = NULL;
-   m_pdsBufferColorKey = NULL;
-   m_rgbTransparent = RGB(255,255,255);
    m_hbmGDIVersion = NULL;
    m_ppb = NULL;
 }
@@ -137,12 +135,12 @@ void Texture::Release()
 {
 }
 
-void Texture::Set(DWORD textureChannel)
+void Texture::Set(const DWORD textureChannel)
 {
-    g_pplayer->m_pin3d.SetBaseTexture( textureChannel, m_pdsBufferColorKey);
+    g_pplayer->m_pin3d.SetBaseTexture( textureChannel, m_pdsBuffer);
 }
 
-void Texture::Unset( DWORD textureChannel )
+void Texture::Unset(const DWORD textureChannel)
 {
     g_pplayer->m_pin3d.SetBaseTexture(textureChannel, NULL);
 }
@@ -159,8 +157,6 @@ HRESULT Texture::SaveToStream(IStream *pstream, PinTable *pt)
 
    bw.WriteInt(FID(WDTH), m_width);
    bw.WriteInt(FID(HGHT), m_height);
-
-   bw.WriteInt(FID(TRNS), m_rgbTransparent);
 
    if (!m_ppb)
    {
@@ -228,10 +224,6 @@ BOOL Texture::LoadToken(int id, BiffReader *pbr)
    {
       pbr->GetString(m_szPath);
    }
-   else if (id == FID(TRNS))
-   {
-      pbr->GetInt(&m_rgbTransparent);
-   }
    else if (id == FID(WDTH))
    {
       pbr->GetInt(&m_width);
@@ -242,7 +234,7 @@ BOOL Texture::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(BITS))
    {
-       m_pdsBuffer = new MemTexture(m_width, m_height);
+      m_pdsBuffer = new MemTexture(m_width, m_height);
 
       // 32-bit picture
       LZWReader lzwreader(pbr->m_pistream, (int *)m_pdsBuffer->data(), m_width*4, m_height, m_pdsBuffer->pitch());
@@ -293,30 +285,9 @@ BOOL Texture::LoadToken(int id, BiffReader *pbr)
    return fTrue;
 }
 
-void Texture::SetTransparentColor(const COLORREF color)
-{
-   if (m_rgbTransparent != color)
-   {
-      m_rgbTransparent = color;
-      delete m_pdsBufferColorKey; m_pdsBufferColorKey = NULL;
-   }
-}
-
-void Texture::CreateAlphaChannel()
-{
-   if (!m_pdsBufferColorKey)
-   {
-      // copy buffer into new color key buffer
-      m_pdsBufferColorKey = new MemTexture(*m_pdsBuffer);
-      if (!Texture::SetAlpha(m_pdsBufferColorKey, m_rgbTransparent))
-         m_rgbTransparent = NOTRANSCOLOR; // set to magic color to disable future checking
-   }
-}
-
 void Texture::FreeStuff()
 {
    delete m_pdsBuffer; m_pdsBuffer = NULL;
-   delete m_pdsBufferColorKey; m_pdsBufferColorKey = NULL;
    if (m_hbmGDIVersion)
    {
       DeleteObject(m_hbmGDIVersion);
@@ -332,9 +303,7 @@ void Texture::FreeStuff()
 void Texture::EnsureHBitmap()
 {
    if (!m_hbmGDIVersion)
-   {
       CreateGDIVersion();
-   }
 }
 
 void Texture::CreateGDIVersion()
@@ -354,11 +323,16 @@ void Texture::CreateGDIVersion()
    bmi.bmiHeader.biCompression = BI_RGB;
    bmi.bmiHeader.biSizeImage = 0;
 
+   BYTE *tmp = new BYTE[m_width*m_height*4];
+   m_pdsBuffer->CopyTo_ConvertAlpha(tmp);
+
    SetStretchBltMode(hdcNew, COLORONCOLOR);
    StretchDIBits(hdcNew,
            0, 0, m_width, m_height,
            0, 0, m_width, m_height,
-           m_pdsBuffer->data(), &bmi, DIB_RGB_COLORS, SRCCOPY);
+           tmp, &bmi, DIB_RGB_COLORS, SRCCOPY);
+
+   delete [] tmp;
 
    SelectObject(hdcNew, hbmOld);
    DeleteDC(hdcNew);
@@ -384,11 +358,11 @@ void Texture::CreateFromResource(const int id, int * const pwidth, int * const p
 
    if (hbm == NULL)
    {
-      m_pdsBufferColorKey=NULL;
+      m_pdsBuffer=NULL;
       return;
    }
 
-   m_pdsBufferColorKey = CreateFromHBitmap(hbm, pwidth, pheight);
+   m_pdsBuffer = CreateFromHBitmap(hbm, pwidth, pheight);
 }
 
 BaseTexture* Texture::CreateFromHBitmap(HBITMAP hbm, int * const pwidth, int * const pheight)
@@ -402,11 +376,11 @@ BaseTexture* Texture::CreateFromHBitmap(HBITMAP hbm, int * const pwidth, int * c
 
 void Texture::CreateTextureOffscreen(const int width, const int height)
 {
-   m_pdsBufferColorKey = new MemTexture( width, height );
-   SetSizeFrom( m_pdsBufferColorKey );
+   m_pdsBuffer = new MemTexture( width, height );
+   SetSizeFrom( m_pdsBuffer );
 }
 
-void Texture::SetOpaque(BaseTexture* pdds)
+void Texture::SetOpaque(BaseTexture* const pdds)
 {
     const int width = pdds->width();
     const int height = pdds->height();
@@ -423,73 +397,4 @@ void Texture::SetOpaque(BaseTexture* pdds)
         }
         pch += pitch;
     }
-}
-
-void Texture::SetAlpha(const COLORREF rgbTransparent)
-{
-    if (!m_pdsBufferColorKey)
-        return;
-    
-	Texture::SetAlpha(m_pdsBufferColorKey, rgbTransparent);
-}
-
-bool Texture::SetAlpha(BaseTexture* pdds, const COLORREF rgbTransparent)
-{
-    // Set alpha of each pixel
-    const int width = pdds->width();
-    const int height = pdds->height();
-
-    bool fTransparent = false;
-
-    const int pitch = pdds->pitch();
-
-    // COLORREF order:  ABGR  (msb to lsb)
-    // D3DCOLOR order:  ARGB  (msb to lsb)
-    const D3DCOLOR bgrTransparent = COLORREF_to_D3DCOLOR(rgbTransparent);
-
-    // check if image has its own alpha channel
-    bool hasAlphaChannel = false;
-
-    BYTE *pch = pdds->data();
-    for (int i=0; i<height; i++)
-    {
-        for (int l=0; l<width; l++)
-        {
-            unsigned alpha = ((*(D3DCOLOR*)pch) & 0xff000000) >> 24;
-            if (alpha < 255)
-            {
-                hasAlphaChannel = true;
-                goto AlphaCheckDone;
-            }
-            pch += 4;
-        }
-        pch += pitch-(width*4);
-    }
-AlphaCheckDone:
-
-    if (hasAlphaChannel)
-        fTransparent = true;
-
-    if (rgbTransparent != NOTRANSCOLOR)
-    {
-        pch = pdds->data();
-        for (int i=0;i<height;i++)
-        {
-            for (int l=0;l<width;l++)
-            {
-                const D3DCOLOR tc = (*(D3DCOLOR *)pch) | 0xff000000; //set to opaque
-                if (tc == bgrTransparent )
-                {
-                    *(unsigned int *)pch = 0x00000000;		// set transparent colorkey to black and alpha transparent
-                    fTransparent = true;					// colorkey is true
-                }
-                else if (!hasAlphaChannel)       // if there is no alpha-channel info in the image, set to opaque
-                    *(D3DCOLOR*)pch = tc;
-                pch += 4;
-            }
-            pch += pitch-(width*4);
-        }
-    }
-
-    return fTransparent;
 }

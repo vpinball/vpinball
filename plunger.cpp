@@ -283,7 +283,6 @@ void Plunger::PostRenderStatic(RenderDevice* pd3dDevice)
         if ( renderNewPlunger )
         {
             //render a simple rectangle as an embedded alpha ramp plunger ;)
-            pin->CreateAlphaChannel();
 //            D3DXVECTOR4 color(1.0f,1.0f,1.0f,1.0f);
 //            pd3dDevice->basicShader->Core()->SetVector("cBase",&color);
             pd3dDevice->basicShader->SetTexture("Texture0",pin);
@@ -299,7 +298,6 @@ void Plunger::PostRenderStatic(RenderDevice* pd3dDevice)
         {
             if ( pin )
             {
-                pin->CreateAlphaChannel();
 //                 D3DXVECTOR4 color(1.0f,1.0f,1.0f,1.0f);
 //                 pd3dDevice->basicShader->Core()->SetVector("cBase",&color);
                 pd3dDevice->basicShader->SetTexture("Texture0",pin);

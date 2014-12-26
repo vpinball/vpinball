@@ -1,7 +1,5 @@
 #pragma once
 
-#define NOTRANSCOLOR  RGB(123,123,123)
-
 struct FIBITMAP;
 class RenderDevice;
 
@@ -29,13 +27,31 @@ public:
     void CopyBits(const void* bits)      // copy bits which are already in the right format
     { memcpy( data(), bits, m_data.size() ); }
 
+	void CopyTo_ConvertAlpha(void* bits) // adds checkerboard pattern where alpha is set to output bits
+	{
+		unsigned int o = 0;
+		for(unsigned int j = 0; j < m_height; ++j)
+		for(unsigned int i = 0; i < m_width; ++i,++o)
+		{
+			if(m_data[o*4+3] != 0xFF)
+			{
+				const BYTE c = (((i>>4)^(j>>4))&1)*128+127;
+				((BYTE*)bits)[o*4  ] = c;
+				((BYTE*)bits)[o*4+1] = c;
+				((BYTE*)bits)[o*4+2] = c;
+				((BYTE*)bits)[o*4+3] = 0xFF;
+			}
+			else
+				((DWORD*)bits)[o] = ((DWORD*)data())[o];
+		}
+	}
+
     static MemTexture *CreateFromHBitmap(HBITMAP hbm);
     static MemTexture *CreateFromFile(const char *filename);
     static MemTexture *CreateFromFreeImage(FIBITMAP* dib);
 };
 
 typedef struct MemTexture BaseTexture;
-
 
 class Texture : public ILoadable
 {
@@ -49,12 +65,10 @@ public:
    HRESULT SaveToStream(IStream *pstream, PinTable *pt);
    HRESULT LoadFromStream(IStream *pstream, int version, PinTable *pt);
 
-   void CreateAlphaChannel();
    void FreeStuff();
-   void SetTransparentColor(const COLORREF color);
 
-   void Set(DWORD textureChannel);
-   void Unset(DWORD textureChannel);
+   void Set(const DWORD textureChannel);
+   void Unset(const DWORD textureChannel);
 
    void Release();
    void EnsureHBitmap();
@@ -64,10 +78,7 @@ public:
    BaseTexture *CreateFromHBitmap(HBITMAP hbm, int * const pwidth, int * const pheight);
    void CreateFromResource(const int id, int * const pwidth = NULL, int * const pheight = NULL);
 
-   void SetAlpha(const COLORREF rgbTransparent);
-
-   static void SetOpaque(BaseTexture* pdds);
-   static bool SetAlpha(BaseTexture* pdds, const COLORREF rgbTransparent);
+   static void SetOpaque(BaseTexture* const pdds);
 
    // create/release a DC which contains a (read-only) copy of the texture; for editor use
    void GetTextureDC(HDC *pdc);
@@ -89,7 +100,6 @@ public:
    int m_width, m_height;
 
    BaseTexture* m_pdsBuffer;
-   BaseTexture* m_pdsBufferColorKey;
 
    HBITMAP m_hbmGDIVersion; // HBitmap at screen depth so GDI draws it fast
    PinBinary *m_ppb;  // if this image should be saved as a binary stream, otherwise just LZW compressed from the live bitmap
@@ -97,8 +107,6 @@ public:
    char m_szName[MAXTOKEN];
    char m_szInternalName[MAXTOKEN];
    char m_szPath[MAX_PATH];
-
-   COLORREF m_rgbTransparent; // if NOTRANSCOLOR then no transparency in picture
 
 private:
    HBITMAP m_oldHBM;        // this is to cache the result of SelectObject()

@@ -2725,22 +2725,7 @@ INT_PTR CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
             {
                NMLISTVIEW * const plistview = (LPNMLISTVIEW)lParam;
                if ((plistview->uNewState & LVIS_SELECTED) != (plistview->uOldState & LVIS_SELECTED))
-               {
                   InvalidateRect(GetDlgItem(hwndDlg, IDC_PICTUREPREVIEW), NULL, fTrue);
-                  if (plistview->uNewState & LVIS_SELECTED)
-                  {
-                     const int sel = plistview->iItem;
-                     LVITEM lvitem;
-                     lvitem.mask = LVIF_PARAM;
-                     lvitem.iItem = sel;
-                     lvitem.iSubItem = 0;
-                     ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
-                     Texture * const ppi = (Texture *)lvitem.lParam;
-                     HWND hwndColor = GetDlgItem(hwndDlg, IDC_COLOR);
-                     SendMessage(hwndColor, CHANGE_COLOR, 0, ppi->m_rgbTransparent);
-                     InvalidateRect(hwndColor, NULL, FALSE);
-                  }
-               }
             }
             break;
 
@@ -2774,7 +2759,7 @@ INT_PTR CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
             GetWindowRect(pdis->hwndItem , &rcClient);
 
             const int xsize = rcClient.right - rcClient.left;
-            const int ysize =	rcClient.bottom - rcClient.top;
+            const int ysize = rcClient.bottom - rcClient.top;
 
             const float controlaspect = (float)xsize/(float)ysize;
             const float aspect = (float)ppi->m_width/(float)ppi->m_height;
@@ -2796,6 +2781,7 @@ INT_PTR CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
 
             HDC hdcDD;
             ppi->GetTextureDC(&hdcDD);
+			SetStretchBltMode(pdis->hDC, HALFTONE); // somehow enables filtering
             StretchBlt(pdis->hDC, x, y, width, height, hdcDD, 0, 0, ppi->m_width, ppi->m_height, SRCCOPY);
             ppi->ReleaseTextureDC(hdcDD);
          }
@@ -2834,34 +2820,6 @@ INT_PTR CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
    case WM_COMMAND:
       switch (HIWORD(wParam))
       {
-      case COLOR_CHANGED:
-         {
-            const int count = ListView_GetSelectedCount(GetDlgItem(hwndDlg, IDC_SOUNDLIST));
-            if (count > 0)
-            {
-               const size_t color = GetWindowLongPtr((HWND)lParam, GWLP_USERDATA);
-               int sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), -1, LVNI_SELECTED);
-               while (sel != -1)
-               {							
-                  LVITEM lvitem;
-                  lvitem.mask = LVIF_PARAM;
-                  lvitem.iItem = sel;
-                  lvitem.iSubItem = 0;
-                  ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
-                  Texture * const ppi = (Texture *)lvitem.lParam;
-                  ppi->SetTransparentColor(color);
-
-                  SetRegValue("Editor", "TransparentColorKey", REG_DWORD, &color, 4);
-
-                  // The previous selection is now deleted, so look again from the top of the list
-                  sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), sel, LVNI_SELECTED);
-               }
-
-               pt->SetNonUndoableDirty(eSaveDirty);
-            }
-         }
-         break;
-
       case BN_CLICKED:
          switch (LOWORD(wParam))
          {
