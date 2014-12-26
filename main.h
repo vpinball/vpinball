@@ -110,6 +110,8 @@ class PinBinary;
 #include "pin/hitplunger.h"
 #include "pin/player.h"
 
+#include "color.h"
+
 #include "DragPoint.h"
 #include "timer.h"
 #include "surface.h"
