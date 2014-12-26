@@ -33,13 +33,14 @@ public:
 		for(unsigned int j = 0; j < m_height; ++j)
 		for(unsigned int i = 0; i < m_width; ++i,++o)
 		{
-			if(m_data[o*4+3] != 0xFF)
+			const unsigned int alpha = m_data[o*4+3];
+			if(alpha != 255)
 			{
-				const BYTE c = (((i>>4)^(j>>4))&1)*128+127;
-				((BYTE*)bits)[o*4  ] = c;
-				((BYTE*)bits)[o*4+1] = c;
-				((BYTE*)bits)[o*4+2] = c;
-				((BYTE*)bits)[o*4+3] = 0xFF;
+				const unsigned int c = (((((i>>4)^(j>>4))&1)<<7)+127) * (255-alpha);
+				((BYTE*)bits)[o*4  ] = ((unsigned int)m_data[o*4  ]*alpha + c)>>8;
+				((BYTE*)bits)[o*4+1] = ((unsigned int)m_data[o*4+1]*alpha + c)>>8;
+				((BYTE*)bits)[o*4+2] = ((unsigned int)m_data[o*4+2]*alpha + c)>>8;
+				((BYTE*)bits)[o*4+3] = m_data[o*4+3];
 			}
 			else
 				((DWORD*)bits)[o] = ((DWORD*)data())[o];
