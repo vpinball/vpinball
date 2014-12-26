@@ -405,7 +405,6 @@ void Decal::RenderText()
 
     m_textImg->CopyBits(bits);
     Texture::SetOpaque(m_textImg);
-    Texture::SetAlpha(m_textImg, RGB(255,255,255));
 
     SelectObject(hdc, hFontOld);
     SelectObject(hdc, oldBmp);
@@ -458,9 +457,6 @@ void Decal::RenderSetup(RenderDevice* pd3dDevice )
    }
    else
    {
-      Texture *pin = m_ptable->GetImage(m_d.m_szImage);
-      if (pin)
-          pin->CreateAlphaChannel();
       leading = 0;
       descent = 0;
    }
@@ -546,10 +542,7 @@ void Decal::RenderStatic(RenderDevice* pd3dDevice)
    {
       Texture *pin = m_ptable->GetImage(m_d.m_szImage);
       if (pin)
-      {
-          pin->CreateAlphaChannel();
           pd3dDevice->basicShader->SetTexture("Texture0", pin);
-      }
    }
 
    // Set texture to mirror, so the alpha state of the texture blends correctly to the outside

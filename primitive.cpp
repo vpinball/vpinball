@@ -608,7 +608,6 @@ void Primitive::RenderObject( RenderDevice *pd3dDevice )
 
     if (pin)
     {
-        pin->CreateAlphaChannel();
         pd3dDevice->basicShader->SetTexture("Texture0", pin);
         pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
         g_pplayer->m_pin3d.EnableAlphaBlend(1,false);
@@ -656,11 +655,6 @@ void Primitive::RenderSetup( RenderDevice* pd3dDevice )
       pd3dDevice->CreateVertexBuffer( m_mesh.NumVertices(), 0, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer );
 
    indexBuffer = pd3dDevice->CreateAndFillIndexBuffer( m_mesh.m_indices );
-
-   // make sure alpha channel is set up
-   Texture * const tex = m_ptable->GetImage(m_d.m_szImage);
-   if (tex)
-       tex->CreateAlphaChannel();
 }
 
 void Primitive::RenderStatic(RenderDevice* pd3dDevice)

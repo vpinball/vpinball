@@ -6083,7 +6083,7 @@ void PinTable::ReImportImage(HWND hwndListView, Texture *ppi, char *filename)
    char szextension[MAX_PATH];
    ExtensionFromFilename(filename, szextension);
 
-   BOOL fBinary;	
+   BOOL fBinary;
    if (!lstrcmpi(szextension, "bmp"))
    {
       fBinary = fFalse;
@@ -6217,16 +6217,6 @@ void PinTable::ImportImage(HWND hwndListView, char *filename)
 {
    Texture * const ppi = new Texture();
 
-   int colorkey;
-   HRESULT hr = GetRegInt("Editor", "TransparentColorKey", &colorkey);
-
-   if (hr == S_OK)	ppi->m_rgbTransparent = (COLORREF)colorkey; //assign from Registry 		
-   else 
-   {
-      ppi->m_rgbTransparent = colorkey = RGB(255,0,255); //assume common transparent color 
-      hr = SetRegValue("Editor", "TransparentColorKey", REG_DWORD, &ppi->m_rgbTransparent, 4);
-   }
-
    ReImportImage(hwndListView, ppi, filename);
 
    if (ppi->m_pdsBuffer == NULL)
@@ -6234,7 +6224,6 @@ void PinTable::ImportImage(HWND hwndListView, char *filename)
       delete ppi;
       return;
    }
-
 
    // The first time we import a file, parse the name of the texture from the filename
 

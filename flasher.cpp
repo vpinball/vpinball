@@ -1262,7 +1262,6 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
 
       if (pinA && !pinB)
       {
-         pinA->CreateAlphaChannel();
          pd3dDevice->basicShader->SetTexture("Texture0", pinA);
          pd3dDevice->basicShader->Core()->SetTechnique("basic_with_textureOne_noLight");
 
@@ -1270,7 +1269,6 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
       }
       else if (!pinA && pinB)
       {
-         pinA->CreateAlphaChannel();
          pd3dDevice->basicShader->SetTexture("Texture0", pinB);
          pd3dDevice->basicShader->Core()->SetTechnique("basic_with_textureOne_noLight");
 
@@ -1278,8 +1276,6 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
       }
       else if (pinA && pinB)
       {
-         pinA->CreateAlphaChannel();
-         pinB->CreateAlphaChannel();
          pd3dDevice->basicShader->SetTexture("Texture0", pinA);
          pd3dDevice->basicShader->SetTexture("Texture1", pinB);
          pd3dDevice->basicShader->Core()->SetTechnique("basic_with_textureAB_noLight");

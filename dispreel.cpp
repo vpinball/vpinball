@@ -410,8 +410,6 @@ void DispReel::PostRenderStatic(RenderDevice* pd3dDevice)
         if (!pin)
             return;
 
-        pin->CreateAlphaChannel();
-
 		g_pplayer->m_pin3d.EnableAlphaBlend(0xe0, false);
         pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATER); //!! still necessary?
 
@@ -500,7 +498,7 @@ void DispReel::RenderSetup(RenderDevice* pd3dDevice)
         }
 
         // save the color to use in any transparent blitting
-        m_rgbImageTransparent = pin->m_rgbTransparent;
+        //!! m_rgbImageTransparent = pin->m_rgbTransparent;
         if ( GridCols!=0 && GridRows!=0 )
         {
             // get the size of the individual reel digits (if m_digitrange is wrong we can forget the rest)
@@ -508,11 +506,7 @@ void DispReel::RenderSetup(RenderDevice* pd3dDevice)
             m_reeldigitheight = (float)pin->m_height / (float)GridRows;
         }
         else
-        {
             ShowError("DispReel: GridCols/GridRows are zero!");
-        }
-
-        pin->CreateAlphaChannel();
 
         const float ratiox = (float)m_reeldigitwidth  / (float)pin->m_width;
         const float ratioy = (float)m_reeldigitheight / (float)pin->m_height;

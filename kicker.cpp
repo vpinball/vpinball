@@ -220,11 +220,10 @@ void Kicker::RenderSetup(RenderDevice* pd3dDevice)
    {
       std::vector<WORD> indices(kickerCupNumFaces);
       Vertex3D_NoTex2 *buf;
-      for( int i=0;i<kickerCupNumFaces;i++ ) indices[i] = kickerCupIndices[i];
+      for( int i=0;i<kickerCupNumFaces;i++ )
+		  indices[i] = kickerCupIndices[i];
 
       texture.CreateFromResource(IDB_KICKER_CUP);
-      texture.m_rgbTransparent = 0xFFFFFFFF;
-      texture.CreateAlphaChannel();
 
       numFaces = kickerCupNumFaces;
       numVertices = kickerCupNumVertices;
@@ -267,8 +266,6 @@ void Kicker::RenderSetup(RenderDevice* pd3dDevice)
       for( unsigned int i=0;i<kickerHoleNumFaces;i++ ) indices[i] = kickerHoleIndices[i];
 
       texture.CreateFromResource(IDB_KICKER_HOLE_WOOD);
-      texture.m_rgbTransparent = 0xFFFFFFFF;
-      texture.CreateAlphaChannel();
 
       numFaces = kickerHoleNumFaces;
       numVertices = kickerHoleNumVertices;

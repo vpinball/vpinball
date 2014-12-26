@@ -1401,7 +1401,6 @@ void Rubber::RenderObject(RenderDevice *pd3dDevice)
 
       if (pin)
       {
-         pin->CreateAlphaChannel();
 //         pin->Set( ePictureTexture );
 
          //ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );

@@ -1016,7 +1016,6 @@ void Ramp::RenderStaticHabitrail(RenderDevice* pd3dDevice)
    }
    else
    {
-       pin->CreateAlphaChannel();
        pd3dDevice->basicShader->SetTexture("Texture0",pin);
        pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
 
@@ -1655,18 +1654,9 @@ void Ramp::RenderStatic(RenderDevice* pd3dDevice)
       Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
       if (pin)
       {
-         pin->CreateAlphaChannel();
-
          pd3dDevice->basicShader->SetTexture("Texture0", pin );
          pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
-         if (pin->m_rgbTransparent == NOTRANSCOLOR)
-         {
-            pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
-         }
-         else
-         {
-            pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
-         }
+         pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
          ppin3d->EnableAlphaBlend( 1, false );
          pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", true);
          pd3dDevice->basicShader->Core()->SetFloat("fAlphaTestValue", 128.0f/255.0f);
@@ -2600,7 +2590,6 @@ void Ramp::PostRenderStatic(RenderDevice* pd3dDevice)
 
       if (pin)
       {
-         pin->CreateAlphaChannel();
          pd3dDevice->basicShader->SetTexture( "Texture0", pin );
          pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
 

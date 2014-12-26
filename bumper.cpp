@@ -519,12 +519,7 @@ void Bumper::RenderSetup(RenderDevice* pd3dDevice )
    if ( m_d.m_fBaseVisible )
    {
       baseTexture.CreateFromResource(IDB_BUMPERBASE);
-      baseTexture.m_rgbTransparent = 0xFFFFFFFF;
-      baseTexture.CreateAlphaChannel();
       socketTexture.CreateFromResource(IDB_BUMPERSOCKET);
-      socketTexture.m_rgbTransparent = 0xFFFFFFFF;
-      socketTexture.CreateAlphaChannel();
-
       ringTexture.CreateFromResource(IDB_RINGENVMAP);
 
       for( int i=0;i<bumperBaseNumFaces;i++ ) indices[i] = bumperBaseIndices[i];
@@ -535,7 +530,6 @@ void Bumper::RenderSetup(RenderDevice* pd3dDevice )
 
       if (!baseVertexBuffer)
          pd3dDevice->CreateVertexBuffer(bumperBaseNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &baseVertexBuffer);
-
 
       fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_orientation));
 

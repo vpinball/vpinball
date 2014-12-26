@@ -335,9 +335,21 @@ void Textbox::RenderText()
     if (!m_texture)
         m_texture = new MemTexture(m_rect.right - m_rect.left, m_rect.bottom - m_rect.top);
     m_texture->CopyBits(bits);
-    Texture::SetOpaque(m_texture);
-    if (m_d.m_fTransparent)
-        Texture::SetAlpha(m_texture, COLORREF_to_D3DCOLOR(m_d.m_backcolor));
+
+    // Set alpha for pixels that match transparent color (if transparent enabled), otherwise set to opaque
+	BYTE *pch = m_texture->data();
+	for (int i=0;i<m_texture->height();i++)
+	{
+		for (int l=0;l<m_texture->width();l++)
+		{
+			if (m_d.m_fTransparent && (((*(D3DCOLOR *)pch) & 0xFFFFFF) == m_d.m_backcolor))
+				*(D3DCOLOR *)pch = 0x00000000; // set to black & alpha full transparent
+			else
+				*(D3DCOLOR *)pch |= 0xFF000000;
+			pch += 4;
+		}
+		pch += m_texture->pitch() - m_texture->width()*4;
+	}
 
     ppin3d->m_pd3dDevice->m_texMan.SetDirty(m_texture);
 

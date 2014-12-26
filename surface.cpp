@@ -1041,7 +1041,6 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
 
         if (pinSide)
         {
-            pinSide->CreateAlphaChannel();
             pd3dDevice->basicShader->SetTexture("Texture0",pinSide);
             pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
 
@@ -1079,9 +1078,7 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
        Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
        if (pin)
        {
-          pin->CreateAlphaChannel();
           pd3dDevice->basicShader->SetTexture("Texture0",pin);  
-
           pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
 
           //g_pplayer->m_pin3d.SetTextureFilter( ePictureTexture, TEXTURE_MODE_TRILINEAR );
