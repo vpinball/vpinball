@@ -256,30 +256,33 @@ void mixer_draw()
 		const float Height = size[1] * sY;
 
 		// Set the color.
-		float r = ((float) ((drop_color             ) >> 24)) * (float)(1.0/255.0);
-		float g = ((float) ((drop_color & 0x00ff0000) >> 16)) * (float)(1.0/255.0);
-		float b = ((float) ((drop_color & 0x0000ff00) >>  8)) * (float)(1.0/255.0);
-		float a = ((float) ((drop_color & 0x000000ff)      )) * (float)(1.0/255.0);
-		DWORD col = RGBA_TO_D3DARGB ( r, g, b, a ); //!! meh
+		{
+		const DWORD r = (drop_color             ) >> 24;
+		const DWORD g = (drop_color & 0x00ff0000) >> 16;
+		const DWORD b = (drop_color & 0x0000ff00) >>  8;
+		const DWORD a = (drop_color & 0x000000ff)      ;
+		const DWORD col = (a << 24) | (r << 16) | (g << 8) | b;
 
 		// Draw the tick mark.  (Reversed x and y to match coordinate system of front end.)
 		g_pplayer->Spritedraw( (fY + 1.0f), (fX + 1.0f),
 							   (Height - 2.0f), (Width - 2.0f), 
 							   col,
 							   (Texture*)NULL); //!!
-
+		}
 		// Set the color.
-		r = ((float) ((color             ) >> 24)) * (float)(1.0/255.0);
-		g = ((float) ((color & 0x00ff0000) >> 16)) * (float)(1.0/255.0);
-		b = ((float) ((color & 0x0000ff00) >>  8)) * (float)(1.0/255.0);
-		a = ((float) ((color & 0x000000ff)      )) * (float)(1.0/255.0);
-		col = RGBA_TO_D3DARGB ( r, g, b, a ); //!! meh
+		{
+		const DWORD r = (color             ) >> 24;
+		const DWORD g = (color & 0x00ff0000) >> 16;
+		const DWORD b = (color & 0x0000ff00) >>  8;
+		const DWORD a = (color & 0x000000ff)      ;
+		const DWORD col = (a << 24) | (r << 16) | (g << 8) | b;
 
 		// Draw the tick mark.  (Reversed x and y to match coordinate system of front end.)
 		g_pplayer->Spritedraw( fY, fX,
 							   Height, Width, 
 							   col,
 							   (Texture*)NULL); //!!
+		}
 	}
 
 	// Restore the render states.

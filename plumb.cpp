@@ -116,11 +116,11 @@ void draw_transparent_box( F32 sx, F32 sy, const F32 x, const F32 y, const U32 c
     sx *= ((float) g_pplayer->m_pin3d.m_dwRenderHeight)*(float)(1.0/600.0);
     sy *= ((float) g_pplayer->m_pin3d.m_dwRenderWidth )*(float)(1.0/800.0);
 
-	const F32 r = ((float) ((color             ) >> 24)) *(float)(1.0/255.0);
-    const F32 g = ((float) ((color & 0x00ff0000) >> 16)) *(float)(1.0/255.0);
-    const F32 b = ((float) ((color & 0x0000ff00) >>  8)) *(float)(1.0/255.0);
-    const F32 a = ((float) ((color & 0x000000ff)      )) *(float)(1.0/255.0);
-	const DWORD col = RGBA_TO_D3DARGB ( r, g, b, a ); //!! meh
+	const DWORD r = (color             ) >> 24;
+	const DWORD g = (color & 0x00ff0000) >> 16;
+	const DWORD b = (color & 0x0000ff00) >>  8;
+	const DWORD a = (color & 0x000000ff)      ;
+	const DWORD col = (a << 24) | (r << 16) | (g << 8) | b;
 
     g_pplayer->Spritedraw( y, x,
                            sy, sx,

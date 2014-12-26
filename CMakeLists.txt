@@ -179,6 +179,7 @@ set(HEADERS
   buildnumber.h
   bumper.h
   codeview.h
+  color.h
   decal.h
   def.h
   dispid.h
