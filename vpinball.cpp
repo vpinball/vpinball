@@ -2847,7 +2847,7 @@ INT_PTR CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                ofn.lpstrFilter = "Bitmap, JPEG and PNG Files (.bmp/.jpg/.png)\0*.bmp;*.jpg;*.jpeg;*.png\0";
                ofn.lpstrFile = szFileName;
                ofn.nMaxFile = 10240;
-               ofn.lpstrDefExt = "bmp";
+               ofn.lpstrDefExt = "png";
                ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY | OFN_EXPLORER | OFN_ALLOWMULTISELECT;
 
                HRESULT hr = GetRegString("RecentDir","ImageDir", szInitialDir, 1024);
@@ -2919,7 +2919,7 @@ INT_PTR CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                      ofn.hInstance = g_hinst;
                      ofn.hwndOwner = g_pvp->m_hwnd;
                      //TEXT
-                     ofn.lpstrFilter = "*.bmp\0*.bmp\0*.jpg\0*.jpeg;*.png;*.gif;*.ico;*.IFF;*.PCX;*.PICT;*.psd;*.tga;*.tiff;*.tif\0";
+                     ofn.lpstrFilter = "PNG (.png)\0*.png;\0Bitmap (.bmp)\0*.bmp;\0JPEG (.jpg/.jpeg)\0*.jpg;*.jpeg;\0IFF (.iff)\0*.IFF;\0PCX (.pcx)\0*.PCX;\0PICT (.pict)\0*.PICT;\0Photoshop (.psd)\0*.psd;\0TGA (.tga)\0*.tga;\0TIFF (.tiff/.tif)\0*.tiff;*.tif\0";
 
                      int begin;		//select only file name from pathfilename
                      const int len = lstrlen(ppi->m_szPath);
@@ -2934,7 +2934,7 @@ INT_PTR CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                      }
                      ofn.lpstrFile = &ppi->m_szPath[begin];
                      ofn.nMaxFile = 2096;
-                     ofn.lpstrDefExt = "bmp";
+                     ofn.lpstrDefExt = "png";
 
                      const HRESULT hr = GetRegString("RecentDir","ImageDir", szInitialDir, 2096);
 
@@ -3051,7 +3051,7 @@ INT_PTR CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                      ofn.lpstrFilter = "Bitmap, JPEG and PNG Files (.bmp/.jpg/.png)\0*.bmp;*.jpg;*.jpeg;*.png\0";
                      ofn.lpstrFile = szFileName;
                      ofn.nMaxFile = _MAX_PATH;
-                     ofn.lpstrDefExt = "bmp";
+                     ofn.lpstrDefExt = "png";
                      ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 
                      HRESULT hr = GetRegString("RecentDir","ImageDir", szInitialDir, 1024);
@@ -3464,7 +3464,7 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
                                 ofn.hwndOwner = g_pvp->m_hwnd;
                                 ofn.lpstrFile = szFileName;
                                 //TEXT
-                                ofn.lpstrFilter = "*.mat\0";
+                                ofn.lpstrFilter = "Material Files (.mat)\0*.mat\0";
                                 ofn.nMaxFile = 2096;
                                 ofn.lpstrDefExt = "mat";
 
