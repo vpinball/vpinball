@@ -116,14 +116,6 @@ typedef [uuid(35AA214F-CC1B-4488-9FE8-9B15E0902E4F)]
 		}
 		DecalType;
 
-typedef [uuid(3D2A4542-A7E8-4151-9FAC-8F31313AADB4)]
-        enum ReelType
-		{
-		ReelText = 0,
-		ReelImage = 1,
-		}
-		ReelType;
-
 typedef [uuid(0FEABC0C-56A4-414e-B76D-4C2CECF17A96)]
         enum SequencerState
 		{
@@ -1885,12 +1877,6 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(DISPID_DispReel_BackColor), helpstring("property BackColor")] HRESULT BackColor([in] OLE_COLOR newVal);
 		[propget, id(DISPID_Image), helpstring("property Image")] HRESULT Image([out, retval] BSTR *pVal);
 		[propput, id(DISPID_Image), helpstring("property Image")] HRESULT Image([in] BSTR newVal);
-		[propget, id(DISPID_DispReel_FontColor), helpstring("property FontColor")] HRESULT FontColor([out, retval] OLE_COLOR *pVal);
-		[propput, id(DISPID_DispReel_FontColor), helpstring("property FontColor")] HRESULT FontColor([in] OLE_COLOR newVal);
-		[propget, id(DISPID_DispReel_ReelColor), helpstring("property ReelColor")] HRESULT ReelColor([out, retval] OLE_COLOR *pVal);
-		[propput, id(DISPID_DispReel_ReelColor), helpstring("property ReelColor")] HRESULT ReelColor([in] OLE_COLOR newVal);
-		[propget, id(DISPID_DispReel_Font), helpstring("property Font")] HRESULT Font([out, retval] IFontDisp **pVal);
-		[propputref, id(DISPID_DispReel_Font), helpstring("property Font")] HRESULT Font([in] IFontDisp *newVal);
 		[propget, id(11), helpstring("property Reels")] HRESULT Reels([out, retval] float *pVal);
 		[propput, id(11), helpstring("property Reels")] HRESULT Reels([in] float newVal);
 		[propget, id(5), helpstring("property Width")] HRESULT Width([out, retval] float *pVal);
@@ -1913,8 +1899,6 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(9), helpstring("property X")] HRESULT X([in] float newVal);
 		[propget, id(10), helpstring("property Y")] HRESULT Y([out, retval] float *pVal);
 		[propput, id(10), helpstring("property Y")] HRESULT Y([in] float newVal);
-		[propget, id(16), helpstring("property Type")] HRESULT Type([out, retval] ReelType *pVal);
-		[propput, id(16), helpstring("property Type")] HRESULT Type([in] ReelType newVal);
 		[propget, id(14), helpstring("property Range")] HRESULT Range([out, retval] float *pVal);
 		[propput, id(14), helpstring("property Range")] HRESULT Range([in] float newVal);
 		[propget, id(DISPID_Name), helpstring("property Name")] HRESULT Name([out, retval] BSTR *pVal);

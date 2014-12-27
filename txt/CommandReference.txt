@@ -188,13 +188,9 @@ Width(float)
 Height(float)
 *X(float)
 *Y(float)
-*Type(ReelType) - 0=Text, 1=Image
 Range(float)
 *BackColor(OLE_COLOR)
 *Image(string) - picture name
-*FontColor(OLE_COLOR)
-*ReelColor(OLE_COLOR)
-Font(IFontDisp)
 Reels(float)
 Spacing(float)
 IsTransparent(bool)

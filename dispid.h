@@ -27,9 +27,6 @@
 #define DISPID_Textbox_Font 4
 
 #define DISPID_DispReel_BackColor 1
-#define DISPID_DispReel_FontColor 2
-#define DISPID_DispReel_ReelColor 3
-#define DISPID_DispReel_Font 4
 
 #define DISPID_Gate_Length 3
 #define DISPID_Gate_Rotation 4
