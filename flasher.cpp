@@ -355,8 +355,8 @@ void Flasher::UpdateMesh()
       T2Matrix._41 = -movx;//-m_d.m_vCenter.x;
       T2Matrix._42 = -movy;//-m_d.m_vCenter.y;
       T2Matrix._43 = 0;
-      TMatrix._41 = movx;//m_d.m_vCenter.x;
-      TMatrix._42 = movy;//m_d.m_vCenter.y;
+      TMatrix._41 = m_d.m_vCenter.x;
+      TMatrix._42 = m_d.m_vCenter.y;
       TMatrix._43 = height;
 
       tempMatrix.SetIdentity();
@@ -450,6 +450,8 @@ void Flasher::RenderSetup(RenderDevice* pd3dDevice)
    const float inv_height = 1.0f/(maxy-miny);
    const float inv_tablewidth = 1.0f/(m_ptable->m_right - m_ptable->m_left);
    const float inv_tableheight = 1.0f/(m_ptable->m_bottom - m_ptable->m_top);
+   m_d.m_vCenter.x = minx + ((maxx - minx)*0.5f);
+   m_d.m_vCenter.y = miny + ((maxy - miny)*0.5f);
 
    for( int i=0;i<numPolys*3;i++)
    {
@@ -506,7 +508,7 @@ void Flasher::MoveOffset(const float dx, const float dy)
 {
    m_d.m_vCenter.x += dx;
    m_d.m_vCenter.y += dy;
-   for (int i=0;i<m_vdpoint.Size();i++)
+   for (int i = 0; i<m_vdpoint.Size(); i++)
    {
       CComObject<DragPoint> * const pdp = m_vdpoint.ElementAt(i);
 
