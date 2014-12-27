@@ -442,12 +442,7 @@ void Bumper::PostRenderStatic(RenderDevice* pd3dDevice)
       {
          const float step = m_d.m_ringSpeed*(m_ptable->m_zScale*m_d.m_heightScale);
          const float limit = 45.f*(m_ptable->m_zScale*m_d.m_heightScale);
-         float _sign = 1.0f;
-         if (ringDown)
-         {
-            _sign = -1.0f;
-         }
-         m_pbumperhitcircle->m_bumperanim.m_ringAnimStep = step * _sign;
+         m_pbumperhitcircle->m_bumperanim.m_ringAnimStep = ringDown ? -step : step;
          m_pbumperhitcircle->m_bumperanim.UpdateAnimation();
          if( ringDown ) 
          {
@@ -466,7 +461,6 @@ void Bumper::PostRenderStatic(RenderDevice* pd3dDevice)
             }
          }
          UpdateRing(pd3dDevice);
-
       }
 
       pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
@@ -502,7 +496,6 @@ void Bumper::PostRenderStatic(RenderDevice* pd3dDevice)
          RenderCap(pd3dDevice, mat);
          pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
       }
-
    }
 }
 

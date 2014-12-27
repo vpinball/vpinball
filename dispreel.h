@@ -16,7 +16,6 @@ class DispReelData
 public:
     Vertex2D    m_v1, m_v2;             // position on map (top right corner)
     char        m_szImage[MAXTOKEN];    // image to use for the decals.
-    ReelType    m_reeltype;
     int			m_imagesPerGridRow;
     int			m_reelcount;			// number of individual reel in the set
     float       m_width, m_height;      // size of each reel
@@ -28,9 +27,6 @@ public:
     int	        m_updateinterval;       // time in ms between each animation update
 
     COLORREF    m_backcolor;            // colour of the background
-    COLORREF    m_reelcolor;            // colour of the reels (valid if m_reeltype = ReelText)
-    COLORREF    m_fontcolor;            // colour of the text on the reels (valid if m_reeltype = ReelText)
-    char        szfont[MAXSTRING];
 
     TimerDataRoot m_tdr;                // timer information
     bool        m_fTransparent;         // is the background transparent
@@ -104,18 +100,11 @@ DECLARE_REGISTRY_RESOURCEID(IDR_DISP_REEL)
 
     DispReelData m_d;
 
-    IFont       *m_pIFont;
-
     DispReelUpdater *m_ptu;
     
     float       m_renderwidth, m_renderheight;     // size of each reel (rendered)
 
 private:
-    // rendering information (after scaling to render resolution)
-    IFont       *m_pIFontPlay;     // Our font, scaled to match play window resolution
-
-	COLORREF	m_rgbImageTransparent;
-
     _reelInfo   ReelInfo[MAX_REELS];
 
 	float       m_reeldigitwidth;  // size of the individual reel digits (in bitmap form)
@@ -136,8 +125,6 @@ public:
     // properties
 	STDMETHOD(get_IsTransparent)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_IsTransparent)(/*[in]*/ VARIANT_BOOL newVal);
-	STDMETHOD(get_Type)(/*[out, retval]*/ ReelType *pVal);
-	STDMETHOD(put_Type)(/*[in]*/ ReelType newVal);
 	STDMETHOD(get_Y)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Y)(/*[in]*/ float newVal);
 	STDMETHOD(get_X)(/*[out, retval]*/ float *pVal);
@@ -158,13 +145,6 @@ public:
     STDMETHOD(put_Sound)(/*[in]*/ BSTR newVal);
     STDMETHOD(get_Steps)(/*[out, retval]*/ float *pVal);
     STDMETHOD(put_Steps)(/*[in]*/ float newVal);
-	STDMETHOD(get_Font)(/*[out, retval]*/ IFontDisp **pVal);
-	STDMETHOD(put_Font)(/*[in]*/ IFontDisp *newVal);
-	STDMETHOD(putref_Font)(IFontDisp* pFont);
-	STDMETHOD(get_FontColor)(/*[out, retval]*/ OLE_COLOR *pVal);
-	STDMETHOD(put_FontColor)(/*[in]*/ OLE_COLOR newVal);
-    STDMETHOD(get_ReelColor)(/*[out, retval]*/ OLE_COLOR *pVal);
-    STDMETHOD(put_ReelColor)(/*[in]*/ OLE_COLOR newVal);
 	STDMETHOD(get_Range)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Range)(/*[in]*/ float newVal);
     STDMETHOD(get_UpdateInterval)(/*[out, retval]*/ long *pVal);

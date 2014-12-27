@@ -1,16 +1,12 @@
 #include "stdafx.h"
 
-const char REEL_NUMBER_TEXT[] = "01234567890";
-
 DispReel::DispReel()
 {
-    m_pIFont = NULL;
     m_ptu = NULL;
 }
 
 DispReel::~DispReel()
 {
-    m_pIFont->Release();
 }
 
 // This function is called when ever a new instance of this object is created
@@ -29,54 +25,7 @@ HRESULT DispReel::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
     //m_preelframe = NULL;
 
-	HRESULT hr;
-	float fTmp;
-	int iTmp;
-
-	FONTDESC fd;
-	fd.cbSizeofstruct = sizeof(FONTDESC);
-	
-	char tmp[256];
-	hr = GetRegString("DefaultProps\\EMReel","FontName", tmp, 256);
-	if (hr != S_OK)
-		fd.lpstrName = L"Times New Roman";
-	else
-	{
-		int len = lstrlen(&tmp[0]) + 1;
-		fd.lpstrName = (LPOLESTR) malloc(len*sizeof(WCHAR));
-		UNICODE_FROM_ANSI(fd.lpstrName, &tmp[0], len); 
-		fd.lpstrName[len] = 0;
-	}
-	
-	hr = GetRegStringAsFloat("DefaultProps\\EMReel","FontSize", &fTmp);
-	fd.cySize.int64 = (hr == S_OK) ? (LONGLONG)(fTmp * 10000.0) : 260000;
-	
-	hr = GetRegInt("DefaultProps\\EMReel", "FontWeight", &iTmp);
-	fd.sWeight = (hr == S_OK) ? iTmp : FW_BOLD;
-
-	hr = GetRegInt("DefaultProps\\EMReel", "FontCharSet", &iTmp);
-	fd.sCharset = (hr == S_OK) ? iTmp : 0;
-
-    hr = GetRegInt("DefaultProps\\EMReel", "FontItalic", &iTmp);
-	if (hr == S_OK)
-		fd.fItalic = iTmp == 0 ? false : true;
-	else
-		fd.fItalic = 0;
-
-	hr = GetRegInt("DefaultProps\\EMReel", "FontUnderline", &iTmp);
-	if (hr == S_OK)
-		fd.fUnderline = iTmp == 0 ? false : true;
-	else
-		fd.fUnderline = 0;
-		
-	hr = GetRegInt("DefaultProps\\EMReel", "FontStrikeThrough", &iTmp);
-	if (hr == S_OK)
-		fd.fStrikethrough = iTmp == 0 ? false : true;
-	else
-		fd.fStrikethrough = 0;
-
-	OleCreateFontIndirect(&fd, IID_IFont, (void **)&m_pIFont);
-   return InitVBA(fTrue, 0, NULL);
+    return InitVBA(fTrue, 0, NULL);
 }
 
 // set the defaults for the objects persistent data (m_d.*) in case this
@@ -92,9 +41,6 @@ void DispReel::SetDefaults(bool fromMouseClick)
 	HRESULT hr;
 	float fTmp;
 	int iTmp;
-
-	hr = GetRegInt("DefaultProps\\EMReel","ReelType", &iTmp);
-	m_d.m_reeltype = (hr == S_OK) && fromMouseClick ? (enum ReelType)iTmp : ReelText;
 
 	hr = GetRegString("DefaultProps\\Ramp","Image", m_d.m_szImage, MAXTOKEN);
 	if ((hr != S_OK) || !fromMouseClick)
@@ -143,12 +89,6 @@ void DispReel::SetDefaults(bool fromMouseClick)
     hr = GetRegInt("DefaultProps\\EMReel","BackColor", &iTmp);
 	m_d.m_backcolor = (hr == S_OK) && fromMouseClick ? iTmp : RGB(64,64,64);
     
-	hr = GetRegInt("DefaultProps\\EMReel","FontColor", &iTmp);
-	m_d.m_fontcolor = (hr == S_OK) && fromMouseClick ? iTmp : RGB(0,0,0);
-    
-	hr = GetRegInt("DefaultProps\\EMReel","ReelColor", &iTmp);
-	m_d.m_reelcolor = (hr == S_OK) && fromMouseClick ? iTmp : RGB(255,255,255);
-
 	hr = GetRegInt("DefaultProps\\EMReel","TimerEnabled", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? false : true;
@@ -157,60 +97,12 @@ void DispReel::SetDefaults(bool fromMouseClick)
 	
 	hr = GetRegInt("DefaultProps\\EMReel","TimerInterval", &iTmp);
 	m_d.m_tdr.m_TimerInterval = (hr == S_OK) && fromMouseClick ? iTmp : 100;
-
-	if (!m_pIFont)
-		{
-		FONTDESC fd;
-		fd.cbSizeofstruct = sizeof(FONTDESC);
-		
-		hr = GetRegStringAsFloat("DefaultProps\\EMReel","FontSize", &fTmp);
-		fd.cySize.int64 = (hr == S_OK) ? (LONGLONG)(fTmp * 10000.0) : 142500;
-
-		char tmp[256];
-		hr = GetRegString("DefaultProps\\EMReel","FontName", tmp, 256);
-		if ((hr != S_OK) || !fromMouseClick)
-			fd.lpstrName = L"Arial Black";
-		else
-		{
-			int len = lstrlen(&tmp[0]) + 1;
-			fd.lpstrName = (LPOLESTR) malloc(len*sizeof(WCHAR));
-			UNICODE_FROM_ANSI(fd.lpstrName, &tmp[0], len); 
-			fd.lpstrName[len] = 0;
-		}
-
-		hr = GetRegInt("DefaultProps\\EMReel", "FontWeight", &iTmp);
-		fd.sWeight = (hr == S_OK) && fromMouseClick ? iTmp : FW_NORMAL;
-	
-		hr = GetRegInt("DefaultProps\\EMReel", "FontCharSet", &iTmp);
-		fd.sCharset = (hr == S_OK) && fromMouseClick ? iTmp : 0;
-		
-		hr = GetRegInt("DefaultProps\\EMReel", "FontItalic", &iTmp);
-		if ((hr == S_OK) && fromMouseClick)
-			fd.fItalic = iTmp == 0 ? false : true;
-		else
-			fd.fItalic = 0;
-
-		hr = GetRegInt("DefaultProps\\EMReel", "FontUnderline", &iTmp);
-		if ((hr == S_OK) && fromMouseClick)
-			fd.fUnderline = iTmp == 0 ? false : true;
-		else
-			fd.fUnderline = 0;
-		
-		hr = GetRegInt("DefaultProps\\EMReel", "FontStrikeThrough", &iTmp);
-		if ((hr == S_OK) && fromMouseClick)
-			fd.fStrikethrough = iTmp == 0 ? false : true;
-		else
-			fd.fStrikethrough = 0;
-		
-		OleCreateFontIndirect(&fd, IID_IFont, (void **)&m_pIFont);    
-		}
-	}
+}
 
 void DispReel::WriteRegDefaults()
-	{
+{
 	char strTmp[MAXTOKEN];
 
-	SetRegValue("DefaultProps\\EMReel","ReelType",REG_DWORD,&m_d.m_reeltype,4);
 	SetRegValue("DefaultProps\\EMReel","Image", REG_SZ, &m_d.m_szImage,lstrlen(m_d.m_szImage));
 	SetRegValue("DefaultProps\\EMReel","Sound", REG_SZ, &m_d.m_szSound,lstrlen(m_d.m_szSound));
 	SetRegValueBool("DefaultProps\\Decal","UseImageGrid",m_d.m_fUseImageGrid);
@@ -224,39 +116,9 @@ void DispReel::WriteRegDefaults()
 	SetRegValueInt("DefaultProps\\Decal","DigitRange",m_d.m_digitrange);
 	SetRegValueInt("DefaultProps\\Decal","UpdateInterval",m_d.m_updateinterval);
 	SetRegValue("DefaultProps\\EMReel","BackColor",REG_DWORD,&m_d.m_backcolor,4);
-	SetRegValue("DefaultProps\\EMReel","FontColor",REG_DWORD,&m_d.m_fontcolor,4);
-	SetRegValue("DefaultProps\\EMReel","ReelColor",REG_DWORD,&m_d.m_reelcolor,4);
 	SetRegValueInt("DefaultProps\\EMReel","TimerEnabled",m_d.m_tdr.m_fTimerEnabled);
 	SetRegValueInt("DefaultProps\\EMReel","TimerInterval",m_d.m_tdr.m_TimerInterval);
-
-	if (m_pIFont)
-		{
-		FONTDESC fd;
-		fd.cbSizeofstruct = sizeof(FONTDESC);
-		m_pIFont->get_Size(&fd.cySize); 
-		m_pIFont->get_Name(&fd.lpstrName); 
-		m_pIFont->get_Weight(&fd.sWeight); 
-		m_pIFont->get_Charset(&fd.sCharset); 
-		m_pIFont->get_Italic(&fd.fItalic);
-		m_pIFont->get_Underline(&fd.fUnderline); 
-		m_pIFont->get_Strikethrough(&fd.fStrikethrough); 
-		
-		const float fTmp = (float)(fd.cySize.int64 / 10000.0);
-		sprintf_s(strTmp, 40, "%f", fTmp);
-		SetRegValue("DefaultProps\\EMReel","FontSize", REG_SZ, &strTmp,lstrlen(strTmp));
-		size_t charCnt = wcslen(fd.lpstrName) + 1;
-		WideCharToMultiByte(CP_ACP, 0, fd.lpstrName, (int)charCnt, strTmp, (int)(2*charCnt), NULL, NULL);
-		SetRegValue("DefaultProps\\EMReel","FontName", REG_SZ, &strTmp,lstrlen(strTmp));
-		const int weight = fd.sWeight;
-		const int charset = fd.sCharset;
-		SetRegValueInt("DefaultProps\\EMReel","FontWeight",weight);
-		SetRegValueInt("DefaultProps\\EMReel","FontCharSet",charset);
-		SetRegValue("DefaultProps\\EMReel","FontItalic",REG_DWORD,&fd.fItalic,4);
-		SetRegValue("DefaultProps\\EMReel","FontUnderline",REG_DWORD,&fd.fUnderline,4);
-		SetRegValue("DefaultProps\\EMReel","FontStrikeThrough",REG_DWORD,&fd.fStrikethrough,4);
-		}
-	}
-
+}
 
 STDMETHODIMP DispReel::InterfaceSupportsErrorInfo(REFIID riid)
 {
@@ -288,7 +150,7 @@ void DispReel::PreRender(Sur * const psur)
     psur->Rectangle(m_d.m_v1.x, m_d.m_v1.y, m_d.m_v2.x, m_d.m_v2.y);
 
     // draw n reels in the box (in blue)
-    psur->SetFillColor(m_d.m_reelcolor);
+    psur->SetFillColor(RGB(0,0,255));
     for (int i=0; i<m_d.m_reelcount; ++i)
     {
         // set up top corner point
@@ -401,36 +263,28 @@ void DispReel::PostRenderStatic(RenderDevice* pd3dDevice)
 
     Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
-    // Set up the reel strip (either using bitmaps or fonts)
-    if (m_d.m_reeltype == ReelImage)
-    {
-        // get a pointer to the image specified in the object
-        Texture * const pin = m_ptable->GetImage(m_d.m_szImage); // pointer to image information from the image manager
+	// get a pointer to the image specified in the object
+	Texture * const pin = m_ptable->GetImage(m_d.m_szImage); // pointer to image information from the image manager
 
-        if (!pin)
-            return;
+	if (!pin)
+		return;
 
-		g_pplayer->m_pin3d.EnableAlphaBlend(0xe0, false);
-        pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATER); //!! still necessary?
+	g_pplayer->m_pin3d.EnableAlphaBlend(0xe0, false);
+	pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATER); //!! still necessary?
 
-        //!! ppin3d->DisableLightMap();
+	//!! ppin3d->DisableLightMap();
 
-        for (int i = 0; i < m_d.m_reelcount; ++i)
-        {
-			g_pplayer->Spritedraw(ReelInfo[i].position.left, ReelInfo[i].position.top,
-								  ReelInfo[i].position.right,
-								  ReelInfo[i].position.bottom,
-								  0xFFFFFFFF, pin,
-								  m_digitTexCoords[ReelInfo[i].currentValue].u_min,m_digitTexCoords[ReelInfo[i].currentValue].v_min,
-								  m_digitTexCoords[ReelInfo[i].currentValue].u_max,m_digitTexCoords[ReelInfo[i].currentValue].v_max);
-        }
+	for (int i = 0; i < m_d.m_reelcount; ++i)
+	{
+		g_pplayer->Spritedraw(ReelInfo[i].position.left, ReelInfo[i].position.top,
+			ReelInfo[i].position.right,
+			ReelInfo[i].position.bottom,
+			0xFFFFFFFF, pin,
+			m_digitTexCoords[ReelInfo[i].currentValue].u_min,m_digitTexCoords[ReelInfo[i].currentValue].v_min,
+			m_digitTexCoords[ReelInfo[i].currentValue].u_max,m_digitTexCoords[ReelInfo[i].currentValue].v_max);
+	}
 
-		g_pplayer->m_pin3d.DisableAlphaBlend();
-    }
-    else
-    {
-        // TODO: ReelText not supported yet
-    }
+	g_pplayer->m_pin3d.DisableAlphaBlend();
 }
 
 void DispReel::RenderSetup(RenderDevice* pd3dDevice)
@@ -465,83 +319,73 @@ void DispReel::RenderSetup(RenderDevice* pd3dDevice)
         x1 += m_renderspacingx + m_renderwidth;
     }
 
-    // Set up the reel strip (either using bitmaps or fonts)
-    if (m_d.m_reeltype == ReelImage)
-    {
-        // get a pointer to the image specified in the object
-        Texture * const pin = m_ptable->GetImage(m_d.m_szImage); // pointer to image information from the image manager
+	// get a pointer to the image specified in the object
+	Texture * const pin = m_ptable->GetImage(m_d.m_szImage); // pointer to image information from the image manager
 
-        if (!pin)
-            return;
+	if (!pin)
+		return;
 
-        int	GridCols, GridRows;
+	int	GridCols, GridRows;
 
-        // get the number of images per row of the image
-        if (m_d.m_fUseImageGrid)
-        {
-            GridCols = m_d.m_imagesPerGridRow;
-            if (GridCols != 0) // best to be safe
-            {
-                GridRows = (m_d.m_digitrange+1) / GridCols;
-                if ( (GridRows * GridCols) < (m_d.m_digitrange+1) )
-                    ++GridRows;
-            }
-            else
-            {
-                GridRows = 1;
-            }
-        }
-        else
-        {
-            GridCols = m_d.m_digitrange+1;
-            GridRows = 1;
-        }
+	// get the number of images per row of the image
+	if (m_d.m_fUseImageGrid)
+	{
+		GridCols = m_d.m_imagesPerGridRow;
+		if (GridCols != 0) // best to be safe
+		{
+			GridRows = (m_d.m_digitrange+1) / GridCols;
+			if ( (GridRows * GridCols) < (m_d.m_digitrange+1) )
+				++GridRows;
+		}
+		else
+			GridRows = 1;
+	}
+	else
+	{
+		GridCols = m_d.m_digitrange+1;
+		GridRows = 1;
+	}
 
-        // save the color to use in any transparent blitting
-        //!! m_rgbImageTransparent = pin->m_rgbTransparent;
-        if ( GridCols!=0 && GridRows!=0 )
-        {
-            // get the size of the individual reel digits (if m_digitrange is wrong we can forget the rest)
-            m_reeldigitwidth  = (float)pin->m_width / (float)GridCols;
-            m_reeldigitheight = (float)pin->m_height / (float)GridRows;
-        }
-        else
-            ShowError("DispReel: GridCols/GridRows are zero!");
+	// save the color to use in any transparent blitting
+	//!! m_rgbImageTransparent = pin->m_rgbTransparent;
+	if ( GridCols!=0 && GridRows!=0 )
+	{
+		// get the size of the individual reel digits (if m_digitrange is wrong we can forget the rest)
+		m_reeldigitwidth  = (float)pin->m_width / (float)GridCols;
+		m_reeldigitheight = (float)pin->m_height / (float)GridRows;
+	}
+	else
+		ShowError("DispReel: GridCols/GridRows are zero!");
 
-        const float ratiox = (float)m_reeldigitwidth  / (float)pin->m_width;
-        const float ratioy = (float)m_reeldigitheight / (float)pin->m_height;
+	const float ratiox = (float)m_reeldigitwidth  / (float)pin->m_width;
+	const float ratioy = (float)m_reeldigitheight / (float)pin->m_height;
 
-        int gr = 0;
-        int gc = 0;
+	int gr = 0;
+	int gc = 0;
 
-        m_digitTexCoords.resize(m_d.m_digitrange + 1);
+	m_digitTexCoords.resize(m_d.m_digitrange + 1);
 
-        for (int i=0; i<=m_d.m_digitrange; ++i)
-        {
-            m_digitTexCoords[i].u_min = (float)gc * ratiox;
-            m_digitTexCoords[i].v_min = (float)gr * ratioy;
-            m_digitTexCoords[i].u_max = m_digitTexCoords[i].u_min + ratiox;
-            m_digitTexCoords[i].v_max = m_digitTexCoords[i].v_min + ratioy;
+	for (int i=0; i<=m_d.m_digitrange; ++i)
+	{
+		m_digitTexCoords[i].u_min = (float)gc * ratiox;
+		m_digitTexCoords[i].v_min = (float)gr * ratioy;
+		m_digitTexCoords[i].u_max = m_digitTexCoords[i].u_min + ratiox;
+		m_digitTexCoords[i].v_max = m_digitTexCoords[i].v_min + ratioy;
 
-            ++gc;
-            if (gc >= GridCols)
-            {
-                gc = 0;
-                ++gr;
-            }
+		++gc;
+		if (gc >= GridCols)
+		{
+			gc = 0;
+			++gr;
+		}
 
-            if (i == m_d.m_digitrange)
-            {
-                // Go back and draw the first picture at the end of the strip
-                gc = 0;
-                gr = 0;
-            }
-        }
-    }
-    else
-    {
-        // TODO: ReelText not supported yet
-    }
+		if (i == m_d.m_digitrange)
+		{
+			// Go back and draw the first picture at the end of the strip
+			gc = 0;
+			gr = 0;
+		}
+	}
 
     m_timenextupdate = g_pplayer->m_time_msec + m_d.m_updateinterval;
     m_fforceupdate = false;
@@ -648,7 +492,6 @@ bool DispReel::RenderAnimation()
 	return rc;
 }
 
-
 void DispReel::SetObjectPos()
 {
 	g_pvp->SetObjectPosCur(m_d.m_v1.x, m_d.m_v1.y);
@@ -690,10 +533,7 @@ HRESULT DispReel::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
 
 	bw.WriteStruct(FID(VER1), &m_d.m_v1, sizeof(Vertex2D));
 	bw.WriteStruct(FID(VER2), &m_d.m_v2, sizeof(Vertex2D));
-    bw.WriteInt(FID(TYPE), m_d.m_reeltype);
 	bw.WriteInt(FID(CLRB), m_d.m_backcolor);
-	bw.WriteInt(FID(CLRF), m_d.m_fontcolor);
-    bw.WriteInt(FID(CLRR),  m_d.m_reelcolor);
     bw.WriteBool(FID(TMON), m_d.m_tdr.m_fTimerEnabled);
 	bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
 	bw.WriteBool(FID(TRNS), m_d.m_fTransparent);
@@ -711,11 +551,6 @@ HRESULT DispReel::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
     bw.WriteInt(FID(UPTM), m_d.m_updateinterval);
     bw.WriteBool(FID(UGRD), m_d.m_fUseImageGrid);
     bw.WriteInt(FID(GIPR), m_d.m_imagesPerGridRow);
-
-	bw.WriteTag(FID(FONT));
-	IPersistStream * ips;
-	m_pIFont->QueryInterface(IID_IPersistStream, (void **)&ips);
-	ips->Save(pstm, TRUE);
 
 	ISelect::SaveData(pstm, hcrypthash, hcryptkey); //add BDS2
 
@@ -764,14 +599,6 @@ BOOL DispReel::LoadToken(int id, BiffReader *pbr)
 		{
 			pbr->GetInt(&m_d.m_backcolor);
 		}
-	else if (id == FID(CLRF))
-		{
-			pbr->GetInt(&m_d.m_fontcolor);
-		}
-    else if (id == FID(CLRR))
-		{
-			pbr->GetInt(&m_d.m_reelcolor);
-		}
 	else if (id == FID(TMON))
 		{
 			pbr->GetBool(&m_d.m_tdr.m_fTimerEnabled);
@@ -810,10 +637,6 @@ BOOL DispReel::LoadToken(int id, BiffReader *pbr)
 		{
 			pbr->GetString(m_d.m_szSound);
 		}
-	else if (id == FID(TYPE))
-		{
-			pbr->GetInt(&m_d.m_reeltype);
-		}
 	else if (id == FID(UGRD))
 		{
 			pbr->GetBool(&m_d.m_fUseImageGrid);
@@ -832,28 +655,28 @@ BOOL DispReel::LoadToken(int id, BiffReader *pbr)
 		{
             pbr->GetInt(&m_d.m_updateinterval);
 		}
-	else if (id == FID(FONT))
+	else if (id == FID(FONT)) //!! deprecated, only here to support loading of old tables
 		{
-		if (!m_pIFont)
-			{
-				FONTDESC fd;
-				fd.cbSizeofstruct = sizeof(FONTDESC);
-				fd.lpstrName = L"Times New Roman";
-				fd.cySize.int64 = 260000;
-				//fd.cySize.Lo = 0;
-				fd.sWeight = FW_BOLD;
-				fd.sCharset = 0;
-				fd.fItalic = 0;
-				fd.fUnderline = 0;
-				fd.fStrikethrough = 0;
-				OleCreateFontIndirect(&fd, IID_IFont, (void **)&m_pIFont);
-			}
+			IFont *pIFont;
+			FONTDESC fd;
+			fd.cbSizeofstruct = sizeof(FONTDESC);
+			fd.lpstrName = L"Times New Roman";
+			fd.cySize.int64 = 260000;
+			//fd.cySize.Lo = 0;
+			fd.sWeight = FW_BOLD;
+			fd.sCharset = 0;
+			fd.fItalic = 0;
+			fd.fUnderline = 0;
+			fd.fStrikethrough = 0;
+			OleCreateFontIndirect(&fd, IID_IFont, (void **)&pIFont);
 
-		IPersistStream * ips;
-		m_pIFont->QueryInterface(IID_IPersistStream, (void **)&ips);
+			IPersistStream * ips;
+			pIFont->QueryInterface(IID_IPersistStream, (void **)&ips);
 
-		ips->Load(pbr->m_pistream);
-	}
+			ips->Load(pbr->m_pistream);
+
+			pIFont->Release();
+		}
 	else
 		{
 		ISelect::LoadToken(id, pbr);
@@ -861,14 +684,13 @@ BOOL DispReel::LoadToken(int id, BiffReader *pbr)
 	return fTrue;
 }
 
-
 HRESULT DispReel::InitPostLoad()
 {
 	return S_OK;
 }
 
 void DispReel::GetDialogPanes(Vector<PropertyPane> *pvproppane)
-	{
+{
 	PropertyPane *pproppane;
 
 	pproppane = new PropertyPane(IDD_PROP_NAME, NULL);
@@ -885,7 +707,7 @@ void DispReel::GetDialogPanes(Vector<PropertyPane> *pvproppane)
 
 	pproppane = new PropertyPane(IDD_PROP_TIMER, IDS_MISC);
 	pvproppane->AddElement(pproppane);
-	}
+}
 
 // These methods provide the interface to the object through both the editor
 // and the script for a of the object properties
@@ -1089,78 +911,6 @@ STDMETHODIMP DispReel::put_Steps(float newVal)
 	STOPUNDO
 
     return S_OK;
-}
-
-STDMETHODIMP DispReel::get_Type(ReelType *pVal)
-{
-    *pVal = m_d.m_reeltype;
-
-	return S_OK;
-}
-
-STDMETHODIMP DispReel::put_Type(ReelType newVal)
-{
-	STARTUNDO
-    m_d.m_reeltype = newVal;
-	STOPUNDO
-
-	return S_OK;
-}
-
-STDMETHODIMP DispReel::get_Font(IFontDisp **pVal)
-{
-	m_pIFont->QueryInterface(IID_IFontDisp, (void **)pVal);
-
-	return S_OK;
-}
-
-STDMETHODIMP DispReel::put_Font(IFontDisp *newVal)
-{
-	// Does anybody use this way of setting the font?  Need to add to idl file.
-	return S_OK;
-}
-
-STDMETHODIMP DispReel::putref_Font(IFontDisp* pFont)
-{
-	//We know that our own property browser gives us the same pointer
-
-	//m_pIFont->Release();
-	//pFont->QueryInterface(IID_IFont, (void **)&m_pIFont);
-
-	SetDirtyDraw();
-    return S_OK;
-}
-
-STDMETHODIMP DispReel::get_FontColor(OLE_COLOR *pVal)
-{
-	*pVal = m_d.m_fontcolor;
-
-	return S_OK;
-}
-
-STDMETHODIMP DispReel::put_FontColor(OLE_COLOR newVal)
-{
-	STARTUNDO
-	m_d.m_fontcolor = newVal;
-	STOPUNDO
-
-	return S_OK;
-}
-
-STDMETHODIMP DispReel::get_ReelColor(OLE_COLOR *pVal)
-{
-    *pVal = m_d.m_reelcolor;
-
-	return S_OK;
-}
-
-STDMETHODIMP DispReel::put_ReelColor(OLE_COLOR newVal)
-{
-	STARTUNDO
-    m_d.m_reelcolor = newVal;
-	STOPUNDO
-
-	return S_OK;
 }
 
 STDMETHODIMP DispReel::get_Range(float *pVal)

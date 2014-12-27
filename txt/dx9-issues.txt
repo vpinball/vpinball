@@ -1,7 +1,6 @@
 DX9 renderer known issues:
 
 *) textboxes don't work
-*) EM reels only work in Image Reel mode, not Text Reel
 *) text decals don't work
 *) kickers cut the ball in half
 *) Stereo 3D only works on NVIDIA so far
