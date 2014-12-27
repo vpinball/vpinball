@@ -1,17 +1,16 @@
 #pragma once
 
 struct FIBITMAP;
-class RenderDevice;
 
 // texture stored in main memory in 32bit ARGB format
-struct MemTexture
+class BaseTexture
 {
 public:
-    MemTexture()
+    BaseTexture()
         : m_width(0), m_height(0)
     { }
 
-    MemTexture(int w, int h)
+    BaseTexture(const int w, const int h)
         : m_width(w), m_height(h), m_data(4*w*h)
     { }
 
@@ -24,7 +23,7 @@ public:
     int m_height;
     std::vector<BYTE> m_data;
 
-    void CopyBits(const void* bits)      // copy bits which are already in the right format
+    void CopyFrom_Raw(const void* bits)  // copy bits which are already in the right format
     { memcpy( data(), bits, m_data.size() ); }
 
 	void CopyTo_ConvertAlpha(void* bits) // adds checkerboard pattern where alpha is set to output bits
@@ -47,12 +46,10 @@ public:
 		}
 	}
 
-    static MemTexture *CreateFromHBitmap(HBITMAP hbm);
-    static MemTexture *CreateFromFile(const char *filename);
-    static MemTexture *CreateFromFreeImage(FIBITMAP* dib);
+    static BaseTexture *CreateFromHBitmap(HBITMAP hbm);
+    static BaseTexture *CreateFromFile(const char *filename);
+    static BaseTexture *CreateFromFreeImage(FIBITMAP* dib);
 };
-
-typedef struct MemTexture BaseTexture;
 
 class Texture : public ILoadable
 {
@@ -88,7 +85,7 @@ public:
 private:
    bool LoadFromMemory(BYTE *data, DWORD size);
 
-   void SetSizeFrom(MemTexture* tex)
+   void SetSizeFrom(const BaseTexture* const tex)
    {
       m_width = tex->width();
       m_height = tex->height();
@@ -97,12 +94,12 @@ private:
 public:
 
    // width and height of texture can be different than width and height
-   // of dd surface, since the surface can be limited to smaller sizes by the user
+   // of m_pdsBuffer, since the surface can be limited to smaller sizes by the user
    int m_width, m_height;
 
    BaseTexture* m_pdsBuffer;
 
-   HBITMAP m_hbmGDIVersion; // HBitmap at screen depth so GDI draws it fast
+   HBITMAP m_hbmGDIVersion; // HBitmap at screen depth and converted/visualized alpha so GDI draws it fast
    PinBinary *m_ppb;  // if this image should be saved as a binary stream, otherwise just LZW compressed from the live bitmap
 
    char m_szName[MAXTOKEN];

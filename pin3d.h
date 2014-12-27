@@ -107,7 +107,7 @@ public:
 	Texture pinballEnvTexture;
 
 	Texture envTexture;
-	MemTexture* m_envRadianceTexture;
+	BaseTexture* m_envRadianceTexture;
 	D3DTexture* m_device_envRadianceTexture;
 
 	Texture m_pddsLightWhite;
@@ -127,7 +127,7 @@ public:
 private:
     VertexBuffer *tableVBuffer;
     IndexBuffer *tableIBuffer;
-    std::map<int, MemTexture*> m_xvShadowMap;
+    std::map<int, BaseTexture*> m_xvShadowMap;
 };
 
 Matrix3D ComputeLaybackTransform(float layback);

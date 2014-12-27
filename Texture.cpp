@@ -4,7 +4,7 @@
 
 #define MIN_TEXTURE_SIZE 8
 
-MemTexture* MemTexture::CreateFromFreeImage(FIBITMAP* dib)
+BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib)
 {
     // check if Textures exceed the maximum texture dimension
     int maxTexDim;
@@ -36,23 +36,21 @@ MemTexture* MemTexture::CreateFromFreeImage(FIBITMAP* dib)
     else if (pictureWidth < MIN_TEXTURE_SIZE || pictureHeight < MIN_TEXTURE_SIZE)
     {
         // some drivers seem to choke on small (1x1) textures, so be safe by scaling them up
-        int newWidth = max(pictureWidth, MIN_TEXTURE_SIZE);
-        int newHeight = max(pictureHeight, MIN_TEXTURE_SIZE);
+        const int newWidth = max(pictureWidth, MIN_TEXTURE_SIZE);
+        const int newHeight = max(pictureHeight, MIN_TEXTURE_SIZE);
         dibResized = FreeImage_Rescale(dib, newWidth, newHeight, FILTER_BOX);
     }
 
     FIBITMAP* dib32 = FreeImage_ConvertTo32Bits(dibResized);
 
-    MemTexture* tex = new MemTexture(FreeImage_GetWidth(dib32), FreeImage_GetHeight(dib32));
+    BaseTexture* tex = new BaseTexture(FreeImage_GetWidth(dib32), FreeImage_GetHeight(dib32));
 
-    BYTE *psrc = FreeImage_GetBits(dib32), *pdst = tex->data();
+    BYTE * const psrc = FreeImage_GetBits(dib32), *pdst = tex->data();
     const int pitchdst = FreeImage_GetPitch(dib32), pitchsrc = tex->pitch();
     const int height = tex->height();
 
     for (int y = 0; y < height; ++y)
-    {
         memcpy(pdst + (height-y-1)*pitchdst, psrc + y*pitchsrc, 4 * tex->width());
-    }
 
     FreeImage_Unload(dib32);
     if (dibResized != dib)      // did we allocate a rescaled copy?
@@ -61,7 +59,7 @@ MemTexture* MemTexture::CreateFromFreeImage(FIBITMAP* dib)
     return tex;
 }
 
-BaseTexture* MemTexture::CreateFromFile(const char *szfile)
+BaseTexture* BaseTexture::CreateFromFile(const char *szfile)
 {
    FREE_IMAGE_FORMAT fif = FIF_UNKNOWN;
 
@@ -71,12 +69,13 @@ BaseTexture* MemTexture::CreateFromFile(const char *szfile)
       // try to guess the file format from the file extension
       fif = FreeImage_GetFIFFromFilename(szfile);
    }
+
    // check that the plugin has reading capabilities ...
    if((fif != FIF_UNKNOWN) && FreeImage_FIFSupportsReading(fif)) {
       // ok, let's load the file
       FIBITMAP *dib = FreeImage_Load(fif, szfile, 0);
 
-      MemTexture* mySurface = MemTexture::CreateFromFreeImage(dib);
+      BaseTexture* mySurface = BaseTexture::CreateFromFreeImage(dib);
       FreeImage_Unload(dib);
 
       //if (bitsPerPixel == 24)
@@ -107,10 +106,10 @@ static FIBITMAP* HBitmapToFreeImage(HBITMAP hbmp)
     return dib;
 }
 
-MemTexture* MemTexture::CreateFromHBitmap(HBITMAP hbm)
+BaseTexture* BaseTexture::CreateFromHBitmap(HBITMAP hbm)
 {
     FIBITMAP *dib = HBitmapToFreeImage(hbm);
-    BaseTexture* pdds = MemTexture::CreateFromFreeImage(dib);
+    BaseTexture* pdds = BaseTexture::CreateFromFreeImage(dib);
     FreeImage_Unload(dib);
     return pdds;
 }
@@ -137,7 +136,7 @@ void Texture::Release()
 
 void Texture::Set(const DWORD textureChannel)
 {
-    g_pplayer->m_pin3d.SetBaseTexture( textureChannel, m_pdsBuffer);
+    g_pplayer->m_pin3d.SetBaseTexture(textureChannel, m_pdsBuffer);
 }
 
 void Texture::Unset(const DWORD textureChannel)
@@ -150,9 +149,7 @@ HRESULT Texture::SaveToStream(IStream *pstream, PinTable *pt)
    BiffWriter bw(pstream, NULL, NULL);
 
    bw.WriteString(FID(NAME), m_szName);
-
    bw.WriteString(FID(INME), m_szInternalName);
-
    bw.WriteString(FID(PATH), m_szPath);
 
    bw.WriteInt(FID(WDTH), m_width);
@@ -175,9 +172,7 @@ HRESULT Texture::SaveToStream(IStream *pstream, PinTable *pt)
          m_ppb->SaveToStream(pstream);
       }
       else
-      {
          bw.WriteInt(FID(LINK), linkid);
-      }
    }
 
    bw.WriteTag(FID(ENDB));
@@ -202,7 +197,7 @@ bool Texture::LoadFromMemory(BYTE *data, DWORD size)
     FIBITMAP *dib = FreeImage_LoadFromMemory(fif, hmem, 0);
     FreeImage_CloseMemory(hmem);
 
-    m_pdsBuffer = MemTexture::CreateFromFreeImage(dib);
+    m_pdsBuffer = BaseTexture::CreateFromFreeImage(dib);
     FreeImage_Unload(dib);
 
     SetSizeFrom(m_pdsBuffer);
@@ -234,7 +229,7 @@ BOOL Texture::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(BITS))
    {
-      m_pdsBuffer = new MemTexture(m_width, m_height);
+      m_pdsBuffer = new BaseTexture(m_width, m_height);
 
       // 32-bit picture
       LZWReader lzwreader(pbr->m_pistream, (int *)m_pdsBuffer->data(), m_width*4, m_height, m_pdsBuffer->pitch());
@@ -257,7 +252,7 @@ BOOL Texture::LoadToken(int id, BiffReader *pbr)
             }
          }
       }
-   endAlphaCheck:
+endAlphaCheck:
 
       // all alpha values are 0: set them all to 0xff
       if (allAlphaZero)
@@ -282,12 +277,14 @@ BOOL Texture::LoadToken(int id, BiffReader *pbr)
       m_ppb = pt->GetImageLinkBinary(linkid);
       return LoadFromMemory((BYTE*)m_ppb->m_pdata, m_ppb->m_cdata);
    }
+
    return fTrue;
 }
 
 void Texture::FreeStuff()
 {
-   delete m_pdsBuffer; m_pdsBuffer = NULL;
+   delete m_pdsBuffer;
+   m_pdsBuffer = NULL;
    if (m_hbmGDIVersion)
    {
       DeleteObject(m_hbmGDIVersion);
@@ -367,16 +364,18 @@ void Texture::CreateFromResource(const int id, int * const pwidth, int * const p
 
 BaseTexture* Texture::CreateFromHBitmap(HBITMAP hbm, int * const pwidth, int * const pheight)
 {
-   BaseTexture* pdds = MemTexture::CreateFromHBitmap(hbm);
+   BaseTexture* pdds = BaseTexture::CreateFromHBitmap(hbm);
    SetSizeFrom(pdds);
-   if (pwidth) *pwidth = pdds->width();
-   if (pheight) *pheight = pdds->height();
+   if (pwidth)
+	   *pwidth = pdds->width();
+   if (pheight)
+	   *pheight = pdds->height();
    return pdds;
 }
 
 void Texture::CreateTextureOffscreen(const int width, const int height)
 {
-   m_pdsBuffer = new MemTexture( width, height );
+   m_pdsBuffer = new BaseTexture( width, height );
    SetSizeFrom( m_pdsBuffer );
 }
 
@@ -392,9 +391,8 @@ void Texture::SetOpaque(BaseTexture* const pdds)
     for (int i=0;i<height;i++)
     {
         for (int l=0;l<width;l++)
-        {
             pch[4*l + 3] = 0xff;
-        }
-        pch += pitch;
+
+		pch += pitch;
     }
 }

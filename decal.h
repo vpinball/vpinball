@@ -97,7 +97,7 @@ private:
 
 	DecalData m_d;
 
-    MemTexture *m_textImg;
+    BaseTexture *m_textImg;
 	float m_leading, m_descent;
 
 	float m_realwidth, m_realheight;

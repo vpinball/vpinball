@@ -28,7 +28,7 @@ Pin3D::~Pin3D()
 	SAFE_RELEASE(m_pddsStatic);
 	SAFE_RELEASE(m_pddsStaticZ);
 
-    for (std::map<int,MemTexture*>::iterator it = m_xvShadowMap.begin(); it != m_xvShadowMap.end(); ++it)
+    for (std::map<int,BaseTexture*>::iterator it = m_xvShadowMap.begin(); it != m_xvShadowMap.end(); ++it)
         delete it->second;
 
    pinballEnvTexture.FreeStuff();
@@ -205,7 +205,7 @@ HRESULT Pin3D::InitPin3D(const HWND hwnd, const bool fFullScreen, const int scre
 
 	envTexture.CreateFromResource(IDB_ENV);
 
-	m_envRadianceTexture = new MemTexture(envTexture.m_pdsBuffer->width(),envTexture.m_pdsBuffer->height());
+	m_envRadianceTexture = new BaseTexture(envTexture.m_pdsBuffer->width(),envTexture.m_pdsBuffer->height());
 
 	EnvmapPrecalc((DWORD*)envTexture.m_pdsBuffer->data(),envTexture.m_pdsBuffer->width(),envTexture.m_pdsBuffer->height(),
 				  (DWORD*)m_envRadianceTexture->data(),envTexture.m_pdsBuffer->width(),envTexture.m_pdsBuffer->height());
@@ -501,11 +501,11 @@ void Pin3D::RenderPlayfieldGraphics()
       m_pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
 	}
 
-   assert(tableVBuffer != NULL);
-   assert(tableIBuffer != NULL);
-   m_pd3dDevice->basicShader->Begin(0);
+    assert(tableVBuffer != NULL);
+    assert(tableIBuffer != NULL);
+    m_pd3dDevice->basicShader->Begin(0);
 	m_pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, tableVBuffer, 0, 4, tableIBuffer, 0, 6);
-   m_pd3dDevice->basicShader->End();
+    m_pd3dDevice->basicShader->End();
 
 	//!! DisableLightMap();
 	SetTexture(NULL);
@@ -585,7 +585,7 @@ BaseTexture* Pin3D::CreateShadow(const float z)
 
 	delete psur;*/
 
-	BaseTexture* pddsProjectTexture = new MemTexture(shadwidth, shadheight);
+	BaseTexture* pddsProjectTexture = new BaseTexture(shadwidth, shadheight);
 	m_xvShadowMap[(int)z] = pddsProjectTexture;
 
 	SelectObject(hdc, hbmOld);
@@ -599,10 +599,7 @@ BaseTexture* Pin3D::CreateShadow(const float z)
 
 void Pin3D::SetTexture(Texture* pTexture)
 {
-    BaseTexture* tex = NULL;
-    if (pTexture)
-        tex = pTexture->m_pdsBuffer;
-    SetBaseTexture(ePictureTexture, tex);
+    SetBaseTexture(ePictureTexture, pTexture ? pTexture->m_pdsBuffer : NULL);
 }
 
 void Pin3D::SetBaseTexture(DWORD texUnit, BaseTexture* pddsTexture)
