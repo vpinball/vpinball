@@ -35,6 +35,46 @@ const VertexElement VertexNormalTexelTexelElement[] =
 
 VertexDeclaration* RenderDevice::m_pVertexNormalTexelTexelDeclaration = NULL;
 
+static unsigned int fvfToSize(DWORD fvf)
+{
+    switch (fvf)
+    {
+        case MY_D3DFVF_VERTEX:
+        case MY_D3DTRANSFORMED_VERTEX:
+            return sizeof(Vertex3D);
+        case MY_D3DFVF_NOTEX2_VERTEX:
+        case MY_D3DTRANSFORMED_NOTEX2_VERTEX:
+            return sizeof(Vertex3D_NoTex2);
+		case MY_D3DFVF_TEX:
+			return sizeof(Vertex3D_TexelOnly);
+        default:
+            assert(0 && "Unknown FVF type in fvfToSize");
+            return 0;
+    }
+}
+
+static UINT ComputePrimitiveCount(const D3DPRIMITIVETYPE type, const int vertexCount)
+{
+    switch (type)
+    {
+        case D3DPT_POINTLIST:
+            return vertexCount;
+        case D3DPT_LINELIST:
+            return vertexCount / 2;
+        case D3DPT_LINESTRIP:
+            return std::max(0, vertexCount - 1);
+        case D3DPT_TRIANGLELIST:
+            return vertexCount / 3;
+        case D3DPT_TRIANGLESTRIP:
+        case D3DPT_TRIANGLEFAN:
+            return std::max(0, vertexCount - 2);
+        default:
+            return 0;
+    }
+}
+
+//
+
 void ReportError(const HRESULT hr, const char *file, const int line)
 {
     char msg[128];
@@ -43,7 +83,11 @@ void ReportError(const HRESULT hr, const char *file, const int line)
     exit(-1);
 }
 
-D3DTexture* TextureManager::LoadTexture(MemTexture* memtex)
+#define CHECKD3D(s) { HRESULT hr = (s); if (FAILED(hr)) ReportError(hr, __FILE__, __LINE__); }
+
+//
+
+D3DTexture* TextureManager::LoadTexture(BaseTexture* memtex)
 {
     Iter it = m_map.find(memtex);
     if (it == m_map.end())
@@ -67,14 +111,14 @@ D3DTexture* TextureManager::LoadTexture(MemTexture* memtex)
     }
 }
 
-void TextureManager::SetDirty(MemTexture* memtex)
+void TextureManager::SetDirty(BaseTexture* memtex)
 {
     Iter it = m_map.find(memtex);
     if (it != m_map.end())
         it->second.dirty = true;
 }
 
-void TextureManager::UnloadTexture(MemTexture* memtex)
+void TextureManager::UnloadTexture(BaseTexture* memtex)
 {
     Iter it = m_map.find(memtex);
     if (it != m_map.end())
@@ -87,55 +131,14 @@ void TextureManager::UnloadTexture(MemTexture* memtex)
 void TextureManager::UnloadAll()
 {
     for (Iter it = m_map.begin(); it != m_map.end(); ++it)
-    {
         it->second.d3dtex->Release();
-    }
-    m_map.clear();
-}
 
-#define CHECKD3D(s) { HRESULT hr = (s); if (FAILED(hr)) ReportError(hr, __FILE__, __LINE__); }
-
-static unsigned int fvfToSize(DWORD fvf)
-{
-    switch (fvf)
-    {
-        case MY_D3DFVF_VERTEX:
-        case MY_D3DTRANSFORMED_VERTEX:
-            return sizeof(Vertex3D);
-        case MY_D3DFVF_NOTEX2_VERTEX:
-        case MY_D3DTRANSFORMED_NOTEX2_VERTEX:
-            return sizeof(Vertex3D_NoTex2);
-		case MY_D3DFVF_TEX:
-			return sizeof(Vertex3D_TexelOnly);
-        default:
-            assert(0 && "Unknown FVF type in fvfToSize");
-            return 0;
-    }
-}
-
-static UINT ComputePrimitiveCount(D3DPRIMITIVETYPE type, int vertexCount)
-{
-    switch (type)
-    {
-        case D3DPT_POINTLIST:
-            return vertexCount;
-        case D3DPT_LINELIST:
-            return vertexCount / 2;
-        case D3DPT_LINESTRIP:
-            return std::max(0, vertexCount - 1);
-        case D3DPT_TRIANGLELIST:
-            return vertexCount / 3;
-        case D3DPT_TRIANGLESTRIP:
-        case D3DPT_TRIANGLEFAN:
-            return std::max(0, vertexCount - 2);
-        default:
-            return 0;
-    }
+	m_map.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
 
-void EnumerateDisplayModes(int adapter, std::vector<VideoMode>& modes)
+void EnumerateDisplayModes(const int adapter, std::vector<VideoMode>& modes)
 {
     IDirect3D9 *d3d;
     d3d = Direct3DCreate9(D3D_SDK_VERSION);
@@ -627,7 +630,7 @@ void RenderDevice::CopyDepth(D3DTexture* dest, RenderTarget* src)
 	}
 }
 
-D3DTexture* RenderDevice::CreateSystemTexture(MemTexture* surf)
+D3DTexture* RenderDevice::CreateSystemTexture(BaseTexture* surf)
 {
     IDirect3DTexture9 *sysTex;
 
@@ -653,7 +656,7 @@ D3DTexture* RenderDevice::CreateSystemTexture(MemTexture* surf)
     return sysTex;
 }
 
-D3DTexture* RenderDevice::UploadTexture(MemTexture* surf, int *pTexWidth, int *pTexHeight)
+D3DTexture* RenderDevice::UploadTexture(BaseTexture* surf, int *pTexWidth, int *pTexHeight)
 {
     IDirect3DTexture9 *sysTex, *tex;
 
@@ -677,7 +680,7 @@ D3DTexture* RenderDevice::UploadTexture(MemTexture* surf, int *pTexWidth, int *p
     return tex;
 }
 
-void RenderDevice::UpdateTexture(D3DTexture* tex, MemTexture* surf)
+void RenderDevice::UpdateTexture(D3DTexture* tex, BaseTexture* surf)
 {
     IDirect3DTexture9* sysTex = CreateSystemTexture(surf);
     CHECKD3D(m_pD3DDevice->UpdateTexture(sysTex, tex));
@@ -856,7 +859,7 @@ void RenderDevice::DrawPrimitive(D3DPRIMITIVETYPE type, DWORD fvf, const void* v
     CHECKD3D(m_pD3DDevice->DrawPrimitiveUP(type, ComputePrimitiveCount(type, vertexCount), vertices, fvfToSize(fvf)));
     m_curVertexBuffer = 0;      // DrawPrimitiveUP sets the VB to NULL
 
-   m_curDrawCalls++;
+    m_curDrawCalls++;
 }
 
 void RenderDevice::DrawIndexedPrimitive(D3DPRIMITIVETYPE type, DWORD fvf, const void* vertices, DWORD vertexCount, const WORD* indices, DWORD indexCount)
@@ -867,7 +870,7 @@ void RenderDevice::DrawIndexedPrimitive(D3DPRIMITIVETYPE type, DWORD fvf, const 
     m_curVertexBuffer = 0;      // DrawIndexedPrimitiveUP sets the VB to NULL
     m_curIndexBuffer = 0;       // DrawIndexedPrimitiveUP sets the IB to NULL
 
-   m_curDrawCalls++;
+    m_curDrawCalls++;
 }
 
 void RenderDevice::DrawPrimitiveVB(D3DPRIMITIVETYPE type, VertexBuffer* vb, DWORD startVertex, DWORD vertexCount)
@@ -887,7 +890,7 @@ void RenderDevice::DrawPrimitiveVB(D3DPRIMITIVETYPE type, VertexBuffer* vb, DWOR
 
     CHECKD3D(m_pD3DDevice->DrawPrimitive(type, startVertex, ComputePrimitiveCount(type, vertexCount)));
 
-   m_curDrawCalls++;
+    m_curDrawCalls++;
 }
 
 void RenderDevice::DrawIndexedPrimitiveVB( D3DPRIMITIVETYPE type, VertexBuffer* vb, DWORD startVertex, DWORD vertexCount, const WORD* indices, DWORD indexCount)
@@ -1036,24 +1039,24 @@ void Shader::Begin( unsigned int pass )
 {
    unsigned int cPasses;
    m_shader->Begin(&cPasses,0);
-   m_shader->BeginPass(pass);
+   m_shader->BeginPass(pass);  
 }
 
 void Shader::End()
 {
-   m_shader->EndPass();
-   m_shader->End();
+   m_shader->EndPass();  
+   m_shader->End();  
 }
 
-void Shader::SetTexture( D3DXHANDLE texelName, Texture *texel)
+void Shader::SetTexture(D3DXHANDLE texelName, Texture *texel)
 {
    if (texel->m_pdsBuffer )
-      m_shader->SetTexture(texelName,m_renderDevice->m_texMan.LoadTexture(texel->m_pdsBuffer));
+      m_shader->SetTexture(texelName, m_renderDevice->m_texMan.LoadTexture(texel->m_pdsBuffer));
 }
 
-void Shader::SetTexture( D3DXHANDLE texelName, D3DTexture *texel)
+void Shader::SetTexture(D3DXHANDLE texelName, D3DTexture *texel)
 {
-   m_shader->SetTexture(texelName,texel);
+   m_shader->SetTexture(texelName, texel);
 }
 
 void Shader::SetMaterial( const Material * const mat, 

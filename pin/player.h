@@ -330,7 +330,7 @@ public:
 
 	int m_dmdx;
 	int m_dmdy;
-	MemTexture* m_texdmd;
+	BaseTexture* m_texdmd;
 	D3DTexture* m_device_texdmd;
 
 private:

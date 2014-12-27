@@ -988,7 +988,6 @@ void Surface::RenderStatic(RenderDevice* pd3dDevice)
    }
 }
 
-
 void Surface::RenderSlingshots(RenderDevice* pd3dDevice)
 {
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;

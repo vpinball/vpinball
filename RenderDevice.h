@@ -24,7 +24,7 @@ struct VideoMode
    int refreshrate;
 };
 
-void EnumerateDisplayModes(int adapter, std::vector<VideoMode>& modes);
+void EnumerateDisplayModes(const int adapter, std::vector<VideoMode>& modes);
 
 
 enum TransformStateType {
@@ -37,6 +37,7 @@ enum UsageFlags {
     USAGE_DYNAMIC   = D3DUSAGE_DYNAMIC      // to be used for vertex/index buffers which are locked every frame
 };
 
+class RenderDevice;
 
 class TextureManager
 {
@@ -49,10 +50,9 @@ public:
         UnloadAll();
     }
 
-    D3DTexture* LoadTexture(MemTexture* memtex);
-    void SetDirty(MemTexture* memtex);
-    void UnloadTexture(MemTexture* memtex);
-
+    D3DTexture* LoadTexture(BaseTexture* memtex);
+    void SetDirty(BaseTexture* memtex);
+    void UnloadTexture(BaseTexture* memtex);
     void UnloadAll();
 
 private:
@@ -65,8 +65,8 @@ private:
     };
 
     RenderDevice& m_rd;
-    std::map<MemTexture*, TexInfo> m_map;
-    typedef std::map<MemTexture*, TexInfo>::iterator Iter;
+    std::map<BaseTexture*, TexInfo> m_map;
+    typedef std::map<BaseTexture*, TexInfo>::iterator Iter;
 };
 
 class VertexBuffer : public IDirect3DVertexBuffer9
@@ -79,18 +79,22 @@ public:
                                               // it's only needed for VBs which are locked several times per frame
         DISCARDCONTENTS = D3DLOCK_DISCARD     // discard previous contents; only works with dynamic VBs
     };
-    void lock( unsigned int offsetToLock, unsigned int sizeToLock, void **dataBuffer, DWORD flags )
+
+	void lock( unsigned int offsetToLock, unsigned int sizeToLock, void **dataBuffer, DWORD flags )
     {
         CHECKD3D(this->Lock(offsetToLock, sizeToLock, dataBuffer, flags));
     }
-    void unlock(void)
+    
+	void unlock(void)
     {
         CHECKD3D(this->Unlock());
     }
-    void release(void)
+    
+	void release(void)
     {
         this->Release();
     }
+
 private:
     VertexBuffer();     // disable default constructor
 };
@@ -110,18 +114,22 @@ public:
                                             // it's only needed for VBs which are locked several times per frame
         DISCARD = D3DLOCK_DISCARD           // discard previous contents; only works with dynamic VBs
     };
-    void lock( unsigned int offsetToLock, unsigned int sizeToLock, void **dataBuffer, DWORD flags )
+
+	void lock( unsigned int offsetToLock, unsigned int sizeToLock, void **dataBuffer, DWORD flags )
     {
         CHECKD3D(this->Lock(offsetToLock, sizeToLock, dataBuffer, flags) );
     }
-    void unlock(void)
+    
+	void unlock(void)
     {
         CHECKD3D(this->Unlock());
     }
-    void release(void)
+    
+	void release(void)
     {
         this->Release();
     }
+
 private:
     IndexBuffer();      // disable default constructor
 };
@@ -179,9 +187,9 @@ public:
    void CopySurface(D3DTexture* dest, RenderTarget* src);
    void CopyDepth(D3DTexture* dest, RenderTarget* src);
 
-   D3DTexture* CreateSystemTexture(MemTexture* surf);
-   D3DTexture* UploadTexture(MemTexture* surf, int *pTexWidth=NULL, int *pTexHeight=NULL);
-   void UpdateTexture(D3DTexture* tex, MemTexture* surf);
+   D3DTexture* CreateSystemTexture(BaseTexture* surf);
+   D3DTexture* UploadTexture(BaseTexture* surf, int *pTexWidth=NULL, int *pTexHeight=NULL);
+   void UpdateTexture(D3DTexture* tex, BaseTexture* surf);
 
    void SetRenderState( const RenderStates p1, const DWORD p2 );
    void SetTexture( DWORD, D3DTexture* );
@@ -215,9 +223,9 @@ public:
    void ForceAnisotropicFiltering( const bool enable ) { m_force_aniso = enable; }
 
    // performance counters
-   unsigned Perf_GetNumDrawCalls()         { return m_frameDrawCalls; }
-   unsigned Perf_GetNumStateChanges()      { return m_frameStateChanges; }
-   unsigned Perf_GetNumTextureChanges()    { return m_frameTextureChanges; }
+   unsigned int Perf_GetNumDrawCalls()         { return m_frameDrawCalls; }
+   unsigned int Perf_GetNumStateChanges()      { return m_frameStateChanges; }
+   unsigned int Perf_GetNumTextureChanges()    { return m_frameTextureChanges; }
 
    inline void CreateVertexDeclaration( const VertexElement *element, VertexDeclaration **declaration )
    {
@@ -231,7 +239,7 @@ public:
 
    inline IDirect3DDevice9* GetCoreDevice()
    {
-      return m_pD3DDevice;
+       return m_pD3DDevice;
    }
 
 private:
@@ -300,6 +308,7 @@ public:
 
     void Begin( unsigned int pass );
     void End();
+
     void SetTexture( D3DXHANDLE texelName, Texture *texel);
     void SetTexture( D3DXHANDLE texelName, D3DTexture *texel);
     void SetMaterial( const Material * const mat, 

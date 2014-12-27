@@ -2915,7 +2915,6 @@ void Player::DrawBalls()
       if( pball->m_pinballDecal )
           ballShader->SetTexture("Texture2",pball->m_pinballDecal);
 
-      UINT cPasses=0;
       if ( drawReflection )
         {
           ballShader->Core()->SetFloat("freflectionStrength", (float)m_ptable->m_ballReflectionStrength/255.0f );
@@ -2924,23 +2923,18 @@ void Player::DrawBalls()
             m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_DESTALPHA);
 
           ballShader->Core()->SetTechnique("RenderBallReflection");
-          ballShader->Core()->Begin(&cPasses,0);
-          ballShader->Core()->BeginPass(0);
+          ballShader->Begin(0);
           m_pin3d.m_pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, ballVertexBuffer, 0, basicBallNumVertices, ballIndexBuffer, 0, basicBallNumFaces );
-          ballShader->Core()->EndPass();
-          ballShader->Core()->End();
+          ballShader->End();
 
             m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
             m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_INVSRCALPHA);
         }
 
       ballShader->Core()->SetTechnique("RenderBall");
-      cPasses=0;
-      ballShader->Core()->Begin(&cPasses,0);
-      ballShader->Core()->BeginPass(0);
+      ballShader->Begin(0);
       m_pin3d.m_pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, ballVertexBuffer, 0, basicBallNumVertices, ballIndexBuffer, 0, basicBallNumFaces );
-      ballShader->Core()->EndPass();
-      ballShader->Core()->End();
+      ballShader->End();
 
       // ball trails
       if((m_fTrailForBalls && (m_ptable->m_useTrailForBalls == -1)) || (m_ptable->m_useTrailForBalls == 1))
@@ -3040,12 +3034,9 @@ void Player::DrawBalls()
                 m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_DESTALPHA);
 
                 ballShader->Core()->SetTechnique("RenderBallTrail");
-                cPasses=0;
-				ballShader->Core()->Begin(&cPasses,0);
-				ballShader->Core()->BeginPass(0);
+				ballShader->Begin(0);
                 m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_NOTEX2_VERTEX, rgv3D_all, num_rgv3D, (LPWORD)rgi_all, num_rgv3D);
-                ballShader->Core()->EndPass();
-				ballShader->Core()->End();
+				ballShader->End();
 
                 m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
                 m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_INVSRCALPHA);

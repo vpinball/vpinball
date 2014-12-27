@@ -551,7 +551,7 @@ STDMETHODIMP ScriptGlobalTable::put_DMDPixels(VARIANT pVal) //!! use 64bit inste
 				g_pplayer->m_pin3d.m_pd3dDevice->m_texMan.UnloadTexture(g_pplayer->m_texdmd);
 				delete g_pplayer->m_texdmd;
 			}
-			g_pplayer->m_texdmd = new MemTexture(g_pplayer->m_dmdx,g_pplayer->m_dmdy);
+			g_pplayer->m_texdmd = new BaseTexture(g_pplayer->m_dmdx,g_pplayer->m_dmdy);
 		}
 
 		DWORD* const data = (DWORD*)g_pplayer->m_texdmd->data(); //!! assumes tex data to be always 32bit
@@ -6100,7 +6100,7 @@ void PinTable::ReImportImage(HWND hwndListView, Texture *ppi, char *filename)
       ppb->ReadFromFile(filename);
    }
 
-   MemTexture *tex = MemTexture::CreateFromFile(filename);
+   BaseTexture *tex = BaseTexture::CreateFromFile(filename);
 
    if (tex == NULL)
    {

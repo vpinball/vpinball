@@ -333,8 +333,8 @@ void Textbox::RenderText()
     GdiFlush();     // make sure everything is drawn
 
     if (!m_texture)
-        m_texture = new MemTexture(m_rect.right - m_rect.left, m_rect.bottom - m_rect.top);
-    m_texture->CopyBits(bits);
+        m_texture = new BaseTexture(m_rect.right - m_rect.left, m_rect.bottom - m_rect.top);
+    m_texture->CopyFrom_Raw(bits);
 
     // Set alpha for pixels that match transparent color (if transparent enabled), otherwise set to opaque
 	BYTE *pch = m_texture->data();
