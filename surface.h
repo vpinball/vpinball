@@ -111,7 +111,7 @@ END_CONNECTION_POINT_MAP()
     virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
     // end ISelect
 
-    virtual float GetDepth(const Vertex3Ds& viewDir) const { return viewDir.z * m_d.m_heighttop; }
+    virtual float GetDepth(const Vertex3Ds& viewDir) { return viewDir.z * m_d.m_heighttop; }
     virtual bool IsTransparent();
 
 private:

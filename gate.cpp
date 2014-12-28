@@ -534,7 +534,7 @@ void Gate::RenderSetup(RenderDevice* pd3dDevice)
     wireVertexBuffer->lock(0, 0, (void**)&buf, 0);
     memcpy( buf, wireVertices, sizeof(Vertex3D_NoTex2)*gateWireNumVertices);
     wireVertexBuffer->unlock();
-   delete(wireVertices);
+   delete [] wireVertices;
 }
 
 void Gate::RenderStatic(RenderDevice* pd3dDevice) // only the support structures are rendered here

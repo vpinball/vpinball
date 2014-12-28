@@ -337,7 +337,7 @@ void Kicker::RenderStatic(RenderDevice* pd3dDevice)
       pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, buf, kickerPlateNumVertices, kickerPlateIndices, kickerPlateNumFaces);
       pd3dDevice->basicShader->End();
       pd3dDevice->SetRenderState(RenderDevice::ZFUNC, D3DCMP_LESSEQUAL );
-      delete buf;
+      delete [] buf;
 
 //      if ( m_d.m_kickertype == KickerHole )
       {
