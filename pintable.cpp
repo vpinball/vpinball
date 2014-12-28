@@ -1362,7 +1362,7 @@ bool PinTable::IsNameUnique(WCHAR *wzName)
 
 void PinTable::GetUniqueName(ItemTypeEnum type, WCHAR *wzUniqueName)
 {
-    WCHAR wzRoot[128];
+    WCHAR wzRoot[256];
     ISelect::GetTypeNameForType(type, wzRoot);
     GetUniqueName(wzRoot, wzUniqueName);
 }

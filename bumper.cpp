@@ -547,7 +547,7 @@ void Bumper::RenderSetup(RenderDevice* pd3dDevice )
          buf[i].tv = bumperBase[i].tv;
       }
       baseVertexBuffer->unlock();
-      delete baseVertices;
+      delete [] baseVertices;
 
       indices.clear();
       indices.resize( bumperSocketNumFaces);
@@ -579,7 +579,7 @@ void Bumper::RenderSetup(RenderDevice* pd3dDevice )
          buf[i].tv = bumperSocket[i].tv;
       }
       socketVertexBuffer->unlock();
-      delete baseVertices;
+      delete [] baseVertices;
 
       indices.clear();
       indices.resize( bumperRingNumFaces);
