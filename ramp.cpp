@@ -1020,26 +1020,14 @@ void Ramp::RenderStaticHabitrail(RenderDevice* pd3dDevice)
        pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
 
        //g_pplayer->m_pin3d.SetTextureFilter(ePictureTexture, TEXTURE_MODE_TRILINEAR);
-}
-   pd3dDevice->basicShader->Begin(0);
-
-/*   int offset=0;
-   for (int i=0; i<rampVertex-1; i++,offset+=32)
-   {
-      RenderPolygons(pd3dDevice, offset, (WORD*)rgicrosssection, 0, 16);
-      if (m_d.m_type == RampType4Wire || m_d.m_type == RampType3WireRight)
-         RenderPolygons(pd3dDevice, offset, (WORD*)rgicrosssection, 16, 24);
-
-      if (m_d.m_type == RampType4Wire || m_d.m_type == RampType3WireLeft)
-         RenderPolygons(pd3dDevice, offset, (WORD*)rgicrosssection, 24, 32);
    }
-   pd3dDevice->basicShader->End();  
-*/
+   pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
    pd3dDevice->basicShader->Begin(0);
    unsigned int offset=0;
    pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, dynamicVertexBuffer, offset, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
    offset += m_numVertices;
    pd3dDevice->basicShader->End();  
+   pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 
 }
 
@@ -1310,7 +1298,12 @@ void Ramp::prepareHabitrail(RenderDevice* pd3dDevice)
         height = rgheightInit[i]+m_ptable->m_tableheight;    
 
         Vertex3Ds tangent( middlePoints[i2].x-middlePoints[i].x, middlePoints[i2].y-middlePoints[i].y, 0.0f);
-
+        if (i == numRings - 1)
+        {
+           // for the last spline point use the previous tangent again, otherwise we won't see the complete wire (it stops one control point too early)
+           tangent.x = middlePoints[i].x - middlePoints[i - 1].x;
+           tangent.y = middlePoints[i].y - middlePoints[i - 1].y;
+        }
         if ( i==0 )
         {
             Vertex3Ds up( middlePoints[i2].x+middlePoints[i].x, middlePoints[i2].y+middlePoints[i].y, rgheightInit[i2]-rgheightInit[i]);
@@ -1342,6 +1335,11 @@ void Ramp::prepareHabitrail(RenderDevice* pd3dDevice)
             //texel
             rgvbuf[index].tu = u;
             rgvbuf[index].tv = v;
+            Vertex3Ds n(rgvbuf[index].x - middlePoints[i].x, rgvbuf[index].y - middlePoints[i].y, rgvbuf[index].z - height);
+            float len = 1.0f / sqrtf(n.x*n.x + n.y*n.y + n.z*n.z);
+            rgvbuf[index].nx = n.x*len;
+            rgvbuf[index].ny = n.y*len;
+            rgvbuf[index].nz = n.z*len;
         }
     }
     // calculate faces
@@ -1380,11 +1378,6 @@ void Ramp::prepareHabitrail(RenderDevice* pd3dDevice)
             rgibuf[(i*numSegments+j)*6+4] = quad[2];
             rgibuf[(i*numSegments+j)*6+5] = quad[1];
         }
-    }
-    //calculate normals
-    for( int i=0;i<m_numIndices;i+=3)
-    {
-        SetNormal( rgvbuf, &rgibuf[i], 3);
     }
     // Draw the floor of the ramp.
     memcpy( &buf[0], &rgvbuf[0], sizeof(Vertex3D_NoTex2)*m_numVertices );
