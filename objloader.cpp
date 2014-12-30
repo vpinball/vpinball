@@ -363,7 +363,7 @@ void WaveFrontObj_Save(const char *filename, const char *description, const Mesh
 
    for( unsigned i=0; i<mesh.NumIndices(); i+=3 )
    {
-      fprintf_s(f,"f %i/%i/%i %i/%i/%i %i/%i/%i\n", mesh.m_indices[i+2]+1, mesh.m_indices[i+2]+1, mesh.m_indices[i+2]+1
+      fprintf_s(f,"f %u/%u/%u %u/%u/%u %u/%u/%u\n", mesh.m_indices[i+2]+1, mesh.m_indices[i+2]+1, mesh.m_indices[i+2]+1
                                                   , mesh.m_indices[i+1]+1, mesh.m_indices[i+1]+1, mesh.m_indices[i+1]+1
                                                   , mesh.m_indices[i  ]+1, mesh.m_indices[i  ]+1, mesh.m_indices[i  ]+1 );
    }

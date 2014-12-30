@@ -101,8 +101,6 @@ void DispReel::SetDefaults(bool fromMouseClick)
 
 void DispReel::WriteRegDefaults()
 {
-	char strTmp[MAXTOKEN];
-
 	SetRegValue("DefaultProps\\EMReel","Image", REG_SZ, &m_d.m_szImage,lstrlen(m_d.m_szImage));
 	SetRegValue("DefaultProps\\EMReel","Sound", REG_SZ, &m_d.m_szSound,lstrlen(m_d.m_szSound));
 	SetRegValueBool("DefaultProps\\Decal","UseImageGrid",m_d.m_fUseImageGrid);

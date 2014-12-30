@@ -29,8 +29,8 @@ public:
 	void CopyTo_ConvertAlpha(void* bits) // adds checkerboard pattern where alpha is set to output bits
 	{
 		unsigned int o = 0;
-		for(unsigned int j = 0; j < m_height; ++j)
-		for(unsigned int i = 0; i < m_width; ++i,++o)
+		for(int j = 0; j < m_height; ++j)
+		for(int i = 0; i < m_width; ++i,++o)
 		{
 			const unsigned int alpha = m_data[o*4+3];
 			if(alpha != 255)

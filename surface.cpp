@@ -124,7 +124,6 @@ HRESULT Surface::InitTarget(PinTable * const ptable, const float x, const float 
    m_ptable = ptable;
    IsWall = false;
    float width = 30.0f, length=6.0f, fTmp;
-   int iTmp;
 
    HRESULT hr = GetRegStringAsFloat(strKeyName, "Width", &fTmp);
    if ((hr == S_OK) && fromMouseClick)

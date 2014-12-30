@@ -368,12 +368,12 @@ void Flasher::UpdateMesh()
       tempMatrix.Multiply(RTmatrix, RTmatrix);
 
       Vertex3D_TexelOnly verts[3];
-      for( int i=0;i<3;i++ )
+      for( int i2=0;i2<3;i2++ )
       {      
-         memcpy( &verts[i], &vertices[offset+i], sizeof(Vertex3D_TexelOnly));
-         T2Matrix.MultiplyVector(verts[i], verts[i]);
-         RTmatrix.MultiplyVector(verts[i], verts[i]);
-         TMatrix.MultiplyVector(verts[i], verts[i]);
+         memcpy( &verts[i2], &vertices[offset+i2], sizeof(Vertex3D_TexelOnly));
+         T2Matrix.MultiplyVector(verts[i2], verts[i2]);
+         RTmatrix.MultiplyVector(verts[i2], verts[i2]);
+         TMatrix.MultiplyVector(verts[i2], verts[i2]);
       }
       memcpy( &buf[offset], verts, sizeof(Vertex3D_TexelOnly)*3 );
    }
