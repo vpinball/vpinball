@@ -478,6 +478,7 @@ void Light::RenderBulbMesh(RenderDevice *pd3dDevice, COLORREF color, bool isOn)
     mat.m_cGlossy = 0xFF020202;
     mat.m_fRoughness = 0.8f;
     pd3dDevice->basicShader->SetMaterial(&mat);
+
     pd3dDevice->basicShader->Begin(0);
     pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, bulbLightVBuffer, 0, bulbLightNumVertices, bulbLightIndexBuffer, 0, bulbLightNumFaces );
     pd3dDevice->basicShader->End();
@@ -495,8 +496,6 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
 
     Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
-    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
-
     const bool isOn = (m_realState == LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : !!m_realState;
     const float height = m_surfaceHeight;
 
@@ -506,12 +505,13 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
 
     if (!m_fBackglass)
     {
+	    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
         float depthbias = -BASEDEPTHBIAS;
         pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, *((DWORD*)&depthbias));
     }
 
 	//ppin3d->EnableAlphaTestReference(1);        // don't alpha blend, but do honor transparent pixels
-    D3DXVECTOR4 center(m_d.m_vCenter.x, m_d.m_vCenter.y, m_surfaceHeight+0.05f, 0.0f);
+    D3DXVECTOR4 center(m_d.m_vCenter.x, m_d.m_vCenter.y, !m_fBackglass ? m_surfaceHeight+0.05f : 0.0f, 0.0f); //!! backglass mode needs more, as there the coord system is different (e.g. falloff is broken)
     D3DXVECTOR4 diffColor(r,g,b,1.0f);
     pd3dDevice->basicShader->Core()->SetVector("lightCenter", &center);
     pd3dDevice->basicShader->Core()->SetVector("lightColor", &diffColor);
@@ -538,34 +538,32 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
     Texture *offTexel=NULL;
     if ( !m_d.m_BulbLight )
     {
-        if (surfaceMaterial)
-        {
-            pd3dDevice->basicShader->SetMaterial(surfaceMaterial);
-        }
-        if ((offTexel = m_ptable->GetImage(m_d.m_szOffImage)) != NULL)
+        pd3dDevice->basicShader->SetMaterial(surfaceMaterial);
+
+		if ((offTexel = m_ptable->GetImage(m_d.m_szOffImage)) != NULL)
         {
             pd3dDevice->basicShader->Core()->SetTechnique("light_with_texture");
             pd3dDevice->basicShader->SetTexture("Texture0", offTexel );
         }
         else
-        {
             pd3dDevice->basicShader->Core()->SetTechnique("light_without_texture");
-        }
     }
     else
-    {
         pd3dDevice->basicShader->Core()->SetTechnique("bulb_light");
-    }
-    pd3dDevice->SetVertexDeclaration(pd3dDevice->m_pVertexNormalTexelTexelDeclaration);
+
+	pd3dDevice->SetVertexDeclaration(pd3dDevice->m_pVertexNormalTexelTexelDeclaration);
 
     pd3dDevice->basicShader->Begin(0);
     pd3dDevice->DrawPrimitiveVB(D3DPT_TRIANGLELIST, customMoverVBuffer, 0, customMoverVertexNum);
     pd3dDevice->basicShader->End();
 
-    pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
     pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, FALSE);
 
-    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+	if (!m_fBackglass)
+	{
+	    pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
+	    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+	}
 }
 
 void Light::PrepareMoversCustom()
