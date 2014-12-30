@@ -1,3 +1,5 @@
+//!! have switch to choose if texture is weighted by diffuse/glossy or is just used raw?
+
 #include "Globals.fxh"
 
 float3 cGlossy = float3(0.5f, 0.5f, 0.5f);
@@ -140,7 +142,7 @@ float4 ps_main_noLight( in VS_SIMPLE_OUTPUT IN) : COLOR
 }
 
 //####### Light shader ##################
-float4   lightColor    = float4(1,1,1,1);
+float4   lightColor = float4(1,1,1,1);
 float4   lightCenter;
 float    maxRange;
 float    intensity=1.0f;
@@ -188,7 +190,7 @@ float4 PS_LightWithTexel(in VS_LIGHT_OUTPUT IN ) : COLOR
 
 	// early out if no normal set (e.g. HUD vertices)
     if(IN.normal.x == 0.0f && IN.normal.y == 0.0f && IN.normal.z == 0.0f)
-     color = float4(0,0,0,1);
+     color = float4(t,1.0f); //!! misses tonemapping and gamma here
     else
 	 color = lightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular, edge); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
 
@@ -234,14 +236,13 @@ float4 PS_LightWithoutTexel(in VS_LIGHT_OUTPUT IN ) : COLOR
 	float4 color;
 	// early out if no normal set (e.g. HUD vertices)
     if(IN.normal.x == 0.0f && IN.normal.y == 0.0f && IN.normal.z == 0.0f)
-     color = float4(0,0,0,1);
+     color = float4(0,0,0,1); //!! misses tonemapping and gamma here
     else
 	 color = lightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular, edge); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
 
     color.a *= fmaterialAlpha;
     color += result;
     return color;
-
 }
 
 float4 PS_BulbLight( in VS_LIGHT_OUTPUT IN ) : COLOR
