@@ -472,18 +472,18 @@ Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** co
       }
       if( isHabitrail())
       {
-          if( m_d.m_type==RampType1Wire )
+//          if( m_d.m_type==RampType1Wire )
           {
               const float width = m_d.m_wireDiameter*0.5f;
               rgvLocal[i] = vmiddle + (width*0.5f) * vnormal;
               rgvLocal[cvertex*2 - i - 1] = vmiddle - (width*0.5f) * vnormal;
           }
-          else
-          {
-              const float width = (m_d.m_wireDiameter*0.5f)+m_d.m_wireDistanceX;
-              rgvLocal[i] = vmiddle + (width*0.5f) * vnormal;
-              rgvLocal[cvertex*2 - i - 1] = vmiddle - (width*0.5f) * vnormal;
-          }
+//           else
+//           {
+//               const float width = (m_d.m_wireDiameter*0.5f)+m_d.m_wireDistanceX;
+//               rgvLocal[i] = vmiddle + (width*0.5f) * vnormal;
+//               rgvLocal[cvertex*2 - i - 1] = vmiddle - (width*0.5f) * vnormal;
+//           }
       }
       else
       {
@@ -1022,11 +1022,109 @@ void Ramp::RenderStaticHabitrail(RenderDevice* pd3dDevice)
        //g_pplayer->m_pin3d.SetTextureFilter(ePictureTexture, TEXTURE_MODE_TRILINEAR);
    }
    pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
-   pd3dDevice->basicShader->Begin(0);
-   unsigned int offset=0;
-   pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, dynamicVertexBuffer, offset, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
-   offset += m_numVertices;
-   pd3dDevice->basicShader->End();  
+   if ( m_d.m_type==RampType2Wire )
+   {
+      Matrix3D matTrafo, matTemp;
+      matTrafo.SetIdentity();
+      matTrafo._41 = -m_d.m_wireDistanceX*0.5f;
+      g_pplayer->UpdateBasicShaderMatrix(matTrafo);
+      pd3dDevice->basicShader->Begin(0);
+      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, dynamicVertexBuffer, 0, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
+      pd3dDevice->basicShader->End();  
+      matTrafo.SetIdentity();
+      matTrafo._41 = m_d.m_wireDistanceX*0.5f;
+      g_pplayer->UpdateBasicShaderMatrix(matTrafo);
+      pd3dDevice->basicShader->Begin(0);
+      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, dynamicVertexBuffer, 0, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
+      pd3dDevice->basicShader->End();  
+      g_pplayer->UpdateBasicShaderMatrix();
+   }
+   else if ( m_d.m_type==RampType4Wire )
+   {
+      Matrix3D matTrafo, matTemp;
+      matTrafo.SetIdentity();
+      matTrafo._41 = -m_d.m_wireDistanceX*0.5f;
+      matTrafo._43 = m_d.m_wireDistanceY*0.5;
+      g_pplayer->UpdateBasicShaderMatrix(matTrafo);
+      pd3dDevice->basicShader->Begin(0);
+      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, dynamicVertexBuffer, 0, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
+      pd3dDevice->basicShader->End();  
+      matTrafo.SetIdentity();
+      matTrafo._41 = m_d.m_wireDistanceX*0.5f;
+      matTrafo._43 = m_d.m_wireDistanceY*0.5;
+      g_pplayer->UpdateBasicShaderMatrix(matTrafo);
+      pd3dDevice->basicShader->Begin(0);
+      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, dynamicVertexBuffer, 0, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
+      pd3dDevice->basicShader->End();  
+      matTrafo.SetIdentity();
+      matTrafo._41 = -m_d.m_wireDistanceX*0.5f;
+      g_pplayer->UpdateBasicShaderMatrix(matTrafo);
+      pd3dDevice->basicShader->Begin(0);
+      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, dynamicVertexBuffer, 0, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
+      pd3dDevice->basicShader->End();  
+      matTrafo.SetIdentity();
+      matTrafo._41 = m_d.m_wireDistanceX*0.5f;
+      g_pplayer->UpdateBasicShaderMatrix(matTrafo);
+      pd3dDevice->basicShader->Begin(0);
+      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, dynamicVertexBuffer, 0, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
+      pd3dDevice->basicShader->End();  
+      g_pplayer->UpdateBasicShaderMatrix();
+   }
+   else if( m_d.m_type==RampType3WireLeft)
+   {
+      Matrix3D matTrafo, matTemp;
+      matTrafo.SetIdentity();
+      matTrafo._41 = -m_d.m_wireDistanceX*0.5f;
+      matTrafo._43 = m_d.m_wireDistanceY*0.5;
+      g_pplayer->UpdateBasicShaderMatrix(matTrafo);
+      pd3dDevice->basicShader->Begin(0);
+      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, dynamicVertexBuffer, 0, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
+      pd3dDevice->basicShader->End();  
+      matTrafo.SetIdentity();
+      matTrafo._41 = -m_d.m_wireDistanceX*0.5f;
+      g_pplayer->UpdateBasicShaderMatrix(matTrafo);
+      pd3dDevice->basicShader->Begin(0);
+      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, dynamicVertexBuffer, 0, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
+      pd3dDevice->basicShader->End();  
+      matTrafo.SetIdentity();
+      matTrafo._41 = m_d.m_wireDistanceX*0.5f;
+      g_pplayer->UpdateBasicShaderMatrix(matTrafo);
+      pd3dDevice->basicShader->Begin(0);
+      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, dynamicVertexBuffer, 0, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
+      pd3dDevice->basicShader->End();  
+      g_pplayer->UpdateBasicShaderMatrix();
+   }
+   else if( m_d.m_type==RampType3WireRight )
+   {
+      Matrix3D matTrafo, matTemp;
+      matTrafo.SetIdentity();
+      matTrafo._41 = m_d.m_wireDistanceX*0.5f;
+      matTrafo._43 = m_d.m_wireDistanceY*0.5;
+      g_pplayer->UpdateBasicShaderMatrix(matTrafo);
+      pd3dDevice->basicShader->Begin(0);
+      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, dynamicVertexBuffer, 0, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
+      pd3dDevice->basicShader->End();  
+      matTrafo.SetIdentity();
+      matTrafo._41 = -m_d.m_wireDistanceX*0.5f;
+      g_pplayer->UpdateBasicShaderMatrix(matTrafo);
+      pd3dDevice->basicShader->Begin(0);
+      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, dynamicVertexBuffer, 0, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
+      pd3dDevice->basicShader->End();  
+      matTrafo.SetIdentity();
+      matTrafo._41 = m_d.m_wireDistanceX*0.5f;
+      g_pplayer->UpdateBasicShaderMatrix(matTrafo);
+      pd3dDevice->basicShader->Begin(0);
+      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, dynamicVertexBuffer, 0, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
+      pd3dDevice->basicShader->End();  
+      g_pplayer->UpdateBasicShaderMatrix();
+   }
+   else 
+   {
+      pd3dDevice->basicShader->Begin(0);
+      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, dynamicVertexBuffer, 0, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
+      pd3dDevice->basicShader->End();  
+   }
+
    pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 
 }
