@@ -192,6 +192,7 @@ void Gate::Render(Sur * const psur)
    float len2 = len1*0.5f;
    Vertex2D tmp;
 
+   {
    const float radangle = ANGTORAD(m_d.m_rotation);
    {
       const float sn = sinf(radangle);
@@ -218,13 +219,16 @@ void Gate::Render(Sur * const psur)
       psur->Line(tmp.x, tmp.y,
          m_d.m_vCenter.x + sn*len2, m_d.m_vCenter.y - cs*len2);
    }
+   }
 
-   const float arrowang = radangle-0.6f;
-   const float sn = sinf(arrowang);
-   const float cs = cosf(arrowang);
+   const float arrowang = ANGTORAD(m_d.m_rotation) - 0.6f;
+   {
+	   const float sn = sinf(arrowang);
+	   const float cs = cosf(arrowang);
 
-   psur->Line(tmp.x, tmp.y,
-      m_d.m_vCenter.x + sn*len2, m_d.m_vCenter.y - cs*len2);
+	   psur->Line(tmp.x, tmp.y,
+		   m_d.m_vCenter.x + sn*len2, m_d.m_vCenter.y - cs*len2);
+   }
 
    if ( m_d.m_twoWay )
    {
@@ -258,7 +262,6 @@ void Gate::Render(Sur * const psur)
 
        psur->Line(tmp.x, tmp.y,
            m_d.m_vCenter.x + sn*len2, m_d.m_vCenter.y - cs*len2);
-
    }
 }
 

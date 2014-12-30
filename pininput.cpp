@@ -567,7 +567,7 @@ void PinInput::Init(const HWND hwnd)
        // Create mouse device
 	   if(!FAILED(m_pDI->CreateDevice( GUID_SysMouse, &m_pMouse, NULL)))
 	   {
-		   HRESULT hr = m_pMouse->SetDataFormat( &c_dfDIMouse2 );
+		   hr = m_pMouse->SetDataFormat( &c_dfDIMouse2 );
  
 		   //hr = m_pMouse->SetCooperativeLevel(hwnd, DISCL_NONEXCLUSIVE | DISCL_FOREGROUND);
 		   dipdw.diph.dwSize = sizeof(DIPROPDWORD);

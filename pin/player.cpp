@@ -1501,14 +1501,14 @@ void Player::NudgeUpdate()	// called on every integral physics frame
 #define IIR_Order 4
 
 // coefficients for IIR_Order Butterworth filter set to 10 Hz passband
-const float a [IIR_Order+1] = {
+const float IIR_a [IIR_Order+1] = {
 	0.0048243445f,
 	0.019297378f,	
 	0.028946068f,
 	0.019297378f,
 	0.0048243445f};
 
-const float b [IIR_Order+1] = {
+const float IIR_b[IIR_Order + 1] = {
 	1.00000000f, //if not 1 add division below
 	-2.369513f,
 	2.3139884f,
@@ -1541,11 +1541,11 @@ void Player::mechPlungerUpdate()	// called on every integral physics frame, only
 	x[0] = (float)m_curPlunger; //initialize filter
 	do
 	{
-		y[0] = a[0]*x[0];	  // initial
+		y[0] = IIR_a[0] * x[0];	  // initial
 
 		for (int i = IIR_Order; i > 0; --i) // all terms but the zero-th 
 		{
-			y[0] += (a[i]*x[i] - b[i]*y[i]);// /b[0]; always one     // sum terms from high to low
+			y[0] += (IIR_a[i] * x[i] - IIR_b[i] * y[i]);// /b[0]; always one     // sum terms from high to low
 			x[i] = x[i-1];		//shift 
 			y[i] = y[i-1];		//shift
 		}
@@ -2417,57 +2417,55 @@ void Player::FlipVideoBuffers3DFXAA( const bool vsync ) //!! SMAA, luma sharpen,
 	m_pin3d.m_pd3dDevice->Flip(vsync);
 }
 
-void Player::UpdateBackdropSettings(bool up )
+void Player::UpdateBackdropSettings(bool up)
 {
-    float thesign=1.0f;
-    if( !up )
-        thesign=-1.0f;
+    const float thesign = !up ? -1.0f : 1.0f;
 
     switch( backdropSettingActive )
     {
     case 0:
         {
-            m_ptable->m_inclination+=thesign;
+            m_ptable->m_inclination += thesign;
             break;
         }
     case 1:
         {
-            m_ptable->m_FOV+=thesign;
+            m_ptable->m_FOV += thesign;
             break;
         }
     case 2:
         {
-            m_ptable->m_layback+=thesign;
+            m_ptable->m_layback += thesign;
             break;
         }
     case 3:
         {
-            m_ptable->m_scalex+=(0.01f*thesign);
+            m_ptable->m_scalex += (0.01f*thesign);
             break;
         }
     case 4:
         {
-            m_ptable->m_scaley+=(0.01f*thesign);
+            m_ptable->m_scaley += (0.01f*thesign);
             break;
         }
     case 5:
         {
-            m_ptable->m_zScale+=(0.01f*thesign);
+            m_ptable->m_zScale += (0.01f*thesign);
             break;
         }
     case 6:
         {
-            m_ptable->m_xlatex+=(0.01f*thesign);
+            m_ptable->m_xlatex += (0.01f*thesign);
             break;
         }
     case 7:
         {
-            m_ptable->m_xlatey+=(0.01f*thesign);
+            m_ptable->m_xlatey += (0.01f*thesign);
             break;
         }
     case 8:
         {
-            m_ptable->m_xlatez+=(thesign);
+            m_ptable->m_xlatez += thesign;
             break;
         }
 
@@ -2944,19 +2942,19 @@ void Player::DrawBalls()
 
 			for(int i2 = 0; i2 < MAX_BALL_TRAIL_POS-1; ++i2)
 			{
-				int i = pball->m_ringcounter_oldpos/(10000/PHYSICS_STEPTIME)-1-i2;
-				if(i<0)
-					i += MAX_BALL_TRAIL_POS;
-				int io = i-1;
+				int i3 = pball->m_ringcounter_oldpos/(10000/PHYSICS_STEPTIME)-1-i2;
+				if(i3<0)
+					i3 += MAX_BALL_TRAIL_POS;
+				int io = i3-1;
 				if(io<0)
 					io += MAX_BALL_TRAIL_POS;
 
-				if((pball->m_oldpos[i].x != FLT_MAX) && (pball->m_oldpos[io].x != FLT_MAX)) // only if already initialized
+				if((pball->m_oldpos[i3].x != FLT_MAX) && (pball->m_oldpos[io].x != FLT_MAX)) // only if already initialized
 				{
 					Vertex3Ds vec;
-					vec.x = pball->m_oldpos[io].x-pball->m_oldpos[i].x;
-					vec.y = pball->m_oldpos[io].y-pball->m_oldpos[i].y;
-					vec.z = pball->m_oldpos[io].z-pball->m_oldpos[i].z;
+					vec.x = pball->m_oldpos[io].x-pball->m_oldpos[i3].x;
+					vec.y = pball->m_oldpos[io].y-pball->m_oldpos[i3].y;
+					vec.z = pball->m_oldpos[io].z-pball->m_oldpos[i3].z;
 					const float bc = (float)m_ptable->m_ballTrailStrength * powf(1.f-1.f/max(vec.Length(), 1.0f), 16.0f); //!! 16=magic alpha falloff
 					const float r = min(pball->m_radius*0.9f, 2.0f*pball->m_radius/powf((float)(i2+2), 0.6f)); //!! consts are for magic radius falloff
 
@@ -2974,12 +2972,12 @@ void Player::DrawBalls()
 						n.z *= r;
 
 						Vertex3D_NoTex2 rgv3D[4];
-						rgv3D[0].x = pball->m_oldpos[i].x - n.x;
-						rgv3D[0].y = pball->m_oldpos[i].y - n.y;
-						rgv3D[0].z = pball->m_oldpos[i].z - n.z;
-						rgv3D[1].x = pball->m_oldpos[i].x + n.x;
-						rgv3D[1].y = pball->m_oldpos[i].y + n.y;
-						rgv3D[1].z = pball->m_oldpos[i].z + n.z;
+						rgv3D[0].x = pball->m_oldpos[i3].x - n.x;
+						rgv3D[0].y = pball->m_oldpos[i3].y - n.y;
+						rgv3D[0].z = pball->m_oldpos[i3].z - n.z;
+						rgv3D[1].x = pball->m_oldpos[i3].x + n.x;
+						rgv3D[1].y = pball->m_oldpos[i3].y + n.y;
+						rgv3D[1].z = pball->m_oldpos[i3].z + n.z;
 						rgv3D[2].x = pball->m_oldpos[io].x + n.x;
 						rgv3D[2].y = pball->m_oldpos[io].y + n.y;
 						rgv3D[2].z = pball->m_oldpos[io].z + n.z;

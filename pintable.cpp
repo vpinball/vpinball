@@ -5960,11 +5960,11 @@ STDMETHODIMP PinTable::PlaySound(BSTR bstr, int loopcount, float volume, float p
    bool foundsame = false;
    if(usesame)
    {
-	   for (int i=0;i<m_voldsound.Size();i++)
+	   for (int i2=0;i2<m_voldsound.Size();i2++)
 	   {
-		  if(m_voldsound.ElementAt(i)->m_ppsOriginal->m_pDSBuffer == pdsb)
+		  if(m_voldsound.ElementAt(i2)->m_ppsOriginal->m_pDSBuffer == pdsb)
 		  {
-			  ppsc = m_voldsound.ElementAt(i);
+			  ppsc = m_voldsound.ElementAt(i2);
 			  foundsame = true;
 			  break;
 		  }
@@ -6634,7 +6634,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
       {
          cvar = 0;
 
-         const BOOL fRamps = fTrue;
+         const bool fRamps = true;
 
          for (int ivar = 0;ivar < m_vedit.Size();ivar++)
             if (m_vedit.ElementAt(ivar)->GetItemType() == eItemSurface || (fRamps && m_vedit.ElementAt(ivar)->GetItemType() == eItemRamp))
