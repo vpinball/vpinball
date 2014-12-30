@@ -744,7 +744,7 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcry
       bw.WriteInt( FID(M3VN), (int)m_mesh.NumVertices() );
       bw.WriteStruct( FID(M3DX), &m_mesh.m_vertices[0], (int)(sizeof(Vertex3D_NoTex2)*m_mesh.NumVertices()) );
       bw.WriteInt( FID(M3FN), (int)m_mesh.NumIndices() );
-	  if(m_mesh.NumIndices() > 65535)
+	  if(m_mesh.NumVertices() > 65535)
 	  {
 	      bw.WriteStruct( FID(M3DI), &m_mesh.m_indices[0], (int)(sizeof(unsigned int)*m_mesh.NumIndices()) );
 	  }
@@ -913,7 +913,7 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
    else if( id == FID(M3DI) )
    {
       m_mesh.m_indices.resize( numIndices );
-	  if(numIndices > 65535)
+	  if(numVertices > 65535)
 	      pbr->GetStruct( &m_mesh.m_indices[0], sizeof(unsigned int)*numIndices);
 	  else
 	  {
