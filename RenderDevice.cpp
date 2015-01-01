@@ -525,11 +525,7 @@ RenderTarget* RenderDevice::DuplicateRenderTarget(RenderTarget* src)
 
 void RenderDevice::CopySurface(RenderTarget* dest, RenderTarget* src)
 {
-    //CHECKD3D(m_pD3DDevice->StretchRect(src, NULL, dest, NULL, D3DTEXF_NONE));
-   HRESULT hr = m_pD3DDevice->StretchRect(src, NULL, dest, NULL, D3DTEXF_NONE);
-   if( FAILED(hr) )
-      ShowError("blub");
-
+    CHECKD3D(m_pD3DDevice->StretchRect(src, NULL, dest, NULL, D3DTEXF_NONE));
 }
 
 D3DTexture* RenderDevice::DuplicateTexture(RenderTarget* src)
