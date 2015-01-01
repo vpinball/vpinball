@@ -147,9 +147,8 @@ private:
 
 	void GetCentralCurve(Vector<RenderVertex> * const pvv);
 
-    Vertex2D *GetRampVertex(int &pcvertex, float ** const ppheight, bool ** const ppfCross, float ** const ppratio, Vertex2D **pMiddlePoints);
+    Vertex2D *GetRampVertex(int &pcvertex, float ** const ppheight, bool ** const ppfCross, float ** const ppratio, Vertex2D **pMiddlePoints, bool forRendering=false);
 	void prepareHabitrail(RenderDevice* pd3dDevice);
-	void prepareStatic(RenderDevice* pd3dDevice);
     void AddJoint(Vector<HitObject> * pvho, const Vertex3Ds& v1, const Vertex3Ds& v2);
     void AddJoint2D(Vector<HitObject> * pvho, const Vertex2D& p, float zlow, float zhigh);
 	void CheckJoint(Vector<HitObject> * const pvho, const HitTriangle * const ph3d1, const HitTriangle * const ph3d2);
@@ -161,6 +160,7 @@ private:
    
 	void AddSideWall(Vector<HitObject> * const pvho, const Vertex2D * const pv1, const Vertex2D * const pv2, const float height1, const float height2, const float wallheight);
 	void AddLine(Vector<HitObject> * const pvho, const Vertex2D * const pv1, const Vertex2D * const pv2, const Vertex2D * const pv3, const float height1, const float height2);
+   void RenderRamp( RenderDevice *pd3dDevice );
 
 // IRamp
 public:
