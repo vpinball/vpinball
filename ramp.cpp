@@ -5,7 +5,6 @@ Ramp::Ramp()
    m_menuid = IDR_SURFACEMENU;
    m_d.m_fCollidable = true;
    m_d.m_fVisible = true;
-   staticVertexBuffer = 0;
    dynamicVertexBuffer = 0;
    dynamicIndexBuffer = 0;
    dynamicVertexBufferRegenerate = true;
@@ -17,9 +16,6 @@ Ramp::Ramp()
 
 Ramp::~Ramp()
 {
-	if(staticVertexBuffer)
-		staticVertexBuffer->release();
-
 	if(dynamicVertexBuffer)
 		dynamicVertexBuffer->release();
 
@@ -930,11 +926,6 @@ void Ramp::EndPlay()
     IEditable::EndPlay();
     m_vhoCollidable.clear();
 
-   	if(staticVertexBuffer) {
-		staticVertexBuffer->release();
-		staticVertexBuffer = 0;
-	}
-
 	if(dynamicVertexBuffer) {
 		dynamicVertexBuffer->release();
 		dynamicVertexBuffer = 0;
@@ -946,45 +937,6 @@ void Ramp::EndPlay()
 		dynamicIndexBuffer = 0;
     }
 }
-
-static const WORD rgicrosssection[] = {
-   0,1,16,
-   1,17,16,
-   1,2,17,
-   2,18,17,
-   2,3,18,
-   3,19,18,
-   3,0,19,
-   0,16,19,
-
-   8,9,24,
-   9,25,24,
-   9,10,25,
-   10,26,25,
-   10,11,26,
-   11,27,26,
-   11,8,27,
-   8,24,27,
-
-   4,5,20,
-   5,21,20,
-   5,6,21,
-   6,22,21,
-   6,7,22,
-   7,23,22,
-   7,4,23,
-   4,20,23,
-
-   12,13,28,
-   13,29,28,
-   13,14,29,
-   14,30,29,
-   14,15,30,
-   15,31,30,
-   15,12,31,
-   12,28,31
-};
-
 
 float Ramp::GetDepth(const Vertex3Ds& viewDir) 
 {
@@ -1136,225 +1088,6 @@ void Ramp::RenderStaticHabitrail(RenderDevice* pd3dDevice)
    pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 
 }
-
-void Ramp::RenderPolygons(RenderDevice* pd3dDevice, int offset, WORD * const rgi, const int start, const int stop)
-{
-   if (m_d.m_type == RampType1Wire)
-      pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, staticVertexBuffer, offset, 32, rgi+stop/2*3, 3*(stop-stop/2));
-   else
-      pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, staticVertexBuffer, offset, 32, rgi+start*3, 3*(stop-start));
-}
-/*
-void Ramp::prepareHabitrail(RenderDevice* pd3dDevice )
-{
-   Matrix3D matView = g_pplayer->m_pin3d.GetViewTransform();
-   Vertex3Ds prevTangent;
-   Vertex2D *middlePoints;
-
-   rgvInit = GetRampVertex(rampVertex, &rgheightInit, NULL, &rgratioInit, &middlePoints);
-
-   const int numVertices = (rampVertex - 1)*32;
-   pd3dDevice->CreateVertexBuffer(numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &staticVertexBuffer);
-
-   Vertex3D_NoTex2 *buf;
-   staticVertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY);
-
-   int offset=0;
-   float l;
-   Vertex3D_NoTex2 rgv3D[32];
-   const float halfDiameter=m_d.m_wireDiameter/2.0f;
-   for (int i=0;i<rampVertex;i++)
-   {
-      rgv3D[0].x = -halfDiameter;
-      rgv3D[0].y = -halfDiameter;
-      rgv3D[0].z = 0;
-      rgv3D[0].nx = 1.0f;
-      rgv3D[0].ny = 1.0f;
-      rgv3D[0].nz = 0;
-      l = 1.0f/sqrtf(rgv3D[0].nx*rgv3D[0].nx + rgv3D[0].ny*rgv3D[0].ny + rgv3D[0].nz*rgv3D[0].nz);
-      rgv3D[0].nx *= l;
-      rgv3D[0].ny *= l;
-      rgv3D[0].nz *= l;
-
-      rgv3D[1].x = halfDiameter;
-      rgv3D[1].y = -halfDiameter;
-      rgv3D[1].z = 0;
-      rgv3D[1].nx = -1.0f;
-      rgv3D[1].ny = 1.0f;
-      rgv3D[1].nz = 0;
-      l = 1.0f/sqrtf(rgv3D[1].nx*rgv3D[1].nx + rgv3D[1].ny*rgv3D[1].ny + rgv3D[1].nz*rgv3D[1].nz);
-      rgv3D[1].nx *= l;
-      rgv3D[1].ny *= l;
-      rgv3D[1].nz *= l;
-
-      rgv3D[2].x = halfDiameter;
-      rgv3D[2].y = halfDiameter;
-      rgv3D[2].z = 0;
-      rgv3D[2].nx = -1.0f;
-      rgv3D[2].ny = -1.0f;
-      rgv3D[2].nz = 0;
-      l = 1.0f/sqrtf(rgv3D[2].nx*rgv3D[2].nx + rgv3D[2].ny*rgv3D[2].ny + rgv3D[2].nz*rgv3D[2].nz);
-      rgv3D[2].nx *= l;
-      rgv3D[2].ny *= l;
-      rgv3D[2].nz *= l;
-
-      rgv3D[3].x = -halfDiameter;
-      rgv3D[3].y = halfDiameter;
-      rgv3D[3].z = 0;
-      rgv3D[3].nx = 1.0f;
-      rgv3D[3].ny = -1.0f;
-      rgv3D[3].nz = 0;
-      l = 1.0f/sqrtf(rgv3D[3].nx*rgv3D[3].nx + rgv3D[3].ny*rgv3D[3].ny + rgv3D[3].nz*rgv3D[3].nz);
-      rgv3D[3].nx *= l;
-      rgv3D[3].ny *= l;
-      rgv3D[3].nz *= l;
-
-      const float halfWireDistanceY=m_d.m_wireDistanceY/2.0f;
-      const float halfWireDistanceX=m_d.m_wireDistanceX/2.0f;
-      const float wireOffset=9.5f;
-      if (m_d.m_type != RampType1Wire)
-      {
-         for (int l=0;l<4;l++)
-         {
-            rgv3D[l+ 4].x = rgv3D[l].x + halfWireDistanceY; //44.0f
-            rgv3D[l+ 4].y = rgv3D[l].y - halfWireDistanceX; //22.0f
-            rgv3D[l+ 4].z = rgv3D[l].z;
-            rgv3D[l+ 8].x = rgv3D[l].x + wireOffset;
-            rgv3D[l+ 8].y = rgv3D[l].y + halfWireDistanceX;
-            rgv3D[l+ 8].z = rgv3D[l].z;
-            rgv3D[l+12].x = rgv3D[l].x + halfWireDistanceY;
-            rgv3D[l+12].y = rgv3D[l].y + halfWireDistanceX;
-            rgv3D[l+12].z = rgv3D[l].z;
-
-            rgv3D[l+ 4].nx = rgv3D[l].nx;
-            rgv3D[l+ 4].ny = rgv3D[l].ny;
-            rgv3D[l+ 4].nz = rgv3D[l].nz;
-            rgv3D[l+ 8].nx = rgv3D[l].nx;
-            rgv3D[l+ 8].ny = rgv3D[l].ny;
-            rgv3D[l+ 8].nz = rgv3D[l].nz;
-            rgv3D[l+12].nx = rgv3D[l].nx;
-            rgv3D[l+12].ny = rgv3D[l].ny;
-            rgv3D[l+12].nz = rgv3D[l].nz;
-
-            rgv3D[l+ 4].tu = rgv3D[l].tu;
-            rgv3D[l+ 4].tv = rgv3D[l].tv;
-            rgv3D[l+ 8].tu = rgv3D[l].tu;
-            rgv3D[l+ 8].tv = rgv3D[l].tv;
-            rgv3D[l+12].tu = rgv3D[l].tu;
-            rgv3D[l+12].tv = rgv3D[l].tv;
-         }
-         for (int l=0;l<4;l++)
-         {
-            rgv3D[l].x += wireOffset;
-            rgv3D[l].y += -halfWireDistanceX;
-         }
-      }
-      else
-      {
-         for (int l=0;l<4;l++)
-         {
-            rgv3D[l+ 4].x = rgv3D[l].x+halfWireDistanceY; //44.0f
-            rgv3D[l+ 4].y = rgv3D[l].y;
-            rgv3D[l+ 4].z = rgv3D[l].z;
-            rgv3D[l+ 8].x = rgv3D[l].x + wireOffset;
-            rgv3D[l+ 8].y = rgv3D[l].y;
-            rgv3D[l+ 8].z = rgv3D[l].z;
-            rgv3D[l+12].x = rgv3D[l].x+halfWireDistanceY;
-            rgv3D[l+12].y = rgv3D[l].y;
-            rgv3D[l+12].z = rgv3D[l].z;
-
-            rgv3D[l+ 4].nx = rgv3D[l].nx;
-            rgv3D[l+ 4].ny = rgv3D[l].ny;
-            rgv3D[l+ 4].nz = rgv3D[l].nz;
-            rgv3D[l+ 8].nx = rgv3D[l].nx;
-            rgv3D[l+ 8].ny = rgv3D[l].ny;
-            rgv3D[l+ 8].nz = rgv3D[l].nz;
-            rgv3D[l+12].nx = rgv3D[l].nx;
-            rgv3D[l+12].ny = rgv3D[l].ny;
-            rgv3D[l+12].nz = rgv3D[l].nz;
-
-            rgv3D[l+ 4].tu = rgv3D[l].tu;
-            rgv3D[l+ 4].tv = rgv3D[l].tv;
-            rgv3D[l+ 8].tu = rgv3D[l].tu;
-            rgv3D[l+ 8].tv = rgv3D[l].tv;
-            rgv3D[l+12].tu = rgv3D[l].tu;
-            rgv3D[l+12].tv = rgv3D[l].tv;
-         }
-      }
-
-      const int p1 = (i==0) ? 0 : (i-1);
-      const int p2 = i;
-      const int p3 = (i==(rampVertex-1)) ? i : (i+1);
-      const int p4 = rampVertex*2 - i - 1; //!! ?? *2 valid?
-
-      Vertex3Ds vacross(rgvInit[p4].x - rgvInit[p2].x, rgvInit[p4].y - rgvInit[p2].y, 0.0f);
-
-      // The vacross vector is our local up vector.  Rotate the cross-section
-      // later to match this up
-      vacross.Normalize();
-
-      Vertex3Ds tangent(rgvInit[p3].x - rgvInit[p1].x, rgvInit[p3].y - rgvInit[p1].y, rgheightInit[p3] - rgheightInit[p1]);
-
-      // This is the vector describing the tangent to the ramp at this point
-      tangent.Normalize();
-
-      Vertex3Ds rotationaxis(tangent.y, -tangent.x, 0.0f);
-      if (rotationaxis.LengthSquared() <= 1e-6f)
-          rotationaxis.Set(1, 0, 0);
-      else
-          rotationaxis.Normalize();
-
-      const float dot = tangent.z; //tangent.Dot(&up);
-      const float angle = acosf(dot);
-
-      RotateAround(rotationaxis, rgv3D, 16, angle);
-
-      // vnewup is the beginning up vector of the cross-section
-      const Vertex2D vnewupdef(0.0f,1.0f);
-      const Vertex3Ds vnewup = RotateAround(rotationaxis, vnewupdef, angle);
-
-      // vacross is not out real up vector, but the up vector for the cross-section isn't real either
-      //Vertex3D vrampup;
-      //CrossProduct(&tangent, &vacross, &vrampup);
-      const float dotupcorrection = vnewup.Dot(vacross);
-      float angleupcorrection = acosf(dotupcorrection);
-
-      if (vacross.x >= 0.f)
-         angleupcorrection = -angleupcorrection;
-
-      RotateAround(tangent, rgv3D, 16, -angleupcorrection);
-      for (int l=0;l<16;l++)
-      {
-         rgv3D[l].x += middlePoints[i].x;
-         rgv3D[l].y += middlePoints[i].y;
-         rgv3D[l].z += rgheightInit[i]*m_ptable->m_zScale;
-      }
-
-      // apply environment texture coords if a texture was assigned to a wired ramp
-      for( int k=0;k<16;k++ )
-      {
-          Vertex3Ds norm(rgv3D[k].nx, rgv3D[k].ny, rgv3D[k].nz);
-          matView.MultiplyVectorNoTranslate(norm, norm);
-          rgv3D[k].tu = 0.5f + norm.x*0.5f;
-          rgv3D[k].tv = 0.5f + norm.y*0.5f;
-      }
-      if (i != 0)
-      {
-         memcpy( &buf[offset], rgv3D, sizeof(Vertex3D_NoTex2)*32);
-         offset+=32;
-      }
-      memcpy(&rgv3D[16], rgv3D, sizeof(Vertex3D_NoTex2)*16);
-   }
-   staticVertexBuffer->unlock();  
-
-   delete[] rgvInit;
-   delete[] rgheightInit;
-   delete[] rgratioInit;
-
-   assert(offset == numVertices);
-
-}
-*/
 
 void Ramp::prepareHabitrail(RenderDevice* pd3dDevice)
 {
@@ -1516,7 +1249,8 @@ void Ramp::RenderStatic(RenderDevice* pd3dDevice)
    Material *mat = m_ptable->GetMaterial( m_d.m_szMaterial);
 
    // dont render alpha shaded ramps into static buffer, these are done per frame later-on
-   if (mat->m_bOpacityActive) return;
+   if (mat->m_bOpacityActive) 
+      return;
 
    /* TODO: This is a misnomer right now, but clamp fixes some visual glitches (single-pixel lines)
     * with transparent textures. Probably the option should simply be renamed to ImageModeClamp,
@@ -1530,8 +1264,8 @@ void Ramp::RenderStatic(RenderDevice* pd3dDevice)
    pd3dDevice->basicShader->SetMaterial(mat);
    if (isHabitrail())
       RenderStaticHabitrail(pd3dDevice);
-   else
-      RenderRamp(pd3dDevice);
+   else 
+      RenderRamp(pd3dDevice, mat);
 }
 
 void Ramp::SetObjectPos()
@@ -2377,15 +2111,9 @@ STDMETHODIMP Ramp::put_WireDistanceY(float newVal)
     return S_OK;
 }
 
-void Ramp::RenderRamp( RenderDevice *pd3dDevice )
+void Ramp::RenderRamp( RenderDevice *pd3dDevice, Material *mat )
 {
-   Material *mat = m_ptable->GetMaterial( m_d.m_szMaterial);
-
    if ( !mat )
-      return;
-
-   // don't render if invisible or not a transparent ramp
-   if (!m_d.m_fVisible || (!mat->m_bOpacityActive && mat->m_fOpacity==1.0f) )
       return;
 
    if ( m_d.m_widthbottom==0.0f && m_d.m_widthtop==0.0f )
@@ -2472,9 +2200,12 @@ void Ramp::RenderRamp( RenderDevice *pd3dDevice )
 void Ramp::PostRenderStatic(RenderDevice* pd3dDevice)
 {
     TRACE_FUNCTION();
-    RenderRamp(pd3dDevice);
+    Material *mat = m_ptable->GetMaterial( m_d.m_szMaterial);
+    // don't render if invisible or not a transparent ramp
+    if (!m_d.m_fVisible || (!mat->m_bOpacityActive) )
+       return;
+    RenderRamp(pd3dDevice, mat);
 }
-
 
 void Ramp::GenerateVertexBuffer(RenderDevice* pd3dDevice)
 {
@@ -2488,6 +2219,8 @@ void Ramp::GenerateVertexBuffer(RenderDevice* pd3dDevice)
     const float inv_tableheight = 1.0f/(m_ptable->m_bottom - m_ptable->m_top);
 
     m_numVertices=(rampVertex-1)*4;
+    m_numIndices=(rampVertex-1)*6*4;
+
     unsigned int offset=0;
     const unsigned int rgioffset = (rampVertex-1)*6;
 
@@ -2499,8 +2232,7 @@ void Ramp::GenerateVertexBuffer(RenderDevice* pd3dDevice)
     dynamicVertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY);
 
     Vertex3D_NoTex2* rgvbuf = new Vertex3D_NoTex2[m_numVertices];
-    std::vector<WORD> rgibuf( (rampVertex-1)*6*2*2 );
-
+    std::vector<WORD> rgibuf( m_numIndices );
     for (int i=0;i<(rampVertex-1);i++)
     {
         Vertex3D_NoTex2 * const rgv3D = &rgvbuf[0]+i*4;
@@ -2546,8 +2278,7 @@ void Ramp::GenerateVertexBuffer(RenderDevice* pd3dDevice)
             }
         }
 
-        //SetNormal(rgv3D, rgi0123, 4);
-        // Draw the floor of the ramp.
+        //floor
         rgibuf[i*6]   = i*4;
         rgibuf[i*6+1] = i*4+1;
         rgibuf[i*6+2] = i*4+2;
@@ -2561,7 +2292,7 @@ void Ramp::GenerateVertexBuffer(RenderDevice* pd3dDevice)
         rgibuf[i*6+rgioffset+3] = i*4+m_numVertices;
         rgibuf[i*6+rgioffset+4] = i*4+m_numVertices+2;
         rgibuf[i*6+rgioffset+5] = i*4+m_numVertices+1;
-
+        
         rgibuf[i*6+rgioffset*2]   = i*4+m_numVertices*2;
         rgibuf[i*6+rgioffset*2+1] = i*4+m_numVertices*2+1;
         rgibuf[i*6+rgioffset*2+2] = i*4+m_numVertices*2+2;
@@ -2576,17 +2307,13 @@ void Ramp::GenerateVertexBuffer(RenderDevice* pd3dDevice)
         rgibuf[i*6+rgioffset*3+4] = i*4+m_numVertices*3+2;
         rgibuf[i*6+rgioffset*3+5] = i*4+m_numVertices*3+1;
     }
-    SetNormal( rgvbuf, &rgibuf[0], m_numIndices);
+    SetNormal( rgvbuf, &rgibuf[0], (rampVertex-1)*6);
     memcpy( &buf[offset], &rgvbuf[0], sizeof(Vertex3D_NoTex2)*m_numVertices );
     offset+=m_numVertices;
 
     if (dynamicIndexBuffer)
         dynamicIndexBuffer->release();
     dynamicIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer( rgibuf );
-
-    WORD maxidx = 0;
-    for (unsigned i = 0; i < rgibuf.size(); ++i)
-        maxidx = std::max(maxidx, rgibuf[i]);
 
     for (int i=0; i<(rampVertex-1); i++)
     {
@@ -2598,7 +2325,6 @@ void Ramp::GenerateVertexBuffer(RenderDevice* pd3dDevice)
         rgv3D[1].x = rgvLocal[i].x;
         rgv3D[1].y = rgvLocal[i].y;
         rgv3D[1].z = (rgheight[i] + m_d.m_rightwallheightvisible)*m_ptable->m_zScale;
-
         if (pin && m_d.m_fImageWalls)
         {
             if (m_d.m_imagealignment == ImageModeWorld)
@@ -2622,10 +2348,8 @@ void Ramp::GenerateVertexBuffer(RenderDevice* pd3dDevice)
             rgv3D[3].tv = rgv3D[2].tv;
         }
 
-        // 2-Sided polygon
-        //SetNormal(rgv3D, rgi0123, 4);
     }
-    SetNormal( rgvbuf, &rgibuf[0], m_numIndices);
+    SetNormal( rgvbuf, &rgibuf[0], (rampVertex-1)*6);
     memcpy( &buf[offset], &rgvbuf[0], sizeof(Vertex3D_NoTex2)*m_numVertices );
     offset+=m_numVertices;
 
@@ -2685,10 +2409,8 @@ void Ramp::GenerateVertexBuffer(RenderDevice* pd3dDevice)
                 rgv3D[3].tv = rgv3D[2].tv;
             }
 
-            // 2-Sided polygon
-//            SetNormal(rgv3D, rgi0123, 4);
         }
-        SetNormal( rgvbuf, &rgibuf[0], m_numIndices);
+        SetNormal( rgvbuf, &rgibuf[0], (rampVertex-1)*6);
         memcpy( &buf[offset], &rgvbuf[0], sizeof(Vertex3D_NoTex2)*m_numVertices );
         offset+=m_numVertices;
 

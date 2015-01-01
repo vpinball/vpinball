@@ -138,7 +138,6 @@ private:
 
     std::vector<HitObject*> m_vhoCollidable; // Objects to that may be collide selectable
 
-	VertexBuffer *staticVertexBuffer;
 	VertexBuffer *dynamicVertexBuffer;
     IndexBuffer *dynamicIndexBuffer;
 	bool dynamicVertexBufferRegenerate;
@@ -160,7 +159,7 @@ private:
    
 	void AddSideWall(Vector<HitObject> * const pvho, const Vertex2D * const pv1, const Vertex2D * const pv2, const float height1, const float height2, const float wallheight);
 	void AddLine(Vector<HitObject> * const pvho, const Vertex2D * const pv1, const Vertex2D * const pv2, const Vertex2D * const pv3, const float height1, const float height2);
-   void RenderRamp( RenderDevice *pd3dDevice );
+   void RenderRamp( RenderDevice *pd3dDevice, Material *mat );
 
 // IRamp
 public:
