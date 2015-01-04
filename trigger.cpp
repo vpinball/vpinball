@@ -556,7 +556,7 @@ void Trigger::EndPlay()
    }
    if ( triggerVertices )
    {
-       delete triggerVertices;
+       delete [] triggerVertices;
        triggerVertices=0;
    }
    m_ptriggerhitcircle = NULL;

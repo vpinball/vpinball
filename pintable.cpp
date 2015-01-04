@@ -1595,7 +1595,8 @@ void PinTable::Render3DProjection(Sur * const psur)
    pinproj.m_rcviewport.right = EDITOR_BG_WIDTH;
    pinproj.m_rcviewport.bottom = EDITOR_BG_HEIGHT;
 
-   const float aspect = 4.0f/3.0f;
+//   const float aspect = 4.0f/3.0f;
+   const float aspect = ((float)m_renderWidth)/((float)m_renderHeight); //(float)(4.0/3.0);
 
    pinproj.FitCameraToVertices(&vvertex3D, aspect, rotation, inclination, FOV, m_xlatez, m_layback);
    pinproj.m_matView.RotateXMatrix((float)M_PI);  // convert Z=out to Z=in (D3D coordinate system)
@@ -3218,6 +3219,9 @@ void PinTable::SetLoadDefaults()
    m_TableMusicVolume = 1.0f;
 
    m_TableAdaptiveVSync = -1;
+   GetRegInt( "Player", "Width", &m_renderWidth );
+   GetRegInt( "Player", "Height", &m_renderHeight );
+
 }
 
 HRESULT PinTable::LoadData(IStream* pstm, int& csubobj, int& csounds, int& ctextures, int& cfonts, int& ccollection, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
