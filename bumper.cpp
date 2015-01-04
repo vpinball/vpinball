@@ -325,7 +325,7 @@ void Bumper::EndPlay()
       ringIndexBuffer->release();
       ringIndexBuffer = 0;
       ringTexture.FreeStuff();
-      delete ringVertices;
+      delete [] ringVertices;
    }
    if (capIndexBuffer)
    {

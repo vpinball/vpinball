@@ -378,7 +378,7 @@ void Pin3D::InitLayout()
 	for (int i=0; i<g_pplayer->m_ptable->m_vedit.Size(); ++i)
 		g_pplayer->m_ptable->m_vedit.ElementAt(i)->GetBoundingVertices(&vvertex3D);
 
-	const float aspect = (float)(4.0/3.0);//((float)m_dwRenderWidth)/m_dwRenderHeight;
+	const float aspect = ((float)m_dwRenderWidth)/((float)m_dwRenderHeight); //(float)(4.0/3.0);//((float)m_dwRenderWidth)/m_dwRenderHeight;
 
     m_proj.FitCameraToVertices(&vvertex3D, aspect, rotation, inclination, FOV, g_pplayer->m_ptable->m_xlatez, g_pplayer->m_ptable->m_layback);
 
@@ -777,15 +777,18 @@ void PinProjection::FitCameraToVertices(Vector<Vertex3Ds> * const pvvertex3D, fl
 	m_rznear += m_vertexcamera.z;
 	m_rzfar += m_vertexcamera.z;
 
-	const float delta = m_rzfar - m_rznear;
+   // why that? changing the near/far z plane can cause perspective distortion
+   // in the z-buffer. 
 
-#if 0
-	m_rznear -= delta*0.15; // Allow for roundoff error (and tweak the setting too).
-	m_rzfar += delta*0.01;
-#else
-	m_rznear -= delta*0.05f; // Allow for roundoff error
-	m_rzfar += delta*0.01f;
-#endif
+// const float delta = m_rzfar - m_rznear;
+// 
+// #if 0
+// 	m_rznear -= delta*0.15; // Allow for roundoff error (and tweak the setting too).
+// 	m_rzfar += delta*0.01;
+// #else
+// 	m_rznear -= delta*0.05f; // Allow for roundoff error
+// 	m_rzfar += delta*0.01f;
+// #endif
 }
 
 void PinProjection::ComputeNearFarPlane(const Vector<Vertex3Ds>& verts)
@@ -808,7 +811,10 @@ void PinProjection::ComputeNearFarPlane(const Vector<Vertex3Ds>& verts)
     slintf("m_rznear: %f\n", m_rznear);
     slintf("m_rzfar : %f\n", m_rzfar);
 
-    m_rznear *= 0.99f;
+    // beware the div-0 problem
+    if( m_rznear==0.0f )
+       m_rznear = 0.001f;
+    //m_rznear *= 0.99f;
     m_rzfar *= 1.01f;
 }
 

@@ -7,6 +7,7 @@ Ramp::Ramp()
    m_d.m_fVisible = true;
    dynamicVertexBuffer = 0;
    dynamicIndexBuffer = 0;
+   dynamicVertexBuffer2 = 0;
    dynamicVertexBufferRegenerate = true;
    m_d.m_depthBias = 0.0f;
    m_d.m_wireDiameter = 6.0f;
@@ -475,13 +476,13 @@ Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** co
       {
          (*pMiddlePoints)[i] = vmiddle +  vnormal;
       }
-      if( isHabitrail() && forRendering )
-      {
-         const float width = m_d.m_wireDiameter*0.5f;
-         rgvLocal[i] = vmiddle + (width*0.5f) * vnormal;
-         rgvLocal[cvertex*2 - i - 1] = vmiddle - (width*0.5f) * vnormal;
-      }
-      else
+//       if( isHabitrail() && forRendering )
+//       {
+//          const float width = m_d.m_wireDiameter*0.5f;
+//          rgvLocal[i] = vmiddle + (width*0.5f) * vnormal;
+//          rgvLocal[cvertex*2 - i - 1] = vmiddle - (width*0.5f) * vnormal;
+//       }
+//       else
       {
          rgvLocal[i] = vmiddle + (widthcur*0.5f) * vnormal;
          rgvLocal[cvertex*2 - i - 1] = vmiddle - (widthcur*0.5f) * vnormal;
@@ -936,6 +937,10 @@ void Ramp::EndPlay()
 		dynamicIndexBuffer->release();
 		dynamicIndexBuffer = 0;
     }
+   if(dynamicVertexBuffer2) {
+      dynamicVertexBuffer2->release();
+      dynamicVertexBuffer2 = 0;
+   }
 }
 
 float Ramp::GetDepth(const Vertex3Ds& viewDir) 
@@ -978,18 +983,11 @@ void Ramp::RenderStaticHabitrail(RenderDevice* pd3dDevice)
    {
       Matrix3D matTrafo, matTemp;
       matTrafo.SetIdentity();
-      matTrafo._41 = -m_d.m_wireDistanceX*0.5f;
       matTrafo._43 = 3.0f;                // raise the wire a bit because the ball runs on a flat ramp physically
       g_pplayer->UpdateBasicShaderMatrix(matTrafo);
       pd3dDevice->basicShader->Begin(0);
       pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, dynamicVertexBuffer, 0, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
-      pd3dDevice->basicShader->End();  
-      matTrafo.SetIdentity();
-      matTrafo._41 = m_d.m_wireDistanceX*0.5f;
-      matTrafo._43 = 3.0f;                // raise the wire a bit because the ball runs on a flat ramp physically
-      g_pplayer->UpdateBasicShaderMatrix(matTrafo);
-      pd3dDevice->basicShader->Begin(0);
-      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, dynamicVertexBuffer, 0, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
+      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, dynamicVertexBuffer2, 0, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
       pd3dDevice->basicShader->End();  
       g_pplayer->UpdateBasicShaderMatrix();
    }
@@ -997,32 +995,18 @@ void Ramp::RenderStaticHabitrail(RenderDevice* pd3dDevice)
    {
       Matrix3D matTrafo, matTemp;
       matTrafo.SetIdentity();
-      matTrafo._41 = -m_d.m_wireDistanceX*0.5f;
       matTrafo._43 = m_d.m_wireDistanceY*0.5f;
       g_pplayer->UpdateBasicShaderMatrix(matTrafo);
       pd3dDevice->basicShader->Begin(0);
       pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, dynamicVertexBuffer, 0, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
+      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, dynamicVertexBuffer2, 0, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
       pd3dDevice->basicShader->End();  
       matTrafo.SetIdentity();
-      matTrafo._41 = m_d.m_wireDistanceX*0.5f;
-      matTrafo._43 = m_d.m_wireDistanceY*0.5f;
-      g_pplayer->UpdateBasicShaderMatrix(matTrafo);
-      pd3dDevice->basicShader->Begin(0);
-      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, dynamicVertexBuffer, 0, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
-      pd3dDevice->basicShader->End();  
-      matTrafo.SetIdentity();
-      matTrafo._41 = -m_d.m_wireDistanceX*0.5f;
       matTrafo._43 = 3.0f;                // raise the wire a bit because the ball runs on a flat ramp physically
       g_pplayer->UpdateBasicShaderMatrix(matTrafo);
       pd3dDevice->basicShader->Begin(0);
       pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, dynamicVertexBuffer, 0, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
-      pd3dDevice->basicShader->End();  
-      matTrafo.SetIdentity();
-      matTrafo._41 = m_d.m_wireDistanceX*0.5f;
-      matTrafo._43 = 3.0f;                // raise the wire a bit because the ball runs on a flat ramp physically
-      g_pplayer->UpdateBasicShaderMatrix(matTrafo);
-      pd3dDevice->basicShader->Begin(0);
-      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, dynamicVertexBuffer, 0, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
+      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, dynamicVertexBuffer2, 0, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
       pd3dDevice->basicShader->End();  
       g_pplayer->UpdateBasicShaderMatrix();
    }
@@ -1030,25 +1014,17 @@ void Ramp::RenderStaticHabitrail(RenderDevice* pd3dDevice)
    {
       Matrix3D matTrafo, matTemp;
       matTrafo.SetIdentity();
-      matTrafo._41 = -m_d.m_wireDistanceX*0.5f;
       matTrafo._43 = m_d.m_wireDistanceY*0.5f;
       g_pplayer->UpdateBasicShaderMatrix(matTrafo);
       pd3dDevice->basicShader->Begin(0);
-      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, dynamicVertexBuffer, 0, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
+      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, dynamicVertexBuffer2, 0, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
       pd3dDevice->basicShader->End();  
       matTrafo.SetIdentity();
-      matTrafo._41 = -m_d.m_wireDistanceX*0.5f;
       matTrafo._43 = 3.0f;                // raise the wire a bit because the ball runs on a flat ramp physically
       g_pplayer->UpdateBasicShaderMatrix(matTrafo);
       pd3dDevice->basicShader->Begin(0);
       pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, dynamicVertexBuffer, 0, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
-      pd3dDevice->basicShader->End();  
-      matTrafo.SetIdentity();
-      matTrafo._41 = m_d.m_wireDistanceX*0.5f;
-      matTrafo._43 = 3.0f;                // raise the wire a bit because the ball runs on a flat ramp physically
-      g_pplayer->UpdateBasicShaderMatrix(matTrafo);
-      pd3dDevice->basicShader->Begin(0);
-      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, dynamicVertexBuffer, 0, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
+      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, dynamicVertexBuffer2, 0, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
       pd3dDevice->basicShader->End();  
       g_pplayer->UpdateBasicShaderMatrix();
    }
@@ -1056,25 +1032,17 @@ void Ramp::RenderStaticHabitrail(RenderDevice* pd3dDevice)
    {
       Matrix3D matTrafo, matTemp;
       matTrafo.SetIdentity();
-      matTrafo._41 = m_d.m_wireDistanceX*0.5f;
       matTrafo._43 = m_d.m_wireDistanceY*0.5f;
       g_pplayer->UpdateBasicShaderMatrix(matTrafo);
       pd3dDevice->basicShader->Begin(0);
       pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, dynamicVertexBuffer, 0, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
       pd3dDevice->basicShader->End();  
       matTrafo.SetIdentity();
-      matTrafo._41 = -m_d.m_wireDistanceX*0.5f;
       matTrafo._43 = 3.0f;                // raise the wire a bit because the ball runs on a flat ramp physically
       g_pplayer->UpdateBasicShaderMatrix(matTrafo);
       pd3dDevice->basicShader->Begin(0);
       pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, dynamicVertexBuffer, 0, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
-      pd3dDevice->basicShader->End();  
-      matTrafo.SetIdentity();
-      matTrafo._41 = m_d.m_wireDistanceX*0.5f;
-      matTrafo._43 = 3.0f;                // raise the wire a bit because the ball runs on a flat ramp physically
-      g_pplayer->UpdateBasicShaderMatrix(matTrafo);
-      pd3dDevice->basicShader->Begin(0);
-      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, dynamicVertexBuffer, 0, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
+      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, dynamicVertexBuffer2, 0, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
       pd3dDevice->basicShader->End();  
       g_pplayer->UpdateBasicShaderMatrix();
    }
@@ -1087,6 +1055,64 @@ void Ramp::RenderStaticHabitrail(RenderDevice* pd3dDevice)
 
    pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 
+}
+
+void Ramp::CreateWire( const int numRings, const int numSegments, const Vertex2D *midPoints, Vertex3D_NoTex2 *rgvbuf)
+{
+   Vertex3Ds prevB;
+   Vertex3Ds binorm;
+   Vertex3Ds normal;
+
+   for( int i=0, index=0; i<numRings; i++ )
+   {
+      const int i2= (i==(numRings-1)) ? i : i+1;
+      float height = rgheightInit[i]+m_ptable->m_tableheight;    
+
+      Vertex3Ds tangent( midPoints[i2].x-midPoints[i].x, midPoints[i2].y-midPoints[i].y, 0.0f);
+      if (i == numRings - 1)
+      {
+         // for the last spline point use the previous tangent again, otherwise we won't see the complete wire (it stops one control point too early)
+         tangent.x = midPoints[i].x - midPoints[i - 1].x;
+         tangent.y = midPoints[i].y - midPoints[i - 1].y;
+      }
+      if ( i==0 )
+      {
+         Vertex3Ds up( midPoints[i2].x+midPoints[i].x, midPoints[i2].y+midPoints[i].y, rgheightInit[i2]-rgheightInit[i]);
+         normal = CrossProduct(tangent,up);     //normal
+         binorm = CrossProduct(tangent, normal);
+      }
+      else
+      {
+         normal = CrossProduct(prevB, tangent);
+         binorm = CrossProduct(tangent, normal);
+      }
+      binorm.Normalize();
+      normal.Normalize();
+      prevB = binorm;
+      int si=index;
+      const float inv_numRings = 1.0f/(float)numRings;
+      const float inv_numSegments = 1.0f/(float)numSegments;
+      for( int j=0;j<numSegments;j++,index++)
+      {
+         const float u=(float)i*inv_numRings;
+         const float v=((float)j+u)*inv_numSegments;
+         const float u_angle = u*(float)(2.0*M_PI);
+         const float v_angle = v*(float)(2.0*M_PI);
+         const Vertex3Ds tmp = GetRotatedAxis( (float)j*(360.0f*inv_numSegments), tangent, normal ) * ((float)m_d.m_wireDiameter*0.5f);
+         rgvbuf[index].x = midPoints[i].x+tmp.x;
+         rgvbuf[index].y = midPoints[i].y+tmp.y;
+         rgvbuf[index].z = height  +tmp.z;
+         //texel
+         rgvbuf[index].tu = u;
+         rgvbuf[index].tv = v;
+         Vertex3Ds n(rgvbuf[index].x - midPoints[i].x, rgvbuf[index].y - midPoints[i].y, rgvbuf[index].z - height);
+         float len = 1.0f / sqrtf(n.x*n.x + n.y*n.y + n.z*n.z);
+         rgvbuf[index].nx = n.x*len;
+         rgvbuf[index].ny = n.y*len;
+         rgvbuf[index].nz = n.z*len;
+
+      }
+   }
 }
 
 void Ramp::prepareHabitrail(RenderDevice* pd3dDevice)
@@ -1117,70 +1143,23 @@ void Ramp::prepareHabitrail(RenderDevice* pd3dDevice)
 
     if (dynamicVertexBuffer)
         dynamicVertexBuffer->release();
+    if (dynamicVertexBuffer2)
+       dynamicVertexBuffer2->release();
 
     pd3dDevice->CreateVertexBuffer(m_numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &dynamicVertexBuffer);
+    pd3dDevice->CreateVertexBuffer(m_numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &dynamicVertexBuffer2);
 
     Vertex3D_NoTex2 *buf;
+    Vertex3D_NoTex2 *buf2;
     dynamicVertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY);
+    dynamicVertexBuffer2->lock(0,0,(void**)&buf2, VertexBuffer::WRITEONLY);
 
     Vertex3D_NoTex2* rgvbuf = new Vertex3D_NoTex2[m_numVertices];
     std::vector<WORD> rgibuf( m_numIndices );
-    //const float height = m_d.m_height+m_ptable->m_tableheight;
+    Vertex3D_NoTex2* rgvbuf2 = new Vertex3D_NoTex2[m_numVertices];
 
-    Vertex3Ds prevB;
-    Vertex3Ds binorm;
-    Vertex3Ds normal;
-    float height=0;
-    for( int i=0, index=0; i<numRings; i++ )
-    {
-        const int i2= (i==(numRings-1)) ? i : i+1;
-        height = rgheightInit[i]+m_ptable->m_tableheight;    
-
-        Vertex3Ds tangent( middlePoints[i2].x-middlePoints[i].x, middlePoints[i2].y-middlePoints[i].y, 0.0f);
-        if (i == numRings - 1)
-        {
-           // for the last spline point use the previous tangent again, otherwise we won't see the complete wire (it stops one control point too early)
-           tangent.x = middlePoints[i].x - middlePoints[i - 1].x;
-           tangent.y = middlePoints[i].y - middlePoints[i - 1].y;
-        }
-        if ( i==0 )
-        {
-            Vertex3Ds up( middlePoints[i2].x+middlePoints[i].x, middlePoints[i2].y+middlePoints[i].y, rgheightInit[i2]-rgheightInit[i]);
-            normal = CrossProduct(tangent,up);     //normal
-            binorm = CrossProduct(tangent, normal);
-        }
-        else
-        {
-            normal = CrossProduct(prevB, tangent);
-            binorm = CrossProduct(tangent, normal);
-        }
-        binorm.Normalize();
-        normal.Normalize();
-        prevB = binorm;
-        int si=index;
-		const float inv_numRings = 1.0f/(float)numRings;
-		const float inv_numSegments = 1.0f/(float)numSegments;
-        for( int j=0;j<numSegments;j++,index++)
-        {
-            const float u=(float)i*inv_numRings;
-            const float v=((float)j+u)*inv_numSegments;
-            const float u_angle = u*(float)(2.0*M_PI);
-            const float v_angle = v*(float)(2.0*M_PI);
-            const Vertex3Ds tmp = GetRotatedAxis( (float)j*(360.0f*inv_numSegments), tangent, normal ) 
-                * ((float)m_d.m_wireDiameter*0.5f);
-            rgvbuf[index].x = middlePoints[i].x+tmp.x;
-            rgvbuf[index].y = middlePoints[i].y+tmp.y;
-            rgvbuf[index].z = height  +tmp.z;
-            //texel
-            rgvbuf[index].tu = u;
-            rgvbuf[index].tv = v;
-            Vertex3Ds n(rgvbuf[index].x - middlePoints[i].x, rgvbuf[index].y - middlePoints[i].y, rgvbuf[index].z - height);
-            float len = 1.0f / sqrtf(n.x*n.x + n.y*n.y + n.z*n.z);
-            rgvbuf[index].nx = n.x*len;
-            rgvbuf[index].ny = n.y*len;
-            rgvbuf[index].nz = n.z*len;
-        }
-    }
+    CreateWire(numRings, numSegments, rgvLocal, rgvbuf);
+    CreateWire(numRings, numSegments, &rgvLocal[splinePoints], rgvbuf2);
     // calculate faces
     for( int i=0;i<numRings-1;i++ )
     {
@@ -1221,12 +1200,15 @@ void Ramp::prepareHabitrail(RenderDevice* pd3dDevice)
     // Draw the floor of the ramp.
     memcpy( &buf[0], &rgvbuf[0], sizeof(Vertex3D_NoTex2)*m_numVertices );
     dynamicVertexBuffer->unlock();
+    memcpy( &buf2[0], &rgvbuf2[0], sizeof(Vertex3D_NoTex2)*m_numVertices );
+    dynamicVertexBuffer2->unlock();
 
     if (dynamicIndexBuffer)
         dynamicIndexBuffer->release();
     dynamicIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer( rgibuf );
 
     delete [] rgvbuf;
+    delete [] rgvbuf2;
     delete [] rgvLocal;
     delete [] middlePoints;
 }
