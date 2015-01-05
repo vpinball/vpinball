@@ -1147,19 +1147,28 @@ void Ramp::prepareHabitrail(RenderDevice* pd3dDevice)
        dynamicVertexBuffer2->release();
 
     pd3dDevice->CreateVertexBuffer(m_numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &dynamicVertexBuffer);
-    pd3dDevice->CreateVertexBuffer(m_numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &dynamicVertexBuffer2);
+    if (m_d.m_type!=RampType1Wire)
+       pd3dDevice->CreateVertexBuffer(m_numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &dynamicVertexBuffer2);
 
     Vertex3D_NoTex2 *buf;
     Vertex3D_NoTex2 *buf2;
     dynamicVertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY);
-    dynamicVertexBuffer2->lock(0,0,(void**)&buf2, VertexBuffer::WRITEONLY);
+    if (m_d.m_type != RampType1Wire)
+       dynamicVertexBuffer2->lock(0, 0, (void**)&buf2, VertexBuffer::WRITEONLY);
 
     Vertex3D_NoTex2* rgvbuf = new Vertex3D_NoTex2[m_numVertices];
+    Vertex3D_NoTex2* rgvbuf2 = NULL;
     std::vector<WORD> rgibuf( m_numIndices );
-    Vertex3D_NoTex2* rgvbuf2 = new Vertex3D_NoTex2[m_numVertices];
+    if (m_d.m_type != RampType1Wire)
+       rgvbuf2 = new Vertex3D_NoTex2[m_numVertices];
+    if (m_d.m_type != RampType1Wire)
+    {
+       CreateWire(numRings, numSegments, rgvLocal, rgvbuf);
+       CreateWire(numRings, numSegments, &rgvLocal[splinePoints], rgvbuf2);
+    }
+    else
+       CreateWire(numRings, numSegments, middlePoints, rgvbuf);
 
-    CreateWire(numRings, numSegments, rgvLocal, rgvbuf);
-    CreateWire(numRings, numSegments, &rgvLocal[splinePoints], rgvbuf2);
     // calculate faces
     for( int i=0;i<numRings-1;i++ )
     {
@@ -1200,15 +1209,19 @@ void Ramp::prepareHabitrail(RenderDevice* pd3dDevice)
     // Draw the floor of the ramp.
     memcpy( &buf[0], &rgvbuf[0], sizeof(Vertex3D_NoTex2)*m_numVertices );
     dynamicVertexBuffer->unlock();
-    memcpy( &buf2[0], &rgvbuf2[0], sizeof(Vertex3D_NoTex2)*m_numVertices );
-    dynamicVertexBuffer2->unlock();
+    if (m_d.m_type!=RampType1Wire)
+    {
+       memcpy(&buf2[0], &rgvbuf2[0], sizeof(Vertex3D_NoTex2)*m_numVertices);
+       dynamicVertexBuffer2->unlock();
+    }
 
     if (dynamicIndexBuffer)
         dynamicIndexBuffer->release();
     dynamicIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer( rgibuf );
 
     delete [] rgvbuf;
-    delete [] rgvbuf2;
+    if ( m_d.m_type!=RampType1Wire)
+      delete [] rgvbuf2;
     delete [] rgvLocal;
     delete [] middlePoints;
 }
