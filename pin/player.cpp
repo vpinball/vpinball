@@ -1843,7 +1843,7 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
 #ifdef _DEBUGPHYSICS
 					++c_hitcnts;						// stats for display
 
-					if (pball->m_coll.hitRigid && pball->m_coll.distance < -0.0875f) //rigid and embedded
+					if (pball->m_coll.hitRigid && pball->m_coll.hitdistance < -0.0875f) //rigid and embedded
 						++c_embedcnts;
 #endif
 					///////////////////////////////////////////////////////////////////////////
@@ -2324,7 +2324,6 @@ void Player::CheckAndUpdateRegions()
     //
 
     RenderTarget* backBuffer = m_pin3d.m_pddsBackBuffer;
-
     RenderTarget* const backBufferZ = m_pin3d.m_pddsZBuffer;
 
     // blit static background
@@ -2333,9 +2332,7 @@ void Player::CheckAndUpdateRegions()
 
     // Process all AnimObjects
     for (int l=0; l < m_vscreenupdate.Size(); ++l)
-    {
         m_vscreenupdate.ElementAt(l)->Check3D();
-    }
 }
 
 
