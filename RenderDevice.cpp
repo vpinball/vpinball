@@ -852,7 +852,11 @@ RenderTarget* RenderDevice::AttachZBufferTo(RenderTarget* surf)
 
 void RenderDevice::DrawPrimitive(D3DPRIMITIVETYPE type, DWORD fvf, const void* vertices, DWORD vertexCount)
 {
-    m_pD3DDevice->SetFVF(fvf);
+   if (currentFVF != fvf)
+   {
+      m_pD3DDevice->SetFVF(fvf);
+      currentFVF = fvf;
+   }
     CHECKD3D(m_pD3DDevice->DrawPrimitiveUP(type, ComputePrimitiveCount(type, vertexCount), vertices, fvfToSize(fvf)));
     m_curVertexBuffer = 0;      // DrawPrimitiveUP sets the VB to NULL
 
@@ -861,8 +865,12 @@ void RenderDevice::DrawPrimitive(D3DPRIMITIVETYPE type, DWORD fvf, const void* v
 
 void RenderDevice::DrawIndexedPrimitive(D3DPRIMITIVETYPE type, DWORD fvf, const void* vertices, DWORD vertexCount, const WORD* indices, DWORD indexCount)
 {
-    m_pD3DDevice->SetFVF(fvf);
-    CHECKD3D(m_pD3DDevice->DrawIndexedPrimitiveUP(type, 0, vertexCount, ComputePrimitiveCount(type, indexCount),
+   if (currentFVF != fvf)
+   {
+      m_pD3DDevice->SetFVF(fvf);
+      currentFVF = fvf;
+   }
+   CHECKD3D(m_pD3DDevice->DrawIndexedPrimitiveUP(type, 0, vertexCount, ComputePrimitiveCount(type, indexCount),
                 indices, D3DFMT_INDEX16, vertices, fvfToSize(fvf)));
     m_curVertexBuffer = 0;      // DrawIndexedPrimitiveUP sets the VB to NULL
     m_curIndexBuffer = 0;       // DrawIndexedPrimitiveUP sets the IB to NULL
@@ -876,8 +884,11 @@ void RenderDevice::DrawPrimitiveVB(D3DPRIMITIVETYPE type, VertexBuffer* vb, DWOR
     vb->GetDesc(&desc);     // let's hope this is not very slow
 
     const unsigned int vsize = fvfToSize(desc.FVF);
-
-    CHECKD3D(m_pD3DDevice->SetFVF(desc.FVF));
+    if (currentFVF != desc.FVF)
+    {
+       CHECKD3D(m_pD3DDevice->SetFVF(desc.FVF));
+       currentFVF = desc.FVF;
+    }
 
     if (m_curVertexBuffer != vb)
     {
@@ -916,7 +927,11 @@ void RenderDevice::DrawIndexedPrimitiveVB( D3DPRIMITIVETYPE type, VertexBuffer* 
     const unsigned int vsize = fvfToSize(desc.FVF);
 
     // bind the vertex and index buffers
-    CHECKD3D(m_pD3DDevice->SetFVF(desc.FVF));
+    if (currentFVF != desc.FVF)
+    {
+       CHECKD3D(m_pD3DDevice->SetFVF(desc.FVF));
+       currentFVF = desc.FVF;
+    }
 
     if (m_curVertexBuffer != vb)
     {

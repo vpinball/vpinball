@@ -278,7 +278,7 @@ private:
 
    bool m_autogen_mipmap;
    bool m_RESZ_support;
-
+   DWORD currentFVF;
    bool m_force_aniso;
 
    // performance counters
