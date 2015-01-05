@@ -871,7 +871,8 @@ STDMETHODIMP Gate::put_Open(VARIANT_BOOL newVal)
       {
          m_phitgate->m_gateanim.m_fOpen = true;
          m_phitgate->m_fEnabled = false;
-         m_plineseg->m_fEnabled = false;
+		 if ( !m_d.m_twoWay )
+	         m_plineseg->m_fEnabled = false;
 
          if (m_phitgate->m_gateanim.m_angle < m_phitgate->m_gateanim.m_angleMax)
             m_phitgate->m_gateanim.m_anglespeed = 0.2f;
@@ -881,7 +882,8 @@ STDMETHODIMP Gate::put_Open(VARIANT_BOOL newVal)
          m_phitgate->m_gateanim.m_fOpen = false;
 
          m_phitgate->m_fEnabled = m_d.m_fCollidable;
-         m_plineseg->m_fEnabled = m_d.m_fCollidable;					
+		 if ( !m_d.m_twoWay )
+	         m_plineseg->m_fEnabled = m_d.m_fCollidable;					
 
          if (m_phitgate->m_gateanim.m_angle > m_phitgate->m_gateanim.m_angleMin)
             m_phitgate->m_gateanim.m_anglespeed = -0.2f;
@@ -1006,7 +1008,8 @@ STDMETHODIMP Gate::put_Collidable(VARIANT_BOOL newVal)
    if (g_pplayer)
    {
       m_phitgate->m_fEnabled = VBTOF(newVal);
-      m_plineseg->m_fEnabled = VBTOF(newVal);
+	  if ( !m_d.m_twoWay )
+	      m_plineseg->m_fEnabled = VBTOF(newVal);
       m_phitgate->m_gateanim.m_angleMax = m_d.m_angleMax;
       m_phitgate->m_gateanim.m_angleMin = m_d.m_angleMin;
 
@@ -1032,7 +1035,8 @@ STDMETHODIMP Gate::Move(int dir, float speed, float angle)//move non-collidable 
    {
       m_phitgate->m_gateanim.m_fOpen = true;// move always turns off natural swing
       m_phitgate->m_fEnabled = false;		// and collidable off
-      m_plineseg->m_fEnabled = false;		
+	  if ( !m_d.m_twoWay )
+	      m_plineseg->m_fEnabled = false;		
 
       if (speed <= 0.0f) speed = 0.2f;		//default gate angle speed
       else speed *= (float)(M_PI/180.0);	// convert to radians
