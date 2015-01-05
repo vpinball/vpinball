@@ -82,8 +82,8 @@ public:
 
 	void lock( unsigned int offsetToLock, unsigned int sizeToLock, void **dataBuffer, DWORD flags )
     {
-        CHECKD3D(this->Lock(offsetToLock, sizeToLock, dataBuffer, flags));
-    }
+       CHECKD3D(this->Lock(offsetToLock, sizeToLock, dataBuffer, flags));
+   }
     
 	void unlock(void)
     {
@@ -234,7 +234,11 @@ public:
 
    inline void SetVertexDeclaration( VertexDeclaration *declaration )
    {
-       CHECKD3D(m_pD3DDevice->SetVertexDeclaration( declaration ));
+      if ( declaration!=currentDeclaration)
+      {
+         currentDeclaration = declaration;
+         CHECKD3D(m_pD3DDevice->SetVertexDeclaration(declaration));
+      }
    }
 
    inline IDirect3DDevice9* GetCoreDevice()
@@ -268,7 +272,7 @@ private:
    VertexBuffer* m_curVertexBuffer;     // for caching
    IndexBuffer* m_curIndexBuffer;       // for caching
    D3DTexture* m_curTexture[8];         // for caching
-
+   VertexDeclaration *currentDeclaration;
    DWORD m_maxaniso;
    bool m_mag_aniso;
 
@@ -320,4 +324,5 @@ public:
 private:
     ID3DXEffect* m_shader;
     RenderDevice *m_renderDevice;
+    Texture *currentTexture;
 };

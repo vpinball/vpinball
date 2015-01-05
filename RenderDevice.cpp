@@ -199,6 +199,7 @@ RenderDevice::RenderDevice(HWND hwnd, int width, int height, bool fullscreen, in
         throw 0;
     }
 #endif
+    currentDeclaration = NULL;
 
     D3DDEVTYPE devtype = D3DDEVTYPE_HAL;
 
@@ -964,6 +965,7 @@ Shader::Shader(RenderDevice *renderDevice)
 {
     m_renderDevice = renderDevice;
     m_shader=0;
+    currentTexture = NULL;
 }
 
 Shader::~Shader()
@@ -1046,8 +1048,11 @@ void Shader::End()
 
 void Shader::SetTexture(D3DXHANDLE texelName, Texture *texel)
 {
-   if (texel->m_pdsBuffer )
+   if (texel->m_pdsBuffer && currentTexture != texel)
+   {
+      currentTexture = texel;
       m_shader->SetTexture(texelName, m_renderDevice->m_texMan.LoadTexture(texel->m_pdsBuffer));
+   }
 }
 
 void Shader::SetTexture(D3DXHANDLE texelName, D3DTexture *texel)
@@ -1062,7 +1067,7 @@ void Shader::SetMaterial( const Material * const mat,
                           float fWrapLighting, float fRoughness, float fEdge, float fOpacity,
                           bool bIsMetal, bool bOpacityActive )
 {
-    if( mat )
+   if (mat)
     {
 		fWrapLighting = mat->m_fWrapLighting;
 		fRoughness = mat->m_fRoughness;
@@ -1074,14 +1079,13 @@ void Shader::SetMaterial( const Material * const mat,
 		bIsMetal = mat->m_bIsMetal;
 		bOpacityActive = mat->m_bOpacityActive;
     }
-
     m_shader->SetFloat("fWrapLighting",fWrapLighting);
     m_shader->SetFloat("fRoughness",exp2f(10.0f * fRoughness + 1.0f)); // map from 0..1 to 2..2048
     m_shader->SetFloat("fEdge",fEdge);
     m_shader->SetVector("cBase",&cBase);
     m_shader->SetVector("cGlossy",&cGlossy);
     m_shader->SetVector("cClearcoat",&cClearcoat);
-	m_shader->SetBool("bIsMetal", bIsMetal);
+	 m_shader->SetBool("bIsMetal", bIsMetal);
     m_shader->SetFloat("fmaterialAlpha", bOpacityActive ? fOpacity : 1.0f);
     if(bOpacityActive /*&& (fOpacity < 1.0f)*/)
 		g_pplayer->m_pin3d.EnableAlphaBlend(1,false);
