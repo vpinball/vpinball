@@ -180,16 +180,16 @@ void Ramp::Render(Sur * const psur)
    if( isHabitrail() )
    {
       psur->Polyline(middlePoints, cvertex);
-      if (m_d.m_type == RampType4Wire || m_d.m_type == RampType3WireRight)
-      {
-         psur->SetLineColor(RGB(0,0,0),false,3);
-         psur->Polyline(rgvLocal, cvertex);
-      }
-      if (m_d.m_type == RampType4Wire || m_d.m_type == RampType3WireLeft)
-      {
-         psur->SetLineColor(RGB(0,0,0),false,3);
-         psur->Polyline(&rgvLocal[cvertex], cvertex);
-      }
+       if (m_d.m_type == RampType4Wire || m_d.m_type == RampType3WireRight)
+       {
+          psur->SetLineColor(RGB(0,0,0),false,3);
+          psur->Polyline(rgvLocal, cvertex);
+       }
+       if (m_d.m_type == RampType4Wire || m_d.m_type == RampType3WireLeft)
+       {
+          psur->SetLineColor(RGB(0,0,0),false,3);
+          psur->Polyline(&rgvLocal[cvertex], cvertex);
+       }
    }
    else
    {
@@ -484,9 +484,9 @@ Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** co
 //       }
 //       else
       {
-         rgvLocal[i] = vmiddle + (widthcur*0.5f) * vnormal;
-         rgvLocal[cvertex*2 - i - 1] = vmiddle - (widthcur*0.5f) * vnormal;
-      }
+      rgvLocal[i] = vmiddle + (widthcur*0.5f) * vnormal;
+      rgvLocal[cvertex*2 - i - 1] = vmiddle - (widthcur*0.5f) * vnormal;
+    }
    }
 
    if (ppfCross)
@@ -1059,60 +1059,60 @@ void Ramp::RenderStaticHabitrail(RenderDevice* pd3dDevice)
 
 void Ramp::CreateWire( const int numRings, const int numSegments, const Vertex2D *midPoints, Vertex3D_NoTex2 *rgvbuf)
 {
-   Vertex3Ds prevB;
-   Vertex3Ds binorm;
-   Vertex3Ds normal;
+    Vertex3Ds prevB;
+    Vertex3Ds binorm;
+    Vertex3Ds normal;
 
-   for( int i=0, index=0; i<numRings; i++ )
-   {
-      const int i2= (i==(numRings-1)) ? i : i+1;
+    for( int i=0, index=0; i<numRings; i++ )
+    {
+        const int i2= (i==(numRings-1)) ? i : i+1;
       float height = rgheightInit[i]+m_ptable->m_tableheight;    
 
       Vertex3Ds tangent( midPoints[i2].x-midPoints[i].x, midPoints[i2].y-midPoints[i].y, 0.0f);
-      if (i == numRings - 1)
-      {
-         // for the last spline point use the previous tangent again, otherwise we won't see the complete wire (it stops one control point too early)
+        if (i == numRings - 1)
+        {
+           // for the last spline point use the previous tangent again, otherwise we won't see the complete wire (it stops one control point too early)
          tangent.x = midPoints[i].x - midPoints[i - 1].x;
          tangent.y = midPoints[i].y - midPoints[i - 1].y;
-      }
-      if ( i==0 )
-      {
+        }
+        if ( i==0 )
+        {
          Vertex3Ds up( midPoints[i2].x+midPoints[i].x, midPoints[i2].y+midPoints[i].y, rgheightInit[i2]-rgheightInit[i]);
-         normal = CrossProduct(tangent,up);     //normal
-         binorm = CrossProduct(tangent, normal);
-      }
-      else
-      {
-         normal = CrossProduct(prevB, tangent);
-         binorm = CrossProduct(tangent, normal);
-      }
-      binorm.Normalize();
-      normal.Normalize();
-      prevB = binorm;
-      int si=index;
-      const float inv_numRings = 1.0f/(float)numRings;
-      const float inv_numSegments = 1.0f/(float)numSegments;
-      for( int j=0;j<numSegments;j++,index++)
-      {
-         const float u=(float)i*inv_numRings;
-         const float v=((float)j+u)*inv_numSegments;
-         const float u_angle = u*(float)(2.0*M_PI);
-         const float v_angle = v*(float)(2.0*M_PI);
+            normal = CrossProduct(tangent,up);     //normal
+            binorm = CrossProduct(tangent, normal);
+        }
+        else
+        {
+            normal = CrossProduct(prevB, tangent);
+            binorm = CrossProduct(tangent, normal);
+        }
+        binorm.Normalize();
+        normal.Normalize();
+        prevB = binorm;
+        int si=index;
+		const float inv_numRings = 1.0f/(float)numRings;
+		const float inv_numSegments = 1.0f/(float)numSegments;
+        for( int j=0;j<numSegments;j++,index++)
+        {
+            const float u=(float)i*inv_numRings;
+            const float v=((float)j+u)*inv_numSegments;
+            const float u_angle = u*(float)(2.0*M_PI);
+            const float v_angle = v*(float)(2.0*M_PI);
          const Vertex3Ds tmp = GetRotatedAxis( (float)j*(360.0f*inv_numSegments), tangent, normal ) * ((float)m_d.m_wireDiameter*0.5f);
          rgvbuf[index].x = midPoints[i].x+tmp.x;
          rgvbuf[index].y = midPoints[i].y+tmp.y;
-         rgvbuf[index].z = height  +tmp.z;
-         //texel
-         rgvbuf[index].tu = u;
-         rgvbuf[index].tv = v;
+            rgvbuf[index].z = height  +tmp.z;
+            //texel
+            rgvbuf[index].tu = u;
+            rgvbuf[index].tv = v;
          Vertex3Ds n(rgvbuf[index].x - midPoints[i].x, rgvbuf[index].y - midPoints[i].y, rgvbuf[index].z - height);
-         float len = 1.0f / sqrtf(n.x*n.x + n.y*n.y + n.z*n.z);
-         rgvbuf[index].nx = n.x*len;
-         rgvbuf[index].ny = n.y*len;
-         rgvbuf[index].nz = n.z*len;
+            float len = 1.0f / sqrtf(n.x*n.x + n.y*n.y + n.z*n.z);
+            rgvbuf[index].nx = n.x*len;
+            rgvbuf[index].ny = n.y*len;
+            rgvbuf[index].nz = n.z*len;
 
-      }
-   }
+        }
+    }
 }
 
 void Ramp::prepareHabitrail(RenderDevice* pd3dDevice)
@@ -1234,8 +1234,8 @@ void Ramp::RenderSetup(RenderDevice* pd3dDevice)
       if ( isHabitrail() )
          prepareHabitrail(pd3dDevice);
       else
-         GenerateVertexBuffer(pd3dDevice);
-   }
+          GenerateVertexBuffer(pd3dDevice);
+      }
 }
 
 void Ramp::RenderStatic(RenderDevice* pd3dDevice)
@@ -2108,8 +2108,8 @@ STDMETHODIMP Ramp::put_WireDistanceY(float newVal)
 
 void Ramp::RenderRamp( RenderDevice *pd3dDevice, Material *mat )
 {
-   if ( !mat )
-      return;
+    if ( !mat )
+        return;
 
    if ( m_d.m_widthbottom==0.0f && m_d.m_widthtop==0.0f )
    {
@@ -2170,22 +2170,22 @@ void Ramp::RenderRamp( RenderDevice *pd3dDevice, Material *mat )
       {
          pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, dynamicVertexBuffer, offset, m_numVertices*2*2, dynamicIndexBuffer, 0, (rampVertex-1)*6*2*2);
       }
-      else
-      {
-         if ( m_d.m_rightwallheightvisible!=0.f ) //only render right side if the height is >0
-         {
-            pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, dynamicVertexBuffer, offset, m_numVertices*2, dynamicIndexBuffer, 0, (rampVertex-1)*6*2);
-         }
-         offset+=2*m_numVertices;
+	  else
+	  {
+		if ( m_d.m_rightwallheightvisible!=0.f ) //only render right side if the height is >0
+        {
+			pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, dynamicVertexBuffer, offset, m_numVertices*2, dynamicIndexBuffer, 0, (rampVertex-1)*6*2);
+        }
+		offset+=2*m_numVertices;
 
-         if ( m_d.m_leftwallheightvisible!=0.f ) //only render left side if the height is >0
-         {
-            pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, dynamicVertexBuffer, offset, m_numVertices*2, dynamicIndexBuffer, 0, (rampVertex-1)*6*2);
-         }
-      }
+		if ( m_d.m_leftwallheightvisible!=0.f ) //only render left side if the height is >0
+        {
+			pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, dynamicVertexBuffer, offset, m_numVertices*2, dynamicIndexBuffer, 0, (rampVertex-1)*6*2);
+        }
+	  }
       pd3dDevice->basicShader->End();  
 
-      g_pplayer->m_pin3d.DisableAlphaBlend();
+	  g_pplayer->m_pin3d.DisableAlphaBlend();
    }
 }
 // Always called each frame to render over everything else (along with primitives)
@@ -2302,7 +2302,16 @@ void Ramp::GenerateVertexBuffer(RenderDevice* pd3dDevice)
         rgibuf[i*6+rgioffset*3+5] = i*4+m_numVertices*3+1;
     }
     SetNormal( rgvbuf, &rgibuf[0], (rampVertex-1)*6);
-    memcpy( &buf[offset], &rgvbuf[0], sizeof(Vertex3D_NoTex2)*m_numVertices );
+    
+	// Flip Normals if pointing downwards instead of upwards //!! hacky, do it correct somehow else
+    for (int i=0;i<(rampVertex-1);i++)
+        for(int j = 0; j < 4; ++j) if(rgvbuf[i*4+j].nz < 0.0f) {
+            rgvbuf[i*4+j].nx = -rgvbuf[i*4+j].nx;
+            rgvbuf[i*4+j].ny = -rgvbuf[i*4+j].ny;
+            rgvbuf[i*4+j].nz = -rgvbuf[i*4+j].nz;
+        }
+
+	memcpy( &buf[offset], &rgvbuf[0], sizeof(Vertex3D_NoTex2)*m_numVertices );
     offset+=m_numVertices;
 
     if (dynamicIndexBuffer)
