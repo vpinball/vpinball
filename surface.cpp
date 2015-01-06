@@ -1020,9 +1020,9 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
     pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelTexelDeclaration );
 
     ppin3d->EnableAlphaBlend(1,false);
-    pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", true);
-    pd3dDevice->basicShader->Core()->SetFloat("fAlphaTestValue", 128.0f/255.0f);
-    if ( m_d.m_fSideVisible )
+    pd3dDevice->basicShader->PerformAlphaTest(true);
+    pd3dDevice->basicShader->SetAlphaTestValue(128.0f / 255.0f);
+    if (m_d.m_fSideVisible)
     {
         mat = m_ptable->GetMaterial( m_d.m_szSideMaterial);
         pd3dDevice->basicShader->SetMaterial(mat);
@@ -1097,7 +1097,6 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
     // reset render states
     //!! ppin3d->DisableLightMap();
     g_pplayer->m_pin3d.DisableAlphaBlend();
-    pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", false);
     pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 }
 

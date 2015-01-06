@@ -530,8 +530,8 @@ void Decal::RenderStatic(RenderDevice* pd3dDevice)
 
    pd3dDevice->basicShader->Core()->SetFloat("fmaterialAlpha",1.0f);
    pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
-   pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", true);
-   pd3dDevice->basicShader->Core()->SetFloat("fAlphaTestValue", 128.0f/255.0f);
+   pd3dDevice->basicShader->PerformAlphaTest(true);
+   pd3dDevice->basicShader->SetAlphaTestValue(128.0f / 255.0f);
 
    if (m_d.m_decaltype != DecalImage)
    {
@@ -559,7 +559,7 @@ void Decal::RenderStatic(RenderDevice* pd3dDevice)
    else
    {
 	   const D3DXVECTOR4 staticColor(1.0f,1.0f,1.0f,1.0f);
-	   pd3dDevice->basicShader->Core()->SetVector("staticColor", &staticColor);
+       pd3dDevice->basicShader->SetStaticColor(staticColor);
    }
 
    pd3dDevice->basicShader->Begin(0);
@@ -570,7 +570,6 @@ void Decal::RenderStatic(RenderDevice* pd3dDevice)
 
    // Set the render state.
    //pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_WRAP);
-   pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", false);
    g_pplayer->m_pin3d.DisableAlphaBlend();
 }
 

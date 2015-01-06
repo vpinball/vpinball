@@ -1248,12 +1248,12 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
 
       const D3DXVECTOR4 color = COLORREF_to_D3DXVECTOR4(m_d.m_color);
       //pd3dDevice->basicShader->Core()->SetFloat("fAlpha",(float)m_d.m_fAlpha/100.0f);
-      pd3dDevice->basicShader->Core()->SetFloat("fAlpha",(float)m_d.m_fAlpha/100.0f);
+      pd3dDevice->basicShader->SetAlphaValue((float)m_d.m_fAlpha / 100.0f);
       pd3dDevice->basicShader->Core()->SetFloat("fFilterAmount",(float)m_d.m_fFilterAmount/100.0f);
-      pd3dDevice->basicShader->Core()->SetVector("staticColor",&color);
-      pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", true);
-      pd3dDevice->basicShader->Core()->SetFloat("fAlphaTestValue", 1.0f/255.0f);
-      if( m_d.m_filter == Filter_Additive )
+      pd3dDevice->basicShader->SetStaticColor(color);
+      pd3dDevice->basicShader->PerformAlphaTest(true);
+      pd3dDevice->basicShader->SetAlphaTestValue(1.0f / 255.0f);
+      if (m_d.m_filter == Filter_Additive)
          pd3dDevice->basicShader->Core()->SetBool("bAdditive", true);
       else if( m_d.m_filter == Filter_Overlay )
          pd3dDevice->basicShader->Core()->SetBool("bOverlay", true);
@@ -1307,5 +1307,4 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
       pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
 	  g_pplayer->m_pin3d.DisableAlphaBlend();
-      pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", false);
 }

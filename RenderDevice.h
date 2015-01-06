@@ -314,12 +314,20 @@ public:
     void Begin( unsigned int pass );
     void End();
 
-    void SetTexture( D3DXHANDLE texelName, Texture *texel );
-    void SetTexture( D3DXHANDLE texelName, D3DTexture *texel );
+    void PerformAlphaTest(bool enable);
+    void SetAlphaTestValue(float value);
+    void SetAlphaValue(float value);
+    void SetTexture(D3DXHANDLE texelName, Texture *texel);
+    void SetTexture( D3DXHANDLE texelName, D3DTexture *texel);
+    void SetStaticColor(D3DXVECTOR4 color);
     void SetMaterial( const Material * const mat );
 
 private:
     ID3DXEffect* m_shader;
     RenderDevice *m_renderDevice;
     Texture *currentTexture;
+    bool    currentAlphaTest;
+    float   currentAlphaTestValue;
+    float   currentAlphaValue;
+    D3DXVECTOR4 currentColor;
 };

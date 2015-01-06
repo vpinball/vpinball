@@ -336,8 +336,8 @@ void Spinner::PostRenderStatic(RenderDevice* pd3dDevice)
 
     Texture * const image = m_ptable->GetImage(m_d.m_szImage);
 
-    pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", true);
-    pd3dDevice->basicShader->Core()->SetFloat("fAlphaTestValue", 128.0f/255.0f);
+    pd3dDevice->basicShader->PerformAlphaTest(true);
+    pd3dDevice->basicShader->SetAlphaTestValue(128.0f / 255.0f);
 
     UpdatePlate(pd3dDevice);
     if ( image )
@@ -358,7 +358,6 @@ void Spinner::PostRenderStatic(RenderDevice* pd3dDevice)
 
             pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
     pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, FALSE);
-    pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", false);
 
 }
 
