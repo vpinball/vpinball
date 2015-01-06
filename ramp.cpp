@@ -2149,8 +2149,8 @@ void Ramp::RenderRamp( RenderDevice *pd3dDevice, Material *mat )
          GenerateVertexBuffer(pd3dDevice);
 
       ppin3d->EnableAlphaBlend( 1, false );
-      pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", true);
-      pd3dDevice->basicShader->Core()->SetFloat("fAlphaTestValue", 128.0f/255.0f);
+      pd3dDevice->basicShader->PerformAlphaTest(true);
+      pd3dDevice->basicShader->SetAlphaTestValue(128.0f / 255.0f);
 
       unsigned int offset=0;
       pd3dDevice->basicShader->Begin(0);
@@ -2186,7 +2186,6 @@ void Ramp::RenderRamp( RenderDevice *pd3dDevice, Material *mat )
       pd3dDevice->basicShader->End();  
 
       g_pplayer->m_pin3d.DisableAlphaBlend();
-      pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", false);
    }
 }
 // Always called each frame to render over everything else (along with primitives)

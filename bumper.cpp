@@ -376,13 +376,12 @@ void Bumper::RenderBase(RenderDevice *pd3dDevice, Material *baseMaterial )
    pd3dDevice->basicShader->SetMaterial(baseMaterial);
    pd3dDevice->basicShader->SetTexture("Texture0", &baseTexture);
    g_pplayer->m_pin3d.EnableAlphaBlend(1,false);
-   pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", true);
-   pd3dDevice->basicShader->Core()->SetFloat("fAlphaTestValue", 128.0f/255.0f);
+   pd3dDevice->basicShader->PerformAlphaTest(true);
+   pd3dDevice->basicShader->SetAlphaTestValue(128.0f / 255.0f);
 
    pd3dDevice->basicShader->Begin(0);
    pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, baseVertexBuffer, 0, bumperBaseNumVertices, baseIndexBuffer, 0, bumperBaseNumFaces );
    pd3dDevice->basicShader->End();
-   pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", false);
    g_pplayer->m_pin3d.DisableAlphaBlend();
 }
 
@@ -391,13 +390,12 @@ void Bumper::RenderSocket(RenderDevice *pd3dDevice, Material *baseMaterial )
    pd3dDevice->basicShader->SetMaterial(baseMaterial);
    pd3dDevice->basicShader->SetTexture("Texture0", &socketTexture);
    g_pplayer->m_pin3d.EnableAlphaBlend(1,false);
-   pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", true);
-   pd3dDevice->basicShader->Core()->SetFloat("fAlphaTestValue", 128.0f/255.0f);
+   pd3dDevice->basicShader->PerformAlphaTest(true);
+   pd3dDevice->basicShader->SetAlphaTestValue(128.0f / 255.0f);
 
    pd3dDevice->basicShader->Begin(0);
    pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, socketVertexBuffer, 0, bumperSocketNumVertices, socketIndexBuffer, 0, bumperSocketNumFaces );
    pd3dDevice->basicShader->End();
-   pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", false);
    g_pplayer->m_pin3d.DisableAlphaBlend();
 }
 
@@ -406,13 +404,12 @@ void Bumper::RenderCap( RenderDevice *pd3dDevice, Material *capMaterial )
    pd3dDevice->basicShader->SetMaterial(capMaterial);
    pd3dDevice->basicShader->SetTexture("Texture0", &capTexture);
    g_pplayer->m_pin3d.EnableAlphaBlend(1,false);
-   pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", true);
-   pd3dDevice->basicShader->Core()->SetFloat("fAlphaTestValue", 128.0f/255.0f);
+   pd3dDevice->basicShader->PerformAlphaTest(true);
+   pd3dDevice->basicShader->SetAlphaTestValue(128.0f / 255.0f);
 
    pd3dDevice->basicShader->Begin(0);
    pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, capVertexBuffer, 0, bumperCapNumVertices, capIndexBuffer, 0, bumperCapNumFaces );
    pd3dDevice->basicShader->End();
-   pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", false);
    g_pplayer->m_pin3d.DisableAlphaBlend();
 }
 
@@ -466,6 +463,7 @@ void Bumper::PostRenderStatic(RenderDevice* pd3dDevice)
       pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
       pd3dDevice->basicShader->SetMaterial(&ringMaterial);
       pd3dDevice->basicShader->SetTexture("Texture0", &ringTexture);
+      pd3dDevice->basicShader->PerformAlphaTest(false);
       pd3dDevice->basicShader->Begin(0);
       // render ring
       pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, ringVertexBuffer, 0, bumperRingNumVertices, ringIndexBuffer, 0, bumperRingNumFaces );

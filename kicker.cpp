@@ -332,7 +332,8 @@ void Kicker::RenderStatic(RenderDevice* pd3dDevice)
       Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
       pd3dDevice->basicShader->SetMaterial(mat);
       pd3dDevice->basicShader->Core()->SetTechnique("kickerBoolean");
-      pd3dDevice->SetRenderState(RenderDevice::ZFUNC, D3DCMP_ALWAYS );
+      pd3dDevice->basicShader->PerformAlphaTest(false);
+      pd3dDevice->SetRenderState(RenderDevice::ZFUNC, D3DCMP_ALWAYS);
       pd3dDevice->basicShader->Begin(0);
       pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, buf, kickerPlateNumVertices, kickerPlateIndices, kickerPlateNumFaces);
       pd3dDevice->basicShader->End();

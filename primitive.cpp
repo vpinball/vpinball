@@ -611,8 +611,8 @@ void Primitive::RenderObject( RenderDevice *pd3dDevice )
         pd3dDevice->basicShader->SetTexture("Texture0", pin);
         pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
         g_pplayer->m_pin3d.EnableAlphaBlend(1,false);
-        pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", true);
-        pd3dDevice->basicShader->Core()->SetFloat("fAlphaTestValue", 128.0f/255.0f);
+        pd3dDevice->basicShader->PerformAlphaTest(true);
+        pd3dDevice->basicShader->SetAlphaTestValue(128.0f / 255.0f);
 
         //g_pplayer->m_pin3d.SetTextureFilter(ePictureTexture, TEXTURE_MODE_TRILINEAR);
         // accomodate models with UV coords outside of [0,1]
@@ -636,7 +636,6 @@ void Primitive::RenderObject( RenderDevice *pd3dDevice )
 
     pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_CLAMP);
     g_pplayer->m_pin3d.DisableAlphaBlend();
-    pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", false);
 }
 
 // Always called each frame to render over everything else (along with alpha ramps)
