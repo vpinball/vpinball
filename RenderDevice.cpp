@@ -177,6 +177,9 @@ void EnumerateDisplayModes(const int adapter, std::vector<VideoMode>& modes)
 
 ////////////////////////////////////////////////////////////////////
 
+#define CHECKNVAPI(s) { NvAPI_Status hr = (s); if (hr != NVAPI_OK) { NvAPI_ShortString ss; NvAPI_GetErrorMessage(hr,ss); MessageBox(NULL, ss, "NVAPI", MB_OK | MB_ICONEXCLAMATION); } }
+static bool NVAPIinit = false; //!! meh
+
 //#define MY_IDX_BUF_SIZE 8192
 #define MY_IDX_BUF_SIZE 65536
 
@@ -271,9 +274,15 @@ RenderDevice::RenderDevice(HWND hwnd, int width, int height, bool fullscreen, in
 	if(m_autogen_mipmap)
 		m_autogen_mipmap = (m_pD3D->CheckDeviceFormat(m_adapter, devtype, params.BackBufferFormat, D3DUSAGE_AUTOGENMIPMAP, D3DRTYPE_TEXTURE, D3DFMT_A8R8G8B8)) == D3D_OK;
 
-		// Determine if RESZ is supported
-		m_RESZ_support = (m_pD3D->CheckDeviceFormat(m_adapter, devtype, params.BackBufferFormat,
-						  D3DUSAGE_RENDERTARGET, D3DRTYPE_SURFACE, ((D3DFORMAT)(MAKEFOURCC('R','E','S','Z'))))) == D3D_OK;
+	if(!NVAPIinit)
+	{
+		if (NvAPI_Initialize() == NVAPI_OK)
+		    NVAPIinit = true;
+	}
+
+	// Determine if RESZ is supported
+	//m_RESZ_support = (m_pD3D->CheckDeviceFormat(m_adapter, devtype, params.BackBufferFormat,
+	//				  D3DUSAGE_RENDERTARGET, D3DRTYPE_SURFACE, ((D3DFORMAT)(MAKEFOURCC('R','E','S','Z'))))) == D3D_OK;
 
 	// check if requested MSAA is possible
     DWORD MultiSampleQualityLevels;
@@ -365,8 +374,6 @@ RenderDevice::RenderDevice(HWND hwnd, int width, int height, bool fullscreen, in
 #include <d3dx9.h> //!! meh
 #pragma comment(lib, "d3dx9.lib")        // TODO: put into build system
 
-#define CHECKNVAPI(s) { NvAPI_Status hr = (s); if (hr != NVAPI_OK) { NvAPI_ShortString ss; NvAPI_GetErrorMessage(hr,ss); MessageBox(NULL, ss, "NVAPI", MB_OK | MB_ICONEXCLAMATION); } }
-static bool NVAPIinit = false; //!! meh
 static RenderTarget *src_cache = NULL; //!! meh
 static D3DTexture* dest_cache = NULL;
 static IDirect3DPixelShader9 *gShader = NULL; //!! meh
@@ -559,13 +566,8 @@ void RenderDevice::CopySurface(D3DTexture* dest, RenderTarget* src)
 
 void RenderDevice::CopyDepth(D3DTexture* dest, RenderTarget* src)
 {
-	if(!m_RESZ_support)
+	if(NVAPIinit)
 	{
-		if(!NVAPIinit)
-	{
-			 CHECKNVAPI(NvAPI_Initialize()); //!! meh
-			 NVAPIinit = true;
-		}
 		if(src != src_cache)
 		{
 			if(src_cache != NULL)
@@ -584,9 +586,12 @@ void RenderDevice::CopyDepth(D3DTexture* dest, RenderTarget* src)
 		//CHECKNVAPI(NvAPI_D3D9_AliasSurfaceAsTexture(m_pD3DDevice,src,dest,0));
 		CHECKNVAPI(NvAPI_D3D9_StretchRectEx(m_pD3DDevice, src, NULL, dest, NULL, D3DTEXF_NONE));
 	}
-	else
+#if 0 // leftover resolve z code, maybe useful later-on
+	else //if(m_RESZ_support)
 	{
-#define RESZ_CODE 0x7fa05000
+#define RESZ_CODE 0x7FA05000
+		IDirect3DSurface9 *pDSTSurface;
+		m_pD3DDevice->GetDepthStencilSurface(&pDSTSurface);
 		IDirect3DSurface9 *pINTZDSTSurface;
 		dest->GetSurfaceLevel(0, &pINTZDSTSurface);
 		// Bind depth buffer
@@ -623,8 +628,11 @@ void RenderDevice::CopyDepth(D3DTexture* dest, RenderTarget* src)
 
 		m_pD3DDevice->EndScene();
 
+		m_pD3DDevice->SetDepthStencilSurface(pDSTSurface);
 		pINTZDSTSurface->Release();
+		pDSTSurface->Release();
 	}
+#endif
 }
 
 D3DTexture* RenderDevice::CreateSystemTexture(BaseTexture* surf)
