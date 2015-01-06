@@ -378,7 +378,7 @@ void Pin3D::InitLayout()
 	for (int i=0; i<g_pplayer->m_ptable->m_vedit.Size(); ++i)
 		g_pplayer->m_ptable->m_vedit.ElementAt(i)->GetBoundingVertices(&vvertex3D);
 
-	const float aspect = ((float)m_dwRenderWidth)/((float)m_dwRenderHeight); //(float)(4.0/3.0);//((float)m_dwRenderWidth)/m_dwRenderHeight;
+	const float aspect = ((float)m_dwRenderWidth)/((float)m_dwRenderHeight); //(float)(4.0/3.0);
 
     m_proj.FitCameraToVertices(&vvertex3D, aspect, rotation, inclination, FOV, g_pplayer->m_ptable->m_xlatez, g_pplayer->m_ptable->m_layback);
 
@@ -812,7 +812,7 @@ void PinProjection::ComputeNearFarPlane(const Vector<Vertex3Ds>& verts)
     slintf("m_rzfar : %f\n", m_rzfar);
 
     // beware the div-0 problem
-    if( m_rznear==0.0f )
+    if( m_rznear < 0.001f )
        m_rznear = 0.001f;
     //m_rznear *= 0.99f;
     m_rzfar *= 1.01f;
