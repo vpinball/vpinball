@@ -246,6 +246,8 @@ public:
        return m_pD3DDevice;
    }
 
+   Material materialStateCache;
+
 private:
 #ifdef USE_D3D9EX
    IDirect3D9Ex* m_pD3D;
@@ -267,7 +269,6 @@ private:
 
    DWORD renderStateCache[RENDER_STATE_CACHE_SIZE];
    DWORD textureStateCache[8][TEXTURE_STATE_CACHE_SIZE];
-   //!! Material materialStateCache;
 
    VertexBuffer* m_curVertexBuffer;     // for caching
    IndexBuffer* m_curIndexBuffer;       // for caching
@@ -313,14 +314,10 @@ public:
     void Begin( unsigned int pass );
     void End();
 
-    void SetTexture( D3DXHANDLE texelName, Texture *texel);
-    void SetTexture( D3DXHANDLE texelName, D3DTexture *texel);
-    void SetMaterial( const Material * const mat, 
-                      D3DXVECTOR4 cBase=D3DXVECTOR4( 0.5f, 0.5f, 0.5f, 1.0f ),
-                      D3DXVECTOR4 cGlossy=D3DXVECTOR4( 0.5f, 0.5f, 0.5f, 1.0f ),
-                      D3DXVECTOR4 cClearcoat=D3DXVECTOR4( 0.5f, 0.5f, 0.5f, 1.0f ),
-                      float fWrapLighting=0.5f, float fRoughness=0.1f, float fEdge=1.0f, float fOpacity=1.0f,
-                      bool bIsMetal=false, bool bOpacityActive=false);
+    void SetTexture( D3DXHANDLE texelName, Texture *texel );
+    void SetTexture( D3DXHANDLE texelName, D3DTexture *texel );
+    void SetMaterial( const Material * const mat );
+
 private:
     ID3DXEffect* m_shader;
     RenderDevice *m_renderDevice;

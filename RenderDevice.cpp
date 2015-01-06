@@ -336,7 +336,7 @@ RenderDevice::RenderDevice(HWND hwnd, int width, int height, bool fullscreen, in
     // fill state caches with dummy values
     memset( renderStateCache, 0xCC, sizeof(DWORD)*RENDER_STATE_CACHE_SIZE);
     memset( textureStateCache, 0xCC, sizeof(DWORD)*8*TEXTURE_STATE_CACHE_SIZE);
-    //!! memset(&materialStateCache, 0xCC, sizeof(Material));
+    memset(&materialStateCache, 0xCC, sizeof(Material));
 
     // initialize performance counters
     m_curDrawCalls = m_frameDrawCalls = 0;
@@ -1075,34 +1075,90 @@ void Shader::SetTexture(D3DXHANDLE texelName, D3DTexture *texel)
    m_shader->SetTexture(texelName, texel);
 }
 
-void Shader::SetMaterial( const Material * const mat, 
-                          D3DXVECTOR4 cBase, 
-                          D3DXVECTOR4 cGlossy, 
-                          D3DXVECTOR4 cClearcoat,
-                          float fWrapLighting, float fRoughness, float fEdge, float fOpacity,
-                          bool bIsMetal, bool bOpacityActive )
+void Shader::SetMaterial( const Material * const mat )
 {
-   if (mat)
+	COLORREF cBase, cGlossy, cClearcoat;
+	float fWrapLighting, fRoughness, fEdge, fOpacity;
+	bool bIsMetal, bOpacityActive;
+
+    if (mat)
     {
 		fWrapLighting = mat->m_fWrapLighting;
-		fRoughness = mat->m_fRoughness;
+		fRoughness = exp2f(10.0f * mat->m_fRoughness + 1.0f); // map from 0..1 to 2..2048
 		fEdge = mat->m_fEdge;
 		fOpacity = mat->m_fOpacity;
-		cBase = convertColor(mat->m_cBase);
-		cGlossy = convertColor(mat->m_cGlossy);
-		cClearcoat = convertColor(mat->m_cClearcoat);
+		cBase = mat->m_cBase;
+		cGlossy = mat->m_cGlossy;
+		cClearcoat = mat->m_cClearcoat;
 		bIsMetal = mat->m_bIsMetal;
 		bOpacityActive = mat->m_bOpacityActive;
     }
-    m_shader->SetFloat("fWrapLighting",fWrapLighting);
-    m_shader->SetFloat("fRoughness",exp2f(10.0f * fRoughness + 1.0f)); // map from 0..1 to 2..2048
-    m_shader->SetFloat("fEdge",fEdge);
-    m_shader->SetVector("cBase",&cBase);
-    m_shader->SetVector("cGlossy",&cGlossy);
-    m_shader->SetVector("cClearcoat",&cClearcoat);
-	 m_shader->SetBool("bIsMetal", bIsMetal);
-    m_shader->SetFloat("fmaterialAlpha", bOpacityActive ? fOpacity : 1.0f);
-    if(bOpacityActive /*&& (fOpacity < 1.0f)*/)
+	else
+	{
+        fWrapLighting = 0.5f;
+		fRoughness = exp2f(10.0f * 0.1f + 1.0f); // map from 0..1 to 2..2048
+		fEdge = 1.0f;
+		fOpacity = 1.0f;
+		cBase = RGB(127,127,127);
+        cGlossy = RGB(127,127,127);
+        cClearcoat = RGB(127,127,127);
+        bIsMetal = false;
+		bOpacityActive = false;
+	}
+
+	if(fWrapLighting != m_renderDevice->materialStateCache.m_fWrapLighting)
+	{
+	    m_shader->SetFloat("fWrapLighting",fWrapLighting);
+		m_renderDevice->materialStateCache.m_fWrapLighting = fWrapLighting;
+	}
+
+	if(fRoughness != m_renderDevice->materialStateCache.m_fRoughness)
+	{
+	    m_shader->SetFloat("fRoughness",fRoughness);
+		m_renderDevice->materialStateCache.m_fRoughness = fRoughness;
+	}
+
+	if(fEdge != m_renderDevice->materialStateCache.m_fEdge)
+	{
+	    m_shader->SetFloat("fEdge",fEdge);
+		m_renderDevice->materialStateCache.m_fEdge = fEdge;
+	}
+
+	if(cBase != m_renderDevice->materialStateCache.m_cBase)
+	{
+		const D3DXVECTOR4 cBaseF = convertColor(cBase);
+		m_shader->SetVector("cBase",&cBaseF);
+		m_renderDevice->materialStateCache.m_cBase = cBase;
+	}
+    
+	if(cGlossy != m_renderDevice->materialStateCache.m_cGlossy)
+	{
+		const D3DXVECTOR4 cGlossyF = convertColor(cGlossy);
+		m_shader->SetVector("cGlossy",&cGlossyF);
+		m_renderDevice->materialStateCache.m_cGlossy = cGlossy;
+	}
+
+	if(cClearcoat != m_renderDevice->materialStateCache.m_cClearcoat)
+	{
+		const D3DXVECTOR4 cClearcoatF = convertColor(cClearcoat);
+		m_shader->SetVector("cClearcoat",&cClearcoatF);
+		m_renderDevice->materialStateCache.m_cClearcoat = cClearcoat;
+	}
+
+	if(bIsMetal != m_renderDevice->materialStateCache.m_bIsMetal)
+	{
+	    m_shader->SetBool("bIsMetal", bIsMetal);
+		m_renderDevice->materialStateCache.m_bIsMetal = bIsMetal;
+	}
+	
+	const float alpha = bOpacityActive ? fOpacity : 1.0f;
+	if(alpha != m_renderDevice->materialStateCache.m_fOpacity)
+	{
+	    m_shader->SetFloat("fmaterialAlpha", alpha);
+		m_renderDevice->materialStateCache.m_fOpacity = alpha;
+	}
+
+	if(bOpacityActive /*&& (fOpacity < 1.0f)*/)
 		g_pplayer->m_pin3d.EnableAlphaBlend(1,false);
     else
 		g_pplayer->m_pin3d.DisableAlphaBlend();
