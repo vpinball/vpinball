@@ -742,18 +742,40 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcry
    {
       bw.WriteString( FID(M3DN), m_d.meshFileName);
       bw.WriteInt( FID(M3VN), (int)m_mesh.NumVertices() );
-      bw.WriteStruct( FID(M3DX), &m_mesh.m_vertices[0], (int)(sizeof(Vertex3D_NoTex2)*m_mesh.NumVertices()) );
+
+#ifndef COMPRESS_MESHES
+	  bw.WriteStruct( FID(M3DX), &m_mesh.m_vertices[0], (int)(sizeof(Vertex3D_NoTex2)*m_mesh.NumVertices()) );
+#else
+	  bw.WriteTag(FID(M3CX));
+	  {
+      LZWWriter lzwwriter(pstm, (int *)&m_mesh.m_vertices[0], sizeof(Vertex3D_NoTex2)*m_mesh.NumVertices(), 1, sizeof(Vertex3D_NoTex2)*m_mesh.NumVertices());
+      lzwwriter.CompressBits(8+1);
+	  }
+#endif
+
       bw.WriteInt( FID(M3FN), (int)m_mesh.NumIndices() );
 	  if(m_mesh.NumVertices() > 65535)
 	  {
+#ifndef COMPRESS_MESHES
 	      bw.WriteStruct( FID(M3DI), &m_mesh.m_indices[0], (int)(sizeof(unsigned int)*m_mesh.NumIndices()) );
+#else
+	  	  bw.WriteTag(FID(M3CI));
+	      LZWWriter lzwwriter(pstm, (int *)&m_mesh.m_indices[0], sizeof(unsigned int)*m_mesh.NumIndices(), 1, sizeof(unsigned int)*m_mesh.NumIndices());
+		  lzwwriter.CompressBits(8+1);
+#endif
 	  }
 	  else
 	  {
 		  std::vector<WORD> tmp(m_mesh.NumIndices());
 		  for(unsigned int i = 0; i < m_mesh.NumIndices(); ++i)
 			  tmp[i] = m_mesh.m_indices[i];
+#ifndef COMPRESS_MESHES
 	      bw.WriteStruct( FID(M3DI), &tmp[0], (int)(sizeof(WORD)*m_mesh.NumIndices()) );
+#else
+  	  	  bw.WriteTag(FID(M3CI));
+	      LZWWriter lzwwriter(pstm, (int *)&tmp[0], sizeof(WORD)*m_mesh.NumIndices(), 1, sizeof(WORD)*m_mesh.NumIndices());
+		  lzwwriter.CompressBits(8+1);
+#endif
 	  }
    }
    bw.WriteFloat(FID(PIDB), m_d.m_depthBias);
@@ -906,6 +928,16 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
       m_mesh.m_vertices.resize(numVertices);
       pbr->GetStruct( &m_mesh.m_vertices[0], sizeof(Vertex3D_NoTex2)*numVertices);
    }
+#ifdef COMPRESS_MESHES
+   else if( id == FID(M3CX) )
+   {
+      m_mesh.m_vertices.clear();
+      m_mesh.m_vertices.resize(numVertices);
+      //pbr->GetStruct( &m_mesh.m_vertices[0], sizeof(Vertex3D_NoTex2)*numVertices);
+	  LZWReader lzwreader(pbr->m_pistream, (int *)&m_mesh.m_vertices[0], sizeof(Vertex3D_NoTex2)*numVertices, 1, sizeof(Vertex3D_NoTex2)*numVertices);
+      lzwreader.Decoder();
+   }
+#endif
    else if( id == FID(M3FN) )
    {
       pbr->GetInt( &numIndices );
@@ -923,6 +955,27 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
 			  m_mesh.m_indices[i] = tmp[i];
 	  }
    }
+#ifdef COMPRESS_MESHES
+   else if( id == FID(M3CI) )
+   {
+      m_mesh.m_indices.resize( numIndices );
+	  if(numVertices > 65535)
+	  {
+	      //pbr->GetStruct( &m_mesh.m_indices[0], sizeof(unsigned int)*numIndices);
+		  LZWReader lzwreader(pbr->m_pistream, (int *)&m_mesh.m_indices[0], sizeof(unsigned int)*numIndices, 1, sizeof(unsigned int)*numIndices);
+		  lzwreader.Decoder();
+	  }
+	  else
+	  {
+  		  std::vector<WORD> tmp(numIndices);
+	      //pbr->GetStruct( &tmp[0], sizeof(WORD)*numIndices);
+  		  LZWReader lzwreader(pbr->m_pistream, (int *)&tmp[0], sizeof(WORD)*numIndices, 1, sizeof(WORD)*numIndices);
+		  lzwreader.Decoder();
+		  for(int i = 0; i < numIndices; ++i)
+			  m_mesh.m_indices[i] = tmp[i];
+	  }
+   }
+#endif
    else if (id == FID(PIDB))
    {
       pbr->GetFloat(&m_d.m_depthBias);
