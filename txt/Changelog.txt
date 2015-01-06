@@ -85,7 +85,7 @@ VP 10.0.0 Changelog
 
 - internal DMD (access via script, input levels are 0..100)
   to display the DMD, use a TextBox with the magic keyword "DMD" as text
-  to be able to connect to VPM, use a recent VPM and also core.vbs and follow the instructions there
+  to be able to connect to VPM, use a recent VPM (2.6 or newer) and also core.vbs (3.44 or newer) and follow the instructions there
 - DMDWidth, DMDHeight, DMDPixels added to Table Script methods
 
 - improved smoothness for ramps (centripetal Catmull-Rom splines)
