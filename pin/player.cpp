@@ -2,8 +2,8 @@
 #include <algorithm>
 #include "../meshes/ballMesh.h"
 #include "BallShader.h"
-// touch defines, delete as soon as we can get rid of old compilers and use new ones that have these natively
 
+// touch defines, delete as soon as we can get rid of old compilers and use new ones that have these natively
 //#define TEST_TOUCH_WITH_MOUSE
 #ifdef TEST_TOUCH_WITH_MOUSE
  #define WM_POINTERDOWN WM_LBUTTONDOWN
@@ -112,8 +112,6 @@ static const float quadVerts[4*5] =
 
 //
 
-#include "..\stereo3D.h"
-
 #define RECOMPUTEBUTTONCHECK WM_USER+100
 #define RESIZE_FROM_EXPAND WM_USER+101
 
@@ -125,7 +123,6 @@ INT_PTR CALLBACK DebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
 {
-	bool SSE2_supported;
 	{
 	int regs[4];
 	__cpuid(regs,1);
@@ -135,8 +132,7 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
 		exit(0);
 	}
 	// disable denormalized floating point numbers, can be faster on some CPUs (and VP doesn't need to rely on denormals)
-	SSE2_supported = ((regs[3] & 0x004000000) != 0);
-	if(SSE2_supported) // SSE2?
+	if((regs[3] & 0x004000000) != 0) // SSE2?
 		_mm_setcsr(_mm_getcsr() | 0x8040); // flush denorms to zero and also treat incoming denorms as zeros
 	else
 		_MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON); // only flush denorms to zero
@@ -297,7 +293,7 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
 	m_dmdy = 0;
 	m_texdmd = NULL;
 	m_device_texdmd = NULL;
-    backdropSettingActive=0;
+    backdropSettingActive = 0;
 }
 
 Player::~Player()
@@ -870,7 +866,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 
 	int vsync = (m_ptable->m_TableAdaptiveVSync == -1) ? m_fVSync : m_ptable->m_TableAdaptiveVSync;
 
-    const bool useAA = false; /* TODO: disabled until flickering fixed */ // (m_fAA && (m_ptable->m_useAA == -1)) || (m_ptable->m_useAA == 1);
+    const bool useAA = (m_fAA && (m_ptable->m_useAA == -1)) || (m_ptable->m_useAA == 1);
     const bool stereo3DFXAA = (!!m_fStereo3D) || ((m_fFXAA && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA > 0));
 
 	// width, height, and colordepth are only defined if fullscreen is true.
@@ -2338,83 +2334,138 @@ void Player::CheckAndUpdateRegions()
 
 void Player::FlipVideoBuffersNormal( const bool vsync )
 {
+	const bool useAA = (m_fAA && (m_ptable->m_useAA == -1)) || (m_ptable->m_useAA == 1);
+
+	// switch to 'real' output buffer
+	m_pin3d.m_pd3dDevice->SetRenderTarget(m_pin3d.m_pd3dDevice->GetOutputBackBuffer());
+
+	// copy framebuffer over from texture and tonemap/gamma
+    float shiftedVerts[4*5] =
+	{
+	  1.0f, 1.0f,0.0f,1.0f+(float)(1.0/(double)m_width),0.0f+(float)(1.0/(double)m_height),
+	 -1.0f, 1.0f,0.0f,0.0f+(float)(1.0/(double)m_width),0.0f+(float)(1.0/(double)m_height),
+	  1.0f,-1.0f,0.0f,1.0f+(float)(1.0/(double)m_width),1.0f+(float)(1.0/(double)m_height),
+	 -1.0f,-1.0f,0.0f,0.0f+(float)(1.0/(double)m_width),1.0f+(float)(1.0/(double)m_height)
+	};
+
+	m_pin3d.m_pd3dDevice->BeginScene();
+
+    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
+    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
+    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, FALSE);
+
+	m_pin3d.m_pd3dDevice->SetVertexDeclaration( m_pin3d.m_pd3dDevice->m_pVertexTexelDeclaration );
+
+	m_pin3d.m_pd3dDevice->basicShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetBackBufferTexture());
+	const D3DXVECTOR4 fb_inv_resolution_05((float)(0.5/(double)m_width),(float)(0.5/(double)m_height),1.0f,1.0f);
+	m_pin3d.m_pd3dDevice->basicShader->Core()->SetVector("fb_inv_resolution_05", &fb_inv_resolution_05);
+    m_pin3d.m_pd3dDevice->basicShader->Core()->SetTechnique(useAA ? "fb_tonemap" : "fb_tonemap_no_filter");
+
+	m_pin3d.m_pd3dDevice->basicShader->Begin(0);
+    m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_TEX, (LPVOID)shiftedVerts, 4);
+    m_pin3d.m_pd3dDevice->basicShader->End();
+	
+	m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, TRUE);
+	m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+
+	m_pin3d.m_pd3dDevice->EndScene();
+
+	// display frame
     m_pin3d.Flip(vsync);
+
+	// switch to texture output buffer again
+	m_pin3d.m_pd3dDevice->SetRenderTarget(m_pin3d.m_pd3dDevice->GetBackBuffer());
 }
 
-void Player::FlipVideoBuffers3DFXAA( const bool vsync ) //!! SMAA, luma sharpen, dither
+void Player::FlipVideoBuffers3DAOFXAA( const bool vsync ) //!! SMAA, luma sharpen, dither
 {
+	const bool AO = false;
+	const bool useAA = (m_fAA && (m_ptable->m_useAA == -1)) || (m_ptable->m_useAA == 1);
+
+	// switch to 'real' output buffer
+	m_pin3d.m_pd3dDevice->SetRenderTarget(m_pin3d.m_pd3dDevice->GetOutputBackBuffer());
+	
+	//
 	const bool stereo = ((m_fStereo3D != 0) && m_fStereo3Denabled);
 	const bool FXAA1 = (((m_fFXAA == 1) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == 1));
 
-	m_pin3d.m_pd3dDevice->CreatePixelShader( stereo ? stereo3Dshader : (FXAA1 ? FXAAshader1 : FXAAshader2) );
-
-	m_pin3d.m_pd3dDevice->CopySurface(m_pin3d.m_pdds3DBackBuffer, m_pin3d.m_pddsBackBuffer);
-	if(stereo)
+	if(stereo || AO)
 		m_pin3d.m_pd3dDevice->CopyDepth(m_pin3d.m_pdds3DZBuffer, m_pin3d.m_pddsZBuffer);
 
     m_pin3d.m_pd3dDevice->BeginScene();
 
-	m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
+    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
     m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
     m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, FALSE);
 
-	m_pin3d.m_pd3dDevice->SetTexture(0,m_pin3d.m_pdds3DBackBuffer);
-	m_pin3d.m_pd3dDevice->SetTextureFilter(0, TEXTURE_MODE_BILINEAR);
-    m_pin3d.m_pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP);
-	if(stereo)
+	m_pin3d.m_pd3dDevice->SetVertexDeclaration( m_pin3d.m_pd3dDevice->m_pVertexTexelDeclaration );
+
+	m_pin3d.m_pd3dDevice->basicShader->SetTexture("Texture0", AO ? m_pin3d.m_pddsAOBackBuffer : m_pin3d.m_pd3dDevice->GetBackBufferTexture());
+	if(stereo || AO)
+		m_pin3d.m_pd3dDevice->basicShader->SetTexture("Texture3", m_pin3d.m_pdds3DZBuffer);
+
+	D3DXVECTOR4 w_h_height;
+	if(!(stereo || AO))
 	{
-		m_pin3d.m_pd3dDevice->SetTexture(1,m_pin3d.m_pdds3DZBuffer);
-		m_pin3d.m_pd3dDevice->SetTextureFilter(1, TEXTURE_MODE_POINT); //!! TEXTURE_MODE_BILINEAR?
-	    m_pin3d.m_pd3dDevice->SetTextureAddressMode(1, RenderDevice::TEX_CLAMP);
-	}
-
-	Matrix3D matWorld, matView, matProj;
-	m_pin3d.m_pd3dDevice->GetTransform( TRANSFORMSTATE_WORLD,      &matWorld );
-	m_pin3d.m_pd3dDevice->GetTransform( TRANSFORMSTATE_VIEW,       &matView );
-	m_pin3d.m_pd3dDevice->GetTransform( TRANSFORMSTATE_PROJECTION, &matProj );
-
-	Matrix3D ident;
-	ident.SetIdentity();
-	m_pin3d.m_pd3dDevice->SetTransform( TRANSFORMSTATE_WORLD,      &ident );
-	m_pin3d.m_pd3dDevice->SetTransform( TRANSFORMSTATE_VIEW,       &ident );
-	m_pin3d.m_pd3dDevice->SetTransform( TRANSFORMSTATE_PROJECTION, &ident );
-
-	//m_pin3d.m_pd3dDevice->SetPixelShader();
-	if(!stereo)
-	{
-		const float temp[4] = {(float)(1.0/(double)m_width), (float)(1.0/(double)m_height), 0.f, 0.f};
-		m_pin3d.m_pd3dDevice->SetPixelShaderConstants(temp,1);
+		w_h_height = D3DXVECTOR4((float)(1.0/(double)m_width), (float)(1.0/(double)m_height), 0.f, 0.f);
 	}
 	else
 	{
-		const float temp[8] = {m_ptable->GetMaxSeparation(), m_ptable->GetZPD(), m_fStereo3DY ? 1.0f : 0.0f, (m_fStereo3D == 1) ? 1.0f : 0.0f,
-						       (float)(1.0/(double)m_width), (float)(1.0/(double)m_height), (float)m_height, m_fStereo3DAA ? 1.0f : 0.0f /*1.0f+(float)(usec()&0x1FF)*(float)(1.0/0x1FF)*/}; //!!
-		m_pin3d.m_pd3dDevice->SetPixelShaderConstants(temp,2);
+		const D3DXVECTOR4 ms_zpd_ya_td(m_ptable->GetMaxSeparation(), m_ptable->GetZPD(), m_fStereo3DY ? 1.0f : 0.0f, (m_fStereo3D == 1) ? 1.0f : 0.0f);
+		m_pin3d.m_pd3dDevice->basicShader->Core()->SetVector("ms_zpd_ya_td", &ms_zpd_ya_td);
+		w_h_height = D3DXVECTOR4((float)(1.0/(double)m_width), (float)(1.0/(double)m_height), (float)m_height, !AO ? (m_fStereo3DAA ? 1.0f : 0.0f) : (1.0f+(float)(usec()&0x1FF)*(float)(1.0/0x1FF)));
 	}
-    m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_TEX, (LPVOID)quadVerts, 4);
-	
-	m_pin3d.m_pd3dDevice->SetTransform( TRANSFORMSTATE_WORLD,      &matWorld );
-	m_pin3d.m_pd3dDevice->SetTransform( TRANSFORMSTATE_VIEW,       &matView );
-	m_pin3d.m_pd3dDevice->SetTransform( TRANSFORMSTATE_PROJECTION, &matProj );
+	m_pin3d.m_pd3dDevice->basicShader->Core()->SetVector("w_h_height", &w_h_height);
+    
+	m_pin3d.m_pd3dDevice->basicShader->Core()->SetTechnique(stereo ? "stereo" : (AO ? "AO" : (FXAA1 ? "FXAA1" : "FXAA2")));
 
-	m_pin3d.m_pd3dDevice->SetTexture(0,NULL);
-	m_pin3d.m_pd3dDevice->SetTextureFilter(0, TEXTURE_MODE_TRILINEAR);
-	if(stereo)
+	m_pin3d.m_pd3dDevice->basicShader->Begin(0);
+    m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_TEX, (LPVOID)quadVerts, 4);
+    m_pin3d.m_pd3dDevice->basicShader->End();
+	
+	//
+
+	if(AO)
 	{
-		m_pin3d.m_pd3dDevice->SetTexture(1,NULL);
-		m_pin3d.m_pd3dDevice->SetTextureFilter(1, TEXTURE_MODE_TRILINEAR);
+		m_pin3d.m_pd3dDevice->CopySurface(m_pin3d.m_pddsAOBackBuffer, m_pin3d.m_pd3dDevice->GetOutputBackBuffer());
+
+		//
+
+		float shiftedVerts[4*5] =
+		{
+		  1.0f, 1.0f,0.0f,1.0f+(float)(1.0/(double)m_width),0.0f+(float)(1.0/(double)m_height),
+		 -1.0f, 1.0f,0.0f,0.0f+(float)(1.0/(double)m_width),0.0f+(float)(1.0/(double)m_height),
+		  1.0f,-1.0f,0.0f,1.0f+(float)(1.0/(double)m_width),1.0f+(float)(1.0/(double)m_height),
+		 -1.0f,-1.0f,0.0f,0.0f+(float)(1.0/(double)m_width),1.0f+(float)(1.0/(double)m_height)
+		};
+
+		m_pin3d.m_pd3dDevice->basicShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetBackBufferTexture());
+		m_pin3d.m_pd3dDevice->basicShader->SetTexture("Texture3", m_pin3d.m_pddsAOBackBuffer);
+		const D3DXVECTOR4 fb_inv_resolution_05((float)(0.5/(double)m_width),(float)(0.5/(double)m_height),1.0f,1.0f);
+		m_pin3d.m_pd3dDevice->basicShader->Core()->SetVector("fb_inv_resolution_05", &fb_inv_resolution_05);
+		m_pin3d.m_pd3dDevice->basicShader->Core()->SetTechnique(useAA ? "fb_tonemap_AO" : "fb_tonemap_AO_no_filter");
+		m_pin3d.m_pd3dDevice->basicShader->Begin(0);
+		m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_TEX, (LPVOID)shiftedVerts, 4);
+		m_pin3d.m_pd3dDevice->basicShader->End();
 	}
+
+	//
 
 	m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, TRUE);
-    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 	m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 
 	m_pin3d.m_pd3dDevice->EndScene();
 
+	// display frame
 	m_pin3d.m_pd3dDevice->Flip(vsync);
+
+	// switch to texture output buffer again
+	m_pin3d.m_pd3dDevice->SetRenderTarget(m_pin3d.m_pd3dDevice->GetBackBuffer());
 }
 
-void Player::UpdateBackdropSettings(bool up)
+void Player::UpdateBackdropSettings(const bool up)
 {
     const float thesign = !up ? -1.0f : 1.0f;
 
@@ -2602,14 +2653,10 @@ void Player::Render()
     }
 
 
-    if((((m_fStereo3D == 0) || !m_fStereo3Denabled) && (!((m_fFXAA && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA > 0)))) || (m_ptable->GetMaxSeparation() <= 0.0f) || (m_ptable->GetMaxSeparation() >= 1.0f) || (m_ptable->GetZPD() <= 0.0f) || (m_ptable->GetZPD() >= 1.0f) || !m_pin3d.m_pdds3DBackBuffer || !m_pin3d.m_pdds3DZBuffer)
-    {
+    if((((m_fStereo3D == 0) || !m_fStereo3Denabled) && (!((m_fFXAA && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA > 0)))) || (m_ptable->GetMaxSeparation() <= 0.0f) || (m_ptable->GetMaxSeparation() >= 1.0f) || (m_ptable->GetZPD() <= 0.0f) || (m_ptable->GetZPD() >= 1.0f) || !m_pin3d.m_pdds3DZBuffer)
         FlipVideoBuffersNormal( vsync );
-    }
     else
-    {
-        FlipVideoBuffers3DFXAA( vsync );
-    }
+        FlipVideoBuffers3DAOFXAA( vsync );
 
 #ifndef ACCURATETIMERS
     m_pactiveball = NULL;  // No ball is the active ball for timers/key events
@@ -3838,4 +3885,3 @@ float Player::ParseLog(LARGE_INTEGER *pli1, LARGE_INTEGER *pli2)
 }
 
 #endif
-

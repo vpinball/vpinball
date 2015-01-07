@@ -1,16 +1,21 @@
 VP 10.0.0 Changelog
 ------------------------
 
-- this release breaks a lot of backwards compatibility for ramps, lights, physics, colors/images/materials, and more, so
-  most existing VP9 and VP8 tables will not work correctly or will output script errors when run (but they will load)
+- the next generation of Visual Pinball finally arrives!
+  due to this, VP10 breaks a lot of backwards compatibility for ramps, lights, physics, colors/images/materials, and more, so
+  most existing VP9 and VP8 tables will not work correctly or will even output script errors when run, -but they will load-, so you can reuse all existing work!
 
   -> TL.DR up-front conversion hints:
-     - pull lightsources->ambient down to 0,0,0 (otherwise table will look 'hazy')
-     - crank up lightsources->emission to 255,255,255 (to get a good contrast on the shading)
+     - pull lightsource->ambient down to 0,0,0 (otherwise table will look 'hazy')
+     - crank up lightsource->emission to 255,255,255 and tweak the color from there (to get a good contrast on the shading)
+     - tweak the lightsource->height and the two emission-scales
      - revisit all physics settings, even if you used VP9Physmod(5) before (only the re-enabled friction and scatter in the physmod5 case though)
-     - assign a material to each object on the table
+     - take a look into the new material editor and assign a material to each object on the table
      - use flashers when doing special lighting effects/night mods, otherwise try to stick with the newly redone light elements
      - revisit CommandReference.txt for all commands that have changed names/behavior, were replaced or deleted
+
+
+- a special thanks has to go out to our awesome alpha testers/improvers: Unclewilly, JPSalas and JimmyFingers!
 
 
 - physics mostly redone (also previously known as 'physmod(5)')
@@ -26,14 +31,17 @@ VP 10.0.0 Changelog
 
   -> the data-format of the physics sets (*.vpp files) is basically the same, although the parameters inside are different, so unfortunately you need to set them up from scratch again
   
-- New Camera Mode added to the Table menu. This mode starts the player in a special mode where you can change backdrop settings with the following keys:
+- new Camera Mode added to the Table menu. This mode starts the player in a special mode where you can change backdrop settings with the following keys:
      left flipper key = decrease value
      right flipper key = increase value
      left magna save key = previous backdrop option
      right magna save key = next backdrop option
 
-- Table field height setting in the "Dimension & Slope Settings" you can define the playfield height. If this value is raised all elements on the table
-  are also moved by that amount. For example: "table field height"=50 means everything on the table is raised by 50 units.
+- new table field height setting in the "Dimension & Slope Settings":
+  Now you can define a real playfield height. If this value is raised, all elements on the table are also moved by that amount.
+  For example: "table field height"=50 means everything on the table is raised by 50 units. This allows for real ball tunnels and more.
+
+- new rubber element
 
 - spinners are mesh based. If the spinner bracket isn't the right one disable the "Show Bracket" settings and you will only see the spinner plate.
   
@@ -66,38 +74,39 @@ VP 10.0.0 Changelog
        you can tweak the edge brightness parameter: Usually it should just be left at 1, but if you think the edges are unnaturally bright, reduce it
 
   -> pro tip:
-     - In nature, each object has a bit of glossy, so try to -never- set the glossy to full black on non-metal materials!
+     - In nature, each object has a bit of glossy, so try to -never- set the glossy layer to full black on non-metal materials!
 
 - assign sound-,image-,material- and collection-manager to hot keys (F2,F3,F4 and F8)
 
-- add rubber element
-
 - new shader based inserts/lights/bulbs
 - new shader based mesh ball
-- new shader based materials/lighting
-  
+- new shader based materials/lighting (full HDR pipeline)
+
   -> due to the new lighting and materials the orientation of vertex normals on imported primitives is now extremely important!
      to test if everything is correct, try to tone down the environment emission scale and see if your objects are correctly lit from above
 
+  -> always try to tweak the two lighting components (some lightsources above the table plus an environment light surrounding the table) separately
+     by setting one emission scale to 0 and then configuring the other one on its own
+
 - images/textures transparency is now -only- based on the alpha channel of the loaded images, no transparency color/hack support anymore
 
-- EM Reels do not feature Text/Font input anymore, only Images (this was already unsupported in 9.9.X, but now officially discarded)
+- EM Reels do not feature raw Text/Font input anymore, only Images (this was already unsupported in 9.9.X, but is now officially discarded)
 
-- internal DMD (access via script, input levels are 0..100)
+- internal DMD support (access via script, input levels are 0..100)
   to display the DMD, use a TextBox with the magic keyword "DMD" as text
   to be able to connect to VPM, use a recent VPM (2.6 or newer) and also core.vbs (3.44 or newer) and follow the instructions there
-- DMDWidth, DMDHeight, DMDPixels added to Table Script methods
+- DMDWidth, DMDHeight, DMDPixels to steer the DMD added to Table Script methods
 
 - improved smoothness for ramps (centripetal Catmull-Rom splines)
-- changed opacity/transparency handling for ramps (Alpha/Acrylic have been deleted, so use the material opacity value now)
+- changed opacity/transparency handling for ramps (Alpha/Acrylic have been deleted, only the material opacity value is supported now)
 
 - GetElement, GetElementByName, GetBalls added to Table Script methods to have simple access to the elements and all active balls on the table
 - renaming of IsVisible properties (flasher, ramp) to Visible
 
-- Flasher supports custom shapes and multi texturing. You can define two separate images and define a filter to blend these two images.
+- flasher supports custom shapes and multi texturing. You can define two separate images and define a filter to blend these two images.
   look into the CommandReference.txt for additional changes to the functions that can be used
 
-- Remove old shadowing code
+- remove old shadowing code and replace it with optional screen space ambient occlusion (via the global video preferences and also the table options)
 
 - support primitive vertex sizes > 65535
 

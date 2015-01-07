@@ -256,7 +256,7 @@ FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     CONTROL         "Enable Fast FXAA",IDC_FFXAA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,165,90,10
     CONTROL         "Enable Quality FXAA",IDC_QFXAA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,175,90,10
-    CONTROL         "Enable 4xAntiAliasing",IDC_AA_ALL_TABLES,"Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,14,185,126,10
+    CONTROL         "Enable 4xAntiAliasing",IDC_AA_ALL_TABLES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,185,126,10
     CONTROL         "Stretch Ball with Table",IDC_StretchNo,"Button",BS_AUTORADIOBUTTON | WS_GROUP,16,212,83,10
     CONTROL         "Don't stretch the Ball",IDC_StretchYes,"Button",BS_AUTORADIOBUTTON,16,222,81,10
     CONTROL         "At Full Screen anti-stretch the Ball",IDC_StretchMonitor,
@@ -1231,8 +1231,8 @@ STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     COMBOBOX        DISPID_Image,7,41,110,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "AntiAliasing",IDC_STATIC,7,56,35,8
-    EDITTEXT        IDC_ENABLE_AA,47,54,20,12,ES_AUTOHSCROLL | WS_DISABLED
+    LTEXT           "AntiAliasing",IDC_STATIC,7,56,38,8
+    EDITTEXT        IDC_ENABLE_AA,47,54,20,12,ES_AUTOHSCROLL
     LTEXT           "FXAA",IDC_STATIC,80,56,19,8
     EDITTEXT        IDC_ENABLE_FXAA,101,54,20,12,ES_AUTOHSCROLL
     CONTROL         "Render Shadows",9,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,71,71,10

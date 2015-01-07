@@ -94,7 +94,8 @@ public:
 	RenderDevice* m_pd3dDevice;
 	RenderTarget* m_pddsBackBuffer;
 
-	D3DTexture* m_pdds3DBackBuffer;
+	D3DTexture* m_pddsAOBackBuffer;
+
 	D3DTexture* m_pdds3DZBuffer;
 
 	RenderTarget* m_pddsZBuffer;
