@@ -357,12 +357,6 @@ void Surface::RenderBlueprint(Sur *psur)
       delete vvertex.ElementAt(i);
 }
 
-/*void Surface::RenderShadow(ShadowSur * const psur, const float height)
-{
-   if ( (!m_d.m_fCastsShadow) || (!m_ptable->m_fRenderShadows) )
-      return;
-}*/
-
 void Surface::GetTimers(Vector<HitTimer> * const pvht)
 {
    IEditable::BeginPlay();
@@ -630,8 +624,8 @@ void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
       rgnormal[i].y = dx*inv_len;
    }
 
-   pd3dDevice->CreateVertexBuffer( numVertices*4, 0, MY_D3DFVF_VERTEX, &sideVBuffer );
-   Vertex3D *verts;
+   pd3dDevice->CreateVertexBuffer( numVertices*4, 0, MY_D3DFVF_NOTEX2_VERTEX, &sideVBuffer );
+   Vertex3D_NoTex2 *verts;
    sideVBuffer->lock( 0, 0, (void**)&verts, VertexBuffer::WRITEONLY);
 
    int offset=0;
@@ -701,8 +695,6 @@ void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
    }
    delete[] rgnormal;
 
-   ppin3d->CalcShadowCoordinates(verts,numVertices);
-
    sideVBuffer->unlock();
 
    // prepare index buffer for sides
@@ -756,11 +748,11 @@ void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
 
       if( topVBuffer )
          topVBuffer->release();
-      pd3dDevice->CreateVertexBuffer( 2*numPolys*3, 0, MY_D3DFVF_VERTEX, &topVBuffer );
+      pd3dDevice->CreateVertexBuffer( 2*numPolys*3, 0, MY_D3DFVF_NOTEX2_VERTEX, &topVBuffer );
 
-	  Vertex3D *buf;
+	  Vertex3D_NoTex2 *buf;
       topVBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
-      Vertex3D * vertsTop[2];
+      Vertex3D_NoTex2 * vertsTop[2];
 	  vertsTop[0] = buf;
 	  vertsTop[1] = buf + 3*numPolys;
 
@@ -785,7 +777,7 @@ void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
             vertsTop[0][offset+2].tu = vertsTop[0][offset+2].x *inv_tablewidth;
             vertsTop[0][offset+2].tv = vertsTop[0][offset+2].y *inv_tableheight;
 
-            memcpy( &vertsTop[1][offset], &vertsTop[0][offset], sizeof(Vertex3D)*3 );
+            memcpy( &vertsTop[1][offset], &vertsTop[0][offset], sizeof(Vertex3D_NoTex2)*3 );
             vertsTop[1][offset].z = heightDropped;
             vertsTop[1][offset+1].z = heightDropped;
             vertsTop[1][offset+2].z = heightDropped;
@@ -802,9 +794,6 @@ void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
          }
          delete vtri.ElementAt(i);
       }
-
-	  ppin3d->CalcShadowCoordinates(vertsTop[0],numPolys*3);
-	  ppin3d->CalcShadowCoordinates(vertsTop[1],numPolys*3);
 
 	  topVBuffer->unlock();
    }
@@ -830,7 +819,7 @@ void Surface::PrepareSlingshots( RenderDevice *pd3dDevice )
    const float slingbottom = (m_d.m_heighttop - m_d.m_heightbottom) * 0.2f + m_d.m_heightbottom;
    const float slingtop    = (m_d.m_heighttop - m_d.m_heightbottom) * 0.8f + m_d.m_heightbottom;
 
-   Vertex3D *buf;
+   Vertex3D_NoTex2 *buf;
    slingshotVBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY);
    int offset=0;
    for (unsigned i=0; i<m_vlinesling.size(); i++)
@@ -838,7 +827,7 @@ void Surface::PrepareSlingshots( RenderDevice *pd3dDevice )
       LineSegSlingshot * const plinesling = m_vlinesling[i];
       plinesling->m_slingshotanim.m_fAnimations = (m_d.m_fSlingshotAnimation != 0);
 
-      Vertex3D rgv3D[12];
+      Vertex3D_NoTex2 rgv3D[12];
       rgv3D[0].x = plinesling->v1.x;
       rgv3D[0].y = plinesling->v1.y;
       rgv3D[0].z = slingbottom+m_ptable->m_tableheight;
@@ -865,8 +854,6 @@ void Surface::PrepareSlingshots( RenderDevice *pd3dDevice )
          rgv3D[l+6].z = rgv3D[l].z;
       }
 
-      ppin3d->CalcShadowCoordinates(rgv3D,12);
-      
       SetNormal(rgv3D, rgiSlingshot0, 4);
       buf[offset++] = rgv3D[rgiSlingshot0[0]];
       buf[offset++] = rgv3D[rgiSlingshot0[1]];
@@ -912,15 +899,15 @@ void Surface::PrepareSlingshots( RenderDevice *pd3dDevice )
 
 void Surface::RenderSetup(RenderDevice* pd3dDevice)
 {
-   float oldBottomHeight = m_d.m_heightbottom;
-   float oldTopHeight = m_d.m_heighttop;
+   const float oldBottomHeight = m_d.m_heightbottom;
+   const float oldTopHeight = m_d.m_heighttop;
 
    m_d.m_heightbottom *= m_ptable->m_zScale;
    m_d.m_heighttop *= m_ptable->m_zScale;
    if( !m_vlinesling.empty() )
    {
       if( !slingshotVBuffer )
-         pd3dDevice->CreateVertexBuffer(m_vlinesling.size()*24, 0, MY_D3DFVF_VERTEX, &slingshotVBuffer);
+         pd3dDevice->CreateVertexBuffer(m_vlinesling.size()*24, 0, MY_D3DFVF_NOTEX2_VERTEX, &slingshotVBuffer);
 
       PrepareSlingshots(pd3dDevice);
    }

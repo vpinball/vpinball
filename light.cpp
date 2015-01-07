@@ -598,11 +598,11 @@ void Light::PrepareMoversCustom()
    }
 
    customMoverVertexNum = vtri.Size()*3;
-   Vertex3D *customMoverVertex = new Vertex3D[customMoverVertexNum];
+   Vertex3D_NoTex2 *customMoverVertex = new Vertex3D_NoTex2[customMoverVertexNum];
 
    if ( customMoverVBuffer==NULL )
    {
-      DWORD vertexType = (!m_fBackglass) ? MY_D3DFVF_VERTEX : MY_D3DTRANSFORMED_VERTEX;
+      DWORD vertexType = (!m_fBackglass) ? MY_D3DFVF_NOTEX2_VERTEX : MY_D3DTRANSFORMED_NOTEX2_VERTEX;
       g_pplayer->m_pin3d.m_pd3dDevice->CreateVertexBuffer( customMoverVertexNum, 0, vertexType, &customMoverVBuffer);
    }
 
@@ -631,9 +631,6 @@ void Light::PrepareMoversCustom()
 
 	   for (int l=0;l<3;l++)
 	   {
-		   if (!m_fBackglass)
-			   ppin3d->CalcShadowCoordinates(&customMoverVertex[k+l],1);
-
 		   // Check if we are using a custom texture.
 		   if (pin != NULL)
 		   {
@@ -654,9 +651,9 @@ void Light::PrepareMoversCustom()
 		   SetHUDVertices(&customMoverVertex[k], 3);
    }
 
-   Vertex3D *buf;
+   Vertex3D_NoTex2 *buf;
    customMoverVBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY);
-   memcpy( buf, customMoverVertex, customMoverVertexNum*sizeof(Vertex3D));
+   memcpy( buf, customMoverVertex, customMoverVertexNum*sizeof(Vertex3D_NoTex2));
    customMoverVBuffer->unlock();
 
    delete [] customMoverVertex;

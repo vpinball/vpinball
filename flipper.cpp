@@ -603,7 +603,7 @@ void Flipper::RenderSetup(RenderDevice* pd3dDevice)
 
     if (!vertexBuffer)
     {
-        pd3dDevice->CreateVertexBuffer(numVertices, 0, MY_D3DFVF_VERTEX, &vertexBuffer);
+        pd3dDevice->CreateVertexBuffer(numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer);
     }
 
     unsigned long ofs=0;
@@ -649,7 +649,7 @@ void Flipper::RenderSetup(RenderDevice* pd3dDevice)
         indexBuffer->release();
     indexBuffer = pd3dDevice->CreateAndFillIndexBuffer(numIndices, idx);
 
-    Vertex3D *buf;
+    Vertex3D_NoTex2 *buf;
     vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
 
     // Render just the flipper (in standard position, angle=0)
@@ -672,7 +672,7 @@ static const WORD rgiFlipper1[4] = {0,4,5,1};
 static const WORD rgiFlipper2[4] = {2,6,7,3};
 
 void Flipper::RenderAtThickness(RenderDevice* pd3dDevice, float angle, float height,
-                                float baseradius, float endradius, float flipperheight, Vertex3D* buf)
+                                float baseradius, float endradius, float flipperheight, Vertex3D_NoTex2* buf)
 {
     Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
@@ -680,7 +680,7 @@ void Flipper::RenderAtThickness(RenderDevice* pd3dDevice, float angle, float hei
     Vertex2D rgv[4];
     SetVertices(0.0f, 0.0f, angle, &vendcenter, rgv, baseradius, endradius);
 
-    Vertex3D rgv3D[32];
+    Vertex3D_NoTex2 rgv3D[32];
     for (int l=0;l<8;l++)
     {
         rgv3D[l].x = rgv[l&3].x;
@@ -688,25 +688,24 @@ void Flipper::RenderAtThickness(RenderDevice* pd3dDevice, float angle, float hei
         rgv3D[l].z = (l<4) ? height + flipperheight + 0.1f : height; // Make flippers a bit taller so they draw above walls
         rgv3D[l].z *= m_ptable->m_zScale;
     }
-    ppin3d->CalcShadowCoordinates(rgv3D,8);
 
     unsigned long offset = 0;
 
-    SetNormal<Vertex3D,WORD>(rgv3D, rgi0123, 3, NULL, NULL, 4);
+    SetNormal<Vertex3D_NoTex2,WORD>(rgv3D, rgi0123, 3, NULL, NULL, 4);
     // Draw top.
     buf[offset    ] = rgv3D[0];
     buf[offset + 1] = rgv3D[1];
     buf[offset + 2] = rgv3D[2];
     buf[offset + 3] = rgv3D[3];
     offset+=4;
-    SetNormal<Vertex3D,WORD>(rgv3D, rgiFlipper1, 3, NULL, NULL, 4);
+    SetNormal<Vertex3D_NoTex2,WORD>(rgv3D, rgiFlipper1, 3, NULL, NULL, 4);
     // Draw front side wall.
     buf[offset    ] = rgv3D[0];
     buf[offset + 1] = rgv3D[4];
     buf[offset + 2] = rgv3D[5];
     buf[offset + 3] = rgv3D[1];
     offset+=4;
-    SetNormal<Vertex3D,WORD>(rgv3D, rgiFlipper2, 3, NULL, NULL, 4);
+    SetNormal<Vertex3D_NoTex2,WORD>(rgv3D, rgiFlipper2, 3, NULL, NULL, 4);
     // Draw back side wall.
     buf[offset    ] = rgv3D[2];
     buf[offset + 1] = rgv3D[6];
@@ -729,7 +728,6 @@ void Flipper::RenderAtThickness(RenderDevice* pd3dDevice, float angle, float hei
         rgv3D[l+16].z = height;
         rgv3D[l+16].z *= m_ptable->m_zScale;
     }
-    ppin3d->CalcShadowCoordinates(rgv3D,32);
 
     // Draw end caps of cylinders of large ends.
     WORD endCapsIndex[3*14];
@@ -740,7 +738,7 @@ void Flipper::RenderAtThickness(RenderDevice* pd3dDevice, float angle, float hei
         endCapsIndex[l*3+2] = l+2;
         SetNormal(rgv3D, endCapsIndex+l*3, 3);
     }
-    memcpy( &buf[offset], rgv3D, sizeof(Vertex3D)*16 );
+    memcpy( &buf[offset], rgv3D, sizeof(Vertex3D_NoTex2)*16 );
     offset += 16;
 
     // offset = 28
@@ -754,8 +752,8 @@ void Flipper::RenderAtThickness(RenderDevice* pd3dDevice, float angle, float hei
         rgv3D[l].ny = rgv3D[l+16].ny = -cosf(anglel);
         rgv3D[l].nz = rgv3D[l+16].nz = 0.0f;
 
-        memcpy( &buf[offset], &rgv3D[l], sizeof(Vertex3D));
-        memcpy( &buf[offset+1], &rgv3D[l+16], sizeof(Vertex3D));
+        memcpy( &buf[offset], &rgv3D[l], sizeof(Vertex3D_NoTex2));
+        memcpy( &buf[offset+1], &rgv3D[l+16], sizeof(Vertex3D_NoTex2));
         offset += 2;
     }
 
@@ -774,14 +772,13 @@ void Flipper::RenderAtThickness(RenderDevice* pd3dDevice, float angle, float hei
         rgv3D[l+16].z = height;
         rgv3D[l+16].z *= m_ptable->m_zScale;
     }
-    ppin3d->CalcShadowCoordinates(rgv3D,32);
 
     // Draw end caps to vertical cylinder at small end.
     for (int l=0;l<14;l++)
     {
         SetNormal(rgv3D, endCapsIndex+l*3, 3);
     }
-    memcpy( &buf[offset], rgv3D, sizeof(Vertex3D)*16 );
+    memcpy( &buf[offset], rgv3D, sizeof(Vertex3D_NoTex2)*16 );
     offset += 16;
 
     // offset = 76
@@ -794,8 +791,8 @@ void Flipper::RenderAtThickness(RenderDevice* pd3dDevice, float angle, float hei
         rgv3D[l].ny = rgv3D[l+16].ny = -cosf(anglel);
         rgv3D[l].nz = rgv3D[l+16].nz = 0.0f;
 
-        memcpy( &buf[offset], &rgv3D[l], sizeof(Vertex3D));
-        memcpy( &buf[offset+1], &rgv3D[l+16], sizeof(Vertex3D));
+        memcpy( &buf[offset], &rgv3D[l], sizeof(Vertex3D_NoTex2));
+        memcpy( &buf[offset+1], &rgv3D[l+16], sizeof(Vertex3D_NoTex2));
         offset += 2;
     }
 

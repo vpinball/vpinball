@@ -40,9 +40,6 @@ static unsigned int fvfToSize(DWORD fvf)
 {
     switch (fvf)
     {
-        case MY_D3DFVF_VERTEX:
-        case MY_D3DTRANSFORMED_VERTEX:
-            return sizeof(Vertex3D);
         case MY_D3DFVF_NOTEX2_VERTEX:
         case MY_D3DTRANSFORMED_NOTEX2_VERTEX:
             return sizeof(Vertex3D_NoTex2);

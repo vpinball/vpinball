@@ -109,32 +109,7 @@ enum SaveDirtyState
 #define MY_D3DFVF_TEX					(D3DFVF_XYZ | D3DFVF_TEX1)
 
 #define MY_D3DFVF_NOTEX2_VERTEX         (D3DFVF_XYZ    | D3DFVF_NORMAL                    | D3DFVF_TEX1)
-#define MY_D3DTRANSFORMED_NOTEX2_VERTEX (D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_SPECULAR | D3DFVF_TEX1)
-
-#define MY_D3DFVF_VERTEX                (D3DFVF_XYZ    | D3DFVF_NORMAL                    | D3DFVF_TEX2)
-#define MY_D3DTRANSFORMED_VERTEX        (D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_SPECULAR | D3DFVF_TEX2)
-
-
-class Vertex3D // for rendering, uses MY_D3DFVF_VERTEX or MY_D3DTRANSFORMED_VERTEX
-{
-public:
-   // Position
-   D3DVALUE x; 
-   D3DVALUE y; 
-   D3DVALUE z;
-
-   // Normals
-   D3DVALUE nx;
-   D3DVALUE ny;
-   D3DVALUE nz;
-
-   // Texture coordinates
-   D3DVALUE tu;
-   D3DVALUE tv;
-
-   D3DVALUE tu2;
-   D3DVALUE tv2;
-};
+#define MY_D3DTRANSFORMED_NOTEX2_VERTEX (D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_SPECULAR | D3DFVF_TEX1) //!! delete
 
 class Vertex3D_TexelOnly // for rendering, uses MY_D3DFVF_NOLIGHTING_VERTEX
 {

@@ -99,8 +99,6 @@ DECLARE_REGISTRY_RESOURCEID(IDR_RUBBER)
 	virtual void GetCenter(Vertex2D * const pv) const {GetPointCenter(pv);}
 	virtual void PutCenter(const Vertex2D * const pv) {PutPointCenter(pv);}
 
-	//virtual void RenderShadow(ShadowSur * const psur, const float height);
-
 	virtual void GetBoundingVertices(Vector<Vertex3Ds> * const pvvertex3D);
 
    virtual float GetDepth(const Vertex3Ds& viewDir);

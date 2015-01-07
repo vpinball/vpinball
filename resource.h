@@ -691,7 +691,6 @@
 #define IDC_ENVEMISSIONSCALE            566
 #define IDC_LIGHTEMISSIONSCALE          567
 #define IDC_TABLESOUNDVOLUME            579
-#define IDC_SHADOW_COLOR                579
 #define IDC_TABLEMUSICVOLUME            580
 #define IDS_VISUALS_SOUND               581
 #define IDC_TABLEAVSYNC                 585
@@ -720,8 +719,6 @@
 #define IDC_EXPORT_PHYSICS_BUTTON       1605
 #define IDC_BALL_REFLECTION             1700
 #define IDC_REFLECTION_EDIT             1701
-#define IDC_SHADOW_X                    1702
-#define IDC_SHADOW_Y                    1703
 #define IDC_BALL_TRAIL                  1704
 #define IDC_TRAIL_EDIT                  1705
 #define IDB_ENV                         1706

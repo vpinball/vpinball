@@ -210,12 +210,6 @@ void Rubber::RenderBlueprint(Sur *psur)
    RenderOutline(psur);
 }
 
-/*void Rubber::RenderShadow(ShadowSur * const psur, const float height)
-{
-   if (!m_d.m_fCastsShadow || !m_ptable->m_fRenderShadows || !m_d.m_fVisible) 
-      return; //skip render if not visible
-}*/
-
 void Rubber::GetBoundingVertices(Vector<Vertex3Ds> * const pvvertex3D)
 {
    int cvertex;

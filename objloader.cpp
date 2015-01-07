@@ -11,7 +11,7 @@ static vector<Vertex3Ds> tmpVerts;
 static vector<Vertex3Ds> tmpNorms;
 static vector<Vertex2D> tmpTexel;
 static vector<MyPoly> tmpFaces;
-static vector<Vertex3D> verts;
+static vector<Vertex3D_NoTex2> verts;
 static vector<int> faces;
 
 static int isInList( const int vi, const int ti, const int ni )
@@ -208,7 +208,7 @@ bool WaveFrontObj_Load(const char *filename, const bool flipTv, const bool conve
       int idx=isInList(tmpFaces[i].vi0, tmpFaces[i].ti0, tmpFaces[i].ni0 );
       if( idx==-1 )
       {
-         Vertex3D tmp;
+         Vertex3D_NoTex2 tmp;
          tmp.x = tmpVerts[tmpFaces[i].vi0].x;
          tmp.y = tmpVerts[tmpFaces[i].vi0].y;
          tmp.z = tmpVerts[tmpFaces[i].vi0].z;
@@ -228,7 +228,7 @@ bool WaveFrontObj_Load(const char *filename, const bool flipTv, const bool conve
       idx=isInList(tmpFaces[i].vi1, tmpFaces[i].ti1, tmpFaces[i].ni1 );
       if( idx==-1 )
       {
-         Vertex3D tmp;
+         Vertex3D_NoTex2 tmp;
          tmp.x = tmpVerts[tmpFaces[i].vi1].x;
          tmp.y = tmpVerts[tmpFaces[i].vi1].y;
          tmp.z = tmpVerts[tmpFaces[i].vi1].z;
@@ -248,7 +248,7 @@ bool WaveFrontObj_Load(const char *filename, const bool flipTv, const bool conve
       idx=isInList(tmpFaces[i].vi2, tmpFaces[i].ti2, tmpFaces[i].ni2 );
       if( idx==-1 )
       {
-         Vertex3D tmp;
+         Vertex3D_NoTex2 tmp;
          tmp.x = tmpVerts[tmpFaces[i].vi2].x;
          tmp.y = tmpVerts[tmpFaces[i].vi2].y;
          tmp.z = tmpVerts[tmpFaces[i].vi2].z;

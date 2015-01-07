@@ -197,7 +197,7 @@ public:
    {
       return x*pv.x + y*pv.y + z*pv.z;
    }
-   inline float Dot(const Vertex3D &pv) const
+   inline float Dot(const Vertex3D_NoTex2 &pv) const
    {
       return x*pv.x + y*pv.y + z*pv.z;
    }
