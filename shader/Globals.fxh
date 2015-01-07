@@ -98,7 +98,7 @@ float3 FBToneMap(float3 color)
     float burnhighlights = 0.25f;
     
     float l = color.x*0.176204f + color.y*0.812985f + color.z*0.0108109f;
-    return color * ((l*burnhighlights + 1.0f) / (l + 1.0f));
+    return saturate(color * ((l*burnhighlights + 1.0f) / (l + 1.0f))); //!! bloom instead?
 }
 
 float3 DoPointLight(float3 pos, float3 N, float3 V, float3 diffuse, float3 glossy, float edge, float glossyPower, int i) 
