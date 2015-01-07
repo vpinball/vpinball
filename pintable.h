@@ -166,6 +166,8 @@ public:
 	STDMETHOD(put_Name)(/*[in]*/ BSTR newVal);
     STDMETHOD(get_EnableAntialiasing)(/*[out, retval]*/ int *pVal);
     STDMETHOD(put_EnableAntialiasing)(/*[in]*/ int newVal);
+    STDMETHOD(get_EnableAO)(/*[out, retval]*/ int *pVal);
+    STDMETHOD(put_EnableAO)(/*[in]*/ int newVal);
     STDMETHOD(get_EnableFXAA)(/*[out, retval]*/ int *pVal);
     STDMETHOD(put_EnableFXAA)(/*[in]*/ int newVal);
     STDMETHOD(get_RenderShadows)(/*[out, retval]*/ VARIANT_BOOL *pVal);
@@ -629,6 +631,7 @@ END_CONNECTION_POINT_MAP()
     int m_ballTrailStrength;
     int m_useAA;
     int m_useFXAA;
+	int m_useAO;
 
     float m_zScale;
 

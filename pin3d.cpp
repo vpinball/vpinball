@@ -159,7 +159,7 @@ void EnvmapPrecalc(const DWORD* const __restrict envmap, const DWORD env_xres, c
 		}
 }
 
-HRESULT Pin3D::InitPin3D(const HWND hwnd, const bool fFullScreen, const int screenwidth, const int screenheight, const int colordepth, int &refreshrate, const int VSync, const bool useAA, const bool stereo3DFXAA)
+HRESULT Pin3D::InitPin3D(const HWND hwnd, const bool fFullScreen, const int screenwidth, const int screenheight, const int colordepth, int &refreshrate, const int VSync, const bool useAA, const bool stereo3DFXAA, const bool useAO)
 {
     m_hwnd = hwnd;
     //fullscreen = fFullScreen;
@@ -210,7 +210,7 @@ HRESULT Pin3D::InitPin3D(const HWND hwnd, const bool fFullScreen, const int scre
 	EnvmapPrecalc((DWORD*)envTexture.m_pdsBuffer->data(),envTexture.m_pdsBuffer->width(),envTexture.m_pdsBuffer->height(),
 				  (DWORD*)m_envRadianceTexture->data(),envTexture.m_pdsBuffer->width(),envTexture.m_pdsBuffer->height());
 	
-
+	
 	m_device_envRadianceTexture = m_pd3dDevice->m_texMan.LoadTexture(m_envRadianceTexture);
 	m_pd3dDevice->m_texMan.SetDirty(m_envRadianceTexture);
 
@@ -222,10 +222,11 @@ HRESULT Pin3D::InitPin3D(const HWND hwnd, const bool fFullScreen, const int scre
 		    return E_FAIL;
     }
 
-	m_pddsAOBackBuffer = m_pd3dDevice->DuplicateTexture(m_pddsBackBuffer);
-	if (!m_pddsAOBackBuffer)
-	    return E_FAIL;
-		
+	if(useAO) {
+		m_pddsAOBackBuffer = m_pd3dDevice->DuplicateTexture(m_pddsBackBuffer);
+		if (!m_pddsAOBackBuffer)
+			return E_FAIL;
+	}
 
 	InitRenderState();
 

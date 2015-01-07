@@ -2800,6 +2800,8 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
 
    bw.WriteInt(FID(UAAL), m_useAA );
    bw.WriteInt(FID(UFXA), m_useFXAA );
+   bw.WriteInt(FID(UAOC), m_useAO );
+
    bw.WriteInt(FID(MASI), m_materials.Size());
    if( m_materials.Size()>0 )
    {
@@ -3214,6 +3216,7 @@ void PinTable::SetLoadDefaults()
 
    m_useAA = -1;
    m_useFXAA = -1;
+   m_useAO = -1;
 
    m_TableSoundVolume = 1.0f;
    m_TableMusicVolume = 1.0f;
@@ -3493,6 +3496,10 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(UAAL))
    {
       pbr->GetInt(&m_useAA);
+   }
+   else if (id == FID(UAOC))
+   {
+      pbr->GetInt(&m_useAO);
    }
    else if (id == FID(UFXA))
    {
@@ -7852,6 +7859,22 @@ STDMETHODIMP PinTable::put_EnableAntialiasing(int newVal)
 {
    STARTUNDO
    m_useAA = newVal;
+   STOPUNDO
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::get_EnableAO(int *pVal)
+{
+   *pVal = m_useAO;
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_EnableAO(int newVal)
+{
+   STARTUNDO
+   m_useAO = newVal;
    STOPUNDO
 
    return S_OK;

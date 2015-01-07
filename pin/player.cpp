@@ -182,7 +182,6 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
         maxPrerenderedFrames = 2; // The default
     m_fMaxPrerenderedFrames = maxPrerenderedFrames;
 
-
     hr = GetRegInt("Player", "FXAA", &m_fFXAA);
     if (hr != S_OK)
       m_fFXAA = 0; // The default = off
@@ -206,7 +205,14 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
     if (hr != S_OK)
       m_fAA = false; // The default = off
     else
-	m_fAA = (AA == 1); // The default = off
+	m_fAA = (AA == 1);
+
+    int AO;
+    hr = GetRegInt("Player", "USEAO", &AO);
+    if (hr != S_OK)
+      m_fAO = false; // The default = off
+    else
+	m_fAO = (AO == 1);
 
 	hr = GetRegInt("Player", "Stereo3D", &m_fStereo3D);
 	if (hr != S_OK)
@@ -866,12 +872,13 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 
 	int vsync = (m_ptable->m_TableAdaptiveVSync == -1) ? m_fVSync : m_ptable->m_TableAdaptiveVSync;
 
+    const bool useAO = (m_fAO && (m_ptable->m_useAO == -1)) || (m_ptable->m_useAO == 1);
     const bool useAA = (m_fAA && (m_ptable->m_useAA == -1)) || (m_ptable->m_useAA == 1);
     const bool stereo3DFXAA = (!!m_fStereo3D) || ((m_fFXAA && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA > 0));
 
 	// width, height, and colordepth are only defined if fullscreen is true.
     HRESULT hr = m_pin3d.InitPin3D(m_hwnd, m_fFullScreen, m_screenwidth, m_screenheight, m_screendepth,
-                   m_refreshrate, vsync, useAA, stereo3DFXAA);
+                   m_refreshrate, vsync, useAA, stereo3DFXAA, useAO);
 
 	if (hr != S_OK)
 	{
@@ -2380,7 +2387,7 @@ void Player::FlipVideoBuffersNormal( const bool vsync )
 
 void Player::FlipVideoBuffers3DAOFXAA( const bool vsync ) //!! SMAA, luma sharpen, dither
 {
-	const bool AO = false;
+	const bool useAO = (m_fAO && (m_ptable->m_useAO == -1)) || (m_ptable->m_useAO == 1);
 	const bool useAA = (m_fAA && (m_ptable->m_useAA == -1)) || (m_ptable->m_useAA == 1);
 
 	// switch to 'real' output buffer
@@ -2390,7 +2397,7 @@ void Player::FlipVideoBuffers3DAOFXAA( const bool vsync ) //!! SMAA, luma sharpe
 	const bool stereo = ((m_fStereo3D != 0) && m_fStereo3Denabled);
 	const bool FXAA1 = (((m_fFXAA == 1) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == 1));
 
-	if(stereo || AO)
+	if(stereo || useAO)
 		m_pin3d.m_pd3dDevice->CopyDepth(m_pin3d.m_pdds3DZBuffer, m_pin3d.m_pddsZBuffer);
 
     m_pin3d.m_pd3dDevice->BeginScene();
@@ -2401,12 +2408,12 @@ void Player::FlipVideoBuffers3DAOFXAA( const bool vsync ) //!! SMAA, luma sharpe
 
 	m_pin3d.m_pd3dDevice->SetVertexDeclaration( m_pin3d.m_pd3dDevice->m_pVertexTexelDeclaration );
 
-	m_pin3d.m_pd3dDevice->basicShader->SetTexture("Texture0", AO ? m_pin3d.m_pddsAOBackBuffer : m_pin3d.m_pd3dDevice->GetBackBufferTexture());
-	if(stereo || AO)
+	m_pin3d.m_pd3dDevice->basicShader->SetTexture("Texture0", (!stereo && useAO) ? m_pin3d.m_pddsAOBackBuffer : m_pin3d.m_pd3dDevice->GetBackBufferTexture());
+	if(stereo || useAO)
 		m_pin3d.m_pd3dDevice->basicShader->SetTexture("Texture3", m_pin3d.m_pdds3DZBuffer);
 
 	D3DXVECTOR4 w_h_height;
-	if(!(stereo || AO))
+	if(!(stereo || useAO))
 	{
 		w_h_height = D3DXVECTOR4((float)(1.0/(double)m_width), (float)(1.0/(double)m_height), 0.f, 0.f);
 	}
@@ -2414,11 +2421,11 @@ void Player::FlipVideoBuffers3DAOFXAA( const bool vsync ) //!! SMAA, luma sharpe
 	{
 		const D3DXVECTOR4 ms_zpd_ya_td(m_ptable->GetMaxSeparation(), m_ptable->GetZPD(), m_fStereo3DY ? 1.0f : 0.0f, (m_fStereo3D == 1) ? 1.0f : 0.0f);
 		m_pin3d.m_pd3dDevice->basicShader->Core()->SetVector("ms_zpd_ya_td", &ms_zpd_ya_td);
-		w_h_height = D3DXVECTOR4((float)(1.0/(double)m_width), (float)(1.0/(double)m_height), (float)m_height, !AO ? (m_fStereo3DAA ? 1.0f : 0.0f) : (1.0f+(float)(usec()&0x1FF)*(float)(1.0/0x1FF)));
+		w_h_height = D3DXVECTOR4((float)(1.0/(double)m_width), (float)(1.0/(double)m_height), (float)m_height, stereo ? (m_fStereo3DAA ? 1.0f : 0.0f) : (1.0f+(float)(usec()&0x1FF)*(float)(1.0/0x1FF)));
 	}
 	m_pin3d.m_pd3dDevice->basicShader->Core()->SetVector("w_h_height", &w_h_height);
     
-	m_pin3d.m_pd3dDevice->basicShader->Core()->SetTechnique(stereo ? "stereo" : (AO ? "AO" : (FXAA1 ? "FXAA1" : "FXAA2")));
+	m_pin3d.m_pd3dDevice->basicShader->Core()->SetTechnique(stereo ? "stereo" : (useAO ? "AO" : (FXAA1 ? "FXAA1" : "FXAA2")));
 
 	m_pin3d.m_pd3dDevice->basicShader->Begin(0);
     m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_TEX, (LPVOID)quadVerts, 4);
@@ -2426,7 +2433,7 @@ void Player::FlipVideoBuffers3DAOFXAA( const bool vsync ) //!! SMAA, luma sharpe
 	
 	//
 
-	if(AO)
+	if(!stereo && useAO)
 	{
 		m_pin3d.m_pd3dDevice->CopySurface(m_pin3d.m_pddsAOBackBuffer, m_pin3d.m_pd3dDevice->GetOutputBackBuffer());
 
@@ -2653,7 +2660,7 @@ void Player::Render()
     }
 
 
-    if((((m_fStereo3D == 0) || !m_fStereo3Denabled) && (!((m_fFXAA && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA > 0)))) || (m_ptable->GetMaxSeparation() <= 0.0f) || (m_ptable->GetMaxSeparation() >= 1.0f) || (m_ptable->GetZPD() <= 0.0f) || (m_ptable->GetZPD() >= 1.0f) || !m_pin3d.m_pdds3DZBuffer)
+    if((((m_fStereo3D == 0) || !m_fStereo3Denabled) && (!((m_fAO && (m_ptable->m_useAO == -1)) || (m_ptable->m_useAO == 1))) && (!((m_fFXAA && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA > 0)))) || (m_ptable->GetMaxSeparation() <= 0.0f) || (m_ptable->GetMaxSeparation() >= 1.0f) || (m_ptable->GetZPD() <= 0.0f) || (m_ptable->GetZPD() >= 1.0f) || (!m_pin3d.m_pdds3DZBuffer && !m_pin3d.m_pddsAOBackBuffer))
         FlipVideoBuffersNormal( vsync );
     else
         FlipVideoBuffers3DAOFXAA( vsync );

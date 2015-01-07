@@ -260,6 +260,8 @@ public:
 	int m_fFXAA;
     bool m_fAA;
 
+	bool m_fAO;
+
 	bool m_fStereo3Denabled;
 	int m_fStereo3D; // 0=off, 1=top/down, 2=interlaced/LG //!! support sidebyside, too?
 
