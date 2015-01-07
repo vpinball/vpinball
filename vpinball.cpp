@@ -7864,7 +7864,7 @@ ManufacturerDimensions dimTable[DIM_TABLE_SIZE] =
    {"Gottlieb System 80 (widebody)", 23.75f, 46.5f },
    {"Gottlieb System 80 (extrawide)", 26.75f, 46.5f },
    {"Stern (widebody)", 23.875f, 45.0f },
-   {"Stern (standard)", 23.25f, 42.0f },
+   {"Stern (standard)", 20.25f, 42.0f },
    {"Stern Modern (standard)", 20.25f, 45.0f },
    {"WMS Pinball 2000", 20.5f, 43.0f },
    {"WMS System 1-11 (standard)", 20.25f, 42.0f },
