@@ -239,12 +239,6 @@ void Bumper::Render(Sur * const psur)
    }
 }
 
-/*void Bumper::RenderShadow(ShadowSur * const psur, const float z)
-{
-   if ( (!m_d.m_fCastsShadow) || (!m_ptable->m_fRenderShadows) )
-      return;
-}*/
-
 void Bumper::GetTimers(Vector<HitTimer> * const pvht)
 {
    IEditable::BeginPlay();

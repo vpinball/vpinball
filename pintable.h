@@ -126,11 +126,7 @@ public:
     STDMETHOD(put_BallReflection)(/*[in]*/ int newVal);
     STDMETHOD(get_ReflectionStrength)(/*[out, retval]*/ int *pVal);
     STDMETHOD(put_ReflectionStrength)(/*[in]*/ int newVal);
-    STDMETHOD(get_ShadowX)(/*[out, retval]*/ float *pVal);
-    STDMETHOD(put_ShadowX)(/*[in]*/ float newVal);
-    STDMETHOD(get_ShadowY)(/*[out, retval]*/ float *pVal);
-    STDMETHOD(put_ShadowY)(/*[in]*/ float newVal);
-	STDMETHOD(get_BallTrail)(/*[out, retval]*/ int *pVal);
+    STDMETHOD(get_BallTrail)(/*[out, retval]*/ int *pVal);
     STDMETHOD(put_BallTrail)(/*[in]*/ int newVal);
     STDMETHOD(get_TrailStrength)(/*[out, retval]*/ int *pVal);
     STDMETHOD(put_TrailStrength)(/*[in]*/ int newVal);
@@ -170,8 +166,8 @@ public:
     STDMETHOD(put_EnableAO)(/*[in]*/ int newVal);
     STDMETHOD(get_EnableFXAA)(/*[out, retval]*/ int *pVal);
     STDMETHOD(put_EnableFXAA)(/*[in]*/ int newVal);
-    STDMETHOD(get_RenderShadows)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-    STDMETHOD(put_RenderShadows)(/*[in]*/ VARIANT_BOOL newVal);
+    //STDMETHOD(get_RenderShadows)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+    //STDMETHOD(put_RenderShadows)(/*[in]*/ VARIANT_BOOL newVal);
     
 	STDMETHOD(get_OverridePhysics)(/*[out, retval]*/ long *pVal);
     STDMETHOD(put_OverridePhysics)(/*[in]*/ long newVal);
@@ -635,8 +631,6 @@ END_CONNECTION_POINT_MAP()
 
     float m_zScale;
 
-	float m_shadowDirX;
-    float m_shadowDirY;
 	bool m_Shake;		// Is the "Earthshaker" effect active.  This will affect nudge (ball physics) and the render.
 
 	bool m_activeLayers[8];

@@ -166,8 +166,6 @@ public:
     static const unsigned AllowedViews = AllwdViews;
 
 
-class ShadowSur;
-
 class EventProxyBase;
 
 // IEditable is the subclass for anything class which is a self-contained table element.
@@ -184,7 +182,7 @@ public:
 	virtual void PreRender(Sur * const psur) = 0;
 	virtual void Render(Sur * const psur) = 0;
 	virtual void RenderBlueprint(Sur *psur);
-	//virtual void RenderShadow(ShadowSur * const psur, const float height);
+	
 	virtual ULONG STDMETHODCALLTYPE AddRef() = 0;
 	virtual ULONG STDMETHODCALLTYPE Release() = 0;
 

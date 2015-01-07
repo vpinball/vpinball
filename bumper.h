@@ -120,7 +120,6 @@ DECLARE_REGISTRY_RESOURCEID(IDR_BUMPER)
 
 	virtual void MoveOffset(const float dx, const float dy);
 	virtual void SetObjectPos();
-	//virtual void RenderShadow(ShadowSur * const psur, const float height);
 
 	virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
 

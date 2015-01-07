@@ -187,12 +187,6 @@ void Spinner::Render(Sur * const psur)
       m_d.m_vCenter.x - cs*halflength, m_d.m_vCenter.y - sn*halflength);
 }
 
-/*void Spinner::RenderShadow(ShadowSur * const psur, const float height)
-{
-   if ( (!m_d.m_fCastsShadow) || (!m_ptable->m_fRenderShadows) )
-      return;
-}*/
-
 void Spinner::GetTimers(Vector<HitTimer> * const pvht)
 {
    IEditable::BeginPlay();

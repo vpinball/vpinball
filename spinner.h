@@ -84,8 +84,6 @@ DECLARE_REGISTRY_RESOURCEID(IDR_SPINNER)
 	virtual void GetCenter(Vertex2D * const pv) const;
 	virtual void PutCenter(const Vertex2D * const pv);
 
-	//virtual void RenderShadow(ShadowSur * const psur, const float height);
-
 	void WriteRegDefaults();
     void UpdatePlate( RenderDevice *pd3dDevice );
 
@@ -97,7 +95,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_SPINNER)
 	HitSpinner *m_phitspinner;
 
 private:
-   Vertex3D staticVertices[8];
+   Vertex3D_NoTex2 staticVertices[8];
    VertexBuffer *bracketVertexBuffer;
    IndexBuffer *bracketIndexBuffer;
    VertexBuffer *plateVertexBuffer;

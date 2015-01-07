@@ -107,6 +107,7 @@ VP 10.0.0 Changelog
   look into the CommandReference.txt for additional changes to the functions that can be used
 
 - remove old shadowing code and replace it with optional screen space ambient occlusion (via the global video preferences and also the table options)
+  the old 'casts shadow' setting is still in the UI, but is currently disabled as it is always true for now
 
 - support primitive vertex sizes > 65535
 

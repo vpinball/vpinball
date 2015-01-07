@@ -689,7 +689,7 @@ void Trigger::RenderSetup(RenderDevice* pd3dDevice)
    if ( vertexBuffer==NULL )
    {
       ppin3d->m_pd3dDevice->CreateVertexBuffer( numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer );
-      NumVideoBytes += numVertices*sizeof(Vertex3D);
+      NumVideoBytes += numVertices*sizeof(Vertex3D_NoTex2);
    }
    Matrix3D fullMatrix;
    fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotation));

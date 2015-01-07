@@ -28,9 +28,6 @@ Pin3D::~Pin3D()
 	SAFE_RELEASE(m_pddsStatic);
 	SAFE_RELEASE(m_pddsStaticZ);
 
-    for (std::map<int,BaseTexture*>::iterator it = m_xvShadowMap.begin(); it != m_xvShadowMap.end(); ++it)
-        delete it->second;
-
    pinballEnvTexture.FreeStuff();
 
    envTexture.FreeStuff();
@@ -210,7 +207,7 @@ HRESULT Pin3D::InitPin3D(const HWND hwnd, const bool fFullScreen, const int scre
 	EnvmapPrecalc((DWORD*)envTexture.m_pdsBuffer->data(),envTexture.m_pdsBuffer->width(),envTexture.m_pdsBuffer->height(),
 				  (DWORD*)m_envRadianceTexture->data(),envTexture.m_pdsBuffer->width(),envTexture.m_pdsBuffer->height());
 	
-	
+
 	m_device_envRadianceTexture = m_pd3dDevice->m_texMan.LoadTexture(m_envRadianceTexture);
 	m_pd3dDevice->m_texMan.SetDirty(m_envRadianceTexture);
 
@@ -272,17 +269,6 @@ void Pin3D::InitRenderState()
 	m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG1, D3DTA_TEXTURE);
 	m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR); // default tfactor: 1,1,1,1
 	m_pd3dDevice->SetTexture(ePictureTexture, NULL);
-
-    // initialize second texture stage (light map)
-	SetTextureFilter( eLightProject1, TEXTURE_MODE_TRILINEAR );
-	m_pd3dDevice->SetTextureStageState( eLightProject1, D3DTSS_COLORARG1, D3DTA_TEXTURE );
-	m_pd3dDevice->SetTextureStageState( eLightProject1, D3DTSS_COLORARG2, D3DTA_CURRENT );
-	m_pd3dDevice->SetTextureStageState( eLightProject1, D3DTSS_COLOROP,   D3DTOP_MODULATE );
-	//m_pd3dDevice->SetTextureStageState( eLightProject1, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
-	//m_pd3dDevice->SetTextureStageState( eLightProject1, D3DTSS_ALPHAARG1, D3DTA_CURRENT );
-	//m_pd3dDevice->SetTextureStageState( eLightProject1, D3DTSS_ALPHAARG2, D3DTA_CURRENT );
-	m_pd3dDevice->SetTextureStageState( eLightProject1, D3DTSS_TEXCOORDINDEX, 1 );
-	//m_pd3dDevice->SetTextureStageState( eLightProject1, D3DTSS_COLOROP,   D3DTOP_DISABLE);
 }
 
 static const WORD rgiPin3D1[4] = {2,3,5,6};
@@ -422,7 +408,7 @@ void Pin3D::InitLayout()
 
 void Pin3D::InitPlayfieldGraphics()
 {
-    Vertex3D rgv[7];
+    Vertex3D_NoTex2 rgv[7];
     rgv[0].x=g_pplayer->m_ptable->m_left;     rgv[0].y=g_pplayer->m_ptable->m_top;      rgv[0].z=g_pplayer->m_ptable->m_tableheight;
     rgv[1].x=g_pplayer->m_ptable->m_right;    rgv[1].y=g_pplayer->m_ptable->m_top;      rgv[1].z=g_pplayer->m_ptable->m_tableheight;
     rgv[2].x=g_pplayer->m_ptable->m_right;    rgv[2].y=g_pplayer->m_ptable->m_bottom;   rgv[2].z=g_pplayer->m_ptable->m_tableheight;
@@ -448,21 +434,20 @@ void Pin3D::InitPlayfieldGraphics()
         rgv[i].tu = (i==1 || i==2) ? 1.0f : 0.f;
     }
 
-    CalcShadowCoordinates(rgv,4);
     const WORD playfieldPolyIndices[6] = {0,1,3,0,3,2};
     tableIBuffer = m_pd3dDevice->CreateAndFillIndexBuffer(6,playfieldPolyIndices);
 
     assert(tableVBuffer == NULL);
-    m_pd3dDevice->CreateVertexBuffer( 4+7, 0, MY_D3DFVF_VERTEX, &tableVBuffer); //+7 verts for second rendering step
+    m_pd3dDevice->CreateVertexBuffer( 4+7, 0, MY_D3DFVF_NOTEX2_VERTEX, &tableVBuffer); //+7 verts for second rendering step
 
-    Vertex3D *buffer;
+    Vertex3D_NoTex2 *buffer;
     tableVBuffer->lock(0,0,(void**)&buffer, VertexBuffer::WRITEONLY);
 
     unsigned int offs = 0;
     for(unsigned int y = 0; y <= 1; ++y)
         for(unsigned int x = 0; x <= 1; ++x,++offs)
         {
-            Vertex3D &tmp = buffer[offs];
+            Vertex3D_NoTex2 &tmp = buffer[offs];
             tmp.x = (x&1) ? rgv[1].x : rgv[0].x;
             tmp.y = (y&1) ? rgv[2].y : rgv[0].y;
             tmp.z = rgv[0].z;
@@ -475,14 +460,11 @@ void Pin3D::InitPlayfieldGraphics()
             tmp.nz = rgv[0].nz;
         }
 
-    CalcShadowCoordinates(buffer,4);
-
     SetNormal(rgv, rgiPin3D1, 4);
 
-    memcpy(buffer+4, rgv, 7*sizeof(Vertex3D));
+    memcpy(buffer+4, rgv, 7*sizeof(Vertex3D_NoTex2));
 
     tableVBuffer->unlock();
-
 }
 
 void Pin3D::RenderPlayfieldGraphics()
@@ -528,78 +510,6 @@ void Pin3D::RenderPlayfieldGraphics()
     // later rendering steps, so we keep it around for now.
 }
 
-void Pin3D::CalcShadowCoordinates(Vertex3D * const pv, const unsigned int count) const
-{
-	const float inv_tu = 1.0f/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
-	const float inv_tv = 1.0f/(g_pplayer->m_ptable->m_top  + g_pplayer->m_ptable->m_bottom);
-	const float tu_offs = 0.5f - g_pplayer->m_ptable->m_right * 0.5f * inv_tu;
-	const float tv_offs = 0.5f - g_pplayer->m_ptable->m_bottom * 0.5f * inv_tv;
-
-	for(unsigned int i = 0; i < count; ++i)
-	{
-		pv[i].tu2 = pv[i].x*inv_tu + tu_offs;
-		pv[i].tv2 = pv[i].y*inv_tv + tv_offs;
-	}
-}
-
-BaseTexture* Pin3D::CreateShadow(const float z)
-{
-	int shadwidth;
-	int shadheight;
-	if ((g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right) > (g_pplayer->m_ptable->m_top + g_pplayer->m_ptable->m_bottom))
-	{
-		shadwidth = 256;
-		shadheight = (int)(256.0f*(g_pplayer->m_ptable->m_top + g_pplayer->m_ptable->m_bottom)/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right));
-	}
-	else
-	{
-		shadheight = 256;
-		shadwidth = (int)(256.0f*(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right)/(g_pplayer->m_ptable->m_top + g_pplayer->m_ptable->m_bottom));
-	}
-
-	// Create Shadow Picture
-	BITMAPINFO bmi;
-	ZeroMemory(&bmi, sizeof(bmi));
-	bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-	bmi.bmiHeader.biWidth = 256;//shadwidth;
-	bmi.bmiHeader.biHeight = -256;//-shadheight;
-	bmi.bmiHeader.biPlanes = 1;
-	bmi.bmiHeader.biBitCount = 24;
-	bmi.bmiHeader.biCompression = BI_RGB;
-	bmi.bmiHeader.biSizeImage = 0;
-
-	//WriteFile(hfile, &bmi, sizeof(bmi), &foo, NULL);
-
-	HDC hdcScreen = GetDC(NULL);
-	HDC hdc = CreateCompatibleDC(hdcScreen);
-
-	BYTE *pbits;
-	HBITMAP hdib = CreateDIBSection(hdcScreen, &bmi, DIB_RGB_COLORS, (void **)&pbits, NULL, 0);
-
-	HBITMAP hbmOld = (HBITMAP)SelectObject(hdc, hdib);
-	const float zoom = (float)shadwidth/(g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right);
-	/*ShadowSur * const psur = new ShadowSur(hdc, zoom, (g_pplayer->m_ptable->m_left + g_pplayer->m_ptable->m_right)*0.5f, (g_pplayer->m_ptable->m_top + g_pplayer->m_ptable->m_bottom)*0.5f, shadwidth, shadheight, z);
-
-	SelectObject(hdc, GetStockObject(WHITE_BRUSH));
-	PatBlt(hdc, 0, 0, shadwidth, shadheight, PATCOPY);
-
-	for (int i=0; i<g_pplayer->m_ptable->m_vedit.Size(); ++i)
-		g_pplayer->m_ptable->m_vedit.ElementAt(i)->RenderShadow(psur, z);
-
-	delete psur;*/
-
-	BaseTexture* pddsProjectTexture = new BaseTexture(shadwidth, shadheight);
-	m_xvShadowMap[(int)z] = pddsProjectTexture;
-
-	SelectObject(hdc, hbmOld);
-	DeleteDC(hdc);
-	ReleaseDC(NULL, hdcScreen);
-
-	DeleteObject(hdib);
-
-	return pddsProjectTexture;
-}
-
 void Pin3D::SetTexture(Texture* pTexture)
 {
     SetBaseTexture(ePictureTexture, pTexture ? pTexture->m_pdsBuffer : NULL);
@@ -609,19 +519,6 @@ void Pin3D::SetBaseTexture(DWORD texUnit, BaseTexture* pddsTexture)
 {
     m_pd3dDevice->SetTexture(texUnit,
             m_pd3dDevice->m_texMan.LoadTexture((pddsTexture == NULL) ? m_pddsLightWhite.m_pdsBuffer : pddsTexture));
-}
-
-void Pin3D::EnableLightMap(const float z)
-{
-    BaseTexture* pdds = m_xvShadowMap[(int)z];
-    if (!pdds)
-        pdds = CreateShadow(z);
-    SetBaseTexture(eLightProject1, pdds);
-}
-
-void Pin3D::DisableLightMap()
-{
-    m_pd3dDevice->SetTexture(eLightProject1, NULL);
 }
 
 void Pin3D::EnableAlphaTestReference(const DWORD alphaRefValue) const
@@ -640,7 +537,7 @@ void Pin3D::EnableAlphaBlend( const DWORD alphaRefValue, const bool additiveBlen
 	m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, additiveBlending ? D3DBLEND_ONE : D3DBLEND_INVSRCALPHA);
 }
 
-void Pin3D::DisableAlphaBlend()
+void Pin3D::DisableAlphaBlend() const
 {
     m_pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
     m_pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, FALSE);
@@ -828,7 +725,7 @@ void PinProjection::CacheTransform()
 	matT.Multiply(m_matWorld, m_matrixTotal);   // total = matWorld * matView * matProj
 }
 
-void PinProjection::TransformVertices(const Vertex3D * const rgv, const WORD * const rgi, const int count, Vertex2D * const rgvout) const
+void PinProjection::TransformVertices(const Vertex3D_NoTex2 * const rgv, const WORD * const rgi, const int count, Vertex2D * const rgvout) const
 {
 	const float rClipWidth  = (m_rcviewport.right - m_rcviewport.left)*0.5f;
 	const float rClipHeight = (m_rcviewport.bottom - m_rcviewport.top)*0.5f;

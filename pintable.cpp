@@ -690,9 +690,6 @@ PinTable::PinTable()
    m_xlatex = 0.0f;
    m_xlatey = 0.0f;
 
-   m_shadowDirX= 1.0f;
-   m_shadowDirY=-1.0f;
-
    m_zScale = 1.0f;
    m_xlatez = 0.0f;
 
@@ -1623,7 +1620,7 @@ void PinTable::Render3DProjection(Sur * const psur)
    psur->SetFillColor(RGB(200,200,200));
    psur->SetBorderColor(-1,false,0);
 
-   Vertex3D rgvIn[8];
+   Vertex3D_NoTex2 rgvIn[8];
    rgvIn[0].x = m_left;    rgvIn[0].y=m_top;    rgvIn[0].z=50.0f;
    rgvIn[1].x = m_left;    rgvIn[1].y=m_top;    rgvIn[1].z=m_glassheight;
    rgvIn[2].x = m_right;   rgvIn[2].y=m_top;    rgvIn[2].z=m_glassheight;
@@ -2783,8 +2780,6 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
    bw.WriteFloat(FID(LZRA), m_lightRange);
    bw.WriteFloat(FID(LIES), m_lightEmissionScale);
    bw.WriteFloat(FID(ENES), m_envEmissionScale);
-   bw.WriteFloat(FID(SDIX), m_shadowDirX);
-   bw.WriteFloat(FID(SDIY), m_shadowDirY);
 
    bw.WriteFloat(FID(SVOL), m_TableSoundVolume);
    bw.WriteFloat(FID(MVOL), m_TableMusicVolume);
@@ -3504,14 +3499,6 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(UFXA))
    {
       pbr->GetInt(&m_useFXAA);
-   }
-   else if (id == FID(SDIX))
-   {
-      pbr->GetFloat(&m_shadowDirX);
-   }
-   else if (id == FID(SDIY))
-   {
-      pbr->GetFloat(&m_shadowDirY);
    }
    else if (id == FID(BCLR))
    {
@@ -7230,46 +7217,6 @@ STDMETHODIMP PinTable::put_ReflectionStrength(int newVal )
    return S_OK;
 }
 
-STDMETHODIMP PinTable::get_ShadowX(float *pVal)
-{
-   *pVal = m_shadowDirX;
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_ShadowX(float newVal )
-{
-   STARTUNDO
-
-   if ( newVal>1.0f ) newVal=1.0f;
-   if ( newVal<-1.0f ) newVal=-1.0f;
-   m_shadowDirX = newVal;
-
-   STOPUNDO
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::get_ShadowY(float *pVal)
-{
-   *pVal = m_shadowDirY;
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_ShadowY(float newVal )
-{
-   STARTUNDO
-
-   if ( newVal>1.0f ) newVal=1.0f;
-   if ( newVal<-1.0f ) newVal=-1.0f;
-   m_shadowDirY = newVal;
-
-   STOPUNDO
-
-   return S_OK;
-}
-
 STDMETHODIMP PinTable::get_BallTrail(int *pVal)
 {
    *pVal = m_useTrailForBalls;
@@ -7832,7 +7779,7 @@ STDMETHODIMP PinTable::put_YieldTime(long newVal)
    return S_OK;
 }
 
-STDMETHODIMP PinTable::get_RenderShadows(VARIANT_BOOL *pVal)
+/*STDMETHODIMP PinTable::get_RenderShadows(VARIANT_BOOL *pVal)
 {
    *pVal = (VARIANT_BOOL)FTOVB(m_fRenderShadows);
 
@@ -7846,7 +7793,7 @@ STDMETHODIMP PinTable::put_RenderShadows(VARIANT_BOOL newVal)
    STOPUNDO
 
    return S_OK;
-}
+}*/
 
 STDMETHODIMP PinTable::get_EnableAntialiasing(int *pVal)
 {

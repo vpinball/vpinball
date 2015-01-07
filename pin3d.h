@@ -6,7 +6,6 @@ extern int NumVideoBytes;
 
 enum
 {
-	eLightProject1 = 1,
 	ePictureTexture = 0
 };
 
@@ -28,7 +27,7 @@ public:
 
 	void FitCameraToVertices(Vector<Vertex3Ds> * const pvvertex3D, float aspect, float rotation, float inclination, float FOV, float xlatez, float layback);
 	void CacheTransform();      // compute m_matrixTotal = m_World * m_View * m_Proj
-	void TransformVertices(const Vertex3D * const rgv, const WORD * const rgi, const int count, Vertex2D * const rgvout) const;
+	void TransformVertices(const Vertex3D_NoTex2 * const rgv, const WORD * const rgi, const int count, Vertex2D * const rgvout) const;
 
     void ComputeNearFarPlane(const Vector<Vertex3Ds>& verts);
 
@@ -66,17 +65,12 @@ public:
     void SetTexture(Texture* pTexture);
 	void SetBaseTexture(DWORD texUnit, BaseTexture* pddsTexture);
 
-    void EnableLightMap(const float z);
-    void DisableLightMap();
-
 	void EnableAlphaTestReference(const DWORD alphaRefValue) const;
     void EnableAlphaBlend(const DWORD alphaRefValue, const bool additiveBlending) const;
-    void DisableAlphaBlend();
+    void DisableAlphaBlend() const;
 
     void DrawBackground();
     void RenderPlayfieldGraphics();
-
-	void CalcShadowCoordinates(Vertex3D * const pv, const unsigned int count) const;
 
     const Matrix3D& GetWorldTransform() const   { return m_proj.m_matWorld; }
     const Matrix3D& GetViewTransform() const    { return m_proj.m_matView; }
@@ -88,7 +82,6 @@ private:
 
 	void Identity();
    
-	BaseTexture* CreateShadow(const float height);
 	// Data members
 public:
 	RenderDevice* m_pd3dDevice;
@@ -128,7 +121,6 @@ public:
 private:
     VertexBuffer *tableVBuffer;
     IndexBuffer *tableIBuffer;
-    std::map<int, BaseTexture*> m_xvShadowMap;
 };
 
 Matrix3D ComputeLaybackTransform(float layback);
