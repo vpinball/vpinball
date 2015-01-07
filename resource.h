@@ -559,6 +559,7 @@
 #define IDC_PRIMITIVE_IS_TOY            395
 #define IDC_ENABLE_FXAA                 395
 #define IDR_REGISTRY4                   395
+#define IDC_ENABLE_AO                   396
 #define IDC_SIZE_HEIGHT                 397
 #define IDC_DEPTH_BIAS                  397
 #define IDC_YMAX_EDIT                   397
@@ -610,6 +611,7 @@
 #define IDC_VP_WIDTH                    421
 #define IDC_VP_HEIGHT                   422
 #define IDC_TABLE_DIM_LIST              423
+#define IDC_AO_ALL_TABLES               424
 #define IDC_FORCE_ANISO                 425
 #define IDC_WIRE_DISTY                  425
 #define IDC_SCALE_BULB_MESH             425
