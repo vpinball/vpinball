@@ -46,7 +46,7 @@ float4 PS_WithTexel(in vout IN ) : COLOR
 	float f=0;//maxRange*0.01;
 	float intens = 1.0f-saturate((len-f)/maxRange);
 	
-	intens = pow(intens,2);
+	intens *= intens;
 	float4 result = saturate((diffuseMaterial*intens)*intensity);	
 	result.a = intens;	
 	float4 texel = tex2D( texSampler0, IN.tex0 );
