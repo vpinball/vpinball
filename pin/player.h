@@ -164,7 +164,7 @@ public:
     void DrawBalls();
     void CheckAndUpdateRegions();
     void FlipVideoBuffersNormal( const bool vsync );
-    void FlipVideoBuffers3DFXAA( const bool vsync );
+    void FlipVideoBuffers3DAOFXAA( const bool vsync );
 
 	void PhysicsSimulateCycle(float dtime);
 
@@ -416,7 +416,7 @@ public:
     void UpdateBasicShaderMatrix(const Matrix3D& objectTrafo = Matrix3D(1.0f));
     void InitShader();
     void UpdateCameraModeDisplay();
-    void UpdateBackdropSettings(bool up );
+    void UpdateBackdropSettings(const bool up);
 #endif
 
 #ifdef STEPPING

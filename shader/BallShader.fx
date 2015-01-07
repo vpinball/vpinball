@@ -158,7 +158,7 @@ float4 ballLightLoop(float3 pos, float3 N, float3 V, float3 diffuse, float3 glos
    if(specularMax > 0.0f)
       color += specular; //!! blend? //!! Fresnel with 1st layer?
   
-   return float4(Gamma(ToneMap(vAmbient + color)), fmaterialAlpha); //!! in case of HDR out later on, remove tonemap and gamma //!! also problematic for alpha blends
+   return float4(/*Gamma(ToneMap(*/vAmbient + color/*))*/, fmaterialAlpha);
 }
 
 

@@ -88,19 +88,17 @@ float3 InvGamma(float3 color) //!! use hardware support? D3DSAMP_SRGBTEXTURE,etc
 	return pow(color,2.2f);
 }
 
-float3 Gamma(float3 color) //!! use hardware support? D3DSAMP_SRGBTEXTURE,etc
+float3 FBGamma(float3 color)
 {
 	return pow(color,1.0f/2.2f);
 }
 
-float3 ToneMap(float3 color)
+float3 FBToneMap(float3 color)
 {
-    float burnhighlights = 0.2f;
+    float burnhighlights = 0.25f;
     
     float l = color.x*0.176204f + color.y*0.812985f + color.z*0.0108109f;
     return color * ((l*burnhighlights + 1.0f) / (l + 1.0f));
-    
-    //return saturate(color);
 }
 
 float3 DoPointLight(float3 pos, float3 N, float3 V, float3 diffuse, float3 glossy, float edge, float glossyPower, int i) 
@@ -196,8 +194,8 @@ float4 lightLoop(float3 pos, float3 N, float3 V, float3 diffuse, float3 glossy, 
       //specular *= invsum;
    }
 
-   //if(dot(N,V) < 0.0f) //!! flip normal in case of wrong orientation? (backside lighting)
-   //   N = -N;
+   if(dot(N,V) < 0.0f) // flip normal in case of wrong orientation? (backside lighting)
+      N = -N;
 
    float3 color = float3(0.0f, 0.0f, 0.0f);
       
@@ -218,7 +216,7 @@ float4 lightLoop(float3 pos, float3 N, float3 V, float3 diffuse, float3 glossy, 
    if(specularMax > 0.0f)
       color = DoEnvmap2ndLayer(color, pos, N, V, specular);
   
-   return float4(Gamma(ToneMap(vAmbient + color)), 1.0f); //!! in case of HDR out later on, remove tonemap and gamma //!! also problematic for alpha blends
+   return float4(/*Gamma(ToneMap(*/vAmbient + color/*))*/, 1.0f);
 }
 
 float4 Additive(float4 cBase, float4 cBlend, float percent)

@@ -13,6 +13,44 @@ bool   bPerformAlphaTest = false;
 float4 staticColor=float4(1,1,1,1);
 float  fAlphaTestValue = 128.0f/255.0f;
 
+float2 fb_inv_resolution_05;
+
+// AO:
+
+texture Texture3; // AO tex
+
+sampler2D texSampler3 : TEXUNIT3 = sampler_state
+{
+	Texture	  = (Texture3);
+    MIPFILTER = LINEAR;
+    MAGFILTER = LINEAR;
+    MINFILTER = LINEAR;
+	ADDRESSU  = Clamp;
+	ADDRESSV  = Clamp;
+};
+
+sampler2D texSampler4 : TEXUNIT0 = sampler_state
+{
+	Texture	  = (Texture0);
+    MIPFILTER = NONE; //!! ??
+    MAGFILTER = POINT;
+    MINFILTER = POINT;
+	ADDRESSU  = Clamp;
+	ADDRESSV  = Clamp;
+};
+
+sampler2D texSampler5 : TEXUNIT0 = sampler_state
+{
+	Texture	  = (Texture0);
+    MIPFILTER = NONE; //!! ??
+    MAGFILTER = LINEAR;
+    MINFILTER = LINEAR;
+	ADDRESSU  = Clamp;
+	ADDRESSV  = Clamp;
+};
+
+//
+
 //function output structures 
 struct VS_OUTPUT 
 { 
@@ -21,6 +59,8 @@ struct VS_OUTPUT
    float3 worldPos      : TEXCOORD1; 
    float3 normal        : TEXCOORD2;
 };
+
+#include "FXAAStereoAO.fxh"
 
 //------------------------------------
 
@@ -43,8 +83,23 @@ VS_OUTPUT vs_main (float4 vPosition  : POSITION0,
    return Out; 
 }
 
+VS_OUTPUT vs_main_no_trafo (float4 vPosition  : POSITION0,  
+                            float2 tc         : TEXCOORD0) 
+{ 
+   VS_OUTPUT Out;
+
+   Out.pos = vPosition;
+   Out.tex0 = tc;
+   Out.worldPos = float3(0,0,0);
+   Out.normal = float3(0,0,0);
+   
+   return Out; 
+}
+
 float4 ps_main( in VS_OUTPUT IN) : COLOR
 {
+   //return float4((IN.normal+1.0f)*0.5f,1.0f); // visualize normals
+   
    float3 diffuse  = cBase;
    float3 glossy   = bIsMetal ? cBase : cGlossy*0.08f;
    float3 specular = cClearcoat*0.08f;
@@ -57,6 +112,8 @@ float4 ps_main( in VS_OUTPUT IN) : COLOR
 
 float4 ps_main_texture(in VS_OUTPUT IN) : COLOR
 {
+   //return float4((IN.normal+1.0f)*0.5f,1.0f); // visualize normals
+   
    float4 pixel = tex2D(texSampler0, IN.tex0);
    pixel.a *= fmaterialAlpha;
 
@@ -142,7 +199,7 @@ float4 ps_main_noLight( in VS_SIMPLE_OUTPUT IN) : COLOR
 }
 
 //####### Light shader ##################
-float4   lightColor = float4(1,1,1,1);
+float3   lightColor = float3(1,1,1);
 float4   lightCenter;
 float    maxRange;
 float    intensity=1.0f;
@@ -199,8 +256,8 @@ float4 PS_LightWithTexel(in VS_LIGHT_OUTPUT IN ) : COLOR
         float len = length(lightCenter.xyz - IN.tablePos.xyz) / max(maxRange, 0.1f);
         float atten = 1.0f - saturate(len);
         atten *= atten;
-        float4 lcolor = lerp(float4(1.0f, 1.0f, 1.0f, 1.0f), lightColor, sqrt(len));
-        result = saturate(lcolor*(atten*intensity));
+        float3 lcolor = lerp(float3(1.0f, 1.0f, 1.0f), lightColor, sqrt(len));
+        result.xyz = lcolor*(atten*intensity);
         result.a = saturate(atten*intensity);
         color.a *= fmaterialAlpha;
         color += result;
@@ -228,8 +285,8 @@ float4 PS_LightWithoutTexel(in VS_LIGHT_OUTPUT IN ) : COLOR
         float len = length(lightCenter.xyz - IN.tablePos.xyz) / max(maxRange, 0.1f);
         float atten = 1.0f - saturate(len);
         atten *= atten;
-        float4 lcolor = lerp(float4(1.0f, 1.0f, 1.0f, 1.0f), lightColor, sqrt(len));
-        result = saturate(lcolor*(atten*intensity));
+        float3 lcolor = lerp(float3(1.0f, 1.0f, 1.0f), lightColor, sqrt(len));
+        result.xyz = lcolor*(atten*intensity);
         result.a = saturate(atten*intensity);
     }
     
@@ -250,8 +307,9 @@ float4 PS_BulbLight( in VS_LIGHT_OUTPUT IN ) : COLOR
 	float len = length(lightCenter.xyz-IN.tablePos.xyz)/max(maxRange,0.1f);
     float atten = 1.0f-saturate(len);
     atten*=atten;
-	float4 lcolor = lerp(float4(1.0f,1.0f,1.0f,1.0f),lightColor, sqrt(len));
-	float4 result = saturate(lcolor*(atten*intensity));
+	float3 lcolor = lerp(float3(1.0f,1.0f,1.0f), lightColor, sqrt(len));
+	float4 result;
+	result.xyz = lcolor*(atten*intensity);
 	result.a = saturate(atten*intensity);	
 	return result;
 }
@@ -280,6 +338,49 @@ VS_OUTPUT vs_kicker (float4 vPosition  : POSITION0,
    return Out; 
 }
 
+//
+
+float4 ps_main_fb_tonemap( in VS_OUTPUT IN) : COLOR
+{
+   return float4(FBGamma(FBToneMap(tex2D(texSampler5, IN.tex0).xyz)), 1.0f);
+}
+
+float4 ps_main_fb_tonemap_AO( in VS_OUTPUT IN) : COLOR
+{
+	return float4(FBGamma(FBToneMap(tex2D(texSampler5, IN.tex0).xyz*(
+           tex2D(texSampler3, IN.tex0-fb_inv_resolution_05).x /*+ //Blur:
+
+           tex2D(texSampler3, IN.tex0+float2(0.0f,fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05).x+
+		   tex2D(texSampler3, IN.tex0-float2(0.0f,fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05).x+
+		   tex2D(texSampler3, IN.tex0+float2(fb_inv_resolution_05.x*2.0f,0.0f)-fb_inv_resolution_05).x+
+		   tex2D(texSampler3, IN.tex0-float2(fb_inv_resolution_05.x*2.0f,0.0f)-fb_inv_resolution_05).x+
+
+           tex2D(texSampler3, IN.tex0+float2(fb_inv_resolution_05.x*2.0f,-fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05).x+
+		   tex2D(texSampler3, IN.tex0+float2(-fb_inv_resolution_05.x*2.0f,fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05).x+
+		   tex2D(texSampler3, IN.tex0+float2(fb_inv_resolution_05.x*2.0f,fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05).x+
+		   tex2D(texSampler3, IN.tex0-float2(fb_inv_resolution_05.x*2.0f,fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05).x)/9.0f*/) )), 1.0f);
+}
+
+float4 ps_main_fb_tonemap_no_filter( in VS_OUTPUT IN) : COLOR
+{
+   return float4(FBGamma(FBToneMap(tex2D(texSampler4, IN.tex0).xyz)), 1.0f);
+}
+
+float4 ps_main_fb_tonemap_AO_no_filter( in VS_OUTPUT IN) : COLOR
+{
+	return float4(FBGamma(FBToneMap(tex2D(texSampler4, IN.tex0).xyz*(
+           tex2D(texSampler3, IN.tex0-fb_inv_resolution_05).x /*+ //Blur:
+
+           tex2D(texSampler3, IN.tex0+float2(0.0f,fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05).x+
+		   tex2D(texSampler3, IN.tex0-float2(0.0f,fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05).x+
+		   tex2D(texSampler3, IN.tex0+float2(fb_inv_resolution_05.x*2.0f,0.0f)-fb_inv_resolution_05).x+
+		   tex2D(texSampler3, IN.tex0-float2(fb_inv_resolution_05.x*2.0f,0.0f)-fb_inv_resolution_05).x+
+
+           tex2D(texSampler3, IN.tex0+float2(fb_inv_resolution_05.x*2.0f,-fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05).x+
+		   tex2D(texSampler3, IN.tex0+float2(-fb_inv_resolution_05.x*2.0f,fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05).x+
+		   tex2D(texSampler3, IN.tex0+float2(fb_inv_resolution_05.x*2.0f,fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05).x+
+		   tex2D(texSampler3, IN.tex0-float2(fb_inv_resolution_05.x*2.0f,fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05).x)/9.0f*/) )), 1.0f);
+}
 
 //------------------------------------
 // Techniques
@@ -367,5 +468,79 @@ technique kickerBoolean
      //ZWriteEnable=TRUE;
      VertexShader = compile vs_3_0 vs_kicker(); 
 	  PixelShader = compile ps_3_0 ps_main();
+   } 
+}
+
+//
+
+technique AO
+{ 
+   pass P0 
+   { 
+      VertexShader = compile vs_3_0 vs_main_no_trafo();
+	  PixelShader = compile ps_3_0 ps_main_ao();
+   } 
+}
+
+technique stereo
+{ 
+   pass P0 
+   { 
+      VertexShader = compile vs_3_0 vs_main_no_trafo();
+	  PixelShader = compile ps_3_0 ps_main_stereo();
+   } 
+}
+
+technique FXAA1
+{ 
+   pass P0 
+   { 
+      VertexShader = compile vs_3_0 vs_main_no_trafo();
+	  PixelShader = compile ps_3_0 ps_main_fxaa1();
+   } 
+}
+
+technique FXAA2
+{ 
+   pass P0 
+   { 
+      VertexShader = compile vs_3_0 vs_main_no_trafo();
+	  PixelShader = compile ps_3_0 ps_main_fxaa2();
+   } 
+}
+
+technique fb_tonemap
+{ 
+   pass P0 
+   { 
+      VertexShader = compile vs_3_0 vs_main_no_trafo();
+	  PixelShader = compile ps_3_0 ps_main_fb_tonemap();
+   } 
+}
+
+technique fb_tonemap_AO
+{ 
+   pass P0 
+   { 
+      VertexShader = compile vs_3_0 vs_main_no_trafo();
+	  PixelShader = compile ps_3_0 ps_main_fb_tonemap_AO();
+   } 
+}
+
+technique fb_tonemap_no_filter
+{ 
+   pass P0 
+   { 
+      VertexShader = compile vs_3_0 vs_main_no_trafo();
+	  PixelShader = compile ps_3_0 ps_main_fb_tonemap_no_filter();
+   } 
+}
+
+technique fb_tonemap_AO_no_filter
+{ 
+   pass P0 
+   { 
+      VertexShader = compile vs_3_0 vs_main_no_trafo();
+	  PixelShader = compile ps_3_0 ps_main_fb_tonemap_AO_no_filter();
    } 
 }

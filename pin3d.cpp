@@ -6,7 +6,7 @@ int NumVideoBytes = 0;
 Pin3D::Pin3D()
 {
 	m_pddsBackBuffer = NULL;
-	m_pdds3DBackBuffer = NULL;
+	m_pddsAOBackBuffer = NULL;
 	m_pddsZBuffer = NULL;
 	m_pdds3DZBuffer = NULL;
 	m_pd3dDevice = NULL;
@@ -22,8 +22,8 @@ Pin3D::~Pin3D()
 {
     m_pd3dDevice->SetZBuffer(NULL);
 
-	SAFE_RELEASE(m_pdds3DBackBuffer);
 	SAFE_RELEASE(m_pdds3DZBuffer);
+	SAFE_RELEASE(m_pddsAOBackBuffer);
 	SAFE_RELEASE(m_pddsZBuffer);
 	SAFE_RELEASE(m_pddsStatic);
 	SAFE_RELEASE(m_pddsStaticZ);
@@ -217,13 +217,15 @@ HRESULT Pin3D::InitPin3D(const HWND hwnd, const bool fFullScreen, const int scre
     m_pddsLightWhite.CreateFromResource(IDB_WHITE);
 
     if(stereo3DFXAA) {
-		m_pdds3DBackBuffer = m_pd3dDevice->DuplicateTexture(m_pddsBackBuffer);
-	    if (!m_pdds3DBackBuffer)
-		    return E_FAIL;
 		m_pdds3DZBuffer = m_pd3dDevice->DuplicateDepthTexture(m_pddsZBuffer);
 	    if (!m_pdds3DZBuffer)
 		    return E_FAIL;
     }
+
+	m_pddsAOBackBuffer = m_pd3dDevice->DuplicateTexture(m_pddsBackBuffer);
+	if (!m_pddsAOBackBuffer)
+	    return E_FAIL;
+		
 
 	InitRenderState();
 

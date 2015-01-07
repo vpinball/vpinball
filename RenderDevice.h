@@ -174,7 +174,10 @@ public:
    void Clear(DWORD numRects, D3DRECT* rects, DWORD flags, D3DCOLOR color, D3DVALUE z, DWORD stencil);
    void Flip(bool vsync);
 
-   RenderTarget* GetBackBuffer() { return m_pBackBuffer; }
+   RenderTarget* GetBackBuffer() { return m_pOffscreenBackBuffer; }
+   D3DTexture* GetBackBufferTexture() { return m_pOffscreenBackBufferTexture; }
+   RenderTarget* GetOutputBackBuffer() { return m_pBackBuffer; }
+
    RenderTarget* DuplicateRenderTarget(RenderTarget* src);
    D3DTexture* DuplicateTexture(RenderTarget* src);
    D3DTexture* DuplicateDepthTexture(RenderTarget* src);
@@ -217,9 +220,6 @@ public:
    void SetTransform( TransformStateType, D3DMATRIX* );
    void GetTransform( TransformStateType, D3DMATRIX* );
 
-   void CreatePixelShader( const char* shader );
-   void SetPixelShaderConstants(const float* constantData, const unsigned int numFloat4s);
-
    void ForceAnisotropicFiltering( const bool enable ) { m_force_aniso = enable; }
 
    // performance counters
@@ -261,6 +261,9 @@ private:
 
    IDirect3DSurface9* m_pBackBuffer;
    IndexBuffer* m_dynIndexBuffer;      // workaround for DrawIndexedPrimitiveVB
+
+   IDirect3DSurface9* m_pOffscreenBackBuffer;
+   D3DTexture* m_pOffscreenBackBufferTexture;
 
    UINT m_adapter;      // index of the display adapter to use
 

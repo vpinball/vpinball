@@ -6,6 +6,7 @@
 #include "DMDShader.h"
 
 #pragma comment(lib, "d3d9.lib")        // TODO: put into build system
+#pragma comment(lib, "d3dx9.lib")       // TODO: put into build system
 
 const VertexElement VertexTexelElement[] = 
 {
@@ -249,12 +250,18 @@ RenderDevice::RenderDevice(HWND hwnd, int width, int height, bool fullscreen, in
 	if(VSync > refreshrate)
 		VSync = 0;
 
+	if(fullscreen)
+	{
+		width = screenWidth;
+		height = screenHeight;
+	}
+
     D3DPRESENT_PARAMETERS params;
-    params.BackBufferWidth = fullscreen ? screenWidth : width;
-    params.BackBufferHeight = fullscreen ? screenHeight : height;
+    params.BackBufferWidth = width;
+    params.BackBufferHeight = height;
     params.BackBufferFormat = format;
     params.BackBufferCount = 1;
-    params.MultiSampleType = useAA ? D3DMULTISAMPLE_4_SAMPLES : D3DMULTISAMPLE_NONE; // D3DMULTISAMPLE_NONMASKABLE?
+    params.MultiSampleType = /*useAA ? D3DMULTISAMPLE_4_SAMPLES :*/ D3DMULTISAMPLE_NONE; // D3DMULTISAMPLE_NONMASKABLE? //!! useAA now uses super sampling/offscreen render
     params.MultiSampleQuality = 0; // if D3DMULTISAMPLE_NONMASKABLE then set to > 0
     params.SwapEffect = D3DSWAPEFFECT_DISCARD;  // FLIP ?
     params.hDeviceWindow = hwnd;
@@ -335,6 +342,15 @@ RenderDevice::RenderDevice(HWND hwnd, int width, int height, bool fullscreen, in
     // Retrieve a reference to the back buffer.
     CHECKD3D(m_pD3DDevice->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &m_pBackBuffer));
 
+	CHECKD3D(m_pD3DDevice->CreateTexture(useAA ? 2*width : width, useAA ? 2*height : height, 1,
+		D3DUSAGE_RENDERTARGET, /*D3DFMT_X8R8G8B8*/D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &m_pOffscreenBackBufferTexture, NULL)); //!! D3DFMT_A32B32G32R32F?
+	CHECKD3D(m_pOffscreenBackBufferTexture->GetSurfaceLevel(0, &m_pOffscreenBackBuffer));
+
+	//CHECKD3D(m_pD3DDevice->CreateTexture(fullscreen ? screenWidth : width, fullscreen ? screenHeight : height, 1,
+	//	D3DUSAGE_DEPTHSTENCIL, /*D3DFMT_INTZ*/(D3DFORMAT)MAKEFOURCC('I','N','T','Z'), D3DPOOL_DEFAULT, &m_pOffscreenBackBufferZTexture, NULL));
+	//CHECKD3D(m_pOffscreenBackBufferZTexture->GetSurfaceLevel(0, &m_pOffscreenBackBufferZ));
+	////m_pD3DDevice->SetDepthStencilSurface(m_pOffscreenBackBufferZ);
+
     // Set up a dynamic index buffer to cache passed indices in
     CreateIndexBuffer(MY_IDX_BUF_SIZE, D3DUSAGE_DYNAMIC, IndexBuffer::FMT_INDEX16, &m_dynIndexBuffer);
 
@@ -371,15 +387,6 @@ RenderDevice::RenderDevice(HWND hwnd, int width, int height, bool fullscreen, in
     CreateVertexDeclaration( VertexNormalTexelTexelElement, &m_pVertexNormalTexelTexelDeclaration );
 }
 
-#include <d3dx9.h> //!! meh
-#pragma comment(lib, "d3dx9.lib")        // TODO: put into build system
-
-static RenderTarget *src_cache = NULL; //!! meh
-static D3DTexture* dest_cache = NULL;
-static IDirect3DPixelShader9 *gShader = NULL; //!! meh
-static const char * shader_cache = NULL;
-
-
 #ifdef _DEBUG
 static void CheckForD3DLeak(IDirect3DDevice9* d3d)
 {
@@ -400,6 +407,9 @@ static void CheckForD3DLeak(IDirect3DDevice9* d3d)
 #endif
 
 
+static RenderTarget *src_cache = NULL; //!! meh, for nvidia depth read only
+static D3DTexture* dest_cache = NULL;
+
 RenderDevice::~RenderDevice()
 {
 	if(src_cache != NULL)
@@ -411,13 +421,10 @@ RenderDevice::~RenderDevice()
 	if(NVAPIinit) //!! meh
 		CHECKNVAPI(NvAPI_Unload());
 	NVAPIinit = false;
-	if(gShader != NULL) //!! meh
-		gShader->Release();
-	gShader = NULL;
-	shader_cache = NULL;
 
 	//
-    if (basicShader)
+
+	if (basicShader)
     {
         delete basicShader;
         basicShader=0;
@@ -440,6 +447,9 @@ RenderDevice::~RenderDevice()
     m_texMan.UnloadAll();
 
 	SAFE_RELEASE(m_pBackBuffer);
+
+	SAFE_RELEASE(m_pOffscreenBackBuffer);
+	SAFE_RELEASE(m_pOffscreenBackBufferTexture);
 
 #ifdef _DEBUG
     CheckForD3DLeak(m_pD3DDevice);
@@ -466,30 +476,6 @@ void RenderDevice::BeginScene()
 void RenderDevice::EndScene()
 {
    CHECKD3D(m_pD3DDevice->EndScene());
-}
-
-void RenderDevice::CreatePixelShader( const char* shader )
-{
-	if(shader != shader_cache)
-	{
-		if(gShader != NULL) //!! meh
-		{
-			gShader->Release();
-			gShader = NULL;
-		}
-		ID3DXBuffer *tmp;
-		//ID3DXBuffer *error;
-		CHECKD3D(D3DXCompileShader( shader, lstrlen(shader), 0, 0, "ps_main", "ps_2_a", D3DXSHADER_OPTIMIZATION_LEVEL3|D3DXSHADER_PREFER_FLOW_CONTROL, &tmp, /*&error*/0, 0 ));
-		//MessageBox(NULL,(LPCSTR)(error->GetBufferPointer()),"bla",MB_OK);
-		CHECKD3D(m_pD3DDevice->CreatePixelShader( (DWORD*)tmp->GetBufferPointer(), &gShader ));
-		shader_cache = shader;
-	}
-	CHECKD3D(m_pD3DDevice->SetPixelShader(gShader));
-}
-
-void RenderDevice::SetPixelShaderConstants(const float* constantData, const unsigned int numFloat4s)
-{
-    m_pD3DDevice->SetPixelShaderConstantF(0, constantData, numFloat4s);
 }
 
 static void FlushGPUCommandBuffer(IDirect3DDevice9* pd3dDevice)
