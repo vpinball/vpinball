@@ -213,7 +213,7 @@ HRESULT Pin3D::InitPin3D(const HWND hwnd, const bool fFullScreen, const int scre
 
     m_pddsLightWhite.CreateFromResource(IDB_WHITE);
 
-    if(stereo3DFXAA) {
+    if(stereo3DFXAA || useAO) {
 		m_pdds3DZBuffer = m_pd3dDevice->DuplicateDepthTexture(m_pddsZBuffer);
 	    if (!m_pdds3DZBuffer)
 		    return E_FAIL;
