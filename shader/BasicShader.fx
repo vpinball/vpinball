@@ -111,15 +111,15 @@ float4 ps_main_texture(in VS_OUTPUT IN) : COLOR
    //return float4((IN.normal+1.0f)*0.5f,1.0f); // visualize normals
    
    float4 pixel = tex2D(texSampler0, IN.tex0);
-   pixel.a *= fmaterialAlpha;
 
    if (bPerformAlphaTest && pixel.a<=fAlphaTestValue )
     clip(-1);           //stop the pixel shader if alpha test should reject pixel
 
+   pixel.a *= fmaterialAlpha;
    // early out if no normal set (e.g. HUD vertices)
    if(IN.normal.x == 0.0f && IN.normal.y == 0.0f && IN.normal.z == 0.0f)
-    return pixel*staticColor;
-
+      return pixel*staticColor;
+      
    float3 t = InvGamma(pixel.xyz);
    float3 diffuse  = t*cBase;
    float3 glossy   = bIsMetal ? diffuse : t*cGlossy*0.08f; //!! use AO for glossy? specular?
