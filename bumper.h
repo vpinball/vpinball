@@ -172,7 +172,7 @@ private:
     Texture socketTexture;
     Material ringMaterial;
 
-    float   ringAnimHeightOffset;
+    //float   ringAnimHeightOffset;
     float   baseHeight;
     bool    ringDown;
     bool    ringAnimate;

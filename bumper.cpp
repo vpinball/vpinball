@@ -17,6 +17,7 @@ Bumper::Bumper()
    socketVertexBuffer = NULL;
    ringMaterial.m_cBase = 0xFFFFFFFF;
    ringMaterial.m_cGlossy = 0;
+   ringAnimate = false;
 }
 
 Bumper::~Bumper()
@@ -72,7 +73,9 @@ HRESULT Bumper::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
    m_d.m_vCenter.x = x;
    m_d.m_vCenter.y = y;
 
-   m_realState	= m_d.m_state;		//>>> added by chris
+   m_realState = m_d.m_state;		//>>> added by chris
+
+   ringAnimate = false;
 
    return InitVBA(fTrue, 0, NULL);
 }
@@ -425,7 +428,7 @@ void Bumper::PostRenderStatic(RenderDevice* pd3dDevice)
       {
          ringAnimate=true;
          ringDown=true;
-         ringAnimHeightOffset=0.0f;
+         //ringAnimHeightOffset=0.0f;
          m_pbumperhitcircle->m_bumperanim.m_fHitEvent = false;
       }
 
