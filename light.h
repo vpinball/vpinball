@@ -15,10 +15,11 @@ public:
 	float m_falloff;
     float m_intensity;
     float m_fadeSpeed;
+	U32 m_time_msec;
     float m_currentIntensity;
     float m_meshRadius;
     float m_meshIntensity;
-    float m_meshFadeSpeed;
+    //float m_meshFadeSpeed;
     LightState m_state;
 	COLORREF m_color;
 	TimerDataRoot m_tdr;

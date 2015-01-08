@@ -103,6 +103,8 @@ HRESULT Light::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
    m_fLockedByLS = false;			//>>> added by chris
    m_realState	= m_d.m_state;		//>>> added by chris
 
+   m_d.m_time_msec = g_pplayer->m_time_msec;
+
    return InitVBA(fTrue, 0, NULL);
 }
 
@@ -488,6 +490,10 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
 {
     TRACE_FUNCTION();
 
+	const U32 old_time_msec = (m_d.m_time_msec < g_pplayer->m_time_msec) ? m_d.m_time_msec : g_pplayer->m_time_msec;
+    m_d.m_time_msec = g_pplayer->m_time_msec;
+	const float diff_time_msec = (float)(g_pplayer->m_time_msec-old_time_msec);
+
     if (m_fBackglass && !GetPTable()->GetDecalsEnabled())
         return;
 
@@ -520,7 +526,7 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
     {
        if (m_d.m_currentIntensity<m_d.m_intensity )
        {
-          m_d.m_currentIntensity+=m_d.m_fadeSpeed;
+          m_d.m_currentIntensity+=m_d.m_fadeSpeed*diff_time_msec;
           if(m_d.m_currentIntensity>m_d.m_intensity )
              m_d.m_currentIntensity=m_d.m_intensity;
        }
@@ -529,7 +535,7 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
     {
        if (m_d.m_currentIntensity>0.0f )
        {
-          m_d.m_currentIntensity-=m_d.m_fadeSpeed;
+          m_d.m_currentIntensity-=m_d.m_fadeSpeed*diff_time_msec;
           if(m_d.m_currentIntensity<0.0f )
              m_d.m_currentIntensity=0.0f;
        }
@@ -1191,9 +1197,7 @@ void Light::InitShape()
             pdp->m_fSmooth = TRUE;
             m_vdpoint.AddElement(pdp);
          }
-
       }
-
    }
 }
 
