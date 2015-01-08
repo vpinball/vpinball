@@ -103,6 +103,8 @@ public:
 	STDMETHOD(put_SlopeMax)(/*[in]*/ float newVal);
 	STDMETHOD(get_SlopeMin)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_SlopeMin)(/*[in]*/ float newVal);
+	STDMETHOD(get_ColorGradeImage)(/*[out, retval]*/ BSTR *pVal);
+	STDMETHOD(put_ColorGradeImage)(/*[in]*/ BSTR newVal);
 	STDMETHOD(get_BackdropImage)(/*[out, retval]*/ BSTR *pVal);
 	STDMETHOD(put_BackdropImage)(/*[in]*/ BSTR newVal);
 	STDMETHOD(get_BackdropColor)(/*[out, retval]*/ OLE_COLOR *pVal);
@@ -545,6 +547,8 @@ END_CONNECTION_POINT_MAP()
 	char m_szImageBackdrop[MAXTOKEN];
     char m_szPlayfieldMaterial[32];
 	COLORREF m_colorbackdrop;
+
+	char m_szImageColorGrade[MAXTOKEN];
 
 	char m_szBallImage[MAXTOKEN];
 	char m_szBallImageFront[MAXTOKEN];

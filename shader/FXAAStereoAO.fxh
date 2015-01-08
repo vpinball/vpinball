@@ -11,7 +11,7 @@ sampler2D texSamplerBack : TEXUNIT0 = sampler_state
 	ADDRESSV  = Clamp;
 };
 
-sampler2D texSamplerDepth : TEXUNIT3 = sampler_state
+sampler2D texSamplerDepth : TEXUNIT2 = sampler_state
 {
 	Texture	  = (Texture3);
 	MIPFILTER = NONE; //!! ??
@@ -132,15 +132,15 @@ float4 ps_main_stereo(in VS_OUTPUT IN) : COLOR
 		parallax = -parallax;
 	const float3 col = tex2D(texSamplerBack,u + (yaxis ? float2(0.0,parallax) : float2(parallax,0.0)));
 	if(!aa)
-		return float4(FBGamma(FBToneMap(col)), 1.0f); // otherwise blend with 'missing' scanline
+		return float4(FBColorGrade(FBGamma(FBToneMap(col))), 1.0f); // otherwise blend with 'missing' scanline
 	minDepth = min(min(tex2D(texSamplerDepth,u + (yaxis ? float2(0.0,0.5*su+w_h_height.y) : float2(0.5*su,w_h_height.y))).x, tex2D(texSamplerDepth,u + (yaxis ? float2(0.0,0.666*su+w_h_height.y) : float2(0.666*su,w_h_height.y))).x), tex2D(texSamplerDepth,u + (yaxis ? float2(0.0,su+w_h_height.y) : float2(su,w_h_height.y))).x);
 	parallax = MaxSeparation - min(MaxSeparation*ZPD/(0.5*ZPD+minDepth*(1.0-0.5*ZPD)), MaxSeparation);
 	if(!l)
 		parallax = -parallax;
 	if(yaxis)
 		parallax = -parallax;
-	return float4(FBGamma(FBToneMap((col + tex2D(texSamplerBack,u + (yaxis ? float2(0.0,parallax+w_h_height.y) : float2(parallax,w_h_height.y))).xyz)*0.5)), 1.0f);
-};
+	return float4(FBColorGrade(FBGamma(FBToneMap((col + tex2D(texSamplerBack,u + (yaxis ? float2(0.0,parallax+w_h_height.y) : float2(parallax,w_h_height.y))).xyz)*0.5))), 1.0f);
+}
 
 // FXAA
 
@@ -185,8 +185,8 @@ float4 ps_main_fxaa1(in VS_OUTPUT IN) : COLOR
 	const float3 rgbA = 0.5 * (tex2D(texSamplerBack,u-dir*(0.5/3.0)).xyz + tex2D(texSamplerBack,u+dir*(0.5/3.0)).xyz);
 	const float3 rgbB = 0.5 * rgbA + 0.25 * (tex2D(texSamplerBack,u-dir*0.5).xyz + tex2D(texSamplerBack,u+dir*0.5).xyz);
 	const float lumaB = luma(rgbB);
-	return float4(FBGamma(FBToneMap(((lumaB < lumaMin) || (lumaB > lumaMax)) ? rgbA : rgbB)), 1.0f); //!! remove and filter on LDR?
-};
+	return float4(FBColorGrade(FBGamma(FBToneMap(((lumaB < lumaMin) || (lumaB > lumaMax)) ? rgbA : rgbB))), 1.0f); //!! remove and filter on LDR?
+}
 
 // Full mid-quality PC FXAA 3.11
 float4 ps_main_fxaa2(in VS_OUTPUT IN) : COLOR
@@ -216,7 +216,7 @@ float4 ps_main_fxaa2(in VS_OUTPUT IN) : COLOR
 	const float rangeMaxClamped = max(0.0833, rangeMaxScaled); //0.0625 (high quality/faster) .. 0.0312 (visible limit/slower)
 	const bool earlyExit = range < rangeMaxClamped;
 	if(earlyExit)
-		return float4(FBGamma(FBToneMap(rgbyM)), 1.0f); //!! remove and filter on LDR?
+		return float4(FBColorGrade(FBGamma(FBToneMap(rgbyM))), 1.0f); //!! remove and filter on LDR?
 	const float lumaNS = lumaN + lumaS;
 	const float lumaWE = lumaW + lumaE;
 	const float subpixRcpRange = 1.0/range;
@@ -307,5 +307,5 @@ float4 ps_main_fxaa2(in VS_OUTPUT IN) : COLOR
 	const float pl = pixelOffsetSubpix * lengthSign;
 	if(horzSpan) un.y += pl;
 	else un.x += pl;
-	return float4(FBGamma(FBToneMap(tex2D(texSamplerBack, un).xyz)), 1.0f); //!! remove and filter on LDR?
-};
+	return float4(FBColorGrade(FBGamma(FBToneMap(tex2D(texSamplerBack, un).xyz))), 1.0f); //!! remove and filter on LDR?
+}

@@ -1,6 +1,8 @@
 #define PI 3.1415926535897932384626433832795f
 #define NUM_LIGHTS 2
 
+bool color_grade;
+
 float3 cBase = float3(0.5f, 0.5f, 0.5f); //!! 0.04-0.95 in RGB
 
 float  fEdge = 1.0f;
@@ -43,11 +45,13 @@ CLight lights[NUM_LIGHTS] = {          //NUM_LIGHTS == 2
    }
 }; 
 
-texture Texture0; // diffuse
+texture Texture0; // base texture
 texture Texture1; // envmap
 texture Texture2; // envmap radiance
-
-sampler2D texSampler0 : TEXUNIT0 = sampler_state
+texture Texture3; // AO tex
+texture Texture4; // color grade
+ 
+sampler2D texSampler0 : TEXUNIT0 = sampler_state // base texture
 {
 	Texture	  = (Texture0);
     MIPFILTER = LINEAR;
@@ -57,7 +61,7 @@ sampler2D texSampler0 : TEXUNIT0 = sampler_state
 	//ADDRESSV  = Wrap;
 };
 
-sampler2D texSampler1 : TEXUNIT1 = sampler_state
+sampler2D texSampler1 : TEXUNIT1 = sampler_state // environment
 {
 	Texture	  = (Texture1);
     MIPFILTER = LINEAR;
@@ -67,7 +71,7 @@ sampler2D texSampler1 : TEXUNIT1 = sampler_state
 	ADDRESSV  = Wrap;
 };
 
-sampler2D texSampler2 : TEXUNIT2 = sampler_state
+sampler2D texSampler2 : TEXUNIT2 = sampler_state // diffuse environment contribution/radiance
 {
 	Texture	  = (Texture2);
     MIPFILTER = NONE;
@@ -75,6 +79,16 @@ sampler2D texSampler2 : TEXUNIT2 = sampler_state
     MINFILTER = LINEAR;
 	ADDRESSU  = Wrap;
 	ADDRESSV  = Wrap;
+};
+
+sampler2D texSampler6 : TEXUNIT1 = sampler_state // color grade LUT
+{
+	Texture	  = (Texture4);
+    MIPFILTER = NONE;
+    MAGFILTER = LINEAR;
+    MINFILTER = LINEAR;
+	ADDRESSU  = Clamp;
+	ADDRESSV  = Clamp;
 };
 
 
@@ -99,6 +113,20 @@ float3 FBToneMap(float3 color)
     
     float l = color.x*0.176204f + color.y*0.812985f + color.z*0.0108109f;
     return saturate(color * ((l*burnhighlights + 1.0f) / (l + 1.0f))); //!! bloom instead?
+}
+
+float3 FBColorGrade(float3 color)
+{
+   if(!color_grade)
+       return color;
+
+   color.xy = color.xy*(15.0f/16.0f) + 1.0f/32.0f; // assumes 16x16x16 resolution flattened to 256x16 texture
+   color.z *= 15.0f;
+
+   float x = (color.x + floor(color.z))/16.0f;
+   float3 lut1 = tex2D(texSampler6, float2(x,            color.y)).xyz; // two lookups to blend/lerp between blue 2D regions
+   float3 lut2 = tex2D(texSampler6, float2(x+1.0f/16.0f, color.y)).xyz;
+   return lerp(lut1,lut2, frac(color.z));
 }
 
 float3 DoPointLight(float3 pos, float3 N, float3 V, float3 diffuse, float3 glossy, float edge, float glossyPower, int i) 

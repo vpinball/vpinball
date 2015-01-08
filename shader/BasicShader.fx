@@ -10,16 +10,12 @@ float3 cClearcoat = float3(0.5f, 0.5f, 0.5f);
 //!! Metals have high specular reflectance:  0.5-1.0
 
 bool   bPerformAlphaTest = false;
-float4 staticColor=float4(1,1,1,1);
+float4 staticColor = float4(1,1,1,1);
 float  fAlphaTestValue = 128.0f/255.0f;
 
 float2 fb_inv_resolution_05;
 
-// AO:
-
-texture Texture3; // AO tex
-
-sampler2D texSampler3 : TEXUNIT3 = sampler_state
+sampler2D texSampler3 : TEXUNIT2 = sampler_state // AO
 {
 	Texture	  = (Texture3);
     MIPFILTER = LINEAR;
@@ -29,7 +25,7 @@ sampler2D texSampler3 : TEXUNIT3 = sampler_state
 	ADDRESSV  = Clamp;
 };
 
-sampler2D texSampler4 : TEXUNIT0 = sampler_state
+sampler2D texSampler4 : TEXUNIT0 = sampler_state // Framebuffer tex (unfiltered)
 {
 	Texture	  = (Texture0);
     MIPFILTER = NONE; //!! ??
@@ -39,7 +35,7 @@ sampler2D texSampler4 : TEXUNIT0 = sampler_state
 	ADDRESSV  = Clamp;
 };
 
-sampler2D texSampler5 : TEXUNIT0 = sampler_state
+sampler2D texSampler5 : TEXUNIT0 = sampler_state // Framebuffer tex (filtered)
 {
 	Texture	  = (Texture0);
     MIPFILTER = NONE; //!! ??
@@ -342,12 +338,12 @@ VS_OUTPUT vs_kicker (float4 vPosition  : POSITION0,
 
 float4 ps_main_fb_tonemap( in VS_OUTPUT IN) : COLOR
 {
-   return float4(FBGamma(FBToneMap(tex2D(texSampler5, IN.tex0).xyz)), 1.0f);
+   return float4(FBColorGrade(FBGamma(FBToneMap(tex2D(texSampler5, IN.tex0).xyz))), 1.0f);
 }
 
 float4 ps_main_fb_tonemap_AO( in VS_OUTPUT IN) : COLOR
 {
-	return float4(FBGamma(FBToneMap(tex2D(texSampler5, IN.tex0).xyz*(
+	return float4(FBColorGrade(FBGamma(FBToneMap(tex2D(texSampler5, IN.tex0).xyz*(
            tex2D(texSampler3, IN.tex0-fb_inv_resolution_05).x /*+ //Blur:
 
            tex2D(texSampler3, IN.tex0+float2(0.0f,fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05).x+
@@ -358,17 +354,17 @@ float4 ps_main_fb_tonemap_AO( in VS_OUTPUT IN) : COLOR
            tex2D(texSampler3, IN.tex0+float2(fb_inv_resolution_05.x*2.0f,-fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05).x+
 		   tex2D(texSampler3, IN.tex0+float2(-fb_inv_resolution_05.x*2.0f,fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05).x+
 		   tex2D(texSampler3, IN.tex0+float2(fb_inv_resolution_05.x*2.0f,fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05).x+
-		   tex2D(texSampler3, IN.tex0-float2(fb_inv_resolution_05.x*2.0f,fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05).x)/9.0f*/) )), 1.0f);
+		   tex2D(texSampler3, IN.tex0-float2(fb_inv_resolution_05.x*2.0f,fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05).x)/9.0f*/) ))), 1.0f);
 }
 
 float4 ps_main_fb_tonemap_no_filter( in VS_OUTPUT IN) : COLOR
 {
-   return float4(FBGamma(FBToneMap(tex2D(texSampler4, IN.tex0).xyz)), 1.0f);
+   return float4(FBColorGrade(FBGamma(FBToneMap(tex2D(texSampler4, IN.tex0).xyz))), 1.0f);
 }
 
 float4 ps_main_fb_tonemap_AO_no_filter( in VS_OUTPUT IN) : COLOR
 {
-	return float4(FBGamma(FBToneMap(tex2D(texSampler4, IN.tex0).xyz*(
+	return float4(FBColorGrade(FBGamma(FBToneMap(tex2D(texSampler4, IN.tex0).xyz*(
            tex2D(texSampler3, IN.tex0-fb_inv_resolution_05).x /*+ //Blur:
 
            tex2D(texSampler3, IN.tex0+float2(0.0f,fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05).x+
@@ -379,7 +375,7 @@ float4 ps_main_fb_tonemap_AO_no_filter( in VS_OUTPUT IN) : COLOR
            tex2D(texSampler3, IN.tex0+float2(fb_inv_resolution_05.x*2.0f,-fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05).x+
 		   tex2D(texSampler3, IN.tex0+float2(-fb_inv_resolution_05.x*2.0f,fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05).x+
 		   tex2D(texSampler3, IN.tex0+float2(fb_inv_resolution_05.x*2.0f,fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05).x+
-		   tex2D(texSampler3, IN.tex0-float2(fb_inv_resolution_05.x*2.0f,fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05).x)/9.0f*/) )), 1.0f);
+		   tex2D(texSampler3, IN.tex0-float2(fb_inv_resolution_05.x*2.0f,fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05).x)/9.0f*/) ))), 1.0f);
 }
 
 //------------------------------------

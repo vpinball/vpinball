@@ -1283,6 +1283,8 @@ void PinTable::Init(VPinball *pvp)
    m_szImage[0] = 0;
    m_szImageBackdrop[0] = 0;
 
+   m_szImageColorGrade[0] = 0;
+
    m_colorplayfield = RGB(128,128,128);
    m_colorbackdrop = RGB(128,128,128);
 
@@ -2757,6 +2759,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
 
    bw.WriteString(FID(IMAG), m_szImage);
    bw.WriteString(FID(BIMG), m_szImageBackdrop);
+   bw.WriteString(FID(IMCG), m_szImageColorGrade);
    bw.WriteString(FID(BLIM), m_szBallImage);
    bw.WriteString(FID(BLIF), m_szBallImageFront);
 
@@ -3182,6 +3185,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 void PinTable::SetLoadDefaults()
 {
    m_szImageBackdrop[0] = 0;
+   m_szImageColorGrade[0] = 0;
    m_szBallImage[0] = 0;
    m_szBallImageFront[0] = 0;
 
@@ -3443,6 +3447,10 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(BIMG))
    {
       pbr->GetString(m_szImageBackdrop);
+   }
+   else if (id == FID(IMCG))
+   {
+      pbr->GetString(m_szImageColorGrade);
    }
    else if (id == FID(PLMA))
    {
@@ -6505,6 +6513,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
    case DISPID_Image2:
    case DISPID_Image3:
    case DISPID_Image4:
+   case DISPID_Image5:
       {
          cvar = m_vimage.Size();
 
@@ -6733,6 +6742,7 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
    case DISPID_Image2:
    case DISPID_Image3:
    case DISPID_Image4:
+   case DISPID_Image5:
       {
          if (dwCookie == -1)
          {
@@ -7415,6 +7425,27 @@ STDMETHODIMP PinTable::put_BackdropImage(BSTR newVal)
       CreateGDIBackdrop();
       SetDirtyDraw();
    }
+
+   STOPUNDO
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::get_ColorGradeImage(BSTR *pVal)
+{
+   WCHAR wz[512];
+
+   MultiByteToWideChar(CP_ACP, 0, m_szImageColorGrade, -1, wz, 32);
+   *pVal = SysAllocString(wz);
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_ColorGradeImage(BSTR newVal)
+{
+   STARTUNDO
+
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_szImageColorGrade, 32, NULL, NULL);
 
    STOPUNDO
 

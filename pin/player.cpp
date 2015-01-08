@@ -2364,6 +2364,12 @@ void Player::FlipVideoBuffersNormal( const bool vsync )
 	m_pin3d.m_pd3dDevice->SetVertexDeclaration( m_pin3d.m_pd3dDevice->m_pVertexTexelDeclaration );
 
 	m_pin3d.m_pd3dDevice->basicShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetBackBufferTexture());
+
+	Texture * const pin = m_ptable->GetImage((char *)m_ptable->m_szImageColorGrade);
+	if(pin)
+		m_pin3d.m_pd3dDevice->basicShader->SetTexture("Texture4", pin);
+	m_pin3d.m_pd3dDevice->basicShader->Core()->SetBool("color_grade", pin != NULL);
+
 	const D3DXVECTOR4 fb_inv_resolution_05((float)(0.5/(double)m_width),(float)(0.5/(double)m_height),1.0f,1.0f);
 	m_pin3d.m_pd3dDevice->basicShader->Core()->SetVector("fb_inv_resolution_05", &fb_inv_resolution_05);
     m_pin3d.m_pd3dDevice->basicShader->Core()->SetTechnique(useAA ? "fb_tonemap" : "fb_tonemap_no_filter");
@@ -2411,6 +2417,11 @@ void Player::FlipVideoBuffers3DAOFXAA( const bool vsync ) //!! SMAA, luma sharpe
 	m_pin3d.m_pd3dDevice->basicShader->SetTexture("Texture0", (!stereo && useAO) ? m_pin3d.m_pddsAOBackBuffer : m_pin3d.m_pd3dDevice->GetBackBufferTexture());
 	if(stereo || useAO)
 		m_pin3d.m_pd3dDevice->basicShader->SetTexture("Texture3", m_pin3d.m_pdds3DZBuffer);
+
+	Texture * const pin = m_ptable->GetImage((char *)m_ptable->m_szImageColorGrade);
+	if(pin)
+		m_pin3d.m_pd3dDevice->basicShader->SetTexture("Texture4", pin);
+	m_pin3d.m_pd3dDevice->basicShader->Core()->SetBool("color_grade", pin != NULL);
 
 	D3DXVECTOR4 w_h_height;
 	if(!(stereo || useAO))

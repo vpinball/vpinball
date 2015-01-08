@@ -455,6 +455,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(DISPID_Image3), helpstring("property BallImage")] HRESULT BallImage([in] BSTR newVal);
 		[propget, id(DISPID_Image2), helpstring("property BackdropImage")] HRESULT BackdropImage([out, retval] BSTR *pVal);
 		[propput, id(DISPID_Image2), helpstring("property BackdropImage")] HRESULT BackdropImage([in] BSTR newVal);
+		[propget, id(DISPID_Image5), helpstring("property ColorGradeImage")] HRESULT ColorGradeImage([out, retval] BSTR *pVal);
+		[propput, id(DISPID_Image5), helpstring("property ColorGradeImage")] HRESULT ColorGradeImage([in] BSTR newVal);
 		[propget, id(DISPID_Table_Width), helpstring("property Width")] HRESULT Width([out, retval] float *pVal);
 		[propput, id(DISPID_Table_Width), helpstring("property Width")] HRESULT Width([in] float newVal);
 		[propget, id(DISPID_Table_Height), helpstring("property Height")] HRESULT Height([out, retval] float *pVal);
