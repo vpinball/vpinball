@@ -1,5 +1,6 @@
 float4 ms_zpd_ya_td;
 float4 w_h_height;
+float AO_scale;
 
 sampler2D texSamplerBack : TEXUNIT0 = sampler_state
 {
@@ -85,7 +86,7 @@ float4 ps_main_ao(in VS_OUTPUT IN) : COLOR
 	const float falloff = 0.000002; //!!
 	const float radius = 0.006; //!!
 	const int samples = 9; //4,8,9,13,21,25 korobov,fibonacci
-	const float total_strength = 1.75 * (/*1.0 for uniform*/0.5 / samples); //!!
+	const float total_strength = AO_scale * (/*1.0 for uniform*/0.5 / samples);
 	const float depth0 = tex2D(texSamplerDepth, u).x;
 	if((depth0 == 1.0f) || (depth0 == 0.0f)) //!! early out if depth too large (=BG) or too small (=DMD,etc -> retweak render options (depth write on), otherwise also screwup with stereo)
 		return float4(1.0f,1.0f,1.0f,1.0f);
@@ -105,9 +106,14 @@ float4 ps_main_ao(in VS_OUTPUT IN) : COLOR
 		occlusion += step(falloff, diff_depth) * /*abs(rdotn)* for uniform*/ (1.0f-diff_norm*diff_norm) * (1.0-smoothstep(falloff, area, diff_depth));
 	}
 	const float ao = 1.0 - total_strength * occlusion;
-	return float4( (tex2D(texSamplerBack, u).xyz*0.5f+(tex2D(texSamplerBack, u+float2(w_h_height.x,0.0f)).xyz+tex2D(texSamplerBack, u+float2(0.0f,w_h_height.y)).xyz+tex2D(texSamplerBack, u-float2(w_h_height.x,0.0f)).xyz+tex2D(texSamplerBack, u-float2(0.0f,w_h_height.y)).xyz)*0.125f)
-		*0.5f+saturate(ao/* + base*/)*0.5f, 1.0f); //!! meh
-};
+	const float averaged_ao = (tex2D(texSamplerBack, u).x*0.5f
+	                          +(tex2D(texSamplerBack, u+float2(w_h_height.x,0.0f)).x
+							   +tex2D(texSamplerBack, u+float2(0.0f,w_h_height.y)).x
+							   +tex2D(texSamplerBack, u-float2(w_h_height.x,0.0f)).x
+							   +tex2D(texSamplerBack, u-float2(0.0f,w_h_height.y)).x)*0.125f)
+		*0.5f+saturate(ao /*+base*/)*0.5f;
+	return float4(averaged_ao, averaged_ao, averaged_ao, 1.0f);
+}
 
 // stereo
 
