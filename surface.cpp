@@ -1082,7 +1082,6 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
     }
 
     // reset render states
-    //!! ppin3d->DisableLightMap();
     g_pplayer->m_pin3d.DisableAlphaBlend();
     pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 }

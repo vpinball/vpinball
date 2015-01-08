@@ -54,17 +54,17 @@ texture Texture4; // color grade
 sampler2D texSampler0 : TEXUNIT0 = sampler_state // base texture
 {
 	Texture	  = (Texture0);
-    MIPFILTER = LINEAR;
-    MAGFILTER = LINEAR;
-    MINFILTER = LINEAR;
-	//ADDRESSU  = Wrap;
+    //MIPFILTER = LINEAR; //!! HACK: not set here as user can choose to override trilinear by anisotropic
+    //MAGFILTER = LINEAR;
+    //MINFILTER = LINEAR;
+	//ADDRESSU  = Wrap; //!! ?
 	//ADDRESSV  = Wrap;
 };
 
-sampler2D texSampler1 : TEXUNIT1 = sampler_state // environment
+sampler2D texSampler1 : TEXUNIT1 = sampler_state // environment and texB for lights
 {
 	Texture	  = (Texture1);
-    MIPFILTER = LINEAR;
+    MIPFILTER = LINEAR; //!! ?
     MAGFILTER = LINEAR;
     MINFILTER = LINEAR;
 	ADDRESSU  = Wrap;

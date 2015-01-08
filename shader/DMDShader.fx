@@ -7,7 +7,7 @@ texture Texture0;
 sampler2D texSampler0 : TEXUNIT0 = sampler_state
 {
 	Texture	  = (Texture0);
-    MIPFILTER = POINT;
+    MIPFILTER = NONE;
     MAGFILTER = POINT;
     MINFILTER = POINT;
 };

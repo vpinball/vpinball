@@ -1281,6 +1281,9 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
          pd3dDevice->basicShader->SetTexture("Texture0", pinA);
          pd3dDevice->basicShader->SetTexture("Texture1", pinB);
          pd3dDevice->basicShader->Core()->SetTechnique("basic_with_textureAB_noLight");
+	     
+		 // reset tex1 to env
+		 pd3dDevice->basicShader->SetTexture("Texture1", &ppin3d->envTexture); //!! make customisable
 
          //ppin3d->SetTextureFilter( ePictureTexture, TEXTURE_MODE_TRILINEAR );
       }
