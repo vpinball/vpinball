@@ -2783,6 +2783,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
    bw.WriteFloat(FID(LZRA), m_lightRange);
    bw.WriteFloat(FID(LIES), m_lightEmissionScale);
    bw.WriteFloat(FID(ENES), m_envEmissionScale);
+   bw.WriteFloat(FID(AOSC), m_AOScale);
 
    bw.WriteFloat(FID(SVOL), m_TableSoundVolume);
    bw.WriteFloat(FID(MVOL), m_TableMusicVolume);
@@ -3204,6 +3205,7 @@ void PinTable::SetLoadDefaults()
    m_lightRange = 3000.0f;
    m_lightEmissionScale = 1000000.0f;
    m_envEmissionScale = 10.0f;
+   m_AOScale = 1.75f;
    m_angletiltMax = 726.0f;
    m_angletiltMin = 4.5f;
 
@@ -3479,6 +3481,10 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(ENES))
    {
        pbr->GetFloat(&m_envEmissionScale);
+   }
+   else if (id == FID(AOSC))
+   {
+       pbr->GetFloat(&m_AOScale);
    }
    else if (id == FID(BREF))
    {
@@ -7167,6 +7173,24 @@ STDMETHODIMP PinTable::put_LightEmissionScale(float newVal)
     STARTUNDO
 
     m_lightEmissionScale = newVal;
+
+    STOPUNDO
+
+    return S_OK;
+}
+
+STDMETHODIMP PinTable::get_AOScale(float *pVal)
+{
+    *pVal = m_AOScale;
+
+    return S_OK;
+}
+
+STDMETHODIMP PinTable::put_AOScale(float newVal)
+{
+    STARTUNDO
+
+    m_AOScale = newVal;
 
     STOPUNDO
 

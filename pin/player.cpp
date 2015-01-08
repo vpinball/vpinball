@@ -2429,6 +2429,8 @@ void Player::FlipVideoBuffers3DAOFXAA( const bool vsync ) //!! SMAA, luma sharpe
 		const D3DXVECTOR4 ms_zpd_ya_td(m_ptable->GetMaxSeparation(), m_ptable->GetZPD(), m_fStereo3DY ? 1.0f : 0.0f, (m_fStereo3D == 1) ? 1.0f : 0.0f);
 		m_pin3d.m_pd3dDevice->basicShader->Core()->SetVector("ms_zpd_ya_td", &ms_zpd_ya_td);
 		w_h_height = D3DXVECTOR4((float)(1.0/(double)m_width), (float)(1.0/(double)m_height), (float)m_height, stereo ? (m_fStereo3DAA ? 1.0f : 0.0f) : (1.0f+(float)(usec()&0x1FF)*(float)(1.0/0x1FF)));
+		if(useAO)
+			m_pin3d.m_pd3dDevice->basicShader->Core()->SetFloat("AO_scale", m_ptable->m_AOScale);
 	}
 	m_pin3d.m_pd3dDevice->basicShader->Core()->SetVector("w_h_height", &w_h_height);
     

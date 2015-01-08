@@ -124,6 +124,8 @@ public:
     STDMETHOD(put_EnvironmentEmissionScale)(/*[in]*/ float newVal);
     STDMETHOD(get_LightEmissionScale)(/*[out, retval]*/ float *pVal);
     STDMETHOD(put_LightEmissionScale)(/*[in]*/ float newVal);
+    STDMETHOD(get_AOScale)(/*[out, retval]*/ float *pVal);
+    STDMETHOD(put_AOScale)(/*[in]*/ float newVal);
     STDMETHOD(get_BallReflection)(/*[out, retval]*/ int *pVal);
     STDMETHOD(put_BallReflection)(/*[in]*/ int newVal);
     STDMETHOD(get_ReflectionStrength)(/*[out, retval]*/ int *pVal);
@@ -624,6 +626,7 @@ END_CONNECTION_POINT_MAP()
     float m_lightRange;
 	float m_lightEmissionScale;
 	float m_envEmissionScale;
+	float m_AOScale;
 
     int m_useReflectionForBalls;
     int m_ballReflectionStrength;

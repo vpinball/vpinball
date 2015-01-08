@@ -690,6 +690,7 @@
 #define IDC_LIGHTRANGE                  565
 #define IDC_ENVEMISSIONSCALE            566
 #define IDC_LIGHTEMISSIONSCALE          567
+#define IDC_AOSCALE                     568
 #define IDC_TABLESOUNDVOLUME            579
 #define IDC_TABLEMUSICVOLUME            580
 #define IDS_VISUALS_SOUND               581
