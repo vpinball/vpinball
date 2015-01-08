@@ -359,12 +359,12 @@ float4 ps_main_fb_tonemap_AO( in VS_OUTPUT IN) : COLOR
 
 float4 ps_main_fb_tonemap_no_filter( in VS_OUTPUT IN) : COLOR
 {
-   return float4(FBColorGrade(FBGamma(FBToneMap(tex2D(texSampler4, IN.tex0).xyz))), 1.0f);
+   return float4(FBColorGrade(FBGamma(FBToneMap(tex2D(texSampler4, IN.tex0+fb_inv_resolution_05).xyz))), 1.0f);
 }
 
 float4 ps_main_fb_tonemap_AO_no_filter( in VS_OUTPUT IN) : COLOR
 {
-	return float4(FBColorGrade(FBGamma(FBToneMap(tex2D(texSampler4, IN.tex0).xyz*(
+	return float4(FBColorGrade(FBGamma(FBToneMap(tex2D(texSampler4, IN.tex0+fb_inv_resolution_05).xyz*(
            tex2D(texSampler3, IN.tex0-fb_inv_resolution_05).x /*+ //Blur:
 
            tex2D(texSampler3, IN.tex0+float2(0.0f,fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05).x+
