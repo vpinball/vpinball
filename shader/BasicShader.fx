@@ -18,7 +18,7 @@ float2 fb_inv_resolution_05;
 sampler2D texSampler3 : TEXUNIT2 = sampler_state // AO
 {
 	Texture	  = (Texture3);
-    MIPFILTER = LINEAR;
+    MIPFILTER = NONE; //!! ??
     MAGFILTER = LINEAR;
     MINFILTER = LINEAR;
 	ADDRESSU  = Clamp;

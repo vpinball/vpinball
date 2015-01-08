@@ -270,8 +270,6 @@ void DispReel::PostRenderStatic(RenderDevice* pd3dDevice)
 	g_pplayer->m_pin3d.EnableAlphaBlend(0xe0, false);
 	pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATER); //!! still necessary?
 
-	//!! ppin3d->DisableLightMap();
-
 	for (int i = 0; i < m_d.m_reelcount; ++i)
 	{
 		g_pplayer->Spritedraw(ReelInfo[i].position.left, ReelInfo[i].position.top,

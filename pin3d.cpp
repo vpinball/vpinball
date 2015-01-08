@@ -275,6 +275,8 @@ static const WORD rgiPin3D1[4] = {2,3,5,6};
 
 void Pin3D::DrawBackground()
 {
+	SetTextureFilter(ePictureTexture, TEXTURE_MODE_TRILINEAR );
+	
 	PinTable * const ptable = g_pplayer->m_ptable;
 	Texture * const pin = ptable->GetDecalsEnabled() ? ptable->GetImage((char *)g_pplayer->m_ptable->m_szImageBackdrop) : NULL;
 	if (pin)
@@ -422,8 +424,6 @@ void Pin3D::InitPlayfieldGraphics()
 
     m_pd3dDevice->SetVertexDeclaration( m_pd3dDevice->m_pVertexNormalTexelTexelDeclaration );
 
-    //!! EnableLightMap(0);
-
     for (int i=0; i<4; ++i)
     {
         rgv[i].nx = 0;
@@ -470,7 +470,7 @@ void Pin3D::InitPlayfieldGraphics()
 void Pin3D::RenderPlayfieldGraphics()
 {
    TRACE_FUNCTION();
-   //!! EnableLightMap(0);
+
    Texture * const pin = g_pplayer->m_ptable->GetImage((char *)g_pplayer->m_ptable->m_szImage);
    Material *mat = g_pplayer->m_ptable->GetMaterial( g_pplayer->m_ptable->m_szPlayfieldMaterial);
    m_pd3dDevice->basicShader->SetMaterial(mat);
@@ -492,7 +492,6 @@ void Pin3D::RenderPlayfieldGraphics()
 	m_pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, tableVBuffer, 0, 4, tableIBuffer, 0, 6);
     m_pd3dDevice->basicShader->End();
 
-	//!! DisableLightMap();
 	SetTexture(NULL);
     if (pin)
     {
