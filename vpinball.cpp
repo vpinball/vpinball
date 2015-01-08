@@ -3808,7 +3808,7 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
 		 sprintf_s(tmp,256,"%f",stereo3DZPD);
  		 SetDlgItemTextA(hwndDlg, IDC_3D_STEREO_ZPD, tmp);
 
-         const bool forceAniso = (GetRegIntWithDefault("Player", "ForceAnisotropicFiltering", 0) != 0);
+         const bool forceAniso = (GetRegIntWithDefault("Player", "ForceAnisotropicFiltering", 1) != 0);
          SendMessage(GetDlgItem(hwndDlg, IDC_FORCE_ANISO), BM_SETCHECK, forceAniso ? BST_CHECKED : BST_UNCHECKED, 0);
 
          const bool softwareVP = (GetRegIntWithDefault("Player", "SoftwareVertexProcessing", 0) != 0);
