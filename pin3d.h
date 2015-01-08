@@ -104,7 +104,7 @@ public:
 	BaseTexture* m_envRadianceTexture;
 	D3DTexture* m_device_envRadianceTexture;
 
-	Texture m_pddsLightWhite;
+	Texture m_pddsLightWhite; // 16x16 tex used as fallback if specified texture not found/invalid
 
     PinProjection m_proj;
 
