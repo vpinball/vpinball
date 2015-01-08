@@ -578,7 +578,11 @@ void Primitive::UpdateMesh( const bool force_rebuild_normals, const bool upload_
    if(upload_vbuffer)
    {
 	   Vertex3D_NoTex2 *buf;
-	   vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY);
+       if ( m_d.staticRendering )
+	      vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY);
+       else
+          vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::DISCARDCONTENTS);
+
 	   memcpy( buf, &m_mesh.m_vertices[0], sizeof(Vertex3D_NoTex2)*m_mesh.m_vertices.size() );
 	   vertexBuffer->unlock();
    }
@@ -650,8 +654,11 @@ void Primitive::PostRenderStatic(RenderDevice* pd3dDevice)
 
 void Primitive::RenderSetup( RenderDevice* pd3dDevice )
 {
-   if( !vertexBuffer )
+   if( !vertexBuffer && m_d.staticRendering)
       pd3dDevice->CreateVertexBuffer( m_mesh.NumVertices(), 0, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer );
+
+   if( !vertexBuffer && !m_d.staticRendering)
+       pd3dDevice->CreateVertexBuffer( m_mesh.NumVertices(), D3DUSAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer );
 
    indexBuffer = pd3dDevice->CreateAndFillIndexBuffer( m_mesh.m_indices );
 }
