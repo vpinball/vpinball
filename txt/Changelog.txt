@@ -88,6 +88,16 @@ VP 10.0.0 Changelog
   -> always try to tweak the two lighting components (some lightsources above the table plus an environment light surrounding the table) separately
      by setting one emission scale to 0 and then configuring the other one on its own
 
+- new (optional) color grading step
+  like in movies or photography, one can now add an (almost) artificial color grading step at the very end of the rendering process
+  (see https://docs.unrealengine.com/latest/INT/Engine/Rendering/PostProcessEffects/ColorGrading/index.html
+   and skip to 'Color Correction' to learn more about how this is supposed to work and for a clean 1:1 mapped 256x16 LUT texture to start with, the default table also includes one as ColorGradeLUT256x16_1to1.png)
+  you can load the 256x16 LUT texture via the Image Manager as usual, and then select it in the Backdrop->Colors&Formatting options
+
+  -> only after -finishing- up a table completely, you should use this functionality as the very final beautification step!
+
+  -> do not save the new LUT texture as jpg, but rather as lossless png or bmp!
+
 - images/textures transparency is now -only- based on the alpha channel of the loaded images, no transparency color/hack support anymore
 
 - EM Reels do not feature raw Text/Font input anymore, only Images (this was already unsupported in 9.9.X, but is now officially discarded)
