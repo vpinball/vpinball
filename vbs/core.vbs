@@ -1770,7 +1770,11 @@ Private Function vpmDefCreateBall2(aKicker)
 End Function
 
 Private Function vpmDefCreateBall3(aKicker)
-	If Not IsEmpty(vpmBallImage) Then aKicker.CreateSizedBallWithMass(BSize,BMass).Image = vpmBallImage Else aKicker.CreateSizedBallWithMass(BSize,BMass)(BSize) : End If
+	If Not IsEmpty(vpmBallImage) Then
+		aKicker.CreateSizedBallWithMass(BSize,BMass).Image = vpmBallImage
+	Else
+		aKicker.CreateSizedBallWithMass(BSize,BMass).Image = Empty ' for whatever reason it doesn't work if not assigning something here
+	End If
 	Set vpmDefCreateBall3 = aKicker
 End Function
 
