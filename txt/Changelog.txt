@@ -92,9 +92,10 @@ VP 10.0.0 Changelog
   like in movies or photography, one can now add an (almost) artificial color grading step at the very end of the rendering process
   (see https://docs.unrealengine.com/latest/INT/Engine/Rendering/PostProcessEffects/ColorGrading/index.html
    and skip to 'Color Correction' to learn more about how this is supposed to work and for a clean 1:1 mapped 256x16 LUT texture to start with, the default table also includes one as ColorGradeLUT256x16_1to1.png)
-  you can load the 256x16 LUT texture via the Image Manager as usual, and then select it in the Backdrop->Colors&Formatting options
+  you can load the 256x16 LUT texture via the Image Manager like any other image, and then select it in the Backdrop->Colors&Formatting options
 
   -> only after -finishing- up a table completely, you should use this functionality as the very final beautification step!
+     (also make sure that there is not already a LUT selected in the backdrop settings when you take the screenshot in VP for the further tweaking)
 
   -> do not save the new LUT texture as jpg, but rather as lossless png or bmp!
 
