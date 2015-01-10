@@ -630,7 +630,7 @@ void Trigger::PostRenderStatic(RenderDevice* pd3dDevice)
             }
         }
         Vertex3D_NoTex2 *buf;
-        vertexBuffer->lock(0, 0, (void**)&buf, 0);
+        vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
         for( int i=0;i<numVertices;i++ )
         {
             buf[i].x = triggerVertices[i].x;
@@ -688,7 +688,7 @@ void Trigger::RenderSetup(RenderDevice* pd3dDevice)
 
    if ( vertexBuffer==NULL )
    {
-      ppin3d->m_pd3dDevice->CreateVertexBuffer( numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer );
+      ppin3d->m_pd3dDevice->CreateVertexBuffer( numVertices, D3DUSAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer );
       NumVideoBytes += numVertices*sizeof(Vertex3D_NoTex2);
    }
    Matrix3D fullMatrix;

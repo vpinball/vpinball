@@ -352,7 +352,7 @@ void Bumper::EndPlay()
 void Bumper::UpdateRing(RenderDevice *pd3dDevice )
 {
    Vertex3D_NoTex2 *buf;
-   ringVertexBuffer->lock(0, 0, (void**)&buf, 0);
+   ringVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
    for( int i=0;i<bumperRingNumVertices;i++ )
    {
       buf[i].x = ringVertices[i].x;
@@ -585,7 +585,7 @@ void Bumper::RenderSetup(RenderDevice* pd3dDevice )
       ringIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer( indices );
 
       if (!ringVertexBuffer)
-         pd3dDevice->CreateVertexBuffer(bumperRingNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &ringVertexBuffer);
+         pd3dDevice->CreateVertexBuffer(bumperRingNumVertices, D3DUSAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &ringVertexBuffer);
 
       ringVertices = new Vertex3D_NoTex2[bumperRingNumVertices];
 
