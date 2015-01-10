@@ -339,7 +339,7 @@ void Flasher::EndPlay()
 void Flasher::UpdateMesh()
 {
    Vertex3D_TexelOnly *buf;
-   dynamicVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
+   dynamicVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
 
    const float height = (m_d.m_height+m_ptable->m_tableheight)*m_ptable->m_zScale;
    const float movx = minx+((maxx-minx)*0.5f);
@@ -409,7 +409,7 @@ void Flasher::RenderSetup(RenderDevice* pd3dDevice)
    if( dynamicVertexBuffer )
       dynamicVertexBuffer->release();
 
-   pd3dDevice->CreateVertexBuffer( numPolys*3, 0, MY_D3DFVF_TEX, &dynamicVertexBuffer );
+   pd3dDevice->CreateVertexBuffer( numPolys*3, D3DUSAGE_DYNAMIC, MY_D3DFVF_TEX, &dynamicVertexBuffer );
    NumVideoBytes += numPolys*3*sizeof(Vertex3D_TexelOnly);     
    
    vertices = new Vertex3D_TexelOnly[numPolys*3];
