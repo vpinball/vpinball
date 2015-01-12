@@ -10,10 +10,12 @@ float3 cClearcoat = float3(0.5f, 0.5f, 0.5f);
 //!! Metals have high specular reflectance:  0.5-1.0
 
 bool   bPerformAlphaTest = false;
-float4 staticColor = float4(1,1,1,1);
+float4 staticColor = float4(1.f,1.f,1.f,1.f);
 float  fAlphaTestValue = 128.0f/255.0f;
 
 float2 fb_inv_resolution_05;
+
+float bulb_modulate_vs_add;
 
 sampler2D texSampler3 : TEXUNIT2 = sampler_state // AO
 {
@@ -243,7 +245,7 @@ float4 PS_LightWithTexel(in VS_LIGHT_OUTPUT IN ) : COLOR
 
 	// early out if no normal set (e.g. HUD vertices)
     if(IN.normal.x == 0.0f && IN.normal.y == 0.0f && IN.normal.z == 0.0f)
-     color = float4(t,1.0f); //!! misses tonemapping and gamma here
+     color = float4(t,1.0f);
     else
 	 color = lightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular, edge); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
 
@@ -289,7 +291,7 @@ float4 PS_LightWithoutTexel(in VS_LIGHT_OUTPUT IN ) : COLOR
 	float4 color;
 	// early out if no normal set (e.g. HUD vertices)
     if(IN.normal.x == 0.0f && IN.normal.y == 0.0f && IN.normal.z == 0.0f)
-     color = float4(0,0,0,1); //!! misses tonemapping and gamma here
+     color = float4(0,0,0,1);
     else
 	 color = lightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular, edge); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
 
@@ -305,8 +307,8 @@ float4 PS_BulbLight( in VS_LIGHT_OUTPUT IN ) : COLOR
     atten*=atten;
 	float3 lcolor = lerp(float3(1.0f,1.0f,1.0f), lightColor, sqrt(len));
 	float4 result;
-	result.xyz = lcolor*(atten*intensity);
-	result.a = saturate(atten*intensity);	
+	result.xyz = lcolor*(-bulb_modulate_vs_add*atten*intensity); // negative as it will be blended with '1.0-thisvalue' (the 1.0 is needed to modulate the underlying elements correctly, but not wanted for the term below)
+	result.a = 1.0f/bulb_modulate_vs_add - 1.0f; //saturate(atten*intensity);
 	return result;
 }
 
@@ -449,11 +451,11 @@ technique bulb_light
    { 
 		vertexshader = compile vs_3_0 vs_light_main();
 		pixelshader  = compile ps_3_0 PS_BulbLight();
-		SrcBlend=ONE;
-		DestBlend=ONE;
-		AlphaTestEnable=true;
+		SrcBlend=SRCALPHA;     // add the lightcontribution
+		DestBlend=INVSRCCOLOR; // but also modulate the light first with the underlying elements by (1+lightcontribution, e.g. a very crude approximation of real lighting)
+		AlphaTestEnable=false;
 		AlphaBlendEnable=true;
-		BlendOp=Add;
+		BlendOp=RevSubtract;   // see above
    } 
 }
 

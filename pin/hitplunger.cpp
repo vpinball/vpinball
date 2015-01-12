@@ -160,7 +160,7 @@ void PlungerAnimObject::UpdateVelocities()
 
 				if (m_speed <= -m_breakOverVelocity)						//mechanical speed is too fast, windows will
 					{														// alias at high speed and EOS 
-					m_force = -m_plunger->m_d.m_mechStrength;				// set to mechnical plunger force
+					m_force = -m_plunger->m_d.m_mechStrength;				// set to mechanical plunger force
 					m_posdesired = m_frameEnd;								// set to button controller 
 					m_fAcc = true;											// enable animation
 					m_mechTimeOut = 5;										// stay any other actions until completed

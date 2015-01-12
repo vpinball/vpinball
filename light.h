@@ -17,6 +17,7 @@ public:
     float m_fadeSpeed;
 	U32 m_time_msec;
     float m_currentIntensity;
+	float m_bulb_modulate_vs_add;
     float m_meshRadius;
     float m_meshIntensity;
     //float m_meshFadeSpeed;
@@ -219,6 +220,8 @@ public:
    STDMETHOD(put_ShowBulbMesh)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_ScaleBulbMesh)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_ScaleBulbMesh)(/*[in]*/ float newVal);
+   STDMETHOD(get_BulbModulateVsAdd)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_BulbModulateVsAdd)(/*[in]*/ float newVal);
 };
 
 #endif // !defined(AFX_LIGHT_H__7445FDB1_1FBE_4975_9AB6_367E6D16098F__INCLUDED_)

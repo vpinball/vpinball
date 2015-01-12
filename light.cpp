@@ -199,6 +199,12 @@ void Light::SetDefaults(bool fromMouseClick)
        m_d.m_meshRadius = fTmp;
    else
        m_d.m_meshRadius = 20.0f;
+
+   hr = GetRegStringAsFloat("DefaultProps\\Light","BulbModulateVsAdd", &fTmp);
+   if ((hr == S_OK) && fromMouseClick)
+       m_d.m_bulb_modulate_vs_add = fTmp;
+   else
+       m_d.m_bulb_modulate_vs_add = 0.9f;
 }
 
 void Light::WriteRegDefaults()
@@ -218,6 +224,7 @@ void Light::WriteRegDefaults()
    SetRegValueBool("DefaultProps\\Light","Bulb", m_d.m_BulbLight);
    SetRegValueBool("DefaultProps\\Light","ShowBulbMesh", m_d.m_showBulbMesh);
    SetRegValueFloat("DefaultProps\\Light","ScaleBulbMesh", m_d.m_meshRadius);
+   SetRegValueFloat("DefaultProps\\Light","BulbModulateVsAdd", m_d.m_bulb_modulate_vs_add);
 }
 
 Texture *Light::GetDisplayTexture()
@@ -456,7 +463,7 @@ void Light::ClearForOverwrite()
 void Light::RenderBulbMesh(RenderDevice *pd3dDevice, COLORREF color, bool isOn)
 {
     pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelDeclaration );
-    pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
+    pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture"); //!! emissive?!
     Material mat;
     mat.m_cBase = 0;
     mat.m_fWrapLighting=0.5f;
@@ -555,7 +562,10 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
             pd3dDevice->basicShader->Core()->SetTechnique("light_without_texture");
     }
     else
+	{
+		pd3dDevice->basicShader->Core()->SetFloat("bulb_modulate_vs_add",m_d.m_bulb_modulate_vs_add);
         pd3dDevice->basicShader->Core()->SetTechnique("bulb_light");
+	}
 
 	pd3dDevice->SetVertexDeclaration(pd3dDevice->m_pVertexNormalTexelTexelDeclaration);
 
@@ -790,6 +800,7 @@ HRESULT Light::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptke
    bw.WriteBool(FID(BULT), m_d.m_BulbLight);
    bw.WriteBool(FID(SHBM), m_d.m_showBulbMesh);
    bw.WriteFloat(FID(BMSC), m_d.m_meshRadius);
+   bw.WriteFloat(FID(BMVA), m_d.m_bulb_modulate_vs_add);
 
    ISelect::SaveData(pstm, hcrypthash, hcryptkey);
 
@@ -918,6 +929,10 @@ BOOL Light::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(BMSC))
    {
        pbr->GetFloat(&m_d.m_meshRadius);
+   }
+   else if (id == FID(BMVA))
+   {
+       pbr->GetFloat(&m_d.m_bulb_modulate_vs_add);
    }
    else
    {
@@ -1417,6 +1432,24 @@ STDMETHODIMP Light::put_ScaleBulbMesh(float newVal)
     STARTUNDO
 
     m_d.m_meshRadius = newVal;
+
+    STOPUNDO
+
+    return S_OK;
+}
+
+STDMETHODIMP Light::get_BulbModulateVsAdd(float *pVal)
+{
+    *pVal = m_d.m_bulb_modulate_vs_add;
+
+    return S_OK;
+}
+
+STDMETHODIMP Light::put_BulbModulateVsAdd(float newVal)
+{
+    STARTUNDO
+
+    m_d.m_bulb_modulate_vs_add = newVal;
 
     STOPUNDO
 
