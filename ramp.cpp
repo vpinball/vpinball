@@ -1060,9 +1060,9 @@ void Ramp::CreateWire( const int numRings, const int numSegments, const Vertex2D
     for( int i=0, index=0; i<numRings; i++ )
     {
         const int i2= (i==(numRings-1)) ? i : i+1;
-      float height = rgheightInit[i]+m_ptable->m_tableheight;    
+        float height = rgheightInit[i]+m_ptable->m_tableheight;    
 
-      Vertex3Ds tangent( midPoints[i2].x-midPoints[i].x, midPoints[i2].y-midPoints[i].y, 0.0f);
+        Vertex3Ds tangent( midPoints[i2].x-midPoints[i].x, midPoints[i2].y-midPoints[i].y, 0.0f);
         if (i == numRings - 1)
         {
            // for the last spline point use the previous tangent again, otherwise we won't see the complete wire (it stops one control point too early)
@@ -1084,27 +1084,26 @@ void Ramp::CreateWire( const int numRings, const int numSegments, const Vertex2D
         normal.Normalize();
         prevB = binorm;
         int si=index;
-		const float inv_numRings = 1.0f/(float)numRings;
-		const float inv_numSegments = 1.0f/(float)numSegments;
+		  const float inv_numRings = 1.0f/(float)numRings;
+		  const float inv_numSegments = 1.0f/(float)numSegments;
         for( int j=0;j<numSegments;j++,index++)
         {
             const float u=(float)i*inv_numRings;
             const float v=((float)j+u)*inv_numSegments;
             const float u_angle = u*(float)(2.0*M_PI);
             const float v_angle = v*(float)(2.0*M_PI);
-         const Vertex3Ds tmp = GetRotatedAxis( (float)j*(360.0f*inv_numSegments), tangent, normal ) * ((float)m_d.m_wireDiameter*0.5f);
-         rgvbuf[index].x = midPoints[i].x+tmp.x;
-         rgvbuf[index].y = midPoints[i].y+tmp.y;
+            const Vertex3Ds tmp = GetRotatedAxis( (float)j*(360.0f*inv_numSegments), tangent, normal ) * ((float)m_d.m_wireDiameter*0.5f);
+            rgvbuf[index].x = midPoints[i].x+tmp.x;
+            rgvbuf[index].y = midPoints[i].y+tmp.y;
             rgvbuf[index].z = height  +tmp.z;
             //texel
             rgvbuf[index].tu = u;
             rgvbuf[index].tv = v;
-         Vertex3Ds n(rgvbuf[index].x - midPoints[i].x, rgvbuf[index].y - midPoints[i].y, rgvbuf[index].z - height);
+            Vertex3Ds n(rgvbuf[index].x - midPoints[i].x, rgvbuf[index].y - midPoints[i].y, rgvbuf[index].z - height);
             float len = 1.0f / sqrtf(n.x*n.x + n.y*n.y + n.z*n.z);
             rgvbuf[index].nx = n.x*len;
             rgvbuf[index].ny = n.y*len;
             rgvbuf[index].nz = n.z*len;
-
         }
     }
 }
@@ -1146,6 +1145,10 @@ void Ramp::prepareHabitrail(RenderDevice* pd3dDevice)
 
     Vertex3D_NoTex2 *buf;
     Vertex3D_NoTex2 *buf2;
+    Vertex2D *tmpPoints = new Vertex2D[splinePoints];
+    for(int i=0;i<splinePoints;i++)
+       tmpPoints[i] = rgvLocal[splinePoints*2 - i - 1];
+
     dynamicVertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY);
     if (m_d.m_type != RampType1Wire)
        dynamicVertexBuffer2->lock(0, 0, (void**)&buf2, VertexBuffer::WRITEONLY);
@@ -1158,7 +1161,7 @@ void Ramp::prepareHabitrail(RenderDevice* pd3dDevice)
     if (m_d.m_type != RampType1Wire)
     {
        CreateWire(numRings, numSegments, rgvLocal, rgvbuf);
-       CreateWire(numRings, numSegments, &rgvLocal[splinePoints], rgvbuf2);
+       CreateWire(numRings, numSegments, tmpPoints, rgvbuf2);
     }
     else
        CreateWire(numRings, numSegments, middlePoints, rgvbuf);
@@ -1218,6 +1221,7 @@ void Ramp::prepareHabitrail(RenderDevice* pd3dDevice)
       delete [] rgvbuf2;
     delete [] rgvLocal;
     delete [] middlePoints;
+    delete [] tmpPoints;
 }
 
 void Ramp::RenderSetup(RenderDevice* pd3dDevice)
