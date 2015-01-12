@@ -704,7 +704,7 @@ BOOL Flasher::LoadToken(int id, BiffReader *pbr)
    {
       int iTmp;
       pbr->GetInt(&iTmp);
-      if( iTmp>100 ) iTmp=100;
+      //if( iTmp>100 ) iTmp=100;
       if( iTmp<0 ) iTmp=0;
       m_d.m_fAlpha = iTmp;
    }
@@ -1100,7 +1100,7 @@ STDMETHODIMP Flasher::put_Opacity(long newVal)
    STARTUNDO
 
    m_d.m_fAlpha = newVal;
-   if (m_d.m_fAlpha>100 ) m_d.m_fAlpha=100;
+   //if (m_d.m_fAlpha>100 ) m_d.m_fAlpha=100;
    if (m_d.m_fAlpha<0 ) m_d.m_fAlpha=0;
    
    STOPUNDO
@@ -1119,7 +1119,7 @@ STDMETHODIMP Flasher::put_Amount(long newVal)
     STARTUNDO
 
         m_d.m_fFilterAmount = newVal;
-    if (m_d.m_fFilterAmount>100 ) m_d.m_fFilterAmount=100;
+    //if (m_d.m_fFilterAmount>100 ) m_d.m_fFilterAmount=100;
     if (m_d.m_fFilterAmount<0 ) m_d.m_fFilterAmount=0;
 
     STOPUNDO
