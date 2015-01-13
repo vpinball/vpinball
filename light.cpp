@@ -571,6 +571,20 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
 
     pd3dDevice->basicShader->Begin(0);
     pd3dDevice->DrawPrimitiveVB(D3DPT_TRIANGLELIST, customMoverVBuffer, 0, customMoverVertexNum);
+    if ( m_d.m_showBulbMesh && m_d.m_BulbLight )
+    {
+        Material mat;
+        mat.m_cBase = 0xFFA0A0A0;
+        mat.m_bOpacityActive=true;
+        mat.m_fOpacity = 0.6f;
+        mat.m_bIsMetal=false;
+        mat.m_fEdge=1.0f;
+        mat.m_cGlossy = 0xFF020202;
+        mat.m_fRoughness = 0.8f;
+        pd3dDevice->basicShader->SetMaterial(&mat);
+
+        pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, bulbLightVBuffer, 0, bulbLightNumVertices, bulbLightIndexBuffer, 0, bulbLightNumFaces );
+    }
     pd3dDevice->basicShader->End();
 
     pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, FALSE);
@@ -610,7 +624,7 @@ void Light::PrepareMoversCustom()
    float height = m_surfaceHeight;
    if ( m_d.m_BulbLight && m_d.m_showBulbMesh )
    {
-       height += (1.4f*m_d.m_meshRadius)*m_ptable->m_zScale;
+       height += (2.6f*m_d.m_meshRadius)*m_ptable->m_zScale;
    }
 
    customMoverVertexNum = vtri.Size()*3;
