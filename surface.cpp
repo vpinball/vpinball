@@ -991,7 +991,7 @@ void Surface::RenderSlingshots(RenderDevice* pd3dDevice)
       if (plinesling->m_slingshotanim.m_iframe != 1)
           continue;
 
-      pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
+      pd3dDevice->basicShader->SetTechnique("basic_without_texture");
 
       pd3dDevice->basicShader->Begin(0);
       pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, slingshotVBuffer, i*24, 24, slingIBuffer, 0, 36);
@@ -1027,13 +1027,13 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
         if (pinSide)
         {
             pd3dDevice->basicShader->SetTexture("Texture0",pinSide);
-            pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
+            pd3dDevice->basicShader->SetTechnique("basic_with_texture");
 
             //g_pplayer->m_pin3d.SetTextureFilter( ePictureTexture, TEXTURE_MODE_TRILINEAR );
         }
         else
         {
-            pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
+            pd3dDevice->basicShader->SetTechnique("basic_without_texture");
         }
 
         if (!fDrop && (numVertices > 0)) // Don't need to render walls if dropped
@@ -1064,13 +1064,13 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
        if (pin)
        {
           pd3dDevice->basicShader->SetTexture("Texture0",pin);  
-          pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
+          pd3dDevice->basicShader->SetTechnique("basic_with_texture");
 
           //g_pplayer->m_pin3d.SetTextureFilter( ePictureTexture, TEXTURE_MODE_TRILINEAR );
        }
        else
        {
-          pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
+          pd3dDevice->basicShader->SetTechnique("basic_without_texture");
        }
 
        if(numPolys > 0)

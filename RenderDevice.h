@@ -325,6 +325,7 @@ public:
     void SetTexture( D3DXHANDLE texelName, D3DTexture *texel);
     void SetStaticColor(D3DXVECTOR4 color);
     void SetMaterial( const Material * const mat );
+    void SetTechnique(char *technique);
 
 private:
     ID3DXEffect* m_shader;
@@ -334,4 +335,5 @@ private:
     float   currentAlphaTestValue;
     float   currentAlphaValue;
     D3DXVECTOR4 currentColor;
+    char   currentTechnique[64];
 };

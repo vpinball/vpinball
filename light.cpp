@@ -555,16 +555,16 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
 
 		if ((offTexel = m_ptable->GetImage(m_d.m_szOffImage)) != NULL)
         {
-            pd3dDevice->basicShader->Core()->SetTechnique("light_with_texture");
+            pd3dDevice->basicShader->SetTechnique("light_with_texture");
             pd3dDevice->basicShader->SetTexture("Texture0", offTexel );
         }
         else
-            pd3dDevice->basicShader->Core()->SetTechnique("light_without_texture");
+            pd3dDevice->basicShader->SetTechnique("light_without_texture");
     }
     else
 	{
 		pd3dDevice->basicShader->Core()->SetFloat("bulb_modulate_vs_add",m_d.m_bulb_modulate_vs_add);
-        pd3dDevice->basicShader->Core()->SetTechnique("bulb_light");
+        pd3dDevice->basicShader->SetTechnique("bulb_light");
 	}
 
 	pd3dDevice->SetVertexDeclaration(pd3dDevice->m_pVertexNormalTexelTexelDeclaration);
@@ -624,7 +624,7 @@ void Light::PrepareMoversCustom()
    float height = m_surfaceHeight;
    if ( m_d.m_BulbLight && m_d.m_showBulbMesh )
    {
-       height += (2.6f*m_d.m_meshRadius)*m_ptable->m_zScale;
+       height += (1.4f*m_d.m_meshRadius)*m_ptable->m_zScale;
    }
 
    customMoverVertexNum = vtri.Size()*3;
