@@ -103,6 +103,7 @@ public:
 	virtual int GetSelectLevel() {return 1;}
     virtual bool LoadMesh(){ return false; }
     virtual void ExportMesh(){};
+    virtual void UpdatePropertyPanes(){};
 
 	POINT m_ptLast;
 
