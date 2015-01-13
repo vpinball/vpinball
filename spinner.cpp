@@ -283,28 +283,28 @@ void Spinner::EndPlay()
 
 void Spinner::UpdatePlate( RenderDevice *pd3dDevice )
 {
-    Matrix3D fullMatrix;
+    Matrix3D _fullMatrix;
     Matrix3D rotzMat,rotxMat;
     Vertex3D_NoTex2 *buf;
 
-    fullMatrix.SetIdentity();
+    _fullMatrix.SetIdentity();
     rotxMat.RotateXMatrix(-m_phitspinner->m_spinneranim.m_angle);
-    rotxMat.Multiply(fullMatrix, fullMatrix);
+    rotxMat.Multiply(_fullMatrix, _fullMatrix);
     rotzMat.RotateZMatrix(ANGTORAD(m_d.m_rotation));
-    rotzMat.Multiply(fullMatrix, fullMatrix);
+    rotzMat.Multiply(_fullMatrix, _fullMatrix);
 
     plateVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
     for( int i=0;i<spinnerPlateNumVertices;i++ )
     {
         Vertex3Ds vert(spinnerPlate[i].x,spinnerPlate[i].y,spinnerPlate[i].z);
-        vert = fullMatrix.MultiplyVector(vert);
+        vert = _fullMatrix.MultiplyVector(vert);
 
         buf[i].x = (vert.x*m_d.m_length)+m_d.m_vCenter.x;
         buf[i].y = (vert.y*m_d.m_length)+m_d.m_vCenter.y;
         buf[i].z = (vert.z*m_d.m_length*m_ptable->m_zScale);
         buf[i].z += m_posZ;
         vert = Vertex3Ds( spinnerPlate[i].nx, spinnerPlate[i].ny, spinnerPlate[i].nz );
-        vert = fullMatrix.MultiplyVectorNoTranslate(vert);
+        vert = _fullMatrix.MultiplyVectorNoTranslate(vert);
         buf[i].nx = vert.x;
         buf[i].ny = vert.y;
         buf[i].nz = vert.z;

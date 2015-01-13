@@ -136,7 +136,7 @@ float4 ps_main_stereo(in VS_OUTPUT IN) : COLOR
 		parallax = -parallax;
 	if(yaxis)
 		parallax = -parallax;
-	const float3 col = tex2D(texSamplerBack,u + (yaxis ? float2(0.0,parallax) : float2(parallax,0.0)));
+	const float3 col = tex2D(texSamplerBack,u + (yaxis ? float2(0.0,parallax) : float2(parallax,0.0))).xyz;
 	if(!aa)
 		return float4(FBColorGrade(FBGamma(FBToneMap(col))), 1.0f); // otherwise blend with 'missing' scanline
 	minDepth = min(min(tex2D(texSamplerDepth,u + (yaxis ? float2(0.0,0.5*su+w_h_height.y) : float2(0.5*su,w_h_height.y))).x, tex2D(texSamplerDepth,u + (yaxis ? float2(0.0,0.666*su+w_h_height.y) : float2(0.666*su,w_h_height.y))).x), tex2D(texSamplerDepth,u + (yaxis ? float2(0.0,su+w_h_height.y) : float2(su,w_h_height.y))).x);

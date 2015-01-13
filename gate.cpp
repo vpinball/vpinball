@@ -221,8 +221,8 @@ void Gate::Render(Sur * const psur)
    }
    }
 
-   const float arrowang = ANGTORAD(m_d.m_rotation) - 0.6f;
    {
+	   const float arrowang = ANGTORAD(m_d.m_rotation) - 0.6f;
 	   const float sn = sinf(arrowang);
 	   const float cs = cosf(arrowang);
 
