@@ -529,6 +529,17 @@ D3DTexture* RenderDevice::DuplicateTexture(RenderTarget* src)
 	return dup;
 }
 
+D3DTexture* RenderDevice::DuplicateTextureSingleChannel(RenderTarget* src)
+{
+    D3DSURFACE_DESC desc;
+    src->GetDesc(&desc);
+	desc.Format = D3DFMT_L8;
+	D3DTexture* dup;
+	CHECKD3D(m_pD3DDevice->CreateTexture(desc.Width, desc.Height, 1,
+		     D3DUSAGE_RENDERTARGET, desc.Format, D3DPOOL_DEFAULT, &dup, NULL)); // D3DUSAGE_AUTOGENMIPMAP?
+	return dup;
+}
+
 D3DTexture* RenderDevice::DuplicateDepthTexture(RenderTarget* src)
 {
     D3DSURFACE_DESC desc;
