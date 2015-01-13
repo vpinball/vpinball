@@ -10,7 +10,7 @@ float3 cClearcoat = float3(0.5f, 0.5f, 0.5f);
 //!! Metals have high specular reflectance:  0.5-1.0
 
 bool   bPerformAlphaTest = false;
-float4 staticColor = float4(1.f,1.f,1.f,1.f);
+float3 staticColor = float3(1.f,1.f,1.f);
 float  fAlphaTestValue = 128.0f/255.0f;
 
 float2 fb_inv_resolution_05;
@@ -120,7 +120,7 @@ float4 ps_main_texture(in VS_OUTPUT IN) : COLOR
    pixel.a *= fmaterialAlpha;
    // early out if no normal set (e.g. HUD vertices)
    if(IN.normal.x == 0.0f && IN.normal.y == 0.0f && IN.normal.z == 0.0f)
-      return pixel*staticColor;
+      return float4(pixel.xyz*staticColor,pixel.a);
       
    float3 t = InvGamma(pixel.xyz);
    float3 diffuse  = t*cBase;
@@ -160,11 +160,13 @@ VS_SIMPLE_OUTPUT vs_simple_main (float4 vPosition  : POSITION0,
 float4 ps_main_textureOne_noLight( in VS_SIMPLE_OUTPUT IN) : COLOR
 {
    float4 pixel = tex2D(texSampler0, IN.tex0);
+
    if (bPerformAlphaTest && pixel.a<=fAlphaTestValue )
     clip(-1);           //stop the pixel shader if alpha test should reject pixel
 
-   float4 result = staticColor*pixel;
-   result.a *= fAlpha;
+   float4 result;
+   result.xyz = staticColor*InvGamma(pixel.xyz);
+   result.a = pixel.a*fAlpha;
    return result;
 }
 
@@ -172,12 +174,15 @@ float4 ps_main_textureAB_noLight( in VS_SIMPLE_OUTPUT IN) : COLOR
 {
    float4 pixel1 = tex2D(texSampler0, IN.tex0);
    float4 pixel2 = tex2D(texSampler1, IN.tex0);
-   if (bPerformAlphaTest && pixel1.a<=fAlphaTestValue )
-    clip(-1);           //stop the pixel shader if alpha test should reject pixel
-   if (bPerformAlphaTest && pixel2.a<=fAlphaTestValue )
+   if (bPerformAlphaTest && (pixel1.a<=fAlphaTestValue || pixel2.a<=fAlphaTestValue))
     clip(-1);           //stop the pixel shader if alpha test should reject pixel
 
-   float4 result = staticColor;
+   pixel1.xyz = InvGamma(pixel1.xyz);
+   pixel2.xyz = InvGamma(pixel2.xyz);
+
+   float4 result;
+   result.xyz = staticColor;
+   result.a = 1.0f;
    if ( bOverlay )
       result *= Overlay(pixel1,pixel2, fFilterAmount);
    else if ( bMultiply )
@@ -193,7 +198,7 @@ float4 ps_main_textureAB_noLight( in VS_SIMPLE_OUTPUT IN) : COLOR
 
 float4 ps_main_noLight( in VS_SIMPLE_OUTPUT IN) : COLOR
 {
-   return staticColor;
+   return float4(staticColor,1.f);
 }
 
 //####### Light shader ##################
@@ -235,9 +240,9 @@ VS_LIGHT_OUTPUT vs_light_main (float4 vPosition  : POSITION0,
 float4 PS_LightWithTexel(in VS_LIGHT_OUTPUT IN ) : COLOR
 {	
     float4 pixel = tex2D(texSampler0, IN.tex0);  
-    float3 t = InvGamma(pixel.xyz);
-    float3 diffuse = t*cBase;
-    float3 glossy = bIsMetal ? diffuse : t*cGlossy*0.08f; //!! use AO for glossy? specular?
+    pixel.xyz = InvGamma(pixel.xyz);
+    float3 diffuse = pixel.xyz*cBase;
+    float3 glossy = bIsMetal ? diffuse : pixel.xyz*cGlossy*0.08f; //!! use AO for glossy? specular?
     float3 specular = cClearcoat*0.08f;
     float edge = bIsMetal ? 1.0f : fEdge;
     float4 result = float4(0.0f, 0.0f, 0.0f, 0.0f);
@@ -245,7 +250,7 @@ float4 PS_LightWithTexel(in VS_LIGHT_OUTPUT IN ) : COLOR
 
 	// early out if no normal set (e.g. HUD vertices)
     if(IN.normal.x == 0.0f && IN.normal.y == 0.0f && IN.normal.z == 0.0f)
-     color = float4(t,1.0f);
+     color = pixel;
     else
 	 color = lightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular, edge); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
 

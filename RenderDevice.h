@@ -180,6 +180,7 @@ public:
 
    RenderTarget* DuplicateRenderTarget(RenderTarget* src);
    D3DTexture* DuplicateTexture(RenderTarget* src);
+   D3DTexture* DuplicateTextureSingleChannel(RenderTarget* src);
    D3DTexture* DuplicateDepthTexture(RenderTarget* src);
 
    void SetRenderTarget( RenderTarget* );

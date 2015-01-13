@@ -220,7 +220,7 @@ float4 psBall( in vout IN ) : COLOR
 
 float4 psBallReflection( in voutReflection IN ) : COLOR
 {
-	float3 ballImageColor = cBase + tex2D( texSampler0, IN.r.xy ).xyz; //!! just add the ballcolor in, this is a whacky reflection anyhow
+	float3 ballImageColor = cBase + InvGamma(tex2D( texSampler0, IN.r.xy ).xyz); //!! just add the ballcolor in, this is a whacky reflection anyhow
 	float alpha = saturate((IN.tex0.y-position.y)/radius);
 	alpha = (alpha*alpha)*(alpha*alpha)*freflectionStrength;
 	return float4(saturate(ballImageColor),alpha);
@@ -228,7 +228,7 @@ float4 psBallReflection( in voutReflection IN ) : COLOR
 
 float4 psBallTrail( in voutTrail IN ) : COLOR
 {
-	return saturate((float4(cBase,0.0f) + tex2D( texSampler0, IN.tex0 ))*IN.alpha); //!! just add the ballcolor in, this is a whacky reflection anyhow
+	return float4(saturate(cBase + InvGamma(tex2D( texSampler0, IN.tex0 ).xyz)*IN.alpha),IN.alpha); //!! just add the ballcolor in, this is a whacky reflection anyhow
 }
 
 //------------------------------------
