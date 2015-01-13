@@ -7,6 +7,7 @@ Flasher::Flasher()
    m_d.m_depthBias = 0.0f;
    dynamicVertexBuffer = 0;
    dynamicVertexBufferRegenerate = true;
+   m_propVisual=NULL;
 }
 
 Flasher::~Flasher()
@@ -932,8 +933,8 @@ void Flasher::GetDialogPanes(Vector<PropertyPane> *pvproppane)
    pproppane = new PropertyPane(IDD_PROP_NAME, NULL);
    pvproppane->AddElement(pproppane);
 
-   pproppane = new PropertyPane(IDD_PROPFLASHER_VISUALS, IDS_VISUALS);
-   pvproppane->AddElement(pproppane);
+   m_propVisual = new PropertyPane(IDD_PROPFLASHER_VISUALS, IDS_VISUALS);
+   pvproppane->AddElement(m_propVisual);
 
    pproppane = new PropertyPane(IDD_PROPFLASHER_POSITION, IDS_POSITION);
    pvproppane->AddElement(pproppane);
@@ -1310,4 +1311,26 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
       pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
 	  g_pplayer->m_pin3d.DisableAlphaBlend();
+}
+
+void Flasher::UpdatePropertyPanes()
+{
+    if ( m_propVisual==NULL )
+        return;
+
+    if ( m_d.m_szImageA[0]==0 && m_d.m_szImageB[0]==0 )
+        EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,8), FALSE);
+    else
+        EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,8), TRUE);
+
+    if ( m_d.m_szImageB[0]==0 || m_d.m_szImageA[0]==0 )
+    {
+        EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_EFFECT_COMBO), FALSE);
+        EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_FILTERAMOUNT_EDIT), FALSE);
+    }
+    else
+    {
+        EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_EFFECT_COMBO), TRUE);
+        EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_FILTERAMOUNT_EDIT), TRUE);
+    }
 }

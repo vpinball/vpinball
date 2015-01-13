@@ -96,6 +96,8 @@ END_CONNECTION_POINT_MAP()
     virtual float GetDepth(const Vertex3Ds& viewDir)
       { return m_d.m_depthBias + viewDir.x * m_d.m_vCenter.x + viewDir.y * m_d.m_vCenter.y + viewDir.z * m_d.m_height; }
 
+    virtual void UpdatePropertyPanes();
+
 	void WriteRegDefaults();
    void UpdateMesh();
    void InitShape();
@@ -109,7 +111,7 @@ END_CONNECTION_POINT_MAP()
    
 	VertexBuffer *dynamicVertexBuffer;
 	bool dynamicVertexBufferRegenerate;
-
+    PropertyPane *m_propVisual;
 // IFlasher
 public:
    STDMETHOD(get_ImageA)(/*[out, retval]*/ BSTR *pVal);

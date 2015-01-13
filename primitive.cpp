@@ -52,6 +52,9 @@ Primitive::Primitive()
    m_d.m_depthBias = 0.0f;
    numIndices = 0;
    numVertices = 0;
+   m_propPhysics=NULL;
+   m_propPosition=NULL;
+   m_propVisual=NULL;
 } 
 
 Primitive::~Primitive() 
@@ -1288,7 +1291,6 @@ STDMETHODIMP Primitive::put_DrawTexturesInside(VARIANT_BOOL newVal)
 
 	   STOPUNDO
    }
-
    return S_OK;
 }
 
@@ -1864,14 +1866,43 @@ void Primitive::GetDialogPanes(Vector<PropertyPane> *pvproppane)
    pproppane = new PropertyPane(IDD_PROP_NAME, NULL);
    pvproppane->AddElement(pproppane);
 
-   pproppane = new PropertyPane(IDD_PROPPRIMITIVE_VISUALS, IDS_VISUALS);
-   pvproppane->AddElement(pproppane);
+   m_propVisual = new PropertyPane(IDD_PROPPRIMITIVE_VISUALS, IDS_VISUALS);
+   pvproppane->AddElement(m_propVisual);
 
-   pproppane = new PropertyPane(IDD_PROPPRIMITIVE_POSITION, IDS_POSITION_TRANSLATION);
-   pvproppane->AddElement(pproppane);
+   m_propPosition = new PropertyPane(IDD_PROPPRIMITIVE_POSITION, IDS_POSITION_TRANSLATION);
+   pvproppane->AddElement(m_propPosition);
 
-   pproppane = new PropertyPane(IDD_PROPPRIMITIVE_PHYSICS, IDS_PHYSICS);
-   pvproppane->AddElement(pproppane);
+   m_propPhysics = new PropertyPane(IDD_PROPPRIMITIVE_PHYSICS, IDS_PHYSICS);
+   pvproppane->AddElement(m_propPhysics);
+}
+
+void Primitive::UpdatePropertyPanes()
+{
+    if ( m_propVisual==NULL || m_propPosition==NULL && m_propPhysics==NULL )
+        return;
+
+    if( m_d.use3DMesh )
+        EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,106), FALSE);
+    else
+        EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,106), TRUE);
+
+    if ( m_d.m_fToy || !m_d.m_fCollidable)
+    {
+        EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,34), FALSE);
+        EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,33), FALSE);
+        EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,110), FALSE);
+        EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,114), FALSE);
+        EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,115), FALSE);
+    }
+    else if ( !m_d.m_fToy && m_d.m_fCollidable)
+    {
+        EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,34), TRUE);
+        EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,33), TRUE);
+        EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,110), TRUE);
+        EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,114), TRUE);
+        EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,115), TRUE);
+    }
+        
 }
 
 STDMETHODIMP Primitive::get_DepthBias(float *pVal)

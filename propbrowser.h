@@ -41,6 +41,7 @@ struct PropertyPane
 	int dialogid;
 	int titlestringid; // If NULL, this represents a non-expandable section
 	LPDLGTEMPLATE ptemplate; // For custom controls
+    HWND dialogHwnd;
 	};
 
 struct ExpandoInfo

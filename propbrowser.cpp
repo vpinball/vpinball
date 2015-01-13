@@ -239,6 +239,7 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, Vector<ISelect> *pvsel)
          hwndDialog = CreateDialogIndirectParam(g_hinst, pproppane->ptemplate,
             hwndExpand, PropertyProc, (size_t)this);
 
+      m_vproppane.ElementAt(i)->dialogHwnd = hwndDialog;
       m_vhwndDialog.AddElement(hwndDialog);
 
       RECT rcDialog;
@@ -282,6 +283,10 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, Vector<ISelect> *pvsel)
    //expand top last
    for(int i = m_vhwndExpand.Size()-1; i >= 0; --i)
 	   SendMessage(m_vhwndExpand.ElementAt(i), EXPANDO_EXPAND, 1, 0);
+
+   for( int i=0;i<m_pvsel->Size();i++ )
+       m_pvsel->ElementAt(i)->UpdatePropertyPanes();
+
 }
 
 BOOL CALLBACK EnumChildInitList(HWND hwnd, LPARAM lParam)
@@ -998,7 +1003,8 @@ INT_PTR CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
                   psb->SetProperty(dispid, &var, fFalse);
                   psb->GetControlValue((HWND)lParam);
                }
-
+               for( int i=0;i<psb->m_pvsel->Size();i++ )
+                   psb->m_pvsel->ElementAt(i)->UpdatePropertyPanes();
             }
             break;
 
@@ -1030,6 +1036,8 @@ INT_PTR CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
                //SendMessage((HWND)lParam, WM_SETTEXT, 0, (LPARAM)"Foo"/*szT*/);
                psb->GetControlValue((HWND)lParam);
+               for( int i=0;i<psb->m_pvsel->Size();i++ )
+                   psb->m_pvsel->ElementAt(i)->UpdatePropertyPanes();
             }
             break;
 

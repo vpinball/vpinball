@@ -220,6 +220,7 @@ public:
 
    virtual bool IsTransparent();
    virtual float GetDepth(const Vertex3Ds& viewDir);
+   virtual void UpdatePropertyPanes();
 
    Mesh m_mesh;
 
@@ -240,6 +241,10 @@ private:        // private member functions
    void CheckJoint(Vector<HitObject> * const pvho, const HitTriangle * const ph3d1, const HitTriangle * const ph3d2);
 
    void CalculateBuiltinOriginal();
+
+   PropertyPane *m_propVisual;
+   PropertyPane *m_propPosition;
+   PropertyPane *m_propPhysics;
 
 private:        // private data members
 
