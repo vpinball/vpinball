@@ -211,19 +211,19 @@ void Flasher::PreRender(Sur * const psur)
       ppi->EnsureHBitmap();
       if ( m_d.m_imagealignment == ImageModeWrap )
       {
-         float minx=FLT_MAX;
-         float miny=FLT_MAX;
-         float maxx=-FLT_MAX;
-         float maxy=-FLT_MAX;
+         float _minx=FLT_MAX;
+         float _miny=FLT_MAX;
+         float _maxx=-FLT_MAX;
+         float _maxy=-FLT_MAX;
          for( int i=0;i<vvertex.Size();i++ )
          {
-            if( vvertex.ElementAt(i)->x<minx) minx=vvertex.ElementAt(i)->x;
-            if( vvertex.ElementAt(i)->x>maxx) maxx=vvertex.ElementAt(i)->x;
-            if( vvertex.ElementAt(i)->y<miny) miny=vvertex.ElementAt(i)->y;
-            if( vvertex.ElementAt(i)->y>maxy) maxy=vvertex.ElementAt(i)->y;
+            if( vvertex.ElementAt(i)->x<_minx) _minx=vvertex.ElementAt(i)->x;
+            if( vvertex.ElementAt(i)->x>_maxx) _maxx=vvertex.ElementAt(i)->x;
+            if( vvertex.ElementAt(i)->y<_miny) _miny=vvertex.ElementAt(i)->y;
+            if( vvertex.ElementAt(i)->y>_maxy) _maxy=vvertex.ElementAt(i)->y;
          }
          if (ppi->m_hbmGDIVersion)
-            psur->PolygonImage(vvertex, ppi->m_hbmGDIVersion, minx, miny, minx+(maxx-minx), miny+(maxy-miny), ppi->m_width, ppi->m_height);
+            psur->PolygonImage(vvertex, ppi->m_hbmGDIVersion, _minx, _miny, _minx+(_maxx-_minx), _miny+(_maxy-_miny), ppi->m_width, ppi->m_height);
       }
       else
       {
