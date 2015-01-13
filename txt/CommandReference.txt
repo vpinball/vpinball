@@ -337,6 +337,7 @@ Variables
 *Radius(float)
 State(LightState) - 0=Off, 1=On, 2=Blinking
 *Color(OLE_COLOR)
+Intensity(float) - sets the lights brightness/emission scale
 TimerEnabled(bool)
 TimerInterval(int)
 BlinkPattern(string)
@@ -352,6 +353,7 @@ FadeSpeed(float)
 Bulb(int)
 ShowBulbMesh(int)
 ScaleBulbMesh(float)
+BulbModulateVsAdd(float) - blends between modulating and additive when bulb is enabled (0..1)
 
 
 PLUNGER
@@ -562,10 +564,10 @@ ImageA(string) - texture name for image A
 ImageB(string) - texture name for image B
 Filter(string) - use one of the following filters to blend ImageA > ImageB: 'None', 'Additive', 'Multiply', 'Overlay', 'Screen' (filter names are case sensitive!)
                  this feature only works if you defined both images
-Amount(int)    - defines the filter amount how much of ImageB is filtered over ImageA in percent (0..100)
+Amount(int)    - defines the filter amount how much of ImageB is filtered over ImageA in percent (0..100, can be set to >100 though)
 Mode           - 0=ImageModeWorld, 1=ImageModeWrap
 *DisplayTexture(bool)
-Opacity - lets you define the blend amount 0..100%
+Opacity - lets you define the blend amount 0..100% (you can use values >100% though to for example enhance the strength of flashers in additive alpha blending mode)
 Color - defines the color of the element in the editor. If you don't want to colorize the image set the color to blank white (RGB 255,255,255)
 Visible(bool) - shows/hides the flasher
 AddBlend(bool) - use additive alpha blending instead of classical alpha blending
