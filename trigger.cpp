@@ -582,7 +582,7 @@ void Trigger::PostRenderStatic(RenderDevice* pd3dDevice)
         animLimit=13.0f;
 
     pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelDeclaration );
-    pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
+    pd3dDevice->basicShader->SetTechnique("basic_without_texture");
 
     Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 

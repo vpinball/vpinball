@@ -444,7 +444,7 @@ void Gate::RenderObject( RenderDevice* pd3dDevice)
 
     ppin3d->EnableAlphaBlend(1,false);
 
-    pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
+    pd3dDevice->basicShader->SetTechnique("basic_without_texture");
     if ( m_d.m_fShowBracket )
     {
         // render bracket

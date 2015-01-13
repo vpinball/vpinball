@@ -1400,11 +1400,11 @@ void Rubber::RenderObject(RenderDevice *pd3dDevice)
          //ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
 
          pd3dDevice->basicShader->SetTexture("Texture0", pin);
-         pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
+         pd3dDevice->basicShader->SetTechnique("basic_with_texture");
       }
       else
       {
-          pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
+          pd3dDevice->basicShader->SetTechnique("basic_without_texture");
       }
 
       if (!dynamicVertexBuffer || dynamicVertexBufferRegenerate)

@@ -987,6 +987,7 @@ Shader::Shader(RenderDevice *renderDevice)
     currentAlphaTestValue = -1.0f;
     currentAlphaValue = -1.0f;
     currentColor=D3DXVECTOR4(-1.0f,-1.0f,-1.0f,-1.0f);
+    currentTechnique[0]=0;
 }
 
 Shader::~Shader()
@@ -1204,4 +1205,13 @@ void Shader::SetStaticColor(D3DXVECTOR4 color)
         currentColor = color;
         m_shader->SetVector("staticColor", &color);
     }
+}
+
+void Shader::SetTechnique(char *technique)
+{
+   if( strcmp(currentTechnique, technique) )
+   {
+      strcpy_s(currentTechnique, 63, technique);
+      m_shader->SetTechnique(technique);
+   }
 }

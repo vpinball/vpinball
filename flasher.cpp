@@ -1266,14 +1266,14 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
       if (pinA && !pinB)
       {
          pd3dDevice->basicShader->SetTexture("Texture0", pinA);
-         pd3dDevice->basicShader->Core()->SetTechnique("basic_with_textureOne_noLight");
+         pd3dDevice->basicShader->SetTechnique("basic_with_textureOne_noLight");
 
 		 //ppin3d->SetTextureFilter( ePictureTexture, TEXTURE_MODE_TRILINEAR );
       }
       else if (!pinA && pinB)
       {
          pd3dDevice->basicShader->SetTexture("Texture0", pinB);
-         pd3dDevice->basicShader->Core()->SetTechnique("basic_with_textureOne_noLight");
+         pd3dDevice->basicShader->SetTechnique("basic_with_textureOne_noLight");
 
          //ppin3d->SetTextureFilter( ePictureTexture, TEXTURE_MODE_TRILINEAR );
       }
@@ -1281,7 +1281,7 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
       {
          pd3dDevice->basicShader->SetTexture("Texture0", pinA);
          pd3dDevice->basicShader->SetTexture("Texture1", pinB);
-         pd3dDevice->basicShader->Core()->SetTechnique("basic_with_textureAB_noLight");
+         pd3dDevice->basicShader->SetTechnique("basic_with_textureAB_noLight");
 	     
 		 // reset tex1 to env
 		 pd3dDevice->basicShader->SetTexture("Texture1", &ppin3d->envTexture); //!! make customisable
@@ -1290,7 +1290,7 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
       }
       else
 	   {
-         pd3dDevice->basicShader->Core()->SetTechnique("basic_with_noLight");
+         pd3dDevice->basicShader->SetTechnique("basic_with_noLight");
 	   }
 
       if(dynamicVertexBufferRegenerate)

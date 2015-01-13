@@ -616,7 +616,7 @@ void Primitive::RenderObject( RenderDevice *pd3dDevice )
     if (pin)
     {
         pd3dDevice->basicShader->SetTexture("Texture0", pin);
-        pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
+        pd3dDevice->basicShader->SetTechnique("basic_with_texture");
         g_pplayer->m_pin3d.EnableAlphaBlend(1,false);
         pd3dDevice->basicShader->PerformAlphaTest(true);
         pd3dDevice->basicShader->SetAlphaTestValue(128.0f / 255.0f);
@@ -627,7 +627,7 @@ void Primitive::RenderObject( RenderDevice *pd3dDevice )
     }
     else
     {
-        pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
+        pd3dDevice->basicShader->SetTechnique("basic_without_texture");
     }
 
     // set transform
