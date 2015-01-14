@@ -11,6 +11,9 @@ Rubber::Rubber()
    dynamicIndexBuffer = 0;
    dynamicVertexBufferRegenerate = true;
    m_d.m_depthBias = 0.0f;
+   m_propPhysics = NULL;
+   m_propPosition = NULL;
+   m_propVisual = NULL;
 }
 
 Rubber::~Rubber()
@@ -1151,14 +1154,14 @@ void Rubber::GetDialogPanes(Vector<PropertyPane> *pvproppane)
    pproppane = new PropertyPane(IDD_PROP_NAME, NULL);
    pvproppane->AddElement(pproppane);
 
-   pproppane = new PropertyPane(IDD_PROPRUBBER_VISUALS, IDS_VISUALS);
-   pvproppane->AddElement(pproppane);
+   m_propVisual = new PropertyPane(IDD_PROPRUBBER_VISUALS, IDS_VISUALS);
+   pvproppane->AddElement(m_propVisual);
 
-   pproppane = new PropertyPane(IDD_PROPRUBBER_POSITION, IDS_POSITION);
-   pvproppane->AddElement(pproppane);
+   m_propPosition = new PropertyPane(IDD_PROPRUBBER_POSITION, IDS_POSITION);
+   pvproppane->AddElement(m_propPosition);
 
-   pproppane = new PropertyPane(IDD_PROPRUBBER_PHYSICS, IDS_PHYSICS);
-   pvproppane->AddElement(pproppane);
+   m_propPhysics = new PropertyPane(IDD_PROPRUBBER_PHYSICS, IDS_PHYSICS);
+   pvproppane->AddElement(m_propPhysics);
 
    pproppane = new PropertyPane(IDD_PROP_TIMER, IDS_MISC);
    pvproppane->AddElement(pproppane);
@@ -1559,4 +1562,23 @@ void Rubber::GenerateVertexBuffer(RenderDevice* pd3dDevice)
     delete [] rgvbuf;
     delete [] rgvLocal;
     delete [] middlePoints;
+}
+
+void Rubber::UpdatePropertyPanes()
+{
+    if ( m_propVisual==NULL || m_propPosition==NULL && m_propPhysics==NULL )
+        return;
+
+    if ( !m_d.m_fCollidable )
+    {
+        EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,110), FALSE);
+        EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,114), FALSE);
+        EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,115), FALSE);
+    }
+    else
+    {
+        EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,110), TRUE);
+        EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,114), TRUE);
+        EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,115), TRUE);
+    }
 }

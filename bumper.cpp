@@ -18,6 +18,7 @@ Bumper::Bumper()
    ringMaterial.m_cBase = 0xFFFFFFFF;
    ringMaterial.m_cGlossy = 0;
    ringAnimate = false;
+   m_propVisual = NULL;
 }
 
 Bumper::~Bumper()
@@ -1101,8 +1102,8 @@ void Bumper::GetDialogPanes(Vector<PropertyPane> *pvproppane)
    pproppane = new PropertyPane(IDD_PROP_NAME, NULL);
    pvproppane->AddElement(pproppane);
 
-   pproppane = new PropertyPane(IDD_PROPBUMPER_VISUALS, IDS_VISUALS);
-   pvproppane->AddElement(pproppane);
+   m_propVisual = new PropertyPane(IDD_PROPBUMPER_VISUALS, IDS_VISUALS);
+   pvproppane->AddElement(m_propVisual);
 
    pproppane = new PropertyPane(IDD_PROPLIGHT_POSITION, IDS_POSITION);
    pvproppane->AddElement(pproppane);
@@ -1209,4 +1210,26 @@ void Bumper::setLightState(const LightState newVal)
          }
       }
    }
+}
+
+void Bumper::UpdatePropertyPanes()
+{
+    if ( m_propVisual==NULL )
+        return;
+
+    if ( !m_d.m_fCapVisible )
+        EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_MATERIAL_COMBO), FALSE);
+    else
+        EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_MATERIAL_COMBO), TRUE);
+
+    if ( !m_d.m_fBaseVisible )
+    {
+        EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_MATERIAL_COMBO2), FALSE);
+        EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_MATERIAL_COMBO3), FALSE);
+    }
+    else
+    {
+        EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_MATERIAL_COMBO2), TRUE);
+        EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_MATERIAL_COMBO3), TRUE);
+    }
 }

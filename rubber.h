@@ -101,7 +101,8 @@ DECLARE_REGISTRY_RESOURCEID(IDR_RUBBER)
 
 	virtual void GetBoundingVertices(Vector<Vertex3Ds> * const pvvertex3D);
 
-   virtual float GetDepth(const Vertex3Ds& viewDir);
+    virtual float GetDepth(const Vertex3Ds& viewDir);
+    virtual void UpdatePropertyPanes();
 
 	void WriteRegDefaults();
 
@@ -127,6 +128,10 @@ private:
 	VertexBuffer *dynamicVertexBuffer;
     IndexBuffer *dynamicIndexBuffer;
 	bool dynamicVertexBufferRegenerate;
+    
+    PropertyPane *m_propVisual;
+    PropertyPane *m_propPhysics;
+    PropertyPane *m_propPosition;
 
 	void GetCentralCurve(Vector<RenderVertex> * const pvv);
 

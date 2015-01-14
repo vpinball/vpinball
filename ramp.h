@@ -114,6 +114,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_RAMP)
 
     virtual bool IsTransparent();
     virtual float GetDepth(const Vertex3Ds& viewDir);
+    virtual void UpdatePropertyPanes();
 
 	void WriteRegDefaults();
 
@@ -137,9 +138,12 @@ private:
     std::vector<HitObject*> m_vhoCollidable; // Objects to that may be collide selectable
 
 	VertexBuffer *dynamicVertexBuffer;
-   IndexBuffer *dynamicIndexBuffer;
-   VertexBuffer *dynamicVertexBuffer2;
+    IndexBuffer *dynamicIndexBuffer;
+    VertexBuffer *dynamicVertexBuffer2;
 	bool dynamicVertexBufferRegenerate;
+
+    PropertyPane *m_propPosition;
+    PropertyPane *m_propPhysics;
 
     bool isHabitrail() const;
 

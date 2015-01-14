@@ -15,6 +15,7 @@ Surface::Surface()
    sideVBuffer = 0;
    topVBuffer = 0;
    sideIBuffer = 0;
+   m_propPhysics = NULL;
 }
 
 Surface::~Surface()
@@ -1641,8 +1642,8 @@ void Surface::GetDialogPanes(Vector<PropertyPane> *pvproppane)
    pproppane = new PropertyPane(IDD_PROPWALL_POSITION, IDS_POSITION);
    pvproppane->AddElement(pproppane);
 
-   pproppane = new PropertyPane(IDD_PROPWALL_PHYSICS, IDS_STATE);
-   pvproppane->AddElement(pproppane);
+   m_propPhysics = new PropertyPane(IDD_PROPWALL_PHYSICS, IDS_STATE);
+   pvproppane->AddElement(m_propPhysics);
 
    pproppane = new PropertyPane(IDD_PROP_TIMER, IDS_MISC);
    pvproppane->AddElement(pproppane);
@@ -1993,4 +1994,38 @@ STDMETHODIMP Surface::put_SlingshotAnimation(VARIANT_BOOL newVal)
    STOPUNDO
 
    return S_OK;
+}
+
+void Surface::UpdatePropertyPanes()
+{
+    if ( m_propPhysics==NULL )
+        return;
+
+    if ( !m_d.m_fCollidable )
+    {
+        EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,3), FALSE);
+        EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,4), FALSE);
+        EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,14), FALSE);
+        EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,111), FALSE);
+        EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,15), FALSE);
+        EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,114), FALSE);
+        EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,115), FALSE);
+        EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,116), FALSE);
+    }
+    else
+    {
+        EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,3), TRUE);
+        if ( m_d.m_fHitEvent )
+            EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,4), TRUE);
+        else
+            EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,4), FALSE);
+
+        EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,14), TRUE);
+        EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,111), TRUE);
+        EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,15), TRUE);
+        EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,114), TRUE);
+        EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,115), TRUE);
+        EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,116), TRUE);
+
+    }
 }
