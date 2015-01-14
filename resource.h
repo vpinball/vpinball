@@ -623,6 +623,7 @@
 #define IDC_3D_STEREO_ZPD               429
 #define IDC_ENABLE_NUDGE_FILTER         430
 #define IDC_BULB_MODULATE_VS_ADD        431
+#define IDC_LIGHT_FALLOFF_POWER         432
 #define IDC_JOYLFLIPCOMBO               501
 #define IDC_JOYRFLIPCOMBO               502
 #define IDC_JOYPLUNGERCOMBO             503

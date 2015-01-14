@@ -13,6 +13,7 @@ class LightData
 public:
 	Vertex2D m_vCenter;
 	float m_falloff;
+	float m_falloff_power;
     float m_intensity;
     float m_fadeSpeed;
 	U32 m_time_msec;
@@ -209,6 +210,8 @@ public:
 	STDMETHOD(put_State)(/*[in]*/ LightState newVal);
 	STDMETHOD(get_Falloff)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Falloff)(/*[in]*/ float newVal);
+	STDMETHOD(get_Falloff_Power)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_Falloff_Power)(/*[in]*/ float newVal);
 	STDMETHOD(get_OffImage)(/*[out, retval]*/ BSTR *pVal);
 	STDMETHOD(put_OffImage)(/*[in]*/ BSTR newVal);
    STDMETHOD(get_DepthBias)(/*[out, retval]*/ float *pVal);

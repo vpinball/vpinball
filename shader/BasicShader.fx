@@ -140,6 +140,7 @@ bool   bMultiply=false;
 bool   bAdditive=false;
 bool   bOverlay=false;
 bool   bScreen=false;
+
 struct VS_SIMPLE_OUTPUT 
 { 
    float4 pos           : POSITION; 
@@ -198,14 +199,15 @@ float4 ps_main_textureAB_noLight( in VS_SIMPLE_OUTPUT IN) : COLOR
 
 float4 ps_main_noLight( in VS_SIMPLE_OUTPUT IN) : COLOR
 {
-   return float4(staticColor,1.f);
+   return float4(staticColor, 1.f);
 }
 
 //####### Light shader ##################
-float3   lightColor = float3(1,1,1);
+float3   lightColor = float3(1.f,1.f,1.f);
 float4   lightCenter;
 float    maxRange;
 float    intensity=1.0f;
+float    falloff_power=2.0f;
 
 struct VS_LIGHT_OUTPUT 
 { 
@@ -257,8 +259,7 @@ float4 PS_LightWithTexel(in VS_LIGHT_OUTPUT IN ) : COLOR
     if ( intensity!=0.0f )
     {
         float len = length(lightCenter.xyz - IN.tablePos.xyz) / max(maxRange, 0.1f);
-        float atten = 1.0f - saturate(len);
-        atten *= atten;
+        float atten = pow(1.0f - saturate(len), falloff_power);
         float3 lcolor = lerp(float3(1.0f, 1.0f, 1.0f), lightColor, sqrt(len));
         result.xyz = lcolor*(atten*intensity);
         result.a = saturate(atten*intensity);
@@ -286,8 +287,7 @@ float4 PS_LightWithoutTexel(in VS_LIGHT_OUTPUT IN ) : COLOR
     if (intensity != 0.0f)
     {
         float len = length(lightCenter.xyz - IN.tablePos.xyz) / max(maxRange, 0.1f);
-        float atten = 1.0f - saturate(len);
-        atten *= atten;
+        float atten = pow(1.0f - saturate(len), falloff_power);
         float3 lcolor = lerp(float3(1.0f, 1.0f, 1.0f), lightColor, sqrt(len));
         result.xyz = lcolor*(atten*intensity);
         result.a = saturate(atten*intensity);
@@ -308,8 +308,7 @@ float4 PS_LightWithoutTexel(in VS_LIGHT_OUTPUT IN ) : COLOR
 float4 PS_BulbLight( in VS_LIGHT_OUTPUT IN ) : COLOR
 {
 	float len = length(lightCenter.xyz-IN.tablePos.xyz)/max(maxRange,0.1f);
-    float atten = 1.0f-saturate(len);
-    atten*=atten;
+    float atten = pow(1.0f-saturate(len), falloff_power);
 	float3 lcolor = lerp(float3(1.0f,1.0f,1.0f), lightColor, sqrt(len));
 	float4 result;
 	result.xyz = lcolor*(-bulb_modulate_vs_add*atten*intensity); // negative as it will be blended with '1.0-thisvalue' (the 1.0 is needed to modulate the underlying elements correctly, but not wanted for the term below)

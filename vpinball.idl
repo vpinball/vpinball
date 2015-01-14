@@ -1174,6 +1174,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 	{
 		[propget, id(1), helpstring("property Falloff")] HRESULT Falloff([out, retval] float *pVal);
 		[propput, id(1), helpstring("property Falloff")] HRESULT Falloff([in] float newVal);
+		[propget, id(432), helpstring("property Falloff_Power")] HRESULT Falloff_Power([out, retval] float *pVal);
+		[propput, id(432), helpstring("property Falloff_Power")] HRESULT Falloff_Power([in] float newVal);
 		[propget, id(DISPID_Light_State), helpstring("property State")] HRESULT State([out, retval] LightState *pVal);
 		[propput, id(DISPID_Light_State), helpstring("property State")] HRESULT State([in] LightState newVal);
 		[propget, id(3), helpstring("property Color")] HRESULT Color([out, retval] OLE_COLOR *pVal);
