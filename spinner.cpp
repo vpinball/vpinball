@@ -293,7 +293,7 @@ void Spinner::UpdatePlate( RenderDevice *pd3dDevice )
     rotzMat.RotateZMatrix(ANGTORAD(m_d.m_rotation));
     rotzMat.Multiply(_fullMatrix, _fullMatrix);
 
-    plateVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
+    plateVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
     for( int i=0;i<spinnerPlateNumVertices;i++ )
     {
         Vertex3Ds vert(spinnerPlate[i].x,spinnerPlate[i].y,spinnerPlate[i].z);
@@ -404,7 +404,7 @@ void Spinner::RenderSetup(RenderDevice* pd3dDevice)
    plateIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer( indices );
 
    if (!plateVertexBuffer)
-       pd3dDevice->CreateVertexBuffer(spinnerBracketNumVertices, D3DUSAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &plateVertexBuffer);
+       pd3dDevice->CreateVertexBuffer(spinnerBracketNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &plateVertexBuffer);
 
    plateVertexBuffer->lock(0, 0, (void**)&buf, 0);
    for( int i=0;i<spinnerPlateNumVertices;i++ )
