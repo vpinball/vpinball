@@ -78,6 +78,7 @@ Light::Light() : m_lightcenter(this)
    m_d.m_depthBias = 0.0f;
    m_d.m_shape = ShapeCustom;
    m_roundLight=false;
+   m_propVisual = NULL;
 }
 
 Light::~Light()
@@ -103,7 +104,6 @@ HRESULT Light::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
    m_fLockedByLS = false;			//>>> added by chris
    m_realState	= m_d.m_state;		//>>> added by chris
 
-   m_d.m_time_msec = g_pplayer->m_time_msec;
 
    return InitVBA(fTrue, 0, NULL);
 }
@@ -697,6 +697,8 @@ void Light::PrepareMoversCustom()
 
 void Light::RenderSetup(RenderDevice* pd3dDevice)
 {
+    m_d.m_time_msec = g_pplayer->m_time_msec;
+
     m_surfaceHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_zScale;
     surfaceMaterial = m_ptable->GetSurfaceMaterial(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
@@ -1477,8 +1479,8 @@ void Light::GetDialogPanes(Vector<PropertyPane> *pvproppane)
    pproppane = new PropertyPane(IDD_PROP_NAME, NULL);
    pvproppane->AddElement(pproppane);
 
-   pproppane = new PropertyPane(IDD_PROPLIGHT_VISUALS, IDS_VISUALS);
-   pvproppane->AddElement(pproppane);
+   m_propVisual = new PropertyPane(IDD_PROPLIGHT_VISUALS, IDS_VISUALS);
+   pvproppane->AddElement(m_propVisual);
 
    pproppane = new PropertyPane(IDD_PROPLIGHT_POSITION, IDS_POSITION);
    pvproppane->AddElement(pproppane);
@@ -1522,4 +1524,23 @@ void Light::setLightState(const LightState newVal)
          }
       }
    }
+}
+
+void Light::UpdatePropertyPanes()
+{
+    if ( m_propVisual==NULL )
+        return;
+
+    if ( !m_d.m_BulbLight )
+    {
+        EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_SHOW_BULB_MESH), FALSE);
+        EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_SCALE_BULB_MESH), FALSE);
+        EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_BULB_MODULATE_VS_ADD), FALSE);
+    }
+    else
+    {
+        EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_SHOW_BULB_MESH), TRUE);
+        EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_SCALE_BULB_MESH), TRUE);
+        EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_BULB_MODULATE_VS_ADD), TRUE);
+    }
 }

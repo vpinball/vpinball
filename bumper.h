@@ -128,6 +128,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_BUMPER)
 	virtual void PutCenter(const Vertex2D * const pv);
 
 	virtual void DrawFrame(BOOL fOn);
+    virtual void UpdatePropertyPanes();
 
 	void WriteRegDefaults();
 
@@ -176,6 +177,8 @@ private:
     float   baseHeight;
     bool    ringDown;
     bool    ringAnimate;
+
+    PropertyPane *m_propVisual;
 
 // IBumper
 public:

@@ -113,6 +113,7 @@ END_CONNECTION_POINT_MAP()
 
     virtual float GetDepth(const Vertex3Ds& viewDir) { return viewDir.z * m_d.m_heighttop; }
     virtual bool IsTransparent();
+    virtual void UpdatePropertyPanes();
 
 private:
     void CurvesToShapes(Vector<HitObject> * const pvho);
@@ -153,6 +154,7 @@ private:
    Material slingShotMaterial;
    Material sideMaterial;
    Material topMaterial;
+   PropertyPane *m_propPhysics;
 
 // ISurface
 public:

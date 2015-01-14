@@ -148,6 +148,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_LIGHT)
 
     virtual bool IsTransparent() { return true; }
     virtual float GetDepth(const Vertex3Ds& viewDir);
+    virtual void UpdatePropertyPanes();
 
 	void WriteRegDefaults();
     void FreeBuffers();
@@ -182,7 +183,7 @@ private:
    IndexBuffer  *bulbLightIndexBuffer;
    VertexBuffer *bulbSocketVBuffer;
    IndexBuffer  *bulbSocketIndexBuffer;
-
+   PropertyPane *m_propVisual;
 // ILight
 
    Texture *GetDisplayTexture();

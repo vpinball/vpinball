@@ -13,6 +13,8 @@ Ramp::Ramp()
    m_d.m_wireDiameter = 6.0f;
    m_d.m_wireDistanceX = 38.0f;
    m_d.m_wireDistanceY = 88.0f;
+   m_propPosition = NULL;
+   m_propPhysics = NULL;
 }
 
 Ramp::~Ramp()
@@ -1724,11 +1726,11 @@ void Ramp::GetDialogPanes(Vector<PropertyPane> *pvproppane)
    pproppane = new PropertyPane(IDD_PROPRAMP_VISUALS, IDS_VISUALS);
    pvproppane->AddElement(pproppane);
 
-   pproppane = new PropertyPane(IDD_PROPRAMP_POSITION, IDS_POSITION);
-   pvproppane->AddElement(pproppane);
+   m_propPosition = new PropertyPane(IDD_PROPRAMP_POSITION, IDS_POSITION);
+   pvproppane->AddElement(m_propPosition);
 
-   pproppane = new PropertyPane(IDD_PROPRAMP_PHYSICS, IDS_PHYSICS);
-   pvproppane->AddElement(pproppane);
+   m_propPhysics = new PropertyPane(IDD_PROPRAMP_PHYSICS, IDS_PHYSICS);
+   pvproppane->AddElement(m_propPhysics);
 
    pproppane = new PropertyPane(IDD_PROP_TIMER, IDS_MISC);
    pvproppane->AddElement(pproppane);
@@ -2433,4 +2435,49 @@ void Ramp::GenerateVertexBuffer(RenderDevice* pd3dDevice)
     delete [] rgvLocal;
     delete [] rgheight;
     delete [] rgratio;
+}
+
+void Ramp::UpdatePropertyPanes()
+{
+    if ( m_propPosition==NULL || m_propPhysics==NULL )
+        return;
+
+    if ( m_d.m_type!=RampTypeFlat )
+    {
+        EnableWindow(GetDlgItem(m_propPosition->dialogHwnd,3), FALSE);
+        EnableWindow(GetDlgItem(m_propPosition->dialogHwnd,4), FALSE);
+        EnableWindow(GetDlgItem(m_propPosition->dialogHwnd,108), FALSE);
+        EnableWindow(GetDlgItem(m_propPosition->dialogHwnd,109), FALSE);
+        EnableWindow(GetDlgItem(m_propPosition->dialogHwnd,IDC_WIRE_DIAMETER), TRUE);
+        EnableWindow(GetDlgItem(m_propPosition->dialogHwnd,IDC_WIRE_DISTX), TRUE);
+        EnableWindow(GetDlgItem(m_propPosition->dialogHwnd,IDC_WIRE_DISTY), TRUE);
+    }
+    else
+    {
+        EnableWindow(GetDlgItem(m_propPosition->dialogHwnd,3), TRUE);
+        EnableWindow(GetDlgItem(m_propPosition->dialogHwnd,4), TRUE);
+        EnableWindow(GetDlgItem(m_propPosition->dialogHwnd,108), TRUE);
+        EnableWindow(GetDlgItem(m_propPosition->dialogHwnd,109), TRUE);
+        EnableWindow(GetDlgItem(m_propPosition->dialogHwnd,IDC_WIRE_DIAMETER), FALSE);
+        EnableWindow(GetDlgItem(m_propPosition->dialogHwnd,IDC_WIRE_DISTX), FALSE);
+        EnableWindow(GetDlgItem(m_propPosition->dialogHwnd,IDC_WIRE_DISTY), FALSE);
+    }
+
+    if( !m_d.m_fCollidable )
+    {
+        EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,10), FALSE);
+        EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,11), FALSE);
+        EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,110), FALSE);
+        EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,114), FALSE);
+        EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,115), FALSE);
+    }
+    else
+    {
+        EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,10), TRUE);
+        EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,11), TRUE);
+        EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,110), TRUE);
+        EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,114), TRUE);
+        EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,115), TRUE);
+    }
+
 }

@@ -1891,13 +1891,22 @@ void Primitive::UpdatePropertyPanes()
         EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,34), FALSE);
         EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,33), FALSE);
         EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,110), FALSE);
+        if ( m_d.m_fToy )
+            EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,111), FALSE);
+        else
+            EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,111), TRUE);
+
         EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,114), FALSE);
         EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,115), FALSE);
     }
     else if ( !m_d.m_fToy && m_d.m_fCollidable)
     {
         EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,34), TRUE);
-        EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,33), TRUE);
+        if ( m_d.m_fHitEvent )
+            EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,33), TRUE);
+        else
+            EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,33), FALSE);
+
         EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,110), TRUE);
         EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,114), TRUE);
         EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,115), TRUE);
