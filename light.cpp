@@ -118,7 +118,13 @@ void Light::SetDefaults(bool fromMouseClick)
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_falloff = fTmp;
    else
-      m_d.m_falloff = 50;
+      m_d.m_falloff = 50.f;
+
+   hr = GetRegStringAsFloat("DefaultProps\\Light","FalloffPower", &fTmp);
+   if ((hr == S_OK) && fromMouseClick)
+      m_d.m_falloff_power = fTmp;
+   else
+      m_d.m_falloff_power = 2.0f;
 
    hr = GetRegInt("DefaultProps\\Light","LightState", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
@@ -210,6 +216,7 @@ void Light::SetDefaults(bool fromMouseClick)
 void Light::WriteRegDefaults()
 {
    SetRegValueFloat("DefaultProps\\Light","Falloff", m_d.m_falloff);
+   SetRegValueFloat("DefaultProps\\Light","FalloffPower", m_d.m_falloff_power);
    SetRegValue("DefaultProps\\Light","LightState",REG_DWORD,&m_d.m_state,4);
    SetRegValue("DefaultProps\\Light","TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
    SetRegValue("DefaultProps\\Light","TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval, 4);
@@ -529,6 +536,7 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
     pd3dDevice->basicShader->Core()->SetVector("lightCenter", &center);
     pd3dDevice->basicShader->Core()->SetVector("lightColor", &diffColor);
     pd3dDevice->basicShader->Core()->SetFloat("maxRange",m_d.m_falloff);
+    pd3dDevice->basicShader->Core()->SetFloat("falloff_power",m_d.m_falloff_power);
     if ( isOn )
     {
        if (m_d.m_currentIntensity<m_d.m_intensity )
@@ -799,6 +807,7 @@ HRESULT Light::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptke
 
    bw.WriteStruct(FID(VCEN), &m_d.m_vCenter, sizeof(Vertex2D));
    bw.WriteFloat(FID(RADI), m_d.m_falloff);
+   bw.WriteFloat(FID(FAPO), m_d.m_falloff_power);
    bw.WriteInt(FID(STAT), m_d.m_state);
    bw.WriteInt(FID(COLR), m_d.m_color);
    bw.WriteBool(FID(TMON), m_d.m_tdr.m_fTimerEnabled);
@@ -834,7 +843,8 @@ HRESULT Light::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, 
 {
    SetDefaults(false);
 
-   m_d.m_falloff = 50;
+   m_d.m_falloff = 50.f;
+   m_d.m_falloff_power = 2.0f;
    m_d.m_state = LightStateOff;
    m_d.m_shape = ShapeCustom;
 
@@ -872,6 +882,10 @@ BOOL Light::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(RADI))
    {
       pbr->GetFloat(&m_d.m_falloff);
+   }
+   else if (id == FID(FAPO))
+   {
+      pbr->GetFloat(&m_d.m_falloff_power);
    }
    else if (id == FID(STAT))
    {
@@ -1103,7 +1117,25 @@ STDMETHODIMP Light::put_Falloff(float newVal)
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
+}
+
+STDMETHODIMP Light::get_Falloff_Power(float *pVal)
+{
+   *pVal = m_d.m_falloff_power;
+
+   return S_OK;
+}
+
+STDMETHODIMP Light::put_Falloff_Power(float newVal)
+{
+   STARTUNDO
+
+   m_d.m_falloff_power = newVal;
+
+   STOPUNDO
+
+   return S_OK;
 }
 
 STDMETHODIMP Light::get_State(LightState *pVal)
