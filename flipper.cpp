@@ -559,7 +559,7 @@ void Flipper::PostRenderStatic(RenderDevice* pd3dDevice)
 
     Material *mat = m_ptable->GetMaterial( m_d.m_szMaterial);
     pd3dDevice->basicShader->SetMaterial(mat);
-    pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
+    pd3dDevice->basicShader->SetTechnique("basic_without_texture");
 
     Matrix3D matTrafo, matTemp;
     matTrafo.SetIdentity();

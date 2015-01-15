@@ -529,7 +529,7 @@ void Decal::RenderStatic(RenderDevice* pd3dDevice)
    pd3dDevice->basicShader->SetMaterial(mat);
 
    pd3dDevice->basicShader->Core()->SetFloat("fmaterialAlpha",1.0f);
-   pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
+   pd3dDevice->basicShader->SetTechnique("basic_with_texture");
    pd3dDevice->basicShader->PerformAlphaTest(true);
    pd3dDevice->basicShader->SetAlphaTestValue(128.0f / 255.0f);
 
