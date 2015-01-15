@@ -965,12 +965,12 @@ void Ramp::RenderStaticHabitrail(RenderDevice* pd3dDevice)
 
    if ( !pin )
    {
-       pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
+       pd3dDevice->basicShader->SetTechnique("basic_without_texture");
    }
    else
    {
        pd3dDevice->basicShader->SetTexture("Texture0",pin);
-       pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
+       pd3dDevice->basicShader->SetTechnique("basic_with_texture");
 
        //g_pplayer->m_pin3d.SetTextureFilter(ePictureTexture, TEXTURE_MODE_TRILINEAR);
    }
@@ -2161,7 +2161,7 @@ void Ramp::RenderRamp( RenderDevice *pd3dDevice, Material *mat )
 
       if (pin && !m_d.m_fImageWalls)
       {
-         pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
+         pd3dDevice->basicShader->SetTechnique("basic_without_texture");
       }
 
       pd3dDevice->basicShader->Begin(0);

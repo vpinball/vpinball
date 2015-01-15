@@ -470,7 +470,7 @@ void Light::ClearForOverwrite()
 void Light::RenderBulbMesh(RenderDevice *pd3dDevice, COLORREF color, bool isOn)
 {
     pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelDeclaration );
-    pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
+    pd3dDevice->basicShader->SetTechnique("basic_without_texture");
     Material mat;
     mat.m_cBase = 0;
     mat.m_fWrapLighting=0.5f;

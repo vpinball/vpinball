@@ -2168,7 +2168,7 @@ void Player::DMDdraw(const float DMDposx, const float DMDposy, const float DMDwi
     m_pin3d.m_pd3dDevice->DMDShader->Core()->SetFloat("fResY",(float)g_pplayer->m_dmdy);
     const D3DXVECTOR4 c = COLORREF_to_D3DXVECTOR4(DMDcolor);
     m_pin3d.m_pd3dDevice->DMDShader->Core()->SetVector("vColor",&c);
-    m_pin3d.m_pd3dDevice->DMDShader->Core()->SetTechnique("basic");
+    m_pin3d.m_pd3dDevice->DMDShader->SetTechnique("basic");
     m_pin3d.m_pd3dDevice->DMDShader->SetTexture("Texture0", g_pplayer->m_device_texdmd);
     m_pin3d.m_pd3dDevice->DMDShader->Begin(0);
     m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_TEX, (LPVOID)DMDVerts, 4);
@@ -2197,7 +2197,7 @@ void Player::Spritedraw(const float posx, const float posy, const float width, c
     m_pin3d.m_pd3dDevice->SetVertexDeclaration( m_pin3d.m_pd3dDevice->m_pVertexTexelDeclaration );
     const D3DXVECTOR4 c = COLORREF_to_D3DXVECTOR4(color);
     m_pin3d.m_pd3dDevice->DMDShader->Core()->SetVector("vColor",&c);
-    m_pin3d.m_pd3dDevice->DMDShader->Core()->SetTechnique("basic_noDMD");
+    m_pin3d.m_pd3dDevice->DMDShader->SetTechnique("basic_noDMD");
     m_pin3d.m_pd3dDevice->DMDShader->SetTexture("Texture0", tex);
     m_pin3d.m_pd3dDevice->DMDShader->Begin(0);
     m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_TEX, (LPVOID)Verts, 4);
@@ -2226,7 +2226,7 @@ void Player::Spritedraw(const float posx, const float posy, const float width, c
     m_pin3d.m_pd3dDevice->SetVertexDeclaration( m_pin3d.m_pd3dDevice->m_pVertexTexelDeclaration );
     const D3DXVECTOR4 c = COLORREF_to_D3DXVECTOR4(color);
     m_pin3d.m_pd3dDevice->DMDShader->Core()->SetVector("vColor",&c);
-    m_pin3d.m_pd3dDevice->DMDShader->Core()->SetTechnique("basic_noDMD");
+    m_pin3d.m_pd3dDevice->DMDShader->SetTechnique("basic_noDMD");
     m_pin3d.m_pd3dDevice->DMDShader->SetTexture("Texture0", tex);
     m_pin3d.m_pd3dDevice->DMDShader->Begin(0);
     m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_TEX, (LPVOID)Verts, 4);
@@ -2434,7 +2434,7 @@ void Player::FlipVideoBuffers3DAOFXAA( const bool vsync ) //!! SMAA, luma sharpe
 	}
 	m_pin3d.m_pd3dDevice->basicShader->Core()->SetVector("w_h_height", &w_h_height);
     
-	m_pin3d.m_pd3dDevice->basicShader->Core()->SetTechnique(stereo ? "stereo" : (useAO ? "AO" : (FXAA1 ? "FXAA1" : "FXAA2")));
+	m_pin3d.m_pd3dDevice->basicShader->SetTechnique(stereo ? "stereo" : (useAO ? "AO" : (FXAA1 ? "FXAA1" : "FXAA2")));
 
 	m_pin3d.m_pd3dDevice->basicShader->Begin(0);
     m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_TEX, (LPVOID)quadVerts, 4);
@@ -2460,7 +2460,7 @@ void Player::FlipVideoBuffers3DAOFXAA( const bool vsync ) //!! SMAA, luma sharpe
 		m_pin3d.m_pd3dDevice->basicShader->SetTexture("Texture3", m_pin3d.m_pddsAOBackBuffer);
 		const D3DXVECTOR4 fb_inv_resolution_05((float)(0.5/(double)m_width),(float)(0.5/(double)m_height),1.0f,1.0f);
 		m_pin3d.m_pd3dDevice->basicShader->Core()->SetVector("fb_inv_resolution_05", &fb_inv_resolution_05);
-		m_pin3d.m_pd3dDevice->basicShader->Core()->SetTechnique(useAA ? "fb_tonemap_AO" : "fb_tonemap_AO_no_filter");
+		m_pin3d.m_pd3dDevice->basicShader->SetTechnique(useAA ? "fb_tonemap_AO" : "fb_tonemap_AO_no_filter");
 		m_pin3d.m_pd3dDevice->basicShader->Begin(0);
 		m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_TEX, (LPVOID)shiftedVerts, 4);
 		m_pin3d.m_pd3dDevice->basicShader->End();
@@ -2980,7 +2980,7 @@ void Player::DrawBalls()
             m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
             m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_DESTALPHA);
 
-          ballShader->Core()->SetTechnique("RenderBallReflection");
+          ballShader->SetTechnique("RenderBallReflection");
           ballShader->Begin(0);
           m_pin3d.m_pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, ballVertexBuffer, 0, basicBallNumVertices, ballIndexBuffer, 0, basicBallNumFaces );
           ballShader->End();
@@ -2989,7 +2989,7 @@ void Player::DrawBalls()
             m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_INVSRCALPHA);
         }
 
-      ballShader->Core()->SetTechnique("RenderBall");
+      ballShader->SetTechnique("RenderBall");
       ballShader->Begin(0);
       m_pin3d.m_pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, ballVertexBuffer, 0, basicBallNumVertices, ballIndexBuffer, 0, basicBallNumFaces );
       ballShader->End();
@@ -3091,7 +3091,7 @@ void Player::DrawBalls()
                 m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
                 m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_DESTALPHA);
 
-                ballShader->Core()->SetTechnique("RenderBallTrail");
+                ballShader->SetTechnique("RenderBallTrail");
 				ballShader->Begin(0);
                 m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_NOTEX2_VERTEX, rgv3D_all, num_rgv3D, (LPWORD)rgi_all, num_rgv3D);
 				ballShader->End();

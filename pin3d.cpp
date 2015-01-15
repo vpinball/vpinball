@@ -479,11 +479,11 @@ void Pin3D::RenderPlayfieldGraphics()
 	{
       SetTextureFilter(ePictureTexture, TEXTURE_MODE_ANISOTROPIC);
       m_pd3dDevice->basicShader->SetTexture("Texture0",pin);
-      m_pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
+      m_pd3dDevice->basicShader->SetTechnique("basic_with_texture");
 	}
 	else // No image by that name
 	{
-      m_pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
+      m_pd3dDevice->basicShader->SetTechnique("basic_without_texture");
 	}
 
     assert(tableVBuffer != NULL);
@@ -498,7 +498,7 @@ void Pin3D::RenderPlayfieldGraphics()
         //m_pd3dDevice->SetTexture(0, NULL);
         m_pd3dDevice->m_texMan.UnloadTexture(pin->m_pdsBuffer);
         SetTextureFilter(ePictureTexture, TEXTURE_MODE_TRILINEAR);
-        m_pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
+        m_pd3dDevice->basicShader->SetTechnique("basic_without_texture");
     }
 
     m_pd3dDevice->basicShader->Begin(0);

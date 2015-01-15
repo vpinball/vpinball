@@ -286,7 +286,7 @@ void Plunger::PostRenderStatic(RenderDevice* pd3dDevice)
 //            D3DXVECTOR4 color(1.0f,1.0f,1.0f,1.0f);
 //            pd3dDevice->basicShader->Core()->SetVector("cBase",&color);
             pd3dDevice->basicShader->SetTexture("Texture0",pin);
-            pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
+            pd3dDevice->basicShader->SetTechnique("basic_with_texture");
             ppin3d->EnableAlphaBlend( 1, false );
             //ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
             static const WORD idx[6] = {0,1,2,2,3,0};
@@ -301,14 +301,14 @@ void Plunger::PostRenderStatic(RenderDevice* pd3dDevice)
 //                 D3DXVECTOR4 color(1.0f,1.0f,1.0f,1.0f);
 //                 pd3dDevice->basicShader->Core()->SetVector("cBase",&color);
                 pd3dDevice->basicShader->SetTexture("Texture0",pin);
-                pd3dDevice->basicShader->Core()->SetTechnique("basic_with_texture");
+                pd3dDevice->basicShader->SetTechnique("basic_with_texture");
                 ppin3d->EnableAlphaBlend( 1, false );
                 //ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
             }
             else
             {
                 //ppin3d->SetTexture(NULL);
-                pd3dDevice->basicShader->Core()->SetTechnique("basic_without_texture");
+                pd3dDevice->basicShader->SetTechnique("basic_without_texture");
             }
             pd3dDevice->basicShader->Begin(0);
             pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, vertexBuffer, frame*(16*PLUNGEPOINTS1), 16*PLUNGEPOINTS1, indexBuffer, 0, 16*6*(PLUNGEPOINTS1-1));
