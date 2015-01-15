@@ -1759,6 +1759,10 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(3), helpstring("property HitEvent")] HRESULT HasHitEvent([in] VARIANT_BOOL newVal);
 		[propget, id(4), helpstring("property Thickness")] HRESULT Thickness([out, retval] int *pVal);
 		[propput, id(4), helpstring("property Thickness")] HRESULT Thickness([in] int newVal);
+		[propget, id(18), helpstring("property RotX")] HRESULT RotX([out, retval] float *pVal);
+		[propput, id(18), helpstring("property RotX")] HRESULT RotX([in] float newVal);
+		[propget, id(24), helpstring("property RotY")] HRESULT RotY([out, retval] float *pVal);
+		[propput, id(24), helpstring("property RotY")] HRESULT RotY([in] float newVal);
 		[propget, id(340), helpstring("property Material")] HRESULT Material([out, retval] BSTR *pVal);
 		[propput, id(340), helpstring("property Material")] HRESULT Material([in] BSTR newVal);
 		[propget, id(DISPID_Image), helpstring("property Image")] HRESULT Image([out, retval] BSTR *pVal);
