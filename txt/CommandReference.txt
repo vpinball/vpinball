@@ -589,3 +589,24 @@ VelX(float)
 VelY(float)
 VelZ(float)
 Image(string)
+
+RUBBER
+==============================================================================================================================================
+
+Variables
+---------
+*Name(string)
+*HasHitEvent(bool)
+*Thickness(int)
+*Collidable(bool)
+*Material(string)
+Visible(bool)
+*EnableStaticRendering(bool) - if set the rubber is only rendered once (like walls) any dynamic changes later 
+                               won't have an effect. This is useful for static rubbers like rubbers on posts. 
+Image(string) - texture name
+Elasticity(float)
+Friction(float)
+Scatter(float)
+RotX(float)                 - angle to rotate the whole rubber around the X axis (inclination)
+RotY(float)                 - angle to rotate the whole rubber around the Y axis (skew)
+

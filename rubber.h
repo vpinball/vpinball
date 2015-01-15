@@ -19,6 +19,9 @@ public:
 	float m_friction;
 	float m_scatter;
    float m_depthBias;      // for determining depth sorting
+   float m_rotX;
+   float m_rotY;
+   float m_rotZ;
    bool m_fHitEvent;
 	bool m_staticRendering;
 
@@ -123,6 +126,8 @@ private:
     int m_numIndices;
 
     std::vector<HitObject*> m_vhoCollidable; // Objects to that may be collide selectable
+    Vertex3D_NoTex2* m_vertices;
+    Vertex3Ds middlePoint;
 
 	VertexBuffer *staticVertexBuffer;
 	VertexBuffer *dynamicVertexBuffer;
@@ -144,7 +149,8 @@ private:
    
 	void AddLine(Vector<HitObject> * const pvho, const Vertex2D * const pv1, const Vertex2D * const pv2, const Vertex2D * const pv3, const float height1, const float height2);
 
-   void RenderObject( RenderDevice *pd3dDevice);
+    void RenderObject( RenderDevice *pd3dDevice);
+    void UpdateRubber( RenderDevice *pd3dDevice );
 // IRamp
 public:
 	STDMETHOD(get_Image)(/*[out, retval]*/ BSTR *pVal);
@@ -172,8 +178,12 @@ public:
     STDMETHOD(put_Elasticity)(/*[in]*/ float newVal);
 	STDMETHOD(get_Friction)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Friction)(/*[in]*/ float newVal);
-	STDMETHOD(get_Scatter)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_Scatter)(/*[in]*/ float newVal);
+    STDMETHOD(get_Scatter)(/*[out, retval]*/ float *pVal);
+    STDMETHOD(put_Scatter)(/*[in]*/ float newVal);
+    STDMETHOD(get_RotX)(/*[out, retval]*/ float *pVal);
+    STDMETHOD(put_RotX)(/*[in]*/ float newVal);
+    STDMETHOD(get_RotY)(/*[out, retval]*/ float *pVal);
+    STDMETHOD(put_RotY)(/*[in]*/ float newVal);
 };
 
 #endif // !defined(AFX_RAMP_H__5EFEDEFB_5504_430A_B000_9B6D1903E3FC__INCLUDED_)

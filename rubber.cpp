@@ -14,6 +14,7 @@ Rubber::Rubber()
    m_propPhysics = NULL;
    m_propPosition = NULL;
    m_propVisual = NULL;
+   m_vertices=NULL;
 }
 
 Rubber::~Rubber()
@@ -26,6 +27,9 @@ Rubber::~Rubber()
 
     if (dynamicIndexBuffer)
         dynamicIndexBuffer->release();
+
+    if( m_vertices )
+        delete [] m_vertices;
 }
 
 HRESULT Rubber::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
@@ -85,6 +89,9 @@ void Rubber::SetDefaults(bool fromMouseClick)
    m_d.m_fCollidable = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"Collidable", true) : true;
 
    m_d.m_staticRendering = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"EnableStaticRendering", true) : true;
+
+   m_d.m_rotX= fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"RotX", 0.0f) : 0.0f;
+   m_d.m_rotY = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"RotY", 0.0f) : 0.0f;
 }
 
 void Rubber::WriteRegDefaults()
@@ -104,6 +111,8 @@ void Rubber::WriteRegDefaults()
    SetRegValueBool(strKeyName,"Collidable",m_d.m_fCollidable);
    SetRegValueBool(strKeyName,"Visible",m_d.m_fVisible);
    SetRegValueBool(strKeyName,"EnableStaticRendering",m_d.m_staticRendering);
+   SetRegValueFloat(strKeyName,"RotX", m_d.m_rotX);
+   SetRegValueFloat(strKeyName,"RotY", m_d.m_rotY);
 }
 
 void Rubber::GetPointDialogPanes(Vector<PropertyPane> *pvproppane)
@@ -239,11 +248,11 @@ void Rubber::GetBoundingVertices(Vector<Vertex3Ds> * const pvvertex3D)
 }
 
 /*
- * Compute the vertices and additional information for the ramp shape.
+ * Compute the m_vertices and additional information for the ramp shape.
  *
  * Output:
- *  pcvertex     - number of vertices for the central curve
- *  return value - size 2*cvertex, vertices forming the 2D outline of the ramp
+ *  pcvertex     - number of m_vertices for the central curve
+ *  return value - size 2*cvertex, m_vertices forming the 2D outline of the ramp
  *                 order: first forward along right side of ramp, then backward along the left side
  *  ppheight     - size cvertex, height of the ramp at the i-th vertex
  *  ppfCross     - size cvertex, true if i-th vertex corresponds to a control point
@@ -253,7 +262,7 @@ Vertex2D *Rubber::GetSplineVertex(int &pcvertex, bool ** const ppfCross, Vertex2
 {
    Vector<RenderVertex> vvertex;
    GetCentralCurve(&vvertex);
-   // vvertex are the 2D vertices forming the central curve of the ramp as seen from above
+   // vvertex are the 2D m_vertices forming the central curve of the ramp as seen from above
 
    const int cvertex = vvertex.size();
    Vertex2D * const rgvLocal = new Vertex2D[(cvertex+1) * 2];
@@ -387,7 +396,7 @@ float Rubber::GetSurfaceHeight(float x, float y)
     Vertex2D vOut;
     ClosestPointOnPolygon(vvertex, Vertex2D(x,y), &vOut, &iSeg, false);
 
-    // Go through vertices (including iSeg itself) counting control points until iSeg
+    // Go through m_vertices (including iSeg itself) counting control points until iSeg
     float totallength = 0.f;
     float startlength = 0.f;
     float zheight = 0.f;
@@ -844,6 +853,8 @@ HRESULT Rubber::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptk
    bw.WriteBool(FID(RVIS), m_d.m_fVisible);
    bw.WriteFloat(FID(RADB), m_d.m_depthBias);
    bw.WriteBool(FID(ESTR), m_d.m_staticRendering);
+   bw.WriteFloat(FID(ROTX), m_d.m_rotX);
+   bw.WriteFloat(FID(ROTY), m_d.m_rotY);
 
    ISelect::SaveData(pstm, hcrypthash, hcryptkey);
 
@@ -939,6 +950,14 @@ BOOL Rubber::LoadToken(int id, BiffReader *pbr)
    {
       pbr->GetFloat(&m_d.m_depthBias);
    }
+   else if (id == FID(ROTX))
+   {
+       pbr->GetFloat(&m_d.m_rotX);
+   }
+   else if (id == FID(ROTY))
+   {
+       pbr->GetFloat(&m_d.m_rotY);
+   }
    else
    {
       LoadPointToken(id, pbr, pbr->m_version);
@@ -1006,7 +1025,7 @@ void Rubber::DoCommand(int icmd, int x, int y)
          int iSeg=-1;
          ClosestPointOnPolygon(vvertex, v, &vOut, &iSeg, true);
 
-         // Go through vertices (including iSeg itself) counting control points until iSeg
+         // Go through m_vertices (including iSeg itself) counting control points until iSeg
          int icp = 0;
          for (int i=0;i<(iSeg+1);i++)
             if (vvertex.ElementAt(i)->fControlPoint)
@@ -1373,6 +1392,50 @@ STDMETHODIMP Rubber::put_EnableStaticRendering(VARIANT_BOOL newVal)
       return S_OK;
 }
 
+STDMETHODIMP Rubber::get_RotX(float *pVal)
+{
+    *pVal = m_d.m_rotX;
+
+    return S_OK;
+}
+
+STDMETHODIMP Rubber::put_RotX(float newVal)
+{
+    if(m_d.m_rotX != newVal)
+    {
+        STARTUNDO
+
+        m_d.m_rotX = newVal;
+        dynamicVertexBufferRegenerate = true;
+
+        STOPUNDO
+    }
+
+    return S_OK;
+}
+
+STDMETHODIMP Rubber::get_RotY(float *pVal)
+{
+    *pVal = m_d.m_rotY;
+
+    return S_OK;
+}
+
+STDMETHODIMP Rubber::put_RotY(float newVal)
+{
+    if(m_d.m_rotY != newVal)
+    {
+        STARTUNDO
+
+        m_d.m_rotY = newVal;
+        dynamicVertexBufferRegenerate = true;
+
+        STOPUNDO
+    }
+
+    return S_OK;
+}
+
 void Rubber::RenderObject(RenderDevice *pd3dDevice)
 {
    TRACE_FUNCTION();
@@ -1398,10 +1461,6 @@ void Rubber::RenderObject(RenderDevice *pd3dDevice)
 
       if (pin)
       {
-//         pin->Set( ePictureTexture );
-
-         //ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
-
          pd3dDevice->basicShader->SetTexture("Texture0", pin);
          pd3dDevice->basicShader->SetTechnique("basic_with_texture");
       }
@@ -1410,13 +1469,11 @@ void Rubber::RenderObject(RenderDevice *pd3dDevice)
           pd3dDevice->basicShader->SetTechnique("basic_without_texture");
       }
 
-      if (!dynamicVertexBuffer || dynamicVertexBufferRegenerate)
-         GenerateVertexBuffer(pd3dDevice);
+      if (dynamicVertexBufferRegenerate)
+         UpdateRubber(pd3dDevice);
 
       pd3dDevice->basicShader->Begin(0);
-      unsigned int offset=0;
-      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, dynamicVertexBuffer, offset, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
-      offset += m_numVertices;
+      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, dynamicVertexBuffer, 0, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
       pd3dDevice->basicShader->End();  
    }
 }
@@ -1434,7 +1491,7 @@ void Rubber::PostRenderStatic(RenderDevice* pd3dDevice)
 
 void Rubber::GenerateVertexBuffer(RenderDevice* pd3dDevice)
 {
-    dynamicVertexBufferRegenerate = false;
+    dynamicVertexBufferRegenerate = true;
     Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
     Vertex2D * middlePoints = 0;
     int accuracy=1;
@@ -1460,12 +1517,15 @@ void Rubber::GenerateVertexBuffer(RenderDevice* pd3dDevice)
     if (dynamicVertexBuffer)
         dynamicVertexBuffer->release();
 
-    pd3dDevice->CreateVertexBuffer(m_numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &dynamicVertexBuffer);
+    if ( m_d.m_staticRendering )
+        pd3dDevice->CreateVertexBuffer(m_numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &dynamicVertexBuffer);
+    else
+        pd3dDevice->CreateVertexBuffer(m_numVertices, D3DUSAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &dynamicVertexBuffer);
 
     Vertex3D_NoTex2 *buf;
     dynamicVertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY);
 
-    Vertex3D_NoTex2* rgvbuf = new Vertex3D_NoTex2[m_numVertices];
+    m_vertices = new Vertex3D_NoTex2[m_numVertices];
     std::vector<WORD> rgibuf( m_numIndices );
     const float height = m_d.m_height+m_ptable->m_tableheight;
 
@@ -1501,12 +1561,12 @@ void Rubber::GenerateVertexBuffer(RenderDevice* pd3dDevice)
             const float v_angle = v*(float)(2.0*M_PI);
             const Vertex3Ds tmp = GetRotatedAxis( (float)j*(360.0f/numSegments), tangent, normal )
 							      * ((float)m_d.m_thickness*0.5f);
-            rgvbuf[index].x = middlePoints[i].x+tmp.x;
-            rgvbuf[index].y = middlePoints[i].y+tmp.y;
-            rgvbuf[index].z = height     +tmp.z;
+            m_vertices[index].x = middlePoints[i].x+tmp.x;
+            m_vertices[index].y = middlePoints[i].y+tmp.y;
+            m_vertices[index].z = height     +tmp.z;
             //texel
-            rgvbuf[index].tu = u;
-            rgvbuf[index].tv = v;
+            m_vertices[index].tu = u;
+            m_vertices[index].tv = v;
         }
     }
     // calculate faces
@@ -1549,19 +1609,81 @@ void Rubber::GenerateVertexBuffer(RenderDevice* pd3dDevice)
     //calculate normals
     for( int i=0;i<m_numIndices;i+=3)
     {
-        SetNormal( rgvbuf, &rgibuf[i], 3);
+        SetNormal( m_vertices, &rgibuf[i], 3);
     }
+
+    Matrix3D fullMatrix;
+    Matrix3D transMat,rotMat;
+
+    float maxx=FLT_MIN;
+    float minx=FLT_MAX;
+    float maxy=FLT_MIN;
+    float miny=FLT_MAX;
+    float maxz=FLT_MIN;
+    float minz=FLT_MAX;
+
+    for( int i=0;i<m_numVertices;i++ )
+    {
+        if ( maxx<m_vertices[i].x ) maxx=m_vertices[i].x;
+        if ( minx>m_vertices[i].x ) minx=m_vertices[i].x;
+        if ( maxy<m_vertices[i].y ) maxy=m_vertices[i].y;
+        if ( miny>m_vertices[i].y ) miny=m_vertices[i].y;
+        if ( maxz<m_vertices[i].z ) maxz=m_vertices[i].z;
+        if ( minz>m_vertices[i].z ) minz=m_vertices[i].z;
+    }
+    middlePoint.x = (maxx+minx)*0.5f;
+    middlePoint.y = (maxy+miny)*0.5f;
+    middlePoint.z = (maxz+minz)*0.5f;
+
     // Draw the floor of the ramp.
-    memcpy( &buf[0], &rgvbuf[0], sizeof(Vertex3D_NoTex2)*m_numVertices );
+    memcpy( &buf[0], &m_vertices[0], sizeof(Vertex3D_NoTex2)*m_numVertices );
     dynamicVertexBuffer->unlock();
 
     if (dynamicIndexBuffer)
         dynamicIndexBuffer->release();
     dynamicIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer( rgibuf );
 
-    delete [] rgvbuf;
     delete [] rgvLocal;
     delete [] middlePoints;
+}
+
+void Rubber::UpdateRubber( RenderDevice *pd3dDevice )
+{
+    Matrix3D fullMatrix;
+    Matrix3D transMat,rotMat;
+    const float height = m_d.m_height+m_ptable->m_tableheight;
+
+    fullMatrix.SetIdentity();
+    rotMat.RotateYMatrix(ANGTORAD(m_d.m_rotY));
+    rotMat.Multiply(fullMatrix, fullMatrix);
+    rotMat.RotateXMatrix(ANGTORAD(m_d.m_rotX));
+    rotMat.Multiply(fullMatrix, fullMatrix);
+
+    Vertex3D_NoTex2 *buf;
+
+    if(m_d.m_staticRendering)
+        dynamicVertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY);
+    else
+        dynamicVertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::DISCARDCONTENTS);
+
+
+    for( int i=0;i<m_numVertices;i++ )
+    {
+        Vertex3Ds vert(m_vertices[i].x-middlePoint.x, m_vertices[i].y-middlePoint.y, m_vertices[i].z-middlePoint.z);
+        vert = fullMatrix.MultiplyVector(vert);
+        buf[i].x = vert.x+middlePoint.x;
+        buf[i].y = vert.y+middlePoint.y;
+        buf[i].z = vert.z+height;
+        vert = Vertex3Ds( m_vertices[i].nx, m_vertices[i].ny, m_vertices[i].nz );
+        vert = fullMatrix.MultiplyVectorNoTranslate(vert);
+        buf[i].nx = vert.x;
+        buf[i].ny = vert.y;
+        buf[i].nz = vert.z;
+        buf[i].tu = m_vertices[i].tu;
+        buf[i].tv = m_vertices[i].tv;
+    }
+    dynamicVertexBuffer->unlock();
+    dynamicVertexBufferRegenerate=false;
 }
 
 void Rubber::UpdatePropertyPanes()
@@ -1582,3 +1704,4 @@ void Rubber::UpdatePropertyPanes()
         EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,115), TRUE);
     }
 }
+
