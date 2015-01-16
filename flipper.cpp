@@ -213,7 +213,7 @@ void Flipper::GetHitShapes(Vector<HitObject> * const pvho)
          if (hr != S_OK)
             m_d.m_OverrideElasticityFalloff = 0.43f;
 
-  		 m_d.m_OverrideFriction = 0.8;
+  		 m_d.m_OverrideFriction = 0.8f;
 	     sprintf_s(tmp,256,"FlipperPhysicsFriction%d",m_d.m_OverridePhysics-1);
          hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideFriction);
          if (hr != S_OK)
