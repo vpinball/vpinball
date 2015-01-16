@@ -455,6 +455,8 @@ public:
 
     bool RenderSolid()      { return m_renderSolid; }
 
+    void InvokeBallBallCollisionCallback(Ball *b1, Ball *b2, float hitVelocity);
+
 BEGIN_COM_MAP(PinTable)
 	COM_INTERFACE_ENTRY(ITable)
 	COM_INTERFACE_ENTRY(IDispatch)

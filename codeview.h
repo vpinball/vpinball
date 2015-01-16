@@ -181,22 +181,26 @@ BEGIN_COM_MAP(CodeViewer)
 	COM_INTERFACE_ENTRY(IServiceProvider)
 END_COM_MAP()
 
-	IActiveScriptParse* m_pScriptParse;
+	IScriptableHost *m_psh;
+
 	IActiveScript* m_pScript;
-	IActiveScriptDebug* m_pScriptDebug;
 
 	VectorSortString<CodeViewDispatch> m_vcvd;
 
-	VectorSortString<CodeViewDispatch> m_vcvdTemp; // Objects added through script
+	BOOL m_fScriptError; // Whether a script error has occured - used for polling from the game
+
+private:
+
+	IActiveScriptParse* m_pScriptParse;
+	IActiveScriptDebug* m_pScriptDebug;
 
 	FINDREPLACE m_findreplacestruct;
 	char szFindString[81];
 	char szReplaceString[81];
 
-	BOOL m_fScriptError; // Whether a script error has occured - used for polling from the game
+	VectorSortString<CodeViewDispatch> m_vcvdTemp; // Objects added through script
 
-	IScriptableHost *m_psh;
-
+public:
 // Edit Class
 	void ColorLine(int line);
 	void UncolorError();

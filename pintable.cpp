@@ -8359,3 +8359,31 @@ STDMETHODIMP PinTable::Version(int *pVal)
 	*pVal = VP_VERSION_MAJOR*1000 + VP_VERSION_MINOR*100 + VP_VERSION_REV;
 	return S_OK;
 }
+
+void PinTable::InvokeBallBallCollisionCallback(Ball *b1, Ball *b2, float hitVelocity)
+{
+    if (g_pplayer)
+    {
+        CComPtr<IDispatch> disp;
+        m_pcv->m_pScript->GetScriptDispatch(NULL, &disp);
+
+        static wchar_t FnName[] = L"OnBallBallCollision";
+        LPOLESTR fnNames = FnName;
+
+        DISPID dispid;
+        HRESULT hr = disp->GetIDsOfNames(IID_NULL, &fnNames, 1, 0, &dispid);
+
+        if (SUCCEEDED(hr))  // did we find the collision callback function?
+        {
+            // note: arguments are passed in reverse order
+            CComVariant rgvar[3] = {
+                CComVariant(hitVelocity),
+                CComVariant(static_cast<IDispatch*>(b2->m_pballex)),
+                CComVariant(static_cast<IDispatch*>(b1->m_pballex))
+            };
+            DISPPARAMS dispparams = { rgvar, NULL, 3, 0 };
+
+            disp->Invoke(dispid, IID_NULL, 0, DISPATCH_METHOD, &dispparams, NULL, NULL, NULL);
+        }
+    }
+}
