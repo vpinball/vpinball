@@ -394,7 +394,7 @@ void Surface::CurvesToShapes(Vector<HitObject> * const pvho)
    Vertex3Ds * const rgv3Dt = new Vertex3Ds[count];
    Vertex3Ds * const rgv3Db = m_d.m_fIsBottomSolid ? new Vertex3Ds[count] : NULL;
 
-   for (int i=0;i<count;i++)
+   for (int i = 0; i < count; ++i)
    {
       const RenderVertex * const pv1 = vvertex.ElementAt(i);
 
@@ -409,8 +409,8 @@ void Surface::CurvesToShapes(Vector<HitObject> * const pvho)
 		  rgv3Db[count-1-i].z = m_d.m_heightbottom+m_ptable->m_tableheight;
 	  }
 
-      const RenderVertex * const pv2 = vvertex.ElementAt((i < count-1) ? (i+1) : 0);
-      const RenderVertex * const pv3 = vvertex.ElementAt((i < count-2) ? (i+2) : (i+2-count));
+      const RenderVertex * const pv2 = vvertex.ElementAt((i + 1) % count);
+      const RenderVertex * const pv3 = vvertex.ElementAt((i + 2) % count);
 
       AddLine(pvho, pv2, pv3, pv1, pv2->fSlingshot);
    }
@@ -447,7 +447,7 @@ void Surface::SetupHitObject(Vector<HitObject> * pvho, HitObject * obj)
         m_vhoDrop.push_back(obj);
 }
 
-void Surface::AddLine(Vector<HitObject> * const pvho, const RenderVertex * const pv1, const RenderVertex * const pv2, const RenderVertex * const pv3, const bool fSlingshot)
+void Surface::AddLine(Vector<HitObject> * const pvho, const RenderVertex * const pv1, const RenderVertex * const pv2, const RenderVertex * const /*pvprev*/, const bool fSlingshot)
 {
    LineSeg *plineseg;
 
@@ -510,12 +510,12 @@ void Surface::AddLine(Vector<HitObject> * const pvho, const RenderVertex * const
        SetupHitObject(pvho, new HitLine3D(v1, v2));
    }
 
-   const Vertex2D vt1 = *pv1 - *pv2;
-   const Vertex2D vt2 = *pv1 - *pv3;
+   //const Vertex2D vt1 = *pv1 - *pv2;
+   //const Vertex2D vt2 = *pv1 - *pvprev;
 
-   const float dot = vt1.Dot(vt2);
+   //const float dot = vt1.Dot(vt2);
 
-   if (dot != 0.f) // continuous segments should mathematically never hit
+   //if (dot != 0.f) // continuous segments should mathematically never hit <<< this is nonsense, dot=0 is a right angle
    {
        SetupHitObject(pvho, new HitLineZ(*pv1, m_d.m_heightbottom+m_ptable->m_tableheight, m_d.m_heighttop+m_ptable->m_tableheight));
 
