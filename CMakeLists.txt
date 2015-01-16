@@ -176,14 +176,12 @@ set(SOURCES
 
 set(HEADERS
   ballex.h
-  buildnumber.h
   bumper.h
   codeview.h
   color.h
   decal.h
   def.h
   dispid.h
-  display.h
   dispreel.h
   disputil.h
   dragpoint.h
@@ -191,13 +189,9 @@ set(HEADERS
   eventproxy.h
   extern.h
   flipper.h
-  freeimage.h
   gate.h
   helpers.h
   hid.h
-  hidpi.h
-  hidsdi.h
-  hidusage.h
   hitrectsur.h
   hitsur.h
   idebug.h
@@ -211,7 +205,6 @@ set(HEADERS
   memutil.h
   mesh.h
   mixer.h
-  msscript.h
   paintsur.h
   pin3d.h
   pinbinary.h
@@ -293,6 +286,7 @@ list(APPEND HEADERS "${CMAKE_BINARY_DIR}/vpinball_i.h")
 include_directories(pin)
 include_directories(media)
 include_directories(inc)
+include_directories(shader)
 include_directories(${CMAKE_SOURCE_DIR})
 include_directories(${CMAKE_BINARY_DIR})
 include_directories(${DirectX_INCLUDE_DIR})
@@ -321,7 +315,6 @@ set(CMAKE_EXE_LINKER_FLAGS_RELWITHSSE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /LTCG")
 find_library(LIB_NVAPI nvapi.lib PATHS ${CMAKE_SOURCE_DIR}/lib)
 find_library(LIB_DXGUID dxguid.lib PATHS ${DirectX_LIB_DIR})
 find_library(LIB_FREEIMAGE freeimage.lib PATHS ${CMAKE_SOURCE_DIR}/lib)
-find_library(LIB_DSOUND dsound.lib PATHS ${DirectX_LIB_DIR})
 find_library(LIB_DINPUT dinput.lib PATHS ${DirectX_LIB_DIR})
 find_library(LIB_D3DX9 d3dx9.lib PATHS ${DirectX_LIB_DIR})
 find_library(LIB_XAUDIO xaudio.lib PATHS ${CMAKE_SOURCE_DIR}/lib/xaudio)
@@ -331,8 +324,8 @@ find_library(LIB_HID hid.lib PATHS ${CMAKE_SOURCE_DIR}/lib)
 LINK_DIRECTORIES(C:/WinDDK7.1/Lib/atl/i386)
 
 add_executable(${NAME} WIN32 ${SOURCES} ${HEADERS} ${RC_RESOURCE})
-target_link_libraries(${NAME} comctl32.lib ${LIB_NVAPI} ${LIB_DXGUID} ${LIB_FREEIMAGE} ${LIB_DSOUND} winmm.lib ${LIB_DINPUT} ${LIB_D3DX9}
-  ${LIB_BASS} imm32.lib setupapi.lib ${LIB_HID})
+target_link_libraries(${NAME} comctl32.lib ${LIB_NVAPI} ${LIB_DXGUID} ${LIB_FREEIMAGE} winmm.lib ${LIB_DINPUT} ${LIB_D3DX9}
+  ${LIB_BASS} imm32.lib setupapi.lib dsound.lib ${LIB_HID})
 
 
 #
