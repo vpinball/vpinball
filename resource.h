@@ -621,6 +621,7 @@
 #define IDC_TWO_WAY_CHECK               427
 #define IDC_3D_STEREO_MS                428
 #define IDC_3D_STEREO_ZPD               429
+#define IDC_HALO_EDIT                   429
 #define IDC_ENABLE_NUDGE_FILTER         430
 #define IDC_BULB_MODULATE_VS_ADD        431
 #define IDC_LIGHT_FALLOFF_POWER         432
@@ -827,7 +828,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        614
 #define _APS_NEXT_COMMAND_VALUE         32998
-#define _APS_NEXT_CONTROL_VALUE         428
+#define _APS_NEXT_CONTROL_VALUE         430
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif
