@@ -211,6 +211,12 @@ void Light::SetDefaults(bool fromMouseClick)
        m_d.m_bulb_modulate_vs_add = fTmp;
    else
        m_d.m_bulb_modulate_vs_add = 0.9f;
+
+   hr = GetRegStringAsFloat("DefaultProps\\Light","BulbHaloHeight", &fTmp);
+   if ((hr == S_OK) && fromMouseClick)
+      m_d.m_bulbHaloHeight = fTmp;
+   else
+      m_d.m_bulbHaloHeight = 28.0f;
 }
 
 void Light::WriteRegDefaults()
@@ -232,6 +238,7 @@ void Light::WriteRegDefaults()
    SetRegValueBool("DefaultProps\\Light","ShowBulbMesh", m_d.m_showBulbMesh);
    SetRegValueFloat("DefaultProps\\Light","ScaleBulbMesh", m_d.m_meshRadius);
    SetRegValueFloat("DefaultProps\\Light","BulbModulateVsAdd", m_d.m_bulb_modulate_vs_add);
+   SetRegValueFloat("DefaultProps\\Light","BulbHaloHeight", m_d.m_bulbHaloHeight);
 }
 
 Texture *Light::GetDisplayTexture()
@@ -630,9 +637,9 @@ void Light::PrepareMoversCustom()
    PolygonToTriangles(vvertex, &vpoly, &vtri);
 
    float height = m_surfaceHeight;
-   if ( m_d.m_BulbLight && m_d.m_showBulbMesh )
+   if ( m_d.m_BulbLight )
    {
-       height += (1.4f*m_d.m_meshRadius)*m_ptable->m_zScale;
+       height += m_d.m_bulbHaloHeight*m_ptable->m_zScale;
    }
 
    customMoverVertexNum = vtri.Size()*3;
@@ -826,6 +833,7 @@ HRESULT Light::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptke
    bw.WriteBool(FID(SHBM), m_d.m_showBulbMesh);
    bw.WriteFloat(FID(BMSC), m_d.m_meshRadius);
    bw.WriteFloat(FID(BMVA), m_d.m_bulb_modulate_vs_add);
+   bw.WriteFloat(FID(BHHI), m_d.m_bulbHaloHeight);
 
    ISelect::SaveData(pstm, hcrypthash, hcryptkey);
 
@@ -962,7 +970,11 @@ BOOL Light::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(BMVA))
    {
-       pbr->GetFloat(&m_d.m_bulb_modulate_vs_add);
+      pbr->GetFloat(&m_d.m_bulb_modulate_vs_add);
+   }
+   else if (id == FID(BHHI))
+   {
+      pbr->GetFloat(&m_d.m_bulbHaloHeight);
    }
    else
    {
@@ -1504,6 +1516,24 @@ STDMETHODIMP Light::put_BulbModulateVsAdd(float newVal)
     return S_OK;
 }
 
+STDMETHODIMP Light::get_BulbHaloHeight(float *pVal)
+{
+   *pVal = m_d.m_bulbHaloHeight;
+
+   return S_OK;
+}
+
+STDMETHODIMP Light::put_BulbHaloHeight(float newVal)
+{
+   STARTUNDO
+
+      m_d.m_bulbHaloHeight = newVal;
+
+   STOPUNDO
+
+      return S_OK;
+}
+
 void Light::GetDialogPanes(Vector<PropertyPane> *pvproppane)
 {
    PropertyPane *pproppane;
@@ -1568,11 +1598,15 @@ void Light::UpdatePropertyPanes()
         EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_SHOW_BULB_MESH), FALSE);
         EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_SCALE_BULB_MESH), FALSE);
         EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_BULB_MODULATE_VS_ADD), FALSE);
+        EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_HALO_EDIT), FALSE);
+        EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,DISPID_Image), TRUE);
     }
     else
     {
         EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_SHOW_BULB_MESH), TRUE);
         EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_SCALE_BULB_MESH), TRUE);
         EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_BULB_MODULATE_VS_ADD), TRUE);
+        EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_HALO_EDIT), TRUE);
+        EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,DISPID_Image), FALSE);
     }
 }

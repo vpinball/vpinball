@@ -41,6 +41,7 @@ public:
 	
     bool m_BulbLight;
 	bool m_showBulbMesh;
+   float m_bulbHaloHeight;
 };
 
 class LightCenter : public ISelect
@@ -184,6 +185,7 @@ private:
    IndexBuffer  *bulbLightIndexBuffer;
    VertexBuffer *bulbSocketVBuffer;
    IndexBuffer  *bulbSocketIndexBuffer;
+   IndexBuffer  *lightBallIndexBuffer;
    PropertyPane *m_propVisual;
 // ILight
 
@@ -226,6 +228,8 @@ public:
    STDMETHOD(put_ScaleBulbMesh)(/*[in]*/ float newVal);
    STDMETHOD(get_BulbModulateVsAdd)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_BulbModulateVsAdd)(/*[in]*/ float newVal);
+   STDMETHOD(get_BulbHaloHeight)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_BulbHaloHeight)(/*[in]*/ float newVal);
 };
 
 #endif // !defined(AFX_LIGHT_H__7445FDB1_1FBE_4975_9AB6_367E6D16098F__INCLUDED_)

@@ -14,7 +14,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (U.S.) resources
+// Englisch (USA) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 #ifdef _WIN32
@@ -708,31 +708,33 @@ BEGIN
     LTEXT           "User &Value",IDC_STATIC,7,40,38,9
 END
 
-IDD_PROPLIGHT_VISUALS DIALOGEX 0, 0, 125, 191
+IDD_PROPLIGHT_VISUALS DIALOGEX 0, 0, 125, 208
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    LTEXT           "Falloff",IDC_STATIC,7,5,43,8
     EDITTEXT        1,51,3,31,12,ES_AUTOHSCROLL
-    LTEXT           "Falloff Power",IDC_STATIC,7,19,43,8
     EDITTEXT        IDC_LIGHT_FALLOFF_POWER,51,17,31,12,ES_AUTOHSCROLL
-    LTEXT           "Intensity",IDC_STATIC,7,33,27,8
     EDITTEXT        12,51,31,31,12,ES_AUTOHSCROLL
-    LTEXT           "Fade Speed",IDC_STATIC,7,48,40,8
     EDITTEXT        IDC_FADE_SPEED,51,46,31,12,ES_AUTOHSCROLL
-    LTEXT           "Color",IDC_STATIC,7,67,43,8
     CONTROL         "Custom2",3,"ColorControl",WS_TABSTOP,51,64,31,12
-    LTEXT           "Off Image:",IDC_STATIC,7,79,37,8
     COMBOBOX        DISPID_Image,7,88,111,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Depth Bias",IDC_STATIC,7,106,36,8
     EDITTEXT        IDC_DEPTH_BIAS,51,104,31,12,ES_AUTOHSCROLL
     CONTROL         "Enable",IDC_LIGHT_TYPE_CHECKBOX,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,136,35,10
-    GROUPBOX        "Bulb",IDC_STATIC,7,124,111,56
     CONTROL         "Show Mesh",IDC_SHOW_BULB_MESH,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,57,136,53,10
-    LTEXT           "Scale Mesh",IDC_STATIC,13,154,38,8
-    EDITTEXT        IDC_SCALE_BULB_MESH,65,150,40,14,ES_AUTOHSCROLL
-    LTEXT           "Modulate (0..1)",IDC_STATIC,13,165,48,8
-    EDITTEXT        IDC_BULB_MODULATE_VS_ADD,65,163,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_HALO_EDIT,65,149,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_SCALE_BULB_MESH,65,164,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_BULB_MODULATE_VS_ADD,65,179,40,14,ES_AUTOHSCROLL
+    LTEXT           "Falloff",IDC_STATIC,7,5,43,8
+    LTEXT           "Falloff Power",IDC_STATIC,7,19,43,8
+    LTEXT           "Intensity",IDC_STATIC,7,33,27,8
+    LTEXT           "Fade Speed",IDC_STATIC,7,48,40,8
+    LTEXT           "Color",IDC_STATIC,7,67,43,8
+    LTEXT           "Off Image:",IDC_STATIC,7,79,37,8
+    LTEXT           "Depth Bias",IDC_STATIC,7,106,36,8
+    GROUPBOX        "Bulb",IDC_STATIC,7,124,111,73
+    LTEXT           "Scale Mesh",IDC_STATIC,13,167,38,8
+    LTEXT           "Modulate (0..1)",IDC_STATIC,13,179,48,8
+    LTEXT           "Halo Height",IDC_STATIC,13,152,38,8
 END
 
 IDD_PROPLIGHT_POSITION DIALOGEX 0, 0, 125, 65
@@ -1764,7 +1766,7 @@ BEGIN
 
     IDD_PROPLIGHT_VISUALS, DIALOG
     BEGIN
-        BOTTOMMARGIN, 170
+        BOTTOMMARGIN, 204
     END
 
     IDD_PROPKICKER_VISUALS, DIALOG
@@ -2411,7 +2413,7 @@ BEGIN
     IDS_STEP                "Step"
 END
 
-#endif    // English (U.S.) resources
+#endif    // Englisch (USA) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
