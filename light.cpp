@@ -270,7 +270,7 @@ void Light::PreRender(Sur * const psur)
    default:
    case ShapeCustom:
        Vector<RenderVertex> vvertex;
-       GetRgVertex(&vvertex);
+       GetRgVertex(vvertex);
 
        // Check if we should display the image in the editor.
        psur->Polygon(vvertex);
@@ -341,7 +341,7 @@ void Light::RenderOutline(Sur * const psur)
    case ShapeCustom: 
        {
           Vector<RenderVertex> vvertex;
-          GetRgVertex(&vvertex);
+          GetRgVertex(vvertex);
           if (m_selectstate != eNotSelected)  
           {
               psur->SetBorderColor(RGB(255,0,0),false,0);
@@ -404,18 +404,17 @@ void Light::GetHitShapesDebug(Vector<HitObject> * const pvho)
    }
 
    case ShapeCustom: {
-      Vector<RenderVertex> vvertex;
-      GetRgVertex(&vvertex);
+      std::vector<RenderVertex> vvertex;
+      GetRgVertex(vvertex);
 
-      const int cvertex = vvertex.Size();
+      const int cvertex = vvertex.size();
       Vertex3Ds * const rgv3d = new Vertex3Ds[cvertex];
 
       for (int i=0; i<cvertex; i++)
       {
-         rgv3d[i].x = vvertex.ElementAt(i)->x;
-         rgv3d[i].y = vvertex.ElementAt(i)->y;
+         rgv3d[i].x = vvertex[i].x;
+         rgv3d[i].y = vvertex[i].y;
          rgv3d[i].z = height;
-         delete vvertex.ElementAt(i);
       }
 
       Hit3DPoly * const ph3dp = new Hit3DPoly(rgv3d, cvertex);
@@ -613,9 +612,9 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
 
 void Light::PrepareMoversCustom()
 {
-   Vector<RenderVertex> vvertex;
-   GetRgVertex(&vvertex);
-   const int cvertex = vvertex.Size();
+   std::vector<RenderVertex> vvertex;
+   GetRgVertex(vvertex);
+   const int cvertex = vvertex.size();
 
    VectorVoid vpoly;
    float maxdist = 0;
@@ -623,8 +622,8 @@ void Light::PrepareMoversCustom()
    {
       vpoly.AddElement((void *)i);
 
-      const float dx = vvertex.ElementAt(i)->x - m_d.m_vCenter.x;
-      const float dy = vvertex.ElementAt(i)->y - m_d.m_vCenter.y;
+      const float dx = vvertex[i].x - m_d.m_vCenter.x;
+      const float dy = vvertex[i].y - m_d.m_vCenter.y;
       const float dist = dx*dx + dy*dy;
       if (dist > maxdist)
          maxdist = dist;
@@ -659,9 +658,9 @@ void Light::PrepareMoversCustom()
    {
 	   const Triangle * const ptri = vtri.ElementAt(t);
 
-	   const RenderVertex * const pv0 = vvertex.ElementAt(ptri->a);
-	   const RenderVertex * const pv1 = vvertex.ElementAt(ptri->c);
-	   const RenderVertex * const pv2 = vvertex.ElementAt(ptri->b);
+	   const RenderVertex * const pv0 = &vvertex[ptri->a];
+	   const RenderVertex * const pv1 = &vvertex[ptri->c];
+	   const RenderVertex * const pv2 = &vvertex[ptri->b];
 
 	   customMoverVertex[k  ].x = pv0->x;   customMoverVertex[k  ].y = pv0->y;   customMoverVertex[k  ].z = height+0.1f;
 	   customMoverVertex[k+1].x = pv1->x;   customMoverVertex[k+1].y = pv1->y;   customMoverVertex[k+1].z = height+0.1f;
@@ -702,9 +701,6 @@ void Light::PrepareMoversCustom()
    customMoverVBuffer->unlock();
 
    delete [] customMoverVertex;
-
-   for (int i=0;i<cvertex;i++)
-      delete vvertex.ElementAt(i);
 
    for (int i=0;i<vtri.Size();i++)
       delete vtri.ElementAt(i);
@@ -1048,18 +1044,10 @@ void Light::DoCommand(int icmd, int x, int y)
    case ID_WALLMENU_ADDPOINT:
       {
          STARTUNDO
+         const Vertex2D v = m_ptable->TransformPoint(x, y);
 
-         RECT rc;
-         GetClientRect(m_ptable->m_hwnd, &rc);
-         HitSur * const phs = new HitSur(NULL, m_ptable->m_zoom, m_ptable->m_offsetx, m_ptable->m_offsety, rc.right - rc.left, rc.bottom - rc.top, 0, 0, NULL);
-
-         const Vertex2D v = phs->ScreenToSurface(x, y);
-         delete phs;
-
-         Vector<RenderVertex> vvertex;
-         GetRgVertex(&vvertex);
-
-         const int cvertex = vvertex.Size();
+         std::vector<RenderVertex> vvertex;
+         GetRgVertex(vvertex);
 
          int iSeg;
          Vertex2D vOut;
@@ -1068,11 +1056,8 @@ void Light::DoCommand(int icmd, int x, int y)
          // Go through vertices (including iSeg itself) counting control points until iSeg
          int icp = 0;
          for (int i=0;i<(iSeg+1);i++)
-            if (vvertex.ElementAt(i)->fControlPoint)
+            if (vvertex[i].fControlPoint)
                icp++;
-
-         for (int i=0;i<cvertex;i++)
-            delete vvertex.ElementAt(i);
 
          //if (icp == 0) // need to add point after the last point
          //icp = m_vdpoint.Size();

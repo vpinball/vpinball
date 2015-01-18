@@ -1007,14 +1007,7 @@ void Rubber::DoCommand(int icmd, int x, int y)
 
    case ID_WALLMENU_ADDPOINT:
       {
-
-         RECT rc;
-         GetClientRect(m_ptable->m_hwnd, &rc);
-
-         HitSur * const phs = new HitSur(NULL, m_ptable->m_zoom, m_ptable->m_offsetx, m_ptable->m_offsety, rc.right - rc.left, rc.bottom - rc.top, 0, 0, NULL);
-
-         const Vertex2D v = phs->ScreenToSurface(x, y);
-         delete phs;
+         const Vertex2D v = m_ptable->TransformPoint(x, y);
 
          Vector<RenderVertex> vvertex;
          GetCentralCurve(&vvertex);

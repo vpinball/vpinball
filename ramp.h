@@ -147,7 +147,7 @@ private:
 
     bool isHabitrail() const;
 
-	void GetCentralCurve(Vector<RenderVertex> * const pvv);
+	void GetCentralCurve(std::vector<RenderVertex> & vv);
 
     Vertex2D *GetRampVertex(int &pcvertex, float ** const ppheight, bool ** const ppfCross, float ** const ppratio, Vertex2D **pMiddlePoints, bool forRendering=false);
 	void prepareHabitrail(RenderDevice* pd3dDevice);

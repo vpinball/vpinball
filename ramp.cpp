@@ -320,8 +320,8 @@ void Ramp::GetBoundingVertices(Vector<Vertex3Ds> * const pvvertex3D)
  */
 Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** const ppfCross, float ** const ppratio, Vertex2D **pMiddlePoints, bool forRendering)
 {
-   Vector<RenderVertex> vvertex;
-   GetCentralCurve(&vvertex);
+   std::vector<RenderVertex> vvertex;
+   GetCentralCurve(vvertex);
    // vvertex are the 2D vertices forming the central curve of the ramp as seen from above
 
    const int cvertex = vvertex.size();
@@ -487,10 +487,7 @@ Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** co
 
    if (ppfCross)
       for (int i=0;i<cvertex;i++)
-         (*ppfCross)[i] = vvertex.ElementAt(i)->fControlPoint;
-
-   for (int i=0;i<cvertex;i++)
-      delete vvertex.ElementAt(i);
+         (*ppfCross)[i] = vvertex[i].fControlPoint;
 
    pcvertex = cvertex;
    return rgvLocal;
@@ -499,19 +496,19 @@ Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** co
 /*
  * Get an approximation of the curve described by the control points of this ramp.
  */
-void Ramp::GetCentralCurve(Vector<RenderVertex> * const pvv)
+void Ramp::GetCentralCurve(std::vector<RenderVertex> & vv)
 {
    const float accuracy = 4.0f*powf(10.0f, (10.0f-m_ptable->GetAlphaRampsAccuracy())*(float)(1.0/1.5)); // min = 4, max = 4 * 10^(10/1.5) = 18.000.000
 
-   IHaveDragPoints::GetRgVertex(pvv, false, accuracy);
+   IHaveDragPoints::GetRgVertex(vv, false, accuracy);
 }
 
 float Ramp::GetSurfaceHeight(float x, float y)
 {
-    Vector<RenderVertex> vvertex;
-    GetCentralCurve(&vvertex);
+    std::vector<RenderVertex> vvertex;
+    GetCentralCurve(vvertex);
 
-    const int cvertex = vvertex.Size();
+    const int cvertex = vvertex.size();
     const float topHeight = m_d.m_heighttop + m_ptable->m_tableheight;
     const float bottomHeight = m_d.m_heightbottom + m_ptable->m_tableheight;
 
@@ -525,16 +522,14 @@ float Ramp::GetSurfaceHeight(float x, float y)
     float zheight = 0.f;
 
     if (iSeg == -1)
-   {
-        //zheight = 0;
-        goto HeightError;
-        //return 0; // Object is not on ramp path
+    {
+        return 0.0f; // Object is not on ramp path
     }
 
     for (int i2=1;i2<cvertex;i2++)
     {
-        const float dx = vvertex.ElementAt(i2)->x - vvertex.ElementAt(i2-1)->x;
-        const float dy = vvertex.ElementAt(i2)->y - vvertex.ElementAt(i2-1)->y;
+        const float dx = vvertex[i2].x - vvertex[i2-1].x;
+        const float dy = vvertex[i2].y - vvertex[i2-1].y;
         const float len = sqrtf(dx*dx + dy*dy);
         if (i2 <= iSeg)
         {
@@ -544,16 +539,13 @@ float Ramp::GetSurfaceHeight(float x, float y)
     }
 
     {
-        const float dx = vOut.x - vvertex.ElementAt(iSeg)->x;
-        const float dy = vOut.y - vvertex.ElementAt(iSeg)->y;
+        const float dx = vOut.x - vvertex[iSeg].x;
+        const float dy = vOut.y - vvertex[iSeg].y;
         const float len = sqrtf(dx*dx + dy*dy);
         startlength += len; // Add the distance the object is between the two closest polyline segments.  Matters mostly for straight edges.
 
         zheight = (startlength/totallength) * (topHeight - bottomHeight) + bottomHeight;
    }
-HeightError:
-    for (int i2=0;i2<cvertex;i2++)
-        delete vvertex.ElementAt(i2);
 
     return zheight;
 }
@@ -1501,31 +1493,20 @@ void Ramp::DoCommand(int icmd, int x, int y)
    case ID_WALLMENU_ADDPOINT:
       {
          STARTUNDO
+         const Vertex2D v = m_ptable->TransformPoint(x, y);
 
-         RECT rc;
-         GetClientRect(m_ptable->m_hwnd, &rc);
+         std::vector<RenderVertex> vvertex;
+         GetCentralCurve(vvertex);
 
-         HitSur * const phs = new HitSur(NULL, m_ptable->m_zoom, m_ptable->m_offsetx, m_ptable->m_offsety, rc.right - rc.left, rc.bottom - rc.top, 0, 0, NULL);
-
-         const Vertex2D v = phs->ScreenToSurface(x, y);
-         delete phs;
-
-         Vector<RenderVertex> vvertex;
-         GetCentralCurve(&vvertex);
-
-         const int cvertex = vvertex.size();
-         Vertex2D vOut;
          int iSeg;
+         Vertex2D vOut;
          ClosestPointOnPolygon(vvertex, v, &vOut, &iSeg, false);
 
          // Go through vertices (including iSeg itself) counting control points until iSeg
          int icp = 0;
          for (int i=0;i<(iSeg+1);i++)
-            if (vvertex.ElementAt(i)->fControlPoint)
+            if (vvertex[i].fControlPoint)
                icp++;
-
-         for (int i=0;i<cvertex;i++)
-            delete vvertex.ElementAt(i);
 
          //if (icp == 0) // need to add point after the last point
          //icp = m_vdpoint.Size();
