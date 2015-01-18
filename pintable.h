@@ -566,7 +566,7 @@ END_CONNECTION_POINT_MAP()
     Vector< IEditable > m_layer[8];
     Vector< ISelect > m_allHitElements;
       
-	Vector< Texture > m_vimage;
+    std::vector< Texture* > m_vimage;
 
     int m_numMaterials;
     Vector< Material > m_materials;

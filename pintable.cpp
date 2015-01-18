@@ -863,8 +863,8 @@ PinTable::~PinTable()
       delete m_vsound.ElementAt(i);
    }
 
-   for (int i=0;i<m_vimage.Size();i++)
-      delete m_vimage.ElementAt(i);
+   for (unsigned i=0;i<m_vimage.size();i++)
+      delete m_vimage[i];
 
    for (int i=0;i<m_vfont.Size();i++)
    {
@@ -1802,14 +1802,13 @@ void PinTable::Play(bool _cameraMode)
    {
       // set up the texture hashtable for fast access
       m_textureMap.clear();
-      for (int i=0;i<m_vimage.Size();i++)
+      for (unsigned i=0;i<m_vimage.size();i++)
       {
-          m_textureMap[ m_vimage.ElementAt(i)->m_szInternalName ] = m_vimage.ElementAt(i);
+          m_textureMap[ m_vimage[i]->m_szInternalName ] = m_vimage[i];
       }
       m_materialMap.clear();
       for (int i=0;i<m_materials.Size();i++)
       {
-
           m_materialMap[ m_materials.ElementAt(i)->m_szName ] = m_materials.ElementAt(i);
       }
       g_pplayer = new Player(_cameraMode);
@@ -2231,7 +2230,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
 
    ////////////// End Encryption
 
-   int ctotalitems = m_vedit.Size() + m_vsound.Size() + m_vimage.Size() + m_vfont.Size() + m_vcollection.Size();
+   int ctotalitems = m_vedit.Size() + m_vsound.Size() + m_vimage.size() + m_vfont.Size() + m_vcollection.Size();
    int csaveditems = 0;
 
    SendMessage(hwndProgressBar, PBM_SETRANGE, 0, MAKELPARAM(0, ctotalitems));
@@ -2313,7 +2312,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
                SendMessage(hwndProgressBar, PBM_SETPOS, csaveditems, 0);
             }
 
-            for (int i=0;i<m_vimage.Size();i++)
+            for (unsigned i=0;i<m_vimage.size();i++)
             {
                strcpy_s(szStmName, sizeof(szStmName), "Image");
                _itoa_s(i, szSuffix, sizeof(szSuffix), 10);
@@ -2323,7 +2322,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
 
                if(SUCCEEDED(hr = pstgData->CreateStream(wszStmName, STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstmItem)))
                {
-                  m_vimage.ElementAt(i)->SaveToStream(pstmItem, this);
+                  m_vimage[i]->SaveToStream(pstmItem, this);
                   pstmItem->Release();
                   pstmItem = NULL;
                }
@@ -2826,7 +2825,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
    {
       bw.WriteInt(FID(SEDT), m_vedit.Size());
       bw.WriteInt(FID(SSND), m_vsound.Size());
-      bw.WriteInt(FID(SIMG), m_vimage.Size());
+      bw.WriteInt(FID(SIMG), m_vimage.size());
       bw.WriteInt(FID(SFNT), m_vfont.Size());
       bw.WriteInt(FID(SCOL), m_vcollection.Size());
 
@@ -6061,11 +6060,11 @@ Texture *PinTable::GetImage(char * const szName) const
             return NULL;
     }
 
-   for (int i=0;i<m_vimage.Size();i++)
+   for (unsigned i=0;i<m_vimage.size();i++)
    {
-      if (!lstrcmp(m_vimage.ElementAt(i)->m_szInternalName, szName))
+      if (!lstrcmp(m_vimage[i]->m_szInternalName, szName))
       {
-         return m_vimage.ElementAt(i);
+         return m_vimage[i];
       }
    }
 
@@ -6258,7 +6257,7 @@ void PinTable::ImportImage(HWND hwndListView, char *filename)
 
    CharLowerBuff(ppi->m_szInternalName, lstrlen(ppi->m_szInternalName));
 
-   m_vimage.AddElement(ppi);
+   m_vimage.push_back(ppi);
 
    const int index = AddListImage(hwndListView, ppi);
 
@@ -6267,9 +6266,9 @@ void PinTable::ImportImage(HWND hwndListView, char *filename)
 
 void PinTable::ListImages(HWND hwndListView)
 {
-   for (int i=0;i<m_vimage.Size();i++)
+   for (unsigned i=0;i<m_vimage.size();i++)
    {
-      AddListImage(hwndListView, m_vimage.ElementAt(i));
+      AddListImage(hwndListView, m_vimage[i]);
    }
 }
 
@@ -6291,7 +6290,7 @@ int PinTable::AddListImage(HWND hwndListView, Texture *ppi)
 
 void PinTable::RemoveImage(Texture *ppi)
 {
-   m_vimage.RemoveElement(ppi);
+   RemoveFromVector(m_vimage, ppi);
    delete ppi;
 }
 
@@ -6441,7 +6440,7 @@ HRESULT PinTable::LoadImageFromStream(IStream *pstm, int version)
 
       if (ppi->LoadFromStream(pstm, version, this) == S_OK)
       {
-         m_vimage.AddElement(ppi);
+         m_vimage.push_back(ppi);
       }
       else
       {
@@ -6507,7 +6506,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
    case DISPID_Image4:
    case DISPID_Image5:
       {
-         cvar = m_vimage.Size();
+         cvar = m_vimage.size();
 
          rgstr = (WCHAR **) CoTaskMemAlloc((cvar+1) * sizeof(WCHAR *));
          rgdw = (DWORD *) CoTaskMemAlloc((cvar+1) * sizeof(DWORD));
@@ -6521,7 +6520,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
 
          for (int ivar = 0 ; ivar < cvar ; ivar++)
          {
-            char *szSrc = m_vimage.ElementAt(ivar)->m_szName;
+            char *szSrc = m_vimage[ivar]->m_szName;
             DWORD cwch = lstrlen(szSrc)+1;
             wzDst = (WCHAR *) CoTaskMemAlloc(cwch*sizeof(WCHAR));
             if (wzDst == NULL)
@@ -6743,7 +6742,7 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
          }
          else
          {
-            char *szSrc = m_vimage.ElementAt(dwCookie)->m_szName;
+            char *szSrc = m_vimage[dwCookie]->m_szName;
             DWORD cwch = lstrlen(szSrc)+1;
             wzDst = (WCHAR *) CoTaskMemAlloc(cwch*sizeof(WCHAR));
 

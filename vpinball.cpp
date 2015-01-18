@@ -4882,9 +4882,9 @@ INT_PTR CALLBACK TableInfoProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lP
          LocalString ls(IDS_NONE);
          SendMessage(hwndList, CB_ADDSTRING, 0, (LPARAM)ls.m_szbuffer);
 
-         for (int i=0;i<pt->m_vimage.Size();i++)
+         for (unsigned i=0; i < pt->m_vimage.size(); ++i)
          {
-            Texture * const pin = pt->m_vimage.ElementAt(i);
+            Texture * const pin = pt->m_vimage[i];
             if (pin->m_ppb)
                SendMessage(hwndList, CB_ADDSTRING, 0, (LPARAM)pin->m_szName);
          }
