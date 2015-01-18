@@ -138,7 +138,7 @@ private:
     PropertyPane *m_propPhysics;
     PropertyPane *m_propPosition;
 
-	void GetCentralCurve(Vector<RenderVertex> * const pvv);
+	void GetCentralCurve(std::vector<RenderVertex> & vv);
 
     Vertex2D *GetSplineVertex(int &pcvertex, bool ** const ppfCross, Vertex2D **pMiddlePoints);
     void AddJoint(Vector<HitObject> * pvho, const Vertex3Ds& v1, const Vertex3Ds& v2);
