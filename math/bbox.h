@@ -4,6 +4,11 @@ class FRect
 {
 public:
    float left, top, right, bottom;
+
+   Vertex2D Center() const
+   {
+       return Vertex2D(0.5f*(left + right), 0.5f*(top + bottom));
+   }
 };
 
 class FRect3D

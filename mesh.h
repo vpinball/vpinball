@@ -370,7 +370,8 @@ inline bool FlatWithAccuracy(const Vertex3Ds & v1, const Vertex3Ds & v2, const V
     return (dblareasq < accuracy);
 }
 
-inline void ClosestPointOnPolygon(const Vector<RenderVertex> &rgv, const Vertex2D &pvin, Vertex2D * const pvout, int * const piseg, const bool fClosed)
+template <class VtxContType>
+inline void ClosestPointOnPolygon(const VtxContType &rgv, const Vertex2D &pvin, Vertex2D * const pvout, int * const piseg, const bool fClosed)
 {
 	const int count = rgv.size();
 

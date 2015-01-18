@@ -1300,9 +1300,7 @@ void PinTable::SetDefaultView()
 {
    FRect frect;
    GetViewRect(&frect);
-
-   m_offsetx = (frect.left+frect.right) * 0.5f;
-   m_offsety = (frect.top+frect.bottom) * 0.5f;
+   m_offset = frect.Center();
    m_zoom = 0.5f;
 }
 
@@ -1672,7 +1670,7 @@ void PinTable::Paint(HDC hdc)
 
    if (m_fDirtyDraw)
    {
-      Sur * const psur = new PaintSur(hdc2, m_zoom, m_offsetx, m_offsety, rc.right - rc.left, rc.bottom - rc.top, GetSelectedItem());
+      Sur * const psur = new PaintSur(hdc2, m_zoom, m_offset.x, m_offset.y, rc.right - rc.left, rc.bottom - rc.top, GetSelectedItem());
       Render(psur);
 
       delete psur;
@@ -1696,8 +1694,8 @@ ISelect *PinTable::HitTest(const int x, const int y)
    RECT rc;
    GetClientRect(m_hwnd, &rc);
 
-   HitSur * const phs = new HitSur(hdc, m_zoom, m_offsetx, m_offsety, rc.right - rc.left, rc.bottom - rc.top, x, y, this);
-   HitSur * const phs2 = new HitSur(hdc, m_zoom, m_offsetx, m_offsety, rc.right - rc.left, rc.bottom - rc.top, x, y, this);
+   HitSur * const phs = new HitSur(hdc, m_zoom, m_offset.x, m_offset.y, rc.right - rc.left, rc.bottom - rc.top, x, y, this);
+   HitSur * const phs2 = new HitSur(hdc, m_zoom, m_offset.x, m_offset.y, rc.right - rc.left, rc.bottom - rc.top, x, y, this);
 
    m_allHitElements.RemoveAllElements();
 
@@ -2741,8 +2739,8 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
    bw.WriteBool(FID(REEL), m_fRenderEMReels);
    bw.WriteBool(FID(DECL), m_fRenderDecals);
 
-   bw.WriteFloat(FID(OFFX), m_offsetx);
-   bw.WriteFloat(FID(OFFY), m_offsety);
+   bw.WriteFloat(FID(OFFX), m_offset.x);
+   bw.WriteFloat(FID(OFFY), m_offset.y);
 
    bw.WriteFloat(FID(ZOOM), m_zoom);
 
@@ -3347,11 +3345,11 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(OFFX))
    {
-      pbr->GetFloat(&m_offsetx);
+      pbr->GetFloat(&m_offset.x);
    }
    else if (id == FID(OFFY))
    {
-      pbr->GetFloat(&m_offsety);
+      pbr->GetFloat(&m_offset.y);
    }
    else if (id == FID(ZOOM))
    {
@@ -3962,7 +3960,7 @@ void PinTable::SetMyScrollInfo()
    RECT rc;
    GetClientRect(m_hwnd, &rc);
 
-   HitSur * const phs = new HitSur(NULL, m_zoom, m_offsetx, m_offsety, rc.right - rc.left, rc.bottom - rc.top, 0, 0, NULL);
+   HitSur * const phs = new HitSur(NULL, m_zoom, m_offset.x, m_offset.y, rc.right - rc.left, rc.bottom - rc.top, 0, 0, NULL);
 
    Vertex2D rgv[2];
    rgv[0] = phs->ScreenToSurface(rc.left, rc.top);
@@ -4017,7 +4015,7 @@ void PinTable::FireKeyEvent(int dispid, int keycode)
    FireDispID(dispid, &dispparams);
 }
 
-void PinTable::DoLButtonDown(int x,int y)
+void PinTable::DoLButtonDown(int x, int y)
 {
    const int ksshift = GetKeyState(VK_SHIFT);
    const int ksctrl = GetKeyState(VK_CONTROL);
@@ -4031,10 +4029,7 @@ void PinTable::DoLButtonDown(int x,int y)
    {
       if (m_zoom < MAX_ZOOM)
       {
-         Vertex2D v;
-         TransformPoint(x,y,&v);
-         m_offsetx = v.x;
-         m_offsety = v.y;
+         m_offset = TransformPoint(x,y);
          SetZoom(m_zoom * 2.0f);
          SetDirtyDraw();
       }
@@ -4094,10 +4089,7 @@ void PinTable::DoRButtonDown(int x,int y)
    {
       if (m_zoom > MIN_ZOOM)
       {
-         Vertex2D v;
-         TransformPoint(x,y,&v);
-         m_offsetx = v.x;
-         m_offsety = v.y;
+         m_offset = TransformPoint(x,y);
          SetZoom(m_zoom * 0.5f);
          SetDirtyDraw();
       }
@@ -4659,8 +4651,7 @@ void PinTable::DoRButtonUp(int x,int y)
 
 void PinTable::DoMouseMove(int x,int y)
 {
-   Vertex2D v;
-   TransformPoint(x,y,&v);
+   Vertex2D v = TransformPoint(x,y);
 
    g_pvp->SetPosCur(v.x, v.y);
 
@@ -5054,12 +5045,8 @@ void PinTable::Paste(BOOL fAtLocation, int x, int y)
       Vertex2D vcenter;
       GetCenter(&vcenter);
 
-      Vertex2D vPos;
-      TransformPoint(x,y,&vPos);
-
-      Vertex2D vOffset;
-      vOffset.x = vPos.x-vcenter.x;
-      vOffset.y = vPos.y-vcenter.y;
+      Vertex2D vPos = TransformPoint(x,y);
+      Vertex2D vOffset = vPos - vcenter;
       Translate(&vOffset);
    }
 
@@ -5285,8 +5272,7 @@ void PinTable::OnKeyDown(int key)
 
 void PinTable::UseTool(int x,int y,int tool)
 {
-   Vertex2D v;
-   TransformPoint(x,y,&v);
+   Vertex2D v = TransformPoint(x,y);
    IEditable *pie = NULL;
 
    // special case for target which is a special kind of wall
@@ -5315,22 +5301,23 @@ void PinTable::UseTool(int x,int y,int tool)
    g_pvp->ParseCommand(IDC_SELECT, g_pvp->m_hwnd, 0);
 }
 
-void PinTable::TransformPoint(int x, int y, Vertex2D *pv)
+Vertex2D PinTable::TransformPoint(int x, int y) const
 {
+   Vertex2D result;
    RECT rc;
    GetClientRect(m_hwnd, &rc);
 
-   HitSur * const phs = new HitSur(NULL, m_zoom, m_offsetx, m_offsety, rc.right - rc.left, rc.bottom - rc.top, 0, 0, NULL);
+   HitSur * const phs = new HitSur(NULL, m_zoom, m_offset.x, m_offset.y, rc.right - rc.left, rc.bottom - rc.top, 0, 0, NULL);
 
-   *pv = phs->ScreenToSurface(x, y);
+   result = phs->ScreenToSurface(x, y);
 
    delete phs;
+   return result;
 }
 
 void PinTable::OnLButtonDown(int x, int y)
 {
-   Vertex2D v;
-   TransformPoint(x,y,&v);
+   Vertex2D v = TransformPoint(x,y);
 
    m_rcDragRect.left = v.x;
    m_rcDragRect.right = v.x;
@@ -5359,7 +5346,7 @@ void PinTable::OnLButtonUp(int x, int y)
          RECT rc;
          GetClientRect(m_hwnd, &rc);
 
-         HitRectSur * const phrs = new HitRectSur(hdc, m_zoom, m_offsetx, m_offsety, rc.right - rc.left, rc.bottom - rc.top, &m_rcDragRect, &vsel);
+         HitRectSur * const phrs = new HitRectSur(hdc, m_zoom, m_offset.x, m_offset.y, rc.right - rc.left, rc.bottom - rc.top, &m_rcDragRect, &vsel);
 
          // Just want one rendering pass (no PreRender) so we don't select things twice
          Render(phrs);
@@ -5398,8 +5385,7 @@ void PinTable::OnLButtonUp(int x, int y)
 
 void PinTable::OnMouseMove(int x, int y)
 {
-   Vertex2D v;
-   TransformPoint(x,y,&v);
+   Vertex2D v = TransformPoint(x,y);
 
    m_rcDragRect.right = v.x;
    m_rcDragRect.bottom = v.y;
@@ -5595,11 +5581,11 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
             si.cbSize = sizeof(SCROLLINFO);
             si.fMask = SIF_ALL;
             GetScrollInfo(hwnd, SB_HORZ, &si);
-            if ( pt->m_oldMousePosX>x )  pt->m_offsetx -= si.nPage/factorX;
-            if ( pt->m_oldMousePosX<x )  pt->m_offsetx += si.nPage/factorX;
+            if ( pt->m_oldMousePosX>x )  pt->m_offset.x -= si.nPage/factorX;
+            if ( pt->m_oldMousePosX<x )  pt->m_offset.x += si.nPage/factorX;
             GetScrollInfo(hwnd, SB_VERT, &si);
-            if ( pt->m_oldMousePosY>y )  pt->m_offsety -= si.nPage/factorY;
-            if ( pt->m_oldMousePosY<y )  pt->m_offsety += si.nPage/factorY;
+            if ( pt->m_oldMousePosY>y )  pt->m_offset.y -= si.nPage/factorY;
+            if ( pt->m_oldMousePosY<y )  pt->m_offset.y += si.nPage/factorY;
             pt->SetDirtyDraw();
             pt->SetMyScrollInfo();
             pt->m_oldMousePosX=x;
@@ -5653,21 +5639,21 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
          switch (LOWORD(wParam))
          {
          case SB_LINELEFT:
-            pt->m_offsetx -= si.nPage/10;
+            pt->m_offset.x -= si.nPage/10;
             break;
          case SB_LINERIGHT:
-            pt->m_offsetx += si.nPage/10;
+            pt->m_offset.x += si.nPage/10;
             break;
          case SB_PAGELEFT:
-            pt->m_offsetx -= si.nPage/2;
+            pt->m_offset.x -= si.nPage/2;
             break;
          case SB_PAGERIGHT:
-            pt->m_offsetx += si.nPage/2;
+            pt->m_offset.x += si.nPage/2;
             break;
          case SB_THUMBTRACK:
             {
-               const int delta = (int)(pt->m_offsetx - si.nPos);
-               pt->m_offsetx = (float)((short)HIWORD(wParam) + delta);
+               const int delta = (int)(pt->m_offset.x - si.nPos);
+               pt->m_offset.x = (float)((short)HIWORD(wParam) + delta);
                break;
             }
          }
@@ -5688,21 +5674,21 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
          switch (LOWORD(wParam))
          {
          case SB_LINEUP:
-            pt->m_offsety -= si.nPage/10;
+            pt->m_offset.y -= si.nPage/10;
             break;
          case SB_LINEDOWN:
-            pt->m_offsety += si.nPage/10;
+            pt->m_offset.y += si.nPage/10;
             break;
          case SB_PAGEUP:
-            pt->m_offsety -= si.nPage/2;
+            pt->m_offset.y -= si.nPage/2;
             break;
          case SB_PAGEDOWN:
-            pt->m_offsety += si.nPage/2;
+            pt->m_offset.y += si.nPage/2;
             break;
          case SB_THUMBTRACK:
             {
-               const int delta = (int)(pt->m_offsety - si.nPos);
-               pt->m_offsety = (float)((short)HIWORD(wParam) + delta);
+               const int delta = (int)(pt->m_offset.y - si.nPos);
+               pt->m_offset.y = (float)((short)HIWORD(wParam) + delta);
                break;
             }
          }
@@ -5716,7 +5702,7 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
       {
          pt = (CComObject<PinTable> *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
          const short zDelta = (short) HIWORD(wParam);    // wheel rotation
-         pt->m_offsety -= zDelta / pt->m_zoom;	// change to orientation to match windows default
+         pt->m_offset.y -= zDelta / pt->m_zoom;	// change to orientation to match windows default
          pt->SetDirtyDraw();
          pt->SetMyScrollInfo();
          return 0;

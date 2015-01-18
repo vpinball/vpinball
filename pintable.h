@@ -348,7 +348,8 @@ public:
 	void UseTool(int x,int y,int tool);
 	void OnKeyDown(int key);
 
-	void TransformPoint(int x, int y, Vertex2D *pv);
+    // Transform editor window coordinates to table coordinates
+	Vertex2D TransformPoint(int x, int y) const;
 
     void ClearMultiSel(ISelect *newSel = NULL);
     bool MultiSelIsEmpty();
@@ -482,9 +483,11 @@ END_CONNECTION_POINT_MAP()
 
 	HWND m_hwnd;
 	VPinball *m_pvp;
-	float m_offsetx;
-	float m_offsety;
+
+    // editor viewport
+	Vertex2D m_offset;
 	float m_zoom;
+
 	//ISelect *m_pselcur;
 	Vector<ISelect> m_vmultisel;
 	

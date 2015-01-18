@@ -137,7 +137,7 @@ void Trigger::InitShape( float x, float y )
     UpdateEditorView(true);
     if ( m_d.m_shape==TriggerNone )
     {
-        for (int i=0;i<m_vdpoint.Size();i++)
+        for (int i=0;i<m_vdpoint.size();i++)
         {
             m_vdpoint.ElementAt(i)->Release();
         }
@@ -184,7 +184,7 @@ HRESULT Trigger::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
    SetDefaults(fromMouseClick);
    
-   if ( m_vdpoint.Size()==0 )
+   if ( m_vdpoint.size()==0 )
        InitShape(x,y);
 
    return InitVBA(fTrue, 0, NULL);
@@ -262,7 +262,7 @@ void Trigger::SetDefaults(bool fromMouseClick)
 
 void Trigger::PreRender(Sur * const psur)
 {
-   if( m_vdpoint.Size()==0 )
+   if( m_vdpoint.size()==0 )
     InitShape(m_d.m_vCenter.x, m_d.m_vCenter.y);
 
    if( m_d.m_shape != TriggerStar )
@@ -272,13 +272,12 @@ void Trigger::PreRender(Sur * const psur)
 
        psur->SetFillColor(m_ptable->RenderSolid() ? RGB(200,220,200) : -1);
 
-
        Vector<RenderVertex> vvertex;
-       GetRgVertex(&vvertex);
+       GetRgVertex(vvertex);
 
        psur->Polygon(vvertex);
 
-       for (int i=0;i<vvertex.Size();i++)
+       for (int i=0;i<vvertex.size();i++)
            delete vvertex.ElementAt(i);
    }
    else
@@ -297,14 +296,14 @@ void Trigger::Render(Sur * const psur)
    if ( m_d.m_shape != TriggerStar )
    {
        Vector<RenderVertex> vvertex;
-       GetRgVertex(&vvertex);
+       GetRgVertex(vvertex);
 
        psur->SetObject(NULL);
        psur->SetBorderColor(RGB(0,180,0),false,1);
 
        psur->Polygon(vvertex);
 
-       for (int i=0;i<vvertex.Size();i++)
+       for (int i=0;i<vvertex.size();i++)
            delete vvertex.ElementAt(i);
 
 
@@ -313,7 +312,7 @@ void Trigger::Render(Sur * const psur)
        if ( !fDrawDragpoints )
        {
            // if any of the dragpoints of this object are selected then draw all the dragpoints
-           for (int i=0;i<m_vdpoint.Size();i++)
+           for (int i=0;i<m_vdpoint.size();i++)
            {
                CComObject<DragPoint> * const pdp = m_vdpoint.ElementAt(i);
                if (pdp->m_selectstate != eNotSelected)
@@ -326,7 +325,7 @@ void Trigger::Render(Sur * const psur)
 
        if (fDrawDragpoints)
        {
-           for (int i=0;i<m_vdpoint.Size();i++)
+           for (int i=0;i<m_vdpoint.size();i++)
            {
                CComObject<DragPoint> * const pdp = m_vdpoint.ElementAt(i);
                psur->SetFillColor(-1);
@@ -452,18 +451,17 @@ void Trigger::GetHitShapesDebug(Vector<HitObject> * const pvho)
    default:
    case TriggerWire:
       {
-         Vector<RenderVertex> vvertex;
-         GetRgVertex(&vvertex);
+         std::vector<RenderVertex> vvertex;
+         GetRgVertex(vvertex);
 
-         const int cvertex = vvertex.Size();
+         const int cvertex = vvertex.size();
          Vertex3Ds * const rgv3d = new Vertex3Ds[cvertex];
 
          for (int i=0;i<cvertex;i++)
          {
-            rgv3d[i].x = vvertex.ElementAt(i)->x;
-            rgv3d[i].y = vvertex.ElementAt(i)->y;
+            rgv3d[i].x = vvertex[i].x;
+            rgv3d[i].y = vvertex[i].y;
             rgv3d[i].z = height + (float)(PHYS_SKIN*2.0);
-            delete vvertex.ElementAt(i);
          }
 
          Hit3DPoly * const ph3dp = new Hit3DPoly(rgv3d, cvertex);
@@ -480,17 +478,16 @@ void Trigger::GetHitShapesDebug(Vector<HitObject> * const pvho)
 void Trigger::CurvesToShapes(Vector<HitObject> * const pvho)
 {
     const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
-    Vector<RenderVertex> vvertex;
-    GetRgVertex(&vvertex);
+    std::vector<RenderVertex> vvertex;
+    GetRgVertex(vvertex);
 
-    const int count = vvertex.Size();
+    const int count = vvertex.size();
     RenderVertex * const rgv = new RenderVertex[count];
     Vertex3Ds * const rgv3D = new Vertex3Ds[count];
 
     for (int i=0;i<count;i++)
     {
-        rgv[i] = *vvertex.ElementAt(i);
-        delete vvertex.ElementAt(i);
+        rgv[i] = vvertex[i];
         rgv3D[i].x = rgv[i].x;
         rgv3D[i].y = rgv[i].y;
         rgv3D[i].z = height + (float)(PHYS_SKIN*2.0);
@@ -739,7 +736,7 @@ void Trigger::MoveOffset(const float dx, const float dy)
    m_d.m_vCenter.x += dx;
    m_d.m_vCenter.y += dy;
 
-   for (int i=0;i<m_vdpoint.Size();i++)
+   for (int i=0;i<m_vdpoint.size();i++)
    {
       CComObject<DragPoint> * const pdp = m_vdpoint.ElementAt(i);
 
@@ -809,17 +806,10 @@ void Trigger::DoCommand(int icmd, int x, int y)
       {
          STARTUNDO
 
-            RECT rc;
-         GetClientRect(m_ptable->m_hwnd, &rc);
-         HitSur * const phs = new HitSur(NULL, m_ptable->m_zoom, m_ptable->m_offsetx, m_ptable->m_offsety, rc.right - rc.left, rc.bottom - rc.top, 0, 0, NULL);
+         const Vertex2D v = m_ptable->TransformPoint(x, y);
 
-         const Vertex2D v = phs->ScreenToSurface(x, y);
-         delete phs;
-
-         Vector<RenderVertex> vvertex;
-         GetRgVertex(&vvertex);
-
-         const int cvertex = vvertex.Size();
+         std::vector<RenderVertex> vvertex;
+         GetRgVertex(vvertex);
 
          int iSeg;
          Vertex2D vOut;
@@ -828,14 +818,11 @@ void Trigger::DoCommand(int icmd, int x, int y)
          // Go through vertices (including iSeg itself) counting control points until iSeg
          int icp = 0;
          for (int i=0;i<(iSeg+1);i++)
-            if (vvertex.ElementAt(i)->fControlPoint)
+            if (vvertex[i].fControlPoint)
                icp++;
 
-         for (int i=0;i<cvertex;i++)
-            delete vvertex.ElementAt(i);
-
          //if (icp == 0) // need to add point after the last point
-         //icp = m_vdpoint.Size();
+         //icp = m_vdpoint.size();
 
          CComObject<DragPoint> *pdp;
          CComObject<DragPoint>::CreateInstance(&pdp);
