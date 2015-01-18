@@ -260,7 +260,7 @@ void Surface::PreRender(Sur * const psur)
    psur->SetBorderColor(-1,false,0);
 
    Vector<RenderVertex> vvertex;
-   GetRgVertex(&vvertex);
+   GetRgVertex(vvertex);
 
    Texture *ppi;
    if (m_ptable->RenderSolid() && m_d.m_fDisplayTexture && (ppi = m_ptable->GetImage(m_d.m_szImage)))
@@ -288,7 +288,7 @@ void Surface::Render(Sur * const psur)
    psur->SetObject(NULL);
 
    Vector<RenderVertex> vvertex; //!! check/reuse from prerender
-   GetRgVertex(&vvertex);
+   GetRgVertex(vvertex);
 
    psur->Polygon(vvertex);
 
@@ -350,7 +350,7 @@ void Surface::RenderBlueprint(Sur *psur)
    psur->SetObject(NULL);
 
    Vector<RenderVertex> vvertex;
-   GetRgVertex(&vvertex);
+   GetRgVertex(vvertex);
 
    psur->Polygon(vvertex);
 
@@ -387,16 +387,16 @@ void Surface::GetHitShapesDebug(Vector<HitObject> * const pvho)
 
 void Surface::CurvesToShapes(Vector<HitObject> * const pvho)
 {
-   Vector<RenderVertex> vvertex;
-   GetRgVertex(&vvertex);
+   std::vector<RenderVertex> vvertex;
+   GetRgVertex(vvertex);
 
-   const int count = vvertex.Size();
+   const int count = vvertex.size();
    Vertex3Ds * const rgv3Dt = new Vertex3Ds[count];
    Vertex3Ds * const rgv3Db = m_d.m_fIsBottomSolid ? new Vertex3Ds[count] : NULL;
 
    for (int i = 0; i < count; ++i)
    {
-      const RenderVertex * const pv1 = vvertex.ElementAt(i);
+      const RenderVertex * const pv1 = &vvertex[i];
 
       rgv3Dt[i].x = pv1->x;
       rgv3Dt[i].y = pv1->y;
@@ -409,14 +409,11 @@ void Surface::CurvesToShapes(Vector<HitObject> * const pvho)
 		  rgv3Db[count-1-i].z = m_d.m_heightbottom+m_ptable->m_tableheight;
 	  }
 
-      const RenderVertex * const pv2 = vvertex.ElementAt((i + 1) % count);
-      const RenderVertex * const pv3 = vvertex.ElementAt((i + 2) % count);
+      const RenderVertex * const pv2 = &vvertex[(i + 1) % count];
+      const RenderVertex * const pv3 = &vvertex[(i + 2) % count];
 
       AddLine(pvho, pv2, pv3, pv1, pv2->fSlingshot);
    }
-
-   for (int i=0;i<count;i++)
-      delete vvertex.ElementAt(i);
 
    Hit3DPoly * const ph3dpolyt = new Hit3DPoly(rgv3Dt,count);
    SetupHitObject(pvho, ph3dpolyt);
@@ -595,16 +592,16 @@ void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
    Texture * const pinSide = m_ptable->GetImage(m_d.m_szSideImage);
 
-   Vector<RenderVertex> vvertex;
-   GetRgVertex(&vvertex);
+   std::vector<RenderVertex> vvertex;
+   GetRgVertex(vvertex);
    float *rgtexcoord = NULL;
 
    if (pinSide)
    {
-      GetTextureCoords(&vvertex, &rgtexcoord);
+      GetTextureCoords(vvertex, &rgtexcoord);
    }
 
-   numVertices = vvertex.Size();
+   numVertices = vvertex.size();
    Vertex2D * const rgnormal = new Vertex2D[numVertices];
    if ( sideVBuffer )
    {
@@ -614,8 +611,8 @@ void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
 
    for (int i=0;i<numVertices;i++)
    {
-      const RenderVertex * const pv1 = vvertex.ElementAt(i);
-      const RenderVertex * const pv2 = vvertex.ElementAt((i < numVertices-1) ? (i+1) : 0);
+      const RenderVertex * const pv1 = &vvertex[i];
+      const RenderVertex * const pv2 = &vvertex[(i < numVertices-1) ? (i+1) : 0];
       const float dx = pv1->x - pv2->x;
       const float dy = pv1->y - pv2->y;
 
@@ -633,8 +630,8 @@ void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
    // Render side
    for (int i=0;i<numVertices;i++, offset+=4)
    {
-      const RenderVertex * const pv1 = vvertex.ElementAt(i);
-      const RenderVertex * const pv2 = vvertex.ElementAt((i < numVertices-1) ? (i+1) : 0);
+      const RenderVertex * const pv1 = &vvertex[i];
+      const RenderVertex * const pv2 = &vvertex[(i < numVertices-1) ? (i+1) : 0];
 
       const int a = (i == 0) ? (numVertices-1) : (i-1);
       const int c = (i < numVertices-1) ? (i+1) : 0;
@@ -740,9 +737,6 @@ void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
       numPolys = vtri.Size();
       if( numPolys==0 )
       {         
-         for (int i=0;i<numVertices;i++)
-            delete vvertex.ElementAt(i);
-
          // no polys to render leave vertex buffer undefined 
          return;
       }
@@ -762,9 +756,9 @@ void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
       {
          const Triangle * const ptri = vtri.ElementAt(i);
 
-         const RenderVertex * const pv0 = vvertex.ElementAt(ptri->a);
-         const RenderVertex * const pv1 = vvertex.ElementAt(ptri->b);
-         const RenderVertex * const pv2 = vvertex.ElementAt(ptri->c);
+         const RenderVertex * const pv0 = &vvertex[ptri->a];
+         const RenderVertex * const pv1 = &vvertex[ptri->b];
+         const RenderVertex * const pv2 = &vvertex[ptri->c];
 
          {
             vertsTop[0][offset].x=pv0->x;   vertsTop[0][offset].y=pv0->y;   vertsTop[0][offset].z=heightNotDropped+m_ptable->m_tableheight;
@@ -798,9 +792,6 @@ void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
 
 	  topVBuffer->unlock();
    }
-
-   for (int i=0;i<numVertices;i++)
-      delete vvertex.ElementAt(i);
 }
 
 static const WORD rgisling[36] = {0,1,2,0,2,3, 4+0,4+1,4+2,4+0,4+2,4+3, 8+0,8+1,8+2,8+0,8+2,8+3, 12+0,12+1,12+2,12+0,12+2,12+3, 16+0,16+1,16+2,16+0,16+2,16+3, 20+0,20+1,20+2,20+0,20+2,20+3};
@@ -1127,8 +1118,8 @@ void Surface::DoCommand(int icmd, int x, int y)
 
          const Vertex2D v = m_ptable->TransformPoint(x, y);
 
-         Vector<RenderVertex> vvertex;
-         GetRgVertex(&vvertex);
+         std::vector<RenderVertex> vvertex;
+         GetRgVertex(vvertex);
 
          Vertex2D vOut;
          int iSeg;
@@ -1137,11 +1128,8 @@ void Surface::DoCommand(int icmd, int x, int y)
          // Go through vertices (including iSeg itself) counting control points until iSeg
          int icp = 0;
          for (int i=0;i<(iSeg+1);i++)
-            if (vvertex.ElementAt(i)->fControlPoint)
+            if (vvertex[i].fControlPoint)
                icp++;
-
-         for (int i=0;i<vvertex.Size();i++)
-            delete vvertex.ElementAt(i);
 
          CComObject<DragPoint> *pdp;
          CComObject<DragPoint>::CreateInstance(&pdp);

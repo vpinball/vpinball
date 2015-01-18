@@ -39,18 +39,13 @@ public:
 	void ReverseOrder();
 	virtual void GetPointDialogPanes(Vector<PropertyPane> *pvproppane);
 
-	void GetTextureCoords(Vector<RenderVertex> *pvv, float **ppcoords);
+    void GetTextureCoords(const std::vector<RenderVertex> & vv, float **ppcoords);
 
     friend class DragPoint;
 
 protected:
     template <class VtxContType>
     void GetRgVertex(VtxContType & vv, bool loop=true, float accuracy=1.0f/(0.5f*0.5f));
-
-    void GetRgVertex(Vector<RenderVertex> * const pvv, bool loop=true, float accuracy=1.0f/(0.5f*0.5f))
-    {
-        GetRgVertex< Vector<RenderVertex> >(*pvv, loop, accuracy);
-    }
 
 	Vector< CComObject<DragPoint> > m_vdpoint;
 };

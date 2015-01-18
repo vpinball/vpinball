@@ -260,8 +260,8 @@ void Rubber::GetBoundingVertices(Vector<Vertex3Ds> * const pvvertex3D)
  */
 Vertex2D *Rubber::GetSplineVertex(int &pcvertex, bool ** const ppfCross, Vertex2D **pMiddlePoints)
 {
-   Vector<RenderVertex> vvertex;
-   GetCentralCurve(&vvertex);
+   std::vector<RenderVertex> vvertex;
+   GetCentralCurve(vvertex);
    // vvertex are the 2D m_vertices forming the central curve of the ramp as seen from above
 
    const int cvertex = vvertex.size();
@@ -367,11 +367,9 @@ Vertex2D *Rubber::GetSplineVertex(int &pcvertex, bool ** const ppfCross, Vertex2
    if (ppfCross)
    {
       for (int i=0;i<cvertex;i++)
-         (*ppfCross)[i] = vvertex.ElementAt(i)->fControlPoint;
-      (*ppfCross)[cvertex] = vvertex.ElementAt(0)->fControlPoint;
+         (*ppfCross)[i] = vvertex[i].fControlPoint;
+      (*ppfCross)[cvertex] = vvertex[0].fControlPoint;
    }
-   for (int i=0;i<cvertex;i++)
-      delete vvertex.ElementAt(i);
 
    pcvertex = cvertex+1;
    return rgvLocal;
@@ -380,17 +378,17 @@ Vertex2D *Rubber::GetSplineVertex(int &pcvertex, bool ** const ppfCross, Vertex2
 /*
  * Get an approximation of the curve described by the control points of this ramp.
  */
-void Rubber::GetCentralCurve(Vector<RenderVertex> * const pvv)
+void Rubber::GetCentralCurve(std::vector<RenderVertex> & vv)
 {
-   IHaveDragPoints::GetRgVertex(pvv);
+   IHaveDragPoints::GetRgVertex(vv);
 }
 
 float Rubber::GetSurfaceHeight(float x, float y)
 {
-    Vector<RenderVertex> vvertex;
-    GetCentralCurve(&vvertex);
+    std::vector<RenderVertex> vvertex;
+    GetCentralCurve(vvertex);
 
-    const int cvertex = vvertex.Size();
+    const int cvertex = vvertex.size();
 
     int iSeg;
     Vertex2D vOut;
@@ -403,15 +401,13 @@ float Rubber::GetSurfaceHeight(float x, float y)
 
     if (iSeg == -1)
     {
-        //zheight = 0;
-        goto HeightError;
-        //return 0; // Object is not on ramp path
+        return 0; // Object is not on ramp path
     }
 
     for (int i2=1;i2<cvertex;i2++)
     {
-        const float dx = vvertex.ElementAt(i2)->x - vvertex.ElementAt(i2-1)->x;
-        const float dy = vvertex.ElementAt(i2)->y - vvertex.ElementAt(i2-1)->y;
+        const float dx = vvertex[i2].x - vvertex[i2-1].x;
+        const float dy = vvertex[i2].y - vvertex[i2-1].y;
         const float len = sqrtf(dx*dx + dy*dy);
         if (i2 <= iSeg)
         {
@@ -421,17 +417,13 @@ float Rubber::GetSurfaceHeight(float x, float y)
     }
 
     {
-        const float dx = vOut.x - vvertex.ElementAt(iSeg)->x;
-        const float dy = vOut.y - vvertex.ElementAt(iSeg)->y;
+        const float dx = vOut.x - vvertex[iSeg].x;
+        const float dy = vOut.y - vvertex[iSeg].y;
         const float len = sqrtf(dx*dx + dy*dy);
         startlength += len; // Add the distance the object is between the two closest polyline segments.  Matters mostly for straight edges.
 
         zheight = (startlength/totallength) * (m_d.m_height );
     }
-
-HeightError:
-    for (int i2=0;i2<cvertex;i2++)
-        delete vvertex.ElementAt(i2);
 
     return zheight;
 }
@@ -1009,10 +1001,8 @@ void Rubber::DoCommand(int icmd, int x, int y)
       {
          const Vertex2D v = m_ptable->TransformPoint(x, y);
 
-         Vector<RenderVertex> vvertex;
-         GetCentralCurve(&vvertex);
-
-         const int cvertex = vvertex.size();
+         std::vector<RenderVertex> vvertex;
+         GetCentralCurve(vvertex);
 
          Vertex2D vOut;
          int iSeg=-1;
@@ -1021,11 +1011,8 @@ void Rubber::DoCommand(int icmd, int x, int y)
          // Go through m_vertices (including iSeg itself) counting control points until iSeg
          int icp = 0;
          for (int i=0;i<(iSeg+1);i++)
-            if (vvertex.ElementAt(i)->fControlPoint)
+            if (vvertex[i].fControlPoint)
                icp++;
-
-         for (int i=0;i<cvertex;i++)
-            delete vvertex.ElementAt(i);
 
          // ClosestPointOnPolygon() couldn't find a point -> don't try to add a new point 
          // because that would lead to strange behavior

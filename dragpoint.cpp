@@ -312,20 +312,20 @@ void IHaveDragPoints::GetPointDialogPanes(Vector<PropertyPane> *pvproppane)
    pvproppane->AddElement(pproppane);
 }
 
-void IHaveDragPoints::GetTextureCoords(Vector<RenderVertex> *pvv, float **ppcoords)
+void IHaveDragPoints::GetTextureCoords(const std::vector<RenderVertex> & vv, float **ppcoords)
 {
    VectorInt<int> vitexpoints;
    VectorInt<int> virenderpoints;
    bool m_fNoCoords = false;
 
-   const int cpoints = pvv->Size();
+   const int cpoints = (int)vv.size();
    int icontrolpoint = 0;
 
    *ppcoords = new float[cpoints];
 
    for (int i=0; i<cpoints; ++i)
    {
-      RenderVertex * const prv = pvv->ElementAt(i);
+      const RenderVertex * const prv = &vv[i];
       if (prv->fControlPoint)
       {
          if (!m_vdpoint.ElementAt(icontrolpoint)->m_fAutoTexture)
@@ -379,8 +379,8 @@ void IHaveDragPoints::GetTextureCoords(Vector<RenderVertex> *pvv, float **ppcoor
       float totallength = 0.0f;
       for (int l=startrenderpoint; l<endrenderpoint; ++l)
       {
-         const Vertex2D * const pv1 = (Vertex2D *)pvv->ElementAt(l % cpoints);
-         const Vertex2D * const pv2 = (Vertex2D *)pvv->ElementAt((l+1) % cpoints);
+         const Vertex2D * const pv1 = (Vertex2D *)&vv[l % cpoints];
+         const Vertex2D * const pv2 = (Vertex2D *)&vv[(l+1) % cpoints];
 
          const float dx = pv1->x - pv2->x;
          const float dy = pv1->y - pv2->y;
@@ -392,8 +392,8 @@ void IHaveDragPoints::GetTextureCoords(Vector<RenderVertex> *pvv, float **ppcoor
       float partiallength = 0.0f;
       for (int l=startrenderpoint; l<endrenderpoint; ++l)
       {
-         const Vertex2D * const pv1 = (Vertex2D *)pvv->ElementAt(l % cpoints);
-         const Vertex2D * const pv2 = (Vertex2D *)pvv->ElementAt((l+1) % cpoints);
+         const Vertex2D * const pv1 = (Vertex2D *)&vv[l % cpoints];
+         const Vertex2D * const pv2 = (Vertex2D *)&vv[(l+1) % cpoints];
 
          const float dx = pv1->x - pv2->x;
          const float dy = pv1->y - pv2->y;

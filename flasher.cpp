@@ -204,7 +204,7 @@ void Flasher::PreRender(Sur * const psur)
    psur->SetBorderColor(-1,false,0);
 
    Vector<RenderVertex> vvertex;
-   GetRgVertex(&vvertex);
+   GetRgVertex(vvertex);
    Texture *ppi;
    if (m_ptable->RenderSolid() && m_d.m_fDisplayTexture && (ppi = m_ptable->GetImage(m_d.m_szImageA)))
    {
@@ -215,12 +215,12 @@ void Flasher::PreRender(Sur * const psur)
          float _miny=FLT_MAX;
          float _maxx=-FLT_MAX;
          float _maxy=-FLT_MAX;
-         for( int i=0;i<vvertex.Size();i++ )
+         for( int i=0;i<vvertex.size();i++ )
          {
-            if( vvertex.ElementAt(i)->x<_minx) _minx=vvertex.ElementAt(i)->x;
-            if( vvertex.ElementAt(i)->x>_maxx) _maxx=vvertex.ElementAt(i)->x;
-            if( vvertex.ElementAt(i)->y<_miny) _miny=vvertex.ElementAt(i)->y;
-            if( vvertex.ElementAt(i)->y>_maxy) _maxy=vvertex.ElementAt(i)->y;
+            if (vvertex[i].x < _minx) _minx=vvertex[i].x;
+            if (vvertex[i].x > _maxx) _maxx=vvertex[i].x;
+            if (vvertex[i].y < _miny) _miny=vvertex[i].y;
+            if (vvertex[i].y > _maxy) _maxy=vvertex[i].y;
          }
          if (ppi->m_hbmGDIVersion)
             psur->PolygonImage(vvertex, ppi->m_hbmGDIVersion, _minx, _miny, _minx+(_maxx-_minx), _miny+(_maxy-_miny), ppi->m_width, ppi->m_height);
@@ -250,7 +250,7 @@ void Flasher::Render(Sur * const psur)
    psur->SetObject(NULL);
 
    Vector<RenderVertex> vvertex; //!! check/reuse from prerender
-   GetRgVertex(&vvertex);
+   GetRgVertex(vvertex);
 
    psur->Polygon(vvertex);
 
@@ -384,10 +384,10 @@ void Flasher::UpdateMesh()
 
 void Flasher::RenderSetup(RenderDevice* pd3dDevice)
 {
-   Vector<RenderVertex> vvertex;
-   GetRgVertex(&vvertex);
+   std::vector<RenderVertex> vvertex;
+   GetRgVertex(vvertex);
 
-   numVertices = vvertex.Size();
+   numVertices = vvertex.size();
 
    VectorVoid vpoly;
 
@@ -400,9 +400,6 @@ void Flasher::RenderSetup(RenderDevice* pd3dDevice)
    numPolys = vtri.Size();
    if( numPolys==0 )
    {         
-      for (int i=0;i<numVertices;i++)
-         delete vvertex.ElementAt(i);
-
       // no polys to render leave vertex buffer undefined 
       return;
    }
@@ -427,9 +424,9 @@ void Flasher::RenderSetup(RenderDevice* pd3dDevice)
    {
       const Triangle * const ptri = vtri.ElementAt(i);
 
-      const RenderVertex * const pv0 = vvertex.ElementAt(ptri->a);
-      const RenderVertex * const pv1 = vvertex.ElementAt(ptri->b);
-      const RenderVertex * const pv2 = vvertex.ElementAt(ptri->c);
+      const RenderVertex * const pv0 = &vvertex[ptri->a];
+      const RenderVertex * const pv1 = &vvertex[ptri->b];
+      const RenderVertex * const pv2 = &vvertex[ptri->c];
 
       {
          vertices[offset  ].x=pv0->x;   vertices[offset  ].y=pv0->y;   vertices[offset  ].z=0;
@@ -467,8 +464,6 @@ void Flasher::RenderSetup(RenderDevice* pd3dDevice)
          vertices[i].tv = vertices[i].y*inv_tableheight;
       }
    }
-   for (int i=0;i<numVertices;i++)
-      delete vvertex.ElementAt(i);
 }
 
 void Flasher::RenderStatic(RenderDevice* pd3dDevice)
@@ -559,8 +554,8 @@ void Flasher::DoCommand(int icmd, int x, int y)
          STARTUNDO
          const Vertex2D v = m_ptable->TransformPoint(x, y);
 
-         Vector<RenderVertex> vvertex;
-         GetRgVertex(&vvertex);
+         std::vector<RenderVertex> vvertex;
+         GetRgVertex(vvertex);
 
          Vertex2D vOut;
          int iSeg;
@@ -569,11 +564,8 @@ void Flasher::DoCommand(int icmd, int x, int y)
          // Go through vertices (including iSeg itself) counting control points until iSeg
          int icp = 0;
          for (int i=0;i<(iSeg+1);i++)
-            if (vvertex.ElementAt(i)->fControlPoint)
+            if (vvertex[i].fControlPoint)
                icp++;
-
-         for (int i=0;i<vvertex.Size();i++)
-            delete vvertex.ElementAt(i);
 
          CComObject<DragPoint> *pdp;
          CComObject<DragPoint>::CreateInstance(&pdp);
