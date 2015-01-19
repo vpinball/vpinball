@@ -10,6 +10,7 @@ float3 cClearcoat = float3(0.5f, 0.5f, 0.5f);
 //!! Metals have high specular reflectance:  0.5-1.0
 
 bool   bPerformAlphaTest = false;
+bool   bAdd_Blend;
 float3 staticColor = float3(1.f,1.f,1.f);
 float  fAlphaTestValue = 128.0f/255.0f;
 
@@ -176,6 +177,9 @@ float4 ps_main_textureOne_noLight( in VS_SIMPLE_OUTPUT IN) : COLOR
    result.xyz = staticColor*InvGamma(pixel.xyz);
    result.a = pixel.a*fAlpha;
 
+   if(!bAdd_Blend)
+      return result;
+
    result.xyz = result.xyz*(-blend_modulate_vs_add*result.a); // negative as it will be blended with '1.0-thisvalue' (the 1.0 is needed to modulate the underlying elements correctly, but not wanted for the term below)
    result.a = 1.0f/blend_modulate_vs_add - 1.0f;
    return result;
@@ -205,6 +209,9 @@ float4 ps_main_textureAB_noLight( in VS_SIMPLE_OUTPUT IN) : COLOR
       
    result.a *= fAlpha;
 
+   if(!bAdd_Blend)
+      return result;
+
    result.xyz = result.xyz*(-blend_modulate_vs_add*result.a); // negative as it will be blended with '1.0-thisvalue' (the 1.0 is needed to modulate the underlying elements correctly, but not wanted for the term below)
    result.a = 1.0f/blend_modulate_vs_add - 1.0f;
    return result;
@@ -212,6 +219,9 @@ float4 ps_main_textureAB_noLight( in VS_SIMPLE_OUTPUT IN) : COLOR
 
 float4 ps_main_noLight( in VS_SIMPLE_OUTPUT IN) : COLOR
 {
+   if(!bAdd_Blend)
+      return float4(staticColor,fAlpha);
+
 	float4 result;
 	result.xyz = staticColor*(-blend_modulate_vs_add*fAlpha); // negative as it will be blended with '1.0-thisvalue' (the 1.0 is needed to modulate the underlying elements correctly, but not wanted for the term below)
 	result.a = 1.0f/blend_modulate_vs_add - 1.0f;
@@ -440,11 +450,6 @@ technique basic_with_textureOne_noLight
    { 
       VertexShader = compile vs_3_0 vs_simple_main(); 
 	  PixelShader = compile ps_3_0 ps_main_textureOne_noLight();
-		SrcBlend=SRCALPHA;     // add the lightcontribution
-		DestBlend=INVSRCCOLOR; // but also modulate the light first with the underlying elements by (1+lightcontribution, e.g. a very crude approximation of real lighting)
-		AlphaTestEnable=false;
-		AlphaBlendEnable=true;
-		BlendOp=RevSubtract;   // see above
    } 
 }
 
@@ -454,11 +459,6 @@ technique basic_with_textureAB_noLight
    { 
       VertexShader = compile vs_3_0 vs_simple_main(); 
 	  PixelShader = compile ps_3_0 ps_main_textureAB_noLight();
-		SrcBlend=SRCALPHA;     // add the lightcontribution
-		DestBlend=INVSRCCOLOR; // but also modulate the light first with the underlying elements by (1+lightcontribution, e.g. a very crude approximation of real lighting)
-		AlphaTestEnable=false;
-		AlphaBlendEnable=true;
-		BlendOp=RevSubtract;   // see above
    } 
 }
 
@@ -468,11 +468,6 @@ technique basic_with_noLight
    { 
       VertexShader = compile vs_3_0 vs_simple_main(); 
 	  PixelShader = compile ps_3_0 ps_main_noLight();
-		SrcBlend=SRCALPHA;     // add the lightcontribution
-		DestBlend=INVSRCCOLOR; // but also modulate the light first with the underlying elements by (1+lightcontribution, e.g. a very crude approximation of real lighting)
-		AlphaTestEnable=false;
-		AlphaBlendEnable=true;
-		BlendOp=RevSubtract;   // see above
    } 
 }
 
