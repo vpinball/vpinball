@@ -126,7 +126,7 @@ private:
     int m_numIndices;
 
     std::vector<HitObject*> m_vhoCollidable; // Objects to that may be collide selectable
-    Vertex3D_NoTex2* m_vertices;
+    std::vector<Vertex3D_NoTex2> m_vertices;
     Vertex3Ds middlePoint;
 
 	VertexBuffer *staticVertexBuffer;
@@ -141,12 +141,14 @@ private:
 	void GetCentralCurve(std::vector<RenderVertex> & vv);
 
     Vertex2D *GetSplineVertex(int &pcvertex, bool ** const ppfCross, Vertex2D **pMiddlePoints);
-    void AddJoint(Vector<HitObject> * pvho, const Vertex3Ds& v1, const Vertex3Ds& v2);
-    void AddJoint2D(Vector<HitObject> * pvho, const Vertex2D& p, float zlow, float zhigh);
-	void CheckJoint(Vector<HitObject> * const pvho, const HitTriangle * const ph3d1, const HitTriangle * const ph3d2);
 
     void GenerateVertexBuffer(RenderDevice* pd3dDevice);
    
+    // utility functions for adding collision objects
+    void SetupHitObject(Vector<HitObject> * pvho, HitObject * obj);
+    void AddJoint(Vector<HitObject> * pvho, const Vertex3Ds& v1, const Vertex3Ds& v2);
+    void AddJoint2D(Vector<HitObject> * pvho, const Vertex2D& p, float zlow, float zhigh);
+	void CheckJoint(Vector<HitObject> * const pvho, const HitTriangle * const ph3d1, const HitTriangle * const ph3d2);
 	void AddLine(Vector<HitObject> * const pvho, const Vertex2D * const pv1, const Vertex2D * const pv2, const Vertex2D * const pv3, const float height1, const float height2);
 
     void RenderObject( RenderDevice *pd3dDevice);
