@@ -58,7 +58,7 @@ public:
 	virtual void DoCodeViewCommand(int command) = 0;
 	};
 
-class CodeViewDispatch : public ISort<CodeViewDispatch>/*Strings*/
+class CodeViewDispatch
 	{
 public:
 	CodeViewDispatch();
@@ -68,8 +68,10 @@ public:
 	IDispatch *m_pdisp;
 	IScriptable *m_piscript;
 	BOOL m_fGlobal;
-	virtual int SortAgainst(CodeViewDispatch *pcvd/*void *pvoid*/);
-	virtual int SortAgainstValue(void *pv);
+
+    // for VectorSortString
+	int SortAgainst(CodeViewDispatch *pcvd/*void *pvoid*/);
+	int SortAgainstValue(void *pv);
 	};
 
 class CodeViewer :
