@@ -145,9 +145,9 @@ void Flasher::SetDefaults(bool fromMouseClick)
    else
        m_d.m_fAlpha = 100;
 
-   hr = GetRegInt("DefaultProps\\Flasher","ModulateVsAdd", &iTmp);
+   hr = GetRegStringAsFloat("DefaultProps\\Flasher","ModulateVsAdd", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
-       m_d.m_modulate_vs_add = iTmp;
+       m_d.m_modulate_vs_add = fTmp;
    else
        m_d.m_modulate_vs_add = 0.9f;
 
