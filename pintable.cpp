@@ -907,14 +907,14 @@ PinTable::~PinTable()
 
 BOOL PinTable::FVerifySaveToClose()
 {
-   if (m_vAsyncHandles.Size() > 0)
+   if (m_vAsyncHandles.size() > 0)
    {
-      /*const DWORD wait =*/ WaitForMultipleObjects(m_vAsyncHandles.Size(), (HANDLE *)m_vAsyncHandles.GetArray(), TRUE, INFINITE);
+      /*const DWORD wait =*/ WaitForMultipleObjects(m_vAsyncHandles.size(), &m_vAsyncHandles[0], TRUE, INFINITE);
       //MessageBox(NULL, "Async work items not done", NULL, 0);
 
       // Close the remaining handles here, since the window messages will never be processed
-      for (int i=0;i<m_vAsyncHandles.Size();i++)
-         CloseHandle(m_vAsyncHandles.ElementAt(i));
+      for (unsigned i=0;i<m_vAsyncHandles.size();i++)
+         CloseHandle(m_vAsyncHandles[i]);
 
       g_pvp->SetActionCur("");
    }
@@ -2041,7 +2041,7 @@ void PinTable::AutoSave()
    if (hr == S_OK)
    {
       HANDLE hEvent = g_pvp->PostWorkToWorkerThread(COMPLETE_AUTOSAVE, (LPARAM)pasp);
-      m_vAsyncHandles.AddElement(hEvent);
+      m_vAsyncHandles.push_back(hEvent);
 
       g_pvp->SetActionCur("Completing AutoSave");
    }
@@ -5738,7 +5738,7 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
          }
          pt->BeginAutoSaveCounter();
          HANDLE hEvent = (HANDLE)wParam;
-         pt->m_vAsyncHandles.RemoveElement((int)hEvent); //!! 64bit
+         RemoveFromVector(pt->m_vAsyncHandles, hEvent);
          CloseHandle(hEvent);
       }
       break;

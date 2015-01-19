@@ -81,12 +81,12 @@ public:
 
 	HWND m_hwndFrame;
 
-	VectorInt<HWND> m_vhwndExpand;
-	VectorInt<HWND> m_vhwndDialog;
+    std::vector<HWND> m_vhwndExpand;
+    std::vector<HWND> m_vhwndDialog;
 
 	Vector<PropertyPane> m_vproppane;
 
-	VectorInt<int> m_vproppriority;
+    std::vector<int> m_vproppriority;
 
 	HFONT m_hfontHeader;
 

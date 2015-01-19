@@ -64,6 +64,16 @@ inline void RemoveFromVector(std::vector<T>& v, const T& val)
     v.erase( std::remove( v.begin(), v.end(), val ), v.end() );
 }
 
+template <typename T>
+inline int FindIndexOf(std::vector<T>& v, const T& val)
+{
+    std::vector<T>::const_iterator it = std::find(v.begin(), v.end(), val);
+    if (it != v.end())
+        return (it - v.begin());
+    else
+        return -1;
+}
+
 #define fTrue 1
 #define fFalse 0
 

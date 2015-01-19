@@ -619,7 +619,7 @@ END_CONNECTION_POINT_MAP()
 	Vector<char> m_vCustomInfoTag;
 	Vector<char> m_vCustomInfoContent;
 
-	VectorInt<HANDLE> m_vAsyncHandles;
+    std::vector<HANDLE> m_vAsyncHandles;
 
     int m_globalAlphaRampsAccuracy;
     int m_userAlphaRampsAccuracy;

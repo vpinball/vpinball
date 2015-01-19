@@ -3137,7 +3137,7 @@ void Player::DrawBalls()
 struct DebugMenuItem
 {
 	int objectindex;
-	VectorInt<int> *pvdispid;
+    std::vector<int> *pvdispid;
 	HMENU hmenu;
 };
 
@@ -3145,8 +3145,8 @@ void AddEventToDebugMenu(char *sz, int index, int dispid, LPARAM lparam)
 {
 	DebugMenuItem * const pdmi = (DebugMenuItem *)lparam;
 	HMENU hmenu = pdmi->hmenu;
-	const int menuid = ((pdmi->objectindex+1)<<16) | pdmi->pvdispid->Size();
-	pdmi->pvdispid->AddElement(dispid);
+	const int menuid = ((pdmi->objectindex+1)<<16) | pdmi->pvdispid->size();
+	pdmi->pvdispid->push_back(dispid);
 	AppendMenu(hmenu, MF_STRING, menuid, sz);
 
 }
@@ -3201,10 +3201,10 @@ void Player::DoDebugObjectMenu(int x, int y)
 	m_hitoctree.HitTestXRay(&ballT, &vhoHit, ballT.m_coll);
 	m_debugoctree.HitTestXRay(&ballT, &vhoHit, ballT.m_coll);
 
-	VectorInt<HMENU> vsubmenu;
+    std::vector<HMENU> vsubmenu;
 	HMENU hmenu = CreatePopupMenu();
 
-	Vector<VectorInt<int> > vvdispid;
+    std::vector< std::vector<int>* > vvdispid;
 
 	if (vhoHit.Size() == 0)
 		{
@@ -3235,15 +3235,15 @@ void Player::DoDebugObjectMenu(int x, int y)
 				&dispparams, &var, NULL, NULL);
 
 			HMENU submenu = CreatePopupMenu();
-			vsubmenu.AddElement(submenu);
+			vsubmenu.push_back(submenu);
 			if (hr == S_OK)
 				{
 				WCHAR *wzT;
 				wzT = V_BSTR(&var);
 				AppendMenuW(hmenu, MF_STRING | MF_POPUP, (UINT_PTR)submenu, wzT);
 
-				VectorInt<int> *pvdispid = new VectorInt<int>();
-				vvdispid.AddElement(pvdispid);
+                std::vector<int> *pvdispid = new std::vector<int>();
+				vvdispid.push_back(pvdispid);
 
 				DebugMenuItem dmi;
 				dmi.objectindex = i;
@@ -3255,20 +3255,20 @@ void Player::DoDebugObjectMenu(int x, int y)
 			IDebugCommands * const pdc = pho->m_pfedebug->GetDebugCommands();
 			if (pdc)
 				{
-				VectorInt<int> vids;
-				VectorInt<int> vcommandid;
+                std::vector<int> vids;
+                std::vector<int> vcommandid;
 
-				pdc->GetDebugCommands(&vids, &vcommandid);
-				for (int l=0;l<vids.Size();l++)
+				pdc->GetDebugCommands(vids, vcommandid);
+				for (unsigned l=0; l<vids.size(); l++)
 					{
-					LocalString ls(vids.ElementAt(l));
-					AppendMenu(submenu, MF_STRING, ((i+1)<<16) | vcommandid.ElementAt(l) | 0x8000, ls.m_szbuffer);
+					LocalString ls(vids[l]);
+					AppendMenu(submenu, MF_STRING, ((i+1)<<16) | vcommandid[l] | 0x8000, ls.m_szbuffer);
 					}
 				}
 			}
 		else
 			{
-			vvdispid.AddElement(NULL); // Put a spacer in so we can keep track of indexes
+			vvdispid.push_back(NULL); // Put a spacer in so we can keep track of indexes
 			}
 		}
 
@@ -3280,7 +3280,7 @@ void Player::DoDebugObjectMenu(int x, int y)
 	const int icmd = TrackPopupMenuEx(hmenu, TPM_RETURNCMD | TPM_RIGHTBUTTON,
 									  pt.x, pt.y, m_hwnd, NULL);
 
-	if (icmd != 0 && vsubmenu.Size() > 0)
+	if (icmd != 0 && vsubmenu.size() > 0)
 		{
 		const int highword = HIWORD(icmd) - 1;
 		const int lowword = icmd & 0xffff;
@@ -3291,7 +3291,7 @@ void Player::DoDebugObjectMenu(int x, int y)
 			}
 		else
 			{
-			const int dispid = vvdispid.ElementAt(highword)->ElementAt(lowword);
+			const int dispid = (*vvdispid[highword])[lowword];
 			m_pactiveball = m_pactiveballDebug;
 			pfe->FireGroupEvent(dispid);
 			m_pactiveball = NULL;
@@ -3299,18 +3299,13 @@ void Player::DoDebugObjectMenu(int x, int y)
 		}
 
 	DestroyMenu(hmenu);
-	for (int i=0;i<vsubmenu.Size();i++)
+	for (unsigned i=0; i<vsubmenu.size(); i++)
 		{
-		DestroyMenu(vsubmenu.ElementAt(i));
+		DestroyMenu(vsubmenu[i]);
 		}
 
-	for (int i=0;i<vvdispid.Size();i++)
-		{
-		if (vvdispid.ElementAt(i))
-			{
-			delete vvdispid.ElementAt(i);
-			}
-		}
+	for (unsigned i=0; i<vvdispid.size(); i++)
+        delete vvdispid[i];
 
 	UnpauseMusic();
 }
