@@ -1239,12 +1239,12 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
          if (ptCur)
          {
             if (ptCur->CheckPermissions(DISABLE_OPEN_MANAGERS))
-               ShowPermissionError();
-            else
             {
-               DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_DIMENSION_CALCULATOR), m_hwnd, DimensionProc, (size_t)ptCur);
+               ShowPermissionError();
+               break;
             }
          }
+         DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_DIMENSION_CALCULATOR), m_hwnd, DimensionProc, NULL);
       }
       break;
 
