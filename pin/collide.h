@@ -32,6 +32,20 @@ class HitObject;
 class AnimObject;
 
 
+/*
+ * Rubber has a coefficient of restitution which decreases with the impact velocity.
+ * We use a heuristic model which decreases the COR according to a falloff parameter:
+ * 0 = no falloff, 1 = half the COR at 1 m/s (18.53 speed units)
+ */
+inline float ElasticityWithFalloff(float elasticity, float falloff, float vel)
+{
+    if (falloff > 0)
+        return elasticity / (1.0f + falloff * fabsf(vel) / 18.53f);
+    else
+        return elasticity;
+}
+
+
 struct CollisionEvent
 {
     CollisionEvent() : ball(0), obj(0), isContact(false) {}
@@ -92,6 +106,7 @@ public:
 	int   m_ObjType;
 	void* m_pObj;
 	float m_elasticity;
+    float m_elasticityFalloff;
 	float m_friction;
 	float m_scatter;
 	bool  m_fEnabled;

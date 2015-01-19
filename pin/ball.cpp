@@ -88,7 +88,7 @@ void Ball::EnsureOMObject()
 	m_pballex->m_pball = this;
 }
  
-void Ball::Collide3DWall(const Vertex3Ds& hitNormal, const float elasticity, float friction, float scatter_angle)
+void Ball::Collide3DWall(const Vertex3Ds& hitNormal, float elasticity, float elastFalloff, float friction, float scatter_angle)
 {
     //speed normal to wall
     float dot = m_vel.Dot(hitNormal);
@@ -120,6 +120,7 @@ void Ball::Collide3DWall(const Vertex3Ds& hitNormal, const float elasticity, flo
     // penetrating the wall (needed for friction computations)
     const float reactionImpulse = m_mass * fabsf(dot);
 
+    elasticity = ElasticityWithFalloff(elasticity, elastFalloff, dot);
     dot *= -(1.0f + elasticity);
     m_vel += dot * hitNormal;     // apply collision impulse (along normal, so no torque)
 
