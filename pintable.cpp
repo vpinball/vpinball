@@ -1377,7 +1377,7 @@ void PinTable::GetUniqueName(WCHAR *wzRoot, WCHAR *wzUniqueName)
       _itow_s(suffix, wzSuffix, sizeof(wzSuffix)/sizeof(WCHAR), 10);
       WideStrCat(wzSuffix, wzName);
 
-      if (m_pcv->m_vcvd.GetSortedIndex(wzName) == -1)
+      if (IsNameUnique(wzName))
       {
          fFound = true;
       }
@@ -1392,14 +1392,9 @@ void PinTable::GetUniqueName(WCHAR *wzRoot, WCHAR *wzUniqueName)
 
 void PinTable::GetUniqueNamePasting(int type, WCHAR *wzUniqueName)
 {
-   int suffix = 1;
-   bool fFound = false;
-   WCHAR wzName[MAXNAMEBUFFER];
-   WCHAR wzSuffix[10];
-
    //if the original name is not yet used, use that one (so there's nothing we have to do) 
    //otherwise add/increase the suffix untill we find a name that's not used yet
-   if (m_pcv->m_vcvd.GetSortedIndex(wzUniqueName) != -1)
+   if (!IsNameUnique(wzUniqueName))
    {
       //first remove the existing suffix
       while (iswdigit(wzUniqueName[wcslen(wzUniqueName)-1]))
@@ -1407,22 +1402,7 @@ void PinTable::GetUniqueNamePasting(int type, WCHAR *wzUniqueName)
          wzUniqueName[wcslen(wzUniqueName)-1] = L'\0';
       }
 
-      while (!fFound)
-      {
-         WideStrCopy(wzUniqueName, wzName);
-         _itow_s(suffix, wzSuffix, sizeof(wzSuffix)/sizeof(WCHAR), 10);
-         WideStrCat(wzSuffix, wzName);
-
-         if (m_pcv->m_vcvd.GetSortedIndex(wzName) == -1)
-         {
-            fFound = true;
-         }
-         else
-         {
-            suffix += 1;
-         }
-      }
-      WideStrCopy(wzName, wzUniqueName);
+      GetUniqueName(wzUniqueName, wzUniqueName);
    }
 }
 

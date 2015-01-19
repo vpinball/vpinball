@@ -1,14 +1,6 @@
 #pragma once
 
 template<class T>
-class ISort
-	{
-public:
-	virtual int SortAgainst(T *pT/*void *pvoid*/) = 0;
-	virtual int SortAgainstValue(void *pv) = 0;
-	};
-
-template<class T>
 class VectorSortString : public Vector<T>
 	{
 protected:
