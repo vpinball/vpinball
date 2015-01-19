@@ -571,7 +571,7 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
     }
     else
 	{
-		pd3dDevice->basicShader->Core()->SetFloat("blend_modulate_vs_add",m_d.m_modulate_vs_add);
+		pd3dDevice->basicShader->Core()->SetFloat("blend_modulate_vs_add",max(m_d.m_modulate_vs_add,0.00001f)); // avoid 0, as it disables the blend
         pd3dDevice->basicShader->SetTechnique("bulb_light");
 	}
 
