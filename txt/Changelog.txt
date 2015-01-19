@@ -115,6 +115,8 @@ VP 10.0.0 Changelog
 - renaming of IsVisible properties (flasher, ramp) to Visible
 
 - flasher supports custom shapes and multi texturing. You can define two separate images and define a filter to blend these two images.
+  in addition there is now a modulate option to define how the flasher blends with the underlying elements (0(=full additive)..1=(only modulate))
+  plus the opacity and amount parameters can be set to values > 100%
   look into the CommandReference.txt for additional changes to the functions that can be used
 
 - remove old shadowing code and replace it with optional screen space ambient occlusion (via the global video preferences and also the table options)
