@@ -87,7 +87,7 @@ void PaintSur::Ellipse2(const float centerx, const float centery, const int radi
 
 void PaintSur::Polygon(const Vertex2D * const rgv, const int count)
 	{
-	POINT * const rgpt = new POINT[count];
+    std::vector<POINT> rgpt(count);
 
 	for (int i=0;i<count;i++)
 		{
@@ -98,32 +98,28 @@ void PaintSur::Polygon(const Vertex2D * const rgv, const int count)
 	SelectObject(m_hdc, m_hbr);
 	SelectObject(m_hdc, m_hpnOutline);
 
-	::Polygon(m_hdc, rgpt, count);
-	
-	delete [] rgpt;
+	::Polygon(m_hdc, &rgpt[0], count);
 	}
 
 // copy-pasted from above
-void PaintSur::Polygon(const Vector<RenderVertex> &rgv)
-	{
-	POINT * const rgpt = new POINT[rgv.Size()];
+void PaintSur::Polygon(const std::vector<RenderVertex> &rgv)
+{
+    std::vector<POINT> rgpt(rgv.size());
 
-	for (int i=0;i<rgv.Size();i++)
+	for (unsigned i=0;i<rgv.size();i++)
 		{
-		rgpt[i].x = SCALEXf(rgv.ElementAt(i)->x);
-		rgpt[i].y = SCALEYf(rgv.ElementAt(i)->y);
+		rgpt[i].x = SCALEXf(rgv[i].x);
+		rgpt[i].y = SCALEYf(rgv[i].y);
 		}
 
 	SelectObject(m_hdc, m_hbr);
 	SelectObject(m_hdc, m_hpnOutline);
 
-	::Polygon(m_hdc, rgpt, rgv.Size());
-	
-	delete [] rgpt;
-	}
+	::Polygon(m_hdc, &rgpt[0], rgv.size());
+}
 
-void PaintSur::PolygonImage(const Vector<RenderVertex> &rgv, HBITMAP hbm, const float left, const float top, const float right, const float bottom, const int bitmapwidth, const int bitmapheight)
-	{
+void PaintSur::PolygonImage(const std::vector<RenderVertex> &rgv, HBITMAP hbm, const float left, const float top, const float right, const float bottom, const int bitmapwidth, const int bitmapheight)
+{
 	const int ix = SCALEXf(left);
 	const int iy = SCALEYf(top);
 	const int ix2 = SCALEXf(right);
@@ -138,24 +134,22 @@ void PaintSur::PolygonImage(const Vector<RenderVertex> &rgv, HBITMAP hbm, const 
 	SelectObject(m_hdc, GetStockObject(BLACK_BRUSH));
 	SelectObject(m_hdc, GetStockObject(NULL_PEN));
 
-	POINT * const rgpt = new POINT[rgv.Size()];
+    std::vector<POINT> rgpt(rgv.size());
 
-	for (int i=0;i<rgv.Size();i++)
+	for (unsigned i=0;i<rgv.size();i++)
 	{
-		rgpt[i].x = SCALEXf(rgv.ElementAt(i)->x);
-		rgpt[i].y = SCALEYf(rgv.ElementAt(i)->y);
+		rgpt[i].x = SCALEXf(rgv[i].x);
+		rgpt[i].y = SCALEYf(rgv[i].y);
 	}
 
-	::Polygon(m_hdc, rgpt, rgv.Size());
+	::Polygon(m_hdc, &rgpt[0], rgv.size());
 			
 	SetStretchBltMode(m_hdc, HALFTONE); // somehow enables filtering
 	StretchBlt(m_hdc, ix, iy, ix2-ix, iy2-iy, hdcNew, 0, 0, bitmapwidth, bitmapheight, SRCINVERT);
 	
 	SelectObject(hdcNew, hbmOld);
 	DeleteDC(hdcNew);
-	
-	delete [] rgpt;
-	}
+}
 
 void PaintSur::Polyline(const Vertex2D * const rgv, const int count)
 {

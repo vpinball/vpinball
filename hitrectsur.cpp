@@ -114,16 +114,16 @@ void HitRectSur::Polygon(const Vertex2D * const rgv, const int count)
 		}
 	}
 // copy-pasted from above
-void HitRectSur::Polygon(const Vector<RenderVertex> &rgv)
+void HitRectSur::Polygon(const std::vector<RenderVertex> &rgv)
 	{
 	if (m_fFailedAlready)
 		{
 		return;
 		}
 
-	for (int i=0; i<rgv.Size(); ++i)
+	for (unsigned i=0; i<rgv.size(); ++i)
 		{
-		if (!PTINRECT(rgv.ElementAt(i)->x,rgv.ElementAt(i)->y))
+		if (!PTINRECT(rgv[i].x,rgv[i].y))
 			{
 			FailObject();
 			return;
@@ -131,7 +131,7 @@ void HitRectSur::Polygon(const Vector<RenderVertex> &rgv)
 		}
 	}
 
-void HitRectSur::PolygonImage(const Vector<RenderVertex> &rgv, HBITMAP hbm, const float left, const float top, const float right, const float bottom, const int bitmapwidth, const int bitmapheight)
+void HitRectSur::PolygonImage(const std::vector<RenderVertex> &rgv, HBITMAP hbm, const float left, const float top, const float right, const float bottom, const int bitmapwidth, const int bitmapheight)
 	{
 	Polygon(rgv);
 	}

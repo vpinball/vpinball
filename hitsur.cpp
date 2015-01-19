@@ -191,25 +191,25 @@ void HitSur::Polygon(const Vertex2D * const rgv, const int count)
 		}
 	}
 // copy-pasted from above
-void HitSur::Polygon(const Vector<RenderVertex> &rgv)
+void HitSur::Polygon(const std::vector<RenderVertex> &rgv)
 	{
 	if (m_pcur == NULL)
 		return;
 
-	int x1 = SCALEXf(rgv.ElementAt(rgv.Size()-1)->x);
-	int y1 = SCALEYf(rgv.ElementAt(rgv.Size()-1)->y);
+	int x1 = SCALEXf(rgv[rgv.size()-1].x);
+	int y1 = SCALEYf(rgv[rgv.size()-1].y);
 	bool hx1 = (m_hitx >= x1);
 	bool hy1 = (m_hity > y1);
 	int crosscount=0;	// count of lines which the hit point is to the left of
-	for (int i=0;i<rgv.Size();++i)
+	for (unsigned i=0;i<rgv.size();++i)
 		{
 		const int x2 = x1;
 		const int y2 = y1;
 		const bool hx2 = hx1;
 		const bool hy2 = hy1;
 		
-		x1 = SCALEXf(rgv.ElementAt(i)->x);
-		y1 = SCALEYf(rgv.ElementAt(i)->y);
+		x1 = SCALEXf(rgv[i].x);
+		y1 = SCALEYf(rgv[i].y);
 		hx1 = (m_hitx >= x1);
 		hy1 = (m_hity > y1);
 
@@ -242,7 +242,7 @@ void HitSur::Polygon(const Vector<RenderVertex> &rgv)
 		}
 	}
 
-void HitSur::PolygonImage(const Vector<RenderVertex> &rgv, HBITMAP hbm, const float left, const float top, const float right, const float bottom, const int bitmapwidth, const int bitmapheight)
+void HitSur::PolygonImage(const std::vector<RenderVertex> &rgv, HBITMAP hbm, const float left, const float top, const float right, const float bottom, const int bitmapwidth, const int bitmapheight)
 	{
 	Polygon(rgv);
 	}

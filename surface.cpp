@@ -259,7 +259,7 @@ void Surface::PreRender(Sur * const psur)
    // Don't want border color to be over-ridden when selected - that will be drawn later
    psur->SetBorderColor(-1,false,0);
 
-   Vector<RenderVertex> vvertex;
+   std::vector<RenderVertex> vvertex;
    GetRgVertex(vvertex);
 
    Texture *ppi;
@@ -275,9 +275,6 @@ void Surface::PreRender(Sur * const psur)
    }
    else
       psur->Polygon(vvertex);
-
-   for (int i=0;i<vvertex.Size();i++) //!! keep for render()
-      delete vvertex.ElementAt(i);
 }
 
 void Surface::Render(Sur * const psur)
@@ -287,13 +284,11 @@ void Surface::Render(Sur * const psur)
    psur->SetObject(this); // For selected formatting
    psur->SetObject(NULL);
 
-   Vector<RenderVertex> vvertex; //!! check/reuse from prerender
-   GetRgVertex(vvertex);
-
-   psur->Polygon(vvertex);
-
-   for (int i=0;i<vvertex.Size();i++)
-      delete vvertex.ElementAt(i);
+   {
+       std::vector<RenderVertex> vvertex; //!! check/reuse from prerender
+       GetRgVertex(vvertex);
+       psur->Polygon(vvertex);
+   }
 
    // if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
    bool fDrawDragpoints = ( (m_selectstate != eNotSelected) || g_pvp->m_fAlwaysDrawDragPoints );
@@ -349,13 +344,10 @@ void Surface::RenderBlueprint(Sur *psur)
    psur->SetObject(this); // For selected formatting
    psur->SetObject(NULL);
 
-   Vector<RenderVertex> vvertex;
+   std::vector<RenderVertex> vvertex;
    GetRgVertex(vvertex);
 
    psur->Polygon(vvertex);
-
-   for (int i=0;i<vvertex.Size();i++)
-      delete vvertex.ElementAt(i);
 }
 
 void Surface::GetTimers(Vector<HitTimer> * const pvht)
