@@ -1802,9 +1802,9 @@ HRESULT VPinball::ApcHost_OnTranslateMessage(MSG* pmsg, BOOL* pfConsumed)
 
    if (!g_pplayer)
    {
-      for (int i=0;i<m_sb.m_vhwndDialog.Size();i++)
+      for (unsigned i=0;i<m_sb.m_vhwndDialog.size();i++)
       {
-         if (IsDialogMessage(m_sb.m_vhwndDialog.ElementAt(i), pmsg))
+         if (IsDialogMessage(m_sb.m_vhwndDialog[i], pmsg))
             *pfConsumed = TRUE;
       }
       if (m_pcv && m_pcv->m_hwndMain)

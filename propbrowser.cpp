@@ -156,7 +156,7 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, Vector<ISelect> *pvsel)
 
    m_olddialog = propID;
 
-   if (m_vhwndExpand.Size() > 0)
+   if (m_vhwndExpand.size() > 0)
    {
       // Stop focus from going to no-man's land if focus is in dialog
       HWND hwndFocus = GetFocus();
@@ -167,11 +167,11 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, Vector<ISelect> *pvsel)
       }
       while ((hwndFocus = GetParent(hwndFocus)) != NULL);
 
-      for (int i=0;i<m_vhwndExpand.Size();i++)
-         DestroyWindow(m_vhwndExpand.ElementAt(i));
+      for (unsigned i=0;i<m_vhwndExpand.size();i++)
+         DestroyWindow(m_vhwndExpand[i]);
 
-	  m_vhwndExpand.RemoveAllElements();
-      m_vhwndDialog.RemoveAllElements(); // Dialog windows will have been destroyed along with their parent expando window
+	  m_vhwndExpand.clear();
+      m_vhwndDialog.clear(); // Dialog windows will have been destroyed along with their parent expando window
    }
 
    if (m_pvsel)
@@ -229,7 +229,7 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, Vector<ISelect> *pvsel)
          WS_CHILD /*| WS_VISIBLE *//*| WS_BORDER*/,
          2, EXPANDO_Y_OFFSET, eSmartBrowserWidth-5, 300, m_hwndFrame, NULL, g_hinst, pexinfo);
 
-      m_vhwndExpand.AddElement(hwndExpand);
+      m_vhwndExpand.push_back(hwndExpand);
 
       HWND hwndDialog;
       if (pproppane->dialogid != 0)
@@ -240,7 +240,7 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, Vector<ISelect> *pvsel)
             hwndExpand, PropertyProc, (size_t)this);
 
       m_vproppane.ElementAt(i)->dialogHwnd = hwndDialog;
-      m_vhwndDialog.AddElement(hwndDialog);
+      m_vhwndDialog.push_back(hwndDialog);
 
       RECT rcDialog;
       GetWindowRect(hwndDialog, &rcDialog);
@@ -259,10 +259,10 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, Vector<ISelect> *pvsel)
 
    LayoutExpandoWidth();
 
-   for(int i=0; i<m_vhwndExpand.Size(); i++)
+   for(unsigned i=0; i<m_vhwndExpand.size(); i++)
    {
-      SendMessage(m_vhwndExpand.ElementAt(i), EXPANDO_EXPAND, 0, 0);
-      ShowWindow(m_vhwndExpand.ElementAt(i), SW_SHOWNOACTIVATE);
+      SendMessage(m_vhwndExpand[i], EXPANDO_EXPAND, 0, 0);
+      ShowWindow(m_vhwndExpand[i], SW_SHOWNOACTIVATE);
    }
 
    if ( pisel && pisel->GetItemType()==eItemTable )
@@ -281,8 +281,8 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, Vector<ISelect> *pvsel)
    //for (int i=0;i<m_vhwndExpand.Size();i++) SendMessage(m_vhwndExpand.ElementAt(i), EXPANDO_EXPAND, 1, 0); 
 
    //expand top last
-   for(int i = m_vhwndExpand.Size()-1; i >= 0; --i)
-	   SendMessage(m_vhwndExpand.ElementAt(i), EXPANDO_EXPAND, 1, 0);
+   for(int i = m_vhwndExpand.size()-1; i >= 0; --i)
+	   SendMessage(m_vhwndExpand[i], EXPANDO_EXPAND, 1, 0);
 
    for( int i=0;i<m_pvsel->Size();i++ )
        m_pvsel->ElementAt(i)->UpdatePropertyPanes();
@@ -437,14 +437,14 @@ BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM lParam)
 
 void SmartBrowser::PopulateDropdowns()
 {
-   for (int i=0;i<m_vhwndDialog.Size();i++)
-      EnumChildWindows(m_vhwndDialog.ElementAt(i), EnumChildInitList, (size_t)this);
+   for (unsigned i=0;i<m_vhwndDialog.size();i++)
+      EnumChildWindows(m_vhwndDialog[i], EnumChildInitList, (size_t)this);
 }
 
 void SmartBrowser::RefreshProperties()
 {
-   for (int i=0;i<m_vhwndDialog.Size();i++)
-      EnumChildWindows(m_vhwndDialog.ElementAt(i), EnumChildProc, (size_t)this);
+   for (unsigned i=0;i<m_vhwndDialog.size();i++)
+      EnumChildWindows(m_vhwndDialog[i], EnumChildProc, (size_t)this);
 }
 
 void SmartBrowser::SetVisible(BOOL fVisible)
@@ -728,17 +728,17 @@ void SmartBrowser::SetProperty(int dispid, VARIANT *pvar, BOOL fPutRef)
 void SmartBrowser::LayoutExpandoWidth()
 {
    int maxwidth = 20; // Just in case we have a weird situation where there are no dialogs
-   for (int i=0; i<m_vhwndDialog.Size(); i++)
+   for (unsigned i=0; i<m_vhwndDialog.size(); i++)
    {
-      HWND hwnd = m_vhwndDialog.ElementAt(i);
+      HWND hwnd = m_vhwndDialog[i];
       RECT rc;
       GetWindowRect(hwnd, &rc);
       maxwidth = max(maxwidth, (rc.right - rc.left));
    }
 
-   for (int i=0; i<m_vhwndExpand.Size(); i++)
+   for (unsigned i=0; i<m_vhwndExpand.size(); i++)
    {
-      HWND hwndExpand = m_vhwndExpand.ElementAt(i);
+      HWND hwndExpand = m_vhwndExpand[i];
       SetWindowPos(hwndExpand, NULL, 0, 0, maxwidth, 20, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOMOVE);
    }
 
@@ -750,9 +750,9 @@ void SmartBrowser::LayoutExpandoWidth()
 void SmartBrowser::RelayoutExpandos()
 {
    int totalheight = 0;
-   for (int i=0;i<m_vhwndExpand.Size();i++)
+   for (unsigned i=0;i<m_vhwndExpand.size();i++)
    {
-      HWND hwndExpand = m_vhwndExpand.ElementAt(i);
+      HWND hwndExpand = m_vhwndExpand[i];
       ExpandoInfo *pexinfo = (ExpandoInfo *)GetWindowLongPtr(hwndExpand, GWLP_USERDATA);
       if (pexinfo->m_fExpanded)
          totalheight += pexinfo->m_dialogheight;
@@ -775,17 +775,17 @@ void SmartBrowser::RelayoutExpandos()
       // longest time ago)
       // If nothing has ever been expanded by the user, higher panels will
       // get priority over lower panels
-      for (int i=0; i<m_vhwndExpand.Size(); i++)
+      for (unsigned i=0; i<m_vhwndExpand.size(); i++)
       {
          const int titleid = m_vproppane.ElementAt(i)->titlestringid;
          if (titleid != NULL)
          {
-            HWND hwndExpand = m_vhwndExpand.ElementAt(i);
+            HWND hwndExpand = m_vhwndExpand[i];
             RECT rc;
             GetWindowRect(hwndExpand, &rc);
             if ((rc.bottom - rc.top) > EXPANDOHEIGHT)
             {
-               const int prio = m_vproppriority.IndexOf(titleid);
+               const int prio = FindIndexOf(m_vproppriority, titleid);
                cnt++;
                if (prio != -1 && prio <= prioBest) //
                {
@@ -799,7 +799,7 @@ void SmartBrowser::RelayoutExpandos()
       if (indexBest != -1 && cnt > 1) //oldest  only the one we expanded
       {	
          RECT rc;
-         HWND hwndExpand = m_vhwndExpand.ElementAt(indexBest);
+         HWND hwndExpand = m_vhwndExpand[indexBest];
          GetWindowRect(hwndExpand, &rc);
          SendMessage(hwndExpand, EXPANDO_COLLAPSE, 0, 0);
          totalheight -= (rc.bottom - rc.top) - EXPANDOHEIGHT;
@@ -808,9 +808,9 @@ void SmartBrowser::RelayoutExpandos()
    }
 
    totalheight = 0;
-   for (int i=0; i<m_vhwndExpand.Size(); i++)
+   for (unsigned i=0; i<m_vhwndExpand.size(); i++)
    {
-      HWND hwndExpand = m_vhwndExpand.ElementAt(i);
+      HWND hwndExpand = m_vhwndExpand[i];
       SetWindowPos(hwndExpand, NULL, EXPANDO_X_OFFSET, totalheight + EXPANDO_Y_OFFSET, 0, 0, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOSIZE | SWP_NOCOPYBITS);
       RECT rc;
       GetWindowRect(hwndExpand, &rc);
@@ -822,8 +822,8 @@ void SmartBrowser::ResetPriority(int expandoid)
 {
    // base prioritys on the title of the property pane
    const int titleid = m_vproppane.ElementAt(expandoid)->titlestringid;	
-   m_vproppriority.RemoveElement(titleid); // Remove this element if it currently exists in our current priority chain
-   m_vproppriority.AddElement(titleid); // Add it back at the end (top) of the chain
+   RemoveFromVector(m_vproppriority, titleid); // Remove this element if it currently exists in our current priority chain
+   m_vproppriority.push_back(titleid); // Add it back at the end (top) of the chain
 }
 
 

@@ -170,16 +170,6 @@ public:
 		return true;
 		}
 
-	inline int LastIndexOf(const void * const pT) const
-		{
-		if (m_rg)
-			for (int i = m_cSize-1; i >= 0; --i)
-				if (m_rg[i] == pT)
-					return i;
-
-		return -1;
-		}
-
 	inline int IndexOf(const void * const pvItem) const
 		{
 		if (m_rg)
@@ -314,62 +304,6 @@ public:
         AddElement(new T(elem));
     }
 
-	};
-
-template<class T> class VectorInt : public VectorVoid
-	{
-public:
-	inline VectorInt() : VectorVoid() {}
-	inline VectorInt(const int cSize) : VectorVoid(cSize) {}
-
-	inline T ElementAt(const int iItem) const
-		{
-		return (T) (m_rg[iItem]);
-		}
-
-	inline int AddElement(const T item)
-		{
-		return VectorVoid::AddElement((void *)item);
-		}
-
-	inline int IndexOf(const int pvItem) const
-		{
-		if (m_rg)
-			for (int i=0; i<m_cSize; ++i)
-				if ((void *)pvItem == m_rg[i])
-					return i;
-
-		return -1;
-		}
-
-	inline void RemoveElement(const int pvItem)
-		{
-		if (!m_rg)
-			return;
-
-		const int i = IndexOf(pvItem);
-		if (i >= 0)
-			RemoveElementAt(i);
-		}
-	};
-
-typedef VectorVoid VectorPV;
-typedef VectorPV * PVectorPV;
-
-template<class T> 
-class VecClean : public Vector<T>
-	{
-public:
-	inline VecClean() {};
-	inline ~VecClean()
-		{
-		int cSize = m_cSize;
-		while (--cSize >= 0)
-			{
-			T * const pElem = ElementAt(cSize);
-			delete pElem;
-			}
-		}
 	};
 
 #endif

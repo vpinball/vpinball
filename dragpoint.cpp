@@ -308,8 +308,8 @@ void IHaveDragPoints::GetPointDialogPanes(Vector<PropertyPane> *pvproppane)
 
 void IHaveDragPoints::GetTextureCoords(const std::vector<RenderVertex> & vv, float **ppcoords)
 {
-   VectorInt<int> vitexpoints;
-   VectorInt<int> virenderpoints;
+   std::vector<int> vitexpoints;
+   std::vector<int> virenderpoints;
    bool m_fNoCoords = false;
 
    const int cpoints = (int)vv.size();
@@ -324,31 +324,31 @@ void IHaveDragPoints::GetTextureCoords(const std::vector<RenderVertex> & vv, flo
       {
          if (!m_vdpoint.ElementAt(icontrolpoint)->m_fAutoTexture)
          {
-            vitexpoints.AddElement(icontrolpoint);
-            virenderpoints.AddElement(i);
+            vitexpoints.push_back(icontrolpoint);
+            virenderpoints.push_back(i);
          }
          ++icontrolpoint;
       }
    }
 
-   if (vitexpoints.Size() == 0)
+   if (vitexpoints.size() == 0)
    {
       // Special case - no texture coordinates were specified
       // Make them up starting at point 0
-      vitexpoints.AddElement(0);
-      virenderpoints.AddElement(0);
+      vitexpoints.push_back(0);
+      virenderpoints.push_back(0);
 
       m_fNoCoords = true;
    }
 
    // Wrap the array around so we cover the last section
-   vitexpoints.AddElement(vitexpoints.ElementAt(0) + m_vdpoint.Size());
-   virenderpoints.AddElement(virenderpoints.ElementAt(0) + cpoints);
+   vitexpoints.push_back(vitexpoints[0] + m_vdpoint.size());
+   virenderpoints.push_back(virenderpoints[0] + cpoints);
 
-   for (int i=0; i<vitexpoints.Size()-1; ++i)
+   for (int i=0; i < (int)vitexpoints.size()-1; ++i)
    {
-      const int startrenderpoint = virenderpoints.ElementAt(i) % cpoints;
-      int endrenderpoint = virenderpoints.ElementAt((i < cpoints-1) ? (i+1) : 0) % cpoints;
+      const int startrenderpoint = virenderpoints[i] % cpoints;
+      int endrenderpoint = virenderpoints[(i < cpoints-1) ? (i+1) : 0] % cpoints;
 
       float starttexcoord;
       float endtexcoord;
@@ -359,8 +359,8 @@ void IHaveDragPoints::GetTextureCoords(const std::vector<RenderVertex> & vv, flo
       }
       else
       {
-         starttexcoord = m_vdpoint.ElementAt(vitexpoints.ElementAt(i) % m_vdpoint.Size())->m_texturecoord;
-         endtexcoord = m_vdpoint.ElementAt(vitexpoints.ElementAt(i+1) % m_vdpoint.Size())->m_texturecoord;
+         starttexcoord = m_vdpoint.ElementAt(vitexpoints[i] % m_vdpoint.Size())->m_texturecoord;
+         endtexcoord = m_vdpoint.ElementAt(vitexpoints[i+1] % m_vdpoint.Size())->m_texturecoord;
       }
 
       const float deltacoord = endtexcoord - starttexcoord;
