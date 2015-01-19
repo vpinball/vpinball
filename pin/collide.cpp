@@ -22,7 +22,7 @@ HitObject *CreateCircularHitPoly(const float x, const float y, const float z, co
 	}
 
 HitObject::HitObject() : m_fEnabled(fTrue), m_ObjType(eNull), m_pObj(NULL),
-                         m_elasticity(0.3f), m_friction(0.3f), m_scatter(0.0f),
+                         m_elasticity(0.3f), m_elasticityFalloff(0.0f), m_friction(0.3f), m_scatter(0.0f),
                          m_pfe(NULL), m_pfedebug(NULL)
 {
 }
@@ -312,7 +312,7 @@ float HitCircle::HitTestRadius(const Ball *pball, float dtime, CollisionEvent& c
 void LineSeg::Collide(CollisionEvent *coll)
 {
     const float dot = coll->hitnormal.x * coll->ball->m_vel.x + coll->hitnormal.y * coll->ball->m_vel.y;
-    coll->ball->Collide2DWall(coll->hitnormal, m_elasticity, m_friction /*0.3f*/, m_scatter);
+    coll->ball->Collide2DWall(coll->hitnormal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter);
 
     if (dot <= -m_threshold)
         FireHitEvent(coll->ball);
@@ -349,12 +349,12 @@ float HitCircle::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 
 void HitCircle::Collide(CollisionEvent *coll)
 {
-    coll->ball->Collide2DWall(coll->hitnormal, m_elasticity, m_friction /*0.3f*/, m_scatter);
+    coll->ball->Collide2DWall(coll->hitnormal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter);
 }
 
 void HitCircle::Contact(CollisionEvent& coll, float dtime)
 {
-    coll.ball->HandleStaticContact(coll.hitnormal, coll.hitvelocity.z, m_friction /*0.3f*/, dtime);
+    coll.ball->HandleStaticContact(coll.hitnormal, coll.hitvelocity.z, m_friction, dtime);
 }
 
 
@@ -448,7 +448,7 @@ void HitLineZ::CalcHitRect()
 void HitLineZ::Collide(CollisionEvent *coll)
 {
     const float dot = coll->hitnormal.Dot(coll->ball->m_vel);
-    coll->ball->Collide3DWall(coll->hitnormal, m_elasticity, m_friction /*0.3f*/, m_scatter);
+    coll->ball->Collide3DWall(coll->hitnormal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter);
 
     if (dot <= -m_threshold)
         FireHitEvent(coll->ball);
@@ -456,7 +456,7 @@ void HitLineZ::Collide(CollisionEvent *coll)
 
 void HitLineZ::Contact(CollisionEvent& coll, float dtime)
 {
-    coll.ball->HandleStaticContact(coll.hitnormal, coll.hitvelocity.z, m_friction /*0.3f*/, dtime);
+    coll.ball->HandleStaticContact(coll.hitnormal, coll.hitvelocity.z, m_friction, dtime);
 }
 
 
@@ -540,7 +540,7 @@ void HitPoint::CalcHitRect()
 void HitPoint::Collide(CollisionEvent *coll)
 {
     const float dot = coll->hitnormal.Dot(coll->ball->m_vel);
-    coll->ball->Collide3DWall(coll->hitnormal, m_elasticity, m_friction /*0.3f*/, m_scatter);
+    coll->ball->Collide3DWall(coll->hitnormal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter);
 
     if (dot <= -m_threshold)
         FireHitEvent(coll->ball);
@@ -548,7 +548,7 @@ void HitPoint::Collide(CollisionEvent *coll)
 
 void HitPoint::Contact(CollisionEvent& coll, float dtime)
 {
-    coll.ball->HandleStaticContact(coll.hitnormal, coll.hitvelocity.z, m_friction /*0.3f*/, dtime);
+    coll.ball->HandleStaticContact(coll.hitnormal, coll.hitvelocity.z, m_friction, dtime);
 }
 
 

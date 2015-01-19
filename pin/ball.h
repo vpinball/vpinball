@@ -36,10 +36,10 @@ public:
     virtual AnimObject *GetAnimObject() { return &m_ballanim; }
 
     //semi-generic collide methods
-    void Collide2DWall(const Vertex3Ds& hitNormal, const float elasticity, float friction, float scatter_angle)
-    { Collide3DWall( Vertex3Ds(hitNormal.x, hitNormal.y, 0), elasticity, friction, scatter_angle); }
+    void Collide2DWall(const Vertex3Ds& hitNormal, float elasticity, float elastFalloff, float friction, float scatter_angle)
+    { Collide3DWall( Vertex3Ds(hitNormal.x, hitNormal.y, 0), elasticity, elastFalloff, friction, scatter_angle); }
 
-    void Collide3DWall(const Vertex3Ds& hitNormal, const float elasticity, float friction, float scatter_angle);
+    void Collide3DWall(const Vertex3Ds& hitNormal, float elasticity, float elastFalloff, float friction, float scatter_angle);
 
     void ApplyFriction(const Vertex3Ds& hitnormal, const float dtime, const float fricCoeff);
     void HandleStaticContact(const Vertex3Ds& normal, const float origNormVel, const float friction, const float dtime);
