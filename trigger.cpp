@@ -272,13 +272,10 @@ void Trigger::PreRender(Sur * const psur)
 
        psur->SetFillColor(m_ptable->RenderSolid() ? RGB(200,220,200) : -1);
 
-       Vector<RenderVertex> vvertex;
+       std::vector<RenderVertex> vvertex;
        GetRgVertex(vvertex);
 
        psur->Polygon(vvertex);
-
-       for (int i=0;i<vvertex.size();i++)
-           delete vvertex.ElementAt(i);
    }
    else
    {
@@ -295,16 +292,13 @@ void Trigger::Render(Sur * const psur)
 
    if ( m_d.m_shape != TriggerStar )
    {
-       Vector<RenderVertex> vvertex;
+       std::vector<RenderVertex> vvertex;
        GetRgVertex(vvertex);
 
        psur->SetObject(NULL);
        psur->SetBorderColor(RGB(0,180,0),false,1);
 
        psur->Polygon(vvertex);
-
-       for (int i=0;i<vvertex.size();i++)
-           delete vvertex.ElementAt(i);
 
 
        bool fDrawDragpoints = (m_selectstate != eNotSelected) || (g_pvp->m_fAlwaysDrawDragPoints);		//>>> added by chris

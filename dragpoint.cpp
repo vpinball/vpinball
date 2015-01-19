@@ -237,16 +237,14 @@ void IHaveDragPoints::ReverseOrder()
    m_vdpoint.ElementAt(m_vdpoint.Size()-1)->m_fSlingshot = fSlingshotTemp;
 }
 
-template <class VtxContType>
-void IHaveDragPoints::GetRgVertex(VtxContType & vv, bool loop, float accuracy)
+void IHaveDragPoints::GetRgVertex(std::vector<RenderVertex> & vv, bool loop, float accuracy)
 {
-   typedef VtxContType::value_type VtxType;
-   static const int Dim = VtxType::Dim;
+   static const int Dim = RenderVertex::Dim;    // for now, this is always 2
 
    const int cpoint = m_vdpoint.Size();
    const int endpoint = loop ? cpoint : cpoint-1;
 
-   VtxType rendv2;
+   RenderVertex rendv2;
 
    for (int i=0; i<endpoint; i++)
    {
@@ -273,7 +271,7 @@ void IHaveDragPoints::GetRgVertex(VtxContType & vv, bool loop, float accuracy)
       CatmullCurve<Dim> cc;
       cc.SetCurve(pdp0->m_v, pdp1->m_v, pdp2->m_v, pdp3->m_v);
 
-      VtxType rendv1;
+      RenderVertex rendv1;
 
       rendv1.x = pdp1->m_v.x;
       rendv1.y = pdp1->m_v.y;
@@ -297,10 +295,6 @@ void IHaveDragPoints::GetRgVertex(VtxContType & vv, bool loop, float accuracy)
       vv.push_back(rendv2);
    }
 }
-
-// instantiate template function
-template void IHaveDragPoints::GetRgVertex<Vector<RenderVertex> >(Vector<RenderVertex> & vv, bool loop, float accuracy);
-template void IHaveDragPoints::GetRgVertex<std::vector<RenderVertex> >(std::vector<RenderVertex> & vv, bool loop, float accuracy);
 
 
 void IHaveDragPoints::GetPointDialogPanes(Vector<PropertyPane> *pvproppane)

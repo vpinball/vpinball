@@ -203,7 +203,7 @@ void Flasher::PreRender(Sur * const psur)
    // Don't want border color to be over-ridden when selected - that will be drawn later
    psur->SetBorderColor(-1,false,0);
 
-   Vector<RenderVertex> vvertex;
+   std::vector<RenderVertex> vvertex;
    GetRgVertex(vvertex);
    Texture *ppi;
    if (m_ptable->RenderSolid() && m_d.m_fDisplayTexture && (ppi = m_ptable->GetImage(m_d.m_szImageA)))
@@ -215,7 +215,7 @@ void Flasher::PreRender(Sur * const psur)
          float _miny=FLT_MAX;
          float _maxx=-FLT_MAX;
          float _maxy=-FLT_MAX;
-         for( int i=0;i<vvertex.size();i++ )
+         for (unsigned i=0; i<vvertex.size(); i++)
          {
             if (vvertex[i].x < _minx) _minx=vvertex[i].x;
             if (vvertex[i].x > _maxx) _maxx=vvertex[i].x;
@@ -237,9 +237,6 @@ void Flasher::PreRender(Sur * const psur)
    }
    else
       psur->Polygon(vvertex);
-
-   for (int i=0;i<vvertex.Size();i++) //!! keep for render()
-      delete vvertex.ElementAt(i);
 }
 
 void Flasher::Render(Sur * const psur)
@@ -249,13 +246,11 @@ void Flasher::Render(Sur * const psur)
    psur->SetObject(this); // For selected formatting
    psur->SetObject(NULL);
 
-   Vector<RenderVertex> vvertex; //!! check/reuse from prerender
-   GetRgVertex(vvertex);
-
-   psur->Polygon(vvertex);
-
-   for (int i=0;i<vvertex.Size();i++)
-      delete vvertex.ElementAt(i);
+   {
+       std::vector<RenderVertex> vvertex; //!! check/reuse from prerender
+       GetRgVertex(vvertex);
+       psur->Polygon(vvertex);
+   }
 
    // if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
    bool fDrawDragpoints = ( (m_selectstate != eNotSelected) || g_pvp->m_fAlwaysDrawDragPoints );

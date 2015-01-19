@@ -44,8 +44,7 @@ public:
     friend class DragPoint;
 
 protected:
-    template <class VtxContType>
-    void GetRgVertex(VtxContType & vv, bool loop=true, float accuracy=1.0f/(0.5f*0.5f));
+    void GetRgVertex(std::vector<RenderVertex> & vv, bool loop=true, float accuracy=1.0f/(0.5f*0.5f));
 
 	Vector< CComObject<DragPoint> > m_vdpoint;
 };

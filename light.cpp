@@ -269,14 +269,11 @@ void Light::PreRender(Sur * const psur)
    {
    default:
    case ShapeCustom:
-       Vector<RenderVertex> vvertex;
+       std::vector<RenderVertex> vvertex;
        GetRgVertex(vvertex);
 
        // Check if we should display the image in the editor.
        psur->Polygon(vvertex);
-
-       for (int i=0;i<vvertex.Size();i++)
-           delete vvertex.ElementAt(i);
 
        break;
    }
@@ -340,7 +337,7 @@ void Light::RenderOutline(Sur * const psur)
 
    case ShapeCustom: 
        {
-          Vector<RenderVertex> vvertex;
+          std::vector<RenderVertex> vvertex;
           GetRgVertex(vvertex);
           if (m_selectstate != eNotSelected)  
           {
@@ -349,9 +346,6 @@ void Light::RenderOutline(Sur * const psur)
               psur->SetBorderColor(RGB(0,0,0),false,0);
           }
           psur->Polygon(vvertex);
-
-          for (int i=0;i<vvertex.Size();i++)
-             delete vvertex.ElementAt(i);
 
           psur->SetObject((ISelect *)&m_lightcenter);
           break;
