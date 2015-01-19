@@ -334,7 +334,8 @@ Variables
 *X(float)
 *Y(float)
 *Shape(Shape) - 0=Circle, 1=Custom
-*Radius(float)
+Falloff(float)
+FalloffPower(float)
 State(LightState) - 0=Off, 1=On, 2=Blinking
 *Color(OLE_COLOR)
 Intensity(float) - sets the lights brightness/emission scale
@@ -572,6 +573,7 @@ Color - defines the color of the element in the editor. If you don't want to col
 Visible(bool) - shows/hides the flasher
 AddBlend(bool) - use additive alpha blending instead of classical alpha blending
 ImageAlignment
+ModulateVsAdd(float) - blends between modulating and additive when bulb is enabled (0..1)
 
 BALL
 ==============================================================================================================================================

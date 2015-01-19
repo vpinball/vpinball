@@ -208,9 +208,9 @@ void Light::SetDefaults(bool fromMouseClick)
 
    hr = GetRegStringAsFloat("DefaultProps\\Light","BulbModulateVsAdd", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
-       m_d.m_bulb_modulate_vs_add = fTmp;
+       m_d.m_modulate_vs_add = fTmp;
    else
-       m_d.m_bulb_modulate_vs_add = 0.9f;
+       m_d.m_modulate_vs_add = 0.9f;
 
    hr = GetRegStringAsFloat("DefaultProps\\Light","BulbHaloHeight", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
@@ -237,7 +237,7 @@ void Light::WriteRegDefaults()
    SetRegValueBool("DefaultProps\\Light","Bulb", m_d.m_BulbLight);
    SetRegValueBool("DefaultProps\\Light","ShowBulbMesh", m_d.m_showBulbMesh);
    SetRegValueFloat("DefaultProps\\Light","ScaleBulbMesh", m_d.m_meshRadius);
-   SetRegValueFloat("DefaultProps\\Light","BulbModulateVsAdd", m_d.m_bulb_modulate_vs_add);
+   SetRegValueFloat("DefaultProps\\Light","BulbModulateVsAdd", m_d.m_modulate_vs_add);
    SetRegValueFloat("DefaultProps\\Light","BulbHaloHeight", m_d.m_bulbHaloHeight);
 }
 
@@ -571,7 +571,7 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
     }
     else
 	{
-		pd3dDevice->basicShader->Core()->SetFloat("bulb_modulate_vs_add",m_d.m_bulb_modulate_vs_add);
+		pd3dDevice->basicShader->Core()->SetFloat("blend_modulate_vs_add",m_d.m_modulate_vs_add);
         pd3dDevice->basicShader->SetTechnique("bulb_light");
 	}
 
@@ -822,7 +822,7 @@ HRESULT Light::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptke
    bw.WriteBool(FID(BULT), m_d.m_BulbLight);
    bw.WriteBool(FID(SHBM), m_d.m_showBulbMesh);
    bw.WriteFloat(FID(BMSC), m_d.m_meshRadius);
-   bw.WriteFloat(FID(BMVA), m_d.m_bulb_modulate_vs_add);
+   bw.WriteFloat(FID(BMVA), m_d.m_modulate_vs_add);
    bw.WriteFloat(FID(BHHI), m_d.m_bulbHaloHeight);
 
    ISelect::SaveData(pstm, hcrypthash, hcryptkey);
@@ -960,7 +960,7 @@ BOOL Light::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(BMVA))
    {
-      pbr->GetFloat(&m_d.m_bulb_modulate_vs_add);
+       pbr->GetFloat(&m_d.m_modulate_vs_add);
    }
    else if (id == FID(BHHI))
    {
@@ -1111,14 +1111,14 @@ STDMETHODIMP Light::put_Falloff(float newVal)
    return S_OK;
 }
 
-STDMETHODIMP Light::get_Falloff_Power(float *pVal)
+STDMETHODIMP Light::get_FalloffPower(float *pVal)
 {
    *pVal = m_d.m_falloff_power;
 
    return S_OK;
 }
 
-STDMETHODIMP Light::put_Falloff_Power(float newVal)
+STDMETHODIMP Light::put_FalloffPower(float newVal)
 {
    STARTUNDO
 
@@ -1479,7 +1479,7 @@ STDMETHODIMP Light::put_ScaleBulbMesh(float newVal)
 
 STDMETHODIMP Light::get_BulbModulateVsAdd(float *pVal)
 {
-    *pVal = m_d.m_bulb_modulate_vs_add;
+    *pVal = m_d.m_modulate_vs_add;
 
     return S_OK;
 }
@@ -1488,7 +1488,7 @@ STDMETHODIMP Light::put_BulbModulateVsAdd(float newVal)
 {
     STARTUNDO
 
-    m_d.m_bulb_modulate_vs_add = newVal;
+    m_d.m_modulate_vs_add = newVal;
 
     STOPUNDO
 

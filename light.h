@@ -18,7 +18,7 @@ public:
     float m_fadeSpeed;
 	U32 m_time_msec;
     float m_currentIntensity;
-	float m_bulb_modulate_vs_add;
+	float m_modulate_vs_add;
     float m_meshRadius;
     float m_meshIntensity;
     //float m_meshFadeSpeed;
@@ -212,8 +212,8 @@ public:
 	STDMETHOD(put_State)(/*[in]*/ LightState newVal);
 	STDMETHOD(get_Falloff)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Falloff)(/*[in]*/ float newVal);
-	STDMETHOD(get_Falloff_Power)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_Falloff_Power)(/*[in]*/ float newVal);
+	STDMETHOD(get_FalloffPower)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_FalloffPower)(/*[in]*/ float newVal);
 	STDMETHOD(get_OffImage)(/*[out, retval]*/ BSTR *pVal);
 	STDMETHOD(put_OffImage)(/*[in]*/ BSTR newVal);
    STDMETHOD(get_DepthBias)(/*[out, retval]*/ float *pVal);

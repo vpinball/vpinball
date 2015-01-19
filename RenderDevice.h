@@ -330,7 +330,9 @@ public:
 private:
     ID3DXEffect* m_shader;
     RenderDevice *m_renderDevice;
-    Texture *currentTexture;
+    
+	// caches:
+	Texture *currentTexture;
     bool    currentAlphaTest;
     float   currentAlphaTestValue;
     float   currentAlphaValue;

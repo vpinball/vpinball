@@ -15,7 +15,7 @@ float  fAlphaTestValue = 128.0f/255.0f;
 
 float2 fb_inv_resolution_05;
 
-float bulb_modulate_vs_add;
+float blend_modulate_vs_add;
 
 sampler2D texSampler3 : TEXUNIT2 = sampler_state // AO
 {
@@ -49,7 +49,7 @@ sampler2D texSampler5 : TEXUNIT0 = sampler_state // Framebuffer tex (filtered)
 
 //
 
-//function output structures 
+// vertex shader output structures 
 struct VS_OUTPUT 
 { 
    float4 pos           : POSITION; 
@@ -61,6 +61,10 @@ struct VS_OUTPUT
 #include "FXAAStereoAO.fxh"
 
 //------------------------------------
+
+//
+// Standard Materials
+//
 
 VS_OUTPUT vs_main (float4 vPosition  : POSITION0,  
                    float3 vNormal    : NORMAL0,  
@@ -133,7 +137,10 @@ float4 ps_main_texture(in VS_OUTPUT IN) : COLOR
    return result;
 }
 
-// ****** simple shader for rendering without lighting *******
+//
+// Flasher
+//
+
 float  fAlpha=1.0f;
 float  fFilterAmount=1.0f;
 bool   bMultiply=false;
@@ -168,6 +175,9 @@ float4 ps_main_textureOne_noLight( in VS_SIMPLE_OUTPUT IN) : COLOR
    float4 result;
    result.xyz = staticColor*InvGamma(pixel.xyz);
    result.a = pixel.a*fAlpha;
+
+   result.xyz = result.xyz*(-blend_modulate_vs_add*result.a); // negative as it will be blended with '1.0-thisvalue' (the 1.0 is needed to modulate the underlying elements correctly, but not wanted for the term below)
+   result.a = 1.0f/blend_modulate_vs_add - 1.0f;
    return result;
 }
 
@@ -194,20 +204,28 @@ float4 ps_main_textureAB_noLight( in VS_SIMPLE_OUTPUT IN) : COLOR
       result *= Screen(pixel1,pixel2, fFilterAmount);
       
    result.a *= fAlpha;
+
+   result.xyz = result.xyz*(-blend_modulate_vs_add*result.a); // negative as it will be blended with '1.0-thisvalue' (the 1.0 is needed to modulate the underlying elements correctly, but not wanted for the term below)
+   result.a = 1.0f/blend_modulate_vs_add - 1.0f;
    return result;
 }
 
 float4 ps_main_noLight( in VS_SIMPLE_OUTPUT IN) : COLOR
 {
-   return float4(staticColor, 1.f);
+	float4 result;
+	result.xyz = staticColor*(-blend_modulate_vs_add*fAlpha); // negative as it will be blended with '1.0-thisvalue' (the 1.0 is needed to modulate the underlying elements correctly, but not wanted for the term below)
+	result.a = 1.0f/blend_modulate_vs_add - 1.0f;
+	return result;
 }
 
-//####### Light shader ##################
+//------------------------------------------
+// Light (Bulb/Shapes)
+
 float3   lightColor = float3(1.f,1.f,1.f);
 float4   lightCenter;
 float    maxRange;
-float    intensity=1.0f;
-float    falloff_power=2.0f;
+float    intensity = 1.0f;
+float    falloff_power = 2.0f;
 
 struct VS_LIGHT_OUTPUT 
 { 
@@ -311,40 +329,43 @@ float4 PS_BulbLight( in VS_LIGHT_OUTPUT IN ) : COLOR
     float atten = pow(1.0f-saturate(len), falloff_power);
 	float3 lcolor = lerp(float3(1.0f,1.0f,1.0f), lightColor, sqrt(len));
 	float4 result;
-	result.xyz = lcolor*(-bulb_modulate_vs_add*atten*intensity); // negative as it will be blended with '1.0-thisvalue' (the 1.0 is needed to modulate the underlying elements correctly, but not wanted for the term below)
-	result.a = 1.0f/bulb_modulate_vs_add - 1.0f; //saturate(atten*intensity);
+	result.xyz = lcolor*(-blend_modulate_vs_add*atten*intensity); // negative as it will be blended with '1.0-thisvalue' (the 1.0 is needed to modulate the underlying elements correctly, but not wanted for the term below)
+	result.a = 1.0f/blend_modulate_vs_add - 1.0f; //saturate(atten*intensity);
 	return result;
 }
 
 
 //------------------------------------------
 // Kicker boolean vertex shader
+
 VS_OUTPUT vs_kicker (float4 vPosition  : POSITION0,  
                      float3 vNormal    : NORMAL0,  
                      float2 tc         : TEXCOORD0, 
                      float2 tc2        : TEXCOORD1) 
 { 
-   VS_OUTPUT Out;
-   float3 P = mul(vPosition, matWorldView).xyz;
-   float4 P2 = vPosition;
-   float3 N = normalize(mul(float4(vNormal,0.0f), matWorldViewInverseTranspose).xyz);
+    VS_OUTPUT Out;
+    float3 P = mul(vPosition, matWorldView).xyz;
+    float4 P2 = vPosition;
+    float3 N = normalize(mul(float4(vNormal,0.0f), matWorldViewInverseTranspose).xyz);
 
-   Out.pos = mul(vPosition, matWorldViewProj);
-   P2.z -= 100.0f;
-   P2 = mul(P2, matWorldViewProj);
-   Out.pos.z = P2.z;
-   Out.tex0 = tc;
-   Out.worldPos = P;
-   Out.normal = N;
+    Out.pos = mul(vPosition, matWorldViewProj);
+    P2.z -= 100.0f;
+    P2 = mul(P2, matWorldViewProj);
+    Out.pos.z = P2.z;
+    Out.tex0 = tc;
+    Out.worldPos = P;
+    Out.normal = N;
    
-   return Out; 
+    return Out; 
 }
 
+//
+// Framebuffer
 //
 
 float4 ps_main_fb_tonemap( in VS_OUTPUT IN) : COLOR
 {
-   return float4(FBColorGrade(FBGamma(FBToneMap(tex2D(texSampler5, IN.tex0).xyz))), 1.0f);
+    return float4(FBColorGrade(FBGamma(FBToneMap(tex2D(texSampler5, IN.tex0).xyz))), 1.0f);
 }
 
 float4 ps_main_fb_tonemap_AO( in VS_OUTPUT IN) : COLOR
@@ -365,7 +386,7 @@ float4 ps_main_fb_tonemap_AO( in VS_OUTPUT IN) : COLOR
 
 float4 ps_main_fb_tonemap_no_filter( in VS_OUTPUT IN) : COLOR
 {
-   return float4(FBColorGrade(FBGamma(FBToneMap(tex2D(texSampler4, IN.tex0+fb_inv_resolution_05).xyz))), 1.0f);
+    return float4(FBColorGrade(FBGamma(FBToneMap(tex2D(texSampler4, IN.tex0+fb_inv_resolution_05).xyz))), 1.0f);
 }
 
 float4 ps_main_fb_tonemap_AO_no_filter( in VS_OUTPUT IN) : COLOR
@@ -386,6 +407,11 @@ float4 ps_main_fb_tonemap_AO_no_filter( in VS_OUTPUT IN) : COLOR
 
 //------------------------------------
 // Techniques
+//
+
+//
+// Standard Materials
+//
 
 technique basic_without_texture
 { 
@@ -405,12 +431,21 @@ technique basic_with_texture
    } 
 }
 
+//
+// Flasher
+//
+
 technique basic_with_textureOne_noLight
 { 
    pass P0 
    { 
       VertexShader = compile vs_3_0 vs_simple_main(); 
 	  PixelShader = compile ps_3_0 ps_main_textureOne_noLight();
+		SrcBlend=SRCALPHA;     // add the lightcontribution
+		DestBlend=INVSRCCOLOR; // but also modulate the light first with the underlying elements by (1+lightcontribution, e.g. a very crude approximation of real lighting)
+		AlphaTestEnable=false;
+		AlphaBlendEnable=true;
+		BlendOp=RevSubtract;   // see above
    } 
 }
 
@@ -420,16 +455,31 @@ technique basic_with_textureAB_noLight
    { 
       VertexShader = compile vs_3_0 vs_simple_main(); 
 	  PixelShader = compile ps_3_0 ps_main_textureAB_noLight();
+		SrcBlend=SRCALPHA;     // add the lightcontribution
+		DestBlend=INVSRCCOLOR; // but also modulate the light first with the underlying elements by (1+lightcontribution, e.g. a very crude approximation of real lighting)
+		AlphaTestEnable=false;
+		AlphaBlendEnable=true;
+		BlendOp=RevSubtract;   // see above
    } 
 }
+
 technique basic_with_noLight
 { 
    pass P0 
    { 
       VertexShader = compile vs_3_0 vs_simple_main(); 
 	  PixelShader = compile ps_3_0 ps_main_noLight();
+		SrcBlend=SRCALPHA;     // add the lightcontribution
+		DestBlend=INVSRCCOLOR; // but also modulate the light first with the underlying elements by (1+lightcontribution, e.g. a very crude approximation of real lighting)
+		AlphaTestEnable=false;
+		AlphaBlendEnable=true;
+		BlendOp=RevSubtract;   // see above
    } 
 }
+
+//
+// Light (Bulb/Shapes)
+//
 
 technique light_with_texture
 { 
@@ -463,16 +513,22 @@ technique bulb_light
    } 
 }
 
+//
+// Kicker
+//
+
 technique kickerBoolean
 { 
    pass P0 
    { 
-     //ZWriteEnable=TRUE;
-     VertexShader = compile vs_3_0 vs_kicker(); 
+      //ZWriteEnable=TRUE;
+      VertexShader = compile vs_3_0 vs_kicker(); 
 	  PixelShader = compile ps_3_0 ps_main();
    } 
 }
 
+//
+// Framebuffer related
 //
 
 technique AO
