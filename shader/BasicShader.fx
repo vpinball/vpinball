@@ -296,10 +296,10 @@ float4 PS_LightWithTexel(in VS_LIGHT_OUTPUT IN ) : COLOR
 
 float4 PS_LightWithoutTexel(in VS_LIGHT_OUTPUT IN ) : COLOR
 {	
-    float3 diffuse  = cBase;
+    float3 diffuse  = lightColor;
     float3 glossy   = bIsMetal ? cBase : cGlossy*0.08f;
     float3 specular = cClearcoat*0.08f;
-	float edge = bIsMetal ? 1.0f : fEdge;
+	 float edge = bIsMetal ? 1.0f : fEdge;
     float4 result = float4(0.0f, 0.0f, 0.0f, 0.0f);
 
     if (intensity != 0.0f)
@@ -310,7 +310,6 @@ float4 PS_LightWithoutTexel(in VS_LIGHT_OUTPUT IN ) : COLOR
         result.xyz = lcolor*(atten*intensity);
         result.a = saturate(atten*intensity);
     }
-    
 	float4 color;
 	// early out if no normal set (e.g. HUD vertices)
     if(IN.normal.x == 0.0f && IN.normal.y == 0.0f && IN.normal.z == 0.0f)
