@@ -145,6 +145,12 @@ void Flasher::SetDefaults(bool fromMouseClick)
    else
        m_d.m_fAlpha = 100;
 
+   hr = GetRegInt("DefaultProps\\Flasher","ModulateVsAdd", &iTmp);
+   if ((hr == S_OK) && fromMouseClick)
+       m_d.m_modulate_vs_add = iTmp;
+   else
+       m_d.m_modulate_vs_add = 0.9f;
+
    hr = GetRegInt("DefaultProps\\Flasher","FilterAmount", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
        m_d.m_fFilterAmount = iTmp;
@@ -185,6 +191,7 @@ void Flasher::WriteRegDefaults()
    SetRegValue("DefaultProps\\Flasher","ImageA", REG_SZ, &m_d.m_szImageA, lstrlen(m_d.m_szImageA));
    SetRegValue("DefaultProps\\Flasher","ImageB", REG_SZ, &m_d.m_szImageB, lstrlen(m_d.m_szImageB));
    SetRegValueInt("DefaultProps\\Flasher","Alpha",m_d.m_fAlpha);
+   SetRegValueFloat("DefaultProps\\Flasher","ModulateVsAdd",m_d.m_modulate_vs_add);
    SetRegValueBool("DefaultProps\\Flasher","Visible",m_d.m_IsVisible);
    SetRegValueBool("DefaultProps\\Flasher","DisplayTexture",m_d.m_fDisplayTexture);
    SetRegValueBool("DefaultProps\\Flasher","AddBlend",m_d.m_fAddBlend);
@@ -596,6 +603,7 @@ HRESULT Flasher::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
    bw.WriteString(FID(IMAG), m_d.m_szImageA);
    bw.WriteString(FID(IMAB), m_d.m_szImageB);
    bw.WriteInt(FID(FALP), m_d.m_fAlpha);
+   bw.WriteFloat(FID(MOVA), m_d.m_modulate_vs_add);
    bw.WriteBool(FID(FVIS), m_d.m_IsVisible);
    bw.WriteBool(FID(DSPT), m_d.m_fDisplayTexture);
    bw.WriteBool(FID(ADDB), m_d.m_fAddBlend);
@@ -688,6 +696,10 @@ BOOL Flasher::LoadToken(int id, BiffReader *pbr)
       //if( iTmp>100 ) iTmp=100;
       if( iTmp<0 ) iTmp=0;
       m_d.m_fAlpha = iTmp;
+   }
+   else if (id == FID(MOVA))
+   {
+      pbr->GetFloat(&m_d.m_modulate_vs_add);
    }
    else if (id == FID(NAME))
    {
@@ -1089,6 +1101,23 @@ STDMETHODIMP Flasher::put_Opacity(long newVal)
    return S_OK;
 }
 
+STDMETHODIMP Flasher::get_ModulateVsAdd(float *pVal)
+{
+   *pVal = m_d.m_modulate_vs_add;
+   return S_OK;
+}
+
+STDMETHODIMP Flasher::put_ModulateVsAdd(float newVal)
+{
+   STARTUNDO
+
+   m_d.m_modulate_vs_add = newVal;
+   
+   STOPUNDO
+
+   return S_OK;
+}
+
 STDMETHODIMP Flasher::get_Amount(long *pVal)
 {
     *pVal = m_d.m_fFilterAmount;
@@ -1227,23 +1256,20 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
       Texture * const pinA = m_ptable->GetImage(m_d.m_szImageA);
       Texture * const pinB = m_ptable->GetImage(m_d.m_szImageB);
 
-      const D3DXVECTOR4 color = COLORREF_to_D3DXVECTOR4(m_d.m_color);
       //pd3dDevice->basicShader->Core()->SetFloat("fAlpha",(float)m_d.m_fAlpha/100.0f);
       pd3dDevice->basicShader->SetAlphaValue((float)m_d.m_fAlpha / 100.0f);
       pd3dDevice->basicShader->Core()->SetFloat("fFilterAmount",(float)m_d.m_fFilterAmount/100.0f);
+	  pd3dDevice->basicShader->Core()->SetFloat("blend_modulate_vs_add",m_d.m_modulate_vs_add);
+      const D3DXVECTOR4 color = COLORREF_to_D3DXVECTOR4(m_d.m_color);
       pd3dDevice->basicShader->SetStaticColor(color);
       pd3dDevice->basicShader->PerformAlphaTest(true);
       pd3dDevice->basicShader->SetAlphaTestValue(1.0f / 255.0f);
-      if (m_d.m_filter == Filter_Additive)
-         pd3dDevice->basicShader->Core()->SetBool("bAdditive", true);
-      else if( m_d.m_filter == Filter_Overlay )
-         pd3dDevice->basicShader->Core()->SetBool("bOverlay", true);
-      else if( m_d.m_filter == Filter_Multiply )
-         pd3dDevice->basicShader->Core()->SetBool("bMultiply", true);
-      else if( m_d.m_filter == Filter_Screen )
-         pd3dDevice->basicShader->Core()->SetBool("bScreen", true);
+      pd3dDevice->basicShader->Core()->SetBool("bAdditive", (m_d.m_filter == Filter_Additive));
+      pd3dDevice->basicShader->Core()->SetBool("bOverlay", (m_d.m_filter == Filter_Overlay));
+      pd3dDevice->basicShader->Core()->SetBool("bMultiply", (m_d.m_filter == Filter_Multiply));
+      pd3dDevice->basicShader->Core()->SetBool("bScreen", (m_d.m_filter == Filter_Screen));
 
-      if (pinA && !pinB)
+	  if (pinA && !pinB)
       {
          pd3dDevice->basicShader->SetTexture("Texture0", pinA);
          pd3dDevice->basicShader->SetTechnique("basic_with_textureOne_noLight");
