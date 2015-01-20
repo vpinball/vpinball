@@ -16,6 +16,7 @@ public:
 	int m_thickness;
 	char m_szImage[MAXTOKEN];
 	float m_elasticity;
+	float m_elasticityFalloff;
 	float m_friction;
 	float m_scatter;
    float m_depthBias;      // for determining depth sorting
@@ -177,6 +178,8 @@ public:
 
     STDMETHOD(get_Elasticity)(/*[out, retval]*/ float *pVal);
     STDMETHOD(put_Elasticity)(/*[in]*/ float newVal);
+    STDMETHOD(get_ElasticityFalloff)(/*[out, retval]*/ float *pVal);
+    STDMETHOD(put_ElasticityFalloff)(/*[in]*/ float newVal);
 	STDMETHOD(get_Friction)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Friction)(/*[in]*/ float newVal);
     STDMETHOD(get_Scatter)(/*[out, retval]*/ float *pVal);
