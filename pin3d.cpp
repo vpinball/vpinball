@@ -284,9 +284,11 @@ void Pin3D::DrawBackground()
 		m_pd3dDevice->Clear( 0, NULL, D3DCLEAR_ZBUFFER, 0, 1.0f, 0L );
 
 		m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
+	    m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, FALSE);
 
 		g_pplayer->Spritedraw(0.f,0.f,1.f,1.f,0xFFFFFFFF,pin);
 
+	    m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, TRUE);
 		m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
 	}
 	else
