@@ -422,7 +422,7 @@ void Pin3D::InitPlayfieldGraphics()
     rgv[6].x=g_pplayer->m_ptable->m_right;    rgv[6].y=g_pplayer->m_ptable->m_bottom;   rgv[6].z=g_pplayer->m_ptable->m_tableheight+50.0f;
     //rgv[7].x=g_pplayer->m_ptable->m_right;    rgv[7].y=g_pplayer->m_ptable->m_top;      rgv[7].z=50.0f;
 
-    m_pd3dDevice->SetVertexDeclaration( m_pd3dDevice->m_pVertexNormalTexelTexelDeclaration );
+    m_pd3dDevice->SetVertexDeclaration( m_pd3dDevice->m_pVertexNormalTexelDeclaration );
 
     for (int i=0; i<4; ++i)
     {

@@ -575,7 +575,7 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
         pd3dDevice->basicShader->SetTechnique("bulb_light");
 	}
 
-	pd3dDevice->SetVertexDeclaration(pd3dDevice->m_pVertexNormalTexelTexelDeclaration);
+	pd3dDevice->SetVertexDeclaration(pd3dDevice->m_pVertexNormalTexelDeclaration);
 
     pd3dDevice->basicShader->Begin(0);
     pd3dDevice->DrawPrimitiveVB(D3DPT_TRIANGLELIST, customMoverVBuffer, 0, customMoverVertexNum);

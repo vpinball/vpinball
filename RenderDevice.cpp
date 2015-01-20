@@ -25,7 +25,7 @@ const VertexElement VertexNormalTexelElement[] =
 };
 VertexDeclaration* RenderDevice::m_pVertexNormalTexelDeclaration	= NULL;
 
-const VertexElement VertexNormalTexelTexelElement[] = 
+/*const VertexElement VertexNormalTexelTexelElement[] = 
 {
    { 0, 0  * sizeof(float),D3DDECLTYPE_FLOAT3,   D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },  // pos
    { 0, 3  * sizeof(float),D3DDECLTYPE_FLOAT3,   D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL,   0 },  // normal
@@ -34,7 +34,7 @@ const VertexElement VertexNormalTexelTexelElement[] =
    D3DDECL_END()
 };
 
-VertexDeclaration* RenderDevice::m_pVertexNormalTexelTexelDeclaration = NULL;
+VertexDeclaration* RenderDevice::m_pVertexNormalTexelTexelDeclaration = NULL;*/
 
 static unsigned int fvfToSize(DWORD fvf)
 {
@@ -381,7 +381,7 @@ RenderDevice::RenderDevice(HWND hwnd, int width, int height, bool fullscreen, in
     // create default vertex declarations for shaders
     CreateVertexDeclaration( VertexTexelElement, &m_pVertexTexelDeclaration );
     CreateVertexDeclaration( VertexNormalTexelElement, &m_pVertexNormalTexelDeclaration );
-    CreateVertexDeclaration( VertexNormalTexelTexelElement, &m_pVertexNormalTexelTexelDeclaration );
+    //CreateVertexDeclaration( VertexNormalTexelTexelElement, &m_pVertexNormalTexelTexelDeclaration );
 }
 
 #ifdef _DEBUG
@@ -439,7 +439,7 @@ RenderDevice::~RenderDevice()
 
     SAFE_RELEASE(m_pVertexTexelDeclaration);
     SAFE_RELEASE(m_pVertexNormalTexelDeclaration);
-    SAFE_RELEASE(m_pVertexNormalTexelTexelDeclaration);
+    //SAFE_RELEASE(m_pVertexNormalTexelTexelDeclaration);
 
     m_texMan.UnloadAll();
 

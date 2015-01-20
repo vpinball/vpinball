@@ -36,7 +36,7 @@ VS_OUTPUT vs_main (float4 vPosition  : POSITION0,
 { 
    VS_OUTPUT Out;
 
-   Out.pos = vPosition;
+   Out.pos = float4(vPosition.xy,0.0f,1.0f);
    Out.tex0 = tc;
    
    return Out; 

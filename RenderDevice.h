@@ -299,7 +299,7 @@ public:
 
    static VertexDeclaration* m_pVertexTexelDeclaration;
    static VertexDeclaration* m_pVertexNormalTexelDeclaration;
-   static VertexDeclaration* m_pVertexNormalTexelTexelDeclaration;
+   //static VertexDeclaration* m_pVertexNormalTexelTexelDeclaration;
 };
 
 class Shader 
