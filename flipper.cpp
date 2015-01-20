@@ -549,7 +549,7 @@ void Flipper::PostRenderStatic(RenderDevice* pd3dDevice)
     if (m_phitflipper == NULL && !m_d.m_fVisible)
         return;
     
-    pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelTexelDeclaration );
+    pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelDeclaration );
 
     pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE);
     pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);

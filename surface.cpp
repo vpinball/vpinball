@@ -964,7 +964,7 @@ void Surface::RenderSlingshots(RenderDevice* pd3dDevice)
 
    if ( ! m_d.m_fSideVisible )
       return;
-   pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelTexelDeclaration );
+   pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelDeclaration );
 
    Material *mat = m_ptable->GetMaterial( m_d.m_szSlingShotMaterial);
    pd3dDevice->basicShader->SetMaterial(mat);
@@ -988,7 +988,7 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
     Pin3D * const ppin3d = &g_pplayer->m_pin3d;
     Material *mat=0;
     // render side
-    pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelTexelDeclaration );
+    pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelDeclaration );
 
     ppin3d->EnableAlphaBlend(1,false);
     pd3dDevice->basicShader->PerformAlphaTest(true);

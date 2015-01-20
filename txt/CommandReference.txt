@@ -607,6 +607,7 @@ Visible(bool)
                                won't have an effect. This is useful for static rubbers like rubbers on posts. 
 Image(string) - texture name
 Elasticity(float)
+ElasticityFalloff(float)
 Friction(float)
 Scatter(float)
 RotX(float)                 - angle to rotate the whole rubber around the X axis (inclination)
