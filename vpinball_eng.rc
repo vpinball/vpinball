@@ -1710,7 +1710,7 @@ BEGIN
     GROUPBOX        "Clearcoat Layer",IDC_STATIC,214,139,191,40
     LTEXT           "Edge Brightness",IDC_STATIC,220,193,52,8
     LTEXT           "(0..1)",IDC_STATIC,222,202,17,8
-    GROUPBOX        "Opacity",IDC_STATIC,214,228,158,21
+    GROUPBOX        "Opacity (can be modulated by Image on Object)",IDC_STATIC,214,228,158,21
     CONTROL         "Active",IDC_OPACITY_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,331,235,36,10
     LTEXT           "Amount",IDC_STATIC,250,236,25,8
     EDITTEXT        IDC_OPACITY_EDIT,303,234,21,14,ES_AUTOHSCROLL
