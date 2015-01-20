@@ -77,7 +77,7 @@ float3 rotate_to_vector_upper(float3 vec, float3 normal)
 	else return -vec;
 }
 
-float4 ps_main_ao(in VS_OUTPUT IN) : COLOR
+float4 ps_main_ao(in VS_OUTPUT_2D IN) : COLOR
 {
 	const float2 u = IN.tex0 + w_h_height.xy*0.5;
 	const float2 ushift = hash(IN.tex0*w_h_height.z)*w_h_height.w; // jitter samples via hash of position on screen and then jitter samples by time //!! see below for non-shifted variant
@@ -118,7 +118,7 @@ float4 ps_main_ao(in VS_OUTPUT IN) : COLOR
 // stereo
 
 //!! opt.?
-float4 ps_main_stereo(in VS_OUTPUT IN) : COLOR
+float4 ps_main_stereo(in VS_OUTPUT_2D IN) : COLOR
 {
 	float2 u = IN.tex0 + w_h_height.xy*0.5;
 	const float MaxSeparation = ms_zpd_ya_td.x;
@@ -156,7 +156,7 @@ float luma(float3 l)
 }
 
 // Approximation of FXAA
-float4 ps_main_fxaa1(in VS_OUTPUT IN) : COLOR
+float4 ps_main_fxaa1(in VS_OUTPUT_2D IN) : COLOR
 {
 	const float2 u = IN.tex0 + w_h_height.xy*0.5;
 	const float2 offs = w_h_height.xy;
@@ -195,7 +195,7 @@ float4 ps_main_fxaa1(in VS_OUTPUT IN) : COLOR
 }
 
 // Full mid-quality PC FXAA 3.11
-float4 ps_main_fxaa2(in VS_OUTPUT IN) : COLOR
+float4 ps_main_fxaa2(in VS_OUTPUT_2D IN) : COLOR
 {
 	const float2 u = IN.tex0 + w_h_height.xy*0.5;
 	const float2 offs = w_h_height.xy;

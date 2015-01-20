@@ -59,6 +59,12 @@ struct VS_OUTPUT
    float3 normal        : TEXCOORD2;
 };
 
+struct VS_OUTPUT_2D 
+{ 
+   float4 pos           : POSITION; 
+   float2 tex0          : TEXCOORD0;
+};
+
 #include "FXAAStereoAO.fxh"
 
 //------------------------------------
@@ -86,15 +92,13 @@ VS_OUTPUT vs_main (float4 vPosition  : POSITION0,
    return Out; 
 }
 
-VS_OUTPUT vs_main_no_trafo (float4 vPosition  : POSITION0,  
+VS_OUTPUT_2D vs_main_no_trafo (float4 vPosition  : POSITION0,  
                             float2 tc         : TEXCOORD0) 
 { 
-   VS_OUTPUT Out;
+   VS_OUTPUT_2D Out;
 
-   Out.pos = vPosition;
+   Out.pos = float4(vPosition.xy,0.0f,1.0f);
    Out.tex0 = tc;
-   Out.worldPos = float3(0,0,0);
-   Out.normal = float3(0,0,0);
    
    return Out; 
 }
@@ -372,12 +376,12 @@ VS_OUTPUT vs_kicker (float4 vPosition  : POSITION0,
 // Framebuffer
 //
 
-float4 ps_main_fb_tonemap( in VS_OUTPUT IN) : COLOR
+float4 ps_main_fb_tonemap( in VS_OUTPUT_2D IN) : COLOR
 {
     return float4(FBColorGrade(FBGamma(FBToneMap(tex2D(texSampler5, IN.tex0).xyz))), 1.0f);
 }
 
-float4 ps_main_fb_tonemap_AO( in VS_OUTPUT IN) : COLOR
+float4 ps_main_fb_tonemap_AO( in VS_OUTPUT_2D IN) : COLOR
 {
 	return float4(FBColorGrade(FBGamma(FBToneMap(tex2D(texSampler5, IN.tex0).xyz*(
            tex2D(texSampler3, IN.tex0-fb_inv_resolution_05).x /*+ //Blur:
@@ -393,12 +397,12 @@ float4 ps_main_fb_tonemap_AO( in VS_OUTPUT IN) : COLOR
 		   tex2D(texSampler3, IN.tex0-float2(fb_inv_resolution_05.x*2.0f,fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05).x)/9.0f*/) ))), 1.0f);
 }
 
-float4 ps_main_fb_tonemap_no_filter( in VS_OUTPUT IN) : COLOR
+float4 ps_main_fb_tonemap_no_filter( in VS_OUTPUT_2D IN) : COLOR
 {
     return float4(FBColorGrade(FBGamma(FBToneMap(tex2D(texSampler4, IN.tex0+fb_inv_resolution_05).xyz))), 1.0f);
 }
 
-float4 ps_main_fb_tonemap_AO_no_filter( in VS_OUTPUT IN) : COLOR
+float4 ps_main_fb_tonemap_AO_no_filter( in VS_OUTPUT_2D IN) : COLOR
 {
 	return float4(FBColorGrade(FBGamma(FBToneMap(tex2D(texSampler4, IN.tex0+fb_inv_resolution_05).xyz*(
            tex2D(texSampler3, IN.tex0-fb_inv_resolution_05).x /*+ //Blur:
