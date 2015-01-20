@@ -77,7 +77,8 @@ void Rubber::SetDefaults(bool fromMouseClick)
    m_d.m_fCastsShadow = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "CastsShadow", true) : true;
    m_d.m_fHitEvent = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "HitEvent", true) : false;
 
-   m_d.m_elasticity = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"Elasticity", 0.8f) : 0.8f;
+   m_d.m_elasticity = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"Elasticity", 0.9f) : 0.9f;
+   m_d.m_elasticityFalloff = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"ElasticityFalloff", 0.4f) : 0.4f;
    m_d.m_friction = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"Friction", 0.3f) : 0.3f;
    m_d.m_scatter = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"Scatter", 0) : 0;
 
@@ -102,6 +103,7 @@ void Rubber::WriteRegDefaults()
    SetRegValue(strKeyName,"Image", REG_SZ, &m_d.m_szImage, lstrlen(m_d.m_szImage));
    SetRegValueBool(strKeyName,"CastsShadow",m_d.m_fCastsShadow);
    SetRegValueFloat(strKeyName,"Elasticity", m_d.m_elasticity);
+   SetRegValueFloat(strKeyName,"ElasticityFalloff", m_d.m_elasticityFalloff);
    SetRegValueFloat(strKeyName,"Friction", m_d.m_friction);
    SetRegValueFloat(strKeyName,"Scatter", m_d.m_scatter);
    SetRegValueBool(strKeyName,"Collidable",m_d.m_fCollidable);
@@ -587,6 +589,7 @@ void Rubber::AddJoint2D(Vector<HitObject> * pvho, const Vertex2D& p, float zlow,
 void Rubber::SetupHitObject(Vector<HitObject> * pvho, HitObject * obj)
 {
     obj->m_elasticity = m_d.m_elasticity;
+    obj->m_elasticityFalloff = m_d.m_elasticityFalloff;
     obj->SetFriction(m_d.m_friction);
     obj->m_scatter = ANGTORAD(m_d.m_scatter);
     obj->m_fEnabled = m_d.m_fCollidable;
@@ -687,6 +690,7 @@ HRESULT Rubber::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptk
    bw.WriteString(FID(IMAG), m_d.m_szImage);
    bw.WriteBool(FID(CSHD), m_d.m_fCastsShadow);
    bw.WriteFloat(FID(ELAS), m_d.m_elasticity);
+   bw.WriteFloat(FID(ELFO), m_d.m_elasticityFalloff);
    bw.WriteFloat(FID(RFCT), m_d.m_friction);
    bw.WriteFloat(FID(RSCT), m_d.m_scatter);
    bw.WriteBool(FID(CLDRP), m_d.m_fCollidable);
@@ -765,6 +769,10 @@ BOOL Rubber::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(ELAS))
    {
       pbr->GetFloat(&m_d.m_elasticity);
+   }
+   else if (id == FID(ELFO))
+   {
+      pbr->GetFloat(&m_d.m_elasticityFalloff);
    }
    else if (id == FID(RFCT))
    {
@@ -1088,9 +1096,23 @@ STDMETHODIMP Rubber::get_Elasticity(float *pVal)
 STDMETHODIMP Rubber::put_Elasticity(float newVal)
 {
    STARTUNDO
-
    m_d.m_elasticity = newVal;
+   STOPUNDO
 
+   return S_OK;
+}
+
+STDMETHODIMP Rubber::get_ElasticityFalloff(float *pVal)
+{
+   *pVal = m_d.m_elasticityFalloff;
+
+   return S_OK;
+}
+
+STDMETHODIMP Rubber::put_ElasticityFalloff(float newVal)
+{
+   STARTUNDO
+   m_d.m_elasticityFalloff = newVal;
    STOPUNDO
 
    return S_OK;
