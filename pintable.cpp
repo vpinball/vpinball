@@ -4502,17 +4502,39 @@ void PinTable::AddToCollection(int index)
         {
             for( int t=0;t<m_vmultisel.Size();t++ )
             {
+                bool alreadyIn=false;
                 ISelect *ptr = m_vmultisel.ElementAt(t);
                 for( int k=0;k<m_vcollection.ElementAt(index)->m_visel.Size();k++ )
                 {
                     if ( ptr==m_vcollection.ElementAt(index)->m_visel.ElementAt(k))
+                    {
                         //already assigned
-                        return;
+                        alreadyIn=true;
+                        break;
+                    }
                 }
-                m_vcollection.ElementAt(index)->m_visel.AddElement(m_vmultisel.ElementAt(t));
+                if ( !alreadyIn)
+                    m_vcollection.ElementAt(index)->m_visel.AddElement(ptr);
             }
         }
     }
+}
+
+bool PinTable::GetCollectionIndex( ISelect *element, int &collectionIndex, int &elementIndex )
+{
+    for( int i=0;i<m_vcollection.size();i++ )
+    {
+        for ( int t=0;t<m_vcollection.ElementAt(i)->m_visel.size();t++)
+        {
+            if( element == m_vcollection.ElementAt(i)->m_visel.ElementAt(t) )
+            {
+                collectionIndex = i;
+                elementIndex=t;
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 void PinTable::FlipY(Vertex2D * const pvCenter)
@@ -5115,7 +5137,22 @@ void PinTable::AddMultiSel(ISelect *psel, bool fAdd, bool fUpdate)
       // If the table is currently selected, deselect it - the table can not be part of a multi-select
       if (!fAdd || MultiSelIsEmpty())
       {
-          ClearMultiSel(psel);
+            ClearMultiSel(psel);
+            if ( !fAdd )
+            {
+                int colIndex=-1;
+                int elemIndex=-1;
+                if ( GetCollectionIndex(psel, colIndex, elemIndex) )
+                {
+                    CComObject<Collection> *col = m_vcollection.ElementAt(colIndex);
+
+                    for( int i=0;i<col->m_visel.size();i++ )
+                    {
+                        col->m_visel[i].m_selectstate = eMultiSelected;
+                        m_vmultisel.AddElement(&col->m_visel[i]);
+                    }
+                }
+            }
       }
       else
       {
@@ -5147,15 +5184,19 @@ void PinTable::AddMultiSel(ISelect *psel, bool fAdd, bool fUpdate)
    }
    else if (m_vmultisel.ElementAt(0) != psel) // Object already in list - no change to selection, only to primary
    {
-      _ASSERTE(psel->m_selectstate != eNotSelected);
+       int colIndex=-1;
+       int elemIndex=-1;
+       if ( !GetCollectionIndex(psel, colIndex, elemIndex) )
+       {
+          _ASSERTE(psel->m_selectstate != eNotSelected);
 
-      // Make this new selection the primary one for the group
-      m_vmultisel.ElementAt(0)->m_selectstate = eMultiSelected;
-      m_vmultisel.RemoveElementAt(index);
-      m_vmultisel.InsertElementAt(psel, 0);
+          // Make this new selection the primary one for the group
+          m_vmultisel.ElementAt(0)->m_selectstate = eMultiSelected;
+          m_vmultisel.RemoveElementAt(index);
+          m_vmultisel.InsertElementAt(psel, 0);
 
-      psel->m_selectstate = eSelected;
-
+          psel->m_selectstate = eSelected;
+       }
       if (fUpdate)
           SetDirtyDraw();
    }

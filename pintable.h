@@ -477,6 +477,8 @@ END_CONNECTION_POINT_MAP()
     bool IsMaterialNameUnique( char *name );
     Material* GetMaterial( char * const szName) const;
     Material* GetSurfaceMaterial( char *szName, float x, float y);
+    bool GetCollectionIndex( ISelect *element, int &collectionIndex, int &elementIndex );
+
     char m_szFileName[_MAX_PATH];
 	char m_szBlueprintFileName[_MAX_PATH];
 	char m_szTitle[1024];
