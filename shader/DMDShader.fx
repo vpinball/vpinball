@@ -4,6 +4,24 @@ float3 vColor = float3(1.f,1.f,1.f);
 
 texture Texture0;
 
+float3 InvGamma(float3 color) //!! use hardware support? D3DSAMP_SRGBTEXTURE,etc
+{
+	return pow(color,2.2f);
+}
+
+float3 InvToneMap(float3 color)
+{
+    float burnhighlights = 0.25f;
+    
+	const float inv_2bh = 0.5f/burnhighlights;
+    const float bh = 4.0f*burnhighlights - 2.0f;
+	color.x = (color.x - 1.0f + sqrt(color.x*(color.x + bh) + 1.0f))*inv_2bh;
+	color.y = (color.y - 1.0f + sqrt(color.y*(color.y + bh) + 1.0f))*inv_2bh;
+	color.z = (color.z - 1.0f + sqrt(color.z*(color.z + bh) + 1.0f))*inv_2bh;
+
+	return color;
+}
+
 sampler2D texSampler0 : TEXUNIT0 = sampler_state
 {
 	Texture	  = (Texture0);
@@ -60,14 +78,14 @@ float4 ps_main( in VS_OUTPUT IN) : COLOR
 	 //collect glow from neighbors
 	 }*/
 
-   return float4(color+color2,1);
+   return float4(InvToneMap(InvGamma(color+color2)),1); //!! meh, this sucks a bit performance-wise, but how to avoid this when doing fullscreen-tonemap/gamma without stencil and depth read?
 }
 
 float4 ps_main_noDMD( in VS_OUTPUT IN) : COLOR
 {
    float4 l = tex2D(texSampler1, IN.tex0);
 
-   return float4(l.xyz*vColor,l.w);
+   return float4(InvToneMap(InvGamma(l.xyz*vColor)),l.w); //!! meh, this sucks a bit performance-wise, but how to avoid this when doing fullscreen-tonemap/gamma without stencil and depth read?
 }
 
 technique basic
