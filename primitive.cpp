@@ -130,6 +130,7 @@ void Primitive::SetDefaults(bool fromMouseClick)
 
    m_d.m_threshold = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"HitThreshold", 2.0f) : 2.0f;
    m_d.m_elasticity = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"Elasticity", 0.3f) : 0.3f;
+   m_d.m_elasticityFalloff = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"ElasticityFalloff", 0.0f) : 0.0f;
    m_d.m_friction = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"Friction", 0.3f) : 0.3f;
    m_d.m_scatter = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"Scatter", 0) : 0;
 
@@ -166,6 +167,7 @@ void Primitive::WriteRegDefaults()
    SetRegValueBool(strKeyName,"HitEvent", m_d.m_fHitEvent);
    SetRegValueFloat(strKeyName,"HitThreshold", m_d.m_threshold);
    SetRegValueFloat(strKeyName,"Elasticity", m_d.m_elasticity);
+   SetRegValueFloat(strKeyName,"ElasticityFalloff", m_d.m_elasticityFalloff);
    SetRegValueFloat(strKeyName,"Friction", m_d.m_friction);
    SetRegValueFloat(strKeyName,"Scatter", m_d.m_scatter);
    SetRegValueBool(strKeyName,"Collidable", m_d.m_fCollidable);
@@ -194,6 +196,7 @@ void Primitive::GetHitShapes(Vector<HitObject> * const pvho)
       rgv3D[2] = vertices[ m_mesh.m_indices[i+2] ];
       HitTriangle * const ph3dpoly = new HitTriangle(rgv3D); //!! this is not efficient at all, use native triangle-soup directly somehow
       ph3dpoly->m_elasticity = m_d.m_elasticity;
+      ph3dpoly->m_elasticityFalloff = m_d.m_elasticityFalloff;
       ph3dpoly->SetFriction(m_d.m_friction);
       ph3dpoly->m_scatter = ANGTORAD(m_d.m_scatter);
       ph3dpoly->m_threshold = m_d.m_threshold;
@@ -229,6 +232,7 @@ void Primitive::CheckJoint(Vector<HitObject> * const pvho, const HitTriangle * c
 
    HitLine3D * const ph3dc = new HitLine3D(ph3d2->m_rgv[0], ph3d2->m_rgv[1]);
    ph3dc->m_elasticity = m_d.m_elasticity;
+   ph3dc->m_elasticityFalloff = m_d.m_elasticityFalloff;
    ph3dc->SetFriction(m_d.m_friction);
    ph3dc->m_scatter = ANGTORAD(m_d.m_scatter);
    ph3dc->m_threshold = m_d.m_threshold;
@@ -741,6 +745,7 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcry
    bw.WriteBool(FID(HTEV), m_d.m_fHitEvent);
    bw.WriteFloat(FID(THRS), m_d.m_threshold);
    bw.WriteFloat(FID(ELAS), m_d.m_elasticity);
+   bw.WriteFloat(FID(ELFO), m_d.m_elasticityFalloff);
    bw.WriteFloat(FID(RFCT), m_d.m_friction);
    bw.WriteFloat(FID(RSCT), m_d.m_scatter);
    bw.WriteBool(FID(CLDRP), m_d.m_fCollidable);
@@ -898,6 +903,10 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(ELAS))
    {
       pbr->GetFloat(&m_d.m_elasticity);
+   }
+   else if (id == FID(ELFO))
+   {
+      pbr->GetFloat(&m_d.m_elasticityFalloff);
    }
    else if (id == FID(RFCT))
    {
@@ -1769,9 +1778,23 @@ STDMETHODIMP Primitive::get_Elasticity(float *pVal)
 STDMETHODIMP Primitive::put_Elasticity(float newVal)
 {
    STARTUNDO
-
    m_d.m_elasticity = newVal;
+   STOPUNDO
 
+   return S_OK;
+}
+
+STDMETHODIMP Primitive::get_ElasticityFalloff(float *pVal)
+{
+   *pVal = m_d.m_elasticityFalloff;
+
+   return S_OK;
+}
+
+STDMETHODIMP Primitive::put_ElasticityFalloff(float newVal)
+{
+   STARTUNDO
+   m_d.m_elasticityFalloff = newVal;
    STOPUNDO
 
    return S_OK;

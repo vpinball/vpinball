@@ -1437,6 +1437,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 
   		[propget, id(110), helpstring("property Elasticity")] HRESULT Elasticity([out, retval] float *pVal);
 		[propput, id(110), helpstring("property Elasticity")] HRESULT Elasticity([in] float newVal);
+  		[propget, id(112), helpstring("property ElasticityFalloff")] HRESULT ElasticityFalloff([out, retval] float *pVal);
+		[propput, id(112), helpstring("property ElasticityFalloff")] HRESULT ElasticityFalloff([in] float newVal);
 		
 		[propget, id(111), helpstring("property Collidable")] HRESULT Collidable([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(111), helpstring("property Collidable")] HRESULT Collidable([in] VARIANT_BOOL newVal);
