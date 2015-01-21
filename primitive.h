@@ -50,6 +50,7 @@ public:
 
    float m_threshold;			// speed at which ball needs to hit to register a hit
    float m_elasticity;
+   float m_elasticityFalloff;
    float m_friction;
    float m_scatter;
 
@@ -166,6 +167,8 @@ public:
    STDMETHOD(put_IsToy)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_Elasticity)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_Elasticity)(/*[in]*/ float newVal);
+   STDMETHOD(get_ElasticityFalloff)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_ElasticityFalloff)(/*[in]*/ float newVal);
    STDMETHOD(get_Friction)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_Friction)(/*[in]*/ float newVal);
    STDMETHOD(get_Scatter)(/*[out, retval]*/ float *pVal);
