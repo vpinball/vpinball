@@ -581,9 +581,10 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
 
     pd3dDevice->basicShader->Begin(0);
     pd3dDevice->DrawPrimitiveVB(D3DPT_TRIANGLELIST, customMoverVBuffer, 0, customMoverVertexNum);
+    pd3dDevice->basicShader->End();
     if ( m_d.m_showBulbMesh && m_d.m_BulbLight )
     {
-        Material mat;
+        /*Material mat;
         mat.m_cBase = 0xFFA0A0A0;
         mat.m_bOpacityActive=true;
         mat.m_fOpacity = 0.6f;
@@ -591,11 +592,13 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
         mat.m_fEdge=1.0f;
         mat.m_cGlossy = 0xFF020202;
         mat.m_fRoughness = 0.8f;
-        pd3dDevice->basicShader->SetMaterial(&mat);
+        pd3dDevice->basicShader->SetMaterial(&mat);*/ // not needed in bulb shader
+	    pd3dDevice->basicShader->Core()->SetFloat("intensity",m_d.m_currentIntensity*0.1f); //!! make configurable?
 
+	    pd3dDevice->basicShader->Begin(0);
         pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, bulbLightVBuffer, 0, bulbLightNumVertices, bulbLightIndexBuffer, 0, bulbLightNumFaces );
+		pd3dDevice->basicShader->End();
     }
-    pd3dDevice->basicShader->End();
 
     pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, FALSE);
 
