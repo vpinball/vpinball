@@ -16,6 +16,7 @@ public:
 	TimerDataRoot m_tdr;
 	float m_rotX,m_rotY,m_rotZ;
 	int m_fAlpha;
+	float m_intensity_scale;
 	float m_modulate_vs_add;
     float m_depthBias;      // for determining depth sorting
     int  m_fFilterAmount;
@@ -135,6 +136,8 @@ public:
     STDMETHOD(put_RotZ)(/*[in]*/ float newVal);
     STDMETHOD(get_Opacity)(/*[out, retval]*/ long *pVal);
     STDMETHOD(put_Opacity)(/*[in]*/ long newVal);
+    STDMETHOD(get_IntensityScale)(/*[out, retval]*/ float *pVal);
+    STDMETHOD(put_IntensityScale)(/*[in]*/ float newVal);
     STDMETHOD(get_ModulateVsAdd)(/*[out, retval]*/ float *pVal);
     STDMETHOD(put_ModulateVsAdd)(/*[in]*/ float newVal);
     STDMETHOD(get_Visible)(/*[out, retval]*/ VARIANT_BOOL *pVal);

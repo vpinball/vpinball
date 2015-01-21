@@ -1196,6 +1196,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(11), helpstring("property BorderColor")] HRESULT BorderColor([in] OLE_COLOR newVal);
 		[propget, id(12), helpstring("property Intensity")] HRESULT Intensity([out, retval] float *pVal);
 		[propput, id(12), helpstring("property Intensity")] HRESULT Intensity([in] float newVal);
+		[propget, id(434), helpstring("property IntensityScale")] HRESULT IntensityScale([out, retval] float *pVal);
+		[propput, id(434), helpstring("property IntensityScale")] HRESULT IntensityScale([in] float newVal);
 		[propget, id(DISPID_Surface), helpstring("property Surface")] HRESULT Surface([out, retval] BSTR *pVal);
 		[propput, id(DISPID_Surface), helpstring("property Surface")] HRESULT Surface([in] BSTR newVal);
 		[propget, id(DISPID_Name), helpstring("property Name")] HRESULT Name([out, retval] BSTR *pVal);
@@ -1726,6 +1728,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(13), helpstring("property DisplayTexture")] HRESULT DisplayTexture([in] VARIANT_BOOL newVal);
 		[propget, id(377), helpstring("property Opacity")] HRESULT Opacity([out, retval] long *pVal);
 		[propput, id(377), helpstring("property Opacity")] HRESULT Opacity([in] long newVal);
+		[propget, id(435), helpstring("property IntensityScale")] HRESULT IntensityScale([out, retval] float *pVal);
+		[propput, id(435), helpstring("property IntensityScale")] HRESULT IntensityScale([in] float newVal);
 		[propget, id(433), helpstring("property ModulateVsAdd")] HRESULT ModulateVsAdd([out, retval] float *pVal);
 		[propput, id(433), helpstring("property ModulateVsAdd")] HRESULT ModulateVsAdd([in] float newVal);
 		[propget, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([out, retval] VARIANT* pVal);
