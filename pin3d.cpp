@@ -316,9 +316,9 @@ void Pin3D::InitLights()
     amb_rgb.b = ambient.x;
     const D3DXVECTOR4 emission= COLORREF_to_D3DXVECTOR4(g_pplayer->m_ptable->m_Light[0].emission);
     D3DCOLORVALUE emission_rgb;
-    emission_rgb.r = emission.z*g_pplayer->m_ptable->m_lightEmissionScale;
-    emission_rgb.g = emission.y*g_pplayer->m_ptable->m_lightEmissionScale;
-    emission_rgb.b = emission.x*g_pplayer->m_ptable->m_lightEmissionScale;
+    emission_rgb.r = emission.z*(g_pplayer->m_ptable->m_lightEmissionScale*g_pplayer->m_ptable->m_globalEmissionScale);
+    emission_rgb.g = emission.y*(g_pplayer->m_ptable->m_lightEmissionScale*g_pplayer->m_ptable->m_globalEmissionScale);
+    emission_rgb.b = emission.x*(g_pplayer->m_ptable->m_lightEmissionScale*g_pplayer->m_ptable->m_globalEmissionScale);
 
     char tmp[64];
     sprintf_s(tmp,"lights[0].vPos");

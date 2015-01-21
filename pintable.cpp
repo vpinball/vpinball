@@ -710,6 +710,8 @@ PinTable::PinTable()
    // set up default protection security descripter
    ResetProtectionBlock();
 
+   m_globalEmissionScale=1.0f;
+
    m_szTableName = NULL;
    m_szAuthor = NULL;
    m_szVersion = NULL;
@@ -2760,6 +2762,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
    bw.WriteFloat(FID(LZRA), m_lightRange);
    bw.WriteFloat(FID(LIES), m_lightEmissionScale);
    bw.WriteFloat(FID(ENES), m_envEmissionScale);
+   bw.WriteFloat(FID(GLES), m_globalEmissionScale);
    bw.WriteFloat(FID(AOSC), m_AOScale);
 
    bw.WriteFloat(FID(SVOL), m_TableSoundVolume);
@@ -3181,6 +3184,7 @@ void PinTable::SetLoadDefaults()
    m_lightHeight = 1000.0f;
    m_lightRange = 3000.0f;
    m_lightEmissionScale = 1000000.0f;
+   m_globalEmissionScale = 1.0f;
    m_envEmissionScale = 10.0f;
    m_AOScale = 1.75f;
    m_angletiltMax = 726.0f;
@@ -3202,7 +3206,6 @@ void PinTable::SetLoadDefaults()
    m_TableAdaptiveVSync = -1;
    GetRegInt( "Player", "Width", &m_renderWidth );
    GetRegInt( "Player", "Height", &m_renderHeight );
-
 }
 
 HRESULT PinTable::LoadData(IStream* pstm, int& csubobj, int& csounds, int& ctextures, int& cfonts, int& ccollection, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
@@ -3458,6 +3461,10 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(ENES))
    {
        pbr->GetFloat(&m_envEmissionScale);
+   }
+   else if (id == FID(GLES))
+   {
+       pbr->GetFloat(&m_globalEmissionScale);
    }
    else if (id == FID(AOSC))
    {
@@ -7181,6 +7188,24 @@ STDMETHODIMP PinTable::put_LightEmissionScale(float newVal)
     STARTUNDO
 
     m_lightEmissionScale = newVal;
+
+    STOPUNDO
+
+    return S_OK;
+}
+
+STDMETHODIMP PinTable::get_NightDay(int *pVal)
+{
+    *pVal = (int)(m_globalEmissionScale*100.0f);
+
+    return S_OK;
+}
+
+STDMETHODIMP PinTable::put_NightDay(int newVal)
+{
+    STARTUNDO
+
+    m_globalEmissionScale = (float)newVal/100.0f;
 
     STOPUNDO
 
