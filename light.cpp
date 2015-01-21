@@ -461,7 +461,7 @@ void Light::EndPlay()
 
 float Light::GetDepth(const Vertex3Ds& viewDir) 
 { 
-   return m_d.m_depthBias + viewDir.x * m_d.m_vCenter.x + viewDir.y * m_d.m_vCenter.y + viewDir.z * m_surfaceHeight; 
+      return m_d.m_depthBias + viewDir.x * m_d.m_vCenter.x + viewDir.y * m_d.m_vCenter.y + viewDir.z * m_surfaceHeight; 
 }
 
 void Light::ClearForOverwrite()
@@ -635,6 +635,7 @@ void Light::PrepareMoversCustom()
    if ( m_d.m_BulbLight )
    {
        height += m_d.m_bulbHaloHeight*m_ptable->m_zScale;
+       m_surfaceHeight = height;
    }
 
    customMoverVertexNum = vtri.Size()*3;
