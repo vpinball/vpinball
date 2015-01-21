@@ -118,6 +118,10 @@ VP 10.0.0 Changelog
   in addition there is now a modulate option to define how the flasher blends with the underlying elements (0(=full additive)..1=(only modulate))
   plus the opacity and amount parameters can be set to values > 100%
   look into the CommandReference.txt for additional changes to the functions that can be used
+  
+- collections can now group elements together. If you enable 'Group elements together' flag and you click on one element of the group all other members 
+  of that group are selected. So you can move/scale/rotate them without multi-select element by element. If you want to select just one element of that group
+  just shift-left click on the element and you can manipulate only that element. Unchecking the 'Group elements together' flag disable this feature for this collection.
 
 - remove old shadowing code and replace it with optional screen space ambient occlusion (via the global video preferences and also the table options)
   the old 'casts shadow' setting is still in the UI, but is currently disabled as it is always true for now
