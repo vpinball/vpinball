@@ -166,9 +166,6 @@ HitGate::HitGate(Gate * const pgate, const float height)
     m_lineseg[0].CalcNormal();
     m_lineseg[1].CalcNormal();
 
-    m_gateanim.m_angleMax = ANGTORAD(pgate->m_d.m_angleMax);
-    m_gateanim.m_angleMin = ANGTORAD(pgate->m_d.m_angleMin);
-
 	m_gateanim.m_angleMin = pgate->m_d.m_angleMin;
 	m_gateanim.m_angleMax = pgate->m_d.m_angleMax;
 

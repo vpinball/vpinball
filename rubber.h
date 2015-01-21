@@ -22,7 +22,7 @@ public:
    float m_depthBias;      // for determining depth sorting
    float m_rotX;
    float m_rotY;
-   float m_rotZ;
+   //float m_rotZ;
    bool m_fHitEvent;
 	bool m_staticRendering;
 
