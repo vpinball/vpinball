@@ -4403,6 +4403,7 @@ public:
    PinTable *ppt;
 };
 
+static CollectionDialogStruct cds;
 INT_PTR CALLBACK CollectManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
    CCO(PinTable) *pt = (CCO(PinTable) *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
@@ -4462,7 +4463,7 @@ INT_PTR CALLBACK CollectManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPAR
       case BN_CLICKED:
          switch (LOWORD(wParam))
          {
-         case IDOK:
+         case IDCLOSE:
             EndDialog(hwndDlg, TRUE);
             break;
 
@@ -4492,7 +4493,6 @@ INT_PTR CALLBACK CollectManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPAR
                   ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
                   CComObject<Collection> * const pcol = (CComObject<Collection> *)lvitem.lParam;
 
-                  CollectionDialogStruct cds;
                   cds.pcol = pcol;
                   cds.ppt = pt;
 
@@ -4603,7 +4603,7 @@ INT_PTR CALLBACK CollectManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPAR
 
    return FALSE;
 }
-
+static CollectionDialogStruct *pcds=0;
 INT_PTR CALLBACK CollectionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
    //CCO(PinTable) *pt;
@@ -4613,8 +4613,8 @@ INT_PTR CALLBACK CollectionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
    {
    case WM_INITDIALOG:
       {
-         CollectionDialogStruct * const pcds = (CollectionDialogStruct *)lParam;
-         SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
+         pcds = (CollectionDialogStruct *)lParam;
+         SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG)pcds);
 
          Collection * const pcol = pcds->pcol;
 
@@ -4630,6 +4630,9 @@ INT_PTR CALLBACK CollectionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
 
          HWND hwndStopSingle = GetDlgItem(hwndDlg, IDC_SUPPRESS);
          SendMessage(hwndStopSingle, BM_SETCHECK, pcol->m_fStopSingleEvents ? BST_CHECKED : BST_UNCHECKED, 0);
+
+         HWND hwndGroupElements = GetDlgItem(hwndDlg, IDC_GROUP_CHECK);
+         SendMessage(hwndGroupElements, BM_SETCHECK, pcol->m_fGroupElements ? BST_CHECKED : BST_UNCHECKED, 0);
 
          HWND hwndOut = GetDlgItem(hwndDlg, IDC_OUTLIST);
          HWND hwndIn = GetDlgItem(hwndDlg, IDC_INLIST);
@@ -4769,7 +4772,7 @@ INT_PTR CALLBACK CollectionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
 
          case IDOK:
             {
-               CollectionDialogStruct * const pcds = (CollectionDialogStruct *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
+               //CollectionDialogStruct * const pcds = (CollectionDialogStruct *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
                Collection * const pcol = pcds->pcol;
 
@@ -4808,6 +4811,10 @@ INT_PTR CALLBACK CollectionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
                HWND hwndStopSingle = GetDlgItem(hwndDlg, IDC_SUPPRESS);
 			   const size_t fStopSingle = SendMessage(hwndStopSingle, BM_GETCHECK, 0, 0);
                pcol->m_fStopSingleEvents = fStopSingle;
+
+               HWND hwndGroupElements = GetDlgItem(hwndDlg, IDC_GROUP_CHECK);
+               const size_t fGroupElements = SendMessage(hwndGroupElements, BM_GETCHECK, 0, 0);
+               pcol->m_fGroupElements = fGroupElements;
 
                char szT[1024];
                HWND hwndName = GetDlgItem(hwndDlg, IDC_NAME);
