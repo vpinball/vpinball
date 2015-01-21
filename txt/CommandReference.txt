@@ -58,7 +58,6 @@ BallFrontDecal(string) - image of the ball front decal
 
 *EnableAntialiasing(bool) - enables AA for this table if you have set 'Enable AntiAliasing' in the video options. default=false
 *EnableFXAA(bool) - enables FXAA for this table if you have set 'Enable FXAA' in the video options. default=false
-*RenderShadows(bool) - default=true
 *RenderEMReels(bool) - default=true						
 *RenderDecals(bool) - default=true
 *TableAdaptiveVSync(int) - sets adaptive vsync option for this table (-1=use global setting, 0=off, 1=automatic, any other number is refresh rate in Hz)
@@ -88,10 +87,10 @@ NudgeTime(float)
 *Light0Emission(OLE_COLOR) - changes the light contribution for each material (currently light0 emission is copied to light1, too)
 LightEmissionScale(float)
 EnvironmentEmissionScale(float)
+AOScale(float) - scaling factor when blending the ambient occlusion
+NightDay(int) - 0..100 value set in the UI (by the user) that defines if its night or day, so that the script can tweak table elements based on that value
 *LightHeight(float) - height of lights
 *LightRange(float) - range of lights
-*ShadowX(float) - defines the shadow X direction (-1.0..+1.0) default=0.0, because the shadow generation is a fake this is not 100% accurate (if X and Y are both zero one can have an ambient occlusion like effect)
-*ShadowY(float) - defines the shadow Y direction (-1.0..+1.0) default=0.0, because the shadow generation is a fake this is not 100% accurate
 
 Methods
 -------

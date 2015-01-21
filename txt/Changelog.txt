@@ -10,7 +10,7 @@ VP 10.0.0 Changelog
      - crank up lightsource->emission to 255,255,255 and tweak the color from there (to get a good contrast on the shading)
      - tweak the lightsource->height and the two emission-scales
      - if doing nightmods, try to avoid manually toning down all images and materials, but rather just use the light emission settings
-       (this will allow the user to tweak the brightness of the table on his/her own afterwards)
+       including the new night->day slider (this will allow the user to tweak the brightness of the table on his/her own afterwards)
      - revisit all physics settings, even if you used VP9Physmod(5) before (only the re-enabled friction and scatter in the physmod5 case though)
      - take a look into the new material editor and assign a material to each object on the table
      - use flashers when doing special lighting effects/night mods, otherwise try to stick with the newly redone light elements
@@ -89,6 +89,9 @@ VP 10.0.0 Changelog
 
   -> always try to tweak the two lighting components (some lightsources above the table plus an environment light surrounding the table) separately
      by setting one emission scale to 0 and then configuring the other one on its own
+
+  -> the night->day slider will scale these two lighting components, and in addition
+     the script now offers NightDay, which returns the range in 0..100, so that additional tweaks can be done in the script, depending on this value
 
 - new (optional) color grading step
   like in movies or photography, one can now add an (almost) artificial color grading step at the very end of the rendering process

@@ -604,7 +604,6 @@
 #define IDC_BUTTON3                     418
 #define IDC_DRAW_ORDER_DOWN             418
 #define IDC_JOYCUSTOM4COMBO             419
-#define IDC_JOYCUSTOM1COMBO2            420
 #define IDC_JOYDEBUGCOMBO               420
 #define IDC_ALPHA_SLIDER                420
 #define IDC_GLOBAL_TRAIL_CHECK          421
@@ -629,6 +628,9 @@
 #define IDC_GROUP_CHECK                 431
 #define IDC_LIGHT_FALLOFF_POWER         432
 #define IDC_MODULATE_VS_ADD             433
+#define IDC_INTENSITY_SCALE_LIGHT       434
+#define IDC_INTENSITY_SCALE_FLASHER     435
+#define IDC_DAYNIGHT_SLIDER             436
 #define IDC_JOYLFLIPCOMBO               501
 #define IDC_JOYRFLIPCOMBO               502
 #define IDC_JOYPLUNGERCOMBO             503
@@ -832,7 +834,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        614
 #define _APS_NEXT_COMMAND_VALUE         32998
-#define _APS_NEXT_CONTROL_VALUE         432
+#define _APS_NEXT_CONTROL_VALUE         437
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif

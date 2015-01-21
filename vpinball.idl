@@ -565,6 +565,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(1705), helpstring("property TrailStength")] HRESULT TrailStrength([in] int newVal);
 		[propget, id(420), helpstring("property AlphaRampAccuracy")] HRESULT AlphaRampAccuracy([out, retval] int *pVal);
 		[propput, id(420), helpstring("property AlphaRampAccuracy")] HRESULT AlphaRampAccuracy([in] int newVal);
+		[propget, id(436), helpstring("property NightDay")] HRESULT NightDay([out, retval] int *pVal);
+		[propput, id(436), helpstring("property NightDay")] HRESULT NightDay([in] int newVal);
 		[propget, id(398), helpstring("property OverwriteAlphaAcc")] HRESULT GlobalAlphaAcc([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(398), helpstring("property OverwriteAlphaAcc")] HRESULT GlobalAlphaAcc([in] VARIANT_BOOL newVal);
 		[id(219), helpstring("method Version")] HRESULT Version([out, retval] int *pVal);

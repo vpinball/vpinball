@@ -806,7 +806,7 @@ void Player::InitBallShader()
    //D3DXVECTOR4 cam( matView._41, matView._42, matView._43, 1 );
    //ballShader->Core()->SetVector("camera", &cam);
    ballShader->Core()->SetFloat("flightRange",m_ptable->m_lightRange);
-   ballShader->Core()->SetFloat("fenvEmissionScale",m_ptable->m_envEmissionScale);
+   ballShader->Core()->SetFloat("fenvEmissionScale",m_ptable->m_envEmissionScale*m_ptable->m_globalEmissionScale);
    ballShader->Core()->SetInt("iLightPointNum",MAX_LIGHT_SOURCES);
 
    ballShader->Core()->SetFloat("fWrapLighting", 0.25f);

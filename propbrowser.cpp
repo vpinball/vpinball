@@ -502,7 +502,7 @@ void SmartBrowser::GetControlValue(HWND hwndControl)
       type = eColor;
    else if (!strcmp(szName, "FontControl"))
       type = eFont;
-   else if (!strcmp(szName, "msctls_trackbar32") || !strcmp(szName,"IDC_ALPHA_SLIDER"))
+   else if (!strcmp(szName, "msctls_trackbar32") || !strcmp(szName,"IDC_ALPHA_SLIDER") || !strcmp(szName,"IDC_DAYNIGHT_SLIDER"))
       type = eSlider;
 
    if (type == eNotControl)
@@ -672,7 +672,7 @@ void SmartBrowser::GetControlValue(HWND hwndControl)
          {
             int data = V_INT(&var);
             // get the range value
-            int range = (data & 0x0000FF00) >> 8;
+            //int range = (data & 0x0000FF00) >> 8;
             // mask off the range from the data
             data &= 0x000000FF;
             
@@ -684,11 +684,27 @@ void SmartBrowser::GetControlValue(HWND hwndControl)
             SendMessage(hwndControl, TBM_SETPOS, TRUE, data);
          }
          else
+         if ( dispid==IDC_DAYNIGHT_SLIDER )
          {
             int data = V_INT(&var);
             // get the range value
-            int range = (data & 0x0000FF00) >> 8;
-            if (range == 0) range = 100;
+            //int range = (data & 0x0000FF00) >> 8;
+            // mask off the range from the data
+            data &= 0x000000FF;
+            
+            SendMessage(hwndControl, TBM_SETRANGE, fTrue, MAKELONG(2, 100));
+            SendMessage(hwndControl, TBM_SETTICFREQ, 10, 0);
+            SendMessage(hwndControl, TBM_SETLINESIZE, 0, 1);
+            SendMessage(hwndControl, TBM_SETPAGESIZE, 0, 1);
+            SendMessage(hwndControl, TBM_SETTHUMBLENGTH, 5, 0);
+            SendMessage(hwndControl, TBM_SETPOS, TRUE, data);
+         }
+         else
+         {
+            int data = V_INT(&var);
+            // get the range value
+            //int range = (data & 0x0000FF00) >> 8;
+            //if (range == 0) range = 100;
             // mask off the range from the data
             data &= 0x000000FF;
 
