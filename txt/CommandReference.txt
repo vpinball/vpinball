@@ -338,7 +338,8 @@ Falloff(float)
 FalloffPower(float)
 State(LightState) - 0=Off, 1=On, 2=Blinking
 *Color(OLE_COLOR)
-Intensity(float) - sets the lights brightness/emission scale
+Intensity(float) - sets the lights brightness/emission
+IntensityScale(float) - sets the lights brightness/emission scale, so that one can fade in/out all affected lights with the same scaling factor
 TimerEnabled(bool)
 TimerInterval(int)
 BlinkPattern(string)
@@ -427,6 +428,8 @@ RotAndTra8(float) or ObjRotZ(float) - rotates the Z axis of the primitive's loca
 HasHitEvent(bool) - enables the support for a hit event in the script (it's the same as for walls)
 Threshold(float) - hit threshold for firing the hit event
 Collidable(bool) - enables/disables collision detection, this can be used from within the script.
+Elasticity(float)
+ElasticityFalloff(float)
 Friction(float) 
 Scatter(float)
 *IsToy(bool) - disables collision handling completely. It overwrites the Collidable-flag and can't be used from within the script. This option is useful if you have real toys
@@ -568,7 +571,8 @@ Filter(string) - use one of the following filters to blend ImageA > ImageB: 'Non
 Amount(int)    - defines the filter amount how much of ImageB is filtered over ImageA in percent (0..100, can be set to >100 though)
 Mode           - 0=ImageModeWorld, 1=ImageModeWrap
 *DisplayTexture(bool)
-Opacity - lets you define the blend amount 0..100% (you can use values >100% though to for example enhance the strength of flashers in additive alpha blending mode)
+Opacity(int) - lets you define the blend amount 0..100% (you can use values >100% though to for example enhance the strength of flashers in additive alpha blending mode)
+IntensityScale(float) - sets the flashers brightness/emission scale, so that one can fade in/out all affected flashers with the same scaling factor
 Color - defines the color of the element in the editor. If you don't want to colorize the image set the color to blank white (RGB 255,255,255)
 Visible(bool) - shows/hides the flasher
 AddBlend(bool) - use additive alpha blending instead of classical alpha blending

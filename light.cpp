@@ -172,6 +172,8 @@ void Light::SetDefaults(bool fromMouseClick)
    else
       m_d.m_intensity = 1.0f;
 
+   m_d.m_intensity_scale = 1.0f;
+
    hr = GetRegInt("DefaultProps\\Light","BorderColor", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_bordercolor = iTmp;
@@ -539,11 +541,11 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
     pd3dDevice->basicShader->Core()->SetFloat("falloff_power",m_d.m_falloff_power);
     if ( isOn )
     {
-       if (m_d.m_currentIntensity<m_d.m_intensity )
+       if (m_d.m_currentIntensity<m_d.m_intensity*m_d.m_intensity_scale )
        {
           m_d.m_currentIntensity+=m_d.m_fadeSpeed*diff_time_msec;
-          if(m_d.m_currentIntensity>m_d.m_intensity )
-             m_d.m_currentIntensity=m_d.m_intensity;
+          if(m_d.m_currentIntensity>m_d.m_intensity*m_d.m_intensity_scale )
+             m_d.m_currentIntensity=m_d.m_intensity*m_d.m_intensity_scale;
        }
     }
     else
@@ -712,7 +714,7 @@ void Light::RenderSetup(RenderDevice* pd3dDevice)
 
     const bool isOn = (m_realState == LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : !!m_realState;
     if( isOn )
-       m_d.m_currentIntensity = m_d.m_intensity;
+       m_d.m_currentIntensity = m_d.m_intensity*m_d.m_intensity_scale;
     else
        m_d.m_currentIntensity = 0.0f;
 
@@ -1338,7 +1340,27 @@ STDMETHODIMP Light::put_Intensity(float newVal)
    m_d.m_intensity = max(0.f, newVal);
    const bool isOn = (m_realState == LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : !!m_realState;
    if( isOn )
-      m_d.m_currentIntensity = m_d.m_intensity;
+      m_d.m_currentIntensity = m_d.m_intensity*m_d.m_intensity_scale;
+   STOPUNDO
+
+   return S_OK;
+}
+
+STDMETHODIMP Light::get_IntensityScale(float *pVal)
+{
+   *pVal = m_d.m_intensity_scale;
+
+   return S_OK;
+}
+
+STDMETHODIMP Light::put_IntensityScale(float newVal)
+{
+   STARTUNDO
+
+   m_d.m_intensity_scale = newVal;
+   const bool isOn = (m_realState == LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : !!m_realState;
+   if( isOn )
+      m_d.m_currentIntensity = m_d.m_intensity*m_d.m_intensity_scale;
    STOPUNDO
 
    return S_OK;

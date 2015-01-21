@@ -145,6 +145,8 @@ void Flasher::SetDefaults(bool fromMouseClick)
    else
        m_d.m_fAlpha = 100;
 
+   m_d.m_intensity_scale = 1.0f;
+
    hr = GetRegStringAsFloat("DefaultProps\\Flasher","ModulateVsAdd", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
        m_d.m_modulate_vs_add = fTmp;
@@ -1101,6 +1103,23 @@ STDMETHODIMP Flasher::put_Opacity(long newVal)
    return S_OK;
 }
 
+STDMETHODIMP Flasher::get_IntensityScale(float *pVal)
+{
+   *pVal = m_d.m_intensity_scale;
+   return S_OK;
+}
+
+STDMETHODIMP Flasher::put_IntensityScale(float newVal)
+{
+   STARTUNDO
+
+   m_d.m_intensity_scale = newVal;
+   
+   STOPUNDO
+
+   return S_OK;
+}
+
 STDMETHODIMP Flasher::get_ModulateVsAdd(float *pVal)
 {
    *pVal = m_d.m_modulate_vs_add;
@@ -1256,8 +1275,8 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
       Texture * const pinA = m_ptable->GetImage(m_d.m_szImageA);
       Texture * const pinB = m_ptable->GetImage(m_d.m_szImageB);
 
-      //pd3dDevice->basicShader->Core()->SetFloat("fAlpha",(float)m_d.m_fAlpha/100.0f);
-      pd3dDevice->basicShader->SetAlphaValue((float)m_d.m_fAlpha / 100.0f);
+      //pd3dDevice->basicShader->Core()->SetFloat("fAlpha",(float)m_d.m_fAlpha*m_d.m_intensity_scale/100.0f);
+      pd3dDevice->basicShader->SetAlphaValue((float)m_d.m_fAlpha*m_d.m_intensity_scale/100.0f);
       pd3dDevice->basicShader->Core()->SetFloat("fFilterAmount",(float)m_d.m_fFilterAmount/100.0f);
 	  pd3dDevice->basicShader->Core()->SetFloat("blend_modulate_vs_add",max(m_d.m_modulate_vs_add,0.00001f)); // avoid 0, as it disables the blend
       const D3DXVECTOR4 color = COLORREF_to_D3DXVECTOR4(m_d.m_color);

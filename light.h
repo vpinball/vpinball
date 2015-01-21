@@ -15,6 +15,7 @@ public:
 	float m_falloff;
 	float m_falloff_power;
     float m_intensity;
+	float m_intensity_scale;
     float m_fadeSpeed;
 	U32 m_time_msec;
     float m_currentIntensity;
@@ -196,6 +197,8 @@ public:
 	STDMETHOD(put_Surface)(/*[in]*/ BSTR newVal);
 	STDMETHOD(get_Intensity)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Intensity)(/*[in]*/ float newVal);
+	STDMETHOD(get_IntensityScale)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_IntensityScale)(/*[in]*/ float newVal);
 	STDMETHOD(get_BorderColor)(/*[out, retval]*/ OLE_COLOR *pVal);
 	STDMETHOD(put_BorderColor)(/*[in]*/ OLE_COLOR newVal);
 	STDMETHOD(get_BlinkInterval)(/*[out, retval]*/ long *pVal);
