@@ -5145,11 +5145,13 @@ void PinTable::AddMultiSel(ISelect *psel, bool fAdd, bool fUpdate)
                 if ( GetCollectionIndex(psel, colIndex, elemIndex) )
                 {
                     CComObject<Collection> *col = m_vcollection.ElementAt(colIndex);
-
-                    for( int i=0;i<col->m_visel.size();i++ )
+                    if ( col->m_fGroupElements )
                     {
-                        col->m_visel[i].m_selectstate = eMultiSelected;
-                        m_vmultisel.AddElement(&col->m_visel[i]);
+                        for( int i=0;i<col->m_visel.size();i++ )
+                        {
+                            col->m_visel[i].m_selectstate = eMultiSelected;
+                            m_vmultisel.AddElement(&col->m_visel[i]);
+                        }
                     }
                 }
             }

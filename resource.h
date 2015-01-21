@@ -623,9 +623,12 @@
 #define IDC_3D_STEREO_ZPD               429
 #define IDC_HALO_EDIT                   429
 #define IDC_ENABLE_NUDGE_FILTER         430
+#define IDAPPLY                         430
 #define IDC_BULB_MODULATE_VS_ADD        431
+#define IDC_CHECK1                      431
+#define IDC_GROUP_CHECK                 431
 #define IDC_LIGHT_FALLOFF_POWER         432
-#define IDC_MODULATE_VS_ADD		        433
+#define IDC_MODULATE_VS_ADD             433
 #define IDC_JOYLFLIPCOMBO               501
 #define IDC_JOYRFLIPCOMBO               502
 #define IDC_JOYPLUNGERCOMBO             503
@@ -829,7 +832,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        614
 #define _APS_NEXT_COMMAND_VALUE         32998
-#define _APS_NEXT_CONTROL_VALUE         430
+#define _APS_NEXT_CONTROL_VALUE         432
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif

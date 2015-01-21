@@ -1817,6 +1817,7 @@ Collection::Collection()
 {
    m_fFireEvents = fFalse;
    m_fStopSingleEvents = fFalse;
+   m_fGroupElements = fTrue;
 }
 
 STDMETHODIMP Collection::get_Name(BSTR *pVal)
@@ -1851,6 +1852,7 @@ HRESULT Collection::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcr
 
    bw.WriteBool(FID(EVNT), m_fFireEvents);
    bw.WriteBool(FID(SSNG), m_fStopSingleEvents);
+   bw.WriteBool(FID(GREL), m_fGroupElements);
 
    bw.WriteTag(FID(ENDB));
 
@@ -1877,7 +1879,11 @@ BOOL Collection::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(SSNG))
    {
-      pbr->GetBool(&m_fStopSingleEvents);
+       pbr->GetBool(&m_fStopSingleEvents);
+   }
+   else if (id == FID(GREL))
+   {
+       pbr->GetBool(&m_fGroupElements);
    }
    else if (id == FID(ITEM))
    {

@@ -291,6 +291,7 @@ END_CONNECTION_POINT_MAP()
 
 	BOOL m_fFireEvents;
 	BOOL m_fStopSingleEvents;
+    BOOL m_fGroupElements;
 	};
 
 class OMCollectionEnum :
