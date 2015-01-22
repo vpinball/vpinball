@@ -464,6 +464,7 @@
     <None Include="res\bumperSocket.bmp">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="shader\FXAAStereoAO.fxh" />
   </ItemGroup>
   <ItemGroup>
     <Object Include="dispatchpatch32.obj" />
@@ -582,9 +583,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="dispid.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="display.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="dispreel.h">
@@ -728,9 +726,6 @@
     <ClInclude Include="stdafx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="stereo3D.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="sur.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -785,9 +780,6 @@
     <ClInclude Include="pin\ball.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="pin\ballMesh.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="pin\collide.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -823,6 +815,21 @@
     </ClInclude>
     <ClInclude Include="inc\bass.h">
       <Filter>Header Files\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="color.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="media\fileio.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="media\lzwreader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="media\lzwwriter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="media\wavread.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
