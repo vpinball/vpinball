@@ -806,9 +806,6 @@
     <CustomBuild Include="shader\BasicShader.fx">
       <Filter>Shader Files</Filter>
     </CustomBuild>
-    <CustomBuild Include="shader\LightInsert.fx">
-      <Filter>Shader Files</Filter>
-    </CustomBuild>
     <CustomBuild Include="shader\DMDShader.fx">
       <Filter>Shader Files</Filter>
     </CustomBuild>

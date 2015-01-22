@@ -7505,11 +7505,6 @@ copy "$(TargetPath)" "%VPIN_DIR%"
       <Command Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">fxc /O3 /T fx_2_0 /Vn basicShaderCode /Fh shader\BasicShader.h shader\BasicShader.fx</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">BasicShader.h</Outputs>
     </CustomBuild>
-    <CustomBuild Include="shader\LightInsert.fx">
-      <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">fxc /O3 /Zi /T fx_2_0 /Vn lightInsertShaderCode /Fh shader\LightInsert.h shader\LightInsert.fx</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">LightInsert.h</Outputs>
-    </CustomBuild>
     <CustomBuild Include="shader\DMDShader.fx">
       <FileType>Document</FileType>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">fxc /O3 /T fx_2_0 /Vn dmdShaderCode /Fh shader\DMDShader.h shader\DMDShader.fx</Command>
