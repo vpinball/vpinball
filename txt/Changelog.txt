@@ -117,6 +117,7 @@ VP 10.0.0 Changelog
 - changed opacity/transparency handling for ramps (Alpha/Acrylic have been deleted, only the material opacity value is supported now)
 
 - GetElement, GetElementByName, GetBalls added to Table Script methods to have simple access to the elements and all active balls on the table
+- OnBallBallCollision(ball1, ball2, velocity) can be used as a Callback in the script to handle Ball to Ball collisions
 - renaming of IsVisible properties (flasher, ramp) to Visible
 
 - flasher supports custom shapes and multi texturing. You can define two separate images and define a filter to blend these two images.
