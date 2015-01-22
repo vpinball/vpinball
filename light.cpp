@@ -474,27 +474,30 @@ void Light::RenderBulbMesh(RenderDevice *pd3dDevice, COLORREF color, bool isOn)
     pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelDeclaration );
     pd3dDevice->basicShader->SetTechnique("basic_without_texture");
     Material mat;
-    mat.m_cBase = 0;
+    mat.m_cBase = 0x181818;
     mat.m_fWrapLighting=0.5f;
     mat.m_bOpacityActive=false;
     mat.m_fOpacity = 1.0f;
-    mat.m_cGlossy=0xFFB4B4B4;
+    mat.m_cGlossy=0xB4B4B4;
     mat.m_bIsMetal=false;
-    mat.m_fEdge=0.0f;
+    mat.m_fEdge=1.0f;
     mat.m_fRoughness = 0.9f;
+    mat.m_cClearcoat = 0;
     pd3dDevice->basicShader->SetMaterial(&mat);
 
     pd3dDevice->basicShader->Begin(0);
     pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, bulbSocketVBuffer, 0, bulbSocketNumVertices, bulbSocketIndexBuffer, 0, bulbSocketNumFaces );
     pd3dDevice->basicShader->End();
 
-    mat.m_cBase = 0xFFA0A0A0;
+    mat.m_cBase = 0;
+    mat.m_fWrapLighting=0.5f;
     mat.m_bOpacityActive=true;
-    mat.m_fOpacity = 0.6f;
+    mat.m_fOpacity = 0.2f;
+    mat.m_cGlossy = 0xFFFFFF;
     mat.m_bIsMetal=false;
-    mat.m_fEdge=1.0f;
-    mat.m_cGlossy = 0xFF020202;
-    mat.m_fRoughness = 0.8f;
+    mat.m_fEdge=1.0f;    
+    mat.m_fRoughness = 0.9f;
+    mat.m_cClearcoat = 0xFFFFFF;
     pd3dDevice->basicShader->SetMaterial(&mat);
 
     pd3dDevice->basicShader->Begin(0);
@@ -557,7 +560,6 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
              m_d.m_currentIntensity=0.0f;
        }
     }
-    pd3dDevice->basicShader->Core()->SetFloat("intensity",m_d.m_currentIntensity);
     Texture *offTexel=NULL;
     if ( !m_d.m_BulbLight )
     {
@@ -572,34 +574,30 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
             pd3dDevice->basicShader->SetTechnique("light_without_texture");
     }
     else
-	{
-		pd3dDevice->basicShader->Core()->SetFloat("blend_modulate_vs_add",max(m_d.m_modulate_vs_add,0.00001f)); // avoid 0, as it disables the blend
+	{		
         pd3dDevice->basicShader->SetTechnique("bulb_light");
 	}
 
 	pd3dDevice->SetVertexDeclaration(pd3dDevice->m_pVertexNormalTexelDeclaration);
 
-    pd3dDevice->basicShader->Begin(0);
-    pd3dDevice->DrawPrimitiveVB(D3DPT_TRIANGLELIST, customMoverVBuffer, 0, customMoverVertexNum);
-    pd3dDevice->basicShader->End();
-    if ( m_d.m_showBulbMesh && m_d.m_BulbLight )
+    if ( m_d.m_showBulbMesh && m_d.m_BulbLight ) // blend bulb mesh hull additive over "normal" bulb to approximate the emission directly reaching the camera
     {
-        /*Material mat;
-        mat.m_cBase = 0xFFA0A0A0;
-        mat.m_bOpacityActive=true;
-        mat.m_fOpacity = 0.6f;
-        mat.m_bIsMetal=false;
-        mat.m_fEdge=1.0f;
-        mat.m_cGlossy = 0xFF020202;
-        mat.m_fRoughness = 0.8f;
-        pd3dDevice->basicShader->SetMaterial(&mat);*/ // not needed in bulb shader
-	    pd3dDevice->basicShader->Core()->SetFloat("intensity",m_d.m_currentIntensity*0.1f); //!! make configurable?
+            pd3dDevice->basicShader->Core()->SetFloat("intensity",m_d.m_currentIntensity*0.02f); //!! make configurable?
+            pd3dDevice->basicShader->Core()->SetFloat("blend_modulate_vs_add",0.00001f); // avoid 0, as it disables the blend
 
 	    pd3dDevice->basicShader->Begin(0);
         pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, bulbLightVBuffer, 0, bulbLightNumVertices, bulbLightIndexBuffer, 0, bulbLightNumFaces );
 		pd3dDevice->basicShader->End();
     }
 
+    // render light shape
+    if ( m_d.m_BulbLight )
+        pd3dDevice->basicShader->Core()->SetFloat("blend_modulate_vs_add",max(m_d.m_modulate_vs_add,0.00001f)); // avoid 0, as it disables the blend
+    pd3dDevice->basicShader->Core()->SetFloat("intensity",m_d.m_currentIntensity);
+    pd3dDevice->basicShader->Begin(0);
+    pd3dDevice->DrawPrimitiveVB(D3DPT_TRIANGLELIST, customMoverVBuffer, 0, customMoverVertexNum);
+    pd3dDevice->basicShader->End();
+    
     pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, FALSE);
 
 	if (!m_fBackglass)

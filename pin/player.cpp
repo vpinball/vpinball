@@ -753,7 +753,7 @@ void Player::InitShader()
    m_pin3d.m_pd3dDevice->basicShader->SetTexture("Texture1", &m_pin3d.envTexture);
    m_pin3d.m_pd3dDevice->basicShader->SetTexture("Texture2", m_pin3d.m_device_envRadianceTexture);
    m_pin3d.m_pd3dDevice->basicShader->Core()->SetFloat("fenvTexWidth", (float)m_pin3d.envTexture.m_height/*+m_pin3d.envTexture.m_width)*0.5f*/);
-   m_pin3d.m_pd3dDevice->basicShader->Core()->SetFloat("fenvEmissionScale", m_ptable->m_envEmissionScale);
+   m_pin3d.m_pd3dDevice->basicShader->Core()->SetFloat("fenvEmissionScale", m_ptable->m_envEmissionScale*m_ptable->m_globalEmissionScale);
 
    InitBallShader();
 }

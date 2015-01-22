@@ -109,6 +109,11 @@ GetBalls(Ball) - returns all Balls on the table
 GetElements(Editable) - returns all Elements on the table
 GetElementByName(string) - returns a certain Element, based on the name
 
+Callback
+--------
+
+OnBallBallCollision(ball1, ball2, velocity)
+
 
 BUMPER
 ==============================================================================================================================================
