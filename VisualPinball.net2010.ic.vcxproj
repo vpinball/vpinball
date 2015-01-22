@@ -7510,6 +7510,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
       <Command Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">fxc /O3 /T fx_2_0 /Vn dmdShaderCode /Fh shader\DMDShader.h shader\DMDShader.fx</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">DMDShader.h</Outputs>
     </CustomBuild>
+    <None Include="shader\FXAAStereoAO.fxh" />
     <None Include="shader\Globals.fxh" />
     <None Include="target.bmp" />
     <None Include="res\textbox.rgs" />
@@ -7535,10 +7536,10 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     <ClInclude Include="ballex.h" />
     <ClInclude Include="bumper.h" />
     <ClInclude Include="codeview.h" />
+    <ClInclude Include="color.h" />
     <ClInclude Include="decal.h" />
     <ClInclude Include="def.h" />
     <ClInclude Include="dispid.h" />
-    <ClInclude Include="display.h" />
     <ClInclude Include="dispreel.h" />
     <ClInclude Include="disputil.h" />
     <ClInclude Include="dragpoint.h" />
@@ -7599,6 +7600,10 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     <ClInclude Include="math\math.h" />
     <ClInclude Include="math\matrix.h" />
     <ClInclude Include="math\vector.h" />
+    <ClInclude Include="media\fileio.h" />
+    <ClInclude Include="media\lzwreader.h" />
+    <ClInclude Include="media\lzwwriter.h" />
+    <ClInclude Include="media\wavread.h" />
     <ClInclude Include="memutil.h" />
     <ClInclude Include="mesh.h" />
     <ClInclude Include="mixer.h" />
@@ -7611,7 +7616,6 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     <ClInclude Include="pintable.h" />
     <ClInclude Include="pinundo.h" />
     <ClInclude Include="pin\ball.h" />
-    <ClInclude Include="pin\ballMesh.h" />
     <ClInclude Include="pin\collide.h" />
     <ClInclude Include="pin\collideex.h" />
     <ClInclude Include="pin\hitable.h" />
@@ -7632,7 +7636,6 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     <ClInclude Include="slintf.h" />
     <ClInclude Include="spinner.h" />
     <ClInclude Include="stdafx.h" />
-    <ClInclude Include="stereo3D.h" />
     <ClInclude Include="sur.h" />
     <ClInclude Include="surface.h" />
     <ClInclude Include="tableglobal.h" />
