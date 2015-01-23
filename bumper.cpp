@@ -529,11 +529,9 @@ void Bumper::RenderSetup(RenderDevice* pd3dDevice )
          Vertex3Ds vert(bumperBase[i].x,bumperBase[i].y,bumperBase[i].z);
          vert = fullMatrix.MultiplyVector(vert);
 
-         buf[i].x = (vert.x*m_d.m_radius*2.0f)+m_d.m_vCenter.x;
-         buf[i].y = (vert.y*m_d.m_radius*2.0f)+m_d.m_vCenter.y;
-         buf[i].z = (vert.z*m_d.m_radius*2.0f*m_ptable->m_zScale);
-         buf[i].z *= m_d.m_heightScale;
-         buf[i].z += baseHeight;
+         buf[i].x = vert.x*m_d.m_radius*2.0f+m_d.m_vCenter.x;
+         buf[i].y = vert.y*m_d.m_radius*2.0f+m_d.m_vCenter.y;
+         buf[i].z = vert.z*m_d.m_radius*2.0f*m_ptable->m_zScale * m_d.m_heightScale + baseHeight;
          vert = Vertex3Ds( bumperBase[i].nx, bumperBase[i].ny, bumperBase[i].nz );
          vert = fullMatrix.MultiplyVectorNoTranslate(vert);
          buf[i].nx = vert.x;
@@ -563,9 +561,9 @@ void Bumper::RenderSetup(RenderDevice* pd3dDevice )
          Vertex3Ds vert(bumperSocket[i].x,bumperSocket[i].y,bumperSocket[i].z);
          vert = fullMatrix.MultiplyVector(vert);
 
-         buf[i].x = (vert.x*scalexy)+m_d.m_vCenter.x;
-         buf[i].y = (vert.y*scalexy)+m_d.m_vCenter.y;
-         buf[i].z = (vert.z*scalexy*m_ptable->m_zScale)+baseHeight;
+         buf[i].x = vert.x*scalexy+m_d.m_vCenter.x;
+         buf[i].y = vert.y*scalexy+m_d.m_vCenter.y;
+         buf[i].z = vert.z*scalexy*m_ptable->m_zScale + baseHeight;
          vert = Vertex3Ds( bumperSocket[i].nx, bumperSocket[i].ny, bumperSocket[i].nz );
          vert = fullMatrix.MultiplyVectorNoTranslate(vert);
          buf[i].nx = vert.x;
@@ -596,11 +594,9 @@ void Bumper::RenderSetup(RenderDevice* pd3dDevice )
       {
          Vertex3Ds vert(bumperRing[i].x,bumperRing[i].y,bumperRing[i].z);
          vert = fullMatrix.MultiplyVector(vert);
-         ringVertices[i].x = (vert.x*scalexy)+m_d.m_vCenter.x;
-         ringVertices[i].y = (vert.y*scalexy)+m_d.m_vCenter.y;
-         ringVertices[i].z = (vert.z*scalexy*m_ptable->m_zScale);
-         ringVertices[i].z *= m_d.m_heightScale;
-         ringVertices[i].z += (baseHeight);
+         ringVertices[i].x = vert.x*scalexy+m_d.m_vCenter.x;
+         ringVertices[i].y = vert.y*scalexy+m_d.m_vCenter.y;
+         ringVertices[i].z = vert.z*scalexy*m_ptable->m_zScale * m_d.m_heightScale + baseHeight;
          vert = Vertex3Ds( bumperRing[i].nx, bumperRing[i].ny, bumperRing[i].nz );
          vert = fullMatrix.MultiplyVectorNoTranslate(vert);
          ringVertices[i].nx = vert.x;
@@ -633,10 +629,9 @@ void Bumper::RenderSetup(RenderDevice* pd3dDevice )
       {
          Vertex3Ds vert(bumperCap[i].x,bumperCap[i].y,bumperCap[i].z);
          vert = fullMatrix.MultiplyVector(vert);
-         vertBuf[i].x = (vert.x*scalexy)+m_d.m_vCenter.x;
-         vertBuf[i].y = (vert.y*scalexy)+m_d.m_vCenter.y;
-         vertBuf[i].z = (vert.z*scalexy*m_ptable->m_zScale);
-         vertBuf[i].z += (baseHeight+84.5f)*m_d.m_heightScale;
+         vertBuf[i].x = vert.x*scalexy+m_d.m_vCenter.x;
+         vertBuf[i].y = vert.y*scalexy+m_d.m_vCenter.y;
+         vertBuf[i].z = vert.z*scalexy*m_ptable->m_zScale + (baseHeight+84.5f)*m_d.m_heightScale;
          vert = Vertex3Ds( bumperCap[i].nx, bumperCap[i].ny, bumperCap[i].nz );
          vert = fullMatrix.MultiplyVectorNoTranslate(vert);
          vertBuf[i].nx = vert.x;

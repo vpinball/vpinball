@@ -4,9 +4,9 @@ float3 vColor = float3(1.f,1.f,1.f);
 
 texture Texture0;
 
-float3 InvGamma(float3 color) //!! use hardware support? D3DSAMP_SRGBTEXTURE,etc
+float3 InvGamma(float3 color) //!! use hardware support? D3DSAMP_SRGBTEXTURE
 {
-	return pow(color,2.2f);
+	return /*color * (color * (color * 0.305306011f + 0.682171111f) + 0.012522878f);/*/ pow(color,2.2f); // pow does not matter anymore on current GPUs
 }
 
 float3 InvToneMap(float3 color)

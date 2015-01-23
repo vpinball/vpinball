@@ -416,10 +416,9 @@ void Gate::UpdateWire( RenderDevice *pd3dDevice )
         Vertex3Ds vert(gateWire[i].x,gateWire[i].y,gateWire[i].z);
         vert = fullMatrix.MultiplyVector(vert);
 
-        buf[i].x = (vert.x*m_d.m_length)+m_d.m_vCenter.x;
-        buf[i].y = (vert.y*m_d.m_length)+m_d.m_vCenter.y;
-        buf[i].z = (vert.z*m_d.m_length*m_ptable->m_zScale);
-        buf[i].z += m_d.m_height+baseHeight;
+        buf[i].x = vert.x*m_d.m_length+m_d.m_vCenter.x;
+        buf[i].y = vert.y*m_d.m_length+m_d.m_vCenter.y;
+        buf[i].z = vert.z*m_d.m_length*m_ptable->m_zScale + m_d.m_height + baseHeight;
         vert = Vertex3Ds( gateWire[i].nx, gateWire[i].ny, gateWire[i].nz );
         vert = fullMatrix.MultiplyVectorNoTranslate(vert);
         buf[i].nx = vert.x;
@@ -492,10 +491,9 @@ void Gate::RenderSetup(RenderDevice* pd3dDevice)
         Vertex3Ds vert(gateBracket[i].x,gateBracket[i].y,gateBracket[i].z);
         vert = fullMatrix.MultiplyVector(vert);
 
-        buf[i].x = (vert.x*m_d.m_length)+m_d.m_vCenter.x;
-        buf[i].y = (vert.y*m_d.m_length)+m_d.m_vCenter.y;
-        buf[i].z = (vert.z*m_d.m_length*m_ptable->m_zScale);
-        buf[i].z += m_d.m_height+baseHeight;
+        buf[i].x = vert.x*m_d.m_length+m_d.m_vCenter.x;
+        buf[i].y = vert.y*m_d.m_length+m_d.m_vCenter.y;
+        buf[i].z = vert.z*m_d.m_length*m_ptable->m_zScale + m_d.m_height + baseHeight;
         vert = Vertex3Ds( gateBracket[i].nx, gateBracket[i].ny, gateBracket[i].nz );
         vert = fullMatrix.MultiplyVectorNoTranslate(vert);
         buf[i].nx = vert.x;
@@ -522,10 +520,9 @@ void Gate::RenderSetup(RenderDevice* pd3dDevice)
         Vertex3Ds vert(gateWire[i].x,gateWire[i].y,gateWire[i].z);
         vert = fullMatrix.MultiplyVector(vert);
 
-        wireVertices[i].x = (vert.x*m_d.m_length)+m_d.m_vCenter.x;
-        wireVertices[i].y = (vert.y*m_d.m_length)+m_d.m_vCenter.y;
-        wireVertices[i].z = (vert.z*m_d.m_length*m_ptable->m_zScale);
-        wireVertices[i].z += m_d.m_height+baseHeight;
+        wireVertices[i].x = vert.x*m_d.m_length+m_d.m_vCenter.x;
+        wireVertices[i].y = vert.y*m_d.m_length+m_d.m_vCenter.y;
+        wireVertices[i].z = vert.z*m_d.m_length*m_ptable->m_zScale + m_d.m_height + baseHeight;
         vert = Vertex3Ds( gateWire[i].nx, gateWire[i].ny, gateWire[i].nz );
         vert = fullMatrix.MultiplyVectorNoTranslate(vert);
         wireVertices[i].nx = vert.x;

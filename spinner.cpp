@@ -299,10 +299,9 @@ void Spinner::UpdatePlate( RenderDevice *pd3dDevice )
         Vertex3Ds vert(spinnerPlate[i].x,spinnerPlate[i].y,spinnerPlate[i].z);
         vert = _fullMatrix.MultiplyVector(vert);
 
-        buf[i].x = (vert.x*m_d.m_length)+m_d.m_vCenter.x;
-        buf[i].y = (vert.y*m_d.m_length)+m_d.m_vCenter.y;
-        buf[i].z = (vert.z*m_d.m_length*m_ptable->m_zScale);
-        buf[i].z += m_posZ;
+        buf[i].x = vert.x*m_d.m_length+m_d.m_vCenter.x;
+        buf[i].y = vert.y*m_d.m_length+m_d.m_vCenter.y;
+        buf[i].z = vert.z*m_d.m_length*m_ptable->m_zScale + m_posZ;
         vert = Vertex3Ds( spinnerPlate[i].nx, spinnerPlate[i].ny, spinnerPlate[i].nz );
         vert = _fullMatrix.MultiplyVectorNoTranslate(vert);
         buf[i].nx = vert.x;
@@ -381,10 +380,9 @@ void Spinner::RenderSetup(RenderDevice* pd3dDevice)
        Vertex3Ds vert(spinnerBracket[i].x,spinnerBracket[i].y,spinnerBracket[i].z);
        vert = fullMatrix.MultiplyVector(vert);
 
-       buf[i].x = (vert.x*m_d.m_length)+m_d.m_vCenter.x;
-       buf[i].y = (vert.y*m_d.m_length)+m_d.m_vCenter.y;
-       buf[i].z = (vert.z*m_d.m_length*m_ptable->m_zScale);
-       buf[i].z += (height+m_d.m_height);
+       buf[i].x = vert.x*m_d.m_length+m_d.m_vCenter.x;
+       buf[i].y = vert.y*m_d.m_length+m_d.m_vCenter.y;
+       buf[i].z = vert.z*m_d.m_length*m_ptable->m_zScale + height + m_d.m_height;
        vert = Vertex3Ds( spinnerBracket[i].nx, spinnerBracket[i].ny, spinnerBracket[i].nz );
        vert = fullMatrix.MultiplyVectorNoTranslate(vert);
        buf[i].nx = vert.x;
@@ -412,10 +410,9 @@ void Spinner::RenderSetup(RenderDevice* pd3dDevice)
        Vertex3Ds vert(spinnerPlate[i].x, spinnerPlate[i].y, spinnerPlate[i].z);
        vert = fullMatrix.MultiplyVector(vert);
 
-       buf[i].x = (vert.x*m_d.m_length);//+m_d.m_vCenter.x;
-       buf[i].y = (vert.y*m_d.m_length);//+m_d.m_vCenter.y;
-       buf[i].z = (vert.z*m_d.m_length*m_ptable->m_zScale);
-       //buf[i].z += (height+m_d.m_height);
+       buf[i].x = vert.x*m_d.m_length;//+m_d.m_vCenter.x;
+       buf[i].y = vert.y*m_d.m_length;//+m_d.m_vCenter.y;
+       buf[i].z = vert.z*m_d.m_length*m_ptable->m_zScale; // + height + m_d.m_height;
        m_posZ = height+m_d.m_height;
 
        vert = Vertex3Ds( spinnerPlate[i].nx, spinnerPlate[i].ny, spinnerPlate[i].nz );

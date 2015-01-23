@@ -735,10 +735,9 @@ void Light::RenderSetup(RenderDevice* pd3dDevice)
         bulbLightVBuffer->lock(0, 0, (void**)&buf, 0);
         for( int i=0;i<bulbLightNumVertices;i++ )
         {
-            buf[i].x = (bulbLight[i].x*m_d.m_meshRadius)+m_d.m_vCenter.x;
-            buf[i].y = (bulbLight[i].y*m_d.m_meshRadius)+m_d.m_vCenter.y;
-            buf[i].z = (bulbLight[i].z*m_d.m_meshRadius*m_ptable->m_zScale);
-            buf[i].z += m_surfaceHeight;
+            buf[i].x = bulbLight[i].x*m_d.m_meshRadius+m_d.m_vCenter.x;
+            buf[i].y = bulbLight[i].y*m_d.m_meshRadius+m_d.m_vCenter.y;
+            buf[i].z = bulbLight[i].z*m_d.m_meshRadius*m_ptable->m_zScale + m_surfaceHeight;
             buf[i].nx = bulbLight[i].nx;
             buf[i].ny = bulbLight[i].ny;
             buf[i].nz = bulbLight[i].nz;
@@ -759,10 +758,9 @@ void Light::RenderSetup(RenderDevice* pd3dDevice)
         bulbSocketVBuffer->lock(0, 0, (void**)&buf, 0);
         for( int i=0;i<bulbSocketNumVertices;i++ )
         {
-            buf[i].x = (bulbSocket[i].x*m_d.m_meshRadius)+m_d.m_vCenter.x;
-            buf[i].y = (bulbSocket[i].y*m_d.m_meshRadius)+m_d.m_vCenter.y;
-            buf[i].z = (bulbSocket[i].z*m_d.m_meshRadius*m_ptable->m_zScale);
-            buf[i].z += m_surfaceHeight;
+            buf[i].x = bulbSocket[i].x*m_d.m_meshRadius+m_d.m_vCenter.x;
+            buf[i].y = bulbSocket[i].y*m_d.m_meshRadius+m_d.m_vCenter.y;
+            buf[i].z = bulbSocket[i].z*m_d.m_meshRadius*m_ptable->m_zScale + m_surfaceHeight;
             buf[i].nx = bulbSocket[i].nx;
             buf[i].ny = bulbSocket[i].ny;
             buf[i].nz = bulbSocket[i].nz;
