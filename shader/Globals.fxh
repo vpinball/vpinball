@@ -97,14 +97,19 @@ float3 FresnelSchlick(float3 spec, float LdotH, float edge)
     return spec + (float3(edge,edge,edge) - spec) * pow(1.0f - LdotH, 5);
 }
 
-float3 InvGamma(float3 color) //!! use hardware support? D3DSAMP_SRGBTEXTURE,etc
+float3 InvGamma(float3 color) //!! use hardware support? D3DSAMP_SRGBTEXTURE
 {
-	return pow(color,2.2f);
+	return /*color * (color * (color * 0.305306011f + 0.682171111f) + 0.012522878f);/*/ pow(color,2.2f); // pow does not matter anymore on current GPUs
 }
 
-float3 FBGamma(float3 color)
+float3 FBGamma(float3 color) //!! use hardware support? D3DRS_SRGBWRITEENABLE
 {
-	return pow(color,1.0f/2.2f);
+	return pow(color,1.0/2.2); // pow does not matter anymore on current GPUs
+
+	/*const float3 t0 = sqrt(color);
+	const float3 t1 = sqrt(t0);
+	const float3 t2 = sqrt(t1);
+	return 0.662002687f * t0 + 0.684122060f * t1 - 0.323583601f * t2 - 0.0225411470f * color;*/
 }
 
 float3 FBToneMap(float3 color)

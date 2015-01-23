@@ -245,10 +245,9 @@ void Kicker::RenderSetup(RenderDevice* pd3dDevice)
          Vertex3Ds vert(kickerCup[i].x,kickerCup[i].y,kickerCup[i].z);
          vert = fullMatrix.MultiplyVector(vert);
 
-         buf[i].x = (vert.x*m_d.m_radius)+m_d.m_vCenter.x;
-         buf[i].y = (vert.y*m_d.m_radius)+m_d.m_vCenter.y;
-         buf[i].z = (vert.z*m_d.m_radius*m_ptable->m_zScale);
-         buf[i].z += height;
+         buf[i].x = vert.x*m_d.m_radius+m_d.m_vCenter.x;
+         buf[i].y = vert.y*m_d.m_radius+m_d.m_vCenter.y;
+         buf[i].z = vert.z*m_d.m_radius*m_ptable->m_zScale + height;
          vert = Vertex3Ds( kickerCup[i].nx, kickerCup[i].ny, kickerCup[i].nz );
          vert = fullMatrix.MultiplyVectorNoTranslate(vert);
          buf[i].nx = vert.x;
@@ -287,10 +286,9 @@ void Kicker::RenderSetup(RenderDevice* pd3dDevice)
          Vertex3Ds vert(kickerHole[i].x,kickerHole[i].y,kickerHole[i].z);
          vert = fullMatrix.MultiplyVector(vert);
 
-         buf[i].x = (vert.x*(m_d.m_radius+0.5f))+m_d.m_vCenter.x;
-         buf[i].y = (vert.y*(m_d.m_radius+0.5f))+m_d.m_vCenter.y;
-         buf[i].z = (vert.z*(m_d.m_radius+0.5f)*m_ptable->m_zScale);
-         buf[i].z += height;
+         buf[i].x = vert.x*(m_d.m_radius+0.5f)+m_d.m_vCenter.x;
+         buf[i].y = vert.y*(m_d.m_radius+0.5f)+m_d.m_vCenter.y;
+         buf[i].z = vert.z*(m_d.m_radius+0.5f)*m_ptable->m_zScale + height;
          vert = Vertex3Ds( kickerHole[i].nx, kickerHole[i].ny, kickerHole[i].nz );
          vert = fullMatrix.MultiplyVectorNoTranslate(vert);
          buf[i].nx = vert.x;

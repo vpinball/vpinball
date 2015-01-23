@@ -125,9 +125,9 @@ void EnvmapPrecalc(const DWORD* const __restrict envmap, const DWORD env_xres, c
 				const float v = acosf(l.z) * (float)(1.0/M_PI);
 				
 				const DWORD rgb = envmap[(int)(u*(float)env_xres)+(int)(v*(float)env_yres)*env_xres];
-				const float r = powf((float)(rgb & 255) * (float)(1.0/255.0), 2.2f); //!! remove invgamma as soon as HDR
-			    const float g = powf((float)(rgb & 65280) * (float)(1.0/65280.0), 2.2f);
-				const float b = powf((float)(rgb & 16711680) * (float)(1.0/16711680.0), 2.2f);
+				const float r = invGammaApprox((float)(rgb & 255) * (float)(1.0/255.0)); //!! remove invgamma as soon as HDR
+				const float g = invGammaApprox((float)(rgb & 65280) * (float)(1.0/65280.0));
+				const float b = invGammaApprox((float)(rgb & 16711680) * (float)(1.0/16711680.0));
 #ifndef USE_ENVMAP_PRECALC_COSINE
 				sum[0] += r * NdotL;
 				sum[1] += g * NdotL;
@@ -149,9 +149,9 @@ void EnvmapPrecalc(const DWORD* const __restrict envmap, const DWORD env_xres, c
 			sum[1] *= (float)(1.0/num_samples);
 			sum[2] *= (float)(1.0/num_samples);
 #endif
-			sum[0] = powf(sum[0],(float)(1.0/2.2)); //!! remove gamma as soon as HDR
-			sum[1] = powf(sum[1],(float)(1.0/2.2));
-			sum[2] = powf(sum[2],(float)(1.0/2.2));
+			sum[0] = gammaApprox(sum[0]); //!! remove gamma as soon as HDR
+			sum[1] = gammaApprox(sum[1]);
+			sum[2] = gammaApprox(sum[2]);
 			rad_envmap[y*rad_env_xres+x] = ((int)(sum[0]*255.0f)) | (((int)(sum[1]*255.0f))<<8) | (((int)(sum[2]*255.0f))<<16);
 		}
 }
