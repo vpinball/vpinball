@@ -4321,6 +4321,15 @@ void PinTable::DoCommand(int icmd, int x, int y)
        AddToCollection( icmd & 0x000000FF );
        return;
    }
+
+   if ( (icmd & 0x0000FFFF) == ID_SELECT_ELEMENT )
+   {
+      int i = (icmd & 0x00FF0000)>>16;
+      ISelect * const pisel = m_allHitElements.ElementAt(i);
+      pisel->DoCommand(icmd, x, y);
+      return;
+   }
+
    switch (icmd)
    {
    case ID_DRAWINFRONT:
@@ -5131,7 +5140,7 @@ bool PinTable::MultiSelIsEmpty()
 // fUpdate tells us whether to go ahead and change the UI
 // based on the new selection, or whether more stuff is coming
 // down the pipe (speeds up drag-selection)
-void PinTable::AddMultiSel(ISelect *psel, bool fAdd, bool fUpdate)
+void PinTable::AddMultiSel(ISelect *psel, bool fAdd, bool fUpdate, bool fContextClick)
 {
    int index = m_vmultisel.IndexOf(psel);
 
@@ -5145,7 +5154,7 @@ void PinTable::AddMultiSel(ISelect *psel, bool fAdd, bool fUpdate)
       if (!fAdd || MultiSelIsEmpty())
       {
             ClearMultiSel(psel);
-            if ( !fAdd )
+            if ( !fAdd && !fContextClick)
             {
                 int colIndex=-1;
                 int elemIndex=-1;
@@ -5206,6 +5215,9 @@ void PinTable::AddMultiSel(ISelect *psel, bool fAdd, bool fUpdate)
 
           psel->m_selectstate = eSelected;
        }
+       else
+          ClearMultiSel(psel);
+
       if (fUpdate)
           SetDirtyDraw();
    }

@@ -110,7 +110,7 @@ void ISelect::DoCommand(int icmd, int x, int y)
           return;
        }
 
-       currentTable->AddMultiSel(pisel, fAdd, fTrue);
+       currentTable->AddMultiSel(pisel, fAdd, fTrue, fTrue);
        return;
     }
     if ( ((icmd & 0x000FFFFF) >= 0x40000 ) && ((icmd & 0x000FFFFF)<0x40020) ) 

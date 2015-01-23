@@ -356,7 +356,7 @@ public:
     void ClearMultiSel(ISelect *newSel = NULL);
     bool MultiSelIsEmpty();
     ISelect *GetSelectedItem() const { return m_vmultisel.ElementAt(0); }
-	void AddMultiSel(ISelect *psel, bool fAdd, bool fUpdate=true);
+	void AddMultiSel(ISelect *psel, bool fAdd, bool fUpdate=true, bool fContextClick=false);
 
 	void BeginAutoSaveCounter();
 	void EndAutoSaveCounter();
