@@ -60,9 +60,9 @@ VS_OUTPUT vs_main (float4 vPosition  : POSITION0,
    return Out; 
 }
 
-float4 ps_main( in VS_OUTPUT IN) : COLOR
+float4 ps_main_DMD( in VS_OUTPUT IN) : COLOR
 {
-   float l = tex2D(texSampler0, IN.tex0).z*(255.9f/100.f);
+   float l = tex2Dlod(texSampler0, float4(IN.tex0, 0.f,0.f)).z*(255.9/100.);
    float3 color = l*vColor; //!! create function that resembles LUT from VPM?
 
    float2 xy = IN.tex0 * float2(fResX,fResY);
@@ -93,7 +93,7 @@ technique basic
    pass P0 
    { 
       VertexShader = compile vs_3_0 vs_main(); 
-	  PixelShader = compile ps_3_0 ps_main();
+	  PixelShader = compile ps_3_0 ps_main_DMD();
    } 
 }
 
