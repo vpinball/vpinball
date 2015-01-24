@@ -76,7 +76,7 @@ vout vsBall( in vin IN )
     float3 normal = normalize(mul(nspin, matWorldView/*InverseTranspose*/)).xyz; //!!?
     
 	OUT.position = mul(pos, matWorldViewProj);
-    OUT.tex0	 = IN.tex0;
+   OUT.tex0	    = IN.tex0;
 	OUT.normal   = normal;
 	OUT.worldPos = p;
 	return OUT;
@@ -210,11 +210,12 @@ float4 psBall( in vout IN ) : COLOR
 	else
 	   playfieldColor = ballImageColor;
 
-	float3 diffuse  = cBase + decalColor.xyz; // assume that decal is used for scratches and/or stickers/logos
+	 float3 diffuse  = cBase;// + decalColor.xyz; // assume that decal is used for scratches and/or stickers/logos
     float3 glossy   = diffuse;
     float3 specular = playfieldColor;
    
-    return ballLightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular, 1.0f);
+    float4 result =ballLightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular, 1.0f);
+    return Screen(decalColor,result, 1.0f);
 }
 
 
