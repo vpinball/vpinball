@@ -142,8 +142,6 @@ public:
 
 	STDMETHOD(FireKnocker)(int Count);
 	STDMETHOD(QuitPlayer)(int CloseType);
-	STDMETHOD(StartShake)();
-	STDMETHOD(StopShake)();
 
 	int m_autosaveTime;
 	static bool m_open_minimized;

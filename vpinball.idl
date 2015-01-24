@@ -530,9 +530,6 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propget, id(218), helpstring("property DeadSlider")] HRESULT DeadSlider([out, retval] int *pVal);
 		[propput, id(218), helpstring("property DeadSlider")] HRESULT DeadSlider([in] int newVal);
 
-		[id(35), helpstring("method StartShake")] HRESULT StartShake([defaultvalue(1)] void);
-		[id(36), helpstring("method StopShake")] HRESULT StopShake([defaultvalue(1)] void);
-
 		[propget, id(558), helpstring("property LightAmbient")] HRESULT LightAmbient([out, retval] OLE_COLOR *pVal);
 		[propput, id(558), helpstring("property LightAmbient")] HRESULT LightAmbient([in] OLE_COLOR newVal);
 		[propget, id(559), helpstring("property Light0Emission")] HRESULT Light0Emission([out, retval] OLE_COLOR *pVal);
@@ -615,8 +612,6 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propget, id(32), helpstring("property RightMagnaSave")] HRESULT RightMagnaSave([out, retval] long *pVal);
 		[propget, id(34), helpstring("property ExitGame")] HRESULT ExitGame([out, retval] long *pVal);
 		[id(33), helpstring("method FireKnocker")] HRESULT FireKnocker([defaultvalue(1)] int Count);
-		[id(35), helpstring("method StartShake")] HRESULT StartShake([defaultvalue(1)] void);
-		[id(36), helpstring("method StopShake")] HRESULT StopShake([defaultvalue(1)] void);
 		[id(37), helpstring("method QuitPlayer")] HRESULT QuitPlayer([defaultvalue(0)] int CloseType);
 
 		[id(38), helpstring("method VersionMajor")] HRESULT VersionMajor([out, retval] int *pVal);

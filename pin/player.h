@@ -166,6 +166,8 @@ public:
     void FlipVideoBuffersNormal( const bool vsync );
     void FlipVideoBuffers3DAOFXAA( const bool vsync );
 
+    void SetScreenOffset(float x, float y);     // set render offset in screen coordinates, e.g., for the nudge shake
+
 	void PhysicsSimulateCycle(float dtime);
 
 	Ball *CreateBall(const float x, const float y, const float z, const float vx, const float vy, const float vz, const float radius = 25.0f, const float mass = 1.0f);
@@ -327,6 +329,8 @@ public:
 	bool m_fUserDebugPaused;
 	bool m_fDebugWindowActive;
 
+    bool m_fNudgeShake;     // whether to shake the screen during digital nudges
+
     bool m_fRecordContacts;             // flag for DoHitTest()
     std::vector< CollisionEvent > m_contacts;
 
@@ -372,14 +376,7 @@ private:
 	float m_BallStretchX;
 	float m_BallStretchY;
 
-	float m_NudgePosX;
-	float m_NudgePosY;
-
-	float m_NudgeVelX;
-	float m_NudgeVelY;
-
-	float m_NudgeAccX;
-	float m_NudgeAccY;
+    Vertex2D m_ScreenOffset;    // for screen shake effect during nudge
 
 	int m_curPlunger;
 

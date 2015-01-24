@@ -43,8 +43,6 @@ public:
 		STDMETHOD(PlaySound)(BSTR bstr, long LoopCount, float volume, float pan, float randompitch, long pitch, VARIANT_BOOL usesame, VARIANT_BOOL restart);
 		STDMETHOD(FireKnocker)(/*[in]*/ int Count);
 		STDMETHOD(QuitPlayer)(/*[in]*/ int CloseType);
-		STDMETHOD(StartShake)(/*[in]*/ void);
-		STDMETHOD(StopShake)(/*[in]*/ void);
 
    		STDMETHOD(Nudge)(float Angle, float Force);
 		STDMETHOD(get_Name)(BSTR *pVal);

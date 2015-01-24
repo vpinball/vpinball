@@ -2244,21 +2244,6 @@ STDMETHODIMP VPinball::QuitPlayer(int CloseType)
    return S_OK;
 }
 
-STDMETHODIMP VPinball::StartShake()
-{
-   if (g_pplayer) g_pplayer->m_ptable->StartShake();
-
-   return S_OK;
-}
-
-
-STDMETHODIMP VPinball::StopShake()
-{
-   if (g_pplayer) g_pplayer->m_ptable->StopShake();
-
-   return S_OK;
-}
-
 
 void VPinball::Quit()
 {
