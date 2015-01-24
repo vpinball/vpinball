@@ -132,7 +132,7 @@ void Gate::SetDefaults(bool fromMouseClick)
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_friction =  fTmp;
    else
-      m_d.m_friction = 0.04f;	
+      m_d.m_friction = 0.02f;	
 
    hr = GetRegStringAsFloat("DefaultProps\\Gate","Scatter", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
