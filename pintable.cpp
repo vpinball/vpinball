@@ -62,20 +62,6 @@ STDMETHODIMP ScriptGlobalTable::QuitPlayer(int CloseType)
    return S_OK;
 }
 
-STDMETHODIMP ScriptGlobalTable::StartShake()
-{
-   m_pt->StartShake();
-
-   return S_OK;
-}
-
-STDMETHODIMP ScriptGlobalTable::StopShake()
-{
-   m_pt->StopShake();
-
-   return S_OK;
-}
-
 STDMETHODIMP ScriptGlobalTable::StopSound(BSTR Sound)
 {
    if (g_pplayer && g_pplayer->m_fPlaySound)
@@ -848,8 +834,6 @@ PinTable::PinTable()
    if ( FAILED(GetRegInt("Player", "TiltTriggerTime", &m_tilt_trigger_time) )
       m_tilt_trigger_time = 10000;
 #endif
-
-   m_Shake = false;
 }
 
 PinTable::~PinTable()
@@ -8381,20 +8365,6 @@ STDMETHODIMP PinTable::QuitPlayer(int CloseType)
       g_pplayer->m_fCloseType = CloseType;
       ExitApp();		
    }
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::StartShake()
-{
-   m_Shake = true;	
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::StopShake()
-{
-   m_Shake = false;	
 
    return S_OK;
 }

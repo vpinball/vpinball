@@ -447,7 +447,6 @@ void BallAnimObject::UpdateVelocities()
 
 void Ball::UpdateVelocities()
 {
-	const float g = g_pplayer->m_gravity.z;
 	const float nx = g_pplayer->m_NudgeX;     // TODO: depends on STEPTIME
 	const float ny = g_pplayer->m_NudgeY;
 	

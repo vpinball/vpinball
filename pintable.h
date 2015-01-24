@@ -155,8 +155,6 @@ public:
 	STDMETHOD(PlaySound)(BSTR bstr, int loopcount, float volume, float pan, float randompitch, int pitch, VARIANT_BOOL usesame, VARIANT_BOOL restart);
 	STDMETHOD(FireKnocker)(/*[in]*/ int Count);
 	STDMETHOD(QuitPlayer)(/*[in]*/ int CloseType);
-	STDMETHOD(StartShake)(/*[in]*/ void);
-	STDMETHOD(StopShake)(/*[in]*/ void);
 
 	STDMETHOD(get_FieldOfView)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_FieldOfView)(/*[in]*/ float newVal);
@@ -647,8 +645,6 @@ END_CONNECTION_POINT_MAP()
 	int m_useAO;
 
     float m_zScale;
-
-	bool m_Shake;		// Is the "Earthshaker" effect active.  This will affect nudge (ball physics) and the render.
 
 	bool m_activeLayers[8];
     bool m_toggleAllLayers;   

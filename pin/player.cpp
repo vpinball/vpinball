@@ -300,6 +300,9 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
 	m_texdmd = NULL;
 	m_device_texdmd = NULL;
     backdropSettingActive = 0;
+
+    m_fNudgeShake = true;       // TODO: add global options checkbox for this
+    m_ScreenOffset = Vertex2D(0,0);
 }
 
 Player::~Player()
@@ -2106,8 +2109,13 @@ void Player::UpdatePhysics()
             const Vertex3Ds force = -m_nudgeSpring * m_tableDisplacement - m_nudgeDamping * m_tableVel;
             m_tableVel += (float)PHYS_FACTOR * force;
             m_tableDisplacement += (float)PHYS_FACTOR * m_tableVel;
-            //if (m_tableVel.LengthSquared() >= 1e-5f)
-            //    slintf("Table shake: %.2f  %.2f\n", m_tableDisplacement.x, m_tableVel.x);
+
+            if (m_fNudgeShake)
+            {
+                // NB: in table coordinates, +Y points down, but in screen coordinates, it points up,
+                // so we have to flip the y component
+                SetScreenOffset(2e-2f * m_tableDisplacement.x, -2e-2f * m_tableDisplacement.y);
+            }
 
             m_tableVelDelta = m_tableVel - m_tableVelOld;
             m_tableVelOld = m_tableVel;
@@ -2345,10 +2353,10 @@ void Player::FlipVideoBuffersNormal( const bool vsync )
 	// copy framebuffer over from texture and tonemap/gamma
     float shiftedVerts[4*5] =
 	{
-	  1.0f, 1.0f,0.0f,1.0f+(float)(1.0/(double)m_width),0.0f+(float)(1.0/(double)m_height),
-	 -1.0f, 1.0f,0.0f,0.0f+(float)(1.0/(double)m_width),0.0f+(float)(1.0/(double)m_height),
-	  1.0f,-1.0f,0.0f,1.0f+(float)(1.0/(double)m_width),1.0f+(float)(1.0/(double)m_height),
-	 -1.0f,-1.0f,0.0f,0.0f+(float)(1.0/(double)m_width),1.0f+(float)(1.0/(double)m_height)
+	  1.0f+m_ScreenOffset.x, 1.0f+m_ScreenOffset.y,0.0f, 1.0f+(float)(1.0/(double)m_width), 0.0f+(float)(1.0/(double)m_height),
+	 -1.0f+m_ScreenOffset.x, 1.0f+m_ScreenOffset.y,0.0f, 0.0f+(float)(1.0/(double)m_width), 0.0f+(float)(1.0/(double)m_height),
+	  1.0f+m_ScreenOffset.x,-1.0f+m_ScreenOffset.y,0.0f, 1.0f+(float)(1.0/(double)m_width), 1.0f+(float)(1.0/(double)m_height),
+	 -1.0f+m_ScreenOffset.x,-1.0f+m_ScreenOffset.y,0.0f, 0.0f+(float)(1.0/(double)m_width), 1.0f+(float)(1.0/(double)m_height)
 	};
 
 	m_pin3d.m_pd3dDevice->BeginScene();
@@ -2450,10 +2458,10 @@ void Player::FlipVideoBuffers3DAOFXAA( const bool vsync ) //!! SMAA, luma sharpe
 
 		float shiftedVerts[4*5] =
 		{
-		  1.0f, 1.0f,0.0f,1.0f+(float)(1.0/(double)m_width),0.0f+(float)(1.0/(double)m_height),
-		 -1.0f, 1.0f,0.0f,0.0f+(float)(1.0/(double)m_width),0.0f+(float)(1.0/(double)m_height),
-		  1.0f,-1.0f,0.0f,1.0f+(float)(1.0/(double)m_width),1.0f+(float)(1.0/(double)m_height),
-		 -1.0f,-1.0f,0.0f,0.0f+(float)(1.0/(double)m_width),1.0f+(float)(1.0/(double)m_height)
+		  1.0f+m_ScreenOffset.x, 1.0f+m_ScreenOffset.y,0.0f, 1.0f+(float)(1.0/(double)m_width), 0.0f+(float)(1.0/(double)m_height),
+		 -1.0f+m_ScreenOffset.x, 1.0f+m_ScreenOffset.y,0.0f, 0.0f+(float)(1.0/(double)m_width), 0.0f+(float)(1.0/(double)m_height),
+		  1.0f+m_ScreenOffset.x,-1.0f+m_ScreenOffset.y,0.0f, 1.0f+(float)(1.0/(double)m_width), 1.0f+(float)(1.0/(double)m_height),
+		 -1.0f+m_ScreenOffset.x,-1.0f+m_ScreenOffset.y,0.0f, 0.0f+(float)(1.0/(double)m_width), 1.0f+(float)(1.0/(double)m_height)
 		};
 
 		m_pin3d.m_pd3dDevice->basicShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetBackBufferTexture());
@@ -2480,6 +2488,14 @@ void Player::FlipVideoBuffers3DAOFXAA( const bool vsync ) //!! SMAA, luma sharpe
 	// switch to texture output buffer again
 	m_pin3d.m_pd3dDevice->SetRenderTarget(m_pin3d.m_pd3dDevice->GetBackBuffer());
 }
+
+
+void Player::SetScreenOffset(float x, float y)
+{
+    m_ScreenOffset.x = x;
+    m_ScreenOffset.y = y;
+}
+
 
 void Player::UpdateBackdropSettings(const bool up)
 {
