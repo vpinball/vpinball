@@ -184,11 +184,17 @@ void Light::SetDefaults(bool fromMouseClick)
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szSurface[0] = 0;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Light","FadeSpeed", &fTmp);
+   hr = GetRegStringAsFloat("DefaultProps\\Light","FadeSpeedUp", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
-      m_d.m_fadeSpeed = fTmp;
+      m_d.m_fadeSpeedUp = fTmp;
    else
-      m_d.m_fadeSpeed = 0.2f;
+      m_d.m_fadeSpeedUp = 0.2f;
+
+   hr = GetRegStringAsFloat("DefaultProps\\Light","FadeSpeedDown", &fTmp);
+   if ((hr == S_OK) && fromMouseClick)
+      m_d.m_fadeSpeedDown = fTmp;
+   else
+      m_d.m_fadeSpeedDown = 0.2f;
 
    hr = GetRegInt("DefaultProps\\Light","Bulb", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
@@ -234,7 +240,8 @@ void Light::WriteRegDefaults()
    SetRegValue("DefaultProps\\Light","BlinkInterval", REG_DWORD, &m_blinkinterval,4);
    SetRegValue("DefaultProps\\Light","BorderColor", REG_DWORD, &m_d.m_bordercolor,4);
    SetRegValue("DefaultProps\\Light","Surface", REG_SZ, &m_d.m_szSurface, lstrlen(m_d.m_szSurface));
-   SetRegValueFloat("DefaultProps\\Light","FadeSpeed", m_d.m_fadeSpeed);
+   SetRegValueFloat("DefaultProps\\Light","FadeSpeedUp", m_d.m_fadeSpeedUp);
+   SetRegValueFloat("DefaultProps\\Light","FadeSpeedDown", m_d.m_fadeSpeedDown);
    SetRegValueFloat("DefaultProps\\Light","Intensity", m_d.m_intensity);
    SetRegValueBool("DefaultProps\\Light","Bulb", m_d.m_BulbLight);
    SetRegValueBool("DefaultProps\\Light","ShowBulbMesh", m_d.m_showBulbMesh);
@@ -546,7 +553,7 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
     {
        if (m_d.m_currentIntensity<m_d.m_intensity*m_d.m_intensity_scale )
        {
-          m_d.m_currentIntensity+=m_d.m_fadeSpeed*diff_time_msec;
+          m_d.m_currentIntensity+=m_d.m_fadeSpeedUp*diff_time_msec;
           if(m_d.m_currentIntensity>m_d.m_intensity*m_d.m_intensity_scale )
              m_d.m_currentIntensity=m_d.m_intensity*m_d.m_intensity_scale;
        }
@@ -555,7 +562,7 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
     {
        if (m_d.m_currentIntensity>0.0f )
        {
-          m_d.m_currentIntensity-=m_d.m_fadeSpeed*diff_time_msec;
+          m_d.m_currentIntensity-=m_d.m_fadeSpeedDown*diff_time_msec;
           if(m_d.m_currentIntensity<0.0f )
              m_d.m_currentIntensity=0.0f;
        }
@@ -820,7 +827,8 @@ HRESULT Light::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptke
    bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
    bw.WriteBool(FID(BGLS), m_fBackglass);
    bw.WriteFloat(FID(LIDB), m_d.m_depthBias);
-   bw.WriteFloat(FID(FASP), m_d.m_fadeSpeed);
+   bw.WriteFloat(FID(FASP), m_d.m_fadeSpeedUp);
+   bw.WriteFloat(FID(FASD), m_d.m_fadeSpeedDown);
    bw.WriteBool(FID(BULT), m_d.m_BulbLight);
    bw.WriteBool(FID(SHBM), m_d.m_showBulbMesh);
    bw.WriteFloat(FID(BMSC), m_d.m_meshRadius);
@@ -946,7 +954,11 @@ BOOL Light::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(FASP))
    {
-       pbr->GetFloat(&m_d.m_fadeSpeed);
+       pbr->GetFloat(&m_d.m_fadeSpeedUp);
+   }
+   else if (id == FID(FASD))
+   {
+       pbr->GetFloat(&m_d.m_fadeSpeedDown);
    }
    else if (id == FID(BULT))
    {
@@ -1427,18 +1439,36 @@ STDMETHODIMP Light::put_DepthBias(float newVal)
    return S_OK;
 }
 
-STDMETHODIMP Light::get_FadeSpeed(float *pVal)
+STDMETHODIMP Light::get_FadeSpeedUp(float *pVal)
 {
-   *pVal = m_d.m_fadeSpeed;
+   *pVal = m_d.m_fadeSpeedUp;
 
    return S_OK;
 }
 
-STDMETHODIMP Light::put_FadeSpeed(float newVal)
+STDMETHODIMP Light::put_FadeSpeedUp(float newVal)
 {
    STARTUNDO
 
-   m_d.m_fadeSpeed = newVal;
+   m_d.m_fadeSpeedUp = newVal;
+
+   STOPUNDO
+
+   return S_OK;
+}
+
+STDMETHODIMP Light::get_FadeSpeedDown(float *pVal)
+{
+   *pVal = m_d.m_fadeSpeedDown;
+
+   return S_OK;
+}
+
+STDMETHODIMP Light::put_FadeSpeedDown(float newVal)
+{
+   STARTUNDO
+
+   m_d.m_fadeSpeedDown = newVal;
 
    STOPUNDO
 

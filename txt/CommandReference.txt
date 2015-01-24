@@ -96,8 +96,6 @@ Methods
 -------
 
 Nudge(float Angle, float Force)
-StartShake()
-StopShake()
 PlaySound(string, int loopcount, float volume, float pan, float randompitch, int pitch, bool usesame, bool restart)
 FireKnocker(int Count)
 QuitPlayer(int CloseType)
@@ -355,7 +353,8 @@ UserValue(any)
 *OffImage(string)
 *OnImageIsLightmap(int) - if set to 1 the on image is used as a add. alpha blend image, this works only on custom light shapes
 DepthBias(float)
-FadeSpeed(float)
+FadeSpeedUp(float) - speed to fade into on state
+FadeSpeedDown(float) - speed to fade into off state
 Bulb(int)
 ShowBulbMesh(int)
 ScaleBulbMesh(float)

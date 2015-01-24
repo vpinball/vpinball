@@ -16,7 +16,8 @@ public:
 	float m_falloff_power;
     float m_intensity;
 	float m_intensity_scale;
-    float m_fadeSpeed;
+    float m_fadeSpeedUp;
+    float m_fadeSpeedDown;
 	U32 m_time_msec;
     float m_currentIntensity;
 	float m_modulate_vs_add;
@@ -221,8 +222,10 @@ public:
 	STDMETHOD(put_OffImage)(/*[in]*/ BSTR newVal);
    STDMETHOD(get_DepthBias)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_DepthBias)(/*[in]*/ float newVal);
-   STDMETHOD(get_FadeSpeed)(/*[out, retval]*/ float *pVal);
-   STDMETHOD(put_FadeSpeed)(/*[in]*/ float newVal);
+   STDMETHOD(get_FadeSpeedUp)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_FadeSpeedUp)(/*[in]*/ float newVal);
+   STDMETHOD(get_FadeSpeedDown)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_FadeSpeedDown)(/*[in]*/ float newVal);
    STDMETHOD(get_Bulb)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_Bulb)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_ShowBulbMesh)(/*[out, retval]*/ VARIANT_BOOL *pVal);

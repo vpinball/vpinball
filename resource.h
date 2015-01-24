@@ -512,7 +512,7 @@
 #define IDC_SIZE_WIDTH                  377
 #define IDC_WIRE_DIAMETER               377
 #define IDC_MAX_PRE_FRAMES              377
-#define IDC_FADE_SPEED                  377
+#define IDC_FADE_SPEED_UP               377
 #define IDC_XMAX_EDIT                   377
 #define IDC_DIFFUSE_EDIT                377
 #define IDC_HEIGHT_EDIT                 378
@@ -631,6 +631,7 @@
 #define IDC_INTENSITY_SCALE_LIGHT       434
 #define IDC_INTENSITY_SCALE_FLASHER     435
 #define IDC_DAYNIGHT_SLIDER             436
+#define IDC_FADE_SPEED_DOWN             437
 #define IDC_JOYLFLIPCOMBO               501
 #define IDC_JOYRFLIPCOMBO               502
 #define IDC_JOYPLUNGERCOMBO             503
@@ -834,7 +835,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        614
 #define _APS_NEXT_COMMAND_VALUE         32998
-#define _APS_NEXT_CONTROL_VALUE         437
+#define _APS_NEXT_CONTROL_VALUE         438
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif
