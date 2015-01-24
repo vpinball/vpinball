@@ -174,7 +174,7 @@ float4 psBall( in vout IN ) : COLOR
 	float2 uv0;
 	uv0.x = r.x*0.5f+0.5f;
 	uv0.y = r.y*0.5f+0.5f;
-	float3 ballImageColor = InvGamma(tex2D( texSampler0, uv0 ).xyz)*fenvEmissionScale;
+	float3 ballImageColor = InvGamma(tex2Dlod( texSampler0, float4(uv0, 0.f,0.f) ).xyz)*fenvEmissionScale;
 
 	float4 decalColor = tex2D( texSampler2, IN.tex0 );
 	decalColor.xyz = InvGamma(decalColor.xyz)*decalColor.a;
@@ -199,7 +199,7 @@ float4 psBall( in vout IN ) : COLOR
        float2 uv;
 	   uv.x = (position.x + hit.x) * invTableWidth;
 	   uv.y = (position.y + hit.y) * invTableHeight;
-	   playfieldColor = InvGamma(tex2D( texSampler1, uv ).xyz); //!! rather use screen space sample from previous frame??
+	   playfieldColor = InvGamma(tex2Dlod( texSampler1, float4(uv, 0.f,0.f) ).xyz); //!! rather use screen space sample from previous frame??
 	   
 	   //!! hack to get some lighting on sample, but only diffuse, the rest is not setup correctly anyhow
 	   playfieldColor = lightLoop(mid, mul(float4(/*normal=*/0,0,1,0), matWorldView).xyz, /*camera=0,0,0,1*/-mid, playfieldColor, float3(0,0,0), float3(0,0,0), 1.0f).xyz;
