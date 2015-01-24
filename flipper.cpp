@@ -50,7 +50,7 @@ void Flipper::SetDefaults(bool fromMouseClick)
    m_d.m_EndRadius = (hr == S_OK) && fromMouseClick ? fTmp : 13.f;		// 6
 
    hr = GetRegStringAsFloat("DefaultProps\\Flipper","Length", &fTmp);
-   m_d.m_FlipperRadiusMax = (hr == S_OK) && fromMouseClick ? fTmp : 125.f;	// 80
+   m_d.m_FlipperRadiusMax = (hr == S_OK) && fromMouseClick ? fTmp : 130.f;	// 80
 
    hr = GetRegStringAsFloat("DefaultProps\\Flipper","MaxDifLength", &fTmp);
    m_d.m_FlipperRadiusMin = (hr == S_OK) && fromMouseClick ? fTmp : 0;
@@ -60,19 +60,19 @@ void Flipper::SetDefaults(bool fromMouseClick)
    //m_d.m_angleEOS = 0; //!! reenable?
 
    hr = GetRegStringAsFloat("DefaultProps\\Flipper","ReturnStrength", &fTmp);
-   m_d.m_return = (hr == S_OK) && fromMouseClick ? fTmp : 0.09f;
+   m_d.m_return = (hr == S_OK) && fromMouseClick ? fTmp : 0.07f;
 
    hr = GetRegStringAsFloat("DefaultProps\\Flipper","Speed", &fTmp);
-   m_d.m_mass = (hr == S_OK) && fromMouseClick ? fTmp : 0.15f;
+   m_d.m_mass = (hr == S_OK) && fromMouseClick ? fTmp : 1.08f;
 
    hr = GetRegStringAsFloat("DefaultProps\\Flipper","Elasticity", &fTmp);
-   m_d.m_elasticity = (hr == S_OK) && fromMouseClick ? fTmp : 0.55f;
+   m_d.m_elasticity = (hr == S_OK) && fromMouseClick ? fTmp : 0.85f;
 
-   m_d.m_elasticityFalloff = GetRegStringAsFloatWithDefault("DefaultProps\\Flipper","ElasticityFalloff", 0.43f);
+   m_d.m_elasticityFalloff = GetRegStringAsFloatWithDefault("DefaultProps\\Flipper","ElasticityFalloff", 0.4f);
 
    m_d.m_OverridePhysics = 0;
 
-   m_d.m_friction = GetRegStringAsFloatWithDefault("DefaultProps\\Flipper","Friction", 0.8f);
+   m_d.m_friction = GetRegStringAsFloatWithDefault("DefaultProps\\Flipper","Friction", 0.85f);
    m_d.m_rampUp = GetRegStringAsFloatWithDefault("DefaultProps\\Flipper","RampUp", 0.0f);
 
    m_d.m_scatter = 0.0;
@@ -97,7 +97,7 @@ void Flipper::SetDefaults(bool fromMouseClick)
       m_d.m_szSurface[0] = 0;
 
    hr = GetRegStringAsFloat("DefaultProps\\Flipper","Strength", &fTmp);
-   m_d.m_strength = (hr == S_OK) && fromMouseClick ? fTmp : 3.0f;
+   m_d.m_strength = (hr == S_OK) && fromMouseClick ? fTmp : 2000.0f;
 
    hr = GetRegStringAsFloat("DefaultProps\\Flipper","Height", &fTmp);
    m_d.m_height = (hr == S_OK) && fromMouseClick ? fTmp : 50;
