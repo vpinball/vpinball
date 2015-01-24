@@ -51,6 +51,7 @@ YieldTime(int) - time in milliseconds to sleep during each frame - can help side
 
 BallImage(string) 
 BallFrontDecal(string) - image of the ball front decal
+BallDecalMode(bool) - switch between using the ball decal as ball logo or ball 'scratches'
 
 *DisplayGrid(bool) - default=true
 *DisplayBackdrop(bool) - displays backdrop image in editor. default=true
@@ -65,7 +66,7 @@ BallFrontDecal(string) - image of the ball front decal
 *ReflectionStrength(int) - defines the reflection strength of the ball reflection (0-255)
 *BallTrail - enable ball trail/motion blur on table. depending on the global video setting 'Ball Trail/Motion Blur' this is on or off. Or it is defined specific for this table.
 *TrailStrength(int) - defines the strength of the ball trail (0-255)
-*AlphaRampAccuracy(int) - defines the alpha ramp accuracy for this table and overrides the global setting from the video options (range 0-10).
+*RampAccuracy(int) - defines the ramp accuracy for this table and overrides the global setting from the video options (range 0-10).
 
 PlungerNormalize(int) - Mech-Plunger component adjustment or weak spring, aging. default=100
 PlungerFilter(bool) - default=false
