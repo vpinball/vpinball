@@ -11,6 +11,8 @@ float    radius;
 float    ballStretchX;
 float    ballStretchY;
 
+bool     decalMode;
+
 //float4   camera;
 
 // this is used for the orientation matrix
@@ -210,12 +212,17 @@ float4 psBall( in vout IN ) : COLOR
 	else
 	   playfieldColor = ballImageColor;
 
-	 float3 diffuse  = cBase;// + decalColor.xyz; // assume that decal is used for scratches and/or stickers/logos
+	 float3 diffuse  = cBase;
+	 if(!decalMode)
+	     diffuse += decalColor.xyz; // assumes that decal is used for scratches, etc
     float3 glossy   = diffuse;
     float3 specular = playfieldColor;
    
     float4 result =ballLightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular, 1.0f);
-    return Screen(decalColor,result, 1.0f);
+	if(!decalMode)
+	    return result;
+	else
+        return Screen(decalColor,result, 1.0f); // assumes that decal is used for logos, etc
 }
 
 
