@@ -91,14 +91,6 @@ typedef [uuid(E15D60BC-7E32-4cc5-BA16-E5C368D5891B)]
 		}
 		RampType;
 
-typedef [uuid(4DD01BC6-6A50-4061-A01E-5798021A04AE)]
-	enum PlungerType
-		{
-		PlungerTypeOrig = 0,
-		PlungerTypeModern = 1,
-		}
-		PlungerType;
-
 typedef [uuid(08844451-F92F-4d5c-8FFF-5973F7DBFFB0)]
 	enum TextAlignment
 		{
@@ -940,8 +932,6 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(DISPID_Name), helpstring("property Name")] HRESULT Name([in] BSTR newVal);
 		[propget, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([out, retval] VARIANT* pVal);
 		[propput, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([in] VARIANT* newVal);
-		[propget, id(390), helpstring("property Type")] HRESULT Type([out, retval] PlungerType *pVal);
-		[propput, id(390), helpstring("property Type")] HRESULT Type([in] PlungerType newVal);
 		[propget, id(340), helpstring("property Material")] HRESULT Material([out, retval] BSTR *pVal);
 		[propput, id(340), helpstring("property Material")] HRESULT Material([in] BSTR newVal);
 		[propget, id(DISPID_Image), helpstring("property Image")] HRESULT Image([out, retval] BSTR *pVal);

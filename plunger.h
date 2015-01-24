@@ -19,7 +19,6 @@ public:
 	float m_speedPull;
 	float m_speedFire;
 	float m_mechStrength;
-	PlungerType m_type;
 	char m_szImage[MAXTOKEN];
 	TimerDataRoot m_tdr;
 	BOOL m_mechPlunger;
@@ -123,8 +122,6 @@ public:
 	STDMETHOD(put_MechStrength)(/*[in]*/ float newVal);
 	STDMETHOD(Fire)();
 	STDMETHOD(PullBack)();
-	STDMETHOD(get_Type)(/*[out, retval]*/ PlungerType *pVal);
-	STDMETHOD(put_Type)(/*[in]*/ PlungerType newVal);
 	STDMETHOD(get_Material)(/*[out, retval]*/ BSTR *pVal);
 	STDMETHOD(put_Material)(/*[in]*/ BSTR newVal);
 	STDMETHOD(get_Image)(/*[out, retval]*/ BSTR *pVal);
