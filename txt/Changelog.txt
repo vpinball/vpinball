@@ -135,6 +135,9 @@ VP 10.0.0 Changelog
 
 - support primitive vertex sizes > 65535
 
+- its not necessary anymore to manually override the texture filtering quality in the global gfx cards options (NVIDIA control panel, etc)
+  if you need HQ filtering, please only use the checkbox in the VP video preferences instead
+
 - new external audio library for music playback (BASS)
 
 - 64bit port (handle with care, might still cause issues)
