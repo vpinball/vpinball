@@ -672,7 +672,7 @@ void Primitive::RenderSetup( RenderDevice* pd3dDevice )
 
 void Primitive::RenderStatic(RenderDevice* pd3dDevice)
 {
-   if( m_d.staticRendering )
+   if( m_d.staticRendering && m_d.m_fVisible)
    {
       RenderObject(pd3dDevice);
    }
