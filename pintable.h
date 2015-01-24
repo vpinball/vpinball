@@ -232,7 +232,10 @@ public:
     STDMETHOD(get_GlobalStereo3D)(/*[out, retval]*/ VARIANT_BOOL *pVal);
     STDMETHOD(put_GlobalStereo3D)(/*[in]*/ VARIANT_BOOL newVal);
 
-    STDMETHOD(Version)(/*[out, retval]*/ int *pVal);
+    STDMETHOD(get_BallDecalMode)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+    STDMETHOD(put_BallDecalMode)(/*[in]*/ VARIANT_BOOL newVal);
+
+	STDMETHOD(Version)(/*[out, retval]*/ int *pVal);
 
 	/////////////////////////////////////////////
 
@@ -561,6 +564,7 @@ END_CONNECTION_POINT_MAP()
 
 	char m_szBallImage[MAXTOKEN];
 	char m_szBallImageFront[MAXTOKEN];
+	bool m_BallDecalMode;
 
 	//CComObject<Surface> *m_psur;
 

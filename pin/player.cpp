@@ -805,6 +805,7 @@ void Player::InitBallShader()
    ballShader->Core()->SetFloat("ballStretchY", m_BallStretchY );
    ballShader->Core()->SetFloat("invTableWidth", inv_tablewidth );
    ballShader->Core()->SetFloat("invTableHeight", inv_tableheight );
+   ballShader->Core()->SetBool("decalMode", m_ptable->m_BallDecalMode );
 
    //D3DXVECTOR4 cam( matView._41, matView._42, matView._43, 1 );
    //ballShader->Core()->SetVector("camera", &cam);

@@ -2757,6 +2757,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
    bw.WriteInt(FID(BREF), m_useReflectionForBalls );
    bw.WriteInt(FID(BRST), m_ballReflectionStrength );
    bw.WriteInt(FID(BTRA), m_useTrailForBalls );
+   bw.WriteBool(FID(BDMO), m_BallDecalMode);
    bw.WriteInt(FID(BTST), m_ballTrailStrength );
    bw.WriteInt(FID(ARAC), m_userAlphaRampsAccuracy );
    bw.WriteBool(FID(OGAC), m_overwriteGlobalAlphaRampsAccuracy );
@@ -3187,6 +3188,8 @@ void PinTable::SetLoadDefaults()
    m_TableSoundVolume = 1.0f;
    m_TableMusicVolume = 1.0f;
 
+   m_BallDecalMode = false;
+
    m_TableAdaptiveVSync = -1;
    GetRegInt( "Player", "Width", &m_renderWidth );
    GetRegInt( "Player", "Height", &m_renderHeight );
@@ -3526,6 +3529,10 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(SVOL))
    {
       pbr->GetFloat(&m_TableSoundVolume);
+   }
+   else if (id == FID(BDMO))
+   {
+      pbr->GetBool(&m_BallDecalMode);
    }
    else if (id == FID(MVOL))
    {
@@ -7397,6 +7404,24 @@ STDMETHODIMP PinTable::put_GlobalStereo3D(VARIANT_BOOL newVal )
 		m_maxSeparation = m_globalMaxSeparation;
 		m_ZPD = m_globalZPD;
     }
+
+	STOPUNDO
+
+    return S_OK;
+}
+
+STDMETHODIMP PinTable::get_BallDecalMode(VARIANT_BOOL *pVal)
+{
+    *pVal = (VARIANT_BOOL)FTOVB(m_BallDecalMode);
+
+    return S_OK;
+}
+
+STDMETHODIMP PinTable::put_BallDecalMode(VARIANT_BOOL newVal )
+{
+    STARTUNDO
+
+    m_BallDecalMode = !!newVal;
 
 	STOPUNDO
 

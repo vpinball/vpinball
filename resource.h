@@ -632,6 +632,7 @@
 #define IDC_INTENSITY_SCALE_FLASHER     435
 #define IDC_DAYNIGHT_SLIDER             436
 #define IDC_FADE_SPEED_DOWN             437
+#define IDC_BALL_DECAL_MODE             438
 #define IDC_JOYLFLIPCOMBO               501
 #define IDC_JOYRFLIPCOMBO               502
 #define IDC_JOYPLUNGERCOMBO             503
@@ -835,7 +836,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        614
 #define _APS_NEXT_COMMAND_VALUE         32998
-#define _APS_NEXT_CONTROL_VALUE         438
+#define _APS_NEXT_CONTROL_VALUE         439
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif
