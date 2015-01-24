@@ -222,7 +222,7 @@ float4 psBall( in vout IN ) : COLOR
 	if(!decalMode)
 	    return result;
 	else
-        return Screen(decalColor,result, 1.0f); // assumes that decal is used for logos, etc
+        return Screen(decalColor*(fenvEmissionScale*0.25f),result, 1.0f); // assumes that decal is used for logos, etc //!! *0.25f = magic to compensate for post-lighting-screenblend trick
 }
 
 
