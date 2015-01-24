@@ -62,12 +62,6 @@ void Plunger::SetDefaults(bool fromMouseClick)
 	else
 		m_d.m_speedPull = 5;
 
-	hr = GetRegInt("DefaultProps\\Plunger","PlungerType", &iTmp);
-	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_type = (enum PlungerType)iTmp;
-	else
-		m_d.m_type = PlungerTypeOrig;
-
 	hr = GetRegInt("DefaultProps\\Plunger","Color", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_color = iTmp;
@@ -150,7 +144,6 @@ void Plunger::WriteRegDefaults()
 	SetRegValueFloat("DefaultProps\\Plunger","Stroke", m_d.m_stroke);
 	SetRegValueFloat("DefaultProps\\Plunger","PullSpeed", m_d.m_speedPull);
 	SetRegValueFloat("DefaultProps\\Plunger","ReleaseSpeed", m_d.m_speedFire);
-	SetRegValue("DefaultProps\\Plunger","PlungerType",REG_DWORD,&m_d.m_type,4);
 	SetRegValue("DefaultProps\\Plunger","Color",REG_DWORD,&m_d.m_color,4);
 	SetRegValue("DefaultProps\\Plunger","Image", REG_SZ, &m_d.m_szImage, lstrlen(m_d.m_szImage));
 	SetRegValue("DefaultProps\\Plunger","TimerEnabled",REG_DWORD, &m_d.m_tdr.m_fTimerEnabled,4);
@@ -277,51 +270,41 @@ void Plunger::PostRenderStatic(RenderDevice* pd3dDevice)
     Material *mat = m_ptable->GetMaterial( m_d.m_szMaterial);
 	pd3dDevice->basicShader->SetMaterial(mat);
 
-    if (m_d.m_type == PlungerTypeModern)
-    {
-        Texture *pin = m_ptable->GetImage(m_d.m_szImage);
-        if ( renderNewPlunger )
-        {
-            //render a simple rectangle as an embedded alpha ramp plunger ;)
+     Texture *pin = m_ptable->GetImage(m_d.m_szImage);
+     if ( renderNewPlunger )
+     {
+         //render a simple rectangle as an embedded alpha ramp plunger ;)
 //            D3DXVECTOR4 color(1.0f,1.0f,1.0f,1.0f);
 //            pd3dDevice->basicShader->Core()->SetVector("cBase",&color);
-            pd3dDevice->basicShader->SetTexture("Texture0",pin);
-            pd3dDevice->basicShader->SetTechnique("basic_with_texture");
-            ppin3d->EnableAlphaBlend( 1, false );
-            //ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
-            static const WORD idx[6] = {0,1,2,2,3,0};
-            pd3dDevice->basicShader->Begin(0);
-            pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, vertexBuffer, frame*4, 4, (LPWORD)idx, 6);
-            pd3dDevice->basicShader->End();
-        }
-        else
-        {
-            if ( pin )
-            {
+         pd3dDevice->basicShader->SetTexture("Texture0",pin);
+         pd3dDevice->basicShader->SetTechnique("basic_with_texture");
+         ppin3d->EnableAlphaBlend( 1, false );
+         //ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
+         static const WORD idx[6] = {0,1,2,2,3,0};
+         pd3dDevice->basicShader->Begin(0);
+         pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, vertexBuffer, frame*4, 4, (LPWORD)idx, 6);
+         pd3dDevice->basicShader->End();
+     }
+     else
+     {
+         if ( pin )
+         {
 //                 D3DXVECTOR4 color(1.0f,1.0f,1.0f,1.0f);
 //                 pd3dDevice->basicShader->Core()->SetVector("cBase",&color);
-                pd3dDevice->basicShader->SetTexture("Texture0",pin);
-                pd3dDevice->basicShader->SetTechnique("basic_with_texture");
-                ppin3d->EnableAlphaBlend( 1, false );
-                //ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
-            }
-            else
-            {
-                //ppin3d->SetTexture(NULL);
-                pd3dDevice->basicShader->SetTechnique("basic_without_texture");
-            }
-            pd3dDevice->basicShader->Begin(0);
-            pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, vertexBuffer, frame*(16*PLUNGEPOINTS1), 16*PLUNGEPOINTS1, indexBuffer, 0, 16*6*(PLUNGEPOINTS1-1));
-            pd3dDevice->basicShader->End();
-        }
-    }
-    else if (m_d.m_type == PlungerTypeOrig)
-    {
-        ppin3d->DisableAlphaBlend();
-        pd3dDevice->basicShader->Begin(0);
-        pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, vertexBuffer, frame*(16*PLUNGEPOINTS0), 16*PLUNGEPOINTS0, indexBuffer, 0, 16*6*(PLUNGEPOINTS0-1));
-        pd3dDevice->basicShader->End();
-    }
+             pd3dDevice->basicShader->SetTexture("Texture0",pin);
+             pd3dDevice->basicShader->SetTechnique("basic_with_texture");
+             ppin3d->EnableAlphaBlend( 1, false );
+             //ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
+         }
+         else
+         {
+             //ppin3d->SetTexture(NULL);
+             pd3dDevice->basicShader->SetTechnique("basic_without_texture");
+         }
+         pd3dDevice->basicShader->Begin(0);
+         pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, vertexBuffer, frame*(16*PLUNGEPOINTS1), 16*PLUNGEPOINTS1, indexBuffer, 0, 16*6*(PLUNGEPOINTS1-1));
+         pd3dDevice->basicShader->End();
+     }
 }
 
 const float rgcrossplunger0[][2] =
@@ -388,7 +371,7 @@ void Plunger::RenderSetup(RenderDevice* pd3dDevice )
    const float inv_cframes = (cframes > 1) ? ((endy - beginy)/(float)(cframes-1)) : 0.0f;
    const float inv_scale = (cframes > 1) ? (1.0f/(float)(cframes-1)) : 0.0f;
 
-   const int plungePoints = (m_d.m_type == PlungerTypeModern) ? PLUNGEPOINTS1 : PLUNGEPOINTS0;
+   const int plungePoints = PLUNGEPOINTS1;
    const int vtsPerFrame = 16 * plungePoints;
 
    if ( vertexBuffer == NULL )
@@ -399,18 +382,6 @@ void Plunger::RenderSetup(RenderDevice* pd3dDevice )
    vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY);
 
    renderNewPlunger=false;
-/*
-   //This is a special test case if the mapping of the moddern plunger isn't usable for everyone
-   //if renderNewPlunger is true a simple rectangle is drawn with an alpha map, it's the same like the alpha plunger method
-   if ( m_d.m_type == PlungerTypeModern )
-   {
-      Texture *pin = m_ptable->GetImage(m_d.m_szImage);
-      if ( pin )
-      {
-         renderNewPlunger=true;
-      }
-   }
-*/
    Vertex3D_NoTex2 verts[16*PLUNGEPOINTS1];
    Vertex3D_NoTex2 * const ptr = verts;
 
@@ -418,84 +389,41 @@ void Plunger::RenderSetup(RenderDevice* pd3dDevice )
    {
       const float height = beginy + inv_cframes*(float)i;
 
-      if (m_d.m_type == PlungerTypeModern)
+      if ( !renderNewPlunger )
       {
-         if ( !renderNewPlunger )
+         // creating the modern plunger by going in a circle for each angle seven points on the Y axis are calculated
+         // start around the middle of the texture otherwise it looks odd
+         float tu=0.51f;
+         const float stepU = 1.0f/16.0f;
+         for (int l=0;l<16;l++, tu+=stepU)
          {
-            // creating the modern plunger by going in a circle for each angle seven points on the Y axis are calculated
-            // start around the middle of the texture otherwise it looks odd
-            float tu=0.51f;
-            const float stepU = 1.0f/16.0f;
-            for (int l=0;l<16;l++, tu+=stepU)
-            {
-               if ( tu>1.0f ) tu=1.0f-tu;
-               const float angle = (float)(M_PI*2.0/16.0)*(float)l;
-               const float sn = sinf(angle);
-               const float cs = cosf(angle);
-               const int offset = l*PLUNGEPOINTS1;
-               for (int m=0;m<PLUNGEPOINTS1;m++)
-               {
-                  ptr[m + offset].x = rgcrossplunger1[m][0] * (sn * m_d.m_width) + m_d.m_v.x;
-                  ptr[m + offset].y = rgcrossplunger1[m][1] + height;
-                  ptr[m + offset].z = (rgcrossplunger1[m][0] * (cs * m_d.m_width) + m_d.m_width + zheight) * m_ptable->m_zScale;
-                  ptr[m + offset].nx = rgcrossplungerNormal1[m][0] * sn;
-                  ptr[m + offset].ny = rgcrossplungerNormal1[m][1];
-                  ptr[m + offset].nz = rgcrossplungerNormal1[m][0] * cs;
-                  ptr[m + offset].tu = tu;
-                  ptr[m + offset].tv = rgcrossplunger1[m][2];
-               }
-               ptr[PLUNGEPOINTS1-1 + offset].y = m_d.m_v.y + m_d.m_height; // cuts off at bottom (bottom of shaft disappears)
-            }
-            memcpy( &buf[vbOffset], ptr, 16*PLUNGEPOINTS1*sizeof(Vertex3D_NoTex2));
-            vbOffset += (16*PLUNGEPOINTS1);
-         }
-         else   // renderNewPlunger
-         {
-            const float tv = (float)i*inv_scale;    // tv in range [0,1]
-            ptr[0].x = m_d.m_v.x;               ptr[0].nx = 0.0f;          ptr[0].tu = 0.0f;
-            ptr[0].y = m_d.m_v.y;               ptr[0].ny = 0.0f;          ptr[0].tv = tv;
-            ptr[0].z = m_d.m_width+zheight;     ptr[0].nz = 1.0f;
-            ptr[1].x = m_d.m_v.x;               ptr[1].nx = 0.0f;          ptr[1].tu = 0.0f;
-            ptr[1].y = height;                  ptr[1].ny = 0.0f;          ptr[1].tv = 0.0f;
-            ptr[1].z = m_d.m_width+zheight;     ptr[1].nz = 1.0f;
-            ptr[2].x = m_d.m_v.x+m_d.m_width;   ptr[2].nx = 0.0f;          ptr[2].tu = 1.0f;
-            ptr[2].y = height;                  ptr[2].ny = 0.0f;          ptr[2].tv = 0.0f;
-            ptr[2].z = m_d.m_width+zheight;     ptr[2].nz = 1.0f;
-            ptr[3].x = m_d.m_v.x+m_d.m_width;   ptr[3].nx = 0.0f;          ptr[3].tu = 1.0f;
-            ptr[3].y = m_d.m_v.y;               ptr[3].ny = 0.0f;          ptr[3].tv = tv;
-            ptr[3].z = m_d.m_width+zheight;     ptr[3].nz = 1.0f;
-            memcpy( &buf[vbOffset], ptr, 4*sizeof(Vertex3D_NoTex2));
-            vbOffset += 4;
-         }
-      }
-      else if (m_d.m_type == PlungerTypeOrig)
-      {
-         for (int l=0;l<16;l++)
-         {
+            if ( tu>1.0f ) tu=1.0f-tu;
             const float angle = (float)(M_PI*2.0/16.0)*(float)l;
             const float sn = sinf(angle);
             const float cs = cosf(angle);
-            const int offset = l*PLUNGEPOINTS0;
-            for (int m=0;m<PLUNGEPOINTS0;m++)
+            const int offset = l*PLUNGEPOINTS1;
+            for (int m=0;m<PLUNGEPOINTS1;m++)
             {
-               ptr[m + offset].x = rgcrossplunger0[m][0] * (sn * m_d.m_width) + m_d.m_v.x;
-               ptr[m + offset].y = height + rgcrossplunger0[m][1];
-               ptr[m + offset].z = (rgcrossplunger0[m][0] * (cs * m_d.m_width) + m_d.m_width + zheight)*m_ptable->m_zScale;
-               ptr[m + offset].nx = rgcrossplungerNormal0[m][0] * sn;
-               ptr[m + offset].ny = rgcrossplungerNormal0[m][1];
-               ptr[m + offset].nz = -rgcrossplungerNormal0[m][0] * cs;
+               ptr[m + offset].x = rgcrossplunger1[m][0] * (sn * m_d.m_width) + m_d.m_v.x;
+               ptr[m + offset].y = rgcrossplunger1[m][1] + height;
+               ptr[m + offset].z = (rgcrossplunger1[m][0] * (cs * m_d.m_width) + m_d.m_width + zheight) * m_ptable->m_zScale;
+               ptr[m + offset].nx = rgcrossplungerNormal1[m][0] * sn;
+               ptr[m + offset].ny = rgcrossplungerNormal1[m][1];
+               ptr[m + offset].nz = rgcrossplungerNormal1[m][0] * cs;
+               ptr[m + offset].tu = tu;
+               ptr[m + offset].tv = rgcrossplunger1[m][2];
             }
-            ptr[PLUNGEPOINTS0-1 + offset].y = m_d.m_v.y + m_d.m_height; // cuts off at bottom (bottom of shaft disappears)
+            ptr[PLUNGEPOINTS1-1 + offset].y = m_d.m_v.y + m_d.m_height; // cuts off at bottom (bottom of shaft disappears)
          }
-         memcpy( &buf[vbOffset], ptr, 16*PLUNGEPOINTS0*sizeof(Vertex3D_NoTex2));
-         vbOffset += (16*PLUNGEPOINTS0);
+         memcpy( &buf[vbOffset], ptr, 16*PLUNGEPOINTS1*sizeof(Vertex3D_NoTex2));
+         vbOffset += (16*PLUNGEPOINTS1);
       }
    }
    vertexBuffer->unlock();
 
 
    // set up index buffer
-   if (!(m_d.m_type == PlungerTypeModern && renderNewPlunger))
+   if (!renderNewPlunger)
    {
        WORD indices[16*PLUNGEPOINTS1*6];
 
@@ -550,7 +478,6 @@ HRESULT Plunger::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
 	bw.WriteFloat(FID(HPSL), m_d.m_stroke);
 	bw.WriteFloat(FID(SPDP), m_d.m_speedPull);
 	bw.WriteFloat(FID(SPDF), m_d.m_speedFire);
-	bw.WriteInt(FID(TYPE), m_d.m_type);
 	bw.WriteString(FID(MATR), m_d.m_szMaterial);
 	bw.WriteString(FID(IMAG), m_d.m_szImage);
 
@@ -654,10 +581,6 @@ BOOL Plunger::LoadToken(int id, BiffReader *pbr)
 	else if (id == FID(NAME))
 		{
 		pbr->GetWideString((WCHAR *)m_wzName);
-		}
-	else if (id == FID(TYPE))
-		{
-		pbr->GetInt(&m_d.m_type);
 		}
 	else if (id == FID(MATR))
 		{
@@ -864,23 +787,6 @@ STDMETHODIMP Plunger::put_FireSpeed(float newVal)
 	return S_OK;
 }
 
-STDMETHODIMP Plunger::get_Type(PlungerType *pVal)
-{
-	*pVal = m_d.m_type;
-
-	return S_OK;
-}
-
-STDMETHODIMP Plunger::put_Type(PlungerType newVal)
-{
-	STARTUNDO
-
-	m_d.m_type = newVal;
-
-	STOPUNDO
-
-	return S_OK;
-}
 
 STDMETHODIMP Plunger::get_Material(BSTR *pVal)
 {
