@@ -142,7 +142,7 @@ VP 10.0.0 Changelog
 
 - 64bit port (handle with care, might still cause issues)
 
-- script editor updated to use latest scintilla (3.5.2)
+- script editor updated to use latest scintilla (3.5.3)
 
 - DirectX 8 port for input handling (currently disabled)
 
