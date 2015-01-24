@@ -295,7 +295,7 @@ BEGIN
     GROUPBOX        "3D Stereo Output",IDC_STATIC,259,7,85,80
     GROUPBOX        "Performance and Troubleshooting",IDC_STATIC,154,123,190,146
     GROUPBOX        "Max Texture Dimension (for low-end gfx boards)",IDC_STATIC,159,181,180,54
-    LTEXT           "Alpha Ramp Accuracy (decrease = performance)",IDC_STATIC,162,238,156,8
+    LTEXT           "Ramp Accuracy (decrease = performance)",IDC_STATIC,162,238,156,8
     GROUPBOX        "Ball aspect ratio for stretched Tables",IDC_STATIC,12,200,133,62
     LTEXT           "to my Monitor:",IDC_STATIC,27,244,45,8
 END
@@ -1254,7 +1254,7 @@ BEGIN
     LTEXT           "Table Sound Volume (0..100)",IDC_STATIC,7,83,94,8
     LTEXT           "Table Music Volume (0..100)",IDC_STATIC,7,97,94,8
     LTEXT           "Adaptive VSync (-1=default)",IDC_STATIC,7,111,94,8
-    GROUPBOX        "Alpha Ramp Accuracy",IDC_STATIC,7,123,114,44
+    GROUPBOX        "Ramp Accuracy",IDC_STATIC,7,123,114,44
     CONTROL         "Overwrite Global Settings",IDC_GLOBAL_ALPHA_ACC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,154,95,10
 END
 

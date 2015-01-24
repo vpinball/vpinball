@@ -40,7 +40,7 @@ class AnimObject;
 inline float ElasticityWithFalloff(float elasticity, float falloff, float vel)
 {
     if (falloff > 0)
-        return elasticity / (1.0f + falloff * fabsf(vel) / 18.53f);
+        return elasticity / (1.0f + falloff * fabsf(vel) * (float)(1.0/18.53));
     else
         return elasticity;
 }
