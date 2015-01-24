@@ -378,44 +378,44 @@ VS_OUTPUT vs_kicker (float4 vPosition  : POSITION0,
 
 float4 ps_main_fb_tonemap( in VS_OUTPUT_2D IN) : COLOR
 {
-    return float4(FBColorGrade(FBGamma(FBToneMap(tex2D(texSampler5, IN.tex0).xyz))), 1.0f);
+    return float4(FBColorGrade(FBGamma(FBToneMap(tex2Dlod(texSampler5, float4(IN.tex0, 0.f,0.f)).xyz))), 1.0f);
 }
 
 float4 ps_main_fb_tonemap_AO( in VS_OUTPUT_2D IN) : COLOR
 {
-	return float4(FBColorGrade(FBGamma(FBToneMap(tex2D(texSampler5, IN.tex0).xyz*(
-           tex2D(texSampler3, IN.tex0-fb_inv_resolution_05).x /*+ //Blur:
+	return float4(FBColorGrade(FBGamma(FBToneMap(tex2Dlod(texSampler5, float4(IN.tex0, 0.f,0.f)).xyz*(
+           tex2Dlod(texSampler3, float4(IN.tex0-fb_inv_resolution_05, 0.f,0.f)).x /*+ //Blur:
 
-           tex2D(texSampler3, IN.tex0+float2(0.0f,fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05).x+
-		   tex2D(texSampler3, IN.tex0-float2(0.0f,fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05).x+
-		   tex2D(texSampler3, IN.tex0+float2(fb_inv_resolution_05.x*2.0f,0.0f)-fb_inv_resolution_05).x+
-		   tex2D(texSampler3, IN.tex0-float2(fb_inv_resolution_05.x*2.0f,0.0f)-fb_inv_resolution_05).x+
+           tex2Dlod(texSampler3, float4(IN.tex0+float2(0.0f,fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05, 0.f,0.f)).x+
+		   tex2Dlod(texSampler3, float4(IN.tex0-float2(0.0f,fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05, 0.f,0.f)).x+
+		   tex2Dlod(texSampler3, float4(IN.tex0+float2(fb_inv_resolution_05.x*2.0f,0.0f)-fb_inv_resolution_05, 0.f,0.f)).x+
+		   tex2Dlod(texSampler3, float4(IN.tex0-float2(fb_inv_resolution_05.x*2.0f,0.0f)-fb_inv_resolution_05, 0.f,0.f)).x+
 
-           tex2D(texSampler3, IN.tex0+float2(fb_inv_resolution_05.x*2.0f,-fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05).x+
-		   tex2D(texSampler3, IN.tex0+float2(-fb_inv_resolution_05.x*2.0f,fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05).x+
-		   tex2D(texSampler3, IN.tex0+float2(fb_inv_resolution_05.x*2.0f,fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05).x+
-		   tex2D(texSampler3, IN.tex0-float2(fb_inv_resolution_05.x*2.0f,fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05).x)/9.0f*/) ))), 1.0f);
+           tex2Dlod(texSampler3, float4(IN.tex0+float2(fb_inv_resolution_05.x*2.0f,-fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05, 0.f,0.f)).x+
+		   tex2Dlod(texSampler3, float4(IN.tex0+float2(-fb_inv_resolution_05.x*2.0f,fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05, 0.f,0.f)).x+
+		   tex2Dlod(texSampler3, float4(IN.tex0+float2(fb_inv_resolution_05.x*2.0f,fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05, 0.f,0.f)).x+
+		   tex2Dlod(texSampler3, float4(IN.tex0-float2(fb_inv_resolution_05.x*2.0f,fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05, 0.f,0.f)).x)/9.0f*/) ))), 1.0f);
 }
 
 float4 ps_main_fb_tonemap_no_filter( in VS_OUTPUT_2D IN) : COLOR
 {
-    return float4(FBColorGrade(FBGamma(FBToneMap(tex2D(texSampler4, IN.tex0+fb_inv_resolution_05).xyz))), 1.0f);
+    return float4(FBColorGrade(FBGamma(FBToneMap(tex2Dlod(texSampler4, float4(IN.tex0+fb_inv_resolution_05, 0.f,0.f)).xyz))), 1.0f);
 }
 
 float4 ps_main_fb_tonemap_AO_no_filter( in VS_OUTPUT_2D IN) : COLOR
 {
-	return float4(FBColorGrade(FBGamma(FBToneMap(tex2D(texSampler4, IN.tex0+fb_inv_resolution_05).xyz*(
-           tex2D(texSampler3, IN.tex0-fb_inv_resolution_05).x /*+ //Blur:
+	return float4(FBColorGrade(FBGamma(FBToneMap(tex2Dlod(texSampler4, float4(IN.tex0+fb_inv_resolution_05, 0.f,0.f)).xyz*(
+           tex2Dlod(texSampler3, float4(IN.tex0-fb_inv_resolution_05, 0.f,0.f)).x /*+ //Blur:
 
-           tex2D(texSampler3, IN.tex0+float2(0.0f,fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05).x+
-		   tex2D(texSampler3, IN.tex0-float2(0.0f,fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05).x+
-		   tex2D(texSampler3, IN.tex0+float2(fb_inv_resolution_05.x*2.0f,0.0f)-fb_inv_resolution_05).x+
-		   tex2D(texSampler3, IN.tex0-float2(fb_inv_resolution_05.x*2.0f,0.0f)-fb_inv_resolution_05).x+
+           tex2Dlod(texSampler3, float4(IN.tex0+float2(0.0f,fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05, 0.f,0.f)).x+
+		   tex2Dlod(texSampler3, float4(IN.tex0-float2(0.0f,fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05, 0.f,0.f)).x+
+		   tex2Dlod(texSampler3, float4(IN.tex0+float2(fb_inv_resolution_05.x*2.0f,0.0f)-fb_inv_resolution_05, 0.f,0.f)).x+
+		   tex2Dlod(texSampler3, float4(IN.tex0-float2(fb_inv_resolution_05.x*2.0f,0.0f)-fb_inv_resolution_05, 0.f,0.f)).x+
 
-           tex2D(texSampler3, IN.tex0+float2(fb_inv_resolution_05.x*2.0f,-fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05).x+
-		   tex2D(texSampler3, IN.tex0+float2(-fb_inv_resolution_05.x*2.0f,fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05).x+
-		   tex2D(texSampler3, IN.tex0+float2(fb_inv_resolution_05.x*2.0f,fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05).x+
-		   tex2D(texSampler3, IN.tex0-float2(fb_inv_resolution_05.x*2.0f,fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05).x)/9.0f*/) ))), 1.0f);
+           tex2Dlod(texSampler3, float4(IN.tex0+float2(fb_inv_resolution_05.x*2.0f,-fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05, 0.f,0.f)).x+
+		   tex2Dlod(texSampler3, float4(IN.tex0+float2(-fb_inv_resolution_05.x*2.0f,fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05, 0.f,0.f)).x+
+		   tex2Dlod(texSampler3, float4(IN.tex0+float2(fb_inv_resolution_05.x*2.0f,fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05, 0.f,0.f)).x+
+		   tex2Dlod(texSampler3, float4(IN.tex0-float2(fb_inv_resolution_05.x*2.0f,fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05, 0.f,0.f)).x)/9.0f*/) ))), 1.0f);
 }
 
 //------------------------------------

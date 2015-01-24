@@ -129,8 +129,8 @@ float3 FBColorGrade(float3 color)
    color.z *= 15.0f;
 
    float x = (color.x + floor(color.z))/16.0f;
-   float3 lut1 = tex2D(texSampler6, float2(x,            color.y)).xyz; // two lookups to blend/lerp between blue 2D regions
-   float3 lut2 = tex2D(texSampler6, float2(x+1.0f/16.0f, color.y)).xyz;
+   float3 lut1 = tex2Dlod(texSampler6, float4(x,            color.y, 0.f,0.f)).xyz; // two lookups to blend/lerp between blue 2D regions
+   float3 lut2 = tex2Dlod(texSampler6, float4(x+1.0f/16.0f, color.y, 0.f,0.f)).xyz;
    return lerp(lut1,lut2, frac(color.z));
 }
 
@@ -175,7 +175,7 @@ float3 DoEnvmapDiffuse(float3 N, float3 diffuse)
 		atan2(N.y, N.x) * (0.5f/PI) + 0.5f,
 	    acos(N.z) * (1.0f/PI));
 
-   return diffuse * InvGamma(tex2D(texSampler2, uv).xyz)*fenvEmissionScale; //!! replace by real HDR instead? -> remove invgamma then
+   return diffuse * InvGamma(tex2Dlod(texSampler2, float4(uv, 0.f,0.f)).xyz)*fenvEmissionScale; //!! replace by real HDR instead? -> remove invgamma then
 }
 
 //!! PI?
