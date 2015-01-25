@@ -6,8 +6,6 @@
 
 //#define COMPRESS_MESHES // abuses the VP-Image-LZW compressor for compressing the meshes (usually pretty weak though, overall compresses the full VPX by 0-10% only)
 
-//#define FP_RESET_AFTER_D3D // resets FPU after D3D, shouldn't be really useful nowadays anymore (and if it is we should rather fix it where it happens)
-
 //#define _CRTDBG_MAP_ALLOC
 #ifdef _CRTDBG_MAP_ALLOC
  #include <crtdbg.h>
