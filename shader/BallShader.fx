@@ -174,10 +174,15 @@ float4 psBall( in vout IN ) : COLOR
 	float2 uv0;
 	uv0.x = r.x*0.5f+0.5f;
 	uv0.y = r.y*0.5f+0.5f;
-	float3 ballImageColor = InvGamma(tex2Dlod( texSampler0, float4(uv0, 0.f,0.f) ).xyz)*fenvEmissionScale;
-
+   float3 ballImageColor = tex2Dlod( texSampler0, float4(uv0, 0.f,0.f) ).xyz;
+   
 	float4 decalColor = tex2D( texSampler2, IN.tex0 );
-	decalColor.xyz = InvGamma(decalColor.xyz)*decalColor.a;
+	if ( !decalMode )
+	   ballImageColor = ballImageColor + decalColor*decalColor.a;
+	else
+	   ballImageColor = Screen( float4(ballImageColor,1.0f), decalColor, 1.0f).xyz;
+	   
+   ballImageColor = InvGamma(ballImageColor)*fenvEmissionScale;
 	
 	/*float3 normal = float3(0,0,1);
 	float NdotR = dot(normal,r);*/
@@ -205,7 +210,7 @@ float4 psBall( in vout IN ) : COLOR
 	   playfieldColor = lightLoop(mid, mul(float4(/*normal=*/0,0,1,0), matWorldView).xyz, /*camera=0,0,0,1*/-mid, playfieldColor, float3(0,0,0), float3(0,0,0), 1.0f).xyz;
 	   
 	   //!! magic falloff & weight the rest in from the ballImage
-	   float weight = freflectionStrength*sqrt(-NdotR);
+	   float weight = freflectionStrength*0.05f*sqrt(-NdotR);
 	   playfieldColor *= weight;
 	   playfieldColor += ballImageColor*(1.0f-weight);
 	}
@@ -213,16 +218,11 @@ float4 psBall( in vout IN ) : COLOR
 	   playfieldColor = ballImageColor;
 
 	 float3 diffuse  = cBase;
-	 if(!decalMode)
-	     diffuse += decalColor.xyz; // assumes that decal is used for scratches, etc
     float3 glossy   = diffuse;
     float3 specular = playfieldColor;
    
     float4 result =ballLightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular, 1.0f);
-	if(!decalMode)
-	    return result;
-	else
-        return Screen(decalColor*(fenvEmissionScale*0.25f),result, 1.0f); // assumes that decal is used for logos, etc //!! *0.25f = magic to compensate for post-lighting-screenblend trick
+    return result;
 }
 
 
