@@ -71,7 +71,6 @@ static UINT ComputePrimitiveCount(const D3DPRIMITIVETYPE type, const int vertexC
     }
 }
 
-//
 
 void ReportError(const HRESULT hr, const char *file, const int line)
 {
@@ -81,9 +80,6 @@ void ReportError(const HRESULT hr, const char *file, const int line)
     exit(-1);
 }
 
-#define CHECKD3D(s) { HRESULT hr = (s); if (FAILED(hr)) ReportError(hr, __FILE__, __LINE__); }
-
-//
 
 D3DTexture* TextureManager::LoadTexture(BaseTexture* memtex)
 {
