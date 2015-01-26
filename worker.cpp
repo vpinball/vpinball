@@ -83,7 +83,7 @@ void CompleteAutoSave(HANDLE hEvent, LPARAM lParam)
 	IStorage *pstgDisk;
 
 	WCHAR *wzSaveName = L"AutoSave";
-	WCHAR *wzSaveExtension = L".vpt";
+	WCHAR *wzSaveExtension = L".vpx";
 	WCHAR wzSuffix[32];
 	_itow_s(pasp->tableindex, wzSuffix, sizeof(wzSuffix)/sizeof(WCHAR), 10);
 
