@@ -3757,7 +3757,14 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
          hwndCheck = GetDlgItem(hwndDlg, IDC_QFXAA);
          SendMessage(hwndCheck, BM_SETCHECK, (fxaa == 2) ? BST_CHECKED : BST_UNCHECKED, 0);
 
-         hwndCheck = GetDlgItem(hwndDlg, IDC_3D_STEREO);
+         hwndCheck = GetDlgItem(hwndDlg, IDC_BG_SET);
+         int bgset;
+         hr = GetRegInt("Player", "BGSet", &bgset);
+         if (hr != S_OK)
+            bgset = 0;
+         SendMessage(hwndCheck, BM_SETCHECK, (bgset != 0) ? BST_CHECKED : BST_UNCHECKED, 0);
+
+		 hwndCheck = GetDlgItem(hwndDlg, IDC_3D_STEREO);
          int stereo3D;
          hr = GetRegInt("Player", "Stereo3D", &stereo3D);
          if (hr != S_OK)
@@ -3940,7 +3947,11 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
 				  else
 					SetRegValue("Player", "FXAA", REG_DWORD, &ffxaa, 4);
 
-                  HWND hwndUseAA = GetDlgItem(hwndDlg, IDC_AA_ALL_TABLES);
+                  HWND hwndBGSet = GetDlgItem(hwndDlg, IDC_BG_SET);
+				  size_t m_BGSet = SendMessage(hwndBGSet, BM_GETCHECK, 0, 0);
+                  SetRegValue("Player", "BGSet", REG_DWORD, &m_BGSet, 4);
+
+				  HWND hwndUseAA = GetDlgItem(hwndDlg, IDC_AA_ALL_TABLES);
 				  size_t m_useAA = SendMessage(hwndUseAA, BM_GETCHECK, 0, 0);
                   SetRegValue("Player", "USEAA", REG_DWORD, &m_useAA, 4);
 

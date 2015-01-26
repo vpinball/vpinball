@@ -272,7 +272,7 @@ void Primitive::RecalculateMatrices()
 {
    // scale matrix
    Matrix3D Smatrix;
-   Smatrix.SetScaling( m_d.m_vSize.x, m_d.m_vSize.y, m_d.m_vSize.z * m_ptable->m_zScale );
+   Smatrix.SetScaling( m_d.m_vSize.x, m_d.m_vSize.y, m_d.m_vSize.z * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] );
 
    // translation matrix
    Matrix3D Tmatrix;

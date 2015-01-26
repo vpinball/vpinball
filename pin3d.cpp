@@ -363,9 +363,9 @@ Matrix3D ComputeLaybackTransform(float layback)
 void Pin3D::InitLayout()
 {
     TRACE_FUNCTION();
-	const float rotation = ANGTORAD(g_pplayer->m_ptable->m_rotation);
-	const float inclination = ANGTORAD(g_pplayer->m_ptable->m_inclination);
-	const float FOV = (g_pplayer->m_ptable->m_FOV < 1.0f) ? 1.0f : g_pplayer->m_ptable->m_FOV;
+	const float rotation = ANGTORAD(g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set]);
+	const float inclination = ANGTORAD(g_pplayer->m_ptable->m_BG_inclination[g_pplayer->m_ptable->m_BG_current_set]);
+	const float FOV = (g_pplayer->m_ptable->m_BG_FOV[g_pplayer->m_ptable->m_BG_current_set] < 1.0f) ? 1.0f : g_pplayer->m_ptable->m_BG_FOV[g_pplayer->m_ptable->m_BG_current_set];
 
 	Vector<Vertex3Ds> vvertex3D;
 	for (int i=0; i<g_pplayer->m_ptable->m_vedit.Size(); ++i)
@@ -373,16 +373,16 @@ void Pin3D::InitLayout()
 
 	const float aspect = ((float)m_dwRenderWidth)/((float)m_dwRenderHeight); //(float)(4.0/3.0);
 
-    m_proj.FitCameraToVertices(&vvertex3D, aspect, rotation, inclination, FOV, g_pplayer->m_ptable->m_xlatez, g_pplayer->m_ptable->m_layback);
+    m_proj.FitCameraToVertices(&vvertex3D, aspect, rotation, inclination, FOV, g_pplayer->m_ptable->m_BG_xlatez[g_pplayer->m_ptable->m_BG_current_set], g_pplayer->m_ptable->m_BG_layback[g_pplayer->m_ptable->m_BG_current_set]);
 
 	m_proj.m_matWorld.SetIdentity();
 
     m_proj.m_matView.RotateXMatrix((float)M_PI);  // convert Z=out to Z=in (D3D coordinate system)
-    m_proj.ScaleView(g_pplayer->m_ptable->m_scalex, g_pplayer->m_ptable->m_scaley, 1.0f);
-    m_proj.TranslateView(g_pplayer->m_ptable->m_xlatex-m_proj.m_vertexcamera.x, g_pplayer->m_ptable->m_xlatey-m_proj.m_vertexcamera.y, -m_proj.m_vertexcamera.z);
+    m_proj.ScaleView(g_pplayer->m_ptable->m_BG_scalex[g_pplayer->m_ptable->m_BG_current_set], g_pplayer->m_ptable->m_BG_scaley[g_pplayer->m_ptable->m_BG_current_set], 1.0f);
+    m_proj.TranslateView(g_pplayer->m_ptable->m_BG_xlatex[g_pplayer->m_ptable->m_BG_current_set]-m_proj.m_vertexcamera.x, g_pplayer->m_ptable->m_BG_xlatey[g_pplayer->m_ptable->m_BG_current_set]-m_proj.m_vertexcamera.y, -m_proj.m_vertexcamera.z);
     m_proj.RotateView(0, 0, rotation);
     m_proj.RotateView(inclination, 0, 0);
-    m_proj.MultiplyView(ComputeLaybackTransform(g_pplayer->m_ptable->m_layback));
+    m_proj.MultiplyView(ComputeLaybackTransform(g_pplayer->m_ptable->m_BG_layback[g_pplayer->m_ptable->m_BG_current_set]));
 
     // recompute near and far plane (workaround for VP9 FitCameraToVertices bugs)
     m_proj.ComputeNearFarPlane(vvertex3D);

@@ -644,7 +644,6 @@ PinTable::PinTable()
    m_undo.m_ptable = this;
    m_fGrid = true;
    m_fBackdrop = true;
-   m_fRenderShadows = true;
 
    m_fRenderDecals = true;
    m_fRenderEMReels = true;
@@ -664,20 +663,29 @@ PinTable::PinTable()
    m_right = 0.0f;
    m_bottom = 0.0f;
 
-   m_rotation = 0;
-   m_layback = 0;
-
    m_glassheight = 210;
    m_tableheight = 0;
 
-   m_scalex = 1.0f;
-   m_scaley = 1.0f;
+   m_BG_current_set = 0;
+   /*const HRESULT hr =*/ GetRegInt("Player", "BGSet", (int*)&m_BG_current_set);
 
-   m_xlatex = 0.0f;
-   m_xlatey = 0.0f;
+   for(int i = 0; i < NUM_BG_SETS; ++i)
+   {
+	   m_BG_inclination[i] = 0;
+	   m_BG_FOV[i] = FLT_MAX;
 
-   m_zScale = 1.0f;
-   m_xlatez = 0.0f;
+	   m_BG_rotation[i] = 0;
+	   m_BG_layback[i] = 0;
+
+	   m_BG_scalex[i] = 1.0f;
+	   m_BG_scaley[i] = 1.0f;
+
+	   m_BG_xlatex[i] = 0.0f;
+	   m_BG_xlatey[i] = 0.0f;
+
+	   m_BG_scalez[i] = 1.0f;
+	   m_BG_xlatez[i] = 0.0f;
+   }
 
    CComObject<CodeViewer>::CreateInstance(&m_pcv);
    m_pcv->AddRef();
@@ -1301,6 +1309,24 @@ void PinTable::InitPostLoad(VPinball *pvp)
 {
    m_pvp = pvp;
 
+   if(m_BG_FOV[1] == FLT_MAX) // old (VP9-) table, copy FS settings over from old setting
+   {
+	   m_BG_inclination[1] = m_BG_inclination[0];
+	   m_BG_FOV[1] = m_BG_FOV[0];
+
+	   m_BG_rotation[1] = m_BG_rotation[0];
+	   m_BG_layback[1] = m_BG_layback[0];
+
+	   m_BG_scalex[1] = m_BG_scalex[0];
+	   m_BG_scaley[1] = m_BG_scaley[0];
+
+	   m_BG_xlatex[1] = m_BG_xlatex[0];
+	   m_BG_xlatey[1] = m_BG_xlatey[0];
+
+	   m_BG_scalez[1] = m_BG_scalez[0];
+	   m_BG_xlatez[1] = m_BG_xlatez[0];
+   }
+
    m_hbmOffScreen = NULL;
    m_fDirtyDraw = true;
 
@@ -1541,9 +1567,9 @@ void PinTable::Render(Sur * const psur)
 
 void PinTable::Render3DProjection(Sur * const psur)
 {
-   const float rotation = ANGTORAD(m_rotation);
-   const float inclination = ANGTORAD(m_inclination);
-   const float FOV = (m_FOV < 1.0f) ? 1.0f : m_FOV; // Can't have a real zero FOV, but this will look almost the same
+   const float rotation = ANGTORAD(m_BG_rotation[m_BG_current_set]);
+   const float inclination = ANGTORAD(m_BG_inclination[m_BG_current_set]);
+   const float FOV = (m_BG_FOV[m_BG_current_set] < 1.0f) ? 1.0f : m_BG_FOV[m_BG_current_set]; // Can't have a real zero FOV, but this will look almost the same
 
    Vector<Vertex3Ds> vvertex3D;
    for (int i=0;i<m_vedit.Size();i++)
@@ -1559,9 +1585,12 @@ void PinTable::Render3DProjection(Sur * const psur)
    pinproj.m_rcviewport.bottom = EDITOR_BG_HEIGHT;
 
 //   const float aspect = 4.0f/3.0f;
-   const float aspect = ((float)m_renderWidth)/((float)m_renderHeight); //(float)(4.0/3.0);
+   int renderWidth,renderHeight;
+   GetRegInt( "Player", "Width", &renderWidth );
+   GetRegInt( "Player", "Height", &renderHeight );
+   const float aspect = ((float)renderWidth)/((float)renderHeight); //(float)(4.0/3.0);
 
-   pinproj.FitCameraToVertices(&vvertex3D, aspect, rotation, inclination, FOV, m_xlatez, m_layback);
+   pinproj.FitCameraToVertices(&vvertex3D, aspect, rotation, inclination, FOV, m_BG_xlatez[m_BG_current_set], m_BG_layback[m_BG_current_set]);
    pinproj.m_matView.RotateXMatrix((float)M_PI);  // convert Z=out to Z=in (D3D coordinate system)
    pinproj.m_matWorld.SetIdentity();
    D3DXMATRIX proj;
@@ -1570,11 +1599,11 @@ void PinTable::Render3DProjection(Sur * const psur)
 
    //pinproj.SetFieldOfView(FOV, aspect, pinproj.m_rznear, pinproj.m_rzfar);
 
-   pinproj.ScaleView(m_scalex, m_scaley, 1.0f);
-   pinproj.TranslateView(m_xlatex-pinproj.m_vertexcamera.x, m_xlatey-pinproj.m_vertexcamera.y, -pinproj.m_vertexcamera.z);
+   pinproj.ScaleView(m_BG_scalex[m_BG_current_set], m_BG_scaley[m_BG_current_set], 1.0f);
+   pinproj.TranslateView(m_BG_xlatex[m_BG_current_set]-pinproj.m_vertexcamera.x, m_BG_xlatey[m_BG_current_set]-pinproj.m_vertexcamera.y, -pinproj.m_vertexcamera.z);
    pinproj.RotateView(0, 0, rotation);
    pinproj.RotateView(inclination, 0, 0);
-   pinproj.MultiplyView(ComputeLaybackTransform(m_layback));
+   pinproj.MultiplyView(ComputeLaybackTransform(m_BG_layback[m_BG_current_set]));
 
    pinproj.CacheTransform();
 
@@ -1879,27 +1908,27 @@ void PinTable::StopPlaying()
    // if the simulation was run without a save first.
    // But I'm not sure how to fix it... - JEP
    
-   float inclination = m_inclination;
-   float fov = m_FOV;
-   float layback = m_layback;
-   float xlatex = m_xlatex;
-   float xlatey = m_xlatey;
-   float xlatez = m_xlatez;
-   float xscale = m_scalex;
-   float yscale = m_scaley;
-   float zscale = m_zScale;
+   float inclination = m_BG_inclination[m_BG_current_set];
+   float fov = m_BG_FOV[m_BG_current_set];
+   float layback = m_BG_layback[m_BG_current_set];
+   float xlatex = m_BG_xlatex[m_BG_current_set];
+   float xlatey = m_BG_xlatey[m_BG_current_set];
+   float xlatez = m_BG_xlatez[m_BG_current_set];
+   float xscale = m_BG_scalex[m_BG_current_set];
+   float yscale = m_BG_scaley[m_BG_current_set];
+   float zscale = m_BG_scalez[m_BG_current_set];
 
    RestoreBackup();
 
-   m_inclination = inclination;
-   m_FOV = fov;
-   m_layback = layback;
-   m_xlatex = xlatex;
-   m_xlatey = xlatey;
-   m_xlatez = xlatez;
-   m_scalex = xscale;
-   m_scaley = yscale;
-   m_zScale = zscale;
+   m_BG_inclination[m_BG_current_set] = inclination;
+   m_BG_FOV[m_BG_current_set] = fov;
+   m_BG_layback[m_BG_current_set] = layback;
+   m_BG_xlatex[m_BG_current_set] = xlatex;
+   m_BG_xlatey[m_BG_current_set] = xlatey;
+   m_BG_xlatez[m_BG_current_set] = xlatez;
+   m_BG_scalex[m_BG_current_set] = xscale;
+   m_BG_scaley[m_BG_current_set] = yscale;
+   m_BG_scalez[m_BG_current_set] = zscale;
    g_fKeepUndoRecords = fTrue;
 
    ShowWindow(g_pvp->m_hwndWork, SW_SHOW);
@@ -2683,12 +2712,28 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
    bw.WriteFloat(FID(TOPX), m_top);
    bw.WriteFloat(FID(RGHT), m_right);
    bw.WriteFloat(FID(BOTM), m_bottom);
-   bw.WriteFloat(FID(XLTX), m_xlatex);
-   bw.WriteFloat(FID(XLTY), m_xlatey);
-   bw.WriteFloat(FID(XLTZ), m_xlatez);
-   bw.WriteFloat(FID(SCLX), m_scalex);
-   bw.WriteFloat(FID(SCLY), m_scaley);
-   bw.WriteFloat(FID(SCLZ), m_zScale);
+
+   bw.WriteFloat(FID(ROTA), m_BG_rotation[0]);
+   bw.WriteFloat(FID(INCL), m_BG_inclination[0]);
+   bw.WriteFloat(FID(LAYB), m_BG_layback[0]);
+   bw.WriteFloat(FID(FOVX), m_BG_FOV[0]);
+   bw.WriteFloat(FID(XLTX), m_BG_xlatex[0]);
+   bw.WriteFloat(FID(XLTY), m_BG_xlatey[0]);
+   bw.WriteFloat(FID(XLTZ), m_BG_xlatez[0]);
+   bw.WriteFloat(FID(SCLX), m_BG_scalex[0]);
+   bw.WriteFloat(FID(SCLY), m_BG_scaley[0]);
+   bw.WriteFloat(FID(SCLZ), m_BG_scalez[0]);
+
+   bw.WriteFloat(FID(ROTF), m_BG_rotation[1]);
+   bw.WriteFloat(FID(INCF), m_BG_inclination[1]);
+   bw.WriteFloat(FID(LAYF), m_BG_layback[1]);
+   bw.WriteFloat(FID(FOVF), m_BG_FOV[1]);
+   bw.WriteFloat(FID(XLFX), m_BG_xlatex[1]);
+   bw.WriteFloat(FID(XLFY), m_BG_xlatey[1]);
+   bw.WriteFloat(FID(XLFZ), m_BG_xlatez[1]);
+   bw.WriteFloat(FID(SCFX), m_BG_scalex[1]);
+   bw.WriteFloat(FID(SCFY), m_BG_scaley[1]);
+   bw.WriteFloat(FID(SCFZ), m_BG_scalez[1]);
 
    bw.WriteInt(FID(ORRP), m_fOverridePhysics);
    bw.WriteFloat(FID(GAVT), m_Gravity);
@@ -2709,10 +2754,6 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
 
    bw.WriteFloat(FID(ZOOM), m_zoom);
 
-   bw.WriteFloat(FID(ROTA), m_rotation);
-   bw.WriteFloat(FID(INCL), m_inclination);
-   bw.WriteFloat(FID(LAYB), m_layback);
-   bw.WriteFloat(FID(FOVX), m_FOV);
    bw.WriteFloat(FID(SLPX), m_angletiltMax);
    bw.WriteFloat(FID(SLOP), m_angletiltMin);
 
@@ -2735,8 +2776,6 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
 
    bw.WriteString(FID(PLMA), m_szPlayfieldMaterial);
    bw.WriteInt(FID(BCLR), m_colorbackdrop);
-
-   bw.WriteBool(FID(DSHD), m_fRenderShadows);
 
    bw.WriteFloat(FID(TDFT), m_globalDifficulty);
 
@@ -3191,8 +3230,6 @@ void PinTable::SetLoadDefaults()
    m_BallDecalMode = false;
 
    m_TableAdaptiveVSync = -1;
-   GetRegInt( "Player", "Width", &m_renderWidth );
-   GetRegInt( "Player", "Height", &m_renderHeight );
 }
 
 HRESULT PinTable::LoadData(IStream* pstm, int& csubobj, int& csounds, int& ctextures, int& cfonts, int& ccollection, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
@@ -3236,17 +3273,85 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    {
       pbr->GetFloat(&m_bottom);
    }
+   else if (id == FID(ROTA))
+   {
+      pbr->GetFloat(&m_BG_rotation[0]);
+   }
+   else if (id == FID(LAYB))
+   {
+      pbr->GetFloat(&m_BG_layback[0]);
+   }
+   else if (id == FID(INCL))
+   {
+      pbr->GetFloat(&m_BG_inclination[0]);
+   }
+   else if (id == FID(FOVX))
+   {
+      pbr->GetFloat(&m_BG_FOV[0]);
+   }
+   else if (id == FID(SCLX))
+   {
+      pbr->GetFloat(&m_BG_scalex[0]);
+   }
+   else if (id == FID(SCLY))
+   {
+      pbr->GetFloat(&m_BG_scaley[0]);
+   }
+   else if (id == FID(SCLZ))
+   {
+      pbr->GetFloat(&m_BG_scalez[0]);
+   }
    else if (id == FID(XLTX))
    {
-      pbr->GetFloat(&m_xlatex);
+      pbr->GetFloat(&m_BG_xlatex[0]);
    }
    else if (id == FID(XLTY))
    {
-      pbr->GetFloat(&m_xlatey);
+      pbr->GetFloat(&m_BG_xlatey[0]);
    }
    else if (id == FID(XLTZ))
    {
-      pbr->GetFloat(&m_xlatez);
+      pbr->GetFloat(&m_BG_xlatez[0]);
+   }
+   else if (id == FID(ROTF))
+   {
+      pbr->GetFloat(&m_BG_rotation[1]);
+   }
+   else if (id == FID(LAYF))
+   {
+      pbr->GetFloat(&m_BG_layback[1]);
+   }
+   else if (id == FID(INCF))
+   {
+      pbr->GetFloat(&m_BG_inclination[1]);
+   }
+   else if (id == FID(FOVF))
+   {
+      pbr->GetFloat(&m_BG_FOV[1]);
+   }
+   else if (id == FID(SCFX))
+   {
+      pbr->GetFloat(&m_BG_scalex[1]);
+   }
+   else if (id == FID(SCFY))
+   {
+      pbr->GetFloat(&m_BG_scaley[1]);
+   }
+   else if (id == FID(SCFZ))
+   {
+      pbr->GetFloat(&m_BG_scalez[1]);
+   }
+   else if (id == FID(XLFX))
+   {
+      pbr->GetFloat(&m_BG_xlatex[1]);
+   }
+   else if (id == FID(XLFY))
+   {
+      pbr->GetFloat(&m_BG_xlatey[1]);
+   }
+   else if (id == FID(XLFZ))
+   {
+      pbr->GetFloat(&m_BG_xlatez[1]);
    }
 #if 0
    else if (id == FID(VERS))
@@ -3254,18 +3359,6 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
       pbr->GetString(szVersion);
    }
 #endif
-   else if (id == FID(SCLX))
-   {
-      pbr->GetFloat(&m_scalex);
-   }
-   else if (id == FID(SCLY))
-   {
-      pbr->GetFloat(&m_scaley);
-   }
-   else if (id == FID(SCLZ))
-   {
-      pbr->GetFloat(&m_zScale);
-   }
    else if( id == FID(ORRP))
    {
       pbr->GetInt(&m_fOverridePhysics);
@@ -3323,22 +3416,6 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(ZOOM))
    {
       pbr->GetFloat(&m_zoom);
-   }
-   else if (id == FID(ROTA))
-   {
-      pbr->GetFloat(&m_rotation);
-   }
-   else if (id == FID(LAYB))
-   {
-      pbr->GetFloat(&m_layback);
-   }
-   else if (id == FID(INCL))
-   {
-      pbr->GetFloat(&m_inclination);
-   }
-   else if (id == FID(FOVX))
-   {
-      pbr->GetFloat(&m_FOV);
    }
    else if (id == FID(MAXSEP))
    {
@@ -3505,10 +3582,6 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(CCUS))
    {
       pbr->GetStruct(m_rgcolorcustom, sizeof(COLORREF)*16);
-   }
-   else if (id == FID(DSHD))
-   {
-      pbr->GetBool(&m_fRenderShadows);
    }
    else if (id == FID(TDFT))
    {
@@ -5811,42 +5884,6 @@ STDMETHODIMP PinTable::put_Name(BSTR newVal)
     return S_OK;
 }
 
-STDMETHODIMP PinTable::get_Inclination(float *pVal)
-{
-   *pVal = m_inclination;
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_Inclination(float newVal)
-{
-   STARTUNDO
-
-      m_inclination = newVal;
-
-   STOPUNDO
-
-      return S_OK;
-}
-
-STDMETHODIMP PinTable::get_Layback(float *pVal)
-{
-   *pVal = m_layback;
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_Layback(float newVal)
-{
-   STARTUNDO
-
-      m_layback = newVal;
-
-   STOPUNDO
-
-      return S_OK;
-}
-
 STDMETHODIMP PinTable::get_MaxSeparation(float *pVal)
 {
    if( m_overwriteGlobalStereo3D )
@@ -5889,24 +5926,6 @@ STDMETHODIMP PinTable::put_ZPD(float newVal)
    STOPUNDO
 
    return S_OK;
-}
-
-STDMETHODIMP PinTable::get_FieldOfView(float *pVal)
-{
-   *pVal = m_FOV;
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_FieldOfView(float newVal)
-{
-   STARTUNDO
-
-      m_FOV = newVal;
-
-   STOPUNDO
-
-      return S_OK;
 }
 
 void PinTable::ClearOldSounds()
@@ -7666,117 +7685,63 @@ STDMETHODIMP PinTable::put_PhysicsLoopTime(int newVal )
 }
 
 
-STDMETHODIMP PinTable::get_Scalex(float *pVal)
+STDMETHODIMP PinTable::get_FieldOfView(float *pVal)
 {
-   *pVal = m_scalex;
+   *pVal = m_BG_FOV[0];
 
    return S_OK;
 }
 
-STDMETHODIMP PinTable::put_Scalex(float newVal)
+STDMETHODIMP PinTable::put_FieldOfView(float newVal)
 {
    STARTUNDO
 
-   m_scalex = newVal;
+   m_BG_FOV[0] = newVal;
 
    STOPUNDO
 
    return S_OK;
 }
 
-STDMETHODIMP PinTable::get_Scaley(float *pVal)
+STDMETHODIMP PinTable::get_Inclination(float *pVal)
 {
-   *pVal = m_scaley;
+   *pVal = m_BG_inclination[0];
 
    return S_OK;
 }
 
-STDMETHODIMP PinTable::put_Scaley(float newVal)
+STDMETHODIMP PinTable::put_Inclination(float newVal)
 {
    STARTUNDO
 
-   m_scaley = newVal;
+   m_BG_inclination[0] = newVal;
 
    STOPUNDO
 
    return S_OK;
 }
 
-STDMETHODIMP PinTable::get_Scalez(float *pVal)
+STDMETHODIMP PinTable::get_Layback(float *pVal)
 {
-   *pVal = m_zScale;
+   *pVal = m_BG_layback[0];
 
    return S_OK;
 }
 
-STDMETHODIMP PinTable::put_Scalez(float newVal)
+STDMETHODIMP PinTable::put_Layback(float newVal)
 {
    STARTUNDO
 
-      m_zScale = newVal;
-
-   STOPUNDO
-
-      return S_OK;
-}
-
-STDMETHODIMP PinTable::get_Xlatex(float *pVal)
-{
-   *pVal = m_xlatex;
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_Xlatex(float newVal)
-{
-   STARTUNDO
-
-   m_xlatex = newVal;
+   m_BG_layback[0] = newVal;
 
    STOPUNDO
 
    return S_OK;
-}
-
-STDMETHODIMP PinTable::get_Xlatey(float *pVal)
-{
-   *pVal = m_xlatey;
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_Xlatey(float newVal)
-{
-   STARTUNDO
-
-   m_xlatey = newVal;
-
-   STOPUNDO
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::get_Xlatez(float *pVal)
-{
-   *pVal = m_xlatez;
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_Xlatez(float newVal)
-{
-   STARTUNDO
-
-      m_xlatez = newVal;
-
-   STOPUNDO
-
-      return S_OK;
 }
 
 STDMETHODIMP PinTable::get_Rotation(float *pVal)
 {
-   *pVal = m_rotation;
+   *pVal = m_BG_rotation[0];
 
    return S_OK;
 }
@@ -7785,12 +7750,303 @@ STDMETHODIMP PinTable::put_Rotation(float newVal)
 {
    STARTUNDO
 
-   m_rotation = newVal;
+   m_BG_rotation[0] = newVal;
 
    STOPUNDO
 
    return S_OK;
 }
+
+STDMETHODIMP PinTable::get_Scalex(float *pVal)
+{
+   *pVal = m_BG_scalex[0];
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_Scalex(float newVal)
+{
+   STARTUNDO
+
+   m_BG_scalex[0] = newVal;
+
+   STOPUNDO
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::get_Scaley(float *pVal)
+{
+   *pVal = m_BG_scaley[0];
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_Scaley(float newVal)
+{
+   STARTUNDO
+
+   m_BG_scaley[0] = newVal;
+
+   STOPUNDO
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::get_Scalez(float *pVal)
+{
+   *pVal = m_BG_scalez[0];
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_Scalez(float newVal)
+{
+   STARTUNDO
+
+   m_BG_scalez[0] = newVal;
+
+   STOPUNDO
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::get_Xlatex(float *pVal)
+{
+   *pVal = m_BG_xlatex[0];
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_Xlatex(float newVal)
+{
+   STARTUNDO
+
+   m_BG_xlatex[0] = newVal;
+
+   STOPUNDO
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::get_Xlatey(float *pVal)
+{
+   *pVal = m_BG_xlatey[0];
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_Xlatey(float newVal)
+{
+   STARTUNDO
+
+   m_BG_xlatey[0] = newVal;
+
+   STOPUNDO
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::get_Xlatez(float *pVal)
+{
+   *pVal = m_BG_xlatez[0];
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_Xlatez(float newVal)
+{
+   STARTUNDO
+
+   m_BG_xlatez[0] = newVal;
+
+   STOPUNDO
+
+   return S_OK;
+}
+
+
+
+STDMETHODIMP PinTable::get_FieldOfViewFS(float *pVal)
+{
+   *pVal = m_BG_FOV[1];
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_FieldOfViewFS(float newVal)
+{
+   STARTUNDO
+
+   m_BG_FOV[1] = newVal;
+
+   STOPUNDO
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::get_InclinationFS(float *pVal)
+{
+   *pVal = m_BG_inclination[1];
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_InclinationFS(float newVal)
+{
+   STARTUNDO
+
+   m_BG_inclination[1] = newVal;
+
+   STOPUNDO
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::get_LaybackFS(float *pVal)
+{
+   *pVal = m_BG_layback[1];
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_LaybackFS(float newVal)
+{
+   STARTUNDO
+
+   m_BG_layback[1] = newVal;
+
+   STOPUNDO
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::get_RotationFS(float *pVal)
+{
+   *pVal = m_BG_rotation[1];
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_RotationFS(float newVal)
+{
+   STARTUNDO
+
+   m_BG_rotation[1] = newVal;
+
+   STOPUNDO
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::get_ScalexFS(float *pVal)
+{
+   *pVal = m_BG_scalex[1];
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_ScalexFS(float newVal)
+{
+   STARTUNDO
+
+   m_BG_scalex[1] = newVal;
+
+   STOPUNDO
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::get_ScaleyFS(float *pVal)
+{
+   *pVal = m_BG_scaley[1];
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_ScaleyFS(float newVal)
+{
+   STARTUNDO
+
+   m_BG_scaley[1] = newVal;
+
+   STOPUNDO
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::get_ScalezFS(float *pVal)
+{
+   *pVal = m_BG_scalez[1];
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_ScalezFS(float newVal)
+{
+   STARTUNDO
+
+   m_BG_scalez[1] = newVal;
+
+   STOPUNDO
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::get_XlatexFS(float *pVal)
+{
+   *pVal = m_BG_xlatex[1];
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_XlatexFS(float newVal)
+{
+   STARTUNDO
+
+   m_BG_xlatex[1] = newVal;
+
+   STOPUNDO
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::get_XlateyFS(float *pVal)
+{
+   *pVal = m_BG_xlatey[1];
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_XlateyFS(float newVal)
+{
+   STARTUNDO
+
+   m_BG_xlatey[1] = newVal;
+
+   STOPUNDO
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::get_XlatezFS(float *pVal)
+{
+   *pVal = m_BG_xlatez[1];
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_XlatezFS(float newVal)
+{
+   STARTUNDO
+
+   m_BG_xlatez[1] = newVal;
+
+   STOPUNDO
+
+   return S_OK;
+}
+
 
 STDMETHODIMP PinTable::get_SlopeMax(float *pVal)
 {
@@ -7889,22 +8145,6 @@ STDMETHODIMP PinTable::put_YieldTime(long newVal)
 
    return S_OK;
 }
-
-/*STDMETHODIMP PinTable::get_RenderShadows(VARIANT_BOOL *pVal)
-{
-   *pVal = (VARIANT_BOOL)FTOVB(m_fRenderShadows);
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_RenderShadows(VARIANT_BOOL newVal)
-{
-   STARTUNDO
-   m_fRenderShadows = !!newVal;
-   STOPUNDO
-
-   return S_OK;
-}*/
 
 STDMETHODIMP PinTable::get_EnableAntialiasing(int *pVal)
 {
@@ -8151,6 +8391,24 @@ STDMETHODIMP PinTable::put_EnableDecals(VARIANT_BOOL newVal)
    STARTUNDO
    m_fRenderDecals = !!newVal;
    STOPUNDO
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::get_ShowDT(VARIANT_BOOL *pVal)
+{
+   *pVal = (VARIANT_BOOL)FTOVB(m_BG_current_set == 0);
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_ShowDT(VARIANT_BOOL newVal)
+{
+   STARTUNDO
+   m_BG_current_set = (!!newVal) ? 0 : 1;
+   STOPUNDO
+
+   SetDirtyDraw();
 
    return S_OK;
 }

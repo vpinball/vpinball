@@ -686,7 +686,7 @@ void Flipper::RenderAtThickness(RenderDevice* pd3dDevice, float angle, float hei
         rgv3D[l].x = rgv[l&3].x;
         rgv3D[l].y = rgv[l&3].y;
         rgv3D[l].z = (l<4) ? height + flipperheight + 0.1f : height; // Make flippers a bit taller so they draw above walls
-        rgv3D[l].z *= m_ptable->m_zScale;
+        rgv3D[l].z *= m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
     }
 
     unsigned long offset = 0;
@@ -722,11 +722,11 @@ void Flipper::RenderAtThickness(RenderDevice* pd3dDevice, float angle, float hei
         rgv3D[l].x = /*m_d.m_Center.x*/ + sinf(anglel)*baseradius;
         rgv3D[l].y = /*m_d.m_Center.y*/ - cosf(anglel)*baseradius;
         rgv3D[l].z = height + flipperheight + 0.1f;
-        rgv3D[l].z *= m_ptable->m_zScale;
+        rgv3D[l].z *= m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
         rgv3D[l+16].x = rgv3D[l].x;
         rgv3D[l+16].y = rgv3D[l].y;
         rgv3D[l+16].z = height;
-        rgv3D[l+16].z *= m_ptable->m_zScale;
+        rgv3D[l+16].z *= m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
     }
 
     // Draw end caps of cylinders of large ends.
@@ -766,11 +766,11 @@ void Flipper::RenderAtThickness(RenderDevice* pd3dDevice, float angle, float hei
         rgv3D[l].x = vendcenter.x + sinf(anglel)*endradius;
         rgv3D[l].y = vendcenter.y - cosf(anglel)*endradius;
         rgv3D[l].z = height + flipperheight + 0.1f;
-        rgv3D[l].z *= m_ptable->m_zScale;
+        rgv3D[l].z *= m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
         rgv3D[l+16].x = rgv3D[l].x;
         rgv3D[l+16].y = rgv3D[l].y;
         rgv3D[l+16].z = height;
-        rgv3D[l+16].z *= m_ptable->m_zScale;
+        rgv3D[l+16].z *= m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
     }
 
     // Draw end caps to vertical cylinder at small end.

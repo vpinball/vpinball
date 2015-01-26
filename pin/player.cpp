@@ -1345,8 +1345,8 @@ void Player::InitWindow()
 	if (hr != S_OK)
 		ballStretchMonitor = 1; // assume 16:9
 
-	const float scalebackX = (m_ptable->m_scalex != 0.0f) ? ((m_ptable->m_scalex + m_ptable->m_scaley)*0.5f)/m_ptable->m_scalex : 1.0f;
-	const float scalebackY = (m_ptable->m_scaley != 0.0f) ? ((m_ptable->m_scalex + m_ptable->m_scaley)*0.5f)/m_ptable->m_scaley : 1.0f;
+	const float scalebackX = (m_ptable->m_BG_scalex[m_ptable->m_BG_current_set] != 0.0f) ? ((m_ptable->m_BG_scalex[m_ptable->m_BG_current_set] + m_ptable->m_BG_scaley[m_ptable->m_BG_current_set])*0.5f)/m_ptable->m_BG_scalex[m_ptable->m_BG_current_set] : 1.0f;
+	const float scalebackY = (m_ptable->m_BG_scaley[m_ptable->m_BG_current_set] != 0.0f) ? ((m_ptable->m_BG_scalex[m_ptable->m_BG_current_set] + m_ptable->m_BG_scaley[m_ptable->m_BG_current_set])*0.5f)/m_ptable->m_BG_scaley[m_ptable->m_BG_current_set] : 1.0f;
 
 	float xMonitor = 16.0f;
 	float yMonitor = 9.0f;
@@ -1389,7 +1389,7 @@ void Player::InitWindow()
 	const float scalebackMonitorX = ((xMonitor + yMonitor)*0.5f)/xMonitor;
 	const float scalebackMonitorY = (((xMonitor + yMonitor)*0.5f)/yMonitor);
 
-	float temprotation = m_ptable->m_rotation;
+	float temprotation = m_ptable->m_BG_rotation[m_ptable->m_BG_current_set];
 	while (temprotation < 0.f)
 	{
 		temprotation += 360.0f;
@@ -2506,47 +2506,47 @@ void Player::UpdateBackdropSettings(const bool up)
     {
     case 0:
         {
-            m_ptable->m_inclination += thesign;
+            m_ptable->m_BG_inclination[m_ptable->m_BG_current_set] += thesign;
             break;
         }
     case 1:
         {
-            m_ptable->m_FOV += thesign;
+            m_ptable->m_BG_FOV[m_ptable->m_BG_current_set] += thesign;
             break;
         }
     case 2:
         {
-            m_ptable->m_layback += thesign;
+            m_ptable->m_BG_layback[m_ptable->m_BG_current_set] += thesign;
             break;
         }
     case 3:
         {
-            m_ptable->m_scalex += (0.01f*thesign);
+            m_ptable->m_BG_scalex[m_ptable->m_BG_current_set] += (0.01f*thesign);
             break;
         }
     case 4:
         {
-            m_ptable->m_scaley += (0.01f*thesign);
+            m_ptable->m_BG_scaley[m_ptable->m_BG_current_set] += (0.01f*thesign);
             break;
         }
     case 5:
         {
-            m_ptable->m_zScale += (0.01f*thesign);
+            m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] += (0.01f*thesign);
             break;
         }
     case 6:
         {
-            m_ptable->m_xlatex += (0.01f*thesign);
+            m_ptable->m_BG_xlatex[m_ptable->m_BG_current_set] += (0.01f*thesign);
             break;
         }
     case 7:
         {
-            m_ptable->m_xlatey += (0.01f*thesign);
+            m_ptable->m_BG_xlatey[m_ptable->m_BG_current_set] += (0.01f*thesign);
             break;
         }
     case 8:
         {
-            m_ptable->m_xlatez += thesign;
+            m_ptable->m_BG_xlatez[m_ptable->m_BG_current_set] += thesign;
             break;
         }
     }
@@ -2567,47 +2567,47 @@ void Player::UpdateCameraModeDisplay()
     {
     case 0:
         {
-            len = sprintf_s(szFoo,"Inclination: %f          ",m_ptable->m_inclination);
+            len = sprintf_s(szFoo,"Inclination: %f          ",m_ptable->m_BG_inclination[m_ptable->m_BG_current_set]);
             break;
         }
     case 1:
         {
-            len = sprintf_s(szFoo,"Field Of View: %f        ",m_ptable->m_FOV);
+            len = sprintf_s(szFoo,"Field Of View: %f        ",m_ptable->m_BG_FOV[m_ptable->m_BG_current_set]);
             break;
         }
     case 2:
         {
-            len = sprintf_s(szFoo,"Layback: %f              ",m_ptable->m_layback);
+            len = sprintf_s(szFoo,"Layback: %f              ",m_ptable->m_BG_layback[m_ptable->m_BG_current_set]);
             break;
         }
     case 3:
         {
-            len = sprintf_s(szFoo,"X Scale: %f              ",m_ptable->m_scalex);
+            len = sprintf_s(szFoo,"X Scale: %f              ",m_ptable->m_BG_scalex[m_ptable->m_BG_current_set]);
             break;
         }
     case 4:
         {
-            len = sprintf_s(szFoo,"Y Scale: %f              ",m_ptable->m_scaley);
+            len = sprintf_s(szFoo,"Y Scale: %f              ",m_ptable->m_BG_scaley[m_ptable->m_BG_current_set]);
             break;
         }
     case 5:
         {
-            len = sprintf_s(szFoo,"Z Scale: %f              ",m_ptable->m_zScale);
+            len = sprintf_s(szFoo,"Z Scale: %f              ",m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]);
             break;
         }
     case 6:
         {
-            len = sprintf_s(szFoo,"X Offset: %f             ",m_ptable->m_xlatex);
+            len = sprintf_s(szFoo,"X Offset: %f             ",m_ptable->m_BG_xlatex[m_ptable->m_BG_current_set]);
             break;
         }
     case 7:
         {
-            len = sprintf_s(szFoo,"Y Offset: %f            ",m_ptable->m_xlatey);
+            len = sprintf_s(szFoo,"Y Offset: %f            ",m_ptable->m_BG_xlatey[m_ptable->m_BG_current_set]);
             break;
         }
     case 8:
         {
-            len = sprintf_s(szFoo,"Z Offset: %f           ",m_ptable->m_xlatez);
+            len = sprintf_s(szFoo,"Z Offset: %f           ",m_ptable->m_BG_xlatez[m_ptable->m_BG_current_set]);
             break;
         }
     default:
@@ -2958,8 +2958,8 @@ void Player::DrawBalls()
       {
          // scaling the ball height by the z scale value results in a flying ball over the playfield/ramp
          // by reducing it with 0.96f (a factor found by trial'n error) the ball is on the ramp again
-         if ( m_ptable->m_zScale!=1.0f )
-            zheight *= (m_ptable->m_zScale*0.96f); 
+         if ( m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] != 1.0f )
+            zheight *= (m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]*0.96f); 
       }
 
       Texture * const playfield = m_ptable->GetImage((char *)m_ptable->m_szImage);
@@ -3440,7 +3440,7 @@ LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 					{
 						ScreenToClient(g_pplayer->m_hwnd, &pointerInfo.ptPixelLocation);
 						for (unsigned int i = 0; i < 8; ++i)
-							if((g_pplayer->m_touchregion_pressed[i] != (uMsg == WM_POINTERDOWN)) && Intersect(touchregion[i], g_pplayer->m_width, g_pplayer->m_height, pointerInfo.ptPixelLocation, fmodf(g_pplayer->m_ptable->m_rotation,360.0f) != 0.f))
+							if((g_pplayer->m_touchregion_pressed[i] != (uMsg == WM_POINTERDOWN)) && Intersect(touchregion[i], g_pplayer->m_width, g_pplayer->m_height, pointerInfo.ptPixelLocation, fmodf(g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set],360.0f) != 0.f))
 							{
 								g_pplayer->m_touchregion_pressed[i] = (uMsg == WM_POINTERDOWN);
 

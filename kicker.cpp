@@ -214,7 +214,7 @@ void Kicker::RenderSetup(RenderDevice* pd3dDevice)
 
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
-   const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_zScale;
+   const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
    if( m_d.m_kickertype == KickerCup )
    {
@@ -247,7 +247,7 @@ void Kicker::RenderSetup(RenderDevice* pd3dDevice)
 
          buf[i].x = vert.x*m_d.m_radius+m_d.m_vCenter.x;
          buf[i].y = vert.y*m_d.m_radius+m_d.m_vCenter.y;
-         buf[i].z = vert.z*m_d.m_radius*m_ptable->m_zScale + height;
+         buf[i].z = vert.z*m_d.m_radius*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + height;
          vert = Vertex3Ds( kickerCup[i].nx, kickerCup[i].ny, kickerCup[i].nz );
          vert = fullMatrix.MultiplyVectorNoTranslate(vert);
          buf[i].nx = vert.x;
@@ -288,7 +288,7 @@ void Kicker::RenderSetup(RenderDevice* pd3dDevice)
 
          buf[i].x = vert.x*(m_d.m_radius+0.5f)+m_d.m_vCenter.x;
          buf[i].y = vert.y*(m_d.m_radius+0.5f)+m_d.m_vCenter.y;
-         buf[i].z = vert.z*(m_d.m_radius+0.5f)*m_ptable->m_zScale + height;
+         buf[i].z = vert.z*(m_d.m_radius+0.5f)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + height;
          vert = Vertex3Ds( kickerHole[i].nx, kickerHole[i].ny, kickerHole[i].nz );
          vert = fullMatrix.MultiplyVectorNoTranslate(vert);
          buf[i].nx = vert.x;
@@ -311,7 +311,7 @@ void Kicker::RenderStatic(RenderDevice* pd3dDevice)
 {
    if ( m_d.m_kickertype == KickerCup || m_d.m_kickertype == KickerHole)
    {
-      const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_zScale;
+      const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
       pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelDeclaration );
       Vertex3D_NoTex2 *buf = new Vertex3D_NoTex2[kickerPlateNumVertices];
@@ -319,7 +319,7 @@ void Kicker::RenderStatic(RenderDevice* pd3dDevice)
       {
          buf[i].x = (kickerPlate[i].x*(m_d.m_radius-0.1f))+m_d.m_vCenter.x;
          buf[i].y = (kickerPlate[i].y*(m_d.m_radius-0.1f))+m_d.m_vCenter.y;
-         buf[i].z = (kickerPlate[i].z*(m_d.m_radius-0.1f))*m_ptable->m_zScale;
+         buf[i].z = (kickerPlate[i].z*(m_d.m_radius-0.1f))*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
          buf[i].z += height;
          buf[i].nx = kickerPlate[i].nx;
          buf[i].ny = kickerPlate[i].ny;

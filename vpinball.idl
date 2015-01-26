@@ -410,6 +410,13 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(215), helpstring("property SlopeMax")] HRESULT SlopeMax([in] float newVal);
 		[propget, id(6), helpstring("property SlopeMin")] HRESULT SlopeMin([out, retval] float *pVal);
 		[propput, id(6), helpstring("property SlopeMin")] HRESULT SlopeMin([in] float newVal);
+
+		[propget, id(DISPID_Table_Inclination), helpstring("property Inclination")] HRESULT Inclination([out, retval] float *pVal);
+		[propput, id(DISPID_Table_Inclination), helpstring("property Inclination")] HRESULT Inclination([in] float newVal);
+		[propget, id(DISPID_Table_FieldOfView), helpstring("property FieldOfView")] HRESULT FieldOfView([out, retval] float *pVal);
+		[propput, id(DISPID_Table_FieldOfView), helpstring("property FieldOfView")] HRESULT FieldOfView([in] float newVal);
+		[propget, id(DISPID_Table_Layback), helpstring("property Layback")] HRESULT Layback([out, retval] float *pVal);
+		[propput, id(DISPID_Table_Layback), helpstring("property Layback")] HRESULT Layback([in] float newVal);
 		[propget, id(99), helpstring("property Rotation")] HRESULT Rotation([out, retval] float *pVal);
 		[propput, id(99), helpstring("property Rotation")] HRESULT Rotation([in] float newVal);
 		[propget, id(100), helpstring("property Scalex")] HRESULT Scalex([out, retval] float *pVal);
@@ -425,6 +432,27 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propget, id(110), helpstring("property Xlatez")] HRESULT Xlatez([out, retval] float *pVal);
 		[propput, id(110), helpstring("property Xlatez")] HRESULT Xlatez([in] float newVal);
 		
+		[propget, id(439), helpstring("property InclinationFS")] HRESULT InclinationFS([out, retval] float *pVal);
+		[propput, id(439), helpstring("property InclinationFS")] HRESULT InclinationFS([in] float newVal);
+		[propget, id(440), helpstring("property FieldOfViewFS")] HRESULT FieldOfViewFS([out, retval] float *pVal);
+		[propput, id(440), helpstring("property FieldOfViewFS")] HRESULT FieldOfViewFS([in] float newVal);
+		[propget, id(441), helpstring("property LaybackFS")] HRESULT LaybackFS([out, retval] float *pVal);
+		[propput, id(441), helpstring("property LaybackFS")] HRESULT LaybackFS([in] float newVal);
+		[propget, id(442), helpstring("property RotationFS")] HRESULT RotationFS([out, retval] float *pVal);
+		[propput, id(442), helpstring("property RotationFS")] HRESULT RotationFS([in] float newVal);
+		[propget, id(443), helpstring("property ScalexFS")] HRESULT ScalexFS([out, retval] float *pVal);
+		[propput, id(443), helpstring("property ScalexFS")] HRESULT ScalexFS([in] float newVal);
+		[propget, id(444), helpstring("property ScaleyFS")] HRESULT ScaleyFS([out, retval] float *pVal);
+		[propput, id(444), helpstring("property ScaleyFS")] HRESULT ScaleyFS([in] float newVal);
+		[propget, id(445), helpstring("property ScalezFS")] HRESULT ScalezFS([out, retval] float *pVal);
+		[propput, id(445), helpstring("property ScalezFS")] HRESULT ScalezFS([in] float newVal);
+		[propget, id(446), helpstring("property XlatexFS")] HRESULT XlatexFS([out, retval] float *pVal);
+		[propput, id(446), helpstring("property XlatexFS")] HRESULT XlatexFS([in] float newVal);
+		[propget, id(447), helpstring("property XlateyFS")] HRESULT XlateyFS([out, retval] float *pVal);
+		[propput, id(447), helpstring("property XlateyFS")] HRESULT XlateyFS([in] float newVal);
+		[propget, id(448), helpstring("property XlatezFS")] HRESULT XlatezFS([out, retval] float *pVal);
+		[propput, id(448), helpstring("property XlatezFS")] HRESULT XlatezFS([in] float newVal);
+
 		[propget, id(1100), helpstring("property Gravity")] HRESULT Gravity([out, retval] float *pVal);
 		[propput, id(1100), helpstring("property Gravity")] HRESULT Gravity([in] float newVal);
 		[propget, id(1101), helpstring("property HardFriction")] HRESULT HardFriction([out, retval] float *pVal);
@@ -453,10 +481,6 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(DISPID_Table_Width), helpstring("property Width")] HRESULT Width([in] float newVal);
 		[propget, id(DISPID_Table_Height), helpstring("property Height")] HRESULT Height([out, retval] float *pVal);
 		[propput, id(DISPID_Table_Height), helpstring("property Height")] HRESULT Height([in] float newVal);
-		[propget, id(DISPID_Table_Inclination), helpstring("property Inclination")] HRESULT Inclination([out, retval] float *pVal);
-		[propput, id(DISPID_Table_Inclination), helpstring("property Inclination")] HRESULT Inclination([in] float newVal);
-		[propget, id(DISPID_Table_Layback), helpstring("property Layback")] HRESULT Layback([out, retval] float *pVal);
-		[propput, id(DISPID_Table_Layback), helpstring("property Layback")] HRESULT Layback([in] float newVal);
 		[propget, id(DISPID_Table_MaxSeparation), helpstring("property MaxSeparation")] HRESULT MaxSeparation([out, retval] float *pVal);
 		[propput, id(DISPID_Table_MaxSeparation), helpstring("property MaxSeparation")] HRESULT MaxSeparation([in] float newVal);
 		[propget, id(DISPID_Table_ZPD), helpstring("property ZPD")] HRESULT ZPD([out, retval] float *pVal);
@@ -465,8 +489,6 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(427), helpstring("property Overwrite3DStereo")] HRESULT GlobalStereo3D([in] VARIANT_BOOL newVal);
 		[propget, id(438), helpstring("property BallDecalMode")] HRESULT BallDecalMode([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(438), helpstring("property BallDecalMode")] HRESULT BallDecalMode([in] VARIANT_BOOL newVal);
-		[propget, id(DISPID_Table_FieldOfView), helpstring("property FieldOfView")] HRESULT FieldOfView([out, retval] float *pVal);
-		[propput, id(DISPID_Table_FieldOfView), helpstring("property FieldOfView")] HRESULT FieldOfView([in] float newVal);
 		[propget, id(DISPID_Table_DisplayGrid), helpstring("property DisplayGrid")] HRESULT DisplayGrid([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(DISPID_Table_DisplayGrid), helpstring("property DisplayGrid")] HRESULT DisplayGrid([in] VARIANT_BOOL newVal);
 		[propget, id(DISPID_Table_DisplayBackdrop), helpstring("property DisplayBackdrop")] HRESULT DisplayBackdrop([out, retval] VARIANT_BOOL *pVal);
@@ -481,8 +503,6 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(396), helpstring("property enableAO")] HRESULT EnableAO([in] int newVal);
 		[propget, id(395), helpstring("property enableFXAA")] HRESULT EnableFXAA([out, retval] int *pVal);
 		[propput, id(395), helpstring("property enableFXAA")] HRESULT EnableFXAA([in] int newVal);
-		//[propget, id(9), helpstring("property RenderShadows")] HRESULT RenderShadows([out, retval] VARIANT_BOOL *pVal);
-		//[propput, id(9), helpstring("property RenderShadows")] HRESULT RenderShadows([in] VARIANT_BOOL newVal);
 		[propget, id(DISPID_Image4), helpstring("property BallFrontDecal")] HRESULT BallFrontDecal([out, retval] BSTR *pVal);
 		[propput, id(DISPID_Image4), helpstring("property BallFrontDecal")] HRESULT BallFrontDecal([in] BSTR newVal);
 		[propget, id(DISPID_Table_OverridePhysics), helpstring("property OverridePhysics")] HRESULT OverridePhysics([out, retval] long *pVal);
@@ -491,6 +511,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(13432), helpstring("property RenderEMReels")] HRESULT EnableEMReels([in] VARIANT_BOOL newVal);
 		[propget, id(13433), helpstring("property RenderDecals")] HRESULT EnableDecals([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(13433), helpstring("property RenderDecals")] HRESULT EnableDecals([in] VARIANT_BOOL newVal);
+		[propget, id(13434), helpstring("property ShowDT")] HRESULT ShowDT([out, retval] VARIANT_BOOL *pVal);
+		[propput, id(13434), helpstring("property ShowDT")] HRESULT ShowDT([in] VARIANT_BOOL newVal);
 
 		//////////////
 		[propget, id(200), helpstring("property Accelerometer")] HRESULT Accelerometer([out, retval] VARIANT_BOOL *pVal);
