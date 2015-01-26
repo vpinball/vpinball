@@ -120,6 +120,10 @@ VP 10.0.0 Changelog
 - OnBallBallCollision(ball1, ball2, velocity) can be used as a Callback in the script to handle Ball to Ball collisions
 - renaming of IsVisible properties (flasher, ramp) to Visible
 
+- two new methods of ball decals added. If 'Logo mode' is unchecked the decal texture will be additively blended based on it's alpha values.
+  This way you can add scratches to the ball (see the default table for an example). In 'Logo mode' the decal texture is blended as an overlay 
+  blend mode 'Screen' in Photoshop/Gimp) to apply a logo or a second image on the normal ball texture.
+
 - flasher supports custom shapes and multi texturing. You can define two separate images and define a filter to blend these two images.
   in addition there is now a modulate option to define how the flasher blends with the underlying elements (0(=full additive)..1=(only modulate))
   plus the opacity and amount parameters can be set to values > 100%
