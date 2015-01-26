@@ -285,7 +285,7 @@ inline Vertex3Ds cos_hemisphere_sample(const float u, const float v) // u,v in [
 {
      const float phi = v * (float)(2.0 * M_PI);
      const float cosTheta = sqrtf(1.0f - u);
-     const float sinTheta = sqrtf(1.0f - cosTheta * cosTheta);
+     const float sinTheta = sqrtf(u);
      return Vertex3Ds(cosf(phi) * sinTheta, cosTheta, sinf(phi) * sinTheta);
 }
 

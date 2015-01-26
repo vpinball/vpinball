@@ -31,7 +31,7 @@ float2 hash(float2 gridcell) // gridcell is assumed to be an integer coordinate
 {
 	const float3 o = float3(26.0f, 161.0f, 26.0f);
 	const float d = 71.0f;
-	const float lf = 1.0f/951.135664f;
+	const float lf = 1.0/951.135664;
 	float3 P = float3(gridcell.x,gridcell.y,gridcell.x+1.0f);
 	P = P - floor(P * ( 1.0f / d )) * d;
 	P += o;
@@ -58,7 +58,7 @@ float3 cos_hemisphere_sample(float2 t) // u,v in [0..1), returns y-up
 {
 	const float phi = t.y * (2.0*3.1415926535897932384626433832795);
 	const float cosTheta = sqrt(1.0 - t.x);
-	const float sinTheta = sqrt(1.0 - cosTheta * cosTheta);
+	const float sinTheta = sqrt(t.x);
 	return float3(cos(phi) * sinTheta, cosTheta, sin(phi) * sinTheta);
 }
 
