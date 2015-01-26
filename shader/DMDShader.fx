@@ -88,7 +88,7 @@ float4 ps_main_noDMD( in VS_OUTPUT IN) : COLOR
    return float4(InvToneMap(InvGamma(l.xyz*vColor)),l.w); //!! meh, this sucks a bit performance-wise, but how to avoid this when doing fullscreen-tonemap/gamma without stencil and depth read?
 }
 
-technique basic
+technique basic_DMD
 { 
    pass P0 
    { 
