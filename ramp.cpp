@@ -2213,19 +2213,19 @@ void Ramp::GenerateVertexBuffer(RenderDevice* pd3dDevice)
         Vertex3D_NoTex2 * const rgv3D = &rgvbuf[0]+i*4;
         rgv3D[0].x = rgvLocal[i].x;
         rgv3D[0].y = rgvLocal[i].y;
-        rgv3D[0].z = rgheight[i]*m_ptable->m_zScale;
+        rgv3D[0].z = rgheight[i]*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
         rgv3D[3].x = rgvLocal[i+1].x;
         rgv3D[3].y = rgvLocal[i+1].y;
-        rgv3D[3].z = rgheight[i+1]*m_ptable->m_zScale;
+        rgv3D[3].z = rgheight[i+1]*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
         rgv3D[2].x = rgvLocal[rampVertex*2-i-2].x;
         rgv3D[2].y = rgvLocal[rampVertex*2-i-2].y;
-        rgv3D[2].z = rgheight[i+1]*m_ptable->m_zScale;
+        rgv3D[2].z = rgheight[i+1]*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
         rgv3D[1].x = rgvLocal[rampVertex*2-i-1].x;
         rgv3D[1].y = rgvLocal[rampVertex*2-i-1].y;
-        rgv3D[1].z = rgheight[i]*m_ptable->m_zScale;
+        rgv3D[1].z = rgheight[i]*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
         if (pin)
         {
@@ -2304,11 +2304,11 @@ void Ramp::GenerateVertexBuffer(RenderDevice* pd3dDevice)
         Vertex3D_NoTex2 * const rgv3D = &rgvbuf[0]+i*4;
         rgv3D[2].x = rgvLocal[i+1].x;
         rgv3D[2].y = rgvLocal[i+1].y;
-        rgv3D[2].z = (rgheight[i+1] + m_d.m_rightwallheightvisible)*m_ptable->m_zScale;
+        rgv3D[2].z = (rgheight[i+1] + m_d.m_rightwallheightvisible)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
         rgv3D[1].x = rgvLocal[i].x;
         rgv3D[1].y = rgvLocal[i].y;
-        rgv3D[1].z = (rgheight[i] + m_d.m_rightwallheightvisible)*m_ptable->m_zScale;
+        rgv3D[1].z = (rgheight[i] + m_d.m_rightwallheightvisible)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
         if (pin && m_d.m_fImageWalls)
         {
             if (m_d.m_imagealignment == ImageModeWorld)
@@ -2356,19 +2356,19 @@ void Ramp::GenerateVertexBuffer(RenderDevice* pd3dDevice)
             Vertex3D_NoTex2 * const rgv3D = &rgvbuf[0]+i*4;
             rgv3D[0].x = rgvLocal[rampVertex*2-i-2].x;
             rgv3D[0].y = rgvLocal[rampVertex*2-i-2].y;
-            rgv3D[0].z = rgheight[i+1]*m_ptable->m_zScale;
+            rgv3D[0].z = rgheight[i+1]*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
             rgv3D[3].x = rgvLocal[rampVertex*2-i-1].x;
             rgv3D[3].y = rgvLocal[rampVertex*2-i-1].y;
-            rgv3D[3].z = rgheight[i]*m_ptable->m_zScale;
+            rgv3D[3].z = rgheight[i]*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
             rgv3D[2].x = rgv3D[3].x;
             rgv3D[2].y = rgv3D[3].y;
-            rgv3D[2].z = (rgheight[i] + m_d.m_leftwallheightvisible)*m_ptable->m_zScale;
+            rgv3D[2].z = (rgheight[i] + m_d.m_leftwallheightvisible)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
             rgv3D[1].x = rgv3D[0].x;
             rgv3D[1].y = rgv3D[0].y;
-            rgv3D[1].z = (rgheight[i+1] + m_d.m_leftwallheightvisible)*m_ptable->m_zScale;
+            rgv3D[1].z = (rgheight[i+1] + m_d.m_leftwallheightvisible)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
             if (pin && m_d.m_fImageWalls)
             {

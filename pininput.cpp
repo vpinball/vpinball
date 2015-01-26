@@ -978,9 +978,9 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 
                float vx = (float)mouseDX*0.1f;
                float vy = (float)mouseDY*0.1f;
-               if (ptable->m_rotation!=0.f && ptable->m_rotation!=360.f )
+               if (ptable->m_BG_rotation[m_ptable->m_BG_current_set]!=0.f && ptable->m_BG_rotation[m_ptable->m_BG_current_set]!=360.f )
                {
-                  const float radangle = ANGTORAD(ptable->m_rotation);
+                  const float radangle = ANGTORAD(ptable->m_BG_rotation[m_ptable->m_BG_current_set]);
                   const float sn = sinf(radangle);
                   const float cs = cosf(radangle);
 

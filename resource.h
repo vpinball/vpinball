@@ -633,6 +633,17 @@
 #define IDC_DAYNIGHT_SLIDER             436
 #define IDC_FADE_SPEED_DOWN             437
 #define IDC_BALL_DECAL_MODE             438
+#define IDC_FS_INCL			            439
+#define IDC_FS_FOV 			            440
+#define IDC_FS_LB			            441
+#define IDC_FS_ROT			            442
+#define IDC_FS_XS			            443
+#define IDC_FS_YS			            444
+#define IDC_FS_ZS			            445
+#define IDC_FS_XT			            446
+#define IDC_FS_YT			            447
+#define IDC_FS_ZT			            448
+#define IDC_BG_SET                      449
 #define IDC_JOYLFLIPCOMBO               501
 #define IDC_JOYRFLIPCOMBO               502
 #define IDC_JOYPLUNGERCOMBO             503

@@ -642,7 +642,7 @@ void Light::PrepareMoversCustom()
    float height = m_surfaceHeight;
    if ( m_d.m_BulbLight )
    {
-       height += m_d.m_bulbHaloHeight*m_ptable->m_zScale;
+       height += m_d.m_bulbHaloHeight*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
        m_surfaceHeight = height;
    }
 
@@ -715,7 +715,7 @@ void Light::RenderSetup(RenderDevice* pd3dDevice)
 {
     m_d.m_time_msec = g_pplayer->m_time_msec;
 
-    m_surfaceHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_zScale;
+    m_surfaceHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
     surfaceMaterial = m_ptable->GetSurfaceMaterial(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
     if (m_realState == LightStateBlinking)
@@ -744,7 +744,7 @@ void Light::RenderSetup(RenderDevice* pd3dDevice)
         {
             buf[i].x = bulbLight[i].x*m_d.m_meshRadius+m_d.m_vCenter.x;
             buf[i].y = bulbLight[i].y*m_d.m_meshRadius+m_d.m_vCenter.y;
-            buf[i].z = bulbLight[i].z*m_d.m_meshRadius*m_ptable->m_zScale + m_surfaceHeight;
+            buf[i].z = bulbLight[i].z*m_d.m_meshRadius*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_surfaceHeight;
             buf[i].nx = bulbLight[i].nx;
             buf[i].ny = bulbLight[i].ny;
             buf[i].nz = bulbLight[i].nz;
@@ -767,7 +767,7 @@ void Light::RenderSetup(RenderDevice* pd3dDevice)
         {
             buf[i].x = bulbSocket[i].x*m_d.m_meshRadius+m_d.m_vCenter.x;
             buf[i].y = bulbSocket[i].y*m_d.m_meshRadius+m_d.m_vCenter.y;
-            buf[i].z = bulbSocket[i].z*m_d.m_meshRadius*m_ptable->m_zScale + m_surfaceHeight;
+            buf[i].z = bulbSocket[i].z*m_d.m_meshRadius*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_surfaceHeight;
             buf[i].nx = bulbSocket[i].nx;
             buf[i].ny = bulbSocket[i].ny;
             buf[i].nz = bulbSocket[i].nz;

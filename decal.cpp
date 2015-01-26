@@ -447,7 +447,7 @@ void Decal::RenderSetup(RenderDevice* pd3dDevice )
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
    Vertex3D_NoTex2 vertices[4];
 
-   const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_zScale;
+   const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
    float leading, descent; // For fonts
    if (m_d.m_decaltype != DecalImage)

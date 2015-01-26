@@ -85,6 +85,14 @@ public:
 	STDMETHOD(get_PhysicsLoopTime)(/*[out, retval]*/ int *pVal);
 	STDMETHOD(put_PhysicsLoopTime)(/*[in]*/ int newVal);
 
+	STDMETHOD(get_FieldOfView)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_FieldOfView)(/*[in]*/ float newVal);
+	STDMETHOD(get_Inclination)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_Inclination)(/*[in]*/ float newVal);
+	STDMETHOD(get_Layback)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_Layback)(/*[in]*/ float newVal);
+	STDMETHOD(get_Rotation)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_Rotation)(/*[in]*/ float newVal);
 	STDMETHOD(get_Scalex)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Scalex)(/*[in]*/ float newVal);
    STDMETHOD(get_Scaley)(/*[out, retval]*/ float *pVal);
@@ -97,8 +105,28 @@ public:
 	STDMETHOD(put_Xlatey)(/*[in]*/ float newVal);
    STDMETHOD(get_Xlatez)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_Xlatez)(/*[in]*/ float newVal);
-	STDMETHOD(get_Rotation)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_Rotation)(/*[in]*/ float newVal);
+	
+	STDMETHOD(get_FieldOfViewFS)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_FieldOfViewFS)(/*[in]*/ float newVal);
+	STDMETHOD(get_InclinationFS)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_InclinationFS)(/*[in]*/ float newVal);
+	STDMETHOD(get_LaybackFS)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_LaybackFS)(/*[in]*/ float newVal);
+	STDMETHOD(get_RotationFS)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_RotationFS)(/*[in]*/ float newVal);
+	STDMETHOD(get_ScalexFS)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_ScalexFS)(/*[in]*/ float newVal);
+   STDMETHOD(get_ScaleyFS)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_ScaleyFS)(/*[in]*/ float newVal);
+   STDMETHOD(get_ScalezFS)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_ScalezFS)(/*[in]*/ float newVal);
+	STDMETHOD(get_XlatexFS)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_XlatexFS)(/*[in]*/ float newVal);
+	STDMETHOD(get_XlateyFS)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_XlateyFS)(/*[in]*/ float newVal);
+   STDMETHOD(get_XlatezFS)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_XlatezFS)(/*[in]*/ float newVal);
+
 	STDMETHOD(get_SlopeMax)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_SlopeMax)(/*[in]*/ float newVal);
 	STDMETHOD(get_SlopeMin)(/*[out, retval]*/ float *pVal);
@@ -156,12 +184,6 @@ public:
 	STDMETHOD(FireKnocker)(/*[in]*/ int Count);
 	STDMETHOD(QuitPlayer)(/*[in]*/ int CloseType);
 
-	STDMETHOD(get_FieldOfView)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_FieldOfView)(/*[in]*/ float newVal);
-	STDMETHOD(get_Inclination)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_Inclination)(/*[in]*/ float newVal);
-	STDMETHOD(get_Layback)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_Layback)(/*[in]*/ float newVal);
 	STDMETHOD(get_Name)(/*[out, retval]*/ BSTR *pVal);
 	STDMETHOD(put_Name)(/*[in]*/ BSTR newVal);
     STDMETHOD(get_EnableAntialiasing)(/*[out, retval]*/ int *pVal);
@@ -188,6 +210,8 @@ public:
 	STDMETHOD(put_EnableDecals)(/*[in]*/ VARIANT_BOOL newVal);
 	STDMETHOD(get_EnableEMReels)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_EnableEMReels)(/*[in]*/ VARIANT_BOOL newVal);
+	STDMETHOD(get_ShowDT)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+	STDMETHOD(put_ShowDT)(/*[in]*/ VARIANT_BOOL newVal);
 
 	STDMETHOD(get_GlobalDifficulty)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_GlobalDifficulty)(/*[in]*/ float newVal);
@@ -504,21 +528,23 @@ END_CONNECTION_POINT_MAP()
 	float m_glassheight;
 	float m_tableheight;
 
-	float m_rotation;
-	float m_inclination;
-	float m_layback;
-	float m_FOV;
-	
 	float m_maxSeparation;
 	float m_globalMaxSeparation;
 	float m_ZPD;
 	float m_globalZPD;
 
-	float m_xlatex;
-	float m_xlatey;
-    float m_xlatez;
-	float m_scalex;
-	float m_scaley;
+	unsigned int m_BG_current_set;
+	float m_BG_inclination[NUM_BG_SETS];
+	float m_BG_FOV[NUM_BG_SETS];
+	float m_BG_layback[NUM_BG_SETS];
+	float m_BG_rotation[NUM_BG_SETS];
+	float m_BG_scalex[NUM_BG_SETS];
+	float m_BG_scaley[NUM_BG_SETS];
+    float m_BG_scalez[NUM_BG_SETS];
+	float m_BG_xlatex[NUM_BG_SETS];
+	float m_BG_xlatey[NUM_BG_SETS];
+    float m_BG_xlatez[NUM_BG_SETS];
+
 	float m_angletiltMax;
 	float m_angletiltMin;
 
@@ -648,23 +674,18 @@ END_CONNECTION_POINT_MAP()
     int m_useFXAA;
 	int m_useAO;
 
-    float m_zScale;
-
 	bool m_activeLayers[8];
-    bool m_toggleAllLayers;   
+    bool m_toggleAllLayers;
     bool m_savingActive;
 
     bool m_renderSolid;
 
 	bool m_fGrid; // Display grid or not
 	bool m_fBackdrop;
-	bool m_fRenderShadows;
 	bool m_fRenderDecals;
 	bool m_fRenderEMReels;
    bool m_overwriteGlobalStereo3D;
    bool m_cameraMode;
-   int  m_renderWidth;
-   int  m_renderHeight;
 #ifdef UNUSED_TILT //!! currently unused (see NudgeGetTilt())
 	int m_jolt_amount;       
 	int m_tilt_amount;

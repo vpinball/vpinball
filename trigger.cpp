@@ -599,8 +599,8 @@ void Trigger::PostRenderStatic(RenderDevice* pd3dDevice)
 
     if ( doAnimation)
     {
-        const float step = 1.0f*(m_ptable->m_zScale);
-        const float limit = animLimit*(m_ptable->m_zScale);
+        const float step = 1.0f*(m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]);
+        const float limit = animLimit*(m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]);
 
         if( moveDown ) 
         {
@@ -695,13 +695,13 @@ void Trigger::RenderSetup(RenderDevice* pd3dDevice)
        {
            triggerVertices[i].x = (vert.x*m_d.m_scaleX)+m_d.m_vCenter.x;
            triggerVertices[i].y = (vert.y*m_d.m_scaleY)+m_d.m_vCenter.y;
-           triggerVertices[i].z = (vert.z*1.0f*m_ptable->m_zScale)+baseHeight;
+           triggerVertices[i].z = (vert.z*1.0f*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set])+baseHeight;
        }
        else
        {
            triggerVertices[i].x = (vert.x*m_d.m_radius)+m_d.m_vCenter.x;
            triggerVertices[i].y = (vert.y*m_d.m_radius)+m_d.m_vCenter.y;
-           triggerVertices[i].z = (vert.z*m_d.m_radius*m_ptable->m_zScale)+baseHeight;
+           triggerVertices[i].z = (vert.z*m_d.m_radius*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set])+baseHeight;
        }
        vert = Vertex3Ds( verts[i].nx, verts[i].ny, verts[i].nz );
        vert = fullMatrix.MultiplyVectorNoTranslate(vert);

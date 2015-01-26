@@ -25,6 +25,8 @@
 
 //
 
+#define NUM_BG_SETS        2
+
 #define MAX_BALL_TRAIL_POS 10
 
 #define MAX_REELS          32

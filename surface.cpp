@@ -886,8 +886,8 @@ void Surface::RenderSetup(RenderDevice* pd3dDevice)
    const float oldBottomHeight = m_d.m_heightbottom;
    const float oldTopHeight = m_d.m_heighttop;
 
-   m_d.m_heightbottom *= m_ptable->m_zScale;
-   m_d.m_heighttop *= m_ptable->m_zScale;
+   m_d.m_heightbottom *= m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+   m_d.m_heighttop *= m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
    if( !m_vlinesling.empty() )
    {
       if( !slingshotVBuffer )
