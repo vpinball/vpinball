@@ -20,6 +20,16 @@ float4   m1;
 float4   m2;
 float4   m3;
 
+sampler2D texSampler7 : TEXUNIT2 = sampler_state // ball decal
+{
+	Texture	  = (Texture2);
+    MIPFILTER = LINEAR;
+    MAGFILTER = LINEAR;
+    MINFILTER = LINEAR;
+	ADDRESSU  = Wrap;
+	ADDRESSV  = Wrap;
+};
+
 //------------------------------------
 
 //application to vertex structure
@@ -99,7 +109,7 @@ voutReflection vsBallReflection( in vin IN )
 
 	// this is not a 100% ball reflection on the table due to the quirky camera setup
 	// the ball is moved a bit down and rendered again
-	pos.y += radius*(2.0f*0.35f);
+	pos.y += radius*(2.0*0.35);
 	pos.z = pos.z*0.5f - 10.0f;
 	
 	float3 p = mul(pos, matWorldView).xyz;
@@ -174,15 +184,14 @@ float4 psBall( in vout IN ) : COLOR
 	float2 uv0;
 	uv0.x = r.x*0.5f+0.5f;
 	uv0.y = r.y*0.5f+0.5f;
-   float3 ballImageColor = tex2Dlod( texSampler0, float4(uv0, 0.f,0.f) ).xyz;
+    float3 ballImageColor = InvGamma(tex2Dlod( texSampler0, float4(uv0, 0.f,0.f) ).xyz);
    
-	float4 decalColor = tex2D( texSampler2, IN.tex0 );
+	float4 decalColor = tex2D( texSampler7, IN.tex0 );
+	decalColor.xyz = InvGamma(decalColor.xyz);
 	if ( !decalMode )
-	   ballImageColor = ballImageColor + decalColor*decalColor.a;
+	   ballImageColor *= fenvEmissionScale;
 	else
-	   ballImageColor = Screen( float4(ballImageColor,1.0f), decalColor, 1.0f).xyz;
-	   
-   ballImageColor = InvGamma(ballImageColor)*fenvEmissionScale;
+	   ballImageColor = Screen( float4(ballImageColor,1.0f), decalColor, 1.0f ).xyz*(0.5f*fenvEmissionScale); //!! 0.5f=magic
 	
 	/*float3 normal = float3(0,0,1);
 	float NdotR = dot(normal,r);*/
@@ -210,33 +219,37 @@ float4 psBall( in vout IN ) : COLOR
 	   playfieldColor = lightLoop(mid, mul(float4(/*normal=*/0,0,1,0), matWorldView).xyz, /*camera=0,0,0,1*/-mid, playfieldColor, float3(0,0,0), float3(0,0,0), 1.0f).xyz;
 	   
 	   //!! magic falloff & weight the rest in from the ballImage
-	   float weight = freflectionStrength*0.05f*sqrt(-NdotR);
+	   float weight = freflectionStrength*-NdotR; //!! sqrt(-NdotR)?
 	   playfieldColor *= weight;
 	   playfieldColor += ballImageColor*(1.0f-weight);
 	}
 	else
 	   playfieldColor = ballImageColor;
 
-	 float3 diffuse  = cBase;
+	float3 diffuse  = cBase;
+	if(!decalMode)
+	    diffuse *= decalColor*decalColor.a; // scratches make the material more rough
     float3 glossy   = diffuse;
     float3 specular = playfieldColor;
+	if(!decalMode)
+	    specular *= 1.0f-decalColor*decalColor.a; // see above
    
-    float4 result =ballLightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular, 1.0f);
+    float4 result = ballLightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular, 1.0f);
     return result;
 }
 
 
 float4 psBallReflection( in voutReflection IN ) : COLOR
 {
-	float3 ballImageColor = cBase + InvGamma(tex2D( texSampler0, IN.r.xy ).xyz)*fenvEmissionScale; //!! just add the ballcolor in, this is a whacky reflection anyhow
+	float3 ballImageColor = (cBase*0.25f + InvGamma(tex2D( texSampler0, IN.r.xy ).xyz))*fenvEmissionScale; //!! just add the ballcolor in, this is a whacky reflection anyhow
 	float alpha = saturate((IN.tex0.y-position.y)/radius);
-	alpha = (alpha*alpha)*(alpha*alpha)*freflectionStrength*0.25f;
+	alpha = (alpha*alpha)*(alpha*alpha)*freflectionStrength;
 	return float4(ballImageColor,alpha);
 }
 
 float4 psBallTrail( in voutTrail IN ) : COLOR
 {
-	return float4((cBase + InvGamma(tex2D( texSampler0, IN.tex0 ).xyz)*fenvEmissionScale)*IN.alpha,IN.alpha); //!! just add the ballcolor in, this is a whacky reflection anyhow
+	return float4((cBase*0.25f + InvGamma(tex2D( texSampler0, IN.tex0 ).xyz))*fenvEmissionScale, IN.alpha); //!! just add the ballcolor in, this is a whacky trail anyhow
 }
 
 //------------------------------------
