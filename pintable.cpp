@@ -5157,7 +5157,9 @@ void PinTable::AddMultiSel(ISelect *psel, bool fAdd, bool fUpdate, bool fContext
                         for( int i=0;i<col->m_visel.size();i++ )
                         {
                             col->m_visel[i].m_selectstate = eMultiSelected;
-                            m_vmultisel.AddElement(&col->m_visel[i]);
+                            // current element is already in m_vmultisel. (ClearMultiSel(psel) added it
+                            if ( col->m_visel.ElementAt(i)!=psel )
+                              m_vmultisel.AddElement(&col->m_visel[i]);
                         }
                     }
                 }
