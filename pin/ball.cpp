@@ -16,7 +16,7 @@ Ball::Ball()
    m_defaultZ = 25.0f; //!! assumes ball radius 25
    m_Event_Pos.x = m_Event_Pos.y = m_Event_Pos.z = -1.0f;
    m_frozen = false;
-   m_color = RGB(0,0,0);
+   m_color = RGB(20,20,20);
 
    m_ringcounter_oldpos = 0;
    for(int i = 0; i < MAX_BALL_TRAIL_POS; ++i)
@@ -49,7 +49,7 @@ void Ball::Init(const float mass)
 
    m_vpVolObjs = new VectorVoid;
 
-   m_color = RGB(0,0,0);
+   m_color = RGB(20,20,20);
 
    if (g_pplayer->m_ptable->m_szBallImage[0] == '\0')
    {

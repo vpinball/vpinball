@@ -3105,7 +3105,7 @@ void Player::DrawBalls()
             {
                 m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
                 m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
-                m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_DESTALPHA);
+                m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_INVSRCALPHA);
 
                 ballShader->SetTechnique("RenderBallTrail");
 				ballShader->Begin(0);
@@ -3113,7 +3113,6 @@ void Player::DrawBalls()
 				ballShader->End();
 
                 m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-                m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_INVSRCALPHA);
             }
         }
 
