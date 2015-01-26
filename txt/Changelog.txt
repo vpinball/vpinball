@@ -43,6 +43,9 @@ VP 10.0.0 Changelog
   Now you can define a real playfield height. If this value is raised, all elements on the table are also moved by that amount.
   For example: "table field height"=50 means everything on the table is raised by 50 units. This allows for real ball tunnels and more.
 
+- new setting in the video preferences to setup rotation for cabinet mode (or otherwise standard desktop)
+  this allows a table to be used in/setup for both DT and FS by setting the backglass options correctly for both modes
+
 - new rubber element
 
 - spinners are mesh based. If the spinner bracket isn't the right one disable the "Show Bracket" settings and you will only see the spinner plate.
@@ -122,7 +125,7 @@ VP 10.0.0 Changelog
 
 - two new methods of ball decals added. If 'Logo mode' is unchecked the decal texture will be additively blended based on it's alpha values.
   This way you can add scratches to the ball (see the default table for an example). In 'Logo mode' the decal texture is blended as an overlay 
-  blend mode 'Screen' in Photoshop/Gimp) to apply a logo or a second image on the normal ball texture.
+  (blend mode 'Screen' in Photoshop/Gimp) to apply a logo or a second image on the normal ball texture.
 
 - flasher supports custom shapes and multi texturing. You can define two separate images and define a filter to blend these two images.
   in addition there is now a modulate option to define how the flasher blends with the underlying elements (0(=full additive)..1=(only modulate))

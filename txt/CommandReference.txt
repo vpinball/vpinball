@@ -377,7 +377,6 @@ TimerEnabled(bool)
 TimerInterval(int)
 *Surface(string)
 UserValue(any)
-*Type(PlungerType) - 0=Original, 1=Modern
 *Color(OLE_COLOR)
 *Image(string) - texture name
 *MeshPLunger(bool)
