@@ -1203,8 +1203,6 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(9), helpstring("property BlinkPattern")] HRESULT BlinkPattern([in] BSTR newVal);
 		[propget, id(DISPID_Light_BlinkInterval), helpstring("property BlinkInterval")] HRESULT BlinkInterval([out, retval] long *pVal);
 		[propput, id(DISPID_Light_BlinkInterval), helpstring("property BlinkInterval")] HRESULT BlinkInterval([in] long newVal);
-		[propget, id(11), helpstring("property BorderColor")] HRESULT BorderColor([out, retval] OLE_COLOR *pVal);
-		[propput, id(11), helpstring("property BorderColor")] HRESULT BorderColor([in] OLE_COLOR newVal);
 		[propget, id(12), helpstring("property Intensity")] HRESULT Intensity([out, retval] float *pVal);
 		[propput, id(12), helpstring("property Intensity")] HRESULT Intensity([in] float newVal);
 		[propget, id(434), helpstring("property IntensityScale")] HRESULT IntensityScale([out, retval] float *pVal);
@@ -1215,8 +1213,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(DISPID_Name), helpstring("property Name")] HRESULT Name([in] BSTR newVal);
 		[propget, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([out, retval] VARIANT* pVal);
 		[propput, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([in] VARIANT* newVal);
-		[propget, id(DISPID_Image), helpstring("property OffImage")] HRESULT OffImage([out, retval] BSTR *pVal);
-		[propput, id(DISPID_Image), helpstring("property OffImage")] HRESULT OffImage([in] BSTR newVal);
+		[propget, id(DISPID_Image), helpstring("property Image")] HRESULT Image([out, retval] BSTR *pVal);
+		[propput, id(DISPID_Image), helpstring("property Image")] HRESULT Image([in] BSTR newVal);
 		[propget, id(397), helpstring("property DepthBias")] HRESULT DepthBias([out, retval] float *pVal);
 		[propput, id(397), helpstring("property DepthBias")] HRESULT DepthBias([in] float newVal);
 		[propget, id(377), helpstring("property FadeSpeedUp")] HRESULT FadeSpeedUp([out, retval] float *pVal);

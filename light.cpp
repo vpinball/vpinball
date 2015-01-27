@@ -174,11 +174,11 @@ void Light::SetDefaults(bool fromMouseClick)
 
    m_d.m_intensity_scale = 1.0f;
 
-   hr = GetRegInt("DefaultProps\\Light","BorderColor", &iTmp);
+   /*hr = GetRegInt("DefaultProps\\Light","BorderColor", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_bordercolor = iTmp;
    else
-      m_d.m_bordercolor = RGB(0,0,0);
+      m_d.m_bordercolor = RGB(0,0,0);*/
 
    hr = GetRegString("DefaultProps\\Light", "Surface", &m_d.m_szSurface, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
@@ -238,7 +238,7 @@ void Light::WriteRegDefaults()
    SetRegValue("DefaultProps\\Light","OffImage", REG_SZ, &m_d.m_szOffImage,lstrlen(m_d.m_szOffImage));
    SetRegValue("DefaultProps\\Light","BlinkPattern", REG_SZ, &m_rgblinkpattern, lstrlen(m_rgblinkpattern));
    SetRegValue("DefaultProps\\Light","BlinkInterval", REG_DWORD, &m_blinkinterval,4);
-   SetRegValue("DefaultProps\\Light","BorderColor", REG_DWORD, &m_d.m_bordercolor,4);
+   //SetRegValue("DefaultProps\\Light","BorderColor", REG_DWORD, &m_d.m_bordercolor,4);
    SetRegValue("DefaultProps\\Light","Surface", REG_SZ, &m_d.m_szSurface, lstrlen(m_d.m_szSurface));
    SetRegValueFloat("DefaultProps\\Light","FadeSpeedUp", m_d.m_fadeSpeedUp);
    SetRegValueFloat("DefaultProps\\Light","FadeSpeedDown", m_d.m_fadeSpeedDown);
@@ -340,7 +340,7 @@ void Light::RenderOutline(Sur * const psur)
    case ShapeCircle:
    default: 
        {
-          psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_falloff + m_d.m_borderwidth);
+          psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_falloff /*+ m_d.m_borderwidth*/);
           break;
        }
 
@@ -351,7 +351,7 @@ void Light::RenderOutline(Sur * const psur)
           if (m_selectstate != eNotSelected)  
           {
               psur->SetBorderColor(RGB(255,0,0),false,0);
-              psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_falloff + m_d.m_borderwidth);
+              psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_falloff /*+ m_d.m_borderwidth*/);
               psur->SetBorderColor(RGB(0,0,0),false,0);
           }
           psur->Polygon(vvertex);
@@ -821,7 +821,7 @@ HRESULT Light::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptke
    bw.WriteString(FID(BPAT), m_rgblinkpattern);
    bw.WriteString(FID(IMG1), m_d.m_szOffImage);
    bw.WriteInt(FID(BINT), m_blinkinterval);
-   bw.WriteInt(FID(BCOL), m_d.m_bordercolor);
+   //bw.WriteInt(FID(BCOL), m_d.m_bordercolor);
    bw.WriteFloat(FID(BWTH), m_d.m_intensity);
    bw.WriteString(FID(SURF), m_d.m_szSurface);
    bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
@@ -863,8 +863,8 @@ HRESULT Light::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, 
 
    strcpy_s(m_rgblinkpattern, sizeof(m_rgblinkpattern), "10");
    m_blinkinterval = 125;
-   m_d.m_borderwidth = 0;
-   m_d.m_bordercolor = RGB(0,0,0);
+   //m_d.m_borderwidth = 0;
+   //m_d.m_bordercolor = RGB(0,0,0);
 
    BiffReader br(pstm, this, pid, version, hcrypthash, hcryptkey);
 
@@ -928,10 +928,10 @@ BOOL Light::LoadToken(int id, BiffReader *pbr)
    {
       pbr->GetInt(&m_blinkinterval);
    }
-   else if (id == FID(BCOL))
+   /*else if (id == FID(BCOL))
    {
       pbr->GetInt(&m_d.m_bordercolor);
-   }
+   }*/
    else if (id == FID(BWTH))
    {
       pbr->GetFloat(&m_d.m_intensity);
@@ -1320,24 +1320,6 @@ STDMETHODIMP Light::put_BlinkInterval(long newVal)
    return S_OK;
 }
 
-STDMETHODIMP Light::get_BorderColor(OLE_COLOR *pVal)
-{
-   *pVal = m_d.m_bordercolor;
-
-   return S_OK;
-}
-
-STDMETHODIMP Light::put_BorderColor(OLE_COLOR newVal)
-{
-   STARTUNDO
-
-   m_d.m_bordercolor = newVal;
-
-   STOPUNDO
-
-   return S_OK;
-}
-
 STDMETHODIMP Light::get_Intensity(float *pVal)
 {
    *pVal = m_d.m_intensity;
@@ -1400,7 +1382,7 @@ STDMETHODIMP Light::put_Surface(BSTR newVal)
 }
 
 
-STDMETHODIMP Light::get_OffImage(BSTR *pVal)
+STDMETHODIMP Light::get_Image(BSTR *pVal)
 {
    WCHAR wz[512];
 
@@ -1410,7 +1392,7 @@ STDMETHODIMP Light::get_OffImage(BSTR *pVal)
    return S_OK;
 }
 
-STDMETHODIMP Light::put_OffImage(BSTR newVal)
+STDMETHODIMP Light::put_Image(BSTR newVal)
 {
    STARTUNDO
 

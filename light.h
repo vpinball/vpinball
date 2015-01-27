@@ -30,8 +30,8 @@ public:
 	Shape m_shape;
 	//char m_rgblinkpattern[33];
 	//int m_blinkinterval;
-	float m_borderwidth;
-	COLORREF m_bordercolor;
+	//float m_borderwidth;
+	//COLORREF m_bordercolor;
    //Material normalMatr;
    //Material borderMatr;
    //float normalR,normalG,normalB;
@@ -200,8 +200,6 @@ public:
 	STDMETHOD(put_Intensity)(/*[in]*/ float newVal);
 	STDMETHOD(get_IntensityScale)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_IntensityScale)(/*[in]*/ float newVal);
-	STDMETHOD(get_BorderColor)(/*[out, retval]*/ OLE_COLOR *pVal);
-	STDMETHOD(put_BorderColor)(/*[in]*/ OLE_COLOR newVal);
 	STDMETHOD(get_BlinkInterval)(/*[out, retval]*/ long *pVal);
 	STDMETHOD(put_BlinkInterval)(/*[in]*/ long newVal);
 	STDMETHOD(get_BlinkPattern)(/*[out, retval]*/ BSTR *pVal);
@@ -218,8 +216,8 @@ public:
 	STDMETHOD(put_Falloff)(/*[in]*/ float newVal);
 	STDMETHOD(get_FalloffPower)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_FalloffPower)(/*[in]*/ float newVal);
-	STDMETHOD(get_OffImage)(/*[out, retval]*/ BSTR *pVal);
-	STDMETHOD(put_OffImage)(/*[in]*/ BSTR newVal);
+	STDMETHOD(get_Image)(/*[out, retval]*/ BSTR *pVal);
+	STDMETHOD(put_Image)(/*[in]*/ BSTR newVal);
    STDMETHOD(get_DepthBias)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_DepthBias)(/*[in]*/ float newVal);
    STDMETHOD(get_FadeSpeedUp)(/*[out, retval]*/ float *pVal);
