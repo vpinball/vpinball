@@ -347,12 +347,9 @@ TimerEnabled(bool)
 TimerInterval(int)
 BlinkPattern(string)
 BlinkInterval(int)
-*BorderColor(OLE_COLOR)
-*BorderWidth(float)
 *Surface(string)
 UserValue(any)
-*OffImage(string)
-*OnImageIsLightmap(int) - if set to 1 the on image is used as a add. alpha blend image, this works only on custom light shapes
+*Image(string)
 DepthBias(float)
 FadeSpeedUp(float) - speed to fade into on state
 FadeSpeedDown(float) - speed to fade into off state
