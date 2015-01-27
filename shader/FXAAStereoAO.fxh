@@ -39,11 +39,11 @@ float2 hash(float2 gridcell) // gridcell is assumed to be an integer coordinate
 	return frac( P.xz * P.yy * lf );
 }
 
-float3 get_normal(float depth0, float2 u) // use neighboring pixels
+float3 get_nonunit_normal(float depth0, float2 u) // use neighboring pixels
 {
 	const float depth1 = tex2Dlod(texSamplerDepth, float4(u.x, u.y+w_h_height.y, 0.f,0.f)).x;
 	const float depth2 = tex2Dlod(texSamplerDepth, float4(u.x+w_h_height.x, u.y, 0.f,0.f)).x;
-	return normalize(float3(w_h_height.y * (depth2 - depth0), (depth1 - depth0) * w_h_height.x, w_h_height.y * w_h_height.x)); //!!
+	return float3(w_h_height.y * (depth2 - depth0), (depth1 - depth0) * w_h_height.x, w_h_height.y * w_h_height.x); //!!
 }
 
 //float3 sphere_sample(float2 t)
@@ -80,6 +80,10 @@ float3 rotate_to_vector_upper(float3 vec, float3 normal)
 float4 ps_main_ao(in VS_OUTPUT_2D IN) : COLOR
 {
 	const float2 u = IN.tex0 + w_h_height.xy*0.5;
+	const float depth0 = tex2Dlod(texSamplerDepth, float4(u, 0.f,0.f)).x;
+	if((depth0 == 1.0f) || (depth0 == 0.0f)) //!! early out if depth too large (=BG) or too small (=DMD,etc -> retweak render options (depth write on), otherwise also screwup with stereo)
+		return float4(1.0f,1.0f,1.0f,1.0f);
+
 	const float2 ushift = hash(IN.tex0*w_h_height.z)*w_h_height.w; // jitter samples via hash of position on screen and then jitter samples by time //!! see below for non-shifted variant
 	//const float base = 0.0;
 	const float area = 0.07; //!!
@@ -87,11 +91,9 @@ float4 ps_main_ao(in VS_OUTPUT_2D IN) : COLOR
 	const float radius = 0.006; //!!
 	const int samples = 9; //4,8,9,13,21,25 korobov,fibonacci
 	const float total_strength = AO_scale * (/*1.0 for uniform*/0.5 / samples);
-	const float depth0 = tex2Dlod(texSamplerDepth, float4(u, 0.f,0.f)).x;
-	if((depth0 == 1.0f) || (depth0 == 0.0f)) //!! early out if depth too large (=BG) or too small (=DMD,etc -> retweak render options (depth write on), otherwise also screwup with stereo)
-		return float4(1.0f,1.0f,1.0f,1.0f);
-	const float3 normal = get_normal(depth0, u);
+	const float3 normal = normalize(get_nonunit_normal(depth0, u));
 	const float radius_depth = radius/depth0;
+
 	float occlusion = 0.0;
 	for(int i=0; i < samples; ++i) {
 		const float2 r = float2(i*(1.0 / samples), i*(2.0 / samples)); //1,5,2,8,13,7 korobov,fibonacci //!! could also use progressive/extensible lattice via rad_inv(i)*(1501825329, 359975893) (check precision though as this should be done in double or uint64)
@@ -100,18 +102,17 @@ float4 ps_main_ao(in VS_OUTPUT_2D IN) : COLOR
 		//const float rdotn = dot(ray,normal);
 		const float2 hemi_ray = u + (radius_depth /** sign(rdotn) for uniform*/) * ray.xy;
 		const float occ_depth = tex2Dlod(texSamplerDepth, float4(hemi_ray, 0.f,0.f)).x;
-		const float3 occ_normal = get_normal(occ_depth, hemi_ray);
+		const float3 occ_normal = get_nonunit_normal(occ_depth, hemi_ray);
 		const float diff_depth = depth0 - occ_depth;
 		const float diff_norm = dot(occ_normal,normal);
-		occlusion += step(falloff, diff_depth) * /*abs(rdotn)* for uniform*/ (1.0f-diff_norm*diff_norm) * (1.0-smoothstep(falloff, area, diff_depth));
+		occlusion += step(falloff, diff_depth) * /*abs(rdotn)* for uniform*/ (1.0f-diff_norm*diff_norm/dot(occ_normal,occ_normal)) * (1.0-smoothstep(falloff, area, diff_depth));
 	}
 	const float ao = 1.0 - total_strength * occlusion;
-	const float averaged_ao = (tex2Dlod(texSamplerBack, float4(u, 0.f,0.f)).x*0.5f
-	                          +(tex2Dlod(texSamplerBack, float4(u+float2(w_h_height.x,0.0f), 0.f,0.f)).x
-							   +tex2Dlod(texSamplerBack, float4(u+float2(0.0f,w_h_height.y), 0.f,0.f)).x
-							   +tex2Dlod(texSamplerBack, float4(u-float2(w_h_height.x,0.0f), 0.f,0.f)).x
-							   +tex2Dlod(texSamplerBack, float4(u-float2(0.0f,w_h_height.y), 0.f,0.f)).x)*0.125f)
-		*0.5f+saturate(ao /*+base*/)*0.5f;
+	const float averaged_ao = (tex2Dlod(texSamplerBack, float4(u+float2(w_h_height.x,w_h_height.y)*0.5f, 0.f,0.f)).x //abuse bilerp for filtering (by using half texel/pixel shift)
+							  +tex2Dlod(texSamplerBack, float4(u-float2(w_h_height.x,w_h_height.y)*0.5f, 0.f,0.f)).x
+							  +tex2Dlod(texSamplerBack, float4(u+float2(w_h_height.x,-w_h_height.y)*0.5f, 0.f,0.f)).x
+							  +tex2Dlod(texSamplerBack, float4(u-float2(w_h_height.x,-w_h_height.y)*0.5f, 0.f,0.f)).x)
+		*(0.25*0.5)+saturate(ao /*+base*/)*0.5f;
 	return float4(averaged_ao, averaged_ao, averaged_ao, 1.0f);
 }
 
