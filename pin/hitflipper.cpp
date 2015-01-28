@@ -6,19 +6,6 @@ FlipperAnimObject::FlipperAnimObject(const Vertex2D& center, float baser, float 
    m_height = zhigh - zlow;
 
    m_hitcircleBase.m_pfe = NULL;
-   m_hitcircleEnd.m_pfe = NULL;
-
-   m_lineseg1.m_pfe = NULL;
-   m_lineseg2.m_pfe = NULL;
-
-   m_lineseg1.m_rcHitRect.zlow = zlow;
-   m_lineseg1.m_rcHitRect.zhigh = zhigh;
-
-   m_lineseg2.m_rcHitRect.zlow = zlow;
-   m_lineseg2.m_rcHitRect.zhigh = zhigh;
-
-   m_hitcircleEnd.zlow = zlow;
-   m_hitcircleEnd.zhigh = zhigh;
 
    m_hitcircleBase.zlow = zlow;
    m_hitcircleBase.zhigh = zhigh;
@@ -52,9 +39,7 @@ FlipperAnimObject::FlipperAnimObject(const Vertex2D& center, float baser, float 
 
    const float fa = asinf((baser-endr)/flipr); //face to centerline angle (center to center)
 
-   faceNormOffset = (float)(M_PI/2.0) - fa; //angle of normal when flipper center line at angle zero
-
-   SetObjects(angleStart);
+   const float faceNormOffset = (float)(M_PI/2.0) - fa; //angle of normal when flipper center line at angle zero
 
    m_force = strength;
    m_returnRatio = returnRatio;
@@ -64,9 +49,7 @@ FlipperAnimObject::FlipperAnimObject(const Vertex2D& center, float baser, float 
 
    m_lastHitFace = false; // used to optimize hit face search order
 
-   const float len = m_flipperradius*cosf(fa); //Cosine of face angle X hypotenuse
-   m_lineseg1.length = len;
-   m_lineseg2.length = len;
+   m_faceLength = m_flipperradius*cosf(fa); //Cosine of face angle X hypotenuse
 
    zeroAngNorm.x =  sinf(faceNormOffset);// F2 Norm, used in Green's transform, in FPM time search
    zeroAngNorm.y = -cosf(faceNormOffset);// F1 norm, change sign of x component, i.e -zeroAngNorm.x
@@ -139,32 +122,6 @@ void HitFlipper::CalcHitRect()
    m_rcHitRect.bottom = m_flipperanim.m_hitcircleBase.center.y + m_flipperanim.m_flipperradius + m_flipperanim.m_endradius + 0.1f;
    m_rcHitRect.zlow = m_flipperanim.m_hitcircleBase.zlow;
    m_rcHitRect.zhigh = m_flipperanim.m_hitcircleBase.zhigh;
-}
-
-
-void FlipperAnimObject::SetObjects(const float angle)
-{
-   m_angleCur = angle;
-   m_hitcircleEnd.center.x = m_hitcircleBase.center.x + m_flipperradius*sinf(angle); //place end radius center
-   m_hitcircleEnd.center.y = m_hitcircleBase.center.y - m_flipperradius*cosf(angle);
-   m_hitcircleEnd.radius = m_endradius;
-
-   m_lineseg1.normal.x =  sinf(angle - faceNormOffset); // normals to new face positions
-   m_lineseg1.normal.y = -cosf(angle - faceNormOffset);
-   m_lineseg2.normal.x =  sinf(angle + faceNormOffset);
-   m_lineseg2.normal.y = -cosf(angle + faceNormOffset);
-
-   m_lineseg1.v1.x = m_hitcircleEnd.center.x + m_hitcircleEnd.radius*m_lineseg1.normal.x; //new endpoints
-   m_lineseg1.v1.y = m_hitcircleEnd.center.y + m_hitcircleEnd.radius*m_lineseg1.normal.y;
-
-   m_lineseg1.v2.x = m_hitcircleBase.center.x + m_hitcircleBase.radius*m_lineseg1.normal.x;
-   m_lineseg1.v2.y = m_hitcircleBase.center.y + m_hitcircleBase.radius*m_lineseg1.normal.y;
-
-   m_lineseg2.v1.x = m_hitcircleBase.center.x + m_hitcircleBase.radius*m_lineseg2.normal.x; // remember v1 to v2 direction
-   m_lineseg2.v1.y = m_hitcircleBase.center.y + m_hitcircleBase.radius*m_lineseg2.normal.y; // to make sure norm is correct
-
-   m_lineseg2.v2.x = m_hitcircleEnd.center.x + m_hitcircleEnd.radius*m_lineseg2.normal.x;
-   m_lineseg2.v2.y = m_hitcircleEnd.center.y + m_hitcircleEnd.radius*m_lineseg2.normal.y;
 }
 
 
@@ -348,8 +305,6 @@ float HitFlipper::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 
    const bool lastface = m_flipperanim.m_lastHitFace;
 
-   //m_flipperanim.SetObjects(m_flipperanim.m_angleCur);	// set current positions ... not needed
-
    // for effective computing, adding a last face hit value to speed calculations 
    //  a ball can only hit one face never two
    // also if a ball hits a face then it can not hit either radius
@@ -401,7 +356,7 @@ float HitFlipper::HitTestFlipperEnd(const Ball * pball, const float dtime, Colli
    const float angleMax = m_flipperanim.m_angleMax;
 
    const float ballr = pball->m_radius;
-   const float feRadius = m_flipperanim.m_hitcircleEnd.radius;
+   const float feRadius = m_flipperanim.m_endradius;
 
    const float ballrEndr = feRadius + ballr;			// magnititude of (ball - flipperEnd)
 
@@ -540,7 +495,7 @@ float HitFlipper::HitTestFlipperFace(const Ball * pball, const float dtime, Coll
    float anglespeed = m_flipperanim.m_anglespeed;				// rotation rate
 
    const Vertex2D flipperbase = m_flipperanim.m_hitcircleBase.center;
-   const float feRadius = m_flipperanim.m_hitcircleEnd.radius;
+   const float feRadius = m_flipperanim.m_endradius;
 
    const float angleMin = m_flipperanim.m_angleMin;
    const float angleMax = m_flipperanim.m_angleMax;	
@@ -639,7 +594,7 @@ float HitFlipper::HitTestFlipperFace(const Ball * pball, const float dtime, Coll
 
    const float bfftd = ballvtx * T.x + ballvty * T.y;			// ball to flipper face tanget distance	
 
-   const float len = m_flipperanim.m_lineseg1.length;// face segment length ... i.g same on either face									
+   const float len = m_flipperanim.m_faceLength; // face segment length ... i.g same on either face									
    if (bfftd < -C_TOL_ENDPNTS || bfftd > len + C_TOL_ENDPNTS) return -1.0f;	// not in range of touching
 
    const float hitz = pball->m_pos.z - ballr + pball->m_vel.z*t;	// check for a hole, relative to ball rolling point at hittime

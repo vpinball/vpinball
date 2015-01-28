@@ -3,12 +3,11 @@
 //#define DEBUG_FLIPPERS
 
 class FlipperAnimObject : public AnimObject
-	{
+{
 public:
     FlipperAnimObject(const Vertex2D& center, float baser, float endr, float flipr, float angleStart, float angleEnd,
                       float zlow, float zhigh, float strength, float mass, float returnRatio);
 
-	void SetObjects(const float angle);
 	virtual void UpdateDisplacements(const float dtime);
 	virtual void UpdateVelocities();
 
@@ -29,17 +28,11 @@ public:
 
 	Flipper *m_pflipper;
 
-	LineSeg m_lineseg1;
-	LineSeg m_lineseg2;
-	HitCircle m_hitcircleEnd;
+    float m_faceLength;
 	HitCircle m_hitcircleBase;
 	float m_endradius;
-	float faceNormOffset;
 
-	// New Flipper motion basis, uses Green's transform to rotate these valuse to curAngle
-	Vertex2D m_leftFaceNormal, m_rightFaceNormal, m_leftFaceBase, m_rightFaceBase;
-	Vertex2D m_endRadiusCenter;
-
+    // kinematic state
     float m_angularMomentum;
     float m_angularAcceleration;
 	float m_anglespeed;
@@ -75,14 +68,13 @@ public:
 #ifdef DEBUG_FLIPPERS
     U32 m_startTime;
 #endif
-	};
+};
 
 class HitFlipper :
 	public HitObject
-	{
+{
 public:
 	Vertex2D v;
-	//float rad1, rad2;
 	float origNormVel;
 
 	HitFlipper(const Vertex2D& center, float baser, float endr, float flipr, float angleStart, float angleEnd,
@@ -109,4 +101,4 @@ public:
 
 	FlipperAnimObject m_flipperanim;
 	int m_last_hittime;
-	};
+};

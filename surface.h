@@ -118,7 +118,7 @@ END_CONNECTION_POINT_MAP()
 private:
     void CurvesToShapes(Vector<HitObject> * const pvho);
     void SetupHitObject(Vector<HitObject> * pvho, HitObject * obj);
-    void AddLine(Vector<HitObject> * const pvho, const RenderVertex * const pv1, const RenderVertex * const pv2, const RenderVertex * const pvprev, const bool fSlingshot);
+    void AddLine(Vector<HitObject> * const pvho, const RenderVertex * const pv1, const RenderVertex * const pv2, const bool fSlingshot);
 
     void RenderSlingshots(RenderDevice* pd3dDevice);
     void RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop);

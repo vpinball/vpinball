@@ -56,7 +56,11 @@ void BumperAnimObject::UpdateAnimation()
     }
 
 }
-LineSegSlingshot::LineSegSlingshot()
+
+////////////////////////////////////////////////////////////////////////////////
+
+LineSegSlingshot::LineSegSlingshot(const Vertex2D& p1, const Vertex2D& p2)
+    : LineSeg(p1, p2)
 {
 	m_slingshotanim.m_iframe = 0;
 	m_slingshotanim.m_TimeReset = 0; // zero means the slingshot is currently reset

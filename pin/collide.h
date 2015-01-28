@@ -146,6 +146,9 @@ public:
 class HitCircle : public HitObject
 	{
 public:
+    HitCircle() { }
+    HitCircle(const Vertex2D& c, float r);
+
 	virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
 
 	float HitTestBasicRadius(const Ball * pball, float dtime, CollisionEvent& coll,
