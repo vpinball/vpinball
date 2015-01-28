@@ -186,32 +186,28 @@ void Primitive::GetHitShapes(Vector<HitObject> * const pvho)
 
    RecalculateMatrices();
    TransformVertices();
-   HitTriangle *ph3dpolyOld = NULL;
 
+   std::set< std::pair<unsigned,unsigned> > addedEdges;
+
+   // add collision triangles and edges
    for( unsigned i=0; i<m_mesh.NumIndices(); i+=3 )
    {
       Vertex3Ds rgv3D[3];
+      // NB: HitTriangle wants CCW vertices, but for rendering we have them in CW order
       rgv3D[0] = vertices[ m_mesh.m_indices[i  ] ];
-      rgv3D[1] = vertices[ m_mesh.m_indices[i+1] ];
-      rgv3D[2] = vertices[ m_mesh.m_indices[i+2] ];
-      HitTriangle * const ph3dpoly = new HitTriangle(rgv3D); //!! this is not efficient at all, use native triangle-soup directly somehow
-      ph3dpoly->m_elasticity = m_d.m_elasticity;
-      ph3dpoly->m_elasticityFalloff = m_d.m_elasticityFalloff;
-      ph3dpoly->SetFriction(m_d.m_friction);
-      ph3dpoly->m_scatter = ANGTORAD(m_d.m_scatter);
-      ph3dpoly->m_threshold = m_d.m_threshold;
-      ph3dpoly->m_fEnabled=m_d.m_fCollidable;
-      ph3dpoly->m_ObjType = ePrimitive;
-      if ( m_d.m_fHitEvent )
-         ph3dpoly->m_pfe = (IFireEvents *)this;
-      else  
-         ph3dpoly->m_pfe = 0;
-      pvho->AddElement( ph3dpoly );
+      rgv3D[1] = vertices[ m_mesh.m_indices[i+2] ];
+      rgv3D[2] = vertices[ m_mesh.m_indices[i+1] ];
+      SetupHitObject(pvho, new HitTriangle(rgv3D));
 
-      if (ph3dpolyOld)
-        CheckJoint(pvho, ph3dpolyOld, ph3dpoly);
+      AddHitEdge(pvho, addedEdges, m_mesh.m_indices[i  ], m_mesh.m_indices[i+1]);
+      AddHitEdge(pvho, addedEdges, m_mesh.m_indices[i+1], m_mesh.m_indices[i+2]);
+      AddHitEdge(pvho, addedEdges, m_mesh.m_indices[i+2], m_mesh.m_indices[i  ]);
+   }
 
-      ph3dpolyOld = ph3dpoly;
+   // add collision vertices
+   for (unsigned i = 0; i < m_mesh.NumVertices(); ++i)
+   {
+       SetupHitObject(pvho, new HitPoint(vertices[i]));
    }
 }
 
@@ -219,32 +215,32 @@ void Primitive::GetHitShapesDebug(Vector<HitObject> * const pvho)
 {
 }
 
-void Primitive::CheckJoint(Vector<HitObject> * const pvho, const HitTriangle * const ph3d1, const HitTriangle * const ph3d2)
+void Primitive::AddHitEdge(Vector<HitObject> * pvho, std::set< std::pair<unsigned,unsigned> >& addedEdges, unsigned i, unsigned j)
 {
-   const Vertex3Ds vjointnormal = CrossProduct(ph3d1->normal, ph3d2->normal);
-   if (vjointnormal.LengthSquared() < 1e-8f)
-       return;  // coplanar triangles need no joints
+    // create pair uniquely identifying the edge (i,j)
+    std::pair<unsigned,unsigned> p( std::min(i,j), std::max(i,j) );
 
-   // By convention of the calling function, points 1 [0] and 2 [1] of the second polygon will
-   // be the common-edge points
-   //!! BUG/TODO: this is wrong! This code was blindly copy-pasted from the ramp code without
-   // checking this assumption, which is not true for a general triangle mesh.
+    if (addedEdges.count(p) == 0)   // edge not yet added?
+    {
+        addedEdges.insert(p);
+        SetupHitObject(pvho, new HitLine3D(vertices[i], vertices[j]));
+    }
+}
 
-   HitLine3D * const ph3dc = new HitLine3D(ph3d2->m_rgv[0], ph3d2->m_rgv[1]);
-   ph3dc->m_elasticity = m_d.m_elasticity;
-   ph3dc->m_elasticityFalloff = m_d.m_elasticityFalloff;
-   ph3dc->SetFriction(m_d.m_friction);
-   ph3dc->m_scatter = ANGTORAD(m_d.m_scatter);
-   ph3dc->m_threshold = m_d.m_threshold;
-   ph3dc->m_ObjType = ePrimitive;
-   if ( m_d.m_fHitEvent )
-      ph3dc->m_pfe = (IFireEvents *)this;
-   else
-      ph3dc->m_pfe = 0;
-   pvho->AddElement(ph3dc);
+void Primitive::SetupHitObject(Vector<HitObject> * pvho, HitObject * obj)
+{
+    obj->m_elasticity = m_d.m_elasticity;
+    obj->m_elasticityFalloff = m_d.m_elasticityFalloff;
+    obj->SetFriction(m_d.m_friction);
+    obj->m_scatter = ANGTORAD(m_d.m_scatter);
+    obj->m_threshold = m_d.m_threshold;
+    obj->m_ObjType = ePrimitive;
+    obj->m_fEnabled = m_d.m_fCollidable;
+    if ( m_d.m_fHitEvent )
+        obj->m_pfe = (IFireEvents *)this;
 
-   m_vhoCollidable.AddElement(ph3dc);	//remember hit components of primitive
-   ph3dc->m_fEnabled = m_d.m_fCollidable;
+    pvho->AddElement(obj);
+    m_vhoCollidable.AddElement(obj);	//remember hit components of primitive
 }
 
 void Primitive::EndPlay()

@@ -479,7 +479,7 @@ Hit3DPoly::Hit3DPoly(Vertex3Ds * const rgv, const int count) : m_rgv(rgv),m_cver
 	}
 
 	const float sqr_len = normal.x * normal.x + normal.y * normal.y + normal.z * normal.z;
-	const float inv_len = (sqr_len > 0.0f) ? -1.0f/sqrtf(sqr_len) : 0.0f;   // NOTE: normal is flipped!
+	const float inv_len = (sqr_len > 0.0f) ? -1.0f/sqrtf(sqr_len) : 0.0f;   // NOTE: normal is flipped! Thus we need vertices in CCW order
 	normal.x *= inv_len;
 	normal.y *= inv_len;
 	normal.z *= inv_len;
@@ -673,12 +673,16 @@ void Hit3DPoly::CalcHitRect()
 	}
 }
 
-HitTriangle::HitTriangle(const Vertex3Ds rgv[3]) //!! triangle soup instead
+HitTriangle::HitTriangle(const Vertex3Ds rgv[3])
 {
 	m_rgv[0] = rgv[0];
 	m_rgv[1] = rgv[1];
 	m_rgv[2] = rgv[2];
 
+    /* NB: due to the swapping of the order of e0 and e1,
+     * the vertices must be passed in counterclockwise order
+     * (but rendering uses clockwise order!)
+     */
 	const Vertex3Ds e0 = m_rgv[2] - m_rgv[0];
 	const Vertex3Ds e1 = m_rgv[1] - m_rgv[0];
 	normal = CrossProduct(e0,e1);

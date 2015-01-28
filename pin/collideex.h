@@ -78,7 +78,7 @@ public:
 class HitTriangle : public HitObject
 {
 public:
-	HitTriangle(const Vertex3Ds rgv[3]);
+	HitTriangle(const Vertex3Ds rgv[3]);    // vertices in counterclockwise order
 	virtual ~HitTriangle() {}
 	virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
 	virtual int GetType() const {return eTriangle;}
