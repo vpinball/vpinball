@@ -1279,7 +1279,7 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
       pd3dDevice->basicShader->SetAlphaValue((float)m_d.m_fAlpha*m_d.m_intensity_scale/100.0f);
       pd3dDevice->basicShader->Core()->SetFloat("fFilterAmount",(float)m_d.m_fFilterAmount/100.0f);
 	  pd3dDevice->basicShader->Core()->SetFloat("blend_modulate_vs_add",max(m_d.m_modulate_vs_add,0.00001f)); // avoid 0, as it disables the blend
-      const D3DXVECTOR4 color = COLORREF_to_D3DXVECTOR4(m_d.m_color);
+      const D3DXVECTOR4 color = convertColor(m_d.m_color);
       pd3dDevice->basicShader->SetStaticColor(color);
       pd3dDevice->basicShader->PerformAlphaTest(true);
       pd3dDevice->basicShader->SetAlphaTestValue(1.0f / 255.0f);
