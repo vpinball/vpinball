@@ -4,32 +4,32 @@
 class Matrix3
 {
 public:
-   inline Matrix3()
+   Matrix3()
    {
       Identity();
    }
 
-   inline void scaleX(const float factor)
+   void scaleX(const float factor)
    {
       m_d[0][0] *= factor;
    }
-   inline void scaleY(const float factor)
+   void scaleY(const float factor)
    {
       m_d[1][1] *= factor;
    }
-   inline void scaleZ(const float factor)
+   void scaleZ(const float factor)
    {
       m_d[2][2] *= factor;
    }
 
-   inline void CreateSkewSymmetric(const Vertex3Ds &pv3D)
+   void CreateSkewSymmetric(const Vertex3Ds &pv3D)
    {
       m_d[0][0] = 0; m_d[0][1] = -pv3D.z; m_d[0][2] = pv3D.y;
       m_d[1][0] = pv3D.z; m_d[1][1] = 0; m_d[1][2] = -pv3D.x;
       m_d[2][0] = -pv3D.y; m_d[2][1] = pv3D.x; m_d[2][2] = 0;
    }
 
-   inline void MultiplyScalar(const float scalar)
+   void MultiplyScalar(const float scalar)
    {
       for (int i=0; i<3; ++i)
          for (int l=0; l<3; ++l)
@@ -37,7 +37,7 @@ public:
    }
 
    template <class VecType>
-   inline Vertex3Ds operator* (const VecType& v) const
+   Vertex3Ds operator* (const VecType& v) const
    {
       return Vertex3Ds(
          m_d[0][0] * v.x + m_d[0][1] * v.y + m_d[0][2] * v.z,
@@ -46,14 +46,14 @@ public:
    }
 
    template <class VecType>
-   inline Vertex3Ds MultiplyVector(const VecType& v) const
+   Vertex3Ds MultiplyVector(const VecType& v) const
    {
 	   return (*this) * v;
    }
 
    // multiply vector with matrix transpose
    template <class VecType>
-   inline Vertex3Ds MultiplyVectorT(const VecType& v) const
+   Vertex3Ds MultiplyVectorT(const VecType& v) const
    {
       return Vertex3Ds(
          m_d[0][0] * v.x + m_d[1][0] * v.y + m_d[2][0] * v.z,
@@ -61,7 +61,7 @@ public:
          m_d[0][2] * v.x + m_d[1][2] * v.y + m_d[2][2] * v.z);
    }
 
-   inline void MultiplyMatrix(const Matrix3 * const pmat1, const Matrix3 * const pmat2)
+   void MultiplyMatrix(const Matrix3 * const pmat1, const Matrix3 * const pmat2)
    {
       Matrix3 matans;
       for(int i=0; i<3; ++i)
@@ -77,14 +77,14 @@ public:
             m_d[i][l] = matans.m_d[i][l];
    }
 
-   inline void AddMatrix(const Matrix3 * const pmat1, const Matrix3 * const pmat2)
+   void AddMatrix(const Matrix3 * const pmat1, const Matrix3 * const pmat2)
    {
       for (int i=0; i<3; ++i)
          for (int l=0; l<3; ++l)
             m_d[i][l] = pmat1->m_d[i][l] + pmat2->m_d[i][l];
    }
 
-   inline void OrthoNormalize()
+   void OrthoNormalize()
    {
       Vertex3Ds vX(m_d[0][0], m_d[1][0], m_d[2][0]);
       Vertex3Ds vY(m_d[0][1], m_d[1][1], m_d[2][1]);
@@ -99,7 +99,7 @@ public:
       m_d[2][0] = vX.z; m_d[2][1] = vY.z; m_d[2][2] = vZ.z;
    }
 
-   inline void Transpose(Matrix3 * const pmatOut) const
+   void Transpose(Matrix3 * const pmatOut) const
    {
       for(int i=0; i<3; ++i)
       {
@@ -109,7 +109,7 @@ public:
       }
    }
 
-   inline void Identity(const float value = 1.0f)
+   void Identity(const float value = 1.0f)
    {
       m_d[0][0] = m_d[1][1] = m_d[2][2] = value;
       m_d[0][1] = m_d[0][2] = 
@@ -149,11 +149,11 @@ public:
 class Matrix3D : public D3DMATRIX
 {
 public:
-	inline Matrix3D() {}
-	inline Matrix3D(const float Scale) { SetScaling(Scale,Scale,Scale); }
+	Matrix3D() {}
+	Matrix3D(const float Scale) { SetScaling(Scale,Scale,Scale); }
 
     // premultiply the given matrix, i.e., result = mult * (*this)
-    inline void Multiply(const Matrix3D &mult, Matrix3D &result) const
+    void Multiply(const Matrix3D &mult, Matrix3D &result) const
     {
         Matrix3D matrixT;
         for (int i=0; i<4; ++i)
@@ -167,19 +167,19 @@ public:
         result = matrixT;
     }
 
-    inline void SetTranslation(const float tx, const float ty, const float tz)
+    void SetTranslation(const float tx, const float ty, const float tz)
     {
         SetIdentity();
         _41 = tx;
         _42 = ty;
         _43 = tz;
     }
-    inline void SetTranslation(const Vertex3Ds& t)
+    void SetTranslation(const Vertex3Ds& t)
     {
         SetTranslation(t.x, t.y, t.z);
     }
 
-    inline void SetScaling(const float sx, const float sy, const float sz)
+    void SetScaling(const float sx, const float sy, const float sz)
     {
         SetIdentity();
         _11 = sx;
@@ -187,7 +187,7 @@ public:
         _33 = sz;
     }
 
-    inline void RotateXMatrix(const float x)
+    void RotateXMatrix(const float x)
     {
         SetIdentity();
         _22 = _33 = cosf(x);
@@ -195,7 +195,7 @@ public:
         _32 = -_23;
     }
 
-    inline void RotateYMatrix(const float y)
+    void RotateYMatrix(const float y)
     {
         SetIdentity();
         _11 = _33 = cosf(y);
@@ -203,7 +203,7 @@ public:
         _13 = -_31;
     }
 
-    inline void RotateZMatrix(const float z)
+    void RotateZMatrix(const float z)
     {
         SetIdentity();
         _11 = _22 = cosf(z);
@@ -211,14 +211,14 @@ public:
         _21 = -_12;
     }
 
-    inline void SetIdentity()
+    void SetIdentity()
     {
         _11 = _22 = _33 = _44 = 1.0f;
         _12 = _13 = _14 = _41 =
         _21 = _23 = _24 = _42 =
         _31 = _32 = _34 = _43 = 0.0f;
     }
-    inline void Scale(const float x, const float y, const float z)
+    void Scale(const float x, const float y, const float z)
     {
         _11 *= x; _12 *= x; _13 *= x;
         _21 *= y; _22 *= y; _23 *= y;
@@ -226,7 +226,7 @@ public:
     }
 
     // extract the matrix corresponding to the 3x3 rotation part
-    inline void GetRotationPart(Matrix3D& rot)
+    void GetRotationPart(Matrix3D& rot)
     {
         rot._11 = _11; rot._12 = _12; rot._13 = _13; rot._14 = 0.0f;
         rot._21 = _21; rot._22 = _22; rot._23 = _23; rot._24 = 0.0f;
@@ -236,7 +236,7 @@ public:
 
     // generic multiply function for everything that has .x, .y and .z
     template <class VecIn, class VecOut>
-    inline void MultiplyVector(const VecIn& vIn, VecOut& vOut) const
+    void MultiplyVector(const VecIn& vIn, VecOut& vOut) const
     {
         // Transform it through the current matrix set
         const float xp = _11*vIn.x + _21*vIn.y + _31*vIn.z + _41;
@@ -250,7 +250,7 @@ public:
         vOut.z = zp*inv_wp;
     }
 
-    inline Vertex3Ds MultiplyVector(const Vertex3Ds &v) const
+    Vertex3Ds MultiplyVector(const Vertex3Ds &v) const
     {
         // Transform it through the current matrix set
         const float xp = _11*v.x + _21*v.y + _31*v.z + _41;
@@ -266,7 +266,7 @@ public:
         return pv3DOut;
     }
 
-    inline Vertex3Ds MultiplyVectorNoTranslate(const Vertex3Ds &v) const
+    Vertex3Ds MultiplyVectorNoTranslate(const Vertex3Ds &v) const
     {
         // Transform it through the current matrix set
         const float xp = _11*v.x + _21*v.y + _31*v.z;
@@ -281,7 +281,7 @@ public:
     }
 
     template <class VecIn, class VecOut>
-    inline void MultiplyVectorNoTranslate(const VecIn& vIn, VecOut& vOut) const
+    void MultiplyVectorNoTranslate(const VecIn& vIn, VecOut& vOut) const
     {
         // Transform it through the current matrix set
         const float xp = _11*vIn.x + _21*vIn.y + _31*vIn.z;
@@ -295,7 +295,7 @@ public:
 
     void Invert();
 
-   inline void Transpose()
+   void Transpose()
    {
 	  Matrix3D tmp;
       for(int i=0; i<4; ++i)
