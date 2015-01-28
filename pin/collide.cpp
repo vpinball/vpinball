@@ -86,26 +86,28 @@ float LineSeg::HitTestBasic(const Ball * pball, const float dtime, CollisionEven
 	
 	float hittime;
 	if (rigid)
-		{
-		if ((bnd < -pball->m_radius/**2.0f*/) || (lateral && bcpd < 0.f)) return -1.0f;	// (ball normal distance) excessive pentratration of object skin ... no collision HACK //!! *2 necessary?
+    {
+		if ((bnd < -pball->m_radius/**2.0f*/) || (lateral && bcpd < 0.f))
+            return -1.0f;	// (ball normal distance) excessive pentratration of object skin ... no collision HACK //!! *2 necessary?
 			
 		if (lateral && (bnd <= (float)PHYS_TOUCH))
-			{
+        {
 			if (inside || (fabsf(bnv) > C_CONTACTVEL)				// fast velocity, return zero time
 																	//zero time for rigid fast bodies				
 			|| (bnd <= (float)(-PHYS_TOUCH)))
 				hittime = 0;										// slow moving but embedded
 			else
 				hittime = bnd*(float)(1.0/(2.0*PHYS_TOUCH)) + 0.5f;	// don't compete for fast zero time events
-            }
+        }
 		else if (fabsf(bnv) > C_LOWNORMVEL) 					// not velocity low ????
 			hittime = bnd/(-bnv);								// rate ok for safe divide 
-		else return -1.0f;										// wait for touching
-		}
+		else
+            return -1.0f;										// wait for touching
+    }
 	else //non-rigid ... target hits
-		{
+    {
 		if (bnv * bnd >= 0.f)									// outside-receding || inside-approaching
-			{
+        {
 			if ((m_ObjType != eTrigger) ||						// no a trigger
 			    (!pball->m_vpVolObjs) ||
 			    (fabsf(bnd) >= pball->m_radius*0.5f) ||		    // not too close ... nor too far away
@@ -114,12 +116,13 @@ float LineSeg::HitTestBasic(const Ball * pball, const float dtime, CollisionEven
 			
 			hittime = 0;
 			bUnHit = !inside;	// ball on outside is UnHit, otherwise it's a Hit
-			}
+        }
 		else
 			hittime = bnd/(-bnv);	
-		}
+    }
 
-	if (infNaN(hittime) || hittime < 0.f || hittime > dtime) return -1.0f; // time is outside this frame ... no collision
+	if (infNaN(hittime) || hittime < 0.f || hittime > dtime)
+        return -1.0f; // time is outside this frame ... no collision
 
 	const float btv = ballvx*normal.y - ballvy*normal.x;				 //ball velocity tangent to segment with respect to direction from V1 to V2
 	const float btd = (ballx - v1.x)*normal.y - (bally - v1.y)*normal.x  // ball tangent distance 
@@ -156,16 +159,41 @@ float LineSeg::HitTestBasic(const Ball * pball, const float dtime, CollisionEven
 	}
 
 float LineSeg::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
-	{															// normal face, lateral, rigid
+{															// normal face, lateral, rigid
 	return HitTestBasic(pball, dtime, coll, true, true, true);
-	}
+}
+
+void LineSeg::Collide(CollisionEvent *coll)
+{
+    const float dot = coll->hitnormal.x * coll->ball->m_vel.x + coll->hitnormal.y * coll->ball->m_vel.y;
+    coll->ball->Collide2DWall(coll->hitnormal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter);
+
+    if (dot <= -m_threshold)
+        FireHitEvent(coll->ball);
+}
+
+void LineSeg::CalcNormal()
+{
+    const Vertex2D vT(v1.x - v2.x, v1.y - v2.y);
+
+    // Set up line normal
+    length = vT.Length();
+    const float inv_length = 1.0f/length;
+    normal.x =  vT.y * inv_length;
+    normal.y = -vT.x * inv_length;
+}
 
 void LineSeg::Contact(CollisionEvent& coll, float dtime)
 {
-    coll.ball->HandleStaticContact(coll.hitnormal, coll.hitvelocity.z, m_friction /*0.3f*/, dtime);
+    coll.ball->HandleStaticContact(coll.hitnormal, coll.hitvelocity.z, m_friction, dtime);
 }
 
+////////////////////////////////////////////////////////////////////////////////
 
+HitCircle::HitCircle(const Vertex2D& c, float r)
+    : center(c), radius(r)
+{
+}
 
 float HitCircle::HitTestBasicRadius(const Ball * pball, float dtime, CollisionEvent& coll,
 									bool direction, bool lateral, bool rigid)
@@ -307,29 +335,6 @@ float HitCircle::HitTestRadius(const Ball *pball, float dtime, CollisionEvent& c
 													//normal face, lateral, rigid
 	return HitTestBasicRadius(pball, dtime, coll, true, true, true);
 }
-
-
-void LineSeg::Collide(CollisionEvent *coll)
-{
-    const float dot = coll->hitnormal.x * coll->ball->m_vel.x + coll->hitnormal.y * coll->ball->m_vel.y;
-    coll->ball->Collide2DWall(coll->hitnormal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter);
-
-    if (dot <= -m_threshold)
-        FireHitEvent(coll->ball);
-}
-
-void LineSeg::CalcNormal()
-	{
-	const Vertex2D vT(v1.x - v2.x, v1.y - v2.y);
-
-	// Set up line normal
-	length = sqrtf(vT.x*vT.x + vT.y*vT.y);
-	const float inv_length = 1.0f/length;
-	normal.x =  vT.y * inv_length;
-	normal.y = -vT.x * inv_length;
-	}
-
-
 
 void HitCircle::CalcHitRect()
 	{

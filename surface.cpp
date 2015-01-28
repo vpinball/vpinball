@@ -404,7 +404,7 @@ void Surface::CurvesToShapes(Vector<HitObject> * const pvho)
       const RenderVertex * const pv2 = &vvertex[(i + 1) % count];
       const RenderVertex * const pv3 = &vvertex[(i + 2) % count];
 
-      AddLine(pvho, pv2, pv3, pv1, pv2->fSlingshot);
+      AddLine(pvho, pv2, pv3, pv2->fSlingshot);
    }
 
    Hit3DPoly * const ph3dpolyt = new Hit3DPoly(rgv3Dt,count);
@@ -436,30 +436,18 @@ void Surface::SetupHitObject(Vector<HitObject> * pvho, HitObject * obj)
         m_vhoDrop.push_back(obj);
 }
 
-void Surface::AddLine(Vector<HitObject> * const pvho, const RenderVertex * const pv1, const RenderVertex * const pv2, const RenderVertex * const /*pvprev*/, const bool fSlingshot)
+void Surface::AddLine(Vector<HitObject> * const pvho, const RenderVertex * const pv1, const RenderVertex * const pv2, const bool fSlingshot)
 {
    LineSeg *plineseg;
 
    if (!fSlingshot)
    {
-      plineseg = new LineSeg();
-
-      if (m_d.m_fHitEvent)
-      {
-         plineseg->m_pfe = (IFireEvents *)this;
-         plineseg->m_threshold = m_d.m_threshold;
-      }
-      else
-         plineseg->m_pfe = NULL;
+      plineseg = new LineSeg(*pv1, *pv2);
    }
    else
    {
-      LineSegSlingshot * const plinesling = new LineSegSlingshot();
+      LineSegSlingshot * const plinesling = new LineSegSlingshot(*pv1, *pv2);
       plineseg = (LineSeg *)plinesling;
-
-      // Slingshots always have hit events
-      plineseg->m_pfe = (IFireEvents *)this;
-      plineseg->m_threshold = m_d.m_threshold;
 
       plinesling->m_force = m_d.m_slingshotforce;
       plinesling->m_psurface = this;
@@ -470,20 +458,13 @@ void Surface::AddLine(Vector<HitObject> * const pvho, const RenderVertex * const
    plineseg->m_rcHitRect.zlow = m_d.m_heightbottom+m_ptable->m_tableheight;
    plineseg->m_rcHitRect.zhigh = m_d.m_heighttop+m_ptable->m_tableheight;
 
-   plineseg->v1 = *pv1;
-   plineseg->v2 = *pv2;
+   SetupHitObject(pvho, plineseg);
 
-   plineseg->m_elasticity = m_d.m_elasticity;
-   plineseg->SetFriction(m_d.m_friction);
-   plineseg->m_scatter = ANGTORAD(m_d.m_scatter);
-
-   plineseg->CalcNormal();
-   plineseg->m_fEnabled = m_d.m_fCollidable;
-
-   pvho->AddElement(plineseg);
-   if (m_d.m_fDroppable)
-      m_vhoDrop.push_back(plineseg);
-   m_vhoCollidable.push_back(plineseg);
+   if (fSlingshot)  // slingshots always have hit events
+   {
+       plineseg->m_pfe = (IFireEvents *)this;
+       plineseg->m_threshold = m_d.m_threshold;
+   }
 
    if (m_d.m_heightbottom != 0.f)
    {
@@ -499,12 +480,7 @@ void Surface::AddLine(Vector<HitObject> * const pvho, const RenderVertex * const
        SetupHitObject(pvho, new HitLine3D(v1, v2));
    }
 
-   //const Vertex2D vt1 = *pv1 - *pv2;
-   //const Vertex2D vt2 = *pv1 - *pvprev;
-
-   //const float dot = vt1.Dot(vt2);
-
-   //if (dot != 0.f) // continuous segments should mathematically never hit <<< this is nonsense, dot=0 is a right angle
+   // create vertical joint between the two line segments
    {
        SetupHitObject(pvho, new HitLineZ(*pv1, m_d.m_heightbottom+m_ptable->m_tableheight, m_d.m_heighttop+m_ptable->m_tableheight));
 

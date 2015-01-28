@@ -300,32 +300,21 @@ void Gate::GetHitShapes(Vector<HitObject> * const pvho)
    m_d.m_angleMax = angleMax;
 
    const float radangle = ANGTORAD(m_d.m_rotation);
-   const float sn = sinf(radangle);
-   const float cs = cosf(radangle);
+   const Vertex2D tangent( cosf(radangle), sinf(radangle) );
 
-   const Vertex2D rgv[2] = {
-      Vertex2D(m_d.m_vCenter.x + cs*(halflength + (float)PHYS_SKIN),//oversize by the ball's radius
-      m_d.m_vCenter.y + sn*(halflength + (float)PHYS_SKIN)),// to prevent the ball from clipping through
-
-      Vertex2D(m_d.m_vCenter.x - cs*(halflength + (float)PHYS_SKIN),//the gate's edge
-      m_d.m_vCenter.y - sn*(halflength + (float)PHYS_SKIN))};
+   const Vertex2D rgv[2] = { //oversize by the ball's radius to prevent the ball from clipping through
+       m_d.m_vCenter + (halflength + (float)PHYS_SKIN) * tangent,
+       m_d.m_vCenter - (halflength + (float)PHYS_SKIN) * tangent
+   };
 
       if ( !m_d.m_twoWay )
       {
-          m_plineseg = new LineSeg();
+          m_plineseg = new LineSeg(rgv[0], rgv[1]);
 
           m_plineseg->m_pfe = NULL;
 
           m_plineseg->m_rcHitRect.zlow = height;
           m_plineseg->m_rcHitRect.zhigh = height + (float)(2.0*PHYS_SKIN); //!! = ball diameter
-
-          m_plineseg->v1.x = rgv[0].x;
-          m_plineseg->v1.y = rgv[0].y;
-
-          m_plineseg->v2.x = rgv[1].x;
-          m_plineseg->v2.y = rgv[1].y;
-
-          m_plineseg->CalcNormal();
 
           m_plineseg->m_elasticity = m_d.m_elasticity;
           m_plineseg->SetFriction(m_d.m_friction);
@@ -343,22 +332,15 @@ void Gate::GetHitShapes(Vector<HitObject> * const pvho)
       if(m_d.m_fShowBracket)
       {
          {
-            HitCircle * const phitcircle = new HitCircle();
+            HitCircle * const phitcircle = new HitCircle(m_d.m_vCenter + halflength * tangent, 0.01f);
             phitcircle->m_pfe = NULL;
-            phitcircle->center.x = m_d.m_vCenter.x + cs*halflength;
-            phitcircle->center.y = m_d.m_vCenter.y + sn*halflength;
-            phitcircle->radius = 0.01f;
             phitcircle->zlow = height;
             phitcircle->zhigh = height+h; //+50;
-
             pvho->AddElement(phitcircle);
          }
 
-         HitCircle * const phitcircle = new HitCircle();
+         HitCircle * const phitcircle = new HitCircle(m_d.m_vCenter - halflength * tangent, 0.01f);
          phitcircle->m_pfe = NULL;
-         phitcircle->center.x = m_d.m_vCenter.x - cs*halflength;
-         phitcircle->center.y = m_d.m_vCenter.y - sn*halflength;
-         phitcircle->radius = 0.01f;
          phitcircle->zlow = height;
          phitcircle->zhigh = height+h; //+50;
          pvho->AddElement(phitcircle);

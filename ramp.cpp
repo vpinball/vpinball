@@ -616,13 +616,8 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
          const Vertex2D * const pv3 = &rgvLocal[i+1];
          const Vertex2D * const pv4 = (i<(cvertex-2)) ? &rgvLocal[i+2] : NULL;
 
-#ifndef RAMPTEST
          AddLine(pvho, pv2, pv3, pv1, rgheight1[i], rgheight1[i+1]+wallheightright);
          AddLine(pvho, pv3, pv2, pv4, rgheight1[i], rgheight1[i+1]+wallheightright);
-#else
-         AddSideWall(pvho, pv2, pv3,rgheight1[i], rgheight1[i+1], wallheightright);
-         AddSideWall(pvho, pv3, pv2,rgheight1[i+1], rgheight1[i], wallheightright);
-#endif
 
          // add joints at start and end of right wall
          if (i == 0)
@@ -642,13 +637,8 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
          const Vertex2D * const pv3 = &rgvLocal[cvertex + i + 1];
          const Vertex2D * const pv4 = (i<(cvertex-2)) ? &rgvLocal[cvertex + i + 2] : NULL;
 
-#ifndef RAMPTEST
          AddLine(pvho, pv2, pv3, pv1, rgheight1[cvertex - i - 2], rgheight1[cvertex - i - 1] + wallheightleft);
          AddLine(pvho, pv3, pv2, pv4, rgheight1[cvertex - i - 2], rgheight1[cvertex - i - 1] + wallheightleft);
-#else
-         AddSideWall(pvho, pv2, pv3, rgheight1[cvertex - i - 1], rgheight1[cvertex - i - 2], wallheightleft);
-         AddSideWall(pvho, pv3, pv2, rgheight1[cvertex - i - 2], rgheight1[cvertex - i - 1], wallheightleft);
-#endif
 
          // add joints at start and end of left wall
          if (i == 0)
@@ -658,7 +648,6 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
       }
    }
 
-#ifndef RAMPTEST
    // Add hit triangles for the ramp floor.
    {
       HitTriangle *ph3dpolyOld = NULL;
@@ -701,14 +690,7 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
             }
             else
             {
-                ph3dpoly->m_elasticity = m_d.m_elasticity;
-                ph3dpoly->SetFriction(m_d.m_friction);
-                ph3dpoly->m_scatter = ANGTORAD(m_d.m_scatter);
-
-                pvho->AddElement(ph3dpoly);
-
-                m_vhoCollidable.push_back(ph3dpoly);	//remember hit components of ramp
-                ph3dpoly->m_fEnabled = m_d.m_fCollidable;
+                SetupHitObject(pvho, ph3dpoly);
 
                 CheckJoint(pvho, ph3dpolyOld, ph3dpoly);
                 ph3dpolyOld = ph3dpoly;
@@ -731,14 +713,7 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
          }
          else
          {
-             ph3dpoly->m_elasticity = m_d.m_elasticity;
-             ph3dpoly->SetFriction(m_d.m_friction);
-             ph3dpoly->m_scatter = ANGTORAD(m_d.m_scatter);
-
-             pvho->AddElement(ph3dpoly);
-
-             m_vhoCollidable.push_back(ph3dpoly);	//remember hit components of ramp
-             ph3dpoly->m_fEnabled = m_d.m_fCollidable;
+             SetupHitObject(pvho, ph3dpoly);
 
              CheckJoint(pvho, ph3dpolyOld, ph3dpoly);
              ph3dpolyOld = ph3dpoly;
@@ -780,14 +755,7 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
          }
          else
          {
-             ph3dpoly->m_elasticity = m_d.m_elasticity;
-             ph3dpoly->SetFriction(m_d.m_friction);
-             ph3dpoly->m_scatter = ANGTORAD(m_d.m_scatter);
-
-             pvho->AddElement(ph3dpoly);
-
-             m_vhoCollidable.push_back(ph3dpoly);	//remember hit components of ramp
-             ph3dpoly->m_fEnabled = m_d.m_fCollidable;
+             SetupHitObject(pvho, ph3dpoly);
          }
       }
 
@@ -804,17 +772,9 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
       }
       else
       {
-          ph3dpoly->m_elasticity = m_d.m_elasticity;
-          ph3dpoly->SetFriction(m_d.m_friction);
-          ph3dpoly->m_scatter = ANGTORAD(m_d.m_scatter);
-
-          pvho->AddElement(ph3dpoly);
-
-          m_vhoCollidable.push_back(ph3dpoly);	//remember hit components of ramp
-          ph3dpoly->m_fEnabled = m_d.m_fCollidable;
+          SetupHitObject(pvho, ph3dpoly);
       }
    }
-#endif
 
    delete [] rgheight1;
    delete [] rgvLocal;
@@ -823,27 +783,6 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
 void Ramp::GetHitShapesDebug(Vector<HitObject> * const pvho)
 {
 }
-
-#ifdef RAMPTEST
-void Ramp::AddSideWall(Vector<HitObject> * const pvho, const Vertex2D * const pv1, const Vertex2D * const pv2, const float height1, const float height2, const float wallheight)
-{
-   Vertex3Ds * const rgv3D = new Vertex3Ds[4];
-   rgv3D[0] = Vertex3Ds(pv1->x,pv1->y,height1 - (float)PHYS_SKIN);
-   rgv3D[1] = Vertex3Ds(pv2->x,pv2->y,height2 - (float)PHYS_SKIN);
-   rgv3D[2] = Vertex3Ds(pv2->x + WALLTILT,pv2->y + WALLTILT,height2 + wallheight);
-   rgv3D[3] = Vertex3Ds(pv1->x + WALLTILT,pv1->y + WALLTILT,height1 + wallheight);
-
-   Hit3DPoly * const ph3dpoly = new Hit3DPoly(rgv3D,4); //!!
-   ph3dpoly->m_elasticity = m_d.m_elasticity;
-   ph3dpoly->SetFriction(m_d.m_friction);
-   ph3dpoly->m_scatter = ANGTORAD(m_d.m_scatter);
-
-   pvho->AddElement(ph3dpoly);
-
-   m_vhoCollidable.push_back(ph3dpoly);	//remember hit components of ramp
-   ph3dpoly->m_fEnabled = m_d.m_fCollidable;
-}
-#endif
 
 void Ramp::CheckJoint(Vector<HitObject> * const pvho, const HitTriangle * const ph3d1, const HitTriangle * const ph3d2)
 {
@@ -861,53 +800,38 @@ void Ramp::CheckJoint(Vector<HitObject> * const pvho, const HitTriangle * const 
 
 void Ramp::AddJoint(Vector<HitObject> * pvho, const Vertex3Ds& v1, const Vertex3Ds& v2)
 {
-   HitLine3D * const ph3dc = new HitLine3D(v1, v2);
-   ph3dc->m_elasticity = m_d.m_elasticity;
-   ph3dc->SetFriction(m_d.m_friction);
-   ph3dc->m_scatter = ANGTORAD(m_d.m_scatter);
-   ph3dc->m_fEnabled = m_d.m_fCollidable;
-
-   pvho->AddElement(ph3dc);
-   m_vhoCollidable.push_back(ph3dc);	//remember hit components of ramp
+    SetupHitObject(pvho, new HitLine3D(v1, v2));
 }
 
 void Ramp::AddJoint2D(Vector<HitObject> * pvho, const Vertex2D& p, float zlow, float zhigh)
 {
-    HitLineZ * const pjoint = new HitLineZ(p, zlow, zhigh);
-    pjoint->m_elasticity = m_d.m_elasticity;
-    pjoint->SetFriction(m_d.m_friction);
-    pjoint->m_scatter = ANGTORAD(m_d.m_scatter);
-    pjoint->m_fEnabled = m_d.m_fCollidable;
-
-    pvho->AddElement(pjoint);
-    m_vhoCollidable.push_back(pjoint); //remember hit components of ramp
+    SetupHitObject(pvho, new HitLineZ(p, zlow, zhigh));
 }
 
 
 void Ramp::AddLine(Vector<HitObject> * const pvho, const Vertex2D * const pv1, const Vertex2D * const pv2, const Vertex2D * const pv3, const float height1, const float height2)
 {
    LineSeg * const plineseg = new LineSeg(*pv1, *pv2);
-   plineseg->m_elasticity = m_d.m_elasticity;
-   plineseg->SetFriction(m_d.m_friction);
-   plineseg->m_scatter = ANGTORAD(m_d.m_scatter);
-   plineseg->m_fEnabled = m_d.m_fCollidable;
-   plineseg->m_pfe = NULL;
    plineseg->m_rcHitRect.zlow = height1;
    plineseg->m_rcHitRect.zhigh = height2;
 
-   pvho->AddElement(plineseg);
-
-   m_vhoCollidable.push_back(plineseg);	//remember hit components of ramp
+   SetupHitObject(pvho, plineseg);
 
    if (pv3)
    {
-      const Vertex2D vt1 = *pv1 - *pv2;
-      const Vertex2D vt2 = *pv1 - *pv3;
-      const float dot = vt1.Dot(vt2);
-
-      if (dot < 0.f) // Inside edges don't need joint hit-testing (dot == 0 continuous segments should mathematically never hit)
-          AddJoint2D(pvho, *pv1, height1, height2);
+       AddJoint2D(pvho, *pv1, height1, height2);
    }
+}
+
+void Ramp::SetupHitObject(Vector<HitObject> * pvho, HitObject * obj)
+{
+    obj->m_elasticity = m_d.m_elasticity;
+    obj->SetFriction(m_d.m_friction);
+    obj->m_scatter = ANGTORAD(m_d.m_scatter);
+    obj->m_fEnabled = m_d.m_fCollidable;
+
+    pvho->AddElement(obj);
+    m_vhoCollidable.push_back(obj);
 }
 
 void Ramp::EndPlay()

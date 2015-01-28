@@ -63,9 +63,6 @@
 //Flippers:
 #define C_INTERATIONS 20 // Precision level and cycles for interative calculations // acceptable contact time ... near zero time
 
-//Ramp:
-#define WALLTILT 0.5f
-
 //Plumb:
 #define	VELOCITY_EPSILON 0.05f	// The threshold for zero velocity.
 
