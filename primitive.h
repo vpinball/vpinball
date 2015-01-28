@@ -6,6 +6,7 @@
 #define AFX_PRIMITIVE_H__31CD2D6B_9BDD_4B1B_BC62_B9DE588A0CAA__INCLUDED_
 
 #include "resource.h"
+#include <set>
 
 
 class Mesh
@@ -241,7 +242,8 @@ private:        // private member functions
 
    bool BrowseFor3DMeshFile();
    void RenderObject( RenderDevice *pd3dDevice);
-   void CheckJoint(Vector<HitObject> * const pvho, const HitTriangle * const ph3d1, const HitTriangle * const ph3d2);
+   void SetupHitObject(Vector<HitObject> * pvho, HitObject * obj);
+   void AddHitEdge(Vector<HitObject> * pvho, std::set< std::pair<unsigned,unsigned> >& addedEdges, unsigned i, unsigned j);
 
    void CalculateBuiltinOriginal();
 
