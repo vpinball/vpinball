@@ -40,6 +40,49 @@ void Mesh::SaveWavefrontObj(const char *fname, const char *description)
     WaveFrontObj_Save(fname, description, *this);
 }
 
+void Mesh::ComputeNormals()
+{
+    for (unsigned i = 0; i < NumVertices(); i++)
+    {
+        Vertex3D_NoTex2 & v = m_vertices[i];
+        v.nx = v.ny = v.nz = 0.0f;
+    }
+
+    for(unsigned i = 0; i < NumIndices(); i+=3)
+    {
+        Vertex3D_NoTex2 * const A = &m_vertices[m_indices[i]  ];
+        Vertex3D_NoTex2 * const B = &m_vertices[m_indices[i+1]];
+        Vertex3D_NoTex2 * const C = &m_vertices[m_indices[i+2]];         
+
+        const Vertex3Ds e0(B->x - A->x, B->y-A->y, B->z-A->z);
+        const Vertex3Ds e1(C->x - A->x, C->y-A->y, C->z-A->z);
+        Vertex3Ds normal = CrossProduct(e0,e1);
+        normal.NormalizeSafe();
+
+        A->nx += normal.x; A->ny += normal.y; A->nz += normal.z;
+        B->nx += normal.x; B->ny += normal.y; B->nz += normal.z;
+        C->nx += normal.x; C->ny += normal.y; C->nz += normal.z;
+    }
+
+    for (unsigned i = 0; i < NumVertices(); i++)
+    {
+        Vertex3D_NoTex2 & v = m_vertices[i];
+        const float inv_l = 1.0f / sqrtf(v.nx*v.nx + v.ny*v.ny + v.nz*v.nz);
+        v.nx *= inv_l;
+        v.ny *= inv_l;
+        v.nz *= inv_l;
+    }
+}
+
+void Mesh::UploadToVB(VertexBuffer * vb) const
+{
+    Vertex3D_NoTex2 *buf;
+    vb->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
+    memcpy( buf, &m_vertices[0], sizeof(Vertex3D_NoTex2)*m_vertices.size() );
+    vb->unlock();
+}
+
+////////////////////////////////////////////////////////////////////////////////
 
 Primitive::Primitive()
 {
@@ -526,65 +569,7 @@ void Primitive::CalculateBuiltinOriginal()
    }
 
    //SetNormal(&m_mesh.m_vertices[0], &m_mesh.m_indices[0], m_mesh.NumIndices()); // SetNormal only works for plane polygons
-   UpdateMesh(true,false);
-}
-
-void Primitive::UpdateMesh( const bool force_rebuild_normals, const bool upload_vbuffer )
-{
-//#define PRIMITIVE_NORMAL_HACK // seems to be not necessary! at least 3ds max exported stuff looks correct, even under rotation //!! or add flip normal flag?
-
-#ifdef PRIMITIVE_NORMAL_HACK
-   force_rebuild_normals = true;
-#endif
-
-   if(force_rebuild_normals)
-   {
-	   for (unsigned i = 0; i < m_mesh.NumVertices(); i++)
-	   {
-		  Vertex3D_NoTex2& tempVert = m_mesh.m_vertices[i];
-		  tempVert.nx = tempVert.ny = tempVert.nz = 0.0f;
-	   }
-
-	   for(unsigned i = 0; i < m_mesh.NumIndices(); i+=3)
-	   {
-		   Vertex3D_NoTex2 * const A = &m_mesh.m_vertices[m_mesh.m_indices[i]  ];
-		   Vertex3D_NoTex2 * const B = &m_mesh.m_vertices[m_mesh.m_indices[i+1]];
-		   Vertex3D_NoTex2 * const C = &m_mesh.m_vertices[m_mesh.m_indices[i+2]];         
-
-			Vertex3Ds normal;
-	   		const Vertex3Ds e0(C->x - A->x,C->y-A->y,C->z-A->z);
-			const Vertex3Ds e1(B->x - A->x,B->y-A->y,B->z-A->z);
-			normal = CrossProduct(e0,e1);
-			normal.NormalizeSafe();
-
-			A->nx += normal.x;
-			A->ny += normal.y;
-			A->nz += normal.z;
-			B->nx += normal.x;
-			B->ny += normal.y;
-			B->nz += normal.z;
-			C->nx += normal.x;
-			C->ny += normal.y;
-			C->nz += normal.z;
-	   }
-
-	   for (unsigned i = 0; i < m_mesh.NumVertices(); i++)
-	   {
-		  Vertex3D_NoTex2 * const tempVert = &m_mesh.m_vertices[i];
-		  const float inv_l = -1.0f/sqrtf(tempVert->nx*tempVert->nx+tempVert->ny*tempVert->ny+tempVert->nz*tempVert->nz);
-		  tempVert->nx *= inv_l;
-		  tempVert->ny *= inv_l;
-		  tempVert->nz *= inv_l;
-	   }
-   }
-
-   if(upload_vbuffer)
-   {
-	   Vertex3D_NoTex2 *buf;
-       vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY);
-	   memcpy( buf, &m_mesh.m_vertices[0], sizeof(Vertex3D_NoTex2)*m_mesh.m_vertices.size() );
-	   vertexBuffer->unlock();
-   }
+   m_mesh.ComputeNormals();
 }
 
 void Primitive::UpdateEditorView()
@@ -600,7 +585,7 @@ void Primitive::RenderObject( RenderDevice *pd3dDevice )
     if (vertexBufferRegenerate)
     {
         vertexBufferRegenerate = false;
-        UpdateMesh(false,true);
+        m_mesh.UploadToVB(vertexBuffer);
     }
     pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelDeclaration );
 
