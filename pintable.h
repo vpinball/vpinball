@@ -192,9 +192,10 @@ public:
     STDMETHOD(put_EnableAO)(/*[in]*/ int newVal);
     STDMETHOD(get_EnableFXAA)(/*[out, retval]*/ int *pVal);
     STDMETHOD(put_EnableFXAA)(/*[in]*/ int newVal);
-    //STDMETHOD(get_RenderShadows)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-    //STDMETHOD(put_RenderShadows)(/*[in]*/ VARIANT_BOOL newVal);
-    
+
+    STDMETHOD(get_BloomStrength)(/*[out, retval]*/ float *pVal);
+    STDMETHOD(put_BloomStrength)(/*[in]*/ float newVal);
+
 	STDMETHOD(get_OverridePhysics)(/*[out, retval]*/ long *pVal);
     STDMETHOD(put_OverridePhysics)(/*[in]*/ long newVal);
 
@@ -673,6 +674,7 @@ END_CONNECTION_POINT_MAP()
     int m_useAA;
     int m_useFXAA;
 	int m_useAO;
+	float m_bloom_strength;
 
 	bool m_activeLayers[8];
     bool m_toggleAllLayers;

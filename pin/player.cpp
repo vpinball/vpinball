@@ -2418,6 +2418,7 @@ void Player::Bloom()
 
 		const D3DXVECTOR4 fb_inv_resolution_05((float)(3.0/(double)m_width),(float)(3.0/(double)m_height),1.0f,1.0f);
 		m_pin3d.m_pd3dDevice->basicShader->Core()->SetVector("fb_inv_resolution_05", &fb_inv_resolution_05);
+		m_pin3d.m_pd3dDevice->basicShader->Core()->SetFloat("bloom_strength", m_ptable->m_bloom_strength);
 		m_pin3d.m_pd3dDevice->basicShader->Core()->SetTechnique("fb_bloom_vert");
 
 		m_pin3d.m_pd3dDevice->basicShader->Begin(0);
