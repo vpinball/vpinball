@@ -21,6 +21,10 @@ public:
 
     size_t NumVertices() const    { return m_vertices.size(); }
 	size_t NumIndices() const     { return m_indices.size(); }
+
+    void ComputeNormals();
+
+    void UploadToVB(VertexBuffer * vb) const;
 };
 
 // Indices for RotAndTra:
@@ -237,7 +241,6 @@ private:        // private member functions
 
    void RecalculateMatrices();
    void TransformVertices();
-   void UpdateMesh( const bool force_rebuild_normals, const bool upload_vbuffer );
    void UpdateEditorView();
 
    bool BrowseFor3DMeshFile();
