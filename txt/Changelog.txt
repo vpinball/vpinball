@@ -141,10 +141,13 @@ VP 10.0.0 Changelog
 - remove old shadowing code and replace it with optional screen space ambient occlusion (via the global video preferences and also the table options)
   the old 'casts shadow' setting is still in the UI, but is currently disabled as it is always true for now
 
-- support primitive vertex sizes > 65535
-
 - its not necessary anymore to manually override the texture filtering quality in the global gfx cards options (NVIDIA control panel, etc)
   if you need HQ filtering, please only use the checkbox in the VP video preferences instead
+
+- please avoid using the VP builtin FXAA (for now!), and rather use the new VP builtin 4xAA
+  (and on top one can then even enable the FXAA/SMAA/etc in the gfx card panels to smoothen out remaining edges)
+
+- support primitive vertex sizes > 65535
 
 - new external audio library for music playback (BASS)
 
