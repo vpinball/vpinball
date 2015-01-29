@@ -179,6 +179,11 @@ public:
    D3DTexture* GetBackBufferTexture() { return m_pOffscreenBackBufferTexture; }
    RenderTarget* GetOutputBackBuffer() { return m_pBackBuffer; }
 
+   RenderTarget* GetBloomBuffer() { return m_pBloomBuffer; }
+   D3DTexture* GetBloomBufferTexture() { return m_pBloomBufferTexture; }
+   RenderTarget* GetBloomTmpBuffer() { return m_pBloomTmpBuffer; }
+   D3DTexture* GetBloomTmpBufferTexture() { return m_pBloomTmpBufferTexture; }
+
    RenderTarget* DuplicateRenderTarget(RenderTarget* src);
    D3DTexture* DuplicateTexture(RenderTarget* src);
    D3DTexture* DuplicateTextureSingleChannel(RenderTarget* src);
@@ -266,6 +271,11 @@ private:
 
    IDirect3DSurface9* m_pOffscreenBackBuffer;
    D3DTexture* m_pOffscreenBackBufferTexture;
+
+   IDirect3DSurface9* m_pBloomBuffer;
+   D3DTexture* m_pBloomBufferTexture;
+   IDirect3DSurface9* m_pBloomTmpBuffer;
+   D3DTexture* m_pBloomTmpBufferTexture;
 
    UINT m_adapter;      // index of the display adapter to use
 

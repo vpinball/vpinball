@@ -18,6 +18,8 @@ float2 fb_inv_resolution_05;
 
 float blend_modulate_vs_add;
 
+float bloom_strength = 1.0f; //!!
+
 sampler2D texSampler3 : TEXUNIT2 = sampler_state // AO
 {
 	Texture	  = (Texture3);
@@ -41,6 +43,16 @@ sampler2D texSampler4 : TEXUNIT0 = sampler_state // Framebuffer tex (unfiltered)
 sampler2D texSampler5 : TEXUNIT0 = sampler_state // Framebuffer tex (filtered)
 {
 	Texture	  = (Texture0);
+    MIPFILTER = NONE; //!! ??
+    MAGFILTER = LINEAR;
+    MINFILTER = LINEAR;
+	ADDRESSU  = Clamp;
+	ADDRESSV  = Clamp;
+};
+
+sampler2D texSamplerBloom : TEXUNIT1 = sampler_state // Bloom tex
+{
+	Texture	  = (Texture1);
     MIPFILTER = NONE; //!! ??
     MAGFILTER = LINEAR;
     MINFILTER = LINEAR;
@@ -378,12 +390,24 @@ VS_OUTPUT vs_kicker (float4 vPosition  : POSITION0,
 
 float4 ps_main_fb_tonemap( in VS_OUTPUT_2D IN) : COLOR
 {
-    return float4(FBColorGrade(FBGamma(FBToneMap(tex2Dlod(texSampler5, float4(IN.tex0, 0.f,0.f)).xyz))), 1.0f);
+    const float3 result = FBToneMap(tex2Dlod(texSampler5, float4(IN.tex0, 0.f,0.f)).xyz) + tex2Dlod(texSamplerBloom, float4(IN.tex0, 0.f,0.f)); //!! offset?
+    return float4(FBColorGrade(FBGamma(saturate(result))), 1.0f);
+}
+
+float4 ps_main_fb_bloom( in VS_OUTPUT_2D IN) : COLOR
+{
+    // collect clipped contribution of the 3x3 texels from original FB
+    const float3 result = (tex2Dlod(texSampler5, float4(IN.tex0, 0.f,0.f)).xyz
+                        +  tex2Dlod(texSampler5, float4(IN.tex0+fb_inv_resolution_05*2.0f, 0.f,0.f)).xyz
+                        +  tex2Dlod(texSampler5, float4(IN.tex0+float2(fb_inv_resolution_05.x*2.0f,0.0f), 0.f,0.f)).xyz
+                        +  tex2Dlod(texSampler5, float4(IN.tex0+float2(0.0f,fb_inv_resolution_05.y*2.0f), 0.f,0.f)).xyz)*0.25f; //!! offset for useAA?
+    return float4(max(FBToneMap(result)-float3(1.f,1.f,1.f), float3(0.f,0.f,0.f)), 1.0f);
 }
 
 float4 ps_main_fb_tonemap_AO( in VS_OUTPUT_2D IN) : COLOR
 {
-	return float4(FBColorGrade(FBGamma(FBToneMap(tex2Dlod(texSampler5, float4(IN.tex0, 0.f,0.f)).xyz*(
+    const float3 result = FBToneMap(tex2Dlod(texSampler5, float4(IN.tex0, 0.f,0.f)).xyz) + tex2Dlod(texSamplerBloom, float4(IN.tex0, 0.f,0.f)); //!! offset?
+	return float4(FBColorGrade(FBGamma(saturate(result*(
            tex2Dlod(texSampler3, float4(IN.tex0-fb_inv_resolution_05, 0.f,0.f)).x /*+ //Blur:
 
            tex2Dlod(texSampler3, float4(IN.tex0+float2(0.0f,fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05, 0.f,0.f)).x+
@@ -399,12 +423,14 @@ float4 ps_main_fb_tonemap_AO( in VS_OUTPUT_2D IN) : COLOR
 
 float4 ps_main_fb_tonemap_no_filter( in VS_OUTPUT_2D IN) : COLOR
 {
-    return float4(FBColorGrade(FBGamma(FBToneMap(tex2Dlod(texSampler4, float4(IN.tex0+fb_inv_resolution_05, 0.f,0.f)).xyz))), 1.0f);
+    const float3 result = FBToneMap(tex2Dlod(texSampler4, float4(IN.tex0+fb_inv_resolution_05, 0.f,0.f)).xyz) + tex2Dlod(texSamplerBloom, float4(IN.tex0, 0.f,0.f)); //!! offset?
+    return float4(FBColorGrade(FBGamma(saturate(result))), 1.0f);
 }
 
 float4 ps_main_fb_tonemap_AO_no_filter( in VS_OUTPUT_2D IN) : COLOR
 {
-	return float4(FBColorGrade(FBGamma(FBToneMap(tex2Dlod(texSampler4, float4(IN.tex0+fb_inv_resolution_05, 0.f,0.f)).xyz*(
+	const float3 result = FBToneMap(tex2Dlod(texSampler4, float4(IN.tex0+fb_inv_resolution_05, 0.f,0.f)).xyz) + tex2Dlod(texSamplerBloom, float4(IN.tex0, 0.f,0.f)); //!! offset?
+    return float4(FBColorGrade(FBGamma(saturate(result*(
            tex2Dlod(texSampler3, float4(IN.tex0-fb_inv_resolution_05, 0.f,0.f)).x /*+ //Blur:
 
            tex2Dlod(texSampler3, float4(IN.tex0+float2(0.0f,fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05, 0.f,0.f)).x+
@@ -417,6 +443,64 @@ float4 ps_main_fb_tonemap_AO_no_filter( in VS_OUTPUT_2D IN) : COLOR
 		   tex2Dlod(texSampler3, float4(IN.tex0+float2(fb_inv_resolution_05.x*2.0f,fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05, 0.f,0.f)).x+
 		   tex2Dlod(texSampler3, float4(IN.tex0-float2(fb_inv_resolution_05.x*2.0f,fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05, 0.f,0.f)).x)/9.0f*/) ))), 1.0f);
 }
+
+//
+// Bloom (9x9)
+//
+
+#if 0 // full or abusing lerp
+float offset[5] = { 0.0, 1.0, 2.0, 3.0, 4.0 };
+float weight[5] = { 0.2270270270, 0.1945945946, 0.1216216216, 0.0540540541, 0.0162162162 };
+
+float4 ps_main_fb_bloom_horiz( in VS_OUTPUT_2D IN) : COLOR
+{
+    float3 result = tex2Dlod(texSampler4, float4(IN.tex0+fb_inv_resolution_05*0.5f, 0.f,0.f)).xyz*weight[0];
+    for(int i = 1; i < 5; ++i)
+    {
+        result += tex2Dlod(texSampler4, float4(IN.tex0+fb_inv_resolution_05*0.5f+float2(fb_inv_resolution_05.x*offset[i],0.0f), 0.f,0.f)).xyz*weight[i];
+        result += tex2Dlod(texSampler4, float4(IN.tex0+fb_inv_resolution_05*0.5f-float2(fb_inv_resolution_05.x*offset[i],0.0f), 0.f,0.f)).xyz*weight[i];
+    }
+    return float4(result, 1.0f);
+}
+
+float4 ps_main_fb_bloom_vert( in VS_OUTPUT_2D IN) : COLOR
+{
+    float3 result = tex2Dlod(texSampler4, float4(IN.tex0+fb_inv_resolution_05*0.5f, 0.f,0.f)).xyz*weight[0];
+    for(int i = 1; i < 5; ++i)
+    {
+        result += tex2Dlod(texSampler4, float4(IN.tex0+fb_inv_resolution_05*0.5f+float2(0.0f,fb_inv_resolution_05.y*offset[i]), 0.f,0.f)).xyz*weight[i];
+        result += tex2Dlod(texSampler4, float4(IN.tex0+fb_inv_resolution_05*0.5f-float2(0.0f,fb_inv_resolution_05.y*offset[i]), 0.f,0.f)).xyz*weight[i];
+    }
+    return float4(result*bloom_strength, 1.0f);
+}
+
+#else
+
+float offset[3] = { 0.0, 1.3846153846, 3.2307692308 };
+float weight[3] = { 0.2270270270, 0.3162162162, 0.0702702703 };
+
+float4 ps_main_fb_bloom_horiz( in VS_OUTPUT_2D IN) : COLOR
+{
+    float3 result = tex2Dlod(texSampler5, float4(IN.tex0+fb_inv_resolution_05*0.5f, 0.f,0.f)).xyz*weight[0];
+    for(int i = 1; i < 3; ++i)
+    {
+        result += tex2Dlod(texSampler5, float4(IN.tex0+fb_inv_resolution_05*0.5f+float2(fb_inv_resolution_05.x*offset[i],0.0f), 0.f,0.f)).xyz*weight[i];
+        result += tex2Dlod(texSampler5, float4(IN.tex0+fb_inv_resolution_05*0.5f-float2(fb_inv_resolution_05.x*offset[i],0.0f), 0.f,0.f)).xyz*weight[i];
+    }
+    return float4(result, 1.0f);
+}
+
+float4 ps_main_fb_bloom_vert( in VS_OUTPUT_2D IN) : COLOR
+{
+    float3 result = tex2Dlod(texSampler5, float4(IN.tex0+fb_inv_resolution_05*0.5f, 0.f,0.f)).xyz*weight[0];
+    for(int i = 1; i < 3; ++i)
+    {
+        result += tex2Dlod(texSampler5, float4(IN.tex0+fb_inv_resolution_05*0.5f+float2(0.0f,fb_inv_resolution_05.y*offset[i]), 0.f,0.f)).xyz*weight[i];
+        result += tex2Dlod(texSampler5, float4(IN.tex0+fb_inv_resolution_05*0.5f-float2(0.0f,fb_inv_resolution_05.y*offset[i]), 0.f,0.f)).xyz*weight[i];
+    }
+    return float4(result*bloom_strength, 1.0f);
+}
+#endif
 
 //------------------------------------
 // Techniques
@@ -574,6 +658,15 @@ technique fb_tonemap
    } 
 }
 
+technique fb_bloom
+{ 
+   pass P0 
+   { 
+      VertexShader = compile vs_3_0 vs_main_no_trafo();
+	  PixelShader = compile ps_3_0 ps_main_fb_bloom();
+   } 
+}
+
 technique fb_tonemap_AO
 { 
    pass P0 
@@ -598,5 +691,23 @@ technique fb_tonemap_AO_no_filter
    { 
       VertexShader = compile vs_3_0 vs_main_no_trafo();
 	  PixelShader = compile ps_3_0 ps_main_fb_tonemap_AO_no_filter();
+   } 
+}
+
+technique fb_bloom_horiz
+{ 
+   pass P0 
+   { 
+      VertexShader = compile vs_3_0 vs_main_no_trafo();
+	  PixelShader = compile ps_3_0 ps_main_fb_bloom_horiz();
+   } 
+}
+
+technique fb_bloom_vert
+{ 
+   pass P0 
+   { 
+      VertexShader = compile vs_3_0 vs_main_no_trafo();
+	  PixelShader = compile ps_3_0 ps_main_fb_bloom_vert();
    } 
 }

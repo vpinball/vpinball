@@ -2343,15 +2343,99 @@ void Player::CheckAndUpdateRegions()
         m_vscreenupdate.ElementAt(l)->Check3D();
 }
 
+void Player::Bloom()
+{
+	float shiftedVerts[4*5] =
+	{
+		1.0f+m_ScreenOffset.x, 1.0f+m_ScreenOffset.y,0.0f, 1.0f+(float)(1.0/(double)m_width), 0.0f+(float)(1.0/(double)m_height),
+		-1.0f+m_ScreenOffset.x, 1.0f+m_ScreenOffset.y,0.0f, 0.0f+(float)(1.0/(double)m_width), 0.0f+(float)(1.0/(double)m_height),
+		1.0f+m_ScreenOffset.x,-1.0f+m_ScreenOffset.y,0.0f, 1.0f+(float)(1.0/(double)m_width), 1.0f+(float)(1.0/(double)m_height),
+		-1.0f+m_ScreenOffset.x,-1.0f+m_ScreenOffset.y,0.0f, 0.0f+(float)(1.0/(double)m_width), 1.0f+(float)(1.0/(double)m_height)
+	};
+	float verts[4*5] =
+	{
+		1.0f+m_ScreenOffset.x, 1.0f+m_ScreenOffset.y,0.0f, 1.0f, 0.0f,
+		-1.0f+m_ScreenOffset.x, 1.0f+m_ScreenOffset.y,0.0f, 0.0f, 0.0f,
+		1.0f+m_ScreenOffset.x,-1.0f+m_ScreenOffset.y,0.0f, 1.0f, 1.0f,
+		-1.0f+m_ScreenOffset.x,-1.0f+m_ScreenOffset.y,0.0f, 0.0f, 1.0f
+	};
+
+	{
+		// switch to 'bloom' output buffer to collect clipped framebuffer values
+		m_pin3d.m_pd3dDevice->SetRenderTarget(m_pin3d.m_pd3dDevice->GetBloomBuffer());
+
+		m_pin3d.m_pd3dDevice->BeginScene();
+
+		m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
+		m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
+		m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, FALSE);
+
+		m_pin3d.m_pd3dDevice->SetVertexDeclaration( m_pin3d.m_pd3dDevice->m_pVertexTexelDeclaration );
+
+		m_pin3d.m_pd3dDevice->basicShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetBackBufferTexture());
+
+		const D3DXVECTOR4 fb_inv_resolution_05((float)(0.5/(double)m_width),(float)(0.5/(double)m_height),1.0f,1.0f);
+		m_pin3d.m_pd3dDevice->basicShader->Core()->SetVector("fb_inv_resolution_05", &fb_inv_resolution_05);
+		m_pin3d.m_pd3dDevice->basicShader->Core()->SetTechnique("fb_bloom");
+
+		m_pin3d.m_pd3dDevice->basicShader->Begin(0);
+		m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_TEX, (LPVOID)shiftedVerts, 4);
+		m_pin3d.m_pd3dDevice->basicShader->End();
+
+		m_pin3d.m_pd3dDevice->EndScene();
+	}
+
+	{
+		// switch to 'bloom' temporary output buffer for horizontal phase of gaussian blur
+		m_pin3d.m_pd3dDevice->SetRenderTarget(m_pin3d.m_pd3dDevice->GetBloomTmpBuffer());
+
+		m_pin3d.m_pd3dDevice->BeginScene();
+
+		m_pin3d.m_pd3dDevice->SetVertexDeclaration( m_pin3d.m_pd3dDevice->m_pVertexTexelDeclaration );
+
+		m_pin3d.m_pd3dDevice->basicShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetBloomBufferTexture());
+
+		const D3DXVECTOR4 fb_inv_resolution_05((float)(3.0/(double)m_width),(float)(3.0/(double)m_height),1.0f,1.0f);
+		m_pin3d.m_pd3dDevice->basicShader->Core()->SetVector("fb_inv_resolution_05", &fb_inv_resolution_05);
+		m_pin3d.m_pd3dDevice->basicShader->Core()->SetTechnique("fb_bloom_horiz");
+
+		m_pin3d.m_pd3dDevice->basicShader->Begin(0);
+		m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_TEX, (LPVOID)verts, 4);
+		m_pin3d.m_pd3dDevice->basicShader->End();
+
+		m_pin3d.m_pd3dDevice->EndScene();
+	}
+
+	{
+		// switch to 'bloom' output buffer for vertical phase of gaussian blur
+		m_pin3d.m_pd3dDevice->SetRenderTarget(m_pin3d.m_pd3dDevice->GetBloomBuffer());
+
+		m_pin3d.m_pd3dDevice->BeginScene();
+
+		m_pin3d.m_pd3dDevice->SetVertexDeclaration( m_pin3d.m_pd3dDevice->m_pVertexTexelDeclaration );
+
+		m_pin3d.m_pd3dDevice->basicShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetBloomTmpBufferTexture());
+
+		const D3DXVECTOR4 fb_inv_resolution_05((float)(3.0/(double)m_width),(float)(3.0/(double)m_height),1.0f,1.0f);
+		m_pin3d.m_pd3dDevice->basicShader->Core()->SetVector("fb_inv_resolution_05", &fb_inv_resolution_05);
+		m_pin3d.m_pd3dDevice->basicShader->Core()->SetTechnique("fb_bloom_vert");
+
+		m_pin3d.m_pd3dDevice->basicShader->Begin(0);
+		m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_TEX, (LPVOID)verts, 4);
+		m_pin3d.m_pd3dDevice->basicShader->End();
+
+		m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, TRUE);
+		m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+		m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+
+		m_pin3d.m_pd3dDevice->EndScene();
+	}
+}
 
 void Player::FlipVideoBuffersNormal( const bool vsync )
 {
 	const bool useAA = (m_fAA && (m_ptable->m_useAA == -1)) || (m_ptable->m_useAA == 1);
 
-	// switch to 'real' output buffer
-	m_pin3d.m_pd3dDevice->SetRenderTarget(m_pin3d.m_pd3dDevice->GetOutputBackBuffer());
-
-	// copy framebuffer over from texture and tonemap/gamma
     float shiftedVerts[4*5] =
 	{
 	  1.0f+m_ScreenOffset.x, 1.0f+m_ScreenOffset.y,0.0f, 1.0f+(float)(1.0/(double)m_width), 0.0f+(float)(1.0/(double)m_height),
@@ -2360,7 +2444,14 @@ void Player::FlipVideoBuffersNormal( const bool vsync )
 	 -1.0f+m_ScreenOffset.x,-1.0f+m_ScreenOffset.y,0.0f, 0.0f+(float)(1.0/(double)m_width), 1.0f+(float)(1.0/(double)m_height)
 	};
 
-	m_pin3d.m_pd3dDevice->BeginScene();
+    Bloom();
+
+	// copy framebuffer over from texture and tonemap/gamma
+
+	// switch to 'real' output buffer
+	m_pin3d.m_pd3dDevice->SetRenderTarget(m_pin3d.m_pd3dDevice->GetOutputBackBuffer());
+
+    m_pin3d.m_pd3dDevice->BeginScene();
 
     m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
     m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
@@ -2369,6 +2460,7 @@ void Player::FlipVideoBuffersNormal( const bool vsync )
 	m_pin3d.m_pd3dDevice->SetVertexDeclaration( m_pin3d.m_pd3dDevice->m_pVertexTexelDeclaration );
 
 	m_pin3d.m_pd3dDevice->basicShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetBackBufferTexture());
+    m_pin3d.m_pd3dDevice->basicShader->SetTexture("Texture1", m_pin3d.m_pd3dDevice->GetBloomBufferTexture());
 
 	Texture * const pin = m_ptable->GetImage((char *)m_ptable->m_szImageColorGrade);
 	if(pin)
@@ -2382,6 +2474,8 @@ void Player::FlipVideoBuffersNormal( const bool vsync )
 	m_pin3d.m_pd3dDevice->basicShader->Begin(0);
     m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_TEX, (LPVOID)shiftedVerts, 4);
     m_pin3d.m_pd3dDevice->basicShader->End();
+
+    m_pin3d.m_pd3dDevice->basicShader->SetTexture("Texture1", &m_pin3d.envTexture); //!! make customisable
 	
 	m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, TRUE);
 	m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
@@ -2400,17 +2494,17 @@ void Player::FlipVideoBuffers3DAOFXAA( const bool vsync ) //!! SMAA, luma sharpe
 {
 	const bool useAO = (m_fAO && (m_ptable->m_useAO == -1)) || (m_ptable->m_useAO == 1);
 	const bool useAA = (m_fAA && (m_ptable->m_useAA == -1)) || (m_ptable->m_useAA == 1);
-
-	// switch to 'real' output buffer
-	m_pin3d.m_pd3dDevice->SetRenderTarget(m_pin3d.m_pd3dDevice->GetOutputBackBuffer());
-	
-	//
-	const bool stereo = ((m_fStereo3D != 0) && m_fStereo3Denabled);
+    const bool stereo = ((m_fStereo3D != 0) && m_fStereo3Denabled);
 	const bool FXAA1 = (((m_fFXAA == 1) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == 1));
 
 	if(stereo || useAO)
 		m_pin3d.m_pd3dDevice->CopyDepth(m_pin3d.m_pdds3DZBuffer, m_pin3d.m_pddsZBuffer);
+        
+    Bloom();
 
+	// switch to 'real' output buffer
+	m_pin3d.m_pd3dDevice->SetRenderTarget(m_pin3d.m_pd3dDevice->GetOutputBackBuffer());
+	
     m_pin3d.m_pd3dDevice->BeginScene();
 
     m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
@@ -2420,6 +2514,7 @@ void Player::FlipVideoBuffers3DAOFXAA( const bool vsync ) //!! SMAA, luma sharpe
 	m_pin3d.m_pd3dDevice->SetVertexDeclaration( m_pin3d.m_pd3dDevice->m_pVertexTexelDeclaration );
 
 	m_pin3d.m_pd3dDevice->basicShader->SetTexture("Texture0", (!stereo && useAO) ? m_pin3d.m_pddsAOBackBuffer : m_pin3d.m_pd3dDevice->GetBackBufferTexture());
+    m_pin3d.m_pd3dDevice->basicShader->SetTexture("Texture1", m_pin3d.m_pd3dDevice->GetBloomBufferTexture());
 	if(stereo || useAO)
 		m_pin3d.m_pd3dDevice->basicShader->SetTexture("Texture3", m_pin3d.m_pdds3DZBuffer);
 
@@ -2476,6 +2571,8 @@ void Player::FlipVideoBuffers3DAOFXAA( const bool vsync ) //!! SMAA, luma sharpe
 	}
 
 	//
+
+    m_pin3d.m_pd3dDevice->basicShader->SetTexture("Texture1", &m_pin3d.envTexture); //!! make customisable
 
 	m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, TRUE);
 	m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);

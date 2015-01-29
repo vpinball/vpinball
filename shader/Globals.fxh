@@ -61,7 +61,7 @@ sampler2D texSampler0 : TEXUNIT0 = sampler_state // base texture
 	//ADDRESSV  = Wrap;
 };
 
-sampler2D texSampler1 : TEXUNIT1 = sampler_state // environment and texB for lights
+sampler2D texSampler1 : TEXUNIT1 = sampler_state // environment and texB for lights //!! split up
 {
 	Texture	  = (Texture1);
     MIPFILTER = LINEAR; //!! ?
@@ -81,7 +81,7 @@ sampler2D texSampler2 : TEXUNIT2 = sampler_state // diffuse environment contribu
 	ADDRESSV  = Wrap;
 };
 
-sampler2D texSampler6 : TEXUNIT1 = sampler_state // color grade LUT
+sampler2D texSampler6 : TEXUNIT2 = sampler_state // color grade LUT
 {
 	Texture	  = (Texture4);
     MIPFILTER = NONE;
@@ -117,7 +117,7 @@ float3 FBToneMap(float3 color)
     float burnhighlights = 0.25f;
     
     float l = color.x*0.176204f + color.y*0.812985f + color.z*0.0108109f;
-    return saturate(color * ((l*burnhighlights + 1.0f) / (l + 1.0f))); //!! bloom instead?
+    return color * ((l*burnhighlights + 1.0f) / (l + 1.0f)); // overflow is handled by bloom
 }
 
 float3 FBColorGrade(float3 color)

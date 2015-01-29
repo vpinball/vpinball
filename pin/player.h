@@ -163,6 +163,8 @@ public:
 
     void DrawBalls();
     void CheckAndUpdateRegions();
+
+    void Bloom();
     void FlipVideoBuffersNormal( const bool vsync );
     void FlipVideoBuffers3DAOFXAA( const bool vsync );
 

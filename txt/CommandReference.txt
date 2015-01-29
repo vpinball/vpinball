@@ -84,6 +84,8 @@ NudgeTime(float)
 *TableSoundVolume(int) - Scales the global sound volume (in percent). default=100
 *TableMusicVolume(int) - Scales the global music volume (in percent). default=100
 
+ShowDT(bool) - Desktop mode enabled (true) or Rotated Fullscreen mode enabled (false)
+
 *LightAmbient(OLE_COLOR) - changes the ambient light contribution for each material, please always try to keep this at full Black
 *Light0Emission(OLE_COLOR) - changes the light contribution for each material (currently light0 emission is copied to light1, too)
 LightEmissionScale(float)

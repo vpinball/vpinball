@@ -341,6 +341,7 @@ RenderDevice::RenderDevice(HWND hwnd, int width, int height, bool fullscreen, in
     // Retrieve a reference to the back buffer.
     CHECKD3D(m_pD3DDevice->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &m_pBackBuffer));
 
+	// alloc float buffer for rendering (optionally 2x2 res for manual super sampling)
 	CHECKD3D(m_pD3DDevice->CreateTexture(useAA ? 2*width : width, useAA ? 2*height : height, 1,
 		D3DUSAGE_RENDERTARGET, /*D3DFMT_X8R8G8B8*/D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &m_pOffscreenBackBufferTexture, NULL)); //!! D3DFMT_A32B32G32R32F?
 	CHECKD3D(m_pOffscreenBackBufferTexture->GetSurfaceLevel(0, &m_pOffscreenBackBuffer));
@@ -349,6 +350,16 @@ RenderDevice::RenderDevice(HWND hwnd, int width, int height, bool fullscreen, in
 	//	D3DUSAGE_DEPTHSTENCIL, /*D3DFMT_INTZ*/(D3DFORMAT)MAKEFOURCC('I','N','T','Z'), D3DPOOL_DEFAULT, &m_pOffscreenBackBufferZTexture, NULL));
 	//CHECKD3D(m_pOffscreenBackBufferZTexture->GetSurfaceLevel(0, &m_pOffscreenBackBufferZ));
 	////m_pD3DDevice->SetDepthStencilSurface(m_pOffscreenBackBufferZ);
+
+	// alloc bloom tex at 1/3 x 1/3 res (allows for simple HQ downscale of clipped input while saving memory)
+    CHECKD3D(m_pD3DDevice->CreateTexture(width/3, height/3, 1,
+		D3DUSAGE_RENDERTARGET, /*D3DFMT_X8R8G8B8*/D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &m_pBloomBufferTexture, NULL)); //!! 8bit enough?
+	CHECKD3D(m_pBloomBufferTexture->GetSurfaceLevel(0, &m_pBloomBuffer));
+
+	// temporary buffer for gaussian blur
+    CHECKD3D(m_pD3DDevice->CreateTexture(width/3, height/3, 1,
+		D3DUSAGE_RENDERTARGET, /*D3DFMT_X8R8G8B8*/D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &m_pBloomTmpBufferTexture, NULL)); //!! 8bit enough?
+	CHECKD3D(m_pBloomTmpBufferTexture->GetSurfaceLevel(0, &m_pBloomTmpBuffer));
 
     // Set up a dynamic index buffer to cache passed indices in
     CreateIndexBuffer(MY_IDX_BUF_SIZE, D3DUSAGE_DYNAMIC, IndexBuffer::FMT_INDEX16, &m_dynIndexBuffer);
@@ -451,6 +462,12 @@ RenderDevice::~RenderDevice()
 
 	SAFE_RELEASE(m_pOffscreenBackBuffer);
 	SAFE_RELEASE(m_pOffscreenBackBufferTexture);
+
+	SAFE_RELEASE(m_pBloomBuffer);
+	SAFE_RELEASE(m_pBloomBufferTexture);
+
+	SAFE_RELEASE(m_pBloomTmpBuffer);
+	SAFE_RELEASE(m_pBloomTmpBufferTexture);
 
 #ifdef _DEBUG
     CheckForD3DLeak(m_pD3DDevice);
