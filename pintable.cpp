@@ -2804,6 +2804,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
    bw.WriteInt(FID(UAAL), m_useAA );
    bw.WriteInt(FID(UFXA), m_useFXAA );
    bw.WriteInt(FID(UAOC), m_useAO );
+   bw.WriteFloat(FID(BLST), m_bloom_strength );
 
    bw.WriteInt(FID(MASI), m_materials.Size());
    if( m_materials.Size()>0 )
@@ -3224,6 +3225,8 @@ void PinTable::SetLoadDefaults()
    m_useFXAA = -1;
    m_useAO = -1;
 
+   m_bloom_strength = 1.0f;
+
    m_TableSoundVolume = 1.0f;
    m_TableMusicVolume = 1.0f;
 
@@ -3561,6 +3564,10 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(UFXA))
    {
       pbr->GetInt(&m_useFXAA);
+   }
+   else if (id == FID(BLST))
+   {
+      pbr->GetFloat(&m_bloom_strength);
    }
    else if (id == FID(BCLR))
    {
@@ -7338,6 +7345,24 @@ STDMETHODIMP PinTable::put_TrailStrength(int newVal )
    STARTUNDO
 
    m_ballTrailStrength = newVal;
+
+   STOPUNDO
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::get_BloomStrength(float *pVal)
+{
+   *pVal = m_bloom_strength;
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_BloomStrength(float newVal )
+{
+   STARTUNDO
+
+   m_bloom_strength = newVal;
 
    STOPUNDO
 

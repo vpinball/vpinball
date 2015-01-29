@@ -91,6 +91,7 @@ ShowDT(bool) - Desktop mode enabled (true) or Rotated Fullscreen mode enabled (f
 LightEmissionScale(float)
 EnvironmentEmissionScale(float)
 AOScale(float) - scaling factor when blending the ambient occlusion
+BloomStrength(float) - scaling factor when blurring the clipped framebuffer contribution (leave at 1 for kinda natural glow)
 NightDay(int) - 0..100 value set in the UI (by the user) that defines if its night or day, so that the script can tweak table elements based on that value
 *LightHeight(float) - height of lights
 *LightRange(float) - range of lights
