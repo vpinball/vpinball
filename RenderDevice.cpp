@@ -1,6 +1,10 @@
 #include "stdafx.h"
+
+#ifndef DISABLE_FORCE_NVIDIA_OPTIMUS
+ #include "nvapi.h"
+#endif
+
 #include "RenderDevice.h"
-#include "nvapi.h"
 #include "Material.h"
 #include "BasicShader.h"
 #include "DMDShader.h"
@@ -274,11 +278,13 @@ RenderDevice::RenderDevice(HWND hwnd, int width, int height, bool fullscreen, in
 	if(m_autogen_mipmap)
 		m_autogen_mipmap = (m_pD3D->CheckDeviceFormat(m_adapter, devtype, params.BackBufferFormat, D3DUSAGE_AUTOGENMIPMAP, D3DRTYPE_TEXTURE, D3DFMT_A8R8G8B8)) == D3D_OK;
 
+#ifndef DISABLE_FORCE_NVIDIA_OPTIMUS
 	if(!NVAPIinit)
 	{
 		if (NvAPI_Initialize() == NVAPI_OK)
 		    NVAPIinit = true;
 	}
+#endif
 
 	// Determine if RESZ is supported
 	//m_RESZ_support = (m_pD3D->CheckDeviceFormat(m_adapter, devtype, params.BackBufferFormat,
@@ -405,6 +411,7 @@ static D3DTexture* dest_cache = NULL;
 
 RenderDevice::~RenderDevice()
 {
+#ifndef DISABLE_FORCE_NVIDIA_OPTIMUS
 	if(src_cache != NULL)
 		CHECKNVAPI(NvAPI_D3D9_UnregisterResource(src_cache)); //!! meh
 	src_cache = NULL;
@@ -414,6 +421,7 @@ RenderDevice::~RenderDevice()
 	if(NVAPIinit) //!! meh
 		CHECKNVAPI(NvAPI_Unload());
 	NVAPIinit = false;
+#endif
 
 	//
 
@@ -553,6 +561,7 @@ void RenderDevice::CopySurface(D3DTexture* dest, RenderTarget* src)
 
 void RenderDevice::CopyDepth(D3DTexture* dest, RenderTarget* src)
 {
+#ifndef DISABLE_FORCE_NVIDIA_OPTIMUS
 	if(NVAPIinit)
 	{
 		if(src != src_cache)
@@ -573,6 +582,7 @@ void RenderDevice::CopyDepth(D3DTexture* dest, RenderTarget* src)
 		//CHECKNVAPI(NvAPI_D3D9_AliasSurfaceAsTexture(m_pD3DDevice,src,dest,0));
 		CHECKNVAPI(NvAPI_D3D9_StretchRectEx(m_pD3DDevice, src, NULL, dest, NULL, D3DTEXF_NONE));
 	}
+#endif
 #if 0 // leftover resolve z code, maybe useful later-on
 	else //if(m_RESZ_support)
 	{
