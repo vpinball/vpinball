@@ -1016,7 +1016,6 @@ INT_PTR CALLBACK TranslateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lP
          SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
 
          SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
-         psel = (ISelect *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
          char szT[256];
          f2sz(0, szT);

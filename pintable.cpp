@@ -5561,10 +5561,6 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
    {
    case WM_CLOSE:
       {
-         // Scary!!!!
-         pt = (CComObject<PinTable> *)GetWindowLongPtr(hwnd, GWLP_USERDATA); 			
-         //DefMDIChildProc(hwnd, uMsg, wParam, lParam);
-
          KillTimer(hwnd, TIMER_ID_AUTOSAVE);
          SetTimer(hwnd, TIMER_ID_CLOSE_TABLE, 100, NULL);	//wait 250 milliseconds
 

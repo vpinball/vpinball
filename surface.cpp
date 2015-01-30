@@ -872,8 +872,6 @@ void Surface::RenderSetup(RenderDevice* pd3dDevice)
       PrepareSlingshots(pd3dDevice);
    }
 
-   Texture * const pinSide = m_ptable->GetImage(m_d.m_szSideImage);
-   Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
    Material *mat=0;
    isDynamic=false;
    if ( m_d.m_fSideVisible )
