@@ -1538,7 +1538,7 @@ void Rubber::UpdateRubber( RenderDevice *pd3dDevice )
 
 void Rubber::UpdatePropertyPanes()
 {
-    if ( m_propVisual==NULL || m_propPosition==NULL && m_propPhysics==NULL )
+    if ( m_propVisual==NULL || m_propPosition==NULL || m_propPhysics==NULL )
         return;
 
     if ( !m_d.m_fCollidable )

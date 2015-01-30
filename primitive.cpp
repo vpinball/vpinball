@@ -1875,7 +1875,7 @@ void Primitive::GetDialogPanes(Vector<PropertyPane> *pvproppane)
 
 void Primitive::UpdatePropertyPanes()
 {
-    if ( m_propVisual==NULL || m_propPosition==NULL && m_propPhysics==NULL )
+    if ( m_propVisual==NULL || m_propPosition==NULL || m_propPhysics==NULL )
         return;
 
     if( m_d.use3DMesh )
