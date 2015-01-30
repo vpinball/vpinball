@@ -3412,7 +3412,7 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
                                     pt->AddMaterial( pmat );
                                     pt->AddListMaterial(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST), pmat);
                                 }
-
+                                fclose(f);
                                 hr = SetRegValue("RecentDir","MaterialDir", REG_SZ, szInitialDir, lstrlen(szInitialDir));
                                 pt->SetNonUndoableDirty(eSaveDirty);
                             }
@@ -7472,6 +7472,7 @@ INT_PTR CALLBACK SearchSelectProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                   ISelect * const pisel = piscript->GetISelect();
                   if (pisel)
                      pt->AddMultiSel(pisel, true);
+                  delete [] szT;
                }
                delete[] rgsel;
                EndDialog(hwndDlg, TRUE);
