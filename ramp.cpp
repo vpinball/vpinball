@@ -1029,7 +1029,6 @@ void Ramp::CreateWire( const int numRings, const int numSegments, const Vertex2D
 void Ramp::prepareHabitrail(RenderDevice* pd3dDevice)
 {
     dynamicVertexBufferRegenerate = false;
-    Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
     Vertex2D * middlePoints = 0;
     int accuracy=1;
     if( m_ptable->GetAlphaRampsAccuracy()<5 )
@@ -1144,7 +1143,6 @@ void Ramp::prepareHabitrail(RenderDevice* pd3dDevice)
 
 void Ramp::RenderSetup(RenderDevice* pd3dDevice)
 {
-   Material *mat = m_ptable->GetMaterial( m_d.m_szMaterial);
    if ( m_d.m_fVisible )
    {
       if ( isHabitrail() )

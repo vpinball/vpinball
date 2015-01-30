@@ -7906,7 +7906,6 @@ INT_PTR CALLBACK DimensionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lP
       case WM_INITDIALOG:
       {
          HWND listHwnd=GetDlgItem( hwndDlg, IDC_TABLE_DIM_LIST);
-         PinTable *pt = g_pvp->GetActiveTable();
          LVCOLUMN lvc;
          LVITEM lv;
 
@@ -7947,7 +7946,6 @@ INT_PTR CALLBACK DimensionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lP
       break;
    case WM_NOTIFY:
       {
-         HWND listhw=GetDlgItem( hwndDlg, IDC_DRAWING_ORDER_LIST);
          LPNMHDR pnmhdr = (LPNMHDR)lParam;
          switch (pnmhdr->code)
          {

@@ -1342,7 +1342,6 @@ void Rubber::PostRenderStatic(RenderDevice* pd3dDevice)
 void Rubber::GenerateVertexBuffer(RenderDevice* pd3dDevice)
 {
     dynamicVertexBufferRegenerate = true;
-    Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
     Vertex2D * middlePoints = 0;
     int accuracy=1;
     if( m_ptable->GetAlphaRampsAccuracy()<5 )

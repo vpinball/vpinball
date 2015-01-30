@@ -417,7 +417,6 @@ void Flasher::RenderSetup(RenderDevice* pd3dDevice)
    vertices = new Vertex3D_TexelOnly[numPolys*3];
 
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-   Texture * const pin = m_ptable->GetImage(m_d.m_szImageA);
 
    minx=FLT_MAX;
    miny=FLT_MAX;
