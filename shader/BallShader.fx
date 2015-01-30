@@ -163,7 +163,7 @@ float4 ballLightLoop(float3 pos, float3 N, float3 V, float3 diffuse, float3 glos
       
    if((!bIsMetal && (diffuseMax > 0.0f)) || (glossyMax > 0.0f))
    {
-      for(int i = 0; i < iLightPointNum; i++)  
+      for(int i = 0; i < iLightPointBallsNum; i++)  
          color += DoPointLight(pos, N, V, diffuse, glossy, edge, fRoughness, i); // no clearcoat needed as only pointlights so far
    }
 
@@ -234,7 +234,7 @@ float4 psBall( in vout IN ) : COLOR
 	float3 diffuse  = cBase;
 	if(!decalMode)
 	    diffuse *= decalColor; // scratches make the material more rough
-    float3 glossy   = diffuse;
+    float3 glossy   = max(diffuse*2.0f,float3(0.1f,0.1f,0.1f)); //!! meh
     float3 specular = playfieldColor;
 	if(!decalMode)
 	    specular *= 1.0f-decalColor; // see above

@@ -1,5 +1,6 @@
 #define PI 3.1415926535897932384626433832795f
 #define NUM_LIGHTS 2
+#define NUM_BALL_LIGHTS 4
 
 bool color_grade;
 
@@ -34,7 +35,24 @@ struct CLight
 }; 
  
 int iLightPointNum = NUM_LIGHTS;
-CLight lights[NUM_LIGHTS] = {          //NUM_LIGHTS == 2
+int iLightPointBallsNum = NUM_LIGHTS+NUM_BALL_LIGHTS;
+CLight lights[NUM_LIGHTS+NUM_BALL_LIGHTS] = {          //NUM_LIGHTS == 2
+   { 
+      float3(0.0f, 0.0f, 0.0f),        //position 
+      float3(0.0f, 0.0f, 0.0f)         //emission //!! have emission > 1.0f
+   }, 
+   { 
+      float3(0.0f, 0.0f, 0.0f),        //position 
+      float3(0.0f, 0.0f, 0.0f)         //emission //!! have emission > 1.0f
+   }, 
+   { 
+      float3(0.0f, 0.0f, 0.0f),        //position 
+      float3(0.0f, 0.0f, 0.0f)         //emission //!! have emission > 1.0f
+   }, 
+   { 
+      float3(0.0f, 0.0f, 0.0f),        //position 
+      float3(0.0f, 0.0f, 0.0f)         //emission //!! have emission > 1.0f
+   }, 
    { 
       float3(0.0f, 0.0f, 0.0f),        //position 
       float3(0.0f, 0.0f, 0.0f)         //emission //!! have emission > 1.0f
@@ -125,12 +143,12 @@ float3 FBColorGrade(float3 color)
    if(!color_grade)
        return color;
 
-   color.xy = color.xy*(15.0f/16.0f) + 1.0f/32.0f; // assumes 16x16x16 resolution flattened to 256x16 texture
+   color.xy = color.xy*(15.0/16.0) + 1.0/32.0; // assumes 16x16x16 resolution flattened to 256x16 texture
    color.z *= 15.0f;
 
    float x = (color.x + floor(color.z))/16.0f;
    float3 lut1 = tex2Dlod(texSampler6, float4(x,            color.y, 0.f,0.f)).xyz; // two lookups to blend/lerp between blue 2D regions
-   float3 lut2 = tex2Dlod(texSampler6, float4(x+1.0f/16.0f, color.y, 0.f,0.f)).xyz;
+   float3 lut2 = tex2Dlod(texSampler6, float4(x+1.0/16.0, color.y, 0.f,0.f)).xyz;
    return lerp(lut1,lut2, frac(color.z));
 }
 
@@ -172,8 +190,8 @@ float3 DoPointLight(float3 pos, float3 N, float3 V, float3 diffuse, float3 gloss
 float3 DoEnvmapDiffuse(float3 N, float3 diffuse)
 {
    float2 uv = float2( // remap to 2D envmap coords
-		atan2(N.y, N.x) * (0.5f/PI) + 0.5f,
-	    acos(N.z) * (1.0f/PI));
+		atan2(N.y, N.x) * (0.5/PI) + 0.5f,
+	    acos(N.z) * (1.0/PI));
 
    return diffuse * InvGamma(tex2Dlod(texSampler2, float4(uv, 0.f,0.f)).xyz)*fenvEmissionScale; //!! replace by real HDR instead? -> remove invgamma then
 }
@@ -188,8 +206,8 @@ float3 DoEnvmapGlossy(float3 N, float3 V, float3 glossy, float glossyPower)
    float mip = log2(fenvTexWidth * sqrt(3.0f)) - 0.5f*log2(glossyPower + 1.0f);
 
    float2 uv = float2( // remap to 2D envmap coords
-		atan2(r.y, r.x) * (0.5f/PI) + 0.5f,
-	    acos(r.z) * (1.0f/PI));
+		atan2(r.y, r.x) * (0.5/PI) + 0.5f,
+	    acos(r.z) * (1.0/PI));
 
    return glossy * InvGamma(tex2Dlod(texSampler1, float4(uv, 0, mip)).xyz)*fenvEmissionScale; //!! replace by real HDR instead? -> remove invgamma then
 }
@@ -201,8 +219,8 @@ float3 DoEnvmap2ndLayer(float3 color1stLayer, float3 pos, float3 N, float3 V, fl
    r = normalize(mul(float4(r,0.0f), matViewInverse).xyz); // trafo back to world
 
    float2 uv = float2( // remap to 2D envmap coords
-		atan2(r.y, r.x) * (0.5f/PI) + 0.5f,
-	    acos(r.z) * (1.0f/PI));
+		atan2(r.y, r.x) * (0.5/PI) + 0.5f,
+	    acos(r.z) * (1.0/PI));
 	    
    float3 w = FresnelSchlick(specular, dot(V, N), fEdge); //!! ?
    return lerp(color1stLayer, InvGamma(tex2Dlod(texSampler1, float4(uv, 0, 0)).xyz)*fenvEmissionScale, w); // weight (optional) lower diffuse/glossy layer with clearcoat/specular //!! replace by real HDR instead? -> remove invgamma then

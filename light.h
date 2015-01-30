@@ -22,7 +22,7 @@ public:
     float m_currentIntensity;
 	float m_modulate_vs_add;
     float m_meshRadius;
-    float m_meshIntensity;
+    //float m_meshIntensity;
     //float m_meshFadeSpeed;
     LightState m_state;
 	COLORREF m_color;
@@ -169,9 +169,10 @@ DECLARE_REGISTRY_RESOURCEID(IDR_LIGHT)
 	LightData m_d;
 	LightState 	m_realState;
 
+	float m_surfaceHeight;
+
 	// Run-time
 private:
-    float m_surfaceHeight;
     Material *surfaceMaterial;
 
 	LightCenter m_lightcenter;
