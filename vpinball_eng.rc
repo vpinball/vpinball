@@ -14,7 +14,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Englisch (USA) resources
+// English (U.S.) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 #ifdef _WIN32
@@ -1330,7 +1330,7 @@ FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     CONTROL         "Custom2",5,"ColorControl",WS_TABSTOP,27,7,40,14
     COMBOBOX        1501,7,32,113,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Preview DT       DT         FS",13434,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,50,104,10
+    CONTROL         "Use DT                DT         FS",13434,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,50,109,10
     EDITTEXT        104,65,67,25,12,ES_AUTOHSCROLL
     EDITTEXT        105,65,80,25,12,ES_AUTOHSCROLL
     EDITTEXT        1040,65,93,25,12,ES_AUTOHSCROLL
@@ -1341,7 +1341,7 @@ BEGIN
     EDITTEXT        102,65,162,25,12,ES_AUTOHSCROLL
     EDITTEXT        103,65,175,25,12,ES_AUTOHSCROLL
     EDITTEXT        110,65,188,25,12,ES_AUTOHSCROLL
-	EDITTEXT        439,95,67,25,12,ES_AUTOHSCROLL
+    EDITTEXT        439,95,67,25,12,ES_AUTOHSCROLL
     EDITTEXT        440,95,80,25,12,ES_AUTOHSCROLL
     EDITTEXT        441,95,93,25,12,ES_AUTOHSCROLL
     EDITTEXT        442,95,107,25,12,ES_AUTOHSCROLL
@@ -2436,7 +2436,7 @@ BEGIN
     IDS_STEP                "Step"
 END
 
-#endif    // Englisch (USA) resources
+#endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
