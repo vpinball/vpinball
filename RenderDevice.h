@@ -228,6 +228,7 @@ public:
    void GetTransform( TransformStateType, D3DMATRIX* );
 
    void ForceAnisotropicFiltering( const bool enable ) { m_force_aniso = enable; }
+   void CompressTextures( const bool enable ) { m_compress_textures = enable; }
 
    // performance counters
    unsigned int Perf_GetNumDrawCalls()         { return m_frameDrawCalls; }
@@ -289,13 +290,15 @@ private:
    IndexBuffer* m_curIndexBuffer;       // for caching
    D3DTexture* m_curTexture[8];         // for caching
    VertexDeclaration *currentDeclaration;
+   DWORD currentFVF;
+
    DWORD m_maxaniso;
    bool m_mag_aniso;
 
    bool m_autogen_mipmap;
    //bool m_RESZ_support;
-   DWORD currentFVF;
    bool m_force_aniso;
+   bool m_compress_textures;
 
    // performance counters
    unsigned m_curDrawCalls, m_frameDrawCalls;

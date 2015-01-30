@@ -651,26 +651,37 @@ void RenderDevice::CopyDepth(D3DTexture* dest, RenderTarget* src)
 
 D3DTexture* RenderDevice::CreateSystemTexture(BaseTexture* surf)
 {
+    const int texwidth = surf->width();
+    const int texheight = surf->height();
+
+    const D3DFORMAT texformat = (m_compress_textures && ((texwidth&3) == 0) && ((texheight&3) == 0)) ? D3DFMT_DXT5 : D3DFMT_A8R8G8B8;
+
     IDirect3DTexture9 *sysTex;
-
-    int texwidth = surf->width();
-    int texheight = surf->height();
-
-    CHECKD3D(m_pD3DDevice->CreateTexture(texwidth, texheight, m_autogen_mipmap ? 1 : 0, 0, D3DFMT_A8R8G8B8,
+    CHECKD3D(m_pD3DDevice->CreateTexture(texwidth, texheight, (texformat != D3DFMT_DXT5 && m_autogen_mipmap) ? 1 : 0, 0, texformat,
                 D3DPOOL_SYSTEMMEM, &sysTex, NULL));
 
     // copy data into system memory texture
-    D3DLOCKED_RECT locked;
+    /*D3DLOCKED_RECT locked;
     CHECKD3D(sysTex->LockRect(0, &locked, NULL, 0));
     BYTE *pdest = (BYTE*)locked.pBits;
     for (int y = 0; y < surf->height(); ++y)
     {
         memcpy(pdest + y*locked.Pitch, surf->data() + y*surf->pitch(), 4 * surf->width());
     }
-    CHECKD3D(sysTex->UnlockRect(0));
+    CHECKD3D(sysTex->UnlockRect(0));*/
 
-	if(!m_autogen_mipmap)
-		CHECKD3D(D3DXFilterTexture(sysTex,NULL,D3DX_DEFAULT,D3DX_DEFAULT));
+    IDirect3DSurface9* sysSurf;
+    CHECKD3D(sysTex->GetSurfaceLevel(0, &sysSurf));
+    RECT sysRect;
+    sysRect.top = 0;
+    sysRect.left = 0;
+    sysRect.right = texwidth;
+    sysRect.bottom = texheight;
+    CHECKD3D(D3DXLoadSurfaceFromMemory(sysSurf, NULL, NULL, surf->data(), D3DFMT_A8R8G8B8, surf->pitch(), NULL, &sysRect, D3DX_FILTER_NONE, 0));
+    CHECKD3D(sysSurf->Release());
+
+	if(!(texformat != D3DFMT_DXT5 && m_autogen_mipmap))
+		CHECKD3D(D3DXFilterTexture(sysTex,NULL,D3DX_DEFAULT,D3DX_DEFAULT)); //!! D3DX_FILTER_SRGB
 
     return sysTex;
 }
@@ -687,13 +698,15 @@ D3DTexture* RenderDevice::UploadTexture(BaseTexture* surf, int *pTexWidth, int *
 
     sysTex = CreateSystemTexture(surf);
 
-	CHECKD3D(m_pD3DDevice->CreateTexture(texwidth, texheight, m_autogen_mipmap ? 0 : sysTex->GetLevelCount(), m_autogen_mipmap ? D3DUSAGE_AUTOGENMIPMAP : 0, D3DFMT_A8R8G8B8,
+    const D3DFORMAT texformat = (m_compress_textures && ((texwidth&3) == 0) && ((texheight&3) == 0)) ? D3DFMT_DXT5 : D3DFMT_A8R8G8B8;
+
+	CHECKD3D(m_pD3DDevice->CreateTexture(texwidth, texheight, (texformat != D3DFMT_DXT5 && m_autogen_mipmap) ? 0 : sysTex->GetLevelCount(), (texformat != D3DFMT_DXT5 && m_autogen_mipmap) ? D3DUSAGE_AUTOGENMIPMAP : 0, texformat,
                 D3DPOOL_DEFAULT, &tex, NULL));
 
     CHECKD3D(m_pD3DDevice->UpdateTexture(sysTex, tex));
 	CHECKD3D(sysTex->Release());
 	
-	if(m_autogen_mipmap)
+	if(texformat != D3DFMT_DXT5 && m_autogen_mipmap)
 	    tex->GenerateMipSubLevels(); // tell driver that now is a good time to generate mipmaps
     
     return tex;
