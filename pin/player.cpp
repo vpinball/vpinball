@@ -813,7 +813,7 @@ void Player::InitBallShader()
    ballShader->Core()->SetFloat("fenvEmissionScale",m_ptable->m_envEmissionScale*m_ptable->m_globalEmissionScale);
    ballShader->Core()->SetInt("iLightPointNum",MAX_LIGHT_SOURCES);
 
-   ballShader->Core()->SetFloat("fWrapLighting", 0.25f);
+   ballShader->Core()->SetFloat("fWrapLighting", 0.f);
    const float Roughness = 0.8f;
    ballShader->Core()->SetFloat("fRoughness", exp2f(10.0f * Roughness + 1.0f));
    ballShader->Core()->SetFloat("fEdge", 1.0f);
@@ -2345,6 +2345,9 @@ void Player::CheckAndUpdateRegions()
 
 void Player::Bloom()
 {
+	if(m_ptable->m_bloom_strength <= 0.0f)
+		return;
+
 	float shiftedVerts[4*5] =
 	{
 		1.0f+m_ScreenOffset.x, 1.0f+m_ScreenOffset.y,0.0f, 1.0f+(float)(1.0/(double)m_width), 0.0f+(float)(1.0/(double)m_height),
@@ -3027,9 +3030,43 @@ void Player::UnpauseMusic()
 		}
 }
 
+void search_for_nearest(const Ball * const pball, const std::vector<Light*> lights, Light* light_nearest[4])
+{
+	for(unsigned int l = 0; l < MAX_BALL_LIGHT_SOURCES; ++l)
+	{
+		float min_dist = FLT_MAX;
+		light_nearest[l] = NULL;
+		for(unsigned int i = 0; i < lights.size(); ++i)
+		{
+			bool already_processed = false;
+			for(unsigned int i2 = 0; i2 < MAX_BALL_LIGHT_SOURCES-1; ++i2)
+				if(l > i2 && light_nearest[i2] == lights[i]) {
+					already_processed = true;
+					break;
+				}
+			if(already_processed)
+				continue;
+
+			const float dist = Vertex3Ds(lights[i]->m_d.m_vCenter.x - pball->m_pos.x, lights[i]->m_d.m_vCenter.y - pball->m_pos.y, lights[i]->m_d.m_meshRadius + lights[i]->m_surfaceHeight - pball->m_pos.z).LengthSquared(); //!! z pos
+			if(dist < min_dist)
+			{
+				min_dist = dist;
+				light_nearest[l] = lights[i];
+			}
+		}
+	}
+}
 
 void Player::DrawBalls()
 {
+	std::vector<Light*> lights;
+	for (int i=0;i<m_ptable->m_vedit.Size();i++)
+	{
+		IEditable *item=m_ptable->m_vedit.ElementAt(i);
+		if (item->GetItemType() == eItemLight && ((Light *)item)->m_d.m_BulbLight)
+			lights.push_back((Light *)item);
+	}
+
     bool drawReflection = ((m_fReflectionForBalls && (m_ptable->m_useReflectionForBalls == -1)) || (m_ptable->m_useReflectionForBalls == 1));
 
     //m_pin3d.m_pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP);
@@ -3040,7 +3077,44 @@ void Player::DrawBalls()
     for (unsigned i=0; i<m_vball.size(); i++)
     {
         Ball * const pball = m_vball[i];
-        float zheight = (!pball->m_frozen) ? pball->m_pos.z : (pball->m_pos.z - pball->m_radius);
+
+		Light* light_nearest[MAX_BALL_LIGHT_SOURCES];
+		search_for_nearest(pball,lights,light_nearest);
+		
+		for(unsigned int light_i = 0; light_i < MAX_BALL_LIGHT_SOURCES; ++light_i)
+			if(light_nearest[light_i] != NULL)
+			{
+				char tmp[64];
+				sprintf_s(tmp,"lights[%u].vPos",light_i+MAX_LIGHT_SOURCES);
+				const Vertex3Ds lpos(light_nearest[light_i]->m_d.m_vCenter.x, light_nearest[light_i]->m_d.m_vCenter.y, light_nearest[light_i]->m_d.m_meshRadius + light_nearest[light_i]->m_surfaceHeight); //!! z pos
+				ballShader->Core()->SetValue(tmp, (void*)&lpos, sizeof(float)*3);
+				sprintf_s(tmp,"lights[%u].vEmission",light_i+MAX_LIGHT_SOURCES);
+				const float c = light_nearest[light_i]->m_d.m_currentIntensity*powf(light_nearest[light_i]->m_d.m_falloff*0.6f,light_nearest[light_i]->m_d.m_falloff_power*0.6f); //!! 0.6f,0.6f = magic
+				D3DXVECTOR4 color = convertColor(light_nearest[light_i]->m_d.m_color);
+				const Vertex3Ds emission_rgb(color.x*c,color.y*c,color.z*c);
+				ballShader->Core()->SetValue(tmp, (void*)&emission_rgb, sizeof(float)*3);
+			}
+			else
+			{
+				char tmp[64];
+				sprintf_s(tmp,"lights[%u].vPos",light_i+MAX_LIGHT_SOURCES);
+				const Vertex3Ds lpos(-100000.0f,-100000.0f,-100000.0f);
+				ballShader->Core()->SetValue(tmp, (void*)&lpos, sizeof(float)*3);
+				sprintf_s(tmp,"lights[%u].vEmission",light_i+MAX_LIGHT_SOURCES);
+				const Vertex3Ds emission_rgb(0.0f,0.0f,0.0f);
+				ballShader->Core()->SetValue(tmp, (void*)&emission_rgb, sizeof(float)*3);
+			}
+
+	  // now for a weird hack: make material more rough, depending on how near the nearest lightsource is, to 'emulate' the area of the bulbs (as we only feature point lights so far)
+      float Roughness = 0.8f;
+	  if(light_nearest[0] != NULL)
+	  {
+		  const float dist = Vertex3Ds(light_nearest[0]->m_d.m_vCenter.x - pball->m_pos.x, light_nearest[0]->m_d.m_vCenter.y - pball->m_pos.y, light_nearest[0]->m_d.m_meshRadius + light_nearest[0]->m_surfaceHeight - pball->m_pos.z).Length(); //!! z pos
+		  Roughness = min(max(dist*0.006f,0.3f),Roughness);
+	  }
+	  ballShader->Core()->SetFloat("fRoughness", exp2f(10.0f * Roughness + 1.0f));
+
+      float zheight = (!pball->m_frozen) ? pball->m_pos.z : (pball->m_pos.z - pball->m_radius);
 
       float maxz = pball->m_defaultZ+3.0f;
       float minz = pball->m_defaultZ-0.1f;
