@@ -94,7 +94,6 @@ public:
     {
         this->Release();
     }
-
 private:
     VertexBuffer();     // disable default constructor
 };
@@ -253,7 +252,7 @@ public:
    {
        return m_pD3DDevice;
    }
-
+   void FreeShader();
    Material materialStateCache;
 
 private:

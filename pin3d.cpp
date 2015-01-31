@@ -21,12 +21,7 @@ Pin3D::Pin3D()
 Pin3D::~Pin3D()
 {
     m_pd3dDevice->SetZBuffer(NULL);
-
-	SAFE_RELEASE(m_pdds3DZBuffer);
-	SAFE_RELEASE(m_pddsAOBackBuffer);
-	SAFE_RELEASE(m_pddsZBuffer);
-	SAFE_RELEASE(m_pddsStatic);
-	SAFE_RELEASE(m_pddsStaticZ);
+    m_pd3dDevice->FreeShader();
 
    pinballEnvTexture.FreeStuff();
 
@@ -45,7 +40,13 @@ Pin3D::~Pin3D()
     if (tableIBuffer)
         tableIBuffer->release();
 
-	delete m_pd3dDevice;
+   SAFE_RELEASE(m_pddsAOBackBuffer);
+   SAFE_RELEASE(m_pdds3DZBuffer);
+   SAFE_RELEASE(m_pddsStaticZ);
+   SAFE_RELEASE(m_pddsZBuffer);
+   SAFE_RELEASE(m_pddsStatic);
+   SAFE_RELEASE(m_pddsBackBuffer);
+   delete m_pd3dDevice;
 }
 
 void Pin3D::TransformVertices(const Vertex3D_NoTex2 * rgv, const WORD * rgi, int count, Vertex2D * rgvout) const
