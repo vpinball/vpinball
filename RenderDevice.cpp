@@ -420,6 +420,23 @@ static void CheckForD3DLeak(IDirect3DDevice9* d3d)
 static RenderTarget *src_cache = NULL; //!! meh, for nvidia depth read only
 static D3DTexture* dest_cache = NULL;
 
+void RenderDevice::FreeShader()
+{
+   if (basicShader)
+   {
+      basicShader->Core()->SetTexture("Texture0",NULL);
+      basicShader->Core()->SetTexture("Texture1",NULL);
+      basicShader->Core()->SetTexture("Texture2",NULL);
+      delete basicShader;
+      basicShader=0;
+   }
+   if (DMDShader)
+   {
+      delete DMDShader;
+      DMDShader=0;
+   }
+}
+
 RenderDevice::~RenderDevice()
 {
 #ifndef DISABLE_FORCE_NVIDIA_OPTIMUS
@@ -435,18 +452,6 @@ RenderDevice::~RenderDevice()
 #endif
 
 	//
-
-	if (basicShader)
-    {
-        delete basicShader;
-        basicShader=0;
-    }
-    if (DMDShader)
-    {
-        delete DMDShader;
-        DMDShader=0;
-    }
-
     m_pD3DDevice->SetStreamSource(0, NULL, 0, 0);
     m_pD3DDevice->SetIndices(NULL);
 
@@ -457,17 +462,13 @@ RenderDevice::~RenderDevice()
     //SAFE_RELEASE(m_pVertexNormalTexelTexelDeclaration);
 
     m_texMan.UnloadAll();
-
-	SAFE_RELEASE(m_pBackBuffer);
-
-	SAFE_RELEASE(m_pOffscreenBackBuffer);
+   SAFE_RELEASE(m_pOffscreenBackBuffer);
 	SAFE_RELEASE(m_pOffscreenBackBufferTexture);
-
-	SAFE_RELEASE(m_pBloomBuffer);
-	SAFE_RELEASE(m_pBloomBufferTexture);
-
-	SAFE_RELEASE(m_pBloomTmpBuffer);
-	SAFE_RELEASE(m_pBloomTmpBufferTexture);
+   SAFE_RELEASE(m_pBloomBuffer);
+   SAFE_RELEASE(m_pBloomBufferTexture);
+   SAFE_RELEASE(m_pBloomTmpBuffer);
+   SAFE_RELEASE(m_pBloomTmpBufferTexture);
+   SAFE_RELEASE(m_pBackBuffer);
 
 #ifdef _DEBUG
     CheckForD3DLeak(m_pD3DDevice);
