@@ -461,7 +461,7 @@ void Gate::RenderSetup(RenderDevice* pd3dDevice)
     bracketIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer( indices );
 
     if (!bracketVertexBuffer)
-        pd3dDevice->CreateVertexBuffer(gateBracketNumVertices, D3DUSAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &bracketVertexBuffer);
+        pd3dDevice->CreateVertexBuffer(gateBracketNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &bracketVertexBuffer);
 
     Matrix3D fullMatrix;
     fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotation));
@@ -494,7 +494,7 @@ void Gate::RenderSetup(RenderDevice* pd3dDevice)
     wireIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer( indices );
 
     if (!wireVertexBuffer)
-        pd3dDevice->CreateVertexBuffer(gateWireNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &wireVertexBuffer);
+        pd3dDevice->CreateVertexBuffer(gateWireNumVertices, D3DUSAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &wireVertexBuffer);
 
     wireVertices = new Vertex3D_NoTex2[gateWireNumVertices];
     for( int i=0;i<gateWireNumVertices;i++ )
