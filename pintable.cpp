@@ -5483,7 +5483,7 @@ void PinTable::OnLButtonUp(int x, int y)
             {
                if (vsel.ElementAt(i)->GetSelectLevel() == minlevel)
                {
-                   AddMultiSel(vsel.ElementAt(i), true, (i == vsel.Size() - 1));       // only update on the last item
+                  AddMultiSel(vsel.ElementAt(i), true, true); //can't update on last element because the last one could have a different minlevel
                }
             }
          }
