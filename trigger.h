@@ -101,6 +101,9 @@ DECLARE_REGISTRY_RESOURCEID(IDR_TRIGGER)
     void UpdateEditorView(const bool initPoints=false);
     void TriggerAnimationHit();
     void TriggerAnimationUnhit();
+    void InitControlPoints(void);
+    void BackupControlPoints(void);
+    void RestoreControlPoints(void);
 
 	PinTable *m_ptable;
 
@@ -151,9 +154,6 @@ public:
     STDMETHOD(put_Rotation)(/*[in]*/ float newVal);
     STDMETHOD(get_Material)(/*[out, retval]*/ BSTR *pVal);
     STDMETHOD(put_Material)(/*[in]*/ BSTR newVal);
-    void InitControlPoints(void);
-    void BackupControlPoints(void);
-    void RestoreControlPoints(void);
     };
 
 #endif // !defined(AFX_TRIGGER_H__2CA7256C_4072_43C3_9D65_AE091B601377__INCLUDED_)
