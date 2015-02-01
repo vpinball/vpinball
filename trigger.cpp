@@ -38,6 +38,75 @@ Trigger::~Trigger()
    }
 }
 
+void Trigger::InitControlPoints(void)
+{
+   float lengthX = 1.3f;
+   float lengthY = 46.5f;
+
+   m_vdpointWire.RemoveAllElements();
+   CComObject<DragPoint> *pdp;
+   CComObject<DragPoint>::CreateInstance(&pdp);
+   if (pdp)
+   {
+      pdp->AddRef();
+      pdp->Init(this, m_d.m_vCenter.x-lengthX, m_d.m_vCenter.y-lengthY);
+      m_vdpointWire.AddElement(pdp);
+   }
+   CComObject<DragPoint>::CreateInstance(&pdp);
+   if (pdp)
+   {
+      pdp->AddRef();
+      pdp->Init(this, m_d.m_vCenter.x-lengthX, m_d.m_vCenter.y+lengthY);
+      m_vdpointWire.AddElement(pdp);
+   }
+   CComObject<DragPoint>::CreateInstance(&pdp);
+   if (pdp)
+   {
+      pdp->AddRef();
+      pdp->Init(this, m_d.m_vCenter.x+lengthX, m_d.m_vCenter.y+lengthY);
+      m_vdpointWire.AddElement(pdp);
+   }
+   CComObject<DragPoint>::CreateInstance(&pdp);
+   if (pdp)
+   {
+      pdp->AddRef();
+      pdp->Init(this, m_d.m_vCenter.x+lengthX, m_d.m_vCenter.y-lengthY);
+      m_vdpointWire.AddElement(pdp);
+   }
+
+   lengthX = 30.0f;
+   lengthY = 30.0f;
+   m_vdpointCustom.RemoveAllElements();
+   CComObject<DragPoint>::CreateInstance(&pdp);
+   if (pdp)
+   {
+      pdp->AddRef();
+      pdp->Init(this, m_d.m_vCenter.x-lengthX, m_d.m_vCenter.y-lengthY);
+      m_vdpointCustom.AddElement(pdp);
+   }
+   CComObject<DragPoint>::CreateInstance(&pdp);
+   if (pdp)
+   {
+      pdp->AddRef();
+      pdp->Init(this, m_d.m_vCenter.x-lengthX, m_d.m_vCenter.y+lengthY);
+      m_vdpointCustom.AddElement(pdp);
+   }
+   CComObject<DragPoint>::CreateInstance(&pdp);
+   if (pdp)
+   {
+      pdp->AddRef();
+      pdp->Init(this, m_d.m_vCenter.x+lengthX, m_d.m_vCenter.y+lengthY);
+      m_vdpointCustom.AddElement(pdp);
+   }
+   CComObject<DragPoint>::CreateInstance(&pdp);
+   if (pdp)
+   {
+      pdp->AddRef();
+      pdp->Init(this, m_d.m_vCenter.x+lengthX, m_d.m_vCenter.y-lengthY);
+      m_vdpointCustom.AddElement(pdp);
+   }
+}
+
 void Trigger::UpdateEditorView(const bool initPoints)
 {
     if( m_d.m_shape!=TriggerNone )
@@ -134,7 +203,8 @@ void Trigger::InitShape( float x, float y )
 {
     float lengthX=30.0f;
     float lengthY=30.0f;
-    UpdateEditorView(true);
+    UpdateEditorView();
+/*
     if ( m_d.m_shape==TriggerNone )
     {
         for (int i=0;i<m_vdpoint.size();i++)
@@ -173,6 +243,7 @@ void Trigger::InitShape( float x, float y )
             m_vdpoint.AddElement(pdp);
         }
     }
+*/
 }
 
 HRESULT Trigger::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
@@ -183,7 +254,7 @@ HRESULT Trigger::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
    m_d.m_vCenter.y = y;
 
    SetDefaults(fromMouseClick);
-   
+   InitControlPoints();   
    if ( m_vdpoint.size()==0 )
        InitShape(x,y);
 
@@ -1009,6 +1080,7 @@ BOOL Trigger::LoadToken(int id, BiffReader *pbr)
 
 HRESULT Trigger::InitPostLoad()
 {
+   InitControlPoints();
    UpdateEditorView();
    return S_OK;
 }
@@ -1279,11 +1351,53 @@ STDMETHODIMP Trigger::get_TriggerShape(TriggerShape *pVal)
    return S_OK;
 }
 
+void Trigger::BackupControlPoints(void)
+{
+   switch(m_d.m_shape)
+   {
+   case TriggerNone:
+      {
+         m_vdpointCustom.RemoveAllElements();
+         for( int i=0;i<m_vdpoint.size();i++ )
+            m_vdpointCustom.AddElement( m_vdpoint.ElementAt(i));
+         break;
+      }
+   case TriggerWire:
+      {
+         m_vdpointWire.RemoveAllElements();
+         for( int i=0;i<m_vdpoint.size();i++ )
+            m_vdpointWire.AddElement( m_vdpoint.ElementAt(i));
+         break;
+      }
+   }
+}
+
+void Trigger::RestoreControlPoints(void)
+{
+   m_vdpoint.RemoveAllElements();
+   switch(m_d.m_shape)
+   {
+   case TriggerNone:
+      {
+         for( int i=0;i<m_vdpointCustom.size();i++)
+            m_vdpoint.AddElement( m_vdpointCustom.ElementAt(i));
+         break;
+      }
+   case TriggerWire:
+      {
+         for( int i=0;i<m_vdpointWire.size();i++)
+            m_vdpoint.AddElement( m_vdpointWire.ElementAt(i));
+         break;
+      }
+   }
+}
+
 STDMETHODIMP Trigger::put_TriggerShape(TriggerShape newVal)
 {
    STARTUNDO
-
+      BackupControlPoints();
       m_d.m_shape = newVal;
+      RestoreControlPoints();
       InitShape( m_d.m_vCenter.x, m_d.m_vCenter.y );
    STOPUNDO
 

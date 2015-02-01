@@ -108,6 +108,8 @@ DECLARE_REGISTRY_RESOURCEID(IDR_TRIGGER)
     Vector<HitObject> m_vhoCollidable; // Objects to that may be collide selectable
 
 	TriggerHitCircle *m_ptriggerhitcircle;
+   Vector< CComObject<DragPoint> > m_vdpointWire;
+   Vector< CComObject<DragPoint> > m_vdpointCustom;
 
     int numVertices;
     int numFaces;
@@ -149,6 +151,9 @@ public:
     STDMETHOD(put_Rotation)(/*[in]*/ float newVal);
     STDMETHOD(get_Material)(/*[out, retval]*/ BSTR *pVal);
     STDMETHOD(put_Material)(/*[in]*/ BSTR newVal);
+    void InitControlPoints(void);
+    void BackupControlPoints(void);
+    void RestoreControlPoints(void);
     };
 
 #endif // !defined(AFX_TRIGGER_H__2CA7256C_4072_43C3_9D65_AE091B601377__INCLUDED_)
