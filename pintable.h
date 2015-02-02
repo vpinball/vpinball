@@ -160,6 +160,8 @@ public:
     STDMETHOD(put_BallReflection)(/*[in]*/ int newVal);
     STDMETHOD(get_ReflectionStrength)(/*[out, retval]*/ int *pVal);
     STDMETHOD(put_ReflectionStrength)(/*[in]*/ int newVal);
+    STDMETHOD(get_PlayfieldReflectionStrength)(/*[out, retval]*/ int *pVal);
+    STDMETHOD(put_PlayfieldReflectionStrength)(/*[in]*/ int newVal);
     STDMETHOD(get_BallTrail)(/*[out, retval]*/ int *pVal);
     STDMETHOD(put_BallTrail)(/*[in]*/ int newVal);
     STDMETHOD(get_TrailStrength)(/*[out, retval]*/ int *pVal);
@@ -669,6 +671,7 @@ END_CONNECTION_POINT_MAP()
 
     int m_useReflectionForBalls;
     int m_ballReflectionStrength;
+    int m_playfieldReflectionStrength;
     int m_useTrailForBalls;
     int m_ballTrailStrength;
     int m_useAA;

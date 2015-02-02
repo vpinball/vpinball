@@ -3158,6 +3158,7 @@ void Player::DrawBalls()
       if ( drawReflection )
         {
           ballShader->Core()->SetFloat("freflectionStrength", (float)m_ptable->m_ballReflectionStrength/255.0f );
+          ballShader->Core()->SetFloat("fplayfieldReflectionStrength", (float)m_ptable->m_playfieldReflectionStrength/255.0f );
             m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
             m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
             m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_DESTALPHA);

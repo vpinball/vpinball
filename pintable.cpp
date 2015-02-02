@@ -2823,6 +2823,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
 
    bw.WriteInt(FID(BREF), m_useReflectionForBalls );
    bw.WriteInt(FID(BRST), m_ballReflectionStrength );
+   bw.WriteInt(FID(PLST), m_playfieldReflectionStrength );
    bw.WriteInt(FID(BTRA), m_useTrailForBalls );
    bw.WriteBool(FID(BDMO), m_BallDecalMode);
    bw.WriteInt(FID(BTST), m_ballTrailStrength );
@@ -3245,6 +3246,7 @@ void PinTable::SetLoadDefaults()
 
    m_useReflectionForBalls = -1;
    m_ballReflectionStrength = 50;
+   m_playfieldReflectionStrength = 50;
 
    m_useTrailForBalls = -1;
    m_ballTrailStrength = 100;
@@ -3572,6 +3574,10 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(BRST))
    {
       pbr->GetInt(&m_ballReflectionStrength);
+   }
+   else if (id == FID(PLST))
+   {
+      pbr->GetInt(&m_playfieldReflectionStrength);
    }
    else if (id == FID(BTRA))
    {
@@ -7343,6 +7349,24 @@ STDMETHODIMP PinTable::put_ReflectionStrength(int newVal )
    STARTUNDO
 
    m_ballReflectionStrength = newVal;
+
+   STOPUNDO
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::get_PlayfieldReflectionStrength(int *pVal)
+{
+   *pVal = m_playfieldReflectionStrength;
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_PlayfieldReflectionStrength(int newVal )
+{
+   STARTUNDO
+
+   m_playfieldReflectionStrength = newVal;
 
    STOPUNDO
 
