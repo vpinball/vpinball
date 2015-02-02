@@ -645,6 +645,8 @@
 #define IDC_FS_ZT			            448
 #define IDC_BG_SET                      449
 #define IDC_BLOOM_STRENGTH              450
+#define IDC_BULB_INTENSITY_SCALE        451
+#define IDC_TEX_COMPRESS                452
 #define IDC_JOYLFLIPCOMBO               501
 #define IDC_JOYRFLIPCOMBO               502
 #define IDC_JOYPLUNGERCOMBO             503
@@ -848,7 +850,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        614
 #define _APS_NEXT_COMMAND_VALUE         32998
-#define _APS_NEXT_CONTROL_VALUE         451
+#define _APS_NEXT_CONTROL_VALUE         453
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif

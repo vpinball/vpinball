@@ -93,6 +93,8 @@ public:
 
     unsigned int m_id; // unique ID for each ball
 
+    float m_bulb_intensity_scale; // to dampen/increase contribution of the bulb lights (locally/by script)
+
     bool m_frozen;
 
     static unsigned int ballID; // increased for each ball created to have an unique ID for scripts for each ball

@@ -598,6 +598,8 @@ VelX(float)
 VelY(float)
 VelZ(float)
 Image(string)
+ID(int) - gets a unique ID for each ball created or allows to set an artificial one to distinguish different balls on the table
+BulbIntensityScale(float) - allows to dampen/scale the intensity of (bulb-)light reflections on each ball (e.g. to simulate shadowing in the ball lane, etc)
 
 RUBBER
 ==============================================================================================================================================

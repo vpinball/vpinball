@@ -283,6 +283,24 @@ STDMETHODIMP BallEx::put_Radius(float newVal)
 	return S_OK;
 }
 
+STDMETHODIMP BallEx::get_BulbIntensityScale(float *pVal)
+{
+	CHECKSTALEBALL
+
+	*pVal = m_pball->m_bulb_intensity_scale;
+
+	return S_OK;
+}
+
+STDMETHODIMP BallEx::put_BulbIntensityScale(float newVal)
+{
+	CHECKSTALEBALL
+
+	m_pball->m_bulb_intensity_scale = newVal;
+
+	return S_OK;
+}
+
 STDMETHODIMP BallEx::DestroyBall(int *pVal)
 {
 	int cnt = 0;

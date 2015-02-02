@@ -3013,11 +3013,17 @@ void Player::UnpauseMusic()
 		}
 }
 
+
+float map_bulblight_to_emission(const Light* const l) // magic mapping of bulblight parameters to "real" lightsource emission
+{
+    return l->m_d.m_currentIntensity * powf(l->m_d.m_falloff*0.6f, l->m_d.m_falloff_power*0.6f); //!! 0.6f,0.6f = magic
+}
+
 void search_for_nearest(const Ball * const pball, const std::vector<Light*> lights, Light* light_nearest[4])
 {
 	for(unsigned int l = 0; l < MAX_BALL_LIGHT_SOURCES; ++l)
 	{
-		float min_dist = FLT_MAX;
+		float max_contribution = -FLT_MAX;
 		light_nearest[l] = NULL;
 		for(unsigned int i = 0; i < lights.size(); ++i)
 		{
@@ -3030,15 +3036,17 @@ void search_for_nearest(const Ball * const pball, const std::vector<Light*> ligh
 			if(already_processed)
 				continue;
 
-			const float dist = Vertex3Ds(lights[i]->m_d.m_vCenter.x - pball->m_pos.x, lights[i]->m_d.m_vCenter.y - pball->m_pos.y, lights[i]->m_d.m_meshRadius + lights[i]->m_surfaceHeight - pball->m_pos.z).LengthSquared(); //!! z pos
-			if(dist < min_dist)
+			const float contribution = map_bulblight_to_emission(lights[i]) / // could also weight in light color if necessary
+                            Vertex3Ds(lights[i]->m_d.m_vCenter.x - pball->m_pos.x, lights[i]->m_d.m_vCenter.y - pball->m_pos.y, lights[i]->m_d.m_meshRadius + lights[i]->m_surfaceHeight - pball->m_pos.z).LengthSquared(); //!! z pos
+			if(contribution > max_contribution)
 			{
-				min_dist = dist;
+				max_contribution = contribution;
 				light_nearest[l] = lights[i];
 			}
 		}
 	}
 }
+
 
 void Player::DrawBalls()
 {
@@ -3072,12 +3080,12 @@ void Player::DrawBalls()
 				const Vertex3Ds lpos(light_nearest[light_i]->m_d.m_vCenter.x, light_nearest[light_i]->m_d.m_vCenter.y, light_nearest[light_i]->m_d.m_meshRadius + light_nearest[light_i]->m_surfaceHeight); //!! z pos
 				ballShader->Core()->SetValue(tmp, (void*)&lpos, sizeof(float)*3);
 				sprintf_s(tmp,"lights[%u].vEmission",light_i+MAX_LIGHT_SOURCES);
-				const float c = light_nearest[light_i]->m_d.m_currentIntensity*powf(light_nearest[light_i]->m_d.m_falloff*0.6f,light_nearest[light_i]->m_d.m_falloff_power*0.6f); //!! 0.6f,0.6f = magic
+				const float c = map_bulblight_to_emission(light_nearest[light_i]) * pball->m_bulb_intensity_scale;
 				D3DXVECTOR4 color = convertColor(light_nearest[light_i]->m_d.m_color);
 				const Vertex3Ds emission_rgb(color.x*c,color.y*c,color.z*c);
 				ballShader->Core()->SetValue(tmp, (void*)&emission_rgb, sizeof(float)*3);
 			}
-			else
+			else //!! rather just set the max number of ball lights!?
 			{
 				char tmp[64];
 				sprintf_s(tmp,"lights[%u].vPos",light_i+MAX_LIGHT_SOURCES);

@@ -42,6 +42,8 @@ void Ball::Init(const float mass)
 
    m_frozen = false;
 
+   m_bulb_intensity_scale = 1.0f;
+
    m_coll.obj = NULL;
    m_dynamic = C_DYNAMIC; // assume dynamic
 
