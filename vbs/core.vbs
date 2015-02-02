@@ -13,6 +13,7 @@ Const VPinMAMEDriverVer = 3.44
 '     to automatically pass the raw DMD data (levels from 0..100) from VPM to VP (see VP10+ for details on how to display it)
 '   - Add toggleKeyCoinDoor in VPMKeys.vbs to choose between a real coindoor setup (e.g. cabinets) and the 'classic' on/off behaviour (e.g desktops/keyboards)
 '   - Increase maximum number of balls/conMaxBalls to 13 and conStackSw to 8 (for Apollo 13), use InitSw8() then instead of InitSw()
+'   - Deprecate vpmSolFlip2, as VP10 does not feature speed on flippers anymore
 ' New in 3.43 (Update by Koadic)
 ' - (Core Changes)
 '	- Minor adjustment to vbs loading via LoadScript to account for files in nonstandard locations
@@ -1723,12 +1724,14 @@ Private Function vpmCheckVPVer
 	On Error Resume Next
 	' a bug in VBS?: Err object is not cleared on Exit Function
 	If VPBuildVersion < 0 Or Err Then vpmCheckVPVer = 50 : Err.Clear : Exit Function
-	If VPBuildVersion > 2806 Then
+	If VPBuildVersion > 2806 and VPBuildVersion < 9999 Then
 		vpmCheckVPVer = 63
-	ElseIf VPBuildVersion > 2721 Then
+	ElseIf VPBuildVersion > 2721 and VPBuildVersion < 9999 Then
 		vpmCheckVPVer = 61
 	ElseIf VPBuildVersion >= 900 and VPBuildVersion <= 999 Then
 		vpmCheckVPVer = 90
+        ElseIf VPBuildVersion >= 10000 Then
+                vpmCheckVPVer = 100
 	Else
 		vpmCheckVPVer = 60
 	End If
@@ -1781,7 +1784,7 @@ End Function
 If VPBuildVersion >= 10000 Then
 	Set vpmCreateBall = GetRef("vpmDefCreateBall3")
 ElseIf VPBuildVersion > 909 And vpmVPVer >= 90 Then
-    Set vpmCreateBall = GetRef("vpmDefCreateBall2")
+        Set vpmCreateBall = GetRef("vpmDefCreateBall2")
 Else
 	Set vpmCreateBall = GetRef("vpmDefCreateBall")
 End If
@@ -1979,18 +1982,28 @@ Sub vpmSolFlipper(aFlip1, aFlip2, aEnabled)
 	Else
 		PlaySound SFlipperOff
 		oldStrength = aFlip1.Strength : aFlip1.Strength = conFlipRetStrength
-		oldSpeed = aFlip1.Speed : aFlip1.Speed = conFlipRetSpeed
-		aFlip1.RotateToStart : aFlip1.Strength = oldStrength : aFlip1.Speed = oldSpeed
+                If VPBuildVersion < 10000 Then
+                        oldSpeed = aFlip1.Speed : aFlip1.Speed = conFlipRetSpeed
+                End If
+		aFlip1.RotateToStart : aFlip1.Strength = oldStrength
+                If VPBuildVersion < 10000 Then
+                        aFlip1.Speed = oldSpeed
+                End If
 		If Not aFlip2 Is Nothing Then
 			oldStrength = aFlip2.Strength : aFlip2.Strength = conFlipRetStrength
-			oldSpeed = aFlip2.Speed : aFlip2.Speed = conFlipRetSpeed
-			aFlip2.RotateToStart : aFlip2.Strength = oldStrength : aFlip2.Speed = oldSpeed
+                        If VPBuildVersion < 10000 Then
+                                oldSpeed = aFlip2.Speed : aFlip2.Speed = conFlipRetSpeed
+                        End If
+			aFlip2.RotateToStart : aFlip2.Strength = oldStrength
+                        If VPBuildVersion < 10000 Then
+                                aFlip2.Speed = oldSpeed
+                        End If
 		End If
 	End If
 End Sub
 
 ' ----- Flippers With Speed Control ------
-Sub vpmSolFlip2(aFlip1, aFlip2, aFlipSpeedUp, aFlipSpeedDn, aSnd, aEnabled)
+Sub vpmSolFlip2(aFlip1, aFlip2, aFlipSpeedUp, aFlipSpeedDn, aSnd, aEnabled) ' DEPRECATED, as VP10 does not feature speed on flippers anymore
 	Dim oldStrength, oldSpeed
 	If aEnabled Then
 		If aSnd = true then : PlaySound SFlipperOn : End If
