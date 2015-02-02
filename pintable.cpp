@@ -5479,11 +5479,21 @@ void PinTable::OnLButtonUp(int x, int y)
 
          if (vsel.Size() > 0)
          {
+            int lastItemForUpdate=-1;
+            //first check which item is the last item to add to the multi selection
+            for (int i=0;i<vsel.Size();i++)
+            {
+                if (vsel.ElementAt(i)->GetSelectLevel() == minlevel)
+                {
+                    lastItemForUpdate = i;
+                }
+            }
+
             for (int i=0;i<vsel.Size();i++)
             {
                if (vsel.ElementAt(i)->GetSelectLevel() == minlevel)
                {
-                  AddMultiSel(vsel.ElementAt(i), true, true); //can't update on last element because the last one could have a different minlevel
+                  AddMultiSel(vsel.ElementAt(i), true, (i == lastItemForUpdate)); //last item updates the (multi-)selection in the editor
                }
             }
          }
