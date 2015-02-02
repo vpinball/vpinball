@@ -60,6 +60,8 @@ public:
 	STDMETHOD(get_ID)(/*[out, retval]*/ int *pVal);
 	STDMETHOD(put_ID)(/*[in]*/ int newVal);
 	STDMETHOD(DestroyBall)(/*[out, retval]*/ int *pVal);
+	STDMETHOD(get_BulbIntensityScale)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_BulbIntensityScale)(/*[in]*/ float newVal);
 
 	virtual void FireGroupEvent(int dispid) {}
 	virtual IDispatch *GetDispatch() {return ((IDispatch *) this);}

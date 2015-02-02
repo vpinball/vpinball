@@ -267,10 +267,12 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,18,91,10
     CONTROL         "Ball Trails/Motion Blur",IDC_GLOBAL_TRAIL_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,31,91,10
     CONTROL         "Enable Ambient Occlusion",IDC_AO_ALL_TABLES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,57,100,10
-    LTEXT           "FPS limiter",IDC_STATIC,162,136,100,10
-    EDITTEXT        IDC_ADAPTIVE_VSYNC,262,134,20,12,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Max prerendered frames",IDC_STATIC,162,148,77,8
-    EDITTEXT        IDC_MAX_PRE_FRAMES,262,146,20,12,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "FPS limiter",IDC_STATIC,162,126,100,10
+    EDITTEXT        IDC_ADAPTIVE_VSYNC,262,124,20,12,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Max prerendered frames",IDC_STATIC,162,138,77,8
+    EDITTEXT        IDC_MAX_PRE_FRAMES,262,136,20,12,ES_RIGHT | ES_AUTOHSCROLL
+    CONTROL         "Texture compression (saves memory/harms quality)",IDC_TEX_COMPRESS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,150,175,10
     CONTROL         "Force Anisotropic Texture Filtering (quality)",IDC_FORCE_ANISO,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,160,155,10
     CONTROL         "Software vertex processing (for some Intel chips)",IDC_SOFTWARE_VP,
@@ -290,11 +292,11 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,218,280,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,277,280,50,14
     LISTBOX         IDC_SIZELIST,14,19,129,120,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "fps  (1=vsync)",IDC_STATIC,283,136,45,10
+    LTEXT           "fps  (1=vsync)",IDC_STATIC,283,126,45,10
     GROUPBOX        "Video Mode",IDC_STATIC,7,7,142,263
     GROUPBOX        "Ball Rendering",IDC_STATIC,154,7,103,40
     GROUPBOX        "3D Stereo Output",IDC_STATIC,259,7,85,80
-    GROUPBOX        "Performance and Troubleshooting",IDC_STATIC,154,123,190,146
+    GROUPBOX        "Performance and Troubleshooting",IDC_STATIC,154,113,190,156
     GROUPBOX        "Max Texture Dimension (for low-end gfx boards)",IDC_STATIC,159,181,180,54
     LTEXT           "Ramp Accuracy (decrease = performance)",IDC_STATIC,162,238,156,8
     GROUPBOX        "Ball aspect ratio for stretched Tables",IDC_STATIC,12,200,133,62

@@ -3803,6 +3803,9 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
          const bool forceAniso = (GetRegIntWithDefault("Player", "ForceAnisotropicFiltering", 1) != 0);
          SendMessage(GetDlgItem(hwndDlg, IDC_FORCE_ANISO), BM_SETCHECK, forceAniso ? BST_CHECKED : BST_UNCHECKED, 0);
 
+         const bool compressTextures = (GetRegIntWithDefault("Player", "CompressTextures", 0) != 0);
+         SendMessage(GetDlgItem(hwndDlg, IDC_TEX_COMPRESS), BM_SETCHECK, compressTextures ? BST_CHECKED : BST_UNCHECKED, 0);
+
          const bool softwareVP = (GetRegIntWithDefault("Player", "SoftwareVertexProcessing", 0) != 0);
          SendMessage(GetDlgItem(hwndDlg, IDC_SOFTWARE_VP), BM_SETCHECK, softwareVP ? BST_CHECKED : BST_UNCHECKED, 0);
 
@@ -3975,6 +3978,10 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                   HWND hwndForceAniso = GetDlgItem(hwndDlg, IDC_FORCE_ANISO);
 				  size_t forceAniso = SendMessage(hwndForceAniso, BM_GETCHECK, 0, 0);
                   SetRegValue("Player", "ForceAnisotropicFiltering", REG_DWORD, &forceAniso, 4);
+
+                  HWND hwndTexCompress = GetDlgItem(hwndDlg, IDC_TEX_COMPRESS);
+				  size_t texCompress = SendMessage(hwndTexCompress, BM_GETCHECK, 0, 0);
+                  SetRegValue("Player", "CompressTextures", REG_DWORD, &texCompress, 4);
 
                   HWND hwndSoftwareVP = GetDlgItem(hwndDlg, IDC_SOFTWARE_VP);
 				  size_t softwareVP = SendMessage(hwndSoftwareVP, BM_GETCHECK, 0, 0);
