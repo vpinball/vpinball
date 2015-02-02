@@ -532,9 +532,6 @@ void Surface::PostRenderStatic(RenderDevice* pd3dDevice)
 {
     TRACE_FUNCTION();
 
-    if (!m_d.m_fVisible)
-        return;
-
     RenderSlingshots((RenderDevice*)pd3dDevice);
     if (m_d.m_fDroppable || isDynamic)
     {
