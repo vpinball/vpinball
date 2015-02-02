@@ -203,9 +203,9 @@ public:
 	float ParseLog(LARGE_INTEGER *pli1, LARGE_INTEGER *pli2);
 #endif
 
-	void DMDdraw(const float DMDposx, const float DMDposy, const float DMDwidth, const float DMDheight, const COLORREF DMDcolor);
-	void Spritedraw(const float posx, const float posy, const float width, const float height, const COLORREF color, Texture* const tex, const float u0 = 0.0f, const float v0 = 0.0f, const float u1 = 1.0f, const float v1 = 1.0f);
-	void Spritedraw(const float posx, const float posy, const float width, const float height, const COLORREF color, D3DTexture* const tex);
+	void DMDdraw(const float DMDposx, const float DMDposy, const float DMDwidth, const float DMDheight, const COLORREF DMDcolor, const float intensity);
+	void Spritedraw(const float posx, const float posy, const float width, const float height, const COLORREF color, Texture* const tex, const float u0 = 0.0f, const float v0 = 0.0f, const float u1 = 1.0f, const float v1 = 1.0f, const float intensity = 1.0f);
+	void Spritedraw(const float posx, const float posy, const float width, const float height, const COLORREF color, D3DTexture* const tex, const float intensity);
 
 	HWND m_hwnd;
 

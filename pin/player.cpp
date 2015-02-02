@@ -2154,7 +2154,7 @@ void Player::UpdatePhysics()
 #endif
 }
 
-void Player::DMDdraw(const float DMDposx, const float DMDposy, const float DMDwidth, const float DMDheight, const COLORREF DMDcolor)
+void Player::DMDdraw(const float DMDposx, const float DMDposy, const float DMDwidth, const float DMDheight, const COLORREF DMDcolor, const float intensity)
 {
   if(g_pplayer->m_device_texdmd)
   {
@@ -2177,6 +2177,7 @@ void Player::DMDdraw(const float DMDposx, const float DMDposy, const float DMDwi
     m_pin3d.m_pd3dDevice->DMDShader->Core()->SetFloat("fResY",(float)g_pplayer->m_dmdy);
     const D3DXVECTOR4 c = convertColor(DMDcolor);
     m_pin3d.m_pd3dDevice->DMDShader->Core()->SetVector("vColor",&c);
+	m_pin3d.m_pd3dDevice->DMDShader->Core()->SetFloat("intensity",intensity);
     m_pin3d.m_pd3dDevice->DMDShader->SetTechnique((float)g_pplayer->m_width*DMDwidth/(float)g_pplayer->m_dmdx < 5.0f ? "basic_DMD" : "basic_DMD_big"); // if width of DMD pixels 'too big' in relation to screen, use smoother function for LED emulation
     m_pin3d.m_pd3dDevice->DMDShader->SetTexture("Texture0", g_pplayer->m_device_texdmd);
     m_pin3d.m_pd3dDevice->DMDShader->Begin(0);
@@ -2185,7 +2186,7 @@ void Player::DMDdraw(const float DMDposx, const float DMDposy, const float DMDwi
   }
 }
 
-void Player::Spritedraw(const float posx, const float posy, const float width, const float height, const COLORREF color, Texture * const tex, const float u0, const float v0, const float u1, const float v1)
+void Player::Spritedraw(const float posx, const float posy, const float width, const float height, const COLORREF color, Texture * const tex, const float u0, const float v0, const float u1, const float v1, const float intensity)
 {
   if(tex)
   {
@@ -2206,6 +2207,7 @@ void Player::Spritedraw(const float posx, const float posy, const float width, c
     m_pin3d.m_pd3dDevice->SetVertexDeclaration( m_pin3d.m_pd3dDevice->m_pVertexTexelDeclaration );
     const D3DXVECTOR4 c = COLORREF_to_D3DXVECTOR4(color);
     m_pin3d.m_pd3dDevice->DMDShader->Core()->SetVector("vColor",&c);
+	m_pin3d.m_pd3dDevice->DMDShader->Core()->SetFloat("intensity",intensity);
     m_pin3d.m_pd3dDevice->DMDShader->SetTechnique("basic_noDMD");
     m_pin3d.m_pd3dDevice->DMDShader->SetTexture("Texture0", tex);
     m_pin3d.m_pd3dDevice->DMDShader->Begin(0);
@@ -2214,7 +2216,7 @@ void Player::Spritedraw(const float posx, const float posy, const float width, c
   }
 }
 
-void Player::Spritedraw(const float posx, const float posy, const float width, const float height, const COLORREF color, D3DTexture * const tex)
+void Player::Spritedraw(const float posx, const float posy, const float width, const float height, const COLORREF color, D3DTexture * const tex, const float intensity)
 {
   if(tex)
   {
@@ -2235,6 +2237,7 @@ void Player::Spritedraw(const float posx, const float posy, const float width, c
     m_pin3d.m_pd3dDevice->SetVertexDeclaration( m_pin3d.m_pd3dDevice->m_pVertexTexelDeclaration );
     const D3DXVECTOR4 c = COLORREF_to_D3DXVECTOR4(color);
     m_pin3d.m_pd3dDevice->DMDShader->Core()->SetVector("vColor",&c);
+	m_pin3d.m_pd3dDevice->DMDShader->Core()->SetFloat("intensity",intensity);
     m_pin3d.m_pd3dDevice->DMDShader->SetTechnique("basic_noDMD");
     m_pin3d.m_pd3dDevice->DMDShader->SetTexture("Texture0", tex);
     m_pin3d.m_pd3dDevice->DMDShader->Begin(0);

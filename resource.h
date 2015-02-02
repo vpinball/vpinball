@@ -721,6 +721,7 @@
 #define IDS_VISUALS_SOUND               581
 #define IDC_TABLEAVSYNC                 585
 #define IDC_SOFTWARE_VP                 586
+#define IDC_TEXT_INTENSITY              587
 #define IDD_PROPPOINT_POSITION_WITHZ    601
 #define IDD_PROPRUBBER_PHYSICS          602
 #define IDC_RUBBER                      602

@@ -167,20 +167,21 @@ Variables
 TEXTBOX
 ==============================================================================================================================================
 
-BackColor
-FontColor
-Text
+BackColor(OLE_COLOR)
+FontColor(OLE_COLOR)
+Text(string)
 Font
-Width
-Height
+Width(float)
+Height(float)
 Alignment
 IsTransparent
 TimerEnabled
 TimerInterval
-X
-Y
-Name
+X(float)
+Y(float)
+Name(string)
 UserValue(any)
+IntensityScale(float) - scales the color of the textbox
 
 
 EMREEL

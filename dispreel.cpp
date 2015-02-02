@@ -277,7 +277,8 @@ void DispReel::PostRenderStatic(RenderDevice* pd3dDevice)
 			ReelInfo[i].position.bottom,
 			0xFFFFFFFF, pin,
 			m_digitTexCoords[ReelInfo[i].currentValue].u_min,m_digitTexCoords[ReelInfo[i].currentValue].v_min,
-			m_digitTexCoords[ReelInfo[i].currentValue].u_max,m_digitTexCoords[ReelInfo[i].currentValue].v_max);
+			m_digitTexCoords[ReelInfo[i].currentValue].u_max,m_digitTexCoords[ReelInfo[i].currentValue].v_max,
+			1.0f);
 	}
 
 	g_pplayer->m_pin3d.DisableAlphaBlend();
