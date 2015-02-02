@@ -486,6 +486,9 @@ void Pin3D::RenderPlayfieldGraphics()
       SetTextureFilter(ePictureTexture, TEXTURE_MODE_ANISOTROPIC);
       m_pd3dDevice->basicShader->SetTexture("Texture0",pin);
       m_pd3dDevice->basicShader->SetTechnique("basic_with_texture");
+      g_pplayer->m_pin3d.EnableAlphaBlend(1,false);
+      m_pd3dDevice->basicShader->PerformAlphaTest(true);
+      m_pd3dDevice->basicShader->SetAlphaTestValue(128.0f / 255.0f);
 	}
 	else // No image by that name
 	{
