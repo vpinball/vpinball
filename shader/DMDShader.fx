@@ -60,6 +60,27 @@ VS_OUTPUT vs_main (float4 vPosition  : POSITION0,
    return Out; 
 }
 
+float4 ps_main_DMD_big( in VS_OUTPUT IN) : COLOR
+{
+   float l = tex2Dlod(texSampler0, float4(IN.tex0, 0.f,0.f)).z*(255.9/100.);
+   float3 color = l*vColor; //!! create function that resembles LUT from VPM?
+
+   float2 xy = IN.tex0 * float2(fResX,fResY);
+   float2 dist = (xy-floor(xy))*2.2f-1.1f;
+   float d = dist.x*dist.x+dist.y*dist.y;
+
+   color *= smoothstep(0,1,1.0f-d*d)*2.0f;
+
+   /*float3 color2 = float3(0,0,0);
+   for(int j = -1; j <= 1; ++j)
+     for(int i = -1; i <= 1; ++i)
+	 {
+	 //collect glow from neighbors
+	 }*/
+
+   return float4(InvToneMap(InvGamma(color/*+color2*/)),1); //!! meh, this sucks a bit performance-wise, but how to avoid this when doing fullscreen-tonemap/gamma without stencil and depth read?
+}
+
 float4 ps_main_DMD( in VS_OUTPUT IN) : COLOR
 {
    float l = tex2Dlod(texSampler0, float4(IN.tex0, 0.f,0.f)).z*(255.9/100.);
@@ -69,16 +90,16 @@ float4 ps_main_DMD( in VS_OUTPUT IN) : COLOR
    float2 dist = (xy-floor(xy))*2.2f-1.1f;
    float d = dist.x*dist.x+dist.y*dist.y;
 
-   color *= smoothstep(0,1,1.0f-d*d);
+   color *= saturate(1.0f-d)*2.5f;
 
-   float3 color2 = float3(0,0,0);
-   /*for(int j = -1; j <= 1; ++j)
+   /*float3 color2 = float3(0,0,0);
+   for(int j = -1; j <= 1; ++j)
      for(int i = -1; i <= 1; ++i)
 	 {
 	 //collect glow from neighbors
 	 }*/
 
-   return float4(InvToneMap(InvGamma(color+color2)),1); //!! meh, this sucks a bit performance-wise, but how to avoid this when doing fullscreen-tonemap/gamma without stencil and depth read?
+   return float4(InvToneMap(InvGamma(color/*+color2*/)),1); //!! meh, this sucks a bit performance-wise, but how to avoid this when doing fullscreen-tonemap/gamma without stencil and depth read?
 }
 
 float4 ps_main_noDMD( in VS_OUTPUT IN) : COLOR
@@ -96,6 +117,16 @@ technique basic_DMD
 	  PixelShader = compile ps_3_0 ps_main_DMD();
    } 
 }
+
+technique basic_DMD_big
+{ 
+   pass P0 
+   { 
+      VertexShader = compile vs_3_0 vs_main(); 
+	  PixelShader = compile ps_3_0 ps_main_DMD_big();
+   } 
+}
+
 
 technique basic_noDMD
 { 
