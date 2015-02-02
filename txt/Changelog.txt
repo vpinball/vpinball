@@ -147,6 +147,8 @@ VP 10.0.0 Changelog
 - please avoid using the VP builtin FXAA (for now!), and rather use the new VP builtin 4xAA
   (and on top one can then even enable the FXAA/SMAA/etc in the gfx card panels to smoothen out remaining edges)
 
+- optional texture compression to save some gfx video memory (at the cost of rendering quality and loading time)
+
 - support primitive vertex sizes > 65535
 
 - new external audio library for music playback (BASS)
