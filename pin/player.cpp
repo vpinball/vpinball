@@ -3019,7 +3019,7 @@ float map_bulblight_to_emission(const Light* const l) // magic mapping of bulbli
     return l->m_d.m_currentIntensity * powf(l->m_d.m_falloff*0.6f, l->m_d.m_falloff_power*0.6f); //!! 0.6f,0.6f = magic
 }
 
-void search_for_nearest(const Ball * const pball, const std::vector<Light*> lights, Light* light_nearest[4])
+void search_for_nearest(const Ball * const pball, const std::vector<Light*> lights, Light* light_nearest[MAX_BALL_LIGHT_SOURCES])
 {
 	for(unsigned int l = 0; l < MAX_BALL_LIGHT_SOURCES; ++l)
 	{
