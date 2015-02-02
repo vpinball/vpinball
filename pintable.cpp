@@ -509,6 +509,34 @@ STDMETHODIMP ScriptGlobalTable::get_VPBuildVersion(long *pVal)
    return S_OK;
 }
 
+/*STDMETHODIMP ScriptGlobalTable::put_NightDay(int pVal)
+{
+   if(g_pplayer)
+	   g_pplayer->m_globalEmissionScale = (float)newVal/100.0f;
+   return S_OK;
+}*/
+
+STDMETHODIMP ScriptGlobalTable::get_NightDay(int *pVal)
+{
+   if(g_pplayer)
+	   *pVal = (int)(g_pplayer->m_ptable->m_globalEmissionScale*100.0f);
+   return S_OK;
+}
+
+/*STDMETHODIMP ScriptGlobalTable::put_ShowDT(int pVal)
+{
+   if(g_pplayer)
+	   g_pplayer->m_BG_current_set = (!!newVal) ? 0 : 1;
+   return S_OK;
+}*/
+
+STDMETHODIMP ScriptGlobalTable::get_ShowDT(VARIANT_BOOL *pVal)
+{
+   if(g_pplayer)
+           *pVal = (VARIANT_BOOL)FTOVB(g_pplayer->m_ptable->m_BG_current_set == 0);	   
+   return S_OK;
+}
+
 STDMETHODIMP ScriptGlobalTable::put_DMDWidth(int pVal)
 {
    if(g_pplayer)
