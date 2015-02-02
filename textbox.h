@@ -17,6 +17,7 @@ public:
 	float m_fontsize;
 	COLORREF m_backcolor;
 	COLORREF m_fontcolor;
+	float m_intensity_scale;
 	char szfont[MAXSTRING];
 	char sztext[MAXSTRING];
 	TimerDataRoot m_tdr;
@@ -99,6 +100,8 @@ public:
 	STDMETHOD(put_Y)(/*[in]*/ float newVal);
 	STDMETHOD(get_X)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_X)(/*[in]*/ float newVal);
+	STDMETHOD(get_IntensityScale)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_IntensityScale)(/*[in]*/ float newVal);
 	STDMETHOD(get_Height)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Height)(/*[in]*/ float newVal);
 	STDMETHOD(get_Width)(/*[out, retval]*/ float *pVal);

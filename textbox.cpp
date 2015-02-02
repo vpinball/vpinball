@@ -41,6 +41,7 @@ void Textbox::SetDefaults(bool fromMouseClick)
     {
         m_d.m_backcolor = RGB(0,0,0);
         m_d.m_fontcolor = RGB(255,255,255);
+		m_d.m_intensity_scale = 1.0f;
         m_d.m_tdr.m_fTimerEnabled = false;
         m_d.m_tdr.m_TimerInterval = 100;
         m_d.m_talign = TextAlignRight;
@@ -59,6 +60,7 @@ void Textbox::SetDefaults(bool fromMouseClick)
     {
         m_d.m_backcolor = GetRegIntWithDefault("DefaultProps\\TextBox","BackColor", RGB(0,0,0));
         m_d.m_fontcolor = GetRegIntWithDefault("DefaultProps\\TextBox","FontColor", RGB(255,255,255));
+        m_d.m_intensity_scale = GetRegStringAsFloatWithDefault("DefaultProps\\TextBox","IntensityScale", 1.0f);
         m_d.m_tdr.m_fTimerEnabled = GetRegIntWithDefault("DefaultProps\\TextBox","TimerEnabled", 0) ? true : false;
         m_d.m_tdr.m_TimerInterval = GetRegIntWithDefault("DefaultProps\\TextBox","TimerInterval", 100);
         m_d.m_talign = (TextAlignment)GetRegIntWithDefault("DefaultProps\\TextBox","TextAlignment", TextAlignRight);
@@ -105,7 +107,6 @@ void Textbox::WriteRegDefaults()
 	SetRegValue("DefaultProps\\TextBox","FontColor", REG_DWORD, &m_d.m_fontcolor, 4);
 	SetRegValue("DefaultProps\\TextBox","TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
 	SetRegValue("DefaultProps\\TextBox","TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval, 4);
-	SetRegValue("DefaultProps\\TextBox","FontColor", REG_DWORD, &m_d.m_fontcolor, 4);
 	SetRegValueBool("DefaultProps\\TextBox","Transparent", m_d.m_fTransparent);
 
 	FONTDESC fd;
@@ -222,7 +223,7 @@ void Textbox::PostRenderStatic(RenderDevice* pd3dDevice)
 	if(strstr(m_d.sztext,"DMD") != NULL) //!! meh
 	{
 		g_pplayer->DMDdraw(x, y, width, height,
-						   m_d.m_fontcolor); //!! replace??!
+						   m_d.m_fontcolor, m_d.m_intensity_scale); //!! replace??!
 
 		return;
 	}
@@ -232,7 +233,7 @@ void Textbox::PostRenderStatic(RenderDevice* pd3dDevice)
 
 	g_pplayer->m_pin3d.EnableAlphaBlend(0x80, false);
 
-	g_pplayer->Spritedraw(x, y, width, height, 0xFFFFFFFF, pd3dDevice->m_texMan.LoadTexture(m_texture));
+	g_pplayer->Spritedraw(x, y, width, height, 0xFFFFFFFF, pd3dDevice->m_texMan.LoadTexture(m_texture), m_d.m_intensity_scale);
 
 	g_pplayer->m_pin3d.DisableAlphaBlend();
 }
@@ -255,7 +256,7 @@ void Textbox::RenderSetup(RenderDevice* pd3dDevice)
 
     CY size;
     m_pIFontPlay->get_Size(&size);
-    size.int64 = (LONGLONG)(size.int64 / 1.5f * ppin3d->m_dwRenderHeight * ppin3d->m_dwRenderWidth);
+    size.int64 = (LONGLONG)(size.int64 / 1.5 * ppin3d->m_dwRenderHeight * ppin3d->m_dwRenderWidth);
     m_pIFontPlay->put_Size(size);
 
     RenderText();
@@ -461,6 +462,7 @@ HRESULT Textbox::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
 	bw.WriteStruct(FID(VER2), &m_d.m_v2, sizeof(Vertex2D));
 	bw.WriteInt(FID(CLRB), m_d.m_backcolor);
 	bw.WriteInt(FID(CLRF), m_d.m_fontcolor);
+	bw.WriteFloat(FID(INSC), m_d.m_intensity_scale);
 	bw.WriteString(FID(TEXT), m_d.sztext);
 	bw.WriteBool(FID(TMON), m_d.m_tdr.m_fTimerEnabled);
 	bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
@@ -514,6 +516,10 @@ BOOL Textbox::LoadToken(int id, BiffReader *pbr)
 	else if (id == FID(CLRF))
 		{
 		pbr->GetInt(&m_d.m_fontcolor);
+		}
+	else if (id == FID(INSC))
+		{
+		pbr->GetFloat(&m_d.m_intensity_scale);
 		}
 	else if (id == FID(TMON))
 		{
@@ -672,6 +678,24 @@ STDMETHODIMP Textbox::put_Y(float newVal)
 
 	m_d.m_v1.y += delta;
 	m_d.m_v2.y += delta;
+
+	STOPUNDO
+
+	return S_OK;
+}
+
+STDMETHODIMP Textbox::get_IntensityScale(float *pVal)
+{
+	*pVal = m_d.m_intensity_scale;
+
+	return S_OK;
+}
+
+STDMETHODIMP Textbox::put_IntensityScale(float newVal)
+{
+	STARTUNDO
+
+	m_d.m_intensity_scale = newVal;
 
 	STOPUNDO
 

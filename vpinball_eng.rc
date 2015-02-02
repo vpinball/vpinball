@@ -1163,6 +1163,7 @@ BEGIN
     COMBOBOX        11,41,74,77,55,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Back &Color",-1,7,22,36,11
     LTEXT           "Text Co&lor",-1,7,42,36,8
+    EDITTEXT        IDC_TEXT_INTENSITY,90,39,20,12,ES_AUTOHSCROLL
     LTEXT           "&Font",-1,7,61,37,8
     LTEXT           "&Alignment:",-1,7,75,32,8
 END

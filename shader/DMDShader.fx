@@ -1,6 +1,7 @@
 float fResX = 128.f;
 float fResY = 32.f;
 float3 vColor = float3(1.f,1.f,1.f);
+float intensity = 1.0f;
 
 texture Texture0;
 
@@ -63,13 +64,13 @@ VS_OUTPUT vs_main (float4 vPosition  : POSITION0,
 float4 ps_main_DMD_big( in VS_OUTPUT IN) : COLOR
 {
    float l = tex2Dlod(texSampler0, float4(IN.tex0, 0.f,0.f)).z*(255.9/100.);
-   float3 color = l*vColor; //!! create function that resembles LUT from VPM?
+   float3 color = l*(vColor*intensity); //!! create function that resembles LUT from VPM?
 
    float2 xy = IN.tex0 * float2(fResX,fResY);
    float2 dist = (xy-floor(xy))*2.2f-1.1f;
    float d = dist.x*dist.x+dist.y*dist.y;
 
-   color *= smoothstep(0,1,1.0f-d*d)*2.0f;
+   color *= smoothstep(0,1,1.0f-d*d);
 
    /*float3 color2 = float3(0,0,0);
    for(int j = -1; j <= 1; ++j)
@@ -84,13 +85,13 @@ float4 ps_main_DMD_big( in VS_OUTPUT IN) : COLOR
 float4 ps_main_DMD( in VS_OUTPUT IN) : COLOR
 {
    float l = tex2Dlod(texSampler0, float4(IN.tex0, 0.f,0.f)).z*(255.9/100.);
-   float3 color = l*vColor; //!! create function that resembles LUT from VPM?
+   float3 color = l*(vColor*1.25f*intensity); //!! create function that resembles LUT from VPM?  //!! 1.25f meh
 
    float2 xy = IN.tex0 * float2(fResX,fResY);
    float2 dist = (xy-floor(xy))*2.2f-1.1f;
    float d = dist.x*dist.x+dist.y*dist.y;
 
-   color *= saturate(1.0f-d)*2.5f;
+   color *= saturate(1.0f-d);
 
    /*float3 color2 = float3(0,0,0);
    for(int j = -1; j <= 1; ++j)
@@ -106,7 +107,7 @@ float4 ps_main_noDMD( in VS_OUTPUT IN) : COLOR
 {
    float4 l = tex2D(texSampler1, IN.tex0);
 
-   return float4(InvToneMap(InvGamma(l.xyz*vColor)),l.w); //!! meh, this sucks a bit performance-wise, but how to avoid this when doing fullscreen-tonemap/gamma without stencil and depth read?
+   return float4(InvToneMap(InvGamma(l.xyz*(vColor*intensity))),l.w); //!! meh, this sucks a bit performance-wise, but how to avoid this when doing fullscreen-tonemap/gamma without stencil and depth read?
 }
 
 technique basic_DMD
