@@ -749,6 +749,7 @@
 #define IDC_BALL_TRAIL                  1704
 #define IDC_TRAIL_EDIT                  1705
 #define IDB_ENV                         1706
+#define IDC_REFLECTION_PLAYFIELD        1707
 #define IDM_NEW                         32768
 #define IDM_OPEN                        32769
 #define IDM_CLOSE                       32770

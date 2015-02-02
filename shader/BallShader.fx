@@ -3,6 +3,7 @@
 #include "Globals.fxh"
 
 float    freflectionStrength;
+float    fplayfieldReflectionStrength;
 float    invTableHeight;
 float    invTableWidth;
 
@@ -204,7 +205,7 @@ float4 psBall( in vout IN ) : COLOR
 	float NdotR = r.z;
 	
 	float3 playfieldColor;
-	if((freflectionStrength > 0.0f) && (NdotR < 0.0f))
+	if((fplayfieldReflectionStrength > 0.0f) && (NdotR < 0.0f))
 	{      
 	   float3 mid = mul(position, matWorldView).xyz;
 	   /*float3 p0 = float3(0,0,0);
@@ -224,7 +225,7 @@ float4 psBall( in vout IN ) : COLOR
 	   playfieldColor = lightLoop(mid, mul(float4(/*normal=*/0,0,1,0), matWorldView).xyz, /*camera=0,0,0,1*/-mid, playfieldColor, float3(0,0,0), float3(0,0,0), 1.0f).xyz;
 	   
 	   //!! magic falloff & weight the rest in from the ballImage
-	   float weight = freflectionStrength*-NdotR; //!! sqrt(-NdotR)?
+	   float weight = fplayfieldReflectionStrength*-NdotR; //!! sqrt(-NdotR)?
 	   playfieldColor *= weight;
 	   playfieldColor += ballImageColor*(1.0f-weight);
 	}
