@@ -936,11 +936,15 @@ float HitLine3D::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 		return -1.0f;
 
     // transform ball to cylinder coordinate system
-    Ball ballT = *pball;
-    ballT.m_pos = matTrans * ballT.m_pos;
-    ballT.m_vel = matTrans * ballT.m_vel;
+    const Vertex3Ds old_pos = pball->m_pos;
+    const Vertex3Ds old_vel = pball->m_vel;
+    ((Ball *)pball)->m_pos = matTrans * pball->m_pos; // evil cast to non-const, but not so expensive as constructor for full copy (and avoids screwing with the ball IDs)
+    ((Ball *)pball)->m_vel = matTrans * pball->m_vel;
 
-    const float hittime = HitLineZ::HitTest(&ballT, dtime, coll);
+    const float hittime = HitLineZ::HitTest(pball, dtime, coll);
+
+    ((Ball *)pball)->m_pos = old_pos; // see above
+    ((Ball *)pball)->m_vel = old_vel;
 
 	if (hittime >= 0.f)       // transform hit normal back to world coordinate system
 		coll.hitnormal = matTrans.MultiplyVectorT(coll.hitnormal);

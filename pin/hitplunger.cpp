@@ -219,7 +219,6 @@ float HitPlunger::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 	{
 	float hittime = dtime; //start time
 	bool fHit = false;
-	Ball BallT = *pball;	
 
 	// If we got here, then the ball is close enough to the plunger
 	// to where we should animate the button's light.
@@ -230,7 +229,7 @@ float HitPlunger::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 	CollisionEvent hit;
     float newtime;
 
-	newtime = m_plungeranim.m_linesegBase.HitTest(&BallT, dtime, hit);
+	newtime = m_plungeranim.m_linesegBase.HitTest(pball, dtime, hit);
 	if (newtime >= 0 && newtime <= hittime)
 		{
 		fHit = true;
@@ -242,7 +241,7 @@ float HitPlunger::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 
 	for (int i=0;i<2;i++)
 		{
-		newtime = m_plungeranim.m_linesegSide[i].HitTest(&BallT, hittime, hit);
+		newtime = m_plungeranim.m_linesegSide[i].HitTest(pball, hittime, hit);
 		if (newtime >= 0 && newtime <= hittime)
 			{
 			fHit = true;
@@ -252,7 +251,7 @@ float HitPlunger::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 			coll.hitvelocity.y = 0;
 			}
 
-		newtime = m_plungeranim.m_jointBase[i].HitTest(&BallT, hittime, hit);
+		newtime = m_plungeranim.m_jointBase[i].HitTest(pball, hittime, hit);
 		if (newtime >= 0 && newtime <= hittime)
 			{
 			fHit = true;
@@ -265,9 +264,10 @@ float HitPlunger::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 
 	const float deltay = m_plungeranim.m_speed;
 	
-	BallT.m_vel.y -= deltay;
+	const float oldvely = pball->m_vel.y;
+	((Ball *)pball)->m_vel.y -= deltay; // evil cast to non-const, but not so expensive as constructor for full copy (and avoids screwing with the ball IDs)
 
-	newtime = m_plungeranim.m_linesegEnd.HitTest(&BallT, hittime, hit);
+	newtime = m_plungeranim.m_linesegEnd.HitTest(pball, hittime, hit);
 	if (newtime >= 0 && newtime <= hittime)
 		{
 		fHit = true;
@@ -279,7 +279,7 @@ float HitPlunger::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 
 	for (int i=0;i<2;i++)
 		{
-		newtime = m_plungeranim.m_jointEnd[i].HitTest(&BallT, hittime, hit);
+		newtime = m_plungeranim.m_jointEnd[i].HitTest(pball, hittime, hit);
 		if (newtime >= 0 && newtime <= hittime)
 			{
 			fHit = true;
@@ -291,6 +291,8 @@ float HitPlunger::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 		}
 
     //coll.isContact = false;     // HACK: we get contacts from the LineSegs, but ignore them
+	((Ball *)pball)->m_vel.y = oldvely;
+
 	return fHit ? hittime : -1.0f;
 	}
 
