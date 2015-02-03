@@ -1575,7 +1575,7 @@ BEGIN
     CONTROL         "Visible",103,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,108,56,10
     CONTROL         "Static Rendering",IDC_STATIC_RENDERING_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,118,69,10
     CONTROL         "Draw Textures inside",106,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,128,82,10
-    LTEXT           "Material",IDC_STATIC,7,78,63,9
+    LTEXT           "Material",IDC_STATIC,7,77,63,9
     LTEXT           "Image",IDC_STATIC,7,21,20,8
     LTEXT           "Sides",IDC_STATIC,7,10,18,8
     GROUPBOX        "3D Mesh",IDC_STATIC,7,44,111,30
