@@ -303,6 +303,7 @@ private:        // private data members
 
    // Vertices for editor display
    std::vector<Vertex3Ds> vertices;
+   std::vector<float> normals; // only z component actually
 
    Matrix3D fullMatrix;
 

@@ -30,7 +30,7 @@ void PaintSur::Line(const float x, const float y, const float x2, const float y2
 
 	::MoveToEx(m_hdc, ix, iy, NULL);
 	::LineTo(m_hdc, ix2, iy2);
-	::LineTo(m_hdc, ix, iy); // To get the last pixel drawn
+	::LineTo(m_hdc, ix, iy); // To get the last pixel drawn //!! meh
 	}
 
 void PaintSur::Rectangle(const float x, const float y, const float x2, float y2)
@@ -153,24 +153,50 @@ void PaintSur::PolygonImage(const std::vector<RenderVertex> &rgv, HBITMAP hbm, c
 
 void PaintSur::Polyline(const Vertex2D * const rgv, const int count)
 {
-    m_ptCache.resize(count);
-
-    for (int i=0;i<count;i++)
-    {
-        m_ptCache[i].x = SCALEXf(rgv[i].x);
-        m_ptCache[i].y = SCALEYf(rgv[i].y);
-    }
-
     SelectObject(m_hdc, m_hpnLine);
 
     /*
      * There seems to be a known GDI bug where drawing very large polylines in one
      * call freezes the system shortly, so we batch them into groups of 1000.
      */
+    m_ptCache.resize(min(count,1001));
+
     for (int i = 0; i < count; i += 1000)
     {
         const int batchSize = std::min(count - i, 1001);
-        ::Polyline(m_hdc, &m_ptCache[i], batchSize);
+		
+		for (int i2=0;i2<batchSize;i2++)
+		{
+			m_ptCache[i2].x = SCALEXf(rgv[i+i2].x);
+			m_ptCache[i2].y = SCALEYf(rgv[i+i2].y);
+		}
+
+        ::Polyline(m_hdc, &m_ptCache[0], batchSize);
+    }
+}
+
+void PaintSur::Lines(const Vertex2D * const rgv, const int count)
+{
+    SelectObject(m_hdc, m_hpnLine);
+
+    /*
+     * There seems to be a known GDI bug where drawing very large polylines in one
+     * call freezes the system shortly, so we batch them into groups of 1000.
+     */
+    m_ptCache.resize(min(count,1000)*2);
+	std::vector<DWORD> idx(min(count,1000),2);
+
+    for (int i = 0; i < count; i += 1000)
+    {
+		const int batchSize = std::min(count - i, 1000);
+
+		for (int i2=0;i2<batchSize*2;i2++)
+		{
+			m_ptCache[i2].x = SCALEXf(rgv[i+i2].x);
+			m_ptCache[i2].y = SCALEYf(rgv[i+i2].y);
+		}
+
+        ::PolyPolyline(m_hdc, &m_ptCache[0], &idx[0], batchSize);
     }
 }
 
