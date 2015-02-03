@@ -2178,7 +2178,7 @@ void Player::DMDdraw(const float DMDposx, const float DMDposy, const float DMDwi
     const D3DXVECTOR4 c = convertColor(DMDcolor);
     m_pin3d.m_pd3dDevice->DMDShader->Core()->SetVector("vColor",&c);
 	m_pin3d.m_pd3dDevice->DMDShader->Core()->SetFloat("intensity",intensity);
-    m_pin3d.m_pd3dDevice->DMDShader->SetTechnique((float)g_pplayer->m_width*DMDwidth/(float)g_pplayer->m_dmdx < 5.0f ? "basic_DMD" : "basic_DMD_big"); // if width of DMD pixels 'too big' in relation to screen, use smoother function for LED emulation
+    m_pin3d.m_pd3dDevice->DMDShader->SetTechnique((float)g_pplayer->m_width*DMDwidth/(float)g_pplayer->m_dmdx < 3.0f ? "basic_DMD_tiny" : ((float)g_pplayer->m_width*DMDwidth/(float)g_pplayer->m_dmdx < 6.0f ? "basic_DMD" : "basic_DMD_big")); // if width of DMD pixels 'too big' in relation to screen, use smoother function for LED emulation
     m_pin3d.m_pd3dDevice->DMDShader->SetTexture("Texture0", g_pplayer->m_device_texdmd);
     m_pin3d.m_pd3dDevice->DMDShader->Begin(0);
     m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_TEX, (LPVOID)DMDVerts, 4);

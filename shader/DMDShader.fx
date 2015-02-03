@@ -88,10 +88,31 @@ float4 ps_main_DMD( in VS_OUTPUT IN) : COLOR
    float3 color = l*(vColor*1.25f*intensity); //!! create function that resembles LUT from VPM?  //!! 1.25f meh
 
    float2 xy = IN.tex0 * float2(fResX,fResY);
-   float2 dist = (xy-floor(xy))*2.2f-1.1f;
+   float2 dist = (xy-floor(xy))*2.f-1.f;
    float d = dist.x*dist.x+dist.y*dist.y;
 
    color *= saturate(1.0f-d);
+
+   /*float3 color2 = float3(0,0,0);
+   for(int j = -1; j <= 1; ++j)
+     for(int i = -1; i <= 1; ++i)
+	 {
+	 //collect glow from neighbors
+	 }*/
+
+   return float4(InvToneMap(InvGamma(color/*+color2*/)),1); //!! meh, this sucks a bit performance-wise, but how to avoid this when doing fullscreen-tonemap/gamma without stencil and depth read?
+}
+
+float4 ps_main_DMD_tiny( in VS_OUTPUT IN) : COLOR
+{
+   float l = tex2Dlod(texSampler0, float4(IN.tex0, 0.f,0.f)).z*(255.9/100.);
+   float3 color = l*(vColor*1.5f*intensity); //!! create function that resembles LUT from VPM?  //!! 1.5f meh
+
+   float2 xy = IN.tex0 * float2(fResX,fResY);
+   float2 dist = (xy-floor(xy))*1.4142f-0.7071f;
+   float d = dist.x*dist.x+dist.y*dist.y;
+
+   color *= 1.0f-pow(d,0.375f);
 
    /*float3 color2 = float3(0,0,0);
    for(int j = -1; j <= 1; ++j)
@@ -125,6 +146,15 @@ technique basic_DMD_big
    { 
       VertexShader = compile vs_3_0 vs_main(); 
 	  PixelShader = compile ps_3_0 ps_main_DMD_big();
+   } 
+}
+
+technique basic_DMD_tiny
+{ 
+   pass P0 
+   { 
+      VertexShader = compile vs_3_0 vs_main(); 
+	  PixelShader = compile ps_3_0 ps_main_DMD_tiny();
    } 
 }
 
