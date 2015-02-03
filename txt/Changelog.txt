@@ -154,6 +154,7 @@ VP 10.0.0 Changelog
 - support primitive vertex sizes > 65535
 
 - new external audio library for music playback (BASS)
+  this allows to use different formats than just MP3, e.g. OGG
 
 - 64bit port (handle with care, might still cause issues)
 
