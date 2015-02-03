@@ -27,7 +27,7 @@ public:
       m_fRoughness = 0.0f;
       m_fEdge = 1.0f;
       m_fOpacity = 1.0f;
-      m_cBase = 0;
+      m_cBase = 0xB469FF;
       m_cGlossy = 0;
       m_cClearcoat = 0;
       m_bIsMetal = false;
