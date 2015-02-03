@@ -194,7 +194,7 @@ float4 psBall( in vout IN ) : COLOR
 	   // decal texture is an alpha scratch texture and must be added to the ball texture
 	   // the strength of the scratches totally rely on the alpha values.
 	   decalColor *= decalColor.a;
-	   ballImageColor = (ballImageColor+decalColor)*fenvEmissionScale;
+	   ballImageColor = (ballImageColor+decalColor.xyz)*fenvEmissionScale;
 	}
 	else
 	   ballImageColor = Screen( float4(ballImageColor,1.0f), decalColor, 1.0f ).xyz*(0.5f*fenvEmissionScale); //!! 0.5f=magic
@@ -234,11 +234,11 @@ float4 psBall( in vout IN ) : COLOR
 
 	float3 diffuse  = cBase;
 	if(!decalMode)
-	    diffuse *= decalColor; // scratches make the material more rough
+	    diffuse *= decalColor.xyz; // scratches make the material more rough
     float3 glossy   = max(diffuse*2.0f,float3(0.1f,0.1f,0.1f)); //!! meh
     float3 specular = playfieldColor;
 	if(!decalMode)
-	    specular *= 1.0f-decalColor; // see above
+	    specular *= float3(1.f,1.f,1.f)-decalColor.xyz; // see above
    
     float4 result = ballLightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular, 1.0f);
     return result;

@@ -390,7 +390,7 @@ VS_OUTPUT vs_kicker (float4 vPosition  : POSITION0,
 
 float4 ps_main_fb_tonemap( in VS_OUTPUT_2D IN) : COLOR
 {
-    const float3 result = FBToneMap(tex2Dlod(texSampler5, float4(IN.tex0, 0.f,0.f)).xyz) + tex2Dlod(texSamplerBloom, float4(IN.tex0, 0.f,0.f)); //!! offset?
+    const float3 result = FBToneMap(tex2Dlod(texSampler5, float4(IN.tex0, 0.f,0.f)).xyz) + tex2Dlod(texSamplerBloom, float4(IN.tex0, 0.f,0.f)).xyz; //!! offset?
     return float4(FBColorGrade(FBGamma(saturate(result))), 1.0f);
 }
 
@@ -406,7 +406,7 @@ float4 ps_main_fb_bloom( in VS_OUTPUT_2D IN) : COLOR
 
 float4 ps_main_fb_tonemap_AO( in VS_OUTPUT_2D IN) : COLOR
 {
-    const float3 result = FBToneMap(tex2Dlod(texSampler5, float4(IN.tex0, 0.f,0.f)).xyz) + tex2Dlod(texSamplerBloom, float4(IN.tex0, 0.f,0.f)); //!! offset?
+    const float3 result = FBToneMap(tex2Dlod(texSampler5, float4(IN.tex0, 0.f,0.f)).xyz) + tex2Dlod(texSamplerBloom, float4(IN.tex0, 0.f,0.f)).xyz; //!! offset?
 	return float4(FBColorGrade(FBGamma(saturate(result*(
            tex2Dlod(texSampler3, float4(IN.tex0-fb_inv_resolution_05, 0.f,0.f)).x /*+ //Blur:
 
@@ -423,13 +423,13 @@ float4 ps_main_fb_tonemap_AO( in VS_OUTPUT_2D IN) : COLOR
 
 float4 ps_main_fb_tonemap_no_filter( in VS_OUTPUT_2D IN) : COLOR
 {
-    const float3 result = FBToneMap(tex2Dlod(texSampler4, float4(IN.tex0+fb_inv_resolution_05, 0.f,0.f)).xyz) + tex2Dlod(texSamplerBloom, float4(IN.tex0, 0.f,0.f)); //!! offset?
+    const float3 result = FBToneMap(tex2Dlod(texSampler4, float4(IN.tex0+fb_inv_resolution_05, 0.f,0.f)).xyz) + tex2Dlod(texSamplerBloom, float4(IN.tex0, 0.f,0.f)).xyz; //!! offset?
     return float4(FBColorGrade(FBGamma(saturate(result))), 1.0f);
 }
 
 float4 ps_main_fb_tonemap_AO_no_filter( in VS_OUTPUT_2D IN) : COLOR
 {
-	const float3 result = FBToneMap(tex2Dlod(texSampler4, float4(IN.tex0+fb_inv_resolution_05, 0.f,0.f)).xyz) + tex2Dlod(texSamplerBloom, float4(IN.tex0, 0.f,0.f)); //!! offset?
+	const float3 result = FBToneMap(tex2Dlod(texSampler4, float4(IN.tex0+fb_inv_resolution_05, 0.f,0.f)).xyz) + tex2Dlod(texSamplerBloom, float4(IN.tex0, 0.f,0.f)).xyz; //!! offset?
     return float4(FBColorGrade(FBGamma(saturate(result*(
            tex2Dlod(texSampler3, float4(IN.tex0-fb_inv_resolution_05, 0.f,0.f)).x /*+ //Blur:
 
