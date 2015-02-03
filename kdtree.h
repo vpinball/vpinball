@@ -51,6 +51,9 @@ public:
     // call when the bounding boxes of the HitObjects have changed to update the tree
     void Update();
 
+    // call when finalizing a tree (no dynamic changes planned on it)
+    void Finalize();
+
 	void HitTestBall(Ball * const pball, CollisionEvent& coll) const
       { m_rootNode.HitTestBallSse(pball, coll); }
 
@@ -68,7 +71,7 @@ private:
 	unsigned int m_num_items;
 	unsigned int m_max_items;
 
-    HitObject* GetItemAt(unsigned i)
+    HitObject* GetItemAt(const unsigned i) const
       { return m_org_vho->ElementAt( m_org_idx[i] ); }
 
     HitKDNode* AllocTwoNodes();
