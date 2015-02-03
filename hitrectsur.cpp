@@ -140,6 +140,10 @@ void HitRectSur::Polyline(const Vertex2D * const rgv, const int count)
 	{
 	}
 
+void HitRectSur::Lines(const Vertex2D * const rgv, const int count)
+	{
+	}
+
 void HitRectSur::Arc(const float x, const float y, const float radius, const float pt1x, const float pt1y, const float pt2x, const float pt2y)
 	{
 	}

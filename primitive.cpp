@@ -78,7 +78,7 @@ void Mesh::UploadToVB(VertexBuffer * vb) const
 {
     Vertex3D_NoTex2 *buf;
     vb->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
-    memcpy( buf, &m_vertices[0], sizeof(Vertex3D_NoTex2)*m_vertices.size() );
+	memcpy( buf, &m_vertices[0], sizeof(Vertex3D_NoTex2)*m_vertices.size() );
     vb->unlock();
 }
 
@@ -279,7 +279,7 @@ void Primitive::SetupHitObject(Vector<HitObject> * pvho, HitObject * obj)
     obj->m_threshold = m_d.m_threshold;
     obj->m_ObjType = ePrimitive;
     obj->m_fEnabled = m_d.m_fCollidable;
-    if ( m_d.m_fHitEvent )
+   if ( m_d.m_fHitEvent )
         obj->m_pfe = (IFireEvents *)this;
 
     pvho->AddElement(obj);
@@ -345,10 +345,15 @@ void Primitive::RecalculateMatrices()
 void Primitive::TransformVertices()
 {
     vertices.resize( m_mesh.NumVertices() );
+	normals.resize( m_mesh.NumVertices() );
 
     for( unsigned i=0; i<m_mesh.NumVertices(); i++ )
     {
         fullMatrix.MultiplyVector(m_mesh.m_vertices[i], vertices[i]);
+		Vertex3Ds n;
+        fullMatrix.MultiplyVectorNoTranslateNormal(m_mesh.m_vertices[i], n);
+		n.Normalize();
+		normals[i] = n.z;
     }
 }
 
@@ -366,7 +371,7 @@ void Primitive::Render(Sur * const psur)
    psur->SetLineColor(RGB(0,0,0),false,1);
    psur->SetObject(this);
 
-   if( m_mesh.NumVertices() <= 100)     // small mesh: draw all triangles
+   /*if( m_mesh.NumVertices() <= 100)     // small mesh: draw all triangles
    {
       for( unsigned i=0; i<m_mesh.NumIndices(); i+=3 )
       {
@@ -396,8 +401,36 @@ void Primitive::Render(Sur * const psur)
            }
 
            psur->Polyline(&drawVertices[0], drawVertices.size());
-       }
-   }
+       }*/
+
+	  std::vector<Vertex2D> drawVertices;
+      for( unsigned i=0; i<m_mesh.NumIndices(); i+=3 )
+      {
+         const Vertex3Ds * const A = &vertices[m_mesh.m_indices[i]  ];
+         const Vertex3Ds * const B = &vertices[m_mesh.m_indices[i+1]];
+         const Vertex3Ds * const C = &vertices[m_mesh.m_indices[i+2]];
+         const float An = normals[m_mesh.m_indices[i]  ];
+         const float Bn = normals[m_mesh.m_indices[i+1]];
+         const float Cn = normals[m_mesh.m_indices[i+2]];
+		 if(fabsf(An+Bn) < 0.25f)
+		 {
+			 drawVertices.push_back(Vertex2D(A->x,A->y));
+			 drawVertices.push_back(Vertex2D(B->x,B->y));
+		 }
+		 if(fabsf(Bn+Cn) < 0.25f)
+		 {
+			 drawVertices.push_back(Vertex2D(B->x,B->y));
+			 drawVertices.push_back(Vertex2D(C->x,C->y));
+		 }
+   		 if(fabsf(Cn+An) < 0.25f)
+		 {
+			 drawVertices.push_back(Vertex2D(C->x,C->y));
+			 drawVertices.push_back(Vertex2D(A->x,A->y));
+		 }
+      }
+
+	  psur->Lines(&drawVertices[0], drawVertices.size()/2);
+   //}
 
    // draw center marker
    psur->SetLineColor(RGB(128,128,128),false,1);

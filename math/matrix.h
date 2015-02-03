@@ -293,7 +293,20 @@ public:
         vOut.z = zp;
     }
 
-    void Invert();
+    template <class VecIn, class VecOut>
+    void MultiplyVectorNoTranslateNormal(const VecIn& vIn, VecOut& vOut) const
+    {
+        // Transform it through the current matrix set
+        const float xp = _11*vIn.nx + _21*vIn.ny + _31*vIn.nz;
+        const float yp = _12*vIn.nx + _22*vIn.ny + _32*vIn.nz;
+        const float zp = _13*vIn.nx + _23*vIn.ny + _33*vIn.nz;
+
+        vOut.x = xp;
+        vOut.y = yp;
+        vOut.z = zp;
+    }
+	
+	void Invert();
 
    void Transpose()
    {
