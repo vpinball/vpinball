@@ -33,24 +33,33 @@ void HitKD::Init(Vector<HitObject> *vho, const unsigned int num_items)
         l_r_t_b_zl_zh = (float*)_aligned_malloc(sizeof(float) * ((m_num_items+3)&0xFFFFFFFC) * 6, 16);
 #endif
         m_max_items = m_num_items;
+
+        m_org_idx.clear();
+	m_org_idx.reserve( m_num_items );
+
+	tmp.clear();
+	tmp.resize( m_num_items );
+
+	m_nodes.clear();
+	/* NB:
+	* Unfortunately, there is no a priori bound on the number of nodes in the tree. We just make
+	* an educated guess on the maximum and truncate the subdivision if we run out of nodes.
+	*/
+	m_nodes.resize( (m_num_items + 1) & ~1u );      // always allocate an even number of nodes, rounded up
     }
 
-    m_org_idx.clear();
-    m_org_idx.reserve( m_num_items );
+    if(tmp.empty()) // did somebody call finalize inbetween?
+	tmp.resize( m_max_items );
 
-    tmp.clear();
-    tmp.resize( m_num_items );
-
-    m_nodes.clear();
-    /* NB:
-     * Unfortunately, there is no a priori bound on the number of nodes in the tree. We just make
-     * an educated guess on the maximum and truncate the subdivision if we run out of nodes.
-     */
-    m_nodes.resize( (m_num_items + 1) & ~1u );      // always allocate an even number of nodes, rounded up
     m_num_nodes = 0;
 
     m_rootNode.Reset();
     m_rootNode.m_hitoct = this;
+}
+
+void HitKD::Finalize()
+{
+    tmp.clear();
 }
 
 HitKDNode* HitKD::AllocTwoNodes()
@@ -227,7 +236,7 @@ void HitKDNode::CreateNextLevel()
     {
         for(unsigned int i = m_start; i < m_start+org_items; ++i)
         {
-            HitObject * const pho = m_hitoct->GetItemAt( i );
+            const HitObject * const pho = m_hitoct->GetItemAt( i );
 
             if      (pho->m_rcHitRect.right < vcenter.x)    m_children[0].m_items++;
             else if (pho->m_rcHitRect.left > vcenter.x)     m_children[1].m_items++;
@@ -237,7 +246,7 @@ void HitKDNode::CreateNextLevel()
     {
         for(unsigned int i = m_start; i < m_start+org_items; ++i)
         {
-            HitObject * const pho = m_hitoct->GetItemAt( i );
+            const HitObject * const pho = m_hitoct->GetItemAt( i );
 
             if      (pho->m_rcHitRect.bottom < vcenter.y)   m_children[0].m_items++;
             else if (pho->m_rcHitRect.top > vcenter.y)      m_children[1].m_items++;
@@ -247,7 +256,7 @@ void HitKDNode::CreateNextLevel()
     {
         for(unsigned int i = m_start; i < m_start+org_items; ++i)
         {
-            HitObject * const pho = m_hitoct->GetItemAt( i );
+            const HitObject * const pho = m_hitoct->GetItemAt( i );
 
             if      (pho->m_rcHitRect.zhigh < vcenter.z)    m_children[0].m_items++;
             else if (pho->m_rcHitRect.zlow > vcenter.z)     m_children[1].m_items++;
