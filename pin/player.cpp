@@ -3017,7 +3017,7 @@ void Player::UnpauseMusic()
 }
 
 
-float map_bulblight_to_emission(const Light* const l) // magic mapping of bulblight parameters to "real" lightsource emission
+inline float map_bulblight_to_emission(const Light* const l) // magic mapping of bulblight parameters to "real" lightsource emission
 {
     return l->m_d.m_currentIntensity * powf(l->m_d.m_falloff*0.6f, l->m_d.m_falloff_power*0.6f); //!! 0.6f,0.6f = magic
 }
@@ -3026,7 +3026,7 @@ void search_for_nearest(const Ball * const pball, const std::vector<Light*> ligh
 {
 	for(unsigned int l = 0; l < MAX_BALL_LIGHT_SOURCES; ++l)
 	{
-		float max_contribution = -FLT_MAX;
+		float min_dist = FLT_MAX;
 		light_nearest[l] = NULL;
 		for(unsigned int i = 0; i < lights.size(); ++i)
 		{
@@ -3039,11 +3039,11 @@ void search_for_nearest(const Ball * const pball, const std::vector<Light*> ligh
 			if(already_processed)
 				continue;
 
-			const float contribution = map_bulblight_to_emission(lights[i]) / // could also weight in light color if necessary
-                            Vertex3Ds(lights[i]->m_d.m_vCenter.x - pball->m_pos.x, lights[i]->m_d.m_vCenter.y - pball->m_pos.y, lights[i]->m_d.m_meshRadius + lights[i]->m_surfaceHeight - pball->m_pos.z).LengthSquared(); //!! z pos
-			if(contribution > max_contribution)
+			const float dist = Vertex3Ds(lights[i]->m_d.m_vCenter.x - pball->m_pos.x, lights[i]->m_d.m_vCenter.y - pball->m_pos.y, lights[i]->m_d.m_meshRadius + lights[i]->m_surfaceHeight - pball->m_pos.z).LengthSquared(); //!! z pos
+			//const float contribution = map_bulblight_to_emission(lights[i]) / dist; // could also weight in light color if necessary //!! JF didn't like that, seems like only distance is a measure better suited for the human eye
+                        if(dist < min_dist)
 			{
-				max_contribution = contribution;
+				min_dist = dist;
 				light_nearest[l] = lights[i];
 			}
 		}
