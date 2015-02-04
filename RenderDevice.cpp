@@ -1136,13 +1136,13 @@ void Shader::SetMaterial( const Material * const mat )
     }
 	else
 	{
-        fWrapLighting = 0.5f;
-		fRoughness = exp2f(10.0f * 0.1f + 1.0f); // map from 0..1 to 2..2048
+        fWrapLighting = 0.0f;
+		fRoughness = exp2f(10.0f * 0.0f + 1.0f); // map from 0..1 to 2..2048
 		fEdge = 1.0f;
 		fOpacity = 1.0f;
-		cBase = RGB(127,127,127);
-        cGlossy = RGB(127,127,127);
-        cClearcoat = RGB(127,127,127);
+		cBase = 0xB469FF;
+        cGlossy = 0;
+        cClearcoat = 0;
         bIsMetal = false;
 		bOpacityActive = false;
 	}

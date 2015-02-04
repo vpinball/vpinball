@@ -23,7 +23,7 @@ public:
 
 	inline Material()
 	{
-      m_fWrapLighting = 0.5f;
+      m_fWrapLighting = 0.0f;
       m_fRoughness = 0.0f;
       m_fEdge = 1.0f;
       m_fOpacity = 1.0f;
