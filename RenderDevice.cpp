@@ -276,7 +276,7 @@ RenderDevice::RenderDevice(HWND hwnd, int width, int height, bool fullscreen, in
 	// check if auto generation of mipmaps can be used, otherwise will be done via d3dx
 	m_autogen_mipmap = (caps.Caps2 & D3DCAPS2_CANAUTOGENMIPMAP) != 0;
 	if(m_autogen_mipmap)
-		m_autogen_mipmap = (m_pD3D->CheckDeviceFormat(m_adapter, devtype, params.BackBufferFormat, D3DUSAGE_AUTOGENMIPMAP, D3DRTYPE_TEXTURE, D3DFMT_A8R8G8B8)) == D3D_OK;
+		m_autogen_mipmap = (m_pD3D->CheckDeviceFormat(m_adapter, devtype, params.BackBufferFormat, D3DUSAGE_AUTOGENMIPMAP, D3DRTYPE_TEXTURE, D3DFMT_A8R8G8B8) == D3D_OK);
 
 #ifndef DISABLE_FORCE_NVIDIA_OPTIMUS
 	if(!NVAPIinit)
@@ -427,11 +427,14 @@ void RenderDevice::FreeShader()
       basicShader->Core()->SetTexture("Texture0",NULL);
       basicShader->Core()->SetTexture("Texture1",NULL);
       basicShader->Core()->SetTexture("Texture2",NULL);
+      basicShader->Core()->SetTexture("Texture3",NULL);
+      basicShader->Core()->SetTexture("Texture4",NULL);
       delete basicShader;
       basicShader=0;
    }
    if (DMDShader)
    {
+      DMDShader->Core()->SetTexture("Texture0",NULL);
       delete DMDShader;
       DMDShader=0;
    }
@@ -454,6 +457,11 @@ RenderDevice::~RenderDevice()
 	//
     m_pD3DDevice->SetStreamSource(0, NULL, 0, 0);
     m_pD3DDevice->SetIndices(NULL);
+    m_pD3DDevice->SetVertexShader(NULL);
+    m_pD3DDevice->SetPixelShader(NULL);
+    m_pD3DDevice->SetFVF(D3DFVF_XYZ);
+    //m_pD3DDevice->SetRenderTarget(0, NULL);
+    m_pD3DDevice->SetDepthStencilSurface(NULL);
 
     SAFE_RELEASE(m_dynIndexBuffer);
 
@@ -1038,10 +1046,10 @@ Shader::~Shader()
 bool Shader::Load( const BYTE* shaderCodeName, UINT codeSize )
 {
     LPD3DXBUFFER pBufferErrors;
-    DWORD dwShaderFlags = D3DXSHADER_PARTIALPRECISION;
+    DWORD dwShaderFlags = 0; //D3DXSHADER_SKIPVALIDATION // these do not have a measurable effect so far (also if used in the offline fxc step): D3DXSHADER_PARTIALPRECISION, D3DXSHADER_PREFER_FLOW_CONTROL/D3DXSHADER_AVOID_FLOW_CONTROL
     HRESULT hr;
 /*
-    if ( fromFile )
+    if(fromFile)
     {
             dwShaderFlags = D3DXSHADER_DEBUG|D3DXSHADER_SKIPOPTIMIZATION;
             hr = D3DXCreateEffectFromFile(	m_renderDevice->GetCoreDevice(),		// pDevice
@@ -1067,10 +1075,10 @@ bool Shader::Load( const BYTE* shaderCodeName, UINT codeSize )
 
     }
 */
-    hr=D3DXCreateEffect( m_renderDevice->GetCoreDevice(), shaderCodeName, codeSize,NULL,NULL,dwShaderFlags,NULL, &m_shader, &pBufferErrors);
-    if(FAILED(hr) )
+    hr = D3DXCreateEffect( m_renderDevice->GetCoreDevice(), shaderCodeName, codeSize,NULL,NULL,dwShaderFlags,NULL, &m_shader, &pBufferErrors);
+    if(FAILED(hr))
     {
-        if ( pBufferErrors )
+        if(pBufferErrors)
         {
             LPVOID pCompileErrors = pBufferErrors->GetBufferPointer(); 
             MessageBox(NULL, (const char*)pCompileErrors, "Compile Error", MB_OK|MB_ICONEXCLAMATION);
