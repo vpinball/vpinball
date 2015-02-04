@@ -1319,17 +1319,17 @@ void Rubber::GenerateVertexBuffer(RenderDevice* pd3dDevice)
     dynamicVertexBufferRegenerate = true;
     Vertex2D * middlePoints = 0;
     int accuracy=1;
-    if( m_ptable->GetAlphaRampsAccuracy()<5 )
+    if( m_ptable->GetDetailLevel()<5 )
     {
        accuracy=6;
     }
-    else if (m_ptable->GetAlphaRampsAccuracy()>=5 && m_ptable->GetAlphaRampsAccuracy()<8)
+    else if (m_ptable->GetDetailLevel()>=5 && m_ptable->GetDetailLevel()<8)
     {
        accuracy=8;
     }
     else
     {
-       accuracy=(int)(m_ptable->GetAlphaRampsAccuracy()*1.3f);
+       accuracy=(int)(m_ptable->GetDetailLevel()*1.3f);
     }
 
     const Vertex2D *rgvLocal = GetSplineVertex(splinePoints, NULL, &middlePoints);

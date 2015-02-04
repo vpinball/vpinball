@@ -250,8 +250,8 @@ public:
 	STDMETHOD(get_TableAdaptiveVSync)(/*[out, retval]*/ int *pVal);
 	STDMETHOD(put_TableAdaptiveVSync)(/*[in]*/ int newVal);
 
-	STDMETHOD(get_RampAccuracy)(/*[out, retval]*/ int *pVal);
-    STDMETHOD(put_RampAccuracy)(/*[in]*/ int newVal);
+	STDMETHOD(get_DetailLevel)(/*[out, retval]*/ int *pVal);
+	STDMETHOD(put_DetailLevel)(/*[in]*/ int newVal);
 
     STDMETHOD(get_GlobalAlphaAcc)(/*[out, retval]*/ VARIANT_BOOL *pVal);
     STDMETHOD(put_GlobalAlphaAcc)(/*[in]*/ VARIANT_BOOL newVal);
@@ -478,7 +478,7 @@ public:
     void MoveCollectionUp(CComObject<Collection> *pcol );
     void MoveCollectionDown(CComObject<Collection> *pcol );
 
-    int GetAlphaRampsAccuracy();
+    int GetDetailLevel();
     float GetZPD();
     float GetMaxSeparation();
 
@@ -656,9 +656,9 @@ END_CONNECTION_POINT_MAP()
 
     std::vector<HANDLE> m_vAsyncHandles;
 
-    int m_globalRampsAccuracy;
-    int m_userRampsAccuracy;
-    bool m_overwriteGlobalRampsAccuracy;
+    int m_globalDetailLevel;
+    int m_userDetailLevel;
+    bool m_overwriteGlobalDetailLevel;
 
 	LightSource m_Light[MAX_LIGHT_SOURCES];
 	COLORREF m_lightAmbient;
