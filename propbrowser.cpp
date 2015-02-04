@@ -267,7 +267,7 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, Vector<ISelect> *pvsel)
 
    if ( pisel && pisel->GetItemType()==eItemTable )
    {
-      const int data = GetBaseISel()->GetPTable()->GetAlphaRampsAccuracy();
+      const int data = GetBaseISel()->GetPTable()->GetDetailLevel();
 
       SendMessage(hwndParent, TBM_SETRANGE, fTrue, MAKELONG(0, 10));
       SendMessage(hwndParent, TBM_SETTICFREQ, 1, 0);

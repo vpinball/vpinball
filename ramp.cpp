@@ -496,7 +496,7 @@ Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** co
  */
 void Ramp::GetCentralCurve(std::vector<RenderVertex> & vv)
 {
-   const float accuracy = 4.0f*powf(10.0f, (10.0f-m_ptable->GetAlphaRampsAccuracy())*(float)(1.0/1.5)); // min = 4, max = 4 * 10^(10/1.5) = 18.000.000
+   const float accuracy = 4.0f*powf(10.0f, (10.0f-m_ptable->GetDetailLevel())*(float)(1.0/1.5)); // min = 4, max = 4 * 10^(10/1.5) = 18.000.000
 
    IHaveDragPoints::GetRgVertex(vv, false, accuracy);
 }
@@ -1029,17 +1029,17 @@ void Ramp::prepareHabitrail(RenderDevice* pd3dDevice)
     dynamicVertexBufferRegenerate = false;
     Vertex2D * middlePoints = 0;
     int accuracy=1;
-    if( m_ptable->GetAlphaRampsAccuracy()<5 )
+    if( m_ptable->GetDetailLevel()<5 )
     {
         accuracy=6;
     }
-    else if (m_ptable->GetAlphaRampsAccuracy()>=5 && m_ptable->GetAlphaRampsAccuracy()<8)
+    else if (m_ptable->GetDetailLevel()>=5 && m_ptable->GetDetailLevel()<8)
     {
         accuracy=8;
     }
     else
     {
-        accuracy=(int)(m_ptable->GetAlphaRampsAccuracy()*1.3f);
+        accuracy=(int)(m_ptable->GetDetailLevel()*1.3f);
     }
 
     const Vertex2D *rgvLocal = GetRampVertex(splinePoints, &rgheightInit, NULL, &rgratioInit, &middlePoints, true);

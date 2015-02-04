@@ -841,12 +841,12 @@ PinTable::PinTable()
 
    SetRegValue("Version", "VPinball", REG_SZ, VP_VERSION_STRING_DIGITS, lstrlen(VP_VERSION_STRING_DIGITS));
 
-   if ( FAILED(GetRegInt("Player", "AlphaRampAccuracy", &m_globalRampsAccuracy) ) )
+   if ( FAILED(GetRegInt("Player", "AlphaRampAccuracy", &m_globalDetailLevel) ) )
    {
-      m_globalRampsAccuracy = 5;
+      m_globalDetailLevel = 5;
    }
-   m_userRampsAccuracy=5;
-   m_overwriteGlobalRampsAccuracy = false;
+   m_userDetailLevel=5;
+   m_overwriteGlobalDetailLevel = false;
 
    if ( FAILED(GetRegStringAsFloat("Player", "Stereo3DZPD", &m_globalZPD) ) )
    {
@@ -2827,8 +2827,8 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
    bw.WriteInt(FID(BTRA), m_useTrailForBalls );
    bw.WriteBool(FID(BDMO), m_BallDecalMode);
    bw.WriteInt(FID(BTST), m_ballTrailStrength );
-   bw.WriteInt(FID(ARAC), m_userRampsAccuracy );
-   bw.WriteBool(FID(OGAC), m_overwriteGlobalRampsAccuracy );
+   bw.WriteInt(FID(ARAC), m_userDetailLevel );
+   bw.WriteBool(FID(OGAC), m_overwriteGlobalDetailLevel );
 
    bw.WriteInt(FID(UAAL), m_useAA );
    bw.WriteInt(FID(UFXA), m_useFXAA );
@@ -3658,11 +3658,11 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    }
    else if ( id == FID(OGAC))
    {
-       pbr->GetBool(&m_overwriteGlobalRampsAccuracy);
+       pbr->GetBool(&m_overwriteGlobalDetailLevel);
    }
    else if ( id == FID(ARAC))
    {      
-      pbr->GetInt(&m_userRampsAccuracy);
+      pbr->GetInt(&m_userDetailLevel);
    }
    else if ( id == FID(MASI) )
    {
@@ -3959,12 +3959,12 @@ void PinTable::MoveCollectionUp(CComObject<Collection> *pcol )
         m_vcollection.InsertElementAt( pcol, idx-1 );
 }
 
-int PinTable::GetAlphaRampsAccuracy()
+int PinTable::GetDetailLevel()
 {
-    if( m_overwriteGlobalRampsAccuracy )
-        return m_userRampsAccuracy;
+    if( m_overwriteGlobalDetailLevel )
+        return m_userDetailLevel;
     else
-        return m_globalRampsAccuracy;
+        return m_globalDetailLevel;
 }
 
 float PinTable::GetZPD()
@@ -7445,23 +7445,23 @@ STDMETHODIMP PinTable::put_TableSoundVolume(int newVal )
    return S_OK;
 }
 
-STDMETHODIMP PinTable::get_RampAccuracy(int *pVal)
+STDMETHODIMP PinTable::get_DetailLevel(int *pVal)
 {
-    if( m_overwriteGlobalRampsAccuracy )
-        *pVal = m_userRampsAccuracy;
+    if( m_overwriteGlobalDetailLevel )
+        *pVal = m_userDetailLevel;
     else
-        *pVal = m_globalRampsAccuracy;
+        *pVal = m_globalDetailLevel;
 
    return S_OK;
 }
 
-STDMETHODIMP PinTable::put_RampAccuracy(int newVal )
+STDMETHODIMP PinTable::put_DetailLevel(int newVal)
 {
    STARTUNDO
 
-   if( m_overwriteGlobalRampsAccuracy )
+   if( m_overwriteGlobalDetailLevel )
    {
-       m_userRampsAccuracy = newVal;
+       m_userDetailLevel = newVal;
    }
 
    STOPUNDO
@@ -7471,7 +7471,7 @@ STDMETHODIMP PinTable::put_RampAccuracy(int newVal )
 
 STDMETHODIMP PinTable::get_GlobalAlphaAcc(VARIANT_BOOL *pVal)
 {
-    *pVal = (VARIANT_BOOL)FTOVB(m_overwriteGlobalRampsAccuracy);
+    *pVal = (VARIANT_BOOL)FTOVB(m_overwriteGlobalDetailLevel);
 
     return S_OK;
 }
@@ -7480,10 +7480,10 @@ STDMETHODIMP PinTable::put_GlobalAlphaAcc(VARIANT_BOOL newVal )
 {
     STARTUNDO
 
-    m_overwriteGlobalRampsAccuracy = !!newVal;
-    if ( !m_overwriteGlobalRampsAccuracy )
+    m_overwriteGlobalDetailLevel = !!newVal;
+    if ( !m_overwriteGlobalDetailLevel )
     {
-        m_userRampsAccuracy = m_globalRampsAccuracy;
+        m_userDetailLevel = m_globalDetailLevel;
     }
 
 	STOPUNDO
