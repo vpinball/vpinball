@@ -98,12 +98,9 @@ DECLARE_REGISTRY_RESOURCEID(IDR_TRIGGER)
 
 	void WriteRegDefaults();
     void InitShape( float x, float y );
-    void UpdateEditorView(const bool initPoints=false);
+    void UpdateEditorView();
     void TriggerAnimationHit();
     void TriggerAnimationUnhit();
-    void InitControlPoints(void);
-    void BackupControlPoints(void);
-    void RestoreControlPoints(void);
 
 	PinTable *m_ptable;
 
@@ -111,8 +108,6 @@ DECLARE_REGISTRY_RESOURCEID(IDR_TRIGGER)
     Vector<HitObject> m_vhoCollidable; // Objects to that may be collide selectable
 
 	TriggerHitCircle *m_ptriggerhitcircle;
-   Vector< CComObject<DragPoint> > m_vdpointWire;
-   Vector< CComObject<DragPoint> > m_vdpointCustom;
 
     int numVertices;
     int numFaces;
