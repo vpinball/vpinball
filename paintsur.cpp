@@ -1,5 +1,9 @@
 #include "StdAfx.h"
 
+#define MAX_SUR_PT_CACHE 1000
+static POINT m_ptCache[MAX_SUR_PT_CACHE*2];
+static const std::vector<DWORD> m_ptCache_idx(MAX_SUR_PT_CACHE*2,2);
+
 PaintSur::PaintSur(const HDC hdc, const float zoom, const float offx, const float offy, const int width, const int height, ISelect * const psel)
          : Sur(hdc, zoom, offx, offy, width, height)
 	{
@@ -157,13 +161,13 @@ void PaintSur::Polyline(const Vertex2D * const rgv, const int count)
 
     /*
      * There seems to be a known GDI bug where drawing very large polylines in one
-     * call freezes the system shortly, so we batch them into groups of 1000.
+     * call freezes the system shortly, so we batch them into groups of MAX_SUR_PT_CACHE.
      */
-    m_ptCache.resize(min(count,1001));
+    //m_ptCache.resize(min(count,MAX_SUR_PT_CACHE+1));
 
-    for (int i = 0; i < count; i += 1000)
+    for (int i = 0; i < count; i += MAX_SUR_PT_CACHE)
     {
-        const int batchSize = std::min(count - i, 1001);
+        const int batchSize = std::min(count - i, MAX_SUR_PT_CACHE+1);
 		
 		for (int i2=0;i2<batchSize;i2++)
 		{
@@ -181,14 +185,14 @@ void PaintSur::Lines(const Vertex2D * const rgv, const int count)
 
     /*
      * There seems to be a known GDI bug where drawing very large polylines in one
-     * call freezes the system shortly, so we batch them into groups of 1000.
+     * call freezes the system shortly, so we batch them into groups of MAX_SUR_PT_CACHE.
      */
-    m_ptCache.resize(min(count,1000)*2);
-	std::vector<DWORD> idx(min(count,1000),2);
+    //m_ptCache.resize(min(count,MAX_SUR_PT_CACHE)*2);
+	//std::vector<DWORD> m_ptCache_idx(min(count,MAX_SUR_PT_CACHE),2);
 
-    for (int i = 0; i < count; i += 1000)
+    for (int i = 0; i < count; i += MAX_SUR_PT_CACHE)
     {
-		const int batchSize = std::min(count - i, 1000);
+		const int batchSize = std::min(count - i, MAX_SUR_PT_CACHE);
 
 		for (int i2=0;i2<batchSize*2;i2++)
 		{
@@ -196,7 +200,7 @@ void PaintSur::Lines(const Vertex2D * const rgv, const int count)
 			m_ptCache[i2].y = SCALEYf(rgv[i+i2].y);
 		}
 
-        ::PolyPolyline(m_hdc, &m_ptCache[0], &idx[0], batchSize);
+        ::PolyPolyline(m_hdc, &m_ptCache[0], &m_ptCache_idx[0], batchSize);
     }
 }
 

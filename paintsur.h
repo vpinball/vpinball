@@ -1,6 +1,6 @@
 #pragma once
 class PaintSur : public Sur
-	{
+{
 public:
 
 	PaintSur(const HDC hdc, const float zoom, const float offx, const float offy, const int width, const int height, ISelect * const psel);
@@ -32,7 +32,4 @@ public:
 	ISelect *m_psel;
 
 	bool m_fNullBorder;
-
-private:
-    std::vector<POINT> m_ptCache;
-	};
+};
