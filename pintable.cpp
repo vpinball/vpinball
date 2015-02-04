@@ -4218,7 +4218,7 @@ void PinTable::DoContextMenu(int x, int y, int menuid, ISelect *psel)
 
    psel->EditMenu(hmenu);
 
-   if (menuid != IDR_POINTMENU && menuid != IDR_TABLEMENU) //psel->GetIEditable() != NULL)
+   if (menuid != IDR_POINTMENU && menuid != IDR_TABLEMENU && menuid != IDR_POINTMENU_SMOOTH) //psel->GetIEditable() != NULL)
    {
       if (GetMenuItemCount(hmenu) > 0)
       {

@@ -470,8 +470,10 @@ void DragPoint::Init(IHaveDragPoints *pihdp, float x, float y)
    m_v.z = 0;
    m_fAutoTexture = fTrue;
    m_texturecoord = 0.0;
-
-   m_menuid = IDR_POINTMENU;
+   if ( pihdp->GetIEditable()->GetItemType()==eItemRubber)
+      m_menuid = IDR_POINTMENU_SMOOTH;
+   else
+      m_menuid = IDR_POINTMENU;
 }
 
 void DragPoint::OnLButtonDown(int x, int y)
