@@ -104,7 +104,7 @@ void EnvmapPrecalc(const DWORD* const __restrict envmap, const DWORD env_xres, c
 			float sum[3];
 			sum[0] = sum[1] = sum[2] = 0.0f;
 
-			const unsigned int num_samples = 64;
+			const unsigned int num_samples = 4096;
 			for(unsigned int s = 0; s < num_samples; ++s)
 			{
 				//!! discard directions pointing below the playfield?? or give them another "average playfield" color??
@@ -206,10 +206,10 @@ HRESULT Pin3D::InitPin3D(const HWND hwnd, const bool fFullScreen, const int scre
 
 	envTexture.CreateFromResource(IDB_ENV);
 
-	m_envRadianceTexture = new BaseTexture(envTexture.m_pdsBuffer->width(),envTexture.m_pdsBuffer->height());
+	m_envRadianceTexture = new BaseTexture(envTexture.m_pdsBuffer->width()/8,envTexture.m_pdsBuffer->height()/8);
 
 	EnvmapPrecalc((DWORD*)envTexture.m_pdsBuffer->data(),envTexture.m_pdsBuffer->width(),envTexture.m_pdsBuffer->height(),
-				  (DWORD*)m_envRadianceTexture->data(),envTexture.m_pdsBuffer->width(),envTexture.m_pdsBuffer->height());
+				  (DWORD*)m_envRadianceTexture->data(),envTexture.m_pdsBuffer->width()/8,envTexture.m_pdsBuffer->height()/8);
 	
 
 	m_device_envRadianceTexture = m_pd3dDevice->m_texMan.LoadTexture(m_envRadianceTexture);
