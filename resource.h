@@ -41,7 +41,6 @@
 #define IDC_COLOR3                      17
 #define DISPID_SIDECOLOR                18
 #define DISPID_SIDEVISIBLE              19
-#define DISPID_CASTSSHADOW              20
 #define DISPID_SMOOTHNORMALS            21
 #define DISPID_ROTRA7                   21
 #define DISPID_DRAWINSIDE               22

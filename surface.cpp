@@ -103,7 +103,6 @@ void Surface::WriteRegDefaults()
    SetRegValueBool(strKeyName,"Droppable", m_d.m_fDroppable);
    SetRegValueBool(strKeyName,"Flipbook", m_d.m_fFlipbook);
    SetRegValueBool(strKeyName,"IsBottomSolid", m_d.m_fIsBottomSolid);
-   SetRegValueBool(strKeyName,"CastsShadow", m_d.m_fCastsShadow);
    SetRegValueFloat(strKeyName,"HeightBottom", m_d.m_heightbottom);
    SetRegValueFloat(strKeyName,"HeightTop", m_d.m_heighttop);
    SetRegValueBool(strKeyName,"DisplayTexture", m_d.m_fDisplayTexture);
@@ -189,7 +188,6 @@ HRESULT Surface::InitTarget(PinTable * const ptable, const float x, const float 
    m_d.m_fDroppable = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"Droppable", false) : false;
    m_d.m_fFlipbook = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"Flipbook", false) : false;
    m_d.m_fIsBottomSolid = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"IsBottomSolid", true) : false;
-   m_d.m_fCastsShadow = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"CastsShadow", true) : true;
 
    m_d.m_heightbottom = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"HeightBottom", 0.0f) : 0.0f;
    m_d.m_heighttop = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"HeightTop", 50.0f) : 50.0f;
@@ -233,7 +231,6 @@ void Surface::SetDefaults(bool fromMouseClick)
    m_d.m_fDroppable = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"Droppable", false) : false;
    m_d.m_fFlipbook = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"Flipbook", false) : false;
    m_d.m_fIsBottomSolid = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"IsBottomSolid", true) : false;
-   m_d.m_fCastsShadow = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"CastsShadow", true) : true;
 
    m_d.m_heightbottom = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"HeightBottom", 0.0f) : 0.0f;
    m_d.m_heighttop = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"HeightTop", 50.0f) : 50.0f;
@@ -1163,7 +1160,6 @@ HRESULT Surface::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
    bw.WriteFloat(FID(ELAS), m_d.m_elasticity);
    bw.WriteFloat(FID(WFCT), m_d.m_friction);
    bw.WriteFloat(FID(WSCT), m_d.m_scatter);
-   bw.WriteBool(FID(CSHD), m_d.m_fCastsShadow);
    bw.WriteBool(FID(VSBL), m_d.m_fVisible);
    bw.WriteBool(FID(SLGA), m_d.m_fSlingshotAnimation);
    bw.WriteBool(FID(SVBL), m_d.m_fSideVisible);
@@ -1375,10 +1371,6 @@ BOOL Surface::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(WSCT))
    {
       pbr->GetFloat(&m_d.m_scatter);
-   }
-   else if (id == FID(CSHD))
-   {
-      pbr->GetBool(&m_d.m_fCastsShadow);
    }
    else if (id == FID(VSBL))
    {
@@ -1777,24 +1769,6 @@ STDMETHODIMP Surface::put_Scatter(float newVal)
    STARTUNDO
 
    m_d.m_scatter = newVal;
-
-   STOPUNDO
-
-   return S_OK;
-}
-
-STDMETHODIMP Surface::get_CastsShadow(VARIANT_BOOL *pVal)
-{
-   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fCastsShadow);
-
-   return S_OK;
-}
-
-STDMETHODIMP Surface::put_CastsShadow(VARIANT_BOOL newVal)
-{
-   STARTUNDO
-
-   m_d.m_fCastsShadow = VBTOF(newVal);
 
    STOPUNDO
 

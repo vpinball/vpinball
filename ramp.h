@@ -35,7 +35,6 @@ public:
 	bool m_fCollidable;
 	bool m_fVisible;
 	bool m_fImageWalls;
-	bool m_fCastsShadow;
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -196,9 +195,6 @@ public:
 	STDMETHOD(put_HeightTop)(/*[in]*/ float newVal);
 	STDMETHOD(get_HeightBottom)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_HeightBottom)(/*[in]*/ float newVal);
-
-	STDMETHOD(get_CastsShadow)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-	STDMETHOD(put_CastsShadow)(/*[in]*/ VARIANT_BOOL newVal);
 
 	STDMETHOD(get_Collidable)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_Collidable)(/*[in]*/ VARIANT_BOOL newVal);

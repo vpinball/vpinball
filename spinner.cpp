@@ -57,7 +57,6 @@ void Spinner::WriteRegDefaults()
    SetRegValueBool("DefaultProps\\Spinner","ShowBracket", m_d.m_fShowBracket);
    SetRegValueFloat("DefaultProps\\Spinner","Height", m_d.m_height);
    SetRegValueFloat("DefaultProps\\Spinner","Overhang", m_d.m_overhang);
-   SetRegValue("DefaultProps\\Spinner","CastsShadow",REG_DWORD,&m_d.m_fCastsShadow,4);
    SetRegValueFloat("DefaultProps\\Spinner","AngleMax", m_d.m_angleMax);
    SetRegValueFloat("DefaultProps\\Spinner","AngleMin", m_d.m_angleMin);
    SetRegValueFloat("DefaultProps\\Spinner","Elasticity", m_d.m_elasticity);
@@ -105,12 +104,6 @@ void Spinner::SetDefaults(bool fromMouseClick)
       m_d.m_overhang = fTmp;
    else
       m_d.m_overhang = 10;
-
-   hr = GetRegInt("DefaultProps\\Spinner","CastsShadow", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_fCastsShadow = iTmp == 0 ? false : true;
-   else
-      m_d.m_fCastsShadow = true;			//<<< added by Chris
 
    // Anti-friction is 1-friction (throughput)
    m_d.m_antifriction = 0.99f;
@@ -494,7 +487,6 @@ HRESULT Spinner::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
    bw.WriteBool(FID(SSUPT), m_d.m_fShowBracket);
    bw.WriteFloat(FID(OVRH), m_d.m_overhang);
    bw.WriteString(FID(MATR), m_d.m_szMaterial);
-   bw.WriteBool(FID(CSHD), m_d.m_fCastsShadow);	//<<< added by Chris
    bw.WriteString(FID(IMGF), m_d.m_szImage);
    bw.WriteString(FID(SURF), m_d.m_szSurface);
    bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
@@ -591,10 +583,6 @@ BOOL Spinner::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(NAME))
    {
       pbr->GetWideString((WCHAR *)m_wzName);
-   }
-   else if (id == FID(CSHD))
-   {
-      pbr->GetBool(&m_d.m_fCastsShadow);
    }
    else
    {
@@ -807,25 +795,6 @@ STDMETHODIMP Spinner::put_Surface(BSTR newVal)
    STARTUNDO
 
       WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSurface, 32, NULL, NULL);
-
-   STOPUNDO
-
-      return S_OK;
-}
-
-//>>> added by Chris
-STDMETHODIMP Spinner::get_CastsShadow(VARIANT_BOOL *pVal)
-{
-   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fCastsShadow);
-
-   return S_OK;
-}
-
-STDMETHODIMP Spinner::put_CastsShadow(VARIANT_BOOL newVal)
-{
-   STARTUNDO
-
-      m_d.m_fCastsShadow = VBTOF(newVal);
 
    STOPUNDO
 

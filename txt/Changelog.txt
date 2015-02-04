@@ -151,7 +151,7 @@ VP 10.0.0 Changelog
   (for now the textures have to be a multiple of 4 in both x & y resolution to make them compressable.
    this can be abused though to 'disable' texture compression on certain critical textures by making them -not- a multiple of 4)
 
-- support primitive vertex sizes > 65535
+- support primitive vertex sizes > 65535 and redo primitive drawing in the editor-UI
 
 - new external audio library for music playback (BASS)
   this allows to use different formats than just MP3, e.g. OGG

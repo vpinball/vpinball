@@ -26,7 +26,6 @@ public:
 	char m_szImage[MAXTOKEN];
 	char m_szSurface[MAXTOKEN];
 	bool m_fShowBracket; 
-	bool m_fCastsShadow;		//>>> added by Chris
 	bool m_fVisible;
 };
 
@@ -124,10 +123,6 @@ public:
 	STDMETHOD(put_Rotation)(/*[in]*/ float newVal);
 	STDMETHOD(get_Length)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Length)(/*[in]*/ float newVal);
-//>>> added by chris
-	STDMETHOD(get_CastsShadow)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-	STDMETHOD(put_CastsShadow)(/*[in]*/ VARIANT_BOOL newVal);
-//<<<
 	
 	STDMETHOD(get_Visible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_Visible)(/*[in]*/ VARIANT_BOOL newVal);

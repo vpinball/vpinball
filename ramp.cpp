@@ -87,7 +87,6 @@ void Ramp::SetDefaults(bool fromMouseClick)
 
    m_d.m_imagealignment = fromMouseClick ? (RampImageAlignment)GetRegIntWithDefault(strKeyName,"ImageMode", ImageModeWorld) : ImageModeWorld;
    m_d.m_fImageWalls = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"ImageWalls", true) : true;
-   m_d.m_fCastsShadow = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"CastsShadow", true) : true;
 
    m_d.m_leftwallheight = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"LeftWallHeight", 62.0f) : 62.0f;
    m_d.m_rightwallheight = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"RightWallHeight", 62.0f) : 62.0f;
@@ -120,7 +119,6 @@ void Ramp::WriteRegDefaults()
    SetRegValue(strKeyName,"Image", REG_SZ, &m_d.m_szImage, lstrlen(m_d.m_szImage));
    SetRegValue(strKeyName,"ImageMode",REG_DWORD,&m_d.m_imagealignment,4);
    SetRegValueBool(strKeyName,"ImageWalls",m_d.m_fImageWalls);
-   SetRegValueBool(strKeyName,"CastsShadow",m_d.m_fCastsShadow);
    SetRegValueFloat(strKeyName,"LeftWallHeight", m_d.m_leftwallheight);
    SetRegValueFloat(strKeyName,"RightWallHeight", m_d.m_rightwallheight);
    SetRegValueFloat(strKeyName,"LeftWallHeightVisible",m_d.m_leftwallheightvisible);
@@ -248,7 +246,7 @@ void Ramp::RenderOutline(Sur * const psur)
    int cvertex;
    bool *pfCross;
    Vertex2D *middlePoints;
-   const Vertex2D *rgvLocal= GetRampVertex(cvertex, NULL, &pfCross, NULL, &middlePoints);
+   const Vertex2D *rgvLocal = GetRampVertex(cvertex, NULL, &pfCross, NULL, &middlePoints);
 
    psur->Polygon(rgvLocal, cvertex*2);
    if( isHabitrail() )
@@ -1216,7 +1214,6 @@ HRESULT Ramp::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey
    bw.WriteString(FID(IMAG), m_d.m_szImage);
    bw.WriteInt(FID(ALGN), m_d.m_imagealignment);
    bw.WriteBool(FID(IMGW), m_d.m_fImageWalls);
-   bw.WriteBool(FID(CSHD), m_d.m_fCastsShadow);
    bw.WriteFloat(FID(WLHL), m_d.m_leftwallheight);
    bw.WriteFloat(FID(WLHR), m_d.m_rightwallheight);
    bw.WriteFloat(FID(WVHL), m_d.m_leftwallheightvisible);
@@ -1304,10 +1301,6 @@ BOOL Ramp::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(IMGW))
    {
       pbr->GetBool(&m_d.m_fImageWalls);
-   }
-   else if (id == FID(CSHD))
-   {
-      pbr->GetBool(&m_d.m_fCastsShadow);
    }
    else if (id == FID(NAME))
    {
@@ -1708,24 +1701,6 @@ STDMETHODIMP Ramp::put_HasWallImage(VARIANT_BOOL newVal)
 
 	   STOPUNDO
    }
-
-   return S_OK;
-}
-
-STDMETHODIMP Ramp::get_CastsShadow(VARIANT_BOOL *pVal)
-{
-   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fCastsShadow);
-
-   return S_OK;
-}
-
-STDMETHODIMP Ramp::put_CastsShadow(VARIANT_BOOL newVal)
-{
-   STARTUNDO
-   
-   m_d.m_fCastsShadow = VBTOF(newVal);
-   
-   STOPUNDO
 
    return S_OK;
 }

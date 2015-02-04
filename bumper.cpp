@@ -128,12 +128,6 @@ void Bumper::SetDefaults(bool fromMouseClick)
    hr = GetRegInt("DefaultProps\\Bumper","BlinkInterval", &iTmp);
    m_blinkinterval = (hr == S_OK) && fromMouseClick ? iTmp : 125;
 
-   hr = GetRegInt("DefaultProps\\Bumper","CastsShadow", &iTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_fCastsShadow = iTmp == 0 ? false : true;
-   else
-      m_d.m_fCastsShadow = true;
-
    hr = GetRegInt("DefaultProps\\Bumper","CapVisible", &iTmp);
    if ((hr == S_OK)&& fromMouseClick)
       m_d.m_fCapVisible = iTmp == 0 ? false : true;
@@ -160,7 +154,6 @@ void Bumper::WriteRegDefaults()
    SetRegValue("DefaultProps\\Bumper","LightState", REG_DWORD, &m_d.m_state,4);	
    SetRegValue("DefaultProps\\Bumper","BlinkPattern", REG_SZ, &m_rgblinkpattern,lstrlen(m_rgblinkpattern));	
    SetRegValueInt("DefaultProps\\Bumper","BlinkInterval", m_blinkinterval);	
-   SetRegValueBool("DefaultProps\\Bumper","CastsShadow", m_d.m_fCastsShadow);	
    SetRegValueBool("DefaultProps\\Bumper","CapVisible", m_d.m_fCapVisible);	
    SetRegValueInt("DefaultProps\\Bumper","BaseVisible", m_d.m_fBaseVisible);	
    SetRegValue("DefaultProps\\Bumper", "Surface", REG_SZ, &m_d.m_szSurface, lstrlen(m_d.m_szSurface));
@@ -724,7 +717,6 @@ HRESULT Bumper::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptk
    bw.WriteString(FID(BPAT), m_rgblinkpattern);
    bw.WriteInt(FID(BINT), m_blinkinterval);
 
-   bw.WriteBool(FID(CSHD), m_d.m_fCastsShadow);
    bw.WriteBool(FID(CAVI), m_d.m_fCapVisible);
    bw.WriteBool(FID(BSVS), m_d.m_fBaseVisible);
 
@@ -824,10 +816,6 @@ BOOL Bumper::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(BINT))
    {
       pbr->GetInt(&m_blinkinterval);
-   }
-   else if (id == FID(CSHD))
-   {
-      pbr->GetBool(&m_d.m_fCastsShadow);
    }
    else if (id == FID(BVIS))
    {
@@ -1108,22 +1096,6 @@ void Bumper::GetDialogPanes(Vector<PropertyPane> *pvproppane)
 
    pproppane = new PropertyPane(IDD_PROP_TIMER, IDS_MISC);
    pvproppane->AddElement(pproppane);
-}
-
-STDMETHODIMP Bumper::get_CastsShadow(VARIANT_BOOL *pVal)
-{
-   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fCastsShadow);
-
-   return S_OK;
-}
-
-STDMETHODIMP Bumper::put_CastsShadow(VARIANT_BOOL newVal)
-{
-   STARTUNDO
-      m_d.m_fCastsShadow = VBTOF(newVal);
-   STOPUNDO
-
-      return S_OK;
 }
 
 STDMETHODIMP Bumper::get_Disabled(VARIANT_BOOL *pVal)
