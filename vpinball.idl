@@ -729,8 +729,6 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(14), helpstring("property SlingshotStrength")] HRESULT SlingshotStrength([in] float newVal);
 		[propget, id(15), helpstring("property Elasticity")] HRESULT Elasticity([out, retval] float *pVal);
 		[propput, id(15), helpstring("property Elasticity")] HRESULT Elasticity([in] float newVal);
-		[propget, id(107), helpstring("property CastsShadow")] HRESULT CastsShadow([out, retval] VARIANT_BOOL *pVal);
-		[propput, id(107), helpstring("property CastsShadow")] HRESULT CastsShadow([in] VARIANT_BOOL newVal);
 		[propget, id(DISPID_Image2), helpstring("property SideImage")] HRESULT SideImage([out, retval] BSTR *pVal);
 		[propput, id(DISPID_Image2), helpstring("property SideImage")] HRESULT SideImage([in] BSTR newVal);
 		[propget, id(16), helpstring("property Visible")] HRESULT Visible([out, retval] VARIANT_BOOL *pVal);
@@ -1100,8 +1098,6 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(26), helpstring("property RingSpeed")] HRESULT RingSpeed([in] float newVal);
 		[propget, id(DISPID_Name), helpstring("property Name")] HRESULT Name([out, retval] BSTR *pVal);
 		[propput, id(DISPID_Name), helpstring("property Name")] HRESULT Name([in] BSTR newVal);
-		[propget, id(107), helpstring("property CastsShadow")] HRESULT CastsShadow([out, retval] VARIANT_BOOL *pVal);
-		[propput, id(107), helpstring("property CastsShadow")] HRESULT CastsShadow([in] VARIANT_BOOL newVal);
 		[propget, id(108), helpstring("property Disabled")] HRESULT Disabled([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(108), helpstring("property Disabled")] HRESULT Disabled([in] VARIANT_BOOL newVal);
 		[propget, id(109), helpstring("property CapVisible")] HRESULT CapVisible([out, retval] VARIANT_BOOL *pVal);
@@ -1608,8 +1604,6 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(DISPID_Surface), helpstring("property Surface")] HRESULT Surface([in] BSTR newVal);
 		[propget, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([out, retval] VARIANT* pVal);
 		[propput, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([in] VARIANT* newVal);
-		[propget, id(107), helpstring("property CastsShadow")] HRESULT CastsShadow([out, retval] VARIANT_BOOL *pVal);
-		[propput, id(107), helpstring("property CastsShadow")] HRESULT CastsShadow([in] VARIANT_BOOL newVal);
 		[propget, id(108), helpstring("property ShowBracket")] HRESULT ShowBracket([out, retval] VARIANT_BOOL *pVal);
 		[propput, id(108), helpstring("property ShowBracket")] HRESULT ShowBracket([in] VARIANT_BOOL newVal);
 
@@ -1677,8 +1671,6 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(11), helpstring("property RightWallHeight")] HRESULT RightWallHeight([in] float newVal);
 		[propget, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([out, retval] VARIANT* pVal);
 		[propput, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([in] VARIANT* newVal);
-		[propget, id(107), helpstring("property CastsShadow")] HRESULT CastsShadow([out, retval] VARIANT_BOOL *pVal);
-		[propput, id(107), helpstring("property CastsShadow")] HRESULT CastsShadow([in] VARIANT_BOOL newVal);
 		[propget, id(108), helpstring("property VisibleLeftWallHeight")] HRESULT VisibleLeftWallHeight([out, retval] float *pVal);
 		[propput, id(108), helpstring("property VisibleLeftWallHeight")] HRESULT VisibleLeftWallHeight([in] float newVal);
 		[propget, id(109), helpstring("property VisibleRightWallHeight")] HRESULT VisibleRightWallHeight([out, retval] float *pVal);
@@ -1800,8 +1792,6 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(DISPID_Image), helpstring("property Image")] HRESULT Image([in] BSTR newVal);
 		[propget, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([out, retval] VARIANT* pVal);
 		[propput, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([in] VARIANT* newVal);
-		[propget, id(107), helpstring("property CastsShadow")] HRESULT CastsShadow([out, retval] VARIANT_BOOL *pVal);
-		[propput, id(107), helpstring("property CastsShadow")] HRESULT CastsShadow([in] VARIANT_BOOL newVal);
 		[propget, id(110), helpstring("property Elasticity")] HRESULT Elasticity([out, retval] float *pVal);
 		[propput, id(110), helpstring("property Elasticity")] HRESULT Elasticity([in] float newVal);
 		[propget, id(120), helpstring("property ElasticityFalloff")] HRESULT ElasticityFalloff([out, retval] float *pVal);

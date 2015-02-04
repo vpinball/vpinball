@@ -178,7 +178,7 @@ BEGIN
     LTEXT           "Rubber Offset &Height",IDC_STATIC,7,69,68,8
 END
 
-IDD_PROPBUMPER_VISUALS DIALOGEX 0, 0, 125, 168
+IDD_PROPBUMPER_VISUALS DIALOGEX 0, 0, 125, 158
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
@@ -194,9 +194,8 @@ BEGIN
     LTEXT           "Orientation",IDC_STATIC,7,104,35,8
     EDITTEXT        IDC_RINGSPEED_EDIT,60,117,40,12,ES_AUTOHSCROLL
     LTEXT           "Ring Speed",IDC_STATIC,7,119,38,8
-    CONTROL         "Casts Shadow",107,"Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,7,138,61,10
-    CONTROL         "Cap Visible",109,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,148,51,10
-    CONTROL         "Base Visible",110,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,60,148,51,10
+    CONTROL         "Cap Visible",109,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,138,51,10
+    CONTROL         "Base Visible",110,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,60,138,51,10
     LTEXT           "&Radius",IDC_STATIC,7,76,23,9
     LTEXT           "Height Scale",IDC_STATIC,7,89,50,9
 END
@@ -734,7 +733,7 @@ BEGIN
     LTEXT           "Intensity",IDC_STATIC,7,33,27,8
     LTEXT           "Fade Speed",IDC_STATIC,7,48,40,8
     LTEXT           "Color",IDC_STATIC,7,67,43,8
-    LTEXT           "Off Image:",IDC_STATIC,7,79,37,8
+    LTEXT           "Off Image",IDC_STATIC,7,79,37,8
     LTEXT           "Depth Bias",IDC_STATIC,7,106,36,8
     GROUPBOX        "Bulb",IDC_STATIC,7,124,111,73
     LTEXT           "Scale Mesh",IDC_STATIC,13,167,38,8
@@ -751,7 +750,7 @@ BEGIN
     COMBOBOX        1502,7,46,111,162,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     LTEXT           "&X",-1,7,9,8,8
     LTEXT           "&Y",-1,7,25,8,8
-    LTEXT           "&Surface:",-1,7,37,26,9
+    LTEXT           "&Surface",-1,7,37,26,9
 END
 
 IDD_PROPLIGHT_STATE DIALOGEX 0, 0, 125, 58
@@ -761,7 +760,7 @@ BEGIN
     COMBOBOX        DISPID_Light_State,33,7,85,60,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     EDITTEXT        9,51,23,67,12,ES_AUTOHSCROLL
     EDITTEXT        DISPID_Light_BlinkInterval,51,38,67,12,ES_AUTOHSCROLL
-    LTEXT           "S&tate:",-1,7,9,25,8
+    LTEXT           "S&tate",-1,7,9,25,8
     LTEXT           "Blink &Pattern",-1,7,25,43,9
     LTEXT           "Blink Inter&val",-1,7,40,41,9
 END
@@ -788,7 +787,7 @@ BEGIN
     LTEXT           "Blink Inter&val",-1,7,43,41,9
 END
 
-IDD_PROPWALL_VISUALS DIALOGEX 0, 0, 125, 195
+IDD_PROPWALL_VISUALS DIALOGEX 0, 0, 125, 185
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
@@ -800,13 +799,12 @@ BEGIN
     COMBOBOX        DISPID_Image2,7,89,111,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     COMBOBOX        IDC_MATERIAL_COMBO2,7,112,111,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     COMBOBOX        IDC_MATERIAL_COMBO3,7,143,111,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Casts S&hadow",107,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,162,111,10
-    CONTROL         "Animate Slingshot",112,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,173,111,10
-    CONTROL         "Flipbook Animation",113,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,184,111,10
+    CONTROL         "Animate Slingshot",112,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,162,111,10
+    CONTROL         "Flipbook Animation",113,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,173,111,10
     LTEXT           "Top Image",-1,7,8,35,8
     LTEXT           "Top Material",-1,7,43,40,8
     LTEXT           "Side Material",-1,7,104,42,8
-    LTEXT           "Si&de Image:",-1,7,78,37,8
+    LTEXT           "Si&de Image",-1,7,78,37,8
     LTEXT           "Slingshot Material",-1,7,135,56,8
 END
 
@@ -868,13 +866,13 @@ BEGIN
     LTEXT           "&Y",-1,7,25,21,8
     LTEXT           "&Length",-1,7,40,38,8
     LTEXT           "&Rotation",-1,7,69,38,8
-    LTEXT           "&Surface:",-1,7,108,26,9
+    LTEXT           "&Surface",-1,7,108,26,9
     LTEXT           "&Height",-1,7,54,38,8
     LTEXT           "Open Angle",-1,7,83,38,8
     LTEXT           "Close Angle",-1,7,96,38,8
 END
 
-IDD_PROPRAMP_VISUALS DIALOGEX 0, 0, 125, 131
+IDD_PROPRAMP_VISUALS DIALOGEX 0, 0, 125, 111
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
@@ -883,14 +881,13 @@ BEGIN
     COMBOBOX        IDC_MATERIAL_COMBO,7,26,109,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     COMBOBOX        1500,7,50,111,60,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     COMBOBOX        8,33,65,85,60,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Apply Ima&ge to Walls",9,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,82,82,10
-    CONTROL         "Casts Shadow",107,"Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,7,105,61,10
-    CONTROL         "Visible",112,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,117,40,10
+    CONTROL         "Apply Ima&ge to Wall",9,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,82,82,10
+    CONTROL         "Visible",112,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,97,40,10
     LTEXT           "&Type",IDC_STATIC,7,6,25,8
-    LTEXT           "&Image:",IDC_STATIC,7,40,22,8
+    LTEXT           "&Image",IDC_STATIC,7,40,22,8
     LTEXT           "&Mode",IDC_STATIC,7,68,25,8
-    LTEXT           "Depth Bias",IDC_STATIC,83,105,36,8
-    EDITTEXT        IDC_DEPTH_BIAS,83,113,36,12,ES_AUTOHSCROLL
+    LTEXT           "Depth Bias",IDC_STATIC,83,85,36,8
+    EDITTEXT        IDC_DEPTH_BIAS,83,93,36,12,ES_AUTOHSCROLL
 END
 
 IDD_PROPRAMP_POSITION DIALOGEX 0, 0, 125, 196
@@ -935,7 +932,7 @@ BEGIN
     COMBOBOX        1502,7,136,109,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     LTEXT           "&X",-1,7,9,8,8
     LTEXT           "&Y",-1,66,9,8,8
-    LTEXT           "&Surface:",-1,7,125,36,9
+    LTEXT           "&Surface",-1,7,125,36,9
     LTEXT           "&Base Radius",-1,7,24,53,8
     LTEXT           "&End Radius",-1,7,39,51,8
     LTEXT           "&Length",-1,7,54,35,8
@@ -990,7 +987,7 @@ BEGIN
     LTEXT           "BreakOver Velocity",-1,7,97,63,8
 END
 
-IDD_PROPSPINNER_VISUALS DIALOGEX 0, 0, 125, 97
+IDD_PROPSPINNER_VISUALS DIALOGEX 0, 0, 125, 87
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
@@ -999,8 +996,7 @@ BEGIN
     COMBOBOX        DISPID_Image,7,28,111,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Material",-1,7,42,26,9
     COMBOBOX        IDC_MATERIAL_COMBO,7,52,111,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Casts Shadow",107,"Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,7,71,61,10
-    CONTROL         "Show Bracket",108,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,81,61,10
+    CONTROL         "Show Bracket",108,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,71,61,10
 END
 
 IDD_PROPSPINNER_POSITION DIALOGEX 0, 0, 125, 173
@@ -1023,7 +1019,7 @@ BEGIN
     LTEXT           "&Height",-1,7,53,22,8
     LTEXT           "&Rotation",-1,7,73,38,8
     LTEXT           "&Overhang",-1,7,88,38,8
-    LTEXT           "&Surface:",-1,7,145,26,9
+    LTEXT           "&Surface",-1,7,145,26,9
     LTEXT           "Angle Max",-1,7,104,38,8
     LTEXT           "Angle Min",-1,7,118,38,8
     LTEXT           "Elasticity",-1,7,133,38,8
@@ -1060,7 +1056,7 @@ STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     CONTROL         "&Visible",7,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,6,36,10
-    LTEXT           "S&hape:",IDC_STATIC,7,21,22,8
+    LTEXT           "S&hape",IDC_STATIC,7,21,22,8
     COMBOBOX        1503,37,18,81,60,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Star Radius",IDC_STATIC,7,36,38,8
     EDITTEXT        IDC_STAR_RADIUS_EDIT,46,33,40,14,ES_AUTOHSCROLL
@@ -1085,7 +1081,7 @@ FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     LTEXT           "Material",IDC_STATIC,7,6,26,8
     COMBOBOX        IDC_MATERIAL_COMBO,7,15,111,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "&Display:",IDC_STATIC,7,34,29,8
+    LTEXT           "&Display",IDC_STATIC,7,34,29,8
     COMBOBOX        9,44,32,74,60,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Radius",IDC_STATIC,7,54,23,8
     EDITTEXT        111,44,52,40,12,ES_AUTOHSCROLL
@@ -1106,7 +1102,7 @@ BEGIN
     CONTROL         "Custom2",DISPID_Decal_Font,"FontControl",WS_TABSTOP,27,95,58,14
     COMBOBOX        DISPID_Image,7,120,111,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     COMBOBOX        DISPID_Decal_SizingType,29,136,89,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "I&mage:",IDC_STATIC,7,111,22,8
+    LTEXT           "I&mage",IDC_STATIC,7,111,22,8
     LTEXT           "&Text",IDC_STATIC,7,51,20,9
     LTEXT           "Font &Color",IDC_STATIC,7,79,35,9
     LTEXT           "&Font",IDC_STATIC,7,98,15,8
@@ -1128,7 +1124,7 @@ BEGIN
     LTEXT           "&Y",-1,7,24,8,8
     LTEXT           "&Width",-1,7,42,20,8
     LTEXT           "&Height",-1,7,58,22,8
-    LTEXT           "&Surface:",-1,7,87,26,9
+    LTEXT           "&Surface",-1,7,87,26,9
     LTEXT           "&Rotation",-1,7,74,28,8
 END
 
@@ -1148,7 +1144,7 @@ FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     COMBOBOX        DISPID_Collection,6,18,112,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     EDITTEXT        15,63,33,55,12,ES_AUTOHSCROLL | ES_NUMBER
-    LTEXT           "&Collection:",-1,6,9,32,8
+    LTEXT           "&Collection",-1,6,9,32,8
     CONTROL         "Update Inter&val",-1,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,6,36,54,9
 END
 
@@ -1165,7 +1161,7 @@ BEGIN
     LTEXT           "Text Co&lor",-1,7,42,36,8
     EDITTEXT        IDC_TEXT_INTENSITY,90,39,20,12,ES_AUTOHSCROLL
     LTEXT           "&Font",-1,7,61,37,8
-    LTEXT           "&Alignment:",-1,7,75,32,8
+    LTEXT           "&Alignment",-1,7,75,32,8
 END
 
 IDD_PROPTEXTBOX_POSITION DIALOGEX 0, 0, 125, 74
@@ -1202,7 +1198,7 @@ BEGIN
     COMBOBOX        DISPID_Image,6,61,113,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Use Image Grid",17,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,88,65,10
     EDITTEXT        18,71,99,40,12,ES_AUTOHSCROLL | ES_NUMBER
-    LTEXT           "I&mage:",IDC_STATIC,6,51,22,8
+    LTEXT           "I&mage",IDC_STATIC,6,51,22,8
     GROUPBOX        "Image Grid",IDC_STATIC,6,77,113,41
     LTEXT           "Images Per Row",IDC_STATIC,13,101,53,8
 END
@@ -1234,7 +1230,7 @@ BEGIN
     COMBOBOX        DISPID_Sound,6,44,113,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     LTEXT           "M&otor Steps",IDC_STATIC,6,9,39,8
     CONTROL         "Update Inter&val",IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,6,24,50,9
-    LTEXT           "&Sound:",IDC_STATIC,6,35,22,8
+    LTEXT           "&Sound",IDC_STATIC,6,35,22,8
 END
 
 IDD_PROPTABLE_VISUALS DIALOGEX 0, 0, 125, 171
@@ -1253,7 +1249,7 @@ BEGIN
     EDITTEXT        IDC_TABLEMUSICVOLUME,101,95,20,12,ES_AUTOHSCROLL
     EDITTEXT        IDC_TABLEAVSYNC,101,109,20,12,ES_AUTOHSCROLL
     CONTROL         "",IDC_ALPHA_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | TBS_TOP | WS_TABSTOP,9,132,107,19
-    LTEXT           "I&mage:",IDC_STATIC,7,28,22,8
+    LTEXT           "I&mage",IDC_STATIC,7,28,22,8
     LTEXT           "Material",IDC_STATIC,7,4,28,9
     LTEXT           "Table Sound Volume (0..100)",IDC_STATIC,7,83,94,8
     LTEXT           "Table Music Volume (0..100)",IDC_STATIC,7,97,94,8
@@ -1312,8 +1308,8 @@ FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     COMBOBOX        1505,7,18,113,120,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     COMBOBOX        1508,7,40,113,109,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "&Ball Image:",IDC_STATIC,7,9,74,8
-    LTEXT           "&Decal:",IDC_STATIC,7,32,40,8
+    LTEXT           "&Ball Image",IDC_STATIC,7,9,74,8
+    LTEXT           "&Decal",IDC_STATIC,7,32,40,8
     CONTROL         "Logo Mode",IDC_BALL_DECAL_MODE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,50,32,98,8
     GROUPBOX        "Reflection",IDC_STATIC,7,57,113,42
     LTEXT           "Enable",IDC_STATIC,11,69,25,8
@@ -1358,7 +1354,7 @@ BEGIN
     LTEXT           "Color Grading LookupTable (256x16)",IDC_STATIC,7,208,118,9
     COMBOBOX        1509,7,220,113,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     LTEXT           "&Color",IDC_STATIC,7,10,20,9
-    LTEXT           "I&mage:",IDC_STATIC,7,22,20,8
+    LTEXT           "I&mage",IDC_STATIC,7,22,20,8
     LTEXT           "&Inclination",IDC_STATIC,7,68,55,9
     LTEXT           "&Field of View",IDC_STATIC,7,82,55,9
     LTEXT           "Layback",IDC_STATIC,7,95,55,8
@@ -1589,7 +1585,7 @@ FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     COMBOBOX        DISPID_Image,7,13,113,60,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Material",-1,7,34,26,8
-    LTEXT           "&Image:",-1,7,3,22,8
+    LTEXT           "&Image",-1,7,3,22,8
     COMBOBOX        IDC_MATERIAL_COMBO,7,43,109,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
 END
 
@@ -1689,19 +1685,18 @@ BEGIN
     LTEXT           "RotZ",IDC_STATIC,7,56,17,8
 END
 
-IDD_PROPRUBBER_VISUALS DIALOGEX 0, 0, 125, 99
+IDD_PROPRUBBER_VISUALS DIALOGEX 0, 0, 125, 89
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    LTEXT           "&Image:",IDC_STATIC,7,1,22,8
+    LTEXT           "&Image",IDC_STATIC,7,1,22,8
     COMBOBOX        1500,7,11,111,60,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Material",IDC_STATIC,7,31,26,8
     COMBOBOX        IDC_MATERIAL_COMBO,7,39,111,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Casts Shadow",107,"Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,7,57,61,10
+    CONTROL         "Static Rendering",IDC_STATIC_RENDERING_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,57,69,10
     CONTROL         "Visible",112,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,69,40,10
     LTEXT           "Depth Bias",IDC_STATIC,83,57,36,8
     EDITTEXT        IDC_DEPTH_BIAS,83,66,36,14,ES_AUTOHSCROLL
-    CONTROL         "Static Rendering",IDC_STATIC_RENDERING_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,80,69,10
 END
 
 IDD_MATERIALDIALOG DIALOGEX 0, 0, 463, 270

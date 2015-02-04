@@ -28,7 +28,6 @@ public:
 
 	bool m_fCollidable;
 	bool m_fVisible;
-	bool m_fCastsShadow;
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -163,8 +162,6 @@ public:
     STDMETHOD(put_Height)(/*[in]*/ float newVal);
     STDMETHOD(get_Thickness)(/*[out, retval]*/ int *pVal);
     STDMETHOD(put_Thickness)(/*[in]*/ int newVal);
-    STDMETHOD(get_CastsShadow)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-    STDMETHOD(put_CastsShadow)(/*[in]*/ VARIANT_BOOL newVal);
     STDMETHOD(get_HasHitEvent)(/*[out, retval]*/ VARIANT_BOOL *pVal);
     STDMETHOD(put_HasHitEvent)(/*[in]*/ VARIANT_BOOL newVal);
     STDMETHOD(get_Collidable)(/*[out, retval]*/ VARIANT_BOOL *pVal);

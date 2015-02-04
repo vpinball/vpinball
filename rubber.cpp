@@ -74,7 +74,6 @@ void Rubber::SetDefaults(bool fromMouseClick)
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szImage[0] = 0;
 
-   m_d.m_fCastsShadow = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "CastsShadow", true) : true;
    m_d.m_fHitEvent = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "HitEvent", true) : false;
 
    m_d.m_elasticity = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"Elasticity", 0.9f) : 0.9f;
@@ -101,7 +100,6 @@ void Rubber::WriteRegDefaults()
    SetRegValue(strKeyName, "TimerEnabled", REG_DWORD, &m_d.m_tdr.m_fTimerEnabled, 4);
    SetRegValue(strKeyName,"TimerInterval",REG_DWORD,&m_d.m_tdr.m_TimerInterval,4);
    SetRegValue(strKeyName,"Image", REG_SZ, &m_d.m_szImage, lstrlen(m_d.m_szImage));
-   SetRegValueBool(strKeyName,"CastsShadow",m_d.m_fCastsShadow);
    SetRegValueFloat(strKeyName,"Elasticity", m_d.m_elasticity);
    SetRegValueFloat(strKeyName,"ElasticityFalloff", m_d.m_elasticityFalloff);
    SetRegValueFloat(strKeyName,"Friction", m_d.m_friction);
@@ -688,7 +686,6 @@ HRESULT Rubber::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptk
    bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
    bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
    bw.WriteString(FID(IMAG), m_d.m_szImage);
-   bw.WriteBool(FID(CSHD), m_d.m_fCastsShadow);
    bw.WriteFloat(FID(ELAS), m_d.m_elasticity);
    bw.WriteFloat(FID(ELFO), m_d.m_elasticityFalloff);
    bw.WriteFloat(FID(RFCT), m_d.m_friction);
@@ -757,10 +754,6 @@ BOOL Rubber::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(IMAG))
    {
       pbr->GetString(m_d.m_szImage);
-   }
-   else if (id == FID(CSHD))
-   {
-      pbr->GetBool(&m_d.m_fCastsShadow);
    }
    else if (id == FID(NAME))
    {
@@ -1046,24 +1039,6 @@ STDMETHODIMP Rubber::put_Image(BSTR newVal)
 
 	   STOPUNDO
    }
-
-   return S_OK;
-}
-
-STDMETHODIMP Rubber::get_CastsShadow(VARIANT_BOOL *pVal)
-{
-   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fCastsShadow);
-
-   return S_OK;
-}
-
-STDMETHODIMP Rubber::put_CastsShadow(VARIANT_BOOL newVal)
-{
-   STARTUNDO
-   
-   m_d.m_fCastsShadow = VBTOF(newVal);
-   
-   STOPUNDO
 
    return S_OK;
 }
