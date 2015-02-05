@@ -46,7 +46,7 @@ public:
    Vertex3Ds m_vSize;
    float m_aRotAndTra[9];
    char m_szImage[MAXTOKEN];
-   char meshFileName[256];
+   char m_meshFileName[256];
 
    char m_szMaterial[32];
    COLORREF m_SideColor;
@@ -61,10 +61,12 @@ public:
 
    float m_depthBias;      // for determining depth sorting
 
-   bool use3DMesh;
+   float m_edgeFactorUI;   // for drawing the mesh in the editorUI
+
+   bool m_use3DMesh;
    bool m_fVisible;
    bool m_DrawTexturesInside;
-   bool staticRendering;
+   bool m_staticRendering;
 
    bool m_fHitEvent;
    bool m_fCollidable;
@@ -154,6 +156,9 @@ public:
    STDMETHOD(put_ObjRotY)(/*[in]*/ float newVal);
    STDMETHOD(get_ObjRotZ)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_ObjRotZ)(/*[in]*/ float newVal);
+
+   STDMETHOD(get_EdgeFactorUI)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_EdgeFactorUI)(/*[in]*/ float newVal);
 
    STDMETHOD(get_Image)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(put_Image)(/*[in]*/ BSTR newVal);

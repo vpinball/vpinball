@@ -196,8 +196,8 @@ void PaintSur::Lines(const Vertex2D * const rgv, const int count)
 
 		for (int i2=0;i2<batchSize*2;i2++)
 		{
-			m_ptCache[i2].x = SCALEXf(rgv[i+i2].x);
-			m_ptCache[i2].y = SCALEYf(rgv[i+i2].y);
+			m_ptCache[i2].x = SCALEXf(rgv[i*2+i2].x);
+			m_ptCache[i2].y = SCALEYf(rgv[i*2+i2].y);
 		}
 
         ::PolyPolyline(m_hdc, &m_ptCache[0], &m_ptCache_idx[0], batchSize);
