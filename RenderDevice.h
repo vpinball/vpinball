@@ -171,17 +171,17 @@ public:
    void BeginScene();
    void EndScene();
 
-   void Clear(DWORD numRects, D3DRECT* rects, DWORD flags, D3DCOLOR color, D3DVALUE z, DWORD stencil);
-   void Flip(bool vsync);
+   void Clear(const DWORD numRects, const D3DRECT* rects, const DWORD flags, const D3DCOLOR color, const D3DVALUE z, const DWORD stencil);
+   void Flip(const bool vsync);
 
-   RenderTarget* GetBackBuffer() { return m_pOffscreenBackBuffer; }
-   D3DTexture* GetBackBufferTexture() { return m_pOffscreenBackBufferTexture; }
-   RenderTarget* GetOutputBackBuffer() { return m_pBackBuffer; }
+   RenderTarget* GetBackBuffer() const { return m_pOffscreenBackBuffer; }
+   D3DTexture* GetBackBufferTexture() const { return m_pOffscreenBackBufferTexture; }
+   RenderTarget* GetOutputBackBuffer() const { return m_pBackBuffer; }
 
-   RenderTarget* GetBloomBuffer() { return m_pBloomBuffer; }
-   D3DTexture* GetBloomBufferTexture() { return m_pBloomBufferTexture; }
-   RenderTarget* GetBloomTmpBuffer() { return m_pBloomTmpBuffer; }
-   D3DTexture* GetBloomTmpBufferTexture() { return m_pBloomTmpBufferTexture; }
+   RenderTarget* GetBloomBuffer() const { return m_pBloomBuffer; }
+   D3DTexture* GetBloomBufferTexture() const { return m_pBloomBufferTexture; }
+   RenderTarget* GetBloomTmpBuffer() const { return m_pBloomTmpBuffer; }
+   D3DTexture* GetBloomTmpBufferTexture() const { return m_pBloomTmpBufferTexture; }
 
    RenderTarget* DuplicateRenderTarget(RenderTarget* src);
    D3DTexture* DuplicateTexture(RenderTarget* src);
@@ -206,40 +206,40 @@ public:
    void SetTextureAddressMode(DWORD texUnit, TextureAddressMode mode);
    void SetTextureStageState(DWORD stage, D3DTEXTURESTAGESTATETYPE type, DWORD value);
 
-   void CreateVertexBuffer( unsigned int numVerts, DWORD usage, DWORD fvf, VertexBuffer **vBuffer );
-   void CreateIndexBuffer(unsigned int numIndices, DWORD usage, IndexBuffer::Format format, IndexBuffer **idxBuffer);
+   void CreateVertexBuffer(const unsigned int numVerts, const DWORD usage, const DWORD fvf, VertexBuffer **vBuffer );
+   void CreateIndexBuffer(const unsigned int numIndices, const DWORD usage, const IndexBuffer::Format format, IndexBuffer **idxBuffer);
 
-   IndexBuffer* CreateAndFillIndexBuffer(unsigned int numIndices, const unsigned int * indices);
-   IndexBuffer* CreateAndFillIndexBuffer(unsigned int numIndices, const WORD * indices);
+   IndexBuffer* CreateAndFillIndexBuffer(const unsigned int numIndices, const unsigned int * indices);
+   IndexBuffer* CreateAndFillIndexBuffer(const unsigned int numIndices, const WORD * indices);
    IndexBuffer* CreateAndFillIndexBuffer(const std::vector<unsigned int>& indices);
    IndexBuffer* CreateAndFillIndexBuffer(const std::vector<WORD>& indices);
 
-   void DrawPrimitive(D3DPRIMITIVETYPE type, DWORD fvf, const void* vertices, DWORD vertexCount);
-   void DrawIndexedPrimitive(D3DPRIMITIVETYPE type, DWORD fvf, const void* vertices, DWORD vertexCount, const WORD* indices, DWORD indexCount);
-   void DrawPrimitiveVB(D3DPRIMITIVETYPE type, VertexBuffer* vb, DWORD startVertex, DWORD vertexCount);
-   void DrawIndexedPrimitiveVB(D3DPRIMITIVETYPE type, VertexBuffer* vb, DWORD startVertex, DWORD vertexCount, const WORD* indices, DWORD indexCount);
-   void DrawIndexedPrimitiveVB(D3DPRIMITIVETYPE type, VertexBuffer* vb, DWORD startVertex, DWORD vertexCount, IndexBuffer* ib, DWORD startIndex, DWORD indexCount);
+   void DrawPrimitive(const D3DPRIMITIVETYPE type, const DWORD fvf, const void* vertices, const DWORD vertexCount);
+   void DrawIndexedPrimitive(const D3DPRIMITIVETYPE type, const DWORD fvf, const void* vertices, const DWORD vertexCount, const WORD* indices, const DWORD indexCount);
+   void DrawPrimitiveVB(const D3DPRIMITIVETYPE type, VertexBuffer* vb, const DWORD startVertex, const DWORD vertexCount);
+   void DrawIndexedPrimitiveVB(const D3DPRIMITIVETYPE type, VertexBuffer* vb, const DWORD startVertex, const DWORD vertexCount, const WORD* indices, const DWORD indexCount);
+   void DrawIndexedPrimitiveVB(const D3DPRIMITIVETYPE type, VertexBuffer* vb, const DWORD startVertex, const DWORD vertexCount, IndexBuffer* ib, const DWORD startIndex, const DWORD indexCount);
 
-   void SetViewport( ViewPort* );
+   void SetViewport( const ViewPort* );
    void GetViewport( ViewPort* );
 
-   void SetTransform( TransformStateType, D3DMATRIX* );
-   void GetTransform( TransformStateType, D3DMATRIX* );
+   void SetTransform(const TransformStateType, const D3DMATRIX* );
+   void GetTransform(const TransformStateType, D3DMATRIX* );
 
    void ForceAnisotropicFiltering( const bool enable ) { m_force_aniso = enable; }
    void CompressTextures( const bool enable ) { m_compress_textures = enable; }
 
    // performance counters
-   unsigned int Perf_GetNumDrawCalls()         { return m_frameDrawCalls; }
-   unsigned int Perf_GetNumStateChanges()      { return m_frameStateChanges; }
-   unsigned int Perf_GetNumTextureChanges()    { return m_frameTextureChanges; }
+   unsigned int Perf_GetNumDrawCalls() const      { return m_frameDrawCalls; }
+   unsigned int Perf_GetNumStateChanges() const   { return m_frameStateChanges; }
+   unsigned int Perf_GetNumTextureChanges() const { return m_frameTextureChanges; }
 
-   inline void CreateVertexDeclaration( const VertexElement *element, VertexDeclaration **declaration )
+   inline void CreateVertexDeclaration( const VertexElement * const element, VertexDeclaration ** declaration )
    {
        CHECKD3D(m_pD3DDevice->CreateVertexDeclaration( element, declaration ));
    }
 
-   inline void SetVertexDeclaration( VertexDeclaration *declaration )
+   inline void SetVertexDeclaration(VertexDeclaration * declaration)
    {
       if ( declaration!=currentDeclaration)
       {
@@ -248,7 +248,7 @@ public:
       }
    }
 
-   inline IDirect3DDevice9* GetCoreDevice()
+   inline IDirect3DDevice9* GetCoreDevice() const
    {
        return m_pD3DDevice;
    }
@@ -323,22 +323,22 @@ public:
     bool Load( const BYTE* shaderCodeName, UINT codeSize );
     void Unload();
 
-    ID3DXEffect *Core()
+    ID3DXEffect *Core() const
     {
         return m_shader;
     }
 
-    void Begin( unsigned int pass );
+    void Begin( const unsigned int pass );
     void End();
 
-    void PerformAlphaTest(bool enable);
-    void SetAlphaTestValue(float value);
-    void SetAlphaValue(float value);
-    void SetTexture(D3DXHANDLE texelName, Texture *texel);
-    void SetTexture( D3DXHANDLE texelName, D3DTexture *texel);
-    void SetStaticColor(D3DXVECTOR4 color);
+    void PerformAlphaTest(const bool enable);
+    void SetAlphaTestValue(const float value);
+    void SetAlphaValue(const float value);
+    void SetTexture(const D3DXHANDLE texelName, Texture *texel);
+    void SetTexture(const D3DXHANDLE texelName, D3DTexture *texel);
+    void SetStaticColor(const D3DXVECTOR4& color);
     void SetMaterial( const Material * const mat );
-    void SetTechnique(char *technique);
+    void SetTechnique(const char * const technique);
 
 private:
     ID3DXEffect* m_shader;
