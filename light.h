@@ -45,6 +45,7 @@ public:
 	bool m_imageMode; // true = pass through/no lighting, false = use surface material
     bool m_BulbLight;
 	bool m_showBulbMesh;
+	bool m_showReflectionOnBall;
 };
 
 class LightCenter : public ISelect
@@ -238,6 +239,8 @@ public:
    STDMETHOD(put_BulbModulateVsAdd)(/*[in]*/ float newVal);
    STDMETHOD(get_BulbHaloHeight)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_BulbHaloHeight)(/*[in]*/ float newVal);
+   STDMETHOD(get_ShowReflectionOnBall)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   STDMETHOD(put_ShowReflectionOnBall)(/*[in]*/ VARIANT_BOOL newVal);
 };
 
 #endif // !defined(AFX_LIGHT_H__7445FDB1_1FBE_4975_9AB6_367E6D16098F__INCLUDED_)

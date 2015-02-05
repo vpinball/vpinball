@@ -3053,11 +3053,11 @@ void search_for_nearest(const Ball * const pball, const std::vector<Light*> &lig
 
 void Player::DrawBalls()
 {
-	std::vector<Light*> lights;
+	std::vector<Light*> lights; // collect all lights that can reflect on balls (currently only bulbs and if flag set to do so)
 	for (int i=0;i<m_ptable->m_vedit.Size();i++)
 	{
 		IEditable *item=m_ptable->m_vedit.ElementAt(i);
-		if (item->GetItemType() == eItemLight && ((Light *)item)->m_d.m_BulbLight)
+		if (item->GetItemType() == eItemLight && ((Light *)item)->m_d.m_BulbLight && ((Light *)item)->m_d.m_showReflectionOnBall)
 			lights.push_back((Light *)item);
 	}
 

@@ -4,7 +4,7 @@
 float c_hardScatter = 0.0f;
 
 HitObject *CreateCircularHitPoly(const float x, const float y, const float z, const float r, const int sections)
-	{
+{
 	Vertex3Ds * const rgv3d = new Vertex3Ds[sections];
 
 	const float inv_sections = (float)(M_PI*2.0)/(float)sections;
@@ -19,7 +19,7 @@ HitObject *CreateCircularHitPoly(const float x, const float y, const float z, co
 		}
 
 	return new Hit3DPoly(rgv3d, sections);
-	}
+}
 
 HitObject::HitObject() : m_fEnabled(fTrue), m_ObjType(eNull), m_pObj(NULL),
                          m_elasticity(0.3f), m_elasticityFalloff(0.0f), m_friction(0.3f), m_scatter(0.0f),
@@ -49,7 +49,7 @@ LineSeg::LineSeg(const Vertex2D& p1, const Vertex2D& p2)
 }
 
 void LineSeg::CalcHitRect()
-	{
+{
 	// Allow roundoff
 	m_rcHitRect.left = min(v1.x, v2.x);
 	m_rcHitRect.right = max(v1.x, v2.x);
@@ -58,10 +58,10 @@ void LineSeg::CalcHitRect()
 
 	//m_rcHitRect.zlow = 0; //!!?
 	//m_rcHitRect.zhigh = 50;
-	}
+}
 
 float LineSeg::HitTestBasic(const Ball * pball, const float dtime, CollisionEvent& coll, const bool direction, const bool lateral, const bool rigid)
-	{
+{
 	if (!m_fEnabled || pball->m_frozen) return -1.0f;	
 
 	const float ballvx = pball->m_vel.x;					// ball velocity
@@ -156,7 +156,7 @@ float LineSeg::HitTestBasic(const Ball * pball, const float dtime, CollisionEven
     }
 
 	return hittime;
-	}
+}
 
 float LineSeg::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 {															// normal face, lateral, rigid
@@ -332,12 +332,12 @@ float HitCircle::HitTestBasicRadius(const Ball * pball, float dtime, CollisionEv
 
 float HitCircle::HitTestRadius(const Ball *pball, float dtime, CollisionEvent& coll)
 {
-													//normal face, lateral, rigid
+	//normal face, lateral, rigid
 	return HitTestBasicRadius(pball, dtime, coll, true, true, true);
 }
 
 void HitCircle::CalcHitRect()
-	{
+{
 	// Allow roundoff
 	m_rcHitRect.left = center.x - radius;
 	m_rcHitRect.right = center.x + radius;
@@ -345,12 +345,12 @@ void HitCircle::CalcHitRect()
 	m_rcHitRect.bottom = center.y + radius;
 	m_rcHitRect.zlow = zlow;
 	m_rcHitRect.zhigh = zhigh;
-	}
+}
 
 float HitCircle::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
-	{
+{
 	return HitTestRadius(pball, dtime, coll);
-	}
+}
 
 void HitCircle::Collide(CollisionEvent *coll)
 {
