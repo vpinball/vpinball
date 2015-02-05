@@ -317,6 +317,9 @@ void Player::Shutdown()
     SAFE_RELEASE(ballIndexBuffer);
     if (ballShader)
     {
+	ballShader->Core()->SetTexture("Texture0",NULL);
+        ballShader->Core()->SetTexture("Texture1",NULL);
+        ballShader->Core()->SetTexture("Texture2",NULL);
         delete ballShader;
         ballShader=0;
     }
