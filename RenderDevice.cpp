@@ -516,7 +516,7 @@ static void FlushGPUCommandBuffer(IDirect3DDevice9* pd3dDevice)
     }
 }
 
-void RenderDevice::Flip(bool vsync)
+void RenderDevice::Flip(const bool vsync)
 {
 #ifdef USE_D3D9EX
     if(vsync)
@@ -827,7 +827,7 @@ void RenderDevice::SetTextureAddressMode(DWORD texUnit, TextureAddressMode mode)
     CHECKD3D(m_pD3DDevice->SetSamplerState(texUnit, D3DSAMP_ADDRESSV, mode));
 }
 
-void RenderDevice::CreateVertexBuffer( unsigned int vertexCount, DWORD usage, DWORD fvf, VertexBuffer **vBuffer )
+void RenderDevice::CreateVertexBuffer(const unsigned int vertexCount, const DWORD usage, const DWORD fvf, VertexBuffer **vBuffer )
 {
     // NB: We always specify WRITEONLY since MSDN states,
     // "Buffers created with D3DPOOL_DEFAULT that do not specify D3DUSAGE_WRITEONLY may suffer a severe performance penalty."
@@ -836,7 +836,7 @@ void RenderDevice::CreateVertexBuffer( unsigned int vertexCount, DWORD usage, DW
                 D3DPOOL_DEFAULT, (IDirect3DVertexBuffer9**)vBuffer, NULL));
 }
 
-void RenderDevice::CreateIndexBuffer(unsigned int numIndices, DWORD usage, IndexBuffer::Format format, IndexBuffer **idxBuffer)
+void RenderDevice::CreateIndexBuffer(const unsigned int numIndices, const DWORD usage, const IndexBuffer::Format format, IndexBuffer **idxBuffer)
 {
     // NB: We always specify WRITEONLY since MSDN states,
     // "Buffers created with D3DPOOL_DEFAULT that do not specify D3DUSAGE_WRITEONLY may suffer a severe performance penalty."
@@ -845,7 +845,7 @@ void RenderDevice::CreateIndexBuffer(unsigned int numIndices, DWORD usage, Index
                 D3DPOOL_DEFAULT, (IDirect3DIndexBuffer9**)idxBuffer, NULL));
 }
 
-IndexBuffer* RenderDevice::CreateAndFillIndexBuffer(unsigned int numIndices, const WORD * indices)
+IndexBuffer* RenderDevice::CreateAndFillIndexBuffer(const unsigned int numIndices, const WORD * indices)
 {
     IndexBuffer* ib;
     CreateIndexBuffer(numIndices, 0, IndexBuffer::FMT_INDEX16, &ib);
@@ -858,7 +858,7 @@ IndexBuffer* RenderDevice::CreateAndFillIndexBuffer(unsigned int numIndices, con
     return ib;
 }
 
-IndexBuffer* RenderDevice::CreateAndFillIndexBuffer(unsigned int numIndices, const unsigned int * indices)
+IndexBuffer* RenderDevice::CreateAndFillIndexBuffer(const unsigned int numIndices, const unsigned int * indices)
 {
     IndexBuffer* ib;
     CreateIndexBuffer(numIndices, 0, IndexBuffer::FMT_INDEX32, &ib);
@@ -894,7 +894,7 @@ RenderTarget* RenderDevice::AttachZBufferTo(RenderTarget* surf)
     return pZBuf;
 }
 
-void RenderDevice::DrawPrimitive(D3DPRIMITIVETYPE type, DWORD fvf, const void* vertices, DWORD vertexCount)
+void RenderDevice::DrawPrimitive(const D3DPRIMITIVETYPE type, const DWORD fvf, const void* vertices, const DWORD vertexCount)
 {
    if (currentFVF != fvf)
    {
@@ -907,7 +907,7 @@ void RenderDevice::DrawPrimitive(D3DPRIMITIVETYPE type, DWORD fvf, const void* v
     m_curDrawCalls++;
 }
 
-void RenderDevice::DrawIndexedPrimitive(D3DPRIMITIVETYPE type, DWORD fvf, const void* vertices, DWORD vertexCount, const WORD* indices, DWORD indexCount)
+void RenderDevice::DrawIndexedPrimitive(const D3DPRIMITIVETYPE type, const DWORD fvf, const void* vertices, const DWORD vertexCount, const WORD* indices, const DWORD indexCount)
 {
    if (currentFVF != fvf)
    {
@@ -922,7 +922,7 @@ void RenderDevice::DrawIndexedPrimitive(D3DPRIMITIVETYPE type, DWORD fvf, const 
     m_curDrawCalls++;
 }
 
-void RenderDevice::DrawPrimitiveVB(D3DPRIMITIVETYPE type, VertexBuffer* vb, DWORD startVertex, DWORD vertexCount)
+void RenderDevice::DrawPrimitiveVB(const D3DPRIMITIVETYPE type, VertexBuffer* vb, const DWORD startVertex, const DWORD vertexCount)
 {
     D3DVERTEXBUFFER_DESC desc;
     vb->GetDesc(&desc);     // let's hope this is not very slow
@@ -945,7 +945,7 @@ void RenderDevice::DrawPrimitiveVB(D3DPRIMITIVETYPE type, VertexBuffer* vb, DWOR
     m_curDrawCalls++;
 }
 
-void RenderDevice::DrawIndexedPrimitiveVB( D3DPRIMITIVETYPE type, VertexBuffer* vb, DWORD startVertex, DWORD vertexCount, const WORD* indices, DWORD indexCount)
+void RenderDevice::DrawIndexedPrimitiveVB(const D3DPRIMITIVETYPE type, VertexBuffer* vb, const DWORD startVertex, const DWORD vertexCount, const WORD* indices, const DWORD indexCount)
 {
     if (indexCount > MY_IDX_BUF_SIZE)
     {
@@ -962,7 +962,7 @@ void RenderDevice::DrawIndexedPrimitiveVB( D3DPRIMITIVETYPE type, VertexBuffer* 
     DrawIndexedPrimitiveVB(type, vb, startVertex, vertexCount, m_dynIndexBuffer, 0, indexCount);
 }
 
-void RenderDevice::DrawIndexedPrimitiveVB( D3DPRIMITIVETYPE type, VertexBuffer* vb, DWORD startVertex, DWORD vertexCount, IndexBuffer* ib, DWORD startIndex, DWORD indexCount)
+void RenderDevice::DrawIndexedPrimitiveVB(const D3DPRIMITIVETYPE type, VertexBuffer* vb, const DWORD startVertex, const DWORD vertexCount, IndexBuffer* ib, const DWORD startIndex, const DWORD indexCount)
 {
     // get VB description (for FVF)
     D3DVERTEXBUFFER_DESC desc;
@@ -995,27 +995,27 @@ void RenderDevice::DrawIndexedPrimitiveVB( D3DPRIMITIVETYPE type, VertexBuffer* 
    m_curDrawCalls++;
 }
 
-void RenderDevice::SetTransform( TransformStateType p1, D3DMATRIX* p2)
+void RenderDevice::SetTransform(const TransformStateType p1, const D3DMATRIX * p2)
 {
    CHECKD3D(m_pD3DDevice->SetTransform((D3DTRANSFORMSTATETYPE)p1, p2));
 }
 
-void RenderDevice::GetTransform( TransformStateType p1, D3DMATRIX* p2)
+void RenderDevice::GetTransform(const TransformStateType p1, D3DMATRIX* p2)
 {
    CHECKD3D(m_pD3DDevice->GetTransform((D3DTRANSFORMSTATETYPE)p1, p2));
 }
 
-void RenderDevice::Clear(DWORD numRects, D3DRECT* rects, DWORD flags, D3DCOLOR color, D3DVALUE z, DWORD stencil)
+void RenderDevice::Clear(const DWORD numRects, const D3DRECT* rects, const DWORD flags, const D3DCOLOR color, const D3DVALUE z, const DWORD stencil)
 {
    m_pD3DDevice->Clear(numRects, rects, flags, color, z, stencil);
 }
 
-void RenderDevice::SetViewport( ViewPort* p1)
+void RenderDevice::SetViewport(const ViewPort* p1)
 {
    m_pD3DDevice->SetViewport((D3DVIEWPORT9*)p1);
 }
 
-void RenderDevice::GetViewport( ViewPort* p1)
+void RenderDevice::GetViewport(ViewPort* p1)
 {
    m_pD3DDevice->GetViewport((D3DVIEWPORT9*)p1);
 }
@@ -1097,7 +1097,7 @@ void Shader::Unload()
     }
 }
 
-void Shader::Begin( unsigned int pass )
+void Shader::Begin( const unsigned int pass )
 {
    unsigned int cPasses;
    m_shader->Begin(&cPasses,0);
@@ -1110,7 +1110,7 @@ void Shader::End()
    m_shader->End();  
 }
 
-void Shader::SetTexture(D3DXHANDLE texelName, Texture *texel)
+void Shader::SetTexture(const D3DXHANDLE texelName, Texture *texel)
 {
    if (texel->m_pdsBuffer && currentTexture != texel)
    {
@@ -1119,7 +1119,7 @@ void Shader::SetTexture(D3DXHANDLE texelName, Texture *texel)
    }
 }
 
-void Shader::SetTexture(D3DXHANDLE texelName, D3DTexture *texel)
+void Shader::SetTexture(const D3DXHANDLE texelName, D3DTexture *texel)
 {
    m_shader->SetTexture(texelName, texel);
 }
@@ -1213,7 +1213,7 @@ void Shader::SetMaterial( const Material * const mat )
 		g_pplayer->m_pin3d.DisableAlphaBlend();
 }
 
-void Shader::PerformAlphaTest(bool enable)
+void Shader::PerformAlphaTest(const bool enable)
 {
     if (enable != currentAlphaTest)
     {
@@ -1222,7 +1222,7 @@ void Shader::PerformAlphaTest(bool enable)
     }
 }
 
-void Shader::SetAlphaTestValue(float value)
+void Shader::SetAlphaTestValue(const float value)
 {
     if (currentAlphaTestValue != value)
     {
@@ -1231,7 +1231,7 @@ void Shader::SetAlphaTestValue(float value)
     }
 }
 
-void Shader::SetAlphaValue(float value)
+void Shader::SetAlphaValue(const float value)
 {
     if (currentAlphaValue != value)
     {
@@ -1240,7 +1240,7 @@ void Shader::SetAlphaValue(float value)
     }
 }
 
-void Shader::SetStaticColor(D3DXVECTOR4 color)
+void Shader::SetStaticColor(const D3DXVECTOR4& color)
 {
     if (currentColor != color)
     {
@@ -1249,7 +1249,7 @@ void Shader::SetStaticColor(D3DXVECTOR4 color)
     }
 }
 
-void Shader::SetTechnique(char *technique)
+void Shader::SetTechnique(const char * const technique)
 {
    if( strcmp(currentTechnique, technique) )
    {
