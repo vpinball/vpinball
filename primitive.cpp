@@ -89,9 +89,10 @@ Primitive::Primitive()
    vertexBuffer = 0;
    vertexBufferRegenerate = true;
    indexBuffer = 0;
-   m_d.use3DMesh=false;
-   m_d.meshFileName[0]=0;
-   m_d.staticRendering=false;
+   m_d.m_use3DMesh = false;
+   m_d.m_meshFileName[0] = 0;
+   m_d.m_staticRendering = false;
+   m_d.m_edgeFactorUI = 0.25f;
    m_d.m_depthBias = 0.0f;
    numIndices = 0;
    numVertices = 0;
@@ -119,7 +120,7 @@ HRESULT Primitive::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
    InitVBA(fTrue, 0, NULL);
 
-   if( !m_d.use3DMesh )
+   if( !m_d.m_use3DMesh )
       CalculateBuiltinOriginal();
 
    UpdateEditorView();
@@ -133,8 +134,8 @@ void Primitive::SetDefaults(bool fromMouseClick)
 
    HRESULT hr;
 
-   m_d.use3DMesh=false;
-   m_d.meshFileName[0]=0;
+   m_d.m_use3DMesh=false;
+   m_d.m_meshFileName[0]=0;
 
    // sides
    m_d.m_Sides = fromMouseClick ? GetRegIntWithDefault(strKeyName,"Sides", 4) : 4;
@@ -145,7 +146,7 @@ void Primitive::SetDefaults(bool fromMouseClick)
    m_d.m_SideColor = fromMouseClick ? GetRegIntWithDefault(strKeyName, "SideColor", RGB(150,150,150)) : RGB(150,150,150);
 
    m_d.m_fVisible = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "Visible", true) : true;
-   m_d.staticRendering = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "StaticRendering", true) : true;
+   m_d.m_staticRendering = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "StaticRendering", true) : true;
    m_d.m_DrawTexturesInside = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "DrawTexturesInside", false) : false;
 
    // Position (X and Y is already set by the click of the user)
@@ -177,6 +178,8 @@ void Primitive::SetDefaults(bool fromMouseClick)
    m_d.m_friction = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"Friction", 0.3f) : 0.3f;
    m_d.m_scatter = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"Scatter", 0) : 0;
 
+   m_d.m_edgeFactorUI = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"EdgeFactorUI", 0.25f) : 0.25f;
+
    m_d.m_fCollidable = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"Collidable", true) : true;
    m_d.m_fToy = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"IsToy", false) : false;
 }
@@ -187,7 +190,7 @@ void Primitive::WriteRegDefaults()
 
    SetRegValueInt(strKeyName,"SideColor", m_d.m_SideColor);
    SetRegValueBool(strKeyName,"Visible", m_d.m_fVisible);
-   SetRegValueBool(strKeyName,"StaticRendering", m_d.staticRendering);
+   SetRegValueBool(strKeyName,"StaticRendering", m_d.m_staticRendering);
    SetRegValueBool(strKeyName,"DrawTexturesInside", m_d.m_DrawTexturesInside);
 
    SetRegValueFloat(strKeyName,"Position_Z", m_d.m_vPosition.z);
@@ -213,6 +216,9 @@ void Primitive::WriteRegDefaults()
    SetRegValueFloat(strKeyName,"ElasticityFalloff", m_d.m_elasticityFalloff);
    SetRegValueFloat(strKeyName,"Friction", m_d.m_friction);
    SetRegValueFloat(strKeyName,"Scatter", m_d.m_scatter);
+
+   SetRegValueFloat(strKeyName,"EdgeFactorUI", m_d.m_edgeFactorUI);
+
    SetRegValueBool(strKeyName,"Collidable", m_d.m_fCollidable);
    SetRegValueBool(strKeyName,"IsToy", m_d.m_fToy);
 }
@@ -371,38 +377,43 @@ void Primitive::Render(Sur * const psur)
    psur->SetLineColor(RGB(0,0,0),false,1);
    psur->SetObject(this);
 
-   /*if( m_mesh.NumVertices() <= 100)     // small mesh: draw all triangles
+   if( (m_d.m_edgeFactorUI <= 0.0f) || (m_d.m_edgeFactorUI >= 1.0f) )
    {
-      for( unsigned i=0; i<m_mesh.NumIndices(); i+=3 )
-      {
-         const Vertex3Ds * const A = &vertices[m_mesh.m_indices[i]  ];
-         const Vertex3Ds * const B = &vertices[m_mesh.m_indices[i+1]];
-         const Vertex3Ds * const C = &vertices[m_mesh.m_indices[i+2]];
-         psur->Line(A->x,A->y, B->x,B->y);
-         psur->Line(B->x,B->y, C->x,C->y);
-         psur->Line(C->x,C->y, A->x,A->y);
-      }
+	   if( (m_d.m_edgeFactorUI >= 1.0f) || (m_mesh.NumVertices() <= 100) ) // small mesh: draw all triangles
+	   {
+		  for( unsigned i=0; i<m_mesh.NumIndices(); i+=3 )
+		  {
+			 const Vertex3Ds * const A = &vertices[m_mesh.m_indices[i]  ];
+			 const Vertex3Ds * const B = &vertices[m_mesh.m_indices[i+1]];
+			 const Vertex3Ds * const C = &vertices[m_mesh.m_indices[i+2]];
+			 psur->Line(A->x,A->y, B->x,B->y);
+			 psur->Line(B->x,B->y, C->x,C->y);
+			 psur->Line(C->x,C->y, A->x,A->y);
+		  }
+	   }
+	   else // large mesh: draw a simplified mesh for performance reasons, does not approximate the shape well
+	   {
+		   if (m_mesh.NumIndices() > 0)
+		   {
+			   const size_t numPts = m_mesh.NumIndices() / 3 + 1;
+			   std::vector<Vertex2D> drawVertices(numPts);
+
+			   const Vertex3Ds& A = vertices[m_mesh.m_indices[0]];
+			   drawVertices[0] = Vertex2D(A.x,A.y);
+
+			   unsigned int o = 1;
+			   for (size_t i=0; i<m_mesh.NumIndices(); i+=3,++o)
+			   {
+				  const Vertex3Ds& B = vertices[m_mesh.m_indices[i+1]];
+				  drawVertices[o] = Vertex2D(B.x,B.y);
+			   }
+
+			   psur->Polyline(&drawVertices[0], drawVertices.size());
+		   }
+	   }
    }
-   else     // large mesh: draw a simplified mesh for performance reasons
+   else
    {
-       if (m_mesh.NumIndices() > 0)
-       {
-           const size_t numPts = m_mesh.NumIndices() / 3 + 1;
-           std::vector<Vertex2D> drawVertices(numPts);
-
-           const Vertex3Ds& A = vertices[m_mesh.m_indices[0]];
-           drawVertices[0] = Vertex2D(A.x,A.y);
-
-		   unsigned int o = 1;
-           for (size_t i=0; i<m_mesh.NumIndices(); i+=3,++o)
-           {
-              const Vertex3Ds& B = vertices[m_mesh.m_indices[i+1]];
-              drawVertices[o] = Vertex2D(B.x,B.y);
-           }
-
-           psur->Polyline(&drawVertices[0], drawVertices.size());
-       }*/
-
 	  std::vector<Vertex2D> drawVertices;
       for( unsigned i=0; i<m_mesh.NumIndices(); i+=3 )
       {
@@ -412,25 +423,26 @@ void Primitive::Render(Sur * const psur)
          const float An = normals[m_mesh.m_indices[i]  ];
          const float Bn = normals[m_mesh.m_indices[i+1]];
          const float Cn = normals[m_mesh.m_indices[i+2]];
-		 if(fabsf(An+Bn) < 0.25f)
+		 if(fabsf(An+Bn) < m_d.m_edgeFactorUI)
 		 {
 			 drawVertices.push_back(Vertex2D(A->x,A->y));
 			 drawVertices.push_back(Vertex2D(B->x,B->y));
 		 }
-		 if(fabsf(Bn+Cn) < 0.25f)
+		 if(fabsf(Bn+Cn) < m_d.m_edgeFactorUI)
 		 {
 			 drawVertices.push_back(Vertex2D(B->x,B->y));
 			 drawVertices.push_back(Vertex2D(C->x,C->y));
 		 }
-   		 if(fabsf(Cn+An) < 0.25f)
+   		 if(fabsf(Cn+An) < m_d.m_edgeFactorUI)
 		 {
 			 drawVertices.push_back(Vertex2D(C->x,C->y));
 			 drawVertices.push_back(Vertex2D(A->x,A->y));
 		 }
       }
 
-	  psur->Lines(&drawVertices[0], drawVertices.size()/2);
-   //}
+	  if(drawVertices.size() > 0)
+		  psur->Lines(&drawVertices[0], drawVertices.size()/2);
+   }
 
    // draw center marker
    psur->SetLineColor(RGB(128,128,128),false,1);
@@ -663,7 +675,7 @@ void Primitive::RenderObject( RenderDevice *pd3dDevice )
 void Primitive::PostRenderStatic(RenderDevice* pd3dDevice)
 {
     TRACE_FUNCTION();
-   if ( m_d.staticRendering || !m_d.m_fVisible )
+   if ( m_d.m_staticRendering || !m_d.m_fVisible )
       return;
 
    RenderObject( pd3dDevice );
@@ -679,7 +691,7 @@ void Primitive::RenderSetup( RenderDevice* pd3dDevice )
 
 void Primitive::RenderStatic(RenderDevice* pd3dDevice)
 {
-   if( m_d.staticRendering && m_d.m_fVisible)
+   if( m_d.m_staticRendering && m_d.m_fVisible)
    {
       RenderObject(pd3dDevice);
    }
@@ -755,13 +767,14 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcry
    bw.WriteFloat(FID(ELFO), m_d.m_elasticityFalloff);
    bw.WriteFloat(FID(RFCT), m_d.m_friction);
    bw.WriteFloat(FID(RSCT), m_d.m_scatter);
+   bw.WriteFloat(FID(EFUI), m_d.m_edgeFactorUI);
    bw.WriteBool(FID(CLDRP), m_d.m_fCollidable);
    bw.WriteBool(FID(ISTO), m_d.m_fToy);
-   bw.WriteBool(FID(U3DM), m_d.use3DMesh);
-   bw.WriteBool(FID(STRE), m_d.staticRendering);
-   if( m_d.use3DMesh )
+   bw.WriteBool(FID(U3DM), m_d.m_use3DMesh);
+   bw.WriteBool(FID(STRE), m_d.m_staticRendering);
+   if( m_d.m_use3DMesh )
    {
-      bw.WriteString( FID(M3DN), m_d.meshFileName);
+      bw.WriteString( FID(M3DN), m_d.m_meshFileName);
       bw.WriteInt( FID(M3VN), (int)m_mesh.NumVertices() );
 
 #ifndef COMPRESS_MESHES
@@ -923,6 +936,10 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
    {
       pbr->GetFloat(&m_d.m_scatter);
    }
+   else if (id == FID(EFUI))
+   {
+	   pbr->GetFloat(&m_d.m_edgeFactorUI);
+   }
    else if (id == FID(CLDRP))
    {
       pbr->GetBool(&m_d.m_fCollidable);
@@ -933,15 +950,15 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(STRE))
    {
-      pbr->GetBool(&m_d.staticRendering);
+      pbr->GetBool(&m_d.m_staticRendering);
    }
    else if ( id == FID(U3DM))
    {
-      pbr->GetBool(&m_d.use3DMesh);
+      pbr->GetBool(&m_d.m_use3DMesh);
    }
    else if ( id == FID(M3DN))
    {
-      pbr->GetWideString((WCHAR *)m_d.meshFileName);
+      pbr->GetWideString((WCHAR *)m_d.m_meshFileName);
    }
    else if( id == FID(M3VN) )
    {
@@ -1015,7 +1032,7 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
 
 HRESULT Primitive::InitPostLoad()
 {
-    if( !m_d.use3DMesh )
+    if( !m_d.m_use3DMesh )
         CalculateBuiltinOriginal();
 
     UpdateEditorView();
@@ -1060,7 +1077,7 @@ bool Primitive::BrowseFor3DMeshFile()
    {
       index++;
       string name = filename.substr(index, filename.length()-index);
-      strcpy_s( m_d.meshFileName, name.c_str());
+      strcpy_s( m_d.m_meshFileName, name.c_str());
    }
    if(ret == 0)
    {
@@ -1068,7 +1085,7 @@ bool Primitive::BrowseFor3DMeshFile()
    }
    SetRegValue("RecentDir","ImportDir", REG_SZ, szInitialDir, lstrlen(szInitialDir));
    m_mesh.Clear();
-   m_d.use3DMesh=false;
+   m_d.m_use3DMesh=false;
    if( vertexBuffer )
    {
       vertexBuffer->release();
@@ -1091,7 +1108,7 @@ bool Primitive::BrowseFor3DMeshFile()
    }
    if (m_mesh.LoadWavefrontObj(ofn.lpstrFile, flipTV, convertToLeftHanded))
    {
-      m_d.use3DMesh=true;
+      m_d.m_use3DMesh=true;
       UpdateEditorView();
       return true;
    }
@@ -1127,7 +1144,7 @@ STDMETHODIMP Primitive::get_MeshFileName(BSTR *pVal)
 {
    WCHAR wz[512];
 
-   MultiByteToWideChar(CP_ACP, 0, m_d.meshFileName, -1, wz, 256);
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_meshFileName, -1, wz, 256);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -1137,7 +1154,7 @@ STDMETHODIMP Primitive::put_MeshFileName(BSTR newVal)
 {
    STARTUNDO
 
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.meshFileName, 256, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_meshFileName, 256, NULL, NULL);
 
    STOPUNDO
    return S_OK;
@@ -1191,7 +1208,7 @@ void Primitive::ExportMesh()
    {
       return;
    }
-   m_mesh.SaveWavefrontObj(ofn.lpstrFile, m_d.use3DMesh ? m_d.meshFileName : "Primitive");
+   m_mesh.SaveWavefrontObj(ofn.lpstrFile, m_d.m_use3DMesh ? m_d.m_meshFileName : "Primitive");
 }
 
 bool Primitive::IsTransparent()
@@ -1222,7 +1239,7 @@ STDMETHODIMP Primitive::put_Sides(int newVal)
         STARTUNDO
 
         m_d.m_Sides = newVal;
-        if (!m_d.use3DMesh)
+        if (!m_d.m_use3DMesh)
         {
             vertexBufferRegenerate = true;
             CalculateBuiltinOriginal();
@@ -1721,9 +1738,24 @@ STDMETHODIMP Primitive::put_ObjRotZ(float newVal)
    return S_OK;
 }
 
+STDMETHODIMP Primitive::get_EdgeFactorUI(float *pVal)
+{
+   *pVal = m_d.m_edgeFactorUI;
+   return S_OK;
+}
+
+STDMETHODIMP Primitive::put_EdgeFactorUI(float newVal)
+{
+   STARTUNDO
+   m_d.m_edgeFactorUI = newVal;
+   STOPUNDO
+
+   return S_OK;
+}
+
 STDMETHODIMP Primitive::get_EnableStaticRendering(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB(m_d.staticRendering);
+   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_staticRendering);
 
    return S_OK;
 }
@@ -1732,7 +1764,7 @@ STDMETHODIMP Primitive::put_EnableStaticRendering(VARIANT_BOOL newVal)
 {
    STARTUNDO
 
-   m_d.staticRendering = VBTOF(newVal);
+   m_d.m_staticRendering = VBTOF(newVal);
 
    STOPUNDO
 
@@ -1911,16 +1943,21 @@ void Primitive::UpdatePropertyPanes()
     if ( m_propVisual==NULL || m_propPosition==NULL || m_propPhysics==NULL )
         return;
 
-    if( m_d.use3DMesh )
+    if( m_d.m_use3DMesh ) {
         EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,106), FALSE);
-    else
+        EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,101), FALSE);
+	}
+    else {
         EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,106), TRUE);
+        EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,101), TRUE);
+	}
 
     if ( m_d.m_fToy || !m_d.m_fCollidable)
     {
         EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,34), FALSE);
         EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,33), FALSE);
         EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,110), FALSE);
+        EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,112), FALSE);
         if ( m_d.m_fToy )
             EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,111), FALSE);
         else
@@ -1938,6 +1975,7 @@ void Primitive::UpdatePropertyPanes()
             EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,33), FALSE);
 
         EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,110), TRUE);
+        EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,112), TRUE);
         EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,114), TRUE);
         EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,115), TRUE);
     }

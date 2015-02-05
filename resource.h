@@ -647,6 +647,7 @@
 #define IDC_BULB_INTENSITY_SCALE        451
 #define IDC_TEX_COMPRESS                452
 #define IDC_IMAGE_MODE                  453
+#define IDC_EDGE_FACTOR_UI              454
 #define IDC_JOYLFLIPCOMBO               501
 #define IDC_JOYRFLIPCOMBO               502
 #define IDC_JOYPLUNGERCOMBO             503
@@ -853,7 +854,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        614
 #define _APS_NEXT_COMMAND_VALUE         32998
-#define _APS_NEXT_CONTROL_VALUE         454
+#define _APS_NEXT_CONTROL_VALUE         455
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif
