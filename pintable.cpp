@@ -6982,7 +6982,7 @@ float PinTable::GetSurfaceHeight(char *szName, float x, float y)
    return m_tableheight;
 }
 
-Material* PinTable::GetSurfaceMaterial( char *szName, float x, float y)
+Material* PinTable::GetSurfaceMaterial(char *szName)
 {
     if (szName == NULL || szName[0] == 0)
         return GetMaterial(m_szPlayfieldMaterial);

@@ -354,6 +354,7 @@ BlinkInterval(int)
 *Surface(string)
 UserValue(any)
 *Image(string)
+ImageMode(bool) - if true, passthrough Image (as if it would be fully emissive), otherwise light image with global lighting using the attached Surface material
 DepthBias(float)
 FadeSpeedUp(float) - speed to fade into on state
 FadeSpeedDown(float) - speed to fade into off state

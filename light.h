@@ -40,10 +40,11 @@ public:
 	char m_szOffImage[MAXTOKEN];
 
     float m_depthBias;      // for determining depth sorting
+    float m_bulbHaloHeight;
 	
+	bool m_imageMode; // true = pass through/no lighting, false = use surface material
     bool m_BulbLight;
 	bool m_showBulbMesh;
-   float m_bulbHaloHeight;
 };
 
 class LightCenter : public ISelect
@@ -173,7 +174,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_LIGHT)
 
 	// Run-time
 private:
-    Material *surfaceMaterial;
+    Material *m_surfaceMaterial;
 
 	LightCenter m_lightcenter;
 
@@ -219,6 +220,8 @@ public:
 	STDMETHOD(put_FalloffPower)(/*[in]*/ float newVal);
 	STDMETHOD(get_Image)(/*[out, retval]*/ BSTR *pVal);
 	STDMETHOD(put_Image)(/*[in]*/ BSTR newVal);
+   STDMETHOD(get_ImageMode)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   STDMETHOD(put_ImageMode)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_DepthBias)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_DepthBias)(/*[in]*/ float newVal);
    STDMETHOD(get_FadeSpeedUp)(/*[out, retval]*/ float *pVal);
