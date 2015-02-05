@@ -214,6 +214,12 @@ void Light::SetDefaults(bool fromMouseClick)
    else
        m_d.m_showBulbMesh = false;
 
+   hr = GetRegInt("DefaultProps\\Light","ShowReflectionOnBall", &iTmp);
+   if ((hr == S_OK) && fromMouseClick)
+       m_d.m_showReflectionOnBall = iTmp ? true : false;
+   else
+       m_d.m_showReflectionOnBall = true;
+
    hr = GetRegStringAsFloat("DefaultProps\\Light","ScaleBulbMesh", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
        m_d.m_meshRadius = fTmp;
@@ -252,6 +258,7 @@ void Light::WriteRegDefaults()
    SetRegValueBool("DefaultProps\\Light","Bulb", m_d.m_BulbLight);
    SetRegValueBool("DefaultProps\\Light","ImageMode", m_d.m_imageMode);
    SetRegValueBool("DefaultProps\\Light","ShowBulbMesh", m_d.m_showBulbMesh);
+   SetRegValueBool("DefaultProps\\Light","ShowReflectionOnBall", m_d.m_showReflectionOnBall);
    SetRegValueFloat("DefaultProps\\Light","ScaleBulbMesh", m_d.m_meshRadius);
    SetRegValueFloat("DefaultProps\\Light","BulbModulateVsAdd", m_d.m_modulate_vs_add);
    SetRegValueFloat("DefaultProps\\Light","BulbHaloHeight", m_d.m_bulbHaloHeight);
@@ -840,6 +847,7 @@ HRESULT Light::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptke
    bw.WriteBool(FID(BULT), m_d.m_BulbLight);
    bw.WriteBool(FID(IMMO), m_d.m_imageMode);
    bw.WriteBool(FID(SHBM), m_d.m_showBulbMesh);
+   bw.WriteBool(FID(SHRB), m_d.m_showReflectionOnBall);
    bw.WriteFloat(FID(BMSC), m_d.m_meshRadius);
    bw.WriteFloat(FID(BMVA), m_d.m_modulate_vs_add);
    bw.WriteFloat(FID(BHHI), m_d.m_bulbHaloHeight);
@@ -980,6 +988,10 @@ BOOL Light::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(SHBM))
    {
        pbr->GetBool(&m_d.m_showBulbMesh);
+   }
+   else if (id == FID(SHRB))
+   {
+       pbr->GetBool(&m_d.m_showReflectionOnBall);
    }
    else if (id == FID(BMSC))
    {
@@ -1518,6 +1530,24 @@ STDMETHODIMP Light::put_ShowBulbMesh(VARIANT_BOOL newVal)
     STARTUNDO
 
     m_d.m_showBulbMesh = VBTOF(newVal);
+
+    STOPUNDO
+
+    return S_OK;
+}
+
+STDMETHODIMP Light::get_ShowReflectionOnBall(VARIANT_BOOL *pVal)
+{
+    *pVal = m_d.m_showReflectionOnBall;
+
+    return S_OK;
+}
+
+STDMETHODIMP Light::put_ShowReflectionOnBall(VARIANT_BOOL newVal)
+{
+    STARTUNDO
+
+    m_d.m_showReflectionOnBall = VBTOF(newVal);
 
     STOPUNDO
 

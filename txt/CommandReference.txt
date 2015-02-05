@@ -358,8 +358,9 @@ ImageMode(bool) - if true, passthrough Image (as if it would be fully emissive),
 DepthBias(float)
 FadeSpeedUp(float) - speed to fade into on state
 FadeSpeedDown(float) - speed to fade into off state
-Bulb(int)
-ShowBulbMesh(int)
+Bulb(bool)
+ShowBulbMesh(bool)
+ShowReflectionOnBall(bool) - in bulb mode, en/disable the reflection of the bulb on balls
 ScaleBulbMesh(float)
 BulbModulateVsAdd(float) - blends between modulating and additive when bulb is enabled (0..1)
 
