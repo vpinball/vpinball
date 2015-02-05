@@ -377,9 +377,9 @@ void Primitive::Render(Sur * const psur)
    psur->SetLineColor(RGB(0,0,0),false,1);
    psur->SetObject(this);
 
-   if( (m_d.m_edgeFactorUI <= 0.0f) || (m_d.m_edgeFactorUI >= 1.0f) )
+   if( (m_d.m_edgeFactorUI <= 0.0f) || (m_d.m_edgeFactorUI >= 1.0f) || !m_d.m_use3DMesh)
    {
-	   if( (m_d.m_edgeFactorUI >= 1.0f) || (m_mesh.NumVertices() <= 100) ) // small mesh: draw all triangles
+	   if( !m_d.m_use3DMesh || (m_d.m_edgeFactorUI >= 1.0f) || (m_mesh.NumVertices() <= 100) ) // small mesh: draw all triangles
 	   {
 		  for( unsigned i=0; i<m_mesh.NumIndices(); i+=3 )
 		  {
