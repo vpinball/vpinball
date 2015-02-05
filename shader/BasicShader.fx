@@ -12,13 +12,13 @@ float3 cClearcoat = float3(0.5f, 0.5f, 0.5f);
 bool   bPerformAlphaTest = false;
 bool   bAdd_Blend;
 float3 staticColor = float3(1.f,1.f,1.f);
-float  fAlphaTestValue = 128.0f/255.0f;
+float  fAlphaTestValue = 128.0/255.0;
 
 float2 fb_inv_resolution_05;
 
 float blend_modulate_vs_add;
 
-float bloom_strength = 1.0f; //!!
+float bloom_strength = 1.0f;
 
 sampler2D texSampler3 : TEXUNIT2 = sampler_state // AO
 {
@@ -252,6 +252,7 @@ float4   lightCenter;
 float    maxRange;
 float    intensity = 1.0f;
 float    falloff_power = 2.0f;
+bool     imageMode;
 
 struct VS_LIGHT_OUTPUT 
 { 
@@ -294,8 +295,8 @@ float4 PS_LightWithTexel(in VS_LIGHT_OUTPUT IN ) : COLOR
     float4 result = float4(0.0f, 0.0f, 0.0f, 0.0f);
     float4 color;
 
-	// early out if no normal set (e.g. HUD vertices)
-    if(IN.normal.x == 0.0f && IN.normal.y == 0.0f && IN.normal.z == 0.0f)
+	// early out if no normal set (e.g. HUD vertices) or passthrough mode
+    if(imageMode || (IN.normal.x == 0.0f && IN.normal.y == 0.0f && IN.normal.z == 0.0f))
      color = pixel;
     else
 	 color = lightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular, edge); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
@@ -325,7 +326,7 @@ float4 PS_LightWithoutTexel(in VS_LIGHT_OUTPUT IN ) : COLOR
     float3 diffuse  = lightColor;
     float3 glossy   = bIsMetal ? lightColor : cGlossy*0.08f;
     float3 specular = cClearcoat*0.08f;
-	 float edge = bIsMetal ? 1.0f : fEdge;
+	float edge = bIsMetal ? 1.0f : fEdge;
     float4 result = float4(0.0f, 0.0f, 0.0f, 0.0f);
 
     if (intensity != 0.0f)
@@ -336,9 +337,10 @@ float4 PS_LightWithoutTexel(in VS_LIGHT_OUTPUT IN ) : COLOR
         result.xyz = lcolor*(atten*intensity);
         result.a = saturate(atten*intensity);
     }
+
 	float4 color;
 	// early out if no normal set (e.g. HUD vertices)
-    if(IN.normal.x == 0.0f && IN.normal.y == 0.0f && IN.normal.z == 0.0f)
+    if(imageMode || (IN.normal.x == 0.0f && IN.normal.y == 0.0f && IN.normal.z == 0.0f))
      color = float4(0,0,0,1);
     else
 	 color = lightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular, edge); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable

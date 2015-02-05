@@ -202,6 +202,12 @@ void Light::SetDefaults(bool fromMouseClick)
    else
        m_d.m_BulbLight = false;
 
+   hr = GetRegInt("DefaultProps\\Light","ImageMode", &iTmp);
+   if ((hr == S_OK) && fromMouseClick)
+       m_d.m_imageMode = iTmp ? true : false;
+   else
+       m_d.m_imageMode = false;
+
    hr = GetRegInt("DefaultProps\\Light","ShowBulbMesh", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
        m_d.m_showBulbMesh = iTmp ? true : false;
@@ -244,6 +250,7 @@ void Light::WriteRegDefaults()
    SetRegValueFloat("DefaultProps\\Light","FadeSpeedDown", m_d.m_fadeSpeedDown);
    SetRegValueFloat("DefaultProps\\Light","Intensity", m_d.m_intensity);
    SetRegValueBool("DefaultProps\\Light","Bulb", m_d.m_BulbLight);
+   SetRegValueBool("DefaultProps\\Light","ImageMode", m_d.m_imageMode);
    SetRegValueBool("DefaultProps\\Light","ShowBulbMesh", m_d.m_showBulbMesh);
    SetRegValueFloat("DefaultProps\\Light","ScaleBulbMesh", m_d.m_meshRadius);
    SetRegValueFloat("DefaultProps\\Light","BulbModulateVsAdd", m_d.m_modulate_vs_add);
@@ -570,10 +577,11 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
     Texture *offTexel=NULL;
     if ( !m_d.m_BulbLight )
     {
-        pd3dDevice->basicShader->SetMaterial(surfaceMaterial);
+        pd3dDevice->basicShader->SetMaterial(m_surfaceMaterial);
 
 		if ((offTexel = m_ptable->GetImage(m_d.m_szOffImage)) != NULL)
         {
+            pd3dDevice->basicShader->Core()->SetBool("imageMode",m_d.m_imageMode);
             pd3dDevice->basicShader->SetTechnique("light_with_texture");
             pd3dDevice->basicShader->SetTexture("Texture0", offTexel );
         }
@@ -589,8 +597,8 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
 
     if ( m_d.m_showBulbMesh && m_d.m_BulbLight ) // blend bulb mesh hull additive over "normal" bulb to approximate the emission directly reaching the camera
     {
-            pd3dDevice->basicShader->Core()->SetFloat("intensity",m_d.m_currentIntensity*0.02f); //!! make configurable?
-            pd3dDevice->basicShader->Core()->SetFloat("blend_modulate_vs_add",0.00001f); // avoid 0, as it disables the blend
+        pd3dDevice->basicShader->Core()->SetFloat("intensity",m_d.m_currentIntensity*0.02f); //!! make configurable?
+        pd3dDevice->basicShader->Core()->SetFloat("blend_modulate_vs_add",0.00001f); // avoid 0, as it disables the blend
 
 	    pd3dDevice->basicShader->Begin(0);
         pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, bulbLightVBuffer, 0, bulbLightNumVertices, bulbLightIndexBuffer, 0, bulbLightNumFaces );
@@ -716,7 +724,7 @@ void Light::RenderSetup(RenderDevice* pd3dDevice)
     m_d.m_time_msec = g_pplayer->m_time_msec;
 
     m_surfaceHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
-    surfaceMaterial = m_ptable->GetSurfaceMaterial(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
+    m_surfaceMaterial = m_ptable->GetSurfaceMaterial(m_d.m_szSurface);
 
     if (m_realState == LightStateBlinking)
         RestartBlinker(g_pplayer->m_time_msec);
@@ -830,6 +838,7 @@ HRESULT Light::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptke
    bw.WriteFloat(FID(FASP), m_d.m_fadeSpeedUp);
    bw.WriteFloat(FID(FASD), m_d.m_fadeSpeedDown);
    bw.WriteBool(FID(BULT), m_d.m_BulbLight);
+   bw.WriteBool(FID(IMMO), m_d.m_imageMode);
    bw.WriteBool(FID(SHBM), m_d.m_showBulbMesh);
    bw.WriteFloat(FID(BMSC), m_d.m_meshRadius);
    bw.WriteFloat(FID(BMVA), m_d.m_modulate_vs_add);
@@ -963,6 +972,10 @@ BOOL Light::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(BULT))
    {
        pbr->GetBool(&m_d.m_BulbLight);
+   }
+   else if (id == FID(IMMO))
+   {
+       pbr->GetBool(&m_d.m_imageMode);
    }
    else if (id == FID(SHBM))
    {
@@ -1475,6 +1488,24 @@ STDMETHODIMP Light::put_Bulb(VARIANT_BOOL newVal)
     return S_OK;
 }
 
+STDMETHODIMP Light::get_ImageMode(VARIANT_BOOL *pVal)
+{
+    *pVal = m_d.m_imageMode;
+
+    return S_OK;
+}
+
+STDMETHODIMP Light::put_ImageMode(VARIANT_BOOL newVal)
+{
+    STARTUNDO
+
+    m_d.m_imageMode = VBTOF(newVal);
+
+    STOPUNDO
+
+    return S_OK;
+}
+
 STDMETHODIMP Light::get_ShowBulbMesh(VARIANT_BOOL *pVal)
 {
     *pVal = m_d.m_showBulbMesh;
@@ -1612,6 +1643,7 @@ void Light::UpdatePropertyPanes()
         EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_SCALE_BULB_MESH), FALSE);
         EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_BULB_MODULATE_VS_ADD), FALSE);
         EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_HALO_EDIT), FALSE);
+        EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_IMAGE_MODE), TRUE);
         EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,DISPID_Image), TRUE);
     }
     else
@@ -1620,6 +1652,7 @@ void Light::UpdatePropertyPanes()
         EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_SCALE_BULB_MESH), TRUE);
         EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_BULB_MODULATE_VS_ADD), TRUE);
         EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_HALO_EDIT), TRUE);
+        EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_IMAGE_MODE), FALSE);
         EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,DISPID_Image), FALSE);
     }
 }
