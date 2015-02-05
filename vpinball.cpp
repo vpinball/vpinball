@@ -3734,7 +3734,15 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
              maxPrerenderedFrames = 2;
          SetDlgItemInt(hwndDlg, IDC_MAX_PRE_FRAMES, maxPrerenderedFrames, FALSE);
 
-         hwndCheck = GetDlgItem(hwndDlg, IDC_AA_ALL_TABLES);
+         float nudgeStrength;
+         hr = GetRegStringAsFloat("Player", "NudgeStrength", &nudgeStrength);
+         if (hr != S_OK)
+             nudgeStrength = 2e-2f;
+ 		 char tmp[256];
+		 sprintf_s(tmp,256,"%f",nudgeStrength);
+ 		 SetDlgItemTextA(hwndDlg, IDC_NUDGE_STRENGTH, tmp);
+
+		 hwndCheck = GetDlgItem(hwndDlg, IDC_AA_ALL_TABLES);
          int m_useAA;
          hr = GetRegInt("Player", "USEAA", &m_useAA);
          if (hr != S_OK)
@@ -3785,8 +3793,7 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
             stereo3DY = fFalse;
          SendMessage(hwndCheck, BM_SETCHECK, stereo3DY ? BST_CHECKED : BST_UNCHECKED, 0);
 
-		 char tmp[256];
-         float stereo3DMS;
+		 float stereo3DMS;
          hr = GetRegStringAsFloat("Player", "Stereo3DMaxSeparation", &stereo3DMS);
          if (hr != S_OK)
             stereo3DMS = 0.03f;
@@ -3941,7 +3948,11 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                   int maxPrerenderedFrames = GetDlgItemInt(hwndDlg, IDC_MAX_PRE_FRAMES, NULL, TRUE);
                   SetRegValue("Player","MaxPrerenderedFrames", REG_DWORD, &maxPrerenderedFrames, 4);
 
-                  HWND hwndFXAA = GetDlgItem(hwndDlg, IDC_FFXAA);
+				  char strTmp[256];
+				  GetDlgItemTextA(hwndDlg, IDC_NUDGE_STRENGTH, strTmp, 256);
+				  SetRegValue("Player", "NudgeStrength", REG_SZ, &strTmp,lstrlen(strTmp));
+
+				  HWND hwndFXAA = GetDlgItem(hwndDlg, IDC_FFXAA);
 				  size_t ffxaa = SendMessage(hwndFXAA, BM_GETCHECK, 0, 0);
 				  hwndFXAA = GetDlgItem(hwndDlg, IDC_QFXAA);
 				  size_t qfxaa = SendMessage(hwndFXAA, BM_GETCHECK, 0, 0) * 2;
@@ -3991,7 +4002,6 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
 				  size_t alphaRampsAccuracy = SendMessage(hwndAraSlider, TBM_GETPOS, 0, 0);
                   SetRegValue("Player", "AlphaRampAccuracy", REG_DWORD, &alphaRampsAccuracy, 4);
 
-				  char strTmp[256];
 				  GetDlgItemTextA(hwndDlg, IDC_3D_STEREO_MS, strTmp, 256);
 				  SetRegValue("Player", "Stereo3DMaxSeparation", REG_SZ, &strTmp,lstrlen(strTmp));
 

@@ -331,8 +331,6 @@ public:
 	bool m_fUserDebugPaused;
 	bool m_fDebugWindowActive;
 
-    bool m_fNudgeShake;     // whether to shake the screen during digital nudges
-
     bool m_fRecordContacts;             // flag for DoHitTest()
     std::vector< CollisionEvent > m_contacts;
 
@@ -378,6 +376,7 @@ private:
 	float m_BallStretchX;
 	float m_BallStretchY;
 
+    float m_NudgeShake;         // whether to shake the screen during digital nudges and how much
     Vertex2D m_ScreenOffset;    // for screen shake effect during nudge
 
 	int m_curPlunger;

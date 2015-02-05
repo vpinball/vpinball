@@ -182,7 +182,13 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
         maxPrerenderedFrames = 2; // The default
     m_fMaxPrerenderedFrames = maxPrerenderedFrames;
 
-    hr = GetRegInt("Player", "FXAA", &m_fFXAA);
+    float nudgeStrength;
+    hr = GetRegStringAsFloat("Player", "NudgeStrength", &nudgeStrength);
+    if (hr != S_OK)
+        nudgeStrength = 2e-2f; // The default
+    m_NudgeShake = nudgeStrength;
+
+	hr = GetRegInt("Player", "FXAA", &m_fFXAA);
     if (hr != S_OK)
       m_fFXAA = 0; // The default = off
 
@@ -301,7 +307,6 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
 	m_device_texdmd = NULL;
     backdropSettingActive = 0;
 
-    m_fNudgeShake = true;       // TODO: add global options checkbox for this
     m_ScreenOffset = Vertex2D(0,0);
 }
 
@@ -2114,11 +2119,11 @@ void Player::UpdatePhysics()
             m_tableVel += (float)PHYS_FACTOR * force;
             m_tableDisplacement += (float)PHYS_FACTOR * m_tableVel;
 
-            if (m_fNudgeShake)
+            if (m_NudgeShake > 0.0f)
             {
                 // NB: in table coordinates, +Y points down, but in screen coordinates, it points up,
                 // so we have to flip the y component
-                SetScreenOffset(2e-2f * m_tableDisplacement.x, -2e-2f * m_tableDisplacement.y);
+                SetScreenOffset(m_NudgeShake * m_tableDisplacement.x, -m_NudgeShake * m_tableDisplacement.y);
             }
 
             m_tableVelDelta = m_tableVel - m_tableVelOld;
