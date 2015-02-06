@@ -14,7 +14,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Englisch (USA) resources
+// English (U.S.) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 #ifdef _WIN32
@@ -257,11 +257,11 @@ BEGIN
     CONTROL         "Enable Fast FXAA",IDC_FFXAA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,165,90,10
     CONTROL         "Enable Quality FXAA",IDC_QFXAA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,175,90,10
     CONTROL         "Enable 4xAntiAliasing",IDC_AA_ALL_TABLES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,185,126,10
-    CONTROL         "Stretch Ball with Table",IDC_StretchNo,"Button",BS_AUTORADIOBUTTON | WS_GROUP,16,212,83,10
-    CONTROL         "Don't stretch the Ball",IDC_StretchYes,"Button",BS_AUTORADIOBUTTON,16,222,81,10
+    CONTROL         "Stretch Ball with Table",IDC_StretchNo,"Button",BS_AUTORADIOBUTTON | WS_DISABLED | WS_GROUP,16,212,83,10
+    CONTROL         "Don't stretch the Ball",IDC_StretchYes,"Button",BS_AUTORADIOBUTTON | WS_DISABLED,16,222,81,10
     CONTROL         "At Full Screen anti-stretch the Ball",IDC_StretchMonitor,
-                    "Button",BS_AUTORADIOBUTTON,16,232,127,10
-    COMBOBOX        IDC_MonitorCombo,73,242,48,71,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
+                    "Button",BS_AUTORADIOBUTTON | WS_DISABLED,16,232,127,10
+    COMBOBOX        IDC_MonitorCombo,73,242,48,71,CBS_DROPDOWN | WS_DISABLED | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Reflect Ball on Playfield",IDC_GLOBAL_REFLECTION_CHECK,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,18,91,10
     CONTROL         "Ball Trails/Motion Blur",IDC_GLOBAL_TRAIL_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,31,91,10
@@ -2444,7 +2444,7 @@ BEGIN
     IDS_STEP                "Step"
 END
 
-#endif    // Englisch (USA) resources
+#endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

@@ -769,6 +769,43 @@ void Player::InitShader()
    InitBallShader();
 }
 
+void Player::UpdateBallShaderMatrix()
+{
+    D3DMATRIX worldMat;
+    D3DMATRIX viewMat;
+    D3DMATRIX projMat;
+    m_pin3d.m_pd3dDevice->GetTransform(TRANSFORMSTATE_WORLD, &worldMat);
+    m_pin3d.m_pd3dDevice->GetTransform(TRANSFORMSTATE_VIEW, &viewMat);
+    m_pin3d.m_pd3dDevice->GetTransform(TRANSFORMSTATE_PROJECTION, &projMat);
+
+    D3DXMATRIX matProj(projMat);
+    D3DXMATRIX matView(viewMat);
+    D3DXMATRIX matWorld(worldMat);
+
+    D3DXMATRIX matWorldView = matWorld * matView;
+    D3DXMATRIX matWorldViewProj = matWorldView * matProj;
+
+    Matrix3D temp;
+    memcpy(temp.m,matWorldView.m,4*4*sizeof(float));
+    temp.Invert();
+    temp.Transpose();
+    D3DXMATRIX matWorldViewInvTrans;
+    memcpy(matWorldViewInvTrans.m,temp.m,4*4*sizeof(float));
+
+    ballShader->Core()->SetMatrix("matWorldViewProj", &matWorldViewProj);
+    ballShader->Core()->SetMatrix("matWorldView", &matWorldView);
+    ballShader->Core()->SetMatrix("matWorldViewInverseTranspose", &matWorldViewInvTrans);
+    //m_pin3d.m_pd3dDevice->basicShader->Core()->SetMatrix("matWorld", &matWorld);
+    ballShader->Core()->SetMatrix("matView", &matView);
+
+    memcpy(temp.m,matView.m,4*4*sizeof(float));
+    temp.Invert();
+    D3DXMATRIX matViewInv;
+    memcpy(matViewInv.m,temp.m,4*4*sizeof(float));
+
+    ballShader->Core()->SetMatrix("matViewInverse", &matViewInv);
+}
+
 void Player::InitBallShader()
 {
    ballShader = new Shader(m_pin3d.m_pd3dDevice );
@@ -778,32 +815,7 @@ void Player::InitBallShader()
    ballShader->Load(ballShaderCode, sizeof(ballShaderCode));
 #endif
 
-   D3DMATRIX worldMat;
-   D3DMATRIX viewMat;
-   D3DMATRIX projMat;
-   m_pin3d.m_pd3dDevice->GetTransform(TRANSFORMSTATE_WORLD, &worldMat );
-   m_pin3d.m_pd3dDevice->GetTransform(TRANSFORMSTATE_VIEW, &viewMat);
-   m_pin3d.m_pd3dDevice->GetTransform(TRANSFORMSTATE_PROJECTION, &projMat);
-
-   D3DXMATRIX matProj(projMat);
-   D3DXMATRIX matView(viewMat);
-   D3DXMATRIX matWorld(worldMat);
-   D3DXMATRIX matWorldView = matWorld * matView;
-   D3DXMATRIX matWorldViewProj = matWorldView * matProj;
-
-   ballShader->Core()->SetMatrix("matWorldViewProj", &matWorldViewProj);
-   ballShader->Core()->SetMatrix("matWorldView", &matWorldView);
-   //ballShader->Core()->SetMatrix("matWorld", &matWorld);
-   ballShader->Core()->SetMatrix("matView", &matView);
-
-   Matrix3D temp;
-   memcpy(temp.m,matWorldView.m,4*4*sizeof(float));
-   temp.Invert();
-   temp.Transpose();
-   D3DXMATRIX matWorldViewInvTrans;
-   memcpy(matWorldViewInvTrans.m,temp.m,4*4*sizeof(float));
-    
-   ballShader->Core()->SetMatrix("matWorldViewInverseTranspose", &matWorldViewInvTrans);
+   UpdateBallShaderMatrix();
 
    const float inv_tablewidth = 1.0f/(m_ptable->m_right - m_ptable->m_left);
    const float inv_tableheight = 1.0f/(m_ptable->m_bottom - m_ptable->m_top);
@@ -1342,6 +1354,8 @@ void Player::InitWindow()
 			m_height += captionheight;
 		}
 
+    float aspect = ((float)m_width)/((float)m_height);
+
 	int ballStretchMode;
 	hr = GetRegInt("Player", "BallStretchMode", &ballStretchMode);
 	if (hr != S_OK)
@@ -1353,8 +1367,8 @@ void Player::InitWindow()
 	if (hr != S_OK)
 		ballStretchMonitor = 1; // assume 16:9
 
-	const float scalebackX = (m_ptable->m_BG_scalex[m_ptable->m_BG_current_set] != 0.0f) ? ((m_ptable->m_BG_scalex[m_ptable->m_BG_current_set] + m_ptable->m_BG_scaley[m_ptable->m_BG_current_set])*0.5f)/m_ptable->m_BG_scalex[m_ptable->m_BG_current_set] : 1.0f;
-	const float scalebackY = (m_ptable->m_BG_scaley[m_ptable->m_BG_current_set] != 0.0f) ? ((m_ptable->m_BG_scalex[m_ptable->m_BG_current_set] + m_ptable->m_BG_scaley[m_ptable->m_BG_current_set])*0.5f)/m_ptable->m_BG_scaley[m_ptable->m_BG_current_set] : 1.0f;
+	 float scalebackX = (m_ptable->m_BG_scalex[m_ptable->m_BG_current_set] != 0.0f) ? ((m_ptable->m_BG_scalex[m_ptable->m_BG_current_set] + m_ptable->m_BG_scaley[m_ptable->m_BG_current_set])*0.5f)/m_ptable->m_BG_scalex[m_ptable->m_BG_current_set] : 1.0f;
+	 float scalebackY = (m_ptable->m_BG_scaley[m_ptable->m_BG_current_set] != 0.0f) ? ((m_ptable->m_BG_scalex[m_ptable->m_BG_current_set] + m_ptable->m_BG_scaley[m_ptable->m_BG_current_set])*0.5f)/m_ptable->m_BG_scaley[m_ptable->m_BG_current_set] : 1.0f;
 
 	float xMonitor = 16.0f;
 	float yMonitor = 9.0f;
@@ -1422,7 +1436,9 @@ void Player::InitWindow()
 				}
 				break;
 	}
-	m_hwnd = ::CreateWindowEx(windowflagsex, "VPPlayer", "Visual Pinball Player", windowflags, x, y, m_width, m_height, NULL, NULL, g_hinst, 0);
+    m_BallStretchX = 1.0f;
+    m_BallStretchY = 1.0f;
+    m_hwnd = ::CreateWindowEx(windowflagsex, "VPPlayer", "Visual Pinball Player", windowflags, x, y, m_width, m_height, NULL, NULL, g_hinst, 0);
 
     mixer_init( m_hwnd );
     hid_init();
@@ -2263,6 +2279,7 @@ void Player::RenderDynamics()
 
    if( cameraMode )
    {
+       UpdateBallShaderMatrix();
        m_pin3d.RenderPlayfieldGraphics();
        for (int i=0;i<m_ptable->m_vedit.Size();i++)
        {
@@ -2314,8 +2331,7 @@ void Player::RenderDynamics()
    for (unsigned i=0; i < m_vHitNonTrans.size(); ++i)
        m_vHitNonTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
 
-   if( !cameraMode )
-      DrawBalls();
+   DrawBalls();
 
    m_limiter.Execute(m_pin3d.m_pd3dDevice); //!! move below other draw calls??
 
@@ -2631,12 +2647,12 @@ void Player::UpdateBackdropSettings(const bool up)
         }
     case 6:
         {
-            m_ptable->m_BG_xlatex[m_ptable->m_BG_current_set] += (0.01f*thesign);
+            m_ptable->m_BG_xlatex[m_ptable->m_BG_current_set] += (thesign);
             break;
         }
     case 7:
         {
-            m_ptable->m_BG_xlatey[m_ptable->m_BG_current_set] += (0.01f*thesign);
+            m_ptable->m_BG_xlatey[m_ptable->m_BG_current_set] += (thesign);
             break;
         }
     case 8:
