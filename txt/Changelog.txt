@@ -13,8 +13,8 @@ VP 10.0.0 Changelog
        including the new night->day slider (this will allow the user to tweak the brightness of the table on his/her own afterwards)
      - revisit all physics settings, even if you used VP9Physmod(5) before (only the re-enabled friction and scatter in the physmod5 case though)
      - take a look into the new material editor and assign a material to each object on the table
-     - use flashers when doing special lighting effects/night mods (and tweak existing ones by playing with the opacity (can be >100%) and modulate options),
-       otherwise try to stick with the newly redone (bulb-)light elements
+     - use flashers when doing special lighting effects/gi-changes/night mods (and tweak existing ones by playing with the opacity (can be >100%) and modulate options),
+       otherwise try to stick with the newly redone (bulb-)light elements (flashers and bulblights are cheaper to render than other elements)
      - revisit CommandReference.txt for all commands that have changed names/behavior, were replaced or deleted
 
 
