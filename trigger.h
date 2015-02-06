@@ -22,6 +22,7 @@ public:
 	float m_hit_height; //trigger hit object height ... default 50
 	bool m_fEnabled;
 	bool m_fVisible;
+    float m_animSpeed;
 	};
 
 /////////////////////////////////////////////////////////////////////////////
@@ -149,6 +150,8 @@ public:
     STDMETHOD(put_Rotation)(/*[in]*/ float newVal);
     STDMETHOD(get_Material)(/*[out, retval]*/ BSTR *pVal);
     STDMETHOD(put_Material)(/*[in]*/ BSTR newVal);
+    STDMETHOD(get_AnimSpeed)(/*[out, retval]*/ float *pVal);
+    STDMETHOD(put_AnimSpeed)(/*[in]*/ float newVal);
     };
 
 #endif // !defined(AFX_TRIGGER_H__2CA7256C_4072_43C3_9D65_AE091B601377__INCLUDED_)

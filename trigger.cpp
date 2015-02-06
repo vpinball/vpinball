@@ -216,6 +216,10 @@ void Trigger::SetDefaults(bool fromMouseClick)
    hr = GetRegString("DefaultProps\\Trigger","Surface", &m_d.m_szSurface, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szSurface[0] = 0;
+
+   hr = GetRegStringAsFloat("DefaultProps\\trigger","AnimSpeed", &fTmp);
+   m_d.m_animSpeed = (hr == S_OK) && fromMouseClick ? fTmp : 1.0f;
+
 }
 
 void Trigger::PreRender(Sur * const psur)
@@ -557,7 +561,7 @@ void Trigger::PostRenderStatic(RenderDevice* pd3dDevice)
 
     if ( doAnimation)
     {
-        const float step = 1.0f*(m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]);
+        const float step = m_d.m_animSpeed*(m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]);
         const float limit = animLimit*(m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]);
 
         if( moveDown ) 
@@ -851,6 +855,7 @@ HRESULT Trigger::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
    bw.WriteFloat(FID(THOT), m_d.m_hit_height);
    bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
    bw.WriteInt(FID(SHAP), m_d.m_shape);
+   bw.WriteFloat(FID(ANSP), m_d.m_animSpeed);
 
    ISelect::SaveData(pstm, hcrypthash, hcryptkey);
 
@@ -881,6 +886,8 @@ void Trigger::WriteRegDefaults()
    SetRegValueFloat("DefaultProps\\Trigger","ScaleY", m_d.m_scaleY);
    SetRegValue("DefaultProps\\Trigger","Shape",REG_DWORD,&m_d.m_shape,4);
    SetRegValue("DefaultProps\\Trigger","Surface", REG_SZ, &m_d.m_szSurface,lstrlen(m_d.m_szSurface));
+   SetRegValueFloat("DefaultProps\\Trigger","AnimSpeed", m_d.m_animSpeed);
+
 }
 
 HRESULT Trigger::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
@@ -952,6 +959,10 @@ BOOL Trigger::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(SHAP))
    {
       pbr->GetInt(&m_d.m_shape);
+   }
+   else if (id == FID(ANSP))
+   {
+       pbr->GetFloat(&m_d.m_animSpeed);
    }
    else if (id == FID(NAME))
    {
@@ -1190,6 +1201,25 @@ STDMETHODIMP Trigger::put_Rotation(float newVal)
 
         return S_OK;
 }
+
+STDMETHODIMP Trigger::get_AnimSpeed(float *pVal)
+{
+    *pVal = m_d.m_animSpeed;
+
+    return S_OK;
+}
+
+STDMETHODIMP Trigger::put_AnimSpeed(float newVal)
+{
+    STARTUNDO
+
+      m_d.m_animSpeed = newVal;
+
+    STOPUNDO
+
+        return S_OK;
+}
+
 
 STDMETHODIMP Trigger::get_Material(BSTR *pVal)
 {

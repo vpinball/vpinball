@@ -1161,6 +1161,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(340), helpstring("property Material")] HRESULT Material([in] BSTR newVal);
 		[propget, id(345), helpstring("property Rotation")] HRESULT Rotation([out, retval] float *pVal);
 		[propput, id(345), helpstring("property Rotation")] HRESULT Rotation([in] float newVal);
+		[propget, id(26), helpstring("property AnimSpeed")] HRESULT AnimSpeed([out, retval] float *pVal);
+		[propput, id(26), helpstring("property AnimSpeed")] HRESULT AnimSpeed([in] float newVal);
 	};
 
 	[
