@@ -584,11 +584,11 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
     Texture *offTexel=NULL;
     if ( !m_d.m_BulbLight )
     {
+        pd3dDevice->basicShader->Core()->SetBool("imageMode",m_d.m_imageMode);
         pd3dDevice->basicShader->SetMaterial(m_surfaceMaterial);
 
 		if ((offTexel = m_ptable->GetImage(m_d.m_szOffImage)) != NULL)
         {
-            pd3dDevice->basicShader->Core()->SetBool("imageMode",m_d.m_imageMode);
             pd3dDevice->basicShader->SetTechnique("light_with_texture");
             pd3dDevice->basicShader->SetTexture("Texture0", offTexel );
         }

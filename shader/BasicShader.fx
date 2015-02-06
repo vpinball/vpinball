@@ -87,8 +87,7 @@ struct VS_OUTPUT_2D
 
 VS_OUTPUT vs_main (float4 vPosition  : POSITION0,  
                    float3 vNormal    : NORMAL0,  
-                   float2 tc         : TEXCOORD0, 
-                   float2 tc2        : TEXCOORD1) 
+                   float2 tc         : TEXCOORD0) 
 { 
    VS_OUTPUT Out;
 
@@ -248,7 +247,7 @@ float4 ps_main_noLight( in VS_SIMPLE_OUTPUT IN) : COLOR
 // Light (Bulb/Shapes)
 
 float3   lightColor = float3(1.f,1.f,1.f);
-float4   lightCenter;
+float3   lightCenter;
 float    maxRange;
 float    intensity = 1.0f;
 float    falloff_power = 2.0f;
@@ -265,8 +264,7 @@ struct VS_LIGHT_OUTPUT
 
 VS_LIGHT_OUTPUT vs_light_main (float4 vPosition  : POSITION0,  
                          float3 vNormal    : NORMAL0,  
-                         float2 tc         : TEXCOORD0, 
-                         float2 tc2        : TEXCOORD1) 
+                         float2 tc         : TEXCOORD0) 
 { 
    VS_LIGHT_OUTPUT Out;
 
@@ -303,7 +301,7 @@ float4 PS_LightWithTexel(in VS_LIGHT_OUTPUT IN ) : COLOR
 
     if ( intensity!=0.0f )
     {
-        float len = length(lightCenter.xyz - IN.tablePos.xyz) / max(maxRange, 0.1f);
+        float len = length(lightCenter - IN.tablePos.xyz) / max(maxRange, 0.1f);
         float atten = pow(1.0f - saturate(len), falloff_power);
         float3 lcolor = lerp(float3(1.0f, 1.0f, 1.0f), lightColor, sqrt(len));
         result.xyz = lcolor*(atten*intensity);
@@ -331,7 +329,7 @@ float4 PS_LightWithoutTexel(in VS_LIGHT_OUTPUT IN ) : COLOR
 
     if (intensity != 0.0f)
     {
-        float len = length(lightCenter.xyz - IN.tablePos.xyz) / max(maxRange, 0.1f);
+        float len = length(lightCenter - IN.tablePos.xyz) / max(maxRange, 0.1f);
         float atten = pow(1.0f - saturate(len), falloff_power);
         float3 lcolor = lerp(float3(1.0f, 1.0f, 1.0f), lightColor, sqrt(len));
         result.xyz = lcolor*(atten*intensity);
@@ -341,7 +339,7 @@ float4 PS_LightWithoutTexel(in VS_LIGHT_OUTPUT IN ) : COLOR
 	float4 color;
 	// early out if no normal set (e.g. HUD vertices)
     if(imageMode || (IN.normal.x == 0.0f && IN.normal.y == 0.0f && IN.normal.z == 0.0f))
-     color = float4(0,0,0,1);
+     color = float4(lightColor,1.f);
     else
 	 color = lightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular, edge); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
 
@@ -352,7 +350,7 @@ float4 PS_LightWithoutTexel(in VS_LIGHT_OUTPUT IN ) : COLOR
 
 float4 PS_BulbLight( in VS_LIGHT_OUTPUT IN ) : COLOR
 {
-	float len = length(lightCenter.xyz-IN.tablePos.xyz)/max(maxRange,0.1f);
+	float len = length(lightCenter-IN.tablePos.xyz)/max(maxRange,0.1f);
     float atten = pow(1.0f-saturate(len), falloff_power);
 	float3 lcolor = lerp(float3(1.0f,1.0f,1.0f), lightColor, sqrt(len));
 	float4 result;
@@ -367,8 +365,7 @@ float4 PS_BulbLight( in VS_LIGHT_OUTPUT IN ) : COLOR
 
 VS_OUTPUT vs_kicker (float4 vPosition  : POSITION0,  
                      float3 vNormal    : NORMAL0,  
-                     float2 tc         : TEXCOORD0, 
-                     float2 tc2        : TEXCOORD1) 
+                     float2 tc         : TEXCOORD0) 
 { 
     VS_OUTPUT Out;
     float3 P = mul(vPosition, matWorldView).xyz;
