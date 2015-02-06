@@ -1436,8 +1436,6 @@ void Player::InitWindow()
 				}
 				break;
 	}
-    m_BallStretchX = 1.0f;
-    m_BallStretchY = 1.0f;
     m_hwnd = ::CreateWindowEx(windowflagsex, "VPPlayer", "Visual Pinball Player", windowflags, x, y, m_width, m_height, NULL, NULL, g_hinst, 0);
 
     mixer_init( m_hwnd );
