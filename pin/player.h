@@ -417,6 +417,7 @@ public:
     void InitShader();
     void UpdateCameraModeDisplay();
     void UpdateBackdropSettings(const bool up);
+    void UpdateBallShaderMatrix();
 #endif
 
 #ifdef STEPPING
