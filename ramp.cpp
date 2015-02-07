@@ -976,7 +976,7 @@ void Ramp::CreateWire( const int numRings, const int numSegments, const Vertex2D
     for( int i=0, index=0; i<numRings; i++ )
     {
         const int i2= (i==(numRings-1)) ? i : i+1;
-        float height = rgheightInit[i]+m_ptable->m_tableheight;    
+        float height = rgheightInit[i];    
 
         Vertex3Ds tangent( midPoints[i2].x-midPoints[i].x, midPoints[i2].y-midPoints[i].y, 0.0f);
         if (i == numRings - 1)
