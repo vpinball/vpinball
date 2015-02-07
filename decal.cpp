@@ -445,8 +445,6 @@ void Decal::RenderSetup(RenderDevice* pd3dDevice )
    RenderText();
 
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-   Vertex3D_NoTex2 vertices[4];
-
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
    float leading, descent; // For fonts
@@ -457,13 +455,8 @@ void Decal::RenderSetup(RenderDevice* pd3dDevice )
    }
    else
    {
-      leading = 0;
-      descent = 0;
-   }
-
-   for (int l=0;l<4;l++)
-   {
-      vertices[l].z = height + 0.2f;
+      leading = 0.f;
+      descent = 0.f;
    }
 
    const float halfwidth = m_realwidth * 0.5f;
@@ -473,34 +466,35 @@ void Decal::RenderSetup(RenderDevice* pd3dDevice )
    const float sn = sinf(radangle);
    const float cs = cosf(radangle);
 
+   Vertex3D_NoTex2 vertices[4];
    vertices[0].x = m_d.m_vCenter.x + sn*(halfheight+leading) - cs*halfwidth;
    vertices[0].y = m_d.m_vCenter.y - cs*(halfheight+leading) - sn*halfwidth;
-   vertices[0].tu = 0;
-   vertices[0].tv = 0;
 
    vertices[1].x = m_d.m_vCenter.x + sn*(halfheight+leading) + cs*halfwidth;
    vertices[1].y = m_d.m_vCenter.y - cs*(halfheight+leading) + sn*halfwidth;
-   vertices[1].tu = 1.0f;
-   vertices[1].tv = 0;
 
    vertices[2].x = m_d.m_vCenter.x - sn*(halfheight+descent) + cs*halfwidth;
    vertices[2].y = m_d.m_vCenter.y + cs*(halfheight+descent) + sn*halfwidth;
-   vertices[2].tu = 1.0f;
-   vertices[2].tv = 1.0f;
 
    vertices[3].x = m_d.m_vCenter.x - sn*(halfheight+descent) - cs*halfwidth;
    vertices[3].y = m_d.m_vCenter.y + cs*(halfheight+descent) - sn*halfwidth;
-   vertices[3].tu = 0;
-   vertices[3].tv = 1.0f;
+
+   for (int l=0;l<4;l++)
+      vertices[l].z = height + 0.2f;
 
    if (!m_fBackglass)
-   {
       SetNormal(vertices, rgi0123, 4);
-   }
    else
-   {
       SetHUDVertices(vertices, 4);
-   }
+
+   vertices[0].tu = 0;
+   vertices[0].tv = 0;
+   vertices[1].tu = 1.0f;
+   vertices[1].tv = 0;
+   vertices[2].tu = 1.0f;
+   vertices[2].tv = 1.0f;
+   vertices[3].tu = 0;
+   vertices[3].tv = 1.0f;
 
    if ( vertexBuffer== NULL )
    {
