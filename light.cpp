@@ -72,12 +72,12 @@ Light::Light() : m_lightcenter(this)
    customMoverVBuffer = NULL;
    bulbLightIndexBuffer = NULL;
    bulbLightVBuffer = NULL;
-   bulbSocketIndexBuffer=NULL;
-   bulbSocketVBuffer=NULL;
-   m_d.m_szOffImage[0]=0;
+   bulbSocketIndexBuffer = NULL;
+   bulbSocketVBuffer = NULL;
+   m_d.m_szOffImage[0] = 0;
    m_d.m_depthBias = 0.0f;
    m_d.m_shape = ShapeCustom;
-   m_roundLight=false;
+   m_roundLight = false;
    m_propVisual = NULL;
 }
 
@@ -87,6 +87,26 @@ Light::~Light()
    {
       customMoverVBuffer->release();
       customMoverVBuffer=0;
+   }
+   if( bulbLightIndexBuffer )
+   {
+       bulbLightIndexBuffer->release();
+       bulbLightIndexBuffer=0;
+   }
+   if( bulbLightVBuffer )
+   {
+       bulbLightVBuffer->release();
+       bulbLightVBuffer=0;
+   }
+   if( bulbSocketIndexBuffer )
+   {
+       bulbSocketIndexBuffer->release();
+       bulbSocketIndexBuffer=0;
+   }
+   if( bulbSocketVBuffer )
+   {
+       bulbSocketVBuffer->release();
+       bulbSocketVBuffer=0;
    }
 }
 
@@ -530,6 +550,9 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
 {
     TRACE_FUNCTION();
 
+	if(customMoverVBuffer == NULL) // in case of degenerate light
+		return;
+
 	const U32 old_time_msec = (m_d.m_time_msec < g_pplayer->m_time_msec) ? m_d.m_time_msec : g_pplayer->m_time_msec;
     m_d.m_time_msec = g_pplayer->m_time_msec;
 	const float diff_time_msec = (float)(g_pplayer->m_time_msec-old_time_msec);
@@ -641,6 +664,9 @@ void Light::PrepareMoversCustom()
    std::vector<RenderVertex> vvertex;
    GetRgVertex(vvertex);
    const int cvertex = vvertex.size();
+
+   if(cvertex == 0)
+	   return;
 
    VectorVoid vpoly;
    float maxdist = 0;
