@@ -168,10 +168,8 @@ void SetHUDVertices(VtxType * const rgv, const int count)
 
 	for (int i=0; i<count; ++i)
 		{
-		rgv[i].x *= mult;
-		rgv[i].y *= ymult;
-		rgv[i].x -= 0.5f;
-		rgv[i].y -= 0.5f;
+		rgv[i].tu = rgv[i].x = rgv[i].x*mult-0.5f;
+		rgv[i].tv = rgv[i].y = rgv[i].y*ymult-0.5f;
 		rgv[i].z = 0.f;
 
 		rgv[i].nx = 0.0f;

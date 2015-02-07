@@ -123,7 +123,7 @@ float4 ps_main( in VS_OUTPUT IN) : COLOR
    float3 specular = cClearcoat*0.08f;
    float edge = bIsMetal ? 1.0f : fEdge;
    
-   float4 result=lightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular, edge); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
+   float4 result = lightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular, edge); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
    result.a *= fmaterialAlpha;
    return result;
 }
@@ -243,6 +243,7 @@ float4 ps_main_noLight( in VS_SIMPLE_OUTPUT IN) : COLOR
 	return result;
 }
 
+
 //------------------------------------------
 // Light (Bulb/Shapes)
 
@@ -252,6 +253,7 @@ float    maxRange;
 float    intensity = 1.0f;
 float    falloff_power = 2.0f;
 bool     imageMode;
+bool     backglassMode;
 
 struct VS_LIGHT_OUTPUT 
 { 
@@ -284,24 +286,27 @@ VS_LIGHT_OUTPUT vs_light_main (float4 vPosition  : POSITION0,
 
 float4 PS_LightWithTexel(in VS_LIGHT_OUTPUT IN ) : COLOR
 {	
-    float4 pixel = tex2D(texSampler0, IN.tex0);  
+    float4 pixel = tex2D(texSampler0, IN.tex0); //!! IN.tex0 abused in backglass mode  
     pixel.xyz = InvGamma(pixel.xyz);
-    float3 diffuse = pixel.xyz*cBase;
-    float3 glossy = bIsMetal ? diffuse : pixel.xyz*cGlossy*0.08f; //!! use AO for glossy? specular?
-    float3 specular = cClearcoat*0.08f;
-    float edge = bIsMetal ? 1.0f : fEdge;
-    float4 result = float4(0.0f, 0.0f, 0.0f, 0.0f);
+
     float4 color;
-
-	// early out if no normal set (e.g. HUD vertices) or passthrough mode
-    if(imageMode || (IN.normal.x == 0.0f && IN.normal.y == 0.0f && IN.normal.z == 0.0f))
-     color = pixel;
+	// no lighting if HUD vertices or passthrough mode
+    if(imageMode || backglassMode)
+        color = pixel;
     else
-	 color = lightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular, edge); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
+	{
+	    float3 diffuse = pixel.xyz*cBase;
+        float3 glossy = bIsMetal ? diffuse : pixel.xyz*cGlossy*0.08f; //!! use AO for glossy? specular?
+        float3 specular = cClearcoat*0.08f;
+        float edge = bIsMetal ? 1.0f : fEdge;
 
+	    color = lightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular, edge); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
+    }
+
+    float4 result = float4(0.0f, 0.0f, 0.0f, 0.0f);
     if ( intensity!=0.0f )
     {
-        float len = length(lightCenter - IN.tablePos.xyz) / max(maxRange, 0.1f);
+        float len = length(lightCenter - (!backglassMode ? IN.tablePos.xyz : float3(IN.tex0,0.0f))) / max(maxRange, 0.1f);
         float atten = pow(1.0f - saturate(len), falloff_power);
         float3 lcolor = lerp(float3(1.0f, 1.0f, 1.0f), lightColor, sqrt(len));
         result.xyz = lcolor*(atten*intensity);
@@ -312,24 +317,17 @@ float4 PS_LightWithTexel(in VS_LIGHT_OUTPUT IN ) : COLOR
         color = Screen(pixel, color, 1.0f);
     }
     else
-    {
         color.a = pixel.a*fmaterialAlpha;
-    }
-	
+
     return color;
 }
 
 float4 PS_LightWithoutTexel(in VS_LIGHT_OUTPUT IN ) : COLOR
-{	
-    float3 diffuse  = lightColor;
-    float3 glossy   = bIsMetal ? lightColor : cGlossy*0.08f;
-    float3 specular = cClearcoat*0.08f;
-	float edge = bIsMetal ? 1.0f : fEdge;
+{
     float4 result = float4(0.0f, 0.0f, 0.0f, 0.0f);
-
     if (intensity != 0.0f)
     {
-        float len = length(lightCenter - IN.tablePos.xyz) / max(maxRange, 0.1f);
+        float len = length(lightCenter - (!backglassMode ? IN.tablePos.xyz : float3(IN.tex0,0.0f))) / max(maxRange, 0.1f);
         float atten = pow(1.0f - saturate(len), falloff_power);
         float3 lcolor = lerp(float3(1.0f, 1.0f, 1.0f), lightColor, sqrt(len));
         result.xyz = lcolor*(atten*intensity);
@@ -337,11 +335,18 @@ float4 PS_LightWithoutTexel(in VS_LIGHT_OUTPUT IN ) : COLOR
     }
 
 	float4 color;
-	// early out if no normal set (e.g. HUD vertices)
-    if(imageMode || (IN.normal.x == 0.0f && IN.normal.y == 0.0f && IN.normal.z == 0.0f))
-     color = float4(lightColor,1.f);
+	// no lighting if HUD vertices or passthrough mode
+    if(imageMode || backglassMode)
+        color = float4(0.f,0.f,0.f,1.f);
     else
-	 color = lightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular, edge); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
+	{
+	    float3 diffuse  = lightColor;
+        float3 glossy   = bIsMetal ? lightColor : cGlossy*0.08f;
+        float3 specular = cClearcoat*0.08f;
+	    float edge = bIsMetal ? 1.0f : fEdge;
+
+	    color = lightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular, edge); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
+	}
 
     color.a *= fmaterialAlpha;
     color += result;
@@ -350,8 +355,8 @@ float4 PS_LightWithoutTexel(in VS_LIGHT_OUTPUT IN ) : COLOR
 
 float4 PS_BulbLight( in VS_LIGHT_OUTPUT IN ) : COLOR
 {
-	float len = length(lightCenter-IN.tablePos.xyz)/max(maxRange,0.1f);
-    float atten = pow(1.0f-saturate(len), falloff_power);
+	float len = length(lightCenter - IN.tablePos.xyz) / max(maxRange,0.1f);
+    float atten = pow(1.0f - saturate(len), falloff_power);
 	float3 lcolor = lerp(float3(1.0f,1.0f,1.0f), lightColor, sqrt(len));
 	float4 result;
 	result.xyz = lcolor*(-blend_modulate_vs_add*atten*intensity); // negative as it will be blended with '1.0-thisvalue' (the 1.0 is needed to modulate the underlying elements correctly, but not wanted for the term below)
