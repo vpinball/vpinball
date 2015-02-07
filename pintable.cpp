@@ -8487,9 +8487,7 @@ STDMETHODIMP PinTable::get_ShowDT(VARIANT_BOOL *pVal)
 
 STDMETHODIMP PinTable::put_ShowDT(VARIANT_BOOL newVal)
 {
-   STARTUNDO
    m_BG_current_set = (!!newVal) ? 0 : 1;
-   STOPUNDO
 
    SetDirtyDraw();
 
