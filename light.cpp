@@ -557,7 +557,13 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
     }
 
 	//ppin3d->EnableAlphaTestReference(1);        // don't alpha blend, but do honor transparent pixels
-    D3DXVECTOR4 center(m_d.m_vCenter.x, m_d.m_vCenter.y, !m_fBackglass ? m_surfaceHeight+0.05f : 0.0f, 0.0f); //!! backglass mode needs more, as there the coord system is different (e.g. falloff is broken)
+	Vertex3D_NoTex2 centerHUD;
+	centerHUD.x = m_d.m_vCenter.x;
+	centerHUD.y = m_d.m_vCenter.y;
+	centerHUD.z = 0.0f;
+	if(m_fBackglass)
+		SetHUDVertices(&centerHUD,1);
+	D3DXVECTOR4 center(centerHUD.x, centerHUD.y, !m_fBackglass ? m_surfaceHeight+0.05f : 0.0f, 0.0f);
     D3DXVECTOR4 diffColor(r,g,b,1.0f);
     pd3dDevice->basicShader->Core()->SetVector("lightCenter", &center);
     pd3dDevice->basicShader->Core()->SetVector("lightColor", &diffColor);
@@ -584,6 +590,7 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
     Texture *offTexel=NULL;
     if ( !m_d.m_BulbLight )
     {
+        pd3dDevice->basicShader->Core()->SetBool("backglassMode",m_fBackglass);
         pd3dDevice->basicShader->Core()->SetBool("imageMode",m_d.m_imageMode);
         pd3dDevice->basicShader->SetMaterial(m_surfaceMaterial);
 
