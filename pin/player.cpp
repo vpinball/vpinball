@@ -900,8 +900,8 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
     const bool useAA = (m_fAA && (m_ptable->m_useAA == -1)) || (m_ptable->m_useAA == 1);
     const bool stereo3DFXAA = (!!m_fStereo3D) || ((m_fFXAA && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA > 0));
 
-	// width, height, and colordepth are only defined if fullscreen is true.
-    HRESULT hr = m_pin3d.InitPin3D(m_hwnd, m_fFullScreen, m_screenwidth, m_screenheight, m_screendepth,
+	// colordepth & refreshrate are only defined if fullscreen is true.
+    HRESULT hr = m_pin3d.InitPin3D(m_hwnd, m_fFullScreen, m_width, m_height, m_screendepth,
                    m_refreshrate, vsync, useAA, stereo3DFXAA, useAO);
 
 	if (hr != S_OK)
@@ -913,14 +913,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 	}
 
 	if (m_fFullScreen)
-	{
-		SetWindowPos(m_hwnd, NULL, 0, 0, m_screenwidth, m_screenheight, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE);
-		m_pixelaspectratio = ((float)m_screenwidth / (float)m_screenheight) / (float)(4.0/3.0);
-	}
-	else
-	{
-		m_pixelaspectratio = ((float)m_width / (float)m_height) / (float)(4.0/3.0);
-	}
+		SetWindowPos(m_hwnd, NULL, 0, 0, m_width, m_height, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE);
 
 	m_pininput.Init(m_hwnd);
 

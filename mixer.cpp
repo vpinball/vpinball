@@ -212,7 +212,7 @@ void mixer_draw()
 
     const U32 alpha = (U32) ( fade * 222.2f );
 
-    F32 ypos = (F32)( -((S32)g_pplayer->m_pin3d.m_dwRenderHeight/2) );
+    F32 ypos = (F32)( -((S32)g_pplayer->m_height/2) );
     const F32 yoff = volume_adjustment_bar_big_size[1] * 2.0f;
 
     for(F32 vol = 0.f, y= - ( volume_adjustment_bar_ysize*0.5f );
@@ -244,12 +244,12 @@ void mixer_draw()
 		const U32 drop_color = ( volume_adjustment_drop_color & 0xffffff00 ) | alpha;
 
 		// Calculate the scale.
-		const float sX = - (float)g_pplayer->m_pin3d.m_dwRenderHeight*(float)(1.0/601.0); //changed from 600 to 601 to correct fadeout shadow lines
-		const float sY = - (float)g_pplayer->m_pin3d.m_dwRenderWidth *(float)(1.0/800.0);
+		const float sX = - (float)g_pplayer->m_height*(float)(1.0/601.0); //changed from 600 to 601 to correct fadeout shadow lines
+		const float sY = - (float)g_pplayer->m_width *(float)(1.0/800.0);
 
 		// Set the position.  
-		const float fX = (float)g_pplayer->m_pin3d.m_dwRenderHeight + (volume_adjustment_bar_pos[0] * sX);
-		const float fY = (float)g_pplayer->m_pin3d.m_dwRenderWidth  + (volume_adjustment_bar_pos[1] * sY) + (y * sY);
+		const float fX = (float)g_pplayer->m_height + (volume_adjustment_bar_pos[0] * sX);
+		const float fY = (float)g_pplayer->m_width  + (volume_adjustment_bar_pos[1] * sY) + (y * sY);
 
 		// Set the width and height.
 		const float Width = size[0] * sX;
