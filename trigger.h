@@ -22,6 +22,7 @@ public:
 	float m_hit_height; //trigger hit object height ... default 50
 	bool m_fEnabled;
 	bool m_fVisible;
+	U32 m_time_msec;
     float m_animSpeed;
 	};
 

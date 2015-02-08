@@ -10,11 +10,11 @@ Trigger::Trigger()
    unhitEvent = false;
    doAnimation = false;
    moveDown = false;
+   animHeightOffset=0.0f;
 
    m_hitEnabled = true;
    vertexBuffer = NULL;
    triggerIndexBuffer=NULL;
-   vertexBuffer=NULL;
    triggerVertices=NULL;
    m_menuid = IDR_SURFACEMENU;
 }
@@ -58,7 +58,7 @@ void Trigger::UpdateEditorView()
             faceIndices = triggerSimpleIndices;
             meshVertices = triggerSimple;
         }
-        if( m_d.m_shape==TriggerStar )
+        else if( m_d.m_shape==TriggerStar )
         {
             numVertices=triggerStarNumVertices;
             numFaces=triggerStarNumFaces;
@@ -219,7 +219,6 @@ void Trigger::SetDefaults(bool fromMouseClick)
 
    hr = GetRegStringAsFloat("DefaultProps\\trigger","AnimSpeed", &fTmp);
    m_d.m_animSpeed = (hr == S_OK) && fromMouseClick ? fTmp : 1.0f;
-
 }
 
 void Trigger::PreRender(Sur * const psur)
@@ -522,17 +521,17 @@ void Trigger::TriggerAnimationUnhit()
 
 void Trigger::PostRenderStatic(RenderDevice* pd3dDevice)
 {
-    if (!m_d.m_fVisible || m_d.m_shape==TriggerNone)
-        return;
+    const U32 old_time_msec = (m_d.m_time_msec < g_pplayer->m_time_msec) ? m_d.m_time_msec : g_pplayer->m_time_msec;
+    m_d.m_time_msec = g_pplayer->m_time_msec;
+    const float diff_time_msec = (float)(g_pplayer->m_time_msec-old_time_msec);
 
-    float animLimit=38.0f;
-    if( m_d.m_shape==TriggerStar )
-        animLimit=13.0f;
+	if (!m_d.m_fVisible || m_d.m_shape==TriggerNone)
+        return;
+    
+	const float animLimit = ( m_d.m_shape==TriggerStar ) ? 13.0f : 38.0f;
 
     pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelDeclaration );
     pd3dDevice->basicShader->SetTechnique("basic_without_texture");
-
-    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
     Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
     pd3dDevice->basicShader->SetMaterial(mat);
@@ -550,14 +549,14 @@ void Trigger::PostRenderStatic(RenderDevice* pd3dDevice)
         doAnimation=true;
         unhitEvent=false;
         hitEvent=false;
-        animHeightOffset=animLimit;
+        animHeightOffset=animLimit*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
         moveDown=false;
     }
 
-    if ( doAnimation)
+    if (doAnimation)
     {
-        const float step = m_d.m_animSpeed*(m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]);
-        const float limit = animLimit*(m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]);
+        const float step = diff_time_msec*m_d.m_animSpeed*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+        const float limit = animLimit*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
         if( moveDown ) 
         {
@@ -593,8 +592,6 @@ void Trigger::PostRenderStatic(RenderDevice* pd3dDevice)
         vertexBuffer->unlock();
     }
 
-
-
     pd3dDevice->basicShader->Begin(0);
     pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, vertexBuffer, 0, numVertices, triggerIndexBuffer, 0, numFaces );
     pd3dDevice->basicShader->End();
@@ -602,43 +599,52 @@ void Trigger::PostRenderStatic(RenderDevice* pd3dDevice)
 
 void Trigger::RenderSetup(RenderDevice* pd3dDevice)
 {
-    if (!m_d.m_fVisible || m_d.m_shape==TriggerNone)
+   m_d.m_time_msec = g_pplayer->m_time_msec;
+
+   hitEvent = false;
+   unhitEvent = false;
+   doAnimation = false;
+   moveDown = false;
+   animHeightOffset=0.0f;
+
+   if (!m_d.m_fVisible || m_d.m_shape==TriggerNone)
       return;
 
-   animHeightOffset=0.0f;
    Vertex3D_NoTex2 *buf;
    Vertex3D_NoTex2 *verts;
-   std::vector<WORD> indices;
-   if ( m_d.m_shape==TriggerWire)
+   if (m_d.m_shape==TriggerWire)
    {
-       indices.resize(triggerSimpleNumFaces);
        numVertices = triggerSimpleNumVertices;
        numFaces = triggerSimpleNumFaces;
        verts = triggerSimple;
-       for( int i=0;i<numFaces;i++ ) indices[i] = triggerSimpleIndices[i];
+	   if ( triggerVertices )
+		   delete [] triggerVertices;
        triggerVertices = new Vertex3D_NoTex2[numVertices];
    }
-   if ( m_d.m_shape==TriggerStar)
+   else if (m_d.m_shape==TriggerStar)
    {
-       indices.resize(triggerStarNumFaces);
        numVertices = triggerStarNumVertices;
        numFaces = triggerStarNumFaces;
        verts = triggerStar;
-       for( int i=0;i<numFaces;i++ ) indices[i] = triggerStarIndices[i];
+	   if ( triggerVertices )
+	      delete [] triggerVertices;
        triggerVertices = new Vertex3D_NoTex2[numVertices];
    }
+
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
    const float baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
    if (triggerIndexBuffer)
        triggerIndexBuffer->release();
-   triggerIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer( indices );
 
-   if ( vertexBuffer==NULL )
-   {
-      ppin3d->m_pd3dDevice->CreateVertexBuffer( numVertices, D3DUSAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer );
-      NumVideoBytes += numVertices*sizeof(Vertex3D_NoTex2);
-   }
+   triggerIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(numFaces, (m_d.m_shape==TriggerWire) ? triggerSimpleIndices : triggerStarIndices);
+
+   if (vertexBuffer)
+	   vertexBuffer->release();
+
+   ppin3d->m_pd3dDevice->CreateVertexBuffer( numVertices, D3DUSAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer );
+   NumVideoBytes += numVertices*sizeof(Vertex3D_NoTex2);
+
    Matrix3D fullMatrix;
    fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotation));
 
@@ -670,7 +676,6 @@ void Trigger::RenderSetup(RenderDevice* pd3dDevice)
    }
    memcpy( buf, triggerVertices, sizeof(Vertex3D_NoTex2)*numVertices );
    vertexBuffer->unlock();
-
 }
 
 void Trigger::RenderStatic(RenderDevice* pd3dDevice)
