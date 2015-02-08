@@ -913,14 +913,14 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 	}
 
 	if (m_fFullScreen)
-		{
+	{
 		SetWindowPos(m_hwnd, NULL, 0, 0, m_screenwidth, m_screenheight, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE);
 		m_pixelaspectratio = ((float)m_screenwidth / (float)m_screenheight) / (float)(4.0/3.0);
-		}
+	}
 	else
-		{
+	{
 		m_pixelaspectratio = ((float)m_width / (float)m_height) / (float)(4.0/3.0);
-		}
+	}
 
 	m_pininput.Init(m_hwnd);
 
@@ -1291,7 +1291,7 @@ void Player::InitWindow()
 
 	hr = GetRegInt("Player", "Height", &m_height);
 	if (hr != S_OK)
-		m_height = m_width *3/4;
+		m_height = m_width * 3/4;
 
 	int fullscreen;
 	hr = GetRegInt("Player", "FullScreen", &fullscreen);
@@ -1300,15 +1300,10 @@ void Player::InitWindow()
 	else
 	    m_fFullScreen = (fullscreen == 1);
 
-	int screenwidth;
-	int screenheight;
-
 	if (m_fFullScreen)
 	{
 		m_screenwidth = m_width;
 		m_screenheight = m_height;
-		screenwidth = m_width;
-		screenheight = m_height;
 		hr = GetRegInt("Player", "ColorDepth", &m_screendepth);
 		if (hr != S_OK)
 			m_screendepth = 32; // The default
@@ -1318,25 +1313,25 @@ void Player::InitWindow()
 	}
 	else
 	{
-		screenwidth = GetSystemMetrics(SM_CXSCREEN);
-		screenheight = GetSystemMetrics(SM_CYSCREEN);
+		m_screenwidth = GetSystemMetrics(SM_CXSCREEN);
+		m_screenheight = GetSystemMetrics(SM_CYSCREEN);
+
+		// constrain window to screen
+		if (m_width > m_screenwidth)
+		{
+			m_width = m_screenwidth;
+			m_height = m_width * 3/4;
+		}
+
+		if (m_height > m_screenheight)
+		{
+			m_height = m_screenheight;
+			m_width = m_height * 4/3;
+		}
 	}
 
-	// constrain window to screen
-	if (!m_fFullScreen && (m_width > screenwidth))
-	{
-		m_width = screenwidth;
-		m_height = m_width * 3 / 4;
-	}
-
-	if (!m_fFullScreen && (m_height > screenheight))
-	{
-		m_height = screenheight;
-		m_width = m_height * 4 / 3;
-	}
-
-	int x = (screenwidth - m_width) / 2;
-	int y = (screenheight - m_height) / 2;
+	const int x = (m_screenwidth - m_width) / 2;
+	int y = (m_screenheight - m_height) / 2;
 
 	// No window border, title, or control boxes.
 	int windowflags = WS_POPUP;
@@ -1344,17 +1339,15 @@ void Player::InitWindow()
 
 	const int captionheight = GetSystemMetrics(SM_CYCAPTION);
 
-	if (!m_fFullScreen && (screenheight - m_height >= (captionheight*2))) // We have enough room for a frame
+	if (!m_fFullScreen && ((m_screenheight - m_height) >= (captionheight*2))) // We have enough room for a frame
 	{
-			// Add a pretty window border and standard control boxes.
-			windowflags = WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_CLIPCHILDREN;
-			windowflagsex = WS_EX_OVERLAPPEDWINDOW;
+		// Add a pretty window border and standard control boxes.
+		windowflags = WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_CLIPCHILDREN;
+		windowflagsex = WS_EX_OVERLAPPEDWINDOW;
 
-			y -= captionheight;
-			m_height += captionheight;
-		}
-
-    float aspect = ((float)m_width)/((float)m_height);
+		y -= captionheight;
+		m_height += captionheight;
+	}
 
 	int ballStretchMode;
 	hr = GetRegInt("Player", "BallStretchMode", &ballStretchMode);
@@ -1367,11 +1360,10 @@ void Player::InitWindow()
 	if (hr != S_OK)
 		ballStretchMonitor = 1; // assume 16:9
 
-	 float scalebackX = (m_ptable->m_BG_scalex[m_ptable->m_BG_current_set] != 0.0f) ? ((m_ptable->m_BG_scalex[m_ptable->m_BG_current_set] + m_ptable->m_BG_scaley[m_ptable->m_BG_current_set])*0.5f)/m_ptable->m_BG_scalex[m_ptable->m_BG_current_set] : 1.0f;
-	 float scalebackY = (m_ptable->m_BG_scaley[m_ptable->m_BG_current_set] != 0.0f) ? ((m_ptable->m_BG_scalex[m_ptable->m_BG_current_set] + m_ptable->m_BG_scaley[m_ptable->m_BG_current_set])*0.5f)/m_ptable->m_BG_scaley[m_ptable->m_BG_current_set] : 1.0f;
+	const float scalebackX = (m_ptable->m_BG_scalex[m_ptable->m_BG_current_set] != 0.0f) ? ((m_ptable->m_BG_scalex[m_ptable->m_BG_current_set] + m_ptable->m_BG_scaley[m_ptable->m_BG_current_set])*0.5f)/m_ptable->m_BG_scalex[m_ptable->m_BG_current_set] : 1.0f;
+	const float scalebackY = (m_ptable->m_BG_scaley[m_ptable->m_BG_current_set] != 0.0f) ? ((m_ptable->m_BG_scalex[m_ptable->m_BG_current_set] + m_ptable->m_BG_scaley[m_ptable->m_BG_current_set])*0.5f)/m_ptable->m_BG_scaley[m_ptable->m_BG_current_set] : 1.0f;
 
-	float xMonitor = 16.0f;
-	float yMonitor = 9.0f;
+	float xMonitor,yMonitor;
 	switch (ballStretchMonitor)
 	{
 	case 0: 
@@ -1406,16 +1398,17 @@ void Player::InitWindow()
 		xMonitor = (float)(10.0 / 4.0);
 		yMonitor = (float)(21.0 / 3.0);
 		break;
-
+	default:
+		xMonitor = 16.0f;
+		yMonitor = 9.0f;
+		break;
 	}
 	const float scalebackMonitorX = ((xMonitor + yMonitor)*0.5f)/xMonitor;
 	const float scalebackMonitorY = (((xMonitor + yMonitor)*0.5f)/yMonitor);
 
 	float temprotation = m_ptable->m_BG_rotation[m_ptable->m_BG_current_set];
 	while (temprotation < 0.f)
-	{
 		temprotation += 360.0f;
-	}
 
 	const float c = sinf(ANGTORAD(fmodf(temprotation + 90.0f,180.0f)));
 	const float s = sinf(ANGTORAD(fmodf(temprotation,180.0f)));
@@ -1429,7 +1422,7 @@ void Player::InitWindow()
 				break;
 		case 2: m_BallStretchX = scalebackX*c + scalebackY*s;
 				m_BallStretchY = scalebackY*c + scalebackX*s;
-				if (m_fFullScreen || (m_width == screenwidth && m_height == screenheight))      // detect windowed fullscreen
+				if (m_fFullScreen || (m_width == m_screenwidth && m_height == m_screenheight)) // detect windowed fullscreen
 				{
 					m_BallStretchX *= scalebackMonitorX*c + scalebackMonitorY*s;
 					m_BallStretchY *= scalebackMonitorY*c + scalebackMonitorX*s;
@@ -1444,20 +1437,20 @@ void Player::InitWindow()
 	SetCursorPos( 400, 999999 ); // ShowCursor(false)?
 }
 
-void Player::NudgeX(const int x, const int j )
+void Player::NudgeX(const int x, const int j)
 {
-   int v=x;
-   if( x>m_ptable->m_tblAccelMaxX) v=m_ptable->m_tblAccelMaxX;
-   if( x<-m_ptable->m_tblAccelMaxX) v=-m_ptable->m_tblAccelMaxX;
-	m_curAccel_x[j] = v;
+   int v = x;
+   if(x >  m_ptable->m_tblAccelMaxX) v =  m_ptable->m_tblAccelMaxX;
+   if(x < -m_ptable->m_tblAccelMaxX) v = -m_ptable->m_tblAccelMaxX;
+   m_curAccel_x[j] = v;
 }
 
-void Player::NudgeY(const int y, const int j )
+void Player::NudgeY(const int y, const int j)
 {
-   int v=y;
-   if( y>m_ptable->m_tblAccelMaxY) v=m_ptable->m_tblAccelMaxY;
-   if( y<-m_ptable->m_tblAccelMaxY) v=-m_ptable->m_tblAccelMaxY;
-	m_curAccel_y[j] = v;
+   int v = y;
+   if(y >  m_ptable->m_tblAccelMaxY) v =  m_ptable->m_tblAccelMaxY;
+   if(y < -m_ptable->m_tblAccelMaxY) v = -m_ptable->m_tblAccelMaxY;
+   m_curAccel_y[j] = v;
 }
 
 #define GetNudgeX() (((F32)m_curAccel_x[0]) * (F32)(2.0 / JOYRANGE)) // Get the -2 .. 2 values from joystick input tilt sensor / ushock //!! why 2?
@@ -2200,8 +2193,8 @@ void Player::DMDdraw(const float DMDposx, const float DMDposy, const float DMDwi
     const D3DXVECTOR4 c = convertColor(DMDcolor);
     m_pin3d.m_pd3dDevice->DMDShader->Core()->SetVector("vColor",&c);
 	m_pin3d.m_pd3dDevice->DMDShader->Core()->SetFloat("intensity",intensity);
-    m_pin3d.m_pd3dDevice->DMDShader->SetTechnique((float)g_pplayer->m_width*DMDwidth/(float)g_pplayer->m_dmdx <= 3.74f ? "basic_DMD_tiny" : ((float)g_pplayer->m_width*DMDwidth/(float)g_pplayer->m_dmdx <= 7.49f ? "basic_DMD" : "basic_DMD_big")); // use different smoothing functions for LED/Plasma emulation (rule of thumb here: up to quarter width of 1920HD = tiny, up to half width of 1920HD = normal, up to full width of 1920HD = big)
     m_pin3d.m_pd3dDevice->DMDShader->SetTexture("Texture0", g_pplayer->m_device_texdmd);
+    m_pin3d.m_pd3dDevice->DMDShader->SetTechnique((float)g_pplayer->m_width*DMDwidth/(float)g_pplayer->m_dmdx <= 3.74f ? "basic_DMD_tiny" : ((float)g_pplayer->m_width*DMDwidth/(float)g_pplayer->m_dmdx <= 7.49f ? "basic_DMD" : "basic_DMD_big")); // use different smoothing functions for LED/Plasma emulation (rule of thumb here: up to quarter width of 1920HD = tiny, up to half width of 1920HD = normal, up to full width of 1920HD = big)
     m_pin3d.m_pd3dDevice->DMDShader->Begin(0);
     m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_TEX, (LPVOID)DMDVerts, 4);
     m_pin3d.m_pd3dDevice->DMDShader->End();
@@ -2230,8 +2223,8 @@ void Player::Spritedraw(const float posx, const float posy, const float width, c
     const D3DXVECTOR4 c = COLORREF_to_D3DXVECTOR4(color);
     m_pin3d.m_pd3dDevice->DMDShader->Core()->SetVector("vColor",&c);
 	m_pin3d.m_pd3dDevice->DMDShader->Core()->SetFloat("intensity",intensity);
-    m_pin3d.m_pd3dDevice->DMDShader->SetTechnique("basic_noDMD");
     m_pin3d.m_pd3dDevice->DMDShader->SetTexture("Texture0", tex);
+    m_pin3d.m_pd3dDevice->DMDShader->SetTechnique("basic_noDMD");
     m_pin3d.m_pd3dDevice->DMDShader->Begin(0);
     m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_TEX, (LPVOID)Verts, 4);
     m_pin3d.m_pd3dDevice->DMDShader->End();
@@ -2260,8 +2253,8 @@ void Player::Spritedraw(const float posx, const float posy, const float width, c
     const D3DXVECTOR4 c = COLORREF_to_D3DXVECTOR4(color);
     m_pin3d.m_pd3dDevice->DMDShader->Core()->SetVector("vColor",&c);
 	m_pin3d.m_pd3dDevice->DMDShader->Core()->SetFloat("intensity",intensity);
-    m_pin3d.m_pd3dDevice->DMDShader->SetTechnique("basic_noDMD");
     m_pin3d.m_pd3dDevice->DMDShader->SetTexture("Texture0", tex);
+    m_pin3d.m_pd3dDevice->DMDShader->SetTechnique("basic_noDMD");
     m_pin3d.m_pd3dDevice->DMDShader->Begin(0);
     m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_TEX, (LPVOID)Verts, 4);
     m_pin3d.m_pd3dDevice->DMDShader->End();

@@ -162,12 +162,12 @@ public:
 
 template <class VtxType>
 void SetHUDVertices(VtxType * const rgv, const int count)
-	{
+{
 	const float mult = (float)g_pplayer->m_pin3d.m_dwRenderWidth * (float)(1.0/EDITOR_BG_WIDTH);
-	const float ymult = mult / (float)g_pplayer->m_pixelaspectratio;
+	const float ymult = mult / g_pplayer->m_pixelaspectratio;
 
 	for (int i=0; i<count; ++i)
-		{
+	{
 		rgv[i].tu = rgv[i].x = rgv[i].x*mult-0.5f;
 		rgv[i].tv = rgv[i].y = rgv[i].y*ymult-0.5f;
 		rgv[i].z = 0.f;
@@ -175,8 +175,8 @@ void SetHUDVertices(VtxType * const rgv, const int count)
 		rgv[i].nx = 0.0f;
 		rgv[i].ny = 0.0f;
 		rgv[i].nz = 0.0f;
-		}
 	}
+}
 
 template <class CurveType, class VtxType, class VtxContType>
 void RecurseSmoothLine(const CurveType & cc, float t1, float t2, const VtxType & vt1, const VtxType & vt2, VtxContType & vv, float accuracy)
