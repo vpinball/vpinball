@@ -165,7 +165,6 @@ private:
 
     Matrix3D fullMatrix;
 
-    Vertex3D_NoTex2 *baseVertices;
     Vertex3D_NoTex2 *ringVertices;
     Texture baseTexture;
     Texture ringTexture;
@@ -173,7 +172,6 @@ private:
     Texture socketTexture;
     Material ringMaterial;
 
-    //float   ringAnimHeightOffset;
     float   baseHeight;
     bool    ringDown;
     bool    ringAnimate;
