@@ -181,7 +181,7 @@ static bool NVAPIinit = false; //!! meh
 //#define MY_IDX_BUF_SIZE 8192
 #define MY_IDX_BUF_SIZE 65536
 
-RenderDevice::RenderDevice(HWND hwnd, int width, int height, bool fullscreen, int screenWidth, int screenHeight, int colordepth, int &refreshrate, int VSync, bool useAA, bool stereo3DFXAA)
+RenderDevice::RenderDevice(HWND hwnd, int width, int height, bool fullscreen, int colordepth, int &refreshrate, int VSync, bool useAA, bool stereo3DFXAA)
     : m_texMan(*this)
 {
     m_adapter = D3DADAPTER_DEFAULT;     // for now, always use the default adapter
@@ -246,12 +246,6 @@ RenderDevice::RenderDevice(HWND hwnd, int width, int height, bool fullscreen, in
 	// limit vsync rate to actual refresh rate, otherwise special handling in renderloop
 	if(VSync > refreshrate)
 		VSync = 0;
-
-	if(fullscreen)
-	{
-		width = screenWidth;
-		height = screenHeight;
-	}
 
     D3DPRESENT_PARAMETERS params;
     params.BackBufferWidth = width;
@@ -346,7 +340,7 @@ RenderDevice::RenderDevice(HWND hwnd, int width, int height, bool fullscreen, in
 		D3DUSAGE_RENDERTARGET, /*D3DFMT_X8R8G8B8*/D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &m_pOffscreenBackBufferTexture, NULL)); //!! D3DFMT_A32B32G32R32F?
 	CHECKD3D(m_pOffscreenBackBufferTexture->GetSurfaceLevel(0, &m_pOffscreenBackBuffer));
 
-	//CHECKD3D(m_pD3DDevice->CreateTexture(fullscreen ? screenWidth : width, fullscreen ? screenHeight : height, 1,
+	//CHECKD3D(m_pD3DDevice->CreateTexture(width, height, 1,
 	//	D3DUSAGE_DEPTHSTENCIL, /*D3DFMT_INTZ*/(D3DFORMAT)MAKEFOURCC('I','N','T','Z'), D3DPOOL_DEFAULT, &m_pOffscreenBackBufferZTexture, NULL));
 	//CHECKD3D(m_pOffscreenBackBufferZTexture->GetSurfaceLevel(0, &m_pOffscreenBackBufferZ));
 	////m_pD3DDevice->SetDepthStencilSurface(m_pOffscreenBackBufferZ);
