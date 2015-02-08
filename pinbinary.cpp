@@ -27,7 +27,7 @@ void PinBinary::ReadFromFile(char *szfilename)
 
 	if (m_pdata)
 		{
-		delete m_pdata;
+		delete [] m_pdata;
 		}
 
 	m_cdata = GetFileSize(hFile, NULL);
