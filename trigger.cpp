@@ -33,7 +33,7 @@ Trigger::~Trigger()
    }
    if ( triggerVertices )
    {
-       delete triggerVertices;
+       delete [] triggerVertices;
        triggerVertices=0;
    }
 }
@@ -262,7 +262,6 @@ void Trigger::Render(Sur * const psur)
 
        psur->Polygon(vvertex);
 
-
        bool fDrawDragpoints = (m_selectstate != eNotSelected) || (g_pvp->m_fAlwaysDrawDragPoints);		//>>> added by chris
        // if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
        if ( !fDrawDragpoints )
@@ -289,9 +288,7 @@ void Trigger::Render(Sur * const psur)
                psur->SetObject(pdp); 
 
                if (pdp->m_fDragging)
-               {
                    psur->SetBorderColor(RGB(0,255,0),false,0);
-               }
 
                psur->Ellipse2(pdp->m_v.x, pdp->m_v.y, 8);
            }
@@ -383,9 +380,7 @@ void Trigger::GetHitShapes(Vector<HitObject> * const pvho)
       pvho->AddElement(m_ptriggerhitcircle);
    }
    else
-   {
       CurvesToShapes(pvho);
-   }
 }
 
 void Trigger::GetHitShapesDebug(Vector<HitObject> * const pvho)
