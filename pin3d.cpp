@@ -164,7 +164,7 @@ HRESULT Pin3D::InitPin3D(const HWND hwnd, const bool fFullScreen, const int scre
 	m_useAA = useAA;
 
     try {
-        m_pd3dDevice = new RenderDevice(m_hwnd, width, height, fullScreen, colordepth, refreshrate, VSync, useAA, stereo3DFXAA);
+        m_pd3dDevice = new RenderDevice(m_hwnd, screenwidth, screenheight, fFullScreen, colordepth, refreshrate, VSync, useAA, stereo3DFXAA);
     } catch (...) {
         return E_FAIL;
     }
@@ -178,8 +178,8 @@ HRESULT Pin3D::InitPin3D(const HWND hwnd, const bool fFullScreen, const int scre
     // set the viewport for the newly created device
     vp.X=0;
     vp.Y=0;
-    vp.Width=width;
-    vp.Height=height;
+    vp.Width=screenwidth;
+    vp.Height=screenheight;
     vp.MinZ=0.0f;
     vp.MaxZ=1.0f;
     m_pd3dDevice->SetViewport( &vp );
