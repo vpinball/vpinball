@@ -7,9 +7,7 @@ class BumperAnimObject : public AnimObject
 public:
 	virtual void Check3D()   { }
 	virtual void Reset();
-    void UpdateAnimation();
-	float m_fHeight;
-	U32 m_TimeReset; // Time at which to turn off light
+    float m_fHeight;
 	int m_iframedesired;
     float m_ringAnimOffset;
     float m_ringAnimStep;

@@ -408,7 +408,12 @@ void Bumper::PostRenderStatic(RenderDevice* pd3dDevice)
 {
    TRACE_FUNCTION();
 
-   if ( ringVertexBuffer==NULL ) return;
+   if ( ringVertexBuffer==NULL )
+	   return;
+
+   const U32 old_time_msec = (m_d.m_time_msec < g_pplayer->m_time_msec) ? m_d.m_time_msec : g_pplayer->m_time_msec;
+   m_d.m_time_msec = g_pplayer->m_time_msec;
+   const float diff_time_msec = (float)(g_pplayer->m_time_msec-old_time_msec);
 
    pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelDeclaration );
 
@@ -431,8 +436,8 @@ void Bumper::PostRenderStatic(RenderDevice* pd3dDevice)
          const float step = m_d.m_ringSpeed*(m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]*m_d.m_heightScale);
          const float limit = 45.f*(m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]*m_d.m_heightScale);
          m_pbumperhitcircle->m_bumperanim.m_ringAnimStep = ringDown ? -step : step;
-         m_pbumperhitcircle->m_bumperanim.UpdateAnimation();
-         if( ringDown ) 
+         m_pbumperhitcircle->m_bumperanim.m_ringAnimOffset += m_pbumperhitcircle->m_bumperanim.m_ringAnimStep*diff_time_msec;
+         if( ringDown )
          {
             if (m_pbumperhitcircle->m_bumperanim.m_ringAnimOffset<-limit)
             {
@@ -477,10 +482,10 @@ void Bumper::PostRenderStatic(RenderDevice* pd3dDevice)
    }
    if ( m_d.m_fCapVisible )
    {
-      pd3dDevice->basicShader->SetTechnique("basic_with_texture");
       mat = m_ptable->GetMaterial(m_d.m_szCapMaterial);
       if ( mat->m_bOpacityActive )
       {
+         pd3dDevice->basicShader->SetTechnique("basic_with_texture");
          pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
          RenderCap(pd3dDevice, mat);
          pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
@@ -490,6 +495,8 @@ void Bumper::PostRenderStatic(RenderDevice* pd3dDevice)
 
 void Bumper::RenderSetup(RenderDevice* pd3dDevice )
 {
+   m_d.m_time_msec = g_pplayer->m_time_msec;
+
    //   const float outerradius = m_d.m_radius + m_d.m_overhang;
    baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 

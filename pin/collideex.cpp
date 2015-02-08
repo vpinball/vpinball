@@ -3,7 +3,6 @@
 BumperHitCircle::BumperHitCircle()
 {
 	m_bumperanim.m_fHeight = 0;
-	m_bumperanim.m_TimeReset = 0;
 	m_bumperanim.m_iframedesired = 0;
 	m_bumperanim.m_fHitEvent = false;
     m_bumperanim.m_ringAnimOffset = 0.0f;
@@ -33,7 +32,6 @@ void BumperHitCircle::Collide(CollisionEvent* coll)
 		pball->m_vel.y += hitnormal.y * m_pbumper->m_d.m_force;
 
 		m_bumperanim.m_fHitEvent = true;
-        m_bumperanim.m_TimeReset = g_pplayer->m_time_msec + 5;
 
 		m_pbumper->FireGroupEvent(DISPID_HitEvents_Hit);
 	}
@@ -42,19 +40,6 @@ void BumperHitCircle::Collide(CollisionEvent* coll)
 void BumperAnimObject::Reset()
 {
 	m_fHeight = 0;
-}
-
-void BumperAnimObject::UpdateAnimation()
-{
-    if (!m_fVisible)
-        return;
-
-    if (m_TimeReset < g_pplayer->m_time_msec)
-    {
-        m_ringAnimOffset += m_ringAnimStep;
-        m_TimeReset = g_pplayer->m_time_msec + 5;
-    }
-
 }
 
 ////////////////////////////////////////////////////////////////////////////////

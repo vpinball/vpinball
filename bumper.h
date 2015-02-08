@@ -56,6 +56,7 @@ public:
 	float m_heightScale;
     float m_orientation;
     float m_ringSpeed;
+	U32 m_time_msec;
 	TimerDataRoot m_tdr;
     char m_szCapMaterial[32];
     char m_szBaseMaterial[32];
