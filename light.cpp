@@ -560,12 +560,12 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
 	if(customMoverVBuffer == NULL) // in case of degenerate light
 		return;
 
+    if (m_fBackglass && !GetPTable()->GetDecalsEnabled())
+        return;
+
 	const U32 old_time_msec = (m_d.m_time_msec < g_pplayer->m_time_msec) ? m_d.m_time_msec : g_pplayer->m_time_msec;
     m_d.m_time_msec = g_pplayer->m_time_msec;
 	const float diff_time_msec = (float)(g_pplayer->m_time_msec-old_time_msec);
-
-    if (m_fBackglass && !GetPTable()->GetDecalsEnabled())
-        return;
 
     if (m_realState == LightStateBlinking)
         UpdateBlinker(g_pplayer->m_time_msec);
