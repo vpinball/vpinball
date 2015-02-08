@@ -509,7 +509,7 @@ void Light::EndPlay()
 
 float Light::GetDepth(const Vertex3Ds& viewDir) 
 { 
-      return m_d.m_depthBias + viewDir.x * m_d.m_vCenter.x + viewDir.y * m_d.m_vCenter.y + viewDir.z * m_surfaceHeight; 
+   return m_d.m_depthBias + viewDir.x * m_d.m_vCenter.x + viewDir.y * m_d.m_vCenter.y + viewDir.z * m_surfaceHeight; 
 }
 
 void Light::ClearForOverwrite()
@@ -523,12 +523,12 @@ void Light::RenderBulbMesh(RenderDevice *pd3dDevice, COLORREF color, bool isOn)
     pd3dDevice->basicShader->SetTechnique("basic_without_texture");
     Material mat;
     mat.m_cBase = 0x181818;
-    mat.m_fWrapLighting=0.5f;
-    mat.m_bOpacityActive=false;
+    mat.m_fWrapLighting = 0.5f;
+    mat.m_bOpacityActive = false;
     mat.m_fOpacity = 1.0f;
-    mat.m_cGlossy=0xB4B4B4;
-    mat.m_bIsMetal=false;
-    mat.m_fEdge=1.0f;
+    mat.m_cGlossy = 0xB4B4B4;
+    mat.m_bIsMetal = false;
+    mat.m_fEdge = 1.0f;
     mat.m_fRoughness = 0.9f;
     mat.m_cClearcoat = 0;
     pd3dDevice->basicShader->SetMaterial(&mat);
@@ -538,12 +538,12 @@ void Light::RenderBulbMesh(RenderDevice *pd3dDevice, COLORREF color, bool isOn)
     pd3dDevice->basicShader->End();
 
     mat.m_cBase = 0;
-    mat.m_fWrapLighting=0.5f;
-    mat.m_bOpacityActive=true;
+    mat.m_fWrapLighting = 0.5f;
+    mat.m_bOpacityActive = true;
     mat.m_fOpacity = 0.2f;
     mat.m_cGlossy = 0xFFFFFF;
-    mat.m_bIsMetal=false;
-    mat.m_fEdge=1.0f;    
+    mat.m_bIsMetal = false;
+    mat.m_fEdge = 1.0f;    
     mat.m_fRoughness = 0.9f;
     mat.m_cClearcoat = 0xFFFFFF;
     pd3dDevice->basicShader->SetMaterial(&mat);

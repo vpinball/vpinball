@@ -53,8 +53,8 @@ void Pin3D::TransformVertices(const Vertex3D_NoTex2 * rgv, const WORD * rgi, int
 {
 	// Get the width and height of the viewport. This is needed to scale the
 	// transformed vertices to fit the render window.
-	const float rClipWidth  = vp.Width*0.5f;
-	const float rClipHeight = vp.Height*0.5f;
+	const float rClipWidth  = (float)vp.Width*0.5f;
+	const float rClipHeight = (float)vp.Height*0.5f;
 	const int xoffset = vp.X;
 	const int yoffset = vp.Y;
 
@@ -160,18 +160,11 @@ void EnvmapPrecalc(const DWORD* const __restrict envmap, const DWORD env_xres, c
 HRESULT Pin3D::InitPin3D(const HWND hwnd, const bool fFullScreen, const int screenwidth, const int screenheight, const int colordepth, int &refreshrate, const int VSync, const bool useAA, const bool stereo3DFXAA, const bool useAO)
 {
     m_hwnd = hwnd;
-    //fullscreen = fFullScreen;
 
-    // Get the dimensions of the viewport and screen bounds //!! meh?!
-    RECT rcScreen;
-    GetClientRect( hwnd, &rcScreen );
-    ClientToScreen( hwnd, (POINT*)&rcScreen.left );
-    ClientToScreen( hwnd, (POINT*)&rcScreen.right );
-    m_dwRenderWidth  = rcScreen.right  - rcScreen.left;
-    m_dwRenderHeight = rcScreen.bottom - rcScreen.top;
+	m_useAA = useAA;
 
     try {
-        m_pd3dDevice = new RenderDevice(m_hwnd, fFullScreen ? screenwidth : m_dwRenderWidth, fFullScreen ? screenheight : m_dwRenderHeight, fFullScreen, colordepth, refreshrate, VSync, useAA, stereo3DFXAA);
+        m_pd3dDevice = new RenderDevice(m_hwnd, width, height, fullScreen, colordepth, refreshrate, VSync, useAA, stereo3DFXAA);
     } catch (...) {
         return E_FAIL;
     }
@@ -185,8 +178,8 @@ HRESULT Pin3D::InitPin3D(const HWND hwnd, const bool fFullScreen, const int scre
     // set the viewport for the newly created device
     vp.X=0;
     vp.Y=0;
-    vp.Width=m_dwRenderWidth;
-    vp.Height=m_dwRenderHeight;
+    vp.Width=width;
+    vp.Height=height;
     vp.MinZ=0.0f;
     vp.MaxZ=1.0f;
     m_pd3dDevice->SetViewport( &vp );
@@ -375,7 +368,7 @@ void Pin3D::InitLayout()
 	for (int i=0; i<g_pplayer->m_ptable->m_vedit.Size(); ++i)
 		g_pplayer->m_ptable->m_vedit.ElementAt(i)->GetBoundingVertices(&vvertex3D);
 
-	const float aspect = ((float)m_dwRenderWidth)/((float)m_dwRenderHeight); //(float)(4.0/3.0);
+	const float aspect = ((float)vp.Width)/((float)vp.Height); //(float)(4.0/3.0);
 
     m_proj.FitCameraToVertices(&vvertex3D, aspect, rotation, inclination, FOV, g_pplayer->m_ptable->m_BG_xlatez[g_pplayer->m_ptable->m_BG_current_set], g_pplayer->m_ptable->m_BG_layback[g_pplayer->m_ptable->m_BG_current_set]);
 
@@ -564,8 +557,8 @@ Vertex3Ds Pin3D::Unproject( const Vertex3Ds& point)
    m2.Invert();
    Vertex3Ds p,p3;
 
-   p.x = 2.0f * (point.x-g_pplayer->m_pin3d.vp.X) / g_pplayer->m_pin3d.vp.Width - 1.0f; 
-   p.y = 1.0f - 2.0f * (point.y-g_pplayer->m_pin3d.vp.Y) / g_pplayer->m_pin3d.vp.Height; 
+   p.x = 2.0f * (point.x-(float)g_pplayer->m_pin3d.vp.X) / (float)g_pplayer->m_pin3d.vp.Width - 1.0f; 
+   p.y = 1.0f - 2.0f * (point.y-(float)g_pplayer->m_pin3d.vp.Y) / (float)g_pplayer->m_pin3d.vp.Height; 
    p.z = (point.z - g_pplayer->m_pin3d.vp.MinZ) / (g_pplayer->m_pin3d.vp.MaxZ-g_pplayer->m_pin3d.vp.MinZ);
    p3 = m2.MultiplyVector( p );
    return p3;
@@ -574,8 +567,8 @@ Vertex3Ds Pin3D::Unproject( const Vertex3Ds& point)
 Vertex3Ds Pin3D::Get3DPointFrom2D( const POINT& p )
 {
    Vertex3Ds p1,p2,pNear,pFar;
-   pNear.x = (float)p.x; pNear.y = (float)p.y; pNear.z = (float)vp.MinZ;
-   pFar.x = (float)p.x; pFar.y = (float)p.y; pFar.z = (float)vp.MaxZ;
+   pNear.x = (float)p.x; pNear.y = (float)p.y; pNear.z = vp.MinZ;
+   pFar.x = (float)p.x; pFar.y = (float)p.y; pFar.z = vp.MaxZ;
    p1 = Unproject( pNear );
    p2 = Unproject( pFar);
    float wz = g_pplayer->m_ptable->m_tableheight;

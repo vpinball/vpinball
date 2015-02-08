@@ -48,7 +48,7 @@ public:
 	Pin3D();
 	~Pin3D();
 
-	HRESULT InitPin3D(const HWND hwnd, const bool fFullScreen, const int screenwidth, const int screenheight, const int colordepth, int &refreshrate, const int VSync, const bool useAA, const bool stereo3DFXAA, const bool useAO);
+	HRESULT InitPin3D(const HWND hwnd, const bool fullScreen, const int width, const int height, const int colordepth, int &refreshrate, const int VSync, const bool useAA, const bool stereo3DFXAA, const bool useAO);
 
 	void InitLayout();
 
@@ -108,14 +108,12 @@ public:
 
     PinProjection m_proj;
 
-	int m_dwRenderWidth;
-	int m_dwRenderHeight;
-
 	HWND m_hwnd;
 
     //Vertex3Ds m_viewVec;        // direction the camera is facing
 
     //bool fullscreen;
+	bool m_useAA;
     ViewPort vp;
 
 private:

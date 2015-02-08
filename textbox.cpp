@@ -240,8 +240,6 @@ void Textbox::PostRenderStatic(RenderDevice* pd3dDevice)
 
 void Textbox::RenderSetup(RenderDevice* pd3dDevice)
 {
-    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-
     const float left   = min(m_d.m_v1.x, m_d.m_v2.x);
     const float right  = max(m_d.m_v1.x, m_d.m_v2.x);
     const float top    = min(m_d.m_v1.y, m_d.m_v2.y);
@@ -256,7 +254,7 @@ void Textbox::RenderSetup(RenderDevice* pd3dDevice)
 
     CY size;
     m_pIFontPlay->get_Size(&size);
-    size.int64 = (LONGLONG)(size.int64 / 1.5 * ppin3d->m_dwRenderHeight * ppin3d->m_dwRenderWidth);
+    size.int64 = (LONGLONG)(size.int64 / 1.5 * g_pplayer->m_height * g_pplayer->m_width);
     m_pIFontPlay->put_Size(size);
 
     RenderText();
@@ -268,8 +266,6 @@ void Textbox::RenderStatic(RenderDevice* pd3dDevice)
 	
 void Textbox::RenderText()
 {
-    Pin3D *const ppin3d = &g_pplayer->m_pin3d;
-
     const int width = m_rect.right - m_rect.left;
     const int height = m_rect.bottom - m_rect.top;
 
@@ -290,14 +286,13 @@ void Textbox::RenderText()
     HDC hdc = CreateCompatibleDC(NULL);
     HBITMAP oldBmp = (HBITMAP)SelectObject(hdc, hbm);
 
-    {
-        HBRUSH hbrush = CreateSolidBrush(m_d.m_backcolor);
-        HBRUSH hbrushold = (HBRUSH)SelectObject(hdc, hbrush);
-        PatBlt(hdc, 0, 0, width, height, PATCOPY);
-        SelectObject(hdc, hbrushold);
-        DeleteObject(hbrush);
-    }
-    HFONT hFont;
+    HBRUSH hbrush = CreateSolidBrush(m_d.m_backcolor);
+    HBRUSH hbrushold = (HBRUSH)SelectObject(hdc, hbrush);
+    PatBlt(hdc, 0, 0, width, height, PATCOPY);
+    SelectObject(hdc, hbrushold);
+    DeleteObject(hbrush);
+
+	HFONT hFont;
     m_pIFontPlay->get_hFont(&hFont);
     HFONT oldFont = (HFONT)SelectObject(hdc, hFont);
     SetTextColor(hdc, m_d.m_fontcolor);
@@ -321,9 +316,8 @@ void Textbox::RenderText()
             break;
     }
 
-    int border = (4 * ppin3d->m_dwRenderWidth) / EDITOR_BG_WIDTH;
+    const int border = (4 * g_pplayer->m_width) / EDITOR_BG_WIDTH;
     RECT rcOut;
-
     rcOut.left = border;
     rcOut.top = border;
     rcOut.right = width - border * 2;
@@ -352,7 +346,7 @@ void Textbox::RenderText()
 		pch += m_texture->pitch() - m_texture->width()*4;
 	}
 
-    ppin3d->m_pd3dDevice->m_texMan.SetDirty(m_texture);
+    g_pplayer->m_pin3d.m_pd3dDevice->m_texMan.SetDirty(m_texture);
 
     SelectObject(hdc, oldFont);
     SelectObject(hdc, oldBmp);

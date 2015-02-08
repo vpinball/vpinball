@@ -163,8 +163,10 @@ public:
 template <class VtxType>
 void SetHUDVertices(VtxType * const rgv, const int count)
 {
-	const float mult = (float)g_pplayer->m_pin3d.m_dwRenderWidth * (float)(1.0/EDITOR_BG_WIDTH);
-	const float ymult = mult / g_pplayer->m_pixelaspectratio;
+	const float mult = (float)g_pplayer->m_width * (float)(1.0/EDITOR_BG_WIDTH)
+		             * (g_pplayer->m_pin3d.m_useAA ? 2.0f : 1.0f); //!! WTF?
+	const float ymult = mult /
+		                (((float)g_pplayer->m_screenwidth / (float)g_pplayer->m_screenheight) / (float)(4.0/3.0)); //!! ?
 
 	for (int i=0; i<count; ++i)
 	{
