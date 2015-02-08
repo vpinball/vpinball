@@ -344,7 +344,8 @@ Variables
 Falloff(float)
 FalloffPower(float)
 State(LightState) - 0=Off, 1=On, 2=Blinking
-*Color(OLE_COLOR)
+*Color(OLE_COLOR) - 'normal' color
+*ColorFull(OLE_COLOR) - full brightness color
 Intensity(float) - sets the lights brightness/emission
 IntensityScale(float) - sets the lights brightness/emission scale, so that one can fade in/out all affected lights with the same scaling factor
 TimerEnabled(bool)

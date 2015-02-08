@@ -26,6 +26,7 @@ public:
     //float m_meshFadeSpeed;
     LightState m_state;
 	COLORREF m_color;
+	COLORREF m_color2;
 	TimerDataRoot m_tdr;
 	Shape m_shape;
 	//char m_rgblinkpattern[33];
@@ -213,6 +214,8 @@ public:
 	STDMETHOD(put_X)(/*[in]*/ float newVal);
 	STDMETHOD(get_Color)(/*[out, retval]*/ OLE_COLOR *pVal);
 	STDMETHOD(put_Color)(/*[in]*/ OLE_COLOR newVal);
+	STDMETHOD(get_ColorFull)(/*[out, retval]*/ OLE_COLOR *pVal);
+	STDMETHOD(put_ColorFull)(/*[in]*/ OLE_COLOR newVal);
 	STDMETHOD(get_State)(/*[out, retval]*/ LightState *pVal);
 	STDMETHOD(put_State)(/*[in]*/ LightState newVal);
 	STDMETHOD(get_Falloff)(/*[out, retval]*/ float *pVal);

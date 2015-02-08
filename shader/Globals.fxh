@@ -226,7 +226,7 @@ float3 DoEnvmap2ndLayer(float3 color1stLayer, float3 pos, float3 N, float3 V, fl
    return lerp(color1stLayer, InvGamma(tex2Dlod(texSampler1, float4(uv, 0, 0)).xyz)*fenvEmissionScale, w); // weight (optional) lower diffuse/glossy layer with clearcoat/specular //!! replace by real HDR instead? -> remove invgamma then
 }
 
-float4 lightLoop(float3 pos, float3 N, float3 V, float3 diffuse, float3 glossy, float3 specular, float edge)
+float3 lightLoop(float3 pos, float3 N, float3 V, float3 diffuse, float3 glossy, float3 specular, float edge)
 {
    // normalize input vectors for BRDF evals
    N = normalize(N);
@@ -267,7 +267,7 @@ float4 lightLoop(float3 pos, float3 N, float3 V, float3 diffuse, float3 glossy, 
    if(specularMax > 0.0f)
       color = DoEnvmap2ndLayer(color, pos, N, V, specular);
   
-   return float4(/*Gamma(ToneMap(*/vAmbient + color/*))*/, 1.0f);
+   return /*Gamma(ToneMap(*/vAmbient + color/*))*/;
 }
 
 float4 Additive(float4 cBase, float4 cBlend, float percent)
@@ -305,7 +305,7 @@ float4 Overlay (float4 cBase, float4 cBlend, float percent)
 	// interpolate between the two, 
 	// using color as influence value
 	float4 blend = cBlend;
-	cNew= lerp(cBase*blend*2.0f, 1.0f-2.0f*(1.0f-cBase)*(1.0f-blend), cNew);
+	cNew = lerp(cBase*blend*2.0f, 1.0f-2.0f*(1.0f-cBase)*(1.0f-blend), cNew);
 
 	//cNew.a = 1.0f;
 	return cNew;

@@ -296,7 +296,6 @@ void IHaveDragPoints::GetRgVertex(std::vector<RenderVertex> & vv, bool loop, flo
    }
 }
 
-
 void IHaveDragPoints::GetPointDialogPanes(Vector<PropertyPane> *pvproppane)
 {
    PropertyPane *pproppane = new PropertyPane(IDD_PROPPOINT_VISUALS, IDS_VISUALS);

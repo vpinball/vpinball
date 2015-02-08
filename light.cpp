@@ -172,6 +172,12 @@ void Light::SetDefaults(bool fromMouseClick)
    else
       m_d.m_color = RGB(255,255,0);
 
+   hr = GetRegInt("DefaultProps\\Light","ColorFull", &iTmp);
+   if ((hr == S_OK) && fromMouseClick)
+      m_d.m_color2 = iTmp;
+   else
+      m_d.m_color2 = RGB(255,255,255);
+
    hr = GetRegString("DefaultProps\\Light","OffImage", m_d.m_szOffImage, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szOffImage[0] = 0;
@@ -267,6 +273,7 @@ void Light::WriteRegDefaults()
    SetRegValue("DefaultProps\\Light","TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
    SetRegValue("DefaultProps\\Light","TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval, 4);
    SetRegValue("DefaultProps\\Light","Color",REG_DWORD,&m_d.m_color,4);
+   SetRegValue("DefaultProps\\Light","ColorFull",REG_DWORD,&m_d.m_color2,4);
    SetRegValue("DefaultProps\\Light","OffImage", REG_SZ, &m_d.m_szOffImage,lstrlen(m_d.m_szOffImage));
    SetRegValue("DefaultProps\\Light","BlinkPattern", REG_SZ, &m_rgblinkpattern, lstrlen(m_rgblinkpattern));
    SetRegValue("DefaultProps\\Light","BlinkInterval", REG_DWORD, &m_blinkinterval,4);
@@ -296,7 +303,7 @@ Texture *Light::GetDisplayTexture()
 void Light::PreRender(Sur * const psur)
 {
    psur->SetBorderColor(-1,false,0);
-   psur->SetFillColor(m_ptable->RenderSolid() ? m_d.m_color : -1);
+   psur->SetFillColor(m_ptable->RenderSolid() ? (((m_d.m_color&0xFEFEFE)+(m_d.m_color2&0xFEFEFE))/2) : -1);
    psur->SetObject(this);
 
    // workaround for the old round light object
@@ -568,10 +575,6 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
     const bool isOn = (m_realState == LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : !!m_realState;
     const float height = m_surfaceHeight;
 
-    const float r = (float)(m_d.m_color & 255) * (float)(1.0/255.0);
-    const float g = (float)(m_d.m_color & 65280) * (float)(1.0/65280.0);
-    const float b = (float)(m_d.m_color & 16711680) * (float)(1.0/16711680.0);
-
     if (!m_fBackglass)
     {
 	    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
@@ -587,9 +590,11 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
 	if(m_fBackglass)
 		SetHUDVertices(&centerHUD,1);
 	D3DXVECTOR4 center(centerHUD.x, centerHUD.y, !m_fBackglass ? m_surfaceHeight+0.05f : 0.0f, 0.0f);
-    D3DXVECTOR4 diffColor(r,g,b,1.0f);
+    D3DXVECTOR4 lightColor = convertColor(m_d.m_color);
+    D3DXVECTOR4 lightColor2 = convertColor(m_d.m_color2);
     pd3dDevice->basicShader->Core()->SetVector("lightCenter", &center);
-    pd3dDevice->basicShader->Core()->SetVector("lightColor", &diffColor);
+    pd3dDevice->basicShader->Core()->SetVector("lightColor", &lightColor);
+    pd3dDevice->basicShader->Core()->SetVector("lightColor2", &lightColor2);
     pd3dDevice->basicShader->Core()->SetFloat("maxRange",m_d.m_falloff);
     pd3dDevice->basicShader->Core()->SetFloat("falloff_power",m_d.m_falloff_power);
     if ( isOn )
@@ -864,6 +869,7 @@ HRESULT Light::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptke
    bw.WriteFloat(FID(FAPO), m_d.m_falloff_power);
    bw.WriteInt(FID(STAT), m_d.m_state);
    bw.WriteInt(FID(COLR), m_d.m_color);
+   bw.WriteInt(FID(COL2), m_d.m_color2);
    bw.WriteBool(FID(TMON), m_d.m_tdr.m_fTimerEnabled);
    bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
    bw.WriteString(FID(BPAT), m_rgblinkpattern);
@@ -910,6 +916,7 @@ HRESULT Light::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, 
    m_d.m_tdr.m_TimerInterval = 100;
 
    m_d.m_color = RGB(255,255,0);
+   m_d.m_color2 = RGB(255,255,255);
 
    strcpy_s(m_rgblinkpattern, sizeof(m_rgblinkpattern), "10");
    m_blinkinterval = 125;
@@ -953,6 +960,10 @@ BOOL Light::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(COLR))
    {
       pbr->GetInt(&m_d.m_color);
+   }
+   else if (id == FID(COL2))
+   {
+      pbr->GetInt(&m_d.m_color2);
    }
    else if (id == FID(IMG1))
    {
@@ -1258,6 +1269,24 @@ STDMETHODIMP Light::put_Color(OLE_COLOR newVal)
    STARTUNDO
 
    m_d.m_color = newVal;
+
+   STOPUNDO
+
+   return S_OK;
+}
+
+STDMETHODIMP Light::get_ColorFull(OLE_COLOR *pVal)
+{
+   *pVal = m_d.m_color2;
+
+   return S_OK;
+}
+
+STDMETHODIMP Light::put_ColorFull(OLE_COLOR newVal)
+{
+   STARTUNDO
+
+   m_d.m_color2 = newVal;
 
    STOPUNDO
 

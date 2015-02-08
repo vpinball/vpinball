@@ -103,9 +103,9 @@ class CatmullCurve<3>
 public:	
 	void SetCurve(const Vertex3Ds& v0, const Vertex3Ds& v1, const Vertex3Ds& v2, const Vertex3Ds& v3)
 	{
-        float dt0 = powf((v1 - v0).LengthSquared(), 0.25f);
-        float dt1 = powf((v2 - v1).LengthSquared(), 0.25f);
-        float dt2 = powf((v3 - v2).LengthSquared(), 0.25f);
+        float dt0 = sqrtf((v1 - v0).Length());
+        float dt1 = sqrtf((v2 - v1).Length());
+        float dt2 = sqrtf((v3 - v2).Length());
 
         // check for repeated control points
         if (dt1 < 1e-4f)    dt1 = 1.0f;

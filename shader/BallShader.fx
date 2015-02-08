@@ -89,7 +89,7 @@ vout vsBall( in vin IN )
     float3 normal = normalize(mul(nspin, matWorldView/*InverseTranspose*/)).xyz; //!!?
     
 	OUT.position = mul(pos, matWorldViewProj);
-   OUT.tex0	    = IN.tex0;
+    OUT.tex0	 = IN.tex0;
 	OUT.normal   = normal;
 	OUT.worldPos = p;
 	return OUT;
@@ -138,7 +138,7 @@ voutTrail vsBallTrail( in vin IN )
 
 //------------------------------------
 
-float4 ballLightLoop(float3 pos, float3 N, float3 V, float3 diffuse, float3 glossy, float3 specular, float edge)
+float3 ballLightLoop(float3 pos, float3 N, float3 V, float3 diffuse, float3 glossy, float3 specular, float edge)
 {
    // normalize input vectors for BRDF evals
    N = normalize(N);
@@ -171,7 +171,7 @@ float4 ballLightLoop(float3 pos, float3 N, float3 V, float3 diffuse, float3 glos
    if(specularMax > 0.0f)
       color += specular; //!! blend? //!! Fresnel with 1st layer?
   
-   return float4(/*Gamma(ToneMap(*/vAmbient + color/*))*/, fmaterialAlpha);
+   return /*Gamma(ToneMap(*/vAmbient + color/*))*/;
 }
 
 
@@ -222,7 +222,7 @@ float4 psBall( in vout IN ) : COLOR
 	   playfieldColor = InvGamma(tex2Dlod( texSampler1, float4(uv, 0.f,0.f) ).xyz); //!! rather use screen space sample from previous frame??
 	   
 	   //!! hack to get some lighting on sample, but only diffuse, the rest is not setup correctly anyhow
-	   playfieldColor = lightLoop(mid, mul(float4(/*normal=*/0,0,1,0), matWorldView).xyz, /*camera=0,0,0,1*/-mid, playfieldColor, float3(0,0,0), float3(0,0,0), 1.0f).xyz;
+	   playfieldColor = lightLoop(mid, mul(float4(/*normal=*/0,0,1,0), matWorldView).xyz, /*camera=0,0,0,1*/-mid, playfieldColor, float3(0,0,0), float3(0,0,0), 1.0f);
 	   
 	   //!! magic falloff & weight the rest in from the ballImage
 	   float weight = fplayfieldReflectionStrength*-NdotR; //!! sqrt(-NdotR)?
@@ -240,7 +240,9 @@ float4 psBall( in vout IN ) : COLOR
 	if(!decalMode)
 	    specular *= float3(1.f,1.f,1.f)-decalColor.xyz; // see above
    
-    float4 result = ballLightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular, 1.0f);
+    float4 result;
+	result.xyz = ballLightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular, 1.0f);
+	result.a = fmaterialAlpha;
     return result;
 }
 
