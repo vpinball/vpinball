@@ -588,7 +588,7 @@ STDMETHODIMP Kicker::DestroyBall(int *pVal)
    return S_OK;
 }
 
-STDMETHODIMP Kicker::KickXYZ(float angle, float speed, float inclination, float x, float y,float z)
+STDMETHODIMP Kicker::KickXYZ(float angle, float speed, float inclination, float x, float y, float z)
 {
    if (g_pplayer && m_phitkickercircle && m_phitkickercircle->m_pball)
    {

@@ -570,7 +570,10 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
     if (m_realState == LightStateBlinking)
         UpdateBlinker(g_pplayer->m_time_msec);
 
-    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+    if(m_fBackglass && g_pplayer->m_ptable->m_tblMirrorEnabled)
+		pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
+
+	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
     const bool isOn = (m_realState == LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : !!m_realState;
     const float height = m_surfaceHeight;
@@ -662,6 +665,9 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
 	    pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
 	    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
 	}
+
+	if(m_fBackglass && g_pplayer->m_ptable->m_tblMirrorEnabled)
+		pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 }
 
 void Light::PrepareMoversCustom()

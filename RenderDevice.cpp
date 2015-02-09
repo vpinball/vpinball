@@ -799,7 +799,7 @@ void RenderDevice::SetZBuffer( RenderTarget* surf)
     CHECKD3D(m_pD3DDevice->SetDepthStencilSurface(surf));
 }
 
-void RenderDevice::SetRenderState( const RenderStates p1, const DWORD p2 )
+void RenderDevice::SetRenderState( const RenderStates p1, DWORD p2 )
 {
    if ( (unsigned int)p1 < RENDER_STATE_CACHE_SIZE)
    {
@@ -810,6 +810,15 @@ void RenderDevice::SetRenderState( const RenderStates p1, const DWORD p2 )
       }
       renderStateCache[p1]=p2;
    }
+
+   if(p1 == CULLMODE && g_pplayer->m_ptable->m_tblMirrorEnabled)
+   {
+	   if(p2 == D3DCULL_CCW)
+		   p2 = D3DCULL_CW;
+	   else if(p2 == D3DCULL_CW)
+		   p2 = D3DCULL_CCW;
+   }
+
    CHECKD3D(m_pD3DDevice->SetRenderState((D3DRENDERSTATETYPE)p1, p2));
 
    m_curStateChanges++;
