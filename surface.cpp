@@ -551,25 +551,16 @@ void Surface::PostRenderStatic(RenderDevice* pd3dDevice)
 
 void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
 {
-   Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-   Texture * const pinSide = m_ptable->GetImage(m_d.m_szSideImage);
-
    std::vector<RenderVertex> vvertex;
    GetRgVertex(vvertex);
    float *rgtexcoord = NULL;
 
+   Texture * const pinSide = m_ptable->GetImage(m_d.m_szSideImage);
    if (pinSide)
-   {
       GetTextureCoords(vvertex, &rgtexcoord);
-   }
 
    numVertices = vvertex.size();
    Vertex2D * const rgnormal = new Vertex2D[numVertices];
-   if ( sideVBuffer )
-   {
-      sideVBuffer->release();
-      sideVBuffer=0;
-   }
 
    for (int i=0;i<numVertices;i++)
    {
@@ -584,6 +575,11 @@ void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
       rgnormal[i].y = dx*inv_len;
    }
 
+   if ( sideVBuffer )
+   {
+      sideVBuffer->release();
+      sideVBuffer=0;
+   }
    pd3dDevice->CreateVertexBuffer( numVertices*4, 0, MY_D3DFVF_NOTEX2_VERTEX, &sideVBuffer );
    Vertex3D_NoTex2 *verts;
    sideVBuffer->lock( 0, 0, (void**)&verts, VertexBuffer::WRITEONLY);
@@ -664,12 +660,12 @@ void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
        int offset2=0;
        for (int i=0; i<numVertices; i++, offset2+=4)
        {
-           rgi.push_back( offset2 );
-           rgi.push_back( offset2+1 );
-           rgi.push_back( offset2+2 );
-           rgi.push_back( offset2 );
-           rgi.push_back( offset2+2 );
-           rgi.push_back( offset2+3 );
+           rgi[i*6  ] = offset2;
+           rgi[i*6+1] = offset2+1;
+           rgi[i*6+2] = offset2+2;
+           rgi[i*6+3] = offset2;
+           rgi[i*6+4] = offset2+2;
+           rgi[i*6+5] = offset2+3;
        }
 
        if (sideIBuffer)
