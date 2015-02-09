@@ -218,11 +218,6 @@ void Kicker::RenderSetup(RenderDevice* pd3dDevice)
 
    if( m_d.m_kickertype == KickerCup )
    {
-      std::vector<WORD> indices(kickerCupNumFaces);
-      Vertex3D_NoTex2 *buf;
-      for( int i=0;i<kickerCupNumFaces;i++ )
-		  indices[i] = kickerCupIndices[i];
-
       texture.CreateFromResource(IDB_KICKER_CUP);
 
       numFaces = kickerCupNumFaces;
@@ -230,15 +225,16 @@ void Kicker::RenderSetup(RenderDevice* pd3dDevice)
 
       if (indexBuffer)
          indexBuffer->release();
-      indexBuffer = pd3dDevice->CreateAndFillIndexBuffer( indices );
+      indexBuffer = pd3dDevice->CreateAndFillIndexBuffer( kickerCupNumFaces, kickerCupIndices );
 
-      if (!vertexBuffer)
-         pd3dDevice->CreateVertexBuffer(kickerCupNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer);
-
+      if (vertexBuffer)
+		  vertexBuffer->release();
+	  pd3dDevice->CreateVertexBuffer(kickerCupNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer);
 
       Matrix3D fullMatrix;
       fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_orientation));
 
+      Vertex3D_NoTex2 *buf;
       vertexBuffer->lock(0, 0, (void**)&buf, 0);
       for( int i=0;i<kickerCupNumVertices;i++ )
       {
@@ -258,12 +254,9 @@ void Kicker::RenderSetup(RenderDevice* pd3dDevice)
       }
       vertexBuffer->unlock();
    }
+
    if( m_d.m_kickertype == KickerHole )
    {
-      std::vector<WORD> indices(kickerHoleNumFaces);
-      Vertex3D_NoTex2 *buf;
-      for( unsigned int i=0;i<kickerHoleNumFaces;i++ ) indices[i] = kickerHoleIndices[i];
-
       texture.CreateFromResource(IDB_KICKER_HOLE_WOOD);
 
       numFaces = kickerHoleNumFaces;
@@ -271,15 +264,16 @@ void Kicker::RenderSetup(RenderDevice* pd3dDevice)
 
       if (indexBuffer)
          indexBuffer->release();
-      indexBuffer = pd3dDevice->CreateAndFillIndexBuffer( indices );
+      indexBuffer = pd3dDevice->CreateAndFillIndexBuffer( kickerHoleNumFaces, kickerHoleIndices );
 
-      if (!vertexBuffer)
-         pd3dDevice->CreateVertexBuffer(numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer);
-
+      if (vertexBuffer)
+		  vertexBuffer->release();
+	  pd3dDevice->CreateVertexBuffer(numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer);
 
       Matrix3D fullMatrix;
       fullMatrix.RotateZMatrix(ANGTORAD(0));
 
+      Vertex3D_NoTex2 *buf;
       vertexBuffer->lock(0, 0, (void**)&buf, 0);
       for( unsigned int i=0;i<numVertices;i++ )
       {
@@ -299,7 +293,6 @@ void Kicker::RenderSetup(RenderDevice* pd3dDevice)
       }
       vertexBuffer->unlock();
    }
-
 }
 
 
@@ -317,10 +310,9 @@ void Kicker::RenderStatic(RenderDevice* pd3dDevice)
       Vertex3D_NoTex2 *buf = new Vertex3D_NoTex2[kickerPlateNumVertices];
       for ( unsigned int i=0;i<kickerPlateNumVertices;i++ )
       {
-         buf[i].x = (kickerPlate[i].x*(m_d.m_radius-0.1f))+m_d.m_vCenter.x;
-         buf[i].y = (kickerPlate[i].y*(m_d.m_radius-0.1f))+m_d.m_vCenter.y;
-         buf[i].z = (kickerPlate[i].z*(m_d.m_radius-0.1f))*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
-         buf[i].z += height;
+         buf[i].x = kickerPlate[i].x*(m_d.m_radius-0.1f)+m_d.m_vCenter.x;
+         buf[i].y = kickerPlate[i].y*(m_d.m_radius-0.1f)+m_d.m_vCenter.y;
+         buf[i].z = kickerPlate[i].z*(m_d.m_radius-0.1f)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + height;
          buf[i].nx = kickerPlate[i].nx;
          buf[i].ny = kickerPlate[i].ny;
          buf[i].nz = kickerPlate[i].nz;

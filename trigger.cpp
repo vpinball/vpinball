@@ -610,7 +610,6 @@ void Trigger::RenderSetup(RenderDevice* pd3dDevice)
    if (!m_d.m_fVisible || m_d.m_shape==TriggerNone)
       return;
 
-   Vertex3D_NoTex2 *buf;
    Vertex3D_NoTex2 *verts;
    if (m_d.m_shape==TriggerWire)
    {
@@ -648,6 +647,7 @@ void Trigger::RenderSetup(RenderDevice* pd3dDevice)
    Matrix3D fullMatrix;
    fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotation));
 
+   Vertex3D_NoTex2 *buf;
    vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY);
    for( int i=0;i<numVertices;i++ )
    {

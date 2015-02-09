@@ -170,7 +170,7 @@ void SetHUDVertices(VtxType * const rgv, const int count)
 
 	for (int i=0; i<count; ++i)
 	{
-		rgv[i].tu = rgv[i].x = rgv[i].x*mult-0.5f;
+		rgv[i].tu = rgv[i].x = rgv[i].x*mult-0.5f;  //!! abuses tu tv to pass position :/
 		rgv[i].tv = rgv[i].y = rgv[i].y*ymult-0.5f;
 		rgv[i].z = 0.f;
 

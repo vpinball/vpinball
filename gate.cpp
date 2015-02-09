@@ -453,12 +453,10 @@ void Gate::PostRenderStatic(RenderDevice* pd3dDevice)
 void Gate::RenderSetup(RenderDevice* pd3dDevice)
 {
     baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
-    std::vector<WORD> indices(gateBracketNumFaces);
 
-    for( int i=0;i<gateBracketNumFaces;i++ ) indices[i] = gateBracketIndices[i];
     if (bracketIndexBuffer)
         bracketIndexBuffer->release();
-    bracketIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer( indices );
+    bracketIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer( gateBracketNumFaces, gateBracketIndices );
 
     if (!bracketVertexBuffer)
         pd3dDevice->CreateVertexBuffer(gateBracketNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &bracketVertexBuffer);
@@ -486,37 +484,31 @@ void Gate::RenderSetup(RenderDevice* pd3dDevice)
     }
     bracketVertexBuffer->unlock();
 
-    indices.clear();
-    indices.resize(gateWireNumFaces);
-    for( int i=0;i<gateWireNumFaces;i++ ) indices[i] = gateWireIndices[i];
     if (wireIndexBuffer)
         wireIndexBuffer->release();
-    wireIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer( indices );
+    wireIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer( gateWireNumFaces, gateWireIndices );
 
     if (!wireVertexBuffer)
         pd3dDevice->CreateVertexBuffer(gateWireNumVertices, D3DUSAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &wireVertexBuffer);
 
-    wireVertices = new Vertex3D_NoTex2[gateWireNumVertices];
+    wireVertexBuffer->lock(0, 0, (void**)&buf, 0);
     for( int i=0;i<gateWireNumVertices;i++ )
     {
         Vertex3Ds vert(gateWire[i].x,gateWire[i].y,gateWire[i].z);
         vert = fullMatrix.MultiplyVector(vert);
 
-        wireVertices[i].x = vert.x*m_d.m_length+m_d.m_vCenter.x;
-        wireVertices[i].y = vert.y*m_d.m_length+m_d.m_vCenter.y;
-        wireVertices[i].z = vert.z*m_d.m_length*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_d.m_height + baseHeight;
+        buf[i].x = vert.x*m_d.m_length+m_d.m_vCenter.x;
+        buf[i].y = vert.y*m_d.m_length+m_d.m_vCenter.y;
+        buf[i].z = vert.z*m_d.m_length*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_d.m_height + baseHeight;
         vert = Vertex3Ds( gateWire[i].nx, gateWire[i].ny, gateWire[i].nz );
         vert = fullMatrix.MultiplyVectorNoTranslate(vert);
-        wireVertices[i].nx = vert.x;
-        wireVertices[i].ny = vert.y;
-        wireVertices[i].nz = vert.z;
-        wireVertices[i].tu = gateWire[i].tu;
-        wireVertices[i].tv = gateWire[i].tv;
+        buf[i].nx = vert.x;
+        buf[i].ny = vert.y;
+        buf[i].nz = vert.z;
+        buf[i].tu = gateWire[i].tu;
+        buf[i].tv = gateWire[i].tv;
     }
-    wireVertexBuffer->lock(0, 0, (void**)&buf, 0);
-    memcpy( buf, wireVertices, sizeof(Vertex3D_NoTex2)*gateWireNumVertices);
     wireVertexBuffer->unlock();
-   delete [] wireVertices;
 }
 
 void Gate::RenderStatic(RenderDevice* pd3dDevice) // only the support structures are rendered here

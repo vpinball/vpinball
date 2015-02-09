@@ -304,14 +304,13 @@ void Spinner::UpdatePlate( RenderDevice *pd3dDevice )
         buf[i].tv = spinnerPlate[i].tv;
     }
     plateVertexBuffer->unlock();
-
 }
 
 void Spinner::PostRenderStatic(RenderDevice* pd3dDevice)
 {
-
     TRACE_FUNCTION();
-    if (!m_phitspinner->m_spinneranim.m_fVisible || !m_d.m_fVisible)
+
+	if (!m_phitspinner->m_spinneranim.m_fVisible || !m_d.m_fVisible)
         return;
 
     Pin3D * const ppin3d = &g_pplayer->m_pin3d;
@@ -342,9 +341,8 @@ void Spinner::PostRenderStatic(RenderDevice* pd3dDevice)
 
 //    g_pplayer->UpdateBasicShaderMatrix();
 
-            pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+    pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
     pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, FALSE);
-
 }
 
 
@@ -354,19 +352,17 @@ void Spinner::RenderSetup(RenderDevice* pd3dDevice)
     return;
 
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
-   std::vector<WORD> indices(spinnerBracketNumFaces);
-   Vertex3D_NoTex2 *buf;
-   for( int i=0;i<spinnerBracketNumFaces;i++ ) indices[i] = spinnerBracketIndices[i];
 
    if (bracketIndexBuffer)
        bracketIndexBuffer->release();
-   bracketIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer( indices );
+   bracketIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer( spinnerBracketNumFaces, spinnerBracketIndices );
 
    if (!bracketVertexBuffer)
        pd3dDevice->CreateVertexBuffer(spinnerBracketNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &bracketVertexBuffer);
 
    fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotation));
 
+   Vertex3D_NoTex2 *buf;
    bracketVertexBuffer->lock(0, 0, (void**)&buf, 0);
    for( int i=0;i<spinnerBracketNumVertices;i++ )
    {
@@ -386,13 +382,9 @@ void Spinner::RenderSetup(RenderDevice* pd3dDevice)
        }
    bracketVertexBuffer->unlock();
 
-   indices.clear();
-   indices.resize(spinnerPlateNumFaces);
-   for( int i=0;i<spinnerPlateNumFaces;i++ ) indices[i] = spinnerPlateIndices[i];
-
    if (plateIndexBuffer)
        plateIndexBuffer->release();
-   plateIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer( indices );
+   plateIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer( spinnerPlateNumFaces, spinnerPlateIndices );
 
    if (!plateVertexBuffer)
        pd3dDevice->CreateVertexBuffer(spinnerPlateNumVertices, D3DUSAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &plateVertexBuffer);

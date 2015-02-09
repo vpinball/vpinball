@@ -322,7 +322,7 @@ void Player::Shutdown()
     SAFE_RELEASE(ballIndexBuffer);
     if (ballShader)
     {
-	ballShader->Core()->SetTexture("Texture0",NULL);
+		ballShader->Core()->SetTexture("Texture0",NULL);
         ballShader->Core()->SetTexture("Texture1",NULL);
         ballShader->Core()->SetTexture("Texture2",NULL);
         delete ballShader;
@@ -839,10 +839,7 @@ void Player::InitBallShader()
    ballShader->Core()->SetFloat("fEdge", 1.0f);
    ballShader->Core()->SetBool("bIsMetal", false); // as ball collects the diffuse playfield which uses this flag!
 
-   vector<WORD> indexList;
-   indexList.resize(basicBallNumFaces);
-   memcpy(&indexList[0],basicBallIndices, sizeof(WORD)*basicBallNumFaces);
-   ballIndexBuffer = m_pin3d.m_pd3dDevice->CreateAndFillIndexBuffer( indexList );
+   ballIndexBuffer = m_pin3d.m_pd3dDevice->CreateAndFillIndexBuffer( basicBallNumFaces, basicBallIndices );
 
    // VB for normal ball 
    m_pin3d.m_pd3dDevice->CreateVertexBuffer( 166, 0, MY_D3DFVF_NOTEX2_VERTEX, &ballVertexBuffer );
@@ -3163,22 +3160,22 @@ void Player::DrawBalls()
       if( pball->m_pinballDecal )
           ballShader->SetTexture("Texture2",pball->m_pinballDecal);
 
-      if ( drawReflection )
-        {
-          ballShader->Core()->SetFloat("freflectionStrength", (float)m_ptable->m_ballReflectionStrength/255.0f );
-          ballShader->Core()->SetFloat("fplayfieldReflectionStrength", (float)m_ptable->m_playfieldReflectionStrength/255.0f );
-            m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
-            m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
-            m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_DESTALPHA);
+	  if ( drawReflection )
+	  {
+		  ballShader->Core()->SetFloat("freflectionStrength", (float)m_ptable->m_ballReflectionStrength/255.0f );
+		  ballShader->Core()->SetFloat("fplayfieldReflectionStrength", (float)m_ptable->m_playfieldReflectionStrength/255.0f );
+		  m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
+		  m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
+		  m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_DESTALPHA);
 
-          ballShader->SetTechnique("RenderBallReflection");
-          ballShader->Begin(0);
-          m_pin3d.m_pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, ballVertexBuffer, 0, basicBallNumVertices, ballIndexBuffer, 0, basicBallNumFaces );
-          ballShader->End();
+		  ballShader->SetTechnique("RenderBallReflection");
+		  ballShader->Begin(0);
+		  m_pin3d.m_pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, ballVertexBuffer, 0, basicBallNumVertices, ballIndexBuffer, 0, basicBallNumFaces );
+		  ballShader->End();
 
-            m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-            m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_INVSRCALPHA);
-        }
+		  m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+		  m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_INVSRCALPHA);
+	  }
 
       ballShader->SetTechnique("RenderBall");
       ballShader->Begin(0);
