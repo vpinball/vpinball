@@ -56,7 +56,13 @@ void DispReel::SetDefaults(bool fromMouseClick)
 	else
 		m_d.m_fUseImageGrid = false;
 
-    hr = GetRegInt("DefaultProps\\EMReel","ImagesPerRow", &iTmp);
+	hr = GetRegInt("DefaultProps\\EMReel","Visible", &iTmp);
+	if ((hr == S_OK)&& fromMouseClick)
+		m_d.m_fVisible = iTmp == 0 ? false : true;
+	else
+		m_d.m_fVisible = true;
+
+	hr = GetRegInt("DefaultProps\\EMReel","ImagesPerRow", &iTmp);
 	m_d.m_imagesPerGridRow = (hr == S_OK) && fromMouseClick ? iTmp : 1;
 
 	hr = GetRegInt("DefaultProps\\EMReel","Transparent", &iTmp);
@@ -104,6 +110,7 @@ void DispReel::WriteRegDefaults()
 	SetRegValue("DefaultProps\\EMReel","Image", REG_SZ, &m_d.m_szImage,lstrlen(m_d.m_szImage));
 	SetRegValue("DefaultProps\\EMReel","Sound", REG_SZ, &m_d.m_szSound,lstrlen(m_d.m_szSound));
 	SetRegValueBool("DefaultProps\\Decal","UseImageGrid",m_d.m_fUseImageGrid);
+	SetRegValueBool("DefaultProps\\Decal","Visible",m_d.m_fVisible);
 	SetRegValueInt("DefaultProps\\Decal","ImagesPerRow",m_d.m_imagesPerGridRow);
 	SetRegValueBool("DefaultProps\\Decal","Transparent",m_d.m_fTransparent);
 	SetRegValueInt("DefaultProps\\Decal","ReelCount",m_d.m_reelcount);
@@ -256,7 +263,8 @@ void DispReel::EndPlay()
 void DispReel::PostRenderStatic(RenderDevice* pd3dDevice)
 {
     TRACE_FUNCTION();
-    if (!GetPTable()->GetEMReelsEnabled())
+    
+	if (!m_d.m_fVisible || !GetPTable()->GetEMReelsEnabled())
         return;
 
     Pin3D * const ppin3d = &g_pplayer->m_pin3d;
@@ -278,7 +286,7 @@ void DispReel::PostRenderStatic(RenderDevice* pd3dDevice)
 			0xFFFFFFFF, pin,
 			m_digitTexCoords[ReelInfo[i].currentValue].u_min,m_digitTexCoords[ReelInfo[i].currentValue].v_min,
 			m_digitTexCoords[ReelInfo[i].currentValue].u_max,m_digitTexCoords[ReelInfo[i].currentValue].v_max,
-			1.0f);
+			1.0f); //!!
 	}
 
 	g_pplayer->m_pin3d.DisableAlphaBlend();
@@ -547,6 +555,7 @@ HRESULT DispReel::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
     bw.WriteFloat(FID(RANG), dig);
     bw.WriteInt(FID(UPTM), m_d.m_updateinterval);
     bw.WriteBool(FID(UGRD), m_d.m_fUseImageGrid);
+    bw.WriteBool(FID(VISI), m_d.m_fVisible);
     bw.WriteInt(FID(GIPR), m_d.m_imagesPerGridRow);
 
 	ISelect::SaveData(pstm, hcrypthash, hcryptkey); //add BDS2
@@ -637,6 +646,10 @@ BOOL DispReel::LoadToken(int id, BiffReader *pbr)
 	else if (id == FID(UGRD))
 		{
 			pbr->GetBool(&m_d.m_fUseImageGrid);
+		}
+	else if (id == FID(VISI))
+		{
+			pbr->GetBool(&m_d.m_fVisible);
 		}
 	else if (id == FID(GIPR))
 		{
@@ -960,6 +973,22 @@ STDMETHODIMP DispReel::put_UseImageGrid(VARIANT_BOOL newVal)
 {
 	STARTUNDO
     m_d.m_fUseImageGrid = VBTOF(newVal);
+	STOPUNDO
+
+	return S_OK;
+}
+
+STDMETHODIMP DispReel::get_Visible(VARIANT_BOOL *pVal)
+{
+    *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fVisible);
+
+	return S_OK;
+}
+
+STDMETHODIMP DispReel::put_Visible(VARIANT_BOOL newVal)
+{
+	STARTUNDO
+    m_d.m_fVisible = VBTOF(newVal);
 	STOPUNDO
 
 	return S_OK;
