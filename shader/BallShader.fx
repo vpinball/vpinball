@@ -183,10 +183,15 @@ float4 psBall( in vout IN ) : COLOR
     float3 v = normalize(/*camera=0,0,0,1*/-IN.worldPos);
     float3 r = reflect(v, normalize(IN.normal));
 
+    float edge = dot(v, r);
+    float lod = (edge > 0.6f) ? // edge falloff to reduce aliasing on edges
+	edge*(6.0*1.0/0.4)-(6.0*0.6/0.4) :
+	0.0f;
+
 	float2 uv0;
 	uv0.x = r.x*0.5f+0.5f;
 	uv0.y = r.y*0.5f+0.5f;
-    float3 ballImageColor = InvGamma(tex2Dlod( texSampler0, float4(uv0, 0.f,0.f) ).xyz);
+    float3 ballImageColor = InvGamma(tex2Dlod( texSampler0, float4(uv0, 0.f,lod) ).xyz);
    
 	float4 decalColor = tex2D( texSampler7, IN.tex0 );
 	decalColor.xyz = InvGamma(decalColor.xyz);
@@ -244,13 +249,6 @@ float4 psBall( in vout IN ) : COLOR
     float4 result;
 	result.xyz = ballLightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular, 1.0f);
 	result.a = fmaterialAlpha;
-
-	float edge = dot(v, r);
-	if(edge > 0.6f) // edge falloff to reduce aliasing on edges
-	{
-	    float e = max((1.0/0.4)-edge*(1.0/0.4), 0.005f);
-	    result.xyz *= sqrt(e);
-	}
 
     return result;
 }
