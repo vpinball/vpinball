@@ -209,6 +209,7 @@ UpdateInterval(int)
 UserValue(any)
 *UserImageGrid(bool)
 ImagesPerGridRow(int)
+Visible(bool)
 
 Methods
 -------
