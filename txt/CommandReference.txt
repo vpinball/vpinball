@@ -517,6 +517,7 @@ Surface(string)
 UserValue(any)
 HitHeight(float)
 Rotation(float)
+AnimSpeed(float)
 
 Methods
 -------

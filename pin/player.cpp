@@ -842,7 +842,7 @@ void Player::InitBallShader()
    ballIndexBuffer = m_pin3d.m_pd3dDevice->CreateAndFillIndexBuffer( basicBallNumFaces, basicBallIndices );
 
    // VB for normal ball 
-   m_pin3d.m_pd3dDevice->CreateVertexBuffer( 166, 0, MY_D3DFVF_NOTEX2_VERTEX, &ballVertexBuffer );
+   m_pin3d.m_pd3dDevice->CreateVertexBuffer( basicBallNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &ballVertexBuffer );
 
    // load precomputed ball vertices into vertex buffer
    Vertex3D_NoTex2 *buf;
