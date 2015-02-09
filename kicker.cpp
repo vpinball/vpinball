@@ -612,6 +612,9 @@ STDMETHODIMP Kicker::KickXYZ(float angle, float speed, float inclination, float 
       if (speedz > 0.f)
          speed = cosf(inclination) * speed;
 
+	  m_phitkickercircle->m_pball->m_angularvelocity.Set(0,0,0);
+      m_phitkickercircle->m_pball->m_angularmomentum.Set(0,0,0);
+
       m_phitkickercircle->m_pball->m_pos.x += x; // brian's suggestion
       m_phitkickercircle->m_pball->m_pos.y += y; 
       m_phitkickercircle->m_pball->m_pos.z += z; 
