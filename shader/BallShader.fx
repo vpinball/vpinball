@@ -180,7 +180,8 @@ float3 ballLightLoop(float3 pos, float3 N, float3 V, float3 diffuse, float3 glos
 
 float4 psBall( in vout IN ) : COLOR
 {
-    float3 r = reflect(normalize(/*camera=0,0,0,1*/-IN.worldPos), normalize(IN.normal));
+    float3 v = normalize(/*camera=0,0,0,1*/-IN.worldPos);
+    float3 r = reflect(v, normalize(IN.normal));
 
 	float2 uv0;
 	uv0.x = r.x*0.5f+0.5f;
@@ -243,6 +244,14 @@ float4 psBall( in vout IN ) : COLOR
     float4 result;
 	result.xyz = ballLightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular, 1.0f);
 	result.a = fmaterialAlpha;
+
+	float edge = dot(v, r);
+	if(edge > 0.6f) // edge falloff to reduce aliasing on edges
+	{
+	    float e = max((1.0/0.4)-edge*(1.0/0.4), 0.005f);
+	    result.xyz *= sqrt(e);
+	}
+
     return result;
 }
 
