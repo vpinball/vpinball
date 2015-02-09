@@ -720,6 +720,15 @@ void Player::UpdateBasicShaderMatrix(const Matrix3D& objectTrafo)
 
     D3DXMATRIX matWorldView = matObject * matWorld * matView;
     D3DXMATRIX matWorldViewProj = matWorldView * matProj;
+
+	if(m_ptable->m_tblMirrorEnabled)
+	{
+		const D3DXMATRIX flip( -1, 0, 0, 0,
+							   0, 1, 0, 0,
+							   0, 0, 1, 0,
+							   0, 0, 0, 1 );
+		matWorldViewProj = matWorldViewProj * flip;
+	}
     
     Matrix3D temp;
     memcpy(temp.m,matWorldView.m,4*4*sizeof(float));
@@ -784,6 +793,15 @@ void Player::UpdateBallShaderMatrix()
 
     D3DXMATRIX matWorldView = matWorld * matView;
     D3DXMATRIX matWorldViewProj = matWorldView * matProj;
+
+	if(m_ptable->m_tblMirrorEnabled)
+	{
+		const D3DXMATRIX flip( -1, 0, 0, 0,
+							   0, 1, 0, 0,
+							   0, 0, 1, 0,
+							   0, 0, 0, 1 );
+		matWorldViewProj = matWorldViewProj * flip;
+	}
 
     Matrix3D temp;
     memcpy(temp.m,matWorldView.m,4*4*sizeof(float));

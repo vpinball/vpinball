@@ -509,8 +509,11 @@ void Decal::RenderSetup(RenderDevice* pd3dDevice )
 
 void Decal::RenderStatic(RenderDevice* pd3dDevice)
 {
-   if( m_fBackglass && !GetPTable()->GetDecalsEnabled())
+   if(m_fBackglass && !GetPTable()->GetDecalsEnabled())
        return;
+
+   if(m_fBackglass && g_pplayer->m_ptable->m_tblMirrorEnabled)
+	   pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
 
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
@@ -562,6 +565,9 @@ void Decal::RenderStatic(RenderDevice* pd3dDevice)
    // Set the render state.
    //pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_WRAP);
    g_pplayer->m_pin3d.DisableAlphaBlend();
+
+   if(m_fBackglass && g_pplayer->m_ptable->m_tblMirrorEnabled)
+	   pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 }
 
 void Decal::SetObjectPos()

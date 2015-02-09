@@ -283,9 +283,15 @@ void Pin3D::DrawBackground()
 		m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
 	    m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, FALSE);
 
+		if(g_pplayer->m_ptable->m_tblMirrorEnabled)
+			m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
+
 		g_pplayer->Spritedraw(0.f,0.f,1.f,1.f,0xFFFFFFFF,pin);
 
-	    m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, TRUE);
+		if(g_pplayer->m_ptable->m_tblMirrorEnabled)
+			m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+
+		m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, TRUE);
 		m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
 	}
 	else

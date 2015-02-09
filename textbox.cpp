@@ -212,6 +212,9 @@ void Textbox::PostRenderStatic(RenderDevice* pd3dDevice)
 {
     TRACE_FUNCTION();
 
+	if(g_pplayer->m_ptable->m_tblMirrorEnabled)
+		pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
+
 	const float mult = (float)(1.0/EDITOR_BG_WIDTH);
 	const float ymult = (float)(1.0/EDITOR_BG_WIDTH * 4.0/3.0);
 
@@ -221,21 +224,20 @@ void Textbox::PostRenderStatic(RenderDevice* pd3dDevice)
 	const float height = (float)(m_rect.bottom - m_rect.top)*ymult;
 
 	if(strstr(m_d.sztext,"DMD") != NULL) //!! meh
-	{
 		g_pplayer->DMDdraw(x, y, width, height,
 						   m_d.m_fontcolor, m_d.m_intensity_scale); //!! replace??!
+	else
+		if (m_texture)
+		{
+			g_pplayer->m_pin3d.EnableAlphaBlend(0x80, false);
 
-		return;
-	}
+			g_pplayer->Spritedraw(x, y, width, height, 0xFFFFFFFF, pd3dDevice->m_texMan.LoadTexture(m_texture), m_d.m_intensity_scale);
 
-	if (!m_texture)
-        return;
+			g_pplayer->m_pin3d.DisableAlphaBlend();
+		}
 
-	g_pplayer->m_pin3d.EnableAlphaBlend(0x80, false);
-
-	g_pplayer->Spritedraw(x, y, width, height, 0xFFFFFFFF, pd3dDevice->m_texMan.LoadTexture(m_texture), m_d.m_intensity_scale);
-
-	g_pplayer->m_pin3d.DisableAlphaBlend();
+	if(g_pplayer->m_ptable->m_tblMirrorEnabled)
+		pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 }
 
 void Textbox::RenderSetup(RenderDevice* pd3dDevice)

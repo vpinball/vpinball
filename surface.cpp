@@ -659,8 +659,7 @@ void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
 
    // prepare index buffer for sides
    {
-       std::vector<WORD> rgi;
-       rgi.reserve(numVertices*6);
+       std::vector<WORD> rgi(numVertices*6);
 
        int offset2=0;
        for (int i=0; i<numVertices; i++, offset2+=4)
@@ -953,17 +952,16 @@ void Surface::RenderSlingshots(RenderDevice* pd3dDevice)
 
 void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
 {
-    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-    Material *mat=0;
-    // render side
     pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelDeclaration );
 
-    ppin3d->EnableAlphaBlend(1,false);
+    g_pplayer->m_pin3d.EnableAlphaBlend(1,false);
     pd3dDevice->basicShader->PerformAlphaTest(true);
     pd3dDevice->basicShader->SetAlphaTestValue(128.0f / 255.0f);
-    if (m_d.m_fSideVisible)
+
+	// render side
+    if (m_d.m_fSideVisible && !fDrop && (numVertices > 0)) // Don't need to render walls if dropped
     {
-        mat = m_ptable->GetMaterial( m_d.m_szSideMaterial);
+        Material *mat = m_ptable->GetMaterial( m_d.m_szSideMaterial);
         pd3dDevice->basicShader->SetMaterial(mat);
         if (mat->m_bOpacityActive)
         {
@@ -975,7 +973,6 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
         }
 
         Texture * const pinSide = m_ptable->GetImage(m_d.m_szSideImage);
-
         if (pinSide)
         {
             pd3dDevice->basicShader->SetTexture("Texture0",pinSide);
@@ -988,21 +985,16 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
             pd3dDevice->basicShader->SetTechnique("basic_without_texture");
         }
 
-        if (!fDrop && (numVertices > 0)) // Don't need to render walls if dropped
-        {
-            // combine drawcalls into one (hopefully faster)
-            pd3dDevice->basicShader->Begin(0);
-
-            pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, sideVBuffer, 0, numVertices*4, sideIBuffer, 0, numVertices*6);
-
-            pd3dDevice->basicShader->End();  
-        }
+        // combine drawcalls into one (hopefully faster)
+        pd3dDevice->basicShader->Begin(0);
+        pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, sideVBuffer, 0, numVertices*4, sideIBuffer, 0, numVertices*6);
+        pd3dDevice->basicShader->End();  
     }
 
     // render top
-    if (m_d.m_fVisible)
+    if (m_d.m_fVisible && (numPolys > 0))
     {
-       mat = m_ptable->GetMaterial( m_d.m_szTopMaterial);
+       Material *mat = m_ptable->GetMaterial( m_d.m_szTopMaterial);
        pd3dDevice->basicShader->SetMaterial(mat);
        if (mat->m_bOpacityActive)
        {
@@ -1012,7 +1004,8 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
        {
           pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
        }
-       Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
+
+	   Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
        if (pin)
        {
           pd3dDevice->basicShader->SetTexture("Texture0",pin);  
@@ -1025,12 +1018,9 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
           pd3dDevice->basicShader->SetTechnique("basic_without_texture");
        }
 
-       if(numPolys > 0)
-       {
-          pd3dDevice->basicShader->Begin(0);
-          pd3dDevice->DrawPrimitiveVB( D3DPT_TRIANGLELIST, topVBuffer, !fDrop ? 0 : 3*numPolys, numPolys*3);
-          pd3dDevice->basicShader->End();  
-       }
+       pd3dDevice->basicShader->Begin(0);
+       pd3dDevice->DrawPrimitiveVB( D3DPT_TRIANGLELIST, topVBuffer, !fDrop ? 0 : 3*numPolys, numPolys*3);
+       pd3dDevice->basicShader->End();  
     }
 
     // reset render states
@@ -1945,6 +1935,5 @@ void Surface::UpdatePropertyPanes()
         EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,114), TRUE);
         EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,115), TRUE);
         EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,116), TRUE);
-
     }
 }
