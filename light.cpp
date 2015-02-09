@@ -700,8 +700,6 @@ void Light::PrepareMoversCustom()
    }
 
    customMoverVertexNum = vtri.Size()*3;
-   Vertex3D_NoTex2 *customMoverVertex = new Vertex3D_NoTex2[customMoverVertexNum];
-
    if ( customMoverVBuffer==NULL )
    {
       DWORD vertexType = (!m_fBackglass) ? MY_D3DFVF_NOTEX2_VERTEX : MY_D3DTRANSFORMED_NOTEX2_VERTEX;
@@ -710,6 +708,9 @@ void Light::PrepareMoversCustom()
 
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
    Texture* pin = m_ptable->GetImage(m_d.m_szOffImage);
+
+   Vertex3D_NoTex2 *buf;
+   customMoverVBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY);
 
    int k=0;
    for (int t=0;t<vtri.Size();t++,k+=3)
@@ -720,45 +721,41 @@ void Light::PrepareMoversCustom()
 	   const RenderVertex * const pv1 = &vvertex[ptri->c];
 	   const RenderVertex * const pv2 = &vvertex[ptri->b];
 
-	   customMoverVertex[k  ].x = pv0->x;   customMoverVertex[k  ].y = pv0->y;   customMoverVertex[k  ].z = height+0.1f;
-	   customMoverVertex[k+1].x = pv1->x;   customMoverVertex[k+1].y = pv1->y;   customMoverVertex[k+1].z = height+0.1f;
-	   customMoverVertex[k+2].x = pv2->x;   customMoverVertex[k+2].y = pv2->y;   customMoverVertex[k+2].z = height+0.1f;
+	   buf[k  ].x = pv0->x;   buf[k  ].y = pv0->y;   buf[k  ].z = height+0.1f;
+	   buf[k+1].x = pv1->x;   buf[k+1].y = pv1->y;   buf[k+1].z = height+0.1f;
+	   buf[k+2].x = pv2->x;   buf[k+2].y = pv2->y;   buf[k+2].z = height+0.1f;
+
+	   // Check if we are using a custom texture.
+	   if (pin != NULL)
+	   {
+		   buf[k  ].tu = pv0->x * inv_tablewidth;
+		   buf[k  ].tv = pv0->y * inv_tableheight;
+		   buf[k+1].tu = pv1->x * inv_tablewidth;
+		   buf[k+1].tv = pv1->y * inv_tableheight;
+		   buf[k+2].tu = pv2->x * inv_tablewidth;
+		   buf[k+2].tv = pv2->y * inv_tableheight;
+	   }
+	   else
+	   {
+		   // Set texture coordinates for default light.
+		   buf[k  ].tu = 0.5f + (pv0->x - m_d.m_vCenter.x) * inv_maxdist;
+		   buf[k  ].tv = 0.5f + (pv0->y - m_d.m_vCenter.y) * inv_maxdist;
+		   buf[k+1].tu = 0.5f + (pv1->x - m_d.m_vCenter.x) * inv_maxdist;
+		   buf[k+1].tv = 0.5f + (pv1->y - m_d.m_vCenter.y) * inv_maxdist;
+		   buf[k+2].tu = 0.5f + (pv2->x - m_d.m_vCenter.x) * inv_maxdist;
+		   buf[k+2].tv = 0.5f + (pv2->y - m_d.m_vCenter.y) * inv_maxdist;
+	   }
 
 	   if(!m_fBackglass)
 	   {
-		   customMoverVertex[k  ].nx = 0; customMoverVertex[k  ].ny = 0; customMoverVertex[k  ].nz = 1.0f;
-		   customMoverVertex[k+1].nx = 0; customMoverVertex[k+1].ny = 0; customMoverVertex[k+1].nz = 1.0f;
-		   customMoverVertex[k+2].nx = 0; customMoverVertex[k+2].ny = 0; customMoverVertex[k+2].nz = 1.0f;
+		   buf[k  ].nx = 0; buf[k  ].ny = 0; buf[k  ].nz = 1.0f;
+		   buf[k+1].nx = 0; buf[k+1].ny = 0; buf[k+1].nz = 1.0f;
+		   buf[k+2].nx = 0; buf[k+2].ny = 0; buf[k+2].nz = 1.0f;
 	   }
-
-	   for (int l=0;l<3;l++)
-	   {
-		   // Check if we are using a custom texture.
-		   if (pin != NULL)
-		   {
-			   customMoverVertex[k+l].tu = customMoverVertex[k+l].x * inv_tablewidth;
-			   customMoverVertex[k+l].tv = customMoverVertex[k+l].y * inv_tableheight;
-		   }
-		   else
-		   {
-			   // Set texture coordinates for default light.
-			   const float dx = customMoverVertex[k+l].x - m_d.m_vCenter.x;
-			   const float dy = customMoverVertex[k+l].y - m_d.m_vCenter.y;
-			   customMoverVertex[k+l].tu = 0.5f + dx * inv_maxdist;
-			   customMoverVertex[k+l].tv = 0.5f + dy * inv_maxdist;
-		   }
-	   }
-
-	   if (m_fBackglass)
-		   SetHUDVertices(&customMoverVertex[k], 3);
+	   else
+		   SetHUDVertices(&buf[k], 3);
    }
-
-   Vertex3D_NoTex2 *buf;
-   customMoverVBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY);
-   memcpy( buf, customMoverVertex, customMoverVertexNum*sizeof(Vertex3D_NoTex2));
    customMoverVBuffer->unlock();
-
-   delete [] customMoverVertex;
 
    for (int i=0;i<vtri.Size();i++)
       delete vtri.ElementAt(i);
@@ -782,16 +779,14 @@ void Light::RenderSetup(RenderDevice* pd3dDevice)
 
     if ( m_d.m_BulbLight && m_d.m_showBulbMesh )
     {
-        std::vector<WORD> indices(bulbLightNumFaces);
-        Vertex3D_NoTex2 *buf;
-        for( int i=0;i<bulbLightNumFaces;i++ ) indices[i] = bulbLightIndices[i];
         if (bulbLightIndexBuffer)
             bulbLightIndexBuffer->release();
-        bulbLightIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer( indices );
+        bulbLightIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer( bulbLightNumFaces, bulbLightIndices );
 
         if (!bulbLightVBuffer)
             pd3dDevice->CreateVertexBuffer(bulbLightNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &bulbLightVBuffer);
 
+        Vertex3D_NoTex2 *buf;
         bulbLightVBuffer->lock(0, 0, (void**)&buf, 0);
         for( int i=0;i<bulbLightNumVertices;i++ )
         {
@@ -805,12 +800,9 @@ void Light::RenderSetup(RenderDevice* pd3dDevice)
             buf[i].tv = bulbLight[i].tv;
         }
         bulbLightVBuffer->unlock();
-        indices.clear();
-        indices.resize(bulbSocketNumFaces);
-        for( int i=0;i<bulbSocketNumFaces;i++ ) indices[i] = bulbSocketIndices[i];
         if (bulbSocketIndexBuffer)
             bulbSocketIndexBuffer->release();
-        bulbSocketIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer( indices );
+        bulbSocketIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer( bulbSocketNumFaces, bulbSocketIndices );
 
         if (!bulbSocketVBuffer)
             pd3dDevice->CreateVertexBuffer(bulbSocketNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &bulbSocketVBuffer);
