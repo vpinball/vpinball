@@ -651,6 +651,7 @@
 #define IDC_REFLECT_ON_BALLS			455
 #define IDC_NUDGE_STRENGTH				456
 #define IDC_COLOR_FULL  				457
+#define IDC_REEL_VISIBLE  				458
 #define IDC_JOYLFLIPCOMBO               501
 #define IDC_JOYRFLIPCOMBO               502
 #define IDC_JOYPLUNGERCOMBO             503
@@ -857,7 +858,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        614
 #define _APS_NEXT_COMMAND_VALUE         32998
-#define _APS_NEXT_CONTROL_VALUE         458
+#define _APS_NEXT_CONTROL_VALUE         459
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif

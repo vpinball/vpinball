@@ -31,6 +31,7 @@ public:
     TimerDataRoot m_tdr;                // timer information
     bool        m_fTransparent;         // is the background transparent
 	bool		m_fUseImageGrid;
+	bool		m_fVisible;
 };
 
 typedef struct {
@@ -153,7 +154,9 @@ public:
     STDMETHOD(put_UseImageGrid)(/*[in]*/ VARIANT_BOOL newVal);
     STDMETHOD(get_ImagesPerGridRow)(/*[out, retval]*/ long *pVal);
     STDMETHOD(put_ImagesPerGridRow)(/*[in]*/ long newVal);
-    // methods
+    STDMETHOD(get_Visible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+	STDMETHOD(put_Visible)(/*[in]*/ VARIANT_BOOL newVal);
+	// methods
     STDMETHOD(ResetToZero)();
     STDMETHOD(AddValue)(/*[in]*/ long Value);
 	STDMETHOD(SetValue)(/*[in]*/ long Value);
