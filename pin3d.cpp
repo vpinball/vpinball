@@ -275,7 +275,7 @@ void Pin3D::DrawBackground()
 	SetTextureFilter(ePictureTexture, TEXTURE_MODE_TRILINEAR );
 	
 	PinTable * const ptable = g_pplayer->m_ptable;
-	Texture * const pin = ptable->GetDecalsEnabled() ? ptable->GetImage((char *)g_pplayer->m_ptable->m_szImageBackdrop) : NULL;
+	Texture * const pin = ptable->GetDecalsEnabled() ? ptable->GetImage((char *)ptable->m_szImageBackdrop) : NULL;
 	if (pin)
 	{
 		m_pd3dDevice->Clear( 0, NULL, D3DCLEAR_ZBUFFER, 0, 1.0f, 0L );
@@ -286,7 +286,7 @@ void Pin3D::DrawBackground()
 		if(g_pplayer->m_ptable->m_tblMirrorEnabled)
 			m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
 
-		g_pplayer->Spritedraw(0.f,0.f,1.f,1.f,0xFFFFFFFF,pin);
+		g_pplayer->Spritedraw(0.f,0.f,1.f,1.f,0xFFFFFFFF,pin,0.0f,0.0f,1.0f,1.0f,ptable->m_ImageBackdropNightDay ? ptable->m_globalEmissionScale : 1.0f);
 
 		if(g_pplayer->m_ptable->m_tblMirrorEnabled)
 			m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);

@@ -139,11 +139,12 @@ float4 ps_main_texture(in VS_OUTPUT IN) : COLOR
     clip(-1);           //stop the pixel shader if alpha test should reject pixel
 
    pixel.a *= fmaterialAlpha;
-   // early out if no normal set (e.g. HUD vertices)
-   if(IN.normal.x == 0.0f && IN.normal.y == 0.0f && IN.normal.z == 0.0f)
-      return float4(pixel.xyz*staticColor,pixel.a);
-      
    float3 t = InvGamma(pixel.xyz);
+
+   // early out if no normal set (e.g. decal vertices)
+   if(IN.normal.x == 0.0f && IN.normal.y == 0.0f && IN.normal.z == 0.0f)
+      return float4(InvToneMap(t*staticColor),pixel.a);
+      
    float3 diffuse  = t*cBase;
    float3 glossy   = bIsMetal ? diffuse : t*cGlossy*0.08f; //!! use AO for glossy? specular?
    float3 specular = cClearcoat*0.08f;
