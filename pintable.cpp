@@ -1304,6 +1304,7 @@ void PinTable::Init(VPinball *pvp)
 
    m_szImage[0] = 0;
    m_szImageBackdrop[0] = 0;
+   m_ImageBackdropNightDay = false;
 
    m_szImageColorGrade[0] = 0;
 
@@ -2791,6 +2792,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
 
    bw.WriteString(FID(IMAG), m_szImage);
    bw.WriteString(FID(BIMG), m_szImageBackdrop);
+   bw.WriteBool(FID(BIMN), m_ImageBackdropNightDay);
    bw.WriteString(FID(IMCG), m_szImageColorGrade);
    bw.WriteString(FID(BLIM), m_szBallImage);
    bw.WriteString(FID(BLIF), m_szBallImageFront);
@@ -3223,6 +3225,7 @@ void PinTable::SetLoadDefaults()
    m_szImageColorGrade[0] = 0;
    m_szBallImage[0] = 0;
    m_szBallImageFront[0] = 0;
+   m_ImageBackdropNightDay = false;
 
    m_szScreenShot[0] = 0;
 
@@ -3526,6 +3529,10 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(BIMG))
    {
       pbr->GetString(m_szImageBackdrop);
+   }
+   else if (id == FID(BIMN))
+   {
+      pbr->GetBool(&m_ImageBackdropNightDay);
    }
    else if (id == FID(IMCG))
    {
@@ -7584,6 +7591,24 @@ STDMETHODIMP PinTable::put_BackdropColor(OLE_COLOR newVal)
    STOPUNDO
 
    return S_OK;
+}
+
+STDMETHODIMP PinTable::get_BackdropImageApplyNightDay(VARIANT_BOOL *pVal)
+{
+    *pVal = (VARIANT_BOOL)FTOVB(m_ImageBackdropNightDay);
+
+    return S_OK;
+}
+
+STDMETHODIMP PinTable::put_BackdropImageApplyNightDay(VARIANT_BOOL newVal )
+{
+    STARTUNDO
+
+    m_ImageBackdropNightDay = !!newVal;
+
+	STOPUNDO
+
+    return S_OK;
 }
 
 STDMETHODIMP PinTable::get_BackdropImage(BSTR *pVal)

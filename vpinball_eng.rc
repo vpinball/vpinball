@@ -1336,7 +1336,8 @@ IDD_PROPBACKGLASS_VISUALS DIALOGEX 0, 0, 125, 240
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    CONTROL         "Custom2",5,"ColorControl",WS_TABSTOP,27,7,40,14
+    CONTROL         "Custom2",5,"ColorControl",WS_TABSTOP,27,5,40,14
+    CONTROL         "Apply Night->Day",IDC_BG_NIGHT_DAY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,50,22,98,8
     COMBOBOX        1501,7,32,113,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Use DT                DT         FS",13434,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,50,109,10
     EDITTEXT        104,65,67,25,12,ES_AUTOHSCROLL
@@ -1361,7 +1362,7 @@ BEGIN
     EDITTEXT        448,95,188,25,12,ES_AUTOHSCROLL
     LTEXT           "Color Grading LookupTable (256x16)",IDC_STATIC,7,208,118,9
     COMBOBOX        1509,7,220,113,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "&Color",IDC_STATIC,7,10,20,9
+    LTEXT           "&Color",IDC_STATIC,7,8,20,9
     LTEXT           "I&mage",IDC_STATIC,7,22,20,8
     LTEXT           "&Inclination",IDC_STATIC,7,68,55,9
     LTEXT           "&Field of View",IDC_STATIC,7,82,55,9

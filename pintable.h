@@ -135,6 +135,8 @@ public:
 	STDMETHOD(put_ColorGradeImage)(/*[in]*/ BSTR newVal);
 	STDMETHOD(get_BackdropImage)(/*[out, retval]*/ BSTR *pVal);
 	STDMETHOD(put_BackdropImage)(/*[in]*/ BSTR newVal);
+	STDMETHOD(get_BackdropImageApplyNightDay)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+	STDMETHOD(put_BackdropImageApplyNightDay)(/*[in]*/ VARIANT_BOOL newVal);
 	STDMETHOD(get_BackdropColor)(/*[out, retval]*/ OLE_COLOR *pVal);
 	STDMETHOD(put_BackdropColor)(/*[in]*/ OLE_COLOR newVal);
 	STDMETHOD(get_PlayfieldMaterial)(/*[out, retval]*/ BSTR *pVal);
@@ -588,6 +590,7 @@ END_CONNECTION_POINT_MAP()
 	char m_szImageBackdrop[MAXTOKEN];
     char m_szPlayfieldMaterial[32];
 	COLORREF m_colorbackdrop;
+	bool m_ImageBackdropNightDay;
 
 	char m_szImageColorGrade[MAXTOKEN];
 
@@ -600,7 +603,7 @@ END_CONNECTION_POINT_MAP()
 	Vector< IEditable > m_vedit;
     Vector< IEditable > m_layer[8];
     Vector< ISelect > m_allHitElements;
-      
+
     std::vector< Texture* > m_vimage;
 
     int m_numMaterials;

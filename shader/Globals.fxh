@@ -130,6 +130,19 @@ float3 FBGamma(float3 color) //!! use hardware support? D3DRS_SRGBWRITEENABLE
 	return 0.662002687f * t0 + 0.684122060f * t1 - 0.323583601f * t2 - 0.0225411470f * color;*/
 }
 
+float3 InvToneMap(float3 color)
+{
+    float burnhighlights = 0.25f;
+    
+	const float inv_2bh = 0.5f/burnhighlights;
+    const float bh = 4.0f*burnhighlights - 2.0f;
+	color.x = (color.x - 1.0f + sqrt(color.x*(color.x + bh) + 1.0f))*inv_2bh;
+	color.y = (color.y - 1.0f + sqrt(color.y*(color.y + bh) + 1.0f))*inv_2bh;
+	color.z = (color.z - 1.0f + sqrt(color.z*(color.z + bh) + 1.0f))*inv_2bh;
+
+	return color;
+}
+
 float3 FBToneMap(float3 color)
 {
     float burnhighlights = 0.25f;
