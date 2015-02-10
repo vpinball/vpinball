@@ -1055,7 +1055,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
                 if ( input->dwData & 0x80 )
                 {
                     g_pplayer->backdropSettingActive++;
-                    if (g_pplayer->backdropSettingActive==9)
+                    if (g_pplayer->backdropSettingActive==10)
                         g_pplayer->backdropSettingActive=0;
                 }
             }
@@ -1065,7 +1065,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
                 {
                     g_pplayer->backdropSettingActive--;
                     if (g_pplayer->backdropSettingActive==-1)
-                        g_pplayer->backdropSettingActive=8;
+                        g_pplayer->backdropSettingActive=9;
                 }
             }
             else if( input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eFrameCount])

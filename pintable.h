@@ -87,10 +87,6 @@ public:
 
 	STDMETHOD(get_FieldOfView)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_FieldOfView)(/*[in]*/ float newVal);
-	STDMETHOD(get_Inclination)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_Inclination)(/*[in]*/ float newVal);
-	STDMETHOD(get_Layback)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_Layback)(/*[in]*/ float newVal);
 	STDMETHOD(get_Rotation)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Rotation)(/*[in]*/ float newVal);
 	STDMETHOD(get_Scalex)(/*[out, retval]*/ float *pVal);
@@ -99,19 +95,21 @@ public:
    STDMETHOD(put_Scaley)(/*[in]*/ float newVal);
    STDMETHOD(get_Scalez)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_Scalez)(/*[in]*/ float newVal);
-	STDMETHOD(get_Xlatex)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_Xlatex)(/*[in]*/ float newVal);
-	STDMETHOD(get_Xlatey)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_Xlatey)(/*[in]*/ float newVal);
-   STDMETHOD(get_Xlatez)(/*[out, retval]*/ float *pVal);
-   STDMETHOD(put_Xlatez)(/*[in]*/ float newVal);
+   STDMETHOD(get_CameraX)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_CameraX)(/*[in]*/ float newVal);
+   STDMETHOD(get_CameraY)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_CameraY)(/*[in]*/ float newVal);
+   STDMETHOD(get_CameraZ)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_CameraZ)(/*[in]*/ float newVal);
+   STDMETHOD(get_CameraTargetX)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_CameraTargetX)(/*[in]*/ float newVal);
+   STDMETHOD(get_CameraTargetY)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_CameraTargetY)(/*[in]*/ float newVal);
+   STDMETHOD(get_CameraTargetZ)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_CameraTargetZ)(/*[in]*/ float newVal);
 	
 	STDMETHOD(get_FieldOfViewFS)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_FieldOfViewFS)(/*[in]*/ float newVal);
-	STDMETHOD(get_InclinationFS)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_InclinationFS)(/*[in]*/ float newVal);
-	STDMETHOD(get_LaybackFS)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_LaybackFS)(/*[in]*/ float newVal);
 	STDMETHOD(get_RotationFS)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_RotationFS)(/*[in]*/ float newVal);
 	STDMETHOD(get_ScalexFS)(/*[out, retval]*/ float *pVal);
@@ -120,12 +118,18 @@ public:
    STDMETHOD(put_ScaleyFS)(/*[in]*/ float newVal);
    STDMETHOD(get_ScalezFS)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_ScalezFS)(/*[in]*/ float newVal);
-	STDMETHOD(get_XlatexFS)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_XlatexFS)(/*[in]*/ float newVal);
-	STDMETHOD(get_XlateyFS)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_XlateyFS)(/*[in]*/ float newVal);
-   STDMETHOD(get_XlatezFS)(/*[out, retval]*/ float *pVal);
-   STDMETHOD(put_XlatezFS)(/*[in]*/ float newVal);
+	STDMETHOD(get_CameraXFS)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_CameraXFS)(/*[in]*/ float newVal);
+	STDMETHOD(get_CameraYFS)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_CameraYFS)(/*[in]*/ float newVal);
+    STDMETHOD(get_CameraZFS)(/*[out, retval]*/ float *pVal);
+    STDMETHOD(put_CameraZFS)(/*[in]*/ float newVal);
+    STDMETHOD(get_CameraTargetXFS)(/*[out, retval]*/ float *pVal);
+    STDMETHOD(put_CameraTargetXFS)(/*[in]*/ float newVal);
+    STDMETHOD(get_CameraTargetYFS)(/*[out, retval]*/ float *pVal);
+    STDMETHOD(put_CameraTargetYFS)(/*[in]*/ float newVal);
+    STDMETHOD(get_CameraTargetZFS)(/*[out, retval]*/ float *pVal);
+    STDMETHOD(put_CameraTargetZFS)(/*[in]*/ float newVal);
 
 	STDMETHOD(get_SlopeMax)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_SlopeMax)(/*[in]*/ float newVal);
@@ -539,16 +543,19 @@ END_CONNECTION_POINT_MAP()
 	float m_globalZPD;
 
 	unsigned int m_BG_current_set;
-	float m_BG_inclination[NUM_BG_SETS];
 	float m_BG_FOV[NUM_BG_SETS];
-	float m_BG_layback[NUM_BG_SETS];
 	float m_BG_rotation[NUM_BG_SETS];
 	float m_BG_scalex[NUM_BG_SETS];
 	float m_BG_scaley[NUM_BG_SETS];
-    float m_BG_scalez[NUM_BG_SETS];
-	float m_BG_xlatex[NUM_BG_SETS];
-	float m_BG_xlatey[NUM_BG_SETS];
-    float m_BG_xlatez[NUM_BG_SETS];
+   float m_BG_scalez[NUM_BG_SETS];
+
+	float m_BG_cameraX[NUM_BG_SETS];
+	float m_BG_cameraY[NUM_BG_SETS];
+   float m_BG_cameraZ[NUM_BG_SETS];
+
+   float m_BG_cameraTargetX[NUM_BG_SETS];
+   float m_BG_cameraTargetY[NUM_BG_SETS];
+   float m_BG_cameraTargetZ[NUM_BG_SETS];
 
 	float m_angletiltMax;
 	float m_angletiltMin;

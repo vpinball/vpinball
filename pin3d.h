@@ -40,6 +40,8 @@ public:
 
 	float m_rznear, m_rzfar;
 	Vertex3Ds m_vertexcamera;
+   Vertex3Ds m_camera;
+   Vertex3Ds m_cameraTarget;
 	};
 
 class Pin3D
@@ -111,7 +113,8 @@ public:
 	HWND m_hwnd;
 
     //Vertex3Ds m_viewVec;        // direction the camera is facing
-
+   int m_dwRenderWidth;
+   int m_dwRenderHeight;
     //bool fullscreen;
 	bool m_useAA;
     ViewPort vp;

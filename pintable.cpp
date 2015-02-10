@@ -699,20 +699,20 @@ PinTable::PinTable()
 
    for(int i = 0; i < NUM_BG_SETS; ++i)
    {
-	   m_BG_inclination[i] = 0;
 	   m_BG_FOV[i] = FLT_MAX;
 
 	   m_BG_rotation[i] = 0;
-	   m_BG_layback[i] = 0;
 
 	   m_BG_scalex[i] = 1.0f;
 	   m_BG_scaley[i] = 1.0f;
+      m_BG_scalez[i] = 1.0f;
 
-	   m_BG_xlatex[i] = 0.0f;
-	   m_BG_xlatey[i] = 0.0f;
-
-	   m_BG_scalez[i] = 1.0f;
-	   m_BG_xlatez[i] = 0.0f;
+	   m_BG_cameraX[i] = 0.0f;
+      m_BG_cameraY[i] = 500.0f;
+      m_BG_cameraZ[i] = 400.0f;
+      m_BG_cameraTargetX[i] = 0.0f;
+      m_BG_cameraTargetY[i] = 0.0f;
+      m_BG_cameraTargetZ[i] = 1.0f;
    }
 
    CComObject<CodeViewer>::CreateInstance(&m_pcv);
@@ -1340,20 +1340,17 @@ void PinTable::InitPostLoad(VPinball *pvp)
 
    if(m_BG_FOV[1] == FLT_MAX) // old (VP9-) table, copy FS settings over from old setting
    {
-	   m_BG_inclination[1] = m_BG_inclination[0];
 	   m_BG_FOV[1] = m_BG_FOV[0];
 
 	   m_BG_rotation[1] = m_BG_rotation[0];
-	   m_BG_layback[1] = m_BG_layback[0];
 
 	   m_BG_scalex[1] = m_BG_scalex[0];
 	   m_BG_scaley[1] = m_BG_scaley[0];
+      m_BG_scalez[1] = m_BG_scalez[0];
 
-	   m_BG_xlatex[1] = m_BG_xlatex[0];
-	   m_BG_xlatey[1] = m_BG_xlatey[0];
-
-	   m_BG_scalez[1] = m_BG_scalez[0];
-	   m_BG_xlatez[1] = m_BG_xlatez[0];
+	   m_BG_cameraX[1] = m_BG_cameraX[0];
+	   m_BG_cameraY[1] = m_BG_cameraY[0];
+	   m_BG_cameraZ[1] = m_BG_cameraZ[0];
    }
 
    m_hbmOffScreen = NULL;
@@ -1597,7 +1594,7 @@ void PinTable::Render(Sur * const psur)
 void PinTable::Render3DProjection(Sur * const psur)
 {
    const float rotation = ANGTORAD(m_BG_rotation[m_BG_current_set]);
-   const float inclination = ANGTORAD(m_BG_inclination[m_BG_current_set]);
+   const float inclination = ANGTORAD(1.0f);
    const float FOV = (m_BG_FOV[m_BG_current_set] < 1.0f) ? 1.0f : m_BG_FOV[m_BG_current_set]; // Can't have a real zero FOV, but this will look almost the same
 
    Vector<Vertex3Ds> vvertex3D;
@@ -1619,20 +1616,41 @@ void PinTable::Render3DProjection(Sur * const psur)
    GetRegInt( "Player", "Height", &renderHeight );
    const float aspect = ((float)renderWidth)/((float)renderHeight); //(float)(4.0/3.0);
 
-   pinproj.FitCameraToVertices(&vvertex3D, aspect, rotation, inclination, FOV, m_BG_xlatez[m_BG_current_set], m_BG_layback[m_BG_current_set]);
-   pinproj.m_matView.RotateXMatrix((float)M_PI);  // convert Z=out to Z=in (D3D coordinate system)
    pinproj.m_matWorld.SetIdentity();
+
+   float camX=m_BG_cameraX[m_BG_current_set];
+   float camY=m_BG_cameraY[m_BG_current_set];
+   float camZ=m_BG_cameraZ[m_BG_current_set];
+
+   Matrix3D rotMat;
+   rotMat.RotateZMatrix(rotation);
+   Vertex3Ds v(camX,camY,camZ);
+   v = rotMat.MultiplyVector(v);
+   D3DXMATRIX mView;
+   D3DXVECTOR3 eye( v.x, v.y, v.z );
+
+   v.x = m_BG_cameraTargetX[m_BG_current_set];
+   v.y = m_BG_cameraTargetY[m_BG_current_set];
+   v.z = m_BG_cameraTargetZ[m_BG_current_set];
+   v = rotMat.MultiplyVector(v);
+   D3DXVECTOR3 at( v.x, v.y, v.z);
+
+   D3DXVECTOR3 up( 0.0f, -1.0f, 0.0f);
+   D3DXMatrixLookAtLH( &mView, &eye, &at, &up );
+   memcpy(pinproj.m_matView.m, mView.m, sizeof(float)*4*4);
+   pinproj.ScaleView(m_BG_scalex[m_BG_current_set], m_BG_scaley[m_BG_current_set], 1.0f);
+
+   pinproj.RotateView(0, 0, rotation);
+   //    m_proj.RotateView(inclination, 0, 0);
+
+   pinproj.m_matWorld._41 = -pinproj.m_vertexcamera.x;
+   pinproj.m_matWorld._42 = -pinproj.m_vertexcamera.y*2;
+
+   // recompute near and far plane (workaround for VP9 FitCameraToVertices bugs)
+   pinproj.ComputeNearFarPlane(vvertex3D);
    D3DXMATRIX proj;
    D3DXMatrixPerspectiveFovLH(&proj, ANGTORAD(FOV), aspect, pinproj.m_rznear, pinproj.m_rzfar);
    memcpy(pinproj.m_matProj.m, proj.m, sizeof(float)*4*4);
-
-   //pinproj.SetFieldOfView(FOV, aspect, pinproj.m_rznear, pinproj.m_rzfar);
-
-   pinproj.ScaleView(m_BG_scalex[m_BG_current_set], m_BG_scaley[m_BG_current_set], 1.0f);
-   pinproj.TranslateView(m_BG_xlatex[m_BG_current_set]-pinproj.m_vertexcamera.x, m_BG_xlatey[m_BG_current_set]-pinproj.m_vertexcamera.y, -pinproj.m_vertexcamera.z);
-   pinproj.RotateView(0, 0, rotation);
-   pinproj.RotateView(inclination, 0, 0);
-   pinproj.MultiplyView(ComputeLaybackTransform(m_BG_layback[m_BG_current_set]));
 
    pinproj.CacheTransform();
 
@@ -1937,24 +1955,26 @@ void PinTable::StopPlaying()
    // if the simulation was run without a save first.
    // But I'm not sure how to fix it... - JEP
    
-   float inclination = m_BG_inclination[m_BG_current_set];
    float fov = m_BG_FOV[m_BG_current_set];
-   float layback = m_BG_layback[m_BG_current_set];
-   float xlatex = m_BG_xlatex[m_BG_current_set];
-   float xlatey = m_BG_xlatey[m_BG_current_set];
-   float xlatez = m_BG_xlatez[m_BG_current_set];
+   float camX = m_BG_cameraX[m_BG_current_set];
+   float camY = m_BG_cameraY[m_BG_current_set];
+   float camZ = m_BG_cameraZ[m_BG_current_set];
+   float camtX = m_BG_cameraTargetX[m_BG_current_set];
+   float camtY = m_BG_cameraTargetY[m_BG_current_set];
+   float camtZ = m_BG_cameraTargetZ[m_BG_current_set];
    float xscale = m_BG_scalex[m_BG_current_set];
    float yscale = m_BG_scaley[m_BG_current_set];
    float zscale = m_BG_scalez[m_BG_current_set];
 
    RestoreBackup();
 
-   m_BG_inclination[m_BG_current_set] = inclination;
    m_BG_FOV[m_BG_current_set] = fov;
-   m_BG_layback[m_BG_current_set] = layback;
-   m_BG_xlatex[m_BG_current_set] = xlatex;
-   m_BG_xlatey[m_BG_current_set] = xlatey;
-   m_BG_xlatez[m_BG_current_set] = xlatez;
+   m_BG_cameraX[m_BG_current_set] = camX;
+   m_BG_cameraY[m_BG_current_set] = camY;
+   m_BG_cameraZ[m_BG_current_set] = camZ;
+   m_BG_cameraTargetX[m_BG_current_set] = camtX;
+   m_BG_cameraTargetY[m_BG_current_set] = camtY;
+   m_BG_cameraTargetZ[m_BG_current_set] = camtZ;
    m_BG_scalex[m_BG_current_set] = xscale;
    m_BG_scaley[m_BG_current_set] = yscale;
    m_BG_scalez[m_BG_current_set] = zscale;
@@ -2743,23 +2763,25 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
    bw.WriteFloat(FID(BOTM), m_bottom);
 
    bw.WriteFloat(FID(ROTA), m_BG_rotation[0]);
-   bw.WriteFloat(FID(INCL), m_BG_inclination[0]);
-   bw.WriteFloat(FID(LAYB), m_BG_layback[0]);
    bw.WriteFloat(FID(FOVX), m_BG_FOV[0]);
-   bw.WriteFloat(FID(XLTX), m_BG_xlatex[0]);
-   bw.WriteFloat(FID(XLTY), m_BG_xlatey[0]);
-   bw.WriteFloat(FID(XLTZ), m_BG_xlatez[0]);
+   bw.WriteFloat(FID(CADX), m_BG_cameraX[0]);
+   bw.WriteFloat(FID(CADY), m_BG_cameraY[0]);
+   bw.WriteFloat(FID(CADZ), m_BG_cameraZ[0]);
+   bw.WriteFloat(FID(CATX), m_BG_cameraTargetX[0]);
+   bw.WriteFloat(FID(CATY), m_BG_cameraTargetY[0]);
+   bw.WriteFloat(FID(CATZ), m_BG_cameraTargetZ[0]);
    bw.WriteFloat(FID(SCLX), m_BG_scalex[0]);
    bw.WriteFloat(FID(SCLY), m_BG_scaley[0]);
    bw.WriteFloat(FID(SCLZ), m_BG_scalez[0]);
 
    bw.WriteFloat(FID(ROTF), m_BG_rotation[1]);
-   bw.WriteFloat(FID(INCF), m_BG_inclination[1]);
-   bw.WriteFloat(FID(LAYF), m_BG_layback[1]);
    bw.WriteFloat(FID(FOVF), m_BG_FOV[1]);
-   bw.WriteFloat(FID(XLFX), m_BG_xlatex[1]);
-   bw.WriteFloat(FID(XLFY), m_BG_xlatey[1]);
-   bw.WriteFloat(FID(XLFZ), m_BG_xlatez[1]);
+   bw.WriteFloat(FID(CAFX), m_BG_cameraX[1]);
+   bw.WriteFloat(FID(CAFY), m_BG_cameraY[1]);
+   bw.WriteFloat(FID(CAFZ), m_BG_cameraZ[1]);
+   bw.WriteFloat(FID(CTSX), m_BG_cameraTargetX[1]);
+   bw.WriteFloat(FID(CTSY), m_BG_cameraTargetY[1]);
+   bw.WriteFloat(FID(CTSZ), m_BG_cameraTargetZ[1]);
    bw.WriteFloat(FID(SCFX), m_BG_scalex[1]);
    bw.WriteFloat(FID(SCFY), m_BG_scaley[1]);
    bw.WriteFloat(FID(SCFZ), m_BG_scalez[1]);
@@ -3313,14 +3335,6 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    {
       pbr->GetFloat(&m_BG_rotation[0]);
    }
-   else if (id == FID(LAYB))
-   {
-      pbr->GetFloat(&m_BG_layback[0]);
-   }
-   else if (id == FID(INCL))
-   {
-      pbr->GetFloat(&m_BG_inclination[0]);
-   }
    else if (id == FID(FOVX))
    {
       pbr->GetFloat(&m_BG_FOV[0]);
@@ -3337,29 +3351,33 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    {
       pbr->GetFloat(&m_BG_scalez[0]);
    }
-   else if (id == FID(XLTX))
+   else if (id == FID(CADX))
    {
-      pbr->GetFloat(&m_BG_xlatex[0]);
+      pbr->GetFloat(&m_BG_cameraX[0]);
    }
-   else if (id == FID(XLTY))
+   else if (id == FID(CADY))
    {
-      pbr->GetFloat(&m_BG_xlatey[0]);
+      pbr->GetFloat(&m_BG_cameraY[0]);
    }
-   else if (id == FID(XLTZ))
+   else if (id == FID(CADZ))
    {
-      pbr->GetFloat(&m_BG_xlatez[0]);
+      pbr->GetFloat(&m_BG_cameraZ[0]);
+   }
+   else if (id == FID(CATX))
+   {
+      pbr->GetFloat(&m_BG_cameraTargetX[0]);
+   }
+   else if (id == FID(CATY))
+   {
+      pbr->GetFloat(&m_BG_cameraTargetY[0]);
+   }
+   else if (id == FID(CATZ))
+   {
+      pbr->GetFloat(&m_BG_cameraTargetZ[0]);
    }
    else if (id == FID(ROTF))
    {
       pbr->GetFloat(&m_BG_rotation[1]);
-   }
-   else if (id == FID(LAYF))
-   {
-      pbr->GetFloat(&m_BG_layback[1]);
-   }
-   else if (id == FID(INCF))
-   {
-      pbr->GetFloat(&m_BG_inclination[1]);
    }
    else if (id == FID(FOVF))
    {
@@ -3377,17 +3395,29 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    {
       pbr->GetFloat(&m_BG_scalez[1]);
    }
-   else if (id == FID(XLFX))
+   else if (id == FID(CAFX))
    {
-      pbr->GetFloat(&m_BG_xlatex[1]);
+      pbr->GetFloat(&m_BG_cameraX[1]);
    }
-   else if (id == FID(XLFY))
+   else if (id == FID(CAFY))
    {
-      pbr->GetFloat(&m_BG_xlatey[1]);
+      pbr->GetFloat(&m_BG_cameraY[1]);
    }
-   else if (id == FID(XLFZ))
+   else if (id == FID(CAFZ))
    {
-      pbr->GetFloat(&m_BG_xlatez[1]);
+      pbr->GetFloat(&m_BG_cameraZ[1]);
+   }
+   else if (id == FID(CTSX))
+   {
+       pbr->GetFloat(&m_BG_cameraTargetX[1]);
+   }
+   else if (id == FID(CTSY))
+   {
+       pbr->GetFloat(&m_BG_cameraTargetY[1]);
+   }
+   else if (id == FID(CTSZ))
+   {
+       pbr->GetFloat(&m_BG_cameraTargetZ[1]);
    }
 #if 0
    else if (id == FID(VERS))
@@ -7811,42 +7841,6 @@ STDMETHODIMP PinTable::put_FieldOfView(float newVal)
    return S_OK;
 }
 
-STDMETHODIMP PinTable::get_Inclination(float *pVal)
-{
-   *pVal = m_BG_inclination[0];
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_Inclination(float newVal)
-{
-   STARTUNDO
-
-   m_BG_inclination[0] = newVal;
-
-   STOPUNDO
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::get_Layback(float *pVal)
-{
-   *pVal = m_BG_layback[0];
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_Layback(float newVal)
-{
-   STARTUNDO
-
-   m_BG_layback[0] = newVal;
-
-   STOPUNDO
-
-   return S_OK;
-}
-
 STDMETHODIMP PinTable::get_Rotation(float *pVal)
 {
    *pVal = m_BG_rotation[0];
@@ -7919,54 +7913,108 @@ STDMETHODIMP PinTable::put_Scalez(float newVal)
    return S_OK;
 }
 
-STDMETHODIMP PinTable::get_Xlatex(float *pVal)
+STDMETHODIMP PinTable::get_CameraX(float *pVal)
 {
-   *pVal = m_BG_xlatex[0];
+   *pVal = m_BG_cameraX[0];
 
    return S_OK;
 }
 
-STDMETHODIMP PinTable::put_Xlatex(float newVal)
+STDMETHODIMP PinTable::put_CameraX(float newVal)
 {
    STARTUNDO
 
-   m_BG_xlatex[0] = newVal;
+      m_BG_cameraX[0] = newVal;
+
+   STOPUNDO
+
+      return S_OK;
+}
+
+STDMETHODIMP PinTable::get_CameraTargetX(float *pVal)
+{
+   *pVal = m_BG_cameraTargetX[0];
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_CameraTargetX(float newVal)
+{
+   STARTUNDO
+
+      m_BG_cameraTargetX[0] = newVal;
+
+   STOPUNDO
+
+      return S_OK;
+}
+STDMETHODIMP PinTable::get_CameraY(float *pVal)
+{
+   *pVal = m_BG_cameraY[0];
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_CameraY(float newVal)
+{
+   STARTUNDO
+
+      m_BG_cameraY[0] = newVal;
+
+   STOPUNDO
+
+      return S_OK;
+}
+
+STDMETHODIMP PinTable::get_CameraTargetY(float *pVal)
+{
+   *pVal = m_BG_cameraTargetY[0];
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_CameraTargetY(float newVal)
+{
+   STARTUNDO
+
+   m_BG_cameraTargetY[0] = newVal;
 
    STOPUNDO
 
    return S_OK;
 }
 
-STDMETHODIMP PinTable::get_Xlatey(float *pVal)
+STDMETHODIMP PinTable::get_CameraZ(float *pVal)
 {
-   *pVal = m_BG_xlatey[0];
+   *pVal = m_BG_cameraZ[0];
 
    return S_OK;
 }
 
-STDMETHODIMP PinTable::put_Xlatey(float newVal)
+STDMETHODIMP PinTable::put_CameraZ(float newVal)
 {
    STARTUNDO
 
-   m_BG_xlatey[0] = newVal;
+      m_BG_cameraZ[0] = newVal;
 
    STOPUNDO
 
-   return S_OK;
+      return S_OK;
 }
 
-STDMETHODIMP PinTable::get_Xlatez(float *pVal)
+
+STDMETHODIMP PinTable::get_CameraTargetZ(float *pVal)
 {
-   *pVal = m_BG_xlatez[0];
+   *pVal = m_BG_cameraTargetZ[0];
 
    return S_OK;
 }
 
-STDMETHODIMP PinTable::put_Xlatez(float newVal)
+STDMETHODIMP PinTable::put_CameraTargetZ(float newVal)
 {
    STARTUNDO
 
-   m_BG_xlatez[0] = newVal;
+   m_BG_cameraTargetZ[0] = newVal;
 
    STOPUNDO
 
@@ -7987,42 +8035,6 @@ STDMETHODIMP PinTable::put_FieldOfViewFS(float newVal)
    STARTUNDO
 
    m_BG_FOV[1] = newVal;
-
-   STOPUNDO
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::get_InclinationFS(float *pVal)
-{
-   *pVal = m_BG_inclination[1];
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_InclinationFS(float newVal)
-{
-   STARTUNDO
-
-   m_BG_inclination[1] = newVal;
-
-   STOPUNDO
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::get_LaybackFS(float *pVal)
-{
-   *pVal = m_BG_layback[1];
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_LaybackFS(float newVal)
-{
-   STARTUNDO
-
-   m_BG_layback[1] = newVal;
 
    STOPUNDO
 
@@ -8101,60 +8113,114 @@ STDMETHODIMP PinTable::put_ScalezFS(float newVal)
    return S_OK;
 }
 
-STDMETHODIMP PinTable::get_XlatexFS(float *pVal)
+STDMETHODIMP PinTable::get_CameraXFS(float *pVal)
 {
-   *pVal = m_BG_xlatex[1];
+   *pVal = m_BG_cameraX[1];
 
    return S_OK;
 }
 
-STDMETHODIMP PinTable::put_XlatexFS(float newVal)
+STDMETHODIMP PinTable::put_CameraXFS(float newVal)
 {
    STARTUNDO
 
-   m_BG_xlatex[1] = newVal;
+   m_BG_cameraX[1] = newVal;
 
    STOPUNDO
 
    return S_OK;
 }
 
-STDMETHODIMP PinTable::get_XlateyFS(float *pVal)
+STDMETHODIMP PinTable::get_CameraTargetXFS(float *pVal)
 {
-   *pVal = m_BG_xlatey[1];
+    *pVal = m_BG_cameraTargetX[1];
+
+    return S_OK;
+}
+
+STDMETHODIMP PinTable::put_CameraTargetXFS(float newVal)
+{
+    STARTUNDO
+
+        m_BG_cameraTargetX[1] = newVal;
+
+    STOPUNDO
+
+        return S_OK;
+}
+
+
+STDMETHODIMP PinTable::get_CameraYFS(float *pVal)
+{
+   *pVal = m_BG_cameraY[1];
 
    return S_OK;
 }
 
-STDMETHODIMP PinTable::put_XlateyFS(float newVal)
+STDMETHODIMP PinTable::put_CameraYFS(float newVal)
 {
    STARTUNDO
 
-   m_BG_xlatey[1] = newVal;
+   m_BG_cameraY[1] = newVal;
 
    STOPUNDO
 
    return S_OK;
 }
 
-STDMETHODIMP PinTable::get_XlatezFS(float *pVal)
+STDMETHODIMP PinTable::get_CameraTargetYFS(float *pVal)
 {
-   *pVal = m_BG_xlatez[1];
+    *pVal = m_BG_cameraTargetY[1];
+
+    return S_OK;
+}
+
+STDMETHODIMP PinTable::put_CameraTargetYFS(float newVal)
+{
+    STARTUNDO
+
+        m_BG_cameraTargetY[1] = newVal;
+
+    STOPUNDO
+
+        return S_OK;
+}
+
+STDMETHODIMP PinTable::get_CameraZFS(float *pVal)
+{
+   *pVal = m_BG_cameraZ[1];
 
    return S_OK;
 }
 
-STDMETHODIMP PinTable::put_XlatezFS(float newVal)
+STDMETHODIMP PinTable::put_CameraZFS(float newVal)
 {
    STARTUNDO
 
-   m_BG_xlatez[1] = newVal;
+   m_BG_cameraZ[1] = newVal;
 
    STOPUNDO
 
    return S_OK;
 }
 
+STDMETHODIMP PinTable::get_CameraTargetZFS(float *pVal)
+{
+    *pVal = m_BG_cameraTargetZ[1];
+
+    return S_OK;
+}
+
+STDMETHODIMP PinTable::put_CameraTargetZFS(float newVal)
+{
+    STARTUNDO
+
+        m_BG_cameraTargetZ[1] = newVal;
+
+    STOPUNDO
+
+        return S_OK;
+}
 
 STDMETHODIMP PinTable::get_SlopeMax(float *pVal)
 {

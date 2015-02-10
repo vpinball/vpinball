@@ -2616,47 +2616,52 @@ void Player::UpdateBackdropSettings(const bool up)
     {
     case 0:
         {
-            m_ptable->m_BG_inclination[m_ptable->m_BG_current_set] += thesign;
-            break;
-        }
-    case 1:
-        {
             m_ptable->m_BG_FOV[m_ptable->m_BG_current_set] += thesign;
             break;
         }
+    case 1:
+       {
+          m_ptable->m_BG_cameraX[m_ptable->m_BG_current_set] += (5*thesign);
+          break;
+       }
     case 2:
-        {
-            m_ptable->m_BG_layback[m_ptable->m_BG_current_set] += thesign;
-            break;
-        }
+       {
+          m_ptable->m_BG_cameraY[m_ptable->m_BG_current_set] += (5*thesign);
+          break;
+       }
     case 3:
+       {
+          m_ptable->m_BG_cameraZ[m_ptable->m_BG_current_set] += 5*thesign;
+          break;
+       }
+    case 4:
+       {
+          m_ptable->m_BG_cameraTargetX[m_ptable->m_BG_current_set] += (5*thesign);
+          break;
+       }
+    case 5:
+       {
+          m_ptable->m_BG_cameraTargetY[m_ptable->m_BG_current_set] += (5*thesign);
+          break;
+       }
+    case 6:
+       {
+          m_ptable->m_BG_cameraTargetZ[m_ptable->m_BG_current_set] += 5*thesign;
+          break;
+       }
+    case 7:
         {
             m_ptable->m_BG_scalex[m_ptable->m_BG_current_set] += (0.01f*thesign);
             break;
         }
-    case 4:
+    case 8:
         {
             m_ptable->m_BG_scaley[m_ptable->m_BG_current_set] += (0.01f*thesign);
             break;
         }
-    case 5:
+    case 9:
         {
             m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] += (0.01f*thesign);
-            break;
-        }
-    case 6:
-        {
-            m_ptable->m_BG_xlatex[m_ptable->m_BG_current_set] += (thesign);
-            break;
-        }
-    case 7:
-        {
-            m_ptable->m_BG_xlatey[m_ptable->m_BG_current_set] += (thesign);
-            break;
-        }
-    case 8:
-        {
-            m_ptable->m_BG_xlatez[m_ptable->m_BG_current_set] += thesign;
             break;
         }
     }
@@ -2677,47 +2682,52 @@ void Player::UpdateCameraModeDisplay()
     {
     case 0:
         {
-            len = sprintf_s(szFoo,"Inclination: %f          ",m_ptable->m_BG_inclination[m_ptable->m_BG_current_set]);
-            break;
-        }
-    case 1:
-        {
             len = sprintf_s(szFoo,"Field Of View: %f        ",m_ptable->m_BG_FOV[m_ptable->m_BG_current_set]);
             break;
         }
+    case 1:
+       {
+          len = sprintf_s(szFoo,"Camera X: %f             ",m_ptable->m_BG_cameraX[m_ptable->m_BG_current_set]);
+          break;
+       }
     case 2:
-        {
-            len = sprintf_s(szFoo,"Layback: %f              ",m_ptable->m_BG_layback[m_ptable->m_BG_current_set]);
-            break;
-        }
+       {
+          len = sprintf_s(szFoo,"Camera Y: %f            ",m_ptable->m_BG_cameraY[m_ptable->m_BG_current_set]);
+          break;
+       }
     case 3:
+       {
+          len = sprintf_s(szFoo,"Camera Z: %f           ",m_ptable->m_BG_cameraZ[m_ptable->m_BG_current_set]);
+          break;
+       }
+    case 4:
+       {
+          len = sprintf_s(szFoo,"Camera Target X: %f             ",m_ptable->m_BG_cameraTargetX[m_ptable->m_BG_current_set]);
+          break;
+       }
+    case 5:
+       {
+          len = sprintf_s(szFoo,"Camera Target Y: %f            ",m_ptable->m_BG_cameraTargetY[m_ptable->m_BG_current_set]);
+          break;
+       }
+    case 6:
+       {
+          len = sprintf_s(szFoo,"Camera Target Z: %f           ",m_ptable->m_BG_cameraTargetZ[m_ptable->m_BG_current_set]);
+          break;
+       }
+    case 7:
         {
             len = sprintf_s(szFoo,"X Scale: %f              ",m_ptable->m_BG_scalex[m_ptable->m_BG_current_set]);
             break;
         }
-    case 4:
+    case 8:
         {
             len = sprintf_s(szFoo,"Y Scale: %f              ",m_ptable->m_BG_scaley[m_ptable->m_BG_current_set]);
             break;
         }
-    case 5:
+    case 9:
         {
             len = sprintf_s(szFoo,"Z Scale: %f              ",m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]);
-            break;
-        }
-    case 6:
-        {
-            len = sprintf_s(szFoo,"X Offset: %f             ",m_ptable->m_BG_xlatex[m_ptable->m_BG_current_set]);
-            break;
-        }
-    case 7:
-        {
-            len = sprintf_s(szFoo,"Y Offset: %f            ",m_ptable->m_BG_xlatey[m_ptable->m_BG_current_set]);
-            break;
-        }
-    case 8:
-        {
-            len = sprintf_s(szFoo,"Z Offset: %f           ",m_ptable->m_BG_xlatez[m_ptable->m_BG_current_set]);
             break;
         }
     default:
@@ -3073,7 +3083,6 @@ void search_for_nearest(const Ball * const pball, const std::vector<Light*> &lig
 	}
 }
 
-
 void Player::DrawBalls()
 {
 	std::vector<Light*> lights; // collect all lights that can reflect on balls (currently only bulbs and if flag set to do so)
@@ -3169,7 +3178,9 @@ void Player::DrawBalls()
       ballShader->Core()->SetVector("m3",&m3);
       D3DXVECTOR4 pos( pball->m_pos.x, pball->m_pos.y, zheight, 1.0f );
       ballShader->Core()->SetVector("position", &pos );
-      ballShader->Core()->SetFloat("radius", pball->m_radius );
+
+      ballShader->Core()->SetFloat("radius", pball->m_radius);
+
       if ( !pball->m_pinballEnv )
           ballShader->SetTexture("Texture0", &m_pin3d.pinballEnvTexture);
       else
