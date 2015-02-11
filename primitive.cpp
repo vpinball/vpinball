@@ -830,6 +830,9 @@ HRESULT Primitive::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int versi
    m_ptable = ptable;
 
    br.Load();
+   if( !m_d.m_use3DMesh )
+       CalculateBuiltinOriginal();
+
    UpdateEditorView();
    return S_OK;
 }
