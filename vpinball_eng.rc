@@ -14,7 +14,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Englisch (USA) resources
+// English (U.S.) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 #ifdef _WIN32
@@ -257,11 +257,10 @@ BEGIN
     CONTROL         "Enable Fast FXAA",IDC_FFXAA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,165,90,10
     CONTROL         "Enable Quality FXAA",IDC_QFXAA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,175,90,10
     CONTROL         "Enable 4xAntiAliasing",IDC_AA_ALL_TABLES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,185,126,10
-    CONTROL         "Stretch Ball with Table",IDC_StretchNo,"Button",BS_AUTORADIOBUTTON | WS_GROUP,16,212,83,10
-    CONTROL         "Don't stretch the Ball",IDC_StretchYes,"Button",BS_AUTORADIOBUTTON,16,222,81,10
-    CONTROL         "At Full Screen anti-stretch the Ball",IDC_StretchMonitor,
-                    "Button",BS_AUTORADIOBUTTON,16,232,127,10
-    COMBOBOX        IDC_MonitorCombo,73,242,48,71,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Stretch Ball with Table",IDC_StretchNo,"Button",BS_AUTORADIOBUTTON | WS_GROUP,16,211,83,10
+    CONTROL         "Don't stretch the Ball",IDC_StretchYes,"Button",BS_AUTORADIOBUTTON,16,221,81,10
+    CONTROL         "Cabinet anti-stretch the ball",IDC_StretchMonitor,
+                    "Button",BS_AUTORADIOBUTTON,16,231,111,10
     CONTROL         "Reflect Ball on Playfield",IDC_GLOBAL_REFLECTION_CHECK,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,18,91,10
     CONTROL         "Ball Trails/Motion Blur",IDC_GLOBAL_TRAIL_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,31,91,10
@@ -294,14 +293,18 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,277,280,50,14
     LISTBOX         IDC_SIZELIST,14,19,129,120,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
     LTEXT           "fps  (1=vsync)",IDC_STATIC,283,126,45,10
-    GROUPBOX        "Video Mode",IDC_STATIC,7,7,142,263
+    GROUPBOX        "Video Mode",IDC_STATIC,7,7,142,266
     GROUPBOX        "Ball Rendering",IDC_STATIC,154,7,103,40
     GROUPBOX        "3D Stereo Output",IDC_STATIC,259,7,85,80
-    GROUPBOX        "Performance and Troubleshooting",IDC_STATIC,154,113,190,156
+    GROUPBOX        "Performance and Troubleshooting",IDC_STATIC,154,113,190,160
     GROUPBOX        "Max Texture Dimension (for low-end gfx boards)",IDC_STATIC,159,181,180,54
     LTEXT           "Object Detail Level (decrease = performance)",IDC_STATIC,162,238,156,8
-    GROUPBOX        "Ball aspect ratio for stretched Tables",IDC_STATIC,12,200,133,62
-    LTEXT           "to my Monitor:",IDC_STATIC,27,244,45,8
+    GROUPBOX        "Ball aspect ratio for stretched Tables",IDC_STATIC,12,200,133,69
+    GROUPBOX        "Aspect Ratio Offset",IDC_STATIC,25,242,110,25
+    LTEXT           "X",IDC_STATIC,31,253,8,8
+    EDITTEXT        IDC_CORRECTION_X,39,251,35,12,ES_AUTOHSCROLL
+    LTEXT           "Y",IDC_STATIC,85,252,8,8
+    EDITTEXT        IDC_CORRECTION_Y,93,251,35,12,ES_AUTOHSCROLL
 END
 
 IDD_FONTDIALOG DIALOG  0, 0, 316, 167
@@ -2265,25 +2268,6 @@ IDR_TABLE               TABLE                   "res\\table.vpx"
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// Dialog Info
-//
-
-IDD_VIDEO_OPTIONS DLGINIT
-BEGIN
-    IDC_MonitorCombo, 0x403, 4, 0
-0x3a34, 0x0033, 
-    IDC_MonitorCombo, 0x403, 5, 0
-0x3631, 0x393a, "\000" 
-    IDC_MonitorCombo, 0x403, 6, 0
-0x3631, 0x313a, 0x0030, 
-    IDC_MonitorCombo, 0x403, 5, 0
-0x3132, 0x393a, "\000" 
-    0
-END
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
 // String Table
 //
 
@@ -2449,7 +2433,7 @@ BEGIN
     IDS_STEP                "Step"
 END
 
-#endif    // Englisch (USA) resources
+#endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

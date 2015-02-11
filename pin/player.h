@@ -212,6 +212,7 @@ public:
     Shader      *ballShader;
     IndexBuffer *ballIndexBuffer;
     VertexBuffer *ballVertexBuffer;
+    bool m_antiStretchBall;
 
 	PinTable *m_ptable;
     bool cameraMode;
@@ -416,6 +417,7 @@ public:
     void UpdateCameraModeDisplay();
     void UpdateBackdropSettings(const bool up);
     void UpdateBallShaderMatrix();
+    void CalcBallAspectRatio(void);
 #endif
 
 #ifdef STEPPING

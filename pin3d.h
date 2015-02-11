@@ -40,6 +40,7 @@ public:
 
 	float m_rznear, m_rzfar;
 	Vertex3Ds m_vertexcamera;
+    float m_cameraLength;
 	};
 
 class Pin3D
