@@ -1356,93 +1356,150 @@ void Player::InitWindow()
 		y -= captionheight;
 		m_height += captionheight;
 	}
-
-	int ballStretchMode;
-	hr = GetRegInt("Player", "BallStretchMode", &ballStretchMode);
-	if (hr != S_OK)
-		ballStretchMode = 0;
-
-	// Monitors: 4:3, 16:9, 16:10, 21:10
-	int ballStretchMonitor;
-	hr = GetRegInt("Player", "BallStretchMonitor", &ballStretchMonitor);
-	if (hr != S_OK)
-		ballStretchMonitor = 1; // assume 16:9
-
-	const float scalebackX = (m_ptable->m_BG_scalex[m_ptable->m_BG_current_set] != 0.0f) ? ((m_ptable->m_BG_scalex[m_ptable->m_BG_current_set] + m_ptable->m_BG_scaley[m_ptable->m_BG_current_set])*0.5f)/m_ptable->m_BG_scalex[m_ptable->m_BG_current_set] : 1.0f;
-	const float scalebackY = (m_ptable->m_BG_scaley[m_ptable->m_BG_current_set] != 0.0f) ? ((m_ptable->m_BG_scalex[m_ptable->m_BG_current_set] + m_ptable->m_BG_scaley[m_ptable->m_BG_current_set])*0.5f)/m_ptable->m_BG_scaley[m_ptable->m_BG_current_set] : 1.0f;
-
-	float xMonitor,yMonitor;
-	switch (ballStretchMonitor)
-	{
-	case 0: 
-		xMonitor = (float)(4.0 / 4.0);
-		yMonitor = (float)(3.0 / 3.0);
-		break;
-	case 1: 
-		xMonitor = (float)(16.0 / 4.0);
-		yMonitor = (float)(9.0 / 3.0);
-		break;
-	case 2: 
-		xMonitor = (float)(16.0 / 4.0);
-		yMonitor = (float)(10.0 / 3.0);
-		break;
-	case 3: 
-		xMonitor = (float)(21.0 / 4.0);
-		yMonitor = (float)(10.0 / 3.0);
-		break;
-	case 4: 
-		xMonitor = (float)(3.0 / 4.0);
-		yMonitor = (float)(4.0 / 3.0);
-		break;
-	case 5: 
-		xMonitor = (float)(9.0 / 4.0);
-		yMonitor = (float)(16.0 / 3.0);
-		break;
-	case 6: 
-		xMonitor = (float)(10.0 / 4.0);
-		yMonitor = (float)(16.0 / 3.0);
-		break;
-	case 7: 
-		xMonitor = (float)(10.0 / 4.0);
-		yMonitor = (float)(21.0 / 3.0);
-		break;
-	default:
-		xMonitor = 16.0f;
-		yMonitor = 9.0f;
-		break;
-	}
-	const float scalebackMonitorX = ((xMonitor + yMonitor)*0.5f)/xMonitor;
-	const float scalebackMonitorY = (((xMonitor + yMonitor)*0.5f)/yMonitor);
-
-	float temprotation = m_ptable->m_BG_rotation[m_ptable->m_BG_current_set];
-	while (temprotation < 0.f)
-		temprotation += 360.0f;
-
-	const float c = sinf(ANGTORAD(fmodf(temprotation + 90.0f,180.0f)));
-	const float s = sinf(ANGTORAD(fmodf(temprotation,180.0f)));
-	switch(ballStretchMode)
-	{
-		case 0:	m_BallStretchX = 1.0f;
-				m_BallStretchY = 1.0f;
-				break;
-		case 1: m_BallStretchX = scalebackX*c + scalebackY*s;
-				m_BallStretchY = scalebackY*c + scalebackX*s;
-				break;
-		case 2: m_BallStretchX = scalebackX*c + scalebackY*s;
-				m_BallStretchY = scalebackY*c + scalebackX*s;
-				if (m_fFullScreen || (m_width == m_screenwidth && m_height == m_screenheight)) // detect windowed fullscreen
-				{
-					m_BallStretchX *= scalebackMonitorX*c + scalebackMonitorY*s;
-					m_BallStretchY *= scalebackMonitorY*c + scalebackMonitorX*s;
-				}
-				break;
-	}
+    CalcBallAspectRatio();
     m_hwnd = ::CreateWindowEx(windowflagsex, "VPPlayer", "Visual Pinball Player", windowflags, x, y, m_width, m_height, NULL, NULL, g_hinst, 0);
 
     mixer_init( m_hwnd );
     hid_init();
-
 	SetCursorPos( 400, 999999 ); // ShowCursor(false)?
+}
+
+void Player::CalcBallAspectRatio(void)
+{
+    HRESULT hr;
+
+    int ballStretchMode;
+    hr = GetRegInt("Player", "BallStretchMode", &ballStretchMode);
+    if (hr != S_OK)
+        ballStretchMode = 0;
+
+    // Monitors: 4:3, 16:9, 16:10, 21:10
+    int ballStretchMonitor;
+    hr = GetRegInt("Player", "BallStretchMonitor", &ballStretchMonitor);
+    if (hr != S_OK)
+        ballStretchMonitor = 1; // assume 16:9
+
+    float ballAspecRatioOffsetX;
+    hr = GetRegStringAsFloat("Player", "BallCorrectionX", &ballAspecRatioOffsetX);
+    if (hr != S_OK)
+        ballAspecRatioOffsetX = 0.0f;
+
+    float ballAspecRatioOffsetY;
+    hr = GetRegStringAsFloat("Player", "BallCorrectionY", &ballAspecRatioOffsetY);
+    if (hr != S_OK)
+        ballAspecRatioOffsetY = 0.0f;
+
+    const float scalebackX = (m_ptable->m_BG_scalex[m_ptable->m_BG_current_set] != 0.0f) ? ((m_ptable->m_BG_scalex[m_ptable->m_BG_current_set] + m_ptable->m_BG_scaley[m_ptable->m_BG_current_set])*0.5f)/m_ptable->m_BG_scalex[m_ptable->m_BG_current_set] : 1.0f;
+    const float scalebackY = (m_ptable->m_BG_scaley[m_ptable->m_BG_current_set] != 0.0f) ? ((m_ptable->m_BG_scalex[m_ptable->m_BG_current_set] + m_ptable->m_BG_scaley[m_ptable->m_BG_current_set])*0.5f)/m_ptable->m_BG_scaley[m_ptable->m_BG_current_set] : 1.0f;
+    float xMonitor=16.0f,yMonitor=9.0f;
+
+    float aspect = (float)m_screenwidth/(float)m_screenheight;
+    float factor = aspect*3.0f;
+    if ( factor>4.0 )
+    {
+        factor = aspect*9.0f;
+        if ( factor == 16.0f )
+        {
+           //16:9
+           xMonitor = (factor+ballAspecRatioOffsetX) / 4.0f;
+           yMonitor = (9.0f+ballAspecRatioOffsetY) / 3.0f;
+        }
+        else
+        {
+            factor = aspect*10.f;
+            if ( factor==16.0f )
+            {
+                //16:10
+                xMonitor = (factor+ballAspecRatioOffsetX) /4.0f;
+                yMonitor = (10.0f+ballAspecRatioOffsetY) / 3.0f;
+            }
+            else
+            {
+                //21:10
+                xMonitor = (21.0f+ballAspecRatioOffsetX) / 4.0f;
+                yMonitor = (10.0f+ballAspecRatioOffsetY) / 3.0f;
+            }
+        }
+    }
+    else
+    {
+        //4:3
+        xMonitor = (factor+ballAspecRatioOffsetX) / 4.0f;
+        yMonitor = (3.0f+ballAspecRatioOffsetY) / 3.0f;
+    }
+/*
+    switch (ballStretchMonitor)
+    {
+    case 0: 
+        xMonitor = (float)(4.0 / 4.0);
+        yMonitor = (float)(3.0 / 3.0);
+        break;
+    case 1: 
+        xMonitor = (float)(16.0 / 4.0);
+        yMonitor = (float)(9.0 / 3.0);
+        break;
+    case 2: 
+        xMonitor = (float)(16.0 / 4.0);
+        yMonitor = (float)(10.0 / 3.0);
+        break;
+    case 3: 
+        xMonitor = (float)(21.0 / 4.0);
+        yMonitor = (float)(10.0 / 3.0);
+        break;
+    case 4: 
+        xMonitor = (float)(3.0 / 4.0);
+        yMonitor = (float)(4.0 / 3.0);
+        break;
+    case 5: 
+        xMonitor = (float)(9.0 / 4.0);
+        yMonitor = (float)(16.0 / 3.0);
+        break;
+    case 6: 
+        xMonitor = (float)(10.0 / 4.0);
+        yMonitor = (float)(16.0 / 3.0);
+        break;
+    case 7: 
+        xMonitor = (float)(10.0 / 4.0);
+        yMonitor = (float)(21.0 / 3.0);
+        break;
+    default:
+        xMonitor = 16.0f;
+        yMonitor = 9.0f;
+        break;
+    }
+    xMonitor += -0.4f;
+    yMonitor += 0.0f;
+*/
+    const float scalebackMonitorX = ((xMonitor + yMonitor)*0.5f)/xMonitor;
+    const float scalebackMonitorY = (((xMonitor + yMonitor)*0.5f)/yMonitor);
+
+    float temprotation = m_ptable->m_BG_rotation[m_ptable->m_BG_current_set];
+    while (temprotation < 0.f)
+        temprotation += 360.0f;
+
+    const float c = sinf(ANGTORAD(fmodf(temprotation + 90.0f,180.0f)));
+    const float s = sinf(ANGTORAD(fmodf(temprotation,180.0f)));
+    m_antiStretchBall=false;
+
+    switch(ballStretchMode)
+    {
+    case 0:	m_BallStretchX = 1.0f;
+        m_BallStretchY = 1.0f;
+        break;
+    case 1: m_BallStretchX = scalebackX*c + scalebackY*s;
+        m_BallStretchY = scalebackY*c + scalebackX*s;
+        break;
+    case 2: m_BallStretchX = scalebackX*c + scalebackY*s;
+        m_BallStretchY = scalebackY*c + scalebackX*s;
+        if (m_fFullScreen || (m_width == m_screenwidth && m_height == m_screenheight)) // detect windowed fullscreen
+        {
+            m_antiStretchBall=true;
+            m_BallStretchX *= scalebackMonitorX*c + scalebackMonitorY*s;
+            m_BallStretchY *= scalebackMonitorY*c + scalebackMonitorX*s;
+        }
+        break;
+    }
+
 }
 
 void Player::NudgeX(const int x, const int j)
@@ -3158,6 +3215,21 @@ void Player::DrawBalls()
       }
 
       // ************************* draw the ball itself ****************************
+      if ( m_antiStretchBall && m_ptable->m_BG_rotation[m_ptable->m_BG_current_set]!=0.0f )
+      {
+         // for cabinets (fullscreen and rotated scene and anti-stretch mode based on aspect ration)
+         // the anti-stretch factor is a constant and balls in the lower half of the playfield become squeezed
+         // to compensate that calculate the angle between viewer and a current ball position
+         if ( pball->m_pos.y>(m_ptable->m_bottom*0.5f))
+         {
+             float la = sqrtf(pball->m_pos.x*pball->m_pos.x + pball->m_pos.y*pball->m_pos.y + pball->m_pos.z*pball->m_pos.z);
+             float fdot = pball->m_pos.x*m_pin3d.m_proj.m_vertexcamera.x + pball->m_pos.y*m_pin3d.m_proj.m_vertexcamera.y + pball->m_pos.z*m_pin3d.m_proj.m_vertexcamera.z;
+             float ang = fdot/(la*m_pin3d.m_proj.m_cameraLength);
+             float stretchy = m_BallStretchY-ang;
+             ballShader->Core()->SetFloat("ballStretchY", stretchy );
+         }
+      }
+
       m_pin3d.EnableAlphaBlend(1, false);
       D3DXVECTOR4 m1(pball->m_orientation.m_d[0][0], pball->m_orientation.m_d[1][0], pball->m_orientation.m_d[2][0], 0.0f );
       D3DXVECTOR4 m2(pball->m_orientation.m_d[0][1], pball->m_orientation.m_d[1][1], pball->m_orientation.m_d[2][1], 0.0f );

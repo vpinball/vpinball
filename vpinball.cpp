@@ -3678,6 +3678,8 @@ std::vector<VideoMode> allVideoModes;
 
 INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+    char tmp[256];
+
    switch (uMsg)
    {
    case WM_INITDIALOG:
@@ -3734,11 +3736,25 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
              maxPrerenderedFrames = 2;
          SetDlgItemInt(hwndDlg, IDC_MAX_PRE_FRAMES, maxPrerenderedFrames, FALSE);
 
+
+         float ballAspecRatioOffsetX;
+         hr = GetRegStringAsFloat("Player", "BallCorrectionX", &ballAspecRatioOffsetX);
+         if (hr != S_OK)
+             ballAspecRatioOffsetX = 0.0f;
+         sprintf_s(tmp,256,"%f",ballAspecRatioOffsetX);
+         SetDlgItemTextA(hwndDlg, IDC_CORRECTION_X, tmp);
+
+         float ballAspecRatioOffsetY;
+         hr = GetRegStringAsFloat("Player", "BallCorrectionY", &ballAspecRatioOffsetY);
+         if (hr != S_OK)
+             ballAspecRatioOffsetY = 0.0f;
+         sprintf_s(tmp,256,"%f",ballAspecRatioOffsetY);
+         SetDlgItemTextA(hwndDlg, IDC_CORRECTION_Y, tmp);
+
          float nudgeStrength;
          hr = GetRegStringAsFloat("Player", "NudgeStrength", &nudgeStrength);
          if (hr != S_OK)
              nudgeStrength = 2e-2f;
- 		 char tmp[256];
 		 sprintf_s(tmp,256,"%f",nudgeStrength);
  		 SetDlgItemTextA(hwndDlg, IDC_NUDGE_STRENGTH, tmp);
 
@@ -3948,7 +3964,14 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                   int maxPrerenderedFrames = GetDlgItemInt(hwndDlg, IDC_MAX_PRE_FRAMES, NULL, TRUE);
                   SetRegValue("Player","MaxPrerenderedFrames", REG_DWORD, &maxPrerenderedFrames, 4);
 
-				  char strTmp[256];
+                  char strTmp[256];
+
+                  GetDlgItemTextA(hwndDlg, IDC_CORRECTION_X, strTmp, 256);
+                  SetRegValue("Player", "BallCorrectionX", REG_SZ, &strTmp,lstrlen(strTmp));
+
+                  GetDlgItemTextA(hwndDlg, IDC_CORRECTION_Y, strTmp, 256);
+                  SetRegValue("Player", "BallCorrectionY", REG_SZ, &strTmp,lstrlen(strTmp));
+
 				  GetDlgItemTextA(hwndDlg, IDC_NUDGE_STRENGTH, strTmp, 256);
 				  SetRegValue("Player", "NudgeStrength", REG_SZ, &strTmp,lstrlen(strTmp));
 
