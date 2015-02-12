@@ -223,7 +223,7 @@ PinInput::PinInput()
    m_ac_down = 0;
    m_ac_didonce = 0;
 
-   m_tilt_updown = 0;
+   m_tilt_updown = DISPID_GameEvents_KeyUp;
 
    m_linearPlunger = false;
 }

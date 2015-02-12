@@ -6082,6 +6082,9 @@ STDMETHODIMP PinTable::PlaySound(BSTR bstr, int loopcount, float volume, float p
 	   pDS->m_pDS->DuplicateSoundBuffer(pdsb, &ppsc->m_pDSBuffer/*&pdsbNew*/);
    }
 
+   if(m_tblMirrorEnabled)
+       pan = -pan;
+
    if (ppsc->m_pDSBuffer)
    {
       ppsc->m_pDSBuffer->SetVolume(decibelvolume);
