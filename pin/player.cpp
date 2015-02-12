@@ -3225,7 +3225,7 @@ void Player::DrawBalls()
              float la = sqrtf(pball->m_pos.x*pball->m_pos.x + pball->m_pos.y*pball->m_pos.y + pball->m_pos.z*pball->m_pos.z);
              float fdot = pball->m_pos.x*m_pin3d.m_proj.m_vertexcamera.x + pball->m_pos.y*m_pin3d.m_proj.m_vertexcamera.y + pball->m_pos.z*m_pin3d.m_proj.m_vertexcamera.z;
              float ang = fdot/(la*m_pin3d.m_proj.m_cameraLength);
-             float stretchy = m_BallStretchY-ang;
+             float stretchy = m_BallStretchY-ang*ang;
              ballShader->Core()->SetFloat("ballStretchY", stretchy );
          }
          else if( pball->m_pos.y<(m_ptable->m_bottom*0.21f))
@@ -3233,7 +3233,7 @@ void Player::DrawBalls()
              float la = sqrtf(pball->m_pos.x*pball->m_pos.x + pball->m_pos.y*pball->m_pos.y + pball->m_pos.z*pball->m_pos.z);
              float fdot = pball->m_pos.x*m_pin3d.m_proj.m_vertexcamera.x + pball->m_pos.y*m_pin3d.m_proj.m_vertexcamera.y + pball->m_pos.z*m_pin3d.m_proj.m_vertexcamera.z;
              float ang = fdot/(la*m_pin3d.m_proj.m_cameraLength);
-             float stretchy = m_BallStretchY-ang;
+             float stretchy = m_BallStretchY-ang*ang;
              ballShader->Core()->SetFloat("ballStretchY", stretchy );
          }
       }
