@@ -345,7 +345,9 @@ private:
     RenderDevice *m_renderDevice;
     
 	// caches:
-	Texture *currentTexture;
+
+    D3DXHANDLE currentSampler[4];
+	Texture *currentTexture[4];
     bool    currentAlphaTest;
     float   currentAlphaTestValue;
     float   currentAlphaValue;
