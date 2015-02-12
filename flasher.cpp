@@ -1308,9 +1308,6 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
          pd3dDevice->basicShader->SetTexture("Texture0", pinA);
          pd3dDevice->basicShader->SetTexture("Texture1", pinB);
          pd3dDevice->basicShader->SetTechnique("basic_with_textureAB_noLight");
-	     
-		 // reset tex1 to env
-		 pd3dDevice->basicShader->SetTexture("Texture1", &ppin3d->envTexture); //!! make customisable
 
          //ppin3d->SetTextureFilter( ePictureTexture, TEXTURE_MODE_TRILINEAR );
       }
@@ -1342,6 +1339,11 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
       pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
   	  pd3dDevice->SetRenderState(RenderDevice::BLENDOP, D3DBLENDOP_ADD);
 	  g_pplayer->m_pin3d.DisableAlphaBlend();
+      if (pinA && pinB)
+      {
+          //reset tex1 to env
+          pd3dDevice->basicShader->SetTexture("Texture1", &ppin3d->envTexture); //!! make customizable
+      }
 }
 
 void Flasher::UpdatePropertyPanes()
