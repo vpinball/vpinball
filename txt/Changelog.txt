@@ -20,16 +20,6 @@ VP 10.0.0 Changelog
 
 - a special thanks has to go out to our awesome alpha testers/improvers: Unclewilly, JPSalas and JimmyFingers!
 
-- for cabinets: in the video options select "Cabinet anti-stretch the ball" and depending on you screen you can enter a correction offset for the
-                aspect ratio. If you use a 16:9 screen use a correction offset for X=0.0 and Y=1.5. For a 16:10 screen use X=0.0 and Y=0.0 for best results.
-                This option only applies to rotated and fullscreen rendered tables (cabinet mode)!
-                Even with this option you might need to adjust the backdrop settings. The biggest problem for an egg-shaped ball is the Layback value.
-                Values over 70-80 are much too high and should be lowered. The scaling can be a problem too. 
-                To find a better POV with a round ball over the playfield do the following:
-                - set the min/max slope to 0 and start table in camera mode (menu Table -> Camera Mode)
-                - enter debug mode and activate "Throw balls in player"
-                - drop balls all over the table and adjust the POV settings
-                
 - physics mostly redone (also previously known as 'physmod(5)')
   due to this it is now also possible to enable vsync without physics sideeffects like stutter or bad aiming (set FPS limiter to 1)
 
@@ -49,12 +39,22 @@ VP 10.0.0 Changelog
      left magna save key = previous backdrop option
      right magna save key = next backdrop option
 
+- new setting in the video preferences to setup rotation for cabinet mode (or otherwise standard desktop)
+  this allows a table to be used in/setup for both DT and FS by setting the backglass options correctly for both modes
+
+- adjust cabinets: in the video options select "Cabinet anti-stretch the ball" and depending on your screen you can enter a correction offset for the
+                   aspect ratio. If you use a 16:9 screen use a correction offset of X=0.0 and Y=1.5. For a 16:10 screen use X=0.0 and Y=0.0 for best results.
+                   This option only applies to rotated and fullscreen rendered tables (cabinet mode)!
+                   Even with this option you might need to adjust the backdrop settings. The biggest problem for an egg-shaped ball is the Layback value.
+                   Values over 70-80 are way too high and should be lowered. The scaling can become a problem too.
+                   To find a better POV with a round ball over the playfield do the following:
+                   - set the min/max slope to 0 and start the table in Camera Mode (menu Table -> Camera Mode)
+                   - enter debug mode and activate "Throw balls in player"
+                   - drop balls all over the table and adjust the POV settings
+
 - new table field height setting in the "Dimension & Slope Settings":
   Now you can define a real playfield height. If this value is raised, all elements on the table are also moved by that amount.
   For example: "table field height"=50 means everything on the table is raised by 50 units. This allows for real ball tunnels and more.
-
-- new setting in the video preferences to setup rotation for cabinet mode (or otherwise standard desktop)
-  this allows a table to be used in/setup for both DT and FS by setting the backglass options correctly for both modes
 
 - new rubber element
 
