@@ -1031,10 +1031,6 @@ Shader::Shader(RenderDevice *renderDevice)
     currentTexture[1]=0;
     currentTexture[2]=0;
     currentTexture[3]=0;
-    currentSampler[0][0]=0;
-    currentSampler[1][0]=0;
-    currentSampler[2][0]=0;
-    currentSampler[3][0]=0;
     currentAlphaTest = false;
     currentAlphaTestValue = -1.0f;
     currentAlphaValue = -1.0f;
@@ -1122,23 +1118,30 @@ void Shader::End()
 
 void Shader::SetTexture(const D3DXHANDLE texelName, Texture *texel)
 {
-   if(!texel->m_pdsBuffer)
-	   return;
+   const unsigned int idx = texelName[strlen(texelName)-1]-'0'; // current convention: SetTexture gets "TextureX", where X 0..4
+   assert(idx < TEXTURESET_STATE_CACHE_SIZE);
 
-   for ( int idx=0;idx<4;idx++ )
+   if(!texel || !texel->m_pdsBuffer) {
+       currentTexture[idx] = NULL; // invalidate the cache
+
+       m_shader->SetTexture(texelName, NULL);
+       return;
+   }
+
+   if(texel->m_pdsBuffer!=currentTexture[idx])
    {
-       if ( strcmp(texelName,currentSampler[idx]) || texel!=currentTexture[idx])
-	   {
-		   strcpy_s(currentSampler[idx], 63, texelName);
-		   currentTexture[idx] = texel;
-		   m_shader->SetTexture(texelName, m_renderDevice->m_texMan.LoadTexture(texel->m_pdsBuffer));
-		   return;
-	   }
+       currentTexture[idx] = texel->m_pdsBuffer;
+       m_shader->SetTexture(texelName, m_renderDevice->m_texMan.LoadTexture(texel->m_pdsBuffer));
    }
 }
 
 void Shader::SetTexture(const D3DXHANDLE texelName, D3DTexture *texel)
 {
+   const unsigned int idx = texelName[strlen(texelName)-1]-'0'; // current convention: SetTexture gets "TextureX", where X 0..4
+   assert(idx < TEXTURESET_STATE_CACHE_SIZE);
+
+   currentTexture[idx] = NULL; // direct set of device tex invalidates the cache
+
    m_shader->SetTexture(texelName, texel);
 }
 
