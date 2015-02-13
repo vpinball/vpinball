@@ -346,11 +346,11 @@ private:
     
 	// caches:
 
-    D3DXHANDLE currentSampler[4];
+    CHAR    currentSampler[4][64];
 	Texture *currentTexture[4];
     bool    currentAlphaTest;
     float   currentAlphaTestValue;
     float   currentAlphaValue;
     D3DXVECTOR4 currentColor;
-    char   currentTechnique[64];
+    char    currentTechnique[64];
 };

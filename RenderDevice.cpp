@@ -1031,10 +1031,10 @@ Shader::Shader(RenderDevice *renderDevice)
     currentTexture[1]=0;
     currentTexture[2]=0;
     currentTexture[3]=0;
-    currentSampler[0]=0;
-    currentSampler[1]=0;
-    currentSampler[2]=0;
-    currentSampler[3]=0;
+    currentSampler[0][0]=0;
+    currentSampler[1][0]=0;
+    currentSampler[2][0]=0;
+    currentSampler[3][0]=0;
     currentAlphaTest = false;
     currentAlphaTestValue = -1.0f;
     currentAlphaValue = -1.0f;
@@ -1122,19 +1122,18 @@ void Shader::End()
 
 void Shader::SetTexture(const D3DXHANDLE texelName, Texture *texel)
 {
-   int idx=0;
-   bool doUpdate=false;
+   if(!texel->m_pdsBuffer)
+	   return;
 
-   for ( idx=0;idx<4;idx++ )
+   for ( int idx=0;idx<4;idx++ )
    {
-       if ( texelName!=currentSampler[idx] || texel!=currentTexture[idx])
-           doUpdate=true;
-   }
-   if (texel->m_pdsBuffer && doUpdate)
-   {
-      currentSampler[idx] = texelName; 
-      currentTexture[idx] = texel;
-      m_shader->SetTexture(texelName, m_renderDevice->m_texMan.LoadTexture(texel->m_pdsBuffer));
+       if ( strcmp(texelName,currentSampler[idx]) || texel!=currentTexture[idx])
+	   {
+		   strcpy_s(currentSampler[idx], 63, texelName);
+		   currentTexture[idx] = texel;
+		   m_shader->SetTexture(texelName, m_renderDevice->m_texMan.LoadTexture(texel->m_pdsBuffer));
+		   return;
+	   }
    }
 }
 
