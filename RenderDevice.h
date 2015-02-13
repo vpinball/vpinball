@@ -344,10 +344,10 @@ private:
     ID3DXEffect* m_shader;
     RenderDevice *m_renderDevice;
     
-	// caches:
+    // caches:
 
-    CHAR    currentSampler[4][64];
-	Texture *currentTexture[4];
+    static const DWORD TEXTURESET_STATE_CACHE_SIZE=5; // current convention: SetTexture gets "TextureX", where X 0..4
+    BaseTexture *currentTexture[TEXTURESET_STATE_CACHE_SIZE];
     bool    currentAlphaTest;
     float   currentAlphaTestValue;
     float   currentAlphaValue;
