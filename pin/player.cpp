@@ -723,11 +723,16 @@ void Player::UpdateBasicShaderMatrix(const Matrix3D& objectTrafo)
 
 	if(m_ptable->m_tblMirrorEnabled)
 	{
-		const D3DXMATRIX flip( -1, 0, 0, 0,
-							   0, 1, 0, 0,
-							   0, 0, 1, 0,
-							   0, 0, 0, 1 );
-		matWorldViewProj = matWorldViewProj * flip;
+		const D3DXMATRIX flipx( -1, 0, 0, 0,
+							    0, 1, 0, 0,
+							    0, 0, 1, 0,
+							    0, 0, 0, 1 );
+		const D3DXMATRIX flipy( 1, 0, 0, 0,
+							    0, -1, 0, 0,
+							    0, 0, 1, 0,
+							    0, 0, 0, 1 );
+		const float rotation = fmodf(m_ptable->m_BG_rotation[m_ptable->m_BG_current_set],360.f);
+		matWorldViewProj = matWorldViewProj * (rotation!=0.0f ? flipy : flipx);
 	}
     
     Matrix3D temp;
@@ -796,11 +801,16 @@ void Player::UpdateBallShaderMatrix()
 
 	if(m_ptable->m_tblMirrorEnabled)
 	{
-		const D3DXMATRIX flip( -1, 0, 0, 0,
-							   0, 1, 0, 0,
-							   0, 0, 1, 0,
-							   0, 0, 0, 1 );
-		matWorldViewProj = matWorldViewProj * flip;
+		const D3DXMATRIX flipx( -1, 0, 0, 0,
+							    0, 1, 0, 0,
+							    0, 0, 1, 0,
+							    0, 0, 0, 1 );
+		const D3DXMATRIX flipy( 1, 0, 0, 0,
+							    0, -1, 0, 0,
+							    0, 0, 1, 0,
+							    0, 0, 0, 1 );
+		const float rotation = fmodf(m_ptable->m_BG_rotation[m_ptable->m_BG_current_set],360.f);
+		matWorldViewProj = matWorldViewProj * (rotation!=0.f ? flipy : flipx);
 	}
 
     Matrix3D temp;
