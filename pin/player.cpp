@@ -3140,6 +3140,30 @@ void search_for_nearest(const Ball * const pball, const std::vector<Light*> &lig
 	}
 }
 
+void Player::GetBallAspectRatio(Ball *pball, float &stretchX, float &stretchY)
+{
+    Vertex3D_NoTex2 rgvIn[4];
+    rgvIn[0].x = pball->m_pos.x-pball->m_radius;    rgvIn[0].y=pball->m_pos.y+pball->m_radius;    rgvIn[0].z=pball->m_pos.z;
+    rgvIn[1].x = pball->m_pos.x+pball->m_radius;    rgvIn[1].y=pball->m_pos.y+pball->m_radius;    rgvIn[1].z=pball->m_pos.z;
+    rgvIn[2].x = pball->m_pos.x+pball->m_radius;    rgvIn[2].y=pball->m_pos.y-pball->m_radius;    rgvIn[2].z=pball->m_pos.z;
+    rgvIn[3].x = pball->m_pos.x-pball->m_radius;    rgvIn[3].y=pball->m_pos.y-pball->m_radius;    rgvIn[3].z=pball->m_pos.z;
+
+    Vertex2D rgvOut[4];
+    m_pin3d.m_proj.TransformVertices(rgvIn, NULL, 4, rgvOut);
+    float maxX = FLT_MIN;
+    float minX = FLT_MAX;
+    float maxY = FLT_MIN;
+    float minY = FLT_MAX;
+    for( int i=0;i<4;i++ )
+    {
+        if(maxX<rgvOut[i].x) maxX = rgvOut[i].x;
+        if(minX>rgvOut[i].x) minX = rgvOut[i].x;
+        if(maxY<rgvOut[i].y) maxY = rgvOut[i].y;
+        if(minY>rgvOut[i].y) minY = rgvOut[i].y;
+    }
+    stretchY = 1.0f-((maxX - minX)/(pball->m_radius*2.0f));
+    stretchX = 1.0f-((maxY - minY)/(pball->m_radius*2.0f));
+}
 
 void Player::DrawBalls()
 {
@@ -3227,25 +3251,10 @@ void Player::DrawBalls()
       // ************************* draw the ball itself ****************************
       if ( m_antiStretchBall && m_ptable->m_BG_rotation[m_ptable->m_BG_current_set]!=0.0f )
       {
-         // for cabinets (fullscreen and rotated scene and anti-stretch mode based on aspect ration)
-         // the anti-stretch factor is a constant and balls in the lower half of the playfield become squeezed
-         // to compensate that calculate the angle between viewer and a current ball position
-         if ( pball->m_pos.y>(m_ptable->m_bottom*0.5f))
-         {
-             float la = sqrtf(pball->m_pos.x*pball->m_pos.x + pball->m_pos.y*pball->m_pos.y + pball->m_pos.z*pball->m_pos.z);
-             float fdot = pball->m_pos.x*m_pin3d.m_proj.m_vertexcamera.x + pball->m_pos.y*m_pin3d.m_proj.m_vertexcamera.y + pball->m_pos.z*m_pin3d.m_proj.m_vertexcamera.z;
-             float ang = fdot/(la*m_pin3d.m_proj.m_cameraLength);
-             float stretchy = m_BallStretchY-ang*ang;
-             ballShader->Core()->SetFloat("ballStretchY", stretchy );
-         }
-         else if( pball->m_pos.y<(m_ptable->m_bottom*0.21f))
-         {
-             float la = sqrtf(pball->m_pos.x*pball->m_pos.x + pball->m_pos.y*pball->m_pos.y + pball->m_pos.z*pball->m_pos.z);
-             float fdot = pball->m_pos.x*m_pin3d.m_proj.m_vertexcamera.x + pball->m_pos.y*m_pin3d.m_proj.m_vertexcamera.y + pball->m_pos.z*m_pin3d.m_proj.m_vertexcamera.z;
-             float ang = fdot/(la*m_pin3d.m_proj.m_cameraLength);
-             float stretchy = m_BallStretchY-ang*ang;
-             ballShader->Core()->SetFloat("ballStretchY", stretchy );
-         }
+          float sx,sy;
+          GetBallAspectRatio(pball, sx, sy);
+          //ballShader->Core()->SetFloat("ballStretchX", m_BallStretchX-sx );
+          ballShader->Core()->SetFloat("ballStretchY", m_BallStretchY-sy );
       }
 
       m_pin3d.EnableAlphaBlend(1, false);
