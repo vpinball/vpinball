@@ -3142,27 +3142,29 @@ void search_for_nearest(const Ball * const pball, const std::vector<Light*> &lig
 
 void Player::GetBallAspectRatio(Ball *pball, float &stretchX, float &stretchY)
 {
-    Vertex3D_NoTex2 rgvIn[4];
-    rgvIn[0].x = pball->m_pos.x-pball->m_radius;    rgvIn[0].y=pball->m_pos.y+pball->m_radius;    rgvIn[0].z=pball->m_pos.z;
-    rgvIn[1].x = pball->m_pos.x+pball->m_radius;    rgvIn[1].y=pball->m_pos.y+pball->m_radius;    rgvIn[1].z=pball->m_pos.z;
-    rgvIn[2].x = pball->m_pos.x+pball->m_radius;    rgvIn[2].y=pball->m_pos.y-pball->m_radius;    rgvIn[2].z=pball->m_pos.z;
-    rgvIn[3].x = pball->m_pos.x-pball->m_radius;    rgvIn[3].y=pball->m_pos.y-pball->m_radius;    rgvIn[3].z=pball->m_pos.z;
+    Vertex3D_NoTex2 rgvIn[6];
+    rgvIn[0].x = pball->m_pos.x;                    rgvIn[0].y=pball->m_pos.y+pball->m_radius;    rgvIn[0].z=pball->m_pos.z;
+    rgvIn[1].x = pball->m_pos.x+pball->m_radius;    rgvIn[1].y=pball->m_pos.y;                    rgvIn[1].z=pball->m_pos.z;
+    rgvIn[2].x = pball->m_pos.x;                    rgvIn[2].y=pball->m_pos.y-pball->m_radius;    rgvIn[2].z=pball->m_pos.z;
+    rgvIn[3].x = pball->m_pos.x-pball->m_radius;    rgvIn[3].y=pball->m_pos.y;                    rgvIn[3].z=pball->m_pos.z;
+    rgvIn[4].x = pball->m_pos.x;                    rgvIn[4].y=pball->m_pos.y;                    rgvIn[4].z=pball->m_pos.z+pball->m_radius;
+    rgvIn[5].x = pball->m_pos.x;                    rgvIn[5].y=pball->m_pos.y;                    rgvIn[5].z=pball->m_pos.z-pball->m_radius;
 
-    Vertex2D rgvOut[4];
-    m_pin3d.m_proj.TransformVertices(rgvIn, NULL, 4, rgvOut);
+    Vertex2D rgvOut[6];
+    m_pin3d.m_proj.TransformVertices(rgvIn, NULL, 6, rgvOut);
     float maxX = FLT_MIN;
     float minX = FLT_MAX;
     float maxY = FLT_MIN;
     float minY = FLT_MAX;
-    for( int i=0;i<4;i++ )
+    for( int i=0;i<6;i++ )
     {
         if(maxX<rgvOut[i].x) maxX = rgvOut[i].x;
         if(minX>rgvOut[i].x) minX = rgvOut[i].x;
         if(maxY<rgvOut[i].y) maxY = rgvOut[i].y;
         if(minY>rgvOut[i].y) minY = rgvOut[i].y;
     }
-    stretchY = 1.0f-((maxX - minX)/(pball->m_radius*2.0f));
-    stretchX = 1.0f-((maxY - minY)/(pball->m_radius*2.0f));
+    stretchY = 1.0f-((maxX - minX)/(maxY-minY));
+    stretchX = 1.0f-((maxY - minY)/(maxX-minX));
 }
 
 void Player::DrawBalls()
