@@ -14,7 +14,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (U.S.) resources
+// Englisch (USA) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 #ifdef _WIN32
@@ -723,14 +723,14 @@ BEGIN
     EDITTEXT        1,51,3,31,12,ES_AUTOHSCROLL
     EDITTEXT        IDC_LIGHT_FALLOFF_POWER,51,17,31,12,ES_AUTOHSCROLL
     EDITTEXT        12,51,31,31,12,ES_AUTOHSCROLL
-    EDITTEXT        IDC_FADE_SPEED_UP,51,46,31,12,ES_AUTOHSCROLL
-    EDITTEXT        IDC_FADE_SPEED_DOWN,90,46,31,12,ES_AUTOHSCROLL
-    CONTROL         "Custom2",3,"ColorControl",WS_TABSTOP,51,64,31,12
-    CONTROL         "Custom2",IDC_COLOR_FULL,"ColorControl",WS_TABSTOP,90,64,31,12
-    LTEXT           "Image",IDC_STATIC,7,79,37,8
-    CONTROL         "PassThrough",IDC_IMAGE_MODE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,51,79,65,10
-    COMBOBOX        DISPID_Image,7,88,111,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    EDITTEXT        IDC_DEPTH_BIAS,51,104,31,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_FADE_SPEED_UP,51,51,31,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_FADE_SPEED_DOWN,90,51,31,12,ES_AUTOHSCROLL
+    CONTROL         "Custom2",3,"ColorControl",WS_TABSTOP,51,72,31,12
+    CONTROL         "Custom2",IDC_COLOR_FULL,"ColorControl",WS_TABSTOP,90,72,31,12
+    LTEXT           "Image",IDC_STATIC,7,88,37,8
+    CONTROL         "PassThrough",IDC_IMAGE_MODE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,51,87,65,10
+    COMBOBOX        DISPID_Image,7,96,111,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_DEPTH_BIAS,51,110,31,12,ES_AUTOHSCROLL
     CONTROL         "Enable",IDC_LIGHT_TYPE_CHECKBOX,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,136,35,10
     CONTROL         "Show Mesh",IDC_SHOW_BULB_MESH,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,57,136,53,10
     EDITTEXT        IDC_HALO_EDIT,65,149,40,12,ES_AUTOHSCROLL
@@ -739,14 +739,17 @@ BEGIN
     LTEXT           "Falloff",IDC_STATIC,7,5,43,8
     LTEXT           "Falloff Power",IDC_STATIC,7,19,43,8
     LTEXT           "Intensity",IDC_STATIC,7,33,27,8
-    LTEXT           "Fade Speed",IDC_STATIC,7,48,40,8
-    LTEXT           "Color",IDC_STATIC,7,67,43,8
-    LTEXT           "Depth Bias",IDC_STATIC,7,106,36,8
+    LTEXT           "Fade Speed",IDC_STATIC,7,53,40,8
+    LTEXT           "Color",IDC_STATIC,7,75,43,8
+    LTEXT           "Depth Bias",IDC_STATIC,7,112,36,8
     GROUPBOX        "Bulb",IDC_STATIC,7,124,111,79
     LTEXT           "Scale Mesh",IDC_STATIC,13,165,38,8
     LTEXT           "Modulate (0..1)",IDC_STATIC,13,178,48,8
     LTEXT           "Halo Height",IDC_STATIC,13,152,38,8
     CONTROL         "Show Reflection on Balls",IDC_REFLECT_ON_BALLS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,190,95,10
+    LTEXT           "Up",IDC_STATIC,53,43,10,8
+    LTEXT           "Down",IDC_STATIC,90,43,20,8
+    LTEXT           "Full",IDC_STATIC,90,64,12,8
 END
 
 IDD_PROPLIGHT_POSITION DIALOGEX 0, 0, 125, 65
@@ -1742,11 +1745,11 @@ BEGIN
     GROUPBOX        "Clearcoat Layer",IDC_STATIC,214,139,191,40
     LTEXT           "Edge Brightness",IDC_STATIC,220,193,52,8
     LTEXT           "(0..1)",IDC_STATIC,222,202,17,8
-    GROUPBOX        "Opacity (can be modulated by Image on Object)",IDC_STATIC,214,228,158,21
+    GROUPBOX        "Opacity (can be modulated by Image on Object)",IDC_STATIC,214,223,158,26
     CONTROL         "Active",IDC_OPACITY_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,331,235,36,10
-    LTEXT           "Amount",IDC_STATIC,250,236,25,8
-    EDITTEXT        IDC_OPACITY_EDIT,303,234,21,14,ES_AUTOHSCROLL
-    LTEXT           "(0-100)",IDC_STATIC,277,236,23,8
+    LTEXT           "Amount",IDC_STATIC,250,235,25,8
+    EDITTEXT        IDC_OPACITY_EDIT,303,234,21,12,ES_AUTOHSCROLL
+    LTEXT           "(0-100)",IDC_STATIC,277,235,23,8
     LTEXT           "Steers the basic Color of an Object. Wrap allows for light even if object is only lit from behind (0=natural)",IDC_STATIC,317,28,85,32
     LTEXT           "Dims the Edge ""glow"" when using Glossy or Clearcoat Layers (1=natural, 0=dark)",IDC_STATIC,317,183,71,34
     LTEXT           "Sets from very dull (Shininess low) to perfect/mirror-like (Shininess high) reflections (for glossy layer or metal only)",IDC_STATIC,317,107,91,32
@@ -2433,7 +2436,7 @@ BEGIN
     IDS_STEP                "Step"
 END
 
-#endif    // English (U.S.) resources
+#endif    // Englisch (USA) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
