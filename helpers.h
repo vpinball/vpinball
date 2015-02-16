@@ -14,28 +14,6 @@
 #pragma once
 
 //---------------------------------------------------------------------------
-// To make the OLE-related code easier to read
-//---------------------------------------------------------------------------
-#define CHECK(x)       { hr = (x);  if (hr) { FAIL("Bad hr"); goto CleanUp; } }
-#define CHECKSZ(x,sz)  { hr = (x);  if (hr) { FAIL(sz);       goto CleanUp; } }
-#define CHECKCL(x)     { hr = (x);  if (hr) { FAIL("Bad hr"); goto CheckLoop; } }
-#define ARGSZ(f,sz)    {            if (f)  { FAIL(sz);       return E_INVALIDARG; } }
-#define CHECKOS(x) { if (ERROR_SUCCESS!=(x)) { FAIL("Bad"); hr=E_FAIL; goto CleanUp; } }
-
-#define RELEASEPTRTYPE(p,typ) \
-  {                           \
-    if (p)                    \
-      {                       \
-      typ *__punk = (p);      \
-      (p) = NULL;             \
-      __punk->Release();      \
-      }                       \
-  }
-
-#define RELEASEPTR(p)     RELEASEPTRTYPE(p,IUnknown)
-
-
-//---------------------------------------------------------------------------
 // Allocates a temporary buffer that will disappear when it goes out of scope
 // NOTE: Be careful of that-- make sure you use the string in the same or
 // nested scope in which you created this buffer.  People should not use this

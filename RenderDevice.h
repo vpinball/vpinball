@@ -92,7 +92,7 @@ public:
     
 	void release(void)
     {
-        this->Release();
+        SAFE_RELEASE_NO_SET(this);
     }
 private:
     VertexBuffer();     // disable default constructor
@@ -126,7 +126,7 @@ public:
     
 	void release(void)
     {
-        this->Release();
+        SAFE_RELEASE_NO_SET(this);
     }
 
 private:
@@ -174,13 +174,10 @@ public:
    void Clear(const DWORD numRects, const D3DRECT* rects, const DWORD flags, const D3DCOLOR color, const D3DVALUE z, const DWORD stencil);
    void Flip(const bool vsync);
 
-   RenderTarget* GetBackBuffer() const { return m_pOffscreenBackBuffer; }
    D3DTexture* GetBackBufferTexture() const { return m_pOffscreenBackBufferTexture; }
    RenderTarget* GetOutputBackBuffer() const { return m_pBackBuffer; }
 
-   RenderTarget* GetBloomBuffer() const { return m_pBloomBuffer; }
    D3DTexture* GetBloomBufferTexture() const { return m_pBloomBufferTexture; }
-   RenderTarget* GetBloomTmpBuffer() const { return m_pBloomTmpBuffer; }
    D3DTexture* GetBloomTmpBufferTexture() const { return m_pBloomTmpBufferTexture; }
 
    RenderTarget* DuplicateRenderTarget(RenderTarget* src);
@@ -269,12 +266,9 @@ private:
    IDirect3DSurface9* m_pBackBuffer;
    IndexBuffer* m_dynIndexBuffer;      // workaround for DrawIndexedPrimitiveVB
 
-   IDirect3DSurface9* m_pOffscreenBackBuffer;
    D3DTexture* m_pOffscreenBackBufferTexture;
 
-   IDirect3DSurface9* m_pBloomBuffer;
    D3DTexture* m_pBloomBufferTexture;
-   IDirect3DSurface9* m_pBloomTmpBuffer;
    D3DTexture* m_pBloomTmpBufferTexture;
 
    UINT m_adapter;      // index of the display adapter to use

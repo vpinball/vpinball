@@ -434,7 +434,7 @@ void PolygonToTriangles(const RenderVertexCont& rgv, VectorVoid * const pvpoly, 
 	// If not, the polygon is self-intersecting
 	const int tricount = pvpoly->Size() - 2;
 
-	Assert(tricount > 0);
+	assert(tricount > 0);
 
 	for (int l=0; l<tricount; ++l)
 	//while (pvpoly->Size() > 2)

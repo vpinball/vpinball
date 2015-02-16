@@ -36,7 +36,7 @@ public:
 		
 		while (1)
 			{
-			//Assert(currentnode >= 0);
+			//assert(currentnode >= 0);
 
 			const int strcmp = (currentnode >= m_cSize) ? 1 : pT->SortAgainst(ElementAt(currentnode));
 			
@@ -75,7 +75,7 @@ public:
 		
 		while (1)
 			{
-			//Assert(currentnode >= 0);
+			//assert(currentnode >= 0);
 			int strcmp;
 			if (currentnode >= m_cSize)
 				{

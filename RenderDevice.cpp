@@ -121,7 +121,7 @@ void TextureManager::UnloadTexture(BaseTexture* memtex)
     Iter it = m_map.find(memtex);
     if (it != m_map.end())
     {
-        it->second.d3dtex->Release();
+        it->second.d3dtex->Release(); //!!
         m_map.erase(it);
     }
 }
@@ -129,7 +129,7 @@ void TextureManager::UnloadTexture(BaseTexture* memtex)
 void TextureManager::UnloadAll()
 {
     for (Iter it = m_map.begin(); it != m_map.end(); ++it)
-        it->second.d3dtex->Release();
+        SAFE_RELEASE(it->second.d3dtex);
 
 	m_map.clear();
 }
@@ -170,7 +170,7 @@ void EnumerateDisplayModes(const int adapter, std::vector<VideoMode>& modes)
         }
     }
 
-    d3d->Release();
+    SAFE_RELEASE(d3d);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -338,7 +338,6 @@ RenderDevice::RenderDevice(HWND hwnd, int width, int height, bool fullscreen, in
 	// alloc float buffer for rendering (optionally 2x2 res for manual super sampling)
 	CHECKD3D(m_pD3DDevice->CreateTexture(useAA ? 2*width : width, useAA ? 2*height : height, 1,
 		D3DUSAGE_RENDERTARGET, /*D3DFMT_X8R8G8B8*/D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &m_pOffscreenBackBufferTexture, NULL)); //!! D3DFMT_A32B32G32R32F?
-	CHECKD3D(m_pOffscreenBackBufferTexture->GetSurfaceLevel(0, &m_pOffscreenBackBuffer));
 
 	//CHECKD3D(m_pD3DDevice->CreateTexture(width, height, 1,
 	//	D3DUSAGE_DEPTHSTENCIL, /*D3DFMT_INTZ*/(D3DFORMAT)MAKEFOURCC('I','N','T','Z'), D3DPOOL_DEFAULT, &m_pOffscreenBackBufferZTexture, NULL));
@@ -348,12 +347,10 @@ RenderDevice::RenderDevice(HWND hwnd, int width, int height, bool fullscreen, in
 	// alloc bloom tex at 1/3 x 1/3 res (allows for simple HQ downscale of clipped input while saving memory)
     CHECKD3D(m_pD3DDevice->CreateTexture(width/3, height/3, 1,
 		D3DUSAGE_RENDERTARGET, /*D3DFMT_X8R8G8B8*/D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &m_pBloomBufferTexture, NULL)); //!! 8bit enough?
-	CHECKD3D(m_pBloomBufferTexture->GetSurfaceLevel(0, &m_pBloomBuffer));
 
 	// temporary buffer for gaussian blur
     CHECKD3D(m_pD3DDevice->CreateTexture(width/3, height/3, 1,
 		D3DUSAGE_RENDERTARGET, /*D3DFMT_X8R8G8B8*/D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &m_pBloomTmpBufferTexture, NULL)); //!! 8bit enough?
-	CHECKD3D(m_pBloomTmpBufferTexture->GetSurfaceLevel(0, &m_pBloomTmpBuffer));
 
     // Set up a dynamic index buffer to cache passed indices in
     CreateIndexBuffer(MY_IDX_BUF_SIZE, D3DUSAGE_DYNAMIC, IndexBuffer::FMT_INDEX16, &m_dynIndexBuffer);
@@ -399,7 +396,7 @@ static void CheckForD3DLeak(IDirect3DDevice9* d3d)
 
     D3DPRESENT_PARAMETERS pp;
     CHECKD3D(swapChain->GetPresentParameters(&pp));
-    swapChain->Release();
+    SAFE_RELEASE(swapChain);
 
     // idea: device can't be reset if there are still allocated resources
     HRESULT hr = d3d->Reset(&pp);
@@ -464,11 +461,8 @@ RenderDevice::~RenderDevice()
     //SAFE_RELEASE(m_pVertexNormalTexelTexelDeclaration);
 
     m_texMan.UnloadAll();
-   SAFE_RELEASE(m_pOffscreenBackBuffer);
 	SAFE_RELEASE(m_pOffscreenBackBufferTexture);
-   SAFE_RELEASE(m_pBloomBuffer);
    SAFE_RELEASE(m_pBloomBufferTexture);
-   SAFE_RELEASE(m_pBloomTmpBuffer);
    SAFE_RELEASE(m_pBloomTmpBufferTexture);
    SAFE_RELEASE(m_pBackBuffer);
 
@@ -476,8 +470,8 @@ RenderDevice::~RenderDevice()
     CheckForD3DLeak(m_pD3DDevice);
 #endif
 
-    m_pD3DDevice->Release();
-    m_pD3D->Release();
+    SAFE_RELEASE(m_pD3DDevice);
+    SAFE_RELEASE(m_pD3D);
 
     /*
      * D3D sets the FPU to single precision/round to nearest int mode when it's initialized,
@@ -506,7 +500,7 @@ static void FlushGPUCommandBuffer(IDirect3DDevice9* pd3dDevice)
         pEventQuery->Issue(D3DISSUE_END);
         while (S_FALSE == pEventQuery->GetData(NULL, 0, D3DGETDATA_FLUSH))
             ;
-        pEventQuery->Release();
+        SAFE_RELEASE(pEventQuery);
     }
 }
 
@@ -576,7 +570,7 @@ void RenderDevice::CopySurface(D3DTexture* dest, RenderTarget* src)
 	IDirect3DSurface9 *textureSurface;
     CHECKD3D(dest->GetSurfaceLevel(0, &textureSurface));
     CHECKD3D(m_pD3DDevice->StretchRect(src, NULL, textureSurface, NULL, D3DTEXF_NONE));
-    textureSurface->Release();
+    SAFE_RELEASE_NO_RCC(textureSurface);
 }
 
 void RenderDevice::CopyDepth(D3DTexture* dest, RenderTarget* src)
@@ -646,8 +640,8 @@ void RenderDevice::CopyDepth(D3DTexture* dest, RenderTarget* src)
 		m_pD3DDevice->EndScene();
 
 		m_pD3DDevice->SetDepthStencilSurface(pDSTSurface);
-		pINTZDSTSurface->Release();
-		pDSTSurface->Release();
+		SAFE_RELEASE_NO_RCC(pINTZDSTSurface);
+		SAFE_RELEASE(pDSTSurface);
 	}
 #endif
 }
@@ -681,7 +675,7 @@ D3DTexture* RenderDevice::CreateSystemTexture(BaseTexture* surf)
     sysRect.right = texwidth;
     sysRect.bottom = texheight;
     CHECKD3D(D3DXLoadSurfaceFromMemory(sysSurf, NULL, NULL, surf->data(), D3DFMT_A8R8G8B8, surf->pitch(), NULL, &sysRect, D3DX_FILTER_NONE, 0));
-    CHECKD3D(sysSurf->Release());
+    SAFE_RELEASE_NO_RCC(sysSurf);
 
 	if(!(texformat != D3DFMT_DXT5 && m_autogen_mipmap))
 		CHECKD3D(D3DXFilterTexture(sysTex,NULL,D3DX_DEFAULT,D3DX_DEFAULT)); //!! D3DX_FILTER_SRGB
@@ -707,7 +701,7 @@ D3DTexture* RenderDevice::UploadTexture(BaseTexture* surf, int *pTexWidth, int *
                 D3DPOOL_DEFAULT, &tex, NULL));
 
     CHECKD3D(m_pD3DDevice->UpdateTexture(sysTex, tex));
-	CHECKD3D(sysTex->Release());
+	SAFE_RELEASE(sysTex);
 	
 	if(texformat != D3DFMT_DXT5 && m_autogen_mipmap)
 	    tex->GenerateMipSubLevels(); // tell driver that now is a good time to generate mipmaps
@@ -719,7 +713,7 @@ void RenderDevice::UpdateTexture(D3DTexture* tex, BaseTexture* surf)
 {
     IDirect3DTexture9* sysTex = CreateSystemTexture(surf);
     CHECKD3D(m_pD3DDevice->UpdateTexture(sysTex, tex));
-    CHECKD3D(sysTex->Release());
+    SAFE_RELEASE(sysTex);
 }
 
 void RenderDevice::SetTexture(DWORD texUnit, D3DTexture* tex )
@@ -1096,11 +1090,7 @@ bool Shader::Load( const BYTE* shaderCodeName, UINT codeSize )
 
 void Shader::Unload()
 {
-    if( m_shader )
-    {
-        m_shader->Release();
-        m_shader=0;
-    }
+    SAFE_RELEASE(m_shader);
 }
 
 void Shader::Begin( const unsigned int pass )

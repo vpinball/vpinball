@@ -2458,13 +2458,17 @@ void Player::Bloom()
 
 	{
 		// switch to 'bloom' output buffer to collect clipped framebuffer values
-		m_pin3d.m_pd3dDevice->SetRenderTarget(m_pin3d.m_pd3dDevice->GetBloomBuffer());
-      m_pin3d.m_pd3dDevice->SetVertexDeclaration( m_pin3d.m_pd3dDevice->m_pVertexTexelDeclaration );
-      m_pin3d.m_pd3dDevice->basicShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetBackBufferTexture());
+		RenderTarget* tmpBloomSurface;
+		m_pin3d.m_pd3dDevice->GetBloomBufferTexture()->GetSurfaceLevel(0, &tmpBloomSurface);
+		m_pin3d.m_pd3dDevice->SetRenderTarget(tmpBloomSurface);
+		SAFE_RELEASE_NO_RCC(tmpBloomSurface);
 
-      const D3DXVECTOR4 fb_inv_resolution_05((float)(0.5/(double)m_width),(float)(0.5/(double)m_height),1.0f,1.0f);
-      m_pin3d.m_pd3dDevice->basicShader->Core()->SetVector("fb_inv_resolution_05", &fb_inv_resolution_05);
-      m_pin3d.m_pd3dDevice->basicShader->Core()->SetTechnique("fb_bloom");
+		m_pin3d.m_pd3dDevice->SetVertexDeclaration( m_pin3d.m_pd3dDevice->m_pVertexTexelDeclaration );
+		m_pin3d.m_pd3dDevice->basicShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetBackBufferTexture());
+
+		const D3DXVECTOR4 fb_inv_resolution_05((float)(0.5/(double)m_width),(float)(0.5/(double)m_height),1.0f,1.0f);
+		m_pin3d.m_pd3dDevice->basicShader->Core()->SetVector("fb_inv_resolution_05", &fb_inv_resolution_05);
+		m_pin3d.m_pd3dDevice->basicShader->Core()->SetTechnique("fb_bloom");
 
 		m_pin3d.m_pd3dDevice->BeginScene();
 
@@ -2474,31 +2478,35 @@ void Player::Bloom()
 		m_pin3d.m_pd3dDevice->basicShader->Begin(0);
 		m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_TEX, (LPVOID)shiftedVerts, 4);
 		m_pin3d.m_pd3dDevice->basicShader->End();
-
 	}
-
 	{
 		// switch to 'bloom' temporary output buffer for horizontal phase of gaussian blur
-		m_pin3d.m_pd3dDevice->SetRenderTarget(m_pin3d.m_pd3dDevice->GetBloomTmpBuffer());
-      m_pin3d.m_pd3dDevice->basicShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetBloomBufferTexture());
-      const D3DXVECTOR4 fb_inv_resolution_05((float)(3.0/(double)m_width),(float)(3.0/(double)m_height),1.0f,1.0f);
-      m_pin3d.m_pd3dDevice->basicShader->Core()->SetVector("fb_inv_resolution_05", &fb_inv_resolution_05);
-      m_pin3d.m_pd3dDevice->basicShader->Core()->SetTechnique("fb_bloom_horiz");
+		RenderTarget* tmpBloomSurface;
+		m_pin3d.m_pd3dDevice->GetBloomTmpBufferTexture()->GetSurfaceLevel(0, &tmpBloomSurface);
+		m_pin3d.m_pd3dDevice->SetRenderTarget(tmpBloomSurface);
+		SAFE_RELEASE_NO_RCC(tmpBloomSurface);
+
+		m_pin3d.m_pd3dDevice->basicShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetBloomBufferTexture());
+		const D3DXVECTOR4 fb_inv_resolution_05((float)(3.0/(double)m_width),(float)(3.0/(double)m_height),1.0f,1.0f);
+		m_pin3d.m_pd3dDevice->basicShader->Core()->SetVector("fb_inv_resolution_05", &fb_inv_resolution_05);
+		m_pin3d.m_pd3dDevice->basicShader->Core()->SetTechnique("fb_bloom_horiz");
 
 		m_pin3d.m_pd3dDevice->basicShader->Begin(0);
 		m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_TEX, (LPVOID)verts, 4);
 		m_pin3d.m_pd3dDevice->basicShader->End();
-
 	}
-
 	{
 		// switch to 'bloom' output buffer for vertical phase of gaussian blur
-		m_pin3d.m_pd3dDevice->SetRenderTarget(m_pin3d.m_pd3dDevice->GetBloomBuffer());
-      m_pin3d.m_pd3dDevice->basicShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetBloomTmpBufferTexture());
-      const D3DXVECTOR4 fb_inv_resolution_05((float)(3.0/(double)m_width),(float)(3.0/(double)m_height),1.0f,1.0f);
-      m_pin3d.m_pd3dDevice->basicShader->Core()->SetVector("fb_inv_resolution_05", &fb_inv_resolution_05);
-      m_pin3d.m_pd3dDevice->basicShader->Core()->SetFloat("bloom_strength", m_ptable->m_bloom_strength);
-      m_pin3d.m_pd3dDevice->basicShader->Core()->SetTechnique("fb_bloom_vert");
+		RenderTarget* tmpBloomSurface;
+		m_pin3d.m_pd3dDevice->GetBloomBufferTexture()->GetSurfaceLevel(0, &tmpBloomSurface);
+		m_pin3d.m_pd3dDevice->SetRenderTarget(tmpBloomSurface);
+		SAFE_RELEASE_NO_RCC(tmpBloomSurface);
+
+		m_pin3d.m_pd3dDevice->basicShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetBloomTmpBufferTexture());
+		const D3DXVECTOR4 fb_inv_resolution_05((float)(3.0/(double)m_width),(float)(3.0/(double)m_height),1.0f,1.0f);
+		m_pin3d.m_pd3dDevice->basicShader->Core()->SetVector("fb_inv_resolution_05", &fb_inv_resolution_05);
+		m_pin3d.m_pd3dDevice->basicShader->Core()->SetFloat("bloom_strength", m_ptable->m_bloom_strength);
+		m_pin3d.m_pd3dDevice->basicShader->Core()->SetTechnique("fb_bloom_vert");
 
 		m_pin3d.m_pd3dDevice->basicShader->Begin(0);
 		m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_TEX, (LPVOID)verts, 4);
@@ -2567,7 +2575,7 @@ void Player::FlipVideoBuffersNormal( const bool vsync )
     m_pin3d.Flip(vsync);
 
 	// switch to texture output buffer again
-	m_pin3d.m_pd3dDevice->SetRenderTarget(m_pin3d.m_pd3dDevice->GetBackBuffer());
+	m_pin3d.m_pd3dDevice->SetRenderTarget(m_pin3d.m_pddsBackBuffer);
 }
 
 void Player::FlipVideoBuffers3DAOFXAA( const bool vsync ) //!! SMAA, luma sharpen, dither
@@ -2664,7 +2672,7 @@ void Player::FlipVideoBuffers3DAOFXAA( const bool vsync ) //!! SMAA, luma sharpe
 	m_pin3d.m_pd3dDevice->Flip(vsync);
 
 	// switch to texture output buffer again
-	m_pin3d.m_pd3dDevice->SetRenderTarget(m_pin3d.m_pd3dDevice->GetBackBuffer());
+	m_pin3d.m_pd3dDevice->SetRenderTarget(m_pin3d.m_pddsBackBuffer);
 }
 
 
