@@ -1518,7 +1518,7 @@ void PinTable::Render(Sur * const psur)
       }
    }
 
-   if (m_fGrid)
+   if (m_fGrid && g_pvp->m_gridSize > 0)
    {
       Vertex2D rlt = psur->ScreenToSurface(rc.left, rc.top);
       Vertex2D rrb = psur->ScreenToSurface(rc.right, rc.bottom);
