@@ -747,6 +747,8 @@ PinTable::PinTable()
 
    m_pbTempScreenshot = NULL;
 
+   m_tblMirrorEnabled = false;
+
    m_numMaterials=0;
    HRESULT hr;
    int tmp;
@@ -763,7 +765,7 @@ PinTable::PinTable()
 	   nudgesens = (float)tmp*(float)(1.0/1000.0);	
    nudge_set_sensitivity( nudgesens );
 
-   m_globalDifficulty = 0;						// easy by default
+   m_globalDifficulty = 0;			// easy by default
    hr = GetRegInt("Player", "GlobalDifficulty", &tmp);
    if (hr == S_OK)
 	   m_globalDifficulty = (float)tmp*(float)(1.0/100.0);
@@ -829,11 +831,6 @@ PinTable::PinTable()
    hr = GetRegInt("Player", "Volmod", &tmp);
    if( hr == S_OK )
 	   m_tblVolmod = (float)tmp*(float)(1.0/1000.0);
-
-   m_tblMirrorEnabled = false;
-   hr = GetRegInt("Player", "mirror", &tmp);
-   if( hr == S_OK )
-	   m_tblMirrorEnabled = ( tmp != 0 );
 
    m_tblExitConfirm = 2000;
    hr = GetRegInt("Player", "Exitconfirm", &tmp);
