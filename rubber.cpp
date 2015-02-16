@@ -1274,7 +1274,7 @@ void Rubber::RenderObject(RenderDevice *pd3dDevice)
       dynamicVertexBufferRegenerate=false;
       return;
    }
-   pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_CLAMP);
+   pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP);
 
    pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelDeclaration );
 

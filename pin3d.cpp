@@ -209,8 +209,6 @@ HRESULT Pin3D::InitPin3D(const HWND hwnd, const bool fullScreen, const int width
 	m_device_envRadianceTexture = m_pd3dDevice->m_texMan.LoadTexture(m_envRadianceTexture);
 	m_pd3dDevice->m_texMan.SetDirty(m_envRadianceTexture);
 
-    m_pddsLightWhite.CreateFromResource(IDB_WHITE);
-
     if(stereo3DFXAA || useAO) {
 		m_pdds3DZBuffer = m_pd3dDevice->DuplicateDepthTexture(m_pddsZBuffer);
 	    if (!m_pdds3DZBuffer)
@@ -258,22 +256,21 @@ void Pin3D::InitRenderState()
 	m_pd3dDevice->SetRenderState( RenderDevice::CLIPPLANEENABLE, 0 );
 
     // initialize first texture stage
-    m_pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_CLAMP/*WRAP*/);
-	m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
-	m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
-	SetTextureFilter(ePictureTexture, TEXTURE_MODE_TRILINEAR );
-	m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_TEXCOORDINDEX, 0);
-	m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLOROP, D3DTOP_MODULATE);
-	m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG1, D3DTA_TEXTURE);
-	m_pd3dDevice->SetTextureStageState(ePictureTexture, D3DTSS_COLORARG2, D3DTA_TFACTOR); // default tfactor: 1,1,1,1
-	m_pd3dDevice->SetTexture(ePictureTexture, NULL);
+    m_pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP/*WRAP*/);
+	m_pd3dDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
+	m_pd3dDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
+	SetTextureFilter(0, TEXTURE_MODE_TRILINEAR );
+	m_pd3dDevice->SetTextureStageState(0, D3DTSS_TEXCOORDINDEX, 0);
+	m_pd3dDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
+	m_pd3dDevice->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE);
+	m_pd3dDevice->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_TFACTOR); // default tfactor: 1,1,1,1
 }
 
 static const WORD rgiPin3D1[4] = {2,3,5,6};
 
 void Pin3D::DrawBackground()
 {
-	SetTextureFilter(ePictureTexture, TEXTURE_MODE_TRILINEAR );
+	SetTextureFilter(0, TEXTURE_MODE_TRILINEAR );
 	
 	PinTable * const ptable = g_pplayer->m_ptable;
 	Texture * const pin = ptable->GetDecalsEnabled() ? ptable->GetImage((char *)ptable->m_szImageBackdrop) : NULL;
@@ -367,6 +364,7 @@ Matrix3D ComputeLaybackTransform(float layback)
 void Pin3D::InitLayout()
 {
     TRACE_FUNCTION();
+
 	const float rotation = ANGTORAD(g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set]);
 	const float inclination = ANGTORAD(g_pplayer->m_ptable->m_BG_inclination[g_pplayer->m_ptable->m_BG_current_set]);
 	const float FOV = (g_pplayer->m_ptable->m_BG_FOV[g_pplayer->m_ptable->m_BG_current_set] < 1.0f) ? 1.0f : g_pplayer->m_ptable->m_BG_FOV[g_pplayer->m_ptable->m_BG_current_set];
@@ -490,7 +488,7 @@ void Pin3D::RenderPlayfieldGraphics()
 
 	if (pin)
 	{
-      SetTextureFilter(ePictureTexture, TEXTURE_MODE_ANISOTROPIC);
+      SetTextureFilter(0, TEXTURE_MODE_ANISOTROPIC);
       m_pd3dDevice->basicShader->SetTexture("Texture0",pin);
       m_pd3dDevice->basicShader->SetTechnique("basic_with_texture");
       g_pplayer->m_pin3d.EnableAlphaBlend(1,false);
@@ -508,12 +506,11 @@ void Pin3D::RenderPlayfieldGraphics()
 	m_pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, tableVBuffer, 0, 4, tableIBuffer, 0, 6);
     m_pd3dDevice->basicShader->End();
 
-	SetTexture(NULL);
+	m_pd3dDevice->basicShader->SetTexture("Texture0",(D3DTexture*)NULL);
     if (pin)
     {
-        //m_pd3dDevice->SetTexture(0, NULL);
         m_pd3dDevice->m_texMan.UnloadTexture(pin->m_pdsBuffer);
-        SetTextureFilter(ePictureTexture, TEXTURE_MODE_TRILINEAR);
+        SetTextureFilter(0, TEXTURE_MODE_TRILINEAR);
         m_pd3dDevice->basicShader->SetTechnique("basic_without_texture");
     }
 
@@ -523,17 +520,6 @@ void Pin3D::RenderPlayfieldGraphics()
 
     // Apparently, releasing the vertex buffer here immediately can cause rendering glitches in
     // later rendering steps, so we keep it around for now.
-}
-
-void Pin3D::SetTexture(Texture* pTexture)
-{
-    SetBaseTexture(ePictureTexture, pTexture ? pTexture->m_pdsBuffer : NULL);
-}
-
-void Pin3D::SetBaseTexture(DWORD texUnit, BaseTexture* pddsTexture)
-{
-    m_pd3dDevice->SetTexture(texUnit,
-            m_pd3dDevice->m_texMan.LoadTexture((pddsTexture == NULL) ? m_pddsLightWhite.m_pdsBuffer : pddsTexture));
 }
 
 void Pin3D::EnableAlphaTestReference(const DWORD alphaRefValue) const

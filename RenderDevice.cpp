@@ -121,7 +121,7 @@ void TextureManager::UnloadTexture(BaseTexture* memtex)
     Iter it = m_map.find(memtex);
     if (it != m_map.end())
     {
-        it->second.d3dtex->Release(); //!!
+        SAFE_RELEASE(it->second.d3dtex);
         m_map.erase(it);
     }
 }
@@ -357,7 +357,6 @@ RenderDevice::RenderDevice(HWND hwnd, int width, int height, bool fullscreen, in
 
     m_curIndexBuffer = 0;
     m_curVertexBuffer = 0;
-    memset(m_curTexture, 0, 8*sizeof(m_curTexture[0]));
 
     // fill state caches with dummy values
     memset( renderStateCache, 0xCC, sizeof(DWORD)*RENDER_STATE_CACHE_SIZE);
@@ -714,18 +713,6 @@ void RenderDevice::UpdateTexture(D3DTexture* tex, BaseTexture* surf)
     IDirect3DTexture9* sysTex = CreateSystemTexture(surf);
     CHECKD3D(m_pD3DDevice->UpdateTexture(sysTex, tex));
     SAFE_RELEASE(sysTex);
-}
-
-void RenderDevice::SetTexture(DWORD texUnit, D3DTexture* tex )
-{
-    if (texUnit >= 8 || tex != m_curTexture[texUnit])
-    {
-        CHECKD3D(m_pD3DDevice->SetTexture(texUnit, tex));
-        if (texUnit < 8)
-            m_curTexture[texUnit] = tex;
-
-        m_curTextureChanges++;
-    }
 }
 
 void RenderDevice::SetTextureFilter(DWORD texUnit, DWORD mode)

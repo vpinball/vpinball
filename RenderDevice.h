@@ -198,7 +198,6 @@ public:
    void UpdateTexture(D3DTexture* tex, BaseTexture* surf);
 
    void SetRenderState( const RenderStates p1, const DWORD p2 );
-   void SetTexture( DWORD, D3DTexture* );
    void SetTextureFilter(DWORD texUnit, DWORD mode);
    void SetTextureAddressMode(DWORD texUnit, TextureAddressMode mode);
    void SetTextureStageState(DWORD stage, D3DTEXTURESTAGESTATETYPE type, DWORD value);
@@ -281,7 +280,6 @@ private:
 
    VertexBuffer* m_curVertexBuffer;     // for caching
    IndexBuffer* m_curIndexBuffer;       // for caching
-   D3DTexture* m_curTexture[8];         // for caching
    VertexDeclaration *currentDeclaration;
    DWORD currentFVF;
 

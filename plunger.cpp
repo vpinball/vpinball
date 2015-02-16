@@ -279,7 +279,7 @@ void Plunger::PostRenderStatic(RenderDevice* pd3dDevice)
          pd3dDevice->basicShader->SetTexture("Texture0",pin);
          pd3dDevice->basicShader->SetTechnique("basic_with_texture");
          ppin3d->EnableAlphaBlend( 1, false );
-         //ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
+         //ppin3d->SetTextureFilter ( 0, TEXTURE_MODE_TRILINEAR );
          static const WORD idx[6] = {0,1,2,2,3,0};
          pd3dDevice->basicShader->Begin(0);
          pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, vertexBuffer, frame*4, 4, (LPWORD)idx, 6);
@@ -294,7 +294,7 @@ void Plunger::PostRenderStatic(RenderDevice* pd3dDevice)
              pd3dDevice->basicShader->SetTexture("Texture0",pin);
              pd3dDevice->basicShader->SetTechnique("basic_with_texture");
              ppin3d->EnableAlphaBlend( 1, false );
-             //ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
+             //ppin3d->SetTextureFilter ( 0, TEXTURE_MODE_TRILINEAR );
          }
          else
          {

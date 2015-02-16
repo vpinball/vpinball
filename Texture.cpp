@@ -134,16 +134,6 @@ void Texture::Release()
 {
 }
 
-void Texture::Set(const DWORD textureChannel)
-{
-    g_pplayer->m_pin3d.SetBaseTexture(textureChannel, m_pdsBuffer);
-}
-
-void Texture::Unset(const DWORD textureChannel)
-{
-    g_pplayer->m_pin3d.SetBaseTexture(textureChannel, NULL);
-}
-
 HRESULT Texture::SaveToStream(IStream *pstream, PinTable *pt)
 {
    BiffWriter bw(pstream, NULL, NULL);

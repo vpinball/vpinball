@@ -374,6 +374,7 @@ void Player::Shutdown()
 	m_dmdy = 0;
 	if(m_texdmd)
 	{
+	    m_pin3d.m_pd3dDevice->DMDShader->SetTexture("Texture0", (D3DTexture*)NULL);
 		m_pin3d.m_pd3dDevice->m_texMan.UnloadTexture(g_pplayer->m_texdmd);
 		delete m_texdmd;
 		m_texdmd = NULL;
@@ -3432,7 +3433,7 @@ void Player::DrawBalls()
             m_pin3d.m_pd3dDevice->SetTransform(TRANSFORMSTATE_WORLD, &matNew);
 
             // draw points
-            m_pin3d.SetTexture(NULL);
+            m_pin3d.m_pd3dDevice->basicShader->SetTexture("Texture0",(D3DTexture*)NULL);
             float ptsize = 5.0f;
             m_pin3d.m_pd3dDevice->SetRenderState((RenderDevice::RenderStates)D3DRS_POINTSIZE, *((DWORD*)&ptsize));
             m_pin3d.m_pd3dDevice->DrawPrimitiveVB( D3DPT_POINTLIST, m_ballDebugPoints, 0, 12 );
@@ -3444,7 +3445,6 @@ void Player::DrawBalls()
 
     }   // end loop over all balls
 
-    m_pin3d.m_pd3dDevice->SetTexture(0, NULL);
     m_pin3d.DisableAlphaBlend();
 }
 
