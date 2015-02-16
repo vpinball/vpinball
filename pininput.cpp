@@ -743,7 +743,27 @@ void PinInput::FireKeyEvent( const int dispid, const int key )
 
 	// Save the keys so we can detect changes.
 	m_PreviousKeys = tmp;
-	m_ptable->FireKeyEvent( dispid, mkey );
+    if ( g_pplayer->cameraMode )
+    {
+        if (mkey == g_pplayer->m_rgKeys[eLeftFlipperKey])
+            g_pplayer->UpdateBackdropSettings(false);
+        else if (mkey == g_pplayer->m_rgKeys[eRightFlipperKey])
+            g_pplayer->UpdateBackdropSettings(true);
+        else if (mkey == g_pplayer->m_rgKeys[eRightMagnaSave])
+        {
+            g_pplayer->backdropSettingActive++;
+            if (g_pplayer->backdropSettingActive==9)
+                g_pplayer->backdropSettingActive=0;
+        }
+        else if (mkey == g_pplayer->m_rgKeys[eLeftMagnaSave])
+        {
+            g_pplayer->backdropSettingActive--;
+            if (g_pplayer->backdropSettingActive==-1)
+                g_pplayer->backdropSettingActive=8;
+        }
+    }
+    else
+	    m_ptable->FireKeyEvent( dispid, mkey );
 }
 
 // Returns true if the table has started at least 1 player.
@@ -1040,35 +1060,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 		
       if( input->dwSequence == APP_KEYBOARD )
 		{
-            if( input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eLeftFlipperKey] && g_pplayer->cameraMode)
-            {
-                if( input->dwData & 0x80)
-                    g_pplayer->UpdateBackdropSettings(false);
-            }
-            else if( input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eRightFlipperKey] && g_pplayer->cameraMode)
-            {
-                if( input->dwData & 0x80)
-                    g_pplayer->UpdateBackdropSettings(true);
-            }
-            else if( input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eRightMagnaSave] && g_pplayer->cameraMode)
-            {
-                if ( input->dwData & 0x80 )
-                {
-                    g_pplayer->backdropSettingActive++;
-                    if (g_pplayer->backdropSettingActive==9)
-                        g_pplayer->backdropSettingActive=0;
-                }
-            }
-            else if( input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eLeftMagnaSave] && g_pplayer->cameraMode)
-            {
-                if( input->dwData & 0x80 )
-                {
-                    g_pplayer->backdropSettingActive--;
-                    if (g_pplayer->backdropSettingActive==-1)
-                        g_pplayer->backdropSettingActive=8;
-                }
-            }
-            else if( input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eFrameCount])
+            if( input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eFrameCount])
 			{
 				if (input->dwData & 0x80)
 					g_pplayer->ToggleFPS();
