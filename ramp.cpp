@@ -886,7 +886,7 @@ void Ramp::RenderStaticHabitrail(RenderDevice* pd3dDevice)
        pd3dDevice->basicShader->SetTexture("Texture0",pin);
        pd3dDevice->basicShader->SetTechnique("basic_with_texture");
 
-       //g_pplayer->m_pin3d.SetTextureFilter(ePictureTexture, TEXTURE_MODE_TRILINEAR);
+       //g_pplayer->m_pin3d.SetTextureFilter(0, TEXTURE_MODE_TRILINEAR);
    }
    pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
    if ( m_d.m_type==RampType2Wire )
@@ -1164,7 +1164,7 @@ void Ramp::RenderStatic(RenderDevice* pd3dDevice)
     * since the texture coordinates always stay within [0,1] anyway.
     */
    if (m_d.m_imagealignment == ImageModeWrap)
-       pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_CLAMP);
+       pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP);
 
    pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelDeclaration );
 
@@ -1999,7 +1999,7 @@ void Ramp::RenderRamp( RenderDevice *pd3dDevice, Material *mat )
 
    // see the comment in RenderStatic() above
    if (m_d.m_imagealignment == ImageModeWrap)
-      pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_CLAMP);
+       pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP);
 
    pd3dDevice->basicShader->SetMaterial(mat);
    if (isHabitrail())
@@ -2016,7 +2016,7 @@ void Ramp::RenderRamp( RenderDevice *pd3dDevice, Material *mat )
          pd3dDevice->basicShader->SetTexture( "Texture0", pin );
          pd3dDevice->basicShader->SetTechnique("basic_with_texture");
 
-         //ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
+         //ppin3d->SetTextureFilter ( 0, TEXTURE_MODE_TRILINEAR );
       }
       else
       {

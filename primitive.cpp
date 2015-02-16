@@ -647,9 +647,9 @@ void Primitive::RenderObject( RenderDevice *pd3dDevice )
         pd3dDevice->basicShader->PerformAlphaTest(true);
         pd3dDevice->basicShader->SetAlphaTestValue(128.0f / 255.0f);
 
-        //g_pplayer->m_pin3d.SetTextureFilter(ePictureTexture, TEXTURE_MODE_TRILINEAR);
+        //g_pplayer->m_pin3d.SetTextureFilter(0, TEXTURE_MODE_TRILINEAR);
         // accomodate models with UV coords outside of [0,1]
-        pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_WRAP);
+        pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_WRAP);
     }
     else
     {
@@ -667,7 +667,7 @@ void Primitive::RenderObject( RenderDevice *pd3dDevice )
     // reset transform
     g_pplayer->UpdateBasicShaderMatrix();
 
-    pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_CLAMP);
+    pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP);
     g_pplayer->m_pin3d.DisableAlphaBlend();
 }
 

@@ -531,8 +531,7 @@ void Decal::RenderStatic(RenderDevice* pd3dDevice)
 
    if (m_d.m_decaltype != DecalImage)
    {
-       ppin3d->SetBaseTexture(ePictureTexture, m_textImg);
-       //pd3dDevice->basicShader->SetTexture("Texture0", pin);
+       pd3dDevice->basicShader->SetTexture("Texture0", pd3dDevice->m_texMan.LoadTexture(m_textImg));
    }
    else
    {
@@ -542,9 +541,9 @@ void Decal::RenderStatic(RenderDevice* pd3dDevice)
    }
 
    // Set texture to mirror, so the alpha state of the texture blends correctly to the outside
-//!!   pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_MIRROR);
+//!!   pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_MIRROR);
 
-   //ppin3d->SetTextureFilter ( ePictureTexture, TEXTURE_MODE_TRILINEAR );
+   //ppin3d->SetTextureFilter ( 0, TEXTURE_MODE_TRILINEAR );
    g_pplayer->m_pin3d.EnableAlphaBlend(1,false);
 
    if (!m_fBackglass)
@@ -565,7 +564,7 @@ void Decal::RenderStatic(RenderDevice* pd3dDevice)
    pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
 
    // Set the render state.
-   //pd3dDevice->SetTextureAddressMode(ePictureTexture, RenderDevice::TEX_WRAP);
+   //pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_WRAP);
    g_pplayer->m_pin3d.DisableAlphaBlend();
 
    if(m_fBackglass && g_pplayer->m_ptable->m_tblMirrorEnabled)

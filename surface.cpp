@@ -915,10 +915,7 @@ void Surface::RenderStatic(RenderDevice* pd3dDevice)
 {
    RenderSlingshots((RenderDevice*)pd3dDevice);
    if (!m_d.m_fDroppable && !isDynamic)
-   {
        RenderWallsAtHeight((RenderDevice*)pd3dDevice, fFalse);
-       g_pplayer->m_pin3d.SetTexture(NULL);
-   }
 }
 
 void Surface::RenderSlingshots(RenderDevice* pd3dDevice)
@@ -974,7 +971,7 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
             pd3dDevice->basicShader->SetTexture("Texture0",pinSide);
             pd3dDevice->basicShader->SetTechnique("basic_with_texture");
 
-            //g_pplayer->m_pin3d.SetTextureFilter( ePictureTexture, TEXTURE_MODE_TRILINEAR );
+            //g_pplayer->m_pin3d.SetTextureFilter( 0, TEXTURE_MODE_TRILINEAR );
         }
         else
         {
@@ -1007,7 +1004,7 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
           pd3dDevice->basicShader->SetTexture("Texture0",pin);  
           pd3dDevice->basicShader->SetTechnique("basic_with_texture");
 
-          //g_pplayer->m_pin3d.SetTextureFilter( ePictureTexture, TEXTURE_MODE_TRILINEAR );
+          //g_pplayer->m_pin3d.SetTextureFilter( 0, TEXTURE_MODE_TRILINEAR );
        }
        else
        {

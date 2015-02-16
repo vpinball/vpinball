@@ -562,6 +562,7 @@ STDMETHODIMP ScriptGlobalTable::put_DMDPixels(VARIANT pVal) //!! use 64bit inste
 		{
 			if(g_pplayer->m_texdmd)
 			{
+			    g_pplayer->m_pin3d.m_pd3dDevice->DMDShader->SetTexture("Texture0", (D3DTexture*)NULL);
 				g_pplayer->m_pin3d.m_pd3dDevice->m_texMan.UnloadTexture(g_pplayer->m_texdmd);
 				delete g_pplayer->m_texdmd;
 			}

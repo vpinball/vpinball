@@ -65,9 +65,6 @@ public:
 
    void FreeStuff();
 
-   void Set(const DWORD textureChannel);
-   void Unset(const DWORD textureChannel);
-
    void Release();
    void EnsureHBitmap();
    void CreateGDIVersion();

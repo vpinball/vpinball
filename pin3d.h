@@ -6,11 +6,6 @@ extern int NumVideoBytes;
 
 enum
 {
-	ePictureTexture = 0
-};
-
-enum
-{
 	TEXTURE_MODE_POINT,				// Point sampled (aka no) texture filtering.
 	TEXTURE_MODE_BILINEAR,			// Bilinar texture filtering. 
 	TEXTURE_MODE_TRILINEAR,			// Trilinar texture filtering. 
@@ -63,9 +58,6 @@ public:
 	void SetRenderTarget(RenderTarget* pddsSurface, RenderTarget* pddsZ) const;
 	void SetTextureFilter(const int TextureNum, const int Mode) const;
 	
-    void SetTexture(Texture* pTexture);
-	void SetBaseTexture(DWORD texUnit, BaseTexture* pddsTexture);
-
 	void EnableAlphaTestReference(const DWORD alphaRefValue) const;
     void EnableAlphaBlend(const DWORD alphaRefValue, const bool additiveBlending) const;
     void DisableAlphaBlend() const;
@@ -104,8 +96,6 @@ public:
 	Texture envTexture;
 	BaseTexture* m_envRadianceTexture;
 	D3DTexture* m_device_envRadianceTexture;
-
-	Texture m_pddsLightWhite; // 16x16 tex used as fallback if specified texture not found/invalid
 
     PinProjection m_proj;
 
