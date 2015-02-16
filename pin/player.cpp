@@ -943,6 +943,27 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 
 	m_pininput.Init(m_hwnd);
 
+	//
+	const unsigned int lflip = get_vk(m_rgKeys[eLeftFlipperKey]);
+	const unsigned int rflip = get_vk(m_rgKeys[eRightFlipperKey]);
+	if(((GetAsyncKeyState(VK_LSHIFT) & 0x8000) && (GetAsyncKeyState(VK_RSHIFT) & 0x8000))
+	    || ((lflip != ~0u) && (rflip != ~0u) && (GetAsyncKeyState(lflip) & 0x8000) && (GetAsyncKeyState(rflip) & 0x8000)))
+	{
+	    m_ptable->m_tblMirrorEnabled = true;
+	}
+	else
+	{
+	    m_ptable->m_tblMirrorEnabled = false;
+
+	    int tmp;
+	    hr = GetRegInt("Player", "mirror", &tmp);
+	    if( hr == S_OK )
+		m_ptable->m_tblMirrorEnabled = ( tmp != 0 );
+	}
+        m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE); // re-init/overrun cache due to the hacky nature of the table mirroring
+        m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+	//
+
 	m_pin3d.InitLayout();
 
 	const float slope = ptable->m_angletiltMin 
@@ -2425,12 +2446,8 @@ void Player::CheckAndUpdateRegions()
     // copy static buffers to back buffer and z buffer
     //
 
-    RenderTarget* backBuffer = m_pin3d.m_pddsBackBuffer;
-    RenderTarget* const backBufferZ = m_pin3d.m_pddsZBuffer;
-
-    // blit static background
-    m_pin3d.m_pd3dDevice->CopySurface(backBuffer,  m_pin3d.m_pddsStatic );
-    m_pin3d.m_pd3dDevice->CopySurface(backBufferZ, m_pin3d.m_pddsStaticZ);
+    m_pin3d.m_pd3dDevice->CopySurface(m_pin3d.m_pddsBackBuffer, m_pin3d.m_pddsStatic);
+    m_pin3d.m_pd3dDevice->CopySurface(m_pin3d.m_pddsZBuffer, m_pin3d.m_pddsStaticZ);
 
     // Process all AnimObjects
     for (int l=0; l < m_vscreenupdate.Size(); ++l)
