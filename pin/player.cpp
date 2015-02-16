@@ -2696,8 +2696,9 @@ void Player::FlipVideoBuffers3DAOFXAA( const bool vsync ) //!! SMAA, luma sharpe
 
 void Player::SetScreenOffset(float x, float y)
 {
-    m_ScreenOffset.x = x;
-    m_ScreenOffset.y = y;
+	const float rotation = fmodf(m_ptable->m_BG_rotation[m_ptable->m_BG_current_set],360.f);
+    m_ScreenOffset.x = (rotation!=0.0f ? -y : x);
+    m_ScreenOffset.y = (rotation!=0.0f ? x : y);
 }
 
 
