@@ -670,6 +670,7 @@ void Flipper::RenderStatic(RenderDevice* pd3dDevice)
 
 static const WORD rgiFlipper1[4] = {0,4,5,1};
 static const WORD rgiFlipper2[4] = {2,6,7,3};
+static const WORD rgi0123[4] = {0,1,2,3};
 
 void Flipper::RenderAtThickness(RenderDevice* pd3dDevice, float angle, float height,
                                 float baseradius, float endradius, float flipperheight, Vertex3D_NoTex2* buf)

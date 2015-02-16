@@ -45,7 +45,8 @@ Pin3D::~Pin3D()
    SAFE_RELEASE(m_pddsStaticZ);
    SAFE_RELEASE(m_pddsZBuffer);
    SAFE_RELEASE(m_pddsStatic);
-   SAFE_RELEASE(m_pddsBackBuffer);
+   SAFE_RELEASE_NO_RCC(m_pddsBackBuffer);
+
    delete m_pd3dDevice;
 }
 
@@ -184,7 +185,7 @@ HRESULT Pin3D::InitPin3D(const HWND hwnd, const bool fullScreen, const int width
     vp.MaxZ=1.0f;
     m_pd3dDevice->SetViewport( &vp );
 
-    m_pddsBackBuffer = m_pd3dDevice->GetBackBuffer();
+    m_pd3dDevice->GetBackBufferTexture()->GetSurfaceLevel(0, &m_pddsBackBuffer);
 
     // Create the "static" color buffer.  
     // This will hold a pre-rendered image of the table and any non-changing elements (ie ramps, decals, etc).

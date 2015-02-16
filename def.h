@@ -96,16 +96,24 @@ typedef _int64          S64;
 #define MAXSTRING 1024
 #define MAXTOKEN 32*4
 
-#define SZTHISFILE
-#define ASSERT(fTest, err)
-#define Assert(x) //_ASSERTE(x)
-#define FAIL(err)
+#define ASSERT(fTest, err) //assert(fTest)
 
 #define CCO(x) CComObject<x>
 
 #define SAFE_VECTOR_DELETE(p)   { if(p) { delete [] (p);  (p)=NULL; } }
 #define SAFE_DELETE(p)			{ if(p) { delete (p);     (p)=NULL; } }
-#define SAFE_RELEASE(p)			{ if(p) { (p)->Release(); (p)=NULL; } }
+
+inline void ref_count_trigger(const ULONG r) // helper for debugging
+{
+#ifdef DEBUG_REFCOUNT_TRIGGER
+	char tmp[16];
+	sprintf_s(tmp,"%u",r);
+    MessageBox(NULL,"Ref Count Trigger",tmp,MB_ICONEXCLAMATION|MB_OK);
+#endif
+}
+#define SAFE_RELEASE(p)			{ if(p) { const ULONG rcc = (p)->Release(); if(rcc != 0) ref_count_trigger(rcc); (p)=NULL; } }
+#define SAFE_RELEASE_NO_SET(p)	{ if(p) { const ULONG rcc = (p)->Release(); if(rcc != 0) ref_count_trigger(rcc); } }
+#define SAFE_RELEASE_NO_RCC(p)	{ if(p) { (p)->Release(); (p)=NULL; } }
 
 #define hrNotImplemented ResultFromScode(E_NOTIMPL)
 
@@ -177,8 +185,6 @@ public:
 
 #define VBTOF(x) ((x) ? fTrue : fFalse)
 #define FTOVB(x) ((x) ? -1 : 0)
-
-const WORD rgi0123[4] = {0,1,2,3};
 
 inline __m128 rcpps(const __m128 &T) //Newton Raphson
 {

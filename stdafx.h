@@ -13,6 +13,9 @@
 
 //#define DEBUG_NUDGE // debug new nudge code
 
+//#define DEBUG_NO_SOUND
+//#define DEBUG_REFCOUNT_TRIGGER
+
 //#define DEBUG_XXX // helps to detect out-of-bounds access, needs to link dbghelp.lib then
 //#define SLINTF    // enable debug console output
 

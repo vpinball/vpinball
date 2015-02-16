@@ -297,6 +297,10 @@ XAudPlayer::XAudPlayer()
 	{
 		m_stream = NULL;
 
+#ifdef DEBUG_NO_SOUND
+		return;
+#endif
+
 		if(!bass_init)
 		{
 		    int DSidx = -1;

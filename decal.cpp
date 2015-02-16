@@ -440,6 +440,8 @@ void Decal::PostRenderStatic(RenderDevice* pd3dDevice)
 {
 }
 
+static const WORD rgi0123[4] = {0,1,2,3};
+
 void Decal::RenderSetup(RenderDevice* pd3dDevice )
 {
    RenderText();
