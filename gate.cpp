@@ -489,7 +489,7 @@ void Gate::RenderSetup(RenderDevice* pd3dDevice)
     wireIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer( gateWireNumFaces, gateWireIndices );
 
     if (!wireVertexBuffer)
-        pd3dDevice->CreateVertexBuffer(gateWireNumVertices, D3DUSAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &wireVertexBuffer);
+        pd3dDevice->CreateVertexBuffer(gateWireNumVertices, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &wireVertexBuffer);
 
     wireVertexBuffer->lock(0, 0, (void**)&buf, 0);
     for( int i=0;i<gateWireNumVertices;i++ )

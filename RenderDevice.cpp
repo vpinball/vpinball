@@ -353,7 +353,7 @@ RenderDevice::RenderDevice(HWND hwnd, int width, int height, bool fullscreen, in
 		D3DUSAGE_RENDERTARGET, /*D3DFMT_X8R8G8B8*/D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &m_pBloomTmpBufferTexture, NULL)); //!! 8bit enough?
 
     // Set up a dynamic index buffer to cache passed indices in
-    CreateIndexBuffer(MY_IDX_BUF_SIZE, D3DUSAGE_DYNAMIC, IndexBuffer::FMT_INDEX16, &m_dynIndexBuffer);
+    CreateIndexBuffer(MY_IDX_BUF_SIZE, USAGE_DYNAMIC, IndexBuffer::FMT_INDEX16, &m_dynIndexBuffer);
 
     m_curIndexBuffer = 0;
     m_curVertexBuffer = 0;
@@ -450,8 +450,10 @@ RenderDevice::~RenderDevice()
     m_pD3DDevice->SetVertexShader(NULL);
     m_pD3DDevice->SetPixelShader(NULL);
     m_pD3DDevice->SetFVF(D3DFVF_XYZ);
-    //m_pD3DDevice->SetRenderTarget(0, NULL);
+    //m_pD3DDevice->SetRenderTarget(0, NULL); // invalid call
     m_pD3DDevice->SetDepthStencilSurface(NULL);
+
+    FreeShader();
 
     SAFE_RELEASE(m_dynIndexBuffer);
 
@@ -471,11 +473,6 @@ RenderDevice::~RenderDevice()
 
     SAFE_RELEASE(m_pD3DDevice);
     SAFE_RELEASE(m_pD3D);
-
-    if( basicShader )
-       delete basicShader;
-    if( DMDShader )
-       delete DMDShader;
 
     /*
      * D3D sets the FPU to single precision/round to nearest int mode when it's initialized,

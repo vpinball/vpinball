@@ -6,7 +6,6 @@ BumperHitCircle::BumperHitCircle()
 	m_bumperanim.m_iframedesired = 0;
 	m_bumperanim.m_fHitEvent = false;
     m_bumperanim.m_ringAnimOffset = 0.0f;
-    m_bumperanim.m_ringAnimStep = 0.0f;
 	m_elasticity = 0.3f;
     SetFriction(0.3f);
 	m_scatter = 0;

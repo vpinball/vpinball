@@ -387,7 +387,7 @@ void Spinner::RenderSetup(RenderDevice* pd3dDevice)
    plateIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer( spinnerPlateNumFaces, spinnerPlateIndices );
 
    if (!plateVertexBuffer)
-       pd3dDevice->CreateVertexBuffer(spinnerPlateNumVertices, D3DUSAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &plateVertexBuffer);
+       pd3dDevice->CreateVertexBuffer(spinnerPlateNumVertices, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &plateVertexBuffer);
 
    plateVertexBuffer->lock(0, 0, (void**)&buf, 0);
    for( int i=0;i<spinnerPlateNumVertices;i++ )
