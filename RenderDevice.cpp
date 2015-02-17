@@ -1010,10 +1010,8 @@ Shader::Shader(RenderDevice *renderDevice)
 {
     m_renderDevice = renderDevice;
     m_shader=0;
-    currentTexture[0]=0;
-    currentTexture[1]=0;
-    currentTexture[2]=0;
-    currentTexture[3]=0;
+	for(unsigned int i = 0; i < TEXTURESET_STATE_CACHE_SIZE; ++i)
+	    currentTexture[i]=0;
     currentAlphaTest = false;
     currentAlphaTestValue = -1.0f;
     currentAlphaValue = -1.0f;
