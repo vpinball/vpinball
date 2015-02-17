@@ -472,6 +472,11 @@ RenderDevice::~RenderDevice()
     SAFE_RELEASE(m_pD3DDevice);
     SAFE_RELEASE(m_pD3D);
 
+    if( basicShader )
+       delete basicShader;
+    if( DMDShader )
+       delete DMDShader;
+
     /*
      * D3D sets the FPU to single precision/round to nearest int mode when it's initialized,
      * but doesn't bother to reset the FPU when it's destroyed. We reset it manually here.
