@@ -328,7 +328,7 @@ void Player::Shutdown()
         delete ballShader;
         ballShader=0;
     }
-#ifdef _DEBUGPHYSICS
+#ifdef DEBUG_BALL_SPIN
     SAFE_RELEASE(m_ballDebugPoints);
 #endif
 
