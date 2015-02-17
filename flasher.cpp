@@ -411,7 +411,7 @@ void Flasher::RenderSetup(RenderDevice* pd3dDevice)
    if( dynamicVertexBuffer )
       dynamicVertexBuffer->release();
 
-   pd3dDevice->CreateVertexBuffer( numPolys*3, D3DUSAGE_DYNAMIC, MY_D3DFVF_TEX, &dynamicVertexBuffer );
+   pd3dDevice->CreateVertexBuffer( numPolys*3, USAGE_DYNAMIC, MY_D3DFVF_TEX, &dynamicVertexBuffer );
    NumVideoBytes += numPolys*3*sizeof(Vertex3D_TexelOnly);     
 
    vertices = new Vertex3D_TexelOnly[numPolys*3];

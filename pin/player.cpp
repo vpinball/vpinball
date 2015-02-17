@@ -1076,6 +1076,9 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 	SendMessage(hwndProgress, PBM_SETPOS, 60, 0);
 	SetWindowText(hwndProgressName, "Rendering Table...");
 
+    //g_viewDir = m_pin3d.m_viewVec;
+    g_viewDir = Vertex3Ds(0, 0, -1.0f);
+
     InitShader();
 
 	// Pre-render all non-changing elements such as 
@@ -1096,8 +1099,6 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 		}
 	}
 
-    //g_viewDir = m_pin3d.m_viewVec;
-    g_viewDir = Vertex3Ds(0, 0, -1.0f);
     std::sort( m_vHitTrans.begin(), m_vHitTrans.end(), CompareHitableDepth );
 
 
@@ -1227,7 +1228,7 @@ void Player::InitStatic(HWND hwndProgress)
                 if (ph)
                 {
                     ph->RenderStatic(m_pin3d.m_pd3dDevice);
-                    if (hwndProgress)
+                    if (hwndProgress && ((i%8)==0))
                         SendMessage(hwndProgress, PBM_SETPOS, 60 + ((15*i)/m_ptable->m_vedit.Size()), 0);
                 }
             }
@@ -1242,7 +1243,7 @@ void Player::InitStatic(HWND hwndProgress)
                 if (ph)
                 {
                     ph->RenderStatic(m_pin3d.m_pd3dDevice);
-                    if (hwndProgress)
+                    if (hwndProgress && ((i%8)==0))
                         SendMessage(hwndProgress, PBM_SETPOS, 75 + ((15*i)/m_ptable->m_vedit.Size()), 0);
                 }
             }
@@ -2474,12 +2475,11 @@ void Player::Bloom()
 		-1.0f+m_ScreenOffset.x,-1.0f+m_ScreenOffset.y,0.0f, 0.0f, 1.0f
 	};
 
+	RenderTarget* tmpBloomSurface;
 	{
 		// switch to 'bloom' output buffer to collect clipped framebuffer values
-		RenderTarget* tmpBloomSurface;
 		m_pin3d.m_pd3dDevice->GetBloomBufferTexture()->GetSurfaceLevel(0, &tmpBloomSurface);
-		m_pin3d.m_pd3dDevice->SetRenderTarget(tmpBloomSurface);
-		SAFE_RELEASE_NO_RCC(tmpBloomSurface);
+		m_pin3d.m_pd3dDevice->SetRenderTarget(tmpBloomSurface);		
 
 		m_pin3d.m_pd3dDevice->SetVertexDeclaration( m_pin3d.m_pd3dDevice->m_pVertexTexelDeclaration );
 		m_pin3d.m_pd3dDevice->basicShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetBackBufferTexture());
@@ -2488,8 +2488,6 @@ void Player::Bloom()
 		m_pin3d.m_pd3dDevice->basicShader->Core()->SetVector("fb_inv_resolution_05", &fb_inv_resolution_05);
 		m_pin3d.m_pd3dDevice->basicShader->Core()->SetTechnique("fb_bloom");
 
-		m_pin3d.m_pd3dDevice->BeginScene();
-
 		m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
 		m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
 		m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, FALSE);
@@ -2497,12 +2495,13 @@ void Player::Bloom()
 		m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_TEX, (LPVOID)shiftedVerts, 4);
 		m_pin3d.m_pd3dDevice->basicShader->End();
 	}
+	RenderTarget* tmpBloomSurface2;
 	{
+		m_pin3d.m_pd3dDevice->basicShader->SetTexture("Texture0", (D3DTexture*)NULL);
+
 		// switch to 'bloom' temporary output buffer for horizontal phase of gaussian blur
-		RenderTarget* tmpBloomSurface;
-		m_pin3d.m_pd3dDevice->GetBloomTmpBufferTexture()->GetSurfaceLevel(0, &tmpBloomSurface);
-		m_pin3d.m_pd3dDevice->SetRenderTarget(tmpBloomSurface);
-		SAFE_RELEASE_NO_RCC(tmpBloomSurface);
+		m_pin3d.m_pd3dDevice->GetBloomTmpBufferTexture()->GetSurfaceLevel(0, &tmpBloomSurface2);
+		m_pin3d.m_pd3dDevice->SetRenderTarget(tmpBloomSurface2);
 
 		m_pin3d.m_pd3dDevice->basicShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetBloomBufferTexture());
 		const D3DXVECTOR4 fb_inv_resolution_05((float)(3.0/(double)m_width),(float)(3.0/(double)m_height),1.0f,1.0f);
@@ -2513,12 +2512,13 @@ void Player::Bloom()
 		m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_TEX, (LPVOID)verts, 4);
 		m_pin3d.m_pd3dDevice->basicShader->End();
 	}
+	RenderTarget* tmpBloomSurface3;
 	{
+		m_pin3d.m_pd3dDevice->basicShader->SetTexture("Texture0", (D3DTexture*)NULL);
+
 		// switch to 'bloom' output buffer for vertical phase of gaussian blur
-		RenderTarget* tmpBloomSurface;
-		m_pin3d.m_pd3dDevice->GetBloomBufferTexture()->GetSurfaceLevel(0, &tmpBloomSurface);
-		m_pin3d.m_pd3dDevice->SetRenderTarget(tmpBloomSurface);
-		SAFE_RELEASE_NO_RCC(tmpBloomSurface);
+		m_pin3d.m_pd3dDevice->GetBloomBufferTexture()->GetSurfaceLevel(0, &tmpBloomSurface3);
+		m_pin3d.m_pd3dDevice->SetRenderTarget(tmpBloomSurface3);
 
 		m_pin3d.m_pd3dDevice->basicShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetBloomTmpBufferTexture());
 		const D3DXVECTOR4 fb_inv_resolution_05((float)(3.0/(double)m_width),(float)(3.0/(double)m_height),1.0f,1.0f);
@@ -2533,9 +2533,14 @@ void Player::Bloom()
 		m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, TRUE);
 		m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
 		m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
-
-		m_pin3d.m_pd3dDevice->EndScene();
 	}
+
+	// switch to 'real' output buffer
+	m_pin3d.m_pd3dDevice->SetRenderTarget(m_pin3d.m_pd3dDevice->GetOutputBackBuffer());
+
+	SAFE_RELEASE_NO_RCC(tmpBloomSurface);
+	SAFE_RELEASE_NO_RCC(tmpBloomSurface2);
+	SAFE_RELEASE_NO_RCC(tmpBloomSurface3);
 }
 
 void Player::FlipVideoBuffersNormal( const bool vsync )
@@ -2550,14 +2555,11 @@ void Player::FlipVideoBuffersNormal( const bool vsync )
 	 -1.0f+m_ScreenOffset.x,-1.0f+m_ScreenOffset.y,0.0f, 0.0f+(float)(1.0/(double)m_width), 1.0f+(float)(1.0/(double)m_height)
 	};
 
+    m_pin3d.m_pd3dDevice->BeginScene();
+
     Bloom();
 
 	// copy framebuffer over from texture and tonemap/gamma
-
-	// switch to 'real' output buffer
-	m_pin3d.m_pd3dDevice->SetRenderTarget(m_pin3d.m_pd3dDevice->GetOutputBackBuffer());
-
-    m_pin3d.m_pd3dDevice->BeginScene();
 
     m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
     m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
@@ -2593,6 +2595,7 @@ void Player::FlipVideoBuffersNormal( const bool vsync )
     m_pin3d.Flip(vsync);
 
 	// switch to texture output buffer again
+    m_pin3d.m_pd3dDevice->basicShader->SetTexture("Texture0", (D3DTexture*)NULL);
 	m_pin3d.m_pd3dDevice->SetRenderTarget(m_pin3d.m_pddsBackBuffer);
 }
 
@@ -2606,13 +2609,10 @@ void Player::FlipVideoBuffers3DAOFXAA( const bool vsync ) //!! SMAA, luma sharpe
 	if(stereo || useAO)
 		m_pin3d.m_pd3dDevice->CopyDepth(m_pin3d.m_pdds3DZBuffer, m_pin3d.m_pddsZBuffer);
         
-    Bloom();
-
-	// switch to 'real' output buffer
-	m_pin3d.m_pd3dDevice->SetRenderTarget(m_pin3d.m_pd3dDevice->GetOutputBackBuffer());
-	
     m_pin3d.m_pd3dDevice->BeginScene();
 
+    Bloom();
+	
     m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
     m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
     m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, FALSE);
@@ -2690,6 +2690,7 @@ void Player::FlipVideoBuffers3DAOFXAA( const bool vsync ) //!! SMAA, luma sharpe
 	m_pin3d.m_pd3dDevice->Flip(vsync);
 
 	// switch to texture output buffer again
+	m_pin3d.m_pd3dDevice->basicShader->SetTexture("Texture0", (D3DTexture*)NULL);
 	m_pin3d.m_pd3dDevice->SetRenderTarget(m_pin3d.m_pddsBackBuffer);
 }
 

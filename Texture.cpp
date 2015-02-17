@@ -130,10 +130,6 @@ Texture::~Texture()
    FreeStuff();
 }
 
-void Texture::Release()
-{
-}
-
 HRESULT Texture::SaveToStream(IStream *pstream, PinTable *pt)
 {
    BiffWriter bw(pstream, NULL, NULL);

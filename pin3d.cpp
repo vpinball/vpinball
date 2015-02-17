@@ -506,10 +506,10 @@ void Pin3D::RenderPlayfieldGraphics()
 	m_pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, tableVBuffer, 0, 4, tableIBuffer, 0, 6);
     m_pd3dDevice->basicShader->End();
 
-	m_pd3dDevice->basicShader->SetTexture("Texture0",(D3DTexture*)NULL);
     if (pin)
     {
-        m_pd3dDevice->m_texMan.UnloadTexture(pin->m_pdsBuffer);
+	//m_pd3dDevice->basicShader->SetTexture("Texture0",(D3DTexture*)NULL);
+        //m_pd3dDevice->m_texMan.UnloadTexture(pin->m_pdsBuffer); //!! is used by ball reflection later-on
         SetTextureFilter(0, TEXTURE_MODE_TRILINEAR);
         m_pd3dDevice->basicShader->SetTechnique("basic_without_texture");
     }

@@ -65,7 +65,6 @@ public:
 
    void FreeStuff();
 
-   void Release();
    void EnsureHBitmap();
    void CreateGDIVersion();
 

@@ -529,6 +529,7 @@ void Trigger::PostRenderStatic(RenderDevice* pd3dDevice)
         return;
     
 	const float animLimit = ( m_d.m_shape==TriggerStar ) ? 13.0f : 38.0f;
+	const float limit = animLimit*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
     pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelDeclaration );
     pd3dDevice->basicShader->SetTechnique("basic_without_texture");
@@ -549,19 +550,20 @@ void Trigger::PostRenderStatic(RenderDevice* pd3dDevice)
         doAnimation=true;
         unhitEvent=false;
         hitEvent=false;
-        animHeightOffset=animLimit*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+        animHeightOffset=limit;
         moveDown=false;
     }
 
     if (doAnimation)
     {
-        const float step = diff_time_msec*m_d.m_animSpeed*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
-        const float limit = animLimit*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+        float step = diff_time_msec*m_d.m_animSpeed*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+	if(moveDown)
+	    step = -step;
+	animHeightOffset+=step;
 
         if( moveDown ) 
-        {
-            animHeightOffset-=step;
-            if( animHeightOffset<-limit )
+        {            
+            if( animHeightOffset<=-limit )
             {
                 animHeightOffset=-limit;
                 doAnimation=false;
@@ -569,13 +571,13 @@ void Trigger::PostRenderStatic(RenderDevice* pd3dDevice)
         }
         else
         {
-            animHeightOffset+=step;
             if( animHeightOffset>=0.0f )
             {
                 animHeightOffset=0.0f;
                 doAnimation=false;
             }
         }
+
         Vertex3D_NoTex2 *buf;
         vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
         for( int i=0;i<numVertices;i++ )
@@ -641,7 +643,7 @@ void Trigger::RenderSetup(RenderDevice* pd3dDevice)
    if (vertexBuffer)
 	   vertexBuffer->release();
 
-   ppin3d->m_pd3dDevice->CreateVertexBuffer( numVertices, D3DUSAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer );
+   ppin3d->m_pd3dDevice->CreateVertexBuffer( numVertices, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer );
    NumVideoBytes += numVertices*sizeof(Vertex3D_NoTex2);
 
    Matrix3D fullMatrix;

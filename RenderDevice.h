@@ -230,6 +230,8 @@ public:
    unsigned int Perf_GetNumStateChanges() const   { return m_frameStateChanges; }
    unsigned int Perf_GetNumTextureChanges() const { return m_frameTextureChanges; }
 
+   void FreeShader();
+
    inline void CreateVertexDeclaration( const VertexElement * const element, VertexDeclaration ** declaration )
    {
        CHECKD3D(m_pD3DDevice->CreateVertexDeclaration( element, declaration ));
@@ -248,7 +250,7 @@ public:
    {
        return m_pD3DDevice;
    }
-   void FreeShader();
+
    Material materialStateCache;
 
 private:

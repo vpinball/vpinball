@@ -10,7 +10,6 @@ public:
     float m_fHeight;
 	int m_iframedesired;
     float m_ringAnimOffset;
-    float m_ringAnimStep;
 	bool m_fHitEvent;
 	bool m_fDisabled;
 	bool m_fVisible;

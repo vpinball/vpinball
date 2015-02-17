@@ -438,13 +438,14 @@ void Bumper::PostRenderStatic(RenderDevice* pd3dDevice)
 
       if( ringAnimate )
       {
-         const float step = m_d.m_ringSpeed*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]*m_d.m_heightScale;
+         float step = m_d.m_ringSpeed*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]*m_d.m_heightScale;
          const float limit = 45.f*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]*m_d.m_heightScale;
-         m_pbumperhitcircle->m_bumperanim.m_ringAnimStep = ringDown ? -step : step;
-         m_pbumperhitcircle->m_bumperanim.m_ringAnimOffset += m_pbumperhitcircle->m_bumperanim.m_ringAnimStep*diff_time_msec;
+         if(ringDown)
+	     step = -step;
+         m_pbumperhitcircle->m_bumperanim.m_ringAnimOffset += step*diff_time_msec;
          if( ringDown )
          {
-            if (m_pbumperhitcircle->m_bumperanim.m_ringAnimOffset<-limit)
+            if (m_pbumperhitcircle->m_bumperanim.m_ringAnimOffset<=-limit)
             {
                m_pbumperhitcircle->m_bumperanim.m_ringAnimOffset = -limit;
                ringDown=false;
@@ -574,7 +575,7 @@ void Bumper::RenderSetup(RenderDevice* pd3dDevice )
       ringIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer( bumperRingNumFaces, bumperRingIndices );
 
       if (!ringVertexBuffer)
-         pd3dDevice->CreateVertexBuffer(bumperRingNumVertices, D3DUSAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &ringVertexBuffer);
+         pd3dDevice->CreateVertexBuffer(bumperRingNumVertices, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &ringVertexBuffer);
 
       ringVertices = new Vertex3D_NoTex2[bumperRingNumVertices];
       ringVertexBuffer->lock(0, 0, (void**)&buf, 0);

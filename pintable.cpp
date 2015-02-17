@@ -1594,6 +1594,9 @@ void PinTable::Render(Sur * const psur)
 
 void PinTable::Render3DProjection(Sur * const psur)
 {
+   if(m_vedit.Size() == 0)
+       return;
+
    const float rotation = ANGTORAD(m_BG_rotation[m_BG_current_set]);
    const float inclination = ANGTORAD(m_BG_inclination[m_BG_current_set]);
    const float FOV = (m_BG_FOV[m_BG_current_set] < 1.0f) ? 1.0f : m_BG_FOV[m_BG_current_set]; // Can't have a real zero FOV, but this will look almost the same
@@ -1833,6 +1836,7 @@ void PinTable::Play(bool _cameraMode)
       {
           m_materialMap[ m_materials.ElementAt(i)->m_szName ] = m_materials.ElementAt(i);
       }
+
       g_pplayer = new Player(_cameraMode);
       HRESULT hr = g_pplayer->Init(this, hwndProgressBar, hwndStatusName);
       if (!m_pcv->m_fScriptError) 
