@@ -944,9 +944,12 @@ STDMETHODIMP Gate::get_OpenAngle(float *pVal)
 
 STDMETHODIMP Gate::put_OpenAngle(float newVal)
 {
-   if (m_d.m_fCollidable) newVal = 0;
+   if (m_d.m_fCollidable)
+   {
+      newVal = (float)(M_PI/2.0);
+      ShowError("Gate is collidable! open angles other than 90 aren't possible!");
+   }
    else newVal = ANGTORAD(newVal);
-
    if (g_pplayer)
    {
       if (newVal > m_d.m_angleMax) newVal = m_d.m_angleMax;
