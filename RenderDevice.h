@@ -213,7 +213,6 @@ public:
    void DrawPrimitive(const D3DPRIMITIVETYPE type, const DWORD fvf, const void* vertices, const DWORD vertexCount);
    void DrawIndexedPrimitive(const D3DPRIMITIVETYPE type, const DWORD fvf, const void* vertices, const DWORD vertexCount, const WORD* indices, const DWORD indexCount);
    void DrawPrimitiveVB(const D3DPRIMITIVETYPE type, VertexBuffer* vb, const DWORD startVertex, const DWORD vertexCount);
-   void DrawIndexedPrimitiveVB(const D3DPRIMITIVETYPE type, VertexBuffer* vb, const DWORD startVertex, const DWORD vertexCount, const WORD* indices, const DWORD indexCount);
    void DrawIndexedPrimitiveVB(const D3DPRIMITIVETYPE type, VertexBuffer* vb, const DWORD startVertex, const DWORD vertexCount, IndexBuffer* ib, const DWORD startIndex, const DWORD indexCount);
 
    void SetViewport( const ViewPort* );
@@ -241,8 +240,9 @@ public:
    {
       if ( declaration!=currentDeclaration)
       {
-         currentDeclaration = declaration;
          CHECKD3D(m_pD3DDevice->SetVertexDeclaration(declaration));
+         currentDeclaration = declaration;
+		 currentFVF = 0;
       }
    }
 
@@ -265,7 +265,6 @@ private:
 #endif
 
    IDirect3DSurface9* m_pBackBuffer;
-   IndexBuffer* m_dynIndexBuffer;      // workaround for DrawIndexedPrimitiveVB
 
    D3DTexture* m_pOffscreenBackBufferTexture;
 

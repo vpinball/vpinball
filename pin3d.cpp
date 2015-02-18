@@ -205,7 +205,7 @@ HRESULT Pin3D::InitPin3D(const HWND hwnd, const bool fullScreen, const int width
 	EnvmapPrecalc((DWORD*)envTexture.m_pdsBuffer->data(),envTexture.m_pdsBuffer->width(),envTexture.m_pdsBuffer->height(),
 				  (DWORD*)m_envRadianceTexture->data(),envTexture.m_pdsBuffer->width()/8,envTexture.m_pdsBuffer->height()/8);
 	
-
+	
 	m_device_envRadianceTexture = m_pd3dDevice->m_texMan.LoadTexture(m_envRadianceTexture);
 	m_pd3dDevice->m_texMan.SetDirty(m_envRadianceTexture);
 
@@ -265,8 +265,6 @@ void Pin3D::InitRenderState()
 	m_pd3dDevice->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE);
 	m_pd3dDevice->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_TFACTOR); // default tfactor: 1,1,1,1
 }
-
-static const WORD rgiPin3D1[4] = {2,3,5,6};
 
 void Pin3D::DrawBackground()
 {
@@ -445,8 +443,8 @@ void Pin3D::InitPlayfieldGraphics()
         rgv[i].tu = (i==1 || i==2) ? 1.0f : 0.f;
     }
 
-    const WORD playfieldPolyIndices[6] = {0,1,3,0,3,2};
-    tableIBuffer = m_pd3dDevice->CreateAndFillIndexBuffer(6,playfieldPolyIndices);
+    const WORD playfieldPolyIndices[10] = {0,1,3,0,3,2, 2,3,5,6};
+    tableIBuffer = m_pd3dDevice->CreateAndFillIndexBuffer(10,playfieldPolyIndices);
 
     assert(tableVBuffer == NULL);
     m_pd3dDevice->CreateVertexBuffer( 4+7, 0, MY_D3DFVF_NOTEX2_VERTEX, &tableVBuffer); //+7 verts for second rendering step
@@ -471,7 +469,7 @@ void Pin3D::InitPlayfieldGraphics()
             tmp.nz = rgv[0].nz;
         }
 
-    SetNormal(rgv, rgiPin3D1, 4);
+    SetNormal(rgv, playfieldPolyIndices+6, 4);
 
     memcpy(buffer+4, rgv, 7*sizeof(Vertex3D_NoTex2));
 
@@ -515,7 +513,7 @@ void Pin3D::RenderPlayfieldGraphics()
     }
 
     m_pd3dDevice->basicShader->Begin(0);
-    m_pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLEFAN, tableVBuffer, 4, 7, (LPWORD)rgiPin3D1, 4);
+    m_pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLEFAN, tableVBuffer, 4, 7, tableIBuffer, 6, 4);
     m_pd3dDevice->basicShader->End();  
 
     // Apparently, releasing the vertex buffer here immediately can cause rendering glitches in

@@ -165,6 +165,8 @@ VP 10.0.0 Changelog
   (there is now a new setting for each primitive, set to 0 to switch to the old approximate drawing mode (usually fast),
    1 to draw each and every triangle (usually slow) or inbetween to approximate the outlines of the object (lower values are faster))
 
+- reactivate old VP9.0 easter egg (and improve it :))
+
 - new external audio library for music playback (BASS)
   this allows to use different formats than just MP3, e.g. OGG
 

@@ -261,7 +261,7 @@ void Plunger::PostRenderStatic(RenderDevice* pd3dDevice)
 
     _ASSERTE(m_phitplunger);
     const PlungerAnimObject& pa = m_phitplunger->m_plungeranim;
-    const int frame = (int)((pa.m_pos - pa.m_frameStart + 1.0f)/(pa.m_frameEnd-pa.m_frameStart) * (cframes-1)+0.5f);
+    const int frame = (int)((pa.m_pos - pa.m_frameStart + 1.0f)/(pa.m_frameEnd-pa.m_frameStart) * (float)(cframes-1)+0.5f);
     if (frame < 0 || frame >= cframes)
         return;
 
@@ -271,18 +271,19 @@ void Plunger::PostRenderStatic(RenderDevice* pd3dDevice)
 	pd3dDevice->basicShader->SetMaterial(mat);
 
      Texture *pin = m_ptable->GetImage(m_d.m_szImage);
-     if ( renderNewPlunger )
+	 if(pin)
+         pd3dDevice->basicShader->SetTexture("Texture0",pin);
+
+	 if ( renderNewPlunger )
      {
          //render a simple rectangle as an embedded alpha ramp plunger ;)
 //            D3DXVECTOR4 color(1.0f,1.0f,1.0f,1.0f);
 //            pd3dDevice->basicShader->Core()->SetVector("cBase",&color);
-         pd3dDevice->basicShader->SetTexture("Texture0",pin);
          pd3dDevice->basicShader->SetTechnique("basic_with_texture");
          ppin3d->EnableAlphaBlend( 1, false );
          //ppin3d->SetTextureFilter ( 0, TEXTURE_MODE_TRILINEAR );
-         static const WORD idx[6] = {0,1,2,2,3,0};
          pd3dDevice->basicShader->Begin(0);
-         pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, vertexBuffer, frame*4, 4, (LPWORD)idx, 6);
+         pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, vertexBuffer, frame*4, 4, indexBuffer, 0, 6);
          pd3dDevice->basicShader->End();
      }
      else
@@ -291,7 +292,6 @@ void Plunger::PostRenderStatic(RenderDevice* pd3dDevice)
          {
 //                 D3DXVECTOR4 color(1.0f,1.0f,1.0f,1.0f);
 //                 pd3dDevice->basicShader->Core()->SetVector("cBase",&color);
-             pd3dDevice->basicShader->SetTexture("Texture0",pin);
              pd3dDevice->basicShader->SetTechnique("basic_with_texture");
              ppin3d->EnableAlphaBlend( 1, false );
              //ppin3d->SetTextureFilter ( 0, TEXTURE_MODE_TRILINEAR );
@@ -421,13 +421,13 @@ void Plunger::RenderSetup(RenderDevice* pd3dDevice )
    }
    vertexBuffer->unlock();
 
+   WORD indices[16*PLUNGEPOINTS1*6];
+   int k;
 
    // set up index buffer
    if (!renderNewPlunger)
    {
-       WORD indices[16*PLUNGEPOINTS1*6];
-
-       int k=0;
+	   k = 0;
        for (int l=0; l<16; l++)
        {
            const int offset = l * plungePoints;
@@ -442,11 +442,17 @@ void Plunger::RenderSetup(RenderDevice* pd3dDevice )
                indices[k++] = m + offset;
            }
        }
-
-       if (indexBuffer)
-           indexBuffer->release();
-       indexBuffer = pd3dDevice->CreateAndFillIndexBuffer(k, indices);
    }
+   else
+   {
+       static const WORD idx[6] = {0,1,2,2,3,0};
+	   k = 6;
+	   memcpy(indices,idx,k*sizeof(WORD));
+   }
+
+   if (indexBuffer)
+       indexBuffer->release();
+   indexBuffer = pd3dDevice->CreateAndFillIndexBuffer(k, indices);
 }
 
 void Plunger::RenderStatic(RenderDevice* pd3dDevice)
