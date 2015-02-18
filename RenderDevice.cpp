@@ -178,9 +178,6 @@ void EnumerateDisplayModes(const int adapter, std::vector<VideoMode>& modes)
 #define CHECKNVAPI(s) { NvAPI_Status hr = (s); if (hr != NVAPI_OK) { NvAPI_ShortString ss; NvAPI_GetErrorMessage(hr,ss); MessageBox(NULL, ss, "NVAPI", MB_OK | MB_ICONEXCLAMATION); } }
 static bool NVAPIinit = false; //!! meh
 
-//#define MY_IDX_BUF_SIZE 8192
-#define MY_IDX_BUF_SIZE 65536
-
 RenderDevice::RenderDevice(HWND hwnd, int width, int height, bool fullscreen, int colordepth, int &refreshrate, int VSync, bool useAA, bool stereo3DFXAA)
     : m_texMan(*this)
 {
@@ -200,7 +197,6 @@ RenderDevice::RenderDevice(HWND hwnd, int width, int height, bool fullscreen, in
         throw 0;
     }
 #endif
-    currentDeclaration = NULL;
 
     D3DDEVTYPE devtype = D3DDEVTYPE_HAL;
 
@@ -352,11 +348,10 @@ RenderDevice::RenderDevice(HWND hwnd, int width, int height, bool fullscreen, in
     CHECKD3D(m_pD3DDevice->CreateTexture(width/3, height/3, 1,
 		D3DUSAGE_RENDERTARGET, /*D3DFMT_X8R8G8B8*/D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &m_pBloomTmpBufferTexture, NULL)); //!! 8bit enough?
 
-    // Set up a dynamic index buffer to cache passed indices in
-    CreateIndexBuffer(MY_IDX_BUF_SIZE, USAGE_DYNAMIC, IndexBuffer::FMT_INDEX16, &m_dynIndexBuffer);
-
     m_curIndexBuffer = 0;
     m_curVertexBuffer = 0;
+    currentDeclaration = NULL;
+	currentFVF = 0;
 
     // fill state caches with dummy values
     memset( renderStateCache, 0xCC, sizeof(DWORD)*RENDER_STATE_CACHE_SIZE);
@@ -450,12 +445,11 @@ RenderDevice::~RenderDevice()
     m_pD3DDevice->SetVertexShader(NULL);
     m_pD3DDevice->SetPixelShader(NULL);
     m_pD3DDevice->SetFVF(D3DFVF_XYZ);
+	m_pD3DDevice->SetVertexDeclaration(NULL);
     //m_pD3DDevice->SetRenderTarget(0, NULL); // invalid call
     m_pD3DDevice->SetDepthStencilSurface(NULL);
 
     FreeShader();
-
-    SAFE_RELEASE(m_dynIndexBuffer);
 
     SAFE_RELEASE(m_pVertexTexelDeclaration);
     SAFE_RELEASE(m_pVertexNormalTexelDeclaration);
@@ -882,11 +876,18 @@ RenderTarget* RenderDevice::AttachZBufferTo(RenderTarget* surf)
 
 void RenderDevice::DrawPrimitive(const D3DPRIMITIVETYPE type, const DWORD fvf, const void* vertices, const DWORD vertexCount)
 {
-   if (currentFVF != fvf)
+   if(fvf == MY_D3DTRANSFORMED_NOTEX2_VERTEX)
    {
-      m_pD3DDevice->SetFVF(fvf);
-      currentFVF = fvf;
+	   if (currentFVF != MY_D3DTRANSFORMED_NOTEX2_VERTEX)
+	   {
+		  CHECKD3D(m_pD3DDevice->SetFVF(MY_D3DTRANSFORMED_NOTEX2_VERTEX));
+		  currentFVF = MY_D3DTRANSFORMED_NOTEX2_VERTEX;
+		  currentDeclaration = 0;
+	   }
    }
+   else
+	   currentFVF = 0;
+
     CHECKD3D(m_pD3DDevice->DrawPrimitiveUP(type, ComputePrimitiveCount(type, vertexCount), vertices, fvfToSize(fvf)));
     m_curVertexBuffer = 0;      // DrawPrimitiveUP sets the VB to NULL
 
@@ -895,11 +896,18 @@ void RenderDevice::DrawPrimitive(const D3DPRIMITIVETYPE type, const DWORD fvf, c
 
 void RenderDevice::DrawIndexedPrimitive(const D3DPRIMITIVETYPE type, const DWORD fvf, const void* vertices, const DWORD vertexCount, const WORD* indices, const DWORD indexCount)
 {
-   if (currentFVF != fvf)
+   if(fvf == MY_D3DTRANSFORMED_NOTEX2_VERTEX)
    {
-      m_pD3DDevice->SetFVF(fvf);
-      currentFVF = fvf;
+	   if (currentFVF != MY_D3DTRANSFORMED_NOTEX2_VERTEX)
+	   {
+		  CHECKD3D(m_pD3DDevice->SetFVF(MY_D3DTRANSFORMED_NOTEX2_VERTEX));
+		  currentFVF = MY_D3DTRANSFORMED_NOTEX2_VERTEX;
+  		  currentDeclaration = 0;
+	   }
    }
+   else
+	   currentFVF = 0;
+
    CHECKD3D(m_pD3DDevice->DrawIndexedPrimitiveUP(type, 0, vertexCount, ComputePrimitiveCount(type, indexCount),
                 indices, D3DFMT_INDEX16, vertices, fvfToSize(fvf)));
     m_curVertexBuffer = 0;      // DrawIndexedPrimitiveUP sets the VB to NULL
@@ -913,15 +921,21 @@ void RenderDevice::DrawPrimitiveVB(const D3DPRIMITIVETYPE type, VertexBuffer* vb
     D3DVERTEXBUFFER_DESC desc;
     vb->GetDesc(&desc);     // let's hope this is not very slow
 
-    const unsigned int vsize = fvfToSize(desc.FVF);
-    if (currentFVF != desc.FVF)
-    {
-       CHECKD3D(m_pD3DDevice->SetFVF(desc.FVF));
-       currentFVF = desc.FVF;
-    }
+	if(desc.FVF == MY_D3DTRANSFORMED_NOTEX2_VERTEX)
+	{
+		if (currentFVF != MY_D3DTRANSFORMED_NOTEX2_VERTEX)
+		{
+		   CHECKD3D(m_pD3DDevice->SetFVF(MY_D3DTRANSFORMED_NOTEX2_VERTEX));
+		   currentFVF = MY_D3DTRANSFORMED_NOTEX2_VERTEX;
+   		   currentDeclaration = 0;
+		}
+	}
+	else
+		currentFVF = 0;
 
     if (m_curVertexBuffer != vb)
     {
+		const unsigned int vsize = fvfToSize(desc.FVF);
         CHECKD3D(m_pD3DDevice->SetStreamSource(0, vb, 0, vsize));
         m_curVertexBuffer = vb;
     }
@@ -931,40 +945,28 @@ void RenderDevice::DrawPrimitiveVB(const D3DPRIMITIVETYPE type, VertexBuffer* vb
     m_curDrawCalls++;
 }
 
-void RenderDevice::DrawIndexedPrimitiveVB(const D3DPRIMITIVETYPE type, VertexBuffer* vb, const DWORD startVertex, const DWORD vertexCount, const WORD* indices, const DWORD indexCount)
-{
-    if (indexCount > MY_IDX_BUF_SIZE)
-    {
-        ShowError("Call to DrawIndexedPrimitiveVB has too many indices. Use an index buffer.");
-        return;
-    }
-
-    // copy the indices to the dynamic index buffer
-    WORD *buffer;
-    m_dynIndexBuffer->lock(0, indexCount * sizeof(WORD), (void**)&buffer, IndexBuffer::DISCARD);
-    memcpy(buffer, indices, indexCount * sizeof(WORD));
-    m_dynIndexBuffer->unlock();
-
-    DrawIndexedPrimitiveVB(type, vb, startVertex, vertexCount, m_dynIndexBuffer, 0, indexCount);
-}
-
 void RenderDevice::DrawIndexedPrimitiveVB(const D3DPRIMITIVETYPE type, VertexBuffer* vb, const DWORD startVertex, const DWORD vertexCount, IndexBuffer* ib, const DWORD startIndex, const DWORD indexCount)
 {
     // get VB description (for FVF)
     D3DVERTEXBUFFER_DESC desc;
     vb->GetDesc(&desc);     // let's hope this is not very slow
 
-    const unsigned int vsize = fvfToSize(desc.FVF);
-
     // bind the vertex and index buffers
-    if (currentFVF != desc.FVF)
-    {
-       CHECKD3D(m_pD3DDevice->SetFVF(desc.FVF));
-       currentFVF = desc.FVF;
-    }
+	if(desc.FVF == MY_D3DTRANSFORMED_NOTEX2_VERTEX)
+	{
+		if (currentFVF != MY_D3DTRANSFORMED_NOTEX2_VERTEX)
+		{
+		   CHECKD3D(m_pD3DDevice->SetFVF(MY_D3DTRANSFORMED_NOTEX2_VERTEX));
+		   currentFVF = MY_D3DTRANSFORMED_NOTEX2_VERTEX;
+   		   currentDeclaration = 0;
+		}
+	}
+	else
+		currentFVF = 0;
 
     if (m_curVertexBuffer != vb)
     {
+		const unsigned int vsize = fvfToSize(desc.FVF);
         CHECKD3D(m_pD3DDevice->SetStreamSource(0, vb, 0, vsize));
         m_curVertexBuffer = vb;
     }

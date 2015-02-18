@@ -3418,8 +3418,6 @@ void Player::DrawBalls()
                 }
             }
 
-            static const WORD rgi_all[MAX_BALL_TRAIL_POS*2] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19};
-
             if(num_rgv3D > 0)
             {
                 m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
@@ -3428,7 +3426,7 @@ void Player::DrawBalls()
 
                 ballShader->SetTechnique("RenderBallTrail");
 				ballShader->Begin(0);
-                m_pin3d.m_pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_NOTEX2_VERTEX, rgv3D_all, num_rgv3D, (LPWORD)rgi_all, num_rgv3D);
+                m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_NOTEX2_VERTEX, rgv3D_all, num_rgv3D);
 				ballShader->End();
 
                 m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
