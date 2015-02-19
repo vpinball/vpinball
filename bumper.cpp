@@ -374,7 +374,7 @@ void Bumper::RenderBase(RenderDevice *pd3dDevice, Material *baseMaterial )
    pd3dDevice->basicShader->SetTexture("Texture0", &baseTexture);
    g_pplayer->m_pin3d.EnableAlphaBlend(false);
    pd3dDevice->basicShader->PerformAlphaTest(true);
-   pd3dDevice->basicShader->SetAlphaTestValue(128.0f / 255.0f);
+   pd3dDevice->basicShader->SetAlphaTestValue(1.0f / 255.0f);
 
    pd3dDevice->basicShader->Begin(0);
    pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, baseVertexBuffer, 0, bumperBaseNumVertices, baseIndexBuffer, 0, bumperBaseNumFaces );
@@ -388,7 +388,7 @@ void Bumper::RenderSocket(RenderDevice *pd3dDevice, Material *baseMaterial )
    pd3dDevice->basicShader->SetTexture("Texture0", &socketTexture);
    g_pplayer->m_pin3d.EnableAlphaBlend(false);
    pd3dDevice->basicShader->PerformAlphaTest(true);
-   pd3dDevice->basicShader->SetAlphaTestValue(128.0f / 255.0f);
+   pd3dDevice->basicShader->SetAlphaTestValue(1.0f / 255.0f);
 
    pd3dDevice->basicShader->Begin(0);
    pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, socketVertexBuffer, 0, bumperSocketNumVertices, socketIndexBuffer, 0, bumperSocketNumFaces );
@@ -402,7 +402,7 @@ void Bumper::RenderCap( RenderDevice *pd3dDevice, Material *capMaterial )
    pd3dDevice->basicShader->SetTexture("Texture0", &capTexture);
    g_pplayer->m_pin3d.EnableAlphaBlend(false);
    pd3dDevice->basicShader->PerformAlphaTest(true);
-   pd3dDevice->basicShader->SetAlphaTestValue(128.0f / 255.0f);
+   pd3dDevice->basicShader->SetAlphaTestValue(1.0f / 255.0f);
 
    pd3dDevice->basicShader->Begin(0);
    pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, capVertexBuffer, 0, bumperCapNumVertices, capIndexBuffer, 0, bumperCapNumFaces );
