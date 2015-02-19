@@ -741,9 +741,13 @@ void RenderDevice::UpdateTexture(D3DTexture* tex, BaseTexture* surf)
 
 void RenderDevice::SetSamplerState(const DWORD Sampler, const D3DSAMPLERSTATETYPE Type, const DWORD Value)
 {
-    CHECKD3D(m_pD3DDevice->SetSamplerState(Sampler, Type, Value));
+	if(textureSamplerCache[Sampler][Type] != Value)
+	{
+	    CHECKD3D(m_pD3DDevice->SetSamplerState(Sampler, Type, Value));
+		textureSamplerCache[Sampler][Type] = Value;
 
-    m_curStateChanges++;
+		m_curStateChanges++;
+	}
 }
 
 void RenderDevice::SetTextureFilter(const DWORD texUnit, DWORD mode)
@@ -955,14 +959,14 @@ void RenderDevice::DrawPrimitiveVB(const D3DPRIMITIVETYPE type, const DWORD fvf,
 {
    VertexDeclaration * declaration = fvfToDecl(fvf);
    if(fvf == MY_D3DTRANSFORMED_NOTEX2_VERTEX)
-   {
+	{
 	   if (currentDeclaration != declaration)
-	   {
-		  CHECKD3D(m_pD3DDevice->SetFVF(MY_D3DTRANSFORMED_NOTEX2_VERTEX));
+		{
+		   CHECKD3D(m_pD3DDevice->SetFVF(MY_D3DTRANSFORMED_NOTEX2_VERTEX));
 		  currentDeclaration = declaration;
-	   }
-   }
-   else
+		}
+	}
+	else
 	   SetVertexDeclaration(declaration);
 
     if (m_curVertexBuffer != vb)
@@ -981,14 +985,14 @@ void RenderDevice::DrawIndexedPrimitiveVB(const D3DPRIMITIVETYPE type, const DWO
 {
    VertexDeclaration * declaration = fvfToDecl(fvf);
    if(fvf == MY_D3DTRANSFORMED_NOTEX2_VERTEX)
-   {
+	{
 	   if (currentDeclaration != declaration)
-	   {
-		  CHECKD3D(m_pD3DDevice->SetFVF(MY_D3DTRANSFORMED_NOTEX2_VERTEX));
+		{
+		   CHECKD3D(m_pD3DDevice->SetFVF(MY_D3DTRANSFORMED_NOTEX2_VERTEX));
 		  currentDeclaration = declaration;
-	   }
-   }
-   else
+		}
+	}
+	else
 	   SetVertexDeclaration(declaration);
 
     // bind the vertex and index buffers
