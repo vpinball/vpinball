@@ -43,9 +43,9 @@ VertexDeclaration* RenderDevice::m_pVertexNormalTexelTexelDeclaration = NULL;*/
 const VertexElement VertexTrafoTexelElement[] = 
 {
    { 0, 0  * sizeof(float),D3DDECLTYPE_FLOAT4,   D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITIONT, 0 }, // transformed pos
-   { 0, 4  * sizeof(float),D3DDECLTYPE_D3DCOLOR, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_COLOR,   0 },   // legacy
-   { 0, 5  * sizeof(float),D3DDECLTYPE_D3DCOLOR, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_COLOR,   1 },   // legacy
-   { 0, 6  * sizeof(float),D3DDECLTYPE_FLOAT2,   D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },  // tex0
+   { 0, 4  * sizeof(float),D3DDECLTYPE_D3DCOLOR, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_COLOR,     0 }, // legacy //!! unused, just there to share same code as VertexNormalTexelElement
+   { 0, 5  * sizeof(float),D3DDECLTYPE_D3DCOLOR, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_COLOR,     1 }, // legacy //!! dto.
+   { 0, 6  * sizeof(float),D3DDECLTYPE_FLOAT2,   D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD,  0 }, // tex0
    D3DDECL_END()
 };
 VertexDeclaration* RenderDevice::m_pVertexTrafoTexelDeclaration	= NULL;
@@ -851,7 +851,7 @@ void RenderDevice::CreateVertexBuffer(const unsigned int vertexCount, const DWOR
     // NB: We always specify WRITEONLY since MSDN states,
     // "Buffers created with D3DPOOL_DEFAULT that do not specify D3DUSAGE_WRITEONLY may suffer a severe performance penalty."
     // This means we cannot read from vertex buffers, but I don't think we need to.
-    CHECKD3D(m_pD3DDevice->CreateVertexBuffer(vertexCount * fvfToSize(fvf), D3DUSAGE_WRITEONLY | usage, (fvf == MY_D3DTRANSFORMED_NOTEX2_VERTEX) ? MY_D3DTRANSFORMED_NOTEX2_VERTEX : 0,
+    CHECKD3D(m_pD3DDevice->CreateVertexBuffer(vertexCount * fvfToSize(fvf), D3DUSAGE_WRITEONLY | usage, 0,
                 D3DPOOL_DEFAULT, (IDirect3DVertexBuffer9**)vBuffer, NULL));
 }
 
@@ -916,16 +916,7 @@ RenderTarget* RenderDevice::AttachZBufferTo(RenderTarget* surf)
 void RenderDevice::DrawPrimitive(const D3DPRIMITIVETYPE type, const DWORD fvf, const void* vertices, const DWORD vertexCount)
 {
    VertexDeclaration * declaration = fvfToDecl(fvf);
-   if(fvf == MY_D3DTRANSFORMED_NOTEX2_VERTEX)
-   {
-	   if (currentDeclaration != declaration)
-	   {
-		  CHECKD3D(m_pD3DDevice->SetFVF(MY_D3DTRANSFORMED_NOTEX2_VERTEX));
-		  currentDeclaration = declaration;
-	   }
-   }
-   else
-	   SetVertexDeclaration(declaration);
+   SetVertexDeclaration(declaration);
 
     CHECKD3D(m_pD3DDevice->DrawPrimitiveUP(type, ComputePrimitiveCount(type, vertexCount), vertices, fvfToSize(fvf)));
     m_curVertexBuffer = 0;      // DrawPrimitiveUP sets the VB to NULL
@@ -936,16 +927,7 @@ void RenderDevice::DrawPrimitive(const D3DPRIMITIVETYPE type, const DWORD fvf, c
 void RenderDevice::DrawIndexedPrimitive(const D3DPRIMITIVETYPE type, const DWORD fvf, const void* vertices, const DWORD vertexCount, const WORD* indices, const DWORD indexCount)
 {
    VertexDeclaration * declaration = fvfToDecl(fvf);
-   if(fvf == MY_D3DTRANSFORMED_NOTEX2_VERTEX)
-   {
-	   if (currentDeclaration != declaration)
-	   {
-		  CHECKD3D(m_pD3DDevice->SetFVF(MY_D3DTRANSFORMED_NOTEX2_VERTEX));
-		  currentDeclaration = declaration;
-	   }
-   }
-   else
-	   SetVertexDeclaration(declaration);
+   SetVertexDeclaration(declaration);
 
    CHECKD3D(m_pD3DDevice->DrawIndexedPrimitiveUP(type, 0, vertexCount, ComputePrimitiveCount(type, indexCount),
                 indices, D3DFMT_INDEX16, vertices, fvfToSize(fvf)));
@@ -958,16 +940,7 @@ void RenderDevice::DrawIndexedPrimitive(const D3DPRIMITIVETYPE type, const DWORD
 void RenderDevice::DrawPrimitiveVB(const D3DPRIMITIVETYPE type, const DWORD fvf, VertexBuffer* vb, const DWORD startVertex, const DWORD vertexCount)
 {
    VertexDeclaration * declaration = fvfToDecl(fvf);
-   if(fvf == MY_D3DTRANSFORMED_NOTEX2_VERTEX)
-	{
-	   if (currentDeclaration != declaration)
-		{
-		   CHECKD3D(m_pD3DDevice->SetFVF(MY_D3DTRANSFORMED_NOTEX2_VERTEX));
-		  currentDeclaration = declaration;
-		}
-	}
-	else
-	   SetVertexDeclaration(declaration);
+   SetVertexDeclaration(declaration);
 
     if (m_curVertexBuffer != vb)
     {
@@ -984,16 +957,7 @@ void RenderDevice::DrawPrimitiveVB(const D3DPRIMITIVETYPE type, const DWORD fvf,
 void RenderDevice::DrawIndexedPrimitiveVB(const D3DPRIMITIVETYPE type, const DWORD fvf, VertexBuffer* vb, const DWORD startVertex, const DWORD vertexCount, IndexBuffer* ib, const DWORD startIndex, const DWORD indexCount)
 {
    VertexDeclaration * declaration = fvfToDecl(fvf);
-   if(fvf == MY_D3DTRANSFORMED_NOTEX2_VERTEX)
-	{
-	   if (currentDeclaration != declaration)
-		{
-		   CHECKD3D(m_pD3DDevice->SetFVF(MY_D3DTRANSFORMED_NOTEX2_VERTEX));
-		  currentDeclaration = declaration;
-		}
-	}
-	else
-	   SetVertexDeclaration(declaration);
+   SetVertexDeclaration(declaration);
 
     // bind the vertex and index buffers
     if (m_curVertexBuffer != vb)
