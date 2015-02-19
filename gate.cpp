@@ -421,7 +421,7 @@ void Gate::RenderObject( RenderDevice* pd3dDevice)
     Pin3D * const ppin3d = &g_pplayer->m_pin3d;
     COLORREF rgbTransparent = RGB(255,0,255); //RGB(0,0,0);
 
-    ppin3d->EnableAlphaBlend(1,false);
+    ppin3d->EnableAlphaBlend(false);
 
     pd3dDevice->basicShader->SetTechnique("basic_without_texture");
     if ( m_d.m_fShowBracket )

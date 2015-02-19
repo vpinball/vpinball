@@ -944,7 +944,7 @@ void Surface::RenderSlingshots(RenderDevice* pd3dDevice)
 
 void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
 {
-    g_pplayer->m_pin3d.EnableAlphaBlend(1,false);
+    g_pplayer->m_pin3d.EnableAlphaBlend(false);
     pd3dDevice->basicShader->PerformAlphaTest(true);
     pd3dDevice->basicShader->SetAlphaTestValue(128.0f / 255.0f);
 
