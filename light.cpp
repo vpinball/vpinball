@@ -519,7 +519,6 @@ void Light::ClearForOverwrite()
 
 void Light::RenderBulbMesh(RenderDevice *pd3dDevice, COLORREF color, bool isOn)
 {
-    pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelDeclaration );
     pd3dDevice->basicShader->SetTechnique("basic_without_texture");
     Material mat;
     mat.m_cBase = 0x181818;
@@ -534,7 +533,7 @@ void Light::RenderBulbMesh(RenderDevice *pd3dDevice, COLORREF color, bool isOn)
     pd3dDevice->basicShader->SetMaterial(&mat);
 
     pd3dDevice->basicShader->Begin(0);
-    pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, bulbSocketVBuffer, 0, bulbSocketNumVertices, bulbSocketIndexBuffer, 0, bulbSocketNumFaces );
+    pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, bulbSocketVBuffer, 0, bulbSocketNumVertices, bulbSocketIndexBuffer, 0, bulbSocketNumFaces );
     pd3dDevice->basicShader->End();
 
     mat.m_cBase = 0;
@@ -549,7 +548,7 @@ void Light::RenderBulbMesh(RenderDevice *pd3dDevice, COLORREF color, bool isOn)
     pd3dDevice->basicShader->SetMaterial(&mat);
 
     pd3dDevice->basicShader->Begin(0);
-    pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, bulbLightVBuffer, 0, bulbLightNumVertices, bulbLightIndexBuffer, 0, bulbLightNumFaces );
+    pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, bulbLightVBuffer, 0, bulbLightNumVertices, bulbLightIndexBuffer, 0, bulbLightNumFaces );
     pd3dDevice->basicShader->End();
 }
 
@@ -638,15 +637,13 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
         pd3dDevice->basicShader->SetTechnique("bulb_light");
 	}
 
-	pd3dDevice->SetVertexDeclaration(pd3dDevice->m_pVertexNormalTexelDeclaration);
-
     if ( m_d.m_showBulbMesh && m_d.m_BulbLight ) // blend bulb mesh hull additive over "normal" bulb to approximate the emission directly reaching the camera
     {
         pd3dDevice->basicShader->Core()->SetFloat("intensity",m_d.m_currentIntensity*0.02f); //!! make configurable?
         pd3dDevice->basicShader->Core()->SetFloat("blend_modulate_vs_add",0.00001f); // avoid 0, as it disables the blend
 
 	    pd3dDevice->basicShader->Begin(0);
-        pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, bulbLightVBuffer, 0, bulbLightNumVertices, bulbLightIndexBuffer, 0, bulbLightNumFaces );
+        pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, bulbLightVBuffer, 0, bulbLightNumVertices, bulbLightIndexBuffer, 0, bulbLightNumFaces );
 		pd3dDevice->basicShader->End();
     }
 
@@ -655,7 +652,7 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
         pd3dDevice->basicShader->Core()->SetFloat("blend_modulate_vs_add",max(m_d.m_modulate_vs_add,0.00001f)); // avoid 0, as it disables the blend
     pd3dDevice->basicShader->Core()->SetFloat("intensity",m_d.m_currentIntensity);
     pd3dDevice->basicShader->Begin(0);
-    pd3dDevice->DrawPrimitiveVB(D3DPT_TRIANGLELIST, customMoverVBuffer, 0, customMoverVertexNum);
+    pd3dDevice->DrawPrimitiveVB(D3DPT_TRIANGLELIST, (!m_fBackglass) ? MY_D3DFVF_NOTEX2_VERTEX : MY_D3DTRANSFORMED_NOTEX2_VERTEX, customMoverVBuffer, 0, customMoverVertexNum);
     pd3dDevice->basicShader->End();
     
     pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, FALSE);

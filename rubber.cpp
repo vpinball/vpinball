@@ -1276,8 +1276,6 @@ void Rubber::RenderObject(RenderDevice *pd3dDevice)
    }
    pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP);
 
-   pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelDeclaration );
-
    Material *mat = m_ptable->GetMaterial( m_d.m_szMaterial);
    pd3dDevice->basicShader->SetMaterial(mat);
    {
@@ -1298,7 +1296,7 @@ void Rubber::RenderObject(RenderDevice *pd3dDevice)
          UpdateRubber(pd3dDevice);
 
       pd3dDevice->basicShader->Begin(0);
-      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, dynamicVertexBuffer, 0, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
+      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, dynamicVertexBuffer, 0, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
       pd3dDevice->basicShader->End();  
    }
 }
@@ -1317,7 +1315,7 @@ void Rubber::PostRenderStatic(RenderDevice* pd3dDevice)
 void Rubber::GenerateVertexBuffer(RenderDevice* pd3dDevice)
 {
     dynamicVertexBufferRegenerate = true;
-    Vertex2D * middlePoints = 0;
+
     int accuracy=1;
     if( m_ptable->GetDetailLevel()<5 )
     {
@@ -1332,6 +1330,7 @@ void Rubber::GenerateVertexBuffer(RenderDevice* pd3dDevice)
        accuracy=(int)(m_ptable->GetDetailLevel()*1.3f);
     }
 
+    Vertex2D * middlePoints = 0;
     const Vertex2D *rgvLocal = GetSplineVertex(splinePoints, NULL, &middlePoints);
     const int numRings=splinePoints-1;
     const int numSegments=accuracy;
@@ -1340,14 +1339,7 @@ void Rubber::GenerateVertexBuffer(RenderDevice* pd3dDevice)
 
     if (dynamicVertexBuffer)
         dynamicVertexBuffer->release();
-
-    if ( m_d.m_staticRendering )
-        pd3dDevice->CreateVertexBuffer(m_numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &dynamicVertexBuffer);
-    else
-        pd3dDevice->CreateVertexBuffer(m_numVertices, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &dynamicVertexBuffer);
-
-    Vertex3D_NoTex2 *buf;
-    dynamicVertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY);
+    pd3dDevice->CreateVertexBuffer(m_numVertices, m_d.m_staticRendering ? 0 : USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &dynamicVertexBuffer);
 
     m_vertices.resize(m_numVertices);
     std::vector<WORD> rgibuf( m_numIndices );
@@ -1460,6 +1452,8 @@ void Rubber::GenerateVertexBuffer(RenderDevice* pd3dDevice)
     middlePoint.z = (maxz+minz)*0.5f;
 
     // Draw the floor of the ramp.
+    Vertex3D_NoTex2 *buf;
+    dynamicVertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY);
     memcpy( &buf[0], &m_vertices[0], sizeof(Vertex3D_NoTex2)*m_numVertices );
     dynamicVertexBuffer->unlock();
 

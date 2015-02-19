@@ -431,8 +431,6 @@ void Pin3D::InitPlayfieldGraphics()
     rgv[6].x=g_pplayer->m_ptable->m_right;    rgv[6].y=g_pplayer->m_ptable->m_bottom;   rgv[6].z=g_pplayer->m_ptable->m_tableheight+50.0f;
     //rgv[7].x=g_pplayer->m_ptable->m_right;    rgv[7].y=g_pplayer->m_ptable->m_top;      rgv[7].z=50.0f;
 
-    m_pd3dDevice->SetVertexDeclaration( m_pd3dDevice->m_pVertexNormalTexelDeclaration );
-
     for (int i=0; i<4; ++i)
     {
         rgv[i].nx = 0;
@@ -501,7 +499,7 @@ void Pin3D::RenderPlayfieldGraphics()
     assert(tableVBuffer != NULL);
     assert(tableIBuffer != NULL);
     m_pd3dDevice->basicShader->Begin(0);
-	m_pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, tableVBuffer, 0, 4, tableIBuffer, 0, 6);
+	m_pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, tableVBuffer, 0, 4, tableIBuffer, 0, 6);
     m_pd3dDevice->basicShader->End();
 
     if (pin)
@@ -513,7 +511,7 @@ void Pin3D::RenderPlayfieldGraphics()
     }
 
     m_pd3dDevice->basicShader->Begin(0);
-    m_pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLEFAN, tableVBuffer, 4, 7, tableIBuffer, 6, 4);
+    m_pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX, tableVBuffer, 4, 7, tableIBuffer, 6, 4);
     m_pd3dDevice->basicShader->End();  
 
     // Apparently, releasing the vertex buffer here immediately can cause rendering glitches in

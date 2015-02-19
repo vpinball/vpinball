@@ -64,9 +64,7 @@
 //#define DEBUG_FPS
 //#define EVENTIME 1
 
-#ifdef _DEBUGPHYSICS
 #define DEBUG_BALL_SPIN
-#endif
 
 //
 

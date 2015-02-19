@@ -632,7 +632,6 @@ void Primitive::RenderObject( RenderDevice *pd3dDevice )
         vertexBufferRegenerate = false;
         m_mesh.UploadToVB(vertexBuffer);
     }
-    pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelDeclaration );
 
     Material *mat = m_ptable->GetMaterial( m_d.m_szMaterial);
     pd3dDevice->basicShader->SetMaterial(mat);
@@ -661,7 +660,7 @@ void Primitive::RenderObject( RenderDevice *pd3dDevice )
 
     pd3dDevice->basicShader->Begin(0);
     // draw the mesh
-    pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, vertexBuffer, 0, m_mesh.NumVertices(), indexBuffer, 0, m_mesh.NumIndices() );
+    pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, m_mesh.NumVertices(), indexBuffer, 0, m_mesh.NumIndices() );
     pd3dDevice->basicShader->End();
 
     // reset transform

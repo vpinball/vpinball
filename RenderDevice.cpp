@@ -40,7 +40,17 @@ VertexDeclaration* RenderDevice::m_pVertexNormalTexelDeclaration	= NULL;
 
 VertexDeclaration* RenderDevice::m_pVertexNormalTexelTexelDeclaration = NULL;*/
 
-static unsigned int fvfToSize(DWORD fvf)
+const VertexElement VertexTrafoTexelElement[] = 
+{
+   { 0, 0  * sizeof(float),D3DDECLTYPE_FLOAT4,   D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITIONT, 0 }, // transformed pos
+   { 0, 4  * sizeof(float),D3DDECLTYPE_D3DCOLOR, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_COLOR,   0 },   // legacy
+   { 0, 5  * sizeof(float),D3DDECLTYPE_D3DCOLOR, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_COLOR,   1 },   // legacy
+   { 0, 6  * sizeof(float),D3DDECLTYPE_FLOAT2,   D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD, 0 },  // tex0
+   D3DDECL_END()
+};
+VertexDeclaration* RenderDevice::m_pVertexTrafoTexelDeclaration	= NULL;
+
+static unsigned int fvfToSize(const DWORD fvf)
 {
     switch (fvf)
     {
@@ -52,6 +62,22 @@ static unsigned int fvfToSize(DWORD fvf)
         default:
             assert(0 && "Unknown FVF type in fvfToSize");
             return 0;
+    }
+}
+
+static VertexDeclaration* fvfToDecl(const DWORD fvf)
+{
+    switch (fvf)
+    {
+        case MY_D3DFVF_NOTEX2_VERTEX:
+            return RenderDevice::m_pVertexNormalTexelDeclaration;
+        case MY_D3DTRANSFORMED_NOTEX2_VERTEX:
+            return RenderDevice::m_pVertexTrafoTexelDeclaration;
+		case MY_D3DFVF_TEX:
+			return RenderDevice::m_pVertexTexelDeclaration;
+        default:
+            assert(0 && "Unknown FVF type in fvfToDecl");
+            return NULL;
     }
 }
 
@@ -351,11 +377,11 @@ RenderDevice::RenderDevice(HWND hwnd, int width, int height, bool fullscreen, in
     m_curIndexBuffer = 0;
     m_curVertexBuffer = 0;
     currentDeclaration = NULL;
-	currentFVF = 0;
 
     // fill state caches with dummy values
     memset( renderStateCache, 0xCC, sizeof(DWORD)*RENDER_STATE_CACHE_SIZE);
     memset( textureStateCache, 0xCC, sizeof(DWORD)*8*TEXTURE_STATE_CACHE_SIZE);
+    memset( textureSamplerCache, 0xCC, sizeof(DWORD)*8*TEXTURE_SAMPLER_CACHE_SIZE);
     memset(&materialStateCache, 0xCC, sizeof(Material));
 
     // initialize performance counters
@@ -380,6 +406,7 @@ RenderDevice::RenderDevice(HWND hwnd, int width, int height, bool fullscreen, in
     CreateVertexDeclaration( VertexTexelElement, &m_pVertexTexelDeclaration );
     CreateVertexDeclaration( VertexNormalTexelElement, &m_pVertexNormalTexelDeclaration );
     //CreateVertexDeclaration( VertexNormalTexelTexelElement, &m_pVertexNormalTexelTexelDeclaration );
+    CreateVertexDeclaration( VertexTrafoTexelElement, &m_pVertexTrafoTexelDeclaration );
 }
 
 #ifdef _DEBUG
@@ -445,7 +472,7 @@ RenderDevice::~RenderDevice()
     m_pD3DDevice->SetVertexShader(NULL);
     m_pD3DDevice->SetPixelShader(NULL);
     m_pD3DDevice->SetFVF(D3DFVF_XYZ);
-	m_pD3DDevice->SetVertexDeclaration(NULL);
+	//m_pD3DDevice->SetVertexDeclaration(NULL); // invalid call
     //m_pD3DDevice->SetRenderTarget(0, NULL); // invalid call
     m_pD3DDevice->SetDepthStencilSurface(NULL);
 
@@ -454,6 +481,7 @@ RenderDevice::~RenderDevice()
     SAFE_RELEASE(m_pVertexTexelDeclaration);
     SAFE_RELEASE(m_pVertexNormalTexelDeclaration);
     //SAFE_RELEASE(m_pVertexNormalTexelTexelDeclaration);
+    SAFE_RELEASE(m_pVertexTrafoTexelDeclaration);
 
     m_texMan.UnloadAll();
 	SAFE_RELEASE(m_pOffscreenBackBufferTexture);
@@ -711,7 +739,14 @@ void RenderDevice::UpdateTexture(D3DTexture* tex, BaseTexture* surf)
     SAFE_RELEASE(sysTex);
 }
 
-void RenderDevice::SetTextureFilter(DWORD texUnit, DWORD mode)
+void RenderDevice::SetSamplerState(const DWORD Sampler, const D3DSAMPLERSTATETYPE Type, const DWORD Value)
+{
+    CHECKD3D(m_pD3DDevice->SetSamplerState(Sampler, Type, Value));
+
+    m_curStateChanges++;
+}
+
+void RenderDevice::SetTextureFilter(const DWORD texUnit, DWORD mode)
 {
 	if((mode == TEXTURE_MODE_TRILINEAR) && m_force_aniso)
 		mode = TEXTURE_MODE_ANISOTROPIC;
@@ -721,36 +756,36 @@ void RenderDevice::SetTextureFilter(DWORD texUnit, DWORD mode)
 	default:
 	case TEXTURE_MODE_POINT:
 		// Don't filter textures, no mipmapping.
-		CHECKD3D(m_pD3DDevice->SetSamplerState(texUnit, D3DSAMP_MAGFILTER, D3DTEXF_POINT));
-		CHECKD3D(m_pD3DDevice->SetSamplerState(texUnit, D3DSAMP_MINFILTER, D3DTEXF_POINT));
-		CHECKD3D(m_pD3DDevice->SetSamplerState(texUnit, D3DSAMP_MIPFILTER, D3DTEXF_NONE));
+		SetSamplerState(texUnit, D3DSAMP_MAGFILTER, D3DTEXF_POINT);
+		SetSamplerState(texUnit, D3DSAMP_MINFILTER, D3DTEXF_POINT);
+		SetSamplerState(texUnit, D3DSAMP_MIPFILTER, D3DTEXF_NONE);
 		break;
 
 	case TEXTURE_MODE_BILINEAR:
 		// Interpolate in 2x2 texels, no mipmapping.
-		CHECKD3D(m_pD3DDevice->SetSamplerState(texUnit, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR));
-		CHECKD3D(m_pD3DDevice->SetSamplerState(texUnit, D3DSAMP_MINFILTER, D3DTEXF_LINEAR));
-		CHECKD3D(m_pD3DDevice->SetSamplerState(texUnit, D3DSAMP_MIPFILTER, D3DTEXF_NONE));
+		SetSamplerState(texUnit, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
+		SetSamplerState(texUnit, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
+		SetSamplerState(texUnit, D3DSAMP_MIPFILTER, D3DTEXF_NONE);
 		break;
 
 	case TEXTURE_MODE_TRILINEAR:
 		// Filter textures on 2 mip levels (interpolate in 2x2 texels). And filter between the 2 mip levels.
-		CHECKD3D(m_pD3DDevice->SetSamplerState(texUnit, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR));
-		CHECKD3D(m_pD3DDevice->SetSamplerState(texUnit, D3DSAMP_MINFILTER, D3DTEXF_LINEAR));
-		CHECKD3D(m_pD3DDevice->SetSamplerState(texUnit, D3DSAMP_MIPFILTER, D3DTEXF_LINEAR));
+		SetSamplerState(texUnit, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
+		SetSamplerState(texUnit, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
+		SetSamplerState(texUnit, D3DSAMP_MIPFILTER, D3DTEXF_LINEAR);
 		break;
 
 	case TEXTURE_MODE_ANISOTROPIC:
 		// Full HQ anisotropic Filter. Should lead to driver doing whatever it thinks is best.
-		CHECKD3D(m_pD3DDevice->SetSamplerState(texUnit, D3DSAMP_MAGFILTER, m_mag_aniso ? D3DTEXF_ANISOTROPIC : D3DTEXF_LINEAR));
-		CHECKD3D(m_pD3DDevice->SetSamplerState(texUnit, D3DSAMP_MINFILTER, D3DTEXF_ANISOTROPIC));
-		CHECKD3D(m_pD3DDevice->SetSamplerState(texUnit, D3DSAMP_MIPFILTER, D3DTEXF_LINEAR));
-		CHECKD3D(m_pD3DDevice->SetSamplerState(texUnit, D3DSAMP_MAXANISOTROPY, min(m_maxaniso,(DWORD)16)));
+		SetSamplerState(texUnit, D3DSAMP_MAGFILTER, m_mag_aniso ? D3DTEXF_ANISOTROPIC : D3DTEXF_LINEAR);
+		SetSamplerState(texUnit, D3DSAMP_MINFILTER, D3DTEXF_ANISOTROPIC);
+		SetSamplerState(texUnit, D3DSAMP_MIPFILTER, D3DTEXF_LINEAR);
+		SetSamplerState(texUnit, D3DSAMP_MAXANISOTROPY, min(m_maxaniso,(DWORD)16));
 		break;
 	}
 }
 
-void RenderDevice::SetTextureStageState( DWORD p1, D3DTEXTURESTAGESTATETYPE p2, DWORD p3)
+void RenderDevice::SetTextureStageState( const DWORD p1, const D3DTEXTURESTAGESTATETYPE p2, const DWORD p3)
 {
     if( (unsigned int)p2 < TEXTURE_STATE_CACHE_SIZE && p1 < 8)
     {
@@ -801,10 +836,10 @@ void RenderDevice::SetRenderState( const RenderStates p1, DWORD p2 )
    m_curStateChanges++;
 }
 
-void RenderDevice::SetTextureAddressMode(DWORD texUnit, TextureAddressMode mode)
+void RenderDevice::SetTextureAddressMode(const DWORD texUnit, const TextureAddressMode mode)
 {
-    CHECKD3D(m_pD3DDevice->SetSamplerState(texUnit, D3DSAMP_ADDRESSU, mode));
-    CHECKD3D(m_pD3DDevice->SetSamplerState(texUnit, D3DSAMP_ADDRESSV, mode));
+    SetSamplerState(texUnit, D3DSAMP_ADDRESSU, mode);
+    SetSamplerState(texUnit, D3DSAMP_ADDRESSV, mode);
 }
 
 void RenderDevice::CreateVertexBuffer(const unsigned int vertexCount, const DWORD usage, const DWORD fvf, VertexBuffer **vBuffer )
@@ -812,7 +847,7 @@ void RenderDevice::CreateVertexBuffer(const unsigned int vertexCount, const DWOR
     // NB: We always specify WRITEONLY since MSDN states,
     // "Buffers created with D3DPOOL_DEFAULT that do not specify D3DUSAGE_WRITEONLY may suffer a severe performance penalty."
     // This means we cannot read from vertex buffers, but I don't think we need to.
-    CHECKD3D(m_pD3DDevice->CreateVertexBuffer(vertexCount * fvfToSize(fvf), D3DUSAGE_WRITEONLY | usage, fvf,
+    CHECKD3D(m_pD3DDevice->CreateVertexBuffer(vertexCount * fvfToSize(fvf), D3DUSAGE_WRITEONLY | usage, (fvf == MY_D3DTRANSFORMED_NOTEX2_VERTEX) ? MY_D3DTRANSFORMED_NOTEX2_VERTEX : 0,
                 D3DPOOL_DEFAULT, (IDirect3DVertexBuffer9**)vBuffer, NULL));
 }
 
@@ -876,17 +911,17 @@ RenderTarget* RenderDevice::AttachZBufferTo(RenderTarget* surf)
 
 void RenderDevice::DrawPrimitive(const D3DPRIMITIVETYPE type, const DWORD fvf, const void* vertices, const DWORD vertexCount)
 {
+   VertexDeclaration * declaration = fvfToDecl(fvf);
    if(fvf == MY_D3DTRANSFORMED_NOTEX2_VERTEX)
    {
-	   if (currentFVF != MY_D3DTRANSFORMED_NOTEX2_VERTEX)
+	   if (currentDeclaration != declaration)
 	   {
 		  CHECKD3D(m_pD3DDevice->SetFVF(MY_D3DTRANSFORMED_NOTEX2_VERTEX));
-		  currentFVF = MY_D3DTRANSFORMED_NOTEX2_VERTEX;
-		  currentDeclaration = 0;
+		  currentDeclaration = declaration;
 	   }
    }
    else
-	   currentFVF = 0;
+	   SetVertexDeclaration(declaration);
 
     CHECKD3D(m_pD3DDevice->DrawPrimitiveUP(type, ComputePrimitiveCount(type, vertexCount), vertices, fvfToSize(fvf)));
     m_curVertexBuffer = 0;      // DrawPrimitiveUP sets the VB to NULL
@@ -896,17 +931,17 @@ void RenderDevice::DrawPrimitive(const D3DPRIMITIVETYPE type, const DWORD fvf, c
 
 void RenderDevice::DrawIndexedPrimitive(const D3DPRIMITIVETYPE type, const DWORD fvf, const void* vertices, const DWORD vertexCount, const WORD* indices, const DWORD indexCount)
 {
+   VertexDeclaration * declaration = fvfToDecl(fvf);
    if(fvf == MY_D3DTRANSFORMED_NOTEX2_VERTEX)
    {
-	   if (currentFVF != MY_D3DTRANSFORMED_NOTEX2_VERTEX)
+	   if (currentDeclaration != declaration)
 	   {
 		  CHECKD3D(m_pD3DDevice->SetFVF(MY_D3DTRANSFORMED_NOTEX2_VERTEX));
-		  currentFVF = MY_D3DTRANSFORMED_NOTEX2_VERTEX;
-  		  currentDeclaration = 0;
+		  currentDeclaration = declaration;
 	   }
    }
    else
-	   currentFVF = 0;
+	   SetVertexDeclaration(declaration);
 
    CHECKD3D(m_pD3DDevice->DrawIndexedPrimitiveUP(type, 0, vertexCount, ComputePrimitiveCount(type, indexCount),
                 indices, D3DFMT_INDEX16, vertices, fvfToSize(fvf)));
@@ -916,26 +951,23 @@ void RenderDevice::DrawIndexedPrimitive(const D3DPRIMITIVETYPE type, const DWORD
     m_curDrawCalls++;
 }
 
-void RenderDevice::DrawPrimitiveVB(const D3DPRIMITIVETYPE type, VertexBuffer* vb, const DWORD startVertex, const DWORD vertexCount)
+void RenderDevice::DrawPrimitiveVB(const D3DPRIMITIVETYPE type, const DWORD fvf, VertexBuffer* vb, const DWORD startVertex, const DWORD vertexCount)
 {
-    D3DVERTEXBUFFER_DESC desc;
-    vb->GetDesc(&desc);     // let's hope this is not very slow
-
-	if(desc.FVF == MY_D3DTRANSFORMED_NOTEX2_VERTEX)
-	{
-		if (currentFVF != MY_D3DTRANSFORMED_NOTEX2_VERTEX)
-		{
-		   CHECKD3D(m_pD3DDevice->SetFVF(MY_D3DTRANSFORMED_NOTEX2_VERTEX));
-		   currentFVF = MY_D3DTRANSFORMED_NOTEX2_VERTEX;
-   		   currentDeclaration = 0;
-		}
-	}
-	else
-		currentFVF = 0;
+   VertexDeclaration * declaration = fvfToDecl(fvf);
+   if(fvf == MY_D3DTRANSFORMED_NOTEX2_VERTEX)
+   {
+	   if (currentDeclaration != declaration)
+	   {
+		  CHECKD3D(m_pD3DDevice->SetFVF(MY_D3DTRANSFORMED_NOTEX2_VERTEX));
+		  currentDeclaration = declaration;
+	   }
+   }
+   else
+	   SetVertexDeclaration(declaration);
 
     if (m_curVertexBuffer != vb)
     {
-		const unsigned int vsize = fvfToSize(desc.FVF);
+		const unsigned int vsize = fvfToSize(fvf);
         CHECKD3D(m_pD3DDevice->SetStreamSource(0, vb, 0, vsize));
         m_curVertexBuffer = vb;
     }
@@ -945,28 +977,24 @@ void RenderDevice::DrawPrimitiveVB(const D3DPRIMITIVETYPE type, VertexBuffer* vb
     m_curDrawCalls++;
 }
 
-void RenderDevice::DrawIndexedPrimitiveVB(const D3DPRIMITIVETYPE type, VertexBuffer* vb, const DWORD startVertex, const DWORD vertexCount, IndexBuffer* ib, const DWORD startIndex, const DWORD indexCount)
+void RenderDevice::DrawIndexedPrimitiveVB(const D3DPRIMITIVETYPE type, const DWORD fvf, VertexBuffer* vb, const DWORD startVertex, const DWORD vertexCount, IndexBuffer* ib, const DWORD startIndex, const DWORD indexCount)
 {
-    // get VB description (for FVF)
-    D3DVERTEXBUFFER_DESC desc;
-    vb->GetDesc(&desc);     // let's hope this is not very slow
+   VertexDeclaration * declaration = fvfToDecl(fvf);
+   if(fvf == MY_D3DTRANSFORMED_NOTEX2_VERTEX)
+   {
+	   if (currentDeclaration != declaration)
+	   {
+		  CHECKD3D(m_pD3DDevice->SetFVF(MY_D3DTRANSFORMED_NOTEX2_VERTEX));
+		  currentDeclaration = declaration;
+	   }
+   }
+   else
+	   SetVertexDeclaration(declaration);
 
     // bind the vertex and index buffers
-	if(desc.FVF == MY_D3DTRANSFORMED_NOTEX2_VERTEX)
-	{
-		if (currentFVF != MY_D3DTRANSFORMED_NOTEX2_VERTEX)
-		{
-		   CHECKD3D(m_pD3DDevice->SetFVF(MY_D3DTRANSFORMED_NOTEX2_VERTEX));
-		   currentFVF = MY_D3DTRANSFORMED_NOTEX2_VERTEX;
-   		   currentDeclaration = 0;
-		}
-	}
-	else
-		currentFVF = 0;
-
     if (m_curVertexBuffer != vb)
     {
-		const unsigned int vsize = fvfToSize(desc.FVF);
+		const unsigned int vsize = fvfToSize(fvf);
         CHECKD3D(m_pD3DDevice->SetStreamSource(0, vb, 0, vsize));
         m_curVertexBuffer = vb;
     }

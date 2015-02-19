@@ -531,7 +531,6 @@ void Trigger::PostRenderStatic(RenderDevice* pd3dDevice)
 	const float animLimit = ( m_d.m_shape==TriggerStar ) ? 13.0f : 38.0f;
 	const float limit = animLimit*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
-    pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelDeclaration );
     pd3dDevice->basicShader->SetTechnique("basic_without_texture");
 
     Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
@@ -595,7 +594,7 @@ void Trigger::PostRenderStatic(RenderDevice* pd3dDevice)
     }
 
     pd3dDevice->basicShader->Begin(0);
-    pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, vertexBuffer, 0, numVertices, triggerIndexBuffer, 0, numFaces );
+    pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, numVertices, triggerIndexBuffer, 0, numFaces );
     pd3dDevice->basicShader->End();
 }
 
