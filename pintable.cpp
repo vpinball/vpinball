@@ -2833,6 +2833,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
    bw.WriteInt(FID(BTST), m_ballTrailStrength );
    bw.WriteInt(FID(ARAC), m_userDetailLevel );
    bw.WriteBool(FID(OGAC), m_overwriteGlobalDetailLevel );
+   bw.WriteBool(FID(GDAC), m_fGrid);
 
    bw.WriteInt(FID(UAAL), m_useAA );
    bw.WriteInt(FID(UFXA), m_useFXAA );
@@ -3668,6 +3669,10 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    else if ( id == FID(OGAC))
    {
        pbr->GetBool(&m_overwriteGlobalDetailLevel);
+   }
+   else if ( id == FID(GDAC))
+   {
+        pbr->GetBool(&m_fGrid);
    }
    else if ( id == FID(ARAC))
    {      
