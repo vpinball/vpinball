@@ -542,7 +542,7 @@ void Decal::RenderStatic(RenderDevice* pd3dDevice)
 //!!   pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_MIRROR);
 
    //ppin3d->SetTextureFilter ( 0, TEXTURE_MODE_TRILINEAR );
-   g_pplayer->m_pin3d.EnableAlphaBlend(1,false);
+   g_pplayer->m_pin3d.EnableAlphaBlend(false);
 
    if (!m_fBackglass)
    {

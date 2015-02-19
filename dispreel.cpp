@@ -276,7 +276,8 @@ void DispReel::PostRenderStatic(RenderDevice* pd3dDevice)
 	if(g_pplayer->m_ptable->m_tblMirrorEnabled)
 		pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
 
-	g_pplayer->m_pin3d.EnableAlphaBlend(0xe0, false);
+    g_pplayer->m_pin3d.EnableAlphaTestReference(0xE0);
+	g_pplayer->m_pin3d.EnableAlphaBlend(false);
 	pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATER); //!! still necessary?
 
 	for (int i = 0; i < m_d.m_reelcount; ++i)
@@ -291,6 +292,7 @@ void DispReel::PostRenderStatic(RenderDevice* pd3dDevice)
 	}
 
 	g_pplayer->m_pin3d.DisableAlphaBlend();
+    pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, FALSE);
 
 	if(g_pplayer->m_ptable->m_tblMirrorEnabled)
 		pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);

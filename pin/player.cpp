@@ -2407,7 +2407,7 @@ void Player::RenderDynamics()
       {
          // Restore the render state.
          m_pin3d.m_pd3dDevice->SetRenderState ( RenderDevice::ZENABLE, D3DZB_TRUE );
-		 g_pplayer->m_pin3d.EnableAlphaBlend(1, false);
+		 g_pplayer->m_pin3d.EnableAlphaBlend(false);
       }
 
       m_ToggleDebugBalls = false;
@@ -3277,7 +3277,7 @@ void Player::DrawBalls()
           ballShader->Core()->SetFloat("ballStretchY", m_BallStretchY-sy );
       }
 
-      m_pin3d.EnableAlphaBlend(1, false);
+      m_pin3d.EnableAlphaBlend(false);
       D3DXVECTOR4 m1(pball->m_orientation.m_d[0][0], pball->m_orientation.m_d[1][0], pball->m_orientation.m_d[2][0], 0.0f );
       D3DXVECTOR4 m2(pball->m_orientation.m_d[0][1], pball->m_orientation.m_d[1][1], pball->m_orientation.m_d[2][1], 0.0f );
       D3DXVECTOR4 m3(pball->m_orientation.m_d[0][2], pball->m_orientation.m_d[1][2], pball->m_orientation.m_d[2][2], 0.0f );

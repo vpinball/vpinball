@@ -333,7 +333,7 @@ void Kicker::RenderStatic(RenderDevice* pd3dDevice)
       {
          pd3dDevice->basicShader->SetTechnique("basic_with_texture");
          pd3dDevice->basicShader->SetTexture("Texture0", &texture);
-         g_pplayer->m_pin3d.EnableAlphaBlend(1,false);
+         g_pplayer->m_pin3d.EnableAlphaBlend(false);
          //pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", true);
          //pd3dDevice->basicShader->Core()->SetFloat("fAlphaTestValue", 128.0f/255.0f);
          pd3dDevice->basicShader->Begin(0);

@@ -487,7 +487,7 @@ void Pin3D::RenderPlayfieldGraphics()
       SetTextureFilter(0, TEXTURE_MODE_ANISOTROPIC);
       m_pd3dDevice->basicShader->SetTexture("Texture0",pin);
       m_pd3dDevice->basicShader->SetTechnique("basic_with_texture");
-      g_pplayer->m_pin3d.EnableAlphaBlend(1,false);
+      g_pplayer->m_pin3d.EnableAlphaBlend(false);
       m_pd3dDevice->basicShader->PerformAlphaTest(true);
       m_pd3dDevice->basicShader->SetAlphaTestValue(128.0f / 255.0f);
 	}
@@ -525,10 +525,8 @@ void Pin3D::EnableAlphaTestReference(const DWORD alphaRefValue) const
 	m_pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATEREQUAL);
 }
 
-void Pin3D::EnableAlphaBlend( const DWORD alphaRefValue, const bool additiveBlending ) const
+void Pin3D::EnableAlphaBlend( const bool additiveBlending ) const
 {
-	//if(alphaRefValue != 1) //!! ?? what makes more sense?
-		EnableAlphaTestReference(alphaRefValue);
 	m_pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
 	m_pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
 	m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, additiveBlending ? D3DBLEND_ONE : D3DBLEND_INVSRCALPHA);
@@ -537,7 +535,6 @@ void Pin3D::EnableAlphaBlend( const DWORD alphaRefValue, const bool additiveBlen
 void Pin3D::DisableAlphaBlend() const
 {
     m_pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
-    m_pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, FALSE);
 }
 
 void Pin3D::Flip(bool vsync)

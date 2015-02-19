@@ -321,12 +321,12 @@ void Spinner::PostRenderStatic(RenderDevice* pd3dDevice)
     Texture * const image = m_ptable->GetImage(m_d.m_szImage);
 
     pd3dDevice->basicShader->PerformAlphaTest(true);
-    pd3dDevice->basicShader->SetAlphaTestValue(128.0f / 255.0f);
+    pd3dDevice->basicShader->SetAlphaTestValue(1.0f / 255.0f);
 
     UpdatePlate(pd3dDevice);
     if ( image )
     {
-        g_pplayer->m_pin3d.EnableAlphaBlend(1, false);
+        g_pplayer->m_pin3d.EnableAlphaBlend(false);
         pd3dDevice->basicShader->SetTexture("Texture0",image);
         pd3dDevice->basicShader->SetTechnique("basic_with_texture");
     }
@@ -426,7 +426,7 @@ void Spinner::RenderStatic(RenderDevice* pd3dDevice)
    mat.m_fEdge=1.0f;
    pd3dDevice->basicShader->SetMaterial(&mat);
    pd3dDevice->basicShader->SetTechnique("basic_without_texture");
-   ppin3d->EnableAlphaBlend(1,false);
+   ppin3d->EnableAlphaBlend(false);
 
    pd3dDevice->basicShader->Begin(0);
    pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, bracketVertexBuffer, 0, spinnerBracketNumVertices, bracketIndexBuffer, 0, spinnerBracketNumFaces );

@@ -272,15 +272,18 @@ void Plunger::PostRenderStatic(RenderDevice* pd3dDevice)
 
      Texture *pin = m_ptable->GetImage(m_d.m_szImage);
 	 if(pin)
+     {
          pd3dDevice->basicShader->SetTexture("Texture0",pin);
-
+         pd3dDevice->basicShader->PerformAlphaTest(true);
+         pd3dDevice->basicShader->SetAlphaTestValue(128.0f / 255.0f);
+     }
 	 if ( renderNewPlunger )
      {
          //render a simple rectangle as an embedded alpha ramp plunger ;)
 //            D3DXVECTOR4 color(1.0f,1.0f,1.0f,1.0f);
 //            pd3dDevice->basicShader->Core()->SetVector("cBase",&color);
          pd3dDevice->basicShader->SetTechnique("basic_with_texture");
-         ppin3d->EnableAlphaBlend( 1, false );
+         ppin3d->EnableAlphaBlend( false );
          //ppin3d->SetTextureFilter ( 0, TEXTURE_MODE_TRILINEAR );
          pd3dDevice->basicShader->Begin(0);
          pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, frame*4, 4, indexBuffer, 0, 6);
@@ -293,7 +296,7 @@ void Plunger::PostRenderStatic(RenderDevice* pd3dDevice)
 //                 D3DXVECTOR4 color(1.0f,1.0f,1.0f,1.0f);
 //                 pd3dDevice->basicShader->Core()->SetVector("cBase",&color);
              pd3dDevice->basicShader->SetTechnique("basic_with_texture");
-             ppin3d->EnableAlphaBlend( 1, false );
+             ppin3d->EnableAlphaBlend( false );
              //ppin3d->SetTextureFilter ( 0, TEXTURE_MODE_TRILINEAR );
          }
          else

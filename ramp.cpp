@@ -2022,7 +2022,7 @@ void Ramp::RenderRamp( RenderDevice *pd3dDevice, Material *mat )
       if (!dynamicVertexBuffer || dynamicVertexBufferRegenerate)
          GenerateVertexBuffer(pd3dDevice);
 
-      ppin3d->EnableAlphaBlend( 1, false );
+      ppin3d->EnableAlphaBlend( false );
       pd3dDevice->basicShader->PerformAlphaTest(true);
       pd3dDevice->basicShader->SetAlphaTestValue(1.0f / 255.0f);
 

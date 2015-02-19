@@ -59,7 +59,7 @@ public:
 	void SetTextureFilter(const int TextureNum, const int Mode) const;
 	
 	void EnableAlphaTestReference(const DWORD alphaRefValue) const;
-    void EnableAlphaBlend(const DWORD alphaRefValue, const bool additiveBlending) const;
+    void EnableAlphaBlend(const bool additiveBlending) const;
     void DisableAlphaBlend() const;
 
     void DrawBackground();

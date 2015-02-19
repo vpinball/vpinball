@@ -229,11 +229,13 @@ void Textbox::PostRenderStatic(RenderDevice* pd3dDevice)
 	else
 		if (m_texture)
 		{
-			g_pplayer->m_pin3d.EnableAlphaBlend(0x80, false);
+            g_pplayer->m_pin3d.EnableAlphaTestReference(0x80);
+			g_pplayer->m_pin3d.EnableAlphaBlend(false);
 
 			g_pplayer->Spritedraw(x, y, width, height, 0xFFFFFFFF, pd3dDevice->m_texMan.LoadTexture(m_texture), m_d.m_intensity_scale);
 
 			g_pplayer->m_pin3d.DisableAlphaBlend();
+            pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE,FALSE);
 		}
 
 	if(g_pplayer->m_ptable->m_tblMirrorEnabled)
