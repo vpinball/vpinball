@@ -124,12 +124,11 @@ enum SaveDirtyState
    eSaveDirty
 };
 
-#define MY_D3DFVF_TEX					(D3DFVF_XYZ | D3DFVF_TEX1)
+#define MY_D3DFVF_TEX					0
+#define MY_D3DFVF_NOTEX2_VERTEX         1
+#define MY_D3DTRANSFORMED_NOTEX2_VERTEX 2 //!! delete
 
-#define MY_D3DFVF_NOTEX2_VERTEX         (D3DFVF_XYZ    | D3DFVF_NORMAL                    | D3DFVF_TEX1)
-#define MY_D3DTRANSFORMED_NOTEX2_VERTEX (D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_SPECULAR | D3DFVF_TEX1) //!! delete // RHW 'mode' abused to not trigger vertex shader
-
-class Vertex3D_TexelOnly // for rendering, uses MY_D3DFVF_NOLIGHTING_VERTEX
+class Vertex3D_TexelOnly // for rendering, uses MY_D3DFVF_TEX
 {
 public:
    // Position
