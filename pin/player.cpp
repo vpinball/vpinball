@@ -1998,7 +1998,7 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
 		{
 			Ball * const pball = m_vball[i];
 
-			if (pball->m_dynamic > 0 && pball->m_coll.obj && pball->m_coll.hittime <= hittime) // find balls with hit objects and minimum time			
+			if (pball->m_dynamic > 0 && pball->m_coll.obj && pball->m_coll.hittime <= hittime) // find balls with hit objects and minimum time
 			{
 				// now collision, contact and script reactions on active ball (object)+++++++++
 				HitObject * const pho = pball->m_coll.obj;// object that ball hit in trials
@@ -2033,7 +2033,7 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
 #ifdef _DEBUGPHYSICS
 								c_staticcnt++;
 #endif
-								pball->m_vel.x = pball->m_vel.y = pball->m_vel.z = 0.f; //quench the remaing velocity and set ...
+								pball->m_vel.x = pball->m_vel.y = pball->m_vel.z = 0.f; //quench the remaining velocity and set ...
 							}
 						}
 					}
@@ -2058,6 +2058,22 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
             m_contacts[i].obj->Contact(m_contacts[i], hittime);
 
         m_contacts.clear();
+
+		// hacky killing of ball spin on resting balls
+		for (unsigned i=0; i < m_vball.size(); i++)
+		{
+			Ball * const pball = m_vball[i];
+			if (pball->m_coll.hitRigid && (pball->m_coll.hitdistance < (float)PHYS_TOUCH)) 
+			{
+				const float mag = pball->m_vel.x*pball->m_vel.x + pball->m_vel.y*pball->m_vel.y; // values below are copy pasted from above
+				if (pball->m_drsq < 8.0e-5f && mag < 1.0e-3f && fabsf(pball->m_vel.z) < 0.2f
+					&& pball->m_angularmomentum.Length() < 0.9f)
+				{
+					pball->m_angularmomentum = Vertex3Ds(0,0,0);
+					pball->m_angularvelocity = Vertex3Ds(0,0,0);
+				}
+			}
+		}
 
 		dtime -= hittime;	//new delta .. i.e. time remaining
 
