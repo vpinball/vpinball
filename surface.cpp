@@ -924,7 +924,6 @@ void Surface::RenderSlingshots(RenderDevice* pd3dDevice)
 
    if ( ! m_d.m_fSideVisible )
       return;
-   pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelDeclaration );
 
    Material *mat = m_ptable->GetMaterial( m_d.m_szSlingShotMaterial);
    pd3dDevice->basicShader->SetMaterial(mat);
@@ -938,15 +937,13 @@ void Surface::RenderSlingshots(RenderDevice* pd3dDevice)
       pd3dDevice->basicShader->SetTechnique("basic_without_texture");
 
       pd3dDevice->basicShader->Begin(0);
-      pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, slingshotVBuffer, i*24, 24, slingIBuffer, 0, 36);
+      pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, slingshotVBuffer, i*24, 24, slingIBuffer, 0, 36);
       pd3dDevice->basicShader->End();
    }
 }
 
 void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
 {
-    pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelDeclaration );
-
     g_pplayer->m_pin3d.EnableAlphaBlend(1,false);
     pd3dDevice->basicShader->PerformAlphaTest(true);
     pd3dDevice->basicShader->SetAlphaTestValue(128.0f / 255.0f);
@@ -980,7 +977,7 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
 
         // combine drawcalls into one (hopefully faster)
         pd3dDevice->basicShader->Begin(0);
-        pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, sideVBuffer, 0, numVertices*4, sideIBuffer, 0, numVertices*6);
+        pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, sideVBuffer, 0, numVertices*4, sideIBuffer, 0, numVertices*6);
         pd3dDevice->basicShader->End();  
     }
 
@@ -1012,7 +1009,7 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
        }
 
        pd3dDevice->basicShader->Begin(0);
-       pd3dDevice->DrawPrimitiveVB( D3DPT_TRIANGLELIST, topVBuffer, !fDrop ? 0 : 3*numPolys, numPolys*3);
+       pd3dDevice->DrawPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, topVBuffer, !fDrop ? 0 : 3*numPolys, numPolys*3);
        pd3dDevice->basicShader->End();  
     }
 

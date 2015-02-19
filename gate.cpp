@@ -415,8 +415,6 @@ void Gate::UpdateWire( RenderDevice *pd3dDevice )
 
 void Gate::RenderObject( RenderDevice* pd3dDevice)
 {
-    pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelDeclaration );
-
     Material *mat = m_ptable->GetMaterial( m_d.m_szMaterial);
     pd3dDevice->basicShader->SetMaterial(mat);
 
@@ -430,14 +428,14 @@ void Gate::RenderObject( RenderDevice* pd3dDevice)
     {
         // render bracket
         pd3dDevice->basicShader->Begin(0);
-        pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, bracketVertexBuffer, 0, gateBracketNumVertices, bracketIndexBuffer, 0, gateBracketNumFaces );
+        pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, bracketVertexBuffer, 0, gateBracketNumVertices, bracketIndexBuffer, 0, gateBracketNumFaces );
         pd3dDevice->basicShader->End();
     }
 
     UpdateWire(pd3dDevice);
     // render wire
     pd3dDevice->basicShader->Begin(0);
-    pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, wireVertexBuffer, 0, gateWireNumVertices, wireIndexBuffer, 0, gateWireNumFaces);
+    pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, wireVertexBuffer, 0, gateWireNumVertices, wireIndexBuffer, 0, gateWireNumFaces);
     pd3dDevice->basicShader->End();
 }
 

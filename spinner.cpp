@@ -314,7 +314,6 @@ void Spinner::PostRenderStatic(RenderDevice* pd3dDevice)
         return;
 
     Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-    pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelDeclaration );
 
     Material *mat = m_ptable->GetMaterial( m_d.m_szMaterial);
     pd3dDevice->basicShader->SetMaterial(mat);
@@ -336,7 +335,7 @@ void Spinner::PostRenderStatic(RenderDevice* pd3dDevice)
        pd3dDevice->basicShader->SetTechnique("basic_without_texture");
     }
     pd3dDevice->basicShader->Begin(0);
-    pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, plateVertexBuffer, 0, spinnerPlateNumVertices, plateIndexBuffer, 0, spinnerPlateNumFaces);
+    pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, plateVertexBuffer, 0, spinnerPlateNumVertices, plateIndexBuffer, 0, spinnerPlateNumFaces);
     pd3dDevice->basicShader->End();
 
 //    g_pplayer->UpdateBasicShaderMatrix();
@@ -416,7 +415,6 @@ void Spinner::RenderStatic(RenderDevice* pd3dDevice)
    if(!m_d.m_fShowBracket || !m_d.m_fVisible) return;
 
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-   pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelDeclaration );
 
    Material mat;
    mat.m_bIsMetal = true;
@@ -431,7 +429,7 @@ void Spinner::RenderStatic(RenderDevice* pd3dDevice)
    ppin3d->EnableAlphaBlend(1,false);
 
    pd3dDevice->basicShader->Begin(0);
-   pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, bracketVertexBuffer, 0, spinnerBracketNumVertices, bracketIndexBuffer, 0, spinnerBracketNumFaces );
+   pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, bracketVertexBuffer, 0, spinnerBracketNumVertices, bracketIndexBuffer, 0, spinnerBracketNumFaces );
    pd3dDevice->basicShader->End();
 }
 

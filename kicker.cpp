@@ -306,7 +306,6 @@ void Kicker::RenderStatic(RenderDevice* pd3dDevice)
    {
       const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
-      pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelDeclaration );
       Vertex3D_NoTex2 *buf = new Vertex3D_NoTex2[kickerPlateNumVertices];
       for ( unsigned int i=0;i<kickerPlateNumVertices;i++ )
       {
@@ -316,8 +315,8 @@ void Kicker::RenderStatic(RenderDevice* pd3dDevice)
          buf[i].nx = kickerPlate[i].nx;
          buf[i].ny = kickerPlate[i].ny;
          buf[i].nz = kickerPlate[i].nz;
-         buf[i].tu=0.0f;
-         buf[i].tv=0.0f;
+         buf[i].tu = 0.0f;
+         buf[i].tv = 0.0f;
       }
       Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
       pd3dDevice->basicShader->SetMaterial(mat);
@@ -338,7 +337,7 @@ void Kicker::RenderStatic(RenderDevice* pd3dDevice)
          //pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", true);
          //pd3dDevice->basicShader->Core()->SetFloat("fAlphaTestValue", 128.0f/255.0f);
          pd3dDevice->basicShader->Begin(0);
-         pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, vertexBuffer, 0, numVertices, indexBuffer, 0, numFaces);
+         pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, numVertices, indexBuffer, 0, numFaces);
          pd3dDevice->basicShader->End();
          //pd3dDevice->basicShader->Core()->SetBool("bPerformAlphaTest", false);
          g_pplayer->m_pin3d.DisableAlphaBlend();

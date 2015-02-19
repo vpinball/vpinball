@@ -283,7 +283,7 @@ void Plunger::PostRenderStatic(RenderDevice* pd3dDevice)
          ppin3d->EnableAlphaBlend( 1, false );
          //ppin3d->SetTextureFilter ( 0, TEXTURE_MODE_TRILINEAR );
          pd3dDevice->basicShader->Begin(0);
-         pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, vertexBuffer, frame*4, 4, indexBuffer, 0, 6);
+         pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, frame*4, 4, indexBuffer, 0, 6);
          pd3dDevice->basicShader->End();
      }
      else
@@ -302,7 +302,7 @@ void Plunger::PostRenderStatic(RenderDevice* pd3dDevice)
              pd3dDevice->basicShader->SetTechnique("basic_without_texture");
          }
          pd3dDevice->basicShader->Begin(0);
-         pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, vertexBuffer, frame*(16*PLUNGEPOINTS1), 16*PLUNGEPOINTS1, indexBuffer, 0, 16*6*(PLUNGEPOINTS1-1));
+         pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, frame*(16*PLUNGEPOINTS1), 16*PLUNGEPOINTS1, indexBuffer, 0, 16*6*(PLUNGEPOINTS1-1));
          pd3dDevice->basicShader->End();
      }
 }

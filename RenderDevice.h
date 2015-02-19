@@ -197,10 +197,11 @@ public:
    D3DTexture* UploadTexture(BaseTexture* surf, int *pTexWidth=NULL, int *pTexHeight=NULL);
    void UpdateTexture(D3DTexture* tex, BaseTexture* surf);
 
-   void SetRenderState( const RenderStates p1, const DWORD p2 );
-   void SetTextureFilter(DWORD texUnit, DWORD mode);
-   void SetTextureAddressMode(DWORD texUnit, TextureAddressMode mode);
-   void SetTextureStageState(DWORD stage, D3DTEXTURESTAGESTATETYPE type, DWORD value);
+   void SetRenderState( const RenderStates p1, DWORD p2 );
+   void SetTextureFilter(const DWORD texUnit, DWORD mode);
+   void SetTextureAddressMode(const DWORD texUnit, const TextureAddressMode mode);
+   void SetTextureStageState(const DWORD stage, const D3DTEXTURESTAGESTATETYPE type, const DWORD value);
+   void SetSamplerState(const DWORD Sampler, const D3DSAMPLERSTATETYPE Type, const DWORD Value);
 
    void CreateVertexBuffer(const unsigned int numVerts, const DWORD usage, const DWORD fvf, VertexBuffer **vBuffer );
    void CreateIndexBuffer(const unsigned int numIndices, const DWORD usage, const IndexBuffer::Format format, IndexBuffer **idxBuffer);
@@ -212,8 +213,8 @@ public:
 
    void DrawPrimitive(const D3DPRIMITIVETYPE type, const DWORD fvf, const void* vertices, const DWORD vertexCount);
    void DrawIndexedPrimitive(const D3DPRIMITIVETYPE type, const DWORD fvf, const void* vertices, const DWORD vertexCount, const WORD* indices, const DWORD indexCount);
-   void DrawPrimitiveVB(const D3DPRIMITIVETYPE type, VertexBuffer* vb, const DWORD startVertex, const DWORD vertexCount);
-   void DrawIndexedPrimitiveVB(const D3DPRIMITIVETYPE type, VertexBuffer* vb, const DWORD startVertex, const DWORD vertexCount, IndexBuffer* ib, const DWORD startIndex, const DWORD indexCount);
+   void DrawPrimitiveVB(const D3DPRIMITIVETYPE type, const DWORD fvf, VertexBuffer* vb, const DWORD startVertex, const DWORD vertexCount);
+   void DrawIndexedPrimitiveVB(const D3DPRIMITIVETYPE type, const DWORD fvf, VertexBuffer* vb, const DWORD startVertex, const DWORD vertexCount, IndexBuffer* ib, const DWORD startIndex, const DWORD indexCount);
 
    void SetViewport( const ViewPort* );
    void GetViewport( ViewPort* );
@@ -242,7 +243,8 @@ public:
       {
          CHECKD3D(m_pD3DDevice->SetVertexDeclaration(declaration));
          currentDeclaration = declaration;
-		 currentFVF = 0;
+
+	 m_curStateChanges++;
       }
    }
 
@@ -251,7 +253,7 @@ public:
        return m_pD3DDevice;
    }
 
-   Material materialStateCache;
+   Material materialStateCache; // for caching
 
 private:
 #ifdef USE_D3D9EX
@@ -275,14 +277,15 @@ private:
 
    static const DWORD RENDER_STATE_CACHE_SIZE=256;
    static const DWORD TEXTURE_STATE_CACHE_SIZE=256;
+   static const DWORD TEXTURE_SAMPLER_CACHE_SIZE=14;
 
-   DWORD renderStateCache[RENDER_STATE_CACHE_SIZE];
-   DWORD textureStateCache[8][TEXTURE_STATE_CACHE_SIZE];
+   DWORD renderStateCache[RENDER_STATE_CACHE_SIZE];          // for caching
+   DWORD textureStateCache[8][TEXTURE_STATE_CACHE_SIZE];     // dto.
+   DWORD textureSamplerCache[8][TEXTURE_SAMPLER_CACHE_SIZE]; // dto.
 
-   VertexBuffer* m_curVertexBuffer;     // for caching
-   IndexBuffer* m_curIndexBuffer;       // for caching
-   VertexDeclaration *currentDeclaration;
-   DWORD currentFVF;
+   VertexBuffer* m_curVertexBuffer;       // for caching
+   IndexBuffer* m_curIndexBuffer;         // dto.
+   VertexDeclaration *currentDeclaration; // dto.
 
    DWORD m_maxaniso;
    bool m_mag_aniso;
@@ -305,6 +308,7 @@ public:
    static VertexDeclaration* m_pVertexTexelDeclaration;
    static VertexDeclaration* m_pVertexNormalTexelDeclaration;
    //static VertexDeclaration* m_pVertexNormalTexelTexelDeclaration;
+   static VertexDeclaration* m_pVertexTrafoTexelDeclaration;
 };
 
 class Shader 

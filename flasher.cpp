@@ -1268,8 +1268,6 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
    if(!m_d.m_IsVisible) 
       return;
 
-   pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexTexelDeclaration );
-
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
    Texture * const pinA = m_ptable->GetImage(m_d.m_szImageA);
    Texture * const pinB = m_ptable->GetImage(m_d.m_szImageB);
@@ -1336,7 +1334,7 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
 
    pd3dDevice->basicShader->Begin(0);
-   pd3dDevice->DrawPrimitiveVB( D3DPT_TRIANGLELIST, dynamicVertexBuffer, 0, numPolys*3);
+   pd3dDevice->DrawPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_TEX, dynamicVertexBuffer, 0, numPolys*3);
    pd3dDevice->basicShader->End();
 
    pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);

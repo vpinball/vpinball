@@ -549,8 +549,6 @@ void Flipper::PostRenderStatic(RenderDevice* pd3dDevice)
     if (m_phitflipper == NULL && !m_d.m_fVisible)
         return;
     
-    pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelDeclaration );
-
     pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE);
     pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
     pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
@@ -569,9 +567,9 @@ void Flipper::PostRenderStatic(RenderDevice* pd3dDevice)
     matTrafo.Multiply(matTemp, matTrafo);
     g_pplayer->UpdateBasicShaderMatrix(matTrafo);
     
-    pd3dDevice->basicShader->Begin(0);
     // render flipper
-    pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, vertexBuffer, 0, 108, indexBuffer, 0, numIndices );
+    pd3dDevice->basicShader->Begin(0);
+    pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, 108, indexBuffer, 0, numIndices );
     pd3dDevice->basicShader->End();  
 
     // render rubber
@@ -581,7 +579,7 @@ void Flipper::PostRenderStatic(RenderDevice* pd3dDevice)
        pd3dDevice->basicShader->SetMaterial(mat);
 
        pd3dDevice->basicShader->Begin(0);
-       pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, vertexBuffer, 108, 108, indexBuffer, 0, numIndices );
+       pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 108, 108, indexBuffer, 0, numIndices );
        pd3dDevice->basicShader->End();  
     }
 
@@ -602,9 +600,7 @@ void Flipper::RenderSetup(RenderDevice* pd3dDevice)
     const float anglerad2 = ANGTORAD(m_d.m_EndAngle);
 
     if (!vertexBuffer)
-    {
         pd3dDevice->CreateVertexBuffer(numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer);
-    }
 
     unsigned long ofs=0;
 

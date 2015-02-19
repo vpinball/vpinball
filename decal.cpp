@@ -519,8 +519,6 @@ void Decal::RenderStatic(RenderDevice* pd3dDevice)
 
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
-   pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelDeclaration );
-
    Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
    pd3dDevice->basicShader->SetMaterial(mat);
 
@@ -558,7 +556,7 @@ void Decal::RenderStatic(RenderDevice* pd3dDevice)
    }
 
    pd3dDevice->basicShader->Begin(0);
-   pd3dDevice->DrawPrimitiveVB( D3DPT_TRIANGLEFAN, vertexBuffer, 0, 4 );
+   pd3dDevice->DrawPrimitiveVB( D3DPT_TRIANGLEFAN, ( m_fBackglass && GetPTable()->GetDecalsEnabled() ) ? MY_D3DTRANSFORMED_NOTEX2_VERTEX : MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, 4 );
    pd3dDevice->basicShader->End();
 
    pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);

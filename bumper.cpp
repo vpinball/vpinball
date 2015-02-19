@@ -377,7 +377,7 @@ void Bumper::RenderBase(RenderDevice *pd3dDevice, Material *baseMaterial )
    pd3dDevice->basicShader->SetAlphaTestValue(128.0f / 255.0f);
 
    pd3dDevice->basicShader->Begin(0);
-   pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, baseVertexBuffer, 0, bumperBaseNumVertices, baseIndexBuffer, 0, bumperBaseNumFaces );
+   pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, baseVertexBuffer, 0, bumperBaseNumVertices, baseIndexBuffer, 0, bumperBaseNumFaces );
    pd3dDevice->basicShader->End();
    g_pplayer->m_pin3d.DisableAlphaBlend();
 }
@@ -391,7 +391,7 @@ void Bumper::RenderSocket(RenderDevice *pd3dDevice, Material *baseMaterial )
    pd3dDevice->basicShader->SetAlphaTestValue(128.0f / 255.0f);
 
    pd3dDevice->basicShader->Begin(0);
-   pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, socketVertexBuffer, 0, bumperSocketNumVertices, socketIndexBuffer, 0, bumperSocketNumFaces );
+   pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, socketVertexBuffer, 0, bumperSocketNumVertices, socketIndexBuffer, 0, bumperSocketNumFaces );
    pd3dDevice->basicShader->End();
    g_pplayer->m_pin3d.DisableAlphaBlend();
 }
@@ -405,7 +405,7 @@ void Bumper::RenderCap( RenderDevice *pd3dDevice, Material *capMaterial )
    pd3dDevice->basicShader->SetAlphaTestValue(128.0f / 255.0f);
 
    pd3dDevice->basicShader->Begin(0);
-   pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, capVertexBuffer, 0, bumperCapNumVertices, capIndexBuffer, 0, bumperCapNumFaces );
+   pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, capVertexBuffer, 0, bumperCapNumVertices, capIndexBuffer, 0, bumperCapNumFaces );
    pd3dDevice->basicShader->End();
    g_pplayer->m_pin3d.DisableAlphaBlend();
 }
@@ -420,8 +420,6 @@ void Bumper::PostRenderStatic(RenderDevice* pd3dDevice)
    const U32 old_time_msec = (m_d.m_time_msec < g_pplayer->m_time_msec) ? m_d.m_time_msec : g_pplayer->m_time_msec;
    m_d.m_time_msec = g_pplayer->m_time_msec;
    const float diff_time_msec = (float)(g_pplayer->m_time_msec-old_time_msec);
-
-   pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelDeclaration );
 
    Material *mat = 0;
 
@@ -468,7 +466,7 @@ void Bumper::PostRenderStatic(RenderDevice* pd3dDevice)
       pd3dDevice->basicShader->PerformAlphaTest(false);
       pd3dDevice->basicShader->Begin(0);
       // render ring
-      pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, ringVertexBuffer, 0, bumperRingNumVertices, ringIndexBuffer, 0, bumperRingNumFaces );
+      pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, ringVertexBuffer, 0, bumperRingNumVertices, ringIndexBuffer, 0, bumperRingNumFaces );
       pd3dDevice->basicShader->End();
 
       mat = m_ptable->GetMaterial(m_d.m_szSkirtMaterial);
@@ -635,7 +633,6 @@ void Bumper::RenderSetup(RenderDevice* pd3dDevice )
 
 void Bumper::RenderStatic(RenderDevice* pd3dDevice)
 {
-   pd3dDevice->SetVertexDeclaration( pd3dDevice->m_pVertexNormalTexelDeclaration );
    if (m_d.m_fBaseVisible)
    {
       Material *mat = m_ptable->GetMaterial(m_d.m_szSkirtMaterial);
