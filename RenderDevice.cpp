@@ -1136,13 +1136,18 @@ void Shader::SetTexture(const D3DXHANDLE texelName, Texture *texel)
        currentTexture[idx] = NULL; // invalidate the cache
 
        m_shader->SetTexture(texelName, NULL);
-       return;
+
+	   m_renderDevice->m_curTextureChanges++;
+
+	   return;
    }
 
    if(texel->m_pdsBuffer!=currentTexture[idx])
    {
        currentTexture[idx] = texel->m_pdsBuffer;
        m_shader->SetTexture(texelName, m_renderDevice->m_texMan.LoadTexture(texel->m_pdsBuffer));
+
+	   m_renderDevice->m_curTextureChanges++;
    }
 }
 
@@ -1154,6 +1159,8 @@ void Shader::SetTexture(const D3DXHANDLE texelName, D3DTexture *texel)
    currentTexture[idx] = NULL; // direct set of device tex invalidates the cache
 
    m_shader->SetTexture(texelName, texel);
+
+   m_renderDevice->m_curTextureChanges++;
 }
 
 void Shader::SetMaterial( const Material * const mat )

@@ -244,7 +244,7 @@ public:
          CHECKD3D(m_pD3DDevice->SetVertexDeclaration(declaration));
          currentDeclaration = declaration;
 
-	 m_curStateChanges++;
+		 m_curStateChanges++;
       }
    }
 
@@ -283,7 +283,7 @@ private:
    DWORD textureStateCache[8][TEXTURE_STATE_CACHE_SIZE];     // dto.
    DWORD textureSamplerCache[8][TEXTURE_SAMPLER_CACHE_SIZE]; // dto.
 
-   VertexBuffer* m_curVertexBuffer;       // for caching
+   VertexBuffer* m_curVertexBuffer;     // for caching
    IndexBuffer* m_curIndexBuffer;         // dto.
    VertexDeclaration *currentDeclaration; // dto.
 
@@ -295,12 +295,12 @@ private:
    bool m_force_aniso;
    bool m_compress_textures;
 
+public:
    // performance counters
    unsigned m_curDrawCalls, m_frameDrawCalls;
    unsigned m_curStateChanges, m_frameStateChanges;
    unsigned m_curTextureChanges, m_frameTextureChanges;
 
-public:
    Shader *basicShader;
    Shader *DMDShader;
    TextureManager m_texMan;
