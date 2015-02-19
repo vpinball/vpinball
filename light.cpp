@@ -1729,6 +1729,7 @@ void Light::UpdatePropertyPanes()
         EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_SHOW_BULB_MESH), FALSE);
         EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_SCALE_BULB_MESH), FALSE);
         EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_BULB_MODULATE_VS_ADD), FALSE);
+        EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_REFLECT_ON_BALLS), FALSE);
         EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_HALO_EDIT), FALSE);
         EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_IMAGE_MODE), TRUE);
         EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,DISPID_Image), TRUE);
@@ -1738,6 +1739,7 @@ void Light::UpdatePropertyPanes()
         EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_SHOW_BULB_MESH), TRUE);
         EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_SCALE_BULB_MESH), TRUE);
         EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_BULB_MODULATE_VS_ADD), TRUE);
+        EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_REFLECT_ON_BALLS), TRUE);
         EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_HALO_EDIT), TRUE);
         EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_IMAGE_MODE), FALSE);
         EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,DISPID_Image), FALSE);
