@@ -528,7 +528,7 @@ void Trigger::PostRenderStatic(RenderDevice* pd3dDevice)
 	if (!m_d.m_fVisible || m_d.m_shape==TriggerNone)
         return;
     
-	const float animLimit = ( m_d.m_shape==TriggerStar ) ? 13.0f : 38.0f;
+	const float animLimit = ( m_d.m_shape==TriggerStar ) ? m_d.m_radius/4.7f : 29.0f;
 	const float limit = animLimit*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
     pd3dDevice->basicShader->SetTechnique("basic_without_texture");
