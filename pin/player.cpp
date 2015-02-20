@@ -2025,7 +2025,7 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
 					if (pball->m_coll.hitRigid && (pball->m_coll.hitdistance < (float)PHYS_TOUCH)) //rigid and close distance contacts
 					{
 						const float mag = pball->m_vel.x*pball->m_vel.x + pball->m_vel.y*pball->m_vel.y; // values below are taken from simulation
-						if (pball->m_drsq < 8.0e-5f && mag < 1.0e-3f && fabsf(pball->m_vel.z) < 0.2f)
+						if (pball->m_drsq < 8.0e-5f && mag < 1.0e-3f*m_ptable->m_Gravity*m_ptable->m_Gravity/GRAVITYCONST/GRAVITYCONST && fabsf(pball->m_vel.z) < 0.2f*m_ptable->m_Gravity/GRAVITYCONST)
 						{
 							if(--pball->m_dynamic <= 0)		//... ball static, cancels next gravity increment
 							{									// m_dynamic is cleared in ball gravity section
@@ -2066,8 +2066,8 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
 			if (pball->m_coll.hitRigid && (pball->m_coll.hitdistance < (float)PHYS_TOUCH)) 
 			{
 				const float mag = pball->m_vel.x*pball->m_vel.x + pball->m_vel.y*pball->m_vel.y; // values below are copy pasted from above
-				if (pball->m_drsq < 8.0e-5f && mag < 1.0e-3f && fabsf(pball->m_vel.z) < 0.2f
-					&& pball->m_angularmomentum.Length() < 0.9f)
+				if (pball->m_drsq < 8.0e-5f && mag < 1.0e-3f*m_ptable->m_Gravity*m_ptable->m_Gravity/GRAVITYCONST/GRAVITYCONST && fabsf(pball->m_vel.z) < 0.2f*m_ptable->m_Gravity/GRAVITYCONST
+					&& pball->m_angularmomentum.Length() < 0.9f*m_ptable->m_Gravity/GRAVITYCONST)
 				{
 					pball->m_angularmomentum = Vertex3Ds(0,0,0);
 					pball->m_angularvelocity = Vertex3Ds(0,0,0);
