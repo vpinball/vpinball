@@ -213,7 +213,6 @@
 #define IDC_PLAY                        206
 #define IDC_DELETE                      207
 #define IDC_EXPAND                      207
-#define IDB_TRIGGER                     208
 #define IDC_RENAME                      208
 #define IDC_PICTUREPREVIEW              209
 #define IDC_EDIT                        209
@@ -224,10 +223,7 @@
 #define IDC_SNDTOBG                     210
 #define IDC_CENTERX                     211
 #define IDC_CENTERY                     212
-#define IDB_TIMER                       213
-#define IDB_FLIPPER                     214
 #define IDC_SCALEFACTOR                 214
-#define IDB_LIGHT                       215
 #define IDR_VPACCEL                     216
 #define IDC_PROGRESS2                   216
 #define IDC_SCALEY                      216
@@ -241,7 +237,6 @@
 #define IDD_ROTATE                      222
 #define IDR_MULTIMENU                   222
 #define IDD_SCALE                       223
-#define IDB_WHITE                       227
 #define IDD_PROGRESS                    228
 #define IDD_PROPTABLE                   229
 #define IDD_PROPLIGHT                   231
