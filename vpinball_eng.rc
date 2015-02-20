@@ -2150,13 +2150,8 @@ END
 //
 
 IDB_TOOLBAR             BITMAP                  "res\\toolbar.bmp"
-IDB_TRIGGER             BITMAP                  "res\\trigger.bmp"
-IDB_TIMER               BITMAP                  "res\\timer.bmp"
-IDB_FLIPPER             BITMAP                  "res\\flipper.bmp"
-IDB_LIGHT               BITMAP                  "res\\light.bmp"
 IDB_BALL                BITMAP                  "res\\ball.bmp"
 IDB_ENV                 BITMAP                  "res\\envmap.bmp"
-IDB_WHITE               BITMAP                  "res\\white.bmp"
 IDB_LOGO                BITMAP                  "res\\logo.bmp"
 IDB_CHEVRON             BITMAP                  "res\\chevron.bmp"
 IDB_BUMPERBASE          BITMAP                  "res\\bumperbase.bmp"

@@ -254,7 +254,7 @@ void Kicker::RenderSetup(RenderDevice* pd3dDevice)
       }
       vertexBuffer->unlock();
    }
-
+   else
    if( m_d.m_kickertype == KickerHole )
    {
       texture.CreateFromResource(IDB_KICKER_HOLE_WOOD);
