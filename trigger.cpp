@@ -17,6 +17,7 @@ Trigger::Trigger()
    triggerIndexBuffer=NULL;
    triggerVertices=NULL;
    m_menuid = IDR_SURFACEMENU;
+   m_propVisual = NULL;
 }
 
 Trigger::~Trigger()
@@ -1248,8 +1249,8 @@ void Trigger::GetDialogPanes(Vector<PropertyPane> *pvproppane)
    pproppane = new PropertyPane(IDD_PROP_NAME, NULL);
    pvproppane->AddElement(pproppane);
 
-   pproppane = new PropertyPane(IDD_PROPTRIGGER_VISUALS, IDS_VISUALS);
-   pvproppane->AddElement(pproppane);
+   m_propVisual = new PropertyPane(IDD_PROPTRIGGER_VISUALS, IDS_VISUALS);
+   pvproppane->AddElement(m_propVisual);
 
    pproppane = new PropertyPane(IDD_PROPLIGHT_POSITION, IDS_POSITION);
    pvproppane->AddElement(pproppane);
@@ -1276,4 +1277,29 @@ STDMETHODIMP Trigger::put_TriggerShape(TriggerShape newVal)
    STOPUNDO
 	   UpdateEditorView();
       return S_OK;
+}
+
+void Trigger::UpdatePropertyPanes()
+{
+    if ( m_propVisual==NULL )
+        return;
+
+    if ( m_d.m_shape==TriggerStar )
+    {
+        EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_STAR_RADIUS_EDIT), TRUE);
+        EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_ROTATION_EDIT), TRUE);
+        EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_RINGSPEED_EDIT), TRUE);
+    }
+    else if( m_d.m_shape==TriggerWire)
+    {
+        EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_STAR_RADIUS_EDIT), FALSE);
+        EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_ROTATION_EDIT), TRUE);
+        EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_RINGSPEED_EDIT), TRUE);
+    }
+    else
+    {
+        EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_STAR_RADIUS_EDIT), FALSE);
+        EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_ROTATION_EDIT), FALSE);
+        EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_RINGSPEED_EDIT), FALSE);
+    }
 }
