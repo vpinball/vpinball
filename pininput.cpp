@@ -745,17 +745,17 @@ void PinInput::FireKeyEvent( const int dispid, const int key )
 	m_PreviousKeys = tmp;
     if ( g_pplayer->cameraMode )
     {
-        if (mkey == g_pplayer->m_rgKeys[eLeftFlipperKey])
+        if (mkey == g_pplayer->m_rgKeys[eLeftFlipperKey] && dispid == DISPID_GameEvents_KeyDown)
             g_pplayer->UpdateBackdropSettings(false);
-        else if (mkey == g_pplayer->m_rgKeys[eRightFlipperKey])
+        else if (mkey == g_pplayer->m_rgKeys[eRightFlipperKey] && dispid == DISPID_GameEvents_KeyDown)
             g_pplayer->UpdateBackdropSettings(true);
-        else if (mkey == g_pplayer->m_rgKeys[eRightMagnaSave])
+        else if (mkey == g_pplayer->m_rgKeys[eRightMagnaSave] && dispid == DISPID_GameEvents_KeyDown)
         {
             g_pplayer->backdropSettingActive++;
             if (g_pplayer->backdropSettingActive==9)
                 g_pplayer->backdropSettingActive=0;
         }
-        else if (mkey == g_pplayer->m_rgKeys[eLeftMagnaSave])
+        else if (mkey == g_pplayer->m_rgKeys[eLeftMagnaSave] && dispid == DISPID_GameEvents_KeyDown)
         {
             g_pplayer->backdropSettingActive--;
             if (g_pplayer->backdropSettingActive==-1)
