@@ -817,8 +817,12 @@ void Trigger::Rotate(float ang, Vertex2D *pvCenter)
        IHaveDragPoints::RotatePoints(ang, pvCenter);
    else
    {
+       GetIEditable()->BeginUndo();
+       GetIEditable()->MarkForUndo();
        m_d.m_rotation=ang;
+       GetIEditable()->EndUndo();
        UpdateEditorView();
+       GetPTable()->SetDirtyDraw();
    }
 }
 
@@ -828,10 +832,14 @@ void Trigger::Scale(float scalex, float scaley, Vertex2D *pvCenter)
        IHaveDragPoints::ScalePoints(scalex, scaley, pvCenter);
     else
     {
+        GetIEditable()->BeginUndo();
+        GetIEditable()->MarkForUndo();
         m_d.m_scaleX=scalex;
         m_d.m_scaleY=scaley;
+        GetIEditable()->EndUndo();
         UpdateEditorView();
-    }
+        GetPTable()->SetDirtyDraw();
+  }
 }
 
 void Trigger::Translate(Vertex2D *pvOffset)
@@ -901,6 +909,7 @@ HRESULT Trigger::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version
    m_ptable = ptable;
 
    br.Load();
+   UpdateEditorView();
    return S_OK;
 }
 
