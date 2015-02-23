@@ -303,6 +303,7 @@ public:
 
    Shader *basicShader;
    Shader *DMDShader;
+   Shader *FBShader;
    TextureManager m_texMan;
 
    static VertexDeclaration* m_pVertexTexelDeclaration;

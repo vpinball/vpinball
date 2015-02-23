@@ -1,5 +1,7 @@
 //!! have switch to choose if texture is weighted by diffuse/glossy or is just used raw?
 
+#define NUM_BALL_LIGHTS 0 // just to avoid having to much constant mem allocated
+
 #include "Globals.fxh"
 
 float3 cGlossy = float3(0.5, 0.5, 0.5);
@@ -9,60 +11,13 @@ float3 cClearcoat = float3(0.5, 0.5, 0.5);
 //!! Gemstones are 0.05-0.17
 //!! Metals have high specular reflectance:  0.5-1.0
 
-bool   bPerformAlphaTest = false;
-bool   bAdd_Blend;
+bool bPerformAlphaTest;
+bool bAdd_Blend;
 float3 staticColor = float3(1.,1.,1.);
 float  fAlphaTestValue = 128.0/255.0;
 
-float2 fb_inv_resolution_05;
-
 float blend_modulate_vs_add;
 
-float bloom_strength = 1.0f;
-
-sampler2D texSampler3 : TEXUNIT2 = sampler_state // AO
-{
-	Texture	  = (Texture3);
-    MIPFILTER = NONE; //!! ??
-    MAGFILTER = LINEAR;
-    MINFILTER = LINEAR;
-	ADDRESSU  = Clamp;
-	ADDRESSV  = Clamp;
-};
-
-sampler2D texSampler4 : TEXUNIT0 = sampler_state // Framebuffer tex (unfiltered)
-{
-	Texture	  = (Texture0);
-    MIPFILTER = NONE; //!! ??
-    MAGFILTER = POINT;
-    MINFILTER = POINT;
-	ADDRESSU  = Clamp;
-	ADDRESSV  = Clamp;
-};
-
-sampler2D texSampler5 : TEXUNIT0 = sampler_state // Framebuffer tex (filtered)
-{
-	Texture	  = (Texture0);
-    MIPFILTER = NONE; //!! ??
-    MAGFILTER = LINEAR;
-    MINFILTER = LINEAR;
-	ADDRESSU  = Clamp;
-	ADDRESSV  = Clamp;
-};
-
-sampler2D texSamplerBloom : TEXUNIT1 = sampler_state // Bloom tex
-{
-	Texture	  = (Texture1);
-    MIPFILTER = NONE; //!! ??
-    MAGFILTER = LINEAR;
-    MINFILTER = LINEAR;
-	ADDRESSU  = Clamp;
-	ADDRESSV  = Clamp;
-};
-
-//
-
-// vertex shader output structures 
 struct VS_OUTPUT 
 { 
    float4 pos           : POSITION; 
@@ -70,14 +25,6 @@ struct VS_OUTPUT
    float3 worldPos      : TEXCOORD1; 
    float3 normal        : TEXCOORD2;
 };
-
-struct VS_OUTPUT_2D 
-{ 
-   float4 pos           : POSITION; 
-   float2 tex0          : TEXCOORD0;
-};
-
-#include "FXAAStereoAO.fxh"
 
 //------------------------------------
 
@@ -99,17 +46,6 @@ VS_OUTPUT vs_main (float4 vPosition  : POSITION0,
    Out.tex0 = tc;
    Out.worldPos = P;
    Out.normal = N;
-   
-   return Out; 
-}
-
-VS_OUTPUT_2D vs_main_no_trafo (float4 vPosition  : POSITION0,  
-                            float2 tc         : TEXCOORD0) 
-{ 
-   VS_OUTPUT_2D Out;
-
-   Out.pos = float4(vPosition.xy,0.0f,1.0f);
-   Out.tex0 = tc;
    
    return Out; 
 }
@@ -162,10 +98,10 @@ float4 ps_main_texture(in VS_OUTPUT IN) : COLOR
 
 float  fAlpha=1.0f;
 float  fFilterAmount=1.0f;
-bool   bMultiply=false;
-bool   bAdditive=false;
-bool   bOverlay=false;
-bool   bScreen=false;
+bool bMultiply;
+bool bAdditive;
+bool bOverlay;
+bool bScreen;
 
 struct VS_SIMPLE_OUTPUT 
 { 
@@ -254,8 +190,8 @@ float3   lightCenter;
 float    maxRange;
 float    intensity = 1.0f;
 float    falloff_power = 2.0f;
-bool     imageMode;
-bool     backglassMode;
+bool imageMode;
+bool backglassMode;
 
 struct VS_LIGHT_OUTPUT 
 { 
@@ -388,124 +324,6 @@ VS_OUTPUT vs_kicker (float4 vPosition  : POSITION0,
     return Out; 
 }
 
-//
-// Framebuffer
-//
-
-float4 ps_main_fb_tonemap( in VS_OUTPUT_2D IN) : COLOR
-{
-    const float3 result = FBToneMap(tex2Dlod(texSampler5, float4(IN.tex0, 0.f,0.f)).xyz) + tex2Dlod(texSamplerBloom, float4(IN.tex0, 0.f,0.f)).xyz; //!! offset?
-    return float4(FBColorGrade(FBGamma(saturate(result))), 1.0f);
-}
-
-float4 ps_main_fb_bloom( in VS_OUTPUT_2D IN) : COLOR
-{
-    // collect clipped contribution of the 3x3 texels from original FB
-    const float3 result = (tex2Dlod(texSampler5, float4(IN.tex0, 0.f,0.f)).xyz
-                        +  tex2Dlod(texSampler5, float4(IN.tex0+fb_inv_resolution_05*2.0f, 0.f,0.f)).xyz
-                        +  tex2Dlod(texSampler5, float4(IN.tex0+float2(fb_inv_resolution_05.x*2.0f,0.0f), 0.f,0.f)).xyz
-                        +  tex2Dlod(texSampler5, float4(IN.tex0+float2(0.0f,fb_inv_resolution_05.y*2.0f), 0.f,0.f)).xyz)*0.25f; //!! offset for useAA?
-    return float4(max(FBToneMap(result)-float3(1.f,1.f,1.f), float3(0.f,0.f,0.f)), 1.0f);
-}
-
-float4 ps_main_fb_tonemap_AO( in VS_OUTPUT_2D IN) : COLOR
-{
-    const float3 result = FBToneMap(tex2Dlod(texSampler5, float4(IN.tex0, 0.f,0.f)).xyz) + tex2Dlod(texSamplerBloom, float4(IN.tex0, 0.f,0.f)).xyz; //!! offset?
-	return float4(FBColorGrade(FBGamma(saturate(result*(
-           tex2Dlod(texSampler3, float4(IN.tex0-fb_inv_resolution_05, 0.f,0.f)).x /*+ //Blur:
-
-           tex2Dlod(texSampler3, float4(IN.tex0+float2(0.0f,fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05, 0.f,0.f)).x+
-		   tex2Dlod(texSampler3, float4(IN.tex0-float2(0.0f,fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05, 0.f,0.f)).x+
-		   tex2Dlod(texSampler3, float4(IN.tex0+float2(fb_inv_resolution_05.x*2.0f,0.0f)-fb_inv_resolution_05, 0.f,0.f)).x+
-		   tex2Dlod(texSampler3, float4(IN.tex0-float2(fb_inv_resolution_05.x*2.0f,0.0f)-fb_inv_resolution_05, 0.f,0.f)).x+
-
-           tex2Dlod(texSampler3, float4(IN.tex0+float2(fb_inv_resolution_05.x*2.0f,-fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05, 0.f,0.f)).x+
-		   tex2Dlod(texSampler3, float4(IN.tex0+float2(-fb_inv_resolution_05.x*2.0f,fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05, 0.f,0.f)).x+
-		   tex2Dlod(texSampler3, float4(IN.tex0+float2(fb_inv_resolution_05.x*2.0f,fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05, 0.f,0.f)).x+
-		   tex2Dlod(texSampler3, float4(IN.tex0-float2(fb_inv_resolution_05.x*2.0f,fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05, 0.f,0.f)).x)/9.0f*/) ))), 1.0f);
-}
-
-float4 ps_main_fb_tonemap_no_filter( in VS_OUTPUT_2D IN) : COLOR
-{
-    const float3 result = FBToneMap(tex2Dlod(texSampler4, float4(IN.tex0+fb_inv_resolution_05, 0.f,0.f)).xyz) + tex2Dlod(texSamplerBloom, float4(IN.tex0, 0.f,0.f)).xyz; //!! offset?
-    return float4(FBColorGrade(FBGamma(saturate(result))), 1.0f);
-}
-
-float4 ps_main_fb_tonemap_AO_no_filter( in VS_OUTPUT_2D IN) : COLOR
-{
-	const float3 result = FBToneMap(tex2Dlod(texSampler4, float4(IN.tex0+fb_inv_resolution_05, 0.f,0.f)).xyz) + tex2Dlod(texSamplerBloom, float4(IN.tex0, 0.f,0.f)).xyz; //!! offset?
-    return float4(FBColorGrade(FBGamma(saturate(result*(
-           tex2Dlod(texSampler3, float4(IN.tex0-fb_inv_resolution_05, 0.f,0.f)).x /*+ //Blur:
-
-           tex2Dlod(texSampler3, float4(IN.tex0+float2(0.0f,fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05, 0.f,0.f)).x+
-		   tex2Dlod(texSampler3, float4(IN.tex0-float2(0.0f,fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05, 0.f,0.f)).x+
-		   tex2Dlod(texSampler3, float4(IN.tex0+float2(fb_inv_resolution_05.x*2.0f,0.0f)-fb_inv_resolution_05, 0.f,0.f)).x+
-		   tex2Dlod(texSampler3, float4(IN.tex0-float2(fb_inv_resolution_05.x*2.0f,0.0f)-fb_inv_resolution_05, 0.f,0.f)).x+
-
-           tex2Dlod(texSampler3, float4(IN.tex0+float2(fb_inv_resolution_05.x*2.0f,-fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05, 0.f,0.f)).x+
-		   tex2Dlod(texSampler3, float4(IN.tex0+float2(-fb_inv_resolution_05.x*2.0f,fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05, 0.f,0.f)).x+
-		   tex2Dlod(texSampler3, float4(IN.tex0+float2(fb_inv_resolution_05.x*2.0f,fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05, 0.f,0.f)).x+
-		   tex2Dlod(texSampler3, float4(IN.tex0-float2(fb_inv_resolution_05.x*2.0f,fb_inv_resolution_05.y*2.0f)-fb_inv_resolution_05, 0.f,0.f)).x)/9.0f*/) ))), 1.0f);
-}
-
-//
-// Bloom (9x9)
-//
-
-#if 0 // full or abusing lerp
-float offset[5] = { 0.0, 1.0, 2.0, 3.0, 4.0 };
-float weight[5] = { 0.2270270270, 0.1945945946, 0.1216216216, 0.0540540541, 0.0162162162 };
-
-float4 ps_main_fb_bloom_horiz( in VS_OUTPUT_2D IN) : COLOR
-{
-    float3 result = tex2Dlod(texSampler4, float4(IN.tex0+fb_inv_resolution_05*0.5f, 0.f,0.f)).xyz*weight[0];
-    for(int i = 1; i < 5; ++i)
-    {
-        result += tex2Dlod(texSampler4, float4(IN.tex0+fb_inv_resolution_05*0.5f+float2(fb_inv_resolution_05.x*offset[i],0.0f), 0.f,0.f)).xyz*weight[i];
-        result += tex2Dlod(texSampler4, float4(IN.tex0+fb_inv_resolution_05*0.5f-float2(fb_inv_resolution_05.x*offset[i],0.0f), 0.f,0.f)).xyz*weight[i];
-    }
-    return float4(result, 1.0f);
-}
-
-float4 ps_main_fb_bloom_vert( in VS_OUTPUT_2D IN) : COLOR
-{
-    float3 result = tex2Dlod(texSampler4, float4(IN.tex0+fb_inv_resolution_05*0.5f, 0.f,0.f)).xyz*weight[0];
-    for(int i = 1; i < 5; ++i)
-    {
-        result += tex2Dlod(texSampler4, float4(IN.tex0+fb_inv_resolution_05*0.5f+float2(0.0f,fb_inv_resolution_05.y*offset[i]), 0.f,0.f)).xyz*weight[i];
-        result += tex2Dlod(texSampler4, float4(IN.tex0+fb_inv_resolution_05*0.5f-float2(0.0f,fb_inv_resolution_05.y*offset[i]), 0.f,0.f)).xyz*weight[i];
-    }
-    return float4(result*bloom_strength, 1.0f);
-}
-
-#else
-
-float offset[3] = { 0.0, 1.3846153846, 3.2307692308 };
-float weight[3] = { 0.2270270270, 0.3162162162, 0.0702702703 };
-
-float4 ps_main_fb_bloom_horiz( in VS_OUTPUT_2D IN) : COLOR
-{
-    float3 result = tex2Dlod(texSampler5, float4(IN.tex0+fb_inv_resolution_05*0.5f, 0.f,0.f)).xyz*weight[0];
-    for(int i = 1; i < 3; ++i)
-    {
-        result += tex2Dlod(texSampler5, float4(IN.tex0+fb_inv_resolution_05*0.5f+float2(fb_inv_resolution_05.x*offset[i],0.0f), 0.f,0.f)).xyz*weight[i];
-        result += tex2Dlod(texSampler5, float4(IN.tex0+fb_inv_resolution_05*0.5f-float2(fb_inv_resolution_05.x*offset[i],0.0f), 0.f,0.f)).xyz*weight[i];
-    }
-    return float4(result, 1.0f);
-}
-
-float4 ps_main_fb_bloom_vert( in VS_OUTPUT_2D IN) : COLOR
-{
-    float3 result = tex2Dlod(texSampler5, float4(IN.tex0+fb_inv_resolution_05*0.5f, 0.f,0.f)).xyz*weight[0];
-    for(int i = 1; i < 3; ++i)
-    {
-        result += tex2Dlod(texSampler5, float4(IN.tex0+fb_inv_resolution_05*0.5f+float2(0.0f,fb_inv_resolution_05.y*offset[i]), 0.f,0.f)).xyz*weight[i];
-        result += tex2Dlod(texSampler5, float4(IN.tex0+fb_inv_resolution_05*0.5f-float2(0.0f,fb_inv_resolution_05.y*offset[i]), 0.f,0.f)).xyz*weight[i];
-    }
-    return float4(result*bloom_strength, 1.0f);
-}
-#endif
-
 //------------------------------------
 // Techniques
 //
@@ -610,108 +428,5 @@ technique kickerBoolean
       //ZWriteEnable=TRUE;
       VertexShader = compile vs_3_0 vs_kicker(); 
 	  PixelShader = compile ps_3_0 ps_main();
-   } 
-}
-
-//
-// Framebuffer related
-//
-
-technique AO
-{ 
-   pass P0 
-   { 
-      VertexShader = compile vs_3_0 vs_main_no_trafo();
-	  PixelShader = compile ps_3_0 ps_main_ao();
-   } 
-}
-
-technique stereo
-{ 
-   pass P0 
-   { 
-      VertexShader = compile vs_3_0 vs_main_no_trafo();
-	  PixelShader = compile ps_3_0 ps_main_stereo();
-   } 
-}
-
-technique FXAA1
-{ 
-   pass P0 
-   { 
-      VertexShader = compile vs_3_0 vs_main_no_trafo();
-	  PixelShader = compile ps_3_0 ps_main_fxaa1();
-   } 
-}
-
-technique FXAA2
-{ 
-   pass P0 
-   { 
-      VertexShader = compile vs_3_0 vs_main_no_trafo();
-	  PixelShader = compile ps_3_0 ps_main_fxaa2();
-   } 
-}
-
-technique fb_tonemap
-{ 
-   pass P0 
-   { 
-      VertexShader = compile vs_3_0 vs_main_no_trafo();
-	  PixelShader = compile ps_3_0 ps_main_fb_tonemap();
-   } 
-}
-
-technique fb_bloom
-{ 
-   pass P0 
-   { 
-      VertexShader = compile vs_3_0 vs_main_no_trafo();
-	  PixelShader = compile ps_3_0 ps_main_fb_bloom();
-   } 
-}
-
-technique fb_tonemap_AO
-{ 
-   pass P0 
-   { 
-      VertexShader = compile vs_3_0 vs_main_no_trafo();
-	  PixelShader = compile ps_3_0 ps_main_fb_tonemap_AO();
-   } 
-}
-
-technique fb_tonemap_no_filter
-{ 
-   pass P0 
-   { 
-      VertexShader = compile vs_3_0 vs_main_no_trafo();
-	  PixelShader = compile ps_3_0 ps_main_fb_tonemap_no_filter();
-   } 
-}
-
-technique fb_tonemap_AO_no_filter
-{ 
-   pass P0 
-   { 
-      VertexShader = compile vs_3_0 vs_main_no_trafo();
-	  PixelShader = compile ps_3_0 ps_main_fb_tonemap_AO_no_filter();
-   } 
-}
-
-technique fb_bloom_horiz
-{ 
-   pass P0 
-   { 
-      VertexShader = compile vs_3_0 vs_main_no_trafo();
-	  PixelShader = compile ps_3_0 ps_main_fb_bloom_horiz();
-   } 
-}
-
-technique fb_bloom_vert
-{ 
-   pass P0 
-   { 
-      VertexShader = compile vs_3_0 vs_main_no_trafo();
-	  PixelShader = compile ps_3_0 ps_main_fb_bloom_vert();
    } 
 }

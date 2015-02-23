@@ -3,7 +3,6 @@
 //
 
 #define NUM_LIGHTS 2
-#define NUM_BALL_LIGHTS 4
 
 struct CLight 
 { 
@@ -13,7 +12,8 @@ struct CLight
 
 #define iLightPointNum NUM_LIGHTS
 #define iLightPointBallsNum (NUM_LIGHTS+NUM_BALL_LIGHTS)
-CLight lights[iLightPointBallsNum] = { //NUM_LIGHTS == 2
+
+CLight lights[iLightPointBallsNum] = {
    { 
       float3(0.0, 0.0, 0.0),        //position 
       float3(0.0, 0.0, 0.0)         //emission //!! have emission > 1.0
@@ -22,6 +22,7 @@ CLight lights[iLightPointBallsNum] = { //NUM_LIGHTS == 2
       float3(0.0, 0.0, 0.0),        //position 
       float3(0.0, 0.0, 0.0)         //emission //!! have emission > 1.0
    }, 
+#if iLightPointBallsNum > 2
    { 
       float3(0.0, 0.0, 0.0),        //position 
       float3(0.0, 0.0, 0.0)         //emission //!! have emission > 1.0
@@ -38,6 +39,7 @@ CLight lights[iLightPointBallsNum] = { //NUM_LIGHTS == 2
       float3(0.0, 0.0, 0.0),        //position 
       float3(0.0, 0.0, 0.0)         //emission
    }
+#endif
 };
 
 float  fenvEmissionScale;
@@ -53,7 +55,7 @@ float4 cBase_Alpha = float4(0.5,0.5,0.5, 1.0); //!! 0.04-0.95 in RGB
 
 float3 Roughness_WrapL_Edge = float3(4.0, 0.5, 1.0); // w in [0..1] for rim/wrap lighting
 
-bool   bIsMetal = false;
+bool bIsMetal;
 
 //
 // Material Helper Functions
