@@ -8,6 +8,7 @@
 #include "Material.h"
 #include "BasicShader.h"
 #include "DMDShader.h"
+#include "FBShader.h"
 
 #pragma comment(lib, "d3d9.lib")        // TODO: put into build system
 #pragma comment(lib, "d3dx9.lib")       // TODO: put into build system
@@ -402,7 +403,15 @@ RenderDevice::RenderDevice(HWND hwnd, int width, int height, bool fullscreen, in
 #else
     DMDShader->Load(dmdShaderCode, sizeof(dmdShaderCode));
 #endif
-    // create default vertex declarations for shaders
+
+    FBShader = new Shader(this);
+#if _MSC_VER >= 1700
+    FBShader->Load(g_FBShaderCode, sizeof(g_FBShaderCode));
+#else
+    FBShader->Load(FBShaderCode, sizeof(FBShaderCode));
+#endif
+
+	// create default vertex declarations for shaders
     CreateVertexDeclaration( VertexTexelElement, &m_pVertexTexelDeclaration );
     CreateVertexDeclaration( VertexNormalTexelElement, &m_pVertexNormalTexelDeclaration );
     //CreateVertexDeclaration( VertexNormalTexelTexelElement, &m_pVertexNormalTexelTexelDeclaration );
@@ -439,8 +448,6 @@ void RenderDevice::FreeShader()
       basicShader->Core()->SetTexture("Texture0",NULL);
       basicShader->Core()->SetTexture("Texture1",NULL);
       basicShader->Core()->SetTexture("Texture2",NULL);
-      basicShader->Core()->SetTexture("Texture3",NULL);
-      basicShader->Core()->SetTexture("Texture4",NULL);
       delete basicShader;
       basicShader=0;
    }
@@ -449,6 +456,15 @@ void RenderDevice::FreeShader()
       DMDShader->Core()->SetTexture("Texture0",NULL);
       delete DMDShader;
       DMDShader=0;
+   }
+   if (FBShader)
+   {
+      FBShader->Core()->SetTexture("Texture0",NULL);
+      FBShader->Core()->SetTexture("Texture1",NULL);
+      FBShader->Core()->SetTexture("Texture3",NULL);
+      FBShader->Core()->SetTexture("Texture4",NULL);
+      delete FBShader;
+      FBShader=0;
    }
 }
 

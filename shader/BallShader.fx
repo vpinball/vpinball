@@ -1,6 +1,8 @@
 //!! always adapt to changes from BasicShader.fx
 //!! add playfield color, glossy, etc for more precise reflections of playfield
 
+#define NUM_BALL_LIGHTS 4
+
 #include "Helpers.fxh"
 
 // transformation matrices
