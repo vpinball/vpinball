@@ -1158,29 +1158,22 @@ void Shader::SetMaterial( const Material * const mat )
 		bOpacityActive = false;
 	}
 
-	if(fWrapLighting != m_renderDevice->materialStateCache.m_fWrapLighting)
+	if(fRoughness != m_renderDevice->materialStateCache.m_fRoughness || fEdge != m_renderDevice->materialStateCache.m_fEdge || fWrapLighting != m_renderDevice->materialStateCache.m_fWrapLighting)
 	{
-	    m_shader->SetFloat("fWrapLighting",fWrapLighting);
-		m_renderDevice->materialStateCache.m_fWrapLighting = fWrapLighting;
-	}
-
-	if(fRoughness != m_renderDevice->materialStateCache.m_fRoughness)
-	{
-	    m_shader->SetFloat("fRoughness",fRoughness);
+	    const D3DXVECTOR4 rwe(fRoughness,fWrapLighting,fEdge, 0.0f);
+	    m_shader->SetVector("Roughness_WrapL_Edge",&rwe);
 		m_renderDevice->materialStateCache.m_fRoughness = fRoughness;
-	}
-
-	if(fEdge != m_renderDevice->materialStateCache.m_fEdge)
-	{
-	    m_shader->SetFloat("fEdge",fEdge);
+		m_renderDevice->materialStateCache.m_fWrapLighting = fWrapLighting;
 		m_renderDevice->materialStateCache.m_fEdge = fEdge;
 	}
 
-	if(cBase != m_renderDevice->materialStateCache.m_cBase)
+	const float alpha = bOpacityActive ? fOpacity : 1.0f;
+	if(cBase != m_renderDevice->materialStateCache.m_cBase || alpha != m_renderDevice->materialStateCache.m_fOpacity)
 	{
-		const D3DXVECTOR4 cBaseF = convertColor(cBase);
-		m_shader->SetVector("cBase",&cBaseF);
+		const D3DXVECTOR4 cBaseF = convertColor(cBase, alpha);
+		m_shader->SetVector("cBase_Alpha",&cBaseF);
 		m_renderDevice->materialStateCache.m_cBase = cBase;
+		m_renderDevice->materialStateCache.m_fOpacity = alpha;
 	}
     
 	if(cGlossy != m_renderDevice->materialStateCache.m_cGlossy)
@@ -1201,13 +1194,6 @@ void Shader::SetMaterial( const Material * const mat )
 	{
 	    m_shader->SetBool("bIsMetal", bIsMetal);
 		m_renderDevice->materialStateCache.m_bIsMetal = bIsMetal;
-	}
-	
-	const float alpha = bOpacityActive ? fOpacity : 1.0f;
-	if(alpha != m_renderDevice->materialStateCache.m_fOpacity)
-	{
-	    m_shader->SetFloat("fmaterialAlpha", alpha);
-		m_renderDevice->materialStateCache.m_fOpacity = alpha;
 	}
 
 	if(bOpacityActive /*&& (fOpacity < 1.0f)*/)
