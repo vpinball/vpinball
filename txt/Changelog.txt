@@ -33,6 +33,8 @@ VP 10.0.0 Changelog
      - add IsBottomSolid to Walls to have Walls optionally completely closed (bottom was always open)
 
   -> the data-format of the physics sets (*.vpp files) is basically the same, although the parameters inside are different, so unfortunately you need to set them up from scratch again
+
+- Select Elements dialog improved. It shows the type of the element and if supported the used images. 
   
 - new Camera Mode added to the Table menu. This mode starts the player in a special mode where you can change backdrop settings with the following keys:
      left flipper key = decrease value
