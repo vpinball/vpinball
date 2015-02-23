@@ -281,7 +281,7 @@ void Plunger::PostRenderStatic(RenderDevice* pd3dDevice)
      {
          //render a simple rectangle as an embedded alpha ramp plunger ;)
 //            D3DXVECTOR4 color(1.0f,1.0f,1.0f,1.0f);
-//            pd3dDevice->basicShader->Core()->SetVector("cBase",&color);
+//            pd3dDevice->basicShader->Core()->SetVector("cBase_Alpha",&color);
          pd3dDevice->basicShader->SetTechnique("basic_with_texture");
          ppin3d->EnableAlphaBlend( false );
          //ppin3d->SetTextureFilter ( 0, TEXTURE_MODE_TRILINEAR );
@@ -294,7 +294,7 @@ void Plunger::PostRenderStatic(RenderDevice* pd3dDevice)
          if ( pin )
          {
 //                 D3DXVECTOR4 color(1.0f,1.0f,1.0f,1.0f);
-//                 pd3dDevice->basicShader->Core()->SetVector("cBase",&color);
+//                 pd3dDevice->basicShader->Core()->SetVector("cBase_Alpha",&color);
              pd3dDevice->basicShader->SetTechnique("basic_with_texture");
              ppin3d->EnableAlphaBlend( false );
              //ppin3d->SetTextureFilter ( 0, TEXTURE_MODE_TRILINEAR );

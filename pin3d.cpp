@@ -299,7 +299,7 @@ void Pin3D::DrawBackground()
 
 void Pin3D::InitLights()
 {
-    m_pd3dDevice->basicShader->Core()->SetInt("iLightPointNum",MAX_LIGHT_SOURCES);
+    //m_pd3dDevice->basicShader->Core()->SetInt("iLightPointNum",MAX_LIGHT_SOURCES);
 
     g_pplayer->m_ptable->m_Light[0].pos.x = g_pplayer->m_ptable->m_right*0.5f;
     g_pplayer->m_ptable->m_Light[1].pos.x = g_pplayer->m_ptable->m_right*0.5f;
@@ -308,16 +308,10 @@ void Pin3D::InitLights()
     g_pplayer->m_ptable->m_Light[0].pos.z = g_pplayer->m_ptable->m_lightHeight;
     g_pplayer->m_ptable->m_Light[1].pos.z = g_pplayer->m_ptable->m_lightHeight;
     
-	const D3DXVECTOR4 ambient = COLORREF_to_D3DXVECTOR4(g_pplayer->m_ptable->m_lightAmbient);
-    D3DCOLORVALUE amb_rgb;
-    amb_rgb.r = ambient.z;
-    amb_rgb.g = ambient.y;
-    amb_rgb.b = ambient.x;
-    const D3DXVECTOR4 emission= COLORREF_to_D3DXVECTOR4(g_pplayer->m_ptable->m_Light[0].emission);
-    D3DCOLORVALUE emission_rgb;
-    emission_rgb.r = emission.z*(g_pplayer->m_ptable->m_lightEmissionScale*g_pplayer->m_ptable->m_globalEmissionScale);
-    emission_rgb.g = emission.y*(g_pplayer->m_ptable->m_lightEmissionScale*g_pplayer->m_ptable->m_globalEmissionScale);
-    emission_rgb.b = emission.x*(g_pplayer->m_ptable->m_lightEmissionScale*g_pplayer->m_ptable->m_globalEmissionScale);
+    D3DXVECTOR4 emission = convertColor(g_pplayer->m_ptable->m_Light[0].emission);
+    emission.x *= g_pplayer->m_ptable->m_lightEmissionScale*g_pplayer->m_ptable->m_globalEmissionScale;
+    emission.y *= g_pplayer->m_ptable->m_lightEmissionScale*g_pplayer->m_ptable->m_globalEmissionScale;
+    emission.z *= g_pplayer->m_ptable->m_lightEmissionScale*g_pplayer->m_ptable->m_globalEmissionScale;
 
     char tmp[64];
     sprintf_s(tmp,"lights[0].vPos");
@@ -325,13 +319,12 @@ void Pin3D::InitLights()
     sprintf_s(tmp,"lights[1].vPos");
     m_pd3dDevice->basicShader->Core()->SetValue(tmp, (void*)&g_pplayer->m_ptable->m_Light[1].pos, sizeof(float)*3);
     sprintf_s(tmp,"lights[0].vEmission");
-    m_pd3dDevice->basicShader->Core()->SetValue(tmp, (void*)&emission_rgb, sizeof(float)*3);
+    m_pd3dDevice->basicShader->Core()->SetValue(tmp, (void*)&emission, sizeof(float)*3);
     sprintf_s(tmp,"lights[1].vEmission");
-    m_pd3dDevice->basicShader->Core()->SetValue(tmp, (void*)&emission_rgb, sizeof(float)*3);
-    sprintf_s(tmp,"vAmbient");
-    m_pd3dDevice->basicShader->Core()->SetValue(tmp, (void*)&amb_rgb, sizeof(float)*3);
-    sprintf_s(tmp,"flightRange");
-    m_pd3dDevice->basicShader->Core()->SetValue(tmp, (void*)&g_pplayer->m_ptable->m_lightRange, sizeof(float));
+    m_pd3dDevice->basicShader->Core()->SetValue(tmp, (void*)&emission, sizeof(float)*3);
+    
+    const D3DXVECTOR4 amb_lr = convertColor(g_pplayer->m_ptable->m_lightAmbient, g_pplayer->m_ptable->m_lightRange);
+    m_pd3dDevice->basicShader->Core()->SetVector("cAmbient_LightRange", &amb_lr);
 }
 
 // currently unused

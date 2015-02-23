@@ -855,7 +855,7 @@ void HitFlipper::Contact(CollisionEvent& coll, float dtime)
         const Vertex3Ds aFc = CrossProduct( CrossProduct(rF, -normal) / m_flipperanim.m_inertia, rF );
         const float contactForceAcc = normal.Dot( aBc - aFc );
 
-        assert( contactForceAcc > 0 );
+        assert( contactForceAcc > 0.f );
 
         // find j >= 0 such that normAcc + j * contactForceAcc >= 0  (bodies should not accelerate towards each other)
 

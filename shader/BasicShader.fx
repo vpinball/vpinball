@@ -2,8 +2,8 @@
 
 #include "Globals.fxh"
 
-float3 cGlossy = float3(0.5f, 0.5f, 0.5f);
-float3 cClearcoat = float3(0.5f, 0.5f, 0.5f);
+float3 cGlossy = float3(0.5, 0.5, 0.5);
+float3 cClearcoat = float3(0.5, 0.5, 0.5);
 //!! No value is under 0.02
 //!! Non-metals value are un-intuitively low: 0.02-0.08
 //!! Gemstones are 0.05-0.17
@@ -11,7 +11,7 @@ float3 cClearcoat = float3(0.5f, 0.5f, 0.5f);
 
 bool   bPerformAlphaTest = false;
 bool   bAdd_Blend;
-float3 staticColor = float3(1.f,1.f,1.f);
+float3 staticColor = float3(1.,1.,1.);
 float  fAlphaTestValue = 128.0/255.0;
 
 float2 fb_inv_resolution_05;
@@ -118,14 +118,14 @@ float4 ps_main( in VS_OUTPUT IN) : COLOR
 {
    //return float4((IN.normal+1.0f)*0.5f,1.0f); // visualize normals
    
-   float3 diffuse  = cBase;
-   float3 glossy   = bIsMetal ? cBase : cGlossy*0.08f;
+   float3 diffuse  = cBase_Alpha.xyz;
+   float3 glossy   = bIsMetal ? cBase_Alpha.xyz : cGlossy*0.08f;
    float3 specular = cClearcoat*0.08f;
-   float edge = bIsMetal ? 1.0f : fEdge;
+   float edge = bIsMetal ? 1.0f : Roughness_WrapL_Edge.z;
    
    float4 result;
    result.xyz = lightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular, edge); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
-   result.a = fmaterialAlpha;
+   result.a = cBase_Alpha.a;
    return result;
 }
 
@@ -138,17 +138,17 @@ float4 ps_main_texture(in VS_OUTPUT IN) : COLOR
    if (bPerformAlphaTest && pixel.a<=fAlphaTestValue )
     clip(-1);           //stop the pixel shader if alpha test should reject pixel
 
-   pixel.a *= fmaterialAlpha;
+   pixel.a *= cBase_Alpha.a;
    float3 t = InvGamma(pixel.xyz);
 
    // early out if no normal set (e.g. decal vertices)
    if(IN.normal.x == 0.0f && IN.normal.y == 0.0f && IN.normal.z == 0.0f)
       return float4(InvToneMap(t*staticColor),pixel.a);
       
-   float3 diffuse  = t*cBase;
+   float3 diffuse  = t*cBase_Alpha.xyz;
    float3 glossy   = bIsMetal ? diffuse : t*cGlossy*0.08f; //!! use AO for glossy? specular?
    float3 specular = cClearcoat*0.08f;
-   float edge = bIsMetal ? 1.0f : fEdge;
+   float edge = bIsMetal ? 1.0f : Roughness_WrapL_Edge.z;
 
    float4 result;
    result.xyz = lightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular, edge);
@@ -215,17 +215,15 @@ float4 ps_main_textureAB_noLight( in VS_SIMPLE_OUTPUT IN) : COLOR
 
    float4 result;
    result.xyz = staticColor;
-   result.a = 1.0f;
+   result.a = fAlpha;
    if ( bOverlay )
-      result *= Overlay(pixel1,pixel2, fFilterAmount);
+      result *= Overlay(pixel1,pixel2);
    else if ( bMultiply )
       result *= Multiply(pixel1,pixel2, fFilterAmount);
    else if ( bAdditive )
       result *= Additive(pixel1,pixel2, fFilterAmount);
    else if ( bScreen )
-      result *= Screen(pixel1,pixel2, fFilterAmount);
-      
-   result.a *= fAlpha;
+      result *= Screen(pixel1,pixel2);
 
    if(!bAdd_Blend)
       return result;
@@ -299,15 +297,15 @@ float4 PS_LightWithTexel(in VS_LIGHT_OUTPUT IN ) : COLOR
         color = pixel;
     else
 	{
-	    float3 diffuse = pixel.xyz*cBase;
+	    float3 diffuse = pixel.xyz*cBase_Alpha.xyz;
         float3 glossy = bIsMetal ? diffuse : pixel.xyz*cGlossy*0.08f; //!! use AO for glossy? specular?
         float3 specular = cClearcoat*0.08f;
-        float edge = bIsMetal ? 1.0f : fEdge;
+        float edge = bIsMetal ? 1.0f : Roughness_WrapL_Edge.z;
 
 	    color.xyz = lightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular, edge); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
 		color.a = pixel.a;
     }
-    color.a *= fmaterialAlpha;
+    color.a *= cBase_Alpha.a;
 
     float4 result = float4(0.0f, 0.0f, 0.0f, 0.0f);
     if ( intensity!=0.0f )
@@ -318,8 +316,8 @@ float4 PS_LightWithTexel(in VS_LIGHT_OUTPUT IN ) : COLOR
         result.xyz = lcolor*(atten*intensity);
         result.a = saturate(atten*intensity);
         color += result;
-        color = Overlay(pixel, color, 1.0f);
-        color = Screen(pixel, color, 1.0f);
+        color = Overlay(pixel, color);
+        color = Screen(pixel, color);
     }
 
     return color;
@@ -343,14 +341,14 @@ float4 PS_LightWithoutTexel(in VS_LIGHT_OUTPUT IN ) : COLOR
         color.xyz = lightColor;
     else
 	{
-	    float3 diffuse  = lightColor*cBase;
+	    float3 diffuse  = lightColor*cBase_Alpha.xyz;
         float3 glossy   = bIsMetal ? diffuse : lightColor*cGlossy*0.08f;
         float3 specular = cClearcoat*0.08f;
-	    float edge = bIsMetal ? 1.0f : fEdge;
+	    float edge = bIsMetal ? 1.0f : Roughness_WrapL_Edge.z;
 
 	    color.xyz = lightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular, edge); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
 	}
-    color.a = fmaterialAlpha;
+    color.a = cBase_Alpha.a;
     
     return color+result;
 }
