@@ -273,7 +273,7 @@ float4 psBall( in vout IN ) : COLOR
 	else
 	   playfieldColor = ballImageColor;
 
-	float3 diffuse  = cBase_Alpha.xyz;
+	float3 diffuse  = cBase_Alpha.xyz*0.075;
 	if(!decalMode)
 	    diffuse *= decalColor; // scratches make the material more rough
     float3 glossy   = max(diffuse*2.0, float3(0.1,0.1,0.1)); //!! meh
@@ -291,7 +291,7 @@ float4 psBall( in vout IN ) : COLOR
 
 float4 psBallReflection( in voutReflection IN ) : COLOR
 {
-	float3 ballImageColor = (cBase_Alpha.xyz*0.25 + InvGamma(tex2D( texSampler0, IN.r.xy ).xyz))*fenvEmissionScale; //!! just add the ballcolor in, this is a whacky reflection anyhow
+	float3 ballImageColor = (cBase_Alpha.xyz*(0.075*0.25) + InvGamma(tex2D( texSampler0, IN.r.xy ).xyz))*fenvEmissionScale; //!! just add the ballcolor in, this is a whacky reflection anyhow
 	float alpha = saturate((IN.tex0.y-position_radius.y)/position_radius.w);
 	alpha = (alpha*alpha)*(alpha*alpha)*reflection_ball_playfield.x;
 	return float4(ballImageColor,alpha);
@@ -299,7 +299,7 @@ float4 psBallReflection( in voutReflection IN ) : COLOR
 
 float4 psBallTrail( in voutTrail IN ) : COLOR
 {
-	return float4((cBase_Alpha.xyz*0.25 + InvGamma(tex2D( texSampler0, IN.tex0 ).xyz))*fenvEmissionScale, IN.alpha); //!! just add the ballcolor in, this is a whacky trail anyhow
+	return float4((cBase_Alpha.xyz*(0.075*0.25) + InvGamma(tex2D( texSampler0, IN.tex0 ).xyz))*fenvEmissionScale, IN.alpha); //!! just add the ballcolor in, this is a whacky trail anyhow
 }
 
 //------------------------------------
