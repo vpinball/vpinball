@@ -7481,7 +7481,8 @@ INT_PTR CALLBACK SearchSelectProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
          if( listHwnd!=NULL )
              ListView_DeleteAllItems( listHwnd );
 
-         lv.mask = LVIF_TEXT;
+         lv.mask = LVIF_TEXT | LVIF_PARAM;
+         int idx=0;
          for (int i=0;i<pt->m_vedit.Size();i++)
          {
             char textBuf[518];
@@ -7491,8 +7492,9 @@ INT_PTR CALLBACK SearchSelectProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
             IScriptable * const piscript = piedit->GetScriptable();
             if (piscript)
             {
-               lv.iItem = i;
+               lv.iItem = idx++;
                lv.iSubItem = 0;
+               lv.lParam = (LPARAM)piscript;
                lv.pszText = pt->GetElementName(piedit);
                ListView_InsertItem( listHwnd, &lv);
                if( piedit->GetItemType() == eItemSurface)
@@ -7636,17 +7638,24 @@ INT_PTR CALLBACK SearchSelectProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
          case IDOK:
             {
                HWND listBox = GetDlgItem(hwndDlg, IDC_ELEMENT_LIST);
-			   const size_t count = ListView_GetSelectedCount(listBox);
+			      const size_t count = ListView_GetSelectedCount(listBox);
 
                PinTable *pt = g_pvp->GetActiveTable();
                pt->ClearMultiSel();
                int iItem=-1;
+               LVITEM lv;
                for (size_t i=0;i<count;i++)
                {
                   iItem = ListView_GetNextItem( listBox, iItem, LVNI_SELECTED);
-                  ISelect *const pisel = pt->m_vedit.ElementAt(iItem)->GetISelect();
-                  if (pisel)
-                      pt->AddMultiSel(pisel, true);
+                  lv.iItem = iItem;
+                  lv.mask = LVIF_PARAM;
+                  if ( ListView_GetItem(listBox, &lv)==TRUE)
+                  {
+                     IScriptable *pscript = (IScriptable*)lv.lParam;
+                     ISelect *const pisel = pscript->GetISelect();
+                     if (pisel)
+                        pt->AddMultiSel(pisel, true);
+                  }
                }
 
                EndDialog(hwndDlg, TRUE);
