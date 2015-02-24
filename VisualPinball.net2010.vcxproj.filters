@@ -809,5 +809,11 @@
     <CustomBuild Include="shader\DMDShader.fx">
       <Filter>Shader Files</Filter>
     </CustomBuild>
+    <CustomBuild Include="shader\FBShader.fx">
+      <Filter>Shader Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="shader\FlasherShader.fx">
+      <Filter>Shader Files</Filter>
+    </CustomBuild>
   </ItemGroup>
 </Project>
