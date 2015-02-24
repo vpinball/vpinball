@@ -1279,7 +1279,6 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
    
    const D3DXVECTOR4 color = convertColor(m_d.m_color);
    pd3dDevice->flasherShader->SetStaticColor(color);
-   pd3dDevice->flasherShader->SetAlphaTestValue(1.0 / 255.0);
    pd3dDevice->flasherShader->Core()->SetInt("filterMode", (int)m_d.m_filter);
    pd3dDevice->flasherShader->Core()->SetBool("bAdd_Blend", m_d.m_fAddBlend);
 
@@ -1319,10 +1318,10 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
    if(m_d.m_fAddBlend)
    {
       pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, FALSE);
-      pd3dDevice->flasherShader->PerformAlphaTest(false);
+      pd3dDevice->flasherShader->SetAlphaTestValue(-1.0f);
    }
    else
-      pd3dDevice->flasherShader->PerformAlphaTest(true);
+      pd3dDevice->flasherShader->SetAlphaTestValue(1.0 / 255.0);
 
    pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, m_d.m_fAddBlend ? D3DBLEND_INVSRCCOLOR : D3DBLEND_INVSRCALPHA);
    pd3dDevice->SetRenderState(RenderDevice::BLENDOP, m_d.m_fAddBlend ? D3DBLENDOP_REVSUBTRACT : D3DBLENDOP_ADD); //!! meh, optimize all these alpha sets

@@ -15,7 +15,6 @@ float  fAlphaTestValue = 128.0/255.0;
 float2 amount__blend_modulate_vs_add;
 int    filterMode;
 
-bool bPerformAlphaTest;
 bool bAdd_Blend;
 
 texture Texture0; // base texture
@@ -63,7 +62,7 @@ float4 ps_main_textureOne_noLight(in VS_OUTPUT_2D IN) : COLOR
 {
    const float4 pixel = tex2D(texSampler0, IN.tex0);
 
-   if (bPerformAlphaTest && pixel.a<=fAlphaTestValue )
+   if (pixel.a<=fAlphaTestValue)
     clip(-1);           //stop the pixel shader if alpha test should reject pixel
 
    float4 result;
@@ -82,7 +81,7 @@ float4 ps_main_textureAB_noLight(in VS_OUTPUT_2D IN) : COLOR
    float4 pixel1 = tex2D(texSampler0, IN.tex0);
    float4 pixel2 = tex2D(texSampler1, IN.tex0);
 
-   if (bPerformAlphaTest && (pixel1.a<=fAlphaTestValue || pixel2.a<=fAlphaTestValue))
+   if (pixel1.a<=fAlphaTestValue || pixel2.a<=fAlphaTestValue)
     clip(-1);           //stop the pixel shader if alpha test should reject pixel
 
    pixel1.xyz = InvGamma(pixel1.xyz);

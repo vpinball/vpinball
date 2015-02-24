@@ -524,13 +524,10 @@ void Decal::RenderStatic(RenderDevice* pd3dDevice)
 
    //pd3dDevice->basicShader->Core()->SetFloat("fmaterialAlpha",1.0f);
    pd3dDevice->basicShader->SetTechnique("basic_with_texture");
-   pd3dDevice->basicShader->PerformAlphaTest(true);
-   pd3dDevice->basicShader->SetAlphaTestValue(1.0f / 255.0f);
+   pd3dDevice->basicShader->SetAlphaTestValue(1.0 / 255.0);
 
    if (m_d.m_decaltype != DecalImage)
-   {
        pd3dDevice->basicShader->SetTexture("Texture0", pd3dDevice->m_texMan.LoadTexture(m_textImg));
-   }
    else
    {
       Texture *pin = m_ptable->GetImage(m_d.m_szImage);
@@ -552,7 +549,7 @@ void Decal::RenderStatic(RenderDevice* pd3dDevice)
    else
    {
 	   const D3DXVECTOR4 staticColor(1.0f,1.0f,1.0f,1.0f);
-       pd3dDevice->basicShader->SetStaticColor(staticColor);
+	   pd3dDevice->basicShader->Core()->SetVector("cBase_Alpha",&staticColor);
    }
 
    pd3dDevice->basicShader->Begin(0);

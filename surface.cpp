@@ -944,8 +944,7 @@ void Surface::RenderSlingshots(RenderDevice* pd3dDevice)
 
 void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
 {
-    pd3dDevice->basicShader->PerformAlphaTest(true);
-    pd3dDevice->basicShader->SetAlphaTestValue(1.0f / 255.0f);
+    pd3dDevice->basicShader->SetAlphaTestValue(1.0 / 255.0);
 
 	// render side
     if (m_d.m_fSideVisible && !fDrop && (numVertices > 0)) // Don't need to render walls if dropped

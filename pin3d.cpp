@@ -205,7 +205,7 @@ HRESULT Pin3D::InitPin3D(const HWND hwnd, const bool fullScreen, const int width
 	EnvmapPrecalc((DWORD*)envTexture.m_pdsBuffer->data(),envTexture.m_pdsBuffer->width(),envTexture.m_pdsBuffer->height(),
 				  (DWORD*)m_envRadianceTexture->data(),envTexture.m_pdsBuffer->width()/8,envTexture.m_pdsBuffer->height()/8);
 	
-	
+
 	m_device_envRadianceTexture = m_pd3dDevice->m_texMan.LoadTexture(m_envRadianceTexture);
 	m_pd3dDevice->m_texMan.SetDirty(m_envRadianceTexture);
 
@@ -480,13 +480,10 @@ void Pin3D::RenderPlayfieldGraphics()
       SetTextureFilter(0, TEXTURE_MODE_ANISOTROPIC);
       m_pd3dDevice->basicShader->SetTexture("Texture0",pin);
       m_pd3dDevice->basicShader->SetTechnique("basic_with_texture");
-      m_pd3dDevice->basicShader->PerformAlphaTest(true);
-      m_pd3dDevice->basicShader->SetAlphaTestValue(1.0f / 255.0f);
+      m_pd3dDevice->basicShader->SetAlphaTestValue(1.0 / 255.0);
 	}
 	else // No image by that name
-	{
       m_pd3dDevice->basicShader->SetTechnique("basic_without_texture");
-	}
 
     assert(tableVBuffer != NULL);
     assert(tableIBuffer != NULL);

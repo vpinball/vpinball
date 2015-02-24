@@ -4,18 +4,60 @@
 
 #include "Globals.fxh"
 
-float3 cGlossy = float3(0.5, 0.5, 0.5);
-float3 cClearcoat = float3(0.5, 0.5, 0.5);
+#include "Helpers.fxh"
+
+// transformation matrices
+float4x4 matWorldViewProj : WORLDVIEWPROJ;
+float4x4 matWorldView     : WORLDVIEW;
+float4x4 matWorldViewInverseTranspose;
+float4x4 matView;
+float4x4 matViewInverse;
+
+texture Texture0; // base texture
+texture Texture1; // envmap
+texture Texture2; // envmap radiance
+ 
+sampler2D texSampler0 : TEXUNIT0 = sampler_state // base texture
+{
+	Texture	  = (Texture0);
+    //MIPFILTER = LINEAR; //!! HACK: not set here as user can choose to override trilinear by anisotropic
+    //MAGFILTER = LINEAR;
+    //MINFILTER = LINEAR;
+	//ADDRESSU  = Wrap; //!! ?
+	//ADDRESSV  = Wrap;
+	//!! SRGBTexture = true;
+};
+
+sampler2D texSampler1 : TEXUNIT1 = sampler_state // environment
+{
+	Texture	  = (Texture1);
+    MIPFILTER = LINEAR; //!! ?
+    MAGFILTER = LINEAR;
+    MINFILTER = LINEAR;
+	ADDRESSU  = Wrap;
+	ADDRESSV  = Wrap;
+};
+
+sampler2D texSampler2 : TEXUNIT2 = sampler_state // diffuse environment contribution/radiance
+{
+	Texture	  = (Texture2);
+    MIPFILTER = NONE;
+    MAGFILTER = LINEAR;
+    MINFILTER = LINEAR;
+	ADDRESSU  = Wrap;
+	ADDRESSV  = Wrap;
+};
+
+#include "Material.fxh"
+
+float3 cGlossy;
+float3 cClearcoat;
 //!! No value is under 0.02
 //!! Non-metals value are un-intuitively low: 0.02-0.08
 //!! Gemstones are 0.05-0.17
 //!! Metals have high specular reflectance:  0.5-1.0
 
-bool bPerformAlphaTest;
-float3 staticColor = float3(1.,1.,1.);
-float  fAlphaTestValue = 128.0/255.0;
-
-float blend_modulate_vs_add;
+float fAlphaTestValue;
 
 struct VS_OUTPUT 
 { 
@@ -38,8 +80,8 @@ VS_OUTPUT vs_main (float4 vPosition : POSITION0,
    VS_OUTPUT Out;
 
    // trafo all into worldview space (as most of the weird trafos happen in view, world is identity so far)
-   float3 P = mul(vPosition, matWorldView).xyz;
-   float3 N = normalize(mul(float4(vNormal,0.0f), matWorldViewInverseTranspose).xyz);
+   const float3 P = mul(vPosition, matWorldView).xyz;
+   const float3 N = normalize(mul(float4(vNormal,0.0), matWorldViewInverseTranspose).xyz);
 
    Out.pos = mul(vPosition, matWorldViewProj);
    Out.tex0 = tc;
@@ -51,12 +93,12 @@ VS_OUTPUT vs_main (float4 vPosition : POSITION0,
 
 float4 ps_main(in VS_OUTPUT IN) : COLOR
 {
-   //return float4((IN.normal+1.0f)*0.5f,1.0f); // visualize normals
+   //return float4((IN.normal+1.0)*0.5,1.0); // visualize normals
    
-   float3 diffuse  = cBase_Alpha.xyz;
-   float3 glossy   = bIsMetal ? cBase_Alpha.xyz : cGlossy*0.08f;
-   float3 specular = cClearcoat*0.08f;
-   float edge = bIsMetal ? 1.0f : Roughness_WrapL_Edge.z;
+   const float3 diffuse  = cBase_Alpha.xyz;
+   const float3 glossy   = bIsMetal ? cBase_Alpha.xyz : cGlossy*0.08;
+   const float3 specular = cClearcoat*0.08;
+   const float edge = bIsMetal ? 1.0 : Roughness_WrapL_Edge.z;
    
    float4 result;
    result.xyz = lightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular, edge); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
@@ -66,24 +108,24 @@ float4 ps_main(in VS_OUTPUT IN) : COLOR
 
 float4 ps_main_texture(in VS_OUTPUT IN) : COLOR
 {
-   //return float4((IN.normal+1.0f)*0.5f,1.0f); // visualize normals
+   //return float4((IN.normal+1.0)*0.5,1.0); // visualize normals
    
    float4 pixel = tex2D(texSampler0, IN.tex0);
 
-   if (bPerformAlphaTest && pixel.a<=fAlphaTestValue )
+   if (pixel.a<=fAlphaTestValue)
     clip(-1);           //stop the pixel shader if alpha test should reject pixel
 
    pixel.a *= cBase_Alpha.a;
-   float3 t = InvGamma(pixel.xyz);
+   const float3 t = InvGamma(pixel.xyz);
 
    // early out if no normal set (e.g. decal vertices)
-   if(IN.normal.x == 0.0f && IN.normal.y == 0.0f && IN.normal.z == 0.0f)
-      return float4(InvToneMap(t*staticColor),pixel.a);
+   if(IN.normal.x == 0.0 && IN.normal.y == 0.0 && IN.normal.z == 0.0)
+      return float4(InvToneMap(t*cBase_Alpha.xyz),pixel.a);
       
-   float3 diffuse  = t*cBase_Alpha.xyz;
-   float3 glossy   = bIsMetal ? diffuse : t*cGlossy*0.08f; //!! use AO for glossy? specular?
-   float3 specular = cClearcoat*0.08f;
-   float edge = bIsMetal ? 1.0f : Roughness_WrapL_Edge.z;
+   const float3 diffuse  = t*cBase_Alpha.xyz;
+   const float3 glossy   = bIsMetal ? diffuse : t*cGlossy*0.08; //!! use AO for glossy? specular?
+   const float3 specular = cClearcoat*0.08;
+   const float edge = bIsMetal ? 1.0 : Roughness_WrapL_Edge.z;
 
    float4 result;
    result.xyz = lightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular, edge);
@@ -94,12 +136,10 @@ float4 ps_main_texture(in VS_OUTPUT IN) : COLOR
 //------------------------------------------
 // Light (Bulb/Shapes)
 
-float3   lightColor = float3(1.f,1.f,1.f);
-float3   lightColor2 = float3(1.f,1.f,1.f);
-float3   lightCenter;
-float    maxRange;
-float    intensity = 1.0f;
-float    falloff_power = 2.0f;
+float4   lightColor_intensity;
+float4   lightColor2_falloff_power;
+float4   lightCenter_maxRange;
+float    blend_modulate_vs_add;
 bool imageMode;
 bool backglassMode;
 
@@ -119,8 +159,8 @@ VS_LIGHT_OUTPUT vs_light_main (float4 vPosition : POSITION0,
    VS_LIGHT_OUTPUT Out;
 
    // trafo all into worldview space (as most of the weird trafos happen in view, world is identity so far)
-   float3 P = mul(vPosition, matWorldView).xyz;
-   float3 N = normalize(mul(float4(vNormal,0.0f), matWorldViewInverseTranspose).xyz);
+   const float3 P = mul(vPosition, matWorldView).xyz;
+   const float3 N = normalize(mul(float4(vNormal,0.0), matWorldViewInverseTranspose).xyz);
 
    Out.pos = mul(vPosition, matWorldViewProj);
    Out.tex0 = tc;
@@ -142,25 +182,23 @@ float4 PS_LightWithTexel(in VS_LIGHT_OUTPUT IN) : COLOR
         color = pixel;
     else
 	{
-	    float3 diffuse = pixel.xyz*cBase_Alpha.xyz;
-        float3 glossy = bIsMetal ? diffuse : pixel.xyz*cGlossy*0.08f; //!! use AO for glossy? specular?
-        float3 specular = cClearcoat*0.08f;
-        float edge = bIsMetal ? 1.0f : Roughness_WrapL_Edge.z;
+	    const float3 diffuse = pixel.xyz*cBase_Alpha.xyz;
+        const float3 glossy = bIsMetal ? diffuse : pixel.xyz*cGlossy*0.08; //!! use AO for glossy? specular?
+        const float3 specular = cClearcoat*0.08;
+        const float edge = bIsMetal ? 1.0 : Roughness_WrapL_Edge.z;
 
 	    color.xyz = lightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular, edge); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
 		color.a = pixel.a;
     }
     color.a *= cBase_Alpha.a;
 
-    float4 result = float4(0.0f, 0.0f, 0.0f, 0.0f);
-    if ( intensity!=0.0f )
+    if ( lightColor_intensity.w!=0.0 )
     {
-        float len = length(lightCenter - (!backglassMode ? IN.tablePos : float3(IN.tex0,0.0f))) / max(maxRange, 0.1f);
-        float atten = pow(1.0f - saturate(len), falloff_power);
-        float3 lcolor = lerp(lightColor2, lightColor, sqrt(len));
-        result.xyz = lcolor*(atten*intensity);
-        result.a = saturate(atten*intensity);
-        color += result;
+        const float len = length(lightCenter_maxRange.xyz - (!backglassMode ? IN.tablePos : float3(IN.tex0,0.0))) * lightCenter_maxRange.w;
+        const float atten = pow(1.0 - saturate(len), lightColor2_falloff_power.w);
+        const float3 lcolor = lerp(lightColor2_falloff_power.xyz, lightColor_intensity.xyz, sqrt(len));
+        color += float4(lcolor*(atten*lightColor_intensity.w),
+		                saturate(atten*lightColor_intensity.w));
         color = Overlay(pixel, color);
         color = Screen(pixel, color);
     }
@@ -170,26 +208,26 @@ float4 PS_LightWithTexel(in VS_LIGHT_OUTPUT IN) : COLOR
 
 float4 PS_LightWithoutTexel(in VS_LIGHT_OUTPUT IN) : COLOR
 {
-    float4 result = float4(0.0f, 0.0f, 0.0f, 0.0f);
-    if (intensity != 0.0f)
+    float4 result = float4(0.0, 0.0, 0.0, 0.0);
+    if (lightColor_intensity.w != 0.0)
     {
-        float len = length(lightCenter - (!backglassMode ? IN.tablePos : float3(IN.tex0,0.0f))) / max(maxRange, 0.1f);
-        float atten = pow(1.0f - saturate(len), falloff_power);
-        float3 lcolor = lerp(lightColor2, lightColor, sqrt(len));
-        result.xyz = lcolor*(atten*intensity);
-        result.a = saturate(atten*intensity);
+        const float len = length(lightCenter_maxRange.xyz - (!backglassMode ? IN.tablePos : float3(IN.tex0,0.0))) * lightCenter_maxRange.w;
+        const float atten = pow(1.0 - saturate(len), lightColor2_falloff_power.w);
+        const float3 lcolor = lerp(lightColor2_falloff_power.xyz, lightColor_intensity.xyz, sqrt(len));
+        result.xyz = lcolor*(atten*lightColor_intensity.w);
+        result.a = saturate(atten*lightColor_intensity.w);
     }
 
 	float4 color;
 	// no lighting if HUD vertices or passthrough mode
     if(imageMode || backglassMode)
-        color.xyz = lightColor;
+        color.xyz = lightColor_intensity.xyz;
     else
 	{
-	    float3 diffuse  = lightColor*cBase_Alpha.xyz;
-        float3 glossy   = bIsMetal ? diffuse : lightColor*cGlossy*0.08f;
-        float3 specular = cClearcoat*0.08f;
-	    float edge = bIsMetal ? 1.0f : Roughness_WrapL_Edge.z;
+	    const float3 diffuse  = lightColor_intensity.xyz*cBase_Alpha.xyz;
+        const float3 glossy   = bIsMetal ? diffuse : lightColor_intensity.xyz*cGlossy*0.08;
+        const float3 specular = cClearcoat*0.08;
+	    const float edge = bIsMetal ? 1.0 : Roughness_WrapL_Edge.z;
 
 	    color.xyz = lightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular, edge); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
 	}
@@ -200,12 +238,12 @@ float4 PS_LightWithoutTexel(in VS_LIGHT_OUTPUT IN) : COLOR
 
 float4 PS_BulbLight(in VS_LIGHT_OUTPUT IN) : COLOR
 {
-	float len = length(lightCenter - IN.tablePos) / max(maxRange,0.1f);
-    float atten = pow(1.0f - saturate(len), falloff_power);
-	float3 lcolor = lerp(lightColor2, lightColor, sqrt(len));
+	const float len = length(lightCenter_maxRange.xyz - IN.tablePos) * lightCenter_maxRange.w;
+    const float atten = pow(1.0 - saturate(len), lightColor2_falloff_power.w);
+	const float3 lcolor = lerp(lightColor2_falloff_power.xyz, lightColor_intensity.xyz, sqrt(len));
 	float4 result;
-	result.xyz = lcolor*(-blend_modulate_vs_add*atten*intensity); // negative as it will be blended with '1.0-thisvalue' (the 1.0 is needed to modulate the underlying elements correctly, but not wanted for the term below)
-	result.a = 1.0f/blend_modulate_vs_add - 1.0f; //saturate(atten*intensity);
+	result.xyz = lcolor*(-blend_modulate_vs_add*atten*lightColor_intensity.w); // negative as it will be blended with '1.0-thisvalue' (the 1.0 is needed to modulate the underlying elements correctly, but not wanted for the term below)
+	result.a = 1.0/blend_modulate_vs_add - 1.0; //saturate(atten*lightColor_intensity.w);
 	return result;
 }
 
@@ -218,12 +256,12 @@ VS_OUTPUT vs_kicker (float4 vPosition : POSITION0,
                      float2 tc        : TEXCOORD0) 
 { 
     VS_OUTPUT Out;
-    float3 P = mul(vPosition, matWorldView).xyz;
+    const float3 P = mul(vPosition, matWorldView).xyz;
     float4 P2 = vPosition;
-    float3 N = normalize(mul(float4(vNormal,0.0f), matWorldViewInverseTranspose).xyz);
+    const float3 N = normalize(mul(float4(vNormal,0.0), matWorldViewInverseTranspose).xyz);
 
     Out.pos = mul(vPosition, matWorldViewProj);
-    P2.z -= 100.0f;
+    P2.z -= 100.0;
     P2 = mul(P2, matWorldViewProj);
     Out.pos.z = P2.z;
     Out.tex0 = tc;
