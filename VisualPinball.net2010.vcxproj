@@ -6924,6 +6924,20 @@ copy "$(TargetPath)" "%VPIN_DIR%"
       <Command Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">fxc /O3 /T fx_2_0 /Vn dmdShaderCode /Fh shader\DMDShader.h shader\DMDShader.fx</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">DMDShader.h</Outputs>
     </CustomBuild>
+    <CustomBuild Include="shader\FBShader.fx">
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">fxc /Od /T fx_2_0 /Vn FBShaderCode /Fh shader\FBShader.h shader\FBShader.fx</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">FBShader.h</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">fxc /O3 /T fx_2_0 /Vn FBShaderCode /Fh shader\FBShader.h shader\FBShader.fx</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">FBShader.h</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="shader\FlasherShader.fx">
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">fxc /Od /T fx_2_0 /Vn flasherShaderCode /Fh shader\FlasherShader.h shader\FlasherShader.fx</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">FlasherShader.h</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">fxc /O3 /T fx_2_0 /Vn flasherShaderCode /Fh shader\FlasherShader.h shader\FlasherShader.fx</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">FlasherShader.h</Outputs>
+    </CustomBuild>
     <None Include="target.bmp" />
     <None Include="res\textbox.rgs" />
     <None Include="res\timer.rgs" />
