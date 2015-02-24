@@ -76,8 +76,8 @@ sampler2D texSamplerBloom : TEXUNIT1 = sampler_state // Bloom
 
 struct VS_OUTPUT_2D
 { 
-   float4 pos           : POSITION; 
-   float2 tex0          : TEXCOORD0;
+   float4 pos  : POSITION; 
+   float2 tex0 : TEXCOORD0;
 };
 
 //

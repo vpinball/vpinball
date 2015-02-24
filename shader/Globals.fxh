@@ -21,7 +21,7 @@ sampler2D texSampler0 : TEXUNIT0 = sampler_state // base texture
 	//ADDRESSV  = Wrap;
 };
 
-sampler2D texSampler1 : TEXUNIT1 = sampler_state // environment and texB for lights //!! split up
+sampler2D texSampler1 : TEXUNIT1 = sampler_state // environment
 {
 	Texture	  = (Texture1);
     MIPFILTER = LINEAR; //!! ?
