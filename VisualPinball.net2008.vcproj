@@ -19578,6 +19578,29 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\shader\FlasherShader.fx"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="fxc /Od /T fx_2_0 /Vn flasherShaderCode /Fh shader\FlasherShader.h shader\FlasherShader.fx"
+						Outputs="FlasherShader.h"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release MinDependency Fast+SSE|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="fxc /O3 /T fx_2_0 /Vn flasherShaderCode /Fh shader\FlasherShader.h shader\FlasherShader.fx"
+						AdditionalDependencies=""
+						Outputs="FlasherShader.h"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\shader\Globals.fxh"
 				>
 			</File>
