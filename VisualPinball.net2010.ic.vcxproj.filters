@@ -836,5 +836,7 @@
     <CustomBuild Include="shader\BallShader.fx" />
     <CustomBuild Include="shader\BasicShader.fx" />
     <CustomBuild Include="shader\DMDShader.fx" />
+    <CustomBuild Include="shader\FBShader.fx" />
+    <CustomBuild Include="shader\FlasherShader.fx" />
   </ItemGroup>
 </Project>
