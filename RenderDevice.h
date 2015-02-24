@@ -304,6 +304,8 @@ public:
    Shader *basicShader;
    Shader *DMDShader;
    Shader *FBShader;
+   Shader *flasherShader;
+
    TextureManager m_texMan;
 
    static VertexDeclaration* m_pVertexTexelDeclaration;

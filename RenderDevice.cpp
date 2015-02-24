@@ -9,6 +9,7 @@
 #include "BasicShader.h"
 #include "DMDShader.h"
 #include "FBShader.h"
+#include "FlasherShader.h"
 
 #pragma comment(lib, "d3d9.lib")        // TODO: put into build system
 #pragma comment(lib, "d3dx9.lib")       // TODO: put into build system
@@ -411,6 +412,13 @@ RenderDevice::RenderDevice(HWND hwnd, int width, int height, bool fullscreen, in
     FBShader->Load(FBShaderCode, sizeof(FBShaderCode));
 #endif
 
+    flasherShader = new Shader(this);
+#if _MSC_VER >= 1700
+    flasherShader->Load(g_flasherShaderCode, sizeof(g_flasherShaderCode));
+#else
+    flasherShader->Load(flasherShaderCode, sizeof(flasherShaderCode));
+#endif
+
 	// create default vertex declarations for shaders
     CreateVertexDeclaration( VertexTexelElement, &m_pVertexTexelDeclaration );
     CreateVertexDeclaration( VertexNormalTexelElement, &m_pVertexNormalTexelDeclaration );
@@ -465,6 +473,13 @@ void RenderDevice::FreeShader()
       FBShader->Core()->SetTexture("Texture4",NULL);
       delete FBShader;
       FBShader=0;
+   }
+   if (flasherShader)
+   {
+      flasherShader->Core()->SetTexture("Texture0",NULL);
+      flasherShader->Core()->SetTexture("Texture1",NULL);
+      delete flasherShader;
+      flasherShader=0;
    }
 }
 
