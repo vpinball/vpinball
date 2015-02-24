@@ -642,17 +642,14 @@ void Primitive::RenderObject( RenderDevice *pd3dDevice )
     {
         pd3dDevice->basicShader->SetTexture("Texture0", pin);
         pd3dDevice->basicShader->SetTechnique("basic_with_texture");
-        pd3dDevice->basicShader->PerformAlphaTest(true);
-        pd3dDevice->basicShader->SetAlphaTestValue(1.0f / 255.0f);
+        pd3dDevice->basicShader->SetAlphaTestValue(1.0 / 255.0);
 
         //g_pplayer->m_pin3d.SetTextureFilter(0, TEXTURE_MODE_TRILINEAR);
         // accomodate models with UV coords outside of [0,1]
         pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_WRAP);
     }
     else
-    {
         pd3dDevice->basicShader->SetTechnique("basic_without_texture");
-    }
 
     // set transform
     g_pplayer->UpdateBasicShaderMatrix(fullMatrix);

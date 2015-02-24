@@ -1041,7 +1041,6 @@ Shader::Shader(RenderDevice *renderDevice)
     m_shader=0;
 	for(unsigned int i = 0; i < TEXTURESET_STATE_CACHE_SIZE; ++i)
 	    currentTexture[i]=0;
-    currentAlphaTest = false;
     currentAlphaTestValue = -1.0f;
     currentAlphaValue = -1.0f;
     currentColor=D3DXVECTOR4(-1.0f,-1.0f,-1.0f,-1.0f);
@@ -1231,15 +1230,6 @@ void Shader::SetMaterial( const Material * const mat )
 		g_pplayer->m_pin3d.EnableAlphaBlend(false);
     else
 		g_pplayer->m_pin3d.DisableAlphaBlend();
-}
-
-void Shader::PerformAlphaTest(const bool enable)
-{
-    if (enable != currentAlphaTest)
-    {
-        currentAlphaTest = enable;
-        m_shader->SetBool("bPerformAlphaTest", enable);
-    }
 }
 
 void Shader::SetAlphaTestValue(const float value)

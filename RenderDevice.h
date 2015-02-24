@@ -331,7 +331,6 @@ public:
     void Begin( const unsigned int pass );
     void End();
 
-    void PerformAlphaTest(const bool enable);
     void SetAlphaTestValue(const float value);
     void SetAlphaValue(const float value);
     void SetTexture(const D3DXHANDLE texelName, Texture *texel);
@@ -348,7 +347,6 @@ private:
 
     static const DWORD TEXTURESET_STATE_CACHE_SIZE=5; // current convention: SetTexture gets "TextureX", where X 0..4
     BaseTexture *currentTexture[TEXTURESET_STATE_CACHE_SIZE];
-    bool    currentAlphaTest;
     float   currentAlphaTestValue;
     float   currentAlphaValue;
     D3DXVECTOR4 currentColor;

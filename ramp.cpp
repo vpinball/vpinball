@@ -2023,8 +2023,7 @@ void Ramp::RenderRamp( RenderDevice *pd3dDevice, Material *mat )
          GenerateVertexBuffer(pd3dDevice);
 
       ppin3d->EnableAlphaBlend( false );
-      pd3dDevice->basicShader->PerformAlphaTest(true);
-      pd3dDevice->basicShader->SetAlphaTestValue(1.0f / 255.0f);
+      pd3dDevice->basicShader->SetAlphaTestValue(1.0 / 255.0);
 
       unsigned int offset=0;
       pd3dDevice->basicShader->Begin(0);

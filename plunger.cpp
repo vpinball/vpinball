@@ -274,8 +274,7 @@ void Plunger::PostRenderStatic(RenderDevice* pd3dDevice)
 	 if(pin)
      {
          pd3dDevice->basicShader->SetTexture("Texture0",pin);
-         pd3dDevice->basicShader->PerformAlphaTest(true);
-         pd3dDevice->basicShader->SetAlphaTestValue(1.0f / 255.0f);
+         pd3dDevice->basicShader->SetAlphaTestValue(1.0 / 255.0);
      }
 	 if ( renderNewPlunger )
      {

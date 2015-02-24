@@ -320,8 +320,7 @@ void Spinner::PostRenderStatic(RenderDevice* pd3dDevice)
 
     Texture * const image = m_ptable->GetImage(m_d.m_szImage);
 
-    pd3dDevice->basicShader->PerformAlphaTest(true);
-    pd3dDevice->basicShader->SetAlphaTestValue(1.0f / 255.0f);
+    pd3dDevice->basicShader->SetAlphaTestValue(1.0 / 255.0);
 
     UpdatePlate(pd3dDevice);
     if ( image )
@@ -330,10 +329,9 @@ void Spinner::PostRenderStatic(RenderDevice* pd3dDevice)
         pd3dDevice->basicShader->SetTechnique("basic_with_texture");
     }
     else // No image by that name
-    {
        pd3dDevice->basicShader->SetTechnique("basic_without_texture");
-    }
-    pd3dDevice->basicShader->Begin(0);
+
+	pd3dDevice->basicShader->Begin(0);
     pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, plateVertexBuffer, 0, spinnerPlateNumVertices, plateIndexBuffer, 0, spinnerPlateNumFaces);
     pd3dDevice->basicShader->End();
 
