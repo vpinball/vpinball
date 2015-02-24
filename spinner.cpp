@@ -326,7 +326,6 @@ void Spinner::PostRenderStatic(RenderDevice* pd3dDevice)
     UpdatePlate(pd3dDevice);
     if ( image )
     {
-        g_pplayer->m_pin3d.EnableAlphaBlend(false);
         pd3dDevice->basicShader->SetTexture("Texture0",image);
         pd3dDevice->basicShader->SetTechnique("basic_with_texture");
     }
