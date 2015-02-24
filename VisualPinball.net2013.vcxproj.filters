@@ -137,6 +137,13 @@
     <Image Include="res\white.bmp">
       <Filter>res</Filter>
     </Image>
+    <Image Include="res\envmap.bmp" />
+    <Image Include="res\bumperbase.bmp" />
+    <Image Include="res\ringenvmap.bmp" />
+    <Image Include="res\bumperCap.bmp" />
+    <Image Include="res\bumperSocket.bmp" />
+    <Image Include="res\kickerHoleWood.bmp" />
+    <Image Include="res\kickerCup.bmp" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="vpinball.idl" />
@@ -685,6 +692,9 @@
       <Filter>shaders</Filter>
     </FxCompile>
     <FxCompile Include="shader\DMDShader.fx">
+      <Filter>shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\FBShader.fx">
       <Filter>shaders</Filter>
     </FxCompile>
   </ItemGroup>
