@@ -19555,6 +19555,20 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\shader\FBShader.fx"
+				>
+				<FileConfiguration
+					Name="Release MinDependency Fast+SSE|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="fxc /O3 /T fx_2_0 /Vn FBShaderCode /Fh shader\FBShader.h shader\FBShader.fx"
+						AdditionalDependencies=""
+						Outputs="FBShader.h"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\shader\Globals.fxh"
 				>
 			</File>
