@@ -19558,6 +19558,15 @@
 				RelativePath=".\shader\FBShader.fx"
 				>
 				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="fxc /Od /T fx_2_0 /Vn FBShaderCode /Fh shader\FBShader.h shader\FBShader.fx"
+						Outputs="FBShader.h"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
 					Name="Release MinDependency Fast+SSE|Win32"
 					>
 					<Tool
