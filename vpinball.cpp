@@ -7638,7 +7638,7 @@ INT_PTR CALLBACK SearchSelectProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
          case IDOK:
             {
                HWND listBox = GetDlgItem(hwndDlg, IDC_ELEMENT_LIST);
-			      const size_t count = ListView_GetSelectedCount(listBox);
+			   const size_t count = ListView_GetSelectedCount(listBox);
 
                PinTable *pt = g_pvp->GetActiveTable();
                pt->ClearMultiSel();
@@ -7653,9 +7653,9 @@ INT_PTR CALLBACK SearchSelectProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                   {
                      IScriptable *pscript = (IScriptable*)lv.lParam;
                      ISelect *const pisel = pscript->GetISelect();
-                     if (pisel)
-                        pt->AddMultiSel(pisel, true);
-                  }
+                  if (pisel)
+                      pt->AddMultiSel(pisel, true);
+               }
                }
 
                EndDialog(hwndDlg, TRUE);
@@ -8044,13 +8044,13 @@ struct ManufacturerDimensions
    float height;
 };
 
-#define DIM_TABLE_SIZE 34
+#define DIM_TABLE_SIZE 36
 ManufacturerDimensions dimTable[DIM_TABLE_SIZE] =
 {
    {"Atari (widebody)", 27.0f, 45.0f },
    {"Bally 70s EM (standard)", 20.25f, 41.0f },
    {"Bally (standard)", 20.25f, 42.0f },
-   {"Bally (widebody)", 26.75f, 42.0f },
+   {"Bally (widebody)", 26.75f, 42.0f }, //!! OPA claims 40.5
    {"Capcom", 20.25f, 46.0f },
    {"Data East/Sega (standard)", 20.25f, 46.0f },
    {"Data East/Sega (widebody)", 23.25f, 46.0f },
@@ -8071,16 +8071,18 @@ ManufacturerDimensions dimTable[DIM_TABLE_SIZE] =
    {"WPC (1987 on)", 20.5f, 46.0f },
    {"WPC (superpin)", 23.25f ,46.0f },
    {"Zaccaria (standard)", 20.25f, 42.0f },
-   {"Black Knight 2000 (1991)", 20.25f ,46.0f },
-   {"Bride Of Pinbot (1991)", 20.25f ,45.25f },
-   {"BSD Dracula (1993)", 20.25f ,45.0f },
+   {"Black Knight 2000 (1991)", 20.25f ,46.0f }, //!! OPA: 20.2756 x 42.0
+   {"Bride Of Pinbot (1991)", 20.25f ,45.25f }, //!! OPA: 20.2362 x 45.27559
+   {"BSD Dracula (1993)", 20.25f ,45.0f }, //!! chepas claims its 20.5
    {"Doctor Who (1992)", 20.25f ,45.0625f },
+   {"Future Spa (1979)", 26.7717f, 40.55118f },
    {"Genie (1979)", 16.75f ,47.0f },
+   {"Guns N' Roses (1994)", 25.0f ,51.75f },
    {"Hercules (1979 Atari)", 36.0f ,72.0f },
    {"Mystery Castle (Alvin G)", 20.25f ,46.0f },
-   {"Safecracker", 16.5f ,41.5f },
+   {"Safecracker", 16.5f ,41.5f }, //!! OPA: "propably" 18.35 x 41.5
    {"Varkon (1982)", 24.0f ,21.0f },
-   {"World Cup Soccer (1994)", 20.25f ,45.75f }
+   {"World Cup Soccer (1994)", 20.25f ,45.75f } //!! OPA: 20.2756 x 45.7874
 };
 
 INT_PTR CALLBACK DimensionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
