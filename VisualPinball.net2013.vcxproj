@@ -4348,7 +4348,14 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\ball.bmp" />
+    <Image Include="res\bumperbase.bmp" />
+    <Image Include="res\bumperCap.bmp" />
+    <Image Include="res\bumperSocket.bmp" />
     <Image Include="res\chevron.bmp" />
+    <Image Include="res\envmap.bmp" />
+    <Image Include="res\kickerCup.bmp" />
+    <Image Include="res\kickerHoleWood.bmp" />
+    <Image Include="res\ringenvmap.bmp" />
     <Image Include="res\script.ico" />
     <Image Include="res\vpinball.ico" />
     <Image Include="res\flipper.bmp" />
@@ -4538,6 +4545,20 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       </ObjectFileOutput>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">dmdShaderCode</EntryPointName>
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">shader\%(Filename).h</HeaderFileOutput>
+    </FxCompile>
+    <FxCompile Include="shader\FBShader.fx">
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">FBShaderCode</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">2.0</ShaderModel>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">
+      </ObjectFileOutput>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">shader\%(Filename).h</HeaderFileOutput>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">FBShaderCode</EntryPointName>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">2.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Effect</ShaderType>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">shader\%(Filename).h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </ObjectFileOutput>
     </FxCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
