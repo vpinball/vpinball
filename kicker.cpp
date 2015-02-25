@@ -334,7 +334,6 @@ void Kicker::RenderStatic(RenderDevice* pd3dDevice)
          pd3dDevice->basicShader->SetTechnique("basic_with_texture");
          pd3dDevice->basicShader->SetTexture("Texture0", &texture);
          g_pplayer->m_pin3d.EnableAlphaBlend(false);
-         //pd3dDevice->basicShader->SetAlphaTestValue(1.0 / 255.0);
          pd3dDevice->basicShader->Begin(0);
          pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, numVertices, indexBuffer, 0, numFaces);
          pd3dDevice->basicShader->End();

@@ -2010,6 +2010,7 @@ void Ramp::RenderRamp( RenderDevice *pd3dDevice, Material *mat )
       if (pin)
       {
          pd3dDevice->basicShader->SetTexture( "Texture0", pin );
+         pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue / 255.0);
          pd3dDevice->basicShader->SetTechnique("basic_with_texture");
 
          //ppin3d->SetTextureFilter ( 0, TEXTURE_MODE_TRILINEAR );
@@ -2023,7 +2024,6 @@ void Ramp::RenderRamp( RenderDevice *pd3dDevice, Material *mat )
          GenerateVertexBuffer(pd3dDevice);
 
       ppin3d->EnableAlphaBlend( false );
-      pd3dDevice->basicShader->SetAlphaTestValue(1.0 / 255.0);
 
       unsigned int offset=0;
       pd3dDevice->basicShader->Begin(0);

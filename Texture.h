@@ -92,7 +92,7 @@ public:
    // width and height of texture can be different than width and height
    // of m_pdsBuffer, since the surface can be limited to smaller sizes by the user
    int m_width, m_height;
-
+   float m_alphaTestValue;
    BaseTexture* m_pdsBuffer;
 
    HBITMAP m_hbmGDIVersion; // HBitmap at screen depth and converted/visualized alpha so GDI draws it fast

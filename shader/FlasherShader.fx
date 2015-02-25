@@ -12,6 +12,7 @@ float4x4 matWorldViewProj : WORLDVIEWPROJ;
 float3 staticColor = float3(1.,1.,1.);
 float  fAlpha = 1.0;
 float  fAlphaTestValue = 128.0/255.0;
+float  fAlphaTestValueB = 128.0/255.0;
 float2 amount__blend_modulate_vs_add;
 int    filterMode;
 
@@ -81,7 +82,7 @@ float4 ps_main_textureAB_noLight(in VS_OUTPUT_2D IN) : COLOR
    float4 pixel1 = tex2D(texSampler0, IN.tex0);
    float4 pixel2 = tex2D(texSampler1, IN.tex0);
 
-   if (pixel1.a<=fAlphaTestValue || pixel2.a<=fAlphaTestValue)
+   if (pixel1.a<=fAlphaTestValue || pixel2.a<=fAlphaTestValueB)
     clip(-1);           //stop the pixel shader if alpha test should reject pixel
 
    pixel1.xyz = InvGamma(pixel1.xyz);
