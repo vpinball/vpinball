@@ -364,10 +364,6 @@ technique bulb_light
    { 
 		vertexshader = compile vs_3_0 vs_lightbulb_main();
 		pixelshader  = compile ps_3_0 PS_BulbLight();
-		SrcBlend=SRCALPHA;     // add the lightcontribution
-		DestBlend=INVSRCCOLOR; // but also modulate the light first with the underlying elements by (1+lightcontribution, e.g. a very crude approximation of real lighting)
-		AlphaBlendEnable=true;
-		BlendOp=RevSubtract;   // see above
    } 
 }
 

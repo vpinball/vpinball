@@ -572,7 +572,7 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
     if(m_fBackglass && g_pplayer->m_ptable->m_tblMirrorEnabled)
 		pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
 
-	//Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
     const bool isOn = (m_realState == LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : !!m_realState;
 
@@ -621,8 +621,8 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
         pd3dDevice->basicShader->Core()->SetBool("imageMode",m_d.m_imageMode);
         pd3dDevice->basicShader->SetMaterial(m_surfaceMaterial);
 
-	    Texture *offTexel;
-		if ((offTexel = m_ptable->GetImage(m_d.m_szOffImage)) != NULL)
+	    Texture *offTexel = m_ptable->GetImage(m_d.m_szOffImage);
+		if (offTexel != NULL)
         {
             pd3dDevice->basicShader->SetTechnique("light_with_texture");
             pd3dDevice->basicShader->SetTexture("Texture0", offTexel );
@@ -631,8 +631,13 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
             pd3dDevice->basicShader->SetTechnique("light_without_texture");
     }
     else
-	{		
+	{
         pd3dDevice->basicShader->SetTechnique("bulb_light");
+
+		ppin3d->EnableAlphaBlend(false);
+		pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);    // add the lightcontribution
+		pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_INVSRCCOLOR); // but also modulate the light first with the underlying elements by (1+lightcontribution, e.g. a very crude approximation of real lighting)
+		pd3dDevice->SetRenderState(RenderDevice::BLENDOP, D3DBLENDOP_REVSUBTRACT); //!! meh, optimize all these alpha sets
 
 		if ( m_d.m_showBulbMesh ) // blend bulb mesh hull additive over "normal" bulb to approximate the emission directly reaching the camera
 		{
@@ -655,6 +660,12 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
     pd3dDevice->DrawPrimitiveVB(D3DPT_TRIANGLELIST, (!m_fBackglass) ? MY_D3DFVF_NOTEX2_VERTEX : MY_D3DTRANSFORMED_NOTEX2_VERTEX, customMoverVBuffer, 0, customMoverVertexNum);
     pd3dDevice->basicShader->End();
     
+    if ( m_d.m_BulbLight )
+	{
+		ppin3d->DisableAlphaBlend();
+	    pd3dDevice->SetRenderState(RenderDevice::BLENDOP, D3DBLENDOP_ADD);
+	}
+
 	if (!m_fBackglass)
 	{
 	    pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
