@@ -478,9 +478,9 @@ void Pin3D::RenderPlayfieldGraphics()
 	if (pin)
 	{
       SetTextureFilter(0, TEXTURE_MODE_ANISOTROPIC);
-      m_pd3dDevice->basicShader->SetTexture("Texture0",pin);
       m_pd3dDevice->basicShader->SetTechnique("basic_with_texture");
-      m_pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue / 255.0);
+      m_pd3dDevice->basicShader->SetTexture("Texture0",pin);
+      m_pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue / 255.0f);
 	}
 	else // No image by that name
       m_pd3dDevice->basicShader->SetTechnique("basic_without_texture");

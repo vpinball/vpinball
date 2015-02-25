@@ -874,7 +874,6 @@ bool Ramp::isHabitrail() const
 
 void Ramp::RenderStaticHabitrail(RenderDevice* pd3dDevice)
 {
-   Pin3D * const ppin3d = &g_pplayer->m_pin3d;
    Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
 
    if ( !pin )
@@ -888,6 +887,7 @@ void Ramp::RenderStaticHabitrail(RenderDevice* pd3dDevice)
 
        //g_pplayer->m_pin3d.SetTextureFilter(0, TEXTURE_MODE_TRILINEAR);
    }
+
    pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
    if ( m_d.m_type==RampType2Wire )
    {
@@ -2009,16 +2009,14 @@ void Ramp::RenderRamp( RenderDevice *pd3dDevice, Material *mat )
 
       if (pin)
       {
-         pd3dDevice->basicShader->SetTexture( "Texture0", pin );
-         pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue / 255.0);
          pd3dDevice->basicShader->SetTechnique("basic_with_texture");
+         pd3dDevice->basicShader->SetTexture( "Texture0", pin );
+         pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue / 255.0f);
 
          //ppin3d->SetTextureFilter ( 0, TEXTURE_MODE_TRILINEAR );
       }
       else
-      {
          pd3dDevice->basicShader->SetTechnique("basic_without_texture");
-      }
 
       if (!dynamicVertexBuffer || dynamicVertexBufferRegenerate)
          GenerateVertexBuffer(pd3dDevice);

@@ -162,8 +162,8 @@ float4   lightColor_intensity;
 float4   lightColor2_falloff_power;
 float4   lightCenter_maxRange;
 float    blend_modulate_vs_add;
-bool imageMode;
-bool backglassMode;
+bool     imageMode;
+bool     backglassMode;
 
 struct VS_LIGHT_OUTPUT 
 { 

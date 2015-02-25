@@ -102,10 +102,10 @@ float3 DoPointLight(const float3 pos, const float3 N, const float3 V, const floa
 float3 DoEnvmapDiffuse(const float3 N, const float3 diffuse)
 {
    const float2 uv = float2( // remap to 2D envmap coords
-		atan2(N.y, N.x) * (0.5/PI) + 0.5f,
+		atan2(N.y, N.x) * (0.5/PI) + 0.5,
 	    acos(N.z) * (1.0/PI));
 
-   return diffuse * InvGamma(tex2Dlod(texSampler2, float4(uv, 0.f,0.f)).xyz)*fenvEmissionScale; //!! replace by real HDR instead? -> remove invgamma then
+   return diffuse * InvGamma(tex2Dlod(texSampler2, float4(uv, 0.,0.)).xyz)*fenvEmissionScale; //!! replace by real HDR instead? -> remove invgamma then
 }
 
 //!! PI?
@@ -113,29 +113,29 @@ float3 DoEnvmapDiffuse(const float3 N, const float3 diffuse)
 float3 DoEnvmapGlossy(const float3 N, const float3 V, const float3 glossy, const float glossyPower)
 {
    float3 r = reflect(-V,N);
-   r = normalize(mul(float4(r,0.0f), matViewInverse).xyz); // trafo back to world
+   r = normalize(mul(float4(r,0.0), matViewInverse).xyz); // trafo back to world
 
-   const float mip = log2(fenvTexWidth * sqrt(3.0f)) - 0.5f*log2(glossyPower + 1.0f);
+   const float mip = log2(fenvTexWidth * sqrt(3.0)) - 0.5*log2(glossyPower + 1.0);
 
    const float2 uv = float2( // remap to 2D envmap coords
-		atan2(r.y, r.x) * (0.5/PI) + 0.5f,
+		atan2(r.y, r.x) * (0.5/PI) + 0.5,
 	    acos(r.z) * (1.0/PI));
 
-   return glossy * InvGamma(tex2Dlod(texSampler1, float4(uv, 0, mip)).xyz)*fenvEmissionScale; //!! replace by real HDR instead? -> remove invgamma then
+   return glossy * InvGamma(tex2Dlod(texSampler1, float4(uv, 0., mip)).xyz)*fenvEmissionScale; //!! replace by real HDR instead? -> remove invgamma then
 }
 
 //!! PI?
 float3 DoEnvmap2ndLayer(const float3 color1stLayer, const float3 pos, const float3 N, const float3 V, const float3 specular)
 {
    float3 r = reflect(-V,N);
-   r = normalize(mul(float4(r,0.0f), matViewInverse).xyz); // trafo back to world
+   r = normalize(mul(float4(r,0.0), matViewInverse).xyz); // trafo back to world
 
    const float2 uv = float2( // remap to 2D envmap coords
-		atan2(r.y, r.x) * (0.5/PI) + 0.5f,
+		atan2(r.y, r.x) * (0.5/PI) + 0.5,
 	    acos(r.z) * (1.0/PI));
 	    
    const float3 w = FresnelSchlick(specular, dot(V, N), Roughness_WrapL_Edge.z); //!! ?
-   return lerp(color1stLayer, InvGamma(tex2Dlod(texSampler1, float4(uv, 0, 0)).xyz)*fenvEmissionScale, w); // weight (optional) lower diffuse/glossy layer with clearcoat/specular //!! replace by real HDR instead? -> remove invgamma then
+   return lerp(color1stLayer, InvGamma(tex2Dlod(texSampler1, float4(uv, 0., 0.)).xyz)*fenvEmissionScale, w); // weight (optional) lower diffuse/glossy layer with clearcoat/specular //!! replace by real HDR instead? -> remove invgamma then
 }
 
 float3 lightLoop(const float3 pos, float3 N, float3 V, float3 diffuse, float3 glossy, const float3 specular, const float edge)

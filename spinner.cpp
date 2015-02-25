@@ -324,9 +324,9 @@ void Spinner::PostRenderStatic(RenderDevice* pd3dDevice)
     UpdatePlate(pd3dDevice);
     if ( image )
     {
-        pd3dDevice->basicShader->SetTexture("Texture0",image);
-        pd3dDevice->basicShader->SetAlphaTestValue(image->m_alphaTestValue / 255.0);
         pd3dDevice->basicShader->SetTechnique("basic_with_texture");
+        pd3dDevice->basicShader->SetTexture("Texture0",image);
+        pd3dDevice->basicShader->SetAlphaTestValue(image->m_alphaTestValue / 255.0f);
     }
     else // No image by that name
        pd3dDevice->basicShader->SetTechnique("basic_without_texture");

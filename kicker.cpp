@@ -318,14 +318,16 @@ void Kicker::RenderStatic(RenderDevice* pd3dDevice)
          buf[i].tu = 0.0f;
          buf[i].tv = 0.0f;
       }
+
       Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
       pd3dDevice->basicShader->SetMaterial(mat);
       pd3dDevice->basicShader->SetTechnique("kickerBoolean");
-      pd3dDevice->basicShader->SetAlphaTestValue(-1.0f);
       pd3dDevice->SetRenderState(RenderDevice::ZFUNC, D3DCMP_ALWAYS);
+
       pd3dDevice->basicShader->Begin(0);
       pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, buf, kickerPlateNumVertices, kickerPlateIndices, kickerPlateNumFaces);
       pd3dDevice->basicShader->End();
+
       pd3dDevice->SetRenderState(RenderDevice::ZFUNC, D3DCMP_LESSEQUAL );
       delete [] buf;
 
@@ -334,11 +336,13 @@ void Kicker::RenderStatic(RenderDevice* pd3dDevice)
          pd3dDevice->basicShader->SetTechnique("basic_with_texture");
          pd3dDevice->basicShader->SetTexture("Texture0", &texture);
          g_pplayer->m_pin3d.EnableAlphaBlend(false);
+	 pd3dDevice->basicShader->SetAlphaTestValue(-1.0f);
+
          pd3dDevice->basicShader->Begin(0);
          pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, numVertices, indexBuffer, 0, numFaces);
          pd3dDevice->basicShader->End();
-         //pd3dDevice->basicShader->SetAlphaTestValue(-1.0f);
-         g_pplayer->m_pin3d.DisableAlphaBlend();
+
+	 g_pplayer->m_pin3d.DisableAlphaBlend();
       }
 //       else
 //       {
