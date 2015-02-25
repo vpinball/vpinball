@@ -438,6 +438,8 @@ void Decal::EndPlay()
 
 void Decal::PostRenderStatic(RenderDevice* pd3dDevice)
 {
+   if(!m_fBackglass)
+      RenderObject(pd3dDevice);
 }
 
 static const WORD rgi0123[4] = {0,1,2,3};
@@ -508,55 +510,63 @@ void Decal::RenderSetup(RenderDevice* pd3dDevice )
    memcpy( buf, vertices, 4*sizeof(Vertex3D_NoTex2));
    vertexBuffer->unlock();
 }
+float Decal::GetDepth(const Vertex3Ds& viewDir)
+{
+   const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+   return viewDir.z*height;
+}
 
-void Decal::RenderStatic(RenderDevice* pd3dDevice)
+bool Decal::IsTransparent()
+{
+   if(m_fBackglass)
+      return false;
+
+   return true;
+}
+
+void Decal::RenderObject(RenderDevice* pd3dDevice)
 {
    if(m_fBackglass && !GetPTable()->GetDecalsEnabled())
-       return;
+      return;
 
    if(m_fBackglass && g_pplayer->m_ptable->m_tblMirrorEnabled)
-	   pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
-
+      pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
+ 
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
    Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
    pd3dDevice->basicShader->SetMaterial(mat);
+
    //pd3dDevice->basicShader->Core()->SetFloat("fmaterialAlpha",1.0f);
-   
+   pd3dDevice->basicShader->SetTechnique("basic_with_texture");
+
    if (m_d.m_decaltype != DecalImage)
-   {
-       pd3dDevice->basicShader->SetTechnique("basic_with_texture");
-       pd3dDevice->basicShader->SetTexture("Texture0", pd3dDevice->m_texMan.LoadTexture(m_textImg));
-       pd3dDevice->basicShader->SetAlphaTestValue(-1.0f); //!! add transparency?
-   }
+      pd3dDevice->basicShader->SetTexture("Texture0", pd3dDevice->m_texMan.LoadTexture(m_textImg));
    else
    {
       Texture *pin = m_ptable->GetImage(m_d.m_szImage);
       if (pin)
       {
-	  pd3dDevice->basicShader->SetTechnique("basic_with_texture");
-          pd3dDevice->basicShader->SetTexture("Texture0", pin);
-          pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue / 255.0f);
+         pd3dDevice->basicShader->SetTexture("Texture0", pin);
+         pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue / 255.0f);
       }
-      else
-	  pd3dDevice->basicShader->SetTechnique("basic_without_texture");
    }
 
    // Set texture to mirror, so the alpha state of the texture blends correctly to the outside
-//!!   pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_MIRROR);
+   //!!   pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_MIRROR);
 
    //ppin3d->SetTextureFilter ( 0, TEXTURE_MODE_TRILINEAR );
    g_pplayer->m_pin3d.EnableAlphaBlend(false);
 
    if (!m_fBackglass)
    {
-       float depthbias = -5 * BASEDEPTHBIAS;
-       pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, *((DWORD*)&depthbias));
+      float depthbias = -5 * BASEDEPTHBIAS;
+      pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, *((DWORD*)&depthbias));
    }
    else
    {
-	   const D3DXVECTOR4 staticColor(1.0f,1.0f,1.0f,1.0f);
-	   pd3dDevice->basicShader->Core()->SetVector("cBase_Alpha",&staticColor);
+      const D3DXVECTOR4 staticColor(1.0f,1.0f,1.0f,1.0f);
+      pd3dDevice->basicShader->Core()->SetVector("cBase_Alpha",&staticColor);
    }
 
    pd3dDevice->basicShader->Begin(0);
@@ -570,7 +580,13 @@ void Decal::RenderStatic(RenderDevice* pd3dDevice)
    g_pplayer->m_pin3d.DisableAlphaBlend();
 
    if(m_fBackglass && g_pplayer->m_ptable->m_tblMirrorEnabled)
-	   pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+      pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+}
+
+void Decal::RenderStatic(RenderDevice* pd3dDevice)
+{
+   if (m_fBackglass)
+      RenderObject(pd3dDevice);
 }
 
 void Decal::SetObjectPos()
