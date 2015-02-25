@@ -2465,8 +2465,9 @@ void Player::CheckAndUpdateRegions()
 
 void Player::Bloom()
 {
-	if(m_ptable->m_bloom_strength <= 0.0f)
-		return;
+    float bloomStrength=m_ptable->m_bloom_strength;
+ 	if(m_ptable->m_bloom_strength < 0.0f)
+ 		bloomStrength = 0.0;
 
 	float shiftedVerts[4*5] =
 	{
@@ -2529,7 +2530,7 @@ void Player::Bloom()
 		m_pin3d.m_pd3dDevice->SetRenderTarget(tmpBloomSurface3);
 
 		m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetBloomTmpBufferTexture());
-		const D3DXVECTOR4 fb_inv_resolution_05((float)(3.0/(double)m_width),(float)(3.0/(double)m_height), m_ptable->m_bloom_strength, 1.0f);
+		const D3DXVECTOR4 fb_inv_resolution_05((float)(3.0/(double)m_width),(float)(3.0/(double)m_height), bloomStrength, 1.0f);
 		m_pin3d.m_pd3dDevice->FBShader->Core()->SetVector("w_h_height", &fb_inv_resolution_05);
 		m_pin3d.m_pd3dDevice->FBShader->Core()->SetTechnique("fb_bloom_vert");
 
