@@ -75,6 +75,8 @@ STANDARD_NOSCRIPT_EDITABLE_DECLARES(Decal, eItemDecal, DECAL, VIEW_PLAYFIELD | V
 	// Multi-object manipulation
 	virtual void GetCenter(Vertex2D * const pv) const;
 	virtual void PutCenter(const Vertex2D * const pv);
+   virtual float GetDepth(const Vertex3Ds& viewDir);
+   virtual bool IsTransparent();
 
 	virtual void Rotate(float ang, Vertex2D *pvCenter);
 
@@ -89,7 +91,7 @@ STANDARD_NOSCRIPT_EDITABLE_DECLARES(Decal, eItemDecal, DECAL, VIEW_PLAYFIELD | V
 
 private:
     void RenderText();
-
+    void RenderObject(RenderDevice* pd3dDevice);
 private:
 	IFont *m_pIFont;
 
