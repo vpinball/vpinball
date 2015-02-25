@@ -549,10 +549,6 @@ void Flipper::PostRenderStatic(RenderDevice* pd3dDevice)
     if (m_phitflipper == NULL && !m_d.m_fVisible)
         return;
     
-    pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, TRUE);
-    pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
-    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-
     Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
     Material *mat = m_ptable->GetMaterial( m_d.m_szMaterial);

@@ -1,11 +1,9 @@
 #include "Helpers.fxh"
 
 float4 ms_zpd_ya_td;
-float4 w_h_height;
+float4 w_h_height; // in bloom w_h_height.z keeps strength
 
 float AO_scale;
-
-float bloom_strength;
 
 /*static*/ bool color_grade;
 
@@ -206,7 +204,7 @@ float4 ps_main_fb_bloom_vert( in VS_OUTPUT_2D IN) : COLOR
         result += tex2Dlod(texSampler4, float4(IN.tex0+w_h_height.xy*0.5+float2(0.0,w_h_height.y*offset[i]), 0.,0.)).xyz*weight[i];
         result += tex2Dlod(texSampler4, float4(IN.tex0+w_h_height.xy*0.5-float2(0.0,w_h_height.y*offset[i]), 0.,0.)).xyz*weight[i];
     }
-    return float4(result*bloom_strength, 1.0);
+    return float4(result*w_h_height.z, 1.0);
 }
 
 #else
@@ -233,7 +231,7 @@ float4 ps_main_fb_bloom_vert( in VS_OUTPUT_2D IN) : COLOR
         result += tex2Dlod(texSampler5, float4(IN.tex0+w_h_height.xy*0.5+float2(0.0,w_h_height.y*offset[i]), 0.,0.)).xyz*weight[i];
         result += tex2Dlod(texSampler5, float4(IN.tex0+w_h_height.xy*0.5-float2(0.0,w_h_height.y*offset[i]), 0.,0.)).xyz*weight[i];
     }
-    return float4(result*bloom_strength, 1.0);
+    return float4(result*w_h_height.z, 1.0);
 }
 #endif
 

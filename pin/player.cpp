@@ -2498,6 +2498,7 @@ void Player::Bloom()
 		m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
 		m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
 		m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, FALSE);
+
 		m_pin3d.m_pd3dDevice->FBShader->Begin(0);
 		m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_TEX, (LPVOID)shiftedVerts, 4);
 		m_pin3d.m_pd3dDevice->FBShader->End();
@@ -2528,9 +2529,8 @@ void Player::Bloom()
 		m_pin3d.m_pd3dDevice->SetRenderTarget(tmpBloomSurface3);
 
 		m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetBloomTmpBufferTexture());
-		const D3DXVECTOR4 fb_inv_resolution_05((float)(3.0/(double)m_width),(float)(3.0/(double)m_height), 1.0f,1.0f);
+		const D3DXVECTOR4 fb_inv_resolution_05((float)(3.0/(double)m_width),(float)(3.0/(double)m_height), m_ptable->m_bloom_strength, 1.0f);
 		m_pin3d.m_pd3dDevice->FBShader->Core()->SetVector("w_h_height", &fb_inv_resolution_05);
-		m_pin3d.m_pd3dDevice->FBShader->Core()->SetFloat("bloom_strength", m_ptable->m_bloom_strength);
 		m_pin3d.m_pd3dDevice->FBShader->Core()->SetTechnique("fb_bloom_vert");
 
 		m_pin3d.m_pd3dDevice->FBShader->Begin(0);
