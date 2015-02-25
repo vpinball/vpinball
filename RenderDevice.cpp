@@ -1041,7 +1041,7 @@ Shader::Shader(RenderDevice *renderDevice)
     m_shader=0;
 	for(unsigned int i = 0; i < TEXTURESET_STATE_CACHE_SIZE; ++i)
 	    currentTexture[i]=0;
-    currentAlphaTestValue = -1.0f;
+    currentAlphaTestValue = -2.0f;
     currentAlphaValue = -1.0f;
     currentColor=D3DXVECTOR4(-1.0f,-1.0f,-1.0f,-1.0f);
     currentTechnique[0]=0;
