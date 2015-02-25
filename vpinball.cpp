@@ -8073,7 +8073,7 @@ ManufacturerDimensions dimTable[DIM_TABLE_SIZE] =
    {"Zaccaria (standard)", 20.25f, 42.0f },
    {"Black Knight 2000 (1991)", 20.25f ,46.0f }, //!! OPA: 20.2756 x 42.0
    {"Bride Of Pinbot (1991)", 20.25f ,45.25f }, //!! OPA: 20.2362 x 45.27559
-   {"BSD Dracula (1993)", 20.25f ,45.0f }, //!! chepas claims its 20.5
+   {"BSD Dracula (1993)", 20.5f ,45.0f }, //!! chepas claims its 20.5 (by pics/compared to TAF), OPA 20.25
    {"Doctor Who (1992)", 20.25f ,45.0625f },
    {"Future Spa (1979)", 26.7717f, 40.55118f },
    {"Genie (1979)", 16.75f ,47.0f },
