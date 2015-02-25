@@ -1313,7 +1313,6 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
       if( m_d.m_fAddBlend)
       {
           pd3dDevice->flasherShader->SetAlphaTestValue(-1.0f);
-          pd3dDevice->flasherShader->Core()->SetFloat("fAlphaTestValueB",-1.0f);
       }
       else
       {
