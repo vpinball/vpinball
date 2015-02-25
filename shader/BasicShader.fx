@@ -1,8 +1,6 @@
 //!! have switch to choose if texture is weighted by diffuse/glossy or is just used raw?
 
-#define NUM_BALL_LIGHTS 0 // just to avoid having to much constant mem allocated
-
-#include "Globals.fxh"
+#define NUM_BALL_LIGHTS 0 // just to avoid having too much constant mem allocated
 
 #include "Helpers.fxh"
 
@@ -67,6 +65,13 @@ struct VS_OUTPUT
    float3 normal   : TEXCOORD2;
 };
 
+struct VS_NOTEX_OUTPUT 
+{ 
+   float4 pos      : POSITION; 
+   float3 worldPos : TEXCOORD0; 
+   float3 normal   : TEXCOORD1;
+};
+
 //------------------------------------
 
 //
@@ -91,7 +96,24 @@ VS_OUTPUT vs_main (float4 vPosition : POSITION0,
    return Out; 
 }
 
-float4 ps_main(in VS_OUTPUT IN) : COLOR
+VS_NOTEX_OUTPUT vs_notex_main (float4 vPosition : POSITION0,  
+                               float3 vNormal   : NORMAL0,  
+                               float2 tc        : TEXCOORD0) 
+{ 
+   VS_NOTEX_OUTPUT Out;
+
+   // trafo all into worldview space (as most of the weird trafos happen in view, world is identity so far)
+   const float3 P = mul(vPosition, matWorldView).xyz;
+   const float3 N = normalize(mul(float4(vNormal,0.0), matWorldViewInverseTranspose).xyz);
+
+   Out.pos = mul(vPosition, matWorldViewProj);
+   Out.worldPos = P;
+   Out.normal = N;
+   
+   return Out; 
+}
+
+float4 ps_main(in VS_NOTEX_OUTPUT IN) : COLOR
 {
    //return float4((IN.normal+1.0)*0.5,1.0); // visualize normals
    
@@ -152,6 +174,12 @@ struct VS_LIGHT_OUTPUT
    float3 normal        : TEXCOORD3;
 };
 
+struct VS_LIGHTBULB_OUTPUT
+{ 
+   float4 pos           : POSITION;
+   float3 tablePos      : TEXCOORD0;
+};
+
 VS_LIGHT_OUTPUT vs_light_main (float4 vPosition : POSITION0,  
                                float3 vNormal   : NORMAL0,  
                                float2 tc        : TEXCOORD0) 
@@ -167,6 +195,18 @@ VS_LIGHT_OUTPUT vs_light_main (float4 vPosition : POSITION0,
    Out.tablePos = vPosition.xyz;
    Out.worldPos = P;
    Out.normal = N;
+   
+   return Out; 
+}
+
+VS_LIGHTBULB_OUTPUT vs_lightbulb_main (float4 vPosition : POSITION0,  
+                                       float3 vNormal   : NORMAL0,  
+                                       float2 tc        : TEXCOORD0) 
+{
+   VS_LIGHTBULB_OUTPUT Out;
+
+   Out.pos = mul(vPosition, matWorldViewProj);
+   Out.tablePos = vPosition.xyz;
    
    return Out; 
 }
@@ -236,7 +276,7 @@ float4 PS_LightWithoutTexel(in VS_LIGHT_OUTPUT IN) : COLOR
     return color+result;
 }
 
-float4 PS_BulbLight(in VS_LIGHT_OUTPUT IN) : COLOR
+float4 PS_BulbLight(in VS_LIGHTBULB_OUTPUT IN) : COLOR
 {
 	const float len = length(lightCenter_maxRange.xyz - IN.tablePos) * lightCenter_maxRange.w;
     const float atten = pow(1.0 - saturate(len), lightColor2_falloff_power.w);
@@ -251,11 +291,11 @@ float4 PS_BulbLight(in VS_LIGHT_OUTPUT IN) : COLOR
 //------------------------------------------
 // Kicker boolean vertex shader
 
-VS_OUTPUT vs_kicker (float4 vPosition : POSITION0,  
-                     float3 vNormal   : NORMAL0,  
-                     float2 tc        : TEXCOORD0) 
+VS_NOTEX_OUTPUT vs_kicker (float4 vPosition : POSITION0,  
+                           float3 vNormal   : NORMAL0,  
+                           float2 tc        : TEXCOORD0) 
 { 
-    VS_OUTPUT Out;
+    VS_NOTEX_OUTPUT Out;
     const float3 P = mul(vPosition, matWorldView).xyz;
     float4 P2 = vPosition;
     const float3 N = normalize(mul(float4(vNormal,0.0), matWorldViewInverseTranspose).xyz);
@@ -264,7 +304,6 @@ VS_OUTPUT vs_kicker (float4 vPosition : POSITION0,
     P2.z -= 100.0;
     P2 = mul(P2, matWorldViewProj);
     Out.pos.z = P2.z;
-    Out.tex0 = tc;
     Out.worldPos = P;
     Out.normal = N;
    
@@ -283,7 +322,7 @@ technique basic_without_texture
 { 
    pass P0 
    { 
-      VertexShader = compile vs_3_0 vs_main(); 
+      VertexShader = compile vs_3_0 vs_notex_main(); 
 	  PixelShader = compile ps_3_0 ps_main();
    } 
 }
@@ -323,11 +362,10 @@ technique bulb_light
 { 
    pass P0 
    { 
-		vertexshader = compile vs_3_0 vs_light_main();
+		vertexshader = compile vs_3_0 vs_lightbulb_main();
 		pixelshader  = compile ps_3_0 PS_BulbLight();
 		SrcBlend=SRCALPHA;     // add the lightcontribution
 		DestBlend=INVSRCCOLOR; // but also modulate the light first with the underlying elements by (1+lightcontribution, e.g. a very crude approximation of real lighting)
-		AlphaTestEnable=false;
 		AlphaBlendEnable=true;
 		BlendOp=RevSubtract;   // see above
    } 

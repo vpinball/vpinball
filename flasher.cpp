@@ -1316,10 +1316,7 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
    pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
    g_pplayer->m_pin3d.EnableAlphaBlend(m_d.m_fAddBlend);
    if(m_d.m_fAddBlend)
-   {
-      pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, FALSE);
       pd3dDevice->flasherShader->SetAlphaTestValue(-1.0f);
-   }
    else
       pd3dDevice->flasherShader->SetAlphaTestValue(1.0 / 255.0);
 

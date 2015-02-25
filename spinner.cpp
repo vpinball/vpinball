@@ -338,7 +338,6 @@ void Spinner::PostRenderStatic(RenderDevice* pd3dDevice)
 //    g_pplayer->UpdateBasicShaderMatrix();
 
     pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
-    pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, FALSE);
 }
 
 

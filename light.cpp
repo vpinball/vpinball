@@ -572,19 +572,17 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
     if(m_fBackglass && g_pplayer->m_ptable->m_tblMirrorEnabled)
 		pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
 
-	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+	//Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
     const bool isOn = (m_realState == LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : !!m_realState;
-    const float height = m_surfaceHeight;
 
     if (!m_fBackglass)
     {
 	    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
-        float depthbias = -BASEDEPTHBIAS;
+        const float depthbias = -BASEDEPTHBIAS;
         pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, *((DWORD*)&depthbias));
     }
 
-	//ppin3d->EnableAlphaTestReference(1);        // don't alpha blend, but do honor transparent pixels
 	Vertex3D_NoTex2 centerHUD;
 	centerHUD.x = m_d.m_vCenter.x;
 	centerHUD.y = m_d.m_vCenter.y;
@@ -592,8 +590,9 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
 	if(m_fBackglass)
 		SetHUDVertices(&centerHUD,1);
 	const D3DXVECTOR4 center_range(centerHUD.x, centerHUD.y, !m_fBackglass ? m_surfaceHeight+0.05f : 0.0f, 1.0f/max(m_d.m_falloff, 0.1f));
-    pd3dDevice->basicShader->Core()->SetVector("lightCenter_maxRange", &center_range);
-    const D3DXVECTOR4 lightColor2_falloff_power = convertColor(m_d.m_color2, m_d.m_falloff_power);
+	pd3dDevice->basicShader->Core()->SetVector("lightCenter_maxRange", &center_range);
+
+	const D3DXVECTOR4 lightColor2_falloff_power = convertColor(m_d.m_color2, m_d.m_falloff_power);
     pd3dDevice->basicShader->Core()->SetVector("lightColor2_falloff_power", &lightColor2_falloff_power);
     D3DXVECTOR4 lightColor_intensity = convertColor(m_d.m_color);
     
@@ -615,13 +614,14 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
              m_d.m_currentIntensity=0.0f;
        }
     }
-    Texture *offTexel=NULL;
+
     if ( !m_d.m_BulbLight )
     {
         pd3dDevice->basicShader->Core()->SetBool("backglassMode",m_fBackglass);
         pd3dDevice->basicShader->Core()->SetBool("imageMode",m_d.m_imageMode);
         pd3dDevice->basicShader->SetMaterial(m_surfaceMaterial);
 
+	    Texture *offTexel;
 		if ((offTexel = m_ptable->GetImage(m_d.m_szOffImage)) != NULL)
         {
             pd3dDevice->basicShader->SetTechnique("light_with_texture");
@@ -633,30 +633,28 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
     else
 	{		
         pd3dDevice->basicShader->SetTechnique("bulb_light");
+
+		if ( m_d.m_showBulbMesh ) // blend bulb mesh hull additive over "normal" bulb to approximate the emission directly reaching the camera
+		{
+			lightColor_intensity.w = m_d.m_currentIntensity*0.02f; //!! make configurable?
+			pd3dDevice->basicShader->Core()->SetVector("lightColor_intensity", &lightColor_intensity);
+			pd3dDevice->basicShader->Core()->SetFloat("blend_modulate_vs_add",0.00001f); // avoid 0, as it disables the blend
+
+			pd3dDevice->basicShader->Begin(0);
+			pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, bulbLightVBuffer, 0, bulbLightNumVertices, bulbLightIndexBuffer, 0, bulbLightNumFaces );
+			pd3dDevice->basicShader->End();
+		}
+
+		pd3dDevice->basicShader->Core()->SetFloat("blend_modulate_vs_add",max(m_d.m_modulate_vs_add,0.00001f)); // avoid 0, as it disables the blend
 	}
 
-    if ( m_d.m_showBulbMesh && m_d.m_BulbLight ) // blend bulb mesh hull additive over "normal" bulb to approximate the emission directly reaching the camera
-    {
-		lightColor_intensity.w = m_d.m_currentIntensity*0.02f; //!! make configurable?
-	    pd3dDevice->basicShader->Core()->SetVector("lightColor_intensity", &lightColor_intensity);
-        pd3dDevice->basicShader->Core()->SetFloat("blend_modulate_vs_add",0.00001f); // avoid 0, as it disables the blend
-
-	    pd3dDevice->basicShader->Begin(0);
-        pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, bulbLightVBuffer, 0, bulbLightNumVertices, bulbLightIndexBuffer, 0, bulbLightNumFaces );
-		pd3dDevice->basicShader->End();
-    }
-
     // render light shape
-    if ( m_d.m_BulbLight )
-        pd3dDevice->basicShader->Core()->SetFloat("blend_modulate_vs_add",max(m_d.m_modulate_vs_add,0.00001f)); // avoid 0, as it disables the blend
 	lightColor_intensity.w = m_d.m_currentIntensity;
 	pd3dDevice->basicShader->Core()->SetVector("lightColor_intensity", &lightColor_intensity);
     pd3dDevice->basicShader->Begin(0);
     pd3dDevice->DrawPrimitiveVB(D3DPT_TRIANGLELIST, (!m_fBackglass) ? MY_D3DFVF_NOTEX2_VERTEX : MY_D3DTRANSFORMED_NOTEX2_VERTEX, customMoverVBuffer, 0, customMoverVertexNum);
     pd3dDevice->basicShader->End();
     
-    pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, FALSE);
-
 	if (!m_fBackglass)
 	{
 	    pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
