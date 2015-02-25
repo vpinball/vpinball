@@ -2665,6 +2665,10 @@ INT_PTR CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
 
          pt->ListImages(GetDlgItem(hwndDlg, IDC_SOUNDLIST));
 
+         char textBuf[256];
+         strcpy(textBuf,"128");
+         SetDlgItemText(hwndDlg, IDC_ALPHA_MASK_EDIT, textBuf);
+
          return TRUE;
       }
       break;
@@ -2708,15 +2712,42 @@ INT_PTR CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
             break;
          case LVN_ITEMCHANGING:
             {
-               NMLISTVIEW * const plistview = (LPNMLISTVIEW)lParam;
-               if ((plistview->uNewState & LVIS_SELECTED) != (plistview->uOldState & LVIS_SELECTED))
-                  InvalidateRect(GetDlgItem(hwndDlg, IDC_PICTUREPREVIEW), NULL, fTrue);
+                NMLISTVIEW * const plistview = (LPNMLISTVIEW)lParam;
+                if ((plistview->uNewState & LVIS_SELECTED) != (plistview->uOldState & LVIS_SELECTED))
+                {
+                   if( plistview->uNewState & LVIS_SELECTED )
+                   {
+                       const int sel = plistview->iItem;
+                       LVITEM lvitem;
+                       lvitem.mask = LVIF_PARAM;
+                       lvitem.iItem = sel;
+                       lvitem.iSubItem = 0;
+                       ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
+                       Texture * const ppi = (Texture *)lvitem.lParam;
+                       char textBuf[256];
+                       sprintf_s(textBuf,"%i",(int)ppi->m_alphaTestValue);
+                       SetDlgItemText(hwndDlg, IDC_ALPHA_MASK_EDIT, textBuf);
+                   }
+                   InvalidateRect(GetDlgItem(hwndDlg, IDC_PICTUREPREVIEW), NULL, fTrue);
+                }
             }
             break;
 
          case LVN_ITEMCHANGED:
             {
-               const int count = ListView_GetSelectedCount(GetDlgItem(hwndDlg, IDC_SOUNDLIST));
+                NMLISTVIEW * const plistview = (LPNMLISTVIEW)lParam;                    
+                const int sel = plistview->iItem;
+                LVITEM lvitem;
+                lvitem.mask = LVIF_PARAM;
+                lvitem.iItem = sel;
+                lvitem.iSubItem = 0;
+                ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
+                Texture * const ppi = (Texture *)lvitem.lParam;
+                char textBuf[64];
+                GetDlgItemText(hwndDlg, IDC_ALPHA_MASK_EDIT, textBuf, 32);
+                ppi->m_alphaTestValue = sz2f(textBuf);
+
+                const int count = ListView_GetSelectedCount(GetDlgItem(hwndDlg, IDC_SOUNDLIST));
                const int fEnable = !(count > 1);
                EnableWindow(GetDlgItem(hwndDlg, IDC_REIMPORTFROM), fEnable);
                EnableWindow(GetDlgItem(hwndDlg, IDC_RENAME), fEnable);
@@ -2809,8 +2840,28 @@ INT_PTR CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
          switch (LOWORD(wParam))
          {
          case IDOK:
-            EndDialog(hwndDlg, TRUE);
-            break;
+             {
+                 const int count = ListView_GetSelectedCount(GetDlgItem(hwndDlg, IDC_SOUNDLIST));
+                 if (count > 0)
+                 {
+                     int sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), -1, LVNI_SELECTED);
+                     while (sel != -1)
+                     {					
+                         LVITEM lvitem;
+                         lvitem.mask = LVIF_PARAM;
+                         lvitem.iItem = sel;
+                         lvitem.iSubItem = 0;
+                         ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
+                         Texture * const ppi = (Texture *)lvitem.lParam;
+                         char textBuf[64];
+                         GetDlgItemText(hwndDlg, IDC_ALPHA_MASK_EDIT, textBuf, 32);
+                         ppi->m_alphaTestValue = sz2f(textBuf);
+                         sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), sel, LVNI_SELECTED);
+                     }
+                 }
+                 EndDialog(hwndDlg, TRUE);
+                 break;
+             }
 
          case IDCANCEL:
             EndDialog(hwndDlg, FALSE);

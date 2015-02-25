@@ -1285,6 +1285,11 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
    if (pinA && !pinB)
    {
       pd3dDevice->flasherShader->SetTexture("Texture0", pinA);
+      if ( m_d.m_fAddBlend )
+          pd3dDevice->flasherShader->SetAlphaTestValue(-1.0f);
+      else
+          pd3dDevice->flasherShader->SetAlphaTestValue(pinA->m_alphaTestValue / 255.0f);
+
       pd3dDevice->flasherShader->SetTechnique("basic_with_textureOne_noLight");
 
       //ppin3d->SetTextureFilter( 0, TEXTURE_MODE_TRILINEAR );
@@ -1293,6 +1298,10 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
    {
       pd3dDevice->flasherShader->SetTexture("Texture0", pinB);
       pd3dDevice->flasherShader->SetTechnique("basic_with_textureOne_noLight");
+      if ( m_d.m_fAddBlend )
+          pd3dDevice->flasherShader->SetAlphaTestValue(-1.0f);
+      else
+          pd3dDevice->flasherShader->SetAlphaTestValue(pinB->m_alphaTestValue / 255.0f);
 
       //ppin3d->SetTextureFilter( 0, TEXTURE_MODE_TRILINEAR );
    }
@@ -1301,6 +1310,16 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
       pd3dDevice->flasherShader->SetTexture("Texture0", pinA);
       pd3dDevice->flasherShader->SetTexture("Texture1", pinB);
       pd3dDevice->flasherShader->SetTechnique("basic_with_textureAB_noLight");
+      if( m_d.m_fAddBlend)
+      {
+          pd3dDevice->flasherShader->SetAlphaTestValue(-1.0f);
+          pd3dDevice->flasherShader->Core()->SetFloat("fAlphaTestValueB",-1.0f);
+      }
+      else
+      {
+          pd3dDevice->flasherShader->SetAlphaTestValue(pinA->m_alphaTestValue / 255.0f);
+          pd3dDevice->flasherShader->Core()->SetFloat("fAlphaTestValueB", pinB->m_alphaTestValue / 255.0f);
+      }
 
       //ppin3d->SetTextureFilter( 0, TEXTURE_MODE_TRILINEAR );
    }
@@ -1315,10 +1334,6 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
 
    pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
    g_pplayer->m_pin3d.EnableAlphaBlend(m_d.m_fAddBlend);
-   if(m_d.m_fAddBlend)
-      pd3dDevice->flasherShader->SetAlphaTestValue(-1.0f);
-   else
-      pd3dDevice->flasherShader->SetAlphaTestValue(1.0 / 255.0);
 
    pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, m_d.m_fAddBlend ? D3DBLEND_INVSRCCOLOR : D3DBLEND_INVSRCALPHA);
    pd3dDevice->SetRenderState(RenderDevice::BLENDOP, m_d.m_fAddBlend ? D3DBLENDOP_REVSUBTRACT : D3DBLENDOP_ADD); //!! meh, optimize all these alpha sets

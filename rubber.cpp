@@ -1284,7 +1284,7 @@ void Rubber::RenderObject(RenderDevice *pd3dDevice)
 
       if (pin)
       {
-         pd3dDevice->basicShader->SetAlphaTestValue(1.0 / 255.0);
+         pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue / 255.0);
          pd3dDevice->basicShader->SetTexture("Texture0", pin);
          pd3dDevice->basicShader->SetTechnique("basic_with_texture");
       }

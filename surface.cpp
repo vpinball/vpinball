@@ -944,7 +944,6 @@ void Surface::RenderSlingshots(RenderDevice* pd3dDevice)
 
 void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
 {
-    pd3dDevice->basicShader->SetAlphaTestValue(1.0 / 255.0);
 
 	// render side
     if (m_d.m_fSideVisible && !fDrop && (numVertices > 0)) // Don't need to render walls if dropped
@@ -965,6 +964,7 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
         {
             pd3dDevice->basicShader->SetTexture("Texture0",pinSide);
             pd3dDevice->basicShader->SetTechnique("basic_with_texture");
+            pd3dDevice->basicShader->SetAlphaTestValue(pinSide->m_alphaTestValue / 255.0);
 
             //g_pplayer->m_pin3d.SetTextureFilter( 0, TEXTURE_MODE_TRILINEAR );
         }
@@ -997,6 +997,7 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
        if (pin)
        {
           pd3dDevice->basicShader->SetTexture("Texture0",pin);  
+          pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue / 255.0);
           pd3dDevice->basicShader->SetTechnique("basic_with_texture");
 
           //g_pplayer->m_pin3d.SetTextureFilter( 0, TEXTURE_MODE_TRILINEAR );

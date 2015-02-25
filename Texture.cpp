@@ -123,6 +123,7 @@ Texture::Texture()
    m_pdsBuffer = NULL;
    m_hbmGDIVersion = NULL;
    m_ppb = NULL;
+   m_alphaTestValue=128.0f;
 }
 
 Texture::~Texture()
@@ -160,7 +161,7 @@ HRESULT Texture::SaveToStream(IStream *pstream, PinTable *pt)
       else
          bw.WriteInt(FID(LINK), linkid);
    }
-
+   bw.WriteFloat(FID(ALTV),m_alphaTestValue);
    bw.WriteTag(FID(ENDB));
 
    return S_OK;
@@ -212,6 +213,10 @@ BOOL Texture::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(HGHT))
    {
       pbr->GetInt(&m_height);
+   }
+   else if (id == FID(ALTV))
+   {
+       pbr->GetFloat(&m_alphaTestValue);
    }
    else if (id == FID(BITS))
    {

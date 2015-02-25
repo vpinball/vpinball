@@ -524,7 +524,6 @@ void Decal::RenderStatic(RenderDevice* pd3dDevice)
 
    //pd3dDevice->basicShader->Core()->SetFloat("fmaterialAlpha",1.0f);
    pd3dDevice->basicShader->SetTechnique("basic_with_texture");
-   pd3dDevice->basicShader->SetAlphaTestValue(1.0 / 255.0);
 
    if (m_d.m_decaltype != DecalImage)
        pd3dDevice->basicShader->SetTexture("Texture0", pd3dDevice->m_texMan.LoadTexture(m_textImg));
@@ -532,7 +531,10 @@ void Decal::RenderStatic(RenderDevice* pd3dDevice)
    {
       Texture *pin = m_ptable->GetImage(m_d.m_szImage);
       if (pin)
+      {
           pd3dDevice->basicShader->SetTexture("Texture0", pin);
+          pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue / 255.0);
+      }
    }
 
    // Set texture to mirror, so the alpha state of the texture blends correctly to the outside
