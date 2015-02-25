@@ -378,12 +378,13 @@ void Bumper::RenderBase(RenderDevice *pd3dDevice, Material *baseMaterial )
    pd3dDevice->basicShader->Begin(0);
    pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, baseVertexBuffer, 0, bumperBaseNumVertices, baseIndexBuffer, 0, bumperBaseNumFaces );
    pd3dDevice->basicShader->End();
+
    g_pplayer->m_pin3d.DisableAlphaBlend();
 }
 
-void Bumper::RenderSocket(RenderDevice *pd3dDevice, Material *baseMaterial )
+void Bumper::RenderSocket(RenderDevice *pd3dDevice, Material *socketMaterial )
 {
-   pd3dDevice->basicShader->SetMaterial(baseMaterial);
+   pd3dDevice->basicShader->SetMaterial(socketMaterial);
    pd3dDevice->basicShader->SetTexture("Texture0", &socketTexture);
    g_pplayer->m_pin3d.EnableAlphaBlend(false);
    pd3dDevice->basicShader->SetAlphaTestValue(1.0 / 255.0);
@@ -391,6 +392,7 @@ void Bumper::RenderSocket(RenderDevice *pd3dDevice, Material *baseMaterial )
    pd3dDevice->basicShader->Begin(0);
    pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, socketVertexBuffer, 0, bumperSocketNumVertices, socketIndexBuffer, 0, bumperSocketNumFaces );
    pd3dDevice->basicShader->End();
+
    g_pplayer->m_pin3d.DisableAlphaBlend();
 }
 
@@ -404,6 +406,7 @@ void Bumper::RenderCap( RenderDevice *pd3dDevice, Material *capMaterial )
    pd3dDevice->basicShader->Begin(0);
    pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, capVertexBuffer, 0, bumperCapNumVertices, capIndexBuffer, 0, bumperCapNumFaces );
    pd3dDevice->basicShader->End();
+
    g_pplayer->m_pin3d.DisableAlphaBlend();
 }
 
@@ -461,8 +464,8 @@ void Bumper::PostRenderStatic(RenderDevice* pd3dDevice)
       pd3dDevice->basicShader->SetMaterial(&ringMaterial);
       pd3dDevice->basicShader->SetTexture("Texture0", &ringTexture);
       pd3dDevice->basicShader->SetAlphaTestValue(-1.0f);
-      pd3dDevice->basicShader->Begin(0);
       // render ring
+      pd3dDevice->basicShader->Begin(0);
       pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, ringVertexBuffer, 0, bumperRingNumVertices, ringIndexBuffer, 0, bumperRingNumFaces );
       pd3dDevice->basicShader->End();
 
@@ -473,6 +476,7 @@ void Bumper::PostRenderStatic(RenderDevice* pd3dDevice)
          RenderSocket(pd3dDevice, mat);
          pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
       }
+
       mat = m_ptable->GetMaterial(m_d.m_szBaseMaterial);
       if ( mat->m_bOpacityActive )
       {
@@ -632,12 +636,14 @@ void Bumper::RenderStatic(RenderDevice* pd3dDevice)
 {
    if (m_d.m_fBaseVisible)
    {
-      Material *mat = m_ptable->GetMaterial(m_d.m_szSkirtMaterial);
       pd3dDevice->basicShader->SetTechnique("basic_with_texture");
+
+      Material *mat = m_ptable->GetMaterial(m_d.m_szSkirtMaterial);
       if ( !mat->m_bOpacityActive )
       {
          RenderSocket(pd3dDevice, mat);
       }
+
       mat = m_ptable->GetMaterial(m_d.m_szBaseMaterial);
       if ( !mat->m_bOpacityActive )
       {

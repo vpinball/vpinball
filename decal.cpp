@@ -521,20 +521,25 @@ void Decal::RenderStatic(RenderDevice* pd3dDevice)
 
    Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
    pd3dDevice->basicShader->SetMaterial(mat);
-
    //pd3dDevice->basicShader->Core()->SetFloat("fmaterialAlpha",1.0f);
-   pd3dDevice->basicShader->SetTechnique("basic_with_texture");
-
+   
    if (m_d.m_decaltype != DecalImage)
+   {
+       pd3dDevice->basicShader->SetTechnique("basic_with_texture");
        pd3dDevice->basicShader->SetTexture("Texture0", pd3dDevice->m_texMan.LoadTexture(m_textImg));
+       pd3dDevice->basicShader->SetAlphaTestValue(-1.0f); //!! add transparency?
+   }
    else
    {
       Texture *pin = m_ptable->GetImage(m_d.m_szImage);
       if (pin)
       {
+	  pd3dDevice->basicShader->SetTechnique("basic_with_texture");
           pd3dDevice->basicShader->SetTexture("Texture0", pin);
-          pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue / 255.0);
+          pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue / 255.0f);
       }
+      else
+	  pd3dDevice->basicShader->SetTechnique("basic_without_texture");
    }
 
    // Set texture to mirror, so the alpha state of the texture blends correctly to the outside

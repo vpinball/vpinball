@@ -82,11 +82,8 @@ float4 ps_main_textureAB_noLight(in VS_OUTPUT_2D IN) : COLOR
    float4 pixel1 = tex2D(texSampler0, IN.tex0);
    float4 pixel2 = tex2D(texSampler1, IN.tex0);
 
-   if (fAlphaTestValue!=-1.0f)
-   {
-      if (pixel1.a<=fAlphaTestValue || pixel2.a<=fAlphaTestValueB)
-         clip(-1);           //stop the pixel shader if alpha test should reject pixel
-   }
+   if (pixel1.a<=fAlphaTestValue || pixel2.a<=fAlphaTestValueB)
+    clip(-1);           //stop the pixel shader if alpha test should reject pixel
 
    pixel1.xyz = InvGamma(pixel1.xyz);
    pixel2.xyz = InvGamma(pixel2.xyz);

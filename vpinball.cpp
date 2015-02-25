@@ -2666,7 +2666,7 @@ INT_PTR CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
          pt->ListImages(GetDlgItem(hwndDlg, IDC_SOUNDLIST));
 
          char textBuf[256];
-         strcpy(textBuf,"128");
+         strcpy_s(textBuf,"128");
          SetDlgItemText(hwndDlg, IDC_ALPHA_MASK_EDIT, textBuf);
 
          return TRUE;

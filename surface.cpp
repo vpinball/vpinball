@@ -962,16 +962,14 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
         Texture * const pinSide = m_ptable->GetImage(m_d.m_szSideImage);
         if (pinSide)
         {
-            pd3dDevice->basicShader->SetTexture("Texture0",pinSide);
             pd3dDevice->basicShader->SetTechnique("basic_with_texture");
-            pd3dDevice->basicShader->SetAlphaTestValue(pinSide->m_alphaTestValue / 255.0);
+            pd3dDevice->basicShader->SetTexture("Texture0",pinSide);
+            pd3dDevice->basicShader->SetAlphaTestValue(pinSide->m_alphaTestValue / 255.0f);
 
             //g_pplayer->m_pin3d.SetTextureFilter( 0, TEXTURE_MODE_TRILINEAR );
         }
         else
-        {
             pd3dDevice->basicShader->SetTechnique("basic_without_texture");
-        }
 
         // combine drawcalls into one (hopefully faster)
         pd3dDevice->basicShader->Begin(0);
@@ -996,16 +994,14 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
 	   Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
        if (pin)
        {
-          pd3dDevice->basicShader->SetTexture("Texture0",pin);  
-          pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue / 255.0);
           pd3dDevice->basicShader->SetTechnique("basic_with_texture");
+          pd3dDevice->basicShader->SetTexture("Texture0",pin);  
+          pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue / 255.0f);
 
           //g_pplayer->m_pin3d.SetTextureFilter( 0, TEXTURE_MODE_TRILINEAR );
        }
        else
-       {
           pd3dDevice->basicShader->SetTechnique("basic_without_texture");
-       }
 
        pd3dDevice->basicShader->Begin(0);
        pd3dDevice->DrawPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, topVBuffer, !fDrop ? 0 : 3*numPolys, numPolys*3);

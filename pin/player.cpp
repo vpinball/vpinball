@@ -854,6 +854,8 @@ void Player::InitBallShader()
    const D3DXVECTOR4 bs(m_BallStretchX, m_BallStretchY, inv_tablewidth, inv_tableheight);
    ballShader->Core()->SetVector("ballStretch_invTableRes", &bs );
    ballShader->Core()->SetBool("decalMode", m_ptable->m_BallDecalMode );
+   const float rotation = fmodf(m_ptable->m_BG_rotation[m_ptable->m_BG_current_set],360.f);
+   ballShader->Core()->SetBool("cabMode", rotation!=0.f );
 
    //D3DXVECTOR4 cam( matView._41, matView._42, matView._43, 1 );
    //ballShader->Core()->SetVector("camera", &cam);
@@ -3291,14 +3293,15 @@ void Player::DrawBalls()
       }
 
       m_pin3d.EnableAlphaBlend(false);
-      D3DXVECTOR4 m1(pball->m_orientation.m_d[0][0], pball->m_orientation.m_d[1][0], pball->m_orientation.m_d[2][0], 0.0f );
-      D3DXVECTOR4 m2(pball->m_orientation.m_d[0][1], pball->m_orientation.m_d[1][1], pball->m_orientation.m_d[2][1], 0.0f );
-      D3DXVECTOR4 m3(pball->m_orientation.m_d[0][2], pball->m_orientation.m_d[1][2], pball->m_orientation.m_d[2][2], 0.0f );
 	  const D3DXVECTOR4 diffuse = convertColor(pball->m_color,1.0f);
 	  ballShader->Core()->SetVector("cBase_Alpha",&diffuse);
-      ballShader->Core()->SetVector("m1",&m1);
-      ballShader->Core()->SetVector("m2",&m2);
-      ballShader->Core()->SetVector("m3",&m3);
+
+	  const D3DXMATRIX m(pball->m_orientation.m_d[0][0], pball->m_orientation.m_d[1][0], pball->m_orientation.m_d[2][0], 0.0f,
+	      pball->m_orientation.m_d[0][1], pball->m_orientation.m_d[1][1], pball->m_orientation.m_d[2][1], 0.0f,
+	      pball->m_orientation.m_d[0][2], pball->m_orientation.m_d[1][2], pball->m_orientation.m_d[2][2], 0.0f,
+	      0.f,0.f,0.f,0.f);
+      ballShader->Core()->SetMatrix("orientation",&m);
+
       const D3DXVECTOR4 pos_rad( pball->m_pos.x, pball->m_pos.y, zheight, pball->m_radius );
       ballShader->Core()->SetVector("position_radius", &pos_rad );
       if ( !pball->m_pinballEnv )
