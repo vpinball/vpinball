@@ -99,7 +99,7 @@ struct voutReflection
 struct voutTrail
 {
     float4 position	   : POSITION0;
-    float3 tex0_alpha	   : TEXCOORD0;
+    float3 tex0_alpha  : TEXCOORD0;
 };
 
 //------------------------------------
@@ -150,7 +150,7 @@ voutReflection vsBallReflection( in vin IN )
     const float3 nspin = mul(IN.normal, orientation);
     const float3 normal = normalize(mul(float4(nspin,0.), matWorldView/*InverseTranspose*/).xyz); //!!?
     
-	const float3 r = normalize(reflect(normalize(/*camera=0,0,0,1*/-p), normal));
+	const float3 r = reflect(normalize(/*camera=0,0,0,1*/-p), normal);
 
     OUT.position = mul(pos, matWorldViewProj);
 	OUT.tex0	 = pos.xy;
@@ -163,7 +163,7 @@ voutTrail vsBallTrail( in vin IN )
     voutTrail OUT;
     
     OUT.position = mul(IN.position, matWorldViewProj);
-	OUT.tex0_alpha	 = float3(IN.tex0, IN.normal.x); //!! abuses normal for now
+	OUT.tex0_alpha = float3(IN.tex0, IN.normal.x); //!! abuses normal for now
 	return OUT;
 }
 

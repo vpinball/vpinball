@@ -110,32 +110,18 @@ float3 DoEnvmapDiffuse(const float3 N, const float3 diffuse)
 
 //!! PI?
 // very very crude approximation by abusing miplevels
-float3 DoEnvmapGlossy(const float3 N, const float3 V, const float3 glossy, const float glossyPower)
+float3 DoEnvmapGlossy(const float3 N, const float3 V, const float2 Ruv, const float3 glossy, const float glossyPower)
 {
-   float3 r = reflect(-V,N);
-   r = normalize(mul(float4(r,0.0), matViewInverse).xyz); // trafo back to world
-
    const float mip = log2(fenvTexWidth * sqrt(3.0)) - 0.5*log2(glossyPower + 1.0);
 
-   const float2 uv = float2( // remap to 2D envmap coords
-		atan2(r.y, r.x) * (0.5/PI) + 0.5,
-	    acos(r.z) * (1.0/PI));
-
-   return glossy * InvGamma(tex2Dlod(texSampler1, float4(uv, 0., mip)).xyz)*fenvEmissionScale; //!! replace by real HDR instead? -> remove invgamma then
+   return glossy * InvGamma(tex2Dlod(texSampler1, float4(Ruv, 0., mip)).xyz)*fenvEmissionScale; //!! replace by real HDR instead? -> remove invgamma then
 }
 
 //!! PI?
-float3 DoEnvmap2ndLayer(const float3 color1stLayer, const float3 pos, const float3 N, const float3 V, const float3 specular)
+float3 DoEnvmap2ndLayer(const float3 color1stLayer, const float3 pos, const float3 N, const float3 V, const float NdotV, const float2 Ruv, const float3 specular)
 {
-   float3 r = reflect(-V,N);
-   r = normalize(mul(float4(r,0.0), matViewInverse).xyz); // trafo back to world
-
-   const float2 uv = float2( // remap to 2D envmap coords
-		atan2(r.y, r.x) * (0.5/PI) + 0.5,
-	    acos(r.z) * (1.0/PI));
-	    
-   const float3 w = FresnelSchlick(specular, dot(V, N), Roughness_WrapL_Edge.z); //!! ?
-   return lerp(color1stLayer, InvGamma(tex2Dlod(texSampler1, float4(uv, 0., 0.)).xyz)*fenvEmissionScale, w); // weight (optional) lower diffuse/glossy layer with clearcoat/specular //!! replace by real HDR instead? -> remove invgamma then
+   const float3 w = FresnelSchlick(specular, NdotV, Roughness_WrapL_Edge.z); //!! ?
+   return lerp(color1stLayer, InvGamma(tex2Dlod(texSampler1, float4(Ruv, 0., 0.)).xyz)*fenvEmissionScale, w); // weight (optional) lower diffuse/glossy layer with clearcoat/specular //!! replace by real HDR instead? -> remove invgamma then
 }
 
 float3 lightLoop(const float3 pos, float3 N, float3 V, float3 diffuse, float3 glossy, const float3 specular, const float edge)
@@ -157,8 +143,12 @@ float3 lightLoop(const float3 pos, float3 N, float3 V, float3 diffuse, float3 gl
       //specular *= invsum;
    }
 
-   if(dot(N,V) < 0.0) // flip normal in case of wrong orientation? (backside lighting)
+   float NdotV = dot(N,V);
+   if(NdotV < 0.0) // flip normal in case of wrong orientation? (backside lighting)
+   {
       N = -N;
+	  NdotV = -NdotV;
+   }
 
    float3 color = float3(0.0, 0.0, 0.0);
       
@@ -172,12 +162,22 @@ float3 lightLoop(const float3 pos, float3 N, float3 V, float3 diffuse, float3 gl
    if(!bIsMetal && (diffuseMax > 0.0))
       color += DoEnvmapDiffuse(N, diffuse);
 
-   if(glossyMax > 0.0)
-      color += DoEnvmapGlossy(N, V, glossy, Roughness_WrapL_Edge.x);
+   if((glossyMax > 0.0) || (specularMax > 0.0))
+   {
+	   float3 R = (2.0*NdotV)*N - V; // reflect(-V,n);
+	   R = normalize(mul(float4(R,0.0), matViewInverse).xyz); // trafo back to world
 
-   // 2nd Layer
-   if(specularMax > 0.0)
-      color = DoEnvmap2ndLayer(color, pos, N, V, specular);
-  
+	   const float2 Ruv = float2( // remap to 2D envmap coords
+			atan2(R.y, R.x) * (0.5/PI) + 0.5,
+			acos(R.z) * (1.0/PI));
+
+	   if(glossyMax > 0.0)
+		  color += DoEnvmapGlossy(N, V, Ruv, glossy, Roughness_WrapL_Edge.x);
+
+	   // 2nd Layer
+	   if(specularMax > 0.0)
+		  color = DoEnvmap2ndLayer(color, pos, N, V, NdotV, Ruv, specular);
+   }
+
    return /*Gamma(ToneMap(*/cAmbient_LightRange.xyz + color/*))*/;
 }
