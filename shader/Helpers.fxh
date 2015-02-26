@@ -15,10 +15,7 @@ float3 InvToneMap(const float3 color)
 {
     const float inv_2bh = 0.5/BURN_HIGHLIGHTS;
     const float bh = 4.0*BURN_HIGHLIGHTS - 2.0;
-	return float3(
-	    (color.x - 1.0 + sqrt(color.x*(color.x + bh) + 1.0))*inv_2bh,
-	    (color.y - 1.0 + sqrt(color.y*(color.y + bh) + 1.0))*inv_2bh,
-	    (color.z - 1.0 + sqrt(color.z*(color.z + bh) + 1.0))*inv_2bh);
+	return (color - 1.0 + sqrt(color*(color + bh) + 1.0))*inv_2bh;
 }
 
 float3 FBGamma(const float3 color) //!! use hardware support? D3DRS_SRGBWRITEENABLE
