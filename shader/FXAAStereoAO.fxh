@@ -25,7 +25,9 @@ float3 get_nonunit_normal(const float depth0, const float2 u) // use neighboring
 //const float phi = t.y * (2.0*3.1415926535897932384626433832795);
 //const float z = 1.0 - t.x*2.0;
 //const float r = sqrt(1.0 - z*z);
-//return float3(cos(phi)*r, z, sin(phi)*r);
+//float sp,cp;
+//sincos(phi,sp,cp);
+//return float3(cp*r, z, sp*r);
 //}
 
 float3 cos_hemisphere_sample(const float2 t) // u,v in [0..1), returns y-up
@@ -33,7 +35,9 @@ float3 cos_hemisphere_sample(const float2 t) // u,v in [0..1), returns y-up
 	const float phi = t.y * (2.0*3.1415926535897932384626433832795);
 	const float cosTheta = sqrt(1.0 - t.x);
 	const float sinTheta = sqrt(t.x);
-	return float3(cos(phi) * sinTheta, cosTheta, sin(phi) * sinTheta);
+	float sp,cp;
+	sincos(phi,sp,cp);
+	return float3(cp * sinTheta, cosTheta, sp * sinTheta);
 }
 
 float3 rotate_to_vector_upper(const float3 vec, const float3 normal)
