@@ -123,7 +123,7 @@ Texture::Texture()
    m_pdsBuffer = NULL;
    m_hbmGDIVersion = NULL;
    m_ppb = NULL;
-   m_alphaTestValue=128.0f;
+   m_alphaTestValue=1.0f;
 }
 
 Texture::~Texture()
