@@ -224,8 +224,11 @@ void Textbox::PostRenderStatic(RenderDevice* pd3dDevice)
 	const float height = (float)(m_rect.bottom - m_rect.top)*ymult;
 
 	if(strstr(m_d.sztext,"DMD") != NULL) //!! meh
+	{
+		g_pplayer->m_pin3d.DisableAlphaBlend();
 		g_pplayer->DMDdraw(x, y, width, height,
 						   m_d.m_fontcolor, m_d.m_intensity_scale); //!! replace??!
+	}
 	else
 		if (m_texture)
 		{

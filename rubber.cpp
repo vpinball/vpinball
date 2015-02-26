@@ -1278,8 +1278,7 @@ void Rubber::RenderObject(RenderDevice *pd3dDevice)
 
    Material *mat = m_ptable->GetMaterial( m_d.m_szMaterial);
    pd3dDevice->basicShader->SetMaterial(mat);
-   {
-      Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+
       Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
 
       if (pin)
@@ -1297,7 +1296,6 @@ void Rubber::RenderObject(RenderDevice *pd3dDevice)
       pd3dDevice->basicShader->Begin(0);
       pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, dynamicVertexBuffer, 0, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
       pd3dDevice->basicShader->End();  
-   }
 }
 
 // Always called each frame to render over everything else (along with primitives)

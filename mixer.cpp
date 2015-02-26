@@ -210,6 +210,8 @@ void mixer_draw()
     WorldMatrix.SetIdentity();
 	g_pplayer->m_pin3d.m_pd3dDevice->SetTransform ( TRANSFORMSTATE_WORLD, (D3DMATRIX*)&WorldMatrix );
 
+    g_pplayer->m_pin3d.EnableAlphaBlend(false);
+
     const U32 alpha = (U32) ( fade * 222.2f );
 
     F32 ypos = (F32)( -((S32)g_pplayer->m_height/2) );

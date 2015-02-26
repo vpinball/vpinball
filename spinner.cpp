@@ -320,7 +320,6 @@ void Spinner::PostRenderStatic(RenderDevice* pd3dDevice)
 
     Texture * const image = m_ptable->GetImage(m_d.m_szImage);
 
-
     UpdatePlate(pd3dDevice);
     if ( image )
     {

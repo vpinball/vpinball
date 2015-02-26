@@ -282,6 +282,8 @@ void Pin3D::DrawBackground()
 		if(g_pplayer->m_ptable->m_tblMirrorEnabled)
 			m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
 
+		g_pplayer->m_pin3d.DisableAlphaBlend();
+
 		g_pplayer->Spritedraw(0.f,0.f,1.f,1.f,0xFFFFFFFF,pin,0.0f,0.0f,1.0f,1.0f,ptable->m_ImageBackdropNightDay ? ptable->m_globalEmissionScale : 1.0f);
 
 		if(g_pplayer->m_ptable->m_tblMirrorEnabled)

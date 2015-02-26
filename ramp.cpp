@@ -872,8 +872,10 @@ bool Ramp::isHabitrail() const
          || m_d.m_type == RampType3WireRight;
 }
 
-void Ramp::RenderStaticHabitrail(RenderDevice* pd3dDevice)
+void Ramp::RenderStaticHabitrail(RenderDevice* pd3dDevice, Material *mat)
 {
+   pd3dDevice->basicShader->SetMaterial(mat);
+
    Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
 
    if ( !pin )
@@ -1153,7 +1155,7 @@ void Ramp::RenderSetup(RenderDevice* pd3dDevice)
 void Ramp::RenderStatic(RenderDevice* pd3dDevice)
 {	
    if (!m_d.m_fVisible) return;		// return if no Visible
-   Material *mat = m_ptable->GetMaterial( m_d.m_szMaterial);
+   Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
 
    // dont render alpha shaded ramps into static buffer, these are done per frame later-on
    if (mat->m_bOpacityActive) 
@@ -1166,9 +1168,8 @@ void Ramp::RenderStatic(RenderDevice* pd3dDevice)
    if (m_d.m_imagealignment == ImageModeWrap)
        pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP);
 
-   pd3dDevice->basicShader->SetMaterial(mat);
    if (isHabitrail())
-      RenderStaticHabitrail(pd3dDevice);
+      RenderStaticHabitrail(pd3dDevice, mat);
    else 
       RenderRamp(pd3dDevice, mat);
 }
@@ -1997,13 +1998,14 @@ void Ramp::RenderRamp( RenderDevice *pd3dDevice, Material *mat )
    if (m_d.m_imagealignment == ImageModeWrap)
        pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP);
 
-   pd3dDevice->basicShader->SetMaterial(mat);
    if (isHabitrail())
    {
-      RenderStaticHabitrail(pd3dDevice);
+      RenderStaticHabitrail(pd3dDevice, mat);
    }
    else
    {
+      pd3dDevice->basicShader->SetMaterial(mat);
+      
       Pin3D * const ppin3d = &g_pplayer->m_pin3d;
       Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
 

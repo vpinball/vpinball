@@ -566,7 +566,7 @@ void Decal::RenderObject(RenderDevice* pd3dDevice)
 
    if (!m_fBackglass)
    {
-      float depthbias = -5 * BASEDEPTHBIAS;
+      const float depthbias = -5. * BASEDEPTHBIAS;
       pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, *((DWORD*)&depthbias));
    }
    else
@@ -579,7 +579,8 @@ void Decal::RenderObject(RenderDevice* pd3dDevice)
    pd3dDevice->DrawPrimitiveVB( D3DPT_TRIANGLEFAN, ( m_fBackglass && GetPTable()->GetDecalsEnabled() ) ? MY_D3DTRANSFORMED_NOTEX2_VERTEX : MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, 4 );
    pd3dDevice->basicShader->End();
 
-   pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
+   if (!m_fBackglass)
+      pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
 
    // Set the render state.
    //pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_WRAP);
