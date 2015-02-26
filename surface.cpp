@@ -920,31 +920,27 @@ void Surface::RenderStatic(RenderDevice* pd3dDevice)
 
 void Surface::RenderSlingshots(RenderDevice* pd3dDevice)
 {
-   Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-
-   if ( ! m_d.m_fSideVisible )
+   if ( !m_d.m_fSideVisible || (m_vlinesling.size() == 0) )
       return;
 
+   pd3dDevice->basicShader->SetTechnique("basic_without_texture");
    Material *mat = m_ptable->GetMaterial( m_d.m_szSlingShotMaterial);
    pd3dDevice->basicShader->SetMaterial(mat);
 
+   pd3dDevice->basicShader->Begin(0);
    for (unsigned i=0; i<m_vlinesling.size(); i++)
    {
       LineSegSlingshot * const plinesling = m_vlinesling[i];
       if (plinesling->m_slingshotanim.m_iframe != 1)
           continue;
 
-      pd3dDevice->basicShader->SetTechnique("basic_without_texture");
-
-      pd3dDevice->basicShader->Begin(0);
       pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, slingshotVBuffer, i*24, 24, slingIBuffer, 0, 36);
-      pd3dDevice->basicShader->End();
    }
+   pd3dDevice->basicShader->End();
 }
 
 void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
 {
-
 	// render side
     if (m_d.m_fSideVisible && !fDrop && (numVertices > 0)) // Don't need to render walls if dropped
     {

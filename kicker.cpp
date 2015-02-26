@@ -321,6 +321,7 @@ void Kicker::RenderStatic(RenderDevice* pd3dDevice)
 
       Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
       pd3dDevice->basicShader->SetMaterial(mat);
+
       pd3dDevice->basicShader->SetTechnique("kickerBoolean");
       pd3dDevice->SetRenderState(RenderDevice::ZFUNC, D3DCMP_ALWAYS);
 
