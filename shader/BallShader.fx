@@ -222,7 +222,7 @@ float4 psBall( in vout IN ) : COLOR
 	float2 uv0;
 	uv0.x = r.x*0.5 + 0.5;
 	uv0.y = r.y*0.5 + 0.5;
-    float3 ballImageColor = InvGamma(tex2Dlod( texSampler0, float4(cabMode ? uv0.yx : uv0, 0.,lod) ).xyz);
+    float3 ballImageColor = InvGamma(tex2Dlod( texSampler0, float4(cabMode ? float2(uv0.y,1.0-uv0.x) : uv0, 0.,lod) ).xyz);
    
 	const float4 decalColorT = tex2D( texSampler7, IN.tex0 );
 	float3 decalColor = InvGamma(decalColorT.xyz);
@@ -287,7 +287,7 @@ float4 psBall( in vout IN ) : COLOR
 
 float4 psBallReflection( in voutReflection IN ) : COLOR
 {
-	const float3 ballImageColor = (cBase_Alpha.xyz*(0.075*0.25) + InvGamma(tex2D( texSampler0, cabMode ? IN.r.yx : IN.r.xy ).xyz))*fenvEmissionScale; //!! just add the ballcolor in, this is a whacky reflection anyhow
+	const float3 ballImageColor = (cBase_Alpha.xyz*(0.075*0.25) + InvGamma(tex2D( texSampler0, cabMode ? float2(IN.r.y,1.0-IN.r.x) : IN.r.xy ).xyz))*fenvEmissionScale; //!! just add the ballcolor in, this is a whacky reflection anyhow
 	float alpha = saturate((IN.tex0.y-position_radius.y)/position_radius.w);
 	alpha = (alpha*alpha)*(alpha*alpha)*reflection_ball_playfield.x;
 	return float4(ballImageColor,alpha);
