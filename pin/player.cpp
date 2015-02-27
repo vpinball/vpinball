@@ -2467,9 +2467,11 @@ void Player::CheckAndUpdateRegions()
 
 void Player::Bloom()
 {
-    float bloomStrength=m_ptable->m_bloom_strength;
- 	if(m_ptable->m_bloom_strength < 0.0f)
- 		bloomStrength = 0.0;
+ 	if(m_ptable->m_bloom_strength <= 0.0f)
+	{
+		m_pin3d.m_pd3dDevice->SetRenderTarget(m_pin3d.m_pd3dDevice->GetOutputBackBuffer());
+		return;
+	}
 
 	float shiftedVerts[4*5] =
 	{
@@ -2528,7 +2530,7 @@ void Player::Bloom()
 		m_pin3d.m_pd3dDevice->SetRenderTarget(tmpBloomSurface3);
 
 		m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetBloomTmpBufferTexture());
-		const D3DXVECTOR4 fb_inv_resolution_05((float)(3.0/(double)m_width),(float)(3.0/(double)m_height), bloomStrength, 1.0f);
+		const D3DXVECTOR4 fb_inv_resolution_05((float)(3.0/(double)m_width),(float)(3.0/(double)m_height), m_ptable->m_bloom_strength, 1.0f);
 		m_pin3d.m_pd3dDevice->FBShader->Core()->SetVector("w_h_height", &fb_inv_resolution_05);
 		m_pin3d.m_pd3dDevice->FBShader->Core()->SetTechnique("fb_bloom_vert");
 
@@ -3293,7 +3295,7 @@ void Player::DrawBalls()
 	  const D3DXMATRIX m(pball->m_orientation.m_d[0][0], pball->m_orientation.m_d[1][0], pball->m_orientation.m_d[2][0], 0.0f,
 	      pball->m_orientation.m_d[0][1], pball->m_orientation.m_d[1][1], pball->m_orientation.m_d[2][1], 0.0f,
 	      pball->m_orientation.m_d[0][2], pball->m_orientation.m_d[1][2], pball->m_orientation.m_d[2][2], 0.0f,
-	      0.f,0.f,0.f,0.f);
+	      0.f,0.f,0.f,1.f);
       ballShader->Core()->SetMatrix("orientation",&m);
 
       const D3DXVECTOR4 pos_rad( pball->m_pos.x, pball->m_pos.y, zheight, pball->m_radius );

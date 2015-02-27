@@ -361,7 +361,7 @@ RenderDevice::RenderDevice(HWND hwnd, int width, int height, bool fullscreen, in
 
 	// alloc float buffer for rendering (optionally 2x2 res for manual super sampling)
 	CHECKD3D(m_pD3DDevice->CreateTexture(useAA ? 2*width : width, useAA ? 2*height : height, 1,
-		D3DUSAGE_RENDERTARGET, /*D3DFMT_X8R8G8B8*/D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &m_pOffscreenBackBufferTexture, NULL)); //!! D3DFMT_A32B32G32R32F?
+		D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &m_pOffscreenBackBufferTexture, NULL)); //!! D3DFMT_A32B32G32R32F?
 
 	//CHECKD3D(m_pD3DDevice->CreateTexture(width, height, 1,
 	//	D3DUSAGE_DEPTHSTENCIL, /*D3DFMT_INTZ*/(D3DFORMAT)MAKEFOURCC('I','N','T','Z'), D3DPOOL_DEFAULT, &m_pOffscreenBackBufferZTexture, NULL));
@@ -370,15 +370,16 @@ RenderDevice::RenderDevice(HWND hwnd, int width, int height, bool fullscreen, in
 
 	// alloc bloom tex at 1/3 x 1/3 res (allows for simple HQ downscale of clipped input while saving memory)
     CHECKD3D(m_pD3DDevice->CreateTexture(width/3, height/3, 1,
-		D3DUSAGE_RENDERTARGET, /*D3DFMT_X8R8G8B8*/D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &m_pBloomBufferTexture, NULL)); //!! 8bit enough?
+		D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &m_pBloomBufferTexture, NULL)); //!! 8bit enough?
 
 	// temporary buffer for gaussian blur
     CHECKD3D(m_pD3DDevice->CreateTexture(width/3, height/3, 1,
-		D3DUSAGE_RENDERTARGET, /*D3DFMT_X8R8G8B8*/D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &m_pBloomTmpBufferTexture, NULL)); //!! 8bit enough?
+		D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &m_pBloomTmpBufferTexture, NULL)); //!! 8bit enough?
 
-    m_curIndexBuffer = 0;
+	m_curIndexBuffer = 0;
     m_curVertexBuffer = 0;
     currentDeclaration = NULL;
+	m_curShader = NULL;
 
     // fill state caches with dummy values
     memset( renderStateCache, 0xCC, sizeof(DWORD)*RENDER_STATE_CACHE_SIZE);
@@ -1261,9 +1262,10 @@ void Shader::SetStaticColor(const D3DXVECTOR4& color)
 
 void Shader::SetTechnique(const char * const technique)
 {
-   if( strcmp(currentTechnique, technique) )
+   if( strcmp(currentTechnique, technique) || (m_renderDevice->m_curShader != this) )
    {
-      strcpy_s(currentTechnique, 63, technique);
+      strcpy_s(currentTechnique, technique);
+	  m_renderDevice->m_curShader = this;
       m_shader->SetTechnique(technique);
    }
 }
