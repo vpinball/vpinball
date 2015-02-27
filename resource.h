@@ -621,6 +621,7 @@
 #define IDC_BULB_MODULATE_VS_ADD        431
 #define IDC_CHECK1                      431
 #define IDC_GROUP_CHECK                 431
+#define IDC_DISABLE_LIGHTING            431
 #define IDC_LIGHT_FALLOFF_POWER         432
 #define IDC_MODULATE_VS_ADD             433
 #define IDC_INTENSITY_SCALE_LIGHT       434

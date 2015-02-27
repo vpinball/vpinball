@@ -19562,7 +19562,7 @@
 					>
 					<Tool
 						Name="VCCustomBuildTool"
-						CommandLine="fxc /Od /T fx_2_0 /Vn FBShaderCode /Fh shader\FBShader.h shader\FBShader.fx"
+						CommandLine="fxc /Od /T fx_2_0 /Vn FBShaderCode /Fh shader\FBShader.h shader\FBShader.fx&#x0D;&#x0A;"
 						Outputs="FBShader.h"
 					/>
 				</FileConfiguration>
@@ -19571,7 +19571,7 @@
 					>
 					<Tool
 						Name="VCCustomBuildTool"
-						CommandLine="fxc /O3 /T fx_2_0 /Vn FBShaderCode /Fh shader\FBShader.h shader\FBShader.fx"
+						CommandLine="fxc /O3 /T fx_2_0 /Vn FBShaderCode /Fh shader\FBShader.h shader\FBShader.fx&#x0D;&#x0A;"
 						AdditionalDependencies=""
 						Outputs="FBShader.h"
 					/>
@@ -19585,7 +19585,7 @@
 					>
 					<Tool
 						Name="VCCustomBuildTool"
-						CommandLine="fxc /Od /T fx_2_0 /Vn flasherShaderCode /Fh shader\FlasherShader.h shader\FlasherShader.fx"
+						CommandLine="fxc /Od /T fx_2_0 /Vn flasherShaderCode /Fh shader\FlasherShader.h shader\FlasherShader.fx&#x0D;&#x0A;"
 						Outputs="FlasherShader.h"
 					/>
 				</FileConfiguration>
@@ -19594,14 +19594,22 @@
 					>
 					<Tool
 						Name="VCCustomBuildTool"
-						CommandLine="fxc /O3 /T fx_2_0 /Vn flasherShaderCode /Fh shader\FlasherShader.h shader\FlasherShader.fx"
+						CommandLine="fxc /O3 /T fx_2_0 /Vn flasherShaderCode /Fh shader\FlasherShader.h shader\FlasherShader.fx&#x0D;&#x0A;"
 						AdditionalDependencies=""
 						Outputs="FlasherShader.h"
 					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\shader\Globals.fxh"
+				RelativePath=".\shader\FXAAStereoAO.fxh"
+				>
+			</File>
+			<File
+				RelativePath=".\shader\Helpers.fxh"
+				>
+			</File>
+			<File
+				RelativePath=".\shader\Material.fxh"
 				>
 			</File>
 		</Filter>

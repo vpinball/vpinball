@@ -182,6 +182,7 @@ void Primitive::SetDefaults(bool fromMouseClick)
 
    m_d.m_fCollidable = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"Collidable", true) : true;
    m_d.m_fToy = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"IsToy", false) : false;
+   m_d.m_fDisableLighting = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"DisableLighting", false) : false;
 }
 
 void Primitive::WriteRegDefaults()
@@ -221,6 +222,7 @@ void Primitive::WriteRegDefaults()
 
    SetRegValueBool(strKeyName,"Collidable", m_d.m_fCollidable);
    SetRegValueBool(strKeyName,"IsToy", m_d.m_fToy);
+   SetRegValueBool(strKeyName,"DisableLighting", m_d.m_fDisableLighting);
 }
 
 void Primitive::GetTimers(Vector<HitTimer> * const pvht)
@@ -635,6 +637,8 @@ void Primitive::RenderObject( RenderDevice *pd3dDevice )
 
     Material *mat = m_ptable->GetMaterial( m_d.m_szMaterial);
     pd3dDevice->basicShader->SetMaterial(mat);
+    if (m_d.m_fDisableLighting)
+        pd3dDevice->basicShader->Core()->SetBool("bDisableLighting", m_d.m_fDisableLighting );
 
     Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
 
@@ -664,6 +668,8 @@ void Primitive::RenderObject( RenderDevice *pd3dDevice )
 
     pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP);
     g_pplayer->m_pin3d.DisableAlphaBlend();
+    if ( m_d.m_fDisableLighting )
+        pd3dDevice->basicShader->Core()->SetBool("bDisableLighting", false );
 }
 
 // Always called each frame to render over everything else (along with alpha ramps)
@@ -767,6 +773,7 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcry
    bw.WriteBool(FID(ISTO), m_d.m_fToy);
    bw.WriteBool(FID(U3DM), m_d.m_use3DMesh);
    bw.WriteBool(FID(STRE), m_d.m_staticRendering);
+   bw.WriteBool(FID(DILI), m_d.m_fDisableLighting);
    if( m_d.m_use3DMesh )
    {
       bw.WriteString( FID(M3DN), m_d.m_meshFileName);
@@ -948,7 +955,11 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(STRE))
    {
-      pbr->GetBool(&m_d.m_staticRendering);
+       pbr->GetBool(&m_d.m_staticRendering);
+   }
+   else if (id == FID(DILI))
+   {
+       pbr->GetBool(&m_d.m_fDisableLighting);
    }
    else if ( id == FID(U3DM))
    {
@@ -1917,6 +1928,24 @@ STDMETHODIMP Primitive::put_IsToy(VARIANT_BOOL newVal)
    STOPUNDO
 
    return S_OK;
+}
+
+STDMETHODIMP Primitive::get_DisableLighting(VARIANT_BOOL *pVal)
+{
+    *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fDisableLighting);
+
+    return S_OK;
+}
+
+STDMETHODIMP Primitive::put_DisableLighting(VARIANT_BOOL newVal)
+{
+    STARTUNDO
+
+        m_d.m_fDisableLighting = VBTOF(newVal);		
+
+    STOPUNDO
+
+        return S_OK;
 }
 
 void Primitive::GetDialogPanes(Vector<PropertyPane> *pvproppane)

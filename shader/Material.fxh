@@ -44,6 +44,7 @@ CLight lights[iLightPointBallsNum] = {
 
 float  fenvEmissionScale;
 float  fenvTexWidth;
+bool   bDisableLighting=false;
 
 float4 cAmbient_LightRange = float4(0.0,0.0,0.0, 0.0); //!! remove completely, just rely on envmap/IBL?
 
@@ -68,6 +69,10 @@ float3 FresnelSchlick(const float3 spec, const float LdotH, const float edge)
 
 float3 DoPointLight(const float3 pos, const float3 N, const float3 V, const float3 diffuse, const float3 glossy, const float edge, const float glossyPower, const int i) 
 { 
+   // early out here or maybe we can add more material elements without lighting later?
+   if( bDisableLighting )
+    return diffuse;
+
    const float3 lightDir = mul(float4(lights[i].vPos,1.0), matView).xyz - pos; //!! do in vertex shader?! or completely before?!
    const float3 L = normalize(lightDir);
    const float NdotL = dot(N, L);
@@ -77,6 +82,7 @@ float3 DoPointLight(const float3 pos, const float3 N, const float3 V, const floa
    if(!bIsMetal && (NdotL + Roughness_WrapL_Edge.y > 0.0))
       Out = diffuse * ((NdotL + Roughness_WrapL_Edge.y) / ((1.0+Roughness_WrapL_Edge.y) * (1.0+Roughness_WrapL_Edge.y)));
  
+    
    // add glossy component (modified ashikhmin/blinn bastard), not fully energy conserving, but good enough
    if(NdotL > 0.0)
    {
@@ -94,7 +100,6 @@ float3 DoPointLight(const float3 pos, const float3 N, const float3 V, const floa
    const float sqrl_lightDir = dot(lightDir,lightDir); // tweaked falloff to have ranged lightsources
    float fAtten = saturate(1.0 - sqrl_lightDir*sqrl_lightDir/(cAmbient_LightRange.w*cAmbient_LightRange.w*cAmbient_LightRange.w*cAmbient_LightRange.w)); //!! pre-mult/invert cAmbient_LightRange.w?
    fAtten = fAtten*fAtten/(sqrl_lightDir + 1.0);
-
    return Out * lights[i].vEmission * fAtten;
 }
 
