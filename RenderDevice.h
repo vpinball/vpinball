@@ -175,6 +175,7 @@ public:
    void Flip(const bool vsync);
 
    D3DTexture* GetBackBufferTexture() const { return m_pOffscreenBackBufferTexture; }
+   D3DTexture* GetBackBufferTmpTexture() const { return m_pOffscreenBackBufferTmpTexture; }
    RenderTarget* GetOutputBackBuffer() const { return m_pBackBuffer; }
 
    D3DTexture* GetBloomBufferTexture() const { return m_pBloomBufferTexture; }
@@ -191,6 +192,8 @@ public:
    RenderTarget* AttachZBufferTo(RenderTarget* surf);
    void CopySurface(RenderTarget* dest, RenderTarget* src);
    void CopySurface(D3DTexture* dest, RenderTarget* src);
+   void CopySurface(RenderTarget* dest, D3DTexture* src);
+   void CopySurface(D3DTexture* dest, D3DTexture* src);
    void CopyDepth(D3DTexture* dest, RenderTarget* src);
 
    D3DTexture* CreateSystemTexture(BaseTexture* surf);
@@ -269,6 +272,7 @@ private:
    IDirect3DSurface9* m_pBackBuffer;
 
    D3DTexture* m_pOffscreenBackBufferTexture;
+   D3DTexture* m_pOffscreenBackBufferTmpTexture;
 
    D3DTexture* m_pBloomBufferTexture;
    D3DTexture* m_pBloomTmpBufferTexture;

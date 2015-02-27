@@ -257,10 +257,11 @@ STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Video Options"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    CONTROL         "Rotate for Cabinet Usage",IDC_BG_SET,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,145,110,10
-    CONTROL         "Enable Fast FXAA",IDC_FFXAA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,165,90,10
-    CONTROL         "Enable Quality FXAA",IDC_QFXAA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,175,90,10
-    CONTROL         "Enable 4xAntiAliasing",IDC_AA_ALL_TABLES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,185,126,10
+    CONTROL         "Rotate for Cabinet Usage",IDC_BG_SET,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,140,110,10
+    CONTROL         "Enable Fast FXAA",IDC_FFXAA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,155,90,10
+    CONTROL         "Enable Quality FXAA",IDC_QFXAA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,165,90,10
+    CONTROL         "Enable Extreme FXAA",IDC_EFXAA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,175,90,10
+    CONTROL         "Enable 4xAntiAliasing",IDC_AA_ALL_TABLES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,190,126,10
     CONTROL         "Stretch Ball with Table",IDC_StretchNo,"Button",BS_AUTORADIOBUTTON | WS_GROUP,16,211,83,10
     CONTROL         "Don't stretch the Ball",IDC_StretchYes,"Button",BS_AUTORADIOBUTTON,16,221,81,10
     CONTROL         "Cabinet anti-stretch the ball",IDC_StretchMonitor,

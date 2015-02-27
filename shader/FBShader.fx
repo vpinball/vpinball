@@ -275,6 +275,15 @@ technique FXAA2
    } 
 }
 
+technique FXAA3
+{ 
+   pass P0 
+   { 
+      VertexShader = compile vs_3_0 vs_main_no_trafo();
+	  PixelShader = compile ps_3_0 ps_main_fxaa3();
+   } 
+}
+
 technique fb_tonemap
 { 
    pass P0 

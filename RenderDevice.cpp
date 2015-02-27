@@ -376,6 +376,10 @@ RenderDevice::RenderDevice(HWND hwnd, int width, int height, bool fullscreen, in
     CHECKD3D(m_pD3DDevice->CreateTexture(width/3, height/3, 1,
 		D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &m_pBloomTmpBufferTexture, NULL)); //!! 8bit enough?
 
+	// alloc temporary buffer for postprocessing
+	CHECKD3D(m_pD3DDevice->CreateTexture(width, height, 1,
+		D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &m_pOffscreenBackBufferTmpTexture, NULL));
+
 	m_curIndexBuffer = 0;
     m_curVertexBuffer = 0;
     currentDeclaration = NULL;
@@ -517,6 +521,7 @@ RenderDevice::~RenderDevice()
 
     m_texMan.UnloadAll();
 	SAFE_RELEASE(m_pOffscreenBackBufferTexture);
+	SAFE_RELEASE(m_pOffscreenBackBufferTmpTexture);
    SAFE_RELEASE(m_pBloomBufferTexture);
    SAFE_RELEASE(m_pBloomTmpBufferTexture);
    SAFE_RELEASE(m_pBackBuffer);
@@ -627,6 +632,26 @@ void RenderDevice::CopySurface(D3DTexture* dest, RenderTarget* src)
     CHECKD3D(m_pD3DDevice->StretchRect(src, NULL, textureSurface, NULL, D3DTEXF_NONE));
     SAFE_RELEASE_NO_RCC(textureSurface);
 }
+
+void RenderDevice::CopySurface(RenderTarget* dest, D3DTexture* src)
+{
+	IDirect3DSurface9 *textureSurface;
+    CHECKD3D(src->GetSurfaceLevel(0, &textureSurface));
+    CHECKD3D(m_pD3DDevice->StretchRect(textureSurface, NULL, dest, NULL, D3DTEXF_NONE));
+    SAFE_RELEASE_NO_RCC(textureSurface);
+}
+
+void RenderDevice::CopySurface(D3DTexture* dest, D3DTexture* src)
+{
+	IDirect3DSurface9 *destTextureSurface;
+    CHECKD3D(dest->GetSurfaceLevel(0, &destTextureSurface));
+    IDirect3DSurface9 *srcTextureSurface;
+    CHECKD3D(src->GetSurfaceLevel(0, &srcTextureSurface));
+    CHECKD3D(m_pD3DDevice->StretchRect(srcTextureSurface, NULL, destTextureSurface, NULL, D3DTEXF_NONE));
+    SAFE_RELEASE_NO_RCC(destTextureSurface);
+    SAFE_RELEASE_NO_RCC(srcTextureSurface);
+}
+
 
 void RenderDevice::CopyDepth(D3DTexture* dest, RenderTarget* src)
 {
