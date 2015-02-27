@@ -283,7 +283,7 @@ private:
    DWORD textureStateCache[8][TEXTURE_STATE_CACHE_SIZE];     // dto.
    DWORD textureSamplerCache[8][TEXTURE_SAMPLER_CACHE_SIZE]; // dto.
 
-   VertexBuffer* m_curVertexBuffer;     // for caching
+   VertexBuffer* m_curVertexBuffer;       // for caching
    IndexBuffer* m_curIndexBuffer;         // dto.
    VertexDeclaration *currentDeclaration; // dto.
 
@@ -305,6 +305,8 @@ public:
    Shader *DMDShader;
    Shader *FBShader;
    Shader *flasherShader;
+
+   Shader* m_curShader; // for caching
 
    TextureManager m_texMan;
 
