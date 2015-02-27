@@ -378,8 +378,12 @@ RenderDevice::RenderDevice(HWND hwnd, int width, int height, bool fullscreen, in
 
 	// alloc temporary buffer for postprocessing
 	if(stereo3DFXAA)
+	{
 		CHECKD3D(m_pD3DDevice->CreateTexture(width, height, 1,
 			D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &m_pOffscreenBackBufferTmpTexture, NULL));
+	}
+	else
+		m_pOffscreenBackBufferTmpTexture = NULL;
 
 	m_curIndexBuffer = 0;
     m_curVertexBuffer = 0;
