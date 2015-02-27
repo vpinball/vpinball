@@ -2060,8 +2060,8 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
 				if (pball->m_drsq < 8.0e-5f && mag < 1.0e-3f*m_ptable->m_Gravity*m_ptable->m_Gravity/GRAVITYCONST/GRAVITYCONST && fabsf(pball->m_vel.z) < 0.2f*m_ptable->m_Gravity/GRAVITYCONST
 					&& pball->m_angularmomentum.Length() < 0.9f*m_ptable->m_Gravity/GRAVITYCONST)
 				{
-					pball->m_angularmomentum = Vertex3Ds(0,0,0);
-					pball->m_angularvelocity = Vertex3Ds(0,0,0);
+					pball->m_angularmomentum *= 0.05f; // do not kill spin completely, otherwise stuck balls will happen during regular gameplay
+					pball->m_angularvelocity *= 0.05f;
 				}
 			}
 		}
@@ -2492,7 +2492,7 @@ void Player::Bloom()
 	{
 		// switch to 'bloom' output buffer to collect clipped framebuffer values
 		m_pin3d.m_pd3dDevice->GetBloomBufferTexture()->GetSurfaceLevel(0, &tmpBloomSurface);
-		m_pin3d.m_pd3dDevice->SetRenderTarget(tmpBloomSurface);		
+		m_pin3d.m_pd3dDevice->SetRenderTarget(tmpBloomSurface);
 
 		m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetBackBufferTexture());
 
@@ -2540,7 +2540,7 @@ void Player::Bloom()
 	}
 
 	// switch to 'real' output buffer
-	m_pin3d.m_pd3dDevice->SetRenderTarget(m_pin3d.m_pd3dDevice->GetOutputBackBuffer());
+		m_pin3d.m_pd3dDevice->SetRenderTarget(m_pin3d.m_pd3dDevice->GetOutputBackBuffer());
 
 	SAFE_RELEASE_NO_RCC(tmpBloomSurface);
 	SAFE_RELEASE_NO_RCC(tmpBloomSurface2);
@@ -2608,7 +2608,7 @@ void Player::FlipVideoBuffers3DAOFXAA( const bool vsync ) //!! SMAA, luma sharpe
 	const bool FXAA1 = (((m_fFXAA == 1) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == 1));
 
 	if(stereo || useAO)
-		m_pin3d.m_pd3dDevice->CopyDepth(m_pin3d.m_pdds3DZBuffer, m_pin3d.m_pddsZBuffer);
+	m_pin3d.m_pd3dDevice->CopyDepth(m_pin3d.m_pdds3DZBuffer, m_pin3d.m_pddsZBuffer);
         
     m_pin3d.m_pd3dDevice->BeginScene();
 
@@ -2622,7 +2622,7 @@ void Player::FlipVideoBuffers3DAOFXAA( const bool vsync ) //!! SMAA, luma sharpe
 	m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", (!stereo && useAO) ? m_pin3d.m_pddsAOBackBuffer : m_pin3d.m_pd3dDevice->GetBackBufferTexture());
     m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture1", m_pin3d.m_pd3dDevice->GetBloomBufferTexture());
 	if(stereo || useAO)
-		m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture3", m_pin3d.m_pdds3DZBuffer);
+	m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture3", m_pin3d.m_pdds3DZBuffer);
 
 	Texture * const pin = m_ptable->GetImage((char *)m_ptable->m_szImageColorGrade);
 	if(pin)
@@ -2654,7 +2654,7 @@ void Player::FlipVideoBuffers3DAOFXAA( const bool vsync ) //!! SMAA, luma sharpe
 
 	if(!stereo && useAO)
 	{
-		m_pin3d.m_pd3dDevice->CopySurface(m_pin3d.m_pddsAOBackBuffer, m_pin3d.m_pd3dDevice->GetOutputBackBuffer());
+	m_pin3d.m_pd3dDevice->CopySurface(m_pin3d.m_pddsAOBackBuffer, m_pin3d.m_pd3dDevice->GetOutputBackBuffer());
 
 		//
 
