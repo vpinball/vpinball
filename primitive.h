@@ -67,6 +67,7 @@ public:
    bool m_fVisible;
    bool m_DrawTexturesInside;
    bool m_staticRendering;
+   bool m_fDisableLighting;
 
    bool m_fHitEvent;
    bool m_fCollidable;
@@ -185,6 +186,8 @@ public:
    STDMETHOD(put_Scatter)(/*[in]*/ float newVal);
    STDMETHOD(get_DepthBias)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_DepthBias)(/*[in]*/ float newVal);
+   STDMETHOD(get_DisableLighting)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   STDMETHOD(put_DisableLighting)(/*[in]*/ VARIANT_BOOL newVal);
 
    Primitive();
    virtual ~Primitive();

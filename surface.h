@@ -32,6 +32,7 @@ public:
 	bool m_fCollidable; //wall must be droppable too!
 	bool m_fIsBottomSolid; //is the bottom closed (lower side of the 'cube') or not (legacy behavior has bottom open, e.g. balls can drop into walls from below, or leave them if inside walls (if bottom area is large enough of course))
 	bool m_fSlingshotAnimation;
+    bool m_fDisableLighting;
 
 	bool m_fVisible;
 	bool m_fHitEvent;
@@ -201,8 +202,10 @@ public:
 	STDMETHOD(put_HasHitEvent)(/*[in]*/ VARIANT_BOOL newVal);
 	STDMETHOD(get_Disabled)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_Disabled)(/*[in]*/ VARIANT_BOOL newVal);
-	STDMETHOD(get_Collidable)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-	STDMETHOD(put_Collidable)(/*[in]*/ VARIANT_BOOL newVal);
+    STDMETHOD(get_Collidable)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+    STDMETHOD(put_Collidable)(/*[in]*/ VARIANT_BOOL newVal);
+    STDMETHOD(get_DisableLighting)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+    STDMETHOD(put_DisableLighting)(/*[in]*/ VARIANT_BOOL newVal);
 
 	STDMETHOD (get_SlingshotThreshold)(/*[out, retval]*/ float *pVal);
 	STDMETHOD (put_SlingshotThreshold)(/*[in]*/ float newVal);

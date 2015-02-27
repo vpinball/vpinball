@@ -114,6 +114,7 @@ void Surface::WriteRegDefaults()
    SetRegValueBool(strKeyName,"Visible", m_d.m_fVisible);
    SetRegValueBool(strKeyName,"SideVisible", m_d.m_fSideVisible);
    SetRegValueBool(strKeyName,"Collidable", m_d.m_fCollidable);
+   SetRegValueBool(strKeyName,"DisableLighting", m_d.m_fDisableLighting);
 }
 
 
@@ -246,6 +247,7 @@ void Surface::SetDefaults(bool fromMouseClick)
    m_d.m_fVisible = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"Visible", true) : true;
    m_d.m_fSideVisible = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"SideVisible", true) : true;
    m_d.m_fCollidable = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"Collidable", true) : true;
+   m_d.m_fDisableLighting = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"DisableLighting", false) : false;
 }
 
 
@@ -942,10 +944,14 @@ void Surface::RenderSlingshots(RenderDevice* pd3dDevice)
 void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
 {
 	// render side
+    if (m_d.m_fDisableLighting && ( m_d.m_fSideVisible || m_d.m_fVisible))
+        pd3dDevice->basicShader->Core()->SetBool("bDisableLighting", m_d.m_fDisableLighting );
+
     if (m_d.m_fSideVisible && !fDrop && (numVertices > 0)) // Don't need to render walls if dropped
     {
         Material *mat = m_ptable->GetMaterial( m_d.m_szSideMaterial);
         pd3dDevice->basicShader->SetMaterial(mat);
+
         if (mat->m_bOpacityActive)
         {
            pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
@@ -1007,6 +1013,9 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
     // reset render states
     g_pplayer->m_pin3d.DisableAlphaBlend();
     pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+    if (m_d.m_fDisableLighting && ( m_d.m_fSideVisible || m_d.m_fVisible))
+        pd3dDevice->basicShader->Core()->SetBool("bDisableLighting", false );
+
 }
 
 void Surface::DoCommand(int icmd, int x, int y)
@@ -1134,6 +1143,7 @@ HRESULT Surface::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
    bw.WriteBool(FID(VSBL), m_d.m_fVisible);
    bw.WriteBool(FID(SLGA), m_d.m_fSlingshotAnimation);
    bw.WriteBool(FID(SVBL), m_d.m_fSideVisible);
+   bw.WriteBool(FID(DILI), m_d.m_fDisableLighting);
 
    ISelect::SaveData(pstm, hcrypthash, hcryptkey);
 
@@ -1350,6 +1360,10 @@ BOOL Surface::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(SLGA))
    {
       pbr->GetBool(&m_d.m_fSlingshotAnimation);
+   }
+   else if (id == FID(DILI))
+   {
+       pbr->GetBool(&m_d.m_fDisableLighting);
    }
    else if (id == FID(SVBL))
    {
@@ -1884,6 +1898,24 @@ STDMETHODIMP Surface::put_SlingshotAnimation(VARIANT_BOOL newVal)
    STOPUNDO
 
    return S_OK;
+}
+
+STDMETHODIMP Surface::get_DisableLighting(VARIANT_BOOL *pVal)
+{
+    *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fDisableLighting);
+
+    return S_OK;
+}
+
+STDMETHODIMP Surface::put_DisableLighting(VARIANT_BOOL newVal)
+{
+    STARTUNDO
+
+        m_d.m_fDisableLighting = VBTOF(newVal);
+
+    STOPUNDO
+
+        return S_OK;
 }
 
 void Surface::UpdatePropertyPanes()
