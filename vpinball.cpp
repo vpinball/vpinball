@@ -3831,6 +3831,8 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
          SendMessage(hwndCheck, BM_SETCHECK, (fxaa == 1) ? BST_CHECKED : BST_UNCHECKED, 0);
          hwndCheck = GetDlgItem(hwndDlg, IDC_QFXAA);
          SendMessage(hwndCheck, BM_SETCHECK, (fxaa == 2) ? BST_CHECKED : BST_UNCHECKED, 0);
+         hwndCheck = GetDlgItem(hwndDlg, IDC_EFXAA);
+         SendMessage(hwndCheck, BM_SETCHECK, (fxaa == 3) ? BST_CHECKED : BST_UNCHECKED, 0);
 
          hwndCheck = GetDlgItem(hwndDlg, IDC_BG_SET);
          int bgset;
@@ -4030,7 +4032,11 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
 				  size_t ffxaa = SendMessage(hwndFXAA, BM_GETCHECK, 0, 0);
 				  hwndFXAA = GetDlgItem(hwndDlg, IDC_QFXAA);
 				  size_t qfxaa = SendMessage(hwndFXAA, BM_GETCHECK, 0, 0) * 2;
-				  if(qfxaa)
+				  hwndFXAA = GetDlgItem(hwndDlg, IDC_EFXAA);
+				  size_t efxaa = SendMessage(hwndFXAA, BM_GETCHECK, 0, 0) * 3;
+				  if(efxaa)
+					SetRegValue("Player", "FXAA", REG_DWORD, &efxaa, 4);
+				  else if(qfxaa)
 					SetRegValue("Player", "FXAA", REG_DWORD, &qfxaa, 4);
 				  else
 					SetRegValue("Player", "FXAA", REG_DWORD, &ffxaa, 4);

@@ -164,9 +164,11 @@ public:
     void DrawBalls();
     void CheckAndUpdateRegions();
 
-    void Bloom();
+    void Bloom(const bool use_tmp_output);
+    void StereoFXAA(const bool stereo, const bool FXAA1, const bool FXAA2, const bool FXAA3);
+
     void FlipVideoBuffersNormal( const bool vsync );
-    void FlipVideoBuffers3DAOFXAA( const bool vsync );
+    void FlipVideoBuffersAO( const bool vsync );
 
     void SetScreenOffset(float x, float y);     // set render offset in screen coordinates, e.g., for the nudge shake
 

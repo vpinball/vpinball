@@ -156,8 +156,10 @@ VP 10.0.0 Changelog
 - its not necessary anymore to manually override the texture filtering quality in the global gfx cards options (NVIDIA control panel, etc)
   if you need HQ filtering, please only use the checkbox in the VP video preferences instead
 
-- please avoid using the VP builtin FXAA (for now!), and rather use the new VP builtin 4xAA
-  (and on top one can then even enable the FXAA/SMAA/etc in the gfx card panels to smoothen out remaining edges)
+- new 4x Anti-Aliasing mode that does brute force oversampling
+  (can optionally be combined with VPs builtin FXAA or the control panel FXAA/SMAA/etc for even more smoothing)
+
+- add third mode for FXAA: extreme (and retweak the quality FXAA mode)
 
 - optional texture compression to save some gfx video memory (at the cost of rendering quality and loading time)
   (for now the textures have to be a multiple of 4 in both x & y resolution to make them compressable.
