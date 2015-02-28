@@ -165,7 +165,7 @@ public:
        TEX_MIRROR        = D3DTADDRESS_MIRROR
    };
 
-   RenderDevice(HWND hwnd, int width, int height, bool fullscreen, int colordepth, int &refreshrate, int VSync, bool useAA, bool stereo3DFXAA);
+   RenderDevice(const HWND hwnd, int width, int height, const bool fullscreen, const int colordepth, int &refreshrate, int VSync, const bool useAA, const bool stereo3D, const bool FXAA);
    ~RenderDevice();
 
    void BeginScene();
