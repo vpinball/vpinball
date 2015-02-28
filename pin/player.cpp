@@ -2310,8 +2310,6 @@ void Player::DMDdraw(const float DMDposx, const float DMDposy, const float DMDwi
 
 void Player::Spritedraw(const float posx, const float posy, const float width, const float height, const COLORREF color, Texture * const tex, const float u0, const float v0, const float u1, const float v1, const float intensity)
 {
-  if(tex)
-  {
 	float Verts[4*5] =
 	{
 	  1.0f,1.0f,0.0f,u1,v1,
@@ -2326,23 +2324,21 @@ void Player::Spritedraw(const float posx, const float posy, const float width, c
 		Verts[i*5+1] = 1.0f-(Verts[i*5+1]*height + posy)*2.0f;
 	}
 
-    m_pin3d.m_pd3dDevice->DMDShader->SetTechnique("basic_noDMD");
+    m_pin3d.m_pd3dDevice->DMDShader->SetTechnique(tex ? "basic_noDMD" : "basic_noDMD_notex");
 
     const D3DXVECTOR4 c = convertColor(color,intensity);
     m_pin3d.m_pd3dDevice->DMDShader->Core()->SetVector("vColor_Intensity",&c);
 
-    m_pin3d.m_pd3dDevice->DMDShader->SetTexture("Texture0", tex);
+	if(tex)
+	    m_pin3d.m_pd3dDevice->DMDShader->SetTexture("Texture0", tex);
 
     m_pin3d.m_pd3dDevice->DMDShader->Begin(0);
     m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_TEX, (LPVOID)Verts, 4);
     m_pin3d.m_pd3dDevice->DMDShader->End();
-  }
 }
 
 void Player::Spritedraw(const float posx, const float posy, const float width, const float height, const COLORREF color, D3DTexture * const tex, const float intensity)
 {
-  if(tex)
-  {
 	float Verts[4*5] =
 	{
 	  1.0f,1.0f,0.0f,1.0f,1.0f,
@@ -2357,17 +2353,17 @@ void Player::Spritedraw(const float posx, const float posy, const float width, c
 		Verts[i*5+1] = 1.0f-(Verts[i*5+1]*height + posy)*2.0f;
 	}
 
-    m_pin3d.m_pd3dDevice->DMDShader->SetTechnique("basic_noDMD");
+    m_pin3d.m_pd3dDevice->DMDShader->SetTechnique(tex ? "basic_noDMD" : "basic_noDMD_notex");
 
     const D3DXVECTOR4 c = convertColor(color,intensity);
     m_pin3d.m_pd3dDevice->DMDShader->Core()->SetVector("vColor_Intensity",&c);
 
-    m_pin3d.m_pd3dDevice->DMDShader->SetTexture("Texture0", tex);
+	if(tex)
+	    m_pin3d.m_pd3dDevice->DMDShader->SetTexture("Texture0", tex);
 
     m_pin3d.m_pd3dDevice->DMDShader->Begin(0);
     m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_TEX, (LPVOID)Verts, 4);
     m_pin3d.m_pd3dDevice->DMDShader->End();
-  }
 }
 
 void Player::RenderDynamics()
@@ -2743,7 +2739,7 @@ void Player::FlipVideoBuffersAO( const bool vsync )
 	m_pin3d.m_pd3dDevice->EndScene();
 
 	// display frame
-	m_pin3d.m_pd3dDevice->Flip(vsync);
+	m_pin3d.Flip(vsync);
 
 	// switch to texture output buffer again
 	m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", (D3DTexture*)NULL);

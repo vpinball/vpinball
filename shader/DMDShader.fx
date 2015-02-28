@@ -121,6 +121,11 @@ float4 ps_main_noDMD(in VS_OUTPUT IN) : COLOR
    return float4(InvToneMap(InvGamma(l.xyz * vColor_Intensity.xyz * vColor_Intensity.w)), l.w); //!! meh, this sucks a bit performance-wise, but how to avoid this when doing fullscreen-tonemap/gamma without stencil and depth read?
 }
 
+float4 ps_main_noDMD_notex(in VS_OUTPUT IN) : COLOR
+{
+   return float4(InvToneMap(InvGamma(vColor_Intensity.xyz * vColor_Intensity.w)), 1.0f); //!! meh, this sucks a bit performance-wise, but how to avoid this when doing fullscreen-tonemap/gamma without stencil and depth read?
+}
+
 technique basic_DMD
 { 
    pass P0 
@@ -155,5 +160,14 @@ technique basic_noDMD
    { 
       VertexShader = compile vs_3_0 vs_main(); 
 	  PixelShader = compile ps_3_0 ps_main_noDMD();
+   } 
+}
+
+technique basic_noDMD_notex
+{ 
+   pass P0 
+   { 
+      VertexShader = compile vs_3_0 vs_main(); 
+	  PixelShader = compile ps_3_0 ps_main_noDMD_notex();
    } 
 }

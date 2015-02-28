@@ -1,5 +1,7 @@
 #include "StdAfx.h"
 
+// All coords for drawing in here are in 1000x1000 res
+
 static HMIXER m_hMixer;
 //static MIXERCAPS sMxCaps;
 static DWORD m_dwMinimum;
@@ -9,12 +11,11 @@ static F32 gMixerVolume;
 static int nmixers;
 static U32 volume_stamp = 0;
 
-const F32 volume_adjustment_bar_pos[2] = { 15.0f, 400.0f };
+const F32 volume_adjustment_bar_pos[2] = { 15.0f, 500.0f };
 const F32 volume_adjustment_bar_big_size[2] = { 20.0f, 4.0f };
 const F32 volume_adjustment_bar_small_size[2] = { 10.0f, 2.0f };
 const F32 volume_adjustment_bar_ysize = 720.0f;
-const U32 volume_adjustment_color[3] = { 0x00ff00df, 0xffff00df, 0xff0000df };
-const U32 volume_adjustment_drop_color = 0x0000001f;
+const U32 volume_adjustment_color[3] = { 0x00ff00, 0xffff00, 0xff0000 };
 
 BOOL mixer_init( const HWND wnd )
 {
@@ -121,7 +122,7 @@ void mixer_get_volume()
 	}
 	
 	if( m_dwMaximum > m_dwMinimum )
-		gMixerVolume = sqrtf( ( F32 ) ( mxcdVolume.dwValue - m_dwMinimum ) / ( F32 ) ( m_dwMaximum - m_dwMinimum ) );
+		gMixerVolume = sqrtf( (F32)( mxcdVolume.dwValue - m_dwMinimum ) / (F32)( m_dwMaximum - m_dwMinimum ) );
 
 	if( g_pplayer->m_ptable->m_tblVolmod != 0.0f )
 		gMixerVolume /= g_pplayer->m_ptable->m_tblVolmod;
@@ -144,24 +145,24 @@ void mixer_update(const PinInput &pininput)
 	else
 		return;
 
-	if(vol < 0.01f) vol = 0.01f;//hardcap minimum
-	if(vol > 1.0f) vol = 1.0f;//hardcap maximum
+	if(vol < 0.01f) vol = 0.01f; //hardcap minimum
+	if(vol > 1.0f) vol = 1.0f;   //hardcap maximum
+
+	volume_stamp = g_pplayer->m_time_msec;
 
 	if(vol == gMixerVolume)
 		return;
 
 	gMixerVolume = vol;
 
-	volume_stamp = g_pplayer->m_time_msec;
-
-    F32 modded_volume = gMixerVolume * g_pplayer->m_ptable->m_tblVolmod;
+	F32 modded_volume = gMixerVolume * g_pplayer->m_ptable->m_tblVolmod;
 
     if( modded_volume < 0.01f )
 		modded_volume = 0.01f; //hardcap minimum
     if( modded_volume > 1.0f )
-		modded_volume = 1.0f; //hardcap maximum
+		modded_volume = 1.0f;  //hardcap maximum
 
-	DWORD dwVal = (DWORD) ( ((F32)m_dwMinimum) + ( modded_volume * modded_volume ) * ((F32)(m_dwMaximum-m_dwMinimum)));
+	DWORD dwVal = (DWORD) ( (F32)m_dwMinimum + ( modded_volume * modded_volume ) * (F32)(m_dwMaximum-m_dwMinimum) );
 
 	MIXERCONTROLDETAILS_UNSIGNED mxcdVolume = { dwVal };
 	MIXERCONTROLDETAILS mxcd;
@@ -186,7 +187,7 @@ void mixer_draw()
 	if( !volume_stamp )
 		return;
 
-	F32 fade = 1.0f - ( ( (F32) ( g_pplayer->m_time_msec - volume_stamp ) ) * 0.001f );
+	F32 fade = 1.0f - (F32)( g_pplayer->m_time_msec - volume_stamp ) * 0.001f;
     if( fade > 1.0f )
 		fade = 1.0f;
     if( fade <= 0.0f )
@@ -195,40 +196,30 @@ void mixer_draw()
 		return;
 	}
 
-	//RenderStateType	RestoreRenderState;
-	//TextureStateType	RestoreTextureState;
-	D3DMATRIX			RestoreWorldMatrix;
+	if(g_pplayer->m_ptable->m_tblMirrorEnabled)
+		g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
 
-	// Save the current transformation state.
-	g_pplayer->m_pin3d.m_pd3dDevice->GetTransform ( TRANSFORMSTATE_WORLD, &RestoreWorldMatrix ); 
-	// Save the current render state.
-	//Display_GetRenderState(g_pplayer->m_pin3d.m_pd3dDevice, &(RestoreRenderState));
-	// Save the current texture state.
-	//Display_GetTextureState (g_pplayer->m_pin3d.m_pd3dDevice, &(RestoreTextureState));
+    g_pplayer->m_pin3d.EnableAlphaBlend(true);
 
-    static /* const */ Matrix3D WorldMatrix; //(1.0f,0.0f,0.0f,0.0f,0.0f,1.0f,0.0f,0.0f,0.0f,0.0f,1.0f,0.0f,0.0f,0.0f,0.0f,1.0f);
-    WorldMatrix.SetIdentity();
-	g_pplayer->m_pin3d.m_pd3dDevice->SetTransform ( TRANSFORMSTATE_WORLD, (D3DMATRIX*)&WorldMatrix );
+    fade *= (float)(222.2/255.0);
 
-    g_pplayer->m_pin3d.EnableAlphaBlend(false);
-
-    const U32 alpha = (U32) ( fade * 222.2f );
-
-    F32 ypos = (F32)( -((S32)g_pplayer->m_height/2) );
+    F32 ypos = -500.f;
     const F32 yoff = volume_adjustment_bar_big_size[1] * 2.0f;
 
-    for(F32 vol = 0.f, y= - ( volume_adjustment_bar_ysize*0.5f );
+    for(F32 vol = 0.f, y = - volume_adjustment_bar_ysize * 0.5f;
             vol < 1.0f;
-            vol += ( 1.0f * yoff / volume_adjustment_bar_ysize ), y += yoff )
+            vol += yoff/volume_adjustment_bar_ysize, y += yoff)
     {
-		U32 color = ( volume_adjustment_color[0] & 0xffffff00 ) | alpha;
         ypos += yoff;
 
+		U32 color;
 		F32 size[2];
         if( vol > gMixerVolume )
         {
             size[0] = volume_adjustment_bar_small_size[0];
             size[1] = volume_adjustment_bar_small_size[1];
+
+			color = volume_adjustment_color[0]; 
         }
         else
         {
@@ -236,61 +227,53 @@ void mixer_draw()
             size[1] = volume_adjustment_bar_big_size[1];
 
 			if( vol < 0.75f )
-				color = ( volume_adjustment_color[0] & 0xffffff00 ) | alpha;
+				color = volume_adjustment_color[0];
 			else if( vol < 0.90f )
-				color = ( volume_adjustment_color[1] & 0xffffff00 ) | alpha;
+				color = volume_adjustment_color[1];
 			else
-				color = ( volume_adjustment_color[2] & 0xffffff00 ) | alpha;
+				color = volume_adjustment_color[2];
         }
 
-		const U32 drop_color = ( volume_adjustment_drop_color & 0xffffff00 ) | alpha;
-
-		// Calculate the scale.
-		const float sX = - (float)g_pplayer->m_height*(float)(1.0/601.0); //changed from 600 to 601 to correct fadeout shadow lines
-		const float sY = - (float)g_pplayer->m_width *(float)(1.0/800.0);
-
 		// Set the position.  
-		const float fX = (float)g_pplayer->m_height + (volume_adjustment_bar_pos[0] * sX);
-		const float fY = (float)g_pplayer->m_width  + (volume_adjustment_bar_pos[1] * sY) + (y * sY);
+		const float fX = 1000.0f - volume_adjustment_bar_pos[0];
+		const float fY = 1000.0f - volume_adjustment_bar_pos[1] - y;
 
 		// Set the width and height.
-		const float Width = size[0] * sX;
-		const float Height = size[1] * sY;
+		const float Width = -size[0];
+		const float Height = -size[1];
 
 		// Set the color.
-		{
-		const DWORD r = (drop_color             ) >> 24;
-		const DWORD g = (drop_color & 0x00ff0000) >> 16;
-		const DWORD b = (drop_color & 0x0000ff00) >>  8;
-		const DWORD a = (drop_color & 0x000000ff)      ;
-		const DWORD col = (a << 24) | (r << 16) | (g << 8) | b;
+/*		{
+		const DWORD r = (drop_color           ) >> 16;
+		const DWORD g = (drop_color & 0x00ff00) >> 8;
+		const DWORD b = (drop_color & 0x0000ff);
+		const DWORD col = (b << 16) | (g << 8) | r;
 
 		// Draw the tick mark.  (Reversed x and y to match coordinate system of front end.)
-		g_pplayer->Spritedraw( (fY + 1.0f), (fX + 1.0f),
-							   (Height - 2.0f), (Width - 2.0f), 
+		g_pplayer->Spritedraw( (fY + 1.0f)/1000.0f, (fX + 1.0f)/1000.0f,
+							   (Height - 2.0f)/1000.0f, (Width - 2.0f)/1000.0f, 
 							   col,
-							   (Texture*)NULL); //!!
-		}
+							   (Texture*)NULL,
+							   0.f,0.f,1.f,1.f,
+							   fade);
+		}*/
 		// Set the color.
 		{
-		const DWORD r = (color             ) >> 24;
-		const DWORD g = (color & 0x00ff0000) >> 16;
-		const DWORD b = (color & 0x0000ff00) >>  8;
-		const DWORD a = (color & 0x000000ff)      ;
-		const DWORD col = (a << 24) | (r << 16) | (g << 8) | b;
+		const DWORD r = (color           ) >> 16;
+		const DWORD g = (color & 0x00ff00) >>  8;
+		const DWORD b = (color & 0x0000ff);
+		const DWORD col = (b << 16) | (g << 8) | r;
 
 		// Draw the tick mark.  (Reversed x and y to match coordinate system of front end.)
-		g_pplayer->Spritedraw( fY, fX,
-							   Height, Width, 
+		g_pplayer->Spritedraw( fY/1000.0f, fX/1000.0f,
+							   Height/1000.0f, Width/1000.0f, 
 							   col,
-							   (Texture*)NULL); //!!
+							   (Texture*)NULL,
+							   0.f,0.f,1.f,1.f,
+							   fade);
 		}
 	}
 
-	// Restore the render states.
-	//Display_SetRenderState(g_pplayer->m_pin3d.m_pd3dDevice, &(RestoreRenderState));
-	// Restore the texture state.
-	//Display_SetTextureState(g_pplayer->m_pin3d.m_pd3dDevice, &(RestoreTextureState));
-	// Restore the transformation state.
-	g_pplayer->m_pin3d.m_pd3dDevice->SetTransform ( TRANSFORMSTATE_WORLD, &RestoreWorldMatrix ); 
+	if(g_pplayer->m_ptable->m_tblMirrorEnabled)
+		g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 }
