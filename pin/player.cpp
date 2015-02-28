@@ -2202,7 +2202,7 @@ void Player::UpdatePhysics()
 
 		m_pininput.ProcessKeys(m_ptable/*, sim_msec*/, cur_time_msec);
 
-		mixer_update(m_pininput);
+		mixer_update();
 		hid_update(/*sim_msec*/cur_time_msec);
         plumb_update(/*sim_msec*/cur_time_msec, GetNudgeX(), GetNudgeY());
 

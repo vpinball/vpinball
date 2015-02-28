@@ -1,7 +1,5 @@
 #include "StdAfx.h"
 
-// All coords for drawing in here are in 1000x1000 res
-
 static HMIXER m_hMixer;
 //static MIXERCAPS sMxCaps;
 static DWORD m_dwMinimum;
@@ -11,11 +9,11 @@ static F32 gMixerVolume;
 static int nmixers;
 static U32 volume_stamp = 0;
 
-const F32 volume_adjustment_bar_pos[2] = { 15.0f, 500.0f };
-const F32 volume_adjustment_bar_big_size[2] = { 20.0f, 4.0f };
-const F32 volume_adjustment_bar_small_size[2] = { 10.0f, 2.0f };
-const F32 volume_adjustment_bar_ysize = 720.0f;
-const U32 volume_adjustment_color[3] = { 0x00ff00, 0xffff00, 0xff0000 };
+const F32 volume_adjustment_bar_pos[2] = { (float)(15.0/1000.0), (float)(500.0/1000.0) };
+const F32 volume_adjustment_bar_big_size[2] = { (float)(20.0/1000.0), (float)(4.0/1000.0) };
+const F32 volume_adjustment_bar_small_size[2] = { (float)(10.0/1000.0), (float)(2.0/1000.0) };
+const F32 volume_adjustment_bar_ysize = (float)(720.0/1000.0);
+const U32 volume_adjustment_color[3] = { 0x00ff00, 0xffff, 0xff };
 
 BOOL mixer_init( const HWND wnd )
 {
@@ -130,7 +128,7 @@ void mixer_get_volume()
 		gMixerVolume = 0.01f; // mute is impossible
 }
 
-void mixer_update(const PinInput &pininput)
+void mixer_update()
 {
 	if(!nmixers || !m_hMixer)
 		return;
@@ -138,9 +136,9 @@ void mixer_update(const PinInput &pininput)
 	const F32 delta = (F32)(1.0 / 500.0);
 
 	float vol;
-    if( pininput.Down( PININ_VOL_DOWN ) )
+    if( g_pplayer->m_pininput.Down( PININ_VOL_DOWN ) )
         vol = gMixerVolume - delta;
-    else if( pininput.Down( PININ_VOL_UP ) )
+    else if( g_pplayer->m_pininput.Down( PININ_VOL_UP ) )
         vol = gMixerVolume + delta;
 	else
 		return;
@@ -196,6 +194,8 @@ void mixer_draw()
 		return;
 	}
 
+	const bool cabMode = fmodf(g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set],360.f) != 0.f;
+
 	if(g_pplayer->m_ptable->m_tblMirrorEnabled)
 		g_pplayer->m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
 
@@ -203,15 +203,12 @@ void mixer_draw()
 
     fade *= (float)(222.2/255.0);
 
-    F32 ypos = -500.f;
     const F32 yoff = volume_adjustment_bar_big_size[1] * 2.0f;
 
     for(F32 vol = 0.f, y = - volume_adjustment_bar_ysize * 0.5f;
             vol < 1.0f;
             vol += yoff/volume_adjustment_bar_ysize, y += yoff)
     {
-        ypos += yoff;
-
 		U32 color;
 		F32 size[2];
         if( vol > gMixerVolume )
@@ -235,43 +232,26 @@ void mixer_draw()
         }
 
 		// Set the position.  
-		const float fX = 1000.0f - volume_adjustment_bar_pos[0];
-		const float fY = 1000.0f - volume_adjustment_bar_pos[1] - y;
-
-		// Set the width and height.
-		const float Width = -size[0];
-		const float Height = -size[1];
+		const float fX = 1.0f - (volume_adjustment_bar_pos[0] + size[0]);
+		const float fY = 1.0f - (volume_adjustment_bar_pos[1] + size[1] + y);
 
 		// Set the color.
-/*		{
-		const DWORD r = (drop_color           ) >> 16;
-		const DWORD g = (drop_color & 0x00ff00) >> 8;
-		const DWORD b = (drop_color & 0x0000ff);
-		const DWORD col = (b << 16) | (g << 8) | r;
-
-		// Draw the tick mark.  (Reversed x and y to match coordinate system of front end.)
-		g_pplayer->Spritedraw( (fY + 1.0f)/1000.0f, (fX + 1.0f)/1000.0f,
-							   (Height - 2.0f)/1000.0f, (Width - 2.0f)/1000.0f, 
-							   col,
+/*		// Draw the tick mark.  (Reversed x and y to match coordinate system of front end.)
+		g_pplayer->Spritedraw( (cabMode ? fX : fY) - (float)(1.0/1000.0), (cabMode ? fY : fX) - (float)(1.0/1000.0),
+							   (cabMode ? size[0] : size[1]) + (float)(2.0/1000.0), (cabMode ? size[1] : size[0]) + (float)(2.0/1000.0), 
+							   drop_color,
 							   (Texture*)NULL,
 							   0.f,0.f,1.f,1.f,
 							   fade);
-		}*/
+		*/
 		// Set the color.
-		{
-		const DWORD r = (color           ) >> 16;
-		const DWORD g = (color & 0x00ff00) >>  8;
-		const DWORD b = (color & 0x0000ff);
-		const DWORD col = (b << 16) | (g << 8) | r;
-
 		// Draw the tick mark.  (Reversed x and y to match coordinate system of front end.)
-		g_pplayer->Spritedraw( fY/1000.0f, fX/1000.0f,
-							   Height/1000.0f, Width/1000.0f, 
-							   col,
+		g_pplayer->Spritedraw( cabMode ? fX : fY, cabMode ? fY : fX,
+							   cabMode ? size[0] : size[1], cabMode ? size[1] : size[0], 
+							   color,
 							   (Texture*)NULL,
 							   0.f,0.f,1.f,1.f,
 							   fade);
-		}
 	}
 
 	if(g_pplayer->m_ptable->m_tblMirrorEnabled)
