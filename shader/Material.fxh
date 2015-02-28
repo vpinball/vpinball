@@ -13,34 +13,13 @@ struct CLight
 #define iLightPointNum NUM_LIGHTS
 #define iLightPointBallsNum (NUM_LIGHTS+NUM_BALL_LIGHTS)
 
-CLight lights[iLightPointBallsNum] = {
-   { 
-      float3(0.0, 0.0, 0.0),        //position 
-      float3(0.0, 0.0, 0.0)         //emission //!! have emission > 1.0
-   }, 
-   { 
-      float3(0.0, 0.0, 0.0),        //position 
-      float3(0.0, 0.0, 0.0)         //emission //!! have emission > 1.0
-   }, 
-#if iLightPointBallsNum > 2
-   { 
-      float3(0.0, 0.0, 0.0),        //position 
-      float3(0.0, 0.0, 0.0)         //emission //!! have emission > 1.0
-   }, 
-   { 
-      float3(0.0, 0.0, 0.0),        //position 
-      float3(0.0, 0.0, 0.0)         //emission //!! have emission > 1.0
-   }, 
-   { 
-      float3(0.0, 0.0, 0.0),        //position 
-      float3(0.0, 0.0, 0.0)         //emission //!! have emission > 1.0
-   }, 
-   { 
-      float3(0.0, 0.0, 0.0),        //position 
-      float3(0.0, 0.0, 0.0)         //emission
-   }
+#if iLightPointBallsNum == 2 // basic shader
+float4 packedLights[3];
+static CLight lights[iLightPointBallsNum] = (CLight[iLightPointBallsNum])packedLights;
+#else                        // ball shader
+float4 packedLights[9];
+static CLight lights[iLightPointBallsNum] = (CLight[iLightPointBallsNum])packedLights;
 #endif
-};
 
 float4 cAmbient_LightRange = float4(0.0,0.0,0.0, 0.0); //!! remove completely, just rely on envmap/IBL?
 

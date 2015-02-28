@@ -320,15 +320,18 @@ void Pin3D::InitLights()
     emission.y *= g_pplayer->m_ptable->m_lightEmissionScale*g_pplayer->m_ptable->m_globalEmissionScale;
     emission.z *= g_pplayer->m_ptable->m_lightEmissionScale*g_pplayer->m_ptable->m_globalEmissionScale;
 
-    char tmp[64];
-    sprintf_s(tmp,"lights[0].vPos");
-    m_pd3dDevice->basicShader->Core()->SetValue(tmp, (void*)&g_pplayer->m_ptable->m_Light[0].pos, sizeof(float)*3);
-    sprintf_s(tmp,"lights[1].vPos");
-    m_pd3dDevice->basicShader->Core()->SetValue(tmp, (void*)&g_pplayer->m_ptable->m_Light[1].pos, sizeof(float)*3);
-    sprintf_s(tmp,"lights[0].vEmission");
-    m_pd3dDevice->basicShader->Core()->SetValue(tmp, (void*)&emission, sizeof(float)*3);
-    sprintf_s(tmp,"lights[1].vEmission");
-    m_pd3dDevice->basicShader->Core()->SetValue(tmp, (void*)&emission, sizeof(float)*3);
+	struct CLight 
+	{ 
+		float vPos[3]; 
+		float vEmission[3];
+	};
+	CLight l[MAX_LIGHT_SOURCES];
+	for(unsigned int i = 0; i < MAX_LIGHT_SOURCES; ++i)
+	{
+		memcpy(&l[i].vPos,&g_pplayer->m_ptable->m_Light[i].pos,sizeof(float)*3);
+		memcpy(&l[i].vEmission,&emission,sizeof(float)*3);
+	}
+    m_pd3dDevice->basicShader->Core()->SetValue("packedLights", l, sizeof(CLight)*MAX_LIGHT_SOURCES);
     
     const D3DXVECTOR4 amb_lr = convertColor(g_pplayer->m_ptable->m_lightAmbient, g_pplayer->m_ptable->m_lightRange);
     m_pd3dDevice->basicShader->SetVector("cAmbient_LightRange", &amb_lr);
