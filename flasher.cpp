@@ -1332,7 +1332,7 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
    }
 
    pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
-   g_pplayer->m_pin3d.EnableAlphaBlend(m_d.m_fAddBlend);
+   g_pplayer->m_pin3d.EnableAlphaBlend(m_d.m_fAddBlend, false);
 
    pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, m_d.m_fAddBlend ? D3DBLEND_INVSRCCOLOR : D3DBLEND_INVSRCALPHA);
    pd3dDevice->SetRenderState(RenderDevice::BLENDOP, m_d.m_fAddBlend ? D3DBLENDOP_REVSUBTRACT : D3DBLENDOP_ADD); //!! meh, optimize all these alpha sets

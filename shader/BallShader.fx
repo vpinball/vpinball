@@ -193,10 +193,10 @@ float3 ballLightLoop(float3 pos, float3 N, float3 V, float3 diffuse, float3 glos
 
    float3 color = float3(0.0, 0.0, 0.0);
       
-   if((!bIsMetal && (diffuseMax > 0.0)) || (glossyMax > 0.0))
+   if(((Roughness_WrapL_Edge_IsMetal.w == 0.0) && (diffuseMax > 0.0)) || (glossyMax > 0.0))
    {
       for(int i = 0; i < iLightPointBallsNum; i++)  
-         color += DoPointLight(pos, N, V, diffuse, glossy, edge, Roughness_WrapL_Edge.x, i); // no clearcoat needed as only pointlights so far
+         color += DoPointLight(pos, N, V, diffuse, glossy, edge, Roughness_WrapL_Edge_IsMetal.x, i); // no clearcoat needed as only pointlights so far
    }
 
    if(specularMax > 0.0)
@@ -216,8 +216,8 @@ float4 psBall( in vout IN ) : COLOR
 
     const float edge = dot(v, r);
     const float lod = (edge > 0.6) ? // edge falloff to reduce aliasing on edges
-	edge*(6.0*1.0/0.4)-(6.0*0.6/0.4) :
-	0.0;
+		edge*(6.0*1.0/0.4)-(6.0*0.6/0.4) :
+		0.0;
 
 	float2 uv0;
 	uv0.x = r.x*0.5 + 0.5;
@@ -231,10 +231,10 @@ float4 psBall( in vout IN ) : COLOR
 	   // decal texture is an alpha scratch texture and must be added to the ball texture
 	   // the strength of the scratches totally rely on the alpha values.
 	   decalColor *= decalColorT.a;
-	   ballImageColor = (ballImageColor+decalColor) * fenvEmissionScale;
+	   ballImageColor = (ballImageColor+decalColor) * fenvEmissionScale_TexWidth.x;
 	}
 	else
-	   ballImageColor = Screen( ballImageColor, decalColor ) * (0.5*fenvEmissionScale); //!! 0.5=magic
+	   ballImageColor = Screen( ballImageColor, decalColor ) * (0.5*fenvEmissionScale_TexWidth.x); //!! 0.5=magic
 	
 	/*float3 normal = float3(0,0,1);
 	float NdotR = dot(normal,r);*/
@@ -287,7 +287,7 @@ float4 psBall( in vout IN ) : COLOR
 
 float4 psBallReflection( in voutReflection IN ) : COLOR
 {
-	const float3 ballImageColor = (cBase_Alpha.xyz*(0.075*0.25) + InvGamma(tex2D( texSampler0, cabMode ? float2(IN.r.y,1.0-IN.r.x) : IN.r.xy ).xyz))*fenvEmissionScale; //!! just add the ballcolor in, this is a whacky reflection anyhow
+	const float3 ballImageColor = (cBase_Alpha.xyz*(0.075*0.25) + InvGamma(tex2D( texSampler0, cabMode ? float2(IN.r.y,1.0-IN.r.x) : IN.r.xy ).xyz))*fenvEmissionScale_TexWidth.x; //!! just add the ballcolor in, this is a whacky reflection anyhow
 	float alpha = saturate((IN.tex0.y-position_radius.y)/position_radius.w);
 	alpha = (alpha*alpha)*(alpha*alpha)*reflection_ball_playfield.x;
 	return float4(ballImageColor,alpha);
@@ -295,7 +295,7 @@ float4 psBallReflection( in voutReflection IN ) : COLOR
 
 float4 psBallTrail( in voutTrail IN ) : COLOR
 {
-	return float4((cBase_Alpha.xyz*(0.075*0.25) + InvGamma(tex2D( texSampler0, IN.tex0_alpha.xy ).xyz))*fenvEmissionScale, IN.tex0_alpha.z); //!! just add the ballcolor in, this is a whacky trail anyhow
+	return float4((cBase_Alpha.xyz*(0.075*0.25) + InvGamma(tex2D( texSampler0, IN.tex0_alpha.xy ).xyz))*fenvEmissionScale_TexWidth.x, IN.tex0_alpha.z); //!! just add the ballcolor in, this is a whacky trail anyhow
 }
 
 //------------------------------------

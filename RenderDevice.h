@@ -373,7 +373,7 @@ public:
 
 	void SetStaticColor(const D3DXVECTOR4& color)
 	{
-		if (currentColor != color)
+		if (currentColor.x != color.x || currentColor.y != color.y || currentColor.z != color.z)
 		{
 			currentColor = color;
 			SetVector("staticColor", &color);
