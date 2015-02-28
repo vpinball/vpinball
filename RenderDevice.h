@@ -392,7 +392,7 @@ public:
 
 	void SetMatrix(const D3DXHANDLE hParameter, const D3DXMATRIX* pMatrix)
 	{
-		/*CHECKD3D(*/m_shader->SetMatrix(hParameter, pMatrix)/*)*/; //!! leads to invalid calls when setting -some- matrices??!
+		/*CHECKD3D(*/m_shader->SetMatrix(hParameter, pMatrix)/*)*/; // leads to invalid calls when setting some of the matrices (as hlsl compiler optimizes some down to less than 4x4)
 		m_renderDevice->m_curParameterChanges++;
 	}
 
@@ -417,6 +417,12 @@ public:
 	void SetBool(const D3DXHANDLE hParameter, const bool b)
 	{
 		CHECKD3D(m_shader->SetBool(hParameter, b));
+		m_renderDevice->m_curParameterChanges++;
+	}
+
+	void SetValue(const D3DXHANDLE hParameter, const void* pData, const unsigned int Bytes)
+	{
+		CHECKD3D(m_shader->SetValue(hParameter, pData, Bytes));
 		m_renderDevice->m_curParameterChanges++;
 	}
 

@@ -878,24 +878,6 @@ void Player::InitBallShader()
    memcpy( buf, basicBall, sizeof(Vertex3D_NoTex2)*basicBallNumVertices );
    ballVertexBuffer->unlock();
 
-    D3DXVECTOR4 emission = convertColor(m_ptable->m_Light[0].emission);
-    emission.x *= m_ptable->m_lightEmissionScale*m_ptable->m_globalEmissionScale;
-    emission.y *= m_ptable->m_lightEmissionScale*m_ptable->m_globalEmissionScale;
-    emission.z *= m_ptable->m_lightEmissionScale*m_ptable->m_globalEmissionScale;
-
-   	struct CLight 
-	{ 
-		float vPos[3]; 
-		float vEmission[3];
-	};
-	CLight l[MAX_LIGHT_SOURCES];
-	for(unsigned int i = 0; i < MAX_LIGHT_SOURCES; ++i)
-	{
-		memcpy(&l[i].vPos,&g_pplayer->m_ptable->m_Light[i].pos,sizeof(float)*3);
-		memcpy(&l[i].vEmission,&emission,sizeof(float)*3);
-	}
-    ballShader->Core()->SetValue("packedLights", l, sizeof(CLight)*MAX_LIGHT_SOURCES);
-
    const D3DXVECTOR4 amb_lr = convertColor(m_ptable->m_lightAmbient, m_ptable->m_lightRange);
    ballShader->SetVector("cAmbient_LightRange", &amb_lr);
 }
@@ -3317,7 +3299,7 @@ void Player::DrawBalls()
 				l[light_i+MAX_LIGHT_SOURCES].vEmission[2] = 0.0f;
 			}
 
-      ballShader->Core()->SetValue("packedLights", l, sizeof(CLight)*(MAX_LIGHT_SOURCES+MAX_BALL_LIGHT_SOURCES));
+      ballShader->SetValue("packedLights", l, sizeof(CLight)*(MAX_LIGHT_SOURCES+MAX_BALL_LIGHT_SOURCES));
 
 	  // now for a weird hack: make material more rough, depending on how near the nearest lightsource is, to 'emulate' the area of the bulbs (as we only feature point lights so far)
       float Roughness = 0.8f;
