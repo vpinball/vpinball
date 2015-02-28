@@ -1275,12 +1275,12 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
    pd3dDevice->flasherShader->SetAlphaValue((float)m_d.m_fAlpha*m_d.m_intensity_scale/100.0f);
 
    const D3DXVECTOR4 ab((float)m_d.m_fFilterAmount/100.0f, max(m_d.m_modulate_vs_add,0.00001f), 0.f,0.f); // avoid 0, as it disables the blend
-   pd3dDevice->flasherShader->Core()->SetVector("amount__blend_modulate_vs_add", &ab);
+   pd3dDevice->flasherShader->SetVector("amount__blend_modulate_vs_add", &ab);
    
    const D3DXVECTOR4 color = convertColor(m_d.m_color);
    pd3dDevice->flasherShader->SetStaticColor(color);
-   pd3dDevice->flasherShader->Core()->SetInt("filterMode", (int)m_d.m_filter);
-   pd3dDevice->flasherShader->Core()->SetBool("bAdd_Blend", m_d.m_fAddBlend);
+   pd3dDevice->flasherShader->SetInt("filterMode", (int)m_d.m_filter);
+   pd3dDevice->flasherShader->SetBool("bAdd_Blend", m_d.m_fAddBlend);
 
    if (pinA && !pinB)
    {
@@ -1312,12 +1312,12 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
       if( m_d.m_fAddBlend)
       {
           pd3dDevice->flasherShader->SetAlphaTestValue(-1.0f);
-          pd3dDevice->flasherShader->Core()->SetFloat("fAlphaTestValueB",-1.0f);
+          pd3dDevice->flasherShader->SetFloat("fAlphaTestValueB",-1.0f);
       }
       else
       {
           pd3dDevice->flasherShader->SetAlphaTestValue(pinA->m_alphaTestValue / 255.0f);
-          pd3dDevice->flasherShader->Core()->SetFloat("fAlphaTestValueB", pinB->m_alphaTestValue / 255.0f);
+          pd3dDevice->flasherShader->SetFloat("fAlphaTestValueB", pinB->m_alphaTestValue / 255.0f);
       }
 
       //ppin3d->SetTextureFilter( 0, TEXTURE_MODE_TRILINEAR );

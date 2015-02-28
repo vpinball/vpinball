@@ -306,7 +306,7 @@ void Pin3D::DrawBackground()
 
 void Pin3D::InitLights()
 {
-    //m_pd3dDevice->basicShader->Core()->SetInt("iLightPointNum",MAX_LIGHT_SOURCES);
+    //m_pd3dDevice->basicShader->SetInt("iLightPointNum",MAX_LIGHT_SOURCES);
 
     g_pplayer->m_ptable->m_Light[0].pos.x = g_pplayer->m_ptable->m_right*0.5f;
     g_pplayer->m_ptable->m_Light[1].pos.x = g_pplayer->m_ptable->m_right*0.5f;
@@ -331,7 +331,7 @@ void Pin3D::InitLights()
     m_pd3dDevice->basicShader->Core()->SetValue(tmp, (void*)&emission, sizeof(float)*3);
     
     const D3DXVECTOR4 amb_lr = convertColor(g_pplayer->m_ptable->m_lightAmbient, g_pplayer->m_ptable->m_lightRange);
-    m_pd3dDevice->basicShader->Core()->SetVector("cAmbient_LightRange", &amb_lr);
+    m_pd3dDevice->basicShader->SetVector("cAmbient_LightRange", &amb_lr);
 }
 
 // currently unused

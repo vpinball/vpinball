@@ -232,6 +232,7 @@ public:
    unsigned int Perf_GetNumDrawCalls() const      { return m_frameDrawCalls; }
    unsigned int Perf_GetNumStateChanges() const   { return m_frameStateChanges; }
    unsigned int Perf_GetNumTextureChanges() const { return m_frameTextureChanges; }
+   unsigned int Perf_GetNumParameterChanges() const { return m_frameParameterChanges; }
 
    void FreeShader();
 
@@ -304,13 +305,14 @@ public:
    unsigned m_curDrawCalls, m_frameDrawCalls;
    unsigned m_curStateChanges, m_frameStateChanges;
    unsigned m_curTextureChanges, m_frameTextureChanges;
+   unsigned m_curParameterChanges, m_frameParameterChanges;
 
    Shader *basicShader;
    Shader *DMDShader;
    Shader *FBShader;
    Shader *flasherShader;
 
-   Shader* m_curShader; // for caching
+   //Shader* m_curShader; // for caching
 
    TextureManager m_texMan;
 
@@ -334,16 +336,89 @@ public:
         return m_shader;
     }
 
-    void Begin( const unsigned int pass );
-    void End();
+	void Begin( const unsigned int pass )
+	{
+	   unsigned int cPasses;
+	   CHECKD3D(m_shader->Begin(&cPasses,0));
+	   CHECKD3D(m_shader->BeginPass(pass));
+	}
 
-    void SetAlphaTestValue(const float value);
-    void SetAlphaValue(const float value);
+	void End()
+	{
+	   CHECKD3D(m_shader->EndPass());
+	   CHECKD3D(m_shader->End());
+	}
+
     void SetTexture(const D3DXHANDLE texelName, Texture *texel);
     void SetTexture(const D3DXHANDLE texelName, D3DTexture *texel);
-    void SetStaticColor(const D3DXVECTOR4& color);
     void SetMaterial( const Material * const mat );
-    void SetTechnique(const char * const technique);
+
+	void SetAlphaTestValue(const float value)
+	{
+		if (currentAlphaTestValue != value)
+		{
+			currentAlphaTestValue = value;
+			SetFloat("fAlphaTestValue", value);
+		}
+	}
+
+	void SetAlphaValue(const float value)
+	{
+		if (currentAlphaValue != value)
+		{
+			currentAlphaValue = value;
+			SetFloat("fAlpha", value);
+		}
+	}
+
+	void SetStaticColor(const D3DXVECTOR4& color)
+	{
+		if (currentColor != color)
+		{
+			currentColor = color;
+			SetVector("staticColor", &color);
+		}
+	}
+
+	void SetTechnique(const D3DXHANDLE technique)
+	{
+	   if( strcmp(currentTechnique, technique) /*|| (m_renderDevice->m_curShader != this)*/ )
+	   {
+		  strcpy_s(currentTechnique, technique);
+		  //m_renderDevice->m_curShader = this;
+		  CHECKD3D(m_shader->SetTechnique(technique));
+	   }
+	}
+
+	void SetMatrix(const D3DXHANDLE hParameter, const D3DXMATRIX* pMatrix)
+	{
+		/*CHECKD3D(*/m_shader->SetMatrix(hParameter, pMatrix)/*)*/; //!! leads to invalid calls when setting -some- matrices??!
+		m_renderDevice->m_curParameterChanges++;
+	}
+
+	void SetVector(const D3DXHANDLE hParameter, const D3DXVECTOR4* pVector)
+	{
+		CHECKD3D(m_shader->SetVector(hParameter, pVector));
+		m_renderDevice->m_curParameterChanges++;
+	}
+
+	void SetFloat(const D3DXHANDLE hParameter, const float f)
+	{
+		CHECKD3D(m_shader->SetFloat(hParameter, f));
+		m_renderDevice->m_curParameterChanges++;
+	}
+
+	void SetInt(const D3DXHANDLE hParameter, const int i)
+	{
+		CHECKD3D(m_shader->SetInt(hParameter, i));
+		m_renderDevice->m_curParameterChanges++;
+	}
+
+	void SetBool(const D3DXHANDLE hParameter, const bool b)
+	{
+		CHECKD3D(m_shader->SetBool(hParameter, b));
+		m_renderDevice->m_curParameterChanges++;
+	}
 
 private:
     ID3DXEffect* m_shader;
