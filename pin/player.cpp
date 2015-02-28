@@ -2564,7 +2564,7 @@ void Player::Bloom(const bool use_tmp_output)
 	SAFE_RELEASE_NO_RCC(tmpBloomSurface3);
 }
 
-void Player::StereoFXAA(const bool stereo, const bool FXAA1, const bool FXAA2, const bool FXAA3) //!! SMAA, luma sharpen, dither?
+void Player::StereoFXAA(const bool stereo, const bool FXAA1, const bool FXAA2, const bool FXAA3, const bool depth_available) //!! SMAA, luma sharpen, dither?
 {
 	if(stereo) // stereo implicitly disables FXAA
 	{
@@ -2590,8 +2590,10 @@ void Player::StereoFXAA(const bool stereo, const bool FXAA1, const bool FXAA2, c
 		m_pin3d.m_pd3dDevice->SetRenderTarget(m_pin3d.m_pd3dDevice->GetOutputBackBuffer());
 
 		m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetBackBufferTmpTexture());
+		if(depth_available)
+			m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture3", m_pin3d.m_pdds3DZBuffer);
 
-		const D3DXVECTOR4 w_h_height((float)(1.0/(double)m_width), (float)(1.0/(double)m_height), 0.f, 0.f);
+		const D3DXVECTOR4 w_h_height((float)(1.0/(double)m_width), (float)(1.0/(double)m_height), 0.f, depth_available ? 1.f : 0.f);
 		m_pin3d.m_pd3dDevice->FBShader->Core()->SetVector("w_h_height", &w_h_height);
 
 		m_pin3d.m_pd3dDevice->FBShader->SetTechnique(FXAA3 ? "FXAA3" : (FXAA2 ? "FXAA2" : "FXAA1"));
@@ -2648,7 +2650,7 @@ void Player::FlipVideoBuffersNormal( const bool vsync )
     m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_TEX, (LPVOID)shiftedVerts, 4);
     m_pin3d.m_pd3dDevice->FBShader->End();
 
-    StereoFXAA(stereo, FXAA1, FXAA2, FXAA3);
+    StereoFXAA(stereo, FXAA1, FXAA2, FXAA3, false);
 
 	m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, TRUE);
 	m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
@@ -2714,8 +2716,8 @@ void Player::FlipVideoBuffersAO( const bool vsync )
 
 	m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetBackBufferTexture());
 	m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture1", m_pin3d.m_pd3dDevice->GetBloomBufferTexture());
-
 	m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture3", m_pin3d.m_pddsAOBackBuffer);
+
 	Texture * const pin = m_ptable->GetImage((char *)m_ptable->m_szImageColorGrade);
 	if(pin)
 		m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture4", pin);
@@ -2729,7 +2731,7 @@ void Player::FlipVideoBuffersAO( const bool vsync )
 	m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_TEX, (LPVOID)shiftedVerts, 4);
 	m_pin3d.m_pd3dDevice->FBShader->End();
 
-	StereoFXAA(stereo, FXAA1, FXAA2, FXAA3);
+	StereoFXAA(stereo, FXAA1, FXAA2, FXAA3, true);
 
 	//
 
