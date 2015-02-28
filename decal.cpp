@@ -537,7 +537,7 @@ void Decal::RenderObject(RenderDevice* pd3dDevice)
    Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
    pd3dDevice->basicShader->SetMaterial(mat);
 
-   //pd3dDevice->basicShader->Core()->SetFloat("fmaterialAlpha",1.0f);
+   //pd3dDevice->basicShader->SetFloat("fmaterialAlpha",1.0f);
 
    if (m_d.m_decaltype != DecalImage)
    {
@@ -572,7 +572,7 @@ void Decal::RenderObject(RenderDevice* pd3dDevice)
    else
    {
       const D3DXVECTOR4 staticColor(1.0f,1.0f,1.0f,1.0f);
-      pd3dDevice->basicShader->Core()->SetVector("cBase_Alpha",&staticColor);
+      pd3dDevice->basicShader->SetVector("cBase_Alpha",&staticColor);
    }
 
    pd3dDevice->basicShader->Begin(0);

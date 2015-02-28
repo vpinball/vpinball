@@ -384,7 +384,7 @@ RenderDevice::RenderDevice(const HWND hwnd, int width, int height, const bool fu
 	m_curIndexBuffer = 0;
     m_curVertexBuffer = 0;
     currentDeclaration = NULL;
-	m_curShader = NULL;
+	//m_curShader = NULL;
 
     // fill state caches with dummy values
     memset( renderStateCache, 0xCC, sizeof(DWORD)*RENDER_STATE_CACHE_SIZE);
@@ -396,6 +396,7 @@ RenderDevice::RenderDevice(const HWND hwnd, int width, int height, const bool fu
     m_curDrawCalls = m_frameDrawCalls = 0;
     m_curStateChanges = m_frameStateChanges = 0;
     m_curTextureChanges = m_frameTextureChanges = 0;
+	m_curParameterChanges = m_frameParameterChanges = 0;
 
     basicShader = new Shader(this);
 #if _MSC_VER >= 1700
@@ -577,7 +578,8 @@ void RenderDevice::Flip(const bool vsync)
     m_frameDrawCalls = m_curDrawCalls;
     m_frameStateChanges = m_curStateChanges;
     m_frameTextureChanges = m_curTextureChanges;
-    m_curDrawCalls = m_curStateChanges = m_curTextureChanges = 0;
+	m_frameParameterChanges = m_curParameterChanges;
+    m_curDrawCalls = m_curStateChanges = m_curTextureChanges = m_curParameterChanges = 0;
 }
 
 RenderTarget* RenderDevice::DuplicateRenderTarget(RenderTarget* src)
@@ -1049,18 +1051,22 @@ void RenderDevice::GetTransform(const TransformStateType p1, D3DMATRIX* p2)
 
 void RenderDevice::Clear(const DWORD numRects, const D3DRECT* rects, const DWORD flags, const D3DCOLOR color, const D3DVALUE z, const DWORD stencil)
 {
-   m_pD3DDevice->Clear(numRects, rects, flags, color, z, stencil);
+   CHECKD3D(m_pD3DDevice->Clear(numRects, rects, flags, color, z, stencil));
 }
 
 void RenderDevice::SetViewport(const ViewPort* p1)
 {
-   m_pD3DDevice->SetViewport((D3DVIEWPORT9*)p1);
+   CHECKD3D(m_pD3DDevice->SetViewport((D3DVIEWPORT9*)p1));
 }
 
 void RenderDevice::GetViewport(ViewPort* p1)
 {
-   m_pD3DDevice->GetViewport((D3DVIEWPORT9*)p1);
+   CHECKD3D(m_pD3DDevice->GetViewport((D3DVIEWPORT9*)p1));
 }
+
+//
+//
+//
 
 Shader::Shader(RenderDevice *renderDevice)
 {
@@ -1135,19 +1141,6 @@ void Shader::Unload()
     SAFE_RELEASE(m_shader);
 }
 
-void Shader::Begin( const unsigned int pass )
-{
-   unsigned int cPasses;
-   m_shader->Begin(&cPasses,0);
-   m_shader->BeginPass(pass);  
-}
-
-void Shader::End()
-{
-   m_shader->EndPass();  
-   m_shader->End();  
-}
-
 void Shader::SetTexture(const D3DXHANDLE texelName, Texture *texel)
 {
    const unsigned int idx = texelName[strlen(texelName)-1]-'0'; // current convention: SetTexture gets "TextureX", where X 0..4
@@ -1156,7 +1149,7 @@ void Shader::SetTexture(const D3DXHANDLE texelName, Texture *texel)
    if(!texel || !texel->m_pdsBuffer) {
        currentTexture[idx] = NULL; // invalidate the cache
 
-       m_shader->SetTexture(texelName, NULL);
+       CHECKD3D(m_shader->SetTexture(texelName, NULL));
 
 	   m_renderDevice->m_curTextureChanges++;
 
@@ -1166,7 +1159,7 @@ void Shader::SetTexture(const D3DXHANDLE texelName, Texture *texel)
    if(texel->m_pdsBuffer!=currentTexture[idx])
    {
        currentTexture[idx] = texel->m_pdsBuffer;
-       m_shader->SetTexture(texelName, m_renderDevice->m_texMan.LoadTexture(texel->m_pdsBuffer));
+       CHECKD3D(m_shader->SetTexture(texelName, m_renderDevice->m_texMan.LoadTexture(texel->m_pdsBuffer)));
 
 	   m_renderDevice->m_curTextureChanges++;
    }
@@ -1179,7 +1172,7 @@ void Shader::SetTexture(const D3DXHANDLE texelName, D3DTexture *texel)
 
    currentTexture[idx] = NULL; // direct set of device tex invalidates the cache
 
-   m_shader->SetTexture(texelName, texel);
+   CHECKD3D(m_shader->SetTexture(texelName, texel));
 
    m_renderDevice->m_curTextureChanges++;
 }
@@ -1218,7 +1211,7 @@ void Shader::SetMaterial( const Material * const mat )
 	if(fRoughness != m_renderDevice->materialStateCache.m_fRoughness || fEdge != m_renderDevice->materialStateCache.m_fEdge || fWrapLighting != m_renderDevice->materialStateCache.m_fWrapLighting)
 	{
 	    const D3DXVECTOR4 rwe(fRoughness,fWrapLighting,fEdge, 0.0f);
-	    m_shader->SetVector("Roughness_WrapL_Edge",&rwe);
+	    SetVector("Roughness_WrapL_Edge",&rwe);
 		m_renderDevice->materialStateCache.m_fRoughness = fRoughness;
 		m_renderDevice->materialStateCache.m_fWrapLighting = fWrapLighting;
 		m_renderDevice->materialStateCache.m_fEdge = fEdge;
@@ -1228,7 +1221,7 @@ void Shader::SetMaterial( const Material * const mat )
 	if(cBase != m_renderDevice->materialStateCache.m_cBase || alpha != m_renderDevice->materialStateCache.m_fOpacity)
 	{
 		const D3DXVECTOR4 cBaseF = convertColor(cBase, alpha);
-		m_shader->SetVector("cBase_Alpha",&cBaseF);
+		SetVector("cBase_Alpha",&cBaseF);
 		m_renderDevice->materialStateCache.m_cBase = cBase;
 		m_renderDevice->materialStateCache.m_fOpacity = alpha;
 	}
@@ -1236,20 +1229,20 @@ void Shader::SetMaterial( const Material * const mat )
 	if(cGlossy != m_renderDevice->materialStateCache.m_cGlossy)
 	{
 		const D3DXVECTOR4 cGlossyF = convertColor(cGlossy);
-		m_shader->SetVector("cGlossy",&cGlossyF);
+		SetVector("cGlossy",&cGlossyF);
 		m_renderDevice->materialStateCache.m_cGlossy = cGlossy;
 	}
 
 	if(cClearcoat != m_renderDevice->materialStateCache.m_cClearcoat)
 	{
 		const D3DXVECTOR4 cClearcoatF = convertColor(cClearcoat);
-		m_shader->SetVector("cClearcoat",&cClearcoatF);
+		SetVector("cClearcoat",&cClearcoatF);
 		m_renderDevice->materialStateCache.m_cClearcoat = cClearcoat;
 	}
 
 	if(bIsMetal != m_renderDevice->materialStateCache.m_bIsMetal)
 	{
-	    m_shader->SetBool("bIsMetal", bIsMetal);
+	    SetBool("bIsMetal", bIsMetal);
 		m_renderDevice->materialStateCache.m_bIsMetal = bIsMetal;
 	}
 
@@ -1257,41 +1250,4 @@ void Shader::SetMaterial( const Material * const mat )
 		g_pplayer->m_pin3d.EnableAlphaBlend(false);
     else
 		g_pplayer->m_pin3d.DisableAlphaBlend();
-}
-
-void Shader::SetAlphaTestValue(const float value)
-{
-    if (currentAlphaTestValue != value)
-    {
-        currentAlphaTestValue = value;
-        m_shader->SetFloat("fAlphaTestValue", value);
-    }
-}
-
-void Shader::SetAlphaValue(const float value)
-{
-    if (currentAlphaValue != value)
-    {
-        currentAlphaValue = value;
-        m_shader->SetFloat("fAlpha", value);
-    }
-}
-
-void Shader::SetStaticColor(const D3DXVECTOR4& color)
-{
-    if (currentColor != color)
-    {
-        currentColor = color;
-        m_shader->SetVector("staticColor", &color);
-    }
-}
-
-void Shader::SetTechnique(const char * const technique)
-{
-   if( strcmp(currentTechnique, technique) || (m_renderDevice->m_curShader != this) )
-   {
-      strcpy_s(currentTechnique, technique);
-	  m_renderDevice->m_curShader = this;
-      m_shader->SetTechnique(technique);
-   }
 }

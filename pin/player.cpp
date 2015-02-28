@@ -743,20 +743,20 @@ void Player::UpdateBasicShaderMatrix(const Matrix3D& objectTrafo)
     D3DXMATRIX matWorldViewInvTrans;
     memcpy(matWorldViewInvTrans.m,temp.m,4*4*sizeof(float));
     
-    m_pin3d.m_pd3dDevice->basicShader->Core()->SetMatrix("matWorldViewProj", &matWorldViewProj);
-    m_pin3d.m_pd3dDevice->flasherShader->Core()->SetMatrix("matWorldViewProj", &matWorldViewProj);
+    m_pin3d.m_pd3dDevice->basicShader->SetMatrix("matWorldViewProj", &matWorldViewProj);
+    m_pin3d.m_pd3dDevice->flasherShader->SetMatrix("matWorldViewProj", &matWorldViewProj);
 
-    m_pin3d.m_pd3dDevice->basicShader->Core()->SetMatrix("matWorldView", &matWorldView);
-    m_pin3d.m_pd3dDevice->basicShader->Core()->SetMatrix("matWorldViewInverseTranspose", &matWorldViewInvTrans);
-    //m_pin3d.m_pd3dDevice->basicShader->Core()->SetMatrix("matWorld", &matWorld);
-    m_pin3d.m_pd3dDevice->basicShader->Core()->SetMatrix("matView", &matView);
+    m_pin3d.m_pd3dDevice->basicShader->SetMatrix("matWorldView", &matWorldView);
+    m_pin3d.m_pd3dDevice->basicShader->SetMatrix("matWorldViewInverseTranspose", &matWorldViewInvTrans);
+    //m_pin3d.m_pd3dDevice->basicShader->SetMatrix("matWorld", &matWorld);
+    m_pin3d.m_pd3dDevice->basicShader->SetMatrix("matView", &matView);
 
     memcpy(temp.m,matView.m,4*4*sizeof(float));
     temp.Invert();
     D3DXMATRIX matViewInv;
     memcpy(matViewInv.m,temp.m,4*4*sizeof(float));
 
-    m_pin3d.m_pd3dDevice->basicShader->Core()->SetMatrix("matViewInverse", &matViewInv);
+    m_pin3d.m_pd3dDevice->basicShader->SetMatrix("matViewInverse", &matViewInv);
 }
 
 void Player::InitShader()
@@ -775,12 +775,12 @@ void Player::InitShader()
 
    UpdateBasicShaderMatrix();
    //D3DXVECTOR4 cam( worldViewProj._41, worldViewProj._42, worldViewProj._43, 1 );
-   //m_pin3d.m_pd3dDevice->basicShader->Core()->SetVector("camera", &cam);
+   //m_pin3d.m_pd3dDevice->basicShader->SetVector("camera", &cam);
 
    m_pin3d.m_pd3dDevice->basicShader->SetTexture("Texture1", &m_pin3d.envTexture);
    m_pin3d.m_pd3dDevice->basicShader->SetTexture("Texture2", m_pin3d.m_device_envRadianceTexture);
-   m_pin3d.m_pd3dDevice->basicShader->Core()->SetFloat("fenvTexWidth", (float)m_pin3d.envTexture.m_height/*+m_pin3d.envTexture.m_width)*0.5f*/);
-   m_pin3d.m_pd3dDevice->basicShader->Core()->SetFloat("fenvEmissionScale", m_ptable->m_envEmissionScale*m_ptable->m_globalEmissionScale);
+   m_pin3d.m_pd3dDevice->basicShader->SetFloat("fenvTexWidth", (float)m_pin3d.envTexture.m_height/*+m_pin3d.envTexture.m_width)*0.5f*/);
+   m_pin3d.m_pd3dDevice->basicShader->SetFloat("fenvEmissionScale", m_ptable->m_envEmissionScale*m_ptable->m_globalEmissionScale);
 
    InitBallShader();
 }
@@ -822,18 +822,18 @@ void Player::UpdateBallShaderMatrix()
     D3DXMATRIX matWorldViewInvTrans;
     memcpy(matWorldViewInvTrans.m,temp.m,4*4*sizeof(float));
 
-    ballShader->Core()->SetMatrix("matWorldViewProj", &matWorldViewProj);
-    ballShader->Core()->SetMatrix("matWorldView", &matWorldView);
-    ballShader->Core()->SetMatrix("matWorldViewInverseTranspose", &matWorldViewInvTrans);
-    //m_pin3d.m_pd3dDevice->basicShader->Core()->SetMatrix("matWorld", &matWorld);
-    ballShader->Core()->SetMatrix("matView", &matView);
+    ballShader->SetMatrix("matWorldViewProj", &matWorldViewProj);
+    ballShader->SetMatrix("matWorldView", &matWorldView);
+    ballShader->SetMatrix("matWorldViewInverseTranspose", &matWorldViewInvTrans);
+    //m_pin3d.m_pd3dDevice->basicShader->SetMatrix("matWorld", &matWorld);
+    ballShader->SetMatrix("matView", &matView);
 
     memcpy(temp.m,matView.m,4*4*sizeof(float));
     temp.Invert();
     D3DXMATRIX matViewInv;
     memcpy(matViewInv.m,temp.m,4*4*sizeof(float));
 
-    ballShader->Core()->SetMatrix("matViewInverse", &matViewInv);
+    ballShader->SetMatrix("matViewInverse", &matViewInv);
 }
 
 void Player::InitBallShader()
@@ -852,20 +852,20 @@ void Player::InitBallShader()
    //const float inclination = ANGTORAD(m_ptable->m_inclination);
 
    const D3DXVECTOR4 bs(m_BallStretchX, m_BallStretchY, inv_tablewidth, inv_tableheight);
-   ballShader->Core()->SetVector("ballStretch_invTableRes", &bs );
-   ballShader->Core()->SetBool("decalMode", m_ptable->m_BallDecalMode );
+   ballShader->SetVector("ballStretch_invTableRes", &bs );
+   ballShader->SetBool("decalMode", m_ptable->m_BallDecalMode );
    const float rotation = fmodf(m_ptable->m_BG_rotation[m_ptable->m_BG_current_set],360.f);
-   ballShader->Core()->SetBool("cabMode", rotation!=0.f );
+   ballShader->SetBool("cabMode", rotation!=0.f );
 
    //D3DXVECTOR4 cam( matView._41, matView._42, matView._43, 1 );
-   //ballShader->Core()->SetVector("camera", &cam);
-   ballShader->Core()->SetFloat("fenvEmissionScale",m_ptable->m_envEmissionScale*m_ptable->m_globalEmissionScale);
-   //ballShader->Core()->SetInt("iLightPointNum",MAX_LIGHT_SOURCES);
+   //ballShader->SetVector("camera", &cam);
+   ballShader->SetFloat("fenvEmissionScale",m_ptable->m_envEmissionScale*m_ptable->m_globalEmissionScale);
+   //ballShader->SetInt("iLightPointNum",MAX_LIGHT_SOURCES);
 
    const float Roughness = 0.8f;
    const D3DXVECTOR4 rwe(exp2f(10.0f * Roughness + 1.0f), 0.f, 1.f, 0.0f);
-   ballShader->Core()->SetVector("Roughness_WrapL_Edge", &rwe);
-   ballShader->Core()->SetBool("bIsMetal", false); // as ball collects the diffuse playfield which uses this flag!
+   ballShader->SetVector("Roughness_WrapL_Edge", &rwe);
+   ballShader->SetBool("bIsMetal", false); // as ball collects the diffuse playfield which uses this flag!
 
    ballIndexBuffer = m_pin3d.m_pd3dDevice->CreateAndFillIndexBuffer( basicBallNumFaces, basicBallIndices );
 
@@ -891,7 +891,7 @@ void Player::InitBallShader()
    ballShader->Core()->SetValue(tmp, (void*)&emission, sizeof(float)*3);
 
    const D3DXVECTOR4 amb_lr = convertColor(m_ptable->m_lightAmbient, m_ptable->m_lightRange);
-   ballShader->Core()->SetVector("cAmbient_LightRange", &amb_lr);
+   ballShader->SetVector("cAmbient_LightRange", &amb_lr);
 }
 
 
@@ -2296,9 +2296,9 @@ void Player::DMDdraw(const float DMDposx, const float DMDposy, const float DMDwi
     m_pin3d.m_pd3dDevice->DMDShader->SetTechnique((float)m_width*DMDwidth/(float)m_dmdx <= 3.74f ? "basic_DMD_tiny" : ((float)m_width*DMDwidth/(float)m_dmdx <= 7.49f ? "basic_DMD" : "basic_DMD_big")); // use different smoothing functions for LED/Plasma emulation (rule of thumb here: up to quarter width of 1920HD = tiny, up to half width of 1920HD = normal, up to full width of 1920HD = big)
 
     const D3DXVECTOR4 c = convertColor(DMDcolor,intensity);
-    m_pin3d.m_pd3dDevice->DMDShader->Core()->SetVector("vColor_Intensity",&c);
+    m_pin3d.m_pd3dDevice->DMDShader->SetVector("vColor_Intensity",&c);
     const D3DXVECTOR4 r((float)m_dmdx,(float)m_dmdy, 0.f,0.f);
-    m_pin3d.m_pd3dDevice->DMDShader->Core()->SetVector("vRes",&r);
+    m_pin3d.m_pd3dDevice->DMDShader->SetVector("vRes",&r);
 
     m_pin3d.m_pd3dDevice->DMDShader->SetTexture("Texture0", m_device_texdmd);
 
@@ -2327,7 +2327,7 @@ void Player::Spritedraw(const float posx, const float posy, const float width, c
     m_pin3d.m_pd3dDevice->DMDShader->SetTechnique(tex ? "basic_noDMD" : "basic_noDMD_notex");
 
     const D3DXVECTOR4 c = convertColor(color,intensity);
-    m_pin3d.m_pd3dDevice->DMDShader->Core()->SetVector("vColor_Intensity",&c);
+    m_pin3d.m_pd3dDevice->DMDShader->SetVector("vColor_Intensity",&c);
 
 	if(tex)
 	    m_pin3d.m_pd3dDevice->DMDShader->SetTexture("Texture0", tex);
@@ -2356,7 +2356,7 @@ void Player::Spritedraw(const float posx, const float posy, const float width, c
     m_pin3d.m_pd3dDevice->DMDShader->SetTechnique(tex ? "basic_noDMD" : "basic_noDMD_notex");
 
     const D3DXVECTOR4 c = convertColor(color,intensity);
-    m_pin3d.m_pd3dDevice->DMDShader->Core()->SetVector("vColor_Intensity",&c);
+    m_pin3d.m_pd3dDevice->DMDShader->SetVector("vColor_Intensity",&c);
 
 	if(tex)
 	    m_pin3d.m_pd3dDevice->DMDShader->SetTexture("Texture0", tex);
@@ -2503,8 +2503,8 @@ void Player::Bloom(const bool use_tmp_output)
 		m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetBackBufferTexture());
 
 		const D3DXVECTOR4 fb_inv_resolution_05((float)(0.5/(double)m_width),(float)(0.5/(double)m_height), 1.0f,1.0f);
-		m_pin3d.m_pd3dDevice->FBShader->Core()->SetVector("w_h_height", &fb_inv_resolution_05);
-		m_pin3d.m_pd3dDevice->FBShader->Core()->SetTechnique("fb_bloom");
+		m_pin3d.m_pd3dDevice->FBShader->SetVector("w_h_height", &fb_inv_resolution_05);
+		m_pin3d.m_pd3dDevice->FBShader->SetTechnique("fb_bloom");
 
 		m_pin3d.m_pd3dDevice->FBShader->Begin(0);
 		m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_TEX, (LPVOID)shiftedVerts, 4);
@@ -2520,8 +2520,8 @@ void Player::Bloom(const bool use_tmp_output)
 
 		m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetBloomBufferTexture());
 		const D3DXVECTOR4 fb_inv_resolution_05((float)(3.0/(double)m_width),(float)(3.0/(double)m_height), 1.0f,1.0f);
-		m_pin3d.m_pd3dDevice->FBShader->Core()->SetVector("w_h_height", &fb_inv_resolution_05);
-		m_pin3d.m_pd3dDevice->FBShader->Core()->SetTechnique("fb_bloom_horiz");
+		m_pin3d.m_pd3dDevice->FBShader->SetVector("w_h_height", &fb_inv_resolution_05);
+		m_pin3d.m_pd3dDevice->FBShader->SetTechnique("fb_bloom_horiz");
 
 		m_pin3d.m_pd3dDevice->FBShader->Begin(0);
 		m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_TEX, (LPVOID)verts, 4);
@@ -2537,8 +2537,8 @@ void Player::Bloom(const bool use_tmp_output)
 
 		m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetBloomTmpBufferTexture());
 		const D3DXVECTOR4 fb_inv_resolution_05((float)(3.0/(double)m_width),(float)(3.0/(double)m_height), m_ptable->m_bloom_strength, 1.0f);
-		m_pin3d.m_pd3dDevice->FBShader->Core()->SetVector("w_h_height", &fb_inv_resolution_05);
-		m_pin3d.m_pd3dDevice->FBShader->Core()->SetTechnique("fb_bloom_vert");
+		m_pin3d.m_pd3dDevice->FBShader->SetVector("w_h_height", &fb_inv_resolution_05);
+		m_pin3d.m_pd3dDevice->FBShader->SetTechnique("fb_bloom_vert");
 
 		m_pin3d.m_pd3dDevice->FBShader->Begin(0);
 		m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_TEX, (LPVOID)verts, 4);
@@ -2571,10 +2571,10 @@ void Player::StereoFXAA(const bool stereo, const bool FXAA1, const bool FXAA2, c
 		m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture3", m_pin3d.m_pdds3DZBuffer);
 
 		const D3DXVECTOR4 ms_zpd_ya_td(m_ptable->GetMaxSeparation(), m_ptable->GetZPD(), m_fStereo3DY ? 1.0f : 0.0f, (m_fStereo3D == 1) ? 1.0f : 0.0f);
-		m_pin3d.m_pd3dDevice->FBShader->Core()->SetVector("ms_zpd_ya_td", &ms_zpd_ya_td);
+		m_pin3d.m_pd3dDevice->FBShader->SetVector("ms_zpd_ya_td", &ms_zpd_ya_td);
 		const D3DXVECTOR4 w_h_height((float)(1.0/(double)m_width), (float)(1.0/(double)m_height), (float)m_height, m_fStereo3DAA ? 1.0f : 0.0f);
 
-		m_pin3d.m_pd3dDevice->FBShader->Core()->SetVector("w_h_height", &w_h_height);
+		m_pin3d.m_pd3dDevice->FBShader->SetVector("w_h_height", &w_h_height);
 
 		m_pin3d.m_pd3dDevice->FBShader->SetTechnique("stereo");
 
@@ -2591,7 +2591,7 @@ void Player::StereoFXAA(const bool stereo, const bool FXAA1, const bool FXAA2, c
 			m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture3", m_pin3d.m_pdds3DZBuffer);
 
 		const D3DXVECTOR4 w_h_height((float)(1.0/(double)m_width), (float)(1.0/(double)m_height), 0.f, depth_available ? 1.f : 0.f);
-		m_pin3d.m_pd3dDevice->FBShader->Core()->SetVector("w_h_height", &w_h_height);
+		m_pin3d.m_pd3dDevice->FBShader->SetVector("w_h_height", &w_h_height);
 
 		m_pin3d.m_pd3dDevice->FBShader->SetTechnique(FXAA3 ? "FXAA3" : (FXAA2 ? "FXAA2" : "FXAA1"));
 
@@ -2637,11 +2637,11 @@ void Player::FlipVideoBuffersNormal( const bool vsync )
 	Texture * const pin = m_ptable->GetImage((char *)m_ptable->m_szImageColorGrade);
 	if(pin)
 		m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture4", pin);
-	m_pin3d.m_pd3dDevice->FBShader->Core()->SetBool("color_grade", pin != NULL);
+	m_pin3d.m_pd3dDevice->FBShader->SetBool("color_grade", pin != NULL);
 
 	const D3DXVECTOR4 fb_inv_resolution_05((float)(0.5/(double)m_width),(float)(0.5/(double)m_height), 1.0f,1.0f);
-	m_pin3d.m_pd3dDevice->FBShader->Core()->SetVector("w_h_height", &fb_inv_resolution_05);
-    m_pin3d.m_pd3dDevice->FBShader->Core()->SetTechnique(useAA ? "fb_tonemap" : "fb_tonemap_no_filter");
+	m_pin3d.m_pd3dDevice->FBShader->SetVector("w_h_height", &fb_inv_resolution_05);
+    m_pin3d.m_pd3dDevice->FBShader->SetTechnique(useAA ? "fb_tonemap" : "fb_tonemap_no_filter");
 
 	m_pin3d.m_pd3dDevice->FBShader->Begin(0);
     m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_TEX, (LPVOID)shiftedVerts, 4);
@@ -2687,8 +2687,8 @@ void Player::FlipVideoBuffersAO( const bool vsync )
 	m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture3", m_pin3d.m_pdds3DZBuffer);
 
 	const D3DXVECTOR4 w_h_height((float)(1.0/(double)m_width), (float)(1.0/(double)m_height), (float)m_height, 1.0f+(float)(usec()&0x1FF)*(float)(1.0/0x1FF));
-	m_pin3d.m_pd3dDevice->FBShader->Core()->SetVector("w_h_height", &w_h_height);
-	m_pin3d.m_pd3dDevice->FBShader->Core()->SetFloat("AO_scale", m_ptable->m_AOScale);
+	m_pin3d.m_pd3dDevice->FBShader->SetVector("w_h_height", &w_h_height);
+	m_pin3d.m_pd3dDevice->FBShader->SetFloat("AO_scale", m_ptable->m_AOScale);
     
 	m_pin3d.m_pd3dDevice->FBShader->SetTechnique("AO");
 
@@ -2718,10 +2718,10 @@ void Player::FlipVideoBuffersAO( const bool vsync )
 	Texture * const pin = m_ptable->GetImage((char *)m_ptable->m_szImageColorGrade);
 	if(pin)
 		m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture4", pin);
-	m_pin3d.m_pd3dDevice->FBShader->Core()->SetBool("color_grade", pin != NULL);
+	m_pin3d.m_pd3dDevice->FBShader->SetBool("color_grade", pin != NULL);
 
 	const D3DXVECTOR4 fb_inv_resolution_05((float)(0.5/(double)m_width),(float)(0.5/(double)m_height), 1.0f,1.0f);
-	m_pin3d.m_pd3dDevice->FBShader->Core()->SetVector("w_h_height", &fb_inv_resolution_05);
+	m_pin3d.m_pd3dDevice->FBShader->SetVector("w_h_height", &fb_inv_resolution_05);
 	m_pin3d.m_pd3dDevice->FBShader->SetTechnique(useAA ? "fb_tonemap_AO" : "fb_tonemap_AO_no_filter");
 
 	m_pin3d.m_pd3dDevice->FBShader->Begin(0);
@@ -3062,6 +3062,8 @@ void Player::Render()
 		TextOut(hdcNull, 10, 85, szFoo, len);
 		len = sprintf_s(szFoo, sizeof(szFoo), "Texture changes: %u      ", m_pin3d.m_pd3dDevice->Perf_GetNumTextureChanges());
 		TextOut(hdcNull, 10, 105, szFoo, len);
+		len = sprintf_s(szFoo, sizeof(szFoo), "Parameter changes: %u      ", m_pin3d.m_pd3dDevice->Perf_GetNumParameterChanges());
+		TextOut(hdcNull, 10, 125, szFoo, len);
 
 #ifdef _DEBUGPHYSICS
 		len = sprintf_s(szFoo, sizeof(szFoo), "physTimes %10u uS(%12u avg %12u max)    ",
@@ -3301,7 +3303,7 @@ void Player::DrawBalls()
 		  Roughness = min(max(dist*0.006f,0.3f),Roughness);
 	  }
 	  const D3DXVECTOR4 rwe(exp2f(10.0f * Roughness + 1.0f), 0.f, 1.f, 0.0f);
-	  ballShader->Core()->SetVector("Roughness_WrapL_Edge", &rwe);
+	  ballShader->SetVector("Roughness_WrapL_Edge", &rwe);
 
       float zheight = (!pball->m_frozen) ? pball->m_pos.z : (pball->m_pos.z - pball->m_radius);
 
@@ -3339,21 +3341,21 @@ void Player::DrawBalls()
 	  const float inv_tableheight = 1.0f/(m_ptable->m_bottom - m_ptable->m_top);
 
 	  const D3DXVECTOR4 bs(m_BallStretchX /*-sx*/, m_BallStretchY - sy, inv_tablewidth, inv_tableheight);
-	  ballShader->Core()->SetVector("ballStretch_invTableRes", &bs );
+	  ballShader->SetVector("ballStretch_invTableRes", &bs );
       }
 
       m_pin3d.EnableAlphaBlend(false);
 	  const D3DXVECTOR4 diffuse = convertColor(pball->m_color,1.0f);
-	  ballShader->Core()->SetVector("cBase_Alpha",&diffuse);
+	  ballShader->SetVector("cBase_Alpha",&diffuse);
 
 	  const D3DXMATRIX m(pball->m_orientation.m_d[0][0], pball->m_orientation.m_d[1][0], pball->m_orientation.m_d[2][0], 0.0f,
 	      pball->m_orientation.m_d[0][1], pball->m_orientation.m_d[1][1], pball->m_orientation.m_d[2][1], 0.0f,
 	      pball->m_orientation.m_d[0][2], pball->m_orientation.m_d[1][2], pball->m_orientation.m_d[2][2], 0.0f,
 	      0.f,0.f,0.f,1.f);
-      ballShader->Core()->SetMatrix("orientation",&m);
+      ballShader->SetMatrix("orientation",&m);
 
       const D3DXVECTOR4 pos_rad( pball->m_pos.x, pball->m_pos.y, zheight, pball->m_radius );
-      ballShader->Core()->SetVector("position_radius", &pos_rad );
+      ballShader->SetVector("position_radius", &pos_rad );
       if ( !pball->m_pinballEnv )
           ballShader->SetTexture("Texture0", &m_pin3d.pinballEnvTexture);
       else
@@ -3365,7 +3367,7 @@ void Player::DrawBalls()
 	  if ( drawReflection )
 	  {
 		  const D3DXVECTOR4 refl((float)m_ptable->m_ballReflectionStrength/255.0f, (float)m_ptable->m_playfieldReflectionStrength/255.0f, 0.f,0.f);
-		  ballShader->Core()->SetVector("reflection_ball_playfield", &refl);
+		  ballShader->SetVector("reflection_ball_playfield", &refl);
 		  m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
 		  m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
 		  m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_DESTALPHA);

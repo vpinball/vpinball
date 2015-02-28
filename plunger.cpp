@@ -260,6 +260,7 @@ void Plunger::PostRenderStatic(RenderDevice* pd3dDevice)
         return;
 
     _ASSERTE(m_phitplunger);
+
     const PlungerAnimObject& pa = m_phitplunger->m_plungeranim;
     const int frame = (int)((pa.m_pos - pa.m_frameStart + 1.0f)/(pa.m_frameEnd-pa.m_frameStart) * (float)(cframes-1)+0.5f);
     if (frame < 0 || frame >= cframes)
@@ -273,7 +274,7 @@ void Plunger::PostRenderStatic(RenderDevice* pd3dDevice)
      Texture *pin = m_ptable->GetImage(m_d.m_szImage);
 	 if(pin)
      {
-	 pd3dDevice->basicShader->SetTechnique("basic_with_texture");
+		 pd3dDevice->basicShader->SetTechnique("basic_with_texture");
          pd3dDevice->basicShader->SetTexture("Texture0",pin);
          pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue / 255.0f);
      }
@@ -284,7 +285,7 @@ void Plunger::PostRenderStatic(RenderDevice* pd3dDevice)
      {
          //render a simple rectangle as an embedded alpha ramp plunger ;)
 //            D3DXVECTOR4 color(1.0f,1.0f,1.0f,1.0f);
-//            pd3dDevice->basicShader->Core()->SetVector("cBase_Alpha",&color);         
+//            pd3dDevice->basicShader->SetVector("cBase_Alpha",&color);         
          //ppin3d->EnableAlphaBlend( false );
          //ppin3d->SetTextureFilter ( 0, TEXTURE_MODE_TRILINEAR );
          pd3dDevice->basicShader->Begin(0);
@@ -296,7 +297,7 @@ void Plunger::PostRenderStatic(RenderDevice* pd3dDevice)
 //         if ( pin )
 //        {
 //                 D3DXVECTOR4 color(1.0f,1.0f,1.0f,1.0f);
-//                 pd3dDevice->basicShader->Core()->SetVector("cBase_Alpha",&color);
+//                 pd3dDevice->basicShader->SetVector("cBase_Alpha",&color);
              //ppin3d->EnableAlphaBlend( false );
              //ppin3d->SetTextureFilter ( 0, TEXTURE_MODE_TRILINEAR );
 //         }
