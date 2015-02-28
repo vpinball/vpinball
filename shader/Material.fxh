@@ -13,10 +13,10 @@ struct CLight
 #define iLightPointNum NUM_LIGHTS
 #define iLightPointBallsNum (NUM_LIGHTS+NUM_BALL_LIGHTS)
 
-#if iLightPointBallsNum == 2 // basic shader
+#if iLightPointBallsNum == iLightPointNum // basic shader
 float4 packedLights[3];
 static CLight lights[iLightPointBallsNum] = (CLight[iLightPointBallsNum])packedLights;
-#else                        // ball shader
+#else                                     // ball shader
 float4 packedLights[9];
 static CLight lights[iLightPointBallsNum] = (CLight[iLightPointBallsNum])packedLights;
 #endif
