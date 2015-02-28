@@ -206,7 +206,7 @@ void EnumerateDisplayModes(const int adapter, std::vector<VideoMode>& modes)
 #define CHECKNVAPI(s) { NvAPI_Status hr = (s); if (hr != NVAPI_OK) { NvAPI_ShortString ss; NvAPI_GetErrorMessage(hr,ss); MessageBox(NULL, ss, "NVAPI", MB_OK | MB_ICONEXCLAMATION); } }
 static bool NVAPIinit = false; //!! meh
 
-RenderDevice::RenderDevice(HWND hwnd, int width, int height, bool fullscreen, int colordepth, int &refreshrate, int VSync, bool useAA, bool stereo3DFXAA)
+RenderDevice::RenderDevice(const HWND hwnd, int width, int height, const bool fullscreen, const int colordepth, int &refreshrate, int VSync, const bool useAA, const bool stereo3D, const bool FXAA)
     : m_texMan(*this)
 {
     m_adapter = D3DADAPTER_DEFAULT;     // for now, always use the default adapter
@@ -215,6 +215,7 @@ RenderDevice::RenderDevice(HWND hwnd, int width, int height, bool fullscreen, in
     CHECKD3D(Direct3DCreate9Ex(D3D_SDK_VERSION, &m_pD3D));
     if (m_pD3D == NULL)
     {
+        ShowError("Could not create D3D9Ex object.");
         throw 0;
     }
 #else
@@ -283,7 +284,7 @@ RenderDevice::RenderDevice(HWND hwnd, int width, int height, bool fullscreen, in
     params.Windowed = !fullscreen;
     params.EnableAutoDepthStencil = FALSE;
     params.AutoDepthStencilFormat = D3DFMT_UNKNOWN;      // ignored
-    params.Flags = /*stereo3DFXAA ?*/ 0 /*: D3DPRESENTFLAG_DISCARD_DEPTHSTENCIL*/;
+    params.Flags = /*stereo3D ?*/ 0 /*: D3DPRESENTFLAG_DISCARD_DEPTHSTENCIL*/;
     params.FullScreen_RefreshRateInHz = fullscreen ? refreshrate : 0;
 #ifdef USE_D3D9EX
     params.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE; //!! or have a special mode to force normal vsync?
@@ -363,11 +364,6 @@ RenderDevice::RenderDevice(HWND hwnd, int width, int height, bool fullscreen, in
 	CHECKD3D(m_pD3DDevice->CreateTexture(useAA ? 2*width : width, useAA ? 2*height : height, 1,
 		D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &m_pOffscreenBackBufferTexture, NULL)); //!! D3DFMT_A32B32G32R32F?
 
-	//CHECKD3D(m_pD3DDevice->CreateTexture(width, height, 1,
-	//	D3DUSAGE_DEPTHSTENCIL, /*D3DFMT_INTZ*/(D3DFORMAT)MAKEFOURCC('I','N','T','Z'), D3DPOOL_DEFAULT, &m_pOffscreenBackBufferZTexture, NULL));
-	//CHECKD3D(m_pOffscreenBackBufferZTexture->GetSurfaceLevel(0, &m_pOffscreenBackBufferZ));
-	////m_pD3DDevice->SetDepthStencilSurface(m_pOffscreenBackBufferZ);
-
 	// alloc bloom tex at 1/3 x 1/3 res (allows for simple HQ downscale of clipped input while saving memory)
     CHECKD3D(m_pD3DDevice->CreateTexture(width/3, height/3, 1,
 		D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &m_pBloomBufferTexture, NULL)); //!! 8bit enough?
@@ -377,7 +373,7 @@ RenderDevice::RenderDevice(HWND hwnd, int width, int height, bool fullscreen, in
 		D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &m_pBloomTmpBufferTexture, NULL)); //!! 8bit enough?
 
 	// alloc temporary buffer for postprocessing
-	if(stereo3DFXAA)
+	if(stereo3D || FXAA)
 	{
 		CHECKD3D(m_pD3DDevice->CreateTexture(width, height, 1,
 			D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &m_pOffscreenBackBufferTmpTexture, NULL));

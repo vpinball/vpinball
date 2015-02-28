@@ -915,11 +915,12 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 
     const bool useAO = (m_fAO && (m_ptable->m_useAO == -1)) || (m_ptable->m_useAO == 1);
     const bool useAA = (m_fAA && (m_ptable->m_useAA == -1)) || (m_ptable->m_useAA == 1);
-    const bool stereo3DFXAA = (!!m_fStereo3D) || ((m_fFXAA && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA > 0));
+    const bool stereo3D = (!!m_fStereo3D);
+	const bool FXAA = ((m_fFXAA && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA > 0));
 
 	// colordepth & refreshrate are only defined if fullscreen is true.
     HRESULT hr = m_pin3d.InitPin3D(m_hwnd, m_fFullScreen, m_width, m_height, m_screendepth,
-                   m_refreshrate, vsync, useAA, stereo3DFXAA, useAO);
+                   m_refreshrate, vsync, useAA, stereo3D, FXAA, useAO);
 
 	if (hr != S_OK)
 	{

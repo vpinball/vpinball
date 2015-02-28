@@ -44,7 +44,7 @@ public:
 	Pin3D();
 	~Pin3D();
 
-	HRESULT InitPin3D(const HWND hwnd, const bool fullScreen, const int width, const int height, const int colordepth, int &refreshrate, const int VSync, const bool useAA, const bool stereo3DFXAA, const bool useAO);
+	HRESULT InitPin3D(const HWND hwnd, const bool fullScreen, const int width, const int height, const int colordepth, int &refreshrate, const int VSync, const bool useAA, const bool stereo3D, const bool FXAA, const bool useAO);
 
 	void InitLayout();
 

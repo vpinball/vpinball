@@ -158,14 +158,14 @@ void EnvmapPrecalc(const DWORD* const __restrict envmap, const DWORD env_xres, c
 		}
 }
 
-HRESULT Pin3D::InitPin3D(const HWND hwnd, const bool fullScreen, const int width, const int height, const int colordepth, int &refreshrate, const int VSync, const bool useAA, const bool stereo3DFXAA, const bool useAO)
+HRESULT Pin3D::InitPin3D(const HWND hwnd, const bool fullScreen, const int width, const int height, const int colordepth, int &refreshrate, const int VSync, const bool useAA, const bool stereo3D, const bool FXAA, const bool useAO)
 {
     m_hwnd = hwnd;
 
 	m_useAA = useAA;
 
     try {
-        m_pd3dDevice = new RenderDevice(m_hwnd, width, height, fullScreen, colordepth, refreshrate, VSync, useAA, stereo3DFXAA);
+        m_pd3dDevice = new RenderDevice(m_hwnd, width, height, fullScreen, colordepth, refreshrate, VSync, useAA, stereo3D, FXAA);
     } catch (...) {
         return E_FAIL;
     }
@@ -209,8 +209,13 @@ HRESULT Pin3D::InitPin3D(const HWND hwnd, const bool fullScreen, const int width
 	m_device_envRadianceTexture = m_pd3dDevice->m_texMan.LoadTexture(m_envRadianceTexture);
 	m_pd3dDevice->m_texMan.SetDirty(m_envRadianceTexture);
 
-    if(stereo3DFXAA || useAO) {
+    if(stereo3D || useAO) {
 		m_pdds3DZBuffer = m_pd3dDevice->DuplicateDepthTexture(m_pddsZBuffer);
+
+		//!! could use this as depth render target, if not had to render to & copy static z also around (stretchrect does not work with textures)
+		//CHECKD3D(m_pdds3DZBuffer->GetSurfaceLevel(0, &m_pOffscreenBackBufferZ));
+		//m_pd3dDevice->SetDepthStencilSurface(m_pOffscreenBackBufferZ);
+
 	    if (!m_pdds3DZBuffer)
 		    return E_FAIL;
     }
