@@ -7,7 +7,7 @@ void mixer_shutdown();
 
 void mixer_get_volume();
 
-void mixer_update(const PinInput &pininput);
+void mixer_update();
 
 void mixer_draw();
 
