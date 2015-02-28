@@ -584,7 +584,7 @@ void Decal::RenderObject(RenderDevice* pd3dDevice)
 
    // Set the render state.
    //pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_WRAP);
-   g_pplayer->m_pin3d.DisableAlphaBlend();
+   //g_pplayer->m_pin3d.DisableAlphaBlend(); //!! not necessary anymore
 
    if(m_fBackglass && g_pplayer->m_ptable->m_tblMirrorEnabled)
       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);

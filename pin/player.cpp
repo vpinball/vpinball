@@ -3520,7 +3520,7 @@ void Player::DrawBalls()
 
     }   // end loop over all balls
 
-    m_pin3d.DisableAlphaBlend();
+    //m_pin3d.DisableAlphaBlend(); //!! not necessary anymore
 }
 
 struct DebugMenuItem

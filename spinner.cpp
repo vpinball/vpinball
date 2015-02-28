@@ -318,7 +318,7 @@ void Spinner::PostRenderStatic(RenderDevice* pd3dDevice)
     Material *mat = m_ptable->GetMaterial( m_d.m_szMaterial);
     pd3dDevice->basicShader->SetMaterial(mat);
 
-    Texture * const image = m_ptable->GetImage(m_d.m_szImage);
+	Texture * const image = m_ptable->GetImage(m_d.m_szImage);
 
     UpdatePlate(pd3dDevice);
     if ( image )

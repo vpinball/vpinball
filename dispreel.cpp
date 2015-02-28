@@ -291,7 +291,7 @@ void DispReel::PostRenderStatic(RenderDevice* pd3dDevice)
 			1.0f); //!!
 	}
 
-	g_pplayer->m_pin3d.DisableAlphaBlend();
+	//g_pplayer->m_pin3d.DisableAlphaBlend(); //!! not necessary anymore
     pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, FALSE);
 
 	if(g_pplayer->m_ptable->m_tblMirrorEnabled)

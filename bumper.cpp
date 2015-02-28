@@ -379,7 +379,7 @@ void Bumper::RenderBase(RenderDevice *pd3dDevice, Material *baseMaterial )
    pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, baseVertexBuffer, 0, bumperBaseNumVertices, baseIndexBuffer, 0, bumperBaseNumFaces );
    pd3dDevice->basicShader->End();
 
-   g_pplayer->m_pin3d.DisableAlphaBlend();
+   //g_pplayer->m_pin3d.DisableAlphaBlend(); //!! not necessary anymore
 }
 
 void Bumper::RenderSocket(RenderDevice *pd3dDevice, Material *socketMaterial )
@@ -393,7 +393,7 @@ void Bumper::RenderSocket(RenderDevice *pd3dDevice, Material *socketMaterial )
    pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, socketVertexBuffer, 0, bumperSocketNumVertices, socketIndexBuffer, 0, bumperSocketNumFaces );
    pd3dDevice->basicShader->End();
 
-   g_pplayer->m_pin3d.DisableAlphaBlend();
+   //g_pplayer->m_pin3d.DisableAlphaBlend(); //!! not necessary anymore
 }
 
 void Bumper::RenderCap( RenderDevice *pd3dDevice, Material *capMaterial )
@@ -407,7 +407,7 @@ void Bumper::RenderCap( RenderDevice *pd3dDevice, Material *capMaterial )
    pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, capVertexBuffer, 0, bumperCapNumVertices, capIndexBuffer, 0, bumperCapNumFaces );
    pd3dDevice->basicShader->End();
 
-   g_pplayer->m_pin3d.DisableAlphaBlend();
+   //g_pplayer->m_pin3d.DisableAlphaBlend(); //!! not necessary anymore
 }
 
 void Bumper::PostRenderStatic(RenderDevice* pd3dDevice)

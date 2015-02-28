@@ -557,9 +557,9 @@ void Trigger::PostRenderStatic(RenderDevice* pd3dDevice)
     if (doAnimation)
     {
         float step = diff_time_msec*m_d.m_animSpeed*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
-	if(moveDown)
-	    step = -step;
-	animHeightOffset+=step;
+		if(moveDown)
+		    step = -step;
+		animHeightOffset+=step;
 
         if( moveDown ) 
         {            

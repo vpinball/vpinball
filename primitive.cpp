@@ -641,7 +641,6 @@ void Primitive::RenderObject( RenderDevice *pd3dDevice )
         pd3dDevice->basicShader->Core()->SetBool("bDisableLighting", m_d.m_fDisableLighting );
 
     Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
-
     if (pin)
     {
         pd3dDevice->basicShader->SetTechnique("basic_with_texture");
@@ -658,8 +657,8 @@ void Primitive::RenderObject( RenderDevice *pd3dDevice )
     // set transform
     g_pplayer->UpdateBasicShaderMatrix(fullMatrix);
 
-    pd3dDevice->basicShader->Begin(0);
     // draw the mesh
+    pd3dDevice->basicShader->Begin(0);
     pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, m_mesh.NumVertices(), indexBuffer, 0, m_mesh.NumIndices() );
     pd3dDevice->basicShader->End();
 
@@ -667,7 +666,7 @@ void Primitive::RenderObject( RenderDevice *pd3dDevice )
     g_pplayer->UpdateBasicShaderMatrix();
 
     pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP);
-    g_pplayer->m_pin3d.DisableAlphaBlend();
+    //g_pplayer->m_pin3d.DisableAlphaBlend(); //!! not necessary anymore
     if ( m_d.m_fDisableLighting )
         pd3dDevice->basicShader->Core()->SetBool("bDisableLighting", false );
 }
