@@ -878,17 +878,23 @@ void Player::InitBallShader()
    memcpy( buf, basicBall, sizeof(Vertex3D_NoTex2)*basicBallNumVertices );
    ballVertexBuffer->unlock();
 
-   const D3DXVECTOR4 emission = convertColor(m_ptable->m_Light[0].emission);
+    D3DXVECTOR4 emission = convertColor(m_ptable->m_Light[0].emission);
+    emission.x *= m_ptable->m_lightEmissionScale*m_ptable->m_globalEmissionScale;
+    emission.y *= m_ptable->m_lightEmissionScale*m_ptable->m_globalEmissionScale;
+    emission.z *= m_ptable->m_lightEmissionScale*m_ptable->m_globalEmissionScale;
 
-   char tmp[64];
-   sprintf_s(tmp,"lights[0].vPos");
-   ballShader->Core()->SetValue(tmp, (void*)&m_ptable->m_Light[0].pos, sizeof(float)*3);
-   sprintf_s(tmp,"lights[1].vPos");
-   ballShader->Core()->SetValue(tmp, (void*)&m_ptable->m_Light[1].pos, sizeof(float)*3);
-   sprintf_s(tmp,"lights[0].vEmission");
-   ballShader->Core()->SetValue(tmp, (void*)&emission, sizeof(float)*3);
-   sprintf_s(tmp,"lights[1].vEmission");
-   ballShader->Core()->SetValue(tmp, (void*)&emission, sizeof(float)*3);
+   	struct CLight 
+	{ 
+		float vPos[3]; 
+		float vEmission[3];
+	};
+	CLight l[MAX_LIGHT_SOURCES];
+	for(unsigned int i = 0; i < MAX_LIGHT_SOURCES; ++i)
+	{
+		memcpy(&l[i].vPos,&g_pplayer->m_ptable->m_Light[i].pos,sizeof(float)*3);
+		memcpy(&l[i].vEmission,&emission,sizeof(float)*3);
+	}
+    ballShader->Core()->SetValue("packedLights", l, sizeof(CLight)*MAX_LIGHT_SOURCES);
 
    const D3DXVECTOR4 amb_lr = convertColor(m_ptable->m_lightAmbient, m_ptable->m_lightRange);
    ballShader->SetVector("cAmbient_LightRange", &amb_lr);
@@ -3270,30 +3276,48 @@ void Player::DrawBalls()
 
 		Light* light_nearest[MAX_BALL_LIGHT_SOURCES];
 		search_for_nearest(pball,lights,light_nearest);
+
+   		struct CLight 
+		{ 
+			float vPos[3]; 
+			float vEmission[3];
+		};
+		CLight l[MAX_LIGHT_SOURCES+MAX_BALL_LIGHT_SOURCES];
+		
+        D3DXVECTOR4 emission = convertColor(m_ptable->m_Light[0].emission);
+	    emission.x *= m_ptable->m_lightEmissionScale*m_ptable->m_globalEmissionScale;
+	    emission.y *= m_ptable->m_lightEmissionScale*m_ptable->m_globalEmissionScale;
+		emission.z *= m_ptable->m_lightEmissionScale*m_ptable->m_globalEmissionScale;
+
+		for(unsigned int i = 0; i < MAX_LIGHT_SOURCES; ++i)
+		{
+			memcpy(&l[i].vPos,&g_pplayer->m_ptable->m_Light[i].pos,sizeof(float)*3);
+			memcpy(&l[i].vEmission,&emission,sizeof(float)*3);
+		}
 		
 		for(unsigned int light_i = 0; light_i < MAX_BALL_LIGHT_SOURCES; ++light_i)
 			if(light_nearest[light_i] != NULL)
 			{
-				char tmp[64];
-				sprintf_s(tmp,"lights[%u].vPos",light_i+MAX_LIGHT_SOURCES);
-				const Vertex3Ds lpos(light_nearest[light_i]->m_d.m_vCenter.x, light_nearest[light_i]->m_d.m_vCenter.y, light_nearest[light_i]->m_d.m_meshRadius + light_nearest[light_i]->m_surfaceHeight); //!! z pos
-				ballShader->Core()->SetValue(tmp, (void*)&lpos, sizeof(float)*3);
-				sprintf_s(tmp,"lights[%u].vEmission",light_i+MAX_LIGHT_SOURCES);
+				l[light_i+MAX_LIGHT_SOURCES].vPos[0] = light_nearest[light_i]->m_d.m_vCenter.x;
+				l[light_i+MAX_LIGHT_SOURCES].vPos[1] = light_nearest[light_i]->m_d.m_vCenter.y;
+				l[light_i+MAX_LIGHT_SOURCES].vPos[2] = light_nearest[light_i]->m_d.m_meshRadius + light_nearest[light_i]->m_surfaceHeight; //!! z pos
 				const float c = map_bulblight_to_emission(light_nearest[light_i]) * pball->m_bulb_intensity_scale;
-				D3DXVECTOR4 color = convertColor(light_nearest[light_i]->m_d.m_color);
-				const Vertex3Ds emission_rgb(color.x*c,color.y*c,color.z*c);
-				ballShader->Core()->SetValue(tmp, (void*)&emission_rgb, sizeof(float)*3);
+				const D3DXVECTOR4 color = convertColor(light_nearest[light_i]->m_d.m_color);
+				l[light_i+MAX_LIGHT_SOURCES].vEmission[0] = color.x*c;
+				l[light_i+MAX_LIGHT_SOURCES].vEmission[1] = color.y*c;
+				l[light_i+MAX_LIGHT_SOURCES].vEmission[2] = color.z*c;
 			}
 			else //!! rather just set the max number of ball lights!?
 			{
-				char tmp[64];
-				sprintf_s(tmp,"lights[%u].vPos",light_i+MAX_LIGHT_SOURCES);
-				const Vertex3Ds lpos(-100000.0f,-100000.0f,-100000.0f);
-				ballShader->Core()->SetValue(tmp, (void*)&lpos, sizeof(float)*3);
-				sprintf_s(tmp,"lights[%u].vEmission",light_i+MAX_LIGHT_SOURCES);
-				const Vertex3Ds emission_rgb(0.0f,0.0f,0.0f);
-				ballShader->Core()->SetValue(tmp, (void*)&emission_rgb, sizeof(float)*3);
+				l[light_i+MAX_LIGHT_SOURCES].vPos[0] = -100000.0f;
+				l[light_i+MAX_LIGHT_SOURCES].vPos[1] = -100000.0f;
+				l[light_i+MAX_LIGHT_SOURCES].vPos[2] = -100000.0f;
+				l[light_i+MAX_LIGHT_SOURCES].vEmission[0] = 0.0f;
+				l[light_i+MAX_LIGHT_SOURCES].vEmission[1] = 0.0f;
+				l[light_i+MAX_LIGHT_SOURCES].vEmission[2] = 0.0f;
 			}
+
+      ballShader->Core()->SetValue("packedLights", l, sizeof(CLight)*(MAX_LIGHT_SOURCES+MAX_BALL_LIGHT_SOURCES));
 
 	  // now for a weird hack: make material more rough, depending on how near the nearest lightsource is, to 'emulate' the area of the bulbs (as we only feature point lights so far)
       float Roughness = 0.8f;
@@ -3554,7 +3578,7 @@ void Player::DoDebugObjectMenu(int x, int y)
 	const float rClipHeight = (float)vp.Height*0.5f;
 
 	const float xcoord = ((float)x-rClipWidth)/rClipWidth;
-	const float ycoord = (-((float)y-rClipHeight))/rClipHeight;
+	const float ycoord = (rClipHeight-(float)y)/rClipHeight;
 
 	// Use the inverse of our 3D transform to determine where in 3D space the
 	// screen pixel the user clicked on is at.  Get the point at the near
