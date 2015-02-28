@@ -1011,7 +1011,7 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
     }
 
     // reset render states
-    g_pplayer->m_pin3d.DisableAlphaBlend();
+    //g_pplayer->m_pin3d.DisableAlphaBlend(); //!!  not necessary anymore
     pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
     if (m_d.m_fDisableLighting && ( m_d.m_fSideVisible || m_d.m_fVisible))
         pd3dDevice->basicShader->Core()->SetBool("bDisableLighting", false );

@@ -662,7 +662,7 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
     
     if ( m_d.m_BulbLight )
 	{
-		ppin3d->DisableAlphaBlend();
+		//ppin3d->DisableAlphaBlend(); //!! not necessary anymore
 	    pd3dDevice->SetRenderState(RenderDevice::BLENDOP, D3DBLENDOP_ADD);
 	}
 

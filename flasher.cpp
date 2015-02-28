@@ -1346,7 +1346,7 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
    pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
    pd3dDevice->SetRenderState(RenderDevice::BLENDOP, D3DBLENDOP_ADD);
-   g_pplayer->m_pin3d.DisableAlphaBlend();
+   //g_pplayer->m_pin3d.DisableAlphaBlend(); //!! not necessary anymore
 }
 
 void Flasher::UpdatePropertyPanes()

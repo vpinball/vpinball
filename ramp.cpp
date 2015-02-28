@@ -877,11 +877,8 @@ void Ramp::RenderStaticHabitrail(RenderDevice* pd3dDevice, Material *mat)
    pd3dDevice->basicShader->SetMaterial(mat);
 
    Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
-
    if ( !pin )
-   {
        pd3dDevice->basicShader->SetTechnique("basic_without_texture");
-   }
    else
    {
        pd3dDevice->basicShader->SetTexture("Texture0",pin);
@@ -966,7 +963,6 @@ void Ramp::RenderStaticHabitrail(RenderDevice* pd3dDevice, Material *mat)
    }
 
    pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
-
 }
 
 void Ramp::CreateWire( const int numRings, const int numSegments, const Vertex2D *midPoints, Vertex3D_NoTex2 *rgvbuf)
@@ -2023,7 +2019,7 @@ void Ramp::RenderRamp( RenderDevice *pd3dDevice, Material *mat )
       if (!dynamicVertexBuffer || dynamicVertexBufferRegenerate)
          GenerateVertexBuffer(pd3dDevice);
 
-      ppin3d->EnableAlphaBlend( false );
+      //ppin3d->EnableAlphaBlend( false ); //!! not necessary anymore
 
       unsigned int offset=0;
       pd3dDevice->basicShader->Begin(0);
@@ -2033,9 +2029,7 @@ void Ramp::RenderRamp( RenderDevice *pd3dDevice, Material *mat )
       offset += m_numVertices;
 
       if (pin && !m_d.m_fImageWalls)
-      {
          pd3dDevice->basicShader->SetTechnique("basic_without_texture");
-      }
 
       pd3dDevice->basicShader->Begin(0);
 
@@ -2058,7 +2052,7 @@ void Ramp::RenderRamp( RenderDevice *pd3dDevice, Material *mat )
 	  }
       pd3dDevice->basicShader->End();  
 
-	  g_pplayer->m_pin3d.DisableAlphaBlend();
+	  //g_pplayer->m_pin3d.DisableAlphaBlend(); //!! not necessary anymore
    }
 }
 // Always called each frame to render over everything else (along with primitives)

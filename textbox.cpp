@@ -237,7 +237,7 @@ void Textbox::PostRenderStatic(RenderDevice* pd3dDevice)
 
 			g_pplayer->Spritedraw(x, y, width, height, 0xFFFFFFFF, pd3dDevice->m_texMan.LoadTexture(m_texture), m_d.m_intensity_scale);
 
-			g_pplayer->m_pin3d.DisableAlphaBlend();
+			//g_pplayer->m_pin3d.DisableAlphaBlend(); //!! not necessary anymore
             pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE,FALSE);
 		}
 
