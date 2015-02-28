@@ -1208,13 +1208,17 @@ void Shader::SetMaterial( const Material * const mat )
 		bOpacityActive = false;
 	}
 
-	if(fRoughness != m_renderDevice->materialStateCache.m_fRoughness || fEdge != m_renderDevice->materialStateCache.m_fEdge || fWrapLighting != m_renderDevice->materialStateCache.m_fWrapLighting)
+	if(fRoughness != m_renderDevice->materialStateCache.m_fRoughness ||
+	   fEdge != m_renderDevice->materialStateCache.m_fEdge ||
+	   fWrapLighting != m_renderDevice->materialStateCache.m_fWrapLighting ||
+	   bIsMetal != m_renderDevice->materialStateCache.m_bIsMetal)
 	{
-	    const D3DXVECTOR4 rwe(fRoughness,fWrapLighting,fEdge, 0.0f);
-	    SetVector("Roughness_WrapL_Edge",&rwe);
+	    const D3DXVECTOR4 rwem(fRoughness,fWrapLighting,fEdge, bIsMetal ? 1.0f : 0.0f);
+	    SetVector("Roughness_WrapL_Edge_IsMetal",&rwem);
 		m_renderDevice->materialStateCache.m_fRoughness = fRoughness;
 		m_renderDevice->materialStateCache.m_fWrapLighting = fWrapLighting;
 		m_renderDevice->materialStateCache.m_fEdge = fEdge;
+		m_renderDevice->materialStateCache.m_bIsMetal = bIsMetal;
 	}
 
 	const float alpha = bOpacityActive ? fOpacity : 1.0f;
@@ -1226,6 +1230,7 @@ void Shader::SetMaterial( const Material * const mat )
 		m_renderDevice->materialStateCache.m_fOpacity = alpha;
 	}
     
+	if(!bIsMetal) // Metal has no glossy
 	if(cGlossy != m_renderDevice->materialStateCache.m_cGlossy)
 	{
 		const D3DXVECTOR4 cGlossyF = convertColor(cGlossy);
@@ -1238,12 +1243,6 @@ void Shader::SetMaterial( const Material * const mat )
 		const D3DXVECTOR4 cClearcoatF = convertColor(cClearcoat);
 		SetVector("cClearcoat",&cClearcoatF);
 		m_renderDevice->materialStateCache.m_cClearcoat = cClearcoat;
-	}
-
-	if(bIsMetal != m_renderDevice->materialStateCache.m_bIsMetal)
-	{
-	    SetBool("bIsMetal", bIsMetal);
-		m_renderDevice->materialStateCache.m_bIsMetal = bIsMetal;
 	}
 
 	if(bOpacityActive /*&& (fOpacity < 1.0f)*/)

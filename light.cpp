@@ -634,8 +634,8 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
 	{
         pd3dDevice->basicShader->SetTechnique("bulb_light");
 
-		ppin3d->EnableAlphaBlend(false);
-		pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);    // add the lightcontribution
+		ppin3d->EnableAlphaBlend(false, false);
+		//pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);    // add the lightcontribution
 		pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_INVSRCCOLOR); // but also modulate the light first with the underlying elements by (1+lightcontribution, e.g. a very crude approximation of real lighting)
 		pd3dDevice->SetRenderState(RenderDevice::BLENDOP, D3DBLENDOP_REVSUBTRACT); //!! meh, optimize all these alpha sets
 

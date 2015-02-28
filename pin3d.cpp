@@ -521,11 +521,12 @@ void Pin3D::EnableAlphaTestReference(const DWORD alphaRefValue) const
 	m_pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATEREQUAL);
 }
 
-void Pin3D::EnableAlphaBlend( const bool additiveBlending ) const
+void Pin3D::EnableAlphaBlend( const bool additiveBlending, const bool set_dest_blend ) const
 {
 	m_pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
 	m_pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
-	m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, additiveBlending ? D3DBLEND_ONE : D3DBLEND_INVSRCALPHA);
+	if(set_dest_blend)
+		m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, additiveBlending ? D3DBLEND_ONE : D3DBLEND_INVSRCALPHA);
 }
 
 void Pin3D::DisableAlphaBlend() const

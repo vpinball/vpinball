@@ -42,11 +42,11 @@ CLight lights[iLightPointBallsNum] = {
 #endif
 };
 
-float  fenvEmissionScale;
-float  fenvTexWidth;
-bool   bDisableLighting=false;
-
 float4 cAmbient_LightRange = float4(0.0,0.0,0.0, 0.0); //!! remove completely, just rely on envmap/IBL?
+
+float2 fenvEmissionScale_TexWidth;
+
+bool   bDisableLighting=false;
 
 //
 // Material Params
@@ -54,9 +54,7 @@ float4 cAmbient_LightRange = float4(0.0,0.0,0.0, 0.0); //!! remove completely, j
 
 float4 cBase_Alpha = float4(0.5,0.5,0.5, 1.0); //!! 0.04-0.95 in RGB
 
-float3 Roughness_WrapL_Edge = float3(4.0, 0.5, 1.0); // w in [0..1] for rim/wrap lighting
-
-bool bIsMetal;
+float4 Roughness_WrapL_Edge_IsMetal = float4(4.0, 0.5, 1.0, 0.0); // w in [0..1] for rim/wrap lighting
 
 //
 // Material Helper Functions
@@ -79,8 +77,8 @@ float3 DoPointLight(const float3 pos, const float3 N, const float3 V, const floa
    float3 Out = float3(0.0,0.0,0.0);
    
    // compute diffuse color (lambert with optional rim/wrap component)
-   if(!bIsMetal && (NdotL + Roughness_WrapL_Edge.y > 0.0))
-      Out = diffuse * ((NdotL + Roughness_WrapL_Edge.y) / ((1.0+Roughness_WrapL_Edge.y) * (1.0+Roughness_WrapL_Edge.y)));
+   if((Roughness_WrapL_Edge_IsMetal.w == 0.0) && (NdotL + Roughness_WrapL_Edge_IsMetal.y > 0.0))
+      Out = diffuse * ((NdotL + Roughness_WrapL_Edge_IsMetal.y) / ((1.0+Roughness_WrapL_Edge_IsMetal.y) * (1.0+Roughness_WrapL_Edge_IsMetal.y)));
  
     
    // add glossy component (modified ashikhmin/blinn bastard), not fully energy conserving, but good enough
@@ -110,23 +108,23 @@ float3 DoEnvmapDiffuse(const float3 N, const float3 diffuse)
 		atan2(N.y, N.x) * (0.5/PI) + 0.5,
 	    acos(N.z) * (1.0/PI));
 
-   return diffuse * InvGamma(tex2Dlod(texSampler2, float4(uv, 0.,0.)).xyz)*fenvEmissionScale; //!! replace by real HDR instead? -> remove invgamma then
+   return diffuse * InvGamma(tex2Dlod(texSampler2, float4(uv, 0.,0.)).xyz)*fenvEmissionScale_TexWidth.x; //!! replace by real HDR instead? -> remove invgamma then
 }
 
 //!! PI?
 // very very crude approximation by abusing miplevels
 float3 DoEnvmapGlossy(const float3 N, const float3 V, const float2 Ruv, const float3 glossy, const float glossyPower)
 {
-   const float mip = log2(fenvTexWidth * sqrt(3.0)) - 0.5*log2(glossyPower + 1.0);
+   const float mip = log2(fenvEmissionScale_TexWidth.y * sqrt(3.0)) - 0.5*log2(glossyPower + 1.0);
 
-   return glossy * InvGamma(tex2Dlod(texSampler1, float4(Ruv, 0., mip)).xyz)*fenvEmissionScale; //!! replace by real HDR instead? -> remove invgamma then
+   return glossy * InvGamma(tex2Dlod(texSampler1, float4(Ruv, 0., mip)).xyz)*fenvEmissionScale_TexWidth.x; //!! replace by real HDR instead? -> remove invgamma then
 }
 
 //!! PI?
 float3 DoEnvmap2ndLayer(const float3 color1stLayer, const float3 pos, const float3 N, const float3 V, const float NdotV, const float2 Ruv, const float3 specular)
 {
-   const float3 w = FresnelSchlick(specular, NdotV, Roughness_WrapL_Edge.z); //!! ?
-   return lerp(color1stLayer, InvGamma(tex2Dlod(texSampler1, float4(Ruv, 0., 0.)).xyz)*fenvEmissionScale, w); // weight (optional) lower diffuse/glossy layer with clearcoat/specular //!! replace by real HDR instead? -> remove invgamma then
+   const float3 w = FresnelSchlick(specular, NdotV, Roughness_WrapL_Edge_IsMetal.z); //!! ?
+   return lerp(color1stLayer, InvGamma(tex2Dlod(texSampler1, float4(Ruv, 0., 0.)).xyz)*fenvEmissionScale_TexWidth.x, w); // weight (optional) lower diffuse/glossy layer with clearcoat/specular //!! replace by real HDR instead? -> remove invgamma then
 }
 
 float3 lightLoop(const float3 pos, float3 N, float3 V, float3 diffuse, float3 glossy, const float3 specular, const float edge)
@@ -158,13 +156,13 @@ float3 lightLoop(const float3 pos, float3 N, float3 V, float3 diffuse, float3 gl
    float3 color = float3(0.0, 0.0, 0.0);
       
    // 1st Layer
-   if((!bIsMetal && (diffuseMax > 0.0)) || (glossyMax > 0.0))
+   if(((Roughness_WrapL_Edge_IsMetal.w == 0.0) && (diffuseMax > 0.0)) || (glossyMax > 0.0))
    {
       for(int i = 0; i < iLightPointNum; i++)
-         color += DoPointLight(pos, N, V, diffuse, glossy, edge, Roughness_WrapL_Edge.x, i); // no clearcoat needed as only pointlights so far
+         color += DoPointLight(pos, N, V, diffuse, glossy, edge, Roughness_WrapL_Edge_IsMetal.x, i); // no clearcoat needed as only pointlights so far
    }
          
-   if(!bIsMetal && (diffuseMax > 0.0))
+   if((Roughness_WrapL_Edge_IsMetal.w == 0.0) && (diffuseMax > 0.0))
       color += DoEnvmapDiffuse(N, diffuse);
 
    if((glossyMax > 0.0) || (specularMax > 0.0))
@@ -177,7 +175,7 @@ float3 lightLoop(const float3 pos, float3 N, float3 V, float3 diffuse, float3 gl
 			acos(R.z) * (1.0/PI));
 
 	   if(glossyMax > 0.0)
-		  color += DoEnvmapGlossy(N, V, Ruv, glossy, Roughness_WrapL_Edge.x);
+		  color += DoEnvmapGlossy(N, V, Ruv, glossy, Roughness_WrapL_Edge_IsMetal.x);
 
 	   // 2nd Layer
 	   if(specularMax > 0.0)

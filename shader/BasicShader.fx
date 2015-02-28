@@ -118,9 +118,9 @@ float4 ps_main(in VS_NOTEX_OUTPUT IN) : COLOR
    //return float4((IN.normal+1.0)*0.5,1.0); // visualize normals
    
    const float3 diffuse  = cBase_Alpha.xyz;
-   const float3 glossy   = bIsMetal ? cBase_Alpha.xyz : cGlossy*0.08;
+   const float3 glossy   = (Roughness_WrapL_Edge_IsMetal.w != 0.0) ? cBase_Alpha.xyz : cGlossy*0.08;
    const float3 specular = cClearcoat*0.08;
-   const float edge = bIsMetal ? 1.0 : Roughness_WrapL_Edge.z;
+   const float edge = (Roughness_WrapL_Edge_IsMetal.w != 0.0) ? 1.0 : Roughness_WrapL_Edge_IsMetal.z;
    
    float4 result;
    result.xyz = lightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular, edge); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
@@ -141,13 +141,13 @@ float4 ps_main_texture(in VS_OUTPUT IN) : COLOR
    const float3 t = InvGamma(pixel.xyz);
 
    // early out if no normal set (e.g. decal vertices)
-   if(IN.normal.x == 0.0 && IN.normal.y == 0.0 && IN.normal.z == 0.0)
+   if(!any(IN.normal))
       return float4(InvToneMap(t*cBase_Alpha.xyz),pixel.a);
       
    const float3 diffuse  = t*cBase_Alpha.xyz;
-   const float3 glossy   = bIsMetal ? diffuse : t*cGlossy*0.08; //!! use AO for glossy? specular?
+   const float3 glossy   = (Roughness_WrapL_Edge_IsMetal.w != 0.0) ? diffuse : t*cGlossy*0.08; //!! use AO for glossy? specular?
    const float3 specular = cClearcoat*0.08;
-   const float edge = bIsMetal ? 1.0 : Roughness_WrapL_Edge.z;
+   const float edge = (Roughness_WrapL_Edge_IsMetal.w != 0.0) ? 1.0 : Roughness_WrapL_Edge_IsMetal.z;
 
    float4 result;
    result.xyz = lightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular, edge);
@@ -223,9 +223,9 @@ float4 PS_LightWithTexel(in VS_LIGHT_OUTPUT IN) : COLOR
     else
 	{
 	    const float3 diffuse = pixel.xyz*cBase_Alpha.xyz;
-        const float3 glossy = bIsMetal ? diffuse : pixel.xyz*cGlossy*0.08; //!! use AO for glossy? specular?
+        const float3 glossy = (Roughness_WrapL_Edge_IsMetal.w != 0.0) ? diffuse : pixel.xyz*cGlossy*0.08; //!! use AO for glossy? specular?
         const float3 specular = cClearcoat*0.08;
-        const float edge = bIsMetal ? 1.0 : Roughness_WrapL_Edge.z;
+        const float edge = (Roughness_WrapL_Edge_IsMetal.w != 0.0) ? 1.0 : Roughness_WrapL_Edge_IsMetal.z;
 
 	    color.xyz = lightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular, edge); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
 		color.a = pixel.a;
@@ -265,9 +265,9 @@ float4 PS_LightWithoutTexel(in VS_LIGHT_OUTPUT IN) : COLOR
     else
 	{
 	    const float3 diffuse  = lightColor_intensity.xyz*cBase_Alpha.xyz;
-        const float3 glossy   = bIsMetal ? diffuse : lightColor_intensity.xyz*cGlossy*0.08;
+        const float3 glossy   = (Roughness_WrapL_Edge_IsMetal.w != 0.0) ? diffuse : lightColor_intensity.xyz*cGlossy*0.08;
         const float3 specular = cClearcoat*0.08;
-	    const float edge = bIsMetal ? 1.0 : Roughness_WrapL_Edge.z;
+	    const float edge = (Roughness_WrapL_Edge_IsMetal.w != 0.0) ? 1.0 : Roughness_WrapL_Edge_IsMetal.z;
 
 	    color.xyz = lightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular, edge); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
 	}

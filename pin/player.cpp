@@ -779,8 +779,8 @@ void Player::InitShader()
 
    m_pin3d.m_pd3dDevice->basicShader->SetTexture("Texture1", &m_pin3d.envTexture);
    m_pin3d.m_pd3dDevice->basicShader->SetTexture("Texture2", m_pin3d.m_device_envRadianceTexture);
-   m_pin3d.m_pd3dDevice->basicShader->SetFloat("fenvTexWidth", (float)m_pin3d.envTexture.m_height/*+m_pin3d.envTexture.m_width)*0.5f*/);
-   m_pin3d.m_pd3dDevice->basicShader->SetFloat("fenvEmissionScale", m_ptable->m_envEmissionScale*m_ptable->m_globalEmissionScale);
+   const D3DXVECTOR4 st(m_ptable->m_envEmissionScale*m_ptable->m_globalEmissionScale, (float)m_pin3d.envTexture.m_height/*+m_pin3d.envTexture.m_width)*0.5f*/, 0.f,0.f);
+   m_pin3d.m_pd3dDevice->basicShader->SetVector("fenvEmissionScale_TexWidth", &st);
 
    InitBallShader();
 }
@@ -859,13 +859,13 @@ void Player::InitBallShader()
 
    //D3DXVECTOR4 cam( matView._41, matView._42, matView._43, 1 );
    //ballShader->SetVector("camera", &cam);
-   ballShader->SetFloat("fenvEmissionScale",m_ptable->m_envEmissionScale*m_ptable->m_globalEmissionScale);
+   const D3DXVECTOR4 st(m_ptable->m_envEmissionScale*m_ptable->m_globalEmissionScale, (float)m_pin3d.envTexture.m_height/*+m_pin3d.envTexture.m_width)*0.5f*/, 0.f,0.f);
+   ballShader->SetVector("fenvEmissionScale_TexWidth",&st);
    //ballShader->SetInt("iLightPointNum",MAX_LIGHT_SOURCES);
 
    const float Roughness = 0.8f;
-   const D3DXVECTOR4 rwe(exp2f(10.0f * Roughness + 1.0f), 0.f, 1.f, 0.0f);
-   ballShader->SetVector("Roughness_WrapL_Edge", &rwe);
-   ballShader->SetBool("bIsMetal", false); // as ball collects the diffuse playfield which uses this flag!
+   const D3DXVECTOR4 rwem(exp2f(10.0f * Roughness + 1.0f), 0.f, 1.f, 0.0f); // no metal, as ball collects the diffuse playfield which uses this flag!
+   ballShader->SetVector("Roughness_WrapL_Edge_IsMetal", &rwem);
 
    ballIndexBuffer = m_pin3d.m_pd3dDevice->CreateAndFillIndexBuffer( basicBallNumFaces, basicBallIndices );
 
@@ -3302,8 +3302,8 @@ void Player::DrawBalls()
 		  const float dist = Vertex3Ds(light_nearest[0]->m_d.m_vCenter.x - pball->m_pos.x, light_nearest[0]->m_d.m_vCenter.y - pball->m_pos.y, light_nearest[0]->m_d.m_meshRadius + light_nearest[0]->m_surfaceHeight - pball->m_pos.z).Length(); //!! z pos
 		  Roughness = min(max(dist*0.006f,0.3f),Roughness);
 	  }
-	  const D3DXVECTOR4 rwe(exp2f(10.0f * Roughness + 1.0f), 0.f, 1.f, 0.0f);
-	  ballShader->SetVector("Roughness_WrapL_Edge", &rwe);
+	  const D3DXVECTOR4 rwem(exp2f(10.0f * Roughness + 1.0f), 0.f, 1.f, 0.0f);
+	  ballShader->SetVector("Roughness_WrapL_Edge_IsMetal", &rwem);
 
       float zheight = (!pball->m_frozen) ? pball->m_pos.z : (pball->m_pos.z - pball->m_radius);
 
@@ -3337,14 +3337,13 @@ void Player::DrawBalls()
           float sx,sy;
           GetBallAspectRatio(pball, sx, sy);
 
-	  const float inv_tablewidth = 1.0f/(m_ptable->m_right - m_ptable->m_left);
-	  const float inv_tableheight = 1.0f/(m_ptable->m_bottom - m_ptable->m_top);
+		  const float inv_tablewidth = 1.0f/(m_ptable->m_right - m_ptable->m_left);
+		  const float inv_tableheight = 1.0f/(m_ptable->m_bottom - m_ptable->m_top);
 
-	  const D3DXVECTOR4 bs(m_BallStretchX /*-sx*/, m_BallStretchY - sy, inv_tablewidth, inv_tableheight);
-	  ballShader->SetVector("ballStretch_invTableRes", &bs );
+		  const D3DXVECTOR4 bs(m_BallStretchX /*-sx*/, m_BallStretchY - sy, inv_tablewidth, inv_tableheight);
+		  ballShader->SetVector("ballStretch_invTableRes", &bs );
       }
 
-      m_pin3d.EnableAlphaBlend(false);
 	  const D3DXVECTOR4 diffuse = convertColor(pball->m_color,1.0f);
 	  ballShader->SetVector("cBase_Alpha",&diffuse);
 
@@ -3369,16 +3368,16 @@ void Player::DrawBalls()
 		  const D3DXVECTOR4 refl((float)m_ptable->m_ballReflectionStrength/255.0f, (float)m_ptable->m_playfieldReflectionStrength/255.0f, 0.f,0.f);
 		  ballShader->SetVector("reflection_ball_playfield", &refl);
 		  m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
-		  m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
+	      m_pin3d.EnableAlphaBlend(false, false);
 		  m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_DESTALPHA);
-
 		  ballShader->SetTechnique("RenderBallReflection");
+
 		  ballShader->Begin(0);
 		  m_pin3d.m_pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, ballVertexBuffer, 0, basicBallNumVertices, ballIndexBuffer, 0, basicBallNumFaces );
 		  ballShader->End();
 
+	      m_pin3d.DisableAlphaBlend();
 		  m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-		  m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_INVSRCALPHA);
 	  }
 
       ballShader->SetTechnique("RenderBall");
@@ -3478,8 +3477,7 @@ void Player::DrawBalls()
             if(num_rgv3D > 0)
             {
                 m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
-                m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
-                m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_INVSRCALPHA);
+                m_pin3d.EnableAlphaBlend(false);
 
                 ballShader->SetTechnique("RenderBallTrail");
 				ballShader->Begin(0);
@@ -3505,9 +3503,10 @@ void Player::DrawBalls()
                     matRot.m[j][k] = pball->m_orientation.m_d[k][j];
             matNew.Multiply(matRot, matNew);
             m_pin3d.m_pd3dDevice->SetTransform(TRANSFORMSTATE_WORLD, &matNew);
+            m_pin3d.DisableAlphaBlend();
 
             // draw points
-            float ptsize = 5.0f;
+            const float ptsize = 5.0f;
             m_pin3d.m_pd3dDevice->SetRenderState((RenderDevice::RenderStates)D3DRS_POINTSIZE, *((DWORD*)&ptsize));
             m_pin3d.m_pd3dDevice->DrawPrimitiveVB( D3DPT_POINTLIST, MY_D3DFVF_TEX, m_ballDebugPoints, 0, 12 );
 
