@@ -638,6 +638,11 @@ float Rubber::GetDepth(const Vertex3Ds& viewDir)
     return m_d.m_depthBias + viewDir.x * center2D.x + viewDir.y * center2D.y + viewDir.z * centerZ;
 }
 
+size_t Rubber::GetMaterialID()
+{
+	return (size_t)m_ptable->GetMaterial(m_d.m_szMaterial);
+}
+
 void Rubber::RenderSetup(RenderDevice* pd3dDevice)
 {
    GenerateVertexBuffer(pd3dDevice);
@@ -1276,26 +1281,25 @@ void Rubber::RenderObject(RenderDevice *pd3dDevice)
    }
    pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP);
 
-   Material *mat = m_ptable->GetMaterial( m_d.m_szMaterial);
+   Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
    pd3dDevice->basicShader->SetMaterial(mat);
 
-      Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
+   Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
+   if (pin)
+   {
+	   pd3dDevice->basicShader->SetTechnique("basic_with_texture");
+	   pd3dDevice->basicShader->SetTexture("Texture0", pin);
+	   pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue / 255.0f);
+   }
+   else
+	   pd3dDevice->basicShader->SetTechnique("basic_without_texture");
 
-      if (pin)
-      {
-         pd3dDevice->basicShader->SetTechnique("basic_with_texture");
-         pd3dDevice->basicShader->SetTexture("Texture0", pin);
-         pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue / 255.0f);
-      }
-      else
-          pd3dDevice->basicShader->SetTechnique("basic_without_texture");
+   if (dynamicVertexBufferRegenerate)
+	   UpdateRubber(pd3dDevice);
 
-      if (dynamicVertexBufferRegenerate)
-         UpdateRubber(pd3dDevice);
-
-      pd3dDevice->basicShader->Begin(0);
-      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, dynamicVertexBuffer, 0, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
-      pd3dDevice->basicShader->End();  
+   pd3dDevice->basicShader->Begin(0);
+   pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, dynamicVertexBuffer, 0, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
+   pd3dDevice->basicShader->End();  
 }
 
 // Always called each frame to render over everything else (along with primitives)

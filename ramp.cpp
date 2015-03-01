@@ -862,6 +862,11 @@ float Ramp::GetDepth(const Vertex3Ds& viewDir)
     return m_d.m_depthBias + viewDir.x * center2D.x + viewDir.y * center2D.y + viewDir.z * centerZ;
 }
 
+size_t Ramp::GetMaterialID()
+{
+	return (size_t)m_ptable->GetMaterial(m_d.m_szMaterial);
+}
+
 
 bool Ramp::isHabitrail() const
 {

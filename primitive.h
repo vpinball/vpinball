@@ -75,8 +75,6 @@ public:
 };
 
 class Primitive :
-
-
    public CComObjectRootEx<CComSingleThreadModel>,
    public IDispatchImpl<IPrimitive, &IID_IPrimitive, &LIBID_VPinballLib>,
    //public CComObjectRoot,
@@ -236,6 +234,8 @@ public:
 
    virtual bool IsTransparent();
    virtual float GetDepth(const Vertex3Ds& viewDir);
+   virtual size_t GetMaterialID();
+
    virtual void UpdatePropertyPanes();
 
    Mesh m_mesh;
@@ -306,8 +306,6 @@ private:        // private data members
    // additional mem:
    // 13 * float * 2 (additional middle points at top and bottom)
    // = nothing...
-
-   Material material;
 
    // Vertices for editor display
    std::vector<Vertex3Ds> vertices;
