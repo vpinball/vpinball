@@ -25,19 +25,28 @@ Surface::~Surface()
 
 bool Surface::IsTransparent()
 {
-    Material *mat = 0;
-    bool result=false;
+    bool result = false;
     if( m_d.m_fSideVisible)
     {
-        mat = m_ptable->GetMaterial(m_d.m_szSideMaterial);
+        Material *mat = m_ptable->GetMaterial(m_d.m_szSideMaterial);
         result = mat->m_bOpacityActive;
     }
     if( m_d.m_fVisible )
     {
-        mat=m_ptable->GetMaterial(m_d.m_szTopMaterial);
-        result=mat->m_bOpacityActive;
+        Material *mat = m_ptable->GetMaterial(m_d.m_szTopMaterial);
+        result = result || mat->m_bOpacityActive;
     }
     return result;
+}
+
+size_t Surface::GetMaterialID()
+{
+	Material *mat = 0;
+	if( m_d.m_fSideVisible)
+        mat = m_ptable->GetMaterial(m_d.m_szSideMaterial);
+    if( m_d.m_fVisible )
+        mat = m_ptable->GetMaterial(m_d.m_szTopMaterial);
+	return (size_t)mat; 
 }
 
 HRESULT Surface::Init(PinTable *ptable, float x, float y, bool fromMouseClick)

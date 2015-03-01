@@ -92,7 +92,7 @@ STANDARD_NOSCRIPT_EDITABLE_DECLARES(Decal, eItemDecal, DECAL, VIEW_PLAYFIELD | V
 private:
     void RenderText();
     void RenderObject(RenderDevice* pd3dDevice);
-private:
+
 	IFont *m_pIFont;
 
 	PinTable *m_ptable;
@@ -104,7 +104,6 @@ private:
 
 	float m_realwidth, m_realheight;
     VertexBuffer *vertexBuffer;
-    Material material;
 };
 
 #endif // !defined(AFX_DECAL_H__447B3CE2_C9EA_4ED1_AA3D_A8328F6DFD48__INCLUDED_)

@@ -1230,6 +1230,11 @@ float Primitive::GetDepth(const Vertex3Ds& viewDir)
     return m_d.m_depthBias + m_d.m_vPosition.Dot( viewDir );
 }
 
+size_t Primitive::GetMaterialID()
+{
+	return (size_t)m_ptable->GetMaterial(m_d.m_szMaterial);
+}
+
 STDMETHODIMP Primitive::get_Sides(int *pVal)
 {
    *pVal = m_d.m_Sides;

@@ -705,6 +705,17 @@ static bool CompareHitableDepth(Hitable* h1, Hitable* h2)
     return h1->GetDepth(g_viewDir) >= h2->GetDepth(g_viewDir);
 }
 
+static bool CompareHitableDepthReverse(Hitable* h1, Hitable* h2)
+{
+    // GetDepth approximates direction in view distance to camera; sort descending
+    return h1->GetDepth(g_viewDir) < h2->GetDepth(g_viewDir);
+}
+
+static bool CompareHitableMaterial(Hitable* h1, Hitable* h2)
+{
+    return h1->GetMaterialID() < h2->GetMaterialID();
+}
+
 void Player::UpdateBasicShaderMatrix(const Matrix3D& objectTrafo)
 {
     D3DMATRIX worldMat;
@@ -1079,6 +1090,8 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 		}
 	}
 
+    //std::sort( m_vHitNonTrans.begin(), m_vHitNonTrans.end(), CompareHitableDepthReverse );
+    //std::stable_sort( m_vHitNonTrans.begin(), m_vHitNonTrans.end(), CompareHitableMaterial ); // stable, so that objects with same materials will keep depth order
     std::sort( m_vHitTrans.begin(), m_vHitTrans.end(), CompareHitableDepth );
 
 
@@ -1150,10 +1163,10 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 
 	SetWindowText(hwndProgressName, "Starting...");
 
-		// Show the window.
-		ShowWindow(m_hwnd, SW_SHOW);
-		SetForegroundWindow(m_hwnd);
-		SetFocus(m_hwnd);
+	// Show the window.
+	ShowWindow(m_hwnd, SW_SHOW);
+	SetForegroundWindow(m_hwnd);
+	SetFocus(m_hwnd);
 
 	// Call Init -- TODO: what's the relation to ptable->FireVoidEvent() above?
 	for (unsigned i=0; i < m_vhitables.size(); ++i)
@@ -2388,27 +2401,6 @@ void Player::RenderDynamics()
                }
            }
        }
-
-   }
-   // Check if we are debugging balls
-   if (m_ToggleDebugBalls)
-   {
-      // Check if we are debugging balls
-      if (m_DebugBalls)
-      {
-         //HRESULT ReturnCode;
-         // Set the render state to something that will always display.
-         m_pin3d.m_pd3dDevice->SetRenderState ( RenderDevice::ZENABLE, D3DZB_FALSE );
-		 m_pin3d.DisableAlphaBlend();
-      }
-      else
-      {
-         // Restore the render state.
-         m_pin3d.m_pd3dDevice->SetRenderState ( RenderDevice::ZENABLE, D3DZB_TRUE );
-		 m_pin3d.EnableAlphaBlend(false);
-      }
-
-      m_ToggleDebugBalls = false;
    }
 
    // Draw non-transparent objects.
@@ -3052,27 +3044,29 @@ void Player::Render()
 		TextOut(hdcNull, 10, 105, szFoo, len);
 		len = sprintf_s(szFoo, sizeof(szFoo), "Parameter changes: %u      ", m_pin3d.m_pd3dDevice->Perf_GetNumParameterChanges());
 		TextOut(hdcNull, 10, 125, szFoo, len);
+		len = sprintf_s(szFoo, sizeof(szFoo), "Objects: %u Trans, %u Solid      ",m_vHitTrans.size(),m_vHitNonTrans.size());
+		TextOut(hdcNull, 10, 145, szFoo, len);
 
 #ifdef _DEBUGPHYSICS
 		len = sprintf_s(szFoo, sizeof(szFoo), "physTimes %10u uS(%12u avg %12u max)    ",
 			   	(U32)phys_period,
 			   	(U32)(m_phys_total / m_count),
 			   	(U32)m_phys_max );
-		TextOut(hdcNull, 10, 140, szFoo, len);
+		TextOut(hdcNull, 10, 180, szFoo, len);
 
 		len = sprintf_s(szFoo, sizeof(szFoo), "phys:%5u iterations(%5u avg %5u max))   ",
 			   	phys_iterations,
 			   	(U32)( m_phys_total_iterations / m_count ),
 				(U32)m_phys_max_iterations );
-		TextOut(hdcNull, 10, 160, szFoo, len);
+		TextOut(hdcNull, 10, 200, szFoo, len);
 
 		len = sprintf_s(szFoo, sizeof(szFoo), "Hits:%5u Collide:%5u Ctacs:%5u Static:%5u Embed:%5u TimeSearch:%5u    ",
 		c_hitcnts, c_collisioncnt, c_contactcnt, c_staticcnt, c_embedcnts, c_timesearch);
-		TextOut(hdcNull, 10, 180, szFoo, len);
+		TextOut(hdcNull, 10, 220, szFoo, len);
 
 		len = sprintf_s(szFoo, sizeof(szFoo), "Octree:%5u Traversed:%5u Tested:%5u DeepTested:%5u  ",
 		c_octNextlevels,c_traversed,c_tested,c_deepTested);
-		TextOut(hdcNull, 10, 200, szFoo, len);
+		TextOut(hdcNull, 10, 240, szFoo, len);
 #endif
         ReleaseDC(NULL, hdcNull);
     }
@@ -3239,6 +3233,10 @@ void Player::GetBallAspectRatio(Ball *pball, float &stretchX, float &stretchY)
 
 void Player::DrawBalls()
 {
+    if (m_ToggleDebugBalls && m_DebugBalls)
+        // Set the render state to something that will always display.
+        m_pin3d.m_pd3dDevice->SetRenderState ( RenderDevice::ZENABLE, FALSE );
+
 	std::vector<Light*> lights; // collect all lights that can reflect on balls (currently only bulbs and if flag set to do so)
 	for (int i=0;i<m_ptable->m_vedit.Size();i++)
 	{
@@ -3494,7 +3492,6 @@ void Player::DrawBalls()
             }
         }
 
-
 #ifdef DEBUG_BALL_SPIN        // draw debug points for visualizing ball rotation
         if (m_fShowFPS)
         {
@@ -3524,6 +3521,12 @@ void Player::DrawBalls()
     }   // end loop over all balls
 
     //m_pin3d.DisableAlphaBlend(); //!! not necessary anymore
+
+	if (m_ToggleDebugBalls && m_DebugBalls)
+        // Set the render state to something that will always display.
+        m_pin3d.m_pd3dDevice->SetRenderState ( RenderDevice::ZENABLE, TRUE );
+   if (m_ToggleDebugBalls)
+        m_ToggleDebugBalls = false;
 }
 
 struct DebugMenuItem
@@ -3540,7 +3543,6 @@ void AddEventToDebugMenu(char *sz, int index, int dispid, LPARAM lparam)
 	const int menuid = ((pdmi->objectindex+1)<<16) | pdmi->pvdispid->size();
 	pdmi->pvdispid->push_back(dispid);
 	AppendMenu(hmenu, MF_STRING, menuid, sz);
-
 }
 
 void Player::DoDebugObjectMenu(int x, int y)

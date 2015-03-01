@@ -112,6 +112,7 @@ END_CONNECTION_POINT_MAP()
     // end ISelect
 
     virtual float GetDepth(const Vertex3Ds& viewDir) { return viewDir.z * m_d.m_heighttop; }
+	virtual size_t GetMaterialID();
     virtual bool IsTransparent();
     virtual void UpdatePropertyPanes();
 
@@ -151,9 +152,6 @@ private:
    VertexBuffer *sideVBuffer;
    VertexBuffer *topVBuffer;
    IndexBuffer *sideIBuffer;
-   Material slingShotMaterial;
-   Material sideMaterial;
-   Material topMaterial;
    PropertyPane *m_propPhysics;
 
 // ISurface

@@ -520,8 +520,8 @@ bool Decal::IsTransparent()
 {
    if(m_fBackglass)
       return false;
-
-   return true;
+   else
+      return true;
 }
 
 void Decal::RenderObject(RenderDevice* pd3dDevice)

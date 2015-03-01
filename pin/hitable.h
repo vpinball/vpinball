@@ -15,4 +15,5 @@ public:
 
     virtual bool IsTransparent()                        { return false; }
     virtual float GetDepth(const Vertex3Ds& viewDir)    { return 0.0f; }
+	virtual size_t GetMaterialID()                      { return 0; }
 	};
