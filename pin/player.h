@@ -164,7 +164,7 @@ public:
     void DrawBalls();
     void CheckAndUpdateRegions();
 
-    void Bloom(const bool use_tmp_output);
+    void Bloom();
     void StereoFXAA(const bool stereo, const bool FXAA1, const bool FXAA2, const bool FXAA3, const bool depth_available);
 
     void FlipVideoBuffersNormal( const bool vsync );

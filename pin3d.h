@@ -81,6 +81,7 @@ public:
 	RenderTarget* m_pddsBackBuffer;
 
 	D3DTexture* m_pddsAOBackBuffer;
+	D3DTexture* m_pddsAOBackTmpBuffer;
 
 	D3DTexture* m_pdds3DZBuffer;
 

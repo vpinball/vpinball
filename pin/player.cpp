@@ -2442,22 +2442,10 @@ void Player::CheckAndUpdateRegions()
         m_vscreenupdate.ElementAt(l)->Check3D();
 }
 
-void Player::Bloom(const bool use_tmp_output)
+void Player::Bloom()
 {
  	if(m_ptable->m_bloom_strength <= 0.0f)
-	{
-	    if(!use_tmp_output)
-			m_pin3d.m_pd3dDevice->SetRenderTarget(m_pin3d.m_pd3dDevice->GetOutputBackBuffer());
-	    else
-	    {
-			RenderTarget* tmpSurface;
-			m_pin3d.m_pd3dDevice->GetBackBufferTmpTexture()->GetSurfaceLevel(0, &tmpSurface);
-			m_pin3d.m_pd3dDevice->SetRenderTarget(tmpSurface);
-			SAFE_RELEASE_NO_RCC(tmpSurface); //!!
-	    }
-
 		return;
-	}
 
 	float shiftedVerts[4*5] =
 	{
@@ -2523,17 +2511,6 @@ void Player::Bloom(const bool use_tmp_output)
 		m_pin3d.m_pd3dDevice->FBShader->Begin(0);
 		m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_TEX, (LPVOID)verts, 4);
 		m_pin3d.m_pd3dDevice->FBShader->End();
-	}
-
-	// switch to 'real' output buffer
-	if(!use_tmp_output)
-		m_pin3d.m_pd3dDevice->SetRenderTarget(m_pin3d.m_pd3dDevice->GetOutputBackBuffer());
-	else
-	{
-		RenderTarget* tmpSurface;
-		m_pin3d.m_pd3dDevice->GetBackBufferTmpTexture()->GetSurfaceLevel(0, &tmpSurface);
-		m_pin3d.m_pd3dDevice->SetRenderTarget(tmpSurface);
-		SAFE_RELEASE_NO_RCC(tmpSurface); //!!
 	}
 
 	SAFE_RELEASE_NO_RCC(tmpBloomSurface);
@@ -2607,10 +2584,20 @@ void Player::FlipVideoBuffersNormal( const bool vsync )
     m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
     m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, FALSE);
 
-    Bloom(stereo || FXAA1 || FXAA2 || FXAA3);
+    Bloom();
+
+	// switch to output buffer
+	if(!(stereo || FXAA1 || FXAA2 || FXAA3))
+		m_pin3d.m_pd3dDevice->SetRenderTarget(m_pin3d.m_pd3dDevice->GetOutputBackBuffer());
+	else
+	{
+		RenderTarget* tmpSurface;
+		m_pin3d.m_pd3dDevice->GetBackBufferTmpTexture()->GetSurfaceLevel(0, &tmpSurface);
+		m_pin3d.m_pd3dDevice->SetRenderTarget(tmpSurface);
+		SAFE_RELEASE_NO_RCC(tmpSurface); //!!
+	}
 
 	// copy framebuffer over from texture and tonemap/gamma
-
 	m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetBackBufferTexture());
     m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture1", m_pin3d.m_pd3dDevice->GetBloomBufferTexture());
 
@@ -2661,7 +2648,12 @@ void Player::FlipVideoBuffersAO( const bool vsync )
     m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
     m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, FALSE);
 
-    Bloom(stereo || FXAA1 || FXAA2 || FXAA3);
+    Bloom();
+
+	RenderTarget* tmpAOSurface;
+	m_pin3d.m_pddsAOBackTmpBuffer->GetSurfaceLevel(0, &tmpAOSurface);
+	m_pin3d.m_pd3dDevice->SetRenderTarget(tmpAOSurface);
+	SAFE_RELEASE_NO_RCC(tmpAOSurface); //!!
 	
 	m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pddsAOBackBuffer);
 	m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture3", m_pin3d.m_pdds3DZBuffer);
@@ -2676,12 +2668,21 @@ void Player::FlipVideoBuffersAO( const bool vsync )
     m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_TEX, (LPVOID)quadVerts, 4);
     m_pin3d.m_pd3dDevice->FBShader->End();
 	
-    if(stereo || FXAA1 || FXAA2 || FXAA3)
-		m_pin3d.m_pd3dDevice->CopySurface(m_pin3d.m_pddsAOBackBuffer, m_pin3d.m_pd3dDevice->GetBackBufferTmpTexture());
-    else
-		m_pin3d.m_pd3dDevice->CopySurface(m_pin3d.m_pddsAOBackBuffer, m_pin3d.m_pd3dDevice->GetOutputBackBuffer());
+	// flip AO buffers (avoids copy)
+	D3DTexture *tmpAO = m_pin3d.m_pddsAOBackBuffer;
+	m_pin3d.m_pddsAOBackBuffer = m_pin3d.m_pddsAOBackTmpBuffer;
+	m_pin3d.m_pddsAOBackTmpBuffer = tmpAO;
 
-	//
+	// switch to output buffer
+	if(!(stereo || FXAA1 || FXAA2 || FXAA3))
+		m_pin3d.m_pd3dDevice->SetRenderTarget(m_pin3d.m_pd3dDevice->GetOutputBackBuffer());
+	else
+	{
+		RenderTarget* tmpSurface;
+		m_pin3d.m_pd3dDevice->GetBackBufferTmpTexture()->GetSurfaceLevel(0, &tmpSurface);
+		m_pin3d.m_pd3dDevice->SetRenderTarget(tmpSurface);
+		SAFE_RELEASE_NO_RCC(tmpSurface); //!!
+	}
 
 	float shiftedVerts[4*5] =
 	{

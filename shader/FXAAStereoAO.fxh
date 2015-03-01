@@ -87,12 +87,11 @@ float4 ps_main_ao(in VS_OUTPUT_2D IN) : COLOR
 		occlusion += step(falloff, diff_depth) * /*abs(rdotn)* for uniform*/ (1.0-diff_norm*diff_norm/dot(occ_normal,occ_normal)) * (1.0-smoothstep(falloff, area, diff_depth));
 	}
 	const float ao = 1.0 - total_strength * occlusion;
-	const float averaged_ao = (tex2Dlod(texSampler5, float4(u+float2(w_h_height.x,w_h_height.y)*0.5, 0.,0.)).x //abuse bilerp for filtering (by using half texel/pixel shift)
-							  +tex2Dlod(texSampler5, float4(u-float2(w_h_height.x,w_h_height.y)*0.5, 0.,0.)).x
-							  +tex2Dlod(texSampler5, float4(u+float2(w_h_height.x,-w_h_height.y)*0.5, 0.,0.)).x
-							  +tex2Dlod(texSampler5, float4(u-float2(w_h_height.x,-w_h_height.y)*0.5, 0.,0.)).x)
-		*(0.25*0.5)+saturate(ao /*+base*/)*0.5;
-	return float4(averaged_ao, averaged_ao, averaged_ao, 1.0);
+	return float4( (tex2Dlod(texSampler5, float4(u+float2(w_h_height.x,w_h_height.y)*0.5, 0.,0.)).x //abuse bilerp for filtering (by using half texel/pixel shift)
+				   +tex2Dlod(texSampler5, float4(u-float2(w_h_height.x,w_h_height.y)*0.5, 0.,0.)).x
+				   +tex2Dlod(texSampler5, float4(u+float2(w_h_height.x,-w_h_height.y)*0.5, 0.,0.)).x
+				   +tex2Dlod(texSampler5, float4(u-float2(w_h_height.x,-w_h_height.y)*0.5, 0.,0.)).x)
+		*(0.25*0.5)+saturate(ao /*+base*/)*0.5, 0.,0.,0.);
 }
 
 // stereo
