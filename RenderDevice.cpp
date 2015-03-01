@@ -206,7 +206,7 @@ void EnumerateDisplayModes(const int adapter, std::vector<VideoMode>& modes)
 #define CHECKNVAPI(s) { NvAPI_Status hr = (s); if (hr != NVAPI_OK) { NvAPI_ShortString ss; NvAPI_GetErrorMessage(hr,ss); MessageBox(NULL, ss, "NVAPI", MB_OK | MB_ICONEXCLAMATION); } }
 static bool NVAPIinit = false; //!! meh
 
-RenderDevice::RenderDevice(const HWND hwnd, int width, int height, const bool fullscreen, const int colordepth, int &refreshrate, int VSync, const bool useAA, const bool stereo3D, const bool FXAA)
+RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, const bool fullscreen, const int colordepth, int &refreshrate, int VSync, const bool useAA, const bool stereo3D, const bool FXAA)
     : m_texMan(*this)
 {
     m_adapter = D3DADAPTER_DEFAULT;     // for now, always use the default adapter

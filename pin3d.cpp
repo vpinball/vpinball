@@ -7,6 +7,7 @@ Pin3D::Pin3D()
 {
 	m_pddsBackBuffer = NULL;
 	m_pddsAOBackBuffer = NULL;
+	m_pddsAOBackTmpBuffer = NULL;
 	m_pddsZBuffer = NULL;
 	m_pdds3DZBuffer = NULL;
 	m_pd3dDevice = NULL;
@@ -41,6 +42,7 @@ Pin3D::~Pin3D()
         tableIBuffer->release();
 
    SAFE_RELEASE(m_pddsAOBackBuffer);
+   SAFE_RELEASE(m_pddsAOBackTmpBuffer);
    SAFE_RELEASE(m_pdds3DZBuffer);
    SAFE_RELEASE(m_pddsStaticZ);
    SAFE_RELEASE(m_pddsZBuffer);
@@ -221,8 +223,12 @@ HRESULT Pin3D::InitPin3D(const HWND hwnd, const bool fullScreen, const int width
     }
 
 	if(useAO) {
-		m_pddsAOBackBuffer = m_pd3dDevice->DuplicateTexture(m_pddsBackBuffer);
-		if (!m_pddsAOBackBuffer)
+		CHECKD3D(m_pd3dDevice->GetCoreDevice()->CreateTexture(width, height, 1,
+			D3DUSAGE_RENDERTARGET, D3DFMT_L8, D3DPOOL_DEFAULT, &m_pddsAOBackTmpBuffer, NULL));
+		CHECKD3D(m_pd3dDevice->GetCoreDevice()->CreateTexture(width, height, 1,
+			D3DUSAGE_RENDERTARGET, D3DFMT_L8, D3DPOOL_DEFAULT, &m_pddsAOBackBuffer, NULL));
+
+		if (!m_pddsAOBackBuffer || !m_pddsAOBackTmpBuffer)
 			return E_FAIL;
 	}
 
