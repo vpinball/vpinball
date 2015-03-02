@@ -3176,14 +3176,29 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
                     {
                         return FALSE;
                     }
-                    ListView_SetItemText(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST), pinfo->item.iItem, 0, pinfo->item.pszText);
                     LVITEM lvitem;
                     lvitem.mask = LVIF_PARAM;
                     lvitem.iItem = pinfo->item.iItem;
                     lvitem.iSubItem = 0;
                     ListView_GetItem(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST), &lvitem);
-                    Material * const pmat = (Material*)lvitem.lParam;
-                    lstrcpy(pmat->m_szName, pinfo->item.pszText);
+                    Material *pmat = (Material*)lvitem.lParam;
+                    if ( pt->IsMaterialNameUnique(pmat->m_szName))
+                    {
+                        lstrcpy(pmat->m_szName, pinfo->item.pszText);
+                        ListView_SetItemText(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST), pinfo->item.iItem, 0, pinfo->item.pszText);
+                    }
+                    else
+                    {
+                        char textBuf[32];
+                        int suffix=1;
+                        do 
+                        {
+                            sprintf_s(textBuf,"%s%i",pinfo->item.pszText, suffix);
+                            suffix++;
+                        } while (!pt->IsMaterialNameUnique(textBuf));
+                        lstrcpy(pmat->m_szName, textBuf);
+                        ListView_SetItemText(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST), pinfo->item.iItem, 0, pmat->m_szName);
+                    }
                     pt->SetNonUndoableDirty(eSaveDirty);
                     return TRUE;
                 }
@@ -3476,7 +3491,7 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
                             if (sel != -1)
                             {
                                 SetFocus(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST));
-                                /*const HWND hwndFoo =*/ ListView_EditLabel(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST), sel);
+                                ListView_EditLabel(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST), sel);
                             }
                         }
                         break;

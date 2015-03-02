@@ -15,6 +15,7 @@ struct StringComparator
 {
     bool operator()(const char* str1, const char* str2) const
     {
-        return lstrcmp(str1, str2) == 0;
+        // use case-insensitive compare because user can enter the names in lower case from the script
+        return lstrcmpi(str1, str2) == 0;
     }
 };

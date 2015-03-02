@@ -6424,7 +6424,7 @@ bool PinTable::IsMaterialNameUnique( char *name )
 {
     for( int i=0;i<m_materials.Size();i++ )
     {
-        if( !strcmp(m_materials.ElementAt(i)->m_szName, name) )
+        if( !lstrcmpi(m_materials.ElementAt(i)->m_szName, name) )
             return false;
     }    
     return true;
