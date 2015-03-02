@@ -300,6 +300,14 @@ inline float radical_inverse(unsigned int v)
      return (float)v * 0.00000000023283064365386962890625f; // /2^32
 }
 
+inline float sobol(unsigned int i, unsigned int scramble = 0)
+{
+    for(unsigned int v = 1u<<31; (i != 0); i>>=1, v^=v>>1) if(i&1)
+	scramble ^= v;
+
+    return (float)scramble * 0.00000000023283064365386962890625f; // /2^32
+}
+
 //
 
 float sz2f(char *sz);
