@@ -2658,7 +2658,8 @@ void Player::FlipVideoBuffersAO( const bool vsync )
 	m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pddsAOBackBuffer);
 	m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture3", m_pin3d.m_pdds3DZBuffer);
 
-	const D3DXVECTOR4 w_h_height((float)(1.0/(double)m_width), (float)(1.0/(double)m_height), (float)m_height, 1.0f+(float)(usec()&0x1FF)*(float)(1.0/0x1FF));
+	const D3DXVECTOR4 w_h_height((float)(1.0/(double)m_width), (float)(1.0/(double)m_height), (float)m_height,
+		radical_inverse(m_cframes)*(float)(1./9.0)); // jitter within lattice cell
 	m_pin3d.m_pd3dDevice->FBShader->SetVector("w_h_height", &w_h_height);
 	m_pin3d.m_pd3dDevice->FBShader->SetFloat("AO_scale", m_ptable->m_AOScale);
     

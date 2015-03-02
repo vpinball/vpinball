@@ -63,7 +63,7 @@ float4 ps_main_ao(in VS_OUTPUT_2D IN) : COLOR
 	if((depth0 == 1.0) || (depth0 == 0.0)) //!! early out if depth too large (=BG) or too small (=DMD,etc -> retweak render options (depth write on), otherwise also screwup with stereo)
 		return float4(1.0,1.0,1.0,1.0);
 
-	const float2 ushift = hash(IN.tex0*w_h_height.z)*w_h_height.w; // jitter samples via hash of position on screen and then jitter samples by time //!! see below for non-shifted variant
+	const float2 ushift = hash(IN.tex0/w_h_height.xy) + float2(/*1.0**/w_h_height.w, 2.0*w_h_height.w); // jitter samples via hash of position on screen and then jitter samples by time //!! see below for non-shifted variant
 	//const float base = 0.0;
 	const float area = 0.07; //!!
 	const float falloff = 0.000002; //!!
@@ -83,12 +83,12 @@ float4 ps_main_ao(in VS_OUTPUT_2D IN) : COLOR
 		const float occ_depth = tex2Dlod(texSamplerDepth, float4(hemi_ray, 0.,0.)).x;
 		const float3 occ_normal = get_nonunit_normal(occ_depth, hemi_ray);
 		const float diff_depth = depth0 - occ_depth;
-		const float diff_norm = dot(occ_normal,normal);
+			const float diff_norm = dot(occ_normal,normal);
 		occlusion += step(falloff, diff_depth) * /*abs(rdotn)* for uniform*/ (1.0-diff_norm*diff_norm/dot(occ_normal,occ_normal)) * (1.0-smoothstep(falloff, area, diff_depth));
 	}
 	const float ao = 1.0 - total_strength * occlusion;
-	return float4( (tex2Dlod(texSampler5, float4(u+float2(w_h_height.x,w_h_height.y)*0.5, 0.,0.)).x //abuse bilerp for filtering (by using half texel/pixel shift)
-				   +tex2Dlod(texSampler5, float4(u-float2(w_h_height.x,w_h_height.y)*0.5, 0.,0.)).x
+	return float4( (tex2Dlod(texSampler5, float4(u+w_h_height.xy*0.5, 0.,0.)).x //abuse bilerp for filtering (by using half texel/pixel shift)
+				   +tex2Dlod(texSampler5, float4(u-w_h_height.xy*0.5, 0.,0.)).x
 				   +tex2Dlod(texSampler5, float4(u+float2(w_h_height.x,-w_h_height.y)*0.5, 0.,0.)).x
 				   +tex2Dlod(texSampler5, float4(u-float2(w_h_height.x,-w_h_height.y)*0.5, 0.,0.)).x)
 		*(0.25*0.5)+saturate(ao /*+base*/)*0.5, 0.,0.,0.);
