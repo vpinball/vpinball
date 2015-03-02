@@ -393,6 +393,8 @@ private:
 	int m_timestamp;
 #endif
 
+	int m_overall_frames;
+
 #ifdef FPS
 	int m_lastfpstime;
 	int m_cframes;

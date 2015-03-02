@@ -1,16 +1,19 @@
 //!! add reflection direction occlusion, so that that will be used for blocking reflection/envmap?
 //!! opt.?
 
-float2 hash(const float2 gridcell) // gridcell is assumed to be an integer coordinate
+float2 hash(const float2 gridcell)
 {
-	const float3 o = float3(26.0, 161.0, 26.0);
+	/*const float3 o = float3(26.0, 161.0, 26.0);
 	const float d = 71.0;
 	const float lf = 1.0/951.135664;
-	float3 P = float3(gridcell.x,gridcell.y,gridcell.x+1.0);
+	float3 P = float3(gridcell.x,gridcell.y,gridcell.x+1.0); // gridcell is assumed to be an integer coordinate (scaled by width&height basically)
 	P = P - floor(P * ( 1.0 / d )) * d;
 	P += o;
 	P *= P;
-	return frac( P.xz * P.yy * lf );
+	return frac( P.xz * P.yy * lf );*/
+
+	return frac(float2(sin(dot(gridcell, float2(12.9898, 78.233) * 2.0)),
+	                   sin(dot(gridcell, float2(12.9898, 78.233)      ))) * 43758.5453);
 }
 
 float3 get_nonunit_normal(const float depth0, const float2 u) // use neighboring pixels
@@ -61,9 +64,9 @@ float4 ps_main_ao(in VS_OUTPUT_2D IN) : COLOR
 
 	const float depth0 = tex2Dlod(texSamplerDepth, float4(u, 0.,0.)).x;
 	if((depth0 == 1.0) || (depth0 == 0.0)) //!! early out if depth too large (=BG) or too small (=DMD,etc -> retweak render options (depth write on), otherwise also screwup with stereo)
-		return float4(1.0,1.0,1.0,1.0);
+		return float4(1.0, 0.,0.,0.);
 
-	const float2 ushift = hash(IN.tex0/w_h_height.xy) + float2(/*1.0**/w_h_height.w, 2.0*w_h_height.w); // jitter samples via hash of position on screen and then jitter samples by time //!! see below for non-shifted variant
+	const float2 ushift = hash(IN.tex0) + w_h_height.zw; // jitter samples via hash of position on screen and then jitter samples by time //!! see below for non-shifted variant
 	//const float base = 0.0;
 	const float area = 0.07; //!!
 	const float falloff = 0.000002; //!!
