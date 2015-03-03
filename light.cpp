@@ -77,6 +77,7 @@ Light::Light() : m_lightcenter(this)
    m_d.m_szOffImage[0] = 0;
    m_d.m_depthBias = 0.0f;
    m_d.m_shape = ShapeCustom;
+   m_d.m_fVisible = true;
    m_roundLight = false;
    m_propVisual = NULL;
 }
@@ -123,7 +124,7 @@ HRESULT Light::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
    m_fLockedByLS = false;			//>>> added by chris
    m_realState	= m_d.m_state;		//>>> added by chris
-
+   m_d.m_fVisible = true;
 
    return InitVBA(fTrue, 0, NULL);
 }
@@ -556,6 +557,9 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
 {
     TRACE_FUNCTION();
 
+	if(!m_d.m_fVisible)
+		return;
+
 	if(customMoverVBuffer == NULL) // in case of degenerate light
 		return;
 
@@ -839,7 +843,7 @@ void Light::RenderSetup(RenderDevice* pd3dDevice)
 
 void Light::RenderStatic(RenderDevice* pd3dDevice)
 {
-    if ( m_d.m_BulbLight && m_d.m_showBulbMesh)
+    if (m_d.m_BulbLight && m_d.m_showBulbMesh)
         RenderBulbMesh(pd3dDevice,0,false);
 }
 
@@ -1726,6 +1730,22 @@ void Light::setLightState(const LightState newVal)
          }
       }
    }
+}
+
+STDMETHODIMP Light::get_Visible(VARIANT_BOOL *pVal) //temporary value of object
+{
+	*pVal = (VARIANT_BOOL)FTOVB(m_d.m_fVisible);
+
+	return S_OK;
+}
+
+STDMETHODIMP Light::put_Visible(VARIANT_BOOL newVal)
+{
+	STARTUNDO
+	m_d.m_fVisible = VBTOF(newVal);
+	STOPUNDO
+
+	return S_OK;
 }
 
 void Light::UpdatePropertyPanes()
