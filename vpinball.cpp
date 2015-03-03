@@ -7521,6 +7521,207 @@ INT_PTR CALLBACK UnlockTableProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
    return FALSE;
 }
 
+bool IsValidString(const char *name )
+{
+    if( name[0]==0 )
+        return false;
+    std::string str(name);
+    if( str.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ._") != std::string::npos )
+        return false;
+
+    return true;
+}
+
+void AddSearchItemToList(HWND listHwnd, IEditable * const piedit, int idx)
+{
+    char textBuf[518];
+    char firstImage[256];
+    char secondImage[256];
+    char layerBuf[16];
+    IScriptable * const piscript = piedit->GetScriptable();
+    memset(layerBuf,0,16);
+    if (piscript)
+    {
+        sprintf_s(layerBuf, "%i", piscript->GetISelect()->layerIndex+1);
+    }
+    ListView_SetItemText( listHwnd, idx, 2, layerBuf);
+    if( piedit->GetItemType() == eItemSurface)
+    {
+        Surface *sur = (Surface*)piedit;
+        firstImage[0]=0;
+        secondImage[0]=0;
+        if ( IsValidString(sur->m_d.m_szImage) )
+        {
+            sprintf_s(firstImage,"%s", sur->m_d.m_szImage);
+            sprintf_s(secondImage,"%s", sur->m_d.m_szSideImage);
+        }
+        textBuf[0]=0;
+        if( firstImage[0]!=0 )
+            strcat_s( textBuf, firstImage);
+        if ( secondImage[0]!=0 )
+        {
+            if ( firstImage[0]!=0)
+                strcat_s( textBuf, " -- ");
+            strcat_s( textBuf, secondImage);
+        }
+        ListView_SetItemText( listHwnd, idx, 1, "Wall");
+        ListView_SetItemText( listHwnd, idx, 3, textBuf);
+    }
+    else if( piedit->GetItemType() == eItemRamp)
+    {
+        Ramp *ramp = (Ramp*)piedit;
+        if ( IsValidString(ramp->m_d.m_szImage) )
+            sprintf_s(textBuf,"%s", ramp->m_d.m_szImage);
+
+        ListView_SetItemText( listHwnd, idx, 1, "Ramp");
+        ListView_SetItemText( listHwnd, idx, 3, textBuf);
+    }
+    else if( piedit->GetItemType() == eItemFlasher)
+    {
+        Flasher *flasher = (Flasher*)piedit;
+        firstImage[0]=0;
+        secondImage[0]=0;
+        if ( IsValidString(flasher->m_d.m_szImageA) )
+            sprintf_s(firstImage,"%s", flasher->m_d.m_szImageA);
+        if( IsValidString(flasher->m_d.m_szImageB) )
+            sprintf_s(secondImage,"%s", flasher->m_d.m_szImageB);
+
+        textBuf[0]=0;
+        if( firstImage[0]!=0 )
+            strcat_s( textBuf, firstImage);
+        if ( secondImage[0]!=0 )
+        {
+            if ( firstImage[0]!=0)
+                strcat_s( textBuf, " -- ");
+            strcat_s( textBuf, secondImage);
+        }
+        ListView_SetItemText( listHwnd, idx, 1, "Flasher");
+        ListView_SetItemText( listHwnd, idx, 3, textBuf);
+    }
+    else if( piedit->GetItemType() == eItemRubber)
+    {
+        Rubber *rubber = (Rubber*)piedit;
+        if ( IsValidString(rubber->m_d.m_szImage) )
+            sprintf_s(textBuf,"%s", rubber->m_d.m_szImage);
+
+        ListView_SetItemText( listHwnd, idx, 1, "Rubber");
+        ListView_SetItemText( listHwnd, idx, 3, textBuf);
+    }
+    else if( piedit->GetItemType() == eItemSpinner)
+    {
+        Spinner *spinner = (Spinner*)piedit;
+        if ( IsValidString(spinner->m_d.m_szImage) )
+            sprintf_s(textBuf,"%s", spinner->m_d.m_szImage);
+
+        ListView_SetItemText( listHwnd, idx, 1, "Spinner");
+        ListView_SetItemText( listHwnd, idx, 3, textBuf);
+    }
+    else if( piedit->GetItemType() == eItemKicker)
+    {
+        ListView_SetItemText( listHwnd, idx, 1, "Kicker");
+        ListView_SetItemText( listHwnd, idx, 3, "");
+    }
+    else if( piedit->GetItemType() == eItemLight)
+    {
+        Light *light = (Light*)piedit;
+        if ( IsValidString(light->m_d.m_szOffImage) )
+            sprintf_s(textBuf,"%s", light->m_d.m_szOffImage);
+
+        ListView_SetItemText( listHwnd, idx, 1, "Light");
+        ListView_SetItemText( listHwnd, idx, 3, textBuf);
+    }
+    else if( piedit->GetItemType() == eItemBumper)
+    {
+        ListView_SetItemText( listHwnd, idx, 1, "Bumper");
+        ListView_SetItemText( listHwnd, idx, 3, "");
+    }
+    else if( piedit->GetItemType() == eItemFlipper)
+    {
+        ListView_SetItemText( listHwnd, idx, 1, "Flipper");
+        ListView_SetItemText( listHwnd, idx, 3, "");
+    }
+    else if( piedit->GetItemType() == eItemGate)
+    {
+        ListView_SetItemText( listHwnd, idx, 1, "Gate");
+        ListView_SetItemText( listHwnd, idx, 3, "");
+    }
+    else if( piedit->GetItemType() == eItemTrigger)
+    {
+        ListView_SetItemText( listHwnd, idx, 1, "Trigger");
+        ListView_SetItemText( listHwnd, idx, 3, "");
+    }
+    else if( piedit->GetItemType() == eItemTimer)
+    {
+        ListView_SetItemText( listHwnd, idx, 1, "Timer");
+        ListView_SetItemText( listHwnd, idx, 3, "");
+    }
+    else if( piedit->GetItemType() == eItemTextbox)
+    {
+        ListView_SetItemText( listHwnd, idx, 1, "Textbox");
+        ListView_SetItemText( listHwnd, idx, 3, "");
+    }
+    else if( piedit->GetItemType() == eItemPlunger)
+    {
+        Plunger *plunger = (Plunger*)piedit;
+        if ( IsValidString(plunger->m_d.m_szImage) )
+            sprintf_s(textBuf, "%s",plunger->m_d.m_szImage);
+        ListView_SetItemText( listHwnd, idx, 1, "Plunger");
+        ListView_SetItemText( listHwnd, idx, 3, textBuf);
+    }
+    else if( piedit->GetItemType() == eItemDispReel)
+    {
+        DispReel *dispReel = (DispReel*)piedit;
+        if (IsValidString(dispReel->m_d.m_szImage))
+            sprintf_s(textBuf, "%s",dispReel->m_d.m_szImage);
+        ListView_SetItemText( listHwnd, idx, 1, "EMReel");
+        ListView_SetItemText( listHwnd, idx, 3, textBuf);
+    }
+    else if( piedit->GetItemType() == eItemPrimitive)
+    {
+        Primitive *primitive = (Primitive*)piedit;
+        if ( IsValidString(primitive->m_d.m_szImage))
+            sprintf_s(textBuf, "%s",primitive->m_d.m_szImage);
+        ListView_SetItemText( listHwnd, idx, 1, "Primitive");
+        ListView_SetItemText( listHwnd, idx, 3, textBuf);
+    }
+
+}
+typedef struct _tagSORTDATA
+{
+    HWND hwndList;
+    int subItemIndex;
+    int sortUpDown;
+}SORTDATA;
+
+SORTDATA SortData;
+static int columnSortOrder[4]={0};
+static int columnNumber;
+
+int CALLBACK MyCompProc(LPARAM lSortParam1, LPARAM lSortParam2, LPARAM lSortOption)
+{
+
+    static LVFINDINFO lvf;
+    static int nItem1, nItem2;
+    static char buf1[MAX_PATH], buf2[MAX_PATH];
+    SORTDATA *lpsd;
+
+    lpsd = (SORTDATA *)lSortOption;
+
+    lvf.flags = LVFI_PARAM;
+    lvf.lParam = lSortParam1;
+    nItem1 = ListView_FindItem(lpsd->hwndList, -1, &lvf);
+
+    lvf.lParam = lSortParam2;
+    nItem2 = ListView_FindItem(lpsd->hwndList, -1, &lvf);
+
+    ListView_GetItemText(lpsd->hwndList, nItem1, lpsd->subItemIndex, buf1, sizeof(buf1));
+
+    ListView_GetItemText(lpsd->hwndList, nItem2, lpsd->subItemIndex, buf2, sizeof(buf2));
+    if(lpsd->sortUpDown == 1)
+        return(stricmp(buf1, buf2));
+    else
+        return(stricmp(buf1, buf2) * -1);
+}
 
 INT_PTR CALLBACK SearchSelectProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -7542,16 +7743,17 @@ INT_PTR CALLBACK SearchSelectProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
          lvc.mask = LVCF_TEXT | LVCF_WIDTH | LVCF_FMT;
          lvc.cx=200;
          lvc.pszText = TEXT("Name");
-         ListView_InsertColumn( listHwnd, 0, &lvc );
+         int index=-1;
+         index = ListView_InsertColumn( listHwnd, 0, &lvc );
          lvc.cx=70;
          lvc.pszText = TEXT("Type");
-         ListView_InsertColumn( listHwnd, 1, &lvc );
+         index = ListView_InsertColumn( listHwnd, 1, &lvc );
          lvc.cx=50;
          lvc.pszText = TEXT("Layer");
-         ListView_InsertColumn( listHwnd, 2, &lvc );
+         index = ListView_InsertColumn( listHwnd, 2, &lvc );
          lvc.cx=250;
          lvc.pszText = TEXT("Image");
-         ListView_InsertColumn( listHwnd, 3, &lvc );
+         index = ListView_InsertColumn( listHwnd, 3, &lvc );
 
          if( listHwnd!=NULL )
              ListView_DeleteAllItems( listHwnd );
@@ -7560,9 +7762,6 @@ INT_PTR CALLBACK SearchSelectProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
          int idx=0;
          for (int i=0;i<pt->m_vedit.Size();i++)
          {
-            char textBuf[518];
-            char firstImage[256];
-            char secondImage[256];
             IEditable * const piedit = pt->m_vedit.ElementAt(i);
             IScriptable * const piscript = piedit->GetScriptable();
             if (piscript)
@@ -7571,144 +7770,8 @@ INT_PTR CALLBACK SearchSelectProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                lv.iSubItem = 0;
                lv.lParam = (LPARAM)piscript;
                lv.pszText = pt->GetElementName(piedit);
-               char layerBuf[16];
-               sprintf_s(layerBuf, "%i", piscript->GetISelect()->layerIndex+1);
-               ListView_InsertItem( listHwnd, &lv);
-               ListView_SetItemText( listHwnd, idx, 2, layerBuf);
-               if( piedit->GetItemType() == eItemSurface)
-               {
-                   Surface *sur = (Surface*)piedit;
-                   firstImage[0]=0;
-                   secondImage[0]=0;
-                   if ( (sur->m_d.m_szImage[0]!=0 && sur->m_d.m_szImage[0]!=-1  )|| (sur->m_d.m_szSideImage[0]!=0 && sur->m_d.m_szSideImage[0]!=-1))
-                   {
-                        sprintf_s(firstImage,"%s", sur->m_d.m_szImage);
-                        sprintf_s(secondImage,"%s", sur->m_d.m_szSideImage);
-                   }
-                   textBuf[0]=0;
-                   if( firstImage[0]!=0 )
-                        strcat_s( textBuf, firstImage);
-                   if ( secondImage[0]!=0 )
-                   {
-                       if ( firstImage[0]!=0)
-                            strcat_s( textBuf, " -- ");
-                       strcat_s( textBuf, secondImage);
-                   }
-                   ListView_SetItemText( listHwnd, idx, 1, "Wall");
-                   ListView_SetItemText( listHwnd, idx, 3, textBuf);
-               }
-               else if( piedit->GetItemType() == eItemRamp)
-               {
-                   Ramp *ramp = (Ramp*)piedit;
-                   if ( ramp->m_d.m_szImage[0]!=0 && ramp->m_d.m_szImage[0]!=-1)
-                       sprintf_s(textBuf,"%s", ramp->m_d.m_szImage);
-
-                   ListView_SetItemText( listHwnd, idx, 1, "Ramp");
-                   ListView_SetItemText( listHwnd, idx, 3, textBuf);
-               }
-               else if( piedit->GetItemType() == eItemFlasher)
-               {
-                   Flasher *flasher = (Flasher*)piedit;
-                   firstImage[0]=0;
-                   secondImage[0]=0;
-                   if ( (flasher->m_d.m_szImageA[0]!=0 && flasher->m_d.m_szImageA[0]!=-1) || (flasher->m_d.m_szImageB[0]!=0 && flasher->m_d.m_szImageB[0]!=-1) )
-                   {
-                       sprintf_s(firstImage,"%s", flasher->m_d.m_szImageA);
-                       sprintf_s(secondImage,"%s", flasher->m_d.m_szImageB);
-                   }
-                   textBuf[0]=0;
-                   if( firstImage[0]!=0 )
-                        strcat_s( textBuf, firstImage);
-                   if ( secondImage[0]!=0 )
-                   {
-                       if ( firstImage[0]!=0)
-                           strcat_s( textBuf, " -- ");
-                       strcat_s( textBuf, secondImage);
-                   }
-                   ListView_SetItemText( listHwnd, idx, 1, "Flasher");
-                   ListView_SetItemText( listHwnd, idx, 3, textBuf);
-               }
-               else if( piedit->GetItemType() == eItemRubber)
-               {
-                   Rubber *rubber = (Rubber*)piedit;
-                   if ( rubber->m_d.m_szImage[0]!=0 && rubber->m_d.m_szImage[0]!=-1)
-                       sprintf_s(textBuf,"%s", rubber->m_d.m_szImage);
-
-                   ListView_SetItemText( listHwnd, idx, 1, "Rubber");
-                   ListView_SetItemText( listHwnd, idx, 3, textBuf);
-               }
-               else if( piedit->GetItemType() == eItemSpinner)
-               {
-                   Spinner *spinner = (Spinner*)piedit;
-                   if ( spinner->m_d.m_szImage[0]!=0 && spinner->m_d.m_szImage[0]!=-1)
-                       sprintf_s(textBuf,"%s", spinner->m_d.m_szImage);
-
-                   ListView_SetItemText( listHwnd, idx, 1, "Spinner");
-                   ListView_SetItemText( listHwnd, idx, 3, textBuf);
-               }
-               else if( piedit->GetItemType() == eItemKicker)
-               {
-                   ListView_SetItemText( listHwnd, idx, 1, "Kicker");
-                   ListView_SetItemText( listHwnd, idx, 3, "");
-               }
-               else if( piedit->GetItemType() == eItemLight)
-               {
-                   Light *light = (Light*)piedit;
-                   if ( light->m_d.m_szOffImage[0]!=0 && light->m_d.m_szOffImage[0]!=-1 )
-                       sprintf_s(textBuf,"%s", light->m_d.m_szOffImage);
-
-                   ListView_SetItemText( listHwnd, idx, 1, "Light");
-                   ListView_SetItemText( listHwnd, idx, 3, textBuf);
-               }
-               else if( piedit->GetItemType() == eItemBumper)
-               {
-                   ListView_SetItemText( listHwnd, idx, 1, "Bumper");
-                   ListView_SetItemText( listHwnd, idx, 3, "");
-               }
-               else if( piedit->GetItemType() == eItemFlipper)
-               {
-                   ListView_SetItemText( listHwnd, idx, 1, "Flipper");
-                   ListView_SetItemText( listHwnd, idx, 3, "");
-               }
-               else if( piedit->GetItemType() == eItemGate)
-               {
-                   ListView_SetItemText( listHwnd, idx, 1, "Gate");
-                   ListView_SetItemText( listHwnd, idx, 3, "");
-               }
-               else if( piedit->GetItemType() == eItemTrigger)
-               {
-                   ListView_SetItemText( listHwnd, idx, 1, "Trigger");
-                   ListView_SetItemText( listHwnd, idx, 3, "");
-               }
-               else if( piedit->GetItemType() == eItemTimer)
-               {
-                   ListView_SetItemText( listHwnd, idx, 1, "Timer");
-                   ListView_SetItemText( listHwnd, idx, 3, "");
-               }
-               else if( piedit->GetItemType() == eItemPlunger)
-               {
-                   Plunger *plunger = (Plunger*)piedit;
-                   if ( plunger->m_d.m_szImage[0]!=0 && plunger->m_d.m_szImage[0]!=-1 )
-                   sprintf_s(textBuf, "%s",plunger->m_d.m_szImage);
-                   ListView_SetItemText( listHwnd, idx, 1, "Plunger");
-                   ListView_SetItemText( listHwnd, idx, 3, textBuf);
-               }
-               else if( piedit->GetItemType() == eItemDispReel)
-               {
-                   DispReel *dispReel = (DispReel*)piedit;
-                   if (dispReel->m_d.m_szImage[0]!=0 && dispReel->m_d.m_szImage[0]!=-1 )
-                       sprintf_s(textBuf, "%s",dispReel->m_d.m_szImage);
-                   ListView_SetItemText( listHwnd, idx, 1, "EMReel");
-                   ListView_SetItemText( listHwnd, idx, 3, textBuf);
-               }
-               else if( piedit->GetItemType() == eItemPrimitive)
-               {
-                   Primitive *primitive = (Primitive*)piedit;
-                   if ( primitive->m_d.m_szImage[0]!=0 && primitive->m_d.m_szImage[0]!=-1 )
-                       sprintf_s(textBuf, "%s",primitive->m_d.m_szImage);
-                   ListView_SetItemText( listHwnd, idx, 1, "Primitive");
-                   ListView_SetItemText( listHwnd, idx, 3, textBuf);
-               }
+               ListView_InsertItem(listHwnd, &lv);
+               AddSearchItemToList(listHwnd, piedit, idx);
                idx++;
             }
          }
@@ -7716,6 +7779,26 @@ INT_PTR CALLBACK SearchSelectProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
       }
       break;
 
+   case WM_NOTIFY:
+       {
+           if( wParam==IDC_ELEMENT_LIST )
+           {
+                LPNMLISTVIEW lpnmListView = (LPNMLISTVIEW)lParam;
+                if( lpnmListView->hdr.code==LVN_COLUMNCLICK)
+                {
+                    columnNumber = lpnmListView->iSubItem;
+                    if( columnSortOrder[columnNumber]==1 )
+                        columnSortOrder[columnNumber]=0;
+                    else
+                        columnSortOrder[columnNumber]=1;
+                    SortData.hwndList = GetDlgItem( hwndDlg, IDC_ELEMENT_LIST);
+                    SortData.subItemIndex = columnNumber;
+                    SortData.sortUpDown = columnSortOrder[columnNumber];
+                    ListView_SortItems( SortData.hwndList, MyCompProc, &SortData);
+                }
+           }
+           break;
+       }
    case WM_CLOSE:
       EndDialog(hwndDlg, FALSE);
       break;

@@ -3,6 +3,8 @@
 DispReel::DispReel()
 {
     m_ptu = NULL;
+    memset(m_d.m_szImage,0,MAXTOKEN);
+    memset(m_d.m_szSound,0,MAXTOKEN);
 }
 
 DispReel::~DispReel()

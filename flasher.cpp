@@ -8,6 +8,9 @@ Flasher::Flasher()
    dynamicVertexBuffer = 0;
    dynamicVertexBufferRegenerate = true;
    m_propVisual=NULL;
+   memset(m_d.m_szImageA,0,MAXTOKEN);
+   memset(m_d.m_szImageB,0,MAXTOKEN);
+
 }
 
 Flasher::~Flasher()

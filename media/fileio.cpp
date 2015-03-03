@@ -342,6 +342,7 @@ HRESULT BiffReader::GetString(char *szvalue)
 	HRESULT hr;
 	int len;
 
+    *szvalue=0;
 	if(FAILED(hr = ReadBytes(&len, sizeof(int), &read)))
 		return hr;
 

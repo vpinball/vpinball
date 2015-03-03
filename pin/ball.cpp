@@ -18,6 +18,8 @@ Ball::Ball()
    m_frozen = false;
    m_color = RGB(255,255,255);
 
+   memset(m_szImage,0,MAXTOKEN);
+   memset(m_szImageFront,0,MAXTOKEN);
    m_ringcounter_oldpos = 0;
    for(int i = 0; i < MAX_BALL_TRAIL_POS; ++i)
 	   m_oldpos[i].x = FLT_MAX;

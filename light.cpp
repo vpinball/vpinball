@@ -80,6 +80,8 @@ Light::Light() : m_lightcenter(this)
    m_d.m_fVisible = true;
    m_roundLight = false;
    m_propVisual = NULL;
+   memset(m_d.m_szOffImage,0,MAXTOKEN);
+   memset(m_d.m_szSurface,0,MAXTOKEN);
 }
 
 Light::~Light()

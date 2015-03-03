@@ -16,6 +16,11 @@ Surface::Surface()
    topVBuffer = 0;
    sideIBuffer = 0;
    m_propPhysics = NULL;
+   memset( m_d.m_szImage,0,MAXTOKEN);
+   memset( m_d.m_szSideImage,0,MAXTOKEN);
+   memset(m_d.m_szSideMaterial,0,32);
+   memset(m_d.m_szTopMaterial,0,32);
+   memset(m_d.m_szSlingShotMaterial,0,32);
 }
 
 Surface::~Surface()

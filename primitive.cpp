@@ -99,6 +99,8 @@ Primitive::Primitive()
    m_propPhysics=NULL;
    m_propPosition=NULL;
    m_propVisual=NULL;
+   memset(m_d.m_szImage,0,MAXTOKEN);
+   memset(m_d.m_szMaterial,0,32);
 } 
 
 Primitive::~Primitive() 

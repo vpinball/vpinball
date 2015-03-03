@@ -11,6 +11,10 @@ Decal::Decal()
    m_pIFont = NULL;
    vertexBuffer = NULL;
    m_textImg = NULL;
+   memset(m_d.m_szImage,0,MAXTOKEN);
+   memset(m_d.m_szMaterial,0,32);
+   memset(m_d.m_szSurface,0,MAXTOKEN);
+
 } 
 
 Decal::~Decal() 
@@ -566,7 +570,7 @@ void Decal::RenderObject(RenderDevice* pd3dDevice)
 
    if (!m_fBackglass)
    {
-      const float depthbias = -5. * BASEDEPTHBIAS;
+      const float depthbias = -5.f * BASEDEPTHBIAS;
       pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, *((DWORD*)&depthbias));
    }
    else
