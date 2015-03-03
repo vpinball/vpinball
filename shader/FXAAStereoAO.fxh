@@ -68,9 +68,9 @@ float4 ps_main_ao(in VS_OUTPUT_2D IN) : COLOR
 
 	const float2 ushift = hash(IN.tex0) + w_h_height.zw; // jitter samples via hash of position on screen and then jitter samples by time //!! see below for non-shifted variant
 	//const float base = 0.0;
-	const float area = 0.07; //!!
-	const float falloff = 0.000002; //!!
-	const float radius = 0.006; //!!
+	const float area = 0.05; //!!
+	const float falloff = 0.0002; //!!
+	const float radius = 0.007; //!!
 	const int samples = 9; //4,8,9,13,21,25 korobov,fibonacci
 	const float total_strength = AO_scale * (/*1.0 for uniform*/0.5 / samples);
 	const float3 normal = normalize(get_nonunit_normal(depth0, u));
@@ -86,7 +86,7 @@ float4 ps_main_ao(in VS_OUTPUT_2D IN) : COLOR
 		const float occ_depth = tex2Dlod(texSamplerDepth, float4(hemi_ray, 0.,0.)).x;
 		const float3 occ_normal = get_nonunit_normal(occ_depth, hemi_ray);
 		const float diff_depth = depth0 - occ_depth;
-			const float diff_norm = dot(occ_normal,normal);
+		const float diff_norm = dot(occ_normal,normal);
 		occlusion += step(falloff, diff_depth) * /*abs(rdotn)* for uniform*/ (1.0-diff_norm*diff_norm/dot(occ_normal,occ_normal)) * (1.0-smoothstep(falloff, area, diff_depth));
 	}
 	const float ao = 1.0 - total_strength * occlusion;
