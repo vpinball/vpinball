@@ -10,6 +10,10 @@ Gate::Gate()
    bracketVertexBuffer=NULL;
    wireIndexBuffer=NULL;
    wireVertexBuffer=NULL;
+   memset(m_d.m_szImageBack,0,MAXTOKEN);
+   memset(m_d.m_szImageFront,0,MAXTOKEN);
+   memset(m_d.m_szMaterial,0,32);
+   memset(m_d.m_szSurface,0,MAXTOKEN);
 }
 
 Gate::~Gate()

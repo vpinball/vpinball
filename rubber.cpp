@@ -14,6 +14,8 @@ Rubber::Rubber()
    m_propPhysics = NULL;
    m_propPosition = NULL;
    m_propVisual = NULL;
+   memset(m_d.m_szImage,0,MAXTOKEN);
+   memset(m_d.m_szMaterial,0, 32);
 }
 
 Rubber::~Rubber()
@@ -1033,6 +1035,8 @@ STDMETHODIMP Rubber::get_Image(BSTR *pVal)
 STDMETHODIMP Rubber::put_Image(BSTR newVal)
 {
    char m_szImage[MAXTOKEN];
+   memset(m_szImage,0,MAXTOKEN);
+
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_szImage, 32, NULL, NULL);
 
    if(strcmp(m_szImage,m_d.m_szImage) != 0)

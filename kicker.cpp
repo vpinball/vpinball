@@ -7,6 +7,8 @@ Kicker::Kicker()
    m_phitkickercircle = NULL;
    vertexBuffer = NULL;
    indexBuffer = NULL;
+   memset(m_d.m_szMaterial,0,32);
+   memset(m_d.m_szSurface,0,MAXTOKEN);
 }
 
 Kicker::~Kicker()

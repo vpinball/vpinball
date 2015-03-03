@@ -124,6 +124,7 @@ Texture::Texture()
    m_hbmGDIVersion = NULL;
    m_ppb = NULL;
    m_alphaTestValue=1.0f;
+   memset(m_szName,0, MAXTOKEN);
 }
 
 Texture::~Texture()

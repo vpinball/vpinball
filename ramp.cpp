@@ -15,6 +15,8 @@ Ramp::Ramp()
    m_d.m_wireDistanceY = 88.0f;
    m_propPosition = NULL;
    m_propPhysics = NULL;
+   memset(m_d.m_szImage,0,MAXTOKEN);
+   memset(m_d.m_szMaterial,0,32);
 }
 
 Ramp::~Ramp()

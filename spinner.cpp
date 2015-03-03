@@ -9,6 +9,9 @@ Spinner::Spinner()
    bracketIndexBuffer = 0;
    plateVertexBuffer = 0;
    plateIndexBuffer = 0;
+   memset(m_d.m_szImage,0, MAXTOKEN);
+   memset(m_d.m_szMaterial,0,32);
+   memset(m_d.m_szSurface,0,MAXTOKEN);
 }
 
 Spinner::~Spinner()
