@@ -3216,6 +3216,8 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
                         lstrcpy(pmat->m_szName, textBuf);
                         ListView_SetItemText(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST), pinfo->item.iItem, 0, pmat->m_szName);
                     }
+                    g_pvp->m_sb.PopulateDropdowns(); 
+                    g_pvp->m_sb.RefreshProperties();
                     pt->SetNonUndoableDirty(eSaveDirty);
                     return TRUE;
                 }
@@ -3439,7 +3441,9 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
                 
                             pt->AddMaterial( pmat );
                             pt->AddListMaterial(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST), pmat);
-                        
+                            g_pvp->m_sb.PopulateDropdowns(); // May need to update list of images
+                            g_pvp->m_sb.RefreshProperties();
+
                             break;
                         }
                         case IDC_IMPORT:
@@ -3504,6 +3508,8 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
                                 fclose(f);
                                 hr = SetRegValue("RecentDir","MaterialDir", REG_SZ, szInitialDir, lstrlen(szInitialDir));
                                 pt->SetNonUndoableDirty(eSaveDirty);
+                                g_pvp->m_sb.PopulateDropdowns(); // May need to update list of images
+                                g_pvp->m_sb.RefreshProperties();
                             }
                             break;
                         }
@@ -3615,6 +3621,8 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
                                     }
                                 }
                                 pt->SetNonUndoableDirty(eSaveDirty);
+                                g_pvp->m_sb.PopulateDropdowns(); 
+                                g_pvp->m_sb.RefreshProperties();
                             }
                         }
                         break;
