@@ -365,7 +365,7 @@ ShowBulbMesh(bool)
 ShowReflectionOnBall(bool) - in bulb mode, en/disable the reflection of the bulb on balls
 ScaleBulbMesh(float)
 BulbModulateVsAdd(float) - blends between modulating and additive when bulb is enabled (0..1)
-
+Visible(bool)
 
 PLUNGER
 ==============================================================================================================================================

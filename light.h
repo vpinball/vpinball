@@ -43,6 +43,7 @@ public:
     float m_depthBias;      // for determining depth sorting
     float m_bulbHaloHeight;
 	
+	bool m_fVisible;
 	bool m_imageMode; // true = pass through/no lighting, false = use surface material
     bool m_BulbLight;
 	bool m_showBulbMesh;
@@ -244,6 +245,8 @@ public:
    STDMETHOD(put_BulbHaloHeight)(/*[in]*/ float newVal);
    STDMETHOD(get_ShowReflectionOnBall)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_ShowReflectionOnBall)(/*[in]*/ VARIANT_BOOL newVal);
+   STDMETHOD(get_Visible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   STDMETHOD(put_Visible)(/*[in]*/ VARIANT_BOOL newVal);
 };
 
 #endif // !defined(AFX_LIGHT_H__7445FDB1_1FBE_4975_9AB6_367E6D16098F__INCLUDED_)
