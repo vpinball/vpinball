@@ -3,6 +3,7 @@
 //////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h" 
+#include "forsyth.h"
 
 // defined in objloader.cpp
 extern bool WaveFrontObj_Load(const char *filename, const bool flipTv, const bool convertToLeftHanded );
@@ -835,6 +836,13 @@ HRESULT Primitive::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int versi
    br.Load();
    if( !m_d.m_use3DMesh )
        CalculateBuiltinOriginal();
+
+   unsigned int* tmp = reorderForsyth(&m_mesh.m_indices[0],m_mesh.NumIndices()/3,m_mesh.NumVertices());
+   if(tmp != NULL)
+   {
+       memcpy(&m_mesh.m_indices[0],tmp,m_mesh.NumIndices()*sizeof(unsigned int));
+       delete [] tmp;
+   }
 
    UpdateEditorView();
    return S_OK;
