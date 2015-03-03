@@ -727,6 +727,7 @@ HMENU VPinball::GetMainMenu(int id)
     return GetSubMenu(hmenu, id + ((count > NUM_MENUS) ? 1 : 0)); // MDI has added its stuff (table icon for first menu item)
 }
 
+
 void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
 {
    CComObject<PinTable> *ptCur;
@@ -1209,7 +1210,22 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
                    ShowPermissionError();
                else
                {
-                   /*const DWORD foo =*/ DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_MATERIALDIALOG), m_hwnd, MaterialManagerProc, (size_t)ptCur);
+                   //DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_MATERIALDIALOG), m_hwnd, MaterialManagerProc, (size_t)ptCur);
+                  if ( ptCur->m_hMaterialManager==NULL )
+                  {
+                     ptCur->m_hMaterialManager = CreateDialogParam(g_hinst, MAKEINTRESOURCE(IDD_MATERIALDIALOG), m_hwnd, MaterialManagerProc, (size_t)ptCur);
+                     if( ptCur->m_hMaterialManager!=NULL )
+                     {
+                        char windowName[256];
+                        strcpy_s(windowName, "Material Manager - ");
+                        strncat_s(windowName, ptCur->m_szFileName, 255);
+                        SetWindowText(ptCur->m_hMaterialManager, windowName);
+                        ShowWindow(ptCur->m_hMaterialManager,SW_SHOW);
+                     }
+                  }
+                  else
+                     SwitchToThisWindow(ptCur->m_hMaterialManager,true);
+
                    m_sb.PopulateDropdowns(); // May need to update list of images
                    m_sb.RefreshProperties();
                }
@@ -3139,7 +3155,6 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
         {
             SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
             LVCOLUMN lvcol;
-
             ListView_SetExtendedListViewStyle(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST), LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
             lvcol.mask = LVCF_TEXT | LVCF_WIDTH;
             LocalString ls(IDS_NAME);
@@ -3154,7 +3169,9 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
         }
         case WM_CLOSE:
         {
-            EndDialog(hwndDlg, FALSE);
+            //EndDialog(hwndDlg, FALSE);
+            DestroyWindow(pt->m_hMaterialManager);
+            pt->m_hMaterialManager=NULL;
             break;
         }
 
@@ -3401,12 +3418,18 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
                                     sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST), sel, LVNI_SELECTED);
                                 }
                             }
-                            EndDialog(hwndDlg, TRUE);
+                            //EndDialog(hwndDlg, TRUE);
+                            DestroyWindow(pt->m_hMaterialManager);
+                            pt->m_hMaterialManager=NULL;
+
                             break;
                         }
                         case IDCANCEL:
                         {
-                            EndDialog(hwndDlg, FALSE);
+                            //EndDialog(hwndDlg, FALSE);
+                            DestroyWindow(pt->m_hMaterialManager);
+                            pt->m_hMaterialManager=NULL;
+
                             break;
                         }
                         case IDC_ADD_BUTTON:
@@ -7718,9 +7741,9 @@ int CALLBACK MyCompProc(LPARAM lSortParam1, LPARAM lSortParam2, LPARAM lSortOpti
 
     ListView_GetItemText(lpsd->hwndList, nItem2, lpsd->subItemIndex, buf2, sizeof(buf2));
     if(lpsd->sortUpDown == 1)
-        return(stricmp(buf1, buf2));
+        return(_stricmp(buf1, buf2));
     else
-        return(stricmp(buf1, buf2) * -1);
+        return(_stricmp(buf1, buf2) * -1);
 }
 
 INT_PTR CALLBACK SearchSelectProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
