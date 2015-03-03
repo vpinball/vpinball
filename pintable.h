@@ -694,6 +694,7 @@ END_CONNECTION_POINT_MAP()
 	bool m_fRenderEMReels;
    bool m_overwriteGlobalStereo3D;
    bool m_cameraMode;
+   HWND m_hMaterialManager;
 #ifdef UNUSED_TILT //!! currently unused (see NudgeGetTilt())
 	int m_jolt_amount;       
 	int m_tilt_amount;

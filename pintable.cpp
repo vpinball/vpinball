@@ -750,6 +750,7 @@ PinTable::PinTable()
    m_tblMirrorEnabled = false;
 
    memset(m_szImage,0,MAXTOKEN);
+   m_hMaterialManager=NULL;
 
    m_numMaterials=0;
    HRESULT hr;
