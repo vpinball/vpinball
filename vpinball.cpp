@@ -395,7 +395,7 @@ void VPinball::Init()
    UpdateRecentFileList(NULL);						// update the recent loaded file list
 
    wintimer_init();								    // calibrate the timer routines
-
+   SwitchToThisWindow(m_hwnd,false);
 #ifdef SLINTF
    // see slintf.cpp
    slintf_init();								    // initialize debug console (can be popupped by the following command)
@@ -806,7 +806,7 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
 
          switch(notify)
          {
-         case 0: fShow = !fShow;  //!!?
+         case 0: fShow = fFalse;  //!!?
             break;
          case 1: fShow = fTrue;   //set
             break;
@@ -1224,7 +1224,7 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
                      }
                   }
                   else
-                     SwitchToThisWindow(ptCur->m_hMaterialManager,true);
+                     SwitchToThisWindow(ptCur->m_hMaterialManager,false);
 
                    m_sb.PopulateDropdowns(); // May need to update list of images
                    m_sb.RefreshProperties();
@@ -2031,15 +2031,15 @@ LRESULT CALLBACK VPWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
          SetWindowPos(g_pvp->m_hwndSideBarScroll,NULL,
             0, scrollwindowtop, TOOLBAR_WIDTH + SCROLL_WIDTH, scrollwindowheight, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
 
-         HWND hwndSB = g_pvp->m_sb.GetHWnd();
+//          HWND hwndSB = g_pvp->m_sb.GetHWnd();
          int SBwidth = g_pvp->m_sb.m_maxdialogwidth;
-
-         if (hwndSB && IsWindowVisible(hwndSB))
-         {
-            SetWindowPos(hwndSB,NULL,
-               rc.right - rc.left - SBwidth, 0, SBwidth, rc.bottom - rc.top - statheight, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER);
-         }
-         else
+// 
+//          if (hwndSB && IsWindowVisible(hwndSB))
+//          {
+//             SetWindowPos(hwndSB,NULL,
+//                rc.right - rc.left - SBwidth, 0, SBwidth, rc.bottom - rc.top - statheight, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+//          }
+//          else
          {
             SBwidth = 0;
          }
@@ -2077,6 +2077,13 @@ LRESULT CALLBACK VPWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
          if (scrollwindowheight < si.nMax)
             sidebarwidth += SCROLL_WIDTH;
 
+         RECT smartRect;
+         GetClientRect( g_pvp->m_sb.m_hwndFrame, &smartRect);
+
+         int sbHeight=(rc.bottom-rc.top)-100;
+         int sbX = rc.right-eSmartBrowserWidth-20;
+
+         SetWindowPos(g_pvp->m_sb.m_hwndFrame, NULL, sbX,40, eSmartBrowserWidth, sbHeight,SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
          SetWindowPos(g_pvp->m_hwndSideBar,NULL,
             0, 0, sidebarwidth, rc.bottom - rc.top - statheight, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
 
