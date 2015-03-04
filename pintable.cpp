@@ -1485,7 +1485,7 @@ void PinTable::Render(Sur * const psur)
 
    if (m_fBackdrop)
    {
-      Texture * const ppi = GetImage((!g_pvp->m_fBackglassView) ? m_szImage : m_szImageBackdrop);
+      Texture * const ppi = GetImage((!g_pvp->m_fBackglassView) ? m_szImage : m_BG_szImage[m_BG_current_set]);
 
       if (ppi)
       {
@@ -2796,7 +2796,8 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
    bw.WriteBool(FID(OGST), m_overwriteGlobalStereo3D );
 
    bw.WriteString(FID(IMAG), m_szImage);
-   bw.WriteString(FID(BIMG), m_szImageBackdrop);
+   bw.WriteString(FID(BIMG), m_BG_szImage[0]);
+   bw.WriteString(FID(BIMF), m_BG_szImage[1]);
    bw.WriteBool(FID(BIMN), m_ImageBackdropNightDay);
    bw.WriteString(FID(IMCG), m_szImageColorGrade);
    bw.WriteString(FID(BLIM), m_szBallImage);
@@ -3227,7 +3228,8 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 
 void PinTable::SetLoadDefaults()
 {
-   m_szImageBackdrop[0] = 0;
+   for(unsigned int i = 0; i < NUM_BG_SETS; ++i)
+	   m_BG_szImage[i][0] = 0;
    m_szImageColorGrade[0] = 0;
    m_szBallImage[0] = 0;
    m_szBallImageFront[0] = 0;
@@ -3534,7 +3536,11 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(BIMG))
    {
-      pbr->GetString(m_szImageBackdrop);
+      pbr->GetString(m_BG_szImage[0]);
+   }
+   else if (id == FID(BIMF))
+   {
+      pbr->GetString(m_BG_szImage[1]);
    }
    else if (id == FID(BIMN))
    {
@@ -6626,6 +6632,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
    case DISPID_Image3:
    case DISPID_Image4:
    case DISPID_Image5:
+   case DISPID_Image6:
       {
          cvar = m_vimage.size();
 
@@ -6855,6 +6862,7 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
    case DISPID_Image3:
    case DISPID_Image4:
    case DISPID_Image5:
+   case DISPID_Image6:
       {
          if (dwCookie == -1)
          {
@@ -7624,21 +7632,48 @@ STDMETHODIMP PinTable::put_BackdropImageApplyNightDay(VARIANT_BOOL newVal )
     return S_OK;
 }
 
-STDMETHODIMP PinTable::get_BackdropImage(BSTR *pVal)
+STDMETHODIMP PinTable::get_BackdropImage_DT(BSTR *pVal)
 {
    WCHAR wz[512];
 
-   MultiByteToWideChar(CP_ACP, 0, m_szImageBackdrop, -1, wz, 32);
+   MultiByteToWideChar(CP_ACP, 0, m_BG_szImage[0], -1, wz, 32);
    *pVal = SysAllocString(wz);
 
    return S_OK;
 }
 
-STDMETHODIMP PinTable::put_BackdropImage(BSTR newVal)
+STDMETHODIMP PinTable::put_BackdropImage_DT(BSTR newVal)
 {
    STARTUNDO
 
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_szImageBackdrop, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_BG_szImage[0], 32, NULL, NULL);
+
+   if (!g_pplayer)
+   {
+      CreateGDIBackdrop();
+      SetDirtyDraw();
+   }
+
+   STOPUNDO
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::get_BackdropImage_FS(BSTR *pVal)
+{
+   WCHAR wz[512];
+
+   MultiByteToWideChar(CP_ACP, 0, m_BG_szImage[1], -1, wz, 32);
+   *pVal = SysAllocString(wz);
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_BackdropImage_FS(BSTR newVal)
+{
+   STARTUNDO
+
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_BG_szImage[1], 32, NULL, NULL);
 
    if (!g_pplayer)
    {

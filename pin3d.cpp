@@ -282,7 +282,9 @@ void Pin3D::DrawBackground()
 	SetTextureFilter(0, TEXTURE_MODE_TRILINEAR );
 	
 	PinTable * const ptable = g_pplayer->m_ptable;
-	Texture * const pin = ptable->GetDecalsEnabled() ? ptable->GetImage((char *)ptable->m_szImageBackdrop) : NULL;
+	Texture * const pin = ptable->GetDecalsEnabled()
+		? ptable->GetImage(ptable->m_BG_szImage[ptable->m_BG_current_set])
+		: NULL;
 	if (pin)
 	{
 		m_pd3dDevice->Clear( 0, NULL, D3DCLEAR_ZBUFFER, 0, 1.0f, 0L );
