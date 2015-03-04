@@ -133,8 +133,10 @@ public:
 	STDMETHOD(put_SlopeMin)(/*[in]*/ float newVal);
 	STDMETHOD(get_ColorGradeImage)(/*[out, retval]*/ BSTR *pVal);
 	STDMETHOD(put_ColorGradeImage)(/*[in]*/ BSTR newVal);
-	STDMETHOD(get_BackdropImage)(/*[out, retval]*/ BSTR *pVal);
-	STDMETHOD(put_BackdropImage)(/*[in]*/ BSTR newVal);
+	STDMETHOD(get_BackdropImage_DT)(/*[out, retval]*/ BSTR *pVal);
+	STDMETHOD(put_BackdropImage_DT)(/*[in]*/ BSTR newVal);
+	STDMETHOD(get_BackdropImage_FS)(/*[out, retval]*/ BSTR *pVal);
+	STDMETHOD(put_BackdropImage_FS)(/*[in]*/ BSTR newVal);
 	STDMETHOD(get_BackdropImageApplyNightDay)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_BackdropImageApplyNightDay)(/*[in]*/ VARIANT_BOOL newVal);
 	STDMETHOD(get_BackdropColor)(/*[out, retval]*/ OLE_COLOR *pVal);
@@ -549,6 +551,7 @@ END_CONNECTION_POINT_MAP()
 	float m_BG_xlatex[NUM_BG_SETS];
 	float m_BG_xlatey[NUM_BG_SETS];
     float m_BG_xlatez[NUM_BG_SETS];
+	char m_BG_szImage[NUM_BG_SETS][MAXTOKEN];
 
 	float m_angletiltMax;
 	float m_angletiltMin;
@@ -587,7 +590,6 @@ END_CONNECTION_POINT_MAP()
 	_protectionData	m_protectionData;
 
 	char m_szImage[MAXTOKEN];
-	char m_szImageBackdrop[MAXTOKEN];
     char m_szPlayfieldMaterial[32];
 	COLORREF m_colorbackdrop;
 	bool m_ImageBackdropNightDay;
