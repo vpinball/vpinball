@@ -19,12 +19,12 @@
 */
 
 //
-// Regarding 2.) altered for VP: unsigned int as vertex type, const correctness, remember if already init'ed, change vertex cache size to 32, use structs
+// Regarding 2.) altered for VP: templated vertex type, const correctness, remember if already init'ed, change vertex cache size to 32, use structs
 //
 
 // Set these to adjust the performance and result quality
-#define VERTEX_CACHE_SIZE 32
-#define CACHE_FUNCTION_LENGTH 32
+#define VERTEX_CACHE_SIZE 64
+#define CACHE_FUNCTION_LENGTH 64
 
 // The size of these data types affect the memory usage
 typedef unsigned short ScoreType;
@@ -47,8 +47,8 @@ struct VertexData
 };
 
 // The size of the precalculated tables
-#define CACHE_SCORE_TABLE_SIZE 32
-#define VALENCE_SCORE_TABLE_SIZE 32
+#define CACHE_SCORE_TABLE_SIZE 64
+#define VALENCE_SCORE_TABLE_SIZE 16
 #if CACHE_SCORE_TABLE_SIZE < VERTEX_CACHE_SIZE
  #error Vertex score table too small
 #endif
@@ -116,9 +116,10 @@ inline ScoreType findVertexScore(const int numActiveTris,
 }
 
 // The main reordering function
-VertexIndexType* reorderForsyth(const VertexIndexType* const indices,
-                                const int nTriangles,
-                                const int nVertices)
+template <typename T>
+T* reorderForsyth(const T* const indices,
+                  const int nTriangles,
+                  const int nVertices)
 {
 	// The tables need not be inited every time this function
 	// is used. Either call initForsyth from the calling process,
@@ -143,11 +144,11 @@ VertexIndexType* reorderForsyth(const VertexIndexType* const indices,
 
 	bool* const triangleAdded = new bool[nTriangles];
 	ScoreType* const triangleScore = new ScoreType[nTriangles];
-	TriangleIndexType* const outTriangles = new TriangleIndexType[nTriangles];
-	TriangleIndexType* const triangleIndices = new TriangleIndexType[3*nTriangles];
+	T* const outTriangles = new T[nTriangles];
+	T* const triangleIndices = new T[3*nTriangles];
 	memset(triangleAdded, 0, sizeof(bool)*nTriangles);
 	memset(triangleScore, 0, sizeof(ScoreType)*nTriangles);
-	memset(triangleIndices, 0, sizeof(TriangleIndexType)*3*nTriangles);
+	memset(triangleIndices, 0, sizeof(T)*3*nTriangles);
 
 	// Count the triangle array offset for each vertex,
 	// initialize the rest of the data.
@@ -212,6 +213,7 @@ VertexIndexType* reorderForsyth(const VertexIndexType* const indices,
 			// Move all cache entries from the previous position
 			// in the cache to the new target position (i) one
 			// step backwards
+			assert(endpos < VERTEX_CACHE_SIZE+3);
 			for (int j = endpos; j > i; j--) {
 				cache[j] = cache[j-1];
 				// If this cache slot contains a real
@@ -219,8 +221,7 @@ VertexIndexType* reorderForsyth(const VertexIndexType* const indices,
 				if (cache[j] >= 0)
 					cVertex[cache[j]].cacheTag++;
 			}
-			// Insert the current vertex into its new target
-			// slot
+			// Insert the current vertex into its new target slot
 			cache[i] = v;
 			cVertex[v].cacheTag = i;
 
