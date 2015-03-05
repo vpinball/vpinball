@@ -17,6 +17,7 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 #define TIMER_ID_AUTOSAVE 12345
 #define TIMER_ID_CLOSE_TABLE 12346
 
+Material dummyMaterial; //!!
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -6440,7 +6441,6 @@ bool PinTable::IsMaterialNameUnique( char *name )
     return true;
 }
 
-Material dummyMaterial; //!!
 
 Material* PinTable::GetMaterial( char * const szName) const
 {
