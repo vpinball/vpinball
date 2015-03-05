@@ -365,14 +365,13 @@ void VPinball::Init()
 
    SendMessage(m_hwndStatusBar, SB_SETPARTS, 4, (size_t)foo);	// Initialise Status bar with 4 empty cells
 
+   InitRegValues();									// get default values from registry
+
    m_sb.Init(m_hwnd);								// initialize smartbrowser (Property bar on the right) - see propbrowser.cpp
 
    SendMessage(m_hwnd, WM_SIZE, 0, 0);				// Make our window relay itself out
 
-   InitTools();										// eventually show smartbrowser
-
-   InitRegValues();									// get default values from registry
-
+   InitTools();
    int DSidx1 = 0, DSidx2 = 0;
    GetRegInt("Player", "SoundDevice", &DSidx1);
    GetRegInt("Player", "SoundDeviceBG", &DSidx2);
@@ -395,7 +394,9 @@ void VPinball::Init()
    UpdateRecentFileList(NULL);						// update the recent loaded file list
 
    wintimer_init();								    // calibrate the timer routines
-   SwitchToThisWindow(m_hwnd,false);
+   if ( m_fPropertiesFloating )
+      SetForegroundWindow(m_hwnd);
+
 #ifdef SLINTF
    // see slintf.cpp
    slintf_init();								    // initialize debug console (can be popupped by the following command)
@@ -493,6 +494,7 @@ void VPinball::InitRegValues()
    m_gridSize = GetRegIntWithDefault("Editor", "GridSize", 50);
 
    BOOL fAutoSave = GetRegIntWithDefault("Editor", "AutoSaveOn", fTrue);
+   m_fPropertiesFloating = (bool)GetRegIntWithDefault("Editor", "PropertiesFloating", fTrue);
 
    if (fAutoSave)
    {
@@ -806,7 +808,7 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
 
          switch(notify)
          {
-         case 0: fShow = fFalse;  //!!?
+         case 0: fShow = !fShow; //!!?
             break;
          case 1: fShow = fTrue;   //set
             break;
@@ -1224,7 +1226,7 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
                      }
                   }
                   else
-                     SwitchToThisWindow(ptCur->m_hMaterialManager,false);
+                      SetForegroundWindow(ptCur->m_hMaterialManager);
 
                    m_sb.PopulateDropdowns(); // May need to update list of images
                    m_sb.RefreshProperties();
@@ -2031,17 +2033,20 @@ LRESULT CALLBACK VPWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
          SetWindowPos(g_pvp->m_hwndSideBarScroll,NULL,
             0, scrollwindowtop, TOOLBAR_WIDTH + SCROLL_WIDTH, scrollwindowheight, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
 
-//          HWND hwndSB = g_pvp->m_sb.GetHWnd();
+         HWND hwndSB = g_pvp->m_sb.GetHWnd();
          int SBwidth = g_pvp->m_sb.m_maxdialogwidth;
-// 
-//          if (hwndSB && IsWindowVisible(hwndSB))
-//          {
-//             SetWindowPos(hwndSB,NULL,
-//                rc.right - rc.left - SBwidth, 0, SBwidth, rc.bottom - rc.top - statheight, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER);
-//          }
-//          else
+
+         if (g_pvp->m_fPropertiesFloating)
+             SBwidth = 0;
+         else
          {
-            SBwidth = 0;
+             if (g_pvp->m_sb.GetVisible())
+             {
+                SetWindowPos(hwndSB,NULL,
+                   rc.right - rc.left - SBwidth, 0, SBwidth, rc.bottom - rc.top - statheight, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+             }
+             else
+                 SBwidth=0;
          }
 
          // Set scroll info for the palette scrollbar
@@ -2077,13 +2082,16 @@ LRESULT CALLBACK VPWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
          if (scrollwindowheight < si.nMax)
             sidebarwidth += SCROLL_WIDTH;
 
-         RECT smartRect;
-         GetClientRect( g_pvp->m_sb.m_hwndFrame, &smartRect);
+         if (g_pvp->m_fPropertiesFloating && hwndSB)
+         {
+             RECT smartRect;
+             GetClientRect(hwndSB, &smartRect);
 
-         int sbHeight=(rc.bottom-rc.top)-100;
-         int sbX = rc.right-eSmartBrowserWidth-20;
+             int sbHeight = (rc.bottom - rc.top) - 100;
+             int sbX = rc.right - eSmartBrowserWidth - 20;
 
-         SetWindowPos(g_pvp->m_sb.m_hwndFrame, NULL, sbX,40, eSmartBrowserWidth, sbHeight,SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+             SetWindowPos(hwndSB, NULL, sbX, 40, eSmartBrowserWidth, sbHeight, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+         }
          SetWindowPos(g_pvp->m_hwndSideBar,NULL,
             0, 0, sidebarwidth, rc.bottom - rc.top - statheight, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
 
@@ -7244,6 +7252,9 @@ INT_PTR CALLBACK EditorOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARA
          int fautosave = GetRegIntWithDefault("Editor", "AutoSaveOn", 1);
          SendDlgItemMessage(hwndDlg, IDC_AUTOSAVE, BM_SETCHECK, fautosave ? BST_CHECKED : BST_UNCHECKED, 0);
 
+         int propFloating = GetRegIntWithDefault("Editor", "PropertiesFloating", 1);
+         SendDlgItemMessage(hwndDlg, IDC_PROP_FLOAT_CHECK, BM_SETCHECK, propFloating ? BST_CHECKED : BST_UNCHECKED, 0);
+
          int fautosavetime = GetRegIntWithDefault("Editor", "AutoSaveTime", AUTOSAVE_DEFAULT_TIME);
          SetDlgItemInt(hwndDlg, IDC_AUTOSAVE_MINUTES, fautosavetime, FALSE);
 
@@ -7276,6 +7287,9 @@ INT_PTR CALLBACK EditorOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARA
                   // auto save
                   checked = (SendDlgItemMessage(hwndDlg, IDC_AUTOSAVE_MINUTES, BM_GETCHECK, 0, 0) == BST_CHECKED);
                   SetRegValueBool("Editor", "AutoSaveOn", checked);
+
+                  checked = (SendDlgItemMessage(hwndDlg, IDC_PROP_FLOAT_CHECK, BM_GETCHECK, 0, 0) == BST_CHECKED);
+                  SetRegValueBool("Editor", "PropertiesFloating", checked);
 
                   int autosavetime = GetDlgItemInt(hwndDlg, IDC_AUTOSAVE_MINUTES, NULL, FALSE);
                   SetRegValueInt("Editor", "AutoSaveTime", autosavetime);

@@ -3749,7 +3749,7 @@ LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
             hid_shutdown();
             // modification to m_vedit of each table after playing them must be done here, otherwise VP will crash (WTF?!)
             playedTable->RestoreLayers();
-
+            SetForegroundWindow(g_pvp->m_hwnd);
 			break;
       }
 
