@@ -19,7 +19,7 @@
 */
 
 //
-// Regarding 2.) altered for VP: unsigned int as vertex type, const correctness, remember if already init'ed, change vertex cache size to 32
+// Regarding 2.) altered for VP: unsigned int as vertex type, const correctness, remember if already init'ed, change vertex cache size to 32, use structs
 //
 
 // Set these to adjust the performance and result quality
@@ -38,6 +38,14 @@ typedef signed char  CachePosType;
 typedef unsigned int TriangleIndexType;
 typedef int          ArrayIndexType;
 
+struct VertexData
+{
+    ArrayIndexType offset;
+    ScoreType lastScore;
+    AdjacencyType numActiveTri;
+    CachePosType cacheTag;
+};
+
 // The size of the precalculated tables
 #define CACHE_SCORE_TABLE_SIZE 32
 #define VALENCE_SCORE_TABLE_SIZE 32
@@ -48,9 +56,6 @@ typedef int          ArrayIndexType;
 // Precalculated tables
 static ScoreType cachePositionScore[CACHE_SCORE_TABLE_SIZE];
 static ScoreType valenceScore[VALENCE_SCORE_TABLE_SIZE];
-
-#define ISADDED(x)  (triangleAdded[(x) >> 3] &  (1 << (x & 7)))
-#define SETADDED(x) (triangleAdded[(x) >> 3] |= (1 << (x & 7)))
 
 // Score function constants
 #define CACHE_DECAY_POWER	1.5
@@ -120,31 +125,27 @@ VertexIndexType* reorderForsyth(const VertexIndexType* const indices,
 	// or just replace the score tables with precalculated values.
 	initForsyth();
 
-	AdjacencyType* const numActiveTris = new AdjacencyType[nVertices];
-	memset(numActiveTris, 0, sizeof(AdjacencyType)*nVertices);
+	VertexData* const cVertex = new VertexData[nVertices];
+	for (int i = 0; i < nVertices; ++i)
+	    cVertex[i].numActiveTri = 0;
 
 	// First scan over the vertex data, count the total number of
 	// occurrances of each vertex
 	for (int i = 0; i < 3*nTriangles; i++) {
-		if (numActiveTris[indices[i]] == MAX_ADJACENCY) {
+		if (cVertex[indices[i]].numActiveTri == MAX_ADJACENCY) {
 			// Unsupported mesh,
 			// vertex shared by too many triangles
-			delete [] numActiveTris;
+			delete [] cVertex;
 			return NULL;
 		}
-		numActiveTris[indices[i]]++;
+		cVertex[indices[i]].numActiveTri++;
 	}
 
-	// Allocate the rest of the arrays
-	ArrayIndexType* const offsets = new ArrayIndexType[nVertices];
-	ScoreType* const lastScore = new ScoreType[nVertices];
-	CachePosType* const cacheTag = new CachePosType[nVertices];
-	memset(cacheTag, 0xFF, sizeof(CachePosType)*nVertices);
-
-	unsigned char* const triangleAdded = new unsigned char[(nTriangles + 7)/8];
+	bool* const triangleAdded = new bool[nTriangles];
 	ScoreType* const triangleScore = new ScoreType[nTriangles];
+	TriangleIndexType* const outTriangles = new TriangleIndexType[nTriangles];
 	TriangleIndexType* const triangleIndices = new TriangleIndexType[3*nTriangles];
-	memset(triangleAdded, 0, sizeof(unsigned char)*((nTriangles + 7)/8));
+	memset(triangleAdded, 0, sizeof(bool)*nTriangles);
 	memset(triangleScore, 0, sizeof(ScoreType)*nTriangles);
 	memset(triangleIndices, 0, sizeof(TriangleIndexType)*3*nTriangles);
 
@@ -152,9 +153,10 @@ VertexIndexType* reorderForsyth(const VertexIndexType* const indices,
 	// initialize the rest of the data.
 	int sum = 0;
 	for (int i = 0; i < nVertices; i++) {
-		offsets[i] = sum;
-		sum += numActiveTris[i];
-		numActiveTris[i] = 0;
+		cVertex[i].offset = sum;
+		sum += cVertex[i].numActiveTri;
+		cVertex[i].numActiveTri = 0;
+		cVertex[i].cacheTag = -1;
 	}
 
 	// Fill the vertex data structures with indices to the triangles
@@ -162,15 +164,16 @@ VertexIndexType* reorderForsyth(const VertexIndexType* const indices,
 	for (int i = 0; i < nTriangles; i++)
 		for (int j = 0; j < 3; j++) {
 			const int v = indices[3*i + j];
-			triangleIndices[offsets[v] + numActiveTris[v]] = i;
-			numActiveTris[v]++;
+			triangleIndices[cVertex[v].offset + cVertex[v].numActiveTri] = i;
+			cVertex[v].numActiveTri++;
 		}
 
 	// Initialize the score for all vertices
 	for (int i = 0; i < nVertices; i++) {
-		lastScore[i] = findVertexScore(numActiveTris[i], cacheTag[i]);
-		for (int j = 0; j < numActiveTris[i]; j++)
-			triangleScore[triangleIndices[offsets[i] + j]] += lastScore[i];
+		cVertex[i].lastScore = findVertexScore(cVertex[i].numActiveTri, cVertex[i].cacheTag);
+		const VertexData &c = cVertex[i];
+		for (int j = 0; j < c.numActiveTri; j++)
+			triangleScore[triangleIndices[c.offset + j]] += c.lastScore;
 	}
 
 	// Find the best triangle
@@ -183,21 +186,18 @@ VertexIndexType* reorderForsyth(const VertexIndexType* const indices,
 			bestTriangle = i;
 		}
 
-	// Allocate the output array
-	TriangleIndexType* const outTriangles = new TriangleIndexType[nTriangles];
-	int outPos = 0;
-
 	// Initialize the cache
 	int cache[VERTEX_CACHE_SIZE + 3];
 	memset(cache, 0xFF, sizeof(int)*(VERTEX_CACHE_SIZE + 3));
 
 	int scanPos = 0;
+	int outPos = 0;
 
 	// Output the currently best triangle, as long as there
 	// are triangles left to output
 	while (bestTriangle >= 0) {
 		// Mark the triangle as added
-		SETADDED(bestTriangle);
+		triangleAdded[bestTriangle] = true;
 		// Output this triangle
 		outTriangles[outPos++] = bestTriangle;
 		for (int i = 0; i < 3; i++) {
@@ -206,7 +206,7 @@ VertexIndexType* reorderForsyth(const VertexIndexType* const indices,
 
 			// Check the current cache position, if it
 			// is in the cache
-			int endpos = cacheTag[v];
+			int endpos = cVertex[v].cacheTag;
 			if (endpos < 0)
 				endpos = VERTEX_CACHE_SIZE + i;
 			// Move all cache entries from the previous position
@@ -217,26 +217,25 @@ VertexIndexType* reorderForsyth(const VertexIndexType* const indices,
 				// If this cache slot contains a real
 				// vertex, update its cache tag
 				if (cache[j] >= 0)
-					cacheTag[cache[j]]++;
+					cVertex[cache[j]].cacheTag++;
 			}
 			// Insert the current vertex into its new target
 			// slot
 			cache[i] = v;
-			cacheTag[v] = i;
+			cVertex[v].cacheTag = i;
 
 			// Find the current triangle in the list of active
 			// triangles and remove it (moving the last
 			// triangle in the list to the slot of this triangle).
-			for (int j = 0; j < numActiveTris[v]; j++) {
-				if (triangleIndices[offsets[v] + j] == bestTriangle) {
-					triangleIndices[offsets[v] + j] =
-					    triangleIndices[
-					        offsets[v] + numActiveTris[v] - 1];
+			const VertexData &c = cVertex[v];
+			for (int j = 0; j < c.numActiveTri; j++) {
+				if (triangleIndices[c.offset + j] == bestTriangle) {
+					triangleIndices[c.offset + j] = triangleIndices[c.offset + c.numActiveTri - 1];
 					break;
 				}
 			}
 			// Shorten the list
-			numActiveTris[v]--;
+			cVertex[v].numActiveTri--;
 		}
 
 		// Update the scores of all triangles in the cache
@@ -247,14 +246,14 @@ VertexIndexType* reorderForsyth(const VertexIndexType* const indices,
 			// This vertex has been pushed outside of the
 			// actual cache
 			if (i >= VERTEX_CACHE_SIZE) {
-				cacheTag[v] = -1;
+				cVertex[v].cacheTag = -1;
 				cache[i] = -1;
 			}
-			const ScoreType newScore = findVertexScore(numActiveTris[v], cacheTag[v]);
-			const ScoreType diff = newScore - lastScore[v];
-			for (int j = 0; j < numActiveTris[v]; j++)
-				triangleScore[triangleIndices[offsets[v] + j]] += diff;
-			lastScore[v] = newScore;
+			const ScoreType newScore = findVertexScore(cVertex[v].numActiveTri, cVertex[v].cacheTag);
+			const ScoreType diff = newScore - cVertex[v].lastScore;
+			for (int j = 0; j < cVertex[v].numActiveTri; j++)
+				triangleScore[triangleIndices[cVertex[v].offset + j]] += diff;
+			cVertex[v].lastScore = newScore;
 		}
 
 		// Find the best triangle referenced by vertices in the cache
@@ -264,8 +263,8 @@ VertexIndexType* reorderForsyth(const VertexIndexType* const indices,
 			if (cache[i] < 0)
 				break;
 			const int v = cache[i];
-			for (int j = 0; j < numActiveTris[v]; j++) {
-				const unsigned int t = triangleIndices[offsets[v] + j];
+			for (int j = 0; j < cVertex[v].numActiveTri; j++) {
+				const unsigned int t = triangleIndices[cVertex[v].offset + j];
 				if (triangleScore[t] > bestScore) {
 					bestTriangle = t;
 					bestScore = triangleScore[t];
@@ -277,7 +276,7 @@ VertexIndexType* reorderForsyth(const VertexIndexType* const indices,
 		// scanning the whole list of triangles
 		if (bestTriangle < 0) {
 			for (; scanPos < nTriangles; scanPos++) {
-				if (!ISADDED(scanPos)) {
+				if (!triangleAdded[scanPos]) {
 					bestTriangle = scanPos;
 					break;
 				}
@@ -286,10 +285,7 @@ VertexIndexType* reorderForsyth(const VertexIndexType* const indices,
 	}
 
 	// Clean up
-	delete [] offsets;
-	delete [] lastScore;
-	delete [] numActiveTris;
-	delete [] cacheTag;
+	delete [] cVertex;
 	delete [] triangleAdded;
 	delete [] triangleScore;
 
