@@ -14,7 +14,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (United States) resources
+// Englisch (USA) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
@@ -565,13 +565,15 @@ BEGIN
     CONTROL         "&Draw Light Center Cross",IDC_DRAW_LIGHTCENTERS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,19,102,10
     CONTROL         "Auto-&Save Tables Every",IDC_AUTOSAVE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,33,93,10
     EDITTEXT        IDC_AUTOSAVE_MINUTES,102,32,25,12,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Grid size",IDC_STATIC,7,61,50,8
-    EDITTEXT        IDC_GRID_SIZE,60,59,27,12,ES_AUTOHSCROLL
-    DEFPUSHBUTTON   "OK",IDOK,67,86,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,128,86,50,14
+    LTEXT           "Grid size",IDC_STATIC,117,63,29,8
+    EDITTEXT        IDC_GRID_SIZE,149,61,27,12,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,67,81,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,128,81,50,14
     LTEXT           "minutes",IDC_STATIC,132,33,25,8
     CONTROL         "Properties Menu floating (needs restart)",IDC_PROP_FLOAT_CHECK,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,47,139,10
+    CONTROL         "Custom2",IDC_COLOR,"ColorControl",WS_TABSTOP,78,60,32,16
+    LTEXT           "Default Material Color",IDC_STATIC,7,64,68,8
 END
 
 IDD_COLLECTDIALOG DIALOGEX 0, 0, 316, 167
@@ -2457,7 +2459,7 @@ BEGIN
     IDS_STEP                "Step"
 END
 
-#endif    // English (United States) resources
+#endif    // Englisch (USA) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
