@@ -139,7 +139,7 @@ float4 ps_main_fb_bloom( in VS_OUTPUT_2D IN) : COLOR
 
 float4 ps_main_fb_tonemap_AO( in VS_OUTPUT_2D IN) : COLOR
 {
-    const float3 result = FBToneMap(tex2Dlod(texSampler5, float4(IN.tex0, 0.,0.)).xyz)
+    const float3 result = FBToneMap(tex2Dlod(texSampler5, float4(IN.tex0, 0.,0.)).xyz) // moving AO before tonemap does not really change the look
            * tex2Dlod(texSampler3, float4(IN.tex0/*-w_h_height.xy*/, 0.,0.)).x // omitting the shift blurs over 2x2 window
            + tex2Dlod(texSamplerBloom, float4(IN.tex0, 0.,0.)).xyz;
     return float4(FBColorGrade(FBGamma(saturate(result))), 1.0);
@@ -153,7 +153,7 @@ float4 ps_main_fb_tonemap_no_filter( in VS_OUTPUT_2D IN) : COLOR
 
 float4 ps_main_fb_tonemap_AO_no_filter( in VS_OUTPUT_2D IN) : COLOR
 {
-    const float3 result = FBToneMap(tex2Dlod(texSampler4, float4(IN.tex0+w_h_height.xy, 0.,0.)).xyz)
+    const float3 result = FBToneMap(tex2Dlod(texSampler4, float4(IN.tex0+w_h_height.xy, 0.,0.)).xyz) // moving AO before tonemap does not really change the look
            * tex2Dlod(texSampler3, float4(IN.tex0/*-w_h_height.xy*/, 0.,0.)).x // omitting the shift blurs over 2x2 window
 	   + tex2Dlod(texSamplerBloom, float4(IN.tex0, 0.,0.)).xyz;
     return float4(FBColorGrade(FBGamma(saturate(result))), 1.0);
