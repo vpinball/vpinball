@@ -62,14 +62,24 @@ void SmartBrowser::Init(HWND hwndParent)
    wcex.hbrBackground = (HBRUSH)(COLOR_BTNFACE + 1);
    RegisterClassEx(&wcex);
 
-   RECT rectParent;
-   GetWindowRect(hwndParent, &rectParent);
-   int x = rectParent.right-eSmartBrowserWidth-20;
-   int y = 40;
-   int height = (rectParent.bottom-rectParent.top)-100;
-   m_hwndFrame = CreateWindowEx(0, "Properties", "Properties",
-      WS_OVERLAPPED | WS_SYSMENU | WS_MINIMIZEBOX | WS_SIZEBOX | WS_CAPTION,
-      x, y, eSmartBrowserWidth, height, hwndParent, NULL, g_hinst, this);
+   if ( g_pvp->m_fPropertiesFloating )
+   {
+       RECT rectParent;
+       GetWindowRect(hwndParent, &rectParent);
+       int x = rectParent.right - eSmartBrowserWidth - 20;
+       int y = 40;
+       int height = (rectParent.bottom - rectParent.top) - 100;
+
+       m_hwndFrame = CreateWindowEx(0, "Properties", "Properties",
+           WS_OVERLAPPED | WS_SYSMENU | WS_MINIMIZEBOX | WS_SIZEBOX | WS_CAPTION,
+           x, y, eSmartBrowserWidth, height, hwndParent, NULL, g_hinst, this);
+   }
+   else
+   {
+       m_hwndFrame = CreateWindowEx(0, "Properties", "Properties",
+           WS_CHILD | WS_BORDER,
+           10, 0, 150, 500, hwndParent, NULL, g_hinst, this);
+   }
 
    m_hfontHeader = CreateFont(-18, 0, 0, 0, FW_MEDIUM, FALSE, FALSE, FALSE,
       DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
@@ -228,10 +238,19 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, Vector<ISelect> *pvsel)
       LocalString ls(pproppane->titlestringid);
       char *szCaption = ls.m_szbuffer;
       pexinfo->m_fHasCaption = (pproppane->titlestringid != 0);
-
-      HWND hwndExpand = CreateWindowEx(WS_EX_TOOLWINDOW, "ExpandoControl", szCaption,
-         WS_CHILD /*| WS_VISIBLE *//*| WS_BORDER*/,
-         2, EXPANDO_Y_OFFSET, eSmartBrowserWidth-5, 300, m_hwndFrame, NULL, g_hinst, pexinfo);
+      HWND hwndExpand =NULL;
+      if (g_pvp->m_fPropertiesFloating)
+      {
+          hwndExpand = CreateWindowEx(WS_EX_TOOLWINDOW, "ExpandoControl", szCaption,
+              WS_CHILD /*| WS_VISIBLE *//*| WS_BORDER*/,
+              2, EXPANDO_Y_OFFSET, eSmartBrowserWidth - 5, 300, m_hwndFrame, NULL, g_hinst, pexinfo);
+      }
+      else
+      {
+          hwndExpand = CreateWindowEx(WS_EX_TOOLWINDOW, "ExpandoControl", szCaption,
+              WS_CHILD /*| WS_VISIBLE *//*| WS_BORDER*/,
+              2, EXPANDO_Y_OFFSET, 150 - 5, 300, m_hwndFrame, NULL, g_hinst, pexinfo);
+      }
 
       m_vhwndExpand.push_back(hwndExpand);
 
@@ -453,17 +472,11 @@ void SmartBrowser::RefreshProperties()
 
 void SmartBrowser::SetVisible(BOOL fVisible)
 {
-   if( m_hwndFrame )
-      ShowWindow(m_hwndFrame, fVisible ? SW_SHOW : SW_HIDE);
-   else if( fVisible==TRUE )
-      Init(g_pvp->m_hwnd);
+    ShowWindow(m_hwndFrame, fVisible ? SW_SHOW : SW_HIDE);
 }
 
 BOOL SmartBrowser::GetVisible()
 {
-   if( m_hwndFrame==NULL)
-      return FALSE;
-
    return IsWindowVisible(m_hwndFrame);
 }
 
@@ -880,19 +893,6 @@ INT_PTR CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
    case WM_DESTROY:
       {
-//          g_pvp->m_sb.m_hwndFrame=NULL;
-//          TBBUTTONINFO tbinfo;
-//          ZeroMemory(&tbinfo,sizeof(TBBUTTONINFO));
-//          tbinfo.cbSize = sizeof(TBBUTTONINFO);
-//          tbinfo.dwMask = TBIF_STATE;
-//          SendMessage(g_pvp->m_hwndToolbarMain,TB_GETBUTTONINFO,ID_EDIT_PROPERTIES,(size_t)&tbinfo);
-// 
-//          if ((tbinfo.fsState & TBSTATE_CHECKED) != 0)
-//          {
-//             tbinfo.fsState ^= TBSTATE_CHECKED;
-//          }
-// 
-//          SendMessage(g_pvp->m_hwndToolbarMain,TB_SETBUTTONINFO,ID_EDIT_PROPERTIES,(size_t)&tbinfo);
          return FALSE;
          break;
 
@@ -1125,7 +1125,10 @@ LRESULT CALLBACK SBFrameProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
    case WM_CLOSE:
       {
-         return TRUE;
+          if (g_pvp->m_fPropertiesFloating)
+          {
+              return TRUE;
+          }
          break;
       }
    case WM_PAINT:

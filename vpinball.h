@@ -148,6 +148,7 @@ public:
 
     HMENU GetMainMenu(int id);
 
+    bool m_fPropertiesFloating;
 private:
 	char m_szRecentTableList[LAST_OPENED_TABLE_COUNT+1][MAX_PATH];
 
