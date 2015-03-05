@@ -22,31 +22,27 @@
 // Regarding 2.) altered for VP: unsigned int as vertex type, const correctness, remember if already init'ed, change vertex cache size to 32
 //
 
-#define __STDC_LIMIT_MACROS
-#include <stdint.h>
-#include <math.h>
-
 // Set these to adjust the performance and result quality
 #define VERTEX_CACHE_SIZE 32
 #define CACHE_FUNCTION_LENGTH 32
 
 // The size of these data types affect the memory usage
-typedef uint16_t ScoreType;
+typedef unsigned short ScoreType;
 #define SCORE_SCALING 7281
 
-typedef uint8_t AdjacencyType;
-#define MAX_ADJACENCY UINT8_MAX
+typedef unsigned char AdjacencyType;
+#define MAX_ADJACENCY 0xffui8
 
 typedef unsigned int VertexIndexType;
-typedef int8_t  CachePosType;
+typedef signed char  CachePosType;
 typedef unsigned int TriangleIndexType;
-typedef int32_t ArrayIndexType;
+typedef int          ArrayIndexType;
 
 // The size of the precalculated tables
 #define CACHE_SCORE_TABLE_SIZE 32
 #define VALENCE_SCORE_TABLE_SIZE 32
 #if CACHE_SCORE_TABLE_SIZE < VERTEX_CACHE_SIZE
-#error Vertex score table too small
+ #error Vertex score table too small
 #endif
 
 // Precalculated tables
@@ -80,8 +76,8 @@ inline void initForsyth() {
 			score = LAST_TRI_SCORE;
 		} else {
 			// Points for being high in the cache.
-			const float scaler = 1.0f / (CACHE_FUNCTION_LENGTH - 3);
-			score = 1.0f - (i - 3) * scaler;
+			const float scaler = 1.0f / (float)(CACHE_FUNCTION_LENGTH - 3);
+			score = 1.0f - (float)(i - 3) * scaler;
 			score = powf(score, CACHE_DECAY_POWER);
 		}
 		cachePositionScore[i] = (ScoreType) (SCORE_SCALING * score);
@@ -105,14 +101,12 @@ inline ScoreType findVertexScore(const int numActiveTris,
 		// No triangles need this vertex!
 		return 0;
 
-	ScoreType score = 0;
-	if (cachePosition < 0) {
-		// Vertex is not in LRU cache - no score
-	} else
-		score = cachePositionScore[cachePosition];
+	ScoreType score = (cachePosition < 0) ? 0 // Vertex is not in LRU cache - no score
+	                  : cachePositionScore[cachePosition];
 
 	if (numActiveTris < VALENCE_SCORE_TABLE_SIZE)
 		score += valenceScore[numActiveTris];
+
 	return score;
 }
 
@@ -145,11 +139,12 @@ VertexIndexType* reorderForsyth(const VertexIndexType* const indices,
 	ArrayIndexType* const offsets = new ArrayIndexType[nVertices];
 	ScoreType* const lastScore = new ScoreType[nVertices];
 	CachePosType* const cacheTag = new CachePosType[nVertices];
+	memset(cacheTag, 0xFF, sizeof(CachePosType)*nVertices);
 
-	uint8_t* const triangleAdded = new uint8_t[(nTriangles + 7)/8];
+	unsigned char* const triangleAdded = new unsigned char[(nTriangles + 7)/8];
 	ScoreType* const triangleScore = new ScoreType[nTriangles];
 	TriangleIndexType* const triangleIndices = new TriangleIndexType[3*nTriangles];
-	memset(triangleAdded, 0, sizeof(uint8_t)*((nTriangles + 7)/8));
+	memset(triangleAdded, 0, sizeof(unsigned char)*((nTriangles + 7)/8));
 	memset(triangleScore, 0, sizeof(ScoreType)*nTriangles);
 	memset(triangleIndices, 0, sizeof(TriangleIndexType)*3*nTriangles);
 
@@ -160,7 +155,6 @@ VertexIndexType* reorderForsyth(const VertexIndexType* const indices,
 		offsets[i] = sum;
 		sum += numActiveTris[i];
 		numActiveTris[i] = 0;
-		cacheTag[i] = -1;
 	}
 
 	// Fill the vertex data structures with indices to the triangles
@@ -183,12 +177,11 @@ VertexIndexType* reorderForsyth(const VertexIndexType* const indices,
 	int bestTriangle = -1;
 	int bestScore = -1;
 
-	for (int i = 0; i < nTriangles; i++) {
+	for (int i = 0; i < nTriangles; i++)
 		if (triangleScore[i] > bestScore) {
 			bestScore = triangleScore[i];
 			bestTriangle = i;
 		}
-	}
 
 	// Allocate the output array
 	TriangleIndexType* const outTriangles = new TriangleIndexType[nTriangles];
@@ -196,8 +189,7 @@ VertexIndexType* reorderForsyth(const VertexIndexType* const indices,
 
 	// Initialize the cache
 	int cache[VERTEX_CACHE_SIZE + 3];
-	for (int i = 0; i < VERTEX_CACHE_SIZE + 3; i++)
-		cache[i] = -1;
+	memset(cache, 0xFF, sizeof(int)*(VERTEX_CACHE_SIZE + 3));
 
 	int scanPos = 0;
 
@@ -246,6 +238,7 @@ VertexIndexType* reorderForsyth(const VertexIndexType* const indices,
 			// Shorten the list
 			numActiveTris[v]--;
 		}
+
 		// Update the scores of all triangles in the cache
 		for (int i = 0; i < VERTEX_CACHE_SIZE + 3; i++) {
 			const int v = cache[i];
@@ -257,13 +250,13 @@ VertexIndexType* reorderForsyth(const VertexIndexType* const indices,
 				cacheTag[v] = -1;
 				cache[i] = -1;
 			}
-			const ScoreType newScore = findVertexScore(numActiveTris[v],
-			                                     cacheTag[v]);
+			const ScoreType newScore = findVertexScore(numActiveTris[v], cacheTag[v]);
 			const ScoreType diff = newScore - lastScore[v];
 			for (int j = 0; j < numActiveTris[v]; j++)
 				triangleScore[triangleIndices[offsets[v] + j]] += diff;
 			lastScore[v] = newScore;
 		}
+
 		// Find the best triangle referenced by vertices in the cache
 		bestTriangle = -1;
 		bestScore = -1;
@@ -279,6 +272,7 @@ VertexIndexType* reorderForsyth(const VertexIndexType* const indices,
 				}
 			}
 		}
+
 		// If no active triangle was found at all, continue
 		// scanning the whole list of triangles
 		if (bestTriangle < 0) {
