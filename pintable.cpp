@@ -2312,7 +2312,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
                   IEditable *piedit = m_vedit.ElementAt(i);
                   ItemTypeEnum type = piedit->GetItemType();
                   pstmItem->Write(&type, sizeof(int), &writ);
-                  hr = piedit->SaveData(pstmItem, hch, hkey);
+                  hr = piedit->SaveData(pstmItem, NULL, NULL);
                   pstmItem->Release();
                   pstmItem = NULL;
                   //if(FAILED(hr)) goto Error;
@@ -2992,7 +2992,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
             hr = pstmVersion->Read(&version, sizeof(int), &read);
             CryptHashData(hch, (BYTE *)&version, sizeof(int), 0);
             pstmVersion->Release();
-            if (version >= BEYOND_FILE_FORMAT_VERSION)
+            if (version > CURRENT_FILE_FORMAT_VERSION)
             {
                LocalString ls2(IDS_WRONGFILEVERSION);
                ShowError(ls2.m_szbuffer);
@@ -3001,6 +3001,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
                pstgData->Release();
                DestroyWindow(hwndProgressBar);
                g_pvp->SetCursorCur(NULL, IDC_ARROW);
+	       return -1;
             }
 
             // Create a block cipher session key based on the hash of the password.
@@ -3045,7 +3046,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 
                   //AddSpriteProjItem();
                   int id = 0; // VBA id for this item
-                  hr = piedit->InitLoad(pstmItem, this, &id, version, hch, hkey);
+                  hr = piedit->InitLoad(pstmItem, this, &id, version, (version < CURRENT_FILE_FORMAT_VERSION) ? hch : NULL, (version < CURRENT_FILE_FORMAT_VERSION) ? hkey : NULL);
                   piedit->InitVBA(fFalse, id, NULL);
                   pstmItem->Release();
                   pstmItem = NULL;
