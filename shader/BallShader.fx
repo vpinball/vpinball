@@ -202,7 +202,7 @@ float3 ballLightLoop(float3 pos, float3 N, float3 V, float3 diffuse, float3 glos
    if(specularMax > 0.0)
       color += specular; //!! blend? //!! Fresnel with 1st layer?
   
-   return /*Gamma(ToneMap(*/cAmbient_LightRange.xyz + color/*))*/;
+   return /*Gamma(ToneMap(*/color/*))*/;
 }
 
 
