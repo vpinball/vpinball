@@ -494,7 +494,7 @@ void VPinball::InitRegValues()
    m_gridSize = GetRegIntWithDefault("Editor", "GridSize", 50);
 
    BOOL fAutoSave = GetRegIntWithDefault("Editor", "AutoSaveOn", fTrue);
-   m_fPropertiesFloating = (bool)GetRegIntWithDefault("Editor", "PropertiesFloating", fTrue);
+   m_fPropertiesFloating = !!GetRegIntWithDefault("Editor", "PropertiesFloating", fTrue);
 
    if (fAutoSave)
    {
@@ -1531,9 +1531,9 @@ void VPinball::LoadFileName(char *szFileName)
          err = GetLastError();
 
       UpdateRecentFileList(szFileName);
-   }
 
-   SetEnableToolbar();
+      SetEnableToolbar();
+   }
 }
 
 CComObject<PinTable> *VPinball::GetActiveTable()

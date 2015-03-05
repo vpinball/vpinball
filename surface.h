@@ -33,7 +33,7 @@ public:
 	bool m_fIsBottomSolid; //is the bottom closed (lower side of the 'cube') or not (legacy behavior has bottom open, e.g. balls can drop into walls from below, or leave them if inside walls (if bottom area is large enough of course))
 	bool m_fSlingshotAnimation;
     bool m_fDisableLighting;
-    bool m_fUseOneVBuffer;
+    //bool m_fUseOneVBuffer;
 	bool m_fVisible;
 	bool m_fHitEvent;
 
