@@ -6,7 +6,7 @@ VP 10.0.0 Changelog
   most existing VP9 and VP8 tables will not work correctly or will even output script errors when run, -but they will load-, so you can reuse all existing work!
 
   -> TL.DR up-front conversion hints:
-     - pull lightsource->ambient down to 0,0,0 (otherwise table will look 'hazy')
+     - pull lightsource->ambient down to 0,0,0 (or at least a small value to avoid loss in fidelity of the colors)
      - crank up lightsource->emission to 255,255,255 and tweak the color from there (to get a good contrast on the shading)
      - tweak the lightsource->height and the two emission-scales
      - if doing nightmods, try to avoid manually toning down all images and materials, but rather just use the light emission settings
@@ -151,7 +151,6 @@ VP 10.0.0 Changelog
   just shift-left click on the element and you can manipulate only that element. Unchecking the 'Group elements together' flag disable this feature for this collection.
 
 - remove old shadowing code and replace it with optional screen space ambient occlusion (via the global video preferences and also the table options)
-  the old 'casts shadow' setting is still in the UI, but is currently disabled as it is always true for now
 
 - its not necessary anymore to manually override the texture filtering quality in the global gfx cards options (NVIDIA control panel, etc)
   if you need HQ filtering, please only use the checkbox in the VP video preferences instead

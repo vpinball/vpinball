@@ -157,7 +157,6 @@ void Gate::SetDefaults(bool fromMouseClick)
        m_d.m_twoWay = iTmp == 0 ? false : true;
    else
        m_d.m_twoWay = true;
-
 }
 
 

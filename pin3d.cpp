@@ -341,7 +341,10 @@ void Pin3D::InitLights()
 	}
     m_pd3dDevice->basicShader->SetValue("packedLights", l, sizeof(CLight)*MAX_LIGHT_SOURCES);
     
-    const D3DXVECTOR4 amb_lr = convertColor(g_pplayer->m_ptable->m_lightAmbient, g_pplayer->m_ptable->m_lightRange);
+    D3DXVECTOR4 amb_lr = convertColor(g_pplayer->m_ptable->m_lightAmbient, g_pplayer->m_ptable->m_lightRange);
+    amb_lr.x *= g_pplayer->m_ptable->m_globalEmissionScale;
+    amb_lr.y *= g_pplayer->m_ptable->m_globalEmissionScale;
+    amb_lr.z *= g_pplayer->m_ptable->m_globalEmissionScale;
     m_pd3dDevice->basicShader->SetVector("cAmbient_LightRange", &amb_lr);
 }
 

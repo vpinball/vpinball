@@ -41,7 +41,7 @@ float4 Roughness_WrapL_Edge_IsMetal = float4(4.0, 0.5, 1.0, 0.0); // w in [0..1]
 
 float3 FresnelSchlick(const float3 spec, const float LdotH, const float edge)
 {
-    return spec + (float3(edge,edge,edge) - spec) * pow(1.0 - LdotH, 5);
+    return spec + (float3(edge,edge,edge) - spec) * pow(1.0 - LdotH, 5); // UE4: float3(edge,edge,edge) = saturate(50.0*spec.g)
 }
 
 float3 DoPointLight(const float3 pos, const float3 N, const float3 V, const float3 diffuse, const float3 glossy, const float edge, const float glossyPower, const int i) 
@@ -58,7 +58,6 @@ float3 DoPointLight(const float3 pos, const float3 N, const float3 V, const floa
    // compute diffuse color (lambert with optional rim/wrap component)
    if((Roughness_WrapL_Edge_IsMetal.w == 0.0) && (NdotL + Roughness_WrapL_Edge_IsMetal.y > 0.0))
       Out = diffuse * ((NdotL + Roughness_WrapL_Edge_IsMetal.y) / ((1.0+Roughness_WrapL_Edge_IsMetal.y) * (1.0+Roughness_WrapL_Edge_IsMetal.y)));
- 
     
    // add glossy component (modified ashikhmin/blinn bastard), not fully energy conserving, but good enough
    if(NdotL > 0.0)
@@ -77,7 +76,11 @@ float3 DoPointLight(const float3 pos, const float3 N, const float3 V, const floa
    const float sqrl_lightDir = dot(lightDir,lightDir); // tweaked falloff to have ranged lightsources
    float fAtten = saturate(1.0 - sqrl_lightDir*sqrl_lightDir/(cAmbient_LightRange.w*cAmbient_LightRange.w*cAmbient_LightRange.w*cAmbient_LightRange.w)); //!! pre-mult/invert cAmbient_LightRange.w?
    fAtten = fAtten*fAtten/(sqrl_lightDir + 1.0);
-   return Out * lights[i].vEmission * fAtten;
+
+   float3 ambient = glossy;
+   if(Roughness_WrapL_Edge_IsMetal.w == 0.0)
+       ambient += diffuse;
+   return Out * lights[i].vEmission * fAtten + ambient * cAmbient_LightRange.xyz;
 }
 
 // does /PI-corrected lookup/final color already
@@ -161,5 +164,5 @@ float3 lightLoop(const float3 pos, float3 N, float3 V, float3 diffuse, float3 gl
 		  color = DoEnvmap2ndLayer(color, pos, N, V, NdotV, Ruv, specular);
    }
 
-   return /*Gamma(ToneMap(*/cAmbient_LightRange.xyz + color/*))*/;
+   return /*Gamma(ToneMap(*/color/*))*/;
 }

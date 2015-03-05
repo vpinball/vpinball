@@ -891,7 +891,10 @@ void Player::InitBallShader()
    memcpy( buf, basicBall, sizeof(Vertex3D_NoTex2)*basicBallNumVertices );
    ballVertexBuffer->unlock();
 
-   const D3DXVECTOR4 amb_lr = convertColor(m_ptable->m_lightAmbient, m_ptable->m_lightRange);
+   D3DXVECTOR4 amb_lr = convertColor(m_ptable->m_lightAmbient, m_ptable->m_lightRange);
+   amb_lr.x *= m_ptable->m_globalEmissionScale;
+   amb_lr.y *= m_ptable->m_globalEmissionScale;
+   amb_lr.z *= m_ptable->m_globalEmissionScale;
    ballShader->SetVector("cAmbient_LightRange", &amb_lr);
 }
 
