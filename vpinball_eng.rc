@@ -1302,7 +1302,7 @@ IDD_PROPTABLE_LIGHTSOURCES DIALOGEX 0, 0, 125, 177
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    LTEXT           "Ambient (leave at Black)",IDC_STATIC,7,10,80,9
+    LTEXT           "Ambient (keep this low)",IDC_STATIC,7,10,80,9
     CONTROL         "Custom2",IDC_LIGHTAMBIENT,"ColorControl",WS_TABSTOP,82,7,40,14
     LTEXT           "Light Emission Color",IDC_STATIC,7,25,80,9
     CONTROL         "Custom2",IDC_LIGHT0EMISSION,"ColorControl",WS_TABSTOP,82,22,40,14
