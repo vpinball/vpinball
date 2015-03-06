@@ -3445,6 +3445,44 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
 
                             break;
                         }
+                        case IDC_CLONE_BUTTON:
+                        {
+                           if (ListView_GetSelectedCount(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST)))	// if some items are selected???
+                           {
+                              int sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST), -1, LVNI_SELECTED);
+                              int selCount = ListView_GetSelectedCount(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST));
+                              if (sel == -1)
+                                 break;
+
+                              while (sel != -1)
+                              {
+                                 LVITEM lvitem;
+                                 lvitem.mask = LVIF_PARAM;
+                                 lvitem.iItem = sel;
+                                 lvitem.iSubItem = 0;
+                                 ListView_GetItem(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST), &lvitem);
+                                 Material *pNewMat = new Material();
+                                 Material * const pmat = (Material*)lvitem.lParam;
+                                 pNewMat->m_bIsMetal = pmat->m_bIsMetal;
+                                 pNewMat->m_bOpacityActive = pmat->m_bOpacityActive;
+                                 pNewMat->m_cBase = pmat->m_cBase;
+                                 pNewMat->m_cClearcoat = pmat->m_cClearcoat;
+                                 pNewMat->m_cGlossy = pmat->m_cGlossy;
+                                 pNewMat->m_fEdge = pmat->m_fEdge;
+                                 pNewMat->m_fOpacity = pmat->m_fOpacity;
+                                 pNewMat->m_fRoughness = pmat->m_fRoughness;
+                                 pNewMat->m_fWrapLighting = pmat->m_fWrapLighting;
+                                 memcpy(pNewMat->m_szName, pmat->m_szName, 32);
+                                 pt->AddMaterial(pNewMat);
+                                 pt->AddListMaterial(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST), pNewMat);
+
+                                 sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST), sel, LVNI_SELECTED);
+                              }
+                              g_pvp->m_sb.PopulateDropdowns(); // May need to update list of images
+                              g_pvp->m_sb.RefreshProperties();
+                           }
+                           break;
+                        }
                         case IDCANCEL:
                         {
                             //EndDialog(hwndDlg, FALSE);

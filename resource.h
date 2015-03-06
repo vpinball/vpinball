@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Visual C++ generated include file.
-// Used by vpinball_eng.rc
+// Von Microsoft Visual C++ generierte Includedatei.
+// Verwendet durch vpinball_eng.rc
 //
 #define VP_VERSION_MINOR                0
 #define VP_VERSION_REV                  0
@@ -595,6 +595,7 @@
 #define IDC_DRAW_ORDER_UP               417
 #define IDC_DRAWING_ORDER_DOWN          417
 #define IDC_COL_DOWN_BUTTON             417
+#define IDC_CLONE_BUTTON                417
 #define IDC_JOYCUSTOM3COMBO             418
 #define IDC_BUTTON3                     418
 #define IDC_DRAW_ORDER_DOWN             418
