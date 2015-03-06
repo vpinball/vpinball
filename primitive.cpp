@@ -322,7 +322,7 @@ void Primitive::RecalculateMatrices()
 {
    // scale matrix
    Matrix3D Smatrix;
-   Smatrix.SetScaling( m_d.m_vSize.x, m_d.m_vSize.y, m_d.m_vSize.z * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] );
+   Smatrix.SetScaling( m_d.m_vSize.x, m_d.m_vSize.y, m_d.m_vSize.z );
 
    // translation matrix
    Matrix3D Tmatrix;
@@ -350,6 +350,8 @@ void Primitive::RecalculateMatrices()
    fullMatrix = Smatrix;
    RTmatrix.Multiply(fullMatrix, fullMatrix);
    Tmatrix.Multiply(fullMatrix, fullMatrix);        // fullMatrix = Smatrix * RTmatrix * Tmatrix
+   Smatrix.SetScaling(1.0f, 1.0f, m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]);
+   Smatrix.Multiply(fullMatrix, fullMatrix);
 }
 
 // recalculate vertices for editor display
