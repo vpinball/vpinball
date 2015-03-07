@@ -187,7 +187,9 @@ private:
 //<<<
 
    int customMoverVertexNum;
+   int customMoverIndexNum;
    VertexBuffer *customMoverVBuffer;
+   IndexBuffer  *customMoverIBuffer;
    VertexBuffer *bulbLightVBuffer;
    IndexBuffer  *bulbLightIndexBuffer;
    VertexBuffer *bulbSocketVBuffer;
