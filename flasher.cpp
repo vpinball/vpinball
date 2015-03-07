@@ -6,11 +6,12 @@ Flasher::Flasher()
    m_d.m_IsVisible = true;
    m_d.m_depthBias = 0.0f;
    dynamicVertexBuffer = 0;
+   dynamicIndexBuffer = 0;
    dynamicVertexBufferRegenerate = true;
+   vertices = 0;
    m_propVisual=NULL;
    memset(m_d.m_szImageA,0,MAXTOKEN);
    memset(m_d.m_szImageB,0,MAXTOKEN);
-
 }
 
 Flasher::~Flasher()
@@ -18,6 +19,10 @@ Flasher::~Flasher()
    if(dynamicVertexBuffer) {
       dynamicVertexBuffer->release();
       dynamicVertexBuffer = 0;
+   }
+   if(dynamicIndexBuffer) {
+      dynamicIndexBuffer->release();
+      dynamicIndexBuffer = 0;
    }
 }
 
@@ -337,6 +342,11 @@ void Flasher::EndPlay()
       dynamicVertexBuffer = 0;
       dynamicVertexBufferRegenerate = true;
    }
+   if(dynamicIndexBuffer) 
+   {
+      dynamicIndexBuffer->release();
+      dynamicIndexBuffer = 0;
+   }
    if( vertices )
    {
       delete[] vertices;
@@ -353,8 +363,7 @@ void Flasher::UpdateMesh()
    const float movx = minx+(maxx-minx)*0.5f;
    const float movy = miny+(maxy-miny)*0.5f;
 
-   int offset=0;
-   for (int i=0;i<numPolys;i++, offset+=3)
+   for (int i=0;i<numVertices;i++)
    {
       Matrix3D tempMatrix,RTmatrix,TMatrix,T2Matrix;
       RTmatrix.SetIdentity();
@@ -375,15 +384,11 @@ void Flasher::UpdateMesh()
       tempMatrix.RotateXMatrix(ANGTORAD(m_d.m_rotX));
       tempMatrix.Multiply(RTmatrix, RTmatrix);
 
-      Vertex3D_TexelOnly verts[3];
-      for( int i2=0;i2<3;i2++ )
-      {      
-         memcpy( &verts[i2], &vertices[offset+i2], sizeof(Vertex3D_TexelOnly));
-         T2Matrix.MultiplyVector(verts[i2], verts[i2]);
-         RTmatrix.MultiplyVector(verts[i2], verts[i2]);
-         TMatrix.MultiplyVector(verts[i2], verts[i2]);
-      }
-      memcpy( &buf[offset], verts, sizeof(Vertex3D_TexelOnly)*3 );
+      Vertex3D_TexelOnly vert = vertices[i];
+      T2Matrix.MultiplyVector(vert, vert);
+      RTmatrix.MultiplyVector(vert, vert);
+      TMatrix.MultiplyVector(vert, vert);
+	  buf[i] = vert;
    }
 
    dynamicVertexBuffer->unlock();
@@ -411,13 +416,34 @@ void Flasher::RenderSetup(RenderDevice* pd3dDevice)
       return;
    }
 
+   if( dynamicIndexBuffer )
+      dynamicIndexBuffer->release();
+   pd3dDevice->CreateIndexBuffer( numPolys*3, 0, IndexBuffer::FMT_INDEX16, &dynamicIndexBuffer );
+   NumVideoBytes += numPolys*3*sizeof(WORD);     
+
+   WORD* bufi;
+   dynamicIndexBuffer->lock(0,0,(void**)&bufi, 0);
+   for(unsigned int i = 0; i < numPolys; ++i)
+   {
+	   const Triangle * const ptri = vtri.ElementAt(i);
+
+	   bufi[i*3  ] = ptri->a;
+	   bufi[i*3+1] = ptri->b;
+	   bufi[i*3+2] = ptri->c;
+   }
+   dynamicIndexBuffer->unlock();
+
+   for (int i=0;i<numPolys;i++)
+      delete vtri.ElementAt(i);
+
    if( dynamicVertexBuffer )
       dynamicVertexBuffer->release();
+   pd3dDevice->CreateVertexBuffer( numVertices, USAGE_DYNAMIC, MY_D3DFVF_TEX, &dynamicVertexBuffer );
+   NumVideoBytes += numVertices*sizeof(Vertex3D_TexelOnly);     
 
-   pd3dDevice->CreateVertexBuffer( numPolys*3, USAGE_DYNAMIC, MY_D3DFVF_TEX, &dynamicVertexBuffer );
-   NumVideoBytes += numPolys*3*sizeof(Vertex3D_TexelOnly);     
-
-   vertices = new Vertex3D_TexelOnly[numPolys*3];
+   if (vertices)
+	   delete [] vertices;
+   vertices = new Vertex3D_TexelOnly[numVertices];
 
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
@@ -425,29 +451,19 @@ void Flasher::RenderSetup(RenderDevice* pd3dDevice)
    miny=FLT_MAX;
    maxx=-FLT_MAX;
    maxy=-FLT_MAX;
-   int offset=0;
-   for (int i=0;i<numPolys;i++, offset+=3)
+
+   for (int i=0;i<numVertices;i++)
    {
-      const Triangle * const ptri = vtri.ElementAt(i);
+      const RenderVertex * const pv0 = &vvertex[i];
 
-      const RenderVertex * const pv0 = &vvertex[ptri->a];
-      const RenderVertex * const pv1 = &vvertex[ptri->b];
-      const RenderVertex * const pv2 = &vvertex[ptri->c];
-
-      {
-         vertices[offset  ].x=pv0->x;   vertices[offset  ].y=pv0->y;   vertices[offset  ].z=0;
-         if( pv0->x>maxx ) maxx=pv0->x; if( pv0->x<minx ) minx=pv0->x;
-         if( pv0->y>maxy ) maxy=pv0->y; if( pv0->y<miny ) miny=pv0->y;
-
-         vertices[offset+2].x=pv1->x;   vertices[offset+2].y=pv1->y;   vertices[offset+2].z=0;
-         if( pv1->x>maxx ) maxx=pv1->x; if( pv1->x<minx ) minx=pv1->x;
-         if( pv1->y>maxy ) maxy=pv1->y; if( pv1->y<miny ) miny=pv1->y;
-
-         vertices[offset+1].x=pv2->x;   vertices[offset+1].y=pv2->y;   vertices[offset+1].z=0;
-         if( pv2->x>maxx ) maxx=pv2->x; if( pv2->x<minx ) minx=pv2->x;
-         if( pv2->y>maxy ) maxy=pv2->y; if( pv2->y<miny ) miny=pv2->y;
-      }
-      delete vtri.ElementAt(i);
+      vertices[i].x=pv0->x;
+	  vertices[i].y=pv0->y;
+	  vertices[i].z=0;
+      
+	  if( pv0->x>maxx ) maxx=pv0->x;
+	  if( pv0->x<minx ) minx=pv0->x;
+      if( pv0->y>maxy ) maxy=pv0->y;
+	  if( pv0->y<miny ) miny=pv0->y;
    }
 
    const float inv_width = 1.0f/(maxx-minx);
@@ -457,7 +473,7 @@ void Flasher::RenderSetup(RenderDevice* pd3dDevice)
    m_d.m_vCenter.x = minx + ((maxx - minx)*0.5f);
    m_d.m_vCenter.y = miny + ((maxy - miny)*0.5f);
 
-   for( int i=0;i<numPolys*3;i++)
+   for( int i=0;i<numVertices;i++)
    {
       if (m_d.m_imagealignment == ImageModeWrap)
       {
@@ -1343,7 +1359,7 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
 
    pd3dDevice->flasherShader->Begin(0);
-   pd3dDevice->DrawPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_TEX, dynamicVertexBuffer, 0, numPolys*3);
+   pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_TEX, dynamicVertexBuffer, 0, numVertices, dynamicIndexBuffer, 0, numPolys*3);
    pd3dDevice->flasherShader->End();
 
    pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);

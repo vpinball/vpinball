@@ -112,6 +112,7 @@ END_CONNECTION_POINT_MAP()
    Vertex3D_TexelOnly *vertices;
    
 	VertexBuffer *dynamicVertexBuffer;
+	IndexBuffer *dynamicIndexBuffer;
 	bool dynamicVertexBufferRegenerate;
     PropertyPane *m_propVisual;
 // IFlasher
