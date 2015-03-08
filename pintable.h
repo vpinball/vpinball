@@ -373,7 +373,7 @@ public:
 
 	void OnDelete();
 
-	void DoLButtonDown(int x,int y);
+	void DoLButtonDown(int x,int y, bool zoomIn=true);
 	void DoLButtonUp(int x,int y);
 	void DoRButtonDown(int x,int y);
 	void DoRButtonUp(int x,int y);

@@ -4131,7 +4131,7 @@ void PinTable::FireKeyEvent(int dispid, int keycode)
    FireDispID(dispid, &dispparams);
 }
 
-void PinTable::DoLButtonDown(int x, int y)
+void PinTable::DoLButtonDown(int x, int y, bool zoomIn )
 {
    const int ksshift = GetKeyState(VK_SHIFT);
    const int ksctrl = GetKeyState(VK_CONTROL);
@@ -4146,7 +4146,11 @@ void PinTable::DoLButtonDown(int x, int y)
       if (m_zoom < MAX_ZOOM)
       {
          m_offset = TransformPoint(x,y);
-         SetZoom(m_zoom * 2.0f);
+         if ( zoomIn )
+            SetZoom(m_zoom * 2.0f);
+         else
+            SetZoom(m_zoom * 0.5f);
+
          SetDirtyDraw();
       }
    }
@@ -5710,7 +5714,6 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
       }
       break;
 
-      
    case WM_LBUTTONDOWN: {
       pt = (CComObject<PinTable> *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
       const short x = (short)(lParam & 0xffff);
@@ -5880,10 +5883,23 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
    case WM_MOUSEWHEEL:
       {
          pt = (CComObject<PinTable> *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
-         const short zDelta = (short) HIWORD(wParam);    // wheel rotation
-         pt->m_offset.y -= zDelta / pt->m_zoom;	// change to orientation to match windows default
-         pt->SetDirtyDraw();
-         pt->SetMyScrollInfo();
+         const short zDelta = GET_WHEEL_DELTA_WPARAM(wParam);
+         const int ksctrl = GetKeyState(VK_CONTROL);
+         if ((ksctrl & 0x80000000))
+         {
+            const short x = (short)(lParam & 0xffff);
+            const short y = (short)((lParam >> 16) & 0xffff);
+            if ((g_pvp->m_ToolCur == IDC_SELECT) || (g_pvp->m_ToolCur == ID_TABLE_MAGNIFY))
+            {
+               pt->DoLButtonDown(x, y, zDelta==-120);
+            }
+         }
+         else
+         {
+            pt->m_offset.y -= zDelta / pt->m_zoom;	// change to orientation to match windows default
+            pt->SetDirtyDraw();
+            pt->SetMyScrollInfo();
+         }
          return 0;
       }
       break;
