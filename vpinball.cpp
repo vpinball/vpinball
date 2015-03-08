@@ -3218,7 +3218,7 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
                     lvitem.iSubItem = 0;
                     ListView_GetItem(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST), &lvitem);
                     Material *pmat = (Material*)lvitem.lParam;
-                    if ( pt->IsMaterialNameUnique(pmat->m_szName))
+                    if (pt->IsMaterialNameUnique(pinfo->item.pszText))
                     {
                         lstrcpy(pmat->m_szName, pinfo->item.pszText);
                         ListView_SetItemText(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST), pinfo->item.iItem, 0, pinfo->item.pszText);
