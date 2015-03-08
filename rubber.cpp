@@ -6,7 +6,6 @@ Rubber::Rubber()
    m_d.m_fCollidable = true;
    m_d.m_fVisible = true;
    m_d.m_fHitEvent = false;
-   staticVertexBuffer = 0;
    dynamicVertexBuffer = 0;
    dynamicIndexBuffer = 0;
    dynamicVertexBufferRegenerate = true;
@@ -20,9 +19,6 @@ Rubber::Rubber()
 
 Rubber::~Rubber()
 {
-	if(staticVertexBuffer)
-		staticVertexBuffer->release();
-
 	if(dynamicVertexBuffer)
 		dynamicVertexBuffer->release();
 
@@ -613,11 +609,6 @@ void Rubber::EndPlay()
 {
     IEditable::EndPlay();
     m_vhoCollidable.clear();
-
-   	if(staticVertexBuffer) {
-		staticVertexBuffer->release();
-		staticVertexBuffer = 0;
-	}
 
 	if(dynamicVertexBuffer) {
 		dynamicVertexBuffer->release();

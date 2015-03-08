@@ -12,8 +12,9 @@ Surface::Surface()
    m_d.m_fInner = true;
    m_d.m_fIsBottomSolid = false;
    slingshotVBuffer=0;
-   sideVBuffer = 0;
    topVBuffer = 0;
+   topIBuffer = 0;
+   sideVBuffer = 0;
    sideIBuffer = 0;
    m_propPhysics = NULL;
    memset( m_d.m_szImage,0,MAXTOKEN);
@@ -57,7 +58,7 @@ size_t Surface::GetMaterialID()
 HRESULT Surface::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 {
    m_ptable = ptable;
-   IsWall = true;
+   m_isWall = true;
    float width = 50.0f, length = 50.0f, fTmp;
 
    HRESULT hr = GetRegStringAsFloat("DefaultProps\\Wall", "Width", &fTmp);
@@ -105,7 +106,7 @@ HRESULT Surface::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
 void Surface::WriteRegDefaults()
 {
-   const char * strKeyName = IsWall ? "DefaultProps\\Wall" : "DefaultProps\\Target";
+   const char * strKeyName = m_isWall ? "DefaultProps\\Wall" : "DefaultProps\\Target";
 
    SetRegValueBool(strKeyName,"TimerEnabled", !!m_d.m_tdr.m_fTimerEnabled);
    SetRegValueInt(strKeyName,"TimerInterval", m_d.m_tdr.m_TimerInterval);
@@ -137,7 +138,7 @@ HRESULT Surface::InitTarget(PinTable * const ptable, const float x, const float 
    static const char strKeyName[] = "DefaultProps\\Target";
 
    m_ptable = ptable;
-   IsWall = false;
+   m_isWall = false;
    float width = 30.0f, length=6.0f, fTmp;
 
    HRESULT hr = GetRegStringAsFloat(strKeyName, "Width", &fTmp);
@@ -545,13 +546,13 @@ void Surface::PostRenderStatic(RenderDevice* pd3dDevice)
 {
     TRACE_FUNCTION();
 
-    RenderSlingshots((RenderDevice*)pd3dDevice);
-    if (m_d.m_fDroppable || isDynamic)
+    RenderSlingshots(pd3dDevice);
+    if (m_d.m_fDroppable || m_isDynamic)
     {
         if (!m_fIsDropped)
         {
             // Render wall raised.
-            RenderWallsAtHeight((RenderDevice*)pd3dDevice, fFalse);
+            RenderWallsAtHeight(pd3dDevice, false);
         }
         else    // is dropped
         {
@@ -559,7 +560,7 @@ void Surface::PostRenderStatic(RenderDevice* pd3dDevice)
             if (!m_d.m_fFlipbook)
             {
                 // Render wall dropped (smashed to a pancake at bottom height).
-                RenderWallsAtHeight((RenderDevice*)pd3dDevice, fTrue);
+                RenderWallsAtHeight(pd3dDevice, true);
             }
         }
     }
@@ -637,14 +638,14 @@ void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
       vnormal[1].Normalize();
 
       {
-         verts[offset].x=pv1->x;     verts[offset].y=pv1->y;     verts[offset].z=m_d.m_heightbottom+m_ptable->m_tableheight;
+         verts[offset  ].x=pv1->x;   verts[offset  ].y=pv1->y;   verts[offset  ].z=m_d.m_heightbottom+m_ptable->m_tableheight;
          verts[offset+1].x=pv1->x;   verts[offset+1].y=pv1->y;   verts[offset+1].z=m_d.m_heighttop+m_ptable->m_tableheight;
          verts[offset+2].x=pv2->x;   verts[offset+2].y=pv2->y;   verts[offset+2].z=m_d.m_heighttop+m_ptable->m_tableheight;
          verts[offset+3].x=pv2->x;   verts[offset+3].y=pv2->y;   verts[offset+3].z=m_d.m_heightbottom+m_ptable->m_tableheight;
          if (pinSide)
          {
-            verts[offset].tu = rgtexcoord[i];
-            verts[offset].tv = 1.0f;
+            verts[offset  ].tu = rgtexcoord[i];
+            verts[offset  ].tv = 1.0f;
 
             verts[offset+1].tu = rgtexcoord[i];
             verts[offset+1].tv = 0;
@@ -686,7 +687,7 @@ void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
 
        if (sideIBuffer)
            sideIBuffer->release();
-       sideIBuffer = pd3dDevice->CreateAndFillIndexBuffer(rgi);
+	   sideIBuffer = pd3dDevice->CreateAndFillIndexBuffer(rgi);
    }
 
    // draw top
@@ -701,12 +702,6 @@ void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
       Vector<Triangle> vtri;
       PolygonToTriangles(vvertex, &vpoly, &vtri);
 
-	  const float heightNotDropped = m_d.m_heighttop;
-      const float heightDropped = (m_d.m_heightbottom + 0.1f);
-
-      const float inv_tablewidth = 1.0f/(m_ptable->m_right - m_ptable->m_left);
-      const float inv_tableheight = 1.0f/(m_ptable->m_bottom - m_ptable->m_top);
-
       numPolys = vtri.Size();
       if( numPolys==0 )
       {         
@@ -714,53 +709,60 @@ void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
          return;
       }
 
-      if( topVBuffer )
+	  const float heightNotDropped = m_d.m_heighttop;
+      const float heightDropped = (m_d.m_heightbottom + 0.1f);
+
+      const float inv_tablewidth = 1.0f/(m_ptable->m_right - m_ptable->m_left);
+      const float inv_tableheight = 1.0f/(m_ptable->m_bottom - m_ptable->m_top);
+
+	  if( topIBuffer )
+         topIBuffer->release();
+      pd3dDevice->CreateIndexBuffer( numPolys*3, 0, IndexBuffer::FMT_INDEX16, &topIBuffer );
+
+	  WORD* bufi;
+	  topIBuffer->lock(0,0,(void**)&bufi, 0);
+	  for(unsigned int i = 0; i < numPolys; ++i)
+	  {
+		  const Triangle * const ptri = vtri.ElementAt(i);
+
+		  bufi[i*3  ] = ptri->a;
+		  bufi[i*3+1] = ptri->b;
+		  bufi[i*3+2] = ptri->c;
+	  }
+	  topIBuffer->unlock();
+
+	  for (int i=0;i<numPolys;i++)
+		  delete vtri.ElementAt(i);
+
+	  if( topVBuffer )
          topVBuffer->release();
-      pd3dDevice->CreateVertexBuffer( 2*numPolys*3, 0, MY_D3DFVF_NOTEX2_VERTEX, &topVBuffer );
+      pd3dDevice->CreateVertexBuffer( 2*numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &topVBuffer );
 
 	  Vertex3D_NoTex2 *buf;
       topVBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
-      Vertex3D_NoTex2 * vertsTop[2];
-	  vertsTop[0] = buf;
-	  vertsTop[1] = buf + 3*numPolys;
+	  Vertex3D_NoTex2 * const vertsTop[2] = {buf, buf + numVertices};
 
-      offset=0;
-      for (int i=0;i<vtri.Size();i++, offset+=3)
+      for (int i=0;i<numVertices;i++)
       {
-         const Triangle * const ptri = vtri.ElementAt(i);
+         const RenderVertex * const pv0 = &vvertex[i];
 
-         const RenderVertex * const pv0 = &vvertex[ptri->a];
-         const RenderVertex * const pv1 = &vvertex[ptri->b];
-         const RenderVertex * const pv2 = &vvertex[ptri->c];
+		 vertsTop[0][i].x  = pv0->x;
+		 vertsTop[0][i].y  = pv0->y;
+		 vertsTop[0][i].z  = heightNotDropped+m_ptable->m_tableheight;
+		 vertsTop[0][i].tu = pv0->x * inv_tablewidth;
+		 vertsTop[0][i].tv = pv0->y * inv_tableheight;
+		 vertsTop[0][i].nx = 0;
+		 vertsTop[0][i].ny = 0;
+		 vertsTop[0][i].nz = 1.0f;
 
-         {
-            vertsTop[0][offset].x=pv0->x;   vertsTop[0][offset].y=pv0->y;   vertsTop[0][offset].z=heightNotDropped+m_ptable->m_tableheight;
-            vertsTop[0][offset+2].x=pv1->x;   vertsTop[0][offset+2].y=pv1->y;   vertsTop[0][offset+2].z=heightNotDropped+m_ptable->m_tableheight;
-            vertsTop[0][offset+1].x=pv2->x;   vertsTop[0][offset+1].y=pv2->y;   vertsTop[0][offset+1].z=heightNotDropped+m_ptable->m_tableheight;
-
-            vertsTop[0][offset].tu = vertsTop[0][offset].x *inv_tablewidth;
-            vertsTop[0][offset].tv = vertsTop[0][offset].y *inv_tableheight;
-            vertsTop[0][offset+1].tu = vertsTop[0][offset+1].x *inv_tablewidth;
-            vertsTop[0][offset+1].tv = vertsTop[0][offset+1].y *inv_tableheight;
-            vertsTop[0][offset+2].tu = vertsTop[0][offset+2].x *inv_tablewidth;
-            vertsTop[0][offset+2].tv = vertsTop[0][offset+2].y *inv_tableheight;
-
-            memcpy( &vertsTop[1][offset], &vertsTop[0][offset], sizeof(Vertex3D_NoTex2)*3 );
-            vertsTop[1][offset].z = heightDropped;
-            vertsTop[1][offset+1].z = heightDropped;
-            vertsTop[1][offset+2].z = heightDropped;
-            
-            for (int l=offset;l<offset+3;l++)
-            {
-               vertsTop[0][l].nx = 0;
-               vertsTop[0][l].ny = 0;
-               vertsTop[0][l].nz = 1.0f;
-               vertsTop[1][l].nx = 0;
-               vertsTop[1][l].ny = 0;
-               vertsTop[1][l].nz = 1.0f;
-            }
-         }
-         delete vtri.ElementAt(i);
+		 vertsTop[1][i].x  = pv0->x;
+		 vertsTop[1][i].y  = pv0->y;
+		 vertsTop[1][i].z  = heightDropped;
+		 vertsTop[1][i].tu = pv0->x * inv_tablewidth;
+		 vertsTop[1][i].tv = pv0->y * inv_tableheight;
+		 vertsTop[1][i].nx = 0;
+		 vertsTop[1][i].ny = 0;
+		 vertsTop[1][i].nz = 1.0f;
       }
 
 	  topVBuffer->unlock();
@@ -779,8 +781,6 @@ static IndexBuffer* slingIBuffer = NULL;        // this is constant so we only h
 
 void Surface::PrepareSlingshots( RenderDevice *pd3dDevice )
 {
-   Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-
    const float slingbottom = (m_d.m_heighttop - m_d.m_heightbottom) * 0.2f + m_d.m_heightbottom;
    const float slingtop    = (m_d.m_heighttop - m_d.m_heightbottom) * 0.8f + m_d.m_heightbottom;
 
@@ -877,19 +877,18 @@ void Surface::RenderSetup(RenderDevice* pd3dDevice)
       PrepareSlingshots(pd3dDevice);
    }
 
-   Material *mat=0;
-   isDynamic=false;
+   m_isDynamic=false;
    if ( m_d.m_fSideVisible )
    {
-      mat=m_ptable->GetMaterial(m_d.m_szSideMaterial);
+      Material *mat=m_ptable->GetMaterial(m_d.m_szSideMaterial);
       if( mat->m_bOpacityActive )
-         isDynamic=true;
+         m_isDynamic=true;
    }
    if( m_d.m_fVisible )
    {
-      mat=m_ptable->GetMaterial(m_d.m_szTopMaterial);
+      Material *mat=m_ptable->GetMaterial(m_d.m_szTopMaterial);
       if( mat->m_bOpacityActive )
-         isDynamic=true;
+         m_isDynamic=true;
    }
 
    // create all vertices for dropped and non-dropped surface
@@ -920,6 +919,11 @@ void Surface::FreeBuffers()
       topVBuffer->release();
       topVBuffer=0;
    }
+   if( topIBuffer )
+   {
+      topIBuffer->release();
+      topIBuffer=0;
+   }
    if (slingIBuffer)    // NB: global instance
    {
        slingIBuffer->release();
@@ -929,9 +933,9 @@ void Surface::FreeBuffers()
 
 void Surface::RenderStatic(RenderDevice* pd3dDevice)
 {
-   RenderSlingshots((RenderDevice*)pd3dDevice);
-   if (!m_d.m_fDroppable && !isDynamic)
-       RenderWallsAtHeight((RenderDevice*)pd3dDevice, fFalse);
+   RenderSlingshots(pd3dDevice);
+   if (!m_d.m_fDroppable && !m_isDynamic)
+       RenderWallsAtHeight(pd3dDevice, false);
 }
 
 void Surface::RenderSlingshots(RenderDevice* pd3dDevice)
@@ -955,7 +959,7 @@ void Surface::RenderSlingshots(RenderDevice* pd3dDevice)
    pd3dDevice->basicShader->End();
 }
 
-void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
+void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, const bool fDrop)
 {
 	// render side
     if (m_d.m_fDisableLighting && ( m_d.m_fSideVisible || m_d.m_fVisible))
@@ -1020,8 +1024,8 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop)
           pd3dDevice->basicShader->SetTechnique("basic_without_texture");
 
        pd3dDevice->basicShader->Begin(0);
-       pd3dDevice->DrawPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, topVBuffer, !fDrop ? 0 : 3*numPolys, numPolys*3);
-       pd3dDevice->basicShader->End();  
+       pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, topVBuffer, !fDrop ? 0 : numVertices, numVertices, topIBuffer, 0, numPolys*3);
+       pd3dDevice->basicShader->End();
     }
 
     // reset render states

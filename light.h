@@ -194,7 +194,6 @@ private:
    IndexBuffer  *bulbLightIndexBuffer;
    VertexBuffer *bulbSocketVBuffer;
    IndexBuffer  *bulbSocketIndexBuffer;
-   IndexBuffer  *lightBallIndexBuffer;
    PropertyPane *m_propVisual;
 // ILight
 

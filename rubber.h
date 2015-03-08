@@ -130,7 +130,6 @@ private:
     std::vector<Vertex3D_NoTex2> m_vertices;
     Vertex3Ds middlePoint;
 
-	VertexBuffer *staticVertexBuffer;
 	VertexBuffer *dynamicVertexBuffer;
     IndexBuffer *dynamicIndexBuffer;
 	bool dynamicVertexBufferRegenerate;

@@ -730,10 +730,11 @@ void Light::PrepareMoversCustom()
    }
 
    customMoverIndexNum = vtri.Size()*3;
-   if ( customMoverIBuffer==NULL )
-   {
-      g_pplayer->m_pin3d.m_pd3dDevice->CreateIndexBuffer( customMoverIndexNum, 0, IndexBuffer::FMT_INDEX16, &customMoverIBuffer);
-   }
+   if ( customMoverIBuffer )
+	   customMoverIBuffer->release();
+
+   g_pplayer->m_pin3d.m_pd3dDevice->CreateIndexBuffer( customMoverIndexNum, 0, IndexBuffer::FMT_INDEX16, &customMoverIBuffer);
+
    WORD* bufi;
    customMoverIBuffer->lock(0,0,(void**)&bufi, 0);
    for(unsigned int i = 0; i < vtri.Size(); ++i)
@@ -750,11 +751,11 @@ void Light::PrepareMoversCustom()
       delete vtri.ElementAt(i);
 
    customMoverVertexNum = vvertex.size();
-   if ( customMoverVBuffer==NULL )
-   {
-      const DWORD vertexType = (!m_fBackglass) ? MY_D3DFVF_NOTEX2_VERTEX : MY_D3DTRANSFORMED_NOTEX2_VERTEX;
-      g_pplayer->m_pin3d.m_pd3dDevice->CreateVertexBuffer( customMoverVertexNum, 0, vertexType, &customMoverVBuffer);
-   }
+   if ( customMoverVBuffer )
+	   customMoverVBuffer->release();
+
+   const DWORD vertexType = (!m_fBackglass) ? MY_D3DFVF_NOTEX2_VERTEX : MY_D3DTRANSFORMED_NOTEX2_VERTEX;
+   g_pplayer->m_pin3d.m_pd3dDevice->CreateVertexBuffer( customMoverVertexNum, 0, vertexType, &customMoverVBuffer);
 
    Vertex3D_NoTex2 *buf;
    customMoverVBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY);
