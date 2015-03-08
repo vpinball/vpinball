@@ -943,6 +943,20 @@ void Surface::RenderSlingshots(RenderDevice* pd3dDevice)
    if ( !m_d.m_fSideVisible || (m_vlinesling.size() == 0) )
       return;
 
+   bool nothing_to_draw = true;
+   for (unsigned i=0; i<m_vlinesling.size(); i++)
+   {
+      LineSegSlingshot * const plinesling = m_vlinesling[i];
+      if (plinesling->m_slingshotanim.m_iframe == 1)
+	  {
+		  nothing_to_draw = false;
+		  break;
+	  }
+   }
+
+   if(nothing_to_draw)
+	   return;
+
    pd3dDevice->basicShader->SetTechnique("basic_without_texture");
    Material *mat = m_ptable->GetMaterial( m_d.m_szSlingShotMaterial);
    pd3dDevice->basicShader->SetMaterial(mat);
@@ -1033,7 +1047,6 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, const bool fDrop)
     pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
     if (m_d.m_fDisableLighting && ( m_d.m_fSideVisible || m_d.m_fVisible))
         pd3dDevice->basicShader->SetBool("bDisableLighting", false );
-
 }
 
 void Surface::DoCommand(int icmd, int x, int y)
