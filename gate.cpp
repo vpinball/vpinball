@@ -10,6 +10,7 @@ Gate::Gate()
    bracketVertexBuffer=NULL;
    wireIndexBuffer=NULL;
    wireVertexBuffer=NULL;
+   m_vertexbuffer_angle = FLT_MAX;
    memset(m_d.m_szImageBack,0,MAXTOKEN);
    memset(m_d.m_szImageFront,0,MAXTOKEN);
    memset(m_d.m_szMaterial,0,32);
@@ -380,11 +381,17 @@ void Gate::EndPlay()
    {
        wireVertexBuffer->release();
        wireVertexBuffer = NULL;
+	   m_vertexbuffer_angle = FLT_MAX;
    }
 }
 
 void Gate::UpdateWire( RenderDevice *pd3dDevice )
 {
+	if(m_phitgate->m_gateanim.m_angle == m_vertexbuffer_angle)
+		return;
+
+	m_vertexbuffer_angle = m_phitgate->m_gateanim.m_angle;
+
     Matrix3D fullMatrix;
     Matrix3D rotzMat,rotxMat;
     Vertex3D_NoTex2 *buf;
@@ -413,7 +420,6 @@ void Gate::UpdateWire( RenderDevice *pd3dDevice )
         buf[i].tv = gateWire[i].tv;
     }
     wireVertexBuffer->unlock();
-
 }
 
 void Gate::RenderObject( RenderDevice* pd3dDevice)

@@ -109,11 +109,14 @@ private:
 
    VertexBuffer *wireVertexBuffer;
    IndexBuffer *wireIndexBuffer;
+   float m_vertexbuffer_angle;
+
    VertexBuffer *bracketVertexBuffer;
    IndexBuffer *bracketIndexBuffer;
-   Vertex3D_NoTex2 *wireVertices;
+
    float baseHeight;
-// IGate
+
+   // IGate
 public:
 	STDMETHOD(get_Elasticity)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Elasticity)(/*[in]*/ float newVal);
