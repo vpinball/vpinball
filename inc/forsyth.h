@@ -214,6 +214,15 @@ T* reorderForsyth(const T* const indices,
 			// in the cache to the new target position (i) one
 			// step backwards
 			assert(endpos < VERTEX_CACHE_SIZE+3);
+			if(!(endpos < VERTEX_CACHE_SIZE+3))
+			{
+				delete [] cVertex;
+				delete [] triangleAdded;
+				delete [] triangleScore;
+				delete [] outTriangles;
+				delete [] triangleIndices;
+				return NULL;
+			}
 			for (int j = endpos; j > i; j--) {
 				cache[j] = cache[j-1];
 				// If this cache slot contains a real
