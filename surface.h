@@ -122,7 +122,7 @@ private:
     void AddLine(Vector<HitObject> * const pvho, const RenderVertex * const pv1, const RenderVertex * const pv2, const bool fSlingshot);
 
     void RenderSlingshots(RenderDevice* pd3dDevice);
-    void RenderWallsAtHeight( RenderDevice* pd3dDevice, BOOL fDrop);
+    void RenderWallsAtHeight( RenderDevice* pd3dDevice, const bool fDrop);
     void PrepareWallsAtHeight( RenderDevice* pd3dDevice );
     void PrepareSlingshots( RenderDevice *pd3dDevice );
 
@@ -143,15 +143,17 @@ private:
     std::vector<HitObject*> m_vhoDrop; // Objects to disable when dropped
     std::vector<HitObject*> m_vhoCollidable; // Objects to that may be collide selectable
 
-	bool IsWall;
-   bool isDynamic;
+	bool m_isWall;
+   bool m_isDynamic;
    int numVertices, numPolys;
 
    // TODO: all these vertex buffers should be combined into one
-   VertexBuffer *slingshotVBuffer;
-   VertexBuffer *sideVBuffer;
+   VertexBuffer *slingshotVBuffer; //!! redo smoothed normal calc would allow for using a 'real' vertex index buffer
    VertexBuffer *topVBuffer;
+   IndexBuffer *topIBuffer;
+   VertexBuffer *sideVBuffer;
    IndexBuffer *sideIBuffer;
+
    PropertyPane *m_propPhysics;
 
 // ISurface
