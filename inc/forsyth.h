@@ -47,8 +47,8 @@ struct VertexData
 };
 
 // The size of the precalculated tables
-#define CACHE_SCORE_TABLE_SIZE 64
-#define VALENCE_SCORE_TABLE_SIZE 16
+#define CACHE_SCORE_TABLE_SIZE 64u
+#define VALENCE_SCORE_TABLE_SIZE 64
 #if CACHE_SCORE_TABLE_SIZE < VERTEX_CACHE_SIZE
  #error Vertex score table too small
 #endif
@@ -70,8 +70,8 @@ inline void initForsyth() {
     if(initForsythDone)
 	return;
 
-	for (int i = 0; i < CACHE_SCORE_TABLE_SIZE; i++) {
-		float score = 0;
+	for (unsigned int i = 0; i < CACHE_SCORE_TABLE_SIZE; i++) {
+		float score = 0.f;
 		if (i < 3) {
 			// This vertex was used in the last triangle,
 			// so it has a fixed score, which ever of the three
@@ -82,8 +82,7 @@ inline void initForsyth() {
 		} else {
 			// Points for being high in the cache.
 			const float scaler = 1.0f / (float)(CACHE_FUNCTION_LENGTH - 3);
-			score = 1.0f - (float)(i - 3) * scaler;
-			score = powf(score, CACHE_DECAY_POWER);
+			score = powf(1.0f - (float)(i - 3) * scaler, CACHE_DECAY_POWER);
 		}
 		cachePositionScore[i] = (ScoreType) (SCORE_SCALING * score);
 	}
@@ -101,16 +100,22 @@ inline void initForsyth() {
 
 // Calculate the score for a vertex
 inline ScoreType findVertexScore(const int numActiveTris,
-                          const int cachePosition) {
+                          const unsigned int cachePosition) {
 	if (numActiveTris == 0)
 		// No triangles need this vertex!
 		return 0;
 
-	ScoreType score = (cachePosition < 0) ? 0 // Vertex is not in LRU cache - no score
+	ScoreType score = (cachePosition >= CACHE_SCORE_TABLE_SIZE) ? 0 // Vertex is not in LRU cache - no score
 	                  : cachePositionScore[cachePosition];
 
 	if (numActiveTris < VALENCE_SCORE_TABLE_SIZE)
 		score += valenceScore[numActiveTris];
+	else
+	{
+	    const float valenceBoost = powf((float)numActiveTris, (float)(-VALENCE_BOOST_POWER));
+	    const float s = (float)VALENCE_BOOST_SCALE * valenceBoost;
+	    score += (ScoreType) (SCORE_SCALING * s);
+	}
 
 	return score;
 }
