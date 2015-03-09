@@ -148,7 +148,7 @@ private:
    int numVertices, numPolys;
 
    // TODO: all these vertex buffers should be combined into one
-   VertexBuffer *slingshotVBuffer; //!! redo smoothed normal calc would allow for using a 'real' vertex index buffer
+   VertexBuffer *slingshotVBuffer;
    VertexBuffer *topVBuffer;
    IndexBuffer *topIBuffer;
    VertexBuffer *sideVBuffer;

@@ -11,7 +11,7 @@ Surface::Surface()
    m_d.m_fSlingshotAnimation = true;
    m_d.m_fInner = true;
    m_d.m_fIsBottomSolid = false;
-   slingshotVBuffer=0;
+   slingshotVBuffer = 0;
    topVBuffer = 0;
    topIBuffer = 0;
    sideVBuffer = 0;
@@ -769,13 +769,7 @@ void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
    }
 }
 
-static const WORD rgisling[36] = {0,1,2,0,2,3, 4+0,4+1,4+2,4+0,4+2,4+3, 8+0,8+1,8+2,8+0,8+2,8+3, 12+0,12+1,12+2,12+0,12+2,12+3, 16+0,16+1,16+2,16+0,16+2,16+3, 20+0,20+1,20+2,20+0,20+2,20+3};
-static const WORD rgiSlingshot0[4] = {0,1,4,3};
-static const WORD rgiSlingshot1[4] = {1,2,5,4};
-static const WORD rgiSlingshot2[4] = {0,3,4,1};
-static const WORD rgiSlingshot3[4] = {1,4,5,2};
-static const WORD rgiSlingshot4[4] = {3,9,10,4};
-static const WORD rgiSlingshot5[4] = {4,10,11,5};
+static const WORD rgiSlingshot[24] = {0,4,3, 0,1,4, 1,2,5, 1,5,4, 4,8,5, 4,7,8, 3,7,4, 3,6,7};
 
 static IndexBuffer* slingIBuffer = NULL;        // this is constant so we only have one global instance
 
@@ -784,82 +778,56 @@ void Surface::PrepareSlingshots( RenderDevice *pd3dDevice )
    const float slingbottom = (m_d.m_heighttop - m_d.m_heightbottom) * 0.2f + m_d.m_heightbottom;
    const float slingtop    = (m_d.m_heighttop - m_d.m_heightbottom) * 0.8f + m_d.m_heightbottom;
 
-   Vertex3D_NoTex2 *buf;
-   slingshotVBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY);
-   int offset=0;
-   for (unsigned i=0; i<m_vlinesling.size(); i++)
+   Vertex3D_NoTex2* const rgv3D = new Vertex3D_NoTex2[m_vlinesling.size()*9];
+
+   unsigned int offset=0;
+   for (unsigned i=0; i<m_vlinesling.size(); i++,offset+=9)
    {
       LineSegSlingshot * const plinesling = m_vlinesling[i];
       plinesling->m_slingshotanim.m_fAnimations = (m_d.m_fSlingshotAnimation != 0);
 
-      Vertex3D_NoTex2 rgv3D[12];
-      rgv3D[0].x = plinesling->v1.x;
-      rgv3D[0].y = plinesling->v1.y;
-      rgv3D[0].z = slingbottom+m_ptable->m_tableheight;
+      rgv3D[offset  ].x = plinesling->v1.x;
+      rgv3D[offset  ].y = plinesling->v1.y;
+      rgv3D[offset  ].z = slingbottom+m_ptable->m_tableheight;
 
-      rgv3D[1].x = (plinesling->v1.x + plinesling->v2.x)*0.5f + plinesling->normal.x*(m_d.m_slingshotforce * 0.25f);//40;//20;
-      rgv3D[1].y = (plinesling->v1.y + plinesling->v2.y)*0.5f + plinesling->normal.y*(m_d.m_slingshotforce * 0.25f);//20;
-      rgv3D[1].z = slingbottom+m_ptable->m_tableheight;
+      rgv3D[offset+1].x = (plinesling->v1.x + plinesling->v2.x)*0.5f + plinesling->normal.x*(m_d.m_slingshotforce * 0.25f); //40;//20;
+      rgv3D[offset+1].y = (plinesling->v1.y + plinesling->v2.y)*0.5f + plinesling->normal.y*(m_d.m_slingshotforce * 0.25f); //20;
+      rgv3D[offset+1].z = slingbottom+m_ptable->m_tableheight;
 
-      rgv3D[2].x = plinesling->v2.x;
-      rgv3D[2].y = plinesling->v2.y;
-      rgv3D[2].z = slingbottom+m_ptable->m_tableheight;
+      rgv3D[offset+2].x = plinesling->v2.x;
+      rgv3D[offset+2].y = plinesling->v2.y;
+      rgv3D[offset+2].z = slingbottom+m_ptable->m_tableheight;
 
-      for (int l=0;l<3;l++)
+      for (unsigned int l=0;l<3;l++)
       {
-         rgv3D[l+3].x = rgv3D[l].x;
-         rgv3D[l+3].y = rgv3D[l].y;
-         rgv3D[l+3].z = slingtop+m_ptable->m_tableheight;
+         rgv3D[l+offset+3].x = rgv3D[l+offset].x;
+         rgv3D[l+offset+3].y = rgv3D[l+offset].y;
+         rgv3D[l+offset+3].z = slingtop+m_ptable->m_tableheight;
       }
 
-      for (int l=0;l<6;l++)
+      for (unsigned int l=0;l<3;l++)
       {
-         rgv3D[l+6].x = rgv3D[l].x - plinesling->normal.x*5.0f;
-         rgv3D[l+6].y = rgv3D[l].y - plinesling->normal.y*5.0f;
-         rgv3D[l+6].z = rgv3D[l].z;
+         rgv3D[l+offset+6].x = rgv3D[l+offset].x - plinesling->normal.x*5.0f;
+         rgv3D[l+offset+6].y = rgv3D[l+offset].y - plinesling->normal.y*5.0f;
+         rgv3D[l+offset+6].z = slingtop+m_ptable->m_tableheight;
       }
 
-      SetNormal(rgv3D, rgiSlingshot0, 4);
-      buf[offset++] = rgv3D[rgiSlingshot0[0]];
-      buf[offset++] = rgv3D[rgiSlingshot0[1]];
-      buf[offset++] = rgv3D[rgiSlingshot0[2]];
-      buf[offset++] = rgv3D[rgiSlingshot0[3]];
-
-      SetNormal(rgv3D, rgiSlingshot1, 4);
-      buf[offset++] = rgv3D[rgiSlingshot1[0]];
-      buf[offset++] = rgv3D[rgiSlingshot1[1]];
-      buf[offset++] = rgv3D[rgiSlingshot1[2]];
-      buf[offset++] = rgv3D[rgiSlingshot1[3]];
-
-      SetNormal(rgv3D, rgiSlingshot2, 4);
-      buf[offset++] = rgv3D[rgiSlingshot2[0]];
-      buf[offset++] = rgv3D[rgiSlingshot2[1]];
-      buf[offset++] = rgv3D[rgiSlingshot2[2]];
-      buf[offset++] = rgv3D[rgiSlingshot2[3]];
-
-      SetNormal(rgv3D, rgiSlingshot3, 4);
-      buf[offset++] = rgv3D[rgiSlingshot3[0]];
-      buf[offset++] = rgv3D[rgiSlingshot3[1]];
-      buf[offset++] = rgv3D[rgiSlingshot3[2]];
-      buf[offset++] = rgv3D[rgiSlingshot3[3]];
-
-      SetNormal(rgv3D, rgiSlingshot4, 4);
-      buf[offset++] = rgv3D[rgiSlingshot4[0]];
-      buf[offset++] = rgv3D[rgiSlingshot4[1]];
-      buf[offset++] = rgv3D[rgiSlingshot4[2]];
-      buf[offset++] = rgv3D[rgiSlingshot4[3]];
-
-      SetNormal(rgv3D, rgiSlingshot5, 4);
-      buf[offset++] = rgv3D[rgiSlingshot5[0]];
-      buf[offset++] = rgv3D[rgiSlingshot5[1]];
-      buf[offset++] = rgv3D[rgiSlingshot5[2]];
-      buf[offset++] = rgv3D[rgiSlingshot5[3]];
+	  ComputeNormals(rgv3D+offset,9,rgiSlingshot,24);
    }
 
+   if( slingshotVBuffer )
+	   slingshotVBuffer->release();
+   pd3dDevice->CreateVertexBuffer(m_vlinesling.size()*9, 0, MY_D3DFVF_NOTEX2_VERTEX, &slingshotVBuffer);
+
+   Vertex3D_NoTex2 *buf;
+   slingshotVBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY);
+   memcpy(buf,rgv3D,m_vlinesling.size()*9*sizeof(Vertex3D_NoTex2));
    slingshotVBuffer->unlock();
 
+   delete [] rgv3D;
+
    if (!slingIBuffer)
-       slingIBuffer = pd3dDevice->CreateAndFillIndexBuffer(36, rgisling);
+       slingIBuffer = pd3dDevice->CreateAndFillIndexBuffer(24, rgiSlingshot);
 }
 
 void Surface::RenderSetup(RenderDevice* pd3dDevice)
@@ -870,12 +838,7 @@ void Surface::RenderSetup(RenderDevice* pd3dDevice)
    m_d.m_heightbottom *= m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
    m_d.m_heighttop *= m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
    if( !m_vlinesling.empty() )
-   {
-      if( !slingshotVBuffer )
-         pd3dDevice->CreateVertexBuffer(m_vlinesling.size()*24, 0, MY_D3DFVF_NOTEX2_VERTEX, &slingshotVBuffer);
-
       PrepareSlingshots(pd3dDevice);
-   }
 
    m_isDynamic=false;
    if ( m_d.m_fSideVisible )
@@ -961,6 +924,8 @@ void Surface::RenderSlingshots(RenderDevice* pd3dDevice)
    Material *mat = m_ptable->GetMaterial( m_d.m_szSlingShotMaterial);
    pd3dDevice->basicShader->SetMaterial(mat);
 
+   pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
+
    pd3dDevice->basicShader->Begin(0);
    for (unsigned i=0; i<m_vlinesling.size(); i++)
    {
@@ -968,9 +933,11 @@ void Surface::RenderSlingshots(RenderDevice* pd3dDevice)
       if (plinesling->m_slingshotanim.m_iframe != 1)
           continue;
 
-      pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, slingshotVBuffer, i*24, 24, slingIBuffer, 0, 36);
+      pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, slingshotVBuffer, i*9, 9, slingIBuffer, 0, 24);
    }
    pd3dDevice->basicShader->End();
+
+   pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 }
 
 void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, const bool fDrop)
