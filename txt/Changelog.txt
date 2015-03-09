@@ -146,9 +146,9 @@ VP 10.0.0 Changelog
   to fade a set of flashers in/out easily you can use the IntensityScale in the script, so that you do not need to use different opacity values
   look into the CommandReference.txt for additional changes to the functions that can be used
   
-- collections can now group elements together. If you enable 'Group elements together' flag and you shift+left click on one element of the group all other members 
+- collections can now group elements together. If you enable 'Group elements together' flag and you click on one element of the group all other members 
   of that group are selected. So you can move/scale/rotate them without multi-select element by element. If you want to select just one element of that group
-  just left click on the element and you can manipulate only that element. Unchecking the 'Group elements together' flag disable this feature for this collection.
+  just shift-left click on the element and you can manipulate only that element. Unchecking the 'Group elements together' flag disable this feature for this collection.
 
 - ctrl+mouse wheel zooms in/out. The old way of using ctrl+left click for zooming in and ctrl+right click for zooming out is still possible.
   

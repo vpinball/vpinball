@@ -5288,7 +5288,7 @@ void PinTable::AddMultiSel(ISelect *psel, bool fAdd, bool fUpdate, bool fContext
       if (!fAdd || MultiSelIsEmpty())
       {
             ClearMultiSel(psel);
-            if ( fAdd && !fContextClick)
+            if ( !fAdd && !fContextClick)
             {
                 int colIndex=-1;
                 int elemIndex=-1;
