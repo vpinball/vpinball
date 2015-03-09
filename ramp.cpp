@@ -1149,10 +1149,10 @@ void Ramp::RenderSetup(RenderDevice* pd3dDevice)
    if ( m_d.m_fVisible )
    {
       if ( isHabitrail() )
-         prepareHabitrail(pd3dDevice);
+          prepareHabitrail(pd3dDevice);
       else
           GenerateVertexBuffer(pd3dDevice);
-      }
+   }
 }
 
 void Ramp::RenderStatic(RenderDevice* pd3dDevice)
@@ -1887,18 +1887,18 @@ STDMETHODIMP Ramp::put_Collidable(VARIANT_BOOL newVal)
 
 STDMETHODIMP Ramp::get_Visible(VARIANT_BOOL *pVal) //temporary value of object
 {
-   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fVisible);
+	*pVal = (VARIANT_BOOL)FTOVB(m_d.m_fVisible);
 
-   return S_OK;
+	return S_OK;
 }
 
 STDMETHODIMP Ramp::put_Visible(VARIANT_BOOL newVal)
 {
-      STARTUNDO
-    m_d.m_fVisible = VBTOF(newVal);
-	  STOPUNDO
+	STARTUNDO
+	m_d.m_fVisible = VBTOF(newVal);
+	STOPUNDO
 
-   return S_OK;
+	return S_OK;
 }
 
 STDMETHODIMP Ramp::get_DepthBias(float *pVal)
@@ -2033,33 +2033,37 @@ void Ramp::RenderRamp( RenderDevice *pd3dDevice, Material *mat )
       pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, dynamicVertexBuffer, offset, m_numVertices, dynamicIndexBuffer, 0, (rampVertex-1)*6);
       pd3dDevice->basicShader->End();  
 
-      offset += m_numVertices;
-
-      if (pin && !m_d.m_fImageWalls)
-         pd3dDevice->basicShader->SetTechnique("basic_without_texture");
-
-      pd3dDevice->basicShader->Begin(0);
-
-      if(m_d.m_rightwallheightvisible!=0.f && m_d.m_leftwallheightvisible!=0.f) //only render left & right side if the height is >0
-      {
-         pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, dynamicVertexBuffer, offset, m_numVertices*2*2, dynamicIndexBuffer, 0, (rampVertex-1)*6*2*2);
-      }
-	  else
+	  if(m_d.m_rightwallheightvisible!=0.f || m_d.m_leftwallheightvisible!=0.f)
 	  {
-		if ( m_d.m_rightwallheightvisible!=0.f ) //only render right side if the height is >0
-        {
-			pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, dynamicVertexBuffer, offset, m_numVertices*2, dynamicIndexBuffer, 0, (rampVertex-1)*6*2);
-        }
-		offset+=2*m_numVertices;
+		  offset += m_numVertices;
 
-		if ( m_d.m_leftwallheightvisible!=0.f ) //only render left side if the height is >0
-        {
-			pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, dynamicVertexBuffer, offset, m_numVertices*2, dynamicIndexBuffer, 0, (rampVertex-1)*6*2);
-        }
+		  if (pin && !m_d.m_fImageWalls)
+			 pd3dDevice->basicShader->SetTechnique("basic_without_texture");
+
+		  pd3dDevice->basicShader->Begin(0);
+
+		  if(m_d.m_rightwallheightvisible!=0.f && m_d.m_leftwallheightvisible!=0.f) //only render left & right side if the height is >0
+		  {
+			 pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, dynamicVertexBuffer, offset, m_numVertices*2*2, dynamicIndexBuffer, 0, (rampVertex-1)*6*2*2);
+		  }
+		  else
+		  {
+			if ( m_d.m_rightwallheightvisible!=0.f ) //only render right side if the height is >0
+			{
+				pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, dynamicVertexBuffer, offset, m_numVertices*2, dynamicIndexBuffer, 0, (rampVertex-1)*6*2);
+			}
+			offset+=2*m_numVertices;
+
+			if ( m_d.m_leftwallheightvisible!=0.f ) //only render left side if the height is >0
+			{
+				pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, dynamicVertexBuffer, offset, m_numVertices*2, dynamicIndexBuffer, 0, (rampVertex-1)*6*2);
+			}
+		  }
+
+		  pd3dDevice->basicShader->End();  
+
+		  //g_pplayer->m_pin3d.DisableAlphaBlend(); //!! not necessary anymore
 	  }
-      pd3dDevice->basicShader->End();  
-
-	  //g_pplayer->m_pin3d.DisableAlphaBlend(); //!! not necessary anymore
    }
 }
 // Always called each frame to render over everything else (along with primitives)
