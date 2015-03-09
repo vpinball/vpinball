@@ -8,7 +8,10 @@ Const VPinMAMEDriverVer = 3.44
 '	- Added ability to define default ball mass (in VP Units) inside table script.
 '		Defaults to 1 unit if undefined. Example...
 '			Const BallMass = 2 '(place before LoadVPM, or otherwise calling core.vbs)
-'       Note that this should be used if changing the ball size via BallSize, as the mass is of course proportional to the radius of the ball (m=k*r^3)	
+'       Note that this should be used if changing the ball size via BallSize,
+'       as the mass is of course proportional to the radius of the ball: m=k*r^3.
+'       One can also use the diameter/size like in VP, so BallMass=k*BallSize^3 with k=1/125000.
+'       Example: BallSize = 55, so BallMass = (55*55*55)/125000 = 1.331.
 '   - Add UseVPMDMD = true to the table script (place before LoadVPM, or otherwise calling core.vbs)
 '     to automatically pass the raw DMD data (levels from 0..100) from VPM to VP (see VP10+ for details on how to display it)
 '   - Add toggleKeyCoinDoor in VPMKeys.vbs to choose between a real coindoor setup (e.g. cabinets) and the 'classic' on/off behaviour (e.g desktops/keyboards)
