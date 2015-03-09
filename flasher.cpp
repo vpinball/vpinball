@@ -428,8 +428,8 @@ void Flasher::RenderSetup(RenderDevice* pd3dDevice)
 	   const Triangle * const ptri = vtri.ElementAt(i);
 
 	   bufi[i*3  ] = ptri->a;
-	   bufi[i*3+1] = ptri->b;
-	   bufi[i*3+2] = ptri->c;
+	   bufi[i*3+1] = ptri->c;
+	   bufi[i*3+2] = ptri->b;
    }
    dynamicIndexBuffer->unlock();
 
