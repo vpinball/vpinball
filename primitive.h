@@ -8,7 +8,6 @@
 #include "resource.h"
 #include <set>
 
-
 class Mesh
 {
 public:
@@ -21,8 +20,6 @@ public:
 
     size_t NumVertices() const    { return m_vertices.size(); }
 	size_t NumIndices() const     { return m_indices.size(); }
-
-    void ComputeNormals();
 
     void UploadToVB(VertexBuffer * vb) const;
 };
