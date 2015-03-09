@@ -844,7 +844,16 @@ void Trigger::Scale(float scalex, float scaley, Vertex2D *pvCenter)
 
 void Trigger::Translate(Vertex2D *pvOffset)
 {
-   IHaveDragPoints::TranslatePoints(pvOffset);
+   if ( m_d.m_shape==TriggerNone)
+      IHaveDragPoints::TranslatePoints(pvOffset);
+   else
+   {
+      GetIEditable()->BeginUndo();
+      GetIEditable()->MarkForUndo();
+      MoveOffset(pvOffset->x, pvOffset->y);
+      GetIEditable()->EndUndo();
+      GetPTable()->SetDirtyDraw();
+   }
 }
 
 HRESULT Trigger::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
