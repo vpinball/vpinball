@@ -41,40 +41,6 @@ void Mesh::SaveWavefrontObj(const char *fname, const char *description)
     WaveFrontObj_Save(fname, description, *this);
 }
 
-void Mesh::ComputeNormals()
-{
-    for (unsigned i = 0; i < NumVertices(); i++)
-    {
-        Vertex3D_NoTex2 & v = m_vertices[i];
-        v.nx = v.ny = v.nz = 0.0f;
-    }
-
-    for(unsigned i = 0; i < NumIndices(); i+=3)
-    {
-        Vertex3D_NoTex2 * const A = &m_vertices[m_indices[i]  ];
-        Vertex3D_NoTex2 * const B = &m_vertices[m_indices[i+1]];
-        Vertex3D_NoTex2 * const C = &m_vertices[m_indices[i+2]];         
-
-        const Vertex3Ds e0(B->x - A->x, B->y-A->y, B->z-A->z);
-        const Vertex3Ds e1(C->x - A->x, C->y-A->y, C->z-A->z);
-        Vertex3Ds normal = CrossProduct(e0,e1);
-        normal.NormalizeSafe();
-
-        A->nx += normal.x; A->ny += normal.y; A->nz += normal.z;
-        B->nx += normal.x; B->ny += normal.y; B->nz += normal.z;
-        C->nx += normal.x; C->ny += normal.y; C->nz += normal.z;
-    }
-
-    for (unsigned i = 0; i < NumVertices(); i++)
-    {
-        Vertex3D_NoTex2 & v = m_vertices[i];
-        const float inv_l = 1.0f / sqrtf(v.nx*v.nx + v.ny*v.ny + v.nz*v.nz);
-        v.nx *= inv_l;
-        v.ny *= inv_l;
-        v.nz *= inv_l;
-    }
-}
-
 void Mesh::UploadToVB(VertexBuffer * vb) const
 {
     Vertex3D_NoTex2 *buf;
@@ -621,7 +587,7 @@ void Primitive::CalculateBuiltinOriginal()
    }
 
    //SetNormal(&m_mesh.m_vertices[0], &m_mesh.m_indices[0], m_mesh.NumIndices()); // SetNormal only works for plane polygons
-   m_mesh.ComputeNormals();
+   ComputeNormals(m_mesh.m_vertices,m_mesh.m_indices);
 }
 
 void Primitive::UpdateEditorView()

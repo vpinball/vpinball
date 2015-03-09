@@ -429,7 +429,7 @@ inline void ClosestPointOnPolygon(const VtxContType &rgv, const Vertex2D &pvin, 
 
 template <class RenderVertexCont>
 void PolygonToTriangles(const RenderVertexCont& rgv, VectorVoid * const pvpoly, Vector<Triangle> * const pvtri)
-	{
+{
 	// There should be this many convex triangles.
 	// If not, the polygon is self-intersecting
 	const int tricount = pvpoly->Size() - 2;
@@ -438,9 +438,9 @@ void PolygonToTriangles(const RenderVertexCont& rgv, VectorVoid * const pvpoly, 
 
 	for (int l=0; l<tricount; ++l)
 	//while (pvpoly->Size() > 2)
-		{
+	{
 		for (int i=0; i<pvpoly->Size(); ++i)
-			{
+		{
 			const int s    = pvpoly->Size();
 			const int pre  = (int)pvpoly->ElementAt((i == 0) ? (s-1) : (i-1));
 			const int a    = (int)pvpoly->ElementAt(i);
@@ -448,7 +448,7 @@ void PolygonToTriangles(const RenderVertexCont& rgv, VectorVoid * const pvpoly, 
 			const int c    = (int)pvpoly->ElementAt((i < s-2) ? (i+2) : ((i+2) - s));
 			const int post = (int)pvpoly->ElementAt((i < s-3) ? (i+3) : ((i+3) - s));
 			if (AdvancePoint(rgv, pvpoly, a, b, c, pre, post))
-				{
+			{
 				Triangle * const ptri = new Triangle();
 				ptri->a = a;
 				ptri->b = b;
@@ -456,7 +456,49 @@ void PolygonToTriangles(const RenderVertexCont& rgv, VectorVoid * const pvpoly, 
 				pvtri->AddElement(ptri);
 				pvpoly->RemoveElementAt((i < s-1) ? (i+1) : 0); // b
 				break;
-				}
 			}
 		}
 	}
+}
+
+template <typename T>
+void ComputeNormals(Vertex3D_NoTex2* const vertices, const unsigned int numVertices, const T* const indices, const unsigned int numIndices)
+{
+    for (unsigned i = 0; i < numVertices; i++)
+    {
+        Vertex3D_NoTex2 &v = vertices[i];
+        v.nx = v.ny = v.nz = 0.0f;
+    }
+
+    for(unsigned i = 0; i < numIndices; i+=3)
+    {
+        Vertex3D_NoTex2& A = vertices[indices[i]  ];
+        Vertex3D_NoTex2& B = vertices[indices[i+1]];
+        Vertex3D_NoTex2& C = vertices[indices[i+2]];         
+
+        const Vertex3Ds e0(B.x - A.x, B.y - A.y, B.z - A.z);
+        const Vertex3Ds e1(C.x - A.x, C.y - A.y, C.z - A.z);
+        Vertex3Ds normal = CrossProduct(e0,e1);
+        normal.NormalizeSafe();
+
+        A.nx += normal.x; A.ny += normal.y; A.nz += normal.z;
+        B.nx += normal.x; B.ny += normal.y; B.nz += normal.z;
+        C.nx += normal.x; C.ny += normal.y; C.nz += normal.z;
+    }
+
+    for (unsigned i = 0; i < numVertices; i++)
+    {
+        Vertex3D_NoTex2 &v = vertices[i];
+		const float l = v.nx*v.nx + v.ny*v.ny + v.nz*v.nz;
+        const float inv_l = (l >= FLT_MIN) ? 1.0f / sqrtf(l) : 0.f;
+        v.nx *= inv_l;
+        v.ny *= inv_l;
+        v.nz *= inv_l;
+    }
+}
+
+template <typename T>
+void ComputeNormals(std::vector<Vertex3D_NoTex2>& vertices, const std::vector<T>& indices)
+{
+	ComputeNormals(&vertices[0],vertices.size(),&indices[0],indices.size());
+}

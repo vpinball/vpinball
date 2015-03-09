@@ -150,7 +150,7 @@ VP 10.0.0 Changelog
   of that group are selected. So you can move/scale/rotate them without multi-select element by element. If you want to select just one element of that group
   just left click on the element and you can manipulate only that element. Unchecking the 'Group elements together' flag disable this feature for this collection.
 
-- ctrl+mouse wheel zooms in/out. The old way ctrl+left click for zooming in and ctrl+right click zooming out are still possible.
+- ctrl+mouse wheel zooms in/out. The old way of using ctrl+left click for zooming in and ctrl+right click for zooming out is still possible.
   
 - remove old shadowing code and replace it with optional screen space ambient occlusion (via the global video preferences and also the table options)
 
