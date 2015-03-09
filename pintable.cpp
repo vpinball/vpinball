@@ -5386,7 +5386,8 @@ void PinTable::OnDelete()
       DeleteFromLayer( m_vseldelete.ElementAt(i)->GetIEditable() );
       m_vseldelete.ElementAt(i)->Delete();
    }
-
+   // update properties to show the properties of the table
+   g_pvp->SetPropSel(&m_vmultisel);
    SetDirtyDraw();
 }
 
