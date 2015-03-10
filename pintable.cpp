@@ -7056,6 +7056,36 @@ Material* PinTable::GetSurfaceMaterial(char *szName)
     }
     return GetMaterial(m_szPlayfieldMaterial);
 }
+
+Texture *PinTable::GetSurfaceImage(char *szName)
+{
+    if (szName == NULL || szName[0] == 0)
+        return GetImage(m_szImage);
+
+    for (int i=0;i<m_vedit.Size();i++)
+    {
+        IEditable *item=m_vedit.ElementAt(i);
+        if (item->GetItemType() == eItemSurface || item->GetItemType() == eItemRamp)
+        {
+            CComBSTR bstr;
+            item->GetScriptable()->get_Name(&bstr);
+            if (!WzSzStrCmp(bstr, szName))
+            {
+                IEditable * const piedit = item;
+                switch (piedit->GetItemType())
+                {
+                case eItemSurface:
+                    return GetImage(((Surface *)piedit)->m_d.m_szImage);
+
+                case eItemRamp:
+                    return GetImage(((Ramp *)piedit)->m_d.m_szImage);
+                }
+            }
+        }
+    }
+    return GetImage(m_szImage);
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 STDMETHODIMP PinTable::get_DisplayGrid(VARIANT_BOOL *pVal)

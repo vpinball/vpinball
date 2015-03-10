@@ -586,39 +586,40 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
     if (m_realState == LightStateBlinking)
         UpdateBlinker(g_pplayer->m_time_msec);
 
-	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-
     const bool isOn = (m_realState == LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : !!m_realState;
 
 	if ( isOn )
     {
-       if (m_d.m_currentIntensity<m_d.m_intensity*m_d.m_intensity_scale )
+       if (m_d.m_currentIntensity < m_d.m_intensity*m_d.m_intensity_scale)
        {
-          m_d.m_currentIntensity+=m_d.m_fadeSpeedUp*diff_time_msec;
-          if(m_d.m_currentIntensity>m_d.m_intensity*m_d.m_intensity_scale )
-             m_d.m_currentIntensity=m_d.m_intensity*m_d.m_intensity_scale;
+          m_d.m_currentIntensity += m_d.m_fadeSpeedUp*diff_time_msec;
+          if(m_d.m_currentIntensity > m_d.m_intensity*m_d.m_intensity_scale)
+             m_d.m_currentIntensity = m_d.m_intensity*m_d.m_intensity_scale;
        }
     }
     else
     {
        if (m_d.m_currentIntensity>0.0f )
        {
-          m_d.m_currentIntensity-=m_d.m_fadeSpeedDown*diff_time_msec;
-          if(m_d.m_currentIntensity<0.0f )
-             m_d.m_currentIntensity=0.0f;
+          m_d.m_currentIntensity -= m_d.m_fadeSpeedDown*diff_time_msec;
+          if(m_d.m_currentIntensity < 0.0f)
+             m_d.m_currentIntensity = 0.0f;
        }
     }
 
+	Texture *offTexel = NULL;
+
+	// early out all lights with no contribution
     const D3DXVECTOR4 lightColor2_falloff_power = convertColor(m_d.m_color2, m_d.m_falloff_power);
     D3DXVECTOR4 lightColor_intensity = convertColor(m_d.m_color);
     if(m_d.m_BulbLight ||
-      (!m_d.m_BulbLight && !m_fBackglass && !m_d.m_imageMode /*&& (m_d.m_szSurface == NULL || m_d.m_szSurface[0] == 0)*/)) // assumes/requires that the light in this kind of state is basically -exactly- the same as the static/(un)lit playfield
+      (!m_d.m_BulbLight && (m_surfaceTexture == (offTexel = m_ptable->GetImage(m_d.m_szOffImage))) && (offTexel != NULL) && !m_fBackglass && !m_d.m_imageMode)) // assumes/requires that the light in this kind of state is basically -exactly- the same as the static/(un)lit playfield/surface and accompanying image
     {
-	if(m_d.m_currentIntensity == 0.f)
-	    return;
-	if(lightColor_intensity.x == 0.f && lightColor_intensity.y == 0.f && lightColor_intensity.z == 0.f &&
-	   lightColor2_falloff_power.x == 0.f && lightColor2_falloff_power.y == 0.f && lightColor2_falloff_power.z == 0.f)
-	    return;
+		if(m_d.m_currentIntensity == 0.f)
+			return;
+		if(lightColor_intensity.x == 0.f && lightColor_intensity.y == 0.f && lightColor_intensity.z == 0.f &&
+		   lightColor2_falloff_power.x == 0.f && lightColor2_falloff_power.y == 0.f && lightColor2_falloff_power.z == 0.f)
+			return;
     }
 
     if (!m_fBackglass)
@@ -639,8 +640,8 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
 		SetHUDVertices(&centerHUD,1);
 	const D3DXVECTOR4 center_range(centerHUD.x, centerHUD.y, !m_fBackglass ? m_surfaceHeight+0.05f : 0.0f, 1.0f/max(m_d.m_falloff, 0.1f));
 	pd3dDevice->basicShader->SetVector("lightCenter_maxRange", &center_range);
-
-    pd3dDevice->basicShader->SetVector("lightColor2_falloff_power", &lightColor2_falloff_power);
+    
+	pd3dDevice->basicShader->SetVector("lightColor2_falloff_power", &lightColor2_falloff_power);
 
     if ( !m_d.m_BulbLight )
     {
@@ -648,8 +649,7 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
         pd3dDevice->basicShader->SetBool("imageMode",m_d.m_imageMode);
         pd3dDevice->basicShader->SetMaterial(m_surfaceMaterial);
 
-	    Texture *offTexel = m_ptable->GetImage(m_d.m_szOffImage);
-		if (offTexel != NULL)
+	    if (offTexel != NULL)
         {
             pd3dDevice->basicShader->SetTechnique("light_with_texture");
             pd3dDevice->basicShader->SetTexture("Texture0", offTexel );
@@ -661,6 +661,7 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
 	{
         pd3dDevice->basicShader->SetTechnique("bulb_light");
 
+		Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 		ppin3d->EnableAlphaBlend(false, false);
 		//pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);    // add the lightcontribution
 		pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_INVSRCCOLOR); // but also modulate the light first with the underlying elements by (1+lightcontribution, e.g. a very crude approximation of real lighting)
@@ -683,7 +684,8 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
     // render light shape
 	lightColor_intensity.w = m_d.m_currentIntensity;
 	pd3dDevice->basicShader->SetVector("lightColor_intensity", &lightColor_intensity);
-    pd3dDevice->basicShader->Begin(0);
+    
+	pd3dDevice->basicShader->Begin(0);
     pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, (!m_fBackglass) ? MY_D3DFVF_NOTEX2_VERTEX : MY_D3DTRANSFORMED_NOTEX2_VERTEX, customMoverVBuffer, 0, customMoverVertexNum, customMoverIBuffer, 0, customMoverIndexNum);
     pd3dDevice->basicShader->End();
     
@@ -812,6 +814,7 @@ void Light::RenderSetup(RenderDevice* pd3dDevice)
 
     m_surfaceHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
     m_surfaceMaterial = m_ptable->GetSurfaceMaterial(m_d.m_szSurface);
+	m_surfaceTexture = m_ptable->GetSurfaceImage(m_d.m_szSurface);
 
     if (m_realState == LightStateBlinking)
         RestartBlinker(g_pplayer->m_time_msec);
