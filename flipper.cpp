@@ -595,8 +595,9 @@ void Flipper::RenderSetup(RenderDevice* pd3dDevice)
     const float anglerad = ANGTORAD(m_d.m_StartAngle);
     const float anglerad2 = ANGTORAD(m_d.m_EndAngle);
 
-    if (!vertexBuffer)
-        pd3dDevice->CreateVertexBuffer(numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer);
+    if (vertexBuffer)
+		vertexBuffer->release();
+    pd3dDevice->CreateVertexBuffer(numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer);
 
     unsigned long ofs=0;
 

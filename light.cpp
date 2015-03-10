@@ -763,7 +763,6 @@ void Light::PrepareMoversCustom()
    customMoverVertexNum = vvertex.size();
    if ( customMoverVBuffer )
 	   customMoverVBuffer->release();
-
    const DWORD vertexType = (!m_fBackglass) ? MY_D3DFVF_NOTEX2_VERTEX : MY_D3DTRANSFORMED_NOTEX2_VERTEX;
    g_pplayer->m_pin3d.m_pd3dDevice->CreateVertexBuffer( customMoverVertexNum, 0, vertexType, &customMoverVBuffer);
 
@@ -829,8 +828,9 @@ void Light::RenderSetup(RenderDevice* pd3dDevice)
             bulbLightIndexBuffer->release();
         bulbLightIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer( bulbLightNumFaces, bulbLightIndices );
 
-        if (!bulbLightVBuffer)
-            pd3dDevice->CreateVertexBuffer(bulbLightNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &bulbLightVBuffer);
+        if (bulbLightVBuffer)
+			bulbLightVBuffer->release();
+        pd3dDevice->CreateVertexBuffer(bulbLightNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &bulbLightVBuffer);
 
         Vertex3D_NoTex2 *buf;
         bulbLightVBuffer->lock(0, 0, (void**)&buf, 0);
@@ -846,12 +846,14 @@ void Light::RenderSetup(RenderDevice* pd3dDevice)
             buf[i].tv = bulbLight[i].tv;
         }
         bulbLightVBuffer->unlock();
+
         if (bulbSocketIndexBuffer)
             bulbSocketIndexBuffer->release();
         bulbSocketIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer( bulbSocketNumFaces, bulbSocketIndices );
 
-        if (!bulbSocketVBuffer)
-            pd3dDevice->CreateVertexBuffer(bulbSocketNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &bulbSocketVBuffer);
+        if (bulbSocketVBuffer)
+			bulbSocketVBuffer->release();
+        pd3dDevice->CreateVertexBuffer(bulbSocketNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &bulbSocketVBuffer);
 
         bulbSocketVBuffer->lock(0, 0, (void**)&buf, 0);
         for( int i=0;i<bulbSocketNumVertices;i++ )

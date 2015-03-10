@@ -455,6 +455,7 @@ void Pin3D::InitPlayfieldGraphics()
         rgv[i].tu = (i==1 || i==2) ? 1.0f : 0.f;
     }
 
+	assert(tableIBuffer == NULL);
     const WORD playfieldPolyIndices[10] = {0,1,3,0,3,2, 2,3,5,6};
     tableIBuffer = m_pd3dDevice->CreateAndFillIndexBuffer(10,playfieldPolyIndices);
 

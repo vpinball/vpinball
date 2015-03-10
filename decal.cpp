@@ -504,11 +504,11 @@ void Decal::RenderSetup(RenderDevice* pd3dDevice )
    vertices[3].tu = 0;
    vertices[3].tv = 1.0f;
 
-   if ( vertexBuffer== NULL )
-   {
-      DWORD vertexType = ( m_fBackglass && GetPTable()->GetDecalsEnabled() ) ? MY_D3DTRANSFORMED_NOTEX2_VERTEX : MY_D3DFVF_NOTEX2_VERTEX;
-	  pd3dDevice->CreateVertexBuffer( 4, 0, vertexType, &vertexBuffer );
-   }
+   if ( vertexBuffer )
+	   vertexBuffer->release();
+   const DWORD vertexType = ( m_fBackglass && GetPTable()->GetDecalsEnabled() ) ? MY_D3DTRANSFORMED_NOTEX2_VERTEX : MY_D3DFVF_NOTEX2_VERTEX;
+   pd3dDevice->CreateVertexBuffer( 4, 0, vertexType, &vertexBuffer );
+
    Vertex3D_NoTex2 *buf;
    vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY);
    memcpy( buf, vertices, 4*sizeof(Vertex3D_NoTex2));

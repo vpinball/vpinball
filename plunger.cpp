@@ -382,8 +382,9 @@ void Plunger::RenderSetup(RenderDevice* pd3dDevice )
    const int plungePoints = PLUNGEPOINTS1;
    const int vtsPerFrame = 16 * plungePoints;
 
-   if ( vertexBuffer == NULL )
-       pd3dDevice->CreateVertexBuffer( cframes*vtsPerFrame, 0, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer );
+   if ( vertexBuffer )
+	   vertexBuffer->release();
+   pd3dDevice->CreateVertexBuffer( cframes*vtsPerFrame, 0, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer );
 
    int vbOffset=0;
    Vertex3D_NoTex2 *buf;
