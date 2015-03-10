@@ -1201,7 +1201,7 @@ void Shader::SetMaterial( const Material * const mat )
 		fRoughness = exp2f(10.0f * 0.0f + 1.0f); // map from 0..1 to 2..2048
 		fEdge = 1.0f;
 		fOpacity = 1.0f;
-		cBase = 0xB469FF;
+		cBase = g_pvp->dummyMaterial.m_cBase;
         cGlossy = 0;
         cClearcoat = 0;
         bIsMetal = false;
