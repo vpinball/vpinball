@@ -737,7 +737,7 @@ void Light::PrepareMoversCustom()
 
    WORD* bufi;
    customMoverIBuffer->lock(0,0,(void**)&bufi, 0);
-   for(unsigned int i = 0; i < vtri.Size(); ++i)
+   for(int i = 0; i < vtri.Size(); ++i)
    {
 	   const Triangle * const ptri = vtri.ElementAt(i);
 
