@@ -34,7 +34,6 @@
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
-extern Material dummyMaterial;
 // menu locations
 enum {
     FILEMENU = 0,
@@ -505,11 +504,11 @@ void VPinball::InitRegValues()
       m_autosaveTime = -1;
 
    m_securitylevel = GetRegIntWithDefault("Player", "SecurityLevel", DEFAULT_SECURITY_LEVEL);
-   DWORD type = REG_NONE;
-   hr = GetRegValue("Editor", "DefaultMaterialColor", &type, &g_pvp->m_cDefaultMaterialColor, 4);
+   DWORD type = REG_DWORD;
+   hr = GetRegValue("Editor", "DefaultMaterialColor", &type, &g_pvp->dummyMaterial.m_cBase, 4);
    if (FAILED(hr))
-      g_pvp->m_cDefaultMaterialColor = 0xB469FF;
-
+       g_pvp->dummyMaterial.m_cBase = 0xB469FF;
+   
    if (m_securitylevel < eSecurityNone || m_securitylevel > eSecurityNoControls)
       m_securitylevel = eSecurityNoControls;
 
@@ -7287,7 +7286,7 @@ INT_PTR CALLBACK EditorOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARA
          SendMessage(hwndControl, BM_SETCHECK, fdrawpoints ? BST_CHECKED : BST_UNCHECKED, 0);
 
          HWND hwndColor = GetDlgItem(hwndDlg, IDC_COLOR);
-         SendMessage(hwndColor, CHANGE_COLOR, 0, g_pvp->m_cDefaultMaterialColor);
+         SendMessage(hwndColor, CHANGE_COLOR, 0, g_pvp->dummyMaterial.m_cBase);
 
          // light centers
          int fdrawcenters = GetRegIntWithDefault("Editor", "DrawLightCenters", 0);
@@ -7312,7 +7311,7 @@ INT_PTR CALLBACK EditorOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARA
 
    case GET_COLOR_TABLE:
    {
-      *((unsigned long **)lParam) = &g_pvp->m_cDefaultMaterialColor;
+       *((unsigned long **)lParam) = &g_pvp->dummyMaterial.m_cBase;
       return TRUE;
    }
 
@@ -7323,7 +7322,7 @@ INT_PTR CALLBACK EditorOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARA
          case COLOR_CHANGED:
          {
             const size_t color = GetWindowLongPtr((HWND)lParam, GWLP_USERDATA);
-            g_pvp->m_cDefaultMaterialColor = color;
+            g_pvp->dummyMaterial.m_cBase = color;
             break;
          }
          case BN_CLICKED:
@@ -7359,8 +7358,7 @@ INT_PTR CALLBACK EditorOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARA
                   for (int i=0;i<g_pvp->m_vtable.Size();i++)
                      g_pvp->m_vtable.ElementAt(i)->BeginAutoSaveCounter();
        
-                  dummyMaterial.m_cBase = g_pvp->m_cDefaultMaterialColor;
-                  SetRegValue("Editor", "DefaultMaterialColor", REG_DWORD, &g_pvp->m_cDefaultMaterialColor, 4);
+                  SetRegValue("Editor", "DefaultMaterialColor", REG_DWORD, &g_pvp->dummyMaterial.m_cBase, 4);
                   EndDialog(hwndDlg, TRUE);
                }
                break;

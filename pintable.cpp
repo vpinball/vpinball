@@ -17,7 +17,7 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 #define TIMER_ID_AUTOSAVE 12345
 #define TIMER_ID_CLOSE_TABLE 12346
 
-Material dummyMaterial; //!!
+
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -1838,7 +1838,7 @@ void PinTable::Play(bool _cameraMode)
       m_materialMap.clear();
       for (int i=0;i<m_materials.Size();i++)
       {
-          m_materialMap[ m_materials.ElementAt(i)->m_szName ] = m_materials.ElementAt(i);
+          m_materialMap[m_materials.ElementAt(i)->m_szName] = m_materials.ElementAt(i);
       }
 
       g_pplayer = new Player(_cameraMode);
@@ -6462,7 +6462,7 @@ bool PinTable::IsMaterialNameUnique( char *name )
 Material* PinTable::GetMaterial( char * const szName) const
 {
     if (szName == NULL || szName[0] == '\0')
-        return &dummyMaterial;
+        return &g_pvp->dummyMaterial;
 
     // during playback, we use the hashtable for lookup
     if (!m_materialMap.empty())
@@ -6472,7 +6472,7 @@ Material* PinTable::GetMaterial( char * const szName) const
         if (it != m_materialMap.end())
             return it->second;
         else
-            return &dummyMaterial;
+            return &g_pvp->dummyMaterial;
     }
 
     for (int i=0;i<m_materials.Size();i++)
@@ -6483,7 +6483,7 @@ Material* PinTable::GetMaterial( char * const szName) const
         }
     }
 
-    return &dummyMaterial;
+    return &g_pvp->dummyMaterial;
 }
 
 void PinTable::AddMaterial( Material *pmat)
