@@ -2302,7 +2302,8 @@ void Player::DMDdraw(const float DMDposx, const float DMDposy, const float DMDwi
 		DMDVerts[i*5+1] = 1.0f-(DMDVerts[i*5+1]*DMDheight + DMDposy)*2.0f;
 	}
 
-    m_pin3d.m_pd3dDevice->DMDShader->SetTechnique((float)m_width*DMDwidth/(float)m_dmdx <= 3.74f ? "basic_DMD_tiny" : ((float)m_width*DMDwidth/(float)m_dmdx <= 7.49f ? "basic_DMD" : "basic_DMD_big")); // use different smoothing functions for LED/Plasma emulation (rule of thumb here: up to quarter width of 1920HD = tiny, up to half width of 1920HD = normal, up to full width of 1920HD = big)
+    const float width = g_pplayer->m_pin3d.m_useAA ? 2.0f*(float)m_width : (float)m_width;
+    m_pin3d.m_pd3dDevice->DMDShader->SetTechnique(width*DMDwidth/(float)m_dmdx <= 3.74f ? "basic_DMD_tiny" : (width*DMDwidth/(float)m_dmdx <= 7.49f ? "basic_DMD" : "basic_DMD_big")); // use different smoothing functions for LED/Plasma emulation (rule of thumb here: up to quarter width of 1920HD = tiny, up to half width of 1920HD = normal, up to full width of 1920HD = big)
 
     const D3DXVECTOR4 c = convertColor(DMDcolor,intensity);
     m_pin3d.m_pd3dDevice->DMDShader->SetVector("vColor_Intensity",&c);
