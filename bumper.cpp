@@ -522,8 +522,9 @@ void Bumper::RenderSetup(RenderDevice* pd3dDevice )
          baseIndexBuffer->release();
       baseIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer( bumperBaseNumFaces, bumperBaseIndices );
 
-      if (!baseVertexBuffer)
-         pd3dDevice->CreateVertexBuffer(bumperBaseNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &baseVertexBuffer);
+      if (baseVertexBuffer)
+		 baseVertexBuffer->release();
+	  pd3dDevice->CreateVertexBuffer(bumperBaseNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &baseVertexBuffer);
 
       fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_orientation));
 
@@ -551,8 +552,9 @@ void Bumper::RenderSetup(RenderDevice* pd3dDevice )
          socketIndexBuffer->release();
       socketIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer( bumperSocketNumFaces, bumperSocketIndices );
 
-      if (!socketVertexBuffer)
-         pd3dDevice->CreateVertexBuffer(bumperSocketNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &socketVertexBuffer);
+      if (socketVertexBuffer)
+		  socketVertexBuffer->release();
+      pd3dDevice->CreateVertexBuffer(bumperSocketNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &socketVertexBuffer);
 
       socketVertexBuffer->lock(0, 0, (void**)&buf, 0);
       for( int i=0;i<bumperSocketNumVertices;i++ )
@@ -577,8 +579,9 @@ void Bumper::RenderSetup(RenderDevice* pd3dDevice )
          ringIndexBuffer->release();
       ringIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer( bumperRingNumFaces, bumperRingIndices );
 
-      if (!ringVertexBuffer)
-         pd3dDevice->CreateVertexBuffer(bumperRingNumVertices, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &ringVertexBuffer);
+      if (ringVertexBuffer)
+		  ringVertexBuffer->release();
+      pd3dDevice->CreateVertexBuffer(bumperRingNumVertices, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &ringVertexBuffer);
 
       ringVertices = new Vertex3D_NoTex2[bumperRingNumVertices];
       ringVertexBuffer->lock(0, 0, (void**)&buf, 0);
@@ -609,8 +612,9 @@ void Bumper::RenderSetup(RenderDevice* pd3dDevice )
          capIndexBuffer->release();
       capIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer( bumperCapNumFaces, bumperCapIndices );
 
-      if (!capVertexBuffer)
-         pd3dDevice->CreateVertexBuffer(bumperCapNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &capVertexBuffer);
+      if (capVertexBuffer)
+ 	     capVertexBuffer->release();
+      pd3dDevice->CreateVertexBuffer(bumperCapNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &capVertexBuffer);
 
       Vertex3D_NoTex2 *buf;
       capVertexBuffer->lock(0, 0, (void**)&buf, 0);

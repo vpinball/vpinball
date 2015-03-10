@@ -880,9 +880,11 @@ void Player::InitBallShader()
    const D3DXVECTOR4 rwem(exp2f(10.0f * Roughness + 1.0f), 0.f, 1.f, 0.0f); // no metal, as ball collects the diffuse playfield which uses this flag!
    ballShader->SetVector("Roughness_WrapL_Edge_IsMetal", &rwem);
 
+   assert(ballIndexBuffer == NULL);
    ballIndexBuffer = m_pin3d.m_pd3dDevice->CreateAndFillIndexBuffer( basicBallNumFaces, basicBallIndices );
 
-   // VB for normal ball 
+   // VB for normal ball
+   assert(ballVertexBuffer == NULL);
    m_pin3d.m_pd3dDevice->CreateVertexBuffer( basicBallNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &ballVertexBuffer );
 
    // load precomputed ball vertices into vertex buffer
@@ -1098,7 +1100,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
     //std::sort( m_vHitNonTrans.begin(), m_vHitNonTrans.end(), CompareHitableDepthReverse );
     //std::stable_sort( m_vHitNonTrans.begin(), m_vHitNonTrans.end(), CompareHitableMaterial ); // stable, so that objects with same materials will keep depth order
     std::sort( m_vHitTrans.begin(), m_vHitTrans.end(), CompareHitableDepth );
-
+    
 
 	// Direct all renders to the back buffer.
     m_pin3d.SetRenderTarget(m_pin3d.m_pddsBackBuffer, m_pin3d.m_pddsZBuffer);
@@ -1123,6 +1125,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
             }
         }
 
+	    assert(m_ballDebugPoints == NULL);
         m_pin3d.m_pd3dDevice->CreateVertexBuffer( ballDbgVtx.size(), 0, MY_D3DFVF_TEX, &m_ballDebugPoints );
         void *buf;
         m_ballDebugPoints->lock(0, 0, &buf, 0);
@@ -2663,7 +2666,7 @@ void Player::FlipVideoBuffersAO( const bool vsync )
 	m_pin3d.m_pddsAOBackTmpBuffer->GetSurfaceLevel(0, &tmpAOSurface);
 	m_pin3d.m_pd3dDevice->SetRenderTarget(tmpAOSurface);
 	SAFE_RELEASE_NO_RCC(tmpAOSurface); //!!
-	
+
 	m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pddsAOBackBuffer);
 	m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture3", m_pin3d.m_pdds3DZBuffer);
 

@@ -637,12 +637,10 @@ void Trigger::RenderSetup(RenderDevice* pd3dDevice)
 
    if (triggerIndexBuffer)
        triggerIndexBuffer->release();
-
    triggerIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(numFaces, (m_d.m_shape==TriggerWire) ? triggerSimpleIndices : triggerStarIndices);
 
    if (vertexBuffer)
 	   vertexBuffer->release();
-
    ppin3d->m_pd3dDevice->CreateVertexBuffer( numVertices, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer );
    NumVideoBytes += numVertices*sizeof(Vertex3D_NoTex2);
 

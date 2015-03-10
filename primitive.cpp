@@ -654,9 +654,13 @@ void Primitive::PostRenderStatic(RenderDevice* pd3dDevice)
 
 void Primitive::RenderSetup( RenderDevice* pd3dDevice )
 {
-   if (!vertexBuffer)
+   if( vertexBuffer )
+      vertexBuffer->release();
+   
       pd3dDevice->CreateVertexBuffer( m_mesh.NumVertices(), 0, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer );
 
+   if( indexBuffer )
+      indexBuffer->release();
    indexBuffer = pd3dDevice->CreateAndFillIndexBuffer( m_mesh.m_indices );
 }
 

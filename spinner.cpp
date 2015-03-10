@@ -354,8 +354,9 @@ void Spinner::RenderSetup(RenderDevice* pd3dDevice)
        bracketIndexBuffer->release();
    bracketIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer( spinnerBracketNumFaces, spinnerBracketIndices );
 
-   if (!bracketVertexBuffer)
-       pd3dDevice->CreateVertexBuffer(spinnerBracketNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &bracketVertexBuffer);
+   if (bracketVertexBuffer)
+	   bracketVertexBuffer->release();
+   pd3dDevice->CreateVertexBuffer(spinnerBracketNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &bracketVertexBuffer);
 
    fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotation));
 
@@ -383,8 +384,9 @@ void Spinner::RenderSetup(RenderDevice* pd3dDevice)
        plateIndexBuffer->release();
    plateIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer( spinnerPlateNumFaces, spinnerPlateIndices );
 
-   if (!plateVertexBuffer)
-       pd3dDevice->CreateVertexBuffer(spinnerPlateNumVertices, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &plateVertexBuffer);
+   if (plateVertexBuffer)
+	   plateVertexBuffer->release();
+   pd3dDevice->CreateVertexBuffer(spinnerPlateNumVertices, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &plateVertexBuffer);
 
    plateVertexBuffer->lock(0, 0, (void**)&buf, 0);
    for( int i=0;i<spinnerPlateNumVertices;i++ )
