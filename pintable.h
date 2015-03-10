@@ -511,6 +511,7 @@ END_CONNECTION_POINT_MAP()
     bool IsMaterialNameUnique( char *name );
     Material* GetMaterial( char * const szName) const;
     Material* GetSurfaceMaterial( char *szName );
+    Texture *GetSurfaceImage( char *szName );
     bool GetCollectionIndex( ISelect *element, int &collectionIndex, int &elementIndex );
 
     char m_szFileName[_MAX_PATH];
