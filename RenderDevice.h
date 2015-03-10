@@ -362,21 +362,21 @@ public:
 		}
 	}
 
-	void SetAlphaValue(const float value)
+	void SetFlasherColorAlpha(const D3DXVECTOR4& color)
 	{
-		if (currentAlphaValue != value)
+		if (currentFlasherColor.x != color.x || currentFlasherColor.y != color.y || currentFlasherColor.z != color.z || currentFlasherColor.w != color.w)
 		{
-			currentAlphaValue = value;
-			SetFloat("fAlpha", value);
+			currentFlasherColor = color;
+			SetVector("staticColor_Alpha", &color);
 		}
 	}
 
-	void SetStaticColor(const D3DXVECTOR4& color)
+	void SetFlasherData(const D3DXVECTOR4& color)
 	{
-		if (currentColor.x != color.x || currentColor.y != color.y || currentColor.z != color.z)
+		if (currentFlasherData.x != color.x || currentFlasherData.y != color.y || currentFlasherData.z != color.z || currentFlasherData.w != color.w)
 		{
-			currentColor = color;
-			SetVector("staticColor", &color);
+			currentFlasherData = color;
+			SetVector("alphaTestValueAB_filterMode_addBlend", &color);
 		}
 	}
 
@@ -435,7 +435,8 @@ private:
     static const DWORD TEXTURESET_STATE_CACHE_SIZE=5; // current convention: SetTexture gets "TextureX", where X 0..4
     BaseTexture *currentTexture[TEXTURESET_STATE_CACHE_SIZE];
     float   currentAlphaTestValue;
-    float   currentAlphaValue;
-    D3DXVECTOR4 currentColor;
     char    currentTechnique[64];
+
+    D3DXVECTOR4 currentFlasherColor; // both flasher only-data
+    D3DXVECTOR4 currentFlasherData;
 };

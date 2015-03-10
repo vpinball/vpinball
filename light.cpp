@@ -586,33 +586,10 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
     if (m_realState == LightStateBlinking)
         UpdateBlinker(g_pplayer->m_time_msec);
 
-    if(m_fBackglass && g_pplayer->m_ptable->m_tblMirrorEnabled)
-		pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
-
 	Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
     const bool isOn = (m_realState == LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : !!m_realState;
 
-    if (!m_fBackglass)
-    {
-	    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
-        const float depthbias = -BASEDEPTHBIAS;
-        pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, *((DWORD*)&depthbias));
-    }
-
-	Vertex3D_NoTex2 centerHUD;
-	centerHUD.x = m_d.m_vCenter.x;
-	centerHUD.y = m_d.m_vCenter.y;
-	centerHUD.z = 0.0f;
-	if(m_fBackglass)
-		SetHUDVertices(&centerHUD,1);
-	const D3DXVECTOR4 center_range(centerHUD.x, centerHUD.y, !m_fBackglass ? m_surfaceHeight+0.05f : 0.0f, 1.0f/max(m_d.m_falloff, 0.1f));
-	pd3dDevice->basicShader->SetVector("lightCenter_maxRange", &center_range);
-
-	const D3DXVECTOR4 lightColor2_falloff_power = convertColor(m_d.m_color2, m_d.m_falloff_power);
-    pd3dDevice->basicShader->SetVector("lightColor2_falloff_power", &lightColor2_falloff_power);
-    D3DXVECTOR4 lightColor_intensity = convertColor(m_d.m_color);
-    
 	if ( isOn )
     {
        if (m_d.m_currentIntensity<m_d.m_intensity*m_d.m_intensity_scale )
@@ -631,6 +608,39 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
              m_d.m_currentIntensity=0.0f;
        }
     }
+
+    const D3DXVECTOR4 lightColor2_falloff_power = convertColor(m_d.m_color2, m_d.m_falloff_power);
+    D3DXVECTOR4 lightColor_intensity = convertColor(m_d.m_color);
+    if(m_d.m_BulbLight ||
+      (!m_d.m_BulbLight && !m_fBackglass && !m_d.m_imageMode /*&& (m_d.m_szSurface == NULL || m_d.m_szSurface[0] == 0)*/)) // assumes/requires that the light in this kind of state is basically -exactly- the same as the static/(un)lit playfield
+    {
+	if(m_d.m_currentIntensity == 0.f)
+	    return;
+	if(lightColor_intensity.x == 0.f && lightColor_intensity.y == 0.f && lightColor_intensity.z == 0.f &&
+	   lightColor2_falloff_power.x == 0.f && lightColor2_falloff_power.y == 0.f && lightColor2_falloff_power.z == 0.f)
+	    return;
+    }
+
+    if (!m_fBackglass)
+    {
+	    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
+        const float depthbias = -BASEDEPTHBIAS;
+        pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, *((DWORD*)&depthbias));
+    }
+
+    if(m_fBackglass && g_pplayer->m_ptable->m_tblMirrorEnabled)
+		pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
+
+	Vertex3D_NoTex2 centerHUD;
+	centerHUD.x = m_d.m_vCenter.x;
+	centerHUD.y = m_d.m_vCenter.y;
+	centerHUD.z = 0.0f;
+	if(m_fBackglass)
+		SetHUDVertices(&centerHUD,1);
+	const D3DXVECTOR4 center_range(centerHUD.x, centerHUD.y, !m_fBackglass ? m_surfaceHeight+0.05f : 0.0f, 1.0f/max(m_d.m_falloff, 0.1f));
+	pd3dDevice->basicShader->SetVector("lightCenter_maxRange", &center_range);
+
+    pd3dDevice->basicShader->SetVector("lightColor2_falloff_power", &lightColor2_falloff_power);
 
     if ( !m_d.m_BulbLight )
     {

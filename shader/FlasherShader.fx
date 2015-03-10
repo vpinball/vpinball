@@ -1,22 +1,17 @@
 #include "Helpers.fxh"
 
-#define Filter_None	    0
-#define Filter_Additive	1
-#define Filter_Overlay	2
-#define Filter_Multiply	3
-#define Filter_Screen   4
+#define Filter_None	0.
+#define Filter_Additive	1.
+#define Filter_Overlay	2.
+#define Filter_Multiply	3.
+#define Filter_Screen   4.
 
 // transformation matrices
 float4x4 matWorldViewProj : WORLDVIEWPROJ;
 
-float3 staticColor = float3(1.,1.,1.);
-float  fAlpha = 1.0;
-float  fAlphaTestValue = 128.0/255.0;
-float  fAlphaTestValueB = 128.0/255.0;
+float4 staticColor_Alpha;
+float4 alphaTestValueAB_filterMode_addBlend;
 float2 amount__blend_modulate_vs_add;
-int    filterMode;
-
-bool bAdd_Blend;
 
 texture Texture0; // base texture
 texture Texture1; // second image
@@ -63,14 +58,14 @@ float4 ps_main_textureOne_noLight(in VS_OUTPUT_2D IN) : COLOR
 {
    const float4 pixel = tex2D(texSampler0, IN.tex0);
 
-   if (pixel.a<=fAlphaTestValue)
+   if (pixel.a<=alphaTestValueAB_filterMode_addBlend.x)
     clip(-1);           //stop the pixel shader if alpha test should reject pixel
 
    float4 result;
-   result.xyz = staticColor*InvGamma(pixel.xyz);
-   result.a = pixel.a*fAlpha;
+   result.xyz = staticColor_Alpha.xyz*InvGamma(pixel.xyz);
+   result.a = pixel.a*staticColor_Alpha.w;
 
-   if(!bAdd_Blend)
+   if(alphaTestValueAB_filterMode_addBlend.w == 0.)
       return result;
    else
       return float4(result.xyz*(-amount__blend_modulate_vs_add.y*result.a), // negative as it will be blended with '1.0-thisvalue' (the 1.0 is needed to modulate the underlying elements correctly, but not wanted for the term below)
@@ -82,26 +77,24 @@ float4 ps_main_textureAB_noLight(in VS_OUTPUT_2D IN) : COLOR
    float4 pixel1 = tex2D(texSampler0, IN.tex0);
    float4 pixel2 = tex2D(texSampler1, IN.tex0);
 
-   if (pixel1.a<=fAlphaTestValue || pixel2.a<=fAlphaTestValueB)
+   if (pixel1.a<=alphaTestValueAB_filterMode_addBlend.x || pixel2.a<=alphaTestValueAB_filterMode_addBlend.y)
     clip(-1);           //stop the pixel shader if alpha test should reject pixel
 
    pixel1.xyz = InvGamma(pixel1.xyz);
    pixel2.xyz = InvGamma(pixel2.xyz);
 
-   float4 result;
-   result.xyz = staticColor;
-   result.a = fAlpha;
+   float4 result = staticColor_Alpha;
 
-   if ( filterMode == Filter_Overlay )
+   if ( alphaTestValueAB_filterMode_addBlend.z == Filter_Overlay )
       result *= Overlay(pixel1,pixel2);
-   else if ( filterMode == Filter_Multiply )
+   else if ( alphaTestValueAB_filterMode_addBlend.z == Filter_Multiply )
       result *= Multiply(pixel1,pixel2, amount__blend_modulate_vs_add.x);
-   else if ( filterMode == Filter_Additive )
+   else if ( alphaTestValueAB_filterMode_addBlend.z == Filter_Additive )
       result *= Additive(pixel1,pixel2, amount__blend_modulate_vs_add.x);
-   else if ( filterMode == Filter_Screen )
+   else if ( alphaTestValueAB_filterMode_addBlend.z == Filter_Screen )
       result *= Screen(pixel1,pixel2);
 
-   if(!bAdd_Blend)
+   if(alphaTestValueAB_filterMode_addBlend.w == 0.)
       return result;
    else
       return float4(result.xyz*(-amount__blend_modulate_vs_add.y*result.a), // negative as it will be blended with '1.0-thisvalue' (the 1.0 is needed to modulate the underlying elements correctly, but not wanted for the term below)
@@ -110,10 +103,10 @@ float4 ps_main_textureAB_noLight(in VS_OUTPUT_2D IN) : COLOR
 
 float4 ps_main_noLight(in VS_OUTPUT_2D IN) : COLOR
 {
-	if(!bAdd_Blend)
-      return float4(staticColor,fAlpha);
+	if(alphaTestValueAB_filterMode_addBlend.w == 0.)
+      return staticColor_Alpha;
 	else
-	  return float4(staticColor*(-amount__blend_modulate_vs_add.y*fAlpha), // negative as it will be blended with '1.0-thisvalue' (the 1.0 is needed to modulate the underlying elements correctly, but not wanted for the term below)
+	  return float4(staticColor_Alpha.xyz*(-amount__blend_modulate_vs_add.y*staticColor_Alpha.w), // negative as it will be blended with '1.0-thisvalue' (the 1.0 is needed to modulate the underlying elements correctly, but not wanted for the term below)
 	                1.0/amount__blend_modulate_vs_add.y - 1.0);
 }
 

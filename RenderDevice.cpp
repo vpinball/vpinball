@@ -1071,13 +1071,13 @@ void RenderDevice::GetViewport(ViewPort* p1)
 Shader::Shader(RenderDevice *renderDevice)
 {
     m_renderDevice = renderDevice;
-    m_shader=0;
+    m_shader = 0;
 	for(unsigned int i = 0; i < TEXTURESET_STATE_CACHE_SIZE; ++i)
-	    currentTexture[i]=0;
+	    currentTexture[i] = 0;
     currentAlphaTestValue = -FLT_MAX;
-    currentAlphaValue = -FLT_MAX;
-    currentColor=D3DXVECTOR4(-FLT_MAX,-FLT_MAX,-FLT_MAX,-FLT_MAX);
-    currentTechnique[0]=0;
+    currentFlasherData =
+    currentFlasherColor = D3DXVECTOR4(-FLT_MAX,-FLT_MAX,-FLT_MAX,-FLT_MAX);
+    currentTechnique[0] = 0;
 }
 
 Shader::~Shader()
