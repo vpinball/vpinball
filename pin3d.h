@@ -17,10 +17,11 @@ class PinProjection
 public:
 	void ScaleView(const float x, const float y, const float z);
 	void MultiplyView(const Matrix3D& mat);
-	void RotateView(float x, float y, float z);
+    void RotateView(float x, float y, float z);
 	void TranslateView(const float x, const float y, const float z);
 
-	void FitCameraToVertices(Vector<Vertex3Ds> * const pvvertex3D, float aspect, float rotation, float inclination, float FOV, float xlatez, float layback);
+    void FitCameraToVerticesFS(Vector<Vertex3Ds> * const pvvertex3D, float aspect, float rotation, float inclination, float FOV, float xlatez, float layback);
+    void FitCameraToVertices(Vector<Vertex3Ds> * const pvvertex3D, float aspect, float rotation, float inclination, float FOV, float xlatez, float layback);
 	void CacheTransform();      // compute m_matrixTotal = m_World * m_View * m_Proj
 	void TransformVertices(const Vertex3D_NoTex2 * const rgv, const WORD * const rgi, const int count, Vertex2D * const rgvout) const;
 
@@ -46,7 +47,8 @@ public:
 
 	HRESULT InitPin3D(const HWND hwnd, const bool fullScreen, const int width, const int height, const int colordepth, int &refreshrate, const int VSync, const bool useAA, const bool stereo3D, const bool FXAA, const bool useAO);
 
-	void InitLayout();
+    void InitLayoutFS();
+    void InitLayout();
 
 	void TransformVertices(const Vertex3D_NoTex2 * rgv, const WORD * rgi, int count, Vertex2D * rgvout) const;
 
@@ -73,7 +75,7 @@ private:
     void InitRenderState();
     void InitLights();
 
-	void Identity();
+    void Identity();
    
 	// Data members
 public:
