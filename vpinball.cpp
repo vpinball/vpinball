@@ -7675,6 +7675,23 @@ void AddSearchItemToList(HWND listHwnd, IEditable * const piedit, int idx)
         }
         ListView_SetItemText( listHwnd, idx, 1, "Wall");
         ListView_SetItemText( listHwnd, idx, 3, textBuf);
+        firstImage[0] = 0;
+        secondImage[0] = 0;
+        if (IsValidString(sur->m_d.m_szTopMaterial))
+        {
+           sprintf_s(firstImage, "%s", sur->m_d.m_szTopMaterial);
+           sprintf_s(secondImage, "%s", sur->m_d.m_szSideMaterial);
+        }
+        textBuf[0] = 0;
+        if (firstImage[0] != 0)
+           strcat_s(textBuf, firstImage);
+        if (secondImage[0] != 0)
+        {
+           if (firstImage[0] != 0)
+              strcat_s(textBuf, " -- ");
+           strcat_s(textBuf, secondImage);
+        }
+        ListView_SetItemText(listHwnd, idx, 4, textBuf);
     }
     else if( piedit->GetItemType() == eItemRamp)
     {
@@ -7684,6 +7701,9 @@ void AddSearchItemToList(HWND listHwnd, IEditable * const piedit, int idx)
 
         ListView_SetItemText( listHwnd, idx, 1, "Ramp");
         ListView_SetItemText( listHwnd, idx, 3, textBuf);
+        if (IsValidString(ramp->m_d.m_szMaterial))
+           sprintf_s(textBuf, "%s", ramp->m_d.m_szMaterial);
+        ListView_SetItemText(listHwnd, idx, 4, textBuf);
     }
     else if( piedit->GetItemType() == eItemFlasher)
     {
@@ -7715,6 +7735,9 @@ void AddSearchItemToList(HWND listHwnd, IEditable * const piedit, int idx)
 
         ListView_SetItemText( listHwnd, idx, 1, "Rubber");
         ListView_SetItemText( listHwnd, idx, 3, textBuf);
+        if (IsValidString(rubber->m_d.m_szMaterial))
+           sprintf_s(textBuf, "%s", rubber->m_d.m_szMaterial);
+        ListView_SetItemText(listHwnd, idx, 4, textBuf);
     }
     else if( piedit->GetItemType() == eItemSpinner)
     {
@@ -7724,11 +7747,18 @@ void AddSearchItemToList(HWND listHwnd, IEditable * const piedit, int idx)
 
         ListView_SetItemText( listHwnd, idx, 1, "Spinner");
         ListView_SetItemText( listHwnd, idx, 3, textBuf);
+        if (IsValidString(spinner->m_d.m_szMaterial))
+           sprintf_s(textBuf, "%s", spinner->m_d.m_szMaterial);
+        ListView_SetItemText(listHwnd, idx, 4, textBuf);
     }
     else if( piedit->GetItemType() == eItemKicker)
     {
+       Kicker *kicker = (Kicker*)piedit;
         ListView_SetItemText( listHwnd, idx, 1, "Kicker");
         ListView_SetItemText( listHwnd, idx, 3, "");
+        if (IsValidString(kicker->m_d.m_szMaterial))
+           sprintf_s(textBuf, "%s", kicker->m_d.m_szMaterial);
+        ListView_SetItemText(listHwnd, idx, 4, textBuf);
     }
     else if( piedit->GetItemType() == eItemLight)
     {
@@ -7738,6 +7768,7 @@ void AddSearchItemToList(HWND listHwnd, IEditable * const piedit, int idx)
 
         ListView_SetItemText( listHwnd, idx, 1, "Light");
         ListView_SetItemText( listHwnd, idx, 3, textBuf);
+        ListView_SetItemText( listHwnd, idx, 4, "");
     }
     else if( piedit->GetItemType() == eItemBumper)
     {
@@ -7751,13 +7782,21 @@ void AddSearchItemToList(HWND listHwnd, IEditable * const piedit, int idx)
     }
     else if( piedit->GetItemType() == eItemGate)
     {
+       Gate *gate = (Gate*)piedit;
         ListView_SetItemText( listHwnd, idx, 1, "Gate");
         ListView_SetItemText( listHwnd, idx, 3, "");
+        if (IsValidString(gate->m_d.m_szMaterial))
+           sprintf_s(textBuf, "%s", gate->m_d.m_szMaterial);
+        ListView_SetItemText(listHwnd, idx, 4, textBuf);
     }
     else if( piedit->GetItemType() == eItemTrigger)
     {
+       Trigger *trigger = (Trigger*)piedit;
         ListView_SetItemText( listHwnd, idx, 1, "Trigger");
         ListView_SetItemText( listHwnd, idx, 3, "");
+        if (IsValidString(trigger->m_d.m_szMaterial))
+           sprintf_s(textBuf, "%s", trigger->m_d.m_szMaterial);
+        ListView_SetItemText(listHwnd, idx, 4, textBuf);
     }
     else if( piedit->GetItemType() == eItemTimer)
     {
@@ -7776,6 +7815,9 @@ void AddSearchItemToList(HWND listHwnd, IEditable * const piedit, int idx)
             sprintf_s(textBuf, "%s",plunger->m_d.m_szImage);
         ListView_SetItemText( listHwnd, idx, 1, "Plunger");
         ListView_SetItemText( listHwnd, idx, 3, textBuf);
+        if (IsValidString(plunger->m_d.m_szMaterial))
+           sprintf_s(textBuf, "%s", plunger->m_d.m_szMaterial);
+        ListView_SetItemText(listHwnd, idx, 4, textBuf);
     }
     else if( piedit->GetItemType() == eItemDispReel)
     {
@@ -7792,6 +7834,9 @@ void AddSearchItemToList(HWND listHwnd, IEditable * const piedit, int idx)
             sprintf_s(textBuf, "%s",primitive->m_d.m_szImage);
         ListView_SetItemText( listHwnd, idx, 1, "Primitive");
         ListView_SetItemText( listHwnd, idx, 3, textBuf);
+        if (IsValidString(primitive->m_d.m_szMaterial))
+           sprintf_s(textBuf, "%s", primitive->m_d.m_szMaterial);
+        ListView_SetItemText(listHwnd, idx, 4, textBuf);
     }
 
 }
@@ -7860,9 +7905,12 @@ INT_PTR CALLBACK SearchSelectProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
          lvc.cx=50;
          lvc.pszText = TEXT("Layer");
          index = ListView_InsertColumn( listHwnd, 2, &lvc );
-         lvc.cx=250;
+         lvc.cx = 200;
          lvc.pszText = TEXT("Image");
-         index = ListView_InsertColumn( listHwnd, 3, &lvc );
+         index = ListView_InsertColumn(listHwnd, 3, &lvc);
+         lvc.cx = 250;
+         lvc.pszText = TEXT("Material");
+         index = ListView_InsertColumn(listHwnd, 4, &lvc);
 
          if( listHwnd!=NULL )
              ListView_DeleteAllItems( listHwnd );
@@ -7911,7 +7959,24 @@ INT_PTR CALLBACK SearchSelectProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
    case WM_CLOSE:
       EndDialog(hwndDlg, FALSE);
       break;
-
+   case WM_SIZE:
+   {
+      RECT rc;
+      GetClientRect(hwndDlg, &rc);
+      HWND hOkButton = GetDlgItem(hwndDlg, IDOK);
+      HWND hCancelButton = GetDlgItem(hwndDlg, IDCANCEL);
+      HWND hList = GetDlgItem(hwndDlg, IDC_ELEMENT_LIST);
+      int windowHeight = rc.bottom - rc.top;
+      int windowWidth = rc.right - rc.left;
+      int buttonY = (windowHeight - 40) + 5;
+      GetClientRect(hOkButton, &rc);
+      int buttonWidth = rc.right - rc.left;
+      int buttonHeight = rc.bottom - rc.top;
+      SetWindowPos(hList, NULL, 6, 5, windowWidth - 14, windowHeight - 60, 0);
+      SetWindowPos(hOkButton, NULL, 6, buttonY, buttonWidth, buttonHeight, 0);
+      SetWindowPos(hCancelButton, NULL, 6+buttonWidth+50, buttonY, buttonWidth, buttonHeight, 0);
+      break;
+   }
    case WM_COMMAND:
       switch (HIWORD(wParam))
       {
