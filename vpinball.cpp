@@ -7660,36 +7660,35 @@ void AddSearchItemToList(HWND listHwnd, IEditable * const piedit, int idx)
         firstImage[0]=0;
         secondImage[0]=0;
         if ( IsValidString(sur->m_d.m_szImage) )
-        {
             sprintf_s(firstImage,"%s", sur->m_d.m_szImage);
+        if (IsValidString(sur->m_d.m_szSideImage))
             sprintf_s(secondImage,"%s", sur->m_d.m_szSideImage);
-        }
         textBuf[0]=0;
         if( firstImage[0]!=0 )
-            strcat_s( textBuf, firstImage);
+            strncat_s( textBuf, firstImage,511);
         if ( secondImage[0]!=0 )
         {
             if ( firstImage[0]!=0)
-                strcat_s( textBuf, " -- ");
-            strcat_s( textBuf, secondImage);
+                strncat_s( textBuf, " -- ",511);
+            strncat_s( textBuf, secondImage,511);
         }
         ListView_SetItemText( listHwnd, idx, 1, "Wall");
         ListView_SetItemText( listHwnd, idx, 3, textBuf);
         firstImage[0] = 0;
         secondImage[0] = 0;
+        textBuf[0] = 0;
         if (IsValidString(sur->m_d.m_szTopMaterial))
-        {
            sprintf_s(firstImage, "%s", sur->m_d.m_szTopMaterial);
+        if (IsValidString(sur->m_d.m_szSideMaterial))
            sprintf_s(secondImage, "%s", sur->m_d.m_szSideMaterial);
-        }
         textBuf[0] = 0;
         if (firstImage[0] != 0)
-           strcat_s(textBuf, firstImage);
+           strncat_s(textBuf, firstImage,511);
         if (secondImage[0] != 0)
         {
            if (firstImage[0] != 0)
-              strcat_s(textBuf, " -- ");
-           strcat_s(textBuf, secondImage);
+              strncat_s(textBuf, " -- ",511);
+           strncat_s(textBuf, secondImage,511);
         }
         ListView_SetItemText(listHwnd, idx, 4, textBuf);
     }
@@ -7717,12 +7716,12 @@ void AddSearchItemToList(HWND listHwnd, IEditable * const piedit, int idx)
 
         textBuf[0]=0;
         if( firstImage[0]!=0 )
-            strcat_s( textBuf, firstImage);
+            strncat_s( textBuf, firstImage,511);
         if ( secondImage[0]!=0 )
         {
             if ( firstImage[0]!=0)
-                strcat_s( textBuf, " -- ");
-            strcat_s( textBuf, secondImage);
+                strncat_s( textBuf, " -- ",511);
+            strncat_s( textBuf, secondImage,511);
         }
         ListView_SetItemText( listHwnd, idx, 1, "Flasher");
         ListView_SetItemText( listHwnd, idx, 3, textBuf);
@@ -7772,8 +7771,35 @@ void AddSearchItemToList(HWND listHwnd, IEditable * const piedit, int idx)
     }
     else if( piedit->GetItemType() == eItemBumper)
     {
-        ListView_SetItemText( listHwnd, idx, 1, "Bumper");
-        ListView_SetItemText( listHwnd, idx, 3, "");
+       Bumper *bumper = (Bumper*)piedit;
+       char thirdImage[256];
+       firstImage[0] = 0;
+       secondImage[0] = 0;
+       thirdImage[0] = 0;
+       textBuf[0] = 0;
+       if (IsValidString(bumper->m_d.m_szBaseMaterial))
+          sprintf_s(firstImage, "%s", bumper->m_d.m_szBaseMaterial);
+       if (firstImage[0] != 0)
+          strcat_s(textBuf, firstImage);
+       if (IsValidString(bumper->m_d.m_szCapMaterial))
+          sprintf_s(secondImage, "%s", bumper->m_d.m_szCapMaterial);
+       if (IsValidString(bumper->m_d.m_szSkirtMaterial))
+          sprintf_s(thirdImage, "%s", bumper->m_d.m_szSkirtMaterial);
+       if (secondImage[0] != 0)
+       {
+          if (firstImage[0] != 0)
+             strcat_s(textBuf, " -- ");
+          strcat_s(textBuf, secondImage);
+       }
+       if (thirdImage[0] != 0)
+       {
+          if (firstImage[0] != 0 || secondImage[0]!=0)
+             strncat_s(textBuf, " -- ",511);
+          strncat_s(textBuf, thirdImage,511);
+       }
+       ListView_SetItemText(listHwnd, idx, 1, "Bumper");
+       ListView_SetItemText( listHwnd, idx, 3, "");
+       ListView_SetItemText(listHwnd, idx, 4, textBuf);
     }
     else if( piedit->GetItemType() == eItemFlipper)
     {
