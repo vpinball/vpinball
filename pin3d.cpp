@@ -392,34 +392,31 @@ void Pin3D::InitLayoutFS()
 
     const float aspect = ((float)vp.Width) / ((float)vp.Height); //(float)(4.0/3.0);
 
-    m_proj.FitCameraToVerticesFS(&vvertex3D, aspect, rotation, inclination, FOV, g_pplayer->m_ptable->m_BG_xlatez[g_pplayer->m_ptable->m_BG_current_set], g_pplayer->m_ptable->m_BG_layback[g_pplayer->m_ptable->m_BG_current_set]);
+    //m_proj.FitCameraToVerticesFS(&vvertex3D, aspect, rotation, inclination, FOV, g_pplayer->m_ptable->m_BG_xlatez[g_pplayer->m_ptable->m_BG_current_set], g_pplayer->m_ptable->m_BG_layback[g_pplayer->m_ptable->m_BG_current_set]);
     float yof = g_pplayer->m_ptable->m_BG_xlatey[g_pplayer->m_ptable->m_BG_current_set];
     float camx = 0.0f;
-    float camy = 350.0f;
-    float camz = 300.0f + g_pplayer->m_ptable->m_BG_xlatez[g_pplayer->m_ptable->m_BG_current_set];
+    float camy = g_pplayer->m_ptable->m_BG_xlatex[g_pplayer->m_ptable->m_BG_current_set];
+    float camz = g_pplayer->m_ptable->m_glassheight + g_pplayer->m_ptable->m_BG_xlatez[g_pplayer->m_ptable->m_BG_current_set];
     m_proj.m_matWorld.SetIdentity();
-    Matrix3D rotMat, xRotMat;
-    rotMat.RotateZMatrix(rotation);
-    xRotMat.RotateXMatrix(inclination);
-    Vertex3Ds v(camx, camy, camz);
-    v = xRotMat.MultiplyVector(v);
-    v = rotMat.MultiplyVector(v);
     D3DXMATRIX mView;
-    D3DXVECTOR3 eye(v.x, v.y, v.z);
-
-    v.x = 0;
-    v.y = (-g_pplayer->m_ptable->m_bottom*0.3f) + yof;
-    v.z = 1.0f;
-    v = xRotMat.MultiplyVector(v);
-    v = rotMat.MultiplyVector(v);
-    D3DXVECTOR3 at(v.x, v.y, v.z);
+    D3DXVECTOR3 eye(camx,camy,camz);
+    D3DXVECTOR3 at(0.0f, yof, 1.0f);
     D3DXVECTOR3 up(0.0f, -1.0f, 0.0f);
+
+    D3DXMATRIX rotationMat;
+
+    D3DXMatrixRotationYawPitchRoll(&rotationMat, inclination, 0,rotation);
+    D3DXVec3TransformCoord(&eye, &eye, &rotationMat);
+    D3DXVec3TransformCoord(&at, &at, &rotationMat);
+    //D3DXVec3TransformCoord(&up, &up, &rotationMat);
+    //at=eye+at;
+
     D3DXMatrixLookAtLH(&mView, &eye, &at, &up);
     memcpy(m_proj.m_matView.m, mView.m, sizeof(float) * 4 * 4);
     m_proj.ScaleView(g_pplayer->m_ptable->m_BG_scalex[g_pplayer->m_ptable->m_BG_current_set], g_pplayer->m_ptable->m_BG_scaley[g_pplayer->m_ptable->m_BG_current_set], 1.0f);
     m_proj.RotateView(0, 0, rotation);
-    m_proj.m_matWorld._41 = -m_proj.m_vertexcamera.x;
-    m_proj.m_matWorld._42 = -m_proj.m_vertexcamera.y*2.0f;
+    m_proj.m_matWorld._41 = -g_pplayer->m_ptable->m_right*0.5f;//-m_proj.m_vertexcamera.x;
+    m_proj.m_matWorld._42 = -g_pplayer->m_ptable->m_bottom*0.5f;//-m_proj.m_vertexcamera.y*1.0f;
     /*
     m_proj.m_matView.RotateXMatrix((float)M_PI);  // convert Z=out to Z=in (D3D coordinate system)
     m_proj.ScaleView(g_pplayer->m_ptable->m_BG_scalex[g_pplayer->m_ptable->m_BG_current_set], g_pplayer->m_ptable->m_BG_scaley[g_pplayer->m_ptable->m_BG_current_set], 1.0f);
@@ -432,7 +429,7 @@ void Pin3D::InitLayoutFS()
     // recompute near and far plane (workaround for VP9 FitCameraToVertices bugs)
     m_proj.ComputeNearFarPlane(vvertex3D);
     D3DXMATRIX proj;
-    //    D3DXMatrixPerspectiveFovLH(&proj, ANGTORAD(FOV), aspect, m_proj.m_rznear, m_proj.m_rzfar);
+    //D3DXMatrixPerspectiveFovLH(&proj, ANGTORAD(FOV), aspect, m_proj.m_rznear, m_proj.m_rzfar);
     D3DXMatrixPerspectiveFovLH(&proj, D3DX_PI / 4.0f, aspect, m_proj.m_rznear, m_proj.m_rzfar);
     memcpy(m_proj.m_matProj.m, proj.m, sizeof(float) * 4 * 4);
 
@@ -729,14 +726,14 @@ void PinProjection::FitCameraToVerticesFS(Vector<Vertex3Ds> * const pvvertex3D, 
         //v = laybackTrans.MultiplyVector(v);
 
         // Rotate vertex about x axis according to incoming inclination
-        // 		temp = v.y;
-        // 		v.y = rinccos*temp - rincsin*v.z;
-        // 		v.z = rincsin*temp + rinccos*v.z;
+        temp = v.y;
+        v.y = rinccos*temp - rincsin*v.z;
+        v.z = rincsin*temp + rinccos*v.z;
 
         // Rotate vertex about z axis according to incoming rotation
-        // 		temp = v.x;
-        // 		v.x =  rrotcos*temp - rrotsin*v.y;
-        // 		v.y =  rrotsin*temp + rrotcos*v.y;
+        temp = v.x;
+        v.x =  rrotcos*temp - rrotsin*v.y;
+        v.y =  rrotsin*temp + rrotcos*v.y;
 
         // Extend z-range if necessary
         m_rznear = min(m_rznear, -v.z);
