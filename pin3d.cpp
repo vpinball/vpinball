@@ -378,7 +378,8 @@ void Pin3D::InitLayoutFS()
     TRACE_FUNCTION();
 
     const float rotation = ANGTORAD(g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set]);
-    const float inclination = ANGTORAD(g_pplayer->m_ptable->m_BG_inclination[g_pplayer->m_ptable->m_BG_current_set]);
+    const float inclination = 0.0f;// ANGTORAD(g_pplayer->m_ptable->m_BG_inclination[g_pplayer->m_ptable->m_BG_current_set]);
+    //not used
     const float FOV = (g_pplayer->m_ptable->m_BG_FOV[g_pplayer->m_ptable->m_BG_current_set] < 1.0f) ? 1.0f : g_pplayer->m_ptable->m_BG_FOV[g_pplayer->m_ptable->m_BG_current_set];
 
     Vector<Vertex3Ds> vvertex3D;
@@ -396,7 +397,7 @@ void Pin3D::InitLayoutFS()
     float yof = g_pplayer->m_ptable->m_BG_xlatey[g_pplayer->m_ptable->m_BG_current_set];
     float camx = 0.0f;
     float camy = g_pplayer->m_ptable->m_BG_xlatex[g_pplayer->m_ptable->m_BG_current_set];
-    float camz = g_pplayer->m_ptable->m_glassheight + g_pplayer->m_ptable->m_BG_xlatez[g_pplayer->m_ptable->m_BG_current_set];
+    float camz = g_pplayer->m_ptable->m_BG_xlatez[g_pplayer->m_ptable->m_BG_current_set];
     m_proj.m_matWorld.SetIdentity();
     D3DXMATRIX mView;
     D3DXVECTOR3 eye(camx,camy,camz);
@@ -417,20 +418,36 @@ void Pin3D::InitLayoutFS()
     m_proj.RotateView(0, 0, rotation);
     m_proj.m_matWorld._41 = -g_pplayer->m_ptable->m_right*0.5f;//-m_proj.m_vertexcamera.x;
     m_proj.m_matWorld._42 = -g_pplayer->m_ptable->m_bottom*0.5f;//-m_proj.m_vertexcamera.y*1.0f;
-    /*
-    m_proj.m_matView.RotateXMatrix((float)M_PI);  // convert Z=out to Z=in (D3D coordinate system)
-    m_proj.ScaleView(g_pplayer->m_ptable->m_BG_scalex[g_pplayer->m_ptable->m_BG_current_set], g_pplayer->m_ptable->m_BG_scaley[g_pplayer->m_ptable->m_BG_current_set], 1.0f);
-    m_proj.TranslateView(g_pplayer->m_ptable->m_BG_xlatex[g_pplayer->m_ptable->m_BG_current_set]-m_proj.m_vertexcamera.x, g_pplayer->m_ptable->m_BG_xlatey[g_pplayer->m_ptable->m_BG_current_set]-m_proj.m_vertexcamera.y, -m_proj.m_vertexcamera.z);
-    m_proj.RotateView(0, 0, rotation);
-    m_proj.RotateView(inclination, 0, 0);
-    m_proj.MultiplyView(ComputeLaybackTransform(g_pplayer->m_ptable->m_BG_layback[g_pplayer->m_ptable->m_BG_current_set]));
-    */
-
+    m_proj.m_matWorld._43 = -g_pplayer->m_ptable->m_glassheight;
     // recompute near and far plane (workaround for VP9 FitCameraToVertices bugs)
     m_proj.ComputeNearFarPlane(vvertex3D);
     D3DXMATRIX proj;
     //D3DXMatrixPerspectiveFovLH(&proj, ANGTORAD(FOV), aspect, m_proj.m_rznear, m_proj.m_rzfar);
-    D3DXMatrixPerspectiveFovLH(&proj, D3DX_PI / 4.0f, aspect, m_proj.m_rznear, m_proj.m_rzfar);
+    //D3DXMatrixPerspectiveFovLH(&proj, D3DX_PI / 4.0f, aspect, m_proj.m_rznear, m_proj.m_rzfar);
+
+    D3DXMatrixIdentity(&proj);
+    float monitorPixel = 1.0f;// 25.4f * 23.3f / sqrt(1920.0f*1920.0f + 1080.0f*1080.0f);
+    float viewRight = (float)(monitorPixel*vp.Width / 2.0f);
+    float viewTop = (float)(monitorPixel*vp.Height / 2.0f);
+    //eye.x = g_pplayer->m_ptable->m_bottom*0.4f;
+    //eye.z += g_pplayer->m_ptable->m_glassheight;
+    eye.z = g_pplayer->m_ptable->m_bottom;
+    float right = viewRight - eye.x;
+    float left = -viewRight - eye.x;
+    float top = viewTop - eye.y;
+    float bottom = -viewTop - eye.y;
+    float z_screen = eye.z >= m_proj.m_rznear ? eye.z : m_proj.m_rznear;
+
+    // move edges of frustum from z_screen to z_near
+    float z_near_to_z_screen = m_proj.m_rznear / z_screen; // <=1.0
+    right *= z_near_to_z_screen;
+    left *= z_near_to_z_screen;
+    top *= z_near_to_z_screen;
+    bottom *= z_near_to_z_screen;
+
+
+    D3DXMatrixPerspectiveOffCenterLH(&proj, left, right, bottom, top, m_proj.m_rznear, m_proj.m_rzfar);
+
     memcpy(m_proj.m_matProj.m, proj.m, sizeof(float) * 4 * 4);
 
     for (int i = 0; i<vvertex3D.Size(); ++i)
@@ -886,7 +903,7 @@ void PinProjection::ComputeNearFarPlane(const Vector<Vertex3Ds>& verts)
     // beware the div-0 problem
     if( m_rznear < 0.001f )
        m_rznear = 0.001f;
-    //m_rznear *= 0.99f;
+    m_rznear *= 0.89f;
     m_rzfar *= 1.01f;
 }
 
