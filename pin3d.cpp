@@ -376,7 +376,6 @@ Matrix3D ComputeLaybackTransform(float layback)
 void Pin3D::InitLayoutFS()
 {
     TRACE_FUNCTION();
-
     const float rotation = ANGTORAD(g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set]);
     const float inclination = 0.0f;// ANGTORAD(g_pplayer->m_ptable->m_BG_inclination[g_pplayer->m_ptable->m_BG_current_set]);
     //not used
@@ -394,10 +393,10 @@ void Pin3D::InitLayoutFS()
     const float aspect = ((float)vp.Width) / ((float)vp.Height); //(float)(4.0/3.0);
 
     //m_proj.FitCameraToVerticesFS(&vvertex3D, aspect, rotation, inclination, FOV, g_pplayer->m_ptable->m_BG_xlatez[g_pplayer->m_ptable->m_BG_current_set], g_pplayer->m_ptable->m_BG_layback[g_pplayer->m_ptable->m_BG_current_set]);
-    float yof = g_pplayer->m_ptable->m_BG_xlatey[g_pplayer->m_ptable->m_BG_current_set];
+    float yof = g_pplayer->m_ptable->m_bottom*0.5f + g_pplayer->m_ptable->m_BG_xlatey[g_pplayer->m_ptable->m_BG_current_set];
     float camx = 0.0f;
-    float camy = g_pplayer->m_ptable->m_BG_xlatex[g_pplayer->m_ptable->m_BG_current_set];
-    float camz = g_pplayer->m_ptable->m_BG_xlatez[g_pplayer->m_ptable->m_BG_current_set];
+    float camy = g_pplayer->m_ptable->m_bottom*0.5f + g_pplayer->m_ptable->m_BG_xlatex[g_pplayer->m_ptable->m_BG_current_set];
+    float camz = g_pplayer->m_ptable->m_bottom + g_pplayer->m_ptable->m_BG_xlatez[g_pplayer->m_ptable->m_BG_current_set];
     m_proj.m_matWorld.SetIdentity();
     D3DXMATRIX mView;
     D3DXVECTOR3 eye(camx,camy,camz);
@@ -432,6 +431,7 @@ void Pin3D::InitLayoutFS()
     //eye.x = g_pplayer->m_ptable->m_bottom*0.4f;
     //eye.z += g_pplayer->m_ptable->m_glassheight;
     eye.z = g_pplayer->m_ptable->m_bottom;
+
     float right = viewRight - eye.x;
     float left = -viewRight - eye.x;
     float top = viewTop - eye.y;
