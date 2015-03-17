@@ -843,5 +843,6 @@
     <CustomBuild Include="shader\FBShader.fx" />
     <CustomBuild Include="shader\FlasherShader.fx" />
     <CustomBuild Include="shader\LightShader.fx" />
+    <CustomBuild Include="shader\ClassicLightShader.fx" />
   </ItemGroup>
 </Project>

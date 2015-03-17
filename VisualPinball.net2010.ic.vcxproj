@@ -7525,6 +7525,11 @@ copy "$(TargetPath)" "%VPIN_DIR%"
       <Command Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">fxc /O3 /T fx_2_0 /Vn lightShaderCode /Fh shader\LightShader.h shader\LightShader.fx</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">LightShader.h</Outputs>
     </CustomBuild>
+    <CustomBuild Include="shader\ClassicLightShader.fx">
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">fxc /O3 /T fx_2_0 /Vn classicLightShaderCode /Fh shader\ClassicLightShader.h shader\ClassicLightShader.fx</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">ClassicLightShader.h</Outputs>
+    </CustomBuild>
     <None Include="shader\FXAAStereoAO.fxh" />
     <None Include="shader\Helpers.fxh" />
     <None Include="shader\Material.fxh" />

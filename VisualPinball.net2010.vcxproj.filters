@@ -818,5 +818,8 @@
     <CustomBuild Include="shader\LightShader.fx">
       <Filter>Shader Files</Filter>
     </CustomBuild>
+    <CustomBuild Include="shader\ClassicLightShader.fx">
+      <Filter>Shader Files</Filter>
+    </CustomBuild>
   </ItemGroup>
 </Project>
