@@ -49,7 +49,7 @@ keyVPMVolume     = 88  '(F12)  Added Control to set VPM Volume
 '
 ' Optional keys
 ' These are not used nor handled by the vbs files
-' They are only here to provide consistant keys for the games.
+' They are only here to provide consistent keys for the games.
 '
 keyUpperLeft     = 30  '(A)    Upper Left Flipper button
 keyUpperRight    = 40  '(')    Upper Right Flipper button
