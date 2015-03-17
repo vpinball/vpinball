@@ -11,6 +11,7 @@
 #include "FBShader.h"
 #include "FlasherShader.h"
 #include "LightShader.h"
+#include "ClassicLightShader.h"
 
 #pragma comment(lib, "d3d9.lib")        // TODO: put into build system
 #pragma comment(lib, "d3dx9.lib")       // TODO: put into build system
@@ -434,6 +435,13 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
     lightShader->Load(lightShaderCode, sizeof(lightShaderCode));
 #endif
 
+    classicLightShader = new Shader(this);
+#if _MSC_VER >= 1700
+    classicLightShader->Load(g_classicLightShaderCode, sizeof(g_classicLightShaderCode));
+#else
+    classicLightShader->Load(classicLightShaderCode, sizeof(classicLightShaderCode));
+#endif
+
 	// create default vertex declarations for shaders
     CreateVertexDeclaration( VertexTexelElement, &m_pVertexTexelDeclaration );
     CreateVertexDeclaration( VertexNormalTexelElement, &m_pVertexNormalTexelDeclaration );
@@ -500,6 +508,14 @@ void RenderDevice::FreeShader()
    {
       delete lightShader;
       lightShader=0;
+   }
+   if (classicLightShader)
+   {
+      classicLightShader->Core()->SetTexture("Texture0",NULL);
+      classicLightShader->Core()->SetTexture("Texture1",NULL);
+      classicLightShader->Core()->SetTexture("Texture2",NULL);
+      delete classicLightShader;
+      classicLightShader=0;
    }
 }
 
