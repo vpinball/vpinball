@@ -4528,6 +4528,14 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">Effect</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">2.0</ShaderModel>
     </FxCompile>
+    <FxCompile Include="shader\LightShader.fx">
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">shader\%(Filename).h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">
+      </ObjectFileOutput>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">lightShaderCode</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">2.0</ShaderModel>
+    </FxCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
