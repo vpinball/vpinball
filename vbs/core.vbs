@@ -1703,7 +1703,7 @@ Class cvpmImpulseP
 	End Sub
 	
 	Public Sub Pullback     ' Pull Plunger
-		Pull = 0 : IMPowerOut = 0 : IMPowerTrans = 0 : mCount = 0 ' reiniatialize to be sure
+		Pull = 0 : IMPowerOut = 0 : IMPowerTrans = 0 : mCount = 0 ' reinitialize to be sure
 		Pull = 1 : NeedUpdate = True
     		PlaySound mEntrySnd
 	End Sub
