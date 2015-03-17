@@ -7520,8 +7520,14 @@ copy "$(TargetPath)" "%VPIN_DIR%"
       <Command Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">fxc /O3 /T fx_2_0 /Vn flasherShaderCode /Fh shader\FlasherShader.h shader\FlasherShader.fx</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">FlasherShader.h</Outputs>
     </CustomBuild>
+    <CustomBuild Include="shader\LightShader.fx">
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">fxc /O3 /T fx_2_0 /Vn lightShaderCode /Fh shader\LightShader.h shader\LightShader.fx</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">LightShader.h</Outputs>
+    </CustomBuild>
     <None Include="shader\FXAAStereoAO.fxh" />
-    <None Include="shader\Globals.fxh" />
+    <None Include="shader\Helpers.fxh" />
+    <None Include="shader\Material.fxh" />
     <None Include="target.bmp" />
     <None Include="res\textbox.rgs" />
     <None Include="res\timer.rgs" />
@@ -7567,6 +7573,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     <ClInclude Include="idebug.h" />
     <ClInclude Include="ieditable.h" />
     <ClInclude Include="inc\bass.h" />
+    <ClInclude Include="inc\forsyth.h" />
     <ClInclude Include="inc\freeimage.h" />
     <ClInclude Include="inc\hidpi.h" />
     <ClInclude Include="inc\hidsdi.h" />

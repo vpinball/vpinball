@@ -19601,6 +19601,29 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\shader\LightShader.fx"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="fxc /Od /T fx_2_0 /Vn lightShaderCode /Fh shader\LightShader.h shader\LightShader.fx&#x0D;&#x0A;"
+						Outputs="LightShader.h"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release MinDependency Fast+SSE|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						CommandLine="fxc /O3 /T fx_2_0 /Vn lightShaderCode /Fh shader\LightShader.h shader\LightShader.fx&#x0D;&#x0A;"
+						AdditionalDependencies=""
+						Outputs="LightShader.h"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\shader\FXAAStereoAO.fxh"
 				>
 			</File>

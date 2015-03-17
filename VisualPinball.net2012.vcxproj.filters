@@ -691,5 +691,8 @@
     <FxCompile Include="shader\FlasherShader.fx">
       <Filter>shaders</Filter>
     </FxCompile>
+    <FxCompile Include="shader\LightShader.fx">
+      <Filter>shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

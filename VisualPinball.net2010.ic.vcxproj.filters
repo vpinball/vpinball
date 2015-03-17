@@ -448,7 +448,6 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\table.vpx" />
-    <None Include="shader\Globals.fxh" />
     <None Include="res\envmap.bmp">
       <Filter>Resource Files</Filter>
     </None>
@@ -465,6 +464,8 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="shader\FXAAStereoAO.fxh" />
+    <None Include="shader\Helpers.fxh" />
+    <None Include="shader\Material.fxh" />
   </ItemGroup>
   <ItemGroup>
     <Object Include="dispatchpatch32.obj" />
@@ -831,6 +832,9 @@
     <ClInclude Include="media\wavread.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="inc\forsyth.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="shader\BallShader.fx" />
@@ -838,5 +842,6 @@
     <CustomBuild Include="shader\DMDShader.fx" />
     <CustomBuild Include="shader\FBShader.fx" />
     <CustomBuild Include="shader\FlasherShader.fx" />
+    <CustomBuild Include="shader\LightShader.fx" />
   </ItemGroup>
 </Project>
