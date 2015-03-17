@@ -161,7 +161,6 @@ float4 ps_main_texture(in VS_OUTPUT IN) : COLOR
 float4   lightColor_intensity;
 float4   lightColor2_falloff_power;
 float4   lightCenter_maxRange;
-//float    blend_modulate_vs_add;
 bool imageMode;
 bool backglassMode;
 
@@ -173,12 +172,6 @@ struct VS_LIGHT_OUTPUT
    float3 tablePos      : TEXCOORD2; 
    float3 normal        : TEXCOORD3;
 };
-
-/*struct VS_LIGHTBULB_OUTPUT
-{ 
-   float4 pos           : POSITION;
-   float3 tablePos      : TEXCOORD0;
-};*/
 
 VS_LIGHT_OUTPUT vs_light_main (float4 vPosition : POSITION0,  
                                float3 vNormal   : NORMAL0,  
@@ -198,18 +191,6 @@ VS_LIGHT_OUTPUT vs_light_main (float4 vPosition : POSITION0,
    
    return Out; 
 }
-
-/*VS_LIGHTBULB_OUTPUT vs_lightbulb_main (float4 vPosition : POSITION0,  
-                                       float3 vNormal   : NORMAL0,  
-                                       float2 tc        : TEXCOORD0) 
-{
-   VS_LIGHTBULB_OUTPUT Out;
-
-   Out.pos = mul(vPosition, matWorldViewProj);
-   Out.tablePos = vPosition.xyz;
-   
-   return Out; 
-}*/
 
 float4 PS_LightWithTexel(in VS_LIGHT_OUTPUT IN) : COLOR
 {	
@@ -275,19 +256,6 @@ float4 PS_LightWithoutTexel(in VS_LIGHT_OUTPUT IN) : COLOR
     
     return color+result;
 }
-
-#if 0
-float4 PS_BulbLight(in VS_LIGHTBULB_OUTPUT IN) : COLOR
-{
-	const float len = length(lightCenter_maxRange.xyz - IN.tablePos) * lightCenter_maxRange.w;
-    const float atten = pow(1.0 - saturate(len), lightColor2_falloff_power.w);
-	const float3 lcolor = lerp(lightColor2_falloff_power.xyz, lightColor_intensity.xyz, sqrt(len));
-	float4 result;
-	result.xyz = lcolor*(-blend_modulate_vs_add*atten*lightColor_intensity.w); // negative as it will be blended with '1.0-thisvalue' (the 1.0 is needed to modulate the underlying elements correctly, but not wanted for the term below)
-	result.a = 1.0/blend_modulate_vs_add - 1.0; //saturate(atten*lightColor_intensity.w);
-	return result;
-}
-#endif
 
 //------------------------------------------
 // Kicker boolean vertex shader
@@ -358,15 +326,6 @@ technique light_without_texture
 	  PixelShader = compile ps_3_0 PS_LightWithoutTexel();
    } 
 }
-
-/*technique bulb_light
-{ 
-   pass P0 
-   { 
-		vertexshader = compile vs_3_0 vs_lightbulb_main();
-		pixelshader  = compile ps_3_0 PS_BulbLight();
-   } 
-}*/
 
 //
 // Kicker
