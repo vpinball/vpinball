@@ -312,6 +312,7 @@ public:
    Shader *FBShader;
    Shader *flasherShader;
    Shader *lightShader;
+   Shader *classicLightShader;
 
    //Shader* m_curShader; // for caching
 

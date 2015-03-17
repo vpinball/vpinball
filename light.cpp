@@ -642,20 +642,20 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
 
     if ( !m_d.m_BulbLight )
     {
-		pd3dDevice->basicShader->SetVector("lightCenter_maxRange", &center_range);
-		pd3dDevice->basicShader->SetVector("lightColor2_falloff_power", &lightColor2_falloff_power);
+		pd3dDevice->classicLightShader->SetVector("lightCenter_maxRange", &center_range);
+		pd3dDevice->classicLightShader->SetVector("lightColor2_falloff_power", &lightColor2_falloff_power);
         
-		pd3dDevice->basicShader->SetBool("backglassMode",m_fBackglass);
-        pd3dDevice->basicShader->SetBool("imageMode",m_d.m_imageMode);
-        pd3dDevice->basicShader->SetMaterial(m_surfaceMaterial);
+		pd3dDevice->classicLightShader->SetBool("backglassMode",m_fBackglass);
+        pd3dDevice->classicLightShader->SetBool("imageMode",m_d.m_imageMode);
+        pd3dDevice->classicLightShader->SetMaterial(m_surfaceMaterial);
 
 	    if (offTexel != NULL)
         {
-            pd3dDevice->basicShader->SetTechnique("light_with_texture");
-            pd3dDevice->basicShader->SetTexture("Texture0", offTexel );
+            pd3dDevice->classicLightShader->SetTechnique("light_with_texture");
+            pd3dDevice->classicLightShader->SetTexture("Texture0", offTexel );
         }
         else
-            pd3dDevice->basicShader->SetTechnique("light_without_texture");
+            pd3dDevice->classicLightShader->SetTechnique("light_without_texture");
     }
     else
 	{
@@ -688,8 +688,8 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
 	lightColor_intensity.w = m_d.m_currentIntensity;
     if ( !m_d.m_BulbLight )
     {
-		pd3dDevice->basicShader->SetVector("lightColor_intensity", &lightColor_intensity);
-		pd3dDevice->basicShader->Begin(0);
+		pd3dDevice->classicLightShader->SetVector("lightColor_intensity", &lightColor_intensity);
+		pd3dDevice->classicLightShader->Begin(0);
 	}
 	else
 	{
@@ -698,7 +698,7 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
 	}
 	pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, (!m_fBackglass) ? MY_D3DFVF_NOTEX2_VERTEX : MY_D3DTRANSFORMED_NOTEX2_VERTEX, customMoverVBuffer, 0, customMoverVertexNum, customMoverIBuffer, 0, customMoverIndexNum);
     if ( !m_d.m_BulbLight )
-	    pd3dDevice->basicShader->End();
+	    pd3dDevice->classicLightShader->End();
 	else
 	    pd3dDevice->lightShader->End();
 

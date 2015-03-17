@@ -315,6 +315,7 @@ void Pin3D::DrawBackground()
 void Pin3D::InitLights()
 {
     //m_pd3dDevice->basicShader->SetInt("iLightPointNum",MAX_LIGHT_SOURCES);
+    //m_pd3dDevice->classicLightShader->SetInt("iLightPointNum",MAX_LIGHT_SOURCES);
 
     g_pplayer->m_ptable->m_Light[0].pos.x = g_pplayer->m_ptable->m_right*0.5f;
     g_pplayer->m_ptable->m_Light[1].pos.x = g_pplayer->m_ptable->m_right*0.5f;
@@ -340,12 +341,14 @@ void Pin3D::InitLights()
 		memcpy(&l[i].vEmission,&emission,sizeof(float)*3);
 	}
     m_pd3dDevice->basicShader->SetValue("packedLights", l, sizeof(CLight)*MAX_LIGHT_SOURCES);
+    m_pd3dDevice->classicLightShader->SetValue("packedLights", l, sizeof(CLight)*MAX_LIGHT_SOURCES);
     
     D3DXVECTOR4 amb_lr = convertColor(g_pplayer->m_ptable->m_lightAmbient, g_pplayer->m_ptable->m_lightRange);
     amb_lr.x *= g_pplayer->m_ptable->m_globalEmissionScale;
     amb_lr.y *= g_pplayer->m_ptable->m_globalEmissionScale;
     amb_lr.z *= g_pplayer->m_ptable->m_globalEmissionScale;
     m_pd3dDevice->basicShader->SetVector("cAmbient_LightRange", &amb_lr);
+    m_pd3dDevice->classicLightShader->SetVector("cAmbient_LightRange", &amb_lr);
 }
 
 // currently unused
@@ -476,13 +479,13 @@ void Pin3D::InitLayout()
 {
     TRACE_FUNCTION();
 
-    const float rotation = ANGTORAD(g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set]);
-    const float inclination = ANGTORAD(g_pplayer->m_ptable->m_BG_inclination[g_pplayer->m_ptable->m_BG_current_set]);
-    const float FOV = (g_pplayer->m_ptable->m_BG_FOV[g_pplayer->m_ptable->m_BG_current_set] < 1.0f) ? 1.0f : g_pplayer->m_ptable->m_BG_FOV[g_pplayer->m_ptable->m_BG_current_set];
+	const float rotation = ANGTORAD(g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set]);
+	const float inclination = ANGTORAD(g_pplayer->m_ptable->m_BG_inclination[g_pplayer->m_ptable->m_BG_current_set]);
+	const float FOV = (g_pplayer->m_ptable->m_BG_FOV[g_pplayer->m_ptable->m_BG_current_set] < 1.0f) ? 1.0f : g_pplayer->m_ptable->m_BG_FOV[g_pplayer->m_ptable->m_BG_current_set];
 
-    Vector<Vertex3Ds> vvertex3D;
+	Vector<Vertex3Ds> vvertex3D;
     for (int i = 0; i<g_pplayer->m_ptable->m_vedit.Size(); ++i)
-        g_pplayer->m_ptable->m_vedit.ElementAt(i)->GetBoundingVertices(&vvertex3D);
+		g_pplayer->m_ptable->m_vedit.ElementAt(i)->GetBoundingVertices(&vvertex3D);
 
     m_proj.m_rcviewport.left = 0;
     m_proj.m_rcviewport.top = 0;
@@ -493,7 +496,7 @@ void Pin3D::InitLayout()
 
     m_proj.FitCameraToVertices(&vvertex3D, aspect, rotation, inclination, FOV, g_pplayer->m_ptable->m_BG_xlatez[g_pplayer->m_ptable->m_BG_current_set], g_pplayer->m_ptable->m_BG_layback[g_pplayer->m_ptable->m_BG_current_set]);
 
-    m_proj.m_matWorld.SetIdentity();
+	m_proj.m_matWorld.SetIdentity();
 
     m_proj.m_matView.RotateXMatrix((float)M_PI);  // convert Z=out to Z=in (D3D coordinate system)
     m_proj.ScaleView(g_pplayer->m_ptable->m_BG_scalex[g_pplayer->m_ptable->m_BG_current_set], g_pplayer->m_ptable->m_BG_scaley[g_pplayer->m_ptable->m_BG_current_set], 1.0f);
@@ -509,15 +512,15 @@ void Pin3D::InitLayout()
     memcpy(m_proj.m_matProj.m, proj.m, sizeof(float) * 4 * 4);
 
     for (int i = 0; i<vvertex3D.Size(); ++i)
-        delete vvertex3D.ElementAt(i);
+		delete vvertex3D.ElementAt(i);
 
     m_proj.m_cameraLength = sqrtf(m_proj.m_vertexcamera.x*m_proj.m_vertexcamera.x + m_proj.m_vertexcamera.y*m_proj.m_vertexcamera.y + m_proj.m_vertexcamera.z*m_proj.m_vertexcamera.z);
 
-    m_pd3dDevice->SetTransform(TRANSFORMSTATE_PROJECTION, &m_proj.m_matProj);
-    m_pd3dDevice->SetTransform(TRANSFORMSTATE_VIEW, &m_proj.m_matView);
+	m_pd3dDevice->SetTransform(TRANSFORMSTATE_PROJECTION, &m_proj.m_matProj);
+	m_pd3dDevice->SetTransform(TRANSFORMSTATE_VIEW, &m_proj.m_matView);
     m_pd3dDevice->SetTransform(TRANSFORMSTATE_WORLD, &m_proj.m_matWorld);
 
-    m_proj.CacheTransform();
+	m_proj.CacheTransform();
 
     // Compute view vector
     /*Matrix3D temp, viewRot;
@@ -527,7 +530,7 @@ void Pin3D::InitLayout()
     viewRot.MultiplyVector(Vertex3Ds(0, 0, 1), m_viewVec);
     m_viewVec.Normalize();*/
 
-    InitLights();
+	InitLights();
 }
 
 void Pin3D::InitPlayfieldGraphics()
@@ -613,7 +616,7 @@ void Pin3D::RenderPlayfieldGraphics()
 
     if (pin)
     {
-	//m_pd3dDevice->basicShader->SetTexture("Texture0",(D3DTexture*)NULL);
+		//m_pd3dDevice->basicShader->SetTexture("Texture0",(D3DTexture*)NULL);
         //m_pd3dDevice->m_texMan.UnloadTexture(pin->m_pdsBuffer); //!! is used by ball reflection later-on
         SetTextureFilter(0, TEXTURE_MODE_TRILINEAR);
         m_pd3dDevice->basicShader->SetTechnique("basic_without_texture");
@@ -797,56 +800,56 @@ void PinProjection::FitCameraToVerticesFS(Vector<Vertex3Ds> * const pvvertex3D, 
 
 void PinProjection::FitCameraToVertices(Vector<Vertex3Ds> * const pvvertex3D, float aspect, float rotation, float inclination, float FOV, float xlatez, float layback)
 {
-    // Determine camera distance
-    const float rrotsin = sinf(rotation);
-    const float rrotcos = cosf(rotation);
-    const float rincsin = sinf(inclination);
-    const float rinccos = cosf(inclination);
+	// Determine camera distance
+	const float rrotsin = sinf(rotation);
+	const float rrotcos = cosf(rotation);
+	const float rincsin = sinf(inclination);
+	const float rinccos = cosf(inclination);
 
-    const float slopey = tanf(0.5f*ANGTORAD(FOV)); // *0.5 because slope is half of FOV - FOV includes top and bottom
+	const float slopey = tanf(0.5f*ANGTORAD(FOV)); // *0.5 because slope is half of FOV - FOV includes top and bottom
 
-    // Field of view along the axis = atan(tan(yFOV)*width/height)
-    // So the slope of x simply equals slopey*width/height
+	// Field of view along the axis = atan(tan(yFOV)*width/height)
+	// So the slope of x simply equals slopey*width/height
 
-    const float slopex = slopey*aspect;
+	const float slopex = slopey*aspect;
 
-    float maxyintercept = -FLT_MAX;
-    float minyintercept = FLT_MAX;
-    float maxxintercept = -FLT_MAX;
-    float minxintercept = FLT_MAX;
+	float maxyintercept = -FLT_MAX;
+	float minyintercept = FLT_MAX;
+	float maxxintercept = -FLT_MAX;
+	float minxintercept = FLT_MAX;
 
-    m_rznear = FLT_MAX;
-    m_rzfar = -FLT_MAX;
+	m_rznear = FLT_MAX;
+	m_rzfar = -FLT_MAX;
 
     Matrix3D laybackTrans = ComputeLaybackTransform(layback);
 
     for (int i = 0; i < pvvertex3D->Size(); ++i)
-    {
+	{
         Vertex3Ds v = *pvvertex3D->ElementAt(i);
-        float temp;
+		float temp;
 
         v = laybackTrans.MultiplyVector(v);
 
-        // Rotate vertex about x axis according to incoming inclination
-        temp = v.y;
-        v.y = rinccos*temp - rincsin*v.z;
-        v.z = rincsin*temp + rinccos*v.z;
+		// Rotate vertex about x axis according to incoming inclination
+		temp = v.y;
+		v.y = rinccos*temp - rincsin*v.z;
+		v.z = rincsin*temp + rinccos*v.z;
 
-        // Rotate vertex about z axis according to incoming rotation
-        temp = v.x;
-        v.x = rrotcos*temp - rrotsin*v.y;
-        v.y = rrotsin*temp + rrotcos*v.y;
+		// Rotate vertex about z axis according to incoming rotation
+		temp = v.x;
+		v.x =  rrotcos*temp - rrotsin*v.y;
+		v.y =  rrotsin*temp + rrotcos*v.y;
 
-        // Extend z-range if necessary
-        m_rznear = min(m_rznear, -v.z);
-        m_rzfar = max(m_rzfar, -v.z);
+		// Extend z-range if necessary
+		m_rznear = min(m_rznear, -v.z);
+		m_rzfar  = max(m_rzfar,  -v.z);
 
-        // Extend slope lines from point to find camera intersection
-        maxyintercept = max(maxyintercept, v.y + slopey*v.z);
-        minyintercept = min(minyintercept, v.y - slopey*v.z);
-        maxxintercept = max(maxxintercept, v.x + slopex*v.z);
-        minxintercept = min(minxintercept, v.x - slopex*v.z);
-    }
+		// Extend slope lines from point to find camera intersection
+		maxyintercept = max(maxyintercept, v.y + slopey*v.z);
+		minyintercept = min(minyintercept, v.y - slopey*v.z);
+		maxxintercept = max(maxxintercept, v.x + slopex*v.z);
+		minxintercept = min(minxintercept, v.x - slopex*v.z);
+	}
 
     slintf("maxy: %f\n", maxyintercept);
     slintf("miny: %f\n", minyintercept);
@@ -855,19 +858,19 @@ void PinProjection::FitCameraToVertices(Vector<Vertex3Ds> * const pvvertex3D, fl
     slintf("m_rznear: %f\n", m_rznear);
     slintf("m_rzfar : %f\n", m_rzfar);
 
-    // Find camera center in xy plane
+	// Find camera center in xy plane
 
-    const float ydist = (maxyintercept - minyintercept) / (slopey*2.0f);
-    const float xdist = (maxxintercept - minxintercept) / (slopex*2.0f);
+	const float ydist = (maxyintercept - minyintercept) / (slopey*2.0f);
+	const float xdist = (maxxintercept - minxintercept) / (slopex*2.0f);
     m_vertexcamera.z = (float)(max(ydist, xdist)) + xlatez;
-    m_vertexcamera.y = (float)((maxyintercept + minyintercept) * 0.5f);
-    m_vertexcamera.x = (float)((maxxintercept + minxintercept) * 0.5f);
+	m_vertexcamera.y = (float)((maxyintercept + minyintercept) * 0.5f);
+	m_vertexcamera.x = (float)((maxxintercept + minxintercept) * 0.5f);
 
-    m_rznear += m_vertexcamera.z;
-    m_rzfar += m_vertexcamera.z;
+	m_rznear += m_vertexcamera.z;
+	m_rzfar += m_vertexcamera.z;
 
-    // why that? changing the near/far z plane can cause perspective distortion
-    // in the z-buffer. 
+   // why that? changing the near/far z plane can cause perspective distortion
+   // in the z-buffer. 
 
     // const float delta = m_rzfar - m_rznear;
     // 
