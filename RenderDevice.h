@@ -257,8 +257,6 @@ public:
        return m_pD3DDevice;
    }
 
-   Material materialStateCache; // for caching
-
 private:
 #ifdef USE_D3D9EX
    IDirect3D9Ex* m_pD3D;
@@ -433,6 +431,8 @@ private:
     RenderDevice *m_renderDevice;
     
     // caches:
+
+    Material currentMaterial;
 
     static const DWORD TEXTURESET_STATE_CACHE_SIZE=5; // current convention: SetTexture gets "TextureX", where X 0..4
     BaseTexture *currentTexture[TEXTURESET_STATE_CACHE_SIZE];

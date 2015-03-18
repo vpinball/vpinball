@@ -392,7 +392,6 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
     memset( renderStateCache, 0xCC, sizeof(DWORD)*RENDER_STATE_CACHE_SIZE);
     memset( textureStateCache, 0xCC, sizeof(DWORD)*8*TEXTURE_STATE_CACHE_SIZE);
     memset( textureSamplerCache, 0xCC, sizeof(DWORD)*8*TEXTURE_SAMPLER_CACHE_SIZE);
-    memset(&materialStateCache, 0xCC, sizeof(Material));
 
     // initialize performance counters
     m_curDrawCalls = m_frameDrawCalls = 0;
@@ -1107,6 +1106,8 @@ Shader::Shader(RenderDevice *renderDevice)
     currentFlasherData =
     currentFlasherColor = D3DXVECTOR4(-FLT_MAX,-FLT_MAX,-FLT_MAX,-FLT_MAX);
     currentTechnique[0] = 0;
+
+    memset(&currentMaterial, 0xCC, sizeof(Material));
 }
 
 Shader::~Shader()
@@ -1237,41 +1238,41 @@ void Shader::SetMaterial( const Material * const mat )
 		bOpacityActive = false;
 	}
 
-	if(fRoughness != m_renderDevice->materialStateCache.m_fRoughness ||
-	   fEdge != m_renderDevice->materialStateCache.m_fEdge ||
-	   fWrapLighting != m_renderDevice->materialStateCache.m_fWrapLighting ||
-	   bIsMetal != m_renderDevice->materialStateCache.m_bIsMetal)
+	if(fRoughness != currentMaterial.m_fRoughness ||
+	   fEdge != currentMaterial.m_fEdge ||
+	   fWrapLighting != currentMaterial.m_fWrapLighting ||
+	   bIsMetal != currentMaterial.m_bIsMetal)
 	{
 	    const D3DXVECTOR4 rwem(fRoughness,fWrapLighting,fEdge, bIsMetal ? 1.0f : 0.0f);
 	    SetVector("Roughness_WrapL_Edge_IsMetal",&rwem);
-		m_renderDevice->materialStateCache.m_fRoughness = fRoughness;
-		m_renderDevice->materialStateCache.m_fWrapLighting = fWrapLighting;
-		m_renderDevice->materialStateCache.m_fEdge = fEdge;
-		m_renderDevice->materialStateCache.m_bIsMetal = bIsMetal;
+		currentMaterial.m_fRoughness = fRoughness;
+		currentMaterial.m_fWrapLighting = fWrapLighting;
+		currentMaterial.m_fEdge = fEdge;
+		currentMaterial.m_bIsMetal = bIsMetal;
 	}
 
 	const float alpha = bOpacityActive ? fOpacity : 1.0f;
-	if(cBase != m_renderDevice->materialStateCache.m_cBase || alpha != m_renderDevice->materialStateCache.m_fOpacity)
+	if(cBase != currentMaterial.m_cBase || alpha != currentMaterial.m_fOpacity)
 	{
 		const D3DXVECTOR4 cBaseF = convertColor(cBase, alpha);
 		SetVector("cBase_Alpha",&cBaseF);
-		m_renderDevice->materialStateCache.m_cBase = cBase;
-		m_renderDevice->materialStateCache.m_fOpacity = alpha;
+		currentMaterial.m_cBase = cBase;
+		currentMaterial.m_fOpacity = alpha;
 	}
     
 	if(!bIsMetal) // Metal has no glossy
-	if(cGlossy != m_renderDevice->materialStateCache.m_cGlossy)
+	if(cGlossy != currentMaterial.m_cGlossy)
 	{
 		const D3DXVECTOR4 cGlossyF = convertColor(cGlossy);
 		SetVector("cGlossy",&cGlossyF);
-		m_renderDevice->materialStateCache.m_cGlossy = cGlossy;
+		currentMaterial.m_cGlossy = cGlossy;
 	}
 
-	if(cClearcoat != m_renderDevice->materialStateCache.m_cClearcoat)
+	if(cClearcoat != currentMaterial.m_cClearcoat)
 	{
 		const D3DXVECTOR4 cClearcoatF = convertColor(cClearcoat);
 		SetVector("cClearcoat",&cClearcoatF);
-		m_renderDevice->materialStateCache.m_cClearcoat = cClearcoat;
+		currentMaterial.m_cClearcoat = cClearcoat;
 	}
 
 	if(bOpacityActive /*&& (fOpacity < 1.0f)*/)
