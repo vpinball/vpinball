@@ -500,7 +500,7 @@ float Hit3DPoly::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 	float hittime;
 	if (rigid) //rigid polygon
 	{
-		if (bnd < -pball->m_radius/**2.0f*/) return -1.0f;	// (ball normal distance) excessive pentratration of object skin ... no collision HACK //!! *2 necessary?
+		if (bnd < -pball->m_radius/**2.0f*/) return -1.0f;	// (ball normal distance) excessive penetration of object skin ... no collision HACK //!! *2 necessary?
 			
 		if (bnd <= (float)PHYS_TOUCH)
 		{
