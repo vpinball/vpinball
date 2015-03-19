@@ -886,7 +886,24 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
       break;
    case ID_EDIT_SEARCH:
       {
-         DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_SEARCH_SELECT_ELEMENT), m_hwnd, SearchSelectProc, 0);
+          ptCur = GetActiveTable();
+          if (ptCur)
+          {
+              if ( ptCur->m_hSearchSelectDialog == NULL )
+              {
+                  ptCur->m_hSearchSelectDialog = CreateDialogParam(g_hinst, MAKEINTRESOURCE(IDD_SEARCH_SELECT_ELEMENT), m_hwnd, SearchSelectProc, (size_t)ptCur);
+                  if (ptCur->m_hSearchSelectDialog != NULL)
+                  {
+                      char windowName[256];
+                      strcpy_s(windowName, "Search/Select Element - ");
+                      strncat_s(windowName, ptCur->m_szFileName, 255);
+                      SetWindowText(ptCur->m_hSearchSelectDialog, windowName);
+                      ShowWindow(ptCur->m_hSearchSelectDialog, SW_SHOW);
+                  }
+              }
+              else
+                  SetForegroundWindow(ptCur->m_hSearchSelectDialog);
+          }
          break;
       }
    case ID_EDIT_DRAWINGORDER_HIT:
@@ -1592,6 +1609,11 @@ BOOL VPinball::CloseTable(PinTable *ppt)
          }
       }
    }
+
+   if ( ppt->m_hSearchSelectDialog )
+    DestroyWindow(ppt->m_hSearchSelectDialog );
+   if (ppt->m_hMaterialManager )
+    DestroyWindow(ppt->m_hMaterialManager);
 
    /*const BOOL fSafe =*/ ppt->FVerifySaveToClose();
 
@@ -7905,8 +7927,7 @@ int CALLBACK MyCompProc(LPARAM lSortParam1, LPARAM lSortParam2, LPARAM lSortOpti
 
 INT_PTR CALLBACK SearchSelectProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-   //CCO(PinTable) *pt;
-   //pt = (CCO(PinTable) *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
+    CCO(PinTable) *pt = (CCO(PinTable) *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
    switch (uMsg)
    {
@@ -7964,7 +7985,30 @@ INT_PTR CALLBACK SearchSelectProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
 
    case WM_NOTIFY:
        {
-           if( wParam==IDC_ELEMENT_LIST )
+           if (((LPNMHDR)lParam)->code == NM_DBLCLK )
+           {
+               HWND listBox = GetDlgItem(hwndDlg, IDC_ELEMENT_LIST);
+               const size_t count = ListView_GetSelectedCount(listBox);
+
+               PinTable *pt = g_pvp->GetActiveTable();
+               pt->ClearMultiSel();
+               int iItem = -1;
+               LVITEM lv;
+               for (size_t i = 0; i < count; i++)
+               {
+                   iItem = ListView_GetNextItem(listBox, iItem, LVNI_SELECTED);
+                   lv.iItem = iItem;
+                   lv.mask = LVIF_PARAM;
+                   if (ListView_GetItem(listBox, &lv) == TRUE)
+                   {
+                       IScriptable *pscript = (IScriptable*)lv.lParam;
+                       ISelect *const pisel = pscript->GetISelect();
+                       if (pisel)
+                           pt->AddMultiSel(pisel, true);
+                   }
+               }
+           }
+           else if( wParam==IDC_ELEMENT_LIST )
            {
                 LPNMLISTVIEW lpnmListView = (LPNMLISTVIEW)lParam;
                 if( lpnmListView->hdr.code==LVN_COLUMNCLICK)
@@ -7983,8 +8027,9 @@ INT_PTR CALLBACK SearchSelectProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
            break;
        }
    case WM_CLOSE:
-      EndDialog(hwndDlg, FALSE);
-      break;
+       DestroyWindow(pt->m_hSearchSelectDialog);
+       pt->m_hSearchSelectDialog = NULL;
+       break;
    case WM_SIZE:
    {
       RECT rc;
@@ -8018,26 +8063,25 @@ INT_PTR CALLBACK SearchSelectProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                pt->ClearMultiSel();
                int iItem=-1;
                LVITEM lv;
-               for (size_t i=0;i<count;i++)
-               {
-                  iItem = ListView_GetNextItem( listBox, iItem, LVNI_SELECTED);
-                  lv.iItem = iItem;
-                  lv.mask = LVIF_PARAM;
-                  if ( ListView_GetItem(listBox, &lv)==TRUE)
-                  {
-                     IScriptable *pscript = (IScriptable*)lv.lParam;
-                     ISelect *const pisel = pscript->GetISelect();
-                  if (pisel)
-                      pt->AddMultiSel(pisel, true);
+                for (size_t i=0;i<count;i++)
+                {
+                    iItem = ListView_GetNextItem( listBox, iItem, LVNI_SELECTED);
+                    lv.iItem = iItem;
+                    lv.mask = LVIF_PARAM;
+                    if ( ListView_GetItem(listBox, &lv)==TRUE)
+                    {
+                        IScriptable *pscript = (IScriptable*)lv.lParam;
+                        ISelect *const pisel = pscript->GetISelect();
+                        if (pisel)
+                            pt->AddMultiSel(pisel, true);
+                    }
                }
-               }
-
-               EndDialog(hwndDlg, TRUE);
             }
             break;
 
          case IDCANCEL:
-            EndDialog(hwndDlg, FALSE);
+             DestroyWindow(pt->m_hSearchSelectDialog);
+             pt->m_hSearchSelectDialog = NULL;
             break;
          }
          break;
