@@ -61,6 +61,11 @@ Primitive::Primitive()
    m_d.m_staticRendering = false;
    m_d.m_edgeFactorUI = 0.25f;
    m_d.m_depthBias = 0.0f;
+   m_d.m_fSkipRendering = false;
+   m_d.m_fGroupdRendering = false;
+   m_numGroupIndices=0;
+   m_numGroupVertices=0;
+
    numIndices = 0;
    numVertices = 0;
    m_propPhysics=NULL;
@@ -76,6 +81,89 @@ Primitive::~Primitive()
         vertexBuffer->release();
     if (indexBuffer)
         indexBuffer->release();
+}
+
+void Primitive::CreateRenderGroup(Collection *collection, RenderDevice *pd3dDevice)
+{
+    vector<Primitive*> prims;
+    if ( !collection->m_fGroupElements )
+        return;
+
+    prims.clear();
+    for (int i = 0; i < collection->m_visel.size(); i++)
+    {
+        ISelect *pisel = collection->m_visel.ElementAt(i);
+        if (pisel->GetItemType() != eItemPrimitive)
+            continue;
+
+        Primitive *prim = (Primitive*)pisel;
+        // only support dynamic mesh primitives for now
+        if ( !prim->m_d.m_use3DMesh || prim->m_d.m_staticRendering)
+            continue;
+
+        prims.push_back(prim);
+    }
+
+    if ( prims.size()==0 )
+        return;
+
+    // The first primitive in the group is the base primitive
+    // this element gets rendered by rendering all other group primitives
+    // the rest of the group is marked as skipped rendering
+    Material *groupMaterial = g_pplayer->m_ptable->GetMaterial(prims[0]->m_d.m_szMaterial);
+    Texture *groupTexel = g_pplayer->m_ptable->GetImage(prims[0]->m_d.m_szImage);
+    m_numGroupVertices = prims[0]->m_mesh.NumVertices();
+    m_numGroupIndices = prims[0]->m_mesh.NumIndices();
+    prims[0]->m_d.m_fGroupdRendering = true;
+    vector<unsigned int> indices;
+    for (size_t i = 0; i<prims[0]->m_mesh.NumIndices();i++ )
+        indices.push_back( prims[0]->m_mesh.m_indices[i]);
+
+    for (size_t i = 1; i < prims.size(); i++)
+    {
+        Material *mat = g_pplayer->m_ptable->GetMaterial(prims[i]->m_d.m_szMaterial);
+        Texture  *texel = g_pplayer->m_ptable->GetImage(prims[i]->m_d.m_szImage);
+        if (mat == groupMaterial && texel == groupTexel)
+        {
+            for (size_t k = 0; k<prims[i]->m_mesh.NumIndices(); k++)
+                indices.push_back(m_numGroupVertices + prims[i]->m_mesh.m_indices[k]);
+            
+            m_numGroupVertices += prims[i]->m_mesh.NumVertices();
+            m_numGroupIndices += prims[i]->m_mesh.NumIndices();
+            prims[i]->m_d.m_fSkipRendering = true;
+        }
+        else
+            prims[i]->m_d.m_fSkipRendering=false;
+    }
+
+    if (vertexBuffer)
+        vertexBuffer->release();
+    pd3dDevice->CreateVertexBuffer(m_numGroupVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer);
+
+    if (indexBuffer)
+        indexBuffer->release();
+    indexBuffer = pd3dDevice->CreateAndFillIndexBuffer(indices);
+
+    unsigned int ofs=0;
+    Vertex3D_NoTex2 *buf;
+    vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
+    for (size_t i = 0; i < prims.size(); i++)
+    {
+        prims[i]->RecalculateMatrices();
+        for (size_t t = 0; t < prims[i]->m_mesh.NumVertices(); t++)
+        {
+            Vertex3D_NoTex2 vt;
+            memcpy(&vt, &prims[i]->m_mesh.m_vertices[t], sizeof(Vertex3D_NoTex2));
+            prims[i]->fullMatrix.MultiplyVector(vt, vt);
+            Vertex3Ds n;
+            prims[i]->fullMatrix.MultiplyVectorNoTranslateNormal(vt, n);
+            vt.nx = n.x; vt.ny = n.y; vt.nz = n.z;
+            memcpy(&buf[ofs], &vt, sizeof(Vertex3D_NoTex2));
+            ofs++;
+        }
+    }
+    vertexBuffer->unlock();
+
 }
 
 HRESULT Primitive::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
@@ -278,6 +366,8 @@ void Primitive::EndPlay()
         indexBuffer->release();
         indexBuffer = 0;
     }
+    m_d.m_fSkipRendering=false;
+    m_d.m_fGroupdRendering=false;
 }
 
 //////////////////////////////
@@ -598,14 +688,16 @@ void Primitive::UpdateEditorView()
 
 void Primitive::RenderObject( RenderDevice *pd3dDevice )
 {
-    RecalculateMatrices();
-
-    if (vertexBufferRegenerate)
+    if (!m_d.m_fGroupdRendering)
     {
-        vertexBufferRegenerate = false;
-        m_mesh.UploadToVB(vertexBuffer);
-    }
+        RecalculateMatrices();
 
+        if (vertexBufferRegenerate)
+        {
+            vertexBufferRegenerate = false;
+            m_mesh.UploadToVB(vertexBuffer);
+        }
+    }
     Material *mat = m_ptable->GetMaterial( m_d.m_szMaterial);
     pd3dDevice->basicShader->SetMaterial(mat);
     if (m_d.m_fDisableLighting)
@@ -626,15 +718,20 @@ void Primitive::RenderObject( RenderDevice *pd3dDevice )
         pd3dDevice->basicShader->SetTechnique("basic_without_texture");
 
     // set transform
-    g_pplayer->UpdateBasicShaderMatrix(fullMatrix);
+    if ( !m_d.m_fGroupdRendering )
+        g_pplayer->UpdateBasicShaderMatrix(fullMatrix);
 
     // draw the mesh
     pd3dDevice->basicShader->Begin(0);
-    pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, m_mesh.NumVertices(), indexBuffer, 0, m_mesh.NumIndices() );
+    if ( m_d.m_fGroupdRendering )
+        pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, m_numGroupVertices, indexBuffer, 0, m_numGroupIndices );
+    else
+        pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, m_mesh.NumVertices(), indexBuffer, 0, m_mesh.NumIndices());
     pd3dDevice->basicShader->End();
 
     // reset transform
-    g_pplayer->UpdateBasicShaderMatrix();
+    if (!m_d.m_fGroupdRendering)
+        g_pplayer->UpdateBasicShaderMatrix();
 
     pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP);
     //g_pplayer->m_pin3d.DisableAlphaBlend(); //!! not necessary anymore
@@ -646,7 +743,7 @@ void Primitive::RenderObject( RenderDevice *pd3dDevice )
 void Primitive::PostRenderStatic(RenderDevice* pd3dDevice)
 {
     TRACE_FUNCTION();
-   if ( m_d.m_staticRendering || !m_d.m_fVisible )
+   if ( m_d.m_staticRendering || !m_d.m_fVisible || m_d.m_fSkipRendering )
       return;
 
    RenderObject( pd3dDevice );
@@ -654,6 +751,9 @@ void Primitive::PostRenderStatic(RenderDevice* pd3dDevice)
 
 void Primitive::RenderSetup( RenderDevice* pd3dDevice )
 {
+    if ( m_d.m_fGroupdRendering || m_d.m_fSkipRendering )
+        return;
+
    if( vertexBuffer )
       vertexBuffer->release();
    
@@ -1203,6 +1303,9 @@ void Primitive::ExportMesh()
 
 bool Primitive::IsTransparent()
 {
+    if ( m_d.m_fSkipRendering )
+        return false;
+
     Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
     return mat->m_bOpacityActive;
 }

@@ -69,6 +69,8 @@ public:
    bool m_fHitEvent;
    bool m_fCollidable;
    bool m_fToy;
+   bool m_fSkipRendering;
+   bool m_fGroupdRendering;
 };
 
 class Primitive :
@@ -234,18 +236,22 @@ public:
    virtual size_t GetMaterialID();
 
    virtual void UpdatePropertyPanes();
+   void    CreateRenderGroup(Collection *collection, RenderDevice *pd3dDevice);
+   void    RecalculateMatrices();
+   void    TransformVertices();
 
    Mesh m_mesh;
 
    PrimitiveData m_d;
+   Matrix3D fullMatrix;
+   int m_numGroupVertices;
+   int m_numGroupIndices;
 
 private:        // private member functions
 
    int numIndices;       // only used during loading
    int numVertices;         // only used during loading
 
-   void RecalculateMatrices();
-   void TransformVertices();
    void UpdateEditorView();
 
    bool BrowseFor3DMeshFile();
@@ -308,7 +314,6 @@ private:        // private data members
    std::vector<Vertex3Ds> vertices;
    std::vector<float> normals; // only z component actually
 
-   Matrix3D fullMatrix;
 
    VertexBuffer *vertexBuffer;
    IndexBuffer *indexBuffer;

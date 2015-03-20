@@ -890,11 +890,11 @@ void Player::InitBallShader()
    const D3DXVECTOR4 rwem(exp2f(10.0f * Roughness + 1.0f), 0.f, 1.f, 0.0f); // no metal, as ball collects the diffuse playfield which uses this flag!
    ballShader->SetVector("Roughness_WrapL_Edge_IsMetal", &rwem);
 
-   assert(ballIndexBuffer == NULL);
+//   assert(ballIndexBuffer == NULL);
    ballIndexBuffer = m_pin3d.m_pd3dDevice->CreateAndFillIndexBuffer( basicBallNumFaces, basicBallIndices );
 
    // VB for normal ball
-   assert(ballVertexBuffer == NULL);
+//   assert(ballVertexBuffer == NULL);
    m_pin3d.m_pd3dDevice->CreateVertexBuffer( basicBallNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &ballVertexBuffer );
 
    // load precomputed ball vertices into vertex buffer
@@ -1089,7 +1089,23 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 
     InitShader();
 
-	// Pre-render all non-changing elements such as 
+    // search through all collection for elements which support group rendering
+    for (int i = 0; i < m_ptable->m_vcollection.Size(); i++)
+    {
+        Collection *pcol = m_ptable->m_vcollection.ElementAt(i);
+        for (int t = 0; t < pcol->m_visel.size(); t++)
+        {
+            // search for a primitive in the group, if found try to create a grouped render element
+            ISelect *pisel = pcol->m_visel.ElementAt(t);
+            if (pisel->GetItemType() == eItemPrimitive)
+            {
+                Primitive *prim = (Primitive*)pisel;
+                prim->CreateRenderGroup(pcol, m_pin3d.m_pd3dDevice);
+                break;
+            }
+        }
+    }
+        // Pre-render all non-changing elements such as 
 	// static walls, rails, backdrops, etc.
 	InitStatic(hwndProgress);
 
@@ -1135,7 +1151,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
             }
         }
 
-	    assert(m_ballDebugPoints == NULL);
+	    //assert(m_ballDebugPoints == NULL);
         m_pin3d.m_pd3dDevice->CreateVertexBuffer( ballDbgVtx.size(), 0, MY_D3DFVF_TEX, &m_ballDebugPoints );
         void *buf;
         m_ballDebugPoints->lock(0, 0, &buf, 0);
