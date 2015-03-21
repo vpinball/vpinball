@@ -725,7 +725,6 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
       Vertex3Ds v2(pv3->x,pv3->y,rgheight1[cvertex-1]);
       AddJoint(pvho, v1, v2);
 
-      ph3dpolyOld = NULL;
    }
 
    // add outside bottom, 

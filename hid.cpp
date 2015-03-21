@@ -161,7 +161,6 @@ void hid_init()
 		WriteFile( hnd, buffer, Capabilities.OutputReportByteLength, &written, &ol );
 		WaitForSingleObject( sReportEvent, 200 );
 		CloseHandle( sReportEvent );
-		sReportEvent = INVALID_HANDLE_VALUE;
 
 		printf( "%u bytes written\n", written );
 
@@ -284,7 +283,6 @@ void hid_update(const U32 cur_time_msec)
             WriteFile( hnd, buffer, Capabilities.OutputReportByteLength, &written, &ol );
             WaitForSingleObject( sReportEvent, 200 );
             CloseHandle( sReportEvent );
-            sReportEvent = INVALID_HANDLE_VALUE;
         }
 	}
 	else
