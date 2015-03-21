@@ -656,6 +656,7 @@
 #define IDC_EDIT3                       461
 #define IDC_CORRECTION_Y                461
 #define IDC_EFXAA                       462
+#define IDC_ABOUT_VERSION               463
 #define IDC_JOYLFLIPCOMBO               501
 #define IDC_JOYRFLIPCOMBO               502
 #define IDC_JOYPLUNGERCOMBO             503
@@ -862,7 +863,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        614
 #define _APS_NEXT_COMMAND_VALUE         32998
-#define _APS_NEXT_CONTROL_VALUE         463
+#define _APS_NEXT_CONTROL_VALUE         464
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif

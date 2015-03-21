@@ -5,6 +5,7 @@
 #include "StdAfx.h"
 
 #include "resource.h"
+#include "svn_version.h"
 
 #if defined(IMSPANISH)
  #define TOOLBAR_WIDTH 152
@@ -3732,6 +3733,11 @@ INT_PTR CALLBACK AboutProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
             (rcMain.right + rcMain.left)/2 - (rcDlg.right - rcDlg.left)/2,
             (rcMain.bottom + rcMain.top)/2 - (rcDlg.bottom - rcDlg.top)/2,
             0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE/* | SWP_NOMOVE*/);
+
+         HWND hVersion = GetDlgItem(hwndDlg, IDC_ABOUT_VERSION);
+         char versionString[256];
+         sprintf_s(versionString, "Version 10.0 - Build %i", SVN_REVISION);
+         SetWindowText(hVersion, versionString);
 
 #if !(defined(IMSPANISH) | defined(IMGERMAN) | defined(IMFRENCH))
          HWND hwndTransName = GetDlgItem(hwndDlg, IDC_TRANSNAME);

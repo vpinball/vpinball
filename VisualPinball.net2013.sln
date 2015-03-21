@@ -1,6 +1,6 @@
-Microsoft Visual Studio Solution File, Format Version 13.00
+Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30626.0
+VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VPinball", "VisualPinball.net2013.vcxproj", "{11B81620-ADF1-46FB-98B0-AF83AB34CAAC}"
 EndProject
@@ -8,6 +8,8 @@ Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
 		Debug|x64 = Debug|x64
+		Full Release|Win32 = Full Release|Win32
+		Full Release|x64 = Full Release|x64
 		Release MinDependency Fast|Win32 = Release MinDependency Fast|Win32
 		Release MinDependency Fast|x64 = Release MinDependency Fast|x64
 		Release MinDependency Fast+SSE|Win32 = Release MinDependency Fast+SSE|Win32
@@ -20,10 +22,10 @@ Global
 		{11B81620-ADF1-46FB-98B0-AF83AB34CAAC}.Debug|Win32.Build.0 = Debug|Win32
 		{11B81620-ADF1-46FB-98B0-AF83AB34CAAC}.Debug|x64.ActiveCfg = Profile|x64
 		{11B81620-ADF1-46FB-98B0-AF83AB34CAAC}.Debug|x64.Build.0 = Debug|x64
-		{11B81620-ADF1-46FB-98B0-AF83AB34CAAC}.Debug|x64.Build.2 = Release MinSize|x64
-		{11B81620-ADF1-46FB-98B0-AF83AB34CAAC}.Debug|x64.Build.4 = ReleaseTestGerman|x64
-		{11B81620-ADF1-46FB-98B0-AF83AB34CAAC}.Debug|x64.Build.6 = ReleaseTest|x64
-		{11B81620-ADF1-46FB-98B0-AF83AB34CAAC}.Debug|x64.Build.8 = Unicode Release MinSize|x64
+		{11B81620-ADF1-46FB-98B0-AF83AB34CAAC}.Full Release|Win32.ActiveCfg = Full Release|Win32
+		{11B81620-ADF1-46FB-98B0-AF83AB34CAAC}.Full Release|Win32.Build.0 = Full Release|Win32
+		{11B81620-ADF1-46FB-98B0-AF83AB34CAAC}.Full Release|x64.ActiveCfg = Full Release|x64
+		{11B81620-ADF1-46FB-98B0-AF83AB34CAAC}.Full Release|x64.Build.0 = Full Release|x64
 		{11B81620-ADF1-46FB-98B0-AF83AB34CAAC}.Release MinDependency Fast|Win32.ActiveCfg = Release MinDependency Fast|Win32
 		{11B81620-ADF1-46FB-98B0-AF83AB34CAAC}.Release MinDependency Fast|Win32.Build.0 = Release MinDependency Fast|Win32
 		{11B81620-ADF1-46FB-98B0-AF83AB34CAAC}.Release MinDependency Fast|x64.ActiveCfg = Release MinDependency Fast|x64

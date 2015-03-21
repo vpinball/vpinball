@@ -9,6 +9,14 @@
       <Configuration>Debug</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Full Release|Win32">
+      <Configuration>Full Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Full Release|x64">
+      <Configuration>Full Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Profile|Win32">
       <Configuration>Profile</Configuration>
       <Platform>Win32</Platform>
@@ -122,7 +130,23 @@
     <CharacterSet>MultiByte</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v120_xp</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <UseOfAtl>Static</UseOfAtl>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v120_xp</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <UseOfAtl>Static</UseOfAtl>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <PlatformToolset>v120_xp</PlatformToolset>
     <UseOfMfc>false</UseOfMfc>
@@ -303,7 +327,15 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
   </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
+  </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
   </ImportGroup>
@@ -566,7 +598,25 @@
     <EmbedManifest>true</EmbedManifest>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
+    <TargetName>VPinball</TargetName>
+    <TargetExt>.exe</TargetExt>
+    <LinkIncremental />
+    <GenerateManifest>true</GenerateManifest>
+    <EmbedManifest>true</EmbedManifest>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">
+    <TargetName>VPinball</TargetName>
+    <TargetExt>.exe</TargetExt>
+    <LinkIncremental />
+    <GenerateManifest>true</GenerateManifest>
+    <EmbedManifest>true</EmbedManifest>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">
     <TargetName>VPinball</TargetName>
     <TargetExt>.exe</TargetExt>
     <LinkIncremental />
@@ -609,6 +659,10 @@
       <TargetMachine>MachineX86</TargetMachine>
       <LargeAddressAware>true</LargeAddressAware>
     </Link>
+    <PreBuildEvent>
+      <Command>SubWCRev.exe $(SolutionDir) $(ProjectDir)svn_version.tmpl $(ProjectDir)svn_version.h</Command>
+      <Message>Generate the svn_version.h file with the necessary repo identify info for versioning using TortoiseSVN</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Unicode Release MinSize|x64'">
     <Midl>
@@ -693,6 +747,10 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
 
 </Command>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>SubWCRev.exe $(SolutionDir) $(ProjectDir)svn_version.tmpl $(ProjectDir)svn_version.h</Command>
+      <Message>Generate the svn_version.h file with the necessary repo identify info for versioning using TortoiseSVN</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|x64'">
     <Midl>
@@ -779,6 +837,10 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <TargetMachine>MachineX86</TargetMachine>
       <LargeAddressAware>true</LargeAddressAware>
     </Link>
+    <PreBuildEvent>
+      <Command>SubWCRev.exe $(SolutionDir) $(ProjectDir)svn_version.tmpl $(ProjectDir)svn_version.h</Command>
+      <Message>Generate the svn_version.h file with the necessary repo identify info for versioning using TortoiseSVN</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseTestSpanish|x64'">
     <Midl>
@@ -854,6 +916,10 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <TargetMachine>MachineX86</TargetMachine>
       <LargeAddressAware>true</LargeAddressAware>
     </Link>
+    <PreBuildEvent>
+      <Command>SubWCRev.exe $(SolutionDir) $(ProjectDir)svn_version.tmpl $(ProjectDir)svn_version.h</Command>
+      <Message>Generate the svn_version.h file with the necessary repo identify info for versioning using TortoiseSVN</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Unicode Release MinDependency|x64'">
     <Midl>
@@ -929,6 +995,10 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <TargetMachine>MachineX86</TargetMachine>
       <LargeAddressAware>true</LargeAddressAware>
     </Link>
+    <PreBuildEvent>
+      <Command>SubWCRev.exe $(SolutionDir) $(ProjectDir)svn_version.tmpl $(ProjectDir)svn_version.h</Command>
+      <Message>Generate the svn_version.h file with the necessary repo identify info for versioning using TortoiseSVN</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release MinSize|x64'">
     <Midl>
@@ -1005,6 +1075,10 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <TargetMachine>MachineX86</TargetMachine>
       <LargeAddressAware>true</LargeAddressAware>
     </Link>
+    <PreBuildEvent>
+      <Command>SubWCRev.exe $(SolutionDir) $(ProjectDir)svn_version.tmpl $(ProjectDir)svn_version.h</Command>
+      <Message>Generate the svn_version.h file with the necessary repo identify info for versioning using TortoiseSVN</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
     <Midl>
@@ -1079,6 +1153,10 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <TargetMachine>MachineX86</TargetMachine>
       <LargeAddressAware>true</LargeAddressAware>
     </Link>
+    <PreBuildEvent>
+      <Command>SubWCRev.exe $(SolutionDir) $(ProjectDir)svn_version.tmpl $(ProjectDir)svn_version.h</Command>
+      <Message>Generate the svn_version.h file with the necessary repo identify info for versioning using TortoiseSVN</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Unicode Debug|x64'">
     <Midl>
@@ -1154,6 +1232,10 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <TargetMachine>MachineX86</TargetMachine>
       <LargeAddressAware>true</LargeAddressAware>
     </Link>
+    <PreBuildEvent>
+      <Command>SubWCRev.exe $(SolutionDir) $(ProjectDir)svn_version.tmpl $(ProjectDir)svn_version.h</Command>
+      <Message>Generate the svn_version.h file with the necessary repo identify info for versioning using TortoiseSVN</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseTestGerman|x64'">
     <Midl>
@@ -1231,6 +1313,10 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <TargetMachine>MachineX86</TargetMachine>
       <LargeAddressAware>true</LargeAddressAware>
     </Link>
+    <PreBuildEvent>
+      <Command>SubWCRev.exe $(SolutionDir) $(ProjectDir)svn_version.tmpl $(ProjectDir)svn_version.h</Command>
+      <Message>Generate the svn_version.h file with the necessary repo identify info for versioning using TortoiseSVN</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseTestFrench|x64'">
     <Midl>
@@ -1319,6 +1405,10 @@ if not exist "%25VPIN_DIR%25" mkdir "%25VPIN_DIR%25"
 copy "$(TargetPath)" "%25VPIN_DIR%25"
 </Command>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>SubWCRev.exe $(SolutionDir) $(ProjectDir)svn_version.tmpl $(ProjectDir)svn_version.h</Command>
+      <Message>Generate the svn_version.h file with the necessary repo identify info for versioning using TortoiseSVN</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseTest|x64'">
     <Midl>
@@ -1431,6 +1521,10 @@ if not exist "%25VPIN_DIR%25" mkdir "%25VPIN_DIR%25"
 copy "$(TargetPath)" "%25VPIN_DIR%25"
 </Command>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>SubWCRev.exe $(SolutionDir) $(ProjectDir)svn_version.tmpl $(ProjectDir)svn_version.h</Command>
+      <Message>Generate the svn_version.h file with the necessary repo identify info for versioning using TortoiseSVN</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Midl>
@@ -1538,6 +1632,10 @@ if not exist "%25VPIN_DIR%25" mkdir "%25VPIN_DIR%25"
 copy "$(TargetPath)" "%25VPIN_DIR%25"
 </Command>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>SubWCRev.exe $(SolutionDir) $(ProjectDir)svn_version.tmpl $(ProjectDir)svn_version.h</Command>
+      <Message>Generate the svn_version.h file with the necessary repo identify info for versioning using TortoiseSVN</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|x64'">
     <Midl>
@@ -1652,8 +1750,141 @@ if not exist "%25VPIN_DIR%25" mkdir "%25VPIN_DIR%25"
 copy "$(TargetPath)" "%25VPIN_DIR%25"
 </Command>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>SubWCRev.exe $(SolutionDir) $(ProjectDir)svn_version.tmpl $(ProjectDir)svn_version.h</Command>
+      <Message>Generate the svn_version.h file with the necessary repo identify info for versioning using TortoiseSVN</Message>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">
+    <Midl>
+      <TypeLibraryName>.\ReleaseMinDependency/vpinball.tlb</TypeLibraryName>
+      <HeaderFileName>
+      </HeaderFileName>
+    </Midl>
+    <ClCompile>
+      <Optimization>Full</Optimization>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <AdditionalIncludeDirectories>$(DXSDK_DIR)\Include;shader;inc;pin;media;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <ExceptionHandling>false</ExceptionHandling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+      <FloatingPointExceptions>false</FloatingPointExceptions>
+      <OpenMPSupport>false</OpenMPSupport>
+      <OmitFramePointers>true</OmitFramePointers>
+      <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;bass.lib;imm32.lib;setupapi.lib;hid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x86;.\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>LIBC;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX86</TargetMachine>
+      <AdditionalOptions>/SAFESEH:NO
+ %(AdditionalOptions)</AdditionalOptions>
+      <LargeAddressAware>true</LargeAddressAware>
+    </Link>
+    <PostBuildEvent>
+      <Command>%40echo off
+if ".%25VPIN_DIR%25" == "." set VPIN_DIR=C:\UPin\VisualPinball\data\exe
+echo VPIN_DIR="%25VPIN_DIR%25"
+if not exist "%25VPIN_DIR%25" mkdir "%25VPIN_DIR%25"
+copy "$(TargetPath)" "%25VPIN_DIR%25"
+</Command>
+    </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>SubWCRev.exe $(SolutionDir) $(ProjectDir)svn_version.tmpl $(ProjectDir)svn_version.h</Command>
+      <Message>Generate the svn_version.h file with the necessary repo identify info for versioning using TortoiseSVN</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">
+    <Midl>
+      <TypeLibraryName>.\ReleaseMinDependency/vpinball.tlb</TypeLibraryName>
+      <HeaderFileName>
+      </HeaderFileName>
+    </Midl>
+    <ClCompile>
+      <Optimization>Full</Optimization>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <AdditionalIncludeDirectories>$(DXSDK_DIR)\Include;inc;pin;media;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <ExceptionHandling>false</ExceptionHandling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+      <FloatingPointExceptions>false</FloatingPointExceptions>
+      <OpenMPSupport>false</OpenMPSupport>
+      <OmitFramePointers>true</OmitFramePointers>
+      <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;bass.lib;imm32.lib;setupapi.lib;hid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x64;.\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>LIBC;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <AdditionalOptions>/SAFESEH:NO
+ %(AdditionalOptions)</AdditionalOptions>
+      <LargeAddressAware>true</LargeAddressAware>
+    </Link>
+    <PostBuildEvent>
+      <Command>%40echo off
+if ".%25VPIN_DIR%25" == "." set VPIN_DIR=C:\UPin\VisualPinball\data\exe
+echo VPIN_DIR="%25VPIN_DIR%25"
+if not exist "%25VPIN_DIR%25" mkdir "%25VPIN_DIR%25"
+copy "$(TargetPath)" "%25VPIN_DIR%25"
+</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">
     <Midl>
       <TypeLibraryName>.\ReleaseMinDependency/vpinball.tlb</TypeLibraryName>
       <HeaderFileName>
@@ -1733,7 +1964,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|Win32'">MinSpace</Optimization>
@@ -1775,7 +2008,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|Win32'">MinSpace</Optimization>
@@ -1817,7 +2052,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|Win32'">MinSpace</Optimization>
@@ -1859,7 +2096,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|Win32'">MinSpace</Optimization>
@@ -1901,7 +2140,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|Win32'">MinSpace</Optimization>
@@ -1943,7 +2184,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|Win32'">MinSpace</Optimization>
@@ -1985,7 +2228,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|Win32'">MinSpace</Optimization>
@@ -2027,7 +2272,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|Win32'">MinSpace</Optimization>
@@ -2069,7 +2316,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|Win32'">MinSpace</Optimization>
@@ -2111,7 +2360,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|Win32'">MinSpace</Optimization>
@@ -2153,7 +2404,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|Win32'">MinSpace</Optimization>
@@ -2195,7 +2448,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|Win32'">MinSpace</Optimization>
@@ -2237,7 +2492,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|Win32'">MinSpace</Optimization>
@@ -2279,7 +2536,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|Win32'">MinSpace</Optimization>
@@ -2321,7 +2580,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|Win32'">MinSpace</Optimization>
@@ -2363,7 +2624,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|Win32'">MinSpace</Optimization>
@@ -2409,7 +2672,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|Win32'">MinSpace</Optimization>
@@ -2451,7 +2716,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|Win32'">MinSpace</Optimization>
@@ -2493,7 +2760,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|Win32'">MinSpace</Optimization>
@@ -2535,7 +2804,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|Win32'">MinSpace</Optimization>
@@ -2577,7 +2848,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|Win32'">MinSpace</Optimization>
@@ -2619,7 +2892,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|Win32'">MinSpace</Optimization>
@@ -2661,7 +2936,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|Win32'">MinSpace</Optimization>
@@ -2703,7 +2980,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|Win32'">MinSpace</Optimization>
@@ -2745,7 +3024,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|Win32'">MinSpace</Optimization>
@@ -2787,7 +3068,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|Win32'">MinSpace</Optimization>
@@ -2829,7 +3112,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|Win32'">MinSpace</Optimization>
@@ -2871,7 +3156,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|Win32'">MinSpace</Optimization>
@@ -2913,7 +3200,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|Win32'">MinSpace</Optimization>
@@ -2959,7 +3248,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|Win32'">MinSpace</Optimization>
@@ -3001,7 +3292,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|Win32'">MinSpace</Optimization>
@@ -3043,7 +3336,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|Win32'">MinSpace</Optimization>
@@ -3085,7 +3380,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|Win32'">MinSpace</Optimization>
@@ -3127,7 +3424,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|Win32'">MinSpace</Optimization>
@@ -3169,7 +3468,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|Win32'">MinSpace</Optimization>
@@ -3211,7 +3512,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|Win32'">MinSpace</Optimization>
@@ -3253,7 +3556,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|Win32'">MinSpace</Optimization>
@@ -3299,7 +3604,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|Win32'">MinSpace</Optimization>
@@ -3342,7 +3649,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|Win32'">MinSpace</Optimization>
@@ -3385,7 +3694,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|Win32'">MinSpace</Optimization>
@@ -3427,7 +3738,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|Win32'">MinSpace</Optimization>
@@ -3474,7 +3787,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|Win32'">MinSpace</Optimization>
@@ -3520,9 +3835,13 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">Create</PrecompiledHeader>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">MinSpace</Optimization>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">Create</PrecompiledHeader>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|x64'">MinSpace</Optimization>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">Create</PrecompiledHeader>
@@ -3584,7 +3903,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|Win32'">MinSpace</Optimization>
@@ -3626,7 +3947,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|Win32'">MinSpace</Optimization>
@@ -3668,7 +3991,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|Win32'">MinSpace</Optimization>
@@ -3711,7 +4036,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|Win32'">MinSpace</Optimization>
@@ -3753,7 +4080,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|Win32'">MinSpace</Optimization>
@@ -3795,7 +4124,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|Win32'">MinSpace</Optimization>
@@ -3837,7 +4168,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|Win32'">MinSpace</Optimization>
@@ -3879,7 +4212,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|Win32'">MinSpace</Optimization>
@@ -3921,7 +4256,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|Win32'">MinSpace</Optimization>
@@ -3967,7 +4304,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|Win32'">MinSpace</Optimization>
@@ -4009,7 +4348,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">MinSpace</Optimization>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|x64'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|Win32'">MinSpace</Optimization>
@@ -4061,13 +4402,21 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <InterfaceIdentifierFileName Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">vpinball_i.c</InterfaceIdentifierFileName>
       <InterfaceIdentifierFileName Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">vpinball_i.c</InterfaceIdentifierFileName>
       <GenerateStublessProxies Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">true</GenerateStublessProxies>
+      <GenerateStublessProxies Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">true</GenerateStublessProxies>
       <GenerateStublessProxies Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">true</GenerateStublessProxies>
+      <GenerateStublessProxies Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">true</GenerateStublessProxies>
       <TypeLibraryName Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">.\vpinball.tlb</TypeLibraryName>
+      <TypeLibraryName Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">.\vpinball.tlb</TypeLibraryName>
       <TypeLibraryName Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">.\vpinball.tlb</TypeLibraryName>
+      <TypeLibraryName Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">.\vpinball.tlb</TypeLibraryName>
       <HeaderFileName Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">vpinball_i.h</HeaderFileName>
+      <HeaderFileName Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">vpinball_i.h</HeaderFileName>
       <HeaderFileName Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">vpinball_i.h</HeaderFileName>
+      <HeaderFileName Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">vpinball_i.h</HeaderFileName>
       <InterfaceIdentifierFileName Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">vpinball_i.c</InterfaceIdentifierFileName>
+      <InterfaceIdentifierFileName Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">vpinball_i.c</InterfaceIdentifierFileName>
       <InterfaceIdentifierFileName Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">vpinball_i.c</InterfaceIdentifierFileName>
+      <InterfaceIdentifierFileName Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">vpinball_i.c</InterfaceIdentifierFileName>
       <GenerateStublessProxies Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">true</GenerateStublessProxies>
       <GenerateStublessProxies Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|x64'">true</GenerateStublessProxies>
       <TypeLibraryName Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">.\vpinball.tlb</TypeLibraryName>
@@ -4157,7 +4506,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">$(OUTDIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">$(OUTDIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">$(OUTDIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">$(OUTDIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">$(OUTDIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">$(OUTDIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">$(OUTDIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|x64'">$(OUTDIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|Win32'">$(OUTDIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -4191,7 +4542,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|Win32'">true</ExcludedFromBuild>
@@ -4219,7 +4572,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|Win32'">true</ExcludedFromBuild>
@@ -4247,7 +4602,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|Win32'">true</ExcludedFromBuild>
@@ -4275,7 +4632,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Full Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|Win32'">true</ExcludedFromBuild>
@@ -4507,10 +4866,16 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
   <ItemGroup>
     <FxCompile Include="shader\BallShader.fx">
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">ballShaderCode</EntryPointName>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">ballShaderCode</EntryPointName>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">Effect</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">Effect</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">2.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">2.0</ShaderModel>
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">shader\%(Filename).h</HeaderFileOutput>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">shader\%(Filename).h</HeaderFileOutput>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">
+      </ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">
       </ObjectFileOutput>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">ballShaderCode</EntryPointName>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Effect</ShaderType>
@@ -4521,11 +4886,17 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     </FxCompile>
     <FxCompile Include="shader\BasicShader.fx">
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">shader\%(Filename).h</HeaderFileOutput>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">shader\%(Filename).h</HeaderFileOutput>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">
       </ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">
+      </ObjectFileOutput>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">basicShaderCode</EntryPointName>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">basicShaderCode</EntryPointName>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">Effect</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">Effect</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">2.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">2.0</ShaderModel>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">basicShaderCode</EntryPointName>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Effect</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">2.0</ShaderModel>
@@ -4535,11 +4906,17 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     </FxCompile>
     <FxCompile Include="shader\DMDShader.fx">
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">shader\%(Filename).h</HeaderFileOutput>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">shader\%(Filename).h</HeaderFileOutput>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">
       </ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">
+      </ObjectFileOutput>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">dmdShaderCode</EntryPointName>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">dmdShaderCode</EntryPointName>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">Effect</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">Effect</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">2.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">2.0</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Effect</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">2.0</ShaderModel>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -4549,11 +4926,17 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     </FxCompile>
     <FxCompile Include="shader\FBShader.fx">
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">FBShaderCode</EntryPointName>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">FBShaderCode</EntryPointName>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">Effect</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">Effect</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">2.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">2.0</ShaderModel>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">
       </ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">
+      </ObjectFileOutput>
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">shader\%(Filename).h</HeaderFileOutput>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">shader\%(Filename).h</HeaderFileOutput>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">FBShaderCode</EntryPointName>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">2.0</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Effect</ShaderType>
@@ -4563,11 +4946,17 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     </FxCompile>
     <FxCompile Include="shader\FlasherShader.fx">
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">flasherShaderCode</EntryPointName>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">flasherShaderCode</EntryPointName>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">Effect</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">Effect</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">2.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">2.0</ShaderModel>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">
       </ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">
+      </ObjectFileOutput>
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">shader\%(Filename).h</HeaderFileOutput>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">shader\%(Filename).h</HeaderFileOutput>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">flasherShaderCode</EntryPointName>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">2.0</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Effect</ShaderType>
@@ -4577,11 +4966,17 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     </FxCompile>
     <FxCompile Include="shader\LightShader.fx">
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">lightShaderCode</EntryPointName>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">lightShaderCode</EntryPointName>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">Effect</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">Effect</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">2.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">2.0</ShaderModel>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">
       </ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">
+      </ObjectFileOutput>
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">shader\%(Filename).h</HeaderFileOutput>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">shader\%(Filename).h</HeaderFileOutput>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">lightShaderCode</EntryPointName>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">2.0</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Effect</ShaderType>
@@ -4591,11 +4986,17 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     </FxCompile>
     <FxCompile Include="shader\ClassicLightShader.fx">
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">classicLightShaderCode</EntryPointName>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">classicLightShaderCode</EntryPointName>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">Effect</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">Effect</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">2.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">2.0</ShaderModel>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">
       </ObjectFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">
+      </ObjectFileOutput>
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">shader\%(Filename).h</HeaderFileOutput>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">shader\%(Filename).h</HeaderFileOutput>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">classicLightShaderCode</EntryPointName>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">2.0</ShaderModel>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Effect</ShaderType>
