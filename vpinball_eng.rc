@@ -14,7 +14,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (United States) resources
+// Englisch (USA) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
@@ -225,8 +225,8 @@ BEGIN
     PUSHBUTTON      "Translator's Web Site Name",IDC_TRANSLATEWEBSITE,130,179,93,14,NOT WS_VISIBLE | WS_DISABLED
     CTEXT           "This application uses Visual Basic Scripting Edition by Microsoft",IDC_STATIC,7,198,150,17
     CONTROL         IDC_RIGHTFLIPPERBUTTON,IDC_STATIC,"Static",SS_BITMAP,7,7,94,27
-    LTEXT           "A Randy Davis Production",IDC_STATIC,13,36,94,23
-    LTEXT           "Version 10.0.0",IDC_STATIC,13,47,121,16
+    LTEXT           "A Randy Davis Production",IDC_STATIC,13,36,94,8
+    LTEXT           "Version 10.0.0",IDC_ABOUT_VERSION,13,47,121,10
     GROUPBOX        "Credits",IDC_STATIC,7,62,216,103
     LTEXT           "Randy Davis - designer, developer",IDC_STATIC,13,77,115,9
     LTEXT           "Noah Fentz - testing",IDC_STATIC,150,77,66,9
@@ -1807,6 +1807,10 @@ BEGIN
         BOTTOMMARGIN, 214
     END
 
+    IDD_ABOUT, DIALOG
+    BEGIN
+    END
+
     IDD_VIDEO_OPTIONS, DIALOG
     BEGIN
         BOTTOMMARGIN, 280
@@ -2461,7 +2465,7 @@ BEGIN
     IDS_STEP                "Step"
 END
 
-#endif    // English (United States) resources
+#endif    // Englisch (USA) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
