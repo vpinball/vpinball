@@ -559,7 +559,8 @@ void Flipper::PostRenderStatic(RenderDevice* pd3dDevice)
     matTrafo.SetIdentity();
     matTrafo._41 = m_d.m_Center.x;
     matTrafo._42 = m_d.m_Center.y;
-    matTemp.RotateZMatrix(m_phitflipper->m_flipperanim.m_angleCur);
+    if ( m_phitflipper )
+      matTemp.RotateZMatrix(m_phitflipper->m_flipperanim.m_angleCur);
     matTrafo.Multiply(matTemp, matTrafo);
     g_pplayer->UpdateBasicShaderMatrix(matTrafo);
     

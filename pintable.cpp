@@ -401,7 +401,7 @@ STDMETHODIMP ScriptGlobalTable::SaveValue(BSTR TableName, BSTR ValueName, VARIAN
 
    DWORD writ;
 
-   hr = pstmValue->Write((WCHAR *)bstr, lstrlenW((WCHAR *)bstr) * sizeof(WCHAR), &writ);
+   pstmValue->Write((WCHAR *)bstr, lstrlenW((WCHAR *)bstr) * sizeof(WCHAR), &writ);
 
    SysFreeString(bstr);
 
@@ -1802,10 +1802,7 @@ void PinTable::Play(bool _cameraMode)
    char szLoadDir[MAX_PATH];
    PathFromFilename(m_szFileName, szLoadDir);
    // make sure the load directory is the active directory
-   DWORD err = SetCurrentDirectory(szLoadDir);
-   if (err == 0)
-      err = GetLastError();
-
+   SetCurrentDirectory(szLoadDir);
    BackupLayers();
 
    HWND hwndProgressDialog = CreateDialog(g_hinst, MAKEINTRESOURCE(IDD_PROGRESS), g_pvp->m_hwnd, ProgressProc);
@@ -3042,7 +3039,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
                {
                   ULONG read;
                   ItemTypeEnum type;
-                  hr = pstmItem->Read(&type, sizeof(int), &read);
+                  pstmItem->Read(&type, sizeof(int), &read);
 
                   IEditable *piedit = EditableRegistry::Create(type);
 
@@ -6360,7 +6357,7 @@ bool PinTable::ExportImage(HWND hwndListView, Texture *ppi, char *szfilename)
          GetLastError();			
       }
 
-      delete [] sinfo; sinfo = NULL;
+      delete [] sinfo; 
       CloseHandle(hFile);	
       return true;
    }

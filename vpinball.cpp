@@ -519,7 +519,7 @@ void VPinball::InitRegValues()
       char szRegName[MAX_PATH];
       sprintf_s(szRegName, "TableFileName%d", i);
       m_szRecentTableList[i][0] = 0x00;
-      hr = GetRegString("RecentDir",szRegName, m_szRecentTableList[i], MAX_PATH);
+      GetRegString("RecentDir",szRegName, m_szRecentTableList[i], MAX_PATH);
    }
 }
 
@@ -1547,9 +1547,7 @@ void VPinball::LoadFileName(char *szFileName)
       SetRegValue("RecentDir","LoadDir", REG_SZ, szLoadDir, lstrlen(szLoadDir));
 
       // make sure the load directory is the active directory
-      DWORD err = SetCurrentDirectory(szLoadDir);
-      if (err == 0)
-         err = GetLastError();
+      SetCurrentDirectory(szLoadDir);
 
       UpdateRecentFileList(szFileName);
 
@@ -2451,7 +2449,7 @@ INT_PTR CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                      szInitialDir[ofn.nFileOffset] = 0;
                      pt->ImportSound(GetDlgItem(hwndDlg, IDC_SOUNDLIST), szFileName, fTrue);
                   }
-                  hr = SetRegValue("RecentDir","SoundDir", REG_SZ, szInitialDir, lstrlen(szInitialDir));
+                  SetRegValue("RecentDir","SoundDir", REG_SZ, szInitialDir, lstrlen(szInitialDir));
                   pt->SetNonUndoableDirty(eSaveDirty);
                }
             }
@@ -3585,7 +3583,7 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
                                     pt->AddListMaterial(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST), pmat);
                                 }
                                 fclose(f);
-                                hr = SetRegValue("RecentDir","MaterialDir", REG_SZ, szInitialDir, lstrlen(szInitialDir));
+                                SetRegValue("RecentDir","MaterialDir", REG_SZ, szInitialDir, lstrlen(szInitialDir));
                                 pt->SetNonUndoableDirty(eSaveDirty);
                                 g_pvp->m_sb.PopulateDropdowns(); // May need to update list of images
                                 g_pvp->m_sb.RefreshProperties();
@@ -4504,7 +4502,7 @@ INT_PTR CALLBACK FontManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
                {
                   strcpy_s(szInitialDir, sizeof(szInitialDir), szFileName);
                   szInitialDir[ofn.nFileOffset] = 0;
-                  hr = SetRegValue("RecentDir","FontDir", REG_SZ, szInitialDir, lstrlen(szInitialDir));
+                  SetRegValue("RecentDir","FontDir", REG_SZ, szInitialDir, lstrlen(szInitialDir));
                   pt->ImportFont(GetDlgItem(hwndDlg, IDC_SOUNDLIST), ofn.lpstrFile);
                }
             }
