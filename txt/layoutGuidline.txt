@@ -1,0 +1,43 @@
+1.  As a first step disable any anti-stretch option in the video settings and set it to "Stretch Ball with Table".
+
+2.  Load a fullscreen table and change the backdrop values to Inclination: 10, FOV: 10, Layback: 35, X/Y/Z Scale to 1.0 and X/Y/Z Offset to 0.0
+
+3.  Temporarily set the Min/Max Slope to 0.0 so you can place balls on the playfield
+
+4.  Start the camera mode
+
+5.  Start the debug mode (by pressing Q and select Debug window) and activate "Throw Balls in player" and place 1 ball on the upper half of the playfield, 
+    1 ball on the middle and 1 ball near to the flippers. These balls should be your reference if you overdo some settings and become an egg or squashed.
+	
+6.  Now increase the inclination a bit but not too much I would say you won't need an inclination over 25
+
+7.  Next increase FOV just a bit but again not too much. I guess you won't need a FOV which is over 30 but 45 should be the absolute limit
+
+8.  Increase the layback. This one depends on the inclination you set in step 6. If you increase the inclination too much you won't need a high layback. 
+    My highest layback angle was 51 but most of the time it's around 30-40.
+	
+9.  Next big step is the scaling. Try to scale both values about the same amount. This step highly depends on the table's aspect ratio. 
+    Let's assume that a cabinet playfield screen is 16:9. The best aspect ratio for a table would be 16:9 or 1:1.7 of course. But if you
+	recreate existing tables you won't have this ratio. The golden rule is to use an aspect ratio of around 1:2.0 if it's higher say 1:2.3 
+	you have to scale the Y-axis too much to fill the screen and the whole table looks squashed (and the balls too ;) ) One good example 
+	is Sharkey's Shootout. This table has a ratio of 1:2.3 and you shouldn't scale the Y-axis too much because there isn't much room for 
+	scaling the X-axis. The only solution for those tables is to accept a border on the left/right side on the screen.
+	
+10. Last part is the offset adjustment. Normally you only need to move the X-axis a bit depending on the settings used in the other steps above
+
+ 
+
+Verdict: The egg shaped ball comes from multiple facts: depending on the inclination, FOV, layback and scaling the perspective distortion produces this view. 
+	     Especially FOV and layback are two critical settings here. There are tables out there which uses FOV of around 90° that is much too high. The FOV is 
+		 the vertical FOV and the horizontal FOV is derived from it. A FOV of 90° or 50° means you would normally see more elements around the playfield but 
+		 for a cabinet setup you don't want that. You will notice that a starting FOV of 10° will produce a quite good perspective view and it doesn't stretch 
+		 the ball towards the playfield glass.
+
+ 
+
+One other aspect to keep in mind: 
+
+If you place elements around the table in the editor VP will calculate a different camera position then without these elements. 
+VP calculates bounding boxes for each element in the editor and try to find the min/max values for X, Y and Z. 
+Based on these min/max values and the backdrop settings the camera position is calculated. So my advice is not 
+to place elements around the main playfield.
