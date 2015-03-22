@@ -325,7 +325,9 @@ void Kicker::RenderStatic(RenderDevice* pd3dDevice)
       pd3dDevice->basicShader->SetMaterial(mat);
 
       pd3dDevice->basicShader->SetTechnique("kickerBoolean");
+      pd3dDevice->basicShader->Core()->SetFloat("fKickerScale", m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]);
       pd3dDevice->SetRenderState(RenderDevice::ZFUNC, D3DCMP_ALWAYS);
+
 
       pd3dDevice->basicShader->Begin(0);
       pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, buf, kickerPlateNumVertices, kickerPlateIndices, kickerPlateNumFaces);
