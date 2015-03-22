@@ -3245,31 +3245,41 @@ void search_for_nearest(const Ball * const pball, const std::vector<Light*> &lig
 	}
 }
 
-void Player::GetBallAspectRatio(Ball *pball, float &stretchX, float &stretchY)
+void Player::GetBallAspectRatio(Ball *pball, float &stretchX, float &stretchY, float zHeight)
 {
-    Vertex3D_NoTex2 rgvIn[6];
-    rgvIn[0].x = pball->m_pos.x;                    rgvIn[0].y=pball->m_pos.y+pball->m_radius;    rgvIn[0].z=pball->m_pos.z;
-    rgvIn[1].x = pball->m_pos.x+pball->m_radius;    rgvIn[1].y=pball->m_pos.y;                    rgvIn[1].z=pball->m_pos.z;
-    rgvIn[2].x = pball->m_pos.x;                    rgvIn[2].y=pball->m_pos.y-pball->m_radius;    rgvIn[2].z=pball->m_pos.z;
-    rgvIn[3].x = pball->m_pos.x-pball->m_radius;    rgvIn[3].y=pball->m_pos.y;                    rgvIn[3].z=pball->m_pos.z;
-    rgvIn[4].x = pball->m_pos.x;                    rgvIn[4].y=pball->m_pos.y;                    rgvIn[4].z=pball->m_pos.z+pball->m_radius;
-    rgvIn[5].x = pball->m_pos.x;                    rgvIn[5].y=pball->m_pos.y;                    rgvIn[5].z=pball->m_pos.z-pball->m_radius;
+    Vertex3D_NoTex2 rgvIn[108/2];
+//     rgvIn[0].x = pball->m_pos.x;                    rgvIn[0].y=pball->m_pos.y+pball->m_radius;    rgvIn[0].z=zHeight;
+//     rgvIn[1].x = pball->m_pos.x + pball->m_radius;    rgvIn[1].y = pball->m_pos.y;                    rgvIn[1].z = zHeight;
+//     rgvIn[2].x = pball->m_pos.x;                    rgvIn[2].y = pball->m_pos.y - pball->m_radius;    rgvIn[2].z = zHeight;
+//     rgvIn[3].x = pball->m_pos.x - pball->m_radius;    rgvIn[3].y = pball->m_pos.y;                    rgvIn[3].z = zHeight;
+//     rgvIn[4].x = pball->m_pos.x;                    rgvIn[4].y = pball->m_pos.y;                    rgvIn[4].z = zHeight + pball->m_radius;
+//     rgvIn[5].x = pball->m_pos.x;                    rgvIn[5].y = pball->m_pos.y;                    rgvIn[5].z = zHeight - pball->m_radius;
+    int numVerts = basicBallNumVertices;
 
-    Vertex2D rgvOut[6];
-    m_pin3d.m_proj.TransformVertices(rgvIn, NULL, 6, rgvOut);
+    for (int i = 0, t = 0; i < numVerts; i += 2,t++)
+    {
+       rgvIn[t].x = basicBall[i].x*pball->m_radius + pball->m_pos.x;
+       rgvIn[t].y = basicBall[i].y*pball->m_radius + pball->m_pos.y;
+       rgvIn[t].z = basicBall[i].z*pball->m_radius + zHeight;
+    }
+    Vertex2D rgvOut[108/2];
+    m_pin3d.m_proj.TransformVertices(rgvIn, NULL, numVerts/2, rgvOut);
     float maxX = FLT_MIN;
     float minX = FLT_MAX;
     float maxY = FLT_MIN;
     float minY = FLT_MAX;
-    for( int i=0;i<6;i++ )
+    for( int i=0;i<numVerts/2;i++ )
     {
         if(maxX<rgvOut[i].x) maxX = rgvOut[i].x;
         if(minX>rgvOut[i].x) minX = rgvOut[i].x;
         if(maxY<rgvOut[i].y) maxY = rgvOut[i].y;
         if(minY>rgvOut[i].y) minY = rgvOut[i].y;
     }
-    stretchY = 1.0f-((maxX - minX)/(maxY-minY));
-    stretchX = 1.0f-((maxY - minY)/(maxX-minX));
+    float midX = maxX - minX;
+    float midY = maxY - minY;
+    stretchY = 1.0f/(midX/midY);
+    stretchX = 1.0f/(midY/midX);
+    stretchX = 1.0f;
 }
 
 void Player::DrawBalls()
@@ -3380,13 +3390,13 @@ void Player::DrawBalls()
       if ( m_antiStretchBall && m_ptable->m_BG_rotation[m_ptable->m_BG_current_set]!=0.0f )
       {
           float sx,sy;
-          GetBallAspectRatio(pball, sx, sy);
+          GetBallAspectRatio(pball, sx, sy, zheight);
 
 		  const float inv_tablewidth = 1.0f/(m_ptable->m_right - m_ptable->m_left);
 		  const float inv_tableheight = 1.0f/(m_ptable->m_bottom - m_ptable->m_top);
-
-		  const D3DXVECTOR4 bs(m_BallStretchX /*-sx*/, m_BallStretchY - sy, inv_tablewidth, inv_tableheight);
-		  ballShader->SetVector("ballStretch_invTableRes", &bs );
+        //const D3DXVECTOR4 bs(m_BallStretchX/* +sx*/, m_BallStretchY - sy, inv_tablewidth, inv_tableheight);
+        const D3DXVECTOR4 bs(sx, sy, inv_tablewidth, inv_tableheight);
+        ballShader->SetVector("ballStretch_invTableRes", &bs);
       }
 
 	  const D3DXVECTOR4 diffuse = convertColor(pball->m_color,1.0f);

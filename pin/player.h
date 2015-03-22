@@ -422,7 +422,7 @@ public:
     void UpdateBackdropSettings(const bool up);
     void UpdateBallShaderMatrix();
     void CalcBallAspectRatio(void);
-    void GetBallAspectRatio(Ball *pball, float &stretchX, float &stretchY);
+    void GetBallAspectRatio(Ball *pball, float &stretchX, float &stretchY, float zHeight);
 #endif
 
 #ifdef STEPPING
