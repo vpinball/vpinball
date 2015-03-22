@@ -73,7 +73,7 @@ struct VS_NOTEX_OUTPUT
 };
 
 //------------------------------------
-
+float fKickerScale = 1.0f;
 //
 // Standard Materials
 //
@@ -168,7 +168,7 @@ VS_NOTEX_OUTPUT vs_kicker (float4 vPosition : POSITION0,
     const float3 N = normalize(mul(float4(vNormal,0.0), matWorldViewInverseTranspose).xyz);
 
     Out.pos = mul(vPosition, matWorldViewProj);
-    P2.z -= 100.0;
+    P2.z -= 70.0f*fKickerScale;
     P2 = mul(P2, matWorldViewProj);
     Out.pos.z = P2.z;
     Out.worldPos = P;
