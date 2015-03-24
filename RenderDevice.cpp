@@ -1104,7 +1104,10 @@ Shader::Shader(RenderDevice *renderDevice)
 	    currentTexture[i] = 0;
     currentAlphaTestValue = -FLT_MAX;
     currentFlasherData =
-    currentFlasherColor = D3DXVECTOR4(-FLT_MAX,-FLT_MAX,-FLT_MAX,-FLT_MAX);
+    currentFlasherColor = 
+	currentLightColor =
+	currentLightColor2 =
+	currentLightData = D3DXVECTOR4(-FLT_MAX,-FLT_MAX,-FLT_MAX,-FLT_MAX);
     currentTechnique[0] = 0;
 
     memset(&currentMaterial, 0xCC, sizeof(Material));

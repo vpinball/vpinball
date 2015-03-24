@@ -642,8 +642,8 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
 
     if ( !m_d.m_BulbLight )
     {
-		pd3dDevice->classicLightShader->SetVector("lightCenter_maxRange", &center_range);
-		pd3dDevice->classicLightShader->SetVector("lightColor2_falloff_power", &lightColor2_falloff_power);
+		pd3dDevice->classicLightShader->SetLightData(center_range);
+		pd3dDevice->classicLightShader->SetLightColor2FalloffPower(lightColor2_falloff_power);
         
 		pd3dDevice->classicLightShader->SetBool("backglassMode",m_fBackglass);
         pd3dDevice->classicLightShader->SetBool("imageMode",m_d.m_imageMode);
@@ -659,8 +659,8 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
     }
     else
 	{
-		pd3dDevice->lightShader->SetVector("lightCenter_maxRange", &center_range);
-		pd3dDevice->lightShader->SetVector("lightColor2_falloff_power", &lightColor2_falloff_power);
+		pd3dDevice->lightShader->SetLightData(center_range);
+		pd3dDevice->lightShader->SetLightColor2FalloffPower(lightColor2_falloff_power);
 
         pd3dDevice->lightShader->SetTechnique("bulb_light");
 
@@ -673,7 +673,7 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
 		if ( m_d.m_showBulbMesh ) // blend bulb mesh hull additive over "normal" bulb to approximate the emission directly reaching the camera
 		{
 			lightColor_intensity.w = m_d.m_currentIntensity*0.02f; //!! make configurable?
-			pd3dDevice->lightShader->SetVector("lightColor_intensity", &lightColor_intensity);
+			pd3dDevice->lightShader->SetLightColorIntensity(lightColor_intensity);
 			pd3dDevice->lightShader->SetFloat("blend_modulate_vs_add",0.00001f); // avoid 0, as it disables the blend
 
 			pd3dDevice->lightShader->Begin(0);
@@ -688,12 +688,12 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
 	lightColor_intensity.w = m_d.m_currentIntensity;
     if ( !m_d.m_BulbLight )
     {
-		pd3dDevice->classicLightShader->SetVector("lightColor_intensity", &lightColor_intensity);
+		pd3dDevice->classicLightShader->SetLightColorIntensity(lightColor_intensity);
 		pd3dDevice->classicLightShader->Begin(0);
 	}
 	else
 	{
-		pd3dDevice->lightShader->SetVector("lightColor_intensity", &lightColor_intensity);
+		pd3dDevice->lightShader->SetLightColorIntensity(lightColor_intensity);
 		pd3dDevice->lightShader->Begin(0);
 	}
 	pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, (!m_fBackglass) ? MY_D3DFVF_NOTEX2_VERTEX : MY_D3DTRANSFORMED_NOTEX2_VERTEX, customMoverVBuffer, 0, customMoverVertexNum, customMoverIBuffer, 0, customMoverIndexNum);
