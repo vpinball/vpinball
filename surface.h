@@ -112,7 +112,15 @@ END_CONNECTION_POINT_MAP()
     // end ISelect
 
     virtual float GetDepth(const Vertex3Ds& viewDir) { return viewDir.z * m_d.m_heighttop; }
-	virtual size_t GetMaterialID();
+	virtual unsigned long long GetMaterialID()
+	{
+		unsigned long long h = 0;
+		if( m_d.m_fSideVisible)
+			h = m_ptable->GetMaterial(m_d.m_szSideMaterial)->hash();
+		if( m_d.m_fVisible )
+			h = m_ptable->GetMaterial(m_d.m_szTopMaterial)->hash();
+		return h;
+	}
     virtual bool IsTransparent();
     virtual void UpdatePropertyPanes();
 

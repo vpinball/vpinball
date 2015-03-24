@@ -37,6 +37,17 @@ public:
       strcat_s( m_szName, "dummyMaterial");
 	}
 
+	inline unsigned long long hash() const
+	{
+		const unsigned char* const p = reinterpret_cast<const unsigned char*>( &(this->m_fWrapLighting) );
+		unsigned int h = 2166136261;
+
+		for (unsigned int i = 0; i <= (unsigned int)(&(this->m_bOpacityActive))-(unsigned int)(&(this->m_fWrapLighting)); ++i)
+			h = (h * 16777619) ^ p[i];
+
+		return (((unsigned long long)this) << 32) | (unsigned long long)h; //!! might suck for 64bit pointers, rather use original material id
+	}
+
 	char m_szName[32];
 	float m_fWrapLighting;
 	float m_fRoughness;

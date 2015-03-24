@@ -421,8 +421,8 @@ public:
     void UpdateCameraModeDisplay();
     void UpdateBackdropSettings(const bool up);
     void UpdateBallShaderMatrix();
-    void CalcBallAspectRatio(void);
-    void GetBallAspectRatio(Ball *pball, float &stretchX, float &stretchY, float zHeight);
+    void CalcBallAspectRatio();
+    void GetBallAspectRatio(const Ball * const pball, float &stretchX, float &stretchY, const float zHeight);
 #endif
 
 #ifdef STEPPING

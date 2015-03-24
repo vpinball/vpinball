@@ -1,4 +1,5 @@
 #include "StdAfx.h"
+#include "forsyth.h"
 
 Ramp::Ramp()
 {
@@ -863,12 +864,6 @@ float Ramp::GetDepth(const Vertex3Ds& viewDir)
     return m_d.m_depthBias + viewDir.x * center2D.x + viewDir.y * center2D.y + viewDir.z * centerZ;
 }
 
-size_t Ramp::GetMaterialID()
-{
-	return (size_t)m_ptable->GetMaterial(m_d.m_szMaterial);
-}
-
-
 bool Ramp::isHabitrail() const
 {
     return  m_d.m_type == RampType4Wire
@@ -1133,6 +1128,13 @@ void Ramp::prepareHabitrail(RenderDevice* pd3dDevice)
 
     if (dynamicIndexBuffer)
         dynamicIndexBuffer->release();
+
+	WORD* tmp = reorderForsyth(&rgibuf[0],rgibuf.size()/3,m_numVertices);
+    if(tmp != NULL)
+    {
+       memcpy(&rgibuf[0],tmp,rgibuf.size()*sizeof(WORD));
+       delete [] tmp;
+    }
     dynamicIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer( rgibuf );
 
     delete [] rgvbuf;
@@ -2193,6 +2195,13 @@ void Ramp::GenerateVertexBuffer(RenderDevice* pd3dDevice)
 
     if (dynamicIndexBuffer)
         dynamicIndexBuffer->release();
+
+	WORD* tmp = reorderForsyth(&rgibuf[0],rgibuf.size()/3,m_numVertices*5);
+    if(tmp != NULL)
+    {
+       memcpy(&rgibuf[0],tmp,rgibuf.size()*sizeof(WORD));
+       delete [] tmp;
+    }
     dynamicIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer( rgibuf );
 
     for (int i=0; i<(rampVertex-1); i++)

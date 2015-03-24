@@ -105,7 +105,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_RUBBER)
 	virtual void GetBoundingVertices(Vector<Vertex3Ds> * const pvvertex3D);
 
     virtual float GetDepth(const Vertex3Ds& viewDir);
-    virtual size_t GetMaterialID();
+	virtual unsigned long long GetMaterialID() { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
     virtual void UpdatePropertyPanes();
 
 	void WriteRegDefaults();

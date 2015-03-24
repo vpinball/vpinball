@@ -1,4 +1,5 @@
 #include "StdAfx.h"
+#include "forsyth.h"
 
 const int numIndices = 294;
 
@@ -641,6 +642,13 @@ void Flipper::RenderSetup(RenderDevice* pd3dDevice)
 
     if (indexBuffer)
         indexBuffer->release();
+
+	WORD* tmp = reorderForsyth(idx,numIndices/3,numVertices);
+    if(tmp != NULL)
+    {
+       memcpy(idx,tmp,numIndices*sizeof(WORD));
+       delete [] tmp;
+    }
     indexBuffer = pd3dDevice->CreateAndFillIndexBuffer(numIndices, idx);
 
     Vertex3D_NoTex2 *buf;
