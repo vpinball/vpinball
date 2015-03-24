@@ -4316,8 +4316,23 @@ void PinTable::DoRButtonDown(int x,int y)
    }
    else
    {
-      //SetSel(HitTest(x,y));
-      AddMultiSel(HitTest(x,y), fFalse, fTrue);
+      // keep the selection if clicking over a selected object, even if
+      // the selected object is hidden behind other objects
+      ISelect *hit = HitTest(x, y);
+      for (int i = 0 ; i < m_vmultisel.Size() ; i++)
+      {
+         if (m_allHitElements.IndexOf(m_vmultisel.ElementAt(i)) != -1)
+         {
+            // found a selected item - keep the current selection set
+            // by re-selecting this item (which will also promote it
+            // to the head of the selection list)
+            hit = m_vmultisel.ElementAt(i);
+            break;
+         }
+      }
+ 
+      // update the selection
+      AddMultiSel(hit, fFalse, fTrue);
    }
 }
 
