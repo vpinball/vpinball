@@ -85,11 +85,11 @@ Primitive::~Primitive()
 
 void Primitive::CreateRenderGroup(Collection *collection, RenderDevice *pd3dDevice)
 {
-    vector<Primitive*> prims;
     if ( !collection->m_fGroupElements )
         return;
 
-    prims.clear();
+    unsigned int overall_size = 0;
+    vector<Primitive*> prims;
     for (int i = 0; i < collection->m_visel.size(); i++)
     {
         ISelect *pisel = collection->m_visel.ElementAt(i);
@@ -102,6 +102,8 @@ void Primitive::CreateRenderGroup(Collection *collection, RenderDevice *pd3dDevi
             continue;
 
         prims.push_back(prim);
+
+	overall_size += prim->m_mesh.NumIndices();
     }
 
     if ( prims.size()==0 )
@@ -115,9 +117,8 @@ void Primitive::CreateRenderGroup(Collection *collection, RenderDevice *pd3dDevi
     m_numGroupVertices = prims[0]->m_mesh.NumVertices();
     m_numGroupIndices = prims[0]->m_mesh.NumIndices();
     prims[0]->m_d.m_fGroupdRendering = true;
-    vector<unsigned int> indices;
-    for (size_t i = 0; i<prims[0]->m_mesh.NumIndices();i++ )
-        indices.push_back( prims[0]->m_mesh.m_indices[i]);
+    vector<unsigned int> indices(overall_size);
+    memcpy(&indices[0], &prims[0]->m_mesh.m_indices[0], prims[0]->m_mesh.NumIndices());
 
     for (size_t i = 1; i < prims.size(); i++)
     {
@@ -126,7 +127,7 @@ void Primitive::CreateRenderGroup(Collection *collection, RenderDevice *pd3dDevi
         if (mat == groupMaterial && texel == groupTexel)
         {
             for (size_t k = 0; k<prims[i]->m_mesh.NumIndices(); k++)
-                indices.push_back(m_numGroupVertices + prims[i]->m_mesh.m_indices[k]);
+                indices[m_numGroupIndices+k] = m_numGroupVertices + prims[i]->m_mesh.m_indices[k];
             
             m_numGroupVertices += prims[i]->m_mesh.NumVertices();
             m_numGroupIndices += prims[i]->m_mesh.NumIndices();
@@ -152,18 +153,16 @@ void Primitive::CreateRenderGroup(Collection *collection, RenderDevice *pd3dDevi
         prims[i]->RecalculateMatrices();
         for (size_t t = 0; t < prims[i]->m_mesh.NumVertices(); t++)
         {
-            Vertex3D_NoTex2 vt;
-            memcpy(&vt, &prims[i]->m_mesh.m_vertices[t], sizeof(Vertex3D_NoTex2));
+            Vertex3D_NoTex2 vt = prims[i]->m_mesh.m_vertices[t];
             prims[i]->fullMatrix.MultiplyVector(vt, vt);
             Vertex3Ds n;
             prims[i]->fullMatrix.MultiplyVectorNoTranslateNormal(vt, n);
             vt.nx = n.x; vt.ny = n.y; vt.nz = n.z;
-            memcpy(&buf[ofs], &vt, sizeof(Vertex3D_NoTex2));
+            buf[ofs] = vt;
             ofs++;
         }
     }
     vertexBuffer->unlock();
-
 }
 
 HRESULT Primitive::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
