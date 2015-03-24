@@ -2111,10 +2111,11 @@ LRESULT CALLBACK VPWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
              RECT smartRect;
              GetClientRect(hwndSB, &smartRect);
 
-             int sbHeight = (rc.bottom - rc.top) - 100;
+             int sbHeight = smartRect.bottom-smartRect.top;//(rc.bottom - rc.top) - 100;
+             int smartWidth = smartRect.right-smartRect.left;
              int sbX = rc.right - eSmartBrowserWidth - 20;
 
-             SetWindowPos(hwndSB, NULL, sbX, 40, eSmartBrowserWidth, sbHeight, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+             SetWindowPos(hwndSB, NULL, sbX, 40, smartWidth, sbHeight, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
          }
          SetWindowPos(g_pvp->m_hwndSideBar,NULL,
             0, 0, sidebarwidth, rc.bottom - rc.top - statheight, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
