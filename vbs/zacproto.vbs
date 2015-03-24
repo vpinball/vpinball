@@ -66,7 +66,7 @@ Function vpmKeyDown(ByVal keycode)
 			Case keyInsertCoin1  vpmTimer.PulseSw swCoin1 : Playsound SCoin
 			Case keyInsertCoin2  vpmTimer.PulseSw swCoin2 : Playsound SCoin
 			Case StartGameKey    .Switch(swStartButton)=1
-			Case keySelfTest     If toggleKeyCoinDoor Then .Switch(swCoinDoor) = Not .Switch(swCoinDoor) Else .Switch(swCoinDoor) = True
+			Case keySelfTest     If toggleKeyCoinDoor Then .Switch(swCoinDoor) = Not .Switch(swCoinDoor) Else .Switch(swCoinDoor) = Not inverseKeyCoinDoor
 			Case keyAdvance      vpmTimer.PulseSw swTilt
 			Case keyBangBack     vpmNudge.DoNudge   0, 6
 			Case LeftTiltKey     vpmNudge.DoNudge  75, 2
@@ -86,7 +86,7 @@ Function vpmKeyUp(ByVal keycode)
 		If keycode = LeftFlipperKey  Then .Switch(swLLFlip) = False
 		Select Case keycode
 			Case StartGameKey    .Switch(swStartButton)=0
-			Case keySelfTest     If toggleKeyCoinDoor = False Then .Switch(swCoinDoor) = False
+			Case keySelfTest     If toggleKeyCoinDoor = False Then .Switch(swCoinDoor) = inverseKeyCoinDoor
 			Case keyShowOpts     .Pause = True : .ShowOptsDialog GetPlayerHWnd : .Pause = False
 			Case keyShowKeys     .Pause = True : vpmShowHelp : .Pause = False
 			Case keyAddBall      .Pause = True : vpmAddBall  : .Pause = False

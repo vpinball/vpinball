@@ -90,7 +90,7 @@ Function vpmKeyDown(ByVal keycode)
 			Case 12              .Switch(swConfigurations)= True
 			Case keyEnter        .Switch(swEnter)         = True
 			Case keySlamDoorHit  .Switch(swSlamTilt)      = True
-			Case keyCoinDoor     If toggleKeyCoinDoor Then .Switch(swCoinDoor) = Not .Switch(swCoinDoor) Else .Switch(swCoinDoor) = True
+			Case keyCoinDoor     If toggleKeyCoinDoor Then .Switch(swCoinDoor) = Not .Switch(swCoinDoor) Else .Switch(swCoinDoor) = Not inverseKeyCoinDoor
 			Case 13		   .Switch(swSoundDiag)     = Not .Switch(swSoundDiag)
 			Case keyMasterEnter  .Switch(swBoxDoor)       = Not .Switch(swBoxDoor)
 			Case keyBangBack     vpmNudge.DoNudge   0,6
@@ -113,7 +113,7 @@ Function vpmKeyUp(ByVal keycode)
 		Select Case keycode
 			Case StartGameKey    .Switch(swStartButton)   = False
 			Case keySlamDoorHit  .Switch(swSlamTilt)      = False
-			Case keyCoinDoor     If toggleKeyCoinDoor = False Then .Switch(swCoinDoor) = False
+			Case keyCoinDoor     If toggleKeyCoinDoor = False Then .Switch(swCoinDoor) = inverseKeyCoinDoor
 			Case keyShowOpts     .Pause = True : .ShowOptsDialog GetPlayerHWnd : .Pause = False
 			Case keyShowKeys     .Pause = True : vpmShowHelp : .Pause = False
 			Case keyShowDips     If IsObject(vpmShowDips) Then .Pause = True : vpmShowDips : .Pause = False
