@@ -2,7 +2,7 @@
 ' - Fixed Labeling Errors
 
 Option Explicit
-Dim toggleKeyCoinDoor
+Dim toggleKeyCoinDoor,inverseKeyCoinDoor
 Dim keyShowOpts,keyShowKeys,keyReset,keyFrame,keyDoubleSize,keyShowDips,keyAddBall
 Dim keyBangBack,keyInsertCoin1,keyInsertCoin2,keyInsertCoin3,keyInsertCoin4,keySlamDoorHit
 Dim keyCoinDoor,keyCancel,keyDown,keyUp,keyEnter,keyAdvance,keyUpDown,keyCPUDiag,keySoundDiag
@@ -28,6 +28,7 @@ keyInsertCoin4   = 7   '(6)    Insert coin in slot 4
 keySlamDoorHit   = 199 '(Home) Slam Tilt
 keyCoinDoor      = 207 '(End)  Opening/Closing Coin Door
 toggleKeyCoinDoor = True '     If true then a key press/switch change will flip the state from on/off, if false then one will have the real coindoor behaviour (for cabinet setups with real coindoors)
+inverseKeyCoinDoor = False '   If false then the coindoor switch behaves like a original coindoor (key pressed = closed, key not pressed = open), otherwise the switch is inverted (key pressed = open, key not pressed = closed)
 
 keyCancel        = 8   '(7)    Coin Door Cancel Button (WPC)
 keyDown          = 9   '(8)    Coin Door Down Button (WPC)

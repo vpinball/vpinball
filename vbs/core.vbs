@@ -15,6 +15,8 @@ Const VPinMAMEDriverVer = 3.44
 '   - Add UseVPMDMD = true to the table script (place before LoadVPM, or otherwise calling core.vbs)
 '     to automatically pass the raw DMD data (levels from 0..100) from VPM to VP (see VP10+ for details on how to display it)
 '   - Add toggleKeyCoinDoor in VPMKeys.vbs to choose between a real coindoor setup (e.g. cabinets) and the 'classic' on/off behaviour (e.g desktops/keyboards)
+'   - Add inverseKeyCoinDoor in VPMKeys.vbs to in addition choose between the behaviour of a real coindoor switch (key pressed = closed, key not pressed = open)
+'     or the inverted behaviour (key pressed = open, key not pressed = closed)
 '   - Increase maximum number of balls/conMaxBalls to 13 and conStackSw to 8 (for Apollo 13), use InitSw8() then instead of InitSw()
 '   - Deprecate vpmSolFlip2, as VP10 does not feature speed on flippers anymore
 ' New in 3.43 (Update by Koadic)
