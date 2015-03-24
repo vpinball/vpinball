@@ -156,7 +156,8 @@ DECLARE_REGISTRY_RESOURCEID(IDR_LIGHT)
 
 	virtual bool IsTransparent() { return m_d.m_BulbLight || (m_surfaceMaterial && m_surfaceMaterial->m_bOpacityActive); }
     virtual float GetDepth(const Vertex3Ds& viewDir);
-    virtual void UpdatePropertyPanes();
+	virtual unsigned long long GetMaterialID() { return m_surfaceMaterial ? m_surfaceMaterial->hash() : 0; }
+	virtual void UpdatePropertyPanes();
 
 	void WriteRegDefaults();
     void FreeBuffers();

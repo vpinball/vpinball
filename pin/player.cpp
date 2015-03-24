@@ -1123,10 +1123,11 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 		}
 	}
 
-    //std::sort( m_vHitNonTrans.begin(), m_vHitNonTrans.end(), CompareHitableDepthReverse );
-    //std::stable_sort( m_vHitNonTrans.begin(), m_vHitNonTrans.end(), CompareHitableMaterial ); // stable, so that objects with same materials will keep depth order
-    std::sort( m_vHitTrans.begin(), m_vHitTrans.end(), CompareHitableDepth );
+    std::sort( m_vHitNonTrans.begin(), m_vHitNonTrans.end(), CompareHitableDepthReverse );
+    std::stable_sort( m_vHitNonTrans.begin(), m_vHitNonTrans.end(), CompareHitableMaterial ); // stable, so that objects with same materials will keep depth order
     
+    std::sort( m_vHitTrans.begin(), m_vHitTrans.end(), CompareHitableMaterial );
+	std::stable_sort( m_vHitTrans.begin(), m_vHitTrans.end(), CompareHitableDepth );
 
 	// Direct all renders to the back buffer.
     m_pin3d.SetRenderTarget(m_pin3d.m_pddsBackBuffer, m_pin3d.m_pddsZBuffer);
@@ -1424,7 +1425,7 @@ void Player::InitWindow()
 	SetCursorPos( 400, 999999 ); // ShowCursor(false)?
 }
 
-void Player::CalcBallAspectRatio(void)
+void Player::CalcBallAspectRatio()
 {
     HRESULT hr;
 
@@ -3245,7 +3246,7 @@ void search_for_nearest(const Ball * const pball, const std::vector<Light*> &lig
 	}
 }
 
-void Player::GetBallAspectRatio(Ball *pball, float &stretchX, float &stretchY, float zHeight)
+void Player::GetBallAspectRatio(const Ball * const pball, float &stretchX, float &stretchY, const float zHeight)
 {
     Vertex3D_NoTex2 rgvIn[108/2];
 //     rgvIn[0].x = pball->m_pos.x;                    rgvIn[0].y=pball->m_pos.y+pball->m_radius;    rgvIn[0].z=zHeight;
@@ -3254,7 +3255,7 @@ void Player::GetBallAspectRatio(Ball *pball, float &stretchX, float &stretchY, f
 //     rgvIn[3].x = pball->m_pos.x - pball->m_radius;    rgvIn[3].y = pball->m_pos.y;                    rgvIn[3].z = zHeight;
 //     rgvIn[4].x = pball->m_pos.x;                    rgvIn[4].y = pball->m_pos.y;                    rgvIn[4].z = zHeight + pball->m_radius;
 //     rgvIn[5].x = pball->m_pos.x;                    rgvIn[5].y = pball->m_pos.y;                    rgvIn[5].z = zHeight - pball->m_radius;
-    int numVerts = basicBallNumVertices;
+    const int numVerts = basicBallNumVertices;
 
     for (int i = 0, t = 0; i < numVerts; i += 2,t++)
     {
@@ -3275,10 +3276,10 @@ void Player::GetBallAspectRatio(Ball *pball, float &stretchX, float &stretchY, f
         if(maxY<rgvOut[i].y) maxY = rgvOut[i].y;
         if(minY>rgvOut[i].y) minY = rgvOut[i].y;
     }
-    float midX = maxX - minX;
-    float midY = maxY - minY;
-    stretchY = 1.0f/(midX/midY);
-    stretchX = 1.0f/(midY/midX);
+    const float midX = maxX - minX;
+    const float midY = maxY - minY;
+    stretchY = midY/midX;
+    stretchX = midX/midY;
     stretchX = 1.0f;
 }
 

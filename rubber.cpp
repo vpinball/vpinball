@@ -1,4 +1,5 @@
 #include "StdAfx.h"
+#include "forsyth.h"
 
 Rubber::Rubber()
 {
@@ -629,11 +630,6 @@ float Rubber::GetDepth(const Vertex3Ds& viewDir)
     GetCenter(&center2D);
     const float centerZ = 0.5f * m_d.m_height;
     return m_d.m_depthBias + viewDir.x * center2D.x + viewDir.y * center2D.y + viewDir.z * centerZ;
-}
-
-size_t Rubber::GetMaterialID()
-{
-	return (size_t)m_ptable->GetMaterial(m_d.m_szMaterial);
 }
 
 void Rubber::RenderSetup(RenderDevice* pd3dDevice)
@@ -1455,6 +1451,13 @@ void Rubber::GenerateVertexBuffer(RenderDevice* pd3dDevice)
 
     if (dynamicIndexBuffer)
         dynamicIndexBuffer->release();
+
+	WORD* tmp = reorderForsyth(&rgibuf[0],rgibuf.size()/3,m_numVertices);
+    if(tmp != NULL)
+    {
+       memcpy(&rgibuf[0],tmp,rgibuf.size()*sizeof(WORD));
+       delete [] tmp;
+    }
     dynamicIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer( rgibuf );
 
     delete [] rgvLocal;

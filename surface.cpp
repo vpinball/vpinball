@@ -1,4 +1,5 @@
 #include "StdAfx.h"
+#include "forsyth.h"
 
 Surface::Surface()
 {
@@ -43,16 +44,6 @@ bool Surface::IsTransparent()
         result = result || mat->m_bOpacityActive;
     }
     return result;
-}
-
-size_t Surface::GetMaterialID()
-{
-	Material *mat = 0;
-	if( m_d.m_fSideVisible)
-        mat = m_ptable->GetMaterial(m_d.m_szSideMaterial);
-    if( m_d.m_fVisible )
-        mat = m_ptable->GetMaterial(m_d.m_szTopMaterial);
-	return (size_t)mat; 
 }
 
 HRESULT Surface::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
@@ -593,10 +584,7 @@ void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
    }
 
    if ( sideVBuffer )
-   {
       sideVBuffer->release();
-      sideVBuffer=0;
-   }
    pd3dDevice->CreateVertexBuffer( numVertices*4, 0, MY_D3DFVF_NOTEX2_VERTEX, &sideVBuffer );
    Vertex3D_NoTex2 *verts;
    sideVBuffer->lock( 0, 0, (void**)&verts, VertexBuffer::WRITEONLY);
@@ -687,6 +675,14 @@ void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
 
        if (sideIBuffer)
            sideIBuffer->release();
+
+	   	WORD* tmp = reorderForsyth(&rgi[0],rgi.size()/3,numVertices*4);
+		if(tmp != NULL)
+		{
+		   memcpy(&rgi[0],tmp,rgi.size()*sizeof(WORD));
+		   delete [] tmp;
+		}
+
 	   sideIBuffer = pd3dDevice->CreateAndFillIndexBuffer(rgi);
    }
 
