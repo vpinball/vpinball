@@ -34,6 +34,7 @@ SmartBrowser::SmartBrowser()
    m_olddialog = -1;
    m_pvsel = NULL;
    m_maxdialogwidth = 20;
+   m_szHeaderCollection[0]=0;
 }
 
 SmartBrowser::~SmartBrowser()
@@ -85,6 +86,10 @@ void SmartBrowser::Init(HWND hwndParent)
       DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
       ANTIALIASED_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "MS Sans Serif");
 
+   m_hfontHeader2 = CreateFont(-14, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE,
+       DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
+       ANTIALIASED_QUALITY, DEFAULT_PITCH | FF_DONTCARE, "MS Sans Serif");
+
    // Register expando window
    wcex.style = CS_DBLCLKS | CS_NOCLOSE; //| CS_OWNDC;
    wcex.lpfnWndProc = (WNDPROC) ExpandoProc;
@@ -123,6 +128,8 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, Vector<ISelect> *pvsel)
    //int resourceid;
    ISelect *pisel = NULL;
    FreePropPanes();
+   char colName[64] = { 0 };
+   Collection *col=NULL;
 
    if (pvsel != NULL)
    {
@@ -139,6 +146,26 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, Vector<ISelect> *pvsel)
             m_vproppane.AddElement(pproppane);
             //resourceid = IDD_PROPMULTI;
             fSame = false;
+         }
+         bool endLoop=false;
+         for (int t = 0; t < g_pvp->m_ptableActive->m_vcollection.Size() && !endLoop; t++)
+         {
+             Collection *pcol = g_pvp->m_ptableActive->m_vcollection.ElementAt(t);
+             for (int k = 0; k < pcol->m_visel.Size(); k++)
+             {
+                 if ((col == NULL) && (pcol->m_visel.ElementAt(k) == pvsel->ElementAt(i)))
+                     col = pcol;
+                 else if ((col != NULL) && (col==pcol) && (pcol->m_visel.ElementAt(k) == pvsel->ElementAt(i)))
+                 {
+                     // user selected one or more elements from a collection and some elements aren't in the collection
+                     endLoop=true;
+                     break;
+                 }
+             }
+         }
+         if (!endLoop && col != NULL )
+         {
+             WideCharToMultiByte(CP_ACP, 0, col->m_wzName, -1, colName, 64, NULL, NULL);
          }
       }
 
@@ -216,9 +243,16 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, Vector<ISelect> *pvsel)
 
       WideCharToMultiByte(CP_ACP, 0, bstr, -1, szTemp, 64, NULL, NULL);
 
+      m_szHeaderCollection[0] = 0;
       //char szNum[64];
       if (pvsel->Size() > 1)
-         sprintf_s(m_szHeader, "%s(%d)", szTemp, pvsel->Size());
+      {
+          if (col)
+          {
+              sprintf_s(m_szHeaderCollection,"%s", colName);
+          }
+          sprintf_s(m_szHeader, "%s(%d)", szTemp, pvsel->Size());
+      }
       else
          lstrcpy(m_szHeader, szTemp);
    }
@@ -485,15 +519,23 @@ void SmartBrowser::DrawHeader(HDC hdc)
    char szText[256];
    HFONT hfontOld;
 
-   strcpy_s(szText, sizeof(szText), m_szHeader);
-
-   hfontOld = (HFONT)SelectObject(hdc, m_hfontHeader);
-
    SetTextAlign(hdc, TA_CENTER);
 
    SetBkMode(hdc, TRANSPARENT);
-
-   ExtTextOut(hdc, m_maxdialogwidth>>1, 0, 0, NULL, szText, lstrlen(szText), NULL);
+   if (m_szHeaderCollection[0] == 0)
+   {
+       hfontOld = (HFONT)SelectObject(hdc, m_hfontHeader);
+       strcpy_s(szText, sizeof(szText), m_szHeader);
+       ExtTextOut(hdc, m_maxdialogwidth >> 1, 0, 0, NULL, szText, lstrlen(szText), NULL);
+   }
+   else
+   {
+       hfontOld = (HFONT)SelectObject(hdc, m_hfontHeader2);
+       strcpy_s(szText, sizeof(szText), m_szHeaderCollection);
+       ExtTextOut(hdc, m_maxdialogwidth >> 1, 0, 0, NULL, szText, lstrlen(szText), NULL);
+       strcpy_s(szText, sizeof(szText), m_szHeader);
+       ExtTextOut(hdc, m_maxdialogwidth >> 1, 14, 0, NULL, szText, lstrlen(szText), NULL);
+   }
 
    SelectObject(hdc, hfontOld);
 }
