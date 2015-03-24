@@ -380,6 +380,34 @@ public:
 		}
 	}
 
+	void SetLightColorIntensity(const D3DXVECTOR4& color)
+	{
+		if (currentLightColor.x != color.x || currentLightColor.y != color.y || currentLightColor.z != color.z || currentLightColor.w != color.w)
+		{
+			currentLightColor = color;
+			SetVector("lightColor_intensity", &color);
+		}
+	}
+
+	void SetLightColor2FalloffPower(const D3DXVECTOR4& color)
+	{
+		if (currentLightColor2.x != color.x || currentLightColor2.y != color.y || currentLightColor2.z != color.z || currentLightColor2.w != color.w)
+		{
+			currentLightColor2 = color;
+			SetVector("lightColor2_falloff_power", &color);
+		}
+	}
+
+	void SetLightData(const D3DXVECTOR4& color)
+	{
+		if (currentLightData.x != color.x || currentLightData.y != color.y || currentLightData.z != color.z || currentLightData.w != color.w)
+		{
+			currentLightData = color;
+			SetVector("lightCenter_maxRange", &color);
+		}
+	}
+
+
 	void SetTechnique(const D3DXHANDLE technique)
 	{
 	   if( strcmp(currentTechnique, technique) /*|| (m_renderDevice->m_curShader != this)*/ )
@@ -441,4 +469,11 @@ private:
 
     D3DXVECTOR4 currentFlasherColor; // both flasher only-data
     D3DXVECTOR4 currentFlasherData;
+
+    D3DXVECTOR4 currentLightColor; // all light only-data
+    D3DXVECTOR4 currentLightColor2;
+    D3DXVECTOR4 currentLightData;
+
+	//std::vector<Material> materialStateCache; // for caching
+    //std::vector<D3DXHANDLE> materialStateCache_handle;
 };
