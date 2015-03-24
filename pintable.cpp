@@ -4230,7 +4230,7 @@ void PinTable::DoRButtonDown(int x,int y)
 	   }
 
 	   // update the selection
-	   AddMultiSel(hit, fFalse, fTrue);
+	   AddMultiSel(hit, false);
    }
 }
 
