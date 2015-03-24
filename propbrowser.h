@@ -88,11 +88,13 @@ public:
 
     std::vector<int> m_vproppriority;
 
-	HFONT m_hfontHeader;
+    HFONT m_hfontHeader;
+    HFONT m_hfontHeader2;
 
 	int m_olddialog;
 
 	char m_szHeader[64];
+    char m_szHeaderCollection[64];
 
 	Vector<ISelect> *m_pvsel;
 
