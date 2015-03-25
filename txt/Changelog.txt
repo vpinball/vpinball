@@ -151,6 +151,10 @@ VP 10.0.0 Changelog
   just shift-left click on the element and you can manipulate only that element. Unchecking the 'Group elements together' flag disable this feature for this collection.
 
 - ctrl+mouse wheel zooms in/out. The old way of using ctrl+left click for zooming in and ctrl+right click for zooming out is still possible.
+
+- extend right click behavior for multi-select to hidden items
+
+- the property menu can now be a floating window (old behavior can be restored in the editor options)
   
 - remove old shadowing code and replace it with optional screen space ambient occlusion (via the global video preferences and also the table options)
 
