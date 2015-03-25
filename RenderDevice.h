@@ -502,7 +502,4 @@ private:
     D3DXVECTOR4 currentLightData;
 	unsigned int currentLightImageMode;
 	unsigned int currentLightBackglassMode;
-
-	//std::vector<Material> materialStateCache; // for caching
-    //std::vector<D3DXHANDLE> materialStateCache_handle;
 };
