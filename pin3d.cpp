@@ -315,7 +315,9 @@ void Pin3D::DrawBackground()
 void Pin3D::InitLights()
 {
     //m_pd3dDevice->basicShader->SetInt("iLightPointNum",MAX_LIGHT_SOURCES);
+#ifdef SEPARATE_CLASSICLIGHTSHADER
     //m_pd3dDevice->classicLightShader->SetInt("iLightPointNum",MAX_LIGHT_SOURCES);
+#endif
 
     g_pplayer->m_ptable->m_Light[0].pos.x = g_pplayer->m_ptable->m_right*0.5f;
     g_pplayer->m_ptable->m_Light[1].pos.x = g_pplayer->m_ptable->m_right*0.5f;
@@ -341,14 +343,18 @@ void Pin3D::InitLights()
 		memcpy(&l[i].vEmission,&emission,sizeof(float)*3);
 	}
     m_pd3dDevice->basicShader->SetValue("packedLights", l, sizeof(CLight)*MAX_LIGHT_SOURCES);
+#ifdef SEPARATE_CLASSICLIGHTSHADER
     m_pd3dDevice->classicLightShader->SetValue("packedLights", l, sizeof(CLight)*MAX_LIGHT_SOURCES);
-    
+#endif
+
     D3DXVECTOR4 amb_lr = convertColor(g_pplayer->m_ptable->m_lightAmbient, g_pplayer->m_ptable->m_lightRange);
     amb_lr.x *= g_pplayer->m_ptable->m_globalEmissionScale;
     amb_lr.y *= g_pplayer->m_ptable->m_globalEmissionScale;
     amb_lr.z *= g_pplayer->m_ptable->m_globalEmissionScale;
     m_pd3dDevice->basicShader->SetVector("cAmbient_LightRange", &amb_lr);
+#ifdef SEPARATE_CLASSICLIGHTSHADER
     m_pd3dDevice->classicLightShader->SetVector("cAmbient_LightRange", &amb_lr);
+#endif
 }
 
 // currently unused
@@ -393,27 +399,26 @@ void Pin3D::InitLayoutFS()
     m_proj.m_rcviewport.right = vp.Width;
     m_proj.m_rcviewport.bottom = vp.Height;
 
-    const float aspect = ((float)vp.Width) / ((float)vp.Height); //(float)(4.0/3.0);
+    const float aspect = (float)vp.Width / (float)vp.Height; //(float)(4.0/3.0);
 
     //m_proj.FitCameraToVerticesFS(&vvertex3D, aspect, rotation, inclination, FOV, g_pplayer->m_ptable->m_BG_xlatez[g_pplayer->m_ptable->m_BG_current_set], g_pplayer->m_ptable->m_BG_layback[g_pplayer->m_ptable->m_BG_current_set]);
-    float yof = g_pplayer->m_ptable->m_bottom*0.5f + g_pplayer->m_ptable->m_BG_xlatey[g_pplayer->m_ptable->m_BG_current_set];
-    float camx = 0.0f;
-    float camy = g_pplayer->m_ptable->m_bottom*0.5f + g_pplayer->m_ptable->m_BG_xlatex[g_pplayer->m_ptable->m_BG_current_set];
-    float camz = g_pplayer->m_ptable->m_bottom + g_pplayer->m_ptable->m_BG_xlatez[g_pplayer->m_ptable->m_BG_current_set];
+    const float yof = g_pplayer->m_ptable->m_bottom*0.5f + g_pplayer->m_ptable->m_BG_xlatey[g_pplayer->m_ptable->m_BG_current_set];
+    const float camx = 0.0f;
+    const float camy = g_pplayer->m_ptable->m_bottom*0.5f + g_pplayer->m_ptable->m_BG_xlatex[g_pplayer->m_ptable->m_BG_current_set];
+    const float camz = g_pplayer->m_ptable->m_bottom + g_pplayer->m_ptable->m_BG_xlatez[g_pplayer->m_ptable->m_BG_current_set];
     m_proj.m_matWorld.SetIdentity();
-    D3DXMATRIX mView;
     D3DXVECTOR3 eye(camx,camy,camz);
     D3DXVECTOR3 at(0.0f, yof, 1.0f);
-    D3DXVECTOR3 up(0.0f, -1.0f, 0.0f);
+    const D3DXVECTOR3 up(0.0f, -1.0f, 0.0f);
 
     D3DXMATRIX rotationMat;
-
     D3DXMatrixRotationYawPitchRoll(&rotationMat, inclination, 0,rotation);
     D3DXVec3TransformCoord(&eye, &eye, &rotationMat);
     D3DXVec3TransformCoord(&at, &at, &rotationMat);
     //D3DXVec3TransformCoord(&up, &up, &rotationMat);
     //at=eye+at;
 
+    D3DXMATRIX mView;
     D3DXMatrixLookAtLH(&mView, &eye, &at, &up);
     memcpy(m_proj.m_matView.m, mView.m, sizeof(float) * 4 * 4);
     m_proj.ScaleView(g_pplayer->m_ptable->m_BG_scalex[g_pplayer->m_ptable->m_BG_current_set], g_pplayer->m_ptable->m_BG_scaley[g_pplayer->m_ptable->m_BG_current_set], 1.0f);
@@ -425,12 +430,12 @@ void Pin3D::InitLayoutFS()
     m_proj.ComputeNearFarPlane(vvertex3D);
     D3DXMATRIX proj;
     //D3DXMatrixPerspectiveFovLH(&proj, ANGTORAD(FOV), aspect, m_proj.m_rznear, m_proj.m_rzfar);
-    //D3DXMatrixPerspectiveFovLH(&proj, D3DX_PI / 4.0f, aspect, m_proj.m_rznear, m_proj.m_rzfar);
+    //D3DXMatrixPerspectiveFovLH(&proj, (float)(M_PI / 4.0), aspect, m_proj.m_rznear, m_proj.m_rzfar);
 
     D3DXMatrixIdentity(&proj);
-    float monitorPixel = 1.0f;// 25.4f * 23.3f / sqrt(1920.0f*1920.0f + 1080.0f*1080.0f);
-    float viewRight = (float)(monitorPixel*vp.Width / 2.0f);
-    float viewTop = (float)(monitorPixel*vp.Height / 2.0f);
+    const float monitorPixel = 1.0f;// 25.4f * 23.3f / sqrt(1920.0f*1920.0f + 1080.0f*1080.0f);
+    const float viewRight = monitorPixel*(float)vp.Width *0.5f;
+    const float viewTop = monitorPixel*(float)vp.Height *0.5f;
     //eye.x = g_pplayer->m_ptable->m_bottom*0.4f;
     //eye.z += g_pplayer->m_ptable->m_glassheight;
     eye.z = g_pplayer->m_ptable->m_bottom;
@@ -439,15 +444,14 @@ void Pin3D::InitLayoutFS()
     float left = -viewRight - eye.x;
     float top = viewTop - eye.y;
     float bottom = -viewTop - eye.y;
-    float z_screen = eye.z >= m_proj.m_rznear ? eye.z : m_proj.m_rznear;
+    const float z_screen = eye.z >= m_proj.m_rznear ? eye.z : m_proj.m_rznear;
 
     // move edges of frustum from z_screen to z_near
-    float z_near_to_z_screen = m_proj.m_rznear / z_screen; // <=1.0
+    const float z_near_to_z_screen = m_proj.m_rznear / z_screen; // <=1.0
     right *= z_near_to_z_screen;
     left *= z_near_to_z_screen;
     top *= z_near_to_z_screen;
     bottom *= z_near_to_z_screen;
-
 
     D3DXMatrixPerspectiveOffCenterLH(&proj, left, right, bottom, top, m_proj.m_rznear, m_proj.m_rzfar);
 

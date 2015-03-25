@@ -310,7 +310,11 @@ public:
    Shader *FBShader;
    Shader *flasherShader;
    Shader *lightShader;
+#ifdef SEPARATE_CLASSICLIGHTSHADER
    Shader *classicLightShader;
+#else
+   #define classicLightShader basicShader
+#endif
 
    //Shader* m_curShader; // for caching
 
@@ -352,6 +356,15 @@ public:
     void SetTexture(const D3DXHANDLE texelName, Texture *texel);
     void SetTexture(const D3DXHANDLE texelName, D3DTexture *texel);
     void SetMaterial( const Material * const mat );
+
+	void SetDisableLighting(const bool value)
+	{
+		if (currentDisableLighting != (unsigned int)value)
+		{
+			currentDisableLighting = (unsigned int)value;
+			SetBool("bDisableLighting", value);
+		}
+	}
 
 	void SetAlphaTestValue(const float value)
 	{
@@ -407,6 +420,18 @@ public:
 		}
 	}
 
+	void SetLightImageBackglassMode(const bool imageMode, const bool backglassMode)
+	{
+		if (currentLightImageMode != (unsigned int)imageMode || currentLightBackglassMode != (unsigned int)backglassMode)
+		{
+			currentLightImageMode = (unsigned int)imageMode;
+			currentLightBackglassMode = (unsigned int)backglassMode;
+			const D3DXVECTOR4 data(imageMode ? 1.0f : 0.0f, backglassMode ? 1.0f : 0.0f, 0.f,0.f);
+			SetVector("imageBackglassMode", &data);
+		}
+	}
+
+	//
 
 	void SetTechnique(const D3DXHANDLE technique)
 	{
@@ -462,6 +487,8 @@ private:
 
     Material currentMaterial;
 
+	unsigned int currentDisableLighting;
+
     static const DWORD TEXTURESET_STATE_CACHE_SIZE=5; // current convention: SetTexture gets "TextureX", where X 0..4
     BaseTexture *currentTexture[TEXTURESET_STATE_CACHE_SIZE];
     float   currentAlphaTestValue;
@@ -473,6 +500,8 @@ private:
     D3DXVECTOR4 currentLightColor; // all light only-data
     D3DXVECTOR4 currentLightColor2;
     D3DXVECTOR4 currentLightData;
+	unsigned int currentLightImageMode;
+	unsigned int currentLightBackglassMode;
 
 	//std::vector<Material> materialStateCache; // for caching
     //std::vector<D3DXHANDLE> materialStateCache_handle;

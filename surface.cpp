@@ -940,7 +940,7 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, const bool fDrop)
 {
 	// render side
     if (m_d.m_fDisableLighting && ( m_d.m_fSideVisible || m_d.m_fVisible))
-        pd3dDevice->basicShader->SetBool("bDisableLighting", m_d.m_fDisableLighting );
+        pd3dDevice->basicShader->SetDisableLighting( m_d.m_fDisableLighting );
 
     if (m_d.m_fSideVisible && !fDrop && (numVertices > 0)) // Don't need to render walls if dropped
     {
@@ -1009,7 +1009,7 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, const bool fDrop)
     //g_pplayer->m_pin3d.DisableAlphaBlend(); //!!  not necessary anymore
     pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
     if (m_d.m_fDisableLighting && ( m_d.m_fSideVisible || m_d.m_fVisible))
-        pd3dDevice->basicShader->SetBool("bDisableLighting", false );
+        pd3dDevice->basicShader->SetDisableLighting( false );
 }
 
 void Surface::DoCommand(int icmd, int x, int y)
