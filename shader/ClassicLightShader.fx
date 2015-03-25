@@ -1,3 +1,4 @@
+#ifdef SEPARATE_CLASSICLIGHTSHADER
 #define NUM_BALL_LIGHTS 0 // just to avoid having too much constant mem allocated
 
 #include "Helpers.fxh"
@@ -54,12 +55,12 @@ float3 cClearcoat;
 //!! Metals have high specular reflectance:  0.5-1.0
 
 //float  fAlphaTestValue;
+#endif
 
 float4 lightColor_intensity;
 float4 lightColor2_falloff_power;
 float4 lightCenter_maxRange;
-bool   imageMode;
-bool   backglassMode;
+float2 imageBackglassMode; // actually bool2
 
 struct VS_LIGHT_OUTPUT 
 { 
@@ -96,7 +97,7 @@ float4 PS_LightWithTexel(in VS_LIGHT_OUTPUT IN) : COLOR
 
     float4 color;
 	// no lighting if HUD vertices or passthrough mode
-    if(imageMode || backglassMode)
+    if(imageBackglassMode.x != 0. || imageBackglassMode.y != 0.)
         color = pixel;
     else
 	{
@@ -112,7 +113,7 @@ float4 PS_LightWithTexel(in VS_LIGHT_OUTPUT IN) : COLOR
 
     if ( lightColor_intensity.w!=0.0 )
     {
-        const float len = length(lightCenter_maxRange.xyz - (!backglassMode ? IN.tablePos : float3(IN.tex0,0.0))) * lightCenter_maxRange.w;
+        const float len = length(lightCenter_maxRange.xyz - (imageBackglassMode.y == 0. ? IN.tablePos : float3(IN.tex0,0.0))) * lightCenter_maxRange.w;
         const float atten = pow(1.0 - saturate(len), lightColor2_falloff_power.w);
         const float3 lcolor = lerp(lightColor2_falloff_power.xyz, lightColor_intensity.xyz, sqrt(len));
         color += float4(lcolor*(atten*lightColor_intensity.w),
@@ -129,7 +130,7 @@ float4 PS_LightWithoutTexel(in VS_LIGHT_OUTPUT IN) : COLOR
     float4 result = float4(0.0, 0.0, 0.0, 0.0);
     if (lightColor_intensity.w != 0.0)
     {
-        const float len = length(lightCenter_maxRange.xyz - (!backglassMode ? IN.tablePos : float3(IN.tex0,0.0))) * lightCenter_maxRange.w;
+        const float len = length(lightCenter_maxRange.xyz - (imageBackglassMode.y == 0. ? IN.tablePos : float3(IN.tex0,0.0))) * lightCenter_maxRange.w;
         const float atten = pow(1.0 - saturate(len), lightColor2_falloff_power.w);
         const float3 lcolor = lerp(lightColor2_falloff_power.xyz, lightColor_intensity.xyz, sqrt(len));
         result.xyz = lcolor*(atten*lightColor_intensity.w);
@@ -138,7 +139,7 @@ float4 PS_LightWithoutTexel(in VS_LIGHT_OUTPUT IN) : COLOR
 
 	float4 color;
 	// no lighting if HUD vertices or passthrough mode
-    if(imageMode || backglassMode)
+    if(imageBackglassMode.x != 0. || imageBackglassMode.y != 0.)
         color.xyz = lightColor_intensity.xyz;
     else
 	{

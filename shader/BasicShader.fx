@@ -73,7 +73,6 @@ struct VS_NOTEX_OUTPUT
 };
 
 //------------------------------------
-float fKickerScale = 1.0f;
 //
 // Standard Materials
 //
@@ -158,6 +157,8 @@ float4 ps_main_texture(in VS_OUTPUT IN) : COLOR
 //------------------------------------------
 // Kicker boolean vertex shader
 
+float fKickerScale = 1.;
+
 VS_NOTEX_OUTPUT vs_kicker (float4 vPosition : POSITION0,  
                            float3 vNormal   : NORMAL0,  
                            float2 tc        : TEXCOORD0) 
@@ -216,3 +217,7 @@ technique kickerBoolean
 	  PixelShader = compile ps_3_0 ps_main();
    } 
 }
+
+#ifndef SEPARATE_CLASSICLIGHTSHADER
+ #include "ClassicLightShader.fx"
+#endif

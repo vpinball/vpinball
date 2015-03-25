@@ -11,7 +11,9 @@
 #include "FBShader.h"
 #include "FlasherShader.h"
 #include "LightShader.h"
-#include "ClassicLightShader.h"
+#ifdef SEPARATE_CLASSICLIGHTSHADER
+ #include "ClassicLightShader.h"
+#endif
 
 #pragma comment(lib, "d3d9.lib")        // TODO: put into build system
 #pragma comment(lib, "d3dx9.lib")       // TODO: put into build system
@@ -434,11 +436,13 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
     lightShader->Load(lightShaderCode, sizeof(lightShaderCode));
 #endif
 
+#ifdef SEPARATE_CLASSICLIGHTSHADER
     classicLightShader = new Shader(this);
 #if _MSC_VER >= 1700
     classicLightShader->Load(g_classicLightShaderCode, sizeof(g_classicLightShaderCode));
 #else
     classicLightShader->Load(classicLightShaderCode, sizeof(classicLightShaderCode));
+#endif
 #endif
 
 	// create default vertex declarations for shaders
@@ -508,6 +512,7 @@ void RenderDevice::FreeShader()
       delete lightShader;
       lightShader=0;
    }
+#ifdef SEPARATE_CLASSICLIGHTSHADER
    if (classicLightShader)
    {
       classicLightShader->Core()->SetTexture("Texture0",NULL);
@@ -516,6 +521,7 @@ void RenderDevice::FreeShader()
       delete classicLightShader;
       classicLightShader=0;
    }
+#endif
 }
 
 RenderDevice::~RenderDevice()
@@ -1103,11 +1109,14 @@ Shader::Shader(RenderDevice *renderDevice)
 	for(unsigned int i = 0; i < TEXTURESET_STATE_CACHE_SIZE; ++i)
 	    currentTexture[i] = 0;
     currentAlphaTestValue = -FLT_MAX;
+	currentDisableLighting = ~0u;
     currentFlasherData =
     currentFlasherColor = 
 	currentLightColor =
 	currentLightColor2 =
 	currentLightData = D3DXVECTOR4(-FLT_MAX,-FLT_MAX,-FLT_MAX,-FLT_MAX);
+	currentLightImageMode = ~0u;
+	currentLightBackglassMode = ~0u;
     currentTechnique[0] = 0;
 
     memset(&currentMaterial, 0xCC, sizeof(Material));

@@ -271,7 +271,13 @@
     <None Include="res\gate.rgs">
       <Filter>res</Filter>
     </None>
-    <None Include="shader\Globals.fxh">
+    <None Include="shader\FXAAStereoAO.fxh">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shader\Helpers.fxh">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shader\Material.fxh">
       <Filter>shaders</Filter>
     </None>
   </ItemGroup>
@@ -626,9 +632,6 @@
     <ClInclude Include="pin\ball.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="inc\bass.h">
-      <Filter>headers</Filter>
-    </ClInclude>
     <ClInclude Include="math\bbox.h">
       <Filter>headers</Filter>
     </ClInclude>
@@ -673,6 +676,12 @@
     </ClInclude>
     <ClInclude Include="media\wavread.h">
       <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\forsyth.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\bass.h">
+      <Filter>inc</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

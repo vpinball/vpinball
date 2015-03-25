@@ -451,6 +451,15 @@
     <None Include="res\rubber.rgs">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="shader\FXAAStereoAO.fxh">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\Helpers.fxh">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\Material.fxh">
+      <Filter>Shader Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\xaudio\aac_codec.h">
@@ -797,6 +806,9 @@
     </ClInclude>
     <ClInclude Include="math\vector.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\forsyth.h">
+      <Filter>Header Files\inc</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

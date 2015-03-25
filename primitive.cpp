@@ -700,7 +700,7 @@ void Primitive::RenderObject( RenderDevice *pd3dDevice )
     Material *mat = m_ptable->GetMaterial( m_d.m_szMaterial);
     pd3dDevice->basicShader->SetMaterial(mat);
     if (m_d.m_fDisableLighting)
-        pd3dDevice->basicShader->SetBool("bDisableLighting", m_d.m_fDisableLighting );
+        pd3dDevice->basicShader->SetDisableLighting( m_d.m_fDisableLighting );
 
     Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
     if (pin)
@@ -735,7 +735,7 @@ void Primitive::RenderObject( RenderDevice *pd3dDevice )
     pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP);
     //g_pplayer->m_pin3d.DisableAlphaBlend(); //!! not necessary anymore
     if ( m_d.m_fDisableLighting )
-        pd3dDevice->basicShader->SetBool("bDisableLighting", false );
+        pd3dDevice->basicShader->SetDisableLighting( false );
 }
 
 // Always called each frame to render over everything else (along with alpha ramps)

@@ -645,8 +645,7 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
 		pd3dDevice->classicLightShader->SetLightData(center_range);
 		pd3dDevice->classicLightShader->SetLightColor2FalloffPower(lightColor2_falloff_power);
         
-		pd3dDevice->classicLightShader->SetBool("backglassMode",m_fBackglass);
-        pd3dDevice->classicLightShader->SetBool("imageMode",m_d.m_imageMode);
+		pd3dDevice->classicLightShader->SetLightImageBackglassMode(m_d.m_imageMode,m_fBackglass);
         pd3dDevice->classicLightShader->SetMaterial(m_surfaceMaterial);
 
 	    if (offTexel != NULL)
