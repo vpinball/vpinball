@@ -40,21 +40,22 @@ public:
 	inline unsigned long long hash() const
 	{
 	    union {
-		struct {
-		    unsigned char uc[8];
-		};
-		unsigned long long ull;
+			struct {
+				unsigned char uc[8];
+			};
+			unsigned long long ull;
 	    } h;
-	    h.uc[0] = (unsigned char)(clamp(m_fWrapLighting, 0.f,1.f)*255.0f);
-	    h.uc[1] = (unsigned char)(clamp(m_fRoughness, 0.f,1.f)*255.0f);
-	    h.uc[2] = (unsigned char)(clamp(m_fEdge, 0.f,1.f)*255.0f);
-	    h.uc[3] = m_bOpacityActive ? (unsigned char)(clamp(m_fOpacity, 0.f,1.f)*255.0f) : 0;
+
+		h.uc[0] = ((unsigned int)m_bIsMetal<<6) | ((unsigned int)m_bOpacityActive<<7) | (((unsigned int)this/sizeof(Material))&63);
+	    h.uc[1] = (unsigned char)(clamp(m_fWrapLighting, 0.f,1.f)*255.0f);
+	    h.uc[2] = (unsigned char)(clamp(m_fRoughness, 0.f,1.f)*255.0f);
+	    h.uc[3] = (unsigned char)(clamp(m_fEdge, 0.f,1.f)*255.0f);
 	    h.uc[4] = ((m_cBase&255)>>5) | ((((m_cBase>>8)&255)>>5)<<3) | ((((m_cBase>>16)&255)>>6)<<6);
 	    h.uc[5] = !m_bIsMetal ? ((m_cGlossy&255)>>5) | ((((m_cGlossy>>8)&255)>>5)<<3) | ((((m_cGlossy>>16)&255)>>6)<<6) : 0;
 	    h.uc[6] = ((m_cClearcoat&255)>>5) | ((((m_cClearcoat>>8)&255)>>5)<<3) | ((((m_cClearcoat>>16)&255)>>6)<<6);
-	    h.uc[7] = (unsigned int)m_bIsMetal | ((unsigned int)m_bOpacityActive<<1);
+		h.uc[7] = m_bOpacityActive ? (unsigned char)(clamp(m_fOpacity, 0.f,1.f)*255.0f) : 0;
 	    
-	    return h.ull;
+		return h.ull;
 
 	    /*return ((unsigned long long)(h.uc[0]&  1)<< 0) | ((unsigned long long)(h.uc[1]&  1)<< 1) | ((unsigned long long)(h.uc[2]&  1)<< 2) | ((unsigned long long)(h.uc[3]&  1)<< 3) | ((unsigned long long)(h.uc[4]&  1)<< 4) | ((unsigned long long)(h.uc[5]&  1)<< 5) | ((unsigned long long)(h.uc[6]&  1)<< 6) | ((unsigned long long)(h.uc[7]&  1)<< 7) |
 		   ((unsigned long long)(h.uc[0]&  2)<< 8) | ((unsigned long long)(h.uc[1]&  2)<< 9) | ((unsigned long long)(h.uc[2]&  2)<<10) | ((unsigned long long)(h.uc[3]&  2)<<11) | ((unsigned long long)(h.uc[4]&  2)<<12) | ((unsigned long long)(h.uc[5]&  2)<<13) | ((unsigned long long)(h.uc[6]&  2)<<14) | ((unsigned long long)(h.uc[7]&  2)<<15) |
