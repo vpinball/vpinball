@@ -2109,7 +2109,7 @@ LRESULT CALLBACK VPWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
          if (g_pvp->m_fPropertiesFloating && hwndSB)
          {
              RECT smartRect;
-             GetClientRect(hwndSB, &smartRect);
+             GetWindowRect(hwndSB, &smartRect);
 
              int sbHeight = smartRect.bottom-smartRect.top;//(rc.bottom - rc.top) - 100;
              int smartWidth = smartRect.right-smartRect.left;
@@ -3241,7 +3241,7 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
                     Material *pmat = (Material*)lvitem.lParam;
                     if (pt->IsMaterialNameUnique(pinfo->item.pszText))
                     {
-                        lstrcpy(pmat->m_szName, pinfo->item.pszText);
+                        lstrcpyn(pmat->m_szName, pinfo->item.pszText,31);
                         ListView_SetItemText(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST), pinfo->item.iItem, 0, pinfo->item.pszText);
                     }
                     else
@@ -3253,7 +3253,7 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
                             sprintf_s(textBuf,"%s%i",pinfo->item.pszText, suffix);
                             suffix++;
                         } while (!pt->IsMaterialNameUnique(textBuf));
-                        lstrcpy(pmat->m_szName, textBuf);
+                        lstrcpyn(pmat->m_szName, textBuf, 31);
                         ListView_SetItemText(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST), pinfo->item.iItem, 0, pmat->m_szName);
                     }
                     g_pvp->m_sb.PopulateDropdowns(); 
@@ -8579,6 +8579,7 @@ INT_PTR CALLBACK DimensionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lP
                break;
             }
          }
+         break;
       }
    case WM_COMMAND:
       switch (HIWORD(wParam))

@@ -3,7 +3,7 @@
 #ifndef IMGERMAN
 enum
 	{
-	eSmartBrowserWidth = 240
+	eSmartBrowserWidth = 200
 	};
 #else
 enum
