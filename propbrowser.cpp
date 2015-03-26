@@ -306,7 +306,7 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, Vector<ISelect> *pvsel)
       // A little hack - if we have multi-select, we know the Name property
       // can never be use.  Disable it to make that easy to understand for the
       // user.
-      if (m_pvsel->Size() > 1)
+      if (m_pvsel && m_pvsel->Size() > 1)
       {
          HWND hwndName = GetDlgItem(hwndDialog, DISPID_FAKE_NAME);
          if (hwndName)
