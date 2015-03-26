@@ -4144,7 +4144,8 @@ void PinTable::DoLButtonDown(int x, int y, bool zoomIn )
       if (m_zoom < MAX_ZOOM)
       {
          m_offset = TransformPoint(x,y);
-         if ( zoomIn )
+
+         if (zoomIn)
             SetZoom(m_zoom * 2.0f);
          else
             SetZoom(m_zoom * 0.5f);
@@ -5920,7 +5921,7 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
             const short y = (short)((lParam >> 16) & 0xffff);
             if ((g_pvp->m_ToolCur == IDC_SELECT) || (g_pvp->m_ToolCur == ID_TABLE_MAGNIFY))
             {
-               pt->DoLButtonDown(x, y, zDelta==-120);
+               pt->DoLButtonDown(x, y, zDelta!=-120);
             }
          }
          else
@@ -7013,8 +7014,8 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
             {
                ShowError("DISPID_Surface alloc failed (2)");
             }
-
-            WideStrCopy(bstr, wzDst);
+            else
+                WideStrCopy(bstr, wzDst);
          }
       }
       break;
