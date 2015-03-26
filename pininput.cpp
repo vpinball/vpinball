@@ -972,6 +972,8 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 		// Update tilt.
 		tilt_update();
 	}
+    else 
+        return;
 
 	// Check if we've been initialized.
 	if( m_firedautostart == 0 )
