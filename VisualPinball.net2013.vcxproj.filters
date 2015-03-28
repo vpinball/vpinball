@@ -71,6 +71,18 @@
     <ClCompile Include="worker.cpp" />
     <ClCompile Include="xaudplayer.cpp" />
     <ClCompile Include="math\math.cpp" />
+    <ClCompile Include="CrashHandler.cpp">
+      <Filter>CrashReporter</Filter>
+    </ClCompile>
+    <ClCompile Include="BlackBox.cpp">
+      <Filter>CrashReporter</Filter>
+    </ClCompile>
+    <ClCompile Include="StackTrace.cpp">
+      <Filter>CrashReporter</Filter>
+    </ClCompile>
+    <ClCompile Include="MemoryStatus.cpp">
+      <Filter>CrashReporter</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="vpinball.rc" />
@@ -305,6 +317,9 @@
     </Filter>
     <Filter Include="shaders">
       <UniqueIdentifier>{67a3c1e1-f7b5-45a4-ba1a-453f61d1e6d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="CrashReporter">
+      <UniqueIdentifier>{2d87fed0-e36e-4766-91a7-0be8f21d47dc}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -691,6 +706,18 @@
     </ClInclude>
     <ClInclude Include="inc\forsyth.h">
       <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="CrashHandler.h">
+      <Filter>CrashReporter</Filter>
+    </ClInclude>
+    <ClInclude Include="BlackBox.h">
+      <Filter>CrashReporter</Filter>
+    </ClInclude>
+    <ClInclude Include="StackTrace.h">
+      <Filter>CrashReporter</Filter>
+    </ClInclude>
+    <ClInclude Include="MemoryStatus.h">
+      <Filter>CrashReporter</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

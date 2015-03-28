@@ -1733,7 +1733,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <CompileAs>Default</CompileAs>
       <FloatingPointExceptions>false</FloatingPointExceptions>
       <OpenMPSupport>false</OpenMPSupport>
-      <OmitFramePointers>true</OmitFramePointers>
+      <OmitFramePointers>false</OmitFramePointers>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
     </ClCompile>
     <ResourceCompile>
@@ -1799,7 +1799,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <CompileAs>Default</CompileAs>
       <FloatingPointExceptions>false</FloatingPointExceptions>
       <OpenMPSupport>false</OpenMPSupport>
-      <OmitFramePointers>true</OmitFramePointers>
+      <OmitFramePointers>false</OmitFramePointers>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
     </ClCompile>
     <ResourceCompile>
@@ -1961,8 +1961,11 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="BlackBox.cpp" />
+    <ClCompile Include="CrashHandler.cpp" />
     <ClCompile Include="flasher.cpp" />
     <ClCompile Include="math\math.cpp" />
+    <ClCompile Include="MemoryStatus.cpp" />
     <ClCompile Include="rubber.cpp" />
     <ClCompile Include="hash.cpp" />
     <ClCompile Include="kdtree.cpp" />
@@ -3835,6 +3838,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Unicode Release MinSize|Win32'">WIN32;NDEBUG;_WINDOWS;_UNICODE;_ATL_DLL;_ATL_MIN_CRT</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Unicode Release MinSize|x64'">WIN32;NDEBUG;_WINDOWS;_UNICODE;_ATL_DLL;_ATL_MIN_CRT</PreprocessorDefinitions>
     </ClCompile>
+    <ClCompile Include="StackTrace.cpp" />
     <ClCompile Include="stdafx.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
@@ -4751,9 +4755,11 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ballex.h" />
+    <ClInclude Include="BlackBox.h" />
     <ClInclude Include="buildnumber.h" />
     <ClInclude Include="bumper.h" />
     <ClInclude Include="codeview.h" />
+    <ClInclude Include="CrashHandler.h" />
     <ClInclude Include="decal.h" />
     <ClInclude Include="def.h" />
     <ClInclude Include="dispid.h" />
@@ -4828,6 +4834,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="media\lzwreader.h" />
     <ClInclude Include="media\lzwwriter.h" />
     <ClInclude Include="media\wavread.h" />
+    <ClInclude Include="MemoryStatus.h" />
     <ClInclude Include="memutil.h" />
     <ClInclude Include="mesh.h" />
     <ClInclude Include="mixer.h" />
@@ -4859,6 +4866,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="rubber.h" />
     <ClInclude Include="slintf.h" />
     <ClInclude Include="spinner.h" />
+    <ClInclude Include="StackTrace.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="stereo3D.h" />
     <ClInclude Include="sur.h" />

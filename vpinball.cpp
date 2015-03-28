@@ -3,7 +3,6 @@
 ////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
-
 #include "resource.h"
 #include "svn_version.h"
 

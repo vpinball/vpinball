@@ -1,6 +1,8 @@
 // VPinball.cpp : Implementation of WinMain
 
 #include "StdAfx.h"
+#include "CrashHandler.h"
+#include "BlackBox.h"
 
 #include "resource.h"
 #include <initguid.h>
@@ -141,6 +143,8 @@ std::map<ItemTypeEnum, EditableInfo> EditableRegistry::m_map;
 
 extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR /*lpCmdLine*/, int /*nShowCmd*/)
 {
+   rde::CrashHandler::Init();
+
 	// disable auto-rotate on tablets
 #if (WINVER <= 0x0601)
     SetDisplayAutoRotationPreferences = (pSDARP) GetProcAddress(GetModuleHandle(TEXT("user32.dll")),
