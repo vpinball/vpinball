@@ -152,7 +152,7 @@ void Primitive::CreateRenderGroup(Collection *collection, RenderDevice *pd3dDevi
    vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
    for (size_t i = 0; i < renderedPrims.size(); i++)
    {
-      prims[i]->RecalculateMatrices();
+      renderedPrims[i]->RecalculateMatrices();
       for (size_t t = 0; t < renderedPrims[i]->m_mesh.NumVertices(); t++)
       {
          Vertex3D_NoTex2 vt = renderedPrims[i]->m_mesh.m_vertices[t];
