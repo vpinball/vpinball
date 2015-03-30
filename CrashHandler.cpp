@@ -27,6 +27,7 @@ namespace
       else
          fprintf(f, buffer);
    }
+
    void WriteSystemInfo(FILE* f)
    {
       OSVERSIONINFOEX sysInfo;
@@ -60,6 +61,7 @@ namespace
             sysInfo.szCSDVersion);
       }
    }
+
    void WriteProcessorInfo(FILE* f)
    {
       SYSTEM_INFO sysInfo;
@@ -68,6 +70,7 @@ namespace
       fprintf(f, "Number of CPUs: %d\nProcessor type: %d\n",
          sysInfo.dwNumberOfProcessors, sysInfo.dwProcessorType);
    }
+
    void WriteDateTime(FILE* f)
    {
       SYSTEMTIME st;
@@ -134,6 +137,7 @@ namespace
       const DWORD threadId = ::GetCurrentThreadId();
       fprintf(f, "Thread ID: 0x%X [%d]\n\n", threadId, threadId);
    }
+
    void WriteEnvironmentInfo(FILE* f)
    {
       fprintf(f, "Environment\n===========\n");
@@ -180,6 +184,7 @@ namespace
          fprintf(f, "%d: Thread 0x%X: %s\n", i, threadId, message);
       }
    }
+
    void WriteMemoryStatus(FILE* f, const rde::MemoryStatus& status)
    {
       fprintf(f, "Memory status\n=============\n");
@@ -217,6 +222,7 @@ namespace
    }
 
    volatile unsigned long s_inFilter = 0;
+
    LONG __stdcall MyExceptionFilter(EXCEPTION_POINTERS* exceptionPtrs)
    {
       LONG returnCode = EXCEPTION_CONTINUE_SEARCH;
@@ -234,7 +240,8 @@ namespace
       }
       const bool miniDumpOK = WriteMiniDump(exceptionPtrs, s_miniDumpFileName);
 
-      FILE* f = ::fopen(s_reportFileName, "wt");
+      FILE* f;
+      fopen_s(&f,s_reportFileName, "wt");
       WriteHeader(f);
       WriteExceptionInfo(f, exceptionPtrs);
       WriteCallStack(f, exceptionPtrs->ContextRecord);
@@ -268,5 +275,4 @@ namespace rde
    {
       strcpy_s(s_reportFileName, name);
    }
-
 }

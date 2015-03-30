@@ -79,7 +79,7 @@ public:
 	HitObject();
 	virtual ~HitObject() {}
 
-	virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll) = 0;
+	virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll) { return -1.f; } //!! shouldn't need to do this, but for whatever reason there is a pure virtual function call triggered otherwise that refuses to be debugged
 
 	virtual int GetType() const = 0;
 
