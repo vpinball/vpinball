@@ -16,14 +16,29 @@ Variables
 *Height(float) - Playfield height. default=2000
 *GlassHeight(float) - Height of Glass above Playfield
 *TableHeight(float)
+
 *Inclination(float) - Angle of Table (used for Display only). default=43
 *Rotation(float) - Rotation of Table (used mainly for FS/Cab tables: 270)
 *Scalex(float) - X Scale of Table
 *Scaley(float) - Y Scale of Table
+*Scalez(float) - Z Scale of Table
 *Xlatex(float) - X Offset of Table
 *Xlatey(float) - Y Offset of Table
+*Xlatez(float) - Z Offset of Table
 *Layback(float) - Skew of Table (used mainly for FS/Cab tables). default=0
 *FieldOfView(float) - Perspective of Table. default=45
+
+*InclinationFS(float) - Angle of Table (used for Display only). default=43
+*RotationFS(float) - Rotation of Table (used mainly for FS/Cab tables: 270)
+*ScalexFS(float) - X Scale of Table
+*ScaleyFS(float) - Y Scale of Table
+*ScalezFS(float) - Z Scale of Table
+*XlatexFS(float) - X Offset of Table
+*XlateyFS(float) - Y Offset of Table
+*XlatezFS(float) - Z Offset of Table
+*LaybackFS(float) - Skew of Table (used mainly for FS/Cab tables). default=0
+*FieldOfViewFS(float) - Perspective of Table. default=45
+
 *MaxSeparation(float) - Maximum separation/scale effect for Stereo 3D (ranges from 0..1)
 *ZPD(float) - Sets the depth where the Stereo 3D should happen (ranges from 0..1)
 *PlayfieldColor(OLE_COLOR)
