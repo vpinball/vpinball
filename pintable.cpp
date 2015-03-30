@@ -6976,7 +6976,7 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
             if (wzDst == NULL)
                ShowError("DISPID_Collection alloc failed (2)");
             else
-               memcpy (wzDst, m_vcollection.ElementAt(dwCookie)->m_wzName, cwch);
+               memcpy (wzDst, m_vcollection.ElementAt(dwCookie)->m_wzName, cwch-sizeof(DWORD)); //!! see above
          }
       }
       break;
