@@ -1,6 +1,7 @@
 // VPinball.cpp : Implementation of WinMain
 
 #include "StdAfx.h"
+#include "StackTrace.h"
 #include "CrashHandler.h"
 #include "BlackBox.h"
 
@@ -10,6 +11,32 @@
 #define  SET_CRT_DEBUG_FIELD(a)   _CrtSetDbgFlag((a) | _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG))
 
 #include "vpinball_i.c"
+
+extern "C" int __cdecl _purecall(void)
+{
+    ShowError("Pure Virtual Function Call");
+
+    CONTEXT Context;
+    ZeroMemory( &Context, sizeof( CONTEXT ) );
+    Context.ContextFlags = CONTEXT_CONTROL;
+
+    __asm
+    {
+    Label:
+      mov [Context.Ebp], ebp;
+      mov [Context.Esp], esp;
+      mov eax, [Label];
+      mov [Context.Eip], eax;
+    }
+
+    char callStack[2048];
+    memset(callStack, 0, sizeof(callStack));
+    rde::StackTrace::GetCallStack(&Context, true, callStack, sizeof(callStack) - 1);
+
+    ShowError(callStack);
+
+    return 0;
+}
 
 #ifndef DISABLE_FORCE_NVIDIA_OPTIMUS
  extern "C" {
