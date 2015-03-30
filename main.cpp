@@ -1,9 +1,12 @@
 // VPinball.cpp : Implementation of WinMain
 
 #include "StdAfx.h"
-#include "StackTrace.h"
-#include "CrashHandler.h"
-#include "BlackBox.h"
+
+#ifdef CRASH_HANDLER
+ #include "StackTrace.h"
+ #include "CrashHandler.h"
+ #include "BlackBox.h"
+#endif
 
 #include "resource.h"
 #include <initguid.h>
@@ -12,12 +15,16 @@
 
 #include "vpinball_i.c"
 
+#ifdef CRASH_HANDLER
 extern "C" int __cdecl _purecall(void)
 {
     ShowError("Pure Virtual Function Call");
 
     CONTEXT Context;
     ZeroMemory( &Context, sizeof( CONTEXT ) );
+#ifdef _WIN64
+	RtlCaptureContext(&Context);
+#else
     Context.ContextFlags = CONTEXT_CONTROL;
 
     __asm
@@ -28,15 +35,17 @@ extern "C" int __cdecl _purecall(void)
       mov eax, [Label];
       mov [Context.Eip], eax;
     }
+#endif
 
     char callStack[2048];
-    memset(callStack, 0, sizeof(callStack));
+    ZeroMemory(callStack, sizeof(callStack));
     rde::StackTrace::GetCallStack(&Context, true, callStack, sizeof(callStack) - 1);
 
     ShowError(callStack);
 
     return 0;
 }
+#endif
 
 #ifndef DISABLE_FORCE_NVIDIA_OPTIMUS
  extern "C" {
@@ -170,7 +179,9 @@ std::map<ItemTypeEnum, EditableInfo> EditableRegistry::m_map;
 
 extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR /*lpCmdLine*/, int /*nShowCmd*/)
 {
-   rde::CrashHandler::Init();
+#ifdef CRASH_HANDLER
+    rde::CrashHandler::Init();
+#endif
 
 	// disable auto-rotate on tablets
 #if (WINVER <= 0x0601)

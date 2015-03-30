@@ -46,4 +46,3 @@ MemoryStatus MemoryStatus::GetCurrent()
 }
 
 }
-

@@ -6,6 +6,8 @@
 
 //#define COMPRESS_MESHES // abuses the VP-Image-LZW compressor for compressing the meshes (usually pretty weak though, overall compresses the full VPX by 0-10% only)
 
+#define CRASH_HANDLER
+
 //#define _CRTDBG_MAP_ALLOC
 #ifdef _CRTDBG_MAP_ALLOC
  #include <crtdbg.h>
