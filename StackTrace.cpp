@@ -86,10 +86,20 @@ int StackTrace::GetCallStack(Address* callStack, int maxDepth, int entriesToSkip
 int StackTrace::GetCallStack(void* vcontext, Address* callStack, int maxDepth, 
 							 int entriesToSkip)
 {
+#ifndef _WIN64
 	uintptr_t* ebpReg;
 	uintptr_t espReg;
 	__asm mov [ebpReg], ebp
 	__asm mov [espReg], esp
+#else
+	uintptr_t[2] ebpReg;
+	uintptr_t espReg;
+    CONTEXT Context;
+	RtlCaptureContext(&Context);
+	ebpReg[1] = Context.Eip;
+	ebpReg[0] = Context.Ebp;
+	espReg = Context.Esp;
+#endif
 
 	InitSymbols();
 
@@ -130,7 +140,14 @@ int StackTrace::GetCallStack(void* vcontext, Address* callStack, int maxDepth,
 int StackTrace::GetCallStack_Fast(Address* callStack, int maxDepth, int entriesToSkip)
 {
 	uintptr_t ebpReg;
+#ifndef _WIN64
 	__asm mov [ebpReg], ebp
+#else
+    CONTEXT Context;
+	RtlCaptureContext(&Context);
+	ebpReg = Context.Ebp;
+#endif
+
 	void** sp = (void**)ebpReg;
 	int numEntries(0);
 	while (sp && numEntries < maxDepth)
