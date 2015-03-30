@@ -2549,6 +2549,7 @@ INT_PTR CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                   OPENFILENAME ofn;
                   LVITEM lvitem;
                   char szInitialDir[2096];
+		  szInitialDir[0] = '\0';
                   int sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), -1, LVNI_SELECTED); //next selected item 	
                   while (sel != -1)
                   {									
@@ -2994,6 +2995,7 @@ INT_PTR CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                if(ListView_GetSelectedCount(GetDlgItem(hwndDlg, IDC_SOUNDLIST)))	// if some items are selected???
                {
                   char szInitialDir[2096];
+		  szInitialDir[0] = '\0';
                   int sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), -1, LVNI_SELECTED);								
                   while (sel != -1)
                   {									
@@ -7108,7 +7110,7 @@ INT_PTR CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPAR
 			   fscanf_s(f,"%f %f %f %f %f %f %f %f\n", &FlipperPhysicsMass,&FlipperPhysicsStrength,&FlipperPhysicsElasticity,&FlipperPhysicsScatter,&FlipperPhysicsReturnStrength,&FlipperPhysicsElasticityFalloff,&FlipperPhysicsFriction,&FlipperPhysicsCoilRampUp);
 			   float TablePhysicsGravityConstant,TablePhysicsContactFriction,TablePhysicsContactScatterAngle;
 			   fscanf_s(f,"%f %f %f\n", &TablePhysicsGravityConstant,&TablePhysicsContactFriction,&TablePhysicsContactScatterAngle);
-			   fscanf_s(f,"%s",tmp2);
+			   fscanf_s(f,"%s",tmp2,sizeof(tmp2));
 			   fclose(f);
 
    				 sprintf_s(tmp,256,"%f",FlipperPhysicsMass);
@@ -7938,7 +7940,7 @@ INT_PTR CALLBACK SearchSelectProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
    case WM_INITDIALOG:
       {
          HWND listHwnd=GetDlgItem( hwndDlg, IDC_ELEMENT_LIST);
-         PinTable *pt = g_pvp->GetActiveTable();
+         PinTable *pint = g_pvp->GetActiveTable();
          LVCOLUMN lvc;
          LVITEM lv;
 
@@ -7968,16 +7970,16 @@ INT_PTR CALLBACK SearchSelectProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
 
          lv.mask = LVIF_TEXT | LVIF_PARAM;
          int idx=0;
-         for (int i=0;i<pt->m_vedit.Size();i++)
+         for (int i=0;i<pint->m_vedit.Size();i++)
          {
-            IEditable * const piedit = pt->m_vedit.ElementAt(i);
+            IEditable * const piedit = pint->m_vedit.ElementAt(i);
             IScriptable * const piscript = piedit->GetScriptable();
             if (piscript)
             {
                lv.iItem = idx;
                lv.iSubItem = 0;
                lv.lParam = (LPARAM)piscript;
-               lv.pszText = pt->GetElementName(piedit);
+               lv.pszText = pint->GetElementName(piedit);
                ListView_InsertItem(listHwnd, &lv);
                AddSearchItemToList(listHwnd, piedit, idx);
                idx++;
@@ -7994,8 +7996,8 @@ INT_PTR CALLBACK SearchSelectProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                HWND listBox = GetDlgItem(hwndDlg, IDC_ELEMENT_LIST);
                const size_t count = ListView_GetSelectedCount(listBox);
 
-               PinTable *pt = g_pvp->GetActiveTable();
-               pt->ClearMultiSel();
+               PinTable *pint = g_pvp->GetActiveTable();
+               pint->ClearMultiSel();
                int iItem = -1;
                LVITEM lv;
                for (size_t i = 0; i < count; i++)
@@ -8008,7 +8010,7 @@ INT_PTR CALLBACK SearchSelectProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                        IScriptable *pscript = (IScriptable*)lv.lParam;
                        ISelect *const pisel = pscript->GetISelect();
                        if (pisel)
-                           pt->AddMultiSel(pisel, true);
+                           pint->AddMultiSel(pisel, true);
                    }
                }
            }
@@ -8063,8 +8065,8 @@ INT_PTR CALLBACK SearchSelectProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                HWND listBox = GetDlgItem(hwndDlg, IDC_ELEMENT_LIST);
 			   const size_t count = ListView_GetSelectedCount(listBox);
 
-               PinTable *pt = g_pvp->GetActiveTable();
-               pt->ClearMultiSel();
+               PinTable *pint = g_pvp->GetActiveTable();
+               pint->ClearMultiSel();
                int iItem=-1;
                LVITEM lv;
                 for (size_t i=0;i<count;i++)
@@ -8077,7 +8079,7 @@ INT_PTR CALLBACK SearchSelectProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                         IScriptable *pscript = (IScriptable*)lv.lParam;
                         ISelect *const pisel = pscript->GetISelect();
                         if (pisel)
-                            pt->AddMultiSel(pisel, true);
+                            pint->AddMultiSel(pisel, true);
                     }
                }
             }
@@ -8561,7 +8563,7 @@ INT_PTR CALLBACK DimensionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lP
             {
                NMLISTVIEW * const plistview = (LPNMLISTVIEW)lParam;
                int idx = plistview->iItem;
-               if ( idx>DIM_TABLE_SIZE || idx<0 )
+               if ( idx>=DIM_TABLE_SIZE || idx<0 )
                   break;
 
                int width = (int)floor(dimTable[idx].width*47.0f+0.5f);

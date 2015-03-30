@@ -721,11 +721,13 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
          }
       }
 
-      // add joint for final edge of ramp
-      Vertex3Ds v1(pv4->x,pv4->y,rgheight1[cvertex-1]);
-      Vertex3Ds v2(pv3->x,pv3->y,rgheight1[cvertex-1]);
-      AddJoint(pvho, v1, v2);
-
+      if(cvertex >= 2)
+      {
+	  // add joint for final edge of ramp
+	  Vertex3Ds v1(pv4->x,pv4->y,rgheight1[cvertex-1]);
+	  Vertex3Ds v2(pv3->x,pv3->y,rgheight1[cvertex-1]);
+	  AddJoint(pvho, v1, v2);
+      }
    }
 
    // add outside bottom, 
