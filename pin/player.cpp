@@ -310,6 +310,10 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
     backdropSettingActive = 0;
 
     m_ScreenOffset = Vertex2D(0,0);
+
+    ballIndexBuffer = NULL;
+    ballVertexBuffer = NULL;
+    m_ballDebugPoints = NULL;
 }
 
 Player::~Player()
@@ -902,11 +906,11 @@ void Player::InitBallShader()
    const D3DXVECTOR4 rwem(exp2f(10.0f * Roughness + 1.0f), 0.f, 1.f, 0.0f); // no metal, as ball collects the diffuse playfield which uses this flag!
    ballShader->SetVector("Roughness_WrapL_Edge_IsMetal", &rwem);
 
-//   assert(ballIndexBuffer == NULL);
+   assert(ballIndexBuffer == NULL);
    ballIndexBuffer = m_pin3d.m_pd3dDevice->CreateAndFillIndexBuffer( basicBallNumFaces, basicBallIndices );
 
    // VB for normal ball
-//   assert(ballVertexBuffer == NULL);
+   assert(ballVertexBuffer == NULL);
    m_pin3d.m_pd3dDevice->CreateVertexBuffer( basicBallNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &ballVertexBuffer );
 
    // load precomputed ball vertices into vertex buffer
@@ -1137,7 +1141,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 
     std::sort( m_vHitNonTrans.begin(), m_vHitNonTrans.end(), CompareHitableDepthReverse );
     std::stable_sort( m_vHitNonTrans.begin(), m_vHitNonTrans.end(), CompareHitableMaterial ); // stable, so that objects with same materials will keep depth order
-    
+
     std::sort( m_vHitTrans.begin(), m_vHitTrans.end(), CompareHitableMaterial );
 	std::stable_sort( m_vHitTrans.begin(), m_vHitTrans.end(), CompareHitableDepth );
 
@@ -1164,7 +1168,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
             }
         }
 
-	    //assert(m_ballDebugPoints == NULL);
+	    assert(m_ballDebugPoints == NULL);
         m_pin3d.m_pd3dDevice->CreateVertexBuffer( ballDbgVtx.size(), 0, MY_D3DFVF_TEX, &m_ballDebugPoints );
         void *buf;
         m_ballDebugPoints->lock(0, 0, &buf, 0);
@@ -3333,10 +3337,10 @@ void Player::DrawBalls()
 	    emission.y *= m_ptable->m_lightEmissionScale*m_ptable->m_globalEmissionScale;
 		emission.z *= m_ptable->m_lightEmissionScale*m_ptable->m_globalEmissionScale;
 
-		for(unsigned int i = 0; i < MAX_LIGHT_SOURCES; ++i)
+		for(unsigned int i2 = 0; i2 < MAX_LIGHT_SOURCES; ++i2)
 		{
-			memcpy(&l[i].vPos,&g_pplayer->m_ptable->m_Light[i].pos,sizeof(float)*3);
-			memcpy(&l[i].vEmission,&emission,sizeof(float)*3);
+			memcpy(&l[i2].vPos,&g_pplayer->m_ptable->m_Light[i2].pos,sizeof(float)*3);
+			memcpy(&l[i2].vEmission,&emission,sizeof(float)*3);
 		}
 		
 		for(unsigned int light_i = 0; light_i < MAX_BALL_LIGHT_SOURCES; ++light_i)
