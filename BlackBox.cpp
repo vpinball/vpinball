@@ -44,7 +44,7 @@ namespace rde
       }
    }
 }
-#	define RDE_GET_CURRENT_THREAD_ID	::GetCurrentThreadId
+#define RDE_GET_CURRENT_THREAD_ID	::GetCurrentThreadId
 
 namespace
 {
@@ -76,6 +76,7 @@ namespace
    volatile long	s_enabled(1);
    volatile long	s_dirty(0);
    volatile long	s_overflow(0);
+
    void AddMessageInternal(const char* msg, long i)
    {
       BlackBoxEntry* messages = s_messages.Get();
@@ -119,6 +120,7 @@ namespace rde
       }
       ::AddMessageInternal(msg, top);
    }
+
    void BlackBox::AddMessagef(const char* fmt, ...)
    {
       if (s_enabled)
@@ -137,6 +139,7 @@ namespace rde
    {
       return s_overflow ? kMaxMessages : s_topMessageIndex;
    }
+
    const char* BlackBox::GetBoxMessage(long index, int& threadId)
    {
       if (s_dirty)
@@ -148,5 +151,4 @@ namespace rde
       threadId = be.threadId;
       return be.message;
    }
-
 }

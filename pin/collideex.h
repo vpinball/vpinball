@@ -254,7 +254,7 @@ public:
 
 	// Bogus methods
 	virtual void Collide(CollisionEvent* coll) {}
-	virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll) {return -1;}
+	virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll) {return -1.f;}
 	virtual void CalcHitRect() {}
 
 	virtual AnimObject *GetAnimObject() {return &m_dispreelanim;}
@@ -280,7 +280,7 @@ public:
 
 	// Bogus methods
 	virtual void Collide(CollisionEvent* coll) {}
-	virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll) {return -1;}
+	virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll) {return -1.f;}
 	virtual void CalcHitRect() {}
 
 	virtual AnimObject *GetAnimObject() {return &m_lightseqanim;}
