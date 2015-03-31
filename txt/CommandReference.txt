@@ -140,22 +140,23 @@ Variables
 ---------
 
 *Name(string)
+*CapMaterial(string)
+*BaseMaterial(string)
+*SkirtMaterial(string)
 *Radius(float) - default=45.0
+*HeightScale (float) - default=90.0
+*Orientation(float) 
+RingSpeed(float)
 *X(float) - X position
 *Y(float) - Y position
-Orientation(float)
-UserValue(any)
 *Surface(string)
 Force(float)
 Threshold(float)
 TimerEnabled(bool)
 TimerInterval(int)
-*Color(OLE_COLOR)
-*SideColor(OLE_COLOR)
-*Disabled(bool) - default=false
+UserValue(any)
 *CapVisible(bool) - default=true
 *BaseVisible(bool) - default=true
-RingSpeed
 
 
 DECAL
