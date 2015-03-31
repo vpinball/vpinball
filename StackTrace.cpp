@@ -21,9 +21,15 @@ namespace
 
 	void InitStackFrameFromContext(PCONTEXT context, STACKFRAME64& stackFrame)
 	{
+#ifdef _WIN64
+		stackFrame.AddrPC.Offset	= context->Rip;
+		stackFrame.AddrFrame.Offset = context->Rbp;
+		stackFrame.AddrStack.Offset = context->Rsp;
+#else
 		stackFrame.AddrPC.Offset	= context->Eip;
 		stackFrame.AddrFrame.Offset = context->Ebp;
 		stackFrame.AddrStack.Offset = context->Esp;
+#endif
 	}
 
 	void** GetNextStackFrame(void** prevSP)
@@ -92,13 +98,13 @@ int StackTrace::GetCallStack(void* vcontext, Address* callStack, int maxDepth,
 	__asm mov [ebpReg], ebp
 	__asm mov [espReg], esp
 #else
-	uintptr_t[2] ebpReg;
+	uintptr_t ebpReg[2];
 	uintptr_t espReg;
     CONTEXT Context;
 	RtlCaptureContext(&Context);
-	ebpReg[1] = Context.Eip;
-	ebpReg[0] = Context.Ebp;
-	espReg = Context.Esp;
+	ebpReg[1] = Context.Rip;
+	ebpReg[0] = Context.Rbp;
+	espReg = Context.Rsp;
 #endif
 
 	InitSymbols();
@@ -145,7 +151,7 @@ int StackTrace::GetCallStack_Fast(Address* callStack, int maxDepth, int entriesT
 #else
     CONTEXT Context;
 	RtlCaptureContext(&Context);
-	ebpReg = Context.Ebp;
+	ebpReg = Context.Rbp;
 #endif
 
 	void** sp = (void**)ebpReg;
