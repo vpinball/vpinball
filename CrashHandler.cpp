@@ -205,12 +205,21 @@ namespace
 
       const CONTEXT* ctx = exceptionPtrs->ContextRecord;
       fprintf(f, "Registers\n=========\n");
+#ifdef _WIN64
+      fprintf(f, "RAX=%08X RBX=%08X RCX=%08X RDX=%08X\n" \
+         "RSI=%08X RDI=%08X RBP=%08X RSP=%08X RIP=%08X\n" \
+         "FLG=%08X CS=%04X DS=%04X SS=%04X ES=%04X FS=%04X GS=%04X\n\n",
+         ctx->Rax, ctx->Rbx, ctx->Rcx, ctx->Rdx, ctx->Rsi, ctx->Rdi,
+         ctx->Rbp, ctx->Rsp, ctx->Rip, ctx->EFlags, ctx->SegCs,
+         ctx->SegDs, ctx->SegSs, ctx->SegEs, ctx->SegFs, ctx->SegGs);
+#else
       fprintf(f, "EAX=%08X EBX=%08X ECX=%08X EDX=%08X\n" \
          "ESI=%08X EDI=%08X EBP=%08X ESP=%08X EIP=%08X\n" \
          "FLG=%08X CS=%04X DS=%04X SS=%04X ES=%04X FS=%04X GS=%04X\n\n",
          ctx->Eax, ctx->Ebx, ctx->Ecx, ctx->Edx, ctx->Esi, ctx->Edi,
          ctx->Ebp, ctx->Esp, ctx->Eip, ctx->EFlags, ctx->SegCs,
          ctx->SegDs, ctx->SegSs, ctx->SegEs, ctx->SegFs, ctx->SegGs);
+#endif
    }
 
    void WriteCallStack(FILE* f, PCONTEXT context)

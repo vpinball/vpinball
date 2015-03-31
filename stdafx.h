@@ -79,7 +79,9 @@
 #define STRICT
 
 #ifndef _WIN32_WINNT
-#if _MSC_VER >= 1800
+#if defined(_WIN64) && defined(CRASH_HANDLER)
+ #define _WIN32_WINNT 0x0501
+#elif _MSC_VER >= 1800
  #define _WIN32_WINNT 0x0500
 #elif _MSC_VER < 1600
  #define _WIN32_WINNT 0x0400

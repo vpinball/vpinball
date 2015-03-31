@@ -3295,7 +3295,7 @@ void Player::GetBallAspectRatio(const Ball * const pball, float &stretchX, float
     const float midX = maxX - minX;
     const float midY = maxY - minY;
     stretchY = midY/midX;
-    stretchX = midX/midY;
+    //stretchX = midX/midY;
     stretchX = 1.0f;
 }
 
