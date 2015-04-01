@@ -633,21 +633,46 @@ void SmartBrowser::GetControlValue(HWND hwndControl)
    {
    case eEdit:
       {
+         // If the control has focus, note the selection status.  If all
+         // of the text is currently selected, note this so that we can
+         // re-select the text when we're done.  This is important when
+         // tabbing between controls in a property sheet - making a change
+         // in one control and then tabbing to the next triggers a refresh
+         // of the whole property page, including the next control we're
+         // tabbing into.  The value refresh that we do here cancels the
+         // selection status.  So the effect is that we break the standard
+         // Windows behavior of selecting the text in the new control we're
+         // tabbing into.  We can fix this by explicitly re-selecting the
+         // text when we're done if it was selected to begin with.
+         bool reSel = false; 
+         if (GetFocus() == hwndControl)
+         {
+            DWORD a, b;
+            SendMessage(hwndControl, EM_GETSEL, (WPARAM)&a, (WPARAM)&b);
+            LRESULT len = SendMessage(hwndControl, WM_GETTEXTLENGTH, 0, 0);
+            if (a == 0 && b == len)
+               reSel = true;
+         }
+ 
          if (!fNinch)
          {
             VariantChangeType(&var, &var, 0, VT_BSTR);
-
+ 
             WCHAR *wzT;
             wzT = V_BSTR(&var);
-
+ 
             char szT[512+1];
 
-            WideCharToMultiByte(CP_ACP, 0, wzT, -1, szT, 512, NULL, NULL);
-
+			WideCharToMultiByte(CP_ACP, 0, wzT, -1, szT, 512, NULL, NULL);
+ 
             SetWindowText(hwndControl, szT);
          }
          else
             SetWindowText(hwndControl, "");
+ 
+         // re-select the text if it was selected on entry
+         if (reSel)
+            SendMessage(hwndControl, EM_SETSEL, (WPARAM)0, (LPARAM)-1);
       }
       break;
 
