@@ -258,6 +258,7 @@ void Plunger::PutCenter(const Vertex2D * const pv)
 void Plunger::PostRenderStatic(RenderDevice* pd3dDevice)
 {
     TRACE_FUNCTION();
+
     // TODO: get rid of frame stuff
     if (!m_d.m_fVisible)
         return;
@@ -273,6 +274,9 @@ void Plunger::PostRenderStatic(RenderDevice* pd3dDevice)
 
     Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
 	pd3dDevice->basicShader->SetMaterial(mat);
+
+    pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
+    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
 
      Texture *pin = m_ptable->GetImage(m_d.m_szImage);
 	 if(pin)
@@ -424,6 +428,7 @@ void Plunger::RenderSetup(RenderDevice* pd3dDevice )
             }
             ptr[PLUNGEPOINTS1-1 + offset].y = m_d.m_v.y + m_d.m_height; // cuts off at bottom (bottom of shaft disappears)
          }
+
          memcpy( &buf[vbOffset], ptr, 16*PLUNGEPOINTS1*sizeof(Vertex3D_NoTex2));
          vbOffset += (16*PLUNGEPOINTS1);
       }

@@ -153,7 +153,6 @@ void Flipper::WriteRegDefaults()
    SetRegValue(regKey,"Surface", REG_SZ, &m_d.m_szSurface,strlen(m_d.m_szSurface));
    SetRegValueFloat(regKey,"Strength", m_d.m_strength);
    SetRegValueFloat(regKey,"Height", m_d.m_height);
-   SetRegValueFloat(regKey,"Height", m_d.m_height);
    SetRegValueInt(regKey,"RubberThickness", m_d.m_rubberthickness);
    SetRegValueInt(regKey,"RubberHeight", m_d.m_rubberheight);
    SetRegValueInt(regKey,"RubberWidth", m_d.m_rubberwidth);
@@ -527,6 +526,7 @@ STDMETHODIMP Flipper::RotateToEnd() //power stroke to hit ball
       m_phitflipper->m_flipperanim.m_EnableRotateEvent = 1;
       m_phitflipper->m_flipperanim.SetSolenoidState(true);
    }
+
    return S_OK;
 }
 
@@ -538,6 +538,7 @@ STDMETHODIMP Flipper::RotateToStart() // return to park
       m_phitflipper->m_flipperanim.m_EnableRotateEvent = -1;
       m_phitflipper->m_flipperanim.SetSolenoidState(false);
    }
+
    return S_OK;
 }
 
@@ -555,6 +556,9 @@ void Flipper::PostRenderStatic(RenderDevice* pd3dDevice)
     Material *mat = m_ptable->GetMaterial( m_d.m_szMaterial);
     pd3dDevice->basicShader->SetMaterial(mat);
     pd3dDevice->basicShader->SetTechnique("basic_without_texture");
+
+    pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
+    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
 
     Matrix3D matTrafo, matTemp;
     matTrafo.SetIdentity();
@@ -600,8 +604,6 @@ void Flipper::RenderSetup(RenderDevice* pd3dDevice)
     if (vertexBuffer)
 		vertexBuffer->release();
     pd3dDevice->CreateVertexBuffer(numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer);
-
-    unsigned long ofs=0;
 
     // 18 + 3*14 + 3*14 + 6*16*2 = 294
     // first 6 quads: top/front/back sides (no bottom)
@@ -659,9 +661,7 @@ void Flipper::RenderSetup(RenderDevice* pd3dDevice)
 
     // Render just the rubber.
     if (m_d.m_rubberthickness > 0)
-    {
         RenderAtThickness(pd3dDevice, 0.0f, height + (float)m_d.m_rubberheight, m_d.m_BaseRadius, m_d.m_EndRadius, (float)m_d.m_rubberwidth, buf+108);
-    }
 
     vertexBuffer->unlock();
 }
@@ -755,8 +755,8 @@ void Flipper::RenderAtThickness(RenderDevice* pd3dDevice, float angle, float hei
         rgv3D[l].ny = rgv3D[l+16].ny = -cosf(anglel);
         rgv3D[l].nz = rgv3D[l+16].nz = 0.0f;
 
-        memcpy( &buf[offset], &rgv3D[l], sizeof(Vertex3D_NoTex2));
-        memcpy( &buf[offset+1], &rgv3D[l+16], sizeof(Vertex3D_NoTex2));
+        buf[offset] = rgv3D[l];
+        buf[offset+1] = rgv3D[l+16];
         offset += 2;
     }
 
@@ -778,10 +778,9 @@ void Flipper::RenderAtThickness(RenderDevice* pd3dDevice, float angle, float hei
 
     // Draw end caps to vertical cylinder at small end.
     for (int l=0;l<14;l++)
-    {
         SetNormal(rgv3D, endCapsIndex+l*3, 3);
-    }
-    memcpy( &buf[offset], rgv3D, sizeof(Vertex3D_NoTex2)*16 );
+
+	memcpy( &buf[offset], rgv3D, sizeof(Vertex3D_NoTex2)*16 );
     offset += 16;
 
     // offset = 76
@@ -794,8 +793,8 @@ void Flipper::RenderAtThickness(RenderDevice* pd3dDevice, float angle, float hei
         rgv3D[l].ny = rgv3D[l+16].ny = -cosf(anglel);
         rgv3D[l].nz = rgv3D[l+16].nz = 0.0f;
 
-        memcpy( &buf[offset], &rgv3D[l], sizeof(Vertex3D_NoTex2));
-        memcpy( &buf[offset+1], &rgv3D[l+16], sizeof(Vertex3D_NoTex2));
+        buf[offset] = rgv3D[l];
+        buf[offset+1] = rgv3D[l+16];
         offset += 2;
     }
 
@@ -1258,7 +1257,7 @@ STDMETHODIMP Flipper::put_RubberMaterial(BSTR newVal)
 {
    STARTUNDO
 
-       WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szRubberMaterial, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szRubberMaterial, 32, NULL, NULL);
 
    STOPUNDO
 
@@ -1380,7 +1379,7 @@ STDMETHODIMP Flipper::put_Enabled(VARIANT_BOOL newVal)
    else
    {
       STARTUNDO
-         m_d.m_fEnabled = VBTOF(newVal);
+      m_d.m_fEnabled = VBTOF(newVal);
       STOPUNDO
    }
    return S_OK;

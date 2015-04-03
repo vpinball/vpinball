@@ -537,6 +537,9 @@ void Trigger::PostRenderStatic(RenderDevice* pd3dDevice)
     Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
     pd3dDevice->basicShader->SetMaterial(mat);
 
+    pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
+    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+
     if ( hitEvent )
     {
         doAnimation=true;
@@ -647,8 +650,6 @@ void Trigger::RenderSetup(RenderDevice* pd3dDevice)
    Matrix3D fullMatrix;
    fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotation));
 
-   Vertex3D_NoTex2 *buf;
-   vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY);
    for( int i=0;i<numVertices;i++ )
    {
        Vertex3Ds vert(verts[i].x,verts[i].y,verts[i].z);
@@ -674,6 +675,9 @@ void Trigger::RenderSetup(RenderDevice* pd3dDevice)
        triggerVertices[i].tu = verts[i].tu;
        triggerVertices[i].tv = verts[i].tv;
    }
+
+   Vertex3D_NoTex2 *buf;
+   vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY);
    memcpy( buf, triggerVertices, sizeof(Vertex3D_NoTex2)*numVertices );
    vertexBuffer->unlock();
 }

@@ -181,7 +181,7 @@ void SetHUDVertices(VtxType * const rgv, const int count)
 }
 
 template <class CurveType, class VtxType, class VtxContType>
-void RecurseSmoothLine(const CurveType & cc, float t1, float t2, const VtxType & vt1, const VtxType & vt2, VtxContType & vv, float accuracy)
+void RecurseSmoothLine(const CurveType & cc, float t1, float t2, const VtxType & vt1, const VtxType & vt2, VtxContType & vv, const float accuracy)
 	{
 	const float tMid = (t1+t2)*0.5f;
 	VtxType vmid;

@@ -586,6 +586,7 @@ void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
    if ( sideVBuffer )
       sideVBuffer->release();
    pd3dDevice->CreateVertexBuffer( numVertices*4, 0, MY_D3DFVF_NOTEX2_VERTEX, &sideVBuffer );
+   
    Vertex3D_NoTex2 *verts;
    sideVBuffer->lock( 0, 0, (void**)&verts, VertexBuffer::WRITEONLY);
 
@@ -645,13 +646,21 @@ void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
             verts[offset+3].tv = 1.0f;
          }
 
-         verts[offset].nx = verts[offset+1].nx = vnormal[0].x;
-         verts[offset].ny = verts[offset+1].ny = -vnormal[0].y;
-         verts[offset].nz = verts[offset+1].nz = 0;
+         verts[offset].nx = vnormal[0].x;
+         verts[offset].ny = -vnormal[0].y;
+         verts[offset].nz = 0;
 
-         verts[offset+2].nx = verts[offset+3].nx = vnormal[1].x;
-         verts[offset+2].ny = verts[offset+3].ny = -vnormal[1].y;
-         verts[offset+2].nz = verts[offset+3].nz = 0;
+		 verts[offset+1].nx = vnormal[0].x;
+         verts[offset+1].ny = -vnormal[0].y;
+         verts[offset+1].nz = 0;
+
+         verts[offset+2].nx = vnormal[1].x;
+         verts[offset+2].ny = -vnormal[1].y;
+         verts[offset+2].nz = 0;
+
+		 verts[offset+3].nx = vnormal[1].x;
+         verts[offset+3].ny = -vnormal[1].y;
+         verts[offset+3].nz = 0;
       }
    }
    delete[] rgnormal;
@@ -920,6 +929,9 @@ void Surface::RenderSlingshots(RenderDevice* pd3dDevice)
    Material *mat = m_ptable->GetMaterial( m_d.m_szSlingShotMaterial);
    pd3dDevice->basicShader->SetMaterial(mat);
 
+   pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
+   pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+
    pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
 
    pd3dDevice->basicShader->Begin(0);
@@ -946,6 +958,9 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, const bool fDrop)
     {
         Material *mat = m_ptable->GetMaterial( m_d.m_szSideMaterial);
         pd3dDevice->basicShader->SetMaterial(mat);
+
+	    pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
+        pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
 
         if (mat->m_bOpacityActive)
         {
@@ -979,6 +994,10 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, const bool fDrop)
     {
        Material *mat = m_ptable->GetMaterial( m_d.m_szTopMaterial);
        pd3dDevice->basicShader->SetMaterial(mat);
+
+       pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
+       pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+
        if (mat->m_bOpacityActive)
        {
           pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);

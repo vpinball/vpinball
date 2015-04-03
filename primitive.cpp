@@ -15,38 +15,38 @@ extern void WaveFrontObj_Save(const char *filename, const char *description, con
 
 void Mesh::Clear()
 {
-   m_vertices.clear();
-   m_indices.clear();
+    m_vertices.clear();
+    m_indices.clear();
 }
 
 bool Mesh::LoadWavefrontObj(const char *fname, const bool flipTV, const bool convertToLeftHanded)
 {
-   Clear();
+    Clear();
 
-   if (WaveFrontObj_Load(fname, flipTV, convertToLeftHanded))
-   {
-      WaveFrontObj_GetVertices(m_vertices);
-      WaveFrontObj_GetIndices(m_indices);
-      return true;
-   }
-   else
-      return false;
+    if (WaveFrontObj_Load(fname, flipTV, convertToLeftHanded))
+    {
+        WaveFrontObj_GetVertices(m_vertices);
+        WaveFrontObj_GetIndices(m_indices);
+        return true;
+    }
+    else
+        return false;
 }
 
 void Mesh::SaveWavefrontObj(const char *fname, const char *description)
 {
-   if (description == NULL)
-      description = fname;
+    if (description == NULL)
+        description = fname;
 
-   WaveFrontObj_Save(fname, description, *this);
+    WaveFrontObj_Save(fname, description, *this);
 }
 
 void Mesh::UploadToVB(VertexBuffer * vb) const
 {
-   Vertex3D_NoTex2 *buf;
-   vb->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
-   memcpy(buf, &m_vertices[0], sizeof(Vertex3D_NoTex2)*m_vertices.size());
-   vb->unlock();
+    Vertex3D_NoTex2 *buf;
+    vb->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
+	memcpy(buf, &m_vertices[0], sizeof(Vertex3D_NoTex2)*m_vertices.size());
+    vb->unlock();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -78,74 +78,74 @@ Primitive::Primitive()
 Primitive::~Primitive()
 {
    if (vertexBuffer)
-      vertexBuffer->release();
-   if (indexBuffer)
-      indexBuffer->release();
+        vertexBuffer->release();
+    if (indexBuffer)
+        indexBuffer->release();
 }
 
 void Primitive::CreateRenderGroup(Collection *collection, RenderDevice *pd3dDevice)
 {
    if (!collection->m_fGroupElements)
-      return;
+        return;
 
-   unsigned int overall_size = 0;
-   vector<Primitive*> prims;
+    unsigned int overall_size = 0;
+    vector<Primitive*> prims;
    vector<Primitive*> renderedPrims;
-   for (int i = 0; i < collection->m_visel.size(); i++)
-   {
-      ISelect *pisel = collection->m_visel.ElementAt(i);
-      if (pisel->GetItemType() != eItemPrimitive)
-         continue;
+    for (int i = 0; i < collection->m_visel.size(); i++)
+    {
+        ISelect *pisel = collection->m_visel.ElementAt(i);
+        if (pisel->GetItemType() != eItemPrimitive)
+            continue;
 
-      Primitive *prim = (Primitive*)pisel;
-      // only support dynamic mesh primitives for now
+        Primitive *prim = (Primitive*)pisel;
+        // only support dynamic mesh primitives for now
       if (!prim->m_d.m_use3DMesh || prim->m_d.m_staticRendering)
-         continue;
+            continue;
 
-      prims.push_back(prim);
+        prims.push_back(prim);
 
-      overall_size += prim->m_mesh.NumIndices();
-   }
+	overall_size += prim->m_mesh.NumIndices();
+    }
 
    if (prims.size() == 0)
-      return;
+        return;
 
-   // The first primitive in the group is the base primitive
-   // this element gets rendered by rendering all other group primitives
-   // the rest of the group is marked as skipped rendering
-   Material *groupMaterial = g_pplayer->m_ptable->GetMaterial(prims[0]->m_d.m_szMaterial);
-   Texture *groupTexel = g_pplayer->m_ptable->GetImage(prims[0]->m_d.m_szImage);
-   m_numGroupVertices = prims[0]->m_mesh.NumVertices();
-   m_numGroupIndices = prims[0]->m_mesh.NumIndices();
-   prims[0]->m_d.m_fGroupdRendering = true;
-   vector<unsigned int> indices(overall_size);
-   memcpy(&indices[0], &prims[0]->m_mesh.m_indices[0], prims[0]->m_mesh.NumIndices());
+    // The first primitive in the group is the base primitive
+    // this element gets rendered by rendering all other group primitives
+    // the rest of the group is marked as skipped rendering
+    Material *groupMaterial = g_pplayer->m_ptable->GetMaterial(prims[0]->m_d.m_szMaterial);
+    Texture *groupTexel = g_pplayer->m_ptable->GetImage(prims[0]->m_d.m_szImage);
+    m_numGroupVertices = prims[0]->m_mesh.NumVertices();
+    m_numGroupIndices = prims[0]->m_mesh.NumIndices();
+    prims[0]->m_d.m_fGroupdRendering = true;
+    vector<unsigned int> indices(overall_size);
+    memcpy(&indices[0], &prims[0]->m_mesh.m_indices[0], prims[0]->m_mesh.NumIndices());
 
-   for (size_t i = 1; i < prims.size(); i++)
-   {
-      Material *mat = g_pplayer->m_ptable->GetMaterial(prims[i]->m_d.m_szMaterial);
-      Texture  *texel = g_pplayer->m_ptable->GetImage(prims[i]->m_d.m_szImage);
-      if (mat == groupMaterial && texel == groupTexel)
-      {
+    for (size_t i = 1; i < prims.size(); i++)
+    {
+        Material *mat = g_pplayer->m_ptable->GetMaterial(prims[i]->m_d.m_szMaterial);
+        Texture  *texel = g_pplayer->m_ptable->GetImage(prims[i]->m_d.m_szImage);
+        if (mat == groupMaterial && texel == groupTexel)
+        {
          for (size_t k = 0; k < prims[i]->m_mesh.NumIndices(); k++)
             indices[m_numGroupIndices + k] = m_numGroupVertices + prims[i]->m_mesh.m_indices[k];
 
-         m_numGroupVertices += prims[i]->m_mesh.NumVertices();
-         m_numGroupIndices += prims[i]->m_mesh.NumIndices();
-         prims[i]->m_d.m_fSkipRendering = true;
+            m_numGroupVertices += prims[i]->m_mesh.NumVertices();
+            m_numGroupIndices += prims[i]->m_mesh.NumIndices();
+            prims[i]->m_d.m_fSkipRendering = true;
          renderedPrims.push_back(prims[i]);
-      }
-      else
+        }
+        else
          prims[i]->m_d.m_fSkipRendering = false;
-   }
+    }
 
-   if (vertexBuffer)
-      vertexBuffer->release();
-   pd3dDevice->CreateVertexBuffer(m_numGroupVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer);
+    if (vertexBuffer)
+        vertexBuffer->release();
+    pd3dDevice->CreateVertexBuffer(m_numGroupVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer);
 
-   if (indexBuffer)
-      indexBuffer->release();
-   indexBuffer = pd3dDevice->CreateAndFillIndexBuffer(indices);
+    if (indexBuffer)
+        indexBuffer->release();
+    indexBuffer = pd3dDevice->CreateAndFillIndexBuffer(indices);
 
    unsigned int ofs = 0;
    Vertex3D_NoTex2 *buf;
@@ -154,17 +154,18 @@ void Primitive::CreateRenderGroup(Collection *collection, RenderDevice *pd3dDevi
    {
       renderedPrims[i]->RecalculateMatrices();
       for (size_t t = 0; t < renderedPrims[i]->m_mesh.NumVertices(); t++)
-      {
-         Vertex3D_NoTex2 vt = renderedPrims[i]->m_mesh.m_vertices[t];
-         renderedPrims[i]->fullMatrix.MultiplyVector(vt, vt);
-         Vertex3Ds n;
-         renderedPrims[i]->fullMatrix.MultiplyVectorNoTranslateNormal(vt, n);
-         vt.nx = n.x; vt.ny = n.y; vt.nz = n.z;
-         buf[ofs] = vt;
-         ofs++;
-      }
+        {
+			Vertex3D_NoTex2 vt = renderedPrims[i]->m_mesh.m_vertices[t];
+			renderedPrims[i]->fullMatrix.MultiplyVector(vt, vt);
+            Vertex3Ds n;
+			renderedPrims[i]->fullMatrix.MultiplyVectorNoTranslateNormal(vt, n);
+            vt.nx = n.x; vt.ny = n.y; vt.nz = n.z;
+            buf[ofs] = vt;
+            ofs++;
+        }
    }
    vertexBuffer->unlock();
+   
    prims.clear();
    renderedPrims.clear();
 }
@@ -318,7 +319,7 @@ void Primitive::GetHitShapes(Vector<HitObject> * const pvho)
    // add collision vertices
    for (unsigned i = 0; i < m_mesh.NumVertices(); ++i)
    {
-      SetupHitObject(pvho, new HitPoint(vertices[i]));
+       SetupHitObject(pvho, new HitPoint(vertices[i]));
    }
 }
 
@@ -328,30 +329,30 @@ void Primitive::GetHitShapesDebug(Vector<HitObject> * const pvho)
 
 void Primitive::AddHitEdge(Vector<HitObject> * pvho, std::set< std::pair<unsigned, unsigned> >& addedEdges, unsigned i, unsigned j)
 {
-   // create pair uniquely identifying the edge (i,j)
+    // create pair uniquely identifying the edge (i,j)
    std::pair<unsigned, unsigned> p(std::min(i, j), std::max(i, j));
 
-   if (addedEdges.count(p) == 0)   // edge not yet added?
-   {
-      addedEdges.insert(p);
-      SetupHitObject(pvho, new HitLine3D(vertices[i], vertices[j]));
-   }
+    if (addedEdges.count(p) == 0)   // edge not yet added?
+    {
+        addedEdges.insert(p);
+        SetupHitObject(pvho, new HitLine3D(vertices[i], vertices[j]));
+    }
 }
 
 void Primitive::SetupHitObject(Vector<HitObject> * pvho, HitObject * obj)
 {
-   obj->m_elasticity = m_d.m_elasticity;
-   obj->m_elasticityFalloff = m_d.m_elasticityFalloff;
-   obj->SetFriction(m_d.m_friction);
-   obj->m_scatter = ANGTORAD(m_d.m_scatter);
-   obj->m_threshold = m_d.m_threshold;
-   obj->m_ObjType = ePrimitive;
-   obj->m_fEnabled = m_d.m_fCollidable;
+    obj->m_elasticity = m_d.m_elasticity;
+    obj->m_elasticityFalloff = m_d.m_elasticityFalloff;
+    obj->SetFriction(m_d.m_friction);
+    obj->m_scatter = ANGTORAD(m_d.m_scatter);
+    obj->m_threshold = m_d.m_threshold;
+    obj->m_ObjType = ePrimitive;
+    obj->m_fEnabled = m_d.m_fCollidable;
    if (m_d.m_fHitEvent)
-      obj->m_pfe = (IFireEvents *)this;
+        obj->m_pfe = (IFireEvents *)this;
 
-   pvho->AddElement(obj);
-   m_vhoCollidable.AddElement(obj);	//remember hit components of primitive
+    pvho->AddElement(obj);
+    m_vhoCollidable.AddElement(obj);	//remember hit components of primitive
 }
 
 void Primitive::EndPlay()
@@ -359,16 +360,16 @@ void Primitive::EndPlay()
    m_vhoCollidable.RemoveAllElements();
 
    if (vertexBuffer)
-   {
-      vertexBuffer->release();
-      vertexBuffer = 0;
-      vertexBufferRegenerate = true;
-   }
-   if (indexBuffer)
-   {
-      indexBuffer->release();
-      indexBuffer = 0;
-   }
+	{
+		vertexBuffer->release();
+		vertexBuffer = 0;
+		vertexBufferRegenerate = true;
+	}
+    if (indexBuffer)
+    {
+        indexBuffer->release();
+        indexBuffer = 0;
+    }
    m_d.m_fSkipRendering = false;
    m_d.m_fGroupdRendering = false;
 }
@@ -420,13 +421,13 @@ void Primitive::TransformVertices()
    normals.resize(m_mesh.NumVertices());
 
    for (unsigned i = 0; i < m_mesh.NumVertices(); i++)
-   {
-      fullMatrix.MultiplyVector(m_mesh.m_vertices[i], vertices[i]);
-      Vertex3Ds n;
-      fullMatrix.MultiplyVectorNoTranslateNormal(m_mesh.m_vertices[i], n);
-      n.Normalize();
-      normals[i] = n.z;
-   }
+    {
+        fullMatrix.MultiplyVector(m_mesh.m_vertices[i], vertices[i]);
+		Vertex3Ds n;
+        fullMatrix.MultiplyVectorNoTranslateNormal(m_mesh.m_vertices[i], n);
+		n.Normalize();
+		normals[i] = n.z;
+    }
 }
 
 //////////////////////////////
@@ -446,41 +447,41 @@ void Primitive::Render(Sur * const psur)
    if ((m_d.m_edgeFactorUI <= 0.0f) || (m_d.m_edgeFactorUI >= 1.0f) || !m_d.m_use3DMesh)
    {
       if (!m_d.m_use3DMesh || (m_d.m_edgeFactorUI >= 1.0f) || (m_mesh.NumVertices() <= 100)) // small mesh: draw all triangles
-      {
+	   {
          for (unsigned i = 0; i < m_mesh.NumIndices(); i += 3)
-         {
+		  {
             const Vertex3Ds * const A = &vertices[m_mesh.m_indices[i]];
             const Vertex3Ds * const B = &vertices[m_mesh.m_indices[i + 1]];
             const Vertex3Ds * const C = &vertices[m_mesh.m_indices[i + 2]];
             psur->Line(A->x, A->y, B->x, B->y);
             psur->Line(B->x, B->y, C->x, C->y);
             psur->Line(C->x, C->y, A->x, A->y);
-         }
-      }
-      else // large mesh: draw a simplified mesh for performance reasons, does not approximate the shape well
-      {
-         if (m_mesh.NumIndices() > 0)
-         {
-            const size_t numPts = m_mesh.NumIndices() / 3 + 1;
-            std::vector<Vertex2D> drawVertices(numPts);
+		  }
+	   }
+	   else // large mesh: draw a simplified mesh for performance reasons, does not approximate the shape well
+	   {
+		   if (m_mesh.NumIndices() > 0)
+		   {
+			   const size_t numPts = m_mesh.NumIndices() / 3 + 1;
+			   std::vector<Vertex2D> drawVertices(numPts);
 
-            const Vertex3Ds& A = vertices[m_mesh.m_indices[0]];
+			   const Vertex3Ds& A = vertices[m_mesh.m_indices[0]];
             drawVertices[0] = Vertex2D(A.x, A.y);
 
-            unsigned int o = 1;
+			   unsigned int o = 1;
             for (size_t i = 0; i < m_mesh.NumIndices(); i += 3, ++o)
-            {
+			   {
                const Vertex3Ds& B = vertices[m_mesh.m_indices[i + 1]];
                drawVertices[o] = Vertex2D(B.x, B.y);
-            }
+			   }
 
-            psur->Polyline(&drawVertices[0], drawVertices.size());
-         }
-      }
+			   psur->Polyline(&drawVertices[0], drawVertices.size());
+		   }
+	   }
    }
    else
    {
-      std::vector<Vertex2D> drawVertices;
+	  std::vector<Vertex2D> drawVertices;
       for (unsigned i = 0; i < m_mesh.NumIndices(); i += 3)
       {
          const Vertex3Ds * const A = &vertices[m_mesh.m_indices[i]];
@@ -490,20 +491,20 @@ void Primitive::Render(Sur * const psur)
          const float Bn = normals[m_mesh.m_indices[i + 1]];
          const float Cn = normals[m_mesh.m_indices[i + 2]];
          if (fabsf(An + Bn) < m_d.m_edgeFactorUI)
-         {
+		 {
             drawVertices.push_back(Vertex2D(A->x, A->y));
             drawVertices.push_back(Vertex2D(B->x, B->y));
-         }
+		 }
          if (fabsf(Bn + Cn) < m_d.m_edgeFactorUI)
-         {
+		 {
             drawVertices.push_back(Vertex2D(B->x, B->y));
             drawVertices.push_back(Vertex2D(C->x, C->y));
-         }
+		 }
          if (fabsf(Cn + An) < m_d.m_edgeFactorUI)
-         {
+		 {
             drawVertices.push_back(Vertex2D(C->x, C->y));
             drawVertices.push_back(Vertex2D(A->x, A->y));
-         }
+		 }
       }
 
       if (drawVertices.size() > 0)
@@ -686,59 +687,64 @@ void Primitive::CalculateBuiltinOriginal()
 
 void Primitive::UpdateEditorView()
 {
-   RecalculateMatrices();
-   TransformVertices();
+    RecalculateMatrices();
+    TransformVertices();
 }
 
 void Primitive::RenderObject(RenderDevice *pd3dDevice)
 {
-   if (!m_d.m_fGroupdRendering)
-   {
-      RecalculateMatrices();
+    if (!m_d.m_fGroupdRendering)
+    {
+        RecalculateMatrices();
 
-      if (vertexBufferRegenerate)
-      {
-         vertexBufferRegenerate = false;
-         m_mesh.UploadToVB(vertexBuffer);
-      }
-   }
-   Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
-   pd3dDevice->basicShader->SetMaterial(mat);
-   if (m_d.m_fDisableLighting)
+        if (vertexBufferRegenerate)
+        {
+            vertexBufferRegenerate = false;
+            m_mesh.UploadToVB(vertexBuffer);
+        }
+    }
+
+	Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
+    pd3dDevice->basicShader->SetMaterial(mat);
+    
+	pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
+    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+
+    if (m_d.m_fDisableLighting)
       pd3dDevice->basicShader->SetDisableLighting(m_d.m_fDisableLighting);
 
-   Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
-   if (pin)
-   {
-      pd3dDevice->basicShader->SetTechnique("basic_with_texture");
-      pd3dDevice->basicShader->SetTexture("Texture0", pin);
-      pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue / 255.0f);
+    Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
+    if (pin)
+    {
+        pd3dDevice->basicShader->SetTechnique("basic_with_texture");
+        pd3dDevice->basicShader->SetTexture("Texture0", pin);
+        pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue / 255.0f);
 
-      //g_pplayer->m_pin3d.SetTextureFilter(0, TEXTURE_MODE_TRILINEAR);
-      // accomodate models with UV coords outside of [0,1]
+        //g_pplayer->m_pin3d.SetTextureFilter(0, TEXTURE_MODE_TRILINEAR);
+        // accomodate models with UV coords outside of [0,1]
       pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_WRAP);
-   }
-   else
-      pd3dDevice->basicShader->SetTechnique("basic_without_texture");
+    }
+    else
+        pd3dDevice->basicShader->SetTechnique("basic_without_texture");
 
-   // set transform
+    // set transform
    if (!m_d.m_fGroupdRendering)
-      g_pplayer->UpdateBasicShaderMatrix(fullMatrix);
+        g_pplayer->UpdateBasicShaderMatrix(fullMatrix);
 
-   // draw the mesh
-   pd3dDevice->basicShader->Begin(0);
+    // draw the mesh
+    pd3dDevice->basicShader->Begin(0);
    if (m_d.m_fGroupdRendering)
       pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, m_numGroupVertices, indexBuffer, 0, m_numGroupIndices);
-   else
-      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, m_mesh.NumVertices(), indexBuffer, 0, m_mesh.NumIndices());
-   pd3dDevice->basicShader->End();
+    else
+        pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, m_mesh.NumVertices(), indexBuffer, 0, m_mesh.NumIndices());
+    pd3dDevice->basicShader->End();
 
-   // reset transform
-   if (!m_d.m_fGroupdRendering)
-      g_pplayer->UpdateBasicShaderMatrix();
+    // reset transform
+    if (!m_d.m_fGroupdRendering)
+        g_pplayer->UpdateBasicShaderMatrix();
 
    pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP);
-   //g_pplayer->m_pin3d.DisableAlphaBlend(); //!! not necessary anymore
+    //g_pplayer->m_pin3d.DisableAlphaBlend(); //!! not necessary anymore
    if (m_d.m_fDisableLighting)
       pd3dDevice->basicShader->SetDisableLighting(false);
 }
@@ -747,6 +753,7 @@ void Primitive::RenderObject(RenderDevice *pd3dDevice)
 void Primitive::PostRenderStatic(RenderDevice* pd3dDevice)
 {
    TRACE_FUNCTION();
+   
    if (m_d.m_staticRendering || !m_d.m_fVisible || m_d.m_fSkipRendering)
       return;
 
@@ -756,12 +763,12 @@ void Primitive::PostRenderStatic(RenderDevice* pd3dDevice)
 void Primitive::RenderSetup(RenderDevice* pd3dDevice)
 {
    if (m_d.m_fGroupdRendering || m_d.m_fSkipRendering)
-      return;
+        return;
 
    if (vertexBuffer)
       vertexBuffer->release();
-
-   pd3dDevice->CreateVertexBuffer(m_mesh.NumVertices(), 0, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer);
+   
+      pd3dDevice->CreateVertexBuffer(m_mesh.NumVertices(), 0, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer);
 
    if (indexBuffer)
       indexBuffer->release();
@@ -858,39 +865,39 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcry
       bw.WriteInt(FID(M3VN), (int)m_mesh.NumVertices());
 
 #ifndef COMPRESS_MESHES
-      bw.WriteStruct( FID(M3DX), &m_mesh.m_vertices[0], (int)(sizeof(Vertex3D_NoTex2)*m_mesh.NumVertices()) );
+	  bw.WriteStruct( FID(M3DX), &m_mesh.m_vertices[0], (int)(sizeof(Vertex3D_NoTex2)*m_mesh.NumVertices()) );
 #else
-      bw.WriteTag(FID(M3CX));
-      {
-         LZWWriter lzwwriter(pstm, (int *)&m_mesh.m_vertices[0], sizeof(Vertex3D_NoTex2)*m_mesh.NumVertices(), 1, sizeof(Vertex3D_NoTex2)*m_mesh.NumVertices());
+	  bw.WriteTag(FID(M3CX));
+	  {
+      LZWWriter lzwwriter(pstm, (int *)&m_mesh.m_vertices[0], sizeof(Vertex3D_NoTex2)*m_mesh.NumVertices(), 1, sizeof(Vertex3D_NoTex2)*m_mesh.NumVertices());
          lzwwriter.CompressBits(8 + 1);
-   }
+	  }
 #endif
 
       bw.WriteInt(FID(M3FN), (int)m_mesh.NumIndices());
       if (m_mesh.NumVertices() > 65535)
-      {
+	  {
 #ifndef COMPRESS_MESHES
-         bw.WriteStruct( FID(M3DI), &m_mesh.m_indices[0], (int)(sizeof(unsigned int)*m_mesh.NumIndices()) );
+	      bw.WriteStruct( FID(M3DI), &m_mesh.m_indices[0], (int)(sizeof(unsigned int)*m_mesh.NumIndices()) );
 #else
-         bw.WriteTag(FID(M3CI));
-         LZWWriter lzwwriter(pstm, (int *)&m_mesh.m_indices[0], sizeof(unsigned int)*m_mesh.NumIndices(), 1, sizeof(unsigned int)*m_mesh.NumIndices());
+	  	  bw.WriteTag(FID(M3CI));
+	      LZWWriter lzwwriter(pstm, (int *)&m_mesh.m_indices[0], sizeof(unsigned int)*m_mesh.NumIndices(), 1, sizeof(unsigned int)*m_mesh.NumIndices());
          lzwwriter.CompressBits(8 + 1);
 #endif
-      }
-      else
-      {
-         std::vector<WORD> tmp(m_mesh.NumIndices());
+	  }
+	  else
+	  {
+		  std::vector<WORD> tmp(m_mesh.NumIndices());
          for (unsigned int i = 0; i < m_mesh.NumIndices(); ++i)
-            tmp[i] = m_mesh.m_indices[i];
+			  tmp[i] = m_mesh.m_indices[i];
 #ifndef COMPRESS_MESHES
-         bw.WriteStruct( FID(M3DI), &tmp[0], (int)(sizeof(WORD)*m_mesh.NumIndices()) );
+	      bw.WriteStruct( FID(M3DI), &tmp[0], (int)(sizeof(WORD)*m_mesh.NumIndices()) );
 #else
-         bw.WriteTag(FID(M3CI));
-         LZWWriter lzwwriter(pstm, (int *)&tmp[0], sizeof(WORD)*m_mesh.NumIndices(), 1, sizeof(WORD)*m_mesh.NumIndices());
+  	  	  bw.WriteTag(FID(M3CI));
+	      LZWWriter lzwwriter(pstm, (int *)&tmp[0], sizeof(WORD)*m_mesh.NumIndices(), 1, sizeof(WORD)*m_mesh.NumIndices());
          lzwwriter.CompressBits(8 + 1);
 #endif
-      }
+	  }
 }
    bw.WriteFloat(FID(PIDB), m_d.m_depthBias);
 
@@ -911,7 +918,7 @@ HRESULT Primitive::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int versi
 
    br.Load();
    if (!m_d.m_use3DMesh)
-      CalculateBuiltinOriginal();
+       CalculateBuiltinOriginal();
 
    unsigned int* tmp = reorderForsyth(&m_mesh.m_indices[0], m_mesh.NumIndices() / 3, m_mesh.NumVertices());
    if (tmp != NULL)
@@ -1028,7 +1035,7 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(EFUI))
    {
-      pbr->GetFloat(&m_d.m_edgeFactorUI);
+	   pbr->GetFloat(&m_d.m_edgeFactorUI);
    }
    else if (id == FID(CLDRP))
    {
@@ -1040,11 +1047,11 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(STRE))
    {
-      pbr->GetBool(&m_d.m_staticRendering);
+       pbr->GetBool(&m_d.m_staticRendering);
    }
    else if (id == FID(DILI))
    {
-      pbr->GetBool(&m_d.m_fDisableLighting);
+       pbr->GetBool(&m_d.m_fDisableLighting);
    }
    else if (id == FID(U3DM))
    {
@@ -1070,7 +1077,7 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
       m_mesh.m_vertices.clear();
       m_mesh.m_vertices.resize(numVertices);
       //pbr->GetStruct( &m_mesh.m_vertices[0], sizeof(Vertex3D_NoTex2)*numVertices);
-      LZWReader lzwreader(pbr->m_pistream, (int *)&m_mesh.m_vertices[0], sizeof(Vertex3D_NoTex2)*numVertices, 1, sizeof(Vertex3D_NoTex2)*numVertices);
+	  LZWReader lzwreader(pbr->m_pistream, (int *)&m_mesh.m_vertices[0], sizeof(Vertex3D_NoTex2)*numVertices, 1, sizeof(Vertex3D_NoTex2)*numVertices);
       lzwreader.Decoder();
    }
 #endif
@@ -1083,33 +1090,33 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
       m_mesh.m_indices.resize(numIndices);
       if (numVertices > 65535)
          pbr->GetStruct(&m_mesh.m_indices[0], sizeof(unsigned int)*numIndices);
-      else
-      {
-         std::vector<WORD> tmp(numIndices);
+	  else
+	  {
+  		  std::vector<WORD> tmp(numIndices);
          pbr->GetStruct(&tmp[0], sizeof(WORD)*numIndices);
          for (int i = 0; i < numIndices; ++i)
-            m_mesh.m_indices[i] = tmp[i];
-      }
+			  m_mesh.m_indices[i] = tmp[i];
+	  }
    }
 #ifdef COMPRESS_MESHES
    else if( id == FID(M3CI) )
    {
       m_mesh.m_indices.resize( numIndices );
-      if(numVertices > 65535)
-      {
-         //pbr->GetStruct( &m_mesh.m_indices[0], sizeof(unsigned int)*numIndices);
-         LZWReader lzwreader(pbr->m_pistream, (int *)&m_mesh.m_indices[0], sizeof(unsigned int)*numIndices, 1, sizeof(unsigned int)*numIndices);
-         lzwreader.Decoder();
-      }
-      else
-      {
-         std::vector<WORD> tmp(numIndices);
-         //pbr->GetStruct( &tmp[0], sizeof(WORD)*numIndices);
-         LZWReader lzwreader(pbr->m_pistream, (int *)&tmp[0], sizeof(WORD)*numIndices, 1, sizeof(WORD)*numIndices);
-         lzwreader.Decoder();
-         for(int i = 0; i < numIndices; ++i)
-            m_mesh.m_indices[i] = tmp[i];
-      }
+	  if(numVertices > 65535)
+	  {
+	      //pbr->GetStruct( &m_mesh.m_indices[0], sizeof(unsigned int)*numIndices);
+		  LZWReader lzwreader(pbr->m_pistream, (int *)&m_mesh.m_indices[0], sizeof(unsigned int)*numIndices, 1, sizeof(unsigned int)*numIndices);
+		  lzwreader.Decoder();
+	  }
+	  else
+	  {
+  		  std::vector<WORD> tmp(numIndices);
+	      //pbr->GetStruct( &tmp[0], sizeof(WORD)*numIndices);
+  		  LZWReader lzwreader(pbr->m_pistream, (int *)&tmp[0], sizeof(WORD)*numIndices, 1, sizeof(WORD)*numIndices);
+		  lzwreader.Decoder();
+		  for(int i = 0; i < numIndices; ++i)
+			  m_mesh.m_indices[i] = tmp[i];
+	  }
    }
 #endif
    else if (id == FID(PIDB))
@@ -1127,11 +1134,11 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
 HRESULT Primitive::InitPostLoad()
 {
    if (!m_d.m_use3DMesh)
-      CalculateBuiltinOriginal();
+        CalculateBuiltinOriginal();
 
-   UpdateEditorView();
+    UpdateEditorView();
 
-   return S_OK;
+    return S_OK;
 }
 
 bool Primitive::BrowseFor3DMeshFile()
@@ -1227,11 +1234,11 @@ STDMETHODIMP Primitive::put_Image(BSTR newVal)
 {
    STARTUNDO
 
-      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szImage, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szImage, 32, NULL, NULL);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Primitive::get_MeshFileName(BSTR *pVal)
@@ -1248,10 +1255,10 @@ STDMETHODIMP Primitive::put_MeshFileName(BSTR newVal)
 {
    STARTUNDO
 
-      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_meshFileName, 256, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_meshFileName, 256, NULL, NULL);
 
    STOPUNDO
-      return S_OK;
+   return S_OK;
 }
 
 bool Primitive::LoadMesh()
@@ -1259,12 +1266,12 @@ bool Primitive::LoadMesh()
    bool result = false;
    STARTUNDO
 
-      result = BrowseFor3DMeshFile();
+   result = BrowseFor3DMeshFile();
    vertexBufferRegenerate = true;
 
    STOPUNDO
 
-      return result;
+   return result;
 }
 
 void Primitive::ExportMesh()
@@ -1308,10 +1315,10 @@ void Primitive::ExportMesh()
 bool Primitive::IsTransparent()
 {
    if (m_d.m_fSkipRendering)
-      return false;
+        return false;
 
-   Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
-   return mat->m_bOpacityActive;
+    Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
+    return mat->m_bOpacityActive;
 }
 
 float Primitive::GetDepth(const Vertex3Ds& viewDir)
@@ -1328,26 +1335,26 @@ STDMETHODIMP Primitive::get_Sides(int *pVal)
 
 STDMETHODIMP Primitive::put_Sides(int newVal)
 {
-   if (newVal > Max_Primitive_Sides)
-      newVal = Max_Primitive_Sides;
+    if (newVal > Max_Primitive_Sides)
+        newVal = Max_Primitive_Sides;
 
-   if (m_d.m_Sides != newVal)
-   {
-      STARTUNDO
+    if (m_d.m_Sides != newVal)
+    {
+        STARTUNDO
 
-         m_d.m_Sides = newVal;
-      if (!m_d.m_use3DMesh)
-      {
-         vertexBufferRegenerate = true;
-         CalculateBuiltinOriginal();
-         RecalculateMatrices();
-         TransformVertices();
-      }
+        m_d.m_Sides = newVal;
+        if (!m_d.m_use3DMesh)
+        {
+            vertexBufferRegenerate = true;
+            CalculateBuiltinOriginal();
+            RecalculateMatrices();
+            TransformVertices();
+        }
 
-      STOPUNDO
-   }
+        STOPUNDO
+    }
 
-   return S_OK;
+    return S_OK;
 }
 
 STDMETHODIMP Primitive::get_Material(BSTR *pVal)
@@ -1363,10 +1370,10 @@ STDMETHODIMP Primitive::get_Material(BSTR *pVal)
 STDMETHODIMP Primitive::put_Material(BSTR newVal)
 {
    STARTUNDO
-      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szMaterial, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szMaterial, 32, NULL, NULL);
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Primitive::get_SideColor(OLE_COLOR *pVal)
@@ -1380,9 +1387,9 @@ STDMETHODIMP Primitive::put_SideColor(OLE_COLOR newVal)
 {
    if (m_d.m_SideColor != newVal)
    {
-      STARTUNDO
-         m_d.m_SideColor = newVal;
-      STOPUNDO
+	   STARTUNDO
+	   m_d.m_SideColor = newVal;
+	   STOPUNDO
    }
 
    return S_OK;
@@ -1398,9 +1405,9 @@ STDMETHODIMP Primitive::get_Visible(VARIANT_BOOL *pVal)
 STDMETHODIMP Primitive::put_Visible(VARIANT_BOOL newVal)
 {
    STARTUNDO
-      m_d.m_fVisible = VBTOF(newVal);
+   m_d.m_fVisible = VBTOF(newVal);
    STOPUNDO
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Primitive::get_DrawTexturesInside(VARIANT_BOOL *pVal)
@@ -1414,12 +1421,12 @@ STDMETHODIMP Primitive::put_DrawTexturesInside(VARIANT_BOOL newVal)
 {
    if (m_d.m_DrawTexturesInside != VBTOF(newVal))
    {
-      STARTUNDO
+	   STARTUNDO
 
-         m_d.m_DrawTexturesInside = VBTOF(newVal);
-      vertexBufferRegenerate = true;
+	   m_d.m_DrawTexturesInside = VBTOF(newVal);
+	   vertexBufferRegenerate = true;
 
-      STOPUNDO
+	   STOPUNDO
    }
    return S_OK;
 }
@@ -1435,12 +1442,12 @@ STDMETHODIMP Primitive::put_X(float newVal)
 {
    if (m_d.m_vPosition.x != newVal)
    {
-      STARTUNDO
-         m_d.m_vPosition.x = newVal;
-      STOPUNDO
+	   STARTUNDO
+	   m_d.m_vPosition.x = newVal;
+	   STOPUNDO
 
-         if (!g_pplayer)
-            UpdateEditorView();
+       if (!g_pplayer)
+           UpdateEditorView();
    }
 
    return S_OK;
@@ -1457,12 +1464,12 @@ STDMETHODIMP Primitive::put_Y(float newVal)
 {
    if (m_d.m_vPosition.y != newVal)
    {
-      STARTUNDO
-         m_d.m_vPosition.y = newVal;
-      STOPUNDO
+	   STARTUNDO
+	   m_d.m_vPosition.y = newVal;
+	   STOPUNDO
 
-         if (!g_pplayer)
-            UpdateEditorView();
+       if (!g_pplayer)
+           UpdateEditorView();
    }
 
    return S_OK;
@@ -1479,12 +1486,12 @@ STDMETHODIMP Primitive::put_Z(float newVal)
 {
    if (m_d.m_vPosition.z != newVal)
    {
-      STARTUNDO
-         m_d.m_vPosition.z = newVal;
-      STOPUNDO
+	   STARTUNDO
+	   m_d.m_vPosition.z = newVal;
+	   STOPUNDO
 
-         if (!g_pplayer)
-            UpdateEditorView();
+       if (!g_pplayer)
+           UpdateEditorView();
    }
 
    return S_OK;
@@ -1501,12 +1508,12 @@ STDMETHODIMP Primitive::put_Size_X(float newVal)
 {
    if (m_d.m_vSize.x != newVal)
    {
-      STARTUNDO
-         m_d.m_vSize.x = newVal;
-      STOPUNDO
+	   STARTUNDO
+	   m_d.m_vSize.x = newVal;
+	   STOPUNDO
 
-         if (!g_pplayer)
-            UpdateEditorView();
+       if (!g_pplayer)
+           UpdateEditorView();
    }
 
    return S_OK;
@@ -1523,12 +1530,12 @@ STDMETHODIMP Primitive::put_Size_Y(float newVal)
 {
    if (m_d.m_vSize.y != newVal)
    {
-      STARTUNDO
-         m_d.m_vSize.y = newVal;
-      STOPUNDO
+	   STARTUNDO
+	   m_d.m_vSize.y = newVal;
+	   STOPUNDO
 
-         if (!g_pplayer)
-            UpdateEditorView();
+       if (!g_pplayer)
+           UpdateEditorView();
    }
 
    return S_OK;
@@ -1545,12 +1552,12 @@ STDMETHODIMP Primitive::put_Size_Z(float newVal)
 {
    if (m_d.m_vSize.z != newVal)
    {
-      STARTUNDO
-         m_d.m_vSize.z = newVal;
-      STOPUNDO
+	   STARTUNDO
+	   m_d.m_vSize.z = newVal;
+	   STOPUNDO
 
-         if (!g_pplayer)
-            UpdateEditorView();
+       if (!g_pplayer)
+           UpdateEditorView();
    }
 
    return S_OK;
@@ -1558,12 +1565,12 @@ STDMETHODIMP Primitive::put_Size_Z(float newVal)
 
 STDMETHODIMP Primitive::get_RotAndTra0(float *pVal)
 {
-   return get_RotX(pVal);
+    return get_RotX(pVal);
 }
 
 STDMETHODIMP Primitive::put_RotAndTra0(float newVal)
 {
-   return put_RotX(newVal);
+    return put_RotX(newVal);
 }
 
 STDMETHODIMP Primitive::get_RotX(float *pVal)
@@ -1576,12 +1583,12 @@ STDMETHODIMP Primitive::put_RotX(float newVal)
 {
    if (m_d.m_aRotAndTra[0] != newVal)
    {
-      STARTUNDO
-         m_d.m_aRotAndTra[0] = newVal;
-      STOPUNDO
+	   STARTUNDO
+	   m_d.m_aRotAndTra[0] = newVal;
+	   STOPUNDO
 
-         if (!g_pplayer)
-            UpdateEditorView();
+       if (!g_pplayer)
+           UpdateEditorView();
    }
 
    return S_OK;
@@ -1589,12 +1596,12 @@ STDMETHODIMP Primitive::put_RotX(float newVal)
 
 STDMETHODIMP Primitive::get_RotAndTra1(float *pVal)
 {
-   return get_RotY(pVal);
+    return get_RotY(pVal);
 }
 
 STDMETHODIMP Primitive::put_RotAndTra1(float newVal)
 {
-   return put_RotY(newVal);
+    return put_RotY(newVal);
 }
 
 STDMETHODIMP Primitive::get_RotY(float *pVal)
@@ -1607,12 +1614,12 @@ STDMETHODIMP Primitive::put_RotY(float newVal)
 {
    if (m_d.m_aRotAndTra[1] != newVal)
    {
-      STARTUNDO
-         m_d.m_aRotAndTra[1] = newVal;
-      STOPUNDO
+	   STARTUNDO
+	   m_d.m_aRotAndTra[1] = newVal;
+	   STOPUNDO
 
-         if (!g_pplayer)
-            UpdateEditorView();
+       if (!g_pplayer)
+           UpdateEditorView();
    }
 
    return S_OK;
@@ -1620,12 +1627,12 @@ STDMETHODIMP Primitive::put_RotY(float newVal)
 
 STDMETHODIMP Primitive::get_RotAndTra2(float *pVal)
 {
-   return get_RotZ(pVal);
+    return get_RotZ(pVal);
 }
 
 STDMETHODIMP Primitive::put_RotAndTra2(float newVal)
 {
-   return put_RotZ(newVal);
+    return put_RotZ(newVal);
 }
 
 STDMETHODIMP Primitive::get_RotZ(float *pVal)
@@ -1638,12 +1645,12 @@ STDMETHODIMP Primitive::put_RotZ(float newVal)
 {
    if (m_d.m_aRotAndTra[2] != newVal)
    {
-      STARTUNDO
-         m_d.m_aRotAndTra[2] = newVal;
-      STOPUNDO
+	   STARTUNDO
+	   m_d.m_aRotAndTra[2] = newVal;
+	   STOPUNDO
 
-         if (!g_pplayer)
-            UpdateEditorView();
+       if (!g_pplayer)
+           UpdateEditorView();
    }
 
    return S_OK;
@@ -1651,12 +1658,12 @@ STDMETHODIMP Primitive::put_RotZ(float newVal)
 
 STDMETHODIMP Primitive::get_RotAndTra3(float *pVal)
 {
-   return get_TransX(pVal);
+    return get_TransX(pVal);
 }
 
 STDMETHODIMP Primitive::put_RotAndTra3(float newVal)
 {
-   return put_TransX(newVal);
+    return put_TransX(newVal);
 }
 
 STDMETHODIMP Primitive::get_TransX(float *pVal)
@@ -1669,12 +1676,12 @@ STDMETHODIMP Primitive::put_TransX(float newVal)
 {
    if (m_d.m_aRotAndTra[3] != newVal)
    {
-      STARTUNDO
-         m_d.m_aRotAndTra[3] = newVal;
-      STOPUNDO
+	   STARTUNDO
+	   m_d.m_aRotAndTra[3] = newVal;
+	   STOPUNDO
 
-         if (!g_pplayer)
-            UpdateEditorView();
+       if (!g_pplayer)
+           UpdateEditorView();
    }
 
    return S_OK;
@@ -1682,12 +1689,12 @@ STDMETHODIMP Primitive::put_TransX(float newVal)
 
 STDMETHODIMP Primitive::get_RotAndTra4(float *pVal)
 {
-   return get_TransY(pVal);
+    return get_TransY(pVal);
 }
 
 STDMETHODIMP Primitive::put_RotAndTra4(float newVal)
 {
-   return put_TransY(newVal);
+    return put_TransY(newVal);
 }
 
 STDMETHODIMP Primitive::get_TransY(float *pVal)
@@ -1700,12 +1707,12 @@ STDMETHODIMP Primitive::put_TransY(float newVal)
 {
    if (m_d.m_aRotAndTra[4] != newVal)
    {
-      STARTUNDO
-         m_d.m_aRotAndTra[4] = newVal;
-      STOPUNDO
+	   STARTUNDO
+	   m_d.m_aRotAndTra[4] = newVal;
+	   STOPUNDO
 
-         if (!g_pplayer)
-            UpdateEditorView();
+       if (!g_pplayer)
+           UpdateEditorView();
    }
 
    return S_OK;
@@ -1713,12 +1720,12 @@ STDMETHODIMP Primitive::put_TransY(float newVal)
 
 STDMETHODIMP Primitive::get_RotAndTra5(float *pVal)
 {
-   return get_TransZ(pVal);
+    return get_TransZ(pVal);
 }
 
 STDMETHODIMP Primitive::put_RotAndTra5(float newVal)
 {
-   return put_TransZ(newVal);
+    return put_TransZ(newVal);
 }
 
 STDMETHODIMP Primitive::get_TransZ(float *pVal)
@@ -1731,12 +1738,12 @@ STDMETHODIMP Primitive::put_TransZ(float newVal)
 {
    if (m_d.m_aRotAndTra[5] != newVal)
    {
-      STARTUNDO
-         m_d.m_aRotAndTra[5] = newVal;
-      STOPUNDO
+	   STARTUNDO
+	   m_d.m_aRotAndTra[5] = newVal;
+	   STOPUNDO
 
-         if (!g_pplayer)
-            UpdateEditorView();
+       if (!g_pplayer)
+           UpdateEditorView();
    }
 
    return S_OK;
@@ -1744,12 +1751,12 @@ STDMETHODIMP Primitive::put_TransZ(float newVal)
 
 STDMETHODIMP Primitive::get_RotAndTra6(float *pVal)
 {
-   return get_ObjRotX(pVal);
+    return get_ObjRotX(pVal);
 }
 
 STDMETHODIMP Primitive::put_RotAndTra6(float newVal)
 {
-   return put_ObjRotX(newVal);
+    return put_ObjRotX(newVal);
 }
 
 STDMETHODIMP Primitive::get_ObjRotX(float *pVal)
@@ -1762,12 +1769,12 @@ STDMETHODIMP Primitive::put_ObjRotX(float newVal)
 {
    if (m_d.m_aRotAndTra[6] != newVal)
    {
-      STARTUNDO
-         m_d.m_aRotAndTra[6] = newVal;
-      STOPUNDO
+	   STARTUNDO
+	   m_d.m_aRotAndTra[6] = newVal;
+	   STOPUNDO
 
-         if (!g_pplayer)
-            UpdateEditorView();
+       if (!g_pplayer)
+           UpdateEditorView();
    }
 
    return S_OK;
@@ -1775,12 +1782,12 @@ STDMETHODIMP Primitive::put_ObjRotX(float newVal)
 
 STDMETHODIMP Primitive::get_RotAndTra7(float *pVal)
 {
-   return get_ObjRotY(pVal);
+    return get_ObjRotY(pVal);
 }
 
 STDMETHODIMP Primitive::put_RotAndTra7(float newVal)
 {
-   return put_ObjRotY(newVal);
+    return put_ObjRotY(newVal);
 }
 
 STDMETHODIMP Primitive::get_ObjRotY(float *pVal)
@@ -1793,12 +1800,12 @@ STDMETHODIMP Primitive::put_ObjRotY(float newVal)
 {
    if (m_d.m_aRotAndTra[7] != newVal)
    {
-      STARTUNDO
-         m_d.m_aRotAndTra[7] = newVal;
-      STOPUNDO
+	   STARTUNDO
+	   m_d.m_aRotAndTra[7] = newVal;
+	   STOPUNDO
 
-         if (!g_pplayer)
-            UpdateEditorView();
+       if (!g_pplayer)
+           UpdateEditorView();
    }
 
    return S_OK;
@@ -1806,12 +1813,12 @@ STDMETHODIMP Primitive::put_ObjRotY(float newVal)
 
 STDMETHODIMP Primitive::get_RotAndTra8(float *pVal)
 {
-   return get_ObjRotZ(pVal);
+    return get_ObjRotZ(pVal);
 }
 
 STDMETHODIMP Primitive::put_RotAndTra8(float newVal)
 {
-   return put_ObjRotZ(newVal);
+    return put_ObjRotZ(newVal);
 }
 
 STDMETHODIMP Primitive::get_ObjRotZ(float *pVal)
@@ -1824,12 +1831,12 @@ STDMETHODIMP Primitive::put_ObjRotZ(float newVal)
 {
    if (m_d.m_aRotAndTra[8] != newVal)
    {
-      STARTUNDO
-         m_d.m_aRotAndTra[8] = newVal;
-      STOPUNDO
+	   STARTUNDO
+	   m_d.m_aRotAndTra[8] = newVal;
+	   STOPUNDO
 
-         if (!g_pplayer)
-            UpdateEditorView();
+       if (!g_pplayer)
+           UpdateEditorView();
    }
 
    return S_OK;
@@ -1844,10 +1851,10 @@ STDMETHODIMP Primitive::get_EdgeFactorUI(float *pVal)
 STDMETHODIMP Primitive::put_EdgeFactorUI(float newVal)
 {
    STARTUNDO
-      m_d.m_edgeFactorUI = newVal;
+   m_d.m_edgeFactorUI = newVal;
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Primitive::get_EnableStaticRendering(VARIANT_BOOL *pVal)
@@ -1861,11 +1868,11 @@ STDMETHODIMP Primitive::put_EnableStaticRendering(VARIANT_BOOL newVal)
 {
    STARTUNDO
 
-      m_d.m_staticRendering = VBTOF(newVal);
+   m_d.m_staticRendering = VBTOF(newVal);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Primitive::get_HasHitEvent(VARIANT_BOOL *pVal)
@@ -1879,11 +1886,11 @@ STDMETHODIMP Primitive::put_HasHitEvent(VARIANT_BOOL newVal)
 {
    STARTUNDO
 
-      m_d.m_fHitEvent = VBTOF(newVal);
+   m_d.m_fHitEvent = VBTOF(newVal);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Primitive::get_Threshold(float *pVal)
@@ -1897,11 +1904,11 @@ STDMETHODIMP Primitive::put_Threshold(float newVal)
 {
    STARTUNDO
 
-      m_d.m_threshold = newVal;
+   m_d.m_threshold = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Primitive::get_Elasticity(float *pVal)
@@ -1914,10 +1921,10 @@ STDMETHODIMP Primitive::get_Elasticity(float *pVal)
 STDMETHODIMP Primitive::put_Elasticity(float newVal)
 {
    STARTUNDO
-      m_d.m_elasticity = newVal;
+   m_d.m_elasticity = newVal;
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Primitive::get_ElasticityFalloff(float *pVal)
@@ -1930,10 +1937,10 @@ STDMETHODIMP Primitive::get_ElasticityFalloff(float *pVal)
 STDMETHODIMP Primitive::put_ElasticityFalloff(float newVal)
 {
    STARTUNDO
-      m_d.m_elasticityFalloff = newVal;
+   m_d.m_elasticityFalloff = newVal;
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Primitive::get_Friction(float *pVal)
@@ -1947,14 +1954,14 @@ STDMETHODIMP Primitive::put_Friction(float newVal)
 {
    STARTUNDO
 
-      if (newVal > 1.0f) newVal = 1.0f;
+   if (newVal > 1.0f) newVal = 1.0f;
       else if (newVal < 0.f) newVal = 0.f;
 
-      m_d.m_friction = newVal;
+   m_d.m_friction = newVal;
 
-      STOPUNDO
+   STOPUNDO
 
-         return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Primitive::get_Scatter(float *pVal)
@@ -1968,11 +1975,11 @@ STDMETHODIMP Primitive::put_Scatter(float newVal)
 {
    STARTUNDO
 
-      m_d.m_scatter = newVal;
+   m_d.m_scatter = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Primitive::get_Collidable(VARIANT_BOOL *pVal)
@@ -2015,25 +2022,25 @@ STDMETHODIMP Primitive::put_IsToy(VARIANT_BOOL newVal)
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Primitive::get_DisableLighting(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fDisableLighting);
+    *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fDisableLighting);
 
-   return S_OK;
+    return S_OK;
 }
 
 STDMETHODIMP Primitive::put_DisableLighting(VARIANT_BOOL newVal)
 {
-   STARTUNDO
+    STARTUNDO
 
       m_d.m_fDisableLighting = VBTOF(newVal);
 
-   STOPUNDO
+    STOPUNDO
 
-      return S_OK;
+        return S_OK;
 }
 
 void Primitive::GetDialogPanes(Vector<PropertyPane> *pvproppane)
@@ -2056,44 +2063,44 @@ void Primitive::GetDialogPanes(Vector<PropertyPane> *pvproppane)
 void Primitive::UpdatePropertyPanes()
 {
    if (m_propVisual == NULL || m_propPosition == NULL || m_propPhysics == NULL)
-      return;
+        return;
 
    if (m_d.m_use3DMesh) {
       EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, 106), FALSE);
       EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, 101), FALSE);
-   }
-   else {
+	}
+    else {
       EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, 106), TRUE);
       EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, 101), TRUE);
-   }
+	}
 
    if (m_d.m_fToy || !m_d.m_fCollidable)
-   {
+    {
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 34), FALSE);
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 33), FALSE);
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 110), FALSE);
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 112), FALSE);
       if (m_d.m_fToy)
          EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 111), FALSE);
-      else
+        else
          EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 111), TRUE);
 
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 114), FALSE);
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 115), FALSE);
-   }
+    }
    else if (!m_d.m_fToy && m_d.m_fCollidable)
-   {
+    {
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 34), TRUE);
       if (m_d.m_fHitEvent)
          EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 33), TRUE);
-      else
+        else
          EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 33), FALSE);
 
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 110), TRUE);
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 112), TRUE);
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 114), TRUE);
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 115), TRUE);
-   }
+    }
 
 }
 
@@ -2110,7 +2117,7 @@ STDMETHODIMP Primitive::put_DepthBias(float newVal)
    {
       STARTUNDO
 
-         m_d.m_depthBias = newVal;
+      m_d.m_depthBias = newVal;
 
       STOPUNDO
    }

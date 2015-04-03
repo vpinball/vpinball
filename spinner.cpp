@@ -281,7 +281,6 @@ void Spinner::UpdatePlate( RenderDevice *pd3dDevice )
 {
     Matrix3D _fullMatrix;
     Matrix3D rotzMat,rotxMat;
-    Vertex3D_NoTex2 *buf;
 
     _fullMatrix.SetIdentity();
     rotxMat.RotateXMatrix(-m_phitspinner->m_spinneranim.m_angle);
@@ -289,6 +288,7 @@ void Spinner::UpdatePlate( RenderDevice *pd3dDevice )
     rotzMat.RotateZMatrix(ANGTORAD(m_d.m_rotation));
     rotzMat.Multiply(_fullMatrix, _fullMatrix);
 
+    Vertex3D_NoTex2 *buf;
     plateVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
     for( int i=0;i<spinnerPlateNumVertices;i++ )
     {
@@ -320,6 +320,9 @@ void Spinner::PostRenderStatic(RenderDevice* pd3dDevice)
 
     Material *mat = m_ptable->GetMaterial( m_d.m_szMaterial);
     pd3dDevice->basicShader->SetMaterial(mat);
+
+    pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
+    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
 
 	Texture * const image = m_ptable->GetImage(m_d.m_szImage);
 
@@ -377,7 +380,7 @@ void Spinner::RenderSetup(RenderDevice* pd3dDevice)
        buf[i].nz = vert.z;
        buf[i].tu = spinnerBracket[i].tu;
        buf[i].tv = spinnerBracket[i].tv;
-       }
+   }
    bracketVertexBuffer->unlock();
 
    if (plateIndexBuffer)

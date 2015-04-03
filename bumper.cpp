@@ -226,7 +226,7 @@ void Bumper::Render(Sur * const psur)
    psur->SetFillColor(-1);
    psur->SetObject(this);
    psur->SetObject(NULL);
-   const float radangle = ANGTORAD(m_d.m_orientation-90);
+   const float radangle = ANGTORAD(m_d.m_orientation-90.f);
    const float sn = sinf(radangle);
    const float cs = cosf(radangle);
 
@@ -425,6 +425,9 @@ void Bumper::PostRenderStatic(RenderDevice* pd3dDevice)
    m_d.m_time_msec = g_pplayer->m_time_msec;
    const float diff_time_msec = (float)(g_pplayer->m_time_msec-old_time_msec);
 
+   pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
+   pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+
    Material *mat = 0;
 
    if (m_d.m_fBaseVisible)
@@ -584,7 +587,6 @@ void Bumper::RenderSetup(RenderDevice* pd3dDevice )
       pd3dDevice->CreateVertexBuffer(bumperRingNumVertices, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &ringVertexBuffer);
 
       ringVertices = new Vertex3D_NoTex2[bumperRingNumVertices];
-      ringVertexBuffer->lock(0, 0, (void**)&buf, 0);
       for( int i=0;i<bumperRingNumVertices;i++ )
       {
          Vertex3Ds vert(bumperRing[i].x,bumperRing[i].y,bumperRing[i].z);
@@ -600,6 +602,7 @@ void Bumper::RenderSetup(RenderDevice* pd3dDevice )
          ringVertices[i].tu = bumperRing[i].tu;
          ringVertices[i].tv = bumperRing[i].tv;
       }
+      ringVertexBuffer->lock(0, 0, (void**)&buf, 0);
       memcpy( buf, ringVertices, bumperRingNumVertices*sizeof(Vertex3D_NoTex2));
       ringVertexBuffer->unlock();
    }

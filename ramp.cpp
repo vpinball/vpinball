@@ -879,6 +879,9 @@ void Ramp::RenderStaticHabitrail(RenderDevice* pd3dDevice, Material *mat)
 {
    pd3dDevice->basicShader->SetMaterial(mat);
 
+   pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
+   pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+
    Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
    if ( !pin )
        pd3dDevice->basicShader->SetTechnique("basic_without_texture");
@@ -1047,7 +1050,7 @@ void Ramp::prepareHabitrail(RenderDevice* pd3dDevice)
 
     const int numRings=splinePoints;
     const int numSegments=accuracy;
-    m_numVertices=(numRings)*(numSegments);
+    m_numVertices=numRings*numSegments;
     m_numIndices = 6*m_numVertices;//m_numVertices*2+2;
 
     if (dynamicVertexBuffer)
@@ -1059,15 +1062,9 @@ void Ramp::prepareHabitrail(RenderDevice* pd3dDevice)
     if (m_d.m_type!=RampType1Wire)
        pd3dDevice->CreateVertexBuffer(m_numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &dynamicVertexBuffer2);
 
-    Vertex3D_NoTex2 *buf;
-    Vertex3D_NoTex2 *buf2;
     Vertex2D *tmpPoints = new Vertex2D[splinePoints];
     for(int i=0;i<splinePoints;i++)
        tmpPoints[i] = rgvLocal[splinePoints*2 - i - 1];
-
-    dynamicVertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY);
-    if (m_d.m_type != RampType1Wire)
-       dynamicVertexBuffer2->lock(0, 0, (void**)&buf2, VertexBuffer::WRITEONLY);
 
     Vertex3D_NoTex2* rgvbuf = new Vertex3D_NoTex2[m_numVertices];
     Vertex3D_NoTex2* rgvbuf2 = NULL;
@@ -1119,11 +1116,17 @@ void Ramp::prepareHabitrail(RenderDevice* pd3dDevice)
             rgibuf[(i*numSegments+j)*6+5] = quad[1];
         }
     }
-    // Draw the floor of the ramp.
-    memcpy( &buf[0], &rgvbuf[0], sizeof(Vertex3D_NoTex2)*m_numVertices );
+
+	// Draw the floor of the ramp.
+	Vertex3D_NoTex2 *buf;
+    dynamicVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
+    memcpy(&buf[0], &rgvbuf[0], sizeof(Vertex3D_NoTex2)*m_numVertices);
     dynamicVertexBuffer->unlock();
-    if (m_d.m_type!=RampType1Wire)
+
+	if (m_d.m_type!=RampType1Wire)
     {
+       Vertex3D_NoTex2 *buf2;
+       dynamicVertexBuffer2->lock(0, 0, (void**)&buf2, VertexBuffer::WRITEONLY);
        memcpy(&buf2[0], &rgvbuf2[0], sizeof(Vertex3D_NoTex2)*m_numVertices);
        dynamicVertexBuffer2->unlock();
     }
@@ -1159,8 +1162,11 @@ void Ramp::RenderSetup(RenderDevice* pd3dDevice)
 }
 
 void Ramp::RenderStatic(RenderDevice* pd3dDevice)
-{	
-   if (!m_d.m_fVisible) return;		// return if no Visible
+{
+   // return if not Visible
+   if (!m_d.m_fVisible)
+	   return;
+   
    Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
 
    // dont render alpha shaded ramps into static buffer, these are done per frame later-on
@@ -2011,6 +2017,9 @@ void Ramp::RenderRamp( RenderDevice *pd3dDevice, Material *mat )
    else
    {
       pd3dDevice->basicShader->SetMaterial(mat);
+
+      pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
+      pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
       
       Pin3D * const ppin3d = &g_pplayer->m_pin3d;
       Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
@@ -2075,10 +2084,12 @@ void Ramp::RenderRamp( RenderDevice *pd3dDevice, Material *mat )
 void Ramp::PostRenderStatic(RenderDevice* pd3dDevice)
 {
     TRACE_FUNCTION();
-    Material *mat = m_ptable->GetMaterial( m_d.m_szMaterial);
+    
+	Material *mat = m_ptable->GetMaterial( m_d.m_szMaterial);
     // don't render if invisible or not a transparent ramp
     if (!m_d.m_fVisible || (!mat->m_bOpacityActive) )
        return;
+
     RenderRamp(pd3dDevice, mat);
 }
 
@@ -2096,15 +2107,11 @@ void Ramp::GenerateVertexBuffer(RenderDevice* pd3dDevice)
     m_numVertices=(rampVertex-1)*4;
     m_numIndices=(rampVertex-1)*6*4;
 
-    unsigned int offset=0;
     const unsigned int rgioffset = (rampVertex-1)*6;
 
     if (dynamicVertexBuffer)
         dynamicVertexBuffer->release();
     pd3dDevice->CreateVertexBuffer(m_numVertices*5, 0, MY_D3DFVF_NOTEX2_VERTEX, &dynamicVertexBuffer);
-
-    Vertex3D_NoTex2 *buf;
-    dynamicVertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY);
 
     Vertex3D_NoTex2* rgvbuf = new Vertex3D_NoTex2[m_numVertices];
     std::vector<WORD> rgibuf( m_numIndices );
@@ -2192,6 +2199,9 @@ void Ramp::GenerateVertexBuffer(RenderDevice* pd3dDevice)
             rgvbuf[i*4+j].nz = -rgvbuf[i*4+j].nz;
         }
 
+    unsigned int offset=0;
+    Vertex3D_NoTex2 *buf;
+    dynamicVertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY);
 	memcpy( &buf[offset], &rgvbuf[0], sizeof(Vertex3D_NoTex2)*m_numVertices );
     offset+=m_numVertices;
 

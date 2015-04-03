@@ -3974,7 +3974,7 @@ void PinTable::RemoveCollection(CComObject<Collection> *pcol)
 
 void PinTable::MoveCollectionUp(CComObject<Collection> *pcol )
 {
-    int idx = m_vcollection.IndexOf(pcol);
+    const int idx = m_vcollection.IndexOf(pcol);
     m_vcollection.RemoveElementAt(idx);
     if ( idx-1<0 )
         m_vcollection.AddElement(pcol);
@@ -3984,26 +3984,17 @@ void PinTable::MoveCollectionUp(CComObject<Collection> *pcol )
 
 int PinTable::GetDetailLevel()
 {
-    if( m_overwriteGlobalDetailLevel )
-        return m_userDetailLevel;
-    else
-        return m_globalDetailLevel;
+    return m_overwriteGlobalDetailLevel ? m_userDetailLevel : m_globalDetailLevel;
 }
 
 float PinTable::GetZPD()
 {
-    if( m_overwriteGlobalStereo3D )
-        return m_ZPD;
-    else
-        return m_globalZPD;
+    return m_overwriteGlobalStereo3D ? m_ZPD : m_globalZPD;
 }
 
 float PinTable::GetMaxSeparation()
 {
-    if( m_overwriteGlobalStereo3D )
-        return m_maxSeparation;
-    else
-        return m_globalMaxSeparation;
+    return m_overwriteGlobalStereo3D ? m_maxSeparation : m_globalMaxSeparation;
 }
 
 FRect3D PinTable::GetBoundingBox()

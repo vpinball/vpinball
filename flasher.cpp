@@ -1303,6 +1303,8 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
    
    pd3dDevice->flasherShader->SetFlasherColorAlpha(color);
 
+   pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
+
    D3DXVECTOR4 flasherData(-1.f,-1.f, (float)m_d.m_filter,m_d.m_fAddBlend ? 1.f : 0.f);
 
    if (pinA && !pinB)
@@ -1363,7 +1365,6 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
    pd3dDevice->flasherShader->End();
 
    pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
-   pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
    pd3dDevice->SetRenderState(RenderDevice::BLENDOP, D3DBLENDOP_ADD);
    //g_pplayer->m_pin3d.DisableAlphaBlend(); //!! not necessary anymore
 }
