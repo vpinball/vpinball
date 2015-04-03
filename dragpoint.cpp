@@ -237,7 +237,7 @@ void IHaveDragPoints::ReverseOrder()
    m_vdpoint.ElementAt(m_vdpoint.Size()-1)->m_fSlingshot = fSlingshotTemp;
 }
 
-void IHaveDragPoints::GetRgVertex(std::vector<RenderVertex> & vv, bool loop, float accuracy)
+void IHaveDragPoints::GetRgVertex(std::vector<RenderVertex> & vv, const bool loop, const float accuracy)
 {
    static const int Dim = RenderVertex::Dim;    // for now, this is always 2
 

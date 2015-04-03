@@ -215,6 +215,9 @@ void Textbox::PostRenderStatic(RenderDevice* pd3dDevice)
 	if(g_pplayer->m_ptable->m_tblMirrorEnabled)
 		pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
 
+    pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
+    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+
 	const float mult = (float)(1.0/EDITOR_BG_WIDTH);
 	const float ymult = (float)(1.0/EDITOR_BG_WIDTH * 4.0/3.0);
 

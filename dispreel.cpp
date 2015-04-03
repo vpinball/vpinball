@@ -278,6 +278,9 @@ void DispReel::PostRenderStatic(RenderDevice* pd3dDevice)
 	if(g_pplayer->m_ptable->m_tblMirrorEnabled)
 		pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
 
+    pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
+    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+
     g_pplayer->m_pin3d.EnableAlphaTestReference(0xE0); //!!
 	pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATER); //!! still necessary?
 	g_pplayer->m_pin3d.EnableAlphaBlend(false);

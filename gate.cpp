@@ -67,19 +67,19 @@ void Gate::SetDefaults(bool fromMouseClick)
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_length = fTmp;
    else
-      m_d.m_length = 100;
+      m_d.m_length = 100.f;
 
    hr = GetRegStringAsFloat("DefaultProps\\Gate","Height", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_height = fTmp;
    else
-      m_d.m_height = 50;
+      m_d.m_height = 50.f;
 
    hr = GetRegStringAsFloat("DefaultProps\\Gate","Rotation", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_rotation = fTmp;
    else
-      m_d.m_rotation = -90;
+      m_d.m_rotation = -90.f;
 
    hr = GetRegInt("DefaultProps\\Gate","ShowBracket", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
@@ -326,6 +326,7 @@ void Gate::GetHitShapes(Vector<HitObject> * const pvho)
 
           pvho->AddElement(m_plineseg);
       }
+
       m_phitgate = new HitGate(this, height);
       m_phitgate->m_twoWay = m_d.m_twoWay;
       m_phitgate->m_pfe = (IFireEvents *)this;
@@ -430,6 +431,9 @@ void Gate::RenderObject( RenderDevice* pd3dDevice)
     Pin3D * const ppin3d = &g_pplayer->m_pin3d;
     ppin3d->EnableAlphaBlend(false);
 
+    pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
+    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+
     pd3dDevice->basicShader->SetTechnique("basic_without_texture");
     if ( m_d.m_fShowBracket )
     {
@@ -452,6 +456,7 @@ void Gate::PostRenderStatic(RenderDevice* pd3dDevice)
 
     if (!m_phitgate->m_gateanim.m_fVisible)
         return;
+
     RenderObject(pd3dDevice);
 }
 
@@ -711,11 +716,11 @@ STDMETHODIMP Gate::put_Length(float newVal)
 {
    STARTUNDO
 
-      m_d.m_length = newVal;
+   m_d.m_length = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Gate::get_Height(float *pVal)
@@ -729,11 +734,11 @@ STDMETHODIMP Gate::put_Height(float newVal)
 {
    STARTUNDO
 
-      m_d.m_height = newVal;
+   m_d.m_height = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Gate::get_Rotation(float *pVal)
@@ -747,7 +752,7 @@ STDMETHODIMP Gate::put_Rotation(float newVal)
 {
    STARTUNDO
 
-      m_d.m_rotation = newVal;
+   m_d.m_rotation = newVal;
 
    STOPUNDO;
 
@@ -765,11 +770,11 @@ STDMETHODIMP Gate::put_X(float newVal)
 {
    STARTUNDO
 
-      m_d.m_vCenter.x = newVal;
+   m_d.m_vCenter.x = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Gate::get_Y(float *pVal)
@@ -783,11 +788,11 @@ STDMETHODIMP Gate::put_Y(float newVal)
 {
    STARTUNDO
 
-      m_d.m_vCenter.y = newVal;
+   m_d.m_vCenter.y = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Gate::get_Surface(BSTR *pVal)
@@ -803,11 +808,11 @@ STDMETHODIMP Gate::put_Surface(BSTR newVal)
 {
    STARTUNDO
 
-      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSurface, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSurface, 32, NULL, NULL);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Gate::get_Material(BSTR *pVal)
@@ -828,7 +833,7 @@ STDMETHODIMP Gate::put_Material(BSTR newVal)
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Gate::get_Open(VARIANT_BOOL *pVal)
@@ -882,11 +887,11 @@ STDMETHODIMP Gate::put_Elasticity(float newVal)
 {
    STARTUNDO
 
-      m_d.m_elasticity = newVal;
+   m_d.m_elasticity = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Gate::get_ShowBracket(VARIANT_BOOL *pVal)
@@ -900,11 +905,11 @@ STDMETHODIMP Gate::put_ShowBracket(VARIANT_BOOL newVal)
 {
    STARTUNDO
 
-      m_d.m_fShowBracket = VBTOF(newVal);
+   m_d.m_fShowBracket = VBTOF(newVal);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Gate::get_CloseAngle(float *pVal)
@@ -938,6 +943,7 @@ STDMETHODIMP Gate::put_CloseAngle(float newVal)
          m_d.m_angleMin = newVal;
       STOPUNDO
    }
+
    return S_OK;
 }
 
@@ -969,7 +975,7 @@ STDMETHODIMP Gate::put_OpenAngle(float newVal)
    else
    {
       STARTUNDO
-         m_d.m_angleMax = newVal;
+      m_d.m_angleMax = newVal;
       STOPUNDO
    }
    return S_OK;
@@ -1000,7 +1006,7 @@ STDMETHODIMP Gate::put_Collidable(VARIANT_BOOL newVal)
    {
       STARTUNDO
 
-         m_d.m_fCollidable = VBTOF(newVal);
+      m_d.m_fCollidable = VBTOF(newVal);
 
       if (newVal) m_d.m_angleMin = 0;	
 
@@ -1080,7 +1086,7 @@ STDMETHODIMP Gate::put_Friction(float newVal)
    {
       STARTUNDO
 
-         m_d.m_friction =  newVal;
+      m_d.m_friction =  newVal;
 
       STOPUNDO
    }
@@ -1105,7 +1111,7 @@ STDMETHODIMP Gate::put_Visible(VARIANT_BOOL newVal)
    {
       STARTUNDO
 
-         m_d.m_fVisible = VBTOF(newVal);
+      m_d.m_fVisible = VBTOF(newVal);
 
       STOPUNDO
    }
@@ -1130,11 +1136,12 @@ STDMETHODIMP Gate::put_TwoWay(VARIANT_BOOL newVal)
     {
        STARTUNDO
 
-          m_d.m_twoWay = VBTOF(newVal);
+       m_d.m_twoWay = VBTOF(newVal);
 
        STOPUNDO
     }
-      return S_OK;
+   
+	return S_OK;
 }
 
 STDMETHODIMP Gate::get_CurrentAngle(float *pVal)

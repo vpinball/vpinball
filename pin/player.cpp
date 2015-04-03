@@ -2462,6 +2462,9 @@ void Player::RenderDynamics()
    for (unsigned i=0; i < m_vHitNonTrans.size(); ++i)
        m_vHitNonTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
 
+   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0); //!! paranoia set of old state, remove as soon as sure that no other code still relies on that legacy set
+   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+
    DrawBalls();
 
    m_limiter.Execute(m_pin3d.m_pd3dDevice); //!! move below other draw calls??
@@ -2469,6 +2472,9 @@ void Player::RenderDynamics()
    // Draw transparent objects.
    for (unsigned i=0; i < m_vHitTrans.size(); ++i)
        m_vHitTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
+
+   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0); //!! paranoia set of old state, remove as soon as sure that no other code still relies on that legacy set
+   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
 
    if( !cameraMode )
    {

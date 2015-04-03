@@ -1275,6 +1275,9 @@ void Rubber::RenderObject(RenderDevice *pd3dDevice)
    Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
    pd3dDevice->basicShader->SetMaterial(mat);
 
+   pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
+   pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+
    Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
    if (pin)
    {
@@ -1299,9 +1302,7 @@ void Rubber::RenderObject(RenderDevice *pd3dDevice)
 void Rubber::PostRenderStatic(RenderDevice* pd3dDevice)
 {
    if ( !m_d.m_staticRendering )
-   {
       RenderObject(pd3dDevice);
-   }
 }
 
 void Rubber::GenerateVertexBuffer(RenderDevice* pd3dDevice)
@@ -1326,7 +1327,7 @@ void Rubber::GenerateVertexBuffer(RenderDevice* pd3dDevice)
     const Vertex2D *rgvLocal = GetSplineVertex(splinePoints, NULL, &middlePoints);
     const int numRings=splinePoints-1;
     const int numSegments=accuracy;
-    m_numVertices=(numRings)*(numSegments);
+    m_numVertices=numRings*numSegments;
     m_numIndices = 6*m_numVertices;//m_numVertices*2+2;
 
     if (dynamicVertexBuffer)
@@ -1477,12 +1478,7 @@ void Rubber::UpdateRubber( RenderDevice *pd3dDevice )
     rotMat.Multiply(fullMatrix, fullMatrix);
 
     Vertex3D_NoTex2 *buf;
-
-    if(m_d.m_staticRendering)
-        dynamicVertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY);
-    else
-        dynamicVertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::DISCARDCONTENTS);
-
+    dynamicVertexBuffer->lock(0,0,(void**)&buf, m_d.m_staticRendering ? VertexBuffer::WRITEONLY : VertexBuffer::DISCARDCONTENTS);
 
     for( int i=0;i<m_numVertices;i++ )
     {

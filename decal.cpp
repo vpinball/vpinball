@@ -535,7 +535,9 @@ void Decal::RenderObject(RenderDevice* pd3dDevice)
 
    if(m_fBackglass && g_pplayer->m_ptable->m_tblMirrorEnabled)
       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
- 
+
+   pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
    Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
@@ -575,6 +577,7 @@ void Decal::RenderObject(RenderDevice* pd3dDevice)
    }
    else
    {
+	  pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
       const D3DXVECTOR4 staticColor(1.0f,1.0f,1.0f,1.0f);
       pd3dDevice->basicShader->SetVector("cBase_Alpha",&staticColor);
    }
@@ -582,9 +585,6 @@ void Decal::RenderObject(RenderDevice* pd3dDevice)
    pd3dDevice->basicShader->Begin(0);
    pd3dDevice->DrawPrimitiveVB( D3DPT_TRIANGLEFAN, ( m_fBackglass && GetPTable()->GetDecalsEnabled() ) ? MY_D3DTRANSFORMED_NOTEX2_VERTEX : MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, 4 );
    pd3dDevice->basicShader->End();
-
-   if (!m_fBackglass)
-      pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
 
    // Set the render state.
    //pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_WRAP);

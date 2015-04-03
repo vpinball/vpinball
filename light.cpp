@@ -628,6 +628,11 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
         const float depthbias = -BASEDEPTHBIAS;
         pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, *((DWORD*)&depthbias));
     }
+	else
+	{
+	    pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
+		pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+	}
 
     if(m_fBackglass && g_pplayer->m_ptable->m_tblMirrorEnabled)
 		pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
@@ -665,7 +670,7 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
 
 		Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 		ppin3d->EnableAlphaBlend(false, false);
-		//pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);    // add the lightcontribution
+		//pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);  // add the lightcontribution
 		pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_INVSRCCOLOR); // but also modulate the light first with the underlying elements by (1+lightcontribution, e.g. a very crude approximation of real lighting)
 		pd3dDevice->SetRenderState(RenderDevice::BLENDOP, D3DBLENDOP_REVSUBTRACT); //!! meh, optimize all these alpha sets
 
@@ -705,12 +710,6 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
 	{
 		//ppin3d->DisableAlphaBlend(); //!! not necessary anymore
 	    pd3dDevice->SetRenderState(RenderDevice::BLENDOP, D3DBLENDOP_ADD);
-	}
-
-	if (!m_fBackglass)
-	{
-	    pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
-	    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
 	}
 
 	if(m_fBackglass && g_pplayer->m_ptable->m_tblMirrorEnabled)
@@ -780,12 +779,11 @@ void Light::PrepareMoversCustom()
    const DWORD vertexType = (!m_fBackglass) ? MY_D3DFVF_NOTEX2_VERTEX : MY_D3DTRANSFORMED_NOTEX2_VERTEX;
    g_pplayer->m_pin3d.m_pd3dDevice->CreateVertexBuffer( customMoverVertexNum, 0, vertexType, &customMoverVBuffer);
 
-   Vertex3D_NoTex2 *buf;
-   customMoverVBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY);
-
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
    Texture* pin = m_ptable->GetImage(m_d.m_szOffImage);
 
+   Vertex3D_NoTex2 *buf;
+   customMoverVBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY);
    for (int t=0;t<customMoverVertexNum;t++)
    {
 	   const RenderVertex * const pv0 = &vvertex[t];
