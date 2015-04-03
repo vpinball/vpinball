@@ -151,16 +151,19 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, Vector<ISelect> *pvsel)
          for (int t = 0; t < g_pvp->m_ptableActive->m_vcollection.Size() && !endLoop; t++)
          {
              Collection *pcol = g_pvp->m_ptableActive->m_vcollection.ElementAt(t);
-             for (int k = 0; k < pcol->m_visel.Size(); k++)
+             if (pcol)
              {
-                 if ((col == NULL) && (pcol->m_visel.ElementAt(k) == pvsel->ElementAt(i)))
-                     col = pcol;
-                 else if ((col != NULL) && (col==pcol) && (pcol->m_visel.ElementAt(k) == pvsel->ElementAt(i)))
-                 {
-                     // user selected one or more elements from a collection and some elements aren't in the collection
-                     endLoop=true;
-                     break;
-                 }
+                for (int k = 0; k < pcol->m_visel.Size(); k++)
+                {
+                   if ((col == NULL) && (pcol->m_visel.ElementAt(k) == pvsel->ElementAt(i)))
+                      col = pcol;
+                   else if ((col != NULL) && (col == pcol) && (pcol->m_visel.ElementAt(k) == pvsel->ElementAt(i)))
+                   {
+                      // user selected one or more elements from a collection and some elements aren't in the collection
+                      endLoop = true;
+                      break;
+                   }
+                }
              }
          }
          if (!endLoop && col != NULL )
