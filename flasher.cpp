@@ -1335,8 +1335,8 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
 
       if ( !m_d.m_fAddBlend )
       {
-          flasherData.x = pinA->m_alphaTestValue / 255.0f;
-	  flasherData.y = pinB->m_alphaTestValue / 255.0f;
+        flasherData.x = pinA->m_alphaTestValue / 255.0f;
+		flasherData.y = pinB->m_alphaTestValue / 255.0f;
       }
 
       //ppin3d->SetTextureFilter( 0, TEXTURE_MODE_TRILINEAR );
@@ -1353,10 +1353,10 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
    }
 
    pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
-   g_pplayer->m_pin3d.EnableAlphaBlend(m_d.m_fAddBlend, false);
 
+   g_pplayer->m_pin3d.EnableAlphaBlend(m_d.m_fAddBlend, false, false);
    pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, m_d.m_fAddBlend ? D3DBLEND_INVSRCCOLOR : D3DBLEND_INVSRCALPHA);
-   pd3dDevice->SetRenderState(RenderDevice::BLENDOP, m_d.m_fAddBlend ? D3DBLENDOP_REVSUBTRACT : D3DBLENDOP_ADD); //!! meh, optimize all these alpha sets
+   pd3dDevice->SetRenderState(RenderDevice::BLENDOP, m_d.m_fAddBlend ? D3DBLENDOP_REVSUBTRACT : D3DBLENDOP_ADD);
 
    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
 
@@ -1365,7 +1365,7 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
    pd3dDevice->flasherShader->End();
 
    pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
-   pd3dDevice->SetRenderState(RenderDevice::BLENDOP, D3DBLENDOP_ADD);
+   //pd3dDevice->SetRenderState(RenderDevice::BLENDOP, D3DBLENDOP_ADD); //!! not necessary anymore
    //g_pplayer->m_pin3d.DisableAlphaBlend(); //!! not necessary anymore
 }
 

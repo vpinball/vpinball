@@ -669,10 +669,10 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
         pd3dDevice->lightShader->SetTechnique("bulb_light");
 
 		Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-		ppin3d->EnableAlphaBlend(false, false);
+		ppin3d->EnableAlphaBlend(false, false, false);
 		//pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);  // add the lightcontribution
 		pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_INVSRCCOLOR); // but also modulate the light first with the underlying elements by (1+lightcontribution, e.g. a very crude approximation of real lighting)
-		pd3dDevice->SetRenderState(RenderDevice::BLENDOP, D3DBLENDOP_REVSUBTRACT); //!! meh, optimize all these alpha sets
+		pd3dDevice->SetRenderState(RenderDevice::BLENDOP, D3DBLENDOP_REVSUBTRACT);
 
 		if ( m_d.m_showBulbMesh ) // blend bulb mesh hull additive over "normal" bulb to approximate the emission directly reaching the camera
 		{
@@ -706,11 +706,11 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
 	else
 	    pd3dDevice->lightShader->End();
 
-	if ( m_d.m_BulbLight )
+	/*if ( m_d.m_BulbLight ) //!! not necessary anymore
 	{
-		//ppin3d->DisableAlphaBlend(); //!! not necessary anymore
+		ppin3d->DisableAlphaBlend();
 	    pd3dDevice->SetRenderState(RenderDevice::BLENDOP, D3DBLENDOP_ADD);
-	}
+	}*/
 
 	if(m_fBackglass && g_pplayer->m_ptable->m_tblMirrorEnabled)
 		pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
