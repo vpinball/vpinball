@@ -1045,6 +1045,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 		[propput, id(DISPID_Name), helpstring("property Name")] HRESULT Name([in] BSTR newVal);
 		[propget, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([out, retval] VARIANT* pVal);
 		[propput, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([in] VARIANT* newVal);
+		[propget, id(616), helpstring("property Visible")] HRESULT Visible([out, retval] VARIANT_BOOL *pVal);
+		[propput, id(616), helpstring("property Visible")] HRESULT Visible([in] VARIANT_BOOL newVal);
 	};
 
 	[

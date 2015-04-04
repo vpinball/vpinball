@@ -32,6 +32,7 @@ void Textbox::SetDefaults(bool fromMouseClick)
 {
     //Textbox is always located on backdrop
     m_fBackglass = true;
+	m_d.m_fVisible = true;
 
     FONTDESC fd;
     fd.cbSizeofstruct = sizeof(FONTDESC);
@@ -211,6 +212,9 @@ void Textbox::EndPlay()
 void Textbox::PostRenderStatic(RenderDevice* pd3dDevice)
 {
     TRACE_FUNCTION();
+
+	if (!m_d.m_fVisible)
+		return;
 
 	if(g_pplayer->m_ptable->m_tblMirrorEnabled)
 		pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
@@ -759,6 +763,22 @@ STDMETHODIMP Textbox::put_IsTransparent(VARIANT_BOOL newVal)
 
 	m_d.m_fTransparent = VBTOF(newVal);
 
+	STOPUNDO
+
+	return S_OK;
+}
+
+STDMETHODIMP Textbox::get_Visible(VARIANT_BOOL *pVal)
+{
+	*pVal = (VARIANT_BOOL)FTOVB(m_d.m_fVisible);
+
+	return S_OK;
+}
+
+STDMETHODIMP Textbox::put_Visible(VARIANT_BOOL newVal)
+{
+	STARTUNDO
+	m_d.m_fVisible = VBTOF(newVal);
 	STOPUNDO
 
 	return S_OK;
