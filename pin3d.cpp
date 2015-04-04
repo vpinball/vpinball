@@ -574,17 +574,16 @@ void Pin3D::InitPlayfieldGraphics()
     for(unsigned int y = 0; y <= 1; ++y)
         for(unsigned int x = 0; x <= 1; ++x,++offs)
         {
-            Vertex3D_NoTex2 &tmp = buffer[offs];
-            tmp.x = (x&1) ? rgv[1].x : rgv[0].x;
-            tmp.y = (y&1) ? rgv[2].y : rgv[0].y;
-            tmp.z = rgv[0].z;
+            buffer[offs].x = (x&1) ? rgv[1].x : rgv[0].x;
+            buffer[offs].y = (y&1) ? rgv[2].y : rgv[0].y;
+            buffer[offs].z = rgv[0].z;
 
-            tmp.tu = (x&1) ? rgv[1].tu : rgv[0].tu;
-            tmp.tv = (y&1) ? rgv[2].tv : rgv[0].tv;
+            buffer[offs].tu = (x&1) ? rgv[1].tu : rgv[0].tu;
+            buffer[offs].tv = (y&1) ? rgv[2].tv : rgv[0].tv;
 
-            tmp.nx = rgv[0].nx;
-            tmp.ny = rgv[0].ny;
-            tmp.nz = rgv[0].nz;
+            buffer[offs].nx = rgv[0].nx;
+            buffer[offs].ny = rgv[0].ny;
+            buffer[offs].nz = rgv[0].nz;
         }
 
     SetNormal(rgv, playfieldPolyIndices+6, 4);
@@ -641,12 +640,14 @@ void Pin3D::EnableAlphaTestReference(const DWORD alphaRefValue) const
 	m_pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATEREQUAL);
 }
 
-void Pin3D::EnableAlphaBlend( const bool additiveBlending, const bool set_dest_blend ) const
+void Pin3D::EnableAlphaBlend( const bool additiveBlending, const bool set_dest_blend, const bool set_blend_op ) const
 {
 	m_pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
-	m_pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);
+	m_pd3dDevice->SetRenderState(RenderDevice::SRCBLEND, D3DBLEND_SRCALPHA);
 	if(set_dest_blend)
 		m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, additiveBlending ? D3DBLEND_ONE : D3DBLEND_INVSRCALPHA);
+	if(set_blend_op)
+		m_pd3dDevice->SetRenderState(RenderDevice::BLENDOP, D3DBLENDOP_ADD);
 }
 
 void Pin3D::DisableAlphaBlend() const

@@ -2464,6 +2464,7 @@ void Player::RenderDynamics()
 
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0); //!! paranoia set of old state, remove as soon as sure that no other code still relies on that legacy set
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::BLENDOP, D3DBLENDOP_ADD);
 
    DrawBalls();
 
@@ -2475,6 +2476,7 @@ void Player::RenderDynamics()
 
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0); //!! paranoia set of old state, remove as soon as sure that no other code still relies on that legacy set
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::BLENDOP, D3DBLENDOP_ADD);
 
    if( !cameraMode )
    {
