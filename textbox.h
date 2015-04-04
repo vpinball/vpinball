@@ -23,6 +23,7 @@ public:
 	TimerDataRoot m_tdr;
 	TextAlignment m_talign;
 	bool m_fTransparent;
+	bool m_fVisible;
 	};
 
 class Textbox :
@@ -94,6 +95,8 @@ private:
 public:
 	STDMETHOD(get_IsTransparent)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_IsTransparent)(/*[in]*/ VARIANT_BOOL newVal);
+	STDMETHOD(get_Visible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+	STDMETHOD(put_Visible)(/*[in]*/ VARIANT_BOOL newVal);
 	STDMETHOD(get_Alignment)(/*[out, retval]*/ TextAlignment *pVal);
 	STDMETHOD(put_Alignment)(/*[in]*/ TextAlignment newVal);
 	STDMETHOD(get_Y)(/*[out, retval]*/ float *pVal);

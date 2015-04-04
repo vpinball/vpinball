@@ -198,6 +198,7 @@ Y(float)
 Name(string)
 UserValue(any)
 IntensityScale(float) - scales the color of the textbox
+Visible(bool)
 
 
 EMREEL
