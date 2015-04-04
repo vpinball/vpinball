@@ -2463,11 +2463,6 @@ void Player::RenderDynamics()
    for (unsigned i=0; i < m_vHitNonTrans.size(); ++i)
        m_vHitNonTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
 
-   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0); //!! paranoia set of old state, remove as soon as sure that no other code still relies on that legacy set
-   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::BLENDOP, D3DBLENDOP_ADD);
-   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
-
    DrawBalls();
 
    m_limiter.Execute(m_pin3d.m_pd3dDevice); //!! move below other draw calls??
@@ -3312,11 +3307,16 @@ void Player::GetBallAspectRatio(const Ball * const pball, float &stretchX, float
 
 void Player::DrawBalls()
 {
+	m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
+    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::BLENDOP, D3DBLENDOP_ADD);
+    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+
     if (m_ToggleDebugBalls && m_DebugBalls)
         // Set the render state to something that will always display.
         m_pin3d.m_pd3dDevice->SetRenderState ( RenderDevice::ZENABLE, FALSE );
 
-	std::vector<Light*> lights; // collect all lights that can reflect on balls (currently only bulbs and if flag set to do so)
+	// collect all lights that can reflect on balls (currently only bulbs and if flag set to do so)
+	std::vector<Light*> lights;
 	for (int i=0;i<m_ptable->m_vedit.Size();i++)
 	{
 		IEditable *item=m_ptable->m_vedit.ElementAt(i);
@@ -3333,6 +3333,7 @@ void Player::DrawBalls()
     {
         Ball * const pball = m_vball[i];
 
+		// collect the x nearest lights that can reflect on balls
 		Light* light_nearest[MAX_BALL_LIGHT_SOURCES];
 		search_for_nearest(pball,lights,light_nearest);
 
@@ -3378,7 +3379,7 @@ void Player::DrawBalls()
 
       ballShader->SetValue("packedLights", l, sizeof(CLight)*(MAX_LIGHT_SOURCES+MAX_BALL_LIGHT_SOURCES));
 
-	  // now for a weird hack: make material more rough, depending on how near the nearest lightsource is, to 'emulate' the area of the bulbs (as we only feature point lights so far)
+	  // now for a weird hack: make material more rough, depending on how near the nearest lightsource is, to 'emulate' the area of the bulbs (as VP only features point lights so far)
       float Roughness = 0.8f;
 	  if(light_nearest[0] != NULL)
 	  {
@@ -3388,19 +3389,17 @@ void Player::DrawBalls()
 	  const D3DXVECTOR4 rwem(exp2f(10.0f * Roughness + 1.0f), 0.f, 1.f, 0.0f);
 	  ballShader->SetVector("Roughness_WrapL_Edge_IsMetal", &rwem);
 
+	  // start drawing
+
       float zheight = (!pball->m_frozen) ? pball->m_pos.z : (pball->m_pos.z - pball->m_radius);
 
-      float maxz = pball->m_defaultZ+3.0f;
-      float minz = pball->m_defaultZ-0.1f;
+      const float maxz = pball->m_defaultZ+3.0f;
+      const float minz = pball->m_defaultZ-0.1f;
       if((m_fReflectionForBalls && (m_ptable->m_useReflectionForBalls == -1)) || (m_ptable->m_useReflectionForBalls == 1))
-      {
          // don't draw reflection if the ball is not on the playfield (e.g. on a ramp/kicker)
-         if( (zheight > maxz) || (pball->m_frozen) || pball->m_pos.z<minz)
-            drawReflection=false;
-         else
-            drawReflection=true;
-      }
-      if( (zheight > maxz) || (pball->m_pos.z < minz) )
+         drawReflection = !( (zheight > maxz) || pball->m_frozen || (pball->m_pos.z < minz) );
+
+	  if( (zheight > maxz) || (pball->m_pos.z < minz) )
       {
          // scaling the ball height by the z scale value results in a flying ball over the playfield/ramp
          // by reducing it with 0.96f (a factor found by trial'n error) the ball is on the ramp again
@@ -3410,9 +3409,7 @@ void Player::DrawBalls()
 
       Texture * const playfield = m_ptable->GetImage((char *)m_ptable->m_szImage);
       if( playfield )
-      {
           ballShader->SetTexture("Texture1", playfield );
-      }
 
       // ************************* draw the ball itself ****************************
       if ( m_antiStretchBall && m_ptable->m_BG_rotation[m_ptable->m_BG_current_set]!=0.0f )
@@ -3422,9 +3419,9 @@ void Player::DrawBalls()
 
 		  const float inv_tablewidth = 1.0f/(m_ptable->m_right - m_ptable->m_left);
 		  const float inv_tableheight = 1.0f/(m_ptable->m_bottom - m_ptable->m_top);
-        //const D3DXVECTOR4 bs(m_BallStretchX/* +sx*/, m_BallStretchY - sy, inv_tablewidth, inv_tableheight);
-        const D3DXVECTOR4 bs(sx, sy, inv_tablewidth, inv_tableheight);
-        ballShader->SetVector("ballStretch_invTableRes", &bs);
+          //const D3DXVECTOR4 bs(m_BallStretchX/* +sx*/, m_BallStretchY - sy, inv_tablewidth, inv_tableheight);
+          const D3DXVECTOR4 bs(sx, sy, inv_tablewidth, inv_tableheight);
+          ballShader->SetVector("ballStretch_invTableRes", &bs);
       }
 
 	  const D3DXVECTOR4 diffuse = convertColor(pball->m_color,1.0f);
@@ -3441,10 +3438,10 @@ void Player::DrawBalls()
       if ( !pball->m_pinballEnv )
           ballShader->SetTexture("Texture0", &m_pin3d.pinballEnvTexture);
       else
-          ballShader->SetTexture("Texture0",pball->m_pinballEnv);
+          ballShader->SetTexture("Texture0", pball->m_pinballEnv);
 
       if( pball->m_pinballDecal )
-          ballShader->SetTexture("Texture2",pball->m_pinballDecal);
+          ballShader->SetTexture("Texture2", pball->m_pinballDecal);
 
 	  if ( drawReflection )
 	  {
@@ -3460,11 +3457,12 @@ void Player::DrawBalls()
 		  ballShader->End();
 
 	      m_pin3d.DisableAlphaBlend();
-		  m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
 	  }
 
+      m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
       ballShader->SetTechnique("RenderBall");
-      ballShader->Begin(0);
+      
+	  ballShader->Begin(0);
       m_pin3d.m_pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, ballVertexBuffer, 0, basicBallNumVertices, ballIndexBuffer, 0, basicBallNumFaces );
       ballShader->End();
 
@@ -3496,10 +3494,7 @@ void Player::DrawBalls()
 					{
 						Vertex3Ds v = vec;
 						v.Normalize();
-						Vertex3Ds up;
-						up.x = 0.f;
-						up.y = 0.f;
-						up.z = 1.f;
+						const Vertex3Ds up(0.f,0.f,1.f);
 						Vertex3Ds n = CrossProduct(v,up);
 						n.x *= r;
 						n.y *= r;
@@ -3566,8 +3561,6 @@ void Player::DrawBalls()
 				ballShader->Begin(0);
                 m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_NOTEX2_VERTEX, rgv3D_all, num_rgv3D);
 				ballShader->End();
-
-                m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
             }
         }
 
@@ -3601,10 +3594,10 @@ void Player::DrawBalls()
 
     //m_pin3d.DisableAlphaBlend(); //!! not necessary anymore
 
+    // Set the render state to something that will always display.
 	if (m_ToggleDebugBalls && m_DebugBalls)
-        // Set the render state to something that will always display.
         m_pin3d.m_pd3dDevice->SetRenderState ( RenderDevice::ZENABLE, TRUE );
-   if (m_ToggleDebugBalls)
+    if (m_ToggleDebugBalls)
         m_ToggleDebugBalls = false;
 }
 
