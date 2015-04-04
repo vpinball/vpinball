@@ -535,6 +535,8 @@ void Decal::RenderObject(RenderDevice* pd3dDevice)
 
    if(m_fBackglass && g_pplayer->m_ptable->m_tblMirrorEnabled)
       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
+   else
+      pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 
    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
 
@@ -590,8 +592,8 @@ void Decal::RenderObject(RenderDevice* pd3dDevice)
    //pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_WRAP);
    //g_pplayer->m_pin3d.DisableAlphaBlend(); //!! not necessary anymore
 
-   if(m_fBackglass && g_pplayer->m_ptable->m_tblMirrorEnabled)
-      pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+   //if(m_fBackglass && g_pplayer->m_ptable->m_tblMirrorEnabled)
+   //   pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 }
 
 void Decal::RenderStatic(RenderDevice* pd3dDevice)

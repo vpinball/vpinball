@@ -155,7 +155,7 @@ private:
     void AddJoint2D(Vector<HitObject> * pvho, const Vertex2D& p, float zlow, float zhigh);
 	void CheckJoint(Vector<HitObject> * const pvho, const HitTriangle * const ph3d1, const HitTriangle * const ph3d2);
 
-	void RenderStaticHabitrail(RenderDevice* pd3dDevice, Material *mat);
+	void RenderStaticHabitrail(RenderDevice* pd3dDevice, const Material * const mat);
 	void RenderPolygons(RenderDevice* pd3dDevice, int offset, WORD * const rgicrosssection, const int start, const int stop);
 
     void GenerateVertexBuffer(RenderDevice* pd3dDevice);
@@ -163,7 +163,7 @@ private:
 	void AddLine(Vector<HitObject> * const pvho, const Vertex2D * const pv1, const Vertex2D * const pv2, const Vertex2D * const pv3, const float height1, const float height2);
     void SetupHitObject(Vector<HitObject> * pvho, HitObject * obj);
 
-    void RenderRamp( RenderDevice *pd3dDevice, Material *mat );
+    void RenderRamp( RenderDevice *pd3dDevice, const Material * const mat );
     void CreateWire( const int numRings, const int numSegments, const Vertex2D *midPoints, Vertex3D_NoTex2 *rgvBuf);
 
 // IRamp

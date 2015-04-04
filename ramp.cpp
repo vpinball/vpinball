@@ -875,7 +875,7 @@ bool Ramp::isHabitrail() const
          || m_d.m_type == RampType3WireRight;
 }
 
-void Ramp::RenderStaticHabitrail(RenderDevice* pd3dDevice, Material *mat)
+void Ramp::RenderStaticHabitrail(RenderDevice* pd3dDevice, const Material * const mat)
 {
    pd3dDevice->basicShader->SetMaterial(mat);
 
@@ -894,6 +894,7 @@ void Ramp::RenderStaticHabitrail(RenderDevice* pd3dDevice, Material *mat)
    }
 
    pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
+
    if ( m_d.m_type==RampType2Wire )
    {
       Matrix3D matTrafo, matTemp;
@@ -968,7 +969,7 @@ void Ramp::RenderStaticHabitrail(RenderDevice* pd3dDevice, Material *mat)
       pd3dDevice->basicShader->End();  
    }
 
-   pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+   //pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 }
 
 void Ramp::CreateWire( const int numRings, const int numSegments, const Vertex2D *midPoints, Vertex3D_NoTex2 *rgvbuf)
@@ -1995,7 +1996,7 @@ STDMETHODIMP Ramp::put_WireDistanceY(float newVal)
     return S_OK;
 }
 
-void Ramp::RenderRamp( RenderDevice *pd3dDevice, Material *mat )
+void Ramp::RenderRamp( RenderDevice *pd3dDevice, const Material * const mat )
 {
     if ( !mat )
         return;
@@ -2020,7 +2021,8 @@ void Ramp::RenderRamp( RenderDevice *pd3dDevice, Material *mat )
 
       pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
       pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-      
+      pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+
       Pin3D * const ppin3d = &g_pplayer->m_pin3d;
       Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
 
@@ -2085,7 +2087,7 @@ void Ramp::PostRenderStatic(RenderDevice* pd3dDevice)
 {
     TRACE_FUNCTION();
     
-	Material *mat = m_ptable->GetMaterial( m_d.m_szMaterial);
+	const Material * const mat = m_ptable->GetMaterial( m_d.m_szMaterial);
     // don't render if invisible or not a transparent ramp
     if (!m_d.m_fVisible || (!mat->m_bOpacityActive) )
        return;

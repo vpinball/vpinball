@@ -538,6 +538,7 @@ void Surface::PostRenderStatic(RenderDevice* pd3dDevice)
     TRACE_FUNCTION();
 
     RenderSlingshots(pd3dDevice);
+
     if (m_d.m_fDroppable || m_isDynamic)
     {
         if (!m_fIsDropped)
@@ -931,7 +932,6 @@ void Surface::RenderSlingshots(RenderDevice* pd3dDevice)
 
    pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-
    pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
 
    pd3dDevice->basicShader->Begin(0);
@@ -945,7 +945,7 @@ void Surface::RenderSlingshots(RenderDevice* pd3dDevice)
    }
    pd3dDevice->basicShader->End();
 
-   pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+   //pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 }
 
 void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, const bool fDrop)
@@ -963,13 +963,9 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, const bool fDrop)
         pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
 
         if (mat->m_bOpacityActive)
-        {
            pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
-        }
         else
-        {
            pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
-        }
 
         Texture * const pinSide = m_ptable->GetImage(m_d.m_szSideImage);
         if (pinSide)
@@ -999,13 +995,9 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, const bool fDrop)
        pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
 
        if (mat->m_bOpacityActive)
-       {
           pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
-       }
        else
-       {
           pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
-       }
 
 	   Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
        if (pin)
@@ -1026,7 +1018,7 @@ void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, const bool fDrop)
 
     // reset render states
     //g_pplayer->m_pin3d.DisableAlphaBlend(); //!!  not necessary anymore
-    pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+    //pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
     if (m_d.m_fDisableLighting && ( m_d.m_fSideVisible || m_d.m_fVisible))
         pd3dDevice->basicShader->SetDisableLighting( false );
 }

@@ -214,6 +214,8 @@ void Textbox::PostRenderStatic(RenderDevice* pd3dDevice)
 
 	if(g_pplayer->m_ptable->m_tblMirrorEnabled)
 		pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
+	else
+ 	    pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 
     pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
     pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
@@ -244,8 +246,8 @@ void Textbox::PostRenderStatic(RenderDevice* pd3dDevice)
             pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE,FALSE);
 		}
 
-	if(g_pplayer->m_ptable->m_tblMirrorEnabled)
-		pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+	//if(g_pplayer->m_ptable->m_tblMirrorEnabled)
+	//	pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 }
 
 void Textbox::RenderSetup(RenderDevice* pd3dDevice)

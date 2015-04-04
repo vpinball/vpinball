@@ -1,15 +1,15 @@
 #include "StdAfx.h"
 
 Timer::Timer()
-	{
-	}
+{
+}
 
 Timer::~Timer()
-	{
-	}
+{
+}
 
 HRESULT Timer::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
-	{
+{
 	m_ptable = ptable;
 
 	m_d.m_v.x = x;
@@ -19,10 +19,10 @@ HRESULT Timer::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 
 	return InitVBA(fTrue, 0, NULL);//ApcProjectItem.Define(ptable->ApcProject, GetDispatch(),
 		//axTypeHostProjectItem/*axTypeHostClass*/, L"Timer", NULL);
-	}
+}
 
 void Timer::SetDefaults(bool fromMouseClick)
-	{
+{
 	HRESULT hr;
 	int iTmp;
 
@@ -37,45 +37,45 @@ void Timer::SetDefaults(bool fromMouseClick)
 		m_d.m_tdr.m_TimerInterval = iTmp;
 	else
 		m_d.m_tdr.m_TimerInterval = 100;
-	}
+}
 
 void Timer::WriteRegDefaults()
-	{
+{
 	SetRegValueBool("DefaultProps\\Timer","TimerEnabled", !!m_d.m_tdr.m_fTimerEnabled);
 	SetRegValueInt("DefaultProps\\Timer","TimerInterval", m_d.m_tdr.m_TimerInterval);
-	}
+}
 
 void Timer::SetObjectPos()
-	{
+{
 	g_pvp->SetObjectPosCur(m_d.m_v.x, m_d.m_v.y);
-	}
+}
 
 void Timer::MoveOffset(const float dx, const float dy)
-	{
+{
 	m_d.m_v.x += dx;
 	m_d.m_v.y += dy;
 
 	m_ptable->SetDirtyDraw();
-	}
+}
 
 void Timer::GetCenter(Vertex2D * const pv) const
-	{
+{
 	*pv = m_d.m_v;
-	}
+}
 
 void Timer::PutCenter(const Vertex2D * const pv)
-	{
+{
 	m_d.m_v = *pv;
 
 	m_ptable->SetDirtyDraw();
-	}
+}
 
 void Timer::PreRender(Sur * const psur)
-	{
-	}
+{
+}
 
 void Timer::Render(Sur * const psur)
-	{
+{
 	psur->SetFillColor(-1);//RGB(192,192,192));
 	psur->SetBorderColor(RGB(0,0,0),false,0);
 	psur->SetLineColor(RGB(0,0,0), false, 0);
@@ -87,24 +87,24 @@ void Timer::Render(Sur * const psur)
 	psur->Ellipse(m_d.m_v.x, m_d.m_v.y, 15);
 
 	for (int i=0;i<12;i++)
-		{
+	{
 		const float angle = (float)(M_PI*2.0/12.0)*(float)i;
 		const float sn = sinf(angle);
 		const float cs = cosf(angle);
 		psur->Line(m_d.m_v.x + sn*9.0f, m_d.m_v.y - cs*9.0f, m_d.m_v.x + sn*15, m_d.m_v.y - cs*15.0f);
-		}
+	}
 
 	//angle = ((PI*2)/24) * 3;
 	psur->Line(m_d.m_v.x, m_d.m_v.y, m_d.m_v.x + 10.5f, m_d.m_v.y - 7.5f);
 
-	}
+}
 
 void Timer::RenderBlueprint(Sur *psur)
-	{
-	}
+{
+}
 
 void Timer::GetTimers(Vector<HitTimer> * const pvht)
-	{
+{
 	IEditable::BeginPlay();
 
 	HitTimer * const pht = new HitTimer();
@@ -116,28 +116,26 @@ void Timer::GetTimers(Vector<HitTimer> * const pvht)
 	m_phittimer = pht;
 
 	if (m_d.m_tdr.m_fTimerEnabled)
-		{
 		pvht->AddElement(pht);
-		}
-	}
+}
 
 void Timer::GetHitShapes(Vector<HitObject> * const pvho)
-	{
+{
 	m_phittimer = NULL;
-	}
+}
 
 void Timer::GetHitShapesDebug(Vector<HitObject> * const pvho)
-	{
-	}
+{
+}
 
 void Timer::EndPlay()
-	{
+{
 	IEditable::EndPlay();
-	}
+}
 
 void Timer::PostRenderStatic(RenderDevice* pd3dDevice)
-	{
-	}
+{
+}
 
 void Timer::RenderSetup(RenderDevice* pd3dDevice)
 {
@@ -145,9 +143,9 @@ void Timer::RenderSetup(RenderDevice* pd3dDevice)
 }
 
 void Timer::RenderStatic(RenderDevice* pd3dDevice)
-	{
-	}
-	
+{
+}
+
 STDMETHODIMP Timer::InterfaceSupportsErrorInfo(REFIID riid)
 {
 	static const IID* arr[] =
@@ -177,20 +175,20 @@ STDMETHODIMP Timer::put_Enabled(VARIANT_BOOL newVal)
 	const BOOL fNew = VBTOF(newVal);
 
 	if (fNew != m_d.m_tdr.m_fTimerEnabled)
-		{
+	{
 		if (m_phittimer)
-			{
+		{
 			if (fNew)
-				{
+			{
 				m_phittimer->m_nextfire = g_pplayer->m_time_msec + m_phittimer->m_interval;
 				g_pplayer->m_vht.AddElement(m_phittimer);
-				}
+			}
 			else
-				{
+			{
 				g_pplayer->m_vht.RemoveElement(m_phittimer);
-				}
 			}
 		}
+	}
 
 	m_d.m_tdr.m_fTimerEnabled = fNew;
 
@@ -213,10 +211,10 @@ STDMETHODIMP Timer::put_Interval(long newVal)
 	m_d.m_tdr.m_TimerInterval = newVal;
 
 	if (m_phittimer)
-		{
+	{
 		m_phittimer->m_interval = m_d.m_tdr.m_TimerInterval;
 		m_phittimer->m_nextfire = g_pplayer->m_time_msec + m_phittimer->m_interval;
-		}
+	}
 
 	STOPUNDO
 
@@ -224,7 +222,7 @@ STDMETHODIMP Timer::put_Interval(long newVal)
 }
 
 HRESULT Timer::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
-	{
+{
 	BiffWriter bw(pstm, hcrypthash, hcryptkey);
 
 	bw.WriteStruct(FID(VCEN), &m_d.m_v, sizeof(Vertex2D));
@@ -239,7 +237,7 @@ HRESULT Timer::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptke
 	bw.WriteTag(FID(ENDB));
 
 	return S_OK;
-	}
+}
 
 HRESULT Timer::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
 {
@@ -254,46 +252,46 @@ HRESULT Timer::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, 
 }
 
 BOOL Timer::LoadToken(int id, BiffReader *pbr)
-	{
+{
 	if (id == FID(PIID))
-		{
+	{
 		pbr->GetInt((int *)pbr->m_pdata);
-		}
+	}
 	else if (id == FID(VCEN))
-		{
+	{
 		pbr->GetStruct(&m_d.m_v, sizeof(Vertex2D));
-		}
+	}
 	else if (id == FID(TMON))
-		{
+	{
 		pbr->GetBool(&m_d.m_tdr.m_fTimerEnabled);
-		}
+	}
 	else if (id == FID(TMIN))
-		{
+	{
 		pbr->GetInt(&m_d.m_tdr.m_TimerInterval);
-		}
+	}
 	else if (id == FID(NAME))
-		{
+	{
 		pbr->GetWideString((WCHAR *)m_wzName);
-		}
+	}
 	else if (id == FID(BGLS))
-		{
+	{
 		pbr->GetBool(&m_fBackglass);
-		}
+	}
 	else
-		{
+	{
 		ISelect::LoadToken(id, pbr);
-		}
+	}
 
 	return fTrue;
-	}
+}
 
 HRESULT Timer::InitPostLoad()
-	{
+{
 	return S_OK;
-	}
+}
 
 void Timer::GetDialogPanes(Vector<PropertyPane> *pvproppane)
-	{
+{
 	PropertyPane *pproppane;
 
 	pproppane = new PropertyPane(IDD_PROP_NAME, NULL);
@@ -301,4 +299,4 @@ void Timer::GetDialogPanes(Vector<PropertyPane> *pvproppane)
 
 	pproppane = new PropertyPane(IDD_PROP_TIMER, IDS_MISC);
 	pvproppane->AddElement(pproppane);
-	}
+}

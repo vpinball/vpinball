@@ -559,6 +559,7 @@ void Flipper::PostRenderStatic(RenderDevice* pd3dDevice)
 
     pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
     pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+    pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 
     Matrix3D matTrafo, matTemp;
     matTrafo.SetIdentity();

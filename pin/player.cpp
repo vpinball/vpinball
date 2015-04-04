@@ -984,8 +984,9 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 	    if( hr == S_OK )
 		m_ptable->m_tblMirrorEnabled = ( tmp != 0 );
 	}
-        m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE); // re-init/overrun cache due to the hacky nature of the table mirroring
-        m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE); // re-init/thrash cache entry due to the hacky nature of the table mirroring
+    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+
 	//
 
 	m_pin3d.InitLayout();
@@ -2465,6 +2466,7 @@ void Player::RenderDynamics()
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0); //!! paranoia set of old state, remove as soon as sure that no other code still relies on that legacy set
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::BLENDOP, D3DBLENDOP_ADD);
+   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 
    DrawBalls();
 
@@ -2477,6 +2479,7 @@ void Player::RenderDynamics()
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0); //!! paranoia set of old state, remove as soon as sure that no other code still relies on that legacy set
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::BLENDOP, D3DBLENDOP_ADD);
+   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 
    if( !cameraMode )
    {
