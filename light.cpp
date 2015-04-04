@@ -636,6 +636,8 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
 
     if(m_fBackglass && g_pplayer->m_ptable->m_tblMirrorEnabled)
 		pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
+	else
+ 	    pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 
 	Vertex3D_NoTex2 centerHUD;
 	centerHUD.x = m_d.m_vCenter.x;
@@ -712,8 +714,8 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
 	    pd3dDevice->SetRenderState(RenderDevice::BLENDOP, D3DBLENDOP_ADD);
 	}*/
 
-	if(m_fBackglass && g_pplayer->m_ptable->m_tblMirrorEnabled)
-		pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+	//if(m_fBackglass && g_pplayer->m_ptable->m_tblMirrorEnabled)
+	//	pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 }
 
 void Light::PrepareMoversCustom()

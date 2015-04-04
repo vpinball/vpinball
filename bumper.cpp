@@ -353,7 +353,7 @@ void Bumper::EndPlay()
    }
 }
 
-void Bumper::UpdateRing(RenderDevice *pd3dDevice )
+void Bumper::UpdateRing(RenderDevice *pd3dDevice)
 {
    Vertex3D_NoTex2 *buf;
    ringVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
@@ -371,8 +371,7 @@ void Bumper::UpdateRing(RenderDevice *pd3dDevice )
    ringVertexBuffer->unlock();
 }
 
-
-void Bumper::RenderBase(RenderDevice *pd3dDevice, Material *baseMaterial )
+void Bumper::RenderBase(RenderDevice *pd3dDevice, const Material * const baseMaterial )
 {
    pd3dDevice->basicShader->SetMaterial(baseMaterial);
    pd3dDevice->basicShader->SetTexture("Texture0", &baseTexture);
@@ -386,7 +385,7 @@ void Bumper::RenderBase(RenderDevice *pd3dDevice, Material *baseMaterial )
    //g_pplayer->m_pin3d.DisableAlphaBlend(); //!! not necessary anymore
 }
 
-void Bumper::RenderSocket(RenderDevice *pd3dDevice, Material *socketMaterial )
+void Bumper::RenderSocket(RenderDevice *pd3dDevice, const Material * const socketMaterial )
 {
    pd3dDevice->basicShader->SetMaterial(socketMaterial);
    pd3dDevice->basicShader->SetTexture("Texture0", &socketTexture);
@@ -400,7 +399,7 @@ void Bumper::RenderSocket(RenderDevice *pd3dDevice, Material *socketMaterial )
    //g_pplayer->m_pin3d.DisableAlphaBlend(); //!! not necessary anymore
 }
 
-void Bumper::RenderCap( RenderDevice *pd3dDevice, Material *capMaterial )
+void Bumper::RenderCap( RenderDevice *pd3dDevice, const Material * const capMaterial )
 {
    pd3dDevice->basicShader->SetMaterial(capMaterial);
    pd3dDevice->basicShader->SetTexture("Texture0", &capTexture);
@@ -418,7 +417,7 @@ void Bumper::PostRenderStatic(RenderDevice* pd3dDevice)
 {
    TRACE_FUNCTION();
 
-   if ( ringVertexBuffer==NULL )
+   if ( ringVertexBuffer==NULL && (m_d.m_fBaseVisible || m_d.m_fCapVisible))
 	   return;
 
    const U32 old_time_msec = (m_d.m_time_msec < g_pplayer->m_time_msec) ? m_d.m_time_msec : g_pplayer->m_time_msec;
@@ -427,8 +426,6 @@ void Bumper::PostRenderStatic(RenderDevice* pd3dDevice)
 
    pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-
-   Material *mat = 0;
 
    if (m_d.m_fBaseVisible)
    {
@@ -467,7 +464,9 @@ void Bumper::PostRenderStatic(RenderDevice* pd3dDevice)
          UpdateRing(pd3dDevice);
       }
 
-      pd3dDevice->basicShader->SetTechnique("basic_with_texture");
+	  pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+	  
+	  pd3dDevice->basicShader->SetTechnique("basic_with_texture");
       pd3dDevice->basicShader->SetMaterial(&ringMaterial);
       pd3dDevice->basicShader->SetTexture("Texture0", &ringTexture);
       pd3dDevice->basicShader->SetAlphaTestValue(-1.0f);
@@ -476,12 +475,11 @@ void Bumper::PostRenderStatic(RenderDevice* pd3dDevice)
       pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, ringVertexBuffer, 0, bumperRingNumVertices, ringIndexBuffer, 0, bumperRingNumFaces );
       pd3dDevice->basicShader->End();
 
-      mat = m_ptable->GetMaterial(m_d.m_szSkirtMaterial);
+	  const Material *mat = m_ptable->GetMaterial(m_d.m_szSkirtMaterial);
       if ( mat->m_bOpacityActive )
       {
          pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
          RenderSocket(pd3dDevice, mat);
-         pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
       }
 
       mat = m_ptable->GetMaterial(m_d.m_szBaseMaterial);
@@ -489,18 +487,17 @@ void Bumper::PostRenderStatic(RenderDevice* pd3dDevice)
       {
          pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
          RenderBase(pd3dDevice, mat);
-         pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
       }
    }
+
    if ( m_d.m_fCapVisible )
    {
-      mat = m_ptable->GetMaterial(m_d.m_szCapMaterial);
+      const Material * const mat = m_ptable->GetMaterial(m_d.m_szCapMaterial);
       if ( mat->m_bOpacityActive )
       {
          pd3dDevice->basicShader->SetTechnique("basic_with_texture");
          pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
          RenderCap(pd3dDevice, mat);
-         pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
       }
    }
 }

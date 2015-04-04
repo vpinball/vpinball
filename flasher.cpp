@@ -1364,7 +1364,7 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
    pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_TEX, dynamicVertexBuffer, 0, numVertices, dynamicIndexBuffer, 0, numPolys*3);
    pd3dDevice->flasherShader->End();
 
-   pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+   //pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
    //pd3dDevice->SetRenderState(RenderDevice::BLENDOP, D3DBLENDOP_ADD); //!! not necessary anymore
    //g_pplayer->m_pin3d.DisableAlphaBlend(); //!! not necessary anymore
 }

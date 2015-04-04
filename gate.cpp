@@ -433,6 +433,7 @@ void Gate::RenderObject( RenderDevice* pd3dDevice)
 
     pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
     pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+    pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 
     pd3dDevice->basicShader->SetTechnique("basic_without_texture");
     if ( m_d.m_fShowBracket )

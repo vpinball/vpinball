@@ -146,9 +146,9 @@ DECLARE_REGISTRY_RESOURCEID(IDR_BUMPER)
 //<<<
 
 private:
-    void RenderBase(RenderDevice *pd3dDevice, Material *baseMaterial );
-    void RenderCap( RenderDevice *pd3dDevice, Material *capMaterial );
-    void RenderSocket(RenderDevice *pd3dDevice, Material *baseMaterial );
+    void RenderBase(RenderDevice *pd3dDevice, const Material * const baseMaterial );
+    void RenderCap(RenderDevice *pd3dDevice, const Material * const capMaterial );
+    void RenderSocket(RenderDevice *pd3dDevice, const Material * const baseMaterial );
     void UpdateRing(RenderDevice *pd3dDevice );
 
     VertexBuffer *baseVertexBuffer;

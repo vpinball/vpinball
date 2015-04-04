@@ -323,6 +323,7 @@ void Spinner::PostRenderStatic(RenderDevice* pd3dDevice)
 
     pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
     pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+    pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 
 	Texture * const image = m_ptable->GetImage(m_d.m_szImage);
 
@@ -342,7 +343,7 @@ void Spinner::PostRenderStatic(RenderDevice* pd3dDevice)
 
 //    g_pplayer->UpdateBasicShaderMatrix();
 
-    pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+//    pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 }
 
 
