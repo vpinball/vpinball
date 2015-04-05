@@ -385,10 +385,10 @@ Matrix3D ComputeLaybackTransform(float layback)
 void Pin3D::InitLayoutFS()
 {
     TRACE_FUNCTION();
+
     const float rotation = ANGTORAD(g_pplayer->m_ptable->m_BG_rotation[g_pplayer->m_ptable->m_BG_current_set]);
     const float inclination = 0.0f;// ANGTORAD(g_pplayer->m_ptable->m_BG_inclination[g_pplayer->m_ptable->m_BG_current_set]);
-    //not used
-    const float FOV = (g_pplayer->m_ptable->m_BG_FOV[g_pplayer->m_ptable->m_BG_current_set] < 1.0f) ? 1.0f : g_pplayer->m_ptable->m_BG_FOV[g_pplayer->m_ptable->m_BG_current_set];
+    //const float FOV = (g_pplayer->m_ptable->m_BG_FOV[g_pplayer->m_ptable->m_BG_current_set] < 1.0f) ? 1.0f : g_pplayer->m_ptable->m_BG_FOV[g_pplayer->m_ptable->m_BG_current_set];
 
     Vector<Vertex3Ds> vvertex3D;
     for (int i = 0; i<g_pplayer->m_ptable->m_vedit.Size(); ++i)
@@ -738,9 +738,6 @@ void PinProjection::FitCameraToVerticesFS(Vector<Vertex3Ds> * const pvvertex3D, 
     float maxxintercept = -FLT_MAX;
     float minxintercept = FLT_MAX;
 
-    m_rznear = FLT_MAX;
-    m_rzfar = -FLT_MAX;
-
     Matrix3D laybackTrans = ComputeLaybackTransform(layback);
 
     for (int i = 0; i < pvvertex3D->Size(); ++i)
@@ -760,10 +757,6 @@ void PinProjection::FitCameraToVerticesFS(Vector<Vertex3Ds> * const pvvertex3D, 
         v.x =  rrotcos*temp - rrotsin*v.y;
         v.y =  rrotsin*temp + rrotcos*v.y;
 
-        // Extend z-range if necessary
-        m_rznear = min(m_rznear, -v.z);
-        m_rzfar = max(m_rzfar, -v.z);
-
         // Extend slope lines from point to find camera intersection
         maxyintercept = max(maxyintercept, v.y + slopey*v.z);
         minyintercept = min(minyintercept, v.y - slopey*v.z);
@@ -775,8 +768,6 @@ void PinProjection::FitCameraToVerticesFS(Vector<Vertex3Ds> * const pvvertex3D, 
     slintf("miny: %f\n", minyintercept);
     slintf("maxx: %f\n", maxxintercept);
     slintf("minx: %f\n", minxintercept);
-    slintf("m_rznear: %f\n", m_rznear);
-    slintf("m_rzfar : %f\n", m_rzfar);
 
     // Find camera center in xy plane
 
@@ -785,22 +776,6 @@ void PinProjection::FitCameraToVerticesFS(Vector<Vertex3Ds> * const pvvertex3D, 
     m_vertexcamera.z = (float)(max(ydist, xdist)) + xlatez;
     m_vertexcamera.y = (float)((maxyintercept + minyintercept) * 0.5f);
     m_vertexcamera.x = (float)((maxxintercept + minxintercept) * 0.5f);
-
-    m_rznear += m_vertexcamera.z;
-    m_rzfar += m_vertexcamera.z;
-
-    // why that? changing the near/far z plane can cause perspective distortion
-    // in the z-buffer. 
-
-    // const float delta = m_rzfar - m_rznear;
-    // 
-    // #if 0
-    // 	m_rznear -= delta*0.15; // Allow for roundoff error (and tweak the setting too).
-    // 	m_rzfar += delta*0.01;
-    // #else
-    // 	m_rznear -= delta*0.05f; // Allow for roundoff error
-    // 	m_rzfar += delta*0.01f;
-    // #endif
 }
 
 void PinProjection::FitCameraToVertices(Vector<Vertex3Ds> * const pvvertex3D, float aspect, float rotation, float inclination, float FOV, float xlatez, float layback)
@@ -823,20 +798,15 @@ void PinProjection::FitCameraToVertices(Vector<Vertex3Ds> * const pvvertex3D, fl
 	float maxxintercept = -FLT_MAX;
 	float minxintercept = FLT_MAX;
 
-	m_rznear = FLT_MAX;
-	m_rzfar = -FLT_MAX;
-
     Matrix3D laybackTrans = ComputeLaybackTransform(layback);
 
     for (int i = 0; i < pvvertex3D->Size(); ++i)
 	{
         Vertex3Ds v = *pvvertex3D->ElementAt(i);
-		float temp;
-
         v = laybackTrans.MultiplyVector(v);
 
 		// Rotate vertex about x axis according to incoming inclination
-		temp = v.y;
+		float temp = v.y;
 		v.y = rinccos*temp - rincsin*v.z;
 		v.z = rincsin*temp + rinccos*v.z;
 
@@ -844,10 +814,6 @@ void PinProjection::FitCameraToVertices(Vector<Vertex3Ds> * const pvvertex3D, fl
 		temp = v.x;
 		v.x =  rrotcos*temp - rrotsin*v.y;
 		v.y =  rrotsin*temp + rrotcos*v.y;
-
-		// Extend z-range if necessary
-		m_rznear = min(m_rznear, -v.z);
-		m_rzfar  = max(m_rzfar,  -v.z);
 
 		// Extend slope lines from point to find camera intersection
 		maxyintercept = max(maxyintercept, v.y + slopey*v.z);
@@ -860,32 +826,14 @@ void PinProjection::FitCameraToVertices(Vector<Vertex3Ds> * const pvvertex3D, fl
     slintf("miny: %f\n", minyintercept);
     slintf("maxx: %f\n", maxxintercept);
     slintf("minx: %f\n", minxintercept);
-    slintf("m_rznear: %f\n", m_rznear);
-    slintf("m_rzfar : %f\n", m_rzfar);
 
 	// Find camera center in xy plane
 
 	const float ydist = (maxyintercept - minyintercept) / (slopey*2.0f);
 	const float xdist = (maxxintercept - minxintercept) / (slopex*2.0f);
-    m_vertexcamera.z = (float)(max(ydist, xdist)) + xlatez;
-	m_vertexcamera.y = (float)((maxyintercept + minyintercept) * 0.5f);
-	m_vertexcamera.x = (float)((maxxintercept + minxintercept) * 0.5f);
-
-	m_rznear += m_vertexcamera.z;
-	m_rzfar += m_vertexcamera.z;
-
-   // why that? changing the near/far z plane can cause perspective distortion
-   // in the z-buffer. 
-
-    // const float delta = m_rzfar - m_rznear;
-    // 
-    // #if 0
-    // 	m_rznear -= delta*0.15; // Allow for roundoff error (and tweak the setting too).
-    // 	m_rzfar += delta*0.01;
-    // #else
-    // 	m_rznear -= delta*0.05f; // Allow for roundoff error
-    // 	m_rzfar += delta*0.01f;
-    // #endif
+    m_vertexcamera.z = max(ydist, xdist) + xlatez;
+	m_vertexcamera.y = (maxyintercept + minyintercept) * 0.5f;
+	m_vertexcamera.x = (maxxintercept + minxintercept) * 0.5f;
 }
 
 void PinProjection::ComputeNearFarPlane(const Vector<Vertex3Ds>& verts)
@@ -898,11 +846,11 @@ void PinProjection::ComputeNearFarPlane(const Vector<Vertex3Ds>& verts)
 
     for (int i = 0; i < verts.Size(); ++i)
     {
-        Vertex3Ds temp = matWorldView.MultiplyVector(verts[i]);
+        const float tempz = matWorldView.MultiplyVector(verts[i]).z;
 
         // Extend z-range if necessary
-        m_rznear = min(m_rznear, temp.z);
-        m_rzfar  = max(m_rzfar,  temp.z);
+        m_rznear = min(m_rznear, tempz);
+        m_rzfar  = max(m_rzfar,  tempz);
     }
 
     slintf("m_rznear: %f\n", m_rznear);
@@ -911,7 +859,7 @@ void PinProjection::ComputeNearFarPlane(const Vector<Vertex3Ds>& verts)
     // beware the div-0 problem
     if( m_rznear < 0.001f )
        m_rznear = 0.001f;
-    m_rznear *= 0.89f;
+	m_rznear *= 0.89f;
     m_rzfar *= 1.01f;
 }
 
@@ -957,4 +905,3 @@ void PinProjection::TransformVertices(const Vertex3D_NoTex2 * const rgv, const W
 		rgvout[l].y	= vTy;
 	}
 }
-
