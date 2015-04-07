@@ -107,7 +107,7 @@ void Bumper::SetDefaults(bool fromMouseClick)
    m_d.m_heightScale = (hr == S_OK) && fromMouseClick ? fTmp : 90.0f;
 
    hr = GetRegStringAsFloat("DefaultProps\\Bumper","RingSpeed", &fTmp);
-   m_d.m_ringSpeed = (hr == S_OK) && fromMouseClick ? fTmp : 5.0f;
+   m_d.m_ringSpeed = (hr == S_OK) && fromMouseClick ? fTmp : 0.5f;
 
    hr = GetRegStringAsFloat("DefaultProps\\Bumper","Orientation", &fTmp);
    m_d.m_orientation = (hr == S_OK) && fromMouseClick ? fTmp : 0.0f;
@@ -273,7 +273,7 @@ void Bumper::GetHitShapes(Vector<HitObject> * const pvho)
    phitcircle->center.y = m_d.m_vCenter.y;
    phitcircle->radius = m_d.m_radius;
    phitcircle->zlow = height;
-   phitcircle->zhigh = height+50.0f+m_d.m_heightScale;
+   phitcircle->zhigh = height+m_d.m_heightScale;
 
    phitcircle->m_pbumper = this;
 
@@ -295,7 +295,7 @@ void Bumper::GetHitShapesDebug(Vector<HitObject> * const pvho)
 {
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
-   HitObject * const pho = CreateCircularHitPoly(m_d.m_vCenter.x, m_d.m_vCenter.y, height + 50.0f + m_d.m_heightScale, m_d.m_radius, 32);
+   HitObject * const pho = CreateCircularHitPoly(m_d.m_vCenter.x, m_d.m_vCenter.y, height +  m_d.m_heightScale, m_d.m_radius, 32);
    pvho->AddElement(pho);
 }
 
