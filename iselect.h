@@ -93,6 +93,11 @@ public:
 
 	// So objects don't have to implement all the transformation functions themselves
 	virtual void GetCenter(Vertex2D * const pv) const = 0;
+    virtual void GetScale(float *sx, float *sy)
+    {
+        *sx=1.0f;
+        *sy=1.0f;
+    }
 	virtual void PutCenter(const Vertex2D * const pv) = 0;
 
 	virtual IEditable *GetIEditable()=0;
