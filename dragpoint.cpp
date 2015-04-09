@@ -876,10 +876,15 @@ INT_PTR CALLBACK ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
          psel = (ISelect *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
          Vertex2D v;			
-         psel->GetCenter(&v);
-         SetDlgItemInt(hwndDlg, IDC_SCALEFACTOR, 1, TRUE);
-         SetDlgItemInt(hwndDlg, IDC_SCALEY, 1, TRUE);
          char szT[256];
+         psel->GetScale(&v.x, &v.y);
+
+         f2sz(v.x, szT);
+         SetDlgItemText(hwndDlg, IDC_SCALEFACTOR, szT);
+         f2sz(v.y, szT);
+         SetDlgItemText(hwndDlg, IDC_SCALEY, szT);
+         psel->GetCenter(&v);
+
          f2sz(v.x, szT);
          SetDlgItemText(hwndDlg, IDC_CENTERX, szT);
          f2sz(v.y, szT);
