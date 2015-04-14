@@ -557,25 +557,24 @@ BOOL Textbox::LoadToken(int id, BiffReader *pbr)
 		}
 	else if (id == FID(FONT))
 		{
-		if (!m_pIFont)
-			{
-			FONTDESC fd;
-			fd.cbSizeofstruct = sizeof(FONTDESC);
-			fd.lpstrName = L"Arial";
-			fd.cySize.int64 = 142500;
-			//fd.cySize.Lo = 0;
-			fd.sWeight = FW_NORMAL;
-			fd.sCharset = 0;
-			fd.fItalic = 0;
-			fd.fUnderline = 0;
-			fd.fStrikethrough = 0;
-			OleCreateFontIndirect(&fd, IID_IFont, (void **)&m_pIFont);
-			}
+         if (!m_pIFont)
+         {
+            FONTDESC fd;
+            fd.cbSizeofstruct = sizeof(FONTDESC);
+            fd.lpstrName = L"Arial";
+            fd.cySize.int64 = 142500;
+            //fd.cySize.Lo = 0;
+            fd.sWeight = FW_NORMAL;
+            fd.sCharset = 0;
+            fd.fItalic = 0;
+            fd.fUnderline = 0;
+            fd.fStrikethrough = 0;
+            OleCreateFontIndirect(&fd, IID_IFont, (void **)&m_pIFont);
+         }
+         IPersistStream * ips;
+         m_pIFont->QueryInterface(IID_IPersistStream, (void **)&ips);
 
-		IPersistStream * ips;
-		m_pIFont->QueryInterface(IID_IPersistStream, (void **)&ips);
-
-		ips->Load(pbr->m_pistream);
+         ips->Load(pbr->m_pistream);
 		}
 	else
 		{
