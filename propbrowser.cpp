@@ -175,7 +175,8 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, Vector<ISelect> *pvsel)
       if (fSame)
       {
          pisel = pvsel->ElementAt(0);
-         pisel->GetDialogPanes(&m_vproppane);
+         if ( pisel )
+            pisel->GetDialogPanes(&m_vproppane);
       }
    }
 
