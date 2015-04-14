@@ -706,13 +706,9 @@ void SmartBrowser::GetControlValue(HWND hwndControl)
 
    case eFont:
    {
-      if (SUCCEEDED(VariantChangeType(&varResult, &var, 0, VT_I4)))
-      {
-         SendMessage(hwndControl, CHANGE_FONT, (!fNinch) ? 0 : 1, (size_t)V_DISPATCH(&varResult));
-         VariantClear(&varResult);
-      }
+      SendMessage(hwndControl, CHANGE_FONT, (!fNinch) ? 0 : 1, (size_t)V_DISPATCH(&var));
+      break;
    }
-   break;
 
    case eCombo:
    {
