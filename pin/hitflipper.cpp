@@ -124,6 +124,20 @@ void HitFlipper::CalcHitRect()
    m_rcHitRect.zhigh = m_flipperanim.m_hitcircleBase.zhigh;
 }
 
+void FlipperAnimObject::SetReturnRatio(const float r)
+{
+    m_returnRatio = r;
+}
+
+void FlipperAnimObject::SetMass(const float m)
+{
+    m_inertia = (float)(1.0/3.0) * m * (m_flipperradius*m_flipperradius); //!! also change if wiring of moment of inertia happens (see ctor)
+}
+
+void FlipperAnimObject::SetStrength(const float s)
+{
+    m_force = s;
+}
 
 void FlipperAnimObject::UpdateDisplacements(const float dtime)
 {

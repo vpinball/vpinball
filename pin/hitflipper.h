@@ -18,6 +18,10 @@ public:
     void SetSolenoidState(bool s);
     float GetStrokeRatio() const;
 
+    void SetReturnRatio(const float r);
+    void SetMass(const float m);
+    void SetStrength(const float s);
+
     // rigid body functions
     Vertex3Ds SurfaceVelocity(const Vertex3Ds& surfP) const;
     Vertex3Ds SurfaceAcceleration(const Vertex3Ds& surfP) const;
