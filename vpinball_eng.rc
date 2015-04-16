@@ -14,7 +14,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Englisch (USA) resources
+// English (United States) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
@@ -988,23 +988,23 @@ IDD_PROPPLUNGER_PHYSICS DIALOGEX 0, 0, 125, 125
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
+    LTEXT           "&Pull Speed",-1,7,4,35,9
     EDITTEXT        3,72,4,46,12,ES_AUTOHSCROLL
+    LTEXT           "&Release Speed",-1,7,19,50,8
     EDITTEXT        4,72,17,46,12,ES_AUTOHSCROLL
+    LTEXT           "Stroke Length",-1,7,34,56,8
     EDITTEXT        113,72,32,46,12,ES_AUTOHSCROLL
+    LTEXT           "Scatter Velocity",-1,7,47,56,8
     EDITTEXT        114,72,45,46,12,ES_AUTOHSCROLL
     CONTROL         "Enable Mechanical Plunger",110,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,59,111,9
     CONTROL         "Auto Plunger",116,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,70,55,9
     CONTROL         "Visible",117,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,71,70,39,9
-    EDITTEXT        111,72,81,46,12,ES_AUTOHSCROLL
-    EDITTEXT        115,72,94,46,12,ES_AUTOHSCROLL
-    EDITTEXT        112,72,108,46,12,ES_AUTOHSCROLL
-    LTEXT           "&Pull Speed",-1,7,4,35,9
-    LTEXT           "&Release Speed",-1,7,19,50,8
     LTEXT           "Mech Strength",-1,7,83,60,8
+    EDITTEXT        111,72,81,46,12,ES_AUTOHSCROLL
+    LTEXT           "Momentum Xfer",-1,7,97,60,8
+    EDITTEXT        118,72,95,46,12,ES_AUTOHSCROLL
     LTEXT           "Park Position (0..1)",-1,7,111,60,8
-    LTEXT           "Stroke Length",-1,7,34,56,8
-    LTEXT           "Scatter Velocity",-1,7,47,56,8
-    LTEXT           "BreakOver Velocity",-1,7,97,63,8
+    EDITTEXT        112,72,109,46,12,ES_AUTOHSCROLL
 END
 
 IDD_PROPSPINNER_VISUALS DIALOGEX 0, 0, 125, 87
@@ -1608,14 +1608,41 @@ BEGIN
     CONTROL         "Disable Lighting",IDC_DISABLE_LIGHTING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,127,66,10
 END
 
-IDD_PROPPLUNGER_VISUALS DIALOGEX 0, 0, 125, 62
+IDD_PROPPLUNGER_VISUALS DIALOGEX 0, 0, 125, 278
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    COMBOBOX        DISPID_Image,7,13,113,60,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Material",-1,7,34,26,8
-    LTEXT           "&Image",-1,7,3,22,8
-    COMBOBOX        IDC_MATERIAL_COMBO,7,43,109,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "&Type",IDC_STATIC,7,9,25,8
+    COMBOBOX        390,34,7,85,60,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Material",IDC_STATIC,7,25,26,8
+    COMBOBOX        IDC_MATERIAL_COMBO,7,34,113,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "&Image:",IDC_STATIC,7,49,22,8
+    COMBOBOX        DISPID_Image,7,58,113,60,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Flat Frames",IDC_STATIC,7,78,37,8
+    EDITTEXT        DISPID_PluFrames,55,76,40,14,ES_AUTOHSCROLL
+    LTEXT           "Width",IDC_STATIC,7,94,20,8
+    EDITTEXT        DISPID_Width,55,92,40,14,ES_AUTOHSCROLL
+    LTEXT           "Z Adjustment",IDC_STATIC,7,109,42,8
+    EDITTEXT        DISPID_ZAdjust,55,107,40,14,ES_AUTOHSCROLL
+    GROUPBOX        "Custom Settings",IDC_STATIC,7,126,110,148
+    LTEXT           "Rod Diameter",IDC_STATIC,14,140,44,8
+    EDITTEXT        DISPID_RodDiam,62,138,40,14,ES_AUTOHSCROLL
+    LTEXT           "Tip Shape",IDC_STATIC,14,156,34,8
+    EDITTEXT        DISPID_TipShape,62,153,40,14,ES_AUTOHSCROLL
+    LTEXT           "Ring Gap",IDC_STATIC,14,171,31,8
+    EDITTEXT        DISPID_RingGap,62,168,40,14,ES_AUTOHSCROLL
+    LTEXT           "Ring Diam",IDC_STATIC,14,186,34,8
+    EDITTEXT        DISPID_RingDiam,62,183,40,14,ES_AUTOHSCROLL
+    LTEXT           "Ring Width",IDC_STATIC,14,201,36,8
+    EDITTEXT        DISPID_RingThickness,62,198,40,14,ES_AUTOHSCROLL
+    LTEXT           "Spring Diam",IDC_STATIC,14,216,39,8
+    EDITTEXT        DISPID_SpringDiam,62,213,40,14,ES_AUTOHSCROLL
+    LTEXT           "Spring Gauge",IDC_STATIC,14,230,44,8
+    EDITTEXT        DISPID_SpringGauge,62,228,40,14,ES_AUTOHSCROLL
+    LTEXT           "Spring Loops",IDC_STATIC,14,245,42,8
+    EDITTEXT        DISPID_SpringLoops,62,243,40,14,ES_AUTOHSCROLL
+    LTEXT           "End Loops",IDC_STATIC,14,260,35,8
+    EDITTEXT        DISPID_SpringEndLoops,62,258,40,14,ES_AUTOHSCROLL
 END
 
 IDD_PROPFLASHER_VISUALS DIALOGEX 0, 0, 125, 180
@@ -1859,6 +1886,11 @@ BEGIN
     IDD_PROPGATE_PHYSICS, DIALOG
     BEGIN
         BOTTOMMARGIN, 59
+    END
+
+    IDD_PROPPLUNGER_VISUALS, DIALOG
+    BEGIN
+        BOTTOMMARGIN, 277
     END
 
     IDD_PROPFLASHER_VISUALS, DIALOG
@@ -2465,7 +2497,7 @@ BEGIN
     IDS_STEP                "Step"
 END
 
-#endif    // Englisch (USA) resources
+#endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

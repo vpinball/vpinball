@@ -657,6 +657,18 @@
 #define IDC_CORRECTION_Y                461
 #define IDC_EFXAA                       462
 #define IDC_ABOUT_VERSION               463
+#define DISPID_PluFrames                464
+#define DISPID_Width                    465
+#define DISPID_ZAdjust                  466
+#define DISPID_RodDiam                  467
+#define DISPID_RingDiam                 468
+#define DISPID_RingThickness            469
+#define DISPID_SpringDiam               470
+#define DISPID_TipShape                 471
+#define DISPID_SpringGauge              472
+#define DISPID_SpringLoops              473
+#define DISPID_RingGap                  474
+#define DISPID_SpringEndLoops           475
 #define IDC_JOYLFLIPCOMBO               501
 #define IDC_JOYRFLIPCOMBO               502
 #define IDC_JOYPLUNGERCOMBO             503
@@ -863,7 +875,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        617
 #define _APS_NEXT_COMMAND_VALUE         32998
-#define _APS_NEXT_CONTROL_VALUE         464
+#define _APS_NEXT_CONTROL_VALUE         476
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif
