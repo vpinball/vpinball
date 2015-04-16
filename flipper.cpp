@@ -129,23 +129,18 @@ void Flipper::WriteRegDefaults()
 {
    static const char regKey[] = "DefaultProps\\Flipper";
 
-   SetRegValueFloat(regKey,"BaseRadius", m_d.m_BaseRadius);
    SetRegValueFloat(regKey,"StartAngle", m_d.m_StartAngle);
    SetRegValueFloat(regKey,"EndAngle", m_d.m_EndAngle);
    SetRegValueFloat(regKey,"BaseRadius", m_d.m_BaseRadius);
-   SetRegValueFloat(regKey,"MaxDifLength", m_d.m_FlipperRadiusMin);
    SetRegValueFloat(regKey,"EndRadius", m_d.m_EndRadius);
-   SetRegValueFloat(regKey,"ReturnStrength", m_d.m_return);
-   SetRegValueFloat(regKey,"StartAngle", m_d.m_StartAngle);
-   SetRegValueFloat(regKey,"EndAngle", m_d.m_EndAngle);
-   SetRegValueFloat(regKey,"Length", m_d.m_FlipperRadiusMax);
    SetRegValueFloat(regKey,"MaxDifLength", m_d.m_FlipperRadiusMin);
    SetRegValueFloat(regKey,"ReturnStrength", m_d.m_return);
+   SetRegValueFloat(regKey,"Length", m_d.m_FlipperRadiusMax);
    SetRegValueFloat(regKey,"Speed", m_d.m_mass);
    SetRegValueFloat(regKey,"Elasticity", m_d.m_elasticity);
    SetRegValueFloat(regKey,"ElasticityFalloff", m_d.m_elasticityFalloff);
-   SetRegValueFloat(regKey, "Friction", m_d.m_friction);
-   SetRegValueFloat(regKey, "RampUp", m_d.m_rampUp);
+   SetRegValueFloat(regKey,"Friction", m_d.m_friction);
+   SetRegValueFloat(regKey,"RampUp", m_d.m_rampUp);
    SetRegValueInt(regKey,"TimerEnabled", m_d.m_tdr.m_fTimerEnabled);
    SetRegValueInt(regKey,"TimerInterval", m_d.m_tdr.m_TimerInterval);
    SetRegValueInt(regKey,"Color", m_d.m_color);
@@ -909,7 +904,8 @@ BOOL Flipper::LoadToken(int id, BiffReader *pbr)
    {
       pbr->GetInt(&m_d.m_tdr.m_TimerInterval);
       //m_d.m_tdr.m_TimerInterval = INT(m_d.m_tdr.m_TimerInterval);
-      if (m_d.m_tdr.m_TimerInterval<1) {m_d.m_tdr.m_TimerInterval = 100;}
+      if (m_d.m_tdr.m_TimerInterval < 1)
+         m_d.m_tdr.m_TimerInterval = 100;
    }
    else if (id == FID(SURF))
    {
@@ -985,11 +981,14 @@ BOOL Flipper::LoadToken(int id, BiffReader *pbr)
 
 HRESULT Flipper::InitPostLoad()
 {
-   if(m_d.m_height > 1000.0f) m_d.m_height = 50.0f;
-   if(m_d.m_rubberheight > 1000) m_d.m_rubberheight = 8;
+   if(m_d.m_height > 1000.0f)
+      m_d.m_height = 50.0f;
+   if(m_d.m_rubberheight > 1000)
+      m_d.m_rubberheight = 8;
    if(m_d.m_rubberthickness > 0 && m_d.m_height > 16.0f && m_d.m_rubberwidth == 0)
       m_d.m_rubberwidth = (int)(m_d.m_height-16.0f);
-   if(m_d.m_rubberwidth > 1000) m_d.m_rubberwidth = (int)(m_d.m_height-16.0f);
+   if(m_d.m_rubberwidth > 1000)
+      m_d.m_rubberwidth = (int)(m_d.m_height-16.0f);
 
    return S_OK;
 }
@@ -1221,9 +1220,16 @@ STDMETHODIMP Flipper::get_Mass(float *pVal)
 
 STDMETHODIMP Flipper::put_Mass(float newVal)
 {
-   STARTUNDO
-   m_d.m_mass = newVal;
-   STOPUNDO
+   if (m_phitflipper)
+   {
+       m_phitflipper->m_flipperanim.SetMass(m_d.m_OverridePhysics ? m_d.m_OverrideMass : newVal);
+   }
+   else
+   {
+       STARTUNDO
+       m_d.m_mass = newVal;
+       STOPUNDO
+   }
 
    return S_OK;
 }
@@ -1331,11 +1337,18 @@ STDMETHODIMP Flipper::get_Strength(float *pVal)
 
 STDMETHODIMP Flipper::put_Strength(float newVal)
 {
-   STARTUNDO
+   if (m_phitflipper)
+   {
+       m_phitflipper->m_flipperanim.SetStrength(m_d.m_OverridePhysics ? m_d.m_OverrideStrength : newVal);
+   }
+   else
+   {
+       STARTUNDO
 
-   m_d.m_strength = newVal;
+       m_d.m_strength = newVal;   
 
-   STOPUNDO
+       STOPUNDO
+   }
 
    return S_OK;
 }
@@ -1351,8 +1364,7 @@ STDMETHODIMP Flipper::put_Visible(VARIANT_BOOL newVal)
 {
    if (m_phitflipper)
    {
-      //m_phitflipper->m_flipperanim.m_fEnabled = m_d.m_fVisible;
-      m_phitflipper->m_flipperanim.m_fVisible = VBTOF(newVal);
+      m_phitflipper->m_flipperanim.m_fVisible = VBTOF(newVal); //m_d.m_fVisible
    }
    else
    {
@@ -1374,8 +1386,7 @@ STDMETHODIMP Flipper::put_Enabled(VARIANT_BOOL newVal)
 {
    if (m_phitflipper)
    {
-      //m_phitflipper->m_flipperanim.m_fEnabled = m_d.m_fVisible;
-      m_phitflipper->m_flipperanim.m_fEnabled = VBTOF(newVal);
+      m_phitflipper->m_flipperanim.m_fEnabled = VBTOF(newVal); //m_d.m_fVisible
    }
    else
    {
@@ -1488,11 +1499,18 @@ STDMETHODIMP Flipper::get_Return(float *pVal)
 
 STDMETHODIMP Flipper::put_Return(float newVal)
 {
-   STARTUNDO
+   if (m_phitflipper)
+   {
+       m_phitflipper->m_flipperanim.SetReturnRatio(m_d.m_OverridePhysics ? m_d.m_OverrideReturnStrength : clamp(newVal, 0.0f, 1.0f));
+   }
+   else
+   {
+       STARTUNDO
 
-   m_d.m_return = clamp(newVal, 0.0f, 1.0f);
+       m_d.m_return = clamp(newVal, 0.0f, 1.0f);
 
-   STOPUNDO
+       STOPUNDO
+   }
 
    return S_OK;
 }

@@ -666,7 +666,7 @@ void Plunger::RenderSetup(RenderDevice* pd3dDevice )
        // maps to the centerline of the top of the cylinder surface.
        // Work outwards on the texture to wrap it around the cylinder.
        float tu = 0.51f;
-       const float stepU = 1.0f/circlePoints;
+       const float stepU = 1.0f/(float)circlePoints;
        for (int l = 0, offset = 0 ; l < circlePoints ; l++, offset += lathePoints, tu += stepU)
        {
            // Go down the long axis, adding a vertex for each point
@@ -805,9 +805,9 @@ void Plunger::RenderSetup(RenderDevice* pd3dDevice )
            float dyEnd = yEnd/(nEnd - 1);
            float dy = dyEnd;
            Vertex3D_NoTex2 *pm = &ptr[offset];
-           const float TWOPI = float(M_PI)*2.0f;
-           const float dtheta = TWOPI/(circlePoints - 1) + TWOPI/2.0f/(n-1);
-           for (float theta = TWOPI/2.0f, y = y0 ; n != 0 ; --n, theta += dtheta, y += dy)
+           const float TWOPI = float(M_PI*2.0);
+           const float dtheta = TWOPI/(float)(circlePoints - 1) + (float)M_PI/(float)(n-1);
+           for (float theta = (float)M_PI, y = y0 ; n != 0 ; --n, theta += dtheta, y += dy)
            {
                if (n == nMain) dy = dyMain;
                if (theta >= TWOPI) theta -= TWOPI;
