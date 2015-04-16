@@ -15,13 +15,11 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (U.S.) resources
+// English (United States) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
-#ifdef _WIN32
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 #pragma code_page(1252)
-#endif //_WIN32
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -143,7 +141,7 @@ BEGIN
     LTEXT           "Scale Y",IDC_STATIC_SCALEY,19,35,26,8
 END
 
-IDD_PROGRESS DIALOG  0, 0, 167, 44
+IDD_PROGRESS DIALOG 0, 0, 167, 44
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Preparing Table"
 FONT 8, "MS Sans Serif"
@@ -306,7 +304,7 @@ BEGIN
     LTEXT           "to my Monitor:",IDC_STATIC,27,244,45,8
 END
 
-IDD_FONTDIALOG DIALOG  0, 0, 316, 167
+IDD_FONTDIALOG DIALOG 0, 0, 316, 167
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Font Manager"
 FONT 8, "MS Sans Serif"
@@ -464,8 +462,7 @@ BEGIN
     LTEXT           "* To assign Custom Keys to Gamepad Buttons, click on the button and select desired key, then choose desired gamepad button from dropdown box.",IDC_STATIC,13,230,168,25
     CONTROL         "Enable Mouse during Play",IDC_ENABLE_MOUSE_PLAYER,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,257,227,100,10
-    CONTROL         "Enable Nudge Filter",IDC_ENABLE_NUDGE_FILTER,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,257,200,100,10
+    CONTROL         "Enable Nudge Filter",IDC_ENABLE_NUDGE_FILTER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,257,200,100,10
 END
 
 IDD_TRANSLATE DIALOGEX 0, 0, 186, 102
@@ -585,7 +582,7 @@ BEGIN
     PUSHBUTTON      "&Down",IDC_COL_DOWN_BUTTON,259,66,50,14
 END
 
-IDD_COLLECTION DIALOG  0, 0, 232, 231
+IDD_COLLECTION DIALOG 0, 0, 232, 231
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Collection"
 FONT 8, "MS Sans Serif"
@@ -646,7 +643,7 @@ BEGIN
     LTEXT           "Please reenter your Password",IDC_STATIC,7,182,99,8
 END
 
-IDD_UNLOCK_DIALOG DIALOG  0, 0, 164, 53
+IDD_UNLOCK_DIALOG DIALOG 0, 0, 164, 53
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Unlock Protected Table"
 FONT 8, "MS Sans Serif"
@@ -992,23 +989,23 @@ IDD_PROPPLUNGER_PHYSICS DIALOGEX 0, 0, 125, 125
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
+    LTEXT           "&Pull Speed",-1,7,4,35,9
     EDITTEXT        3,72,4,46,12,ES_AUTOHSCROLL
+    LTEXT           "&Release Speed",-1,7,19,50,8
     EDITTEXT        4,72,17,46,12,ES_AUTOHSCROLL
+    LTEXT           "Stroke Length",-1,7,34,56,8
     EDITTEXT        113,72,32,46,12,ES_AUTOHSCROLL
+    LTEXT           "Scatter Velocity",-1,7,47,56,8
     EDITTEXT        114,72,45,46,12,ES_AUTOHSCROLL
     CONTROL         "Enable Mechanical Plunger",110,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,59,111,9
     CONTROL         "Auto Plunger",116,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,70,55,9
     CONTROL         "Visible",117,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,71,70,39,9
-    EDITTEXT        111,72,81,46,12,ES_AUTOHSCROLL
-    EDITTEXT        115,72,94,46,12,ES_AUTOHSCROLL
-    EDITTEXT        112,72,108,46,12,ES_AUTOHSCROLL
-    LTEXT           "&Pull Speed",-1,7,4,35,9
-    LTEXT           "&Release Speed",-1,7,19,50,8
     LTEXT           "Mech Strength",-1,7,83,60,8
+    EDITTEXT        111,72,81,46,12,ES_AUTOHSCROLL
+    LTEXT           "Momentum Xfer",-1,7,97,60,8
+    EDITTEXT        118,72,95,46,12,ES_AUTOHSCROLL
     LTEXT           "Park Position (0..1)",-1,7,111,60,8
-    LTEXT           "Stroke Length",-1,7,34,56,8
-    LTEXT           "Scatter Velocity",-1,7,47,56,8
-    LTEXT           "BreakOver Velocity",-1,7,97,63,8
+    EDITTEXT        112,72,109,46,12,ES_AUTOHSCROLL
 END
 
 IDD_PROPSPINNER_VISUALS DIALOGEX 0, 0, 125, 124
@@ -1525,7 +1522,7 @@ BEGIN
     CONTROL         "Throw Balls in Player",IDC_BALL_THROWING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,27,81,10
 END
 
-IDD_COMLIST DIALOG  0, 0, 287, 190
+IDD_COMLIST DIALOG 0, 0, 287, 190
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Component List"
 FONT 8, "MS Sans Serif"
@@ -1630,16 +1627,41 @@ BEGIN
     EDITTEXT        IDC_DEPTH_BIAS,79,115,36,12,ES_AUTOHSCROLL
 END
 
-IDD_PROPPLUNGER_VISUALS DIALOGEX 0, 0, 125, 79
+IDD_PROPPLUNGER_VISUALS DIALOGEX 0, 0, 125, 265
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
+    LTEXT           "&Type",IDC_STATIC,7,9,25,8
     COMBOBOX        390,34,7,85,60,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    COMBOBOX        DISPID_Image,7,31,113,60,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Custom2",391,"ColorControl",WS_TABSTOP,27,49,40,14
-    LTEXT           "&Type",-1,7,9,25,8
-    LTEXT           "&Color",-1,7,52,17,8
-    LTEXT           "&Image:",-1,7,21,22,8
+    LTEXT           "&Color",IDC_STATIC,7,25,17,8
+    CONTROL         "Custom2",391,"ColorControl",WS_TABSTOP,34,22,40,14
+    LTEXT           "&Image:",IDC_STATIC,7,37,22,8
+    COMBOBOX        DISPID_Image,7,47,113,60,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Flat Frames",IDC_STATIC,7,65,37,8
+    EDITTEXT        DISPID_PluFrames,55,63,40,14,ES_AUTOHSCROLL
+    LTEXT           "Width",IDC_STATIC,7,81,20,8
+    EDITTEXT        DISPID_Width,55,79,40,14,ES_AUTOHSCROLL
+    LTEXT           "Z Adjustment",IDC_STATIC,7,96,42,8
+    EDITTEXT        DISPID_ZAdjust,55,94,40,14,ES_AUTOHSCROLL
+    GROUPBOX        "Custom Settings",IDC_STATIC,7,113,110,149
+    LTEXT           "Rod Diameter",IDC_STATIC,14,127,44,8
+    EDITTEXT        DISPID_RodDiam,62,125,40,14,ES_AUTOHSCROLL
+    LTEXT           "Tip Shape",IDC_STATIC,14,143,34,8
+    EDITTEXT        DISPID_TipShape,62,140,40,14,ES_AUTOHSCROLL
+    LTEXT           "Ring Gap",IDC_STATIC,14,158,31,8
+    EDITTEXT        DISPID_RingGap,62,155,40,14,ES_AUTOHSCROLL
+    LTEXT           "Ring Diam",IDC_STATIC,14,173,34,8
+    EDITTEXT        DISPID_RingDiam,62,170,40,14,ES_AUTOHSCROLL
+    LTEXT           "Ring Width",IDC_STATIC,14,188,36,8
+    EDITTEXT        DISPID_RingThickness,62,185,40,14,ES_AUTOHSCROLL
+    LTEXT           "Spring Diam",IDC_STATIC,14,203,39,8
+    EDITTEXT        DISPID_SpringDiam,62,200,40,14,ES_AUTOHSCROLL
+    LTEXT           "Spring Gauge",IDC_STATIC,14,217,44,8
+    EDITTEXT        DISPID_SpringGauge,62,215,40,14,ES_AUTOHSCROLL
+    LTEXT           "Spring Loops",IDC_STATIC,14,232,42,8
+    EDITTEXT        DISPID_SpringLoops,62,230,40,14,ES_AUTOHSCROLL
+    LTEXT           "End Loops",IDC_STATIC,14,247,35,8
+    EDITTEXT        DISPID_SpringEndLoops,62,245,40,14,ES_AUTOHSCROLL
 END
 
 IDD_PROPFLASHER_VISUALS DIALOGEX 0, 0, 125, 102
@@ -1705,7 +1727,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
+GUIDELINES DESIGNINFO
 BEGIN
     IDD_DIMENSION_CALCULATOR, DIALOG
     BEGIN
@@ -1757,6 +1779,10 @@ BEGIN
     IDD_PROPBACKGLASS_VISUALS, DIALOG
     BEGIN
         BOTTOMMARGIN, 185
+    END
+
+    IDD_PROPPLUNGER_VISUALS, DIALOG
+    BEGIN
     END
 
     IDD_PROPFLASHER_VISUALS, DIALOG
@@ -1866,7 +1892,7 @@ IDR_PRIMITIVE           REGISTRY                "res\\primitive.rgs"
 // Menu
 //
 
-IDR_APPMENU MENU 
+IDR_APPMENU MENU
 BEGIN
     POPUP "&File"
     BEGIN
@@ -1972,7 +1998,7 @@ BEGIN
     END
 END
 
-IDR_POINTMENU MENU 
+IDR_POINTMENU MENU
 BEGIN
     POPUP "PointMenu"
     BEGIN
@@ -1981,7 +2007,7 @@ BEGIN
     END
 END
 
-IDR_SURFACEMENU MENU 
+IDR_SURFACEMENU MENU
 BEGIN
     POPUP "WallMenu"
     BEGIN
@@ -1994,7 +2020,7 @@ BEGIN
     END
 END
 
-IDR_MULTIMENU MENU 
+IDR_MULTIMENU MENU
 BEGIN
     POPUP "WallMenu"
     BEGIN
@@ -2006,7 +2032,7 @@ BEGIN
     END
 END
 
-IDR_SCRIPTMENU MENU 
+IDR_SCRIPTMENU MENU
 BEGIN
     POPUP "&Script"
     BEGIN
@@ -2029,7 +2055,7 @@ BEGIN
     END
 END
 
-IDR_TABLEMENU MENU 
+IDR_TABLEMENU MENU
 BEGIN
     POPUP "Table Menu"
     BEGIN
@@ -2060,7 +2086,7 @@ IDB_CHEVRON             BITMAP                  "res\\chevron.bmp"
 // Accelerator
 //
 
-IDR_VPACCEL ACCELERATORS 
+IDR_VPACCEL ACCELERATORS
 BEGIN
     VK_DELETE,      ID_DELETE,              VIRTKEY, NOINVERT
     "D",            ID_EDIT_DRAWINGORDER_HIT, VIRTKEY, SHIFT, CONTROL, NOINVERT
@@ -2068,34 +2094,34 @@ BEGIN
     "E",            ID_EDIT_SEARCH,         VIRTKEY, SHIFT, CONTROL, NOINVERT
     "Z",            ID_EDIT_UNDO,           VIRTKEY, CONTROL, NOINVERT
     VK_F5,          ID_TABLE_PLAY,          VIRTKEY, NOINVERT
-    "B",            ID_INSERT_BUMPER,             VIRTKEY, CONTROL, NOINVERT
+    "B",            ID_INSERT_BUMPER,       VIRTKEY, CONTROL, NOINVERT
     "C",            IDC_COPY,               VIRTKEY, CONTROL, NOINVERT
-    "D",            ID_INSERT_DECAL,              VIRTKEY, CONTROL, NOINVERT
-    "Y",            ID_INSERT_DISP_REEL,           VIRTKEY, CONTROL, NOINVERT
-    "F",            ID_INSERT_FLIPPER,            VIRTKEY, CONTROL, NOINVERT
-    "G",            ID_INSERT_GATE,               VIRTKEY, CONTROL, NOINVERT
-    "K",            ID_INSERT_KICKER,             VIRTKEY, CONTROL, NOINVERT
-    "L",            ID_INSERT_LIGHT,              VIRTKEY, CONTROL, NOINVERT
-    "Q",            ID_INSERT_LIGHT_SEQ,           VIRTKEY, CONTROL, NOINVERT
+    "D",            ID_INSERT_DECAL,        VIRTKEY, CONTROL, NOINVERT
+    "Y",            ID_INSERT_DISP_REEL,    VIRTKEY, CONTROL, NOINVERT
+    "F",            ID_INSERT_FLIPPER,      VIRTKEY, CONTROL, NOINVERT
+    "G",            ID_INSERT_GATE,         VIRTKEY, CONTROL, NOINVERT
+    "K",            ID_INSERT_KICKER,       VIRTKEY, CONTROL, NOINVERT
+    "L",            ID_INSERT_LIGHT,        VIRTKEY, CONTROL, NOINVERT
+    "Q",            ID_INSERT_LIGHT_SEQ,    VIRTKEY, CONTROL, NOINVERT
     "V",            IDC_PASTE,              VIRTKEY, CONTROL, NOINVERT
     "V",            IDC_PASTEAT,            VIRTKEY, SHIFT, CONTROL, NOINVERT
-    "P",            ID_INSERT_PLUNGER,            VIRTKEY, CONTROL, NOINVERT
-    "J",            ID_INSERT_PRIMITIVE,          VIRTKEY, CONTROL, NOINVERT
-    "R",            ID_INSERT_RAMP,               VIRTKEY, CONTROL, NOINVERT
+    "P",            ID_INSERT_PLUNGER,      VIRTKEY, CONTROL, NOINVERT
+    "J",            ID_INSERT_PRIMITIVE,    VIRTKEY, CONTROL, NOINVERT
+    "R",            ID_INSERT_RAMP,         VIRTKEY, CONTROL, NOINVERT
     VK_ESCAPE,      IDC_SELECT,             VIRTKEY, NOINVERT
-    "I",            ID_INSERT_SPINNER,            VIRTKEY, CONTROL, NOINVERT
-    "A",            ID_INSERT_TARGET,             VIRTKEY, CONTROL, NOINVERT
-    "E",            ID_INSERT_TEXTBOX,            VIRTKEY, CONTROL, NOINVERT
-    "M",            ID_INSERT_TIMER,              VIRTKEY, CONTROL, NOINVERT
-    "T",            ID_INSERT_TRIGGER,            VIRTKEY, CONTROL, NOINVERT
-    "W",            ID_INSERT_WALL,               VIRTKEY, CONTROL, NOINVERT
+    "I",            ID_INSERT_SPINNER,      VIRTKEY, CONTROL, NOINVERT
+    "A",            ID_INSERT_TARGET,       VIRTKEY, CONTROL, NOINVERT
+    "E",            ID_INSERT_TEXTBOX,      VIRTKEY, CONTROL, NOINVERT
+    "M",            ID_INSERT_TIMER,        VIRTKEY, CONTROL, NOINVERT
+    "T",            ID_INSERT_TRIGGER,      VIRTKEY, CONTROL, NOINVERT
+    "W",            ID_INSERT_WALL,         VIRTKEY, CONTROL, NOINVERT
     "N",            IDM_NEW,                VIRTKEY, CONTROL, NOINVERT
     "O",            IDM_OPEN,               VIRTKEY, CONTROL, NOINVERT
     "S",            IDM_SAVE,               VIRTKEY, CONTROL, NOINVERT
-    "H",            ID_INSERT_FLASHER,            VIRTKEY, CONTROL, NOINVERT
+    "H",            ID_INSERT_FLASHER,      VIRTKEY, CONTROL, NOINVERT
 END
 
-IDR_CODEVIEWACCEL ACCELERATORS 
+IDR_CODEVIEWACCEL ACCELERATORS
 BEGIN
     "W",            ID_ADD_COMMENT,         VIRTKEY, CONTROL, NOINVERT
     VK_F3,          ID_EDIT_FINDNEXT,       VIRTKEY, NOINVERT
@@ -2114,44 +2140,44 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_VPINBALL             ICON                    "res\\vpinball.ico"
-IDI_SCRIPT               ICON                    "res\\script.ico"
-IDI_TABLE                ICON                    "res\\table.ico"
-IDI_PLAY                 ICON                    "res\\play.ico"
-IDI_PAUSE                ICON                    "res\\pause.ico"
-IDI_STEP                 ICON                    "res\\step.ico"
+IDI_VPINBALL            ICON                    "res\\vpinball.ico"
+IDI_SCRIPT              ICON                    "res\\script.ico"
+IDI_TABLE               ICON                    "res\\table.ico"
+IDI_PLAY                ICON                    "res\\play.ico"
+IDI_PAUSE               ICON                    "res\\pause.ico"
+IDI_STEP                ICON                    "res\\step.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Cursor
 //
 
-IDC_MAGNIFY         CURSOR                  "res\\magnify.cur"
-IDC_LIGHT           CURSOR                  "res\\light.cur"
-IDC_WALL            CURSOR                  "res\\wall.cur"
-IDC_FLIPPER         CURSOR                  "res\\flipper.cur"
-IDC_TRIGGER         CURSOR                  "res\\trigger.cur"
-IDC_GATE            CURSOR                  "res\\gate.cur"
-IDC_TIMER           CURSOR                  "res\\timer.cur"
-IDC_PLUNGER         CURSOR                  "res\\plunger.cur"
-IDC_TEXTBOX         CURSOR                  "res\\textbox.cur"
-IDC_BUMPER          CURSOR                  "res\\bumper.cur"
-IDC_KICKER          CURSOR                  "res\\kicker.cur"
-IDC_TARGET          CURSOR                  "res\\target.cur"
-IDC_DECAL           CURSOR                  "res\\decal.cur"
-IDC_SPINNER         CURSOR                  "res\\spinner.cur"
-IDC_RAMP            CURSOR                  "res\\ramp.cur"
-IDC_DISP_REEL       CURSOR                  "res\\dispreel.cur"
-IDC_LIGHT_SEQ       CURSOR                  "res\\lightseq.cur"
-IDC_PRIMITIVE       CURSOR                  "res\\primitive.cur"
-IDC_FLASHER         CURSOR                  "res\\flasher.cur"
+IDC_MAGNIFY             CURSOR                  "res\\magnify.cur"
+IDC_LIGHT               CURSOR                  "res\\light.cur"
+IDC_WALL                CURSOR                  "res\\wall.cur"
+IDC_FLIPPER             CURSOR                  "res\\flipper.cur"
+IDC_TRIGGER             CURSOR                  "res\\trigger.cur"
+IDC_GATE                CURSOR                  "res\\gate.cur"
+IDC_TIMER               CURSOR                  "res\\timer.cur"
+IDC_PLUNGER             CURSOR                  "res\\plunger.cur"
+IDC_TEXTBOX             CURSOR                  "res\\textbox.cur"
+IDC_BUMPER              CURSOR                  "res\\bumper.cur"
+IDC_KICKER              CURSOR                  "res\\kicker.cur"
+IDC_TARGET              CURSOR                  "res\\target.cur"
+IDC_DECAL               CURSOR                  "res\\decal.cur"
+IDC_SPINNER             CURSOR                  "res\\spinner.cur"
+IDC_RAMP                CURSOR                  "res\\ramp.cur"
+IDC_DISP_REEL           CURSOR                  "res\\dispreel.cur"
+IDC_LIGHT_SEQ           CURSOR                  "res\\lightseq.cur"
+IDC_PRIMITIVE           CURSOR                  "res\\primitive.cur"
+IDC_FLASHER             CURSOR                  "res\\flasher.cur"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // TABLE
 //
 
-IDR_TABLE           TABLE                   "res\\table.vpt"
+IDR_TABLE               TABLE                   "res\\table.vpt"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -2177,7 +2203,7 @@ END
 // String Table
 //
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_PROJNAME            "Visual Pinball"
     IDS_TB_TIMER            "Timer"
@@ -2193,14 +2219,14 @@ BEGIN
     IDS_LAYER3              "Layer&3"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_TB_LIGHTSEQ         "LightSeq"
     IDS_REPLACEALL          "Replaced"
     IDS_REPLACEALL2         "occurrences in script."
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_NEED_DD9            "Visual Pinball requires DirectX 9.0 or higher from Microsoft."
     IDS_LOCK                "&Lock"
@@ -2214,12 +2240,12 @@ BEGIN
     IDS_POSITION_TRANSLATION "Position & Translation"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_VISUALS_SOUND       "Colors, Sound & Graphics"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_PHYSICSGFX          "Physics & Graphics"
     IDS_DIMENSIONSSLOPE     "Dimensions & Slope"
@@ -2227,7 +2253,7 @@ BEGIN
     IDS_INPUT               "Input"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_TIMER_DESC          "Timer Class"
     IDS_LAYER4              "Layer&4"
@@ -2247,7 +2273,7 @@ BEGIN
     IDS_TB_TRIGGER          "Trigger"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_LAYER8              "Layer&8"
     IDS_LIGHT_DESC          "Light Class"
@@ -2267,12 +2293,12 @@ BEGIN
     IDS_TO_COLLECTION       "To &Collection"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_DRAWING_ORDER_SELECT "D&rawing Order (Select)"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_RAMP_DESC           "Ramp Class"
     IDS_TB_RAMP             "Ramp"
@@ -2291,7 +2317,7 @@ BEGIN
     IDS_DRAWINFRONT         "Draw In &Front"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_PERMISSION_ERROR    "This table is protected.\n\nThe table author has requested that this option be restricted."
     IDS_PROTECT_ONETICKED   "You must tick at least one protection option."
@@ -2301,7 +2327,7 @@ BEGIN
     IDS_UNLOCK_SUCCESS      "This table has been successfully unlocked."
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_DRAWINBACK          "Draw In &Back"
     IDS_SAVEERROR           "There was an error saving the file."
@@ -2319,7 +2345,7 @@ BEGIN
     IDS_COLLECTION          "Collection"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_EDITOR              "Editor"
     IDS_DEFAULTBALL         "Ball"
@@ -2338,7 +2364,7 @@ BEGIN
     IDS_TB_COMCONTROL       "ActiveX"
 END
 
-#endif    // English (U.S.) resources
+#endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
