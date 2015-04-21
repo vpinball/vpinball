@@ -278,10 +278,10 @@ BEGIN
     CONTROL         "Enable Ambient Occlusion",IDC_AO_ALL_TABLES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,57,100,10
     LTEXT           "Visual Nudge Strength",IDC_STATIC,162,97,100,10
     EDITTEXT        IDC_NUDGE_STRENGTH,246,95,36,12,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "FPS limiter",IDC_STATIC,162,126,100,10
-    EDITTEXT        IDC_ADAPTIVE_VSYNC,262,124,20,12,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "FPS limiter/VSync",IDC_STATIC,162,126,100,10
+    EDITTEXT        IDC_ADAPTIVE_VSYNC,246,124,20,12,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Max prerendered frames",IDC_STATIC,162,138,77,8
-    EDITTEXT        IDC_MAX_PRE_FRAMES,262,136,20,12,ES_RIGHT | ES_AUTOHSCROLL
+    EDITTEXT        IDC_MAX_PRE_FRAMES,246,136,20,12,ES_RIGHT | ES_AUTOHSCROLL
     CONTROL         "Texture compression (saves memory/harms quality)",IDC_TEX_COMPRESS,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,150,175,10
     CONTROL         "Force Anisotropic Texture Filtering (quality)",IDC_FORCE_ANISO,
@@ -296,7 +296,7 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,218,280,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,277,280,50,14
     LISTBOX         IDC_SIZELIST,14,19,129,120,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "fps  (1=vsync)",IDC_STATIC,283,126,45,10
+    LTEXT           "fps  (1=VSync, 2=Adapt.)",IDC_STATIC,267,126,90,10
     GROUPBOX        "Video Mode",IDC_STATIC,7,7,142,266
     GROUPBOX        "Ball Rendering",IDC_STATIC,154,7,103,40
     GROUPBOX        "3D Stereo Output",IDC_STATIC,259,7,85,80
@@ -1266,7 +1266,7 @@ BEGIN
     EDITTEXT        IDC_ENABLE_AA,47,54,20,12,ES_AUTOHSCROLL
     LTEXT           "FXAA",IDC_STATIC,80,56,19,8
     EDITTEXT        IDC_ENABLE_FXAA,101,54,20,12,ES_AUTOHSCROLL
-    LTEXT           "Ambient Occlusion",IDC_STATIC,7,69,90,8
+    LTEXT           "Ambient Occlusion (-1=default)",IDC_STATIC,7,69,90,8
     EDITTEXT        IDC_ENABLE_AO,101,67,20,12,ES_AUTOHSCROLL
     EDITTEXT        IDC_TABLESOUNDVOLUME,101,81,20,12,ES_AUTOHSCROLL
     EDITTEXT        IDC_TABLEMUSICVOLUME,101,95,20,12,ES_AUTOHSCROLL
@@ -1276,7 +1276,7 @@ BEGIN
     LTEXT           "Material",IDC_STATIC,7,4,28,9
     LTEXT           "Table Sound Volume (0..100)",IDC_STATIC,7,83,94,8
     LTEXT           "Table Music Volume (0..100)",IDC_STATIC,7,97,94,8
-    LTEXT           "Adaptive VSync (-1=default)",IDC_STATIC,7,111,94,8
+    LTEXT           "FPS Limiter/VSync (-1=default)",IDC_STATIC,7,111,94,8
     GROUPBOX        "Object Detail Level",IDC_STATIC,7,123,114,44
     CONTROL         "Overwrite Global Settings",IDC_GLOBAL_ALPHA_ACC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,154,95,10
 END
