@@ -1,5 +1,7 @@
 #include "stdafx.h"
 
+//#include "Dwmapi.h"
+
 #ifndef DISABLE_FORCE_NVIDIA_OPTIMUS
  #include "nvapi.h"
 #endif
@@ -210,102 +212,129 @@ void EnumerateDisplayModes(const int adapter, std::vector<VideoMode>& modes)
 #define CHECKNVAPI(s) { NvAPI_Status hr = (s); if (hr != NVAPI_OK) { NvAPI_ShortString ss; NvAPI_GetErrorMessage(hr,ss); MessageBox(NULL, ss, "NVAPI", MB_OK | MB_ICONEXCLAMATION); } }
 static bool NVAPIinit = false; //!! meh
 
-RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, const bool fullscreen, const int colordepth, int &refreshrate, int VSync, const bool useAA, const bool stereo3D, const bool FXAA)
-    : m_texMan(*this)
-{
-    m_adapter = D3DADAPTER_DEFAULT;     // for now, always use the default adapter
-
 #ifdef USE_D3D9EX
-    CHECKD3D(Direct3DCreate9Ex(D3D_SDK_VERSION, &m_pD3D));
-    if (m_pD3D == NULL)
-    {
-        ShowError("Could not create D3D9Ex object.");
-        throw 0;
-    }
-#else
-    m_pD3D = Direct3DCreate9(D3D_SDK_VERSION);
-    if (m_pD3D == NULL)
-    {
-        ShowError("Could not create D3D9 object.");
-        throw 0;
-    }
+typedef HRESULT(WINAPI *pD3DC9Ex)(UINT SDKVersion, IDirect3D9Ex**);
+static pD3DC9Ex mDirect3DCreate9Ex = NULL;
 #endif
 
-    D3DDEVTYPE devtype = D3DDEVTYPE_HAL;
+typedef HRESULT(STDAPICALLTYPE *pDICE)(BOOL* pfEnabled);
+static pDICE mDwmIsCompositionEnabled = NULL;
 
-    // Look for 'NVIDIA PerfHUD' adapter
-    // If it is present, override default settings
-    // This only takes effect if run under NVPerfHud, otherwise does nothing
-    for (UINT adapter=0; adapter < m_pD3D->GetAdapterCount(); adapter++)
-    {
-        D3DADAPTER_IDENTIFIER9 Identifier;
-        m_pD3D->GetAdapterIdentifier(adapter, 0, &Identifier);
-        if (strstr(Identifier.Description, "PerfHUD") != 0)
-        {
-            m_adapter = adapter;
-            devtype = D3DDEVTYPE_REF;
-            break;
-        }
-    }
+typedef HRESULT(STDAPICALLTYPE *pDF)();
+static pDF mDwmFlush = NULL;
 
-    D3DCAPS9 caps;
-    m_pD3D->GetDeviceCaps(m_adapter, devtype, &caps);
+RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, const bool fullscreen, const int colordepth, int &refreshrate, int VSync, const bool useAA, const bool stereo3D, const bool FXAA)
+	: m_texMan(*this)
+{
+	m_adapter = D3DADAPTER_DEFAULT;     // for now, always use the default adapter
+
+	mDwmIsCompositionEnabled = NULL;
+	mDwmFlush = NULL;
+
+	mDwmIsCompositionEnabled = (pDICE)GetProcAddress(GetModuleHandle(TEXT("dwmapi.dll")), "DwmIsCompositionEnabled"); //!! remove as soon as win xp support dropped and use static link
+	mDwmFlush = (pDF)GetProcAddress(GetModuleHandle(TEXT("dwmapi.dll")), "DwmFlush"); //!! remove as soon as win xp support dropped and use static link
+
+#ifdef USE_D3D9EX
+	m_pD3DEx = NULL;
+	m_pD3DDeviceEx = NULL;
+
+	mDirect3DCreate9Ex = (pD3DC9Ex)GetProcAddress(GetModuleHandle(TEXT("d3d9.dll")), "Direct3DCreate9Ex"); //!! remove as soon as win xp support dropped and use static link
+	if (mDirect3DCreate9Ex)
+	{
+		CHECKD3D(mDirect3DCreate9Ex(D3D_SDK_VERSION, &m_pD3DEx));
+		if (m_pD3DEx == NULL)
+		{
+			ShowError("Could not create D3D9Ex object.");
+			throw 0;
+		}
+		m_pD3DEx->QueryInterface(__uuidof(IDirect3D9), reinterpret_cast<void **>(&m_pD3D));
+	}
+	else
+#endif
+	{
+		m_pD3D = Direct3DCreate9(D3D_SDK_VERSION);
+		if (m_pD3D == NULL)
+		{
+			ShowError("Could not create D3D9 object.");
+			throw 0;
+		}
+	}
+
+	D3DDEVTYPE devtype = D3DDEVTYPE_HAL;
+
+	// Look for 'NVIDIA PerfHUD' adapter
+	// If it is present, override default settings
+	// This only takes effect if run under NVPerfHud, otherwise does nothing
+	for (UINT adapter = 0; adapter < m_pD3D->GetAdapterCount(); adapter++)
+	{
+		D3DADAPTER_IDENTIFIER9 Identifier;
+		m_pD3D->GetAdapterIdentifier(adapter, 0, &Identifier);
+		if (strstr(Identifier.Description, "PerfHUD") != 0)
+		{
+			m_adapter = adapter;
+			devtype = D3DDEVTYPE_REF;
+			break;
+		}
+	}
+
+	D3DCAPS9 caps;
+	m_pD3D->GetDeviceCaps(m_adapter, devtype, &caps);
 
 	// check which parameters can be used for anisotropic filter
-    m_mag_aniso = (caps.TextureFilterCaps & D3DPTFILTERCAPS_MAGFANISOTROPIC) != 0;
-    m_maxaniso = caps.MaxAnisotropy;
+	m_mag_aniso = (caps.TextureFilterCaps & D3DPTFILTERCAPS_MAGFANISOTROPIC) != 0;
+	m_maxaniso = caps.MaxAnisotropy;
 
-    if(((caps.TextureCaps & D3DPTEXTURECAPS_NONPOW2CONDITIONAL) != 0) || ((caps.TextureCaps & D3DPTEXTURECAPS_POW2) != 0))
+	if (((caps.TextureCaps & D3DPTEXTURECAPS_NONPOW2CONDITIONAL) != 0) || ((caps.TextureCaps & D3DPTEXTURECAPS_POW2) != 0))
 		ShowError("D3D device does only support power of 2 textures");
 
-    // get the current display format
-    D3DFORMAT format;
-    if (!fullscreen)
-    {
-        D3DDISPLAYMODE mode;
-        CHECKD3D(m_pD3D->GetAdapterDisplayMode(m_adapter, &mode));
-        format = mode.Format;
+	// get the current display format
+	D3DFORMAT format;
+	if (!fullscreen)
+	{
+		D3DDISPLAYMODE mode;
+		CHECKD3D(m_pD3D->GetAdapterDisplayMode(m_adapter, &mode));
+		format = mode.Format;
 		refreshrate = mode.RefreshRate;
-    }
-    else
-    {
-        format = (colordepth == 16) ? D3DFMT_R5G6B5 : D3DFMT_X8R8G8B8;
-    }
+	}
+	else
+	{
+		format = (colordepth == 16) ? D3DFMT_R5G6B5 : D3DFMT_X8R8G8B8;
+	}
 
 	// limit vsync rate to actual refresh rate, otherwise special handling in renderloop
-	if(VSync > refreshrate)
+	if (VSync > refreshrate)
 		VSync = 0;
 
-    D3DPRESENT_PARAMETERS params;
-    params.BackBufferWidth = width;
-    params.BackBufferHeight = height;
-    params.BackBufferFormat = format;
-    params.BackBufferCount = 1;
-    params.MultiSampleType = /*useAA ? D3DMULTISAMPLE_4_SAMPLES :*/ D3DMULTISAMPLE_NONE; // D3DMULTISAMPLE_NONMASKABLE? //!! useAA now uses super sampling/offscreen render
-    params.MultiSampleQuality = 0; // if D3DMULTISAMPLE_NONMASKABLE then set to > 0
-    params.SwapEffect = D3DSWAPEFFECT_DISCARD;  // FLIP ?
-    params.hDeviceWindow = hwnd;
-    params.Windowed = !fullscreen;
-    params.EnableAutoDepthStencil = FALSE;
-    params.AutoDepthStencilFormat = D3DFMT_UNKNOWN;      // ignored
-    params.Flags = /*stereo3D ?*/ 0 /*: D3DPRESENTFLAG_DISCARD_DEPTHSTENCIL*/;
-    params.FullScreen_RefreshRateInHz = fullscreen ? refreshrate : 0;
+	D3DPRESENT_PARAMETERS params;
+	params.BackBufferWidth = width;
+	params.BackBufferHeight = height;
+	params.BackBufferFormat = format;
+	params.BackBufferCount = 1;
+	params.MultiSampleType = /*useAA ? D3DMULTISAMPLE_4_SAMPLES :*/ D3DMULTISAMPLE_NONE; // D3DMULTISAMPLE_NONMASKABLE? //!! useAA now uses super sampling/offscreen render
+	params.MultiSampleQuality = 0; // if D3DMULTISAMPLE_NONMASKABLE then set to > 0
+	params.SwapEffect = D3DSWAPEFFECT_DISCARD;  // FLIP ?
+	params.hDeviceWindow = hwnd;
+	params.Windowed = !fullscreen;
+	params.EnableAutoDepthStencil = FALSE;
+	params.AutoDepthStencilFormat = D3DFMT_UNKNOWN;      // ignored
+	params.Flags = /*stereo3D ?*/ 0 /*: D3DPRESENTFLAG_DISCARD_DEPTHSTENCIL*/;
+	params.FullScreen_RefreshRateInHz = fullscreen ? refreshrate : 0;
 #ifdef USE_D3D9EX
-    params.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE; //!! or have a special mode to force normal vsync?
+	params.PresentationInterval = (m_pD3DEx && (VSync != 1)) ? D3DPRESENT_INTERVAL_IMMEDIATE : (!!VSync ? D3DPRESENT_INTERVAL_ONE : D3DPRESENT_INTERVAL_IMMEDIATE); //!! or have a special mode to force normal vsync?
 #else
-    params.PresentationInterval = !!VSync ? D3DPRESENT_INTERVAL_ONE : D3DPRESENT_INTERVAL_IMMEDIATE;
+	params.PresentationInterval = !!VSync ? D3DPRESENT_INTERVAL_ONE : D3DPRESENT_INTERVAL_IMMEDIATE;
 #endif
 
 	// check if auto generation of mipmaps can be used, otherwise will be done via d3dx
 	m_autogen_mipmap = (caps.Caps2 & D3DCAPS2_CANAUTOGENMIPMAP) != 0;
-	if(m_autogen_mipmap)
+	if (m_autogen_mipmap)
 		m_autogen_mipmap = (m_pD3D->CheckDeviceFormat(m_adapter, devtype, params.BackBufferFormat, D3DUSAGE_AUTOGENMIPMAP, D3DRTYPE_TEXTURE, D3DFMT_A8R8G8B8) == D3D_OK);
 
 #ifndef DISABLE_FORCE_NVIDIA_OPTIMUS
-	if(!NVAPIinit)
+	if (!NVAPIinit)
 	{
 		if (NvAPI_Initialize() == NVAPI_OK)
-		    NVAPIinit = true;
+			NVAPIinit = true;
 	}
 #endif
 
@@ -314,52 +343,61 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
 	//				  D3DUSAGE_RENDERTARGET, D3DRTYPE_SURFACE, ((D3DFORMAT)(MAKEFOURCC('R','E','S','Z'))))) == D3D_OK;
 
 	// check if requested MSAA is possible
-    DWORD MultiSampleQualityLevels;
-    if( !SUCCEEDED(m_pD3D->CheckDeviceMultiSampleType( m_adapter, 
-                                devtype, params.BackBufferFormat, 
-                                params.Windowed, params.MultiSampleType, &MultiSampleQualityLevels ) ) )
-    {
+	DWORD MultiSampleQualityLevels;
+	if (!SUCCEEDED(m_pD3D->CheckDeviceMultiSampleType(m_adapter,
+		devtype, params.BackBufferFormat,
+		params.Windowed, params.MultiSampleType, &MultiSampleQualityLevels)))
+	{
 		ShowError("D3D device does not support this MultiSampleType");
 		params.MultiSampleType = D3DMULTISAMPLE_NONE;
 		params.MultiSampleQuality = 0;
-    }
-    else
+	}
+	else
 		params.MultiSampleQuality = min(params.MultiSampleQuality, MultiSampleQualityLevels);
 
-    const int softwareVP = GetRegIntWithDefault("Player", "SoftwareVertexProcessing", 0);
-    const DWORD flags = softwareVP ? D3DCREATE_SOFTWARE_VERTEXPROCESSING : D3DCREATE_HARDWARE_VERTEXPROCESSING;
+	const int softwareVP = GetRegIntWithDefault("Player", "SoftwareVertexProcessing", 0);
+	const DWORD flags = softwareVP ? D3DCREATE_SOFTWARE_VERTEXPROCESSING : D3DCREATE_HARDWARE_VERTEXPROCESSING;
 
-    // Create the D3D device. This optionally goes to the proper fullscreen mode.
-    // It also creates the default swap chain (front and back buffer).
+	// Create the D3D device. This optionally goes to the proper fullscreen mode.
+	// It also creates the default swap chain (front and back buffer).
 #ifdef USE_D3D9EX
-    D3DDISPLAYMODEEX mode;
-    mode.Size = sizeof(D3DDISPLAYMODEEX);
-    CHECKD3D(m_pD3D->CreateDeviceEx(
-               m_adapter,
-               devtype,
-               hwnd,
-               flags /*| D3DCREATE_PUREDEVICE*/,
-               &params,
-               fullscreen ? &mode : NULL,
-               &m_pD3DDevice));
+	if (m_pD3DEx)
+	{
+		D3DDISPLAYMODEEX mode;
+		mode.Size = sizeof(D3DDISPLAYMODEEX);
+		CHECKD3D(m_pD3DEx->CreateDeviceEx(
+			m_adapter,
+			devtype,
+			hwnd,
+			flags /*| D3DCREATE_PUREDEVICE*/,
+			&params,
+			fullscreen ? &mode : NULL,
+			&m_pD3DDeviceEx));
 
-    // Get the display mode so that we can report back the actual refresh rate.
-    CHECKD3D(m_pD3DDevice->GetDisplayModeEx(m_adapter, &mode, NULL));
-#else
-    CHECKD3D(m_pD3D->CreateDevice(
-               m_adapter,
-               devtype,
-               hwnd,
-               flags /*| D3DCREATE_PUREDEVICE*/,
-               &params,
-               &m_pD3DDevice));
+		m_pD3DDeviceEx->QueryInterface(__uuidof(IDirect3DDevice9), reinterpret_cast<void**>(&m_pD3DDevice));
 
-    // Get the display mode so that we can report back the actual refresh rate.
-    D3DDISPLAYMODE mode;
-    CHECKD3D(m_pD3DDevice->GetDisplayMode(m_adapter, &mode));
+		// Get the display mode so that we can report back the actual refresh rate.
+		CHECKD3D(m_pD3DDeviceEx->GetDisplayModeEx(m_adapter, &mode, NULL));
+
+		refreshrate = mode.RefreshRate;
+	}
+	else
 #endif
+	{
+		CHECKD3D(m_pD3D->CreateDevice(
+			m_adapter,
+			devtype,
+			hwnd,
+			flags /*| D3DCREATE_PUREDEVICE*/,
+			&params,
+			&m_pD3DDevice));
 
-    refreshrate = mode.RefreshRate;
+		// Get the display mode so that we can report back the actual refresh rate.
+		D3DDISPLAYMODE mode;
+		CHECKD3D(m_pD3DDevice->GetDisplayMode(m_adapter, &mode));
+
+		refreshrate = mode.RefreshRate;
+	}
 
     // Retrieve a reference to the back buffer.
     CHECKD3D(m_pD3DDevice->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &m_pBackBuffer));
@@ -374,7 +412,7 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
 
 	// temporary buffer for gaussian blur
     CHECKD3D(m_pD3DDevice->CreateTexture(width/3, height/3, 1,
-		D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &m_pBloomTmpBufferTexture, NULL)); //!! 8bit enough?
+		D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &m_pBloomTmpBufferTexture, NULL)); //!! 8bit are enough!
 
 	// alloc temporary buffer for postprocessing
 	if(stereo3D || FXAA)
@@ -564,11 +602,16 @@ RenderDevice::~RenderDevice()
 
 #ifdef _DEBUG
     CheckForD3DLeak(m_pD3DDevice);
+
+#ifdef USE_D3D9EX
+	SAFE_RELEASE_NO_RCC(m_pD3DDeviceEx);
 #endif
-
-    SAFE_RELEASE(m_pD3DDevice);
-    SAFE_RELEASE(m_pD3D);
-
+	SAFE_RELEASE(m_pD3DDevice);
+#ifdef USE_D3D9EX
+	SAFE_RELEASE_NO_RCC(m_pD3DEx);
+#endif
+	SAFE_RELEASE(m_pD3D);
+	
     /*
      * D3D sets the FPU to single precision/round to nearest int mode when it's initialized,
      * but doesn't bother to reset the FPU when it's destroyed. We reset it manually here.
@@ -602,11 +645,29 @@ static void FlushGPUCommandBuffer(IDirect3DDevice9* pd3dDevice)
 
 void RenderDevice::Flip(const bool vsync)
 {
+    BOOL dwm = 0;
+	if (mDwmIsCompositionEnabled && vsync) // xp does neither have d3dex nor dwm, so vsync will always be specified during device set
+		mDwmIsCompositionEnabled(&dwm);
+
 #ifdef USE_D3D9EX
-    if(vsync)
-		m_pD3DDevice->WaitForVBlank(0);
+	if (m_pD3DEx && vsync && !dwm)
+	{
+		m_pD3DDeviceEx->WaitForVBlank(0); //!! does not seem to work on win8??
+		/*D3DRASTER_STATUS r;
+		CHECKD3D(m_pD3DDevice->GetRasterStatus(0, &r)); // usually not supported, also only for pure devices?!
+
+		while (!r.InVBlank)
+		{
+			uSleep(10);
+			m_pD3DDevice->GetRasterStatus(0, &r);
+		}*/
+	}
 #endif
+
     CHECKD3D(m_pD3DDevice->Present(NULL, NULL, NULL, NULL));
+
+	if (mDwmFlush && vsync && dwm)
+        mDwmFlush(); //!! also above present?? (internet sources are not clear about order)
 
     // reset performance counters
     m_frameDrawCalls = m_curDrawCalls;
@@ -1287,7 +1348,7 @@ void Shader::SetMaterial( const Material * const mat )
 		currentMaterial.m_cClearcoat = cClearcoat;
 	}
 
-	if(bOpacityActive /*&& (fOpacity < 1.0f)*/)
+	if(bOpacityActive /*&& (alpha < 1.0f)*/)
 		g_pplayer->m_pin3d.EnableAlphaBlend(false);
     else
 		g_pplayer->m_pin3d.DisableAlphaBlend();

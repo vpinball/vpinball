@@ -2977,22 +2977,23 @@ void Player::Render()
     hid_set_output ( HID_OUTPUT_PLUNGER, ((m_time_msec - m_LastPlungerHit) < 512) && ((m_time_msec & 512) > 0) );
 
     int localvsync = (m_ptable->m_TableAdaptiveVSync == -1) ? m_fVSync : m_ptable->m_TableAdaptiveVSync;
-	if (localvsync > m_refreshrate)
+	if (localvsync > m_refreshrate) // cannot sync, just limit to selected framerate
 		localvsync = 0;
+	else if (localvsync > 1) // adaptive sync to refresh rate
+		localvsync = m_refreshrate;
 
     bool vsync = false;
     if(localvsync > 0)
     {
         if(localvsync == 1) // legacy auto-detection
         {
-            if(m_fps > m_refreshrate*ADAPT_VSYNC_FACTOR)
-                vsync = true;
+            //if(m_fps > m_refreshrate*ADAPT_VSYNC_FACTOR) // do nothing, as already enforced during device set
+            //    vsync = true;
         }
         else
             if(m_fps > localvsync*ADAPT_VSYNC_FACTOR)
                 vsync = true;
     }
-
 
     if(!((m_fAO && (m_ptable->m_useAO == -1)) || (m_ptable->m_useAO == 1)) || !m_pin3d.m_pddsAOBackBuffer)
         FlipVideoBuffersNormal( vsync );

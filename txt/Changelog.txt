@@ -35,6 +35,8 @@ VP 10.0.0 Changelog
 
   -> the data-format of the physics sets (*.vpp files) is basically the same, although the parameters inside are different, so unfortunately you need to set them up from scratch again
 
+- new plunger code (provided by mjr)
+
 - Select Elements dialog improved. It shows the type of the element and if supported the used images. 
   
 - new Camera Mode added to the Table menu. This mode starts the player in a special mode where you can change backdrop settings with the following keys:
@@ -166,6 +168,9 @@ VP 10.0.0 Changelog
   (can optionally be combined with VPs builtin FXAA or the control panel FXAA/SMAA/etc for even more smoothing)
 
 - add third mode for FXAA: extreme (and retweak the quality FXAA mode)
+
+- adaptive vsync works again, it will disable vsync automatically if FPS drop below monitor refresh rate (not on windows XP though due to missing functionality there)
+  enable it by setting the FPS Limiter to 2 (1 will still be using 'real' VSync and any number above the monitor refresh rate (usually 60Hz) will just limit the FPS)
 
 - optional texture compression to save some gfx video memory (at the cost of rendering quality and loading time)
   (for now the textures have to be a multiple of 4 in both x & y resolution to make them compressable.
