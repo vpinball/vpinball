@@ -390,34 +390,48 @@ PLUNGER
 Variables
 ---------
 
-*Name(string)
-*X(float)
-*Y(float)
-*PullSpeed(float)
-FireSpeed(float)
-TimerEnabled(bool)
-TimerInterval(int)
-*Surface(string)
-UserValue(any)
-*Color(OLE_COLOR)
-*Image(string) - texture name
-*MeshPLunger(bool)
-*AutoPlunger(bool)
-*Visible(bool)
-MechStrength(float)
-ParkPosition(float)
-Stroke(float)
-ScatterVelocity(float)
-BreakOverVelocity(float)
+*AnimFrames(int) - Flat style only: the number of animation frames in the Image; the image must be arranged with all of the frames lined up horizontally, all the same size, with the fully forward image in the leftmost cell
+*AutoPlunger(bool) - if set, this is a solenoid launcher rather than a traditional plunger
+*Color(OLE_COLOR) - surface color for 3D rendering; used only if no texture is specified via Image
+FireSpeed(float) - speed of firing when Fire() is called or mechanical plunger is released; controls both animation speed and ball launch strength
+*Image(string) - image used as texture for the 3D styles or as animation cell(s) for the flat style
+*MechPlunger(bool) - true if this simulation plunger can be controlled by a mechanical plunger input device attached to the system; if set, the ParkPosition is used as the rest position
+MechStrength(float) - controls strength of coupling to mechanical plunger position; using about the same value as FireSpeed usually works best
+MomentumXfer(float) - adjustment factor for launch strength; multiplied into final ball speed calculation on each launch, so 1.0 has no effect, and 2.0 doubles the strength
+*Name(string) - name of the object for scripting references
+ParkPosition(float) - distance back from fully forward position of resting position (as a fraction of the total length); used only if MechPlunger is enabled
+*PullSpeed(float) - speed of retraction when Pullback() is called (for pulling via keyboard interface)
+*RingDiam(float) - Custom type only: the diameter of the e-ring in the on-screen rendering, as a fraction of the Width setting
+*RingGap(float) - Custom type only: the distance between the tip and the e-ring in the on-screen rendering
+*RingThickness(float) - Custom type only: the thickness of the e-ring in the on-screen rendering
+*RodDiam(float) - Custom type only: the drawing diameter of the rod as a fraction of the Width setting
+*SpringDiam(float) - Custom type only: the diameter of the spring coil in the on-screen rendering, as a fraction of the Width setting
+*SpringEndLoops(float) - Custom type only: the number of stationary (non-stretching) "end loops" the spring makes in the on-screen rendering (fractional values are allowed)
+*SpringGauge(float) - Custom type only: the thickness of the spring wire in the on-screen rendering
+*SpringLoops(float) - Custom type only: the number of loops the spring makes around the rod within the displayed extent (fractional values are allowed, as partial loops are perfectly sensible)
+Stroke(float) - total travel distance; also controls the on-screen length (which is slightly longer than the travel distance, to accommodate the non-moving parts)
+ScatterVelocity(float) - amount of randomness added to ball velocity on firing
+*Shape(string) - Custom type only: a list of Distance/Diameter pairs separated by semicolons specifying the shape of the tip, as a series of circles centered on the plunger axis
+*Surface(string) - object for aligning vertical position of plunger; sits atop playfield if this is left blank
+TimerEnabled(bool) - enable the plunger's script timer
+TimerInterval(int) - interval for firing the plunger's script timer
+*Type(int) - the visual style of the plunger drawn on-screen
+UserValue(any) - arbitrary value associated with the object for scripting purposes
+*Visible(bool) - true if plunger is visible on-screen
+*Width(float) - on-screen width of the plunger on each side of the center-line (this acts like a radius, so the actual drawing width is twice this value)
+*X(float) - x position of center-line of plunger
+*Y(float) - y position of back end of plunger
+*ZAdjust(float) - moves the on-screen rendering vertically up (positive values) or down (negative values) from the default position determined by the Surface alignment
+
 
 Methods
 -------
 
-Pullback()
-Fire()
-CreateBall(IBall **ball)
-Position(int value) - added for mechanical plunger position BDS
-MotionDevice(int value) - added for uShockType
+Pullback() - start retracting the plunger at the speed given by PullSpeed; continues automatically until Fire() is called
+Fire() - fire the plunger from the current position (for an auto-plunger, immediately pulls back all the way and fires with full strength)
+CreateBall(IBall **ball) - create a new ball located at the tip of the plunger
+Position() - returns an integer (0 to 25) giving the current position of the mechanical plunger
+MotionDevice() - returns a non-zero integer giving the type of special input device attached, or 0 if none is attached (1=Pinball Wizard, 2=Ultracade, 3=SideWinder, 4=VirtuaPin plunger kit, 5=Generic/other)
 
 
 PRIMITIVE
