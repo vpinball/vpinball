@@ -35,7 +35,12 @@ VP 10.0.0 Changelog
 
   -> the data-format of the physics sets (*.vpp files) is basically the same, although the parameters inside are different, so unfortunately you need to set them up from scratch again
 
-- new plunger code (provided by mjr)
+- changed the plunger physics to make the launch behavior more linear and controllable, for both keyboard and mechanical 
+  plunger interfaces
+
+- added new plunger visual styles, Flat and Custom, along with new properties for more control over the appearance; it 
+  should now be possible to create a photo-realistic plunger with the precise appearance desired using the built-in
+  plunger object
 
 - Select Elements dialog improved. It shows the type of the element and if supported the used images. 
   
