@@ -909,16 +909,17 @@ void Player::InitBallShader()
    ballShader->SetVector("Roughness_WrapL_Edge_IsMetal", &rwem);
 
    assert(ballIndexBuffer == NULL);
-   ballIndexBuffer = m_pin3d.m_pd3dDevice->CreateAndFillIndexBuffer( basicBallNumFaces, basicBallIndices );
+   const bool lowDetailBall = m_ptable->GetDetailLevel() < 10;
+   ballIndexBuffer = m_pin3d.m_pd3dDevice->CreateAndFillIndexBuffer(lowDetailBall ? basicBallLoNumFaces : basicBallMidNumFaces, lowDetailBall ? basicBallLoIndices : basicBallMidIndices);
 
    // VB for normal ball
    assert(ballVertexBuffer == NULL);
-   m_pin3d.m_pd3dDevice->CreateVertexBuffer( basicBallNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &ballVertexBuffer );
+   m_pin3d.m_pd3dDevice->CreateVertexBuffer(lowDetailBall ? basicBallLoNumVertices : basicBallMidNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &ballVertexBuffer);
 
    // load precomputed ball vertices into vertex buffer
    Vertex3D_NoTex2 *buf;
    ballVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
-   memcpy( buf, basicBall, sizeof(Vertex3D_NoTex2)*basicBallNumVertices );
+   memcpy(buf, lowDetailBall ? basicBallLo : basicBallMid, sizeof(Vertex3D_NoTex2)*(lowDetailBall ? basicBallLoNumVertices : basicBallMidNumVertices));
    ballVertexBuffer->unlock();
 
    D3DXVECTOR4 amb_lr = convertColor(m_ptable->m_lightAmbient, m_ptable->m_lightRange);
@@ -3385,13 +3386,15 @@ void Player::GetBallAspectRatio(const Ball * const pball, float &stretchX, float
 //     rgvIn[3].x = pball->m_pos.x - pball->m_radius;    rgvIn[3].y = pball->m_pos.y;                    rgvIn[3].z = zHeight;
 //     rgvIn[4].x = pball->m_pos.x;                    rgvIn[4].y = pball->m_pos.y;                    rgvIn[4].z = zHeight + pball->m_radius;
 //     rgvIn[5].x = pball->m_pos.x;                    rgvIn[5].y = pball->m_pos.y;                    rgvIn[5].z = zHeight - pball->m_radius;
-    const int numVerts = basicBallNumVertices;
+	const bool lowDetailBall = m_ptable->GetDetailLevel() < 10;
+	const int numVerts = lowDetailBall ? basicBallLoNumVertices : basicBallMidNumVertices;
+	const Vertex3D_NoTex2 * const ball = lowDetailBall ? basicBallLo : basicBallMid;
 
     for (int i = 0, t = 0; i < numVerts; i += 2,t++)
     {
-       rgvIn[t].x = basicBall[i].x*pball->m_radius + pball->m_pos.x;
-       rgvIn[t].y = basicBall[i].y*pball->m_radius + pball->m_pos.y;
-       rgvIn[t].z = basicBall[i].z*pball->m_radius + zHeight;
+       rgvIn[t].x = ball[i].x*pball->m_radius + pball->m_pos.x;
+       rgvIn[t].y = ball[i].y*pball->m_radius + pball->m_pos.y;
+       rgvIn[t].z = ball[i].z*pball->m_radius + zHeight;
     }
     Vertex2D rgvOut[108/2];
     m_pin3d.m_proj.TransformVertices(rgvIn, NULL, numVerts/2, rgvOut);
@@ -3551,6 +3554,8 @@ void Player::DrawBalls()
       if( pball->m_pinballDecal )
           ballShader->SetTexture("Texture2", pball->m_pinballDecal);
 
+	  const bool lowDetailBall = m_ptable->GetDetailLevel() < 10;
+
 	  if (drawReflection)
 	  {
 		  const D3DXVECTOR4 refl((float)m_ptable->m_ballReflectionStrength / 255.0f, (float)m_ptable->m_playfieldReflectionStrength / 255.0f, 0.f, 0.f);
@@ -3561,7 +3566,7 @@ void Player::DrawBalls()
 		  ballShader->SetTechnique("RenderBallReflection");
 
 		  ballShader->Begin(0);
-		  m_pin3d.m_pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, ballVertexBuffer, 0, basicBallNumVertices, ballIndexBuffer, 0, basicBallNumFaces);
+		  m_pin3d.m_pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, ballVertexBuffer, 0, lowDetailBall ? basicBallLoNumVertices : basicBallMidNumVertices, ballIndexBuffer, 0, lowDetailBall ? basicBallLoNumFaces : basicBallMidNumFaces);
 		  ballShader->End();
 
 		  m_pin3d.DisableAlphaBlend();
@@ -3571,7 +3576,7 @@ void Player::DrawBalls()
       ballShader->SetTechnique("RenderBall");
       
       ballShader->Begin(0);
-      m_pin3d.m_pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, ballVertexBuffer, 0, basicBallNumVertices, ballIndexBuffer, 0, basicBallNumFaces );
+	  m_pin3d.m_pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, ballVertexBuffer, 0, lowDetailBall ? basicBallLoNumVertices : basicBallMidNumVertices, ballIndexBuffer, 0, lowDetailBall ? basicBallLoNumFaces : basicBallMidNumFaces);
       ballShader->End();
 
       // ball trails
