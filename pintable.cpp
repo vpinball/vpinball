@@ -1340,6 +1340,7 @@ void PinTable::SetCaption(char *szCaption)
 void PinTable::InitPostLoad(VPinball *pvp)
 {
    m_pvp = pvp;
+   pvp->m_ptableActive = (CComObject<PinTable> *)this;
 
    if(m_BG_FOV[1] == FLT_MAX) // old (VP9-) table, copy FS settings over from old setting
    {
