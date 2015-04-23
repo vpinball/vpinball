@@ -20,6 +20,7 @@ public:
     float m_fadeSpeedDown;
 	U32 m_time_msec;
     float m_currentIntensity;
+    float m_transmissionScale;
 	float m_modulate_vs_add;
     float m_meshRadius;
     //float m_meshIntensity;
@@ -155,6 +156,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_LIGHT)
 	virtual void DrawFrame(BOOL fOn)  { }
 
 	virtual bool IsTransparent() { return m_d.m_BulbLight || (m_surfaceMaterial && m_surfaceMaterial->m_bOpacityActive); }
+	virtual bool RenderToLightBuffer()		{ return m_d.m_BulbLight && (m_d.m_transmissionScale > 0.f); }
     virtual float GetDepth(const Vertex3Ds& viewDir);
 	virtual unsigned long long GetMaterialID() { return m_surfaceMaterial ? m_surfaceMaterial->hash() : 0; }
 	virtual void UpdatePropertyPanes();
@@ -206,6 +208,8 @@ public:
 	STDMETHOD(put_Surface)(/*[in]*/ BSTR newVal);
 	STDMETHOD(get_Intensity)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Intensity)(/*[in]*/ float newVal);
+	STDMETHOD(get_TransmissionScale)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_TransmissionScale)(/*[in]*/ float newVal);
 	STDMETHOD(get_IntensityScale)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_IntensityScale)(/*[in]*/ float newVal);
 	STDMETHOD(get_BlinkInterval)(/*[out, retval]*/ long *pVal);

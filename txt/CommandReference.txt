@@ -366,6 +366,7 @@ State(LightState) - 0=Off, 1=On, 2=Blinking
 *ColorFull(OLE_COLOR) - full brightness color
 Intensity(float) - sets the lights brightness/emission
 IntensityScale(float) - sets the lights brightness/emission scale, so that one can fade in/out all affected lights with the same scaling factor
+TransmissionScale(float) - sets the light scale for transmission, f.e. through playfield plastics or transparent ramps that are placed above the bulb light
 TimerEnabled(bool)
 TimerInterval(int)
 BlinkPattern(string)

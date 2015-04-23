@@ -14,7 +14,7 @@ struct SaveMaterial
    float fEdge; // edge weight/brightness for glossy and clearcoat (0(dark edges)..1(full fresnel))
    bool  bUnused2;
    float fOpacity; // opacity (0..1)
-   bool  bOpacityActive;
+   unsigned char bOpacityActive_fEdgeAlpha; // lowest bit = on/off, upper 7bits = edge weight for fresnel (0(no opacity change)..1(full fresnel)), stupid encoding because of legacy loading/saving
 };
 
 class Material
@@ -26,6 +26,7 @@ public:
       m_fWrapLighting = 0.0f;
       m_fRoughness = 0.0f;
       m_fEdge = 1.0f;
+      m_fEdgeAlpha = 1.0f;
       m_fOpacity = 1.0f;
       m_cBase = 0xB469FF;
       m_cGlossy = 0;
@@ -46,10 +47,10 @@ public:
 			unsigned long long ull;
 	    } h;
 
-		h.uc[0] = ((unsigned int)m_bIsMetal<<6) | ((unsigned int)m_bOpacityActive<<7) | (((unsigned int)this/sizeof(Material))&63);
+		h.uc[0] = ((unsigned int)m_bIsMetal<<6) | ((unsigned int)m_bOpacityActive<<7) | (((unsigned int)this/sizeof(Material))&63); //!! meh
 	    h.uc[1] = (unsigned char)(clamp(m_fWrapLighting, 0.f,1.f)*255.0f);
 	    h.uc[2] = (unsigned char)(clamp(m_fRoughness, 0.f,1.f)*255.0f);
-	    h.uc[3] = (unsigned char)(clamp(m_fEdge, 0.f,1.f)*255.0f);
+	    h.uc[3] = (((unsigned char)(clamp(m_fEdge, 0.f,1.f)*255.0f))>>4) | (m_bOpacityActive ? ((((unsigned char)(clamp(m_fEdgeAlpha, 0.f,1.f)*255.0f))>>4)<<4) : 0);
 	    h.uc[4] = ((m_cBase&255)>>5) | ((((m_cBase>>8)&255)>>5)<<3) | ((((m_cBase>>16)&255)>>6)<<6);
 	    h.uc[5] = !m_bIsMetal ? ((m_cGlossy&255)>>5) | ((((m_cGlossy>>8)&255)>>5)<<3) | ((((m_cGlossy>>16)&255)>>6)<<6) : 0;
 	    h.uc[6] = ((m_cClearcoat&255)>>5) | ((((m_cClearcoat>>8)&255)>>5)<<3) | ((((m_cClearcoat>>16)&255)>>6)<<6);
@@ -79,6 +80,7 @@ public:
 	float m_fWrapLighting;
 	float m_fRoughness;
 	float m_fEdge;
+	float m_fEdgeAlpha;
 	float m_fOpacity;
 	COLORREF m_cBase;
 	COLORREF m_cGlossy;

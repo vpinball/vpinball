@@ -296,7 +296,7 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,218,280,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,277,280,50,14
     LISTBOX         IDC_SIZELIST,14,19,129,120,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "fps  (1=VSync, 2=Adapt.)",IDC_STATIC,267,126,90,10
+    LTEXT           "fps  (1=VSync,2=Adapt)",IDC_STATIC,267,126,90,10
     GROUPBOX        "Video Mode",IDC_STATIC,7,7,142,266
     GROUPBOX        "Ball Rendering",IDC_STATIC,154,7,103,40
     GROUPBOX        "3D Stereo Output",IDC_STATIC,259,7,85,80
@@ -724,7 +724,7 @@ BEGIN
     LTEXT           "User &Value",IDC_STATIC,7,40,38,9
 END
 
-IDD_PROPLIGHT_VISUALS DIALOGEX 0, 0, 125, 208
+IDD_PROPLIGHT_VISUALS DIALOGEX 0, 0, 125, 221
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
@@ -744,17 +744,19 @@ BEGIN
     EDITTEXT        IDC_HALO_EDIT,65,149,40,12,ES_AUTOHSCROLL
     EDITTEXT        IDC_SCALE_BULB_MESH,65,162,40,12,ES_AUTOHSCROLL
     EDITTEXT        IDC_BULB_MODULATE_VS_ADD,65,175,40,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_TRANSMISSION_SCALE,65,188,40,12,ES_AUTOHSCROLL
     LTEXT           "Falloff",IDC_STATIC,7,5,43,8
     LTEXT           "Falloff Power",IDC_STATIC,7,19,43,8
     LTEXT           "Intensity",IDC_STATIC,7,33,27,8
     LTEXT           "Fade Speed",IDC_STATIC,7,53,40,8
     LTEXT           "Color",IDC_STATIC,7,75,43,8
     LTEXT           "Depth Bias",IDC_STATIC,7,112,36,8
-    GROUPBOX        "Bulb",IDC_STATIC,7,124,111,79
+    GROUPBOX        "Bulb",IDC_STATIC,7,124,111,92
+    LTEXT           "Halo Height",IDC_STATIC,13,152,38,8
     LTEXT           "Scale Mesh",IDC_STATIC,13,165,38,8
     LTEXT           "Modulate (0..1)",IDC_STATIC,13,178,48,8
-    LTEXT           "Halo Height",IDC_STATIC,13,152,38,8
-    CONTROL         "Show Reflection on Balls",IDC_REFLECT_ON_BALLS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,190,95,10
+    LTEXT           "Transmit (0..1)",IDC_STATIC,13,191,48,8
+    CONTROL         "Show Reflection on Balls",IDC_REFLECT_ON_BALLS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,203,95,10
     LTEXT           "Up",IDC_STATIC,53,43,10,8
     LTEXT           "Down",IDC_STATIC,90,43,20,8
     LTEXT           "Full",IDC_STATIC,90,64,12,8
@@ -1266,7 +1268,7 @@ BEGIN
     EDITTEXT        IDC_ENABLE_AA,47,54,20,12,ES_AUTOHSCROLL
     LTEXT           "FXAA",IDC_STATIC,80,56,19,8
     EDITTEXT        IDC_ENABLE_FXAA,101,54,20,12,ES_AUTOHSCROLL
-    LTEXT           "Ambient Occlusion (-1=default)",IDC_STATIC,7,69,90,8
+    LTEXT           "Ambient Occlusion (-1=def.)",IDC_STATIC,7,69,90,8
     EDITTEXT        IDC_ENABLE_AO,101,67,20,12,ES_AUTOHSCROLL
     EDITTEXT        IDC_TABLESOUNDVOLUME,101,81,20,12,ES_AUTOHSCROLL
     EDITTEXT        IDC_TABLEMUSICVOLUME,101,95,20,12,ES_AUTOHSCROLL
@@ -1276,7 +1278,7 @@ BEGIN
     LTEXT           "Material",IDC_STATIC,7,4,28,9
     LTEXT           "Table Sound Volume (0..100)",IDC_STATIC,7,83,94,8
     LTEXT           "Table Music Volume (0..100)",IDC_STATIC,7,97,94,8
-    LTEXT           "FPS Limiter/VSync (-1=default)",IDC_STATIC,7,111,94,8
+    LTEXT           "FPS Limiter/VSync (-1=def.)",IDC_STATIC,7,111,94,8
     GROUPBOX        "Object Detail Level",IDC_STATIC,7,123,114,44
     CONTROL         "Overwrite Global Settings",IDC_GLOBAL_ALPHA_ACC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,154,95,10
 END
@@ -1755,14 +1757,14 @@ BEGIN
     EDITTEXT        IDC_DEPTH_BIAS,83,66,36,14,ES_AUTOHSCROLL
 END
 
-IDD_MATERIALDIALOG DIALOGEX 0, 0, 463, 270
+IDD_MATERIALDIALOG DIALOGEX 0, 0, 463, 290
 STYLE DS_SETFONT | DS_MODALFRAME | WS_MINIMIZEBOX | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_APPWINDOW
 CAPTION "Material Manager"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,408,234,50,14
-    CONTROL         "List1",IDC_MATERIAL_LIST,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | LVS_SORTASCENDING | LVS_EDITLABELS | WS_BORDER | WS_TABSTOP,6,5,204,243
+    DEFPUSHBUTTON   "OK",IDOK,408,272,50,14
+    CONTROL         "List1",IDC_MATERIAL_LIST,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | LVS_SORTASCENDING | LVS_EDITLABELS | WS_BORDER | WS_TABSTOP,6,5,204,282
     PUSHBUTTON      "&Import",IDC_IMPORT,408,54,50,14
     PUSHBUTTON      "&Delete",IDC_DELETE,408,102,50,14
     PUSHBUTTON      "&Rename",IDC_RENAME,408,86,50,14
@@ -1785,13 +1787,17 @@ BEGIN
     GROUPBOX        "Clearcoat Layer",IDC_STATIC,214,139,191,40
     LTEXT           "Edge Brightness",IDC_STATIC,220,193,52,8
     LTEXT           "(0..1)",IDC_STATIC,222,202,17,8
-    GROUPBOX        "Opacity (can be modulated by Image on Object)",IDC_STATIC,214,223,158,26
+    GROUPBOX        "Opacity (can be modulated by Image on Object)",IDC_STATIC,214,223,192,64
     CONTROL         "Active",IDC_OPACITY_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,331,235,36,10
-    LTEXT           "Amount",IDC_STATIC,250,235,25,8
-    EDITTEXT        IDC_OPACITY_EDIT,303,234,21,12,ES_AUTOHSCROLL
-    LTEXT           "(0-100)",IDC_STATIC,277,235,23,8
+    LTEXT           "Amount",IDC_STATIC,220,235,25,8
+    EDITTEXT        IDC_OPACITY_EDIT,290,234,21,14,ES_AUTOHSCROLL
+    LTEXT           "(0..1)",IDC_STATIC,222,244,23,8
+    LTEXT           "Edge Opacity",IDC_STATIC,220,263,52,8
+    EDITTEXT        IDC_EDGEALPHA_EDIT,290,262,21,14,ES_AUTOHSCROLL    
+    LTEXT           "(0..1)",IDC_STATIC,222,272,17,8
+    LTEXT           "Increases the opacity on the silhouette (1=natural, 0=no change)",IDC_STATIC,313,258,81,24
     LTEXT           "Steers the basic Color of an Object. Wrap allows for light even if object is only lit from behind (0=natural)",IDC_STATIC,313,28,85,32
-    LTEXT           "Dims the Edge ""glow"" when using Glossy or Clearcoat Layers (1=natural, 0=dark)",IDC_STATIC,313,183,71,34
+    LTEXT           "Dims the silhouette ""glow"" when using Glossy or Clearcoat Layers (1=natural, 0=dark)",IDC_STATIC,313,183,85,34
     LTEXT           "Sets from very dull (Shininess low) to perfect/mirror-like (Shininess high) reflections (for glossy layer or metal only)",IDC_STATIC,313,107,92,32
     LTEXT           "Add subtle reflections on non-metal materials (leave at non-black for most natural behavior)",IDC_STATIC,313,69,85,32
     LTEXT           "Add an additional thin clearcoat layer on top of the material",IDC_STATIC,313,148,75,26

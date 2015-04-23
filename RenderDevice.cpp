@@ -412,7 +412,7 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
 
 	// temporary buffer for gaussian blur
     CHECKD3D(m_pD3DDevice->CreateTexture(width/3, height/3, 1,
-		D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &m_pBloomTmpBufferTexture, NULL)); //!! 8bit are enough!
+		D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &m_pBloomTmpBufferTexture, NULL)); //!! 8bit are enough! //!! but used also for bulb light hack now!
 
 	// alloc temporary buffer for postprocessing
 	if(stereo3D || FXAA)
@@ -520,6 +520,7 @@ void RenderDevice::FreeShader()
       basicShader->Core()->SetTexture("Texture0",NULL);
       basicShader->Core()->SetTexture("Texture1",NULL);
       basicShader->Core()->SetTexture("Texture2",NULL);
+      basicShader->Core()->SetTexture("Texture3",NULL);
       delete basicShader;
       basicShader=0;
    }
@@ -1284,7 +1285,7 @@ void Shader::SetTexture(const D3DXHANDLE texelName, D3DTexture *texel)
 void Shader::SetMaterial( const Material * const mat )
 {
 	COLORREF cBase, cGlossy, cClearcoat;
-	float fWrapLighting, fRoughness, fEdge, fOpacity;
+	float fWrapLighting, fRoughness, fEdge, fEdgeAlpha, fOpacity;
 	bool bIsMetal, bOpacityActive;
 
     if (mat)
@@ -1292,6 +1293,7 @@ void Shader::SetMaterial( const Material * const mat )
 		fWrapLighting = mat->m_fWrapLighting;
 		fRoughness = exp2f(10.0f * mat->m_fRoughness + 1.0f); // map from 0..1 to 2..2048
 		fEdge = mat->m_fEdge;
+		fEdgeAlpha = mat->m_fEdgeAlpha;
 		fOpacity = mat->m_fOpacity;
 		cBase = mat->m_cBase;
 		cGlossy = mat->m_cGlossy;
@@ -1342,11 +1344,13 @@ void Shader::SetMaterial( const Material * const mat )
 		currentMaterial.m_cGlossy = cGlossy;
 	}
 
-	if(cClearcoat != currentMaterial.m_cClearcoat)
+	if(cClearcoat != currentMaterial.m_cClearcoat ||
+	  (bOpacityActive && fEdgeAlpha != currentMaterial.m_fEdgeAlpha))
 	{
-		const D3DXVECTOR4 cClearcoatF = convertColor(cClearcoat);
-		SetVector("cClearcoat",&cClearcoatF);
+		const D3DXVECTOR4 cClearcoatF = convertColor(cClearcoat,fEdgeAlpha);
+		SetVector("cClearcoat_EdgeAlpha",&cClearcoatF);
 		currentMaterial.m_cClearcoat = cClearcoat;
+		currentMaterial.m_fEdgeAlpha = fEdgeAlpha;
 	}
 
 	if(bOpacityActive /*&& (alpha < 1.0f)*/)

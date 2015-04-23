@@ -105,7 +105,13 @@ VP 10.0.0 Changelog
 - assign sound-,image-,material- and collection-manager to hot keys (F2,F3,F4 and F8)
 
 - new shader based inserts/lights/bulbs
+  bulbs are special in many aspects:
+   - They optionally feature a built-in mesh that "emits" light to the viewer
+   - One can use them to add a lighting effect over other elements (use the Modulate option to blend between additive (0) and multiplicative (1) behavior)
+   - In addition they can be used to add a lighting effect from below for all transparent materials (like playfield plastics and transparent ramps) via the Transmit option
+
 - new shader based mesh ball
+
 - new shader based materials/lighting (full HDR pipeline)
 
   -> due to the new lighting and materials the orientation of vertex normals on imported primitives is now extremely important!

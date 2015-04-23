@@ -760,6 +760,8 @@
 #define IDB_BITMAP3                     613
 #define IDB_KICKER_CUP                  613
 #define IDR_POINTMENU_SMOOTH            614
+#define IDC_TRANSMISSION_SCALE          617
+#define IDC_EDGEALPHA_EDIT              618
 #define DISPID_Gate_Height1             1142
 #define DISPID_Image                    1500
 #define IDC_MESH_FILENAME_EDIT          1601
@@ -873,7 +875,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        617
+#define _APS_NEXT_RESOURCE_VALUE        619
 #define _APS_NEXT_COMMAND_VALUE         32998
 #define _APS_NEXT_CONTROL_VALUE         476
 #define _APS_NEXT_SYMED_VALUE           188

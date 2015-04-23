@@ -168,6 +168,8 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
 
 	m_curPlunger = JOYRANGEMN - 1;
 
+	m_current_renderstage = 0;
+
 	HRESULT hr;
 
 	int vsync;
@@ -2433,6 +2435,108 @@ void Player::Spritedraw(const float posx, const float posy, const float width, c
     m_pin3d.m_pd3dDevice->DMDShader->End();
 }
 
+void Player::DrawBulbLightBuffer()
+{
+	// switch to 'bloom' output buffer to collect all bulb lights
+	RenderTarget* tmpBloomSurface;
+	m_pin3d.m_pd3dDevice->GetBloomBufferTexture()->GetSurfaceLevel(0, &tmpBloomSurface);
+	m_pin3d.m_pd3dDevice->SetRenderTarget(tmpBloomSurface);
+
+	m_pin3d.m_pd3dDevice->Clear(0, NULL, D3DCLEAR_TARGET, 0, 1.0f, 0L);
+
+	// check if any bulb specified at all
+	bool do_renderstage = false;
+	for (unsigned i = 0; i < m_vHitTrans.size(); ++i)
+		if (m_vHitTrans[i]->RenderToLightBuffer())
+		{
+			do_renderstage = true;
+			break;
+		}
+
+	if (do_renderstage)
+	{
+		m_current_renderstage = 1; // for bulb lights so they know what they have to do
+
+		// Draw bulb lights with transmission scale only
+		for (unsigned int i = 0; i < m_vHitTrans.size(); ++i)
+			if (m_vHitTrans[i]->RenderToLightBuffer())
+				m_vHitTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
+
+		m_pin3d.DisableAlphaBlend();
+		m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
+		m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
+		m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, FALSE);
+
+		float shiftedVerts[4 * 5] =
+		{
+			1.0f + m_ScreenOffset.x, 1.0f + m_ScreenOffset.y, 0.0f, 1.0f + (float)(1.0 / (double)m_width), 0.0f + (float)(1.0 / (double)m_height),
+			-1.0f + m_ScreenOffset.x, 1.0f + m_ScreenOffset.y, 0.0f, 0.0f + (float)(1.0 / (double)m_width), 0.0f + (float)(1.0 / (double)m_height),
+			1.0f + m_ScreenOffset.x, -1.0f + m_ScreenOffset.y, 0.0f, 1.0f + (float)(1.0 / (double)m_width), 1.0f + (float)(1.0 / (double)m_height),
+			-1.0f + m_ScreenOffset.x, -1.0f + m_ScreenOffset.y, 0.0f, 0.0f + (float)(1.0 / (double)m_width), 1.0f + (float)(1.0 / (double)m_height)
+		};
+		float verts[4 * 5] =
+		{
+			1.0f + m_ScreenOffset.x, 1.0f + m_ScreenOffset.y, 0.0f, 1.0f, 0.0f,
+			-1.0f + m_ScreenOffset.x, 1.0f + m_ScreenOffset.y, 0.0f, 0.0f, 0.0f,
+			1.0f + m_ScreenOffset.x, -1.0f + m_ScreenOffset.y, 0.0f, 1.0f, 1.0f,
+			-1.0f + m_ScreenOffset.x, -1.0f + m_ScreenOffset.y, 0.0f, 0.0f, 1.0f
+		};
+
+
+		for (unsigned int blur = 0; blur < 2; ++blur) //!! opt.: use larger blur kernel instead?!
+		{
+			RenderTarget* tmpBloomSurface2;
+			{
+				m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", (D3DTexture*)NULL);
+
+				// switch to 'bloom' temporary output buffer for horizontal phase of gaussian blur
+				m_pin3d.m_pd3dDevice->GetBloomTmpBufferTexture()->GetSurfaceLevel(0, &tmpBloomSurface2);
+				m_pin3d.m_pd3dDevice->SetRenderTarget(tmpBloomSurface2);
+
+				m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetBloomBufferTexture());
+				const D3DXVECTOR4 fb_inv_resolution_05((float)(3.0 / (double)m_width), (float)(3.0 / (double)m_height), 1.0f, 1.0f);
+				m_pin3d.m_pd3dDevice->FBShader->SetVector("w_h_height", &fb_inv_resolution_05);
+				m_pin3d.m_pd3dDevice->FBShader->SetTechnique("fb_bloom_horiz");
+
+				m_pin3d.m_pd3dDevice->FBShader->Begin(0);
+				m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_TEX, (LPVOID)verts, 4);
+				m_pin3d.m_pd3dDevice->FBShader->End();
+			}
+			RenderTarget* tmpBloomSurface3;
+			{
+				m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", (D3DTexture*)NULL);
+
+				// switch to 'bloom' output buffer for vertical phase of gaussian blur
+				m_pin3d.m_pd3dDevice->GetBloomBufferTexture()->GetSurfaceLevel(0, &tmpBloomSurface3);
+				m_pin3d.m_pd3dDevice->SetRenderTarget(tmpBloomSurface3);
+
+				m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetBloomTmpBufferTexture());
+				const D3DXVECTOR4 fb_inv_resolution_05((float)(3.0 / (double)m_width), (float)(3.0 / (double)m_height), 1.0f, 1.0f);
+				m_pin3d.m_pd3dDevice->FBShader->SetVector("w_h_height", &fb_inv_resolution_05);
+				m_pin3d.m_pd3dDevice->FBShader->SetTechnique("fb_bloom_vert");
+
+				m_pin3d.m_pd3dDevice->FBShader->Begin(0);
+				m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_TEX, (LPVOID)verts, 4);
+				m_pin3d.m_pd3dDevice->FBShader->End();
+			}
+			SAFE_RELEASE_NO_RCC(tmpBloomSurface2);
+			SAFE_RELEASE_NO_RCC(tmpBloomSurface3);
+		}
+
+		m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, TRUE);
+		m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+		m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+
+		m_current_renderstage = 0;
+	}
+
+	// switch back to render buffer
+	m_pin3d.m_pd3dDevice->SetRenderTarget(m_pin3d.m_pddsBackBuffer);
+	SAFE_RELEASE_NO_RCC(tmpBloomSurface);
+
+	m_pin3d.m_pd3dDevice->basicShader->SetTexture("Texture3", m_pin3d.m_pd3dDevice->GetBloomBufferTexture()); //!! only needs to be set once
+}
+
 void Player::RenderDynamics()
 {
    TRACE_FUNCTION();
@@ -2476,6 +2580,8 @@ void Player::RenderDynamics()
    DrawBalls();
 
    m_limiter.Execute(m_pin3d.m_pd3dDevice); //!! move below other draw calls??
+
+   DrawBulbLightBuffer();
 
    // Draw transparent objects.
    for (unsigned i=0; i < m_vHitTrans.size(); ++i)
