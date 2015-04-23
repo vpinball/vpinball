@@ -211,7 +211,7 @@ void Light::SetDefaults(bool fromMouseClick)
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_transmissionScale = fTmp;
    else
-      m_d.m_transmissionScale = 0.25f;
+      m_d.m_transmissionScale = fromMouseClick ? 0.5f : 0.f;
 
    m_d.m_intensity_scale = 1.0f;
 
@@ -1842,7 +1842,8 @@ void Light::UpdatePropertyPanes()
         EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_SCALE_BULB_MESH), FALSE);
         EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_BULB_MODULATE_VS_ADD), FALSE);
         EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_REFLECT_ON_BALLS), FALSE);
-        EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_HALO_EDIT), FALSE);
+		EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_TRANSMISSION_SCALE), FALSE);
+		EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_HALO_EDIT), FALSE);
         EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_IMAGE_MODE), TRUE);
         EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,DISPID_Image), TRUE);
     }
@@ -1852,7 +1853,8 @@ void Light::UpdatePropertyPanes()
         EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_SCALE_BULB_MESH), TRUE);
         EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_BULB_MODULATE_VS_ADD), TRUE);
         EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_REFLECT_ON_BALLS), TRUE);
-        EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_HALO_EDIT), TRUE);
+		EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_TRANSMISSION_SCALE), TRUE);
+		EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_HALO_EDIT), TRUE);
         EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_IMAGE_MODE), FALSE);
         EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,DISPID_Image), FALSE);
     }
