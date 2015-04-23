@@ -1256,6 +1256,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propput, id(DISPID_Light_BlinkInterval), helpstring("property BlinkInterval")] HRESULT BlinkInterval([in] long newVal);
                 [propget, id(12), helpstring("property Intensity")] HRESULT Intensity([out, retval] float *pVal);
                 [propput, id(12), helpstring("property Intensity")] HRESULT Intensity([in] float newVal);
+                [propget, id(617), helpstring("property TransmissionScale")] HRESULT TransmissionScale([out, retval] float *pVal);
+                [propput, id(617), helpstring("property TransmissionScale")] HRESULT TransmissionScale([in] float newVal);
                 [propget, id(434), helpstring("property IntensityScale")] HRESULT IntensityScale([out, retval] float *pVal);
                 [propput, id(434), helpstring("property IntensityScale")] HRESULT IntensityScale([in] float newVal);
                 [propget, id(DISPID_Surface), helpstring("property Surface")] HRESULT Surface([out, retval] BSTR *pVal);

@@ -427,7 +427,8 @@ void Spinner::RenderStatic(RenderDevice* pd3dDevice)
    mat.m_cGlossy = 0x60606060;
    mat.m_fRoughness = 0.4f;
    mat.m_cClearcoat = 0x20202020;
-   mat.m_fEdge=1.0f;
+   mat.m_fEdge = 1.0f;
+   mat.m_fEdgeAlpha = 1.0f;
    pd3dDevice->basicShader->SetMaterial(&mat);
    pd3dDevice->basicShader->SetTechnique("basic_without_texture");
    ppin3d->EnableAlphaBlend(false);

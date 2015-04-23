@@ -2858,7 +2858,8 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
            mats[i].fEdge = m_materials.ElementAt(i)->m_fEdge;
            mats[i].fOpacity = m_materials.ElementAt(i)->m_fOpacity;
            mats[i].bIsMetal = m_materials.ElementAt(i)->m_bIsMetal;
-           mats[i].bOpacityActive = m_materials.ElementAt(i)->m_bOpacityActive;
+           mats[i].bOpacityActive_fEdgeAlpha = m_materials.ElementAt(i)->m_bOpacityActive ? 1 : 0;
+           mats[i].bOpacityActive_fEdgeAlpha |= ((unsigned char)(clamp(m_materials.ElementAt(i)->m_fEdgeAlpha, 0.f,1.f)*127.f))<<1;
            strcpy_s(mats[i].szName, m_materials.ElementAt(i)->m_szName);
        }
        bw.WriteStruct( FID(MATE), mats, sizeof(SaveMaterial)*m_materials.Size());
@@ -3708,7 +3709,8 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
            pmat->m_fEdge = mats[i].fEdge;
            pmat->m_fOpacity = mats[i].fOpacity;
            pmat->m_bIsMetal = mats[i].bIsMetal;
-           pmat->m_bOpacityActive = mats[i].bOpacityActive;
+           pmat->m_bOpacityActive = !!(mats[i].bOpacityActive_fEdgeAlpha & 1);
+           pmat->m_fEdgeAlpha = (float)(mats[i].bOpacityActive_fEdgeAlpha>>1)*(float)(1.0/127.0); //!! + rounding offset?
            strcpy_s(pmat->m_szName, mats[i].szName);
            m_materials.AddElement( pmat );
        }

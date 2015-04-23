@@ -48,7 +48,7 @@ sampler2D texSampler2 : TEXUNIT2 = sampler_state // diffuse environment contribu
 #include "Material.fxh"
 
 float3 cGlossy;
-float3 cClearcoat;
+float3 cClearcoat_EdgeAlpha; // actually doesn't feature edge-alpha
 //!! No value is under 0.02
 //!! Non-metals value are un-intuitively low: 0.02-0.08
 //!! Gemstones are 0.05-0.17
@@ -103,10 +103,10 @@ float4 PS_LightWithTexel(in VS_LIGHT_OUTPUT IN) : COLOR
 	{
 	    const float3 diffuse = pixel.xyz*cBase_Alpha.xyz;
         const float3 glossy = (Roughness_WrapL_Edge_IsMetal.w != 0.0) ? diffuse : pixel.xyz*cGlossy*0.08; //!! use AO for glossy? specular?
-        const float3 specular = cClearcoat*0.08;
+        const float3 specular = cClearcoat_EdgeAlpha.xyz*0.08;
         const float edge = (Roughness_WrapL_Edge_IsMetal.w != 0.0) ? 1.0 : Roughness_WrapL_Edge_IsMetal.z;
 
-	    color.xyz = lightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular, edge); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
+	    color.xyz = lightLoop(IN.worldPos, normalize(IN.normal), normalize(/*camera=0,0,0,1*/-IN.worldPos), diffuse, glossy, specular, edge); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
 		color.a = pixel.a;
     }
     color.a *= cBase_Alpha.a;
@@ -145,10 +145,10 @@ float4 PS_LightWithoutTexel(in VS_LIGHT_OUTPUT IN) : COLOR
 	{
 	    const float3 diffuse  = lightColor_intensity.xyz*cBase_Alpha.xyz;
         const float3 glossy   = (Roughness_WrapL_Edge_IsMetal.w != 0.0) ? diffuse : lightColor_intensity.xyz*cGlossy*0.08;
-        const float3 specular = cClearcoat*0.08;
+        const float3 specular = cClearcoat_EdgeAlpha.xyz*0.08;
 	    const float edge = (Roughness_WrapL_Edge_IsMetal.w != 0.0) ? 1.0 : Roughness_WrapL_Edge_IsMetal.z;
 
-	    color.xyz = lightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular, edge); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
+	    color.xyz = lightLoop(IN.worldPos, normalize(IN.normal), normalize(/*camera=0,0,0,1*/-IN.worldPos), diffuse, glossy, specular, edge); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
 	}
     color.a = cBase_Alpha.a;
     

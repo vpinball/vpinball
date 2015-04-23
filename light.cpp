@@ -207,6 +207,12 @@ void Light::SetDefaults(bool fromMouseClick)
    else
       m_d.m_intensity = 1.0f;
 
+   hr = GetRegStringAsFloat("DefaultProps\\Light","TransmissionScale", &fTmp);
+   if ((hr == S_OK) && fromMouseClick)
+      m_d.m_transmissionScale = fTmp;
+   else
+      m_d.m_transmissionScale = 0.25f;
+
    m_d.m_intensity_scale = 1.0f;
 
    /*hr = GetRegInt("DefaultProps\\Light","BorderColor", &iTmp);
@@ -291,6 +297,7 @@ void Light::WriteRegDefaults()
    SetRegValueFloat("DefaultProps\\Light","FadeSpeedUp", m_d.m_fadeSpeedUp);
    SetRegValueFloat("DefaultProps\\Light","FadeSpeedDown", m_d.m_fadeSpeedDown);
    SetRegValueFloat("DefaultProps\\Light","Intensity", m_d.m_intensity);
+   SetRegValueFloat("DefaultProps\\Light","TransmissionScale", m_d.m_transmissionScale);
    SetRegValueBool("DefaultProps\\Light","Bulb", m_d.m_BulbLight);
    SetRegValueBool("DefaultProps\\Light","ImageMode", m_d.m_imageMode);
    SetRegValueBool("DefaultProps\\Light","ShowBulbMesh", m_d.m_showBulbMesh);
@@ -542,6 +549,7 @@ void Light::RenderBulbMesh(RenderDevice *pd3dDevice, COLORREF color, bool isOn)
     mat.m_cGlossy = 0xB4B4B4;
     mat.m_bIsMetal = false;
     mat.m_fEdge = 1.0f;
+    mat.m_fEdgeAlpha = 1.0f;
     mat.m_fRoughness = 0.9f;
     mat.m_cClearcoat = 0;
     pd3dDevice->basicShader->SetMaterial(&mat);
@@ -556,7 +564,8 @@ void Light::RenderBulbMesh(RenderDevice *pd3dDevice, COLORREF color, bool isOn)
     mat.m_fOpacity = 0.2f;
     mat.m_cGlossy = 0xFFFFFF;
     mat.m_bIsMetal = false;
-    mat.m_fEdge = 1.0f;    
+    mat.m_fEdge = 1.0f;
+    mat.m_fEdgeAlpha = 1.0f;
     mat.m_fRoughness = 0.9f;
     mat.m_cClearcoat = 0xFFFFFF;
     pd3dDevice->basicShader->SetMaterial(&mat);
@@ -679,6 +688,8 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
 		if ( m_d.m_showBulbMesh ) // blend bulb mesh hull additive over "normal" bulb to approximate the emission directly reaching the camera
 		{
 			lightColor_intensity.w = m_d.m_currentIntensity*0.02f; //!! make configurable?
+			if(g_pplayer->m_current_renderstage == 1)
+			    lightColor_intensity.w *= m_d.m_transmissionScale;
 			pd3dDevice->lightShader->SetLightColorIntensity(lightColor_intensity);
 			pd3dDevice->lightShader->SetFloat("blend_modulate_vs_add",0.00001f); // avoid 0, as it disables the blend
 
@@ -687,7 +698,7 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
 			pd3dDevice->lightShader->End();
 		}
 
-		pd3dDevice->lightShader->SetFloat("blend_modulate_vs_add",max(m_d.m_modulate_vs_add,0.00001f)); // avoid 0, as it disables the blend
+		pd3dDevice->lightShader->SetFloat("blend_modulate_vs_add", (g_pplayer->m_current_renderstage == 0) ? max(m_d.m_modulate_vs_add,0.00001f) : 0.00001f); // avoid 0, as it disables the blend // in the separate bulb light render stage only enable additive
 	}
 
     // render light shape
@@ -699,6 +710,8 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
 	}
 	else
 	{
+	    if(g_pplayer->m_current_renderstage == 1)
+			    lightColor_intensity.w *= m_d.m_transmissionScale;
 		pd3dDevice->lightShader->SetLightColorIntensity(lightColor_intensity);
 		pd3dDevice->lightShader->Begin(0);
 	}
@@ -932,6 +945,7 @@ HRESULT Light::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptke
    bw.WriteInt(FID(BINT), m_blinkinterval);
    //bw.WriteInt(FID(BCOL), m_d.m_bordercolor);
    bw.WriteFloat(FID(BWTH), m_d.m_intensity);
+   bw.WriteFloat(FID(TRMS), m_d.m_transmissionScale);
    bw.WriteString(FID(SURF), m_d.m_szSurface);
    bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
    bw.WriteBool(FID(BGLS), m_fBackglass);
@@ -1051,6 +1065,10 @@ BOOL Light::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(BWTH))
    {
       pbr->GetFloat(&m_d.m_intensity);
+   }
+   else if (id == FID(TRMS))
+   {
+      pbr->GetFloat(&m_d.m_transmissionScale);
    }
    else if (id == FID(SURF))
    {
@@ -1477,6 +1495,24 @@ STDMETHODIMP Light::put_Intensity(float newVal)
    const bool isOn = (m_realState == LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : !!m_realState;
    if( isOn )
       m_d.m_currentIntensity = m_d.m_intensity*m_d.m_intensity_scale;
+   STOPUNDO
+
+   return S_OK;
+}
+
+STDMETHODIMP Light::get_TransmissionScale(float *pVal)
+{
+   *pVal = m_d.m_transmissionScale;
+
+   return S_OK;
+}
+
+STDMETHODIMP Light::put_TransmissionScale(float newVal)
+{
+   STARTUNDO
+
+   m_d.m_transmissionScale = max(0.f, newVal);
+
    STOPUNDO
 
    return S_OK;

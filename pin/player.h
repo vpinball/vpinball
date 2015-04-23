@@ -164,7 +164,8 @@ public:
     void DrawBalls();
     void CheckAndUpdateRegions();
 
-    void Bloom();
+	void DrawBulbLightBuffer();
+	void Bloom();
     void StereoFXAA(const bool stereo, const bool FXAA1, const bool FXAA2, const bool FXAA3, const bool depth_available);
 
     void FlipVideoBuffersNormal( const bool vsync );
@@ -339,6 +340,8 @@ public:
 	int m_dmdy;
 	BaseTexture* m_texdmd;
 	D3DTexture* m_device_texdmd;
+
+	unsigned int m_current_renderstage; // currently only used for bulb lights
 
 private:
 	Vector<HitObject> m_vho;

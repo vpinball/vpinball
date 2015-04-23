@@ -109,12 +109,8 @@ float3 DoEnvmap2ndLayer(const float3 color1stLayer, const float3 pos, const floa
    return lerp(color1stLayer, InvGamma(tex2Dlod(texSampler1, float4(Ruv, 0., 0.)).xyz)*fenvEmissionScale_TexWidth.x, w); // weight (optional) lower diffuse/glossy layer with clearcoat/specular //!! replace by real HDR instead? -> remove invgamma then
 }
 
-float3 lightLoop(const float3 pos, float3 N, float3 V, float3 diffuse, float3 glossy, const float3 specular, const float edge)
+float3 lightLoop(const float3 pos, float3 N, const float3 V, float3 diffuse, float3 glossy, const float3 specular, const float edge) // input vectors (N,V) are normalized for BRDF evals
 {
-   // normalize input vectors for BRDF evals //!! do upfront?
-   N = normalize(N);
-   V = normalize(V);
-   
    // normalize BRDF layer inputs //!! use diffuse = (1-glossy)*diffuse instead?
    const float diffuseMax = max(diffuse.x,max(diffuse.y,diffuse.z));
    const float glossyMax = max(glossy.x,max(glossy.y,glossy.z));
