@@ -2535,7 +2535,7 @@ void Player::DrawBulbLightBuffer()
 	m_pin3d.m_pd3dDevice->SetRenderTarget(m_pin3d.m_pddsBackBuffer);
 	SAFE_RELEASE_NO_RCC(tmpBloomSurface);
 
-	m_pin3d.m_pd3dDevice->basicShader->SetTexture("Texture3", m_pin3d.m_pd3dDevice->GetBloomBufferTexture()); //!! only needs to be set once
+	m_pin3d.m_pd3dDevice->basicShader->SetTexture("Texture3", m_pin3d.m_pd3dDevice->GetBloomBufferTexture());
 }
 
 void Player::RenderDynamics()
@@ -2588,6 +2588,8 @@ void Player::RenderDynamics()
    for (unsigned i=0; i < m_vHitTrans.size(); ++i)
        m_vHitTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
 
+   m_pin3d.m_pd3dDevice->basicShader->SetTexture("Texture3", (D3DTexture*)NULL); // need to reset the bulb light texture, as its used as render target for bloom again
+
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0); //!! paranoia set of old state, remove as soon as sure that no other code still relies on that legacy set
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::BLENDOP, D3DBLENDOP_ADD);
@@ -2623,7 +2625,16 @@ void Player::CheckAndUpdateRegions()
 void Player::Bloom()
 {
 	if (m_ptable->m_bloom_strength <= 0.0f)
+	{
+		// need to reset content from (optional) bulb light abuse of the buffer
+		RenderTarget* tmpBloomSurface;
+		m_pin3d.m_pd3dDevice->GetBloomBufferTexture()->GetSurfaceLevel(0, &tmpBloomSurface);
+		m_pin3d.m_pd3dDevice->SetRenderTarget(tmpBloomSurface);
+		m_pin3d.m_pd3dDevice->Clear(0, NULL, D3DCLEAR_TARGET, 0, 1.0f, 0L);
+		SAFE_RELEASE_NO_RCC(tmpBloomSurface);
+
 		return;
+	}
 
 	float shiftedVerts[4 * 5] =
 	{
