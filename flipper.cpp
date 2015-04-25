@@ -61,20 +61,20 @@ void Flipper::SetDefaults(bool fromMouseClick)
    //m_d.m_angleEOS = 0; //!! reenable?
 
    hr = GetRegStringAsFloat("DefaultProps\\Flipper","ReturnStrength", &fTmp);
-   m_d.m_return = (hr == S_OK) && fromMouseClick ? fTmp : 0.07f;
+   m_d.m_return = (hr == S_OK) && fromMouseClick ? fTmp : 0.1f;
 
    hr = GetRegStringAsFloat("DefaultProps\\Flipper","Speed", &fTmp);
-   m_d.m_mass = (hr == S_OK) && fromMouseClick ? fTmp : 1.08f;
+   m_d.m_mass = (hr == S_OK) && fromMouseClick ? fTmp : 1.0f;
 
    hr = GetRegStringAsFloat("DefaultProps\\Flipper","Elasticity", &fTmp);
-   m_d.m_elasticity = (hr == S_OK) && fromMouseClick ? fTmp : 0.85f;
+   m_d.m_elasticity = (hr == S_OK) && fromMouseClick ? fTmp : 0.5f;
 
-   m_d.m_elasticityFalloff = GetRegStringAsFloatWithDefault("DefaultProps\\Flipper","ElasticityFalloff", 0.4f);
+   m_d.m_elasticityFalloff = GetRegStringAsFloatWithDefault("DefaultProps\\Flipper","ElasticityFalloff", 0.3f);
 
    m_d.m_OverridePhysics = 0;
 
-   m_d.m_friction = GetRegStringAsFloatWithDefault("DefaultProps\\Flipper","Friction", 0.85f);
-   m_d.m_rampUp = GetRegStringAsFloatWithDefault("DefaultProps\\Flipper","RampUp", 0.0f);
+   m_d.m_friction = GetRegStringAsFloatWithDefault("DefaultProps\\Flipper","Friction", 0.25f);
+   m_d.m_rampUp = GetRegStringAsFloatWithDefault("DefaultProps\\Flipper","RampUp", 3.5f);
 
    m_d.m_scatter = 0.0;
 
@@ -98,7 +98,7 @@ void Flipper::SetDefaults(bool fromMouseClick)
       m_d.m_szSurface[0] = 0;
 
    hr = GetRegStringAsFloat("DefaultProps\\Flipper","Strength", &fTmp);
-   m_d.m_strength = (hr == S_OK) && fromMouseClick ? fTmp : 2000.0f;
+   m_d.m_strength = (hr == S_OK) && fromMouseClick ? fTmp : 2200.0f;
 
    hr = GetRegStringAsFloat("DefaultProps\\Flipper","Height", &fTmp);
    m_d.m_height = (hr == S_OK) && fromMouseClick ? fTmp : 50;
