@@ -107,7 +107,7 @@ VP 10.0.0 Changelog
 - new shader based inserts/lights/bulbs
   bulbs are special in many aspects:
    - They optionally feature a built-in mesh that "emits" light to the viewer
-   - One can use them to add a lighting effect over other elements (use the Modulate option to blend between additive (0) and multiplicative (1) behavior)
+   - One can use them to add a lighting effect over other elements (use the Modulate option to blend between additive (0) and multiplicative (1) behavior, try to keep this around 0.9 to best support the day->night slider)
    - In addition they can be used to add a lighting effect from below for all transparent materials (like playfield plastics and transparent ramps) via the Transmit option
 
 - new shader based mesh ball
@@ -155,7 +155,7 @@ VP 10.0.0 Changelog
   (blend mode 'Screen' in Photoshop/Gimp) to apply a logo or a second image on the normal ball texture.
 
 - flasher supports custom shapes and multi texturing. You can define two separate images and define a filter to blend these two images.
-  in addition there is now a modulate option to define how the flasher blends with the underlying elements (0(=full additive)..1=(only modulate))
+  in addition there is now a modulate option to define how the flasher blends with the underlying elements (0(=full additive)..1=(only modulate), try to stick with something like 0.9 to best support the day->night slider)
   plus the opacity and amount parameters can be set to values > 100%
   to fade a set of flashers in/out easily you can use the IntensityScale in the script, so that you do not need to use different opacity values
   look into the CommandReference.txt for additional changes to the functions that can be used

@@ -691,14 +691,14 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
 			if(g_pplayer->m_current_renderstage == 1)
 			    lightColor_intensity.w *= m_d.m_transmissionScale;
 			pd3dDevice->lightShader->SetLightColorIntensity(lightColor_intensity);
-			pd3dDevice->lightShader->SetFloat("blend_modulate_vs_add",0.00001f); // avoid 0, as it disables the blend
+			pd3dDevice->lightShader->SetFloat("blend_modulate_vs_add",0.00001f); // additive, but avoid full 0, as it disables the blend
 
 			pd3dDevice->lightShader->Begin(0);
 			pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, bulbLightVBuffer, 0, bulbLightNumVertices, bulbLightIndexBuffer, 0, bulbLightNumFaces );
 			pd3dDevice->lightShader->End();
 		}
 
-		pd3dDevice->lightShader->SetFloat("blend_modulate_vs_add", (g_pplayer->m_current_renderstage == 0) ? max(m_d.m_modulate_vs_add,0.00001f) : 0.00001f); // avoid 0, as it disables the blend // in the separate bulb light render stage only enable additive
+		pd3dDevice->lightShader->SetFloat("blend_modulate_vs_add", (g_pplayer->m_current_renderstage == 0) ? min(max(m_d.m_modulate_vs_add,0.00001f),0.99f) : 0.00001f); // avoid 0, as it disables the blend and avoid 1 as it looks not good with day->night changes // in the separate bulb light render stage only enable additive
 	}
 
     // render light shape
