@@ -1298,7 +1298,7 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
    Texture * const pinA = m_ptable->GetImage(m_d.m_szImageA);
    Texture * const pinB = m_ptable->GetImage(m_d.m_szImageB);
 
-   const D3DXVECTOR4 ab((float)m_d.m_fFilterAmount/100.0f, max(m_d.m_modulate_vs_add,0.00001f), 0.f,0.f); // avoid 0, as it disables the blend
+   const D3DXVECTOR4 ab((float)m_d.m_fFilterAmount/100.0f, min(max(m_d.m_modulate_vs_add,0.00001f),0.99f), 0.f,0.f); // avoid 0, as it disables the blend and avoid 1 as it looks not good with day->night changes
    pd3dDevice->flasherShader->SetVector("amount__blend_modulate_vs_add", &ab);
    
    pd3dDevice->flasherShader->SetFlasherColorAlpha(color);
