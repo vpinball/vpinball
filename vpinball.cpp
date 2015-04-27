@@ -2549,59 +2549,91 @@ INT_PTR CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                   OPENFILENAME ofn;
                   LVITEM lvitem;
                   char szInitialDir[2096];
-		  szInitialDir[0] = '\0';
+		          szInitialDir[0] = '\0';
                   int sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), -1, LVNI_SELECTED); //next selected item 	
-                  while (sel != -1)
-                  {									
-                     lvitem.mask = LVIF_PARAM;
-                     lvitem.iItem = sel;
-                     lvitem.iSubItem = 0;
-                     ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
-                     PinSound *pps = (PinSound *)lvitem.lParam;								
+                  if (sel != -1)
+                  {
+                      lvitem.mask = LVIF_PARAM;
+                      lvitem.iItem = sel;
+                      lvitem.iSubItem = 0;
+                      ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
+                      PinSound *pps = (PinSound *)lvitem.lParam;
 
-                     ZeroMemory(&ofn, sizeof(OPENFILENAME));
-                     ofn.lStructSize = sizeof(OPENFILENAME);
-                     ofn.hInstance = g_hinst;
-                     ofn.hwndOwner = g_pvp->m_hwnd;
-                     //TEXT
-                     ofn.lpstrFilter = "Sound Files (*.wav)\0*.wav\0";
+                      ZeroMemory(&ofn, sizeof(OPENFILENAME));
+                      ofn.lStructSize = sizeof(OPENFILENAME);
+                      ofn.hInstance = g_hinst;
+                      ofn.hwndOwner = g_pvp->m_hwnd;
+                      //TEXT
+                      ofn.lpstrFilter = "Sound Files (*.wav)\0*.wav\0";
+                      char pathName[MAX_PATH] = { 0 };
+                      char filename[MAX_PATH] = { 0 };
 
-                     int begin;		//select only file name from pathfilename
-                     const int len = lstrlen(pps->m_szPath);
+                      int begin;		//select only file name from pathfilename
+                      int len = lstrlen(pps->m_szPath);
 
-                     for (begin=len;begin>=0;begin--)
-                     {
-                        if (pps->m_szPath[begin] == '\\')
-                        {
-                           begin++;
-                           break;
-                        }
-                     }
-                     ofn.lpstrFile = &pps->m_szPath[begin];
-                     ofn.nMaxFile = 2096;
-                     ofn.lpstrDefExt = "wav";
-                     const HRESULT hr = GetRegString("RecentDir","SoundDir", szInitialDir,2096);
+                      for (begin = len; begin >= 0; begin--)
+                      {
+                          if (pps->m_szPath[begin] == '\\')
+                          {
+                              begin++;
+                              break;
+                          }
+                      }
+                      memcpy(filename, &pps->m_szPath[begin], len - begin);
+                      ofn.lpstrFile = filename;
+                      ofn.nMaxFile = 2096;
+                      ofn.lpstrDefExt = "wav";
+                      const HRESULT hr = GetRegString("RecentDir", "SoundDir", szInitialDir, 2096);
 
-                     if (hr == S_OK)ofn.lpstrInitialDir = szInitialDir;
-                     else ofn.lpstrInitialDir = NULL;	
+                      if (hr == S_OK)ofn.lpstrInitialDir = szInitialDir;
+                      else ofn.lpstrInitialDir = NULL;
 
-                     ofn.lpstrTitle = "SAVE AS";
-                     ofn.Flags = OFN_NOREADONLYRETURN | OFN_CREATEPROMPT | OFN_OVERWRITEPROMPT | OFN_EXPLORER;
+                      ofn.lpstrTitle = "SAVE AS";
+                      ofn.Flags = OFN_NOREADONLYRETURN | OFN_CREATEPROMPT | OFN_OVERWRITEPROMPT | OFN_EXPLORER;
 
-                     szInitialDir[ofn.nFileOffset] = 0;
+                      szInitialDir[ofn.nFileOffset] = 0;
+                      if (GetSaveFileName(&ofn))	//Get filename from user
+                      {
+                          len = lstrlen(ofn.lpstrFile);
+                          for (begin = len; begin >= 0; begin--)
+                          {
+                              if (ofn.lpstrFile[begin] == '\\')
+                              {
+                                  begin++;
+                                  break;
+                              }
+                          }
+                          memcpy(pathName, ofn.lpstrFile, begin);
+                          pathName[begin] = 0;
+                          while (sel != -1)
+                          {
+                              len = lstrlen(pps->m_szPath);
+                              for (begin = len; begin >= 0; begin--)
+                              {
+                                  if (pps->m_szPath[begin] == '\\')
+                                  {
+                                      begin++;
+                                      break;
+                                  }
+                              }
+                              memset(filename,0,MAX_PATH);
+                              strcpy_s(filename, MAX_PATH, pathName);
+                              memcpy(&filename[lstrlen(pathName)], &pps->m_szPath[begin], (len-begin)+1);
+                              if (pt->ExportSound(GetDlgItem(hwndDlg, IDC_SOUNDLIST), pps, filename))
+                              {
+                                //pt->ReImportSound(GetDlgItem(hwndDlg, IDC_SOUNDLIST), pps, ofn.lpstrFile, fTrue);
+                                //pt->SetNonUndoableDirty(eSaveDirty);
+                              }
+                              sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), sel, LVNI_SELECTED); //next selected item
+                              lvitem.iItem = sel;
+                              lvitem.iSubItem = 0;
+                              ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
+                              pps = (PinSound *)lvitem.lParam;
 
-                     if (GetSaveFileName(&ofn))	//Get filename from user
-                     {																	
-                        if (pt->ExportSound(GetDlgItem(hwndDlg, IDC_SOUNDLIST), pps, ofn.lpstrFile))
-                        {
-                           //pt->ReImportSound(GetDlgItem(hwndDlg, IDC_SOUNDLIST), pps, ofn.lpstrFile, fTrue);
-                           //pt->SetNonUndoableDirty(eSaveDirty);
-                        }
-                     }
-                     sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), sel, LVNI_SELECTED); //next selected item
-
+                          }
+                          SetRegValue("RecentDir", "SoundDir", REG_SZ, pathName, lstrlen(pathName));
+                      }
                   }
-                  /*const HRESULT hr =*/ SetRegValue("RecentDir","SoundDir", REG_SZ, szInitialDir, lstrlen(szInitialDir));
                   EndDialog(hwndDlg, TRUE);
                }
             }
@@ -2991,20 +3023,20 @@ INT_PTR CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
             break;
 
          case IDC_EXPORT:
-            {
-               if(ListView_GetSelectedCount(GetDlgItem(hwndDlg, IDC_SOUNDLIST)))	// if some items are selected???
-               {
-                  char szInitialDir[2096];
-		  szInitialDir[0] = '\0';
-                  int sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), -1, LVNI_SELECTED);								
-                  while (sel != -1)
-                  {									
+         {
+             if (ListView_GetSelectedCount(GetDlgItem(hwndDlg, IDC_SOUNDLIST)))	// if some items are selected???
+             {
+                 char szInitialDir[2096];
+                 szInitialDir[0] = '\0';
+                 int sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), -1, LVNI_SELECTED);
+                 if (sel != -1)
+                 {
                      LVITEM lvitem;
                      lvitem.mask = LVIF_PARAM;
                      lvitem.iItem = sel;
                      lvitem.iSubItem = 0;
                      ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
-                     Texture * const ppi = (Texture*)lvitem.lParam;									
+                     Texture *ppi = (Texture*)lvitem.lParam;
 
                      OPENFILENAME ofn;
                      ZeroMemory(&ofn, sizeof(OPENFILENAME));
@@ -3013,26 +3045,28 @@ INT_PTR CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                      ofn.hwndOwner = g_pvp->m_hwnd;
                      //TEXT
                      ofn.lpstrFilter = "PNG (.png)\0*.png;\0Bitmap (.bmp)\0*.bmp;\0JPEG (.jpg/.jpeg)\0*.jpg;*.jpeg;\0IFF (.iff)\0*.IFF;\0PCX (.pcx)\0*.PCX;\0PICT (.pict)\0*.PICT;\0Photoshop (.psd)\0*.psd;\0TGA (.tga)\0*.tga;\0TIFF (.tiff/.tif)\0*.tiff;*.tif\0";
-
+                     char pathName[MAX_PATH] = { 0 };
+                     char filename[MAX_PATH] = { 0 };
                      int begin;		//select only file name from pathfilename
-                     const int len = lstrlen(ppi->m_szPath);
+                     int len = lstrlen(ppi->m_szPath);
 
-                     for (begin=len;begin>=0;begin--)
+                     for (begin = len; begin >= 0; begin--)
                      {
-                        if (ppi->m_szPath[begin] == '\\')
-                        {
-                           begin++;
-                           break;
-                        }
+                         if (ppi->m_szPath[begin] == '\\')
+                         {
+                             begin++;
+                             break;
+                         }
                      }
-                     ofn.lpstrFile = &ppi->m_szPath[begin];
+                     memcpy(filename, &ppi->m_szPath[begin],len-begin);
+                     ofn.lpstrFile = filename;
                      ofn.nMaxFile = 2096;
                      ofn.lpstrDefExt = "png";
 
-                     const HRESULT hr = GetRegString("RecentDir","ImageDir", szInitialDir, 2096);
+                     const HRESULT hr = GetRegString("RecentDir", "ImageDir", szInitialDir, 2096);
 
                      if (hr == S_OK)ofn.lpstrInitialDir = szInitialDir;
-                     else ofn.lpstrInitialDir = NULL;	
+                     else ofn.lpstrInitialDir = NULL;
 
                      ofn.lpstrTitle = "SAVE AS";
                      ofn.Flags = OFN_NOREADONLYRETURN | OFN_CREATEPROMPT | OFN_OVERWRITEPROMPT | OFN_EXPLORER;
@@ -3040,16 +3074,46 @@ INT_PTR CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                      szInitialDir[ofn.nFileOffset] = 0;
 
                      if (GetSaveFileName(&ofn))	//Get filename from user
-                     {																	
-                        if (pt->ExportImage(GetDlgItem(hwndDlg, IDC_SOUNDLIST), ppi, ofn.lpstrFile))
-                        {
-                           //pt->ReImportImage(GetDlgItem(hwndDlg, IDC_SOUNDLIST), ppi, ofn.lpstrFile);
-                           //pt->SetNonUndoableDirty(eSaveDirty);
-                        }
-                     }
-                     sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), sel, LVNI_SELECTED);
-                  } // finished all selected items
-                  SetRegValue("RecentDir","ImageDir", REG_SZ, szInitialDir, lstrlen(szInitialDir));
+                     {
+                         len = lstrlen(ofn.lpstrFile);
+                         for (begin = len; begin >= 0; begin--)
+                         {
+                             if (ofn.lpstrFile[begin] == '\\')
+                             {
+                                 begin++;
+                                 break;
+                             }
+                         }
+                         memcpy(pathName, ofn.lpstrFile, begin);
+                         pathName[begin] = 0;
+                         while (sel != -1)
+                         {
+                             len = lstrlen(ppi->m_szPath);
+                             for (begin = len; begin >= 0; begin--)
+                             {
+                                 if (ppi->m_szPath[begin] == '\\')
+                                 {
+                                     begin++;
+                                     break;
+                                 }
+                             }
+                             memset(filename,0,MAX_PATH);
+                             strcpy_s(filename, MAX_PATH, pathName);
+                             memcpy(filename, &ppi->m_szPath[begin], (len-begin)+1);
+                             if (pt->ExportImage(GetDlgItem(hwndDlg, IDC_SOUNDLIST), ppi, filename))
+                             {
+                                 //pt->ReImportImage(GetDlgItem(hwndDlg, IDC_SOUNDLIST), ppi, ofn.lpstrFile);
+                                 //pt->SetNonUndoableDirty(eSaveDirty);
+                             }
+                             sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), sel, LVNI_SELECTED);
+                             lvitem.iItem = sel;
+                             lvitem.iSubItem = 0;
+                             ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
+                             ppi = (Texture*)lvitem.lParam;
+                         }
+                         SetRegValue("RecentDir", "ImageDir", REG_SZ, pathName, lstrlen(pathName));
+                     } // finished all selected items
+                 }
                }							
             }	
             break;
