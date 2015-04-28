@@ -776,11 +776,13 @@ INT_PTR CALLBACK RotateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
          SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
 
          psel = (ISelect *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
-
-         Vertex2D v;			
-         psel->GetCenter(&v);
-         SetDlgItemInt(hwndDlg, IDC_ROTATEBY, 0, TRUE);
          char szT[256];
+         float angle = psel->GetRotate();
+         Vertex2D v;			
+
+         f2sz(angle, szT);
+         SetDlgItemText(hwndDlg, IDC_ROTATEBY, szT);
+         psel->GetCenter(&v);
          f2sz(v.x, szT);
          SetDlgItemText(hwndDlg, IDC_CENTERX, szT);
          f2sz(v.y, szT);
