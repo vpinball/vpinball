@@ -90,6 +90,8 @@ DECLARE_REGISTRY_RESOURCEID(IDR_TRIGGER)
 	virtual void Translate(Vertex2D *pvOffset);
 	virtual void GetCenter(Vertex2D * const pv) const {GetPointCenter(pv);}
     virtual void GetScale(float *sx, float *sy){ *sx = m_d.m_scaleX; *sy = m_d.m_scaleY;}
+    virtual float GetRotate(void){ return m_d.m_rotation; }
+
 	virtual void PutCenter(const Vertex2D * const pv) {PutPointCenter(pv);}
 	virtual void GetPointCenter(Vertex2D * const pv) const ;
 	virtual void PutPointCenter(const Vertex2D * const pv);

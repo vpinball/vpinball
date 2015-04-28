@@ -98,6 +98,11 @@ public:
         *sx=1.0f;
         *sy=1.0f;
     }
+    virtual float GetRotate()
+    {
+        return 0.0f;
+    }
+
 	virtual void PutCenter(const Vertex2D * const pv) = 0;
 
 	virtual IEditable *GetIEditable()=0;
