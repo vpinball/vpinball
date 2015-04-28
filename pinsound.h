@@ -38,6 +38,7 @@ public:
 
 	char *m_pdata; // Copy of the buffer data so we can save it out
 	int m_cdata;
+    bool                m_bToBackglassOutput;
 
 	class PinDirectSound *GetPinDirectSound();
 };

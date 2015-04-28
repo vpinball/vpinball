@@ -2652,7 +2652,9 @@ INT_PTR CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                      ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
                      PinSound *pps = (PinSound *)lvitem.lParam;								
 
-					 strcpy_s(pps->m_szPath, "* Backglass Output *");
+					 //strcpy_s(pps->m_szPath, "* Backglass Output *");
+                     pps->m_bToBackglassOutput ^= true;
+
                      sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), sel, LVNI_SELECTED); //next selected item
 
                   }

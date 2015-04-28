@@ -3825,6 +3825,7 @@ void PinTable::ListSounds(HWND hwndListView)
 
 int PinTable::AddListSound(HWND hwndListView, PinSound *pps)
 {
+    char pathName[MAX_PATH];
    LVITEM lvitem;
    lvitem.mask = LVIF_DI_SETITEM | LVIF_TEXT | LVIF_PARAM;
    lvitem.iItem = 0;
@@ -3834,7 +3835,13 @@ int PinTable::AddListSound(HWND hwndListView, PinSound *pps)
 
    const int index = ListView_InsertItem(hwndListView, &lvitem);
 
-   ListView_SetItemText(hwndListView, index, 1, pps->m_szPath);
+   memset(pathName,0,MAX_PATH);
+   if (pps->m_bToBackglassOutput)
+   {
+       strcpy_s(pathName,"*BG* ");
+   }
+   strcat_s(pathName, pps->m_szPath);
+   ListView_SetItemText(hwndListView, index, 1, pathName);
 
    return index;
 }
