@@ -7437,7 +7437,7 @@ INT_PTR CALLBACK EditorOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARA
                   SetRegValueBool("Editor", "DrawLightCenters", checked);
 
                   // auto save
-                  checked = (SendDlgItemMessage(hwndDlg, IDC_AUTOSAVE_MINUTES, BM_GETCHECK, 0, 0) == BST_CHECKED);
+                  checked = (SendDlgItemMessage(hwndDlg, IDC_AUTOSAVE, BM_GETCHECK, 0, 0) == BST_CHECKED);
                   SetRegValueBool("Editor", "AutoSaveOn", checked);
 
                   checked = (SendDlgItemMessage(hwndDlg, IDC_PROP_FLOAT_CHECK, BM_GETCHECK, 0, 0) == BST_CHECKED);
