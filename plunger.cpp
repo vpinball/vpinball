@@ -41,6 +41,8 @@ void Plunger::SetDefaults(bool fromMouseClick)
 	float fTmp;
 	int iTmp;
 
+    SetDefaultPhysics(fromMouseClick);
+
 	hr = GetRegStringAsFloat("DefaultProps\\Plunger", "Height", &fTmp);
 	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_height = fTmp;
@@ -93,11 +95,6 @@ void Plunger::SetDefaults(bool fromMouseClick)
 	else
 		m_d.m_animFrames = 1;
 
-	hr = GetRegStringAsFloat("DefaultProps\\Plunger", "ReleaseSpeed", &fTmp);
-	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_speedFire = fTmp;
-	else
-		m_d.m_speedFire = 80;
 
 	hr = GetRegInt("DefaultProps\\Plunger", "TimerEnabled", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
@@ -127,17 +124,6 @@ void Plunger::SetDefaults(bool fromMouseClick)
 	else
 		m_d.m_autoPlunger = fFalse;
 
-	hr = GetRegStringAsFloat("DefaultProps\\Plunger", "MechStrength", &fTmp);
-	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_mechStrength = fTmp;
-	else
-		m_d.m_mechStrength = 85;
-
-	hr = GetRegStringAsFloat("DefaultProps\\Plunger", "ParkPosition", &fTmp);
-	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_parkPosition = fTmp;
-	else
-		m_d.m_parkPosition = (float)(0.5 / 3.0);  // typical mechanical plunger has 3 inch stroke and 0.5 inch rest position
 
 	hr = GetRegInt("DefaultProps\\Plunger", "Visible", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
@@ -145,17 +131,6 @@ void Plunger::SetDefaults(bool fromMouseClick)
 	else
 		m_d.m_fVisible = true;
 
-	hr = GetRegStringAsFloat("DefaultProps\\Plunger", "ScatterVelocity", &fTmp);
-	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_scatterVelocity = fTmp;
-	else
-		m_d.m_scatterVelocity = 0;
-
-	hr = GetRegStringAsFloat("DefaultProps\\Plunger", "MomentumXfer", &fTmp);
-	if ((hr == S_OK) && fromMouseClick)
-		m_d.m_momentumXfer = fTmp;
-	else
-		m_d.m_momentumXfer = 1.0f;
 
 	hr = GetRegString("DefaultProps\\Plunger", "CustomTipShape", m_d.m_szTipShape, MAXTIPSHAPE);
 	if ((hr != S_OK) || !fromMouseClick)
@@ -344,6 +319,41 @@ void Plunger::PutCenter(const Vertex2D * const pv)
 	m_d.m_v = *pv;
 
 	m_ptable->SetDirtyDraw();
+}
+
+void Plunger::SetDefaultPhysics(bool fromMouseClick)
+{
+    HRESULT hr;
+    float fTmp;
+
+    hr = GetRegStringAsFloat("DefaultProps\\Plunger", "ReleaseSpeed", &fTmp);
+    if ((hr == S_OK) && fromMouseClick)
+        m_d.m_speedFire = fTmp;
+    else
+        m_d.m_speedFire = 80;
+    hr = GetRegStringAsFloat("DefaultProps\\Plunger", "MechStrength", &fTmp);
+    if ((hr == S_OK) && fromMouseClick)
+        m_d.m_mechStrength = fTmp;
+    else
+        m_d.m_mechStrength = 85;
+
+    hr = GetRegStringAsFloat("DefaultProps\\Plunger", "ParkPosition", &fTmp);
+    if ((hr == S_OK) && fromMouseClick)
+        m_d.m_parkPosition = fTmp;
+    else
+        m_d.m_parkPosition = (float)(0.5 / 3.0);  // typical mechanical plunger has 3 inch stroke and 0.5 inch rest position
+    hr = GetRegStringAsFloat("DefaultProps\\Plunger", "ScatterVelocity", &fTmp);
+    if ((hr == S_OK) && fromMouseClick)
+        m_d.m_scatterVelocity = fTmp;
+    else
+        m_d.m_scatterVelocity = 0;
+
+    hr = GetRegStringAsFloat("DefaultProps\\Plunger", "MomentumXfer", &fTmp);
+    if ((hr == S_OK) && fromMouseClick)
+        m_d.m_momentumXfer = fTmp;
+    else
+        m_d.m_momentumXfer = 1.0f;
+
 }
 
 void Plunger::PostRenderStatic(RenderDevice* pd3dDevice)

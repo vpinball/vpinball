@@ -123,6 +123,7 @@ END_CONNECTION_POINT_MAP()
 	}
     virtual bool IsTransparent();
     virtual void UpdatePropertyPanes();
+    virtual void SetDefaultPhysics(bool fromMouseClick);
 
 private:
     void CurvesToShapes(Vector<HitObject> * const pvho);

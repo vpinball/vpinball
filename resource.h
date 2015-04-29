@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
-// Von Microsoft Visual C++ generierte Includedatei.
-// Verwendet durch vpinball_eng.rc
+// Microsoft Visual C++ generated include file.
+// Used by vpinball_eng.rc
 //
 #define VP_VERSION_MINOR                0
 #define VP_VERSION_REV                  0
@@ -189,6 +189,7 @@
 #define IDC_CUR_DISPLCDSEG              172
 #define IDS_UNSECURECONTROL2            173
 #define IDS_COLLECTION                  174
+#define IDS_DEFAULTPHYSICS              175
 #define IDS_NEED_DD9                    176
 #define IDS_LOCK                        177
 #define IDS_MISC                        178
@@ -868,6 +869,8 @@
 #define IDM_COLLECTION_EDITOR           32995
 #define IDC_EFFECT_COMBO                32996
 #define ID_TABLE_CAMERAMODE             32997
+#define ID_EDIT_SETDEFAULTPHYSICS       32998
+#define ID_EDIT_LOCK                    32999
 #define DZVALUE                         65535
 #define DZName                          65535
 
@@ -876,7 +879,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        619
-#define _APS_NEXT_COMMAND_VALUE         32998
+#define _APS_NEXT_COMMAND_VALUE         33002
 #define _APS_NEXT_CONTROL_VALUE         476
 #define _APS_NEXT_SYMED_VALUE           188
 #endif

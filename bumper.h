@@ -129,6 +129,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_BUMPER)
 
 	virtual void DrawFrame(BOOL fOn);
     virtual void UpdatePropertyPanes();
+    virtual void SetDefaultPhysics(bool fromMouseClick);
 
 	void WriteRegDefaults();
 

@@ -4513,17 +4513,7 @@ void PinTable::DoCommand(int icmd, int x, int y)
 
    case ID_LOCK:
       {
-         BeginUndo();
-         bool fLock = FMutilSelLocked() ? false : true;
-         for (int i=0;i<m_vmultisel.Size();i++)
-         {
-            ISelect *psel;
-            psel = m_vmultisel.ElementAt(i);
-            psel->GetIEditable()->MarkForUndo();
-            psel->m_fLocked = fLock;
-         }
-         EndUndo();
-         SetDirtyDraw();
+          LockElements();
       }
       break;
 
@@ -4709,6 +4699,21 @@ bool PinTable::GetCollectionIndex( ISelect *element, int &collectionIndex, int &
         }
     }
     return false;
+}
+
+void PinTable::LockElements()
+{
+    BeginUndo();
+    bool fLock = FMutilSelLocked() ? false : true;
+    for (int i = 0; i < m_vmultisel.Size(); i++)
+    {
+        ISelect *psel;
+        psel = m_vmultisel.ElementAt(i);
+        psel->GetIEditable()->MarkForUndo();
+        psel->m_fLocked = fLock;
+    }
+    EndUndo();
+    SetDirtyDraw();
 }
 
 void PinTable::FlipY(Vertex2D * const pvCenter)

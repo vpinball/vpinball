@@ -148,6 +148,7 @@ public:
 	// Multi-object manipulation
 	virtual void GetCenter(Vertex2D * const pv) const;
 	virtual void PutCenter(const Vertex2D * const pv);
+    virtual void SetDefaultPhysics(bool fromMouseClick);
 
 	void WriteRegDefaults();
 

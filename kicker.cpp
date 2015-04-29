@@ -67,11 +67,6 @@ void Kicker::SetDefaults(bool fromMouseClick)
    else
       m_d.m_fEnabled = true;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Kicker","Scatter", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_scatter = fTmp;
-   else
-      m_d.m_scatter = 0;
 
    hr = GetRegStringAsFloat("DefaultProps\\Kicker","HitHeight", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
@@ -84,6 +79,8 @@ void Kicker::SetDefaults(bool fromMouseClick)
       m_d.m_orientation = fTmp;
    else
       m_d.m_orientation = 0.0f;
+
+   SetDefaultPhysics(fromMouseClick);
 
    hr = GetRegString("DefaultProps\\Kicker", "Surface", &m_d.m_szSurface, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
@@ -300,6 +297,19 @@ void Kicker::RenderSetup(RenderDevice* pd3dDevice)
 
 void Kicker::PreRenderStatic( RenderDevice* pd3dDevice)
 {
+}
+
+void Kicker::SetDefaultPhysics(bool fromMouseClick)
+{
+    HRESULT hr;
+    float fTmp;
+
+    hr = GetRegStringAsFloat("DefaultProps\\Kicker", "Scatter", &fTmp);
+    if ((hr == S_OK) && fromMouseClick)
+        m_d.m_scatter = fTmp;
+    else
+        m_d.m_scatter = 0;
+
 }
 
 void Kicker::RenderStatic(RenderDevice* pd3dDevice)

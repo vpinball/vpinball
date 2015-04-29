@@ -88,6 +88,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_GATE)
 	virtual void PutCenter(const Vertex2D * const pv);
    void PrepareStatic(RenderDevice* pd3dDevice);
    void PrepareMovers(RenderDevice* pd3dDevice );
+   virtual void SetDefaultPhysics(bool fromMouseClick);
 
 	virtual void RenderBlueprint(Sur *psur);
 

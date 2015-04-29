@@ -514,6 +514,7 @@ END_CONNECTION_POINT_MAP()
     Texture *GetSurfaceImage( char *szName );
     bool GetCollectionIndex( ISelect *element, int &collectionIndex, int &elementIndex );
 
+    void LockElements();
     char m_szFileName[_MAX_PATH];
 	char m_szBlueprintFileName[_MAX_PATH];
 	char m_szTitle[1024];

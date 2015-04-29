@@ -60,23 +60,7 @@ void Flipper::SetDefaults(bool fromMouseClick)
 
    //m_d.m_angleEOS = 0; //!! reenable?
 
-   hr = GetRegStringAsFloat("DefaultProps\\Flipper","ReturnStrength", &fTmp);
-   m_d.m_return = (hr == S_OK) && fromMouseClick ? fTmp : 0.1f;
-
-   hr = GetRegStringAsFloat("DefaultProps\\Flipper","Speed", &fTmp);
-   m_d.m_mass = (hr == S_OK) && fromMouseClick ? fTmp : 1.0f;
-
-   hr = GetRegStringAsFloat("DefaultProps\\Flipper","Elasticity", &fTmp);
-   m_d.m_elasticity = (hr == S_OK) && fromMouseClick ? fTmp : 0.5f;
-
-   m_d.m_elasticityFalloff = GetRegStringAsFloatWithDefault("DefaultProps\\Flipper","ElasticityFalloff", 0.3f);
-
-   m_d.m_OverridePhysics = 0;
-
-   m_d.m_friction = GetRegStringAsFloatWithDefault("DefaultProps\\Flipper","Friction", 0.25f);
-   m_d.m_rampUp = GetRegStringAsFloatWithDefault("DefaultProps\\Flipper","RampUp", 3.5f);
-
-   m_d.m_scatter = 0.0;
+   SetDefaultPhysics(fromMouseClick);
 
    hr = GetRegInt("DefaultProps\\Flipper","TimerEnabled", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
@@ -496,6 +480,31 @@ void Flipper::PutCenter(const Vertex2D * const pv)
    m_d.m_Center = *pv;
 
    m_ptable->SetDirtyDraw();
+}
+
+void Flipper::SetDefaultPhysics(bool fromMouseClick)
+{
+    HRESULT hr;
+    float fTmp;
+    int iTmp;
+
+    hr = GetRegStringAsFloat("DefaultProps\\Flipper", "ReturnStrength", &fTmp);
+    m_d.m_return = (hr == S_OK) && fromMouseClick ? fTmp : 0.1f;
+
+    hr = GetRegStringAsFloat("DefaultProps\\Flipper", "Speed", &fTmp);
+    m_d.m_mass = (hr == S_OK) && fromMouseClick ? fTmp : 1.0f;
+
+    hr = GetRegStringAsFloat("DefaultProps\\Flipper", "Elasticity", &fTmp);
+    m_d.m_elasticity = (hr == S_OK) && fromMouseClick ? fTmp : 0.5f;
+
+    m_d.m_elasticityFalloff = GetRegStringAsFloatWithDefault("DefaultProps\\Flipper", "ElasticityFalloff", 0.3f);
+
+    m_d.m_OverridePhysics = 0;
+
+    m_d.m_friction = GetRegStringAsFloatWithDefault("DefaultProps\\Flipper", "Friction", 0.25f);
+    m_d.m_rampUp = GetRegStringAsFloatWithDefault("DefaultProps\\Flipper", "RampUp", 3.5f);
+
+    m_d.m_scatter = 0.0;
 }
 
 STDMETHODIMP Flipper::InterfaceSupportsErrorInfo(REFIID riid)

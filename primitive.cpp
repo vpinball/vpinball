@@ -234,10 +234,8 @@ void Primitive::SetDefaults(bool fromMouseClick)
       m_d.m_szImage[0] = 0;
 
    m_d.m_threshold = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "HitThreshold", 2.0f) : 2.0f;
-   m_d.m_elasticity = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "Elasticity", 0.3f) : 0.3f;
-   m_d.m_elasticityFalloff = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "ElasticityFalloff", 0.5f) : 0.5f;
-   m_d.m_friction = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "Friction", 0.3f) : 0.3f;
-   m_d.m_scatter = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "Scatter", 0) : 0;
+   
+   SetDefaultPhysics(fromMouseClick);
 
    m_d.m_edgeFactorUI = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "EdgeFactorUI", 0.25f) : 0.25f;
 
@@ -2103,6 +2101,15 @@ void Primitive::UpdatePropertyPanes()
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 115), TRUE);
     }
 
+}
+
+void Primitive::SetDefaultPhysics(bool fromMouseClick)
+{
+    static const char strKeyName[] = "DefaultProps\\Primitive";
+    m_d.m_elasticity = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "Elasticity", 0.3f) : 0.3f;
+    m_d.m_elasticityFalloff = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "ElasticityFalloff", 0.5f) : 0.5f;
+    m_d.m_friction = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "Friction", 0.3f) : 0.3f;
+    m_d.m_scatter = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "Scatter", 0) : 0;
 }
 
 STDMETHODIMP Primitive::get_DepthBias(float *pVal)

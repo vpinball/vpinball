@@ -79,6 +79,7 @@ public:
     virtual void PutCenter(const Vertex2D * const pv);
 
     virtual void PreRenderStatic( RenderDevice* pd3dDevice);
+    virtual void SetDefaultPhysics(bool fromMouseClick);
 
     void WriteRegDefaults();
 

@@ -100,8 +100,7 @@ void Bumper::SetDefaults(bool fromMouseClick)
    hr = GetRegStringAsFloat("DefaultProps\\Bumper","Radius", &fTmp);
    m_d.m_radius = (hr == S_OK) && fromMouseClick ? fTmp : 45;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Bumper","Force", &fTmp);
-   m_d.m_force = (hr == S_OK) && fromMouseClick ? fTmp : 15;
+   SetDefaultPhysics(fromMouseClick);
 
    hr = GetRegStringAsFloat("DefaultProps\\Bumper","HeightScale", &fTmp);
    m_d.m_heightScale = (hr == S_OK) && fromMouseClick ? fTmp : 90.0f;
@@ -1198,4 +1197,14 @@ void Bumper::UpdatePropertyPanes()
         EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_MATERIAL_COMBO2), TRUE);
         EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_MATERIAL_COMBO3), TRUE);
     }
+}
+
+void Bumper::SetDefaultPhysics(bool fromMouseClick)
+{
+    HRESULT hr;
+    float fTmp;
+
+    hr = GetRegStringAsFloat("DefaultProps\\Bumper", "Force", &fTmp);
+    m_d.m_force = (hr == S_OK) && fromMouseClick ? fTmp : 15;
+
 }

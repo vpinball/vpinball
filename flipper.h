@@ -100,6 +100,7 @@ END_CONNECTION_POINT_MAP()
 	// Multi-object manipulation
 	virtual void GetCenter(Vertex2D * const pv) const;
 	virtual void PutCenter(const Vertex2D * const pv);
+    virtual void SetDefaultPhysics(bool fromMouseClick);
 
     void RenderAtThickness(RenderDevice* pd3dDevice, float angle, float height, float baseradius, float endradius, float flipperheight, Vertex3D_NoTex2* buf);
 

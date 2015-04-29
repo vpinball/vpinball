@@ -236,6 +236,8 @@ public:
    virtual unsigned long long GetMaterialID() { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
 
    virtual void UpdatePropertyPanes();
+   virtual void SetDefaultPhysics(bool fromMouseClick);
+
    void    CreateRenderGroup(Collection *collection, RenderDevice *pd3dDevice);
    void    RecalculateMatrices();
    void    TransformVertices();

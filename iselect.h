@@ -105,6 +105,8 @@ public:
 
 	virtual void PutCenter(const Vertex2D * const pv) = 0;
 
+    virtual void SetDefaultPhysics(bool fromMouseClick){}
+
 	virtual IEditable *GetIEditable()=0;
 
 	BOOL LoadToken(int id, BiffReader *pbr);
