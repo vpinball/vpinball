@@ -127,23 +127,7 @@ void Gate::SetDefaults(bool fromMouseClick)
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szSurface[0] = 0;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Gate","Elasticity", &fTmp);
-   if ((hr == S_OK)  && fromMouseClick)
-      m_d.m_elasticity = fTmp;
-   else
-      m_d.m_elasticity = 0.3f;
-
-   hr = GetRegStringAsFloat("DefaultProps\\Gate","Friction", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_friction =  fTmp;
-   else
-      m_d.m_friction = 0.02f;	
-
-   hr = GetRegStringAsFloat("DefaultProps\\Gate","Scatter", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_scatter = fTmp;
-   else
-      m_d.m_scatter = 0;
+   SetDefaultPhysics(fromMouseClick);
 
    hr = GetRegString("DefaultProps\\Gate","ImageFront", &m_d.m_szImageFront, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
@@ -267,6 +251,31 @@ void Gate::Render(Sur * const psur)
        psur->Line(tmp.x, tmp.y,
            m_d.m_vCenter.x + sn*len2, m_d.m_vCenter.y - cs*len2);
    }
+}
+
+void Gate::SetDefaultPhysics(bool fromMouseClick)
+{
+    HRESULT hr;
+    float fTmp;
+
+    hr = GetRegStringAsFloat("DefaultProps\\Gate", "Elasticity", &fTmp);
+    if ((hr == S_OK) && fromMouseClick)
+        m_d.m_elasticity = fTmp;
+    else
+        m_d.m_elasticity = 0.3f;
+
+    hr = GetRegStringAsFloat("DefaultProps\\Gate", "Friction", &fTmp);
+    if ((hr == S_OK) && fromMouseClick)
+        m_d.m_friction = fTmp;
+    else
+        m_d.m_friction = 0.02f;
+
+    hr = GetRegStringAsFloat("DefaultProps\\Gate", "Scatter", &fTmp);
+    if ((hr == S_OK) && fromMouseClick)
+        m_d.m_scatter = fTmp;
+    else
+        m_d.m_scatter = 0;
+
 }
 
 void Gate::RenderBlueprint(Sur *psur)

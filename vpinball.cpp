@@ -906,6 +906,32 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
           }
          break;
       }
+   case ID_EDIT_SETDEFAULTPHYSICS:
+   {
+       ptCur = GetActiveTable();
+       if (ptCur)
+       {
+           LocalString ls(IDS_DEFAULTPHYSICS);
+           const int answ = MessageBox(m_hwnd, ls.m_szbuffer, "Continue?", MB_YESNO | MB_ICONWARNING );
+           if (answ == IDYES)
+           {
+               ptCur->BeginUndo();
+               for (int i = 0; i < ptCur->m_vmultisel.size(); i++)
+                   ptCur->m_vmultisel.ElementAt(i)->SetDefaultPhysics(true);
+               ptCur->EndUndo();
+               m_sb.RefreshProperties();
+           }
+       }
+       break;
+   }
+   case ID_LOCK:
+   {
+       ptCur = GetActiveTable();
+       if (ptCur)
+           ptCur->LockElements();
+       break;
+
+   }
    case ID_EDIT_DRAWINGORDER_HIT:
       {
          //DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_DRAWING_ORDER), m_hwnd, DrawingOrderProc, 0);

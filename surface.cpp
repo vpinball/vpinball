@@ -246,9 +246,7 @@ void Surface::SetDefaults(bool fromMouseClick)
    m_d.m_slingshotforce = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"SlingshotForce", 80.0f) : 80.0f;
    m_d.m_fSlingshotAnimation = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"SlingshotAnimation", true) : true;
 
-   m_d.m_elasticity = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"Elasticity", 0.3f) : 0.3f;
-   m_d.m_friction = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"Friction", 0.3f) : 0.3f;
-   m_d.m_scatter = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"Scatter", 0) : 0;
+   SetDefaultPhysics(fromMouseClick);
 
    m_d.m_fVisible = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"Visible", true) : true;
    m_d.m_fSideVisible = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"SideVisible", true) : true;
@@ -1954,4 +1952,12 @@ void Surface::UpdatePropertyPanes()
         EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,115), TRUE);
         EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,116), TRUE);
     }
+}
+
+void Surface::SetDefaultPhysics(bool fromMouseClick)
+{
+    static const char strKeyName[] = "DefaultProps\\Wall";
+    m_d.m_elasticity = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "Elasticity", 0.3f) : 0.3f;
+    m_d.m_friction = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "Friction", 0.3f) : 0.3f;
+    m_d.m_scatter = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "Scatter", 0) : 0;
 }

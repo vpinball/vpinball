@@ -96,9 +96,7 @@ void Ramp::SetDefaults(bool fromMouseClick)
    m_d.m_leftwallheightvisible = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"LeftWallHeightVisible", 30.0f) : 30.0f;
    m_d.m_rightwallheightvisible = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"RightWallHeightVisible", 30.0f) : 30.0f;
 
-   m_d.m_elasticity = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"Elasticity", 0.3f) : 0.3f;
-   m_d.m_friction = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"Friction", 0.3f) : 0.3f;
-   m_d.m_scatter = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"Scatter", 0) : 0;
+   SetDefaultPhysics(fromMouseClick);
 
    m_d.m_fVisible = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"Visible", true) : true;
    m_d.m_fCollidable = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"Collidable", true) : true;
@@ -2380,4 +2378,12 @@ void Ramp::UpdatePropertyPanes()
         EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,115), TRUE);
     }
 
+}
+
+void Ramp::SetDefaultPhysics(bool fromMouseClick)
+{
+    static const char strKeyName[] = "DefaultProps\\Ramp";
+    m_d.m_elasticity = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "Elasticity", 0.3f) : 0.3f;
+    m_d.m_friction = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "Friction", 0.3f) : 0.3f;
+    m_d.m_scatter = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "Scatter", 0) : 0;
 }

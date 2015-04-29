@@ -108,6 +108,7 @@ void Spinner::SetDefaults(bool fromMouseClick)
    else
       m_d.m_overhang = 10;
 
+   SetDefaultPhysics(fromMouseClick);
    // Anti-friction is 1-friction (throughput)
    m_d.m_antifriction = 0.99f;
 
@@ -122,12 +123,6 @@ void Spinner::SetDefaults(bool fromMouseClick)
       m_d.m_angleMin = fTmp;
    else
       m_d.m_angleMin = 0;
-
-   hr = GetRegStringAsFloat("DefaultProps\\Spinner","Elasticity", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_elasticity = fTmp;
-   else
-      m_d.m_elasticity = 0.3f;
 
    hr = GetRegInt("DefaultProps\\Spinner","Visible", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
@@ -461,6 +456,17 @@ void Spinner::PutCenter(const Vertex2D * const pv)
    m_d.m_vCenter = *pv;
 
    m_ptable->SetDirtyDraw();
+}
+
+void Spinner::SetDefaultPhysics(bool fromMouseClick)
+{
+    HRESULT hr;
+    float fTmp;
+    hr = GetRegStringAsFloat("DefaultProps\\Spinner", "Elasticity", &fTmp);
+    if ((hr == S_OK) && fromMouseClick)
+        m_d.m_elasticity = fTmp;
+    else
+        m_d.m_elasticity = 0.3f;
 }
 
 HRESULT Spinner::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
