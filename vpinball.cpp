@@ -3305,6 +3305,7 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
             //EndDialog(hwndDlg, FALSE);
             DestroyWindow(pt->m_hMaterialManager);
             pt->m_hMaterialManager=NULL;
+            SetForegroundWindow(g_pvp->m_hwnd);
             break;
         }
 
@@ -3557,6 +3558,7 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
                             //EndDialog(hwndDlg, TRUE);
                             DestroyWindow(pt->m_hMaterialManager);
                             pt->m_hMaterialManager=NULL;
+                            SetForegroundWindow(g_pvp->m_hwnd);
 
                             break;
                         }
