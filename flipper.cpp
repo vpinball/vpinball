@@ -486,7 +486,6 @@ void Flipper::SetDefaultPhysics(bool fromMouseClick)
 {
     HRESULT hr;
     float fTmp;
-    int iTmp;
 
     hr = GetRegStringAsFloat("DefaultProps\\Flipper", "ReturnStrength", &fTmp);
     m_d.m_return = (hr == S_OK) && fromMouseClick ? fTmp : 0.1f;
