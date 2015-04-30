@@ -3376,7 +3376,7 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
                             hwndColor = GetDlgItem(hwndDlg, IDC_COLOR3);
                             SendMessage(hwndColor, CHANGE_COLOR, 0, pmat->m_cClearcoat);
                             char textBuf[256];
-                            f2sz(pmat->m_fWrapLighting,textBuf);
+                            f2sz(pmat->m_fWrapLighting, textBuf);
                             SetDlgItemText(hwndDlg, IDC_DIFFUSE_EDIT, textBuf);
                             f2sz(pmat->m_fRoughness,textBuf);
                             SetDlgItemText(hwndDlg, IDC_GLOSSY_EDIT, textBuf);
@@ -3410,20 +3410,40 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
                     if( (plistview->uNewState & LVIS_SELECTED)==0 )
                     {
                         char textBuf[256];
+                        float fv;
                         GetDlgItemText(hwndDlg, IDC_DIFFUSE_EDIT, textBuf, 31);
-                        pmat->m_fWrapLighting = sz2f(textBuf);
+                        fv = sz2f(textBuf);
+                        if ( pmat->m_fWrapLighting!=fv )
+                            pt->SetNonUndoableDirty(eSaveDirty);
+                        pmat->m_fWrapLighting = fv;
                         GetDlgItemText(hwndDlg, IDC_GLOSSY_EDIT, textBuf, 31);
-                        pmat->m_fRoughness = sz2f(textBuf);
+                        fv = sz2f(textBuf);
+                        if (pmat->m_fRoughness != fv)
+                            pt->SetNonUndoableDirty(eSaveDirty);
+                        pmat->m_fRoughness = fv;
                         GetDlgItemText(hwndDlg, IDC_SPECULAR_EDIT, textBuf, 31);
-                        pmat->m_fEdge = sz2f(textBuf);
+                        fv = sz2f(textBuf);
+                        if (pmat->m_fEdge != fv)
+                            pt->SetNonUndoableDirty(eSaveDirty);
+                        pmat->m_fEdge = fv;
                         GetDlgItemText(hwndDlg, IDC_OPACITY_EDIT, textBuf, 31);
-                        pmat->m_fOpacity = sz2f(textBuf);
+                        fv = sz2f(textBuf);
+                        if (pmat->m_fOpacity != fv)
+                            pt->SetNonUndoableDirty(eSaveDirty);
+                        pmat->m_fOpacity = fv;
                         size_t checked = SendDlgItemMessage(hwndDlg, IDC_DIFFUSE_CHECK, BM_GETCHECK, 0, 0);
+                        if (pmat->m_bIsMetal != (checked==1))
+                            pt->SetNonUndoableDirty(eSaveDirty);
                         pmat->m_bIsMetal = checked==1;
                         checked = SendDlgItemMessage(hwndDlg, IDC_OPACITY_CHECK, BM_GETCHECK, 0, 0);
-                        pmat->m_bOpacityActive = checked==1;
+                        if (pmat->m_bOpacityActive != (checked == 1))
+                            pt->SetNonUndoableDirty(eSaveDirty);
+                        pmat->m_bOpacityActive = checked == 1;
                         GetDlgItemText(hwndDlg, IDC_EDGEALPHA_EDIT, textBuf, 31);
-                        pmat->m_fEdgeAlpha = sz2f(textBuf);
+                        fv = sz2f(textBuf);
+                        if (pmat->m_fEdgeAlpha != fv)
+                            pt->SetNonUndoableDirty(eSaveDirty);
+                        pmat->m_fEdgeAlpha = fv;
                     }
                     else
                     {
@@ -3536,20 +3556,40 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
                                     ListView_GetItem(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST), &lvitem);
                                     Material * const pmat = (Material*)lvitem.lParam;
                                     char textBuf[256];
+                                    float fv;
                                     GetDlgItemText(hwndDlg, IDC_DIFFUSE_EDIT, textBuf, 31);
-                                    pmat->m_fWrapLighting = sz2f(textBuf);
+                                    fv = sz2f(textBuf);
+                                    if (pmat->m_fWrapLighting != fv)
+                                        pt->SetNonUndoableDirty(eSaveDirty);
+                                    pmat->m_fWrapLighting = fv;
                                     GetDlgItemText(hwndDlg, IDC_GLOSSY_EDIT, textBuf, 31);
-                                    pmat->m_fRoughness = sz2f(textBuf);
+                                    fv = sz2f(textBuf);
+                                    if (pmat->m_fRoughness != fv)
+                                        pt->SetNonUndoableDirty(eSaveDirty);
+                                    pmat->m_fRoughness = fv;
                                     GetDlgItemText(hwndDlg, IDC_SPECULAR_EDIT, textBuf, 31);
-                                    pmat->m_fEdge = sz2f(textBuf);
+                                    fv = sz2f(textBuf);
+                                    if (pmat->m_fEdge != fv)
+                                        pt->SetNonUndoableDirty(eSaveDirty);
+                                    pmat->m_fEdge = fv;
                                     GetDlgItemText(hwndDlg, IDC_OPACITY_EDIT, textBuf, 31);
-                                    pmat->m_fOpacity = sz2f(textBuf);
+                                    fv = sz2f(textBuf);
+                                    if (pmat->m_fOpacity != fv)
+                                        pt->SetNonUndoableDirty(eSaveDirty);
+                                    pmat->m_fOpacity = fv;
                                     size_t checked = SendDlgItemMessage(hwndDlg, IDC_DIFFUSE_CHECK, BM_GETCHECK, 0, 0);
-                                    pmat->m_bIsMetal = checked==1;
+                                    if (pmat->m_bIsMetal != (checked == 1))
+                                        pt->SetNonUndoableDirty(eSaveDirty);
+                                    pmat->m_bIsMetal = checked == 1;
                                     checked = SendDlgItemMessage(hwndDlg, IDC_OPACITY_CHECK, BM_GETCHECK, 0, 0);
-                                    pmat->m_bOpacityActive = checked==1;
+                                    if (pmat->m_bOpacityActive != (checked == 1))
+                                        pt->SetNonUndoableDirty(eSaveDirty);
+                                    pmat->m_bOpacityActive = checked == 1;
                                     GetDlgItemText(hwndDlg, IDC_EDGEALPHA_EDIT, textBuf, 31);
-                                    pmat->m_fEdgeAlpha = sz2f(textBuf);
+                                    fv = sz2f(textBuf);
+                                    if (pmat->m_fEdgeAlpha != fv)
+                                        pt->SetNonUndoableDirty(eSaveDirty);
+                                    pmat->m_fEdgeAlpha = fv;
 
                                     // The previous selection is now deleted, so look again from the top of the list
                                     sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST), sel, LVNI_SELECTED);
@@ -3598,6 +3638,7 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
                               }
                               g_pvp->m_sb.PopulateDropdowns(); // May need to update list of images
                               g_pvp->m_sb.RefreshProperties();
+                              pt->SetNonUndoableDirty(eSaveDirty);
                            }
                            break;
                         }
@@ -3618,6 +3659,7 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
                             pt->AddListMaterial(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST), pmat);
                             g_pvp->m_sb.PopulateDropdowns(); // May need to update list of images
                             g_pvp->m_sb.RefreshProperties();
+                            pt->SetNonUndoableDirty(eSaveDirty);
 
                             break;
                         }
