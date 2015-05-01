@@ -866,7 +866,7 @@ void Player::UpdateBallShaderMatrix()
 
     ballShader->SetMatrix("matWorldViewProj", &matWorldViewProj);
     ballShader->SetMatrix("matWorldView", &matWorldView);
-    ballShader->SetMatrix("matWorldViewInverseTranspose", &matWorldViewInvTrans);
+    //ballShader->SetMatrix("matWorldViewInverseTranspose", &matWorldViewInvTrans);
     ballShader->SetMatrix("matView", &matView);
 
     memcpy(temp.m,matView.m,4*4*sizeof(float));

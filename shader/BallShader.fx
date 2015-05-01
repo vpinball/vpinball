@@ -212,7 +212,7 @@ float3 ballLightLoop(float3 pos, float3 N, float3 V, float3 diffuse, float3 glos
 float4 psBall( in vout IN ) : COLOR
 {
     const float3 v = normalize(/*camera=0,0,0,1*/-IN.worldPos);
-    const float3 r = reflect(v, normalize(IN.normal));
+    const float3 r = reflect(normalize(IN.normal),v);
 
     const float edge = dot(v, r);
     const float lod = (edge > 0.6) ? // edge falloff to reduce aliasing on edges
