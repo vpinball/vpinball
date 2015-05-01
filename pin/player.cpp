@@ -3390,8 +3390,10 @@ void search_for_nearest(const Ball * const pball, const std::vector<Light*> &lig
 
 void Player::GetBallAspectRatio(const Ball * const pball, float &stretchX, float &stretchY, const float zHeight)
 {
-    Vertex3D_NoTex2 rgvIn[108/2];
-//     rgvIn[0].x = pball->m_pos.x;                    rgvIn[0].y=pball->m_pos.y+pball->m_radius;    rgvIn[0].z=zHeight;
+    Vertex3D_NoTex2 *rgvIn;
+    Vertex2D *rgvOut;
+
+    //     rgvIn[0].x = pball->m_pos.x;                    rgvIn[0].y=pball->m_pos.y+pball->m_radius;    rgvIn[0].z=zHeight;
 //     rgvIn[1].x = pball->m_pos.x + pball->m_radius;    rgvIn[1].y = pball->m_pos.y;                    rgvIn[1].z = zHeight;
 //     rgvIn[2].x = pball->m_pos.x;                    rgvIn[2].y = pball->m_pos.y - pball->m_radius;    rgvIn[2].z = zHeight;
 //     rgvIn[3].x = pball->m_pos.x - pball->m_radius;    rgvIn[3].y = pball->m_pos.y;                    rgvIn[3].z = zHeight;
@@ -3400,14 +3402,14 @@ void Player::GetBallAspectRatio(const Ball * const pball, float &stretchX, float
 	const bool lowDetailBall = m_ptable->GetDetailLevel() < 10;
 	const int numVerts = lowDetailBall ? basicBallLoNumVertices : basicBallMidNumVertices;
 	const Vertex3D_NoTex2 * const ball = lowDetailBall ? basicBallLo : basicBallMid;
-
+   rgvIn = new Vertex3D_NoTex2[(numVerts+1) / 2];
+   rgvOut = new Vertex2D[(numVerts+1) / 2];
     for (int i = 0, t = 0; i < numVerts; i += 2,t++)
     {
        rgvIn[t].x = ball[i].x*pball->m_radius + pball->m_pos.x;
        rgvIn[t].y = ball[i].y*pball->m_radius + pball->m_pos.y;
        rgvIn[t].z = ball[i].z*pball->m_radius + zHeight;
     }
-    Vertex2D rgvOut[108/2];
     m_pin3d.m_proj.TransformVertices(rgvIn, NULL, numVerts/2, rgvOut);
     float maxX = FLT_MIN;
     float minX = FLT_MAX;
@@ -3425,6 +3427,8 @@ void Player::GetBallAspectRatio(const Ball * const pball, float &stretchX, float
     stretchY = midY/midX;
     //stretchX = midX/midY;
     stretchX = 1.0f;
+    delete[] rgvIn;
+    delete[] rgvOut;
 }
 
 void Player::DrawBalls()
