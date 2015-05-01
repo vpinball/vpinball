@@ -11,7 +11,6 @@ float4x4 matWorldView     : WORLDVIEW;
 //float4x4 matWorldViewInverseTranspose;
 float4x4 matView;
 float4x4 matViewInverse;
-
 texture  Texture0; // base texture
 texture  Texture1; // envmap
 texture  Texture2; // envmap radiance
@@ -150,7 +149,7 @@ voutReflection vsBallReflection( in vin IN )
     const float3 nspin = mul(IN.normal, orientation);
     const float3 normal = normalize(mul(float4(nspin,0.), matWorldView/*InverseTranspose*/).xyz); //!!?
     
-	const float3 r = reflect(normalize(/*camera=0,0,0,1*/-p), normal);
+    const float3 r = reflect(normal, normalize(/*camera=0,0,0,1*/-p));
 
     OUT.position = mul(pos, matWorldViewProj);
 	OUT.tex0	 = pos.xy;
@@ -220,9 +219,17 @@ float4 psBall( in vout IN ) : COLOR
 		0.0;
 
 	float2 uv0;
-	uv0.x = r.x*0.5 + 0.5;
-	uv0.y = r.y*0.5 + 0.5;
-    float3 ballImageColor = InvGamma(tex2Dlod( texSampler0, float4(cabMode ? float2(uv0.y,1.0-uv0.x) : uv0, 0.,lod) ).xyz);
+   if (cabMode)
+   {
+      uv0.x = -r.x*0.5 + 0.5;
+      uv0.y = r.y*0.5 + 0.5;
+   }
+   else
+   {
+      uv0.x = r.x*0.5 + 0.5;
+      uv0.y = -r.y*0.5 + 0.5;
+   }
+   float3 ballImageColor = InvGamma(tex2Dlod(texSampler0, float4(cabMode ? float2(uv0.y, 1.0 - uv0.x) : uv0, 0., lod)).xyz);
    
 	const float4 decalColorT = tex2D( texSampler7, IN.tex0 );
 	float3 decalColor = InvGamma(decalColorT.xyz);
@@ -287,8 +294,9 @@ float4 psBall( in vout IN ) : COLOR
 
 float4 psBallReflection( in voutReflection IN ) : COLOR
 {
-	const float3 ballImageColor = (cBase_Alpha.xyz*(0.075*0.25) + InvGamma(tex2D( texSampler0, cabMode ? float2(IN.r.y,1.0-IN.r.x) : IN.r.xy ).xyz))*fenvEmissionScale_TexWidth.x; //!! just add the ballcolor in, this is a whacky reflection anyhow
-	float alpha = saturate((IN.tex0.y-position_radius.y)/position_radius.w);
+   const float2 envTex = cabMode ? float2(IN.r.y*0.5f + 0.5f, -IN.r.x*0.5f + 0.5f) : float2(IN.r.x*0.5f + 0.5f, IN.r.y*0.5f + 0.5f);
+   const float3 ballImageColor = (cBase_Alpha.xyz*(0.075*0.25) + InvGamma(tex2D(texSampler0, envTex).xyz))*fenvEmissionScale_TexWidth.x; //!! just add the ballcolor in, this is a whacky reflection anyhow
+   float alpha = saturate((IN.tex0.y - position_radius.y) / position_radius.w);
 	alpha = (alpha*alpha)*(alpha*alpha)*reflection_ball_playfield.x;
 	return float4(ballImageColor,alpha);
 }
