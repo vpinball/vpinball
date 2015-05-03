@@ -835,6 +835,7 @@ void Light::PrepareMoversCustom()
 
 void Light::RenderSetup(RenderDevice* pd3dDevice)
 {
+   m_iblinkframe = 0;
     m_d.m_time_msec = g_pplayer->m_time_msec;
 
     m_surfaceHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
@@ -1637,7 +1638,7 @@ STDMETHODIMP Light::put_FadeSpeedDown(float newVal)
 
 STDMETHODIMP Light::get_Bulb(VARIANT_BOOL *pVal)
 {
-    *pVal = m_d.m_BulbLight;
+   *pVal = VBTOF(m_d.m_BulbLight);
 
     return S_OK;
 }
@@ -1655,7 +1656,7 @@ STDMETHODIMP Light::put_Bulb(VARIANT_BOOL newVal)
 
 STDMETHODIMP Light::get_ImageMode(VARIANT_BOOL *pVal)
 {
-    *pVal = m_d.m_imageMode;
+   *pVal = VBTOF(m_d.m_imageMode);
 
     return S_OK;
 }
@@ -1673,7 +1674,7 @@ STDMETHODIMP Light::put_ImageMode(VARIANT_BOOL newVal)
 
 STDMETHODIMP Light::get_ShowBulbMesh(VARIANT_BOOL *pVal)
 {
-    *pVal = m_d.m_showBulbMesh;
+   *pVal = VBTOF(m_d.m_showBulbMesh);
 
     return S_OK;
 }
@@ -1691,7 +1692,7 @@ STDMETHODIMP Light::put_ShowBulbMesh(VARIANT_BOOL newVal)
 
 STDMETHODIMP Light::get_ShowReflectionOnBall(VARIANT_BOOL *pVal)
 {
-    *pVal = m_d.m_showReflectionOnBall;
+   *pVal = VBTOF(m_d.m_showReflectionOnBall);
 
     return S_OK;
 }
@@ -1842,10 +1843,10 @@ void Light::UpdatePropertyPanes()
         EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_SCALE_BULB_MESH), FALSE);
         EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_BULB_MODULATE_VS_ADD), FALSE);
         EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_REFLECT_ON_BALLS), FALSE);
-		EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_TRANSMISSION_SCALE), FALSE);
-		EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_HALO_EDIT), FALSE);
-        EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_IMAGE_MODE), TRUE);
-        EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,DISPID_Image), TRUE);
+		  EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_TRANSMISSION_SCALE), FALSE);
+		  EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_HALO_EDIT), FALSE);
+        EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_IMAGE_MODE), TRUE);
+        EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, DISPID_Image), TRUE);
     }
     else
     {
