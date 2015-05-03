@@ -164,6 +164,9 @@ static const int allLayers[8]=
    ID_LAYER_LAYER8
 };
 
+static char g_filename[MAX_PATH];
+static char g_initDir[MAX_PATH];
+
 #define TBCOUNTMAIN (sizeof(g_tbbuttonMain) / sizeof(TBBUTTON))
 #define TBCOUNTPALETTE (sizeof(g_tbbuttonPalette) / sizeof(TBBUTTON))
 #define TBCOUNTLAYERS (sizeof(g_tbbuttonLayers) / sizeof(TBBUTTON))
@@ -2305,7 +2308,7 @@ LRESULT CALLBACK VPSideBarWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
 
 STDMETHODIMP VPinball::PlaySound(BSTR bstr)
 {
-   if (g_pplayer) g_pplayer->m_ptable->PlaySound(bstr, 0, 1.f, 0.f, 0.f, 0, false, true);
+      if (g_pplayer) g_pplayer->m_ptable->PlaySound(bstr, 0, 1.f, 0.f, 0.f, 0, VARIANT_FALSE, VARIANT_TRUE);
 
    return S_OK;
 }
@@ -2574,8 +2577,6 @@ INT_PTR CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                {	
                   OPENFILENAME ofn;
                   LVITEM lvitem;
-                  char szInitialDir[2096];
-		          szInitialDir[0] = '\0';
                   int sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), -1, LVNI_SELECTED); //next selected item 	
                   if (sel != -1)
                   {
@@ -2592,10 +2593,11 @@ INT_PTR CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                       //TEXT
                       ofn.lpstrFilter = "Sound Files (*.wav)\0*.wav\0";
                       char pathName[MAX_PATH] = { 0 };
-                      char filename[MAX_PATH] = { 0 };
 
                       int begin;		//select only file name from pathfilename
                       int len = lstrlen(pps->m_szPath);
+                      memset(g_filename, 0, MAX_PATH);
+                      memset(g_initDir, 0, MAX_PATH);
 
                       for (begin = len; begin >= 0; begin--)
                       {
@@ -2605,19 +2607,19 @@ INT_PTR CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                               break;
                           }
                       }
-                      memcpy(filename, &pps->m_szPath[begin], len - begin);
-                      ofn.lpstrFile = filename;
-                      ofn.nMaxFile = 2096;
+                      memcpy(g_filename, &pps->m_szPath[begin], len - begin);
+                      ofn.lpstrFile = g_filename;
+                      ofn.nMaxFile = MAX_PATH;
                       ofn.lpstrDefExt = "wav";
-                      const HRESULT hr = GetRegString("RecentDir", "SoundDir", szInitialDir, 2096);
+                      const HRESULT hr = GetRegString("RecentDir", "SoundDir", g_initDir, MAX_PATH);
 
-                      if (hr == S_OK)ofn.lpstrInitialDir = szInitialDir;
+                      if (hr == S_OK)ofn.lpstrInitialDir = g_initDir;
                       else ofn.lpstrInitialDir = NULL;
 
                       ofn.lpstrTitle = "SAVE AS";
                       ofn.Flags = OFN_NOREADONLYRETURN | OFN_CREATEPROMPT | OFN_OVERWRITEPROMPT | OFN_EXPLORER;
 
-                      szInitialDir[ofn.nFileOffset] = 0;
+                      g_initDir[ofn.nFileOffset] = 0;
                       if (GetSaveFileName(&ofn))	//Get filename from user
                       {
                           len = lstrlen(ofn.lpstrFile);
@@ -2642,10 +2644,10 @@ INT_PTR CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                                       break;
                                   }
                               }
-                              memset(filename,0,MAX_PATH);
-                              strcpy_s(filename, MAX_PATH, pathName);
-                              memcpy(&filename[lstrlen(pathName)], &pps->m_szPath[begin], (len-begin)+1);
-                              if (pt->ExportSound(GetDlgItem(hwndDlg, IDC_SOUNDLIST), pps, filename))
+                              memset(g_filename,0,MAX_PATH);
+                              strcpy_s(g_filename, MAX_PATH, pathName);
+                              memcpy(&g_filename[lstrlen(pathName)], &pps->m_szPath[begin], (len-begin)+1);
+                              if (pt->ExportSound(GetDlgItem(hwndDlg, IDC_SOUNDLIST), pps, g_filename))
                               {
                                 //pt->ReImportSound(GetDlgItem(hwndDlg, IDC_SOUNDLIST), pps, ofn.lpstrFile, fTrue);
                                 //pt->SetNonUndoableDirty(eSaveDirty);
@@ -3054,8 +3056,7 @@ INT_PTR CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
          {
              if (ListView_GetSelectedCount(GetDlgItem(hwndDlg, IDC_SOUNDLIST)))	// if some items are selected???
              {
-                 char szInitialDir[2096];
-                 szInitialDir[0] = '\0';
+                char pathName[MAX_PATH] = { 0 };
                  int sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), -1, LVNI_SELECTED);
                  if (sel != -1)
                  {
@@ -3073,10 +3074,10 @@ INT_PTR CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                      ofn.hwndOwner = g_pvp->m_hwnd;
                      //TEXT
                      ofn.lpstrFilter = "PNG (.png)\0*.png;\0Bitmap (.bmp)\0*.bmp;\0JPEG (.jpg/.jpeg)\0*.jpg;*.jpeg;\0IFF (.iff)\0*.IFF;\0PCX (.pcx)\0*.PCX;\0PICT (.pict)\0*.PICT;\0Photoshop (.psd)\0*.psd;\0TGA (.tga)\0*.tga;\0TIFF (.tiff/.tif)\0*.tiff;*.tif\0";
-                     char pathName[MAX_PATH] = { 0 };
-                     char filename[MAX_PATH] = { 0 };
                      int begin;		//select only file name from pathfilename
                      int len = lstrlen(ppi->m_szPath);
+                     memset(g_filename, 0, MAX_PATH);
+                     memset(g_initDir, 0, MAX_PATH);
 
                      for (begin = len; begin >= 0; begin--)
                      {
@@ -3086,20 +3087,23 @@ INT_PTR CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                              break;
                          }
                      }
-                     memcpy(filename, &ppi->m_szPath[begin],len-begin);
-                     ofn.lpstrFile = filename;
-                     ofn.nMaxFile = 2096;
+                     if ( begin>0 )
+                     {
+                        memcpy(g_filename, &ppi->m_szPath[begin], len - begin);
+                        g_filename[len - begin] = 0;
+                     }
+                     ofn.lpstrFile = g_filename;
+                     ofn.nMaxFile = MAX_PATH;
                      ofn.lpstrDefExt = "png";
 
-                     const HRESULT hr = GetRegString("RecentDir", "ImageDir", szInitialDir, 2096);
+                     const HRESULT hr = GetRegString("RecentDir", "ImageDir", g_initDir, MAX_PATH);
 
-                     if (hr == S_OK)ofn.lpstrInitialDir = szInitialDir;
+                     if (hr == S_OK)ofn.lpstrInitialDir = g_initDir;
                      else ofn.lpstrInitialDir = NULL;
-
-                     ofn.lpstrTitle = "SAVE AS";
+                     //ofn.lpstrTitle = "SAVE AS";
                      ofn.Flags = OFN_NOREADONLYRETURN | OFN_CREATEPROMPT | OFN_OVERWRITEPROMPT | OFN_EXPLORER;
 
-                     szInitialDir[ofn.nFileOffset] = 0;
+                     g_initDir[ofn.nFileOffset] = 0;
 
                      if (GetSaveFileName(&ofn))	//Get filename from user
                      {
@@ -3112,8 +3116,11 @@ INT_PTR CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                                  break;
                              }
                          }
-                         memcpy(pathName, ofn.lpstrFile, begin);
-                         pathName[begin] = 0;
+                         if (begin>0 )
+                         {
+                            memcpy(pathName, ofn.lpstrFile, begin);
+                            pathName[begin] = 0;
+                         }
                          while (sel != -1)
                          {
                              len = lstrlen(ppi->m_szPath);
@@ -3125,10 +3132,10 @@ INT_PTR CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                                      break;
                                  }
                              }
-                             memset(filename,0,MAX_PATH);
-                             strcpy_s(filename, MAX_PATH, pathName);
-                             memcpy(filename, &ppi->m_szPath[begin], (len-begin)+1);
-                             if (pt->ExportImage(GetDlgItem(hwndDlg, IDC_SOUNDLIST), ppi, filename))
+                             memset(g_filename, 0, MAX_PATH);
+                             strcpy_s(g_filename, MAX_PATH, pathName);
+                             memcpy(g_filename, &ppi->m_szPath[begin], (len - begin) + 1);
+                             if (pt->ExportImage(GetDlgItem(hwndDlg, IDC_SOUNDLIST), ppi, g_filename))
                              {
                                  //pt->ReImportImage(GetDlgItem(hwndDlg, IDC_SOUNDLIST), ppi, ofn.lpstrFile);
                                  //pt->SetNonUndoableDirty(eSaveDirty);
