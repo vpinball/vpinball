@@ -644,7 +644,10 @@ void Plunger::RenderSetup(RenderDevice* pd3dDevice)
 		// 
 		// The spring only applies to the custom plunger.
 		if (m_d.m_type == PlungerTypeCustom)
-			springIndices = (4 * springVts) - 12;
+		{
+			if ((springIndices = (4 * springVts) - 12) < 0)
+				springIndices = 0;
+		}
 
 		// the total number of indices is simply the sum of the
 		// lathe and spring indices
