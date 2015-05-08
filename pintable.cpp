@@ -2907,7 +2907,11 @@ HRESULT PinTable::LoadGameFromFilename(char *szFileName)
    IStorage* pstgRoot;
    HRESULT hr = S_OK;
 
-   ASSERT(*szFileName, "Empty File Name String!");
+   if (szFileName == NULL)
+   {
+      ShowError("Empty File Name String!");
+      return S_FALSE;
+   }
 
    strcpy_s(m_szFileName, sizeof(m_szFileName), szFileName);
    {

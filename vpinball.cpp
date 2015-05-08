@@ -166,6 +166,8 @@ static const int allLayers[8]=
 
 static char g_filename[MAX_PATH];
 static char g_initDir[MAX_PATH];
+static char recentNumber[LAST_OPENED_TABLE_COUNT];
+static char recentMenuname[MAX_PATH];
 
 #define TBCOUNTMAIN (sizeof(g_tbbuttonMain) / sizeof(TBBUTTON))
 #define TBCOUNTPALETTE (sizeof(g_tbbuttonPalette) / sizeof(TBBUTTON))
@@ -1837,20 +1839,17 @@ void VPinball::UpdateRecentFileList(char *szfilename)
       // add in the list of recently accessed files
       for (int i=0; i<LAST_OPENED_TABLE_COUNT; i++)
       {
-         char number[8];
-         char menuname[MAX_PATH];
-
          // if this entry is empty then all the rest are empty
          if (m_szRecentTableList[i][0] == 0x00) break;
-         _itoa_s(i+1,number,10);
-         strcpy_s(menuname,"&");
-         strcat_s(menuname,number);
-         strcat_s(menuname," ");
-         strcat_s(menuname,m_szRecentTableList[i]);
+         _itoa_s(i+1,recentNumber,10);
+         strcpy_s(recentMenuname,"&");
+         strcat_s(recentMenuname,recentNumber);
+         strcat_s(recentMenuname," ");
+         strcat_s(recentMenuname,m_szRecentTableList[i]);
          // set the IDM of this menu item
          menuInfo.wID = RECENT_FIRST_MENU_IDM + i;
-         menuInfo.dwTypeData = menuname;
-         menuInfo.cch = lstrlen(menuname);
+         menuInfo.dwTypeData = recentMenuname;
+         menuInfo.cch = lstrlen(recentMenuname);
 
          InsertMenuItem(hmenuFile, count, TRUE, &menuInfo);
          count++;
