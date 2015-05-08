@@ -416,7 +416,7 @@ void VPinball::EnsureWorkerThread()
    if (!m_workerthread)
    {
       g_hWorkerStarted = CreateEvent(NULL,TRUE,FALSE,NULL);
-      m_workerthread = CreateThread(NULL, 0, VPWorkerThreadStart, 0, 0, &m_workerthreadid); //!! _beginthreadex is safer
+      m_workerthread = (HANDLE)_beginthreadex(NULL, 0, VPWorkerThreadStart, 0, 0, &m_workerthreadid); //!! _beginthreadex is safer
       if (WaitForSingleObject(g_hWorkerStarted, 5000) == WAIT_TIMEOUT)
       {
       }

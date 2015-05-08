@@ -154,7 +154,7 @@ private:
 	char m_szRecentTableList[LAST_OPENED_TABLE_COUNT+1][MAX_PATH];
 
 	HANDLE m_workerthread;
-	DWORD m_workerthreadid;
+	unsigned int m_workerthreadid;
 
     HMODULE m_scintillaDll;
 };
