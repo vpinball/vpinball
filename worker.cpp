@@ -25,7 +25,7 @@ VOID CALLBACK HangSnoopProc(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime
 	lasthangsnoopvalue = newvalue;
 	}
 
-DWORD WINAPI VPWorkerThreadStart(void *param)
+unsigned int WINAPI VPWorkerThreadStart(void *param)
 	{
 	MSG msg;
 

@@ -19,6 +19,6 @@ public:
 	HWND HwndTable;
 	};
 
-DWORD WINAPI VPWorkerThreadStart(void *param);
+unsigned int WINAPI VPWorkerThreadStart(void *param);
 
 void CompleteAutoSave(HANDLE hEvent, LPARAM lParam);
