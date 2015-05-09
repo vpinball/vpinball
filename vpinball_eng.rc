@@ -245,8 +245,9 @@ BEGIN
     CTEXT           "Cupid",IDC_STATIC,82,141,42,9
     LTEXT           "Fuzzel",IDC_STATIC,13,141,21,8
     LTEXT           "Koadic",IDC_STATIC,150,141,42,9
-    CTEXT           "Mukuste",IDC_STATIC,82,151,42,9
-    CTEXT           "Copyright (C) 2000-2014 Randy Davis. All rights reserved",IDC_STATIC,7,174,118,19
+	LTEXT           "Mjr", IDC_STATIC, 13, 151, 21, 8
+	CTEXT           "Mukuste", IDC_STATIC, 82, 151, 42, 9
+    CTEXT           "Copyright (C) 2000-2015 Randy Davis. All rights reserved",IDC_STATIC,7,174,118,19
     LTEXT           "Translator's Name - Translation",IDC_TRANSNAME,108,36,115,9,NOT WS_VISIBLE | WS_DISABLED
     LTEXT           "Translator's web site address",IDC_TRANSWEBSITE,50,184,32,8,NOT WS_VISIBLE | WS_DISABLED
 END
@@ -1986,7 +1987,7 @@ BEGIN
             VALUE "FileDescription", "Visual Pinball 10.0.0"
             VALUE "FileVersion", "10, 0, 0, 0"
             VALUE "InternalName", "Visual Pinball"
-            VALUE "LegalCopyright", "Copyright 2000-2014"
+            VALUE "LegalCopyright", "Copyright 2000-2015"
             VALUE "OriginalFilename", "vpinball.exe"
             VALUE "ProductName", "Visual Pinball"
             VALUE "ProductVersion", "10, 0, 0, 0"
