@@ -677,6 +677,9 @@
       <Command>SubWCRev.exe $(SolutionDir) $(ProjectDir)svn_version.tmpl $(ProjectDir)svn_version.h</Command>
       <Message>Generate the svn_version.h file with the necessary repo identify info for versioning using TortoiseSVN</Message>
     </PreBuildEvent>
+    <Manifest>
+      <EnableDpiAwareness>true</EnableDpiAwareness>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Unicode Release MinSize|x64'">
     <Midl>
@@ -765,6 +768,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Command>SubWCRev.exe $(SolutionDir) $(ProjectDir)svn_version.tmpl $(ProjectDir)svn_version.h</Command>
       <Message>Generate the svn_version.h file with the necessary repo identify info for versioning using TortoiseSVN</Message>
     </PreBuildEvent>
+    <Manifest>
+      <EnableDpiAwareness>true</EnableDpiAwareness>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release MinDependency|x64'">
     <Midl>
@@ -855,6 +861,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Command>SubWCRev.exe $(SolutionDir) $(ProjectDir)svn_version.tmpl $(ProjectDir)svn_version.h</Command>
       <Message>Generate the svn_version.h file with the necessary repo identify info for versioning using TortoiseSVN</Message>
     </PreBuildEvent>
+    <Manifest>
+      <EnableDpiAwareness>true</EnableDpiAwareness>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseTestSpanish|x64'">
     <Midl>
@@ -934,6 +943,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Command>SubWCRev.exe $(SolutionDir) $(ProjectDir)svn_version.tmpl $(ProjectDir)svn_version.h</Command>
       <Message>Generate the svn_version.h file with the necessary repo identify info for versioning using TortoiseSVN</Message>
     </PreBuildEvent>
+    <Manifest>
+      <EnableDpiAwareness>true</EnableDpiAwareness>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Unicode Release MinDependency|x64'">
     <Midl>
@@ -1013,6 +1025,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Command>SubWCRev.exe $(SolutionDir) $(ProjectDir)svn_version.tmpl $(ProjectDir)svn_version.h</Command>
       <Message>Generate the svn_version.h file with the necessary repo identify info for versioning using TortoiseSVN</Message>
     </PreBuildEvent>
+    <Manifest>
+      <EnableDpiAwareness>true</EnableDpiAwareness>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release MinSize|x64'">
     <Midl>
@@ -1093,6 +1108,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Command>SubWCRev.exe $(SolutionDir) $(ProjectDir)svn_version.tmpl $(ProjectDir)svn_version.h</Command>
       <Message>Generate the svn_version.h file with the necessary repo identify info for versioning using TortoiseSVN</Message>
     </PreBuildEvent>
+    <Manifest>
+      <EnableDpiAwareness>true</EnableDpiAwareness>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
     <Midl>
@@ -1171,6 +1189,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Command>SubWCRev.exe $(SolutionDir) $(ProjectDir)svn_version.tmpl $(ProjectDir)svn_version.h</Command>
       <Message>Generate the svn_version.h file with the necessary repo identify info for versioning using TortoiseSVN</Message>
     </PreBuildEvent>
+    <Manifest>
+      <EnableDpiAwareness>true</EnableDpiAwareness>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Unicode Debug|x64'">
     <Midl>
@@ -1250,6 +1271,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Command>SubWCRev.exe $(SolutionDir) $(ProjectDir)svn_version.tmpl $(ProjectDir)svn_version.h</Command>
       <Message>Generate the svn_version.h file with the necessary repo identify info for versioning using TortoiseSVN</Message>
     </PreBuildEvent>
+    <Manifest>
+      <EnableDpiAwareness>true</EnableDpiAwareness>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseTestGerman|x64'">
     <Midl>
@@ -1331,6 +1355,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Command>SubWCRev.exe $(SolutionDir) $(ProjectDir)svn_version.tmpl $(ProjectDir)svn_version.h</Command>
       <Message>Generate the svn_version.h file with the necessary repo identify info for versioning using TortoiseSVN</Message>
     </PreBuildEvent>
+    <Manifest>
+      <EnableDpiAwareness>true</EnableDpiAwareness>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseTestFrench|x64'">
     <Midl>
@@ -1423,6 +1450,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Command>SubWCRev.exe $(SolutionDir) $(ProjectDir)svn_version.tmpl $(ProjectDir)svn_version.h</Command>
       <Message>Generate the svn_version.h file with the necessary repo identify info for versioning using TortoiseSVN</Message>
     </PreBuildEvent>
+    <Manifest>
+      <EnableDpiAwareness>true</EnableDpiAwareness>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseTest|x64'">
     <Midl>
@@ -1539,6 +1569,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Command>SubWCRev.exe $(SolutionDir) $(ProjectDir)svn_version.tmpl $(ProjectDir)svn_version.h</Command>
       <Message>Generate the svn_version.h file with the necessary repo identify info for versioning using TortoiseSVN</Message>
     </PreBuildEvent>
+    <Manifest>
+      <EnableDpiAwareness>true</EnableDpiAwareness>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Midl>
@@ -1650,6 +1683,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Command>SubWCRev.exe $(SolutionDir) $(ProjectDir)svn_version.tmpl $(ProjectDir)svn_version.h</Command>
       <Message>Generate the svn_version.h file with the necessary repo identify info for versioning using TortoiseSVN</Message>
     </PreBuildEvent>
+    <Manifest>
+      <EnableDpiAwareness>true</EnableDpiAwareness>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast|x64'">
     <Midl>
@@ -1733,7 +1769,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <CompileAs>Default</CompileAs>
       <FloatingPointExceptions>false</FloatingPointExceptions>
       <OpenMPSupport>false</OpenMPSupport>
-      <OmitFramePointers>false</OmitFramePointers>
+      <OmitFramePointers>true</OmitFramePointers>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
     </ClCompile>
     <ResourceCompile>
@@ -1768,6 +1804,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Command>SubWCRev.exe $(SolutionDir) $(ProjectDir)svn_version.tmpl $(ProjectDir)svn_version.h</Command>
       <Message>Generate the svn_version.h file with the necessary repo identify info for versioning using TortoiseSVN</Message>
     </PreBuildEvent>
+    <Manifest>
+      <EnableDpiAwareness>true</EnableDpiAwareness>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Full Release|Win32'">
     <Midl>
@@ -1835,6 +1874,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Command>SubWCRev.exe $(SolutionDir) $(ProjectDir)svn_version.tmpl $(ProjectDir)svn_version.h</Command>
       <Message>Generate the svn_version.h file with the necessary repo identify info for versioning using TortoiseSVN</Message>
     </PreBuildEvent>
+    <Manifest>
+      <EnableDpiAwareness>true</EnableDpiAwareness>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|x64'">
     <Midl>
