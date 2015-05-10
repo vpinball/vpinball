@@ -202,6 +202,9 @@ void CodeViewer::RemoveItem(IScriptable *piscript)
    CodeViewDispatch *pcvd;
 
    int idx = m_vcvd.GetSortedIndex(bstr);
+   
+   if (idx == -1)
+      return;
 
    pcvd = m_vcvd.ElementAt(idx);
 
@@ -241,6 +244,8 @@ HRESULT CodeViewer::ReplaceName(IScriptable *piscript, WCHAR *wzNew)
    piscript->get_Name(&bstr);
 
    int idx = m_vcvd.GetSortedIndex(bstr);
+   if (idx == -1)
+      return E_FAIL;
 
    CodeViewDispatch * const pcvd = m_vcvd.ElementAt(idx);
 
@@ -371,7 +376,6 @@ void CodeViewer::Create()
    wcex.lpszMenuName = MAKEINTRESOURCE(IDR_SCRIPTMENU);//NULL;
    wcex.hbrBackground = (HBRUSH)(COLOR_BTNFACE + 1);
    RegisterClassEx(&wcex);
-
    m_hwndMain = CreateWindowEx(0, "CVFrame", "Script",
       WS_POPUP | WS_SIZEBOX | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX,
       10, 10, 300, 300, m_hwndMain, NULL, g_hinst, 0);
@@ -539,7 +543,7 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
    m_fScriptError = fTrue;
 
    PinTable * const pt = g_pvp->GetActiveTable();
-   if (!pt->CheckPermissions(DISABLE_TABLEVIEW))
+   if (pt!=NULL && !pt->CheckPermissions(DISABLE_TABLEVIEW))
    {
       SetVisible(fTrue);
       ShowWindow(m_hwndMain, SW_RESTORE);
@@ -566,7 +570,7 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 
    EnableWindow(g_pvp->m_hwnd, TRUE);
 
-   if (!pt->CheckPermissions(DISABLE_TABLEVIEW))
+   if (pt!=NULL && !pt->CheckPermissions(DISABLE_TABLEVIEW))
       SetFocus(m_hwndScintilla);
 
    return S_OK;
@@ -1001,7 +1005,7 @@ void CodeViewer::GetParamsFromEvent(int iEvent, char *szParams)
             if (pfd->cParams != 0) // no parameters makes it easy
             {
                // Get parameter names
-               BSTR * const rgstr = (BSTR *) CoTaskMemAlloc(6 * sizeof(BSTR *));
+               BSTR * const rgstr = (BSTR *) CoTaskMemAlloc(6 * sizeof(BSTR));
 
                unsigned int cnames;
                /*const HRESULT hr =*/ ptiChild->GetNames(pfd->memid, rgstr, 6, &cnames);
