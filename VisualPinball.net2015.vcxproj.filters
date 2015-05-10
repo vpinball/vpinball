@@ -71,6 +71,10 @@
     <ClCompile Include="worker.cpp" />
     <ClCompile Include="xaudplayer.cpp" />
     <ClCompile Include="math\math.cpp" />
+    <ClCompile Include="BlackBox.cpp" />
+    <ClCompile Include="CrashHandler.cpp" />
+    <ClCompile Include="MemoryStatus.cpp" />
+    <ClCompile Include="StackTrace.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="vpinball.rc" />
@@ -674,6 +678,18 @@
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="media\wavread.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="BlackBox.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="CrashHandler.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="MemoryStatus.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="StackTrace.h">
       <Filter>headers</Filter>
     </ClInclude>
   </ItemGroup>
