@@ -654,6 +654,9 @@ Elasticity(float)
 ElasticityFalloff(float)
 Friction(float)
 Scatter(float)
-RotX(float)                 - angle to rotate the whole rubber around the X axis (inclination)
-RotY(float)                 - angle to rotate the whole rubber around the Y axis (skew)
+RotX(float)                 - angle to rotate the whole rubber around the X axis 
+RotY(float)                 - angle to rotate the whole rubber around the Y axis 
+RotZ(float)                 - angle to rotate the whole rubber around the Z axis 
+*EnableShowInEditor(bool)   - if set the you can adjust the control points of the rubber any more but the 
+                              rotation angles are applied to the rubber mesh in the editor.
 
