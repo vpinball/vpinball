@@ -208,6 +208,8 @@ VP 10.0.0 Changelog
 
 - technical note: make sure to install Microsoft SDK 5.0,7.0A,7.1 or 7.1A, if you compile VP and get missing header errors (optionally set the include path inc\winsdk)
 
+- rubber object improved to let it rotate around the X/Y/Z axis and show them in the editor if the checkbox "Show In Editor" is checked.
+
 VP 9.9.1 Changelog
 ------------------------
 - fixed some memory leaks

@@ -1842,6 +1842,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propput, id(4), helpstring("property Thickness")] HRESULT Thickness([in] int newVal);
                 [propget, id(18), helpstring("property RotX")] HRESULT RotX([out, retval] float *pVal);
                 [propput, id(18), helpstring("property RotX")] HRESULT RotX([in] float newVal);
+                [propget, id(25), helpstring("property RotZ")] HRESULT RotZ([out, retval] float *pVal);
+                [propput, id(25), helpstring("property RotZ")] HRESULT RotZ([in] float newVal);
                 [propget, id(24), helpstring("property RotY")] HRESULT RotY([out, retval] float *pVal);
                 [propput, id(24), helpstring("property RotY")] HRESULT RotY([in] float newVal);
                 [propget, id(340), helpstring("property Material")] HRESULT Material([out, retval] BSTR *pVal);
@@ -1871,6 +1873,9 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 
                 [propget, id(398), helpstring("property static rendering")] HRESULT EnableStaticRendering([out, retval] VARIANT_BOOL *pVal);
                 [propput, id(398), helpstring("property static rendering")] HRESULT EnableStaticRendering([in] VARIANT_BOOL newVal);
+
+                [propget, id(431), helpstring("property show in editor")] HRESULT EnableShowInEditor([out, retval] VARIANT_BOOL *pVal);
+                [propput, id(431), helpstring("property show in editor")] HRESULT EnableShowInEditor([in] VARIANT_BOOL newVal);
         };
    
    

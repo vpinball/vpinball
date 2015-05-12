@@ -22,9 +22,11 @@ public:
    float m_depthBias;      // for determining depth sorting
    float m_rotX;
    float m_rotY;
+   float m_rotZ;
    //float m_rotZ;
    bool m_fHitEvent;
 	bool m_staticRendering;
+    bool m_showInEditor;
 
 	bool m_fCollidable;
 	bool m_fVisible;
@@ -129,6 +131,8 @@ private:
 
     std::vector<HitObject*> m_vhoCollidable; // Objects to that may be collide selectable
     std::vector<Vertex3D_NoTex2> m_vertices;
+    std::vector<WORD> ringIndices;
+
     Vertex3Ds middlePoint;
 
 	VertexBuffer *dynamicVertexBuffer;
@@ -152,7 +156,10 @@ private:
     void AddLine(Vector<HitObject> * const pvho, const Vertex2D & v1, const Vertex2D & v2, const float height1, const float height2);
 
     void RenderObject( RenderDevice *pd3dDevice);
-    void UpdateRubber( RenderDevice *pd3dDevice );
+    void UpdateRubber(RenderDevice *pd3dDevice, bool updateVB=true);
+    void GenerateMesh( int _accuracy=-1 );
+    void DrawRubberMesh(Sur * const psur);
+
 // IRamp
 public:
 	STDMETHOD(get_Image)(/*[out, retval]*/ BSTR *pVal);
@@ -173,6 +180,8 @@ public:
     STDMETHOD(put_DepthBias)(/*[in]*/ float newVal);
     STDMETHOD(get_EnableStaticRendering)(/*[out, retval]*/ VARIANT_BOOL *pVal);
     STDMETHOD(put_EnableStaticRendering)(/*[in]*/ VARIANT_BOOL newVal);
+    STDMETHOD(get_EnableShowInEditor)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+    STDMETHOD(put_EnableShowInEditor)(/*[in]*/ VARIANT_BOOL newVal);
 
     STDMETHOD(get_Elasticity)(/*[out, retval]*/ float *pVal);
     STDMETHOD(put_Elasticity)(/*[in]*/ float newVal);
@@ -186,6 +195,8 @@ public:
     STDMETHOD(put_RotX)(/*[in]*/ float newVal);
     STDMETHOD(get_RotY)(/*[out, retval]*/ float *pVal);
     STDMETHOD(put_RotY)(/*[in]*/ float newVal);
+    STDMETHOD(get_RotZ)(/*[out, retval]*/ float *pVal);
+    STDMETHOD(put_RotZ)(/*[in]*/ float newVal);
 };
 
 #endif // !defined(AFX_RAMP_H__5EFEDEFB_5504_430A_B000_9B6D1903E3FC__INCLUDED_)

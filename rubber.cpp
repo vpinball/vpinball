@@ -80,10 +80,12 @@ void Rubber::SetDefaults(bool fromMouseClick)
    m_d.m_fVisible = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"Visible", true) : true;
    m_d.m_fCollidable = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"Collidable", true) : true;
 
-   m_d.m_staticRendering = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"EnableStaticRendering", true) : true;
+   m_d.m_staticRendering = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "EnableStaticRendering", true) : true;
+   m_d.m_showInEditor = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "EnableShowInEditor", false) : false;
 
    m_d.m_rotX = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"RotX", 0.0f) : 0.0f;
-   m_d.m_rotY = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"RotY", 0.0f) : 0.0f;
+   m_d.m_rotY = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "RotY", 0.0f) : 0.0f;
+   m_d.m_rotZ = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "RotZ", 0.0f) : 0.0f;
 }
 
 void Rubber::WriteRegDefaults()
@@ -102,9 +104,11 @@ void Rubber::WriteRegDefaults()
    SetRegValueFloat(strKeyName,"Scatter", m_d.m_scatter);
    SetRegValueBool(strKeyName,"Collidable",m_d.m_fCollidable);
    SetRegValueBool(strKeyName,"Visible",m_d.m_fVisible);
-   SetRegValueBool(strKeyName,"EnableStaticRendering",m_d.m_staticRendering);
-   SetRegValueFloat(strKeyName,"RotX", m_d.m_rotX);
-   SetRegValueFloat(strKeyName,"RotY", m_d.m_rotY);
+   SetRegValueBool(strKeyName, "EnableStaticRendering", m_d.m_staticRendering);
+   SetRegValueBool(strKeyName, "EnableShowInEditor", m_d.m_showInEditor);
+   SetRegValueFloat(strKeyName, "RotX", m_d.m_rotX);
+   SetRegValueFloat(strKeyName, "RotY", m_d.m_rotY);
+   SetRegValueFloat(strKeyName, "RotZ", m_d.m_rotZ);
 }
 
 void Rubber::GetPointDialogPanes(Vector<PropertyPane> *pvproppane)
@@ -118,6 +122,37 @@ void Rubber::GetPointDialogPanes(Vector<PropertyPane> *pvproppane)
    pvproppane->AddElement(pproppane);
 }
 
+void Rubber::DrawRubberMesh(Sur * const psur)
+{
+    std::vector<Vertex2D> drawVertices;
+
+    GenerateMesh(4);
+    UpdateRubber(NULL, false);
+    for (int i = 0; i < (int)ringIndices.size(); i += 3)
+    {
+        Vertex3Ds A = Vertex3Ds(m_vertices[ringIndices[i]].x, m_vertices[ringIndices[i]].y, m_vertices[ringIndices[i]].z);
+        Vertex3Ds B = Vertex3Ds(m_vertices[ringIndices[i + 1]].x, m_vertices[ringIndices[i + 1]].y, m_vertices[ringIndices[i + 1]].z);
+        Vertex3Ds C = Vertex3Ds(m_vertices[ringIndices[i + 2]].x, m_vertices[ringIndices[i + 2]].y, m_vertices[ringIndices[i + 2]].z);
+        if (fabsf(m_vertices[ringIndices[i]].nz + m_vertices[ringIndices[i + 1]].nz) < 1.f)
+        {
+            drawVertices.push_back(Vertex2D(A.x, A.y));
+            drawVertices.push_back(Vertex2D(B.x, B.y));
+        }
+        if (fabsf(m_vertices[ringIndices[i+1]].nz + m_vertices[ringIndices[i + 2]].nz) < 1.f)
+        {
+            drawVertices.push_back(Vertex2D(B.x, B.y));
+            drawVertices.push_back(Vertex2D(C.x, C.y));
+        }
+        if (fabsf(m_vertices[ringIndices[i + 2]].nz + m_vertices[ringIndices[i]].nz) < 1.f)
+        {
+            drawVertices.push_back(Vertex2D(C.x, C.y));
+            drawVertices.push_back(Vertex2D(A.x, A.y));
+        }
+    }
+    if (drawVertices.size() > 0)
+        psur->Lines(&drawVertices[0], drawVertices.size() / 2);
+
+}
 
 void Rubber::PreRender(Sur * const psur)
 {
@@ -129,11 +164,17 @@ void Rubber::PreRender(Sur * const psur)
    psur->SetBorderColor(-1,false,0);
    psur->SetObject(this);
 
-   int cvertex;
-
-   Vertex2D * const rgvLocal = GetSplineVertex(cvertex, NULL, NULL);
-   psur->Polygon(rgvLocal, (cvertex)*2);
-   delete [] rgvLocal;
+   if (!m_d.m_showInEditor)
+   {
+       int cvertex;
+       Vertex2D * const rgvLocal = GetSplineVertex(cvertex, NULL, NULL);
+       psur->Polygon(rgvLocal, (cvertex)* 2);
+       delete[] rgvLocal;
+   }
+   else
+   {
+       DrawRubberMesh(psur);
+   }
 }
 
 void Rubber::Render(Sur * const psur)
@@ -144,18 +185,29 @@ void Rubber::Render(Sur * const psur)
    psur->SetObject(this);
    psur->SetObject(NULL); // NULL so this won't be hit-tested
 
-   int cvertex;
-   bool *pfCross;
-   const Vertex2D *rgvLocal = GetSplineVertex(cvertex, &pfCross, NULL);
-   psur->Polygon(rgvLocal, (cvertex)*2);
-   for (int i=0;i<cvertex;i++)
-       if (pfCross[i])
-           psur->Line(rgvLocal[i].x, rgvLocal[i].y, rgvLocal[cvertex*2 - i - 1].x, rgvLocal[cvertex*2 - i - 1].y);
-   
-   delete [] rgvLocal;
-   delete [] pfCross;
+   if (!m_d.m_showInEditor)
+   {
+       int cvertex;
+       bool *pfCross;
+       const Vertex2D *rgvLocal = GetSplineVertex(cvertex, &pfCross, NULL);
+       psur->Polygon(rgvLocal, (cvertex)* 2);
+       for (int i = 0; i < cvertex; i++)
+           if (pfCross[i])
+               psur->Line(rgvLocal[i].x, rgvLocal[i].y, rgvLocal[cvertex * 2 - i - 1].x, rgvLocal[cvertex * 2 - i - 1].y);
+
+       delete[] rgvLocal;
+       delete[] pfCross;
+   }
+   else
+   {
+       DrawRubberMesh(psur);
+       // if y rotation is used don't show dragpoints
+       return;
+   }
+
 
    bool fDrawDragpoints = ( (m_selectstate != eNotSelected) || (g_pvp->m_fAlwaysDrawDragPoints) );
+   
    // if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
    if (!fDrawDragpoints)
    {
@@ -196,17 +248,25 @@ void Rubber::RenderOutline(Sur * const psur)
    psur->SetObject(this);
    psur->SetObject(NULL); // NULL so this won't be hit-tested
 
-   int cvertex;
-   bool *pfCross;
-   const Vertex2D * const rgvLocal = GetSplineVertex(cvertex, &pfCross, NULL);
 
-   psur->Polygon(rgvLocal, (cvertex)*2);
-   for (int i=0;i<cvertex;i++)
-      if (pfCross[i])
-         psur->Line(rgvLocal[i].x, rgvLocal[i].y, rgvLocal[cvertex*2 - i - 1].x, rgvLocal[cvertex*2 - i - 1].y);
+   if (!m_d.m_showInEditor)
+   {
+       int cvertex;
+       bool *pfCross;
+       const Vertex2D * const rgvLocal = GetSplineVertex(cvertex, &pfCross, NULL);
 
-   delete [] rgvLocal;
-   delete [] pfCross;
+       psur->Polygon(rgvLocal, (cvertex)* 2);
+       for (int i = 0; i < cvertex; i++)
+           if (pfCross[i])
+               psur->Line(rgvLocal[i].x, rgvLocal[i].y, rgvLocal[cvertex * 2 - i - 1].x, rgvLocal[cvertex * 2 - i - 1].y);
+
+       delete[] rgvLocal;
+       delete[] pfCross;
+   }
+   else
+   {
+       DrawRubberMesh(psur);
+   }
 }
 
 void Rubber::RenderBlueprint(Sur *psur)
@@ -685,8 +745,10 @@ HRESULT Rubber::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptk
    bw.WriteBool(FID(RVIS), m_d.m_fVisible);
    bw.WriteFloat(FID(RADB), m_d.m_depthBias);
    bw.WriteBool(FID(ESTR), m_d.m_staticRendering);
+   bw.WriteBool(FID(ESIE), m_d.m_showInEditor);
    bw.WriteFloat(FID(ROTX), m_d.m_rotX);
    bw.WriteFloat(FID(ROTY), m_d.m_rotY);
+   bw.WriteFloat(FID(ROTZ), m_d.m_rotZ);
 
    ISelect::SaveData(pstm, hcrypthash, hcryptkey);
 
@@ -778,6 +840,10 @@ BOOL Rubber::LoadToken(int id, BiffReader *pbr)
    {
       pbr->GetBool(&m_d.m_staticRendering);
    }
+   else if (id == FID(ESIE))
+   {
+       pbr->GetBool(&m_d.m_showInEditor);
+   }
    else if (id == FID(RADB))
    {
       pbr->GetFloat(&m_d.m_depthBias);
@@ -789,6 +855,10 @@ BOOL Rubber::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(ROTY))
    {
        pbr->GetFloat(&m_d.m_rotY);
+   }
+   else if (id == FID(ROTZ))
+   {
+       pbr->GetFloat(&m_d.m_rotZ);
    }
    else
    {
@@ -1210,6 +1280,24 @@ STDMETHODIMP Rubber::put_EnableStaticRendering(VARIANT_BOOL newVal)
       return S_OK;
 }
 
+STDMETHODIMP Rubber::get_EnableShowInEditor(VARIANT_BOOL *pVal)
+{
+    *pVal = (VARIANT_BOOL)FTOVB(m_d.m_showInEditor);
+
+    return S_OK;
+}
+
+STDMETHODIMP Rubber::put_EnableShowInEditor(VARIANT_BOOL newVal)
+{
+    STARTUNDO
+
+        m_d.m_showInEditor = VBTOF(newVal);
+
+    STOPUNDO
+
+        return S_OK;
+}
+
 STDMETHODIMP Rubber::get_RotX(float *pVal)
 {
     *pVal = m_d.m_rotX;
@@ -1246,6 +1334,28 @@ STDMETHODIMP Rubber::put_RotY(float newVal)
         STARTUNDO
 
         m_d.m_rotY = newVal;
+        dynamicVertexBufferRegenerate = true;
+
+        STOPUNDO
+    }
+
+    return S_OK;
+}
+
+STDMETHODIMP Rubber::get_RotZ(float *pVal)
+{
+    *pVal = m_d.m_rotZ;
+
+    return S_OK;
+}
+
+STDMETHODIMP Rubber::put_RotZ(float newVal)
+{
+    if (m_d.m_rotZ != newVal)
+    {
+        STARTUNDO
+
+            m_d.m_rotZ = newVal;
         dynamicVertexBufferRegenerate = true;
 
         STOPUNDO
@@ -1303,52 +1413,48 @@ void Rubber::PostRenderStatic(RenderDevice* pd3dDevice)
       RenderObject(pd3dDevice);
 }
 
-void Rubber::GenerateVertexBuffer(RenderDevice* pd3dDevice)
+void Rubber::GenerateMesh(int _accuracy)
 {
-    dynamicVertexBufferRegenerate = true;
-
-    int accuracy=1;
-    if( m_ptable->GetDetailLevel()<5 )
+    int accuracy = 1;
+    if (m_ptable->GetDetailLevel() < 5)
     {
-       accuracy=6;
+        accuracy = 6;
     }
-    else if (m_ptable->GetDetailLevel()>=5 && m_ptable->GetDetailLevel()<8)
+    else if (m_ptable->GetDetailLevel() >= 5 && m_ptable->GetDetailLevel() < 8)
     {
-       accuracy=8;
+        accuracy = 8;
     }
     else
     {
-       accuracy=(int)(m_ptable->GetDetailLevel()*1.3f);
+        accuracy = (int)(m_ptable->GetDetailLevel()*1.3f);
     }
+    if ( _accuracy!=-1 )
+        accuracy = _accuracy;
 
     Vertex2D * middlePoints = 0;
     const Vertex2D *rgvLocal = GetSplineVertex(splinePoints, NULL, &middlePoints);
-    const int numRings=splinePoints-1;
-    const int numSegments=accuracy;
-    m_numVertices=numRings*numSegments;
-    m_numIndices = 6*m_numVertices;//m_numVertices*2+2;
-
-    if (dynamicVertexBuffer)
-        dynamicVertexBuffer->release();
-    pd3dDevice->CreateVertexBuffer(m_numVertices, m_d.m_staticRendering ? 0 : USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &dynamicVertexBuffer);
+    const int numRings = splinePoints - 1;
+    const int numSegments = accuracy;
+    m_numVertices = numRings*numSegments;
+    m_numIndices = 6 * m_numVertices;//m_numVertices*2+2;
 
     m_vertices.resize(m_numVertices);
-    std::vector<WORD> rgibuf( m_numIndices );
-    const float height = m_d.m_height+m_ptable->m_tableheight;
+    ringIndices.resize(m_numIndices);
+    const float height = m_d.m_height + m_ptable->m_tableheight;
 
     Vertex3Ds prevB;
     Vertex3Ds binorm;
     Vertex3Ds normal;
-    for( int i=0, index=0; i<numRings; i++ )
+    for (int i = 0, index = 0; i < numRings; i++)
     {
-        const int i2= (i==numRings-1) ? 0: i+1;
+        const int i2 = (i == numRings - 1) ? 0 : i + 1;
 
-        Vertex3Ds tangent( middlePoints[i2].x-middlePoints[i].x, middlePoints[i2].y-middlePoints[i].y, 0.0f);
-        
-        if ( i==0 )
+        Vertex3Ds tangent(middlePoints[i2].x - middlePoints[i].x, middlePoints[i2].y - middlePoints[i].y, 0.0f);
+
+        if (i == 0)
         {
-            Vertex3Ds up( middlePoints[i2].x+middlePoints[i].x, middlePoints[i2].y+middlePoints[i].y, height*2.f);
-            normal = CrossProduct(tangent,up);     //normal
+            Vertex3Ds up(middlePoints[i2].x + middlePoints[i].x, middlePoints[i2].y + middlePoints[i].y, height*2.f);
+            normal = CrossProduct(tangent, up);     //normal
             binorm = CrossProduct(tangent, normal);
         }
         else
@@ -1359,88 +1465,109 @@ void Rubber::GenerateVertexBuffer(RenderDevice* pd3dDevice)
         binorm.Normalize();
         normal.Normalize();
         prevB = binorm;
-        int si=index;
-        for( int j=0;j<numSegments;j++,index++)
+        int si = index;
+        for (int j = 0; j < numSegments; j++, index++)
         {
-            const float u=(float)i/numRings;
-            const float v=((float)j+u)/numSegments;
+            const float u = (float)i / numRings;
+            const float v = ((float)j + u) / numSegments;
             const float u_angle = u*(float)(2.0*M_PI);
             const float v_angle = v*(float)(2.0*M_PI);
-            const Vertex3Ds tmp = GetRotatedAxis( (float)j*(360.0f/numSegments), tangent, normal )
-							      * ((float)m_d.m_thickness*0.5f);
-            m_vertices[index].x = middlePoints[i].x+tmp.x;
-            m_vertices[index].y = middlePoints[i].y+tmp.y;
-            m_vertices[index].z = height     +tmp.z;
+            const Vertex3Ds tmp = GetRotatedAxis((float)j*(360.0f / numSegments), tangent, normal)
+                * ((float)m_d.m_thickness*0.5f);
+            m_vertices[index].x = middlePoints[i].x + tmp.x;
+            m_vertices[index].y = middlePoints[i].y + tmp.y;
+            m_vertices[index].z = height + tmp.z;
             //texel
             m_vertices[index].tu = u;
             m_vertices[index].tv = v;
         }
     }
     // calculate faces
-    for( int i=0;i<numRings;i++ )
+    for (int i = 0; i < numRings; i++)
     {
-        for( int j=0;j<numSegments;j++ )
+        for (int j = 0; j < numSegments; j++)
         {
             int quad[4];
-            quad[0] = i*numSegments+j;
+            quad[0] = i*numSegments + j;
 
-            if( j!=numSegments-1 )
-                quad[1] = i*numSegments+j+1;
+            if (j != numSegments - 1)
+                quad[1] = i*numSegments + j + 1;
             else
                 quad[1] = i*numSegments;
 
-            if( i!=numRings-1 )
+            if (i != numRings - 1)
             {
-                quad[2] = (i+1)*numSegments+j;
-                if( j!=numSegments-1)
-                    quad[3]=(i+1)*numSegments+j+1;
+                quad[2] = (i + 1)*numSegments + j;
+                if (j != numSegments - 1)
+                    quad[3] = (i + 1)*numSegments + j + 1;
                 else
-                    quad[3]=(i+1)*numSegments;  
+                    quad[3] = (i + 1)*numSegments;
             }
             else
             {
                 quad[2] = j;
-                if(j!=numSegments-1)
-                    quad[3] = j+1;
+                if (j != numSegments - 1)
+                    quad[3] = j + 1;
                 else
                     quad[3] = 0;
             }
-            rgibuf[(i*numSegments+j)*6  ] = quad[0];
-            rgibuf[(i*numSegments+j)*6+1] = quad[1];
-            rgibuf[(i*numSegments+j)*6+2] = quad[2];
-            rgibuf[(i*numSegments+j)*6+3] = quad[3];
-            rgibuf[(i*numSegments+j)*6+4] = quad[2];
-            rgibuf[(i*numSegments+j)*6+5] = quad[1];
+            ringIndices[(i*numSegments + j) * 6] = quad[0];
+            ringIndices[(i*numSegments + j) * 6 + 1] = quad[1];
+            ringIndices[(i*numSegments + j) * 6 + 2] = quad[2];
+            ringIndices[(i*numSegments + j) * 6 + 3] = quad[3];
+            ringIndices[(i*numSegments + j) * 6 + 4] = quad[2];
+            ringIndices[(i*numSegments + j) * 6 + 5] = quad[1];
         }
     }
     //calculate normals
-    for( int i=0;i<m_numIndices;i+=3)
+    for (int i = 0; i < m_numIndices; i += 3)
     {
-        SetNormal( &m_vertices[0], &rgibuf[i], 3);
+        SetNormal(&m_vertices[0], &ringIndices[i], 3);
     }
 
     Matrix3D fullMatrix;
-    Matrix3D transMat,rotMat;
+    Matrix3D transMat, rotMat;
 
-    float maxx=FLT_MIN;
-    float minx=FLT_MAX;
-    float maxy=FLT_MIN;
-    float miny=FLT_MAX;
-    float maxz=FLT_MIN;
-    float minz=FLT_MAX;
+    float maxx = FLT_MIN;
+    float minx = FLT_MAX;
+    float maxy = FLT_MIN;
+    float miny = FLT_MAX;
+    float maxz = FLT_MIN;
+    float minz = FLT_MAX;
 
-    for( int i=0;i<m_numVertices;i++ )
+    for (int i = 0; i < m_numVertices; i++)
     {
-        if ( maxx<m_vertices[i].x ) maxx=m_vertices[i].x;
-        if ( minx>m_vertices[i].x ) minx=m_vertices[i].x;
-        if ( maxy<m_vertices[i].y ) maxy=m_vertices[i].y;
-        if ( miny>m_vertices[i].y ) miny=m_vertices[i].y;
-        if ( maxz<m_vertices[i].z ) maxz=m_vertices[i].z;
-        if ( minz>m_vertices[i].z ) minz=m_vertices[i].z;
+        if (maxx < m_vertices[i].x) maxx = m_vertices[i].x;
+        if (minx > m_vertices[i].x) minx = m_vertices[i].x;
+        if (maxy < m_vertices[i].y) maxy = m_vertices[i].y;
+        if (miny > m_vertices[i].y) miny = m_vertices[i].y;
+        if (maxz < m_vertices[i].z) maxz = m_vertices[i].z;
+        if (minz > m_vertices[i].z) minz = m_vertices[i].z;
     }
-    middlePoint.x = (maxx+minx)*0.5f;
-    middlePoint.y = (maxy+miny)*0.5f;
-    middlePoint.z = (maxz+minz)*0.5f;
+    middlePoint.x = (maxx + minx)*0.5f;
+    middlePoint.y = (maxy + miny)*0.5f;
+    middlePoint.z = (maxz + minz)*0.5f;
+
+    WORD* tmp = reorderForsyth(&ringIndices[0], ringIndices.size() / 3, m_numVertices);
+    if (tmp != NULL)
+    {
+        memcpy(&ringIndices[0], tmp, ringIndices.size()*sizeof(WORD));
+        delete[] tmp;
+    }
+
+    delete[] rgvLocal;
+    delete[] middlePoints;
+
+}
+void Rubber::GenerateVertexBuffer(RenderDevice* pd3dDevice)
+{
+    dynamicVertexBufferRegenerate = true;
+
+    GenerateMesh();
+
+    if (dynamicVertexBuffer)
+        dynamicVertexBuffer->release();
+    pd3dDevice->CreateVertexBuffer(m_numVertices, m_d.m_staticRendering ? 0 : USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &dynamicVertexBuffer);
 
     // Draw the floor of the ramp.
     Vertex3D_NoTex2 *buf;
@@ -1451,32 +1578,28 @@ void Rubber::GenerateVertexBuffer(RenderDevice* pd3dDevice)
     if (dynamicIndexBuffer)
         dynamicIndexBuffer->release();
 
-	WORD* tmp = reorderForsyth(&rgibuf[0],rgibuf.size()/3,m_numVertices);
-    if(tmp != NULL)
-    {
-       memcpy(&rgibuf[0],tmp,rgibuf.size()*sizeof(WORD));
-       delete [] tmp;
-    }
-    dynamicIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer( rgibuf );
-
-    delete [] rgvLocal;
-    delete [] middlePoints;
+    dynamicIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer( ringIndices );
 }
 
-void Rubber::UpdateRubber( RenderDevice *pd3dDevice )
+void Rubber::UpdateRubber( RenderDevice *pd3dDevice, bool updateVB )
 {
     Matrix3D fullMatrix;
     Matrix3D transMat,rotMat;
     const float height = m_d.m_height+m_ptable->m_tableheight;
 
     fullMatrix.SetIdentity();
+    rotMat.RotateZMatrix(ANGTORAD(m_d.m_rotZ));
+    rotMat.Multiply(fullMatrix, fullMatrix);
     rotMat.RotateYMatrix(ANGTORAD(m_d.m_rotY));
     rotMat.Multiply(fullMatrix, fullMatrix);
     rotMat.RotateXMatrix(ANGTORAD(m_d.m_rotX));
     rotMat.Multiply(fullMatrix, fullMatrix);
 
     Vertex3D_NoTex2 *buf;
-    dynamicVertexBuffer->lock(0,0,(void**)&buf, m_d.m_staticRendering ? VertexBuffer::WRITEONLY : VertexBuffer::DISCARDCONTENTS);
+    if ( updateVB )
+        dynamicVertexBuffer->lock(0,0,(void**)&buf, m_d.m_staticRendering ? VertexBuffer::WRITEONLY : VertexBuffer::DISCARDCONTENTS);
+    else
+        buf = m_vertices.data();
 
     for( int i=0;i<m_numVertices;i++ )
     {
@@ -1493,8 +1616,11 @@ void Rubber::UpdateRubber( RenderDevice *pd3dDevice )
         buf[i].tu = m_vertices[i].tu;
         buf[i].tv = m_vertices[i].tv;
     }
-    dynamicVertexBuffer->unlock();
-    dynamicVertexBufferRegenerate=false;
+    if (updateVB)
+    {
+        dynamicVertexBuffer->unlock();
+        dynamicVertexBufferRegenerate = false;
+    }
 }
 
 void Rubber::UpdatePropertyPanes()
