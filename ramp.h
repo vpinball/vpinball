@@ -135,6 +135,9 @@ private:
 
     int m_numVertices;      // this goes along with dynamicVertexBuffer
     int m_numIndices;
+    Vertex3D_NoTex2* m_vertBuffer;
+    Vertex3D_NoTex2* m_vertBuffer2;
+    std::vector<WORD> m_meshIndices;
 
     std::vector<HitObject*> m_vhoCollidable; // Objects to that may be collide selectable
 
@@ -145,6 +148,7 @@ private:
 
     PropertyPane *m_propPosition;
     PropertyPane *m_propPhysics;
+
 
     bool isHabitrail() const;
 
@@ -166,6 +170,8 @@ private:
 
     void RenderRamp( RenderDevice *pd3dDevice, const Material * const mat );
     void CreateWire( const int numRings, const int numSegments, const Vertex2D *midPoints, Vertex3D_NoTex2 *rgvBuf);
+    void GenerateWireMesh(Vertex3D_NoTex2 **meshBuf, Vertex3D_NoTex2 **meshBuf2);
+    void Ramp::GenerateRampMesh(Vertex3D_NoTex2 **meshBuf);
 
 // IRamp
 public:

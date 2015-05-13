@@ -54,22 +54,22 @@ void Trigger::UpdateEditorView()
 
         if( m_d.m_shape==TriggerWire )
         {
-            numVertices=triggerSimpleNumVertices;
-            numFaces=triggerSimpleNumFaces;
+            m_numVertices=triggerSimpleNumVertices;
+            m_numFaces=triggerSimpleNumFaces;
             faceIndices = triggerSimpleIndices;
             meshVertices = triggerSimple;
         }
         else if( m_d.m_shape==TriggerStar )
         {
-            numVertices=triggerStarNumVertices;
-            numFaces=triggerStarNumFaces;
+            m_numVertices=triggerStarNumVertices;
+            m_numFaces=triggerStarNumFaces;
             faceIndices = triggerStarIndices;
             meshVertices = triggerStar;
         }
-        vertices.resize(numVertices);
+        vertices.resize(m_numVertices);
         Matrix3D fullMatrix;
         fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotation));
-        for( int i=0;i<numVertices;i++ )
+        for( int i=0;i<m_numVertices;i++ )
         {
             Vertex3Ds vert(meshVertices[i].x,meshVertices[i].y,meshVertices[i].z);
             fullMatrix.MultiplyVector(vert, vertices[i]);
@@ -309,16 +309,16 @@ void Trigger::Render(Sur * const psur)
 
    if( m_d.m_shape==TriggerWire )
    {
-       if (numFaces > 0)
+       if (m_numFaces > 0)
        {
-           const size_t numPts = numFaces / 3 + 1;
+           const size_t numPts = m_numFaces / 3 + 1;
            std::vector<Vertex2D> drawVertices(numPts);
 
            const Vertex3Ds& A = vertices[faceIndices[0]];
            drawVertices[0] = Vertex2D(A.x,A.y);
 
 		   size_t o = 1;
-           for (int i=0; i<numFaces; i+=3,++o)
+           for (int i=0; i<m_numFaces; i+=3,++o)
            {
               const Vertex3Ds& B = vertices[faceIndices[i+1]];
               drawVertices[o] = Vertex2D(B.x,B.y);
@@ -584,7 +584,7 @@ void Trigger::PostRenderStatic(RenderDevice* pd3dDevice)
 
         Vertex3D_NoTex2 *buf;
         vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
-        for( int i=0;i<numVertices;i++ )
+        for( int i=0;i<m_numVertices;i++ )
         {
             buf[i].x = triggerVertices[i].x;
             buf[i].y = triggerVertices[i].y;
@@ -599,8 +599,62 @@ void Trigger::PostRenderStatic(RenderDevice* pd3dDevice)
     }
 
     pd3dDevice->basicShader->Begin(0);
-    pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, numVertices, triggerIndexBuffer, 0, numFaces );
+    pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, m_numVertices, triggerIndexBuffer, 0, m_numFaces );
     pd3dDevice->basicShader->End();
+}
+
+void Trigger::GenerateMesh()
+{
+    const float baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
+    Vertex3D_NoTex2 *verts;
+    Matrix3D fullMatrix;
+
+    fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotation));
+
+    if (m_d.m_shape == TriggerWire)
+    {
+        m_numVertices = triggerSimpleNumVertices;
+        m_numFaces = triggerSimpleNumFaces;
+        verts = triggerSimple;
+        if (triggerVertices)
+            delete[] triggerVertices;
+        triggerVertices = new Vertex3D_NoTex2[m_numVertices];
+    }
+    else if (m_d.m_shape == TriggerStar)
+    {
+        m_numVertices = triggerStarNumVertices;
+        m_numFaces = triggerStarNumFaces;
+        verts = triggerStar;
+        if (triggerVertices)
+            delete[] triggerVertices;
+        triggerVertices = new Vertex3D_NoTex2[m_numVertices];
+    }
+
+    for (int i = 0; i < m_numVertices; i++)
+    {
+        Vertex3Ds vert(verts[i].x, verts[i].y, verts[i].z);
+        vert = fullMatrix.MultiplyVector(vert);
+
+        if (m_d.m_shape != TriggerStar)
+        {
+            triggerVertices[i].x = (vert.x*m_d.m_scaleX) + m_d.m_vCenter.x;
+            triggerVertices[i].y = (vert.y*m_d.m_scaleY) + m_d.m_vCenter.y;
+            triggerVertices[i].z = (vert.z*1.0f*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]) + baseHeight;
+        }
+        else
+        {
+            triggerVertices[i].x = (vert.x*m_d.m_radius) + m_d.m_vCenter.x;
+            triggerVertices[i].y = (vert.y*m_d.m_radius) + m_d.m_vCenter.y;
+            triggerVertices[i].z = (vert.z*m_d.m_radius*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]) + baseHeight;
+        }
+        vert = Vertex3Ds(verts[i].nx, verts[i].ny, verts[i].nz);
+        vert = fullMatrix.MultiplyVectorNoTranslate(vert);
+        triggerVertices[i].nx = vert.x;
+        triggerVertices[i].ny = vert.y;
+        triggerVertices[i].nz = vert.z;
+        triggerVertices[i].tu = verts[i].tu;
+        triggerVertices[i].tv = verts[i].tv;
+    }
 }
 
 void Trigger::RenderSetup(RenderDevice* pd3dDevice)
@@ -616,70 +670,31 @@ void Trigger::RenderSetup(RenderDevice* pd3dDevice)
    if (!m_d.m_fVisible || m_d.m_shape==TriggerNone)
       return;
 
-   Vertex3D_NoTex2 *verts;
-   if (m_d.m_shape==TriggerWire)
-   {
-       numVertices = triggerSimpleNumVertices;
-       numFaces = triggerSimpleNumFaces;
-       verts = triggerSimple;
-	   if ( triggerVertices )
-		   delete [] triggerVertices;
-       triggerVertices = new Vertex3D_NoTex2[numVertices];
-   }
-   else if (m_d.m_shape==TriggerStar)
-   {
-       numVertices = triggerStarNumVertices;
-       numFaces = triggerStarNumFaces;
-       verts = triggerStar;
-	   if ( triggerVertices )
-	      delete [] triggerVertices;
-       triggerVertices = new Vertex3D_NoTex2[numVertices];
-   }
-
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-   const float baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
+   if (m_d.m_shape == TriggerWire)
+   {
+       m_numVertices = triggerSimpleNumVertices;
+       m_numFaces = triggerSimpleNumFaces;
+   }
+   else if (m_d.m_shape == TriggerStar)
+   {
+       m_numVertices = triggerStarNumVertices;
+       m_numFaces = triggerStarNumFaces;
+   }
 
    if (triggerIndexBuffer)
        triggerIndexBuffer->release();
-   triggerIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(numFaces, (m_d.m_shape==TriggerWire) ? triggerSimpleIndices : triggerStarIndices);
+   triggerIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(m_numFaces, (m_d.m_shape==TriggerWire) ? triggerSimpleIndices : triggerStarIndices);
 
    if (vertexBuffer)
 	   vertexBuffer->release();
-   ppin3d->m_pd3dDevice->CreateVertexBuffer( numVertices, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer );
-   NumVideoBytes += numVertices*sizeof(Vertex3D_NoTex2);
+   ppin3d->m_pd3dDevice->CreateVertexBuffer( m_numVertices, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer );
+   NumVideoBytes += m_numVertices*sizeof(Vertex3D_NoTex2);
 
-   Matrix3D fullMatrix;
-   fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotation));
-
-   for( int i=0;i<numVertices;i++ )
-   {
-       Vertex3Ds vert(verts[i].x,verts[i].y,verts[i].z);
-       vert = fullMatrix.MultiplyVector(vert);
-
-       if ( m_d.m_shape!=TriggerStar )
-       {
-           triggerVertices[i].x = (vert.x*m_d.m_scaleX)+m_d.m_vCenter.x;
-           triggerVertices[i].y = (vert.y*m_d.m_scaleY)+m_d.m_vCenter.y;
-           triggerVertices[i].z = (vert.z*1.0f*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set])+baseHeight;
-       }
-       else
-       {
-           triggerVertices[i].x = (vert.x*m_d.m_radius)+m_d.m_vCenter.x;
-           triggerVertices[i].y = (vert.y*m_d.m_radius)+m_d.m_vCenter.y;
-           triggerVertices[i].z = (vert.z*m_d.m_radius*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set])+baseHeight;
-       }
-       vert = Vertex3Ds( verts[i].nx, verts[i].ny, verts[i].nz );
-       vert = fullMatrix.MultiplyVectorNoTranslate(vert);
-       triggerVertices[i].nx = vert.x;
-       triggerVertices[i].ny = vert.y;
-       triggerVertices[i].nz = vert.z;
-       triggerVertices[i].tu = verts[i].tu;
-       triggerVertices[i].tv = verts[i].tv;
-   }
-
+   GenerateMesh();
    Vertex3D_NoTex2 *buf;
    vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY);
-   memcpy( buf, triggerVertices, sizeof(Vertex3D_NoTex2)*numVertices );
+   memcpy( buf, triggerVertices, sizeof(Vertex3D_NoTex2)*m_numVertices );
    vertexBuffer->unlock();
 }
 

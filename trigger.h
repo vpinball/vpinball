@@ -107,6 +107,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_TRIGGER)
     void UpdateEditorView();
     void TriggerAnimationHit();
     void TriggerAnimationUnhit();
+    void GenerateMesh();
 
 	PinTable *m_ptable;
 
@@ -115,8 +116,8 @@ DECLARE_REGISTRY_RESOURCEID(IDR_TRIGGER)
 
 	TriggerHitCircle *m_ptriggerhitcircle;
 
-    int numVertices;
-    int numFaces;
+    int m_numVertices;
+    int m_numFaces;
     float animHeightOffset;
 	bool hitEvent;
     bool unhitEvent;

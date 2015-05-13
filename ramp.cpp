@@ -1027,30 +1027,122 @@ void Ramp::CreateWire( const int numRings, const int numSegments, const Vertex2D
     }
 }
 
-void Ramp::prepareHabitrail(RenderDevice* pd3dDevice)
+void Ramp::GenerateWireMesh(Vertex3D_NoTex2 **meshBuf1, Vertex3D_NoTex2 **meshBuf2)
 {
-    dynamicVertexBufferRegenerate = false;
     Vertex2D * middlePoints = 0;
-    int accuracy=1;
-    if( m_ptable->GetDetailLevel()<5 )
+    int accuracy = 1;
+    if (m_ptable->GetDetailLevel() < 5)
     {
-        accuracy=6;
+        accuracy = 6;
     }
-    else if (m_ptable->GetDetailLevel()>=5 && m_ptable->GetDetailLevel()<8)
+    else if (m_ptable->GetDetailLevel() >= 5 && m_ptable->GetDetailLevel() < 8)
     {
-        accuracy=8;
+        accuracy = 8;
     }
     else
     {
-        accuracy=(int)(m_ptable->GetDetailLevel()*1.3f);
+        accuracy = (int)(m_ptable->GetDetailLevel()*1.3f);
     }
 
     const Vertex2D *rgvLocal = GetRampVertex(splinePoints, &rgheightInit, NULL, &rgratioInit, &middlePoints, true);
 
-    const int numRings=splinePoints;
-    const int numSegments=accuracy;
-    m_numVertices=numRings*numSegments;
-    m_numIndices = 6*m_numVertices;//m_numVertices*2+2;
+    const int numRings = splinePoints;
+    const int numSegments = accuracy;
+    m_numVertices = numRings*numSegments;
+    m_numIndices = 6 * m_numVertices;//m_numVertices*2+2;
+
+    if ( *meshBuf1==NULL )
+        *meshBuf1 = new Vertex3D_NoTex2[m_numVertices];
+
+    Vertex2D *tmpPoints = new Vertex2D[splinePoints];
+    for (int i = 0; i < splinePoints; i++)
+        tmpPoints[i] = rgvLocal[splinePoints * 2 - i - 1];
+
+    m_vertBuffer = new Vertex3D_NoTex2[m_numVertices];
+    m_vertBuffer2 = NULL;
+    m_meshIndices.resize(m_numIndices);
+
+    if (m_d.m_type != RampType1Wire)
+    {
+        m_vertBuffer2 = new Vertex3D_NoTex2[m_numVertices];
+        if (*meshBuf2==NULL)
+            *meshBuf2 = new Vertex3D_NoTex2[m_numVertices];
+    }
+
+    Vertex3D_NoTex2 *buf1 = *meshBuf1;
+
+    if (m_d.m_type != RampType1Wire)
+    {
+        CreateWire(numRings, numSegments, rgvLocal, m_vertBuffer);
+        CreateWire(numRings, numSegments, tmpPoints, m_vertBuffer2);
+    }
+    else
+        CreateWire(numRings, numSegments, middlePoints, m_vertBuffer);
+
+    // calculate faces
+    for (int i = 0; i < numRings - 1; i++)
+    {
+        for (int j = 0; j < numSegments; j++)
+        {
+            int quad[4];
+            quad[0] = i*numSegments + j;
+
+            if (j != numSegments - 1)
+                quad[1] = i*numSegments + j + 1;
+            else
+                quad[1] = i*numSegments;
+
+            if (i != numRings - 1)
+            {
+                quad[2] = (i + 1)*numSegments + j;
+                if (j != numSegments - 1)
+                    quad[3] = (i + 1)*numSegments + j + 1;
+                else
+                    quad[3] = (i + 1)*numSegments;
+            }
+            else
+            {
+                quad[2] = j;
+                if (j != numSegments - 1)
+                    quad[3] = j + 1;
+                else
+                    quad[3] = 0;
+            }
+            m_meshIndices[(i*numSegments + j) * 6] = quad[0];
+            m_meshIndices[(i*numSegments + j) * 6 + 1] = quad[1];
+            m_meshIndices[(i*numSegments + j) * 6 + 2] = quad[2];
+            m_meshIndices[(i*numSegments + j) * 6 + 3] = quad[3];
+            m_meshIndices[(i*numSegments + j) * 6 + 4] = quad[2];
+            m_meshIndices[(i*numSegments + j) * 6 + 5] = quad[1];
+        }
+    }
+
+    memcpy(&buf1[0], &m_vertBuffer[0], sizeof(Vertex3D_NoTex2)*m_numVertices);
+
+    if (m_d.m_type != RampType1Wire)
+    {
+        Vertex3D_NoTex2 *buf2 = *meshBuf2;
+        memcpy(&buf2[0], &m_vertBuffer2[0], sizeof(Vertex3D_NoTex2)*m_numVertices);
+    }
+
+    WORD* tmp = reorderForsyth(&m_meshIndices[0], m_meshIndices.size() / 3, m_numVertices);
+    if (tmp != NULL)
+    {
+        memcpy(&m_meshIndices[0], tmp, m_meshIndices.size()*sizeof(WORD));
+        delete[] tmp;
+    }
+
+    delete[] rgvLocal;
+    delete[] middlePoints;
+    delete[] tmpPoints;
+}
+
+void Ramp::prepareHabitrail(RenderDevice* pd3dDevice)
+{
+    dynamicVertexBufferRegenerate = false;
+    Vertex3D_NoTex2 *tmpBuf1=NULL;
+    Vertex3D_NoTex2 *tmpBuf2=NULL;
+    GenerateWireMesh(&tmpBuf1, &tmpBuf2);
 
     if (dynamicVertexBuffer)
         dynamicVertexBuffer->release();
@@ -1061,92 +1153,36 @@ void Ramp::prepareHabitrail(RenderDevice* pd3dDevice)
     if (m_d.m_type!=RampType1Wire)
        pd3dDevice->CreateVertexBuffer(m_numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &dynamicVertexBuffer2);
 
-    Vertex2D *tmpPoints = new Vertex2D[splinePoints];
-    for(int i=0;i<splinePoints;i++)
-       tmpPoints[i] = rgvLocal[splinePoints*2 - i - 1];
-
-    Vertex3D_NoTex2* rgvbuf = new Vertex3D_NoTex2[m_numVertices];
-    Vertex3D_NoTex2* rgvbuf2 = NULL;
-    std::vector<WORD> rgibuf( m_numIndices );
-    if (m_d.m_type != RampType1Wire)
-       rgvbuf2 = new Vertex3D_NoTex2[m_numVertices];
-    if (m_d.m_type != RampType1Wire)
-    {
-       CreateWire(numRings, numSegments, rgvLocal, rgvbuf);
-       CreateWire(numRings, numSegments, tmpPoints, rgvbuf2);
-    }
-    else
-       CreateWire(numRings, numSegments, middlePoints, rgvbuf);
-
-    // calculate faces
-    for( int i=0;i<numRings-1;i++ )
-    {
-        for( int j=0;j<numSegments;j++ )
-        {
-            int quad[4];
-            quad[0] = i*numSegments+j;
-
-            if( j!=numSegments-1 )
-                quad[1] = i*numSegments+j+1;
-            else
-                quad[1] = i*numSegments;
-
-            if( i!=numRings-1 )
-            {
-                quad[2] = (i+1)*numSegments+j;
-                if( j!=numSegments-1)
-                    quad[3]=(i+1)*numSegments+j+1;
-                else
-                    quad[3]=(i+1)*numSegments;  
-            }
-            else
-            {
-                quad[2] = j;
-                if(j!=numSegments-1)
-                    quad[3] = j+1;
-                else
-                    quad[3] = 0;
-            }
-            rgibuf[(i*numSegments+j)*6  ] = quad[0];
-            rgibuf[(i*numSegments+j)*6+1] = quad[1];
-            rgibuf[(i*numSegments+j)*6+2] = quad[2];
-            rgibuf[(i*numSegments+j)*6+3] = quad[3];
-            rgibuf[(i*numSegments+j)*6+4] = quad[2];
-            rgibuf[(i*numSegments+j)*6+5] = quad[1];
-        }
-    }
 
 	// Draw the floor of the ramp.
 	Vertex3D_NoTex2 *buf;
+    Vertex3D_NoTex2 *buf2;
     dynamicVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
-    memcpy(&buf[0], &rgvbuf[0], sizeof(Vertex3D_NoTex2)*m_numVertices);
+    memcpy(&buf[0], &tmpBuf1[0], sizeof(Vertex3D_NoTex2)*m_numVertices);
     dynamicVertexBuffer->unlock();
 
 	if (m_d.m_type!=RampType1Wire)
     {
-       Vertex3D_NoTex2 *buf2;
        dynamicVertexBuffer2->lock(0, 0, (void**)&buf2, VertexBuffer::WRITEONLY);
-       memcpy(&buf2[0], &rgvbuf2[0], sizeof(Vertex3D_NoTex2)*m_numVertices);
+       memcpy(&buf2[0], &tmpBuf2[0], sizeof(Vertex3D_NoTex2)*m_numVertices);
        dynamicVertexBuffer2->unlock();
     }
+
 
     if (dynamicIndexBuffer)
         dynamicIndexBuffer->release();
 
-	WORD* tmp = reorderForsyth(&rgibuf[0],rgibuf.size()/3,m_numVertices);
-    if(tmp != NULL)
-    {
-       memcpy(&rgibuf[0],tmp,rgibuf.size()*sizeof(WORD));
-       delete [] tmp;
-    }
-    dynamicIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer( rgibuf );
+    dynamicIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer( m_meshIndices );
 
-    delete [] rgvbuf;
-    if ( m_d.m_type!=RampType1Wire)
-      delete [] rgvbuf2;
-    delete [] rgvLocal;
-    delete [] middlePoints;
-    delete [] tmpPoints;
+    delete [] m_vertBuffer;
+    delete[] tmpBuf1;
+    if (m_d.m_type != RampType1Wire)
+    {
+        delete[] m_vertBuffer2;
+        delete[] tmpBuf2;
+    }
+
+    m_meshIndices.clear();
 }
 
 void Ramp::RenderSetup(RenderDevice* pd3dDevice)
@@ -2093,46 +2129,46 @@ void Ramp::PostRenderStatic(RenderDevice* pd3dDevice)
     RenderRamp(pd3dDevice, mat);
 }
 
-void Ramp::GenerateVertexBuffer(RenderDevice* pd3dDevice)
+void Ramp::GenerateRampMesh(Vertex3D_NoTex2 **meshBuf)
 {
-    dynamicVertexBufferRegenerate = false;
-
     Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
     float *rgheight, *rgratio;
     const Vertex2D * const rgvLocal = GetRampVertex(rampVertex, &rgheight, NULL, &rgratio, NULL, true);
 
-    const float inv_tablewidth = 1.0f/(m_ptable->m_right - m_ptable->m_left);
-    const float inv_tableheight = 1.0f/(m_ptable->m_bottom - m_ptable->m_top);
+    const float inv_tablewidth = 1.0f / (m_ptable->m_right - m_ptable->m_left);
+    const float inv_tableheight = 1.0f / (m_ptable->m_bottom - m_ptable->m_top);
 
-    m_numVertices=(rampVertex-1)*4;
-    m_numIndices=(rampVertex-1)*6*4;
+    m_numVertices = (rampVertex - 1) * 4;
+    m_numIndices = (rampVertex - 1) * 6 * 4;
 
-    const unsigned int rgioffset = (rampVertex-1)*6;
+    const unsigned int rgioffset = (rampVertex - 1) * 6;
 
-    if (dynamicVertexBuffer)
-        dynamicVertexBuffer->release();
-    pd3dDevice->CreateVertexBuffer(m_numVertices*5, 0, MY_D3DFVF_NOTEX2_VERTEX, &dynamicVertexBuffer);
-
-    Vertex3D_NoTex2* rgvbuf = new Vertex3D_NoTex2[m_numVertices];
-    std::vector<WORD> rgibuf( m_numIndices );
-    for (int i=0;i<(rampVertex-1);i++)
+    if (*meshBuf == NULL)
     {
-        Vertex3D_NoTex2 * const rgv3D = &rgvbuf[0]+i*4;
+        *meshBuf = new Vertex3D_NoTex2[m_numIndices*5];
+    }
+    Vertex3D_NoTex2 *buf = *meshBuf;
+
+    m_vertBuffer = new Vertex3D_NoTex2[m_numVertices];
+    m_meshIndices.resize(m_numIndices);
+    for (int i = 0; i < (rampVertex - 1); i++)
+    {
+        Vertex3D_NoTex2 * const rgv3D = &m_vertBuffer[0] + i * 4;
         rgv3D[0].x = rgvLocal[i].x;
         rgv3D[0].y = rgvLocal[i].y;
-        rgv3D[0].z = rgheight[i]*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+        rgv3D[0].z = rgheight[i] * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
-        rgv3D[3].x = rgvLocal[i+1].x;
-        rgv3D[3].y = rgvLocal[i+1].y;
-        rgv3D[3].z = rgheight[i+1]*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+        rgv3D[3].x = rgvLocal[i + 1].x;
+        rgv3D[3].y = rgvLocal[i + 1].y;
+        rgv3D[3].z = rgheight[i + 1] * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
-        rgv3D[2].x = rgvLocal[rampVertex*2-i-2].x;
-        rgv3D[2].y = rgvLocal[rampVertex*2-i-2].y;
-        rgv3D[2].z = rgheight[i+1]*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+        rgv3D[2].x = rgvLocal[rampVertex * 2 - i - 2].x;
+        rgv3D[2].y = rgvLocal[rampVertex * 2 - i - 2].y;
+        rgv3D[2].z = rgheight[i + 1] * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
-        rgv3D[1].x = rgvLocal[rampVertex*2-i-1].x;
-        rgv3D[1].y = rgvLocal[rampVertex*2-i-1].y;
-        rgv3D[1].z = rgheight[i]*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+        rgv3D[1].x = rgvLocal[rampVertex * 2 - i - 1].x;
+        rgv3D[1].y = rgvLocal[rampVertex * 2 - i - 1].y;
+        rgv3D[1].z = rgheight[i] * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
         if (pin)
         {
@@ -2154,74 +2190,68 @@ void Ramp::GenerateVertexBuffer(RenderDevice* pd3dDevice)
                 rgv3D[1].tu = 0;
                 rgv3D[1].tv = rgratio[i];
                 rgv3D[2].tu = 0;
-                rgv3D[2].tv = rgratio[i+1];
+                rgv3D[2].tv = rgratio[i + 1];
                 rgv3D[3].tu = 1.0f;
-                rgv3D[3].tv = rgratio[i+1];
+                rgv3D[3].tv = rgratio[i + 1];
             }
         }
 
         //floor
-        rgibuf[i*6]   = i*4;
-        rgibuf[i*6+1] = i*4+1;
-        rgibuf[i*6+2] = i*4+2;
-        rgibuf[i*6+3] = i*4;
-        rgibuf[i*6+4] = i*4+2;
-        rgibuf[i*6+5] = i*4+3;
+        m_meshIndices[i * 6] = i * 4;
+        m_meshIndices[i * 6 + 1] = i * 4 + 1;
+        m_meshIndices[i * 6 + 2] = i * 4 + 2;
+        m_meshIndices[i * 6 + 3] = i * 4;
+        m_meshIndices[i * 6 + 4] = i * 4 + 2;
+        m_meshIndices[i * 6 + 5] = i * 4 + 3;
 
-        rgibuf[i*6+rgioffset]   = i*4+m_numVertices;
-        rgibuf[i*6+rgioffset+1] = i*4+m_numVertices+3;
-        rgibuf[i*6+rgioffset+2] = i*4+m_numVertices+2;
-        rgibuf[i*6+rgioffset+3] = i*4+m_numVertices;
-        rgibuf[i*6+rgioffset+4] = i*4+m_numVertices+2;
-        rgibuf[i*6+rgioffset+5] = i*4+m_numVertices+1;
-        
-        rgibuf[i*6+rgioffset*2]   = i*4+m_numVertices*2;
-        rgibuf[i*6+rgioffset*2+1] = i*4+m_numVertices*2+1;
-        rgibuf[i*6+rgioffset*2+2] = i*4+m_numVertices*2+2;
-        rgibuf[i*6+rgioffset*2+3] = i*4+m_numVertices*2;
-        rgibuf[i*6+rgioffset*2+4] = i*4+m_numVertices*2+2;
-        rgibuf[i*6+rgioffset*2+5] = i*4+m_numVertices*2+3;
+        m_meshIndices[i * 6 + rgioffset] = i * 4 + m_numVertices;
+        m_meshIndices[i * 6 + rgioffset + 1] = i * 4 + m_numVertices + 3;
+        m_meshIndices[i * 6 + rgioffset + 2] = i * 4 + m_numVertices + 2;
+        m_meshIndices[i * 6 + rgioffset + 3] = i * 4 + m_numVertices;
+        m_meshIndices[i * 6 + rgioffset + 4] = i * 4 + m_numVertices + 2;
+        m_meshIndices[i * 6 + rgioffset + 5] = i * 4 + m_numVertices + 1;
 
-        rgibuf[i*6+rgioffset*3]   = i*4+m_numVertices*3;
-        rgibuf[i*6+rgioffset*3+1] = i*4+m_numVertices*3+3;
-        rgibuf[i*6+rgioffset*3+2] = i*4+m_numVertices*3+2;
-        rgibuf[i*6+rgioffset*3+3] = i*4+m_numVertices*3;
-        rgibuf[i*6+rgioffset*3+4] = i*4+m_numVertices*3+2;
-        rgibuf[i*6+rgioffset*3+5] = i*4+m_numVertices*3+1;
+        m_meshIndices[i * 6 + rgioffset * 2] = i * 4 + m_numVertices * 2;
+        m_meshIndices[i * 6 + rgioffset * 2 + 1] = i * 4 + m_numVertices * 2 + 1;
+        m_meshIndices[i * 6 + rgioffset * 2 + 2] = i * 4 + m_numVertices * 2 + 2;
+        m_meshIndices[i * 6 + rgioffset * 2 + 3] = i * 4 + m_numVertices * 2;
+        m_meshIndices[i * 6 + rgioffset * 2 + 4] = i * 4 + m_numVertices * 2 + 2;
+        m_meshIndices[i * 6 + rgioffset * 2 + 5] = i * 4 + m_numVertices * 2 + 3;
+
+        m_meshIndices[i * 6 + rgioffset * 3] = i * 4 + m_numVertices * 3;
+        m_meshIndices[i * 6 + rgioffset * 3 + 1] = i * 4 + m_numVertices * 3 + 3;
+        m_meshIndices[i * 6 + rgioffset * 3 + 2] = i * 4 + m_numVertices * 3 + 2;
+        m_meshIndices[i * 6 + rgioffset * 3 + 3] = i * 4 + m_numVertices * 3;
+        m_meshIndices[i * 6 + rgioffset * 3 + 4] = i * 4 + m_numVertices * 3 + 2;
+        m_meshIndices[i * 6 + rgioffset * 3 + 5] = i * 4 + m_numVertices * 3 + 1;
     }
-    SetNormal( rgvbuf, &rgibuf[0], (rampVertex-1)*6);
-    
-	// Flip Normals if pointing downwards instead of upwards //!! hacky, do it correct somehow else
-    for (int i=0;i<(rampVertex-1);i++)
-        for(int j = 0; j < 4; ++j) if(rgvbuf[i*4+j].nz < 0.0f) {
-            rgvbuf[i*4+j].nx = -rgvbuf[i*4+j].nx;
-            rgvbuf[i*4+j].ny = -rgvbuf[i*4+j].ny;
-            rgvbuf[i*4+j].nz = -rgvbuf[i*4+j].nz;
+    SetNormal(m_vertBuffer, &m_meshIndices[0], (rampVertex - 1) * 6);
+
+    // Flip Normals if pointing downwards instead of upwards //!! hacky, do it correct somehow else
+    for (int i = 0; i < (rampVertex - 1); i++)
+        for (int j = 0; j < 4; ++j) if (m_vertBuffer[i * 4 + j].nz < 0.0f) {
+            m_vertBuffer[i * 4 + j].nx = -m_vertBuffer[i * 4 + j].nx;
+            m_vertBuffer[i * 4 + j].ny = -m_vertBuffer[i * 4 + j].ny;
+            m_vertBuffer[i * 4 + j].nz = -m_vertBuffer[i * 4 + j].nz;
         }
 
-    unsigned int offset=0;
-    Vertex3D_NoTex2 *buf;
-    dynamicVertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY);
-	memcpy( &buf[offset], &rgvbuf[0], sizeof(Vertex3D_NoTex2)*m_numVertices );
-    offset+=m_numVertices;
+    unsigned int offset = 0;
+    memcpy(&buf[offset], &m_vertBuffer[0], sizeof(Vertex3D_NoTex2)*m_numVertices);
+    offset += m_numVertices;
 
-    if (dynamicIndexBuffer)
-        dynamicIndexBuffer->release();
-
-	WORD* tmp = reorderForsyth(&rgibuf[0],rgibuf.size()/3,m_numVertices*5);
-    if(tmp != NULL)
+    WORD* tmp = reorderForsyth(&m_meshIndices[0], m_meshIndices.size() / 3, m_numVertices * 5);
+    if (tmp != NULL)
     {
-       memcpy(&rgibuf[0],tmp,rgibuf.size()*sizeof(WORD));
-       delete [] tmp;
+        memcpy(&m_meshIndices[0], tmp, m_meshIndices.size()*sizeof(WORD));
+        delete[] tmp;
     }
-    dynamicIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer( rgibuf );
 
-    for (int i=0; i<(rampVertex-1); i++)
+    for (int i = 0; i < (rampVertex - 1); i++)
     {
-        Vertex3D_NoTex2 * const rgv3D = &rgvbuf[0]+i*4;
-        rgv3D[2].x = rgvLocal[i+1].x;
-        rgv3D[2].y = rgvLocal[i+1].y;
-        rgv3D[2].z = (rgheight[i+1] + m_d.m_rightwallheightvisible)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+        Vertex3D_NoTex2 * const rgv3D = &m_vertBuffer[0] + i * 4;
+        rgv3D[2].x = rgvLocal[i + 1].x;
+        rgv3D[2].y = rgvLocal[i + 1].y;
+        rgv3D[2].z = (rgheight[i + 1] + m_d.m_rightwallheightvisible)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
         rgv3D[1].x = rgvLocal[i].x;
         rgv3D[1].y = rgvLocal[i].y;
@@ -2240,7 +2270,7 @@ void Ramp::GenerateVertexBuffer(RenderDevice* pd3dDevice)
                 rgv3D[0].tu = 0;
                 rgv3D[0].tv = rgratio[i];
                 rgv3D[2].tu = 0;
-                rgv3D[2].tv = rgratio[i+1];
+                rgv3D[2].tv = rgratio[i + 1];
             }
 
             rgv3D[1].tu = rgv3D[0].tu;
@@ -2250,34 +2280,34 @@ void Ramp::GenerateVertexBuffer(RenderDevice* pd3dDevice)
         }
 
     }
-    SetNormal( rgvbuf, &rgibuf[0], (rampVertex-1)*6);
-    memcpy( &buf[offset], &rgvbuf[0], sizeof(Vertex3D_NoTex2)*m_numVertices );
-    offset+=m_numVertices;
+    SetNormal(m_vertBuffer, &m_meshIndices[0], (rampVertex - 1) * 6);
+    memcpy(&buf[offset], &m_vertBuffer[0], sizeof(Vertex3D_NoTex2)*m_numVertices);
+    offset += m_numVertices;
 
     // Flip Normals and redraw
-    for (int i=0;i<(rampVertex-1);i++)
-        for(int j = 0; j < 4; ++j) {
-            rgvbuf[i*4+j].nx = -rgvbuf[i*4+j].nx;
-            rgvbuf[i*4+j].ny = -rgvbuf[i*4+j].ny;
-            rgvbuf[i*4+j].nz = -rgvbuf[i*4+j].nz;
+    for (int i = 0; i < (rampVertex - 1); i++)
+        for (int j = 0; j < 4; ++j) {
+            m_vertBuffer[i * 4 + j].nx = -m_vertBuffer[i * 4 + j].nx;
+            m_vertBuffer[i * 4 + j].ny = -m_vertBuffer[i * 4 + j].ny;
+            m_vertBuffer[i * 4 + j].nz = -m_vertBuffer[i * 4 + j].nz;
         }
 
-    memcpy( &buf[offset], &rgvbuf[0], sizeof(Vertex3D_NoTex2)*m_numVertices );
-    offset+=m_numVertices;
+    memcpy(&buf[offset], &m_vertBuffer[0], sizeof(Vertex3D_NoTex2)*m_numVertices);
+    offset += m_numVertices;
 
     // only calculate vertices if one or both sides are visible (!=0)
-    if( m_d.m_leftwallheightvisible!=0.f || m_d.m_rightwallheightvisible!=0.f )
+    if (m_d.m_leftwallheightvisible != 0.f || m_d.m_rightwallheightvisible != 0.f)
     {
-        for (int i=0;i<(rampVertex-1);i++)
+        for (int i = 0; i < (rampVertex - 1); i++)
         {
-            Vertex3D_NoTex2 * const rgv3D = &rgvbuf[0]+i*4;
-            rgv3D[0].x = rgvLocal[rampVertex*2-i-2].x;
-            rgv3D[0].y = rgvLocal[rampVertex*2-i-2].y;
-            rgv3D[0].z = rgheight[i+1]*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+            Vertex3D_NoTex2 * const rgv3D = &m_vertBuffer[0] + i * 4;
+            rgv3D[0].x = rgvLocal[rampVertex * 2 - i - 2].x;
+            rgv3D[0].y = rgvLocal[rampVertex * 2 - i - 2].y;
+            rgv3D[0].z = rgheight[i + 1] * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
-            rgv3D[3].x = rgvLocal[rampVertex*2-i-1].x;
-            rgv3D[3].y = rgvLocal[rampVertex*2-i-1].y;
-            rgv3D[3].z = rgheight[i]*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+            rgv3D[3].x = rgvLocal[rampVertex * 2 - i - 1].x;
+            rgv3D[3].y = rgvLocal[rampVertex * 2 - i - 1].y;
+            rgv3D[3].z = rgheight[i] * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
             rgv3D[2].x = rgv3D[3].x;
             rgv3D[2].y = rgv3D[3].y;
@@ -2285,7 +2315,7 @@ void Ramp::GenerateVertexBuffer(RenderDevice* pd3dDevice)
 
             rgv3D[1].x = rgv3D[0].x;
             rgv3D[1].y = rgv3D[0].y;
-            rgv3D[1].z = (rgheight[i+1] + m_d.m_leftwallheightvisible)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+            rgv3D[1].z = (rgheight[i + 1] + m_d.m_leftwallheightvisible)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
             if (pin && m_d.m_fImageWalls)
             {
@@ -2301,7 +2331,7 @@ void Ramp::GenerateVertexBuffer(RenderDevice* pd3dDevice)
                     rgv3D[0].tu = 0;
                     rgv3D[0].tv = rgratio[i];
                     rgv3D[2].tu = 0;
-                    rgv3D[2].tv = rgratio[i+1];
+                    rgv3D[2].tv = rgratio[i + 1];
                 }
 
                 rgv3D[1].tu = rgv3D[0].tu;
@@ -2311,28 +2341,51 @@ void Ramp::GenerateVertexBuffer(RenderDevice* pd3dDevice)
             }
 
         }
-        SetNormal( rgvbuf, &rgibuf[0], (rampVertex-1)*6);
-        memcpy( &buf[offset], &rgvbuf[0], sizeof(Vertex3D_NoTex2)*m_numVertices );
-        offset+=m_numVertices;
+        SetNormal(m_vertBuffer, &m_meshIndices[0], (rampVertex - 1) * 6);
+        memcpy(&buf[offset], &m_vertBuffer[0], sizeof(Vertex3D_NoTex2)*m_numVertices);
+        offset += m_numVertices;
 
         // Flip Normals and redraw
-        for (int i=0;i<(rampVertex-1);i++)
+        for (int i = 0; i < (rampVertex - 1); i++)
         {
-            for(int j = 0; j < 4; ++j) {
-                rgvbuf[i*4+j].nx = -rgvbuf[i*4+j].nx;
-                rgvbuf[i*4+j].ny = -rgvbuf[i*4+j].ny;
-                rgvbuf[i*4+j].nz = -rgvbuf[i*4+j].nz;
+            for (int j = 0; j < 4; ++j) {
+                m_vertBuffer[i * 4 + j].nx = -m_vertBuffer[i * 4 + j].nx;
+                m_vertBuffer[i * 4 + j].ny = -m_vertBuffer[i * 4 + j].ny;
+                m_vertBuffer[i * 4 + j].nz = -m_vertBuffer[i * 4 + j].nz;
             }
         }
-        memcpy( &buf[offset], &rgvbuf[0], sizeof(Vertex3D_NoTex2)*m_numVertices );
+        memcpy(&buf[offset], &m_vertBuffer[0], sizeof(Vertex3D_NoTex2)*m_numVertices);
     }
 
+    delete[] m_vertBuffer;
+    delete[] rgvLocal;
+    delete[] rgheight;
+    delete[] rgratio;
+}
+
+void Ramp::GenerateVertexBuffer(RenderDevice* pd3dDevice)
+{
+    dynamicVertexBufferRegenerate = false;
+
+    Vertex3D_NoTex2 *tmpBuffer=NULL;
+    GenerateRampMesh(&tmpBuffer);
+
+    if (dynamicVertexBuffer)
+        dynamicVertexBuffer->release();
+
+    pd3dDevice->CreateVertexBuffer(m_numVertices*5, 0, MY_D3DFVF_NOTEX2_VERTEX, &dynamicVertexBuffer);
+
+    Vertex3D_NoTex2 *buf;
+    dynamicVertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY);
+    memcpy(&buf[0], &tmpBuffer[0], sizeof(Vertex3D_NoTex2)*m_numVertices*5);
     dynamicVertexBuffer->unlock();
 
-    delete [] rgvbuf;
-    delete [] rgvLocal;
-    delete [] rgheight;
-    delete [] rgratio;
+    if (dynamicIndexBuffer)
+        dynamicIndexBuffer->release();
+
+    dynamicIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer( m_meshIndices );
+    delete[] tmpBuffer;
+
 }
 
 void Ramp::UpdatePropertyPanes()

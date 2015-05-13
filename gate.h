@@ -97,6 +97,8 @@ DECLARE_REGISTRY_RESOURCEID(IDR_GATE)
 	void WriteRegDefaults();
     void UpdateWire( RenderDevice *pd3dDevice );
     void RenderObject( RenderDevice* pd3dDevice);
+    void GenerateBracketMesh(Vertex3D_NoTex2 *buf);
+    void GenerateWireMesh(Vertex3D_NoTex2 *buf);
 
 	PinTable *m_ptable;
 
@@ -105,6 +107,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_GATE)
 private:
 	LineSeg *m_plineseg;
 	HitGate *m_phitgate;
+    Matrix3D fullMatrix;
 
    float m_posZ;        // z coordinate for rendering
 

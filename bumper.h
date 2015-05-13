@@ -151,6 +151,10 @@ private:
     void RenderCap(RenderDevice *pd3dDevice, const Material * const capMaterial );
     void RenderSocket(RenderDevice *pd3dDevice, const Material * const baseMaterial );
     void UpdateRing(RenderDevice *pd3dDevice );
+    void GenerateBaseMesh(Vertex3D_NoTex2 *buf);
+    void GenerateSocketMesh(Vertex3D_NoTex2 *buf);
+    void GenerateRingMesh(Vertex3D_NoTex2 *buf);
+    void GenerateCapMesh(Vertex3D_NoTex2 *buf);
 
     VertexBuffer *baseVertexBuffer;
     IndexBuffer *baseIndexBuffer;
