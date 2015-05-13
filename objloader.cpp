@@ -308,6 +308,58 @@ void WaveFrontObj_GetIndices( std::vector<unsigned int>& list ) // clears tempor
    faces.clear();
 }
 
+FILE* WaveFrontObj_ExportStart(const char *filename)
+{
+    FILE *f;
+    fopen_s(&f, filename, "wt");
+    if (!f)
+        return 0;
+    fprintf_s(f, "# Visual Pinball table OBJ file\n");
+    return f;
+}
+
+void WaveFrontObj_WriteObjectName(FILE *f, const char *objname)
+{
+    fprintf_s(f, "o %s\n",objname);
+}
+
+void WaveFrontObj_WriteVertexInfo(FILE *f, const Vertex3D_NoTex2 *verts, unsigned int numVerts)
+{
+    for (unsigned i = 0; i < numVerts; i++)
+    {
+        fprintf_s(f, "v %f %f %f\n", verts[i].x, verts[i].y, -verts[i].z);
+    }
+    for (unsigned i = 0; i < numVerts; i++)
+    {
+        fprintf_s(f, "vn %f %f %f\n", verts[i].nx, verts[i].ny, verts[i].nz);
+    }
+    for (unsigned i = 0; i < numVerts; i++)
+    {
+        float tv = 1.f - verts[i].tv;
+        fprintf_s(f, "vt %f %f\n", verts[i].tu, tv);
+    }
+}
+
+void WaveFrontObj_WriteFaceInfo(FILE *f, const std::vector<WORD> &faces)
+{
+    for (unsigned i = 0; i < faces.size(); i += 3)
+    {
+        fprintf_s(f, "f %u/%u/%u %u/%u/%u %u/%u/%u\n", faces[i + 2] + 1, faces[i + 2] + 1, faces[i + 2] + 1
+                                                     , faces[i + 1] + 1, faces[i + 1] + 1, faces[i + 1] + 1
+                                                     , faces[i] + 1, faces[i] + 1, faces[i] + 1);
+    }
+}
+
+void WaveFrontObj_WriteFaceInfoLong(FILE *f, const std::vector<unsigned int> &faces)
+{
+    for (unsigned i = 0; i < faces.size(); i += 3)
+    {
+        fprintf_s(f, "f %u/%u/%u %u/%u/%u %u/%u/%u\n", faces[i + 2] + 1, faces[i + 2] + 1, faces[i + 2] + 1
+                                                     , faces[i + 1] + 1, faces[i + 1] + 1, faces[i + 1] + 1
+                                                     , faces[i] + 1, faces[i] + 1, faces[i] + 1);
+    }
+}
+
 // exporting a mesh to a Wavefront .OBJ file. The mesh is converted into right-handed coordinate system (VP uses left-handed)
 void WaveFrontObj_Save(const char *filename, const char *description, const Mesh& mesh)
 {
@@ -346,26 +398,8 @@ void WaveFrontObj_Save(const char *filename, const char *description, const Mesh
 */
    fprintf_s(f,"# Visual Pinball OBJ file\n");
    fprintf_s(f,"# numVerts: %u numFaces: %u\n", mesh.NumVertices(), mesh.NumIndices() );
-   fprintf_s(f,"o %s\n", description );
-   for( unsigned i=0; i<mesh.NumVertices(); i++ )
-   {
-      fprintf_s(f,"v %f %f %f\n", mesh.m_vertices[i].x, mesh.m_vertices[i].y, -mesh.m_vertices[i].z );
-   }
-   for( unsigned i=0; i<mesh.NumVertices(); i++ )
-   {
-      fprintf_s(f,"vn %f %f %f\n",mesh.m_vertices[i].nx, mesh.m_vertices[i].ny, mesh.m_vertices[i].nz );
-   }
-   for( unsigned i=0; i<mesh.NumVertices(); i++ )
-   {
-      float tv = 1.f-mesh.m_vertices[i].tv;
-      fprintf_s(f,"vt %f %f\n", mesh.m_vertices[i].tu, tv );
-   }
-
-   for( unsigned i=0; i<mesh.NumIndices(); i+=3 )
-   {
-      fprintf_s(f,"f %u/%u/%u %u/%u/%u %u/%u/%u\n", mesh.m_indices[i+2]+1, mesh.m_indices[i+2]+1, mesh.m_indices[i+2]+1
-                                                  , mesh.m_indices[i+1]+1, mesh.m_indices[i+1]+1, mesh.m_indices[i+1]+1
-                                                  , mesh.m_indices[i  ]+1, mesh.m_indices[i  ]+1, mesh.m_indices[i  ]+1 );
-   }
+   WaveFrontObj_WriteObjectName(f, description);
+   WaveFrontObj_WriteVertexInfo(f, mesh.m_vertices.data(), mesh.m_vertices.size());
+   WaveFrontObj_WriteFaceInfoLong(f, mesh.m_indices);
    fclose(f);
 }

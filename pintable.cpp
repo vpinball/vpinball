@@ -18,7 +18,6 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 #define TIMER_ID_CLOSE_TABLE 12346
 
 
-
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
@@ -4991,6 +4990,28 @@ void PinTable::ExportBlueprint()
    CloseHandle(hfile);
 }
 
+void PinTable::ExportTableMesh()
+{
+    OPENFILENAME ofn;
+    ZeroMemory(&ofn, sizeof(OPENFILENAME));
+    ofn.lStructSize = sizeof(OPENFILENAME);
+    ofn.hInstance = g_hinst;
+    ofn.hwndOwner = g_pvp->m_hwnd;
+    // TEXT
+    ofn.lpstrFilter = "Wavefront obj(*.obj)\0*.obj\0";
+    ofn.lpstrFile = m_szObjFileName;
+    ofn.nMaxFile = _MAX_PATH;
+    ofn.lpstrDefExt = "obj";
+    ofn.Flags = OFN_OVERWRITEPROMPT;
+
+    int ret = GetSaveFileName(&ofn);
+
+    // user cancelled
+    if (ret == 0)
+        return;// S_FALSE;
+    
+    // to be continued...;)
+}
 
 void PinTable::SelectItem(IScriptable *piscript)
 {

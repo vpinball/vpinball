@@ -299,6 +299,8 @@ public:
 	void Paste(BOOL fAtLocation, int x, int y);
 
 	void ExportBlueprint();
+    void ExportTableMesh();
+
 
 	//void FireVoidEvent(int dispid);
 	void FireKeyEvent(int dispid, int keycode);
@@ -517,6 +519,7 @@ END_CONNECTION_POINT_MAP()
     void LockElements();
     char m_szFileName[_MAX_PATH];
 	char m_szBlueprintFileName[_MAX_PATH];
+    char m_szObjFileName[_MAX_PATH];
 	char m_szTitle[1024];
 
 	HWND m_hwnd;
