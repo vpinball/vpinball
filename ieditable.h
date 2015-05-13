@@ -182,6 +182,7 @@ public:
 	virtual void PreRender(Sur * const psur) = 0;
 	virtual void Render(Sur * const psur) = 0;
 	virtual void RenderBlueprint(Sur *psur);
+    virtual void ExportMesh() {}
 	
 	virtual ULONG STDMETHODCALLTYPE AddRef() = 0;
 	virtual ULONG STDMETHODCALLTYPE Release() = 0;
