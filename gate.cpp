@@ -470,9 +470,50 @@ void Gate::PostRenderStatic(RenderDevice* pd3dDevice)
     RenderObject(pd3dDevice);
 }
 
-void Gate::RenderSetup(RenderDevice* pd3dDevice)
+void Gate::GenerateBracketMesh(Vertex3D_NoTex2 *buf)
+{
+    for (int i = 0; i < gateBracketNumVertices; i++)
+    {
+        Vertex3Ds vert(gateBracket[i].x, gateBracket[i].y, gateBracket[i].z);
+        vert = fullMatrix.MultiplyVector(vert);
+
+        buf[i].x = vert.x*m_d.m_length + m_d.m_vCenter.x;
+        buf[i].y = vert.y*m_d.m_length + m_d.m_vCenter.y;
+        buf[i].z = vert.z*m_d.m_length*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_d.m_height + baseHeight;
+        vert = Vertex3Ds(gateBracket[i].nx, gateBracket[i].ny, gateBracket[i].nz);
+        vert = fullMatrix.MultiplyVectorNoTranslate(vert);
+        buf[i].nx = vert.x;
+        buf[i].ny = vert.y;
+        buf[i].nz = vert.z;
+        buf[i].tu = gateBracket[i].tu;
+        buf[i].tv = gateBracket[i].tv;
+    }
+}
+
+void Gate::GenerateWireMesh(Vertex3D_NoTex2 *buf)
 {
     baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
+
+    for (int i = 0; i < gateWireNumVertices; i++)
+    {
+        Vertex3Ds vert(gateWire[i].x, gateWire[i].y, gateWire[i].z);
+        vert = fullMatrix.MultiplyVector(vert);
+
+        buf[i].x = vert.x*m_d.m_length + m_d.m_vCenter.x;
+        buf[i].y = vert.y*m_d.m_length + m_d.m_vCenter.y;
+        buf[i].z = vert.z*m_d.m_length*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_d.m_height + baseHeight;
+        vert = Vertex3Ds(gateWire[i].nx, gateWire[i].ny, gateWire[i].nz);
+        vert = fullMatrix.MultiplyVectorNoTranslate(vert);
+        buf[i].nx = vert.x;
+        buf[i].ny = vert.y;
+        buf[i].nz = vert.z;
+        buf[i].tu = gateWire[i].tu;
+        buf[i].tv = gateWire[i].tv;
+    }
+}
+
+void Gate::RenderSetup(RenderDevice* pd3dDevice)
+{
 
     if (bracketIndexBuffer)
         bracketIndexBuffer->release();
@@ -482,27 +523,11 @@ void Gate::RenderSetup(RenderDevice* pd3dDevice)
 		bracketVertexBuffer->release();
     pd3dDevice->CreateVertexBuffer(gateBracketNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &bracketVertexBuffer);
 
-    Matrix3D fullMatrix;
     fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotation));
 
     Vertex3D_NoTex2 *buf;
     bracketVertexBuffer->lock(0, 0, (void**)&buf, 0);
-    for( int i=0;i<gateBracketNumVertices;i++ )
-    {
-        Vertex3Ds vert(gateBracket[i].x,gateBracket[i].y,gateBracket[i].z);
-        vert = fullMatrix.MultiplyVector(vert);
-
-        buf[i].x = vert.x*m_d.m_length+m_d.m_vCenter.x;
-        buf[i].y = vert.y*m_d.m_length+m_d.m_vCenter.y;
-        buf[i].z = vert.z*m_d.m_length*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_d.m_height + baseHeight;
-        vert = Vertex3Ds( gateBracket[i].nx, gateBracket[i].ny, gateBracket[i].nz );
-        vert = fullMatrix.MultiplyVectorNoTranslate(vert);
-        buf[i].nx = vert.x;
-        buf[i].ny = vert.y;
-        buf[i].nz = vert.z;
-        buf[i].tu = gateBracket[i].tu;
-        buf[i].tv = gateBracket[i].tv;
-    }
+    GenerateBracketMesh(buf);
     bracketVertexBuffer->unlock();
 
     if (wireIndexBuffer)
@@ -514,22 +539,7 @@ void Gate::RenderSetup(RenderDevice* pd3dDevice)
     pd3dDevice->CreateVertexBuffer(gateWireNumVertices, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &wireVertexBuffer);
 
     wireVertexBuffer->lock(0, 0, (void**)&buf, 0);
-    for( int i=0;i<gateWireNumVertices;i++ )
-    {
-        Vertex3Ds vert(gateWire[i].x,gateWire[i].y,gateWire[i].z);
-        vert = fullMatrix.MultiplyVector(vert);
-
-        buf[i].x = vert.x*m_d.m_length+m_d.m_vCenter.x;
-        buf[i].y = vert.y*m_d.m_length+m_d.m_vCenter.y;
-        buf[i].z = vert.z*m_d.m_length*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_d.m_height + baseHeight;
-        vert = Vertex3Ds( gateWire[i].nx, gateWire[i].ny, gateWire[i].nz );
-        vert = fullMatrix.MultiplyVectorNoTranslate(vert);
-        buf[i].nx = vert.x;
-        buf[i].ny = vert.y;
-        buf[i].nz = vert.z;
-        buf[i].tu = gateWire[i].tu;
-        buf[i].tv = gateWire[i].tv;
-    }
+    GenerateWireMesh(buf);
     wireVertexBuffer->unlock();
 }
 

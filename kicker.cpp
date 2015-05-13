@@ -206,6 +206,54 @@ void Kicker::PostRenderStatic(RenderDevice* pd3dDevice)
 {
 }
 
+void Kicker::GenerateCupMesh(Vertex3D_NoTex2 *buf)
+{
+    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+    Matrix3D fullMatrix;
+    fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_orientation));
+
+    for (int i = 0; i < kickerCupNumVertices; i++)
+    {
+        Vertex3Ds vert(kickerCup[i].x, kickerCup[i].y, kickerCup[i].z);
+        vert = fullMatrix.MultiplyVector(vert);
+
+        buf[i].x = vert.x*m_d.m_radius + m_d.m_vCenter.x;
+        buf[i].y = vert.y*m_d.m_radius + m_d.m_vCenter.y;
+        buf[i].z = vert.z*m_d.m_radius*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + height;
+        vert = Vertex3Ds(kickerCup[i].nx, kickerCup[i].ny, kickerCup[i].nz);
+        vert = fullMatrix.MultiplyVectorNoTranslate(vert);
+        buf[i].nx = vert.x;
+        buf[i].ny = vert.y;
+        buf[i].nz = vert.z;
+        buf[i].tu = kickerCup[i].tu;
+        buf[i].tv = kickerCup[i].tv;
+    }
+}
+
+void Kicker::GenerateHoleMesh(Vertex3D_NoTex2 *buf)
+{
+    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+    Matrix3D fullMatrix;
+    fullMatrix.RotateZMatrix(ANGTORAD(0));
+
+    for (unsigned int i = 0; i < numVertices; i++)
+    {
+        Vertex3Ds vert(kickerHole[i].x, kickerHole[i].y, kickerHole[i].z);
+        vert = fullMatrix.MultiplyVector(vert);
+
+        buf[i].x = vert.x*(m_d.m_radius + 0.5f) + m_d.m_vCenter.x;
+        buf[i].y = vert.y*(m_d.m_radius + 0.5f) + m_d.m_vCenter.y;
+        buf[i].z = vert.z*(m_d.m_radius + 0.5f)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + height;
+        vert = Vertex3Ds(kickerHole[i].nx, kickerHole[i].ny, kickerHole[i].nz);
+        vert = fullMatrix.MultiplyVectorNoTranslate(vert);
+        buf[i].nx = vert.x;
+        buf[i].ny = vert.y;
+        buf[i].nz = vert.z;
+        buf[i].tu = kickerHole[i].tu;
+        buf[i].tv = kickerHole[i].tv;
+    }
+}
+
 void Kicker::RenderSetup(RenderDevice* pd3dDevice)
 {
    if ((m_d.m_kickertype == KickerInvisible) || (m_d.m_kickertype == KickerHidden))
@@ -213,7 +261,6 @@ void Kicker::RenderSetup(RenderDevice* pd3dDevice)
 
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
-   const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
    if( m_d.m_kickertype == KickerCup )
    {
@@ -230,27 +277,9 @@ void Kicker::RenderSetup(RenderDevice* pd3dDevice)
 		  vertexBuffer->release();
 	  pd3dDevice->CreateVertexBuffer(kickerCupNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer);
 
-      Matrix3D fullMatrix;
-      fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_orientation));
-
       Vertex3D_NoTex2 *buf;
       vertexBuffer->lock(0, 0, (void**)&buf, 0);
-      for( int i=0;i<kickerCupNumVertices;i++ )
-      {
-         Vertex3Ds vert(kickerCup[i].x,kickerCup[i].y,kickerCup[i].z);
-         vert = fullMatrix.MultiplyVector(vert);
-
-         buf[i].x = vert.x*m_d.m_radius+m_d.m_vCenter.x;
-         buf[i].y = vert.y*m_d.m_radius+m_d.m_vCenter.y;
-         buf[i].z = vert.z*m_d.m_radius*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + height;
-         vert = Vertex3Ds( kickerCup[i].nx, kickerCup[i].ny, kickerCup[i].nz );
-         vert = fullMatrix.MultiplyVectorNoTranslate(vert);
-         buf[i].nx = vert.x;
-         buf[i].ny = vert.y;
-         buf[i].nz = vert.z;
-         buf[i].tu = kickerCup[i].tu;
-         buf[i].tv = kickerCup[i].tv;
-      }
+      GenerateCupMesh(buf);
       vertexBuffer->unlock();
    }
    else
@@ -269,27 +298,10 @@ void Kicker::RenderSetup(RenderDevice* pd3dDevice)
 		  vertexBuffer->release();
 	  pd3dDevice->CreateVertexBuffer(numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer);
 
-      Matrix3D fullMatrix;
-      fullMatrix.RotateZMatrix(ANGTORAD(0));
 
       Vertex3D_NoTex2 *buf;
       vertexBuffer->lock(0, 0, (void**)&buf, 0);
-      for( unsigned int i=0;i<numVertices;i++ )
-      {
-         Vertex3Ds vert(kickerHole[i].x,kickerHole[i].y,kickerHole[i].z);
-         vert = fullMatrix.MultiplyVector(vert);
-
-         buf[i].x = vert.x*(m_d.m_radius+0.5f)+m_d.m_vCenter.x;
-         buf[i].y = vert.y*(m_d.m_radius+0.5f)+m_d.m_vCenter.y;
-         buf[i].z = vert.z*(m_d.m_radius+0.5f)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + height;
-         vert = Vertex3Ds( kickerHole[i].nx, kickerHole[i].ny, kickerHole[i].nz );
-         vert = fullMatrix.MultiplyVectorNoTranslate(vert);
-         buf[i].nx = vert.x;
-         buf[i].ny = vert.y;
-         buf[i].nz = vert.z;
-         buf[i].tu = kickerHole[i].tu;
-         buf[i].tv = kickerHole[i].tv;
-      }
+      GenerateHoleMesh(buf);
       vertexBuffer->unlock();
    }
 }

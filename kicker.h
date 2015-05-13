@@ -82,6 +82,8 @@ public:
     virtual void SetDefaultPhysics(bool fromMouseClick);
 
     void WriteRegDefaults();
+    void GenerateCupMesh(Vertex3D_NoTex2 *buf);
+    void GenerateHoleMesh(Vertex3D_NoTex2 *buf);
 
     PinTable *m_ptable;
 

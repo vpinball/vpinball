@@ -501,6 +501,89 @@ void Bumper::PostRenderStatic(RenderDevice* pd3dDevice)
    }
 }
 
+void Bumper::GenerateBaseMesh(Vertex3D_NoTex2 *buf)
+{
+    const float scalexy = m_d.m_radius*2.0f;
+    for (int i = 0; i < bumperBaseNumVertices; i++)
+    {
+        Vertex3Ds vert(bumperBase[i].x, bumperBase[i].y, bumperBase[i].z);
+        vert = fullMatrix.MultiplyVector(vert);
+
+        buf[i].x = vert.x*scalexy + m_d.m_vCenter.x;
+        buf[i].y = vert.y*scalexy + m_d.m_vCenter.y;
+        buf[i].z = (vert.z * m_d.m_heightScale + baseHeight)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+        vert = Vertex3Ds(bumperBase[i].nx, bumperBase[i].ny, bumperBase[i].nz);
+        vert = fullMatrix.MultiplyVectorNoTranslate(vert);
+        buf[i].nx = vert.x;
+        buf[i].ny = vert.y;
+        buf[i].nz = vert.z;
+        buf[i].tu = bumperBase[i].tu;
+        buf[i].tv = bumperBase[i].tv;
+    }
+}
+
+void Bumper::GenerateSocketMesh(Vertex3D_NoTex2 *buf)
+{
+    const float scalexy = m_d.m_radius*2.0f;
+    for (int i = 0; i < bumperSocketNumVertices; i++)
+    {
+        Vertex3Ds vert(bumperSocket[i].x, bumperSocket[i].y, bumperSocket[i].z);
+        vert = fullMatrix.MultiplyVector(vert);
+
+        buf[i].x = vert.x*scalexy + m_d.m_vCenter.x;
+        buf[i].y = vert.y*scalexy + m_d.m_vCenter.y;
+        buf[i].z = (vert.z*m_d.m_heightScale + baseHeight)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+        vert = Vertex3Ds(bumperSocket[i].nx, bumperSocket[i].ny, bumperSocket[i].nz);
+        vert = fullMatrix.MultiplyVectorNoTranslate(vert);
+        buf[i].nx = vert.x;
+        buf[i].ny = vert.y;
+        buf[i].nz = vert.z;
+        buf[i].tu = bumperSocket[i].tu;
+        buf[i].tv = bumperSocket[i].tv;
+    }
+}
+
+void Bumper::GenerateRingMesh(Vertex3D_NoTex2 *buf)
+{
+    const float scalexy = m_d.m_radius*2.0f;
+
+    for (int i = 0; i < bumperRingNumVertices; i++)
+    {
+        Vertex3Ds vert(bumperRing[i].x, bumperRing[i].y, bumperRing[i].z);
+        vert = fullMatrix.MultiplyVector(vert);
+        buf[i].x = vert.x*scalexy + m_d.m_vCenter.x;
+        buf[i].y = vert.y*scalexy + m_d.m_vCenter.y;
+        buf[i].z = (vert.z * m_d.m_heightScale + baseHeight)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+        vert = Vertex3Ds(bumperRing[i].nx, bumperRing[i].ny, bumperRing[i].nz);
+        vert = fullMatrix.MultiplyVectorNoTranslate(vert);
+        buf[i].nx = vert.x;
+        buf[i].ny = vert.y;
+        buf[i].nz = vert.z;
+        buf[i].tu = bumperRing[i].tu;
+        buf[i].tv = bumperRing[i].tv;
+    }
+}
+
+void Bumper::GenerateCapMesh(Vertex3D_NoTex2 *buf)
+{
+    const float scalexy = m_d.m_radius*2.0f;
+
+    for (int i = 0; i < bumperCapNumVertices; i++)
+    {
+        Vertex3Ds vert(bumperCap[i].x, bumperCap[i].y, bumperCap[i].z);
+        vert = fullMatrix.MultiplyVector(vert);
+        buf[i].x = vert.x*scalexy + m_d.m_vCenter.x;
+        buf[i].y = vert.y*scalexy + m_d.m_vCenter.y;
+        buf[i].z = (vert.z *m_d.m_heightScale + (baseHeight + m_d.m_heightScale))*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+        vert = Vertex3Ds(bumperCap[i].nx, bumperCap[i].ny, bumperCap[i].nz);
+        vert = fullMatrix.MultiplyVectorNoTranslate(vert);
+        buf[i].nx = vert.x;
+        buf[i].ny = vert.y;
+        buf[i].nz = vert.z;
+        buf[i].tu = bumperCap[i].tu;
+        buf[i].tv = bumperCap[i].tv;
+    }
+}
 void Bumper::RenderSetup(RenderDevice* pd3dDevice )
 {
    m_d.m_time_msec = g_pplayer->m_time_msec;
@@ -508,7 +591,6 @@ void Bumper::RenderSetup(RenderDevice* pd3dDevice )
    //   const float outerradius = m_d.m_radius + m_d.m_overhang;
    baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
-   const float scalexy = m_d.m_radius*2.0f;
    const float scalez = m_d.m_radius*m_d.m_heightScale*2.0f*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
    if ( m_d.m_fBaseVisible )
@@ -529,22 +611,7 @@ void Bumper::RenderSetup(RenderDevice* pd3dDevice )
 
       Vertex3D_NoTex2 *buf;
       baseVertexBuffer->lock(0, 0, (void**)&buf, 0);
-      for( int i=0;i<bumperBaseNumVertices;i++ )
-      {
-         Vertex3Ds vert(bumperBase[i].x,bumperBase[i].y,bumperBase[i].z);
-         vert = fullMatrix.MultiplyVector(vert);
-
-         buf[i].x = vert.x*scalexy+m_d.m_vCenter.x;
-         buf[i].y = vert.y*scalexy+m_d.m_vCenter.y;
-         buf[i].z = (vert.z * m_d.m_heightScale + baseHeight)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
-         vert = Vertex3Ds( bumperBase[i].nx, bumperBase[i].ny, bumperBase[i].nz );
-         vert = fullMatrix.MultiplyVectorNoTranslate(vert);
-         buf[i].nx = vert.x;
-         buf[i].ny = vert.y;
-         buf[i].nz = vert.z;
-         buf[i].tu = bumperBase[i].tu;
-         buf[i].tv = bumperBase[i].tv;
-      }
+      GenerateBaseMesh(buf);
       baseVertexBuffer->unlock();
 
       if (socketIndexBuffer)
@@ -556,22 +623,7 @@ void Bumper::RenderSetup(RenderDevice* pd3dDevice )
       pd3dDevice->CreateVertexBuffer(bumperSocketNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &socketVertexBuffer);
 
       socketVertexBuffer->lock(0, 0, (void**)&buf, 0);
-      for( int i=0;i<bumperSocketNumVertices;i++ )
-      {
-         Vertex3Ds vert(bumperSocket[i].x,bumperSocket[i].y,bumperSocket[i].z);
-         vert = fullMatrix.MultiplyVector(vert);
-
-         buf[i].x = vert.x*scalexy+m_d.m_vCenter.x;
-         buf[i].y = vert.y*scalexy+m_d.m_vCenter.y;
-         buf[i].z = (vert.z*m_d.m_heightScale + baseHeight)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
-         vert = Vertex3Ds( bumperSocket[i].nx, bumperSocket[i].ny, bumperSocket[i].nz );
-         vert = fullMatrix.MultiplyVectorNoTranslate(vert);
-         buf[i].nx = vert.x;
-         buf[i].ny = vert.y;
-         buf[i].nz = vert.z;
-         buf[i].tu = bumperSocket[i].tu;
-         buf[i].tv = bumperSocket[i].tv;
-      }
+      GenerateSocketMesh(buf);
       socketVertexBuffer->unlock();
 
       if (ringIndexBuffer)
@@ -583,21 +635,8 @@ void Bumper::RenderSetup(RenderDevice* pd3dDevice )
       pd3dDevice->CreateVertexBuffer(bumperRingNumVertices, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &ringVertexBuffer);
 
       ringVertices = new Vertex3D_NoTex2[bumperRingNumVertices];
-      for( int i=0;i<bumperRingNumVertices;i++ )
-      {
-         Vertex3Ds vert(bumperRing[i].x,bumperRing[i].y,bumperRing[i].z);
-         vert = fullMatrix.MultiplyVector(vert);
-         ringVertices[i].x = vert.x*scalexy+m_d.m_vCenter.x;
-         ringVertices[i].y = vert.y*scalexy+m_d.m_vCenter.y;
-         ringVertices[i].z = (vert.z * m_d.m_heightScale + baseHeight)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
-         vert = Vertex3Ds( bumperRing[i].nx, bumperRing[i].ny, bumperRing[i].nz );
-         vert = fullMatrix.MultiplyVectorNoTranslate(vert);
-         ringVertices[i].nx = vert.x;
-         ringVertices[i].ny = vert.y;
-         ringVertices[i].nz = vert.z;
-         ringVertices[i].tu = bumperRing[i].tu;
-         ringVertices[i].tv = bumperRing[i].tv;
-      }
+      GenerateRingMesh(ringVertices);
+
       ringVertexBuffer->lock(0, 0, (void**)&buf, 0);
       memcpy( buf, ringVertices, bumperRingNumVertices*sizeof(Vertex3D_NoTex2));
       ringVertexBuffer->unlock();
@@ -617,21 +656,7 @@ void Bumper::RenderSetup(RenderDevice* pd3dDevice )
 
       Vertex3D_NoTex2 *buf;
       capVertexBuffer->lock(0, 0, (void**)&buf, 0);
-      for( int i=0;i<bumperCapNumVertices;i++ )
-      {
-         Vertex3Ds vert(bumperCap[i].x,bumperCap[i].y,bumperCap[i].z);
-         vert = fullMatrix.MultiplyVector(vert);
-         buf[i].x = vert.x*scalexy+m_d.m_vCenter.x;
-         buf[i].y = vert.y*scalexy+m_d.m_vCenter.y;
-         buf[i].z = (vert.z *m_d.m_heightScale + (baseHeight + m_d.m_heightScale))*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
-         vert = Vertex3Ds( bumperCap[i].nx, bumperCap[i].ny, bumperCap[i].nz );
-         vert = fullMatrix.MultiplyVectorNoTranslate(vert);
-         buf[i].nx = vert.x;
-         buf[i].ny = vert.y;
-         buf[i].nz = vert.z;
-         buf[i].tu = bumperCap[i].tu;
-         buf[i].tv = bumperCap[i].tv;
-      }
+      GenerateCapMesh(buf);
       capVertexBuffer->unlock();
    }
 
