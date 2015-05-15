@@ -237,6 +237,7 @@ public:
 
    virtual void UpdatePropertyPanes();
    virtual void SetDefaultPhysics(bool fromMouseClick);
+   virtual void ExportMesh(FILE *f);
 
    void    CreateRenderGroup(Collection *collection, RenderDevice *pd3dDevice);
    void    RecalculateMatrices();

@@ -13,6 +13,7 @@ static vector<Vertex2D> tmpTexel;
 static vector<MyPoly> tmpFaces;
 static vector<Vertex3D_NoTex2> verts;
 static vector<int> faces;
+static unsigned int faceIndexOffset = 0;
 
 static int isInList( const int vi, const int ti, const int ni )
 {
@@ -314,8 +315,19 @@ FILE* WaveFrontObj_ExportStart(const char *filename)
     fopen_s(&f, filename, "wt");
     if (!f)
         return 0;
+    faceIndexOffset = 0;
     fprintf_s(f, "# Visual Pinball table OBJ file\n");
     return f;
+}
+
+void WaveFrontObj_ExportEnd(FILE *f)
+{
+   fclose(f);
+}
+
+void WaveFrontObj_UpdateFaceOffset(unsigned int numVertices)
+{
+   faceIndexOffset += numVertices;
 }
 
 void WaveFrontObj_WriteObjectName(FILE *f, const char *objname)
@@ -331,12 +343,12 @@ void WaveFrontObj_WriteVertexInfo(FILE *f, const Vertex3D_NoTex2 *verts, unsigne
     }
     for (unsigned i = 0; i < numVerts; i++)
     {
-        fprintf_s(f, "vn %f %f %f\n", verts[i].nx, verts[i].ny, verts[i].nz);
+        float tv = 1.f - verts[i].tv;
+        fprintf_s(f, "vt %f %f\n", verts[i].tu, tv);
     }
     for (unsigned i = 0; i < numVerts; i++)
     {
-        float tv = 1.f - verts[i].tv;
-        fprintf_s(f, "vt %f %f\n", verts[i].tu, tv);
+       fprintf_s(f, "vn %f %f %f\n", verts[i].nx, verts[i].ny, -verts[i].nz);
     }
 }
 
@@ -344,19 +356,30 @@ void WaveFrontObj_WriteFaceInfo(FILE *f, const std::vector<WORD> &faces)
 {
     for (unsigned i = 0; i < faces.size(); i += 3)
     {
-        fprintf_s(f, "f %u/%u/%u %u/%u/%u %u/%u/%u\n", faces[i + 2] + 1, faces[i + 2] + 1, faces[i + 2] + 1
-                                                     , faces[i + 1] + 1, faces[i + 1] + 1, faces[i + 1] + 1
-                                                     , faces[i] + 1, faces[i] + 1, faces[i] + 1);
+       fprintf_s(f, "f %u/%u/%u %u/%u/%u %u/%u/%u\n", faces[i + 2] + 1 + faceIndexOffset, faces[i + 2] + 1 + faceIndexOffset, faces[i + 2] + 1 + faceIndexOffset
+                                                    , faces[i + 1] + 1 + faceIndexOffset, faces[i + 1] + 1 + faceIndexOffset, faces[i + 1] + 1 + faceIndexOffset
+                                                    , faces[i    ] + 1 + faceIndexOffset, faces[i    ] + 1 + faceIndexOffset, faces[i    ] + 1 + faceIndexOffset);
     }
+}
+
+void WaveFrontObj_WriteFaceInfoList(FILE *f, const WORD *faces, unsigned int numFaces)
+{
+   fprintf_s(f, "s 1\n");
+   for (unsigned i = 0; i < numFaces; i += 3)
+   {
+      fprintf_s(f, "f %u/%u/%u %u/%u/%u %u/%u/%u\n", faces[i + 2] + 1 + faceIndexOffset, faces[i + 2] + 1 + faceIndexOffset, faces[i + 2] + 1 + faceIndexOffset
+                                                   , faces[i + 1] + 1 + faceIndexOffset, faces[i + 1] + 1 + faceIndexOffset, faces[i + 1] + 1 + faceIndexOffset
+                                                   , faces[i] + 1 + faceIndexOffset, faces[i] + 1 + faceIndexOffset, faces[i] + 1 + faceIndexOffset);
+   }
 }
 
 void WaveFrontObj_WriteFaceInfoLong(FILE *f, const std::vector<unsigned int> &faces)
 {
     for (unsigned i = 0; i < faces.size(); i += 3)
     {
-        fprintf_s(f, "f %u/%u/%u %u/%u/%u %u/%u/%u\n", faces[i + 2] + 1, faces[i + 2] + 1, faces[i + 2] + 1
-                                                     , faces[i + 1] + 1, faces[i + 1] + 1, faces[i + 1] + 1
-                                                     , faces[i] + 1, faces[i] + 1, faces[i] + 1);
+       fprintf_s(f, "f %u/%u/%u %u/%u/%u %u/%u/%u\n", faces[i + 2] + 1 + faceIndexOffset, faces[i + 2] + 1 + faceIndexOffset, faces[i + 2] + 1 + faceIndexOffset
+                                                    , faces[i + 1] + 1 + faceIndexOffset, faces[i + 1] + 1 + faceIndexOffset, faces[i + 1] + 1 + faceIndexOffset
+                                                    , faces[i] + 1 + faceIndexOffset, faces[i] + 1 + faceIndexOffset, faces[i] + 1 + faceIndexOffset);
     }
 }
 

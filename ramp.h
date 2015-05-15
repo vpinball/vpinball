@@ -116,6 +116,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_RAMP)
 	virtual unsigned long long GetMaterialID() { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
     virtual void UpdatePropertyPanes();
     virtual void SetDefaultPhysics(bool fromMouseClick);
+    virtual void ExportMesh(FILE *f);
 
 	void WriteRegDefaults();
 

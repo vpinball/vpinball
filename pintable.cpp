@@ -4,6 +4,7 @@
 #include "hash.h"
 #include <algorithm>
 #include <atlsafe.h>
+#include "objloader.h"
 
 #define HASHLENGTH 16
 
@@ -5006,11 +5007,27 @@ void PinTable::ExportTableMesh()
 
     int ret = GetSaveFileName(&ofn);
 
-    // user cancelled
+    // user canceled
     if (ret == 0)
         return;// S_FALSE;
-    
-    // to be continued...;)
+
+   FILE *f = WaveFrontObj_ExportStart(m_szObjFileName);
+   if (f == NULL)
+   {
+      ShowError("Unable to create obj file!");
+      return;
+   }
+   for (int i = 0; i < m_vedit.Size(); i++)
+    {
+       IEditable *ptr = m_vedit.ElementAt(i);
+       if (ptr->m_isVisible && ptr->m_fBackglass == g_pvp->m_fBackglassView)
+       {
+          ptr->ExportMesh(f);
+       }
+    }
+   WaveFrontObj_ExportEnd(f);
+   MessageBox(NULL, "Export finished!", "Info", MB_OK | MB_ICONEXCLAMATION);
+
 }
 
 void PinTable::SelectItem(IScriptable *piscript)

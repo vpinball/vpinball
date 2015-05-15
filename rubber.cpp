@@ -1,5 +1,6 @@
 #include "StdAfx.h"
 #include "forsyth.h"
+#include "objloader.h"
 
 Rubber::Rubber()
 {
@@ -1413,6 +1414,19 @@ void Rubber::PostRenderStatic(RenderDevice* pd3dDevice)
       RenderObject(pd3dDevice);
 }
 
+void Rubber::ExportMesh(FILE *f)
+{
+   char name[MAX_PATH];
+   if ( m_d.m_fVisible )
+   {
+      WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, MAX_PATH, NULL, NULL);
+      GenerateMesh();
+      WaveFrontObj_WriteObjectName(f, name);
+      WaveFrontObj_WriteVertexInfo(f, m_vertices.data(), m_numVertices);
+      WaveFrontObj_WriteFaceInfo(f, ringIndices);
+      WaveFrontObj_UpdateFaceOffset(m_numVertices);
+   }
+}
 void Rubber::GenerateMesh(int _accuracy)
 {
     int accuracy = 1;
