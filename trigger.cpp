@@ -1,4 +1,5 @@
 #include "StdAfx.h"
+#include "objloader.h"
 #include "meshes/triggerSimpleMesh.h"
 #include "meshes/triggerStarMesh.h"
 
@@ -604,6 +605,21 @@ void Trigger::PostRenderStatic(RenderDevice* pd3dDevice)
     pd3dDevice->basicShader->End();
 }
 
+void Trigger::ExportMesh(FILE *f)
+{
+   char name[MAX_PATH];
+
+   if (!m_d.m_fVisible || m_d.m_shape == TriggerNone)
+      return;
+
+   WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, MAX_PATH, NULL, NULL);
+   GenerateMesh();
+   WaveFrontObj_WriteObjectName(f, name);
+   WaveFrontObj_WriteVertexInfo(f, triggerVertices, m_numVertices);
+   WaveFrontObj_WriteFaceInfoList(f, m_d.m_shape == TriggerWire ? triggerSimpleIndices : triggerStarIndices, m_numFaces);
+   WaveFrontObj_UpdateFaceOffset(m_numVertices);
+
+}
 void Trigger::GenerateMesh()
 {
     const float baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
