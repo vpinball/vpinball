@@ -96,6 +96,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_TRIGGER)
 	virtual void GetPointCenter(Vertex2D * const pv) const ;
 	virtual void PutPointCenter(const Vertex2D * const pv);
     virtual void UpdatePropertyPanes();
+    virtual void ExportMesh(FILE *f);
 
 	void CurvesToShapes(Vector<HitObject> * const pvho);
 	void AddLine(Vector<HitObject> * const pvho, const RenderVertex * const pv1, const RenderVertex * const pv2, const RenderVertex * const pv3, const float height);
