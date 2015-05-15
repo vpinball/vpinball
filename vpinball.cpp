@@ -2832,10 +2832,13 @@ INT_PTR CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                lvitem.iSubItem = 0;
                ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
                Texture * const ppi = (Texture *)lvitem.lParam;
-               lstrcpy(ppi->m_szName, pinfo->item.pszText);
-               lstrcpy(ppi->m_szInternalName, pinfo->item.pszText);
-               CharLowerBuff(ppi->m_szInternalName, lstrlen(ppi->m_szInternalName));
-               pt->SetNonUndoableDirty(eSaveDirty);
+               if ( ppi!=NULL )
+               {
+                  lstrcpy(ppi->m_szName, pinfo->item.pszText);
+                  lstrcpy(ppi->m_szInternalName, pinfo->item.pszText);
+                  CharLowerBuff(ppi->m_szInternalName, lstrlen(ppi->m_szInternalName));
+                  pt->SetNonUndoableDirty(eSaveDirty);
+               }
                return TRUE;
             }
             break;
@@ -2853,9 +2856,12 @@ INT_PTR CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                        lvitem.iSubItem = 0;
                        ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
                        Texture * const ppi = (Texture *)lvitem.lParam;
-                       char textBuf[256];
-                       sprintf_s(textBuf,"%i",(int)ppi->m_alphaTestValue);
-                       SetDlgItemText(hwndDlg, IDC_ALPHA_MASK_EDIT, textBuf);
+                       if (ppi != NULL)
+                       {
+                          char textBuf[256];
+                          sprintf_s(textBuf, "%i", (int)ppi->m_alphaTestValue);
+                          SetDlgItemText(hwndDlg, IDC_ALPHA_MASK_EDIT, textBuf);
+                       }
                    }
                    InvalidateRect(GetDlgItem(hwndDlg, IDC_PICTUREPREVIEW), NULL, fTrue);
                 }
@@ -2872,14 +2878,17 @@ INT_PTR CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                 lvitem.iSubItem = 0;
                 ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
                 Texture * const ppi = (Texture *)lvitem.lParam;
-                char textBuf[64];
-                GetDlgItemText(hwndDlg, IDC_ALPHA_MASK_EDIT, textBuf, 32);
-                ppi->m_alphaTestValue = sz2f(textBuf);
+                if (ppi != NULL)
+                {
+                   char textBuf[64];
+                   GetDlgItemText(hwndDlg, IDC_ALPHA_MASK_EDIT, textBuf, 32);
+                   ppi->m_alphaTestValue = sz2f(textBuf);
 
-                const int count = ListView_GetSelectedCount(GetDlgItem(hwndDlg, IDC_SOUNDLIST));
-               const int fEnable = !(count > 1);
-               EnableWindow(GetDlgItem(hwndDlg, IDC_REIMPORTFROM), fEnable);
-               EnableWindow(GetDlgItem(hwndDlg, IDC_RENAME), fEnable);
+                   const int count = ListView_GetSelectedCount(GetDlgItem(hwndDlg, IDC_SOUNDLIST));
+                   const int fEnable = !(count > 1);
+                   EnableWindow(GetDlgItem(hwndDlg, IDC_REIMPORTFROM), fEnable);
+                   EnableWindow(GetDlgItem(hwndDlg, IDC_RENAME), fEnable);
+                }
                //EnableWindow(GetDlgItem(hwndDlg, IDC_EXPORT), fEnable);
             }
             break;
@@ -2899,36 +2908,38 @@ INT_PTR CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
             lvitem.iSubItem = 0;
             ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
             Texture * const ppi = (Texture *)lvitem.lParam;
-
-            RECT rcClient;
-            GetWindowRect(pdis->hwndItem , &rcClient);
-
-            const int xsize = rcClient.right - rcClient.left;
-            const int ysize = rcClient.bottom - rcClient.top;
-
-            const float controlaspect = (float)xsize/(float)ysize;
-            const float aspect = (float)ppi->m_width/(float)ppi->m_height;
-
-            int width, height;
-            if (aspect > controlaspect)
+            if (ppi != NULL)
             {
-               width = xsize;
-               height = (int)(xsize/aspect);
-            }
-            else
-            {
-               height = ysize;
-               width = (int)(ysize*aspect);
-            }
+               RECT rcClient;
+               GetWindowRect(pdis->hwndItem, &rcClient);
 
-            const int x = (xsize - width) / 2;
-            const int y = (ysize - height) / 2;
+               const int xsize = rcClient.right - rcClient.left;
+               const int ysize = rcClient.bottom - rcClient.top;
 
-            HDC hdcDD;
-            ppi->GetTextureDC(&hdcDD);
-			SetStretchBltMode(pdis->hDC, HALFTONE); // somehow enables filtering
-            StretchBlt(pdis->hDC, x, y, width, height, hdcDD, 0, 0, ppi->m_width, ppi->m_height, SRCCOPY);
-            ppi->ReleaseTextureDC(hdcDD);
+               const float controlaspect = (float)xsize / (float)ysize;
+               const float aspect = (float)ppi->m_width / (float)ppi->m_height;
+
+               int width, height;
+               if (aspect > controlaspect)
+               {
+                  width = xsize;
+                  height = (int)(xsize / aspect);
+               }
+               else
+               {
+                  height = ysize;
+                  width = (int)(ysize*aspect);
+               }
+
+               const int x = (xsize - width) / 2;
+               const int y = (ysize - height) / 2;
+
+               HDC hdcDD;
+               ppi->GetTextureDC(&hdcDD);
+               SetStretchBltMode(pdis->hDC, HALFTONE); // somehow enables filtering
+               StretchBlt(pdis->hDC, x, y, width, height, hdcDD, 0, 0, ppi->m_width, ppi->m_height, SRCCOPY);
+               ppi->ReleaseTextureDC(hdcDD);
+            }
          }
          else
          {
@@ -2982,10 +2993,13 @@ INT_PTR CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                          lvitem.iSubItem = 0;
                          ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
                          Texture * const ppi = (Texture *)lvitem.lParam;
-                         char textBuf[64];
-                         GetDlgItemText(hwndDlg, IDC_ALPHA_MASK_EDIT, textBuf, 32);
-                         ppi->m_alphaTestValue = sz2f(textBuf);
-                         sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), sel, LVNI_SELECTED);
+                         if (ppi != NULL)
+                         {
+                            char textBuf[64];
+                            GetDlgItemText(hwndDlg, IDC_ALPHA_MASK_EDIT, textBuf, 32);
+                            ppi->m_alphaTestValue = sz2f(textBuf);
+                            sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), sel, LVNI_SELECTED);
+                         }
                      }
                  }
                  EndDialog(hwndDlg, TRUE);
@@ -3077,88 +3091,90 @@ INT_PTR CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                      lvitem.iSubItem = 0;
                      ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
                      Texture *ppi = (Texture*)lvitem.lParam;
-
-                     OPENFILENAME ofn;
-                     ZeroMemory(&ofn, sizeof(OPENFILENAME));
-                     ofn.lStructSize = sizeof(OPENFILENAME);
-                     ofn.hInstance = g_hinst;
-                     ofn.hwndOwner = g_pvp->m_hwnd;
-                     //TEXT
-                     ofn.lpstrFilter = "PNG (.png)\0*.png;\0Bitmap (.bmp)\0*.bmp;\0JPEG (.jpg/.jpeg)\0*.jpg;*.jpeg;\0IFF (.iff)\0*.IFF;\0PCX (.pcx)\0*.PCX;\0PICT (.pict)\0*.PICT;\0Photoshop (.psd)\0*.psd;\0TGA (.tga)\0*.tga;\0TIFF (.tiff/.tif)\0*.tiff;*.tif\0";
-                     int begin;		//select only file name from pathfilename
-                     int len = lstrlen(ppi->m_szPath);
-                     memset(g_filename, 0, MAX_PATH);
-                     memset(g_initDir, 0, MAX_PATH);
-
-                     for (begin = len; begin >= 0; begin--)
+                     if (ppi != NULL)
                      {
-                         if (ppi->m_szPath[begin] == '\\')
-                         {
-                             begin++;
-                             break;
-                         }
-                     }
-                     if ( begin>0 )
-                     {
-                        memcpy(g_filename, &ppi->m_szPath[begin], len - begin);
-                        g_filename[len - begin] = 0;
-                     }
-                     ofn.lpstrFile = g_filename;
-                     ofn.nMaxFile = MAX_PATH;
-                     ofn.lpstrDefExt = "png";
+                        OPENFILENAME ofn;
+                        ZeroMemory(&ofn, sizeof(OPENFILENAME));
+                        ofn.lStructSize = sizeof(OPENFILENAME);
+                        ofn.hInstance = g_hinst;
+                        ofn.hwndOwner = g_pvp->m_hwnd;
+                        //TEXT
+                        ofn.lpstrFilter = "PNG (.png)\0*.png;\0Bitmap (.bmp)\0*.bmp;\0JPEG (.jpg/.jpeg)\0*.jpg;*.jpeg;\0IFF (.iff)\0*.IFF;\0PCX (.pcx)\0*.PCX;\0PICT (.pict)\0*.PICT;\0Photoshop (.psd)\0*.psd;\0TGA (.tga)\0*.tga;\0TIFF (.tiff/.tif)\0*.tiff;*.tif\0";
+                        int begin;		//select only file name from pathfilename
+                        int len = lstrlen(ppi->m_szPath);
+                        memset(g_filename, 0, MAX_PATH);
+                        memset(g_initDir, 0, MAX_PATH);
 
-                     const HRESULT hr = GetRegString("RecentDir", "ImageDir", g_initDir, MAX_PATH);
+                        for (begin = len; begin >= 0; begin--)
+                        {
+                           if (ppi->m_szPath[begin] == '\\')
+                           {
+                              begin++;
+                              break;
+                           }
+                        }
+                        if (begin > 0)
+                        {
+                           memcpy(g_filename, &ppi->m_szPath[begin], len - begin);
+                           g_filename[len - begin] = 0;
+                        }
+                        ofn.lpstrFile = g_filename;
+                        ofn.nMaxFile = MAX_PATH;
+                        ofn.lpstrDefExt = "png";
 
-                     if (hr == S_OK)ofn.lpstrInitialDir = g_initDir;
-                     else ofn.lpstrInitialDir = NULL;
-                     //ofn.lpstrTitle = "SAVE AS";
-                     ofn.Flags = OFN_NOREADONLYRETURN | OFN_CREATEPROMPT | OFN_OVERWRITEPROMPT | OFN_EXPLORER;
+                        const HRESULT hr = GetRegString("RecentDir", "ImageDir", g_initDir, MAX_PATH);
 
-                     g_initDir[ofn.nFileOffset] = 0;
+                        if (hr == S_OK)ofn.lpstrInitialDir = g_initDir;
+                        else ofn.lpstrInitialDir = NULL;
+                        //ofn.lpstrTitle = "SAVE AS";
+                        ofn.Flags = OFN_NOREADONLYRETURN | OFN_CREATEPROMPT | OFN_OVERWRITEPROMPT | OFN_EXPLORER;
 
-                     if (GetSaveFileName(&ofn))	//Get filename from user
-                     {
-                         len = lstrlen(ofn.lpstrFile);
-                         for (begin = len; begin >= 0; begin--)
-                         {
-                             if (ofn.lpstrFile[begin] == '\\')
-                             {
+                        g_initDir[ofn.nFileOffset] = 0;
+
+                        if (GetSaveFileName(&ofn))	//Get filename from user
+                        {
+                           len = lstrlen(ofn.lpstrFile);
+                           for (begin = len; begin >= 0; begin--)
+                           {
+                              if (ofn.lpstrFile[begin] == '\\')
+                              {
                                  begin++;
                                  break;
-                             }
-                         }
-                         if (begin>0 )
-                         {
-                            memcpy(pathName, ofn.lpstrFile, begin);
-                            pathName[begin] = 0;
-                         }
-                         while (sel != -1)
-                         {
-                             len = lstrlen(ppi->m_szPath);
-                             for (begin = len; begin >= 0; begin--)
-                             {
+                              }
+                           }
+                           if (begin > 0)
+                           {
+                              memcpy(pathName, ofn.lpstrFile, begin);
+                              pathName[begin] = 0;
+                           }
+                           while (sel != -1 && ppi!=NULL)
+                           {
+                              len = lstrlen(ppi->m_szPath);
+                              for (begin = len; begin >= 0; begin--)
+                              {
                                  if (ppi->m_szPath[begin] == '\\')
                                  {
-                                     begin++;
-                                     break;
+                                    begin++;
+                                    break;
                                  }
-                             }
-                             memset(g_filename, 0, MAX_PATH);
-                             strcpy_s(g_filename, MAX_PATH, pathName);
-                             memcpy(g_filename, &ppi->m_szPath[begin], (len - begin) + 1);
-                             if (pt->ExportImage(GetDlgItem(hwndDlg, IDC_SOUNDLIST), ppi, g_filename))
-                             {
+                              }
+                              memset(g_filename, 0, MAX_PATH);
+                              strcpy_s(g_filename, MAX_PATH, pathName);
+                              memcpy(g_filename, &ppi->m_szPath[begin], (len - begin) + 1);
+                              if (pt->ExportImage(GetDlgItem(hwndDlg, IDC_SOUNDLIST), ppi, g_filename))
+                              {
                                  //pt->ReImportImage(GetDlgItem(hwndDlg, IDC_SOUNDLIST), ppi, ofn.lpstrFile);
                                  //pt->SetNonUndoableDirty(eSaveDirty);
-                             }
-                             sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), sel, LVNI_SELECTED);
-                             lvitem.iItem = sel;
-                             lvitem.iSubItem = 0;
-                             ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
-                             ppi = (Texture*)lvitem.lParam;
-                         }
-                         SetRegValue("RecentDir", "ImageDir", REG_SZ, pathName, lstrlen(pathName));
-                     } // finished all selected items
+                              }
+                              sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), sel, LVNI_SELECTED);
+                              lvitem.iItem = sel;
+                              lvitem.iSubItem = 0;
+                              ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
+                              ppi = (Texture*)lvitem.lParam;
+                           }
+                           SetRegValue("RecentDir", "ImageDir", REG_SZ, pathName, lstrlen(pathName));
+                        } // finished all selected items
+                     }
                  }
                }							
             }	
@@ -3182,11 +3198,15 @@ INT_PTR CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                         lvitem.iSubItem = 0;
                         ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
                         Texture * const ppi = (Texture*)lvitem.lParam;
-                        pt->RemoveImage(ppi);
-                        ListView_DeleteItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), sel);
+                        if (ppi != NULL)
+                        {
+                           pt->RemoveImage(ppi);
+                           ListView_DeleteItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), sel);
 
-                        // The previous selection is now deleted, so look again from the top of the list
-                        sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), -1, LVNI_SELECTED);
+                           // The previous selection is now deleted, so look again from the top of the list
+                           sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), -1, LVNI_SELECTED);
+
+                        }
                      }
                   }
                   pt->SetNonUndoableDirty(eSaveDirty);
@@ -3212,17 +3232,20 @@ INT_PTR CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                         lvitem.iSubItem = 0;
                         ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
                         Texture * const ppi = (Texture*)lvitem.lParam;
-                        HANDLE hFile = CreateFile(ppi->m_szPath,GENERIC_READ, FILE_SHARE_READ,	
-                           NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-
-                        if (hFile != INVALID_HANDLE_VALUE)
+                        if (ppi != NULL)
                         {
-                           CloseHandle(hFile);	
-                           pt->ReImportImage(GetDlgItem(hwndDlg, IDC_SOUNDLIST), ppi, ppi->m_szPath);
-                           pt->SetNonUndoableDirty(eSaveDirty);
+                           HANDLE hFile = CreateFile(ppi->m_szPath, GENERIC_READ, FILE_SHARE_READ,
+                              NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+
+                           if (hFile != INVALID_HANDLE_VALUE)
+                           {
+                              CloseHandle(hFile);
+                              pt->ReImportImage(GetDlgItem(hwndDlg, IDC_SOUNDLIST), ppi, ppi->m_szPath);
+                              pt->SetNonUndoableDirty(eSaveDirty);
+                           }
+                           else MessageBox(hwndDlg, ppi->m_szPath, "  FILE NOT FOUND!  ", MB_OK);
+                           sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), sel, LVNI_SELECTED);
                         }
-                        else MessageBox(hwndDlg,ppi->m_szPath, "  FILE NOT FOUND!  ", MB_OK);
-                        sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), sel, LVNI_SELECTED);
                      }
                   }
                   // Display new image
@@ -3270,17 +3293,19 @@ INT_PTR CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                         lvitem.iSubItem = 0;
                         ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
                         Texture * const ppi = (Texture*)lvitem.lParam;
+                        if (ppi != NULL)
+                        {
+                           strcpy_s(szInitialDir, sizeof(szInitialDir), szFileName);
+                           szInitialDir[ofn.nFileOffset] = 0;
+                           hr = SetRegValue("RecentDir", "ImageDir", REG_SZ, szInitialDir, lstrlen(szInitialDir));
 
-                        strcpy_s(szInitialDir, sizeof(szInitialDir), szFileName);
-                        szInitialDir[ofn.nFileOffset] = 0;
-                        hr = SetRegValue("RecentDir","ImageDir", REG_SZ, szInitialDir, lstrlen(szInitialDir));
+                           pt->ReImportImage(GetDlgItem(hwndDlg, IDC_SOUNDLIST), ppi, ofn.lpstrFile);
+                           ListView_SetItemText(GetDlgItem(hwndDlg, IDC_SOUNDLIST), sel, 1, ppi->m_szPath);
+                           pt->SetNonUndoableDirty(eSaveDirty);
 
-                        pt->ReImportImage(GetDlgItem(hwndDlg, IDC_SOUNDLIST), ppi, ofn.lpstrFile);
-                        ListView_SetItemText(GetDlgItem(hwndDlg, IDC_SOUNDLIST), sel, 1, ppi->m_szPath);
-                        pt->SetNonUndoableDirty(eSaveDirty);
-
-                        // Display new image
-                        InvalidateRect(GetDlgItem(hwndDlg, IDC_PICTUREPREVIEW), NULL, fTrue);
+                           // Display new image
+                           InvalidateRect(GetDlgItem(hwndDlg, IDC_PICTUREPREVIEW), NULL, fTrue);
+                        }
                      }
                   }
                }
