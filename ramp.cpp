@@ -2042,6 +2042,8 @@ void Ramp::ExportMesh(FILE *f)
          Vertex3D_NoTex2 *rampMesh = NULL;
          GenerateRampMesh(&rampMesh);
          unsigned int numVers = m_numVertices*5;
+         if (m_d.m_rightwallheightvisible == 0.0f && m_d.m_leftwallheightvisible == 0.0f)
+            numVers = m_numVertices;
          WaveFrontObj_WriteObjectName(f, name);
          WaveFrontObj_WriteVertexInfo(f, rampMesh, numVers);
          //floor
@@ -2345,6 +2347,17 @@ void Ramp::GenerateRampMesh(Vertex3D_NoTex2 **meshBuf)
                 rgv3D[3].tv = rgratio[i + 1];
             }
         }
+        else
+        {
+           rgv3D[0].tu = 0.0f;
+           rgv3D[0].tv = 0.0f;
+           rgv3D[1].tu = 0.0f;
+           rgv3D[1].tv = 0.0f;
+           rgv3D[2].tu = 0.0f;
+           rgv3D[2].tv = 0.0f;
+           rgv3D[3].tu = 0.0f;
+           rgv3D[3].tv = 0.0f;
+        }
 
         //floor
         m_meshIndices[i * 6] = i * 4;
@@ -2427,6 +2440,17 @@ void Ramp::GenerateRampMesh(Vertex3D_NoTex2 **meshBuf)
             rgv3D[1].tv = rgv3D[0].tv;
             rgv3D[3].tu = rgv3D[2].tu;
             rgv3D[3].tv = rgv3D[2].tv;
+        }
+        else
+        {
+           rgv3D[0].tu = 0.0f;
+           rgv3D[0].tv = 0.0f;
+           rgv3D[1].tu = 0.0f;
+           rgv3D[1].tv = 0.0f;
+           rgv3D[2].tu = 0.0f;
+           rgv3D[2].tv = 0.0f;
+           rgv3D[3].tu = 0.0f;
+           rgv3D[3].tv = 0.0f;
         }
 
     }

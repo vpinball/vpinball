@@ -4993,6 +4993,8 @@ void PinTable::ExportBlueprint()
 
 void PinTable::ExportTableMesh()
 {
+
+/*
     OPENFILENAME ofn;
     ZeroMemory(&ofn, sizeof(OPENFILENAME));
     ofn.lStructSize = sizeof(OPENFILENAME);
@@ -5012,6 +5014,8 @@ void PinTable::ExportTableMesh()
         return;// S_FALSE;
 
    FILE *f = WaveFrontObj_ExportStart(m_szObjFileName);
+*/
+   FILE *f = WaveFrontObj_ExportStart("C:\\Models\\test.obj");
    if (f == NULL)
    {
       ShowError("Unable to create obj file!");
