@@ -315,6 +315,7 @@ void IHaveDragPoints::GetTextureCoords(const std::vector<RenderVertex> & vv, flo
    int icontrolpoint = 0;
 
    *ppcoords = new float[cpoints];
+   memset(*ppcoords, 0, sizeof(float)*cpoints);
 
    for (int i=0; i<cpoints; ++i)
    {
@@ -391,7 +392,8 @@ void IHaveDragPoints::GetTextureCoords(const std::vector<RenderVertex> & vv, flo
          const float dx = pv1->x - pv2->x;
          const float dy = pv1->y - pv2->y;
          const float length = sqrtf(dx*dx + dy*dy);
-
+         if (totallength == 0.0f)
+            totallength = 1.0f;
          const float texcoord = partiallength / totallength;
 
          (*ppcoords)[l % cpoints] = (texcoord * deltacoord) + starttexcoord;

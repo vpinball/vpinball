@@ -585,6 +585,7 @@ void Surface::GenerateMesh(Vertex3D_NoTex2 **topBuf, Vertex3D_NoTex2 **sideBuf)
 
 
    *sideBuf = new Vertex3D_NoTex2[numVertices * 4];
+   memset(*sideBuf, 0, sizeof(Vertex3D_NoTex2)*numVertices * 4);
    Vertex3D_NoTex2 *verts = *sideBuf;
 
    int offset = 0;
@@ -725,6 +726,7 @@ void Surface::GenerateMesh(Vertex3D_NoTex2 **topBuf, Vertex3D_NoTex2 **sideBuf)
          delete vtri.ElementAt(i);
 
       *topBuf = new Vertex3D_NoTex2[numVertices * 2];
+      memset(*topBuf, 0, sizeof(Vertex3D_NoTex2)*numVertices * 2);
       Vertex3D_NoTex2 *buf = *topBuf;
       Vertex3D_NoTex2 * const vertsTop[2] = { buf, buf + numVertices };
 
@@ -773,24 +775,24 @@ void Surface::ExportMesh(FILE *f)
    if (topBuf != NULL && m_d.m_fVisible && !m_d.m_fSideVisible)
    {
       WaveFrontObj_WriteObjectName(f, name);
-      WaveFrontObj_WriteVertexInfo(f, topBuf, numVertices * 2);
+      WaveFrontObj_WriteVertexInfo(f, topBuf, numVertices);
       WaveFrontObj_WriteFaceInfo(f, topIndices);
-      WaveFrontObj_UpdateFaceOffset(numVertices * 2);
+      WaveFrontObj_UpdateFaceOffset(numVertices);
    }
    else if (topBuf != NULL && sideBuf != NULL && m_d.m_fVisible && m_d.m_fSideVisible)
    {
-      Vertex3D_NoTex2 *tmp = new Vertex3D_NoTex2[numVertices * 4 * 2];
+      Vertex3D_NoTex2 *tmp = new Vertex3D_NoTex2[numVertices * 5];
       memcpy(tmp, sideBuf, sizeof(Vertex3D_NoTex2) * numVertices*4);
-      memcpy(&tmp[numVertices * 4], topBuf, sizeof(Vertex3D_NoTex2)*numVertices * 2);
+      memcpy(&tmp[numVertices * 4], topBuf, sizeof(Vertex3D_NoTex2)*numVertices);
       WaveFrontObj_WriteObjectName(f, name);
-      WaveFrontObj_WriteVertexInfo(f, tmp, numVertices * 4 * 2);
+      WaveFrontObj_WriteVertexInfo(f, tmp, numVertices * 5);
       delete[] tmp;
       WORD *idx = new WORD[topIndices.size() + sideIndices.size()];
       memcpy(idx, sideIndices.data(), sideIndices.size()*sizeof(WORD));
-      for (unsigned int i = 0; i < topIndices.size(); i++)
+      for (int i = 0; i < topIndices.size(); i++)
          idx[sideIndices.size() + i] = topIndices[i] + numVertices * 4;
-      WaveFrontObj_WriteFaceInfoList(f, idx, topIndices.size()+sideIndices.size());
-      WaveFrontObj_UpdateFaceOffset(numVertices * 4 * 2);
+      WaveFrontObj_WriteFaceInfoList(f, idx, topIndices.size() + sideIndices.size());
+      WaveFrontObj_UpdateFaceOffset(numVertices * 5);
       delete[] idx;
    }
    else if (sideBuf != NULL && !m_d.m_fVisible && m_d.m_fSideVisible)
@@ -800,6 +802,10 @@ void Surface::ExportMesh(FILE *f)
       WaveFrontObj_WriteFaceInfo(f, sideIndices);
       WaveFrontObj_UpdateFaceOffset(numVertices * 4);
    }
+   if ( sideBuf!=NULL )
+      delete[] sideBuf;
+   if (topBuf != NULL)
+      delete[] topBuf;
 }
 
 void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
