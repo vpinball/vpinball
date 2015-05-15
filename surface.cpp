@@ -1,5 +1,6 @@
 #include "StdAfx.h"
 #include "forsyth.h"
+#include "objloader.h"
 
 Surface::Surface()
 {
@@ -556,7 +557,7 @@ void Surface::PostRenderStatic(RenderDevice* pd3dDevice)
     }
 }
 
-void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
+void Surface::GenerateMesh(Vertex3D_NoTex2 **topBuf, Vertex3D_NoTex2 **sideBuf)
 {
    std::vector<RenderVertex> vvertex;
    GetRgVertex(vvertex);
@@ -569,35 +570,32 @@ void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
    numVertices = vvertex.size();
    Vertex2D * const rgnormal = new Vertex2D[numVertices];
 
-   for (int i=0;i<numVertices;i++)
+   for (int i = 0; i < numVertices; i++)
    {
       const RenderVertex * const pv1 = &vvertex[i];
-      const RenderVertex * const pv2 = &vvertex[(i < numVertices-1) ? (i+1) : 0];
+      const RenderVertex * const pv2 = &vvertex[(i < numVertices - 1) ? (i + 1) : 0];
       const float dx = pv1->x - pv2->x;
       const float dy = pv1->y - pv2->y;
 
-      const float inv_len = 1.0f/sqrtf(dx*dx + dy*dy);
+      const float inv_len = 1.0f / sqrtf(dx*dx + dy*dy);
 
       rgnormal[i].x = dy*inv_len;
       rgnormal[i].y = dx*inv_len;
    }
 
-   if ( sideVBuffer )
-      sideVBuffer->release();
-   pd3dDevice->CreateVertexBuffer( numVertices*4, 0, MY_D3DFVF_NOTEX2_VERTEX, &sideVBuffer );
-   
-   Vertex3D_NoTex2 *verts;
-   sideVBuffer->lock( 0, 0, (void**)&verts, VertexBuffer::WRITEONLY);
 
-   int offset=0;
+   *sideBuf = new Vertex3D_NoTex2[numVertices * 4];
+   Vertex3D_NoTex2 *verts = *sideBuf;
+
+   int offset = 0;
    // Render side
-   for (int i=0;i<numVertices;i++, offset+=4)
+   for (int i = 0; i < numVertices; i++, offset += 4)
    {
       const RenderVertex * const pv1 = &vvertex[i];
-      const RenderVertex * const pv2 = &vvertex[(i < numVertices-1) ? (i+1) : 0];
+      const RenderVertex * const pv2 = &vvertex[(i < numVertices - 1) ? (i + 1) : 0];
 
-      const int a = (i == 0) ? (numVertices-1) : (i-1);
-      const int c = (i < numVertices-1) ? (i+1) : 0;
+      const int a = (i == 0) ? (numVertices - 1) : (i - 1);
+      const int c = (i < numVertices - 1) ? (i + 1) : 0;
 
       Vertex2D vnormal[2];
       if (pv1->fSmooth)
@@ -626,72 +624,65 @@ void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
       vnormal[1].Normalize();
 
       {
-         verts[offset  ].x=pv1->x;   verts[offset  ].y=pv1->y;   verts[offset  ].z=m_d.m_heightbottom+m_ptable->m_tableheight;
-         verts[offset+1].x=pv1->x;   verts[offset+1].y=pv1->y;   verts[offset+1].z=m_d.m_heighttop+m_ptable->m_tableheight;
-         verts[offset+2].x=pv2->x;   verts[offset+2].y=pv2->y;   verts[offset+2].z=m_d.m_heighttop+m_ptable->m_tableheight;
-         verts[offset+3].x=pv2->x;   verts[offset+3].y=pv2->y;   verts[offset+3].z=m_d.m_heightbottom+m_ptable->m_tableheight;
+         verts[offset].x = pv1->x;   verts[offset].y = pv1->y;   verts[offset].z = m_d.m_heightbottom + m_ptable->m_tableheight;
+         verts[offset + 1].x = pv1->x;   verts[offset + 1].y = pv1->y;   verts[offset + 1].z = m_d.m_heighttop + m_ptable->m_tableheight;
+         verts[offset + 2].x = pv2->x;   verts[offset + 2].y = pv2->y;   verts[offset + 2].z = m_d.m_heighttop + m_ptable->m_tableheight;
+         verts[offset + 3].x = pv2->x;   verts[offset + 3].y = pv2->y;   verts[offset + 3].z = m_d.m_heightbottom + m_ptable->m_tableheight;
          if (pinSide)
          {
-            verts[offset  ].tu = rgtexcoord[i];
-            verts[offset  ].tv = 1.0f;
+            verts[offset].tu = rgtexcoord[i];
+            verts[offset].tv = 1.0f;
 
-            verts[offset+1].tu = rgtexcoord[i];
-            verts[offset+1].tv = 0;
+            verts[offset + 1].tu = rgtexcoord[i];
+            verts[offset + 1].tv = 0;
 
-            verts[offset+2].tu = rgtexcoord[c];
-            verts[offset+2].tv = 0;
+            verts[offset + 2].tu = rgtexcoord[c];
+            verts[offset + 2].tv = 0;
 
-            verts[offset+3].tu = rgtexcoord[c];
-            verts[offset+3].tv = 1.0f;
+            verts[offset + 3].tu = rgtexcoord[c];
+            verts[offset + 3].tv = 1.0f;
          }
 
          verts[offset].nx = vnormal[0].x;
          verts[offset].ny = -vnormal[0].y;
          verts[offset].nz = 0;
 
-		 verts[offset+1].nx = vnormal[0].x;
-         verts[offset+1].ny = -vnormal[0].y;
-         verts[offset+1].nz = 0;
+         verts[offset + 1].nx = vnormal[0].x;
+         verts[offset + 1].ny = -vnormal[0].y;
+         verts[offset + 1].nz = 0;
 
-         verts[offset+2].nx = vnormal[1].x;
-         verts[offset+2].ny = -vnormal[1].y;
-         verts[offset+2].nz = 0;
+         verts[offset + 2].nx = vnormal[1].x;
+         verts[offset + 2].ny = -vnormal[1].y;
+         verts[offset + 2].nz = 0;
 
-		 verts[offset+3].nx = vnormal[1].x;
-         verts[offset+3].ny = -vnormal[1].y;
-         verts[offset+3].nz = 0;
+         verts[offset + 3].nx = vnormal[1].x;
+         verts[offset + 3].ny = -vnormal[1].y;
+         verts[offset + 3].nz = 0;
       }
    }
    delete[] rgnormal;
 
-   sideVBuffer->unlock();
-
    // prepare index buffer for sides
    {
-       std::vector<WORD> rgi(numVertices*6);
+      sideIndices.resize(numVertices * 6);
+      int offset2 = 0;
+      for (int i = 0; i < numVertices; i++, offset2 += 4)
+      {
+         sideIndices[i * 6] = offset2;
+         sideIndices[i * 6 + 1] = offset2 + 1;
+         sideIndices[i * 6 + 2] = offset2 + 2;
+         sideIndices[i * 6 + 3] = offset2;
+         sideIndices[i * 6 + 4] = offset2 + 2;
+         sideIndices[i * 6 + 5] = offset2 + 3;
+      }
 
-       int offset2=0;
-       for (int i=0; i<numVertices; i++, offset2+=4)
-       {
-           rgi[i*6  ] = offset2;
-           rgi[i*6+1] = offset2+1;
-           rgi[i*6+2] = offset2+2;
-           rgi[i*6+3] = offset2;
-           rgi[i*6+4] = offset2+2;
-           rgi[i*6+5] = offset2+3;
-       }
+      WORD* tmp = reorderForsyth(&sideIndices[0], sideIndices.size() / 3, numVertices * 4);
+      if (tmp != NULL)
+      {
+         memcpy(&sideIndices[0], tmp, sideIndices.size()*sizeof(WORD));
+         delete[] tmp;
+      }
 
-       if (sideIBuffer)
-           sideIBuffer->release();
-
-	   	WORD* tmp = reorderForsyth(&rgi[0],rgi.size()/3,numVertices*4);
-		if(tmp != NULL)
-		{
-		   memcpy(&rgi[0],tmp,rgi.size()*sizeof(WORD));
-		   delete [] tmp;
-		}
-
-	   sideIBuffer = pd3dDevice->CreateAndFillIndexBuffer(rgi);
    }
 
    // draw top
@@ -700,76 +691,156 @@ void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
    {
       VectorVoid vpoly;
 
-      for (int i=0;i<numVertices;i++)
+      for (int i = 0; i < numVertices; i++)
          vpoly.AddElement((void *)i);
 
       Vector<Triangle> vtri;
       PolygonToTriangles(vvertex, &vpoly, &vtri);
 
       numPolys = vtri.Size();
-      if( numPolys==0 )
-      {         
+      if (numPolys == 0)
+      {
          // no polys to render leave vertex buffer undefined 
          return;
       }
 
-	  const float heightNotDropped = m_d.m_heighttop;
+      const float heightNotDropped = m_d.m_heighttop;
       const float heightDropped = (m_d.m_heightbottom + 0.1f);
 
-      const float inv_tablewidth = 1.0f/(m_ptable->m_right - m_ptable->m_left);
-      const float inv_tableheight = 1.0f/(m_ptable->m_bottom - m_ptable->m_top);
+      const float inv_tablewidth = 1.0f / (m_ptable->m_right - m_ptable->m_left);
+      const float inv_tableheight = 1.0f / (m_ptable->m_bottom - m_ptable->m_top);
 
-	  if( topIBuffer )
-         topIBuffer->release();
-      pd3dDevice->CreateIndexBuffer( numPolys*3, 0, IndexBuffer::FMT_INDEX16, &topIBuffer );
+      topIndices.resize(numPolys * 3);
 
-	  WORD* bufi;
-	  topIBuffer->lock(0,0,(void**)&bufi, 0);
-	  for(int i = 0; i < numPolys; ++i)
-	  {
-		  const Triangle * const ptri = vtri.ElementAt(i);
+      for (int i = 0; i < numPolys; ++i)
+      {
+         const Triangle * const ptri = vtri.ElementAt(i);
 
-		  bufi[i*3  ] = ptri->a;
-		  bufi[i*3+1] = ptri->c;
-		  bufi[i*3+2] = ptri->b;
-	  }
-	  topIBuffer->unlock();
+         topIndices[i * 3] = ptri->a;
+         topIndices[i * 3 + 1] = ptri->c;
+         topIndices[i * 3 + 2] = ptri->b;
+      }
 
-	  for (int i=0;i<numPolys;i++)
-		  delete vtri.ElementAt(i);
+      for (int i = 0; i < numPolys; i++)
+         delete vtri.ElementAt(i);
 
-	  if( topVBuffer )
-         topVBuffer->release();
-      pd3dDevice->CreateVertexBuffer( 2*numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &topVBuffer );
+      *topBuf = new Vertex3D_NoTex2[numVertices * 2];
+      Vertex3D_NoTex2 *buf = *topBuf;
+      Vertex3D_NoTex2 * const vertsTop[2] = { buf, buf + numVertices };
 
-	  Vertex3D_NoTex2 *buf;
-      topVBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
-	  Vertex3D_NoTex2 * const vertsTop[2] = {buf, buf + numVertices};
-
-      for (int i=0;i<numVertices;i++)
+      for (int i = 0; i < numVertices; i++)
       {
          const RenderVertex * const pv0 = &vvertex[i];
 
-		 vertsTop[0][i].x  = pv0->x;
-		 vertsTop[0][i].y  = pv0->y;
-		 vertsTop[0][i].z  = heightNotDropped+m_ptable->m_tableheight;
-		 vertsTop[0][i].tu = pv0->x * inv_tablewidth;
-		 vertsTop[0][i].tv = pv0->y * inv_tableheight;
-		 vertsTop[0][i].nx = 0;
-		 vertsTop[0][i].ny = 0;
-		 vertsTop[0][i].nz = 1.0f;
+         vertsTop[0][i].x = pv0->x;
+         vertsTop[0][i].y = pv0->y;
+         vertsTop[0][i].z = heightNotDropped + m_ptable->m_tableheight;
+         vertsTop[0][i].tu = pv0->x * inv_tablewidth;
+         vertsTop[0][i].tv = pv0->y * inv_tableheight;
+         vertsTop[0][i].nx = 0;
+         vertsTop[0][i].ny = 0;
+         vertsTop[0][i].nz = 1.0f;
 
-		 vertsTop[1][i].x  = pv0->x;
-		 vertsTop[1][i].y  = pv0->y;
-		 vertsTop[1][i].z  = heightDropped;
-		 vertsTop[1][i].tu = pv0->x * inv_tablewidth;
-		 vertsTop[1][i].tv = pv0->y * inv_tableheight;
-		 vertsTop[1][i].nx = 0;
-		 vertsTop[1][i].ny = 0;
-		 vertsTop[1][i].nz = 1.0f;
+         vertsTop[1][i].x = pv0->x;
+         vertsTop[1][i].y = pv0->y;
+         vertsTop[1][i].z = heightDropped;
+         vertsTop[1][i].tu = pv0->x * inv_tablewidth;
+         vertsTop[1][i].tv = pv0->y * inv_tableheight;
+         vertsTop[1][i].nx = 0;
+         vertsTop[1][i].ny = 0;
+         vertsTop[1][i].nz = 1.0f;
       }
+   }
+}
 
-	  topVBuffer->unlock();
+void Surface::ExportMesh(FILE *f)
+{
+   const float oldBottomHeight = m_d.m_heightbottom;
+   const float oldTopHeight = m_d.m_heighttop;
+
+   m_d.m_heightbottom *= m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+   m_d.m_heighttop *= m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+
+   Vertex3D_NoTex2 *topBuf = NULL;
+   Vertex3D_NoTex2 *sideBuf = NULL;
+   GenerateMesh(&topBuf, &sideBuf);
+
+   m_d.m_heightbottom = oldBottomHeight;
+   m_d.m_heighttop = oldTopHeight;
+
+   char name[MAX_PATH];
+   WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, MAX_PATH, NULL, NULL);
+   if (topBuf != NULL && m_d.m_fVisible && !m_d.m_fSideVisible)
+   {
+      WaveFrontObj_WriteObjectName(f, name);
+      WaveFrontObj_WriteVertexInfo(f, topBuf, numVertices * 2);
+      WaveFrontObj_WriteFaceInfo(f, topIndices);
+      WaveFrontObj_UpdateFaceOffset(numVertices * 2);
+   }
+   else if (topBuf != NULL && sideBuf != NULL && m_d.m_fVisible && m_d.m_fSideVisible)
+   {
+      Vertex3D_NoTex2 *tmp = new Vertex3D_NoTex2[numVertices * 4 * 2];
+      memcpy(tmp, sideBuf, sizeof(Vertex3D_NoTex2) * numVertices*4);
+      memcpy(&tmp[numVertices * 4], topBuf, sizeof(Vertex3D_NoTex2)*numVertices * 2);
+      WaveFrontObj_WriteObjectName(f, name);
+      WaveFrontObj_WriteVertexInfo(f, tmp, numVertices * 4 * 2);
+      delete[] tmp;
+      WORD *idx = new WORD[topIndices.size() + sideIndices.size()];
+      memcpy(idx, sideIndices.data(), sideIndices.size()*sizeof(WORD));
+      for (unsigned int i = 0; i < topIndices.size(); i++)
+         idx[sideIndices.size() + i] = topIndices[i] + numVertices * 4;
+      WaveFrontObj_WriteFaceInfoList(f, idx, topIndices.size()+sideIndices.size());
+      WaveFrontObj_UpdateFaceOffset(numVertices * 4 * 2);
+      delete[] idx;
+   }
+   else if (sideBuf != NULL && !m_d.m_fVisible && m_d.m_fSideVisible)
+   {
+      WaveFrontObj_WriteObjectName(f, name);
+      WaveFrontObj_WriteVertexInfo(f, sideBuf, numVertices * 4);
+      WaveFrontObj_WriteFaceInfo(f, sideIndices);
+      WaveFrontObj_UpdateFaceOffset(numVertices * 4);
+   }
+}
+
+void Surface::PrepareWallsAtHeight( RenderDevice* pd3dDevice )
+{
+   Vertex3D_NoTex2 *topBuf = NULL;
+   Vertex3D_NoTex2 *sideBuf = NULL;
+   GenerateMesh(&topBuf, &sideBuf);
+   if (sideBuf != NULL)
+   {
+      if (sideVBuffer)
+         sideVBuffer->release();
+      pd3dDevice->CreateVertexBuffer(numVertices * 4, 0, MY_D3DFVF_NOTEX2_VERTEX, &sideVBuffer);
+
+      Vertex3D_NoTex2 *verts;
+      sideVBuffer->lock(0, 0, (void**)&verts, VertexBuffer::WRITEONLY);
+      memcpy(verts, sideBuf, sizeof(Vertex3D_NoTex2)*numVertices * 4);
+      sideVBuffer->unlock();
+
+      sideIBuffer = pd3dDevice->CreateAndFillIndexBuffer(sideIndices);
+      delete[] sideBuf;
+   }
+   if (topBuf != NULL)
+   {
+      // draw top
+      if (m_d.m_fVisible)      //!! BUG? Visible could still be set later if rendered dynamically?
+      {
+         if (topIBuffer)
+            topIBuffer->release();
+
+         topIBuffer = pd3dDevice->CreateAndFillIndexBuffer(topIndices);
+
+         if (topVBuffer)
+            topVBuffer->release();
+         pd3dDevice->CreateVertexBuffer(2 * numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &topVBuffer);
+
+         Vertex3D_NoTex2 *buf;
+         topVBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
+         memcpy(buf, topBuf, sizeof(Vertex3D_NoTex2)*numVertices * 2);
+         topVBuffer->unlock();
+      }
+      delete[] topBuf;
    }
 }
 
