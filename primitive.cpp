@@ -698,7 +698,7 @@ void Primitive::ExportMesh(FILE *f)
       WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, MAX_PATH, NULL, NULL);
       Vertex3D_NoTex2 *buf = new Vertex3D_NoTex2[m_mesh.NumVertices()];
       RecalculateMatrices();
-      for (int i = 0; i < m_mesh.NumVertices(); i++)
+      for (unsigned int i = 0; i < m_mesh.NumVertices(); i++)
       {
          Vertex3Ds vert(m_mesh.m_vertices[i].x, m_mesh.m_vertices[i].y, m_mesh.m_vertices[i].z);
          vert = fullMatrix.MultiplyVector(vert);

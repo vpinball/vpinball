@@ -4991,10 +4991,65 @@ void PinTable::ExportBlueprint()
    CloseHandle(hfile);
 }
 
+void PinTable::ExportMesh(FILE *f)
+{
+   char name[MAX_PATH];
+   WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, MAX_PATH, NULL, NULL);
+
+   Vertex3D_NoTex2 rgv[7];
+   rgv[0].x = m_left;     rgv[0].y = m_top;      rgv[0].z = m_tableheight;
+   rgv[1].x = m_right;    rgv[1].y = m_top;      rgv[1].z = m_tableheight;
+   rgv[2].x = m_right;    rgv[2].y = m_bottom;   rgv[2].z = m_tableheight;
+   rgv[3].x = m_left;     rgv[3].y = m_bottom;   rgv[3].z = m_tableheight;
+
+   // These next 4 vertices are used just to set the extents
+   rgv[4].x = m_left;     rgv[4].y = m_top;      rgv[4].z = m_tableheight + 50.0f;
+   rgv[5].x = m_left;     rgv[5].y = m_bottom;   rgv[5].z = m_tableheight + 50.0f;
+   rgv[6].x = m_right;    rgv[6].y = m_bottom;   rgv[6].z = m_tableheight + 50.0f;
+   //rgv[7].x=g_pplayer->m_ptable->m_right;    rgv[7].y=g_pplayer->m_ptable->m_top;      rgv[7].z=50.0f;
+
+   for (int i = 0; i < 4; ++i)
+   {
+      rgv[i].nx = 0;
+      rgv[i].ny = 0;
+      rgv[i].nz = 1.0f;
+
+      rgv[i].tv = (i & 2) ? 1.0f : 0.f;
+      rgv[i].tu = (i == 1 || i == 2) ? 1.0f : 0.f;
+   }
+
+   const WORD playfieldPolyIndices[10] = { 0, 1, 3, 0, 3, 2, 2, 3, 5, 6 };
+
+   Vertex3D_NoTex2 *buffer=new Vertex3D_NoTex2[4+7];
+
+   unsigned int offs = 0;
+   for (unsigned int y = 0; y <= 1; ++y)
+      for (unsigned int x = 0; x <= 1; ++x, ++offs)
+      {
+         buffer[offs].x = (x & 1) ? rgv[1].x : rgv[0].x;
+         buffer[offs].y = (y & 1) ? rgv[2].y : rgv[0].y;
+         buffer[offs].z = rgv[0].z;
+
+         buffer[offs].tu = (x & 1) ? rgv[1].tu : rgv[0].tu;
+         buffer[offs].tv = (y & 1) ? rgv[2].tv : rgv[0].tv;
+
+         buffer[offs].nx = rgv[0].nx;
+         buffer[offs].ny = rgv[0].ny;
+         buffer[offs].nz = rgv[0].nz;
+      }
+
+   SetNormal(rgv, playfieldPolyIndices + 6, 4);
+
+   memcpy(buffer + 4, rgv, 7 * sizeof(Vertex3D_NoTex2));
+
+   WaveFrontObj_WriteObjectName(f, name);
+   WaveFrontObj_WriteVertexInfo(f, buffer, 4 + 7);
+   WaveFrontObj_WriteFaceInfoList(f, playfieldPolyIndices, 10);
+   WaveFrontObj_UpdateFaceOffset(4 + 7);
+}
+
 void PinTable::ExportTableMesh()
 {
-
-/*
     OPENFILENAME ofn;
     ZeroMemory(&ofn, sizeof(OPENFILENAME));
     ofn.lStructSize = sizeof(OPENFILENAME);
@@ -5014,13 +5069,12 @@ void PinTable::ExportTableMesh()
         return;// S_FALSE;
 
    FILE *f = WaveFrontObj_ExportStart(m_szObjFileName);
-*/
-   FILE *f = WaveFrontObj_ExportStart("C:\\Models\\test.obj");
    if (f == NULL)
    {
       ShowError("Unable to create obj file!");
       return;
    }
+   ExportMesh(f);
    for (int i = 0; i < m_vedit.Size(); i++)
     {
        IEditable *ptr = m_vedit.ElementAt(i);

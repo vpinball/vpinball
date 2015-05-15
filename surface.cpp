@@ -789,7 +789,7 @@ void Surface::ExportMesh(FILE *f)
       delete[] tmp;
       WORD *idx = new WORD[topIndices.size() + sideIndices.size()];
       memcpy(idx, sideIndices.data(), sideIndices.size()*sizeof(WORD));
-      for (int i = 0; i < topIndices.size(); i++)
+      for (unsigned int i = 0; i < topIndices.size(); i++)
          idx[sideIndices.size() + i] = topIndices[i] + numVertices * 4;
       WaveFrontObj_WriteFaceInfoList(f, idx, topIndices.size() + sideIndices.size());
       WaveFrontObj_UpdateFaceOffset(numVertices * 5);
