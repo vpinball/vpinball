@@ -124,6 +124,7 @@ END_CONNECTION_POINT_MAP()
     virtual bool IsTransparent();
     virtual void UpdatePropertyPanes();
     virtual void SetDefaultPhysics(bool fromMouseClick);
+    virtual void ExportMesh(FILE *f);
 
 private:
     void CurvesToShapes(Vector<HitObject> * const pvho);
@@ -134,6 +135,7 @@ private:
     void RenderWallsAtHeight( RenderDevice* pd3dDevice, const bool fDrop);
     void PrepareWallsAtHeight( RenderDevice* pd3dDevice );
     void PrepareSlingshots( RenderDevice *pd3dDevice );
+    void GenerateMesh(Vertex3D_NoTex2 **topBuf, Vertex3D_NoTex2**sideBuf);
 
     void FreeBuffers();
 
@@ -155,6 +157,8 @@ private:
 	bool m_isWall;
    bool m_isDynamic;
    int numVertices, numPolys;
+   std::vector<WORD> sideIndices;
+   std::vector<WORD> topIndices;
 
    // TODO: all these vertex buffers should be combined into one
    VertexBuffer *slingshotVBuffer;
