@@ -91,6 +91,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_GATE)
    virtual void SetDefaultPhysics(bool fromMouseClick);
 
 	virtual void RenderBlueprint(Sur *psur);
+   virtual void ExportMesh(FILE *f);
 
     int angleToFrame(float angle) const;
 

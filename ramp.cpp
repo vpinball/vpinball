@@ -1,5 +1,6 @@
 #include "StdAfx.h"
 #include "forsyth.h"
+#include "objloader.h"
 
 Ramp::Ramp()
 {
@@ -2028,6 +2029,155 @@ STDMETHODIMP Ramp::put_WireDistanceY(float newVal)
     }
 
     return S_OK;
+}
+
+void Ramp::ExportMesh(FILE *f)
+{
+   char name[MAX_PATH];
+   if (m_d.m_fVisible)
+   {
+      WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, MAX_PATH, NULL, NULL);
+      if (!isHabitrail())
+      {
+         Vertex3D_NoTex2 *rampMesh = NULL;
+         GenerateRampMesh(&rampMesh);
+         unsigned int numVers = m_numVertices*5;
+         WaveFrontObj_WriteObjectName(f, name);
+         WaveFrontObj_WriteVertexInfo(f, rampMesh, numVers);
+         //floor
+         WaveFrontObj_WriteFaceInfoList(f, m_meshIndices.data(), (rampVertex-1)*6);
+
+         if (m_d.m_rightwallheightvisible!=0.f && m_d.m_leftwallheightvisible!=0.f)
+            WaveFrontObj_WriteFaceInfoList(f, m_meshIndices.data(), (rampVertex - 1) * 6*2*2);  //both walls
+         else
+         {
+            int listLength = (rampVertex - 1) * 6 * 2;
+            if (m_d.m_rightwallheightvisible != 0.0f)
+            {
+               WORD *rightIdx=new WORD[listLength];
+               for (int i = 0; i < listLength; i++)
+               {
+                  rightIdx[i] = m_meshIndices[i] + m_numVertices;
+               }
+               WaveFrontObj_WriteFaceInfoList(f, rightIdx, listLength);
+               delete[] rightIdx;
+            }
+            if (m_d.m_leftwallheightvisible!=0.0f)
+               WaveFrontObj_WriteFaceInfoList(f, m_meshIndices.data(), listLength);
+         }
+         WaveFrontObj_UpdateFaceOffset(numVers);
+         delete[] rampMesh;
+      }
+      else
+      {
+         Vertex3D_NoTex2 *tmpBuf1=NULL, *tmpBuf2=NULL;
+         GenerateWireMesh(&tmpBuf1, &tmpBuf2);
+         if (m_d.m_type == RampType1Wire)
+         {
+            WaveFrontObj_WriteObjectName(f, name);
+            WaveFrontObj_WriteVertexInfo(f, tmpBuf1, m_numVertices);
+            WaveFrontObj_WriteFaceInfo(f, m_meshIndices);
+            WaveFrontObj_UpdateFaceOffset(m_numVertices);
+         }
+         else if (m_d.m_type == RampType2Wire)
+         {
+            Vertex3D_NoTex2 *tmp = new Vertex3D_NoTex2[m_numVertices * 2];
+            memcpy(tmp, tmpBuf1, sizeof(Vertex3D_NoTex2)*m_numVertices);
+            memcpy(&tmp[m_numVertices], tmpBuf2, sizeof(Vertex3D_NoTex2)*m_numVertices);
+            for (int i = 0; i < m_numVertices * 2; i++) 
+               tmp[i].z += 3.0f;
+            WaveFrontObj_WriteVertexInfo(f, tmp, m_numVertices*2);
+            delete[] tmp;
+            WaveFrontObj_WriteFaceInfo(f, m_meshIndices);
+            WORD *idx = new WORD[m_meshIndices.size()];
+            for (unsigned int i = 0; i < m_meshIndices.size(); i++)
+               idx[i] = m_meshIndices[i] + m_numVertices;
+            WaveFrontObj_WriteFaceInfoList(f, idx, m_meshIndices.size());
+            WaveFrontObj_UpdateFaceOffset(m_numVertices*2);
+            delete[] idx;
+         }
+         else if (m_d.m_type==RampType4Wire)
+         {
+            Vertex3D_NoTex2 *tmp = new Vertex3D_NoTex2[m_numVertices * 4];
+            memcpy(tmp, tmpBuf1, sizeof(Vertex3D_NoTex2)*m_numVertices);
+            memcpy(&tmp[m_numVertices], tmpBuf2, sizeof(Vertex3D_NoTex2)*m_numVertices);
+            memcpy(&tmp[m_numVertices*2], tmpBuf1, sizeof(Vertex3D_NoTex2)*m_numVertices);
+            memcpy(&tmp[m_numVertices*3], tmpBuf2, sizeof(Vertex3D_NoTex2)*m_numVertices);
+            for (int i = 0; i < m_numVertices * 2; i++)
+               tmp[i].z += m_d.m_wireDistanceY*0.5f;
+
+            for (int i = m_numVertices * 2; i < m_numVertices * 4; i++)
+               tmp[i].z += 3.0f;
+            WaveFrontObj_WriteVertexInfo(f, tmp, m_numVertices * 4);
+            delete[] tmp;
+            WaveFrontObj_WriteFaceInfo(f, m_meshIndices);
+            WORD *idx = new WORD[m_meshIndices.size()];
+            for (unsigned int i = 0; i < m_meshIndices.size(); i++)
+               idx[i] = m_meshIndices[i] + m_numVertices;
+            WaveFrontObj_WriteFaceInfoList(f, idx, m_meshIndices.size());
+            for (unsigned int i = 0; i < m_meshIndices.size(); i++)
+               idx[i] = m_meshIndices[i] + m_numVertices*2;
+            WaveFrontObj_WriteFaceInfoList(f, idx, m_meshIndices.size());
+            for (unsigned int i = 0; i < m_meshIndices.size(); i++)
+               idx[i] = m_meshIndices[i] + m_numVertices*3;
+            WaveFrontObj_WriteFaceInfoList(f, idx, m_meshIndices.size());
+            WaveFrontObj_UpdateFaceOffset(m_numVertices * 4);
+            delete[] idx;
+         }
+         else if (m_d.m_type == RampType3WireLeft)
+         {
+            Vertex3D_NoTex2 *tmp = new Vertex3D_NoTex2[m_numVertices * 3];
+            memcpy(tmp, tmpBuf2, sizeof(Vertex3D_NoTex2)*m_numVertices);
+            memcpy(&tmp[m_numVertices], tmpBuf1, sizeof(Vertex3D_NoTex2)*m_numVertices);
+            memcpy(&tmp[m_numVertices * 2], tmpBuf2, sizeof(Vertex3D_NoTex2)*m_numVertices);
+            for (int i = 0; i < m_numVertices; i++)
+               tmp[i].z += m_d.m_wireDistanceY*0.5f;
+
+            for (int i = m_numVertices; i < m_numVertices * 3; i++)
+               tmp[i].z += 3.0f;
+            WaveFrontObj_WriteVertexInfo(f, tmp, m_numVertices * 3);
+            delete[] tmp;
+            WaveFrontObj_WriteFaceInfo(f, m_meshIndices);
+            WORD *idx = new WORD[m_meshIndices.size()];
+            for (unsigned int i = 0; i < m_meshIndices.size(); i++)
+               idx[i] = m_meshIndices[i] + m_numVertices;
+            WaveFrontObj_WriteFaceInfoList(f, idx, m_meshIndices.size());
+            for (unsigned int i = 0; i < m_meshIndices.size(); i++)
+               idx[i] = m_meshIndices[i] + m_numVertices * 2;
+            WaveFrontObj_WriteFaceInfoList(f, idx, m_meshIndices.size());
+            WaveFrontObj_UpdateFaceOffset(m_numVertices * 3);
+            delete[] idx;
+         }
+         else if (m_d.m_type == RampType3WireRight)
+         {
+            Vertex3D_NoTex2 *tmp = new Vertex3D_NoTex2[m_numVertices * 3];
+            memcpy(tmp, tmpBuf1, sizeof(Vertex3D_NoTex2)*m_numVertices);
+            memcpy(&tmp[m_numVertices], tmpBuf1, sizeof(Vertex3D_NoTex2)*m_numVertices);
+            memcpy(&tmp[m_numVertices * 2], tmpBuf2, sizeof(Vertex3D_NoTex2)*m_numVertices);
+            for (int i = 0; i < m_numVertices; i++)
+               tmp[i].z += m_d.m_wireDistanceY*0.5f;
+
+            for (int i = m_numVertices; i < m_numVertices * 3; i++)
+               tmp[i].z += 3.0f;
+            WaveFrontObj_WriteVertexInfo(f, tmp, m_numVertices * 3);
+            delete[] tmp;
+            WaveFrontObj_WriteFaceInfo(f, m_meshIndices);
+            WORD *idx = new WORD[m_meshIndices.size()];
+            for (unsigned int i = 0; i < m_meshIndices.size(); i++)
+               idx[i] = m_meshIndices[i] + m_numVertices;
+            WaveFrontObj_WriteFaceInfoList(f, idx, m_meshIndices.size());
+            for (unsigned int i = 0; i < m_meshIndices.size(); i++)
+               idx[i] = m_meshIndices[i] + m_numVertices * 2;
+            WaveFrontObj_WriteFaceInfoList(f, idx, m_meshIndices.size());
+            WaveFrontObj_UpdateFaceOffset(m_numVertices * 3);
+            delete[] idx;
+         }
+
+         delete[] tmpBuf1;
+         if (m_d.m_type != RampType1Wire)
+            delete[] tmpBuf2;
+      }
+   }
 }
 
 void Ramp::RenderRamp( RenderDevice *pd3dDevice, const Material * const mat )

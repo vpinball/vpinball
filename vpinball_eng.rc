@@ -2057,6 +2057,7 @@ BEGIN
         POPUP "Ex&port"
         BEGIN
             MENUITEM "&Blueprint...",               ID_FILE_EXPORT_BLUEPRINT
+            MENUITEM "OBJ &Mesh",                   ID_EXPORT_TABLEMESH
         END
         MENUITEM "Unlock",                      IDM_UNLOCKPROTECTED
         MENUITEM SEPARATOR

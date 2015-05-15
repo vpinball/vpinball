@@ -719,6 +719,9 @@
     <ClInclude Include="MemoryStatus.h">
       <Filter>CrashReporter</Filter>
     </ClInclude>
+    <ClInclude Include="objloader.h">
+      <Filter>headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="shader\BallShader.fx">

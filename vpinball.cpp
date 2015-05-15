@@ -1154,7 +1154,19 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
          }
       }
       break;
-
+   case ID_EXPORT_TABLEMESH:
+   {
+      ptCur = GetActiveTable();
+      if (ptCur)
+      {
+         if (ptCur->CheckPermissions(DISABLE_TABLE_SAVE))
+            ShowPermissionError();
+         else
+            ptCur->ExportTableMesh();
+      }
+   }
+   break;
+   
    case ID_FILE_EXIT:
       PostMessage(m_hwnd, WM_CLOSE, 0, 0);
       break;

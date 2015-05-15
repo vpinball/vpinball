@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "objloader.h"
 #include "meshes/bumperBaseMesh.h"
 #include "meshes/bumperRingMesh.h"
 #include "meshes/bumperCapMesh.h"
@@ -498,6 +499,66 @@ void Bumper::PostRenderStatic(RenderDevice* pd3dDevice)
          pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
          RenderCap(pd3dDevice, mat);
       }
+   }
+}
+
+void Bumper::ExportMesh(FILE *f)
+{
+   char name[MAX_PATH];
+   char subObjName[MAX_PATH];
+   WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, MAX_PATH, NULL, NULL);
+
+
+   baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+   fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_orientation));
+
+   if (m_d.m_fBaseVisible)
+   {
+      Vertex3D_NoTex2 *base=new Vertex3D_NoTex2[bumperBaseNumVertices];
+      strcpy_s(subObjName, name);
+      strcat_s(subObjName, "Base");
+      WaveFrontObj_WriteObjectName(f, subObjName);
+
+      GenerateBaseMesh(base);
+      WaveFrontObj_WriteVertexInfo(f, base, bumperBaseNumVertices);
+      WaveFrontObj_WriteFaceInfoList(f, bumperBaseIndices, bumperBaseNumFaces);
+      WaveFrontObj_UpdateFaceOffset(bumperBaseNumVertices);
+      delete[] base;
+
+      Vertex3D_NoTex2 *ring = new Vertex3D_NoTex2[bumperRingNumVertices];
+      strcpy_s(subObjName, name);
+      strcat_s(subObjName, "Ring");
+      WaveFrontObj_WriteObjectName(f, subObjName);
+
+      GenerateRingMesh(ring);
+      WaveFrontObj_WriteVertexInfo(f, ring, bumperRingNumVertices);
+      WaveFrontObj_WriteFaceInfoList(f, bumperRingIndices, bumperRingNumFaces);
+      WaveFrontObj_UpdateFaceOffset(bumperRingNumVertices);
+      delete[] ring;
+
+      Vertex3D_NoTex2 *socket = new Vertex3D_NoTex2[bumperSocketNumVertices];
+      strcpy_s(subObjName, name);
+      strcat_s(subObjName, "Socket");
+      WaveFrontObj_WriteObjectName(f, subObjName);
+
+      GenerateSocketMesh(socket);
+      WaveFrontObj_WriteVertexInfo(f, socket, bumperSocketNumVertices);
+      WaveFrontObj_WriteFaceInfoList(f, bumperSocketIndices, bumperSocketNumFaces);
+      WaveFrontObj_UpdateFaceOffset(bumperSocketNumVertices);
+      delete[] socket;
+   }
+   if (m_d.m_fCapVisible)
+   {
+      Vertex3D_NoTex2 *cap = new Vertex3D_NoTex2[bumperCapNumVertices];
+      strcpy_s(subObjName, name);
+      strcat_s(subObjName, "Cap");
+      WaveFrontObj_WriteObjectName(f, subObjName);
+
+      GenerateCapMesh(cap);
+      WaveFrontObj_WriteVertexInfo(f, cap, bumperCapNumVertices);
+      WaveFrontObj_WriteFaceInfoList(f, bumperCapIndices, bumperCapNumFaces);
+      WaveFrontObj_UpdateFaceOffset(bumperCapNumVertices);
+      delete[] cap;
    }
 }
 

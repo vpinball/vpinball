@@ -4,6 +4,7 @@
 
 #include "stdafx.h" 
 #include "forsyth.h"
+#include "objloader.h"
 
 // defined in objloader.cpp
 extern bool WaveFrontObj_Load(const char *filename, const bool flipTv, const bool convertToLeftHanded);
@@ -687,6 +688,38 @@ void Primitive::UpdateEditorView()
 {
     RecalculateMatrices();
     TransformVertices();
+}
+
+void Primitive::ExportMesh(FILE *f)
+{
+   char name[MAX_PATH];
+   if (m_d.m_fVisible)
+   {
+      WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, MAX_PATH, NULL, NULL);
+      Vertex3D_NoTex2 *buf = new Vertex3D_NoTex2[m_mesh.NumVertices()];
+      RecalculateMatrices();
+      for (int i = 0; i < m_mesh.NumVertices(); i++)
+      {
+         Vertex3Ds vert(m_mesh.m_vertices[i].x, m_mesh.m_vertices[i].y, m_mesh.m_vertices[i].z);
+         vert = fullMatrix.MultiplyVector(vert);
+
+         buf[i].x = vert.x;
+         buf[i].y = vert.y;
+         buf[i].z = vert.z;
+         vert = Vertex3Ds(m_mesh.m_vertices[i].nx, m_mesh.m_vertices[i].ny, m_mesh.m_vertices[i].nz);
+         vert = fullMatrix.MultiplyVectorNoTranslate(vert);
+         buf[i].nx = vert.x;
+         buf[i].ny = vert.y;
+         buf[i].nz = vert.z;
+         buf[i].tu = m_mesh.m_vertices[i].tu;
+         buf[i].tv = m_mesh.m_vertices[i].tv;
+      }
+      WaveFrontObj_WriteObjectName(f, name);
+      WaveFrontObj_WriteVertexInfo(f, buf, m_mesh.NumVertices());
+      WaveFrontObj_WriteFaceInfoLong(f, m_mesh.m_indices);
+      WaveFrontObj_UpdateFaceOffset(m_mesh.NumVertices());
+      delete[] buf;
+   }
 }
 
 void Primitive::RenderObject(RenderDevice *pd3dDevice)

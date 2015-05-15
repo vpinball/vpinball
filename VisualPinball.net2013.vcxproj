@@ -4880,6 +4880,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="memutil.h" />
     <ClInclude Include="mesh.h" />
     <ClInclude Include="mixer.h" />
+    <ClInclude Include="objloader.h" />
     <ClInclude Include="paintsur.h" />
     <ClInclude Include="physconst.h" />
     <ClInclude Include="pin3d.h" />

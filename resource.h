@@ -873,6 +873,7 @@
 #define ID_TABLE_CAMERAMODE             32997
 #define ID_EDIT_SETDEFAULTPHYSICS       32998
 #define ID_EDIT_LOCK                    32999
+#define ID_EXPORT_TABLEMESH             33002
 #define DZVALUE                         65535
 #define DZName                          65535
 
@@ -881,7 +882,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        619
-#define _APS_NEXT_COMMAND_VALUE         33002
+#define _APS_NEXT_COMMAND_VALUE         33003
 #define _APS_NEXT_CONTROL_VALUE         476
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
