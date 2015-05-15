@@ -241,6 +241,7 @@ void Trigger::PreRender(Sur * const psur)
    }
    else
    {
+       psur->SetObject(this);
        psur->SetFillColor(-1);
        psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius);
    }
