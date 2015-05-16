@@ -5021,7 +5021,6 @@ void PinTable::ExportMesh(FILE *f)
    const WORD playfieldPolyIndices[10] = { 0, 1, 3, 0, 3, 2, 2, 3, 5, 6 };
 
    Vertex3D_NoTex2 *buffer=new Vertex3D_NoTex2[4+7];
-
    unsigned int offs = 0;
    for (unsigned int y = 0; y <= 1; ++y)
       for (unsigned int x = 0; x <= 1; ++x, ++offs)
@@ -5040,12 +5039,17 @@ void PinTable::ExportMesh(FILE *f)
 
    SetNormal(rgv, playfieldPolyIndices + 6, 4);
 
-   memcpy(buffer + 4, rgv, 7 * sizeof(Vertex3D_NoTex2));
-
    WaveFrontObj_WriteObjectName(f, name);
-   WaveFrontObj_WriteVertexInfo(f, buffer, 4 + 7);
-   WaveFrontObj_WriteFaceInfoList(f, playfieldPolyIndices, 10);
-   WaveFrontObj_UpdateFaceOffset(4 + 7);
+   WaveFrontObj_WriteVertexInfo(f, buffer, 4);
+//    Texture *tex = GetImage(m_szImage);
+//    if (tex)
+//    {
+//       WaveFrontObj_WriteMaterial(m_szImage, tex->m_szPath);
+//       WaveFrontObj_UseTexture(f, m_szImage);
+//    }
+   WaveFrontObj_WriteFaceInfoList(f, playfieldPolyIndices, 6);
+   WaveFrontObj_UpdateFaceOffset(4);
+   delete[] buffer;
 }
 
 void PinTable::ExportTableMesh()

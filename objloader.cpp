@@ -14,6 +14,7 @@ static vector<MyPoly> tmpFaces;
 static vector<Vertex3D_NoTex2> verts;
 static vector<int> faces;
 static unsigned int faceIndexOffset = 0;
+static FILE *matFile = NULL;
 
 static int isInList( const int vi, const int ti, const int ni )
 {
@@ -312,17 +313,73 @@ void WaveFrontObj_GetIndices( std::vector<unsigned int>& list ) // clears tempor
 FILE* WaveFrontObj_ExportStart(const char *filename)
 {
     FILE *f;
+    char matName[MAX_PATH];
+    char nameOnly[MAX_PATH] = { 0 };
+    int len = lstrlen(filename);
+    int i;
+    for (i = len; i >= 0; i--)
+    {
+       if (filename[i] == '.')
+       {
+          i++;
+          break;
+       }
+    }
+    strcpy_s(matName, filename);
+    if (i < len)
+    {
+       memcpy(matName, filename, i);
+       matName[i] = 0;
+       strcat_s(matName, "mtl");
+    }
+
+    for (i = len; i >= 0; i--)
+    {
+       if (matName[i] == '\\')
+       {
+          i++;
+          break;
+       }
+    }
+    memcpy(nameOnly, matName + i, len - i);
+    fopen_s(&matFile, matName, "wt");
+    if (!matFile)
+       return 0;
+    fprintf_s(matFile, "# Visual Pinball table mat file\n");
+
     fopen_s(&f, filename, "wt");
     if (!f)
         return 0;
     faceIndexOffset = 0;
     fprintf_s(f, "# Visual Pinball table OBJ file\n");
+    fprintf_s(f, "mtllib %s\n", nameOnly);
     return f;
 }
 
 void WaveFrontObj_ExportEnd(FILE *f)
 {
    fclose(f);
+   fclose(matFile);
+}
+
+void WaveFrontObj_WriteMaterial(const char *texelName, const char *texelFilename)
+{
+   fprintf_s(matFile, "newmtl %s\n", texelName);
+   fprintf_s(matFile, "Ns 7.843137\n");
+   fprintf_s(matFile, "Ka 0.000000 0.000000 0.000000\n");
+   fprintf_s(matFile, "Kd 1.000000 1.000000 1.000000\n");
+   fprintf_s(matFile, "Ks 0.000000 0.000000 0.000000\n");
+   fprintf_s(matFile, "Ni 1.500000\n");
+   fprintf_s(matFile, "d 1.000000\n");
+   fprintf_s(matFile, "illum 2\n");
+   fprintf_s(matFile, "map_kd %s\n", texelFilename);
+   fprintf_s(matFile, "map_ka %s\n\n", texelFilename);
+
+}
+
+void WaveFrontObj_UseTexture(FILE *f, const char *texelName)
+{
+   fprintf_s(f, "usemtl %s\n", texelName);
 }
 
 void WaveFrontObj_UpdateFaceOffset(unsigned int numVertices)
@@ -343,12 +400,21 @@ void WaveFrontObj_WriteVertexInfo(FILE *f, const Vertex3D_NoTex2 *verts, unsigne
     }
     for (unsigned i = 0; i < numVerts; i++)
     {
+        float tu = verts[i].tu;
         float tv = 1.f - verts[i].tv;
-        fprintf_s(f, "vt %f %f\n", verts[i].tu, tv);
+        if (tu != tu) tu = 0.0f;
+        if (tv != tv) tv = 0.0f;
+        fprintf_s(f, "vt %f %f\n", tu, tv);
     }
     for (unsigned i = 0; i < numVerts; i++)
     {
-       fprintf_s(f, "vn %f %f %f\n", verts[i].nx, verts[i].ny, -verts[i].nz);
+       float nx = verts[i].nx;
+       float ny = verts[i].ny;
+       float nz = verts[i].nz;
+       if (nx != nx) nx = 0.0f;
+       if (ny != ny) ny = 0.0f;
+       if (nz != nz) nz = 0.0f;
+       fprintf_s(f, "vn %f %f %f\n", nx, ny, -nz);
     }
 }
 
