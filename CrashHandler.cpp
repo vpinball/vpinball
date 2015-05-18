@@ -56,7 +56,7 @@ namespace
       }
       else
       {
-         fprintf(f, "Unknown Windows version - %d.%d (%s)\n",
+         fprintf(f, "Unknown Windows version - %u.%u (%s)\n",
             sysInfo.dwMajorVersion, sysInfo.dwMinorVersion,
             sysInfo.szCSDVersion);
       }
@@ -67,7 +67,7 @@ namespace
       SYSTEM_INFO sysInfo;
       memset(&sysInfo, 0, sizeof(sysInfo));
       GetSystemInfo(&sysInfo);
-      fprintf(f, "Number of CPUs: %d\nProcessor type: %d\n",
+      fprintf(f, "Number of CPUs: %u\nProcessor type: %u\n",
          sysInfo.dwNumberOfProcessors, sysInfo.dwProcessorType);
    }
 
@@ -75,7 +75,7 @@ namespace
    {
       SYSTEMTIME st;
       ::GetLocalTime(&st);
-      fprintf(f, "Date/time: %d/%d/%d, %02d:%02d:%02d:%d\n",
+      fprintf(f, "Date/time: %u/%u/%u, %02u:%02u:%02u:%u\n",
          st.wDay, st.wMonth, st.wYear, st.wHour, st.wMinute,
          st.wSecond, st.wMilliseconds);
    }
@@ -135,7 +135,7 @@ namespace
             "write to" : "read from"), exceptionPtrs->ExceptionRecord->ExceptionInformation[1]);
       }
       const DWORD threadId = ::GetCurrentThreadId();
-      fprintf(f, "Thread ID: 0x%X [%d]\n\n", threadId, threadId);
+      fprintf(f, "Thread ID: 0x%X [%u]\n\n", threadId, threadId);
    }
 
    void WriteEnvironmentInfo(FILE* f)
@@ -188,13 +188,13 @@ namespace
    void WriteMemoryStatus(FILE* f, const rde::MemoryStatus& status)
    {
       fprintf(f, "Memory status\n=============\n");
-      fprintf(f, "Total Reserved: %dK (%dM) bytes\n", status.totalReserved >> 10,
+      fprintf(f, "Total Reserved: %uK (%uM) bytes\n", status.totalReserved >> 10,
          status.totalReserved >> 20);
-      fprintf(f, "Total Commited: %dK (%dM) bytes\n", status.totalCommited >> 10,
+      fprintf(f, "Total Commited: %uK (%uM) bytes\n", status.totalCommited >> 10,
          status.totalCommited >> 20);
-      fprintf(f, "Total Free: %dK (%dM) bytes\n", status.totalFree >> 10,
+      fprintf(f, "Total Free: %uK (%uM) bytes\n", status.totalFree >> 10,
          status.totalFree >> 20);
-      fprintf(f, "Largest Free: %dK (%dM) bytes\n\n", status.largestFree >> 10,
+      fprintf(f, "Largest Free: %uK (%uM) bytes\n\n", status.largestFree >> 10,
          status.largestFree >> 20);
    }
 
@@ -251,18 +251,21 @@ namespace
 
       FILE* f;
       fopen_s(&f,s_reportFileName, "wt");
-      WriteHeader(f);
-      WriteExceptionInfo(f, exceptionPtrs);
-      WriteCallStack(f, exceptionPtrs->ContextRecord);
+	  if (f)
+	  {
+		  WriteHeader(f);
+		  WriteExceptionInfo(f, exceptionPtrs);
+		  WriteCallStack(f, exceptionPtrs->ContextRecord);
 
-      WriteEnvironmentInfo(f);
-      rde::MemoryStatus memStatus = rde::MemoryStatus::GetCurrent();
-      WriteMemoryStatus(f, memStatus);
-      WriteRegisters(f, exceptionPtrs);
-      WriteBlackBoxMessages(f);
+		  WriteEnvironmentInfo(f);
+		  rde::MemoryStatus memStatus = rde::MemoryStatus::GetCurrent();
+		  WriteMemoryStatus(f, memStatus);
+		  WriteRegisters(f, exceptionPtrs);
+		  WriteBlackBoxMessages(f);
 
-      fprintf(f, (miniDumpOK ? "\nMini dump saved successfully.\n" : "\nFailed to save minidump.\n"));
-      ::fclose(f);
+		  fprintf(f, (miniDumpOK ? "\nMini dump saved successfully.\n" : "\nFailed to save minidump.\n"));
+		  ::fclose(f);
+	  }
 
       return returnCode;
    }
