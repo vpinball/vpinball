@@ -182,16 +182,14 @@ STDMETHODIMP BallEx::put_Image(BSTR newVal)
 HRESULT BallEx::get_UserValue(VARIANT *pVal)
 {
 	VariantClear(pVal);
-	VariantCopy(pVal, &m_uservalue);
-	return S_OK;
+	return VariantCopy(pVal, &m_uservalue);
 }
 
 HRESULT BallEx::put_UserValue(VARIANT *newVal)
 {
 	VariantInit(&m_uservalue);
 	VariantClear(&m_uservalue);
-	/*const HRESULT hr =*/ VariantCopy(&m_uservalue, newVal);
-	return S_OK;
+	return VariantCopy(&m_uservalue, newVal);
 }
 
 STDMETHODIMP BallEx::get_FrontDecal(BSTR *pVal)
