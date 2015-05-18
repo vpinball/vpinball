@@ -97,8 +97,7 @@ HRESULT IEditable::put_TimerInterval(long newVal, int *pti)
 HRESULT IEditable::get_UserValue(VARIANT *pVal)
 	{
 	VariantClear(pVal);
-	VariantCopy(pVal, &m_uservalue);
-	return S_OK;
+	return VariantCopy(pVal, &m_uservalue);
 	}
 
 HRESULT IEditable::put_UserValue(VARIANT *newVal)
@@ -107,11 +106,11 @@ HRESULT IEditable::put_UserValue(VARIANT *newVal)
 
 	VariantInit(&m_uservalue);
 	VariantClear(&m_uservalue);
-	/*const HRESULT hr =*/ VariantCopy(&m_uservalue, newVal);
+	const HRESULT hr = VariantCopy(&m_uservalue, newVal);
 	
 	STOPUNDO
 	
-	return S_OK;
+	return hr;
 	}
 
 void IEditable::BeginPlay()
