@@ -779,22 +779,22 @@ void Plunger::RenderSetup(RenderDevice* pd3dDevice)
 			// top-justified, so we always start at the top of the cell.
 			//
 			// The x extent is the full width of the current cell.
-			const float tu = cellWid * float(cellIdx);
-			const float tv = (yBot - yTop) / (beginy + m_d.m_height - endy);
+			const float tu_local = cellWid * float(cellIdx);
+			const float tv_local = (yBot - yTop) / (beginy + m_d.m_height - endy);
 
 			// Fill in the four corner vertices.
 			// Vertices are (in order): bottom left, top left, top right, bottom right.
-			ptr[0].x = xLt;        ptr[0].nx = 0.0f;          ptr[0].tu = tu;           // left
-			ptr[0].y = yBot;       ptr[0].ny = 0.0f;          ptr[0].tv = tv;           // bottom
+			ptr[0].x = xLt;        ptr[0].nx = 0.0f;          ptr[0].tu = tu_local;           // left
+			ptr[0].y = yBot;       ptr[0].ny = 0.0f;          ptr[0].tv = tv_local;           // bottom
 			ptr[0].z = z;          ptr[0].nz = -1.0f;
-			ptr[1].x = xLt;        ptr[1].nx = 0.0f;          ptr[1].tu = tu;           // left
-			ptr[1].y = yTop;       ptr[1].ny = 0.0f;          ptr[1].tv = 0.0f;         // top
+			ptr[1].x = xLt;        ptr[1].nx = 0.0f;          ptr[1].tu = tu_local;           // left
+			ptr[1].y = yTop;       ptr[1].ny = 0.0f;          ptr[1].tv = 0.0f;				  // top
 			ptr[1].z = z;          ptr[1].nz = -1.0f;
-			ptr[2].x = xRt;        ptr[2].nx = 0.0f;          ptr[2].tu = tu + cellWid; // right
-			ptr[2].y = yTop;       ptr[2].ny = 0.0f;          ptr[2].tv = 0.0f;         // top
+			ptr[2].x = xRt;        ptr[2].nx = 0.0f;          ptr[2].tu = tu_local + cellWid; // right
+			ptr[2].y = yTop;       ptr[2].ny = 0.0f;          ptr[2].tv = 0.0f;			      // top
 			ptr[2].z = z;          ptr[2].nz = -1.0f;
-			ptr[3].x = xRt;        ptr[3].nx = 0.0f;          ptr[3].tu = tu + cellWid; // right
-			ptr[3].y = yBot;       ptr[3].ny = 0.0f;          ptr[3].tv = tv;           // bottom
+			ptr[3].x = xRt;        ptr[3].nx = 0.0f;          ptr[3].tu = tu_local + cellWid; // right
+			ptr[3].y = yBot;       ptr[3].ny = 0.0f;          ptr[3].tv = tv_local;           // bottom
 			ptr[3].z = z;          ptr[3].nz = -1.0f;
 		}
 		else
