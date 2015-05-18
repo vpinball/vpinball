@@ -212,6 +212,21 @@ VP 10.0.0 Changelog
 
 - It is possible to export the entire table to an .obj file. (Menu File -> Export -> OBJ Mesh)
 
+- Mesh import dialog added. The options are:
+  * "Convert coordinate system" : converts a mesh to the left handed coordinate system used by DirectX
+  * "Center mesh to it's midpoint" : The midpoint(pivot) of a mesh is calculated and the whole mesh is moved so that the midpoint is at the origin (0,0,0)
+  * "Place at primitive's position"    : The old/normal placement function. The mesh isn't moved and will be placed relative to the primitives base position.
+  * "Place at mesh's absolute position (use mesh's middpoint)": The mesh is transformed so it's midpoint(pivot) is at the origin (0,0,0) and then moved to it's absolute position
+                                                                   where it was placed in the 3D editor (e.g. Blender).
+  The last option is useful for the following workflow:
+   1. export the table as one huge .obj file (File -> Export -> OBJ Mesh).
+   2. import this obj file into your 3D editor.
+   3. place additional meshes on the table or replace existing objects
+   4. export each object you have added or replaced into a separate .obj file
+   5. import each .obj file and in the import dialog select "Place at mesh's absolute position (use mesh's midpoint)". The object's pivot point will be the object's midpoint 
+      and the base position of the primitive is changed to the position from the 3D editor.
+  
+
 VP 9.9.1 Changelog
 ------------------------
 - fixed some memory leaks
