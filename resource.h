@@ -315,6 +315,7 @@
 #define IDC_DRAWING_ORDER_UP            280
 #define IDC_COL_UP_BUTTON               280
 #define IDC_ADD_BUTTON                  280
+#define IDC_BROWSE_BUTTON               280
 #define IDC_ITEMLIST                    281
 #define IDC_OUT                         281
 #define IDC_SENDMAIL                    281
@@ -511,6 +512,7 @@
 #define IDC_XMAX_EDIT                   377
 #define IDC_DIFFUSE_EDIT                377
 #define IDC_ALPHA_MASK_EDIT             377
+#define IDC_FILENAME_EDIT               377
 #define IDC_HEIGHT_EDIT                 378
 #define IDD_COMLIST                     378
 #define IDC_RADIO1                      378
@@ -627,6 +629,7 @@
 #define IDC_PROP_FLOAT_CHECK            431
 #define EDITOR_CHECK                    431
 #define IDC_SHOW_IN_EDITOR_CHECK        431
+#define IDC_CONVERT_COORD_CHECK         431
 #define IDC_LIGHT_FALLOFF_POWER         432
 #define IDC_MODULATE_VS_ADD             433
 #define IDC_INTENSITY_SCALE_LIGHT       434
@@ -672,6 +675,9 @@
 #define DISPID_SpringLoops              473
 #define DISPID_RingGap                  474
 #define DISPID_SpringEndLoops           475
+#define IDC_REL_POSITION_RADIO          477
+#define IDC_RADIO3                      478
+#define IDC_ABS_POSITION_RADIO          478
 #define IDC_JOYLFLIPCOMBO               501
 #define IDC_JOYRFLIPCOMBO               502
 #define IDC_JOYPLUNGERCOMBO             503
@@ -765,6 +771,7 @@
 #define IDR_POINTMENU_SMOOTH            614
 #define IDC_TRANSMISSION_SCALE          617
 #define IDC_EDGEALPHA_EDIT              618
+#define IDD_MESH_IMPORT_DIALOG          619
 #define DISPID_Gate_Height1             1142
 #define DISPID_Image                    1500
 #define IDC_MESH_FILENAME_EDIT          1601
@@ -881,9 +888,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        619
+#define _APS_NEXT_RESOURCE_VALUE        620
 #define _APS_NEXT_COMMAND_VALUE         33003
-#define _APS_NEXT_CONTROL_VALUE         476
+#define _APS_NEXT_CONTROL_VALUE         479
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif

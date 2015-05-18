@@ -18,6 +18,9 @@ void Mesh::Clear()
 {
     m_vertices.clear();
     m_indices.clear();
+    middlePoint.x = 0.0f;
+    middlePoint.y = 0.0f;
+    middlePoint.z = 0.0f;
 }
 
 bool Mesh::LoadWavefrontObj(const char *fname, const bool flipTV, const bool convertToLeftHanded)
@@ -28,6 +31,22 @@ bool Mesh::LoadWavefrontObj(const char *fname, const bool flipTV, const bool con
     {
         WaveFrontObj_GetVertices(m_vertices);
         WaveFrontObj_GetIndices(m_indices);
+        float maxX = FLT_MIN, minX = FLT_MAX;
+        float maxY = FLT_MIN, minY = FLT_MAX;
+        float maxZ = FLT_MIN, minZ = FLT_MAX;
+
+        for (unsigned int i = 0; i < m_vertices.size(); i++)
+        {
+           if (m_vertices[i].x > maxX) maxX = m_vertices[i].x;
+           if (m_vertices[i].x < minX) minX = m_vertices[i].x;
+           if (m_vertices[i].y > maxY) maxY = m_vertices[i].y;
+           if (m_vertices[i].y < minY) minY = m_vertices[i].y;
+           if (m_vertices[i].z > maxZ) maxZ = m_vertices[i].z;
+           if (m_vertices[i].z < minZ) minZ = m_vertices[i].z;
+        }
+        middlePoint.x = (maxX + minX)*0.5f;
+        middlePoint.y = (maxY + minY)*0.5f;
+        middlePoint.z = (maxZ + minZ)*0.5f;
         return true;
     }
     else
@@ -198,7 +217,6 @@ void Primitive::SetDefaults(bool fromMouseClick)
 
    m_d.m_use3DMesh = false;
    m_d.m_meshFileName[0] = 0;
-
    // sides
    m_d.m_Sides = fromMouseClick ? GetRegIntWithDefault(strKeyName, "Sides", 4) : 4;
    if (m_d.m_Sides > Max_Primitive_Sides)
@@ -1173,8 +1191,145 @@ HRESULT Primitive::InitPostLoad()
     return S_OK;
 }
 
+INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+   static Primitive *prim = NULL;
+   switch (uMsg)
+   {
+      case WM_INITDIALOG:
+      {
+         char nullstring[8] = { 0 };
+
+         prim = (Primitive*)lParam;
+         SetDlgItemText(hwndDlg, IDC_FILENAME_EDIT, nullstring);
+         CheckDlgButton(hwndDlg, IDC_CONVERT_COORD_CHECK, BST_CHECKED);
+         CheckDlgButton(hwndDlg, IDC_REL_POSITION_RADIO, BST_CHECKED);
+         CheckDlgButton(hwndDlg, IDC_ABS_POSITION_RADIO, BST_UNCHECKED);
+         return TRUE;
+      }
+      case WM_CLOSE:
+      {
+         EndDialog(hwndDlg, FALSE);
+         break;
+      }
+      case WM_COMMAND:
+         switch (HIWORD(wParam))
+         {
+            case BN_CLICKED:
+               switch (LOWORD(wParam))
+               {
+                  case IDOK:
+                  {
+                     char szFileName[1024] = { 0 };
+
+                     GetDlgItemText(hwndDlg, IDC_FILENAME_EDIT, szFileName, 1023);
+                     if (szFileName[0] == 0)
+                     {
+                        ShowError("No .obj file selected!");
+                        break;
+                     }
+                     prim->m_mesh.Clear();
+                     prim->m_d.m_use3DMesh = false;
+                     if (prim->vertexBuffer)
+                     {
+                        prim->vertexBuffer->release();
+                        prim->vertexBuffer = 0;
+                     }
+                     bool flipTV = false;
+                     bool convertToLeftHanded = IsDlgButtonChecked(hwndDlg, IDC_CONVERT_COORD_CHECK);
+                     bool importAbsolutePosition = IsDlgButtonChecked(hwndDlg, IDC_ABS_POSITION_RADIO);
+                     if (prim->m_mesh.LoadWavefrontObj(szFileName, flipTV, convertToLeftHanded))
+                     {
+                        if (importAbsolutePosition)
+                        {
+                           for (unsigned int i = 0; i < prim->m_mesh.m_vertices.size(); i++)
+                           {
+                              prim->m_mesh.m_vertices[i].x -= prim->m_mesh.middlePoint.x;
+                              prim->m_mesh.m_vertices[i].y -= prim->m_mesh.middlePoint.y;
+                              prim->m_mesh.m_vertices[i].z -= prim->m_mesh.middlePoint.z;
+                           }
+                           prim->m_d.m_vPosition.x = prim->m_mesh.middlePoint.x;
+                           prim->m_d.m_vPosition.y = prim->m_mesh.middlePoint.y;
+                           prim->m_d.m_vPosition.z = prim->m_mesh.middlePoint.z;
+                           prim->m_d.m_vSize.x = 1.0f;
+                           prim->m_d.m_vSize.y = 1.0f;
+                           prim->m_d.m_vSize.z = 1.0f;
+                        }
+                        prim->m_d.m_use3DMesh = true;
+                        prim->UpdateEditorView();
+                        EndDialog(hwndDlg, TRUE);
+                     }
+                     else
+                        ShowError("Unable to open file!");
+                     break;
+                  }
+                  case IDC_BROWSE_BUTTON:
+                  {
+                     if (prim == NULL)
+                        break;
+
+                     char szFileName[1024];
+                     char szInitialDir[1024];
+                     szFileName[0] = '\0';
+
+                     OPENFILENAME ofn;
+                     ZeroMemory(&ofn, sizeof(OPENFILENAME));
+                     ofn.lStructSize = sizeof(OPENFILENAME);
+                     ofn.hInstance = g_hinst;
+                     ofn.hwndOwner = g_pvp->m_hwnd;
+                     // TEXT
+                     ofn.lpstrFilter = "Wavefront obj file (*.obj)\0*.obj\0";
+                     ofn.lpstrFile = szFileName;
+                     ofn.nMaxFile = _MAX_PATH;
+                     ofn.lpstrDefExt = "obj";
+                     ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
+
+                     const HRESULT hr = GetRegString("RecentDir", "ImportDir", szInitialDir, 1024);
+                     char szFoo[MAX_PATH];
+                     if (hr == S_OK)
+                     {
+                        ofn.lpstrInitialDir = szInitialDir;
+                     }
+                     else
+                     {
+                        lstrcpy(szFoo, "c:\\");
+                        ofn.lpstrInitialDir = szFoo;
+                     }
+
+                     const int ret = GetOpenFileName(&ofn);
+                     SetForegroundWindow(hwndDlg);
+                     if (ret)
+                     {
+                        SetDlgItemText(hwndDlg, IDC_FILENAME_EDIT, szFileName);
+                        SetRegValue("RecentDir", "ImportDir", REG_SZ, szInitialDir, lstrlen(szInitialDir));
+                        string filename(szFileName);
+                        size_t index = filename.find_last_of("\\");
+                        if (index != -1)
+                        {
+                           index++;
+                           string name = filename.substr(index, filename.length() - index);
+                           strcpy_s(prim->m_d.m_meshFileName, name.c_str());
+                        }
+                     }
+                     break;
+                  }
+                  case IDCANCEL:
+                  {
+                     EndDialog(hwndDlg, FALSE);
+                     break;
+                  }
+               }
+         }
+   }
+   return FALSE;
+}
+
 bool Primitive::BrowseFor3DMeshFile()
 {
+
+   DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_MESH_IMPORT_DIALOG), g_pvp->m_hwnd, ObjImportProc, (size_t)this);
+   return false;
+
    char szFileName[1024];
    char szInitialDir[1024];
    szFileName[0] = '\0';
@@ -1241,6 +1396,12 @@ bool Primitive::BrowseFor3DMeshFile()
    }
    if (m_mesh.LoadWavefrontObj(ofn.lpstrFile, flipTV, convertToLeftHanded))
    {
+      m_d.m_vPosition.x = m_mesh.middlePoint.x;
+      m_d.m_vPosition.y = m_mesh.middlePoint.y;
+      m_d.m_vPosition.z = m_mesh.middlePoint.z;
+      m_d.m_vSize.x = 1.0f;
+      m_d.m_vSize.y = 1.0f;
+      m_d.m_vSize.z = 1.0f;
       m_d.m_use3DMesh = true;
       UpdateEditorView();
       return true;
