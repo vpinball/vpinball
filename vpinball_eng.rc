@@ -14,6 +14,61 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
+// German (Germany) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DEU)
+LANGUAGE LANG_GERMAN, SUBLANG_GERMAN
+#pragma code_page(1252)
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_MESH_IMPORT_DIALOG DIALOGEX 0, 0, 309, 113
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_TOOLWINDOW
+CAPTION "Wavefront OBJ Importer"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "&Import",IDOK,198,92,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,252,92,50,14
+    LTEXT           "File",IDC_STATIC,15,12,12,8
+    EDITTEXT        IDC_FILENAME_EDIT,28,10,220,14,ES_AUTOHSCROLL
+    PUSHBUTTON      "&Browse",IDC_BROWSE_BUTTON,248,10,50,14
+    CONTROL         "Convert coordinate system",IDC_CONVERT_COORD_CHECK,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,20,41,103,10
+    GROUPBOX        "Options",IDC_STATIC,15,29,279,59
+    CONTROL         "Place at primitive's position",IDC_REL_POSITION_RADIO,
+                    "Button",BS_AUTORADIOBUTTON,20,59,101,10
+    CONTROL         "Place at mesh's absolute postion (use mesh's middle point)",IDC_ABS_POSITION_RADIO,
+                    "Button",BS_AUTORADIOBUTTON,20,73,201,10
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO
+BEGIN
+    IDD_MESH_IMPORT_DIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 302
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 106
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+#endif    // German (Germany) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
 // English (United States) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)

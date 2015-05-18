@@ -11,17 +11,17 @@
 class Mesh
 {
 public:
-    std::vector<Vertex3D_NoTex2> m_vertices;
-    std::vector<unsigned int> m_indices;
+   Vertex3Ds middlePoint;
+   std::vector<Vertex3D_NoTex2> m_vertices;
+   std::vector<unsigned int> m_indices;
+   Mesh(){ middlePoint.x = 0.0f; middlePoint.y = 0.0f; middlePoint.z = 0.0f; }
+   void Clear();
+   bool LoadWavefrontObj(const char *fname, const bool flipTV, const bool convertToLeftHanded);
+   void SaveWavefrontObj(const char *fname, const char *description=NULL);
 
-    void Clear();
-    bool LoadWavefrontObj(const char *fname, const bool flipTV, const bool convertToLeftHanded);
-    void SaveWavefrontObj(const char *fname, const char *description=NULL);
-
-    size_t NumVertices() const    { return m_vertices.size(); }
+   size_t NumVertices() const    { return m_vertices.size(); }
 	size_t NumIndices() const     { return m_indices.size(); }
-
-    void UploadToVB(VertexBuffer * vb) const;
+   void UploadToVB(VertexBuffer * vb) const;
 };
 
 // Indices for RotAndTra:
@@ -242,6 +242,8 @@ public:
    void    CreateRenderGroup(Collection *collection, RenderDevice *pd3dDevice);
    void    RecalculateMatrices();
    void    TransformVertices();
+
+   static INT_PTR CALLBACK ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
    Mesh m_mesh;
 
