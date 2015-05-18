@@ -392,25 +392,25 @@ void WaveFrontObj_WriteObjectName(FILE *f, const char *objname)
     fprintf_s(f, "o %s\n",objname);
 }
 
-void WaveFrontObj_WriteVertexInfo(FILE *f, const Vertex3D_NoTex2 *verts, unsigned int numVerts)
+void WaveFrontObj_WriteVertexInfo(FILE *f, const Vertex3D_NoTex2 *in_verts, unsigned int numVerts)
 {
     for (unsigned i = 0; i < numVerts; i++)
     {
-        fprintf_s(f, "v %f %f %f\n", verts[i].x, verts[i].y, -verts[i].z);
+        fprintf_s(f, "v %f %f %f\n", in_verts[i].x, in_verts[i].y, -in_verts[i].z);
     }
     for (unsigned i = 0; i < numVerts; i++)
     {
-        float tu = verts[i].tu;
-        float tv = 1.f - verts[i].tv;
+        float tu = in_verts[i].tu;
+        float tv = 1.f - in_verts[i].tv;
         if (tu != tu) tu = 0.0f;
         if (tv != tv) tv = 0.0f;
         fprintf_s(f, "vt %f %f\n", tu, tv);
     }
     for (unsigned i = 0; i < numVerts; i++)
     {
-       float nx = verts[i].nx;
-       float ny = verts[i].ny;
-       float nz = verts[i].nz;
+       float nx = in_verts[i].nx;
+       float ny = in_verts[i].ny;
+       float nz = in_verts[i].nz;
        if (nx != nx) nx = 0.0f;
        if (ny != ny) ny = 0.0f;
        if (nz != nz) nz = 0.0f;
@@ -418,34 +418,34 @@ void WaveFrontObj_WriteVertexInfo(FILE *f, const Vertex3D_NoTex2 *verts, unsigne
     }
 }
 
-void WaveFrontObj_WriteFaceInfo(FILE *f, const std::vector<WORD> &faces)
+void WaveFrontObj_WriteFaceInfo(FILE *f, const std::vector<WORD> &in_faces)
 {
-    for (unsigned i = 0; i < faces.size(); i += 3)
+    for (unsigned i = 0; i < in_faces.size(); i += 3)
     {
-       fprintf_s(f, "f %u/%u/%u %u/%u/%u %u/%u/%u\n", faces[i + 2] + 1 + faceIndexOffset, faces[i + 2] + 1 + faceIndexOffset, faces[i + 2] + 1 + faceIndexOffset
-                                                    , faces[i + 1] + 1 + faceIndexOffset, faces[i + 1] + 1 + faceIndexOffset, faces[i + 1] + 1 + faceIndexOffset
-                                                    , faces[i    ] + 1 + faceIndexOffset, faces[i    ] + 1 + faceIndexOffset, faces[i    ] + 1 + faceIndexOffset);
+       fprintf_s(f, "f %u/%u/%u %u/%u/%u %u/%u/%u\n", in_faces[i + 2] + 1 + faceIndexOffset, in_faces[i + 2] + 1 + faceIndexOffset, in_faces[i + 2] + 1 + faceIndexOffset
+                                                    , in_faces[i + 1] + 1 + faceIndexOffset, in_faces[i + 1] + 1 + faceIndexOffset, in_faces[i + 1] + 1 + faceIndexOffset
+                                                    , in_faces[i    ] + 1 + faceIndexOffset, in_faces[i    ] + 1 + faceIndexOffset, in_faces[i    ] + 1 + faceIndexOffset);
     }
 }
 
-void WaveFrontObj_WriteFaceInfoList(FILE *f, const WORD *faces, unsigned int numFaces)
+void WaveFrontObj_WriteFaceInfoList(FILE *f, const WORD *in_faces, unsigned int numFaces)
 {
    fprintf_s(f, "s 1\n");
    for (unsigned i = 0; i < numFaces; i += 3)
    {
-      fprintf_s(f, "f %u/%u/%u %u/%u/%u %u/%u/%u\n", faces[i + 2] + 1 + faceIndexOffset, faces[i + 2] + 1 + faceIndexOffset, faces[i + 2] + 1 + faceIndexOffset
-                                                   , faces[i + 1] + 1 + faceIndexOffset, faces[i + 1] + 1 + faceIndexOffset, faces[i + 1] + 1 + faceIndexOffset
-                                                   , faces[i] + 1 + faceIndexOffset, faces[i] + 1 + faceIndexOffset, faces[i] + 1 + faceIndexOffset);
+      fprintf_s(f, "f %u/%u/%u %u/%u/%u %u/%u/%u\n", in_faces[i + 2] + 1 + faceIndexOffset, in_faces[i + 2] + 1 + faceIndexOffset, in_faces[i + 2] + 1 + faceIndexOffset
+                                                   , in_faces[i + 1] + 1 + faceIndexOffset, in_faces[i + 1] + 1 + faceIndexOffset, in_faces[i + 1] + 1 + faceIndexOffset
+                                                   , in_faces[i    ] + 1 + faceIndexOffset, in_faces[i    ] + 1 + faceIndexOffset, in_faces[i    ] + 1 + faceIndexOffset);
    }
 }
 
-void WaveFrontObj_WriteFaceInfoLong(FILE *f, const std::vector<unsigned int> &faces)
+void WaveFrontObj_WriteFaceInfoLong(FILE *f, const std::vector<unsigned int> &in_faces)
 {
-    for (unsigned i = 0; i < faces.size(); i += 3)
+    for (unsigned i = 0; i < in_faces.size(); i += 3)
     {
-       fprintf_s(f, "f %u/%u/%u %u/%u/%u %u/%u/%u\n", faces[i + 2] + 1 + faceIndexOffset, faces[i + 2] + 1 + faceIndexOffset, faces[i + 2] + 1 + faceIndexOffset
-                                                    , faces[i + 1] + 1 + faceIndexOffset, faces[i + 1] + 1 + faceIndexOffset, faces[i + 1] + 1 + faceIndexOffset
-                                                    , faces[i] + 1 + faceIndexOffset, faces[i] + 1 + faceIndexOffset, faces[i] + 1 + faceIndexOffset);
+       fprintf_s(f, "f %u/%u/%u %u/%u/%u %u/%u/%u\n", in_faces[i + 2] + 1 + faceIndexOffset, in_faces[i + 2] + 1 + faceIndexOffset, in_faces[i + 2] + 1 + faceIndexOffset
+                                                    , in_faces[i + 1] + 1 + faceIndexOffset, in_faces[i + 1] + 1 + faceIndexOffset, in_faces[i + 1] + 1 + faceIndexOffset
+                                                    , in_faces[i    ] + 1 + faceIndexOffset, in_faces[i    ] + 1 + faceIndexOffset, in_faces[i    ] + 1 + faceIndexOffset);
     }
 }
 
