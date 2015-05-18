@@ -236,7 +236,7 @@ int StackTrace::GetSymbolInfo(Address address, char* symbol, int maxSymbolLen)
 		else
 		{
 			fileLineChars = _snprintf_s(symbol, maxSymbolLen, _TRUNCATE,
-				" %s(%d)", fileName, lineInfo.LineNumber);
+				" %s(%u)", fileName, lineInfo.LineNumber);
 		}
 		symbol += fileLineChars;
 		maxSymbolLen -= fileLineChars;
