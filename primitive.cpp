@@ -1205,10 +1205,13 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
          CheckDlgButton(hwndDlg, IDC_CONVERT_COORD_CHECK, BST_CHECKED);
          CheckDlgButton(hwndDlg, IDC_REL_POSITION_RADIO, BST_CHECKED);
          CheckDlgButton(hwndDlg, IDC_ABS_POSITION_RADIO, BST_UNCHECKED);
+         CheckDlgButton(hwndDlg, IDC_CENTER_MESH, BST_UNCHECKED);
+         EnableWindow(GetDlgItem(hwndDlg, IDOK), FALSE);
          return TRUE;
       }
       case WM_CLOSE:
       {
+         prim = NULL;
          EndDialog(hwndDlg, FALSE);
          break;
       }
@@ -1236,11 +1239,12 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
                         prim->vertexBuffer = 0;
                      }
                      bool flipTV = false;
-                     bool convertToLeftHanded = IsDlgButtonChecked(hwndDlg, IDC_CONVERT_COORD_CHECK);
-                     bool importAbsolutePosition = IsDlgButtonChecked(hwndDlg, IDC_ABS_POSITION_RADIO);
+                     bool convertToLeftHanded = IsDlgButtonChecked(hwndDlg, IDC_CONVERT_COORD_CHECK) == BST_CHECKED;
+                     bool importAbsolutePosition = IsDlgButtonChecked(hwndDlg, IDC_ABS_POSITION_RADIO) == BST_CHECKED;
+                     bool centerMesh = IsDlgButtonChecked(hwndDlg, IDC_CENTER_MESH)==BST_CHECKED;
                      if (prim->m_mesh.LoadWavefrontObj(szFileName, flipTV, convertToLeftHanded))
                      {
-                        if (importAbsolutePosition)
+                        if (importAbsolutePosition || centerMesh)
                         {
                            for (unsigned int i = 0; i < prim->m_mesh.m_vertices.size(); i++)
                            {
@@ -1248,15 +1252,19 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
                               prim->m_mesh.m_vertices[i].y -= prim->m_mesh.middlePoint.y;
                               prim->m_mesh.m_vertices[i].z -= prim->m_mesh.middlePoint.z;
                            }
-                           prim->m_d.m_vPosition.x = prim->m_mesh.middlePoint.x;
-                           prim->m_d.m_vPosition.y = prim->m_mesh.middlePoint.y;
-                           prim->m_d.m_vPosition.z = prim->m_mesh.middlePoint.z;
-                           prim->m_d.m_vSize.x = 1.0f;
-                           prim->m_d.m_vSize.y = 1.0f;
-                           prim->m_d.m_vSize.z = 1.0f;
+                           if (importAbsolutePosition)
+                           {
+                              prim->m_d.m_vPosition.x = prim->m_mesh.middlePoint.x;
+                              prim->m_d.m_vPosition.y = prim->m_mesh.middlePoint.y;
+                              prim->m_d.m_vPosition.z = prim->m_mesh.middlePoint.z;
+                              prim->m_d.m_vSize.x = 1.0f;
+                              prim->m_d.m_vSize.y = 1.0f;
+                              prim->m_d.m_vSize.z = 1.0f;
+                           }
                         }
                         prim->m_d.m_use3DMesh = true;
                         prim->UpdateEditorView();
+                        prim = NULL;
                         EndDialog(hwndDlg, TRUE);
                      }
                      else
@@ -1310,11 +1318,13 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
                            string name = filename.substr(index, filename.length() - index);
                            strcpy_s(prim->m_d.m_meshFileName, name.c_str());
                         }
+                        EnableWindow(GetDlgItem(hwndDlg, IDOK), TRUE);
                      }
                      break;
                   }
                   case IDCANCEL:
                   {
+                     prim = NULL;
                      EndDialog(hwndDlg, FALSE);
                      break;
                   }

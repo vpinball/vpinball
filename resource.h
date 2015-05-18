@@ -676,8 +676,9 @@
 #define DISPID_RingGap                  474
 #define DISPID_SpringEndLoops           475
 #define IDC_REL_POSITION_RADIO          477
-#define IDC_RADIO3                      478
 #define IDC_ABS_POSITION_RADIO          478
+#define IDC_CHECK3                      479
+#define IDC_CENTER_MESH                 479
 #define IDC_JOYLFLIPCOMBO               501
 #define IDC_JOYRFLIPCOMBO               502
 #define IDC_JOYPLUNGERCOMBO             503
@@ -890,7 +891,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        620
 #define _APS_NEXT_COMMAND_VALUE         33003
-#define _APS_NEXT_CONTROL_VALUE         479
+#define _APS_NEXT_CONTROL_VALUE         480
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif
