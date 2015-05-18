@@ -47,7 +47,7 @@ public:
 			unsigned long long ull;
 	    } h;
 
-		h.uc[0] = ((unsigned int)m_bIsMetal<<6) | ((unsigned int)m_bOpacityActive<<7) | (((unsigned int)this/sizeof(Material))&63); //!! meh
+		h.uc[0] = ((unsigned int)m_bIsMetal<<6) | ((unsigned int)m_bOpacityActive<<7) | (((size_t)this/sizeof(Material))&63); //!! meh
 	    h.uc[1] = (unsigned char)(clamp(m_fWrapLighting, 0.f,1.f)*255.0f);
 	    h.uc[2] = (unsigned char)(clamp(m_fRoughness, 0.f,1.f)*255.0f);
 	    h.uc[3] = (((unsigned char)(clamp(m_fEdge, 0.f,1.f)*255.0f))>>4) | (m_bOpacityActive ? ((((unsigned char)(clamp(m_fEdgeAlpha, 0.f,1.f)*255.0f))>>4)<<4) : 0);
