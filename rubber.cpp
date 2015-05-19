@@ -1423,6 +1423,9 @@ void Rubber::ExportMesh(FILE *f)
       GenerateMesh();
       WaveFrontObj_WriteObjectName(f, name);
       WaveFrontObj_WriteVertexInfo(f, m_vertices.data(), m_numVertices);
+      Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
+      WaveFrontObj_WriteMaterial(m_d.m_szMaterial, NULL, mat);
+      WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
       WaveFrontObj_WriteFaceInfo(f, ringIndices);
       WaveFrontObj_UpdateFaceOffset(m_numVertices);
    }

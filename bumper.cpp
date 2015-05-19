@@ -521,6 +521,9 @@ void Bumper::ExportMesh(FILE *f)
 
       GenerateBaseMesh(base);
       WaveFrontObj_WriteVertexInfo(f, base, bumperBaseNumVertices);
+      Material *mat = m_ptable->GetMaterial(m_d.m_szBaseMaterial);
+      WaveFrontObj_WriteMaterial(m_d.m_szBaseMaterial, NULL, mat);
+      WaveFrontObj_UseTexture(f, m_d.m_szBaseMaterial);
       WaveFrontObj_WriteFaceInfoList(f, bumperBaseIndices, bumperBaseNumFaces);
       WaveFrontObj_UpdateFaceOffset(bumperBaseNumVertices);
       delete[] base;
@@ -543,6 +546,9 @@ void Bumper::ExportMesh(FILE *f)
 
       GenerateSocketMesh(socket);
       WaveFrontObj_WriteVertexInfo(f, socket, bumperSocketNumVertices);
+      mat = m_ptable->GetMaterial(m_d.m_szSkirtMaterial);
+      WaveFrontObj_WriteMaterial(m_d.m_szSkirtMaterial, NULL, mat);
+      WaveFrontObj_UseTexture(f, m_d.m_szSkirtMaterial);
       WaveFrontObj_WriteFaceInfoList(f, bumperSocketIndices, bumperSocketNumFaces);
       WaveFrontObj_UpdateFaceOffset(bumperSocketNumVertices);
       delete[] socket;
@@ -556,6 +562,9 @@ void Bumper::ExportMesh(FILE *f)
 
       GenerateCapMesh(cap);
       WaveFrontObj_WriteVertexInfo(f, cap, bumperCapNumVertices);
+      Material *mat = m_ptable->GetMaterial(m_d.m_szCapMaterial);
+      WaveFrontObj_WriteMaterial(m_d.m_szCapMaterial, NULL, mat);
+      WaveFrontObj_UseTexture(f, m_d.m_szCapMaterial);
       WaveFrontObj_WriteFaceInfoList(f, bumperCapIndices, bumperCapNumFaces);
       WaveFrontObj_UpdateFaceOffset(bumperCapNumVertices);
       delete[] cap;

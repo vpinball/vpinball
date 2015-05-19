@@ -449,7 +449,8 @@ void WaveFrontObj_WriteMaterial(const char *texelName, const char *texelFilename
    D3DXVECTOR4 color = convertColor(mat->m_cBase);
    fprintf_s(matFile, "Ka 0.000000 0.000000 0.000000\n");
    fprintf_s(matFile, "Kd %f %f %f\n", color.x, color.y, color.z);
-   fprintf_s(matFile, "Ks 0.000000 0.000000 0.000000\n");
+   color = convertColor(mat->m_cGlossy);
+   fprintf_s(matFile, "Ks %f %f %f\n", color.x, color.y, color.z);
    fprintf_s(matFile, "Ni 1.500000\n");
    fprintf_s(matFile, "d %f\n",mat->m_fOpacity);
    fprintf_s(matFile, "illum 5\n");
