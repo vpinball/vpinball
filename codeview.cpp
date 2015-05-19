@@ -2001,7 +2001,7 @@ STDMETHODIMP OMCollectionEnum::Next(ULONG celt, VARIANT __RPC_FAR *rgVar, ULONG 
 STDMETHODIMP OMCollectionEnum::Skip(ULONG celt)
 {
    m_index += celt;
-   return (m_index	>= m_pcol->m_visel.Size()) ? S_FALSE : S_OK;
+   return (m_index >= m_pcol->m_visel.Size()) ? S_FALSE : S_OK;
 }
 
 STDMETHODIMP OMCollectionEnum::Reset()

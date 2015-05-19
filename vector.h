@@ -134,6 +134,7 @@ public:
 			ZeroMemory(&m_rg[m_cSize], sizeof(void *) * (cNewSize - m_cSize));
 			m_cSize = cNewSize;
 			}
+
 		return true;
 		}
 
