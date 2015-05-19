@@ -2041,13 +2041,13 @@ void Ramp::ExportMesh(FILE *f)
       {
          Vertex3D_NoTex2 *rampMesh = NULL;
          GenerateRampMesh(&rampMesh);
+         Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
          unsigned int numVers = m_numVertices * 5;
          if (m_d.m_rightwallheightvisible == 0.0f && m_d.m_leftwallheightvisible == 0.0f)
             numVers = m_numVertices;
          WaveFrontObj_WriteObjectName(f, name);
          WaveFrontObj_WriteVertexInfo(f, rampMesh, numVers);
          //floor
-         Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
          WaveFrontObj_WriteMaterial(m_d.m_szMaterial, NULL, mat);
          WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
          WaveFrontObj_WriteFaceInfoList(f, m_meshIndices.data(), (rampVertex - 1) * 6);
@@ -2077,10 +2077,13 @@ void Ramp::ExportMesh(FILE *f)
       {
          Vertex3D_NoTex2 *tmpBuf1=NULL, *tmpBuf2=NULL;
          GenerateWireMesh(&tmpBuf1, &tmpBuf2);
+         Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
          if (m_d.m_type == RampType1Wire)
          {
             WaveFrontObj_WriteObjectName(f, name);
             WaveFrontObj_WriteVertexInfo(f, tmpBuf1, m_numVertices);
+            WaveFrontObj_WriteMaterial(m_d.m_szMaterial, NULL, mat);
+            WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
             WaveFrontObj_WriteFaceInfo(f, m_meshIndices);
             WaveFrontObj_UpdateFaceOffset(m_numVertices);
          }
@@ -2094,6 +2097,8 @@ void Ramp::ExportMesh(FILE *f)
             WaveFrontObj_WriteVertexInfo(f, tmp, m_numVertices*2);
             delete[] tmp;
             WaveFrontObj_WriteFaceInfo(f, m_meshIndices);
+            WaveFrontObj_WriteMaterial(m_d.m_szMaterial, NULL, mat);
+            WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
             WORD *idx = new WORD[m_meshIndices.size()];
             for (unsigned int i = 0; i < m_meshIndices.size(); i++)
                idx[i] = m_meshIndices[i] + m_numVertices;
@@ -2115,6 +2120,8 @@ void Ramp::ExportMesh(FILE *f)
                tmp[i].z += 3.0f;
             WaveFrontObj_WriteVertexInfo(f, tmp, m_numVertices * 4);
             delete[] tmp;
+            WaveFrontObj_WriteMaterial(m_d.m_szMaterial, NULL, mat);
+            WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
             WaveFrontObj_WriteFaceInfo(f, m_meshIndices);
             WORD *idx = new WORD[m_meshIndices.size()];
             for (unsigned int i = 0; i < m_meshIndices.size(); i++)
@@ -2142,6 +2149,8 @@ void Ramp::ExportMesh(FILE *f)
                tmp[i].z += 3.0f;
             WaveFrontObj_WriteVertexInfo(f, tmp, m_numVertices * 3);
             delete[] tmp;
+            WaveFrontObj_WriteMaterial(m_d.m_szMaterial, NULL, mat);
+            WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
             WaveFrontObj_WriteFaceInfo(f, m_meshIndices);
             WORD *idx = new WORD[m_meshIndices.size()];
             for (unsigned int i = 0; i < m_meshIndices.size(); i++)
@@ -2166,6 +2175,8 @@ void Ramp::ExportMesh(FILE *f)
                tmp[i].z += 3.0f;
             WaveFrontObj_WriteVertexInfo(f, tmp, m_numVertices * 3);
             delete[] tmp;
+            WaveFrontObj_WriteMaterial(m_d.m_szMaterial, NULL, mat);
+            WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
             WaveFrontObj_WriteFaceInfo(f, m_meshIndices);
             WORD *idx = new WORD[m_meshIndices.size()];
             for (unsigned int i = 0; i < m_meshIndices.size(); i++)
