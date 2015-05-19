@@ -82,6 +82,86 @@ static void NormalizeNormals()
 }
 #endif
 
+bool WaveFrontObjLoadMaterial(const char *filename, Material *mat)
+{
+    FILE *f;
+
+    fopen_s(&f, filename, "r");
+    if ( !f )
+        return false;
+
+    while (1)
+    {
+        char lineHeader[256];
+        int res = fscanf_s(f, "\n%s", lineHeader, 256);
+        if (res == EOF)
+        {
+            fclose(f);
+            break;
+        }
+        if (strcmp(lineHeader, "newmtl") == 0)
+        {
+            fscanf_s(f,"%s\n", mat->m_szName,32);
+        }
+        else if (strcmp(lineHeader, "Ns") == 0)
+        {
+            float tmp;
+            fscanf_s(f, "%f\n",&tmp);
+            int d = (int)(tmp*100);
+            tmp = d/100.0f;
+            // normally a wavefront material specular exponent ranges from 0..1000.
+            // but our shininess calculation differs from the way how e.g. Blender is calculating the specular exponent
+            // starting from 0.5 and use only half of the exponent resolution to get a similar look
+            mat->m_fRoughness = 0.5f+(tmp / 2000.0f);
+
+            if ( mat->m_fRoughness>1.0f )
+                mat->m_fRoughness = 1.0f;
+            if (mat->m_fRoughness<0.01f)
+                mat->m_fRoughness = 0.01;
+        }
+        else if (strcmp(lineHeader, "Ka") == 0)
+        {
+            Vertex3Ds tmp;;
+            fscanf_s(f, "%f %f %f\n", &tmp.x, &tmp.y, &tmp.z);
+        }
+        else if (strcmp(lineHeader,"Kd")==0)
+        {
+            Vertex3Ds tmp;
+            DWORD r,g,b;
+            fscanf_s(f, "%f %f %f\n", &tmp.x, &tmp.y, &tmp.z);
+            r = (DWORD)(tmp.x * 255);
+            g = (DWORD)(tmp.y * 255);
+            b = (DWORD)(tmp.z * 255);
+            mat->m_cBase = RGB(r,g,b);
+        }
+        else if (strcmp(lineHeader, "Ks") == 0)
+        {
+            Vertex3Ds tmp;
+            DWORD r, g, b;
+            fscanf_s(f, "%f %f %f\n", &tmp.x, &tmp.y, &tmp.z);
+            r = (DWORD)(tmp.x * 255);
+            g = (DWORD)(tmp.y * 255);
+            b = (DWORD)(tmp.z * 255);
+            mat->m_cGlossy = RGB(r, g, b);
+        }
+        else if (strcmp(lineHeader, "Ni") == 0)
+        {
+            float tmp;
+            fscanf_s(f, "%f\n", &tmp);
+        }
+        else if (strcmp(lineHeader, "d") == 0)
+        {
+            float tmp;
+            fscanf_s(f, "%f\n", &tmp);
+            if ( tmp>1.0f ) tmp=1.0f;
+            mat->m_fOpacity=tmp;
+            break;
+        }
+    }
+    fclose(f);
+    return true;
+}
+
 bool WaveFrontObj_Load(const char *filename, const bool flipTv, const bool convertToLeftHanded )
 {
    FILE *f;
@@ -362,18 +442,22 @@ void WaveFrontObj_ExportEnd(FILE *f)
    fclose(matFile);
 }
 
-void WaveFrontObj_WriteMaterial(const char *texelName, const char *texelFilename)
+void WaveFrontObj_WriteMaterial(const char *texelName, const char *texelFilename, Material *mat)
 {
    fprintf_s(matFile, "newmtl %s\n", texelName);
    fprintf_s(matFile, "Ns 7.843137\n");
+   D3DXVECTOR4 color = convertColor(mat->m_cBase);
    fprintf_s(matFile, "Ka 0.000000 0.000000 0.000000\n");
-   fprintf_s(matFile, "Kd 1.000000 1.000000 1.000000\n");
+   fprintf_s(matFile, "Kd %f %f %f\n", color.x, color.y, color.z);
    fprintf_s(matFile, "Ks 0.000000 0.000000 0.000000\n");
    fprintf_s(matFile, "Ni 1.500000\n");
-   fprintf_s(matFile, "d 1.000000\n");
-   fprintf_s(matFile, "illum 2\n");
-   fprintf_s(matFile, "map_kd %s\n", texelFilename);
-   fprintf_s(matFile, "map_ka %s\n\n", texelFilename);
+   fprintf_s(matFile, "d %f\n",mat->m_fOpacity);
+   fprintf_s(matFile, "illum 5\n");
+   if (texelFilename != NULL)
+   {
+       fprintf_s(matFile, "map_kd %s\n", texelFilename);
+       fprintf_s(matFile, "map_ka %s\n\n", texelFilename);
+   }
 
 }
 

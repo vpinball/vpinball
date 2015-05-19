@@ -225,6 +225,17 @@ VP 10.0.0 Changelog
    4. export each object you have added or replaced into a separate .obj file
    5. import each .obj file and in the import dialog select "Place at mesh's absolute position (use mesh's midpoint)". The object's pivot point will be the object's midpoint 
       and the base position of the primitive is changed to the position from the 3D editor.
+      
+- Added solution to import the mesh's material via the mesh import dialog. When "Import mesh's material" is selected VP also tries to load the corresponding
+  .mtl file and adds the first material in that file. For instance: the mesh .obj files is "bumper.obj" there should be a file "bumper.mtl" in the same 
+  directory. Only some basic settings of the material are imported due to the limited .mtl format.
+  For Blender the used material settings are:
+  Blender diffuse color -> VP base color
+  Blender specular color -> VP glossy layer
+  Blender specular hardness -> VP shininess value
+  Blender transparency alpha value -> VP opacity amount
+  
+  When imported the primitive gets the imported material automatically assigned. The texture isn't imported this must be done as usual with the help of the image manager.
   
 
 VP 9.9.1 Changelog
