@@ -5041,12 +5041,9 @@ void PinTable::ExportMesh(FILE *f)
 
    WaveFrontObj_WriteObjectName(f, name);
    WaveFrontObj_WriteVertexInfo(f, buffer, 4);
-//    Texture *tex = GetImage(m_szImage);
-//    if (tex)
-//    {
-//       WaveFrontObj_WriteMaterial(m_szImage, tex->m_szPath);
-//       WaveFrontObj_UseTexture(f, m_szImage);
-//    }
+   Material *mat = GetMaterial(m_szPlayfieldMaterial);
+   WaveFrontObj_WriteMaterial(m_szPlayfieldMaterial, NULL, mat);
+   WaveFrontObj_UseTexture(f, m_szPlayfieldMaterial);
    WaveFrontObj_WriteFaceInfoList(f, playfieldPolyIndices, 6);
    WaveFrontObj_UpdateFaceOffset(4);
    delete[] buffer;
@@ -5055,6 +5052,7 @@ void PinTable::ExportMesh(FILE *f)
 void PinTable::ExportTableMesh()
 {
     OPENFILENAME ofn;
+    memset(m_szObjFileName, 0, MAX_PATH);
     ZeroMemory(&ofn, sizeof(OPENFILENAME));
     ofn.lStructSize = sizeof(OPENFILENAME);
     ofn.hInstance = g_hinst;

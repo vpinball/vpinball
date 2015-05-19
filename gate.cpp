@@ -487,6 +487,9 @@ void Gate::ExportMesh(FILE *f)
       WaveFrontObj_WriteObjectName(f, subName);
       GenerateBracketMesh(buf);
       WaveFrontObj_WriteVertexInfo(f, buf, gateBracketNumVertices);
+      Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
+      WaveFrontObj_WriteMaterial(m_d.m_szMaterial, NULL, mat);
+      WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
       WaveFrontObj_WriteFaceInfoList(f, gateBracketIndices, gateBracketNumFaces);
       WaveFrontObj_UpdateFaceOffset(gateBracketNumVertices);
       delete[] buf;
@@ -498,6 +501,9 @@ void Gate::ExportMesh(FILE *f)
    WaveFrontObj_WriteObjectName(f, subName);
    GenerateWireMesh(buf);
    WaveFrontObj_WriteVertexInfo(f, buf, gateWireNumVertices);
+   Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
+   WaveFrontObj_WriteMaterial(m_d.m_szMaterial, NULL, mat);
+   WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
    WaveFrontObj_WriteFaceInfoList(f, gateWireIndices, gateWireNumFaces);
    WaveFrontObj_UpdateFaceOffset(gateWireNumVertices);
    delete[] buf;

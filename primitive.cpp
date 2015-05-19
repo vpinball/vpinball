@@ -734,6 +734,9 @@ void Primitive::ExportMesh(FILE *f)
       }
       WaveFrontObj_WriteObjectName(f, name);
       WaveFrontObj_WriteVertexInfo(f, buf, m_mesh.NumVertices());
+      Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
+      WaveFrontObj_WriteMaterial(m_d.m_szMaterial, NULL, mat);
+      WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
       WaveFrontObj_WriteFaceInfoLong(f, m_mesh.m_indices);
       WaveFrontObj_UpdateFaceOffset(m_mesh.NumVertices());
       delete[] buf;

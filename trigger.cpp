@@ -616,6 +616,9 @@ void Trigger::ExportMesh(FILE *f)
    GenerateMesh();
    WaveFrontObj_WriteObjectName(f, name);
    WaveFrontObj_WriteVertexInfo(f, triggerVertices, m_numVertices);
+   Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
+   WaveFrontObj_WriteMaterial(m_d.m_szMaterial, NULL, mat);
+   WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
    WaveFrontObj_WriteFaceInfoList(f, m_d.m_shape == TriggerWire ? triggerSimpleIndices : triggerStarIndices, m_numFaces);
    WaveFrontObj_UpdateFaceOffset(m_numVertices);
 

@@ -2041,37 +2041,36 @@ void Ramp::ExportMesh(FILE *f)
       {
          Vertex3D_NoTex2 *rampMesh = NULL;
          GenerateRampMesh(&rampMesh);
-         // too small ramps make problems -> don't export them
-         if (rampVertex > 2)
-         {
-            unsigned int numVers = m_numVertices * 5;
-            if (m_d.m_rightwallheightvisible == 0.0f && m_d.m_leftwallheightvisible == 0.0f)
-               numVers = m_numVertices;
-            WaveFrontObj_WriteObjectName(f, name);
-            WaveFrontObj_WriteVertexInfo(f, rampMesh, numVers);
-            //floor
-            WaveFrontObj_WriteFaceInfoList(f, m_meshIndices.data(), (rampVertex - 1) * 6);
+         unsigned int numVers = m_numVertices * 5;
+         if (m_d.m_rightwallheightvisible == 0.0f && m_d.m_leftwallheightvisible == 0.0f)
+            numVers = m_numVertices;
+         WaveFrontObj_WriteObjectName(f, name);
+         WaveFrontObj_WriteVertexInfo(f, rampMesh, numVers);
+         //floor
+         Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
+         WaveFrontObj_WriteMaterial(m_d.m_szMaterial, NULL, mat);
+         WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
+         WaveFrontObj_WriteFaceInfoList(f, m_meshIndices.data(), (rampVertex - 1) * 6);
 
-            if (m_d.m_rightwallheightvisible != 0.f && m_d.m_leftwallheightvisible != 0.f)
-               WaveFrontObj_WriteFaceInfoList(f, m_meshIndices.data(), (rampVertex - 1) * 6 * 2 * 2);  //both walls
-            else
+         if (m_d.m_rightwallheightvisible != 0.f && m_d.m_leftwallheightvisible != 0.f)
+            WaveFrontObj_WriteFaceInfoList(f, m_meshIndices.data(), (rampVertex - 1) * 6 * 2 * 2);  //both walls
+         else
+         {
+            int listLength = (rampVertex - 1) * 6 * 2;
+            if (m_d.m_rightwallheightvisible != 0.0f)
             {
-               int listLength = (rampVertex - 1) * 6 * 2;
-               if (m_d.m_rightwallheightvisible != 0.0f)
+               WORD *rightIdx = new WORD[listLength];
+               for (int i = 0; i < listLength; i++)
                {
-                  WORD *rightIdx = new WORD[listLength];
-                  for (int i = 0; i < listLength; i++)
-                  {
-                     rightIdx[i] = m_meshIndices[i] + m_numVertices;
-                  }
-                  WaveFrontObj_WriteFaceInfoList(f, rightIdx, listLength);
-                  delete[] rightIdx;
+                  rightIdx[i] = m_meshIndices[i] + m_numVertices;
                }
-               if (m_d.m_leftwallheightvisible != 0.0f)
-                  WaveFrontObj_WriteFaceInfoList(f, m_meshIndices.data(), listLength);
+               WaveFrontObj_WriteFaceInfoList(f, rightIdx, listLength);
+               delete[] rightIdx;
             }
-            WaveFrontObj_UpdateFaceOffset(numVers);
+            if (m_d.m_leftwallheightvisible != 0.0f)
+               WaveFrontObj_WriteFaceInfoList(f, m_meshIndices.data(), listLength);
          }
+         WaveFrontObj_UpdateFaceOffset(numVers);
          delete[] rampMesh;
       }
       else
