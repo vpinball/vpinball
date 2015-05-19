@@ -44,6 +44,7 @@ BEGIN
     CONTROL         "Place at mesh's absolute position (use mesh's midpoint)",IDC_ABS_POSITION_RADIO,
                     "Button",BS_AUTORADIOBUTTON,20,73,190,10
     CONTROL         "Center mesh to it's midpoint",IDC_CENTER_MESH,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,169,41,105,10
+    CONTROL         "Import mesh's material",IDC_IMPORT_MATERIAL,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,169,59,88,10
 END
 
 IDD_DIMENSION_CALCULATOR DIALOGEX 0, 0, 316, 169
@@ -1845,6 +1846,10 @@ BEGIN
         RIGHTMARGIN, 303
         TOPMARGIN, 7
         BOTTOMMARGIN, 107
+    END
+
+    IDD_MATERIALDIALOG, DIALOG
+    BEGIN
     END
 END
 #endif    // APSTUDIO_INVOKED
