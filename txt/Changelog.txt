@@ -68,6 +68,7 @@ VP 10.0.0 Changelog
   For example: "table field height"=50 means everything on the table is raised by 50 units. This allows for real ball tunnels and more.
 
 - new rubber element
+  rubber object can be rotated around the X/Y/Z axis and shown in the editor if the checkbox "Show In Editor" is checked
 
 - spinners are mesh based. If the spinner bracket isn't the right one disable the "Show Bracket" settings and you will only see the spinner plate.
   
@@ -191,6 +192,31 @@ VP 10.0.0 Changelog
   (there is now a new setting for each primitive, set to 0 to switch to the old approximate drawing mode (usually fast),
    1 to draw each and every triangle (usually slow) or inbetween to approximate the outlines of the object (lower values are faster))
 
+- export of the entire table to an .obj file (Menu File -> Export -> OBJ Mesh)
+- mesh import dialog added. The options are:
+  * "Convert coordinate system" : Converts a mesh to the left handed coordinate system used by DirectX
+  * "Center mesh to it's midpoint" : The midpoint(pivot) of a mesh is calculated and the whole mesh is moved so that the midpoint is at the origin (0,0,0)
+  * "Place at primitive's position" : The old/normal placement function. The mesh isn't moved and will be placed relative to the primitives base position
+  * "Place at mesh's absolute position (use mesh's middpoint)": The mesh is transformed so that it's midpoint(pivot) is at the origin (0,0,0) and then moved to it's absolute position
+                                                                where it was placed in the 3D editor (e.g. Blender)
+  The last option is useful for the following workflow:
+   1. export the table as one huge .obj file (File -> Export -> OBJ Mesh)
+   2. import this obj file into your 3D editor
+   3. place additional meshes on the table or replace existing objects
+   4. export each object you have added or replaced into a separate .obj file
+   5. import each .obj file and in the import dialog select "Place at mesh's absolute position (use mesh's midpoint)"
+      so that the object's pivot point will be the object's midpoint and the base position of the primitive is changed to the position from the 3D editor
+
+  * "Import mesh's material" : Loads the corresponding .mtl file and adds the first material in that file.
+                               For instance: if the mesh .obj file is called "bumper.obj", then there should be a file "bumper.mtl" in the same directory.
+							   But only some basic material settings are imported due to the limited .mtl format, for Blender the used material parameters are:
+                                Blender diffuse color -> VP base color
+                                Blender specular color -> VP glossy layer
+                                Blender specular hardness -> VP shininess value
+                                Blender transparency alpha value -> VP opacity amount
+                               When imported the primitive has the imported material automatically assigned.
+							   Note that any textures aren't imported automatically though, this must be done as usual with the help of the image manager.
+
 - reactivate old VP9.0 easter egg (and improve it :))
 
 - new external audio library for music playback (BASS)
@@ -207,36 +233,6 @@ VP 10.0.0 Changelog
 - texture size limit/downscale now respects aspect ratio (currently disabled)
 
 - technical note: make sure to install Microsoft SDK 5.0,7.0A,7.1 or 7.1A, if you compile VP and get missing header errors (optionally set the include path inc\winsdk)
-
-- rubber object improved to let it rotate around the X/Y/Z axis and show them in the editor if the checkbox "Show In Editor" is checked.
-
-- It is possible to export the entire table to an .obj file. (Menu File -> Export -> OBJ Mesh)
-
-- Mesh import dialog added. The options are:
-  * "Convert coordinate system" : converts a mesh to the left handed coordinate system used by DirectX
-  * "Center mesh to it's midpoint" : The midpoint(pivot) of a mesh is calculated and the whole mesh is moved so that the midpoint is at the origin (0,0,0)
-  * "Place at primitive's position"    : The old/normal placement function. The mesh isn't moved and will be placed relative to the primitives base position.
-  * "Place at mesh's absolute position (use mesh's middpoint)": The mesh is transformed so it's midpoint(pivot) is at the origin (0,0,0) and then moved to it's absolute position
-                                                                   where it was placed in the 3D editor (e.g. Blender).
-  The last option is useful for the following workflow:
-   1. export the table as one huge .obj file (File -> Export -> OBJ Mesh).
-   2. import this obj file into your 3D editor.
-   3. place additional meshes on the table or replace existing objects
-   4. export each object you have added or replaced into a separate .obj file
-   5. import each .obj file and in the import dialog select "Place at mesh's absolute position (use mesh's midpoint)". The object's pivot point will be the object's midpoint 
-      and the base position of the primitive is changed to the position from the 3D editor.
-      
-- Added solution to import the mesh's material via the mesh import dialog. When "Import mesh's material" is selected VP also tries to load the corresponding
-  .mtl file and adds the first material in that file. For instance: the mesh .obj files is "bumper.obj" there should be a file "bumper.mtl" in the same 
-  directory. Only some basic settings of the material are imported due to the limited .mtl format.
-  For Blender the used material settings are:
-  Blender diffuse color -> VP base color
-  Blender specular color -> VP glossy layer
-  Blender specular hardness -> VP shininess value
-  Blender transparency alpha value -> VP opacity amount
-  
-  When imported the primitive gets the imported material automatically assigned. The texture isn't imported this must be done as usual with the help of the image manager.
-  
 
 VP 9.9.1 Changelog
 ------------------------
