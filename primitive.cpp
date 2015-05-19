@@ -1535,7 +1535,9 @@ void Primitive::ExportMesh()
    {
       return;
    }
-   m_mesh.SaveWavefrontObj(ofn.lpstrFile, m_d.m_use3DMesh ? m_d.m_meshFileName : "Primitive");
+   char name[MAX_PATH];
+   WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, MAX_PATH, NULL, NULL);
+   m_mesh.SaveWavefrontObj(ofn.lpstrFile, m_d.m_use3DMesh ? name : "Primitive");
 }
 
 bool Primitive::IsTransparent()
