@@ -471,7 +471,7 @@ float Rubber::GetSurfaceHeight(float x, float y)
         zheight = (startlength/totallength) * (m_d.m_height );
     }
 
-    return zheight;
+    return zheight*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 }
 
 void Rubber::GetTimers(Vector<HitTimer> * const pvht)
@@ -1489,11 +1489,10 @@ void Rubber::GenerateMesh(int _accuracy)
             const float v = ((float)j + u) / numSegments;
             const float u_angle = u*(float)(2.0*M_PI);
             const float v_angle = v*(float)(2.0*M_PI);
-            const Vertex3Ds tmp = GetRotatedAxis((float)j*(360.0f / numSegments), tangent, normal)
-                * ((float)m_d.m_thickness*0.5f);
+            const Vertex3Ds tmp = GetRotatedAxis((float)j*(360.0f / numSegments), tangent, normal) * ((float)m_d.m_thickness*0.5f);
             m_vertices[index].x = middlePoints[i].x + tmp.x;
             m_vertices[index].y = middlePoints[i].y + tmp.y;
-            m_vertices[index].z = height + tmp.z;
+            m_vertices[index].z = height+tmp.z;
             //texel
             m_vertices[index].tu = u;
             m_vertices[index].tv = v;
@@ -1602,7 +1601,7 @@ void Rubber::UpdateRubber( RenderDevice *pd3dDevice, bool updateVB )
 {
     Matrix3D fullMatrix;
     Matrix3D transMat,rotMat;
-    const float height = m_d.m_height+m_ptable->m_tableheight;
+    const float height = m_d.m_height*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_ptable->m_tableheight;
 
     fullMatrix.SetIdentity();
     rotMat.RotateZMatrix(ANGTORAD(m_d.m_rotZ));
@@ -1624,7 +1623,7 @@ void Rubber::UpdateRubber( RenderDevice *pd3dDevice, bool updateVB )
         vert = fullMatrix.MultiplyVector(vert);
         buf[i].x = vert.x+middlePoint.x;
         buf[i].y = vert.y+middlePoint.y;
-        buf[i].z = vert.z+height;
+        buf[i].z = vert.z*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + height;
         vert = Vertex3Ds( m_vertices[i].nx, m_vertices[i].ny, m_vertices[i].nz );
         vert = fullMatrix.MultiplyVectorNoTranslate(vert);
         buf[i].nx = vert.x;

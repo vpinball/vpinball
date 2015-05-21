@@ -7163,7 +7163,7 @@ float PinTable::GetSurfaceHeight(char *szName, float x, float y)
             switch (piedit->GetItemType())
             {
             case eItemSurface:
-               return ((Surface *)piedit)->m_d.m_heighttop+m_tableheight;
+                return ((Surface *)piedit)->m_d.m_heighttop + m_tableheight;
 
             case eItemRamp:
                return ((Ramp *)piedit)->GetSurfaceHeight(x, y);
