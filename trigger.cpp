@@ -625,7 +625,7 @@ void Trigger::ExportMesh(FILE *f)
 }
 void Trigger::GenerateMesh()
 {
-    const float baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
+    const float baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
     Vertex3D_NoTex2 *verts;
     Matrix3D fullMatrix;
 

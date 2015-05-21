@@ -347,7 +347,7 @@ void Spinner::RenderSetup(RenderDevice* pd3dDevice)
    if ( !m_d.m_fVisible )
     return;
 
-   const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
+   const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
    if (bracketIndexBuffer)
        bracketIndexBuffer->release();
@@ -396,7 +396,7 @@ void Spinner::RenderSetup(RenderDevice* pd3dDevice)
        buf[i].x = vert.x*m_d.m_length;//+m_d.m_vCenter.x;
        buf[i].y = vert.y*m_d.m_length;//+m_d.m_vCenter.y;
        buf[i].z = vert.z*m_d.m_length*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]; // + height + m_d.m_height;
-       m_posZ = height+m_d.m_height;
+       m_posZ = height + m_d.m_height;
 
        vert = Vertex3Ds( spinnerPlate[i].nx, spinnerPlate[i].ny, spinnerPlate[i].nz );
        vert = fullMatrix.MultiplyVectorNoTranslate(vert);
