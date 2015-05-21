@@ -538,9 +538,6 @@ void WaveFrontObj_WriteFaceInfoLong(FILE *f, const std::vector<unsigned int> &in
 void WaveFrontObj_Save(const char *filename, const char *description, const Mesh& mesh)
 {
    FILE *f;
-   fopen_s(&f,filename,"wt");
-   if( !f )
-      return ;
 /*    
    fprintf_s(f,"const unsigned int bumperBaseNumVertices=%i;\n",mesh.NumVertices());
    fprintf_s(f,"const unsigned int bumperBaseNumFaces=%i;\n", mesh.NumIndices());
@@ -570,10 +567,13 @@ void WaveFrontObj_Save(const char *filename, const char *description, const Mesh
    fclose(f);
    return;
 */
-   fprintf_s(f,"# Visual Pinball OBJ file\n");
+   f = WaveFrontObj_ExportStart(filename);
+   if (!f)
+      return;
+   fprintf_s(f, "# Visual Pinball OBJ file\n");
    fprintf_s(f,"# numVerts: %u numFaces: %u\n", mesh.NumVertices(), mesh.NumIndices() );
    WaveFrontObj_WriteObjectName(f, description);
    WaveFrontObj_WriteVertexInfo(f, mesh.m_vertices.data(), mesh.m_vertices.size());
    WaveFrontObj_WriteFaceInfoLong(f, mesh.m_indices);
-   fclose(f);
+   WaveFrontObj_ExportEnd(f);
 }
