@@ -157,13 +157,8 @@ void Kicker::GetHitShapes(Vector<HitObject> * const pvho)
 
    phitcircle->center.x = m_d.m_vCenter.x;
    phitcircle->center.y = m_d.m_vCenter.y;
-   if ( m_d.m_fFallThrough )
-   {
-       phitcircle->radius = m_d.m_radius * 0.75f;
-   }
-   else
-    phitcircle->radius = m_d.m_radius*0.6f; // reduce the hit circle radius because only the inner circle of the 
-                                            // kicker should start a hit event
+   phitcircle->radius = m_d.m_radius; 
+
    phitcircle->zlow = height;
    phitcircle->zhigh = height + m_d.m_hit_height;	// height of kicker hit cylinder  
 
@@ -208,7 +203,6 @@ void Kicker::PostRenderStatic(RenderDevice* pd3dDevice)
 
 void Kicker::GenerateCupMesh(Vertex3D_NoTex2 *buf)
 {
-    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
     Matrix3D fullMatrix;
     fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_orientation));
 
@@ -219,7 +213,7 @@ void Kicker::GenerateCupMesh(Vertex3D_NoTex2 *buf)
 
         buf[i].x = vert.x*m_d.m_radius + m_d.m_vCenter.x;
         buf[i].y = vert.y*m_d.m_radius + m_d.m_vCenter.y;
-        buf[i].z = vert.z*m_d.m_radius*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + height;
+        buf[i].z = vert.z*m_d.m_radius*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_baseHeight;
         vert = Vertex3Ds(kickerCup[i].nx, kickerCup[i].ny, kickerCup[i].nz);
         vert = fullMatrix.MultiplyVectorNoTranslate(vert);
         buf[i].nx = vert.x;
@@ -232,7 +226,6 @@ void Kicker::GenerateCupMesh(Vertex3D_NoTex2 *buf)
 
 void Kicker::GenerateHoleMesh(Vertex3D_NoTex2 *buf)
 {
-    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
     Matrix3D fullMatrix;
     fullMatrix.RotateZMatrix(ANGTORAD(0));
 
@@ -243,7 +236,7 @@ void Kicker::GenerateHoleMesh(Vertex3D_NoTex2 *buf)
 
         buf[i].x = vert.x*(m_d.m_radius + 0.5f) + m_d.m_vCenter.x;
         buf[i].y = vert.y*(m_d.m_radius + 0.5f) + m_d.m_vCenter.y;
-        buf[i].z = vert.z*(m_d.m_radius + 0.5f)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + height;
+        buf[i].z = vert.z*(m_d.m_radius + 0.5f)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_baseHeight;
         vert = Vertex3Ds(kickerHole[i].nx, kickerHole[i].ny, kickerHole[i].nz);
         vert = fullMatrix.MultiplyVectorNoTranslate(vert);
         buf[i].nx = vert.x;
@@ -260,6 +253,7 @@ void Kicker::RenderSetup(RenderDevice* pd3dDevice)
       return;
 
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+   m_baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
 
    if( m_d.m_kickertype == KickerCup )
@@ -919,10 +913,11 @@ STDMETHODIMP Kicker::BallCntOver(int *pVal)
    return S_OK;
 }
 
-
+//FILE *fip;
 KickerHitCircle::KickerHitCircle()
 {
    m_pball = NULL;
+   //fip = fopen("c:\\Models\\plop.log", "wt");
 }
 
 float KickerHitCircle::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
@@ -942,37 +937,109 @@ void KickerHitCircle::DoCollide(Ball * const pball, Vertex3Ds& hitnormal, Vertex
 
       if (i < 0)	//entering Kickers volume
       { 
-         if (m_pkicker->m_d.m_fFallThrough)
-             pball->m_frozen = false;
+         bool hitEvent = false;
+         Vertex3Ds d = pball->m_pos - Vertex3Ds(center.x, center.y, m_pkicker->m_baseHeight);
+         const float bnd = fabs(d.Length() - radius);
+         const float a = Vertex3Ds(pball->m_vel.x, pball->m_vel.y, 0.0f).Length();
+
+         if (bnd < 0.5f && a < 4.0f)
+         {
+            // early out here if the ball is slow and we are near the kicker center
+            hitEvent = true;
+         }
          else
          {
-             pball->m_frozen = true;
-             pball->m_vpVolObjs->AddElement(m_pObj);		// add kicker to ball's volume set
-             m_pball = pball;
+            float minDist = FLT_MAX;
+            Vertex3Ds dist;
+            int idx = -1;
+            for (int t = 0; t < (int)kickerHoleNumVertices; t++)
+            {
+               // find the right normal by calculating the distance from current ball position to vertex of the kicker mesh               
+               Vertex3Ds vpos = Vertex3Ds(kickerHole[t].x, kickerHole[t].y, kickerHole[t].z);
+               vpos.x = vpos.x*m_pkicker->m_d.m_radius + center.x;
+               vpos.y = vpos.y*m_pkicker->m_d.m_radius + center.y;
+               vpos.z = vpos.z*radius *m_pkicker->m_ptable->m_BG_scalez[m_pkicker->m_ptable->m_BG_current_set] + m_pkicker->m_baseHeight;
+               dist = pball->m_pos - vpos;
+               float length = dist.Length();
+               if (length < minDist)
+               {
+                  minDist = length;
+                  idx = t;
+               }
+            }
+            if (idx != -1)
+            {
+               // we have the nearest vertex now use the normal and damp it so it doesn't speed up the ball velocity too much
+               Vertex3Ds hitnorm(kickerHole[idx].nx, kickerHole[idx].ny, kickerHole[idx].nz);
+               float centerPrecision = 0.02f;
+               float factor = 0.0005f;
+               if (a > 15.0f)
+               {
+                  centerPrecision = 0.008f;
+                  factor = 0.0008f;
+               }
+               else if (a > 9.0f)
+               {
+                  centerPrecision = 0.009f;
+                  factor = 0.0007f;
+               }
+               else if (a > 5.0f)
+               {
+                  centerPrecision = 0.014f;
+                  factor = 0.0006f;
+               }
+               else
+               {
+                  factor = 0.0005f;
+                  centerPrecision = 0.1f;
+               }
+
+               hitnorm *= factor*radius;
+               pball->m_vel += hitnorm;
+               centerPrecision *= g_pplayer->m_ptable->m_angletiltMin;
+               //fprintf_s(fip, "a %f bnd %f vx %f vy %f vz %f len:%f \n", a, bnd, pball->m_vel.x, pball->m_vel.y, pball->m_vel.z, pball->m_vel.Length());
+               if (bnd < centerPrecision)
+                  hitEvent = true;
+            }
          }
-
-         // Don't fire the hit event if the ball was just created
-         // Fire the event before changing ball attributes, so scripters can get a useful ball state
-         if (hitnormal.x != FLT_MAX ) // FLT_MAX if just created
-            m_pkicker->FireGroupEvent(DISPID_HitEvents_Hit);
-
-         if (pball->m_frozen || m_pkicker->m_d.m_fFallThrough)	// script may have unfrozen the ball
+         
+         if (hitEvent)
          {
-            // if ball falls through hole, we fake the collision algo by changing the ball height
-            // in HitTestBasicRadius() the z-position of the ball is check if it is >= to the hit cylinder
-            // if we don't change the height of the ball we get a lot of hit events while the ball is falling!!
-
-            // Only mess with variables if ball was not kicked during event
-            pball->m_vel.SetZero();
-            pball->m_pos.x = center.x;
-            pball->m_pos.y = center.y;
-            if ( m_pkicker->m_d.m_fFallThrough )
-               pball->m_pos.z = m_zheight-pball->m_radius-5.0f;
+            if (m_pkicker->m_d.m_fFallThrough)
+               pball->m_frozen = false;
             else
-               pball->m_pos.z = m_zheight+pball->m_radius;
+            {
+//                fprintf_s(fip, "-----> a %f bnd %f vx %f vy %f vz %f len:%f \n", a, bnd, pball->m_vel.x, pball->m_vel.y, pball->m_vel.z, pball->m_vel.Length());
+//                fflush(fip);
+               pball->m_frozen = true;
+               pball->m_vpVolObjs->AddElement(m_pObj);		// add kicker to ball's volume set
+               m_pball = pball;
+            }
+            // Don't fire the hit event if the ball was just created
+            // Fire the event before changing ball attributes, so scripters can get a useful ball state
+            if (hitnormal.x != FLT_MAX) // FLT_MAX if just created
+               m_pkicker->FireGroupEvent(DISPID_HitEvents_Hit);
 
+
+
+            if (pball->m_frozen || m_pkicker->m_d.m_fFallThrough)	// script may have unfrozen the ball
+            {
+               // if ball falls through hole, we fake the collision algo by changing the ball height
+               // in HitTestBasicRadius() the z-position of the ball is check if it is >= to the hit cylinder
+               // if we don't change the height of the ball we get a lot of hit events while the ball is falling!!
+
+               // Only mess with variables if ball was not kicked during event
+               pball->m_vel.SetZero();
+               pball->m_pos.x = center.x;
+               pball->m_pos.y = center.y;
+               if (m_pkicker->m_d.m_fFallThrough)
+                  pball->m_pos.z = m_zheight - pball->m_radius - 5.0f;
+               else
+                  pball->m_pos.z = m_zheight+ pball->m_radius*pball->m_radius/radius;
+
+            }
+            else m_pball = NULL;		// make sure
          }
-         else m_pball = NULL;		// make sure
       }
       else // exiting kickers volume
       {				

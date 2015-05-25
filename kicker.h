@@ -95,6 +95,7 @@ public:
     unsigned int numVertices;
     unsigned int numFaces;
     Texture texture;
+    float  m_baseHeight;
     // IKicker
 public:
     STDMETHOD(get_Material)(/*[out, retval]*/ BSTR *pVal);
