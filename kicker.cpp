@@ -1,6 +1,7 @@
 #include "StdAfx.h"
 #include "meshes/kickerCupMesh.h"
 #include "meshes/kickerHoleMesh.h"
+#include "meshes/kickerHitMesh.h"
 
 Kicker::Kicker()
 {
@@ -941,7 +942,6 @@ void KickerHitCircle::DoCollide(Ball * const pball, Vertex3Ds& hitnormal, Vertex
          Vertex3Ds d = pball->m_pos - Vertex3Ds(center.x, center.y, m_pkicker->m_baseHeight);
          const float bnd = fabs(d.Length() - radius);
          const float a = Vertex3Ds(pball->m_vel.x, pball->m_vel.y, 0.0f).Length();
-
          if (bnd < 0.5f && a < 4.0f)
          {
             // early out here if the ball is slow and we are near the kicker center
@@ -949,13 +949,15 @@ void KickerHitCircle::DoCollide(Ball * const pball, Vertex3Ds& hitnormal, Vertex
          }
          else
          {
+            Vertex3D_NoTex2 *mesh = kickerHitMesh;
+            int numVerts = kickerHitVertices;
             float minDist = FLT_MAX;
             Vertex3Ds dist;
             int idx = -1;
-            for (int t = 0; t < (int)kickerHoleNumVertices; t++)
+            for (int t = 0; t < numVerts; t++)
             {
                // find the right normal by calculating the distance from current ball position to vertex of the kicker mesh               
-               Vertex3Ds vpos = Vertex3Ds(kickerHole[t].x, kickerHole[t].y, kickerHole[t].z);
+               Vertex3Ds vpos = Vertex3Ds(mesh[t].x, mesh[t].y, mesh[t].z);
                vpos.x = vpos.x*m_pkicker->m_d.m_radius + center.x;
                vpos.y = vpos.y*m_pkicker->m_d.m_radius + center.y;
                vpos.z = vpos.z*radius *m_pkicker->m_ptable->m_BG_scalez[m_pkicker->m_ptable->m_BG_current_set] + m_pkicker->m_baseHeight;
@@ -970,35 +972,15 @@ void KickerHitCircle::DoCollide(Ball * const pball, Vertex3Ds& hitnormal, Vertex
             if (idx != -1)
             {
                // we have the nearest vertex now use the normal and damp it so it doesn't speed up the ball velocity too much
-               Vertex3Ds hitnorm(kickerHole[idx].nx, kickerHole[idx].ny, kickerHole[idx].nz);
-               float centerPrecision = 0.02f;
-               float factor = 0.0005f;
-               if (a > 15.0f)
-               {
-                  centerPrecision = 0.008f;
-                  factor = 0.0008f;
-               }
-               else if (a > 9.0f)
-               {
-                  centerPrecision = 0.009f;
-                  factor = 0.0007f;
-               }
-               else if (a > 5.0f)
-               {
-                  centerPrecision = 0.014f;
-                  factor = 0.0006f;
-               }
-               else
-               {
-                  factor = 0.0005f;
-                  centerPrecision = 0.1f;
-               }
+               Vertex3Ds hitnorm(mesh[idx].nx, mesh[idx].ny, -mesh[idx].nz);
+               float centerPrecision = 0.0029f;
+               float factor = 0.004f;
 
-               hitnorm *= factor*radius;
+               hitnorm *= factor;
                pball->m_vel += hitnorm;
                centerPrecision *= g_pplayer->m_ptable->m_angletiltMin;
                //fprintf_s(fip, "a %f bnd %f vx %f vy %f vz %f len:%f \n", a, bnd, pball->m_vel.x, pball->m_vel.y, pball->m_vel.z, pball->m_vel.Length());
-               if (bnd < centerPrecision)
+               if (bnd < centerPrecision )
                   hitEvent = true;
             }
          }
@@ -1009,8 +991,8 @@ void KickerHitCircle::DoCollide(Ball * const pball, Vertex3Ds& hitnormal, Vertex
                pball->m_frozen = false;
             else
             {
-//                fprintf_s(fip, "-----> a %f bnd %f vx %f vy %f vz %f len:%f \n", a, bnd, pball->m_vel.x, pball->m_vel.y, pball->m_vel.z, pball->m_vel.Length());
-//                fflush(fip);
+               //fprintf_s(fip, "-----> a %f bnd %f vx %f vy %f vz %f len:%f \n", a, bnd, pball->m_vel.x, pball->m_vel.y, pball->m_vel.z, pball->m_vel.Length());
+               //fflush(fip);
                pball->m_frozen = true;
                pball->m_vpVolObjs->AddElement(m_pObj);		// add kicker to ball's volume set
                m_pball = pball;
