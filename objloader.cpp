@@ -538,10 +538,11 @@ void WaveFrontObj_WriteFaceInfoLong(FILE *f, const std::vector<unsigned int> &in
 void WaveFrontObj_Save(const char *filename, const char *description, const Mesh& mesh)
 {
    FILE *f;
-/*    
-   fprintf_s(f,"const unsigned int bumperBaseNumVertices=%i;\n",mesh.NumVertices());
-   fprintf_s(f,"const unsigned int bumperBaseNumFaces=%i;\n", mesh.NumIndices());
-   fprintf_s(f,"Vertex3D_NoTex2 bumperBase[%i]=\n{\n",mesh.NumVertices());
+    
+   f = fopen(filename, "wt");
+   fprintf_s(f,"const unsigned int kickerHitVertices=%i;\n",mesh.NumVertices());
+   fprintf_s(f,"const unsigned int kickerHitNumFaces=%i;\n", mesh.NumIndices());
+   fprintf_s(f,"Vertex3D_NoTex2 kickerHitMesh[%i]=\n{\n",mesh.NumVertices());
 
    for( int i=0;i<mesh.NumVertices();i++ )
    {
@@ -566,7 +567,6 @@ void WaveFrontObj_Save(const char *filename, const char *description, const Mesh
    fprintf_s(f,"\n};");
    fclose(f);
    return;
-*/
    f = WaveFrontObj_ExportStart(filename);
    if (!f)
       return;
