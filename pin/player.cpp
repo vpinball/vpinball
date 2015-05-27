@@ -2447,7 +2447,7 @@ void Player::DrawBulbLightBuffer()
 
 	// check if any bulb specified at all
 	bool do_renderstage = false;
-	for (unsigned i = 0; i < m_vHitTrans.size(); ++i)
+	for (unsigned int i = 0; i < m_vHitTrans.size(); ++i)
 		if (m_vHitTrans[i]->RenderToLightBuffer())
 		{
 			do_renderstage = true;
@@ -2457,6 +2457,8 @@ void Player::DrawBulbLightBuffer()
 	if (do_renderstage)
 	{
 		m_current_renderstage = 1; // for bulb lights so they know what they have to do
+
+		m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, FALSE); // disable all z-tests as zbuffer is in different resolution
 
 		// Draw bulb lights with transmission scale only
 		for (unsigned int i = 0; i < m_vHitTrans.size(); ++i)
@@ -2575,7 +2577,7 @@ void Player::RenderDynamics()
    }
 
    // Draw non-transparent objects.
-   for (unsigned i=0; i < m_vHitNonTrans.size(); ++i)
+   for (unsigned int i=0; i < m_vHitNonTrans.size(); ++i)
        m_vHitNonTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
 
    DrawBalls();
@@ -2585,7 +2587,7 @@ void Player::RenderDynamics()
    DrawBulbLightBuffer();
 
    // Draw transparent objects.
-   for (unsigned i=0; i < m_vHitTrans.size(); ++i)
+   for (unsigned int i=0; i < m_vHitTrans.size(); ++i)
        m_vHitTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
 
    m_pin3d.m_pd3dDevice->basicShader->SetTexture("Texture3", (D3DTexture*)NULL); // need to reset the bulb light texture, as its used as render target for bloom again
