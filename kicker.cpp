@@ -934,13 +934,14 @@ void KickerHitCircle::DoCollide(Ball * const pball, Vertex3Ds& hitnormal, Vertex
 
    if ((hitnormal.x == FLT_MAX) || ((hitvelocity.x < 1.f) == (i < 0))) // New or (Hit && !Vol || UnHit && Vol)
    {
-      pball->m_pos += STATICTIME * pball->m_vel;        // move ball slightly forward
+     // pball->m_pos += STATICTIME * pball->m_vel;        // move ball slightly forward
 
       if (i < 0)	//entering Kickers volume
       { 
          bool hitEvent = false;
          Vertex3Ds d = pball->m_pos - Vertex3Ds(center.x, center.y, m_pkicker->m_baseHeight);
          const float bnd = fabs(d.Length() - radius);
+         const float distCenter = d.Length() - radius;
          const float a = Vertex3Ds(pball->m_vel.x, pball->m_vel.y, 0.0f).Length();
          if (bnd < 0.5f && a < 4.0f)
          {
@@ -950,7 +951,7 @@ void KickerHitCircle::DoCollide(Ball * const pball, Vertex3Ds& hitnormal, Vertex
          else
          {
             Vertex3D_NoTex2 *mesh = kickerHitMesh;
-            int numVerts = kickerHitVertices;
+            int numVerts = kickerHitNumVertices;
             float minDist = FLT_MAX;
             Vertex3Ds dist;
             int idx = -1;
@@ -972,12 +973,47 @@ void KickerHitCircle::DoCollide(Ball * const pball, Vertex3Ds& hitnormal, Vertex
             if (idx != -1)
             {
                // we have the nearest vertex now use the normal and damp it so it doesn't speed up the ball velocity too much
-               Vertex3Ds hitnorm(mesh[idx].nx, mesh[idx].ny, -mesh[idx].nz);
-               float centerPrecision = 0.0029f;
-               float factor = 0.004f;
+               float centerPrecision = 0.0019f;
+               Vertex3Ds hitnorm(mesh[idx].nx, mesh[idx].ny, mesh[idx].nz);
+               float dot = pball->m_vel.Dot(hitnorm);
+               const float reactionImpulse = pball->m_mass * fabsf(dot);
+
+               dot *= -(1.0f + 0.0f);
+               pball->m_vel += dot * hitnorm;     // apply collision impulse (along normal, so no torque)
+
+               const Vertex3Ds surfP = -pball->m_radius * hitnorm;    // surface contact point relative to center of mass
+
+               Vertex3Ds surfVel = pball->SurfaceVelocity(surfP);       // velocity at impact point
+
+               Vertex3Ds tangent = surfVel - surfVel.Dot(hitnorm) * hitnorm; // calc the tangential velocity
+
+               const float tangentSpSq = tangent.LengthSquared();
+               if (tangent.LengthSquared() > 1e-6f)
+               {
+                  tangent /= sqrtf(tangentSpSq);           // normalize to get tangent direction
+                  const float vt = surfVel.Dot(tangent);   // get speed in tangential direction
+
+                  // compute friction impulse
+                  const Vertex3Ds cross = CrossProduct(surfP, tangent);
+                  const float kt = pball->m_invMass + tangent.Dot(CrossProduct(cross / pball->m_inertia, surfP));
+
+                  // friction impulse can't be greather than coefficient of friction times collision impulse (Coulomb friction cone)
+//                  const float maxFric = friction * reactionImpulse;
+                  const float maxFric = 1.0f * reactionImpulse;
+                  const float jt = clamp(-vt / kt, -maxFric, maxFric);
+
+                  pball->ApplySurfaceImpulse(surfP, jt * tangent);
+               }
+
+/*
+               float factor = 0.008f;
 
                hitnorm *= factor;
-               pball->m_vel += hitnorm;
+               if ( distCenter<0.0f )
+                  pball->m_vel -= hitnorm;
+               else
+                  pball->m_vel += hitnorm;
+*/
                centerPrecision *= g_pplayer->m_ptable->m_angletiltMin;
                //fprintf_s(fip, "a %f bnd %f vx %f vy %f vz %f len:%f \n", a, bnd, pball->m_vel.x, pball->m_vel.y, pball->m_vel.z, pball->m_vel.Length());
                if (bnd < centerPrecision )
