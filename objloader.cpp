@@ -107,7 +107,7 @@ bool WaveFrontObjLoadMaterial(const char *filename, Material *mat)
         {
             float tmp;
             fscanf_s(f, "%f\n",&tmp);
-            int d = (int)(tmp*100);
+            int d = (int)(tmp*100.f);
             tmp = d/100.0f;
             // normally a wavefront material specular exponent ranges from 0..1000.
             // but our shininess calculation differs from the way how e.g. Blender is calculating the specular exponent
@@ -129,9 +129,9 @@ bool WaveFrontObjLoadMaterial(const char *filename, Material *mat)
             Vertex3Ds tmp;
             DWORD r,g,b;
             fscanf_s(f, "%f %f %f\n", &tmp.x, &tmp.y, &tmp.z);
-            r = (DWORD)(tmp.x * 255);
-            g = (DWORD)(tmp.y * 255);
-            b = (DWORD)(tmp.z * 255);
+            r = (DWORD)(tmp.x * 255.f);
+            g = (DWORD)(tmp.y * 255.f);
+            b = (DWORD)(tmp.z * 255.f);
             mat->m_cBase = RGB(r,g,b);
         }
         else if (strcmp(lineHeader, "Ks") == 0)
@@ -139,9 +139,9 @@ bool WaveFrontObjLoadMaterial(const char *filename, Material *mat)
             Vertex3Ds tmp;
             DWORD r, g, b;
             fscanf_s(f, "%f %f %f\n", &tmp.x, &tmp.y, &tmp.z);
-            r = (DWORD)(tmp.x * 255);
-            g = (DWORD)(tmp.y * 255);
-            b = (DWORD)(tmp.z * 255);
+            r = (DWORD)(tmp.x * 255.f);
+            g = (DWORD)(tmp.y * 255.f);
+            b = (DWORD)(tmp.z * 255.f);
             mat->m_cGlossy = RGB(r, g, b);
         }
         else if (strcmp(lineHeader, "Ni") == 0)
@@ -539,7 +539,7 @@ void WaveFrontObj_Save(const char *filename, const char *description, const Mesh
 {
    FILE *f;
     
-   f = fopen(filename, "wt");
+   /*f = fopen(filename, "wt");
    fprintf_s(f,"const unsigned int kickerHitVertices=%i;\n",mesh.NumVertices());
    fprintf_s(f,"const unsigned int kickerHitNumFaces=%i;\n", mesh.NumIndices());
    fprintf_s(f,"Vertex3D_NoTex2 kickerHitMesh[%i]=\n{\n",mesh.NumVertices());
@@ -566,7 +566,7 @@ void WaveFrontObj_Save(const char *filename, const char *description, const Mesh
    }
    fprintf_s(f,"\n};");
    fclose(f);
-   return;
+   return;*/
    f = WaveFrontObj_ExportStart(filename);
    if (!f)
       return;
