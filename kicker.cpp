@@ -591,7 +591,7 @@ STDMETHODIMP Kicker::CreateSizedBallWithMass(/*[in]*/float radius, /*[in]*/float
       pball->m_coll.hitvelocity.x = 1.0f;           // HACK: avoid capture leaving kicker
       Vertex3Ds hitnormal(FLT_MAX,FLT_MAX,FLT_MAX);
       Vertex3Ds hitvelocity(FLT_MAX,FLT_MAX,FLT_MAX);
-      m_phitkickercircle->DoCollide(pball, hitnormal, hitvelocity);
+      m_phitkickercircle->DoCollide(pball, hitnormal, hitvelocity, true);
    }
 
    return S_OK;
@@ -613,7 +613,7 @@ STDMETHODIMP Kicker::CreateSizedBall(/*[in]*/float radius, /*out, retval]*/ IBal
       pball->m_coll.hitvelocity.x = 1.0f;           // HACK: avoid capture leaving kicker
       Vertex3Ds hitnormal(FLT_MAX,FLT_MAX,FLT_MAX);
       Vertex3Ds hitvelocity(FLT_MAX,FLT_MAX,FLT_MAX);
-      m_phitkickercircle->DoCollide(pball, hitnormal, hitvelocity);
+      m_phitkickercircle->DoCollide(pball, hitnormal, hitvelocity, true);
    }
 
    return S_OK;
@@ -634,7 +634,7 @@ STDMETHODIMP Kicker::CreateBall(IBall **pBallEx)
       pball->m_coll.hitvelocity.x = 1.0f;           // HACK: avoid capture leaving kicker
       Vertex3Ds hitnormal(FLT_MAX,FLT_MAX,FLT_MAX);
       Vertex3Ds hitvelocity(FLT_MAX,FLT_MAX,FLT_MAX);
-      m_phitkickercircle->DoCollide(pball, hitnormal, hitvelocity);
+      m_phitkickercircle->DoCollide(pball, hitnormal, hitvelocity, true);
    }
 
    return S_OK;
@@ -663,6 +663,7 @@ STDMETHODIMP Kicker::KickXYZ(float angle, float speed, float inclination, float 
 {
    if (g_pplayer && m_phitkickercircle && m_phitkickercircle->m_pball)
    {
+      float tmpSpeed = speed*1.8f;
       float anglerad = ANGTORAD(angle);				// yaw angle, zero is along -Y axis		
 
       if (fabsf(inclination) > (float)(M_PI/2.0))		// radians or degrees?  if greater PI/2 assume degrees
@@ -678,10 +679,10 @@ STDMETHODIMP Kicker::KickXYZ(float angle, float speed, float inclination, float 
          anglerad += scatter;
       }
 
-      const float speedz = sinf(inclination) * speed;
+      const float speedz = sinf(inclination) * tmpSpeed;
 
       if (speedz > 0.f)
-         speed = cosf(inclination) * speed;
+         tmpSpeed = cosf(inclination) * tmpSpeed;
 
 	  m_phitkickercircle->m_pball->m_angularvelocity.Set(0,0,0);
       m_phitkickercircle->m_pball->m_angularmomentum.Set(0,0,0);
@@ -690,8 +691,8 @@ STDMETHODIMP Kicker::KickXYZ(float angle, float speed, float inclination, float 
       m_phitkickercircle->m_pball->m_pos.y += y; 
       m_phitkickercircle->m_pball->m_pos.z += z; 
 
-      m_phitkickercircle->m_pball->m_vel.x =  sinf(anglerad) * speed;
-      m_phitkickercircle->m_pball->m_vel.y = -cosf(anglerad) * speed;
+      m_phitkickercircle->m_pball->m_vel.x = sinf(anglerad) * tmpSpeed;
+      m_phitkickercircle->m_pball->m_vel.y = -cosf(anglerad) * tmpSpeed;
       m_phitkickercircle->m_pball->m_vel.z = speedz;
       m_phitkickercircle->m_pball->m_frozen = false;
       m_phitkickercircle->m_pball = NULL;
@@ -990,7 +991,7 @@ float KickerHitCircle::HitTest(const Ball * pball, float dtime, CollisionEvent& 
    return HitTestBasicRadius(pball, dtime, coll, false, false, false); //any face, not-lateral, non-rigid
 }
 
-void KickerHitCircle::DoCollide(Ball * const pball, Vertex3Ds& hitnormal, Vertex3Ds& hitvelocity)
+void KickerHitCircle::DoCollide(Ball * const pball, Vertex3Ds& hitnormal, Vertex3Ds& hitvelocity, bool newBall)
 {
    if (m_pball) return;								    // a previous ball already in kicker
 
@@ -998,7 +999,7 @@ void KickerHitCircle::DoCollide(Ball * const pball, Vertex3Ds& hitnormal, Vertex
 
    if ((hitnormal.x == FLT_MAX) || ((hitvelocity.x < 1.f) == (i < 0))) // New or (Hit && !Vol || UnHit && Vol)
    {
-       if ( m_pkicker->m_d.m_legacyMode )
+       if ( m_pkicker->m_d.m_legacyMode || newBall)
             pball->m_pos += STATICTIME * pball->m_vel;        // move ball slightly forward
 
       if (i < 0)	//entering Kickers volume
@@ -1010,7 +1011,7 @@ void KickerHitCircle::DoCollide(Ball * const pball, Vertex3Ds& hitnormal, Vertex
          const float a = Vertex3Ds(pball->m_vel.x, pball->m_vel.y, 0.0f).Length();
          const float centerPrecision = 0.002f*g_pplayer->m_ptable->m_angletiltMin;
          const float grabHeight = (m_zheight + pball->m_radius*pball->m_radius / radius)*1.1f;
-         if (pball->m_pos.z<(grabHeight-0.5f) || m_pkicker->m_d.m_legacyMode)
+         if (pball->m_pos.z<(grabHeight-0.5f) || m_pkicker->m_d.m_legacyMode || newBall)
          {
             // early out here if the ball is slow and we are near the kicker center
             hitEvent = true;

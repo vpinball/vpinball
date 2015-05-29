@@ -141,7 +141,8 @@ class KickerHitCircle : public HitCircle
 public:
     KickerHitCircle();
     virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
-    void DoCollide(Ball * const pball, Vertex3Ds& phitnormal, Vertex3Ds& phitvelocity);
+    //void DoCollide(Ball * const pball, Vertex3Ds& phitnormal, Vertex3Ds& phitvelocity);
+    void DoCollide(Ball * const pball, Vertex3Ds& phitnormal, Vertex3Ds& phitvelocity, bool newBall=false);
     virtual void Collide(CollisionEvent *coll)  { DoCollide(coll->ball, coll->hitnormal, coll->hitvelocity); }
 
     virtual int GetType() const { return eTrigger; }
