@@ -630,6 +630,7 @@
 #define EDITOR_CHECK                    431
 #define IDC_SHOW_IN_EDITOR_CHECK        431
 #define IDC_CONVERT_COORD_CHECK         431
+#define IDC_LEGACYMODE                  431
 #define IDC_LIGHT_FALLOFF_POWER         432
 #define IDC_MODULATE_VS_ADD             433
 #define IDC_INTENSITY_SCALE_LIGHT       434
@@ -679,7 +680,6 @@
 #define IDC_ABS_POSITION_RADIO          478
 #define IDC_CHECK3                      479
 #define IDC_CENTER_MESH                 479
-#define IDC_CHECK2                      480
 #define IDC_IMPORT_MATERIAL             480
 #define IDC_JOYLFLIPCOMBO               501
 #define IDC_JOYRFLIPCOMBO               502
