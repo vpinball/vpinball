@@ -222,11 +222,17 @@ void Ramp::Render(Sur * const psur)
 
    if (fDrawDragpoints)
    {
-      for (int i=0;i<m_vdpoint.Size();i++)
+      const int len = m_vdpoint.Size();
+      for (int i=0;i<len;i++)
       {
          CComObject<DragPoint> * const pdp = m_vdpoint.ElementAt(i);
          psur->SetFillColor(-1);
-         psur->SetBorderColor(RGB(255,0,0),false,0);
+         if (i == 0)
+            psur->SetBorderColor(RGB(0, 0, 255), false, 0);
+         else
+            psur->SetBorderColor(RGB(255, 0, 0), false, 0);
+
+
          psur->SetObject(pdp);
 
          if (pdp->m_fDragging)
