@@ -21,6 +21,7 @@ public:
     float m_orientation;
     bool m_fEnabled;
     bool m_fFallThrough;
+    bool m_legacyMode;
 };
 
 class KickerHitCircle;
@@ -80,6 +81,7 @@ public:
 
     virtual void PreRenderStatic( RenderDevice* pd3dDevice);
     virtual void SetDefaultPhysics(bool fromMouseClick);
+    virtual void ExportMesh(FILE *f);
 
     void WriteRegDefaults();
     void GenerateCupMesh(Vertex3D_NoTex2 *buf);
@@ -130,7 +132,9 @@ public:
     STDMETHOD(put_Radius)(/*[in]*/ float newVal);
     STDMETHOD(get_FallThrough)(/*[out, retval]*/ VARIANT_BOOL *pVal);
     STDMETHOD(put_FallThrough)(/*[in]*/ VARIANT_BOOL newVal);
-};
+    STDMETHOD(get_Legacy)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+    STDMETHOD(put_Legacy)(/*[in]*/ VARIANT_BOOL newVal);
+    };
 
 class KickerHitCircle : public HitCircle
 {
