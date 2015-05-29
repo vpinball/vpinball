@@ -663,7 +663,7 @@ STDMETHODIMP Kicker::KickXYZ(float angle, float speed, float inclination, float 
 {
    if (g_pplayer && m_phitkickercircle && m_phitkickercircle->m_pball)
    {
-      float tmpSpeed = speed*1.8f;
+      float tmpSpeed = speed*2.5f;
       float anglerad = ANGTORAD(angle);				// yaw angle, zero is along -Y axis		
 
       if (fabsf(inclination) > (float)(M_PI/2.0))		// radians or degrees?  if greater PI/2 assume degrees
@@ -679,12 +679,12 @@ STDMETHODIMP Kicker::KickXYZ(float angle, float speed, float inclination, float 
          anglerad += scatter;
       }
 
-      const float speedz = sinf(inclination) * tmpSpeed;
+      const float speedz = sinf(inclination) * tmpSpeed*3.0f;
 
       if (speedz > 0.f)
-         tmpSpeed = cosf(inclination) * tmpSpeed;
+         tmpSpeed = cosf(inclination) * tmpSpeed*3.0f;
 
-	  m_phitkickercircle->m_pball->m_angularvelocity.Set(0,0,0);
+	   m_phitkickercircle->m_pball->m_angularvelocity.Set(0,0,0);
       m_phitkickercircle->m_pball->m_angularmomentum.Set(0,0,0);
 
       m_phitkickercircle->m_pball->m_pos.x += x; // brian's suggestion
@@ -1010,7 +1010,7 @@ void KickerHitCircle::DoCollide(Ball * const pball, Vertex3Ds& hitnormal, Vertex
          const float distCenter = d.Length() - radius;
          const float a = Vertex3Ds(pball->m_vel.x, pball->m_vel.y, 0.0f).Length();
          const float centerPrecision = 0.002f*g_pplayer->m_ptable->m_angletiltMin;
-         const float grabHeight = (m_zheight + pball->m_radius*pball->m_radius / radius)*1.1f;
+         const float grabHeight = (m_zheight + pball->m_radius)*0.75f;
          if (pball->m_pos.z<(grabHeight-0.5f) || m_pkicker->m_d.m_legacyMode || newBall)
          {
             // early out here if the ball is slow and we are near the kicker center
@@ -1086,9 +1086,9 @@ void KickerHitCircle::DoCollide(Ball * const pball, Vertex3Ds& hitnormal, Vertex
                pball->m_frozen = false;
             else
             {
-                pball->m_frozen = true;
-               pball->m_vpVolObjs->AddElement(m_pObj);		// add kicker to ball's volume set
-               m_pball = pball;
+                  pball->m_frozen = true;
+                  pball->m_vpVolObjs->AddElement(m_pObj);		// add kicker to ball's volume set
+                  m_pball = pball;
             }
             // Don't fire the hit event if the ball was just created
             // Fire the event before changing ball attributes, so scripters can get a useful ball state
@@ -1097,7 +1097,7 @@ void KickerHitCircle::DoCollide(Ball * const pball, Vertex3Ds& hitnormal, Vertex
 
 
 
-            if (pball->m_frozen || m_pkicker->m_d.m_fFallThrough)	// script may have unfrozen the ball
+            if (pball->m_frozen || m_pkicker->m_d.m_fFallThrough )	// script may have unfrozen the ball
             {
                // if ball falls through hole, we fake the collision algo by changing the ball height
                // in HitTestBasicRadius() the z-position of the ball is check if it is >= to the hit cylinder
@@ -1110,7 +1110,7 @@ void KickerHitCircle::DoCollide(Ball * const pball, Vertex3Ds& hitnormal, Vertex
                if (m_pkicker->m_d.m_fFallThrough)
                   pball->m_pos.z = m_zheight - pball->m_radius - 5.0f;
                else
-                  pball->m_pos.z = m_zheight+ pball->m_radius*pball->m_radius/radius;
+                  pball->m_pos.z = m_zheight+ pball->m_radius/**pball->m_radius/radius*/;
 
             }
             else m_pball = NULL;		// make sure
