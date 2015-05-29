@@ -34,6 +34,8 @@ VP 10.0.0 Changelog
      - add IsBottomSolid to Walls to have Walls optionally completely closed (bottom was always open)
 
   -> the data-format of the physics sets (*.vpp files) is basically the same, although the parameters inside are different, so unfortunately you need to set them up from scratch again
+  
+  -> kicker physics changed: The kicker bevel will influence the ball's motion and won't grab the ball like a magnet any more. The old behaviour can be set when the 'Legacy' check box is checked.
 
 - changed the plunger physics to make the launch behavior more linear and controllable, for both keyboard and mechanical 
   plunger interfaces
@@ -233,6 +235,8 @@ VP 10.0.0 Changelog
 - texture size limit/downscale now respects aspect ratio (currently disabled)
 
 - technical note: make sure to install Microsoft SDK 5.0,7.0A,7.1 or 7.1A, if you compile VP and get missing header errors (optionally set the include path inc\winsdk)
+
+- the control point for the bottom ramp has a blue color to identify which side of the ramp is the bottom one.
 
 VP 9.9.1 Changelog
 ------------------------
