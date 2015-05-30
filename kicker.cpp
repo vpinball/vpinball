@@ -663,7 +663,6 @@ STDMETHODIMP Kicker::KickXYZ(float angle, float speed, float inclination, float 
 {
    if (g_pplayer && m_phitkickercircle && m_phitkickercircle->m_pball)
    {
-      float tmpSpeed = speed*2.5f;
       float anglerad = ANGTORAD(angle);				// yaw angle, zero is along -Y axis		
 
       if (fabsf(inclination) > (float)(M_PI/2.0))		// radians or degrees?  if greater PI/2 assume degrees
@@ -679,10 +678,10 @@ STDMETHODIMP Kicker::KickXYZ(float angle, float speed, float inclination, float 
          anglerad += scatter;
       }
 
-      const float speedz = sinf(inclination) * tmpSpeed*3.0f;
+      const float speedz = sinf(inclination) * speed;
 
       if (speedz > 0.f)
-         tmpSpeed = cosf(inclination) * tmpSpeed*3.0f;
+         speed = cosf(inclination) * speed;
 
 	   m_phitkickercircle->m_pball->m_angularvelocity.Set(0,0,0);
       m_phitkickercircle->m_pball->m_angularmomentum.Set(0,0,0);
@@ -691,8 +690,8 @@ STDMETHODIMP Kicker::KickXYZ(float angle, float speed, float inclination, float 
       m_phitkickercircle->m_pball->m_pos.y += y; 
       m_phitkickercircle->m_pball->m_pos.z += z; 
 
-      m_phitkickercircle->m_pball->m_vel.x = sinf(anglerad) * tmpSpeed;
-      m_phitkickercircle->m_pball->m_vel.y = -cosf(anglerad) * tmpSpeed;
+      m_phitkickercircle->m_pball->m_vel.x = sinf(anglerad) * speed;
+      m_phitkickercircle->m_pball->m_vel.y = -cosf(anglerad) * speed;
       m_phitkickercircle->m_pball->m_vel.z = speedz;
       m_phitkickercircle->m_pball->m_frozen = false;
       m_phitkickercircle->m_pball = NULL;
