@@ -542,6 +542,10 @@ void Rubber::SetupHitObject(Vector<HitObject> * pvho, HitObject * obj)
    obj->SetFriction(m_d.m_friction);
    obj->m_scatter = ANGTORAD(m_d.m_scatter);
    obj->m_fEnabled = m_d.m_fCollidable;
+   // the rubber is of type ePrimitive for triggering the event in HitTriangle::Collide()
+   obj->m_ObjType = ePrimitive;
+   // hard coded threshold for now
+   obj->m_threshold = 2.0f;
    if (m_d.m_fHitEvent)
       obj->m_pfe = (IFireEvents *)this;
    else
@@ -1346,6 +1350,9 @@ void Rubber::GenerateMesh(int _accuracy)
     const int numSegments = accuracy;
     m_numVertices = numRings*numSegments;
     m_numIndices = 6 * m_numVertices;//m_numVertices*2+2;
+    
+    m_vertices.clear();
+    ringIndices.clear();
 
     m_vertices.resize(m_numVertices);
     ringIndices.resize(m_numIndices);
