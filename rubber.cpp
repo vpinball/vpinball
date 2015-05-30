@@ -491,177 +491,69 @@ void Rubber::GetTimers(Vector<HitTimer> * const pvht)
 
 void Rubber::GetHitShapes(Vector<HitObject> * const pvho)
 {
-   int cvertex;
-   Vertex2D * const rgvLocal = GetSplineVertex(cvertex, NULL, NULL);
+   std::set< std::pair<unsigned, unsigned> > addedEdges;
 
-   const float height = m_d.m_height + m_ptable->m_tableheight;
-   const float topheight = height + (float)m_d.m_thickness;
+   GenerateMesh();
 
-   for (int i=0; i<(cvertex-1); i++)
+   // add collision triangles and edges
+   for (unsigned i = 0; i<ringIndices.size(); i += 3)
    {
-       const Vertex2D & v1 = rgvLocal[i];
-       const Vertex2D & v2 = rgvLocal[i+1];
+      Vertex3Ds rgv3D[3];
+      // NB: HitTriangle wants CCW vertices, but for rendering we have them in CW order
+      Vertex3D_NoTex2 *v = &m_vertices[ringIndices[i]];
+      rgv3D[0] = Vertex3Ds(v->x, v->y, v->z);
+      v = &m_vertices[ringIndices[i + 2]];
+      rgv3D[1] = Vertex3Ds(v->x, v->y, v->z);
+      v = &m_vertices[ringIndices[i + 1]];
+      rgv3D[2] = Vertex3Ds(v->x, v->y, v->z);
+      SetupHitObject(pvho, new HitTriangle(rgv3D));
 
-       AddLine(pvho, v1, v2, height, topheight);
-       AddLine(pvho, v2, v1, height, topheight);
-
-       AddJoint2D(pvho, v1, height, topheight);
+      AddHitEdge(pvho, addedEdges, ringIndices[i], ringIndices[i + 1]);
+      AddHitEdge(pvho, addedEdges, ringIndices[i + 1], ringIndices[i + 2]);
+      AddHitEdge(pvho, addedEdges, ringIndices[i + 2], ringIndices[i]);
    }
 
-   for (int i=0; i<(cvertex-1); i++)
+   // add collision vertices
+   for (unsigned i = 0; i < m_vertices.size(); ++i)
    {
-       const Vertex2D & v1 = rgvLocal[cvertex + i];
-       const Vertex2D & v2 = rgvLocal[cvertex + i + 1];
-
-       AddLine(pvho, v1, v2, height, topheight);
-       AddLine(pvho, v2, v1, height, topheight);
-
-       AddJoint2D(pvho, v1, height, topheight);
+      Vertex3Ds v = Vertex3Ds(m_vertices[i].x, m_vertices[i].y, m_vertices[i].z);
+      SetupHitObject(pvho, new HitPoint(v));
    }
-
-   // Add hit triangles for the top of the rubber object.
-   {
-      const Vertex2D *pv1,*pv2,*pv3,*pv4;
-
-      for (int i=0; i<(cvertex-1); i++)
-      {
-         /*
-          * Layout of one ramp quad seen from above, ramp direction is bottom to top:
-          *
-          *    3 - - 4
-          *    | \   |
-          *    |   \ |
-          *    2 - - 1
-          */
-         pv1 = &rgvLocal[i];                    // i-th right
-         pv2 = &rgvLocal[cvertex*2 - i - 1];    // i-th left
-         pv3 = &rgvLocal[cvertex*2 - i - 2];    // (i+1)-th left
-         pv4 = &rgvLocal[i+1];                  // (i+1)-th right
-
-         {
-            const Vertex3Ds rgv3D[3] = {
-				Vertex3Ds(pv2->x, pv2->y, topheight),
-				Vertex3Ds(pv1->x, pv1->y, topheight),
-				Vertex3Ds(pv3->x, pv3->y, topheight)};
-
-            // add joint for left edge
-            AddJoint(pvho, rgv3D[0], rgv3D[2]);
-
-			HitTriangle * const ph3dpoly = new HitTriangle(rgv3D); //!! this is not efficient at all, use native triangle-soup directly somehow
-
-            if (ph3dpoly->IsDegenerate())       // degenerate triangles happen if width is 0 at some point
-            {
-                delete ph3dpoly;
-            }
-            else
-            {
-                SetupHitObject(pvho, ph3dpoly);
-            }
-         }
-
-         const Vertex3Ds rgv3D[3] = {
-			Vertex3Ds(pv3->x, pv3->y, topheight),
-			Vertex3Ds(pv1->x, pv1->y, topheight),
-			Vertex3Ds(pv4->x, pv4->y, topheight)};
-
-		 // add joint for right edge
-         AddJoint(pvho, rgv3D[1], rgv3D[2]);
-
-         HitTriangle * const ph3dpoly = new HitTriangle(rgv3D);
-         if (ph3dpoly->IsDegenerate())
-         {
-             delete ph3dpoly;
-         }
-         else
-         {
-             SetupHitObject(pvho, ph3dpoly);
-         }
-      }
-   }
-
-   // Add hit triangles for the bottom of the rubber object.
-
-   for (int i=0; i<(cvertex-1); i++)
-   {
-      // see sketch above
-      const Vertex2D * const pv1 = &rgvLocal[i];
-      const Vertex2D * const pv2 = &rgvLocal[cvertex*2 - i - 1];
-      const Vertex2D * const pv3 = &rgvLocal[cvertex*2 - i - 2];
-      const Vertex2D * const pv4 = &rgvLocal[i+1];
-
-      {
-         // left ramp triangle, order CW
-         const Vertex3Ds rgv3D[3] = {
-			Vertex3Ds(pv1->x, pv1->y, height),
-			Vertex3Ds(pv2->x, pv2->y, height),
-			Vertex3Ds(pv3->x, pv3->y, height)};
-
-         HitTriangle * const ph3dpoly = new HitTriangle(rgv3D);
-         if (ph3dpoly->IsDegenerate())
-         {
-             delete ph3dpoly;
-         }
-         else
-         {
-             SetupHitObject(pvho, ph3dpoly);
-         }
-      }
-
-      // right ramp triangle, order CW
-      const Vertex3Ds rgv3D[3] = {
-		Vertex3Ds(pv3->x, pv3->y, height),
-		Vertex3Ds(pv4->x, pv4->y, height),
-		Vertex3Ds(pv1->x, pv1->y, height)};
-
-      HitTriangle * const ph3dpoly = new HitTriangle(rgv3D);
-      if (ph3dpoly->IsDegenerate())
-      {
-          delete ph3dpoly;
-      }
-      else
-      {
-          SetupHitObject(pvho, ph3dpoly);
-      }
-   }
-
-   delete [] rgvLocal;
 }
 
-void Rubber::GetHitShapesDebug(Vector<HitObject> * const pvho)
+void Rubber::AddHitEdge(Vector<HitObject> * pvho, std::set< std::pair<unsigned, unsigned> >& addedEdges, unsigned i, unsigned j)
 {
-}
+   // create pair uniquely identifying the edge (i,j)
+   std::pair<unsigned, unsigned> p(std::min(i, j), std::max(i, j));
 
-void Rubber::AddJoint(Vector<HitObject> * pvho, const Vertex3Ds& v1, const Vertex3Ds& v2)
-{
-    SetupHitObject(pvho, new HitLine3D(v1, v2));
-}
-
-void Rubber::AddJoint2D(Vector<HitObject> * pvho, const Vertex2D& p, float zlow, float zhigh)
-{
-    SetupHitObject(pvho, new HitLineZ(p, zlow, zhigh));
+   if (addedEdges.count(p) == 0)   // edge not yet added?
+   {
+      addedEdges.insert(p);
+      Vertex3Ds v1 = Vertex3Ds(m_vertices[i].x, m_vertices[i].y, m_vertices[i].z);
+      Vertex3Ds v2 = Vertex3Ds(m_vertices[j].x, m_vertices[j].y, m_vertices[j].z);
+      SetupHitObject(pvho, new HitLine3D(v1,v2));
+   }
 }
 
 void Rubber::SetupHitObject(Vector<HitObject> * pvho, HitObject * obj)
 {
-    obj->m_elasticity = m_d.m_elasticity;
-    obj->m_elasticityFalloff = m_d.m_elasticityFalloff;
-    obj->SetFriction(m_d.m_friction);
-    obj->m_scatter = ANGTORAD(m_d.m_scatter);
-    obj->m_fEnabled = m_d.m_fCollidable;
+   obj->m_elasticity = m_d.m_elasticity;
+   obj->m_elasticityFalloff = m_d.m_elasticityFalloff;
+   obj->SetFriction(m_d.m_friction);
+   obj->m_scatter = ANGTORAD(m_d.m_scatter);
+   obj->m_fEnabled = m_d.m_fCollidable;
+   if (m_d.m_fHitEvent)
+      obj->m_pfe = (IFireEvents *)this;
+   else
+      obj->m_pfe = NULL;
 
-    obj->m_pfe = m_d.m_fHitEvent ? static_cast<IFireEvents*>(this) : NULL;
 
-    pvho->AddElement(obj);
-    m_vhoCollidable.push_back(obj);	//remember hit components of ramp
+   pvho->AddElement(obj);
+   m_vhoCollidable.push_back(obj);	//remember hit components of primitive
 }
 
-void Rubber::AddLine(Vector<HitObject> * const pvho, const Vertex2D & v1, const Vertex2D & v2, const float height1, const float height2)
+void Rubber::GetHitShapesDebug(Vector<HitObject> * const pvho)
 {
-   LineSeg * const plineseg = new LineSeg(v1, v2);
-   SetupHitObject(pvho, plineseg);
-
-   plineseg->m_rcHitRect.zlow = height1;
-   plineseg->m_rcHitRect.zhigh = height2;
 }
 
 void Rubber::EndPlay()

@@ -113,6 +113,8 @@ DECLARE_REGISTRY_RESOURCEID(IDR_RUBBER)
     virtual void ExportMesh(FILE *f);
 
 	void WriteRegDefaults();
+   void AddHitEdge(Vector<HitObject> * pvho, std::set< std::pair<unsigned, unsigned> >& addedEdges, unsigned i, unsigned j);
+   void SetupHitObject(Vector<HitObject> * pvho, HitObject * obj);
 
     // IHaveDragPoints
     virtual void GetPointDialogPanes(Vector<PropertyPane> *pvproppane);
@@ -150,12 +152,6 @@ private:
 
     void GenerateVertexBuffer(RenderDevice* pd3dDevice);
    
-    // utility functions for adding collision objects
-    void SetupHitObject(Vector<HitObject> * pvho, HitObject * obj);
-    void AddJoint(Vector<HitObject> * pvho, const Vertex3Ds& v1, const Vertex3Ds& v2);
-    void AddJoint2D(Vector<HitObject> * pvho, const Vertex2D& p, float zlow, float zhigh);
-    void AddLine(Vector<HitObject> * const pvho, const Vertex2D & v1, const Vertex2D & v2, const float height1, const float height2);
-
     void RenderObject( RenderDevice *pd3dDevice);
     void UpdateRubber(RenderDevice *pd3dDevice, bool updateVB=true);
     void GenerateMesh( int _accuracy=-1 );
