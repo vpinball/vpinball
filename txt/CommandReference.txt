@@ -333,7 +333,7 @@ UserValue(any)
 Scatter(float)
 Fall Through(bool) - if checked the ball will fall through the surface assigned to the kicker, only if the surface is higher than the playfield
 *Legacy(bool)      - if checked the kicker will behave as an old VP9 kicker that means no distraction of the ball if it doesn't hit straight the kicker center
-HitHeight(float)
+HitAccuracy(float) - defines the accuracy how fast the ball gets caught when rolling over the kicker center (0-1.0)
 *Orientation(float)
 *Radius(float)
 

@@ -17,7 +17,7 @@ public:
     char m_szSurface[MAXTOKEN];
     KickerType m_kickertype;
     float m_scatter;
-    float m_hit_height; //kicker hit object height ... default 40
+    float m_hitAccuracy; //kicker hit object height ... default 40
     float m_orientation;
     bool m_fEnabled;
     bool m_fFallThrough;
@@ -124,8 +124,8 @@ public:
 
     STDMETHOD(get_Scatter)(/*[out, retval]*/ float *pVal);
     STDMETHOD(put_Scatter)(/*[in]*/ float newVal);
-    STDMETHOD(get_HitHeight)(/*[out, retval]*/ float *pVal);
-    STDMETHOD(put_HitHeight)(/*[in]*/ float newVal);
+    STDMETHOD(get_HitAccuracy)(/*[out, retval]*/ float *pVal);
+    STDMETHOD(put_HitAccuracy)(/*[in]*/ float newVal);
     STDMETHOD(get_Orientation)(/*[out, retval]*/ float *pVal);
     STDMETHOD(put_Orientation)(/*[in]*/ float newVal);
     STDMETHOD(get_Radius)(/*[out, retval]*/ float *pVal);

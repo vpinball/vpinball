@@ -2,7 +2,6 @@
 #include "objloader.h"
 #include "meshes/kickerCupMesh.h"
 #include "meshes/kickerHoleMesh.h"
-#include "meshes/kickerHitMesh.h"
 
 Kicker::Kicker()
 {
@@ -70,11 +69,11 @@ void Kicker::SetDefaults(bool fromMouseClick)
       m_d.m_fEnabled = true;
 
 
-   hr = GetRegStringAsFloat("DefaultProps\\Kicker","HitHeight", &fTmp);
+   hr = GetRegStringAsFloat("DefaultProps\\Kicker","HitAccuracy", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
-      m_d.m_hit_height = fTmp;
+      m_d.m_hitAccuracy = fTmp;
    else
-      m_d.m_hit_height = 40;
+      m_d.m_hitAccuracy = 0.3f;
 
    hr = GetRegStringAsFloat("DefaultProps\\Kicker","Orientation", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
@@ -113,7 +112,7 @@ void Kicker::WriteRegDefaults()
    SetRegValue("DefaultProps\\Kicker","TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
    SetRegValue("DefaultProps\\Kicker","TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval, 4);
    SetRegValueBool("DefaultProps\\Kicker","Enabled", m_d.m_fEnabled);
-   SetRegValueFloat("DefaultProps\\Kicker","HitHeight", m_d.m_hit_height);
+   SetRegValueFloat("DefaultProps\\Kicker","HitHeight", m_d.m_hitAccuracy);
    SetRegValueFloat("DefaultProps\\Kicker","Orientation", m_d.m_orientation);
    SetRegValueFloat("DefaultProps\\Kicker","Radius", m_d.m_radius);
    SetRegValueFloat("DefaultProps\\Kicker","Scatter", m_d.m_scatter);
@@ -180,7 +179,7 @@ void Kicker::GetHitShapes(Vector<HitObject> * const pvho)
        phitcircle->radius = m_d.m_radius; 
 
    phitcircle->zlow = height;
-   phitcircle->zhigh = height + m_d.m_hit_height;	// height of kicker hit cylinder  
+   phitcircle->zhigh = height + 40.0f;// m_d.m_hit_height;	// height of kicker hit cylinder  
 
    phitcircle->m_zheight = height;		//height for Kicker locked ball + ball->m_radius
 
@@ -470,7 +469,7 @@ HRESULT Kicker::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptk
    bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
    bw.WriteInt(FID(TYPE), m_d.m_kickertype);
    bw.WriteFloat(FID(KSCT), m_d.m_scatter);
-   bw.WriteFloat(FID(KHOT), m_d.m_hit_height);
+   bw.WriteFloat(FID(KHAC), m_d.m_hitAccuracy);
    bw.WriteFloat(FID(KORI), m_d.m_orientation);
    bw.WriteBool(FID(FATH), m_d.m_fFallThrough);
    bw.WriteBool(FID(LEMO), m_d.m_legacyMode);
@@ -512,9 +511,9 @@ BOOL Kicker::LoadToken(int id, BiffReader *pbr)
    {
       pbr->GetFloat(&m_d.m_scatter);
    }
-   else if (id == FID(KHOT))
+   else if (id == FID(KHAC))
    {
-      pbr->GetFloat(&m_d.m_hit_height);
+      pbr->GetFloat(&m_d.m_hitAccuracy);
    }
    else if (id == FID(KORI))
    {
@@ -820,19 +819,24 @@ STDMETHODIMP Kicker::put_Scatter(float newVal)
       return S_OK;
 }
 
-STDMETHODIMP Kicker::get_HitHeight(float *pVal)
+STDMETHODIMP Kicker::get_HitAccuracy(float *pVal)
 {
-   *pVal = m_d.m_hit_height;
+   *pVal = m_d.m_hitAccuracy;
 
    return S_OK;
 }
 
-STDMETHODIMP Kicker::put_HitHeight(float newVal)
+STDMETHODIMP Kicker::put_HitAccuracy(float newVal)
 {
    STARTUNDO
 
-      m_d.m_hit_height = newVal;
-
+      if (newVal > 1.0f)
+         m_d.m_hitAccuracy=1.0f;
+      else if (newVal > 0.0f)
+         m_d.m_hitAccuracy = newVal;
+      else
+         m_d.m_hitAccuracy = 0.0f;
+         
    STOPUNDO
 
       return S_OK;
@@ -1015,22 +1019,19 @@ void KickerHitCircle::DoCollide(Ball * const pball, Vertex3Ds& hitnormal, Vertex
       if (i < 0)	//entering Kickers volume
       { 
          bool hitEvent = false;
-         Vertex3Ds d = pball->m_pos - Vertex3Ds(center.x, center.y, m_pkicker->m_baseHeight);
-         const float bnd = fabs(d.Length() - radius);
-         const float distCenter = d.Length() - radius;
-         const float a = Vertex3Ds(pball->m_vel.x, pball->m_vel.y, 0.0f).Length();
-         const float centerPrecision = 0.002f*g_pplayer->m_ptable->m_angletiltMin;
-         const float grabHeight = (m_zheight + pball->m_radius)*0.75f;
-         if (pball->m_pos.z<(grabHeight-0.5f) || m_pkicker->m_d.m_legacyMode || newBall)
+         const float grabHeight = (m_zheight + pball->m_radius)*m_pkicker->m_d.m_hitAccuracy;
+         if (pball->m_pos.z<(grabHeight) || m_pkicker->m_d.m_legacyMode || newBall)
          {
             // early out here if the ball is slow and we are near the kicker center
             hitEvent = true;
          }
          else
          {
-            Vertex3D_NoTex2 *mesh = kickerHitMesh;
-            Vertex3Ds point;
-            int numVerts = kickerHitNumVertices;
+            Vertex3Ds d = pball->m_pos - Vertex3Ds(center.x, center.y, m_pkicker->m_baseHeight);
+            const float bnd = fabs(d.Length() - radius);
+            const float a = Vertex3Ds(pball->m_vel.x, pball->m_vel.y, 0.0f).Length();
+            Vertex3D_NoTex2 *mesh = kickerCup;
+            int numVerts = kickerCupNumVertices;
             float minDist = FLT_MAX;
             Vertex3Ds dist;
             int idx = -1;
@@ -1047,7 +1048,6 @@ void KickerHitCircle::DoCollide(Ball * const pball, Vertex3Ds& hitnormal, Vertex
                if (length < minDist)
                {
                   minDist = length;
-                  point = vpos;
                   idx = t;
                }
             }
@@ -1055,21 +1055,35 @@ void KickerHitCircle::DoCollide(Ball * const pball, Vertex3Ds& hitnormal, Vertex
             {
                // we have the nearest vertex now use the normal and damp it so it doesn't speed up the ball velocity too much
                Vertex3Ds hitnorm(mesh[idx].nx, mesh[idx].ny, mesh[idx].nz);
+               Vertex3Ds surfVel, tangent, surfP;
                float dot = pball->m_vel.Dot(hitnorm);
                const float reactionImpulse = pball->m_mass * fabsf(dot);
-               float factor = 0.02f;
+               float factor = 0.025f;
                if ( bnd<0.1f )
-                   factor = 0.2f;
+                   factor = 0.095f;
 
                dot *= -(a*factor);
 
                pball->m_vel += dot * hitnorm;     // apply collision impulse (along normal, so no torque)
 
-               const Vertex3Ds surfP = -pball->m_radius * hitnorm;    // surface contact point relative to center of mass
+               float friction = 0.3f;
+               if (pball->m_pos.z > pball->m_defaultZ)
+               {
+                  friction = 1.0f;
+                  surfP = -pball->m_radius * hitnorm;    // surface contact point relative to center of mass
 
-               Vertex3Ds surfVel = pball->SurfaceVelocity(surfP);       // velocity at impact point
+                  surfVel = pball->SurfaceVelocity(surfP);       // velocity at impact point
 
-               Vertex3Ds tangent = surfVel - surfVel.Dot(hitnorm) * hitnorm; // calc the tangential velocity
+                  tangent = surfVel - surfVel.Dot(hitnorm) * hitnorm; // calc the tangential velocity
+               }
+               else
+               {
+                  surfP = -pball->m_radius * hitnormal;    // surface contact point relative to center of mass
+
+                  surfVel = pball->SurfaceVelocity(surfP);       // velocity at impact point
+
+                  tangent = surfVel - surfVel.Dot(hitnorm) * hitnormal; // calc the tangential velocity
+               }
 
                const float tangentSpSq = tangent.LengthSquared();
                if (tangent.LengthSquared() > 1e-6f)
@@ -1082,7 +1096,7 @@ void KickerHitCircle::DoCollide(Ball * const pball, Vertex3Ds& hitnormal, Vertex
                   const float kt = pball->m_invMass + tangent.Dot(CrossProduct(cross / pball->m_inertia, surfP));
 
                   // friction impulse can't be greater than coefficient of friction times collision impulse (Coulomb friction cone)
-                  const float maxFric = 1.0f * reactionImpulse;
+                  const float maxFric = friction * reactionImpulse;
                   const float jt = clamp(-vt / kt, -maxFric, maxFric);
 
                   pball->ApplySurfaceImpulse(surfP, jt * tangent);

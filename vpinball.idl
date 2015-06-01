@@ -1347,8 +1347,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [id(312), helpstring("method BallCntOver")] HRESULT BallCntOver([out, retval] int *pVal);
                 [propget, id(313), helpstring("property Scatter")] HRESULT Scatter([out, retval] float *pVal);
                 [propput, id(313), helpstring("property Scatter")] HRESULT Scatter([in] float newVal);
-                [propget, id(314), helpstring("property HitHeight")] HRESULT HitHeight([out, retval] float *pVal);
-                [propput, id(314), helpstring("property HitHeight")] HRESULT HitHeight([in] float newVal);
+                [propget, id(314), helpstring("property HitAccuracy")] HRESULT HitAccuracy([out, retval] float *pVal);
+                [propput, id(314), helpstring("property HitAccuracy")] HRESULT HitAccuracy([in] float newVal);
                 [propget, id(107), helpstring("property Orientation")] HRESULT Orientation([out, retval] float *pVal);
                 [propput, id(107), helpstring("property Orientation")] HRESULT Orientation([in] float newVal);
                 [propget, id(111), helpstring("property Radius")] HRESULT Radius([out, retval] float *pVal);

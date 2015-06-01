@@ -8553,7 +8553,7 @@ INT_PTR CALLBACK DrawingOrderProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                   else if ( pedit->GetItemType()==eItemKicker )
                   {
                      Kicker *kick= (Kicker*)pedit;
-                     sprintf_s(textBuf,"%.02f", kick->m_d.m_hit_height);
+                     sprintf_s(textBuf,"%.02f", kick->m_d.m_hitAccuracy);
                      ListView_SetItemText( listHwnd, i, 1, textBuf);
                      ListView_SetItemText( listHwnd, i, 2, "Kicker");
                   }
