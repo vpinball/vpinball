@@ -48,7 +48,7 @@ inline float ElasticityWithFalloff(float elasticity, float falloff, float vel)
 
 struct CollisionEvent
 {
-    CollisionEvent() : ball(0), obj(0), isContact(false) {}
+    CollisionEvent() : ball(0), obj(0), isContact(false), hittime(0.0f), hitdistance(0.0f), hitmoment(0.0f), hitx(0.0f), hity(0.0f), hitRigid(false) {}
 
     Ball* ball;         // the ball that collided with smth
     HitObject* obj;     // what the ball collided with

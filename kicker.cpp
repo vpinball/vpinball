@@ -10,6 +10,10 @@ Kicker::Kicker()
    indexBuffer = NULL;
    memset(m_d.m_szMaterial,0,32);
    memset(m_d.m_szSurface,0,MAXTOKEN);
+   m_ptable=NULL;
+   numVertices=0;
+   numFaces=0;
+   m_baseHeight=0.0f;
 }
 
 Kicker::~Kicker()
@@ -998,6 +1002,8 @@ STDMETHODIMP Kicker::BallCntOver(int *pVal)
 KickerHitCircle::KickerHitCircle()
 {
    m_pball = NULL;
+   m_pkicker = NULL;
+   m_zheight = 0.0f;
 }
 
 float KickerHitCircle::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
@@ -1069,6 +1075,7 @@ void KickerHitCircle::DoCollide(Ball * const pball, Vertex3Ds& hitnormal, Vertex
                float friction = 0.3f;
                if (pball->m_pos.z > pball->m_defaultZ)
                {
+                  // ball is on a surface(e.g. upper playfield) use a high friction and a different calculation to compensate surface collision
                   friction = 1.0f;
                   surfP = -pball->m_radius * hitnorm;    // surface contact point relative to center of mass
 
@@ -1082,7 +1089,7 @@ void KickerHitCircle::DoCollide(Ball * const pball, Vertex3Ds& hitnormal, Vertex
 
                   surfVel = pball->SurfaceVelocity(surfP);       // velocity at impact point
 
-                  tangent = surfVel - surfVel.Dot(hitnorm) * hitnormal; // calc the tangential velocity
+                  tangent = surfVel - surfVel.Dot(hitnormal) * hitnorm; // calc the tangential velocity
                }
 
                const float tangentSpSq = tangent.LengthSquared();
