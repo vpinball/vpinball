@@ -4,7 +4,7 @@
 
 #define USE_D3D9EX // if enabled can use extended API, does not benefit on XP though // currently only allows to enable adaptive vsync again (on win vista/7 only, seems to be broken in win8)
 
-//#define COMPRESS_MESHES // abuses the VP-Image-LZW compressor for compressing the meshes (usually pretty weak though, overall compresses the full VPX by 0-10% only)
+#define COMPRESS_MESHES // uses miniz for compressing the meshes
 
 #define CRASH_HANDLER
 

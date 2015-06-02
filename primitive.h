@@ -254,8 +254,12 @@ public:
 
 private:        // private member functions
 
-   int numIndices;       // only used during loading
-   int numVertices;         // only used during loading
+   int numIndices;         // only used during loading
+   int numVertices;        // only used during loading
+#ifdef COMPRESS_MESHES
+   int compressedIndices;  // only used during loading
+   int compressedVertices; // only used during loading
+#endif
 
    void UpdateEditorView();
 
