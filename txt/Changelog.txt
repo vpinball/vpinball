@@ -35,7 +35,7 @@ VP 10.0.0 Changelog
 
   -> the data-format of the physics sets (*.vpp files) is basically the same, although the parameters inside are different, so unfortunately you need to set them up from scratch again
   
-  -> kicker physics changed: The kicker bevel will influence the ball's motion and won't grab the ball like a magnet any more. The old behaviour can be set when the 'Legacy' check box is checked.
+  -> kicker physics changed: The kicker bevel will influence the ball's motion and won't grab the ball like a magnet anymore. The old behaviour can be set via the 'Legacy' checkbox.
 
 - changed the plunger physics to make the launch behavior more linear and controllable, for both keyboard and mechanical 
   plunger interfaces
@@ -223,6 +223,8 @@ VP 10.0.0 Changelog
 
 - new external audio library for music playback (BASS)
   this allows to use different formats than just MP3, e.g. OGG
+
+- use miniz library to compress primitives
 
 - 64bit port (handle with care, might still cause issues)
 
