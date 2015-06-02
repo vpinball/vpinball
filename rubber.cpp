@@ -493,7 +493,7 @@ void Rubber::GetHitShapes(Vector<HitObject> * const pvho)
 {
    std::set< std::pair<unsigned, unsigned> > addedEdges;
 
-   GenerateMesh();
+   GenerateMesh(6);
 
    // add collision triangles and edges
    for (unsigned i = 0; i<ringIndices.size(); i += 3)
