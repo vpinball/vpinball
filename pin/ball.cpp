@@ -17,6 +17,17 @@ Ball::Ball()
    m_Event_Pos.x = m_Event_Pos.y = m_Event_Pos.z = -1.0f;
    m_frozen = false;
    m_color = RGB(255,255,255);
+   m_dynamic = C_DYNAMIC; // assume dynamic
+   m_vel.SetZero();
+   m_angularmomentum.SetZero();
+   m_angularvelocity.SetZero();
+   m_mass = 1.0f;
+   m_invMass = 1.0f / m_mass;
+   m_drsq = 0.0f;
+   m_radius = 25.0f;
+   m_orientation.Identity();
+   m_inertia = (float)(2.0 / 5.0) * m_radius*m_radius * m_mass;
+   m_bulb_intensity_scale = 1.0f;
 
    memset(m_szImage,0,MAXTOKEN);
    memset(m_szImageFront,0,MAXTOKEN);
