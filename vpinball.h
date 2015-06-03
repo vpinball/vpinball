@@ -7,7 +7,7 @@
 
 #include "RenderDevice.h"
 
-#define CURRENT_FILE_FORMAT_VERSION 1000
+#define CURRENT_FILE_FORMAT_VERSION 1001
 
 #define	WINDOWMESSAGE_ADDUNITS 5150 // Message ID to request the game window to add units (coins)
 
