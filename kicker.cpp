@@ -181,8 +181,21 @@ void Kicker::GetHitShapes(Vector<HitObject> * const pvho)
        // kicker should start a hit event
    }
    else
-       phitcircle->radius = m_d.m_radius; 
+   {
+       phitcircle->radius = m_d.m_radius;
+       const float rad = m_d.m_radius * 0.8f;
+       hitMesh.resize(kickerHitNumVertices);
+       for (unsigned int t = 0; t <kickerHitNumVertices; t++)
+       {
+           // find the right normal by calculating the distance from current ball position to vertex of the kicker mesh               
+           Vertex3Ds vpos = Vertex3Ds(kickerHitMesh[t].x, kickerHitMesh[t].y, kickerHitMesh[t].z);
+           vpos.x = vpos.x*rad + m_d.m_vCenter.x;
+           vpos.y = vpos.y*rad + m_d.m_vCenter.y;
+           vpos.z = vpos.z*rad * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_baseHeight;
+           hitMesh.push_back(vpos);
+       }
 
+   }
    phitcircle->zlow = height;
    phitcircle->zhigh = height + 40.0f;// m_d.m_hit_height;	// height of kicker hit cylinder  
 
@@ -1036,19 +1049,12 @@ void KickerHitCircle::DoCollide(Ball * const pball, Vertex3Ds& hitnormal, Vertex
             const Vertex3Ds d = pball->m_pos - Vertex3Ds(center.x, center.y, m_pkicker->m_baseHeight);
             const float bnd = fabsf(d.Length() - radius);
             const float a = Vertex3Ds(pball->m_vel.x, pball->m_vel.y, 0.0f).Length();
-            const Vertex3D_NoTex2 * const mesh = kickerHitMesh;
-            const unsigned int numVerts = kickerHitNumVertices;
-            const float rad = m_pkicker->m_d.m_radius*0.8f;
             float minDist = FLT_MAX;
             int idx = -1;
-            for (unsigned int t = 0; t < numVerts; t++)
+            for (unsigned int t = 0; t < m_pkicker->hitMesh.size(); t++)
             {
                // find the right normal by calculating the distance from current ball position to vertex of the kicker mesh               
-               Vertex3Ds vpos = Vertex3Ds(mesh[t].x, mesh[t].y, mesh[t].z);
-               vpos.x = vpos.x*rad + center.x;
-               vpos.y = vpos.y*rad + center.y;
-               vpos.z = vpos.z*rad * m_pkicker->m_ptable->m_BG_scalez[m_pkicker->m_ptable->m_BG_current_set] + m_pkicker->m_baseHeight;
-               const float length = Vertex3Ds(pball->m_pos - vpos).Length();
+               const float length = Vertex3Ds(pball->m_pos - m_pkicker->hitMesh[t]).Length();
                if (length < minDist)
                {
                   minDist = length;
@@ -1058,7 +1064,7 @@ void KickerHitCircle::DoCollide(Ball * const pball, Vertex3Ds& hitnormal, Vertex
             if (idx != -1)
             {
                // we have the nearest vertex now use the normal and damp it so it doesn't speed up the ball velocity too much
-               const Vertex3Ds hitnorm(mesh[idx].nx, mesh[idx].ny, mesh[idx].nz);
+                const Vertex3Ds hitnorm(kickerHitMesh[idx].nx, kickerHitMesh[idx].ny, kickerHitMesh[idx].nz);
                Vertex3Ds surfVel, tangent, surfP;
                float dot = pball->m_vel.Dot(hitnorm);
                const float reactionImpulse = pball->m_mass * fabsf(dot);
@@ -1067,7 +1073,7 @@ void KickerHitCircle::DoCollide(Ball * const pball, Vertex3Ds& hitnormal, Vertex
                dot *= -(a*factor);
 
                pball->m_vel += dot * hitnorm;     // apply collision impulse (along normal, so no torque)
-
+               pball->m_dynamic = C_DYNAMIC;
                float friction;
                if (pball->m_pos.z > pball->m_defaultZ)
                {
@@ -1131,8 +1137,11 @@ void KickerHitCircle::DoCollide(Ball * const pball, Vertex3Ds& hitnormal, Vertex
 
                // Only mess with variables if ball was not kicked during event
                pball->m_vel.SetZero();
+               pball->m_angularmomentum.SetZero();
+               pball->m_angularvelocity.SetZero();
                pball->m_pos.x = center.x;
                pball->m_pos.y = center.y;
+               pball->m_dynamic = 0;
                if (m_pkicker->m_d.m_fFallThrough)
                   pball->m_pos.z = m_zheight - pball->m_radius - 5.0f;
                else
