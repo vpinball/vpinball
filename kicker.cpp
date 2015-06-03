@@ -2,6 +2,7 @@
 #include "objloader.h"
 #include "meshes/kickerCupMesh.h"
 #include "meshes/kickerHoleMesh.h"
+#include "meshes/kickerHitMesh.h"
 
 Kicker::Kicker()
 {
@@ -1035,20 +1036,19 @@ void KickerHitCircle::DoCollide(Ball * const pball, Vertex3Ds& hitnormal, Vertex
             const Vertex3Ds d = pball->m_pos - Vertex3Ds(center.x, center.y, m_pkicker->m_baseHeight);
             const float bnd = fabsf(d.Length() - radius);
             const float a = Vertex3Ds(pball->m_vel.x, pball->m_vel.y, 0.0f).Length();
-            const Vertex3D_NoTex2 * const mesh = kickerCup;
-            const unsigned int numVerts = kickerCupNumVertices;
+            const Vertex3D_NoTex2 * const mesh = kickerHitMesh;
+            const unsigned int numVerts = kickerHitNumVertices;
+            const float rad = m_pkicker->m_d.m_radius*0.8f;
             float minDist = FLT_MAX;
             int idx = -1;
             for (unsigned int t = 0; t < numVerts; t++)
             {
                // find the right normal by calculating the distance from current ball position to vertex of the kicker mesh               
                Vertex3Ds vpos = Vertex3Ds(mesh[t].x, mesh[t].y, mesh[t].z);
-               vpos.x = vpos.x*m_pkicker->m_d.m_radius + center.x;
-               vpos.y = vpos.y*m_pkicker->m_d.m_radius + center.y;
-               vpos.z = vpos.z*m_pkicker->m_d.m_radius * m_pkicker->m_ptable->m_BG_scalez[m_pkicker->m_ptable->m_BG_current_set] + m_pkicker->m_baseHeight;
-               const Vertex3Ds bpos = pball->m_pos;
-			   const Vertex3Ds dist = bpos - vpos;
-               const float length = dist.Length();
+               vpos.x = vpos.x*rad + center.x;
+               vpos.y = vpos.y*rad + center.y;
+               vpos.z = vpos.z*rad * m_pkicker->m_ptable->m_BG_scalez[m_pkicker->m_ptable->m_BG_current_set] + m_pkicker->m_baseHeight;
+               const float length = Vertex3Ds(pball->m_pos - vpos).Length();
                if (length < minDist)
                {
                   minDist = length;
