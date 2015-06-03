@@ -192,7 +192,7 @@ void Kicker::GetHitShapes(Vector<HitObject> * const pvho)
            vpos.x = vpos.x*rad + m_d.m_vCenter.x;
            vpos.y = vpos.y*rad + m_d.m_vCenter.y;
            vpos.z = vpos.z*rad * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_baseHeight;
-           hitMesh.push_back(vpos);
+           hitMesh[t] = vpos;
        }
 
    }
