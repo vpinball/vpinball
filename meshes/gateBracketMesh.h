@@ -1,6 +1,6 @@
 const unsigned int gateBracketNumVertices=184;
 const unsigned int gateBracketNumFaces=516;
-Vertex3D_NoTex2 gateBracket[184]=
+const Vertex3D_NoTex2 gateBracket[184]=
 {
 { 0.349370f,-0.066985f,-0.061870f, -0.707100f,0.000000f,-0.707100f, 0.500000f,0.500000f},
 { 0.344098f,-0.066985f,-0.049142f, -0.980800f,0.000000f,-0.195100f, 0.500000f,0.500000f},

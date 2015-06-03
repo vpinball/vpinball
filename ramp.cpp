@@ -1209,7 +1209,7 @@ void Ramp::RenderStatic(RenderDevice* pd3dDevice)
    if (!m_d.m_fVisible)
 	   return;
    
-   Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
+   const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
 
    // dont render alpha shaded ramps into static buffer, these are done per frame later-on
    if (mat->m_bOpacityActive) 
@@ -2209,7 +2209,7 @@ void Ramp::RenderRamp( RenderDevice *pd3dDevice, const Material * const mat )
 
    if ( m_d.m_widthbottom==0.0f && m_d.m_widthtop==0.0f )
    {
-      dynamicVertexBufferRegenerate=false;
+      dynamicVertexBufferRegenerate = false;
       return;
    }
 
@@ -2218,9 +2218,7 @@ void Ramp::RenderRamp( RenderDevice *pd3dDevice, const Material * const mat )
        pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP);
 
    if (isHabitrail())
-   {
       RenderStaticHabitrail(pd3dDevice, mat);
-   }
    else
    {
       pd3dDevice->basicShader->SetMaterial(mat);

@@ -45,7 +45,7 @@ void Trigger::UpdateEditorView()
 {
     if( m_d.m_shape!=TriggerNone )
     {
-        Vertex3D_NoTex2 *meshVertices;
+        const Vertex3D_NoTex2 *meshVertices;
         float lengthX=30.0f;
         float lengthY=30.0f;
         float maxx=-FLT_MAX;        
@@ -626,7 +626,7 @@ void Trigger::ExportMesh(FILE *f)
 void Trigger::GenerateMesh()
 {
     const float baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
-    Vertex3D_NoTex2 *verts;
+    const Vertex3D_NoTex2 *verts;
     Matrix3D fullMatrix;
 
     fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotation));

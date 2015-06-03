@@ -1,6 +1,6 @@
 const unsigned int spinnerPlateNumVertices=228;
 const unsigned int spinnerPlateNumFaces=912;
-Vertex3D_NoTex2 spinnerPlate[228]=
+const Vertex3D_NoTex2 spinnerPlate[228]=
 {
 { 0.362518f,0.027512f,0.212508f, 0.995100f,0.000000f,0.098400f, 0.954375f,0.540387f},
 { 0.362518f,-0.027511f,0.212508f, 0.995100f,0.000000f,0.098400f, 0.985625f,0.540387f},

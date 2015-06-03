@@ -1,6 +1,6 @@
 const unsigned int kickerCupNumVertices=499;
 const unsigned int kickerCupNumFaces=774;
-Vertex3D_NoTex2 kickerCup[499]=
+const Vertex3D_NoTex2 kickerCup[499]=
 {
 { 0.903056f,0.003986f,-0.111434f, -0.495300f,0.065200f,0.866200f, 0.500000f,0.041577f},
 { 0.871362f,-0.236722f,-0.111434f, -0.495300f,0.065200f,0.866200f, 0.458339f,0.041577f},
@@ -767,7 +767,7 @@ WORD kickerCupIndices[774]=
 
 const unsigned int kickerPlateNumVertices=49;
 const unsigned int kickerPlateNumFaces=72;
-Vertex3D_NoTex2 kickerPlate[49]=
+const Vertex3D_NoTex2 kickerPlate[49]=
 {
 { -1.160550f,0.001521f,0.002516f, 0.000000f,0.000000f,1.000000f, 0.500000f,0.001500f},
 { -1.121706f,-0.293496f,0.002516f, 0.000000f,0.000000f,1.000000f, 0.458338f,0.001500f},

@@ -1,6 +1,6 @@
 const unsigned int spinnerBracketNumVertices=152;
 const unsigned int spinnerBracketNumFaces=420;
-Vertex3D_NoTex2 spinnerBracket[152]=
+const Vertex3D_NoTex2 spinnerBracket[152]=
 {
 { 0.509953f,0.008467f,0.476188f, -0.000000f,0.000000f,1.000000f, 0.000000f,0.000000f},
 { -0.509953f,0.008466f,0.476187f, -0.000000f,0.000000f,1.000000f, 0.000000f,0.000000f},
