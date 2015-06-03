@@ -93,6 +93,7 @@ public:
 
     KickerHitCircle *m_phitkickercircle;
     VertexBuffer *vertexBuffer;
+    std::vector<Vertex3Ds> hitMesh;
     IndexBuffer  *indexBuffer;
     unsigned int numVertices;
     unsigned int numFaces;
