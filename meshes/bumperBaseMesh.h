@@ -1,6 +1,6 @@
 const unsigned int bumperBaseNumVertices=1157;
 const unsigned int bumperBaseNumFaces=1848;
-Vertex3D_NoTex2 bumperBase[1157]=
+const Vertex3D_NoTex2 bumperBase[1157]=
 {
 { -0.350283f,0.000000f,0.694245f, 0.991400f,-0.130600f,-0.000000f, 0.152837f,0.283302f},
 { -0.350283f,0.000000f,0.231045f, 0.991400f,-0.130600f,-0.000000f, 0.152305f,0.439764f},

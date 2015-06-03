@@ -1,6 +1,6 @@
 const unsigned int bumperRingNumVertices=358;
 const unsigned int bumperRingNumFaces=1008;
-Vertex3D_NoTex2 bumperRing[358]=
+const Vertex3D_NoTex2 bumperRing[358]=
 {
 { 0.005668f,-0.402742f,0.602621f, -0.000000f,-1.000000f,-0.000000f, 0.418274f,0.629082f},
 { 0.005668f,-0.402742f,0.545621f, -0.000000f,-1.000000f,-0.000000f, 0.418274f,0.726163f},

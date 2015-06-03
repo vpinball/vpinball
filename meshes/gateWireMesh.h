@@ -1,6 +1,6 @@
 const unsigned int gateWireNumVertices=186;
 const unsigned int gateWireNumFaces=1008;
-Vertex3D_NoTex2 gateWire[186]=
+const Vertex3D_NoTex2 gateWire[186]=
 {
 { -0.011238f,0.004682f,-0.174262f, -0.479600f,0.670500f,0.565900f, 0.500000f,0.500000f},
 { -0.012480f,0.000439f,-0.173020f, -0.652400f,0.000000f,0.757900f, 0.500000f,0.500000f},

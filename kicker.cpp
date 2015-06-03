@@ -402,7 +402,6 @@ void Kicker::RenderStatic(RenderDevice* pd3dDevice)
       pd3dDevice->basicShader->Core()->SetFloat("fKickerScale", m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]);
       pd3dDevice->SetRenderState(RenderDevice::ZFUNC, D3DCMP_ALWAYS);
 
-
       pd3dDevice->basicShader->Begin(0);
       pd3dDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, buf, kickerPlateNumVertices, kickerPlateIndices, kickerPlateNumFaces);
       pd3dDevice->basicShader->End();
@@ -1033,24 +1032,23 @@ void KickerHitCircle::DoCollide(Ball * const pball, Vertex3Ds& hitnormal, Vertex
          }
          else
          {
-            Vertex3Ds d = pball->m_pos - Vertex3Ds(center.x, center.y, m_pkicker->m_baseHeight);
-            const float bnd = fabs(d.Length() - radius);
+            const Vertex3Ds d = pball->m_pos - Vertex3Ds(center.x, center.y, m_pkicker->m_baseHeight);
+            const float bnd = fabsf(d.Length() - radius);
             const float a = Vertex3Ds(pball->m_vel.x, pball->m_vel.y, 0.0f).Length();
-            Vertex3D_NoTex2 *mesh = kickerCup;
-            int numVerts = kickerCupNumVertices;
+            const Vertex3D_NoTex2 * const mesh = kickerCup;
+            const unsigned int numVerts = kickerCupNumVertices;
             float minDist = FLT_MAX;
-            Vertex3Ds dist;
             int idx = -1;
-            for (int t = 0; t < numVerts; t++)
+            for (unsigned int t = 0; t < numVerts; t++)
             {
                // find the right normal by calculating the distance from current ball position to vertex of the kicker mesh               
                Vertex3Ds vpos = Vertex3Ds(mesh[t].x, mesh[t].y, mesh[t].z);
                vpos.x = vpos.x*m_pkicker->m_d.m_radius + center.x;
                vpos.y = vpos.y*m_pkicker->m_d.m_radius + center.y;
                vpos.z = vpos.z*m_pkicker->m_d.m_radius * m_pkicker->m_ptable->m_BG_scalez[m_pkicker->m_ptable->m_BG_current_set] + m_pkicker->m_baseHeight;
-               Vertex3Ds bpos=pball->m_pos;
-               dist = bpos-vpos;
-               float length = dist.Length();
+               const Vertex3Ds bpos = pball->m_pos;
+			   const Vertex3Ds dist = bpos - vpos;
+               const float length = dist.Length();
                if (length < minDist)
                {
                   minDist = length;
@@ -1060,19 +1058,17 @@ void KickerHitCircle::DoCollide(Ball * const pball, Vertex3Ds& hitnormal, Vertex
             if (idx != -1)
             {
                // we have the nearest vertex now use the normal and damp it so it doesn't speed up the ball velocity too much
-               Vertex3Ds hitnorm(mesh[idx].nx, mesh[idx].ny, mesh[idx].nz);
+               const Vertex3Ds hitnorm(mesh[idx].nx, mesh[idx].ny, mesh[idx].nz);
                Vertex3Ds surfVel, tangent, surfP;
                float dot = pball->m_vel.Dot(hitnorm);
                const float reactionImpulse = pball->m_mass * fabsf(dot);
-               float factor = 0.025f;
-               if ( bnd<0.1f )
-                   factor = 0.095f;
+			   const float factor = (bnd<0.1f) ? 0.095f : 0.025f;
 
                dot *= -(a*factor);
 
                pball->m_vel += dot * hitnorm;     // apply collision impulse (along normal, so no torque)
 
-               float friction = 0.3f;
+               float friction;
                if (pball->m_pos.z > pball->m_defaultZ)
                {
                   // ball is on a surface(e.g. upper playfield) use a high friction and a different calculation to compensate surface collision
@@ -1085,6 +1081,7 @@ void KickerHitCircle::DoCollide(Ball * const pball, Vertex3Ds& hitnormal, Vertex
                }
                else
                {
+				  friction = 0.3f;
                   surfP = -pball->m_radius * hitnormal;    // surface contact point relative to center of mass
 
                   surfVel = pball->SurfaceVelocity(surfP);       // velocity at impact point
@@ -1126,8 +1123,6 @@ void KickerHitCircle::DoCollide(Ball * const pball, Vertex3Ds& hitnormal, Vertex
             if (hitnormal.x != FLT_MAX) // FLT_MAX if just created
                m_pkicker->FireGroupEvent(DISPID_HitEvents_Hit);
 
-
-
             if (pball->m_frozen || m_pkicker->m_d.m_fFallThrough )	// script may have unfrozen the ball
             {
                // if ball falls through hole, we fake the collision algo by changing the ball height
@@ -1141,7 +1136,7 @@ void KickerHitCircle::DoCollide(Ball * const pball, Vertex3Ds& hitnormal, Vertex
                if (m_pkicker->m_d.m_fFallThrough)
                   pball->m_pos.z = m_zheight - pball->m_radius - 5.0f;
                else
-                  pball->m_pos.z = m_zheight+ pball->m_radius/**pball->m_radius/radius*/;
+                  pball->m_pos.z = m_zheight + pball->m_radius/**pball->m_radius/radius*/;
 
             }
             else m_pball = NULL;		// make sure

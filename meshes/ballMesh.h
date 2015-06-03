@@ -1,7 +1,7 @@
 #if 0 // Icosa High
 const unsigned int basicBallNumVertices=673;
 const unsigned int basicBallNumFaces=1280*3;
-Vertex3D_NoTex2 basicBall[673]=
+const Vertex3D_NoTex2 basicBall[673]=
 {
 {0.f,0.f,1.f,-2.3868809e-09f,0.f,1.f,0.59999996f,1.f},
 {0.13795224f,0.f,0.99043888f,0.13693003f,1.4562201e-07f,0.99058074f,0.5f,0.95594794f},
@@ -1963,7 +1963,7 @@ WORD basicBallIndices[1280*3]=
 #elif 0 // Icosa medium
 const unsigned int basicBallNumVertices=274;
 const unsigned int basicBallNumFaces=500*3;
-Vertex3D_NoTex2 basicBall[274]=
+const Vertex3D_NoTex2 basicBall[274]=
 {
 {0.f,0.f,1.f,-2.410921e-09f,0.f,1.f,0.59999996f,1.f},
 {0.21962465f,0.f,0.97558439f,0.21800028f,1.9296781e-08f,0.97594869f,0.5f,0.92951679f},
@@ -2746,7 +2746,7 @@ WORD basicBallIndices[500*3]=
 #elif 1 // Icosa low
 const unsigned int basicBallMidNumVertices=181;
 const unsigned int basicBallMidNumFaces=320*3;
-Vertex3D_NoTex2 basicBallMid[181]=
+const Vertex3D_NoTex2 basicBallMid[181]=
 {
 {0.f,0.f,1.f,-2.4333193e-09f,1.0949937e-08f,1.f,0.59999996f,1.f},
 {0.27326652f,0.f,0.96193832f,0.27130246f,1.217769e-09f,0.96249413f,0.5f,0.91189593f},
@@ -3256,7 +3256,7 @@ WORD basicBallMidIndices[320*3]=
 // Icosa lowest
 const unsigned int basicBallLoNumVertices=108;
 const unsigned int basicBallLoNumFaces=180*3;
-Vertex3D_NoTex2 basicBallLo[108]=
+const Vertex3D_NoTex2 basicBallLo[108]=
 {
 {0.f,0.f,1.f,0.f,7.4472202e-09f,1.f,0.59999996f,1.f},
 {0.36072916f,0.f,0.93267065f,0.35851011f,9.9518802e-09f,0.93352586f,0.5f,0.88252789f},

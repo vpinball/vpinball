@@ -1,6 +1,6 @@
 const unsigned int bulbLightNumVertices=67;
 const unsigned int bulbLightNumFaces=360;
-Vertex3D_NoTex2 bulbLight[67]=
+const Vertex3D_NoTex2 bulbLight[67]=
 {
 { 0.220295f,-0.381570f,0.984870f, 0.496400f,-0.859800f,0.119300f, 0.698812f,0.614784f},
 { 0.000000f,-0.407060f,1.148565f, 0.000000f,-0.924900f,0.380300f, 0.688975f,0.500000f},

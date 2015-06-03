@@ -1,6 +1,6 @@
 const unsigned int bulbSocketNumVertices=592;
 const unsigned int bulbSocketNumFaces=3384;
-Vertex3D_NoTex2 bulbSocket[592]=
+const Vertex3D_NoTex2 bulbSocket[592]=
 {
 { 0.000000f,0.000000f,-0.758774f, 0.000000f,0.000000f,-1.000000f, 0.371246f,1.000000f},
 { 0.000000f,0.314660f,-0.758774f, 0.000000f,0.734200f,-0.678900f, 0.250000f,0.874869f},

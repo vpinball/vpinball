@@ -1,5 +1,5 @@
 const unsigned int kickerHitNumVertices=485;
-Vertex3D_NoTex2 kickerHitMesh[485]=
+const Vertex3D_NoTex2 kickerHitMesh[485]=
 {
 { 0.039965f,-0.168118f,-0.273172f, -0.044700f,0.339700f,0.939500f, 0.177084f,0.169846f},
 { 0.104670f,-0.366991f,-0.198172f, -0.088100f,0.328800f,0.940300f, 0.166667f,0.127385f},
