@@ -2626,7 +2626,6 @@ HRESULT PinTable::SaveCustomInfo(IStorage* pstg, IStream *pstmTags, HCRYPTHASH h
       bw.WriteString(FID(CUST), m_vCustomInfoTag.ElementAt(i));
    }
 
-
    bw.WriteTag(FID(ENDB));
 
    for (int i=0;i<m_vCustomInfoTag.Size();i++)
@@ -3015,7 +3014,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
                pstgData->Release();
                DestroyWindow(hwndProgressBar);
                g_pvp->SetCursorCur(NULL, IDC_ARROW);
-	       return -1;
+			   return -1;
             }
 
             // Create a block cipher session key based on the hash of the password.
@@ -3060,7 +3059,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 
                   //AddSpriteProjItem();
                   int id = 0; // VBA id for this item
-                  hr = piedit->InitLoad(pstmItem, this, &id, version, (version < CURRENT_FILE_FORMAT_VERSION) ? hch : NULL, (version < CURRENT_FILE_FORMAT_VERSION) ? hkey : NULL);
+                  hr = piedit->InitLoad(pstmItem, this, &id, version, (version < 1000) ? hch : NULL, (version < 1000) ? hkey : NULL); // 1000 (VP10 beta) removed the encryption
                   piedit->InitVBA(fFalse, id, NULL);
                   pstmItem->Release();
                   pstmItem = NULL;
