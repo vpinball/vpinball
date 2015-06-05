@@ -74,7 +74,7 @@ void Rubber::SetDefaults(bool fromMouseClick)
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szImage[0] = 0;
 
-   m_d.m_fHitEvent = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "HitEvent", true) : false;
+   m_d.m_fHitEvent = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "HitEvent", false) : false;
 
    SetDefaultPhysics(fromMouseClick);
 
