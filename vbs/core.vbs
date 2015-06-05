@@ -1,8 +1,20 @@
 Option Explicit
-Const VPinMAMEDriverVer = 3.44
+Const VPinMAMEDriverVer = 3.45
 '=======================
 ' VPinMAME driver core.
 '=======================
+' New in 3.45 (Update by KieferSkunk)
+' - (Core changes)
+'   - Rewrote cvpmDictionary as a wrapper around Microsoft's Scripting.Dictionary object.
+'     This provides two major benefits:
+'     (1) Improved performance: Keys are stored by hash/reference, not by index, and existence checks and key location are now O(1) instead of O(N) operations.
+'     (2) Keys and Items can now both be primitive types or objects.  You can use integers, strings, etc. as keys, and you can use any object as an Item.
+'         Note: The only restriction is that a Key cannot be a Scripting.Dictionary or an Array.
+'   - cvpmTurnTable now smoothly changes speeds and directions.  You can adjust the following properties to change the turntable's behavior:
+'     - MaxSpeed: Sets new maximum spin speed.  If motor is on, turntable will smoothly accelerate to new speed.
+'     - SpinUp: Sets new spin-up rate.  If currently accelerating, turntable will accelerate at the new rate.
+'     - SpinDown: Sets new spin-down rate.  If currently slowing to a stop, turntable will decelerate at the new rate.
+'     - SpinCW: True for clockwise rotation, False for counter-clockwise.  If motor is on, switching this will smoothly reverse the turntable's direction.
 ' New in 3.44 (Update by Toxie)
 ' - (Core changes)
 '	- Added ability to define default ball mass (in VP Units) inside table script.
@@ -555,67 +567,64 @@ Function LoadScript(file) 'Checks Tables and Scripts directories for specified v
 End Function
 
 ' Dictionary
-' Somehow Microsoft managed to make the dictionary object "unsafe for scripting"!
-' To avoid security warnings I create my own dictionary
-' To make it easier the key must be an object and the item must not be an object
+' At one point, Microsoft had made Scripting.Dictionary "unsafe for scripting", but it's
+' been a long time since that was true.  So now, to maintain compatibility with all tables
+' and scripts that use cvpmDictionary, this class is now a simple wrapper around Microsoft's
+' more efficient implementation.
 Class cvpmDictionary
-	Private mKey(), mItem(), mNext
+    Private mDict
+	Private Sub Class_Initialize : Set mDict = CreateObject("Scripting.Dictionary") : End Sub
 
-	Private Sub Class_Initialize : mNext = 0 : ReDim mKey(0), mItem(0) : End Sub
-
+    ' DEPRECATED: MS Dictionaries are not index-based.  Use "Exists" method instead.
 	Private Function FindKey(aKey)
-		Dim ii : FindKey = -1
-		If mNext > 0 Then
-			For ii = 0 To mNext - 1
-				If mKey(ii) Is aKey Then FindKey = ii : Exit Function
+		Dim ii, key : FindKey = -1
+		If mDict.Count > 0 Then
+		    ii = 0
+		    For Each key In mDict.Keys
+		        If key = aKey Then FindKey = ii : Exit Function
 			Next
 		End If
 	End Function
 
-	Public Property Get Count : Count = mNext : End Property
+	Public Property Get Count : Count = mDict.Count : End Property
 
 	Public Property Get Item(aKey)
-		Dim no : no = FindKey(aKey)
-		If no >= 0 Then Item = mItem(no) Else Add aKey, Empty : Item = Empty
+	    Item = Empty
+	    If mDict.Exists(aKey) Then
+	        If IsObject(mDict(Item)) Then
+	            Set Item = mDict(aKey)
+	        Else
+	            Item = mDict(aKey)
+	        End If
+	    End If
 	End Property
 
 	Public Property Let Item(aKey, aData)
-		Dim no : no = FindKey(aKey)
-		If no >= 0 Then mItem(no) = aData Else Add aKey, aData
+	    If IsObject(aData) Then
+	        Set mDict(aKey) = aData
+	    Else
+	        mDict(aKey) = aData
+	    End If
 	End Property
 
 	Public Property Set Key(aKey)
-		Dim no : no = FindKey(aKey)
-		If no >= 0 Then Set mKey(no) = aKey Else Exit Property ' Err.Raise xxx
+	    ' This function is (and always has been) a no-op.  Previous definition
+	    ' just looked up aKey in the keys list, and if found, set the key to itself.
 	End Property
 
 	Public Sub Add(aKey, aItem)
-		Dim no : no = FindKey(aKey)
-		If no >= 0 Then ' already exists. Just change the value
-			mItem(no) = aItem
-		Else
-			ReDim Preserve mKey(mNext), mItem(mNext)
-			Set mKey(mNext) = aKey : mItem(mNext) = aItem : mNext = mNext + 1
-		End If
+	    If IsObject(aItem) Then
+	        Set mDict(aKey) = aItem
+	    Else
+	        mDict(aKey) = aItem
+	    End If
 	End Sub
 
-	Public Sub Remove(aKey)
-		Dim ii, no
-		no = FindKey(aKey) : If no < 0 Then Exit Sub 'Err.Raise xxx
-		mNext = mNext - 1
-		If no < mNext Then
-			For ii = no To mNext - 1 : Set mKey(ii) = mKey(ii+1) : mItem(ii) = mItem(ii+1) : Next
-		End If
-		ReDim Preserve mKey(mNext), mItem(mNext)
-	End Sub
-
-	Public Sub RemoveAll : ReDim mKey(0), mItem(0) : mNext = 0 : End Sub
-
-	Public Function Exists(aKey) : Exists = FindKey(aKey) >= 0 : End Function
-
-	Public Function Items : If mNext > 0 Then Items = mItem Else Items = Array() : End If : End Function
-
-	Public Function Keys  : If mNext > 0 Then Keys  = mKey  Else Keys  = Array() : End If : End Function
+	Public Sub Remove(aKey)      : mDict.Remove(aKey)          : End Sub
+	Public Sub      RemoveAll    : mDict.RemoveAll             : End Sub
+	Public Function Exists(aKey) : Exists = mDict.Exists(aKey) : End Function
+	Public Function Items        : Items  = mDict.Items        : End Function
+	Public Function Keys         : Keys   = mDict.Keys         : End Function
 End Class
 
 '--------------------
@@ -627,7 +636,9 @@ Class cvpmTimer
 
 	Private Sub Class_Initialize
 		ReDim mQue(conMaxTimers) : mNow = 0 : mTimers = 0
-		Set mSlowUpdates = New cvpmDictionary : Set mFastUpdates = New cvpmDictionary : Set mResets = New cvpmDictionary
+		Set mSlowUpdates = New cvpmDictionary
+		Set mFastUpdates = New cvpmDictionary
+		Set mResets      = New cvpmDictionary
 	End Sub
 
 	Public Sub InitTimer(aTimerObj, aFast)
@@ -1191,19 +1202,23 @@ End Class
 '     Turntable
 '--------------------
 Class cvpmTurntable
-	Private mX, mY, mSize, mMotorOn, mDir, mBalls, mTrigger
-	Public MaxSpeed, SpinUp, SpinDown, Speed
+	Private mX, mY, mSize, mTrigger, mBalls, mSpinUp, mSpinDown
+	Private mMotorOn, mSpinCW
+	Private mMaxSpeed, mTargetSpeed, mCurrentAccel
+	Public Speed
 
 	Private Sub Class_Initialize
-		mMotorOn = False : Speed = 0 : mDir = 1 : SpinUp = 10 : SpinDown = 4
 		Set mBalls = New cvpmDictionary
+		mMotorOn = False : mSpinCW = True : Speed = 0 : mSpinUp = 10 : mSpinDown = 4
+		AdjustTargets
 	End Sub
 
 	Private Property Let NeedUpdate(aEnabled) : vpmTimer.EnableUpdate Me, True, aEnabled : End Property
 
 	Public Sub InitTurntable(aTrigger, aMaxSpeed)
 		mX = aTrigger.X : mY = aTrigger.Y : mSize = aTrigger.Radius : vpmTimer.InitTimer aTrigger, True
-		MaxSpeed = aMaxSpeed : Set mTrigger = aTrigger
+		mMaxSpeed = aMaxSpeed : Set mTrigger = aTrigger
+		AdjustTargets
 	End Sub
 
 	Public Sub CreateEvents(aName)
@@ -1213,15 +1228,38 @@ Class cvpmTurntable
 		End If
 	End Sub
 
-	Public Sub SolMotorState(aCW, aEnabled)
-		mMotorOn = aEnabled : If aEnabled Then If aCW Then mDir = 1 Else mDir = -1
-		NeedUpdate = True
+	Public Sub SolMotorState(aCW, aMotorOn)
+	    mSpinCW = aCW
+	    mMotorOn = aMotorOn
+	    AdjustTargets
 	End Sub
 
-	Public Property Let MotorOn(aEnabled)
-		mMotorOn = aEnabled : NeedUpdate = mBalls.Count Or SpinUp Or SpinDown
-	End Property
+    Private Sub AdjustTargets
+	    If mMotorOn Then
+	        mTargetSpeed = MaxSpeed
+	        mCurrentAccel = SpinUp
+	        If Not mSpinCW Then mTargetSpeed = -MaxSpeed
+	    Else
+	        mTargetSpeed = 0
+	        mCurrentAccel = SpinDown
+	    End If
+
+        NeedUpdate = mBalls.Count Or SpinUp Or SpinDown
+    End Sub
+
+    Public Property Let MaxSpeed(newSpeed) : mMaxSpeed = newSpeed : AdjustTargets : End Property
+    Public Property Let SpinUp(newRate) : mSpinUp = newRate : AdjustTargets : End Property
+    Public Property Let SpinDown(newRate) : mSpinDown = newRate : AdjustTargets : End Property
+
+    Public Property Get MaxSpeed : MaxSpeed = mMaxSpeed : End Property
+    Public Property Get SpinUp : SpinUp = mSpinup : End Property
+    Public Property Get SpinDown : SpinDown = mSpinDown : End Property
+
+	Public Property Let MotorOn(aEnabled) : SolMotorState mSpinCW, aEnabled : End Property
+	Public Property Let SpinCW(aCW) : SolMotorState aCW, mMotorOn : End Property
+
 	Public Property Get MotorOn : MotorOn = mMotorOn : End Property
+	Public Property Get SpinCW : SpinCW = mSpinCW : End Property
 
 	Public Sub AddBall(aBall)
 		On Error Resume Next : mBalls.Add aBall,0 : NeedUpdate = True
@@ -1231,20 +1269,16 @@ Class cvpmTurntable
 		mBalls.Remove aBall : NeedUpdate = mBalls.Count Or SpinUp Or SpinDown
 	End Sub
 	Public Property Get Balls : Balls = mBalls.Keys : End Property
-	Public Property Let SpinCW(aCW)
-		NeedUpdate = True : If aCW Then mDir = 1 Else mDir = -1
-	End Property
-
-	Public Property Get SpinCW : SpinCW = (mDir = 1) : End Property
 
 	Public Sub Update
-		If mMotorOn Then
-			Speed = Speed + mDir*SpinUp/100
-			If mDir * Speed >= MaxSpeed Then Speed = mDir * MaxSpeed : NeedUpdate = mBalls.Count
-		Else
-			Speed = Speed - mDir*SpinDown/100
-			If mDir * Speed <= 0 Then Speed = 0 : NeedUpdate = mBalls.Count
-		End If
+	    If Speed > mTargetSpeed Then
+	        Speed = Speed - mCurrentAccel/100
+	        If Speed < mTargetSpeed Then Speed = mTargetSpeed : NeedUpdate = mBalls.Count
+	    ElseIf Speed < mTargetSpeed Then
+	        Speed = Speed + mCurrentAccel/100
+	        If Speed > mTargetSpeed Then Speed = mTargetSpeed : NeedUpdate = mBalls.Count
+	    End If
+
 		If Speed Then
 			Dim obj
 			On Error Resume Next
