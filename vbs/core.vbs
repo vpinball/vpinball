@@ -573,7 +573,7 @@ End Function
 ' more efficient implementation.
 Class cvpmDictionary
     Private mDict
-	Private Sub Class_Initialize : Set mDict = CreateObject("Scripting.Dictionary") : End Sub
+	Private Sub Class_Initialize : Set mDict = CreateObject("Scripting.Dictionary") : mDebug = False : End Sub
 
     ' DEPRECATED: MS Dictionaries are not index-based.  Use "Exists" method instead.
 	Private Function FindKey(aKey)
@@ -591,7 +591,7 @@ Class cvpmDictionary
 	Public Property Get Item(aKey)
 	    Item = Empty
 	    If mDict.Exists(aKey) Then
-	        If IsObject(mDict(Item)) Then
+	        If IsObject(mDict(aKey)) Then
 	            Set Item = mDict(aKey)
 	        Else
 	            Item = mDict(aKey)
@@ -620,11 +620,11 @@ Class cvpmDictionary
 	    End If
 	End Sub
 
-	Public Sub Remove(aKey)      : mDict.Remove(aKey)          : End Sub
-	Public Sub      RemoveAll    : mDict.RemoveAll             : End Sub
-	Public Function Exists(aKey) : Exists = mDict.Exists(aKey) : End Function
-	Public Function Items        : Items  = mDict.Items        : End Function
-	Public Function Keys         : Keys   = mDict.Keys         : End Function
+	Public Sub Remove(aKey)       : mDict.Remove(aKey)          : End Sub
+	Public Sub RemoveAll          : mDict.RemoveAll             : End Sub
+	Public Function Exists(aKey)  : Exists = mDict.Exists(aKey) : End Function
+	Public Function Items         : Items  = mDict.Items        : End Function
+	Public Function Keys          : Keys   = mDict.Keys         : End Function
 End Class
 
 '--------------------
@@ -1672,7 +1672,11 @@ Class cvpmImpulseP
 
 	Public Sub AddBall(aBall)
 		With mBalls
-			If .Exists(aBall) Then .Item(aBall) = .Item(aBall) + 1 Else .Add aBall, 1 : NeedUpdate = True
+			If .Exists(aBall) Then
+			    .Item(aBall) = .Item(aBall) + 1
+			Else
+			    .Add aBall, 1 : NeedUpdate = True
+			End If
 		End With
 		If SwitchOn = True Then	controller.switch(SwitchNum) = 1
 		BallOn = 1
@@ -1680,7 +1684,10 @@ Class cvpmImpulseP
 
 	Public Sub RemoveBall(aBall)
 		With mBalls
-			If .Exists(aBall) Then .Item(aBall) = .Item(aBall) - 1 : If .Item(aBall) <= 0 Then .Remove aBall
+			If .Exists(aBall) Then
+			    .Item(aBall) = .Item(aBall) - 1
+			    If .Item(aBall) <= 0 Then .Remove aBall
+			End If
 			NeedUpdate = (.Count > 0)
 		End With
 		If SwitchOn = True Then	controller.switch(SwitchNum) = 0
@@ -1718,9 +1725,9 @@ Class cvpmImpulseP
 
 	Public Sub Fire	    	  ' Resets System and Transfer Power Value
 		If Auto = True Then
-		IMPowerOut = -Strength + ((Rnd) * RandomOut)
+    		IMPowerOut = -Strength + ((Rnd) * RandomOut)
 		Else
-		IMPowerOut = -Strength * (IMPowerTrans + ((Rnd-0.5) * cFactor * RandomOut)) / Res
+	    	IMPowerOut = -Strength * (IMPowerTrans + ((Rnd-0.5) * cFactor * RandomOut)) / Res
 		End If
 		PlungeOn = True
 		Update
