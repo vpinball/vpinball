@@ -3051,6 +3051,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\BlackBox.cpp"
+				>
+			</File>
+			<File
 				RelativePath="bumper.cpp"
 				>
 				<FileConfiguration
@@ -4137,6 +4141,10 @@
 						PreprocessorDefinitions=""
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\CrashHandler.cpp"
+				>
 			</File>
 			<File
 				RelativePath="decal.cpp"
@@ -10163,6 +10171,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\MemoryStatus.cpp"
+				>
+			</File>
+			<File
 				RelativePath="memutil.cpp"
 				>
 				<FileConfiguration
@@ -14321,6 +14333,10 @@
 						PreprocessorDefinitions=""
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\StackTrace.cpp"
+				>
 			</File>
 			<File
 				RelativePath="stdafx.cpp"
@@ -19544,7 +19560,23 @@
 				RelativePath=".\shader\ClassicLightShader.fx"
 				>
 				<FileConfiguration
+					Name="Unicode Release MinSize|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
 					Name="Unicode Release MinSize|x64"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release MinDependency|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -19560,7 +19592,23 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
+					Name="ReleaseTestSpanish|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
 					Name="ReleaseTestSpanish|x64"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Unicode Release MinDependency|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -19576,7 +19624,23 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
+					Name="Release MinSize|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
 					Name="Release MinSize|x64"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Profile|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -19592,7 +19656,23 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
+					Name="Unicode Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
 					Name="Unicode Debug|x64"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseTestGerman|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -19608,7 +19688,23 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
+					Name="ReleaseTestFrench|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
 					Name="ReleaseTestFrench|x64"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="ReleaseTest|Win32"
 					ExcludedFromBuild="true"
 					>
 					<Tool
@@ -19625,6 +19721,7 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|Win32"
+					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCustomBuildTool"
@@ -19641,6 +19738,14 @@
 					/>
 				</FileConfiguration>
 				<FileConfiguration
+					Name="Release MinDependency Fast|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
 					Name="Release MinDependency Fast|x64"
 					ExcludedFromBuild="true"
 					>
@@ -19650,6 +19755,7 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release MinDependency Fast+SSE|Win32"
+					ExcludedFromBuild="true"
 					>
 					<Tool
 						Name="VCCustomBuildTool"
