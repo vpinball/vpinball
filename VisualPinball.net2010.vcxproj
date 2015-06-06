@@ -1756,8 +1756,11 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="BlackBox.cpp" />
+    <ClCompile Include="CrashHandler.cpp" />
     <ClCompile Include="flasher.cpp" />
     <ClCompile Include="math\math.cpp" />
+    <ClCompile Include="MemoryStatus.cpp" />
     <ClCompile Include="rubber.cpp" />
     <ClCompile Include="hash.cpp" />
     <ClCompile Include="kdtree.cpp" />
@@ -5478,6 +5481,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Unicode Release MinSize|Win32'">WIN32;NDEBUG;_WINDOWS;_UNICODE;_ATL_DLL;_ATL_MIN_CRT</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Unicode Release MinSize|x64'">WIN32;NDEBUG;_WINDOWS;_UNICODE;_ATL_DLL;_ATL_MIN_CRT</PreprocessorDefinitions>
     </ClCompile>
+    <ClCompile Include="StackTrace.cpp" />
     <ClCompile Include="stdafx.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
