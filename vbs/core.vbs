@@ -573,7 +573,7 @@ End Function
 ' more efficient implementation.
 Class cvpmDictionary
     Private mDict
-	Private Sub Class_Initialize : Set mDict = CreateObject("Scripting.Dictionary") : mDebug = False : End Sub
+	Private Sub Class_Initialize : Set mDict = CreateObject("Scripting.Dictionary") : End Sub
 
     ' DEPRECATED: MS Dictionaries are not index-based.  Use "Exists" method instead.
 	Private Function FindKey(aKey)
