@@ -35,7 +35,8 @@ VP 10.0.0 Changelog
 
   -> the data-format of the physics sets (*.vpp files) is basically the same, although the parameters inside are different, so unfortunately you need to set them up from scratch again
   
-  -> kicker physics changed: The kicker bevel will influence the ball's motion and won't grab the ball like a magnet anymore. The old behaviour can be set via the 'Legacy' checkbox.
+  -> kicker physics changed: The kicker bevel will influence the ball's motion and won't grab the ball like a magnet anymore.
+     The old behaviour can be set via the 'Legacy' checkbox and is recommended for 'invisible' kickers like the trough as it can be much faster.
 
 - changed the plunger physics to make the launch behavior more linear and controllable, for both keyboard and mechanical 
   plunger interfaces
