@@ -5,7 +5,13 @@
 #if !defined(AFX_PINTABLE_H__D14A2DAB_2984_4FE7_A102_D0283ECE31B4__INCLUDED_)
 #define AFX_PINTABLE_H__D14A2DAB_2984_4FE7_A102_D0283ECE31B4__INCLUDED_
 
-#include <unordered_map>
+#if 0
+ #include <tr1/unordered_map>
+ using namespace std::tr1;
+#else
+ #include <unordered_map>
+#endif
+
 #include "hash.h"
 
 #define VIEW_PLAYFIELD 1
