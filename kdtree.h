@@ -19,7 +19,6 @@ private:
 
 #ifdef KDTREE_SSE_LEAFTEST
 	void HitTestBallSse(Ball * const pball, CollisionEvent& coll) const;
-	void HitTestBallSseInner(Ball * const pball, const size_t i, CollisionEvent& coll) const;
 #endif
 
 	FRect3D m_rectbounds;

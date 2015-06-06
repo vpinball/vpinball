@@ -35,17 +35,17 @@ void HitKD::Init(Vector<HitObject> *vho, const unsigned int num_items)
         m_max_items = m_num_items;
 
         m_org_idx.clear();
-	m_org_idx.reserve( m_num_items );
+		m_org_idx.reserve( m_num_items );
 
-	tmp.clear();
-	tmp.resize( m_num_items );
+		tmp.clear();
+		tmp.resize( m_num_items );
 
-	m_nodes.clear();
-	/* NB:
-	* Unfortunately, there is no a priori bound on the number of nodes in the tree. We just make
-	* an educated guess on the maximum and truncate the subdivision if we run out of nodes.
-	*/
-	m_nodes.resize( (m_num_items + 1) & ~1u );      // always allocate an even number of nodes, rounded up
+		m_nodes.clear();
+		/* NB:
+		* Unfortunately, there is no a priori bound on the number of nodes in the tree. We just make
+		* an educated guess on the maximum and truncate the subdivision if we run out of nodes.
+		*/
+		m_nodes.resize( (m_num_items + 1) & ~1u );      // always allocate an even number of nodes, rounded up
     }
 
     if(tmp.empty()) // did somebody call finalize inbetween?
@@ -192,6 +192,8 @@ void HitKDNode::CreateNextLevel()
 			return;
 		axis = 2;
 	}
+
+	//!! weight this with ratio of elements going to middle vs left&right! (avoids volume split that goes directly through object)
 
 	// create children, calc bboxes
     m_children = m_hitoct->AllocTwoNodes();
@@ -412,25 +414,24 @@ void HitKDNode::HitTestBall(Ball * const pball, CollisionEvent& coll) const
 }
 
 #ifdef KDTREE_SSE_LEAFTEST
-void HitKDNode::HitTestBallSseInner(Ball * const pball, const size_t i, CollisionEvent& coll) const
-{
-  HitObject * const pho = m_hitoct->GetItemAt( i );
-
-  // ball can not hit itself
-  if (pball == pho)
-    return;
-
-  DoHitTest(pball, pho, coll);
-}
-
 void HitKDNode::HitTestBallSse(Ball * const pball, CollisionEvent& coll) const
 {
-	const unsigned int org_items = (m_items&0x3FFFFFFF);
-	const unsigned int axis = (m_items>>30);
+	const HitKDNode* stack[128]; //!! should be enough, but better implement test in construction to not exceed this
+	unsigned int stackpos = 0;
+	stack[0] = NULL; // sentinel
+
+	const HitKDNode* __restrict current = this;
 
     const unsigned int padded = (m_hitoct->m_num_items+3)&0xFFFFFFFC;
 
-    // init SSE registers with ball bbox
+	const __m128* __restrict const pL = (__m128*)m_hitoct->l_r_t_b_zl_zh;
+	const __m128* __restrict const pR = (__m128*)(m_hitoct->l_r_t_b_zl_zh + padded);
+	const __m128* __restrict const pT = (__m128*)(m_hitoct->l_r_t_b_zl_zh + padded * 2);
+	const __m128* __restrict const pB = (__m128*)(m_hitoct->l_r_t_b_zl_zh + padded * 3);
+	const __m128* __restrict const pZl = (__m128*)(m_hitoct->l_r_t_b_zl_zh + padded * 4);
+	const __m128* __restrict const pZh = (__m128*)(m_hitoct->l_r_t_b_zl_zh + padded * 5);
+	
+	// init SSE registers with ball bbox
     const __m128 bleft = _mm_set1_ps(pball->m_rcHitRect.left);
     const __m128 bright = _mm_set1_ps(pball->m_rcHitRect.right);
     const __m128 btop = _mm_set1_ps(pball->m_rcHitRect.top);
@@ -438,86 +439,104 @@ void HitKDNode::HitTestBallSse(Ball * const pball, CollisionEvent& coll) const
     const __m128 bzlow = _mm_set1_ps(pball->m_rcHitRect.zlow);
     const __m128 bzhigh = _mm_set1_ps(pball->m_rcHitRect.zhigh);
 
-    const __m128* __restrict const pL = (__m128*)m_hitoct->l_r_t_b_zl_zh;
-    const __m128* __restrict const pR = (__m128*)(m_hitoct->l_r_t_b_zl_zh+padded);
-    const __m128* __restrict const pT = (__m128*)(m_hitoct->l_r_t_b_zl_zh+padded*2);
-    const __m128* __restrict const pB = (__m128*)(m_hitoct->l_r_t_b_zl_zh+padded*3);
-    const __m128* __restrict const pZl = (__m128*)(m_hitoct->l_r_t_b_zl_zh+padded*4);
-    const __m128* __restrict const pZh = (__m128*)(m_hitoct->l_r_t_b_zl_zh+padded*5);
-
-    // loop implements 4 collision checks at once
-    // (rc1.right >= rc2.left && rc1.bottom >= rc2.top && rc1.left <= rc2.right && rc1.top <= rc2.bottom && rc1.zlow <= rc2.zhigh && rc1.zhigh >= rc2.zlow)
-    const unsigned int size = (m_start+org_items+3)/4;
-    for (unsigned int i = m_start/4; i < size; ++i)
-    {
-#ifdef _DEBUGPHYSICS
-	  g_pplayer->c_tested++; //!! +=4? or is this more fair?
-#endif
-      // comparisons set bits if bounds miss. if all bits are set, there is no collision. otherwise continue comparisons
-      // bits set, there is a bounding box collision
-      __m128 cmp = _mm_cmpge_ps(bright, pL[i]);
-      int mask = _mm_movemask_ps(cmp);
-      if (mask == 0) continue;
-
-      cmp = _mm_cmple_ps(bleft, pR[i]);
-      mask &= _mm_movemask_ps(cmp);
-      if (mask == 0) continue;
-
-      cmp = _mm_cmpge_ps(bbottom, pT[i]);
-      mask &= _mm_movemask_ps(cmp);
-      if (mask == 0) continue;
-
-      cmp = _mm_cmple_ps(btop, pB[i]);
-      mask &= _mm_movemask_ps(cmp);
-      if (mask == 0) continue;
-
-      cmp = _mm_cmpge_ps(bzhigh, pZl[i]);
-      mask &= _mm_movemask_ps(cmp);
-      if (mask == 0) continue;
-
-      cmp = _mm_cmple_ps(bzlow, pZh[i]);
-      mask &= _mm_movemask_ps(cmp);
-      if (mask == 0) continue;
-
-      // now there is at least one bbox collision
-      if ((mask & 1) != 0) HitTestBallSseInner(pball, i*4, coll);
-      if ((mask & 2) != 0 /*&& (i*4+1)<m_hitoct->m_num_items*/) HitTestBallSseInner(pball, i*4+1, coll); // boundary checks not necessary
-      if ((mask & 4) != 0 /*&& (i*4+2)<m_hitoct->m_num_items*/) HitTestBallSseInner(pball, i*4+2, coll); //  anymore as non-valid entries were
-      if ((mask & 8) != 0 /*&& (i*4+3)<m_hitoct->m_num_items*/) HitTestBallSseInner(pball, i*4+3, coll); //  initialized to keep these maskbits 0
-    }
-
-	if (m_children) // not a leaf
+	do
 	{
-#ifdef _DEBUGPHYSICS
-		g_pplayer->c_traversed++;
-#endif
-		if(axis == 0)
-		{
-			const float vcenter = (m_rectbounds.left+m_rectbounds.right)*0.5f;
-			if(pball->m_rcHitRect.left <= vcenter)
-				m_children[0].HitTestBallSse(pball, coll);
-			if(pball->m_rcHitRect.right >= vcenter)
-				m_children[1].HitTestBallSse(pball, coll);
-		}
-		else
-		if(axis == 1)
-		{
-			const float vcenter = (m_rectbounds.top+m_rectbounds.bottom)*0.5f;
-			if (pball->m_rcHitRect.top <= vcenter)
-				m_children[0].HitTestBallSse(pball, coll);
-			if (pball->m_rcHitRect.bottom >= vcenter)
-				m_children[1].HitTestBallSse(pball, coll);
-		}
-		else
-		{
-			const float vcenter = (m_rectbounds.zlow+m_rectbounds.zhigh)*0.5f;
+		const unsigned int org_items = (current->m_items & 0x3FFFFFFF);
+		const unsigned int axis = (current->m_items >> 30);
 
-			if(pball->m_rcHitRect.zlow <= vcenter)
-				m_children[0].HitTestBallSse(pball, coll);
-			if(pball->m_rcHitRect.zhigh >= vcenter)
-				m_children[1].HitTestBallSse(pball, coll);
+		// loop implements 4 collision checks at once
+		// (rc1.right >= rc2.left && rc1.bottom >= rc2.top && rc1.left <= rc2.right && rc1.top <= rc2.bottom && rc1.zlow <= rc2.zhigh && rc1.zhigh >= rc2.zlow)
+		const unsigned int size = (current->m_start + org_items + 3) / 4;
+		for (unsigned int i = current->m_start / 4; i < size; ++i)
+		{
+#ifdef _DEBUGPHYSICS
+			g_pplayer->c_tested++; //!! +=4? or is this more fair?
+#endif
+			// comparisons set bits if bounds miss. if all bits are set, there is no collision. otherwise continue comparisons
+			// bits set, there is a bounding box collision
+			__m128 cmp = _mm_cmpge_ps(bright, pL[i]);
+			int mask = _mm_movemask_ps(cmp);
+			if (mask == 0) continue;
+
+			cmp = _mm_cmple_ps(bleft, pR[i]);
+			mask &= _mm_movemask_ps(cmp);
+			if (mask == 0) continue;
+
+			cmp = _mm_cmpge_ps(bbottom, pT[i]);
+			mask &= _mm_movemask_ps(cmp);
+			if (mask == 0) continue;
+
+			cmp = _mm_cmple_ps(btop, pB[i]);
+			mask &= _mm_movemask_ps(cmp);
+			if (mask == 0) continue;
+
+			cmp = _mm_cmpge_ps(bzhigh, pZl[i]);
+			mask &= _mm_movemask_ps(cmp);
+			if (mask == 0) continue;
+
+			cmp = _mm_cmple_ps(bzlow, pZh[i]);
+			mask &= _mm_movemask_ps(cmp);
+			if (mask == 0) continue;
+
+			// now there is at least one bbox collision
+			if ((mask & 1) != 0)
+			{
+				HitObject * const pho = m_hitoct->GetItemAt(i * 4);
+				if (pball != pho) // ball can not hit itself
+					DoHitTest(pball, pho, coll);
+			}
+			// array boundary checks for the rest not necessary as non-valid entries were initialized to keep these maskbits 0
+			if ((mask & 2) != 0 /*&& (i*4+1)<m_hitoct->m_num_items*/)
+			{
+				HitObject * const pho = m_hitoct->GetItemAt(i * 4 + 1);
+				if (pball != pho) // ball can not hit itself
+					DoHitTest(pball, pho, coll);
+			}
+			if ((mask & 4) != 0 /*&& (i*4+2)<m_hitoct->m_num_items*/)
+			{
+				HitObject * const pho = m_hitoct->GetItemAt(i * 4 + 2);
+				if (pball != pho) // ball can not hit itself
+					DoHitTest(pball, pho, coll);
+			}
+			if ((mask & 8) != 0 /*&& (i*4+3)<m_hitoct->m_num_items*/)
+			{
+				HitObject * const pho = m_hitoct->GetItemAt(i * 4 + 3);
+				if (pball != pho) // ball can not hit itself
+					DoHitTest(pball, pho, coll);
+			}
 		}
-	}
+
+		//if (stackpos >= 127)
+		//	ShowError("Quadtree stack size to be exceeded");
+
+		if (current->m_children) // not a leaf
+		{
+#ifdef _DEBUGPHYSICS
+			g_pplayer->c_traversed++;
+#endif
+			if (axis == 0)
+			{
+				const float vcenter = (current->m_rectbounds.left + current->m_rectbounds.right)*0.5f;
+				if (pball->m_rcHitRect.left <= vcenter) stack[++stackpos] =	current->m_children;
+				if (pball->m_rcHitRect.right >= vcenter) stack[++stackpos] = current->m_children+1;
+			}
+			else
+				if (axis == 1)
+				{
+					const float vcenter = (current->m_rectbounds.top + current->m_rectbounds.bottom)*0.5f;
+					if (pball->m_rcHitRect.top <= vcenter) stack[++stackpos] = current->m_children;
+					if (pball->m_rcHitRect.bottom >= vcenter) stack[++stackpos] = current->m_children+1;
+				}
+				else
+				{
+					const float vcenter = (current->m_rectbounds.zlow + current->m_rectbounds.zhigh)*0.5f;
+					if (pball->m_rcHitRect.zlow <= vcenter) stack[++stackpos] = current->m_children;
+					if (pball->m_rcHitRect.zhigh >= vcenter) stack[++stackpos] = current->m_children+1;
+				}
+		}
+
+		current = stack[stackpos--];
+	} while (current);
 }
 #endif
 
