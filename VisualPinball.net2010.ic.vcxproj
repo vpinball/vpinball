@@ -1997,8 +1997,11 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="BlackBox.cpp" />
+    <ClCompile Include="CrashHandler.cpp" />
     <ClCompile Include="flasher.cpp" />
     <ClCompile Include="math\math.cpp" />
+    <ClCompile Include="MemoryStatus.cpp" />
     <ClCompile Include="rubber.cpp" />
     <ClCompile Include="hash.cpp" />
     <ClCompile Include="kdtree.cpp" />
@@ -5971,6 +5974,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Unicode Release MinSize|Win32'">WIN32;NDEBUG;_WINDOWS;_UNICODE;_ATL_DLL;_ATL_MIN_CRT</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Unicode Release MinSize|x64'">WIN32;NDEBUG;_WINDOWS;_UNICODE;_ATL_DLL;_ATL_MIN_CRT</PreprocessorDefinitions>
     </ClCompile>
+    <ClCompile Include="StackTrace.cpp" />
     <ClCompile Include="stdafx.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
@@ -7570,9 +7574,11 @@ copy "$(TargetPath)" "%VPIN_DIR%"
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ballex.h" />
+    <ClInclude Include="BlackBox.h" />
     <ClInclude Include="bumper.h" />
     <ClInclude Include="codeview.h" />
     <ClInclude Include="color.h" />
+    <ClInclude Include="CrashHandler.h" />
     <ClInclude Include="decal.h" />
     <ClInclude Include="def.h" />
     <ClInclude Include="dispid.h" />
@@ -7641,6 +7647,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     <ClInclude Include="media\lzwreader.h" />
     <ClInclude Include="media\lzwwriter.h" />
     <ClInclude Include="media\wavread.h" />
+    <ClInclude Include="MemoryStatus.h" />
     <ClInclude Include="memutil.h" />
     <ClInclude Include="mesh.h" />
     <ClInclude Include="mixer.h" />
@@ -7672,6 +7679,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     <ClInclude Include="rubber.h" />
     <ClInclude Include="slintf.h" />
     <ClInclude Include="spinner.h" />
+    <ClInclude Include="StackTrace.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="sur.h" />
     <ClInclude Include="surface.h" />
