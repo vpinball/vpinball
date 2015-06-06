@@ -8,7 +8,7 @@ VP 10.0.0 Changelog
   -> TL.DR up-front conversion hints:
      - pull lightsource->ambient down to 0,0,0 (or at least a small value to avoid loss in fidelity of the colors)
      - crank up lightsource->emission to 255,255,255 and tweak the color from there (to get a good contrast on the shading)
-     - tweak the lightsource->height and the two emission-scales
+     - tweak the lightsource->height and the two emission-scales (and try to keep the light range really really really large before tweaking the rest of the light parameters!)
      - if doing nightmods, try to avoid manually toning down all images and materials, but rather just use the light emission settings
        including the new night->day slider (this will allow the user to tweak the brightness of the table on his/her own afterwards)
      - revisit all physics settings, even if you used VP9Physmod(5) before (only the re-enabled friction and scatter in the physmod5 case though)
