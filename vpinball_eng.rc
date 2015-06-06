@@ -1561,7 +1561,7 @@ BEGIN
     LTEXT           "Scatter Angle",-1,7,46,56,8
     LTEXT           "Hit Accuracy (0..1)",-1,7,60,61,8
     CONTROL         "Fall through",IDC_FALL_THROUGH_HOLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,19,53,10
-    CONTROL         "Legacy",IDC_LEGACYMODE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,31,41,9
+    CONTROL         "Legacy (faster/approximate physics)",IDC_LEGACYMODE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,31,131,9
 END
 
 IDD_PROPPRIMITIVE_POSITION DIALOGEX 0, 0, 125, 205
