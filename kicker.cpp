@@ -231,6 +231,8 @@ void Kicker::EndPlay()
       indexBuffer=0;
    }
 
+   hitMesh.clear();
+
    IEditable::EndPlay();
 }
 
