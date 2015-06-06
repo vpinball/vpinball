@@ -202,90 +202,99 @@ void HitQuadtree::HitTestBall(Ball * const pball, CollisionEvent& coll) const
 #endif
 }
 
-
-void HitQuadtree::HitTestBallSseInner(Ball * const pball, const size_t i, CollisionEvent& coll) const
-{
-    // ball can not hit itself
-    if (pball == m_vho[i])
-        return;
-
-    DoHitTest(pball, m_vho[i], coll);
-}
-
 void HitQuadtree::HitTestBallSse(Ball * const pball, CollisionEvent& coll) const
 {
-    if (lefts != 0)
-    {
-        // init SSE registers with ball bbox
-        const __m128 bleft   = _mm_set1_ps(pball->m_rcHitRect.left);
-        const __m128 bright  = _mm_set1_ps(pball->m_rcHitRect.right);
-        const __m128 btop    = _mm_set1_ps(pball->m_rcHitRect.top);
-        const __m128 bbottom = _mm_set1_ps(pball->m_rcHitRect.bottom);
-        const __m128 bzlow   = _mm_set1_ps(pball->m_rcHitRect.zlow);
-        const __m128 bzhigh  = _mm_set1_ps(pball->m_rcHitRect.zhigh);
+	const HitQuadtree* stack[128]; //!! should be enough, but better implement test in construction to not exceed this
+	unsigned int stackpos = 0;
+	stack[0] = NULL; // sentinel
 
-        const __m128* const pL = (__m128*)lefts;
-        const __m128* const pR = (__m128*)rights;
-        const __m128* const pT = (__m128*)tops;
-        const __m128* const pB = (__m128*)bottoms;
-        const __m128* const pZl = (__m128*)zlows;
-        const __m128* const pZh = (__m128*)zhighs;
+	const HitQuadtree* __restrict current = this;
 
-        // loop implements 4 collision checks at once
-        // (rc1.right >= rc2.left && rc1.bottom >= rc2.top && rc1.left <= rc2.right && rc1.top <= rc2.bottom && rc1.zlow <= rc2.zhigh && rc1.zhigh >= rc2.zlow)
-        const size_t size = (m_vho.size()+3)/4;
-        for (size_t i=0; i<size; ++i)
-        {
-            // comparisons set bits if bounds miss. if all bits are set, there is no collision. otherwise continue comparisons
-            // bits set, there is a bounding box collision
-            __m128 cmp = _mm_cmpge_ps(bright, pL[i]);
-            int mask = _mm_movemask_ps(cmp);
-            if (mask == 0) continue;
+	// init SSE registers with ball bbox
+	const __m128 bleft = _mm_set1_ps(pball->m_rcHitRect.left);
+	const __m128 bright = _mm_set1_ps(pball->m_rcHitRect.right);
+	const __m128 btop = _mm_set1_ps(pball->m_rcHitRect.top);
+	const __m128 bbottom = _mm_set1_ps(pball->m_rcHitRect.bottom);
+	const __m128 bzlow = _mm_set1_ps(pball->m_rcHitRect.zlow);
+	const __m128 bzhigh = _mm_set1_ps(pball->m_rcHitRect.zhigh);
 
-            cmp = _mm_cmple_ps(bleft, pR[i]);
-            mask &= _mm_movemask_ps(cmp);
-            if (mask == 0) continue;
+	do
+	{
+		if (current->lefts != 0) // does node contain hitables?
+		{
+			const __m128* const pL = (__m128*)current->lefts;
+			const __m128* const pR = (__m128*)current->rights;
+			const __m128* const pT = (__m128*)current->tops;
+			const __m128* const pB = (__m128*)current->bottoms;
+			const __m128* const pZl = (__m128*)current->zlows;
+			const __m128* const pZh = (__m128*)current->zhighs;
 
-            cmp = _mm_cmpge_ps(bbottom, pT[i]);
-            mask &= _mm_movemask_ps(cmp);
-            if (mask == 0) continue;
+			// loop implements 4 collision checks at once
+			// (rc1.right >= rc2.left && rc1.bottom >= rc2.top && rc1.left <= rc2.right && rc1.top <= rc2.bottom && rc1.zlow <= rc2.zhigh && rc1.zhigh >= rc2.zlow)
+			const size_t size = (current->m_vho.size() + 3) / 4;
+			for (size_t i = 0; i < size; ++i)
+			{
+				// comparisons set bits if bounds miss. if all bits are set, there is no collision. otherwise continue comparisons
+				// bits set, there is a bounding box collision
+				__m128 cmp = _mm_cmpge_ps(bright, pL[i]);
+				int mask = _mm_movemask_ps(cmp);
+				if (mask == 0) continue;
 
-            cmp = _mm_cmple_ps(btop, pB[i]);
-            mask &= _mm_movemask_ps(cmp);
-            if (mask == 0) continue;
+				cmp = _mm_cmple_ps(bleft, pR[i]);
+				mask &= _mm_movemask_ps(cmp);
+				if (mask == 0) continue;
 
-            cmp = _mm_cmpge_ps(bzhigh, pZl[i]);
-            mask &= _mm_movemask_ps(cmp);
-            if (mask == 0) continue;
+				cmp = _mm_cmpge_ps(bbottom, pT[i]);
+				mask &= _mm_movemask_ps(cmp);
+				if (mask == 0) continue;
 
-            cmp = _mm_cmple_ps(bzlow, pZh[i]);
-            mask &= _mm_movemask_ps(cmp);
-            if (mask == 0) continue;
+				cmp = _mm_cmple_ps(btop, pB[i]);
+				mask &= _mm_movemask_ps(cmp);
+				if (mask == 0) continue;
 
-            // now there is at least one bbox collision
-            if ((mask & 1) != 0) HitTestBallSseInner(pball, i*4, coll);
-            if ((mask & 2) != 0 /*&& (i*4+1)<m_vho.size()*/) HitTestBallSseInner(pball, i*4+1, coll); // boundary checks not necessary
-            if ((mask & 4) != 0 /*&& (i*4+2)<m_vho.size()*/) HitTestBallSseInner(pball, i*4+2, coll); //  anymore as non-valid entries were
-            if ((mask & 8) != 0 /*&& (i*4+3)<m_vho.size()*/) HitTestBallSseInner(pball, i*4+3, coll); //  initialized to keep these maskbits 0
-        }
-    }
+				cmp = _mm_cmpge_ps(bzhigh, pZl[i]);
+				mask &= _mm_movemask_ps(cmp);
+				if (mask == 0) continue;
 
-    if (!m_fLeaf)
-    {
-        const bool fLeft = (pball->m_rcHitRect.left <= m_vcenter.x);
-        const bool fRight = (pball->m_rcHitRect.right >= m_vcenter.x);
+				cmp = _mm_cmple_ps(bzlow, pZh[i]);
+				mask &= _mm_movemask_ps(cmp);
+				if (mask == 0) continue;
 
-        if (pball->m_rcHitRect.top <= m_vcenter.y) // Top
-        {
-            if (fLeft)  m_children[0]->HitTestBallSse(pball, coll);
-            if (fRight) m_children[1]->HitTestBallSse(pball, coll);
-        }
-        if (pball->m_rcHitRect.bottom >= m_vcenter.y) // Bottom
-        {
-            if (fLeft)  m_children[2]->HitTestBallSse(pball, coll);
-            if (fRight) m_children[3]->HitTestBallSse(pball, coll);
-        }
-    }
+				// now there is at least one bbox collision
+				if ((mask & 1) != 0 && (pball != current->m_vho[i * 4])) // ball can not hit itself
+					DoHitTest(pball, current->m_vho[i * 4], coll);
+				// array boundary checks for the rest not necessary as non-valid entries were initialized to keep these maskbits 0
+				if ((mask & 2) != 0 /*&& (i*4+1)<m_vho.size()*/ && (pball != current->m_vho[i * 4 + 1])) // ball can not hit itself
+					DoHitTest(pball, current->m_vho[i * 4 + 1], coll);
+				if ((mask & 4) != 0 /*&& (i*4+2)<m_vho.size()*/ && (pball != current->m_vho[i * 4 + 2])) // ball can not hit itself
+					DoHitTest(pball, current->m_vho[i * 4 + 2], coll);
+				if ((mask & 8) != 0 /*&& (i*4+3)<m_vho.size()*/ && (pball != current->m_vho[i * 4 + 3])) // ball can not hit itself
+					DoHitTest(pball, current->m_vho[i * 4 + 3], coll);
+			}
+		}
+
+		//if (stackpos >= 127)
+		//	ShowError("Quadtree stack size to be exceeded");
+
+		if (!current->m_fLeaf)
+		{
+			const bool fLeft = (pball->m_rcHitRect.left <= current->m_vcenter.x);
+			const bool fRight = (pball->m_rcHitRect.right >= current->m_vcenter.x);
+
+			if (pball->m_rcHitRect.top <= current->m_vcenter.y) // Top
+			{
+				if (fLeft)  stack[++stackpos] = current->m_children[0];
+				if (fRight) stack[++stackpos] = current->m_children[1];
+			}
+			if (pball->m_rcHitRect.bottom >= current->m_vcenter.y) // Bottom
+			{
+				if (fLeft)  stack[++stackpos] = current->m_children[2];
+				if (fRight) stack[++stackpos] = current->m_children[3];
+			}
+		}
+
+		current = stack[stackpos--];
+	} while (current);
 }
 
 void HitQuadtree::HitTestXRay(Ball * const pball, Vector<HitObject> * const pvhoHit, CollisionEvent& coll) const
