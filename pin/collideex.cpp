@@ -500,7 +500,7 @@ float Hit3DPoly::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 	float hittime;
 	if (rigid) //rigid polygon
 	{
-		if (bnd < -pball->m_radius/**2.0f*/) return -1.0f;	// (ball normal distance) excessive penetration of object skin ... no collision HACK //!! *2 necessary?
+		if (bnd < -pball->m_radius*2.0f) return -1.0f;	// (ball normal distance) excessive penetration of object skin ... no collision HACK
 			
 		if (bnd <= (float)PHYS_TOUCH)
 		{
@@ -681,7 +681,7 @@ float HitTriangle::HitTest(const Ball * pball, float dtime, CollisionEvent& coll
 {
 	if (!m_fEnabled) return -1.0f;
 
-    const float bnv = normal.Dot(pball->m_vel);       //speed in Normal-vector direction
+    const float bnv = normal.Dot(pball->m_vel);     // speed in Normal-vector direction
 
 	if (bnv >= C_CONTACTVEL)						// return if clearly ball is receding from object
 		return -1.0f;
@@ -690,11 +690,11 @@ float HitTriangle::HitTest(const Ball * pball, float dtime, CollisionEvent& coll
 	const float bRadius = pball->m_radius;
     Vertex3Ds hitPos = pball->m_pos - bRadius * normal; // nearest point on ball ... projected radius along norm
 
-    const float bnd = normal.Dot( hitPos - m_rgv[0] ); // distance from plane to ball
+    const float bnd = normal.Dot( hitPos - m_rgv[0] );  // distance from plane to ball
 
 	float hittime;
 
-    if (bnd < -pball->m_radius/**2.0f*/) //!! *2 necessary?
+    if (bnd < -pball->m_radius*2.0f)
         return -1.0f;	// (ball normal distance) excessive pentratration of object skin ... no collision HACK
 
     bool isContact = false;
@@ -711,10 +711,10 @@ float HitTriangle::HitTest(const Ball * pball, float dtime, CollisionEvent& coll
         else
             hittime = bnd / -bnv;
     }
-    else if (fabsf(bnv) > C_LOWNORMVEL )					// not velocity low?
-        hittime = bnd / -bnv;								// rate ok for safe divide 
+    else if (fabsf(bnv) > C_LOWNORMVEL )			// not velocity low?
+        hittime = bnd / -bnv;						// rate ok for safe divide 
     else
-        return -1.0f;										// wait for touching
+        return -1.0f;								// wait for touching
 
 	if (infNaN(hittime) || hittime < 0 || hittime > dtime)
         return -1.0f;	// time is outside this frame ... no collision
@@ -1001,8 +1001,7 @@ void TriggerLineSeg::Collide(CollisionEvent* coll)
 		{	
 			pball->m_vpVolObjs->AddElement(m_pObj);
 			((Trigger*)m_pObj)->TriggerAnimationHit();
-            ((Trigger*)m_pObj)->FireGroupEvent(DISPID_HitEvents_Hit);			
-
+            ((Trigger*)m_pObj)->FireGroupEvent(DISPID_HitEvents_Hit);
 		}		
 		else			
 		{

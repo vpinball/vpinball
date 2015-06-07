@@ -205,7 +205,7 @@ float Ball::HitTest(const Ball * pball_, float dtime, CollisionEvent& coll)
 	const float b = dv.Dot(d);              // inner product
 	const float bnv = b/bcdd;				// normal speed of balls toward each other
 
-	if ( bnv > C_LOWNORMVEL) return -1.0f;	// dot of delta velocity and delta displacement, postive if receding no collison
+	if ( bnv > C_LOWNORMVEL) return -1.0f;	// dot of delta velocity and delta displacement, positive if receding no collison
 
 	const float totalradius = pball->m_radius + m_radius;
 	const float bnd = bcdd - totalradius;   // distance between ball surfaces
@@ -238,18 +238,21 @@ float Ball::HitTest(const Ball * pball_, float dtime, CollisionEvent& coll)
 
         // choose smallest non-negative solution
 		hittime = std::min(time1, time2);
-        if (hittime < 0)
+        if (hittime < 0.f)
             hittime = std::max(time1, time2);
 
-		if (infNaN(hittime) || hittime < 0 || hittime > dtime)
+		if (infNaN(hittime) || hittime < 0.f || hittime > dtime)
             return -1.0f; // .. was some time previous || beyond the next physics tick
 	}
 
     const Vertex3Ds hitPos = pball->m_pos + hittime * dv; // new ball position
 
     //calc unit normal of collision
-	coll.hitnormal = hitPos - m_pos;
-    coll.hitnormal.Normalize();
+	const Vertex3Ds hitnormal = hitPos - m_pos;
+	if (hitnormal.x <= FLT_MIN && hitnormal.y <= FLT_MIN && hitnormal.z <= FLT_MIN)
+		return -1.f;
+	coll.hitnormal = hitnormal;
+	coll.hitnormal.Normalize();
 
 	coll.hitdistance = bnd;			// actual contact distance
 	coll.hitRigid = true;			// rigid collision type
@@ -263,7 +266,7 @@ void Ball::Collide(CollisionEvent *coll)
 
     // make sure we process each ball/ball collision only once
     // (but if we are frozen, there won't be a second collision event, so deal with it now!)
-    if (pball <= this && !this->m_frozen)
+    if (pball <= this && !this->m_frozen) //!! <= this ????
         return;
 
     // target ball to object ball delta velocity
@@ -274,7 +277,7 @@ void Ball::Collide(CollisionEvent *coll)
 	// correct displacements, mostly from low velocity, alternative to true acceleration processing
 	if (dot >= -C_LOWNORMVEL )								// nearly receding ... make sure of conditions
 	{														// otherwise if clearly approaching .. process the collision
-		if (dot > C_LOWNORMVEL) return;						//is this velocity clearly receding (i.e must > a minimum)		
+		if (dot > C_LOWNORMVEL) return;						// is this velocity clearly receding (i.e must > a minimum)		
 #ifdef C_EMBEDDED
 		if (coll->hitdistance < -C_EMBEDDED)
 			dot = -C_EMBEDSHOT;		// has ball become embedded???, give it a kick
@@ -349,6 +352,8 @@ void Ball::ApplyFriction(const Vertex3Ds& hitnormal, const float dtime, const fl
     const float maxFric = fricCoeff * m_mass * -g_pplayer->m_gravity.Dot(hitnormal);
 
     const float slipspeed = slip.Length();
+	Vertex3Ds slipDir;
+	float numer;
     //slintf("Velocity: %.2f Angular velocity: %.2f Surface velocity: %.2f Slippage: %.2f\n", vel.Length(), m_angularvelocity.Length(), surfVel.Length(), slipspeed);
     //if (slipspeed > 1e-6f)
     if (slipspeed < C_PRECISION)
@@ -362,27 +367,26 @@ void Ball::ApplyFriction(const Vertex3Ds& hitnormal, const float dtime, const fl
         if (slipAcc.LengthSquared() < 1e-6f)
             return;
 
-        Vertex3Ds slipDir = slipAcc;
+        slipDir = slipAcc;
         slipDir.Normalize();
 
-        const float numer = - slipDir.Dot( surfAcc );
-        const float denom = m_invMass + slipDir.Dot( CrossProduct( CrossProduct(surfP, slipDir) / m_inertia, surfP ) );
-        const float fric = clamp(numer / denom, -maxFric, maxFric);
-
-        ApplySurfaceImpulse(surfP, (dtime * fric) * slipDir);
+        numer = - slipDir.Dot( surfAcc );
     }
     else
     {
         // nonzero slip speed - dynamic friction case
+        slipDir = slip / slipspeed;
 
-        Vertex3Ds slipDir = slip / slipspeed;
-
-        const float numer = - slipDir.Dot( surfVel );
-        const float denom = m_invMass + slipDir.Dot( CrossProduct( CrossProduct(surfP, slipDir) / m_inertia, surfP ) );
-        const float fric = clamp(numer / denom, -maxFric, maxFric);
-
-        ApplySurfaceImpulse(surfP, (dtime * fric) * slipDir);
+        numer = - slipDir.Dot( surfVel );
     }
+
+	const float denom = m_invMass + slipDir.Dot(CrossProduct(CrossProduct(surfP, slipDir) / m_inertia, surfP));
+	const float fric = clamp(numer / denom, -maxFric, maxFric);
+
+	if (infNaN(fric))
+		return;
+
+	ApplySurfaceImpulse(surfP, (dtime * fric) * slipDir);
 }
 
 Vertex3Ds Ball::SurfaceVelocity(const Vertex3Ds& surfP) const
@@ -410,14 +414,15 @@ void Ball::CalcHitRect()
 {
 	const float dx = fabsf(m_vel.x);
 	const float dy = fabsf(m_vel.y);
+	const float dz = fabsf(m_vel.z);
 
 	m_rcHitRect.left   = m_pos.x - (m_radius + 0.1f + dx); //!! make more accurate ????
 	m_rcHitRect.right  = m_pos.x + (m_radius + 0.1f + dx);
 	m_rcHitRect.top    = m_pos.y - (m_radius + 0.1f + dy);
 	m_rcHitRect.bottom = m_pos.y + (m_radius + 0.1f + dy);
 
-	m_rcHitRect.zlow  = min(m_pos.z, m_pos.z+m_vel.z) - m_radius;
-	m_rcHitRect.zhigh = max(m_pos.z, m_pos.z+m_vel.z) + (m_radius + 0.1f);
+	m_rcHitRect.zlow   = m_pos.z - (m_radius + 0.1f + dz);
+	m_rcHitRect.zhigh  = m_pos.z + (m_radius + 0.1f + dz);
    // update defaultZ for ball reflection
    // if the ball was created by a kicker which is higher than the playfield 
    // the defaultZ must be updated if the ball falls onto the playfield that means the Z value is equal to the radius
@@ -465,7 +470,7 @@ void Ball::UpdateVelocities()
 	const float nx = g_pplayer->m_NudgeX;     // TODO: depends on STEPTIME
 	const float ny = g_pplayer->m_NudgeY;
 	
-	if (!m_frozen)  // Gravity	
+	if (!m_frozen)  // Gravity
 	{
 		m_vel += (float)PHYS_FACTOR * g_pplayer->m_gravity;
 
