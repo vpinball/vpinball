@@ -76,10 +76,16 @@ public:
 	
 	STDMETHOD(get_Gravity)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Gravity)(/*[in]*/ float newVal);
-	STDMETHOD(get_HardFriction)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_HardFriction)(/*[in]*/ float newVal);
-	STDMETHOD(get_HardScatter)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_HardScatter)(/*[in]*/ float newVal);
+	STDMETHOD(get_Friction)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_Friction)(/*[in]*/ float newVal);
+	STDMETHOD(get_Elasticity)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_Elasticity)(/*[in]*/ float newVal);
+	STDMETHOD(get_ElasticityFalloff)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_ElasticityFalloff)(/*[in]*/ float newVal);
+	STDMETHOD(get_Scatter)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_Scatter)(/*[in]*/ float newVal);
+	STDMETHOD(get_DefaultScatter)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_DefaultScatter)(/*[in]*/ float newVal);
 	STDMETHOD(get_NudgeTime)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_NudgeTime)(/*[in]*/ float newVal);
 	STDMETHOD(get_PlungerNormalize)(/*[out, retval]*/ int *pVal);
@@ -356,8 +362,7 @@ public:
 	virtual void SelectItem(IScriptable *piscript);
 	virtual void DoCodeViewCommand(int command);
 	virtual void SetDirtyScript(SaveDirtyState sds);
-   virtual void ExportMesh(FILE *f);
-
+	virtual void ExportMesh(FILE *f);
 
 	// Multi-object manipulation
 	virtual void GetCenter(Vertex2D * const pv) const;
@@ -564,38 +569,43 @@ END_CONNECTION_POINT_MAP()
 	float m_BG_xlatex[NUM_BG_SETS];
 	float m_BG_xlatey[NUM_BG_SETS];
     float m_BG_xlatez[NUM_BG_SETS];
-	char m_BG_szImage[NUM_BG_SETS][MAXTOKEN];
+	char  m_BG_szImage[NUM_BG_SETS][MAXTOKEN];
 
 	float m_angletiltMax;
 	float m_angletiltMin;
 
-	int m_fOverridePhysics;
+	int   m_fOverridePhysics;
     float m_fOverrideGravityConstant;
 
 	unsigned int m_PhysicsMaxLoops;
 
 	float m_Gravity;
-	float m_hardFriction;
-	float m_hardScatter;
+	
+	float m_friction;
+	float m_elasticity;
+	float m_elasticityFalloff;
+	float m_scatter;
+
+	float m_defaultScatter;
     float m_nudgeTime;
-	int m_plungerNormalize;
-	bool m_plungerFilter;
+	int   m_plungerNormalize;
+	bool  m_plungerFilter;
 
-    bool m_tblAutoStartEnabled;
-    bool m_tblMirrorEnabled;		// Mirror tables left to right.  This is activated by a cheat during table selection.
+    bool  m_tblAutoStartEnabled;
+    bool  m_tblMirrorEnabled;		// Mirror tables left to right.  This is activated by a cheat during table selection.
 
-	bool m_tblAccelerometer;		// true if electronic accelerometer enabled
-	bool m_tblAccelNormalMount;		// true is Normal Mounting (Left Hand Coordinates)
+	bool  m_tblAccelerometer;		// true if electronic accelerometer enabled
+	bool  m_tblAccelNormalMount;	// true is Normal Mounting (Left Hand Coordinates)
 	float m_tblAccelAngle;			// 0 degrees rotated counterclockwise (GUI is lefthand coordinates)
 	float m_tblAccelAmpX;			// Accelerometer gain X axis
 	float m_tblAccelAmpY;			// Accelerometer gain Y axis
     int   m_tblAccelMaxX;           // Accelerometer max value X axis
     int   m_tblAccelMaxY;			// Accelerometer max value Y axis
     
-	U32 m_tblAutoStart;             // msecs before trying an autostart if doing once-only method .. 0 is automethod
-    U32 m_tblAutoStartRetry;        // msecs before retrying to autostart.
+	U32   m_tblAutoStart;           // msecs before trying an autostart if doing once-only method .. 0 is automethod
+    U32   m_tblAutoStartRetry;      // msecs before retrying to autostart.
     float m_tblVolmod;              // volume modulation for doing audio balancing
-    U32 m_tblExitConfirm;           // msecs for esc button to be pressed to exit completely
+    U32   m_tblExitConfirm;         // msecs for esc button to be pressed to exit completely
 	float m_globalDifficulty;		// Table Difficulty Level
 
     short m_oldMousePosX;
@@ -642,7 +652,6 @@ END_CONNECTION_POINT_MAP()
 	FRect m_rcDragRect; // Multi-select
 
 	HBITMAP m_hbmOffScreen; // Buffer for drawing the editor window
-	bool m_fDirtyDraw; // Whether our background bitmap is up to date
 
 	PinUndo m_undo;
 
@@ -674,8 +683,8 @@ END_CONNECTION_POINT_MAP()
 
     std::vector<HANDLE> m_vAsyncHandles;
 
-    int m_globalDetailLevel;
-    int m_userDetailLevel;
+    int  m_globalDetailLevel;
+    int  m_userDetailLevel;
     bool m_overwriteGlobalDetailLevel;
 
 	LightSource m_Light[MAX_LIGHT_SOURCES];
@@ -687,41 +696,45 @@ END_CONNECTION_POINT_MAP()
 	float m_globalEmissionScale;
 	float m_AOScale;
 
-    int m_useReflectionForBalls;
-    int m_ballReflectionStrength;
-    int m_playfieldReflectionStrength;
-    int m_useTrailForBalls;
-    int m_ballTrailStrength;
-    int m_useAA;
-    int m_useFXAA;
-	int m_useAO;
+    int   m_useReflectionForBalls;
+    int   m_ballReflectionStrength;
+    int   m_playfieldReflectionStrength;
+    int   m_useTrailForBalls;
+    int   m_ballTrailStrength;
+    int   m_useAA;
+    int   m_useFXAA;
+	int   m_useAO;
 	float m_bloom_strength;
 
-	bool m_activeLayers[8];
-    bool m_toggleAllLayers;
-    bool m_savingActive;
+	HWND  m_hMaterialManager;
+	HWND  m_hSearchSelectDialog;
 
-    bool m_renderSolid;
+	bool  m_fDirtyDraw; // Whether our background bitmap is up to date
 
-	bool m_fGrid; // Display grid or not
-	bool m_fBackdrop;
-	bool m_fRenderDecals;
-	bool m_fRenderEMReels;
-   bool m_overwriteGlobalStereo3D;
-   bool m_cameraMode;
-   HWND m_hMaterialManager;
-   HWND m_hSearchSelectDialog;
+	bool  m_activeLayers[8];
+    bool  m_toggleAllLayers;
+    bool  m_savingActive;
+
+    bool  m_renderSolid;
+
+	bool  m_fGrid; // Display grid or not
+	bool  m_fBackdrop;
+	bool  m_fRenderDecals;
+	bool  m_fRenderEMReels;
+    bool  m_overwriteGlobalStereo3D;
+    
+	bool  m_cameraMode;
 
 #ifdef UNUSED_TILT //!! currently unused (see NudgeGetTilt())
-	int m_jolt_amount;       
-	int m_tilt_amount;
-	int m_jolt_trigger_time;
-	int m_tilt_trigger_time;
+	int   m_jolt_amount;       
+	int   m_tilt_amount;
+	int   m_jolt_trigger_time;
+	int   m_tilt_trigger_time;
 #endif
 
 private:
     std::tr1::unordered_map<const char*, Texture*, StringHashFunctor, StringComparator> m_textureMap;      // hash table to speed up texture lookup by name
-    std::tr1::unordered_map<const char*, Material*, StringHashFunctor, StringComparator> m_materialMap;      // hash table to speed up texture lookup by name
+    std::tr1::unordered_map<const char*, Material*, StringHashFunctor, StringComparator> m_materialMap;    // hash table to speed up material lookup by name
 };
 
 #endif // !defined(AFX_PINTABLE_H__D14A2DAB_2984_4FE7_A102_D0283ECE31B4__INCLUDED_)

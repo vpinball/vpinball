@@ -86,4 +86,3 @@ private:
 
     friend class HitKDNode;
 };
-

@@ -26,6 +26,7 @@ VP 10.0.0 Changelog
   -> additional changes since physmod5, note that these will also -force- you to revisit existing physmod5 physics table settings:
      - friction is no longer ignored (e.g. it was always constant at 0.3 before) on the playfield, walls, slingshots, primitives, ramps, gates (and more?!)
      - scatter is no longer ignored for kickers and all kinds of collisions. also the global fallback behavior was changed: only if scatter < 0 then the global scatter value is used
+     - elasticity, elasticity falloff and scatter are now exposed as new playfield properties (before these were fixed at elasticity=0.2 and the other two at 0)
      - import/export of the physics options sets is fixed and can be used again
      - flipper properties strength,mass,return are wired up correctly and can be used from the script again
      - collision heuristics are adapted for all ball sizes (e.g. different from the default radius of 25), so it should be safer to use strange ball sizes now

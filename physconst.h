@@ -65,4 +65,3 @@
 
 //Plumb:
 #define	VELOCITY_EPSILON 0.05f	// The threshold for zero velocity.
-

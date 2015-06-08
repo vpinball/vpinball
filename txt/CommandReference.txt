@@ -53,8 +53,11 @@ DMDPixels(VARIANT) - set array of (byte-)values (0..100), size needs to match th
 *SlopeMin(float) - Angle of Playfield within Cabinet (used for Physics only)
 *GlobalDifficulty(float) - Mainly chooses/weights between SlopeMax and SlopeMin, but also affects precision of flippers/scattering
 Gravity(float) - default=0.86543
-HardFriction(float) - default=0.0025
-HardScatter(float) - default=0
+Friction(float) - for the Playfield, default=0.0025
+Elasticity(float) - for the Playfield, default=0.2
+ElasticityFalloff(float) - for the Playfield, default=0
+Scatter(float) - scatter angle for the Playfield, default=0
+DefaultScatter(float) - default=0, overrides all elements that have scatter angle set to < 0
 *OverridePhysics(int) - overrides the table physics settings with pre defined settings defined under Preferences -> Physics Options.
                         You can define up to 8 different physics settings for the table and the flippers. Save them to one of the 8 slots and
                         by assigning the slot number to this OverridePhysics it overrides these settings. default=0 (means use table settings)

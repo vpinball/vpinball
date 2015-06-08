@@ -517,8 +517,10 @@ void Player::CreateBoundingHitShapes(Vector<HitObject> *pvho)
 	pvho->AddElement(ph3dpoly);
 
 	m_hitPlayfield = HitPlane(Vertex3Ds(0, 0, 1), m_ptable->m_tableheight);
-	m_hitPlayfield.SetFriction(m_ptable->m_hardFriction);
-	m_hitPlayfield.m_elasticity = 0.2f;
+	m_hitPlayfield.SetFriction(m_ptable->m_friction);
+	m_hitPlayfield.m_elasticity = m_ptable->m_elasticity;
+	m_hitPlayfield.m_elasticityFalloff = m_ptable->m_elasticityFalloff;
+	m_hitPlayfield.m_scatter = m_ptable->m_scatter;
 
 	m_hitTopGlass = HitPlane(Vertex3Ds(0, 0, -1), m_ptable->m_glassheight);
 	m_hitTopGlass.SetFriction(0.3f);
@@ -1981,7 +1983,7 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
 #ifdef _DEBUGPHYSICS
 		c_timesearch++;
 #endif
-		hittime = dtime;        //begin time search from now ...  until delta ends
+		hittime = dtime;        // begin time search from now ...  until delta ends
 
 		// find earliest time where a flipper collides with its stop
 		for (unsigned i = 0; i < m_vFlippers.size(); ++i)
@@ -2000,7 +2002,7 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
 
 			if (!pball->m_frozen && pball->m_dynamic > 0) // don't play with frozen balls
 			{
-				pball->m_coll.hittime = hittime;                // search upto current hittime
+				pball->m_coll.hittime = hittime;          // search upto current hittime
 				pball->m_coll.obj = NULL;
 
 				// always check for playfield and top glass
@@ -2009,21 +2011,21 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
 				m_hitoctree_dynamic.HitTestBall(pball, pball->m_coll);  // dynamic objects
 				m_hitoctree.HitTestBall(pball, pball->m_coll);  // find the hit objects and hit times
 
-				const float htz = pball->m_coll.hittime;// this ball's hit time
+				const float htz = pball->m_coll.hittime; // this ball's hit time
 				if (htz < 0.f) pball->m_coll.obj = NULL; // no negative time allowed
 
 				if (pball->m_coll.obj)                                  // hit object
 				{
 #ifdef _DEBUGPHYSICS
-					++c_hitcnts;                                            // stats for display
+					++c_hitcnts;                                        // stats for display
 
 					if (pball->m_coll.hitRigid && pball->m_coll.hitdistance < -0.0875f) //rigid and embedded
 						++c_embedcnts;
 #endif
 					///////////////////////////////////////////////////////////////////////////
-					if (htz <= hittime)                                     //smaller hit time??
+					if (htz <= hittime)                         // smaller hit time??
 					{
-						hittime = htz;                                  // record actual event time
+						hittime = htz;                          // record actual event time
 
 						if (htz < STATICTIME)                   // less than static time interval
 						{
@@ -2045,27 +2047,27 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
 		// now update displacements to collide-contact or end of physics frame
 		// !!!!! 2) move objects to hittime
 
-		if (hittime > STATICTIME) StaticCnts = STATICCNTS;               // allow more zeros next round
+		if (hittime > STATICTIME) StaticCnts = STATICCNTS; // allow more zeros next round
 
 		for (unsigned i = 0; i < m_vmover.size(); i++)
-			m_vmover[i]->UpdateDisplacements(hittime); //step 2:  move the objects about according to velocities
+			m_vmover[i]->UpdateDisplacements(hittime); // step 2: move the objects about according to velocities
 
-		//  find balls that need to be collided and script'ed (generally there will be one, but more are possible)
+		// find balls that need to be collided and script'ed (generally there will be one, but more are possible)
 
-		for (unsigned i = 0; i < m_vball.size(); i++)                                      // use m_vball.size(), in case script deletes a ball
+		for (unsigned i = 0; i < m_vball.size(); i++) // use m_vball.size(), in case script deletes a ball
 		{
 			Ball * const pball = m_vball[i];
 
 			if (pball->m_dynamic > 0 && pball->m_coll.obj && pball->m_coll.hittime <= hittime) // find balls with hit objects and minimum time
 			{
 				// now collision, contact and script reactions on active ball (object)+++++++++
-				HitObject * const pho = pball->m_coll.obj;// object that ball hit in trials
-				m_pactiveball = pball;                           // For script that wants the ball doing the collision
+				HitObject * const pho = pball->m_coll.obj; // object that ball hit in trials
+				m_pactiveball = pball;                     // For script that wants the ball doing the collision
 #ifdef _DEBUGPHYSICS
 				c_collisioncnt++;
 #endif
 				pho->Collide(&pball->m_coll);        //!!!!! 3) collision on active ball
-				pball->m_coll.obj = NULL;                        // remove trial hit object pointer
+				pball->m_coll.obj = NULL;            // remove trial hit object pointer
 
 				// Collide may have changed the velocity of the ball, 
 				// and therefore the bounding box for the next hit cycle
@@ -2077,7 +2079,7 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
 				}
 				else
 				{
-					pball->CalcHitRect();           // do new boundings 
+					pball->CalcHitRect(); // do new boundings 
 
 					// is this ball static? .. set static and quench        
 					if (pball->m_coll.hitRigid && (pball->m_coll.hitdistance < (float)PHYS_TOUCH)) //rigid and close distance contacts
@@ -2086,7 +2088,7 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
 						if (pball->m_drsq < 8.0e-5f && mag < 1.0e-3f*m_ptable->m_Gravity*m_ptable->m_Gravity / GRAVITYCONST / GRAVITYCONST && fabsf(pball->m_vel.z) < 0.2f*m_ptable->m_Gravity / GRAVITYCONST)
 						{
 							if(--pball->m_dynamic <= 0)             //... ball static, cancels next gravity increment
-							{                                                                       // m_dynamic is cleared in ball gravity section
+							{                                       // m_dynamic is cleared in ball gravity section
 								pball->m_dynamic = 0;
 #ifdef _DEBUGPHYSICS
 								c_staticcnt++;

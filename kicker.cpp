@@ -1040,9 +1040,9 @@ void KickerHitCircle::DoCollide(Ball * const pball, Vertex3Ds& hitnormal, Vertex
       if (i < 0)	//entering Kickers volume
       { 
          bool hitEvent = false;
-         const float grabHeight = (m_zheight + pball->m_radius)*(m_pkicker->m_d.m_hitAccuracy);
+         const float grabHeight = (m_zheight + pball->m_radius) * m_pkicker->m_d.m_hitAccuracy;
       
-         if (pball->m_pos.z<(grabHeight) || m_pkicker->m_d.m_legacyMode || newBall)
+         if (pball->m_pos.z<grabHeight || m_pkicker->m_d.m_legacyMode || newBall)
          {
             // early out here if the ball is slow and we are near the kicker center
             hitEvent = true;
@@ -1051,7 +1051,6 @@ void KickerHitCircle::DoCollide(Ball * const pball, Vertex3Ds& hitnormal, Vertex
          {
             const Vertex3Ds d = pball->m_pos - Vertex3Ds(center.x, center.y, m_pkicker->m_baseHeight);
             const float bnd = fabsf(d.Length() - radius);
-            float a = Vertex3Ds(pball->m_vel.x, pball->m_vel.y, 0.0f).Length();
             float minDist = FLT_MAX;
             int idx = -1;
             for (unsigned int t = 0; t < m_pkicker->hitMesh.size(); t++)
@@ -1067,11 +1066,10 @@ void KickerHitCircle::DoCollide(Ball * const pball, Vertex3Ds& hitnormal, Vertex
             if (idx != -1)
             {
                // we have the nearest vertex now use the normal and damp it so it doesn't speed up the ball velocity too much
-                const Vertex3Ds hitnorm(kickerHitMesh[idx].nx, kickerHitMesh[idx].ny, kickerHitMesh[idx].nz);
+               const Vertex3Ds hitnorm(kickerHitMesh[idx].nx, kickerHitMesh[idx].ny, kickerHitMesh[idx].nz);
                Vertex3Ds surfVel, tangent, surfP;
-               float dot = pball->m_vel.Dot(hitnorm);
+               const float dot = -pball->m_vel.Dot(hitnorm);
                const float reactionImpulse = pball->m_mass * fabsf(dot);
-               dot *= -(1.0f);
 
                pball->m_vel += dot * hitnorm;     // apply collision impulse (along normal, so no torque)
                pball->m_dynamic = C_DYNAMIC;
@@ -1088,7 +1086,7 @@ void KickerHitCircle::DoCollide(Ball * const pball, Vertex3Ds& hitnormal, Vertex
                }
                else
                {
-				      friction = 0.3f;
+				  friction = 0.3f;
                   surfP = -pball->m_radius * hitnormal;    // surface contact point relative to center of mass
 
                   surfVel = pball->SurfaceVelocity(surfP);       // velocity at impact point
@@ -1121,9 +1119,9 @@ void KickerHitCircle::DoCollide(Ball * const pball, Vertex3Ds& hitnormal, Vertex
                pball->m_frozen = false;
             else
             {
-                  pball->m_frozen = true;
-                  pball->m_vpVolObjs->AddElement(m_pObj);		// add kicker to ball's volume set
-                  m_pball = pball;
+               pball->m_frozen = true;
+               pball->m_vpVolObjs->AddElement(m_pObj);		// add kicker to ball's volume set
+               m_pball = pball;
             }
             // Don't fire the hit event if the ball was just created
             // Fire the event before changing ball attributes, so scripters can get a useful ball state
