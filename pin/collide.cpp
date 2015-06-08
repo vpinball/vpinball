@@ -87,8 +87,8 @@ float LineSeg::HitTestBasic(const Ball * pball, const float dtime, CollisionEven
 	float hittime;
 	if (rigid)
     {
-		if ((bnd < -pball->m_radius*2.0f) || (lateral && bcpd < 0.f))
-            return -1.0f;	// (ball normal distance) excessive pentratration of object skin ... no collision HACK
+		if ((bnd < -pball->m_radius/**2.0f*/) || (lateral && bcpd < 0.f))
+            return -1.0f;	// (ball normal distance) excessive pentratration of object skin ... no collision HACK //!! *2 necessary?
 			
 		if (lateral && (bnd <= (float)PHYS_TOUCH))
         {
@@ -252,7 +252,7 @@ float HitCircle::HitTestBasicRadius(const Ball * pball, float dtime, CollisionEv
 
 	if (rigid && bnd < (float)PHYS_TOUCH)		// positive: contact possible in future ... Negative: objects in contact now
     {
-		if (bnd < -pball->m_radius*2.0f)
+		if (bnd < -pball->m_radius/**2.0f*/) //!! *2 necessary?
             return -1.0f;
         else if (fabsf(bnv) <= C_CONTACTVEL)
         {

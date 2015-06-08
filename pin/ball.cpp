@@ -414,15 +414,14 @@ void Ball::CalcHitRect()
 {
 	const float dx = fabsf(m_vel.x);
 	const float dy = fabsf(m_vel.y);
-	const float dz = fabsf(m_vel.z);
 
 	m_rcHitRect.left   = m_pos.x - (m_radius + 0.1f + dx); //!! make more accurate ????
 	m_rcHitRect.right  = m_pos.x + (m_radius + 0.1f + dx);
 	m_rcHitRect.top    = m_pos.y - (m_radius + 0.1f + dy);
 	m_rcHitRect.bottom = m_pos.y + (m_radius + 0.1f + dy);
 
-	m_rcHitRect.zlow   = m_pos.z - (m_radius + 0.1f + dz);
-	m_rcHitRect.zhigh  = m_pos.z + (m_radius + 0.1f + dz);
+	m_rcHitRect.zlow   = min(m_pos.z, m_pos.z+m_vel.z) - m_radius;
+	m_rcHitRect.zhigh  = max(m_pos.z, m_pos.z+m_vel.z) + (m_radius + 0.1f);
    // update defaultZ for ball reflection
    // if the ball was created by a kicker which is higher than the playfield 
    // the defaultZ must be updated if the ball falls onto the playfield that means the Z value is equal to the radius
