@@ -43,7 +43,7 @@ public:
 class LineSegSlingshot : public LineSeg
 {
 public:
-	LineSegSlingshot(const Vertex2D& p1, const Vertex2D& p2);
+	LineSegSlingshot(const Vertex2D& p1, const Vertex2D& p2, const float _zlow, const float _zhigh);
 
 	virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
 	virtual void Collide(CollisionEvent* coll);

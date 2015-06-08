@@ -462,48 +462,20 @@ void Player::CreateBoundingHitShapes(Vector<HitObject> *pvho)
 {
 	LineSeg *plineseg;
 
-	plineseg = new LineSeg();
+	plineseg = new LineSeg(Vertex2D(m_ptable->m_right,m_ptable->m_top),Vertex2D(m_ptable->m_right,m_ptable->m_bottom),m_ptable->m_tableheight,m_ptable->m_glassheight);
 	plineseg->m_pfe = NULL;
-	plineseg->m_rcHitRect.zlow = m_ptable->m_tableheight;
-	plineseg->m_rcHitRect.zhigh = m_ptable->m_glassheight;
-	plineseg->v1.x = m_ptable->m_right;
-	plineseg->v1.y = m_ptable->m_top;
-	plineseg->v2.x = m_ptable->m_right;
-	plineseg->v2.y = m_ptable->m_bottom;
-	plineseg->CalcNormal();
 	pvho->AddElement(plineseg);
 
-	plineseg = new LineSeg();
+	plineseg = new LineSeg(Vertex2D(m_ptable->m_left,m_ptable->m_bottom),Vertex2D(m_ptable->m_left,m_ptable->m_top),m_ptable->m_tableheight,m_ptable->m_glassheight);
 	plineseg->m_pfe = NULL;
-	plineseg->m_rcHitRect.zlow = m_ptable->m_tableheight;
-	plineseg->m_rcHitRect.zhigh = m_ptable->m_glassheight;
-	plineseg->v1.x = m_ptable->m_left;
-	plineseg->v1.y = m_ptable->m_bottom;
-	plineseg->v2.x = m_ptable->m_left;
-	plineseg->v2.y = m_ptable->m_top;
-	plineseg->CalcNormal();
 	pvho->AddElement(plineseg);
 
-	plineseg = new LineSeg();
+	plineseg = new LineSeg(Vertex2D(m_ptable->m_right,m_ptable->m_bottom),Vertex2D(m_ptable->m_left,m_ptable->m_bottom),m_ptable->m_tableheight,m_ptable->m_glassheight);
 	plineseg->m_pfe = NULL;
-	plineseg->m_rcHitRect.zlow = m_ptable->m_tableheight;
-	plineseg->m_rcHitRect.zhigh = m_ptable->m_glassheight;
-	plineseg->v1.x = m_ptable->m_right;
-	plineseg->v1.y = m_ptable->m_bottom;
-	plineseg->v2.x = m_ptable->m_left;
-	plineseg->v2.y = m_ptable->m_bottom;
-	plineseg->CalcNormal();
 	pvho->AddElement(plineseg);
 
-	plineseg = new LineSeg();
+	plineseg = new LineSeg(Vertex2D(m_ptable->m_left,m_ptable->m_top),Vertex2D(m_ptable->m_right,m_ptable->m_top),m_ptable->m_tableheight,m_ptable->m_glassheight);
 	plineseg->m_pfe = NULL;
-	plineseg->m_rcHitRect.zlow = m_ptable->m_tableheight;
-	plineseg->m_rcHitRect.zhigh = m_ptable->m_glassheight;
-	plineseg->v1.x = m_ptable->m_left;
-	plineseg->v1.y = m_ptable->m_top;
-	plineseg->v2.x = m_ptable->m_right;
-	plineseg->v2.y = m_ptable->m_top;
-	plineseg->CalcNormal();
 	pvho->AddElement(plineseg);
 
 	Vertex3Ds * const rgv3D = new Vertex3Ds[4];

@@ -131,7 +131,7 @@ void Rubber::DrawRubberMesh(Sur * const psur)
     UpdateRubber(NULL, false);
     for (int i = 0; i < (int)ringIndices.size(); i += 3)
     {
-        Vertex3Ds A = Vertex3Ds(m_vertices[ringIndices[i]].x, m_vertices[ringIndices[i]].y, m_vertices[ringIndices[i]].z);
+        Vertex3Ds A = Vertex3Ds(m_vertices[ringIndices[i    ]].x, m_vertices[ringIndices[i    ]].y, m_vertices[ringIndices[i    ]].z);
         Vertex3Ds B = Vertex3Ds(m_vertices[ringIndices[i + 1]].x, m_vertices[ringIndices[i + 1]].y, m_vertices[ringIndices[i + 1]].z);
         Vertex3Ds C = Vertex3Ds(m_vertices[ringIndices[i + 2]].x, m_vertices[ringIndices[i + 2]].y, m_vertices[ringIndices[i + 2]].z);
         if (fabsf(m_vertices[ringIndices[i]].nz + m_vertices[ringIndices[i + 1]].nz) < 1.f)
@@ -139,7 +139,7 @@ void Rubber::DrawRubberMesh(Sur * const psur)
             drawVertices.push_back(Vertex2D(A.x, A.y));
             drawVertices.push_back(Vertex2D(B.x, B.y));
         }
-        if (fabsf(m_vertices[ringIndices[i+1]].nz + m_vertices[ringIndices[i + 2]].nz) < 1.f)
+        if (fabsf(m_vertices[ringIndices[i + 1]].nz + m_vertices[ringIndices[i + 2]].nz) < 1.f)
         {
             drawVertices.push_back(Vertex2D(B.x, B.y));
             drawVertices.push_back(Vertex2D(C.x, C.y));
@@ -550,7 +550,6 @@ void Rubber::SetupHitObject(Vector<HitObject> * pvho, HitObject * obj)
       obj->m_pfe = (IFireEvents *)this;
    else
       obj->m_pfe = NULL;
-
 
    pvho->AddElement(obj);
    m_vhoCollidable.push_back(obj);	//remember hit components of primitive

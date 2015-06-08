@@ -42,9 +42,11 @@ void HitObject::FireHitEvent(Ball* pball)
 
 
 
-LineSeg::LineSeg(const Vertex2D& p1, const Vertex2D& p2)
+LineSeg::LineSeg(const Vertex2D& p1, const Vertex2D& p2, const float _zlow, const float _zhigh)
     : v1(p1), v2(p2)
 {
+    m_rcHitRect.zlow = _zlow;
+    m_rcHitRect.zhigh = _zhigh;
     CalcNormal();
 }
 
@@ -190,8 +192,8 @@ void LineSeg::Contact(CollisionEvent& coll, float dtime)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-HitCircle::HitCircle(const Vertex2D& c, float r)
-    : center(c), radius(r)
+HitCircle::HitCircle(const Vertex2D& c, float r, float _zlow, float _zhigh)
+    : center(c), radius(r), zlow(_zlow), zhigh(_zhigh)
 {
 }
 
@@ -570,8 +572,6 @@ void DoHitTest(Ball *pball, HitObject *pho, CollisionEvent& coll)
             coll.ball = pball;
             coll.obj = pho;
             coll.hittime = newtime;
-            coll.hitx = pball->m_pos.x + pball->m_vel.x*newtime;
-            coll.hity = pball->m_pos.y + pball->m_vel.y*newtime;
         }
     }
     else    // find first collision, but also remember all contacts
@@ -583,8 +583,6 @@ void DoHitTest(Ball *pball, HitObject *pho, CollisionEvent& coll)
         {
             newColl.ball = pball;
             newColl.obj = pho;
-            newColl.hitx = pball->m_pos.x + pball->m_vel.x*newtime;
-            newColl.hity = pball->m_pos.y + pball->m_vel.y*newtime;
         }
 
         if (newColl.isContact)
