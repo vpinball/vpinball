@@ -412,21 +412,18 @@ void Ball::ApplySurfaceImpulse(const Vertex3Ds& surfP, const Vertex3Ds& impulse)
 
 void Ball::CalcHitRect()
 {
-	const float dx = fabsf(m_vel.x);
-	const float dy = fabsf(m_vel.y);
+	m_rcHitRect.left   = min(m_pos.x, m_pos.x + m_vel.x) - (m_radius + 0.1f); //!! make more accurate ????
+	m_rcHitRect.right  = max(m_pos.x, m_pos.x + m_vel.x) + (m_radius + 0.1f);
+	m_rcHitRect.top    = min(m_pos.y, m_pos.y + m_vel.y) - (m_radius + 0.1f);
+	m_rcHitRect.bottom = max(m_pos.y, m_pos.y + m_vel.y) + (m_radius + 0.1f);
+	m_rcHitRect.zlow   = min(m_pos.z, m_pos.z + m_vel.z) - (m_radius + 0.1f);
+	m_rcHitRect.zhigh  = max(m_pos.z, m_pos.z + m_vel.z) + (m_radius + 0.1f);
 
-	m_rcHitRect.left   = m_pos.x - (m_radius + 0.1f + dx); //!! make more accurate ????
-	m_rcHitRect.right  = m_pos.x + (m_radius + 0.1f + dx);
-	m_rcHitRect.top    = m_pos.y - (m_radius + 0.1f + dy);
-	m_rcHitRect.bottom = m_pos.y + (m_radius + 0.1f + dy);
-
-	m_rcHitRect.zlow   = min(m_pos.z, m_pos.z+m_vel.z) - m_radius;
-	m_rcHitRect.zhigh  = max(m_pos.z, m_pos.z+m_vel.z) + (m_radius + 0.1f);
-   // update defaultZ for ball reflection
-   // if the ball was created by a kicker which is higher than the playfield 
-   // the defaultZ must be updated if the ball falls onto the playfield that means the Z value is equal to the radius
-   if ( m_pos.z == m_radius )
-      m_defaultZ = m_pos.z;
+    // update defaultZ for ball reflection
+    // if the ball was created by a kicker which is higher than the playfield 
+    // the defaultZ must be updated if the ball falls onto the playfield that means the Z value is equal to the radius
+	if (m_pos.z == m_radius + g_pplayer->m_ptable->m_tableheight)
+        m_defaultZ = m_pos.z;
 }
 
 void BallAnimObject::UpdateDisplacements(const float dtime)
