@@ -48,7 +48,7 @@ inline float ElasticityWithFalloff(float elasticity, float falloff, float vel)
 
 struct CollisionEvent
 {
-    CollisionEvent() : ball(0), obj(0), isContact(false), hittime(0.0f), hitdistance(0.0f), hitmoment(0.0f), hitx(0.0f), hity(0.0f), hitRigid(false) {}
+    CollisionEvent() : ball(0), obj(0), isContact(false), hittime(0.0f), hitdistance(0.0f), hitmoment(0.0f), hitRigid(false) {}
 
     Ball* ball;         // the ball that collided with smth
     HitObject* obj;     // what the ball collided with
@@ -61,8 +61,6 @@ struct CollisionEvent
 	Vertex3Ds hitvelocity; //!! sometimes abused ?! (f.e. z = original normal velocity)
 	float hitmoment;
 	//float hitangularrate; //!! angular rate is only assigned but never used
-
-    float hitx, hity;   // position of the ball at hit time (saved to avoid floating point errors with multiple time slices)
 
     bool hitRigid;      // rigid body collision?
 
@@ -127,7 +125,7 @@ class LineSeg : public HitObject
 	{
 public:
     LineSeg() { }
-    LineSeg(const Vertex2D& p1, const Vertex2D& p2);
+    LineSeg(const Vertex2D& p1, const Vertex2D& p2, const float _zlow, const float _zhigh);
 
 	virtual float HitTestBasic(const Ball * pball, const float dtime, CollisionEvent& coll, const bool direction, const bool lateral, const bool rigid);
 	virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
@@ -147,7 +145,7 @@ class HitCircle : public HitObject
 	{
 public:
     HitCircle() { }
-    HitCircle(const Vertex2D& c, float r);
+    HitCircle(const Vertex2D& c, float r, float _zlow, float _zhigh);
 
 	virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
 

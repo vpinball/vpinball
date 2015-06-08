@@ -390,19 +390,22 @@ void Surface::CurvesToShapes(Vector<HitObject> * const pvho)
    Vertex3Ds * const rgv3Dt = new Vertex3Ds[count];
    Vertex3Ds * const rgv3Db = m_d.m_fIsBottomSolid ? new Vertex3Ds[count] : NULL;
 
+   const float bottom = m_d.m_heightbottom+m_ptable->m_tableheight;
+   const float top = m_d.m_heighttop+m_ptable->m_tableheight;
+
    for (int i = 0; i < count; ++i)
    {
       const RenderVertex * const pv1 = &vvertex[i];
 
       rgv3Dt[i].x = pv1->x;
       rgv3Dt[i].y = pv1->y;
-      rgv3Dt[i].z = m_d.m_heighttop+m_ptable->m_tableheight;
+      rgv3Dt[i].z = top;
 
 	  if(m_d.m_fIsBottomSolid)
 	  {
 		  rgv3Db[count-1-i].x = pv1->x;
 		  rgv3Db[count-1-i].y = pv1->y;
-		  rgv3Db[count-1-i].z = m_d.m_heightbottom+m_ptable->m_tableheight;
+		  rgv3Db[count-1-i].z = bottom;
 	  }
 
       const RenderVertex * const pv2 = &vvertex[(i + 1) % count];
@@ -444,13 +447,16 @@ void Surface::AddLine(Vector<HitObject> * const pvho, const RenderVertex * const
 {
    LineSeg *plineseg;
 
+   const float bottom = m_d.m_heightbottom+m_ptable->m_tableheight;
+   const float top = m_d.m_heighttop+m_ptable->m_tableheight;
+
    if (!fSlingshot)
    {
-      plineseg = new LineSeg(*pv1, *pv2);
+      plineseg = new LineSeg(*pv1, *pv2, bottom, top);
    }
    else
    {
-      LineSegSlingshot * const plinesling = new LineSegSlingshot(*pv1, *pv2);
+      LineSegSlingshot * const plinesling = new LineSegSlingshot(*pv1, *pv2, bottom, top);
       plineseg = (LineSeg *)plinesling;
 
       plinesling->m_force = m_d.m_slingshotforce;
@@ -458,9 +464,6 @@ void Surface::AddLine(Vector<HitObject> * const pvho, const RenderVertex * const
 
       m_vlinesling.push_back(plinesling);
    }
-
-   plineseg->m_rcHitRect.zlow = m_d.m_heightbottom+m_ptable->m_tableheight;
-   plineseg->m_rcHitRect.zhigh = m_d.m_heighttop+m_ptable->m_tableheight;
 
    SetupHitObject(pvho, plineseg);
 
@@ -473,25 +476,25 @@ void Surface::AddLine(Vector<HitObject> * const pvho, const RenderVertex * const
    if (m_d.m_heightbottom != 0.f)
    {
        // add lower edge as a line
-       Vertex3Ds v1(pv1->x, pv1->y, m_d.m_heightbottom+m_ptable->m_tableheight);
-       Vertex3Ds v2(pv2->x, pv2->y, m_d.m_heightbottom+m_ptable->m_tableheight);
+       Vertex3Ds v1(pv1->x, pv1->y, bottom);
+       Vertex3Ds v2(pv2->x, pv2->y, bottom);
        SetupHitObject(pvho, new HitLine3D(v1, v2));
    }
    {
        // add upper edge as a line
-       Vertex3Ds v1(pv1->x, pv1->y, m_d.m_heighttop+m_ptable->m_tableheight);
-       Vertex3Ds v2(pv2->x, pv2->y, m_d.m_heighttop+m_ptable->m_tableheight);
+       Vertex3Ds v1(pv1->x, pv1->y, top);
+       Vertex3Ds v2(pv2->x, pv2->y, top);
        SetupHitObject(pvho, new HitLine3D(v1, v2));
    }
 
    // create vertical joint between the two line segments
    {
-       SetupHitObject(pvho, new HitLineZ(*pv1, m_d.m_heightbottom+m_ptable->m_tableheight, m_d.m_heighttop+m_ptable->m_tableheight));
+       SetupHitObject(pvho, new HitLineZ(*pv1, bottom, top));
 
        // add upper and lower end points of line
        if (m_d.m_heightbottom != 0)
-           SetupHitObject(pvho, new HitPoint(Vertex3Ds(pv1->x, pv1->y, m_d.m_heightbottom+m_ptable->m_tableheight)));
-       SetupHitObject(pvho, new HitPoint(Vertex3Ds(pv1->x, pv1->y, m_d.m_heighttop+m_ptable->m_tableheight)));
+           SetupHitObject(pvho, new HitPoint(Vertex3Ds(pv1->x, pv1->y, bottom)));
+       SetupHitObject(pvho, new HitPoint(Vertex3Ds(pv1->x, pv1->y, top)));
    }
 }
 
@@ -588,6 +591,9 @@ void Surface::GenerateMesh(Vertex3D_NoTex2 **topBuf, Vertex3D_NoTex2 **sideBuf)
    memset(*sideBuf, 0, sizeof(Vertex3D_NoTex2)*numVertices * 4);
    Vertex3D_NoTex2 *verts = *sideBuf;
 
+   const float bottom = m_d.m_heightbottom+m_ptable->m_tableheight;
+   const float top = m_d.m_heighttop+m_ptable->m_tableheight;
+
    int offset = 0;
    // Render side
    for (int i = 0; i < numVertices; i++, offset += 4)
@@ -625,10 +631,10 @@ void Surface::GenerateMesh(Vertex3D_NoTex2 **topBuf, Vertex3D_NoTex2 **sideBuf)
       vnormal[1].Normalize();
 
       {
-         verts[offset].x = pv1->x;   verts[offset].y = pv1->y;   verts[offset].z = m_d.m_heightbottom + m_ptable->m_tableheight;
-         verts[offset + 1].x = pv1->x;   verts[offset + 1].y = pv1->y;   verts[offset + 1].z = m_d.m_heighttop + m_ptable->m_tableheight;
-         verts[offset + 2].x = pv2->x;   verts[offset + 2].y = pv2->y;   verts[offset + 2].z = m_d.m_heighttop + m_ptable->m_tableheight;
-         verts[offset + 3].x = pv2->x;   verts[offset + 3].y = pv2->y;   verts[offset + 3].z = m_d.m_heightbottom + m_ptable->m_tableheight;
+         verts[offset].x = pv1->x;   verts[offset].y = pv1->y;   verts[offset].z = bottom;
+         verts[offset + 1].x = pv1->x;   verts[offset + 1].y = pv1->y;   verts[offset + 1].z = top;
+         verts[offset + 2].x = pv2->x;   verts[offset + 2].y = pv2->y;   verts[offset + 2].z = top;
+         verts[offset + 3].x = pv2->x;   verts[offset + 3].y = pv2->y;   verts[offset + 3].z = bottom;
          if (pinSide)
          {
             verts[offset].tu = rgtexcoord[i];
@@ -706,7 +712,7 @@ void Surface::GenerateMesh(Vertex3D_NoTex2 **topBuf, Vertex3D_NoTex2 **sideBuf)
       }
 
       const float heightNotDropped = m_d.m_heighttop;
-      const float heightDropped = (m_d.m_heightbottom + 0.1f);
+      const float heightDropped = m_d.m_heightbottom + 0.1f;
 
       const float inv_tablewidth = 1.0f / (m_ptable->m_right - m_ptable->m_left);
       const float inv_tableheight = 1.0f / (m_ptable->m_bottom - m_ptable->m_top);

@@ -43,8 +43,8 @@ void BumperAnimObject::Reset()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-LineSegSlingshot::LineSegSlingshot(const Vertex2D& p1, const Vertex2D& p2)
-    : LineSeg(p1, p2)
+LineSegSlingshot::LineSegSlingshot(const Vertex2D& p1, const Vertex2D& p2, const float _zlow, const float _zhigh)
+    : LineSeg(p1, p2, _zlow, _zhigh)
 {
 	m_slingshotanim.m_iframe = 0;
 	m_slingshotanim.m_TimeReset = 0; // zero means the slingshot is currently reset
@@ -488,8 +488,7 @@ float Hit3DPoly::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 		return -1.0f;
 
 	// Point on the ball that will hit the polygon, if it hits at all
-	const float bRadius = pball->m_radius;
-    Vertex3Ds hitPos = pball->m_pos - bRadius * normal; // nearest point on ball ... projected radius along norm
+    Vertex3Ds hitPos = pball->m_pos - pball->m_radius * normal; // nearest point on ball ... projected radius along norm
 
     const float bnd = normal.Dot( hitPos - m_rgv[0] ); // distance from plane to ball
 

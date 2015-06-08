@@ -818,16 +818,12 @@ void Ramp::AddJoint2D(Vector<HitObject> * pvho, const Vertex2D& p, float zlow, f
 
 void Ramp::AddLine(Vector<HitObject> * const pvho, const Vertex2D * const pv1, const Vertex2D * const pv2, const Vertex2D * const pv3, const float height1, const float height2)
 {
-   LineSeg * const plineseg = new LineSeg(*pv1, *pv2);
-   plineseg->m_rcHitRect.zlow = height1;
-   plineseg->m_rcHitRect.zhigh = height2;
+   LineSeg * const plineseg = new LineSeg(*pv1, *pv2, height1, height2);
 
    SetupHitObject(pvho, plineseg);
 
    if (pv3)
-   {
        AddJoint2D(pvho, *pv1, height1, height2);
-   }
 }
 
 void Ramp::SetupHitObject(Vector<HitObject> * pvho, HitObject * obj)

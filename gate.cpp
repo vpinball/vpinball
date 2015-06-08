@@ -323,12 +323,9 @@ void Gate::GetHitShapes(Vector<HitObject> * const pvho)
 
       if ( !m_d.m_twoWay )
       {
-          m_plineseg = new LineSeg(rgv[0], rgv[1]);
+          m_plineseg = new LineSeg(rgv[0], rgv[1], height, height + (float)(2.0*PHYS_SKIN)); //!! = ball diameter
 
           m_plineseg->m_pfe = NULL;
-
-          m_plineseg->m_rcHitRect.zlow = height;
-          m_plineseg->m_rcHitRect.zhigh = height + (float)(2.0*PHYS_SKIN); //!! = ball diameter
 
           m_plineseg->m_elasticity = m_d.m_elasticity;
           m_plineseg->SetFriction(m_d.m_friction);
@@ -347,17 +344,13 @@ void Gate::GetHitShapes(Vector<HitObject> * const pvho)
       if(m_d.m_fShowBracket)
       {
          {
-            HitCircle * const phitcircle = new HitCircle(m_d.m_vCenter + halflength * tangent, 0.01f);
+            HitCircle * const phitcircle = new HitCircle(m_d.m_vCenter + halflength * tangent, 0.01f, height, height+h);
             phitcircle->m_pfe = NULL;
-            phitcircle->zlow = height;
-            phitcircle->zhigh = height+h; //+50;
             pvho->AddElement(phitcircle);
          }
 
-         HitCircle * const phitcircle = new HitCircle(m_d.m_vCenter - halflength * tangent, 0.01f);
+         HitCircle * const phitcircle = new HitCircle(m_d.m_vCenter - halflength * tangent, 0.01f, height, height+h);
          phitcircle->m_pfe = NULL;
-         phitcircle->zlow = height;
-         phitcircle->zhigh = height+h; //+50;
          pvho->AddElement(phitcircle);
       }
 }

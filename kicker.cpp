@@ -173,11 +173,9 @@ void Kicker::GetHitShapes(Vector<HitObject> * const pvho)
    if (m_d.m_legacyMode)
    {
        if (m_d.m_fFallThrough)
-       {
            phitcircle->radius = m_d.m_radius * 0.75f;
-       }
        else
-           phitcircle->radius = m_d.m_radius*0.6f; // reduce the hit circle radius because only the inner circle of the 
+           phitcircle->radius = m_d.m_radius * 0.6f; // reduce the hit circle radius because only the inner circle of the 
        // kicker should start a hit event
    }
    else
@@ -197,7 +195,7 @@ void Kicker::GetHitShapes(Vector<HitObject> * const pvho)
 
    }
    phitcircle->zlow = height;
-   phitcircle->zhigh = height + 50.0f;// m_d.m_hit_height;	// height of kicker hit cylinder  
+   phitcircle->zhigh = height + 50.0f; // m_d.m_hit_height;	// height of kicker hit cylinder  //!! 50 = ball diameter
 
    phitcircle->m_zheight = height;		//height for Kicker locked ball + ball->m_radius
 
