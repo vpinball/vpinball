@@ -681,8 +681,13 @@ PinTable::PinTable()
    m_fOverridePhysics = 0;
 
    m_Gravity = GRAVITYCONST;
-   m_hardFriction = 0.3f;
-   m_hardScatter = 0;
+   
+   m_friction = 0.3f;
+   m_elasticity = 0.2f;
+   m_elasticityFalloff = 0.f;
+   m_scatter = 0.f;
+
+   m_defaultScatter = 0;
    m_nudgeTime = 5.0f;
 
    m_plungerNormalize = 100;  //Mech-Plunger component adjustment or weak spring, aging
@@ -1245,9 +1250,7 @@ void PinTable::Init(VPinball *pvp)
    m_tableheight = 0;
 
    for (int i=0;i<16;i++)
-   {
       m_rgcolorcustom[i] = RGB(0,0,0);
-   }
 
    //pilb->Release();
 
@@ -1872,7 +1875,7 @@ void PinTable::Play(bool _cameraMode)
 			 m_fOverrideContactScatterAngle = ANGTORAD(m_fOverrideContactScatterAngle);
 		 }
 
-         c_hardScatter = (m_fOverridePhysics ? m_fOverrideContactScatterAngle : m_hardScatter);
+         c_hardScatter = (m_fOverridePhysics ? m_fOverrideContactScatterAngle : m_defaultScatter);
 
          const float slope = m_angletiltMin + (m_angletiltMax - m_angletiltMin)* m_globalDifficulty;
 
@@ -2779,8 +2782,11 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
 
    bw.WriteInt(FID(ORRP), m_fOverridePhysics);
    bw.WriteFloat(FID(GAVT), m_Gravity);
-   bw.WriteFloat(FID(FRCT), m_hardFriction);
-   bw.WriteFloat(FID(SCAT), m_hardScatter);
+   bw.WriteFloat(FID(FRCT), m_friction);
+   bw.WriteFloat(FID(ELAS), m_elasticity);
+   bw.WriteFloat(FID(ELFA), m_elasticityFalloff);
+   bw.WriteFloat(FID(PFSC), m_scatter);
+   bw.WriteFloat(FID(SCAT), m_defaultScatter);
    bw.WriteFloat(FID(NDGT), m_nudgeTime);
    bw.WriteInt(FID(MPGC), m_plungerNormalize);
    bw.WriteBool(FID(MPDF), m_plungerFilter);
@@ -3427,11 +3433,23 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    }
    else if( id == FID(FRCT))
    {
-      pbr->GetFloat(&m_hardFriction);
+      pbr->GetFloat(&m_friction);
    }
-   else if( id == FID(SCAT))
+   else if (id == FID(ELAS))
    {
-      pbr->GetFloat(&m_hardScatter);
+	   pbr->GetFloat(&m_elasticity);
+   }
+   else if (id == FID(ELFA))
+   {
+	   pbr->GetFloat(&m_elasticityFalloff);
+   }
+   else if (id == FID(PFSC))
+   {
+	   pbr->GetFloat(&m_scatter);
+   }
+   else if (id == FID(SCAT))
+   {
+      pbr->GetFloat(&m_defaultScatter);
    }
    else if( id == FID(NDGT))
    {
@@ -7926,36 +7944,90 @@ STDMETHODIMP PinTable::put_Gravity(float newVal )
    return S_OK;
 }
 
-STDMETHODIMP PinTable::get_HardFriction(float *pVal)
+STDMETHODIMP PinTable::get_Friction(float *pVal)
 {
-   *pVal = m_hardFriction;
+   *pVal = m_friction;
 
    return S_OK;
 }
 
-STDMETHODIMP PinTable::put_HardFriction(float newVal )
+STDMETHODIMP PinTable::put_Friction(float newVal )
 {	
    STARTUNDO
 
-   m_hardFriction = clamp(newVal, 0.0f, 1.0f);
+   m_friction = clamp(newVal, 0.0f, 1.0f);
 
    STOPUNDO
 
    return S_OK;
 }
 
-STDMETHODIMP PinTable::get_HardScatter(float *pVal)
+STDMETHODIMP PinTable::get_Elasticity(float *pVal)
 {
-   *pVal = RADTOANG(m_hardScatter);
+	*pVal = m_elasticity;
+
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::put_Elasticity(float newVal)
+{
+	STARTUNDO
+
+	m_elasticity = newVal;
+
+	STOPUNDO
+
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::get_ElasticityFalloff(float *pVal)
+{
+	*pVal = m_elasticityFalloff;
+
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::put_ElasticityFalloff(float newVal)
+{
+	STARTUNDO
+
+	m_elasticityFalloff = newVal;
+
+	STOPUNDO
+
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::get_Scatter(float *pVal)
+{
+	*pVal = RADTOANG(m_scatter);
+
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::put_Scatter(float newVal)
+{
+	STARTUNDO
+
+	m_scatter = ANGTORAD(newVal);
+
+	STOPUNDO
+
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::get_DefaultScatter(float *pVal)
+{
+   *pVal = RADTOANG(m_defaultScatter);
 
    return S_OK;
 }
 
-STDMETHODIMP PinTable::put_HardScatter(float newVal )
+STDMETHODIMP PinTable::put_DefaultScatter(float newVal )
 {
    STARTUNDO
 
-   m_hardScatter = ANGTORAD(newVal);
+   m_defaultScatter = ANGTORAD(newVal);
 
    STOPUNDO
 
@@ -8620,8 +8692,8 @@ STDMETHODIMP PinTable::ImportPhysics()
 		}
 
 	put_Gravity(TablePhysicsGravityConstant);
-	put_HardFriction(TablePhysicsContactFriction);
-	put_HardScatter(TablePhysicsContactScatterAngle);
+	put_Friction(TablePhysicsContactFriction);
+	put_DefaultScatter(TablePhysicsContactScatterAngle);
 
 	return S_OK;
 }
@@ -8714,10 +8786,10 @@ STDMETHODIMP PinTable::ExportPhysics()
 	get_Gravity(&val);
 	fprintf_s(f,"%f ",val);
 
-	get_HardFriction(&val);
+	get_Friction(&val);
 	fprintf_s(f,"%f ",val);
 
-	get_HardScatter(&val);
+	get_DefaultScatter(&val);
 	fprintf_s(f,"%f ",val);
 
 

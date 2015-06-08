@@ -464,10 +464,16 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 
                 [propget, id(1100), helpstring("property Gravity")] HRESULT Gravity([out, retval] float *pVal);
                 [propput, id(1100), helpstring("property Gravity")] HRESULT Gravity([in] float newVal);
-                [propget, id(1101), helpstring("property HardFriction")] HRESULT HardFriction([out, retval] float *pVal);
-                [propput, id(1101), helpstring("property HardFriction")] HRESULT HardFriction([in] float newVal);
-                [propget, id(1102), helpstring("property HardScatter")] HRESULT HardScatter([out, retval] float *pVal);
-                [propput, id(1102), helpstring("property HardScatter")] HRESULT HardScatter([in] float newVal);
+                [propget, id(1101), helpstring("property Friction")] HRESULT Friction([out, retval] float *pVal);
+                [propput, id(1101), helpstring("property Friction")] HRESULT Friction([in] float newVal);
+				[propget, id(1708), helpstring("property Elasticity")] HRESULT Elasticity([out, retval] float *pVal);
+				[propput, id(1708), helpstring("property Elasticity")] HRESULT Elasticity([in] float newVal);
+				[propget, id(1709), helpstring("property ElasticityFalloff")] HRESULT ElasticityFalloff([out, retval] float *pVal);
+				[propput, id(1709), helpstring("property ElasticityFalloff")] HRESULT ElasticityFalloff([in] float newVal);
+				[propget, id(1710), helpstring("property Scatter")] HRESULT Scatter([out, retval] float *pVal);
+				[propput, id(1710), helpstring("property Scatter")] HRESULT Scatter([in] float newVal);
+				[propget, id(1102), helpstring("property DefaultScatter")] HRESULT DefaultScatter([out, retval] float *pVal);
+                [propput, id(1102), helpstring("property DefaultScatter")] HRESULT DefaultScatter([in] float newVal);
                 [propget, id(1103), helpstring("property NudgeTime")] HRESULT NudgeTime([out, retval] float *pVal);
                 [propput, id(1103), helpstring("property NudgeTime")] HRESULT NudgeTime([in] float newVal);
                 [propget, id(1104), helpstring("property PlungerNormalize")] HRESULT PlungerNormalize([out, retval] int *pVal);
