@@ -227,6 +227,8 @@ float Ball::HitTest(const Ball * pball_, float dtime, CollisionEvent& coll)
 	{
         // find collision time as solution of quadratic equation
         //   at^2 + bt + c = 0
+		//	(length(m_vel - pball->m_vel)*t) ^ 2 + ((m_vel - pball->m_vel).(m_pos - pball->m_pos)) * 2 * t = totalradius*totalradius - length(m_pos - pball->m_pos)^2
+
 		const float a = dv.LengthSquared();         // square of differential velocity
 
 		if (a < 1.0e-8f)
@@ -249,7 +251,7 @@ float Ball::HitTest(const Ball * pball_, float dtime, CollisionEvent& coll)
 
     //calc unit normal of collision
 	const Vertex3Ds hitnormal = hitPos - m_pos;
-	if (hitnormal.x <= FLT_MIN && hitnormal.y <= FLT_MIN && hitnormal.z <= FLT_MIN)
+	if (fabsf(hitnormal.x) <= FLT_MIN && fabsf(hitnormal.y) <= FLT_MIN && fabsf(hitnormal.z) <= FLT_MIN)
 		return -1.f;
 	coll.hitnormal = hitnormal;
 	coll.hitnormal.Normalize();
