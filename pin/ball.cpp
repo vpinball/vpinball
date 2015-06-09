@@ -257,7 +257,7 @@ float Ball::HitTest(const Ball * pball_, float dtime, CollisionEvent& coll)
 	coll.hitnormal.Normalize();
 
 	coll.hitdistance = bnd;			// actual contact distance
-	coll.hitRigid = true;			// rigid collision type
+	//coll.hitRigid = true;			// rigid collision type
 
 	return hittime;	
 }
