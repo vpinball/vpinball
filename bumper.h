@@ -7,45 +7,6 @@
 
 #include "resource.h"       // main symbols
 
-class IBlink
-	{
-public:
-	virtual void DrawFrame(BOOL fOn) = 0;
-
-	char m_rgblinkpattern[33];
-	int m_blinkinterval;
-
-	int m_timenextblink;
-	int m_iblinkframe;
-
-    void UpdateBlinker(int time_msec)
-    {
-        if (m_timenextblink <= time_msec)
-        {
-            m_iblinkframe++;
-            char cnew = m_rgblinkpattern[m_iblinkframe];
-            if (cnew == 0)
-            {
-                m_iblinkframe = 0;
-                cnew = m_rgblinkpattern[0];
-            }
-
-            DrawFrame(cnew == '1');
-            m_timenextblink += m_blinkinterval;
-        }
-    }
-
-    void RestartBlinker(int cur_time_msec)
-    {
-        m_iblinkframe = 0;
-        const char cnew = m_rgblinkpattern[m_iblinkframe];
-
-        DrawFrame(cnew == '1');
-        m_timenextblink = cur_time_msec + m_blinkinterval;
-    }
-
-	};
-
 class BumperData
 {
 public:
@@ -62,9 +23,6 @@ public:
     char m_szBaseMaterial[32];
     char m_szSkirtMaterial[32];
 	char m_szSurface[MAXTOKEN];
-	LightState m_state;
-	//char m_rgblinkpattern[33];
-	//int m_blinkinterval;
 	bool m_fCapVisible;
 	bool m_fBaseVisible;
 };
@@ -85,7 +43,6 @@ class Bumper :
 	public IEditable,
 	public Hitable,
 	public IScriptable,
-	public IBlink,
 	public IFireEvents,
 	public IPerPropertyBrowsing // Ability to fill in dropdown in property browser
 	//public EditableImpl<Bumper>
@@ -127,7 +84,6 @@ DECLARE_REGISTRY_RESOURCEID(IDR_BUMPER)
 	virtual void GetCenter(Vertex2D * const pv) const;
 	virtual void PutCenter(const Vertex2D * const pv);
 
-	virtual void DrawFrame(BOOL fOn);
     virtual void UpdatePropertyPanes();
     virtual void SetDefaultPhysics(bool fromMouseClick);
     virtual void ExportMesh(FILE *f);
@@ -140,12 +96,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_BUMPER)
 
 	BumperHitCircle *m_pbumperhitcircle;
 
-//>>> Added By Chris
-	bool		m_fDisabled;
-	LightState 	m_realState;
-	void		setLightStateBypass(const LightState newVal);
-	void		setLightState(const LightState newVal);
-//<<<
+	bool m_fDisabled;
 
 private:
     void RenderBase(RenderDevice *pd3dDevice, const Material * const baseMaterial );
@@ -178,11 +129,11 @@ private:
     Texture socketTexture;
     Material ringMaterial;
 
-    float   baseHeight;
+	PropertyPane *m_propVisual;
+	
+	float   baseHeight;
     bool    ringDown;
     bool    ringAnimate;
-
-    PropertyPane *m_propVisual;
 
 // IBumper
 public:
@@ -202,12 +153,12 @@ public:
 	STDMETHOD(put_Threshold)(/*[in]*/ float newVal);
 	STDMETHOD(get_Force)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Force)(/*[in]*/ float newVal);
-   STDMETHOD(get_HeightScale)(/*[out, retval]*/ float *pVal);
-   STDMETHOD(put_HeightScale)(/*[in]*/ float newVal);
-   STDMETHOD(get_RingSpeed)(/*[out, retval]*/ float *pVal);
-   STDMETHOD(put_RingSpeed)(/*[in]*/ float newVal);
-   STDMETHOD(get_Orientation)(/*[out, retval]*/ float *pVal);
-   STDMETHOD(put_Orientation)(/*[in]*/ float newVal);
+	STDMETHOD(get_HeightScale)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_HeightScale)(/*[in]*/ float newVal);
+	STDMETHOD(get_RingSpeed)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_RingSpeed)(/*[in]*/ float newVal);
+	STDMETHOD(get_Orientation)(/*[out, retval]*/ float *pVal);
+	STDMETHOD(put_Orientation)(/*[in]*/ float newVal);
 	STDMETHOD(get_Radius)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Radius)(/*[in]*/ float newVal);
 	STDMETHOD(get_Disabled)(/*[out, retval]*/ VARIANT_BOOL *pVal);

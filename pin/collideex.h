@@ -5,10 +5,9 @@ class Surface;
 class BumperAnimObject : public AnimObject
 {
 public:
-	virtual void Check3D()   { }
-	virtual void Reset();
-    float m_fHeight;
-	int m_iframedesired;
+	virtual void Check3D() { }
+	virtual void Reset() { }
+
     float m_ringAnimOffset;
 	bool m_fHitEvent;
 	bool m_fDisabled;
@@ -22,7 +21,7 @@ public:
 
 	virtual void Collide(CollisionEvent* coll);
 
-	virtual AnimObject *GetAnimObject() {return &m_bumperanim;}
+	virtual AnimObject *GetAnimObject() { return &m_bumperanim; }
 
 	BumperAnimObject m_bumperanim;
 
@@ -48,7 +47,7 @@ public:
 	virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
 	virtual void Collide(CollisionEvent* coll);
 
-	virtual AnimObject *GetAnimObject() {return &m_slingshotanim;}
+	virtual AnimObject *GetAnimObject() { return &m_slingshotanim; }
 
 	SlingshotAnimObject m_slingshotanim;
 
@@ -78,7 +77,7 @@ public:
 	HitTriangle(const Vertex3Ds rgv[3]);    // vertices in counterclockwise order
 	virtual ~HitTriangle() {}
 	virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
-	virtual int GetType() const {return eTriangle;}
+	virtual int GetType() const { return eTriangle; }
 	virtual void Collide(CollisionEvent* coll);
     virtual void Contact(CollisionEvent& coll, float dtime);
 	virtual void CalcHitRect();
@@ -133,7 +132,7 @@ class HitSpinner : public HitObject
 public:
 	HitSpinner(Spinner * const pspinner, const float height);
 
-	virtual int GetType() const {return eSpinner;}
+	virtual int GetType() const { return eSpinner; }
 
 	virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
 
@@ -141,7 +140,7 @@ public:
 
 	virtual void CalcHitRect();
 
-	virtual AnimObject *GetAnimObject() {return &m_spinneranim;}
+	virtual AnimObject *GetAnimObject() { return &m_spinneranim; }
 
 	LineSeg m_lineseg[2];
 
@@ -154,7 +153,7 @@ public:
 	virtual void UpdateDisplacements(const float dtime);
 	virtual void UpdateVelocities();
 
-	virtual bool FMover() const {return true;}
+	virtual bool FMover() const { return true; }
 
 	virtual void Reset();
 
@@ -195,7 +194,7 @@ public:
 	virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
 	virtual void Collide(CollisionEvent* coll);
 
-	virtual int GetType() const {return eTrigger;}
+	virtual int GetType() const { return eTrigger; }
 
 	Trigger *m_ptrigger;
 };
@@ -206,7 +205,7 @@ public:
 	virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
 	virtual void Collide(CollisionEvent* coll);
 
-	virtual int GetType() const {return eTrigger;}
+	virtual int GetType() const { return eTrigger; }
 
 	Trigger *m_ptrigger;
 };
@@ -226,11 +225,9 @@ public:
 
 	virtual void CalcHitRect();
 
-	virtual int GetType() const {return e3DLine;}
+	virtual int GetType() const { return e3DLine; }
 
 private:
-	void CacheHitTransform(const Vertex3Ds& v1, const Vertex3Ds& v2);
-
     Matrix3 matTrans;
 };
 
@@ -247,17 +244,17 @@ public:
 class DispReelUpdater : public HitObject
 {
 public:
-	DispReelUpdater(DispReel * const ptb) {m_dispreelanim.m_pDispReel = ptb;}
+	DispReelUpdater(DispReel * const ptb) { m_dispreelanim.m_pDispReel = ptb; }
 	virtual ~DispReelUpdater() {}
 
-	virtual int GetType() const {return eDispReel;}
+	virtual int GetType() const { return eDispReel; }
 
 	// Bogus methods
 	virtual void Collide(CollisionEvent* coll) {}
-	virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll) {return -1.f;}
+	virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll) { return -1.f; }
 	virtual void CalcHitRect() {}
 
-	virtual AnimObject *GetAnimObject() {return &m_dispreelanim;}
+	virtual AnimObject *GetAnimObject() { return &m_dispreelanim; }
 
 	DispReelAnimObject m_dispreelanim;
 };
@@ -273,17 +270,17 @@ public:
 class LightSeqUpdater : public HitObject
 {
 public:
-	LightSeqUpdater(LightSeq * const ptb) {m_lightseqanim.m_pLightSeq = ptb;}
+	LightSeqUpdater(LightSeq * const ptb) { m_lightseqanim.m_pLightSeq = ptb; }
 	virtual ~LightSeqUpdater() {}
 
-	virtual int GetType() const {return eLightSeq;}
+	virtual int GetType() const { return eLightSeq; }
 
 	// Bogus methods
 	virtual void Collide(CollisionEvent* coll) {}
-	virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll) {return -1.f;}
+	virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll) { return -1.f; }
 	virtual void CalcHitRect() {}
 
-	virtual AnimObject *GetAnimObject() {return &m_lightseqanim;}
+	virtual AnimObject *GetAnimObject() { return &m_lightseqanim; }
 
 	LightSeqAnimObject m_lightseqanim;
 };
