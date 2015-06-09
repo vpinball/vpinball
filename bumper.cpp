@@ -85,8 +85,6 @@ HRESULT Bumper::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
    m_d.m_vCenter.x = x;
    m_d.m_vCenter.y = y;
 
-   m_realState = m_d.m_state;		//>>> added by chris
-
    ringAnimate = false;
 
    return InitVBA(fTrue, 0, NULL);
@@ -128,16 +126,6 @@ void Bumper::SetDefaults(bool fromMouseClick)
    hr = GetRegInt("DefaultProps\\Bumper","TimerInterval", &iTmp);
    m_d.m_tdr.m_TimerInterval = (hr == S_OK) && fromMouseClick ? iTmp : 100;
 
-   hr = GetRegInt("DefaultProps\\Bumper","LightState", &iTmp);
-   m_d.m_state = (hr == S_OK) && fromMouseClick ? (enum LightState)iTmp : LightStateOff;
-
-   hr = GetRegString("DefaultProps\\Bumper","BlinkPattern", m_rgblinkpattern, MAXTOKEN);
-   if ((hr != S_OK) || !fromMouseClick)
-      strcpy_s(m_rgblinkpattern, sizeof(m_rgblinkpattern), "10");
-
-   hr = GetRegInt("DefaultProps\\Bumper","BlinkInterval", &iTmp);
-   m_blinkinterval = (hr == S_OK) && fromMouseClick ? iTmp : 125;
-
    hr = GetRegInt("DefaultProps\\Bumper","CapVisible", &iTmp);
    if ((hr == S_OK)&& fromMouseClick)
       m_d.m_fCapVisible = iTmp == 0 ? false : true;
@@ -161,9 +149,6 @@ void Bumper::WriteRegDefaults()
    SetRegValueFloat("DefaultProps\\Bumper","Threshold", m_d.m_threshold);
    SetRegValueInt("DefaultProps\\Bumper","TimerEnabled", m_d.m_tdr.m_fTimerEnabled);	
    SetRegValueInt("DefaultProps\\Bumper","TimerInterval", m_d.m_tdr.m_TimerInterval);	
-   SetRegValue("DefaultProps\\Bumper","LightState", REG_DWORD, &m_d.m_state,4);	
-   SetRegValue("DefaultProps\\Bumper","BlinkPattern", REG_SZ, &m_rgblinkpattern,lstrlen(m_rgblinkpattern));	
-   SetRegValueInt("DefaultProps\\Bumper","BlinkInterval", m_blinkinterval);	
    SetRegValueBool("DefaultProps\\Bumper","CapVisible", m_d.m_fCapVisible);	
    SetRegValueInt("DefaultProps\\Bumper","BaseVisible", m_d.m_fBaseVisible);	
    SetRegValue("DefaultProps\\Bumper", "Surface", REG_SZ, &m_d.m_szSurface, lstrlen(m_d.m_szSurface));
@@ -282,13 +267,6 @@ void Bumper::GetHitShapes(Vector<HitObject> * const pvho)
    m_pbumperhitcircle = phitcircle;
 
    phitcircle->m_bumperanim.m_fVisible = m_d.m_fBaseVisible;
-   DrawFrame( m_d.m_state == LightStateOn );        // make sure bumper light gets turned on
-
-   if (m_d.m_state == LightStateBlinking)
-   {
-      m_timenextblink = g_pplayer->m_time_msec + m_blinkinterval;
-   }
-   m_iblinkframe = 0;
 }
 
 void Bumper::GetHitShapesDebug(Vector<HitObject> * const pvho)
@@ -806,9 +784,6 @@ HRESULT Bumper::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptk
    bw.WriteString(FID(SKMA), m_d.m_szSkirtMaterial);
    bw.WriteString(FID(SURF), m_d.m_szSurface);
    bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
-   bw.WriteInt(FID(STAT), m_d.m_state);
-   bw.WriteString(FID(BPAT), m_rgblinkpattern);
-   bw.WriteInt(FID(BINT), m_blinkinterval);
 
    bw.WriteBool(FID(CAVI), m_d.m_fCapVisible);
    bw.WriteBool(FID(BSVS), m_d.m_fBaseVisible);
@@ -827,8 +802,6 @@ HRESULT Bumper::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version,
    BiffReader br(pstm, this, pid, version, hcrypthash, hcryptkey);
 
    m_ptable = ptable;
-
-   m_realState	= m_d.m_state;		//>>> added by chris
 
    br.Load();
 
@@ -897,19 +870,6 @@ BOOL Bumper::LoadToken(int id, BiffReader *pbr)
    {
       pbr->GetWideString((WCHAR *)m_wzName);
    }
-   else if (id == FID(STAT))
-   {
-      pbr->GetInt(&m_d.m_state);
-      m_realState	= m_d.m_state;		//>>> added by chris
-   }
-   else if (id == FID(BPAT))
-   {
-      pbr->GetString(m_rgblinkpattern);
-   }
-   else if (id == FID(BINT))
-   {
-      pbr->GetInt(&m_blinkinterval);
-   }
    else if (id == FID(BVIS))
    {
       //backwards compatibility when loading old VP9 tables
@@ -936,11 +896,6 @@ BOOL Bumper::LoadToken(int id, BiffReader *pbr)
 HRESULT Bumper::InitPostLoad()
 {
    return S_OK;
-}
-
-void Bumper::DrawFrame(BOOL fOn)
-{
-   m_pbumperhitcircle->m_bumperanim.m_iframedesired = fOn;
 }
 
 STDMETHODIMP Bumper::get_Radius(float *pVal)
@@ -1233,43 +1188,10 @@ STDMETHODIMP Bumper::get_BaseVisible(VARIANT_BOOL *pVal)
 STDMETHODIMP Bumper::put_BaseVisible(VARIANT_BOOL newVal)
 {
    STARTUNDO
-      m_d.m_fBaseVisible = VBTOF(newVal);
+   m_d.m_fBaseVisible = VBTOF(newVal);
    STOPUNDO
 
-      return S_OK;
-}
-
-void Bumper::setLightStateBypass(const LightState newVal)
-{
-   setLightState(newVal);
-}
-
-void Bumper::setLightState(const LightState newVal)
-{
-   if (newVal != m_realState)
-   {
-      const LightState lastState = m_realState;
-      m_realState = newVal;
-
-      if (m_pbumperhitcircle)
-      {
-         switch (m_realState)
-         {
-         case LightStateOff:
-            DrawFrame(fFalse);
-            break;
-
-         case LightStateOn:
-            DrawFrame(fTrue);
-            break;
-
-         case LightStateBlinking:
-            m_iblinkframe = 0; // reset pattern
-            m_timenextblink = g_pplayer->m_time_msec; // Start pattern right away // + m_d.m_blinkinterval;
-            break;
-         }
-      }
-   }
+   return S_OK;
 }
 
 void Bumper::UpdatePropertyPanes()

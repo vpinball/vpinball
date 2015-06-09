@@ -314,34 +314,24 @@ void LightSeq::RenderSetup(RenderDevice* pd3dDevice)
 	// get the number of elements (objects) in the collection (referenced by m_visel)
 	size = m_pcollection->m_visel.Size();
 
-	// go though the collection and get the cordinates of all the lights and bumper
+	// go though the collection and get the cordinates of all the lights
 	for(int i=0; i<size; ++i)
 	{
 		// get the type of object
 		const ItemTypeEnum type = m_pcollection->m_visel.ElementAt(i)->GetIEditable()->GetItemType();
-		// must be a light or bumper
-		if ( (type == eItemLight) || (type == eItemBumper) )
+		// must be a light
+		if (type == eItemLight)
 		{
 			float x,y;
-			if (type == eItemLight)
-			{
-				// process a light
-				Light * const pLight = (Light *)m_pcollection->m_visel.ElementAt(i);
-				pLight->get_X(&x);
-				pLight->get_Y(&y);
+			// process a light
+			Light * const pLight = (Light *)m_pcollection->m_visel.ElementAt(i);
+			pLight->get_X(&x);
+			pLight->get_Y(&y);
 
-				if (pLight->m_fBackglass)
-				{
-					// if the light is on the backglass then scale up its Y position
-					y *= 2.666f; // 2 little devils ;-)
-				}
-			}
-			else
+			if (pLight->m_fBackglass)
 			{
-				// process a bumper
-				Bumper * const pBumper = (Bumper *)m_pcollection->m_visel.ElementAt(i);
-				pBumper->get_X(&x);
-				pBumper->get_Y(&y);
+				// if the light is on the backglass then scale up its Y position
+				y *= 2.666f; // 2 little devils ;-)
 			}
 
 			// scale down to suit the size of the light sequence grid
@@ -730,15 +720,6 @@ STDMETHODIMP LightSeq::StopPlay()
 				pLight->get_State(&state);
 				pLight->put_State(state);
 			}
-/*			else if (type == eItemBumper)
-			{
-				Bumper * const pBumper = (Bumper *)m_pcollection->m_visel.ElementAt(i);
-				pBumper->unLockLight();
-				LightState state;
-				pBumper->get_State(&state);
-				pBumper->put_State(state);
-			}
-*/
 		}
 	}
 	return S_OK;
@@ -1806,11 +1787,6 @@ void LightSeq::SetElementToState(const int index, const LightState State)
 		Light * const pLight = (Light *)m_pcollection->m_visel.ElementAt(index);
 		pLight->setLightStateBypass(State);
 	}
-	else if (type == eItemBumper)
-	{
-		Bumper * const pBumper = (Bumper *)m_pcollection->m_visel.ElementAt(index);
-		pBumper->setLightStateBypass(State);
-	}
 }
 
 bool LightSeq::VerifyAndSetGridElement(const int x, const int y, const LightState State)
@@ -1836,7 +1812,7 @@ bool LightSeq::VerifyAndSetGridElement(const int x, const int y, const LightStat
 
 LightState LightSeq::GetElementState(const int index)
 {
-	// just incase the element isn't a light or bumper
+	// just incase the element isn't a light
 	LightState rc = LightStateOff;
 
 	const ItemTypeEnum type = m_pcollection->m_visel.ElementAt(index)->GetIEditable()->GetItemType();
@@ -1844,11 +1820,6 @@ LightState LightSeq::GetElementState(const int index)
 	{
 		Light * const pLight = (Light *)m_pcollection->m_visel.ElementAt(index);
 		rc = pLight->m_realState;
-	}
-	else if (type == eItemBumper)
-	{
-		Bumper * const pBumper = (Bumper *)m_pcollection->m_visel.ElementAt(index);
-		rc = pBumper->m_realState;
 	}
 	return rc;
 }

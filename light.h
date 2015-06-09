@@ -30,8 +30,6 @@ public:
 	COLORREF m_color2;
 	TimerDataRoot m_tdr;
 	Shape m_shape;
-	//char m_rgblinkpattern[33];
-	//int m_blinkinterval;
 	//float m_borderwidth;
 	//COLORREF m_bordercolor;
    //Material normalMatr;
@@ -82,6 +80,34 @@ public:
 
 /////////////////////////////////////////////////////////////////////////////
 // Light
+
+class IBlink
+{
+public:
+	char m_rgblinkpattern[33];
+	int m_blinkinterval;
+
+	int m_timenextblink;
+	int m_iblinkframe;
+
+	void UpdateBlinker(const int time_msec)
+	{
+		if (m_timenextblink <= time_msec)
+		{
+			m_iblinkframe++;
+			if (m_rgblinkpattern[m_iblinkframe] == 0)
+				m_iblinkframe = 0;
+
+			m_timenextblink += m_blinkinterval;
+		}
+	}
+
+	void RestartBlinker(const int cur_time_msec)
+	{
+		m_iblinkframe = 0;
+		m_timenextblink = cur_time_msec + m_blinkinterval;
+	}
+};
 
 class Light :
 	public IDispatchImpl<ILight, &IID_ILight, &LIBID_VPinballLib>,
@@ -152,8 +178,6 @@ DECLARE_REGISTRY_RESOURCEID(IDR_LIGHT)
 	virtual void PutCenter(const Vertex2D * const pv) { PutPointCenter(pv); }
 	virtual void GetPointCenter(Vertex2D * const pv) const;
 	virtual void PutPointCenter(const Vertex2D * const pv);
-
-	virtual void DrawFrame(BOOL fOn)  { }
 
 	virtual bool IsTransparent() { return m_d.m_BulbLight || (m_surfaceMaterial && m_surfaceMaterial->m_bOpacityActive); }
 	virtual bool RenderToLightBuffer()		{ return m_d.m_BulbLight && (m_d.m_transmissionScale > 0.f); }

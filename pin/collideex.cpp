@@ -2,8 +2,6 @@
 
 BumperHitCircle::BumperHitCircle()
 {
-	m_bumperanim.m_fHeight = 0;
-	m_bumperanim.m_iframedesired = 0;
 	m_bumperanim.m_fHitEvent = false;
     m_bumperanim.m_ringAnimOffset = 0.0f;
 	m_elasticity = 0.3f;
@@ -34,11 +32,6 @@ void BumperHitCircle::Collide(CollisionEvent* coll)
 
 		m_pbumper->FireGroupEvent(DISPID_HitEvents_Hit);
 	}
-}
-
-void BumperAnimObject::Reset()
-{
-	m_fHeight = 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -868,18 +861,6 @@ void HitPlane::Contact(CollisionEvent& coll, float dtime)
 
 HitLine3D::HitLine3D(const Vertex3Ds& v1, const Vertex3Ds& v2)
 {
-    CacheHitTransform(v1, v2);
-
-    m_rcHitRect.left = min(v1.x, v2.x);
-    m_rcHitRect.right = max(v1.x, v2.x);
-    m_rcHitRect.top = min(v1.y, v2.y);
-    m_rcHitRect.bottom = max(v1.y, v2.y);
-    m_rcHitRect.zlow = min(v1.z, v2.z);
-    m_rcHitRect.zhigh = max(v1.z, v2.z);
-}
-
-void HitLine3D::CacheHitTransform(const Vertex3Ds& v1, const Vertex3Ds& v2)
-{
 	Vertex3Ds vLine = v2 - v1;
 	vLine.Normalize();
 
@@ -887,30 +868,37 @@ void HitLine3D::CacheHitTransform(const Vertex3Ds& v1, const Vertex3Ds& v2)
 	Vertex3Ds transaxis;
 	/*const Vertex3Ds vup(0,0,1.0f);
 	CrossProduct(vLine, vup, &transaxis);*/
-	transaxis.x =  vLine.y;
+	transaxis.x = vLine.y;
 	transaxis.y = -vLine.x;
 	transaxis.z = 0.0f;
 
-    if (transaxis.LengthSquared() <= 1e-6f)     // line already points in z axis?
-        transaxis.Set(1, 0, 0);                 // choose arbitrary rotation vector
-    else
-        transaxis.Normalize();
+	if (transaxis.LengthSquared() <= 1e-6f)     // line already points in z axis?
+		transaxis.Set(1, 0, 0);                 // choose arbitrary rotation vector
+	else
+		transaxis.Normalize();
 
 	// Angle to rotate the line into the z-axis
 	const float dot = vLine.z; //vLine.Dot(&vup);
 
 	const float transangle = acosf(dot);
 
-    matTrans.RotationAroundAxis(transaxis, -transangle);
+	matTrans.RotationAroundAxis(transaxis, -transangle);
 
-    const Vertex3Ds vtrans1 = matTrans * v1;
-    const Vertex3Ds vtrans2 = matTrans * v2;
+	const Vertex3Ds vtrans1 = matTrans * v1;
+	const Vertex3Ds vtrans2 = matTrans * v2;
 
-    // set up HitLineZ parameters
-    m_xy.x = vtrans1.x;
-    m_xy.y = vtrans1.y;
-    m_zlow = min(vtrans1.z, vtrans2.z);
-    m_zhigh = max(vtrans1.z, vtrans2.z);
+	// set up HitLineZ parameters
+	m_xy.x = vtrans1.x;
+	m_xy.y = vtrans1.y;
+	m_zlow = min(vtrans1.z, vtrans2.z);
+	m_zhigh = max(vtrans1.z, vtrans2.z);
+
+    m_rcHitRect.left = min(v1.x, v2.x);
+    m_rcHitRect.right = max(v1.x, v2.x);
+    m_rcHitRect.top = min(v1.y, v2.y);
+    m_rcHitRect.bottom = max(v1.y, v2.y);
+    m_rcHitRect.zlow = min(v1.z, v2.z);
+    m_rcHitRect.zhigh = max(v1.z, v2.z);
 }
 
 float HitLine3D::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
