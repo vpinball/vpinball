@@ -268,7 +268,9 @@ void Ball::Collide(CollisionEvent *coll)
 
     // make sure we process each ball/ball collision only once
     // (but if we are frozen, there won't be a second collision event, so deal with it now!)
-    if (pball <= this && !this->m_frozen) //!! <= this ????
+    if (((g_pplayer->m_swap_ball_collision_handling && pball >= this) ||
+		(!g_pplayer->m_swap_ball_collision_handling && pball <= this)) &&
+		!this->m_frozen)
         return;
 
     // target ball to object ball delta velocity

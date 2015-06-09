@@ -299,6 +299,8 @@ public:
 	bool m_DebugBalls;			 // Draw balls in the foreground.
 	bool m_ToggleDebugBalls;
 
+	bool m_swap_ball_collision_handling; // Swaps the order of ball-ball collision handling around each physics cycle (in ragard to the RLC comment block in quadtree.cpp (hopefully ;)))
+
 #ifdef _DEBUGPHYSICS
 	U32 c_hitcnts;
 	U32 c_collisioncnt;
