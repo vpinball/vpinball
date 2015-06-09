@@ -258,6 +258,8 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
 	m_DebugBalls = false;
 	m_ToggleDebugBalls = false;
 
+	m_swap_ball_collision_handling = false;
+
 	m_fDebugMode = false;
 	m_hwndDebugger = NULL;
 	m_PauseTimeTarget = 0;
@@ -2108,6 +2110,8 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
 		}
 
 		dtime -= hittime;       //new delta .. i.e. time remaining
+
+		m_swap_ball_collision_handling = !m_swap_ball_collision_handling; // swap order of ball-ball collisions
 
 		} // end physics loop
 }
