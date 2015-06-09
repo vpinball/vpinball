@@ -148,7 +148,7 @@ float LineSeg::HitTestBasic(const Ball * pball, const float dtime, CollisionEven
     coll.hitnormal.z = 0.0f;
 		
 	coll.hitdistance = bnd;				// actual contact distance ...
-	coll.hitRigid = rigid;				// collision type
+	//coll.hitRigid = rigid;				// collision type
 
     // check for contact
     if (fabsf(bnv) <= C_CONTACTVEL && fabsf(bnd) <= (float)PHYS_TOUCH)
@@ -327,7 +327,7 @@ float HitCircle::HitTestBasicRadius(const Ball * pball, float dtime, CollisionEv
         coll.hitvelocity.z = bnv;
 
 	coll.hitdistance = bnd;				//actual contact distance ... 
-	coll.hitRigid = rigid;				// collision type
+	//coll.hitRigid = rigid;				// collision type
 
 	return hittime;
 }
@@ -442,7 +442,7 @@ float HitLineZ::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
         coll.hitvelocity.z = bnv;
 
     coll.hitdistance = bnd;                    // actual contact distance
-    coll.hitRigid = true;
+    //coll.hitRigid = true;
 
     return hittime;
 }
@@ -534,7 +534,7 @@ float HitPoint::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
         coll.hitvelocity.z = bnv;
 
     coll.hitdistance = bnd;                    // actual contact distance
-    coll.hitRigid = true;
+    //coll.hitRigid = true;
 
     return hittime;
 }

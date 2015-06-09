@@ -48,7 +48,7 @@ inline float ElasticityWithFalloff(float elasticity, float falloff, float vel)
 
 struct CollisionEvent
 {
-    CollisionEvent() : ball(0), obj(0), isContact(false), hittime(0.0f), hitdistance(0.0f), hitmoment(0.0f), hitRigid(false) {}
+    CollisionEvent() : ball(0), obj(0), isContact(false), hittime(0.0f), hitdistance(0.0f), hitmoment(0.0f)/*, hitRigid(false)*/ {}
 
     Ball* ball;         // the ball that collided with smth
     HitObject* obj;     // what the ball collided with
@@ -62,7 +62,7 @@ struct CollisionEvent
 	float hitmoment;
 	//float hitangularrate; //!! angular rate is only assigned but never used
 
-    bool hitRigid;      // rigid body collision?
+    //bool hitRigid;      // rigid body collision? //!! this is almost never ever triggered (as 99.999999% true when actually handled), and if then only once while rolling over a trigger, etc, with a very minimalistic special handling afterwards (if false), so for now removed
 
     bool isContact;     // set to true if impact velocity is 0
 };

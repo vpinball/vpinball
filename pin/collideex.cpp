@@ -590,7 +590,7 @@ float Hit3DPoly::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 			coll.hitvelocity.x = bUnHit ? 1.0f : 0.0f;	// UnHit signal	is receding from outside target
 			
 		coll.hitdistance = bnd;				// 3dhit actual contact distance ... 
-		coll.hitRigid = rigid;				// collision type
+		//coll.hitRigid = rigid;				// collision type
 
 		return hittime;
 	}
@@ -747,7 +747,7 @@ float HitTriangle::HitTest(const Ball * pball, float dtime, CollisionEvent& coll
 		coll.hitnormal = normal;
 
 		coll.hitdistance = bnd;				// 3dhit actual contact distance ... 
-		coll.hitRigid = true;				// collision type
+		//coll.hitRigid = true;				// collision type
 
         if (isContact)
         {
@@ -824,7 +824,7 @@ float HitPlane::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
             coll.hitnormal = normal;
             coll.hitvelocity.z = bnv; // remember original normal velocity
             coll.hitdistance = bnd;
-            coll.hitRigid = true;
+            //coll.hitRigid = true;
             return 0.0f;    // hittime is ignored for contacts
         }
         else
@@ -840,7 +840,7 @@ float HitPlane::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 
     coll.hitnormal = normal;
     coll.hitdistance = bnd;                // actual contact distance
-    coll.hitRigid = true;               // collision type
+    //coll.hitRigid = true;               // collision type
 
     return hittime;
 }

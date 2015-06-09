@@ -497,7 +497,7 @@ float HitFlipper::HitTestFlipperEnd(const Ball * pball, const float dtime, Colli
       return -1.0f; // not hit ... ball is receding from face already, must have been embedded or shallow angled
 
    coll.hitdistance = bfend;			//actual contact distance ..
-   coll.hitRigid = true;				// collision type
+   //coll.hitRigid = true;				// collision type
 
    return t;
 }
@@ -656,7 +656,7 @@ float HitFlipper::HitTestFlipperFace(const Ball * pball, const float dtime, Coll
       return -1.0f; // not hit ... ball is receding from endradius already, must have been embedded
 
    coll.hitdistance = bffnd;			//normal ...actual contact distance ... 
-   coll.hitRigid = true;				// collision type
+   //coll.hitRigid = true;				// collision type
 
    return t;
 }

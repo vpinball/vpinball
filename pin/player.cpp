@@ -1991,7 +1991,7 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
 #ifdef _DEBUGPHYSICS
 					++c_hitcnts;                                        // stats for display
 
-					if (pball->m_coll.hitRigid && pball->m_coll.hitdistance < -0.0875f) //rigid and embedded
+					if (/*pball->m_coll.hitRigid &&*/ pball->m_coll.hitdistance < -0.0875f) //rigid and embedded
 						++c_embedcnts;
 #endif
 					///////////////////////////////////////////////////////////////////////////
@@ -2001,8 +2001,8 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
 
 						if (htz < STATICTIME)                   // less than static time interval
 						{
-							if (!pball->m_coll.hitRigid) hittime = STATICTIME; // non-rigid ... set Static time
-							else if (--StaticCnts < 0)
+							/*if (!pball->m_coll.hitRigid) hittime = STATICTIME; // non-rigid ... set Static time
+							else*/ if (--StaticCnts < 0)
 							{
 								StaticCnts = 0;                 // keep from wrapping
 								hittime = STATICTIME;
@@ -2054,7 +2054,7 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
 					pball->CalcHitRect(); // do new boundings 
 
 					// is this ball static? .. set static and quench        
-					if (pball->m_coll.hitRigid && (pball->m_coll.hitdistance < (float)PHYS_TOUCH)) //rigid and close distance contacts
+					if (/*pball->m_coll.hitRigid &&*/ (pball->m_coll.hitdistance < (float)PHYS_TOUCH)) //rigid and close distance contacts
 					{
 						const float mag = pball->m_vel.x*pball->m_vel.x + pball->m_vel.y*pball->m_vel.y; // values below are taken from simulation
 						if (pball->m_drsq < 8.0e-5f && mag < 1.0e-3f*m_ptable->m_Gravity*m_ptable->m_Gravity / GRAVITYCONST / GRAVITYCONST && fabsf(pball->m_vel.z) < 0.2f*m_ptable->m_Gravity / GRAVITYCONST)
@@ -2095,7 +2095,7 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
 		for (unsigned i = 0; i < m_vball.size(); i++)
 		{
 			Ball * const pball = m_vball[i];
-			if (pball->m_coll.hitRigid && (pball->m_coll.hitdistance < (float)PHYS_TOUCH))
+			if (/*pball->m_coll.hitRigid &&*/ (pball->m_coll.hitdistance < (float)PHYS_TOUCH))
 			{
 				const float mag = pball->m_vel.x*pball->m_vel.x + pball->m_vel.y*pball->m_vel.y; // values below are copy pasted from above
 				if (pball->m_drsq < 8.0e-5f && mag < 1.0e-3f*m_ptable->m_Gravity*m_ptable->m_Gravity / GRAVITYCONST / GRAVITYCONST && fabsf(pball->m_vel.z) < 0.2f*m_ptable->m_Gravity / GRAVITYCONST
