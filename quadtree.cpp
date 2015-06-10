@@ -218,6 +218,9 @@ void HitQuadtree::HitTestBallSse(Ball * const pball, CollisionEvent& coll) const
 	const __m128 bzlow = _mm_set1_ps(pball->m_rcHitRect.zlow);
 	const __m128 bzhigh = _mm_set1_ps(pball->m_rcHitRect.zhigh);
 
+	const bool traversal_order = (rand_mt_01() < 0.5f); // swaps test order in leafs randomly
+	const size_t d = traversal_order ? 1 : -1;
+
 	do
 	{
 		if (current->lefts != 0) // does node contain hitables?
@@ -232,7 +235,9 @@ void HitQuadtree::HitTestBallSse(Ball * const pball, CollisionEvent& coll) const
 			// loop implements 4 collision checks at once
 			// (rc1.right >= rc2.left && rc1.bottom >= rc2.top && rc1.left <= rc2.right && rc1.top <= rc2.bottom && rc1.zlow <= rc2.zhigh && rc1.zhigh >= rc2.zlow)
 			const size_t size = (current->m_vho.size() + 3) / 4;
-			for (size_t i = 0; i < size; ++i)
+			const size_t start = traversal_order ? 0 : (size - 1);
+			const size_t end = traversal_order ? size : -1;
+			for (size_t i = start; i != end; i += d)
 			{
 				// comparisons set bits if bounds miss. if all bits are set, there is no collision. otherwise continue comparisons
 				// bits set, there is a bounding box collision

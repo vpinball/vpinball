@@ -1982,8 +1982,17 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
 				// always check for playfield and top glass
 				DoHitTest(pball, &m_hitPlayfield, pball->m_coll);
 				DoHitTest(pball, &m_hitTopGlass, pball->m_coll);
-				m_hitoctree_dynamic.HitTestBall(pball, pball->m_coll);  // dynamic objects
-				m_hitoctree.HitTestBall(pball, pball->m_coll);  // find the hit objects and hit times
+
+				if (rand_mt_01() < 0.5f) // swap order of dynamic and static obj checks randomly
+				{
+					m_hitoctree_dynamic.HitTestBall(pball, pball->m_coll);  // dynamic objects
+					m_hitoctree.HitTestBall(pball, pball->m_coll);  // find the hit objects and hit times
+				}
+				else
+				{
+					m_hitoctree.HitTestBall(pball, pball->m_coll);  // find the hit objects and hit times
+					m_hitoctree_dynamic.HitTestBall(pball, pball->m_coll);  // dynamic objects
+				}
 
 				const float htz = pball->m_coll.hittime; // this ball's hit time
 				if (htz < 0.f) pball->m_coll.obj = NULL; // no negative time allowed
@@ -2011,9 +2020,9 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
 							}
 						}
 					}
+				}
 			}
-		}
-}   // end loop over all balls
+		} // end loop over all balls
 
 		m_fRecordContacts = false;
 
@@ -2088,8 +2097,12 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
 		 * Maybe a two-phase setup where we first process only contacts, then only collisions
 		 * could also work.
 		 */
-		for (unsigned i = 0; i < m_contacts.size(); ++i)
-			m_contacts[i].obj->Contact(m_contacts[i], hittime);
+		if (rand_mt_01() < 0.5f) // swap order of contact handling randomly
+			for (unsigned i = 0; i < m_contacts.size(); ++i)
+				m_contacts[i].obj->Contact(m_contacts[i], hittime);
+		else
+			for (unsigned i = m_contacts.size()-1; i != -1; --i)
+				m_contacts[i].obj->Contact(m_contacts[i], hittime);
 
 		m_contacts.clear();
 
