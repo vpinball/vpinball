@@ -416,12 +416,22 @@ void Ball::ApplySurfaceImpulse(const Vertex3Ds& surfP, const Vertex3Ds& impulse)
 
 void Ball::CalcHitRect()
 {
-	m_rcHitRect.left   = min(m_pos.x, m_pos.x + m_vel.x) - (m_radius + 0.1f); //!! make more accurate ????
+	/* this would be okay if travelling only in vel direction, but the ball could also be reflected by something
+	m_rcHitRect.left   = min(m_pos.x, m_pos.x + m_vel.x) - (m_radius + 0.1f);
 	m_rcHitRect.right  = max(m_pos.x, m_pos.x + m_vel.x) + (m_radius + 0.1f);
 	m_rcHitRect.top    = min(m_pos.y, m_pos.y + m_vel.y) - (m_radius + 0.1f);
 	m_rcHitRect.bottom = max(m_pos.y, m_pos.y + m_vel.y) + (m_radius + 0.1f);
 	m_rcHitRect.zlow   = min(m_pos.z, m_pos.z + m_vel.z) - (m_radius + 0.1f);
 	m_rcHitRect.zhigh  = max(m_pos.z, m_pos.z + m_vel.z) + (m_radius + 0.1f);
+	*/
+
+	const float vl = m_vel.Length() + m_radius + 0.1f; //!! 0.1f = paranoia
+	m_rcHitRect.left   = m_pos.x - vl;
+	m_rcHitRect.right  = m_pos.x + vl;
+	m_rcHitRect.top    = m_pos.y - vl;
+	m_rcHitRect.bottom = m_pos.y + vl;
+	m_rcHitRect.zlow   = m_pos.z - vl;
+	m_rcHitRect.zhigh  = m_pos.z + vl;
 
     // update defaultZ for ball reflection
     // if the ball was created by a kicker which is higher than the playfield 
