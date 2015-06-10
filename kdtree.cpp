@@ -334,7 +334,7 @@ void HitKDNode::CreateNextLevel()
 
 /*  RLC
 
-Hit logic needs to be expanded, during static and psudo-static conditions, multiple hits (multi-face contacts)
+Hit logic needs to be expanded, during static and pseudo-static conditions, multiple hits (multi-face contacts)
 are possible and should be handled, with embedding (pentrations) some contacts persist for long periods
 and may cause others not to be seen (masked because of their position in the object list).
 
@@ -439,6 +439,9 @@ void HitKDNode::HitTestBallSse(Ball * const pball, CollisionEvent& coll) const
     const __m128 bzlow = _mm_set1_ps(pball->m_rcHitRect.zlow);
     const __m128 bzhigh = _mm_set1_ps(pball->m_rcHitRect.zhigh);
 
+	const bool traversal_order = (rand_mt_01() < 0.5f); // swaps test order in leafs randomly
+	const unsigned int d = traversal_order ? 1 : -1;
+
 	do
 	{
 		const unsigned int org_items = (current->m_items & 0x3FFFFFFF);
@@ -447,7 +450,9 @@ void HitKDNode::HitTestBallSse(Ball * const pball, CollisionEvent& coll) const
 		// loop implements 4 collision checks at once
 		// (rc1.right >= rc2.left && rc1.bottom >= rc2.top && rc1.left <= rc2.right && rc1.top <= rc2.bottom && rc1.zlow <= rc2.zhigh && rc1.zhigh >= rc2.zlow)
 		const unsigned int size = (current->m_start + org_items + 3) / 4;
-		for (unsigned int i = current->m_start / 4; i < size; ++i)
+		const unsigned int start = traversal_order ? current->m_start / 4 : (size - 1);
+		const unsigned int end = traversal_order ? size : (current->m_start / 4 - 1);
+		for (unsigned int i = start; i != end; i += d)
 		{
 #ifdef _DEBUGPHYSICS
 			g_pplayer->c_tested++; //!! +=4? or is this more fair?
