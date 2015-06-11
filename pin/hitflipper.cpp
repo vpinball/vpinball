@@ -21,6 +21,9 @@ FlipperAnimObject::FlipperAnimObject(const Vertex2D& center, float baser, float 
    if (flipr < 0.01f) flipr = 0.01f; // must not be zero 
    m_flipperradius = flipr; //radius of flipper arc, center-to-center radius
 
+   if(angleEnd == angleStart) // otherwise hangs forever in collisions/updates
+       angleEnd += 0.0001f;
+
    m_dir = (angleEnd >= angleStart) ? 1 : -1;
    m_solState = false;
    m_isInContact = false;
@@ -148,7 +151,7 @@ void FlipperAnimObject::UpdateDisplacements(const float dtime)
 
    if (m_angleCur >= m_angleMax)        // hit stop?
    {
-      //m_angleCur = m_angleMax;
+      m_angleCur = m_angleMax;
 
       if (m_anglespeed > 0.f) 
       {
@@ -173,7 +176,7 @@ void FlipperAnimObject::UpdateDisplacements(const float dtime)
    }
    else if (m_angleCur <= m_angleMin)
    {
-      //m_angleCur = m_angleMin;
+      m_angleCur = m_angleMin;
 
       if (m_anglespeed < 0.f)
       {
@@ -195,7 +198,7 @@ void FlipperAnimObject::UpdateVelocities()
     //const float solForce = m_solState ? m_force : 0.0f;
     //float force = m_dir * (solForce + springForce);
 
-    float desiredTorque = 0;
+    float desiredTorque;
     if (m_solState)
     {
         desiredTorque = m_force;
@@ -259,7 +262,7 @@ void FlipperAnimObject::SetSolenoidState(bool s)
 
 float FlipperAnimObject::GetStrokeRatio() const
 {
-    return (m_angleCur - m_angleStart) / (m_angleEnd - m_angleStart);
+    return (m_angleCur - m_angleStart) / (m_angleEnd - m_angleStart); //!! End == Start?
 }
 
 // compute the cross product (0,0,rz) x v
@@ -784,7 +787,7 @@ void HitFlipper::Collide(CollisionEvent *coll)
    Vertex3Ds tangent = vrel - vrel.Dot(normal) * normal;       // calc the tangential velocity
 
    const float tangentSpSq = tangent.LengthSquared();
-   if (tangent.LengthSquared() > 1e-6f)
+   if (tangentSpSq > 1e-6f)
    {
        tangent /= sqrtf(tangentSpSq);            // normalize to get tangent direction
        const float vt = vrel.Dot(tangent);   // get speed in tangential direction
