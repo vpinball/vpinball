@@ -142,7 +142,7 @@ void HitQuadtree::InitSseArrays()
 
 /*  RLC
 
-    Hit logic needs to be expanded, during static and psudo-static conditions, multiple hits (multi-face contacts)
+    Hit logic needs to be expanded, during static and pseudo-static conditions, multiple hits (multi-face contacts)
     are possible and should be handled, with embedding (pentrations) some contacts persist for long periods
     and may cause others not to be seen (masked because of their position in the object list).
 
