@@ -1,8 +1,20 @@
 Option Explicit
-Const VPinMAMEDriverVer = 3.45
+Const VPinMAMEDriverVer = 3.46
 '=======================
 ' VPinMAME driver core.
 '=======================
+' New in 3.46 (Update by KieferSkunk)
+' - (Core changes)
+'   - Added two new classes: cvpmTrough and cvpmSaucer
+'     - cvpmTrough takes over for cvpmBallStack in non-Saucer mode.
+'       - Can handle any number of balls (no more "out of bounds" errors with lots of balls)
+'       - Accurately simulates ball movement and switch interaction in a real trough
+'     - cvpmSaucer takes over for cvpmBallStack in Saucer mode.
+'     - cvpmBallStack is now considered "legacy" - kept for compatibility with existing tables.  (No changes)
+'   - Updated vbsdoc.html with these new classes.
+'   - Added two helper functions, vpMin(a, b) and vpMax(a, b).
+'     - These each take two numbers (or strings) and return the lower or higher of the two (respectively).
+'
 ' New in 3.45 (Update by KieferSkunk)
 ' - (Core changes)
 '   - Rewrote cvpmDictionary as a wrapper around Microsoft's Scripting.Dictionary object.
@@ -15,6 +27,7 @@ Const VPinMAMEDriverVer = 3.45
 '     - SpinUp: Sets new spin-up rate.  If currently accelerating, turntable will accelerate at the new rate.
 '     - SpinDown: Sets new spin-down rate.  If currently slowing to a stop, turntable will decelerate at the new rate.
 '     - SpinCW: True for clockwise rotation, False for counter-clockwise.  If motor is on, switching this will smoothly reverse the turntable's direction.
+'
 ' New in 3.44 (Update by Toxie)
 ' - (Core changes)
 '	- Added ability to define default ball mass (in VP Units) inside table script.
@@ -31,13 +44,16 @@ Const VPinMAMEDriverVer = 3.45
 '     or the inverted behaviour (key pressed = open, key not pressed = closed)
 '   - Increase maximum number of balls/conMaxBalls to 13 and conStackSw to 8 (for Apollo 13), use InitSw8() then instead of InitSw()
 '   - Deprecate vpmSolFlip2, as VP10 does not feature speed on flippers anymore
+'
 ' New in 3.43 (Update by Koadic)
 ' - (Core Changes)
 '	- Minor adjustment to vbs loading via LoadScript to account for files in nonstandard locations
 '	- Fix minor bugs when loading some tables
+
 ' New in 3.42 (Update by Koadic)
 ' - (Core Changes)
 '	- Minor adjustment to vpmInit to unpause controller before stopping controller
+'
 ' New in 3.41 (Update by Koadic)
 ' - (Core Changes)
 '	- Modified vpmInit routine:
@@ -60,6 +76,7 @@ Const VPinMAMEDriverVer = 3.45
 '	- Added ability to load GlobalPlugIn.vbs containing any custom scripting the user wants loaded with the core.vbs (instead of modifying the core)
 ' -(Other Additions)
 '	- Updated B2BCollision.vbs with vpmBallCreate method and renamed new file to B2B.vbs (to maintain compatiblity with tables using old file).
+'
 ' New in 3.40 (Update by Koadic)
 ' - (Core Changes)
 '	- Modified NVOffset routine to allow use of alternative controllers (like dB2S B2S.Server)
@@ -317,7 +334,7 @@ Set GICallback2 = GetRef("NullSub")
 Dim ExtraKeyHelp    ' Help string for game specific keys
 Dim vpmShowDips     ' Show DIPs function
 '-----------------------------------------------------------------------------
-' These helper function requires the following objects on the table:
+' These helper functions require the following objects on the table:
 '   PinMAMETimer   : Timer object
 '   PulseTimer     : Timer object
 '
@@ -334,7 +351,39 @@ Dim vpmShowDips     ' Show DIPs function
 '   (Private) .FastUpdate    - called from fast timer
 '   (Friend)  .AddResetObj   - Add object that needs to catch reset
 '
-' cvpmBallStack (Create as many as needed)
+' cvpmTrough (Create as many as needed)
+'   (Public) .IsTrough         - Get or Set whether this trough is the default trough (first trough sets this by default)
+'   (Public) .Size             - Get or Set total number of balls trough can hold
+'   (Public) .EntrySw          - Set switch number for trough entry (if any) - eg. Outhole
+'   (Public) .AddSw            - Assign a switch at a specific slot
+'   (Public) .InitSwitches     - Set trough switches using an array, from exit slot back toward entrance.
+'   (Public) .InitExit         - Setup exit kicker, force and direction
+'   (Public) .InitExitVariance - Modify exit kick direction and force (+/-, min force = 1)
+'   (Public) .InitEntrySounds  - Sounds to play when a ball enters the trough
+'   (Public) .InitExitSounds   - Sounds to play when the exit kicker fires
+'   (Public) .CreateEvents     - Auto-generate hit events for VP entry kicker(s) associated with this trough
+'   (Public) .MaxBallsPerKick  - Set maximum number of balls to kick out (default 1)
+'   (Public) .MaxSlotsPerKick  - Set maximum slots from which to get balls when kicking out (default 1)
+'   (Public) .Balls            - Get current balls in trough, or set initial number of balls in trough
+'   (Public) .BallsPending     - Get number of balls waiting in trough entry
+'   (Public) .Reset            - Reset and update all trough switches
+'   (Friend) .Update           - Called from vpmTimer to update ball positions and switches
+'   (Public) .AddBall          - Add a ball to the trough from a kicker.  If kicker is the exit kicker, stacks ball at exit.
+'   (Public) .SolIn            - Solenoid handler for entry solenoid
+'   (Public) .SolOut           - Solenoid handler for exit solenoid
+'
+' cvpmSaucer (Create as many as needed)
+'   (Public) .InitKicker       - Setup main kicker, switch, exit direction and force (including Z force)
+'   (Public) .InitExitVariance - Modify kick direction and force (+/-, min force = 1)
+'   (Public) .InitAltKick      - Set alternate direction and force (including Z force) - for saucers with two kickers
+'   (Public) .InitSounds       - Sounds to play when a ball enters the saucer or the kicker fires
+'   (Public) .CreateEvents     - Auto-generate hit event for VP kicker(s) associated with this saucer
+'   (Public) .AddBall          - Add a ball to the saucer from a kicker.
+'   (Public) .HasBall          - True if the saucer is occupied.
+'   (Public) .solOut           - Fire the primary exit kicker.  Ejects ball if one is present.
+'   (Public) .solOutAlt        - Fire the secondary exit kicker.  Ejects ball with alternate forces if present.
+'
+' cvpmBallStack (DEPRECATED, but create as many as needed)
 '   (Public) .InitSw        - init switches used in stack
 '   (Public) .InitSaucer    - init saucer
 '   (Public) .InitNoTrough  - init a single ball, no trough handler
@@ -620,11 +669,11 @@ Class cvpmDictionary
 	    End If
 	End Sub
 
-	Public Sub Remove(aKey)       : mDict.Remove(aKey)          : End Sub
-	Public Sub RemoveAll          : mDict.RemoveAll             : End Sub
-	Public Function Exists(aKey)  : Exists = mDict.Exists(aKey) : End Function
-	Public Function Items         : Items  = mDict.Items        : End Function
-	Public Function Keys          : Keys   = mDict.Keys         : End Function
+	Public Sub Remove(aKey)      : mDict.Remove(aKey)          : End Sub
+	Public Sub      RemoveAll    : mDict.RemoveAll             : End Sub
+	Public Function Exists(aKey) : Exists = mDict.Exists(aKey) : End Function
+	Public Function Items        : Items  = mDict.Items        : End Function
+	Public Function Keys         : Keys   = mDict.Keys         : End Function
 End Class
 
 '--------------------
@@ -729,7 +778,532 @@ Class cvpmTimer
 End Class
 
 '--------------------
-'     BallStack
+'     Trough
+'--------------------
+Class cvpmTrough
+    ' Takes over for older cvpmBallStack in "trough mode".  Theory of operation:
+    ' A trough can hold up to N balls, and has N*2 "slots".  A ball effectively takes
+    ' up two slots, so no two adjacent slots (0 and 1) can be occupied at the same time.
+    ' Switches are assigned to even slots only, which means that as balls move through
+    ' the trough, each switch is allowed to flip between open and closed.
+    ' Slot 0 is the exit, and can have additional balls "stacked" on it, simulating balls
+    ' falling onto the exit kicker instead of coming in from the entrance.  Extra balls
+    ' can be queued up at the entrance, and will enter the trough only if there's room
+    ' for them.
+
+    Private mSlot(), mSw(), mEntrySw
+    Private mBallsInEntry, mMaxBallsPerKick, mStackExitBalls
+    Private mExitKicker, mExitDir, mExitForce, mDirVar, mForceVar
+    Private mSounds
+
+    ' If you want to see what the trough is doing internally, add a TextBox to your table
+    ' named "DebugBox" (recommend Courier New or FixedSys at a small font size) and set
+    ' this variable to true via .isDebug = True.
+	Private mDebug
+
+    Private Sub Class_Initialize
+        Dim ii
+
+        ReDim mSw(conMaxBalls), mSlot(conMaxBalls * 2)
+        For ii = 0 to UBound(mSlot) : mSlot(ii) = 0 : Next   ' All slots empty to start
+        For ii = 0 to UBound(mSw)   : mSw(ii) = 0   : Next   ' All switches unassigned to start.
+        mEntrySw = 0
+
+        Set mExitKicker = Nothing
+        mExitDir = 0 : mExitForce = 1 : mDirVar = 0 : mForceVar = 0
+        mBallsInEntry = 0 : mMaxBallsPerKick = 1 : mStackExitBalls = 1
+
+        Set mSounds = New cvpmDictionary
+
+		mDebug = False
+
+        If Not IsObject(vpmTrough) Then Set vpmTrough = Me
+    End Sub
+
+    Public Property Let IsTrough(aYes)
+        If aYes Then
+            Set vpmTrough = Me
+        ElseIf Me Is vpmTrough Then
+            Set vpmTrough = Nothing
+        End If
+    End Property
+
+    Public Property Get IsTrough
+        IsTrough = (Me Is vpmTrough)
+    End Property
+
+    ' Initialization
+
+    Public Property Let isDebug(enabled) : mDebug = enabled : End Property
+
+    Public Property Let Size(aSize)
+        Dim oldSize, newSize, ii
+        oldSize = UBound(mSw)
+        newSize = vpMax(1, aSize)
+
+        ReDim Preserve mSlot(newSize * 2)
+        ReDim Preserve mSw(newSize)
+        For ii = oldSize+1 To newSize : mSw(ii) = 0 : Next
+        For ii = (oldSize*2) + 1 to (newSize*2) : mSlot(ii) = 0 : Next
+    End Property
+    Public Property Get Size : Size = UBound(mSw) : End Property
+
+    ' Set EntrySw = 0 if you want balls to just fall into the trough automatically.
+    ' Set it to a real switch number to indicate that a ball is occupying an entry kicker.
+    ' The ROM in the controller is then responsible for kicking the ball into the trough.
+    Public Property Let EntrySw(swNo) : mEntrySw = swNo : End Property
+
+    ' Assign switches, starting from slot 0 and going to entrance.
+    ' This sub allows you to pass in as many switches as you wish.
+    Public Sub InitSwitches(switchArray)
+        If Not IsArray(switchArray) Then
+            Err.Raise 17, "cvpmTrough.InitSwitches: Input must be an array."
+        End If
+
+        Dim ii
+        For ii = 0 to UBound(mSw)
+            If ii > UBound(switchArray) Then
+                mSw(ii) = 0
+            Else
+                mSw(ii) = switchArray(ii)
+            End If
+        Next
+    End Sub
+
+    ' Alternative: Assign a switch to a specific slot.
+    Public Sub AddSw(slotNo, swNo)
+        If slotNo < 0 OR slotNo > UBound(mSw) Then Exit Sub
+        mSw(slotNo) = swNo
+    End Sub
+
+    ' MaxBallsPerKick: Kick up to N balls total per exit kick.  Balls are only kicked from Slot 0.
+    ' StackExitBalls: Automatically stack up to N balls in Slot 0 regardless of where they came from.
+
+    ' Example: Subway where exit kicker is on the same level as the trough and a ball can
+    ' come in from the exit: StackExitBalls = 1, MaxBallsPerKick = 2.  If Slot 0 has 1
+    ' ball and Slot 1 is occupied, only one ball will be kicked.  If Slot 0 has 2 or more
+    ' balls, it'll kick out 2 balls.
+
+    ' Example: Twilight Zone Slot Kicker: Kicker is below trough, so if a ball is in the
+    ' exit chute, another ball can fall into the chute as well whether it came in from the
+    ' exit (Slot Machine) or any other entrance (Piano, Camera).  In both cases, the kicker
+    ' will eject 2 balls at once.  Set StackExitBalls = 2, maxBallsPerKick = 2 to simulate.
+
+    Public Property Let MaxBallsPerKick(n) : mMaxBallsPerKick = vpMax(1, n) : End Property
+    Public Property Let StackExitBalls(n) : mStackExitBalls = vpMax(1, n) : End Property
+
+    Public Sub InitExit(aKicker, aDir, aForce)
+        If TypeName(aKicker) <> "Kicker" Then
+            Err.Raise 17, "cvpmTrough.InitExit: Cannot use object of type '" & TypeName(aKicker) & "'."
+        End If
+
+        Set mExitKicker = aKicker
+        mExitDir = aDir
+        mExitForce = vpMax(1, aForce)
+    End Sub
+
+    Public Sub InitExitVariance(aDirVar, aForceVar)
+        mDirVar = aDirVar
+        mForceVar = aForceVar
+    End Sub
+
+    ' Setup sounds
+    Public Sub InitEntrySounds(addSound, entrySoundEmpty, entrySoundBall)
+        mSounds.Item("add") = addSound
+        mSounds.Item("entry") = entrySoundEmpty
+        mSounds.Item("entryBall") = entrySoundBall
+    End Sub
+
+    Public Sub InitExitSounds(exitSoundEmpty, exitSoundBall)
+        mSounds.Item("exit") = exitSoundEmpty
+        mSounds.Item("exitBall") = exitSoundBall
+    End Sub
+
+    ' Start trough with this many balls
+    Public Property Let Balls(numBalls)
+        Dim ii, ballsAdded
+
+        ' First clear all slots.
+        For ii = 0 to UBound(mSlot) : mSlot(ii) = 0 : Next
+
+        ' Now put a ball in each even-numbered slot up to the number requested.
+        ' First, stack exit slot.  (Note, we may get a negative number. vpMin/vpMax prevent that.)
+        mSlot(0) = vpMax(0, vpMin(mStackExitBalls, numBalls))
+        ballsAdded = mSlot(0)
+
+        ' Fill remaining slots.
+        For ii = 1 to vpMin(numBalls - mSlot(0), UBound(mSw))
+            mSlot(ii*2) = 1
+            ballsAdded = ballsAdded + 1
+        Next
+
+        ' If we asked to put more balls in the trough than it can handle, queue up the rest.
+        mBallsInEntry = vpMax(0, numBalls-ballsAdded)
+
+        UpdateTroughSwitches
+    End Property
+
+    Public Property Get Balls
+        Balls = 0
+        Dim ii : For ii = 0 to UBound(mSlot) : Balls = Balls + mSlot(ii) : Next
+    End Property
+
+    Public Property Get BallsPending : BallsPending = mBallsInEntry : End Property
+
+    ' Auto-generate events for any entry kickers (eg. outhole, TZ Camera and Piano, etc.)
+    ' Accepts a single kicker, an Array, or a Collection.
+	Public Sub CreateEvents(aName, aKicker)
+		Dim obj, tmp
+		If Not vpmCheckEvent(aName, Me) Then Exit Sub
+		vpmSetArray tmp, aKicker
+		For Each obj In tmp
+			If isObject(obj) Then
+				vpmBuildEvent obj, "Hit", aName & ".AddBall Me"
+			Else
+				vpmBuildEvent mKicker, "Hit", aName & ".AddBall Me"
+			End If
+		Next
+	End Sub
+
+    ' VPM Update management
+
+	Private Property Let NeedUpdate(aEnabled) : vpmTimer.EnableUpdate Me, False, aEnabled : End Property
+
+	Public Sub Reset
+		UpdateTroughSwitches
+        If mEntrySw Then Controller.Switch(mEntrySw) = (mBallsInEntry > 0)
+	End Sub
+
+	Public Sub Update
+		NeedUpdate = AdvanceBalls
+		UpdateTroughSwitches
+    End Sub
+
+    ' Switch and slot management
+
+    Private Sub setSw(slotNo, enabled)
+        If mSw(slotNo) Then Controller.Switch(mSw(slotNo)) = enabled
+    End Sub
+
+    Private Sub UpdateTroughSwitches
+        Dim ii
+		For ii = 0 to UBound(mSw)
+			If mSw(ii) Then
+				Controller.Switch(mSw(ii)) = (mSlot(ii*2) > 0)
+			End If
+		Next
+		If mDebug Then UpdateDebugBox
+    End Sub
+
+	Private Sub UpdateDebugBox   ' Requires a textbox named DebugBox
+		Dim str, ii
+		str = "Entry: " & mBallsInEntry & " (sw" & mEntrySw & " = "
+		If mEntrySw > 0 Then
+			str = str & Controller.Switch(mEntrySw)
+		Else
+			str = str & "n/a"
+		End If
+		str = str & ")" & vbNewLine
+
+		str = str & "["
+		For ii = UBound(mSlot) To 0 Step -1 : str = str & mSlot(ii) : Next
+		str = str & "]" & vbNewLine
+
+		str = str & "["
+		For ii = UBound(mSlot) To 0 Step -1
+			If ii Mod 2 = 0 Then
+				If mSw(ii\2) Then
+					If Controller.Switch(mSw(ii\2)) Then
+						str = str & "1"
+					Else
+						str = str & "0"
+					End If
+				Else
+					str = str & "-"
+				End If
+			Else
+				str = str & " "
+			End If
+		Next
+		str = str & "]"
+
+		DebugBox.Text = str
+	End Sub
+
+    Private Function AdvanceBalls
+        Dim ii, canMove, maxSlot
+        maxSlot = UBound(mSlot)
+        AdvanceBalls = False
+
+        ' Move balls through slots, one slot at a time.
+        For ii = 0 to maxSlot
+            If mSlot(ii) Then               ' Ball in this slot.
+				canMove = False
+
+                ' Can this ball move?  (Slot 0 = no)
+                If ii = 0 Then
+                    ' Slot 0 never moves (except when ejected)
+                    canMove = False
+				ElseIf ii = 1 Then
+					' Slot 1 automatically moves to Slot 0
+					canMove = True
+				ElseIf ii = 2 Then
+				    ' Slot 2 moves if the number of balls in slot 0 is less than the stack target.
+				    canMove = (mSlot(0) < mStackExitBalls)
+				Else
+					' Only move if there is no ball in ii-1 or ii-2.
+					canMove = (mSlot(ii-2) = 0) AND (mSlot(ii-1) = 0)
+				End If
+
+                If canMove Then
+                    mSlot(ii) = mSlot(ii) - 1
+                    mSlot(ii-1) = mSlot(ii-1) + 1
+                    AdvanceBalls = True       ' Mark balls as having moved.
+                End If
+            End If
+        Next
+
+        ' If balls are supposed to fall into the trough without going through a kicker,
+        ' see if any balls are pending and try to add one automatically if so.
+        If mBallsInEntry > 0 AND mEntrySw <= 0 Then
+            AdvanceBalls = AddBallAtEntrance OR AdvanceBalls
+        End If
+    End Function
+
+    ' Ball management
+
+    Private Function AddBallAtEntrance
+        Dim maxSlot : maxSlot = UBound(mSlot)
+        AddBallAtEntrance = False
+
+        ' Only add a ball if there's room for it at the entrance.
+        ' If the trough is full (or the entrance is occupied), the ball will remain
+        ' in the entry queue.  In a kicker-gated trough, the entry switch will remain
+        ' pressed down, usually resulting in the machine retrying the load.  In a fall-in
+        ' trough, the ball will just remain queued until the entrance opens up.
+        If mSlot(maxSlot) = 0 AND mSlot(maxSlot-1) = 0 Then
+            mSlot(maxSlot) = 1
+            mBallsInEntry = vpMax(0, mBallsInEntry - 1)
+            If mBallsInEntry = 0 AND mEntrySw Then Controller.Switch(mEntrySw) = False
+            AddBallAtEntrance = True
+        End If
+    End Function
+
+    Public Sub AddBall(aKicker)
+        Dim addDone : addDone = False
+        If IsObject(aKicker) Then
+            aKicker.DestroyBall
+            If aKicker Is mExitKicker Then
+                ' Ball fell in from exit.  Stack it up on Slot 0.
+                mSlot(0) = mSlot(0) + 1
+                NeedUpdate = True
+                UpdateTroughSwitches
+                addDone = True
+            End If
+        End If
+
+        If Not addDone Then
+            ' Ball came in from entrance.  Queue it up for entry.
+            mBallsInEntry = mBallsInEntry + 1
+	    	If mEntrySw > 0 Then
+		        ' Trough has an entry kicker.  Ball will not enter trough
+		        ' until the entry solenoid is fired.
+    			Controller.Switch(mEntrySw) = True
+	    	End If
+            NeedUpdate = True
+	    End If
+
+		PlaySound mSounds.Item("add")
+	End Sub
+
+    ' Use solCallback(solNo) on the trough entry kicker solenoid.
+    Public Sub solIn(aEnabled)
+        If aEnabled Then
+            If mBallsInEntry > 0 Then
+                NeedUpdate = AddBallAtEntrance
+                PlaySound mSounds.Item("entryBall")
+            Else
+                PlaySound mSounds.Item("entry")
+            End If
+        End If
+    End Sub
+    Public Sub EntrySol_On : solIn(true) : End Sub
+
+    ' Use solCallback(solNo) on the trough exit kicker solenoid.
+	Public Sub solOut(aEnabled)
+        Dim iiBall, kDir, kForce, kBaseDir, ballsEjected
+        ballsEjected = 0
+
+		If aEnabled Then
+			For iiBall = 0 to (mMaxBallsPerKick - 1)
+				kDir = (mExitDir + (Rnd - 0.5) * mDirVar)
+				kForce = vpMax(1, mExitForce + (Rnd - 0.5) * mForceVar * (0.8 * iiBall))   ' Dampen force a bit on subsequent balls.
+
+				If mSlot(0) > 0 Then
+					' Remove ball from this slot.
+					mSlot(0) = mSlot(0) - 1
+					If isObject(mExitKicker) Then
+						vpmTimer.AddTimer ballsEjected*200, "vpmCreateBall(" & mExitKicker.Name & ").Kick " &_
+							CInt(kDir) & "," & Replace(kForce,",",".") & ", 0 '"
+					End If
+
+					ballsEjected = ballsEjected + 1
+				End If
+			Next
+
+			If ballsEjected > 0 Then
+				PlaySound mSounds.Item("exitBall")
+				UpdateTroughSwitches
+				NeedUpdate = True
+			Else
+				PlaySound mSounds.Item("exit")
+			End If
+		End If
+ 	End Sub
+ 	Public Sub ExitSol_On : solOut(true) : End Sub
+End Class
+
+'--------------------
+'     Saucer
+'--------------------
+Class cvpmSaucer
+    ' Takes over for older cvpmBallStack in "saucer mode".
+
+    Private mSw, mKicker, mExternalKicker
+    Private mDir(1), mForce(1), mZForce(1), mDirVar, mForceVar
+    Private mSounds
+
+    Private Sub Class_Initialize
+        mSw = 0
+
+        mKicker = 0
+        mExternalKicker = 0
+        mDir(0) = 0 : mForce(0) = 1 : mZForce(0) = 0
+        mDir(1) = 0 : mForce(1) = 1 : mZForce(1) = 0
+        mDirVar = 0 : mForceVar = 0
+
+        Set mSounds = New cvpmDictionary
+    End Sub
+
+    ' Initialization
+
+    Public Sub InitKicker(aKicker, aSw, aDir, aForce, aZForce)
+        If TypeName(aKicker) <> "Kicker" Then
+            Err.Raise 17, "cvpmSaucer.InitKicker: Cannot use object of type '" & TypeName(aKicker) & "'."
+        End If
+
+        Set mKicker = aKicker
+        mSw = aSw
+        mDir(0) = aDir
+        mForce(0) = vpMax(1, aForce)
+        mZForce(0) = vpMax(0, aZForce)
+    End Sub
+
+    Public Sub InitExitVariance(aDirVar, aForceVar)
+        mDirVar = aDirVar
+        mForceVar = aForceVar
+    End Sub
+
+    ' Alternate kick params (simulates a saucer with two kickers)
+    Public Sub InitAltKick(aDir, aForce, aZForce)
+        mDir(1) = aDir
+        mForce(1) = vpMax(1, aForce)
+        mZForce(1) = vpMax(0, aZForce)
+    End Sub
+
+    ' Setup sounds
+    Public Sub InitSounds(addSound, exitSoundEmpty, exitSoundBall)
+        mSounds.Item("add") = addSound
+        mSounds.Item("exit") = exitSoundEmpty
+        mSounds.Item("exitBall") = exitSoundBall
+    End Sub
+
+    ' Generate hit event for the kicker(s) associated with this saucer.
+    ' Accepts a single kicker, an Array, or a Collection.
+	Public Sub CreateEvents(aName, aKicker)
+		Dim obj, tmp
+		If Not vpmCheckEvent(aName, Me) Then Exit Sub
+		vpmSetArray tmp, aKicker
+		For Each obj In tmp
+			If isObject(obj) Then
+				vpmBuildEvent obj, "Hit", aName & ".AddBall Me"
+			Else
+				vpmBuildEvent mKicker, "Hit", aName & ".AddBall Me"
+			End If
+		Next
+	End Sub
+
+    ' Ball management
+
+    Public Sub AddBall(aKicker)
+        If isObject(aKicker) Then
+			If aKicker Is mKicker Then
+				mKicker.Enabled = False
+				mExternalKicker = 0
+			Else
+				aKicker.Enabled = False
+				Set mExternalKicker = aKicker
+			End If
+		Else
+			mKicker.Enabled = False
+			mExternalKicker = 0
+		End If
+
+		If mSw Then Controller.Switch(mSw) = True
+		PlaySound mSounds.Item("add")
+    End Sub
+
+    Public Property Get HasBall
+        HasBall = False
+        If IsObject(mExternalKicker) Then
+            HasBall = True
+        Else
+            HasBall = Not mKicker.Enabled
+        End If
+    End Property
+
+    ' SolCallback solNo, "mySaucer.solOut"
+    Public Sub solOut(aEnabled) : If aEnabled Then KickOut 0 : End If : End Sub
+    Public Sub ExitSol_On : KickOut 0 : End Sub
+
+    ' SolCallback solNo, "mySaucer.solOutAlt"
+    Public Sub solOutAlt(aEnabled) : If aEnabled Then KickOut 1 : End If : End Sub
+    Public Sub ExitAltSol_On : KickOut 1 : End Sub
+
+    Private Sub KickOut(kickIndex)
+        If HasBall Then
+            Dim kDir, kForce, kZForce
+
+            kDir = mDir(kickIndex) + (Rnd - 0.5)*mDirVar
+            kForce = vpMax(1, mForce(kickIndex) + (Rnd - 0.5)*mForceVar)
+            kZForce = mZForce(kickIndex)
+
+            If IsObject(mExternalKicker) Then
+                ' Transfer ball to internal kicker and remove relationship
+                vpmCreateBall mKicker
+                mExternalKicker.DestroyBall
+                mExternalKicker.Enabled = True
+            Else
+                mKicker.Enabled = True
+            End If
+
+            mKicker.Kick kDir, kForce, kZForce
+            If mSw Then Controller.Switch(mSw) = False
+            PlaySound mSounds.Item("exitBall")
+        Else
+            PlaySound mSounds.Item("exit")
+        End If
+    End Sub
+End Class
+
+'--------------------
+'     BallStack (DEPRECATED/LEGACY)
+'     Known issues:
+'     - Adding more balls than conMaxBalls will crash the script.
+'     - If there are more balls in trough than are ever used in a game (eg. Bride of Pinbot),
+'       one or more trough switches will be permanently stuck down and may result in a ROM test report.
+'     - Trough does not handle stacking balls at exit.
+'     - Saucer mode is essentially a hack on top of the trough logic.
 '--------------------
 Class cvpmBallStack
 	Private mSw(), mEntrySw, mBalls, mBallIn, mBallPos(), mSaucer, mBallsMoving
@@ -1672,11 +2246,7 @@ Class cvpmImpulseP
 
 	Public Sub AddBall(aBall)
 		With mBalls
-			If .Exists(aBall) Then
-			    .Item(aBall) = .Item(aBall) + 1
-			Else
-			    .Add aBall, 1 : NeedUpdate = True
-			End If
+			If .Exists(aBall) Then .Item(aBall) = .Item(aBall) + 1 Else .Add aBall, 1 : NeedUpdate = True
 		End With
 		If SwitchOn = True Then	controller.switch(SwitchNum) = 1
 		BallOn = 1
@@ -1684,10 +2254,7 @@ Class cvpmImpulseP
 
 	Public Sub RemoveBall(aBall)
 		With mBalls
-			If .Exists(aBall) Then
-			    .Item(aBall) = .Item(aBall) - 1
-			    If .Item(aBall) <= 0 Then .Remove aBall
-			End If
+			If .Exists(aBall) Then .Item(aBall) = .Item(aBall) - 1 : If .Item(aBall) <= 0 Then .Remove aBall
 			NeedUpdate = (.Count > 0)
 		End With
 		If SwitchOn = True Then	controller.switch(SwitchNum) = 0
@@ -1725,9 +2292,9 @@ Class cvpmImpulseP
 
 	Public Sub Fire	    	  ' Resets System and Transfer Power Value
 		If Auto = True Then
-    		IMPowerOut = -Strength + ((Rnd) * RandomOut)
+		IMPowerOut = -Strength + ((Rnd) * RandomOut)
 		Else
-	    	IMPowerOut = -Strength * (IMPowerTrans + ((Rnd-0.5) * cFactor * RandomOut)) / Res
+		IMPowerOut = -Strength * (IMPowerTrans + ((Rnd-0.5) * cFactor * RandomOut)) / Res
 		End If
 		PlungeOn = True
 		Update
@@ -2323,6 +2890,10 @@ Sub VPMVol
 		msgbox "Entered value is out of range. Entry must be in the range of negative 32 to 0." & VbNewLine & VbNewLine & "VPinMame Global Volume will remain set at " & VolPM & "."
 	End If
 End Sub
+
+' Simple min/max functions
+Function vpMin(a, b) : If a < b Then vpMin = a Else vpMin = b : End If : End Function
+Function vpMax(a, b) : If a > b Then vpMax = a Else vpMax = b : End If : End Function
 
 LoadScript("ledcontrol.vbs"):Err.Clear	' Checks for existance of ledcontrol.vbs and loads it if found, if found but no ledwiz installed, clear error to allow loading of table
 
