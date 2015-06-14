@@ -286,6 +286,7 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
 	c_timesearch = 0;
 
 	c_octNextlevels = 0;
+
 	c_traversed = 0;
 	c_tested = 0;
 	c_deepTested = 0;
@@ -3067,6 +3068,8 @@ void Player::Render()
 	c_staticcnt = 0;
 	c_embedcnts = 0;
 	c_timesearch = 0;
+
+	c_octNextlevels = 0;
 
 	c_traversed = 0;
     c_tested = 0;
