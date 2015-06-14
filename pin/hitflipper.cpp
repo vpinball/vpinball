@@ -144,6 +144,9 @@ void FlipperAnimObject::SetStrength(const float s)
 
 void FlipperAnimObject::UpdateDisplacements(const float dtime)
 {
+   if (fabsf(m_anglespeed) < 0.0005f)   // avoids 'jumping balls' when two or more balls held on flipper (and more other balls are in play) //!! make dependent on physics update rate
+	  return;
+
    m_angleCur += m_anglespeed*dtime;	// move flipper angle
 
    //if (m_anglespeed)
@@ -208,7 +211,7 @@ void FlipperAnimObject::UpdateVelocities()
     else
         desiredTorque = -m_returnRatio * m_force;
 
-    desiredTorque *= m_dir;
+    desiredTorque *= (float)m_dir;
 
     // update current torque linearly towards desired torque
     // (simple model for coil hysteresis)
@@ -833,8 +836,10 @@ void HitFlipper::Contact(CollisionEvent& coll, float dtime)
 {
 	Ball * pball = coll.ball;
 
+#ifdef C_EMBEDDED
 	if (coll.hitdistance < -C_EMBEDDED)
 		pball->m_vel += coll.hitnormal*0.1f; //!! magic to avoid balls being pushed by each other through resting flippers!
+#endif
 
     const Vertex3Ds normal = coll.hitnormal;
 
@@ -897,6 +902,8 @@ void HitFlipper::Contact(CollisionEvent& coll, float dtime)
         const float maxFric = j * m_friction;
 
         const float slipspeed = slip.Length();
+		Vertex3Ds slipDir;
+		float numer, denomF;
         if (slipspeed < C_PRECISION)
         {
             // slip speed zero - static friction case
@@ -907,30 +914,25 @@ void HitFlipper::Contact(CollisionEvent& coll, float dtime)
             if (slipAcc.LengthSquared() < 1e-6f)
                 return;
 
-            Vertex3Ds slipDir = slipAcc;
+            slipDir = slipAcc;
             slipDir.Normalize();
 
-            const float numer = - slipDir.Dot( arel );
-            const float denomB = pball->m_invMass + slipDir.Dot( CrossProduct( CrossProduct(rB, slipDir) / pball->m_inertia, rB ) );
-            const float denomF = slipDir.Dot( CrossProduct( CrossProduct(rF, -slipDir) / m_flipperanim.m_inertia, rF ) );
-            const float fric = clamp(numer / (denomB + denomF), -maxFric, maxFric);
-
-            pball->ApplySurfaceImpulse(rB, (dtime * fric) * slipDir);
-            m_flipperanim.ApplyImpulse(rF, (-dtime * fric) * slipDir);
+            numer = - slipDir.Dot( arel );
+            denomF = slipDir.Dot( CrossProduct( CrossProduct(rF, -slipDir) / m_flipperanim.m_inertia, rF ) );
         }
         else
         {
             // nonzero slip speed - dynamic friction case
 
-            Vertex3Ds slipDir = slip / slipspeed;
+            slipDir = slip / slipspeed;
 
-            const float numer = - slipDir.Dot( vrel );
-            const float denomB = pball->m_invMass + slipDir.Dot( CrossProduct( CrossProduct(rB, slipDir) / pball->m_inertia, rB ) );
-            const float denomF = slipDir.Dot( CrossProduct( CrossProduct(rF, slipDir) / m_flipperanim.m_inertia, rF ) );
-            const float fric = clamp(numer / (denomB + denomF), -maxFric, maxFric);
-
-            pball->ApplySurfaceImpulse(rB, (dtime * fric) * slipDir);
-            m_flipperanim.ApplyImpulse(rF, (-dtime * fric) * slipDir);
+            numer = - slipDir.Dot( vrel );
+            denomF = slipDir.Dot( CrossProduct( CrossProduct(rF, slipDir) / m_flipperanim.m_inertia, rF ) );
         }
-    }
+	
+		const float denomB = pball->m_invMass + slipDir.Dot(CrossProduct(CrossProduct(rB, slipDir) / pball->m_inertia, rB));
+		const float fric = clamp(numer / (denomB + denomF), -maxFric, maxFric);
+		pball->ApplySurfaceImpulse(rB, (dtime * fric) * slipDir);
+		m_flipperanim.ApplyImpulse(rF, (-dtime * fric) * slipDir);
+	}
 }
