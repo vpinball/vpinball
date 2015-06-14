@@ -123,7 +123,7 @@ void HitKD::FillFromVector(Vector<HitObject>& vho)
         m_org_idx.push_back( i );
     }
 
-    m_rootNode.CreateNextLevel();
+    m_rootNode.CreateNextLevel(0);
     InitSseArrays();
 }
 
@@ -141,7 +141,7 @@ void HitKD::FillFromIndices()
         m_rootNode.m_rectbounds.Extend( pho->m_rcHitRect );
     }
 
-    m_rootNode.CreateNextLevel();
+    m_rootNode.CreateNextLevel(0);
     InitSseArrays();
 }
 
@@ -154,7 +154,7 @@ void HitKD::FillFromIndices(const FRect3D& initialBounds)
 
     // assume that CalcHitRect() was already called on the hit objects
 
-    m_rootNode.CreateNextLevel();
+    m_rootNode.CreateNextLevel(0);
     InitSseArrays();
 }
 
@@ -164,11 +164,11 @@ void HitKD::Update()
 }
 
 
-void HitKDNode::CreateNextLevel()
+void HitKDNode::CreateNextLevel(const unsigned int level)
 {
 	const unsigned int org_items = (m_items&0x3FFFFFFF);
 
-	if(org_items <= 4) //!! magic (will not favor empty space enough for huge objects)
+	if (org_items <= 4 || level >= 64) //!! magic (might not favor empty space enough for huge objects)
 		return;
 
 	const Vertex3Ds vdiag(m_rectbounds.right-m_rectbounds.left, m_rectbounds.bottom-m_rectbounds.top, m_rectbounds.zhigh-m_rectbounds.zlow);
@@ -176,19 +176,19 @@ void HitKDNode::CreateNextLevel()
 	unsigned int axis;
 	if((vdiag.x > vdiag.y) && (vdiag.x > vdiag.z))
 	{
-		if(vdiag.x < 6.66f) //!! magic (will not subdivide object soups enough)
+		if(vdiag.x < 0.0666f) //!! magic (might not subdivide object soups enough)
 			return;
 		axis = 0;
 	}
 	else if(vdiag.y > vdiag.z)
 	{
-		if(vdiag.y < 6.66f)
+		if(vdiag.y < 0.0666f)
 			return;
 		axis = 1;
 	}
 	else
 	{
-		if(vdiag.z < 6.66f)
+		if(vdiag.z < 0.0666f)
 			return;
 		axis = 2;
 	}
@@ -327,8 +327,8 @@ void HitKDNode::CreateNextLevel()
     memcpy(&m_hitoct->m_org_idx[ m_children[0].m_start ], &m_hitoct->tmp[ m_children[0].m_start ], m_children[0].m_items*sizeof(unsigned int));
     memcpy(&m_hitoct->m_org_idx[ m_children[1].m_start ], &m_hitoct->tmp[ m_children[1].m_start ], m_children[1].m_items*sizeof(unsigned int));
 
-	m_children[0].CreateNextLevel();
-	m_children[1].CreateNextLevel();
+	m_children[0].CreateNextLevel(level+1);
+	m_children[1].CreateNextLevel(level+1);
 }
 
 

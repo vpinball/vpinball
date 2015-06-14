@@ -286,6 +286,7 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
 	c_timesearch = 0;
 
 	c_octNextlevels = 0;
+	c_quadNextlevels = 0;
 
 	c_traversed = 0;
 	c_tested = 0;
@@ -3070,6 +3071,7 @@ void Player::Render()
 	c_timesearch = 0;
 
 	c_octNextlevels = 0;
+	//c_quadNextlevels = 0; // not updated per frame so keep!
 
 	c_traversed = 0;
     c_tested = 0;
@@ -3251,8 +3253,8 @@ void Player::Render()
 			c_hitcnts, c_collisioncnt, c_contactcnt, c_staticcnt, c_embedcnts, c_timesearch);
 		TextOut(hdcNull, 10, 220, szFoo, len);
 
-		len = sprintf_s(szFoo, sizeof(szFoo), "Octree:%5u Traversed:%5u Tested:%5u DeepTested:%5u  ",
-			c_octNextlevels,c_traversed,c_tested,c_deepTested);
+		len = sprintf_s(szFoo, sizeof(szFoo), "Octree:%5u Quadtree:%5u Traversed:%5u Tested:%5u DeepTested:%5u  ",
+			c_octNextlevels,c_quadNextlevels,c_traversed,c_tested,c_deepTested);
 		TextOut(hdcNull, 10, 240, szFoo, len);
 #endif
         ReleaseDC(NULL, hdcNull);
