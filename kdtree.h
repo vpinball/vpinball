@@ -15,7 +15,7 @@ private:
 	void HitTestBall(Ball * const pball, CollisionEvent& coll) const;
 	void HitTestXRay(Ball * const pball, Vector<HitObject> * const pvhoHit, CollisionEvent& coll) const;
 
-	void CreateNextLevel();
+	void CreateNextLevel(const unsigned int level);
 
 #ifdef KDTREE_SSE_LEAFTEST
 	void HitTestBallSse(Ball * const pball, CollisionEvent& coll) const;

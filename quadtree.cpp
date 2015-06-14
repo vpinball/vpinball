@@ -30,11 +30,18 @@ void HitQuadtree::Initialize()
     for (unsigned i = 0; i < m_vho.size(); ++i)
         bounds.Extend(m_vho[i]->m_rcHitRect);
 
-    CreateNextLevel(bounds);
+    CreateNextLevel(bounds, 0);
 }
 
-void HitQuadtree::CreateNextLevel(const FRect3D& bounds)
+void HitQuadtree::CreateNextLevel(const FRect3D& bounds, const unsigned int level)
 {
+	if (m_vho.size() <= 8 || level >= 64) //!! magic (might not favor empty space enough for huge objects)
+		return;
+
+#ifdef _DEBUGPHYSICS
+	g_pplayer->c_quadNextlevels++;
+#endif
+
     m_fLeaf = false;
 
     m_vcenter.x = (bounds.left + bounds.right)*0.5f;
@@ -77,7 +84,7 @@ void HitQuadtree::CreateNextLevel(const FRect3D& bounds)
 
     m_vho.swap(vRemain);
 
-    if (m_vcenter.x - bounds.left > 125.0f)       // TODO: bad heuristic, improve this
+    if (m_vcenter.x - bounds.left > 0.0666f) //!! magic (might not subdivide object soups enough)
     {
         for (int i=0; i<4; ++i)
         {
@@ -91,7 +98,7 @@ void HitQuadtree::CreateNextLevel(const FRect3D& bounds)
             childBounds.bottom = (i&2) ? bounds.bottom : m_vcenter.y;
             childBounds.zhigh  = bounds.zhigh;
 
-            m_children[i]->CreateNextLevel(childBounds);
+            m_children[i]->CreateNextLevel(childBounds, level+1);
         }
     }
 
@@ -170,7 +177,7 @@ void HitQuadtree::HitTestBall(Ball * const pball, CollisionEvent& coll) const
 
     for (unsigned i=0; i<m_vho.size(); i++)
     {
-#ifdef LOG
+#ifdef _DEBUGPHYSICS
         g_pplayer->c_tested++;
 #endif
         if ((pball != m_vho[i]) // ball can not hit itself
@@ -185,7 +192,7 @@ void HitQuadtree::HitTestBall(Ball * const pball, CollisionEvent& coll) const
         const bool fLeft = (pball->m_rcHitRect.left <= m_vcenter.x);
         const bool fRight = (pball->m_rcHitRect.right >= m_vcenter.x);
 
-#ifdef LOG
+#ifdef _DEBUGPHYSICS
         g_pplayer->c_tested++;
 #endif
         if (pball->m_rcHitRect.top <= m_vcenter.y) // Top
@@ -239,6 +246,9 @@ void HitQuadtree::HitTestBallSse(Ball * const pball, CollisionEvent& coll) const
 			const size_t end = traversal_order ? size : -1;
 			for (size_t i = start; i != end; i += d)
 			{
+#ifdef _DEBUGPHYSICS
+				g_pplayer->c_tested++; //!! +=4? or is this more fair?
+#endif
 				// comparisons set bits if bounds miss. if all bits are set, there is no collision. otherwise continue comparisons
 				// bits set, there is a bounding box collision
 				__m128 cmp = _mm_cmpge_ps(bright, pL[i]);
@@ -283,6 +293,9 @@ void HitQuadtree::HitTestBallSse(Ball * const pball, CollisionEvent& coll) const
 
 		if (!current->m_fLeaf)
 		{
+#ifdef _DEBUGPHYSICS
+			g_pplayer->c_traversed++;
+#endif
 			const bool fLeft = (pball->m_rcHitRect.left <= current->m_vcenter.x);
 			const bool fRight = (pball->m_rcHitRect.right >= current->m_vcenter.x);
 
@@ -306,12 +319,12 @@ void HitQuadtree::HitTestXRay(Ball * const pball, Vector<HitObject> * const pvho
 {
     for (unsigned i=0; i<m_vho.size(); i++)
     {
-#ifdef LOG
+#ifdef _DEBUGPHYSICS
         g_pplayer->c_tested++;
 #endif
         if ((pball != m_vho[i]) && fRectIntersect3D(pball->m_rcHitRect, m_vho[i]->m_rcHitRect))
         {
-#ifdef LOG
+#ifdef _DEBUGPHYSICS
             g_pplayer->c_deepTested++;
 #endif
             const float newtime = m_vho[i]->HitTest(pball, coll.hittime, coll);
@@ -327,10 +340,9 @@ void HitQuadtree::HitTestXRay(Ball * const pball, Vector<HitObject> * const pvho
         const bool fLeft = (pball->m_rcHitRect.left <= m_vcenter.x);
         const bool fRight = (pball->m_rcHitRect.right >= m_vcenter.x);
 
-#ifdef LOG
+#ifdef _DEBUGPHYSICS
         g_pplayer->c_tested++;
 #endif
-
         if (pball->m_rcHitRect.top <= m_vcenter.y) // Top
         {
             if (fLeft)  m_children[0]->HitTestXRay(pball, pvhoHit, coll);

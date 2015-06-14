@@ -310,6 +310,8 @@ public:
 	U32 c_timesearch;
 
 	U32 c_octNextlevels;
+	U32 c_quadNextlevels;
+
 	U32 c_traversed;
 	U32 c_tested;
 	U32 c_deepTested;
@@ -341,7 +343,7 @@ public:
 	int m_dmdx;
 	int m_dmdy;
 	BaseTexture* m_texdmd;
-	D3DTexture* m_device_texdmd;
+	D3DTexture* m_device_texdmd; //!! remove?
 
 	unsigned int m_current_renderstage; // currently only used for bulb lights
 
