@@ -1965,7 +1965,7 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
 		for (unsigned i = 0; i < m_vFlippers.size(); ++i)
 		{
 			const float fliphit = m_vFlippers[i]->GetHitTime();
-			if (fliphit >= 0.f && fliphit < hittime)
+			if (fliphit > 0.f && fliphit < hittime) //!! >= 0.f causes infinite loop
 				hittime = fliphit;
 		}
 
@@ -3253,8 +3253,8 @@ void Player::Render()
 			c_hitcnts, c_collisioncnt, c_contactcnt, c_staticcnt, c_embedcnts, c_timesearch);
 		TextOut(hdcNull, 10, 220, szFoo, len);
 
-		len = sprintf_s(szFoo, sizeof(szFoo), "Octree:%5u Quadtree:%5u Traversed:%5u Tested:%5u DeepTested:%5u  ",
-			c_octNextlevels,c_quadNextlevels,c_traversed,c_tested,c_deepTested);
+		len = sprintf_s(szFoo, sizeof(szFoo), "OctObjects: %5u Octree:%5u QuadObjects: %5u Quadtree:%5u Traversed:%5u Tested:%5u DeepTested:%5u  ",
+			c_octObjects,c_octNextlevels,c_quadObjects,c_quadNextlevels,c_traversed,c_tested,c_deepTested);
 		TextOut(hdcNull, 10, 240, szFoo, len);
 #endif
         ReleaseDC(NULL, hdcNull);

@@ -20,14 +20,14 @@ public:
 
     void AddElement(HitObject *pho)         { m_vho.push_back(pho); }
     void Initialize();
-    void Initialize(const FRect3D& bounds)  { CreateNextLevel(bounds, 0); }
+	void Initialize(const FRect3D& bounds);
 
     void HitTestBall(Ball * const pball, CollisionEvent& coll) const;
     void HitTestXRay(Ball * const pball, Vector<HitObject> * const pvhoHit, CollisionEvent& coll) const;
 
 private:
 
-    void CreateNextLevel(const FRect3D& bounds, const unsigned int level);
+	void CreateNextLevel(const FRect3D& bounds, const unsigned int level, unsigned int level_empty);
     void HitTestBallSse(Ball * const pball, CollisionEvent& coll) const;
 
     std::vector<HitObject*> m_vho;

@@ -567,7 +567,7 @@ void DoHitTest(Ball *pball, HitObject *pho, CollisionEvent& coll)
     if (!g_pplayer->m_fRecordContacts)  // simply find first event
     {
         const float newtime = pho->HitTest(pball, coll.hittime, coll);
-        if ((newtime >= 0) && (newtime <= coll.hittime))
+        if ((newtime >= 0.f) && !sign(newtime) && (newtime <= coll.hittime))
         {
             coll.ball = pball;
             coll.obj = pho;
@@ -579,7 +579,7 @@ void DoHitTest(Ball *pball, HitObject *pho, CollisionEvent& coll)
         CollisionEvent newColl;
         newColl.isContact = false;
         const float newtime = pho->HitTest(pball, coll.hittime, newColl);
-        if (newColl.isContact || ((newtime >= 0) && (newtime <= coll.hittime)))
+        if (newColl.isContact || ((newtime >= 0.f) && !sign(newtime) && (newtime <= coll.hittime)))
         {
             newColl.ball = pball;
             newColl.obj = pho;
@@ -587,7 +587,7 @@ void DoHitTest(Ball *pball, HitObject *pho, CollisionEvent& coll)
 
         if (newColl.isContact)
             g_pplayer->m_contacts.push_back(newColl);
-        else if (newtime >= 0 && newtime <= coll.hittime)
+        else if (newtime >= 0.f && !sign(newtime) && newtime <= coll.hittime)
         {
             coll = newColl;
             coll.hittime = newtime;
