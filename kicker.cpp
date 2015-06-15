@@ -197,8 +197,6 @@ void Kicker::GetHitShapes(Vector<HitObject> * const pvho)
    phitcircle->zlow = height;
    phitcircle->zhigh = height + 38.0f; // m_d.m_hit_height;	// height of kicker hit cylinder  //!! 50 = ball diameter
 
-   phitcircle->m_zheight = height;		//height for Kicker locked ball + ball->m_radius
-
    phitcircle->m_fEnabled = m_d.m_fEnabled;
 
    phitcircle->m_ObjType = eKicker;
@@ -276,7 +274,7 @@ void Kicker::ExportMesh(FILE *f)
 void Kicker::GenerateCupMesh(Vertex3D_NoTex2 *buf)
 {
     Matrix3D fullMatrix;
-    fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_orientation+90.0f));
+    fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_orientation));
 
     for (int i = 0; i < kickerCupNumVertices; i++)
     {
@@ -306,9 +304,9 @@ void Kicker::GenerateHoleMesh(Vertex3D_NoTex2 *buf)
         Vertex3Ds vert(kickerHole[i].x, kickerHole[i].y, kickerHole[i].z);
         vert = fullMatrix.MultiplyVector(vert);
 
-        buf[i].x = vert.x*(m_d.m_radius + 0.5f) + m_d.m_vCenter.x;
-        buf[i].y = vert.y*(m_d.m_radius + 0.5f) + m_d.m_vCenter.y;
-        buf[i].z = vert.z*(m_d.m_radius + 0.5f)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_baseHeight;
+        buf[i].x = vert.x*(m_d.m_radius) + m_d.m_vCenter.x;
+        buf[i].y = vert.y*(m_d.m_radius) + m_d.m_vCenter.y;
+        buf[i].z = vert.z*(m_d.m_radius)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_baseHeight;
         vert = Vertex3Ds(kickerHole[i].nx, kickerHole[i].ny, kickerHole[i].nz);
         vert = fullMatrix.MultiplyVectorNoTranslate(vert);
         buf[i].nx = vert.x;
@@ -397,17 +395,22 @@ void Kicker::RenderStatic(RenderDevice* pd3dDevice)
       const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
       Vertex3D_NoTex2 *buf = new Vertex3D_NoTex2[kickerPlateNumVertices];
+      float rad = m_d.m_radius*0.82f;
+      if ( m_d.m_kickertype==KickerCup )
+         rad = m_d.m_radius*0.9f;
+
       for ( unsigned int i=0;i<kickerPlateNumVertices;i++ )
       {
-         buf[i].x = kickerPlate[i].x*(m_d.m_radius-0.1f)+m_d.m_vCenter.x;
-         buf[i].y = kickerPlate[i].y*(m_d.m_radius-0.1f)+m_d.m_vCenter.y;
-         buf[i].z = kickerPlate[i].z*(m_d.m_radius-0.1f)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + height;
+         buf[i].x = kickerPlate[i].x*rad+m_d.m_vCenter.x;
+         buf[i].y = kickerPlate[i].y*rad+m_d.m_vCenter.y;
+         buf[i].z = kickerPlate[i].z*rad*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + height;
          buf[i].nx = kickerPlate[i].nx;
          buf[i].ny = kickerPlate[i].ny;
          buf[i].nz = kickerPlate[i].nz;
          buf[i].tu = 0.0f;
          buf[i].tv = 0.0f;
       }
+      pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
 
       Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
       pd3dDevice->basicShader->SetMaterial(mat);
@@ -706,21 +709,25 @@ STDMETHODIMP Kicker::KickXYZ(float angle, float speed, float inclination, float 
       }
 
       const float speedz = sinf(inclination) * speed;
-
-      if (speedz > 0.f)
+      if (speedz > 0.0f)
          speed = cosf(inclination) * speed;
 
 	   m_phitkickercircle->m_pball->m_angularvelocity.Set(0,0,0);
       m_phitkickercircle->m_pball->m_angularmomentum.Set(0,0,0);
-
+      m_phitkickercircle->m_pball->m_coll.hitdistance = 0.0f;
+      m_phitkickercircle->m_pball->m_coll.hittime = -1.0f;
+      m_phitkickercircle->m_pball->m_coll.hitnormal.SetZero();
+      m_phitkickercircle->m_pball->m_coll.hitvelocity.SetZero();
       m_phitkickercircle->m_pball->m_pos.x += x; // brian's suggestion
       m_phitkickercircle->m_pball->m_pos.y += y; 
       m_phitkickercircle->m_pball->m_pos.z += z; 
-
       m_phitkickercircle->m_pball->m_vel.x = sinf(anglerad) * speed;
       m_phitkickercircle->m_pball->m_vel.y = -cosf(anglerad) * speed;
       m_phitkickercircle->m_pball->m_vel.z = speedz;
       m_phitkickercircle->m_pball->m_frozen = false;
+      m_phitkickercircle->m_pball->m_dynamic = 2;
+      m_phitkickercircle->m_pball->m_coll.isContact = false;
+      m_phitkickercircle->m_pball->m_coll.hitmoment_bit = true;
       m_phitkickercircle->m_pball = NULL;
    }
 
@@ -1016,7 +1023,6 @@ KickerHitCircle::KickerHitCircle()
 {
    m_pball = NULL;
    m_pkicker = NULL;
-   m_zheight = 0.0f;
 }
 
 float KickerHitCircle::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
@@ -1030,7 +1036,7 @@ void KickerHitCircle::DoCollide(Ball * const pball, Vertex3Ds& hitnormal, Vertex
 
    const int i = pball->m_vpVolObjs->IndexOf(m_pObj);	// check if kicker in ball's volume set
 
-   if ((hitnormal.x == FLT_MAX) || ((hitvelocity.x < 1.f) == (i < 0))) // New or (Hit && !Vol || UnHit && Vol)
+   if (newBall || ((hitvelocity.x < 1.f) == (i < 0))) // New or (Hit && !Vol || UnHit && Vol)
    {
        if ( m_pkicker->m_d.m_legacyMode || newBall)
             pball->m_pos += STATICTIME * pball->m_vel;        // move ball slightly forward
@@ -1038,7 +1044,7 @@ void KickerHitCircle::DoCollide(Ball * const pball, Vertex3Ds& hitnormal, Vertex
       if (i < 0)	//entering Kickers volume
       { 
          bool hitEvent = false;
-         const float grabHeight = (m_zheight + pball->m_radius) * m_pkicker->m_d.m_hitAccuracy;
+         const float grabHeight = (zlow + pball->m_radius) * m_pkicker->m_d.m_hitAccuracy;
       
          if (pball->m_pos.z<grabHeight || m_pkicker->m_d.m_legacyMode || newBall)
          {
@@ -1047,7 +1053,7 @@ void KickerHitCircle::DoCollide(Ball * const pball, Vertex3Ds& hitnormal, Vertex
          }
          else
          {
-            const Vertex3Ds d = pball->m_pos - Vertex3Ds(center.x, center.y, m_pkicker->m_baseHeight);
+            const Vertex3Ds d = pball->m_pos - Vertex3Ds(center.x, center.y, zlow);
             const float bnd = fabsf(d.Length() - radius);
             float minDist = FLT_MAX;
             int idx = -1;
@@ -1124,7 +1130,7 @@ void KickerHitCircle::DoCollide(Ball * const pball, Vertex3Ds& hitnormal, Vertex
             }
             // Don't fire the hit event if the ball was just created
             // Fire the event before changing ball attributes, so scripters can get a useful ball state
-            if (hitnormal.x != FLT_MAX) // FLT_MAX if just created
+            if (!newBall) // FLT_MAX if just created
                m_pkicker->FireGroupEvent(DISPID_HitEvents_Hit);
 
             if (pball->m_frozen || m_pkicker->m_d.m_fFallThrough )	// script may have unfrozen the ball
@@ -1141,9 +1147,9 @@ void KickerHitCircle::DoCollide(Ball * const pball, Vertex3Ds& hitnormal, Vertex
                pball->m_pos.y = center.y;
                pball->m_dynamic = 0;
                if (m_pkicker->m_d.m_fFallThrough)
-                  pball->m_pos.z = m_zheight - pball->m_radius - 5.0f;
+                  pball->m_pos.z = zlow - pball->m_radius - 5.0f;
                else
-                  pball->m_pos.z = m_zheight + pball->m_radius/**pball->m_radius/radius*/;
+                  pball->m_pos.z = zlow + pball->m_radius/**pball->m_radius/radius*/;
 
             }
             else m_pball = NULL;		// make sure
