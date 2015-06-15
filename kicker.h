@@ -151,7 +151,6 @@ public:
 
     Kicker *m_pkicker;
     Ball *m_pball;  //The ball inside this kicker
-    float m_zheight;
 };
 
 #endif // !defined(AFX_KICKER_H__3A9F3FC4_605A_43AD_A430_830279CFE059__INCLUDED_)
