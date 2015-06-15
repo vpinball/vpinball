@@ -2108,7 +2108,7 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
 
 		m_contacts.clear();
 
-		// hacky killing of ball spin on resting balls
+		// hacky killing of ball spin on resting balls (very low and very high spinning)
 		for (unsigned i = 0; i < m_vball.size(); i++)
 		{
 			Ball * const pball = m_vball[i];
@@ -2116,7 +2116,8 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
 			{
 				const float mag = pball->m_vel.x*pball->m_vel.x + pball->m_vel.y*pball->m_vel.y; // values below are copy pasted from above
 				if (pball->m_drsq < 8.0e-5f && mag < 1.0e-3f*m_ptable->m_Gravity*m_ptable->m_Gravity / GRAVITYCONST / GRAVITYCONST && fabsf(pball->m_vel.z) < 0.2f*m_ptable->m_Gravity / GRAVITYCONST
-                                        && pball->m_angularmomentum.Length() < 0.9f*m_ptable->m_Gravity/GRAVITYCONST)
+					&& (pball->m_angularmomentum.Length() < 0.9f*m_ptable->m_Gravity / GRAVITYCONST || (pball->m_angularmomentum.x*pball->m_angularmomentum.x + pball->m_angularmomentum.y*pball->m_angularmomentum.y)/mag > 666.f)
+					)
 				{
 					pball->m_angularmomentum *= 0.05f; // do not kill spin completely, otherwise stuck balls will happen during regular gameplay
 					pball->m_angularvelocity *= 0.05f;

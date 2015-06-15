@@ -48,8 +48,8 @@ void Ball::Init(const float mass)
 
    m_orientation.Identity();
    m_inertia = (float)(2.0/5.0) * m_radius*m_radius * m_mass;
-   m_angularvelocity.Set(0,0,0);
-   m_angularmomentum.Set(0,0,0);
+   m_angularvelocity.SetZero();
+   m_angularmomentum.SetZero();
 
    m_ballanim.m_pball = this;
 
@@ -148,7 +148,7 @@ void Ball::Collide3DWall(const Vertex3Ds& hitNormal, float elasticity, float ela
     Vertex3Ds tangent = surfVel - surfVel.Dot(hitNormal) * hitNormal; // calc the tangential velocity
 
     const float tangentSpSq = tangent.LengthSquared();
-    if (tangent.LengthSquared() > 1e-6f)
+	if (tangentSpSq > 1e-6f)
     {
         tangent /= sqrtf(tangentSpSq);           // normalize to get tangent direction
         const float vt = surfVel.Dot(tangent);   // get speed in tangential direction
@@ -161,7 +161,8 @@ void Ball::Collide3DWall(const Vertex3Ds& hitNormal, float elasticity, float ela
         const float maxFric = friction * reactionImpulse;
         const float jt = clamp(-vt / kt, -maxFric, maxFric);
 
-        ApplySurfaceImpulse(surfP, jt * tangent);
+		if (!infNaN(jt))
+	        ApplySurfaceImpulse(surfP, jt * tangent);
     }
 
     if (scatter_angle < 0.0f) scatter_angle = c_hardScatter;			// if < 0 use global value
@@ -298,7 +299,7 @@ void Ball::Collide(CollisionEvent *coll)
 #ifdef C_DISP_GAIN
 	float edist = -C_DISP_GAIN * coll->hitdistance;
 	if (edist > 1.0e-4f)
-	{										
+	{
 		if (edist > C_DISP_LIMIT) 
 			edist = C_DISP_LIMIT;		// crossing ramps, delta noise
 		if (!m_frozen) edist *= 0.5f;	// if the hitten ball is not frozen
@@ -358,7 +359,7 @@ void Ball::ApplyFriction(const Vertex3Ds& hitnormal, const float dtime, const fl
     const float slipspeed = slip.Length();
 	Vertex3Ds slipDir;
 	float numer;
-    //slintf("Velocity: %.2f Angular velocity: %.2f Surface velocity: %.2f Slippage: %.2f\n", vel.Length(), m_angularvelocity.Length(), surfVel.Length(), slipspeed);
+	//slintf("Velocity: %.2f Angular velocity: %.2f Surface velocity: %.2f Slippage: %.2f\n", m_vel.Length(), m_angularvelocity.Length(), surfVel.Length(), slipspeed);
     //if (slipspeed > 1e-6f)
     if (slipspeed < C_PRECISION)
     {
