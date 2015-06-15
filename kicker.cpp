@@ -162,7 +162,7 @@ void Kicker::GetTimers(Vector<HitTimer> * const pvht)
 
 void Kicker::GetHitShapes(Vector<HitObject> * const pvho)
 {
-   const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
+    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
    KickerHitCircle * const phitcircle = new KickerHitCircle();
 
@@ -189,13 +189,13 @@ void Kicker::GetHitShapes(Vector<HitObject> * const pvho)
            Vertex3Ds vpos = Vertex3Ds(kickerHitMesh[t].x, kickerHitMesh[t].y, kickerHitMesh[t].z);
            vpos.x = vpos.x*rad + m_d.m_vCenter.x;
            vpos.y = vpos.y*rad + m_d.m_vCenter.y;
-           vpos.z = vpos.z*rad * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_baseHeight;
+           vpos.z = vpos.z*rad * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + height;
            hitMesh[t] = vpos;
        }
 
    }
    phitcircle->zlow = height;
-   phitcircle->zhigh = height + 50.0f; // m_d.m_hit_height;	// height of kicker hit cylinder  //!! 50 = ball diameter
+   phitcircle->zhigh = height + 38.0f; // m_d.m_hit_height;	// height of kicker hit cylinder  //!! 50 = ball diameter
 
    phitcircle->m_zheight = height;		//height for Kicker locked ball + ball->m_radius
 
@@ -1069,9 +1069,7 @@ void KickerHitCircle::DoCollide(Ball * const pball, Vertex3Ds& hitnormal, Vertex
                const float dot = -pball->m_vel.Dot(hitnorm);
                const float reactionImpulse = pball->m_mass * fabsf(dot);
 
-               pball->m_vel += dot * hitnorm;     // apply collision impulse (along normal, so no torque)
-               pball->m_dynamic = C_DYNAMIC;
-               float friction;
+/*
                if (pball->m_pos.z > pball->m_defaultZ)
                {
                   // ball is on a surface(e.g. upper playfield) use a high friction and a different calculation to compensate surface collision
@@ -1083,17 +1081,20 @@ void KickerHitCircle::DoCollide(Ball * const pball, Vertex3Ds& hitnormal, Vertex
                   tangent = surfVel - surfVel.Dot(hitnorm) * hitnorm; // calc the tangential velocity
                }
                else
-               {
-				  friction = 0.3f;
-                  surfP = -pball->m_radius * hitnormal;    // surface contact point relative to center of mass
+*/
+               surfP = -pball->m_radius * hitnormal;    // surface contact point relative to center of mass
 
-                  surfVel = pball->SurfaceVelocity(surfP);       // velocity at impact point
+               surfVel = pball->SurfaceVelocity(surfP);       // velocity at impact point
 
-                  tangent = surfVel - surfVel.Dot(hitnormal) * hitnorm; // calc the tangential velocity
-               }
+               tangent = surfVel - surfVel.Dot(hitnormal) * hitnorm; // calc the tangential velocity
+              
+               pball->m_vel += dot * hitnorm;     // apply collision impulse (along normal, so no torque)
+               pball->m_dynamic = C_DYNAMIC;
 
+               const float friction = 0.3f;
                const float tangentSpSq = tangent.LengthSquared();
-               if (tangent.LengthSquared() > 1e-6f)
+
+               if (tangentSpSq > 1e-6f)
                {
                   tangent /= sqrtf(tangentSpSq);           // normalize to get tangent direction
                   const float vt = surfVel.Dot(tangent);   // get speed in tangential direction
