@@ -251,6 +251,11 @@ inline bool deNorm(const float a)
     return (((float_as_int(a)&0x7FFFFFFF) < 0x00800000) && (a != 0.0));
 }
 
+inline bool sign(const float a)
+{
+	return (float_as_int(a) & 0x80000000) == 0x80000000;
+}
+
 //
 // TinyMT64 for random numbers (much better than rand())
 //

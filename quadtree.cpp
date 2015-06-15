@@ -30,12 +30,25 @@ void HitQuadtree::Initialize()
     for (unsigned i = 0; i < m_vho.size(); ++i)
         bounds.Extend(m_vho[i]->m_rcHitRect);
 
-    CreateNextLevel(bounds, 0);
+#ifdef _DEBUGPHYSICS
+	g_pplayer->c_quadObjects = m_vho.size();
+#endif
+
+    CreateNextLevel(bounds, 0, 0);
 }
 
-void HitQuadtree::CreateNextLevel(const FRect3D& bounds, const unsigned int level)
+void HitQuadtree::Initialize(const FRect3D& bounds)
 {
-	if (m_vho.size() <= 8 || level >= 64) //!! magic (might not favor empty space enough for huge objects)
+#ifdef _DEBUGPHYSICS
+	g_pplayer->c_quadObjects = m_vho.size();
+#endif
+
+	CreateNextLevel(bounds, 0, 0);
+}
+
+void HitQuadtree::CreateNextLevel(const FRect3D& bounds, const unsigned int level, unsigned int level_empty)
+{
+	if (m_vho.size() <= 4) //!! magic
 		return;
 
 #ifdef _DEBUGPHYSICS
@@ -84,8 +97,20 @@ void HitQuadtree::CreateNextLevel(const FRect3D& bounds, const unsigned int leve
 
     m_vho.swap(vRemain);
 
-    if (m_vcenter.x - bounds.left > 0.0666f) //!! magic (might not subdivide object soups enough)
-    {
+	// check if at least two nodes feature objects, otherwise don't bother subdividing further
+	unsigned int count_empty = (m_vho.size() == 0) ? 1 : 0;
+	for (int i = 0; i < 4; ++i)
+		if (m_children[i]->m_vho.size() == 0)
+			++count_empty;
+
+	if (count_empty >= 4)
+		++level_empty;
+	else
+		level_empty = 0;
+
+	if (m_vcenter.x - bounds.left > 0.0001f && //!! magic
+		level_empty <= 8 && // If 8 levels were all just subdividing the same objects without luck, exit & Free the nodes again (but at least empty space was cut off)
+		level + 1 < 128 / 3)
         for (int i=0; i<4; ++i)
         {
             FRect3D childBounds;
@@ -98,9 +123,8 @@ void HitQuadtree::CreateNextLevel(const FRect3D& bounds, const unsigned int leve
             childBounds.bottom = (i&2) ? bounds.bottom : m_vcenter.y;
             childBounds.zhigh  = bounds.zhigh;
 
-            m_children[i]->CreateNextLevel(childBounds, level+1);
+			m_children[i]->CreateNextLevel(childBounds, level + 1, level_empty);
         }
-    }
 
     InitSseArrays();
     for (int i=0; i<4; ++i)

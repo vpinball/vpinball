@@ -309,7 +309,9 @@ public:
 	U32 c_embedcnts;
 	U32 c_timesearch;
 
+	U32 c_octObjects;
 	U32 c_octNextlevels;
+	U32 c_quadObjects;
 	U32 c_quadNextlevels;
 
 	U32 c_traversed;

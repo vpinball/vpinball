@@ -123,7 +123,11 @@ void HitKD::FillFromVector(Vector<HitObject>& vho)
         m_org_idx.push_back( i );
     }
 
-    m_rootNode.CreateNextLevel(0);
+#ifdef _DEBUGPHYSICS
+	g_pplayer->c_octObjects = vho.size();
+#endif
+
+    m_rootNode.CreateNextLevel(0,0);
     InitSseArrays();
 }
 
@@ -141,7 +145,11 @@ void HitKD::FillFromIndices()
         m_rootNode.m_rectbounds.Extend( pho->m_rcHitRect );
     }
 
-    m_rootNode.CreateNextLevel(0);
+#ifdef _DEBUGPHYSICS
+	g_pplayer->c_octObjects = m_org_idx.size();
+#endif
+
+    m_rootNode.CreateNextLevel(0,0);
     InitSseArrays();
 }
 
@@ -154,7 +162,11 @@ void HitKD::FillFromIndices(const FRect3D& initialBounds)
 
     // assume that CalcHitRect() was already called on the hit objects
 
-    m_rootNode.CreateNextLevel(0);
+#ifdef _DEBUGPHYSICS
+	g_pplayer->c_octObjects = m_org_idx.size();
+#endif
+
+    m_rootNode.CreateNextLevel(0,0);
     InitSseArrays();
 }
 
@@ -164,11 +176,12 @@ void HitKD::Update()
 }
 
 
-void HitKDNode::CreateNextLevel(const unsigned int level)
+void HitKDNode::CreateNextLevel(const unsigned int level, unsigned int level_empty)
 {
 	const unsigned int org_items = (m_items&0x3FFFFFFF);
 
-	if (org_items <= 4 || level >= 64) //!! magic (might not favor empty space enough for huge objects)
+	if (org_items <= 4 || //!! magic
+		level >= 128/2)
 		return;
 
 	const Vertex3Ds vdiag(m_rectbounds.right-m_rectbounds.left, m_rectbounds.bottom-m_rectbounds.top, m_rectbounds.zhigh-m_rectbounds.zlow);
@@ -176,19 +189,19 @@ void HitKDNode::CreateNextLevel(const unsigned int level)
 	unsigned int axis;
 	if((vdiag.x > vdiag.y) && (vdiag.x > vdiag.z))
 	{
-		if(vdiag.x < 0.0666f) //!! magic (might not subdivide object soups enough)
+		if(vdiag.x < 0.0001f) //!! magic
 			return;
 		axis = 0;
 	}
 	else if(vdiag.y > vdiag.z)
 	{
-		if(vdiag.y < 0.0666f)
+		if(vdiag.y < 0.0001f) //!!
 			return;
 		axis = 1;
 	}
 	else
 	{
-		if(vdiag.z < 0.0666f)
+		if(vdiag.z < 0.0001f) //!!
 			return;
 		axis = 2;
 	}
@@ -265,6 +278,27 @@ void HitKDNode::CreateNextLevel(const unsigned int level)
         }
     }
 
+	// check if at least two nodes feature objects, otherwise don't bother subdividing further
+	unsigned int count_empty = 0;
+	if (m_children[0].m_items == 0)
+		count_empty = 1;
+	if (m_children[1].m_items == 0)
+		++count_empty;
+	if (org_items - m_children[0].m_items - m_children[1].m_items == 0)
+		++count_empty;
+
+	if (count_empty >= 2)
+		++level_empty;
+	else
+		level_empty = 0;
+
+	if (level_empty > 8) // If 8 levels were all just subdividing the same objects without luck, exit & Free the nodes again (but at least empty space was cut off)
+	{
+		m_hitoct->m_num_nodes -= 2;
+		m_children = NULL;
+		return;
+	}
+
 	m_children[0].m_start = m_start + org_items - m_children[0].m_items - m_children[1].m_items;
 	m_children[1].m_start = m_children[0].m_start + m_children[0].m_items;
 
@@ -327,8 +361,8 @@ void HitKDNode::CreateNextLevel(const unsigned int level)
     memcpy(&m_hitoct->m_org_idx[ m_children[0].m_start ], &m_hitoct->tmp[ m_children[0].m_start ], m_children[0].m_items*sizeof(unsigned int));
     memcpy(&m_hitoct->m_org_idx[ m_children[1].m_start ], &m_hitoct->tmp[ m_children[1].m_start ], m_children[1].m_items*sizeof(unsigned int));
 
-	m_children[0].CreateNextLevel(level+1);
-	m_children[1].CreateNextLevel(level+1);
+	m_children[0].CreateNextLevel(level + 1, level_empty);
+	m_children[1].CreateNextLevel(level + 1, level_empty);
 }
 
 
