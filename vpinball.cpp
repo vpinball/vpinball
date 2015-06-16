@@ -2882,7 +2882,12 @@ INT_PTR CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                 {
                    char textBuf[64];
                    GetDlgItemText(hwndDlg, IDC_ALPHA_MASK_EDIT, textBuf, 32);
-                   ppi->m_alphaTestValue = sz2f(textBuf);
+                   float v = sz2f(textBuf);
+                   if (ppi->m_alphaTestValue != v)
+                   {
+                      ppi->m_alphaTestValue = v;
+                      pt->SetNonUndoableDirty(eSaveDirty);
+                   }
 
                    const int count = ListView_GetSelectedCount(GetDlgItem(hwndDlg, IDC_SOUNDLIST));
                    const int fEnable = !(count > 1);
@@ -2997,7 +3002,13 @@ INT_PTR CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                          {
                             char textBuf[64];
                             GetDlgItemText(hwndDlg, IDC_ALPHA_MASK_EDIT, textBuf, 32);
-                            ppi->m_alphaTestValue = sz2f(textBuf);
+                            float v = sz2f(textBuf);
+                            if (ppi->m_alphaTestValue != v)
+                            {
+                               ppi->m_alphaTestValue = v;
+                               pt->SetNonUndoableDirty(eSaveDirty);
+                            }
+
                             sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), sel, LVNI_SELECTED);
                          }
                      }
@@ -3072,7 +3083,8 @@ INT_PTR CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                if (sel != -1)
                {
                   SetFocus(GetDlgItem(hwndDlg, IDC_SOUNDLIST));
-                  /*const HWND hwndFoo =*/ ListView_EditLabel(GetDlgItem(hwndDlg, IDC_SOUNDLIST), sel);
+                  ListView_EditLabel(GetDlgItem(hwndDlg, IDC_SOUNDLIST), sel);
+                  pt->SetNonUndoableDirty(eSaveDirty);
                }
             }
             break;
