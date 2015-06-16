@@ -1314,8 +1314,11 @@ void Rubber::ExportMesh(FILE *f)
    char name[MAX_PATH];
    if ( m_d.m_fVisible )
    {
+      
       WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, MAX_PATH, NULL, NULL);
       GenerateMesh();
+      UpdateRubber(NULL, false);
+
       WaveFrontObj_WriteObjectName(f, name);
       WaveFrontObj_WriteVertexInfo(f, m_vertices.data(), m_numVertices);
       Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
