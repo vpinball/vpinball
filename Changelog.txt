@@ -1,3 +1,14 @@
+VP 9.9.2 Changelog
+------------------------
+- new plunger code (see Plunger pdf)
+
+- fix text selection if in previous selected text box a change was made
+
+- extend right click behavior for multi-select to hidden items
+
+- updated to latest FreeImage.dll (3.17.0)
+- script editor updated to use latest scintilla (3.5.6)
+
 VP 9.9.1 Changelog
 ------------------------
 - fixed some memory leaks
