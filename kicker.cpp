@@ -274,7 +274,7 @@ void Kicker::ExportMesh(FILE *f)
 void Kicker::GenerateCupMesh(Vertex3D_NoTex2 *buf)
 {
     Matrix3D fullMatrix;
-    fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_orientation));
+    fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_orientation + 180));
 
     for (int i = 0; i < kickerCupNumVertices; i++)
     {
