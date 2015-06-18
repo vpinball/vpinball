@@ -1163,8 +1163,13 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
 	  mz_ulong uclen = (mz_ulong)(sizeof(Vertex3D_NoTex2)*m_mesh.NumVertices());
 	  mz_uint8 * c = (mz_uint8 *)malloc(compressedVertices);
 	  pbr->GetStruct( c, compressedVertices);
-	  if (uncompress((unsigned char *)&m_mesh.m_vertices[0], &uclen, c, compressedVertices) != Z_OK)
-		  ShowError("Could not uncompress primitive vertex data");
+	  const int error = uncompress((unsigned char *)&m_mesh.m_vertices[0], &uclen, c, compressedVertices);
+	  if (error != Z_OK)
+	  {
+		  char err[128];
+		  sprintf_s(err, "Could not uncompress primitive vertex data, error %d", error);
+		  ShowError(err);
+	  }
 	  free(c);
    }
 #endif
@@ -1179,7 +1184,7 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
          pbr->GetStruct(&m_mesh.m_indices[0], sizeof(unsigned int)*numIndices);
 	  else
 	  {
-  		  std::vector<WORD> tmp(numIndices);
+  		 std::vector<WORD> tmp(numIndices);
          pbr->GetStruct(&tmp[0], sizeof(WORD)*numIndices);
          for (int i = 0; i < numIndices; ++i)
 			  m_mesh.m_indices[i] = tmp[i];
@@ -1200,8 +1205,13 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
 		  mz_ulong uclen = (mz_ulong)(sizeof(unsigned int)*m_mesh.NumIndices());
 		  mz_uint8 * c = (mz_uint8 *)malloc(compressedIndices);
 		  pbr->GetStruct(c, compressedIndices);
-		  if (uncompress((unsigned char *)&m_mesh.m_indices[0], &uclen, c, compressedIndices) != Z_OK)
-			  ShowError("Could not uncompress primitive index data");
+		  const int error = uncompress((unsigned char *)&m_mesh.m_indices[0], &uclen, c, compressedIndices);
+		  if (error != Z_OK)
+		  {
+			  char err[128];
+			  sprintf_s(err, "Could not uncompress (large) primitive index data, error %d", error);
+			  ShowError(err);
+		  }
 		  free(c);
 	  }
 	  else
@@ -1213,8 +1223,13 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
 		  mz_ulong uclen = (mz_ulong)(sizeof(WORD)*m_mesh.NumIndices());
 		  mz_uint8 * c = (mz_uint8 *)malloc(compressedIndices);
 		  pbr->GetStruct(c, compressedIndices);
-		  if (uncompress((unsigned char *)&tmp[0], &uclen, c, compressedIndices) != Z_OK)
-			  ShowError("Could not uncompress primitive index data");
+		  const int error = uncompress((unsigned char *)&tmp[0], &uclen, c, compressedIndices);
+		  if (error != Z_OK)
+		  {
+			  char err[128];
+			  sprintf_s(err, "Could not uncompress (small) primitive index data, error %d", error);
+			  ShowError(err);
+		  }
 		  free(c);
 
 		  for(int i = 0; i < numIndices; ++i)
