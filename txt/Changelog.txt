@@ -20,6 +20,10 @@ VP 10.0.0 Changelog
 
 - a special thanks has to go out to our awesome alpha testers/improvers: Unclewilly, JPSalas and JimmyFingers!
 
+- for all the changes regarding the core vbs script file package (like cvpmTrough,cvpmSaucer,BallMass,UseVPMDMD and the new Coindoor key functionality)
+  look into core.vbs for the full changelog
+
+
 - physics mostly redone (also previously known as 'physmod(5)')
   due to this it is now also possible to enable vsync without physics sideeffects like stutter or bad aiming (set FPS limiter to 1)
 
@@ -38,6 +42,7 @@ VP 10.0.0 Changelog
   
   -> kicker physics changed: The kicker bevel will influence the ball's motion and won't grab the ball like a magnet anymore.
      The old behaviour can be set via the 'Legacy' checkbox and is recommended for 'invisible' kickers like the trough as it can be much faster.
+     Also use 'Legacy' on kickers that are (ab)used as triggers (e.g. to create balls once or 'warp' balls).
 
 - changed the plunger physics to make the launch behavior more linear and controllable, for both keyboard and mechanical 
   plunger interfaces
@@ -145,7 +150,7 @@ VP 10.0.0 Changelog
 
 - internal DMD support (access via script, input levels are 0..100)
   to display the DMD, use a TextBox with the magic keyword "DMD" as text
-  to be able to connect to VPM, use a recent VPM (2.6 or newer) and also core.vbs (3.44 or newer) and follow the instructions there
+  to be able to connect to VPM, use a recent VPM (2.6 or newer) and a recent core.vbs (3.44 or newer) and follow the instructions there
 - DMDWidth, DMDHeight, DMDPixels to steer the DMD added to Table Script methods
 
 - improved smoothness for ramps (centripetal Catmull-Rom splines)
@@ -221,6 +226,8 @@ VP 10.0.0 Changelog
                                When imported the primitive has the imported material automatically assigned.
 							   Note that any textures aren't imported automatically though, this must be done as usual with the help of the image manager.
 
+- the control point for the bottom ramp has a blue color to identify which side of the ramp is the bottom one
+
 - reactivate old VP9.0 easter egg (and improve it :))
 
 - new external audio library for music playback (BASS)
@@ -231,8 +238,7 @@ VP 10.0.0 Changelog
 - 64bit port (handle with care, might still cause issues)
 
 - updated to latest FreeImage.dll (3.17.0)
-
-- script editor updated to use latest Scintilla (3.5.4)
+- script editor updated to use latest Scintilla (3.5.6)
 
 - DirectX 8 port for input handling (currently disabled)
 
@@ -240,7 +246,16 @@ VP 10.0.0 Changelog
 
 - technical note: make sure to install Microsoft SDK 5.0,7.0A,7.1 or 7.1A, if you compile VP and get missing header errors (optionally set the include path inc\winsdk)
 
-- the control point for the bottom ramp has a blue color to identify which side of the ramp is the bottom one.
+VP 9.9.2 Changelog
+------------------------
+- new plunger code (see Plunger pdf)
+
+- fix text selection if in previous selected text box a change was made
+
+- extend right click behavior for multi-select to hidden items
+
+- updated to latest FreeImage.dll (3.17.0)
+- script editor updated to use latest scintilla (3.5.6)
 
 VP 9.9.1 Changelog
 ------------------------
