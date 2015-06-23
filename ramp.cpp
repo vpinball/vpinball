@@ -488,7 +488,7 @@ Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** co
       {
       rgvLocal[i] = Vertex2D(vmiddle.x,vmiddle.y) + (widthcur*0.5f) * vnormal;
       rgvLocal[cvertex*2 - i - 1] = Vertex2D(vmiddle.x,vmiddle.y) - (widthcur*0.5f) * vnormal;
-    }
+      }
    }
 
    if (ppfCross)
@@ -534,14 +534,12 @@ float Ramp::GetSurfaceHeight(float x, float y)
         totallength += len;
     }
 
-    {
-        const float dx = vOut.x - vvertex[iSeg].x;
-        const float dy = vOut.y - vvertex[iSeg].y;
-        const float len = sqrtf(dx*dx + dy*dy);
-        startlength += len; // Add the distance the object is between the two closest polyline segments.  Matters mostly for straight edges. Z does not respect that yet!
+	const float dx = vOut.x - vvertex[iSeg].x;
+	const float dy = vOut.y - vvertex[iSeg].y;
+	const float len = sqrtf(dx*dx + dy*dy);
+	startlength += len; // Add the distance the object is between the two closest polyline segments.  Matters mostly for straight edges. Z does not respect that yet!
 
-        zheight = vvertex[iSeg].z + (startlength/totallength) * (topHeight - bottomHeight) + bottomHeight;
-   }
+	zheight = vvertex[iSeg].z + (startlength / totallength) * (topHeight - bottomHeight) + bottomHeight;
 
     return zheight;
 }
@@ -1470,7 +1468,7 @@ void Ramp::DoCommand(int icmd, int x, int y)
          if (pdp)
          {
             pdp->AddRef();
-            pdp->Init(this, vOut.x, vOut.y);
+            pdp->Init(this, vOut.x, vOut.y, (vvertex[max(iSeg - 1, 0)].z + vvertex[min(iSeg + 1, (int)vvertex.size() - 1)].z)*0.5f);
             pdp->m_fSmooth = true; // Ramps are usually always smooth
             m_vdpoint.InsertElementAt(pdp, icp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
          }
@@ -2519,16 +2517,15 @@ void Ramp::GenerateRampMesh(Vertex3D_NoTex2 **meshBuf)
             }
 			else
 			{
-            rgv3D[0].tu = 0.0f;
-            rgv3D[0].tv = 0.0f;
-            rgv3D[1].tu = 0.0f;
-            rgv3D[1].tv = 0.0f;
-            rgv3D[2].tu = 0.0f;
-            rgv3D[2].tv = 0.0f;
-            rgv3D[3].tu = 0.0f;
-            rgv3D[3].tv = 0.0f;				
+				rgv3D[0].tu = 0.0f;
+				rgv3D[0].tv = 0.0f;
+				rgv3D[1].tu = 0.0f;
+				rgv3D[1].tv = 0.0f;
+				rgv3D[2].tu = 0.0f;
+				rgv3D[2].tv = 0.0f;
+				rgv3D[3].tu = 0.0f;
+				rgv3D[3].tv = 0.0f;
 			}
-
         }
         SetNormal(m_vertBuffer, &m_meshIndices[0], (rampVertex - 1) * 6);
         memcpy(&buf[offset], &m_vertBuffer[0], sizeof(Vertex3D_NoTex2)*m_numVertices);
@@ -2574,7 +2571,6 @@ void Ramp::GenerateVertexBuffer(RenderDevice* pd3dDevice)
 
     dynamicIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer( m_meshIndices );
     delete[] tmpBuffer;
-
 }
 
 void Ramp::UpdatePropertyPanes()
@@ -2619,7 +2615,6 @@ void Ramp::UpdatePropertyPanes()
         EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,114), TRUE);
         EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,115), TRUE);
     }
-
 }
 
 void Ramp::SetDefaultPhysics(bool fromMouseClick)
