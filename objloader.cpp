@@ -117,7 +117,7 @@ bool WaveFrontObjLoadMaterial(const char *filename, Material *mat)
             if ( mat->m_fRoughness>1.0f )
                 mat->m_fRoughness = 1.0f;
             if (mat->m_fRoughness<0.01f)
-                mat->m_fRoughness = 0.01;
+                mat->m_fRoughness = 0.01f;
         }
         else if (strcmp(lineHeader, "Ka") == 0)
         {

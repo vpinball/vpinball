@@ -16,8 +16,8 @@ public:
  *  and
  *   p'(0) = t0, p'(1) = t1.
  */
-inline void InitCubicSplineCoeffs(float x0, float x1, float t0, float t1,
-        float &c0, float &c1, float &c2, float &c3)
+inline void InitCubicSplineCoeffs(const float x0, const float x1, const float t0, const float t1,
+							      float &c0, float &c1, float &c2, float &c3)
 {
     c0 = x0;
     c1 = t0;
@@ -26,11 +26,11 @@ inline void InitCubicSplineCoeffs(float x0, float x1, float t0, float t1,
 }
 
 // standard uniform Catmull-Rom splines with tension 0.5
-inline void InitCatmullCoeffs(float x0, float x1, float x2, float x3,
-        float &c0, float &c1, float &c2, float &c3)
+inline void InitCatmullCoeffs(const float x0, const float x1, const float x2, const float x3,
+							  float &c0, float &c1, float &c2, float &c3)
 {
     InitCubicSplineCoeffs(x1, x2, 0.5f*(x2-x0), 0.5f*(x3-x1),
-            c0, c1, c2, c3);
+						  c0, c1, c2, c3);
 }
 
 // nonuniform Catmull-Rom splines; see
@@ -137,10 +137,12 @@ private:
 };
 
 
-class RenderVertex : public Vertex2D
+class RenderVertex3D : public Vertex3Ds
 {
 public:
-    static const int Dim = 2;
+    void set(const Vertex3Ds &v) { x = v.x; y = v.y; z = v.z; }
+
+    static const int Dim = 3;
 
 	bool fSmooth;
 	bool fSlingshot;
@@ -148,10 +150,14 @@ public:
 	bool padd; // Useless padding to align to 4bytes, should enhance access speeds
 };
 
-class RenderVertex3D : public Vertex3Ds
+class RenderVertex : public Vertex2D
 {
 public:
-    static const int Dim = 3;
+    void set(const Vertex3Ds &v) { x = v.x; y = v.y; }
+    void set(const RenderVertex &v) { *this = v; }
+    void set(const RenderVertex3D &v) { x = v.x; y = v.y; fSmooth = v.fSmooth; fSlingshot = v.fSlingshot; fControlPoint = v.fControlPoint; }
+
+    static const int Dim = 2;
 
 	bool fSmooth;
 	bool fSlingshot;
@@ -389,8 +395,10 @@ inline void ClosestPointOnPolygon(const VtxContType &rgv, const Vertex2D &pvin, 
 	{
 		const int p2 = (i < count-1) ? (i+1) : 0;
 
-		const RenderVertex & rgvi = rgv[i];
-		const RenderVertex & rgvp2 = rgv[p2];
+		RenderVertex rgvi;
+		rgvi.set(rgv[i]);
+		RenderVertex rgvp2;
+		rgvp2.set(rgv[p2]);
 		const float A = rgvi.y - rgvp2.y;
 		const float B = rgvp2.x - rgvi.x;
 		const float C = -(A*rgvi.x + B*rgvi.y);
