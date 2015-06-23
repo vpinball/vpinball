@@ -7,7 +7,7 @@ VP 9.9.2 Changelog
 - extend right click behavior for multi-select to hidden items
 
 - updated to latest FreeImage.dll (3.17.0)
-- script editor updated to use latest scintilla (3.5.6)
+- script editor updated to use latest scintilla (3.5.7)
 
 VP 9.9.1 Changelog
 ------------------------
