@@ -154,6 +154,7 @@ VP 10.0.0 Changelog
 - DMDWidth, DMDHeight, DMDPixels to steer the DMD added to Table Script methods
 
 - improved smoothness for ramps (centripetal Catmull-Rom splines)
+- ramps can now in addition use the height parameter of their control points (its used as an offset in addition to the normal ramp behavior)
 - changed opacity/transparency handling for ramps (Alpha/Acrylic have been deleted, only the material opacity value is supported now)
 
 - GetElement, GetElementByName, GetBalls added to Table Script methods to have simple access to the elements and all active balls on the table
