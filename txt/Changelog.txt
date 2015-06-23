@@ -238,7 +238,7 @@ VP 10.0.0 Changelog
 - 64bit port (handle with care, might still cause issues)
 
 - updated to latest FreeImage.dll (3.17.0)
-- script editor updated to use latest Scintilla (3.5.6)
+- script editor updated to use latest Scintilla (3.5.7)
 
 - DirectX 8 port for input handling (currently disabled)
 
@@ -255,7 +255,7 @@ VP 9.9.2 Changelog
 - extend right click behavior for multi-select to hidden items
 
 - updated to latest FreeImage.dll (3.17.0)
-- script editor updated to use latest scintilla (3.5.6)
+- script editor updated to use latest scintilla (3.5.7)
 
 VP 9.9.1 Changelog
 ------------------------
