@@ -47,7 +47,6 @@ public:
 	const DIDEVICEOBJECTDATA *GetTail ( /*const U32 curr_sim_msec*/ );
 
     void autostart( const U32 msecs, const U32 retry_msecs, const U32 curr_time_msec );
-	void autocoin( const U32 msecs, const U32 curr_time_msec );
     void button_exit( const U32 msecs, const U32 curr_time_msec );
 
 	void tilt_update();
@@ -108,7 +107,6 @@ private:
 	U32 m_ChangedKeys;
 
 	U32 m_firedautostart;
-	U32 m_firedautocoin;
 
 	int m_pressed_start;
 
@@ -117,9 +115,6 @@ private:
 
 	int m_as_down;
     int m_as_didonce;
-
-    int m_ac_down;
-    int m_ac_didonce;
 
     int m_tilt_updown;
 

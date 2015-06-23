@@ -295,7 +295,6 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
 
 	m_movedPlunger = 0;
 	m_LastPlungerHit = 0;
-	m_Coins = 0;
 
 	for (unsigned int i = 0; i < 8; ++i)
 		m_touchregion_pressed[i] = false;
@@ -347,9 +346,7 @@ void Player::Shutdown()
     m_limiter.Shutdown();
 
 	for (unsigned i = 0; i < m_vhitables.size(); ++i)
-	{
 		m_vhitables[i]->EndPlay();
-	}
 
 	for (int i = 0; i < m_vho.Size(); i++)
 		delete m_vho.ElementAt(i);
@@ -931,8 +928,12 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
     const bool stereo3D = (!!m_fStereo3D);
     const bool FXAA = ((m_fFXAA && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA > 0));
 
+    int colordepth;
+    if(GetRegInt("Player", "ColorDepth", &colordepth) != S_OK)
+        colordepth = 32; // The default
+
     // colordepth & refreshrate are only defined if fullscreen is true.
-    HRESULT hr = m_pin3d.InitPin3D(m_hwnd, m_fFullScreen, m_width, m_height, m_screendepth,
+    HRESULT hr = m_pin3d.InitPin3D(m_hwnd, m_fFullScreen, m_width, m_height, colordepth,
 				                   m_refreshrate, vsync, useAA, stereo3D, FXAA, useAO);
 
 	if (hr != S_OK)
@@ -1373,9 +1374,6 @@ void Player::InitWindow()
 	{
 		m_screenwidth = m_width;
 		m_screenheight = m_height;
-		hr = GetRegInt("Player", "ColorDepth", &m_screendepth);
-		if (hr != S_OK)
-			m_screendepth = 32; // The default
 		hr = GetRegInt("Player", "RefreshRate", &m_refreshrate);
 		if (hr != S_OK)
 			m_refreshrate = 0; // The default
@@ -1384,6 +1382,7 @@ void Player::InitWindow()
 	{
 		m_screenwidth = GetSystemMetrics(SM_CXSCREEN);
 		m_screenheight = GetSystemMetrics(SM_CYSCREEN);
+		m_refreshrate = 0; // The default
 
 		// constrain window to screen
 		if (m_width > m_screenwidth)
@@ -4078,40 +4077,6 @@ LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 		}
 		return TRUE;
 		break;
-
-	case WM_USER:
-		// Custom user message.  
-		LRESULT ReturnCode = FALSE;
-
-		// Process based on type.
-		switch (wParam)
-		{
-		case WINDOWMESSAGE_ADDUNITS:
-			// Coin message from the front end (aka "credit manager").
-			if (g_pplayer != NULL)
-			{
-				if (g_pplayer->m_ptable != NULL)
-				{
-					// Check parameter.
-					if ((lParam > 0) && (lParam < 10))
-					{
-						// Add the coins.
-						g_pplayer->m_Coins += lParam;
-						ReturnCode = TRUE;
-					}
-					else
-					{
-						// Print an error.
-#ifdef _DEBUG
-						OutputDebugString ( "Autocoin: Invalid parameter." );
-#endif
-					}
-				}
-			}
-			break;
-		}
-
-		return ReturnCode;
 	}
 
 	return DefWindowProc(hwnd, uMsg, wParam, lParam);

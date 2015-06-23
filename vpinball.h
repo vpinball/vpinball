@@ -9,8 +9,6 @@
 
 #define CURRENT_FILE_FORMAT_VERSION 1001
 
-#define	WINDOWMESSAGE_ADDUNITS 5150 // Message ID to request the game window to add units (coins)
-
 #define DEFAULT_SECURITY_LEVEL 0
 
 #define LAST_OPENED_TABLE_COUNT	8
