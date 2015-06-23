@@ -40,11 +40,11 @@ public:
 		STDMETHOD(put_DMDHeight)(/*[in]*/ int pVal);
 		STDMETHOD(put_DMDPixels)(/*[in]*/ VARIANT pVal);
 
-                STDMETHOD(get_NightDay)(/*[out, retval]*/ int *pVal);
-                //STDMETHOD(put_NightDay)(/*[in]*/ int newVal);
+        STDMETHOD(get_NightDay)(/*[out, retval]*/ int *pVal);
+        //STDMETHOD(put_NightDay)(/*[in]*/ int newVal);
 
-	        STDMETHOD(get_ShowDT)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-	        //STDMETHOD(put_ShowDT)(/*[in]*/ VARIANT_BOOL newVal);
+	    STDMETHOD(get_ShowDT)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+	    //STDMETHOD(put_ShowDT)(/*[in]*/ VARIANT_BOOL newVal);
 
 		STDMETHOD(PlaySound)(BSTR bstr, long LoopCount, float volume, float pan, float randompitch, long pitch, VARIANT_BOOL usesame, VARIANT_BOOL restart);
 		STDMETHOD(FireKnocker)(/*[in]*/ int Count);

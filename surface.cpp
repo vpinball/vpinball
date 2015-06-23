@@ -100,7 +100,7 @@ void Surface::WriteRegDefaults()
 {
    const char * strKeyName = m_isWall ? "DefaultProps\\Wall" : "DefaultProps\\Target";
 
-   SetRegValueBool(strKeyName,"TimerEnabled", !!m_d.m_tdr.m_fTimerEnabled);
+   SetRegValueBool(strKeyName,"TimerEnabled", m_d.m_tdr.m_fTimerEnabled);
    SetRegValueInt(strKeyName,"TimerInterval", m_d.m_tdr.m_TimerInterval);
    SetRegValueBool(strKeyName,"HitEvent", m_d.m_fHitEvent);
    SetRegValueFloat(strKeyName,"HitThreshold", m_d.m_threshold);
@@ -154,7 +154,7 @@ HRESULT Surface::InitTarget(PinTable * const ptable, const float x, const float 
    {
       pdp->AddRef();
       pdp->Init(this, x-width, y+length);
-      pdp->m_fAutoTexture = fFalse;
+      pdp->m_fAutoTexture = false;
       pdp->m_texturecoord = 0.0f;
       m_vdpoint.AddElement(pdp);
    }
@@ -163,7 +163,7 @@ HRESULT Surface::InitTarget(PinTable * const ptable, const float x, const float 
    {
       pdp->AddRef();
       pdp->Init(this, x+width, y+length);
-      pdp->m_fAutoTexture = fFalse;
+      pdp->m_fAutoTexture = false;
       pdp->m_texturecoord = 1.0f;
       m_vdpoint.AddElement(pdp);
    }

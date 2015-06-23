@@ -2,7 +2,6 @@
 
 LightSeq::LightSeq() : m_LightSeqCenter(this)
 {
-	m_ptu = NULL;
 }
 
 LightSeq::~LightSeq()
@@ -58,7 +57,7 @@ void LightSeq::SetDefaults(bool fromMouseClick)
 	if ((hr == S_OK) && fromMouseClick)
 		m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? false : true;
 	else
-		m_d.m_tdr.m_fTimerEnabled = fFalse;
+		m_d.m_tdr.m_fTimerEnabled = false;
 	
 	hr = GetRegInt("DefaultProps\\LightSequence","TimerInterval", &iTmp);
 	if ((hr == S_OK) && fromMouseClick)
@@ -74,7 +73,7 @@ void LightSeq::WriteRegDefaults()
 	SetRegValue("DefaultProps\\LightSequence","Collection",REG_SZ,strTmp2,66);
 	SetRegValueFloat("DefaultProps\\LightSequence","CenterX", m_d.m_vCenter.x);
 	SetRegValueFloat("DefaultProps\\LightSequence","CenterY", m_d.m_vCenter.y);
-	SetRegValue("DefaultProps\\LightSequence","TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
+	SetRegValueBool("DefaultProps\\LightSequence","TimerEnabled",m_d.m_tdr.m_fTimerEnabled);
 	SetRegValue("DefaultProps\\LightSequence","TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval, 4);
 	}
 
@@ -211,15 +210,15 @@ void LightSeq::GetTimers(Vector<HitTimer> * const pvht)
 //
 void LightSeq::GetHitShapes(Vector<HitObject> * const pvho)
 {
-    m_ptu = new LightSeqUpdater(this);
+	m_lightseqanim.m_pLightSeq = this;
 
 	// HACK - adding object directly to screen update list.  Someday make hit objects and screenupdaters seperate objects
-	g_pplayer->m_vscreenupdate.AddElement(&m_ptu->m_lightseqanim);
+	g_pplayer->m_vanimate.AddElement(&m_lightseqanim);
 }
 
 void LightSeq::GetHitShapesDebug(Vector<HitObject> * const pvho)
-	{
-	}
+{
+}
 
 // This method is called as the game exits..
 // it cleans up any allocated memory used by the instace of the object
@@ -230,12 +229,6 @@ void LightSeq::EndPlay()
 	{
 		delete [] m_pgridData;
 		m_pgridData = NULL;
-	}
-
-	if (m_ptu != NULL)
-	{
-		delete m_ptu;
-		m_ptu = NULL;
 	}
 
 	IEditable::EndPlay();
@@ -307,9 +300,7 @@ void LightSeq::RenderSetup(RenderDevice* pd3dDevice)
 		return;
 	}
 	else
-	{
 		ZeroMemory((void *)m_pgridData, (size_t)((m_lightSeqGridHeight*m_lightSeqGridWidth)*sizeof(short)));
-	}
 
 	// get the number of elements (objects) in the collection (referenced by m_visel)
 	size = m_pcollection->m_visel.Size();
@@ -341,7 +332,7 @@ void LightSeq::RenderSetup(RenderDevice* pd3dDevice)
 			if ( /*(ix >= 0) &&*/ (ix < (unsigned int)m_lightSeqGridWidth) && //>=0 handled by unsigned int
 				 /*(iy >= 0) &&*/ (iy < (unsigned int)m_lightSeqGridHeight) ) //>=0 handled by unsigned int
 			{
-				const int gridIndex = (iy * m_lightSeqGridWidth) + ix;
+				const int gridIndex = iy * m_lightSeqGridWidth + ix;
 
 				// then store the index offset into the grid (plus 1, 0 is no object)
 				m_pgridData[gridIndex] = i + 1;
@@ -354,13 +345,9 @@ void LightSeq::RenderStatic(RenderDevice* pd3dDevice)
 {
 }
 
-// This function is called during Check3D.  It basically check to see if the update
+// This function is called during Animate().  It basically check to see if the update
 // interval has expired and if so handles the light effect
-//
-// if a screen update is required it returns true.. but since the light sequencer doesn't
-// have a screen update it always returns false.
-//
-bool LightSeq::RenderAnimation()
+void LightSeq::RenderAnimation()
 {
 	if (m_playInProgress)
 	{
@@ -399,9 +386,8 @@ bool LightSeq::RenderAnimation()
 					// move the tail to the next position
 					++m_queue.Tail;
 					if (m_queue.Tail >= LIGHTSEQQUEUESIZE)
-	   	   			{
 	   	   				m_queue.Tail = 0;
-	   	   			}
+
 					// not playing at the moment
 					m_playInProgress = false;
 					// if the queue is empty then reset the lights to their real state
@@ -433,8 +419,6 @@ bool LightSeq::RenderAnimation()
 			m_playInProgress = true;
 		}
 	}
-
-	return false;
 }
 
 

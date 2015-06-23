@@ -13,7 +13,7 @@ public:
 
 	virtual bool FMover() const { return true; }
 
-	virtual void Check3D() { }
+	virtual void Animate() { }
 
     void SetSolenoidState(bool s);
     float GetStrokeRatio() const;

@@ -5,8 +5,7 @@ class Surface;
 class BumperAnimObject : public AnimObject
 {
 public:
-	virtual void Check3D() { }
-	virtual void Reset() { }
+	virtual void Animate() { }
 
     float m_ringAnimOffset;
 	bool m_fHitEvent;
@@ -31,8 +30,7 @@ public:
 class SlingshotAnimObject : public AnimObject
 {
 public:
-	virtual void Check3D();
-	virtual void Reset();
+	virtual void Animate();
 
 	int m_iframe;
 	U32 m_TimeReset; // Time at which to pull in slingshot
@@ -112,9 +110,7 @@ public:
 	virtual void UpdateDisplacements(const float dtime);
 	virtual void UpdateVelocities();
 
-	virtual bool FMover() const {return true;}
-
-	virtual void Reset();
+	virtual bool FMover() const { return true; }
 
 	Spinner *m_pspinner;
 
@@ -154,8 +150,6 @@ public:
 	virtual void UpdateVelocities();
 
 	virtual bool FMover() const { return true; }
-
-	virtual void Reset();
 
 	Gate *m_pgate;
 
@@ -231,56 +225,18 @@ private:
     Matrix3 matTrans;
 };
 
-
 class DispReelAnimObject : public AnimObject
 {
 public:
-    virtual void Check3D();
-	virtual void Reset();
+	virtual void Animate();
 
 	DispReel *m_pDispReel;
-};
-
-class DispReelUpdater : public HitObject
-{
-public:
-	DispReelUpdater(DispReel * const ptb) { m_dispreelanim.m_pDispReel = ptb; }
-	virtual ~DispReelUpdater() {}
-
-	virtual int GetType() const { return eDispReel; }
-
-	// Bogus methods
-	virtual void Collide(CollisionEvent* coll) {}
-	virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll) { return -1.f; }
-	virtual void CalcHitRect() {}
-
-	virtual AnimObject *GetAnimObject() { return &m_dispreelanim; }
-
-	DispReelAnimObject m_dispreelanim;
 };
 
 class LightSeqAnimObject : public AnimObject
 {
 public:
-    virtual void Check3D();
+	virtual void Animate();
 
 	LightSeq *m_pLightSeq;
-};
-
-class LightSeqUpdater : public HitObject
-{
-public:
-	LightSeqUpdater(LightSeq * const ptb) { m_lightseqanim.m_pLightSeq = ptb; }
-	virtual ~LightSeqUpdater() {}
-
-	virtual int GetType() const { return eLightSeq; }
-
-	// Bogus methods
-	virtual void Collide(CollisionEvent* coll) {}
-	virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll) { return -1.f; }
-	virtual void CalcHitRect() {}
-
-	virtual AnimObject *GetAnimObject() { return &m_lightseqanim; }
-
-	LightSeqAnimObject m_lightseqanim;
 };

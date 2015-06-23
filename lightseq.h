@@ -59,7 +59,6 @@ typedef struct {
 	float	processRadius;
 	float	angle;
 	float	stepAngle;
-	float	processAngle;
 } _tracer;
 
 class LightSeqCenter : public ISelect
@@ -188,13 +187,14 @@ public:
 
 	PinTable 		*m_ptable;
 	LightSeqData 	m_d;
-    LightSeqUpdater *m_ptu;
 	LightSeqCenter	m_LightSeqCenter;
 
-    bool		RenderAnimation();
+    void		RenderAnimation();
 
 private:
-    void		SetupTracers(const SequencerState Animation, long TailLength, long Repeat, long Pause);
+	LightSeqAnimObject m_lightseqanim;
+	
+	void		SetupTracers(const SequencerState Animation, long TailLength, long Repeat, long Pause);
 	bool		ProcessTracer(_tracer * const pTracer, const LightState State);
 	void		SetAllLightsToState(const LightState State);
 	void 		SetElementToState(const int index, const LightState State);

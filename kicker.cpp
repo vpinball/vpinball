@@ -57,9 +57,9 @@ void Kicker::SetDefaults(bool fromMouseClick)
 
    hr = GetRegInt("DefaultProps\\Kicker","TimerEnabled", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
-      m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? fFalse : fTrue;
+      m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? false : true;
    else
-      m_d.m_tdr.m_fTimerEnabled = fFalse;
+      m_d.m_tdr.m_fTimerEnabled = false;
 
    hr = GetRegInt("DefaultProps\\Kicker","TimerInterval", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
@@ -114,7 +114,7 @@ void Kicker::SetDefaults(bool fromMouseClick)
 
 void Kicker::WriteRegDefaults()
 {
-   SetRegValue("DefaultProps\\Kicker","TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
+   SetRegValueBool("DefaultProps\\Kicker","TimerEnabled",m_d.m_tdr.m_fTimerEnabled);
    SetRegValue("DefaultProps\\Kicker","TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval, 4);
    SetRegValueBool("DefaultProps\\Kicker","Enabled", m_d.m_fEnabled);
    SetRegValueFloat("DefaultProps\\Kicker","HitHeight", m_d.m_hitAccuracy);
@@ -274,7 +274,7 @@ void Kicker::ExportMesh(FILE *f)
 void Kicker::GenerateCupMesh(Vertex3D_NoTex2 *buf)
 {
     Matrix3D fullMatrix;
-    fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_orientation + 180));
+    fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_orientation + 180.f));
 
     for (int i = 0; i < kickerCupNumVertices; i++)
     {
@@ -304,9 +304,9 @@ void Kicker::GenerateHoleMesh(Vertex3D_NoTex2 *buf)
         Vertex3Ds vert(kickerHole[i].x, kickerHole[i].y, kickerHole[i].z);
         vert = fullMatrix.MultiplyVector(vert);
 
-        buf[i].x = vert.x*(m_d.m_radius) + m_d.m_vCenter.x;
-        buf[i].y = vert.y*(m_d.m_radius) + m_d.m_vCenter.y;
-        buf[i].z = vert.z*(m_d.m_radius)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_baseHeight;
+        buf[i].x = vert.x*m_d.m_radius + m_d.m_vCenter.x;
+        buf[i].y = vert.y*m_d.m_radius + m_d.m_vCenter.y;
+        buf[i].z = vert.z*m_d.m_radius*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_baseHeight;
         vert = Vertex3Ds(kickerHole[i].nx, kickerHole[i].ny, kickerHole[i].nz);
         vert = fullMatrix.MultiplyVectorNoTranslate(vert);
         buf[i].nx = vert.x;
@@ -395,9 +395,7 @@ void Kicker::RenderStatic(RenderDevice* pd3dDevice)
       const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
       Vertex3D_NoTex2 *buf = new Vertex3D_NoTex2[kickerPlateNumVertices];
-      float rad = m_d.m_radius*0.82f;
-      if ( m_d.m_kickertype==KickerCup )
-         rad = m_d.m_radius*0.9f;
+	  const float rad = m_d.m_radius * ((m_d.m_kickertype == KickerCup) ? 0.9f : 0.82f);
 
       for ( unsigned int i=0;i<kickerPlateNumVertices;i++ )
       {
@@ -410,6 +408,7 @@ void Kicker::RenderStatic(RenderDevice* pd3dDevice)
          buf[i].tu = 0.0f;
          buf[i].tv = 0.0f;
       }
+
       pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
 
       Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
@@ -712,8 +711,8 @@ STDMETHODIMP Kicker::KickXYZ(float angle, float speed, float inclination, float 
       if (speedz > 0.0f)
          speed = cosf(inclination) * speed;
 
-	   m_phitkickercircle->m_pball->m_angularvelocity.Set(0,0,0);
-      m_phitkickercircle->m_pball->m_angularmomentum.Set(0,0,0);
+      m_phitkickercircle->m_pball->m_angularvelocity.SetZero();
+      m_phitkickercircle->m_pball->m_angularmomentum.SetZero();
       m_phitkickercircle->m_pball->m_coll.hitdistance = 0.0f;
       m_phitkickercircle->m_pball->m_coll.hittime = -1.0f;
       m_phitkickercircle->m_pball->m_coll.hitnormal.SetZero();

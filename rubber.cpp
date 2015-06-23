@@ -11,7 +11,6 @@ Rubber::Rubber()
    dynamicVertexBuffer = 0;
    dynamicIndexBuffer = 0;
    dynamicVertexBufferRegenerate = true;
-   m_d.m_depthBias = 0.0f;
    m_propPhysics = NULL;
    m_propPosition = NULL;
    m_propVisual = NULL;
@@ -46,7 +45,7 @@ HRESULT Rubber::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
        {
            pdp->AddRef();
            pdp->Init(this, xx, yy);
-           pdp->m_fSmooth = TRUE;
+           pdp->m_fSmooth = true;
            m_vdpoint.AddElement(pdp);
        }
    }
@@ -96,7 +95,7 @@ void Rubber::WriteRegDefaults()
    SetRegValueFloat(strKeyName,"Height", m_d.m_height);
    SetRegValueInt(strKeyName,"Thickness", m_d.m_thickness);
    SetRegValueBool(strKeyName, "HitEvent", m_d.m_fHitEvent);
-   SetRegValue(strKeyName, "TimerEnabled", REG_DWORD, &m_d.m_tdr.m_fTimerEnabled, 4);
+   SetRegValueBool(strKeyName, "TimerEnabled", m_d.m_tdr.m_fTimerEnabled);
    SetRegValue(strKeyName,"TimerInterval",REG_DWORD,&m_d.m_tdr.m_TimerInterval,4);
    SetRegValue(strKeyName,"Image", REG_SZ, &m_d.m_szImage, lstrlen(m_d.m_szImage));
    SetRegValueFloat(strKeyName,"Elasticity", m_d.m_elasticity);
@@ -582,7 +581,7 @@ float Rubber::GetDepth(const Vertex3Ds& viewDir)
     Vertex2D center2D;
     GetCenter(&center2D);
     const float centerZ = 0.5f * m_d.m_height;
-    return m_d.m_depthBias + viewDir.x * center2D.x + viewDir.y * center2D.y + viewDir.z * centerZ;
+    return viewDir.x * center2D.x + viewDir.y * center2D.y + viewDir.z * centerZ;
 }
 
 void Rubber::RenderSetup(RenderDevice* pd3dDevice)
@@ -639,7 +638,6 @@ HRESULT Rubber::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptk
    bw.WriteFloat(FID(RSCT), m_d.m_scatter);
    bw.WriteBool(FID(CLDRP), m_d.m_fCollidable);
    bw.WriteBool(FID(RVIS), m_d.m_fVisible);
-   bw.WriteFloat(FID(RADB), m_d.m_depthBias);
    bw.WriteBool(FID(ESTR), m_d.m_staticRendering);
    bw.WriteBool(FID(ESIE), m_d.m_showInEditor);
    bw.WriteFloat(FID(ROTX), m_d.m_rotX);
@@ -740,10 +738,6 @@ BOOL Rubber::LoadToken(int id, BiffReader *pbr)
    {
        pbr->GetBool(&m_d.m_showInEditor);
    }
-   else if (id == FID(RADB))
-   {
-      pbr->GetFloat(&m_d.m_depthBias);
-   }
    else if (id == FID(ROTX))
    {
        pbr->GetFloat(&m_d.m_rotX);
@@ -835,7 +829,7 @@ void Rubber::DoCommand(int icmd, int x, int y)
          {
             pdp->AddRef();
             pdp->Init(this, vOut.x, vOut.y);
-            pdp->m_fSmooth = fTrue; // Ramps are usually always smooth
+            pdp->m_fSmooth = true; // Ramps are usually always smooth
             m_vdpoint.InsertElementAt(pdp, icp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
          }
 
@@ -1134,28 +1128,6 @@ STDMETHODIMP Rubber::put_Visible(VARIANT_BOOL newVal)
     STOPUNDO
 
     return S_OK;
-}
-
-STDMETHODIMP Rubber::get_DepthBias(float *pVal)
-{
-   *pVal = m_d.m_depthBias;
-
-   return S_OK;
-}
-
-STDMETHODIMP Rubber::put_DepthBias(float newVal)
-{
-   if(m_d.m_depthBias != newVal)
-   {
-      STARTUNDO
-
-      m_d.m_depthBias = newVal;
-      dynamicVertexBufferRegenerate = true;
-
-      STOPUNDO
-   }
-
-   return S_OK;
 }
 
 STDMETHODIMP Rubber::get_EnableStaticRendering(VARIANT_BOOL *pVal)

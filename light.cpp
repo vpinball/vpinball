@@ -165,9 +165,9 @@ void Light::SetDefaults(bool fromMouseClick)
 
    hr = GetRegInt("DefaultProps\\Light","TimerEnabled", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
-      m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? fFalse : fTrue;
+      m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? false : true;
    else
-      m_d.m_tdr.m_fTimerEnabled = fFalse;
+      m_d.m_tdr.m_fTimerEnabled = false;
 
    hr = GetRegInt("DefaultProps\\Light","TimerInterval", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
@@ -285,7 +285,7 @@ void Light::WriteRegDefaults()
    SetRegValueFloat("DefaultProps\\Light","Falloff", m_d.m_falloff);
    SetRegValueFloat("DefaultProps\\Light","FalloffPower", m_d.m_falloff_power);
    SetRegValue("DefaultProps\\Light","LightState",REG_DWORD,&m_d.m_state,4);
-   SetRegValue("DefaultProps\\Light","TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
+   SetRegValueBool("DefaultProps\\Light","TimerEnabled",m_d.m_tdr.m_fTimerEnabled);
    SetRegValue("DefaultProps\\Light","TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval, 4);
    SetRegValue("DefaultProps\\Light","Color",REG_DWORD,&m_d.m_color,4);
    SetRegValue("DefaultProps\\Light","ColorFull",REG_DWORD,&m_d.m_color2,4);
@@ -711,7 +711,7 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
 	else
 	{
 	    if(g_pplayer->m_current_renderstage == 1)
-			    lightColor_intensity.w *= m_d.m_transmissionScale;
+		    lightColor_intensity.w *= m_d.m_transmissionScale;
 		pd3dDevice->lightShader->SetLightColorIntensity(lightColor_intensity);
 		pd3dDevice->lightShader->Begin(0);
 	}
@@ -982,7 +982,7 @@ HRESULT Light::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, 
    m_d.m_state = LightStateOff;
    m_d.m_shape = ShapeCustom;
 
-   m_d.m_tdr.m_fTimerEnabled = fFalse;
+   m_d.m_tdr.m_fTimerEnabled = false;
    m_d.m_tdr.m_TimerInterval = 100;
 
    m_d.m_color = RGB(255,255,0);
@@ -1296,6 +1296,7 @@ STDMETHODIMP Light::get_State(LightState *pVal)
 STDMETHODIMP Light::put_State(LightState newVal)
 {
    STARTUNDO
+
    // if the light is locked by the LS then just change the state and don't change the actual light
    if (!m_fLockedByLS)
       setLightState(newVal);
@@ -1423,7 +1424,7 @@ void Light::InitShape()
          {
             pdp->AddRef();
             pdp->Init(this, xx, yy);
-            pdp->m_fSmooth = TRUE;
+            pdp->m_fSmooth = true;
             m_vdpoint.AddElement(pdp);
          }
       }

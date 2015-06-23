@@ -231,7 +231,7 @@ public:
     std::vector<Ball*> m_vball;
     std::vector<HitFlipper*> m_vFlippers;
 
-	Vector<AnimObject> m_vscreenupdate;
+	Vector<AnimObject> m_vanimate;
 	Vector<HitTimer> m_vht;
 
 	Vertex3Ds m_gravity;

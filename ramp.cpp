@@ -50,7 +50,7 @@ HRESULT Ramp::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
    {
       pdp->AddRef();
       pdp->Init(this, x, y+length);
-      pdp->m_fSmooth = fTrue;
+      pdp->m_fSmooth = true;
       m_vdpoint.AddElement(pdp);
    }
 
@@ -59,7 +59,7 @@ HRESULT Ramp::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
    {
       pdp->AddRef();
       pdp->Init(this, x, y-length);
-      pdp->m_fSmooth = fTrue;
+      pdp->m_fSmooth = true;
       m_vdpoint.AddElement(pdp);
    }
 
@@ -116,7 +116,7 @@ void Ramp::WriteRegDefaults()
    SetRegValueFloat(strKeyName,"WidthBottom", m_d.m_widthbottom);
    SetRegValueFloat(strKeyName,"WidthTop", m_d.m_widthtop);
    SetRegValueInt(strKeyName,"RampType", m_d.m_type);
-   SetRegValue(strKeyName,"TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
+   SetRegValueBool(strKeyName,"TimerEnabled",m_d.m_tdr.m_fTimerEnabled);
    SetRegValue(strKeyName,"TimerInterval",REG_DWORD,&m_d.m_tdr.m_TimerInterval,4);
    SetRegValue(strKeyName,"Image", REG_SZ, &m_d.m_szImage, lstrlen(m_d.m_szImage));
    SetRegValue(strKeyName,"ImageMode",REG_DWORD,&m_d.m_imagealignment,4);
@@ -1481,7 +1481,7 @@ void Ramp::DoCommand(int icmd, int x, int y)
          {
             pdp->AddRef();
             pdp->Init(this, vOut.x, vOut.y);
-            pdp->m_fSmooth = fTrue; // Ramps are usually always smooth
+            pdp->m_fSmooth = true; // Ramps are usually always smooth
             m_vdpoint.InsertElementAt(pdp, icp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
          }
 

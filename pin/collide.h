@@ -90,7 +90,7 @@ public:
 
 	virtual void CalcHitRect() = 0;
 	
-	virtual AnimObject *GetAnimObject() {return NULL;}
+	virtual AnimObject *GetAnimObject() { return NULL; }
 
     void SetFriction(const float friction)  { m_friction = friction; }
 
@@ -120,8 +120,7 @@ public:
 	virtual void UpdateDisplacements(const float dtime) {}
 	virtual void UpdateVelocities() {}
 
-    virtual void Check3D() {}
-	virtual void Reset() {}
+    virtual void Animate() {}
 };
 
 class LineSeg : public HitObject

@@ -19,7 +19,6 @@ public:
 	float m_elasticityFalloff;
 	float m_friction;
 	float m_scatter;
-   float m_depthBias;      // for determining depth sorting
    float m_rotX;
    float m_rotY;
    float m_rotZ;
@@ -173,8 +172,6 @@ public:
 	STDMETHOD(put_Collidable)(/*[in]*/ VARIANT_BOOL newVal);
 	STDMETHOD(get_Visible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_Visible)(/*[in]*/ VARIANT_BOOL newVal);
-    STDMETHOD(get_DepthBias)(/*[out, retval]*/ float *pVal);
-    STDMETHOD(put_DepthBias)(/*[in]*/ float newVal);
     STDMETHOD(get_EnableStaticRendering)(/*[out, retval]*/ VARIANT_BOOL *pVal);
     STDMETHOD(put_EnableStaticRendering)(/*[in]*/ VARIANT_BOOL newVal);
     STDMETHOD(get_EnableShowInEditor)(/*[out, retval]*/ VARIANT_BOOL *pVal);

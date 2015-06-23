@@ -44,7 +44,7 @@ public:
     friend class DragPoint;
 
 protected:
-    void GetRgVertex(std::vector<RenderVertex> & vv, const bool loop=true, const float accuracy=1.0f/(0.5f*0.5f));
+    void GetRgVertex(std::vector<RenderVertex> & vv, const bool loop=true, const float accuracy=(float)(1.0/(0.5*0.5)));
 
 	Vector< CComObject<DragPoint> > m_vdpoint;
 };
@@ -120,11 +120,11 @@ public:
 	STDMETHOD(put_Z)(/*[in]*/ float newVal);
 
 	Vertex3Ds m_v;
-	BOOL m_fSmooth;
-	BOOL m_fSlingshot;
-	BOOL m_fAutoTexture;
 	float m_texturecoord;
 	IHaveDragPoints *m_pihdp;
+	bool m_fSmooth;
+	bool m_fSlingshot;
+	bool m_fAutoTexture;
 };
 
 #endif // !defined(AFX_DRAGPOINT_H__E0C074C9_5BF2_4F8C_8012_76082BAC2203__INCLUDED_)

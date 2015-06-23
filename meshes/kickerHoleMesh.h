@@ -1,6 +1,6 @@
 const unsigned int kickerHoleNumVertices=192;
 const unsigned int kickerHoleNumFaces=288;
-Vertex3D_NoTex2 kickerHole[192]=
+const Vertex3D_NoTex2 kickerHole[192]=
 {
 { 0.795518f,0.000001f,-0.021814f, -0.235300f,-0.031000f,0.971400f, 0.208334f,0.169846f},
 { 0.941778f,0.252349f,0.021664f, -0.235300f,-0.031000f,0.971400f, 0.166667f,0.000000f},
@@ -195,7 +195,7 @@ Vertex3D_NoTex2 kickerHole[192]=
 { 0.795518f,0.000001f,-0.478336f, -0.991400f,0.130500f,-0.000000f, 0.208334f,0.992938f},
 { 0.768411f,-0.205895f,-0.021814f, -0.991400f,0.130500f,-0.000000f, 0.250001f,0.169846f}
 };
-WORD kickerHoleIndices[288]=
+const WORD kickerHoleIndices[288]=
 {
    0,1,2,3,1,0,4,5,6,7,5,4,8,9,10,
    11,9,8,12,13,14,12,14,15,16,17,18,19,17,16,
