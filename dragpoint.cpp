@@ -224,7 +224,7 @@ void IHaveDragPoints::ReverseOrder()
       m_vdpoint.ReplaceElementAt(pdp1, m_vdpoint.Size() - 1 - i);
    }
 
-   const BOOL fSlingshotTemp = m_vdpoint.ElementAt(0)->m_fSlingshot;
+   const bool fSlingshotTemp = m_vdpoint.ElementAt(0)->m_fSlingshot;
 
    for (int i=0;i<m_vdpoint.Size()-1;i++)
    {
@@ -275,8 +275,8 @@ void IHaveDragPoints::GetRgVertex(std::vector<RenderVertex> & vv, const bool loo
 
       rendv1.x = pdp1->m_v.x;
       rendv1.y = pdp1->m_v.y;
-      rendv1.fSmooth = (pdp1->m_fSmooth != 0);
-      rendv1.fSlingshot = (pdp1->m_fSlingshot != 0);
+      rendv1.fSmooth = pdp1->m_fSmooth;
+      rendv1.fSlingshot = pdp1->m_fSlingshot;
       rendv1.fControlPoint = true;
 
       // Properties of last point don't matter, because it won't be added to the list on this pass (it'll get added as the first point of the next curve)
@@ -463,14 +463,14 @@ void IHaveDragPoints::LoadPointToken(int id, BiffReader *pbr, int version)
 void DragPoint::Init(IHaveDragPoints *pihdp, float x, float y)
 {
    m_pihdp = pihdp;
-   m_fSmooth = fFalse;
+   m_fSmooth = false;
 
-   m_fSlingshot = fFalse;
+   m_fSlingshot = false;
    m_v.x = x;
    m_v.y = y;
-   m_v.z = 0;
-   m_fAutoTexture = fTrue;
-   m_texturecoord = 0.0;
+   m_v.z = 0.f;
+   m_fAutoTexture = true;
+   m_texturecoord = 0.0f;
    if ( pihdp->GetIEditable()->GetItemType()==eItemRubber)
       m_menuid = IDR_POINTMENU_SMOOTH;
    else
@@ -557,11 +557,11 @@ void DragPoint::DoCommand(int icmd, int x, int y)
       index2 = (m_pihdp->m_vdpoint.IndexOf(this) - 1 + m_pihdp->m_vdpoint.Size()) % m_pihdp->m_vdpoint.Size();
       if (m_fSmooth && m_fSlingshot)
       {
-         m_fSlingshot = fFalse;
+         m_fSlingshot = false;
       }
       if (m_fSmooth && m_pihdp->m_vdpoint.ElementAt(index2)->m_fSlingshot)
       {
-         m_pihdp->m_vdpoint.ElementAt(index2)->m_fSlingshot = fFalse;
+         m_pihdp->m_vdpoint.ElementAt(index2)->m_fSlingshot = false;
       }
 
       m_pihdp->GetIEditable()->EndUndo();
@@ -576,9 +576,9 @@ void DragPoint::DoCommand(int icmd, int x, int y)
       m_fSlingshot = !m_fSlingshot;
       if (m_fSlingshot)
       {
-         m_fSmooth = fFalse;
+         m_fSmooth = false;
          index2 = (m_pihdp->m_vdpoint.IndexOf(this) + 1) % m_pihdp->m_vdpoint.Size();
-         m_pihdp->m_vdpoint.ElementAt(index2)->m_fSmooth = fFalse;
+         m_pihdp->m_vdpoint.ElementAt(index2)->m_fSmooth = false;
       }
 
       m_pihdp->GetIEditable()->EndUndo();

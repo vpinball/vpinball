@@ -11,11 +11,11 @@
 // Timer
 
 class TimerDataRoot
-	{
+{
 public:
-	BOOL m_fTimerEnabled;
 	int m_TimerInterval;
-	};
+	bool m_fTimerEnabled;
+};
 
 class TimerData
 	{

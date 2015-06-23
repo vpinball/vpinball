@@ -182,9 +182,9 @@ void Trigger::SetDefaults(bool fromMouseClick)
 
    hr = GetRegInt("DefaultProps\\Trigger","TimerEnabled", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
-      m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? fFalse : fTrue;
+      m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? false : true;
    else
-      m_d.m_tdr.m_fTimerEnabled = fFalse;
+      m_d.m_tdr.m_fTimerEnabled = false;
 
    hr = GetRegInt("DefaultProps\\Trigger","TimerInterval", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
@@ -932,7 +932,7 @@ void Trigger::ClearForOverwrite()
 
 void Trigger::WriteRegDefaults()
 {
-   SetRegValue("DefaultProps\\Trigger","TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
+   SetRegValueBool("DefaultProps\\Trigger","TimerEnabled",m_d.m_tdr.m_fTimerEnabled);
    SetRegValue("DefaultProps\\Trigger","TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval, 4);
    SetRegValueBool("DefaultProps\\Trigger","Enabled",m_d.m_fEnabled);
    SetRegValueBool("DefaultProps\\Trigger","Visible",m_d.m_fVisible);

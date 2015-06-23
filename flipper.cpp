@@ -64,9 +64,9 @@ void Flipper::SetDefaults(bool fromMouseClick)
 
    hr = GetRegInt("DefaultProps\\Flipper","TimerEnabled", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
-      m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? fFalse : fTrue;
+      m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? false : true;
    else
-      m_d.m_tdr.m_fTimerEnabled = fFalse;
+      m_d.m_tdr.m_fTimerEnabled = false;
 
    hr = GetRegInt("DefaultProps\\Flipper","TimerInterval", &iTmp);
    m_d.m_tdr.m_TimerInterval = (hr == S_OK) && fromMouseClick ? iTmp : 100;
@@ -125,7 +125,7 @@ void Flipper::WriteRegDefaults()
    SetRegValueFloat(regKey,"ElasticityFalloff", m_d.m_elasticityFalloff);
    SetRegValueFloat(regKey,"Friction", m_d.m_friction);
    SetRegValueFloat(regKey,"RampUp", m_d.m_rampUp);
-   SetRegValueInt(regKey,"TimerEnabled", m_d.m_tdr.m_fTimerEnabled);
+   SetRegValueBool(regKey,"TimerEnabled", m_d.m_tdr.m_fTimerEnabled);
    SetRegValueInt(regKey,"TimerInterval", m_d.m_tdr.m_TimerInterval);
    SetRegValueInt(regKey,"Color", m_d.m_color);
    SetRegValueInt(regKey,"RubberColor", m_d.m_rubbercolor);

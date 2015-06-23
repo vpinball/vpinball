@@ -114,9 +114,9 @@ void Gate::SetDefaults(bool fromMouseClick)
 
    hr = GetRegInt("DefaultProps\\Gate","TimerEnabled", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
-      m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? fFalse : fTrue;
+      m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? false : true;
    else
-      m_d.m_tdr.m_fTimerEnabled = fFalse;
+      m_d.m_tdr.m_fTimerEnabled = false;
 
    hr = GetRegInt("DefaultProps\\Gate","TimerInterval", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
@@ -156,7 +156,7 @@ void Gate::WriteRegDefaults()
    SetRegValueFloat("DefaultProps\\Gate","AngleMin", m_d.m_angleMin);
    SetRegValueFloat("DefaultProps\\Gate","AngleMax", m_d.m_angleMax);
    SetRegValueBool("DefaultProps\\Gate","Visible", m_d.m_fVisible);
-   SetRegValue("DefaultProps\\Gate","TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
+   SetRegValueBool("DefaultProps\\Gate","TimerEnabled", m_d.m_tdr.m_fTimerEnabled);
    SetRegValue("DefaultProps\\Gate","TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval, 4);
    SetRegValue("DefaultProps\\Gate","Surface", REG_SZ, &m_d.m_szSurface,lstrlen(m_d.m_szSurface));
    SetRegValueFloat("DefaultProps\\Gate","Elasticity", m_d.m_elasticity);

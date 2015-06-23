@@ -2,7 +2,6 @@
 
 DispReel::DispReel()
 {
-    m_ptu = NULL;
     memset(m_d.m_szImage,0,MAXTOKEN);
     memset(m_d.m_szSound,0,MAXTOKEN);
 }
@@ -123,7 +122,7 @@ void DispReel::WriteRegDefaults()
 	SetRegValueInt("DefaultProps\\Decal","DigitRange",m_d.m_digitrange);
 	SetRegValueInt("DefaultProps\\Decal","UpdateInterval",m_d.m_updateinterval);
 	SetRegValue("DefaultProps\\EMReel","BackColor",REG_DWORD,&m_d.m_backcolor,4);
-	SetRegValueInt("DefaultProps\\EMReel","TimerEnabled",m_d.m_tdr.m_fTimerEnabled);
+	SetRegValueBool("DefaultProps\\EMReel","TimerEnabled",m_d.m_tdr.m_fTimerEnabled);
 	SetRegValueInt("DefaultProps\\EMReel","TimerInterval",m_d.m_tdr.m_TimerInterval);
 }
 
@@ -238,27 +237,21 @@ void DispReel::GetTimers(Vector<HitTimer> * const pvht)
 //
 void DispReel::GetHitShapes(Vector<HitObject> * const pvho)
 {
-    m_ptu = new DispReelUpdater(this);
+	m_dispreelanim.m_pDispReel = this;
 
 	// HACK - adding object directly to screen update list.  Someday make hit objects and screenupdaters seperate objects
-	g_pplayer->m_vscreenupdate.AddElement(&m_ptu->m_dispreelanim);
+	g_pplayer->m_vanimate.AddElement(&m_dispreelanim);
 }
 
 void DispReel::GetHitShapesDebug(Vector<HitObject> * const pvho)
-	{
-	}
+{
+}
 
 // This method is called as the game exits..
 // it cleans up any allocated memory used by the instance of the object
 //
 void DispReel::EndPlay()
 {
-	if (m_ptu)
-	{
-		delete m_ptu;
-		m_ptu = NULL;
-	}
-
 	IEditable::EndPlay();
 }
 
@@ -406,22 +399,20 @@ void DispReel::RenderSetup(RenderDevice* pd3dDevice)
 	}
 
     m_timenextupdate = g_pplayer->m_time_msec + m_d.m_updateinterval;
-    m_fforceupdate = false;
 }
 
 void DispReel::RenderStatic(RenderDevice* pd3dDevice)
 {
 }
 
-// This function is called during Check3D.  It basically check to see if the update
+// This function is called during Animate().  It basically check to see if the update
 // interval has expired and if so handles the rolling of the reels according to the
 // number of motor steps queued up for each reel
 //
 // if a screen update is required it returns true..
 //
-bool DispReel::RenderAnimation()
+void DispReel::RenderAnimation()
 {
-    bool    rc = false;
     OLECHAR mySound[256];
 
     if (g_pplayer->m_time_msec >= m_timenextupdate)
@@ -473,9 +464,7 @@ bool DispReel::RenderAnimation()
 		                    ReelInfo[i].currentValue += AdjustValue;
 			                // if not the first reel then decrement the next reel by 1
 					        if (i != 0)
-						    {
 			                    ReelInfo[i-1].motorPulses--;
-							}
 						}
 					}
 					else
@@ -488,26 +477,13 @@ bool DispReel::RenderAnimation()
 			                // if not the first reel then increment the next reel
 							// along by 1 (just like a car odometer)
 					        if (i != 0)
-						    {
 			                    ReelInfo[i-1].motorPulses++;
-							}
 						}
 					}
 				}
-				// there is a change in the animation, redraw the frame
-				rc = true;
             }
         }
-
-        // if there is a change or we are forced to update, then do so..
-        if (rc || m_fforceupdate)
-        {
-            m_fforceupdate = false;
-            rc = true;
-		}
 	}
-
-	return rc;
 }
 
 void DispReel::SetObjectPos()
@@ -1088,8 +1064,7 @@ STDMETHODIMP DispReel::SetValue(long Value)
     }
 
     // force a immediate screen update
-    m_fforceupdate = true;
-	m_timenextupdate = g_pplayer->m_time_msec;
+    m_timenextupdate = g_pplayer->m_time_msec;
 
     return S_OK;
 }

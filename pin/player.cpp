@@ -1062,8 +1062,9 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
         AnimObject *pao = pho->GetAnimObject();
         if (pao)
         {
-            m_vscreenupdate.AddElement(pao);
-            if (pao->FMover())
+			if (pho->GetType() == eLineSeg) // only slingshot still uses this
+				m_vanimate.AddElement(pao);
+            if (pao->FMover()) // spinner, gate, flipper, plunger
                 m_vmover.push_back(pao);
         }
     }
@@ -2035,7 +2036,7 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
 		if (hittime > STATICTIME) StaticCnts = STATICCNTS; // allow more zeros next round
 
 		for (unsigned i = 0; i < m_vmover.size(); i++)
-			m_vmover[i]->UpdateDisplacements(hittime); // step 2: move the objects about according to velocities
+			m_vmover[i]->UpdateDisplacements(hittime); // step 2: move the objects about according to velocities (spinner, gate, flipper, plunger, ball)
 
 		// find balls that need to be collided and script'ed (generally there will be one, but more are possible)
 
@@ -2326,10 +2327,10 @@ void Player::UpdatePhysics()
 			FilterNudge();
 
 		for (unsigned i = 0; i < m_vmover.size(); i++)
-			m_vmover[i]->UpdateVelocities();        // always on integral physics frame boundary
+			m_vmover[i]->UpdateVelocities();        // always on integral physics frame boundary (spinner, gate, flipper, plunger, ball)
 
 		//primary physics loop
-		PhysicsSimulateCycle(physics_diff_time);            // main simulator call
+		PhysicsSimulateCycle(physics_diff_time);    // main simulator call
 
 		//ball trail, keep old pos of balls
 		for (unsigned i = 0; i < m_vball.size(); i++)
@@ -2628,9 +2629,9 @@ void Player::CheckAndUpdateRegions()
     m_pin3d.m_pd3dDevice->CopySurface(m_pin3d.m_pddsBackBuffer, m_pin3d.m_pddsStatic);
     m_pin3d.m_pd3dDevice->CopySurface(m_pin3d.m_pddsZBuffer, m_pin3d.m_pddsStaticZ);
 
-    // Process all AnimObjects
-    for (int l=0; l < m_vscreenupdate.Size(); ++l)
-        m_vscreenupdate.ElementAt(l)->Check3D();
+    // Process all AnimObjects (currently only DispReel, LightSeq and Slingshot)
+	for (int l = 0; l < m_vanimate.Size(); ++l)
+		m_vanimate.ElementAt(l)->Animate();
 }
 
 void Player::Bloom()
@@ -2794,7 +2795,7 @@ void Player::FlipVideoBuffersNormal( const bool vsync )
 		RenderTarget* tmpSurface;
 		m_pin3d.m_pd3dDevice->GetBackBufferTmpTexture()->GetSurfaceLevel(0, &tmpSurface);
 		m_pin3d.m_pd3dDevice->SetRenderTarget(tmpSurface);
-                SAFE_RELEASE_NO_RCC(tmpSurface); //!!
+		SAFE_RELEASE_NO_RCC(tmpSurface); //!!
 	}
 
 	// copy framebuffer over from texture and tonemap/gamma
@@ -2853,7 +2854,7 @@ void Player::FlipVideoBuffersAO( const bool vsync )
 	RenderTarget* tmpAOSurface;
 	m_pin3d.m_pddsAOBackTmpBuffer->GetSurfaceLevel(0, &tmpAOSurface);
 	m_pin3d.m_pd3dDevice->SetRenderTarget(tmpAOSurface);
-        SAFE_RELEASE_NO_RCC(tmpAOSurface); //!!
+	SAFE_RELEASE_NO_RCC(tmpAOSurface); //!!
 
 	m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pddsAOBackBuffer);
 	m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture3", m_pin3d.m_pdds3DZBuffer);
@@ -2883,7 +2884,7 @@ void Player::FlipVideoBuffersAO( const bool vsync )
 		RenderTarget* tmpSurface;
 		m_pin3d.m_pd3dDevice->GetBackBufferTmpTexture()->GetSurfaceLevel(0, &tmpSurface);
 		m_pin3d.m_pd3dDevice->SetRenderTarget(tmpSurface);
-                SAFE_RELEASE_NO_RCC(tmpSurface); //!!
+		SAFE_RELEASE_NO_RCC(tmpSurface); //!!
 	}
 
 	float shiftedVerts[4 * 5] =
@@ -3524,7 +3525,7 @@ void Player::DrawBalls()
 	  if(light_nearest[0] != NULL)
 	  {
 		  const float dist = Vertex3Ds(light_nearest[0]->m_d.m_vCenter.x - pball->m_pos.x, light_nearest[0]->m_d.m_vCenter.y - pball->m_pos.y, light_nearest[0]->m_d.m_meshRadius + light_nearest[0]->m_surfaceHeight - pball->m_pos.z).Length(); //!! z pos
-                  Roughness = min(max(dist*0.006f,0.3f),Roughness);
+		  Roughness = min(max(dist*0.006f,0.3f),Roughness);
 	  }
 	  const D3DXVECTOR4 rwem(exp2f(10.0f * Roughness + 1.0f), 0.f, 1.f, 0.0f);
 	  ballShader->SetVector("Roughness_WrapL_Edge_IsMetal", &rwem);

@@ -93,7 +93,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_DISP_REEL)
 // ISupportsErrorInfo
 	STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
-    bool        RenderAnimation();
+    void        RenderAnimation();
 
 	void		WriteRegDefaults();
 
@@ -101,8 +101,6 @@ DECLARE_REGISTRY_RESOURCEID(IDR_DISP_REEL)
 
     DispReelData m_d;
 
-    DispReelUpdater *m_ptu;
-    
     float       m_renderwidth, m_renderheight;     // size of each reel (rendered)
 
 private:
@@ -111,7 +109,8 @@ private:
 	float       m_reeldigitwidth;  // size of the individual reel digits (in bitmap form)
     float       m_reeldigitheight;
     U32         m_timenextupdate;
-    bool        m_fforceupdate;
+	
+	DispReelAnimObject m_dispreelanim;
 
     struct TexCoordRect
     {

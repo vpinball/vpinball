@@ -119,9 +119,9 @@ void Bumper::SetDefaults(bool fromMouseClick)
 
    hr = GetRegInt("DefaultProps\\Bumper","TimerEnabled", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
-      m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? fFalse : fTrue;
+      m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? false : true;
    else
-      m_d.m_tdr.m_fTimerEnabled = fFalse;
+      m_d.m_tdr.m_fTimerEnabled = false;
 
    hr = GetRegInt("DefaultProps\\Bumper","TimerInterval", &iTmp);
    m_d.m_tdr.m_TimerInterval = (hr == S_OK) && fromMouseClick ? iTmp : 100;
@@ -147,7 +147,7 @@ void Bumper::WriteRegDefaults()
    SetRegValueFloat("DefaultProps\\Bumper","RingSpeed", m_d.m_ringSpeed);
    SetRegValueFloat("DefaultProps\\Bumper","Orientation", m_d.m_orientation);
    SetRegValueFloat("DefaultProps\\Bumper","Threshold", m_d.m_threshold);
-   SetRegValueInt("DefaultProps\\Bumper","TimerEnabled", m_d.m_tdr.m_fTimerEnabled);	
+   SetRegValueBool("DefaultProps\\Bumper","TimerEnabled", m_d.m_tdr.m_fTimerEnabled);	
    SetRegValueInt("DefaultProps\\Bumper","TimerInterval", m_d.m_tdr.m_TimerInterval);	
    SetRegValueBool("DefaultProps\\Bumper","CapVisible", m_d.m_fCapVisible);	
    SetRegValueInt("DefaultProps\\Bumper","BaseVisible", m_d.m_fBaseVisible);	

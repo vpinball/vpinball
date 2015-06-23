@@ -41,7 +41,7 @@ void Flasher::InitShape()
       {
          pdp->AddRef();
          pdp->Init(this, x-size*0.5f, y-size*0.5f);
-         pdp->m_fSmooth = FALSE;
+         pdp->m_fSmooth = false;
          m_vdpoint.AddElement(pdp);
       }
       CComObject<DragPoint>::CreateInstance(&pdp);
@@ -49,7 +49,7 @@ void Flasher::InitShape()
       {
          pdp->AddRef();
          pdp->Init(this, x-size*0.5f, y+size*0.5f);
-         pdp->m_fSmooth = FALSE;
+		 pdp->m_fSmooth = false;
          m_vdpoint.AddElement(pdp);
       }
       CComObject<DragPoint>::CreateInstance(&pdp);
@@ -57,7 +57,7 @@ void Flasher::InitShape()
       {
          pdp->AddRef();
          pdp->Init(this, x+size*0.5f, y+size*0.5f);
-         pdp->m_fSmooth = FALSE;
+		 pdp->m_fSmooth = false;
          m_vdpoint.AddElement(pdp);
       }
       CComObject<DragPoint>::CreateInstance(&pdp);
@@ -65,7 +65,7 @@ void Flasher::InitShape()
       {
          pdp->AddRef();
          pdp->Init(this, x+size*0.5f, y-size*0.5f);
-         pdp->m_fSmooth = FALSE;
+		 pdp->m_fSmooth = false;
          m_vdpoint.AddElement(pdp);
       }
    }
@@ -129,9 +129,9 @@ void Flasher::SetDefaults(bool fromMouseClick)
 
    hr = GetRegInt("DefaultProps\\Flasher","TimerEnabled", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
-      m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? fFalse : fTrue;
+      m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? false : true;
    else
-      m_d.m_tdr.m_fTimerEnabled = fFalse;
+      m_d.m_tdr.m_fTimerEnabled = false;
 
    hr = GetRegInt("DefaultProps\\Flasher","TimerInterval", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
@@ -196,7 +196,7 @@ void Flasher::WriteRegDefaults()
    SetRegValueFloat("DefaultProps\\Flasher","RotY", m_d.m_rotY);
    SetRegValueFloat("DefaultProps\\Flasher","RotZ", m_d.m_rotZ);
    SetRegValue("DefaultProps\\Flasher","Color",REG_DWORD,&m_d.m_color,4);
-   SetRegValueBool("DefaultProps\\Flasher","TimerEnabled",!!m_d.m_tdr.m_fTimerEnabled);
+   SetRegValueBool("DefaultProps\\Flasher","TimerEnabled",m_d.m_tdr.m_fTimerEnabled);
    SetRegValueInt("DefaultProps\\Flasher","TimerInterval",m_d.m_tdr.m_TimerInterval);
    SetRegValue("DefaultProps\\Flasher","ImageA", REG_SZ, &m_d.m_szImageA, lstrlen(m_d.m_szImageA));
    SetRegValue("DefaultProps\\Flasher","ImageB", REG_SZ, &m_d.m_szImageB, lstrlen(m_d.m_szImageB));

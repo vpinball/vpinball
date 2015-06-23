@@ -54,7 +54,7 @@ HRESULT IEditable::put_TimerEnabled(VARIANT_BOOL newVal, BOOL *pte)
 	{
 	STARTUNDO
 
-	BOOL fNew = VBTOF(newVal);
+	const BOOL fNew = VBTOF(newVal);
 
 	if (fNew != *pte)
 		{

@@ -198,7 +198,7 @@ DECLARE_REGISTRY_RESOURCEID(IDR_LIGHT)
 	PinTable *m_ptable;
 
 	LightData m_d;
-	LightState 	m_realState;
+	LightState m_realState;
 
 	float m_surfaceHeight;
 
@@ -210,8 +210,8 @@ private:
 	LightCenter m_lightcenter;
 
 //>>> Added By Chris
-	bool		m_fLockedByLS;
-   bool     m_roundLight;
+	bool	m_fLockedByLS;
+    bool    m_roundLight;
 //<<<
 
    int customMoverVertexNum;

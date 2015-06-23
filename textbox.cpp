@@ -62,7 +62,7 @@ void Textbox::SetDefaults(bool fromMouseClick)
         m_d.m_backcolor = GetRegIntWithDefault("DefaultProps\\TextBox","BackColor", RGB(0,0,0));
         m_d.m_fontcolor = GetRegIntWithDefault("DefaultProps\\TextBox","FontColor", RGB(255,255,255));
         m_d.m_intensity_scale = GetRegStringAsFloatWithDefault("DefaultProps\\TextBox","IntensityScale", 1.0f);
-        m_d.m_tdr.m_fTimerEnabled = GetRegIntWithDefault("DefaultProps\\TextBox","TimerEnabled", 0) ? true : false;
+        m_d.m_tdr.m_fTimerEnabled = GetRegBoolWithDefault("DefaultProps\\TextBox","TimerEnabled", false) ? true : false;
         m_d.m_tdr.m_TimerInterval = GetRegIntWithDefault("DefaultProps\\TextBox","TimerInterval", 100);
         m_d.m_talign = (TextAlignment)GetRegIntWithDefault("DefaultProps\\TextBox","TextAlignment", TextAlignRight);
         m_d.m_fTransparent = GetRegBoolWithDefault("DefaultProps\\TextBox","Transparent", false);
@@ -106,7 +106,7 @@ void Textbox::WriteRegDefaults()
 	
 	SetRegValue("DefaultProps\\TextBox","BackColor", REG_DWORD, &m_d.m_backcolor, 4);
 	SetRegValue("DefaultProps\\TextBox","FontColor", REG_DWORD, &m_d.m_fontcolor, 4);
-	SetRegValue("DefaultProps\\TextBox","TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
+	SetRegValueBool("DefaultProps\\TextBox","TimerEnabled",m_d.m_tdr.m_fTimerEnabled);
 	SetRegValue("DefaultProps\\TextBox","TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval, 4);
 	SetRegValueBool("DefaultProps\\TextBox","Transparent", m_d.m_fTransparent);
 

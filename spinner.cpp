@@ -66,7 +66,7 @@ void Spinner::WriteRegDefaults()
    //SetRegValueFloat("DefaultProps\\Spinner","Friction", m_d.m_friction);
    SetRegValueFloat("DefaultProps\\Spinner","Scatter", m_d.m_scatter);
    SetRegValue("DefaultProps\\Spinner","Visible",REG_DWORD,&m_d.m_fVisible,4);
-   SetRegValue("DefaultProps\\Spinner","TimerEnabled",REG_DWORD,&m_d.m_tdr.m_fTimerEnabled,4);
+   SetRegValueBool("DefaultProps\\Spinner","TimerEnabled",m_d.m_tdr.m_fTimerEnabled);
    SetRegValue("DefaultProps\\Spinner","TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval, 4);
    SetRegValue("DefaultProps\\Spinner","Image", REG_SZ, &m_d.m_szImage,lstrlen(m_d.m_szImage));
    SetRegValue("DefaultProps\\Spinner","Surface", REG_SZ, &m_d.m_szSurface,lstrlen(m_d.m_szSurface));
@@ -134,7 +134,7 @@ void Spinner::SetDefaults(bool fromMouseClick)
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? false : true;
    else
-      m_d.m_tdr.m_fTimerEnabled = fFalse;
+      m_d.m_tdr.m_fTimerEnabled = false;
 
    hr = GetRegInt("DefaultProps\\Spinner","TimerInterval", &iTmp);
    if ((hr == S_OK) && fromMouseClick)

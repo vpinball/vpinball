@@ -98,7 +98,7 @@ void LineSegSlingshot::Collide(CollisionEvent* coll)
     }
 }
 
-void SlingshotAnimObject::Check3D()
+void SlingshotAnimObject::Animate()
 {
 	if ((m_iframe == 0) && (m_TimeReset != 0) && m_fAnimations)
 	{
@@ -109,11 +109,6 @@ void SlingshotAnimObject::Check3D()
 		m_iframe = 0;
 		m_TimeReset = 0;
 	}
-}
-
-void SlingshotAnimObject::Reset()
-{
-	// Do nothing right now - just let it draw as not hit
 }
 
 HitGate::HitGate(Gate * const pgate, const float height)
@@ -142,7 +137,6 @@ HitGate::HitGate(Gate * const pgate, const float height)
     m_lineseg[1].v1.y = m_lineseg[0].v2.y;
     m_lineseg[1].v2.x = m_lineseg[0].v1.x;
     m_lineseg[1].v2.y = m_lineseg[0].v1.y;
-
 
     m_lineseg[0].CalcNormal();
     m_lineseg[1].CalcNormal();
@@ -189,7 +183,6 @@ float HitGate::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
         coll.hitvelocity.x = 0.0f;
 
     return hittime;
-
 }
 
 void HitGate::Collide(CollisionEvent* coll)
@@ -271,10 +264,6 @@ void GateAnimObject::UpdateVelocities()
 			m_anglespeed = (m_anglespeed - sinf(m_angle) * 0.0025f) * (1.0f - m_friction); // Center of gravity towards bottom of object, makes it stop vertical
 		//else m_anglespeed = (m_anglespeed-sinf((m_angle - m_angleMin)*0.5f) * 0.02f)*(1.0f - m_friction); // Center of gravity towards bottom of object, makes it stop vertical
 	}
-}
-
-void GateAnimObject::Reset()
-{
 }
 
 HitSpinner::HitSpinner(Spinner * const pspinner, const float height)
@@ -426,10 +415,6 @@ void SpinnerAnimObject::UpdateVelocities()
 	m_anglespeed -= sinf(m_angle) * (float)(0.0025 * PHYS_FACTOR); // Center of gravity towards bottom of object, makes it stop vertical
 
 	m_anglespeed *= m_damping;
-}
-
-void SpinnerAnimObject::Reset()
-{
 }
 
 void HitSpinner::CalcHitRect()
@@ -943,23 +928,18 @@ void HitLine3D::CalcHitRect()
 
 // this function is called every frame to see if the object needs updating
 //
-void DispReelAnimObject::Check3D()
+void DispReelAnimObject::Animate()
 {
     // update the reels animation (returns saying weither to redraw the frame object or not)
-    /*m_fInvalid =*/ m_pDispReel->RenderAnimation();
+    m_pDispReel->RenderAnimation();
 }
-
-void DispReelAnimObject::Reset()
-{
-}
-
 
 // this function is called every frame to see if the object needs updating
 //
-void LightSeqAnimObject::Check3D()
+void LightSeqAnimObject::Animate()
 {
     // update the reels animation (returns saying weither to redraw the frame object or not)
-    /*m_fInvalid =*/ m_pLightSeq->RenderAnimation();
+    m_pLightSeq->RenderAnimation();
 }
 
 
