@@ -324,12 +324,11 @@ public:
 #endif
 	U32 m_movedPlunger;			// has plunger moved, must have moved at least three times
 	U32 m_LastPlungerHit;		// The last time the plunger was in contact (at least the vicinity) of the ball.
-	int m_Coins;				// The number of coins queued to be inserted.  These were sent from the shell after the load.
 	float m_curMechPlungerPos;
 
 	int m_width, m_height;
 
-    int m_screenwidth, m_screenheight, m_screendepth, m_refreshrate;
+    int m_screenwidth, m_screenheight, m_refreshrate;
     bool m_fFullScreen;
 
 	bool m_touchregion_pressed[8]; // status for each touch region to avoid multitouch double triggers (true = finger on, false = finger off)
@@ -355,7 +354,7 @@ private:
 
     std::vector<Ball*> m_vballDelete;	// Balls to free at the end of the frame
 
-	HitQuadtree m_hitoctree;
+	/*HitKD*/HitQuadtree m_hitoctree;
 
 	Vector<HitObject> m_vdebugho;
 	HitQuadtree m_debugoctree;
@@ -363,7 +362,7 @@ private:
 	Vector<HitObject> m_vho_dynamic;
     HitKD m_hitoctree_dynamic; // should be generated from scratch each time something changes
 
-    HitPlane m_hitPlayfield;
+    HitPlane m_hitPlayfield; // HitPlanes cannot be part of octree (infinite size)
     HitPlane m_hitTopGlass;
 
 	U64 m_StartTime_usec;

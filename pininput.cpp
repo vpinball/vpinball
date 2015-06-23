@@ -69,7 +69,6 @@ PinInput::PinInput()
 	m_joymechtilt = 0;
 
 	m_firedautostart = 0;
-	m_firedautocoin = 0;
 
 	m_pressed_start = 0;
     
@@ -219,9 +218,6 @@ PinInput::PinInput()
 
    m_as_down = 0;
    m_as_didonce = 0;
-
-   m_ac_down = 0;
-   m_ac_didonce = 0;
 
    m_tilt_updown = DISPID_GameEvents_KeyUp;
 
@@ -782,53 +778,6 @@ int PinInput::started()
 		return 0;
 }
 
-// Adds coins that were passed in from the 
-// credit manager via a window message. 
-void PinInput::autocoin( const U32 msecs, const U32 curr_time_msec )
-{
-	// Make sure we have a player.
-	if( !g_pplayer ) 
-		return;
-
-	// Check if we have coins.
-	if ( g_pplayer->m_Coins > 0 )
-	{
-		if( (m_firedautocoin > 0) &&														// Initialized.
-			(m_ac_down == 1) &&																// Coin button is down.
-			((curr_time_msec - m_firedautocoin) > 100) )									// Coin button has been down for at least 0.10 seconds.
-		{
-			// Release coin button.
-			m_firedautocoin = curr_time_msec;
-			m_ac_down = 0;
-			FireKeyEvent( DISPID_GameEvents_KeyUp, g_pplayer->m_rgKeys[eAddCreditKey] );
-
-			// Update the counter.
-			g_pplayer->m_Coins--;
-
-#ifdef _DEBUG
-			OutputDebugString( "**Autocoin: Release.\n" );
-#endif
-		}
-
-		// Logic to do "autocoin"
-		if( (m_ac_down == 0) &&														// Coin button is up.
-			(((m_ac_didonce == 1) && ((curr_time_msec - m_firedautocoin) > 500))) ||	// Last attempt was at least 0.50 seconds ago.
-			 ((m_ac_didonce == 0) && ((curr_time_msec - m_firedautocoin) > msecs)) )	// Never attempted and at least autostart seconds have elapsed.
-		{
-			// Press coin button.
-			m_firedautocoin = curr_time_msec;
-			m_ac_down = 1;
-			m_ac_didonce = 1;
-			FireKeyEvent( DISPID_GameEvents_KeyDown, g_pplayer->m_rgKeys[eAddCreditKey] );
-
-#ifdef _DEBUG
-			OutputDebugString( "**Autocoin: Press.\n" );
-#endif
-		}
-	}
-}
-
-
 void PinInput::autostart( const U32 msecs, const U32 retry_msecs, const U32 curr_time_msec )
 {
 //	if( !VPinball::m_open_minimized ) 
@@ -879,8 +828,7 @@ void PinInput::button_exit( const U32 msecs, const U32 curr_time_msec )
 
 	// Check if we can exit.
 	if( m_exit_stamp &&							   // Initialized.
-		(curr_time_msec - m_exit_stamp > msecs) && // Held exit button for number of mseconds.
-		(g_pplayer->m_Coins == 0) )				   // No coins queued to be entered.
+		(curr_time_msec - m_exit_stamp > msecs)) // Held exit button for number of mseconds.
 	{
 		if (uShockType == USHOCKTYPE_ULTRACADE)
 			ExitApp(); //remove pesky exit button
@@ -964,9 +912,6 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 			// Update autostart.
 			autostart( m_ptable->m_tblAutoStart, m_ptable->m_tblAutoStartRetry, curr_time_msec );
 		
-		// Update autocoin (use autostart seconds to define when nvram is ready).
-		autocoin( m_ptable->m_tblAutoStart, curr_time_msec );
-
 		button_exit( m_ptable->m_tblExitConfirm, curr_time_msec );
 
 		// Update tilt.
@@ -978,10 +923,6 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 	// Check if we've been initialized.
 	if( m_firedautostart == 0 )
 		m_firedautostart = curr_time_msec;
-
-	// Check if we've been initialized.
-	if( m_firedautocoin == 0 )
-		m_firedautocoin = curr_time_msec;
 
 	GetInputDeviceData(/*curr_time_msec*/);
 
