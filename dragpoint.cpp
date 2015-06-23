@@ -401,7 +401,7 @@ void IHaveDragPoints::LoadPointToken(int id, BiffReader *pbr, int version)
    }
 }
 
-void DragPoint::Init(IHaveDragPoints *pihdp, float x, float y)
+void DragPoint::Init(IHaveDragPoints *pihdp, const float x, const float y, const float z)
 {
    m_pihdp = pihdp;
    m_fSmooth = false;
@@ -409,7 +409,7 @@ void DragPoint::Init(IHaveDragPoints *pihdp, float x, float y)
    m_fSlingshot = false;
    m_v.x = x;
    m_v.y = y;
-   m_v.z = 0.f;
+   m_v.z = z;
    m_fAutoTexture = true;
    m_texturecoord = 0.0f;
    if ( pihdp->GetIEditable()->GetItemType()==eItemRubber)
