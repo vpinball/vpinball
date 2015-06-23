@@ -237,65 +237,6 @@ void IHaveDragPoints::ReverseOrder()
    m_vdpoint.ElementAt(m_vdpoint.Size()-1)->m_fSlingshot = fSlingshotTemp;
 }
 
-void IHaveDragPoints::GetRgVertex(std::vector<RenderVertex> & vv, const bool loop, const float accuracy)
-{
-   static const int Dim = RenderVertex::Dim;    // for now, this is always 2
-
-   const int cpoint = m_vdpoint.Size();
-   const int endpoint = loop ? cpoint : cpoint-1;
-
-   RenderVertex rendv2;
-
-   for (int i=0; i<endpoint; i++)
-   {
-      const CComObject<DragPoint> * const pdp1 = m_vdpoint.ElementAt(i);
-      const CComObject<DragPoint> * const pdp2 = m_vdpoint.ElementAt((i < cpoint-1) ? (i+1) : 0);
-
-      if ((pdp1->m_v.x == pdp2->m_v.x) && (pdp1->m_v.y == pdp2->m_v.y))
-      {
-         // Special case - two points coincide
-         continue;
-      }
-
-      int iprev = (pdp1->m_fSmooth ? i-1 : i);
-      if (iprev < 0)
-          iprev = (loop ? cpoint-1 : 0);
-
-      int inext = (pdp2->m_fSmooth ? i+2 : i+1);
-      if (inext >= cpoint)
-          inext = (loop ? inext-cpoint : cpoint-1);
-
-      const CComObject<DragPoint> * const pdp0 = m_vdpoint.ElementAt(iprev);
-      const CComObject<DragPoint> * const pdp3 = m_vdpoint.ElementAt(inext);
-
-      CatmullCurve<Dim> cc;
-      cc.SetCurve(pdp0->m_v, pdp1->m_v, pdp2->m_v, pdp3->m_v);
-
-      RenderVertex rendv1;
-
-      rendv1.x = pdp1->m_v.x;
-      rendv1.y = pdp1->m_v.y;
-      rendv1.fSmooth = pdp1->m_fSmooth;
-      rendv1.fSlingshot = pdp1->m_fSlingshot;
-      rendv1.fControlPoint = true;
-
-      // Properties of last point don't matter, because it won't be added to the list on this pass (it'll get added as the first point of the next curve)
-      rendv2.x = pdp2->m_v.x;
-      rendv2.y = pdp2->m_v.y;
-
-      RecurseSmoothLine(cc, 0, 1, rendv1, rendv2, vv, accuracy);
-   }
-
-   if (!loop)
-   {
-      // Add the very last point to the list because nobody else added it
-      rendv2.fSmooth = true;
-      rendv2.fSlingshot = false;
-      rendv2.fControlPoint = false;
-      vv.push_back(rendv2);
-   }
-}
-
 void IHaveDragPoints::GetPointDialogPanes(Vector<PropertyPane> *pvproppane)
 {
    PropertyPane *pproppane = new PropertyPane(IDD_PROPPOINT_VISUALS, IDS_VISUALS);

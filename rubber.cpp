@@ -413,7 +413,7 @@ Vertex2D *Rubber::GetSplineVertex(int &pcvertex, bool ** const ppfCross, Vertex2
    }
    if (pMiddlePoints)
    {
-       (*pMiddlePoints)[cvertex] = (*pMiddlePoints)[0] ;
+       (*pMiddlePoints)[cvertex] = (*pMiddlePoints)[0];
    }
 
    pcvertex = cvertex+1;

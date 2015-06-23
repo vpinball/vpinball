@@ -10,7 +10,7 @@
 class RampData
 {
 public:
-   char m_szMaterial[32];
+    char m_szMaterial[32];
 	TimerDataRoot m_tdr;
 	float m_heightbottom;
 	float m_heighttop;
@@ -153,7 +153,13 @@ private:
 
     bool isHabitrail() const;
 
-	void GetCentralCurve(std::vector<RenderVertex> & vv);
+    // Get an approximation of the curve described by the control points of this ramp.
+	template <typename T>
+	void GetCentralCurve(std::vector<T> &vv)
+	{
+		const float accuracy = 4.0f*powf(10.0f, (10.0f - m_ptable->GetDetailLevel())*(float)(1.0 / 1.5)); // min = 4, max = 4 * 10^(10/1.5) = 18.000.000
+		IHaveDragPoints::GetRgVertex(vv, false, accuracy);
+	}
 
     Vertex2D *GetRampVertex(int &pcvertex, float ** const ppheight, bool ** const ppfCross, float ** const ppratio, Vertex2D **pMiddlePoints, bool forRendering=false);
 	void prepareHabitrail(RenderDevice* pd3dDevice);

@@ -326,7 +326,7 @@ void Ramp::GetBoundingVertices(Vector<Vertex3Ds> * const pvvertex3D)
  */
 Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** const ppfCross, float ** const ppratio, Vertex2D **pMiddlePoints, bool forRendering)
 {
-   std::vector<RenderVertex> vvertex;
+   std::vector<RenderVertex3D> vvertex;
    GetCentralCurve(vvertex);
    // vvertex are the 2D vertices forming the central curve of the ramp as seen from above
 
@@ -362,8 +362,8 @@ Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** co
 
    for (int i=0; i<(cvertex-1); i++)
    {
-      const RenderVertex & v1 = vvertex[i];
-      const RenderVertex & v2 = vvertex[i+1];
+      const RenderVertex3D & v1 = vvertex[i];
+      const RenderVertex3D & v2 = vvertex[i+1];
 
       const float dx = v1.x - v2.x;
       const float dy = v1.y - v2.y;
@@ -375,9 +375,9 @@ Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** co
    float currentlength = 0;
    for (int i=0; i<cvertex; i++)
    {
-      const RenderVertex & vprev = vvertex[(i>0) ? i-1 : i];
-      const RenderVertex & vnext = vvertex[(i < (cvertex-1)) ? i+1 : i];
-      const RenderVertex & vmiddle = vvertex[i];
+      const RenderVertex3D & vprev = vvertex[(i>0) ? i-1 : i];
+      const RenderVertex3D & vnext = vvertex[(i < (cvertex-1)) ? i+1 : i];
+      const RenderVertex3D & vmiddle = vvertex[i];
 
       Vertex2D vnormal;
       {
@@ -454,7 +454,7 @@ Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** co
       float widthcur = percentage * (m_d.m_widthtop - m_d.m_widthbottom) + m_d.m_widthbottom;
       if (ppheight)
       {
-         (*ppheight)[i] = percentage * (topHeight - bottomHeight) + bottomHeight;
+         (*ppheight)[i] = vmiddle.z + percentage * (topHeight - bottomHeight) + bottomHeight;
       }
 
       if (ppratio)
@@ -476,7 +476,7 @@ Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** co
 
       if( pMiddlePoints )
       {
-         (*pMiddlePoints)[i] = vmiddle +  vnormal;
+         (*pMiddlePoints)[i] = Vertex2D(vmiddle.x,vmiddle.y) +  vnormal;
       }
 //       if( isHabitrail() && forRendering )
 //       {
@@ -486,8 +486,8 @@ Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** co
 //       }
 //       else
       {
-      rgvLocal[i] = vmiddle + (widthcur*0.5f) * vnormal;
-      rgvLocal[cvertex*2 - i - 1] = vmiddle - (widthcur*0.5f) * vnormal;
+      rgvLocal[i] = Vertex2D(vmiddle.x,vmiddle.y) + (widthcur*0.5f) * vnormal;
+      rgvLocal[cvertex*2 - i - 1] = Vertex2D(vmiddle.x,vmiddle.y) - (widthcur*0.5f) * vnormal;
     }
    }
 
@@ -499,19 +499,9 @@ Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** co
    return rgvLocal;
 }
 
-/*
- * Get an approximation of the curve described by the control points of this ramp.
- */
-void Ramp::GetCentralCurve(std::vector<RenderVertex> & vv)
-{
-   const float accuracy = 4.0f*powf(10.0f, (10.0f-m_ptable->GetDetailLevel())*(float)(1.0/1.5)); // min = 4, max = 4 * 10^(10/1.5) = 18.000.000
-
-   IHaveDragPoints::GetRgVertex(vv, false, accuracy);
-}
-
 float Ramp::GetSurfaceHeight(float x, float y)
 {
-    std::vector<RenderVertex> vvertex;
+    std::vector<RenderVertex3D> vvertex;
     GetCentralCurve(vvertex);
 
     const int cvertex = vvertex.size();
@@ -548,9 +538,9 @@ float Ramp::GetSurfaceHeight(float x, float y)
         const float dx = vOut.x - vvertex[iSeg].x;
         const float dy = vOut.y - vvertex[iSeg].y;
         const float len = sqrtf(dx*dx + dy*dy);
-        startlength += len; // Add the distance the object is between the two closest polyline segments.  Matters mostly for straight edges.
+        startlength += len; // Add the distance the object is between the two closest polyline segments.  Matters mostly for straight edges. Z does not respect that yet!
 
-        zheight = (startlength/totallength) * (topHeight - bottomHeight) + bottomHeight;
+        zheight = vvertex[iSeg].z + (startlength/totallength) * (topHeight - bottomHeight) + bottomHeight;
    }
 
     return zheight;
@@ -1459,7 +1449,7 @@ void Ramp::DoCommand(int icmd, int x, int y)
          STARTUNDO
          const Vertex2D v = m_ptable->TransformPoint(x, y);
 
-         std::vector<RenderVertex> vvertex;
+         std::vector<RenderVertex3D> vvertex;
          GetCentralCurve(vvertex);
 
          int iSeg;
