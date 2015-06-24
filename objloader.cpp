@@ -442,7 +442,7 @@ void WaveFrontObj_ExportEnd(FILE *f)
    fclose(matFile);
 }
 
-void WaveFrontObj_WriteMaterial(const char *texelName, const char *texelFilename, Material *mat)
+void WaveFrontObj_WriteMaterial(const char *texelName, const char *texelFilename, const Material * const mat)
 {
    fprintf_s(matFile, "newmtl %s\n", texelName);
    fprintf_s(matFile, "Ns 7.843137\n");
