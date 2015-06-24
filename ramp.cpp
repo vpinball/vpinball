@@ -74,8 +74,6 @@ void Ramp::SetDefaults(bool fromMouseClick)
 {
    static const char strKeyName[] = "DefaultProps\\Ramp";
 
-   HRESULT hr;
-
    m_d.m_heightbottom = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"HeightBottom", 0.0f) : 0.0f;
    m_d.m_heighttop = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"HeightTop", 50.0f) : 50.0f;
    m_d.m_widthbottom = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"WidthBottom", 75.0f) : 75.0f;
@@ -85,7 +83,7 @@ void Ramp::SetDefaults(bool fromMouseClick)
    m_d.m_tdr.m_fTimerEnabled = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"TimerEnabled", false) : false;
    m_d.m_tdr.m_TimerInterval = fromMouseClick ? GetRegIntWithDefault(strKeyName,"TimerInterval", 100) : 100;
 
-   hr = GetRegString(strKeyName,"Image", m_d.m_szImage, MAXTOKEN);
+   HRESULT hr = GetRegString(strKeyName,"Image", m_d.m_szImage, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szImage[0] = 0;
 
@@ -151,7 +149,7 @@ void Ramp::PreRender(Sur * const psur)
 {
    //make 1 wire ramps look unique in editor - uses ramp color
    if (m_ptable->RenderSolid())
-   psur->SetFillColor(RGB(192,192,192));
+	   psur->SetFillColor(RGB(192,192,192));
    else
        psur->SetFillColor(-1);
    psur->SetBorderColor(-1,false,0);
@@ -167,7 +165,6 @@ void Ramp::PreRender(Sur * const psur)
 
 void Ramp::Render(Sur * const psur)
 {
-    int k=0;
    psur->SetFillColor(-1);
    psur->SetBorderColor(RGB(0,0,0),false,0);
    psur->SetLineColor(RGB(0,0,0),false,0);
@@ -178,7 +175,7 @@ void Ramp::Render(Sur * const psur)
    bool *pfCross;
    Vertex2D *middlePoints;
    Vertex2D *rgvLocal = GetRampVertex(cvertex, NULL, &pfCross, NULL, &middlePoints);
-   psur->Polygon(rgvLocal, (cvertex)*2);
+   psur->Polygon(rgvLocal, cvertex*2);
    if( isHabitrail() )
    {
       psur->Polyline(middlePoints, cvertex);
@@ -204,7 +201,7 @@ void Ramp::Render(Sur * const psur)
    delete [] pfCross;
    delete [] middlePoints;
 
-   bool fDrawDragpoints = ( (m_selectstate != eNotSelected) || (g_pvp->m_fAlwaysDrawDragPoints) );
+   bool fDrawDragpoints = ( (m_selectstate != eNotSelected) || g_pvp->m_fAlwaysDrawDragPoints );
    // if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
    if (!fDrawDragpoints)
    {
@@ -231,7 +228,6 @@ void Ramp::Render(Sur * const psur)
             psur->SetBorderColor(RGB(0, 0, 255), false, 0);
          else
             psur->SetBorderColor(RGB(255, 0, 0), false, 0);
-
 
          psur->SetObject(pdp);
 
@@ -357,8 +353,8 @@ Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** co
    // Compute an approximation to the length of the central curve
    // by adding up the lengths of the line segments.
    float totallength = 0;
-   const float bottomHeight=m_d.m_heightbottom+m_ptable->m_tableheight;
-   const float topHeight = m_d.m_heighttop+m_ptable->m_tableheight;
+   const float bottomHeight = m_d.m_heightbottom + m_ptable->m_tableheight;
+   const float topHeight    = m_d.m_heighttop    + m_ptable->m_tableheight;
 
    for (int i=0; i<(cvertex-1); i++)
    {
@@ -518,9 +514,7 @@ float Ramp::GetSurfaceHeight(float x, float y)
     float zheight = 0.f;
 
     if (iSeg == -1)
-    {
         return 0.0f; // Object is not on ramp path
-    }
 
     for (int i2=1;i2<cvertex;i2++)
     {
@@ -528,9 +522,7 @@ float Ramp::GetSurfaceHeight(float x, float y)
         const float dy = vvertex[i2].y - vvertex[i2-1].y;
         const float len = sqrtf(dx*dx + dy*dy);
         if (i2 <= iSeg)
-        {
             startlength += len;
-        }
         totallength += len;
     }
 
@@ -716,10 +708,10 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
 
       if(cvertex >= 2)
       {
-	  // add joint for final edge of ramp
-	  Vertex3Ds v1(pv4->x,pv4->y,rgheight1[cvertex-1]);
-	  Vertex3Ds v2(pv3->x,pv3->y,rgheight1[cvertex-1]);
-	  AddJoint(pvho, v1, v2);
+		  // add joint for final edge of ramp
+		  Vertex3Ds v1(pv4->x,pv4->y,rgheight1[cvertex-1]);
+		  Vertex3Ds v2(pv3->x,pv3->y,rgheight1[cvertex-1]);
+		  AddJoint(pvho, v1, v2);
       }
    }
 
@@ -840,10 +832,10 @@ void Ramp::EndPlay()
 		dynamicIndexBuffer->release();
 		dynamicIndexBuffer = 0;
     }
-   if(dynamicVertexBuffer2) {
-      dynamicVertexBuffer2->release();
-      dynamicVertexBuffer2 = 0;
-   }
+    if(dynamicVertexBuffer2) {
+        dynamicVertexBuffer2->release();
+        dynamicVertexBuffer2 = 0;
+    }
 }
 
 float Ramp::GetDepth(const Vertex3Ds& viewDir) 
@@ -975,13 +967,13 @@ void Ramp::CreateWire( const int numRings, const int numSegments, const Vertex2D
         Vertex3Ds tangent( midPoints[i2].x-midPoints[i].x, midPoints[i2].y-midPoints[i].y, 0.0f);
         if (i == numRings - 1)
         {
-           // for the last spline point use the previous tangent again, otherwise we won't see the complete wire (it stops one control point too early)
-         tangent.x = midPoints[i].x - midPoints[i - 1].x;
-         tangent.y = midPoints[i].y - midPoints[i - 1].y;
+            // for the last spline point use the previous tangent again, otherwise we won't see the complete wire (it stops one control point too early)
+            tangent.x = midPoints[i].x - midPoints[i - 1].x;
+            tangent.y = midPoints[i].y - midPoints[i - 1].y;
         }
         if ( i==0 )
         {
-         Vertex3Ds up( midPoints[i2].x+midPoints[i].x, midPoints[i2].y+midPoints[i].y, rgheightInit[i2]-rgheightInit[i]);
+            Vertex3Ds up( midPoints[i2].x+midPoints[i].x, midPoints[i2].y+midPoints[i].y, rgheightInit[i2]-rgheightInit[i]);
             normal = CrossProduct(tangent,up);     //normal
             binorm = CrossProduct(tangent, normal);
         }
@@ -993,13 +985,14 @@ void Ramp::CreateWire( const int numRings, const int numSegments, const Vertex2D
         binorm.Normalize();
         normal.Normalize();
         prevB = binorm;
-        int si=index;
-		  const float inv_numRings = 1.0f/(float)numRings;
-		  const float inv_numSegments = 1.0f/(float)numSegments;
+        
+		int si=index;
+		const float inv_numRings = 1.0f/(float)numRings;
+		const float inv_numSegments = 1.0f/(float)numSegments;
         for( int j=0;j<numSegments;j++,index++)
         {
-            const float u=(float)i*inv_numRings;
-            const float v=((float)j+u)*inv_numSegments;
+            const float u = (float)i*inv_numRings;
+            const float v = ((float)j+u)*inv_numSegments;
             const float u_angle = u*(float)(2.0*M_PI);
             const float v_angle = v*(float)(2.0*M_PI);
             const Vertex3Ds tmp = GetRotatedAxis( (float)j*(360.0f*inv_numSegments), tangent, normal ) * ((float)m_d.m_wireDiameter*0.5f);
@@ -1009,7 +1002,7 @@ void Ramp::CreateWire( const int numRings, const int numSegments, const Vertex2D
             //texel
             rgvbuf[index].tu = u;
             rgvbuf[index].tv = v;
-            Vertex3Ds n(rgvbuf[index].x - midPoints[i].x, rgvbuf[index].y - midPoints[i].y, rgvbuf[index].z - height);
+            const Vertex3Ds n(rgvbuf[index].x - midPoints[i].x, rgvbuf[index].y - midPoints[i].y, rgvbuf[index].z - height);
             float len = 1.0f / sqrtf(n.x*n.x + n.y*n.y + n.z*n.z);
             rgvbuf[index].nx = n.x*len;
             rgvbuf[index].ny = n.y*len;
@@ -1021,7 +1014,7 @@ void Ramp::CreateWire( const int numRings, const int numSegments, const Vertex2D
 void Ramp::GenerateWireMesh(Vertex3D_NoTex2 **meshBuf1, Vertex3D_NoTex2 **meshBuf2)
 {
     Vertex2D * middlePoints = 0;
-    int accuracy = 1;
+    int accuracy;
     if (m_ptable->GetDetailLevel() < 5)
     {
         accuracy = 6;
@@ -1099,7 +1092,8 @@ void Ramp::GenerateWireMesh(Vertex3D_NoTex2 **meshBuf1, Vertex3D_NoTex2 **meshBu
                 else
                     quad[3] = 0;
             }
-            m_meshIndices[(i*numSegments + j) * 6] = quad[0];
+
+            m_meshIndices[(i*numSegments + j) * 6    ] = quad[0];
             m_meshIndices[(i*numSegments + j) * 6 + 1] = quad[1];
             m_meshIndices[(i*numSegments + j) * 6 + 2] = quad[2];
             m_meshIndices[(i*numSegments + j) * 6 + 3] = quad[3];
@@ -1138,12 +1132,11 @@ void Ramp::prepareHabitrail(RenderDevice* pd3dDevice)
     if (dynamicVertexBuffer)
         dynamicVertexBuffer->release();
     if (dynamicVertexBuffer2)
-       dynamicVertexBuffer2->release();
+        dynamicVertexBuffer2->release();
 
     pd3dDevice->CreateVertexBuffer(m_numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &dynamicVertexBuffer);
     if (m_d.m_type!=RampType1Wire)
        pd3dDevice->CreateVertexBuffer(m_numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &dynamicVertexBuffer2);
-
 
 	// Draw the floor of the ramp.
 	Vertex3D_NoTex2 *buf;
@@ -1166,11 +1159,11 @@ void Ramp::prepareHabitrail(RenderDevice* pd3dDevice)
     dynamicIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer( m_meshIndices );
 
     delete [] m_vertBuffer;
-    delete[] tmpBuf1;
+    delete [] tmpBuf1;
     if (m_d.m_type != RampType1Wire)
     {
-        delete[] m_vertBuffer2;
-        delete[] tmpBuf2;
+        delete [] m_vertBuffer2;
+        delete [] tmpBuf2;
     }
 
     m_meshIndices.clear();
@@ -1385,21 +1378,22 @@ BOOL Ramp::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(RADI))
    {
-       pbr->GetFloat(&m_d.m_wireDiameter);
+      pbr->GetFloat(&m_d.m_wireDiameter);
    }
    else if (id == FID(RADX))
    {
-       pbr->GetFloat(&m_d.m_wireDistanceX);
+      pbr->GetFloat(&m_d.m_wireDistanceX);
    }
    else if (id == FID(RADY))
    {
-       pbr->GetFloat(&m_d.m_wireDistanceY);
+      pbr->GetFloat(&m_d.m_wireDistanceY);
    }
    else
    {
       LoadPointToken(id, pbr, pbr->m_version);
       ISelect::LoadToken(id, pbr);
    }
+
    return fTrue;
 }
 
@@ -1625,7 +1619,6 @@ STDMETHODIMP Ramp::put_Material(BSTR newVal)
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szMaterial, 32, NULL, NULL);
 
    STOPUNDO
-
 
    return S_OK;
 }
@@ -1915,12 +1908,12 @@ STDMETHODIMP Ramp::put_Collidable(VARIANT_BOOL newVal)
    }
    else
 	   for (unsigned i=0; i < m_vhoCollidable.size(); i++)
-	      m_vhoCollidable[i]->m_fEnabled = VBTOF(fNewVal);	//copy to hit checking on enities composing the object
+	      m_vhoCollidable[i]->m_fEnabled = VBTOF(fNewVal);	//copy to hit checking on entities composing the object
 
    return S_OK;
 }
 
-STDMETHODIMP Ramp::get_Visible(VARIANT_BOOL *pVal) //temporary value of object
+STDMETHODIMP Ramp::get_Visible(VARIANT_BOOL *pVal)
 {
 	*pVal = (VARIANT_BOOL)FTOVB(m_d.m_fVisible);
 
@@ -2046,7 +2039,7 @@ void Ramp::ExportMesh(FILE *f)
             WaveFrontObj_WriteFaceInfoList(f, m_meshIndices.data(), (rampVertex - 1) * 6 * 2 * 2);  //both walls
          else
          {
-            int listLength = (rampVertex - 1) * 6 * 2;
+            const int listLength = (rampVertex - 1) * 6 * 2;
             if (m_d.m_rightwallheightvisible != 0.0f)
             {
                WORD *rightIdx = new WORD[listLength];
@@ -2067,7 +2060,7 @@ void Ramp::ExportMesh(FILE *f)
       {
          Vertex3D_NoTex2 *tmpBuf1=NULL, *tmpBuf2=NULL;
          GenerateWireMesh(&tmpBuf1, &tmpBuf2);
-         Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
+         const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
          if (m_d.m_type == RampType1Wire)
          {
             WaveFrontObj_WriteObjectName(f, name);
@@ -2079,7 +2072,7 @@ void Ramp::ExportMesh(FILE *f)
          }
          else if (m_d.m_type == RampType2Wire)
          {
-            Vertex3D_NoTex2 *tmp = new Vertex3D_NoTex2[m_numVertices * 2];
+            Vertex3D_NoTex2 * const tmp = new Vertex3D_NoTex2[m_numVertices * 2];
             memcpy(tmp, tmpBuf1, sizeof(Vertex3D_NoTex2)*m_numVertices);
             memcpy(&tmp[m_numVertices], tmpBuf2, sizeof(Vertex3D_NoTex2)*m_numVertices);
             for (int i = 0; i < m_numVertices * 2; i++) 
@@ -2089,7 +2082,7 @@ void Ramp::ExportMesh(FILE *f)
             WaveFrontObj_WriteFaceInfo(f, m_meshIndices);
             WaveFrontObj_WriteMaterial(m_d.m_szMaterial, NULL, mat);
             WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
-            WORD *idx = new WORD[m_meshIndices.size()];
+            WORD * const idx = new WORD[m_meshIndices.size()];
             for (unsigned int i = 0; i < m_meshIndices.size(); i++)
                idx[i] = m_meshIndices[i] + m_numVertices;
             WaveFrontObj_WriteFaceInfoList(f, idx, m_meshIndices.size());
@@ -2098,7 +2091,7 @@ void Ramp::ExportMesh(FILE *f)
          }
          else if (m_d.m_type==RampType4Wire)
          {
-            Vertex3D_NoTex2 *tmp = new Vertex3D_NoTex2[m_numVertices * 4];
+            Vertex3D_NoTex2 * const tmp = new Vertex3D_NoTex2[m_numVertices * 4];
             memcpy(tmp, tmpBuf1, sizeof(Vertex3D_NoTex2)*m_numVertices);
             memcpy(&tmp[m_numVertices], tmpBuf2, sizeof(Vertex3D_NoTex2)*m_numVertices);
             memcpy(&tmp[m_numVertices*2], tmpBuf1, sizeof(Vertex3D_NoTex2)*m_numVertices);
@@ -2113,7 +2106,7 @@ void Ramp::ExportMesh(FILE *f)
             WaveFrontObj_WriteMaterial(m_d.m_szMaterial, NULL, mat);
             WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
             WaveFrontObj_WriteFaceInfo(f, m_meshIndices);
-            WORD *idx = new WORD[m_meshIndices.size()];
+            WORD * const idx = new WORD[m_meshIndices.size()];
             for (unsigned int i = 0; i < m_meshIndices.size(); i++)
                idx[i] = m_meshIndices[i] + m_numVertices;
             WaveFrontObj_WriteFaceInfoList(f, idx, m_meshIndices.size());
@@ -2128,7 +2121,7 @@ void Ramp::ExportMesh(FILE *f)
          }
          else if (m_d.m_type == RampType3WireLeft)
          {
-            Vertex3D_NoTex2 *tmp = new Vertex3D_NoTex2[m_numVertices * 3];
+            Vertex3D_NoTex2 * const tmp = new Vertex3D_NoTex2[m_numVertices * 3];
             memcpy(tmp, tmpBuf2, sizeof(Vertex3D_NoTex2)*m_numVertices);
             memcpy(&tmp[m_numVertices], tmpBuf1, sizeof(Vertex3D_NoTex2)*m_numVertices);
             memcpy(&tmp[m_numVertices * 2], tmpBuf2, sizeof(Vertex3D_NoTex2)*m_numVertices);
@@ -2142,7 +2135,7 @@ void Ramp::ExportMesh(FILE *f)
             WaveFrontObj_WriteMaterial(m_d.m_szMaterial, NULL, mat);
             WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
             WaveFrontObj_WriteFaceInfo(f, m_meshIndices);
-            WORD *idx = new WORD[m_meshIndices.size()];
+            WORD * const idx = new WORD[m_meshIndices.size()];
             for (unsigned int i = 0; i < m_meshIndices.size(); i++)
                idx[i] = m_meshIndices[i] + m_numVertices;
             WaveFrontObj_WriteFaceInfoList(f, idx, m_meshIndices.size());
@@ -2154,7 +2147,7 @@ void Ramp::ExportMesh(FILE *f)
          }
          else if (m_d.m_type == RampType3WireRight)
          {
-            Vertex3D_NoTex2 *tmp = new Vertex3D_NoTex2[m_numVertices * 3];
+            Vertex3D_NoTex2 * const tmp = new Vertex3D_NoTex2[m_numVertices * 3];
             memcpy(tmp, tmpBuf1, sizeof(Vertex3D_NoTex2)*m_numVertices);
             memcpy(&tmp[m_numVertices], tmpBuf1, sizeof(Vertex3D_NoTex2)*m_numVertices);
             memcpy(&tmp[m_numVertices * 2], tmpBuf2, sizeof(Vertex3D_NoTex2)*m_numVertices);
@@ -2168,7 +2161,7 @@ void Ramp::ExportMesh(FILE *f)
             WaveFrontObj_WriteMaterial(m_d.m_szMaterial, NULL, mat);
             WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
             WaveFrontObj_WriteFaceInfo(f, m_meshIndices);
-            WORD *idx = new WORD[m_meshIndices.size()];
+            WORD * const idx = new WORD[m_meshIndices.size()];
             for (unsigned int i = 0; i < m_meshIndices.size(); i++)
                idx[i] = m_meshIndices[i] + m_numVertices;
             WaveFrontObj_WriteFaceInfoList(f, idx, m_meshIndices.size());
@@ -2301,7 +2294,7 @@ void Ramp::GenerateRampMesh(Vertex3D_NoTex2 **meshBuf)
     {
         *meshBuf = new Vertex3D_NoTex2[m_numIndices*5];
     }
-    Vertex3D_NoTex2 *buf = *meshBuf;
+    Vertex3D_NoTex2 * const buf = *meshBuf;
 
     m_vertBuffer = new Vertex3D_NoTex2[m_numVertices];
     m_meshIndices.resize(m_numIndices);
@@ -2404,7 +2397,7 @@ void Ramp::GenerateRampMesh(Vertex3D_NoTex2 **meshBuf)
     memcpy(&buf[offset], &m_vertBuffer[0], sizeof(Vertex3D_NoTex2)*m_numVertices);
     offset += m_numVertices;
 
-    WORD* tmp = reorderForsyth(&m_meshIndices[0], m_meshIndices.size() / 3, m_numVertices * 5);
+    WORD* const tmp = reorderForsyth(&m_meshIndices[0], m_meshIndices.size() / 3, m_numVertices * 5);
     if (tmp != NULL)
     {
         memcpy(&m_meshIndices[0], tmp, m_meshIndices.size()*sizeof(WORD));
