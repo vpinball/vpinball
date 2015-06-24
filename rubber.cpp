@@ -1302,7 +1302,7 @@ void Rubber::ExportMesh(FILE *f)
 }
 void Rubber::GenerateMesh(int _accuracy)
 {
-    int accuracy = 1;
+    int accuracy;
     if (m_ptable->GetDetailLevel() < 5)
     {
         accuracy = 6;
@@ -1408,11 +1408,8 @@ void Rubber::GenerateMesh(int _accuracy)
             ringIndices[(i*numSegments + j) * 6 + 5] = quad[1];
         }
     }
-    //calculate normals
-    for (int i = 0; i < m_numIndices; i += 3)
-    {
-        SetNormal(&m_vertices[0], &ringIndices[i], 3);
-    }
+
+	ComputeNormals(&m_vertices[0], m_numVertices, &ringIndices[0], m_numIndices);
 
     Matrix3D fullMatrix;
     Matrix3D transMat, rotMat;
