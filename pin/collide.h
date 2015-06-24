@@ -58,7 +58,7 @@ struct CollisionEvent
 
     // additional collision information
     Vertex3Ds hitnormal;
-	Vertex3Ds hitvelocity; //!! sometimes abused ?! (f.e. z = original normal velocity)
+	Vertex3Ds hitvelocity; //!! mostly abused (f.e. x = UnHit signal (0 or 1 then) or side of hit (spinner, 0 or 1), z = original normal velocity), y is correctly/only used by plunger and flipper
 
 	//float hitangularrate; //!! angular rate is only assigned but never used
 

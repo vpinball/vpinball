@@ -161,6 +161,7 @@ private:
 		IHaveDragPoints::GetRgVertex(vv, false, accuracy);
 	}
 
+
     Vertex2D *GetRampVertex(int &pcvertex, float ** const ppheight, bool ** const ppfCross, float ** const ppratio, Vertex2D **pMiddlePoints, bool forRendering=false);
 	void prepareHabitrail(RenderDevice* pd3dDevice);
     void AddJoint(Vector<HitObject> * pvho, const Vertex3Ds& v1, const Vertex3Ds& v2);

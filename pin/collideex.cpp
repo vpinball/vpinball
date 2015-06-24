@@ -172,7 +172,6 @@ float HitGate::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
         if (hittime >= 0.f)
         {
             coll.hitvelocity.x = 1.0f;
-            coll.hitvelocity.y = 0.0f;
 
             return hittime;
         }
@@ -318,7 +317,6 @@ float HitSpinner::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 	if (hittime >= 0.f)
 	{
 		coll.hitvelocity.x = 1.0f;
-		coll.hitvelocity.y = 0.0f;
 
 		return hittime;
 	}
@@ -355,7 +353,7 @@ void HitSpinner::Collide(CollisionEvent* coll)
 		m_spinneranim.m_anglespeed /= h - pball->m_radius;
 
 	// We encoded which side of the spinner the ball hit
-	if (coll->hitvelocity.x > 0.0f)
+	if (coll->hitvelocity.x != 0.0f)
 		m_spinneranim.m_anglespeed = -m_spinneranim.m_anglespeed; 
 }
 
@@ -596,7 +594,7 @@ void Hit3DPoly::Collide(CollisionEvent *coll)
 
 		const int i = pball->m_vpVolObjs->IndexOf(m_pObj); // if -1 then not in objects volume set (i.e not already hit)
 
-		if ((coll->hitvelocity.x < 1.0f) == (i < 0))	   // Hit == NotAlreadyHit
+		if ((coll->hitvelocity.x != 1.0f) == (i < 0))	   // Hit == NotAlreadyHit
 		{			
             pball->m_pos += STATICTIME * pball->m_vel;     //move ball slightly forward
 				
@@ -960,7 +958,7 @@ void TriggerLineSeg::Collide(CollisionEvent* coll)
 
 	const int i = pball->m_vpVolObjs->IndexOf(m_pObj); // if -1 then not in objects volume set (i.e not already hit)
 
-	if ((coll->hitvelocity.x < 1.0f) == (i < 0))	   // Hit == NotAlreadyHit
+	if ((coll->hitvelocity.x != 1.0f) == (i < 0))	   // Hit == NotAlreadyHit
 	{		
         pball->m_pos += STATICTIME * pball->m_vel;     // move ball slightly forward
 		
@@ -994,7 +992,7 @@ void TriggerHitCircle::Collide(CollisionEvent* coll)
 
 	const int i = pball->m_vpVolObjs->IndexOf(m_pObj); // if -1 then not in objects volume set (i.e not already hit)
 
-	if ((coll->hitvelocity.x < 1.0f) == (i < 0))	   // Hit == NotAlreadyHit
+	if ((coll->hitvelocity.x != 1.0f) == (i < 0))	   // Hit == NotAlreadyHit
 	{
         pball->m_pos += STATICTIME * pball->m_vel;	   //move ball slightly forward
 
