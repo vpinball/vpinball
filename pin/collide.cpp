@@ -265,7 +265,7 @@ float HitCircle::HitTestBasicRadius(const Ball * pball, float dtime, CollisionEv
 			hittime = std::max(0.0f, -bnd / bnv);   // estimate based on distance and speed along distance
     }
 	else if (m_ObjType >= eTrigger // triggers & kickers
-		     && pball->m_vpVolObjs && (bnd < 0 == pball->m_vpVolObjs->IndexOf(m_pObj) < 0))
+		     && pball->m_vpVolObjs && ((bnd < 0.f) == (pball->m_vpVolObjs->IndexOf(m_pObj) < 0)))
     { // here if ... ball inside and no hit set .... or ... ball outside and hit set
 
 		if (fabsf(bnd-radius) < 0.05f)	 // if ball appears in center of trigger, then assumed it was gen'ed there
@@ -288,11 +288,11 @@ float HitCircle::HitTestBasicRadius(const Ball * pball, float dtime, CollisionEv
         if (!SolveQuadraticEq(a, 2.0f*b, bcddsq - targetRadius*targetRadius, time1, time2))
             return -1.0f;
 		
-		fUnhit = (time1*time2 < 0);
+		fUnhit = (time1*time2 < 0.f);
 		hittime = fUnhit ? max(time1,time2) : min(time1,time2); // ball is inside the circle
     }
 	
-    if (infNaN(hittime) || hittime < 0 || hittime > dtime)
+    if (infNaN(hittime) || hittime < 0.f || hittime > dtime)
         return -1.0f; // contact out of physics frame
 	const float hitz = pball->m_pos.z - pball->m_radius + pball->m_vel.z * hittime; // rolling point
 
