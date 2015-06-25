@@ -106,9 +106,9 @@ void Kicker::SetDefaults(bool fromMouseClick)
 
    hr = GetRegInt("DefaultProps\\Kicker", "Legacy", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
-       m_d.m_legacyMode = iTmp == 0 ? false : true;
+       m_d.m_legacyMode = iTmp == 0 ? true : true;
    else
-       m_d.m_legacyMode = false;
+       m_d.m_legacyMode = true;
 
 }
 
