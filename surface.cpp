@@ -683,12 +683,13 @@ void Surface::GenerateMesh(Vertex3D_NoTex2 **topBuf, Vertex3D_NoTex2 **sideBuf)
          sideIndices[i * 6 + 5] = offset2 + 3;
       }
 
-      WORD* tmp = reorderForsyth(&sideIndices[0], sideIndices.size() / 3, numVertices * 4);
+	  // not necessary to reorder
+      /*WORD* tmp = reorderForsyth(&sideIndices[0], sideIndices.size() / 3, numVertices * 4);
       if (tmp != NULL)
       {
          memcpy(&sideIndices[0], tmp, sideIndices.size()*sizeof(WORD));
          delete[] tmp;
-      }
+      }*/
 
    }
 
