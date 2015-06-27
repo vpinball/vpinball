@@ -314,6 +314,17 @@ void Ramp::GetBoundingVertices(Vector<Vertex3Ds> * const pvvertex3D)
    delete [] rgheight1;
 }
 
+void Ramp::AssignHeightToControlPoint(RenderVertex3D v, float height)
+{
+   for (int i = 0; i < m_vdpoint.size(); i++)
+   {
+      if (m_vdpoint.ElementAt(i)->m_v.x == v.x && m_vdpoint.ElementAt(i)->m_v.y == v.y)
+      {
+         m_vdpoint.ElementAt(i)->m_calcHeight = height;
+      }
+
+   }
+}
 /*
  * Compute the vertices and additional information for the ramp shape.
  *
@@ -457,7 +468,8 @@ Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** co
       {
          (*ppheight)[i] = vmiddle.z + percentage * (topHeight - bottomHeight) + bottomHeight;
       }
-
+      
+      AssignHeightToControlPoint(vvertex[i], vmiddle.z + percentage * (topHeight - bottomHeight) + bottomHeight);
       if (ppratio)
       {
          (*ppratio)[i] = 1.0f - percentage;
@@ -479,17 +491,8 @@ Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** co
       {
          (*pMiddlePoints)[i] = Vertex2D(vmiddle.x,vmiddle.y) +  vnormal;
       }
-//       if( isHabitrail() && forRendering )
-//       {
-//          const float width = m_d.m_wireDiameter*0.5f;
-//          rgvLocal[i] = vmiddle + (width*0.5f) * vnormal;
-//          rgvLocal[cvertex*2 - i - 1] = vmiddle - (width*0.5f) * vnormal;
-//       }
-//       else
-      {
       rgvLocal[i] = Vertex2D(vmiddle.x,vmiddle.y) + (widthcur*0.5f) * vnormal;
       rgvLocal[cvertex*2 - i - 1] = Vertex2D(vmiddle.x,vmiddle.y) - (widthcur*0.5f) * vnormal;
-      }
    }
 
    if (ppfCross)
