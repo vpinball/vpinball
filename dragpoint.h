@@ -116,7 +116,7 @@ class DragPoint :
 	public ISelect
 {
 public:
-	DragPoint() { m_v.z = 0; }
+   DragPoint() { m_v.z = 0.0f; m_calcHeight = 0.0f; }
 
 	void Init(IHaveDragPoints *pihdp, const float x, const float y, const float z = 0.f);
 
@@ -174,8 +174,10 @@ public:
 	STDMETHOD(put_Y)(/*[in]*/ float newVal);
 	STDMETHOD(get_Z)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Z)(/*[in]*/ float newVal);
+   STDMETHOD(get_CalcHeight)(/*[out, retval]*/ float *pVal);
 
 	Vertex3Ds m_v;
+   float m_calcHeight;
 	float m_texturecoord;
 	IHaveDragPoints *m_pihdp;
 	bool m_fSmooth;

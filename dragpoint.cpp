@@ -410,6 +410,7 @@ void DragPoint::Init(IHaveDragPoints *pihdp, const float x, const float y, const
    m_v.x = x;
    m_v.y = y;
    m_v.z = z;
+   m_calcHeight = 0.0f;
    m_fAutoTexture = true;
    m_texturecoord = 0.0f;
    if ( pihdp->GetIEditable()->GetItemType()==eItemRubber)
@@ -651,6 +652,12 @@ STDMETHODIMP DragPoint::put_Z(float newVal)
       return S_OK;
 }
 
+STDMETHODIMP DragPoint::get_CalcHeight(float *pVal)
+{
+   *pVal = m_calcHeight;
+
+   return S_OK;
+}
 
 STDMETHODIMP DragPoint::get_Smooth(VARIANT_BOOL *pVal)
 {

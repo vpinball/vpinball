@@ -513,6 +513,7 @@
 #define IDC_DIFFUSE_EDIT                377
 #define IDC_ALPHA_MASK_EDIT             377
 #define IDC_FILENAME_EDIT               377
+#define IDC_CALC_HEIGHT_EDIT            377
 #define IDC_HEIGHT_EDIT                 378
 #define IDD_COMLIST                     378
 #define IDC_RADIO1                      378
