@@ -26,7 +26,10 @@ Ramp::~Ramp()
 	if(dynamicVertexBuffer)
 		dynamicVertexBuffer->release();
 
-    if (dynamicIndexBuffer)
+	if (dynamicVertexBuffer2)
+		dynamicVertexBuffer2->release();
+	
+	if (dynamicIndexBuffer)
         dynamicIndexBuffer->release();
 }
 
@@ -1003,7 +1006,7 @@ void Ramp::CreateWire( const int numRings, const int numSegments, const Vertex2D
             rgvbuf[index].tu = u;
             rgvbuf[index].tv = v;
             const Vertex3Ds n(rgvbuf[index].x - midPoints[i].x, rgvbuf[index].y - midPoints[i].y, rgvbuf[index].z - height);
-            float len = 1.0f / sqrtf(n.x*n.x + n.y*n.y + n.z*n.z);
+            const float len = 1.0f / sqrtf(n.x*n.x + n.y*n.y + n.z*n.z);
             rgvbuf[index].nx = n.x*len;
             rgvbuf[index].ny = n.y*len;
             rgvbuf[index].nz = n.z*len;
@@ -2024,7 +2027,7 @@ void Ramp::ExportMesh(FILE *f)
          Vertex3D_NoTex2 *rampMesh = NULL;
          GenerateRampMesh(&rampMesh);
          Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
-         unsigned int numVers = m_numVertices * 5;
+         unsigned int numVers = m_numVertices * 3;
          if (m_d.m_rightwallheightvisible == 0.0f && m_d.m_leftwallheightvisible == 0.0f)
             numVers = m_numVertices;
          WaveFrontObj_WriteObjectName(f, name);
@@ -2035,10 +2038,10 @@ void Ramp::ExportMesh(FILE *f)
          WaveFrontObj_WriteFaceInfoList(f, m_meshIndices.data(), (rampVertex - 1) * 6);
 
          if (m_d.m_rightwallheightvisible != 0.f && m_d.m_leftwallheightvisible != 0.f)
-            WaveFrontObj_WriteFaceInfoList(f, m_meshIndices.data(), (rampVertex - 1) * 6 * 2 * 2);  //both walls
+            WaveFrontObj_WriteFaceInfoList(f, m_meshIndices.data(), (rampVertex - 1) * 6 * 2);  //both walls
          else
          {
-            const int listLength = (rampVertex - 1) * 6 * 2;
+            const int listLength = (rampVertex - 1) * 6;
             if (m_d.m_rightwallheightvisible != 0.0f)
             {
                WORD *rightIdx = new WORD[listLength];
@@ -2201,7 +2204,7 @@ void Ramp::RenderRamp( RenderDevice *pd3dDevice, const Material * const mat )
 
       pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
       pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-      pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+      pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE); // as both floor and walls are thinwalled
 
       Pin3D * const ppin3d = &g_pplayer->m_pin3d;
       Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
@@ -2222,42 +2225,44 @@ void Ramp::RenderRamp( RenderDevice *pd3dDevice, const Material * const mat )
 
       //ppin3d->EnableAlphaBlend( false ); //!! not necessary anymore
 
-      unsigned int offset=0;
-      pd3dDevice->basicShader->Begin(0);
-      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, dynamicVertexBuffer, offset, m_numVertices, dynamicIndexBuffer, 0, (rampVertex-1)*6);
-      pd3dDevice->basicShader->End();  
-
-	  if(m_d.m_rightwallheightvisible!=0.f || m_d.m_leftwallheightvisible!=0.f)
+	  if (m_d.m_rightwallheightvisible != 0.f && m_d.m_leftwallheightvisible != 0.f && (!pin || m_d.m_fImageWalls))
 	  {
-		  offset += m_numVertices;
-
-		  if (pin && !m_d.m_fImageWalls)
-			 pd3dDevice->basicShader->SetTechnique("basic_without_texture");
-
+		  // both walls with image and floor
 		  pd3dDevice->basicShader->Begin(0);
-
-		  if(m_d.m_rightwallheightvisible!=0.f && m_d.m_leftwallheightvisible!=0.f) //only render left & right side if the height is >0
-		  {
-			 pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, dynamicVertexBuffer, offset, m_numVertices*2*2, dynamicIndexBuffer, 0, (rampVertex-1)*6*2*2);
-		  }
-		  else
-		  {
-			if ( m_d.m_rightwallheightvisible!=0.f ) //only render right side if the height is >0
-			{
-				pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, dynamicVertexBuffer, offset, m_numVertices*2, dynamicIndexBuffer, 0, (rampVertex-1)*6*2);
-			}
-			offset+=2*m_numVertices;
-
-			if ( m_d.m_leftwallheightvisible!=0.f ) //only render left side if the height is >0
-			{
-				pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, dynamicVertexBuffer, offset, m_numVertices*2, dynamicIndexBuffer, 0, (rampVertex-1)*6*2);
-			}
-		  }
-
-		  pd3dDevice->basicShader->End();  
-
-		  //g_pplayer->m_pin3d.DisableAlphaBlend(); //!! not necessary anymore
+		  pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, dynamicVertexBuffer, 0, m_numVertices, dynamicIndexBuffer, 0, (rampVertex - 1) * 6 * 3);
+		  pd3dDevice->basicShader->End();
 	  }
+	  else
+	  {
+		  // only floor
+		  pd3dDevice->basicShader->Begin(0);
+		  pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, dynamicVertexBuffer, 0, m_numVertices, dynamicIndexBuffer, 0, (rampVertex - 1) * 6);
+
+		  if (m_d.m_rightwallheightvisible != 0.f || m_d.m_leftwallheightvisible != 0.f)
+		  {
+			  if (pin && !m_d.m_fImageWalls)
+			  {
+				  pd3dDevice->basicShader->End();
+				  pd3dDevice->basicShader->SetTechnique("basic_without_texture");
+				  pd3dDevice->basicShader->Begin(0);
+			  }
+
+			  if (m_d.m_rightwallheightvisible != 0.f && m_d.m_leftwallheightvisible != 0.f) //only render left & right side if the height is >0
+				  pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, dynamicVertexBuffer, m_numVertices, m_numVertices * 2, dynamicIndexBuffer, 0, (rampVertex - 1) * 6 * 2);
+			  else
+			  {
+				  if (m_d.m_rightwallheightvisible != 0.f) //only render right side if the height is >0
+					  pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, dynamicVertexBuffer, m_numVertices, m_numVertices, dynamicIndexBuffer, 0, (rampVertex - 1) * 6);
+
+				  if (m_d.m_leftwallheightvisible != 0.f) //only render left side if the height is >0
+					  pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, dynamicVertexBuffer, m_numVertices*2, m_numVertices, dynamicIndexBuffer, 0, (rampVertex - 1) * 6);
+			  }
+		  }
+
+		  pd3dDevice->basicShader->End();
+	  }
+
+	  //g_pplayer->m_pin3d.DisableAlphaBlend(); //!! not necessary anymore
    }
 }
 // Always called each frame to render over everything else (along with primitives)
@@ -2285,13 +2290,12 @@ void Ramp::GenerateRampMesh(Vertex3D_NoTex2 **meshBuf)
     const float inv_tableheight = 1.0f / (m_ptable->m_bottom - m_ptable->m_top);
 
     m_numVertices = rampVertex * 2;
-    m_numIndices = (rampVertex - 1) * 6 * 4;
-
-    const unsigned int rgioffset = (rampVertex - 1) * 6;
+	const unsigned int rgioffset = (rampVertex - 1) * 6;
+	m_numIndices = rgioffset * 3; // to draw the full ramp in one go (could only use *1, and draw three times with offsets into vertices)
 
     if (*meshBuf == NULL)
     {
-        *meshBuf = new Vertex3D_NoTex2[m_numVertices*5];
+        *meshBuf = new Vertex3D_NoTex2[m_numVertices*3];
     }
     Vertex3D_NoTex2 * const buf = *meshBuf;
 
@@ -2306,7 +2310,7 @@ void Ramp::GenerateRampMesh(Vertex3D_NoTex2 **meshBuf)
 
         rgv3D[1].x = rgvLocal[rampVertex * 2 - i - 1].x;
         rgv3D[1].y = rgvLocal[rampVertex * 2 - i - 1].y;
-        rgv3D[1].z = rgheight[i] * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+		rgv3D[1].z = rgv3D[0].z;
 
         if (pin)
         {
@@ -2337,33 +2341,27 @@ void Ramp::GenerateRampMesh(Vertex3D_NoTex2 **meshBuf)
 			break;
 
         //floor
-        m_meshIndices[i * 6] = i * 2;
+        m_meshIndices[i * 6]     = i * 2;
         m_meshIndices[i * 6 + 1] = i * 2 + 1;
         m_meshIndices[i * 6 + 2] = i * 2 + 3;
         m_meshIndices[i * 6 + 3] = i * 2;
         m_meshIndices[i * 6 + 4] = i * 2 + 3;
         m_meshIndices[i * 6 + 5] = i * 2 + 2;
 
-        m_meshIndices[i * 6 + rgioffset] = i * 2 + m_numVertices;
-        m_meshIndices[i * 6 + rgioffset + 1] = i * 2 + m_numVertices + 2;
-        m_meshIndices[i * 6 + rgioffset + 2] = i * 2 + m_numVertices + 3;
-        m_meshIndices[i * 6 + rgioffset + 3] = i * 2 + m_numVertices;
-        m_meshIndices[i * 6 + rgioffset + 4] = i * 2 + m_numVertices + 3;
-        m_meshIndices[i * 6 + rgioffset + 5] = i * 2 + m_numVertices + 1;
-
-        m_meshIndices[i * 6 + rgioffset * 2] = i * 2 + m_numVertices * 2;
+		//walls
+		m_meshIndices[i * 6 + rgioffset]     = i * 2 + m_numVertices;
+		m_meshIndices[i * 6 + rgioffset + 1] = i * 2 + m_numVertices + 1;
+		m_meshIndices[i * 6 + rgioffset + 2] = i * 2 + m_numVertices + 3;
+		m_meshIndices[i * 6 + rgioffset + 3] = i * 2 + m_numVertices;
+		m_meshIndices[i * 6 + rgioffset + 4] = i * 2 + m_numVertices + 3;
+		m_meshIndices[i * 6 + rgioffset + 5] = i * 2 + m_numVertices + 2;
+		
+		m_meshIndices[i * 6 + rgioffset * 2]     = i * 2 + m_numVertices * 2;
         m_meshIndices[i * 6 + rgioffset * 2 + 1] = i * 2 + m_numVertices * 2 + 1;
         m_meshIndices[i * 6 + rgioffset * 2 + 2] = i * 2 + m_numVertices * 2 + 3;
         m_meshIndices[i * 6 + rgioffset * 2 + 3] = i * 2 + m_numVertices * 2;
         m_meshIndices[i * 6 + rgioffset * 2 + 4] = i * 2 + m_numVertices * 2 + 3;
         m_meshIndices[i * 6 + rgioffset * 2 + 5] = i * 2 + m_numVertices * 2 + 2;
-
-        m_meshIndices[i * 6 + rgioffset * 3] = i * 2 + m_numVertices * 3;
-        m_meshIndices[i * 6 + rgioffset * 3 + 1] = i * 2 + m_numVertices * 3 + 2;
-        m_meshIndices[i * 6 + rgioffset * 3 + 2] = i * 2 + m_numVertices * 3 + 3;
-        m_meshIndices[i * 6 + rgioffset * 3 + 3] = i * 2 + m_numVertices * 3;
-        m_meshIndices[i * 6 + rgioffset * 3 + 4] = i * 2 + m_numVertices * 3 + 3;
-        m_meshIndices[i * 6 + rgioffset * 3 + 5] = i * 2 + m_numVertices * 3 + 1;
     }
     ComputeNormals(m_vertBuffer, m_numVertices, &m_meshIndices[0], (rampVertex - 1) * 6);
 
@@ -2379,65 +2377,55 @@ void Ramp::GenerateRampMesh(Vertex3D_NoTex2 **meshBuf)
     memcpy(&buf[offset], &m_vertBuffer[0], sizeof(Vertex3D_NoTex2)*m_numVertices);
     offset += m_numVertices;
 
-    for (int i = 0; i < rampVertex; i++)
-    {
-        Vertex3D_NoTex2 * const rgv3D = m_vertBuffer + i * 2;
+	// only calculate vertices if one or both sides are visible (!=0)
+	if (m_d.m_leftwallheightvisible != 0.f || m_d.m_rightwallheightvisible != 0.f)
+	{
+		for (int i = 0; i < rampVertex; i++)
+		{
+			Vertex3D_NoTex2 * const rgv3D = m_vertBuffer + i * 2;
 
-        rgv3D[1].x = rgvLocal[i].x;
-        rgv3D[1].y = rgvLocal[i].y;
-        rgv3D[1].z = (rgheight[i] + m_d.m_rightwallheightvisible)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
-        if (pin && m_d.m_fImageWalls)
-        {
-            if (m_d.m_imagealignment == ImageModeWorld)
-            {
-                rgv3D[0].tu = rgv3D[0].x * inv_tablewidth;
-                rgv3D[0].tv = rgv3D[0].y * inv_tableheight;
-            }
-            else
-            {
-                rgv3D[0].tu = 0;
-                rgv3D[0].tv = rgratio[i];
-            }
+			rgv3D[1].x = rgvLocal[i].x;
+			rgv3D[1].y = rgvLocal[i].y;
+			rgv3D[1].z = (rgheight[i] + m_d.m_rightwallheightvisible)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
-            rgv3D[1].tu = rgv3D[0].tu;
-            rgv3D[1].tv = rgv3D[0].tv;
-        }
-        else
-        {
-           rgv3D[0].tu = 0.0f;
-           rgv3D[0].tv = 0.0f;
-           rgv3D[1].tu = 0.0f;
-           rgv3D[1].tv = 0.0f;
-        }
-    }
-    ComputeNormals(m_vertBuffer, m_numVertices, &m_meshIndices[0], (rampVertex - 1) * 6);
-	memcpy(&buf[offset], &m_vertBuffer[0], sizeof(Vertex3D_NoTex2)*m_numVertices);
-    offset += m_numVertices;
+			if (pin && m_d.m_fImageWalls)
+			{
+				if (m_d.m_imagealignment == ImageModeWorld)
+				{
+					rgv3D[0].tu = rgv3D[0].x * inv_tablewidth;
+					rgv3D[0].tv = rgv3D[0].y * inv_tableheight;
+				}
+				else
+				{
+					rgv3D[0].tu = 0;
+					rgv3D[0].tv = rgratio[i];
+				}
 
-    // Flip Normals and redraw
-    for (int i = 0; i < rampVertex; i++)
-        for (int j = 0; j < 2; ++j) {
-            m_vertBuffer[i * 2 + j].nx = -m_vertBuffer[i * 2 + j].nx;
-            m_vertBuffer[i * 2 + j].ny = -m_vertBuffer[i * 2 + j].ny;
-            m_vertBuffer[i * 2 + j].nz = -m_vertBuffer[i * 2 + j].nz;
-        }
+				rgv3D[1].tu = rgv3D[0].tu;
+				rgv3D[1].tv = rgv3D[0].tv;
+			}
+			else
+			{
+			   rgv3D[0].tu = 0.0f;
+			   rgv3D[0].tv = 0.0f;
+			   rgv3D[1].tu = 0.0f;
+			   rgv3D[1].tv = 0.0f;
+			}
+		}
+		ComputeNormals(m_vertBuffer, m_numVertices, &m_meshIndices[0], (rampVertex - 1) * 6);
+		memcpy(&buf[offset], &m_vertBuffer[0], sizeof(Vertex3D_NoTex2)*m_numVertices);
+		offset += m_numVertices;
 
-    memcpy(&buf[offset], &m_vertBuffer[0], sizeof(Vertex3D_NoTex2)*m_numVertices);
-    offset += m_numVertices;
-
-    // only calculate vertices if one or both sides are visible (!=0)
-    if (m_d.m_leftwallheightvisible != 0.f || m_d.m_rightwallheightvisible != 0.f)
-    {
-        for (int i = 0; i < rampVertex-1; i++)
+        for (int i = 0; i < rampVertex; i++)
         {
             Vertex3D_NoTex2 * const rgv3D = m_vertBuffer + i * 2;
-            rgv3D[0].x = rgvLocal[rampVertex * 2 - i - 2].x;
-            rgv3D[0].y = rgvLocal[rampVertex * 2 - i - 2].y;
-            rgv3D[0].z = rgheight[i + 1] * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+            rgv3D[0].x = rgvLocal[rampVertex * 2 - i - 1].x;
+            rgv3D[0].y = rgvLocal[rampVertex * 2 - i - 1].y;
+            rgv3D[0].z = rgheight[i] * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
             rgv3D[1].x = rgv3D[0].x;
             rgv3D[1].y = rgv3D[0].y;
-            rgv3D[1].z = (rgheight[i + 1] + m_d.m_leftwallheightvisible)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+            rgv3D[1].z = (rgheight[i] + m_d.m_leftwallheightvisible)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
             if (pin && m_d.m_fImageWalls)
             {
@@ -2465,18 +2453,6 @@ void Ramp::GenerateRampMesh(Vertex3D_NoTex2 **meshBuf)
         }
         ComputeNormals(m_vertBuffer, m_numVertices, &m_meshIndices[0], (rampVertex - 1) * 6);
 		memcpy(&buf[offset], &m_vertBuffer[0], sizeof(Vertex3D_NoTex2)*m_numVertices);
-        offset += m_numVertices;
-
-        // Flip Normals and redraw
-        for (int i = 0; i < rampVertex; i++)
-        {
-            for (int j = 0; j < 2; ++j) {
-                m_vertBuffer[i * 2 + j].nx = -m_vertBuffer[i * 2 + j].nx;
-                m_vertBuffer[i * 2 + j].ny = -m_vertBuffer[i * 2 + j].ny;
-                m_vertBuffer[i * 2 + j].nz = -m_vertBuffer[i * 2 + j].nz;
-            }
-        }
-        memcpy(&buf[offset], &m_vertBuffer[0], sizeof(Vertex3D_NoTex2)*m_numVertices);
     }
 
     delete[] m_vertBuffer;
@@ -2495,14 +2471,14 @@ void Ramp::GenerateVertexBuffer(RenderDevice* pd3dDevice)
     if (dynamicVertexBuffer)
         dynamicVertexBuffer->release();
 
-    pd3dDevice->CreateVertexBuffer(m_numVertices*5, 0, MY_D3DFVF_NOTEX2_VERTEX, &dynamicVertexBuffer);
+    pd3dDevice->CreateVertexBuffer(m_numVertices*3, 0, MY_D3DFVF_NOTEX2_VERTEX, &dynamicVertexBuffer);
 
     Vertex3D_NoTex2 *buf;
     dynamicVertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY);
-    memcpy(&buf[0], &tmpBuffer[0], sizeof(Vertex3D_NoTex2)*m_numVertices*5);
+    memcpy(&buf[0], &tmpBuffer[0], sizeof(Vertex3D_NoTex2)*m_numVertices*3);
     dynamicVertexBuffer->unlock();
 
-	WORD* const tmp = reorderForsyth(&m_meshIndices[0], m_meshIndices.size() / 3, m_numVertices * 5);
+	WORD* const tmp = reorderForsyth(&m_meshIndices[0], m_meshIndices.size() / 3, m_numVertices * 3);
 	if (tmp != NULL)
 	{
 		memcpy(&m_meshIndices[0], tmp, m_meshIndices.size()*sizeof(WORD));
