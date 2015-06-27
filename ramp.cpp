@@ -1113,12 +1113,13 @@ void Ramp::GenerateWireMesh(Vertex3D_NoTex2 **meshBuf1, Vertex3D_NoTex2 **meshBu
         memcpy(&buf2[0], &m_vertBuffer2[0], sizeof(Vertex3D_NoTex2)*m_numVertices);
     }
 
-    WORD* tmp = reorderForsyth(&m_meshIndices[0], m_meshIndices.size() / 3, m_numVertices);
+	// not necessary to reorder
+    /*WORD* tmp = reorderForsyth(&m_meshIndices[0], m_meshIndices.size() / 3, m_numVertices);
     if (tmp != NULL)
     {
         memcpy(&m_meshIndices[0], tmp, m_meshIndices.size()*sizeof(WORD));
         delete[] tmp;
-    }
+    }*/
 
     delete[] rgvLocal;
     delete[] middlePoints;
@@ -2365,13 +2366,13 @@ void Ramp::GenerateRampMesh(Vertex3D_NoTex2 **meshBuf)
     }
     ComputeNormals(m_vertBuffer, m_numVertices, &m_meshIndices[0], (rampVertex - 1) * 6);
 
-    // Flip Normals if pointing downwards instead of upwards //!! hacky, do it correct somehow else
-    for (int i = 0; i < rampVertex; i++)
+    // Flip Normals if pointing downwards instead of upwards, not necessary anymore //!! hacky, do it correct somehow else
+    /*for (int i = 0; i < rampVertex; i++)
         for (int j = 0; j < 2; ++j) if (m_vertBuffer[i * 2 + j].nz < 0.0f) {
             m_vertBuffer[i * 2 + j].nx = -m_vertBuffer[i * 2 + j].nx;
             m_vertBuffer[i * 2 + j].ny = -m_vertBuffer[i * 2 + j].ny;
             m_vertBuffer[i * 2 + j].nz = -m_vertBuffer[i * 2 + j].nz;
-        }
+        }*/
 
     unsigned int offset = 0;
     memcpy(&buf[offset], &m_vertBuffer[0], sizeof(Vertex3D_NoTex2)*m_numVertices);
@@ -2478,12 +2479,13 @@ void Ramp::GenerateVertexBuffer(RenderDevice* pd3dDevice)
     memcpy(&buf[0], &tmpBuffer[0], sizeof(Vertex3D_NoTex2)*m_numVertices*3);
     dynamicVertexBuffer->unlock();
 
-	WORD* const tmp = reorderForsyth(&m_meshIndices[0], m_meshIndices.size() / 3, m_numVertices * 3);
+	// not necessary to reorder //!! also potentially unsafe, as walls can be disabled, so order is important!
+	/*WORD* const tmp = reorderForsyth(&m_meshIndices[0], m_meshIndices.size() / 3, m_numVertices * 3);
 	if (tmp != NULL)
 	{
 		memcpy(&m_meshIndices[0], tmp, m_meshIndices.size()*sizeof(WORD));
 		delete[] tmp;
-	}
+	}*/
 
     if (dynamicIndexBuffer)
         dynamicIndexBuffer->release();

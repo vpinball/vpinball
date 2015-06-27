@@ -1434,12 +1434,13 @@ void Rubber::GenerateMesh(int _accuracy)
     middlePoint.y = (maxy + miny)*0.5f;
     middlePoint.z = (maxz + minz)*0.5f;
 
-    WORD* tmp = reorderForsyth(&ringIndices[0], ringIndices.size() / 3, m_numVertices);
+	// not necessary to reorder
+    /*WORD* tmp = reorderForsyth(&ringIndices[0], ringIndices.size() / 3, m_numVertices);
     if (tmp != NULL)
     {
         memcpy(&ringIndices[0], tmp, ringIndices.size()*sizeof(WORD));
         delete[] tmp;
-    }
+    }*/
 
     delete[] rgvLocal;
     delete[] middlePoints;
