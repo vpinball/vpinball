@@ -1424,37 +1424,34 @@ FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     EDITTEXT        1100,80,7,40,12,ES_AUTOHSCROLL
     EDITTEXT        1101,80,21,40,12,ES_AUTOHSCROLL
-	LTEXT           "Gravity Constant", IDC_STATIC, 7, 9, 69, 8
-	LTEXT           "Playfield Friction", IDC_STATIC, 7, 23, 69, 8
-
-	EDITTEXT        1708, 80, 35, 40, 12, ES_AUTOHSCROLL
-	LTEXT           "Playfield Elasticity", IDC_STATIC, 7, 37, 69, 8
-	EDITTEXT        1709, 80, 49, 40, 12, ES_AUTOHSCROLL
-	LTEXT           "Pf. Elasticity Falloff", IDC_STATIC, 7, 51, 69, 8
-	EDITTEXT        1710, 80, 63, 40, 12, ES_AUTOHSCROLL
-	LTEXT           "Playfield Scatter Angle", IDC_STATIC, 7, 65, 69, 8
-
-	EDITTEXT        1102, 80, 77, 40, 12, ES_AUTOHSCROLL
-	EDITTEXT        1103, 80, 91, 40, 12, ES_AUTOHSCROLL
-	EDITTEXT        1105, 80, 119, 40, 12, ES_AUTOHSCROLL
-	EDITTEXT        1104, 80, 133, 40, 12, ES_AUTOHSCROLL
-	LTEXT           "Default Scatter Angle", IDC_STATIC, 7, 79, 69, 8
-	LTEXT           "Nudge Time", IDC_STATIC, 7, 93, 69, 8
-	LTEXT           "Physics Max. Loops", IDC_STATIC, 7, 121, 70, 8
-	LTEXT           "Mech-Plunger Adjust", IDC_STATIC, 7, 135, 70, 8
-
-	CONTROL         "Filter Mechanical Plunger", 1107, "Button", BS_AUTOCHECKBOX | WS_TABSTOP, 7, 148, 111, 9
-	EDITTEXT        1043, 106, 158, 14, 12, ES_AUTOHSCROLL
-	LTEXT           "Override by Global Physics Set", IDC_STATIC, 7, 160, 98, 8
-	PUSHBUTTON      "Import Physics Set (incl. Flippers)", IDC_IMPORT_PHYSICS_BUTTON, 7, 177, 110, 14
+    LTEXT           "Gravity Constant",IDC_STATIC,7,9,69,8
+    LTEXT           "Playfield Friction",IDC_STATIC,7,23,69,8
+    EDITTEXT        1708,80,35,40,12,ES_AUTOHSCROLL
+    LTEXT           "Playfield Elasticity",IDC_STATIC,7,37,69,8
+    EDITTEXT        1709,80,49,40,12,ES_AUTOHSCROLL
+    LTEXT           "Pf. Elasticity Falloff",IDC_STATIC,7,51,69,8
+    EDITTEXT        1710,80,63,40,12,ES_AUTOHSCROLL
+    LTEXT           "Playfield Scatter Angle",IDC_STATIC,7,65,69,8
+    EDITTEXT        1102,80,77,40,12,ES_AUTOHSCROLL
+    EDITTEXT        1103,80,91,40,12,ES_AUTOHSCROLL
+    EDITTEXT        1105,80,119,40,12,ES_AUTOHSCROLL
+    EDITTEXT        1104,80,133,40,12,ES_AUTOHSCROLL
+    LTEXT           "Default Scatter Angle",IDC_STATIC,7,79,69,8
+    LTEXT           "Nudge Time",IDC_STATIC,7,93,69,8
+    LTEXT           "Physics Max. Loops",IDC_STATIC,7,121,70,8
+    LTEXT           "Mech-Plunger Adjust",IDC_STATIC,7,135,70,8
+    CONTROL         "Filter Mechanical Plunger",1107,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,148,111,9
+    EDITTEXT        1043,106,158,14,12,ES_AUTOHSCROLL
+    LTEXT           "Override by Global Physics Set",IDC_STATIC,7,160,98,8
+    PUSHBUTTON      "Import Physics Set (incl. Flippers)",IDC_IMPORT_PHYSICS_BUTTON,7,177,110,14
     PUSHBUTTON      "Export Physics Set (incl. Flippers)",IDC_EXPORT_PHYSICS_BUTTON,7,192,110,14
-	LTEXT           "- - -", IDC_STATIC, 7, 209, 113, 8
-	CONTROL         "Enable EM Reels", 13432, "Button", BS_AUTOCHECKBOX | WS_TABSTOP, 7, 219, 104, 10
+    LTEXT           "- - -",IDC_STATIC,7,209,113,8
+    CONTROL         "Enable EM Reels",13432,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,219,104,10
     CONTROL         "Enable Decals",13433,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,231,105,10
     EDITTEXT        1041,80,243,40,12,ES_AUTOHSCROLL
     LTEXT           "3D Stereo Separation",IDC_STATIC,7,245,70,8
-	EDITTEXT        1042, 80, 257, 40, 12, ES_AUTOHSCROLL
-	LTEXT           "3D Stereo ZPD", IDC_STATIC, 7, 259, 70, 8
+    EDITTEXT        1042,80,257,40,12,ES_AUTOHSCROLL
+    LTEXT           "3D Stereo ZPD",IDC_STATIC,7,259,70,8
     CONTROL         "Overwrite Global Settings",IDC_GLOBAL_3DSTEREO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,272,98,8
 END
 
@@ -1468,16 +1465,18 @@ BEGIN
     LTEXT           "&Y",IDC_STATIC,7,25,8,8
 END
 
-IDD_PROPPOINT_POSITION_WITHZ DIALOGEX 0, 0, 125, 58
+IDD_PROPPOINT_POSITION_WITHZ DIALOGEX 0, 0, 125, 77
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    EDITTEXT        1,36,7,49,12,ES_AUTOHSCROLL
-    EDITTEXT        2,36,23,49,12,ES_AUTOHSCROLL
-    EDITTEXT        6,36,39,49,12,ES_AUTOHSCROLL
+    EDITTEXT        1,47,7,38,12,ES_AUTOHSCROLL
+    EDITTEXT        2,47,23,38,12,ES_AUTOHSCROLL
+    EDITTEXT        6,47,39,38,12,ES_AUTOHSCROLL
     LTEXT           "&X",IDC_STATIC,7,9,25,8
     LTEXT           "&Y",IDC_STATIC,7,25,25,8
     LTEXT           "&Height",IDC_STATIC,7,41,25,8
+    EDITTEXT        IDC_CALC_HEIGHT_EDIT,47,55,38,12,ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "Calc. Height",IDC_STATIC,7,56,40,8
 END
 
 IDD_PROPPOINT_VISUALS DIALOGEX 0, 0, 125, 22
@@ -1570,7 +1569,8 @@ BEGIN
     LTEXT           "Scatter Angle",-1,7,46,56,8
     LTEXT           "Hit Accuracy (0..1)",-1,7,60,61,8
     CONTROL         "Fall through",IDC_FALL_THROUGH_HOLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,19,53,10
-    CONTROL         "Legacy (faster/approximate physics)",IDC_LEGACYMODE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,31,131,9
+    CONTROL         "Legacy (faster/approximate physics)",IDC_LEGACYMODE,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,31,131,9
 END
 
 IDD_PROPPRIMITIVE_POSITION DIALOGEX 0, 0, 125, 205
@@ -1854,6 +1854,11 @@ BEGIN
         RIGHTMARGIN, 303
         TOPMARGIN, 7
         BOTTOMMARGIN, 107
+    END
+
+    IDD_PROPPOINT_POSITION_WITHZ, DIALOG
+    BEGIN
+        BOTTOMMARGIN, 58
     END
 
     IDD_PROPKICKER_STATE, DIALOG
