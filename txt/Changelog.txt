@@ -154,7 +154,11 @@ VP 10.0.0 Changelog
 - DMDWidth, DMDHeight, DMDPixels to steer the DMD added to Table Script methods
 
 - improved smoothness for ramps (centripetal Catmull-Rom splines)
-- ramps can now in addition use the height parameter of their control points (its used as an offset in addition to the normal ramp behavior)
+- ramps can now in addition use the height parameter of their control points (its used as an offset in addition to the normal ramp behaviour)
+- in the editor: control points of ramps have a new read-only "Real Height" information. The "Height Offset" is just an offset for the current height. 
+  E.g.: Top/Bottom height of the ramp is 100. If you add 25 to the "Height Offset" the "Real Height" shows 125. This is more important if you use a sloped 
+  ramp with bottom height 0 and top height 60 and add new control points on the ramp. The height information is interpolated from one control point to the 
+  next one, so the "Real Height" shows you this value and the "Height Offset" can be used to easily adjust the height.  
 - changed opacity/transparency handling for ramps (Alpha/Acrylic have been deleted, only the material opacity value is supported now)
 
 - GetElement, GetElementByName, GetBalls added to Table Script methods to have simple access to the elements and all active balls on the table
