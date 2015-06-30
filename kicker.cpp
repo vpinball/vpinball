@@ -277,7 +277,7 @@ void Kicker::GenerateCupMesh(Vertex3D_NoTex2 *buf)
 
     for (int i = 0; i < kickerCupNumVertices; i++)
     {
-        Vertex3Ds vert(kickerCup[i].x, kickerCup[i].y, kickerCup[i].z);
+        Vertex3Ds vert(kickerCup[i].x, kickerCup[i].y, kickerCup[i].z-0.18f);
         vert = fullMatrix.MultiplyVector(vert);
 
         buf[i].x = vert.x*m_d.m_radius + m_d.m_vCenter.x;
@@ -394,7 +394,7 @@ void Kicker::RenderStatic(RenderDevice* pd3dDevice)
       const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
       Vertex3D_NoTex2 *buf = new Vertex3D_NoTex2[kickerPlateNumVertices];
-	  const float rad = m_d.m_radius * ((m_d.m_kickertype == KickerCup) ? 0.9f : 0.82f);
+	  const float rad = m_d.m_radius * ((m_d.m_kickertype == KickerCup) ? 1.0f : 0.82f);
 
       for ( unsigned int i=0;i<kickerPlateNumVertices;i++ )
       {
