@@ -870,6 +870,7 @@ void Ramp::RenderStaticHabitrail(RenderDevice* pd3dDevice, const Material * cons
 
    pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+   pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
 
    Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
    if ( !pin )
@@ -881,8 +882,6 @@ void Ramp::RenderStaticHabitrail(RenderDevice* pd3dDevice, const Material * cons
 
        //g_pplayer->m_pin3d.SetTextureFilter(0, TEXTURE_MODE_TRILINEAR);
    }
-
-   pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
 
    if ( m_d.m_type==RampType2Wire )
    {
@@ -1101,12 +1100,13 @@ void Ramp::GenerateWireMesh(Vertex3D_NoTex2 **meshBuf1, Vertex3D_NoTex2 **meshBu
                     quad[3] = 0;
             }
 
-            m_meshIndices[(i*numSegments + j) * 6    ] = quad[0];
-            m_meshIndices[(i*numSegments + j) * 6 + 1] = quad[1];
-            m_meshIndices[(i*numSegments + j) * 6 + 2] = quad[2];
-            m_meshIndices[(i*numSegments + j) * 6 + 3] = quad[3];
-            m_meshIndices[(i*numSegments + j) * 6 + 4] = quad[2];
-            m_meshIndices[(i*numSegments + j) * 6 + 5] = quad[1];
+			const unsigned int offs = (i*numSegments + j) * 6;
+            m_meshIndices[offs    ] = quad[0];
+            m_meshIndices[offs + 1] = quad[1];
+			m_meshIndices[offs + 2] = quad[2];
+			m_meshIndices[offs + 3] = quad[3];
+			m_meshIndices[offs + 4] = quad[2];
+			m_meshIndices[offs + 5] = quad[1];
         }
     }
 
@@ -2236,7 +2236,7 @@ void Ramp::RenderRamp( RenderDevice *pd3dDevice, const Material * const mat )
 	  {
 		  // both walls with image and floor
 		  pd3dDevice->basicShader->Begin(0);
-		  pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, dynamicVertexBuffer, 0, m_numVertices, dynamicIndexBuffer, 0, (rampVertex - 1) * 6 * 3);
+		  pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, dynamicVertexBuffer, 0, m_numVertices*3, dynamicIndexBuffer, 0, (rampVertex - 1) * 6 * 3);
 		  pd3dDevice->basicShader->End();
 	  }
 	  else
