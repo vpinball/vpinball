@@ -1710,6 +1710,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="BlackBox.cpp" />
     <ClCompile Include="CrashHandler.cpp" />
     <ClCompile Include="flasher.cpp" />
+    <ClCompile Include="inc\progmesh.cpp" />
     <ClCompile Include="math\math.cpp" />
     <ClCompile Include="MemoryStatus.cpp" />
     <ClCompile Include="rubber.cpp" />
@@ -4366,9 +4367,11 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ballex.h" />
+    <ClInclude Include="BlackBox.h" />
     <ClInclude Include="buildnumber.h" />
     <ClInclude Include="bumper.h" />
     <ClInclude Include="codeview.h" />
+    <ClInclude Include="CrashHandler.h" />
     <ClInclude Include="decal.h" />
     <ClInclude Include="def.h" />
     <ClInclude Include="dispid.h" />
@@ -4408,6 +4411,8 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="inc\nvapi_lite_sli.h" />
     <ClInclude Include="inc\nvapi_lite_stereo.h" />
     <ClInclude Include="inc\nvapi_lite_surround.h" />
+    <ClInclude Include="inc\progmesh.h" />
+    <ClInclude Include="inc\progmesh_vecmatquat_minimal.h" />
     <ClInclude Include="inc\scilexer.h" />
     <ClInclude Include="inc\scintilla.h" />
     <ClInclude Include="inc\xaudio\aac_codec.h" />
@@ -4443,9 +4448,11 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="media\lzwreader.h" />
     <ClInclude Include="media\lzwwriter.h" />
     <ClInclude Include="media\wavread.h" />
+    <ClInclude Include="MemoryStatus.h" />
     <ClInclude Include="memutil.h" />
     <ClInclude Include="mesh.h" />
     <ClInclude Include="mixer.h" />
+    <ClInclude Include="objloader.h" />
     <ClInclude Include="paintsur.h" />
     <ClInclude Include="physconst.h" />
     <ClInclude Include="pin3d.h" />
@@ -4474,6 +4481,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="rubber.h" />
     <ClInclude Include="slintf.h" />
     <ClInclude Include="spinner.h" />
+    <ClInclude Include="StackTrace.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="stereo3D.h" />
     <ClInclude Include="sur.h" />

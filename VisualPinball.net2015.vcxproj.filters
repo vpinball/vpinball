@@ -75,6 +75,9 @@
     <ClCompile Include="CrashHandler.cpp" />
     <ClCompile Include="MemoryStatus.cpp" />
     <ClCompile Include="StackTrace.cpp" />
+    <ClCompile Include="inc\progmesh.cpp">
+      <Filter>inc</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="vpinball.rc" />
@@ -690,6 +693,9 @@
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="StackTrace.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="objloader.h">
       <Filter>headers</Filter>
     </ClInclude>
   </ItemGroup>

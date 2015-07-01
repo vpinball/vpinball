@@ -1765,7 +1765,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DebugInformationFormat>None</DebugInformationFormat>
       <CompileAs>Default</CompileAs>
       <FloatingPointExceptions>false</FloatingPointExceptions>
       <OpenMPSupport>false</OpenMPSupport>
@@ -1781,7 +1781,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x86;.\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>LIBC;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -2006,6 +2006,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="BlackBox.cpp" />
     <ClCompile Include="CrashHandler.cpp" />
     <ClCompile Include="flasher.cpp" />
+    <ClCompile Include="inc\progmesh.cpp" />
     <ClCompile Include="math\math.cpp" />
     <ClCompile Include="MemoryStatus.cpp" />
     <ClCompile Include="rubber.cpp" />
@@ -4841,6 +4842,8 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="inc\nvapi_lite_sli.h" />
     <ClInclude Include="inc\nvapi_lite_stereo.h" />
     <ClInclude Include="inc\nvapi_lite_surround.h" />
+    <ClInclude Include="inc\progmesh.h" />
+    <ClInclude Include="inc\progmesh_vecmatquat_minimal.h" />
     <ClInclude Include="inc\scilexer.h" />
     <ClInclude Include="inc\scintilla.h" />
     <ClInclude Include="inc\xaudio\aac_codec.h" />
@@ -4879,6 +4882,22 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="MemoryStatus.h" />
     <ClInclude Include="memutil.h" />
     <ClInclude Include="mesh.h" />
+    <ClInclude Include="meshes\ballMesh.h" />
+    <ClInclude Include="meshes\bulbLightMesh.h" />
+    <ClInclude Include="meshes\bulbSocketMesh.h" />
+    <ClInclude Include="meshes\bumperBaseMesh.h" />
+    <ClInclude Include="meshes\bumperCapMesh.h" />
+    <ClInclude Include="meshes\bumperRingMesh.h" />
+    <ClInclude Include="meshes\bumperSocketMesh.h" />
+    <ClInclude Include="meshes\gateBracketMesh.h" />
+    <ClInclude Include="meshes\gateWireMesh.h" />
+    <ClInclude Include="meshes\kickerCupMesh.h" />
+    <ClInclude Include="meshes\kickerHitMesh.h" />
+    <ClInclude Include="meshes\kickerHoleMesh.h" />
+    <ClInclude Include="meshes\spinnerBracketMesh.h" />
+    <ClInclude Include="meshes\spinnerPlateMesh.h" />
+    <ClInclude Include="meshes\triggerSimpleMesh.h" />
+    <ClInclude Include="meshes\triggerStarMesh.h" />
     <ClInclude Include="mixer.h" />
     <ClInclude Include="objloader.h" />
     <ClInclude Include="paintsur.h" />

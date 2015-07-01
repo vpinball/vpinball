@@ -83,6 +83,9 @@
     <ClCompile Include="MemoryStatus.cpp">
       <Filter>CrashReporter</Filter>
     </ClCompile>
+    <ClCompile Include="inc\progmesh.cpp">
+      <Filter>inc</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="vpinball.rc" />
@@ -149,20 +152,33 @@
     <Image Include="res\white.bmp">
       <Filter>res</Filter>
     </Image>
-    <Image Include="res\envmap.bmp" />
-    <Image Include="res\bumperbase.bmp" />
-    <Image Include="res\ringenvmap.bmp" />
-    <Image Include="res\bumperCap.bmp" />
-    <Image Include="res\bumperSocket.bmp" />
-    <Image Include="res\kickerHoleWood.bmp" />
-    <Image Include="res\kickerCup.bmp" />
+    <Image Include="res\bumperbase.bmp">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\bumperCap.bmp">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\bumperSocket.bmp">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\envmap.bmp">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\kickerCup.bmp">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\kickerHoleWood.bmp">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\ringenvmap.bmp">
+      <Filter>res</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="vpinball.idl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="res\vpinball.rgs" />
-    <None Include="res\table.vpx" />
     <None Include="res\ball.rgs">
       <Filter>res</Filter>
     </None>
@@ -301,6 +317,9 @@
     <None Include="shader\FXAAStereoAO.fxh">
       <Filter>shaders</Filter>
     </None>
+    <None Include="res\table.vpx">
+      <Filter>res</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="inc">
@@ -320,6 +339,9 @@
     </Filter>
     <Filter Include="CrashReporter">
       <UniqueIdentifier>{2d87fed0-e36e-4766-91a7-0be8f21d47dc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="meshes">
+      <UniqueIdentifier>{23b51dec-131c-4ac3-8f28-4e8fd6a3b646}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -721,6 +743,60 @@
     </ClInclude>
     <ClInclude Include="objloader.h">
       <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\ballMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\bulbLightMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\bulbSocketMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\bumperBaseMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\bumperCapMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\bumperRingMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\bumperSocketMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\gateBracketMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\gateWireMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\kickerCupMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\kickerHitMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\kickerHoleMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\spinnerBracketMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\spinnerPlateMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\triggerSimpleMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\triggerStarMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\progmesh.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\progmesh_vecmatquat_minimal.h">
+      <Filter>inc</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
