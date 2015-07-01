@@ -18285,6 +18285,14 @@
 					>
 				</File>
 				<File
+					RelativePath=".\inc\progmesh.h"
+					>
+				</File>
+				<File
+					RelativePath=".\inc\progmesh.cpp"
+					>
+				</File>
+				<File
 					RelativePath=".\inc\scilexer.h"
 					>
 				</File>

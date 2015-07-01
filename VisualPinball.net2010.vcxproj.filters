@@ -228,6 +228,9 @@
     <ClCompile Include="quadtree.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="inc\progmesh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="math\matrix.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
