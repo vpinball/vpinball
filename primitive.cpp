@@ -6,6 +6,7 @@
 #include "forsyth.h"
 #include "objloader.h"
 #include "inc\miniz.c"
+#include "inc\progmesh.h"
 
 // defined in objloader.cpp
 extern bool WaveFrontObj_Load(const char *filename, const bool flipTv, const bool convertToLeftHanded);
@@ -315,29 +316,102 @@ void Primitive::GetHitShapes(Vector<HitObject> * const pvho)
       return;
 
    RecalculateMatrices();
-   TransformVertices();
+   TransformVertices(); //!! could also only do this for the optional reduced variant!
 
-   std::set< std::pair<unsigned, unsigned> > addedEdges;
+   //
 
-   // add collision triangles and edges
-   for (unsigned i = 0; i < m_mesh.NumIndices(); i += 3)
+   const float reduction_factor = 0.f; //!! make configurable 0..1
+   const unsigned int reduced_vertices = max((unsigned int)powf((float)vertices.size(), clamp(1.f-reduction_factor,0.f,1.f)*0.25f+0.75f), 420u); //!! 420 = magic
+
+   if (reduced_vertices < vertices.size())
    {
-      Vertex3Ds rgv3D[3];
-      // NB: HitTriangle wants CCW vertices, but for rendering we have them in CW order
-      rgv3D[0] = vertices[m_mesh.m_indices[i]];
-      rgv3D[1] = vertices[m_mesh.m_indices[i + 2]];
-      rgv3D[2] = vertices[m_mesh.m_indices[i + 1]];
-      SetupHitObject(pvho, new HitTriangle(rgv3D));
+	   std::vector<ProgMesh::float3> prog_vertices(vertices.size());
+	   for (size_t i = 0; i < vertices.size(); ++i) //!! opt. use original data directly!
+	   {
+		   prog_vertices[i].x = vertices[i].x;
+		   prog_vertices[i].y = vertices[i].y;
+		   prog_vertices[i].z = vertices[i].z;
+	   }
+	   std::vector<ProgMesh::tridata> prog_indices(m_mesh.NumIndices() / 3);
+	   size_t i2 = 0;
+	   for (size_t i = 0; i < m_mesh.NumIndices(); i += 3)
+	   {
+		   ProgMesh::tridata t;
+		   t.v[0] = m_mesh.m_indices[i];
+		   t.v[1] = m_mesh.m_indices[i + 1];
+		   t.v[2] = m_mesh.m_indices[i + 2];
+		   if (t.v[0] != t.v[1] && t.v[1] != t.v[2] && t.v[2] != t.v[0])
+			  prog_indices[i2++] = t;
+	   }
+	   if (i2 < prog_indices.size())
+		   prog_indices.resize(i2);
 
-      AddHitEdge(pvho, addedEdges, m_mesh.m_indices[i], m_mesh.m_indices[i + 1]);
-      AddHitEdge(pvho, addedEdges, m_mesh.m_indices[i + 1], m_mesh.m_indices[i + 2]);
-      AddHitEdge(pvho, addedEdges, m_mesh.m_indices[i + 2], m_mesh.m_indices[i]);
+	   std::vector<unsigned int> prog_map;
+	   std::vector<unsigned int> prog_perm;
+	   ProgMesh::ProgressiveMesh(prog_vertices, prog_indices, prog_map, prog_perm);
+	   ProgMesh::PermuteVertices(prog_perm, prog_vertices, prog_indices);
+	   prog_perm.clear();
+
+	   std::vector<ProgMesh::tridata> prog_new_indices;
+	   ProgMesh::ReMapIndices(reduced_vertices, prog_indices, prog_new_indices, prog_map);
+	   prog_indices.clear();
+	   prog_map.clear();
+
+	   //
+
+	   std::set< std::pair<unsigned, unsigned> > addedEdges;
+
+	   // add collision triangles and edges
+	   for (unsigned int i = 0; i < prog_new_indices.size(); ++i)
+	   {
+		   const unsigned int i0 = prog_new_indices[i].v[0];
+		   const unsigned int i1 = prog_new_indices[i].v[1];
+		   const unsigned int i2 = prog_new_indices[i].v[2];
+
+		   Vertex3Ds rgv3D[3];
+		   // NB: HitTriangle wants CCW vertices, but for rendering we have them in CW order
+		   rgv3D[0].x = prog_vertices[i0].x; rgv3D[0].y = prog_vertices[i0].y; rgv3D[0].z = prog_vertices[i0].z;
+		   rgv3D[1].x = prog_vertices[i2].x; rgv3D[1].y = prog_vertices[i2].y; rgv3D[1].z = prog_vertices[i2].z;
+		   rgv3D[2].x = prog_vertices[i1].x; rgv3D[2].y = prog_vertices[i1].y; rgv3D[2].z = prog_vertices[i1].z;
+		   SetupHitObject(pvho, new HitTriangle(rgv3D));
+
+		   AddHitEdge(pvho, addedEdges, i0, i1, rgv3D[0], rgv3D[2]);
+		   AddHitEdge(pvho, addedEdges, i1, i2, rgv3D[2], rgv3D[1]);
+		   AddHitEdge(pvho, addedEdges, i2, i0, rgv3D[1], rgv3D[0]);
+	   }
+
+	   prog_new_indices.clear();
+
+	   // add collision vertices
+	   for (unsigned i = 0; i < prog_vertices.size(); ++i)
+		   SetupHitObject(pvho, new HitPoint(prog_vertices[i].x, prog_vertices[i].y, prog_vertices[i].z));
    }
-
-   // add collision vertices
-   for (unsigned i = 0; i < m_mesh.NumVertices(); ++i)
+   else
    {
-       SetupHitObject(pvho, new HitPoint(vertices[i]));
+	   std::set< std::pair<unsigned, unsigned> > addedEdges;
+
+	   // add collision triangles and edges
+	   for (unsigned i = 0; i < m_mesh.NumIndices(); i += 3)
+	   {
+		   const unsigned int i0 = m_mesh.m_indices[i];
+		   const unsigned int i1 = m_mesh.m_indices[i + 1];
+		   const unsigned int i2 = m_mesh.m_indices[i + 2];
+
+		   Vertex3Ds rgv3D[3];
+		   // NB: HitTriangle wants CCW vertices, but for rendering we have them in CW order
+		   rgv3D[0] = vertices[i0];
+		   rgv3D[1] = vertices[i2];
+		   rgv3D[2] = vertices[i1];
+		   SetupHitObject(pvho, new HitTriangle(rgv3D));
+
+		   AddHitEdge(pvho, addedEdges, i0, i1, rgv3D[0], rgv3D[2]);
+		   AddHitEdge(pvho, addedEdges, i1, i2, rgv3D[2], rgv3D[1]);
+		   AddHitEdge(pvho, addedEdges, i2, i0, rgv3D[1], rgv3D[0]);
+	   }
+
+	   // add collision vertices
+	   for (unsigned i = 0; i < m_mesh.NumVertices(); ++i)
+		   SetupHitObject(pvho, new HitPoint(vertices[i]));
    }
 }
 
@@ -345,7 +419,7 @@ void Primitive::GetHitShapesDebug(Vector<HitObject> * const pvho)
 {
 }
 
-void Primitive::AddHitEdge(Vector<HitObject> * pvho, std::set< std::pair<unsigned, unsigned> >& addedEdges, unsigned i, unsigned j)
+void Primitive::AddHitEdge(Vector<HitObject> * pvho, std::set< std::pair<unsigned, unsigned> >& addedEdges, const unsigned i, const unsigned j, const Vertex3Ds &vi, const Vertex3Ds &vj)
 {
     // create pair uniquely identifying the edge (i,j)
    std::pair<unsigned, unsigned> p(std::min(i, j), std::max(i, j));
@@ -353,7 +427,7 @@ void Primitive::AddHitEdge(Vector<HitObject> * pvho, std::set< std::pair<unsigne
     if (addedEdges.count(p) == 0)   // edge not yet added?
     {
         addedEdges.insert(p);
-        SetupHitObject(pvho, new HitLine3D(vertices[i], vertices[j]));
+        SetupHitObject(pvho, new HitLine3D(vi, vj));
     }
 }
 
@@ -2295,7 +2369,7 @@ STDMETHODIMP Primitive::put_Collidable(VARIANT_BOOL newVal)
    }
    else
       for (int i = 0; i < m_vhoCollidable.Size(); i++)
-         m_vhoCollidable.ElementAt(i)->m_fEnabled = VBTOF(fNewVal);	//copy to hit checking on enities composing the object 
+         m_vhoCollidable.ElementAt(i)->m_fEnabled = VBTOF(fNewVal);	//copy to hit checking on entities composing the object 
 
    return S_OK;
 }

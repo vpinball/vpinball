@@ -266,7 +266,7 @@ private:        // private member functions
    bool BrowseFor3DMeshFile();
    void RenderObject( RenderDevice *pd3dDevice);
    void SetupHitObject(Vector<HitObject> * pvho, HitObject * obj);
-   void AddHitEdge(Vector<HitObject> * pvho, std::set< std::pair<unsigned,unsigned> >& addedEdges, unsigned i, unsigned j);
+   void AddHitEdge(Vector<HitObject> * pvho, std::set< std::pair<unsigned,unsigned> >& addedEdges, const unsigned i, const unsigned j, const Vertex3Ds &vi, const Vertex3Ds &vj);
 
    void CalculateBuiltinOriginal();
 
