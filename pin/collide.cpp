@@ -21,12 +21,6 @@ HitObject *CreateCircularHitPoly(const float x, const float y, const float z, co
 	return new Hit3DPoly(rgv3d, sections);
 }
 
-HitObject::HitObject() : m_fEnabled(fTrue), m_ObjType(eNull), m_pObj(NULL),
-                         m_elasticity(0.3f), m_elasticityFalloff(0.0f), m_friction(0.3f), m_scatter(0.0f),
-                         m_pfe(NULL), m_pfedebug(NULL)
-{
-}
-
 void HitObject::FireHitEvent(Ball* pball)
 {
     if (m_pfe && m_fEnabled)
@@ -192,11 +186,6 @@ void LineSeg::Contact(CollisionEvent& coll, float dtime)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-HitCircle::HitCircle(const Vertex2D& c, float r, float _zlow, float _zhigh)
-    : center(c), radius(r), zlow(_zlow), zhigh(_zhigh)
-{
-}
-
 float HitCircle::HitTestBasicRadius(const Ball * pball, float dtime, CollisionEvent& coll,
 									bool direction, bool lateral, bool rigid)
 {
@@ -327,7 +316,7 @@ float HitCircle::HitTestBasicRadius(const Ball * pball, float dtime, CollisionEv
         coll.hitvelocity.z = bnv;
 
 	coll.hitdistance = bnd;				//actual contact distance ... 
-	//coll.hitRigid = rigid;				// collision type
+	//coll.hitRigid = rigid;			// collision type
 
 	return hittime;
 }
@@ -367,11 +356,6 @@ void HitCircle::Contact(CollisionEvent& coll, float dtime)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-
-HitLineZ::HitLineZ(const Vertex2D& xy, float zlow, float zhigh)
-    : m_xy(xy), m_zlow(zlow), m_zhigh(zhigh)
-{
-}
 
 float HitLineZ::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 {
@@ -469,11 +453,6 @@ void HitLineZ::Contact(CollisionEvent& coll, float dtime)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-
-HitPoint::HitPoint(const Vertex3Ds& p)
-    : m_p(p)
-{
-}
 
 float HitPoint::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 {

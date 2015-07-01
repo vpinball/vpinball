@@ -77,7 +77,9 @@ class HitObject
 {
 public:
 
-	HitObject();
+	HitObject() : m_fEnabled(fTrue), m_ObjType(eNull), m_pObj(NULL),
+			      m_elasticity(0.3f), m_elasticityFalloff(0.0f), m_friction(0.3f), m_scatter(0.0f),
+				  m_pfe(NULL), m_pfedebug(NULL) {}
 	virtual ~HitObject() {}
 
 	virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll) { return -1.f; } //!! shouldn't need to do this, but for whatever reason there is a pure virtual function call triggered otherwise that refuses to be debugged
@@ -147,7 +149,7 @@ class HitCircle : public HitObject
 {
 public:
     HitCircle() { }
-    HitCircle(const Vertex2D& c, float r, float _zlow, float _zhigh);
+	HitCircle(const Vertex2D& c, float r, float _zlow, float _zhigh) : center(c), radius(r), zlow(_zlow), zhigh(_zhigh) { }
 
 	virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
 
@@ -175,7 +177,7 @@ class HitLineZ : public HitObject
 {
 public:
     HitLineZ() { }
-    HitLineZ(const Vertex2D& xy, float zlow, float zhigh);
+	HitLineZ(const Vertex2D& xy, float zlow, float zhigh) : m_xy(xy), m_zlow(zlow), m_zhigh(zhigh) { }
 
     virtual void CalcHitRect();
     virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
@@ -191,7 +193,8 @@ public:
 class HitPoint : public HitObject
 {
 public:
-    HitPoint(const Vertex3Ds& p);
+	HitPoint(const Vertex3Ds& p) : m_p(p) {}
+	HitPoint(const float x, const float y, const float z) { m_p.x = x; m_p.y = y; m_p.z = z; }
 
     virtual void CalcHitRect();
     virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
