@@ -915,7 +915,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 
 	SendMessage(hwndProgress, PBM_SETPOS, 40, 0);
 	// TEXT
-	SetWindowText(hwndProgressName, "Initalizing Visuals...");
+	SetWindowText(hwndProgressName, "Initializing Visuals...");
 
 	InitWindow();
 	InitKeys();
@@ -988,7 +988,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
     Ball::ballID=0;
 
 	SendMessage(hwndProgress, PBM_SETPOS, 50, 0);
-	SetWindowText(hwndProgressName, "Initalizing Physics...");
+	SetWindowText(hwndProgressName, "Initializing Physics...");
 
     {
         // Initialize new nudging.
@@ -1033,6 +1033,15 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 		Hitable * const ph = pe->GetIHitable();
 		if (ph)
 		{
+#ifdef _DEBUGPHYSICS
+			CComBSTR bstr;
+			pe->GetScriptable()->get_Name(&bstr);
+			char * bstr2 = MakeChar(bstr);
+			CHAR wzDst[256];
+			sprintf_s(wzDst, "Initializing Physics... %s", bstr2);
+			delete [] bstr2;
+			SetWindowText(hwndProgressName, wzDst);
+#endif
 			const int currentsize = m_vho.Size();
 			ph->GetHitShapes(&m_vho);
 			const int newsize = m_vho.Size();
