@@ -476,9 +476,10 @@ Elasticity(float)
 ElasticityFalloff(float)
 Friction(float) 
 Scatter(float)
-*IsToy(bool) - disables collision handling completely. It overwrites the Collidable-flag and can't be used from within the script. This option is useful if you have real toys
-               or static primitives which are never hitable at all.
-
+*IsToy(bool) - disables collision handling and all physics preprocessing completely.
+               It overwrites the Collidable-flag and can't be used from within the script.
+               This option is useful if you have real toys or static primitives which are never hitable at all
+               and are just there for the 'looks'.
 
 RAMP
 ==============================================================================================================================================
