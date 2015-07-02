@@ -59,6 +59,7 @@ public:
    float m_depthBias;      // for determining depth sorting
 
    float m_edgeFactorUI;   // for drawing the mesh in the editorUI
+   float m_collision_reductionFactor; //0=none..1=pow(num_vertices,0.75)
 
    bool m_use3DMesh;
    bool m_fVisible;
@@ -157,6 +158,8 @@ public:
 
    STDMETHOD(get_EdgeFactorUI)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_EdgeFactorUI)(/*[in]*/ float newVal);
+   STDMETHOD(get_CollisionReductionFactor)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_CollisionReductionFactor)(/*[in]*/ float newVal);
 
    STDMETHOD(get_Image)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(put_Image)(/*[in]*/ BSTR newVal);

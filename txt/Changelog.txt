@@ -205,6 +205,8 @@ VP 10.0.0 Changelog
 - support primitive vertex sizes > 65535 and redo primitive drawing in the editor-UI 
   (there is now a new setting for each primitive, set to 0 to switch to the old approximate drawing mode (usually fast),
    1 to draw each and every triangle (usually slow) or inbetween to approximate the outlines of the object (lower values are faster))
+- primitives can optionally be reduced for the use in the physics core (so that highly detailed objects do not cause stutter on collisions)
+  by setting the new 'reduce polygons' options (0=no reduction and no slowdown on loading .. 1=high reduction of polygons and slower loading)
 
 - export of the entire table to an .obj file (Menu File -> Export -> OBJ Mesh)
 - mesh import dialog added. The options are:

@@ -82,6 +82,7 @@ Primitive::Primitive()
    m_d.m_meshFileName[0] = 0;
    m_d.m_staticRendering = false;
    m_d.m_edgeFactorUI = 0.25f;
+   m_d.m_collision_reductionFactor = 0.f;
    m_d.m_depthBias = 0.0f;
    m_d.m_fSkipRendering = false;
    m_d.m_fGroupdRendering = false;
@@ -259,6 +260,7 @@ void Primitive::SetDefaults(bool fromMouseClick)
    SetDefaultPhysics(fromMouseClick);
 
    m_d.m_edgeFactorUI = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "EdgeFactorUI", 0.25f) : 0.25f;
+   m_d.m_collision_reductionFactor = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "CollisionReductionFactor", 0.f) : 0.f;
 
    m_d.m_fCollidable = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "Collidable", true) : true;
    m_d.m_fToy = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "IsToy", false) : false;
@@ -299,6 +301,7 @@ void Primitive::WriteRegDefaults()
    SetRegValueFloat(strKeyName, "Scatter", m_d.m_scatter);
 
    SetRegValueFloat(strKeyName, "EdgeFactorUI", m_d.m_edgeFactorUI);
+   SetRegValueFloat(strKeyName, "CollisionReductionFactor", m_d.m_collision_reductionFactor);
 
    SetRegValueBool(strKeyName, "Collidable", m_d.m_fCollidable);
    SetRegValueBool(strKeyName, "IsToy", m_d.m_fToy);
@@ -320,8 +323,7 @@ void Primitive::GetHitShapes(Vector<HitObject> * const pvho)
 
    //
 
-   const float reduction_factor = 0.f; //!! make configurable 0..1
-   const unsigned int reduced_vertices = max((unsigned int)powf((float)vertices.size(), clamp(1.f-reduction_factor,0.f,1.f)*0.25f+0.75f), 420u); //!! 420 = magic
+   const unsigned int reduced_vertices = max((unsigned int)powf((float)vertices.size(), clamp(1.f-m_d.m_collision_reductionFactor,0.f,1.f)*0.25f+0.75f), 420u); //!! 420 = magic
 
    if (reduced_vertices < vertices.size())
    {
@@ -983,6 +985,7 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcry
    bw.WriteFloat(FID(RFCT), m_d.m_friction);
    bw.WriteFloat(FID(RSCT), m_d.m_scatter);
    bw.WriteFloat(FID(EFUI), m_d.m_edgeFactorUI);
+   bw.WriteFloat(FID(CORF), m_d.m_collision_reductionFactor);
    bw.WriteBool(FID(CLDRP), m_d.m_fCollidable);
    bw.WriteBool(FID(ISTO), m_d.m_fToy);
    bw.WriteBool(FID(U3DM), m_d.m_use3DMesh);
@@ -1189,6 +1192,10 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(EFUI))
    {
 	   pbr->GetFloat(&m_d.m_edgeFactorUI);
+   }
+   else if (id == FID(CORF))
+   {
+	   pbr->GetFloat(&m_d.m_collision_reductionFactor);
    }
    else if (id == FID(CLDRP))
    {
@@ -2225,6 +2232,21 @@ STDMETHODIMP Primitive::put_EdgeFactorUI(float newVal)
    return S_OK;
 }
 
+STDMETHODIMP Primitive::get_CollisionReductionFactor(float *pVal)
+{
+	*pVal = m_d.m_collision_reductionFactor;
+	return S_OK;
+}
+
+STDMETHODIMP Primitive::put_CollisionReductionFactor(float newVal)
+{
+	STARTUNDO
+	m_d.m_collision_reductionFactor = newVal;
+	STOPUNDO
+
+	return S_OK;
+}
+
 STDMETHODIMP Primitive::get_EnableStaticRendering(VARIANT_BOOL *pVal)
 {
    *pVal = (VARIANT_BOOL)FTOVB(m_d.m_staticRendering);
@@ -2448,10 +2470,16 @@ void Primitive::UpdatePropertyPanes()
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 33), FALSE);
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 110), FALSE);
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 112), FALSE);
-      if (m_d.m_fToy)
-         EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 111), FALSE);
-      else
-         EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 111), TRUE);
+	  if (m_d.m_fToy)
+	  {
+		  EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 481), FALSE);
+		  EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 111), FALSE);
+	  }
+	  else
+	  {
+		  EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 481), TRUE);
+		  EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 111), TRUE);
+	  }
 
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 114), FALSE);
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 115), FALSE);
@@ -2460,7 +2488,8 @@ void Primitive::UpdatePropertyPanes()
     {
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 34), TRUE);
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 111), TRUE);
-      if (m_d.m_fHitEvent)
+	  EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 481), TRUE);
+	  if (m_d.m_fHitEvent)
          EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 33), TRUE);
         else
          EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 33), FALSE);

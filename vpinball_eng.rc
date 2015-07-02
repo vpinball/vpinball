@@ -1727,7 +1727,7 @@ BEGIN
     LTEXT           "RotX",IDC_STATIC,7,51,17,8
 END
 
-IDD_PROPPRIMITIVE_PHYSICS DIALOGEX 0, 0, 125, 112
+IDD_PROPPRIMITIVE_PHYSICS DIALOGEX 0, 0, 125, 130
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
@@ -1737,13 +1737,15 @@ BEGIN
     EDITTEXT        112,78,45,40,12,ES_AUTOHSCROLL
     EDITTEXT        114,78,58,40,12,ES_AUTOHSCROLL
     EDITTEXT        115,78,71,40,12,ES_AUTOHSCROLL
-    LTEXT           "&Elasticity",-1,7,34,63,8
+	LTEXT           "Hit Threshol&d", -1, 7, 21, 70, 8
+	LTEXT           "&Elasticity", -1, 7, 34, 63, 8
     LTEXT           "Elasticity Falloff",-1,7,47,63,8
     LTEXT           "&Friction",-1,7,60,63,8
     LTEXT           "&Scatter Angle",-1,7,73,63,8
-    LTEXT           "Hit Threshol&d",-1,7,21,70,8
     CONTROL         "Collidable (switchable in script)",111,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,86,115,10
     CONTROL         "Toy (never collidable,much faster)",IDC_PRIMITIVE_IS_TOY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,99,115,10
+	LTEXT           "If not a Toy, reduce polygons by (0..1)", -1, 7, 112, 63, 16
+	EDITTEXT        IDC_COLLISION_REDUCTION_FACTOR, 78, 114, 40, 12, ES_AUTOHSCROLL
 END
 
 IDD_PROPRUBBER_PHYSICS DIALOGEX 0, 0, 125, 85
