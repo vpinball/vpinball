@@ -913,7 +913,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 
 	//m_hSongCompletionEvent = CreateEvent( NULL, TRUE, FALSE, NULL );
 
-	SendMessage(hwndProgress, PBM_SETPOS, 40, 0);
+	SendMessage(hwndProgress, PBM_SETPOS, 10, 0);
 	// TEXT
 	SetWindowText(hwndProgressName, "Initializing Visuals...");
 
@@ -987,7 +987,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 
     Ball::ballID=0;
 
-	SendMessage(hwndProgress, PBM_SETPOS, 50, 0);
+	SendMessage(hwndProgress, PBM_SETPOS, 30, 0);
 	SetWindowText(hwndProgressName, "Initializing Physics...");
 
     {
@@ -1034,13 +1034,16 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 		if (ph)
 		{
 #ifdef _DEBUGPHYSICS
-			CComBSTR bstr;
-			pe->GetScriptable()->get_Name(&bstr);
-			char * bstr2 = MakeChar(bstr);
-			CHAR wzDst[256];
-			sprintf_s(wzDst, "Initializing Physics... %s", bstr2);
-			delete [] bstr2;
-			SetWindowText(hwndProgressName, wzDst);
+			if(pe->GetScriptable())
+			{
+				CComBSTR bstr;
+				pe->GetScriptable()->get_Name(&bstr);
+				char * bstr2 = MakeChar(bstr);
+				CHAR wzDst[256];
+				sprintf_s(wzDst, "Initializing Object-Physics %s...", bstr2);
+				delete [] bstr2;
+				SetWindowText(hwndProgressName, wzDst);
+			}
 #endif
 			const int currentsize = m_vho.Size();
 			ph->GetHitShapes(&m_vho);
@@ -1055,6 +1058,9 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 			m_vhitables.push_back(ph);
 		}
 	}
+
+	SendMessage(hwndProgress, PBM_SETPOS, 45, 0);
+	SetWindowText(hwndProgressName, "Initializing Octree...");
 
 	CreateBoundingHitShapes(&m_vho);
 
@@ -1266,7 +1272,7 @@ void Player::InitStatic(HWND hwndProgress)
                 if (ph)
                 {
                     ph->RenderStatic(m_pin3d.m_pd3dDevice);
-                    if (hwndProgress && ((i%8)==0))
+                    if (hwndProgress && ((i%16)==0))
                         SendMessage(hwndProgress, PBM_SETPOS, 60 + ((15*i)/m_ptable->m_vedit.Size()), 0);
                 }
             }
@@ -1281,7 +1287,7 @@ void Player::InitStatic(HWND hwndProgress)
                 if (ph)
                 {
                     ph->RenderStatic(m_pin3d.m_pd3dDevice);
-                    if (hwndProgress && ((i%8)==0))
+                    if (hwndProgress && ((i%16)==0))
                         SendMessage(hwndProgress, PBM_SETPOS, 75 + ((15*i)/m_ptable->m_vedit.Size()), 0);
                 }
             }
