@@ -79,7 +79,7 @@ public:
 
 	HitObject() : m_fEnabled(fTrue), m_ObjType(eNull), m_pObj(NULL),
 			      m_elasticity(0.3f), m_elasticityFalloff(0.0f), m_friction(0.3f), m_scatter(0.0f),
-				  m_pfe(NULL), m_pfedebug(NULL) {}
+				  m_pfe(NULL), m_pfedebug(NULL), m_pe(NULL) {}
 	virtual ~HitObject() {}
 
 	virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll) { return -1.f; } //!! shouldn't need to do this, but for whatever reason there is a pure virtual function call triggered otherwise that refuses to be debugged
@@ -103,6 +103,8 @@ public:
 	
 	//IDispatch *m_pdisp;
 	IFireEvents *m_pfedebug;
+
+	void *m_pe; // currently only used to determine which HitTriangles/HitLines/HitPoints are being part of the same Primitive element
 
 	FRect3D m_rcHitRect;
 

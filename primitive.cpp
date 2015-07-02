@@ -440,8 +440,9 @@ void Primitive::SetupHitObject(Vector<HitObject> * pvho, HitObject * obj)
     obj->m_threshold = m_d.m_threshold;
     obj->m_ObjType = ePrimitive;
     obj->m_fEnabled = m_d.m_fCollidable;
-   if (m_d.m_fHitEvent)
-        obj->m_pfe = (IFireEvents *)this;
+	if (m_d.m_fHitEvent)
+		obj->m_pfe = (IFireEvents *)this;
+	obj->m_pe = this;
 
     pvho->AddElement(obj);
     m_vhoCollidable.AddElement(obj);	//remember hit components of primitive
