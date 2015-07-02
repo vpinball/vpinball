@@ -1816,11 +1816,7 @@ void PinTable::Play(bool _cameraMode)
    HWND hwndProgressBar = GetDlgItem(hwndProgressDialog, IDC_PROGRESS2);
    HWND hwndStatusName = GetDlgItem(hwndProgressDialog, IDC_STATUSNAME);
 
-   SendMessage(hwndProgressBar, PBM_SETPOS, 0, 0);
-   // TEXT
-   SetWindowText(hwndStatusName, "Compiling Script...");
-
-   SendMessage(hwndProgressBar, PBM_SETPOS, 20, 0);
+   SendMessage(hwndProgressBar, PBM_SETPOS, 1, 0);
    SetWindowText(hwndStatusName, "Backing Up Table State...");
    BackupForPlay();
 
