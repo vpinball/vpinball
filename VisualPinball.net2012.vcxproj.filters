@@ -690,6 +690,21 @@
     <ClInclude Include="inc\bass.h">
       <Filter>inc</Filter>
     </ClInclude>
+    <ClInclude Include="BlackBox.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="CrashHandler.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="MemoryStatus.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="StackTrace.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\progmesh.h">
+      <Filter>inc</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="shader\BallShader.fx">
