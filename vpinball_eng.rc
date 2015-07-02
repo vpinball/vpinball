@@ -1742,8 +1742,8 @@ BEGIN
     LTEXT           "&Friction",-1,7,60,63,8
     LTEXT           "&Scatter Angle",-1,7,73,63,8
     LTEXT           "Hit Threshol&d",-1,7,21,70,8
-    CONTROL         "Collidable (switchable in the script)",111,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,86,115,10
-    CONTROL         "Toy (never collidable->much faster)",IDC_PRIMITIVE_IS_TOY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,99,115,10
+    CONTROL         "Collidable (switchable in script)",111,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,86,115,10
+    CONTROL         "Toy (never collidable,much faster)",IDC_PRIMITIVE_IS_TOY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,99,115,10
 END
 
 IDD_PROPRUBBER_PHYSICS DIALOGEX 0, 0, 125, 85
