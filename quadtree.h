@@ -7,6 +7,7 @@ class HitQuadtree
 public:
     HitQuadtree()
     {
+        m_unique = NULL;
         m_fLeaf = true;
         lefts = 0;
         rights = 0;
@@ -30,10 +31,11 @@ private:
 	void CreateNextLevel(const FRect3D& bounds, const unsigned int level, unsigned int level_empty);
     void HitTestBallSse(Ball * const pball, CollisionEvent& coll) const;
 
+    Primitive* m_unique; // everything below/including this node shares the same original primitive object (just for early outs if not collidable)
+
     std::vector<HitObject*> m_vho;
     HitQuadtree * __restrict m_children[4];
     Vertex3Ds m_vcenter;
-    bool m_fLeaf;
 
     // helper arrays for SSE boundary checks
     void InitSseArrays();
@@ -43,6 +45,8 @@ private:
     float* __restrict bottoms;
     float* __restrict zlows;
     float* __restrict zhighs;
+
+    bool m_fLeaf;
 
 #ifndef NDEBUG
 public:
