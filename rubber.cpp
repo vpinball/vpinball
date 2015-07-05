@@ -128,6 +128,7 @@ void Rubber::DrawRubberMesh(Sur * const psur)
 
     GenerateMesh(4);
     UpdateRubber(NULL, false);
+
     for (int i = 0; i < (int)ringIndices.size(); i += 3)
     {
         Vertex3Ds A = Vertex3Ds(m_vertices[ringIndices[i    ]].x, m_vertices[ringIndices[i    ]].y, m_vertices[ringIndices[i    ]].z);
@@ -493,6 +494,7 @@ void Rubber::GetHitShapes(Vector<HitObject> * const pvho)
    std::set< std::pair<unsigned, unsigned> > addedEdges;
 
    GenerateMesh(4);
+   UpdateRubber(NULL, false);
 
    // add collision triangles and edges
    for (unsigned i = 0; i<ringIndices.size(); i += 3)
@@ -1223,7 +1225,7 @@ STDMETHODIMP Rubber::put_RotZ(float newVal)
     {
         STARTUNDO
 
-            m_d.m_rotZ = newVal;
+        m_d.m_rotZ = newVal;
         dynamicVertexBufferRegenerate = true;
 
         STOPUNDO
@@ -1324,7 +1326,7 @@ void Rubber::GenerateMesh(int _accuracy)
     const int numSegments = accuracy;
     m_numVertices = numRings*numSegments;
     m_numIndices = 6 * m_numVertices;//m_numVertices*2+2;
-    
+
     m_vertices.clear();
     ringIndices.clear();
 
