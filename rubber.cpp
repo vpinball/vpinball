@@ -1522,13 +1522,15 @@ void Rubber::UpdatePropertyPanes()
         EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,110), FALSE);
         EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,114), FALSE);
         EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,115), FALSE);
-    }
+		EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,120), FALSE);
+	}
     else
     {
         EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,110), TRUE);
         EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,114), TRUE);
         EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,115), TRUE);
-    }
+		EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd,120), TRUE);
+	}
 }
 
 void Rubber::SetDefaultPhysics(bool fromMouseClick)
