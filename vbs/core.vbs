@@ -125,7 +125,7 @@ Const VPinMAMEDriverVer = 3.46
 ' New in 3.26 (Update by PD)
 ' - (Core Changes)
 '    - Added "GICallback2" function to support Steve Ellenoff's new support in VPM for Dimming GI in WMS games
-'      GICallaback returns numeric values 0-8 instead of a boolean 0 or 1 (on/off) like GICallback does.
+'      GICallback returns numeric values 0-8 instead of a boolean 0 or 1 (on/off) like GICallback does.
 '      Existing tables will need to be altered to support dimming levels and need to use GICallback2 instead.
 '      The old GICallback is left intact so older tables are not broken by the new code
 '
