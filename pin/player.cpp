@@ -2510,7 +2510,7 @@ void Player::DrawBulbLightBuffer()
 		};
 
 
-		for (unsigned int blur = 0; blur < 2; ++blur) //!! opt.: use larger blur kernel instead?!
+		for (unsigned int blur = 0; blur < 2; ++blur) //!!! opt.: use larger blur kernel instead?!
 		{
 			RenderTarget* tmpBloomSurface2;
 			{
@@ -3386,7 +3386,7 @@ void Player::UnpauseMusic()
 
 inline float map_bulblight_to_emission(const Light* const l) // magic mapping of bulblight parameters to "real" lightsource emission
 {
-    return l->m_d.m_currentIntensity * powf(l->m_d.m_falloff*0.6f, l->m_d.m_falloff_power*0.6f); //!! 0.6f,0.6f = magic
+    return l->m_d.m_currentIntensity * clamp(powf(l->m_d.m_falloff*0.6f, l->m_d.m_falloff_power*0.6f),0.f,23000.f); //!! 0.6f,0.6f = magic, also clamp 23000
 }
 
 void search_for_nearest(const Ball * const pball, const std::vector<Light*> &lights, Light* light_nearest[MAX_BALL_LIGHT_SOURCES])
