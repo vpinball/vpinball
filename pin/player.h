@@ -146,7 +146,8 @@ public:
 	virtual ~Player();
 
 	HRESULT Init(PinTable * const ptable, const HWND hwndProgress, const HWND hwndProgressName);
-    void InitBallShader();
+   void RenderStaticMirror();
+   void InitBallShader();
 	void InitWindow();
 	void InitKeys();
 	void InitRegValues();

@@ -176,6 +176,7 @@ public:
 
    D3DTexture* GetBackBufferTexture() const { return m_pOffscreenBackBufferTexture; }
    D3DTexture* GetBackBufferTmpTexture() const { return m_pOffscreenBackBufferTmpTexture; }
+   D3DTexture* GetMirrorBufferTexture() const { return m_pMirrorBufferTexture; }
    RenderTarget* GetOutputBackBuffer() const { return m_pBackBuffer; }
 
    D3DTexture* GetBloomBufferTexture() const { return m_pBloomBufferTexture; }
@@ -222,7 +223,8 @@ public:
    void SetViewport( const ViewPort* );
    void GetViewport( ViewPort* );
 
-   void SetTransform(const TransformStateType, const D3DMATRIX* );
+   void DrawFullscreenQuad();
+   void SetTransform(const TransformStateType, const D3DMATRIX*);
    void GetTransform(const TransformStateType, D3DMATRIX* );
 
    void ForceAnisotropicFiltering( const bool enable ) { m_force_aniso = enable; }
@@ -274,6 +276,7 @@ private:
 
    D3DTexture* m_pBloomBufferTexture;
    D3DTexture* m_pBloomTmpBufferTexture;
+   D3DTexture* m_pMirrorBufferTexture;
 
    UINT m_adapter;      // index of the display adapter to use
 

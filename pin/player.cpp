@@ -1238,12 +1238,60 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 	return S_OK;
 }
 
+void Player::RenderStaticMirror()
+{
+   D3DMATRIX viewMat;
+
+   // Direct all renders to the "static" buffer.
+   m_pin3d.SetRenderTarget(m_pin3d.m_pddsStatic, m_pin3d.m_pddsStaticZ);
+   RenderTarget *tmpMirrorSurface = NULL;
+   m_pin3d.m_pd3dDevice->GetMirrorBufferTexture()->GetSurfaceLevel(0, &tmpMirrorSurface);
+   m_pin3d.m_pd3dDevice->SetRenderTarget(tmpMirrorSurface);
+
+   //m_pin3d.m_pd3dDevice->FBShader->SetFloat("mirrorFactor", (float)m_ptable->m_playfieldReflectionStrength/255.0f);
+   // mirroring is disabled for now
+   m_pin3d.m_pd3dDevice->FBShader->SetFloat("mirrorFactor", 0.0f);
+
+   m_pin3d.m_pd3dDevice->GetTransform(TRANSFORMSTATE_VIEW, &viewMat);
+   // flip camera
+   viewMat._33 *= -1.0f;
+   viewMat._32 *= -1.0f;
+   m_pin3d.m_pd3dDevice->SetTransform(TRANSFORMSTATE_VIEW, &viewMat);
+
+   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
+   // render static stuff
+   for (int i = 0; i < m_ptable->m_vedit.Size(); i++)
+   {
+      if (m_ptable->m_vedit.ElementAt(i)->GetItemType() != eItemDecal)
+      {
+         Hitable * const ph = m_ptable->m_vedit.ElementAt(i)->GetIHitable();
+         if (ph)
+         {
+            ph->RenderStatic(m_pin3d.m_pd3dDevice);
+         }
+      }
+   }
+   // and flip back camera
+   viewMat._33 *= -1.0f;
+   viewMat._32 *= -1.0f;
+   m_pin3d.m_pd3dDevice->SetTransform(TRANSFORMSTATE_VIEW, &viewMat);
+
+   m_pin3d.m_pd3dDevice->SetRenderTarget(m_pin3d.m_pddsStatic);
+   SAFE_RELEASE_NO_RCC(tmpMirrorSurface);
+}
 
 void Player::InitStatic(HWND hwndProgress)
 {
     TRACE_FUNCTION();
 	// Start the frame.
-	m_pin3d.m_pd3dDevice->BeginScene();
+    for (unsigned i = 0; i < m_vhitables.size(); ++i)
+    {
+       Hitable * const ph = m_vhitables[i];
+       ph->RenderSetup(m_pin3d.m_pd3dDevice);
+    }
+
+
+    m_pin3d.m_pd3dDevice->BeginScene();
 
 	// Direct all renders to the "static" buffer.
 	m_pin3d.SetRenderTarget(m_pin3d.m_pddsStatic, m_pin3d.m_pddsStaticZ);
@@ -1254,16 +1302,35 @@ void Player::InitStatic(HWND hwndProgress)
     for (unsigned i=0; i < m_vhitables.size(); ++i)
     {
         Hitable * const ph = m_vhitables[i];
-        ph->RenderSetup(m_pin3d.m_pd3dDevice);
         ph->PreRenderStatic(m_pin3d.m_pd3dDevice);
     }
 
     m_pin3d.InitPlayfieldGraphics();
     if ( !cameraMode )
     {
-        m_pin3d.RenderPlayfieldGraphics();
+       RenderStaticMirror();
+       m_pin3d.RenderPlayfieldGraphics();
 
-        // Draw stuff
+       // render the mirrored texture over the playfield
+       m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetMirrorBufferTexture());
+       m_pin3d.m_pd3dDevice->FBShader->SetTechnique("fb_mirror");
+
+       m_pin3d.EnableAlphaBlend(false, false);
+       m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_DESTALPHA);
+
+       m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
+       m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
+       m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, FALSE);
+
+       m_pin3d.m_pd3dDevice->FBShader->Begin(0);
+       m_pin3d.m_pd3dDevice->DrawFullscreenQuad();
+       m_pin3d.m_pd3dDevice->FBShader->End();
+
+       m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, TRUE);
+       m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+       m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+
+        // now render everything else
         for (int i=0;i<m_ptable->m_vedit.Size();i++)
         {
             if (m_ptable->m_vedit.ElementAt(i)->GetItemType() != eItemDecal)
@@ -1277,6 +1344,7 @@ void Player::InitStatic(HWND hwndProgress)
                 }
             }
         }
+
 
         // Draw decals (they have transparency, so they have to be drawn after the wall they are on)
         for (int i=0;i<m_ptable->m_vedit.Size();i++)
@@ -2669,13 +2737,6 @@ void Player::Bloom()
 		1.0f, -1.0f, 0.0f, 1.0f + (float)(1.0 / (double)m_width), 1.0f + (float)(1.0 / (double)m_height),
 		-1.0f, -1.0f, 0.0f, 0.0f + (float)(1.0 / (double)m_width), 1.0f + (float)(1.0 / (double)m_height)
 	};
-	float verts[4 * 5] =
-	{
-		1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-		-1.0f, 1.0f, 0.0f, 0.0f, 0.0f,
-		1.0f, -1.0f, 0.0f, 1.0f, 1.0f,
-		-1.0f, -1.0f, 0.0f, 0.0f, 1.0f
-	};
 
 	RenderTarget* tmpBloomSurface;
 	{
@@ -2707,7 +2768,7 @@ void Player::Bloom()
 		m_pin3d.m_pd3dDevice->FBShader->SetTechnique("fb_bloom_horiz");
 
 		m_pin3d.m_pd3dDevice->FBShader->Begin(0);
-		m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_TEX, (LPVOID)verts, 4);
+      m_pin3d.m_pd3dDevice->DrawFullscreenQuad();
 		m_pin3d.m_pd3dDevice->FBShader->End();
 	}
 	RenderTarget* tmpBloomSurface3;
@@ -2724,7 +2785,7 @@ void Player::Bloom()
 		m_pin3d.m_pd3dDevice->FBShader->SetTechnique("fb_bloom_vert");
 
 		m_pin3d.m_pd3dDevice->FBShader->Begin(0);
-		m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_TEX, (LPVOID)verts, 4);
+      m_pin3d.m_pd3dDevice->DrawFullscreenQuad();
 		m_pin3d.m_pd3dDevice->FBShader->End();
 	}
 
@@ -2835,9 +2896,24 @@ void Player::FlipVideoBuffersNormal( const bool vsync )
 	m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
 	m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 
-	m_pin3d.m_pd3dDevice->EndScene();
 
-	// display frame
+//    m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetMirrorBufferTexture());
+//    m_pin3d.m_pd3dDevice->FBShader->SetTechnique("fb_mirror");
+// 
+//    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
+//    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
+//    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, FALSE);
+// 
+//    m_pin3d.m_pd3dDevice->FBShader->Begin(0);
+//    m_pin3d.m_pd3dDevice->DrawFullscreenQuad();
+//    m_pin3d.m_pd3dDevice->FBShader->End();
+// 
+//    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, TRUE);
+//    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+//    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+
+   m_pin3d.m_pd3dDevice->EndScene();
+   // display frame
 	m_pin3d.Flip(vsync);
 
 	// switch to texture output buffer again
