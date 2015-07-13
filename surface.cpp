@@ -734,8 +734,7 @@ void Surface::GenerateMesh(Vertex3D_NoTex2 **topBuf, Vertex3D_NoTex2 **sideBuf)
 
       *topBuf = new Vertex3D_NoTex2[numVertices * 2];
       memset(*topBuf, 0, sizeof(Vertex3D_NoTex2)*numVertices * 2);
-      Vertex3D_NoTex2 *buf = *topBuf;
-      Vertex3D_NoTex2 * const vertsTop[2] = { buf, buf + numVertices };
+	  Vertex3D_NoTex2 * const vertsTop[2] = { *topBuf, *topBuf + numVertices };
 
       for (int i = 0; i < numVertices; i++)
       {
