@@ -4,6 +4,7 @@ float4 ms_zpd_ya_td;
 float4 w_h_height; // in bloom w_h_height.z keeps strength
 
 float AO_scale;
+float mirrorFactor;
 
 /*static*/ bool color_grade;
 
@@ -70,6 +71,17 @@ sampler2D texSamplerBloom : TEXUNIT1 = sampler_state // Bloom
     MINFILTER = LINEAR;
 	ADDRESSU  = Clamp;
 	ADDRESSV  = Clamp;
+};
+
+sampler2D texSamplerMirror : TEXUNIT0 = sampler_state // base texture
+{
+   Texture = (Texture0);
+   //MIPFILTER = LINEAR; //!! HACK: not set here as user can choose to override trilinear by anisotropic
+   //MAGFILTER = LINEAR;
+   //MINFILTER = LINEAR;
+   //ADDRESSU  = Wrap; //!! ?
+   //ADDRESSV  = Wrap;
+   //!! SRGBTexture = true;
 };
 
 struct VS_OUTPUT_2D
@@ -232,6 +244,14 @@ float4 ps_main_fb_bloom_vert( in VS_OUTPUT_2D IN) : COLOR
 }
 #endif
 
+// mirror
+float4 ps_main_fb_mirror(in VS_OUTPUT_2D IN) : COLOR
+{
+   float4 col1 = tex2D(texSamplerMirror, IN.tex0) * mirrorFactor;
+   return col1;
+}
+
+
 //
 // Techniques
 //
@@ -344,4 +364,13 @@ technique fb_bloom_vert
       VertexShader = compile vs_3_0 vs_main_no_trafo();
 	  PixelShader = compile ps_3_0 ps_main_fb_bloom_vert();
    } 
+}
+
+technique fb_mirror
+{
+   pass P0
+   {
+      VertexShader = compile vs_3_0 vs_main_no_trafo();
+      PixelShader = compile ps_3_0 ps_main_fb_mirror();
+   }
 }

@@ -403,8 +403,11 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
     CHECKD3D(m_pD3DDevice->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &m_pBackBuffer));
 
 	// alloc float buffer for rendering (optionally 2x2 res for manual super sampling)
-	CHECKD3D(m_pD3DDevice->CreateTexture(useAA ? 2*width : width, useAA ? 2*height : height, 1,
-		D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &m_pOffscreenBackBufferTexture, NULL)); //!! D3DFMT_A32B32G32R32F?
+    CHECKD3D(m_pD3DDevice->CreateTexture(useAA ? 2 * width : width, useAA ? 2 * height : height, 1,
+       D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &m_pOffscreenBackBufferTexture, NULL)); //!! D3DFMT_A32B32G32R32F?
+
+    CHECKD3D(m_pD3DDevice->CreateTexture(width, height, 1,
+       D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &m_pMirrorBufferTexture, NULL)); //!! D3DFMT_A32B32G32R32F?
 
 	// alloc bloom tex at 1/3 x 1/3 res (allows for simple HQ downscale of clipped input while saving memory)
     CHECKD3D(m_pD3DDevice->CreateTexture(width/3, height/3, 1,
@@ -596,10 +599,13 @@ RenderDevice::~RenderDevice()
 
     m_texMan.UnloadAll();
 	SAFE_RELEASE(m_pOffscreenBackBufferTexture);
-	SAFE_RELEASE(m_pOffscreenBackBufferTmpTexture);
+   SAFE_RELEASE(m_pMirrorBufferTexture);
+   SAFE_RELEASE(m_pOffscreenBackBufferTmpTexture);
    SAFE_RELEASE(m_pBloomBufferTexture);
    SAFE_RELEASE(m_pBloomTmpBufferTexture);
    SAFE_RELEASE(m_pBackBuffer);
+   SAFE_RELEASE(m_pBloomBufferTexture);
+
 
 #ifdef _DEBUG
     CheckForD3DLeak(m_pD3DDevice);
@@ -1159,6 +1165,18 @@ void RenderDevice::SetViewport(const ViewPort* p1)
 void RenderDevice::GetViewport(ViewPort* p1)
 {
    CHECKD3D(m_pD3DDevice->GetViewport((D3DVIEWPORT9*)p1));
+}
+
+void RenderDevice::DrawFullscreenQuad()
+{
+   float verts[4 * 5] =
+   {
+      1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+      -1.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+      1.0f, -1.0f, 0.0f, 1.0f, 1.0f,
+      -1.0f, -1.0f, 0.0f, 0.0f, 1.0f
+   };
+   DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_TEX, (LPVOID)verts, 4);
 }
 
 //
