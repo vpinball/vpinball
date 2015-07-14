@@ -2644,7 +2644,15 @@ void Player::RenderDynamics()
 
    if( cameraMode )
    {
-       UpdateBallShaderMatrix();
+	   m_pin3d.InitLights();
+
+	   const D3DXVECTOR4 st(m_ptable->m_envEmissionScale*m_ptable->m_globalEmissionScale, (float)m_pin3d.envTexture.m_height/*+m_pin3d.envTexture.m_width)*0.5f*/, 0.f, 0.f); //!! dto.
+	   m_pin3d.m_pd3dDevice->basicShader->SetVector("fenvEmissionScale_TexWidth", &st);
+#ifdef SEPARATE_CLASSICLIGHTSHADER
+	   m_pin3d.m_pd3dDevice->classicLightShader->SetVector("fenvEmissionScale_TexWidth", &st);
+#endif
+
+	   UpdateBallShaderMatrix();
        m_pin3d.RenderPlayfieldGraphics();
        for (int i=0;i<m_ptable->m_vedit.Size();i++)
        {
@@ -3081,6 +3089,34 @@ void Player::UpdateBackdropSettings(const bool up)
 		m_ptable->m_BG_xlatez[m_ptable->m_BG_current_set] += thesign;
 		break;
 	}
+	case 9:
+	{
+		m_ptable->m_lightEmissionScale += thesign*100000.f;
+		if (m_ptable->m_lightEmissionScale < 0.f)
+			m_ptable->m_lightEmissionScale = 0.f;
+		break;
+	}
+	case 10:
+	{
+		m_ptable->m_lightRange += thesign*1000.f;
+		if (m_ptable->m_lightRange < 0.f)
+			m_ptable->m_lightRange = 0.f;
+		break;
+	}
+	case 11:
+	{
+		m_ptable->m_lightHeight += thesign*100.f;
+		if (m_ptable->m_lightHeight < 100.f)
+			m_ptable->m_lightHeight = 100.f;
+		break;
+	}
+	case 12:
+	{
+		m_ptable->m_envEmissionScale += thesign;
+		if (m_ptable->m_envEmissionScale < 0.f)
+			m_ptable->m_envEmissionScale = 0.f;
+		break;
+	}
 	}
 }
 void Player::UpdateCameraModeDisplay()
@@ -3088,7 +3124,7 @@ void Player::UpdateCameraModeDisplay()
     HDC hdcNull = GetDC(NULL);
     char szFoo[128];
     int len;
-    len = sprintf_s(szFoo,"Camera Mode                                         ");
+    len = sprintf_s(szFoo,"Camera & Light Mode                                 ");
     TextOut(hdcNull, 10, 30, szFoo, len);
     len = sprintf_s(szFoo,"Left / Right flipper key = decrease / increase value");
     TextOut(hdcNull, 10, 50, szFoo, len);
@@ -3099,47 +3135,67 @@ void Player::UpdateCameraModeDisplay()
 	{
 	case 0:
 	{
-		len = sprintf_s(szFoo, "Inclination: %f          ", m_ptable->m_BG_inclination[m_ptable->m_BG_current_set]);
+		len = sprintf_s(szFoo, "Inclination: %f           ", m_ptable->m_BG_inclination[m_ptable->m_BG_current_set]);
 		break;
 	}
 	case 1:
 	{
-		len = sprintf_s(szFoo, "Field Of View: %f        ", m_ptable->m_BG_FOV[m_ptable->m_BG_current_set]);
+		len = sprintf_s(szFoo, "Field Of View: %f         ", m_ptable->m_BG_FOV[m_ptable->m_BG_current_set]);
 		break;
 	}
 	case 2:
 	{
-		len = sprintf_s(szFoo, "Layback: %f              ", m_ptable->m_BG_layback[m_ptable->m_BG_current_set]);
+		len = sprintf_s(szFoo, "Layback: %f               ", m_ptable->m_BG_layback[m_ptable->m_BG_current_set]);
 		break;
 	}
 	case 3:
 	{
-		len = sprintf_s(szFoo, "X Scale: %f              ", m_ptable->m_BG_scalex[m_ptable->m_BG_current_set]);
+		len = sprintf_s(szFoo, "X Scale: %f               ", m_ptable->m_BG_scalex[m_ptable->m_BG_current_set]);
 		break;
 	}
 	case 4:
 	{
-		len = sprintf_s(szFoo, "Y Scale: %f              ", m_ptable->m_BG_scaley[m_ptable->m_BG_current_set]);
+		len = sprintf_s(szFoo, "Y Scale: %f               ", m_ptable->m_BG_scaley[m_ptable->m_BG_current_set]);
 		break;
 	}
 	case 5:
 	{
-		len = sprintf_s(szFoo, "Z Scale: %f              ", m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]);
+		len = sprintf_s(szFoo, "Z Scale: %f               ", m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]);
 		break;
 	}
 	case 6:
 	{
-		len = sprintf_s(szFoo, "X Offset: %f             ", m_ptable->m_BG_xlatex[m_ptable->m_BG_current_set]);
+		len = sprintf_s(szFoo, "X Offset: %f              ", m_ptable->m_BG_xlatex[m_ptable->m_BG_current_set]);
 		break;
 	}
 	case 7:
 	{
-		len = sprintf_s(szFoo, "Y Offset: %f            ", m_ptable->m_BG_xlatey[m_ptable->m_BG_current_set]);
+		len = sprintf_s(szFoo, "Y Offset: %f              ", m_ptable->m_BG_xlatey[m_ptable->m_BG_current_set]);
 		break;
 	}
 	case 8:
 	{
-		len = sprintf_s(szFoo, "Z Offset: %f           ", m_ptable->m_BG_xlatez[m_ptable->m_BG_current_set]);
+		len = sprintf_s(szFoo, "Z Offset: %f              ", m_ptable->m_BG_xlatez[m_ptable->m_BG_current_set]);
+		break;
+	}
+	case 9:
+	{
+		len = sprintf_s(szFoo, "Light Emission Scale: %f  ", m_ptable->m_lightEmissionScale);
+		break;
+	}
+	case 10:
+	{
+		len = sprintf_s(szFoo, "Light Range: %f           ", m_ptable->m_lightRange);
+		break;
+	}
+	case 11:
+	{
+		len = sprintf_s(szFoo, "Light Height: %f          ", m_ptable->m_lightHeight);
+		break;
+	}
+	case 12:
+	{
+		len = sprintf_s(szFoo, "Environment Emission: %f  ", m_ptable->m_envEmissionScale);
 		break;
 	}
 	default:

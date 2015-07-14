@@ -69,11 +69,11 @@ public:
 
     const Matrix3D& GetWorldTransform() const   { return m_proj.m_matWorld; }
     const Matrix3D& GetViewTransform() const    { return m_proj.m_matView; }
-    void  InitPlayfieldGraphics();
+    void InitPlayfieldGraphics();
+	void InitLights();
 
 private:
     void InitRenderState();
-    void InitLights();
 
     void Identity();
    

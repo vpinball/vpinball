@@ -1797,7 +1797,6 @@ void PinTable::Play(bool _cameraMode)
    if (g_pplayer)
       return; // Can't play twice
 
-   m_cameraMode = _cameraMode;
    mixer_get_volume();
 
    EndAutoSaveCounter();
