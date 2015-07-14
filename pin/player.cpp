@@ -1258,7 +1258,8 @@ void Player::RenderStaticMirror()
    viewMat._32 *= -1.0f;
    m_pin3d.m_pd3dDevice->SetTransform(TRANSFORMSTATE_VIEW, &viewMat);
 
-   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
+   m_ptable->m_tblMirrorEnabled = !m_ptable->m_tblMirrorEnabled; // abuse already existing mirror flag to flip cull modes
+
    // render static stuff
    for (int i = 0; i < m_ptable->m_vedit.Size(); i++)
    {
@@ -1271,6 +1272,8 @@ void Player::RenderStaticMirror()
          }
       }
    }
+   m_ptable->m_tblMirrorEnabled = !m_ptable->m_tblMirrorEnabled;
+
    // and flip back camera
    viewMat._33 *= -1.0f;
    viewMat._32 *= -1.0f;
