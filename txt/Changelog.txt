@@ -53,11 +53,11 @@ VP 10.0.0 Changelog
 
 - Select Elements dialog improved. It shows the type of the element and if supported the used images. 
   
-- new Camera Mode added to the Table menu. This mode starts the player in a special mode where you can change backdrop settings with the following keys:
+- new Camera & Light Mode added to the Table menu. This mode starts the player in a special mode where you can change backdrop & lighting settings with the following keys:
      left flipper key = decrease value
      right flipper key = increase value
-     left magna save key = previous backdrop option
-     right magna save key = next backdrop option
+     left magna save key = previous backdrop/light option
+     right magna save key = next backdrop/light option
 
 - new setting in the video preferences to setup rotation for cabinet mode (or otherwise standard desktop)
   this allows a table to be used in/setup for both DT and FS by setting the backglass options correctly for both modes
