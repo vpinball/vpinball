@@ -748,14 +748,14 @@ void PinInput::FireKeyEvent( const int dispid, const int key )
         else if (mkey == g_pplayer->m_rgKeys[eRightMagnaSave] && dispid == DISPID_GameEvents_KeyDown)
         {
             g_pplayer->backdropSettingActive++;
-            if (g_pplayer->backdropSettingActive==9)
+            if (g_pplayer->backdropSettingActive==13)
                 g_pplayer->backdropSettingActive=0;
         }
         else if (mkey == g_pplayer->m_rgKeys[eLeftMagnaSave] && dispid == DISPID_GameEvents_KeyDown)
         {
             g_pplayer->backdropSettingActive--;
             if (g_pplayer->backdropSettingActive==-1)
-                g_pplayer->backdropSettingActive=8;
+                g_pplayer->backdropSettingActive=12;
         }
     }
     else
@@ -769,7 +769,7 @@ int PinInput::started()
 	if( m_pressed_start ) 
 		return 1;
 
-        if ( g_pplayer->m_vball.size() > 0 )
+    if ( g_pplayer->m_vball.size() > 0 )
 	{
 		m_pressed_start = 1;
 		return 1;

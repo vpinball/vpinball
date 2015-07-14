@@ -1,15 +1,5 @@
 #include "stdafx.h"
 
-BumperHitCircle::BumperHitCircle()
-{
-	m_bumperanim.m_fHitEvent = false;
-    m_bumperanim.m_ringAnimOffset = 0.0f;
-	m_elasticity = 0.3f;
-    SetFriction(0.3f);
-	m_scatter = 0;
-	m_bumperanim.m_fVisible = true;
-}
-
 void BumperHitCircle::Collide(CollisionEvent* coll)
 {
     Ball *pball = coll->ball;
@@ -35,16 +25,6 @@ void BumperHitCircle::Collide(CollisionEvent* coll)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
-LineSegSlingshot::LineSegSlingshot(const Vertex2D& p1, const Vertex2D& p2, const float _zlow, const float _zhigh)
-    : LineSeg(p1, p2, _zlow, _zhigh)
-{
-	m_slingshotanim.m_iframe = 0;
-	m_slingshotanim.m_TimeReset = 0; // zero means the slingshot is currently reset
-	m_elasticity = 0.3f;
-    SetFriction(0.3f);
-	m_scatter = 0;
-}
 
 float LineSegSlingshot::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 {
@@ -768,12 +748,6 @@ void HitTriangle::CalcHitRect()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-
-HitPlane::HitPlane(const Vertex3Ds& normal_, const float d_)
-    : normal(normal_), d(d_)
-{
-    m_elasticity = 0.2f;
-}
 
 float HitPlane::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 {
