@@ -80,6 +80,12 @@ void Kicker::SetDefaults(bool fromMouseClick)
    else
       m_d.m_hitAccuracy = 0.7f;
 
+   hr = GetRegStringAsFloat("DefaultProps\\Kicker", "HitHeight", &fTmp);
+   if ((hr == S_OK) && fromMouseClick)
+      m_d.m_hit_height = fTmp;
+   else
+      m_d.m_hit_height = 40.0f;
+
    hr = GetRegStringAsFloat("DefaultProps\\Kicker","Orientation", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_orientation = fTmp;
@@ -117,8 +123,9 @@ void Kicker::WriteRegDefaults()
    SetRegValueBool("DefaultProps\\Kicker","TimerEnabled",m_d.m_tdr.m_fTimerEnabled);
    SetRegValue("DefaultProps\\Kicker","TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval, 4);
    SetRegValueBool("DefaultProps\\Kicker","Enabled", m_d.m_fEnabled);
-   SetRegValueFloat("DefaultProps\\Kicker","HitHeight", m_d.m_hitAccuracy);
-   SetRegValueFloat("DefaultProps\\Kicker","Orientation", m_d.m_orientation);
+   SetRegValueFloat("DefaultProps\\Kicker", "HitAccuracy", m_d.m_hitAccuracy);
+   SetRegValueFloat("DefaultProps\\Kicker", "HitHeight", m_d.m_hit_height);
+   SetRegValueFloat("DefaultProps\\Kicker", "Orientation", m_d.m_orientation);
    SetRegValueFloat("DefaultProps\\Kicker","Radius", m_d.m_radius);
    SetRegValueFloat("DefaultProps\\Kicker","Scatter", m_d.m_scatter);
    SetRegValue("DefaultProps\\Kicker","KickerType",REG_DWORD,&m_d.m_kickertype,4);
@@ -194,7 +201,7 @@ void Kicker::GetHitShapes(Vector<HitObject> * const pvho)
        }
    }
    phitcircle->zlow = height;
-   phitcircle->zhigh = height + 38.0f; // m_d.m_hit_height;	// height of kicker hit cylinder  //!! 50 = ball diameter
+   phitcircle->zhigh = height + m_d.m_hit_height;	// height of kicker hit cylinder  //!! 50 = ball diameter
 
    phitcircle->m_fEnabled = m_d.m_fEnabled;
 
@@ -488,6 +495,7 @@ HRESULT Kicker::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptk
    bw.WriteInt(FID(TYPE), m_d.m_kickertype);
    bw.WriteFloat(FID(KSCT), m_d.m_scatter);
    bw.WriteFloat(FID(KHAC), m_d.m_hitAccuracy);
+   bw.WriteFloat(FID(KHHI), m_d.m_hit_height);
    bw.WriteFloat(FID(KORI), m_d.m_orientation);
    bw.WriteBool(FID(FATH), m_d.m_fFallThrough);
    bw.WriteBool(FID(LEMO), m_d.m_legacyMode);
@@ -532,6 +540,10 @@ BOOL Kicker::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(KHAC))
    {
       pbr->GetFloat(&m_d.m_hitAccuracy);
+   }
+   else if (id == FID(KHHI))
+   {
+      pbr->GetFloat(&m_d.m_hit_height);
    }
    else if (id == FID(KORI))
    {
@@ -850,15 +862,33 @@ STDMETHODIMP Kicker::put_HitAccuracy(float newVal)
    STARTUNDO
 
       if (newVal > 1.0f)
-         m_d.m_hitAccuracy=1.0f;
+         m_d.m_hitAccuracy = 1.0f;
       else if (newVal > 0.0f)
          m_d.m_hitAccuracy = newVal;
       else
          m_d.m_hitAccuracy = 0.0f;
-         
-   STOPUNDO
 
-      return S_OK;
+      STOPUNDO
+
+         return S_OK;
+}
+
+STDMETHODIMP Kicker::get_HitHeight(float *pVal)
+{
+   *pVal = m_d.m_hit_height;
+
+   return S_OK;
+}
+
+STDMETHODIMP Kicker::put_HitHeight(float newVal)
+{
+     STARTUNDO
+
+      m_d.m_hit_height = newVal;
+
+      STOPUNDO
+
+         return S_OK;
 }
 
 STDMETHODIMP Kicker::get_Orientation(float *pVal)

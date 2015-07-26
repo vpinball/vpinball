@@ -22,6 +22,7 @@ public:
     bool m_fEnabled;
     bool m_fFallThrough;
     bool m_legacyMode;
+    float m_hit_height;
 };
 
 class KickerHitCircle;
@@ -127,6 +128,8 @@ public:
     STDMETHOD(put_Scatter)(/*[in]*/ float newVal);
     STDMETHOD(get_HitAccuracy)(/*[out, retval]*/ float *pVal);
     STDMETHOD(put_HitAccuracy)(/*[in]*/ float newVal);
+    STDMETHOD(get_HitHeight)(/*[out, retval]*/ float *pVal);
+    STDMETHOD(put_HitHeight)(/*[in]*/ float newVal);
     STDMETHOD(get_Orientation)(/*[out, retval]*/ float *pVal);
     STDMETHOD(put_Orientation)(/*[in]*/ float newVal);
     STDMETHOD(get_Radius)(/*[out, retval]*/ float *pVal);
