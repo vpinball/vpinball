@@ -678,6 +678,8 @@ PinTable::PinTable()
    m_fRenderDecals = true;
    m_fRenderEMReels = true;
 
+   m_fReflectionEnabled = false;
+
    m_fOverridePhysics = 0;
 
    m_Gravity = GRAVITYCONST;

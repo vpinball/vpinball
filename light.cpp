@@ -579,7 +579,7 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
 {
     TRACE_FUNCTION();
 
-	if(!m_d.m_fVisible)
+	if(!m_d.m_fVisible || m_ptable->m_fReflectionEnabled )
 		return;
 
 	if(customMoverVBuffer == NULL) // in case of degenerate light

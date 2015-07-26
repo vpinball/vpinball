@@ -1257,6 +1257,7 @@ void Player::RenderStaticMirror()
    m_pin3d.m_pd3dDevice->SetTransform(TRANSFORMSTATE_VIEW, &viewMat);
 
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
+   m_ptable->m_fReflectionEnabled = true;
 
    // render static stuff
    for (int i = 0; i < m_ptable->m_vedit.Size(); i++)
@@ -1270,6 +1271,8 @@ void Player::RenderStaticMirror()
          }
       }
    }
+
+   m_ptable->m_fReflectionEnabled = false;
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 
    // and flip back camera
@@ -1281,10 +1284,58 @@ void Player::RenderStaticMirror()
    SAFE_RELEASE_NO_RCC(tmpMirrorSurface);
 }
 
-void Player::RenderMirrorOverlay()
+void Player::RenderDynamicMirror()
+{
+   D3DMATRIX viewMat;
+
+   m_pin3d.m_pd3dDevice->BeginScene();
+
+   RenderTarget *tmpMirrorSurface = NULL;
+   m_pin3d.m_pd3dDevice->GetMirrorTmpBufferTexture()->GetSurfaceLevel(0, &tmpMirrorSurface);
+   m_pin3d.m_pd3dDevice->SetRenderTarget(tmpMirrorSurface);
+
+   m_pin3d.m_pd3dDevice->FBShader->SetFloat("mirrorFactor", (float)m_ptable->m_playfieldReflectionStrength / 255.0f);
+
+   m_pin3d.m_pd3dDevice->GetTransform(TRANSFORMSTATE_VIEW, &viewMat);
+   // flip camera
+   viewMat._33 *= -1.0f;
+   viewMat._32 *= -1.0f;
+   m_pin3d.m_pd3dDevice->SetTransform(TRANSFORMSTATE_VIEW, &viewMat);
+
+   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
+   m_ptable->m_fReflectionEnabled = true;
+
+   // Draw transparent objects.
+   for (unsigned int i = 0; i < m_vHitTrans.size(); ++i)
+      m_vHitTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
+
+   // Draw non-transparent objects.
+   for (unsigned int i = 0; i < m_vHitNonTrans.size(); ++i)
+      m_vHitNonTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
+
+
+   m_pin3d.m_pd3dDevice->EndScene();
+
+   m_ptable->m_fReflectionEnabled = false;
+   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+
+   // and flip back camera
+   viewMat._33 *= -1.0f;
+   viewMat._32 *= -1.0f;
+   m_pin3d.m_pd3dDevice->SetTransform(TRANSFORMSTATE_VIEW, &viewMat);
+
+   m_pin3d.m_pd3dDevice->SetRenderTarget(m_pin3d.m_pddsBackBuffer);
+   SAFE_RELEASE_NO_RCC(tmpMirrorSurface);
+}
+
+void Player::RenderMirrorOverlay(bool onlyStatic)
 {
    // render the mirrored texture over the playfield
-   m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetMirrorBufferTexture());
+   if (onlyStatic)
+      m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetMirrorBufferTexture());
+   else
+      m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetMirrorTmpBufferTexture());
+
    m_pin3d.m_pd3dDevice->FBShader->SetTechnique("fb_mirror");
 
    m_pin3d.EnableAlphaBlend(false, false);
@@ -2722,13 +2773,21 @@ void Player::CheckAndUpdateRegions()
     //
     // copy static buffers to back buffer and z buffer
     //
-
     m_pin3d.m_pd3dDevice->CopySurface(m_pin3d.m_pddsBackBuffer, m_pin3d.m_pddsStatic);
-    m_pin3d.m_pd3dDevice->CopySurface(m_pin3d.m_pddsZBuffer, m_pin3d.m_pddsStaticZ);
 
     // Process all AnimObjects (currently only DispReel, LightSeq and Slingshot)
-	for (int l = 0; l < m_vanimate.Size(); ++l)
-		m_vanimate.ElementAt(l)->Animate();
+    for (int l = 0; l < m_vanimate.Size(); ++l)
+       m_vanimate.ElementAt(l)->Animate();
+
+// Disabled for now because it doesn't work :) No dynamic element is rendered something is wrong here!
+//     if (m_ptable->m_fReflectElementsOnPlayfield)
+//     {
+//        RenderDynamicMirror();
+//        RenderMirrorOverlay(false);
+//     }
+
+    m_pin3d.m_pd3dDevice->CopySurface(m_pin3d.m_pddsZBuffer, m_pin3d.m_pddsStaticZ);
+
 }
 
 void Player::Bloom()

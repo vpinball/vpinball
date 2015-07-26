@@ -406,8 +406,14 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
     CHECKD3D(m_pD3DDevice->CreateTexture(useAA ? 2 * width : width, useAA ? 2 * height : height, 1,
        D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &m_pOffscreenBackBufferTexture, NULL)); //!! D3DFMT_A32B32G32R32F?
 
-    CHECKD3D(m_pD3DDevice->CreateTexture(width, height, 1,
-       D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &m_pMirrorBufferTexture, NULL)); //!! D3DFMT_A32B32G32R32F?
+    if (g_pplayer->m_ptable->m_fReflectElementsOnPlayfield)
+    {
+       CHECKD3D(m_pD3DDevice->CreateTexture(width, height, 1,
+          D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &m_pMirrorBufferTexture, NULL)); //!! D3DFMT_A32B32G32R32F?
+
+       CHECKD3D(m_pD3DDevice->CreateTexture(width, height, 1,
+          D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &m_pMirrorTmpBufferTexture, NULL)); //!! D3DFMT_A32B32G32R32F?
+    }
 
 	// alloc bloom tex at 1/3 x 1/3 res (allows for simple HQ downscale of clipped input while saving memory)
     CHECKD3D(m_pD3DDevice->CreateTexture(width/3, height/3, 1,
@@ -599,7 +605,11 @@ RenderDevice::~RenderDevice()
 
     m_texMan.UnloadAll();
 	SAFE_RELEASE(m_pOffscreenBackBufferTexture);
-   SAFE_RELEASE(m_pMirrorBufferTexture);
+   if (g_pplayer->m_ptable->m_fReflectElementsOnPlayfield)
+   {
+      SAFE_RELEASE(m_pMirrorBufferTexture);
+      SAFE_RELEASE(m_pMirrorTmpBufferTexture);
+   }
    SAFE_RELEASE(m_pOffscreenBackBufferTmpTexture);
    SAFE_RELEASE(m_pBloomBufferTexture);
    SAFE_RELEASE(m_pBloomTmpBufferTexture);
@@ -996,6 +1006,11 @@ void RenderDevice::SetRenderState( const RenderStates p1, DWORD p2 )
 		   p2 = D3DCULL_CW;
 	   else if(p2 == D3DCULL_CW)
 		   p2 = D3DCULL_CCW;
+   }
+   else if (p1 == CULLMODE && g_pplayer->m_ptable->m_fReflectionEnabled)
+   {
+      p2 = D3DCULL_NONE;
+      renderStateCache[p1] = p2;
    }
 
    CHECKD3D(m_pD3DDevice->SetRenderState((D3DRENDERSTATETYPE)p1, p2));
