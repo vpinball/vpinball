@@ -1248,9 +1248,7 @@ void Player::RenderStaticMirror()
    m_pin3d.m_pd3dDevice->GetMirrorBufferTexture()->GetSurfaceLevel(0, &tmpMirrorSurface);
    m_pin3d.m_pd3dDevice->SetRenderTarget(tmpMirrorSurface);
 
-   //m_pin3d.m_pd3dDevice->FBShader->SetFloat("mirrorFactor", (float)m_ptable->m_playfieldReflectionStrength/255.0f);
-   // mirroring is disabled for now
-   m_pin3d.m_pd3dDevice->FBShader->SetFloat("mirrorFactor", 0.0f);
+   m_pin3d.m_pd3dDevice->FBShader->SetFloat("mirrorFactor", (float)m_ptable->m_playfieldReflectionStrength/255.0f);
 
    m_pin3d.m_pd3dDevice->GetTransform(TRANSFORMSTATE_VIEW, &viewMat);
    // flip camera
@@ -1258,7 +1256,7 @@ void Player::RenderStaticMirror()
    viewMat._32 *= -1.0f;
    m_pin3d.m_pd3dDevice->SetTransform(TRANSFORMSTATE_VIEW, &viewMat);
 
-   m_ptable->m_tblMirrorEnabled = !m_ptable->m_tblMirrorEnabled; // abuse already existing mirror flag to flip cull modes
+   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
 
    // render static stuff
    for (int i = 0; i < m_ptable->m_vedit.Size(); i++)
@@ -1272,7 +1270,7 @@ void Player::RenderStaticMirror()
          }
       }
    }
-   m_ptable->m_tblMirrorEnabled = !m_ptable->m_tblMirrorEnabled;
+   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 
    // and flip back camera
    viewMat._33 *= -1.0f;
@@ -1281,6 +1279,28 @@ void Player::RenderStaticMirror()
 
    m_pin3d.m_pd3dDevice->SetRenderTarget(m_pin3d.m_pddsStatic);
    SAFE_RELEASE_NO_RCC(tmpMirrorSurface);
+}
+
+void Player::RenderMirrorOverlay()
+{
+   // render the mirrored texture over the playfield
+   m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetMirrorBufferTexture());
+   m_pin3d.m_pd3dDevice->FBShader->SetTechnique("fb_mirror");
+
+   m_pin3d.EnableAlphaBlend(false, false);
+   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_DESTALPHA);
+
+   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
+   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
+   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, FALSE);
+
+   m_pin3d.m_pd3dDevice->FBShader->Begin(0);
+   m_pin3d.m_pd3dDevice->DrawFullscreenQuad();
+   m_pin3d.m_pd3dDevice->FBShader->End();
+
+   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, TRUE);
+   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 }
 
 void Player::InitStatic(HWND hwndProgress)
@@ -1311,27 +1331,11 @@ void Player::InitStatic(HWND hwndProgress)
     m_pin3d.InitPlayfieldGraphics();
     if ( !cameraMode )
     {
-       RenderStaticMirror();
+       if ( m_ptable->m_fReflectElementsOnPlayfield )
+         RenderStaticMirror();
        m_pin3d.RenderPlayfieldGraphics();
-
-       // render the mirrored texture over the playfield
-       m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetMirrorBufferTexture());
-       m_pin3d.m_pd3dDevice->FBShader->SetTechnique("fb_mirror");
-
-       m_pin3d.EnableAlphaBlend(false, false);
-       m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_DESTALPHA);
-
-       m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
-       m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
-       m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, FALSE);
-
-       m_pin3d.m_pd3dDevice->FBShader->Begin(0);
-       m_pin3d.m_pd3dDevice->DrawFullscreenQuad();
-       m_pin3d.m_pd3dDevice->FBShader->End();
-
-       m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, TRUE);
-       m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-       m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+       if (m_ptable->m_fReflectElementsOnPlayfield)
+          RenderMirrorOverlay();
 
         // now render everything else
         for (int i=0;i<m_ptable->m_vedit.Size();i++)

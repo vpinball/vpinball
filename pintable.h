@@ -229,8 +229,10 @@ public:
 	STDMETHOD(put_EnableDecals)(/*[in]*/ VARIANT_BOOL newVal);
 	STDMETHOD(get_EnableEMReels)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_EnableEMReels)(/*[in]*/ VARIANT_BOOL newVal);
-	STDMETHOD(get_ShowDT)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-	STDMETHOD(put_ShowDT)(/*[in]*/ VARIANT_BOOL newVal);
+   STDMETHOD(get_ShowDT)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   STDMETHOD(put_ShowDT)(/*[in]*/ VARIANT_BOOL newVal);
+   STDMETHOD(get_ReflectElementsOnPlayfield)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   STDMETHOD(put_ReflectElementsOnPlayfield)(/*[in]*/ VARIANT_BOOL newVal);
 
 	STDMETHOD(get_GlobalDifficulty)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_GlobalDifficulty)(/*[in]*/ float newVal);
@@ -721,7 +723,8 @@ END_CONNECTION_POINT_MAP()
 	bool  m_fBackdrop;
 	bool  m_fRenderDecals;
 	bool  m_fRenderEMReels;
-    bool  m_overwriteGlobalStereo3D;
+   bool  m_overwriteGlobalStereo3D;
+   bool  m_fReflectElementsOnPlayfield;
     
 #ifdef UNUSED_TILT //!! currently unused (see NudgeGetTilt())
 	int   m_jolt_amount;       
