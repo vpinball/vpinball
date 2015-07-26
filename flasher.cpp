@@ -1284,7 +1284,7 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
 {
    TRACE_FUNCTION();
    // Don't render if invisible.
-   if(!m_d.m_IsVisible || dynamicVertexBuffer==NULL) 
+   if(!m_d.m_IsVisible || dynamicVertexBuffer==NULL || m_ptable->m_fReflectionEnabled) 
       return;
 
    const D3DXVECTOR4 color = convertColor(m_d.m_color,(float)m_d.m_fAlpha*m_d.m_intensity_scale/100.0f);

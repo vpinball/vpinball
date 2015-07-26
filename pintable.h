@@ -725,6 +725,7 @@ END_CONNECTION_POINT_MAP()
 	bool  m_fRenderEMReels;
    bool  m_overwriteGlobalStereo3D;
    bool  m_fReflectElementsOnPlayfield;
+   bool  m_fReflectionEnabled;
     
 #ifdef UNUSED_TILT //!! currently unused (see NudgeGetTilt())
 	int   m_jolt_amount;       
