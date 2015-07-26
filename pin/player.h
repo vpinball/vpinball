@@ -147,6 +147,7 @@ public:
 
 	HRESULT Init(PinTable * const ptable, const HWND hwndProgress, const HWND hwndProgressName);
    void RenderStaticMirror();
+   void RenderMirrorOverlay();
    void InitBallShader();
 	void InitWindow();
 	void InitKeys();

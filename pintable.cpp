@@ -2847,6 +2847,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
    bw.WriteInt(FID(ARAC), m_userDetailLevel );
    bw.WriteBool(FID(OGAC), m_overwriteGlobalDetailLevel );
    bw.WriteBool(FID(GDAC), m_fGrid);
+   bw.WriteBool(FID(REOP), m_fReflectElementsOnPlayfield);
 
    bw.WriteInt(FID(UAAL), m_useAA );
    bw.WriteInt(FID(UFXA), m_useFXAA );
@@ -3273,6 +3274,7 @@ void PinTable::SetLoadDefaults()
    m_useReflectionForBalls = -1;
    m_ballReflectionStrength = 50;
    m_playfieldReflectionStrength = 50;
+   m_fReflectElementsOnPlayfield = false;
 
    m_useTrailForBalls = -1;
    m_ballTrailStrength = 100;
@@ -3706,11 +3708,15 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    {
        pbr->GetBool(&m_overwriteGlobalDetailLevel);
    }
-   else if ( id == FID(GDAC))
+   else if (id == FID(GDAC))
    {
-        pbr->GetBool(&m_fGrid);
+      pbr->GetBool(&m_fGrid);
    }
-   else if ( id == FID(ARAC))
+   else if (id == FID(REOP))
+   {
+      pbr->GetBool(&m_fReflectElementsOnPlayfield);
+   }
+   else if (id == FID(ARAC))
    {      
       pbr->GetInt(&m_userDetailLevel);
    }
@@ -8823,6 +8829,22 @@ STDMETHODIMP PinTable::put_ShowDT(VARIANT_BOOL newVal)
    m_BG_current_set = (!!newVal) ? 0 : 1;
 
    SetDirtyDraw();
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::get_ReflectElementsOnPlayfield(VARIANT_BOOL *pVal)
+{
+   *pVal = (VARIANT_BOOL)FTOVB(m_fReflectElementsOnPlayfield);
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_ReflectElementsOnPlayfield(VARIANT_BOOL newVal)
+{
+   STARTUNDO
+      m_fReflectElementsOnPlayfield = (!!newVal);
+   STOPUNDO
 
    return S_OK;
 }

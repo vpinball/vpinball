@@ -608,6 +608,7 @@
 #define IDC_ALPHA_SLIDER                420
 #define IDC_GLOBAL_TRAIL_CHECK          421
 #define IDC_VP_WIDTH                    421
+#define IDC_ALPHA_SLIDER2               421
 #define IDC_VP_HEIGHT                   422
 #define IDC_TABLE_DIM_LIST              423
 #define IDC_AO_ALL_TABLES               424
@@ -632,6 +633,7 @@
 #define IDC_SHOW_IN_EDITOR_CHECK        431
 #define IDC_CONVERT_COORD_CHECK         431
 #define IDC_LEGACYMODE                  431
+#define IDC_REFLECT_ELEMENTS_CHECK      431
 #define IDC_LIGHT_FALLOFF_POWER         432
 #define IDC_MODULATE_VS_ADD             433
 #define IDC_INTENSITY_SCALE_LIGHT       434
