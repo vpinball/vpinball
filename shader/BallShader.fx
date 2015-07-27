@@ -243,7 +243,7 @@ float4 psBall( in vout IN ) : COLOR
 	else
 	   ballImageColor = Screen( ballImageColor, decalColor ) * (0.5*fenvEmissionScale_TexWidth.x); //!! 0.5=magic
 	
-	/*float3 normal = float3(0,0,1);
+	/*float3 normal = float3(0,0,1); //!! not true!!
 	float NdotR = dot(normal,r);*/
 	// opt.:
 	const float NdotR = r.z;
