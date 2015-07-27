@@ -10,10 +10,10 @@ float mirrorFactor;
 
 texture Texture0; // FB
 texture Texture1; // Bloom
-texture Texture3; // AO
+texture Texture3; // AO Result & DepthBuffer
 texture Texture4; // Color grade
 
-sampler2D texSampler3 : TEXUNIT2 = sampler_state // AO
+sampler2D texSampler3 : TEXUNIT2 = sampler_state // AO Result
 {
 	Texture	  = (Texture3);
     MIPFILTER = NONE; //!! ??
@@ -23,7 +23,7 @@ sampler2D texSampler3 : TEXUNIT2 = sampler_state // AO
 	ADDRESSV  = Clamp;
 };
 
-sampler2D texSamplerDepth : TEXUNIT2 = sampler_state
+sampler2D texSamplerDepth : TEXUNIT2 = sampler_state // Depth
 {
 	Texture	  = (Texture3);
 	MIPFILTER = NONE; //!! ??
@@ -168,7 +168,7 @@ float4 ps_main_fb_tonemap_AO( in VS_OUTPUT_2D IN) : COLOR
 {
     const float3 result = FBToneMap(tex2Dlod(texSampler5, float4(IN.tex0, 0.,0.)).xyz) // moving AO before tonemap does not really change the look
            * tex2Dlod(texSampler3, float4(IN.tex0/*-w_h_height.xy*/, 0.,0.)).x // omitting the shift blurs over 2x2 window
-           + tex2Dlod(texSamplerBloom, float4(IN.tex0, 0.,0.)).xyz;
+           + tex2Dlod(texSamplerBloom, float4(IN.tex0, 0.,0.)).xyz;  //!! offset?
     return float4(FBColorGrade(FBGamma(saturate(result))), 1.0);
 }
 
@@ -182,7 +182,7 @@ float4 ps_main_fb_tonemap_AO_no_filter( in VS_OUTPUT_2D IN) : COLOR
 {
     const float3 result = FBToneMap(tex2Dlod(texSampler4, float4(IN.tex0+w_h_height.xy, 0.,0.)).xyz) // moving AO before tonemap does not really change the look
            * tex2Dlod(texSampler3, float4(IN.tex0/*-w_h_height.xy*/, 0.,0.)).x // omitting the shift blurs over 2x2 window
-	   + tex2Dlod(texSamplerBloom, float4(IN.tex0, 0.,0.)).xyz;
+	   + tex2Dlod(texSamplerBloom, float4(IN.tex0, 0.,0.)).xyz;  //!! offset?
     return float4(FBColorGrade(FBGamma(saturate(result))), 1.0);
 }
 
