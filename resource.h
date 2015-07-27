@@ -736,6 +736,7 @@
 #define IDC_SHADOW_Y                    1703
 #define IDC_BALL_TRAIL                  1704
 #define IDC_TRAIL_EDIT                  1705
+#define IDC_TABLE_FILENAME		1711
 #define IDM_NEW                         32768
 #define IDM_OPEN                        32769
 #define IDM_CLOSE                       32770

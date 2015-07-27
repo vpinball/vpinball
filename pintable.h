@@ -209,6 +209,8 @@ public:
 	STDMETHOD(put_Inclination)(/*[in]*/ float newVal);
 	STDMETHOD(get_Layback)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Layback)(/*[in]*/ float newVal);
+	STDMETHOD(get_FileName)(/*[out, retval]*/ BSTR *pVal);
+
 	STDMETHOD(get_Name)(/*[out, retval]*/ BSTR *pVal);
 	STDMETHOD(put_Name)(/*[in]*/ BSTR newVal);
     STDMETHOD(get_EnableAntialiasing)(/*[out, retval]*/ int *pVal);

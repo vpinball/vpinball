@@ -2,7 +2,7 @@ Visual Pinball command Reference v0.1
 by Fuzzel
 
 This is a quick overview of all commands/variables VP knows. A lot of them haven't an effect from the script because they have an impact on the pre-rendering only.
-Variables starting with a (*) can't be used from the script or don't have an effect.
+Variables starting with a (*) can't be changed by the script (most can be read though) or don't have an effect.
 
 
 TABLE
@@ -12,6 +12,7 @@ Variables
 ---------
 
 *Name(string) - table name
+*FileName(string) - file name (without path and extension)
 *Width(float) - Playfield width. default=1000
 *Height(float) - Playfield height. default=2000
 *GlassHeight(float) - Height of Glass above Playfield
