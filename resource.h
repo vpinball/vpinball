@@ -795,6 +795,7 @@
 #define IDC_PLAYFIELD_ELASTICITY        1708
 #define IDC_PLAYFIELD_ELASTICITY_FALLOFF 1709
 #define IDC_PLAYFIELD_SCATTER           1710
+#define IDC_TABLE_FILENAME		1711
 #define IDM_NEW                         32768
 #define IDM_OPEN                        32769
 #define IDM_CLOSE                       32770

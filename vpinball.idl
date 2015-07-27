@@ -514,6 +514,7 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propput, id(DISPID_Table_DisplayBackdrop), helpstring("property DisplayBackdrop")] HRESULT DisplayBackdrop([in] VARIANT_BOOL newVal);
                 [propget, id(DISPID_Image), helpstring("property Image")] HRESULT Image([out, retval] BSTR *pVal);
                 [propput, id(DISPID_Image), helpstring("property Image")] HRESULT Image([in] BSTR newVal);
+                [propget, id(1711), helpstring("property FileName")] HRESULT FileName([out, retval] BSTR *pVal);
                 [propget, id(DISPID_Name), helpstring("property Name")] HRESULT Name([out, retval] BSTR *pVal);
                 [propput, id(DISPID_Name), helpstring("property Name")] HRESULT Name([in] BSTR newVal);
                 [propget, id(394), helpstring("property enableAA")] HRESULT EnableAntialiasing([out, retval] int *pVal);
