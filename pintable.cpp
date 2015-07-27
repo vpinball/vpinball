@@ -853,9 +853,9 @@ PinTable::PinTable()
 
    if ( FAILED(GetRegInt("Player", "AlphaRampAccuracy", &m_globalDetailLevel) ) )
    {
-      m_globalDetailLevel = 5;
+      m_globalDetailLevel = 10;
    }
-   m_userDetailLevel=5;
+   m_userDetailLevel=10;
    m_overwriteGlobalDetailLevel = false;
 
    if ( FAILED(GetRegStringAsFloat("Player", "Stereo3DZPD", &m_globalZPD) ) )
