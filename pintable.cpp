@@ -6109,6 +6109,15 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
    return DefMDIChildProc(hwnd, uMsg, wParam, lParam);
 }
 
+STDMETHODIMP PinTable::get_FileName(BSTR *pVal)
+{
+   WCHAR *wz = MakeWide(m_szTitle);
+   *pVal = SysAllocString(wz);
+   delete [] wz;
+
+   return S_OK;
+}
+
 STDMETHODIMP PinTable::get_Name(BSTR *pVal)
 {
    *pVal = SysAllocString((WCHAR *)m_wzName);

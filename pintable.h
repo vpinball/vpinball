@@ -202,6 +202,8 @@ public:
 	STDMETHOD(FireKnocker)(/*[in]*/ int Count);
 	STDMETHOD(QuitPlayer)(/*[in]*/ int CloseType);
 
+	STDMETHOD(get_FileName)(/*[out, retval]*/ BSTR *pVal);
+
 	STDMETHOD(get_Name)(/*[out, retval]*/ BSTR *pVal);
 	STDMETHOD(put_Name)(/*[in]*/ BSTR newVal);
     STDMETHOD(get_EnableAntialiasing)(/*[out, retval]*/ int *pVal);
