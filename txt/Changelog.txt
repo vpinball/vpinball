@@ -133,6 +133,8 @@ VP 10.0.0 Changelog
   -> the night->day slider will scale these two lighting components, and in addition
      the script now offers NightDay, which returns the range in 0..100, so that additional tweaks can be done in the script, depending on this value
 
+- new (optional) playfield reflections
+
 - new (optional) color grading step
   like in movies or photography, one can now add an (almost) artificial color grading step at the very end of the rendering process
   (see https://docs.unrealengine.com/latest/INT/Engine/Rendering/PostProcessEffects/ColorGrading/index.html
@@ -160,6 +162,7 @@ VP 10.0.0 Changelog
   ramp with bottom height 0 and top height 60 and add new control points on the ramp. The height information is interpolated from one control point to the 
   next one, so the "Real Height" shows you this value and the "Height Offset" can be used to easily adjust the height.  
 - changed opacity/transparency handling for ramps (Alpha/Acrylic have been deleted, only the material opacity value is supported now)
+- the control point for the bottom ramp has a blue color to identify which side of the ramp is the bottom one
 
 - GetElement, GetElementByName, GetBalls added to Table Script methods to have simple access to the elements and all active balls on the table
 - OnBallBallCollision(ball1, ball2, velocity) can be used as a Callback in the script to handle Ball to Ball collisions
@@ -232,8 +235,6 @@ VP 10.0.0 Changelog
                                 Blender transparency alpha value -> VP opacity amount
                                When imported the primitive has the imported material automatically assigned.
 							   Note that any textures aren't imported automatically though, this must be done as usual with the help of the image manager.
-
-- the control point for the bottom ramp has a blue color to identify which side of the ramp is the bottom one
 
 - reactivate old VP9.0 easter egg (and improve it :))
 
