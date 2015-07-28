@@ -316,7 +316,7 @@ STDMETHODIMP ScriptGlobalTable::GetTextFile(BSTR FileName, BSTR *pContents)
 STDMETHODIMP ScriptGlobalTable::get_UserDirectory(BSTR *pVal)
 {
    WCHAR wzPath[MAX_PATH];
-   WideStrCopy(g_pvp->m_wzMyPath, wzPath);
+   WideStrNCopy(g_pvp->m_wzMyPath, wzPath, MAX_PATH);
    WideStrCat(L"User\\", wzPath);
    *pVal = SysAllocString(wzPath);
 
@@ -361,7 +361,7 @@ STDMETHODIMP ScriptGlobalTable::SaveValue(BSTR TableName, BSTR ValueName, VARIAN
    HRESULT hr = S_OK;
 
    WCHAR wzPath[MAX_PATH];
-   WideStrCopy(g_pvp->m_wzMyPath, wzPath);
+   WideStrNCopy(g_pvp->m_wzMyPath, wzPath, MAX_PATH);
    WideStrCat(L"User\\VPReg.stg", wzPath);
 
    if (FAILED(hr = StgOpenStorage(wzPath, NULL, STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE, NULL, 0, &pstgRoot)))
@@ -425,7 +425,7 @@ STDMETHODIMP ScriptGlobalTable::LoadValue(BSTR TableName, BSTR ValueName, VARIAN
    HRESULT hr = S_OK;
 
    WCHAR wzPath[MAX_PATH];
-   WideStrCopy(g_pvp->m_wzMyPath, wzPath);
+   WideStrNCopy(g_pvp->m_wzMyPath, wzPath, MAX_PATH);
    WideStrCat(L"User\\VPReg.stg", wzPath);
 
    if (FAILED(hr = StgOpenStorage(wzPath, NULL, STGM_TRANSACTED | STGM_READWRITE | STGM_SHARE_EXCLUSIVE, NULL, 0, &pstgRoot)))
@@ -1423,7 +1423,7 @@ void PinTable::GetUniqueName(WCHAR *wzRoot, WCHAR *wzUniqueName)
 
    while (!fFound)
    {
-      WideStrCopy(wzRoot, wzName);
+      WideStrNCopy(wzRoot, wzName, 128);
       _itow_s(suffix, wzSuffix, sizeof(wzSuffix)/sizeof(WCHAR), 10);
       WideStrCat(wzSuffix, wzName);
 
@@ -3947,7 +3947,7 @@ void PinTable::NewCollection(HWND hwndListView, BOOL fFromSelection)
    LocalStringW prefix(IDS_COLLECTION);
    GetUniqueName(prefix.str, wzT);
 
-   WideStrCopy(wzT, pcol->m_wzName);
+   WideStrNCopy(wzT, pcol->m_wzName, MAXNAMEBUFFER);
 
    if (fFromSelection && !MultiSelIsEmpty())
    {
@@ -4072,7 +4072,7 @@ void PinTable::SetCollectionName(Collection *pcol, char *szName, HWND hwndList, 
       {
          ListView_SetItemText(hwndList, index, 0, szName);
       }
-      WideStrCopy(wzT, pcol->m_wzName);
+      WideStrNCopy(wzT, pcol->m_wzName, MAXNAMEBUFFER);
    }
 }
 
@@ -6139,7 +6139,7 @@ STDMETHODIMP PinTable::put_Name(BSTR newVal)
 
     if (m_pcv->ReplaceName((IScriptable *)this, newVal) == S_OK)
     {
-        WideStrCopy(newVal, (WCHAR *)m_wzName);
+        WideStrNCopy(newVal, (WCHAR *)m_wzName, MAXNAMEBUFFER);
         //lstrcpyW((WCHAR *)m_wzName, newVal);
     }
 
@@ -7161,7 +7161,7 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
                ShowError("DISPID_Surface alloc failed (2)");
             }
             else
-                WideStrCopy(bstr, wzDst);
+               WideStrNCopy(bstr, wzDst, cwch*sizeof(WCHAR));
          }
       }
       break;

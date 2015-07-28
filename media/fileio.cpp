@@ -506,10 +506,11 @@ unsigned long __stdcall FastIStorage::Release()
 long __stdcall FastIStorage::CreateStream(const WCHAR *wzName,unsigned long,unsigned long,unsigned long,struct IStream **ppstm)
 	{
 	FastIStream * const pfs = new FastIStream();
+   const int wzNameLen = lstrlenW(wzName) + 1;
 	pfs->AddRef(); // AddRef once for us, and once for the caller
 	pfs->AddRef();
-	pfs->m_wzName = new WCHAR[lstrlenW(wzName)+1];
-	WideStrCopy((WCHAR *)wzName, pfs->m_wzName);
+	pfs->m_wzName = new WCHAR[wzNameLen];
+	WideStrNCopy((WCHAR *)wzName, pfs->m_wzName,wzNameLen);
 
 	*ppstm = pfs;
 
@@ -526,10 +527,11 @@ long __stdcall FastIStorage::OpenStream(const WCHAR *,void *,unsigned long,unsig
 long __stdcall FastIStorage::CreateStorage(const WCHAR *wzName,unsigned long,unsigned long,unsigned long,struct IStorage **ppstg)
 	{
 	FastIStorage * const pfs = new FastIStorage();
-	pfs->AddRef(); // AddRef once for us, and once for the caller
+   const int wzNameLen = lstrlenW(wzName) + 1;
+   pfs->AddRef(); // AddRef once for us, and once for the caller
 	pfs->AddRef();
-	pfs->m_wzName = new WCHAR[lstrlenW(wzName)+1];
-	WideStrCopy((WCHAR *)wzName, pfs->m_wzName);
+	pfs->m_wzName = new WCHAR[wzNameLen];
+	WideStrNCopy((WCHAR *)wzName, pfs->m_wzName, wzNameLen);
 
 	*ppstg = pfs;
 

@@ -139,7 +139,7 @@ HRESULT CodeViewer::AddTemporaryItem(BSTR bstr, IDispatch *pdisp)
 {
    CodeViewDispatch * const pcvd = new CodeViewDispatch();
 
-   WideStrCopy(bstr, pcvd->m_wzName);
+   WideStrNCopy(bstr, pcvd->m_wzName, 32);
    pcvd->m_pdisp = pdisp;
    pcvd->m_pdisp->QueryInterface(IID_IUnknown, (void **)&pcvd->m_punk);
    pcvd->m_punk->Release();
@@ -170,7 +170,7 @@ HRESULT CodeViewer::AddItem(IScriptable *piscript, BOOL fGlobal)
    CComBSTR bstr;
    piscript->get_Name(&bstr);
 
-   WideStrCopy(bstr, pcvd->m_wzName);
+   WideStrNCopy(bstr, pcvd->m_wzName, 32);
    pcvd->m_pdisp = piscript->GetDispatch();
    pcvd->m_pdisp->QueryInterface(IID_IUnknown, (void **)&pcvd->m_punk);
    pcvd->m_punk->Release();
