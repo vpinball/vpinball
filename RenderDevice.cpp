@@ -251,7 +251,7 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
     {
 		hr = mDirect3DCreate9Ex(D3D_SDK_VERSION, &m_pD3DEx);
         if (FAILED(hr))
-            ReportError("Fatal Error: unable to create DX9Ex object!", hr, __FILE__, __LINE__);
+            ReportError("Fatal Error: unable to create D3D9Ex object!", hr, __FILE__, __LINE__);
 
 		if (m_pD3DEx == NULL)
 		{
@@ -424,16 +424,16 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
     hr = m_pD3DDevice->CreateTexture(useAA ? 2 * width : width, useAA ? 2 * height : height, 1,
                                      D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &m_pOffscreenBackBufferTexture, NULL); //!! D3DFMT_A32B32G32R32F?
     if (FAILED(hr))
-        ReportError("Fatal Error: unable to create AA texture!", hr, __FILE__, __LINE__);
+        ReportError("Fatal Error: unable to create render buffer!", hr, __FILE__, __LINE__);
 
     if (g_pplayer->m_ptable->m_fReflectElementsOnPlayfield)
     {
-       hr = m_pD3DDevice->CreateTexture(width, height, 1,
+       hr = m_pD3DDevice->CreateTexture(useAA ? 2 * width : width, useAA ? 2 * height : height, 1,
                                         D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &m_pMirrorBufferTexture, NULL); //!! D3DFMT_A32B32G32R32F?
        if (FAILED(hr))
            ReportError("Fatal Error: unable to create static reflection map!", hr, __FILE__, __LINE__);
 
-       hr = m_pD3DDevice->CreateTexture(width, height, 1,
+       hr = m_pD3DDevice->CreateTexture(useAA ? 2 * width : width, useAA ? 2 * height : height, 1,
                                         D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &m_pMirrorTmpBufferTexture, NULL); //!! D3DFMT_A32B32G32R32F?
        if (FAILED(hr))
            ReportError("Fatal Error: unable to create dynamic reflection map!", hr, __FILE__, __LINE__);
@@ -1073,7 +1073,7 @@ void RenderDevice::CreateVertexBuffer(const unsigned int vertexCount, const DWOR
     hr = m_pD3DDevice->CreateVertexBuffer(vertexCount * fvfToSize(fvf), D3DUSAGE_WRITEONLY | usage, 0,
                                           D3DPOOL_DEFAULT, (IDirect3DVertexBuffer9**)vBuffer, NULL);
     if (FAILED(hr))
-        ReportError("Fatal Error: unable to vertex buffer!", hr, __FILE__, __LINE__);
+        ReportError("Fatal Error: unable to create vertex buffer!", hr, __FILE__, __LINE__);
 }
 
 void RenderDevice::CreateIndexBuffer(const unsigned int numIndices, const DWORD usage, const IndexBuffer::Format format, IndexBuffer **idxBuffer)
@@ -1085,7 +1085,7 @@ void RenderDevice::CreateIndexBuffer(const unsigned int numIndices, const DWORD 
     hr = m_pD3DDevice->CreateIndexBuffer(idxSize * numIndices, usage | D3DUSAGE_WRITEONLY, (D3DFORMAT)format,
                                          D3DPOOL_DEFAULT, (IDirect3DIndexBuffer9**)idxBuffer, NULL);
     if (FAILED(hr))
-        ReportError("Fatal Error: unable to index buffer!", hr, __FILE__, __LINE__);
+        ReportError("Fatal Error: unable to create index buffer!", hr, __FILE__, __LINE__);
 }
 
 IndexBuffer* RenderDevice::CreateAndFillIndexBuffer(const unsigned int numIndices, const WORD * indices)
