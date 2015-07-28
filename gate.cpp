@@ -505,6 +505,7 @@ void Gate::ExportMesh(FILE *f)
 }
 void Gate::GenerateBracketMesh(Vertex3D_NoTex2 *buf)
 {
+   Matrix3D fullMatrix;
    fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotation));
    for (int i = 0; i < gateBracketNumVertices; i++)
     {
@@ -526,6 +527,7 @@ void Gate::GenerateBracketMesh(Vertex3D_NoTex2 *buf)
 
 void Gate::GenerateWireMesh(Vertex3D_NoTex2 *buf)
 {
+    Matrix3D fullMatrix;
     fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotation));
 
     for (int i = 0; i < gateWireNumVertices; i++)
