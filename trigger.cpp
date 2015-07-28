@@ -228,11 +228,11 @@ void Trigger::PreRender(Sur * const psur)
    if( m_vdpoint.size()==0 )
     InitShape(m_d.m_vCenter.x, m_d.m_vCenter.y);
 
-   if( m_d.m_shape != TriggerStar )
-   {
-       psur->SetBorderColor(-1,false,0);
-       psur->SetObject(this);
+   psur->SetBorderColor(-1, false, 0);
+   psur->SetObject(this);
 
+   if (m_d.m_shape != TriggerStar)
+   {
        psur->SetFillColor(m_ptable->RenderSolid() ? RGB(200,220,200) : -1);
 
        std::vector<RenderVertex> vvertex;
@@ -242,7 +242,6 @@ void Trigger::PreRender(Sur * const psur)
    }
    else
    {
-       psur->SetObject(this);
        psur->SetFillColor(-1);
        psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius);
    }
@@ -298,7 +297,8 @@ void Trigger::Render(Sur * const psur)
    }
    else
    {
-       psur->SetBorderColor(RGB(0,180,0),false,1);
+      psur->SetObject(NULL);
+      psur->SetBorderColor(RGB(0, 180, 0), false, 1);
 
        psur->Line(m_d.m_vCenter.x - m_d.m_radius, m_d.m_vCenter.y, m_d.m_vCenter.x + m_d.m_radius, m_d.m_vCenter.y);
        psur->Line(m_d.m_vCenter.x, m_d.m_vCenter.y - m_d.m_radius, m_d.m_vCenter.x, m_d.m_vCenter.y + m_d.m_radius);
