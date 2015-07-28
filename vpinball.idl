@@ -567,9 +567,6 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propget, id(217), helpstring("property DeadZone")] HRESULT DeadZone([out, retval] int *pVal);
                 [propput, id(217), helpstring("property DeadZone")] HRESULT DeadZone([in] int newVal);
 
-                [propget, id(218), helpstring("property DeadSlider")] HRESULT DeadSlider([out, retval] int *pVal);
-                [propput, id(218), helpstring("property DeadSlider")] HRESULT DeadSlider([in] int newVal);
-
                 [propget, id(558), helpstring("property LightAmbient")] HRESULT LightAmbient([out, retval] OLE_COLOR *pVal);
                 [propput, id(558), helpstring("property LightAmbient")] HRESULT LightAmbient([in] OLE_COLOR newVal);
                 [propget, id(559), helpstring("property Light0Emission")] HRESULT Light0Emission([out, retval] OLE_COLOR *pVal);
