@@ -645,8 +645,6 @@ RenderDevice::~RenderDevice()
    SAFE_RELEASE(m_pBloomBufferTexture);
    SAFE_RELEASE(m_pBloomTmpBufferTexture);
    SAFE_RELEASE(m_pBackBuffer);
-   SAFE_RELEASE(m_pBloomBufferTexture);
-
 
 #ifdef _DEBUG
     CheckForD3DLeak(m_pD3DDevice);
