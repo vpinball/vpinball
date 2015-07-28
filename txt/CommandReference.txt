@@ -98,7 +98,6 @@ PlungerFilter(bool) - default=false
 *JoltTriggerTime(int)
 *TiltTriggerTime(int)
 *DeadZone(int)
-*DeadSlider(int)
 NudgeTime(float)
 
 *TableSoundVolume(int) - Scales the global sound volume (in percent). default=100
@@ -338,7 +337,6 @@ Scatter(float)
 Fall Through(bool) - if checked the ball will fall through the surface assigned to the kicker, only if the surface is higher than the playfield
 *Legacy(bool)      - if checked the kicker will behave as an old VP9 kicker that means no distraction of the ball if it doesn't hit straight the kicker center
 HitAccuracy(float) - defines the accuracy how fast the ball gets caught when rolling over the kicker center (0-1.0)
-HitHeight(float)   - defines the height of the hit cylinder used for the collision detection. Default value is 40.0 and should be ok for normal sized balls (around 50) but you need to increase this if you use balls with a radius around 100.
 *Orientation(float)
 *Radius(float)
 
