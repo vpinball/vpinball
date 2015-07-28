@@ -319,6 +319,7 @@ float sz2f(char *sz);
 void f2sz(const float f, char *sz);
 
 void WideStrCopy(WCHAR *wzin, WCHAR *wzout);
+void WideStrNCopy(WCHAR *wzin, WCHAR *wzout, const DWORD wzoutMaxLen);
 int WideStrCmp(WCHAR *wz1, WCHAR *wz2);
 int WzSzStrCmp(WCHAR *wz1, char *sz2);
 void WideStrCat(WCHAR *wzin, WCHAR *wzout);

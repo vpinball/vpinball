@@ -86,10 +86,10 @@ void CompleteAutoSave(HANDLE hEvent, LPARAM lParam)
 	WCHAR *wzSaveExtension = L".vpx";
 	WCHAR wzSuffix[32];
 	_itow_s(pasp->tableindex, wzSuffix, sizeof(wzSuffix)/sizeof(WCHAR), 10);
+   const int maxLen = MAX_PATH + 32 + lstrlenW(wzSaveName) + lstrlenW(wzSaveExtension) + 1;
+	WCHAR * const wzT = new WCHAR[maxLen];
 
-	WCHAR * const wzT = new WCHAR[MAX_PATH + 32 + lstrlenW(wzSaveName) + lstrlenW(wzSaveExtension)+ 1];
-
-	WideStrCopy(g_pvp->m_wzMyPath, wzT);
+	WideStrNCopy(g_pvp->m_wzMyPath, wzT, maxLen);
 	WideStrCat(wzSaveName, wzT);
 	WideStrCat(wzSuffix, wzT);
 	WideStrCat(wzSaveExtension, wzT);
