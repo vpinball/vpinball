@@ -231,7 +231,7 @@ int StackTrace::GetSymbolInfo(Address address, char* symbol, int maxSymbolLen)
 		if (displacementLine > 0)
 		{
 			fileLineChars = _snprintf_s(symbol, maxSymbolLen, _TRUNCATE, 
-				" %s(%d+%04d byte(s))", fileName, lineInfo.LineNumber, displacementLine);
+				" %s(%u+%04u byte(s))", fileName, lineInfo.LineNumber, displacementLine);
 		}
 		else
 		{
