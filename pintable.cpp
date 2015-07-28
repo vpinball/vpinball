@@ -8951,27 +8951,6 @@ STDMETHODIMP PinTable::put_AccelerometerAngle(float newVal)
    return S_OK;
 }
 
-STDMETHODIMP PinTable::get_DeadSlider(int *pVal)
-{
-   int deadz;
-   const HRESULT hr = GetRegInt("Player", "DeadZone", &deadz);
-   if (hr != S_OK)
-	   deadz = 0; // The default
-   *pVal = deadz;
-
-   return S_OK;
-}
-
-STDMETHODIMP PinTable::put_DeadSlider(int newVal)
-{
-   if (newVal>100) newVal=100;
-   if (newVal<0) newVal=0;
-
-   SetRegValue("Player", "DeadZone", REG_DWORD, &newVal, 4);
-
-   return S_OK;
-}
-
 STDMETHODIMP PinTable::get_DeadZone(int *pVal)
 {
    int deadz;

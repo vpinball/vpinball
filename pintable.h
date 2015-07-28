@@ -246,8 +246,6 @@ public:
 	STDMETHOD(get_AccelerometerAngle)(/*[out, retval]*/ float *pVal);  //!! remove?!
 	STDMETHOD(put_AccelerometerAngle)(/*[in]*/ float newVal); //!! remove?!
 
-	STDMETHOD(get_DeadSlider)(/*[out, retval]*/  int *pVal); //!! remove?!
-	STDMETHOD(put_DeadSlider)(/*[in]*/ int newVal); //!! remove?!
 	STDMETHOD(get_DeadZone)(/*[out, retval]*/  int *pVal); //!! remove?!
 	STDMETHOD(put_DeadZone)(/*[in]*/ int newVal); //!! remove?!
 
