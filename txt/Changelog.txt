@@ -134,7 +134,16 @@ VP 10.0.0 Changelog
      the script now offers NightDay, which returns the range in 0..100, so that additional tweaks can be done in the script, depending on this value
 
 - new (optional) playfield reflections
-
+  This option is a table option and can't be blindly activated on all tables. Because authors have so many different ways to build tables it's nearly impossible to handle the reflection in every case.
+  If you're building a table and you want to use this option the following rules apply:
+  - only static elements reflect on the table (for now)
+  - the reflection only applies on the playfield not on upper playfield areas or separate walls used as a playfield.
+  - don't overdo the reflection strength of the ball/playfield reflection. Depending on the playfield texture a value around 50-120 should be good enough. Otherwise it looks unnatural.
+  - don't use decals of the size of the playfield as an overlay or you won't see the reflection neither.
+  - the reflection effect is actually very simple. VP flips all static elements on the z-axis (z=0) and renders them into a texture. This texture is blended over the playfield. Therefore special care must be taken 
+    for mesh primitives. You have to set the pivot point of a mesh well. If you try to compensate a wrong pivot point in VP by adjusting the xyz position it could result in a wrong mirrored element. You will notice it
+    because e.g. a mirrored post isn't mirrored under the actual post instead it's rendered a bit below on the playfield and the reflection looks odd.
+  
 - new (optional) color grading step
   like in movies or photography, one can now add an (almost) artificial color grading step at the very end of the rendering process
   (see https://docs.unrealengine.com/latest/INT/Engine/Rendering/PostProcessEffects/ColorGrading/index.html
