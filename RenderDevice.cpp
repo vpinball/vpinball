@@ -110,7 +110,7 @@ static UINT ComputePrimitiveCount(const D3DPRIMITIVETYPE type, const int vertexC
 }
 
 
-void ReportError(const HRESULT hr, const char *file, const int line)
+void ReportFatalError(const HRESULT hr, const char *file, const int line)
 {
     char msg[128];
     sprintf_s(msg, 128, "Fatal error: HRESULT %x at %s:%d", hr, file, line);
@@ -118,6 +118,13 @@ void ReportError(const HRESULT hr, const char *file, const int line)
     exit(-1);
 }
 
+void ReportError(const char *errorText, const HRESULT hr, const char *file, const int line)
+{
+    char msg[128];
+    sprintf_s(msg, 128, "%s HRESULT %x at %s:%d", errorText, hr, file, line);
+    ShowError(msg);
+    exit(-1);
+}
 
 D3DTexture* TextureManager::LoadTexture(BaseTexture* memtex)
 {
@@ -227,6 +234,7 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
     : m_texMan(*this)
 {
     m_adapter = D3DADAPTER_DEFAULT;     // for now, always use the default adapter
+    HRESULT hr;
 
 	mDwmIsCompositionEnabled = NULL;
 	mDwmFlush = NULL;
@@ -241,7 +249,10 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
 	mDirect3DCreate9Ex = (pD3DC9Ex)GetProcAddress(GetModuleHandle(TEXT("d3d9.dll")), "Direct3DCreate9Ex"); //!! remove as soon as win xp support dropped and use static link
 	if (mDirect3DCreate9Ex)
     {
-		CHECKD3D(mDirect3DCreate9Ex(D3D_SDK_VERSION, &m_pD3DEx));
+		hr = mDirect3DCreate9Ex(D3D_SDK_VERSION, &m_pD3DEx);
+        if (FAILED(hr))
+            ReportError("Fatal Error: unable to create DX9Ex object!", hr, __FILE__, __LINE__);
+
 		if (m_pD3DEx == NULL)
 		{
         ShowError("Could not create D3D9Ex object.");
@@ -384,50 +395,70 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
 	else
 #endif
 	{
-    CHECKD3D(m_pD3D->CreateDevice(
+    hr = m_pD3D->CreateDevice(
                m_adapter,
                devtype,
                hwnd,
                flags /*| D3DCREATE_PUREDEVICE*/,
                &params,
-               &m_pD3DDevice));
+               &m_pD3DDevice);
+
+    if (FAILED(hr))
+        ReportError("Fatal Error: unable to create D3D device!", hr, __FILE__, __LINE__);
 
     // Get the display mode so that we can report back the actual refresh rate.
     D3DDISPLAYMODE mode;
-    CHECKD3D(m_pD3DDevice->GetDisplayMode(m_adapter, &mode));
+    hr= m_pD3DDevice->GetDisplayMode(m_adapter, &mode);
+    if (FAILED(hr))
+        ReportError("Fatal Error: unable to get supported video mode list!", hr, __FILE__, __LINE__);
 
     refreshrate = mode.RefreshRate;
 	}
 
     // Retrieve a reference to the back buffer.
-    CHECKD3D(m_pD3DDevice->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &m_pBackBuffer));
+    hr = m_pD3DDevice->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &m_pBackBuffer);
+    if (FAILED(hr))
+        ReportError("Fatal Error: unable to create back buffer!", hr, __FILE__, __LINE__);
 
 	// alloc float buffer for rendering (optionally 2x2 res for manual super sampling)
-    CHECKD3D(m_pD3DDevice->CreateTexture(useAA ? 2 * width : width, useAA ? 2 * height : height, 1,
-       D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &m_pOffscreenBackBufferTexture, NULL)); //!! D3DFMT_A32B32G32R32F?
+    hr = m_pD3DDevice->CreateTexture(useAA ? 2 * width : width, useAA ? 2 * height : height, 1,
+                                     D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &m_pOffscreenBackBufferTexture, NULL); //!! D3DFMT_A32B32G32R32F?
+    if (FAILED(hr))
+        ReportError("Fatal Error: unable to create AA texture!", hr, __FILE__, __LINE__);
 
     if (g_pplayer->m_ptable->m_fReflectElementsOnPlayfield)
     {
-       CHECKD3D(m_pD3DDevice->CreateTexture(width, height, 1,
-          D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &m_pMirrorBufferTexture, NULL)); //!! D3DFMT_A32B32G32R32F?
+       hr = m_pD3DDevice->CreateTexture(width, height, 1,
+                                        D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &m_pMirrorBufferTexture, NULL); //!! D3DFMT_A32B32G32R32F?
+       if (FAILED(hr))
+           ReportError("Fatal Error: unable to create static reflection map!", hr, __FILE__, __LINE__);
 
-       CHECKD3D(m_pD3DDevice->CreateTexture(width, height, 1,
-          D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &m_pMirrorTmpBufferTexture, NULL)); //!! D3DFMT_A32B32G32R32F?
+       hr = m_pD3DDevice->CreateTexture(width, height, 1,
+                                        D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &m_pMirrorTmpBufferTexture, NULL); //!! D3DFMT_A32B32G32R32F?
+       if (FAILED(hr))
+           ReportError("Fatal Error: unable to create dynamic reflection map!", hr, __FILE__, __LINE__);
     }
 
 	// alloc bloom tex at 1/3 x 1/3 res (allows for simple HQ downscale of clipped input while saving memory)
-    CHECKD3D(m_pD3DDevice->CreateTexture(width/3, height/3, 1,
-		D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &m_pBloomBufferTexture, NULL)); //!! 8bit enough?
+    hr = m_pD3DDevice->CreateTexture(width/3, height/3, 1,
+		                             D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &m_pBloomBufferTexture, NULL) ; //!! 8bit enough?
+    if (FAILED(hr))
+        ReportError("Fatal Error: unable to create bloom buffer!", hr, __FILE__, __LINE__);
 
 	// temporary buffer for gaussian blur
-    CHECKD3D(m_pD3DDevice->CreateTexture(width/3, height/3, 1,
-		D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &m_pBloomTmpBufferTexture, NULL)); //!! 8bit are enough! //!! but used also for bulb light hack now!
+    hr = m_pD3DDevice->CreateTexture(width/3, height/3, 1,
+		D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &m_pBloomTmpBufferTexture, NULL); //!! 8bit are enough! //!! but used also for bulb light hack now!
+    if (FAILED(hr))
+        ReportError("Fatal Error: unable to create blur buffer!", hr, __FILE__, __LINE__);
 
 	// alloc temporary buffer for postprocessing
 	if(stereo3D || FXAA)
 	{
-		CHECKD3D(m_pD3DDevice->CreateTexture(width, height, 1,
-			D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &m_pOffscreenBackBufferTmpTexture, NULL));
+		hr = m_pD3DDevice->CreateTexture(width, height, 1,
+			                                 D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &m_pOffscreenBackBufferTmpTexture, NULL);
+        if (FAILED(hr))
+            ReportError("Fatal Error: unable to create stereo3D/FXAA buffer!", hr, __FILE__, __LINE__);
+
 	}
 	else
 		m_pOffscreenBackBufferTmpTexture = NULL;
@@ -850,8 +881,12 @@ D3DTexture* RenderDevice::CreateSystemTexture(BaseTexture* surf)
     const D3DFORMAT texformat = (m_compress_textures && ((texwidth&3) == 0) && ((texheight&3) == 0)) ? D3DFMT_DXT5 : D3DFMT_A8R8G8B8;
 
     IDirect3DTexture9 *sysTex;
-    CHECKD3D(m_pD3DDevice->CreateTexture(texwidth, texheight, (texformat != D3DFMT_DXT5 && m_autogen_mipmap) ? 1 : 0, 0, texformat,
-                D3DPOOL_SYSTEMMEM, &sysTex, NULL));
+    HRESULT hr;
+    hr = m_pD3DDevice->CreateTexture(texwidth, texheight, (texformat != D3DFMT_DXT5 && m_autogen_mipmap) ? 1 : 0, 0, texformat, D3DPOOL_SYSTEMMEM, &sysTex, NULL);
+    if (FAILED(hr))
+    {
+        ReportError("Fatal Error: unable to create texture!", hr, __FILE__, __LINE__);
+    }
 
     // copy data into system memory texture
     /*D3DLOCKED_RECT locked;
@@ -882,6 +917,7 @@ D3DTexture* RenderDevice::CreateSystemTexture(BaseTexture* surf)
 D3DTexture* RenderDevice::UploadTexture(BaseTexture* surf, int *pTexWidth, int *pTexHeight)
 {
     IDirect3DTexture9 *sysTex, *tex;
+    HRESULT hr;
 
     int texwidth = surf->width();
     int texheight = surf->height();
@@ -893,10 +929,14 @@ D3DTexture* RenderDevice::UploadTexture(BaseTexture* surf, int *pTexWidth, int *
 
     const D3DFORMAT texformat = (m_compress_textures && ((texwidth&3) == 0) && ((texheight&3) == 0)) ? D3DFMT_DXT5 : D3DFMT_A8R8G8B8;
 
-	CHECKD3D(m_pD3DDevice->CreateTexture(texwidth, texheight, (texformat != D3DFMT_DXT5 && m_autogen_mipmap) ? 0 : sysTex->GetLevelCount(), (texformat != D3DFMT_DXT5 && m_autogen_mipmap) ? D3DUSAGE_AUTOGENMIPMAP : 0, texformat,
-                D3DPOOL_DEFAULT, &tex, NULL));
+	hr = m_pD3DDevice->CreateTexture(texwidth, texheight, (texformat != D3DFMT_DXT5 && m_autogen_mipmap) ? 0 : sysTex->GetLevelCount(), (texformat != D3DFMT_DXT5 && m_autogen_mipmap) ? D3DUSAGE_AUTOGENMIPMAP : 0, texformat, D3DPOOL_DEFAULT, &tex, NULL);
+    if (FAILED(hr))
+        ReportError("Fatal Error: out of VRAM!", hr, __FILE__, __LINE__);
 
-    CHECKD3D(m_pD3DDevice->UpdateTexture(sysTex, tex));
+    hr = m_pD3DDevice->UpdateTexture(sysTex, tex);
+    if (FAILED(hr))
+        ReportError("Fatal Error: uploading texture failed!", hr, __FILE__, __LINE__);
+
 	SAFE_RELEASE(sysTex);
 	
 	if(texformat != D3DFMT_DXT5 && m_autogen_mipmap)
@@ -1029,17 +1069,23 @@ void RenderDevice::CreateVertexBuffer(const unsigned int vertexCount, const DWOR
     // NB: We always specify WRITEONLY since MSDN states,
     // "Buffers created with D3DPOOL_DEFAULT that do not specify D3DUSAGE_WRITEONLY may suffer a severe performance penalty."
     // This means we cannot read from vertex buffers, but I don't think we need to.
-    CHECKD3D(m_pD3DDevice->CreateVertexBuffer(vertexCount * fvfToSize(fvf), D3DUSAGE_WRITEONLY | usage, 0,
-                D3DPOOL_DEFAULT, (IDirect3DVertexBuffer9**)vBuffer, NULL));
+    HRESULT hr;
+    hr = m_pD3DDevice->CreateVertexBuffer(vertexCount * fvfToSize(fvf), D3DUSAGE_WRITEONLY | usage, 0,
+                                          D3DPOOL_DEFAULT, (IDirect3DVertexBuffer9**)vBuffer, NULL);
+    if (FAILED(hr))
+        ReportError("Fatal Error: unable to vertex buffer!", hr, __FILE__, __LINE__);
 }
 
 void RenderDevice::CreateIndexBuffer(const unsigned int numIndices, const DWORD usage, const IndexBuffer::Format format, IndexBuffer **idxBuffer)
 {
     // NB: We always specify WRITEONLY since MSDN states,
     // "Buffers created with D3DPOOL_DEFAULT that do not specify D3DUSAGE_WRITEONLY may suffer a severe performance penalty."
+    HRESULT hr;
     const unsigned idxSize = (format == IndexBuffer::FMT_INDEX16) ? 2 : 4;
-    CHECKD3D(m_pD3DDevice->CreateIndexBuffer(idxSize * numIndices, usage | D3DUSAGE_WRITEONLY, (D3DFORMAT)format,
-                D3DPOOL_DEFAULT, (IDirect3DIndexBuffer9**)idxBuffer, NULL));
+    hr = m_pD3DDevice->CreateIndexBuffer(idxSize * numIndices, usage | D3DUSAGE_WRITEONLY, (D3DFORMAT)format,
+                                         D3DPOOL_DEFAULT, (IDirect3DIndexBuffer9**)idxBuffer, NULL);
+    if (FAILED(hr))
+        ReportError("Fatal Error: unable to index buffer!", hr, __FILE__, __LINE__);
 }
 
 IndexBuffer* RenderDevice::CreateAndFillIndexBuffer(const unsigned int numIndices, const WORD * indices)
@@ -1082,21 +1128,29 @@ IndexBuffer* RenderDevice::CreateAndFillIndexBuffer(const std::vector<unsigned i
 RenderTarget* RenderDevice::AttachZBufferTo(RenderTarget* surf)
 {
     D3DSURFACE_DESC desc;
+    HRESULT hr;
     surf->GetDesc(&desc);
 
     IDirect3DSurface9 *pZBuf;
-    CHECKD3D(m_pD3DDevice->CreateDepthStencilSurface(desc.Width, desc.Height, D3DFMT_D16 /*D3DFMT_D24X8*/,
-            desc.MultiSampleType, desc.MultiSampleQuality, FALSE, &pZBuf, NULL));
+    hr = m_pD3DDevice->CreateDepthStencilSurface(desc.Width, desc.Height, D3DFMT_D16 /*D3DFMT_D24X8*/,
+                                                 desc.MultiSampleType, desc.MultiSampleQuality, FALSE, &pZBuf, NULL);
+    if (FAILED(hr))
+        ReportError("Fatal Error: unable to create depth buffer!", hr, __FILE__, __LINE__);
 
     return pZBuf;
 }
 
 void RenderDevice::DrawPrimitive(const D3DPRIMITIVETYPE type, const DWORD fvf, const void* vertices, const DWORD vertexCount)
 {
+    HRESULT hr;
    VertexDeclaration * declaration = fvfToDecl(fvf);
    SetVertexDeclaration(declaration);
 
-    CHECKD3D(m_pD3DDevice->DrawPrimitiveUP(type, ComputePrimitiveCount(type, vertexCount), vertices, fvfToSize(fvf)));
+    hr = m_pD3DDevice->DrawPrimitiveUP(type, ComputePrimitiveCount(type, vertexCount), vertices, fvfToSize(fvf));
+
+    if (FAILED(hr))
+        ReportError("Fatal Error: DrawPrimitiveUP failed!", hr, __FILE__, __LINE__);
+
     m_curVertexBuffer = 0;      // DrawPrimitiveUP sets the VB to NULL
 
     m_curDrawCalls++;
@@ -1104,12 +1158,15 @@ void RenderDevice::DrawPrimitive(const D3DPRIMITIVETYPE type, const DWORD fvf, c
 
 void RenderDevice::DrawIndexedPrimitive(const D3DPRIMITIVETYPE type, const DWORD fvf, const void* vertices, const DWORD vertexCount, const WORD* indices, const DWORD indexCount)
 {
+    HRESULT hr;
    VertexDeclaration * declaration = fvfToDecl(fvf);
    SetVertexDeclaration(declaration);
 
-   CHECKD3D(m_pD3DDevice->DrawIndexedPrimitiveUP(type, 0, vertexCount, ComputePrimitiveCount(type, indexCount),
-                indices, D3DFMT_INDEX16, vertices, fvfToSize(fvf)));
-    m_curVertexBuffer = 0;      // DrawIndexedPrimitiveUP sets the VB to NULL
+   hr = m_pD3DDevice->DrawIndexedPrimitiveUP(type, 0, vertexCount, ComputePrimitiveCount(type, indexCount),
+                                             indices, D3DFMT_INDEX16, vertices, fvfToSize(fvf));
+   if (FAILED(hr))
+       ReportError("Fatal Error: DrawIndexedPrimitive failed!", hr, __FILE__, __LINE__);
+   m_curVertexBuffer = 0;      // DrawIndexedPrimitiveUP sets the VB to NULL
     m_curIndexBuffer = 0;       // DrawIndexedPrimitiveUP sets the IB to NULL
 
     m_curDrawCalls++;
@@ -1117,6 +1174,7 @@ void RenderDevice::DrawIndexedPrimitive(const D3DPRIMITIVETYPE type, const DWORD
 
 void RenderDevice::DrawPrimitiveVB(const D3DPRIMITIVETYPE type, const DWORD fvf, VertexBuffer* vb, const DWORD startVertex, const DWORD vertexCount)
 {
+   HRESULT hr;
    VertexDeclaration * declaration = fvfToDecl(fvf);
    SetVertexDeclaration(declaration);
 
@@ -1127,7 +1185,9 @@ void RenderDevice::DrawPrimitiveVB(const D3DPRIMITIVETYPE type, const DWORD fvf,
         m_curVertexBuffer = vb;
     }
 
-    CHECKD3D(m_pD3DDevice->DrawPrimitive(type, startVertex, ComputePrimitiveCount(type, vertexCount)));
+    hr = m_pD3DDevice->DrawPrimitive(type, startVertex, ComputePrimitiveCount(type, vertexCount));
+    if (FAILED(hr))
+        ReportError("Fatal Error: DrawPrimitive failed!", hr, __FILE__, __LINE__);
 
     m_curDrawCalls++;
 }
@@ -1387,7 +1447,7 @@ void Shader::SetMaterial( const Material * const mat )
 		currentMaterial.m_fEdgeAlpha = fEdgeAlpha;
 	}
 
-	if(bOpacityActive /*&& (alpha < 1.0f)*/)
+	if(bOpacityActive /*&& (alpha < 1.0f)*/ )
 		g_pplayer->m_pin3d.EnableAlphaBlend(false);
     else
 		g_pplayer->m_pin3d.DisableAlphaBlend();

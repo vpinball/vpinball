@@ -6,9 +6,10 @@
 #include "Material.h"
 #include "Texture.h"
 
-#define CHECKD3D(s) { HRESULT hr = (s); if (FAILED(hr)) ReportError(hr, __FILE__, __LINE__); }
+#define CHECKD3D(s) { HRESULT hr = (s); if (FAILED(hr)) ReportFatalError(hr, __FILE__, __LINE__); }
 
-void ReportError(HRESULT hr, const char *file, int line);
+void ReportFatalError(HRESULT hr, const char *file, int line);
+void ReportError(const char *errorText, const HRESULT hr, const char *file, const int line);
 
 typedef IDirect3DTexture9 D3DTexture;
 typedef D3DVIEWPORT9 ViewPort;
