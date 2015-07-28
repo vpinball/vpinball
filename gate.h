@@ -108,7 +108,6 @@ DECLARE_REGISTRY_RESOURCEID(IDR_GATE)
 private:
 	LineSeg *m_plineseg;
 	HitGate *m_phitgate;
-    Matrix3D fullMatrix;
 
    float m_posZ;        // z coordinate for rendering
 
