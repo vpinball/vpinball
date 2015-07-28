@@ -729,7 +729,6 @@ void Player::UpdateBasicShaderMatrix(const Matrix3D& objectTrafo)
 		const float rotation = fmodf(m_ptable->m_BG_rotation[m_ptable->m_BG_current_set], 360.f);
 		matWorldViewProj = matWorldViewProj * (rotation != 0.0f ? flipy : flipx);
 	}
-    
     Matrix3D temp;
     memcpy(temp.m,matWorldView.m,4*4*sizeof(float));
     temp.Invert();
@@ -1241,6 +1240,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 void Player::RenderStaticMirror()
 {
    D3DMATRIX viewMat;
+   const float rotation = fmodf(m_ptable->m_BG_rotation[m_ptable->m_BG_current_set], 360.f);
 
    // Direct all renders to the "static" buffer.
    m_pin3d.SetRenderTarget(m_pin3d.m_pddsStatic, m_pin3d.m_pddsStaticZ);
@@ -1253,11 +1253,15 @@ void Player::RenderStaticMirror()
    m_pin3d.m_pd3dDevice->GetTransform(TRANSFORMSTATE_VIEW, &viewMat);
    // flip camera
    viewMat._33 *= -1.0f;
-   viewMat._32 *= -1.0f;
+   if (rotation!=0.0f )
+      viewMat._31 *= -1.0f;
+   else
+      viewMat._32 *= -1.0f;
    m_pin3d.m_pd3dDevice->SetTransform(TRANSFORMSTATE_VIEW, &viewMat);
 
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
    m_ptable->m_fReflectionEnabled = true;
+   UpdateBasicShaderMatrix();
 
    // render static stuff
    for (int i = 0; i < m_ptable->m_vedit.Size(); i++)
@@ -1277,8 +1281,12 @@ void Player::RenderStaticMirror()
 
    // and flip back camera
    viewMat._33 *= -1.0f;
-   viewMat._32 *= -1.0f;
+   if (rotation != 0.0f)
+       viewMat._31 *= -1.0f;
+   else
+       viewMat._32 *= -1.0f;
    m_pin3d.m_pd3dDevice->SetTransform(TRANSFORMSTATE_VIEW, &viewMat);
+   UpdateBasicShaderMatrix();
 
    m_pin3d.m_pd3dDevice->SetRenderTarget(m_pin3d.m_pddsStatic);
    SAFE_RELEASE_NO_RCC(tmpMirrorSurface);
@@ -1287,8 +1295,7 @@ void Player::RenderStaticMirror()
 void Player::RenderDynamicMirror()
 {
    D3DMATRIX viewMat;
-
-   m_pin3d.m_pd3dDevice->BeginScene();
+   const float rotation = fmodf(m_ptable->m_BG_rotation[m_ptable->m_BG_current_set], 360.f);
 
    RenderTarget *tmpMirrorSurface = NULL;
    m_pin3d.m_pd3dDevice->GetMirrorTmpBufferTexture()->GetSurfaceLevel(0, &tmpMirrorSurface);
@@ -1299,8 +1306,14 @@ void Player::RenderDynamicMirror()
    m_pin3d.m_pd3dDevice->GetTransform(TRANSFORMSTATE_VIEW, &viewMat);
    // flip camera
    viewMat._33 *= -1.0f;
-   viewMat._32 *= -1.0f;
+   if (rotation != 0.0f)
+       viewMat._31 *= -1.0f;
+   else
+       viewMat._32 *= -1.0f;
    m_pin3d.m_pd3dDevice->SetTransform(TRANSFORMSTATE_VIEW, &viewMat);
+   UpdateBasicShaderMatrix();
+
+   m_pin3d.m_pd3dDevice->BeginScene();
 
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
    m_ptable->m_fReflectionEnabled = true;
@@ -1314,15 +1327,19 @@ void Player::RenderDynamicMirror()
       m_vHitNonTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
 
 
-   m_pin3d.m_pd3dDevice->EndScene();
-
    m_ptable->m_fReflectionEnabled = false;
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 
+   m_pin3d.m_pd3dDevice->EndScene();
+
    // and flip back camera
    viewMat._33 *= -1.0f;
-   viewMat._32 *= -1.0f;
+   if (rotation != 0.0f)
+       viewMat._31 *= -1.0f;
+   else
+       viewMat._32 *= -1.0f;
    m_pin3d.m_pd3dDevice->SetTransform(TRANSFORMSTATE_VIEW, &viewMat);
+   UpdateBasicShaderMatrix();
 
    m_pin3d.m_pd3dDevice->SetRenderTarget(m_pin3d.m_pddsBackBuffer);
    SAFE_RELEASE_NO_RCC(tmpMirrorSurface);
@@ -2787,7 +2804,6 @@ void Player::CheckAndUpdateRegions()
 //     }
 
     m_pin3d.m_pd3dDevice->CopySurface(m_pin3d.m_pddsZBuffer, m_pin3d.m_pddsStaticZ);
-
 }
 
 void Player::Bloom()

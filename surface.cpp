@@ -1051,6 +1051,9 @@ void Surface::RenderSlingshots(RenderDevice* pd3dDevice)
 void Surface::RenderWallsAtHeight( RenderDevice* pd3dDevice, const bool fDrop)
 {
 	// render side
+    if (m_ptable->m_fReflectionEnabled && (m_d.m_heightbottom<0.0f || m_d.m_heighttop<0.0f) )
+        return;
+
     if (m_d.m_fDisableLighting && ( m_d.m_fSideVisible || m_d.m_fVisible))
         pd3dDevice->basicShader->SetDisableLighting( m_d.m_fDisableLighting );
 

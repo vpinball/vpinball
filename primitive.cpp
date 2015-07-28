@@ -823,6 +823,9 @@ void Primitive::ExportMesh(FILE *f)
 
 void Primitive::RenderObject(RenderDevice *pd3dDevice)
 {
+    if (m_ptable->m_fReflectionEnabled && m_d.m_vPosition.z<0.0f )
+        return;
+
     if (!m_d.m_fGroupdRendering)
     {
         RecalculateMatrices();
@@ -837,7 +840,7 @@ void Primitive::RenderObject(RenderDevice *pd3dDevice)
 	Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
     pd3dDevice->basicShader->SetMaterial(mat);
     
-	pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
+	pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, m_d.m_depthBias);
     pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
     pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 
