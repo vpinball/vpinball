@@ -840,7 +840,7 @@ void Primitive::RenderObject(RenderDevice *pd3dDevice)
 	Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
     pd3dDevice->basicShader->SetMaterial(mat);
     
-	pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, m_d.m_depthBias);
+	pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, *((DWORD*)&m_d.m_depthBias));
     pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
     pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 
