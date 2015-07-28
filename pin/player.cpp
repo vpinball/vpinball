@@ -2637,13 +2637,6 @@ void Player::DrawBulbLightBuffer()
 		m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
 		m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, FALSE);
 
-		float shiftedVerts[4 * 5] =
-		{
-			1.0f, 1.0f, 0.0f, 1.0f + (float)(1.0 / (double)m_width), 0.0f + (float)(1.0 / (double)m_height),
-			-1.0f, 1.0f, 0.0f, 0.0f + (float)(1.0 / (double)m_width), 0.0f + (float)(1.0 / (double)m_height),
-			1.0f, -1.0f, 0.0f, 1.0f + (float)(1.0 / (double)m_width), 1.0f + (float)(1.0 / (double)m_height),
-			-1.0f, -1.0f, 0.0f, 0.0f + (float)(1.0 / (double)m_width), 1.0f + (float)(1.0 / (double)m_height)
-		};
 		float verts[4 * 5] =
 		{
 			1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
