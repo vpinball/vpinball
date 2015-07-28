@@ -314,7 +314,7 @@ void Ramp::GetBoundingVertices(Vector<Vertex3Ds> * const pvvertex3D)
    delete [] rgheight1;
 }
 
-void Ramp::AssignHeightToControlPoint(RenderVertex3D v, float height)
+void Ramp::AssignHeightToControlPoint(const RenderVertex3D &v, float height)
 {
    for (int i = 0; i < m_vdpoint.size(); i++)
    {
