@@ -19,7 +19,7 @@
 */
 
 //
-// Regarding 2.) altered for VP: templated vertex type, const correctness, remember if already init'ed, change vertex cache size to 32, use structs
+// Regarding 2.) altered for VP: templated vertex type, const correctness, remember if already init'ed, change vertex cache size to 64, use structs
 //
 
 // Set these to adjust the performance and result quality
@@ -233,7 +233,18 @@ T* reorderForsyth(const T* const indices,
 				// If this cache slot contains a real
 				// vertex, update its cache tag
 				if (cache[j] >= 0)
+				{
 					cVertex[cache[j]].cacheTag++;
+					if (cVertex[cache[j]].cacheTag >= VERTEX_CACHE_SIZE + 3)
+					{
+						delete[] cVertex;
+						delete[] triangleAdded;
+						delete[] triangleScore;
+						delete[] outTriangles;
+						delete[] triangleIndices;
+						return NULL;
+					}
+				}
 			}
 			// Insert the current vertex into its new target slot
 			cache[i] = v;
