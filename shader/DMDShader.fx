@@ -1,9 +1,7 @@
-
-
 #include "Helpers.fxh"
 
-float4 vColor_Intensity = float4(1.,1.,1., 1.);
-float2 vRes = float2(128., 32.);
+float4 vColor_Intensity;
+float2 vRes;
 
 texture Texture0;
 
@@ -13,6 +11,9 @@ sampler2D texSampler0 : TEXUNIT0 = sampler_state // DMD
     MIPFILTER = NONE;
     MAGFILTER = POINT;
     MINFILTER = POINT;
+    // Set texture to mirror, so the alpha state of the texture blends correctly to the outside
+	ADDRESSU  = MIRROR;
+	ADDRESSV  = MIRROR;
 };
 
 sampler2D texSampler1 : TEXUNIT0 = sampler_state // Sprite
@@ -63,8 +64,8 @@ float4 ps_main_DMD_big(in VS_OUTPUT IN) : COLOR
    color *= smoothstep(0.,1.,1.0-d*d);
 
    /*float3 color2 = float3(0,0,0);
-   for(int j = -1; j <= 1; ++j)
-     for(int i = -1; i <= 1; ++i)
+   [unroll] for(int j = -1; j <= 1; ++j)
+     [unroll] for(int i = -1; i <= 1; ++i)
 	 {
 	 //collect glow from neighbors
 	 }*/
@@ -84,8 +85,8 @@ float4 ps_main_DMD(in VS_OUTPUT IN) : COLOR
    color *= saturate(1.0-d);
 
    /*float3 color2 = float3(0,0,0);
-   for(int j = -1; j <= 1; ++j)
-     for(int i = -1; i <= 1; ++i)
+   [unroll] for(int j = -1; j <= 1; ++j)
+     [unroll] for(int i = -1; i <= 1; ++i)
 	 {
 	 //collect glow from neighbors
 	 }*/
@@ -105,8 +106,8 @@ float4 ps_main_DMD_tiny(in VS_OUTPUT IN) : COLOR
    color *= 1.0-pow(d, 0.375);
 
    /*float3 color2 = float3(0,0,0);
-   for(int j = -1; j <= 1; ++j)
-     for(int i = -1; i <= 1; ++i)
+   [unroll] for(int j = -1; j <= 1; ++j)
+     [unroll] for(int i = -1; i <= 1; ++i)
 	 {
 	 //collect glow from neighbors
 	 }*/
