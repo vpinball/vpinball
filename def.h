@@ -313,6 +313,19 @@ inline float sobol(unsigned int i, unsigned int scramble = 0)
     return (float)scramble * 0.00000000023283064365386962890625f; // /2^32
 }
 
+inline void RemoveSpaces(char* source)
+{
+  char* i = source;
+  char* j = source;
+  while(*j != 0)
+  {
+    *i = *j++;
+    if(!isspace(*i))
+      i++;
+  }
+  *i = '\0';
+}
+
 //
 
 float sz2f(char *sz);
