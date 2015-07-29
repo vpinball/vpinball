@@ -444,7 +444,10 @@ void WaveFrontObj_ExportEnd(FILE *f)
 
 void WaveFrontObj_WriteMaterial(const char *texelName, const char *texelFilename, const Material * const mat)
 {
-   fprintf_s(matFile, "newmtl %s\n", texelName);
+   char texelNameCopy[MAX_PATH];
+   strcpy_s(texelNameCopy,texelName);
+   RemoveSpaces(texelNameCopy);
+   fprintf_s(matFile, "newmtl %s\n", texelNameCopy);
    fprintf_s(matFile, "Ns 7.843137\n");
    D3DXVECTOR4 color = convertColor(mat->m_cBase);
    fprintf_s(matFile, "Ka 0.000000 0.000000 0.000000\n");
@@ -456,10 +459,12 @@ void WaveFrontObj_WriteMaterial(const char *texelName, const char *texelFilename
    fprintf_s(matFile, "illum 5\n");
    if (texelFilename != NULL)
    {
-       fprintf_s(matFile, "map_kd %s\n", texelFilename);
-       fprintf_s(matFile, "map_ka %s\n\n", texelFilename);
-   }
+       strcpy_s(texelNameCopy,texelFilename);
+       RemoveSpaces(texelNameCopy);
 
+       fprintf_s(matFile, "map_kd %s\n", texelNameCopy);
+       fprintf_s(matFile, "map_ka %s\n\n", texelNameCopy);
+   }
 }
 
 void WaveFrontObj_UseTexture(FILE *f, const char *texelName)
