@@ -2348,27 +2348,30 @@ void Ramp::GenerateRampMesh(Vertex3D_NoTex2 **meshBuf)
 			break;
 
         //floor
-        m_meshIndices[i * 6]     = i * 2;
-        m_meshIndices[i * 6 + 1] = i * 2 + 1;
-        m_meshIndices[i * 6 + 2] = i * 2 + 3;
-        m_meshIndices[i * 6 + 3] = i * 2;
-        m_meshIndices[i * 6 + 4] = i * 2 + 3;
-        m_meshIndices[i * 6 + 5] = i * 2 + 2;
+		unsigned int offs = i * 6;
+        m_meshIndices[offs]     = i * 2;
+        m_meshIndices[offs + 1] = i * 2 + 1;
+		m_meshIndices[offs + 2] = i * 2 + 3;
+		m_meshIndices[offs + 3] = i * 2;
+		m_meshIndices[offs + 4] = i * 2 + 3;
+		m_meshIndices[offs + 5] = i * 2 + 2;
 
 		//walls
-		m_meshIndices[i * 6 + rgioffset]     = i * 2 + m_numVertices;
-		m_meshIndices[i * 6 + rgioffset + 1] = i * 2 + m_numVertices + 1;
-		m_meshIndices[i * 6 + rgioffset + 2] = i * 2 + m_numVertices + 3;
-		m_meshIndices[i * 6 + rgioffset + 3] = i * 2 + m_numVertices;
-		m_meshIndices[i * 6 + rgioffset + 4] = i * 2 + m_numVertices + 3;
-		m_meshIndices[i * 6 + rgioffset + 5] = i * 2 + m_numVertices + 2;
+		offs += rgioffset;
+		m_meshIndices[offs]     = i * 2 + m_numVertices;
+		m_meshIndices[offs + 1] = i * 2 + m_numVertices + 1;
+		m_meshIndices[offs + 2] = i * 2 + m_numVertices + 3;
+		m_meshIndices[offs + 3] = i * 2 + m_numVertices;
+		m_meshIndices[offs + 4] = i * 2 + m_numVertices + 3;
+		m_meshIndices[offs + 5] = i * 2 + m_numVertices + 2;
 		
-		m_meshIndices[i * 6 + rgioffset * 2]     = i * 2 + m_numVertices * 2;
-        m_meshIndices[i * 6 + rgioffset * 2 + 1] = i * 2 + m_numVertices * 2 + 1;
-        m_meshIndices[i * 6 + rgioffset * 2 + 2] = i * 2 + m_numVertices * 2 + 3;
-        m_meshIndices[i * 6 + rgioffset * 2 + 3] = i * 2 + m_numVertices * 2;
-        m_meshIndices[i * 6 + rgioffset * 2 + 4] = i * 2 + m_numVertices * 2 + 3;
-        m_meshIndices[i * 6 + rgioffset * 2 + 5] = i * 2 + m_numVertices * 2 + 2;
+		offs += rgioffset;
+		m_meshIndices[offs]     = i * 2 + m_numVertices * 2;
+		m_meshIndices[offs + 1] = i * 2 + m_numVertices * 2 + 1;
+		m_meshIndices[offs + 2] = i * 2 + m_numVertices * 2 + 3;
+		m_meshIndices[offs + 3] = i * 2 + m_numVertices * 2;
+		m_meshIndices[offs + 4] = i * 2 + m_numVertices * 2 + 3;
+		m_meshIndices[offs + 5] = i * 2 + m_numVertices * 2 + 2;
     }
     ComputeNormals(m_vertBuffer, m_numVertices, &m_meshIndices[0], (rampVertex - 1) * 6);
 
