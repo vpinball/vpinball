@@ -713,6 +713,11 @@ void Player::UpdateBasicShaderMatrix(const Matrix3D& objectTrafo)
     D3DXMATRIX matWorld(worldMat);
     D3DXMATRIX matObject(objectTrafo);
 
+    if (m_ptable->m_fReflectionEnabled)
+    {
+        matObject._43 -= m_ptable->m_tableheight*2.0f; // why factor 2.0f?
+    }
+
     D3DXMATRIX matWorldView = matObject * matWorld * matView;
     D3DXMATRIX matWorldViewProj = matWorldView * matProj;
 
@@ -1256,7 +1261,9 @@ void Player::RenderStaticMirror()
    if (rotation!=0.0f )
       viewMat._31 *= -1.0f;
    else
-      viewMat._32 *= -1.0f;
+   {
+       viewMat._32 *= -1.0f;
+   }
    m_pin3d.m_pd3dDevice->SetTransform(TRANSFORMSTATE_VIEW, &viewMat);
 
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
@@ -1284,7 +1291,9 @@ void Player::RenderStaticMirror()
    if (rotation != 0.0f)
        viewMat._31 *= -1.0f;
    else
+   {
        viewMat._32 *= -1.0f;
+   }
    m_pin3d.m_pd3dDevice->SetTransform(TRANSFORMSTATE_VIEW, &viewMat);
    UpdateBasicShaderMatrix();
 
