@@ -210,7 +210,7 @@ int StackTrace::GetSymbolInfo(Address address, char* symbol, int maxSymbolLen)
 	if (SymGetSymFromAddr64(hCurrentProcess, address64, &disp, symbolInfo))
 	{
 		const int symbolChars =
-			_snprintf_s(symbol, maxSymbolLen, _TRUNCATE, " %s + 0x%X", symbolInfo->Name, disp);
+			_snprintf_s(symbol, maxSymbolLen, _TRUNCATE, " %s + 0x%llX", symbolInfo->Name, disp);
 		symbol += symbolChars;
 		maxSymbolLen -= symbolChars;
 		charsAdded += symbolChars;
@@ -276,7 +276,7 @@ void StackTrace::GetCallStack(void* vcontext, bool includeArguments,
 		if (maxSymbolLen > 0 && includeArguments)
 		{
 			charsAdded = _snprintf_s(symbol, maxSymbolLen, _TRUNCATE, 
-				" (0x%08X 0x%08X 0x%08X 0x%08x)\n", stackFrame.Params[0],
+				" (0x%08llX 0x%08llX 0x%08llX 0x%08llx)\n", stackFrame.Params[0],
 				stackFrame.Params[1], stackFrame.Params[2], stackFrame.Params[3]);
 			maxSymbolLen -= charsAdded;
 			symbol += charsAdded;
