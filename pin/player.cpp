@@ -3805,7 +3805,6 @@ void Player::DrawBalls()
       ballShader->SetMatrix("orientation",&m);
 
       const D3DXVECTOR4 pos_rad( pball->m_pos.x, pball->m_pos.y, zheight, pball->m_radius );
-      ballShader->SetVector("position_radius", &pos_rad );
       if ( !pball->m_pinballEnv )
           ballShader->SetTexture("Texture0", &m_pin3d.pinballEnvTexture);
       else
@@ -3818,7 +3817,9 @@ void Player::DrawBalls()
 
 	  if (drawReflection)
 	  {
-		  const D3DXVECTOR4 refl((float)m_ptable->m_ballReflectionStrength / 255.0f, (float)m_ptable->m_playfieldReflectionStrength / 255.0f, 0.f, 0.f);
+          const D3DXVECTOR4 pos_radRef(pball->m_pos.x, pball->m_pos.y, zheight+m_ptable->m_tableheight, pball->m_radius);
+          ballShader->SetVector("position_radius", &pos_radRef);
+          const D3DXVECTOR4 refl((float)m_ptable->m_ballReflectionStrength / 255.0f, (float)m_ptable->m_playfieldReflectionStrength / 255.0f, 0.f, 0.f);
 		  ballShader->SetVector("reflection_ball_playfield", &refl);
 		  m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
 		  m_pin3d.EnableAlphaBlend(false, false);
@@ -3830,8 +3831,9 @@ void Player::DrawBalls()
 		  ballShader->End();
 
 		  m_pin3d.DisableAlphaBlend();
-	  }
+      }
 
+      ballShader->SetVector("position_radius", &pos_rad);
       m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
       ballShader->SetTechnique("RenderBall");
       
