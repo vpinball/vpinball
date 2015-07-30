@@ -3,7 +3,6 @@
 // Used by vpinball_eng.rc
 //
 #define DISPID_Textbox_BackColor        1
-#define VP_VERSION_REV                  1
 #define DISPID_Textbox_FontColor        2
 #define DISPID_Light_State              2
 #define DISPID_Gate_Length              3

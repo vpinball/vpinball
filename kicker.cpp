@@ -238,18 +238,18 @@ void Kicker::PreRenderStatic( RenderDevice* pd3dDevice)
          for (int l=0;l<16;++l)
          {
             WORD rgiNormal[6] = {
-               (l-1+16) % 16,
-               (l-1+16) % 16 + 16,
-               (l-1+16) % 16 + 2,
-               l,
-               l+16,
-               (l+2) % 16 };
+			   (WORD)((l-1+16) % 16),
+			   (WORD)((l-1+16) % 16 + 16),
+			   (WORD)((l-1+16) % 16 + 2),
+               (WORD)l,
+			   (WORD)(l+16),
+			   (WORD)((l+2) % 16) };
 
             WORD rgi[4] = {
-               l,
-               l+16,
-               (l+1) % 16 + 16,
-               (l+1) % 16 };
+			   (WORD)l,
+			   (WORD)(l+16),
+			   (WORD)((l+1) % 16 + 16),
+			   (WORD)((l+1) % 16) };
 
             SetNormal(vertices, rgiNormal, 3, NULL, rgi, 2);
             SetNormal(vertices, &rgiNormal[3], 3, NULL, &rgi[2], 2);
