@@ -1310,6 +1310,8 @@ void Player::RenderDynamicMirror()
    m_pin3d.m_pd3dDevice->GetMirrorTmpBufferTexture()->GetSurfaceLevel(0, &tmpMirrorSurface);
    m_pin3d.m_pd3dDevice->SetRenderTarget(tmpMirrorSurface);
 
+   m_pin3d.m_pd3dDevice->Clear(0, NULL, D3DCLEAR_TARGET|D3DCLEAR_ZBUFFER, 0, 1.0f, 0L);
+
    m_pin3d.m_pd3dDevice->FBShader->SetFloat("mirrorFactor", (float)m_ptable->m_playfieldReflectionStrength / 255.0f);
 
    m_pin3d.m_pd3dDevice->GetTransform(TRANSFORMSTATE_VIEW, &viewMat);
