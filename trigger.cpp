@@ -168,7 +168,13 @@ void Trigger::SetDefaults(bool fromMouseClick)
    else
        m_d.m_rotation = 0.0f;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Trigger","ScaleX", &fTmp);
+   hr = GetRegStringAsFloat("DefaultProps\\Trigger", "WireThickness", &fTmp);
+   if ((hr == S_OK) && fromMouseClick)
+      m_d.m_wireThickness = fTmp;
+   else
+      m_d.m_wireThickness = 0.0f;
+
+   hr = GetRegStringAsFloat("DefaultProps\\Trigger", "ScaleX", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
        m_d.m_scaleX = fTmp;
    else
@@ -714,7 +720,21 @@ void Trigger::RenderSetup(RenderDevice* pd3dDevice)
    GenerateMesh();
    Vertex3D_NoTex2 *buf;
    vertexBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY);
-   memcpy( buf, triggerVertices, sizeof(Vertex3D_NoTex2)*m_numVertices );
+   if ( m_d.m_shape == TriggerWire )
+   {
+      Vertex3D_NoTex2 *tmp = new Vertex3D_NoTex2[m_numVertices];
+      for (int i = 0; i < m_numVertices; i++)
+      {
+         memcpy(&tmp[i], &triggerVertices[i], sizeof(Vertex3D_NoTex2));
+         tmp[i].x += tmp[i].nx * m_d.m_wireThickness;
+         tmp[i].y += tmp[i].ny * m_d.m_wireThickness;
+         tmp[i].z += tmp[i].nz * m_d.m_wireThickness;
+      }
+      memcpy(buf, tmp, sizeof(Vertex3D_NoTex2)*m_numVertices);
+      delete tmp;
+   }
+   else
+      memcpy( buf, triggerVertices, sizeof(Vertex3D_NoTex2)*m_numVertices );
    vertexBuffer->unlock();
 }
 
@@ -901,6 +921,7 @@ HRESULT Trigger::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
    bw.WriteStruct(FID(VCEN), &m_d.m_vCenter, sizeof(Vertex2D));
    bw.WriteFloat(FID(RADI), m_d.m_radius);
    bw.WriteFloat(FID(ROTA), m_d.m_rotation);
+   bw.WriteFloat(FID(WITI), m_d.m_wireThickness);
    bw.WriteFloat(FID(SCAX), m_d.m_scaleX);
    bw.WriteFloat(FID(SCAY), m_d.m_scaleY);
    bw.WriteBool(FID(TMON), m_d.m_tdr.m_fTimerEnabled);
@@ -938,8 +959,9 @@ void Trigger::WriteRegDefaults()
    SetRegValueBool("DefaultProps\\Trigger","Visible",m_d.m_fVisible);
    SetRegValueFloat("DefaultProps\\Trigger","HitHeight", m_d.m_hit_height);
    SetRegValueFloat("DefaultProps\\Trigger","Radius", m_d.m_radius);
-   SetRegValueFloat("DefaultProps\\Trigger","Rotation", m_d.m_rotation);
-   SetRegValueFloat("DefaultProps\\Trigger","ScaleX", m_d.m_scaleX);
+   SetRegValueFloat("DefaultProps\\Trigger", "Rotation", m_d.m_rotation);
+   SetRegValueFloat("DefaultProps\\Trigger", "WireThickness", m_d.m_wireThickness);
+   SetRegValueFloat("DefaultProps\\Trigger", "ScaleX", m_d.m_scaleX);
    SetRegValueFloat("DefaultProps\\Trigger","ScaleY", m_d.m_scaleY);
    SetRegValue("DefaultProps\\Trigger","Shape",REG_DWORD,&m_d.m_shape,4);
    SetRegValue("DefaultProps\\Trigger","Surface", REG_SZ, &m_d.m_szSurface,lstrlen(m_d.m_szSurface));
@@ -976,7 +998,11 @@ BOOL Trigger::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(ROTA))
    {
-       pbr->GetFloat(&m_d.m_rotation);
+      pbr->GetFloat(&m_d.m_rotation);
+   }
+   else if (id == FID(WITI))
+   {
+      pbr->GetFloat(&m_d.m_wireThickness);
    }
    else if (id == FID(SCAX))
    {
@@ -1260,6 +1286,24 @@ STDMETHODIMP Trigger::put_Rotation(float newVal)
         return S_OK;
 }
 
+STDMETHODIMP Trigger::get_WireThickness(float *pVal)
+{
+   *pVal = m_d.m_wireThickness;
+
+   return S_OK;
+}
+
+STDMETHODIMP Trigger::put_WireThickness(float newVal)
+{
+   STARTUNDO
+
+      m_d.m_wireThickness = newVal;
+
+   STOPUNDO
+
+      return S_OK;
+}
+
 STDMETHODIMP Trigger::get_AnimSpeed(float *pVal)
 {
     *pVal = m_d.m_animSpeed;
@@ -1332,6 +1376,7 @@ STDMETHODIMP Trigger::put_TriggerShape(TriggerShape newVal)
       m_d.m_shape = newVal;
    STOPUNDO
 	   UpdateEditorView();
+   
       return S_OK;
 }
 
@@ -1345,17 +1390,20 @@ void Trigger::UpdatePropertyPanes()
         EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_STAR_RADIUS_EDIT), TRUE);
         EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_ROTATION_EDIT), TRUE);
         EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_RINGSPEED_EDIT), TRUE);
+        EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_STAR_THICKNESS_EDIT), FALSE);
     }
     else if( m_d.m_shape==TriggerWire)
     {
         EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_STAR_RADIUS_EDIT), FALSE);
-        EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_ROTATION_EDIT), TRUE);
+        EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_STAR_THICKNESS_EDIT), TRUE);
+        EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_ROTATION_EDIT), TRUE);
         EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_RINGSPEED_EDIT), TRUE);
     }
     else
     {
         EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_STAR_RADIUS_EDIT), FALSE);
-        EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_ROTATION_EDIT), FALSE);
+        EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_STAR_THICKNESS_EDIT), FALSE);
+        EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_ROTATION_EDIT), FALSE);
         EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_RINGSPEED_EDIT), FALSE);
     }
 }
