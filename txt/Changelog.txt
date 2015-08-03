@@ -78,6 +78,8 @@ VP 10.0.0 Changelog
 
 - new rubber element
   rubber object can be rotated around the X/Y/Z axis and shown in the editor if the checkbox "Show In Editor" is checked
+  
+- the thickness of a wire trigger can be scaled. 0 is the default thickness. To make it thicker use values like 0.5, 1, 1.5, 2... 
 
 - spinners are mesh based. If the spinner bracket isn't the right one disable the "Show Bracket" settings and you will only see the spinner plate.
   

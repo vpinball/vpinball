@@ -24,6 +24,7 @@ public:
 	bool m_fVisible;
 	U32 m_time_msec;
     float m_animSpeed;
+    float m_wireThickness;
 	};
 
 /////////////////////////////////////////////////////////////////////////////
@@ -156,6 +157,8 @@ public:
     STDMETHOD(put_HitHeight)(/*[in]*/ float newVal);
     STDMETHOD(get_Rotation)(/*[out, retval]*/ float *pVal);
     STDMETHOD(put_Rotation)(/*[in]*/ float newVal);
+    STDMETHOD(get_WireThickness)(/*[out, retval]*/ float *pVal);
+    STDMETHOD(put_WireThickness)(/*[in]*/ float newVal);
     STDMETHOD(get_Material)(/*[out, retval]*/ BSTR *pVal);
     STDMETHOD(put_Material)(/*[in]*/ BSTR newVal);
     STDMETHOD(get_AnimSpeed)(/*[out, retval]*/ float *pVal);

@@ -555,6 +555,7 @@ UserValue(any)
 HitHeight(float)
 Rotation(float)
 AnimSpeed(float)
+WireThickness(float) - This option is only used for wire shape triggers. The thickness is a factor to scale the wire 0=normal thickness(default). To make it thicker use values like 0.5, 1, 1.5, 2...
 
 Methods
 -------
