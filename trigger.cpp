@@ -594,9 +594,18 @@ void Trigger::PostRenderStatic(RenderDevice* pd3dDevice)
         vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
         for( int i=0;i<m_numVertices;i++ )
         {
-            buf[i].x = triggerVertices[i].x;
-            buf[i].y = triggerVertices[i].y;
-            buf[i].z = triggerVertices[i].z+animHeightOffset;
+            if (m_d.m_shape == TriggerWire)
+            {
+                buf[i].x = triggerVertices[i].x  + triggerVertices[i].nx*m_d.m_wireThickness;
+                buf[i].y = triggerVertices[i].y  + triggerVertices[i].ny*m_d.m_wireThickness;
+                buf[i].z = (triggerVertices[i].z + triggerVertices[i].nz*m_d.m_wireThickness)+animHeightOffset;
+            }
+            else
+            {
+                buf[i].x = triggerVertices[i].x;
+                buf[i].y = triggerVertices[i].y;
+                buf[i].z = triggerVertices[i].z + animHeightOffset;
+            }
             buf[i].nx = triggerVertices[i].nx;
             buf[i].ny = triggerVertices[i].ny;
             buf[i].nz = triggerVertices[i].nz;
