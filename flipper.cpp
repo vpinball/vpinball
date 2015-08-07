@@ -2,8 +2,8 @@
 #include "forsyth.h"
 #include "objloader.h"
 
-const int numIndices = 294;
-const int numFlipVerts=108;
+const int numIndices = 294+6;
+const int numFlipVerts=112;
 
 Flipper::Flipper()
 {
@@ -573,11 +573,11 @@ void Flipper::PostRenderStatic(RenderDevice* pd3dDevice)
     if ( m_phitflipper )
       matTemp.RotateZMatrix(m_phitflipper->m_flipperanim.m_angleCur);
     matTrafo.Multiply(matTemp, matTrafo);
-    g_pplayer->UpdateBasicShaderMatrix(matTrafo);
+	g_pplayer->UpdateBasicShaderMatrix(matTrafo);
     
     // render flipper
     pd3dDevice->basicShader->Begin(0);
-    pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, 108, indexBuffer, 0, numIndices );
+    pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, numFlipVerts, indexBuffer, 0, numIndices );
     pd3dDevice->basicShader->End();  
 
     // render rubber
@@ -587,7 +587,7 @@ void Flipper::PostRenderStatic(RenderDevice* pd3dDevice)
        pd3dDevice->basicShader->SetMaterial(mat);
 
        pd3dDevice->basicShader->Begin(0);
-       pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 108, 108, indexBuffer, 0, numIndices );
+       pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, numFlipVerts, numFlipVerts, indexBuffer, 0, numIndices );
        pd3dDevice->basicShader->End();  
     }
 
@@ -640,7 +640,14 @@ void Flipper::ExportMesh(FILE *f)
         idx[102 + 96 + i * 6 + 4] = 76 + (o + 3) % 32;
         idx[102 + 96 + i * 6 + 5] = 76 + (o + 2) % 32;
     }
-    // Render just the flipper (in standard position, angle=0)
+	idx[294 + 0] = 108;
+	idx[294 + 1] = 108 + 1;
+	idx[294 + 2] = 108 + 2;
+	idx[294 + 3] = 108;
+	idx[294 + 4] = 108 + 2;
+	idx[294 + 5] = 108 + 3;
+	
+	// Render just the flipper (in standard position, angle=0)
     Vertex3D_NoTex2 *baseFlipper = new Vertex3D_NoTex2[numFlipVerts];
     RenderAtThickness(NULL, 0.0f, height, m_d.m_BaseRadius - (float)m_d.m_rubberthickness, m_d.m_EndRadius - (float)m_d.m_rubberthickness, m_d.m_height, baseFlipper);
 
@@ -718,7 +725,7 @@ void Flipper::ExportMesh(FILE *f)
 
 void Flipper::RenderSetup(RenderDevice* pd3dDevice)
 {
-    const unsigned long numVertices= 108*2; //*2 for flipper plus rubber
+    const unsigned long numVertices= numFlipVerts*2; //*2 for flipper plus rubber
     // 12 + 16 + 32 + 16 + 32
     _ASSERTE(m_phitflipper);
     Pin3D * const ppin3d = &g_pplayer->m_pin3d;
@@ -768,17 +775,16 @@ void Flipper::RenderSetup(RenderDevice* pd3dDevice)
         idx[102 + 96 + i*6+4] = 76 + (o+3)%32;
         idx[102 + 96 + i*6+5] = 76 + (o+2)%32;
     }
+	idx[294 + 0] = 108;
+	idx[294 + 1] = 108+1;
+	idx[294 + 2] = 108+2;
+	idx[294 + 3] = 108;
+	idx[294 + 4] = 108+2;
+	idx[294 + 5] = 108+3;
 
-    if (indexBuffer)
+	if (indexBuffer)
         indexBuffer->release();
 
-	// not necessary to reorder
-	/*WORD* tmp = reorderForsyth(idx,numIndices/3,numVertices);
-    if(tmp != NULL)
-    {
-       memcpy(idx,tmp,numIndices*sizeof(WORD));
-       delete [] tmp;
-    }*/
     indexBuffer = pd3dDevice->CreateAndFillIndexBuffer(numIndices, idx);
 
     Vertex3D_NoTex2 *buf;
@@ -789,7 +795,7 @@ void Flipper::RenderSetup(RenderDevice* pd3dDevice)
 
     // Render just the rubber.
     if (m_d.m_rubberthickness > 0)
-        RenderAtThickness(pd3dDevice, 0.0f, height + (float)m_d.m_rubberheight, m_d.m_BaseRadius, m_d.m_EndRadius, (float)m_d.m_rubberwidth, buf+108);
+        RenderAtThickness(pd3dDevice, 0.0f, height + (float)m_d.m_rubberheight, m_d.m_BaseRadius, m_d.m_EndRadius, (float)m_d.m_rubberwidth, buf+numFlipVerts);
 
     vertexBuffer->unlock();
 }
@@ -800,7 +806,7 @@ void Flipper::RenderStatic(RenderDevice* pd3dDevice)
 
 static const WORD rgiFlipper1[4] = {0,4,5,1};
 static const WORD rgiFlipper2[4] = {2,6,7,3};
-static const WORD rgi0123[4] = {0,1,2,3};
+static const WORD rgi0123[4] = { 0, 1, 2, 3 };
 
 void Flipper::RenderAtThickness(RenderDevice* pd3dDevice, float angle, float height,
                                 float baseradius, float endradius, float flipperheight, Vertex3D_NoTex2* buf)
@@ -810,7 +816,7 @@ void Flipper::RenderAtThickness(RenderDevice* pd3dDevice, float angle, float hei
     Vertex2D vendcenter;
     Vertex2D rgv[4];
     SetVertices(0.0f, 0.0f, angle, &vendcenter, rgv, baseradius, endradius);
-
+	Vertex3D_NoTex2 bottomRgv[4];
     Vertex3D_NoTex2 rgv3D[32];
     for (int l=0;l<8;l++)
     {
@@ -843,6 +849,8 @@ void Flipper::RenderAtThickness(RenderDevice* pd3dDevice, float angle, float hei
     buf[offset + 2] = rgv3D[7];
     buf[offset + 3] = rgv3D[3];
     offset+=4;
+	memcpy(bottomRgv, &rgv3D[4], 4 * sizeof(Vertex3D_NoTex2));
+	SetNormal<Vertex3D_NoTex2, WORD>(bottomRgv, rgi0123, 3, NULL, NULL, 4);
 
     // offset = 12
 
@@ -889,7 +897,7 @@ void Flipper::RenderAtThickness(RenderDevice* pd3dDevice, float angle, float hei
     }
 
     // offset = 60
-
+	Vertex3D_NoTex2 bottomSmall[16];
     // End circle.
     for (int l=0;l<16;l++)
     {
@@ -908,8 +916,8 @@ void Flipper::RenderAtThickness(RenderDevice* pd3dDevice, float angle, float hei
     for (int l=0;l<14;l++)
         SetNormal(rgv3D, endCapsIndex+l*3, 3);
 
-	memcpy( &buf[offset], rgv3D, sizeof(Vertex3D_NoTex2)*16 );
-    offset += 16;
+	memcpy(&buf[offset], rgv3D, sizeof(Vertex3D_NoTex2) * 16);
+	offset += 16;
 
     // offset = 76
 
@@ -925,8 +933,10 @@ void Flipper::RenderAtThickness(RenderDevice* pd3dDevice, float angle, float hei
         buf[offset+1] = rgv3D[l+16];
         offset += 2;
     }
-
     // offset = 108
+	memcpy(&buf[offset], bottomRgv, sizeof(Vertex3D_NoTex2) * 4);
+	offset += 4;
+	//offset = 112;
 }
 
 
