@@ -668,7 +668,13 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
         {
             pd3dDevice->classicLightShader->SetTechnique("light_with_texture");
             pd3dDevice->classicLightShader->SetTexture("Texture0", offTexel );
-        }
+			if (m_ptable->m_fReflectElementsOnPlayfield)
+			{
+				pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
+				pd3dDevice->SetRenderState(RenderDevice::SRCBLEND, D3DBLEND_ONE);
+				pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_ONE);
+			}
+		}
         else
             pd3dDevice->classicLightShader->SetTechnique("light_without_texture");
     }
