@@ -897,7 +897,6 @@ void Flipper::RenderAtThickness(RenderDevice* pd3dDevice, float angle, float hei
     }
 
     // offset = 60
-	Vertex3D_NoTex2 bottomSmall[16];
     // End circle.
     for (int l=0;l<16;l++)
     {

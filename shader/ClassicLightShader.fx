@@ -159,9 +159,9 @@ technique light_with_texture
 { 
    pass P0 
    { 
-       AlphaBlendEnable = true;
-       SrcBlend = One;
-       DestBlend = One;
+//       AlphaBlendEnable = true;
+//       SrcBlend = One;
+//       DestBlend = One;
        VertexShader = compile vs_3_0 vs_light_main();
 	  PixelShader = compile ps_3_0 PS_LightWithTexel();
    } 
