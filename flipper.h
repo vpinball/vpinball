@@ -101,6 +101,7 @@ END_CONNECTION_POINT_MAP()
 	virtual void GetCenter(Vertex2D * const pv) const;
 	virtual void PutCenter(const Vertex2D * const pv);
     virtual void SetDefaultPhysics(bool fromMouseClick);
+    virtual void ExportMesh(FILE *f);
 
     void RenderAtThickness(RenderDevice* pd3dDevice, float angle, float height, float baseradius, float endradius, float flipperheight, Vertex3D_NoTex2* buf);
 
@@ -162,7 +163,7 @@ public:
 	STDMETHOD(get_EndAngle)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_EndAngle)(/*[in]*/ float newVal);
 	STDMETHOD(RotateToStart)();
-	STDMETHOD(RotateToEnd)();
+    STDMETHOD(RotateToEnd)();
 	STDMETHOD(get_StartAngle)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_StartAngle)(/*[in]*/ float newVal);
 	STDMETHOD(get_Length)(/*[out, retval]*/ float *pVal);

@@ -1,7 +1,9 @@
 #include "StdAfx.h"
 #include "forsyth.h"
+#include "objloader.h"
 
 const int numIndices = 294;
+const int numFlipVerts=108;
 
 Flipper::Flipper()
 {
@@ -592,6 +594,127 @@ void Flipper::PostRenderStatic(RenderDevice* pd3dDevice)
     g_pplayer->UpdateBasicShaderMatrix();
 }
 
+void Flipper::ExportMesh(FILE *f)
+{
+    char name[MAX_PATH];
+    char subObjName[MAX_PATH];
+    WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, MAX_PATH, NULL, NULL);
+
+    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_Center.x, m_d.m_Center.y);
+    const float anglerad = ANGTORAD(m_d.m_StartAngle);
+    const float anglerad2 = ANGTORAD(m_d.m_EndAngle);
+
+    // 18 + 3*14 + 3*14 + 6*16*2 = 294
+    // first 6 quads: top/front/back sides (no bottom)
+    // next 14 tris:  base top cap
+    // next 14 tris:  end top cap
+    // next 16 quads: base mantle
+    // next 16 quads: end mantle
+    static WORD idx[numIndices] = { 0, 1, 2, 0, 2, 3, 4, 5, 6, 4, 6, 7, 8, 9, 10, 8, 10, 11 };
+    for (int i = 0; i < 14; i++)
+    {
+        idx[18 + i * 3] = 12;
+        idx[18 + i * 3 + 1] = 12 + i + 1;
+        idx[18 + i * 3 + 2] = 12 + i + 2;
+
+        idx[60 + i * 3] = 60;
+        idx[60 + i * 3 + 1] = 60 + i + 1;
+        idx[60 + i * 3 + 2] = 60 + i + 2;
+    }
+
+    for (int i = 0; i < 16; i++)
+    {
+        const WORD o = 2 * i;
+
+        idx[102 + i * 6] = 28 + o;
+        idx[102 + i * 6 + 1] = 28 + (o + 1) % 32;
+        idx[102 + i * 6 + 2] = 28 + (o + 2) % 32;
+        idx[102 + i * 6 + 3] = 28 + (o + 1) % 32;
+        idx[102 + i * 6 + 4] = 28 + (o + 3) % 32;
+        idx[102 + i * 6 + 5] = 28 + (o + 2) % 32;
+
+        idx[102 + 96 + i * 6] = 76 + o;
+        idx[102 + 96 + i * 6 + 1] = 76 + (o + 1) % 32;
+        idx[102 + 96 + i * 6 + 2] = 76 + (o + 2) % 32;
+        idx[102 + 96 + i * 6 + 3] = 76 + (o + 1) % 32;
+        idx[102 + 96 + i * 6 + 4] = 76 + (o + 3) % 32;
+        idx[102 + 96 + i * 6 + 5] = 76 + (o + 2) % 32;
+    }
+    // Render just the flipper (in standard position, angle=0)
+    Vertex3D_NoTex2 *baseFlipper = new Vertex3D_NoTex2[numFlipVerts];
+    RenderAtThickness(NULL, 0.0f, height, m_d.m_BaseRadius - (float)m_d.m_rubberthickness, m_d.m_EndRadius - (float)m_d.m_rubberthickness, m_d.m_height, baseFlipper);
+
+    Matrix3D matTrafo, matTemp;
+    matTrafo.SetIdentity();
+    matTemp.SetIdentity();
+    matTrafo._41 = m_d.m_Center.x;
+    matTrafo._42 = m_d.m_Center.y;
+    matTemp.RotateZMatrix(m_d.m_StartAngle);
+    matTrafo.Multiply(matTemp, matTrafo);
+
+    Vertex3D_NoTex2 *buf = baseFlipper;
+    for (int i = 0; i < numFlipVerts; i++)
+    {
+        Vertex3Ds vert(buf[i].x, buf[i].y, buf[i].z);
+        vert = matTrafo.MultiplyVector(vert);
+
+        buf[i].x = vert.x;
+        buf[i].y = vert.y;
+        buf[i].z = vert.z;
+        vert = Vertex3Ds(buf[i].nx, buf[i].ny, buf[i].nz);
+        vert = matTrafo.MultiplyVectorNoTranslate(vert);
+        buf[i].nx = vert.x;
+        buf[i].ny = vert.y;
+        buf[i].nz = vert.z;
+        buf[i].tu = 0.0f;
+        buf[i].tv = 0.0f;
+    }
+
+    strcpy_s(subObjName, name);
+    strcat_s(subObjName, "Base");
+    WaveFrontObj_WriteObjectName(f, subObjName);
+    WaveFrontObj_WriteVertexInfo(f, baseFlipper, numFlipVerts);
+    Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
+    WaveFrontObj_WriteMaterial(m_d.m_szMaterial, NULL, mat);
+    WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
+    WaveFrontObj_WriteFaceInfoList(f, idx, numIndices);
+    WaveFrontObj_UpdateFaceOffset(numFlipVerts);
+
+    // Render just the rubber.
+    if (m_d.m_rubberthickness > 0)
+    {
+        Vertex3D_NoTex2 *rubber = new Vertex3D_NoTex2[numFlipVerts];
+        RenderAtThickness(NULL, 0.0f, height + (float)m_d.m_rubberheight, m_d.m_BaseRadius, m_d.m_EndRadius, (float)m_d.m_rubberwidth, rubber);
+        buf = rubber;
+        for (int i = 0; i < numFlipVerts; i++)
+        {
+            Vertex3Ds vert(buf[i].x, buf[i].y, buf[i].z);
+            vert = matTrafo.MultiplyVector(vert);
+
+            buf[i].x = vert.x;
+            buf[i].y = vert.y;
+            buf[i].z = vert.z;
+            vert = Vertex3Ds(buf[i].nx, buf[i].ny, buf[i].nz);
+            vert = matTrafo.MultiplyVectorNoTranslate(vert);
+            buf[i].nx = vert.x;
+            buf[i].ny = vert.y;
+            buf[i].nz = vert.z;
+            buf[i].tu = 0.0f;
+            buf[i].tv = 0.0f;
+        }
+        strcpy_s(subObjName, name);
+        strcat_s(subObjName, "Rubber");
+        WaveFrontObj_WriteObjectName(f, subObjName);
+        WaveFrontObj_WriteVertexInfo(f, rubber, numFlipVerts);
+        mat = m_ptable->GetMaterial(m_d.m_szRubberMaterial);
+        WaveFrontObj_WriteMaterial(m_d.m_szRubberMaterial, NULL, mat);
+        WaveFrontObj_UseTexture(f, m_d.m_szRubberMaterial);
+        WaveFrontObj_WriteFaceInfoList(f, idx, numIndices);
+        WaveFrontObj_UpdateFaceOffset(numFlipVerts);
+        delete rubber;
+    }
+    delete baseFlipper;
+}
 
 void Flipper::RenderSetup(RenderDevice* pd3dDevice)
 {
