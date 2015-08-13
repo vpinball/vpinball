@@ -395,6 +395,9 @@ void Kicker::SetDefaultPhysics(bool fromMouseClick)
 
 void Kicker::RenderStatic(RenderDevice* pd3dDevice)
 {
+   if ( m_ptable->m_fReflectionEnabled )
+       return;
+
    if ( m_d.m_kickertype == KickerCup || m_d.m_kickertype == KickerHole)
    {
       const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
