@@ -744,7 +744,7 @@ void Flipper::ExportMesh(FILE *f)
 
 void Flipper::GenerateBaseMesh(Vertex3D_NoTex2 *buf)
 {
-    #define TSCALE 10.0f
+    #define TSCALE 10.5f
     #define LSCALE 1.15f
     
     Matrix3D fullMatrix;
@@ -752,8 +752,8 @@ void Flipper::GenerateBaseMesh(Vertex3D_NoTex2 *buf)
     fullMatrix.RotateZMatrix(ANGTORAD(180.0f));
 
 	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_Center.x, m_d.m_Center.y);
-	const float baseScale = 10;
-	const float tipScale = TSCALE;
+	const float baseScale = 10.0f;
+	const float tipScale = 13.5f;
 	const float baseRadius = m_d.m_BaseRadius - m_d.m_rubberthickness;
 	const float endRadius = m_d.m_EndRadius - m_d.m_rubberthickness;
 	Vertex3D_NoTex2 *temp = new Vertex3D_NoTex2[flipperBaseVertices];
@@ -806,7 +806,7 @@ void Flipper::GenerateBaseMesh(Vertex3D_NoTex2 *buf)
     //rubber
     if (m_d.m_rubberthickness > 0.0f)
     {
-        const float rubberBaseScale = 10;
+        const float rubberBaseScale = 9.8f;
         const float rubberTipScale = TSCALE;
         memcpy(temp, flipperBaseMesh, sizeof(Vertex3D_NoTex2)*flipperBaseVertices);
         for (int t = 0; t < 13; t++)
