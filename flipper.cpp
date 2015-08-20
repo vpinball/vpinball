@@ -772,7 +772,7 @@ void Flipper::GenerateBaseMesh(Vertex3D_NoTex2 *buf)
 			if (temp[i].x == vertsTipBottom[t].x && temp[i].y == vertsTipBottom[t].y && temp[i].z == vertsTipBottom[t].z)
 			{
 				temp[i].x *= endRadius * tipScale ;
-				temp[i].y *= endRadius+m_d.m_FlipperRadius*LSCALE;
+				temp[i].y *= endRadius+m_d.m_FlipperRadius*1.14f;
 			}
 			if (temp[i].x == vertsBaseTop[t].x && temp[i].y == vertsBaseTop[t].y && temp[i].z == vertsBaseTop[t].z)
 			{
@@ -782,7 +782,7 @@ void Flipper::GenerateBaseMesh(Vertex3D_NoTex2 *buf)
 			if (temp[i].x == vertsTipTop[t].x && temp[i].y == vertsTipTop[t].y && temp[i].z == vertsTipTop[t].z)
 			{
 				temp[i].x *= endRadius*tipScale;
-                temp[i].y *= endRadius + m_d.m_FlipperRadius*LSCALE;
+                temp[i].y *= endRadius + m_d.m_FlipperRadius*1.14f;
 			}
 		}
 	}
