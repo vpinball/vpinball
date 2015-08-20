@@ -21,7 +21,8 @@ public:
 	float m_EndAngle;
 	float m_height;
 	Vertex2D m_Center;
-	
+    char m_szImage[MAXTOKEN];
+
 	TimerDataRoot m_tdr;
 	
 	char m_szSurface[MAXTOKEN];
@@ -103,7 +104,7 @@ END_CONNECTION_POINT_MAP()
     virtual void SetDefaultPhysics(bool fromMouseClick);
     virtual void ExportMesh(FILE *f);
 
-    void RenderAtThickness(RenderDevice* pd3dDevice, float angle, float height, float baseradius, float endradius, float flipperheight, Vertex3D_NoTex2* buf);
+    void GenerateBaseMesh(Vertex3D_NoTex2 *buf);
 
 	void WriteRegDefaults();
 
@@ -163,7 +164,7 @@ public:
 	STDMETHOD(get_EndAngle)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_EndAngle)(/*[in]*/ float newVal);
 	STDMETHOD(RotateToStart)();
-    STDMETHOD(RotateToEnd)();
+	STDMETHOD(RotateToEnd)();
 	STDMETHOD(get_StartAngle)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_StartAngle)(/*[in]*/ float newVal);
 	STDMETHOD(get_Length)(/*[out, retval]*/ float *pVal);
@@ -180,6 +181,8 @@ public:
 	//STDMETHOD(put_AngleEOS)(/*[in]*/ float newVal);
 	STDMETHOD(get_FlipperRadiusMin)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_FlipperRadiusMin)(/*[in]*/ float newVal);
+    STDMETHOD(get_Image)(/*[out, retval]*/ BSTR *pVal);
+    STDMETHOD(put_Image)(/*[in]*/ BSTR newVal);
 };
 
 #endif // !defined(AFX_FLIPPER_H__D65AA2A2_9F89_4AA4_88F3_D325B1001825__INCLUDED_)

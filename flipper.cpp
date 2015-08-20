@@ -1,10 +1,76 @@
 #include "StdAfx.h"
 #include "forsyth.h"
+#include "meshes/flipperBase.h"
 #include "objloader.h"
 
-const int numIndices = 294+6;
-const int numFlipVerts=112;
+static const Vertex3Ds vertsTipBottom[13]=
+{
+	{ -0.101425f, 0.786319f, 0.003753f },
+	{ -0.097969f, 0.812569f, 0.003753f },
+	{ -0.087837f, 0.837031f, 0.003753f },
+	{ -0.071718f, 0.858037f, 0.003753f },
+	{ -0.050713f, 0.874155f, 0.003753f },
+	{ -0.026251f, 0.884288f, 0.003753f },
+	{ -0.000000f, 0.887744f, 0.003753f },
+	{  0.026251f, 0.884288f, 0.003753f },
+	{  0.050713f, 0.874155f, 0.003753f },
+	{  0.071718f, 0.858037f, 0.003753f },
+	{  0.087837f, 0.837031f, 0.003753f },
+	{  0.097969f, 0.812569f, 0.003753f },
+	{  0.101425f, 0.786319f, 0.003753f }
+};
 
+static const Vertex3Ds vertsTipTop[13] =
+{
+	{ -0.101425f, 0.786319f, 1.004253f },
+	{ -0.097969f, 0.812569f, 1.004253f },
+	{ -0.087837f, 0.837031f, 1.004253f },
+	{ -0.071718f, 0.858037f, 1.004253f },
+	{ -0.050713f, 0.874155f, 1.004253f },
+	{ -0.026251f, 0.884288f, 1.004253f },
+	{ -0.000000f, 0.887744f, 1.004253f },
+	{ 0.026251f, 0.884288f, 1.004253f },
+	{ 0.050713f, 0.874155f, 1.004253f },
+	{ 0.071718f, 0.858037f, 1.004253f },
+	{ 0.087837f, 0.837031f, 1.004253f },
+	{ 0.097969f, 0.812569f, 1.004253f },
+	{ 0.101425f, 0.786319f, 1.004253f }
+};
+
+static const Vertex3Ds vertsBaseBottom[13] =
+{
+	{ -0.100762f, -0.000000f, 0.003753f },
+	{ -0.097329f, -0.026079f, 0.003753f },
+	{ -0.087263f, -0.050381f, 0.003753f },
+	{ -0.071250f, -0.071250f, 0.003753f },
+	{ -0.050381f, -0.087263f, 0.003753f },
+	{ -0.026079f, -0.097329f, 0.003753f },
+	{ -0.000000f, -0.100762f, 0.003753f },
+	{  0.026079f, -0.097329f, 0.003753f },
+	{  0.050381f, -0.087263f, 0.003753f },
+	{  0.071250f, -0.071250f, 0.003753f },
+	{  0.087263f, -0.050381f, 0.003753f },
+	{  0.097329f, -0.026079f, 0.003753f },
+	{  0.100762f, -0.000000f, 0.003753f }
+};
+
+static const Vertex3Ds vertsBaseTop[13] =
+{
+	{ -0.100762f,  0.000000f, 1.004253f },
+	{ -0.097329f, -0.026079f, 1.004253f },
+	{ -0.087263f, -0.050381f, 1.004253f },
+	{ -0.071250f, -0.071250f, 1.004253f },
+	{ -0.050381f, -0.087263f, 1.004253f },
+	{ -0.026079f, -0.097329f, 1.004253f },
+	{ -0.000000f, -0.100762f, 1.004253f },
+	{  0.026079f, -0.097329f, 1.004253f },
+	{  0.050381f, -0.087263f, 1.004253f },
+	{  0.071250f, -0.071250f, 1.004253f },
+	{  0.087263f, -0.050381f, 1.004253f },
+	{  0.097329f, -0.026079f, 1.004253f },
+	{  0.100762f, -0.000000f, 1.004253f }
+};
+const int numIndices = 294;
 Flipper::Flipper()
 {
    m_phitflipper = NULL;
@@ -546,7 +612,6 @@ STDMETHODIMP Flipper::RotateToStart() // return to park
 
    return S_OK;
 }
-
 void Flipper::PostRenderStatic(RenderDevice* pd3dDevice)
 {
     TRACE_FUNCTION();
@@ -558,9 +623,22 @@ void Flipper::PostRenderStatic(RenderDevice* pd3dDevice)
     
     Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
-    Material *mat = m_ptable->GetMaterial( m_d.m_szMaterial);
+    Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
     pd3dDevice->basicShader->SetMaterial(mat);
-    pd3dDevice->basicShader->SetTechnique("basic_without_texture");
+
+    Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
+    if (pin)
+    {
+        pd3dDevice->basicShader->SetTechnique("basic_with_texture");
+        pd3dDevice->basicShader->SetTexture("Texture0", pin);
+        pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue / 255.0f);
+
+        //g_pplayer->m_pin3d.SetTextureFilter(0, TEXTURE_MODE_TRILINEAR);
+        // accomodate models with UV coords outside of [0,1]
+        //pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_WRAP);
+    }
+    else
+        pd3dDevice->basicShader->SetTechnique("basic_without_texture");
 
     pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
     pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
@@ -573,24 +651,21 @@ void Flipper::PostRenderStatic(RenderDevice* pd3dDevice)
     if ( m_phitflipper )
       matTemp.RotateZMatrix(m_phitflipper->m_flipperanim.m_angleCur);
     matTrafo.Multiply(matTemp, matTrafo);
-	g_pplayer->UpdateBasicShaderMatrix(matTrafo);
-    
-    // render flipper
+    g_pplayer->UpdateBasicShaderMatrix(matTrafo);
     pd3dDevice->basicShader->Begin(0);
-    pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, numFlipVerts, indexBuffer, 0, numIndices );
+    pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, flipperBaseVertices, indexBuffer, 0, flipperBaseNumFaces);
     pd3dDevice->basicShader->End();  
 
-    // render rubber
+	//render rubber
     if (m_d.m_rubberthickness > 0)
     {
        mat =  m_ptable->GetMaterial( m_d.m_szRubberMaterial );
        pd3dDevice->basicShader->SetMaterial(mat);
 
        pd3dDevice->basicShader->Begin(0);
-       pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, numFlipVerts, numFlipVerts, indexBuffer, 0, numIndices );
+       pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, flipperBaseVertices, flipperBaseVertices, indexBuffer, 0, flipperBaseNumFaces);
        pd3dDevice->basicShader->End();  
     }
-
     g_pplayer->UpdateBasicShaderMatrix();
 }
 
@@ -599,68 +674,19 @@ void Flipper::ExportMesh(FILE *f)
     char name[MAX_PATH];
     char subObjName[MAX_PATH];
     WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, MAX_PATH, NULL, NULL);
-
-    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_Center.x, m_d.m_Center.y);
-    const float anglerad = ANGTORAD(m_d.m_StartAngle);
-    const float anglerad2 = ANGTORAD(m_d.m_EndAngle);
-
-    // 18 + 3*14 + 3*14 + 6*16*2 = 294
-    // first 6 quads: top/front/back sides (no bottom)
-    // next 14 tris:  base top cap
-    // next 14 tris:  end top cap
-    // next 16 quads: base mantle
-    // next 16 quads: end mantle
-    static WORD idx[numIndices] = { 0, 1, 2, 0, 2, 3, 4, 5, 6, 4, 6, 7, 8, 9, 10, 8, 10, 11 };
-    for (int i = 0; i < 14; i++)
-    {
-        idx[18 + i * 3] = 12;
-        idx[18 + i * 3 + 1] = 12 + i + 1;
-        idx[18 + i * 3 + 2] = 12 + i + 2;
-
-        idx[60 + i * 3] = 60;
-        idx[60 + i * 3 + 1] = 60 + i + 1;
-        idx[60 + i * 3 + 2] = 60 + i + 2;
-    }
-
-    for (int i = 0; i < 16; i++)
-    {
-        const WORD o = 2 * i;
-
-        idx[102 + i * 6] = 28 + o;
-        idx[102 + i * 6 + 1] = 28 + (o + 1) % 32;
-        idx[102 + i * 6 + 2] = 28 + (o + 2) % 32;
-        idx[102 + i * 6 + 3] = 28 + (o + 1) % 32;
-        idx[102 + i * 6 + 4] = 28 + (o + 3) % 32;
-        idx[102 + i * 6 + 5] = 28 + (o + 2) % 32;
-
-        idx[102 + 96 + i * 6] = 76 + o;
-        idx[102 + 96 + i * 6 + 1] = 76 + (o + 1) % 32;
-        idx[102 + 96 + i * 6 + 2] = 76 + (o + 2) % 32;
-        idx[102 + 96 + i * 6 + 3] = 76 + (o + 1) % 32;
-        idx[102 + 96 + i * 6 + 4] = 76 + (o + 3) % 32;
-        idx[102 + 96 + i * 6 + 5] = 76 + (o + 2) % 32;
-    }
-	idx[294 + 0] = 108;
-	idx[294 + 1] = 108 + 1;
-	idx[294 + 2] = 108 + 2;
-	idx[294 + 3] = 108;
-	idx[294 + 4] = 108 + 2;
-	idx[294 + 5] = 108 + 3;
-	
-	// Render just the flipper (in standard position, angle=0)
-    Vertex3D_NoTex2 *baseFlipper = new Vertex3D_NoTex2[numFlipVerts];
-    RenderAtThickness(NULL, 0.0f, height, m_d.m_BaseRadius - (float)m_d.m_rubberthickness, m_d.m_EndRadius - (float)m_d.m_rubberthickness, m_d.m_height, baseFlipper);
-
     Matrix3D matTrafo, matTemp;
     matTrafo.SetIdentity();
     matTemp.SetIdentity();
     matTrafo._41 = m_d.m_Center.x;
     matTrafo._42 = m_d.m_Center.y;
-    matTemp.RotateZMatrix(m_d.m_StartAngle);
+    matTemp.RotateZMatrix(ANGTORAD(m_d.m_StartAngle));
     matTrafo.Multiply(matTemp, matTrafo);
+    
+    Vertex3D_NoTex2 *flipper = new Vertex3D_NoTex2[flipperBaseVertices*2];
+    GenerateBaseMesh(flipper);
 
-    Vertex3D_NoTex2 *buf = baseFlipper;
-    for (int i = 0; i < numFlipVerts; i++)
+    Vertex3D_NoTex2 *buf = flipper;
+    for (int i = 0; i < flipperBaseVertices; i++)
     {
         Vertex3Ds vert(buf[i].x, buf[i].y, buf[i].z);
         vert = matTrafo.MultiplyVector(vert);
@@ -673,27 +699,21 @@ void Flipper::ExportMesh(FILE *f)
         buf[i].nx = vert.x;
         buf[i].ny = vert.y;
         buf[i].nz = vert.z;
-        buf[i].tu = 0.0f;
-        buf[i].tv = 0.0f;
     }
 
     strcpy_s(subObjName, name);
     strcat_s(subObjName, "Base");
     WaveFrontObj_WriteObjectName(f, subObjName);
-    WaveFrontObj_WriteVertexInfo(f, baseFlipper, numFlipVerts);
+    WaveFrontObj_WriteVertexInfo(f, flipper, flipperBaseVertices);
     Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
     WaveFrontObj_WriteMaterial(m_d.m_szMaterial, NULL, mat);
     WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
-    WaveFrontObj_WriteFaceInfoList(f, idx, numIndices);
-    WaveFrontObj_UpdateFaceOffset(numFlipVerts);
-
-    // Render just the rubber.
-    if (m_d.m_rubberthickness > 0)
+    WaveFrontObj_WriteFaceInfoList(f, flipperBaseIndices, flipperBaseNumFaces);
+    WaveFrontObj_UpdateFaceOffset(flipperBaseVertices);
+    if (m_d.m_rubberthickness > 0.0f)
     {
-        Vertex3D_NoTex2 *rubber = new Vertex3D_NoTex2[numFlipVerts];
-        RenderAtThickness(NULL, 0.0f, height + (float)m_d.m_rubberheight, m_d.m_BaseRadius, m_d.m_EndRadius, (float)m_d.m_rubberwidth, rubber);
-        buf = rubber;
-        for (int i = 0; i < numFlipVerts; i++)
+        Vertex3D_NoTex2 *buf = &flipper[flipperBaseVertices];
+        for (int i = 0; i < flipperBaseVertices; i++)
         {
             Vertex3Ds vert(buf[i].x, buf[i].y, buf[i].z);
             vert = matTrafo.MultiplyVector(vert);
@@ -706,238 +726,156 @@ void Flipper::ExportMesh(FILE *f)
             buf[i].nx = vert.x;
             buf[i].ny = vert.y;
             buf[i].nz = vert.z;
-            buf[i].tu = 0.0f;
-            buf[i].tv = 0.0f;
         }
+
         strcpy_s(subObjName, name);
         strcat_s(subObjName, "Rubber");
         WaveFrontObj_WriteObjectName(f, subObjName);
-        WaveFrontObj_WriteVertexInfo(f, rubber, numFlipVerts);
+        WaveFrontObj_WriteVertexInfo(f, &flipper[flipperBaseVertices], flipperBaseVertices);
         mat = m_ptable->GetMaterial(m_d.m_szRubberMaterial);
         WaveFrontObj_WriteMaterial(m_d.m_szRubberMaterial, NULL, mat);
         WaveFrontObj_UseTexture(f, m_d.m_szRubberMaterial);
-        WaveFrontObj_WriteFaceInfoList(f, idx, numIndices);
-        WaveFrontObj_UpdateFaceOffset(numFlipVerts);
-        delete rubber;
+        WaveFrontObj_WriteFaceInfoList(f, flipperBaseIndices, flipperBaseNumFaces);
+        WaveFrontObj_UpdateFaceOffset(flipperBaseVertices);
     }
-    delete baseFlipper;
+    delete flipper;
+
+}
+
+void Flipper::GenerateBaseMesh(Vertex3D_NoTex2 *buf)
+{
+    #define TSCALE 10.0f
+    #define LSCALE 1.15f
+    
+    Matrix3D fullMatrix;
+
+    fullMatrix.RotateZMatrix(ANGTORAD(180.0f));
+
+	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_Center.x, m_d.m_Center.y);
+	const float baseScale = 10;
+	const float tipScale = TSCALE;
+	const float baseRadius = m_d.m_BaseRadius - m_d.m_rubberthickness;
+	const float endRadius = m_d.m_EndRadius - m_d.m_rubberthickness;
+	Vertex3D_NoTex2 *temp = new Vertex3D_NoTex2[flipperBaseVertices];
+
+    // scale the base and tip
+	memcpy(temp, flipperBaseMesh, sizeof(Vertex3D_NoTex2)*flipperBaseVertices);
+	for (int t = 0; t < 13; t++)
+	{
+		for (int i = 0; i < flipperBaseVertices; i++)
+		{
+			if (temp[i].x == vertsBaseBottom[t].x && temp[i].y == vertsBaseBottom[t].y && temp[i].z == vertsBaseBottom[t].z)
+			{
+				temp[i].x *= baseRadius*baseScale;
+				temp[i].y *= baseRadius*baseScale;
+			}
+			if (temp[i].x == vertsTipBottom[t].x && temp[i].y == vertsTipBottom[t].y && temp[i].z == vertsTipBottom[t].z)
+			{
+				temp[i].x *= endRadius * tipScale ;
+				temp[i].y *= endRadius+m_d.m_FlipperRadius*LSCALE;
+			}
+			if (temp[i].x == vertsBaseTop[t].x && temp[i].y == vertsBaseTop[t].y && temp[i].z == vertsBaseTop[t].z)
+			{
+				temp[i].x *= baseRadius*baseScale;
+				temp[i].y *= baseRadius*baseScale;
+			}
+			if (temp[i].x == vertsTipTop[t].x && temp[i].y == vertsTipTop[t].y && temp[i].z == vertsTipTop[t].z)
+			{
+				temp[i].x *= endRadius*tipScale;
+                temp[i].y *= endRadius + m_d.m_FlipperRadius*LSCALE;
+			}
+		}
+	}
+    for (int i = 0; i < flipperBaseVertices; i++)
+	{
+		Vertex3Ds vert(temp[i].x, temp[i].y, temp[i].z);
+		vert = fullMatrix.MultiplyVector(vert);
+
+		buf[i].x = vert.x;
+		buf[i].y = vert.y;
+		buf[i].z = vert.z*m_d.m_height*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + height;
+		vert = Vertex3Ds(flipperBaseMesh[i].nx, flipperBaseMesh[i].ny, flipperBaseMesh[i].nz);
+		vert = fullMatrix.MultiplyVectorNoTranslate(vert);
+		buf[i].nx = vert.x;
+		buf[i].ny = vert.y;
+		buf[i].nz = vert.z;
+		buf[i].tu = flipperBaseMesh[i].tu;
+		buf[i].tv = flipperBaseMesh[i].tv;
+	}
+
+    //rubber
+    if (m_d.m_rubberthickness > 0.0f)
+    {
+        const float rubberBaseScale = 10;
+        const float rubberTipScale = TSCALE;
+        memcpy(temp, flipperBaseMesh, sizeof(Vertex3D_NoTex2)*flipperBaseVertices);
+        for (int t = 0; t < 13; t++)
+        {
+            for (int i = 0; i < flipperBaseVertices; i++)
+            {
+                if (temp[i].x == vertsBaseBottom[t].x && temp[i].y == vertsBaseBottom[t].y && temp[i].z == vertsBaseBottom[t].z)
+                {
+                    temp[i].x *= m_d.m_BaseRadius*rubberBaseScale;
+                    temp[i].y *= m_d.m_BaseRadius*rubberBaseScale;
+                }
+                if (temp[i].x == vertsTipBottom[t].x && temp[i].y == vertsTipBottom[t].y && temp[i].z == vertsTipBottom[t].z)
+                {
+                    temp[i].x *= m_d.m_EndRadius * rubberTipScale;
+                    temp[i].y *= m_d.m_EndRadius + m_d.m_FlipperRadius*LSCALE;
+                }
+                if (temp[i].x == vertsBaseTop[t].x && temp[i].y == vertsBaseTop[t].y && temp[i].z == vertsBaseTop[t].z)
+                {
+                    temp[i].x *= m_d.m_BaseRadius*rubberBaseScale;
+                    temp[i].y *= m_d.m_BaseRadius*rubberBaseScale;
+                }
+                if (temp[i].x == vertsTipTop[t].x && temp[i].y == vertsTipTop[t].y && temp[i].z == vertsTipTop[t].z)
+                {
+                    temp[i].x *= m_d.m_EndRadius*rubberTipScale;
+                    temp[i].y *= m_d.m_EndRadius + m_d.m_FlipperRadius*LSCALE;
+                }
+            }
+        }
+
+        for (int i = 0; i < flipperBaseVertices; i++)
+        {
+            Vertex3Ds vert(temp[i].x, temp[i].y, temp[i].z);
+            vert = fullMatrix.MultiplyVector(vert);
+                
+            buf[i + flipperBaseVertices].x = vert.x;
+            buf[i + flipperBaseVertices].y = vert.y;
+            buf[i + flipperBaseVertices].z = vert.z*m_d.m_rubberwidth*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + height + m_d.m_rubberheight;
+            vert = Vertex3Ds(flipperBaseMesh[i].nx, flipperBaseMesh[i].ny, flipperBaseMesh[i].nz);
+            vert = fullMatrix.MultiplyVectorNoTranslate(vert);
+            buf[i + flipperBaseVertices].nx = vert.x;
+            buf[i + flipperBaseVertices].ny = vert.y;
+            buf[i + flipperBaseVertices].nz = vert.z;
+            buf[i + flipperBaseVertices].tu = flipperBaseMesh[i].tu;
+            buf[i + flipperBaseVertices].tv = flipperBaseMesh[i].tv+0.5f;
+        }
+    }
+
+	delete temp;
 }
 
 void Flipper::RenderSetup(RenderDevice* pd3dDevice)
 {
-    const unsigned long numVertices= numFlipVerts*2; //*2 for flipper plus rubber
-    // 12 + 16 + 32 + 16 + 32
-    _ASSERTE(m_phitflipper);
-    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-
-    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_Center.x, m_d.m_Center.y);
-
-    const float anglerad = ANGTORAD(m_d.m_StartAngle);
-    const float anglerad2 = ANGTORAD(m_d.m_EndAngle);
-
-    if (vertexBuffer)
-		vertexBuffer->release();
-    pd3dDevice->CreateVertexBuffer(numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer);
-
-    // 18 + 3*14 + 3*14 + 6*16*2 = 294
-    // first 6 quads: top/front/back sides (no bottom)
-    // next 14 tris:  base top cap
-    // next 14 tris:  end top cap
-    // next 16 quads: base mantle
-    // next 16 quads: end mantle
-    static WORD idx[numIndices]={0,1,2,0,2,3, 4,5,6,4,6,7, 8,9,10,8,10,11 };
-    for( int i=0;i<14;i++ )
-    {
-        idx[18 + i*3  ] = 12;
-        idx[18 + i*3+1] = 12+i+1;
-        idx[18 + i*3+2] = 12+i+2;
-
-        idx[60 + i*3  ] = 60;
-        idx[60 + i*3+1] = 60+i+1;
-        idx[60 + i*3+2] = 60+i+2;
-    }
-
-    for(int i=0;i<16;i++ )
-    {
-        const WORD o = 2 * i;
-
-        idx[102 + i*6  ] = 28 + o;
-        idx[102 + i*6+1] = 28 + (o+1)%32;
-        idx[102 + i*6+2] = 28 + (o+2)%32;
-        idx[102 + i*6+3] = 28 + (o+1)%32;
-        idx[102 + i*6+4] = 28 + (o+3)%32;
-        idx[102 + i*6+5] = 28 + (o+2)%32;
-
-        idx[102 + 96 + i*6  ] = 76 + o;
-        idx[102 + 96 + i*6+1] = 76 + (o+1)%32;
-        idx[102 + 96 + i*6+2] = 76 + (o+2)%32;
-        idx[102 + 96 + i*6+3] = 76 + (o+1)%32;
-        idx[102 + 96 + i*6+4] = 76 + (o+3)%32;
-        idx[102 + 96 + i*6+5] = 76 + (o+2)%32;
-    }
-	idx[294 + 0] = 108;
-	idx[294 + 1] = 108+1;
-	idx[294 + 2] = 108+2;
-	idx[294 + 3] = 108;
-	idx[294 + 4] = 108+2;
-	idx[294 + 5] = 108+3;
-
 	if (indexBuffer)
-        indexBuffer->release();
+		indexBuffer->release();
+	indexBuffer = pd3dDevice->CreateAndFillIndexBuffer(flipperBaseNumFaces, flipperBaseIndices);
 
-    indexBuffer = pd3dDevice->CreateAndFillIndexBuffer(numIndices, idx);
+	if (vertexBuffer)
+		vertexBuffer->release();
+	pd3dDevice->CreateVertexBuffer(flipperBaseVertices*2, 0, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer);
 
-    Vertex3D_NoTex2 *buf;
-    vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
-
-    // Render just the flipper (in standard position, angle=0)
-    RenderAtThickness(pd3dDevice, 0.0f, height, m_d.m_BaseRadius - (float)m_d.m_rubberthickness, m_d.m_EndRadius - (float)m_d.m_rubberthickness, m_d.m_height, buf);
-
-    // Render just the rubber.
-    if (m_d.m_rubberthickness > 0)
-        RenderAtThickness(pd3dDevice, 0.0f, height + (float)m_d.m_rubberheight, m_d.m_BaseRadius, m_d.m_EndRadius, (float)m_d.m_rubberwidth, buf+numFlipVerts);
-
-    vertexBuffer->unlock();
+	Vertex3D_NoTex2 *buf;
+	vertexBuffer->lock(0, 0, (void**)&buf, 0);
+	GenerateBaseMesh(buf);
+	vertexBuffer->unlock();
 }
 
 void Flipper::RenderStatic(RenderDevice* pd3dDevice)
 {
 }
-
-static const WORD rgiFlipper1[4] = {0,4,5,1};
-static const WORD rgiFlipper2[4] = {2,6,7,3};
-static const WORD rgi0123[4] = { 0, 1, 2, 3 };
-
-void Flipper::RenderAtThickness(RenderDevice* pd3dDevice, float angle, float height,
-                                float baseradius, float endradius, float flipperheight, Vertex3D_NoTex2* buf)
-{
-    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-
-    Vertex2D vendcenter;
-    Vertex2D rgv[4];
-    SetVertices(0.0f, 0.0f, angle, &vendcenter, rgv, baseradius, endradius);
-	Vertex3D_NoTex2 bottomRgv[4];
-    Vertex3D_NoTex2 rgv3D[32];
-    for (int l=0;l<8;l++)
-    {
-        rgv3D[l].x = rgv[l&3].x;
-        rgv3D[l].y = rgv[l&3].y;
-        rgv3D[l].z = (l<4) ? height + flipperheight + 0.1f : height; // Make flippers a bit taller so they draw above walls
-        rgv3D[l].z *= m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
-    }
-
-    unsigned long offset = 0;
-
-    SetNormal<Vertex3D_NoTex2,WORD>(rgv3D, rgi0123, 3, NULL, NULL, 4);
-    // Draw top.
-    buf[offset    ] = rgv3D[0];
-    buf[offset + 1] = rgv3D[1];
-    buf[offset + 2] = rgv3D[2];
-    buf[offset + 3] = rgv3D[3];
-    offset+=4;
-    SetNormal<Vertex3D_NoTex2,WORD>(rgv3D, rgiFlipper1, 3, NULL, NULL, 4);
-    // Draw front side wall.
-    buf[offset    ] = rgv3D[0];
-    buf[offset + 1] = rgv3D[4];
-    buf[offset + 2] = rgv3D[5];
-    buf[offset + 3] = rgv3D[1];
-    offset+=4;
-    SetNormal<Vertex3D_NoTex2,WORD>(rgv3D, rgiFlipper2, 3, NULL, NULL, 4);
-    // Draw back side wall.
-    buf[offset    ] = rgv3D[2];
-    buf[offset + 1] = rgv3D[6];
-    buf[offset + 2] = rgv3D[7];
-    buf[offset + 3] = rgv3D[3];
-    offset+=4;
-	memcpy(bottomRgv, &rgv3D[4], 4 * sizeof(Vertex3D_NoTex2));
-	SetNormal<Vertex3D_NoTex2, WORD>(bottomRgv, rgi0123, 3, NULL, NULL, 4);
-
-    // offset = 12
-
-    // Base circle
-    for (int l=0;l<16;l++)
-    {
-        const float anglel = (float)(M_PI*2.0/16.0)*(float)l;
-        rgv3D[l].x = /*m_d.m_Center.x*/ + sinf(anglel)*baseradius;
-        rgv3D[l].y = /*m_d.m_Center.y*/ - cosf(anglel)*baseradius;
-        rgv3D[l].z = height + flipperheight + 0.1f;
-        rgv3D[l].z *= m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
-        rgv3D[l+16].x = rgv3D[l].x;
-        rgv3D[l+16].y = rgv3D[l].y;
-        rgv3D[l+16].z = height;
-        rgv3D[l+16].z *= m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
-    }
-
-    // Draw end caps of cylinders of large ends.
-    WORD endCapsIndex[3*14];
-    for (int l=0;l<14;l++)
-    {
-        endCapsIndex[l*3  ] = 0;
-        endCapsIndex[l*3+1] = l+1;
-        endCapsIndex[l*3+2] = l+2;
-        SetNormal(rgv3D, endCapsIndex+l*3, 3);
-    }
-    memcpy( &buf[offset], rgv3D, sizeof(Vertex3D_NoTex2)*16 );
-    offset += 16;
-
-    // offset = 28
-
-    // Draw vertical cylinders at large end of flipper.
-    for (int l=0; l<16; l++)
-    {
-        // set normal according to cylinder surface
-        const float anglel = (float)(M_PI*2.0/16.0)*(float)l;
-        rgv3D[l].nx = rgv3D[l+16].nx = +sinf(anglel);
-        rgv3D[l].ny = rgv3D[l+16].ny = -cosf(anglel);
-        rgv3D[l].nz = rgv3D[l+16].nz = 0.0f;
-
-        buf[offset] = rgv3D[l];
-        buf[offset+1] = rgv3D[l+16];
-        offset += 2;
-    }
-
-    // offset = 60
-    // End circle.
-    for (int l=0;l<16;l++)
-    {
-        const float anglel = (float)(M_PI*2.0/16.0)*(float)l;
-        rgv3D[l].x = vendcenter.x + sinf(anglel)*endradius;
-        rgv3D[l].y = vendcenter.y - cosf(anglel)*endradius;
-        rgv3D[l].z = height + flipperheight + 0.1f;
-        rgv3D[l].z *= m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
-        rgv3D[l+16].x = rgv3D[l].x;
-        rgv3D[l+16].y = rgv3D[l].y;
-        rgv3D[l+16].z = height;
-        rgv3D[l+16].z *= m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
-    }
-
-    // Draw end caps to vertical cylinder at small end.
-    for (int l=0;l<14;l++)
-        SetNormal(rgv3D, endCapsIndex+l*3, 3);
-
-	memcpy(&buf[offset], rgv3D, sizeof(Vertex3D_NoTex2) * 16);
-	offset += 16;
-
-    // offset = 76
-
-    // Draw vertical cylinders at small end.
-    for (int l=0;l<16;l++)
-    {
-        const float anglel = (float)(M_PI*2.0/16.0)*(float)l;
-        rgv3D[l].nx = rgv3D[l+16].nx = +sinf(anglel);
-        rgv3D[l].ny = rgv3D[l+16].ny = -cosf(anglel);
-        rgv3D[l].nz = rgv3D[l+16].nz = 0.0f;
-
-        buf[offset] = rgv3D[l];
-        buf[offset+1] = rgv3D[l+16];
-        offset += 2;
-    }
-    // offset = 108
-	memcpy(&buf[offset], bottomRgv, sizeof(Vertex3D_NoTex2) * 4);
-	offset += 4;
-	//offset = 112;
-}
-
 
 HRESULT Flipper::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
 {
@@ -971,6 +909,8 @@ HRESULT Flipper::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
    bw.WriteBool(FID(ENBL), m_d.m_fEnabled);
    bw.WriteFloat(FID(FRMN), m_d.m_FlipperRadiusMin);		
    bw.WriteFloat(FID(FHGT), m_d.m_height);
+   bw.WriteString(FID(IMAG), m_d.m_szImage);
+
 
    ISelect::SaveData(pstm, hcrypthash, hcryptkey);
 
@@ -1111,6 +1051,10 @@ BOOL Flipper::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(ENBL))
    {
       pbr->GetBool(&m_d.m_fEnabled);
+   }
+   else if (id == FID(IMAG))
+   {
+       pbr->GetString(m_d.m_szImage);
    }
    else
    {
@@ -1674,4 +1618,25 @@ STDMETHODIMP Flipper::put_FlipperRadiusMin(float newVal)
    STOPUNDO
 
    return S_OK;
+}
+
+STDMETHODIMP Flipper::get_Image(BSTR *pVal)
+{
+    WCHAR wz[512];
+
+    MultiByteToWideChar(CP_ACP, 0, m_d.m_szImage, -1, wz, 32);
+    *pVal = SysAllocString(wz);
+
+    return S_OK;
+}
+
+STDMETHODIMP Flipper::put_Image(BSTR newVal)
+{
+    STARTUNDO
+
+        WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szImage, 32, NULL, NULL);
+
+    STOPUNDO
+
+        return S_OK;
 }
