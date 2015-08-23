@@ -86,6 +86,7 @@ Primitive::Primitive()
    m_d.m_depthBias = 0.0f;
    m_d.m_fSkipRendering = false;
    m_d.m_fGroupdRendering = false;
+   m_d.m_fReflectionEnabled = true;
    m_numGroupIndices = 0;
    m_numGroupVertices = 0;
 
@@ -265,6 +266,7 @@ void Primitive::SetDefaults(bool fromMouseClick)
    m_d.m_fCollidable = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "Collidable", true) : true;
    m_d.m_fToy = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "IsToy", false) : false;
    m_d.m_fDisableLighting = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "DisableLighting", false) : false;
+   m_d.m_fReflectionEnabled = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "ReflectionEnabled", true) : true;
 }
 
 void Primitive::WriteRegDefaults()
@@ -306,6 +308,7 @@ void Primitive::WriteRegDefaults()
    SetRegValueBool(strKeyName, "Collidable", m_d.m_fCollidable);
    SetRegValueBool(strKeyName, "IsToy", m_d.m_fToy);
    SetRegValueBool(strKeyName, "DisableLighting", m_d.m_fDisableLighting);
+   SetRegValueBool(strKeyName, "ReflectionEnabled", m_d.m_fReflectionEnabled);
 }
 
 void Primitive::GetTimers(Vector<HitTimer> * const pvht)
@@ -913,6 +916,9 @@ void Primitive::RenderStatic(RenderDevice* pd3dDevice)
 {
    if (m_d.m_staticRendering && m_d.m_fVisible)
    {
+      if (m_ptable->m_fReflectionEnabled && !m_d.m_fReflectionEnabled)
+         return;
+
       RenderObject(pd3dDevice);
    }
 }
@@ -994,6 +1000,7 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcry
    bw.WriteBool(FID(U3DM), m_d.m_use3DMesh);
    bw.WriteBool(FID(STRE), m_d.m_staticRendering);
    bw.WriteBool(FID(DILI), m_d.m_fDisableLighting);
+   bw.WriteBool(FID(REEN), m_d.m_fReflectionEnabled);
    if (m_d.m_use3DMesh)
    {
       bw.WriteString(FID(M3DN), m_d.m_meshFileName);
@@ -1163,6 +1170,10 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(TVIS))
    {
       pbr->GetBool(&m_d.m_fVisible);
+   }
+   else if (id == FID(REEN))
+   {
+      pbr->GetBool(&m_d.m_fReflectionEnabled);
    }
    else if (id == FID(DTXI))
    {
@@ -2434,6 +2445,24 @@ STDMETHODIMP Primitive::put_DisableLighting(VARIANT_BOOL newVal)
     STOPUNDO
 
         return S_OK;
+}
+
+STDMETHODIMP Primitive::get_ReflectionEnabled(VARIANT_BOOL *pVal)
+{
+   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fReflectionEnabled);
+
+   return S_OK;
+}
+
+STDMETHODIMP Primitive::put_ReflectionEnabled(VARIANT_BOOL newVal)
+{
+   STARTUNDO
+
+      m_d.m_fReflectionEnabled = VBTOF(newVal);
+
+   STOPUNDO
+
+      return S_OK;
 }
 
 void Primitive::GetDialogPanes(Vector<PropertyPane> *pvproppane)

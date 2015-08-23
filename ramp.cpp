@@ -104,6 +104,7 @@ void Ramp::SetDefaults(bool fromMouseClick)
 
    m_d.m_fVisible = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"Visible", true) : true;
    m_d.m_fCollidable = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"Collidable", true) : true;
+   m_d.m_fReflectionEnabled = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "ReflectionEnabled", true) : true;
 
    m_d.m_wireDiameter = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"WireDiameter", 8.0f) : 8.0f;
    m_d.m_wireDistanceX = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"WireDistanceX", 38.0f) : 38.0f;
@@ -132,8 +133,9 @@ void Ramp::WriteRegDefaults()
    SetRegValueFloat(strKeyName,"Friction", m_d.m_friction);
    SetRegValueFloat(strKeyName,"Scatter", m_d.m_scatter);
    SetRegValueBool(strKeyName,"Collidable",m_d.m_fCollidable);
-   SetRegValueBool(strKeyName,"Visible",m_d.m_fVisible);
-   SetRegValueFloat(strKeyName,"WireDiameter", m_d.m_wireDiameter);
+   SetRegValueBool(strKeyName, "Visible", m_d.m_fVisible);
+   SetRegValueBool(strKeyName, "ReflectionEnabled", m_d.m_fReflectionEnabled);
+   SetRegValueFloat(strKeyName, "WireDiameter", m_d.m_wireDiameter);
    SetRegValueFloat(strKeyName,"WireDistanceX", m_d.m_wireDistanceX);
    SetRegValueFloat(strKeyName,"WireDistanceY", m_d.m_wireDistanceY);
 }
@@ -1192,7 +1194,10 @@ void Ramp::RenderStatic(RenderDevice* pd3dDevice)
    // return if not Visible
    if (!m_d.m_fVisible)
 	   return;
-   
+
+   if (m_ptable->m_fReflectionEnabled && !m_d.m_fReflectionEnabled)
+      return;
+
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
 
    // dont render alpha shaded ramps into static buffer, these are done per frame later-on
@@ -1264,6 +1269,7 @@ HRESULT Ramp::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey
    bw.WriteFloat(FID(RADI), m_d.m_wireDiameter);
    bw.WriteFloat(FID(RADX), m_d.m_wireDistanceX);
    bw.WriteFloat(FID(RADY), m_d.m_wireDistanceY);
+   bw.WriteBool(FID(REEN), m_d.m_fReflectionEnabled);
 
    ISelect::SaveData(pstm, hcrypthash, hcryptkey);
 
@@ -1378,6 +1384,10 @@ BOOL Ramp::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(RVIS))
    {
       pbr->GetBool(&m_d.m_fVisible);
+   }
+   else if (id == FID(REEN))
+   {
+      pbr->GetBool(&m_d.m_fReflectionEnabled);
    }
    else if (id == FID(RADB))
    {
@@ -1923,18 +1933,34 @@ STDMETHODIMP Ramp::put_Collidable(VARIANT_BOOL newVal)
 
 STDMETHODIMP Ramp::get_Visible(VARIANT_BOOL *pVal)
 {
-	*pVal = (VARIANT_BOOL)FTOVB(m_d.m_fVisible);
+   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fVisible);
 
-	return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Ramp::put_Visible(VARIANT_BOOL newVal)
 {
-	STARTUNDO
-	m_d.m_fVisible = VBTOF(newVal);
-	STOPUNDO
+   STARTUNDO
+      m_d.m_fVisible = VBTOF(newVal);
+   STOPUNDO
 
-	return S_OK;
+      return S_OK;
+}
+
+STDMETHODIMP Ramp::get_ReflectionEnabled(VARIANT_BOOL *pVal)
+{
+   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fReflectionEnabled);
+
+   return S_OK;
+}
+
+STDMETHODIMP Ramp::put_ReflectionEnabled(VARIANT_BOOL newVal)
+{
+   STARTUNDO
+      m_d.m_fReflectionEnabled = VBTOF(newVal);
+   STOPUNDO
+
+      return S_OK;
 }
 
 STDMETHODIMP Ramp::get_DepthBias(float *pVal)

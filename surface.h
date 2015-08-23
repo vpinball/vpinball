@@ -36,7 +36,8 @@ public:
     //bool m_fUseOneVBuffer;
 	bool m_fVisible;
 	bool m_fHitEvent;
-
+   bool m_fReflectionEnabled;
+   
 	bool m_fInner; //!! Deprecated, do not use! Always true after loading! (was: Inside or outside wall)
 };
 
@@ -219,6 +220,8 @@ public:
     STDMETHOD(put_Collidable)(/*[in]*/ VARIANT_BOOL newVal);
     STDMETHOD(get_DisableLighting)(/*[out, retval]*/ VARIANT_BOOL *pVal);
     STDMETHOD(put_DisableLighting)(/*[in]*/ VARIANT_BOOL newVal);
+    STDMETHOD(get_ReflectionEnabled)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+    STDMETHOD(put_ReflectionEnabled)(/*[in]*/ VARIANT_BOOL newVal);
 
 	STDMETHOD (get_SlingshotThreshold)(/*[out, retval]*/ float *pVal);
 	STDMETHOD (put_SlingshotThreshold)(/*[in]*/ float newVal);

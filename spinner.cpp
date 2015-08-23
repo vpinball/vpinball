@@ -70,6 +70,7 @@ void Spinner::WriteRegDefaults()
    SetRegValue("DefaultProps\\Spinner","TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval, 4);
    SetRegValue("DefaultProps\\Spinner","Image", REG_SZ, &m_d.m_szImage,lstrlen(m_d.m_szImage));
    SetRegValue("DefaultProps\\Spinner","Surface", REG_SZ, &m_d.m_szSurface,lstrlen(m_d.m_szSurface));
+   SetRegValue("DefaultProps\\Spinner", "ReflectionEnabled", REG_DWORD, &m_d.m_fReflectionEnabled, 4);
 }
 
 void Spinner::SetDefaults(bool fromMouseClick)
@@ -130,7 +131,13 @@ void Spinner::SetDefaults(bool fromMouseClick)
    else
       m_d.m_fVisible = true;
 
-   hr = GetRegInt("DefaultProps\\Spinner","TimerEnabled", &iTmp);
+   hr = GetRegInt("DefaultProps\\Spinner", "ReflectionEnabled", &iTmp);
+   if ((hr == S_OK) && fromMouseClick)
+      m_d.m_fReflectionEnabled = iTmp == 0 ? false : true;
+   else
+      m_d.m_fReflectionEnabled = true;
+
+   hr = GetRegInt("DefaultProps\\Spinner", "TimerEnabled", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? false : true;
    else
@@ -411,7 +418,11 @@ void Spinner::RenderSetup(RenderDevice* pd3dDevice)
 
 void Spinner::RenderStatic(RenderDevice* pd3dDevice)
 {
-   if(!m_d.m_fShowBracket || !m_d.m_fVisible) return;
+   if(!m_d.m_fShowBracket || !m_d.m_fVisible) 
+      return;
+
+   if (m_ptable->m_fReflectionEnabled && !m_d.m_fReflectionEnabled)
+      return;
 
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
@@ -940,6 +951,23 @@ STDMETHODIMP Spinner::put_Visible(VARIANT_BOOL newVal)
    }
 
    return S_OK;
+}
+
+STDMETHODIMP Spinner::get_ReflectionEnabled(VARIANT_BOOL *pVal)
+{
+   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fReflectionEnabled);
+
+   return S_OK;
+}
+
+
+STDMETHODIMP Spinner::put_ReflectionEnabled(VARIANT_BOOL newVal)
+{
+   STARTUNDO
+      m_d.m_fReflectionEnabled = VBTOF(newVal);
+   STOPUNDO
+
+      return S_OK;
 }
 
 STDMETHODIMP Spinner::get_CurrentAngle(float *pVal)

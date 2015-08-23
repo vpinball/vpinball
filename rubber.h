@@ -28,6 +28,7 @@ public:
 
 	bool m_fCollidable;
 	bool m_fVisible;
+   bool m_fReflectionEnabled;
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -190,6 +191,8 @@ public:
     STDMETHOD(put_RotY)(/*[in]*/ float newVal);
     STDMETHOD(get_RotZ)(/*[out, retval]*/ float *pVal);
     STDMETHOD(put_RotZ)(/*[in]*/ float newVal);
+    STDMETHOD(get_ReflectionEnabled)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+    STDMETHOD(put_ReflectionEnabled)(/*[in]*/ VARIANT_BOOL newVal);
 };
 
 #endif // !defined(AFX_RAMP_H__5EFEDEFB_5504_430A_B000_9B6D1903E3FC__INCLUDED_)

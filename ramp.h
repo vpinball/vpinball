@@ -35,6 +35,7 @@ public:
 	bool m_fCollidable;
 	bool m_fVisible;
 	bool m_fImageWalls;
+   bool m_fReflectionEnabled;
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -215,8 +216,10 @@ public:
 
 	STDMETHOD(get_Collidable)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_Collidable)(/*[in]*/ VARIANT_BOOL newVal);
-	STDMETHOD(get_Visible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-	STDMETHOD(put_Visible)(/*[in]*/ VARIANT_BOOL newVal);
+   STDMETHOD(get_Visible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   STDMETHOD(put_Visible)(/*[in]*/ VARIANT_BOOL newVal);
+   STDMETHOD(get_ReflectionEnabled)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   STDMETHOD(put_ReflectionEnabled)(/*[in]*/ VARIANT_BOOL newVal);
 
     STDMETHOD(get_Friction)(/*[out, retval]*/ float *pVal);
 	STDMETHOD(put_Friction)(/*[in]*/ float newVal);

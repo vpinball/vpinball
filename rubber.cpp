@@ -86,6 +86,8 @@ void Rubber::SetDefaults(bool fromMouseClick)
    m_d.m_rotX = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName,"RotX", 0.0f) : 0.0f;
    m_d.m_rotY = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "RotY", 0.0f) : 0.0f;
    m_d.m_rotZ = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "RotZ", 0.0f) : 0.0f;
+
+   m_d.m_fReflectionEnabled = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "ReflectionEnabled", true) : true;
 }
 
 void Rubber::WriteRegDefaults()
@@ -109,6 +111,7 @@ void Rubber::WriteRegDefaults()
    SetRegValueFloat(strKeyName, "RotX", m_d.m_rotX);
    SetRegValueFloat(strKeyName, "RotY", m_d.m_rotY);
    SetRegValueFloat(strKeyName, "RotZ", m_d.m_rotZ);
+   SetRegValueBool(strKeyName, "ReflectionEnabled", m_d.m_fReflectionEnabled);
 }
 
 void Rubber::GetPointDialogPanes(Vector<PropertyPane> *pvproppane)
@@ -595,6 +598,9 @@ void Rubber::RenderStatic(RenderDevice* pd3dDevice)
 {	
    if( m_d.m_staticRendering )
    {
+      if (m_ptable->m_fReflectionEnabled && !m_d.m_fReflectionEnabled)
+         return;
+
       RenderObject(pd3dDevice);
    }
 }
@@ -645,6 +651,7 @@ HRESULT Rubber::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptk
    bw.WriteFloat(FID(ROTX), m_d.m_rotX);
    bw.WriteFloat(FID(ROTY), m_d.m_rotY);
    bw.WriteFloat(FID(ROTZ), m_d.m_rotZ);
+   bw.WriteBool(FID(REEN), m_d.m_fReflectionEnabled);
 
    ISelect::SaveData(pstm, hcrypthash, hcryptkey);
 
@@ -731,6 +738,10 @@ BOOL Rubber::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(RVIS))
    {
       pbr->GetBool(&m_d.m_fVisible);
+   }
+   else if (id == FID(REEN))
+   {
+      pbr->GetBool(&m_d.m_fReflectionEnabled);
    }
    else if (id == FID(ESTR))
    {
@@ -1166,6 +1177,24 @@ STDMETHODIMP Rubber::put_EnableShowInEditor(VARIANT_BOOL newVal)
     STOPUNDO
 
         return S_OK;
+}
+
+STDMETHODIMP Rubber::get_ReflectionEnabled(VARIANT_BOOL *pVal)
+{
+   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fReflectionEnabled);
+
+   return S_OK;
+}
+
+STDMETHODIMP Rubber::put_ReflectionEnabled(VARIANT_BOOL newVal)
+{
+   STARTUNDO
+
+      m_d.m_fReflectionEnabled = VBTOF(newVal);
+
+   STOPUNDO
+
+      return S_OK;
 }
 
 STDMETHODIMP Rubber::get_RotX(float *pVal)

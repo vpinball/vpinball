@@ -160,7 +160,7 @@ TimerInterval(int)
 UserValue(any)
 *CapVisible(bool) - default=true
 *BaseVisible(bool) - default=true
-
+*ReflectionEnabled(bool) - default=true
 
 DECAL
 ==============================================================================================================================================
@@ -480,6 +480,8 @@ Scatter(float)
                It overwrites the Collidable-flag and can't be used from within the script.
                This option is useful if you have real toys or static primitives which are never hitable at all
                and are just there for the 'looks'.
+*ReflectionEnabled(bool) - default=true
+
 
 RAMP
 ==============================================================================================================================================
@@ -506,6 +508,7 @@ Collidable(bool)
 Visible(bool)
 Friction(float)
 Scatter(float)
+*ReflectionEnabled(bool) - default=true
 
 
 SPINNER
@@ -534,6 +537,7 @@ UserValue(any)
 Elasticity(float)
 *Visible(bool)
 CurrentAngle(float) - only readable
+*ReflectionEnabled(bool) - default=true
 
 TRIGGER
 ==============================================================================================================================================
@@ -598,6 +602,7 @@ SlingshotThreshold(float)
 *FlipbookAnimation(bool)
 Friction(float)
 Scatter(float)
+*ReflectionEnabled(bool) - default=true
 
 FLASHER
 ==============================================================================================================================================
@@ -665,3 +670,4 @@ RotY(float)                 - angle to rotate the whole rubber around the Y axis
 RotZ(float)                 - angle to rotate the whole rubber around the Z axis 
 *EnableShowInEditor(bool)   - if set one cannot adjust the control points of the rubber but the 
                               rotation angles are applied to the rubber mesh in the editor.
+*ReflectionEnabled(bool)    - default=true

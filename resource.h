@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Visual C++ generated include file.
-// Used by vpinball_eng.rc
+// Von Microsoft Visual C++ generierte Includedatei.
+// Verwendet durch vpinball_eng.rc
 //
 #define VP_VERSION_MINOR                0
 #define VP_VERSION_REV                  0
@@ -635,6 +635,10 @@
 #define IDC_CONVERT_COORD_CHECK         431
 #define IDC_LEGACYMODE                  431
 #define IDC_REFLECT_ELEMENTS_CHECK      431
+#define IDC_RAMP_REFLECT_ENABLED_CHECK  431
+#define IDC_BUMPER_REFLECT_ENABLED_CHECK 431
+#define IDC_SPINNER_REFLECT_ENABLED_CHECJ 431
+#define IDC_SPINNER_REFLECT_ENABLED_CHECK 431
 #define IDC_LIGHT_FALLOFF_POWER         432
 #define IDC_MODULATE_VS_ADD             433
 #define IDC_INTENSITY_SCALE_LIGHT       434
@@ -684,8 +688,11 @@
 #define IDC_ABS_POSITION_RADIO          478
 #define IDC_CHECK3                      479
 #define IDC_CENTER_MESH                 479
+#define IDC_RUBBER_REFLECT_ENABLED_CHECK 479
 #define IDC_IMPORT_MATERIAL             480
 #define IDC_COLLISION_REDUCTION_FACTOR  481
+#define IDC_PRIM_REFLECT_ENABLE_CHECK   483
+#define IDC_WALL_REFLECT_ENABLED_CHECK  484
 #define IDC_JOYLFLIPCOMBO               501
 #define IDC_JOYRFLIPCOMBO               502
 #define IDC_JOYPLUNGERCOMBO             503
@@ -902,7 +909,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        620
 #define _APS_NEXT_COMMAND_VALUE         33003
-#define _APS_NEXT_CONTROL_VALUE         482
+#define _APS_NEXT_CONTROL_VALUE         485
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif
