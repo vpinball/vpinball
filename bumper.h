@@ -25,6 +25,7 @@ public:
 	char m_szSurface[MAXTOKEN];
 	bool m_fCapVisible;
 	bool m_fBaseVisible;
+	bool m_fReflectionEnabled;
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -167,6 +168,8 @@ public:
 	STDMETHOD(put_CapVisible)(/*[in]*/ VARIANT_BOOL newVal);
 	STDMETHOD(get_BaseVisible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 	STDMETHOD(put_BaseVisible)(/*[in]*/ VARIANT_BOOL newVal);
+	STDMETHOD(get_ReflectionEnabled)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   STDMETHOD(put_ReflectionEnabled)(/*[in]*/ VARIANT_BOOL newVal);
 };
 
 #endif // !defined(AFX_BUMPER_H__9A202FF0_7FAE_49BF_AA4C_C01C692E6DD9__INCLUDED_)

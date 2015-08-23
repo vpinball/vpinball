@@ -137,6 +137,13 @@ void Bumper::SetDefaults(bool fromMouseClick)
       m_d.m_fBaseVisible = iTmp == 0 ? false : true;
    else
       m_d.m_fBaseVisible = true;
+
+   hr = GetRegInt("DefaultProps\\Bumper", "ReflectionEnabled", &iTmp);
+   if ((hr == S_OK) && fromMouseClick)
+      m_d.m_fReflectionEnabled= iTmp == 0 ? false : true;
+   else
+      m_d.m_fReflectionEnabled = true;
+
 }
 
 void Bumper::WriteRegDefaults()
@@ -149,8 +156,9 @@ void Bumper::WriteRegDefaults()
    SetRegValueFloat("DefaultProps\\Bumper","Threshold", m_d.m_threshold);
    SetRegValueBool("DefaultProps\\Bumper","TimerEnabled", m_d.m_tdr.m_fTimerEnabled);	
    SetRegValueInt("DefaultProps\\Bumper","TimerInterval", m_d.m_tdr.m_TimerInterval);	
-   SetRegValueBool("DefaultProps\\Bumper","CapVisible", m_d.m_fCapVisible);	
-   SetRegValueInt("DefaultProps\\Bumper","BaseVisible", m_d.m_fBaseVisible);	
+   SetRegValueInt("DefaultProps\\Bumper", "CapVisible", m_d.m_fCapVisible);
+   SetRegValueInt("DefaultProps\\Bumper", "BaseVisible", m_d.m_fBaseVisible);
+   SetRegValueInt("DefaultProps\\Bumper", "ReflectionEnabled", m_d.m_fReflectionEnabled);
    SetRegValue("DefaultProps\\Bumper", "Surface", REG_SZ, &m_d.m_szSurface, lstrlen(m_d.m_szSurface));
 }
 
@@ -714,6 +722,9 @@ void Bumper::RenderSetup(RenderDevice* pd3dDevice )
 
 void Bumper::RenderStatic(RenderDevice* pd3dDevice)
 {
+   if (m_ptable->m_fReflectionEnabled && !m_d.m_fReflectionEnabled)
+      return;
+
    if (m_d.m_fBaseVisible)
    {
       pd3dDevice->basicShader->SetTechnique("basic_with_texture");
@@ -787,6 +798,7 @@ HRESULT Bumper::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptk
 
    bw.WriteBool(FID(CAVI), m_d.m_fCapVisible);
    bw.WriteBool(FID(BSVS), m_d.m_fBaseVisible);
+   bw.WriteBool(FID(REEN), m_d.m_fReflectionEnabled);
 
    ISelect::SaveData(pstm, hcrypthash, hcryptkey);
 
@@ -885,6 +897,10 @@ BOOL Bumper::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(BSVS))
    {
       pbr->GetBool(&m_d.m_fBaseVisible);
+   }
+   else if (id == FID(REEN))
+   {
+      pbr->GetBool(&m_d.m_fReflectionEnabled);
    }
    else
    {
@@ -1192,6 +1208,22 @@ STDMETHODIMP Bumper::put_BaseVisible(VARIANT_BOOL newVal)
    STOPUNDO
 
    return S_OK;
+}
+
+STDMETHODIMP Bumper::get_ReflectionEnabled(VARIANT_BOOL *pVal)
+{
+	*pVal = (VARIANT_BOOL)FTOVB(m_d.m_fReflectionEnabled);
+
+	return S_OK;
+}
+
+STDMETHODIMP Bumper::put_ReflectionEnabled(VARIANT_BOOL newVal)
+{
+	STARTUNDO
+		m_d.m_fReflectionEnabled = VBTOF(newVal);
+	STOPUNDO
+
+		return S_OK;
 }
 
 void Bumper::UpdatePropertyPanes()

@@ -121,7 +121,8 @@ void Surface::WriteRegDefaults()
    SetRegValueBool(strKeyName,"Visible", m_d.m_fVisible);
    SetRegValueBool(strKeyName,"SideVisible", m_d.m_fSideVisible);
    SetRegValueBool(strKeyName,"Collidable", m_d.m_fCollidable);
-   SetRegValueBool(strKeyName,"DisableLighting", m_d.m_fDisableLighting);
+   SetRegValueBool(strKeyName, "DisableLighting", m_d.m_fDisableLighting);
+   SetRegValueBool(strKeyName, "ReflectionEnabled", m_d.m_fReflectionEnabled);
 }
 
 
@@ -252,7 +253,8 @@ void Surface::SetDefaults(bool fromMouseClick)
    m_d.m_fVisible = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"Visible", true) : true;
    m_d.m_fSideVisible = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"SideVisible", true) : true;
    m_d.m_fCollidable = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"Collidable", true) : true;
-   m_d.m_fDisableLighting = fromMouseClick ? GetRegBoolWithDefault(strKeyName,"DisableLighting", false) : false;
+   m_d.m_fDisableLighting = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "DisableLighting", false) : false;
+   m_d.m_fReflectionEnabled= fromMouseClick ? GetRegBoolWithDefault(strKeyName, "ReflectionEnabled", true) : true;
 }
 
 
@@ -1002,6 +1004,9 @@ void Surface::FreeBuffers()
 
 void Surface::RenderStatic(RenderDevice* pd3dDevice)
 {
+   if (m_ptable->m_fReflectionEnabled && !m_d.m_fReflectionEnabled)
+      return;
+
    RenderSlingshots(pd3dDevice);
    if (!m_d.m_fDroppable && !m_isDynamic)
        RenderWallsAtHeight(pd3dDevice, false);
@@ -1252,6 +1257,7 @@ HRESULT Surface::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
    bw.WriteBool(FID(SLGA), m_d.m_fSlingshotAnimation);
    bw.WriteBool(FID(SVBL), m_d.m_fSideVisible);
    bw.WriteBool(FID(DILI), m_d.m_fDisableLighting);
+   bw.WriteBool(FID(REEN), m_d.m_fReflectionEnabled);
 
    ISelect::SaveData(pstm, hcrypthash, hcryptkey);
 
@@ -1476,6 +1482,10 @@ BOOL Surface::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(SVBL))
    {
       pbr->GetBool(&m_d.m_fSideVisible);
+   }
+   else if (id == FID(REEN))
+   {
+      pbr->GetBool(&m_d.m_fReflectionEnabled);
    }
    else
    {
@@ -2010,20 +2020,38 @@ STDMETHODIMP Surface::put_SlingshotAnimation(VARIANT_BOOL newVal)
 
 STDMETHODIMP Surface::get_DisableLighting(VARIANT_BOOL *pVal)
 {
-    *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fDisableLighting);
+   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fDisableLighting);
 
-    return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Surface::put_DisableLighting(VARIANT_BOOL newVal)
 {
-    STARTUNDO
+   STARTUNDO
 
-        m_d.m_fDisableLighting = VBTOF(newVal);
+      m_d.m_fDisableLighting = VBTOF(newVal);
 
-    STOPUNDO
+   STOPUNDO
 
-        return S_OK;
+      return S_OK;
+}
+
+STDMETHODIMP Surface::get_ReflectionEnabled(VARIANT_BOOL *pVal)
+{
+   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fReflectionEnabled);
+
+   return S_OK;
+}
+
+STDMETHODIMP Surface::put_ReflectionEnabled(VARIANT_BOOL newVal)
+{
+   STARTUNDO
+
+      m_d.m_fReflectionEnabled = VBTOF(newVal);
+
+   STOPUNDO
+
+      return S_OK;
 }
 
 void Surface::UpdatePropertyPanes()

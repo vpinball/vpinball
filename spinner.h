@@ -27,6 +27,7 @@ public:
 	char m_szSurface[MAXTOKEN];
 	bool m_fShowBracket; 
 	bool m_fVisible;
+   bool m_fReflectionEnabled;
 };
 
 class HitSpinner;
@@ -137,6 +138,8 @@ public:
 	STDMETHOD (get_Elasticity)(/*[out, retval]*/ float *pVal);
 	STDMETHOD (put_Elasticity)(/*[in]*/ float newVal);
     STDMETHODIMP get_CurrentAngle(float *pVal);
-};
+    STDMETHOD(get_ReflectionEnabled)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+    STDMETHOD(put_ReflectionEnabled)(/*[in]*/ VARIANT_BOOL newVal);
+   };
 
 #endif // !defined(AFX_SPINNER_H__8D8CB0E1_8C8F_49BF_A639_4DFA12DD4C3C__INCLUDED_)
