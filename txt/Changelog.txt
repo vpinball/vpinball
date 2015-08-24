@@ -88,6 +88,8 @@ VP 10.0.0 Changelog
   
 - gates are mesh based. Another option was added to the gate element "Two Way" if set the ball can roll from both sides through the gate
 
+- flippers can now feature an image
+
 - add material editor
   
   -> quick and basic explanation:
@@ -145,6 +147,7 @@ VP 10.0.0 Changelog
   - the reflection effect is actually very simple. VP flips all static elements on the z-axis (z=0) and renders them into a texture. This texture is blended over the playfield. Therefore special care must be taken 
     for mesh primitives. You have to set the pivot point of a mesh well. If you try to compensate a wrong pivot point in VP by adjusting the xyz position it could result in a wrong mirrored element. You will notice it
     because e.g. a mirrored post isn't mirrored under the actual post instead it's rendered a bit below on the playfield and the reflection looks odd.
+  - if needed, disable certain elements from the reflection via the respective flag in its options
   
 - new (optional) color grading step
   like in movies or photography, one can now add an (almost) artificial color grading step at the very end of the rendering process
