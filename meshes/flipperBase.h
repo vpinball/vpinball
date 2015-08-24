@@ -1,6 +1,6 @@
 const unsigned int flipperBaseVertices=104;
 const unsigned int flipperBaseNumFaces=300;
-Vertex3D_NoTex2 flipperBaseMesh[104]=
+const Vertex3D_NoTex2 flipperBaseMesh[104]=
 {
 { -0.101425f,0.786319f,0.003753f, -0.997900f,0.065000f,-0.000000f, 0.126235f,0.422635f},
 { -0.101425f,0.786319f,1.004253f, -0.997900f,0.065000f,-0.000000f, 0.068619f,0.486620f},
@@ -107,7 +107,7 @@ Vertex3D_NoTex2 flipperBaseMesh[104]=
 { 0.087837f,0.837031f,0.003753f, 0.866000f,0.500000f,-0.000000f, 0.104696f,0.353845f},
 { 0.087837f,0.837031f,1.004253f, 0.866000f,0.500000f,-0.000000f, 0.027922f,0.313093f}
 };
-WORD flipperBaseIndices[300]=
+const WORD flipperBaseIndices[300]=
 {
    0,1,2,0,2,3,4,5,6,4,6,7,8,9,10,
    8,10,11,12,13,14,12,14,15,12,15,16,12,16,17,
