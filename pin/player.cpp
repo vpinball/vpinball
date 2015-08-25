@@ -1242,18 +1242,32 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 	return S_OK;
 }
 
+// reflection is split into two parts static and dynamic
+// for the static objects:
+//  1. switch to an extra mirror back buffer and mirror z-buffer
+//  2. render the mirrored elements into these buffers (normal rendering)
+//  3. switch back to normal camera mode and use the static back buffer but still use mirror z-buffer
+//  4. render all static elements again to fill the mirror z-buffer with the correct depth information
+//  5. copy the mirror back buffer into the mirror texture for blending the texture over the playfield in a later step
+//
+// for the dynamic objects:
+//  1. copy the mirror z-buffer into the normal z-buffer
+//  2. switch to a temporary mirror texture and render all dynamic elements into that buffer 
+//  3. switch back to normal back buffer
+//  4. render the dynamic mirror texture over the scene
+//  5. render all dynamic objects as normal
 void Player::RenderStaticMirror()
 {
    D3DMATRIX viewMat;
    const float rotation = fmodf(m_ptable->m_BG_rotation[m_ptable->m_BG_current_set], 360.f);
 
    // Direct all renders to the "static" buffer.
-   m_pin3d.SetRenderTarget(m_pin3d.m_pddsStatic, m_pin3d.m_pddsStaticZ);
+   m_pin3d.SetRenderTarget(m_pin3d.m_mirrorBuffer, m_pin3d.m_mirrorZBuffer);
    RenderTarget *tmpMirrorSurface = NULL;
    m_pin3d.m_pd3dDevice->GetMirrorBufferTexture()->GetSurfaceLevel(0, &tmpMirrorSurface);
-   m_pin3d.m_pd3dDevice->SetRenderTarget(tmpMirrorSurface);
 
-   m_pin3d.m_pd3dDevice->FBShader->SetFloat("mirrorFactor", (float)m_ptable->m_playfieldReflectionStrength/255.0f);
+   m_pin3d.m_pd3dDevice->Clear(0, NULL, D3DCLEAR_ZBUFFER, 0, 1.0f, 0L);
+   m_pin3d.m_pd3dDevice->FBShader->SetFloat("mirrorFactor", (float)m_ptable->m_playfieldReflectionStrength / 255.0f);
 
    m_pin3d.m_pd3dDevice->GetTransform(TRANSFORMSTATE_VIEW, &viewMat);
    // flip camera
@@ -1270,7 +1284,7 @@ void Player::RenderStaticMirror()
    m_ptable->m_fReflectionEnabled = true;
    UpdateBasicShaderMatrix();
 
-   // render static stuff
+   // render mirrored static elements
    for (int i = 0; i < m_ptable->m_vedit.Size(); i++)
    {
       if (m_ptable->m_vedit.ElementAt(i)->GetItemType() != eItemDecal)
@@ -1298,6 +1312,23 @@ void Player::RenderStaticMirror()
    UpdateBasicShaderMatrix();
 
    m_pin3d.m_pd3dDevice->SetRenderTarget(m_pin3d.m_pddsStatic);
+
+
+   // render normal static elements but into mirrored z-buffer
+   for (int i = 0; i < m_ptable->m_vedit.Size(); i++)
+   {
+       if (m_ptable->m_vedit.ElementAt(i)->GetItemType() != eItemDecal)
+       {
+           Hitable * const ph = m_ptable->m_vedit.ElementAt(i)->GetIHitable();
+           if (ph)
+           {
+               ph->RenderStatic(m_pin3d.m_pd3dDevice);
+           }
+       }
+   }
+   m_pin3d.SetRenderTarget(m_pin3d.m_pddsStatic, m_pin3d.m_pddsStaticZ);
+   // copy mirror back buffer into mirror texture for rendering it over the playfield later on
+   m_pin3d.m_pd3dDevice->CopySurface(tmpMirrorSurface, m_pin3d.m_mirrorBuffer);
    SAFE_RELEASE_NO_RCC(tmpMirrorSurface);
 }
 
@@ -1306,11 +1337,15 @@ void Player::RenderDynamicMirror()
    D3DMATRIX viewMat;
    const float rotation = fmodf(m_ptable->m_BG_rotation[m_ptable->m_BG_current_set], 360.f);
 
+   // copy the special mirror z-Buffer to the current z-buffer
+   m_pin3d.m_pd3dDevice->CopySurface(m_pin3d.m_pddsZBuffer, m_pin3d.m_mirrorZBuffer);
+
+   // render into temp back buffer 
    RenderTarget *tmpMirrorSurface = NULL;
    m_pin3d.m_pd3dDevice->GetMirrorTmpBufferTexture()->GetSurfaceLevel(0, &tmpMirrorSurface);
    m_pin3d.m_pd3dDevice->SetRenderTarget(tmpMirrorSurface);
 
-   m_pin3d.m_pd3dDevice->Clear(0, NULL, D3DCLEAR_TARGET|D3DCLEAR_ZBUFFER, 0, 1.0f, 0L);
+   m_pin3d.m_pd3dDevice->Clear(0, NULL, D3DCLEAR_TARGET, 0, 1.0f, 0L);
 
    m_pin3d.m_pd3dDevice->FBShader->SetFloat("mirrorFactor", (float)m_ptable->m_playfieldReflectionStrength / 255.0f);
 
@@ -1368,16 +1403,14 @@ void Player::RenderMirrorOverlay(bool onlyStatic)
 
    m_pin3d.EnableAlphaBlend(false, false);
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_DESTALPHA);
-
+   // z-test must be enabled otherwise mirrored elements are drawn over blocking elements
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
-   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, FALSE);
 
    m_pin3d.m_pd3dDevice->FBShader->Begin(0);
    m_pin3d.m_pd3dDevice->DrawFullscreenQuad();
    m_pin3d.m_pd3dDevice->FBShader->End();
 
-   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, TRUE);
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 }
@@ -2800,12 +2833,11 @@ void Player::CheckAndUpdateRegions()
     for (int l = 0; l < m_vanimate.Size(); ++l)
        m_vanimate.ElementAt(l)->Animate();
 
-// Disabled for now because it doesn't work :) No dynamic element is rendered something is wrong here!
-//     if (m_ptable->m_fReflectElementsOnPlayfield)
-//     {
-//        RenderDynamicMirror();
-//        RenderMirrorOverlay(false);
-//     }
+    if (m_ptable->m_fReflectElementsOnPlayfield)
+    {
+        RenderDynamicMirror();
+        RenderMirrorOverlay(false);
+    }
 
     m_pin3d.m_pd3dDevice->CopySurface(m_pin3d.m_pddsZBuffer, m_pin3d.m_pddsStaticZ);
 }
