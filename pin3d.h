@@ -88,7 +88,10 @@ public:
 	D3DTexture* m_pdds3DZBuffer;
 
 	RenderTarget* m_pddsZBuffer;
-
+    
+    RenderTarget* m_mirrorZBuffer;
+    RenderTarget* m_mirrorBuffer;
+    
 	RenderTarget* m_pddsStatic;
 	RenderTarget* m_pddsStaticZ;
 
