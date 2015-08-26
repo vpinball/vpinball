@@ -25,6 +25,7 @@ public:
     float m_wireThickness;
 	bool m_fEnabled;
 	bool m_fVisible;
+    bool m_fReflectionEnabled;
 	};
 
 /////////////////////////////////////////////////////////////////////////////
@@ -163,6 +164,8 @@ public:
     STDMETHOD(put_Material)(/*[in]*/ BSTR newVal);
     STDMETHOD(get_AnimSpeed)(/*[out, retval]*/ float *pVal);
     STDMETHOD(put_AnimSpeed)(/*[in]*/ float newVal);
+    STDMETHOD(get_ReflectionEnabled)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+    STDMETHOD(put_ReflectionEnabled)(/*[in]*/ VARIANT_BOOL newVal);
     };
 
 #endif // !defined(AFX_TRIGGER_H__2CA7256C_4072_43C3_9D65_AE091B601377__INCLUDED_)

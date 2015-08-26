@@ -318,6 +318,9 @@ void Spinner::PostRenderStatic(RenderDevice* pd3dDevice)
 	if (!m_phitspinner->m_spinneranim.m_fVisible || !m_d.m_fVisible)
         return;
 
+    if ( m_ptable->m_fReflectionEnabled && !m_d.m_fReflectionEnabled )
+        return;
+
     Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
     Material *mat = m_ptable->GetMaterial( m_d.m_szMaterial);

@@ -31,6 +31,7 @@ public:
 	bool m_fCollidable;
 	bool m_fVisible;
     bool m_twoWay;
+    bool m_fReflectionEnabled;
 	};
 
 class Gate :
@@ -161,6 +162,8 @@ public:
 	STDMETHOD(get_TwoWay)(/*[out, retval]*/ VARIANT_BOOL *pVal);
     STDMETHOD(put_TwoWay)(/*[in]*/ VARIANT_BOOL newVal);
     STDMETHOD(get_CurrentAngle)(/*[out, retval]*/ float *pVal);
+    STDMETHOD(get_ReflectionEnabled)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+    STDMETHOD(put_ReflectionEnabled)(/*[in]*/ VARIANT_BOOL newVal);
 };
 
 #endif // !defined(AFX_GATE_H__EDC63CB2_226F_4606_99A9_0C2DB8FE1E3B__INCLUDED_)

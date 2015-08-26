@@ -138,11 +138,17 @@ void Gate::SetDefaults(bool fromMouseClick)
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szImageBack[0] = 0;
 
-   hr = GetRegInt("DefaultProps\\Gate","TwoWay", &iTmp);
+   hr = GetRegInt("DefaultProps\\Gate", "TwoWay", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
        m_d.m_twoWay = iTmp == 0 ? false : true;
    else
        m_d.m_twoWay = true;
+
+   hr = GetRegInt("DefaultProps\\Gate", "ReflectionEnabled", &iTmp);
+   if ((hr == S_OK) && fromMouseClick)
+       m_d.m_fReflectionEnabled = iTmp == 0 ? false : true;
+   else
+       m_d.m_fReflectionEnabled = true;
 }
 
 
@@ -164,7 +170,8 @@ void Gate::WriteRegDefaults()
    SetRegValueFloat("DefaultProps\\Gate","Scatter", m_d.m_scatter);
    SetRegValue("DefaultProps\\Gate","ImageFront", REG_SZ, &m_d.m_szImageFront,lstrlen(m_d.m_szImageFront));
    SetRegValue("DefaultProps\\Gate","ImageBack", REG_SZ, &m_d.m_szImageBack,lstrlen(m_d.m_szImageBack));
-   SetRegValueBool("DefaultProps\\Gate","TwoWay", m_d.m_twoWay);
+   SetRegValueBool("DefaultProps\\Gate", "TwoWay", m_d.m_twoWay);
+   SetRegValueBool("DefaultProps\\Gate", "ReflectionEnabled", m_d.m_fReflectionEnabled);
 }
 
 void Gate::PreRender(Sur * const psur)
@@ -461,6 +468,9 @@ void Gate::PostRenderStatic(RenderDevice* pd3dDevice)
     if (!m_phitgate->m_gateanim.m_fVisible)
         return;
 
+    if ( m_ptable->m_fReflectionEnabled && !m_d.m_fReflectionEnabled )
+        return;
+
     RenderObject(pd3dDevice);
 }
 
@@ -631,6 +641,7 @@ HRESULT Gate::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey
    bw.WriteBool(FID(GVSBL), m_d.m_fVisible);
    bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
    bw.WriteBool(FID(TWWA), m_d.m_twoWay);
+   bw.WriteBool(FID(REEN), m_d.m_fReflectionEnabled);
 
    ISelect::SaveData(pstm, hcrypthash, hcryptkey);
 
@@ -695,7 +706,11 @@ BOOL Gate::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(GVSBL))
    {
-      pbr->GetBool(&m_d.m_fVisible); 
+       pbr->GetBool(&m_d.m_fVisible);
+   }
+   else if (id == FID(REEN))
+   {
+       pbr->GetBool(&m_d.m_fReflectionEnabled);
    }
    else if (id == FID(TMIN))
    {
@@ -1198,6 +1213,24 @@ STDMETHODIMP Gate::put_TwoWay(VARIANT_BOOL newVal)
     }
    
 	return S_OK;
+}
+
+STDMETHODIMP Gate::get_ReflectionEnabled(VARIANT_BOOL *pVal)
+{
+    *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fReflectionEnabled);
+
+    return S_OK;
+}
+
+STDMETHODIMP Gate::put_ReflectionEnabled(VARIANT_BOOL newVal)
+{
+    STARTUNDO
+
+        m_d.m_fReflectionEnabled = VBTOF(newVal);
+
+    STOPUNDO
+
+        return S_OK;
 }
 
 STDMETHODIMP Gate::get_CurrentAngle(float *pVal)

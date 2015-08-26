@@ -893,6 +893,8 @@ void Primitive::PostRenderStatic(RenderDevice* pd3dDevice)
    
    if (m_d.m_staticRendering || !m_d.m_fVisible || m_d.m_fSkipRendering)
       return;
+   if ( m_ptable->m_fReflectionEnabled && !m_d.m_fReflectionEnabled )
+       return;
 
    RenderObject(pd3dDevice);
 }

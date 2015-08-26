@@ -42,6 +42,7 @@ public:
 	float m_springLoops;
 	float m_springEndLoops;
 	bool m_fVisible;
+    bool m_fReflectionEnabled;
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -242,6 +243,8 @@ public:
 	STDMETHOD(put_MomentumXfer)(/*[in]*/ float newVal);
 	STDMETHOD(Position)(int *pVal); //added for mechanical plunger position
 	STDMETHOD(MotionDevice)(int *pVal);
+    STDMETHOD(get_ReflectionEnabled)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+    STDMETHOD(put_ReflectionEnabled)(/*[in]*/ VARIANT_BOOL newVal);
 };
 
 #endif // !defined(AFX_PLUNGER_H__A729D2E2_D68F_4DD6_BE4B_D8AD1B8C7B66__INCLUDED_)

@@ -227,6 +227,13 @@ void Trigger::SetDefaults(bool fromMouseClick)
 
    hr = GetRegStringAsFloat("DefaultProps\\trigger","AnimSpeed", &fTmp);
    m_d.m_animSpeed = (hr == S_OK) && fromMouseClick ? fTmp : 1.0f;
+
+   hr = GetRegInt("DefaultProps\\Trigger", "ReflectionEnabled", &iTmp);
+   if ((hr == S_OK) && fromMouseClick)
+       m_d.m_fReflectionEnabled = iTmp == 0 ? false : true;
+   else
+       m_d.m_fReflectionEnabled = true;
+
 }
 
 void Trigger::PreRender(Sur * const psur)
@@ -536,7 +543,9 @@ void Trigger::PostRenderStatic(RenderDevice* pd3dDevice)
 
 	if (!m_d.m_fVisible || m_d.m_shape==TriggerNone)
         return;
-    
+    if ( m_ptable->m_fReflectionEnabled && !m_d.m_fReflectionEnabled )
+        return;
+
 	const float animLimit = ( m_d.m_shape==TriggerStar ) ? m_d.m_radius/4.7f : 29.0f;
 	const float limit = animLimit*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
@@ -943,6 +952,7 @@ HRESULT Trigger::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
    bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
    bw.WriteInt(FID(SHAP), m_d.m_shape);
    bw.WriteFloat(FID(ANSP), m_d.m_animSpeed);
+   bw.WriteBool(FID(REEN), m_d.m_fReflectionEnabled);
 
    ISelect::SaveData(pstm, hcrypthash, hcryptkey);
 
@@ -975,6 +985,7 @@ void Trigger::WriteRegDefaults()
    SetRegValue("DefaultProps\\Trigger","Shape",REG_DWORD,&m_d.m_shape,4);
    SetRegValue("DefaultProps\\Trigger","Surface", REG_SZ, &m_d.m_szSurface,lstrlen(m_d.m_szSurface));
    SetRegValueFloat("DefaultProps\\Trigger","AnimSpeed", m_d.m_animSpeed);
+   SetRegValueBool("DefaultProps\\Trigger", "ReflectionEnabled", m_d.m_fReflectionEnabled);
 
 }
 
@@ -1047,7 +1058,11 @@ BOOL Trigger::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(VSBL))
    {
-      pbr->GetBool(&m_d.m_fVisible);
+       pbr->GetBool(&m_d.m_fVisible);
+   }
+   else if (id == FID(REEN))
+   {
+       pbr->GetBool(&m_d.m_fReflectionEnabled);
    }
    else if (id == FID(SHAP))
    {
@@ -1387,6 +1402,24 @@ STDMETHODIMP Trigger::put_TriggerShape(TriggerShape newVal)
 	   UpdateEditorView();
    
       return S_OK;
+}
+
+STDMETHODIMP Trigger::get_ReflectionEnabled(VARIANT_BOOL *pVal)
+{
+    *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fReflectionEnabled);
+
+    return S_OK;
+}
+
+STDMETHODIMP Trigger::put_ReflectionEnabled(VARIANT_BOOL newVal)
+{
+    STARTUNDO
+
+        m_d.m_fReflectionEnabled = VBTOF(newVal);
+
+    STOPUNDO
+
+        return S_OK;
 }
 
 void Trigger::UpdatePropertyPanes()

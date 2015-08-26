@@ -2313,6 +2313,8 @@ void Ramp::PostRenderStatic(RenderDevice* pd3dDevice)
     // don't render if invisible or not a transparent ramp
     if (!m_d.m_fVisible || (!mat->m_bOpacityActive) )
        return;
+    if ( m_ptable->m_fReflectionEnabled && !m_d.m_fReflectionEnabled )
+        return;
 
     RenderRamp(pd3dDevice, mat);
 }
