@@ -406,6 +406,9 @@ void Bumper::PostRenderStatic(RenderDevice* pd3dDevice)
    if ( ringVertexBuffer==NULL && (m_d.m_fBaseVisible || m_d.m_fCapVisible))
 	   return;
 
+   if ( m_ptable->m_fReflectionEnabled && !m_d.m_fReflectionEnabled )
+       return;
+
    const U32 old_time_msec = (m_d.m_time_msec < g_pplayer->m_time_msec) ? m_d.m_time_msec : g_pplayer->m_time_msec;
    m_d.m_time_msec = g_pplayer->m_time_msec;
    const float diff_time_msec = (float)(g_pplayer->m_time_msec-old_time_msec);

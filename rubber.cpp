@@ -1308,8 +1308,13 @@ void Rubber::RenderObject(RenderDevice *pd3dDevice)
 // Also has less drawing calls by bundling seperate calls.
 void Rubber::PostRenderStatic(RenderDevice* pd3dDevice)
 {
-   if ( !m_d.m_staticRendering )
-      RenderObject(pd3dDevice);
+    if (!m_d.m_staticRendering)
+    {
+        if ( m_ptable->m_fReflectionEnabled && !m_d.m_fReflectionEnabled )
+            return;
+
+        RenderObject(pd3dDevice);
+    }
 }
 
 void Rubber::ExportMesh(FILE *f)

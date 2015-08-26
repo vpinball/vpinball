@@ -185,6 +185,12 @@ void Plunger::SetDefaults(bool fromMouseClick)
 	else
 		m_d.m_springEndLoops = 2.5f;
 
+    hr = GetRegInt("DefaultProps\\Plunger", "ReflectionEnabled", &iTmp);
+    if ((hr == S_OK) && fromMouseClick)
+        m_d.m_fReflectionEnabled = iTmp == 0 ? false : true;
+    else
+        m_d.m_fReflectionEnabled = true;
+
 }
 
 void Plunger::WriteRegDefaults()
@@ -218,6 +224,7 @@ void Plunger::WriteRegDefaults()
 	SetRegValueFloat("DefaultProps\\Plunger", "CustomSpringGauge", m_d.m_springGauge);
 	SetRegValueFloat("DefaultProps\\Plunger", "CustomSpringLoops", m_d.m_springLoops);
 	SetRegValueFloat("DefaultProps\\Plunger", "CustomSpringEndLoops", m_d.m_springEndLoops);
+    SetRegValueBool("DefaultProps\\Plunger", "ReflectionEnabled", m_d.m_fReflectionEnabled);
 }
 
 void Plunger::PreRender(Sur * const psur)
@@ -363,6 +370,9 @@ void Plunger::PostRenderStatic(RenderDevice* pd3dDevice)
 	// TODO: get rid of frame stuff
 	if (!m_d.m_fVisible)
 		return;
+
+    if ( m_ptable->m_fReflectionEnabled && !m_d.m_fReflectionEnabled )
+        return;
 
 	_ASSERTE(m_phitplunger);
 
@@ -1019,8 +1029,9 @@ HRESULT Plunger::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
 
 	bw.WriteBool(FID(TMON), m_d.m_tdr.m_fTimerEnabled);
 	bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
-	bw.WriteBool(FID(VSBL), m_d.m_fVisible);
-	bw.WriteString(FID(SURF), m_d.m_szSurface);
+    bw.WriteBool(FID(VSBL), m_d.m_fVisible);
+    bw.WriteBool(FID(REEN), m_d.m_fReflectionEnabled);
+    bw.WriteString(FID(SURF), m_d.m_szSurface);
 	bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
 
 	bw.WriteString(FID(TIPS), m_d.m_szTipShape);
@@ -1139,11 +1150,15 @@ BOOL Plunger::LoadToken(int id, BiffReader *pbr)
 	{
 		pbr->GetString(m_d.m_szImage);
 	}
-	else if (id == FID(VSBL))
-	{
-		pbr->GetBool(&m_d.m_fVisible);
-	}
-	else if (id == FID(SURF))
+    else if (id == FID(VSBL))
+    {
+        pbr->GetBool(&m_d.m_fVisible);
+    }
+    else if (id == FID(REEN))
+    {
+        pbr->GetBool(&m_d.m_fReflectionEnabled);
+    }
+    else if (id == FID(SURF))
 	{
 		pbr->GetString(m_d.m_szSurface);
 	}
@@ -1838,6 +1853,24 @@ STDMETHODIMP Plunger::put_MomentumXfer(float newVal)
 	STOPUNDO
 
 	return S_OK;
+}
+
+STDMETHODIMP Plunger::get_ReflectionEnabled(VARIANT_BOOL *pVal)
+{
+    *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fReflectionEnabled);
+
+    return S_OK;
+}
+
+STDMETHODIMP Plunger::put_ReflectionEnabled(VARIANT_BOOL newVal)
+{
+    STARTUNDO
+
+        m_d.m_fReflectionEnabled = VBTOF(newVal);
+
+    STOPUNDO
+
+        return S_OK;
 }
 
 void Plunger::GetDialogPanes(Vector<PropertyPane> *pvproppane)

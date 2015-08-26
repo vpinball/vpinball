@@ -184,6 +184,12 @@ void Flipper::SetDefaults(bool fromMouseClick)
       m_d.m_fEnabled = iTmp == 0 ? false : true;
    else
       m_d.m_fEnabled = true;
+
+   hr = GetRegInt("DefaultProps\\Flipper", "ReflectionEnabled", &iTmp);
+   if ((hr == S_OK) && fromMouseClick)
+       m_d.m_fReflectionEnabled = iTmp == 0 ? false : true;
+   else
+       m_d.m_fReflectionEnabled = true;
 }
 
 void Flipper::WriteRegDefaults()
@@ -213,7 +219,8 @@ void Flipper::WriteRegDefaults()
    SetRegValueInt(regKey,"RubberHeight", m_d.m_rubberheight);
    SetRegValueInt(regKey,"RubberWidth", m_d.m_rubberwidth);
    SetRegValueBool(regKey,"Visible", m_d.m_fVisible);
-   SetRegValueBool(regKey,"Enabled", m_d.m_fEnabled);
+   SetRegValueBool(regKey, "Enabled", m_d.m_fEnabled);
+   SetRegValueBool(regKey, "ReflectionEnabled", m_d.m_fReflectionEnabled);
 }
 
 
@@ -629,7 +636,10 @@ void Flipper::PostRenderStatic(RenderDevice* pd3dDevice)
         return;
     if (m_phitflipper == NULL && !m_d.m_fVisible)
         return;
-    
+
+    if ( m_ptable->m_fReflectionEnabled && !m_d.m_fReflectionEnabled )
+        return;
+
     Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
     Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
@@ -920,6 +930,7 @@ HRESULT Flipper::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
    bw.WriteFloat(FID(FRMN), m_d.m_FlipperRadiusMin);		
    bw.WriteFloat(FID(FHGT), m_d.m_height);
    bw.WriteString(FID(IMAG), m_d.m_szImage);
+   bw.WriteBool(FID(REEN), m_d.m_fReflectionEnabled);
 
 
    ISelect::SaveData(pstm, hcrypthash, hcryptkey);
@@ -1060,7 +1071,11 @@ BOOL Flipper::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(ENBL))
    {
-      pbr->GetBool(&m_d.m_fEnabled);
+       pbr->GetBool(&m_d.m_fEnabled);
+   }
+   else if (id == FID(REEN))
+   {
+       pbr->GetBool(&m_d.m_fReflectionEnabled);
    }
    else if (id == FID(IMAG))
    {
@@ -1645,6 +1660,24 @@ STDMETHODIMP Flipper::put_Image(BSTR newVal)
     STARTUNDO
 
         WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szImage, 32, NULL, NULL);
+
+    STOPUNDO
+
+        return S_OK;
+}
+
+STDMETHODIMP Flipper::get_ReflectionEnabled(VARIANT_BOOL *pVal)
+{
+    *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fReflectionEnabled);
+
+    return S_OK;
+}
+
+STDMETHODIMP Flipper::put_ReflectionEnabled(VARIANT_BOOL newVal)
+{
+    STARTUNDO
+
+        m_d.m_fReflectionEnabled = VBTOF(newVal);
 
     STOPUNDO
 

@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
-// Von Microsoft Visual C++ generierte Includedatei.
-// Verwendet durch vpinball_eng.rc
+// Microsoft Visual C++ generated include file.
+// Used by vpinball_eng.rc
 //
 #define VP_VERSION_MINOR                0
 #define VP_VERSION_REV                  0
@@ -639,6 +639,10 @@
 #define IDC_BUMPER_REFLECT_ENABLED_CHECK 431
 #define IDC_SPINNER_REFLECT_ENABLED_CHECJ 431
 #define IDC_SPINNER_REFLECT_ENABLED_CHECK 431
+#define IDC_FLIPPER_REFLECT_ENABLED_CHECK 431
+#define IDC_GATE_REFLECT_ENABLED_CHECK  431
+#define IDC_PLUNGER_REFLECT_ENABLED_CHECK 431
+#define IDC_TRIGGER_REFLECT_ENABLED_CHECK 431
 #define IDC_LIGHT_FALLOFF_POWER         432
 #define IDC_MODULATE_VS_ADD             433
 #define IDC_INTENSITY_SCALE_LIGHT       434

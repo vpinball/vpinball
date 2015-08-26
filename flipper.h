@@ -57,6 +57,7 @@ public:
 
 	bool  m_fVisible;
     bool  m_fEnabled;
+    bool  m_fReflectionEnabled;
 };
 
 class Flipper : 
@@ -183,6 +184,8 @@ public:
 	STDMETHOD(put_FlipperRadiusMin)(/*[in]*/ float newVal);
     STDMETHOD(get_Image)(/*[out, retval]*/ BSTR *pVal);
     STDMETHOD(put_Image)(/*[in]*/ BSTR newVal);
+    STDMETHOD(get_ReflectionEnabled)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+    STDMETHOD(put_ReflectionEnabled)(/*[in]*/ VARIANT_BOOL newVal);
 };
 
 #endif // !defined(AFX_FLIPPER_H__D65AA2A2_9F89_4AA4_88F3_D325B1001825__INCLUDED_)
