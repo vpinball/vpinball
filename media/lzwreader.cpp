@@ -290,7 +290,9 @@ short LZWReader::Decoder()
 			 * of the line, we have to send the buffer to the out_line()
 			 * routine...
 			 */
-			*bufptr++ = (BYTE) c;
+         if (bufptr)
+   			*bufptr++ = (BYTE) c;
+
 			if (--bufcnt == 0)
 				{
 				buf = NextLine();
