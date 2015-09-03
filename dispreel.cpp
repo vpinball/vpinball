@@ -1544,11 +1544,19 @@ void DispReel::SetVerticesForReel(int reelNum, int digit, Vertex3D_NoTex2 * v)
     v[0].z = v[1].z = v[2].z = v[3].z = 1.0f;
     v[0].rhw = v[1].rhw = v[2].rhw = v[3].rhw = 1.0f;
 
-    v[0].tu = v[3].tu = m_digitTexCoords[digit].u_min;
-    v[0].tv = v[1].tv = m_digitTexCoords[digit].v_min;
+	if (digit < (int)m_digitTexCoords.size())
+	{
+		v[0].tu = v[3].tu = m_digitTexCoords[digit].u_min;
+		v[0].tv = v[1].tv = m_digitTexCoords[digit].v_min;
 
-    v[1].tu = v[2].tu = m_digitTexCoords[digit].u_max;
-    v[2].tv = v[3].tv = m_digitTexCoords[digit].v_max;
+		v[1].tu = v[2].tu = m_digitTexCoords[digit].u_max;
+		v[2].tv = v[3].tv = m_digitTexCoords[digit].v_max;
+	}
+	else
+	{
+		v[0].tu = v[1].tu = v[2].tu = v[3].tu = 0;
+		v[0].tv = v[1].tv = v[2].tv = v[3].tv = 0;
+	}
 
     v[0].color = v[1].color = v[2].color = v[3].color = 0xffffffff;
 }
