@@ -1256,7 +1256,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 //  3. switch back to normal back buffer
 //  4. render the dynamic mirror texture over the scene
 //  5. render all dynamic objects as normal
-void Player::RenderStaticMirror()
+void Player::RenderStaticMirror(const bool onlyBalls)
 {
    D3DMATRIX viewMat;
    const float rotation = fmodf(m_ptable->m_BG_rotation[m_ptable->m_BG_current_set], 360.f);
@@ -1269,48 +1269,50 @@ void Player::RenderStaticMirror()
    m_pin3d.m_pd3dDevice->Clear(0, NULL, D3DCLEAR_ZBUFFER, 0, 1.0f, 0L);
    m_pin3d.m_pd3dDevice->FBShader->SetFloat("mirrorFactor", (float)m_ptable->m_playfieldReflectionStrength / 255.0f);
 
-   m_pin3d.m_pd3dDevice->GetTransform(TRANSFORMSTATE_VIEW, &viewMat);
-   // flip camera
-   viewMat._33 *= -1.0f;
-   if (rotation!=0.0f )
-      viewMat._31 *= -1.0f;
-   else
+   if (!onlyBalls)
    {
-       viewMat._32 *= -1.0f;
-   }
-   m_pin3d.m_pd3dDevice->SetTransform(TRANSFORMSTATE_VIEW, &viewMat);
-
-   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
-   m_ptable->m_fReflectionEnabled = true;
-   UpdateBasicShaderMatrix();
-
-   // render mirrored static elements
-   for (int i = 0; i < m_ptable->m_vedit.Size(); i++)
-   {
-      if (m_ptable->m_vedit.ElementAt(i)->GetItemType() != eItemDecal)
+      m_pin3d.m_pd3dDevice->GetTransform(TRANSFORMSTATE_VIEW, &viewMat);
+      // flip camera
+      viewMat._33 *= -1.0f;
+      if (rotation != 0.0f)
+         viewMat._31 *= -1.0f;
+      else
       {
-         Hitable * const ph = m_ptable->m_vedit.ElementAt(i)->GetIHitable();
-         if (ph)
+         viewMat._32 *= -1.0f;
+      }
+      m_pin3d.m_pd3dDevice->SetTransform(TRANSFORMSTATE_VIEW, &viewMat);
+
+      m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
+      m_ptable->m_fReflectionEnabled = true;
+      UpdateBasicShaderMatrix();
+
+      // render mirrored static elements
+      for (int i = 0; i < m_ptable->m_vedit.Size(); i++)
+      {
+         if (m_ptable->m_vedit.ElementAt(i)->GetItemType() != eItemDecal)
          {
-            ph->RenderStatic(m_pin3d.m_pd3dDevice);
+            Hitable * const ph = m_ptable->m_vedit.ElementAt(i)->GetIHitable();
+            if (ph)
+            {
+               ph->RenderStatic(m_pin3d.m_pd3dDevice);
+            }
          }
       }
+
+      m_ptable->m_fReflectionEnabled = false;
+      m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+
+      // and flip back camera
+      viewMat._33 *= -1.0f;
+      if (rotation != 0.0f)
+         viewMat._31 *= -1.0f;
+      else
+      {
+         viewMat._32 *= -1.0f;
+      }
+      m_pin3d.m_pd3dDevice->SetTransform(TRANSFORMSTATE_VIEW, &viewMat);
+      UpdateBasicShaderMatrix();
    }
-
-   m_ptable->m_fReflectionEnabled = false;
-   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
-
-   // and flip back camera
-   viewMat._33 *= -1.0f;
-   if (rotation != 0.0f)
-       viewMat._31 *= -1.0f;
-   else
-   {
-       viewMat._32 *= -1.0f;
-   }
-   m_pin3d.m_pd3dDevice->SetTransform(TRANSFORMSTATE_VIEW, &viewMat);
-   UpdateBasicShaderMatrix();
-
    m_pin3d.m_pd3dDevice->SetRenderTarget(m_pin3d.m_pddsStatic);
 
 
@@ -1332,7 +1334,7 @@ void Player::RenderStaticMirror()
    SAFE_RELEASE_NO_RCC(tmpMirrorSurface);
 }
 
-void Player::RenderDynamicMirror()
+void Player::RenderDynamicMirror(const bool onlyBalls)
 {
    D3DMATRIX viewMat;
    const float rotation = fmodf(m_ptable->m_BG_rotation[m_ptable->m_BG_current_set], 360.f);
@@ -1347,8 +1349,6 @@ void Player::RenderDynamicMirror()
 
    m_pin3d.m_pd3dDevice->Clear(0, NULL, D3DCLEAR_TARGET, 0, 1.0f, 0L);
 
-   m_pin3d.m_pd3dDevice->FBShader->SetFloat("mirrorFactor", (float)m_ptable->m_playfieldReflectionStrength / 255.0f);
-
    m_pin3d.m_pd3dDevice->GetTransform(TRANSFORMSTATE_VIEW, &viewMat);
    // flip camera
    viewMat._33 *= -1.0f;
@@ -1357,20 +1357,31 @@ void Player::RenderDynamicMirror()
    else
        viewMat._32 *= -1.0f;
    m_pin3d.m_pd3dDevice->SetTransform(TRANSFORMSTATE_VIEW, &viewMat);
-   UpdateBasicShaderMatrix();
+   
+   if ( !onlyBalls )
+      UpdateBasicShaderMatrix();
 
+   UpdateBallShaderMatrix();
    m_pin3d.m_pd3dDevice->BeginScene();
 
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
    m_ptable->m_fReflectionEnabled = true;
 
-   // Draw transparent objects.
-   for (unsigned int i = 0; i < m_vHitTrans.size(); ++i)
-      m_vHitTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
+   if (!onlyBalls)
+   {
+      // Draw transparent objects.
+      for (unsigned int i = 0; i < m_vHitTrans.size(); ++i)
+         m_vHitTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
+   }
 
-   // Draw non-transparent objects.
-   for (unsigned int i = 0; i < m_vHitNonTrans.size(); ++i)
-      m_vHitNonTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
+   DrawBalls();
+
+   if (!onlyBalls)
+   {
+      // Draw non-transparent objects.
+      for (unsigned int i = 0; i < m_vHitNonTrans.size(); ++i)
+         m_vHitNonTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
+   }
 
 
    m_ptable->m_fReflectionEnabled = false;
@@ -1385,7 +1396,10 @@ void Player::RenderDynamicMirror()
    else
        viewMat._32 *= -1.0f;
    m_pin3d.m_pd3dDevice->SetTransform(TRANSFORMSTATE_VIEW, &viewMat);
-   UpdateBasicShaderMatrix();
+   if ( !onlyBalls)
+      UpdateBasicShaderMatrix();
+
+   UpdateBallShaderMatrix();
 
    m_pin3d.m_pd3dDevice->SetRenderTarget(m_pin3d.m_pddsBackBuffer);
    SAFE_RELEASE_NO_RCC(tmpMirrorSurface);
@@ -1443,8 +1457,13 @@ void Player::InitStatic(HWND hwndProgress)
     m_pin3d.InitPlayfieldGraphics();
     if ( !cameraMode )
     {
-       if ( m_ptable->m_fReflectElementsOnPlayfield )
-         RenderStaticMirror();
+       const bool drawBallReflection = ((m_fReflectionForBalls && (m_ptable->m_useReflectionForBalls == -1)) || (m_ptable->m_useReflectionForBalls == 1));
+       if (!m_ptable->m_fReflectElementsOnPlayfield || drawBallReflection)
+         RenderStaticMirror(true);
+       else
+          if (m_ptable->m_fReflectElementsOnPlayfield )
+             RenderStaticMirror();
+
        m_pin3d.RenderPlayfieldGraphics();
        if (m_ptable->m_fReflectElementsOnPlayfield)
           RenderMirrorOverlay();
@@ -2833,10 +2852,17 @@ void Player::CheckAndUpdateRegions()
     for (int l = 0; l < m_vanimate.Size(); ++l)
        m_vanimate.ElementAt(l)->Animate();
 
-    if (m_ptable->m_fReflectElementsOnPlayfield)
+    const bool drawBallReflection = ((m_fReflectionForBalls && (m_ptable->m_useReflectionForBalls == -1)) || (m_ptable->m_useReflectionForBalls == 1));
+
+    if (!m_ptable->m_fReflectElementsOnPlayfield && drawBallReflection)
     {
-        RenderDynamicMirror();
+        RenderDynamicMirror(true);
         RenderMirrorOverlay(false);
+    }
+    else if (m_ptable->m_fReflectElementsOnPlayfield)
+    {
+       RenderDynamicMirror();
+       RenderMirrorOverlay(false);
     }
 
     m_pin3d.m_pd3dDevice->CopySurface(m_pin3d.m_pddsZBuffer, m_pin3d.m_pddsStaticZ);
@@ -3023,7 +3049,7 @@ void Player::FlipVideoBuffersNormal( const bool vsync )
 	m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 
 
-//    m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetMirrorBufferTexture());
+//    m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetMirrorTmpBufferTexture());
 //    m_pin3d.m_pd3dDevice->FBShader->SetTechnique("fb_mirror");
 // 
 //    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
@@ -3037,7 +3063,7 @@ void Player::FlipVideoBuffersNormal( const bool vsync )
 //    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, TRUE);
 //    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
 //    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
-
+// 
    m_pin3d.m_pd3dDevice->EndScene();
    // display frame
 	m_pin3d.Flip(vsync);
@@ -3710,6 +3736,26 @@ void Player::GetBallAspectRatio(const Ball * const pball, float &stretchX, float
     delete[] rgvOut;
 }
 
+// not used anymore. Reflection of the ball is done in RenderDynamicMirror()!
+void Player::DrawBallReflection(Ball *pball, const float zheight, const bool lowDetailBall)
+{
+   // this is the old ball reflection hack and can be removed if the new reflection works!
+   const D3DXVECTOR4 pos_radRef(pball->m_pos.x, pball->m_pos.y, zheight + m_ptable->m_tableheight, pball->m_radius);
+   ballShader->SetVector("position_radius", &pos_radRef);
+   const D3DXVECTOR4 refl((float)m_ptable->m_ballReflectionStrength / 255.0f, (float)m_ptable->m_playfieldReflectionStrength / 255.0f, 0.f, 0.f);
+   ballShader->SetVector("reflection_ball_playfield", &refl);
+   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
+   m_pin3d.EnableAlphaBlend(false, false);
+   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_DESTALPHA);
+   ballShader->SetTechnique("RenderBallReflection");
+
+   ballShader->Begin(0);
+   m_pin3d.m_pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, ballVertexBuffer, 0, lowDetailBall ? basicBallLoNumVertices : basicBallMidNumVertices, ballIndexBuffer, 0, lowDetailBall ? basicBallLoNumFaces : basicBallMidNumFaces);
+   ballShader->End();
+
+   m_pin3d.DisableAlphaBlend();
+}
+
 void Player::DrawBalls()
 {
 	m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
@@ -3730,6 +3776,9 @@ void Player::DrawBalls()
 	}
 
     bool drawReflection = ((m_fReflectionForBalls && (m_ptable->m_useReflectionForBalls == -1)) || (m_ptable->m_useReflectionForBalls == 1));
+    
+//     if (reflectionOnly && !drawReflection)
+//        return;
 
     //m_pin3d.m_pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP);
     //m_pin3d.m_pd3dDevice->SetTextureFilter(0, TEXTURE_MODE_TRILINEAR);
@@ -3797,6 +3846,9 @@ void Player::DrawBalls()
       // start drawing
 
       float zheight = (!pball->m_frozen) ? pball->m_pos.z : (pball->m_pos.z - pball->m_radius);
+      
+      if ( m_ptable->m_fReflectionEnabled)
+         zheight -= m_ptable->m_tableheight*2.0f;
 
       const float maxz = pball->m_defaultZ+3.0f;
       const float minz = pball->m_defaultZ-0.1f;
@@ -3849,23 +3901,13 @@ void Player::DrawBalls()
 
 	  const bool lowDetailBall = m_ptable->GetDetailLevel() < 10;
 
-	  if (drawReflection)
-	  {
-          const D3DXVECTOR4 pos_radRef(pball->m_pos.x, pball->m_pos.y, zheight+m_ptable->m_tableheight, pball->m_radius);
-          ballShader->SetVector("position_radius", &pos_radRef);
-          const D3DXVECTOR4 refl((float)m_ptable->m_ballReflectionStrength / 255.0f, (float)m_ptable->m_playfieldReflectionStrength / 255.0f, 0.f, 0.f);
-		  ballShader->SetVector("reflection_ball_playfield", &refl);
-		  m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
-		  m_pin3d.EnableAlphaBlend(false, false);
-		  m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_DESTALPHA);
-		  ballShader->SetTechnique("RenderBallReflection");
+// 	  if (drawReflection)
+// 	  {
+//         DrawBallReflection(pball, zheight, lowDetailBall);
+//      }
 
-		  ballShader->Begin(0);
-		  m_pin3d.m_pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, ballVertexBuffer, 0, lowDetailBall ? basicBallLoNumVertices : basicBallMidNumVertices, ballIndexBuffer, 0, lowDetailBall ? basicBallLoNumFaces : basicBallMidNumFaces);
-		  ballShader->End();
-
-		  m_pin3d.DisableAlphaBlend();
-      }
+     if ( !drawReflection &&  m_ptable->m_fReflectionEnabled)
+        continue;
 
       ballShader->SetVector("position_radius", &pos_rad);
       m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
