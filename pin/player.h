@@ -146,8 +146,8 @@ public:
 	virtual ~Player();
 
 	HRESULT Init(PinTable * const ptable, const HWND hwndProgress, const HWND hwndProgressName);
-   void RenderStaticMirror();
-   void RenderDynamicMirror();
+   void RenderStaticMirror(const bool onlyBalls=false);
+   void RenderDynamicMirror(const bool onlyBalls=false);
    void RenderMirrorOverlay(bool onlyStatic=true);
    void InitBallShader();
 	void InitWindow();
@@ -434,6 +434,7 @@ public:
     void UpdateBallShaderMatrix();
     void CalcBallAspectRatio();
     void GetBallAspectRatio(const Ball * const pball, float &stretchX, float &stretchY, const float zHeight);
+    void DrawBallReflection(Ball *pball, const float zheight, const bool lowDetailBall);
 #endif
 
 #ifdef STEPPING

@@ -426,7 +426,8 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
     if (FAILED(hr))
         ReportError("Fatal Error: unable to create render buffer!", hr, __FILE__, __LINE__);
 
-    if (g_pplayer->m_ptable->m_fReflectElementsOnPlayfield)
+    const bool drawBallReflection = ((g_pplayer->m_fReflectionForBalls && (g_pplayer->m_ptable->m_useReflectionForBalls == -1)) || (g_pplayer->m_ptable->m_useReflectionForBalls == 1));
+    if (g_pplayer->m_ptable->m_fReflectElementsOnPlayfield || drawBallReflection)
     {
        hr = m_pD3DDevice->CreateTexture(useAA ? 2 * width : width, useAA ? 2 * height : height, 1,
                                         D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &m_pMirrorBufferTexture, NULL); //!! D3DFMT_A32B32G32R32F?
@@ -636,7 +637,9 @@ RenderDevice::~RenderDevice()
 
     m_texMan.UnloadAll();
 	SAFE_RELEASE(m_pOffscreenBackBufferTexture);
-   if (g_pplayer->m_ptable->m_fReflectElementsOnPlayfield)
+
+   const bool drawBallReflection = ((g_pplayer->m_fReflectionForBalls && (g_pplayer->m_ptable->m_useReflectionForBalls == -1)) || (g_pplayer->m_ptable->m_useReflectionForBalls == 1));
+   if (g_pplayer->m_ptable->m_fReflectElementsOnPlayfield || drawBallReflection)
    {
       SAFE_RELEASE(m_pMirrorBufferTexture);
       SAFE_RELEASE(m_pMirrorTmpBufferTexture);
