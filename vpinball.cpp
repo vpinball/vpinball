@@ -1410,10 +1410,24 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
       }
    case ID_HELP_ABOUT:
       {
-         /*const DWORD foo =*/ DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_ABOUT),
-            m_hwnd, AboutProc, 0);
+         DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_ABOUT), m_hwnd, AboutProc, 0);
+         break;
+   }
+   case ID_WINDOW_CASCADE:
+      {
+         SendMessage(m_hwndWork, WM_MDICASCADE, 0, 0);
+         break;
       }
-      break;
+   case ID_WINDOW_TILE:
+      {
+         SendMessage(m_hwndWork, WM_MDITILE, 0, 0);         
+         break;
+      }
+   case ID_WINDOW_ARRANGEICONS:
+      {
+         SendMessage(m_hwndWork, WM_MDIICONARRANGE, 0, 0);
+         break;
+      }
    }
 }
 
