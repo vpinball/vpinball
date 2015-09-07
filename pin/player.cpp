@@ -1458,7 +1458,7 @@ void Player::InitStatic(HWND hwndProgress)
     if ( !cameraMode )
     {
        const bool drawBallReflection = ((m_fReflectionForBalls && (m_ptable->m_useReflectionForBalls == -1)) || (m_ptable->m_useReflectionForBalls == 1));
-       if (!m_ptable->m_fReflectElementsOnPlayfield || drawBallReflection)
+       if (!m_ptable->m_fReflectElementsOnPlayfield && drawBallReflection)
          RenderStaticMirror(true);
        else
           if (m_ptable->m_fReflectElementsOnPlayfield )
