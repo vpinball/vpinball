@@ -1,6 +1,6 @@
 /*++
 
-Copyright (c) 1996, 1997      Microsoft Corporation
+Copyright (c) Microsoft Corporation. All rights reserved.
 
 Module Name:
 
@@ -14,12 +14,6 @@ Environment:
 
     Kernel & user mode
 
-Revision History:
-
-    Aug-1996 : created by Kenneth D. Ray
-    Jun-1997 : updated by Robert Ingman to reflect final HID 1.0 spec
-               and HID Usages Table 0.9 spec.
-
 --*/
 
 #ifndef   __HIDUSAGE_H__
@@ -31,6 +25,7 @@ Revision History:
 
 typedef USHORT USAGE, *PUSAGE;
 
+#define HID_USAGE_PAGE_UNDEFINED      ((USAGE) 0x00)
 #define HID_USAGE_PAGE_GENERIC        ((USAGE) 0x01)
 #define HID_USAGE_PAGE_SIMULATION     ((USAGE) 0x02)
 #define HID_USAGE_PAGE_VR             ((USAGE) 0x03)
@@ -46,6 +41,10 @@ typedef USHORT USAGE, *PUSAGE;
 #define HID_USAGE_PAGE_UNICODE        ((USAGE) 0x10)
 #define HID_USAGE_PAGE_ALPHANUMERIC   ((USAGE) 0x14)
 
+//
+// Microsoft Vendor Specific Usage Pages
+//
+#define HID_USAGE_PAGE_MICROSOFT_BLUETOOTH_HANDSFREE	((USAGE) 0xFFF3)
 
 //
 // Usages from Generic Desktop Page (0x01)
@@ -233,7 +232,7 @@ typedef USHORT USAGE, *PUSAGE;
 #define HID_USAGE_LED_RED                    ((USAGE) 0x48)
 #define HID_USAGE_LED_GREEN                  ((USAGE) 0x49)
 #define HID_USAGE_LED_AMBER                  ((USAGE) 0x4A)
-#define HID_USAGE_LED_GENERIC_INDICATOR      ((USAGE) 0x3B)
+#define HID_USAGE_LED_GENERIC_INDICATOR      ((USAGE) 0x4B)
 
 //
 //  Button Page (0x09)
@@ -260,11 +259,34 @@ typedef USHORT USAGE, *PUSAGE;
 #define HID_USAGE_TELEPHONY_HEADSET                ((USAGE) 0x05)
 #define HID_USAGE_TELEPHONY_KEYPAD                 ((USAGE) 0x06)
 #define HID_USAGE_TELEPHONY_PROGRAMMABLE_BUTTON    ((USAGE) 0x07)
+#define HID_USAGE_TELEPHONY_REDIAL                 ((USAGE) 0x24)
+#define HID_USAGE_TELEPHONY_TRANSFER               ((USAGE) 0x25)
+#define HID_USAGE_TELEPHONY_DROP                   ((USAGE) 0x26)
+#define HID_USAGE_TELEPHONY_LINE                   ((USAGE) 0x2A)
+#define HID_USAGE_TELEPHONY_RING_ENABLE            ((USAGE) 0x2D)
+#define HID_USAGE_TELEPHONY_SEND                   ((USAGE) 0x31)
+#define HID_USAGE_TELEPHONY_KEYPAD_0               ((USAGE) 0xB0)
+#define HID_USAGE_TELEPHONY_KEYPAD_D               ((USAGE) 0xBF)
+#define HID_USAGE_TELEPHONY_HOST_AVAILABLE         ((USAGE) 0xF1)
+
+
+//
+// Microsoft Bluetooth Handsfree Page (0xFFF3)
+//
+#define HID_USAGE_MS_BTH_HF_DIALNUMBER             ((USAGE) 0x21)
+#define HID_USAGE_MS_BTH_HF_DIALMEMORY             ((USAGE) 0x22)
+
 
 //
 // and others...
 //
 
+#define HID_USAGE_CONSUMERCTRL          ((USAGE)0x01)
+#define HID_USAGE_DIGITIZER_PEN         ((USAGE)0x02)
+#define HID_USAGE_DIGITIZER_IN_RANGE    ((USAGE)0x32)
+#define HID_USAGE_DIGITIZER_TIP_SWITCH  ((USAGE)0x42)
+#define HID_USAGE_DIGITIZER_BARREL_SWITCH ((USAGE)0x44)
 
 #endif
+
 
