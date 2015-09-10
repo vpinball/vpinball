@@ -2852,19 +2852,21 @@ void Player::CheckAndUpdateRegions()
     for (int l = 0; l < m_vanimate.Size(); ++l)
        m_vanimate.ElementAt(l)->Animate();
 
-    const bool drawBallReflection = ((m_fReflectionForBalls && (m_ptable->m_useReflectionForBalls == -1)) || (m_ptable->m_useReflectionForBalls == 1));
-
-    if (!m_ptable->m_fReflectElementsOnPlayfield && drawBallReflection)
+    if (!cameraMode)
     {
-        RenderDynamicMirror(true);
-        RenderMirrorOverlay(false);
-    }
-    else if (m_ptable->m_fReflectElementsOnPlayfield)
-    {
-       RenderDynamicMirror();
-       RenderMirrorOverlay(false);
-    }
+        const bool drawBallReflection = ((m_fReflectionForBalls && (m_ptable->m_useReflectionForBalls == -1)) || (m_ptable->m_useReflectionForBalls == 1));
 
+        if (!m_ptable->m_fReflectElementsOnPlayfield && drawBallReflection)
+        {
+            RenderDynamicMirror(true);
+            RenderMirrorOverlay(false);
+        }
+        else if (m_ptable->m_fReflectElementsOnPlayfield)
+        {
+            RenderDynamicMirror();
+            RenderMirrorOverlay(false);
+        }
+    }
     m_pin3d.m_pd3dDevice->CopySurface(m_pin3d.m_pddsZBuffer, m_pin3d.m_pddsStaticZ);
 }
 
