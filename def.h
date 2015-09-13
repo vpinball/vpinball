@@ -20,11 +20,11 @@ inline float max(const float x, const float y)
 }
 inline double min(const double x, const double y)
 {
-	return x < y ? x : y;
+   return x < y ? x : y;
 }
 inline double max(const double x, const double y)
 {
-	return x < y ? y : x;
+   return x < y ? y : x;
 }
 inline int min(const int x, const int y)
 {
@@ -40,7 +40,7 @@ inline unsigned int min(const unsigned int x, const unsigned int y)
 }
 inline unsigned int min(const DWORD x, const DWORD y)
 {
-	return x < y ? x : y;
+   return x < y ? x : y;
 }
 inline unsigned int max(const unsigned int x, const unsigned int y)
 {
@@ -50,28 +50,28 @@ inline unsigned int max(const unsigned int x, const unsigned int y)
 template <typename T>
 inline T clamp(T x, T min, T max)
 {
-    if (x < min)
-        return min;
-    else if (x > max)
-        return max;
-    else
-        return x;
+   if (x < min)
+      return min;
+   else if (x > max)
+      return max;
+   else
+      return x;
 }
 
 template <typename T>
 inline void RemoveFromVector(std::vector<T>& v, const T& val)
 {
-    v.erase( std::remove( v.begin(), v.end(), val ), v.end() );
+   v.erase(std::remove(v.begin(), v.end(), val), v.end());
 }
 
 template <typename T>
 inline int FindIndexOf(std::vector<T>& v, const T& val)
 {
-    std::vector<T>::const_iterator it = std::find(v.begin(), v.end(), val);
-    if (it != v.end())
-        return (it - v.begin());
-    else
-        return -1;
+   std::vector<T>::const_iterator it = std::find(v.begin(), v.end(), val);
+   if (it != v.end())
+      return (it - v.begin());
+   else
+      return -1;
 }
 
 #define fTrue 1
@@ -106,9 +106,9 @@ typedef _int64          S64;
 inline void ref_count_trigger(const ULONG r, const char *file, const int line) // helper for debugging
 {
 #ifdef DEBUG_REFCOUNT_TRIGGER
-    char msg[128];
-    sprintf_s(msg, 128, "Ref Count: %u at %s:%d", r, file, line);
-    MessageBox(NULL, msg, "Error", MB_OK | MB_ICONEXCLAMATION);
+   char msg[128];
+   sprintf_s(msg, 128, "Ref Count: %u at %s:%d", r, file, line);
+   MessageBox(NULL, msg, "Error", MB_OK | MB_ICONEXCLAMATION);
 #endif
 }
 #define SAFE_RELEASE(p)			{ if(p) { const ULONG rcc = (p)->Release(); if(rcc != 0) ref_count_trigger(rcc, __FILE__, __LINE__); (p)=NULL; } }
@@ -132,8 +132,8 @@ class Vertex3D_TexelOnly // for rendering, uses MY_D3DFVF_TEX
 {
 public:
    // Position
-   D3DVALUE x; 
-   D3DVALUE y; 
+   D3DVALUE x;
+   D3DVALUE y;
    D3DVALUE z;
 
    // Texture coordinates
@@ -146,19 +146,19 @@ public:
 class Vertex3D_NoTex2 // for rendering, uses MY_D3DFVF_NOTEX2_VERTEX or MY_D3DTRANSFORMED_NOTEX2_VERTEX
 {
 public:
-      // Position
-      D3DVALUE x;
-      D3DVALUE y;
-      D3DVALUE z;
+   // Position
+   D3DVALUE x;
+   D3DVALUE y;
+   D3DVALUE z;
 
-      // Normals
-      D3DVALUE nx;
-      D3DVALUE ny;
-      D3DVALUE nz;
-      
-	  // Texture coordinates
-      D3DVALUE tu;
-      D3DVALUE tv;
+   // Normals
+   D3DVALUE nx;
+   D3DVALUE ny;
+   D3DVALUE nz;
+
+   // Texture coordinates
+   D3DVALUE tu;
+   D3DVALUE tv;
 };
 
 class LocalString
@@ -172,9 +172,9 @@ public:
 class LocalStringW
 {
 public:
-    LocalStringW(int resid);
+   LocalStringW(int resid);
 
-    WCHAR str[256];
+   WCHAR str[256];
 };
 
 #define M_PI 3.1415926535897932384626433832795
@@ -188,37 +188,37 @@ public:
 inline __m128 rcpps(const __m128 &T) //Newton Raphson
 {
    const __m128 TRCP = _mm_rcp_ps(T);
-   return _mm_sub_ps(_mm_add_ps(TRCP,TRCP),_mm_mul_ps(_mm_mul_ps(TRCP,T),TRCP));
+   return _mm_sub_ps(_mm_add_ps(TRCP, TRCP), _mm_mul_ps(_mm_mul_ps(TRCP, T), TRCP));
 }
 
 inline __m128 rsqrtps(const __m128 &T) //Newton Raphson
 {
    const __m128 TRSQRT = _mm_rsqrt_ps(T);
-   return _mm_mul_ps(_mm_mul_ps(_mm_set1_ps(0.5f),TRSQRT), _mm_sub_ps(_mm_set1_ps(3.0f),_mm_mul_ps(_mm_mul_ps(TRSQRT,T),TRSQRT)));
+   return _mm_mul_ps(_mm_mul_ps(_mm_set1_ps(0.5f), TRSQRT), _mm_sub_ps(_mm_set1_ps(3.0f), _mm_mul_ps(_mm_mul_ps(TRSQRT, T), TRSQRT)));
 }
 
 inline __m128 rsqrtss(const __m128 &T) //Newton Raphson
 {
    const __m128 TRSQRT = _mm_rsqrt_ss(T);
-   return _mm_mul_ss(_mm_mul_ss(_mm_set_ss(0.5f),TRSQRT), _mm_sub_ss(_mm_set_ss(3.0f),_mm_mul_ss(_mm_mul_ss(TRSQRT,T),TRSQRT)));
+   return _mm_mul_ss(_mm_mul_ss(_mm_set_ss(0.5f), TRSQRT), _mm_sub_ss(_mm_set_ss(3.0f), _mm_mul_ss(_mm_mul_ss(TRSQRT, T), TRSQRT)));
 }
 
 inline __m128 sseHorizontalAdd(const __m128 &a) // could use dp instruction on SSE4
 {
    const __m128 ftemp = _mm_add_ps(a, _mm_movehl_ps(a, a));
-   return _mm_add_ss(ftemp,_mm_shuffle_ps(ftemp, ftemp, 1));
+   return _mm_add_ss(ftemp, _mm_shuffle_ps(ftemp, ftemp, 1));
 }
 
 //
 
 inline int float_as_int(const float x)
 {
-	union {
-		float f;
-		int i;
-	} uc;
-	uc.f = x;
-	return uc.i;
+   union {
+      float f;
+      int i;
+   } uc;
+   uc.f = x;
+   return uc.i;
 }
 
 inline float int_as_float(const int i)
@@ -233,27 +233,27 @@ inline float int_as_float(const int i)
 
 inline bool infNaN(const float a)
 {
-	return ((float_as_int(a)&0x7F800000) == 0x7F800000);
+   return ((float_as_int(a) & 0x7F800000) == 0x7F800000);
 }
 
 inline bool inf(const float a)
 {
-	return ((float_as_int(a)&0x7FFFFFFF) == 0x7F800000);
+   return ((float_as_int(a) & 0x7FFFFFFF) == 0x7F800000);
 }
 
 inline bool NaN(const float a)
 {
-	return (((float_as_int(a)&0x7F800000) == 0x7F800000) && ((float_as_int(a)&0x007FFFFF) != 0));
+   return (((float_as_int(a) & 0x7F800000) == 0x7F800000) && ((float_as_int(a) & 0x007FFFFF) != 0));
 }
 
 inline bool deNorm(const float a)
 {
-    return (((float_as_int(a)&0x7FFFFFFF) < 0x00800000) && (a != 0.0));
+   return (((float_as_int(a) & 0x7FFFFFFF) < 0x00800000) && (a != 0.0));
 }
 
 inline bool sign(const float a)
 {
-	return (float_as_int(a) & 0x80000000) == 0x80000000;
+   return (float_as_int(a) & 0x80000000) == 0x80000000;
 }
 
 //
@@ -297,33 +297,33 @@ inline float rand_mt_m11() { return int_as_float(0x3F800000u | (unsigned int)(ti
 // flip bits on decimal point (bit reversal)/van der Corput/radical inverse
 inline float radical_inverse(unsigned int v)
 {
-     v = (v << 16) | (v >> 16);
-     v = ((v & 0x55555555u) << 1) | ((v & 0xAAAAAAAAu) >> 1);
-     v = ((v & 0x33333333u) << 2) | ((v & 0xCCCCCCCCu) >> 2);
-     v = ((v & 0x0F0F0F0Fu) << 4) | ((v & 0xF0F0F0F0u) >> 4);
-     v = ((v & 0x00FF00FFu) << 8) | ((v & 0xFF00FF00u) >> 8);
-     return (float)v * 0.00000000023283064365386962890625f; // /2^32
+   v = (v << 16) | (v >> 16);
+   v = ((v & 0x55555555u) << 1) | ((v & 0xAAAAAAAAu) >> 1);
+   v = ((v & 0x33333333u) << 2) | ((v & 0xCCCCCCCCu) >> 2);
+   v = ((v & 0x0F0F0F0Fu) << 4) | ((v & 0xF0F0F0F0u) >> 4);
+   v = ((v & 0x00FF00FFu) << 8) | ((v & 0xFF00FF00u) >> 8);
+   return (float)v * 0.00000000023283064365386962890625f; // /2^32
 }
 
 inline float sobol(unsigned int i, unsigned int scramble = 0)
 {
-    for(unsigned int v = 1u<<31; (i != 0); i>>=1, v^=v>>1) if(i&1)
-	scramble ^= v;
+   for (unsigned int v = 1u << 31; (i != 0); i >>= 1, v ^= v >> 1) if (i & 1)
+      scramble ^= v;
 
-    return (float)scramble * 0.00000000023283064365386962890625f; // /2^32
+   return (float)scramble * 0.00000000023283064365386962890625f; // /2^32
 }
 
 inline void RemoveSpaces(char* source)
 {
-  char* i = source;
-  char* j = source;
-  while(*j != 0)
-  {
-    *i = *j++;
-    if(!isspace(*i))
-      i++;
-  }
-  *i = '\0';
+   char* i = source;
+   char* j = source;
+   while (*j != 0)
+   {
+      *i = *j++;
+      if (!isspace(*i))
+         i++;
+   }
+   *i = '\0';
 }
 
 //

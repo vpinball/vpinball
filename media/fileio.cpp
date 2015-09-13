@@ -1,783 +1,783 @@
 #include "stdafx.h"
 
 void ExtensionFromFilename(char *szfilename, char *szextension)
-	{
-	const int len = lstrlen(szfilename);
+{
+   const int len = lstrlen(szfilename);
 
-	int begin;
-	for (begin=len;begin>=0;begin--)
-		{
-		if (szfilename[begin] == '.')
-			{
-			begin++;
-			break;
-			}
-		}
+   int begin;
+   for (begin = len; begin >= 0; begin--)
+   {
+      if (szfilename[begin] == '.')
+      {
+         begin++;
+         break;
+      }
+   }
 
-	if (begin <= 0)
-		{
-		szextension[0] = '\0';
-		}
+   if (begin <= 0)
+   {
+      szextension[0] = '\0';
+   }
 
-	lstrcpy(szextension, &szfilename[begin]);
-	}
+   lstrcpy(szextension, &szfilename[begin]);
+}
 
 void TitleFromFilename(char *szfilename, char *sztitle)
-	{
-	const int len = lstrlen(szfilename);
+{
+   const int len = lstrlen(szfilename);
 
-	int begin;
-	for (begin=len;begin>=0;begin--)
-		{
-		if (szfilename[begin] == '\\')
-			{
-			begin++;
-			break;
-			}
-		}
+   int begin;
+   for (begin = len; begin >= 0; begin--)
+   {
+      if (szfilename[begin] == '\\')
+      {
+         begin++;
+         break;
+      }
+   }
 
-	int end;
-	for (end=len;end>=0;end--)
-		{
-		if (szfilename[end] == '.')
-			{
-			break;
-			}
-		}
+   int end;
+   for (end = len; end >= 0; end--)
+   {
+      if (szfilename[end] == '.')
+      {
+         break;
+      }
+   }
 
-	if (end == 0)
-		{
-		end = len-1;
-		}
+   if (end == 0)
+   {
+      end = len - 1;
+   }
 
-	char *szT = &szfilename[begin];
-	int count = end-begin;
+   char *szT = &szfilename[begin];
+   int count = end - begin;
 
-	while (count--) {*sztitle++ = *szT++;}
-	*sztitle = '\0';
-	}
+   while (count--) { *sztitle++ = *szT++; }
+   *sztitle = '\0';
+}
 
 void PathFromFilename(char *szfilename, char *szpath)
-	{
-	const int len = lstrlen(szfilename);
-	// find the last '\' in the filename
-	int end;
-	for (end=len;end>=0;end--)
-		{
-		if (szfilename[end] == '\\' || szfilename[end] == '/' )
-			{
-			break;
-			}
-		}
-		
-	if (end == 0)
-		{
-		end = len-1;
-		}
+{
+   const int len = lstrlen(szfilename);
+   // find the last '\' in the filename
+   int end;
+   for (end = len; end >= 0; end--)
+   {
+      if (szfilename[end] == '\\' || szfilename[end] == '/')
+      {
+         break;
+      }
+   }
 
-	// copy from the start of the string to the end (or last '\')
-	char *szT = szfilename;
-	int count = end+1;
+   if (end == 0)
+   {
+      end = len - 1;
+   }
 
-	while (count--) {*szpath++ = *szT++;}
-	*szpath = '\0';
-	}
-	
+   // copy from the start of the string to the end (or last '\')
+   char *szT = szfilename;
+   int count = end + 1;
+
+   while (count--) { *szpath++ = *szT++; }
+   *szpath = '\0';
+}
+
 void TitleAndPathFromFilename(char *szfilename, char *szpath)
-	{
-	const int len = lstrlen(szfilename);
-	// find the last '.' in the filename
-	int end;
-	for (end=len;end>=0;end--)
-		{
-		if (szfilename[end] == '.')
-			{
-			break;
-			}
-		}
-		
-	if (end == 0)
-		{
-		end = len;
-		}
+{
+   const int len = lstrlen(szfilename);
+   // find the last '.' in the filename
+   int end;
+   for (end = len; end >= 0; end--)
+   {
+      if (szfilename[end] == '.')
+      {
+         break;
+      }
+   }
 
-	// copy from the start of the string to the end (or last '\')
-	char *szT = szfilename;
-	int count = end;
+   if (end == 0)
+   {
+      end = len;
+   }
 
-	while (count-- > 0) {*szpath++ = *szT++;}
-	*szpath = '\0';
-	}
+   // copy from the start of the string to the end (or last '\')
+   char *szT = szfilename;
+   int count = end;
+
+   while (count-- > 0) { *szpath++ = *szT++; }
+   *szpath = '\0';
+}
 
 BOOL RawReadFromFile(char *szfilename, int *psize, char **pszout)
-	{
-	HANDLE hFile = CreateFile(szfilename,
-		GENERIC_READ, FILE_SHARE_READ,
-		NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+{
+   HANDLE hFile = CreateFile(szfilename,
+      GENERIC_READ, FILE_SHARE_READ,
+      NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
-	if (hFile == INVALID_HANDLE_VALUE)
-		{
-		return fFalse;
-		//ShowError("The file could not be opened.");
-		//return;
-		}
+   if (hFile == INVALID_HANDLE_VALUE)
+   {
+      return fFalse;
+      //ShowError("The file could not be opened.");
+      //return;
+   }
 
-	*psize = GetFileSize(hFile, NULL);
+   *psize = GetFileSize(hFile, NULL);
 
-	*pszout = new char[*psize + 2];
+   *pszout = new char[*psize + 2];
 
-	DWORD read;
+   DWORD read;
 
-	/*BOOL fFoo =*/ ReadFile(hFile, *pszout, *psize, &read, NULL);
+   /*BOOL fFoo =*/ ReadFile(hFile, *pszout, *psize, &read, NULL);
 
-	(*pszout)[*psize] = '\0';
-	(*pszout)[*psize+1] = '\0'; // In case this is a unicode file, end it with a null character properly
+   (*pszout)[*psize] = '\0';
+   (*pszout)[*psize + 1] = '\0'; // In case this is a unicode file, end it with a null character properly
 
-	/*fFoo =*/ CloseHandle(hFile);
+   /*fFoo =*/ CloseHandle(hFile);
 
-	return fTrue;
-	}
+   return fTrue;
+}
 
 BiffWriter::BiffWriter(IStream *pistream, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
-	{
-	m_pistream = pistream;
-	m_hcrypthash = hcrypthash;
-	m_hcryptkey = hcryptkey;
-	}
+{
+   m_pistream = pistream;
+   m_hcrypthash = hcrypthash;
+   m_hcryptkey = hcryptkey;
+}
 
-HRESULT BiffWriter::WriteBytes(const void *pv,unsigned long count,unsigned long *foo)
-	{
-	if (m_hcrypthash)
-		{
-		CryptHashData(m_hcrypthash, (BYTE *)pv, count, 0);
-		}
+HRESULT BiffWriter::WriteBytes(const void *pv, unsigned long count, unsigned long *foo)
+{
+   if (m_hcrypthash)
+   {
+      CryptHashData(m_hcrypthash, (BYTE *)pv, count, 0);
+   }
 
-	return m_pistream->Write(pv, count, foo);
-	}
+   return m_pistream->Write(pv, count, foo);
+}
 
 HRESULT BiffWriter::WriteRecordSize(int size)
-	{
-	ULONG writ = 0;
-	HRESULT hr = m_pistream->Write(&size, sizeof(size), &writ);
+{
+   ULONG writ = 0;
+   HRESULT hr = m_pistream->Write(&size, sizeof(size), &writ);
 
-	return hr;
-	}
+   return hr;
+}
 
 HRESULT BiffWriter::WriteInt(int id, int value)
-	{
-	ULONG writ = 0;
-	HRESULT hr;
+{
+   ULONG writ = 0;
+   HRESULT hr;
 
-	if(FAILED(hr = WriteRecordSize(sizeof(int)*2)))
-		return hr;
+   if (FAILED(hr = WriteRecordSize(sizeof(int) * 2)))
+      return hr;
 
-	if(FAILED(hr = WriteBytes(&id, sizeof(int), &writ)))
-		return hr;
+   if (FAILED(hr = WriteBytes(&id, sizeof(int), &writ)))
+      return hr;
 
-	hr = WriteBytes(&value, sizeof(int), &writ);
+   hr = WriteBytes(&value, sizeof(int), &writ);
 
-	return hr;
-	}
+   return hr;
+}
 
 HRESULT BiffWriter::WriteString(int id, char *szvalue)
-	{
-	ULONG writ = 0;
-	HRESULT hr;
-	int len = lstrlen(szvalue);
+{
+   ULONG writ = 0;
+   HRESULT hr;
+   int len = lstrlen(szvalue);
 
-	if(FAILED(hr = WriteRecordSize(sizeof(int)*2 + len)))
-		return hr;
+   if (FAILED(hr = WriteRecordSize(sizeof(int) * 2 + len)))
+      return hr;
 
-	if(FAILED(hr = WriteBytes(&id, sizeof(int), &writ)))
-		return hr;
+   if (FAILED(hr = WriteBytes(&id, sizeof(int), &writ)))
+      return hr;
 
-	if(FAILED(hr = WriteBytes(&len, sizeof(int), &writ)))
-		return hr;
+   if (FAILED(hr = WriteBytes(&len, sizeof(int), &writ)))
+      return hr;
 
-	hr = WriteBytes(szvalue, len, &writ);
+   hr = WriteBytes(szvalue, len, &writ);
 
-	return hr;
-	}
+   return hr;
+}
 
 HRESULT BiffWriter::WriteWideString(int id, WCHAR *wzvalue)
-	{
-	ULONG writ = 0;
-	HRESULT hr;
-	int len = lstrlenW(wzvalue) * sizeof(WCHAR);
+{
+   ULONG writ = 0;
+   HRESULT hr;
+   int len = lstrlenW(wzvalue) * sizeof(WCHAR);
 
-	if(FAILED(hr = WriteRecordSize(sizeof(int)*2 + len)))
-		return hr;
+   if (FAILED(hr = WriteRecordSize(sizeof(int) * 2 + len)))
+      return hr;
 
-	if(FAILED(hr = WriteBytes(&id, sizeof(int), &writ)))
-		return hr;
+   if (FAILED(hr = WriteBytes(&id, sizeof(int), &writ)))
+      return hr;
 
-	if(FAILED(hr = WriteBytes(&len, sizeof(int), &writ)))
-		return hr;
+   if (FAILED(hr = WriteBytes(&len, sizeof(int), &writ)))
+      return hr;
 
-	hr = WriteBytes(wzvalue, len, &writ);
+   hr = WriteBytes(wzvalue, len, &writ);
 
-	return hr;
-	}
+   return hr;
+}
 
 HRESULT BiffWriter::WriteBool(int id, BOOL fvalue)
-	{
-	ULONG writ = 0;
-	HRESULT hr;
+{
+   ULONG writ = 0;
+   HRESULT hr;
 
-	if(FAILED(hr = WriteRecordSize(sizeof(int)*2)))
-		return hr;
+   if (FAILED(hr = WriteRecordSize(sizeof(int) * 2)))
+      return hr;
 
-	if(FAILED(hr = WriteBytes(&id, sizeof(int), &writ)))
-		return hr;
+   if (FAILED(hr = WriteBytes(&id, sizeof(int), &writ)))
+      return hr;
 
-	hr = WriteBytes(&fvalue, sizeof(BOOL), &writ);
+   hr = WriteBytes(&fvalue, sizeof(BOOL), &writ);
 
-	return hr;
-	}
+   return hr;
+}
 
 HRESULT BiffWriter::WriteFloat(int id, float value)
-	{
-	ULONG writ = 0;
-	HRESULT hr;
+{
+   ULONG writ = 0;
+   HRESULT hr;
 
-	if(FAILED(hr = WriteRecordSize(sizeof(int) + sizeof(float))))
-		return hr;
+   if (FAILED(hr = WriteRecordSize(sizeof(int) + sizeof(float))))
+      return hr;
 
-	if(FAILED(hr = WriteBytes(&id, sizeof(int), &writ)))
-		return hr;
+   if (FAILED(hr = WriteBytes(&id, sizeof(int), &writ)))
+      return hr;
 
-	hr = WriteBytes(&value, sizeof(float), &writ);
+   hr = WriteBytes(&value, sizeof(float), &writ);
 
-	return hr;
-	}
+   return hr;
+}
 
 HRESULT BiffWriter::WriteStruct(int id, void *pvalue, int size)
-	{
-	ULONG writ = 0;
-	HRESULT hr;
+{
+   ULONG writ = 0;
+   HRESULT hr;
 
-	if(FAILED(hr = WriteRecordSize(sizeof(int) + size)))
-		return hr;
+   if (FAILED(hr = WriteRecordSize(sizeof(int) + size)))
+      return hr;
 
-	if(FAILED(hr = WriteBytes(&id, sizeof(int), &writ)))
-		return hr;
+   if (FAILED(hr = WriteBytes(&id, sizeof(int), &writ)))
+      return hr;
 
-	hr = WriteBytes(pvalue, size, &writ);
+   hr = WriteBytes(pvalue, size, &writ);
 
-	return hr;
-	}
+   return hr;
+}
 
 HRESULT BiffWriter::WriteVector3(int id, Vertex3Ds* vec)
 {
-    return WriteStruct(id, &vec->x, 3 * sizeof(float));
+   return WriteStruct(id, &vec->x, 3 * sizeof(float));
 }
 
 HRESULT BiffWriter::WriteVector3Padded(int id, Vertex3Ds* vec)
 {
-    float data[4];
-    data[0] = vec->x;
-    data[1] = vec->y;
-    data[2] = vec->z;
-    data[3] = 0.0f;
-    return WriteStruct(id, data, 4 * sizeof(float));
+   float data[4];
+   data[0] = vec->x;
+   data[1] = vec->y;
+   data[2] = vec->z;
+   data[3] = 0.0f;
+   return WriteStruct(id, data, 4 * sizeof(float));
 }
 
 HRESULT BiffWriter::WriteTag(int id)
-	{
-	ULONG writ = 0;
-	HRESULT hr;
+{
+   ULONG writ = 0;
+   HRESULT hr;
 
-	if(FAILED(hr = WriteRecordSize(sizeof(int))))
-		return hr;
+   if (FAILED(hr = WriteRecordSize(sizeof(int))))
+      return hr;
 
-	hr = WriteBytes(&id, sizeof(int), &writ);
+   hr = WriteBytes(&id, sizeof(int), &writ);
 
-	return hr;
-	}
+   return hr;
+}
 
 BiffReader::BiffReader(IStream *pistream, ILoadable *piloadable, void *ppassdata, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
-	{
-	m_pistream = pistream;
-	m_piloadable = piloadable;
-	m_pdata = ppassdata;
-	m_version = version;
+{
+   m_pistream = pistream;
+   m_piloadable = piloadable;
+   m_pdata = ppassdata;
+   m_version = version;
 
-	m_bytesinrecordremaining = 0;
+   m_bytesinrecordremaining = 0;
 
-	m_hcrypthash = hcrypthash;
-	m_hcryptkey = hcryptkey;
-	}
+   m_hcrypthash = hcrypthash;
+   m_hcryptkey = hcryptkey;
+}
 
-HRESULT BiffReader::ReadBytes(void *pv,unsigned long count,unsigned long *foo)
-	{
-	HRESULT hr = m_pistream->Read(pv, count, foo);
+HRESULT BiffReader::ReadBytes(void *pv, unsigned long count, unsigned long *foo)
+{
+   HRESULT hr = m_pistream->Read(pv, count, foo);
 
-	if (m_hcrypthash)
-		{
-		CryptHashData(m_hcrypthash, (BYTE *)pv, count, 0);
-		}
+   if (m_hcrypthash)
+   {
+      CryptHashData(m_hcrypthash, (BYTE *)pv, count, 0);
+   }
 
-	return hr;
-	}
+   return hr;
+}
 
 HRESULT BiffReader::GetIntNoHash(void *pvalue)
-	{
-	m_bytesinrecordremaining -= sizeof(int);
+{
+   m_bytesinrecordremaining -= sizeof(int);
 
-	ULONG read = 0;
-	return m_pistream->Read(pvalue, sizeof(int), &read);
-	}
+   ULONG read = 0;
+   return m_pistream->Read(pvalue, sizeof(int), &read);
+}
 
 HRESULT BiffReader::GetInt(void *pvalue)
-	{
-	m_bytesinrecordremaining -= sizeof(int);
+{
+   m_bytesinrecordremaining -= sizeof(int);
 
-	ULONG read = 0;
-	return ReadBytes(pvalue, sizeof(int), &read);
-	}
+   ULONG read = 0;
+   return ReadBytes(pvalue, sizeof(int), &read);
+}
 
 HRESULT BiffReader::GetString(char *szvalue)
-	{
-	ULONG read = 0;
-	HRESULT hr;
-	int len;
+{
+   ULONG read = 0;
+   HRESULT hr;
+   int len;
 
-    *szvalue=0;
-	if(FAILED(hr = ReadBytes(&len, sizeof(int), &read)))
-		return hr;
+   *szvalue = 0;
+   if (FAILED(hr = ReadBytes(&len, sizeof(int), &read)))
+      return hr;
 
-	m_bytesinrecordremaining -= len+sizeof(int);
+   m_bytesinrecordremaining -= len + sizeof(int);
 
-	hr = ReadBytes(szvalue, len, &read);
-	szvalue[len] = 0;
-	return hr;
-	}
+   hr = ReadBytes(szvalue, len, &read);
+   szvalue[len] = 0;
+   return hr;
+}
 
 HRESULT BiffReader::GetWideString(WCHAR *wzvalue)
-	{
-	ULONG read = 0;
-	HRESULT hr;
-	int len;
+{
+   ULONG read = 0;
+   HRESULT hr;
+   int len;
 
-	if(FAILED(hr = ReadBytes(&len, sizeof(int), &read)))
-		return hr;
+   if (FAILED(hr = ReadBytes(&len, sizeof(int), &read)))
+      return hr;
 
-	m_bytesinrecordremaining -= len+sizeof(int);
+   m_bytesinrecordremaining -= len + sizeof(int);
 
-	hr = ReadBytes(wzvalue, len, &read);
-	wzvalue[len/sizeof(WCHAR)] = 0;
-	return hr;
-	}
+   hr = ReadBytes(wzvalue, len, &read);
+   wzvalue[len / sizeof(WCHAR)] = 0;
+   return hr;
+}
 
 HRESULT BiffReader::GetFloat(float *pvalue)
-	{
-	m_bytesinrecordremaining -= sizeof(float);
+{
+   m_bytesinrecordremaining -= sizeof(float);
 
-	ULONG read = 0;
-	return ReadBytes(pvalue, sizeof(float), &read);
-	}
+   ULONG read = 0;
+   return ReadBytes(pvalue, sizeof(float), &read);
+}
 
 HRESULT BiffReader::GetBool(BOOL *pfvalue)
-	{
-	m_bytesinrecordremaining -= sizeof(BOOL);
+{
+   m_bytesinrecordremaining -= sizeof(BOOL);
 
-	ULONG read = 0;
-	//return m_pistream->Read(pfvalue, sizeof(BOOL), &read);
-	return ReadBytes(pfvalue, sizeof(BOOL), &read);
-	}
+   ULONG read = 0;
+   //return m_pistream->Read(pfvalue, sizeof(BOOL), &read);
+   return ReadBytes(pfvalue, sizeof(BOOL), &read);
+}
 
 HRESULT BiffReader::GetBool(bool *pvalue)
-	{
-    BOOL val;
-    HRESULT hr = GetBool(&val);
-    *pvalue = !!val;
-    return hr;
-	}
+{
+   BOOL val;
+   HRESULT hr = GetBool(&val);
+   *pvalue = !!val;
+   return hr;
+}
 
 HRESULT BiffReader::GetStruct(void *pvalue, int size)
-	{
-	m_bytesinrecordremaining -= size;
+{
+   m_bytesinrecordremaining -= size;
 
-	ULONG read = 0;
-	return ReadBytes(pvalue, size, &read);
-	}
+   ULONG read = 0;
+   return ReadBytes(pvalue, size, &read);
+}
 
 HRESULT BiffReader::GetVector3(Vertex3Ds* vec)
 {
-    assert(sizeof(Vertex3Ds) == 3 * sizeof(float));     // fields need to be contiguous
-    return GetStruct(&vec->x, 3 * sizeof(float));
+   assert(sizeof(Vertex3Ds) == 3 * sizeof(float));     // fields need to be contiguous
+   return GetStruct(&vec->x, 3 * sizeof(float));
 }
 
 HRESULT BiffReader::GetVector3Padded(Vertex3Ds* vec)
 {
-    float data[4];
-    HRESULT hr = GetStruct(data, 4 * sizeof(float));
-    if (SUCCEEDED(hr))
-    {
-        vec->x = data[0];
-        vec->y = data[1];
-        vec->z = data[2];
-    }
-    return hr;
+   float data[4];
+   HRESULT hr = GetStruct(data, 4 * sizeof(float));
+   if (SUCCEEDED(hr))
+   {
+      vec->x = data[0];
+      vec->y = data[1];
+      vec->z = data[2];
+   }
+   return hr;
 }
 
 HRESULT BiffReader::Load()
-	{
-	int tag = 0;
-	while (tag != FID(ENDB))
-		{
-		if (m_version > 30)
-			{
-			GetIntNoHash(&m_bytesinrecordremaining);
-			}
+{
+   int tag = 0;
+   while (tag != FID(ENDB))
+   {
+      if (m_version > 30)
+      {
+         GetIntNoHash(&m_bytesinrecordremaining);
+      }
 
-		const HRESULT hr = GetInt(&tag);
+      const HRESULT hr = GetInt(&tag);
 
-		BOOL fContinue = fFalse;
-		if (hr == S_OK)
-			{
-			fContinue = m_piloadable->LoadToken(tag, this);
-			}
+      BOOL fContinue = fFalse;
+      if (hr == S_OK)
+      {
+         fContinue = m_piloadable->LoadToken(tag, this);
+      }
 
-		if (!fContinue)
-			{
-			return E_FAIL;
-			}
+      if (!fContinue)
+      {
+         return E_FAIL;
+      }
 
-		if (m_version > 30)
-			{
-			if (m_bytesinrecordremaining > 0)
-				{
-				BYTE * const szT = new BYTE[m_bytesinrecordremaining];
-				GetStruct(szT, m_bytesinrecordremaining);
-				delete [] szT;
-				}
-			}
-		}
+      if (m_version > 30)
+      {
+         if (m_bytesinrecordremaining > 0)
+         {
+            BYTE * const szT = new BYTE[m_bytesinrecordremaining];
+            GetStruct(szT, m_bytesinrecordremaining);
+            delete[] szT;
+         }
+      }
+   }
 
-	return S_OK;
-	}
+   return S_OK;
+}
 
 FastIStorage::FastIStorage()
-	{
-	m_wzName = NULL;
-	m_cref = 0;
-	}
+{
+   m_wzName = NULL;
+   m_cref = 0;
+}
 
 FastIStorage::~FastIStorage()
-	{
-	for (int i=0;i<m_vstg.Size();i++)
-		{
-		m_vstg.ElementAt(i)->Release();
-		}
+{
+   for (int i = 0; i < m_vstg.Size(); i++)
+   {
+      m_vstg.ElementAt(i)->Release();
+   }
 
-	for (int i=0;i<m_vstm.Size();i++)
-		{
-		m_vstm.ElementAt(i)->Release();
-		}
+   for (int i = 0; i < m_vstm.Size(); i++)
+   {
+      m_vstm.ElementAt(i)->Release();
+   }
 
-	SAFE_VECTOR_DELETE(m_wzName);
-	}
+   SAFE_VECTOR_DELETE(m_wzName);
+}
 
-long __stdcall FastIStorage::QueryInterface(const struct _GUID &,void ** )
-	{
-	return S_OK;
-	}
+long __stdcall FastIStorage::QueryInterface(const struct _GUID &, void **)
+{
+   return S_OK;
+}
 
 unsigned long __stdcall FastIStorage::AddRef()
-	{
-	m_cref++;
+{
+   m_cref++;
 
-	return S_OK;
-	}
+   return S_OK;
+}
 
 unsigned long __stdcall FastIStorage::Release()
-	{
-	m_cref--;
+{
+   m_cref--;
 
-	if (m_cref == 0)
-		{
-		delete this;
-		}
+   if (m_cref == 0)
+   {
+      delete this;
+   }
 
-	return S_OK;
-	}
+   return S_OK;
+}
 
-long __stdcall FastIStorage::CreateStream(const WCHAR *wzName,unsigned long,unsigned long,unsigned long,struct IStream **ppstm)
-	{
-	FastIStream * const pfs = new FastIStream();
-   const int wzNameLen = lstrlenW(wzName) + 1;
-	pfs->AddRef(); // AddRef once for us, and once for the caller
-	pfs->AddRef();
-	pfs->m_wzName = new WCHAR[wzNameLen];
-	WideStrNCopy((WCHAR *)wzName, pfs->m_wzName,wzNameLen);
-
-	*ppstm = pfs;
-
-	m_vstm.AddElement(pfs);
-
-	return S_OK;
-	}
-
-long __stdcall FastIStorage::OpenStream(const WCHAR *,void *,unsigned long,unsigned long,struct IStream ** )
-	{
-	return S_OK;
-	}
-
-long __stdcall FastIStorage::CreateStorage(const WCHAR *wzName,unsigned long,unsigned long,unsigned long,struct IStorage **ppstg)
-	{
-	FastIStorage * const pfs = new FastIStorage();
+long __stdcall FastIStorage::CreateStream(const WCHAR *wzName, unsigned long, unsigned long, unsigned long, struct IStream **ppstm)
+{
+   FastIStream * const pfs = new FastIStream();
    const int wzNameLen = lstrlenW(wzName) + 1;
    pfs->AddRef(); // AddRef once for us, and once for the caller
-	pfs->AddRef();
-	pfs->m_wzName = new WCHAR[wzNameLen];
-	WideStrNCopy((WCHAR *)wzName, pfs->m_wzName, wzNameLen);
+   pfs->AddRef();
+   pfs->m_wzName = new WCHAR[wzNameLen];
+   WideStrNCopy((WCHAR *)wzName, pfs->m_wzName, wzNameLen);
 
-	*ppstg = pfs;
+   *ppstm = pfs;
 
-	m_vstg.AddElement(pfs);
+   m_vstm.AddElement(pfs);
 
-	return S_OK;
-	}
+   return S_OK;
+}
 
-long __stdcall FastIStorage::OpenStorage(const WCHAR *,struct IStorage *,unsigned long,WCHAR ** ,unsigned long,struct IStorage ** )
-	{
-	return S_OK;
-	}
+long __stdcall FastIStorage::OpenStream(const WCHAR *, void *, unsigned long, unsigned long, struct IStream **)
+{
+   return S_OK;
+}
 
-long __stdcall FastIStorage::CopyTo(unsigned long,const struct _GUID *,WCHAR ** ,struct IStorage *pstgNew)
-	{
-	HRESULT hr;
-	IStorage *pstgT;
-	IStream *pstmT;
+long __stdcall FastIStorage::CreateStorage(const WCHAR *wzName, unsigned long, unsigned long, unsigned long, struct IStorage **ppstg)
+{
+   FastIStorage * const pfs = new FastIStorage();
+   const int wzNameLen = lstrlenW(wzName) + 1;
+   pfs->AddRef(); // AddRef once for us, and once for the caller
+   pfs->AddRef();
+   pfs->m_wzName = new WCHAR[wzNameLen];
+   WideStrNCopy((WCHAR *)wzName, pfs->m_wzName, wzNameLen);
 
-	for (int i=0;i<m_vstg.Size();i++)
-		{
-		FastIStorage *pstgCur = m_vstg.ElementAt(i);
-		if(SUCCEEDED(hr = pstgNew->CreateStorage(pstgCur->m_wzName, STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstgT)))
-			{
-			pstgCur->CopyTo(0,NULL,NULL,pstgT);
-			pstgT->Release();
-			}
-		}
+   *ppstg = pfs;
 
-	for (int i=0;i<m_vstm.Size();i++)
-		{
-		FastIStream *pstmCur = m_vstm.ElementAt(i);
-		if(SUCCEEDED(hr = pstgNew->CreateStream(pstmCur->m_wzName, STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstmT)))
-			{
-			ULONG writ;
-			//pstmCur->CopyTo(0,NULL,NULL,pstmT);
-			pstmT->Write(pstmCur->m_rg, pstmCur->m_cSize, &writ);
-			pstmT->Release();
-			}
-		}
+   m_vstg.AddElement(pfs);
 
-	return S_OK;
-	}
+   return S_OK;
+}
 
-long __stdcall FastIStorage::MoveElementTo(const WCHAR *,struct IStorage *,const WCHAR *,unsigned long)
-	{
-	return S_OK;
-	}
+long __stdcall FastIStorage::OpenStorage(const WCHAR *, struct IStorage *, unsigned long, WCHAR **, unsigned long, struct IStorage **)
+{
+   return S_OK;
+}
+
+long __stdcall FastIStorage::CopyTo(unsigned long, const struct _GUID *, WCHAR **, struct IStorage *pstgNew)
+{
+   HRESULT hr;
+   IStorage *pstgT;
+   IStream *pstmT;
+
+   for (int i = 0; i < m_vstg.Size(); i++)
+   {
+      FastIStorage *pstgCur = m_vstg.ElementAt(i);
+      if (SUCCEEDED(hr = pstgNew->CreateStorage(pstgCur->m_wzName, STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstgT)))
+      {
+         pstgCur->CopyTo(0, NULL, NULL, pstgT);
+         pstgT->Release();
+      }
+   }
+
+   for (int i = 0; i < m_vstm.Size(); i++)
+   {
+      FastIStream *pstmCur = m_vstm.ElementAt(i);
+      if (SUCCEEDED(hr = pstgNew->CreateStream(pstmCur->m_wzName, STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstmT)))
+      {
+         ULONG writ;
+         //pstmCur->CopyTo(0,NULL,NULL,pstmT);
+         pstmT->Write(pstmCur->m_rg, pstmCur->m_cSize, &writ);
+         pstmT->Release();
+      }
+   }
+
+   return S_OK;
+}
+
+long __stdcall FastIStorage::MoveElementTo(const WCHAR *, struct IStorage *, const WCHAR *, unsigned long)
+{
+   return S_OK;
+}
 
 long __stdcall FastIStorage::Commit(unsigned long)
-	{
-	return S_OK;
-	}
+{
+   return S_OK;
+}
 
 long __stdcall FastIStorage::Revert()
-	{
-	return S_OK;
-	}
+{
+   return S_OK;
+}
 
-long __stdcall FastIStorage::EnumElements(unsigned long,void *,unsigned long,struct IEnumSTATSTG ** )
-	{
-	return S_OK;
-	}
+long __stdcall FastIStorage::EnumElements(unsigned long, void *, unsigned long, struct IEnumSTATSTG **)
+{
+   return S_OK;
+}
 
 long __stdcall FastIStorage::DestroyElement(const WCHAR *)
-	{
-	return S_OK;
-	}
+{
+   return S_OK;
+}
 
-long __stdcall FastIStorage::RenameElement(const WCHAR *,const WCHAR *)
-	{
-	return S_OK;
-	}
+long __stdcall FastIStorage::RenameElement(const WCHAR *, const WCHAR *)
+{
+   return S_OK;
+}
 
-long __stdcall FastIStorage::SetElementTimes(const WCHAR *,const struct _FILETIME *,const struct _FILETIME *,const struct _FILETIME *)
-	{
-	return S_OK;
-	}
+long __stdcall FastIStorage::SetElementTimes(const WCHAR *, const struct _FILETIME *, const struct _FILETIME *, const struct _FILETIME *)
+{
+   return S_OK;
+}
 
 long __stdcall FastIStorage::SetClass(const struct _GUID &)
-	{
-	return S_OK;
-	}
+{
+   return S_OK;
+}
 
-long __stdcall FastIStorage::SetStateBits(unsigned long,unsigned long)
-	{
-	return S_OK;
-	}
+long __stdcall FastIStorage::SetStateBits(unsigned long, unsigned long)
+{
+   return S_OK;
+}
 
-long __stdcall FastIStorage::Stat(struct tagSTATSTG *,unsigned long)
-	{
-	return S_OK;
-	}
+long __stdcall FastIStorage::Stat(struct tagSTATSTG *, unsigned long)
+{
+   return S_OK;
+}
 
 FastIStream::FastIStream()
-	{
-	m_cref = 0;
+{
+   m_cref = 0;
 
-	m_cMax = 0;
-	m_cSeek = 0;
-	m_cSize = 0;
-	m_rg = NULL;
+   m_cMax = 0;
+   m_cSeek = 0;
+   m_cSize = 0;
+   m_rg = NULL;
 
-	m_wzName = NULL;
-	}
+   m_wzName = NULL;
+}
 
 FastIStream::~FastIStream()
-	{
-	free(m_rg);
-	SAFE_VECTOR_DELETE(m_wzName);
-	}
+{
+   free(m_rg);
+   SAFE_VECTOR_DELETE(m_wzName);
+}
 
 void FastIStream::SetSize(unsigned int i)
-	{
-	if (i > m_cMax)
-		{
-		void *m_rgNew;
+{
+   if (i > m_cMax)
+   {
+      void *m_rgNew;
 
-		if (m_rg)
-			{
-			m_rgNew = realloc((void *)m_rg, sizeof(void *) * (i));
-			}
-		else
-			{
-			m_rgNew = malloc(sizeof(void *) * i);
-			}
+      if (m_rg)
+      {
+         m_rgNew = realloc((void *)m_rg, sizeof(void *) * (i));
+      }
+      else
+      {
+         m_rgNew = malloc(sizeof(void *) * i);
+      }
 
-		m_rg = (char *)m_rgNew;
-		m_cMax = i;
-		}
-	}
+      m_rg = (char *)m_rgNew;
+      m_cMax = i;
+   }
+}
 
-long __stdcall FastIStream::QueryInterface(const struct _GUID &,void ** )
-	{
-	return S_OK;
-	}
+long __stdcall FastIStream::QueryInterface(const struct _GUID &, void **)
+{
+   return S_OK;
+}
 
 unsigned long __stdcall FastIStream::AddRef()
-	{
-	m_cref++;
+{
+   m_cref++;
 
-	return S_OK;
-	}
+   return S_OK;
+}
 
 unsigned long __stdcall FastIStream::Release()
-	{
-	m_cref--;
+{
+   m_cref--;
 
-	if (m_cref == 0)
-		{
-		delete this;
-		}
+   if (m_cref == 0)
+   {
+      delete this;
+   }
 
-	return S_OK;
-	}
+   return S_OK;
+}
 
-long __stdcall FastIStream::Read(void *pv,unsigned long count,unsigned long *foo)
-	{
-	memcpy(pv, m_rg + m_cSeek, count);
-	m_cSeek += count;
-	
-	if (foo != NULL)
-		{
-		*foo = count;
-		}
+long __stdcall FastIStream::Read(void *pv, unsigned long count, unsigned long *foo)
+{
+   memcpy(pv, m_rg + m_cSeek, count);
+   m_cSeek += count;
 
-	return S_OK;
-	}
+   if (foo != NULL)
+   {
+      *foo = count;
+   }
 
-long __stdcall FastIStream::Write(const void *pv,unsigned long count,unsigned long *foo)
-	{
-	if((m_cSeek + count) > m_cMax)
-		{
-		SetSize(max(m_cSeek*2, m_cSeek + count));
-		}
+   return S_OK;
+}
 
-	memcpy(m_rg + m_cSeek, pv, count);
-	m_cSeek += count;
-	
-	m_cSize = max(m_cSize, m_cSeek);
-	
-	if (foo != NULL)
-		{
-		*foo = count;
-		}
+long __stdcall FastIStream::Write(const void *pv, unsigned long count, unsigned long *foo)
+{
+   if ((m_cSeek + count) > m_cMax)
+   {
+      SetSize(max(m_cSeek * 2, m_cSeek + count));
+   }
 
-	return S_OK;
-	}
+   memcpy(m_rg + m_cSeek, pv, count);
+   m_cSeek += count;
+
+   m_cSize = max(m_cSize, m_cSeek);
+
+   if (foo != NULL)
+   {
+      *foo = count;
+   }
+
+   return S_OK;
+}
 
 long __stdcall FastIStream::Seek(union _LARGE_INTEGER li, unsigned long origin, union _ULARGE_INTEGER *puiOut)
-	{
-	switch (origin)
-		{
-		case STREAM_SEEK_SET:
-			m_cSeek = li.LowPart;
-			break;
+{
+   switch (origin)
+   {
+   case STREAM_SEEK_SET:
+      m_cSeek = li.LowPart;
+      break;
 
-		case STREAM_SEEK_CUR:
-			m_cSeek += li.LowPart;
-			break;
-		}
+   case STREAM_SEEK_CUR:
+      m_cSeek += li.LowPart;
+      break;
+   }
 
-	if (puiOut)
-		{
-		puiOut->QuadPart = m_cSeek;
-		}
+   if (puiOut)
+   {
+      puiOut->QuadPart = m_cSeek;
+   }
 
-	return S_OK;
-	}
+   return S_OK;
+}
 
 long __stdcall FastIStream::SetSize(union _ULARGE_INTEGER)
-	{
-	return S_OK;
-	}
+{
+   return S_OK;
+}
 
-long __stdcall FastIStream::CopyTo(struct IStream *,union _ULARGE_INTEGER,union _ULARGE_INTEGER *,union _ULARGE_INTEGER *)
-	{
-	return S_OK;
-	}
+long __stdcall FastIStream::CopyTo(struct IStream *, union _ULARGE_INTEGER, union _ULARGE_INTEGER *, union _ULARGE_INTEGER *)
+{
+   return S_OK;
+}
 
 long __stdcall FastIStream::Commit(unsigned long)
-	{
-	return S_OK;
-	}
+{
+   return S_OK;
+}
 
 long __stdcall FastIStream::Revert()
-	{
-	return S_OK;
-	}
+{
+   return S_OK;
+}
 
-long __stdcall FastIStream::LockRegion(union _ULARGE_INTEGER,union _ULARGE_INTEGER,unsigned long)
-	{
-	return S_OK;
-	}
+long __stdcall FastIStream::LockRegion(union _ULARGE_INTEGER, union _ULARGE_INTEGER, unsigned long)
+{
+   return S_OK;
+}
 
-long __stdcall FastIStream::UnlockRegion(union _ULARGE_INTEGER,union _ULARGE_INTEGER,unsigned long)
-	{
-	return S_OK;
-	}
+long __stdcall FastIStream::UnlockRegion(union _ULARGE_INTEGER, union _ULARGE_INTEGER, unsigned long)
+{
+   return S_OK;
+}
 
-long __stdcall FastIStream::Stat(struct tagSTATSTG *,unsigned long)
-	{
-	return S_OK;
-	}
+long __stdcall FastIStream::Stat(struct tagSTATSTG *, unsigned long)
+{
+   return S_OK;
+}
 
-long __stdcall FastIStream::Clone(struct IStream ** )
-	{
-	return S_OK;
-	}
+long __stdcall FastIStream::Clone(struct IStream **)
+{
+   return S_OK;
+}

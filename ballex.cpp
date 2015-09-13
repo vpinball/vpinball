@@ -3,7 +3,7 @@
 
 BallEx::BallEx()
 {
-	m_pball = NULL;
+   m_pball = NULL;
 }
 
 BallEx::~BallEx()
@@ -12,304 +12,304 @@ BallEx::~BallEx()
 
 void BallEx::GetDebugCommands(std::vector<int> & pvids, std::vector<int> & pvcommandid)
 {
-	pvids.push_back(IDS_MAKEACTIVEBALL);
-	pvcommandid.push_back(0);
+   pvids.push_back(IDS_MAKEACTIVEBALL);
+   pvcommandid.push_back(0);
 }
 
 void BallEx::RunDebugCommand(int id)
 {
-	switch (id)
-	{
-		case 0:
-			g_pplayer->m_pactiveballDebug = m_pball;
-			break;
-	}
+   switch (id)
+   {
+   case 0:
+      g_pplayer->m_pactiveballDebug = m_pball;
+      break;
+   }
 }
 
 #define CHECKSTALEBALL if (!m_pball) return E_POINTER;
 
 STDMETHODIMP BallEx::get_X(float *pVal)
 {
-	CHECKSTALEBALL
+   CHECKSTALEBALL
 
-	*pVal = m_pball->m_pos.x;
+      *pVal = m_pball->m_pos.x;
 
-	return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP BallEx::put_X(float newVal)
 {
-	CHECKSTALEBALL
+   CHECKSTALEBALL
 
-	m_pball->m_pos.x = newVal;
+      m_pball->m_pos.x = newVal;
 
-	return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP BallEx::get_Y(float *pVal)
 {
-	CHECKSTALEBALL
+   CHECKSTALEBALL
 
-	*pVal = m_pball->m_pos.y;
+      *pVal = m_pball->m_pos.y;
 
-	return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP BallEx::put_Y(float newVal)
 {
-	CHECKSTALEBALL
+   CHECKSTALEBALL
 
-	m_pball->m_pos.y = newVal;
+      m_pball->m_pos.y = newVal;
 
-	return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP BallEx::get_VelX(float *pVal)
 {
-	CHECKSTALEBALL
+   CHECKSTALEBALL
 
-	*pVal = m_pball->m_vel.x;
+      *pVal = m_pball->m_vel.x;
 
-	return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP BallEx::put_VelX(float newVal)
 {
-	CHECKSTALEBALL
+   CHECKSTALEBALL
 
-	m_pball->m_vel.x = newVal;
+      m_pball->m_vel.x = newVal;
 
-	m_pball->CalcHitRect();
+   m_pball->CalcHitRect();
 
-	return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP BallEx::get_VelY(float *pVal)
 {
-	CHECKSTALEBALL
+   CHECKSTALEBALL
 
-	*pVal = m_pball->m_vel.y;
+      *pVal = m_pball->m_vel.y;
 
-	return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP BallEx::put_VelY(float newVal)
 {
-	CHECKSTALEBALL
+   CHECKSTALEBALL
 
-	m_pball->m_vel.y = newVal;
+      m_pball->m_vel.y = newVal;
 
-	m_pball->CalcHitRect();
+   m_pball->CalcHitRect();
 
-	return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP BallEx::get_Z(float *pVal)
 {
-	CHECKSTALEBALL
+   CHECKSTALEBALL
 
-	*pVal = m_pball->m_pos.z;
+      *pVal = m_pball->m_pos.z;
 
-	return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP BallEx::put_Z(float newVal)
 {
-	CHECKSTALEBALL
+   CHECKSTALEBALL
 
-	m_pball->m_pos.z = newVal;
+      m_pball->m_pos.z = newVal;
 
-	return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP BallEx::get_VelZ(float *pVal)
 {
-	CHECKSTALEBALL
+   CHECKSTALEBALL
 
-	*pVal = m_pball->m_vel.z;
+      *pVal = m_pball->m_vel.z;
 
-	return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP BallEx::put_VelZ(float newVal)
 {
-	CHECKSTALEBALL
+   CHECKSTALEBALL
 
-	m_pball->m_vel.z = newVal;
+      m_pball->m_vel.z = newVal;
 
-	m_pball->CalcHitRect();
+   m_pball->CalcHitRect();
 
-	return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP BallEx::get_Color(OLE_COLOR *pVal)
 {
-	CHECKSTALEBALL
+   CHECKSTALEBALL
 
-	*pVal = m_pball->m_color;
+      *pVal = m_pball->m_color;
 
-	return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP BallEx::put_Color(OLE_COLOR newVal)
 {
-	CHECKSTALEBALL
+   CHECKSTALEBALL
 
-	m_pball->m_color = newVal;
+      m_pball->m_color = newVal;
 
-	return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP BallEx::get_Image(BSTR *pVal)
 {
-	WCHAR wz[512];
+   WCHAR wz[512];
 
-	MultiByteToWideChar(CP_ACP, 0, m_pball->m_szImage, -1, wz, 32);
-	*pVal = SysAllocString(wz);
-	return S_OK;
+   MultiByteToWideChar(CP_ACP, 0, m_pball->m_szImage, -1, wz, 32);
+   *pVal = SysAllocString(wz);
+   return S_OK;
 }
 
 STDMETHODIMP BallEx::put_Image(BSTR newVal)
 {
-	WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_pball->m_szImage, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_pball->m_szImage, 32, NULL, NULL);
 
-	m_pball->m_pinballEnv = g_pplayer->m_ptable->GetImage(m_pball->m_szImage);
-    // recalculate texture coords for new texture
-    m_pball->RenderSetup();
-	return S_OK;
+   m_pball->m_pinballEnv = g_pplayer->m_ptable->GetImage(m_pball->m_szImage);
+   // recalculate texture coords for new texture
+   m_pball->RenderSetup();
+   return S_OK;
 }
 
 HRESULT BallEx::get_UserValue(VARIANT *pVal)
 {
-	VariantClear(pVal);
-	return VariantCopy(pVal, &m_uservalue);
+   VariantClear(pVal);
+   return VariantCopy(pVal, &m_uservalue);
 }
 
 HRESULT BallEx::put_UserValue(VARIANT *newVal)
 {
-	VariantInit(&m_uservalue);
-	VariantClear(&m_uservalue);
-	return VariantCopy(&m_uservalue, newVal);
+   VariantInit(&m_uservalue);
+   VariantClear(&m_uservalue);
+   return VariantCopy(&m_uservalue, newVal);
 }
 
 STDMETHODIMP BallEx::get_FrontDecal(BSTR *pVal)
 {
-	WCHAR wz[512];
+   WCHAR wz[512];
 
-	MultiByteToWideChar(CP_ACP, 0, m_pball->m_szImageFront, -1, wz, 32);
-	*pVal = SysAllocString(wz);
-	return S_OK;
+   MultiByteToWideChar(CP_ACP, 0, m_pball->m_szImageFront, -1, wz, 32);
+   *pVal = SysAllocString(wz);
+   return S_OK;
 }
 
 STDMETHODIMP BallEx::put_FrontDecal(BSTR newVal)
 {
-	WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_pball->m_szImageFront, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_pball->m_szImageFront, 32, NULL, NULL);
 
-	m_pball->m_pinballDecal = g_pplayer->m_ptable->GetImage(m_pball->m_szImageFront);
+   m_pball->m_pinballDecal = g_pplayer->m_ptable->GetImage(m_pball->m_szImageFront);
 
-	return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP BallEx::get_Name(BSTR *pVal)
 {
-	*pVal = SysAllocString(L"Ball");
-	return S_OK;
+   *pVal = SysAllocString(L"Ball");
+   return S_OK;
 }
 
 STDMETHODIMP BallEx::put_Name(BSTR newVal)
 {
-	return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP BallEx::get_Mass(float *pVal)
 {
-	CHECKSTALEBALL
+   CHECKSTALEBALL
 
-	*pVal = m_pball->m_mass;
+      *pVal = m_pball->m_mass;
 
-	return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP BallEx::put_Mass(float newVal)
 {
-	CHECKSTALEBALL
+   CHECKSTALEBALL
 
-	m_pball->m_mass = newVal;
-    m_pball->m_invMass = 1.0f / newVal;
+      m_pball->m_mass = newVal;
+   m_pball->m_invMass = 1.0f / newVal;
 
-	m_pball->m_inertia = (float)(2.0/5.0) * m_pball->m_radius*m_pball->m_radius * m_pball->m_mass;
+   m_pball->m_inertia = (float)(2.0 / 5.0) * m_pball->m_radius*m_pball->m_radius * m_pball->m_mass;
 
-	return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP BallEx::get_ID(int *pVal)
 {
-	CHECKSTALEBALL
+   CHECKSTALEBALL
 
-	*pVal = m_pball->m_id;
+      *pVal = m_pball->m_id;
 
-	return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP BallEx::put_ID(int newVal)
 {
-	CHECKSTALEBALL
+   CHECKSTALEBALL
 
-	m_pball->m_id = newVal;
+      m_pball->m_id = newVal;
 
-	return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP BallEx::get_Radius(float *pVal)
 {
-	CHECKSTALEBALL
+   CHECKSTALEBALL
 
-	*pVal = m_pball->m_radius;
+      *pVal = m_pball->m_radius;
 
-	return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP BallEx::put_Radius(float newVal)
 {
-	CHECKSTALEBALL
+   CHECKSTALEBALL
 
-	m_pball->m_radius = newVal;
-	m_pball->m_inertia = (float)(2.0/5.0) * m_pball->m_radius*m_pball->m_radius * m_pball->m_mass;
+      m_pball->m_radius = newVal;
+   m_pball->m_inertia = (float)(2.0 / 5.0) * m_pball->m_radius*m_pball->m_radius * m_pball->m_mass;
 
-	m_pball->CalcHitRect();
+   m_pball->CalcHitRect();
 
-	return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP BallEx::get_BulbIntensityScale(float *pVal)
 {
-	CHECKSTALEBALL
+   CHECKSTALEBALL
 
-	*pVal = m_pball->m_bulb_intensity_scale;
+      *pVal = m_pball->m_bulb_intensity_scale;
 
-	return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP BallEx::put_BulbIntensityScale(float newVal)
 {
-	CHECKSTALEBALL
+   CHECKSTALEBALL
 
-	m_pball->m_bulb_intensity_scale = newVal;
+      m_pball->m_bulb_intensity_scale = newVal;
 
-	return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP BallEx::DestroyBall(int *pVal)
 {
-	int cnt = 0;
-	if (g_pplayer)
-	{
-		++cnt;
-		g_pplayer->DestroyBall(g_pplayer->m_pactiveball);
-		g_pplayer->m_pactiveball = NULL;				// clear ActiveBall
-	}
+   int cnt = 0;
+   if (g_pplayer)
+   {
+      ++cnt;
+      g_pplayer->DestroyBall(g_pplayer->m_pactiveball);
+      g_pplayer->m_pactiveball = NULL;				// clear ActiveBall
+   }
 
-	if (pVal) *pVal = cnt;
+   if (pVal) *pVal = cnt;
 
-	return S_OK;
+   return S_OK;
 }

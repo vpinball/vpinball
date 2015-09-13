@@ -38,7 +38,7 @@ void f2sz(const float f, char *sz)
 
 void WideStrCopy(WCHAR *wzin, WCHAR *wzout)
 {
-   while (*wzin) { *wzout++ = *wzin++;}
+   while (*wzin) { *wzout++ = *wzin++; }
    *wzout = 0;
 }
 

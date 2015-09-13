@@ -5,223 +5,223 @@ class Surface;
 class BumperAnimObject : public AnimObject
 {
 public:
-	virtual void Animate() { }
+   virtual void Animate() { }
 
-    float m_ringAnimOffset;
-	bool m_fHitEvent;
-	bool m_fDisabled;
-	bool m_fVisible;
+   float m_ringAnimOffset;
+   bool m_fHitEvent;
+   bool m_fDisabled;
+   bool m_fVisible;
 };
 
 class BumperHitCircle : public HitCircle
 {
 public:
-	BumperHitCircle()
-	{
-		m_bumperanim.m_fHitEvent = false;
-		m_bumperanim.m_ringAnimOffset = 0.0f;
-		m_elasticity = 0.3f;
-		SetFriction(0.3f);
-		m_scatter = 0;
-		m_bumperanim.m_fVisible = true;
-	}
+   BumperHitCircle()
+   {
+      m_bumperanim.m_fHitEvent = false;
+      m_bumperanim.m_ringAnimOffset = 0.0f;
+      m_elasticity = 0.3f;
+      SetFriction(0.3f);
+      m_scatter = 0;
+      m_bumperanim.m_fVisible = true;
+   }
 
-	virtual void Collide(CollisionEvent* coll);
+   virtual void Collide(CollisionEvent* coll);
 
-	virtual AnimObject *GetAnimObject() { return &m_bumperanim; }
+   virtual AnimObject *GetAnimObject() { return &m_bumperanim; }
 
-	BumperAnimObject m_bumperanim;
+   BumperAnimObject m_bumperanim;
 
-	Bumper *m_pbumper;
+   Bumper *m_pbumper;
 };
 
 class SlingshotAnimObject : public AnimObject
 {
 public:
-	virtual void Animate();
+   virtual void Animate();
 
-	int m_iframe;
-	U32 m_TimeReset; // Time at which to pull in slingshot
-	bool m_fAnimations;
+   int m_iframe;
+   U32 m_TimeReset; // Time at which to pull in slingshot
+   bool m_fAnimations;
 };
 
 class LineSegSlingshot : public LineSeg
 {
 public:
-	LineSegSlingshot(const Vertex2D& p1, const Vertex2D& p2, const float _zlow, const float _zhigh)
-		: LineSeg(p1, p2, _zlow, _zhigh)
-	{
-		m_slingshotanim.m_iframe = 0;
-		m_slingshotanim.m_TimeReset = 0; // zero means the slingshot is currently reset
-		m_elasticity = 0.3f;
-		SetFriction(0.3f);
-		m_scatter = 0;
-	}
+   LineSegSlingshot(const Vertex2D& p1, const Vertex2D& p2, const float _zlow, const float _zhigh)
+      : LineSeg(p1, p2, _zlow, _zhigh)
+   {
+      m_slingshotanim.m_iframe = 0;
+      m_slingshotanim.m_TimeReset = 0; // zero means the slingshot is currently reset
+      m_elasticity = 0.3f;
+      SetFriction(0.3f);
+      m_scatter = 0;
+   }
 
-	virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
-	virtual void Collide(CollisionEvent* coll);
+   virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
+   virtual void Collide(CollisionEvent* coll);
 
-	virtual AnimObject *GetAnimObject() { return &m_slingshotanim; }
+   virtual AnimObject *GetAnimObject() { return &m_slingshotanim; }
 
-	SlingshotAnimObject m_slingshotanim;
+   SlingshotAnimObject m_slingshotanim;
 
-	float m_force;
+   float m_force;
 
-	Surface *m_psurface;
+   Surface *m_psurface;
 };
 
 class Hit3DPoly : public HitObject
 {
 public:
-	Hit3DPoly(Vertex3Ds * const rgv, const int count);
-	virtual ~Hit3DPoly();
-	virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
-	virtual int GetType() const {return e3DPoly;}
-	virtual void Collide(CollisionEvent *coll);
-	virtual void CalcHitRect();
+   Hit3DPoly(Vertex3Ds * const rgv, const int count);
+   virtual ~Hit3DPoly();
+   virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
+   virtual int GetType() const { return e3DPoly; }
+   virtual void Collide(CollisionEvent *coll);
+   virtual void CalcHitRect();
 
-	Vertex3Ds *m_rgv;
-	Vertex3Ds normal;
-	int m_cvertex;
+   Vertex3Ds *m_rgv;
+   Vertex3Ds normal;
+   int m_cvertex;
 };
 
 class HitTriangle : public HitObject
 {
 public:
-	HitTriangle(const Vertex3Ds rgv[3]);    // vertices in counterclockwise order
-	virtual ~HitTriangle() {}
-	virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
-	virtual int GetType() const { return eTriangle; }
-	virtual void Collide(CollisionEvent* coll);
-    virtual void Contact(CollisionEvent& coll, float dtime);
-	virtual void CalcHitRect();
+   HitTriangle(const Vertex3Ds rgv[3]);    // vertices in counterclockwise order
+   virtual ~HitTriangle() {}
+   virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
+   virtual int GetType() const { return eTriangle; }
+   virtual void Collide(CollisionEvent* coll);
+   virtual void Contact(CollisionEvent& coll, float dtime);
+   virtual void CalcHitRect();
 
-    bool IsDegenerate() const       { return normal.IsZero(); }
+   bool IsDegenerate() const       { return normal.IsZero(); }
 
-	Vertex3Ds m_rgv[3];
-	Vertex3Ds normal;
+   Vertex3Ds m_rgv[3];
+   Vertex3Ds normal;
 };
 
 
 class HitPlane : public HitObject
 {
 public:
-    HitPlane() {}
-    HitPlane(const Vertex3Ds& normal_, const float d_)
-		: normal(normal_), d(d_)
-	{
-		m_elasticity = 0.2f;
-	}
+   HitPlane() {}
+   HitPlane(const Vertex3Ds& normal_, const float d_)
+      : normal(normal_), d(d_)
+   {
+      m_elasticity = 0.2f;
+   }
 
-    virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
-    virtual int GetType() const { return ePlane; }
-    virtual void Collide(CollisionEvent* coll);
-    virtual void Contact(CollisionEvent& coll, float dtime);
-    virtual void CalcHitRect() {}  // TODO: this is needed if we want to put it in the quadtree
+   virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
+   virtual int GetType() const { return ePlane; }
+   virtual void Collide(CollisionEvent* coll);
+   virtual void Contact(CollisionEvent& coll, float dtime);
+   virtual void CalcHitRect() {}  // TODO: this is needed if we want to put it in the quadtree
 
-    Vertex3Ds normal;
-    float d;
+   Vertex3Ds normal;
+   float d;
 };
 
 
 class SpinnerAnimObject : public AnimObject
 {
 public:
-	virtual void UpdateDisplacements(const float dtime);
-	virtual void UpdateVelocities();
+   virtual void UpdateDisplacements(const float dtime);
+   virtual void UpdateVelocities();
 
-	virtual bool FMover() const { return true; }
+   virtual bool FMover() const { return true; }
 
-	Spinner *m_pspinner;
+   Spinner *m_pspinner;
 
-	float m_anglespeed;
-	float m_angle;
-	float m_angleMax;
-	float m_angleMin;
-	float m_elasticity;
-    float m_damping;
-	bool m_fVisible;
+   float m_anglespeed;
+   float m_angle;
+   float m_angleMax;
+   float m_angleMin;
+   float m_elasticity;
+   float m_damping;
+   bool m_fVisible;
 };
 
 class HitSpinner : public HitObject
 {
 public:
-	HitSpinner(Spinner * const pspinner, const float height);
+   HitSpinner(Spinner * const pspinner, const float height);
 
-	virtual int GetType() const { return eSpinner; }
+   virtual int GetType() const { return eSpinner; }
 
-	virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
+   virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
 
-	virtual void Collide(CollisionEvent* coll);
+   virtual void Collide(CollisionEvent* coll);
 
-	virtual void CalcHitRect();
+   virtual void CalcHitRect();
 
-	virtual AnimObject *GetAnimObject() { return &m_spinneranim; }
+   virtual AnimObject *GetAnimObject() { return &m_spinneranim; }
 
-	LineSeg m_lineseg[2];
+   LineSeg m_lineseg[2];
 
-	SpinnerAnimObject m_spinneranim;
+   SpinnerAnimObject m_spinneranim;
 };
 
 class GateAnimObject : public AnimObject
 {
 public:
-	virtual void UpdateDisplacements(const float dtime);
-	virtual void UpdateVelocities();
+   virtual void UpdateDisplacements(const float dtime);
+   virtual void UpdateVelocities();
 
-	virtual bool FMover() const { return true; }
+   virtual bool FMover() const { return true; }
 
-	Gate *m_pgate;
+   Gate *m_pgate;
 
-	float m_anglespeed;
-	float m_angle;
-	float m_angleMin, m_angleMax;
-	float m_friction;
-	bool m_fVisible; 
-	
-	bool m_fOpen; // True when the table logic is opening the gate, not just the ball passing through
+   float m_anglespeed;
+   float m_angle;
+   float m_angleMin, m_angleMax;
+   float m_friction;
+   bool m_fVisible;
+
+   bool m_fOpen; // True when the table logic is opening the gate, not just the ball passing through
 };
 
 class HitGate : public HitObject
 {
 public:
-	HitGate(Gate * const pgate, const float height);
+   HitGate(Gate * const pgate, const float height);
 
-	virtual int GetType() const {return eGate;}
+   virtual int GetType() const { return eGate; }
 
-	virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
+   virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
 
-	virtual void Collide(CollisionEvent* coll);
-    virtual void CalcHitRect();
+   virtual void Collide(CollisionEvent* coll);
+   virtual void CalcHitRect();
 
-	virtual AnimObject *GetAnimObject() {return &m_gateanim;}
+   virtual AnimObject *GetAnimObject() { return &m_gateanim; }
 
-	Gate *m_pgate;
-    LineSeg m_lineseg[3];
-    GateAnimObject m_gateanim;
-    bool m_twoWay;
+   Gate *m_pgate;
+   LineSeg m_lineseg[3];
+   GateAnimObject m_gateanim;
+   bool m_twoWay;
 };
 
 class TriggerLineSeg : public LineSeg
 {
 public:
-	virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
-	virtual void Collide(CollisionEvent* coll);
+   virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
+   virtual void Collide(CollisionEvent* coll);
 
-	virtual int GetType() const { return eTrigger; }
+   virtual int GetType() const { return eTrigger; }
 
-	Trigger *m_ptrigger;
+   Trigger *m_ptrigger;
 };
 
 class TriggerHitCircle : public HitCircle
 {
 public:
-	virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
-	virtual void Collide(CollisionEvent* coll);
+   virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
+   virtual void Collide(CollisionEvent* coll);
 
-	virtual int GetType() const { return eTrigger; }
+   virtual int GetType() const { return eTrigger; }
 
-	Trigger *m_ptrigger;
+   Trigger *m_ptrigger;
 };
 
 /*
@@ -232,31 +232,31 @@ public:
 class HitLine3D : public HitLineZ
 {
 public:
-	HitLine3D(const Vertex3Ds& v1, const Vertex3Ds& v2);
+   HitLine3D(const Vertex3Ds& v1, const Vertex3Ds& v2);
 
-	virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
-	virtual void Collide(CollisionEvent* coll);
+   virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
+   virtual void Collide(CollisionEvent* coll);
 
-	virtual void CalcHitRect();
+   virtual void CalcHitRect();
 
-	virtual int GetType() const { return e3DLine; }
+   virtual int GetType() const { return e3DLine; }
 
 private:
-    Matrix3 matTrans;
+   Matrix3 matTrans;
 };
 
 class DispReelAnimObject : public AnimObject
 {
 public:
-	virtual void Animate();
+   virtual void Animate();
 
-	DispReel *m_pDispReel;
+   DispReel *m_pDispReel;
 };
 
 class LightSeqAnimObject : public AnimObject
 {
 public:
-	virtual void Animate();
+   virtual void Animate();
 
-	LightSeq *m_pLightSeq;
+   LightSeq *m_pLightSeq;
 };

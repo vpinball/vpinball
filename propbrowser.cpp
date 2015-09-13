@@ -175,7 +175,7 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, Vector<ISelect> *pvsel)
       if (fSame)
       {
          pisel = pvsel->ElementAt(0);
-         if ( pisel )
+         if (pisel)
             pisel->GetDialogPanes(&m_vproppane);
       }
    }
@@ -595,7 +595,7 @@ void SmartBrowser::GetControlValue(HWND hwndControl)
       dispid = 0x80010000;
 
    CComVariant var, varResult;
-   HRESULT hr = pdisp->Invoke( dispid, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_PROPERTYGET, &dispparams, &var, NULL, NULL);
+   HRESULT hr = pdisp->Invoke(dispid, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_PROPERTYGET, &dispparams, &var, NULL, NULL);
 
    // Check each selection in a multiple selection and see if everything
    // has the same value.  If not, set a ninched state to the control
@@ -655,7 +655,7 @@ void SmartBrowser::GetControlValue(HWND hwndControl)
 
       if (!fNinch)
       {
-         if ( SUCCEEDED(VariantChangeType(&varResult, &var, 0, VT_BSTR)))
+         if (SUCCEEDED(VariantChangeType(&varResult, &var, 0, VT_BSTR)))
          {
             WCHAR *wzT;
             wzT = V_BSTR(&varResult);

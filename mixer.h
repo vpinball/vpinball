@@ -2,7 +2,7 @@
 #ifndef __MIXER_H__
 #define __MIXER_H__
 
-BOOL mixer_init( const HWND wnd );
+BOOL mixer_init(const HWND wnd);
 void mixer_shutdown();
 
 void mixer_get_volume();

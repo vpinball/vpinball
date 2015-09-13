@@ -9,6 +9,6 @@ void slintf_popup_console(); // noop if aleady popped up
 void slintf_close_console(); // noop if already closed
 #endif
 
-void slintf( const char *str, ... );
+void slintf(const char *str, ...);
 
 #endif/* !__SLINTF_H__ */

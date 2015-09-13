@@ -29,13 +29,13 @@ void EnumerateDisplayModes(const int adapter, std::vector<VideoMode>& modes);
 
 
 enum TransformStateType {
-    TRANSFORMSTATE_WORLD      = D3DTS_WORLD,
-    TRANSFORMSTATE_VIEW       = D3DTS_VIEW,
-    TRANSFORMSTATE_PROJECTION = D3DTS_PROJECTION
+   TRANSFORMSTATE_WORLD = D3DTS_WORLD,
+   TRANSFORMSTATE_VIEW = D3DTS_VIEW,
+   TRANSFORMSTATE_PROJECTION = D3DTS_PROJECTION
 };
 
 enum UsageFlags {
-    USAGE_DYNAMIC   = D3DUSAGE_DYNAMIC      // to be used for vertex/index buffers which are locked every frame
+   USAGE_DYNAMIC = D3DUSAGE_DYNAMIC      // to be used for vertex/index buffers which are locked every frame
 };
 
 class RenderDevice;
@@ -43,95 +43,95 @@ class RenderDevice;
 class TextureManager
 {
 public:
-    TextureManager(RenderDevice& rd) : m_rd(rd)
-    { }
+   TextureManager(RenderDevice& rd) : m_rd(rd)
+   { }
 
-    ~TextureManager()
-    {
-        UnloadAll();
-    }
+   ~TextureManager()
+   {
+      UnloadAll();
+   }
 
-    D3DTexture* LoadTexture(BaseTexture* memtex);
-    void SetDirty(BaseTexture* memtex);
-    void UnloadTexture(BaseTexture* memtex);
-    void UnloadAll();
+   D3DTexture* LoadTexture(BaseTexture* memtex);
+   void SetDirty(BaseTexture* memtex);
+   void UnloadTexture(BaseTexture* memtex);
+   void UnloadAll();
 
 private:
-    struct TexInfo
-    {
-        D3DTexture* d3dtex;
-        int texWidth;
-        int texHeight;
-        bool dirty;
-    };
+   struct TexInfo
+   {
+      D3DTexture* d3dtex;
+      int texWidth;
+      int texHeight;
+      bool dirty;
+   };
 
-    RenderDevice& m_rd;
-    std::map<BaseTexture*, TexInfo> m_map;
-    typedef std::map<BaseTexture*, TexInfo>::iterator Iter;
+   RenderDevice& m_rd;
+   std::map<BaseTexture*, TexInfo> m_map;
+   typedef std::map<BaseTexture*, TexInfo>::iterator Iter;
 };
 
 class VertexBuffer : public IDirect3DVertexBuffer9
 {
 public:
-    enum LockFlags
-    {
-        WRITEONLY = 0,                        // in DX9, this is specified during VB creation
-        NOOVERWRITE = D3DLOCK_NOOVERWRITE,    // meaning: no recently drawn vertices are overwritten. only works with dynamic VBs.
-                                              // it's only needed for VBs which are locked several times per frame
-        DISCARDCONTENTS = D3DLOCK_DISCARD     // discard previous contents; only works with dynamic VBs
-    };
+   enum LockFlags
+   {
+      WRITEONLY = 0,                        // in DX9, this is specified during VB creation
+      NOOVERWRITE = D3DLOCK_NOOVERWRITE,    // meaning: no recently drawn vertices are overwritten. only works with dynamic VBs.
+      // it's only needed for VBs which are locked several times per frame
+      DISCARDCONTENTS = D3DLOCK_DISCARD     // discard previous contents; only works with dynamic VBs
+   };
 
-	void lock( unsigned int offsetToLock, unsigned int sizeToLock, void **dataBuffer, DWORD flags )
-    {
-       CHECKD3D(this->Lock(offsetToLock, sizeToLock, dataBuffer, flags));
+   void lock(unsigned int offsetToLock, unsigned int sizeToLock, void **dataBuffer, DWORD flags)
+   {
+      CHECKD3D(this->Lock(offsetToLock, sizeToLock, dataBuffer, flags));
    }
-    
-	void unlock(void)
-    {
-        CHECKD3D(this->Unlock());
-    }
-    
-	void release(void)
-    {
-        SAFE_RELEASE_NO_SET(this);
-    }
+
+   void unlock(void)
+   {
+      CHECKD3D(this->Unlock());
+   }
+
+   void release(void)
+   {
+      SAFE_RELEASE_NO_SET(this);
+   }
 private:
-    VertexBuffer();     // disable default constructor
+   VertexBuffer();     // disable default constructor
 };
 
 
 class IndexBuffer : public IDirect3DIndexBuffer9
 {
 public:
-    enum Format {
-        FMT_INDEX16 = D3DFMT_INDEX16,
-        FMT_INDEX32 = D3DFMT_INDEX32
-    };
-    enum LockFlags
-    {
-        WRITEONLY = 0,                      // in DX9, this is specified during VB creation
-        NOOVERWRITE = D3DLOCK_NOOVERWRITE,  // meaning: no recently drawn vertices are overwritten. only works with dynamic VBs.
-                                            // it's only needed for VBs which are locked several times per frame
-        DISCARD = D3DLOCK_DISCARD           // discard previous contents; only works with dynamic VBs
-    };
+   enum Format {
+      FMT_INDEX16 = D3DFMT_INDEX16,
+      FMT_INDEX32 = D3DFMT_INDEX32
+   };
+   enum LockFlags
+   {
+      WRITEONLY = 0,                      // in DX9, this is specified during VB creation
+      NOOVERWRITE = D3DLOCK_NOOVERWRITE,  // meaning: no recently drawn vertices are overwritten. only works with dynamic VBs.
+      // it's only needed for VBs which are locked several times per frame
+      DISCARD = D3DLOCK_DISCARD           // discard previous contents; only works with dynamic VBs
+   };
 
-	void lock( unsigned int offsetToLock, unsigned int sizeToLock, void **dataBuffer, DWORD flags )
-    {
-        CHECKD3D(this->Lock(offsetToLock, sizeToLock, dataBuffer, flags) );
-    }
-    
-	void unlock(void)
-    {
-        CHECKD3D(this->Unlock());
-    }
-    
-	void release(void)
-    {
-        SAFE_RELEASE_NO_SET(this);
-    }
+   void lock(unsigned int offsetToLock, unsigned int sizeToLock, void **dataBuffer, DWORD flags)
+   {
+      CHECKD3D(this->Lock(offsetToLock, sizeToLock, dataBuffer, flags));
+   }
+
+   void unlock(void)
+   {
+      CHECKD3D(this->Unlock());
+   }
+
+   void release(void)
+   {
+      SAFE_RELEASE_NO_SET(this);
+   }
 
 private:
-    IndexBuffer();      // disable default constructor
+   IndexBuffer();      // disable default constructor
 };
 
 class Shader;
@@ -141,29 +141,29 @@ class RenderDevice
 public:
    enum RenderStates
    {
-      ALPHABLENDENABLE   = D3DRS_ALPHABLENDENABLE,
-      ALPHATESTENABLE    = D3DRS_ALPHATESTENABLE,
-      ALPHAREF           = D3DRS_ALPHAREF,
-      ALPHAFUNC          = D3DRS_ALPHAFUNC,
-	  BLENDOP            = D3DRS_BLENDOP,
-      CLIPPING           = D3DRS_CLIPPING,
-      CLIPPLANEENABLE    = D3DRS_CLIPPLANEENABLE,
-      CULLMODE           = D3DRS_CULLMODE,
-      DESTBLEND          = D3DRS_DESTBLEND,
-      LIGHTING           = D3DRS_LIGHTING,
-      SRCBLEND           = D3DRS_SRCBLEND,
-      ZENABLE            = D3DRS_ZENABLE,
-      ZFUNC              = D3DRS_ZFUNC,
-      ZWRITEENABLE       = D3DRS_ZWRITEENABLE,
-      TEXTUREFACTOR      = D3DRS_TEXTUREFACTOR,
-      DEPTHBIAS          = D3DRS_DEPTHBIAS,
-      COLORWRITEENABLE   = D3DRS_COLORWRITEENABLE
+      ALPHABLENDENABLE = D3DRS_ALPHABLENDENABLE,
+      ALPHATESTENABLE = D3DRS_ALPHATESTENABLE,
+      ALPHAREF = D3DRS_ALPHAREF,
+      ALPHAFUNC = D3DRS_ALPHAFUNC,
+      BLENDOP = D3DRS_BLENDOP,
+      CLIPPING = D3DRS_CLIPPING,
+      CLIPPLANEENABLE = D3DRS_CLIPPLANEENABLE,
+      CULLMODE = D3DRS_CULLMODE,
+      DESTBLEND = D3DRS_DESTBLEND,
+      LIGHTING = D3DRS_LIGHTING,
+      SRCBLEND = D3DRS_SRCBLEND,
+      ZENABLE = D3DRS_ZENABLE,
+      ZFUNC = D3DRS_ZFUNC,
+      ZWRITEENABLE = D3DRS_ZWRITEENABLE,
+      TEXTUREFACTOR = D3DRS_TEXTUREFACTOR,
+      DEPTHBIAS = D3DRS_DEPTHBIAS,
+      COLORWRITEENABLE = D3DRS_COLORWRITEENABLE
    };
 
    enum TextureAddressMode {
-       TEX_WRAP          = D3DTADDRESS_WRAP,
-       TEX_CLAMP         = D3DTADDRESS_CLAMP,
-       TEX_MIRROR        = D3DTADDRESS_MIRROR
+      TEX_WRAP = D3DTADDRESS_WRAP,
+      TEX_CLAMP = D3DTADDRESS_CLAMP,
+      TEX_MIRROR = D3DTADDRESS_MIRROR
    };
 
    RenderDevice(const HWND hwnd, const int width, const int height, const bool fullscreen, const int colordepth, int &refreshrate, int VSync, const bool useAA, const bool stereo3D, const bool FXAA);
@@ -189,8 +189,8 @@ public:
    D3DTexture* DuplicateTextureSingleChannel(RenderTarget* src);
    D3DTexture* DuplicateDepthTexture(RenderTarget* src);
 
-   void SetRenderTarget( RenderTarget* );
-   void SetZBuffer( RenderTarget* );
+   void SetRenderTarget(RenderTarget*);
+   void SetZBuffer(RenderTarget*);
 
    RenderTarget* AttachZBufferTo(RenderTarget* surf);
    void CopySurface(RenderTarget* dest, RenderTarget* src);
@@ -200,16 +200,16 @@ public:
    void CopyDepth(D3DTexture* dest, RenderTarget* src);
 
    D3DTexture* CreateSystemTexture(BaseTexture* surf);
-   D3DTexture* UploadTexture(BaseTexture* surf, int *pTexWidth=NULL, int *pTexHeight=NULL);
+   D3DTexture* UploadTexture(BaseTexture* surf, int *pTexWidth = NULL, int *pTexHeight = NULL);
    void UpdateTexture(D3DTexture* tex, BaseTexture* surf);
 
-   void SetRenderState( const RenderStates p1, DWORD p2 );
+   void SetRenderState(const RenderStates p1, DWORD p2);
    void SetTextureFilter(const DWORD texUnit, DWORD mode);
    void SetTextureAddressMode(const DWORD texUnit, const TextureAddressMode mode);
    void SetTextureStageState(const DWORD stage, const D3DTEXTURESTAGESTATETYPE type, const DWORD value);
    void SetSamplerState(const DWORD Sampler, const D3DSAMPLERSTATETYPE Type, const DWORD Value);
 
-   void CreateVertexBuffer(const unsigned int numVerts, const DWORD usage, const DWORD fvf, VertexBuffer **vBuffer );
+   void CreateVertexBuffer(const unsigned int numVerts, const DWORD usage, const DWORD fvf, VertexBuffer **vBuffer);
    void CreateIndexBuffer(const unsigned int numIndices, const DWORD usage, const IndexBuffer::Format format, IndexBuffer **idxBuffer);
 
    IndexBuffer* CreateAndFillIndexBuffer(const unsigned int numIndices, const unsigned int * indices);
@@ -222,15 +222,15 @@ public:
    void DrawPrimitiveVB(const D3DPRIMITIVETYPE type, const DWORD fvf, VertexBuffer* vb, const DWORD startVertex, const DWORD vertexCount);
    void DrawIndexedPrimitiveVB(const D3DPRIMITIVETYPE type, const DWORD fvf, VertexBuffer* vb, const DWORD startVertex, const DWORD vertexCount, IndexBuffer* ib, const DWORD startIndex, const DWORD indexCount);
 
-   void SetViewport( const ViewPort* );
-   void GetViewport( ViewPort* );
+   void SetViewport(const ViewPort*);
+   void GetViewport(ViewPort*);
 
    void DrawFullscreenQuad();
    void SetTransform(const TransformStateType, const D3DMATRIX*);
-   void GetTransform(const TransformStateType, D3DMATRIX* );
+   void GetTransform(const TransformStateType, D3DMATRIX*);
 
-   void ForceAnisotropicFiltering( const bool enable ) { m_force_aniso = enable; }
-   void CompressTextures( const bool enable ) { m_compress_textures = enable; }
+   void ForceAnisotropicFiltering(const bool enable) { m_force_aniso = enable; }
+   void CompressTextures(const bool enable) { m_compress_textures = enable; }
 
    // performance counters
    unsigned int Perf_GetNumDrawCalls() const      { return m_frameDrawCalls; }
@@ -240,25 +240,25 @@ public:
 
    void FreeShader();
 
-   inline void CreateVertexDeclaration( const VertexElement * const element, VertexDeclaration ** declaration )
+   inline void CreateVertexDeclaration(const VertexElement * const element, VertexDeclaration ** declaration)
    {
-       CHECKD3D(m_pD3DDevice->CreateVertexDeclaration( element, declaration ));
+      CHECKD3D(m_pD3DDevice->CreateVertexDeclaration(element, declaration));
    }
 
    inline void SetVertexDeclaration(VertexDeclaration * declaration)
    {
-      if ( declaration!=currentDeclaration)
+      if (declaration != currentDeclaration)
       {
          CHECKD3D(m_pD3DDevice->SetVertexDeclaration(declaration));
          currentDeclaration = declaration;
 
-		 m_curStateChanges++;
+         m_curStateChanges++;
       }
    }
 
    inline IDirect3DDevice9* GetCoreDevice() const
    {
-       return m_pD3DDevice;
+      return m_pD3DDevice;
    }
 
 private:
@@ -283,9 +283,9 @@ private:
 
    UINT m_adapter;      // index of the display adapter to use
 
-   static const DWORD RENDER_STATE_CACHE_SIZE=256;
-   static const DWORD TEXTURE_STATE_CACHE_SIZE=256;
-   static const DWORD TEXTURE_SAMPLER_CACHE_SIZE=14;
+   static const DWORD RENDER_STATE_CACHE_SIZE = 256;
+   static const DWORD TEXTURE_STATE_CACHE_SIZE = 256;
+   static const DWORD TEXTURE_SAMPLER_CACHE_SIZE = 14;
 
    DWORD renderStateCache[RENDER_STATE_CACHE_SIZE];          // for caching
    DWORD textureStateCache[8][TEXTURE_STATE_CACHE_SIZE];     // dto.
@@ -318,7 +318,7 @@ public:
 #ifdef SEPARATE_CLASSICLIGHTSHADER
    Shader *classicLightShader;
 #else
-   #define classicLightShader basicShader
+#define classicLightShader basicShader
 #endif
 
    //Shader* m_curShader; // for caching
@@ -331,180 +331,180 @@ public:
    static VertexDeclaration* m_pVertexTrafoTexelDeclaration;
 };
 
-class Shader 
+class Shader
 {
 public:
-    Shader(RenderDevice *renderDevice);
-    ~Shader();
+   Shader(RenderDevice *renderDevice);
+   ~Shader();
 
-    bool Load( const BYTE* shaderCodeName, UINT codeSize );
-    void Unload();
+   bool Load(const BYTE* shaderCodeName, UINT codeSize);
+   void Unload();
 
-    ID3DXEffect *Core() const
-    {
-        return m_shader;
-    }
+   ID3DXEffect *Core() const
+   {
+      return m_shader;
+   }
 
-	void Begin( const unsigned int pass )
-	{
-	   unsigned int cPasses;
-	   CHECKD3D(m_shader->Begin(&cPasses,0));
-	   CHECKD3D(m_shader->BeginPass(pass));
-	}
+   void Begin(const unsigned int pass)
+   {
+      unsigned int cPasses;
+      CHECKD3D(m_shader->Begin(&cPasses, 0));
+      CHECKD3D(m_shader->BeginPass(pass));
+   }
 
-	void End()
-	{
-	   CHECKD3D(m_shader->EndPass());
-	   CHECKD3D(m_shader->End());
-	}
+   void End()
+   {
+      CHECKD3D(m_shader->EndPass());
+      CHECKD3D(m_shader->End());
+   }
 
-    void SetTexture(const D3DXHANDLE texelName, Texture *texel);
-    void SetTexture(const D3DXHANDLE texelName, D3DTexture *texel);
-    void SetMaterial( const Material * const mat );
+   void SetTexture(const D3DXHANDLE texelName, Texture *texel);
+   void SetTexture(const D3DXHANDLE texelName, D3DTexture *texel);
+   void SetMaterial(const Material * const mat);
 
-	void SetDisableLighting(const bool value)
-	{
-		if (currentDisableLighting != (unsigned int)value)
-		{
-			currentDisableLighting = (unsigned int)value;
-			SetBool("bDisableLighting", value);
-		}
-	}
+   void SetDisableLighting(const bool value)
+   {
+      if (currentDisableLighting != (unsigned int)value)
+      {
+         currentDisableLighting = (unsigned int)value;
+         SetBool("bDisableLighting", value);
+      }
+   }
 
-	void SetAlphaTestValue(const float value)
-	{
-		if (currentAlphaTestValue != value)
-		{
-			currentAlphaTestValue = value;
-			SetFloat("fAlphaTestValue", value);
-		}
-	}
+   void SetAlphaTestValue(const float value)
+   {
+      if (currentAlphaTestValue != value)
+      {
+         currentAlphaTestValue = value;
+         SetFloat("fAlphaTestValue", value);
+      }
+   }
 
-	void SetFlasherColorAlpha(const D3DXVECTOR4& color)
-	{
-		if (currentFlasherColor.x != color.x || currentFlasherColor.y != color.y || currentFlasherColor.z != color.z || currentFlasherColor.w != color.w)
-		{
-			currentFlasherColor = color;
-			SetVector("staticColor_Alpha", &color);
-		}
-	}
+   void SetFlasherColorAlpha(const D3DXVECTOR4& color)
+   {
+      if (currentFlasherColor.x != color.x || currentFlasherColor.y != color.y || currentFlasherColor.z != color.z || currentFlasherColor.w != color.w)
+      {
+         currentFlasherColor = color;
+         SetVector("staticColor_Alpha", &color);
+      }
+   }
 
-	void SetFlasherData(const D3DXVECTOR4& color)
-	{
-		if (currentFlasherData.x != color.x || currentFlasherData.y != color.y || currentFlasherData.z != color.z || currentFlasherData.w != color.w)
-		{
-			currentFlasherData = color;
-			SetVector("alphaTestValueAB_filterMode_addBlend", &color);
-		}
-	}
+   void SetFlasherData(const D3DXVECTOR4& color)
+   {
+      if (currentFlasherData.x != color.x || currentFlasherData.y != color.y || currentFlasherData.z != color.z || currentFlasherData.w != color.w)
+      {
+         currentFlasherData = color;
+         SetVector("alphaTestValueAB_filterMode_addBlend", &color);
+      }
+   }
 
-	void SetLightColorIntensity(const D3DXVECTOR4& color)
-	{
-		if (currentLightColor.x != color.x || currentLightColor.y != color.y || currentLightColor.z != color.z || currentLightColor.w != color.w)
-		{
-			currentLightColor = color;
-			SetVector("lightColor_intensity", &color);
-		}
-	}
+   void SetLightColorIntensity(const D3DXVECTOR4& color)
+   {
+      if (currentLightColor.x != color.x || currentLightColor.y != color.y || currentLightColor.z != color.z || currentLightColor.w != color.w)
+      {
+         currentLightColor = color;
+         SetVector("lightColor_intensity", &color);
+      }
+   }
 
-	void SetLightColor2FalloffPower(const D3DXVECTOR4& color)
-	{
-		if (currentLightColor2.x != color.x || currentLightColor2.y != color.y || currentLightColor2.z != color.z || currentLightColor2.w != color.w)
-		{
-			currentLightColor2 = color;
-			SetVector("lightColor2_falloff_power", &color);
-		}
-	}
+   void SetLightColor2FalloffPower(const D3DXVECTOR4& color)
+   {
+      if (currentLightColor2.x != color.x || currentLightColor2.y != color.y || currentLightColor2.z != color.z || currentLightColor2.w != color.w)
+      {
+         currentLightColor2 = color;
+         SetVector("lightColor2_falloff_power", &color);
+      }
+   }
 
-	void SetLightData(const D3DXVECTOR4& color)
-	{
-		if (currentLightData.x != color.x || currentLightData.y != color.y || currentLightData.z != color.z || currentLightData.w != color.w)
-		{
-			currentLightData = color;
-			SetVector("lightCenter_maxRange", &color);
-		}
-	}
+   void SetLightData(const D3DXVECTOR4& color)
+   {
+      if (currentLightData.x != color.x || currentLightData.y != color.y || currentLightData.z != color.z || currentLightData.w != color.w)
+      {
+         currentLightData = color;
+         SetVector("lightCenter_maxRange", &color);
+      }
+   }
 
-	void SetLightImageBackglassMode(const bool imageMode, const bool backglassMode)
-	{
-		if (currentLightImageMode != (unsigned int)imageMode || currentLightBackglassMode != (unsigned int)backglassMode)
-		{
-			currentLightImageMode = (unsigned int)imageMode;
-			currentLightBackglassMode = (unsigned int)backglassMode;
-			const D3DXVECTOR4 data(imageMode ? 1.0f : 0.0f, backglassMode ? 1.0f : 0.0f, 0.f,0.f);
-			SetVector("imageBackglassMode", &data);
-		}
-	}
+   void SetLightImageBackglassMode(const bool imageMode, const bool backglassMode)
+   {
+      if (currentLightImageMode != (unsigned int)imageMode || currentLightBackglassMode != (unsigned int)backglassMode)
+      {
+         currentLightImageMode = (unsigned int)imageMode;
+         currentLightBackglassMode = (unsigned int)backglassMode;
+         const D3DXVECTOR4 data(imageMode ? 1.0f : 0.0f, backglassMode ? 1.0f : 0.0f, 0.f, 0.f);
+         SetVector("imageBackglassMode", &data);
+      }
+   }
 
-	//
+   //
 
-	void SetTechnique(const D3DXHANDLE technique)
-	{
-	   if( strcmp(currentTechnique, technique) /*|| (m_renderDevice->m_curShader != this)*/ )
-	   {
-		  strcpy_s(currentTechnique, technique);
-		  //m_renderDevice->m_curShader = this;
-		  CHECKD3D(m_shader->SetTechnique(technique));
-	   }
-	}
+   void SetTechnique(const D3DXHANDLE technique)
+   {
+      if (strcmp(currentTechnique, technique) /*|| (m_renderDevice->m_curShader != this)*/)
+      {
+         strcpy_s(currentTechnique, technique);
+         //m_renderDevice->m_curShader = this;
+         CHECKD3D(m_shader->SetTechnique(technique));
+      }
+   }
 
-	void SetMatrix(const D3DXHANDLE hParameter, const D3DXMATRIX* pMatrix)
-	{
-		/*CHECKD3D(*/m_shader->SetMatrix(hParameter, pMatrix)/*)*/; // leads to invalid calls when setting some of the matrices (as hlsl compiler optimizes some down to less than 4x4)
-		m_renderDevice->m_curParameterChanges++;
-	}
+   void SetMatrix(const D3DXHANDLE hParameter, const D3DXMATRIX* pMatrix)
+   {
+      /*CHECKD3D(*/m_shader->SetMatrix(hParameter, pMatrix)/*)*/; // leads to invalid calls when setting some of the matrices (as hlsl compiler optimizes some down to less than 4x4)
+      m_renderDevice->m_curParameterChanges++;
+   }
 
-	void SetVector(const D3DXHANDLE hParameter, const D3DXVECTOR4* pVector)
-	{
-		CHECKD3D(m_shader->SetVector(hParameter, pVector));
-		m_renderDevice->m_curParameterChanges++;
-	}
+   void SetVector(const D3DXHANDLE hParameter, const D3DXVECTOR4* pVector)
+   {
+      CHECKD3D(m_shader->SetVector(hParameter, pVector));
+      m_renderDevice->m_curParameterChanges++;
+   }
 
-	void SetFloat(const D3DXHANDLE hParameter, const float f)
-	{
-		CHECKD3D(m_shader->SetFloat(hParameter, f));
-		m_renderDevice->m_curParameterChanges++;
-	}
+   void SetFloat(const D3DXHANDLE hParameter, const float f)
+   {
+      CHECKD3D(m_shader->SetFloat(hParameter, f));
+      m_renderDevice->m_curParameterChanges++;
+   }
 
-	void SetInt(const D3DXHANDLE hParameter, const int i)
-	{
-		CHECKD3D(m_shader->SetInt(hParameter, i));
-		m_renderDevice->m_curParameterChanges++;
-	}
+   void SetInt(const D3DXHANDLE hParameter, const int i)
+   {
+      CHECKD3D(m_shader->SetInt(hParameter, i));
+      m_renderDevice->m_curParameterChanges++;
+   }
 
-	void SetBool(const D3DXHANDLE hParameter, const bool b)
-	{
-		CHECKD3D(m_shader->SetBool(hParameter, b));
-		m_renderDevice->m_curParameterChanges++;
-	}
+   void SetBool(const D3DXHANDLE hParameter, const bool b)
+   {
+      CHECKD3D(m_shader->SetBool(hParameter, b));
+      m_renderDevice->m_curParameterChanges++;
+   }
 
-	void SetValue(const D3DXHANDLE hParameter, const void* pData, const unsigned int Bytes)
-	{
-		CHECKD3D(m_shader->SetValue(hParameter, pData, Bytes));
-		m_renderDevice->m_curParameterChanges++;
-	}
+   void SetValue(const D3DXHANDLE hParameter, const void* pData, const unsigned int Bytes)
+   {
+      CHECKD3D(m_shader->SetValue(hParameter, pData, Bytes));
+      m_renderDevice->m_curParameterChanges++;
+   }
 
 private:
-    ID3DXEffect* m_shader;
-    RenderDevice *m_renderDevice;
-    
-    // caches:
+   ID3DXEffect* m_shader;
+   RenderDevice *m_renderDevice;
 
-    Material currentMaterial;
+   // caches:
 
-	unsigned int currentDisableLighting;
+   Material currentMaterial;
 
-    static const DWORD TEXTURESET_STATE_CACHE_SIZE=5; // current convention: SetTexture gets "TextureX", where X 0..4
-    BaseTexture *currentTexture[TEXTURESET_STATE_CACHE_SIZE];
-    float   currentAlphaTestValue;
-    char    currentTechnique[64];
+   unsigned int currentDisableLighting;
 
-    D3DXVECTOR4 currentFlasherColor; // both flasher only-data
-    D3DXVECTOR4 currentFlasherData;
+   static const DWORD TEXTURESET_STATE_CACHE_SIZE = 5; // current convention: SetTexture gets "TextureX", where X 0..4
+   BaseTexture *currentTexture[TEXTURESET_STATE_CACHE_SIZE];
+   float   currentAlphaTestValue;
+   char    currentTechnique[64];
 
-    D3DXVECTOR4 currentLightColor; // all light only-data
-    D3DXVECTOR4 currentLightColor2;
-    D3DXVECTOR4 currentLightData;
-	unsigned int currentLightImageMode;
-	unsigned int currentLightBackglassMode;
+   D3DXVECTOR4 currentFlasherColor; // both flasher only-data
+   D3DXVECTOR4 currentFlasherData;
+
+   D3DXVECTOR4 currentLightColor; // all light only-data
+   D3DXVECTOR4 currentLightColor2;
+   D3DXVECTOR4 currentLightData;
+   unsigned int currentLightImageMode;
+   unsigned int currentLightBackglassMode;
 };

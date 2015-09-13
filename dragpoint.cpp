@@ -2,7 +2,7 @@
 
 IHaveDragPoints::~IHaveDragPoints()
 {
-   for (int i=0;i<m_vdpoint.Size();i++)
+   for (int i = 0; i < m_vdpoint.Size(); i++)
    {
       m_vdpoint.ElementAt(i)->Release();
    }
@@ -15,7 +15,7 @@ void IHaveDragPoints::GetPointCenter(Vertex2D * const pv) const
    float miny = FLT_MAX;
    float maxy = -FLT_MAX;
 
-   for (int i=0;i<m_vdpoint.Size();i++)
+   for (int i = 0; i < m_vdpoint.Size(); i++)
    {
       const Vertex3Ds& v = m_vdpoint.ElementAt(i)->m_v;
       minx = min(minx, v.x);
@@ -24,8 +24,8 @@ void IHaveDragPoints::GetPointCenter(Vertex2D * const pv) const
       maxy = max(maxy, v.y);
    }
 
-   pv->x = (maxx+minx)*0.5f;
-   pv->y = (maxy+miny)*0.5f;
+   pv->x = (maxx + minx)*0.5f;
+   pv->y = (maxy + miny)*0.5f;
 }
 
 void IHaveDragPoints::PutPointCenter(const Vertex2D * const pv)
@@ -42,7 +42,7 @@ void IHaveDragPoints::FlipPointY(Vertex2D *pvCenter)
 
    const float ycenter = pvCenter->y;
 
-   for (int i=0;i<m_vdpoint.Size();i++)
+   for (int i = 0; i < m_vdpoint.Size(); i++)
    {
       const float deltay = m_vdpoint.ElementAt(i)->m_v.y - ycenter;
 
@@ -70,7 +70,7 @@ void IHaveDragPoints::FlipPointX(Vertex2D *pvCenter)
 
    const float xcenter = pvCenter->x;
 
-   for (int i=0;i<m_vdpoint.Size();i++)
+   for (int i = 0; i < m_vdpoint.Size(); i++)
    {
       const float deltax = m_vdpoint.ElementAt(i)->m_v.x - xcenter;
 
@@ -120,7 +120,7 @@ void IHaveDragPoints::RotatePoints(float ang, Vertex2D *pvCenter)
    const float sn = sinf(ANGTORAD(ang));
    const float cs = cosf(ANGTORAD(ang));
 
-   for (int i=0;i<m_vdpoint.Size();i++)
+   for (int i = 0; i < m_vdpoint.Size(); i++)
    {
       DragPoint * const pdp1 = m_vdpoint.ElementAt(i);
       const float dx = pdp1->m_v.x - centerx;
@@ -159,7 +159,7 @@ void IHaveDragPoints::ScalePoints(float scalex, float scaley, Vertex2D *pvCenter
    const float centerx = pvCenter->x;
    const float centery = pvCenter->y;
 
-   for (int i=0;i<m_vdpoint.Size();i++)
+   for (int i = 0; i < m_vdpoint.Size(); i++)
    {
       DragPoint *pdp1 = m_vdpoint.ElementAt(i);
       const float dx = (pdp1->m_v.x - centerx) * scalex;
@@ -188,7 +188,7 @@ void IHaveDragPoints::TranslatePoints(Vertex2D *pvOffset)
    GetIEditable()->BeginUndo();
    GetIEditable()->MarkForUndo();
 
-   for (int i=0;i<m_vdpoint.Size();i++)
+   for (int i = 0; i < m_vdpoint.Size(); i++)
    {
       DragPoint * const pdp1 = m_vdpoint.ElementAt(i);
       pdp1->m_v.x += pvOffset->x;
@@ -216,25 +216,25 @@ void IHaveDragPoints::ReverseOrder()
    }
 
    // Reverse order of points (switches winding, reverses inside/outside)
-   for (int i=0;i<m_vdpoint.Size()/2;i++)
+   for (int i = 0; i < m_vdpoint.Size() / 2; i++)
    {
       DragPoint * const pdp1 = m_vdpoint.ElementAt(i);
       DragPoint * const pdp2 = m_vdpoint.ElementAt(m_vdpoint.Size() - 1 - i);
-      m_vdpoint.ReplaceElementAt(pdp2,i);
+      m_vdpoint.ReplaceElementAt(pdp2, i);
       m_vdpoint.ReplaceElementAt(pdp1, m_vdpoint.Size() - 1 - i);
    }
 
    const bool fSlingshotTemp = m_vdpoint.ElementAt(0)->m_fSlingshot;
 
-   for (int i=0;i<m_vdpoint.Size()-1;i++)
+   for (int i = 0; i < m_vdpoint.Size() - 1; i++)
    {
       DragPoint * const pdp1 = m_vdpoint.ElementAt(i);
-      const DragPoint * const pdp2 = m_vdpoint.ElementAt(i+1);
+      const DragPoint * const pdp2 = m_vdpoint.ElementAt(i + 1);
 
       pdp1->m_fSlingshot = pdp2->m_fSlingshot;
    }
 
-   m_vdpoint.ElementAt(m_vdpoint.Size()-1)->m_fSlingshot = fSlingshotTemp;
+   m_vdpoint.ElementAt(m_vdpoint.Size() - 1)->m_fSlingshot = fSlingshotTemp;
 }
 
 void IHaveDragPoints::GetPointDialogPanes(Vector<PropertyPane> *pvproppane)
@@ -258,7 +258,7 @@ void IHaveDragPoints::GetTextureCoords(const std::vector<RenderVertex> & vv, flo
    *ppcoords = new float[cpoints];
    memset(*ppcoords, 0, sizeof(float)*cpoints);
 
-   for (int i=0; i<cpoints; ++i)
+   for (int i = 0; i < cpoints; ++i)
    {
       const RenderVertex * const prv = &vv[i];
       if (prv->fControlPoint)
@@ -286,10 +286,10 @@ void IHaveDragPoints::GetTextureCoords(const std::vector<RenderVertex> & vv, flo
    vitexpoints.push_back(vitexpoints[0] + m_vdpoint.size());
    virenderpoints.push_back(virenderpoints[0] + cpoints);
 
-   for (int i=0; i < (int)vitexpoints.size()-1; ++i)
+   for (int i = 0; i < (int)vitexpoints.size() - 1; ++i)
    {
       const int startrenderpoint = virenderpoints[i] % cpoints;
-      int endrenderpoint = virenderpoints[(i < cpoints-1) ? (i+1) : 0] % cpoints;
+      int endrenderpoint = virenderpoints[(i < cpoints - 1) ? (i + 1) : 0] % cpoints;
 
       float starttexcoord;
       float endtexcoord;
@@ -301,7 +301,7 @@ void IHaveDragPoints::GetTextureCoords(const std::vector<RenderVertex> & vv, flo
       else
       {
          starttexcoord = m_vdpoint.ElementAt(vitexpoints[i] % m_vdpoint.Size())->m_texturecoord;
-         endtexcoord = m_vdpoint.ElementAt(vitexpoints[i+1] % m_vdpoint.Size())->m_texturecoord;
+         endtexcoord = m_vdpoint.ElementAt(vitexpoints[i + 1] % m_vdpoint.Size())->m_texturecoord;
       }
 
       const float deltacoord = endtexcoord - starttexcoord;
@@ -312,10 +312,10 @@ void IHaveDragPoints::GetTextureCoords(const std::vector<RenderVertex> & vv, flo
       }
 
       float totallength = 0.0f;
-      for (int l=startrenderpoint; l<endrenderpoint; ++l)
+      for (int l = startrenderpoint; l < endrenderpoint; ++l)
       {
          const Vertex2D * const pv1 = (Vertex2D *)&vv[l % cpoints];
-         const Vertex2D * const pv2 = (Vertex2D *)&vv[(l+1) % cpoints];
+         const Vertex2D * const pv2 = (Vertex2D *)&vv[(l + 1) % cpoints];
 
          const float dx = pv1->x - pv2->x;
          const float dy = pv1->y - pv2->y;
@@ -325,10 +325,10 @@ void IHaveDragPoints::GetTextureCoords(const std::vector<RenderVertex> & vv, flo
       }
 
       float partiallength = 0.0f;
-      for (int l=startrenderpoint; l<endrenderpoint; ++l)
+      for (int l = startrenderpoint; l < endrenderpoint; ++l)
       {
          const Vertex2D * const pv1 = (Vertex2D *)&vv[l % cpoints];
-         const Vertex2D * const pv2 = (Vertex2D *)&vv[(l+1) % cpoints];
+         const Vertex2D * const pv2 = (Vertex2D *)&vv[(l + 1) % cpoints];
 
          const float dx = pv1->x - pv2->x;
          const float dy = pv1->y - pv2->y;
@@ -346,7 +346,7 @@ void IHaveDragPoints::GetTextureCoords(const std::vector<RenderVertex> & vv, flo
 
 void IHaveDragPoints::ClearPointsForOverwrite()
 {
-   for (int i=0;i<m_vdpoint.Size();i++)
+   for (int i = 0; i < m_vdpoint.Size(); i++)
    {
       if (m_vdpoint.ElementAt(i)->m_selectstate != eNotSelected/*GetPTable()->m_pselcur == m_vdpoint.ElementAt(i)*/)
       {
@@ -364,7 +364,7 @@ HRESULT IHaveDragPoints::SavePointData(IStream *pstm, HCRYPTHASH hcrypthash, HCR
 {
    BiffWriter bw(pstm, hcrypthash, hcryptkey);
 
-   for (int i=0;i<m_vdpoint.Size();i++)
+   for (int i = 0; i < m_vdpoint.Size(); i++)
    {
       bw.WriteTag(FID(DPNT));
       CComObject<DragPoint> *pdp = m_vdpoint.ElementAt(i);
@@ -413,7 +413,7 @@ void DragPoint::Init(IHaveDragPoints *pihdp, const float x, const float y, const
    m_calcHeight = 0.0f;
    m_fAutoTexture = true;
    m_texturecoord = 0.0f;
-   if ( pihdp->GetIEditable()->GetItemType()==eItemRubber)
+   if (pihdp->GetIEditable()->GetItemType() == eItemRubber)
       m_menuid = IDR_POINTMENU_SMOOTH;
    else
       m_menuid = IDR_POINTMENU;
@@ -421,13 +421,13 @@ void DragPoint::Init(IHaveDragPoints *pihdp, const float x, const float y, const
 
 void DragPoint::OnLButtonDown(int x, int y)
 {
-   ISelect::OnLButtonDown(x,y);
+   ISelect::OnLButtonDown(x, y);
    m_pihdp->GetIEditable()->SetDirtyDraw();
 }
 
 void DragPoint::OnLButtonUp(int x, int y)
 {
-   ISelect::OnLButtonUp(x,y);
+   ISelect::OnLButtonUp(x, y);
    m_pihdp->GetIEditable()->SetDirtyDraw();
 }
 
@@ -531,12 +531,12 @@ void DragPoint::DoCommand(int icmd, int x, int y)
 
 void DragPoint::SetSelectFormat(Sur *psur)
 {
-   psur->SetFillColor(RGB(150,200,255));
+   psur->SetFillColor(RGB(150, 200, 255));
 }
 
 void DragPoint::SetMultiSelectFormat(Sur *psur)
 {
-   psur->SetFillColor(RGB(200,225,255));
+   psur->SetFillColor(RGB(200, 225, 255));
 }
 
 STDMETHODIMP DragPoint::InterfaceSupportsErrorInfo(REFIID riid)
@@ -546,9 +546,9 @@ STDMETHODIMP DragPoint::InterfaceSupportsErrorInfo(REFIID riid)
       &IID_IControlPoint,
    };
 
-   for (size_t i=0;i<sizeof(arr)/sizeof(arr[0]);i++)
+   for (size_t i = 0; i < sizeof(arr) / sizeof(arr[0]); i++)
    {
-      if (InlineIsEqualGUID(*arr[i],riid))
+      if (InlineIsEqualGUID(*arr[i], riid))
          return S_OK;
    }
    return S_FALSE;
@@ -713,7 +713,7 @@ STDMETHODIMP DragPoint::put_TextureCoordinateU(float newVal)
       return S_OK;
 }
 
-int rotateApplyCount=0;
+int rotateApplyCount = 0;
 INT_PTR CALLBACK RotateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
    ISelect *psel;
@@ -721,25 +721,25 @@ INT_PTR CALLBACK RotateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
    switch (uMsg)
    {
    case WM_INITDIALOG:
-      {
-         rotateApplyCount=0;
-         SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
+   {
+      rotateApplyCount = 0;
+      SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
 
-         psel = (ISelect *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
-         char szT[256];
-         float angle = psel->GetRotate();
-         Vertex2D v;			
+      psel = (ISelect *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
+      char szT[256];
+      float angle = psel->GetRotate();
+      Vertex2D v;
 
-         f2sz(angle, szT);
-         SetDlgItemText(hwndDlg, IDC_ROTATEBY, szT);
-         psel->GetCenter(&v);
-         f2sz(v.x, szT);
-         SetDlgItemText(hwndDlg, IDC_CENTERX, szT);
-         f2sz(v.y, szT);
-         SetDlgItemText(hwndDlg, IDC_CENTERY, szT);
-      }
-      return TRUE;
-      break;
+      f2sz(angle, szT);
+      SetDlgItemText(hwndDlg, IDC_ROTATEBY, szT);
+      psel->GetCenter(&v);
+      f2sz(v.x, szT);
+      SetDlgItemText(hwndDlg, IDC_CENTERX, szT);
+      f2sz(v.y, szT);
+      SetDlgItemText(hwndDlg, IDC_CENTERY, szT);
+   }
+   return TRUE;
+   break;
 
    case WM_CLOSE:
       EndDialog(hwndDlg, FALSE);
@@ -753,29 +753,12 @@ INT_PTR CALLBACK RotateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
          switch (LOWORD(wParam))
          {
          case IDOK:
+         {
+            if (rotateApplyCount == 0)
             {
-               if( rotateApplyCount==0 )
-               {
-                  char szT[256];
-                  GetDlgItemText(hwndDlg, IDC_ROTATEBY, szT, 255);							
-
-                  const float f = sz2f(szT);
-                  GetDlgItemText(hwndDlg, IDC_CENTERX, szT, 255);
-                  Vertex2D v;
-                  v.x = sz2f(szT);
-                  GetDlgItemText(hwndDlg, IDC_CENTERY, szT, 255);
-                  v.y = sz2f(szT);
-
-                  psel->Rotate(f, &v);
-               }
-               EndDialog(hwndDlg, TRUE);
-               break;
-            }
-         case IDC_ROTATE_APPLY_BUTTON:
-            {
-               rotateApplyCount++;
                char szT[256];
-               GetDlgItemText(hwndDlg, IDC_ROTATEBY, szT, 255);							
+               GetDlgItemText(hwndDlg, IDC_ROTATEBY, szT, 255);
+
                const float f = sz2f(szT);
                GetDlgItemText(hwndDlg, IDC_CENTERX, szT, 255);
                Vertex2D v;
@@ -784,23 +767,40 @@ INT_PTR CALLBACK RotateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
                v.y = sz2f(szT);
 
                psel->Rotate(f, &v);
-               psel->GetPTable()->SetDirtyDraw();
-               break;
             }
+            EndDialog(hwndDlg, TRUE);
+            break;
+         }
+         case IDC_ROTATE_APPLY_BUTTON:
+         {
+            rotateApplyCount++;
+            char szT[256];
+            GetDlgItemText(hwndDlg, IDC_ROTATEBY, szT, 255);
+            const float f = sz2f(szT);
+            GetDlgItemText(hwndDlg, IDC_CENTERX, szT, 255);
+            Vertex2D v;
+            v.x = sz2f(szT);
+            GetDlgItemText(hwndDlg, IDC_CENTERY, szT, 255);
+            v.y = sz2f(szT);
+
+            psel->Rotate(f, &v);
+            psel->GetPTable()->SetDirtyDraw();
+            break;
+         }
          case IDC_ROTATE_UNDO_BUTTON:
+         {
+            if (rotateApplyCount > 0)
             {
-               if( rotateApplyCount>0 ) 
-               {
-                  rotateApplyCount--;
-                  psel->GetPTable()->Undo();
-                  psel->GetPTable()->SetDirtyDraw();
-               }
-               break;
+               rotateApplyCount--;
+               psel->GetPTable()->Undo();
+               psel->GetPTable()->SetDirtyDraw();
             }
+            break;
+         }
          case IDCANCEL:
-            if( rotateApplyCount>0 )
+            if (rotateApplyCount > 0)
             {
-               for( int i=0;i<rotateApplyCount;i++ ) psel->GetPTable()->Undo();
+               for (int i = 0; i < rotateApplyCount; i++) psel->GetPTable()->Undo();
                psel->GetPTable()->SetDirtyDraw();
             }
             EndDialog(hwndDlg, FALSE);
@@ -814,7 +814,7 @@ INT_PTR CALLBACK RotateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
    return FALSE;
 }
 
-int scaleApplyCount=0;
+int scaleApplyCount = 0;
 INT_PTR CALLBACK ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
    ISelect *psel;
@@ -822,35 +822,35 @@ INT_PTR CALLBACK ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
    switch (uMsg)
    {
    case WM_INITDIALOG:
-      {
-         scaleApplyCount=0;
-         SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
-         psel = (ISelect *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
+   {
+      scaleApplyCount = 0;
+      SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
+      psel = (ISelect *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
-         Vertex2D v;			
-         char szT[256];
-         psel->GetScale(&v.x, &v.y);
+      Vertex2D v;
+      char szT[256];
+      psel->GetScale(&v.x, &v.y);
 
-         f2sz(v.x, szT);
-         SetDlgItemText(hwndDlg, IDC_SCALEFACTOR, szT);
-         f2sz(v.y, szT);
-         SetDlgItemText(hwndDlg, IDC_SCALEY, szT);
-         psel->GetCenter(&v);
+      f2sz(v.x, szT);
+      SetDlgItemText(hwndDlg, IDC_SCALEFACTOR, szT);
+      f2sz(v.y, szT);
+      SetDlgItemText(hwndDlg, IDC_SCALEY, szT);
+      psel->GetCenter(&v);
 
-         f2sz(v.x, szT);
-         SetDlgItemText(hwndDlg, IDC_CENTERX, szT);
-         f2sz(v.y, szT);
-         SetDlgItemText(hwndDlg, IDC_CENTERY, szT);
+      f2sz(v.x, szT);
+      SetDlgItemText(hwndDlg, IDC_CENTERX, szT);
+      f2sz(v.y, szT);
+      SetDlgItemText(hwndDlg, IDC_CENTERY, szT);
 
-         SendDlgItemMessage(hwndDlg, IDC_SQUARE, BM_SETCHECK, TRUE, 0);
+      SendDlgItemMessage(hwndDlg, IDC_SQUARE, BM_SETCHECK, TRUE, 0);
 
-         HWND hwndEdit = GetDlgItem(hwndDlg, IDC_SCALEY);
-         HWND hwndText = GetDlgItem(hwndDlg, IDC_STATIC_SCALEY);
-         EnableWindow(hwndEdit, FALSE);
-         EnableWindow(hwndText, FALSE);
-      }
-      return TRUE;
-      break;
+      HWND hwndEdit = GetDlgItem(hwndDlg, IDC_SCALEY);
+      HWND hwndText = GetDlgItem(hwndDlg, IDC_STATIC_SCALEY);
+      EnableWindow(hwndEdit, FALSE);
+      EnableWindow(hwndText, FALSE);
+   }
+   return TRUE;
+   break;
 
    case WM_CLOSE:
       EndDialog(hwndDlg, FALSE);
@@ -864,43 +864,13 @@ INT_PTR CALLBACK ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
          switch (LOWORD(wParam))
          {
          case IDOK:
+         {
+            if (scaleApplyCount == 0)
             {
-               if( scaleApplyCount==0 )
-               {
-                  char szT[256];
-                  GetDlgItemText(hwndDlg, IDC_SCALEFACTOR, szT, 255);
-                  const float fx = sz2f(szT);
-				  const size_t checked = SendDlgItemMessage(hwndDlg, IDC_SQUARE, BM_GETCHECK, 0, 0);
-                  float fy;
-                  if (checked)
-                  {
-                     fy = fx;
-                  }
-                  else
-                  {
-                     GetDlgItemText(hwndDlg, IDC_SCALEY, szT, 255);
-                     fy = sz2f(szT);
-                  }
-
-                  GetDlgItemText(hwndDlg, IDC_CENTERX, szT, 255);
-                  Vertex2D v;
-                  v.x = sz2f(szT);
-                  GetDlgItemText(hwndDlg, IDC_CENTERY, szT, 255);
-                  v.y = sz2f(szT);
-
-                  //pihdp->ScalePoints(fx, fy, &v);
-                  psel->Scale(fx, fy, &v);
-               }
-               EndDialog(hwndDlg, TRUE);
-               break;
-            }
-         case IDC_SCALE_APPLY_BUTTON:
-            {
-               scaleApplyCount++;
                char szT[256];
                GetDlgItemText(hwndDlg, IDC_SCALEFACTOR, szT, 255);
                const float fx = sz2f(szT);
-			   const size_t checked = SendDlgItemMessage(hwndDlg, IDC_SQUARE, BM_GETCHECK, 0, 0);
+               const size_t checked = SendDlgItemMessage(hwndDlg, IDC_SQUARE, BM_GETCHECK, 0, 0);
                float fy;
                if (checked)
                {
@@ -920,38 +890,68 @@ INT_PTR CALLBACK ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 
                //pihdp->ScalePoints(fx, fy, &v);
                psel->Scale(fx, fy, &v);
-               psel->GetPTable()->SetDirtyDraw();
-               break;
             }
+            EndDialog(hwndDlg, TRUE);
+            break;
+         }
+         case IDC_SCALE_APPLY_BUTTON:
+         {
+            scaleApplyCount++;
+            char szT[256];
+            GetDlgItemText(hwndDlg, IDC_SCALEFACTOR, szT, 255);
+            const float fx = sz2f(szT);
+            const size_t checked = SendDlgItemMessage(hwndDlg, IDC_SQUARE, BM_GETCHECK, 0, 0);
+            float fy;
+            if (checked)
+            {
+               fy = fx;
+            }
+            else
+            {
+               GetDlgItemText(hwndDlg, IDC_SCALEY, szT, 255);
+               fy = sz2f(szT);
+            }
+
+            GetDlgItemText(hwndDlg, IDC_CENTERX, szT, 255);
+            Vertex2D v;
+            v.x = sz2f(szT);
+            GetDlgItemText(hwndDlg, IDC_CENTERY, szT, 255);
+            v.y = sz2f(szT);
+
+            //pihdp->ScalePoints(fx, fy, &v);
+            psel->Scale(fx, fy, &v);
+            psel->GetPTable()->SetDirtyDraw();
+            break;
+         }
          case IDC_SCALE_UNDO_BUTTON:
+         {
+            if (scaleApplyCount > 0)
             {
-               if( scaleApplyCount>0 )
-               {
-                  scaleApplyCount--;
-                  psel->GetPTable()->Undo();
-                  psel->GetPTable()->SetDirtyDraw();
-               }
-               break;
+               scaleApplyCount--;
+               psel->GetPTable()->Undo();
+               psel->GetPTable()->SetDirtyDraw();
             }
+            break;
+         }
          case IDCANCEL:
-            if( scaleApplyCount>0 )
+            if (scaleApplyCount > 0)
             {
-               for( int i=0;i<scaleApplyCount;i++) psel->GetPTable()->Undo();
+               for (int i = 0; i < scaleApplyCount; i++) psel->GetPTable()->Undo();
                psel->GetPTable()->SetDirtyDraw();
             }
             EndDialog(hwndDlg, FALSE);
             break;
 
          case IDC_SQUARE:
-            {
-			   size_t checked = SendDlgItemMessage(hwndDlg, IDC_SQUARE, BM_GETCHECK, 0, 0);
-               HWND hwndEdit = GetDlgItem(hwndDlg, IDC_SCALEY);
-               HWND hwndText = GetDlgItem(hwndDlg, IDC_STATIC_SCALEY);
+         {
+            size_t checked = SendDlgItemMessage(hwndDlg, IDC_SQUARE, BM_GETCHECK, 0, 0);
+            HWND hwndEdit = GetDlgItem(hwndDlg, IDC_SCALEY);
+            HWND hwndText = GetDlgItem(hwndDlg, IDC_STATIC_SCALEY);
 
-               EnableWindow(hwndEdit, !(checked == BST_CHECKED));
-               EnableWindow(hwndText, !(checked == BST_CHECKED));
-            }
-            break;
+            EnableWindow(hwndEdit, !(checked == BST_CHECKED));
+            EnableWindow(hwndText, !(checked == BST_CHECKED));
+         }
+         break;
          }
          break;
       }
@@ -961,7 +961,7 @@ INT_PTR CALLBACK ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
    return FALSE;
 }
 
-int translateApplyCount=0;
+int translateApplyCount = 0;
 INT_PTR CALLBACK TranslateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
    ISelect *psel;
@@ -969,20 +969,20 @@ INT_PTR CALLBACK TranslateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lP
    switch (uMsg)
    {
    case WM_INITDIALOG:
-      {
-         translateApplyCount=0;
-         SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
+   {
+      translateApplyCount = 0;
+      SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
 
-         SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
+      SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
 
-         char szT[256];
-         f2sz(0, szT);
-         SetDlgItemText(hwndDlg, IDC_OFFSETX, szT);
-         f2sz(0, szT);
-         SetDlgItemText(hwndDlg, IDC_OFFSETY, szT);
-      }
-      return TRUE;
-      break;
+      char szT[256];
+      f2sz(0, szT);
+      SetDlgItemText(hwndDlg, IDC_OFFSETX, szT);
+      f2sz(0, szT);
+      SetDlgItemText(hwndDlg, IDC_OFFSETY, szT);
+   }
+   return TRUE;
+   break;
 
    case WM_CLOSE:
       EndDialog(hwndDlg, FALSE);
@@ -996,25 +996,10 @@ INT_PTR CALLBACK TranslateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lP
          switch (LOWORD(wParam))
          {
          case IDOK:
+         {
+            if (translateApplyCount == 0)
             {
-               if( translateApplyCount==0 )
-               {
-                  char szT[256];							
-                  GetDlgItemText(hwndDlg, IDC_OFFSETX, szT, 255);
-                  Vertex2D v;
-                  v.x = sz2f(szT);
-                  GetDlgItemText(hwndDlg, IDC_OFFSETY, szT, 255);
-                  v.y = sz2f(szT);
-
-                  psel->Translate(&v);
-               }
-               EndDialog(hwndDlg, TRUE);
-               break;
-            }
-         case IDC_TRANSLATE_APPLY_BUTTON:
-            {
-               translateApplyCount++;
-               char szT[256];							
+               char szT[256];
                GetDlgItemText(hwndDlg, IDC_OFFSETX, szT, 255);
                Vertex2D v;
                v.x = sz2f(szT);
@@ -1022,23 +1007,38 @@ INT_PTR CALLBACK TranslateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lP
                v.y = sz2f(szT);
 
                psel->Translate(&v);
-               psel->GetPTable()->SetDirtyDraw();
-               break;
             }
+            EndDialog(hwndDlg, TRUE);
+            break;
+         }
+         case IDC_TRANSLATE_APPLY_BUTTON:
+         {
+            translateApplyCount++;
+            char szT[256];
+            GetDlgItemText(hwndDlg, IDC_OFFSETX, szT, 255);
+            Vertex2D v;
+            v.x = sz2f(szT);
+            GetDlgItemText(hwndDlg, IDC_OFFSETY, szT, 255);
+            v.y = sz2f(szT);
+
+            psel->Translate(&v);
+            psel->GetPTable()->SetDirtyDraw();
+            break;
+         }
          case IDC_TRANSLATE_UNDO_BUTTON:
+         {
+            if (translateApplyCount > 0)
             {
-               if( translateApplyCount>0 )
-               {
-                  translateApplyCount--;
-                  psel->GetPTable()->Undo();
-                  psel->GetPTable()->SetDirtyDraw();
-               }
-               break;
+               translateApplyCount--;
+               psel->GetPTable()->Undo();
+               psel->GetPTable()->SetDirtyDraw();
             }
+            break;
+         }
          case IDCANCEL:
-            if( translateApplyCount>0 )
+            if (translateApplyCount > 0)
             {
-               for( int i=0;i<translateApplyCount;i++ ) psel->GetPTable()->Undo();
+               for (int i = 0; i < translateApplyCount; i++) psel->GetPTable()->Undo();
                psel->GetPTable()->SetDirtyDraw();
             }
             EndDialog(hwndDlg, FALSE);

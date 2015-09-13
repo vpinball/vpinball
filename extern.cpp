@@ -8,18 +8,18 @@ BOOL g_fKeepUndoRecords = fTrue;
 
 void ShowError(char *sz)
 {
-	MessageBox(NULL, sz, "Error", MB_OK | MB_ICONEXCLAMATION);
+   MessageBox(NULL, sz, "Error", MB_OK | MB_ICONEXCLAMATION);
 }
 
 void ExitApp()
 {
-    // Quit nicely.
-    if( g_pvp )
-    {
-        g_pvp->Quit();
-    } 
-    else
-    {
-        exit(0);
-    }
+   // Quit nicely.
+   if (g_pvp)
+   {
+      g_pvp->Quit();
+   }
+   else
+   {
+      exit(0);
+   }
 }

@@ -2,8 +2,8 @@
 #ifndef __PLUMB_H__
 #define __PLUMB_H__
 
-void plumb_set_sensitivity( const F32 sens );
-void nudge_set_sensitivity( const F32 sens );
+void plumb_set_sensitivity(const F32 sens);
+void nudge_set_sensitivity(const F32 sens);
 
 F32 nudge_get_sensitivity();
 
