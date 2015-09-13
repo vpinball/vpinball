@@ -826,9 +826,6 @@ void Primitive::ExportMesh(FILE *f)
 
 void Primitive::RenderObject(RenderDevice *pd3dDevice)
 {
-   if (m_ptable->m_fReflectionEnabled && m_d.m_vPosition.z < 0.0f)
-      return;
-
    if (!m_d.m_fGroupdRendering)
    {
       RecalculateMatrices();
