@@ -18,16 +18,16 @@
 class ScopedTracer
 {
 public:
-    ScopedTracer(const WCHAR *name)
-    {
-        D3DPERF_BeginEvent(RGB(0,255,0), name);
-        OutputDebugStringW(name);
-    }
+   ScopedTracer(const WCHAR *name)
+   {
+      D3DPERF_BeginEvent(RGB(0,255,0), name);
+      OutputDebugStringW(name);
+   }
 
-    ~ScopedTracer()
-    {
-        D3DPERF_EndEvent();
-    }
+   ~ScopedTracer()
+   {
+      D3DPERF_EndEvent();
+   }
 };
 
 #else

@@ -19,7 +19,7 @@ DEFINE_GUID(CLSID_VBScript, 0xb54f3741, 0x5b07, 0x11cf, 0xa4, 0xb0, 0x0, 0xaa, 0
 
 
 UINT g_FindMsgString; // Windows message for the FindText dialog
-const char vbsKeyWords[] = 
+const char vbsKeyWords[] =
 "and as byref byval case call const "
 "continue dim do each else elseif end error exit false for function global "
 "goto if in loop me new next not nothing on optional or private public "
@@ -85,11 +85,11 @@ void CodeViewer::Init(IScriptableHost *psh)
    m_pScript = NULL;
 
    const HRESULT res = InitializeScriptEngine();
-   if(res != S_OK)
+   if (res != S_OK)
    {
-       char bla[128];
-       sprintf_s(bla, "Cannot initialize Script Engine 0x%X", res);
-       MessageBox(g_pvp->m_hwnd, bla, "Error", MB_ICONERROR);
+      char bla[128];
+      sprintf_s(bla, "Cannot initialize Script Engine 0x%X", res);
+      MessageBox(g_pvp->m_hwnd, bla, "Error", MB_ICONERROR);
    }
 
    m_sdsDirty = eSaveClean;
@@ -104,7 +104,7 @@ CodeViewer::~CodeViewer()
 {
    Destroy();
 
-   for (int i=0;i<m_vcvd.Size();i++)
+   for (int i = 0; i < m_vcvd.Size(); i++)
       delete m_vcvd.ElementAt(i);
 
    if (m_haccel)
@@ -130,7 +130,7 @@ void CodeViewer::EndSession()
 
    InitializeScriptEngine();
 
-   for (int i=0; i<m_vcvdTemp.Size(); i++)
+   for (int i = 0; i < m_vcvdTemp.Size(); i++)
       delete m_vcvdTemp.ElementAt(i);
    m_vcvdTemp.RemoveAllElements();
 }
@@ -202,7 +202,7 @@ void CodeViewer::RemoveItem(IScriptable *piscript)
    CodeViewDispatch *pcvd;
 
    int idx = m_vcvd.GetSortedIndex(bstr);
-   
+
    if (idx == -1)
       return;
 
@@ -275,20 +275,20 @@ HRESULT CodeViewer::ReplaceName(IScriptable *piscript, WCHAR *wzNew)
 
 STDMETHODIMP CodeViewer::InitializeScriptEngine()
 {
-   const HRESULT result = CoCreateInstance(CLSID_VBScript, 0, CLSCTX_ALL/*CLSCTX_INPROC_SERVER*/, IID_IActiveScriptParse, (LPVOID*) &m_pScriptParse); //!! CLSCTX_INPROC_SERVER good enough?!
+   const HRESULT result = CoCreateInstance(CLSID_VBScript, 0, CLSCTX_ALL/*CLSCTX_INPROC_SERVER*/, IID_IActiveScriptParse, (LPVOID*)&m_pScriptParse); //!! CLSCTX_INPROC_SERVER good enough?!
    if (result == S_OK)
    {
       m_pScriptParse->QueryInterface(IID_IActiveScript,
-         (LPVOID*) &m_pScript);
+         (LPVOID*)&m_pScript);
 
       m_pScriptParse->QueryInterface(IID_IActiveScriptDebug,
-         (LPVOID*) &m_pScriptDebug);
+         (LPVOID*)&m_pScriptDebug);
 
       m_pScriptParse->InitNew();
       m_pScript->SetScriptSite(this);
 
       IObjectSafety *pios;
-      m_pScriptParse->QueryInterface(IID_IObjectSafety, (LPVOID*) &pios);
+      m_pScriptParse->QueryInterface(IID_IObjectSafety, (LPVOID*)&pios);
 
       if (pios)
       {
@@ -338,8 +338,8 @@ void CodeViewer::SetVisible(BOOL fVisible)
       ShowWindow(m_hwndMain, fVisible ? SW_SHOW : SW_HIDE);
 
    if (fVisible)
-      SetWindowPos(m_hwndMain,HWND_TOP,
-         0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+      SetWindowPos(m_hwndMain, HWND_TOP,
+      0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 }
 
 void CodeViewer::SetEnabled(BOOL fEnabled)
@@ -362,13 +362,13 @@ void CodeViewer::SetCaption(char *szCaption)
 
 void CodeViewer::Create()
 {
-   m_haccel = LoadAccelerators(g_hinst,MAKEINTRESOURCE(IDR_CODEVIEWACCEL));// Accelerator keys
+   m_haccel = LoadAccelerators(g_hinst, MAKEINTRESOURCE(IDR_CODEVIEWACCEL));// Accelerator keys
 
    WNDCLASSEX wcex;
    ZeroMemory(&wcex, sizeof(WNDCLASSEX));
    wcex.cbSize = sizeof(WNDCLASSEX);
    wcex.style = CS_DBLCLKS;
-   wcex.lpfnWndProc = (WNDPROC) CodeViewWndProc;
+   wcex.lpfnWndProc = (WNDPROC)CodeViewWndProc;
    wcex.hInstance = g_hinst;
    wcex.hIcon = LoadIcon(g_hinst, MAKEINTRESOURCE(IDI_SCRIPT));
    wcex.lpszClassName = "CVFrame";
@@ -382,7 +382,7 @@ void CodeViewer::Create()
 
    SetWindowLongPtr(m_hwndMain, GWLP_USERDATA, (size_t)this);
 
-   SetWindowPos(m_hwndMain,NULL,
+   SetWindowPos(m_hwndMain, NULL,
       0, 0, 640, 480, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
 
    m_hwndScintilla = CreateWindowEx(0, "Scintilla", "",
@@ -401,27 +401,27 @@ void CodeViewer::Create()
    // screen
    SendMessage(m_hwndScintilla, SCI_SETVISIBLEPOLICY, 0, 0);
 
-   SendMessage(m_hwndScintilla, SCI_SETMARGINTYPEN, 0, SC_MARGIN_NUMBER );
+   SendMessage(m_hwndScintilla, SCI_SETMARGINTYPEN, 0, SC_MARGIN_NUMBER);
    SendMessage(m_hwndScintilla, SCI_SETMARGINSENSITIVEN, 1, 1);
    SendMessage(m_hwndScintilla, SCI_SETMARGINWIDTHN, 0, 40);
 
    SendMessage(m_hwndScintilla, SCI_SETCARETLINEVISIBLE, 1, 0);
-   SendMessage(m_hwndScintilla, SCI_SETCARETLINEBACK, RGB(240,240,255),0);
+   SendMessage(m_hwndScintilla, SCI_SETCARETLINEBACK, RGB(240, 240, 255), 0);
 
-   SendMessage(m_hwndScintilla, SCI_INDICSETSTYLE,0, INDIC_ROUNDBOX );
-   SendMessage(m_hwndScintilla, SCI_SETINDICATORCURRENT,0,0 );
-   SendMessage(m_hwndScintilla, SCI_INDICSETFORE, 0, RGB(255,0,0) );
-   SendMessage(m_hwndScintilla, SCI_INDICSETALPHA, 0, 90 );
+   SendMessage(m_hwndScintilla, SCI_INDICSETSTYLE, 0, INDIC_ROUNDBOX);
+   SendMessage(m_hwndScintilla, SCI_SETINDICATORCURRENT, 0, 0);
+   SendMessage(m_hwndScintilla, SCI_INDICSETFORE, 0, RGB(255, 0, 0));
+   SendMessage(m_hwndScintilla, SCI_INDICSETALPHA, 0, 90);
 
    SendMessage(m_hwndScintilla, SCI_SETPROPERTY, (WPARAM)"fold", (LPARAM)"1");
    SendMessage(m_hwndScintilla, SCI_SETPROPERTY, (WPARAM)"fold.compact", (LPARAM)"0");
-   SendMessage(m_hwndScintilla, SCI_SETMARGINTYPEN, 1, SC_MARGIN_SYMBOL );
-   SendMessage(m_hwndScintilla, SCI_SETMARGINMASKN, 1, SC_MASK_FOLDERS );
-   SendMessage(m_hwndScintilla, SCI_SETMARGINWIDTHN, 1, 20 );
+   SendMessage(m_hwndScintilla, SCI_SETMARGINTYPEN, 1, SC_MARGIN_SYMBOL);
+   SendMessage(m_hwndScintilla, SCI_SETMARGINMASKN, 1, SC_MASK_FOLDERS);
+   SendMessage(m_hwndScintilla, SCI_SETMARGINWIDTHN, 1, 20);
 
    SendMessage(m_hwndScintilla, SCI_MARKERDEFINE, SC_MARKNUM_FOLDEROPEN, SC_MARK_MINUS);
-   SendMessage(m_hwndScintilla, SCI_MARKERSETFORE, SC_MARKNUM_FOLDEROPEN, RGB(0,0,0));
-   SendMessage(m_hwndScintilla, SCI_MARKERSETBACK, SC_MARKNUM_FOLDEROPEN, RGB(255,255,255));
+   SendMessage(m_hwndScintilla, SCI_MARKERSETFORE, SC_MARKNUM_FOLDEROPEN, RGB(0, 0, 0));
+   SendMessage(m_hwndScintilla, SCI_MARKERSETBACK, SC_MARKNUM_FOLDEROPEN, RGB(255, 255, 255));
 
    SendMessage(m_hwndScintilla, SCI_MARKERDEFINE, SC_MARKNUM_FOLDER, SC_MARK_PLUS);
    SendMessage(m_hwndScintilla, SCI_MARKERDEFINE, SC_MARKNUM_FOLDERSUB, SC_MARK_EMPTY);
@@ -432,21 +432,21 @@ void CodeViewer::Create()
 
    SendMessage(m_hwndScintilla, SCI_STYLESETSIZE, 32, 10);
    SendMessage(m_hwndScintilla, SCI_STYLESETFONT, 32, (LPARAM)"Courier");
-   SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_DEFAULT, RGB(0,0,0));
-   SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_COMMENT, RGB(0,130,0));
-   SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_NUMBER, RGB(0,100,100));
-   SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_KEYWORD, RGB(0,0,160));
-   SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_STRING, RGB(0,100,100));
-   SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_PREPROCESSOR, RGB(255,0,0));
-   SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_OPERATOR, RGB(0,0,0));
-   SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_IDENTIFIER, RGB(0,0,0));
-   SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_DATE, RGB(0,0,0));
+   SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_DEFAULT, RGB(0, 0, 0));
+   SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_COMMENT, RGB(0, 130, 0));
+   SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_NUMBER, RGB(0, 100, 100));
+   SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_KEYWORD, RGB(0, 0, 160));
+   SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_STRING, RGB(0, 100, 100));
+   SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_PREPROCESSOR, RGB(255, 0, 0));
+   SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_OPERATOR, RGB(0, 0, 0));
+   SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_IDENTIFIER, RGB(0, 0, 0));
+   SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_DATE, RGB(0, 0, 0));
 
    //////////////////////// Status Window (& Sizing Box)
 
    m_hwndStatus = CreateStatusWindow((WS_CHILD | WS_VISIBLE), "", m_hwndMain, 1);
 
-   int foo[4] = {120,300,350,400};
+   int foo[4] = { 120, 300, 350, 400 };
    SendMessage(m_hwndStatus, SB_SETPARTS, 4, (size_t)foo);
 
    /////////////////// Compile / Find Buttons
@@ -483,7 +483,7 @@ void CodeViewer::Destroy()
 }
 
 STDMETHODIMP CodeViewer::GetItemInfo(LPCOLESTR pstrName, DWORD dwReturnMask,
-                                     IUnknown **ppiunkItem, ITypeInfo **ppti)
+   IUnknown **ppiunkItem, ITypeInfo **ppti)
 {
    if (dwReturnMask & SCRIPTINFO_IUNKNOWN)
       *ppiunkItem = 0;
@@ -509,7 +509,7 @@ STDMETHODIMP CodeViewer::GetItemInfo(LPCOLESTR pstrName, DWORD dwReturnMask,
    {
       IProvideClassInfo* pClassInfo;
       pcvd->m_punk->QueryInterface(IID_IProvideClassInfo,
-         (LPVOID*) &pClassInfo);
+         (LPVOID*)&pClassInfo);
       if (pClassInfo)
       {
          pClassInfo->GetClassInfo(ppti);
@@ -536,14 +536,14 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
    {
       char *szT = MakeChar(ei.bstrDescription);
       AddToDebugOutput(szT);
-      delete [] szT;
+      delete[] szT;
       return S_OK;
    }
 
    m_fScriptError = fTrue;
 
    PinTable * const pt = g_pvp->GetActiveTable();
-   if (pt!=NULL && !pt->CheckPermissions(DISABLE_TABLEVIEW))
+   if (pt != NULL && !pt->CheckPermissions(DISABLE_TABLEVIEW))
    {
       SetVisible(fTrue);
       ShowWindow(m_hwndMain, SW_RESTORE);
@@ -570,7 +570,7 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 
    EnableWindow(g_pvp->m_hwnd, TRUE);
 
-   if (pt!=NULL && !pt->CheckPermissions(DISABLE_TABLEVIEW))
+   if (pt != NULL && !pt->CheckPermissions(DISABLE_TABLEVIEW))
       SetFocus(m_hwndScintilla);
 
    return S_OK;
@@ -578,46 +578,46 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 
 void CodeViewer::Compile()
 {
-   if( m_pScript )
+   if (m_pScript)
    {
-   const size_t cchar = SendMessage(m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
+      const size_t cchar = SendMessage(m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
 
-   char * const szText = new char[cchar+1];
-   WCHAR * const wzText = new WCHAR[cchar+1];
+      char * const szText = new char[cchar + 1];
+      WCHAR * const wzText = new WCHAR[cchar + 1];
 
-   SendMessage(m_hwndScintilla, SCI_GETTEXT, cchar+1, (size_t)szText);
-   MultiByteToWideChar(CP_ACP, 0, szText, -1, wzText, (int)cchar);
-   wzText[cchar] = L'\0';
+      SendMessage(m_hwndScintilla, SCI_GETTEXT, cchar + 1, (size_t)szText);
+      MultiByteToWideChar(CP_ACP, 0, szText, -1, wzText, (int)cchar);
+      wzText[cchar] = L'\0';
 
-   EXCEPINFO exception;
-   ZeroMemory(&exception, sizeof(exception));
-   m_pScript->SetScriptState(SCRIPTSTATE_INITIALIZED);
+      EXCEPINFO exception;
+      ZeroMemory(&exception, sizeof(exception));
+      m_pScript->SetScriptState(SCRIPTSTATE_INITIALIZED);
 
-   /*const HRESULT hr =*/ m_pScript->AddTypeLib(LIBID_VPinballLib, 1, 0, 0);
+      /*const HRESULT hr =*/ m_pScript->AddTypeLib(LIBID_VPinballLib, 1, 0, 0);
 
-   for (int i=0;i<m_vcvd.Size();i++)
-   {
-      int flags = SCRIPTITEM_ISSOURCE | SCRIPTITEM_ISVISIBLE;
-      if (m_vcvd.ElementAt(i)->m_fGlobal)
-         flags |= SCRIPTITEM_GLOBALMEMBERS;
-      m_pScript->AddNamedItem(m_vcvd.ElementAt(i)->m_wzName, flags);
-   }
+      for (int i = 0; i < m_vcvd.Size(); i++)
+      {
+         int flags = SCRIPTITEM_ISSOURCE | SCRIPTITEM_ISVISIBLE;
+         if (m_vcvd.ElementAt(i)->m_fGlobal)
+            flags |= SCRIPTITEM_GLOBALMEMBERS;
+         m_pScript->AddNamedItem(m_vcvd.ElementAt(i)->m_wzName, flags);
+      }
 
-   m_pScriptParse->ParseScriptText(wzText, 0, 0, 0, CONTEXTCOOKIE_NORMAL, 0,
-      SCRIPTTEXT_ISVISIBLE, 0, &exception);
+      m_pScriptParse->ParseScriptText(wzText, 0, 0, 0, CONTEXTCOOKIE_NORMAL, 0,
+         SCRIPTTEXT_ISVISIBLE, 0, &exception);
 
-   m_pScript->SetScriptState(SCRIPTSTATE_INITIALIZED);
+      m_pScript->SetScriptState(SCRIPTSTATE_INITIALIZED);
 
-   delete [] wzText;
-   delete [] szText;
+      delete[] wzText;
+      delete[] szText;
    }
 }
 
 void CodeViewer::Start()
 {
    //ShowError("CodeViewer::Start"); //debug logging BDS
-   if(m_pScript)
-       m_pScript->SetScriptState(SCRIPTSTATE_CONNECTED);
+   if (m_pScript)
+      m_pScript->SetScriptState(SCRIPTSTATE_CONNECTED);
 }
 
 void CodeViewer::EvaluateScriptStatement(char *szScript)
@@ -626,14 +626,14 @@ void CodeViewer::EvaluateScriptStatement(char *szScript)
    ZeroMemory(&exception, sizeof(exception));
 
    const int scriptlen = lstrlen(szScript);
-   WCHAR * const wzScript = new WCHAR[scriptlen+1];
+   WCHAR * const wzScript = new WCHAR[scriptlen + 1];
 
-   MultiByteToWideChar(CP_ACP, 0, szScript, -1, wzScript, scriptlen+1);
+   MultiByteToWideChar(CP_ACP, 0, szScript, -1, wzScript, scriptlen + 1);
    wzScript[scriptlen] = L'\0';
 
    m_pScriptParse->ParseScriptText(wzScript, L"Debug", 0, 0, CONTEXTCOOKIE_DEBUG, 0, 0, NULL, &exception);
 
-   delete [] wzScript;
+   delete[] wzScript;
 }
 
 void CodeViewer::AddToDebugOutput(char *szText)
@@ -706,7 +706,7 @@ void CodeViewer::Find(FINDREPLACE *pfr)
    }
    else
    {
-      startChar = selstart-1;
+      startChar = selstart - 1;
       stopChar = 0;
    }
 
@@ -746,10 +746,10 @@ void CodeViewer::Find(FINDREPLACE *pfr)
    if (posFind != -1)
    {
       const size_t start = SendMessage(m_hwndScintilla, SCI_GETTARGETSTART, 0, 0);
-	  const size_t end = SendMessage(m_hwndScintilla, SCI_GETTARGETEND, 0, 0);
-	  const size_t lineStart = SendMessage(m_hwndScintilla, SCI_LINEFROMPOSITION, min(start, end), 0);
-	  const size_t lineEnd = SendMessage(m_hwndScintilla, SCI_LINEFROMPOSITION, max(start, end), 0);
-	  for (size_t line = lineStart; line <= lineEnd; ++line)
+      const size_t end = SendMessage(m_hwndScintilla, SCI_GETTARGETEND, 0, 0);
+      const size_t lineStart = SendMessage(m_hwndScintilla, SCI_LINEFROMPOSITION, min(start, end), 0);
+      const size_t lineEnd = SendMessage(m_hwndScintilla, SCI_LINEFROMPOSITION, max(start, end), 0);
+      for (size_t line = lineStart; line <= lineEnd; ++line)
          SendMessage(m_hwndScintilla, SCI_ENSUREVISIBLEENFORCEPOLICY, line, 0);
       SendMessage(m_hwndScintilla, SCI_SETSEL, start, end);
 
@@ -784,16 +784,16 @@ void CodeViewer::Replace(FINDREPLACE *pfr)
    FINDTEXTEX ft;
    ft.chrg.cpMax = len;			// search through end of the text
    ft.chrg.cpMin = selstart;
-   if(!(pfr->Flags & (FR_REPLACE | FR_REPLACEALL)))
+   if (!(pfr->Flags & (FR_REPLACE | FR_REPLACEALL)))
       ft.chrg.cpMin = selend;
    ft.lpstrText = pfr->lpstrFindWhat;
 
    LONG cszReplaced = 0;
 next:
    const size_t cpMatch = SendMessage(m_hwndScintilla, SCI_FINDTEXT, (WPARAM)(pfr->Flags), (LPARAM)&ft);
-   if((SSIZE_T)cpMatch < 0)
+   if ((SSIZE_T)cpMatch < 0)
    {
-      if(cszReplaced == 0)
+      if (cszReplaced == 0)
       {
          char szT[MAX_PATH];
          LocalString ls(IDS_FINDFAILED);
@@ -819,9 +819,9 @@ next:
    ft.chrg.cpMin = ft.chrgText.cpMin;
    ft.chrg.cpMax = ft.chrgText.cpMax;
    SendMessage(m_hwndScintilla, SCI_SETSEL, ft.chrgText.cpMin, ft.chrgText.cpMax);
-   if(((pfr->Flags & FR_REPLACE) && cszReplaced == 0) || (pfr->Flags & FR_REPLACEALL))
+   if (((pfr->Flags & FR_REPLACE) && cszReplaced == 0) || (pfr->Flags & FR_REPLACEALL))
    {
-      SendMessage(m_hwndScintilla, SCI_REPLACESEL, true, (LPARAM) pfr->lpstrReplaceWith);
+      SendMessage(m_hwndScintilla, SCI_REPLACESEL, true, (LPARAM)pfr->lpstrReplaceWith);
       ft.chrg.cpMin = cpMatch + lstrlen(pfr->lpstrReplaceWith);
       ft.chrg.cpMax = len;	// search through end of the text
       cszReplaced++;
@@ -833,8 +833,8 @@ void CodeViewer::SaveToStream(IStream *pistream, HCRYPTHASH hcrypthash, HCRYPTKE
 {
    size_t cchar = SendMessage(m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
    const size_t bufferSize = cchar + 32;
-   char * const szText = new char[bufferSize+1];
-   SendMessage(m_hwndScintilla, SCI_GETTEXT, cchar+1, (size_t)szText);
+   char * const szText = new char[bufferSize + 1];
+   SendMessage(m_hwndScintilla, SCI_GETTEXT, cchar + 1, (size_t)szText);
 
    // if there is a valid key, then encrypt the script text (now in szText)
    // (must be done before the hash is updated)
@@ -864,7 +864,7 @@ void CodeViewer::SaveToStream(IStream *pistream, HCRYPTHASH hcrypthash, HCRYPTKE
 
    CryptHashData(hcrypthash, (BYTE *)szText, (DWORD)cchar, 0);
 
-   delete [] szText;
+   delete[] szText;
 }
 
 
@@ -876,7 +876,7 @@ void CodeViewer::LoadFromStream(IStream *pistream, HCRYPTHASH hcrypthash, HCRYPT
    int cchar;
    pistream->Read(&cchar, sizeof(int), &read);
 
-   BYTE * const szText = new BYTE[cchar+1];
+   BYTE * const szText = new BYTE[cchar + 1];
 
    pistream->Read(szText, (cchar)*sizeof(char), &read);
 
@@ -908,7 +908,7 @@ void CodeViewer::LoadFromStream(IStream *pistream, HCRYPTHASH hcrypthash, HCRYPT
    szText[cchar] = L'\0';
 
    // check for bogus control characters
-   for (int i=0;i<cchar;i++)
+   for (int i = 0; i < cchar; i++)
    {
       if (szText[i] < 9 || (szText[i] > 10 && szText[i] < 13) || (szText[i] > 13 && szText[i] < 32))
          szText[i] = ' ';
@@ -916,7 +916,7 @@ void CodeViewer::LoadFromStream(IStream *pistream, HCRYPTHASH hcrypthash, HCRYPT
    SendMessage(m_hwndScintilla, SCI_SETTEXT, 0, (size_t)szText);
    SendMessage(m_hwndScintilla, SCI_EMPTYUNDOBUFFER, 0, 0);
 
-   delete [] szText;
+   delete[] szText;
 
    m_fIgnoreDirty = fFalse;
    m_sdsDirty = eSaveClean;
@@ -925,7 +925,7 @@ void CodeViewer::LoadFromStream(IStream *pistream, HCRYPTHASH hcrypthash, HCRYPT
 
 void CodeViewer::ColorLine(int line)
 {
-	//!!
+   //!!
 }
 
 void CodeViewer::UncolorError()
@@ -940,10 +940,10 @@ void CodeViewer::UncolorError()
 
 void CodeViewer::ColorError(int line, int nchar)
 {
-   m_errorLineNumber = line-1;
+   m_errorLineNumber = line - 1;
 
-   const size_t startChar = SendMessage(m_hwndScintilla, SCI_POSITIONFROMLINE, line-1, 0);
-   const size_t length = SendMessage(m_hwndScintilla, SCI_LINELENGTH, line-1, 0);
+   const size_t startChar = SendMessage(m_hwndScintilla, SCI_POSITIONFROMLINE, line - 1, 0);
+   const size_t length = SendMessage(m_hwndScintilla, SCI_LINELENGTH, line - 1, 0);
 
    SendMessage(m_hwndScintilla, SCI_INDICATORFILLRANGE, startChar, length);
    SendMessage(m_hwndScintilla, SCI_GOTOLINE, line, 0);
@@ -986,7 +986,7 @@ void CodeViewer::GetParamsFromEvent(int iEvent, char *szParams)
       TYPEATTR *pta;
       pti->GetTypeAttr(&pta);
 
-      for (int i=0; i<pta->cImplTypes; i++)
+      for (int i = 0; i < pta->cImplTypes; i++)
       {
          HREFTYPE href;
          pti->GetRefTypeOfImplType(i, &href);
@@ -1005,14 +1005,14 @@ void CodeViewer::GetParamsFromEvent(int iEvent, char *szParams)
             if (pfd->cParams != 0) // no parameters makes it easy
             {
                // Get parameter names
-               BSTR * const rgstr = (BSTR *) CoTaskMemAlloc(6 * sizeof(BSTR));
+               BSTR * const rgstr = (BSTR *)CoTaskMemAlloc(6 * sizeof(BSTR));
 
                unsigned int cnames;
                /*const HRESULT hr =*/ ptiChild->GetNames(pfd->memid, rgstr, 6, &cnames);
 
                // Add enum string to combo control
                char szT[512];
-               for (unsigned int l=1; l<cnames; ++l)
+               for (unsigned int l = 1; l < cnames; ++l)
                {
                   WideCharToMultiByte(CP_ACP, 0, rgstr[l], -1, szT, 512, NULL, NULL);
                   if (l > 1)
@@ -1022,7 +1022,7 @@ void CodeViewer::GetParamsFromEvent(int iEvent, char *szParams)
                   lstrcat(szParams, szT);
                }
 
-               for (unsigned int l=0; l < cnames; l++)
+               for (unsigned int l = 0; l < cnames; l++)
                   SysFreeString(rgstr[l]);
 
                CoTaskMemFree(rgstr);
@@ -1066,8 +1066,8 @@ void CodeViewer::FindCodeFromEvent()
    index = SendMessage(m_hwndEventList, CB_GETCURSEL, 0, 0);
    SendMessage(m_hwndEventList, CB_GETLBTEXT, index, (size_t)szEventName);
    const size_t iEventIndex = SendMessage(m_hwndEventList, CB_GETITEMDATA, index, 0);
-   lstrcat(szItemName,"_"); // VB Specific event names
-   lstrcat(szItemName,szEventName);
+   lstrcat(szItemName, "_"); // VB Specific event names
+   lstrcat(szItemName, szEventName);
 
    size_t codelen = SendMessage(m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
    size_t startChar = 0;
@@ -1080,23 +1080,23 @@ void CodeViewer::FindCodeFromEvent()
    size_t posFind;
    while ((posFind = SendMessage(m_hwndScintilla, SCI_SEARCHINTARGET, lstrlen(szItemName), (LPARAM)szItemName)) != -1)
    {
-	  const size_t line = SendMessage(m_hwndScintilla, SCI_LINEFROMPOSITION, posFind, 0);
+      const size_t line = SendMessage(m_hwndScintilla, SCI_LINEFROMPOSITION, posFind, 0);
       // Check for 'sub' and make sure we're not in a comment
-	  const size_t beginchar = SendMessage(m_hwndScintilla, SCI_POSITIONFROMLINE, line, 0);
+      const size_t beginchar = SendMessage(m_hwndScintilla, SCI_POSITIONFROMLINE, line, 0);
       bool fGoodMatch = true;
 
       char szLine[1024];
       SOURCE_TEXT_ATTR wzFormat[1024];
       WCHAR wzText[1024];
 
-	  const size_t cchar = SendMessage(m_hwndScintilla, SCI_GETLINE, line, (size_t)szLine);
+      const size_t cchar = SendMessage(m_hwndScintilla, SCI_GETLINE, line, (size_t)szLine);
       MultiByteToWideChar(CP_ACP, 0, szLine, -1, wzText, (int)cchar);
       m_pScriptDebug->GetScriptTextAttributes(wzText, (ULONG)cchar, NULL, 0, wzFormat);
 
-	  const size_t inamechar = posFind - beginchar - 1;
+      const size_t inamechar = posFind - beginchar - 1;
 
-	  int i;
-      for (i=(int)inamechar;i>=0;i--)
+      int i;
+      for (i = (int)inamechar; i >= 0; i--)
       {
          if (wzFormat[i] == SOURCETEXT_ATTR_KEYWORD)
             break;
@@ -1111,8 +1111,8 @@ void CodeViewer::FindCodeFromEvent()
       }
       else
       {
-         szLine[i+1] = '\0';
-         if (lstrcmpi(&szLine[i-2], "sub")) //!! correct like this?
+         szLine[i + 1] = '\0';
+         if (lstrcmpi(&szLine[i - 2], "sub")) //!! correct like this?
             fGoodMatch = false;
       }
 
@@ -1122,14 +1122,14 @@ void CodeViewer::FindCodeFromEvent()
 
          fFound = true;
 
-		 size_t ichar = SendMessage(m_hwndScintilla, SCI_POSITIONFROMLINE, line + 1, 0);
+         size_t ichar = SendMessage(m_hwndScintilla, SCI_POSITIONFROMLINE, line + 1, 0);
          if (ichar == -1)
          {
             // The function was declared as the last line of the script - rare but possible
             ichar = SendMessage(m_hwndScintilla, SCI_POSITIONFROMLINE, line, 0);
          }
 
-		 const size_t lineEvent = SendMessage(m_hwndScintilla, SCI_LINEFROMPOSITION, ichar, 0);
+         const size_t lineEvent = SendMessage(m_hwndScintilla, SCI_LINEFROMPOSITION, ichar, 0);
          SendMessage(m_hwndScintilla, SCI_ENSUREVISIBLEENFORCEPOLICY, lineEvent, 0);
          SendMessage(m_hwndScintilla, SCI_SETSEL, ichar, ichar);
       }
@@ -1137,7 +1137,7 @@ void CodeViewer::FindCodeFromEvent()
       if (fFound)
          break;
 
-      startChar = posFind+1;
+      startChar = posFind + 1;
       SendMessage(m_hwndScintilla, SCI_SETTARGETSTART, startChar, 0);
       SendMessage(m_hwndScintilla, SCI_SETTARGETEND, stopChar, 0);
    }
@@ -1181,12 +1181,12 @@ void CodeViewer::FindCodeFromEvent()
       lstrcat(szNewCode, "(");
       lstrcat(szNewCode, szParams);
       lstrcat(szNewCode, ")\n\t");
-	  const size_t subtitlelen = lstrlen(szNewCode);
+      const size_t subtitlelen = lstrlen(szNewCode);
       lstrcat(szNewCode, "\nEnd Sub");
 
       SendMessage(m_hwndScintilla, SCI_REPLACESEL, TRUE, (size_t)szNewCode);
 
-      SendMessage(m_hwndScintilla, SCI_SETSEL, codelen+subtitlelen, codelen+subtitlelen);
+      SendMessage(m_hwndScintilla, SCI_SETSEL, codelen + subtitlelen, codelen + subtitlelen);
    }
 
    SetFocus(m_hwndScintilla);
@@ -1211,7 +1211,7 @@ HRESULT STDMETHODCALLTYPE CodeViewer::ProcessUrlAction(
 {
 
    *pPolicy = (dwAction == URLACTION_ACTIVEX_RUN && (g_pvp->m_securitylevel < eSecurityNoControls)) ?
-URLPOLICY_ALLOW : URLPOLICY_DISALLOW;
+   URLPOLICY_ALLOW : URLPOLICY_DISALLOW;
 
    return S_OK;
 }
@@ -1226,7 +1226,7 @@ HRESULT STDMETHODCALLTYPE CodeViewer::QueryCustomPolicy(
    DWORD cbContext,
    DWORD dwReserved)
 {
-   DWORD * const ppolicy = (DWORD *) CoTaskMemAlloc(sizeof(DWORD));
+   DWORD * const ppolicy = (DWORD *)CoTaskMemAlloc(sizeof(DWORD));
    *ppolicy = URLPOLICY_DISALLOW;
 
    *ppPolicy = (BYTE *)ppolicy;
@@ -1265,7 +1265,7 @@ BOOL CodeViewer::FControlAlreadyOkayed(CONFIRMSAFETY *pcs)
 {
    if (g_pplayer)
    {
-      for (int i=0;i<g_pplayer->m_controlclsidsafe.Size();i++)
+      for (int i = 0; i < g_pplayer->m_controlclsidsafe.Size(); i++)
       {
          const CLSID * const pclsid = g_pplayer->m_controlclsidsafe.ElementAt(i);
          if (*pclsid == pcs->clsid)
@@ -1344,8 +1344,8 @@ BOOL CodeViewer::FUserManuallyOkaysControl(CONFIRMSAFETY *pcs)
    if (ans == IDYES)
       fSafe = fTrue;
 
-   delete [] szName;
-   delete [] szT;
+   delete[] szName;
+   delete[] szT;
 
    return fSafe;
 }
@@ -1402,9 +1402,9 @@ void CodeViewer::MarginClick(int position, int modifiers)
    }
 }
 
-void AddComment( HWND sciHwnd )
+void AddComment(HWND sciHwnd)
 {
-   char *comment="'";
+   char *comment = "'";
 
    size_t startSel = SendMessage(sciHwnd, SCI_GETSELECTIONSTART, 0, 0);
    size_t endSel = SendMessage(sciHwnd, SCI_GETSELECTIONEND, 0, 0);
@@ -1415,44 +1415,44 @@ void AddComment( HWND sciHwnd )
    size_t lines = selEndLine - selStartLine + 1;
    size_t posFromLine = SendMessage(sciHwnd, SCI_POSITIONFROMLINE, selEndLine, 0);
 
-   if( lines>1 && endSel==posFromLine )
+   if (lines > 1 && endSel == posFromLine)
    {
       selEndLine--;
       lines--;
       endSel = SendMessage(sciHwnd, SCI_GETLINEENDPOSITION, selEndLine, 0);
    }
-   SendMessage(sciHwnd, SCI_BEGINUNDOACTION,0,0 );
+   SendMessage(sciHwnd, SCI_BEGINUNDOACTION, 0, 0);
    size_t lineStart = SendMessage(sciHwnd, SCI_POSITIONFROMLINE, selStartLine, 0);
-   if (lines <= 1) 
+   if (lines <= 1)
    {
       // Only a single line was selected, so just append whitespace + end-comment at end of line if needed
-      size_t lineEnd = SendMessage(sciHwnd, SCI_GETLINEENDPOSITION, selEndLine,0 );
+      size_t lineEnd = SendMessage(sciHwnd, SCI_GETLINEENDPOSITION, selEndLine, 0);
       SendMessage(sciHwnd, SCI_INSERTTEXT, lineStart, (LPARAM)comment);
    }
-   else 
+   else
    {
       // More than one line selected, so insert middle_comments where needed
-      for (size_t i = selStartLine; i < selEndLine+1; i++) 
+      for (size_t i = selStartLine; i < selEndLine + 1; i++)
       {
-         lineStart = SendMessage(sciHwnd, SCI_POSITIONFROMLINE, i, 0 );
+         lineStart = SendMessage(sciHwnd, SCI_POSITIONFROMLINE, i, 0);
          SendMessage(sciHwnd, SCI_INSERTTEXT, lineStart, (LPARAM)comment);
       }
    }
-   SendMessage(sciHwnd, SCI_ENDUNDOACTION,0,0 );
+   SendMessage(sciHwnd, SCI_ENDUNDOACTION, 0, 0);
 }
 
-void GetRange(HWND sciHwnd, int start, int end, char *text )
+void GetRange(HWND sciHwnd, int start, int end, char *text)
 {
    Sci_TextRange tr;
    tr.chrg.cpMin = start;
    tr.chrg.cpMax = end;
    tr.lpstrText = text;
-   SendMessage(sciHwnd, SCI_GETTEXTRANGE,0,(LPARAM)&tr);
+   SendMessage(sciHwnd, SCI_GETTEXTRANGE, 0, (LPARAM)&tr);
 }
 
-void RemoveComment( HWND sciHwnd )
+void RemoveComment(HWND sciHwnd)
 {
-   char *comment="\b";
+   char *comment = "\b";
    size_t startSel = SendMessage(sciHwnd, SCI_GETSELECTIONSTART, 0, 0);
    size_t endSel = SendMessage(sciHwnd, SCI_GETSELECTIONEND, 0, 0);
    size_t pos = SendMessage(sciHwnd, SCI_GETCURRENTPOS, 0, 0);
@@ -1462,43 +1462,43 @@ void RemoveComment( HWND sciHwnd )
    size_t lines = selEndLine - selStartLine + 1;
    size_t posFromLine = SendMessage(sciHwnd, SCI_POSITIONFROMLINE, selEndLine, 0);
 
-   if( lines>1 && endSel==posFromLine )
+   if (lines > 1 && endSel == posFromLine)
    {
       selEndLine--;
       lines--;
-      endSel=SendMessage(sciHwnd, SCI_GETLINEENDPOSITION, selEndLine, 0);
+      endSel = SendMessage(sciHwnd, SCI_GETLINEENDPOSITION, selEndLine, 0);
    }
 
-   SendMessage(sciHwnd, SCI_BEGINUNDOACTION,0,0 );
+   SendMessage(sciHwnd, SCI_BEGINUNDOACTION, 0, 0);
 
-   for (size_t i = selStartLine; i<selEndLine + 1; i++)
+   for (size_t i = selStartLine; i < selEndLine + 1; i++)
    {
-	  size_t lineStart = SendMessage(sciHwnd, SCI_POSITIONFROMLINE, i, 0);
-	  size_t lineEnd = SendMessage(sciHwnd, SCI_GETLINEENDPOSITION, i, 0);
+      size_t lineStart = SendMessage(sciHwnd, SCI_POSITIONFROMLINE, i, 0);
+      size_t lineEnd = SendMessage(sciHwnd, SCI_GETLINEENDPOSITION, i, 0);
       char buf[1024];
-      if( lineEnd-lineStart<1023)
+      if (lineEnd - lineStart < 1023)
       {
-         GetRange(sciHwnd, lineStart, lineEnd, buf );
+         GetRange(sciHwnd, lineStart, lineEnd, buf);
          string line(buf);
-		 size_t idx = line.find_first_of("'");
-         if( idx==0 )
+         size_t idx = line.find_first_of("'");
+         if (idx == 0)
          {
-            SendMessage(sciHwnd, SCI_SETSEL, lineStart, lineStart+1);
+            SendMessage(sciHwnd, SCI_SETSEL, lineStart, lineStart + 1);
             SendMessage(sciHwnd, SCI_REPLACESEL, 0, (LPARAM)"");
          }
-      }     
+      }
    }
-   SendMessage(sciHwnd, SCI_ENDUNDOACTION,0,0 );
+   SendMessage(sciHwnd, SCI_ENDUNDOACTION, 0, 0);
 }
 
-string upperCase( string input )
+string upperCase(string input)
 {
-   for( string::iterator it = input.begin(); it!=input.end(); ++it )
+   for (string::iterator it = input.begin(); it != input.end(); ++it)
       *it = toupper(*it);
    return input;
 }
 
-void ParseForFunction( CodeViewer *pcv )
+void ParseForFunction(CodeViewer *pcv)
 {
    HWND sciHwnd = pcv->m_hwndScintilla;
    char text[1024];
@@ -1508,36 +1508,36 @@ void ParseForFunction( CodeViewer *pcv )
    SendMessage(pcv->m_hwndFunctionList, CB_RESETCONTENT, 0, 0);
 
    functionLines = new int[scriptLines];
-   for (size_t i = 0; i<scriptLines; i++)
+   for (size_t i = 0; i < scriptLines; i++)
    {
-      memset(text,0,1024);
-	  const size_t lineLength = SendMessage(sciHwnd, SCI_LINELENGTH, i, 0);
-      if ( lineLength>1023 ) 
+      memset(text, 0, 1024);
+      const size_t lineLength = SendMessage(sciHwnd, SCI_LINELENGTH, i, 0);
+      if (lineLength > 1023)
          continue;
-      SendMessage(sciHwnd, SCI_GETLINE, i, (LPARAM)text );
+      SendMessage(sciHwnd, SCI_GETLINE, i, (LPARAM)text);
       string line(text);
-	  const size_t idx = upperCase(line).find("SUB");
-      if( (SSIZE_T)idx>=0 )
+      const size_t idx = upperCase(line).find("SUB");
+      if ((SSIZE_T)idx >= 0)
       {
-		 const size_t endIdx = upperCase(line).find("END", idx - 4);
-		 const size_t exitIdx = upperCase(line).find("EXIT", idx - 5);
-		 const size_t commentIdx = upperCase(line).find("'");
-         if( endIdx==-1 && exitIdx==-1 )
+         const size_t endIdx = upperCase(line).find("END", idx - 4);
+         const size_t exitIdx = upperCase(line).find("EXIT", idx - 5);
+         const size_t commentIdx = upperCase(line).find("'");
+         if (endIdx == -1 && exitIdx == -1)
          {
-            if ( (SSIZE_T)commentIdx>=0 && commentIdx<idx )
+            if ((SSIZE_T)commentIdx >= 0 && commentIdx < idx)
                continue;
 
-			size_t end = line.find("(", idx);
-            if( end==-1 )
+            size_t end = line.find("(", idx);
+            if (end == -1)
             {
-               end=line.find(":",idx);
-               if ( end==-1 )
-                  end=line.find("\n",idx);
+               end = line.find(":", idx);
+               if (end == -1)
+                  end = line.find("\n", idx);
             }
-            if( end!=-1 )
+            if (end != -1)
             {
-			   const size_t index = SendMessage(pcv->m_hwndFunctionList, CB_ADDSTRING, 0, (LPARAM)line.substr(idx + 3, end - 3).c_str());
-               functionLines[index]=i;
+               const size_t index = SendMessage(pcv->m_hwndFunctionList, CB_ADDSTRING, 0, (LPARAM)line.substr(idx + 3, end - 3).c_str());
+               functionLines[index] = i;
             }
          }
       }
@@ -1547,7 +1547,7 @@ void ParseForFunction( CodeViewer *pcv )
 
 static CodeViewer* GetCodeViewerPtr(HWND hwndDlg)
 {
-      return (CodeViewer *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
+   return (CodeViewer *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 }
 
 LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -1559,259 +1559,259 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
       if (pfr->Flags & FR_DIALOGTERM)
       {
          pcv->m_hwndFind = NULL;
-		 const size_t selstart = SendMessage(pcv->m_hwndScintilla, SCI_GETSELECTIONSTART, 0, 0);
-		 const size_t selend = SendMessage(pcv->m_hwndScintilla, SCI_GETSELECTIONEND, 0, 0);
+         const size_t selstart = SendMessage(pcv->m_hwndScintilla, SCI_GETSELECTIONSTART, 0, 0);
+         const size_t selend = SendMessage(pcv->m_hwndScintilla, SCI_GETSELECTIONEND, 0, 0);
          ::SetFocus(pcv->m_hwndScintilla);
          SendMessage(pcv->m_hwndScintilla, SCI_SETSEL, selstart, selend);
          return 0;
       }
       if (pfr->Flags & FR_FINDNEXT)
          pcv->Find(pfr);
-      if ( (pfr->Flags & FR_REPLACE) || (pfr->Flags & FR_REPLACEALL) )
+      if ((pfr->Flags & FR_REPLACE) || (pfr->Flags & FR_REPLACEALL))
          pcv->Replace(pfr);
    }
 
    switch (uMsg)
    {
    case WM_DESTROY:
-      {
-      }
-      break;
+   {
+   }
+   break;
 
    case WM_ACTIVATE:
-      {
-         if (LOWORD(wParam) != WA_INACTIVE)
-            g_pvp->m_pcv = GetCodeViewerPtr(hwndDlg);
-      }
-      break;
+   {
+      if (LOWORD(wParam) != WA_INACTIVE)
+         g_pvp->m_pcv = GetCodeViewerPtr(hwndDlg);
+   }
+   break;
 
    case WM_CLOSE:
-      {
-         CodeViewer * const pcv = GetCodeViewerPtr(hwndDlg);
-         pcv->SetVisible(fFalse);
-         return 0;
-      }
-      break;
+   {
+      CodeViewer * const pcv = GetCodeViewerPtr(hwndDlg);
+      pcv->SetVisible(fFalse);
+      return 0;
+   }
+   break;
 
    case WM_COMMAND:
+   {
+      const int code = HIWORD(wParam);
+      const int id = LOWORD(wParam);
+      //HWND hwndControl = (HWND)lParam;
+
+      switch (code)
       {
-         const int code = HIWORD(wParam);
-         const int id = LOWORD(wParam);
-         //HWND hwndControl = (HWND)lParam;
-
-         switch (code)
+      case SCEN_CHANGE:
+      {
+         CodeViewer * const pcv = GetCodeViewerPtr(hwndDlg);
+         if (pcv->m_errorLineNumber != -1)
+            pcv->UncolorError();
+         if (!pcv->m_fIgnoreDirty && (pcv->m_sdsDirty < eSaveDirty))
          {
-         case SCEN_CHANGE:
-            {
-               CodeViewer * const pcv = GetCodeViewerPtr(hwndDlg);
-               if (pcv->m_errorLineNumber != -1)
-                  pcv->UncolorError();
-               if (!pcv->m_fIgnoreDirty && (pcv->m_sdsDirty < eSaveDirty))
-               {
-                  pcv->m_sdsDirty = eSaveDirty;
-                  pcv->m_psh->SetDirtyScript(eSaveDirty);
-               }
-            }
-            break;
-
-         case BN_CLICKED: // or menu
-            {
-               CodeViewer * const pcv = GetCodeViewerPtr(hwndDlg);
-               switch (id)
-               {
-               case ID_COMPILE:
-                  pcv->Compile();
-                  // Setting the script to started, and the back to initialized will clear the script out so we can re-do it later - is this behavior just random or is it the way it's supposed to work?
-                  //pcv->m_pScript->SetScriptState(SCRIPTSTATE_CLOSED /*SCRIPTSTATE_STARTED*/);
-                  pcv->EndSession();
-                  break;
-
-               case ID_FIND:
-                  pcv->ShowFindDialog();
-                  break;
-               case ID_REPLACE:
-                  pcv->ShowFindReplaceDialog();
-                  break;
-               case ID_EDIT_FINDNEXT:
-                  pcv->Find(&pcv->m_findreplaceold);
-                  break;
-
-               case ID_EDIT_UNDO:
-                  SendMessage(pcv->m_hwndScintilla, SCI_UNDO, 0, 0);
-                  break;
-
-               case ID_EDIT_COPY:
-                  SendMessage(pcv->m_hwndScintilla, WM_COPY, 0, 0);
-                  break;
-
-               case ID_EDIT_CUT:
-                  SendMessage(pcv->m_hwndScintilla, WM_CUT, 0, 0);
-                  break;
-
-               case ID_EDIT_PASTE:
-                  SendMessage(pcv->m_hwndScintilla, WM_PASTE, 0, 0);
-                  break;
-               case ID_ADD_COMMENT:
-                  {
-                     AddComment(pcv->m_hwndScintilla);
-                     break;
-                  }
-               case ID_REMOVE_COMMENT:
-                  {
-                     RemoveComment(pcv->m_hwndScintilla);
-                     break;
-                  }
-               }
-            }
-            break;
-         case CBN_SETFOCUS:
-            {
-               CodeViewer * const pcv = GetCodeViewerPtr(hwndDlg);
-               if ( id==IDC_FUNCTIONLIST ) 
-                  ParseForFunction(pcv);
-               break;
-            }
-         case CBN_SELCHANGE: // Or accelerator
-            {
-               CodeViewer * const pcv = GetCodeViewerPtr(hwndDlg);
-               switch (id)
-               {
-               case ID_FIND: // accelerator
-                  pcv->ShowFindDialog();
-                  break;
-               case ID_SAVE:
-               case ID_TABLE_PLAY:
-                  pcv->m_psh->DoCodeViewCommand(id);
-                  break;
-
-               case ID_EDIT_FINDNEXT:
-                  pcv->Find(&pcv->m_findreplaceold);
-                  break;
-
-               case ID_REPLACE:
-                  pcv->ShowFindReplaceDialog();
-                  break;
-
-               case ID_EDIT_UNDO:
-                  SendMessage(pcv->m_hwndScintilla, SCI_UNDO, 0, 0);
-                  break;
-
-               case IDC_ITEMLIST:
-                  {
-                     pcv->ListEventsFromItem();
-                     pcv->TellHostToSelectItem();
-                  }
-                  break;
-
-               case IDC_EVENTLIST:
-                  {
-                     pcv->FindCodeFromEvent();
-                  }
-                  break;
-               case IDC_FUNCTIONLIST:
-                  {
-				     const size_t index = SendMessage(pcv->m_hwndFunctionList, CB_GETCURSEL, 0, 0);
-                     SendMessage( pcv->m_hwndScintilla, SCI_GOTOLINE, functionLines[index],0);
-                     SendMessage( pcv->m_hwndScintilla, SCI_GRABFOCUS, 0,0 );
-                  }
-                  break;
-               case ID_ADD_COMMENT:
-                  {
-                     AddComment(pcv->m_hwndScintilla);
-                     break;
-                  }
-               case ID_REMOVE_COMMENT:
-                  {
-                     RemoveComment(pcv->m_hwndScintilla);
-                     break;
-                  }
-               }
-            }
-            break;
+            pcv->m_sdsDirty = eSaveDirty;
+            pcv->m_psh->SetDirtyScript(eSaveDirty);
          }
       }
       break;
 
-   case WM_NOTIFY:
+      case BN_CLICKED: // or menu
       {
-         //int idCtrl = (int) wParam;
-         NMHDR * const pnmh = (LPNMHDR) lParam;
-         HWND hwndRE = pnmh->hwndFrom;
-         const int code = pnmh->code;
-
-         switch (code)
+         CodeViewer * const pcv = GetCodeViewerPtr(hwndDlg);
+         switch (id)
          {
-         case SCN_SAVEPOINTREACHED:
-            {
-               CodeViewer *pcv = GetCodeViewerPtr(hwndDlg);
-               if (pcv->m_sdsDirty > eSaveClean)
-               {
-                  pcv->m_sdsDirty = eSaveClean;
-                  pcv->m_psh->SetDirtyScript(eSaveClean);
-               }
-            }
+         case ID_COMPILE:
+            pcv->Compile();
+            // Setting the script to started, and the back to initialized will clear the script out so we can re-do it later - is this behavior just random or is it the way it's supposed to work?
+            //pcv->m_pScript->SetScriptState(SCRIPTSTATE_CLOSED /*SCRIPTSTATE_STARTED*/);
+            pcv->EndSession();
             break;
 
-         case SCN_UPDATEUI:
-            {
-               SCNotification * const pscn = (SCNotification *)lParam;
-
-               char szT[256];
-               CodeViewer * const pcv = GetCodeViewerPtr(hwndDlg);
-			   size_t pos = SendMessage(hwndRE, SCI_GETCURRENTPOS, 0, 0);
-			   const size_t line = SendMessage(hwndRE, SCI_LINEFROMPOSITION, pos, 0) + 1;
-			   const size_t column = SendMessage(hwndRE, SCI_GETCOLUMN, pos, 0);
-
-               sprintf_s(szT, "Line %u, Col %u", (U32)line, (U32)column);
-               SendMessage(pcv->m_hwndStatus, SB_SETTEXT, 0 | 0, (size_t)szT);
-            }
+         case ID_FIND:
+            pcv->ShowFindDialog();
             break;
-         case SCN_MARGINCLICK:
-            {
-               SCNotification * const pscn = (SCNotification *)lParam;
-               CodeViewer * const pcv = GetCodeViewerPtr(hwndDlg);
-               if (pscn->margin == 1)
-               {
-                  pcv->MarginClick(pscn->position, pscn->modifiers);
-               }
-            }
+         case ID_REPLACE:
+            pcv->ShowFindReplaceDialog();
             break;
-            
+         case ID_EDIT_FINDNEXT:
+            pcv->Find(&pcv->m_findreplaceold);
+            break;
+
+         case ID_EDIT_UNDO:
+            SendMessage(pcv->m_hwndScintilla, SCI_UNDO, 0, 0);
+            break;
+
+         case ID_EDIT_COPY:
+            SendMessage(pcv->m_hwndScintilla, WM_COPY, 0, 0);
+            break;
+
+         case ID_EDIT_CUT:
+            SendMessage(pcv->m_hwndScintilla, WM_CUT, 0, 0);
+            break;
+
+         case ID_EDIT_PASTE:
+            SendMessage(pcv->m_hwndScintilla, WM_PASTE, 0, 0);
+            break;
+         case ID_ADD_COMMENT:
+         {
+            AddComment(pcv->m_hwndScintilla);
+            break;
          }
-
+         case ID_REMOVE_COMMENT:
+         {
+            RemoveComment(pcv->m_hwndScintilla);
+            break;
+         }
+         }
+      }
+      break;
+      case CBN_SETFOCUS:
+      {
+         CodeViewer * const pcv = GetCodeViewerPtr(hwndDlg);
+         if (id == IDC_FUNCTIONLIST)
+            ParseForFunction(pcv);
          break;
       }
-
-   case RECOLOR_LINE:
+      case CBN_SELCHANGE: // Or accelerator
       {
          CodeViewer * const pcv = GetCodeViewerPtr(hwndDlg);
-
-	 for (size_t i = wParam; i <= (size_t)lParam; i++)
-            pcv->ColorLine(i);
-      }
-      break;
-
-   case WM_SIZE:
-      {
-         RECT rc;
-         GetClientRect(hwndDlg, &rc);
-         CodeViewer * const pcv = GetCodeViewerPtr(hwndDlg);
-
-         if (pcv && pcv->m_hwndStatus)
+         switch (id)
          {
-            SendMessage(pcv->m_hwndStatus, WM_SIZE, wParam, lParam);
+         case ID_FIND: // accelerator
+            pcv->ShowFindDialog();
+            break;
+         case ID_SAVE:
+         case ID_TABLE_PLAY:
+            pcv->m_psh->DoCodeViewCommand(id);
+            break;
 
-            RECT rcStatus;
-            GetClientRect(pcv->m_hwndStatus, &rcStatus);
-            const int statheight = rcStatus.bottom - rcStatus.top;
+         case ID_EDIT_FINDNEXT:
+            pcv->Find(&pcv->m_findreplaceold);
+            break;
 
-            const int buttonwidth = 0;
+         case ID_REPLACE:
+            pcv->ShowFindReplaceDialog();
+            break;
 
-            SetWindowPos(pcv->m_hwndScintilla,NULL,
-               0, 0, rc.right-rc.left-buttonwidth/* - 20*/, rc.bottom - rc.top - 10 - statheight - 22, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+         case ID_EDIT_UNDO:
+            SendMessage(pcv->m_hwndScintilla, SCI_UNDO, 0, 0);
+            break;
+
+         case IDC_ITEMLIST:
+         {
+            pcv->ListEventsFromItem();
+            pcv->TellHostToSelectItem();
+         }
+         break;
+
+         case IDC_EVENTLIST:
+         {
+            pcv->FindCodeFromEvent();
+         }
+         break;
+         case IDC_FUNCTIONLIST:
+         {
+            const size_t index = SendMessage(pcv->m_hwndFunctionList, CB_GETCURSEL, 0, 0);
+            SendMessage(pcv->m_hwndScintilla, SCI_GOTOLINE, functionLines[index], 0);
+            SendMessage(pcv->m_hwndScintilla, SCI_GRABFOCUS, 0, 0);
+         }
+         break;
+         case ID_ADD_COMMENT:
+         {
+            AddComment(pcv->m_hwndScintilla);
+            break;
+         }
+         case ID_REMOVE_COMMENT:
+         {
+            RemoveComment(pcv->m_hwndScintilla);
+            break;
+         }
          }
       }
       break;
+      }
+   }
+   break;
+
+   case WM_NOTIFY:
+   {
+      //int idCtrl = (int) wParam;
+      NMHDR * const pnmh = (LPNMHDR)lParam;
+      HWND hwndRE = pnmh->hwndFrom;
+      const int code = pnmh->code;
+
+      switch (code)
+      {
+      case SCN_SAVEPOINTREACHED:
+      {
+         CodeViewer *pcv = GetCodeViewerPtr(hwndDlg);
+         if (pcv->m_sdsDirty > eSaveClean)
+         {
+            pcv->m_sdsDirty = eSaveClean;
+            pcv->m_psh->SetDirtyScript(eSaveClean);
+         }
+      }
+      break;
+
+      case SCN_UPDATEUI:
+      {
+         SCNotification * const pscn = (SCNotification *)lParam;
+
+         char szT[256];
+         CodeViewer * const pcv = GetCodeViewerPtr(hwndDlg);
+         size_t pos = SendMessage(hwndRE, SCI_GETCURRENTPOS, 0, 0);
+         const size_t line = SendMessage(hwndRE, SCI_LINEFROMPOSITION, pos, 0) + 1;
+         const size_t column = SendMessage(hwndRE, SCI_GETCOLUMN, pos, 0);
+
+         sprintf_s(szT, "Line %u, Col %u", (U32)line, (U32)column);
+         SendMessage(pcv->m_hwndStatus, SB_SETTEXT, 0 | 0, (size_t)szT);
+      }
+      break;
+      case SCN_MARGINCLICK:
+      {
+         SCNotification * const pscn = (SCNotification *)lParam;
+         CodeViewer * const pcv = GetCodeViewerPtr(hwndDlg);
+         if (pscn->margin == 1)
+         {
+            pcv->MarginClick(pscn->position, pscn->modifiers);
+         }
+      }
+      break;
+
+      }
+
+      break;
+   }
+
+   case RECOLOR_LINE:
+   {
+      CodeViewer * const pcv = GetCodeViewerPtr(hwndDlg);
+
+      for (size_t i = wParam; i <= (size_t)lParam; i++)
+         pcv->ColorLine(i);
+   }
+   break;
+
+   case WM_SIZE:
+   {
+      RECT rc;
+      GetClientRect(hwndDlg, &rc);
+      CodeViewer * const pcv = GetCodeViewerPtr(hwndDlg);
+
+      if (pcv && pcv->m_hwndStatus)
+      {
+         SendMessage(pcv->m_hwndStatus, WM_SIZE, wParam, lParam);
+
+         RECT rcStatus;
+         GetClientRect(pcv->m_hwndStatus, &rcStatus);
+         const int statheight = rcStatus.bottom - rcStatus.top;
+
+         const int buttonwidth = 0;
+
+         SetWindowPos(pcv->m_hwndScintilla, NULL,
+            0, 0, rc.right - rc.left - buttonwidth/* - 20*/, rc.bottom - rc.top - 10 - statheight - 22, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+      }
+   }
+   break;
    }
 
    return DefWindowProc(hwndDlg, uMsg, wParam, lParam);
@@ -1847,7 +1847,7 @@ HRESULT Collection::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcr
 
    bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
 
-   for (int i=0; i<m_visel.Size(); i++)
+   for (int i = 0; i < m_visel.Size(); i++)
    {
       IEditable * const piedit = m_visel.ElementAt(i)->GetIEditable();
       IScriptable * const piscript = piedit->GetScriptable();
@@ -1883,11 +1883,11 @@ BOOL Collection::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(SSNG))
    {
-       pbr->GetBool(&m_fStopSingleEvents);
+      pbr->GetBool(&m_fStopSingleEvents);
    }
    else if (id == FID(GREL))
    {
-       pbr->GetBool(&m_fGroupElements);
+      pbr->GetBool(&m_fGroupElements);
    }
    else if (id == FID(ITEM))
    {
@@ -1897,7 +1897,7 @@ BOOL Collection::LoadToken(int id, BiffReader *pbr)
       WCHAR wzT[MAXNAMEBUFFER];
       pbr->GetWideString((WCHAR *)wzT);
 
-      for (int i=0;i<ppt->m_vedit.Size();i++)
+      for (int i = 0; i < ppt->m_vedit.Size(); i++)
       {
          IScriptable * const piscript = ppt->m_vedit.ElementAt(i)->GetScriptable();
          if (piscript) // skip decals
@@ -1967,27 +1967,27 @@ STDMETHODIMP OMCollectionEnum::Next(ULONG celt, VARIANT __RPC_FAR *rgVar, ULONG 
    const int cwanted = celt;
    int creturned;
 
-   if (m_index+cwanted > m_pcol->m_visel.Size())
+   if (m_index + cwanted > m_pcol->m_visel.Size())
    {
       hr = S_FALSE;
       last = m_pcol->m_visel.Size();
-      creturned = m_pcol->m_visel.Size()-m_index;
+      creturned = m_pcol->m_visel.Size() - m_index;
    }
    else
    {
       hr = S_OK;
-      last = m_index+cwanted;
+      last = m_index + cwanted;
       creturned = cwanted;
    }
 
-   for (int i=m_index;i<last;i++)
+   for (int i = m_index; i < last; i++)
    {
       IDispatch * const pdisp = m_pcol->m_visel.ElementAt(i)->GetDispatch();
 
       pdisp->QueryInterface(IID_IDispatch, (void **)&pdisp);
 
-      V_VT(&rgVar[i-m_index]) = VT_DISPATCH;
-      V_DISPATCH(&rgVar[i-m_index]) = pdisp;
+      V_VT(&rgVar[i - m_index]) = VT_DISPATCH;
+      V_DISPATCH(&rgVar[i - m_index]) = pdisp;
    }
 
    m_index += creturned;
@@ -2055,13 +2055,13 @@ STDMETHODIMP DebuggerModule::Print(VARIANT *pvar)
    WCHAR * const wzT = V_BSTR(&varT);
    const int len = lstrlenW(wzT);
 
-   char * const szT = new char[len+1];
+   char * const szT = new char[len + 1];
 
-   WideCharToMultiByte(CP_ACP, 0, wzT, -1, szT, len+1, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, wzT, -1, szT, len + 1, NULL, NULL);
 
    m_pcv->AddToDebugOutput(szT);
 
-   delete [] szT;
+   delete[] szT;
 
    return S_OK;
 }

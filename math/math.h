@@ -5,13 +5,13 @@
 #if _MSC_VER < 1800
 __forceinline float exp2f(const float e)
 {
-	return powf(2.0f,e);
+   return powf(2.0f,e);
 }
 #endif
 
 __forceinline float sqrf(const float x)
 {
-	return x*x;
+   return x*x;
 }
 
 // Math stuff which doesn't fit elsewhere

@@ -6,57 +6,57 @@
 
 BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib)
 {
-    // check if Textures exceed the maximum texture dimension
-    int maxTexDim;
-    HRESULT hrMaxTex = GetRegInt("Player", "MaxTexDimension", &maxTexDim);
-    if (hrMaxTex != S_OK)
-        maxTexDim = 0; // default: Don't resize textures
-    if(maxTexDim <= 0)
-        maxTexDim = 65536;
+   // check if Textures exceed the maximum texture dimension
+   int maxTexDim;
+   HRESULT hrMaxTex = GetRegInt("Player", "MaxTexDimension", &maxTexDim);
+   if (hrMaxTex != S_OK)
+      maxTexDim = 0; // default: Don't resize textures
+   if (maxTexDim <= 0)
+      maxTexDim = 65536;
 
-    const int pictureWidth = FreeImage_GetWidth(dib);
-    const int pictureHeight = FreeImage_GetHeight(dib);
-    FIBITMAP* dibResized = dib;
+   const int pictureWidth = FreeImage_GetWidth(dib);
+   const int pictureHeight = FreeImage_GetHeight(dib);
+   FIBITMAP* dibResized = dib;
 
-    if ((pictureHeight > maxTexDim) || (pictureWidth > maxTexDim))
-    {
-        int newWidth = max(min(pictureWidth, maxTexDim), MIN_TEXTURE_SIZE);
-        int newHeight = max(min(pictureHeight, maxTexDim), MIN_TEXTURE_SIZE);
-        /*
-         * The following code tries to maintain the aspect ratio while resizing. This is
-         * however not really necessary and makes playfield textures more blurry than they
-         * need to be, so it's disabled for now.
-         */
-        //if (pictureWidth - newWidth > pictureHeight - newHeight)
-        //    newHeight = min(pictureHeight * newWidth / pictureWidth, maxTexDim);
-        //else
-        //    newWidth = min(pictureWidth * newHeight / pictureHeight, maxTexDim);
-        dibResized = FreeImage_Rescale(dib, newWidth, newHeight, FILTER_BILINEAR);
-    }
-    else if (pictureWidth < MIN_TEXTURE_SIZE || pictureHeight < MIN_TEXTURE_SIZE)
-    {
-        // some drivers seem to choke on small (1x1) textures, so be safe by scaling them up
-        const int newWidth = max(pictureWidth, MIN_TEXTURE_SIZE);
-        const int newHeight = max(pictureHeight, MIN_TEXTURE_SIZE);
-        dibResized = FreeImage_Rescale(dib, newWidth, newHeight, FILTER_BOX);
-    }
+   if ((pictureHeight > maxTexDim) || (pictureWidth > maxTexDim))
+   {
+      int newWidth = max(min(pictureWidth, maxTexDim), MIN_TEXTURE_SIZE);
+      int newHeight = max(min(pictureHeight, maxTexDim), MIN_TEXTURE_SIZE);
+      /*
+       * The following code tries to maintain the aspect ratio while resizing. This is
+       * however not really necessary and makes playfield textures more blurry than they
+       * need to be, so it's disabled for now.
+       */
+      //if (pictureWidth - newWidth > pictureHeight - newHeight)
+      //    newHeight = min(pictureHeight * newWidth / pictureWidth, maxTexDim);
+      //else
+      //    newWidth = min(pictureWidth * newHeight / pictureHeight, maxTexDim);
+      dibResized = FreeImage_Rescale(dib, newWidth, newHeight, FILTER_BILINEAR);
+   }
+   else if (pictureWidth < MIN_TEXTURE_SIZE || pictureHeight < MIN_TEXTURE_SIZE)
+   {
+      // some drivers seem to choke on small (1x1) textures, so be safe by scaling them up
+      const int newWidth = max(pictureWidth, MIN_TEXTURE_SIZE);
+      const int newHeight = max(pictureHeight, MIN_TEXTURE_SIZE);
+      dibResized = FreeImage_Rescale(dib, newWidth, newHeight, FILTER_BOX);
+   }
 
-    FIBITMAP* dib32 = FreeImage_ConvertTo32Bits(dibResized);
+   FIBITMAP* dib32 = FreeImage_ConvertTo32Bits(dibResized);
 
-    BaseTexture* tex = new BaseTexture(FreeImage_GetWidth(dib32), FreeImage_GetHeight(dib32));
+   BaseTexture* tex = new BaseTexture(FreeImage_GetWidth(dib32), FreeImage_GetHeight(dib32));
 
-    BYTE * const psrc = FreeImage_GetBits(dib32), *pdst = tex->data();
-    const int pitchdst = FreeImage_GetPitch(dib32), pitchsrc = tex->pitch();
-    const int height = tex->height();
+   BYTE * const psrc = FreeImage_GetBits(dib32), *pdst = tex->data();
+   const int pitchdst = FreeImage_GetPitch(dib32), pitchsrc = tex->pitch();
+   const int height = tex->height();
 
-    for (int y = 0; y < height; ++y)
-        memcpy(pdst + (height-y-1)*pitchdst, psrc + y*pitchsrc, 4 * tex->width());
+   for (int y = 0; y < height; ++y)
+      memcpy(pdst + (height - y - 1)*pitchdst, psrc + y*pitchsrc, 4 * tex->width());
 
-    FreeImage_Unload(dib32);
-    if (dibResized != dib)      // did we allocate a rescaled copy?
-        FreeImage_Unload(dibResized);
+   FreeImage_Unload(dib32);
+   if (dibResized != dib)      // did we allocate a rescaled copy?
+      FreeImage_Unload(dibResized);
 
-    return tex;
+   return tex;
 }
 
 BaseTexture* BaseTexture::CreateFromFile(const char *szfile)
@@ -65,13 +65,13 @@ BaseTexture* BaseTexture::CreateFromFile(const char *szfile)
 
    // check the file signature and deduce its format
    fif = FreeImage_GetFileType(szfile, 0);
-   if(fif == FIF_UNKNOWN) {
+   if (fif == FIF_UNKNOWN) {
       // try to guess the file format from the file extension
       fif = FreeImage_GetFIFFromFilename(szfile);
    }
 
    // check that the plugin has reading capabilities ...
-   if((fif != FIF_UNKNOWN) && FreeImage_FIFSupportsReading(fif)) {
+   if ((fif != FIF_UNKNOWN) && FreeImage_FIFSupportsReading(fif)) {
       // ok, let's load the file
       FIBITMAP *dib = FreeImage_Load(fif, szfile, 0);
 
@@ -90,28 +90,28 @@ BaseTexture* BaseTexture::CreateFromFile(const char *szfile)
 // from the FreeImage FAQ page
 static FIBITMAP* HBitmapToFreeImage(HBITMAP hbmp)
 {
-    BITMAP bm;
-    GetObject(hbmp, sizeof(BITMAP), &bm);
-    FIBITMAP* dib = FreeImage_Allocate(bm.bmWidth, bm.bmHeight, bm.bmBitsPixel);
-    // The GetDIBits function clears the biClrUsed and biClrImportant BITMAPINFO members (dont't know why)
-    // So we save these infos below. This is needed for palettized images only.
-    int nColors = FreeImage_GetColorsUsed(dib);
-    HDC dc = GetDC(NULL);
-    int Success = GetDIBits(dc, hbmp, 0, FreeImage_GetHeight(dib),
-            FreeImage_GetBits(dib), FreeImage_GetInfo(dib), DIB_RGB_COLORS);
-    ReleaseDC(NULL, dc);
-    // restore BITMAPINFO members
-    FreeImage_GetInfoHeader(dib)->biClrUsed = nColors;
-    FreeImage_GetInfoHeader(dib)->biClrImportant = nColors;
-    return dib;
+   BITMAP bm;
+   GetObject(hbmp, sizeof(BITMAP), &bm);
+   FIBITMAP* dib = FreeImage_Allocate(bm.bmWidth, bm.bmHeight, bm.bmBitsPixel);
+   // The GetDIBits function clears the biClrUsed and biClrImportant BITMAPINFO members (dont't know why)
+   // So we save these infos below. This is needed for palettized images only.
+   int nColors = FreeImage_GetColorsUsed(dib);
+   HDC dc = GetDC(NULL);
+   int Success = GetDIBits(dc, hbmp, 0, FreeImage_GetHeight(dib),
+      FreeImage_GetBits(dib), FreeImage_GetInfo(dib), DIB_RGB_COLORS);
+   ReleaseDC(NULL, dc);
+   // restore BITMAPINFO members
+   FreeImage_GetInfoHeader(dib)->biClrUsed = nColors;
+   FreeImage_GetInfoHeader(dib)->biClrImportant = nColors;
+   return dib;
 }
 
 BaseTexture* BaseTexture::CreateFromHBitmap(HBITMAP hbm)
 {
-    FIBITMAP *dib = HBitmapToFreeImage(hbm);
-    BaseTexture* pdds = BaseTexture::CreateFromFreeImage(dib);
-    FreeImage_Unload(dib);
-    return pdds;
+   FIBITMAP *dib = HBitmapToFreeImage(hbm);
+   BaseTexture* pdds = BaseTexture::CreateFromFreeImage(dib);
+   FreeImage_Unload(dib);
+   return pdds;
 }
 
 
@@ -123,8 +123,8 @@ Texture::Texture()
    m_pdsBuffer = NULL;
    m_hbmGDIVersion = NULL;
    m_ppb = NULL;
-   m_alphaTestValue=1.0f;
-   memset(m_szName,0, MAXTOKEN);
+   m_alphaTestValue = 1.0f;
+   memset(m_szName, 0, MAXTOKEN);
 }
 
 Texture::~Texture()
@@ -148,8 +148,8 @@ HRESULT Texture::SaveToStream(IStream *pstream, PinTable *pt)
       bw.WriteTag(FID(BITS));
 
       // 32-bit picture
-      LZWWriter lzwwriter(pstream, (int *)m_pdsBuffer->data(), m_width*4, m_height, m_pdsBuffer->pitch());
-      lzwwriter.CompressBits(8+1);
+      LZWWriter lzwwriter(pstream, (int *)m_pdsBuffer->data(), m_width * 4, m_height, m_pdsBuffer->pitch());
+      lzwwriter.CompressBits(8 + 1);
    }
    else // JPEG (or other binary format)
    {
@@ -162,7 +162,7 @@ HRESULT Texture::SaveToStream(IStream *pstream, PinTable *pt)
       else
          bw.WriteInt(FID(LINK), linkid);
    }
-   bw.WriteFloat(FID(ALTV),m_alphaTestValue);
+   bw.WriteFloat(FID(ALTV), m_alphaTestValue);
    bw.WriteTag(FID(ENDB));
 
    return S_OK;
@@ -180,16 +180,16 @@ HRESULT Texture::LoadFromStream(IStream *pstream, int version, PinTable *pt)
 
 bool Texture::LoadFromMemory(BYTE *data, DWORD size)
 {
-    FIMEMORY *hmem = FreeImage_OpenMemory(data, size);
-    FREE_IMAGE_FORMAT fif = FreeImage_GetFileTypeFromMemory(hmem, 0);
-    FIBITMAP *dib = FreeImage_LoadFromMemory(fif, hmem, 0);
-    FreeImage_CloseMemory(hmem);
+   FIMEMORY *hmem = FreeImage_OpenMemory(data, size);
+   FREE_IMAGE_FORMAT fif = FreeImage_GetFileTypeFromMemory(hmem, 0);
+   FIBITMAP *dib = FreeImage_LoadFromMemory(fif, hmem, 0);
+   FreeImage_CloseMemory(hmem);
 
-    m_pdsBuffer = BaseTexture::CreateFromFreeImage(dib);
-    FreeImage_Unload(dib);
+   m_pdsBuffer = BaseTexture::CreateFromFreeImage(dib);
+   FreeImage_Unload(dib);
 
-    SetSizeFrom(m_pdsBuffer);
-    return true;
+   SetSizeFrom(m_pdsBuffer);
+   return true;
 }
 
 
@@ -217,14 +217,14 @@ BOOL Texture::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(ALTV))
    {
-       pbr->GetFloat(&m_alphaTestValue);
+      pbr->GetFloat(&m_alphaTestValue);
    }
    else if (id == FID(BITS))
    {
       m_pdsBuffer = new BaseTexture(m_width, m_height);
 
       // 32-bit picture
-      LZWReader lzwreader(pbr->m_pistream, (int *)m_pdsBuffer->data(), m_width*4, m_height, m_pdsBuffer->pitch());
+      LZWReader lzwreader(pbr->m_pistream, (int *)m_pdsBuffer->data(), m_width * 4, m_height, m_pdsBuffer->pitch());
       lzwreader.Decoder();
 
       const int lpitch = m_pdsBuffer->pitch();
@@ -233,24 +233,24 @@ BOOL Texture::LoadToken(int id, BiffReader *pbr)
       // Find out if all alpha values are zero
       BYTE * const pch = (BYTE *)m_pdsBuffer->data();
       bool allAlphaZero = true;
-      for (int i=0;i<m_height;i++)
+      for (int i = 0; i < m_height; i++)
       {
-         for (int l=0;l<m_width;l++)
+         for (int l = 0; l < m_width; l++)
          {
-            if (pch[i*lpitch + 4*l + 3] != 0)
+            if (pch[i*lpitch + 4 * l + 3] != 0)
             {
-                allAlphaZero = false;
-                goto endAlphaCheck;
+               allAlphaZero = false;
+               goto endAlphaCheck;
             }
          }
       }
-endAlphaCheck:
+   endAlphaCheck:
 
       // all alpha values are 0: set them all to 0xff
       if (allAlphaZero)
-         for (int i=0;i<m_height;i++)
-            for (int l=0;l<m_width;l++)
-               pch[i*lpitch + 4*l + 3] = 0xff;
+         for (int i = 0; i < m_height; i++)
+            for (int l = 0; l < m_width; l++)
+               pch[i*lpitch + 4 * l + 3] = 0xff;
    }
    else if (id == FID(JPEG))
    {
@@ -312,33 +312,33 @@ void Texture::CreateGDIVersion()
    bmi.bmiHeader.biCompression = BI_RGB;
    bmi.bmiHeader.biSizeImage = 0;
 
-   BYTE *tmp = new BYTE[m_width*m_height*4];
+   BYTE *tmp = new BYTE[m_width*m_height * 4];
    m_pdsBuffer->CopyTo_ConvertAlpha(tmp);
 
    SetStretchBltMode(hdcNew, COLORONCOLOR);
    StretchDIBits(hdcNew,
-           0, 0, m_width, m_height,
-           0, 0, m_width, m_height,
-           tmp, &bmi, DIB_RGB_COLORS, SRCCOPY);
+      0, 0, m_width, m_height,
+      0, 0, m_width, m_height,
+      tmp, &bmi, DIB_RGB_COLORS, SRCCOPY);
 
-   delete [] tmp;
+   delete[] tmp;
 
    SelectObject(hdcNew, hbmOld);
    DeleteDC(hdcNew);
-   ReleaseDC(NULL,hdcScreen);
+   ReleaseDC(NULL, hdcScreen);
 }
 
 void Texture::GetTextureDC(HDC *pdc)
 {
-    EnsureHBitmap();
-    *pdc = CreateCompatibleDC(NULL);
-    m_oldHBM = (HBITMAP)SelectObject(*pdc, m_hbmGDIVersion);
+   EnsureHBitmap();
+   *pdc = CreateCompatibleDC(NULL);
+   m_oldHBM = (HBITMAP)SelectObject(*pdc, m_hbmGDIVersion);
 }
 
 void Texture::ReleaseTextureDC(HDC dc)
 {
-    SelectObject(dc, m_oldHBM);
-    DeleteDC(dc);
+   SelectObject(dc, m_oldHBM);
+   DeleteDC(dc);
 }
 
 void Texture::CreateFromResource(const int id, int * const pwidth, int * const pheight)
@@ -347,7 +347,7 @@ void Texture::CreateFromResource(const int id, int * const pwidth, int * const p
 
    if (hbm == NULL)
    {
-      m_pdsBuffer=NULL;
+      m_pdsBuffer = NULL;
       return;
    }
 
@@ -359,32 +359,32 @@ BaseTexture* Texture::CreateFromHBitmap(HBITMAP hbm, int * const pwidth, int * c
    BaseTexture* pdds = BaseTexture::CreateFromHBitmap(hbm);
    SetSizeFrom(pdds);
    if (pwidth)
-	   *pwidth = pdds->width();
+      *pwidth = pdds->width();
    if (pheight)
-	   *pheight = pdds->height();
+      *pheight = pdds->height();
    return pdds;
 }
 
 void Texture::CreateTextureOffscreen(const int width, const int height)
 {
-   m_pdsBuffer = new BaseTexture( width, height );
-   SetSizeFrom( m_pdsBuffer );
+   m_pdsBuffer = new BaseTexture(width, height);
+   SetSizeFrom(m_pdsBuffer);
 }
 
 void Texture::SetOpaque(BaseTexture* const pdds)
 {
-    const int width = pdds->width();
-    const int height = pdds->height();
-    const int pitch = pdds->pitch();
+   const int width = pdds->width();
+   const int height = pdds->height();
+   const int pitch = pdds->pitch();
 
-    // Assume our 32 bit color structure
-    BYTE *pch = pdds->data();
+   // Assume our 32 bit color structure
+   BYTE *pch = pdds->data();
 
-    for (int i=0;i<height;i++)
-    {
-        for (int l=0;l<width;l++)
-            pch[4*l + 3] = 0xff;
+   for (int i = 0; i < height; i++)
+   {
+      for (int l = 0; l < width; l++)
+         pch[4 * l + 3] = 0xff;
 
-		pch += pitch;
-    }
+      pch += pitch;
+   }
 }

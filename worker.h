@@ -12,12 +12,12 @@ extern HANDLE g_hWorkerStarted;
 class FastIStorage;
 
 class AutoSavePackage
-	{
+{
 public:
-	FastIStorage *pstg;
-	int tableindex;
-	HWND HwndTable;
-	};
+   FastIStorage *pstg;
+   int tableindex;
+   HWND HwndTable;
+};
 
 unsigned int WINAPI VPWorkerThreadStart(void *param);
 

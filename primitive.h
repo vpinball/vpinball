@@ -17,10 +17,10 @@ public:
    Mesh(){ middlePoint.x = 0.0f; middlePoint.y = 0.0f; middlePoint.z = 0.0f; }
    void Clear();
    bool LoadWavefrontObj(const char *fname, const bool flipTV, const bool convertToLeftHanded);
-   void SaveWavefrontObj(const char *fname, const char *description=NULL);
+   void SaveWavefrontObj(const char *fname, const char *description = NULL);
 
    size_t NumVertices() const    { return m_vertices.size(); }
-	size_t NumIndices() const     { return m_indices.size(); }
+   size_t NumIndices() const     { return m_indices.size(); }
    void UploadToVB(VertexBuffer * vb) const;
 };
 
@@ -79,7 +79,7 @@ class Primitive :
    public CComObjectRootEx<CComSingleThreadModel>,
    public IDispatchImpl<IPrimitive, &IID_IPrimitive, &LIBID_VPinballLib>,
    //public CComObjectRoot,
-   public CComCoClass<Primitive,&CLSID_Primitive>,
+   public CComCoClass<Primitive, &CLSID_Primitive>,
    public EventProxy<Primitive, &DIID_IPrimitiveEvents>,
    public IConnectionPointContainerImpl<Primitive>,
    public IProvideClassInfo2Impl<&CLSID_Primitive, &DIID_IPrimitiveEvents, &LIBID_VPinballLib>,
@@ -214,7 +214,7 @@ public:
 
    STANDARD_EDITABLE_DECLARES(Primitive, eItemPrimitive, PRIMITIVE, 1)
 
-   DECLARE_REGISTRY_RESOURCEID(IDR_PRIMITIVE)
+      DECLARE_REGISTRY_RESOURCEID(IDR_PRIMITIVE)
 
    virtual void MoveOffset(const float dx, const float dy);
    virtual void SetObjectPos();
@@ -270,9 +270,9 @@ private:        // private member functions
    void UpdateEditorView();
 
    bool BrowseFor3DMeshFile();
-   void RenderObject( RenderDevice *pd3dDevice);
+   void RenderObject(RenderDevice *pd3dDevice);
    void SetupHitObject(Vector<HitObject> * pvho, HitObject * obj);
-   void AddHitEdge(Vector<HitObject> * pvho, std::set< std::pair<unsigned,unsigned> >& addedEdges, const unsigned i, const unsigned j, const Vertex3Ds &vi, const Vertex3Ds &vj);
+   void AddHitEdge(Vector<HitObject> * pvho, std::set< std::pair<unsigned, unsigned> >& addedEdges, const unsigned i, const unsigned j, const Vertex3Ds &vi, const Vertex3Ds &vj);
 
    void CalculateBuiltinOriginal();
 

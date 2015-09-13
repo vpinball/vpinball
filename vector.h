@@ -8,303 +8,303 @@
 class VectorVoid
 {
 protected:
-	int		m_cMax;		// Number of elements allocated
-	int		m_cSize;	// Last element used
-	void 	**m_rg;		// Data buffer
+   int		m_cMax;		// Number of elements allocated
+   int		m_cSize;	// Last element used
+   void 	**m_rg;		// Data buffer
 
 public:
-	inline VectorVoid()
-		{
-		m_cSize = 0;
-		m_rg = (void **)malloc(sizeof(void *) * START_SIZE);
-		m_cMax = (!m_rg) ? 0 : START_SIZE;  // if !m_rg, we're actually OOM, but this will get caught the next time anything gets added to the Vector
-		}
+   inline VectorVoid()
+   {
+      m_cSize = 0;
+      m_rg = (void **)malloc(sizeof(void *) * START_SIZE);
+      m_cMax = (!m_rg) ? 0 : START_SIZE;  // if !m_rg, we're actually OOM, but this will get caught the next time anything gets added to the Vector
+   }
 
-	inline VectorVoid(const int cSize)
-		{
-		m_cSize = 0;
-		m_rg = (void **)malloc(sizeof(void *) * cSize);
-		m_cMax = (!m_rg) ? 0 : cSize;
-		}
+   inline VectorVoid(const int cSize)
+   {
+      m_cSize = 0;
+      m_rg = (void **)malloc(sizeof(void *) * cSize);
+      m_cMax = (!m_rg) ? 0 : cSize;
+   }
 
-	inline VectorVoid(const VectorVoid * const pvector)
-		{		
-		m_rg = (void **)malloc(sizeof(void *) * pvector->m_cMax);
+   inline VectorVoid(const VectorVoid * const pvector)
+   {
+      m_rg = (void **)malloc(sizeof(void *) * pvector->m_cMax);
 
-		if (!m_rg)
-			{
-			m_cMax = 0;
-			m_cSize = 0;
+      if (!m_rg)
+      {
+         m_cMax = 0;
+         m_cSize = 0;
 
-			return;
-			}
+         return;
+      }
 
-		m_cMax = pvector->m_cMax;
-		m_cSize = pvector->m_cSize;
+      m_cMax = pvector->m_cMax;
+      m_cSize = pvector->m_cSize;
 
-		for (int i=0; i<m_cSize; ++i)	// We need this for smart pointers - they need to be ref counted
-			{
-			m_rg[i] = pvector->m_rg[i];
-			}
-		}
+      for (int i = 0; i < m_cSize; ++i)	// We need this for smart pointers - they need to be ref counted
+      {
+         m_rg[i] = pvector->m_rg[i];
+      }
+   }
 
-	inline ~VectorVoid()
-		{
-		if (m_rg)
-			free(m_rg);
-		}
-		
-	// essentially a debug-only method to tell the Vector to toss its heap mem
-	inline void Reset()
-		{
-		if (m_rg)
-			{
-			free(m_rg);
-			m_rg = NULL;
-			m_cSize = 0;
-			m_cMax = 0;
-			}
-		}
+   inline ~VectorVoid()
+   {
+      if (m_rg)
+         free(m_rg);
+   }
 
-	inline void Empty()
-		{
-		if (m_rg)
-			free(m_rg);
-		m_cSize = 0;
-		m_rg = (void **)malloc(sizeof(void *) * START_SIZE);
-		m_cMax = (!m_rg) ? 0 : START_SIZE;  // if !m_rg, we're actually OOM, but this will get caught the next time anything gets added to the Vector
-		}
+   // essentially a debug-only method to tell the Vector to toss its heap mem
+   inline void Reset()
+   {
+      if (m_rg)
+      {
+         free(m_rg);
+         m_rg = NULL;
+         m_cSize = 0;
+         m_cMax = 0;
+      }
+   }
 
-	inline int Size() const
-		{
-		return m_cSize;
-		}
+   inline void Empty()
+   {
+      if (m_rg)
+         free(m_rg);
+      m_cSize = 0;
+      m_rg = (void **)malloc(sizeof(void *) * START_SIZE);
+      m_cMax = (!m_rg) ? 0 : START_SIZE;  // if !m_rg, we're actually OOM, but this will get caught the next time anything gets added to the Vector
+   }
 
-    int size() const    { return Size(); }      // for compatibility with std::vector
+   inline int Size() const
+   {
+      return m_cSize;
+   }
 
-	inline int Capacity() const
-		{
-		return m_cMax;
-		}
-		
-	inline void *ElementAt(const int iItem) const
-		{
-		return m_rg[iItem];
-		}
+   int size() const    { return Size(); }      // for compatibility with std::vector
 
-	inline void *GetArray() const
-		{
-		return m_rg;
-		}
+   inline int Capacity() const
+   {
+      return m_cMax;
+   }
 
-	inline bool SetSize(const int i)
-		{
-		if (i > m_cMax)
-			{		
-			void **m_rgNew;
+   inline void *ElementAt(const int iItem) const
+   {
+      return m_rg[iItem];
+   }
 
-			if (m_rg)
-				{
-				m_rgNew = (void **)realloc((void *)m_rg, sizeof(void *) * i);
-				}
-			else
-				{
-				m_rgNew = (void **)malloc(sizeof(void *) * i);
-				}
+   inline void *GetArray() const
+   {
+      return m_rg;
+   }
 
-			if (m_rgNew == NULL)
-				{
-				return false;
-				}
+   inline bool SetSize(const int i)
+   {
+      if (i > m_cMax)
+      {
+         void **m_rgNew;
 
-			m_rg = m_rgNew;
-			m_cMax = i;
-			}
+         if (m_rg)
+         {
+            m_rgNew = (void **)realloc((void *)m_rg, sizeof(void *) * i);
+         }
+         else
+         {
+            m_rgNew = (void **)malloc(sizeof(void *) * i);
+         }
 
-		return true;
-		}
+         if (m_rgNew == NULL)
+         {
+            return false;
+         }
 
-	inline bool Extend(const int cNewSize)
-		{
-		if (cNewSize > m_cSize)
-			{
-			if (!SetSize(cNewSize))
-				return false;
+         m_rg = m_rgNew;
+         m_cMax = i;
+      }
 
-			ZeroMemory(&m_rg[m_cSize], sizeof(void *) * (cNewSize - m_cSize));
-			m_cSize = cNewSize;
-			}
+      return true;
+   }
 
-		return true;
-		}
+   inline bool Extend(const int cNewSize)
+   {
+      if (cNewSize > m_cSize)
+      {
+         if (!SetSize(cNewSize))
+            return false;
 
-	inline bool Clone(VectorVoid * const pvector) const
-		{
-		if (m_rg)
-			{
-			pvector->Reset();
+         ZeroMemory(&m_rg[m_cSize], sizeof(void *) * (cNewSize - m_cSize));
+         m_cSize = cNewSize;
+      }
 
-			if ((pvector->m_rg = (void **)malloc(sizeof(void *) * m_cMax)) == NULL)
-				{
-				pvector->m_cMax = 0;
-				pvector->m_cSize = 0;
+      return true;
+   }
 
-				return false;  // OOM
-				}
+   inline bool Clone(VectorVoid * const pvector) const
+   {
+      if (m_rg)
+      {
+         pvector->Reset();
 
-			pvector->m_cMax = m_cMax;
-			pvector->m_cSize = m_cSize;
-			
-			for (int i=0; i<m_cSize; ++i)	// We need this for smart pointers - they need to be ref counted
-				{
-				pvector->m_rg[i] = m_rg[i];
-				}
-			}
-		else
-			{
-			pvector->m_rg = NULL;
+         if ((pvector->m_rg = (void **)malloc(sizeof(void *) * m_cMax)) == NULL)
+         {
+            pvector->m_cMax = 0;
+            pvector->m_cSize = 0;
 
-			pvector->m_cMax = 0;
-			pvector->m_cSize = 0;
-			}
+            return false;  // OOM
+         }
 
-		return true;
-		}
+         pvector->m_cMax = m_cMax;
+         pvector->m_cSize = m_cSize;
 
-	inline int IndexOf(const void * const pvItem) const
-		{
-		if (m_rg)
-			for (int i=0; i < m_cSize; ++i)
-				if (pvItem == m_rg[i])
-					return i;
+         for (int i = 0; i < m_cSize; ++i)	// We need this for smart pointers - they need to be ref counted
+         {
+            pvector->m_rg[i] = m_rg[i];
+         }
+      }
+      else
+      {
+         pvector->m_rg = NULL;
 
-		return -1;
-		}
+         pvector->m_cMax = 0;
+         pvector->m_cSize = 0;
+      }
 
-	// returns current size of the Vector, or -1 on failure (OOM)
-	inline int AddElement(void * const pItem)
-		{
-		if(m_cSize == m_cMax)
-			{
-			if (!SetSize(m_cSize+GROW_SIZE))
-				return -1;
-			}
+      return true;
+   }
 
-		const int oldsize = m_cSize;
-		m_rg[m_cSize++] = pItem;
+   inline int IndexOf(const void * const pvItem) const
+   {
+      if (m_rg)
+         for (int i = 0; i < m_cSize; ++i)
+            if (pvItem == m_rg[i])
+               return i;
 
-		return oldsize;
-		}
+      return -1;
+   }
 
-	// true for success, false if failure (OOM)
-	inline bool InsertElementAt(void * const pItem, const int iPos)
-		{					
-		if(m_cSize == m_cMax)
-			{		
-			if (!SetSize(m_cSize+GROW_SIZE))
-				return false;
-			}
+   // returns current size of the Vector, or -1 on failure (OOM)
+   inline int AddElement(void * const pItem)
+   {
+      if (m_cSize == m_cMax)
+      {
+         if (!SetSize(m_cSize + GROW_SIZE))
+            return -1;
+      }
 
-		if (m_cSize != iPos)
-			{
-			memmove(m_rg+iPos+1, m_rg+iPos, sizeof(void *) * (m_cSize-iPos));
-			}
+      const int oldsize = m_cSize;
+      m_rg[m_cSize++] = pItem;
 
-		m_rg[iPos] = pItem;
-		++m_cSize;
-		return true;
-		}
+      return oldsize;
+   }
 
-	inline void ReplaceElementAt(void * const pItem, const int iPos)
-		{
-		if (!m_rg)
-			return;
+   // true for success, false if failure (OOM)
+   inline bool InsertElementAt(void * const pItem, const int iPos)
+   {
+      if (m_cSize == m_cMax)
+      {
+         if (!SetSize(m_cSize + GROW_SIZE))
+            return false;
+      }
 
-		m_rg[iPos] = pItem;
-		}
+      if (m_cSize != iPos)
+      {
+         memmove(m_rg + iPos + 1, m_rg + iPos, sizeof(void *) * (m_cSize - iPos));
+      }
 
-	inline void RemoveElementAt(const int iItem)
-		{
-		if (!m_rg)
-			return;
+      m_rg[iPos] = pItem;
+      ++m_cSize;
+      return true;
+   }
 
-		memmove(m_rg+iItem, m_rg+iItem+1, sizeof(void *) * (m_cSize-iItem-1));
-		--m_cSize;
-		}
+   inline void ReplaceElementAt(void * const pItem, const int iPos)
+   {
+      if (!m_rg)
+         return;
 
-	inline void RemoveElement(void * const pvItem)
-		{
-		if (!m_rg)
-			return;
+      m_rg[iPos] = pItem;
+   }
 
-		const int i = IndexOf(pvItem);
-		if (i >= 0)
-			RemoveElementAt(i);
-		}
+   inline void RemoveElementAt(const int iItem)
+   {
+      if (!m_rg)
+         return;
 
-	inline void RemoveAllElements()
-		{
-		if (!m_rg)
-			return;
-		//for (int i=0; i<m_cSize; ++i) 	// We need this for smart pointers - they need to be ref counted
-			//{
-			//m_rg[i] = NULL;
-			//}
-		m_cSize = 0;
-		}
+      memmove(m_rg + iItem, m_rg + iItem + 1, sizeof(void *) * (m_cSize - iItem - 1));
+      --m_cSize;
+   }
 
-    // LIFO stack support
-    inline int Push(void * const pItem)
-    {
-        return AddElement(pItem);
-    }
+   inline void RemoveElement(void * const pvItem)
+   {
+      if (!m_rg)
+         return;
 
-    inline bool Pop(void ** const ppItem)
-		{
-        if(m_cSize)
-        {
-            *ppItem = m_rg[--m_cSize];
-            m_rg[m_cSize] = NULL;
-			return true;
-        }
+      const int i = IndexOf(pvItem);
+      if (i >= 0)
+         RemoveElementAt(i);
+   }
 
-        return false;
-		}
+   inline void RemoveAllElements()
+   {
+      if (!m_rg)
+         return;
+      //for (int i=0; i<m_cSize; ++i) 	// We need this for smart pointers - they need to be ref counted
+      //{
+      //m_rg[i] = NULL;
+      //}
+      m_cSize = 0;
+   }
 
-	inline bool Top(void ** const ppItem) const
-		{
-		if(m_cSize)
-			{
-			*ppItem = m_rg[m_cSize-1];
-			return true;
-			}
+   // LIFO stack support
+   inline int Push(void * const pItem)
+   {
+      return AddElement(pItem);
+   }
 
-		return false;
-		}
-	};
-	
+   inline bool Pop(void ** const ppItem)
+   {
+      if (m_cSize)
+      {
+         *ppItem = m_rg[--m_cSize];
+         m_rg[m_cSize] = NULL;
+         return true;
+      }
+
+      return false;
+   }
+
+   inline bool Top(void ** const ppItem) const
+   {
+      if (m_cSize)
+      {
+         *ppItem = m_rg[m_cSize - 1];
+         return true;
+      }
+
+      return false;
+   }
+};
+
 template<class T> class Vector : public VectorVoid
-	{
+{
 public:
-	Vector() : VectorVoid() {}
-	Vector(const int cSize) : VectorVoid(cSize) {}
+   Vector() : VectorVoid() {}
+   Vector(const int cSize) : VectorVoid(cSize) {}
 
-    typedef T value_type;
+   typedef T value_type;
 
-	T *ElementAt(const int iItem) const
-		{
-		return (T *) (m_rg[iItem]);
-		}	
+   T *ElementAt(const int iItem) const
+   {
+      return (T *)(m_rg[iItem]);
+   }
 
-          T& operator[](const int iItem)        { return *ElementAt(iItem); }
-    const T& operator[](const int iItem) const  { return *ElementAt(iItem); }
+   T& operator[](const int iItem)        { return *ElementAt(iItem); }
+   const T& operator[](const int iItem) const  { return *ElementAt(iItem); }
 
-    // for compatibility with std::vector -- allocates a new copy of elem
-    void push_back(const T& elem)
-    {
-        AddElement(new T(elem));
-    }
+   // for compatibility with std::vector -- allocates a new copy of elem
+   void push_back(const T& elem)
+   {
+      AddElement(new T(elem));
+   }
 
-	};
+};
 
 #endif

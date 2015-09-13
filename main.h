@@ -14,15 +14,15 @@
 #include "commctrl.h"
 
 #ifdef VP10
- #define DIRECTINPUT_VERSION 0x0800
+#define DIRECTINPUT_VERSION 0x0800
 #else
- #define DIRECTINPUT_VERSION 0x0700
+#define DIRECTINPUT_VERSION 0x0700
 #endif
 #include <dinput.h>
 #include <dsound.h>
 
 #ifdef _DEBUG
- #define D3D_DEBUG_INFO
+#define D3D_DEBUG_INFO
 #endif
 #include <d3d9.h>
 

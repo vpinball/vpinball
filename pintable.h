@@ -6,10 +6,10 @@
 #define AFX_PINTABLE_H__D14A2DAB_2984_4FE7_A102_D0283ECE31B4__INCLUDED_
 
 #if 0
- #include <tr1/unordered_map>
- using namespace std::tr1;
+#include <tr1/unordered_map>
+using namespace std::tr1;
 #else
- #include <unordered_map>
+#include <unordered_map>
 #endif
 
 #include "hash.h"
@@ -37,706 +37,706 @@
 #define	PROT_KEYVERSION			0
 
 struct LightSource {
-	COLORREF emission;
-	Vertex3Ds pos;
+   COLORREF emission;
+   Vertex3Ds pos;
 };
 
 typedef struct {
-	long			fileversion;
-	long			size;
-	unsigned char	paraphrase[PROT_CIPHER_LENGTH];
-	unsigned long	flags;
-	int				keyversion;
-	int				spare1;
-	int				spare2;
+   long			fileversion;
+   long			size;
+   unsigned char	paraphrase[PROT_CIPHER_LENGTH];
+   unsigned long	flags;
+   int				keyversion;
+   int				spare1;
+   int				spare2;
 } _protectionData;
 
 class PinTable :
-	public CComObjectRootEx<CComSingleThreadModel>,
-	public IDispatchImpl<ITable, &IID_ITable, &LIBID_VPinballLib>,
-	public IConnectionPointContainerImpl<PinTable>,
-	public EventProxy<PinTable, &DIID_ITableEvents>,
-	// IProvideClassInfo provides an ITypeInfo for the whole coclass
-	// allowing VBScript to get the set of events to sync to.
-	// VBA does not need this interface for some reason
-	public IProvideClassInfo2Impl<&CLSID_Table, &DIID_ITableEvents, &LIBID_VPinballLib>,
-	public ISelect,
-	public IScriptable,
-	public IScriptableHost,
-	public IEditable,
-	public IPerPropertyBrowsing	// Ability to fill in dropdown in property browser
+   public CComObjectRootEx<CComSingleThreadModel>,
+   public IDispatchImpl<ITable, &IID_ITable, &LIBID_VPinballLib>,
+   public IConnectionPointContainerImpl<PinTable>,
+   public EventProxy<PinTable, &DIID_ITableEvents>,
+   // IProvideClassInfo provides an ITypeInfo for the whole coclass
+   // allowing VBScript to get the set of events to sync to.
+   // VBA does not need this interface for some reason
+   public IProvideClassInfo2Impl<&CLSID_Table, &DIID_ITableEvents, &LIBID_VPinballLib>,
+   public ISelect,
+   public IScriptable,
+   public IScriptableHost,
+   public IEditable,
+   public IPerPropertyBrowsing	// Ability to fill in dropdown in property browser
 {
 public:
-	STDMETHOD(get_BallFrontDecal)(/*[out, retval]*/ BSTR *pVal);
-	STDMETHOD(put_BallFrontDecal)(/*[in]*/ BSTR newVal);
-	STDMETHOD(get_YieldTime)(/*[out, retval]*/ long *pVal);
-	STDMETHOD(put_YieldTime)(/*[in]*/ long newVal);
-	STDMETHOD(get_BallImage)(/*[out, retval]*/ BSTR *pVal);
-	STDMETHOD(put_BallImage)(/*[in]*/ BSTR newVal);
-	
-	STDMETHOD(get_Gravity)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_Gravity)(/*[in]*/ float newVal);
-	STDMETHOD(get_Friction)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_Friction)(/*[in]*/ float newVal);
-	STDMETHOD(get_Elasticity)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_Elasticity)(/*[in]*/ float newVal);
-	STDMETHOD(get_ElasticityFalloff)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_ElasticityFalloff)(/*[in]*/ float newVal);
-	STDMETHOD(get_Scatter)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_Scatter)(/*[in]*/ float newVal);
-	STDMETHOD(get_DefaultScatter)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_DefaultScatter)(/*[in]*/ float newVal);
-	STDMETHOD(get_NudgeTime)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_NudgeTime)(/*[in]*/ float newVal);
-	STDMETHOD(get_PlungerNormalize)(/*[out, retval]*/ int *pVal);
-	STDMETHOD(put_PlungerNormalize)(/*[in]*/ int newVal);
+   STDMETHOD(get_BallFrontDecal)(/*[out, retval]*/ BSTR *pVal);
+   STDMETHOD(put_BallFrontDecal)(/*[in]*/ BSTR newVal);
+   STDMETHOD(get_YieldTime)(/*[out, retval]*/ long *pVal);
+   STDMETHOD(put_YieldTime)(/*[in]*/ long newVal);
+   STDMETHOD(get_BallImage)(/*[out, retval]*/ BSTR *pVal);
+   STDMETHOD(put_BallImage)(/*[in]*/ BSTR newVal);
 
-	STDMETHOD(get_PlungerFilter)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-	STDMETHOD(put_PlungerFilter)(/*[in]*/ VARIANT_BOOL newVal);
+   STDMETHOD(get_Gravity)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_Gravity)(/*[in]*/ float newVal);
+   STDMETHOD(get_Friction)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_Friction)(/*[in]*/ float newVal);
+   STDMETHOD(get_Elasticity)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_Elasticity)(/*[in]*/ float newVal);
+   STDMETHOD(get_ElasticityFalloff)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_ElasticityFalloff)(/*[in]*/ float newVal);
+   STDMETHOD(get_Scatter)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_Scatter)(/*[in]*/ float newVal);
+   STDMETHOD(get_DefaultScatter)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_DefaultScatter)(/*[in]*/ float newVal);
+   STDMETHOD(get_NudgeTime)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_NudgeTime)(/*[in]*/ float newVal);
+   STDMETHOD(get_PlungerNormalize)(/*[out, retval]*/ int *pVal);
+   STDMETHOD(put_PlungerNormalize)(/*[in]*/ int newVal);
 
-	STDMETHOD(get_PhysicsLoopTime)(/*[out, retval]*/ int *pVal);
-	STDMETHOD(put_PhysicsLoopTime)(/*[in]*/ int newVal);
+   STDMETHOD(get_PlungerFilter)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   STDMETHOD(put_PlungerFilter)(/*[in]*/ VARIANT_BOOL newVal);
 
-	STDMETHOD(get_FieldOfView)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_FieldOfView)(/*[in]*/ float newVal);
-	STDMETHOD(get_Inclination)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_Inclination)(/*[in]*/ float newVal);
-	STDMETHOD(get_Layback)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_Layback)(/*[in]*/ float newVal);
-	STDMETHOD(get_Rotation)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_Rotation)(/*[in]*/ float newVal);
-	STDMETHOD(get_Scalex)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_Scalex)(/*[in]*/ float newVal);
+   STDMETHOD(get_PhysicsLoopTime)(/*[out, retval]*/ int *pVal);
+   STDMETHOD(put_PhysicsLoopTime)(/*[in]*/ int newVal);
+
+   STDMETHOD(get_FieldOfView)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_FieldOfView)(/*[in]*/ float newVal);
+   STDMETHOD(get_Inclination)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_Inclination)(/*[in]*/ float newVal);
+   STDMETHOD(get_Layback)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_Layback)(/*[in]*/ float newVal);
+   STDMETHOD(get_Rotation)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_Rotation)(/*[in]*/ float newVal);
+   STDMETHOD(get_Scalex)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_Scalex)(/*[in]*/ float newVal);
    STDMETHOD(get_Scaley)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_Scaley)(/*[in]*/ float newVal);
    STDMETHOD(get_Scalez)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_Scalez)(/*[in]*/ float newVal);
-	STDMETHOD(get_Xlatex)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_Xlatex)(/*[in]*/ float newVal);
-	STDMETHOD(get_Xlatey)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_Xlatey)(/*[in]*/ float newVal);
+   STDMETHOD(get_Xlatex)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_Xlatex)(/*[in]*/ float newVal);
+   STDMETHOD(get_Xlatey)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_Xlatey)(/*[in]*/ float newVal);
    STDMETHOD(get_Xlatez)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_Xlatez)(/*[in]*/ float newVal);
-	
-	STDMETHOD(get_FieldOfViewFS)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_FieldOfViewFS)(/*[in]*/ float newVal);
-	STDMETHOD(get_InclinationFS)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_InclinationFS)(/*[in]*/ float newVal);
-	STDMETHOD(get_LaybackFS)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_LaybackFS)(/*[in]*/ float newVal);
-	STDMETHOD(get_RotationFS)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_RotationFS)(/*[in]*/ float newVal);
-	STDMETHOD(get_ScalexFS)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_ScalexFS)(/*[in]*/ float newVal);
+
+   STDMETHOD(get_FieldOfViewFS)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_FieldOfViewFS)(/*[in]*/ float newVal);
+   STDMETHOD(get_InclinationFS)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_InclinationFS)(/*[in]*/ float newVal);
+   STDMETHOD(get_LaybackFS)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_LaybackFS)(/*[in]*/ float newVal);
+   STDMETHOD(get_RotationFS)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_RotationFS)(/*[in]*/ float newVal);
+   STDMETHOD(get_ScalexFS)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_ScalexFS)(/*[in]*/ float newVal);
    STDMETHOD(get_ScaleyFS)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_ScaleyFS)(/*[in]*/ float newVal);
    STDMETHOD(get_ScalezFS)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_ScalezFS)(/*[in]*/ float newVal);
-	STDMETHOD(get_XlatexFS)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_XlatexFS)(/*[in]*/ float newVal);
-	STDMETHOD(get_XlateyFS)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_XlateyFS)(/*[in]*/ float newVal);
+   STDMETHOD(get_XlatexFS)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_XlatexFS)(/*[in]*/ float newVal);
+   STDMETHOD(get_XlateyFS)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_XlateyFS)(/*[in]*/ float newVal);
    STDMETHOD(get_XlatezFS)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_XlatezFS)(/*[in]*/ float newVal);
 
-	STDMETHOD(get_SlopeMax)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_SlopeMax)(/*[in]*/ float newVal);
-	STDMETHOD(get_SlopeMin)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_SlopeMin)(/*[in]*/ float newVal);
-	STDMETHOD(get_ColorGradeImage)(/*[out, retval]*/ BSTR *pVal);
-	STDMETHOD(put_ColorGradeImage)(/*[in]*/ BSTR newVal);
-	STDMETHOD(get_BackdropImage_DT)(/*[out, retval]*/ BSTR *pVal);
-	STDMETHOD(put_BackdropImage_DT)(/*[in]*/ BSTR newVal);
-	STDMETHOD(get_BackdropImage_FS)(/*[out, retval]*/ BSTR *pVal);
-	STDMETHOD(put_BackdropImage_FS)(/*[in]*/ BSTR newVal);
-	STDMETHOD(get_BackdropImageApplyNightDay)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-	STDMETHOD(put_BackdropImageApplyNightDay)(/*[in]*/ VARIANT_BOOL newVal);
-	STDMETHOD(get_BackdropColor)(/*[out, retval]*/ OLE_COLOR *pVal);
-	STDMETHOD(put_BackdropColor)(/*[in]*/ OLE_COLOR newVal);
-	STDMETHOD(get_PlayfieldMaterial)(/*[out, retval]*/ BSTR *pVal);
-	STDMETHOD(put_PlayfieldMaterial)(/*[in]*/ BSTR newVal);
+   STDMETHOD(get_SlopeMax)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_SlopeMax)(/*[in]*/ float newVal);
+   STDMETHOD(get_SlopeMin)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_SlopeMin)(/*[in]*/ float newVal);
+   STDMETHOD(get_ColorGradeImage)(/*[out, retval]*/ BSTR *pVal);
+   STDMETHOD(put_ColorGradeImage)(/*[in]*/ BSTR newVal);
+   STDMETHOD(get_BackdropImage_DT)(/*[out, retval]*/ BSTR *pVal);
+   STDMETHOD(put_BackdropImage_DT)(/*[in]*/ BSTR newVal);
+   STDMETHOD(get_BackdropImage_FS)(/*[out, retval]*/ BSTR *pVal);
+   STDMETHOD(put_BackdropImage_FS)(/*[in]*/ BSTR newVal);
+   STDMETHOD(get_BackdropImageApplyNightDay)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   STDMETHOD(put_BackdropImageApplyNightDay)(/*[in]*/ VARIANT_BOOL newVal);
+   STDMETHOD(get_BackdropColor)(/*[out, retval]*/ OLE_COLOR *pVal);
+   STDMETHOD(put_BackdropColor)(/*[in]*/ OLE_COLOR newVal);
+   STDMETHOD(get_PlayfieldMaterial)(/*[out, retval]*/ BSTR *pVal);
+   STDMETHOD(put_PlayfieldMaterial)(/*[in]*/ BSTR newVal);
 
-	STDMETHOD(get_LightAmbient)(/*[out, retval]*/ OLE_COLOR *pVal);
-	STDMETHOD(put_LightAmbient)(/*[in]*/ OLE_COLOR newVal);
-	STDMETHOD(get_Light0Emission)(/*[out, retval]*/ OLE_COLOR *pVal);
-	STDMETHOD(put_Light0Emission)(/*[in]*/ OLE_COLOR newVal);
-    STDMETHOD(get_LightHeight)(/*[out, retval]*/ float *pVal);
-    STDMETHOD(put_LightHeight)(/*[in]*/ float newVal);
-    STDMETHOD(get_LightRange)(/*[out, retval]*/ float *pVal);
-    STDMETHOD(put_LightRange)(/*[in]*/ float newVal);
-    STDMETHOD(get_EnvironmentEmissionScale)(/*[out, retval]*/ float *pVal);
-    STDMETHOD(put_EnvironmentEmissionScale)(/*[in]*/ float newVal);
-    STDMETHOD(get_LightEmissionScale)(/*[out, retval]*/ float *pVal);
-    STDMETHOD(put_LightEmissionScale)(/*[in]*/ float newVal);
-    STDMETHOD(get_NightDay)(/*[out, retval]*/ int *pVal);
-    STDMETHOD(put_NightDay)(/*[in]*/ int newVal);
-    STDMETHOD(get_AOScale)(/*[out, retval]*/ float *pVal);
-    STDMETHOD(put_AOScale)(/*[in]*/ float newVal);
-    STDMETHOD(get_BallReflection)(/*[out, retval]*/ int *pVal);
-    STDMETHOD(put_BallReflection)(/*[in]*/ int newVal);
-    STDMETHOD(get_ReflectionStrength)(/*[out, retval]*/ int *pVal);
-    STDMETHOD(put_ReflectionStrength)(/*[in]*/ int newVal);
-    STDMETHOD(get_PlayfieldReflectionStrength)(/*[out, retval]*/ int *pVal);
-    STDMETHOD(put_PlayfieldReflectionStrength)(/*[in]*/ int newVal);
-    STDMETHOD(get_BallTrail)(/*[out, retval]*/ int *pVal);
-    STDMETHOD(put_BallTrail)(/*[in]*/ int newVal);
-    STDMETHOD(get_TrailStrength)(/*[out, retval]*/ int *pVal);
-    STDMETHOD(put_TrailStrength)(/*[in]*/ int newVal);
-    
-	STDMETHOD(get_Height)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_Height)(/*[in]*/ float newVal);
-	STDMETHOD(get_Width)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_Width)(/*[in]*/ float newVal);
-	STDMETHOD(get_GlassHeight)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_GlassHeight)(/*[in]*/ float newVal);
-	STDMETHOD(get_TableHeight)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_TableHeight)(/*[in]*/ float newVal);
-	STDMETHOD(get_DisplayBackdrop)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-	STDMETHOD(put_DisplayBackdrop)(/*[in]*/ VARIANT_BOOL newVal);
-	STDMETHOD(get_DisplayGrid)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-	STDMETHOD(put_DisplayGrid)(/*[in]*/ VARIANT_BOOL newVal);
-	STDMETHOD(get_Image)(/*[out, retval]*/ BSTR *pVal);
-	STDMETHOD(put_Image)(/*[in]*/ BSTR newVal);
+   STDMETHOD(get_LightAmbient)(/*[out, retval]*/ OLE_COLOR *pVal);
+   STDMETHOD(put_LightAmbient)(/*[in]*/ OLE_COLOR newVal);
+   STDMETHOD(get_Light0Emission)(/*[out, retval]*/ OLE_COLOR *pVal);
+   STDMETHOD(put_Light0Emission)(/*[in]*/ OLE_COLOR newVal);
+   STDMETHOD(get_LightHeight)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_LightHeight)(/*[in]*/ float newVal);
+   STDMETHOD(get_LightRange)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_LightRange)(/*[in]*/ float newVal);
+   STDMETHOD(get_EnvironmentEmissionScale)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_EnvironmentEmissionScale)(/*[in]*/ float newVal);
+   STDMETHOD(get_LightEmissionScale)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_LightEmissionScale)(/*[in]*/ float newVal);
+   STDMETHOD(get_NightDay)(/*[out, retval]*/ int *pVal);
+   STDMETHOD(put_NightDay)(/*[in]*/ int newVal);
+   STDMETHOD(get_AOScale)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_AOScale)(/*[in]*/ float newVal);
+   STDMETHOD(get_BallReflection)(/*[out, retval]*/ int *pVal);
+   STDMETHOD(put_BallReflection)(/*[in]*/ int newVal);
+   STDMETHOD(get_ReflectionStrength)(/*[out, retval]*/ int *pVal);
+   STDMETHOD(put_ReflectionStrength)(/*[in]*/ int newVal);
+   STDMETHOD(get_PlayfieldReflectionStrength)(/*[out, retval]*/ int *pVal);
+   STDMETHOD(put_PlayfieldReflectionStrength)(/*[in]*/ int newVal);
+   STDMETHOD(get_BallTrail)(/*[out, retval]*/ int *pVal);
+   STDMETHOD(put_BallTrail)(/*[in]*/ int newVal);
+   STDMETHOD(get_TrailStrength)(/*[out, retval]*/ int *pVal);
+   STDMETHOD(put_TrailStrength)(/*[in]*/ int newVal);
 
-	STDMETHOD(PlaySound)(BSTR bstr, int loopcount, float volume, float pan, float randompitch, int pitch, VARIANT_BOOL usesame, VARIANT_BOOL restart);
-	STDMETHOD(FireKnocker)(/*[in]*/ int Count);
-	STDMETHOD(QuitPlayer)(/*[in]*/ int CloseType);
+   STDMETHOD(get_Height)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_Height)(/*[in]*/ float newVal);
+   STDMETHOD(get_Width)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_Width)(/*[in]*/ float newVal);
+   STDMETHOD(get_GlassHeight)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_GlassHeight)(/*[in]*/ float newVal);
+   STDMETHOD(get_TableHeight)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_TableHeight)(/*[in]*/ float newVal);
+   STDMETHOD(get_DisplayBackdrop)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   STDMETHOD(put_DisplayBackdrop)(/*[in]*/ VARIANT_BOOL newVal);
+   STDMETHOD(get_DisplayGrid)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   STDMETHOD(put_DisplayGrid)(/*[in]*/ VARIANT_BOOL newVal);
+   STDMETHOD(get_Image)(/*[out, retval]*/ BSTR *pVal);
+   STDMETHOD(put_Image)(/*[in]*/ BSTR newVal);
 
-	STDMETHOD(get_FileName)(/*[out, retval]*/ BSTR *pVal);
+   STDMETHOD(PlaySound)(BSTR bstr, int loopcount, float volume, float pan, float randompitch, int pitch, VARIANT_BOOL usesame, VARIANT_BOOL restart);
+   STDMETHOD(FireKnocker)(/*[in]*/ int Count);
+   STDMETHOD(QuitPlayer)(/*[in]*/ int CloseType);
 
-	STDMETHOD(get_Name)(/*[out, retval]*/ BSTR *pVal);
-	STDMETHOD(put_Name)(/*[in]*/ BSTR newVal);
-    STDMETHOD(get_EnableAntialiasing)(/*[out, retval]*/ int *pVal);
-    STDMETHOD(put_EnableAntialiasing)(/*[in]*/ int newVal);
-    STDMETHOD(get_EnableAO)(/*[out, retval]*/ int *pVal);
-    STDMETHOD(put_EnableAO)(/*[in]*/ int newVal);
-    STDMETHOD(get_EnableFXAA)(/*[out, retval]*/ int *pVal);
-    STDMETHOD(put_EnableFXAA)(/*[in]*/ int newVal);
+   STDMETHOD(get_FileName)(/*[out, retval]*/ BSTR *pVal);
 
-    STDMETHOD(get_BloomStrength)(/*[out, retval]*/ float *pVal);
-    STDMETHOD(put_BloomStrength)(/*[in]*/ float newVal);
+   STDMETHOD(get_Name)(/*[out, retval]*/ BSTR *pVal);
+   STDMETHOD(put_Name)(/*[in]*/ BSTR newVal);
+   STDMETHOD(get_EnableAntialiasing)(/*[out, retval]*/ int *pVal);
+   STDMETHOD(put_EnableAntialiasing)(/*[in]*/ int newVal);
+   STDMETHOD(get_EnableAO)(/*[out, retval]*/ int *pVal);
+   STDMETHOD(put_EnableAO)(/*[in]*/ int newVal);
+   STDMETHOD(get_EnableFXAA)(/*[out, retval]*/ int *pVal);
+   STDMETHOD(put_EnableFXAA)(/*[in]*/ int newVal);
 
-	STDMETHOD(get_OverridePhysics)(/*[out, retval]*/ long *pVal);
-    STDMETHOD(put_OverridePhysics)(/*[in]*/ long newVal);
+   STDMETHOD(get_BloomStrength)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_BloomStrength)(/*[in]*/ float newVal);
 
-	STDMETHOD(ImportPhysics)();
-	STDMETHOD(ExportPhysics)();
+   STDMETHOD(get_OverridePhysics)(/*[out, retval]*/ long *pVal);
+   STDMETHOD(put_OverridePhysics)(/*[in]*/ long newVal);
 
-	STDMETHOD(get_MaxSeparation)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_MaxSeparation)(/*[in]*/ float newVal);
-	STDMETHOD(get_ZPD)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_ZPD)(/*[in]*/ float newVal);
+   STDMETHOD(ImportPhysics)();
+   STDMETHOD(ExportPhysics)();
 
-	STDMETHOD(get_EnableDecals)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-	STDMETHOD(put_EnableDecals)(/*[in]*/ VARIANT_BOOL newVal);
-	STDMETHOD(get_EnableEMReels)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-	STDMETHOD(put_EnableEMReels)(/*[in]*/ VARIANT_BOOL newVal);
+   STDMETHOD(get_MaxSeparation)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_MaxSeparation)(/*[in]*/ float newVal);
+   STDMETHOD(get_ZPD)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_ZPD)(/*[in]*/ float newVal);
+
+   STDMETHOD(get_EnableDecals)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   STDMETHOD(put_EnableDecals)(/*[in]*/ VARIANT_BOOL newVal);
+   STDMETHOD(get_EnableEMReels)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   STDMETHOD(put_EnableEMReels)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_ShowDT)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_ShowDT)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_ReflectElementsOnPlayfield)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_ReflectElementsOnPlayfield)(/*[in]*/ VARIANT_BOOL newVal);
 
-	STDMETHOD(get_GlobalDifficulty)(/*[out, retval]*/ float *pVal);
-	STDMETHOD(put_GlobalDifficulty)(/*[in]*/ float newVal);
+   STDMETHOD(get_GlobalDifficulty)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_GlobalDifficulty)(/*[in]*/ float newVal);
 
-	STDMETHOD(get_Accelerometer)(/*[out, retval]*/ VARIANT_BOOL *pVal); //!! remove?!
-	STDMETHOD(put_Accelerometer)(/*[in]*/ VARIANT_BOOL newVal);	 //!! remove?!
-	STDMETHOD(get_AccelNormalMount)(/*[out, retval]*/ VARIANT_BOOL *pVal); //!! remove?!
-	STDMETHOD(put_AccelNormalMount)(/*[in]*/ VARIANT_BOOL newVal); //!! remove?!
-	STDMETHOD(get_AccelerometerAngle)(/*[out, retval]*/ float *pVal);  //!! remove?!
-	STDMETHOD(put_AccelerometerAngle)(/*[in]*/ float newVal); //!! remove?!
+   STDMETHOD(get_Accelerometer)(/*[out, retval]*/ VARIANT_BOOL *pVal); //!! remove?!
+   STDMETHOD(put_Accelerometer)(/*[in]*/ VARIANT_BOOL newVal);	 //!! remove?!
+   STDMETHOD(get_AccelNormalMount)(/*[out, retval]*/ VARIANT_BOOL *pVal); //!! remove?!
+   STDMETHOD(put_AccelNormalMount)(/*[in]*/ VARIANT_BOOL newVal); //!! remove?!
+   STDMETHOD(get_AccelerometerAngle)(/*[out, retval]*/ float *pVal);  //!! remove?!
+   STDMETHOD(put_AccelerometerAngle)(/*[in]*/ float newVal); //!! remove?!
 
-	STDMETHOD(get_DeadZone)(/*[out, retval]*/  int *pVal); //!! remove?!
-	STDMETHOD(put_DeadZone)(/*[in]*/ int newVal); //!! remove?!
+   STDMETHOD(get_DeadZone)(/*[out, retval]*/  int *pVal); //!! remove?!
+   STDMETHOD(put_DeadZone)(/*[in]*/ int newVal); //!! remove?!
 
 #ifdef UNUSED_TILT
-	STDMETHOD(get_JoltAmount)(/*[out, retval]*/  int *pVal);
-	STDMETHOD(put_JoltAmount)(/*[in]*/ int newVal);
-	STDMETHOD(get_TiltAmount)(/*[out, retval]*/ int *pVal);
-	STDMETHOD(put_TiltAmount)(/*[in]*/ int newVal);
-	STDMETHOD(get_JoltTriggerTime)(/*[out, retval]*/ int *pVal);
-	STDMETHOD(put_JoltTriggerTime)(/*[in]*/ int newVal);
-	STDMETHOD(get_TiltTriggerTime)(/*[out, retval]*/ int *pVal);
-	STDMETHOD(put_TiltTriggerTime)(/*[in]*/ int newVal);
+   STDMETHOD(get_JoltAmount)(/*[out, retval]*/  int *pVal);
+   STDMETHOD(put_JoltAmount)(/*[in]*/ int newVal);
+   STDMETHOD(get_TiltAmount)(/*[out, retval]*/ int *pVal);
+   STDMETHOD(put_TiltAmount)(/*[in]*/ int newVal);
+   STDMETHOD(get_JoltTriggerTime)(/*[out, retval]*/ int *pVal);
+   STDMETHOD(put_JoltTriggerTime)(/*[in]*/ int newVal);
+   STDMETHOD(get_TiltTriggerTime)(/*[out, retval]*/ int *pVal);
+   STDMETHOD(put_TiltTriggerTime)(/*[in]*/ int newVal);
 #endif
 
-	STDMETHOD(get_TableSoundVolume)(/*[out, retval]*/ int *pVal);
-	STDMETHOD(put_TableSoundVolume)(/*[in]*/ int newVal);
-	STDMETHOD(get_TableMusicVolume)(/*[out, retval]*/ int *pVal);
-	STDMETHOD(put_TableMusicVolume)(/*[in]*/ int newVal);
+   STDMETHOD(get_TableSoundVolume)(/*[out, retval]*/ int *pVal);
+   STDMETHOD(put_TableSoundVolume)(/*[in]*/ int newVal);
+   STDMETHOD(get_TableMusicVolume)(/*[out, retval]*/ int *pVal);
+   STDMETHOD(put_TableMusicVolume)(/*[in]*/ int newVal);
 
-	STDMETHOD(get_TableAdaptiveVSync)(/*[out, retval]*/ int *pVal);
-	STDMETHOD(put_TableAdaptiveVSync)(/*[in]*/ int newVal);
+   STDMETHOD(get_TableAdaptiveVSync)(/*[out, retval]*/ int *pVal);
+   STDMETHOD(put_TableAdaptiveVSync)(/*[in]*/ int newVal);
 
-	STDMETHOD(get_DetailLevel)(/*[out, retval]*/ int *pVal);
-	STDMETHOD(put_DetailLevel)(/*[in]*/ int newVal);
-
-    STDMETHOD(get_GlobalAlphaAcc)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-    STDMETHOD(put_GlobalAlphaAcc)(/*[in]*/ VARIANT_BOOL newVal);
-
-    STDMETHOD(get_GlobalStereo3D)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-    STDMETHOD(put_GlobalStereo3D)(/*[in]*/ VARIANT_BOOL newVal);
-
-    STDMETHOD(get_BallDecalMode)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-    STDMETHOD(put_BallDecalMode)(/*[in]*/ VARIANT_BOOL newVal);
-
-	STDMETHOD(Version)(/*[out, retval]*/ int *pVal);
-
-	/////////////////////////////////////////////
-
-	PinTable();
-	virtual ~PinTable();
-
-	void Init(VPinball *pvp);
-	void InitPostLoad(VPinball *pvp);
-
-	virtual HRESULT GetTypeName(BSTR *pVal);
-	virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
-
-	void CreateTableWindow();
-	void SetCaption(char *szCaption);
-
-	HRESULT InitVBA();
-	void CloseVBA();
-
-	void Render(Sur * const psur);
-	void Paint(HDC hdc);
-	ISelect *HitTest(const int x, const int y);
-	void SetDirtyDraw();
-
-	void Render3DProjection(Sur * const psur);
-
-	BOOL GetDecalsEnabled() const;
-	BOOL GetEMReelsEnabled() const;
-
-	void Copy();
-	void Paste(BOOL fAtLocation, int x, int y);
-
-	void ExportBlueprint();
-    void ExportTableMesh();
-
-
-	//void FireVoidEvent(int dispid);
-	void FireKeyEvent(int dispid, int keycode);
-
-	void Play(bool _cameraMode=false);
-	void StopPlaying();
-
-	void ImportSound(HWND hwndListView, char *filename, BOOL fPlay);
-	void ReImportSound(HWND hwndListView, PinSound *pps, char *filename, BOOL fPlay);
-	bool ExportSound(HWND hwndListView, PinSound *pps,char *filename);
-	void ListSounds(HWND hwndListView);
-	int AddListSound(HWND hwndListView, PinSound *pps);
-	void RemoveSound(PinSound *pps);
-	HRESULT SaveSoundToStream(PinSound *pps, IStream *pstm);
-	HRESULT LoadSoundFromStream(IStream *pstm);
-	void ClearOldSounds();
-	bool ExportImage(HWND hwndListView, Texture *ppi, char *filename);
-	void ImportImage(HWND hwndListView, char *filename);
-	void ReImportImage(HWND hwndListView, Texture *ppi, char *filename);
-	void ListImages(HWND hwndListView);
-	int AddListImage(HWND hwndListView, Texture *ppi);
-	void RemoveImage(Texture *ppi);
-	HRESULT LoadImageFromStream(IStream *pstm, int version);
-	Texture *GetImage(char * const szName) const;
-	void CreateGDIBackdrop();
-	int GetImageLink(Texture *ppi);
-	PinBinary *PinTable::GetImageLinkBinary(int id);
-
-	void ListCustomInfo(HWND hwndListView);
-	int AddListItem(HWND hwndListView, char *szName, char *szValue1, LPARAM lparam);
-
-	void ImportFont(HWND hwndListView, char *filename);
-	void ListFonts(HWND hwndListView);
-	int AddListBinary(HWND hwndListView, PinBinary *ppb);
-	void RemoveFont(PinFont *ppf);
-
-	void NewCollection(HWND hwndListView, BOOL fFromSelection);
-	void ListCollections(HWND hwndListView);
-	int AddListCollection(HWND hwndListView, CComObject<Collection> *pcol);
-	void RemoveCollection(CComObject<Collection> *pcol);
-	void SetCollectionName(Collection *pcol, char *szName, HWND hwndList, int index);
-
-	void DoContextMenu(int x, int y, int menuid, ISelect *psel);
-	virtual void DoCommand(int icmd, int x, int y);
-	bool FMutilSelLocked();
-
-	virtual void SelectItem(IScriptable *piscript);
-	virtual void DoCodeViewCommand(int command);
-	virtual void SetDirtyScript(SaveDirtyState sds);
-	virtual void ExportMesh(FILE *f);
-
-	// Multi-object manipulation
-	virtual void GetCenter(Vertex2D * const pv) const;
-	virtual void PutCenter(const Vertex2D * const pv);
-	virtual void FlipY(Vertex2D * const pvCenter);
-	virtual void FlipX(Vertex2D * const pvCenter);
-	virtual void Rotate(float ang, Vertex2D *pvCenter);
-	virtual void Scale(float scalex, float scaley, Vertex2D *pvCenter);
-	virtual void Translate(Vertex2D *pvOffset);
-
-	// IEditable (mostly bogus for now)
-	virtual void PreRender(Sur * const psur);
-	virtual ItemTypeEnum GetItemType();
-	virtual HRESULT InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey);
-	virtual HRESULT InitPostLoad();
-	virtual HRESULT InitVBA(BOOL fNew, int id, WCHAR *wzName);
-	virtual ISelect *GetISelect();
-	virtual void SetDefaults(bool fromMouseClick);
-	virtual IScriptable *GetScriptable();
-
-	virtual PinTable *GetPTable() {return this;}
-    char *GetElementName( IEditable *pedit );
-
-	void OnDelete();
-
-	void DoLButtonDown(int x,int y, bool zoomIn=true);
-	void DoLButtonUp(int x,int y);
-	void DoRButtonDown(int x,int y);
-	void DoRButtonUp(int x,int y);
-	void DoMouseMove(int x,int y);
-	void DoLDoubleClick(int x, int y);
-	void UseTool(int x,int y,int tool);
-	void OnKeyDown(int key);
-
-    // Transform editor window coordinates to table coordinates
-	Vertex2D TransformPoint(int x, int y) const;
-
-    void ClearMultiSel(ISelect *newSel = NULL);
-    bool MultiSelIsEmpty();
-    ISelect *GetSelectedItem() const { return m_vmultisel.ElementAt(0); }
-	void AddMultiSel(ISelect *psel, bool fAdd, bool fUpdate=true, bool fContextClick=false);
-
-	void BeginAutoSaveCounter();
-	void EndAutoSaveCounter();
-	void AutoSave();
-
-	HRESULT TableSave();
-	HRESULT SaveAs();
-	virtual HRESULT ApcProject_Save();
-	HRESULT Save(BOOL fSaveAs);
-	HRESULT SaveToStorage(IStorage *pstg);
-	HRESULT SaveInfo(IStorage* pstg, HCRYPTHASH hcrypthash);
-	HRESULT SaveCustomInfo(IStorage* pstg, IStream *pstmTags, HCRYPTHASH hcrypthash);
-	HRESULT WriteInfoValue(IStorage* pstg, WCHAR *wzName, char *szValue, HCRYPTHASH hcrypthash);
-	HRESULT ReadInfoValue(IStorage* pstg, WCHAR *wzName, char **pszValue, HCRYPTHASH hcrypthash);
-	HRESULT SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey);
-	HRESULT LoadGameFromFilename(char *szFileName);
-	HRESULT LoadGameFromStorage(IStorage *pstgRoot);
-	HRESULT LoadInfo(IStorage* pstg, HCRYPTHASH hcrypthash, int version);
-	HRESULT LoadCustomInfo(IStorage* pstg, IStream *pstmTags, HCRYPTHASH hcrypthash, int version);
-	HRESULT LoadData(IStream* pstm, int& csubobj, int& csounds, int& ctextures, int& cfonts, int& ccollection, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey);
-	virtual IEditable *GetIEditable() {return (IEditable *)this;}
-	virtual void Delete() {} // Can't delete table itself
-	virtual void Uncreate() {}
-	virtual BOOL LoadToken(int id, BiffReader *pbr);
-
-	virtual IDispatch *GetPrimary() {return this->GetDispatch();}
-	virtual IDispatch *GetDispatch() {return (IDispatch *)this;}
-	virtual IFireEvents *GetIFireEvents() {return (IFireEvents *)this;}
-	virtual IDebugCommands *GetDebugCommands() {return NULL;}
-
-	void SetZoom(float zoom);
-	void SetMyScrollInfo();
-
-	void BackupForPlay();
-	void RestoreBackup();
-
-	void BeginUndo();
-	void EndUndo();
-	void Undo();
-
-	void Uncreate(IEditable *pie);
-	void Undelete(IEditable *pie);
-
-	STDMETHOD(GetDisplayString)(DISPID dispID, BSTR *pbstr) {return hrNotImplemented;}
-	STDMETHOD(MapPropertyToPage)(DISPID dispID, CLSID *pclsid) {return hrNotImplemented;}
-	STDMETHOD(GetPredefinedStrings)(DISPID dispID, CALPOLESTR *pcaStringsOut, CADWORD *pcaCookiesOut);
-	STDMETHOD(GetPredefinedValue)(DISPID dispID, DWORD dwCookie, VARIANT *pVarOut);
-
-	STDMETHOD(GetPredefinedStrings)(DISPID dispID, CALPOLESTR *pcaStringsOut, CADWORD *pcaCookiesOut, IEditable *piedit);
-	STDMETHOD(GetPredefinedValue)(DISPID dispID, DWORD dwCookie, VARIANT *pVarOut, IEditable *piedit);
-
-	virtual void OnLButtonDown(int x, int y);
-	virtual void OnLButtonUp(int x, int y);
-	virtual void OnMouseMove(int x, int y);
-
-	void SetDefaultView();
-	void GetViewRect(FRect *pfrect);
-
-	bool IsNameUnique(WCHAR *wzName);
-	void GetUniqueName(ItemTypeEnum type, WCHAR *wzUniqueName);
-	void GetUniqueName(WCHAR *prefix, WCHAR *wzUniqueName);
-	void GetUniqueNamePasting(int type, WCHAR *wzUniqueName);
-
-	float GetSurfaceHeight(char *szName, float x, float y);
-
-	void SetLoadDefaults();
-
-	void SetDirty(SaveDirtyState sds);
-	void SetNonUndoableDirty(SaveDirtyState sds);
-	void CheckDirty();
-	BOOL FDirty();
-
-	BOOL FVerifySaveToClose();
-
-	HRESULT StopSound(BSTR Sound);
-
-	BOOL CheckPermissions(unsigned long flag);
-	BOOL IsTableProtected();
-	void ResetProtectionBlock();
-	BOOL SetupProtectionBlock(unsigned char *pPassword, unsigned long flags);
-	BOOL UnlockProtectionBlock(unsigned char *pPassword);
-
-    void SwitchToLayer(int layerNumber );
-    void AssignToLayer(IEditable *obj, int layerNumber );
-    void AssignMultiToLayer( int layerNumber, int x, int y );
-    void MergeAllLayers();
-    void RestoreLayers();
-    void BackupLayers();
-    void DeleteFromLayer( IEditable *obj );
-    void AddToCollection(int index);
-    void MoveCollectionUp(CComObject<Collection> *pcol );
-    void MoveCollectionDown(CComObject<Collection> *pcol );
-
-    int GetDetailLevel();
-    float GetZPD();
-    float GetMaxSeparation();
-
-    FRect3D GetBoundingBox();
-
-    bool RenderSolid()      { return m_renderSolid; }
-
-    void InvokeBallBallCollisionCallback(Ball *b1, Ball *b2, float hitVelocity);
-
-BEGIN_COM_MAP(PinTable)
-	COM_INTERFACE_ENTRY(ITable)
-	COM_INTERFACE_ENTRY(IDispatch)
-	COM_INTERFACE_ENTRY_IMPL(IConnectionPointContainer)
-	COM_INTERFACE_ENTRY(IPerPropertyBrowsing)
-	COM_INTERFACE_ENTRY(IProvideClassInfo)
-	COM_INTERFACE_ENTRY(IProvideClassInfo2)
-END_COM_MAP()
-
-BEGIN_CONNECTION_POINT_MAP(PinTable)
-	CONNECTION_POINT_ENTRY(DIID_ITableEvents)
-END_CONNECTION_POINT_MAP()
-    void ListMaterials( HWND hwndListView );
-    int AddListMaterial(HWND hwndListView, Material *pmat);
-    void RemoveMaterial(Material *pmat);
-    void AddMaterial( Material *pmat);
-    bool IsMaterialNameUnique( char *name );
-    Material* GetMaterial( char * const szName) const;
-    Material* GetSurfaceMaterial( char *szName );
-    Texture *GetSurfaceImage( char *szName );
-    bool GetCollectionIndex( ISelect *element, int &collectionIndex, int &elementIndex );
-
-    void LockElements();
-    char m_szFileName[_MAX_PATH];
-	char m_szBlueprintFileName[_MAX_PATH];
-    char m_szObjFileName[_MAX_PATH];
-	char m_szTitle[1024];
-
-	HWND m_hwnd;
-	VPinball *m_pvp;
-
-    // editor viewport
-	Vertex2D m_offset;
-	float m_zoom;
-
-	//ISelect *m_pselcur;
-	Vector<ISelect> m_vmultisel;
-	
-	float m_left; // always zero for now
-	float m_top; // always zero for now
-	float m_right;
-	float m_bottom;
-
-	float m_glassheight;
-	float m_tableheight;
-
-	float m_maxSeparation;
-	float m_globalMaxSeparation;
-	float m_ZPD;
-	float m_globalZPD;
-
-	unsigned int m_BG_current_set;
-	float m_BG_inclination[NUM_BG_SETS];
-	float m_BG_FOV[NUM_BG_SETS];
-	float m_BG_layback[NUM_BG_SETS];
-	float m_BG_rotation[NUM_BG_SETS];
-	float m_BG_scalex[NUM_BG_SETS];
-	float m_BG_scaley[NUM_BG_SETS];
-    float m_BG_scalez[NUM_BG_SETS];
-	float m_BG_xlatex[NUM_BG_SETS];
-	float m_BG_xlatey[NUM_BG_SETS];
-    float m_BG_xlatez[NUM_BG_SETS];
-	char  m_BG_szImage[NUM_BG_SETS][MAXTOKEN];
-
-	float m_angletiltMax;
-	float m_angletiltMin;
-
-	int   m_fOverridePhysics;
-    float m_fOverrideGravityConstant;
-
-	unsigned int m_PhysicsMaxLoops;
-
-	float m_Gravity;
-	
-	float m_friction;
-	float m_elasticity;
-	float m_elasticityFalloff;
-	float m_scatter;
-
-	float m_defaultScatter;
-    float m_nudgeTime;
-	int   m_plungerNormalize;
-	bool  m_plungerFilter;
-
-    bool  m_tblAutoStartEnabled;
-    bool  m_tblMirrorEnabled;		// Mirror tables left to right.  This is activated by a cheat during table selection.
-
-	bool  m_tblAccelerometer;		// true if electronic accelerometer enabled
-	bool  m_tblAccelNormalMount;	// true is Normal Mounting (Left Hand Coordinates)
-	float m_tblAccelAngle;			// 0 degrees rotated counterclockwise (GUI is lefthand coordinates)
-	float m_tblAccelAmpX;			// Accelerometer gain X axis
-	float m_tblAccelAmpY;			// Accelerometer gain Y axis
-    int   m_tblAccelMaxX;           // Accelerometer max value X axis
-    int   m_tblAccelMaxY;			// Accelerometer max value Y axis
-    
-	U32   m_tblAutoStart;           // msecs before trying an autostart if doing once-only method .. 0 is automethod
-    U32   m_tblAutoStartRetry;      // msecs before retrying to autostart.
-    float m_tblVolmod;              // volume modulation for doing audio balancing
-    U32   m_tblExitConfirm;         // msecs for esc button to be pressed to exit completely
-	float m_globalDifficulty;		// Table Difficulty Level
-
-    short m_oldMousePosX;
-    short m_oldMousePosY;
-	_protectionData	m_protectionData;
-
-	char m_szImage[MAXTOKEN];
-    char m_szPlayfieldMaterial[32];
-	COLORREF m_colorbackdrop;
-	bool m_ImageBackdropNightDay;
-
-	char m_szImageColorGrade[MAXTOKEN];
-
-	char m_szBallImage[MAXTOKEN];
-	char m_szBallImageFront[MAXTOKEN];
-	bool m_BallDecalMode;
-
-	//CComObject<Surface> *m_psur;
-
-	Vector< IEditable > m_vedit;
-    Vector< IEditable > m_layer[8];
-    Vector< ISelect > m_allHitElements;
-
-    std::vector< Texture* > m_vimage;
-
-    int m_numMaterials;
-    Vector< Material > m_materials;
-
-	Vector< PinSound > m_vsound;
-
-	Vector< PinFont > m_vfont;
-
-	Vector< CComObject<Collection> > m_vcollection;
-
-	COLORREF m_rgcolorcustom[16];		// array for the choosecolor in property browser
-
-	Vector< PinSoundCopy > m_voldsound; // copied sounds currently playing
-
-	float m_TableSoundVolume;
-	float m_TableMusicVolume;
-
-	int m_TableAdaptiveVSync;
-
-	FRect m_rcDragRect; // Multi-select
-
-	HBITMAP m_hbmOffScreen; // Buffer for drawing the editor window
-
-	PinUndo m_undo;
-
-	CComObject<CodeViewer> *m_pcv;
-
-	CComObject<ScriptGlobalTable> *m_psgt; // Object to expose to script for global functions
-
-	SaveDirtyState m_sdsDirtyProp;
-	SaveDirtyState m_sdsDirtyScript;
-	SaveDirtyState m_sdsNonUndoableDirty;
-	SaveDirtyState m_sdsCurrentDirtyState;
-
-	// Table info
-	char *m_szTableName;
-	char *m_szAuthor;
-	char *m_szVersion;
-	char *m_szReleaseDate;
-	char *m_szAuthorEMail;
-	char *m_szWebSite;
-	char *m_szBlurb;
-	char *m_szDescription;
-	char *m_szRules;
-	char  m_szScreenShot[MAXTOKEN];
-
-	PinBinary *m_pbTempScreenshot; // Holds contents of screenshot image until the image asks for it
-
-	Vector<char> m_vCustomInfoTag;
-	Vector<char> m_vCustomInfoContent;
-
-    std::vector<HANDLE> m_vAsyncHandles;
-
-    int  m_globalDetailLevel;
-    int  m_userDetailLevel;
-    bool m_overwriteGlobalDetailLevel;
-
-	LightSource m_Light[MAX_LIGHT_SOURCES];
-	COLORREF m_lightAmbient;
-    float m_lightHeight;
-    float m_lightRange;
-	float m_lightEmissionScale;
-	float m_envEmissionScale;
-	float m_globalEmissionScale;
-	float m_AOScale;
-
-    int   m_useReflectionForBalls;
-    int   m_ballReflectionStrength;
-    int   m_playfieldReflectionStrength;
-    int   m_useTrailForBalls;
-    int   m_ballTrailStrength;
-    int   m_useAA;
-    int   m_useFXAA;
-	int   m_useAO;
-	float m_bloom_strength;
-
-	HWND  m_hMaterialManager;
-	HWND  m_hSearchSelectDialog;
-
-	bool  m_fDirtyDraw; // Whether our background bitmap is up to date
-
-	bool  m_activeLayers[8];
-    bool  m_toggleAllLayers;
-    bool  m_savingActive;
-
-    bool  m_renderSolid;
-
-	bool  m_fGrid; // Display grid or not
-	bool  m_fBackdrop;
-	bool  m_fRenderDecals;
-	bool  m_fRenderEMReels;
+   STDMETHOD(get_DetailLevel)(/*[out, retval]*/ int *pVal);
+   STDMETHOD(put_DetailLevel)(/*[in]*/ int newVal);
+
+   STDMETHOD(get_GlobalAlphaAcc)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   STDMETHOD(put_GlobalAlphaAcc)(/*[in]*/ VARIANT_BOOL newVal);
+
+   STDMETHOD(get_GlobalStereo3D)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   STDMETHOD(put_GlobalStereo3D)(/*[in]*/ VARIANT_BOOL newVal);
+
+   STDMETHOD(get_BallDecalMode)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   STDMETHOD(put_BallDecalMode)(/*[in]*/ VARIANT_BOOL newVal);
+
+   STDMETHOD(Version)(/*[out, retval]*/ int *pVal);
+
+   /////////////////////////////////////////////
+
+   PinTable();
+   virtual ~PinTable();
+
+   void Init(VPinball *pvp);
+   void InitPostLoad(VPinball *pvp);
+
+   virtual HRESULT GetTypeName(BSTR *pVal);
+   virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
+
+   void CreateTableWindow();
+   void SetCaption(char *szCaption);
+
+   HRESULT InitVBA();
+   void CloseVBA();
+
+   void Render(Sur * const psur);
+   void Paint(HDC hdc);
+   ISelect *HitTest(const int x, const int y);
+   void SetDirtyDraw();
+
+   void Render3DProjection(Sur * const psur);
+
+   BOOL GetDecalsEnabled() const;
+   BOOL GetEMReelsEnabled() const;
+
+   void Copy();
+   void Paste(BOOL fAtLocation, int x, int y);
+
+   void ExportBlueprint();
+   void ExportTableMesh();
+
+
+   //void FireVoidEvent(int dispid);
+   void FireKeyEvent(int dispid, int keycode);
+
+   void Play(bool _cameraMode = false);
+   void StopPlaying();
+
+   void ImportSound(HWND hwndListView, char *filename, BOOL fPlay);
+   void ReImportSound(HWND hwndListView, PinSound *pps, char *filename, BOOL fPlay);
+   bool ExportSound(HWND hwndListView, PinSound *pps, char *filename);
+   void ListSounds(HWND hwndListView);
+   int AddListSound(HWND hwndListView, PinSound *pps);
+   void RemoveSound(PinSound *pps);
+   HRESULT SaveSoundToStream(PinSound *pps, IStream *pstm);
+   HRESULT LoadSoundFromStream(IStream *pstm);
+   void ClearOldSounds();
+   bool ExportImage(HWND hwndListView, Texture *ppi, char *filename);
+   void ImportImage(HWND hwndListView, char *filename);
+   void ReImportImage(HWND hwndListView, Texture *ppi, char *filename);
+   void ListImages(HWND hwndListView);
+   int AddListImage(HWND hwndListView, Texture *ppi);
+   void RemoveImage(Texture *ppi);
+   HRESULT LoadImageFromStream(IStream *pstm, int version);
+   Texture *GetImage(char * const szName) const;
+   void CreateGDIBackdrop();
+   int GetImageLink(Texture *ppi);
+   PinBinary *PinTable::GetImageLinkBinary(int id);
+
+   void ListCustomInfo(HWND hwndListView);
+   int AddListItem(HWND hwndListView, char *szName, char *szValue1, LPARAM lparam);
+
+   void ImportFont(HWND hwndListView, char *filename);
+   void ListFonts(HWND hwndListView);
+   int AddListBinary(HWND hwndListView, PinBinary *ppb);
+   void RemoveFont(PinFont *ppf);
+
+   void NewCollection(HWND hwndListView, BOOL fFromSelection);
+   void ListCollections(HWND hwndListView);
+   int AddListCollection(HWND hwndListView, CComObject<Collection> *pcol);
+   void RemoveCollection(CComObject<Collection> *pcol);
+   void SetCollectionName(Collection *pcol, char *szName, HWND hwndList, int index);
+
+   void DoContextMenu(int x, int y, int menuid, ISelect *psel);
+   virtual void DoCommand(int icmd, int x, int y);
+   bool FMutilSelLocked();
+
+   virtual void SelectItem(IScriptable *piscript);
+   virtual void DoCodeViewCommand(int command);
+   virtual void SetDirtyScript(SaveDirtyState sds);
+   virtual void ExportMesh(FILE *f);
+
+   // Multi-object manipulation
+   virtual void GetCenter(Vertex2D * const pv) const;
+   virtual void PutCenter(const Vertex2D * const pv);
+   virtual void FlipY(Vertex2D * const pvCenter);
+   virtual void FlipX(Vertex2D * const pvCenter);
+   virtual void Rotate(float ang, Vertex2D *pvCenter);
+   virtual void Scale(float scalex, float scaley, Vertex2D *pvCenter);
+   virtual void Translate(Vertex2D *pvOffset);
+
+   // IEditable (mostly bogus for now)
+   virtual void PreRender(Sur * const psur);
+   virtual ItemTypeEnum GetItemType();
+   virtual HRESULT InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey);
+   virtual HRESULT InitPostLoad();
+   virtual HRESULT InitVBA(BOOL fNew, int id, WCHAR *wzName);
+   virtual ISelect *GetISelect();
+   virtual void SetDefaults(bool fromMouseClick);
+   virtual IScriptable *GetScriptable();
+
+   virtual PinTable *GetPTable() { return this; }
+   char *GetElementName(IEditable *pedit);
+
+   void OnDelete();
+
+   void DoLButtonDown(int x, int y, bool zoomIn = true);
+   void DoLButtonUp(int x, int y);
+   void DoRButtonDown(int x, int y);
+   void DoRButtonUp(int x, int y);
+   void DoMouseMove(int x, int y);
+   void DoLDoubleClick(int x, int y);
+   void UseTool(int x, int y, int tool);
+   void OnKeyDown(int key);
+
+   // Transform editor window coordinates to table coordinates
+   Vertex2D TransformPoint(int x, int y) const;
+
+   void ClearMultiSel(ISelect *newSel = NULL);
+   bool MultiSelIsEmpty();
+   ISelect *GetSelectedItem() const { return m_vmultisel.ElementAt(0); }
+   void AddMultiSel(ISelect *psel, bool fAdd, bool fUpdate = true, bool fContextClick = false);
+
+   void BeginAutoSaveCounter();
+   void EndAutoSaveCounter();
+   void AutoSave();
+
+   HRESULT TableSave();
+   HRESULT SaveAs();
+   virtual HRESULT ApcProject_Save();
+   HRESULT Save(BOOL fSaveAs);
+   HRESULT SaveToStorage(IStorage *pstg);
+   HRESULT SaveInfo(IStorage* pstg, HCRYPTHASH hcrypthash);
+   HRESULT SaveCustomInfo(IStorage* pstg, IStream *pstmTags, HCRYPTHASH hcrypthash);
+   HRESULT WriteInfoValue(IStorage* pstg, WCHAR *wzName, char *szValue, HCRYPTHASH hcrypthash);
+   HRESULT ReadInfoValue(IStorage* pstg, WCHAR *wzName, char **pszValue, HCRYPTHASH hcrypthash);
+   HRESULT SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey);
+   HRESULT LoadGameFromFilename(char *szFileName);
+   HRESULT LoadGameFromStorage(IStorage *pstgRoot);
+   HRESULT LoadInfo(IStorage* pstg, HCRYPTHASH hcrypthash, int version);
+   HRESULT LoadCustomInfo(IStorage* pstg, IStream *pstmTags, HCRYPTHASH hcrypthash, int version);
+   HRESULT LoadData(IStream* pstm, int& csubobj, int& csounds, int& ctextures, int& cfonts, int& ccollection, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey);
+   virtual IEditable *GetIEditable() { return (IEditable *)this; }
+   virtual void Delete() {} // Can't delete table itself
+   virtual void Uncreate() {}
+   virtual BOOL LoadToken(int id, BiffReader *pbr);
+
+   virtual IDispatch *GetPrimary() { return this->GetDispatch(); }
+   virtual IDispatch *GetDispatch() { return (IDispatch *)this; }
+   virtual IFireEvents *GetIFireEvents() { return (IFireEvents *)this; }
+   virtual IDebugCommands *GetDebugCommands() { return NULL; }
+
+   void SetZoom(float zoom);
+   void SetMyScrollInfo();
+
+   void BackupForPlay();
+   void RestoreBackup();
+
+   void BeginUndo();
+   void EndUndo();
+   void Undo();
+
+   void Uncreate(IEditable *pie);
+   void Undelete(IEditable *pie);
+
+   STDMETHOD(GetDisplayString)(DISPID dispID, BSTR *pbstr) { return hrNotImplemented; }
+   STDMETHOD(MapPropertyToPage)(DISPID dispID, CLSID *pclsid) { return hrNotImplemented; }
+   STDMETHOD(GetPredefinedStrings)(DISPID dispID, CALPOLESTR *pcaStringsOut, CADWORD *pcaCookiesOut);
+   STDMETHOD(GetPredefinedValue)(DISPID dispID, DWORD dwCookie, VARIANT *pVarOut);
+
+   STDMETHOD(GetPredefinedStrings)(DISPID dispID, CALPOLESTR *pcaStringsOut, CADWORD *pcaCookiesOut, IEditable *piedit);
+   STDMETHOD(GetPredefinedValue)(DISPID dispID, DWORD dwCookie, VARIANT *pVarOut, IEditable *piedit);
+
+   virtual void OnLButtonDown(int x, int y);
+   virtual void OnLButtonUp(int x, int y);
+   virtual void OnMouseMove(int x, int y);
+
+   void SetDefaultView();
+   void GetViewRect(FRect *pfrect);
+
+   bool IsNameUnique(WCHAR *wzName);
+   void GetUniqueName(ItemTypeEnum type, WCHAR *wzUniqueName);
+   void GetUniqueName(WCHAR *prefix, WCHAR *wzUniqueName);
+   void GetUniqueNamePasting(int type, WCHAR *wzUniqueName);
+
+   float GetSurfaceHeight(char *szName, float x, float y);
+
+   void SetLoadDefaults();
+
+   void SetDirty(SaveDirtyState sds);
+   void SetNonUndoableDirty(SaveDirtyState sds);
+   void CheckDirty();
+   BOOL FDirty();
+
+   BOOL FVerifySaveToClose();
+
+   HRESULT StopSound(BSTR Sound);
+
+   BOOL CheckPermissions(unsigned long flag);
+   BOOL IsTableProtected();
+   void ResetProtectionBlock();
+   BOOL SetupProtectionBlock(unsigned char *pPassword, unsigned long flags);
+   BOOL UnlockProtectionBlock(unsigned char *pPassword);
+
+   void SwitchToLayer(int layerNumber);
+   void AssignToLayer(IEditable *obj, int layerNumber);
+   void AssignMultiToLayer(int layerNumber, int x, int y);
+   void MergeAllLayers();
+   void RestoreLayers();
+   void BackupLayers();
+   void DeleteFromLayer(IEditable *obj);
+   void AddToCollection(int index);
+   void MoveCollectionUp(CComObject<Collection> *pcol);
+   void MoveCollectionDown(CComObject<Collection> *pcol);
+
+   int GetDetailLevel();
+   float GetZPD();
+   float GetMaxSeparation();
+
+   FRect3D GetBoundingBox();
+
+   bool RenderSolid()      { return m_renderSolid; }
+
+   void InvokeBallBallCollisionCallback(Ball *b1, Ball *b2, float hitVelocity);
+
+   BEGIN_COM_MAP(PinTable)
+      COM_INTERFACE_ENTRY(ITable)
+      COM_INTERFACE_ENTRY(IDispatch)
+      COM_INTERFACE_ENTRY_IMPL(IConnectionPointContainer)
+      COM_INTERFACE_ENTRY(IPerPropertyBrowsing)
+      COM_INTERFACE_ENTRY(IProvideClassInfo)
+      COM_INTERFACE_ENTRY(IProvideClassInfo2)
+   END_COM_MAP()
+
+   BEGIN_CONNECTION_POINT_MAP(PinTable)
+      CONNECTION_POINT_ENTRY(DIID_ITableEvents)
+   END_CONNECTION_POINT_MAP()
+   void ListMaterials(HWND hwndListView);
+   int AddListMaterial(HWND hwndListView, Material *pmat);
+   void RemoveMaterial(Material *pmat);
+   void AddMaterial(Material *pmat);
+   bool IsMaterialNameUnique(char *name);
+   Material* GetMaterial(char * const szName) const;
+   Material* GetSurfaceMaterial(char *szName);
+   Texture *GetSurfaceImage(char *szName);
+   bool GetCollectionIndex(ISelect *element, int &collectionIndex, int &elementIndex);
+
+   void LockElements();
+   char m_szFileName[_MAX_PATH];
+   char m_szBlueprintFileName[_MAX_PATH];
+   char m_szObjFileName[_MAX_PATH];
+   char m_szTitle[1024];
+
+   HWND m_hwnd;
+   VPinball *m_pvp;
+
+   // editor viewport
+   Vertex2D m_offset;
+   float m_zoom;
+
+   //ISelect *m_pselcur;
+   Vector<ISelect> m_vmultisel;
+
+   float m_left; // always zero for now
+   float m_top; // always zero for now
+   float m_right;
+   float m_bottom;
+
+   float m_glassheight;
+   float m_tableheight;
+
+   float m_maxSeparation;
+   float m_globalMaxSeparation;
+   float m_ZPD;
+   float m_globalZPD;
+
+   unsigned int m_BG_current_set;
+   float m_BG_inclination[NUM_BG_SETS];
+   float m_BG_FOV[NUM_BG_SETS];
+   float m_BG_layback[NUM_BG_SETS];
+   float m_BG_rotation[NUM_BG_SETS];
+   float m_BG_scalex[NUM_BG_SETS];
+   float m_BG_scaley[NUM_BG_SETS];
+   float m_BG_scalez[NUM_BG_SETS];
+   float m_BG_xlatex[NUM_BG_SETS];
+   float m_BG_xlatey[NUM_BG_SETS];
+   float m_BG_xlatez[NUM_BG_SETS];
+   char  m_BG_szImage[NUM_BG_SETS][MAXTOKEN];
+
+   float m_angletiltMax;
+   float m_angletiltMin;
+
+   int   m_fOverridePhysics;
+   float m_fOverrideGravityConstant;
+
+   unsigned int m_PhysicsMaxLoops;
+
+   float m_Gravity;
+
+   float m_friction;
+   float m_elasticity;
+   float m_elasticityFalloff;
+   float m_scatter;
+
+   float m_defaultScatter;
+   float m_nudgeTime;
+   int   m_plungerNormalize;
+   bool  m_plungerFilter;
+
+   bool  m_tblAutoStartEnabled;
+   bool  m_tblMirrorEnabled;		// Mirror tables left to right.  This is activated by a cheat during table selection.
+
+   bool  m_tblAccelerometer;		// true if electronic accelerometer enabled
+   bool  m_tblAccelNormalMount;	// true is Normal Mounting (Left Hand Coordinates)
+   float m_tblAccelAngle;			// 0 degrees rotated counterclockwise (GUI is lefthand coordinates)
+   float m_tblAccelAmpX;			// Accelerometer gain X axis
+   float m_tblAccelAmpY;			// Accelerometer gain Y axis
+   int   m_tblAccelMaxX;           // Accelerometer max value X axis
+   int   m_tblAccelMaxY;			// Accelerometer max value Y axis
+
+   U32   m_tblAutoStart;           // msecs before trying an autostart if doing once-only method .. 0 is automethod
+   U32   m_tblAutoStartRetry;      // msecs before retrying to autostart.
+   float m_tblVolmod;              // volume modulation for doing audio balancing
+   U32   m_tblExitConfirm;         // msecs for esc button to be pressed to exit completely
+   float m_globalDifficulty;		// Table Difficulty Level
+
+   short m_oldMousePosX;
+   short m_oldMousePosY;
+   _protectionData	m_protectionData;
+
+   char m_szImage[MAXTOKEN];
+   char m_szPlayfieldMaterial[32];
+   COLORREF m_colorbackdrop;
+   bool m_ImageBackdropNightDay;
+
+   char m_szImageColorGrade[MAXTOKEN];
+
+   char m_szBallImage[MAXTOKEN];
+   char m_szBallImageFront[MAXTOKEN];
+   bool m_BallDecalMode;
+
+   //CComObject<Surface> *m_psur;
+
+   Vector< IEditable > m_vedit;
+   Vector< IEditable > m_layer[8];
+   Vector< ISelect > m_allHitElements;
+
+   std::vector< Texture* > m_vimage;
+
+   int m_numMaterials;
+   Vector< Material > m_materials;
+
+   Vector< PinSound > m_vsound;
+
+   Vector< PinFont > m_vfont;
+
+   Vector< CComObject<Collection> > m_vcollection;
+
+   COLORREF m_rgcolorcustom[16];		// array for the choosecolor in property browser
+
+   Vector< PinSoundCopy > m_voldsound; // copied sounds currently playing
+
+   float m_TableSoundVolume;
+   float m_TableMusicVolume;
+
+   int m_TableAdaptiveVSync;
+
+   FRect m_rcDragRect; // Multi-select
+
+   HBITMAP m_hbmOffScreen; // Buffer for drawing the editor window
+
+   PinUndo m_undo;
+
+   CComObject<CodeViewer> *m_pcv;
+
+   CComObject<ScriptGlobalTable> *m_psgt; // Object to expose to script for global functions
+
+   SaveDirtyState m_sdsDirtyProp;
+   SaveDirtyState m_sdsDirtyScript;
+   SaveDirtyState m_sdsNonUndoableDirty;
+   SaveDirtyState m_sdsCurrentDirtyState;
+
+   // Table info
+   char *m_szTableName;
+   char *m_szAuthor;
+   char *m_szVersion;
+   char *m_szReleaseDate;
+   char *m_szAuthorEMail;
+   char *m_szWebSite;
+   char *m_szBlurb;
+   char *m_szDescription;
+   char *m_szRules;
+   char  m_szScreenShot[MAXTOKEN];
+
+   PinBinary *m_pbTempScreenshot; // Holds contents of screenshot image until the image asks for it
+
+   Vector<char> m_vCustomInfoTag;
+   Vector<char> m_vCustomInfoContent;
+
+   std::vector<HANDLE> m_vAsyncHandles;
+
+   int  m_globalDetailLevel;
+   int  m_userDetailLevel;
+   bool m_overwriteGlobalDetailLevel;
+
+   LightSource m_Light[MAX_LIGHT_SOURCES];
+   COLORREF m_lightAmbient;
+   float m_lightHeight;
+   float m_lightRange;
+   float m_lightEmissionScale;
+   float m_envEmissionScale;
+   float m_globalEmissionScale;
+   float m_AOScale;
+
+   int   m_useReflectionForBalls;
+   int   m_ballReflectionStrength;
+   int   m_playfieldReflectionStrength;
+   int   m_useTrailForBalls;
+   int   m_ballTrailStrength;
+   int   m_useAA;
+   int   m_useFXAA;
+   int   m_useAO;
+   float m_bloom_strength;
+
+   HWND  m_hMaterialManager;
+   HWND  m_hSearchSelectDialog;
+
+   bool  m_fDirtyDraw; // Whether our background bitmap is up to date
+
+   bool  m_activeLayers[8];
+   bool  m_toggleAllLayers;
+   bool  m_savingActive;
+
+   bool  m_renderSolid;
+
+   bool  m_fGrid; // Display grid or not
+   bool  m_fBackdrop;
+   bool  m_fRenderDecals;
+   bool  m_fRenderEMReels;
    bool  m_overwriteGlobalStereo3D;
    bool  m_fReflectElementsOnPlayfield;
    bool  m_fReflectionEnabled;
-    
+
 #ifdef UNUSED_TILT //!! currently unused (see NudgeGetTilt())
-	int   m_jolt_amount;       
-	int   m_tilt_amount;
-	int   m_jolt_trigger_time;
-	int   m_tilt_trigger_time;
+   int   m_jolt_amount;
+   int   m_tilt_amount;
+   int   m_jolt_trigger_time;
+   int   m_tilt_trigger_time;
 #endif
 
 private:
-    std::tr1::unordered_map<const char*, Texture*, StringHashFunctor, StringComparator> m_textureMap;      // hash table to speed up texture lookup by name
-    std::tr1::unordered_map<const char*, Material*, StringHashFunctor, StringComparator> m_materialMap;    // hash table to speed up material lookup by name
+   std::tr1::unordered_map<const char*, Texture*, StringHashFunctor, StringComparator> m_textureMap;      // hash table to speed up texture lookup by name
+   std::tr1::unordered_map<const char*, Material*, StringHashFunctor, StringComparator> m_materialMap;    // hash table to speed up material lookup by name
 };
 
 #endif // !defined(AFX_PINTABLE_H__D14A2DAB_2984_4FE7_A102_D0283ECE31B4__INCLUDED_)

@@ -1,82 +1,82 @@
 #pragma once
 class PinTable;
 
-class ScriptGlobalTable:
-	public CComObjectRootEx<CComSingleThreadModel>,
-	public IDispatchImpl<ITableGlobal, &IID_ITableGlobal, &LIBID_VPinballLib>,
-	public IScriptable
-	{
+class ScriptGlobalTable :
+   public CComObjectRootEx<CComSingleThreadModel>,
+   public IDispatchImpl<ITableGlobal, &IID_ITableGlobal, &LIBID_VPinballLib>,
+   public IScriptable
+{
 public:
-		// Headers to support communication between the game and the script.
-		STDMETHOD(EndModal)();
-		STDMETHOD(BeginModal)();
-		STDMETHOD(GetTextFile)(BSTR FileName, /*[out, retval]*/ BSTR *pContents);
-		STDMETHOD(get_GameTime)(/*[out, retval]*/ long *pVal);
-		STDMETHOD(get_AddCreditKey)(/*[out, retval]*/ long *pVal);
-		STDMETHOD(get_AddCreditKey2)(/*[out, retval]*/ long *pVal);
-		STDMETHOD(get_ActiveBall)(/*[out, retval]*/ IBall **pVal);
-		STDMETHOD(LoadValue)(BSTR TableName, BSTR ValueName, /*[out, retval]*/ VARIANT *Value);
-		STDMETHOD(SaveValue)(BSTR TableName, BSTR ValueName, VARIANT Value);
-		STDMETHOD(StopSound)(BSTR Sound);
-		STDMETHOD(AddObject)(BSTR Name, IDispatch *pdisp);
+   // Headers to support communication between the game and the script.
+   STDMETHOD(EndModal)();
+   STDMETHOD(BeginModal)();
+   STDMETHOD(GetTextFile)(BSTR FileName, /*[out, retval]*/ BSTR *pContents);
+   STDMETHOD(get_GameTime)(/*[out, retval]*/ long *pVal);
+   STDMETHOD(get_AddCreditKey)(/*[out, retval]*/ long *pVal);
+   STDMETHOD(get_AddCreditKey2)(/*[out, retval]*/ long *pVal);
+   STDMETHOD(get_ActiveBall)(/*[out, retval]*/ IBall **pVal);
+   STDMETHOD(LoadValue)(BSTR TableName, BSTR ValueName, /*[out, retval]*/ VARIANT *Value);
+   STDMETHOD(SaveValue)(BSTR TableName, BSTR ValueName, VARIANT Value);
+   STDMETHOD(StopSound)(BSTR Sound);
+   STDMETHOD(AddObject)(BSTR Name, IDispatch *pdisp);
 #ifdef _WIN64
-		STDMETHOD(get_GetPlayerHWnd)(/*[out, retval]*/ SIZE_T *pVal);
+   STDMETHOD(get_GetPlayerHWnd)(/*[out, retval]*/ SIZE_T *pVal);
 #else
-		STDMETHOD(get_GetPlayerHWnd)(/*[out, retval]*/ long *pVal);
+   STDMETHOD(get_GetPlayerHWnd)(/*[out, retval]*/ long *pVal);
 #endif
-		STDMETHOD(get_UserDirectory)(/*[out, retval]*/ BSTR *pVal);
-		STDMETHOD(get_StartGameKey)(/*[out, retval]*/ long *pVal);
-		STDMETHOD(EndMusic)();
-		STDMETHOD(PlayMusic)(BSTR str);
-		STDMETHOD(get_PlungerKey)(/*[out, retval]*/ long *pVal);
-		STDMETHOD(get_CenterTiltKey)(/*[out, retval]*/ long *pVal);
-		STDMETHOD(get_RightTiltKey)(/*[out, retval]*/ long *pVal);
-		STDMETHOD(get_LeftTiltKey)(/*[out, retval]*/ long *pVal);
-		STDMETHOD(get_RightFlipperKey)(/*[out, retval]*/ long *pVal);
-		STDMETHOD(get_LeftFlipperKey)(/*[out, retval]*/ long *pVal);
-		STDMETHOD(get_VPBuildVersion)(/*[out, retval]*/ long *pVal);
+   STDMETHOD(get_UserDirectory)(/*[out, retval]*/ BSTR *pVal);
+   STDMETHOD(get_StartGameKey)(/*[out, retval]*/ long *pVal);
+   STDMETHOD(EndMusic)();
+   STDMETHOD(PlayMusic)(BSTR str);
+   STDMETHOD(get_PlungerKey)(/*[out, retval]*/ long *pVal);
+   STDMETHOD(get_CenterTiltKey)(/*[out, retval]*/ long *pVal);
+   STDMETHOD(get_RightTiltKey)(/*[out, retval]*/ long *pVal);
+   STDMETHOD(get_LeftTiltKey)(/*[out, retval]*/ long *pVal);
+   STDMETHOD(get_RightFlipperKey)(/*[out, retval]*/ long *pVal);
+   STDMETHOD(get_LeftFlipperKey)(/*[out, retval]*/ long *pVal);
+   STDMETHOD(get_VPBuildVersion)(/*[out, retval]*/ long *pVal);
 
-		STDMETHOD(put_DMDWidth)(/*[in]*/ int pVal);
-		STDMETHOD(put_DMDHeight)(/*[in]*/ int pVal);
-		STDMETHOD(put_DMDPixels)(/*[in]*/ VARIANT pVal);
+   STDMETHOD(put_DMDWidth)(/*[in]*/ int pVal);
+   STDMETHOD(put_DMDHeight)(/*[in]*/ int pVal);
+   STDMETHOD(put_DMDPixels)(/*[in]*/ VARIANT pVal);
 
-        STDMETHOD(get_NightDay)(/*[out, retval]*/ int *pVal);
-        //STDMETHOD(put_NightDay)(/*[in]*/ int newVal);
+   STDMETHOD(get_NightDay)(/*[out, retval]*/ int *pVal);
+   //STDMETHOD(put_NightDay)(/*[in]*/ int newVal);
 
-	    STDMETHOD(get_ShowDT)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-	    //STDMETHOD(put_ShowDT)(/*[in]*/ VARIANT_BOOL newVal);
+   STDMETHOD(get_ShowDT)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   //STDMETHOD(put_ShowDT)(/*[in]*/ VARIANT_BOOL newVal);
 
-		STDMETHOD(PlaySound)(BSTR bstr, long LoopCount, float volume, float pan, float randompitch, long pitch, VARIANT_BOOL usesame, VARIANT_BOOL restart);
-		STDMETHOD(FireKnocker)(/*[in]*/ int Count);
-		STDMETHOD(QuitPlayer)(/*[in]*/ int CloseType);
+   STDMETHOD(PlaySound)(BSTR bstr, long LoopCount, float volume, float pan, float randompitch, long pitch, VARIANT_BOOL usesame, VARIANT_BOOL restart);
+   STDMETHOD(FireKnocker)(/*[in]*/ int Count);
+   STDMETHOD(QuitPlayer)(/*[in]*/ int CloseType);
 
-   		STDMETHOD(Nudge)(float Angle, float Force);
-		STDMETHOD(get_Name)(BSTR *pVal);
-		STDMETHOD(get_MechanicalTilt)(/*[out, retval]*/ long *pVal);
-		STDMETHOD(get_LeftMagnaSave)(/*[out, retval]*/ long *pVal);
-		STDMETHOD(get_RightMagnaSave)(/*[out, retval]*/ long *pVal);
-		STDMETHOD(get_ExitGame)(/*[out, retval]*/ long *pVal);
-		
-        STDMETHOD(VersionMajor)(/*[out, retval]*/ int *pVal);
-        STDMETHOD(VersionMinor)(/*[out, retval]*/ int *pVal);
-        STDMETHOD(VersionRevision)(/*[out, retval]*/ int *pVal);
+   STDMETHOD(Nudge)(float Angle, float Force);
+   STDMETHOD(get_Name)(BSTR *pVal);
+   STDMETHOD(get_MechanicalTilt)(/*[out, retval]*/ long *pVal);
+   STDMETHOD(get_LeftMagnaSave)(/*[out, retval]*/ long *pVal);
+   STDMETHOD(get_RightMagnaSave)(/*[out, retval]*/ long *pVal);
+   STDMETHOD(get_ExitGame)(/*[out, retval]*/ long *pVal);
 
-        STDMETHOD(GetBalls)(/*[out, retval]*/ LPSAFEARRAY *pVal);
-        STDMETHOD(GetElements)(/*[out, retval]*/ LPSAFEARRAY *pVal);
-        STDMETHOD(GetElementByName)(/*[in]*/ BSTR name, /*[out, retval]*/ IDispatch* *pVal);
+   STDMETHOD(VersionMajor)(/*[out, retval]*/ int *pVal);
+   STDMETHOD(VersionMinor)(/*[out, retval]*/ int *pVal);
+   STDMETHOD(VersionRevision)(/*[out, retval]*/ int *pVal);
 
-	void Init(PinTable *pt);
+   STDMETHOD(GetBalls)(/*[out, retval]*/ LPSAFEARRAY *pVal);
+   STDMETHOD(GetElements)(/*[out, retval]*/ LPSAFEARRAY *pVal);
+   STDMETHOD(GetElementByName)(/*[in]*/ BSTR name, /*[out, retval]*/ IDispatch* *pVal);
 
-	virtual IDispatch *GetDispatch();
+   void Init(PinTable *pt);
 
-	virtual ISelect *GetISelect() {return NULL;}
+   virtual IDispatch *GetDispatch();
 
-	BOOL GetTextFileFromDirectory(char *szfilename, char *dirname, BSTR *pContents);
+   virtual ISelect *GetISelect() { return NULL; }
 
-BEGIN_COM_MAP(ScriptGlobalTable)
-	COM_INTERFACE_ENTRY(ITableGlobal)
-	COM_INTERFACE_ENTRY(IDispatch)
-END_COM_MAP()
+   BOOL GetTextFileFromDirectory(char *szfilename, char *dirname, BSTR *pContents);
 
-	PinTable *m_pt;
-	};
+   BEGIN_COM_MAP(ScriptGlobalTable)
+      COM_INTERFACE_ENTRY(ITableGlobal)
+      COM_INTERFACE_ENTRY(IDispatch)
+   END_COM_MAP()
+
+   PinTable *m_pt;
+};

@@ -3,78 +3,78 @@
 #include "meshes/flipperBase.h"
 #include "objloader.h"
 
-static const float vertsTipBottomf[13*3]=
+static const float vertsTipBottomf[13 * 3] =
 {
-	 -0.101425f, 0.786319f, 0.003753f,
-	 -0.097969f, 0.812569f, 0.003753f,
-	 -0.087837f, 0.837031f, 0.003753f,
-	 -0.071718f, 0.858037f, 0.003753f,
-	 -0.050713f, 0.874155f, 0.003753f,
-	 -0.026251f, 0.884288f, 0.003753f,
-	 -0.000000f, 0.887744f, 0.003753f,
-	  0.026251f, 0.884288f, 0.003753f,
-	  0.050713f, 0.874155f, 0.003753f,
-	  0.071718f, 0.858037f, 0.003753f,
-	  0.087837f, 0.837031f, 0.003753f,
-	  0.097969f, 0.812569f, 0.003753f,
-	  0.101425f, 0.786319f, 0.003753f
+   -0.101425f, 0.786319f, 0.003753f,
+   -0.097969f, 0.812569f, 0.003753f,
+   -0.087837f, 0.837031f, 0.003753f,
+   -0.071718f, 0.858037f, 0.003753f,
+   -0.050713f, 0.874155f, 0.003753f,
+   -0.026251f, 0.884288f, 0.003753f,
+   -0.000000f, 0.887744f, 0.003753f,
+   0.026251f, 0.884288f, 0.003753f,
+   0.050713f, 0.874155f, 0.003753f,
+   0.071718f, 0.858037f, 0.003753f,
+   0.087837f, 0.837031f, 0.003753f,
+   0.097969f, 0.812569f, 0.003753f,
+   0.101425f, 0.786319f, 0.003753f
 };
 
 static const Vertex3Ds* const vertsTipBottom = (Vertex3Ds*)vertsTipBottomf;
 
-static const float vertsTipTopf[13*3] =
+static const float vertsTipTopf[13 * 3] =
 {
-	 -0.101425f, 0.786319f, 1.004253f,
-	 -0.097969f, 0.812569f, 1.004253f,
-	 -0.087837f, 0.837031f, 1.004253f,
-	 -0.071718f, 0.858037f, 1.004253f,
-	 -0.050713f, 0.874155f, 1.004253f,
-	 -0.026251f, 0.884288f, 1.004253f,
-	 -0.000000f, 0.887744f, 1.004253f,
-	 0.026251f, 0.884288f, 1.004253f ,
-	 0.050713f, 0.874155f, 1.004253f ,
-	 0.071718f, 0.858037f, 1.004253f ,
-	 0.087837f, 0.837031f, 1.004253f ,
-	 0.097969f, 0.812569f, 1.004253f ,
-	 0.101425f, 0.786319f, 1.004253f 
+   -0.101425f, 0.786319f, 1.004253f,
+   -0.097969f, 0.812569f, 1.004253f,
+   -0.087837f, 0.837031f, 1.004253f,
+   -0.071718f, 0.858037f, 1.004253f,
+   -0.050713f, 0.874155f, 1.004253f,
+   -0.026251f, 0.884288f, 1.004253f,
+   -0.000000f, 0.887744f, 1.004253f,
+   0.026251f, 0.884288f, 1.004253f,
+   0.050713f, 0.874155f, 1.004253f,
+   0.071718f, 0.858037f, 1.004253f,
+   0.087837f, 0.837031f, 1.004253f,
+   0.097969f, 0.812569f, 1.004253f,
+   0.101425f, 0.786319f, 1.004253f
 };
 
 static const Vertex3Ds* const vertsTipTop = (Vertex3Ds*)vertsTipTopf;
 
-static const float vertsBaseBottomf[13*3] =
+static const float vertsBaseBottomf[13 * 3] =
 {
-	 -0.100762f, -0.000000f, 0.003753f,
-	 -0.097329f, -0.026079f, 0.003753f,
-	 -0.087263f, -0.050381f, 0.003753f,
-	 -0.071250f, -0.071250f, 0.003753f,
-	 -0.050381f, -0.087263f, 0.003753f,
-	 -0.026079f, -0.097329f, 0.003753f,
-	 -0.000000f, -0.100762f, 0.003753f,
-	  0.026079f, -0.097329f, 0.003753f,
-	  0.050381f, -0.087263f, 0.003753f,
-	  0.071250f, -0.071250f, 0.003753f,
-	  0.087263f, -0.050381f, 0.003753f,
-	  0.097329f, -0.026079f, 0.003753f,
-	  0.100762f, -0.000000f, 0.003753f
+   -0.100762f, -0.000000f, 0.003753f,
+   -0.097329f, -0.026079f, 0.003753f,
+   -0.087263f, -0.050381f, 0.003753f,
+   -0.071250f, -0.071250f, 0.003753f,
+   -0.050381f, -0.087263f, 0.003753f,
+   -0.026079f, -0.097329f, 0.003753f,
+   -0.000000f, -0.100762f, 0.003753f,
+   0.026079f, -0.097329f, 0.003753f,
+   0.050381f, -0.087263f, 0.003753f,
+   0.071250f, -0.071250f, 0.003753f,
+   0.087263f, -0.050381f, 0.003753f,
+   0.097329f, -0.026079f, 0.003753f,
+   0.100762f, -0.000000f, 0.003753f
 };
 
 static const Vertex3Ds* const vertsBaseBottom = (Vertex3Ds*)vertsBaseBottomf;
 
-static const float vertsBaseTopf[13*3] =
+static const float vertsBaseTopf[13 * 3] =
 {
-	-0.100762f,  0.000000f, 1.004253f,
-	-0.097329f, -0.026079f, 1.004253f,
-	-0.087263f, -0.050381f, 1.004253f,
-	-0.071250f, -0.071250f, 1.004253f,
-	-0.050381f, -0.087263f, 1.004253f,
-	-0.026079f, -0.097329f, 1.004253f,
-	-0.000000f, -0.100762f, 1.004253f,
-	 0.026079f, -0.097329f, 1.004253f,
-	 0.050381f, -0.087263f, 1.004253f,
-	 0.071250f, -0.071250f, 1.004253f,
-	 0.087263f, -0.050381f, 1.004253f,
-	 0.097329f, -0.026079f, 1.004253f,
-	 0.100762f, -0.000000f, 1.004253f
+   -0.100762f, 0.000000f, 1.004253f,
+   -0.097329f, -0.026079f, 1.004253f,
+   -0.087263f, -0.050381f, 1.004253f,
+   -0.071250f, -0.071250f, 1.004253f,
+   -0.050381f, -0.087263f, 1.004253f,
+   -0.026079f, -0.097329f, 1.004253f,
+   -0.000000f, -0.100762f, 1.004253f,
+   0.026079f, -0.097329f, 1.004253f,
+   0.050381f, -0.087263f, 1.004253f,
+   0.071250f, -0.071250f, 1.004253f,
+   0.087263f, -0.050381f, 1.004253f,
+   0.097329f, -0.026079f, 1.004253f,
+   0.100762f, -0.000000f, 1.004253f
 };
 
 static const Vertex3Ds* const vertsBaseTop = (Vertex3Ds*)vertsBaseTopf;
@@ -89,10 +89,10 @@ Flipper::Flipper()
 
 Flipper::~Flipper()
 {
-    if (vertexBuffer)
-        vertexBuffer->release();
-    if (indexBuffer)
-        indexBuffer->release();
+   if (vertexBuffer)
+      vertexBuffer->release();
+   if (indexBuffer)
+      indexBuffer->release();
 }
 
 HRESULT Flipper::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
@@ -115,22 +115,22 @@ void Flipper::SetDefaults(bool fromMouseClick)
    float fTmp;
    int iTmp;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Flipper","StartAngle", &fTmp);
+   hr = GetRegStringAsFloat("DefaultProps\\Flipper", "StartAngle", &fTmp);
    m_d.m_StartAngle = (hr == S_OK) && fromMouseClick ? fTmp : 121;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Flipper","EndAngle", &fTmp);
+   hr = GetRegStringAsFloat("DefaultProps\\Flipper", "EndAngle", &fTmp);
    m_d.m_EndAngle = (hr == S_OK) && fromMouseClick ? fTmp : 70;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Flipper","BaseRadius", &fTmp);
+   hr = GetRegStringAsFloat("DefaultProps\\Flipper", "BaseRadius", &fTmp);
    m_d.m_BaseRadius = (hr == S_OK) && fromMouseClick ? fTmp : 21.5f;		// 15
 
-   hr = GetRegStringAsFloat("DefaultProps\\Flipper","EndRadius", &fTmp);
+   hr = GetRegStringAsFloat("DefaultProps\\Flipper", "EndRadius", &fTmp);
    m_d.m_EndRadius = (hr == S_OK) && fromMouseClick ? fTmp : 13.f;		// 6
 
-   hr = GetRegStringAsFloat("DefaultProps\\Flipper","Length", &fTmp);
+   hr = GetRegStringAsFloat("DefaultProps\\Flipper", "Length", &fTmp);
    m_d.m_FlipperRadiusMax = (hr == S_OK) && fromMouseClick ? fTmp : 130.f;	// 80
 
-   hr = GetRegStringAsFloat("DefaultProps\\Flipper","MaxDifLength", &fTmp);
+   hr = GetRegStringAsFloat("DefaultProps\\Flipper", "MaxDifLength", &fTmp);
    m_d.m_FlipperRadiusMin = (hr == S_OK) && fromMouseClick ? fTmp : 0;
 
    m_d.m_FlipperRadius = m_d.m_FlipperRadiusMax;
@@ -139,47 +139,47 @@ void Flipper::SetDefaults(bool fromMouseClick)
 
    SetDefaultPhysics(fromMouseClick);
 
-   hr = GetRegInt("DefaultProps\\Flipper","TimerEnabled", &iTmp);
+   hr = GetRegInt("DefaultProps\\Flipper", "TimerEnabled", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? false : true;
    else
       m_d.m_tdr.m_fTimerEnabled = false;
 
-   hr = GetRegInt("DefaultProps\\Flipper","TimerInterval", &iTmp);
+   hr = GetRegInt("DefaultProps\\Flipper", "TimerInterval", &iTmp);
    m_d.m_tdr.m_TimerInterval = (hr == S_OK) && fromMouseClick ? iTmp : 100;
 
-   hr = GetRegInt("DefaultProps\\Flipper","Color", &iTmp);
-   m_d.m_color = (hr == S_OK) && fromMouseClick ? iTmp : RGB(255,255,255);
+   hr = GetRegInt("DefaultProps\\Flipper", "Color", &iTmp);
+   m_d.m_color = (hr == S_OK) && fromMouseClick ? iTmp : RGB(255, 255, 255);
 
-   hr = GetRegInt("DefaultProps\\Flipper","RubberColor", &iTmp);
-   m_d.m_rubbercolor = (hr == S_OK) && fromMouseClick ? iTmp : RGB(128,50,50);
+   hr = GetRegInt("DefaultProps\\Flipper", "RubberColor", &iTmp);
+   m_d.m_rubbercolor = (hr == S_OK) && fromMouseClick ? iTmp : RGB(128, 50, 50);
 
    hr = GetRegString("DefaultProps\\Flipper", "Surface", &m_d.m_szSurface, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szSurface[0] = 0;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Flipper","Strength", &fTmp);
+   hr = GetRegStringAsFloat("DefaultProps\\Flipper", "Strength", &fTmp);
    m_d.m_strength = (hr == S_OK) && fromMouseClick ? fTmp : 2200.0f;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Flipper","Height", &fTmp);
+   hr = GetRegStringAsFloat("DefaultProps\\Flipper", "Height", &fTmp);
    m_d.m_height = (hr == S_OK) && fromMouseClick ? fTmp : 50;
 
-   hr = GetRegInt("DefaultProps\\Flipper","RubberThickness", &iTmp);
+   hr = GetRegInt("DefaultProps\\Flipper", "RubberThickness", &iTmp);
    m_d.m_rubberthickness = (hr == S_OK) && fromMouseClick ? iTmp : 7;
 
-   hr = GetRegInt("DefaultProps\\Flipper","RubberHeight", &iTmp);
+   hr = GetRegInt("DefaultProps\\Flipper", "RubberHeight", &iTmp);
    m_d.m_rubberheight = (hr == S_OK) && fromMouseClick ? iTmp : 19;
 
-   hr = GetRegInt("DefaultProps\\Flipper","RubberWidth", &iTmp);
+   hr = GetRegInt("DefaultProps\\Flipper", "RubberWidth", &iTmp);
    m_d.m_rubberwidth = (hr == S_OK) && fromMouseClick ? iTmp : 24;
 
-   hr = GetRegInt("DefaultProps\\Flipper","Visible", &iTmp);
+   hr = GetRegInt("DefaultProps\\Flipper", "Visible", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_fVisible = iTmp == 0 ? false : true;
    else
       m_d.m_fVisible = true;
 
-   hr = GetRegInt("DefaultProps\\Flipper","Enabled", &iTmp);
+   hr = GetRegInt("DefaultProps\\Flipper", "Enabled", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_fEnabled = iTmp == 0 ? false : true;
    else
@@ -187,38 +187,38 @@ void Flipper::SetDefaults(bool fromMouseClick)
 
    hr = GetRegInt("DefaultProps\\Flipper", "ReflectionEnabled", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
-       m_d.m_fReflectionEnabled = iTmp == 0 ? false : true;
+      m_d.m_fReflectionEnabled = iTmp == 0 ? false : true;
    else
-       m_d.m_fReflectionEnabled = true;
+      m_d.m_fReflectionEnabled = true;
 }
 
 void Flipper::WriteRegDefaults()
 {
    static const char regKey[] = "DefaultProps\\Flipper";
 
-   SetRegValueFloat(regKey,"StartAngle", m_d.m_StartAngle);
-   SetRegValueFloat(regKey,"EndAngle", m_d.m_EndAngle);
-   SetRegValueFloat(regKey,"BaseRadius", m_d.m_BaseRadius);
-   SetRegValueFloat(regKey,"EndRadius", m_d.m_EndRadius);
-   SetRegValueFloat(regKey,"MaxDifLength", m_d.m_FlipperRadiusMin);
-   SetRegValueFloat(regKey,"ReturnStrength", m_d.m_return);
-   SetRegValueFloat(regKey,"Length", m_d.m_FlipperRadiusMax);
-   SetRegValueFloat(regKey,"Speed", m_d.m_mass);
-   SetRegValueFloat(regKey,"Elasticity", m_d.m_elasticity);
-   SetRegValueFloat(regKey,"ElasticityFalloff", m_d.m_elasticityFalloff);
-   SetRegValueFloat(regKey,"Friction", m_d.m_friction);
-   SetRegValueFloat(regKey,"RampUp", m_d.m_rampUp);
-   SetRegValueBool(regKey,"TimerEnabled", m_d.m_tdr.m_fTimerEnabled);
-   SetRegValueInt(regKey,"TimerInterval", m_d.m_tdr.m_TimerInterval);
-   SetRegValueInt(regKey,"Color", m_d.m_color);
-   SetRegValueInt(regKey,"RubberColor", m_d.m_rubbercolor);
-   SetRegValue(regKey,"Surface", REG_SZ, &m_d.m_szSurface,strlen(m_d.m_szSurface));
-   SetRegValueFloat(regKey,"Strength", m_d.m_strength);
-   SetRegValueFloat(regKey,"Height", m_d.m_height);
-   SetRegValueInt(regKey,"RubberThickness", m_d.m_rubberthickness);
-   SetRegValueInt(regKey,"RubberHeight", m_d.m_rubberheight);
-   SetRegValueInt(regKey,"RubberWidth", m_d.m_rubberwidth);
-   SetRegValueBool(regKey,"Visible", m_d.m_fVisible);
+   SetRegValueFloat(regKey, "StartAngle", m_d.m_StartAngle);
+   SetRegValueFloat(regKey, "EndAngle", m_d.m_EndAngle);
+   SetRegValueFloat(regKey, "BaseRadius", m_d.m_BaseRadius);
+   SetRegValueFloat(regKey, "EndRadius", m_d.m_EndRadius);
+   SetRegValueFloat(regKey, "MaxDifLength", m_d.m_FlipperRadiusMin);
+   SetRegValueFloat(regKey, "ReturnStrength", m_d.m_return);
+   SetRegValueFloat(regKey, "Length", m_d.m_FlipperRadiusMax);
+   SetRegValueFloat(regKey, "Speed", m_d.m_mass);
+   SetRegValueFloat(regKey, "Elasticity", m_d.m_elasticity);
+   SetRegValueFloat(regKey, "ElasticityFalloff", m_d.m_elasticityFalloff);
+   SetRegValueFloat(regKey, "Friction", m_d.m_friction);
+   SetRegValueFloat(regKey, "RampUp", m_d.m_rampUp);
+   SetRegValueBool(regKey, "TimerEnabled", m_d.m_tdr.m_fTimerEnabled);
+   SetRegValueInt(regKey, "TimerInterval", m_d.m_tdr.m_TimerInterval);
+   SetRegValueInt(regKey, "Color", m_d.m_color);
+   SetRegValueInt(regKey, "RubberColor", m_d.m_rubbercolor);
+   SetRegValue(regKey, "Surface", REG_SZ, &m_d.m_szSurface, strlen(m_d.m_szSurface));
+   SetRegValueFloat(regKey, "Strength", m_d.m_strength);
+   SetRegValueFloat(regKey, "Height", m_d.m_height);
+   SetRegValueInt(regKey, "RubberThickness", m_d.m_rubberthickness);
+   SetRegValueInt(regKey, "RubberHeight", m_d.m_rubberheight);
+   SetRegValueInt(regKey, "RubberWidth", m_d.m_rubberwidth);
+   SetRegValueBool(regKey, "Visible", m_d.m_fVisible);
    SetRegValueBool(regKey, "Enabled", m_d.m_fEnabled);
    SetRegValueBool(regKey, "ReflectionEnabled", m_d.m_fReflectionEnabled);
 }
@@ -243,50 +243,50 @@ void Flipper::GetTimers(Vector<HitTimer> * const pvht)
 
 void Flipper::GetHitShapes(Vector<HitObject> * const pvho)
 {
-   if(m_d.m_OverridePhysics)
+   if (m_d.m_OverridePhysics)
    {
-	     char tmp[256];
- 		 m_d.m_OverrideMass = 0.15f;
-	     sprintf_s(tmp,256,"FlipperPhysicsMass%d",m_d.m_OverridePhysics-1);
-         HRESULT hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideMass);
-         if (hr != S_OK)
-            m_d.m_OverrideMass = 0.15f;
+      char tmp[256];
+      m_d.m_OverrideMass = 0.15f;
+      sprintf_s(tmp, 256, "FlipperPhysicsMass%d", m_d.m_OverridePhysics - 1);
+      HRESULT hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideMass);
+      if (hr != S_OK)
+         m_d.m_OverrideMass = 0.15f;
 
-		 m_d.m_OverrideStrength = 3.f;
-	     sprintf_s(tmp,256,"FlipperPhysicsStrength%d",m_d.m_OverridePhysics-1);
-         hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideStrength);
-         if (hr != S_OK)
-            m_d.m_OverrideStrength = 3.f;
+      m_d.m_OverrideStrength = 3.f;
+      sprintf_s(tmp, 256, "FlipperPhysicsStrength%d", m_d.m_OverridePhysics - 1);
+      hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideStrength);
+      if (hr != S_OK)
+         m_d.m_OverrideStrength = 3.f;
 
- 		 m_d.m_OverrideElasticity = 0.55f;
-	     sprintf_s(tmp,256,"FlipperPhysicsElasticity%d",m_d.m_OverridePhysics-1);
-         hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideElasticity);
-         if (hr != S_OK)
-            m_d.m_OverrideElasticity = 0.55f;
-		 
-		 m_d.m_OverrideReturnStrength = 0.09f;
-	     sprintf_s(tmp,256,"FlipperPhysicsReturnStrength%d",m_d.m_OverridePhysics-1);
-         hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideReturnStrength);
-         if (hr != S_OK)
-            m_d.m_OverrideReturnStrength = 0.09f;
+      m_d.m_OverrideElasticity = 0.55f;
+      sprintf_s(tmp, 256, "FlipperPhysicsElasticity%d", m_d.m_OverridePhysics - 1);
+      hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideElasticity);
+      if (hr != S_OK)
+         m_d.m_OverrideElasticity = 0.55f;
 
-		 m_d.m_OverrideElasticityFalloff = 0.43f;
-	     sprintf_s(tmp,256,"FlipperPhysicsElasticityFalloff%d",m_d.m_OverridePhysics-1);
-         hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideElasticityFalloff);
-         if (hr != S_OK)
-            m_d.m_OverrideElasticityFalloff = 0.43f;
+      m_d.m_OverrideReturnStrength = 0.09f;
+      sprintf_s(tmp, 256, "FlipperPhysicsReturnStrength%d", m_d.m_OverridePhysics - 1);
+      hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideReturnStrength);
+      if (hr != S_OK)
+         m_d.m_OverrideReturnStrength = 0.09f;
 
-  		 m_d.m_OverrideFriction = 0.8f;
-	     sprintf_s(tmp,256,"FlipperPhysicsFriction%d",m_d.m_OverridePhysics-1);
-         hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideFriction);
-         if (hr != S_OK)
-            m_d.m_OverrideFriction = 0.8f;
+      m_d.m_OverrideElasticityFalloff = 0.43f;
+      sprintf_s(tmp, 256, "FlipperPhysicsElasticityFalloff%d", m_d.m_OverridePhysics - 1);
+      hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideElasticityFalloff);
+      if (hr != S_OK)
+         m_d.m_OverrideElasticityFalloff = 0.43f;
 
-		 m_d.m_OverrideCoilRampUp = 0.f;
-	     sprintf_s(tmp,256,"FlipperPhysicsCoilRampUp%d",m_d.m_OverridePhysics-1);
-         hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideCoilRampUp);
-         if (hr != S_OK)
-            m_d.m_OverrideCoilRampUp = 0.f;
+      m_d.m_OverrideFriction = 0.8f;
+      sprintf_s(tmp, 256, "FlipperPhysicsFriction%d", m_d.m_OverridePhysics - 1);
+      hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideFriction);
+      if (hr != S_OK)
+         m_d.m_OverrideFriction = 0.8f;
+
+      m_d.m_OverrideCoilRampUp = 0.f;
+      sprintf_s(tmp, 256, "FlipperPhysicsCoilRampUp%d", m_d.m_OverridePhysics - 1);
+      hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideCoilRampUp);
+      if (hr != S_OK)
+         m_d.m_OverrideCoilRampUp = 0.f;
    }
 
    //
@@ -296,7 +296,7 @@ void Flipper::GetHitShapes(Vector<HitObject> * const pvho)
    if (m_d.m_FlipperRadiusMin > 0.f && m_d.m_FlipperRadiusMax > m_d.m_FlipperRadiusMin)
    {
       m_d.m_FlipperRadius = m_d.m_FlipperRadiusMax - (m_d.m_FlipperRadiusMax - m_d.m_FlipperRadiusMin) * m_ptable->m_globalDifficulty;
-      m_d.m_FlipperRadius = max(m_d.m_FlipperRadius, m_d.m_BaseRadius - m_d.m_EndRadius +0.05f);
+      m_d.m_FlipperRadius = max(m_d.m_FlipperRadius, m_d.m_BaseRadius - m_d.m_EndRadius + 0.05f);
    }
    else m_d.m_FlipperRadius = m_d.m_FlipperRadiusMax;
 
@@ -305,8 +305,8 @@ void Flipper::GetHitShapes(Vector<HitObject> * const pvho)
    const float mass = m_d.m_OverridePhysics ? m_d.m_OverrideMass : m_d.m_mass;
 
    HitFlipper * const phf = new HitFlipper(m_d.m_Center, m_d.m_BaseRadius, m_d.m_EndRadius,
-	   m_d.m_FlipperRadius, ANGTORAD(m_d.m_StartAngle), ANGTORAD(m_d.m_EndAngle), height, height + m_d.m_height,
-       strength, mass, return_ratio);
+      m_d.m_FlipperRadius, ANGTORAD(m_d.m_StartAngle), ANGTORAD(m_d.m_EndAngle), height, height + m_d.m_height,
+      strength, mass, return_ratio);
 
    phf->m_elasticity = m_d.m_OverridePhysics ? m_d.m_OverrideElasticity : m_d.m_elasticity;
    phf->SetFriction(m_d.m_OverridePhysics ? m_d.m_OverrideFriction : m_d.m_friction);
@@ -315,9 +315,9 @@ void Flipper::GetHitShapes(Vector<HitObject> * const pvho)
    const float coil_ramp_up = m_d.m_OverridePhysics ? m_d.m_OverrideCoilRampUp : m_d.m_rampUp;
 
    if (coil_ramp_up <= 0.f)
-       phf->m_flipperanim.m_torqueRampupSpeed = 1e6f; // set very high for instant coil response
+      phf->m_flipperanim.m_torqueRampupSpeed = 1e6f; // set very high for instant coil response
    else
-       phf->m_flipperanim.m_torqueRampupSpeed = strength / coil_ramp_up;
+      phf->m_flipperanim.m_torqueRampupSpeed = strength / coil_ramp_up;
 
    phf->m_flipperanim.m_EnableRotateEvent = 0;
    phf->m_pfe = NULL;
@@ -328,7 +328,7 @@ void Flipper::GetHitShapes(Vector<HitObject> * const pvho)
    pvho->AddElement(phf);
    phf->m_pflipper = this;
    phf->m_flipperanim.m_pflipper = this;
-   m_phitflipper = phf;	
+   m_phitflipper = phf;
 }
 
 void Flipper::GetHitShapesDebug(Vector<HitObject> * const pvho)
@@ -337,8 +337,8 @@ void Flipper::GetHitShapesDebug(Vector<HitObject> * const pvho)
 
    if (m_d.m_FlipperRadiusMin > 0.f && m_d.m_FlipperRadiusMax > m_d.m_FlipperRadiusMin)
    {
-      m_d.m_FlipperRadius = m_d.m_FlipperRadiusMax - ( m_d.m_FlipperRadiusMax - m_d.m_FlipperRadiusMin) * m_ptable->m_globalDifficulty;
-      m_d.m_FlipperRadius = max(m_d.m_FlipperRadius, m_d.m_BaseRadius - m_d.m_EndRadius +0.05f);
+      m_d.m_FlipperRadius = m_d.m_FlipperRadiusMax - (m_d.m_FlipperRadiusMax - m_d.m_FlipperRadiusMin) * m_ptable->m_globalDifficulty;
+      m_d.m_FlipperRadius = max(m_d.m_FlipperRadius, m_d.m_BaseRadius - m_d.m_EndRadius + 0.05f);
    }
    else m_d.m_FlipperRadius = m_d.m_FlipperRadiusMax;
 
@@ -348,49 +348,49 @@ void Flipper::GetHitShapesDebug(Vector<HitObject> * const pvho)
 
 void Flipper::EndPlay()
 {
-    if (m_phitflipper) // Failed player case
-    {
-        m_phitflipper = NULL;
-    }
-    if (vertexBuffer)
-    {
-        vertexBuffer->release();
-        vertexBuffer = NULL;
-    }
-    if (indexBuffer)
-    {
-        indexBuffer->release();
-        indexBuffer = NULL;
-    }
+   if (m_phitflipper) // Failed player case
+   {
+      m_phitflipper = NULL;
+   }
+   if (vertexBuffer)
+   {
+      vertexBuffer->release();
+      vertexBuffer = NULL;
+   }
+   if (indexBuffer)
+   {
+      indexBuffer->release();
+      indexBuffer = NULL;
+   }
 
-    IEditable::EndPlay();
+   IEditable::EndPlay();
 }
 
 void Flipper::SetVertices(float basex, float basey, const float angle, Vertex2D * const pvEndCenter, Vertex2D * const rgvTangents, const float baseradius, const float endradius) const
 {
    const float fradius = m_d.m_FlipperRadius;
-   const float fa = asinf((baseradius-endradius)/fradius); //face to centerline angle (center to center)
+   const float fa = asinf((baseradius - endradius) / fradius); //face to centerline angle (center to center)
 
-   const float faceNormOffset = (float)(M_PI/2.0) - fa; //angle of normal when flipper center line at angle zero	
+   const float faceNormOffset = (float)(M_PI / 2.0) - fa; //angle of normal when flipper center line at angle zero	
 
    const float endx = basex + fradius*sinf(angle); //place end radius center
    pvEndCenter->x = endx;
    const float endy = basey - fradius*cosf(angle);
    pvEndCenter->y = endy;
 
-   const float faceNormx1 =  sinf(angle - faceNormOffset); // normals to new face positions
+   const float faceNormx1 = sinf(angle - faceNormOffset); // normals to new face positions
    const float faceNormy1 = -cosf(angle - faceNormOffset);
-   const float faceNormx2 =  sinf(angle + faceNormOffset); // both faces
+   const float faceNormx2 = sinf(angle + faceNormOffset); // both faces
    const float faceNormy2 = -cosf(angle + faceNormOffset);
 
    rgvTangents[0].x = basex + baseradius*faceNormx1;	// endpoints of faces
    rgvTangents[0].y = basey + baseradius*faceNormy1;
 
-   rgvTangents[1].x = endx + endradius*faceNormx1; 
+   rgvTangents[1].x = endx + endradius*faceNormx1;
    rgvTangents[1].y = endy + endradius*faceNormy1;
 
-   rgvTangents[3].x = basex + baseradius*faceNormx2; 
-   rgvTangents[3].y = basey + baseradius*faceNormy2; 
+   rgvTangents[3].x = basex + baseradius*faceNormx2;
+   rgvTangents[3].y = basey + baseradius*faceNormy2;
 
    rgvTangents[2].x = endx + endradius*faceNormx2;
    rgvTangents[2].y = endy + endradius*faceNormy2;
@@ -403,9 +403,9 @@ void Flipper::PreRender(Sur * const psur)
 
    m_d.m_FlipperRadius = m_d.m_FlipperRadiusMax;
 
-   psur->SetFillColor(m_ptable->RenderSolid() ? RGB(192,192,192) : -1);
-   psur->SetBorderColor(-1,false,0);
-   psur->SetLineColor(RGB(0,0,0), false, 0);
+   psur->SetFillColor(m_ptable->RenderSolid() ? RGB(192, 192, 192) : -1);
+   psur->SetBorderColor(-1, false, 0);
+   psur->SetLineColor(RGB(0, 0, 0), false, 0);
 
    Vertex2D vendcenter;
    Vertex2D rgv[4];
@@ -427,9 +427,9 @@ void Flipper::Render(Sur * const psur)
    Vertex2D rgv[4];
    SetVertices(m_d.m_Center.x, m_d.m_Center.y, anglerad, &vendcenter, rgv, m_d.m_BaseRadius, m_d.m_EndRadius);
 
-   psur->SetFillColor(m_ptable->RenderSolid() ? RGB(192,192,192) : -1);
-   psur->SetBorderColor(-1,false,0);
-   psur->SetLineColor(RGB(0,0,0), false, 0);
+   psur->SetFillColor(m_ptable->RenderSolid() ? RGB(192, 192, 192) : -1);
+   psur->SetBorderColor(-1, false, 0);
+   psur->SetLineColor(RGB(0, 0, 0), false, 0);
 
    psur->SetObject(this);
 
@@ -441,7 +441,7 @@ void Flipper::Render(Sur * const psur)
 
    SetVertices(m_d.m_Center.x, m_d.m_Center.y, anglerad2, &vendcenter, rgv, m_d.m_BaseRadius, m_d.m_EndRadius);
 
-   psur->SetLineColor(RGB(128,128,128), true, 0);
+   psur->SetLineColor(RGB(128, 128, 128), true, 0);
 
    psur->Line(rgv[0].x, rgv[0].y, rgv[1].x, rgv[1].y);
    psur->Line(rgv[2].x, rgv[2].y, rgv[3].x, rgv[3].y);
@@ -449,22 +449,22 @@ void Flipper::Render(Sur * const psur)
    psur->Arc(m_d.m_Center.x, m_d.m_Center.y, m_d.m_BaseRadius, rgv[0].x, rgv[0].y, rgv[3].x, rgv[3].y);
    psur->Arc(vendcenter.x, vendcenter.y, m_d.m_EndRadius, rgv[2].x, rgv[2].y, rgv[1].x, rgv[1].y);
 
-   rgv[0].x = m_d.m_Center.x + sinf(anglerad) * (m_d.m_FlipperRadius+m_d.m_EndRadius);
-   rgv[0].y = m_d.m_Center.y - cosf(anglerad) * (m_d.m_FlipperRadius+m_d.m_EndRadius);
+   rgv[0].x = m_d.m_Center.x + sinf(anglerad) * (m_d.m_FlipperRadius + m_d.m_EndRadius);
+   rgv[0].y = m_d.m_Center.y - cosf(anglerad) * (m_d.m_FlipperRadius + m_d.m_EndRadius);
 
-   rgv[1].x = m_d.m_Center.x + sinf(anglerad2) * (m_d.m_FlipperRadius+m_d.m_EndRadius);
-   rgv[1].y = m_d.m_Center.y - cosf(anglerad2) * (m_d.m_FlipperRadius+m_d.m_EndRadius);
+   rgv[1].x = m_d.m_Center.x + sinf(anglerad2) * (m_d.m_FlipperRadius + m_d.m_EndRadius);
+   rgv[1].y = m_d.m_Center.y - cosf(anglerad2) * (m_d.m_FlipperRadius + m_d.m_EndRadius);
 
    if (m_d.m_EndAngle < m_d.m_StartAngle)
-      psur->Arc(m_d.m_Center.x, m_d.m_Center.y, m_d.m_FlipperRadius+m_d.m_EndRadius
+      psur->Arc(m_d.m_Center.x, m_d.m_Center.y, m_d.m_FlipperRadius + m_d.m_EndRadius
       , rgv[0].x, rgv[0].y, rgv[1].x, rgv[1].y);
-   else psur->Arc(m_d.m_Center.x, m_d.m_Center.y, m_d.m_FlipperRadius+m_d.m_EndRadius
+   else psur->Arc(m_d.m_Center.x, m_d.m_Center.y, m_d.m_FlipperRadius + m_d.m_EndRadius
       , rgv[1].x, rgv[1].y, rgv[0].x, rgv[0].y);
 
    if (m_d.m_FlipperRadiusMin > 0.f && m_d.m_FlipperRadiusMax > m_d.m_FlipperRadiusMin)
    {
       m_d.m_FlipperRadius = (m_ptable->m_globalDifficulty > 0.f) ? m_d.m_FlipperRadiusMin : m_d.m_FlipperRadiusMax;
-      m_d.m_FlipperRadius = max(m_d.m_FlipperRadius, m_d.m_BaseRadius - m_d.m_EndRadius +0.05f);
+      m_d.m_FlipperRadius = max(m_d.m_FlipperRadius, m_d.m_BaseRadius - m_d.m_EndRadius + 0.05f);
    }
    else return;
 
@@ -482,7 +482,7 @@ void Flipper::Render(Sur * const psur)
 
       SetVertices(m_d.m_Center.x, m_d.m_Center.y, anglerad2, &vendcenter, rgv, m_d.m_BaseRadius, m_d.m_EndRadius);
 
-      psur->SetLineColor(RGB(128,128,128), true, 0);
+      psur->SetLineColor(RGB(128, 128, 128), true, 0);
 
       psur->Line(rgv[0].x, rgv[0].y, rgv[1].x, rgv[1].y);
       psur->Line(rgv[2].x, rgv[2].y, rgv[3].x, rgv[3].y);
@@ -490,20 +490,20 @@ void Flipper::Render(Sur * const psur)
       psur->Arc(m_d.m_Center.x, m_d.m_Center.y, m_d.m_BaseRadius, rgv[0].x, rgv[0].y, rgv[3].x, rgv[3].y);
       psur->Arc(vendcenter.x, vendcenter.y, m_d.m_EndRadius, rgv[2].x, rgv[2].y, rgv[1].x, rgv[1].y);
 
-      rgv[0].x = m_d.m_Center.x + sinf(anglerad) * (m_d.m_FlipperRadius+m_d.m_EndRadius);
-      rgv[0].y = m_d.m_Center.y - cosf(anglerad) * (m_d.m_FlipperRadius+m_d.m_EndRadius);
+      rgv[0].x = m_d.m_Center.x + sinf(anglerad) * (m_d.m_FlipperRadius + m_d.m_EndRadius);
+      rgv[0].y = m_d.m_Center.y - cosf(anglerad) * (m_d.m_FlipperRadius + m_d.m_EndRadius);
 
-      rgv[1].x = m_d.m_Center.x + sinf(anglerad2) * (m_d.m_FlipperRadius+m_d.m_EndRadius);
-      rgv[1].y = m_d.m_Center.y - cosf(anglerad2) * (m_d.m_FlipperRadius+m_d.m_EndRadius);
+      rgv[1].x = m_d.m_Center.x + sinf(anglerad2) * (m_d.m_FlipperRadius + m_d.m_EndRadius);
+      rgv[1].y = m_d.m_Center.y - cosf(anglerad2) * (m_d.m_FlipperRadius + m_d.m_EndRadius);
 
       if (m_d.m_EndAngle < m_d.m_StartAngle)
-         psur->Arc(m_d.m_Center.x, m_d.m_Center.y, m_d.m_FlipperRadius+m_d.m_EndRadius
+         psur->Arc(m_d.m_Center.x, m_d.m_Center.y, m_d.m_FlipperRadius + m_d.m_EndRadius
          , rgv[0].x, rgv[0].y, rgv[1].x, rgv[1].y);
-      else psur->Arc(m_d.m_Center.x, m_d.m_Center.y, m_d.m_FlipperRadius+m_d.m_EndRadius
+      else psur->Arc(m_d.m_Center.x, m_d.m_Center.y, m_d.m_FlipperRadius + m_d.m_EndRadius
          , rgv[1].x, rgv[1].y, rgv[0].x, rgv[0].y);
 
       m_d.m_FlipperRadius = m_d.m_FlipperRadiusMax - (m_d.m_FlipperRadiusMax - m_d.m_FlipperRadiusMin) * m_ptable->m_globalDifficulty;
-      m_d.m_FlipperRadius = max(m_d.m_FlipperRadius, m_d.m_BaseRadius - m_d.m_EndRadius +0.05f);
+      m_d.m_FlipperRadius = max(m_d.m_FlipperRadius, m_d.m_BaseRadius - m_d.m_EndRadius + 0.05f);
 
       SetVertices(m_d.m_Center.x, m_d.m_Center.y, anglerad, &vendcenter, rgv, m_d.m_BaseRadius, m_d.m_EndRadius);
 
@@ -517,7 +517,7 @@ void Flipper::Render(Sur * const psur)
 
       SetVertices(m_d.m_Center.x, m_d.m_Center.y, anglerad2, &vendcenter, rgv, m_d.m_BaseRadius, m_d.m_EndRadius);
 
-      psur->SetLineColor(RGB(128,128,128), true, 0);
+      psur->SetLineColor(RGB(128, 128, 128), true, 0);
 
       psur->Line(rgv[0].x, rgv[0].y, rgv[1].x, rgv[1].y);
       psur->Line(rgv[2].x, rgv[2].y, rgv[3].x, rgv[3].y);
@@ -525,16 +525,16 @@ void Flipper::Render(Sur * const psur)
       psur->Arc(m_d.m_Center.x, m_d.m_Center.y, m_d.m_BaseRadius, rgv[0].x, rgv[0].y, rgv[3].x, rgv[3].y);
       psur->Arc(vendcenter.x, vendcenter.y, m_d.m_EndRadius, rgv[2].x, rgv[2].y, rgv[1].x, rgv[1].y);
 
-      rgv[0].x = m_d.m_Center.x + sinf(anglerad) * (m_d.m_FlipperRadius+m_d.m_EndRadius);
-      rgv[0].y = m_d.m_Center.y - cosf(anglerad) * (m_d.m_FlipperRadius+m_d.m_EndRadius);
+      rgv[0].x = m_d.m_Center.x + sinf(anglerad) * (m_d.m_FlipperRadius + m_d.m_EndRadius);
+      rgv[0].y = m_d.m_Center.y - cosf(anglerad) * (m_d.m_FlipperRadius + m_d.m_EndRadius);
 
-      rgv[1].x = m_d.m_Center.x + sinf(anglerad2) * (m_d.m_FlipperRadius+m_d.m_EndRadius);
-      rgv[1].y = m_d.m_Center.y - cosf(anglerad2) * (m_d.m_FlipperRadius+m_d.m_EndRadius);
+      rgv[1].x = m_d.m_Center.x + sinf(anglerad2) * (m_d.m_FlipperRadius + m_d.m_EndRadius);
+      rgv[1].y = m_d.m_Center.y - cosf(anglerad2) * (m_d.m_FlipperRadius + m_d.m_EndRadius);
 
       if (m_d.m_EndAngle < m_d.m_StartAngle)
-         psur->Arc(m_d.m_Center.x, m_d.m_Center.y, m_d.m_FlipperRadius+m_d.m_EndRadius
+         psur->Arc(m_d.m_Center.x, m_d.m_Center.y, m_d.m_FlipperRadius + m_d.m_EndRadius
          , rgv[0].x, rgv[0].y, rgv[1].x, rgv[1].y);
-      else psur->Arc(m_d.m_Center.x, m_d.m_Center.y, m_d.m_FlipperRadius+m_d.m_EndRadius
+      else psur->Arc(m_d.m_Center.x, m_d.m_Center.y, m_d.m_FlipperRadius + m_d.m_EndRadius
          , rgv[1].x, rgv[1].y, rgv[0].x, rgv[0].y);
    }
 
@@ -568,26 +568,26 @@ void Flipper::PutCenter(const Vertex2D * const pv)
 
 void Flipper::SetDefaultPhysics(bool fromMouseClick)
 {
-    HRESULT hr;
-    float fTmp;
+   HRESULT hr;
+   float fTmp;
 
-    hr = GetRegStringAsFloat("DefaultProps\\Flipper", "ReturnStrength", &fTmp);
-    m_d.m_return = (hr == S_OK) && fromMouseClick ? fTmp : 0.1f;
+   hr = GetRegStringAsFloat("DefaultProps\\Flipper", "ReturnStrength", &fTmp);
+   m_d.m_return = (hr == S_OK) && fromMouseClick ? fTmp : 0.1f;
 
-    hr = GetRegStringAsFloat("DefaultProps\\Flipper", "Speed", &fTmp);
-    m_d.m_mass = (hr == S_OK) && fromMouseClick ? fTmp : 1.0f;
+   hr = GetRegStringAsFloat("DefaultProps\\Flipper", "Speed", &fTmp);
+   m_d.m_mass = (hr == S_OK) && fromMouseClick ? fTmp : 1.0f;
 
-    hr = GetRegStringAsFloat("DefaultProps\\Flipper", "Elasticity", &fTmp);
-    m_d.m_elasticity = (hr == S_OK) && fromMouseClick ? fTmp : 0.5f;
+   hr = GetRegStringAsFloat("DefaultProps\\Flipper", "Elasticity", &fTmp);
+   m_d.m_elasticity = (hr == S_OK) && fromMouseClick ? fTmp : 0.5f;
 
-    m_d.m_elasticityFalloff = GetRegStringAsFloatWithDefault("DefaultProps\\Flipper", "ElasticityFalloff", 0.3f);
+   m_d.m_elasticityFalloff = GetRegStringAsFloatWithDefault("DefaultProps\\Flipper", "ElasticityFalloff", 0.3f);
 
-    m_d.m_OverridePhysics = 0;
+   m_d.m_OverridePhysics = 0;
 
-    m_d.m_friction = GetRegStringAsFloatWithDefault("DefaultProps\\Flipper", "Friction", 0.25f);
-    m_d.m_rampUp = GetRegStringAsFloatWithDefault("DefaultProps\\Flipper", "RampUp", 3.5f);
+   m_d.m_friction = GetRegStringAsFloatWithDefault("DefaultProps\\Flipper", "Friction", 0.25f);
+   m_d.m_rampUp = GetRegStringAsFloatWithDefault("DefaultProps\\Flipper", "RampUp", 3.5f);
 
-    m_d.m_scatter = 0.0;
+   m_d.m_scatter = 0.0;
 }
 
 STDMETHODIMP Flipper::InterfaceSupportsErrorInfo(REFIID riid)
@@ -597,9 +597,9 @@ STDMETHODIMP Flipper::InterfaceSupportsErrorInfo(REFIID riid)
       &IID_IFlipper,
    };
 
-   for (int i=0;i<sizeof(arr)/sizeof(arr[0]);i++)
+   for (int i = 0; i < sizeof(arr) / sizeof(arr[0]); i++)
    {
-      if (InlineIsEqualGUID(*arr[i],riid))
+      if (InlineIsEqualGUID(*arr[i], riid))
          return S_OK;
    }
    return S_FALSE;
@@ -621,7 +621,7 @@ STDMETHODIMP Flipper::RotateToStart() // return to park
 {
    if (m_phitflipper)
    {
-      const float startAng =  ANGTORAD(m_d.m_StartAngle);		
+      const float startAng = ANGTORAD(m_d.m_StartAngle);
       m_phitflipper->m_flipperanim.m_EnableRotateEvent = -1;
       m_phitflipper->m_flipperanim.SetSolenoidState(false);
    }
@@ -630,267 +630,267 @@ STDMETHODIMP Flipper::RotateToStart() // return to park
 }
 void Flipper::PostRenderStatic(RenderDevice* pd3dDevice)
 {
-    TRACE_FUNCTION();
+   TRACE_FUNCTION();
 
-    if (m_phitflipper && !m_phitflipper->m_flipperanim.m_fVisible)
-        return;
-    if (m_phitflipper == NULL && !m_d.m_fVisible)
-        return;
+   if (m_phitflipper && !m_phitflipper->m_flipperanim.m_fVisible)
+      return;
+   if (m_phitflipper == NULL && !m_d.m_fVisible)
+      return;
 
-    if ( m_ptable->m_fReflectionEnabled && !m_d.m_fReflectionEnabled )
-        return;
+   if (m_ptable->m_fReflectionEnabled && !m_d.m_fReflectionEnabled)
+      return;
 
-    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+   Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
-    Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
-    pd3dDevice->basicShader->SetMaterial(mat);
+   Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
+   pd3dDevice->basicShader->SetMaterial(mat);
 
-    Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
-    if (pin)
-    {
-        pd3dDevice->basicShader->SetTechnique("basic_with_texture");
-        pd3dDevice->basicShader->SetTexture("Texture0", pin);
-        pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0/255.0));
+   Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
+   if (pin)
+   {
+      pd3dDevice->basicShader->SetTechnique("basic_with_texture");
+      pd3dDevice->basicShader->SetTexture("Texture0", pin);
+      pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
 
-        //g_pplayer->m_pin3d.SetTextureFilter(0, TEXTURE_MODE_TRILINEAR);
-        // accomodate models with UV coords outside of [0,1]
-        //pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_WRAP);
-    }
-    else
-        pd3dDevice->basicShader->SetTechnique("basic_without_texture");
+      //g_pplayer->m_pin3d.SetTextureFilter(0, TEXTURE_MODE_TRILINEAR);
+      // accomodate models with UV coords outside of [0,1]
+      //pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_WRAP);
+   }
+   else
+      pd3dDevice->basicShader->SetTechnique("basic_without_texture");
 
-    pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
-    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-    pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+   pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
+   pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+   pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 
-    Matrix3D matTrafo, matTemp;
-    matTrafo.SetIdentity();
-    matTrafo._41 = m_d.m_Center.x;
-    matTrafo._42 = m_d.m_Center.y;
-    if ( m_phitflipper )
+   Matrix3D matTrafo, matTemp;
+   matTrafo.SetIdentity();
+   matTrafo._41 = m_d.m_Center.x;
+   matTrafo._42 = m_d.m_Center.y;
+   if (m_phitflipper)
       matTemp.RotateZMatrix(m_phitflipper->m_flipperanim.m_angleCur);
-    matTrafo.Multiply(matTemp, matTrafo);
-    g_pplayer->UpdateBasicShaderMatrix(matTrafo);
-    pd3dDevice->basicShader->Begin(0);
-    pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, flipperBaseVertices, indexBuffer, 0, flipperBaseNumFaces);
-    pd3dDevice->basicShader->End();  
+   matTrafo.Multiply(matTemp, matTrafo);
+   g_pplayer->UpdateBasicShaderMatrix(matTrafo);
+   pd3dDevice->basicShader->Begin(0);
+   pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, flipperBaseVertices, indexBuffer, 0, flipperBaseNumFaces);
+   pd3dDevice->basicShader->End();
 
-	//render rubber
-    if (m_d.m_rubberthickness > 0)
-    {
-       mat =  m_ptable->GetMaterial( m_d.m_szRubberMaterial );
-       pd3dDevice->basicShader->SetMaterial(mat);
+   //render rubber
+   if (m_d.m_rubberthickness > 0)
+   {
+      mat = m_ptable->GetMaterial(m_d.m_szRubberMaterial);
+      pd3dDevice->basicShader->SetMaterial(mat);
 
-       pd3dDevice->basicShader->Begin(0);
-       pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, flipperBaseVertices, flipperBaseVertices, indexBuffer, 0, flipperBaseNumFaces);
-       pd3dDevice->basicShader->End();  
-    }
-    g_pplayer->UpdateBasicShaderMatrix();
+      pd3dDevice->basicShader->Begin(0);
+      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, flipperBaseVertices, flipperBaseVertices, indexBuffer, 0, flipperBaseNumFaces);
+      pd3dDevice->basicShader->End();
+   }
+   g_pplayer->UpdateBasicShaderMatrix();
 }
 
 void Flipper::ExportMesh(FILE *f)
 {
-    char name[MAX_PATH];
-    char subObjName[MAX_PATH];
-    WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, MAX_PATH, NULL, NULL);
-    Matrix3D matTrafo, matTemp;
-    matTrafo.SetIdentity();
-    matTemp.SetIdentity();
-    matTrafo._41 = m_d.m_Center.x;
-    matTrafo._42 = m_d.m_Center.y;
-    matTemp.RotateZMatrix(ANGTORAD(m_d.m_StartAngle));
-    matTrafo.Multiply(matTemp, matTrafo);
-    
-    Vertex3D_NoTex2 *flipper = new Vertex3D_NoTex2[flipperBaseVertices*2];
-    GenerateBaseMesh(flipper);
+   char name[MAX_PATH];
+   char subObjName[MAX_PATH];
+   WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, MAX_PATH, NULL, NULL);
+   Matrix3D matTrafo, matTemp;
+   matTrafo.SetIdentity();
+   matTemp.SetIdentity();
+   matTrafo._41 = m_d.m_Center.x;
+   matTrafo._42 = m_d.m_Center.y;
+   matTemp.RotateZMatrix(ANGTORAD(m_d.m_StartAngle));
+   matTrafo.Multiply(matTemp, matTrafo);
 
-    Vertex3D_NoTex2 *buf = flipper;
-    for (int i = 0; i < flipperBaseVertices; i++)
-    {
-        Vertex3Ds vert(buf[i].x, buf[i].y, buf[i].z);
-        vert = matTrafo.MultiplyVector(vert);
+   Vertex3D_NoTex2 *flipper = new Vertex3D_NoTex2[flipperBaseVertices * 2];
+   GenerateBaseMesh(flipper);
 
-        buf[i].x = vert.x;
-        buf[i].y = vert.y;
-        buf[i].z = vert.z;
-        vert = Vertex3Ds(buf[i].nx, buf[i].ny, buf[i].nz);
-        vert = matTrafo.MultiplyVectorNoTranslate(vert);
-        buf[i].nx = vert.x;
-        buf[i].ny = vert.y;
-        buf[i].nz = vert.z;
-    }
+   Vertex3D_NoTex2 *buf = flipper;
+   for (int i = 0; i < flipperBaseVertices; i++)
+   {
+      Vertex3Ds vert(buf[i].x, buf[i].y, buf[i].z);
+      vert = matTrafo.MultiplyVector(vert);
 
-    strcpy_s(subObjName, name);
-    strcat_s(subObjName, "Base");
-    WaveFrontObj_WriteObjectName(f, subObjName);
-    WaveFrontObj_WriteVertexInfo(f, flipper, flipperBaseVertices);
-    Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
-    WaveFrontObj_WriteMaterial(m_d.m_szMaterial, NULL, mat);
-    WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
-    WaveFrontObj_WriteFaceInfoList(f, flipperBaseIndices, flipperBaseNumFaces);
-    WaveFrontObj_UpdateFaceOffset(flipperBaseVertices);
-    if (m_d.m_rubberthickness > 0.0f)
-    {
-        Vertex3D_NoTex2 *buf = &flipper[flipperBaseVertices];
-        for (int i = 0; i < flipperBaseVertices; i++)
-        {
-            Vertex3Ds vert(buf[i].x, buf[i].y, buf[i].z);
-            vert = matTrafo.MultiplyVector(vert);
+      buf[i].x = vert.x;
+      buf[i].y = vert.y;
+      buf[i].z = vert.z;
+      vert = Vertex3Ds(buf[i].nx, buf[i].ny, buf[i].nz);
+      vert = matTrafo.MultiplyVectorNoTranslate(vert);
+      buf[i].nx = vert.x;
+      buf[i].ny = vert.y;
+      buf[i].nz = vert.z;
+   }
 
-            buf[i].x = vert.x;
-            buf[i].y = vert.y;
-            buf[i].z = vert.z;
-            vert = Vertex3Ds(buf[i].nx, buf[i].ny, buf[i].nz);
-            vert = matTrafo.MultiplyVectorNoTranslate(vert);
-            buf[i].nx = vert.x;
-            buf[i].ny = vert.y;
-            buf[i].nz = vert.z;
-        }
+   strcpy_s(subObjName, name);
+   strcat_s(subObjName, "Base");
+   WaveFrontObj_WriteObjectName(f, subObjName);
+   WaveFrontObj_WriteVertexInfo(f, flipper, flipperBaseVertices);
+   Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
+   WaveFrontObj_WriteMaterial(m_d.m_szMaterial, NULL, mat);
+   WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
+   WaveFrontObj_WriteFaceInfoList(f, flipperBaseIndices, flipperBaseNumFaces);
+   WaveFrontObj_UpdateFaceOffset(flipperBaseVertices);
+   if (m_d.m_rubberthickness > 0.0f)
+   {
+      Vertex3D_NoTex2 *buf = &flipper[flipperBaseVertices];
+      for (int i = 0; i < flipperBaseVertices; i++)
+      {
+         Vertex3Ds vert(buf[i].x, buf[i].y, buf[i].z);
+         vert = matTrafo.MultiplyVector(vert);
 
-        strcpy_s(subObjName, name);
-        strcat_s(subObjName, "Rubber");
-        WaveFrontObj_WriteObjectName(f, subObjName);
-        WaveFrontObj_WriteVertexInfo(f, &flipper[flipperBaseVertices], flipperBaseVertices);
-        mat = m_ptable->GetMaterial(m_d.m_szRubberMaterial);
-        WaveFrontObj_WriteMaterial(m_d.m_szRubberMaterial, NULL, mat);
-        WaveFrontObj_UseTexture(f, m_d.m_szRubberMaterial);
-        WaveFrontObj_WriteFaceInfoList(f, flipperBaseIndices, flipperBaseNumFaces);
-        WaveFrontObj_UpdateFaceOffset(flipperBaseVertices);
-    }
-    delete flipper;
+         buf[i].x = vert.x;
+         buf[i].y = vert.y;
+         buf[i].z = vert.z;
+         vert = Vertex3Ds(buf[i].nx, buf[i].ny, buf[i].nz);
+         vert = matTrafo.MultiplyVectorNoTranslate(vert);
+         buf[i].nx = vert.x;
+         buf[i].ny = vert.y;
+         buf[i].nz = vert.z;
+      }
+
+      strcpy_s(subObjName, name);
+      strcat_s(subObjName, "Rubber");
+      WaveFrontObj_WriteObjectName(f, subObjName);
+      WaveFrontObj_WriteVertexInfo(f, &flipper[flipperBaseVertices], flipperBaseVertices);
+      mat = m_ptable->GetMaterial(m_d.m_szRubberMaterial);
+      WaveFrontObj_WriteMaterial(m_d.m_szRubberMaterial, NULL, mat);
+      WaveFrontObj_UseTexture(f, m_d.m_szRubberMaterial);
+      WaveFrontObj_WriteFaceInfoList(f, flipperBaseIndices, flipperBaseNumFaces);
+      WaveFrontObj_UpdateFaceOffset(flipperBaseVertices);
+   }
+   delete flipper;
 
 }
 
 void Flipper::GenerateBaseMesh(Vertex3D_NoTex2 *buf)
 {
-    Matrix3D fullMatrix;
+   Matrix3D fullMatrix;
 
-    fullMatrix.RotateZMatrix(ANGTORAD(180.0f));
+   fullMatrix.RotateZMatrix(ANGTORAD(180.0f));
 
-	const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_Center.x, m_d.m_Center.y);
-	const float baseScale = 10.0f;
-	const float tipScale = 10.0f;
-	const float baseRadius = m_d.m_BaseRadius - m_d.m_rubberthickness;
-	const float endRadius = m_d.m_EndRadius - m_d.m_rubberthickness;
-	Vertex3D_NoTex2 *temp = new Vertex3D_NoTex2[flipperBaseVertices];
+   const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_Center.x, m_d.m_Center.y);
+   const float baseScale = 10.0f;
+   const float tipScale = 10.0f;
+   const float baseRadius = m_d.m_BaseRadius - m_d.m_rubberthickness;
+   const float endRadius = m_d.m_EndRadius - m_d.m_rubberthickness;
+   Vertex3D_NoTex2 *temp = new Vertex3D_NoTex2[flipperBaseVertices];
 
-    // scale the base and tip
-	memcpy(temp, flipperBaseMesh, sizeof(Vertex3D_NoTex2)*flipperBaseVertices);
-	for (int t = 0; t < 13; t++)
-	{
-		for (int i = 0; i < flipperBaseVertices; i++)
-		{
-			if (temp[i].x == vertsBaseBottom[t].x && temp[i].y == vertsBaseBottom[t].y && temp[i].z == vertsBaseBottom[t].z)
-			{
-				temp[i].x *= baseRadius*baseScale;
-				temp[i].y *= baseRadius*baseScale;
-			}
-			if (temp[i].x == vertsTipBottom[t].x && temp[i].y == vertsTipBottom[t].y && temp[i].z == vertsTipBottom[t].z)
-			{
-				temp[i].x *= endRadius * tipScale;
-				temp[i].y *= endRadius * tipScale;
-                temp[i].y += m_d.m_FlipperRadius-endRadius*7.9f;
-			}
-			if (temp[i].x == vertsBaseTop[t].x && temp[i].y == vertsBaseTop[t].y && temp[i].z == vertsBaseTop[t].z)
-			{
-				temp[i].x *= baseRadius*baseScale;
-				temp[i].y *= baseRadius*baseScale;
-			}
-			if (temp[i].x == vertsTipTop[t].x && temp[i].y == vertsTipTop[t].y && temp[i].z == vertsTipTop[t].z)
-			{
-				temp[i].x *= endRadius*tipScale;
-                temp[i].y *= endRadius * tipScale;
-                temp[i].y += m_d.m_FlipperRadius - endRadius * 7.9f;
-            }
-		}
-	}
-    for (int i = 0; i < flipperBaseVertices; i++)
-	{
-		Vertex3Ds vert(temp[i].x, temp[i].y, temp[i].z);
-		vert = fullMatrix.MultiplyVector(vert);
+   // scale the base and tip
+   memcpy(temp, flipperBaseMesh, sizeof(Vertex3D_NoTex2)*flipperBaseVertices);
+   for (int t = 0; t < 13; t++)
+   {
+      for (int i = 0; i < flipperBaseVertices; i++)
+      {
+         if (temp[i].x == vertsBaseBottom[t].x && temp[i].y == vertsBaseBottom[t].y && temp[i].z == vertsBaseBottom[t].z)
+         {
+            temp[i].x *= baseRadius*baseScale;
+            temp[i].y *= baseRadius*baseScale;
+         }
+         if (temp[i].x == vertsTipBottom[t].x && temp[i].y == vertsTipBottom[t].y && temp[i].z == vertsTipBottom[t].z)
+         {
+            temp[i].x *= endRadius * tipScale;
+            temp[i].y *= endRadius * tipScale;
+            temp[i].y += m_d.m_FlipperRadius - endRadius*7.9f;
+         }
+         if (temp[i].x == vertsBaseTop[t].x && temp[i].y == vertsBaseTop[t].y && temp[i].z == vertsBaseTop[t].z)
+         {
+            temp[i].x *= baseRadius*baseScale;
+            temp[i].y *= baseRadius*baseScale;
+         }
+         if (temp[i].x == vertsTipTop[t].x && temp[i].y == vertsTipTop[t].y && temp[i].z == vertsTipTop[t].z)
+         {
+            temp[i].x *= endRadius*tipScale;
+            temp[i].y *= endRadius * tipScale;
+            temp[i].y += m_d.m_FlipperRadius - endRadius * 7.9f;
+         }
+      }
+   }
+   for (int i = 0; i < flipperBaseVertices; i++)
+   {
+      Vertex3Ds vert(temp[i].x, temp[i].y, temp[i].z);
+      vert = fullMatrix.MultiplyVector(vert);
 
-		buf[i].x = vert.x;
-		buf[i].y = vert.y;
-		buf[i].z = vert.z*m_d.m_height*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + height;
-		vert = Vertex3Ds(flipperBaseMesh[i].nx, flipperBaseMesh[i].ny, flipperBaseMesh[i].nz);
-		vert = fullMatrix.MultiplyVectorNoTranslate(vert);
-		buf[i].nx = vert.x;
-		buf[i].ny = vert.y;
-		buf[i].nz = vert.z;
-		buf[i].tu = flipperBaseMesh[i].tu;
-		buf[i].tv = flipperBaseMesh[i].tv;
-	}
+      buf[i].x = vert.x;
+      buf[i].y = vert.y;
+      buf[i].z = vert.z*m_d.m_height*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + height;
+      vert = Vertex3Ds(flipperBaseMesh[i].nx, flipperBaseMesh[i].ny, flipperBaseMesh[i].nz);
+      vert = fullMatrix.MultiplyVectorNoTranslate(vert);
+      buf[i].nx = vert.x;
+      buf[i].ny = vert.y;
+      buf[i].nz = vert.z;
+      buf[i].tu = flipperBaseMesh[i].tu;
+      buf[i].tv = flipperBaseMesh[i].tv;
+   }
 
-    //rubber
-    if (m_d.m_rubberthickness > 0.0f)
-    {
-        const float rubberBaseScale = 10.0f;
-        const float rubberTipScale = 10.0f;
-        memcpy(temp, flipperBaseMesh, sizeof(Vertex3D_NoTex2)*flipperBaseVertices);
-        for (int t = 0; t < 13; t++)
-        {
-            for (int i = 0; i < flipperBaseVertices; i++)
+   //rubber
+   if (m_d.m_rubberthickness > 0.0f)
+   {
+      const float rubberBaseScale = 10.0f;
+      const float rubberTipScale = 10.0f;
+      memcpy(temp, flipperBaseMesh, sizeof(Vertex3D_NoTex2)*flipperBaseVertices);
+      for (int t = 0; t < 13; t++)
+      {
+         for (int i = 0; i < flipperBaseVertices; i++)
+         {
+            if (temp[i].x == vertsBaseBottom[t].x && temp[i].y == vertsBaseBottom[t].y && temp[i].z == vertsBaseBottom[t].z)
             {
-                if (temp[i].x == vertsBaseBottom[t].x && temp[i].y == vertsBaseBottom[t].y && temp[i].z == vertsBaseBottom[t].z)
-                {
-                    temp[i].x *= m_d.m_BaseRadius*rubberBaseScale;
-                    temp[i].y *= m_d.m_BaseRadius*rubberBaseScale;
-                }
-                if (temp[i].x == vertsTipBottom[t].x && temp[i].y == vertsTipBottom[t].y && temp[i].z == vertsTipBottom[t].z)
-                {
-                    temp[i].x *= m_d.m_EndRadius * rubberTipScale;
-                    temp[i].y *= m_d.m_EndRadius * rubberTipScale; 
-                    temp[i].y += m_d.m_FlipperRadius-m_d.m_EndRadius*7.9f;
-                }
-                if (temp[i].x == vertsBaseTop[t].x && temp[i].y == vertsBaseTop[t].y && temp[i].z == vertsBaseTop[t].z)
-                {
-                    temp[i].x *= m_d.m_BaseRadius*rubberBaseScale;
-                    temp[i].y *= m_d.m_BaseRadius*rubberBaseScale;
-                }
-                if (temp[i].x == vertsTipTop[t].x && temp[i].y == vertsTipTop[t].y && temp[i].z == vertsTipTop[t].z)
-                {
-                    temp[i].x *= m_d.m_EndRadius*rubberTipScale;
-                    temp[i].y *= m_d.m_EndRadius * rubberTipScale;
-                    temp[i].y += m_d.m_FlipperRadius - m_d.m_EndRadius*7.9f;
-                }
+               temp[i].x *= m_d.m_BaseRadius*rubberBaseScale;
+               temp[i].y *= m_d.m_BaseRadius*rubberBaseScale;
             }
-        }
+            if (temp[i].x == vertsTipBottom[t].x && temp[i].y == vertsTipBottom[t].y && temp[i].z == vertsTipBottom[t].z)
+            {
+               temp[i].x *= m_d.m_EndRadius * rubberTipScale;
+               temp[i].y *= m_d.m_EndRadius * rubberTipScale;
+               temp[i].y += m_d.m_FlipperRadius - m_d.m_EndRadius*7.9f;
+            }
+            if (temp[i].x == vertsBaseTop[t].x && temp[i].y == vertsBaseTop[t].y && temp[i].z == vertsBaseTop[t].z)
+            {
+               temp[i].x *= m_d.m_BaseRadius*rubberBaseScale;
+               temp[i].y *= m_d.m_BaseRadius*rubberBaseScale;
+            }
+            if (temp[i].x == vertsTipTop[t].x && temp[i].y == vertsTipTop[t].y && temp[i].z == vertsTipTop[t].z)
+            {
+               temp[i].x *= m_d.m_EndRadius*rubberTipScale;
+               temp[i].y *= m_d.m_EndRadius * rubberTipScale;
+               temp[i].y += m_d.m_FlipperRadius - m_d.m_EndRadius*7.9f;
+            }
+         }
+      }
 
-        for (int i = 0; i < flipperBaseVertices; i++)
-        {
-            Vertex3Ds vert(temp[i].x, temp[i].y, temp[i].z);
-            vert = fullMatrix.MultiplyVector(vert);
-                
-            buf[i + flipperBaseVertices].x = vert.x;
-            buf[i + flipperBaseVertices].y = vert.y;
-            buf[i + flipperBaseVertices].z = vert.z*m_d.m_rubberwidth*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + height + m_d.m_rubberheight;
-            vert = Vertex3Ds(flipperBaseMesh[i].nx, flipperBaseMesh[i].ny, flipperBaseMesh[i].nz);
-            vert = fullMatrix.MultiplyVectorNoTranslate(vert);
-            buf[i + flipperBaseVertices].nx = vert.x;
-            buf[i + flipperBaseVertices].ny = vert.y;
-            buf[i + flipperBaseVertices].nz = vert.z;
-            buf[i + flipperBaseVertices].tu = flipperBaseMesh[i].tu;
-            buf[i + flipperBaseVertices].tv = flipperBaseMesh[i].tv+0.5f;
-        }
-    }
+      for (int i = 0; i < flipperBaseVertices; i++)
+      {
+         Vertex3Ds vert(temp[i].x, temp[i].y, temp[i].z);
+         vert = fullMatrix.MultiplyVector(vert);
 
-	delete temp;
+         buf[i + flipperBaseVertices].x = vert.x;
+         buf[i + flipperBaseVertices].y = vert.y;
+         buf[i + flipperBaseVertices].z = vert.z*m_d.m_rubberwidth*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + height + m_d.m_rubberheight;
+         vert = Vertex3Ds(flipperBaseMesh[i].nx, flipperBaseMesh[i].ny, flipperBaseMesh[i].nz);
+         vert = fullMatrix.MultiplyVectorNoTranslate(vert);
+         buf[i + flipperBaseVertices].nx = vert.x;
+         buf[i + flipperBaseVertices].ny = vert.y;
+         buf[i + flipperBaseVertices].nz = vert.z;
+         buf[i + flipperBaseVertices].tu = flipperBaseMesh[i].tu;
+         buf[i + flipperBaseVertices].tv = flipperBaseMesh[i].tv + 0.5f;
+      }
+   }
+
+   delete temp;
 }
 
 void Flipper::RenderSetup(RenderDevice* pd3dDevice)
 {
-	if (indexBuffer)
-		indexBuffer->release();
-	indexBuffer = pd3dDevice->CreateAndFillIndexBuffer(flipperBaseNumFaces, flipperBaseIndices);
+   if (indexBuffer)
+      indexBuffer->release();
+   indexBuffer = pd3dDevice->CreateAndFillIndexBuffer(flipperBaseNumFaces, flipperBaseIndices);
 
-	if (vertexBuffer)
-		vertexBuffer->release();
-	pd3dDevice->CreateVertexBuffer(flipperBaseVertices*2, 0, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer);
+   if (vertexBuffer)
+      vertexBuffer->release();
+   pd3dDevice->CreateVertexBuffer(flipperBaseVertices * 2, 0, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer);
 
-	Vertex3D_NoTex2 *buf;
-	vertexBuffer->lock(0, 0, (void**)&buf, 0);
-	GenerateBaseMesh(buf);
-	vertexBuffer->unlock();
+   Vertex3D_NoTex2 *buf;
+   vertexBuffer->lock(0, 0, (void**)&buf, 0);
+   GenerateBaseMesh(buf);
+   vertexBuffer->unlock();
 }
 
 void Flipper::RenderStatic(RenderDevice* pd3dDevice)
@@ -927,7 +927,7 @@ HRESULT Flipper::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
    bw.WriteFloat(FID(RPUP), m_d.m_rampUp);
    bw.WriteBool(FID(VSBL), m_d.m_fVisible);
    bw.WriteBool(FID(ENBL), m_d.m_fEnabled);
-   bw.WriteFloat(FID(FRMN), m_d.m_FlipperRadiusMin);		
+   bw.WriteFloat(FID(FRMN), m_d.m_FlipperRadiusMin);
    bw.WriteFloat(FID(FHGT), m_d.m_height);
    bw.WriteString(FID(IMAG), m_d.m_szImage);
    bw.WriteBool(FID(REEN), m_d.m_fReflectionEnabled);
@@ -976,7 +976,7 @@ BOOL Flipper::LoadToken(int id, BiffReader *pbr)
    }
    /*else if (id == FID(FAEOS))
    {
-      pbr->GetFloat(&m_d.m_angleEOS);
+   pbr->GetFloat(&m_d.m_angleEOS);
    }*/
    else if (id == FID(FRTN))
    {
@@ -1063,7 +1063,7 @@ BOOL Flipper::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(FRMN))
    {
-      pbr->GetFloat(&m_d.m_FlipperRadiusMin);	
+      pbr->GetFloat(&m_d.m_FlipperRadiusMin);
    }
    else if (id == FID(VSBL))
    {
@@ -1071,15 +1071,15 @@ BOOL Flipper::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(ENBL))
    {
-       pbr->GetBool(&m_d.m_fEnabled);
+      pbr->GetBool(&m_d.m_fEnabled);
    }
    else if (id == FID(REEN))
    {
-       pbr->GetBool(&m_d.m_fReflectionEnabled);
+      pbr->GetBool(&m_d.m_fReflectionEnabled);
    }
    else if (id == FID(IMAG))
    {
-       pbr->GetString(m_d.m_szImage);
+      pbr->GetString(m_d.m_szImage);
    }
    else
    {
@@ -1091,14 +1091,14 @@ BOOL Flipper::LoadToken(int id, BiffReader *pbr)
 
 HRESULT Flipper::InitPostLoad()
 {
-   if(m_d.m_height > 1000.0f)
+   if (m_d.m_height > 1000.0f)
       m_d.m_height = 50.0f;
-   if(m_d.m_rubberheight > 1000)
+   if (m_d.m_rubberheight > 1000)
       m_d.m_rubberheight = 8;
-   if(m_d.m_rubberthickness > 0 && m_d.m_height > 16.0f && m_d.m_rubberwidth == 0)
-      m_d.m_rubberwidth = (int)(m_d.m_height-16.0f);
-   if(m_d.m_rubberwidth > 1000)
-      m_d.m_rubberwidth = (int)(m_d.m_height-16.0f);
+   if (m_d.m_rubberthickness > 0 && m_d.m_height > 16.0f && m_d.m_rubberwidth == 0)
+      m_d.m_rubberwidth = (int)(m_d.m_height - 16.0f);
+   if (m_d.m_rubberwidth > 1000)
+      m_d.m_rubberwidth = (int)(m_d.m_height - 16.0f);
 
    return S_OK;
 }
@@ -1114,7 +1114,7 @@ STDMETHODIMP Flipper::put_BaseRadius(float newVal)
 {
    STARTUNDO
 
-   m_d.m_BaseRadius = newVal;
+      m_d.m_BaseRadius = newVal;
 
    STOPUNDO;
 
@@ -1132,11 +1132,11 @@ STDMETHODIMP Flipper::put_EndRadius(float newVal)
 {
    STARTUNDO
 
-   m_d.m_EndRadius = newVal;
+      m_d.m_EndRadius = newVal;
 
    STOPUNDO
 
-   return S_OK;
+      return S_OK;
 }
 
 STDMETHODIMP Flipper::get_Length(float *pVal)
@@ -1150,11 +1150,11 @@ STDMETHODIMP Flipper::put_Length(float newVal)
 {
    STARTUNDO
 
-   m_d.m_FlipperRadiusMax = newVal;
+      m_d.m_FlipperRadiusMax = newVal;
 
    STOPUNDO
 
-   return S_OK;
+      return S_OK;
 }
 
 STDMETHODIMP Flipper::get_StartAngle(float *pVal)
@@ -1168,11 +1168,11 @@ STDMETHODIMP Flipper::put_StartAngle(float newVal)
 {
    STARTUNDO
 
-   m_d.m_StartAngle = newVal;
+      m_d.m_StartAngle = newVal;
 
    STOPUNDO
 
-   return S_OK;
+      return S_OK;
 }
 
 STDMETHODIMP Flipper::get_EndAngle(float *pVal)
@@ -1186,7 +1186,7 @@ STDMETHODIMP Flipper::put_EndAngle(float newVal)
 {
    STARTUNDO
 
-   m_d.m_EndAngle = newVal;
+      m_d.m_EndAngle = newVal;
 
    STOPUNDO;
 
@@ -1216,11 +1216,11 @@ STDMETHODIMP Flipper::put_X(float newVal)
 {
    STARTUNDO
 
-   m_d.m_Center.x = newVal;
+      m_d.m_Center.x = newVal;
 
    STOPUNDO
 
-   return S_OK;
+      return S_OK;
 }
 
 STDMETHODIMP Flipper::get_Y(float *pVal)
@@ -1234,11 +1234,11 @@ STDMETHODIMP Flipper::put_Y(float newVal)
 {
    STARTUNDO
 
-   m_d.m_Center.y = newVal;
+      m_d.m_Center.y = newVal;
 
    STOPUNDO
 
-   return S_OK;
+      return S_OK;
 }
 
 STDMETHODIMP Flipper::get_Surface(BSTR *pVal)
@@ -1255,19 +1255,19 @@ STDMETHODIMP Flipper::put_Surface(BSTR newVal)
 {
    STARTUNDO
 
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSurface, 32, NULL, NULL);
+      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSurface, 32, NULL, NULL);
 
    STOPUNDO
 
-   return S_OK;
+      return S_OK;
 }
 
 STDMETHODIMP Flipper::get_Material(BSTR *pVal)
 {
-    WCHAR wz[512];
+   WCHAR wz[512];
 
-    MultiByteToWideChar(CP_ACP, 0, m_d.m_szMaterial, -1, wz, 32);
-    *pVal = SysAllocString(wz);
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_szMaterial, -1, wz, 32);
+   *pVal = SysAllocString(wz);
 
    return S_OK;
 }
@@ -1276,29 +1276,29 @@ STDMETHODIMP Flipper::put_Material(BSTR newVal)
 {
    STARTUNDO
 
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szMaterial, 32, NULL, NULL);
+      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szMaterial, 32, NULL, NULL);
 
    STOPUNDO
 
-   return S_OK;
+      return S_OK;
 }
 
 /*STDMETHODIMP Flipper::get_AngleEOS(float *pVal)
 {
-   *pVal = m_d.m_angleEOS;
+*pVal = m_d.m_angleEOS;
 
-   return S_OK;
+return S_OK;
 }
 
 STDMETHODIMP Flipper::put_AngleEOS(float newVal)
 {
-   STARTUNDO
+STARTUNDO
 
-   m_d.m_angleEOS = newVal;
+m_d.m_angleEOS = newVal;
 
-   STOPUNDO
+STOPUNDO
 
-   return S_OK;
+return S_OK;
 }*/
 
 void Flipper::GetDialogPanes(Vector<PropertyPane> *pvproppane)
@@ -1332,13 +1332,13 @@ STDMETHODIMP Flipper::put_Mass(float newVal)
 {
    if (m_phitflipper)
    {
-       m_phitflipper->m_flipperanim.SetMass(m_d.m_OverridePhysics ? m_d.m_OverrideMass : newVal);
+      m_phitflipper->m_flipperanim.SetMass(m_d.m_OverridePhysics ? m_d.m_OverrideMass : newVal);
    }
    else
    {
-       STARTUNDO
-       m_d.m_mass = newVal;
-       STOPUNDO
+      STARTUNDO
+         m_d.m_mass = newVal;
+      STOPUNDO
    }
 
    return S_OK;
@@ -1354,31 +1354,31 @@ STDMETHODIMP Flipper::get_OverridePhysics(long *pVal)
 STDMETHODIMP Flipper::put_OverridePhysics(long newVal)
 {
    STARTUNDO
-   m_d.m_OverridePhysics = newVal;
+      m_d.m_OverridePhysics = newVal;
    STOPUNDO
 
-   return S_OK;
+      return S_OK;
 }
 
 STDMETHODIMP Flipper::get_RubberMaterial(BSTR *pVal)
 {
-    WCHAR wz[512];
+   WCHAR wz[512];
 
-    MultiByteToWideChar(CP_ACP, 0, m_d.m_szRubberMaterial, -1, wz, 32);
-    *pVal = SysAllocString(wz);
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_szRubberMaterial, -1, wz, 32);
+   *pVal = SysAllocString(wz);
 
-    return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Flipper::put_RubberMaterial(BSTR newVal)
 {
    STARTUNDO
 
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szRubberMaterial, 32, NULL, NULL);
+      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szRubberMaterial, 32, NULL, NULL);
 
    STOPUNDO
 
-   return S_OK;
+      return S_OK;
 }
 
 STDMETHODIMP Flipper::get_RubberThickness(long *pVal)
@@ -1406,36 +1406,36 @@ STDMETHODIMP Flipper::put_RubberThickness(long newVal)
 {
    STARTUNDO
 
-   m_d.m_rubberthickness = newVal;
+      m_d.m_rubberthickness = newVal;
 
    STOPUNDO
 
-   return S_OK;
+      return S_OK;
 }
 
 STDMETHODIMP Flipper::put_RubberHeight(long newVal)
 {
    STARTUNDO
 
-   if (newVal < 0) newVal = 0;
+      if (newVal < 0) newVal = 0;
       else if (newVal > 1000) newVal = 50;
 
-   m_d.m_rubberheight = newVal;
+      m_d.m_rubberheight = newVal;
 
-   STOPUNDO
+      STOPUNDO
 
-   return S_OK;
+         return S_OK;
 }
 
 STDMETHODIMP Flipper::put_RubberWidth(long newVal)
 {
    STARTUNDO
 
-   m_d.m_rubberwidth = newVal;
+      m_d.m_rubberwidth = newVal;
 
    STOPUNDO
 
-   return S_OK;
+      return S_OK;
 }
 
 STDMETHODIMP Flipper::get_Strength(float *pVal)
@@ -1449,15 +1449,15 @@ STDMETHODIMP Flipper::put_Strength(float newVal)
 {
    if (m_phitflipper)
    {
-       m_phitflipper->m_flipperanim.SetStrength(m_d.m_OverridePhysics ? m_d.m_OverrideStrength : newVal);
+      m_phitflipper->m_flipperanim.SetStrength(m_d.m_OverridePhysics ? m_d.m_OverrideStrength : newVal);
    }
    else
    {
-       STARTUNDO
+      STARTUNDO
 
-       m_d.m_strength = newVal;   
+         m_d.m_strength = newVal;
 
-       STOPUNDO
+      STOPUNDO
    }
 
    return S_OK;
@@ -1479,7 +1479,7 @@ STDMETHODIMP Flipper::put_Visible(VARIANT_BOOL newVal)
    else
    {
       STARTUNDO
-      m_d.m_fVisible = VBTOF(newVal);
+         m_d.m_fVisible = VBTOF(newVal);
       STOPUNDO
    }
    return S_OK;
@@ -1501,7 +1501,7 @@ STDMETHODIMP Flipper::put_Enabled(VARIANT_BOOL newVal)
    else
    {
       STARTUNDO
-      m_d.m_fEnabled = VBTOF(newVal);
+         m_d.m_fEnabled = VBTOF(newVal);
       STOPUNDO
    }
    return S_OK;
@@ -1523,7 +1523,7 @@ STDMETHODIMP Flipper::put_Elasticity(float newVal)
    else
    {
       STARTUNDO
-      m_d.m_elasticity = newVal;
+         m_d.m_elasticity = newVal;
       STOPUNDO
    }
 
@@ -1532,16 +1532,16 @@ STDMETHODIMP Flipper::put_Elasticity(float newVal)
 
 STDMETHODIMP Flipper::get_ElasticityFalloff(float *pVal)
 {
-    *pVal = m_d.m_elasticityFalloff;
-    return S_OK;
+   *pVal = m_d.m_elasticityFalloff;
+   return S_OK;
 }
 
 STDMETHODIMP Flipper::put_ElasticityFalloff(float newVal)
 {
-    STARTUNDO
-    m_d.m_elasticityFalloff = newVal;
-    STOPUNDO
-    return S_OK;
+   STARTUNDO
+      m_d.m_elasticityFalloff = newVal;
+   STOPUNDO
+      return S_OK;
 }
 
 STDMETHODIMP Flipper::get_Friction(float *pVal)
@@ -1560,7 +1560,7 @@ STDMETHODIMP Flipper::put_Friction(float newVal)
    else
    {
       STARTUNDO
-      m_d.m_friction = newVal;
+         m_d.m_friction = newVal;
       STOPUNDO
    }
 
@@ -1576,10 +1576,10 @@ STDMETHODIMP Flipper::get_RampUp(float *pVal)
 STDMETHODIMP Flipper::put_RampUp(float newVal)
 {
    STARTUNDO
-   m_d.m_rampUp = newVal;
+      m_d.m_rampUp = newVal;
    STOPUNDO
 
-   return S_OK;
+      return S_OK;
 }
 
 STDMETHODIMP Flipper::get_Height(float *pVal)
@@ -1593,11 +1593,11 @@ STDMETHODIMP Flipper::put_Height(float newVal)
 {
    STARTUNDO
 
-   m_d.m_height = newVal;
+      m_d.m_height = newVal;
 
    STOPUNDO
 
-   return S_OK;
+      return S_OK;
 }
 
 STDMETHODIMP Flipper::get_Return(float *pVal)
@@ -1611,15 +1611,15 @@ STDMETHODIMP Flipper::put_Return(float newVal)
 {
    if (m_phitflipper)
    {
-       m_phitflipper->m_flipperanim.SetReturnRatio(m_d.m_OverridePhysics ? m_d.m_OverrideReturnStrength : clamp(newVal, 0.0f, 1.0f));
+      m_phitflipper->m_flipperanim.SetReturnRatio(m_d.m_OverridePhysics ? m_d.m_OverrideReturnStrength : clamp(newVal, 0.0f, 1.0f));
    }
    else
    {
-       STARTUNDO
+      STARTUNDO
 
-       m_d.m_return = clamp(newVal, 0.0f, 1.0f);
+         m_d.m_return = clamp(newVal, 0.0f, 1.0f);
 
-       STOPUNDO
+      STOPUNDO
    }
 
    return S_OK;
@@ -1636,50 +1636,50 @@ STDMETHODIMP Flipper::put_FlipperRadiusMin(float newVal)
 {
    STARTUNDO
 
-   if (newVal < 0.0f) newVal = 0.0f;
+      if (newVal < 0.0f) newVal = 0.0f;
 
    m_d.m_FlipperRadiusMin = newVal;
 
    STOPUNDO
 
-   return S_OK;
+      return S_OK;
 }
 
 STDMETHODIMP Flipper::get_Image(BSTR *pVal)
 {
-    WCHAR wz[512];
+   WCHAR wz[512];
 
-    MultiByteToWideChar(CP_ACP, 0, m_d.m_szImage, -1, wz, 32);
-    *pVal = SysAllocString(wz);
+   MultiByteToWideChar(CP_ACP, 0, m_d.m_szImage, -1, wz, 32);
+   *pVal = SysAllocString(wz);
 
-    return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Flipper::put_Image(BSTR newVal)
 {
-    STARTUNDO
+   STARTUNDO
 
-        WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szImage, 32, NULL, NULL);
+      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szImage, 32, NULL, NULL);
 
-    STOPUNDO
+   STOPUNDO
 
-        return S_OK;
+      return S_OK;
 }
 
 STDMETHODIMP Flipper::get_ReflectionEnabled(VARIANT_BOOL *pVal)
 {
-    *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fReflectionEnabled);
+   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fReflectionEnabled);
 
-    return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Flipper::put_ReflectionEnabled(VARIANT_BOOL newVal)
 {
-    STARTUNDO
+   STARTUNDO
 
-        m_d.m_fReflectionEnabled = VBTOF(newVal);
+      m_d.m_fReflectionEnabled = VBTOF(newVal);
 
-    STOPUNDO
+   STOPUNDO
 
-        return S_OK;
+      return S_OK;
 }

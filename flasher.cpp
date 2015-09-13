@@ -9,18 +9,18 @@ Flasher::Flasher()
    dynamicIndexBuffer = 0;
    dynamicVertexBufferRegenerate = true;
    vertices = 0;
-   m_propVisual=NULL;
-   memset(m_d.m_szImageA,0,MAXTOKEN);
-   memset(m_d.m_szImageB,0,MAXTOKEN);
+   m_propVisual = NULL;
+   memset(m_d.m_szImageA, 0, MAXTOKEN);
+   memset(m_d.m_szImageB, 0, MAXTOKEN);
 }
 
 Flasher::~Flasher()
 {
-   if(dynamicVertexBuffer) {
+   if (dynamicVertexBuffer) {
       dynamicVertexBuffer->release();
       dynamicVertexBuffer = 0;
    }
-   if(dynamicIndexBuffer) {
+   if (dynamicIndexBuffer) {
       dynamicIndexBuffer->release();
       dynamicIndexBuffer = 0;
    }
@@ -28,7 +28,7 @@ Flasher::~Flasher()
 
 void Flasher::InitShape()
 {
-   if ( m_vdpoint.Size() == 0 )
+   if (m_vdpoint.Size() == 0)
    {
       // First time shape has been set to custom - set up some points
       const float x = m_d.m_vCenter.x;
@@ -40,7 +40,7 @@ void Flasher::InitShape()
       if (pdp)
       {
          pdp->AddRef();
-         pdp->Init(this, x-size*0.5f, y-size*0.5f);
+         pdp->Init(this, x - size*0.5f, y - size*0.5f);
          pdp->m_fSmooth = false;
          m_vdpoint.AddElement(pdp);
       }
@@ -48,24 +48,24 @@ void Flasher::InitShape()
       if (pdp)
       {
          pdp->AddRef();
-         pdp->Init(this, x-size*0.5f, y+size*0.5f);
-		 pdp->m_fSmooth = false;
+         pdp->Init(this, x - size*0.5f, y + size*0.5f);
+         pdp->m_fSmooth = false;
          m_vdpoint.AddElement(pdp);
       }
       CComObject<DragPoint>::CreateInstance(&pdp);
       if (pdp)
       {
          pdp->AddRef();
-         pdp->Init(this, x+size*0.5f, y+size*0.5f);
-		 pdp->m_fSmooth = false;
+         pdp->Init(this, x + size*0.5f, y + size*0.5f);
+         pdp->m_fSmooth = false;
          m_vdpoint.AddElement(pdp);
       }
       CComObject<DragPoint>::CreateInstance(&pdp);
       if (pdp)
       {
          pdp->AddRef();
-         pdp->Init(this, x+size*0.5f, y-size*0.5f);
-		 pdp->m_fSmooth = false;
+         pdp->Init(this, x + size*0.5f, y - size*0.5f);
+         pdp->m_fSmooth = false;
          m_vdpoint.AddElement(pdp);
       }
    }
@@ -79,9 +79,9 @@ HRESULT Flasher::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
    m_d.m_vCenter.x = x;
    m_d.m_vCenter.y = y;
 
-   m_d.m_rotX=0.0f;
-   m_d.m_rotY=0.0f;
-   m_d.m_rotZ=0.0f;
+   m_d.m_rotX = 0.0f;
+   m_d.m_rotY = 0.0f;
+   m_d.m_rotZ = 0.0f;
    SetDefaults(fromMouseClick);
 
    InitShape();
@@ -97,57 +97,57 @@ void Flasher::SetDefaults(bool fromMouseClick)
    float fTmp;
    int iTmp;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Flasher","Height", &fTmp);
+   hr = GetRegStringAsFloat("DefaultProps\\Flasher", "Height", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_height = fTmp;
    else
       m_d.m_height = 50.0f;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Flasher","RotX", &fTmp);
+   hr = GetRegStringAsFloat("DefaultProps\\Flasher", "RotX", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_rotX = fTmp;
    else
       m_d.m_rotX = 0.0f;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Flasher","RotY", &fTmp);
+   hr = GetRegStringAsFloat("DefaultProps\\Flasher", "RotY", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_rotY = fTmp;
    else
       m_d.m_rotY = 0.0f;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Flasher","RotZ", &fTmp);
+   hr = GetRegStringAsFloat("DefaultProps\\Flasher", "RotZ", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_rotZ = fTmp;
    else
       m_d.m_rotZ = 0.0f;
 
-   hr = GetRegInt("DefaultProps\\Flasher","Color", &iTmp);
+   hr = GetRegInt("DefaultProps\\Flasher", "Color", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_color = iTmp;
    else
-      m_d.m_color = RGB(50,200,50);
+      m_d.m_color = RGB(50, 200, 50);
 
-   hr = GetRegInt("DefaultProps\\Flasher","TimerEnabled", &iTmp);
+   hr = GetRegInt("DefaultProps\\Flasher", "TimerEnabled", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? false : true;
    else
       m_d.m_tdr.m_fTimerEnabled = false;
 
-   hr = GetRegInt("DefaultProps\\Flasher","TimerInterval", &iTmp);
+   hr = GetRegInt("DefaultProps\\Flasher", "TimerInterval", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_tdr.m_TimerInterval = iTmp;
    else
       m_d.m_tdr.m_TimerInterval = 100;
 
-   hr = GetRegString("DefaultProps\\Flasher","ImageA", m_d.m_szImageA, MAXTOKEN);
+   hr = GetRegString("DefaultProps\\Flasher", "ImageA", m_d.m_szImageA, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szImageA[0] = 0;
 
-   hr = GetRegString("DefaultProps\\Flasher","ImageB", m_d.m_szImageB, MAXTOKEN);
+   hr = GetRegString("DefaultProps\\Flasher", "ImageB", m_d.m_szImageB, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szImageB[0] = 0;
 
-   hr = GetRegInt("DefaultProps\\Flasher","Opacity", &iTmp);
+   hr = GetRegInt("DefaultProps\\Flasher", "Opacity", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_fAlpha = iTmp;
    else
@@ -155,70 +155,70 @@ void Flasher::SetDefaults(bool fromMouseClick)
 
    m_d.m_intensity_scale = 1.0f;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Flasher","ModulateVsAdd", &fTmp);
+   hr = GetRegStringAsFloat("DefaultProps\\Flasher", "ModulateVsAdd", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_modulate_vs_add = fTmp;
    else
       m_d.m_modulate_vs_add = 0.9f;
 
-   hr = GetRegInt("DefaultProps\\Flasher","FilterAmount", &iTmp);
+   hr = GetRegInt("DefaultProps\\Flasher", "FilterAmount", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_fFilterAmount = iTmp;
    else
       m_d.m_fFilterAmount = 100;
 
-   hr = GetRegInt("DefaultProps\\Flasher","Visible", &iTmp);
+   hr = GetRegInt("DefaultProps\\Flasher", "Visible", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_IsVisible = iTmp == 0 ? false : true;
    else
       m_d.m_IsVisible = true;
 
-   hr = GetRegInt("DefaultProps\\Flasher","AddBlend", &iTmp);
+   hr = GetRegInt("DefaultProps\\Flasher", "AddBlend", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_fAddBlend = iTmp == 0 ? false : true;
    else
       m_d.m_fAddBlend = false;
 
-   hr = GetRegInt("DefaultProps\\Flasher","DisplayTexture", &iTmp);
+   hr = GetRegInt("DefaultProps\\Flasher", "DisplayTexture", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_fDisplayTexture = (iTmp == 0) ? false : true;
    else
       m_d.m_fDisplayTexture = false;
 
-   m_d.m_imagealignment = fromMouseClick ? (RampImageAlignment)GetRegIntWithDefault("DefaultProps\\Flasher","ImageMode", ImageModeWrap) : ImageModeWrap;
-   m_d.m_filter = fromMouseClick ? (Filters)GetRegIntWithDefault("DefaultProps\\Flasher","Filter", Filter_Overlay) : Filter_Overlay;
+   m_d.m_imagealignment = fromMouseClick ? (RampImageAlignment)GetRegIntWithDefault("DefaultProps\\Flasher", "ImageMode", ImageModeWrap) : ImageModeWrap;
+   m_d.m_filter = fromMouseClick ? (Filters)GetRegIntWithDefault("DefaultProps\\Flasher", "Filter", Filter_Overlay) : Filter_Overlay;
 }
 
 void Flasher::WriteRegDefaults()
 {
-   SetRegValueFloat("DefaultProps\\Flasher","Height", m_d.m_height);
-   SetRegValueFloat("DefaultProps\\Flasher","RotX", m_d.m_rotX);
-   SetRegValueFloat("DefaultProps\\Flasher","RotY", m_d.m_rotY);
-   SetRegValueFloat("DefaultProps\\Flasher","RotZ", m_d.m_rotZ);
-   SetRegValue("DefaultProps\\Flasher","Color",REG_DWORD,&m_d.m_color,4);
-   SetRegValueBool("DefaultProps\\Flasher","TimerEnabled",m_d.m_tdr.m_fTimerEnabled);
-   SetRegValueInt("DefaultProps\\Flasher","TimerInterval",m_d.m_tdr.m_TimerInterval);
-   SetRegValue("DefaultProps\\Flasher","ImageA", REG_SZ, &m_d.m_szImageA, lstrlen(m_d.m_szImageA));
-   SetRegValue("DefaultProps\\Flasher","ImageB", REG_SZ, &m_d.m_szImageB, lstrlen(m_d.m_szImageB));
-   SetRegValueInt("DefaultProps\\Flasher","Alpha",m_d.m_fAlpha);
-   SetRegValueFloat("DefaultProps\\Flasher","ModulateVsAdd",m_d.m_modulate_vs_add);
-   SetRegValueBool("DefaultProps\\Flasher","Visible",m_d.m_IsVisible);
-   SetRegValueBool("DefaultProps\\Flasher","DisplayTexture",m_d.m_fDisplayTexture);
-   SetRegValueBool("DefaultProps\\Flasher","AddBlend",m_d.m_fAddBlend);
-   SetRegValue("DefaultProps\\Flasher","ImageMode",REG_DWORD,&m_d.m_imagealignment,4);
-   SetRegValue("DefaultProps\\Flasher","Filter",REG_DWORD,&m_d.m_filter,4);
-   SetRegValueInt("DefaultProps\\Flasher","FilterAmount",m_d.m_fFilterAmount);
+   SetRegValueFloat("DefaultProps\\Flasher", "Height", m_d.m_height);
+   SetRegValueFloat("DefaultProps\\Flasher", "RotX", m_d.m_rotX);
+   SetRegValueFloat("DefaultProps\\Flasher", "RotY", m_d.m_rotY);
+   SetRegValueFloat("DefaultProps\\Flasher", "RotZ", m_d.m_rotZ);
+   SetRegValue("DefaultProps\\Flasher", "Color", REG_DWORD, &m_d.m_color, 4);
+   SetRegValueBool("DefaultProps\\Flasher", "TimerEnabled", m_d.m_tdr.m_fTimerEnabled);
+   SetRegValueInt("DefaultProps\\Flasher", "TimerInterval", m_d.m_tdr.m_TimerInterval);
+   SetRegValue("DefaultProps\\Flasher", "ImageA", REG_SZ, &m_d.m_szImageA, lstrlen(m_d.m_szImageA));
+   SetRegValue("DefaultProps\\Flasher", "ImageB", REG_SZ, &m_d.m_szImageB, lstrlen(m_d.m_szImageB));
+   SetRegValueInt("DefaultProps\\Flasher", "Alpha", m_d.m_fAlpha);
+   SetRegValueFloat("DefaultProps\\Flasher", "ModulateVsAdd", m_d.m_modulate_vs_add);
+   SetRegValueBool("DefaultProps\\Flasher", "Visible", m_d.m_IsVisible);
+   SetRegValueBool("DefaultProps\\Flasher", "DisplayTexture", m_d.m_fDisplayTexture);
+   SetRegValueBool("DefaultProps\\Flasher", "AddBlend", m_d.m_fAddBlend);
+   SetRegValue("DefaultProps\\Flasher", "ImageMode", REG_DWORD, &m_d.m_imagealignment, 4);
+   SetRegValue("DefaultProps\\Flasher", "Filter", REG_DWORD, &m_d.m_filter, 4);
+   SetRegValueInt("DefaultProps\\Flasher", "FilterAmount", m_d.m_fFilterAmount);
 }
 
 void Flasher::PreRender(Sur * const psur)
 {
-   if ( m_vdpoint.Size() == 0 )
+   if (m_vdpoint.Size() == 0)
       InitShape();
 
-   psur->SetFillColor(m_ptable->RenderSolid() ? RGB(192,192,192) : -1);
+   psur->SetFillColor(m_ptable->RenderSolid() ? RGB(192, 192, 192) : -1);
    psur->SetObject(this);
    // Don't want border color to be over-ridden when selected - that will be drawn later
-   psur->SetBorderColor(-1,false,0);
+   psur->SetBorderColor(-1, false, 0);
 
    std::vector<RenderVertex> vvertex;
    GetRgVertex(vvertex);
@@ -226,21 +226,21 @@ void Flasher::PreRender(Sur * const psur)
    if (m_ptable->RenderSolid() && m_d.m_fDisplayTexture && (ppi = m_ptable->GetImage(m_d.m_szImageA)))
    {
       ppi->EnsureHBitmap();
-      if ( m_d.m_imagealignment == ImageModeWrap )
+      if (m_d.m_imagealignment == ImageModeWrap)
       {
-         float _minx=FLT_MAX;
-         float _miny=FLT_MAX;
-         float _maxx=-FLT_MAX;
-         float _maxy=-FLT_MAX;
-         for (unsigned i=0; i<vvertex.size(); i++)
+         float _minx = FLT_MAX;
+         float _miny = FLT_MAX;
+         float _maxx = -FLT_MAX;
+         float _maxy = -FLT_MAX;
+         for (unsigned i = 0; i < vvertex.size(); i++)
          {
-            if (vvertex[i].x < _minx) _minx=vvertex[i].x;
-            if (vvertex[i].x > _maxx) _maxx=vvertex[i].x;
-            if (vvertex[i].y < _miny) _miny=vvertex[i].y;
-            if (vvertex[i].y > _maxy) _maxy=vvertex[i].y;
+            if (vvertex[i].x < _minx) _minx = vvertex[i].x;
+            if (vvertex[i].x > _maxx) _maxx = vvertex[i].x;
+            if (vvertex[i].y < _miny) _miny = vvertex[i].y;
+            if (vvertex[i].y > _maxy) _maxy = vvertex[i].y;
          }
          if (ppi->m_hbmGDIVersion)
-            psur->PolygonImage(vvertex, ppi->m_hbmGDIVersion, _minx, _miny, _minx+(_maxx-_minx), _miny+(_maxy-_miny), ppi->m_width, ppi->m_height);
+            psur->PolygonImage(vvertex, ppi->m_hbmGDIVersion, _minx, _miny, _minx + (_maxx - _minx), _miny + (_maxy - _miny), ppi->m_width, ppi->m_height);
       }
       else
       {
@@ -259,7 +259,7 @@ void Flasher::PreRender(Sur * const psur)
 void Flasher::Render(Sur * const psur)
 {
    psur->SetFillColor(-1);
-   psur->SetBorderColor(RGB(0,0,0),false,0);
+   psur->SetBorderColor(RGB(0, 0, 0), false, 0);
    psur->SetObject(this); // For selected formatting
    psur->SetObject(NULL);
 
@@ -270,12 +270,12 @@ void Flasher::Render(Sur * const psur)
    }
 
    // if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
-   bool fDrawDragpoints = ( (m_selectstate != eNotSelected) || g_pvp->m_fAlwaysDrawDragPoints );
+   bool fDrawDragpoints = ((m_selectstate != eNotSelected) || g_pvp->m_fAlwaysDrawDragPoints);
 
    if (!fDrawDragpoints)
    {
       // if any of the dragpoints of this object are selected then draw all the dragpoints
-      for (int i=0;i<m_vdpoint.Size();i++)
+      for (int i = 0; i < m_vdpoint.Size(); i++)
       {
          const CComObject<DragPoint> * const pdp = m_vdpoint.ElementAt(i);
          if (pdp->m_selectstate != eNotSelected)
@@ -285,15 +285,15 @@ void Flasher::Render(Sur * const psur)
          }
       }
    }
-   for (int i=0;i<m_vdpoint.Size();i++)
+   for (int i = 0; i < m_vdpoint.Size(); i++)
    {
       CComObject<DragPoint> * const pdp = m_vdpoint.ElementAt(i);
       psur->SetFillColor(-1);
-      psur->SetBorderColor(RGB(255,0,0),false,0);
+      psur->SetBorderColor(RGB(255, 0, 0), false, 0);
 
       if (pdp->m_fDragging)
       {
-         psur->SetBorderColor(RGB(0,255,0),false,0);
+         psur->SetBorderColor(RGB(0, 255, 0), false, 0);
       }
       if (fDrawDragpoints)
       {
@@ -336,21 +336,21 @@ void Flasher::EndPlay()
 {
    IEditable::EndPlay();
 
-   if(dynamicVertexBuffer) 
+   if (dynamicVertexBuffer)
    {
       dynamicVertexBuffer->release();
       dynamicVertexBuffer = 0;
       dynamicVertexBufferRegenerate = true;
    }
-   if(dynamicIndexBuffer) 
+   if (dynamicIndexBuffer)
    {
       dynamicIndexBuffer->release();
       dynamicIndexBuffer = 0;
    }
-   if( vertices )
+   if (vertices)
    {
       delete[] vertices;
-      vertices=0;
+      vertices = 0;
    }
 }
 
@@ -359,13 +359,13 @@ void Flasher::UpdateMesh()
    Vertex3D_TexelOnly *buf;
    dynamicVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
 
-   const float height = (m_d.m_height+m_ptable->m_tableheight)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
-   const float movx = minx+(maxx-minx)*0.5f;
-   const float movy = miny+(maxy-miny)*0.5f;
+   const float height = (m_d.m_height + m_ptable->m_tableheight)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+   const float movx = minx + (maxx - minx)*0.5f;
+   const float movy = miny + (maxy - miny)*0.5f;
 
-   for (int i=0;i<numVertices;i++)
+   for (int i = 0; i < numVertices; i++)
    {
-      Matrix3D tempMatrix,RTmatrix,TMatrix,T2Matrix;
+      Matrix3D tempMatrix, RTmatrix, TMatrix, T2Matrix;
       RTmatrix.SetIdentity();
       TMatrix.SetIdentity();
       T2Matrix.SetIdentity();
@@ -388,7 +388,7 @@ void Flasher::UpdateMesh()
       T2Matrix.MultiplyVector(vert, vert);
       RTmatrix.MultiplyVector(vert, vert);
       TMatrix.MultiplyVector(vert, vert);
-	  buf[i] = vert;
+      buf[i] = vert;
    }
 
    dynamicVertexBuffer->unlock();
@@ -403,82 +403,82 @@ void Flasher::RenderSetup(RenderDevice* pd3dDevice)
 
    VectorVoid vpoly;
 
-   for (int i=0;i<numVertices;i++)
+   for (int i = 0; i < numVertices; i++)
       vpoly.AddElement((void *)i);
 
    Vector<Triangle> vtri;
    PolygonToTriangles(vvertex, &vpoly, &vtri);
 
    numPolys = vtri.Size();
-   if( numPolys==0 )
-   {         
+   if (numPolys == 0)
+   {
       // no polys to render leave vertex buffer undefined 
       return;
    }
 
-   if( dynamicIndexBuffer )
+   if (dynamicIndexBuffer)
       dynamicIndexBuffer->release();
-   pd3dDevice->CreateIndexBuffer( numPolys*3, 0, IndexBuffer::FMT_INDEX16, &dynamicIndexBuffer );
-   NumVideoBytes += numPolys*3*sizeof(WORD);     
+   pd3dDevice->CreateIndexBuffer(numPolys * 3, 0, IndexBuffer::FMT_INDEX16, &dynamicIndexBuffer);
+   NumVideoBytes += numPolys * 3 * sizeof(WORD);
 
    WORD* bufi;
-   dynamicIndexBuffer->lock(0,0,(void**)&bufi, 0);
-   for(int i = 0; i < numPolys; ++i)
+   dynamicIndexBuffer->lock(0, 0, (void**)&bufi, 0);
+   for (int i = 0; i < numPolys; ++i)
    {
-	   const Triangle * const ptri = vtri.ElementAt(i);
+      const Triangle * const ptri = vtri.ElementAt(i);
 
-	   bufi[i*3  ] = ptri->a;
-	   bufi[i*3+1] = ptri->c;
-	   bufi[i*3+2] = ptri->b;
+      bufi[i * 3] = ptri->a;
+      bufi[i * 3 + 1] = ptri->c;
+      bufi[i * 3 + 2] = ptri->b;
    }
    dynamicIndexBuffer->unlock();
 
-   for (int i=0;i<numPolys;i++)
+   for (int i = 0; i < numPolys; i++)
       delete vtri.ElementAt(i);
 
-   if( dynamicVertexBuffer )
+   if (dynamicVertexBuffer)
       dynamicVertexBuffer->release();
-   pd3dDevice->CreateVertexBuffer( numVertices, USAGE_DYNAMIC, MY_D3DFVF_TEX, &dynamicVertexBuffer );
-   NumVideoBytes += numVertices*sizeof(Vertex3D_TexelOnly);     
+   pd3dDevice->CreateVertexBuffer(numVertices, USAGE_DYNAMIC, MY_D3DFVF_TEX, &dynamicVertexBuffer);
+   NumVideoBytes += numVertices*sizeof(Vertex3D_TexelOnly);
 
    if (vertices)
-	   delete [] vertices;
+      delete[] vertices;
    vertices = new Vertex3D_TexelOnly[numVertices];
 
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
-   minx=FLT_MAX;
-   miny=FLT_MAX;
-   maxx=-FLT_MAX;
-   maxy=-FLT_MAX;
+   minx = FLT_MAX;
+   miny = FLT_MAX;
+   maxx = -FLT_MAX;
+   maxy = -FLT_MAX;
 
-   for (int i=0;i<numVertices;i++)
+   for (int i = 0; i < numVertices; i++)
    {
       const RenderVertex * const pv0 = &vvertex[i];
 
-      vertices[i].x=pv0->x;
-	  vertices[i].y=pv0->y;
-	  vertices[i].z=0;
-      
-	  if( pv0->x>maxx ) maxx=pv0->x;
-	  if( pv0->x<minx ) minx=pv0->x;
-      if( pv0->y>maxy ) maxy=pv0->y;
-	  if( pv0->y<miny ) miny=pv0->y;
+      vertices[i].x = pv0->x;
+      vertices[i].y = pv0->y;
+      vertices[i].z = 0;
+
+      if (pv0->x > maxx) maxx = pv0->x;
+      if (pv0->x < minx) minx = pv0->x;
+      if (pv0->y > maxy) maxy = pv0->y;
+      if (pv0->y < miny) miny = pv0->y;
    }
 
-   const float inv_width = 1.0f/(maxx-minx);
-   const float inv_height = 1.0f/(maxy-miny);
-   const float inv_tablewidth = 1.0f/(m_ptable->m_right - m_ptable->m_left);
-   const float inv_tableheight = 1.0f/(m_ptable->m_bottom - m_ptable->m_top);
+   const float inv_width = 1.0f / (maxx - minx);
+   const float inv_height = 1.0f / (maxy - miny);
+   const float inv_tablewidth = 1.0f / (m_ptable->m_right - m_ptable->m_left);
+   const float inv_tableheight = 1.0f / (m_ptable->m_bottom - m_ptable->m_top);
    m_d.m_vCenter.x = minx + ((maxx - minx)*0.5f);
    m_d.m_vCenter.y = miny + ((maxy - miny)*0.5f);
 
-   for( int i=0;i<numVertices;i++)
+   for (int i = 0; i < numVertices; i++)
    {
       if (m_d.m_imagealignment == ImageModeWrap)
       {
-         vertices[i].tu = (vertices[i].x-minx)*inv_width;
-         vertices[i].tv = (vertices[i].y-miny)*inv_height;
+         vertices[i].tu = (vertices[i].x - minx)*inv_width;
+         vertices[i].tv = (vertices[i].y - miny)*inv_height;
       }
       else
       {
@@ -489,7 +489,7 @@ void Flasher::RenderSetup(RenderDevice* pd3dDevice)
 }
 
 void Flasher::RenderStatic(RenderDevice* pd3dDevice)
-{	
+{
 }
 
 void Flasher::SetObjectPos()
@@ -526,7 +526,7 @@ void Flasher::MoveOffset(const float dx, const float dy)
 {
    m_d.m_vCenter.x += dx;
    m_d.m_vCenter.y += dy;
-   for (int i = 0; i<m_vdpoint.Size(); i++)
+   for (int i = 0; i < m_vdpoint.Size(); i++)
    {
       CComObject<DragPoint> * const pdp = m_vdpoint.ElementAt(i);
 
@@ -544,20 +544,20 @@ void Flasher::DoCommand(int icmd, int x, int y)
    switch (icmd)
    {
    case ID_WALLMENU_FLIP:
-      {
-         Vertex2D vCenter;
-         GetPointCenter(&vCenter);
-         FlipPointY(&vCenter);
-      }
-      break;
+   {
+      Vertex2D vCenter;
+      GetPointCenter(&vCenter);
+      FlipPointY(&vCenter);
+   }
+   break;
 
    case ID_WALLMENU_MIRROR:
-      {
-         Vertex2D vCenter;
-         GetPointCenter(&vCenter);
-         FlipPointX(&vCenter);
-      }
-      break;
+   {
+      Vertex2D vCenter;
+      GetPointCenter(&vCenter);
+      FlipPointX(&vCenter);
+   }
+   break;
 
    case ID_WALLMENU_ROTATE:
       RotateDialog();
@@ -572,37 +572,37 @@ void Flasher::DoCommand(int icmd, int x, int y)
       break;
 
    case ID_WALLMENU_ADDPOINT:
+   {
+      STARTUNDO
+         const Vertex2D v = m_ptable->TransformPoint(x, y);
+
+      std::vector<RenderVertex> vvertex;
+      GetRgVertex(vvertex);
+
+      Vertex2D vOut;
+      int iSeg;
+      ClosestPointOnPolygon(vvertex, v, &vOut, &iSeg, true);
+
+      // Go through vertices (including iSeg itself) counting control points until iSeg
+      int icp = 0;
+      for (int i = 0; i < (iSeg + 1); i++)
+         if (vvertex[i].fControlPoint)
+            icp++;
+
+      CComObject<DragPoint> *pdp;
+      CComObject<DragPoint>::CreateInstance(&pdp);
+      if (pdp)
       {
-         STARTUNDO
-            const Vertex2D v = m_ptable->TransformPoint(x, y);
-
-         std::vector<RenderVertex> vvertex;
-         GetRgVertex(vvertex);
-
-         Vertex2D vOut;
-         int iSeg;
-         ClosestPointOnPolygon(vvertex, v, &vOut, &iSeg, true);
-
-         // Go through vertices (including iSeg itself) counting control points until iSeg
-         int icp = 0;
-         for (int i=0;i<(iSeg+1);i++)
-            if (vvertex[i].fControlPoint)
-               icp++;
-
-         CComObject<DragPoint> *pdp;
-         CComObject<DragPoint>::CreateInstance(&pdp);
-         if (pdp)
-         {
-            pdp->AddRef();
-            pdp->Init(this, vOut.x, vOut.y);
-            m_vdpoint.InsertElementAt(pdp, icp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
-         }
-
-         SetDirtyDraw();
-
-         STOPUNDO
+         pdp->AddRef();
+         pdp->Init(this, vOut.x, vOut.y);
+         m_vdpoint.InsertElementAt(pdp, icp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
       }
-      break;
+
+      SetDirtyDraw();
+
+      STOPUNDO
+   }
+   break;
    }
 }
 
@@ -629,11 +629,11 @@ HRESULT Flasher::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
    bw.WriteBool(FID(ADDB), m_d.m_fAddBlend);
    bw.WriteFloat(FID(FLDB), m_d.m_depthBias);
    bw.WriteInt(FID(ALGN), m_d.m_imagealignment);
-   bw.WriteInt(FID(FILT), m_d.m_filter);   
-   bw.WriteInt(FID(FIAM), m_d.m_fFilterAmount);   
+   bw.WriteInt(FID(FILT), m_d.m_filter);
+   bw.WriteInt(FID(FIAM), m_d.m_fFilterAmount);
    ISelect::SaveData(pstm, hcrypthash, hcryptkey);
    HRESULT hr;
-   if(FAILED(hr = SavePointData(pstm, hcrypthash, hcryptkey)))
+   if (FAILED(hr = SavePointData(pstm, hcrypthash, hcryptkey)))
       return hr;
 
    bw.WriteTag(FID(ENDB));
@@ -714,7 +714,7 @@ BOOL Flasher::LoadToken(int id, BiffReader *pbr)
       int iTmp;
       pbr->GetInt(&iTmp);
       //if( iTmp>100 ) iTmp=100;
-      if( iTmp<0 ) iTmp=0;
+      if (iTmp < 0) iTmp = 0;
       m_d.m_fAlpha = iTmp;
    }
    else if (id == FID(MOVA))
@@ -729,13 +729,13 @@ BOOL Flasher::LoadToken(int id, BiffReader *pbr)
    {
       BOOL iTmp;
       pbr->GetBool(&iTmp);
-      m_d.m_IsVisible = (iTmp==1);
+      m_d.m_IsVisible = (iTmp == 1);
    }
    else if (id == FID(ADDB))
    {
       BOOL iTmp;
       pbr->GetBool(&iTmp);
-      m_d.m_fAddBlend = (iTmp==1);
+      m_d.m_fAddBlend = (iTmp == 1);
    }
    else if (id == FID(DSPT))
    {
@@ -777,8 +777,8 @@ STDMETHODIMP Flasher::InterfaceSupportsErrorInfo(REFIID riid)
       &IID_IFlasher
    };
 
-   for (size_t i=0;i<sizeof(arr)/sizeof(arr[0]);i++)
-      if (InlineIsEqualGUID(*arr[i],riid))
+   for (size_t i = 0; i < sizeof(arr) / sizeof(arr[0]); i++)
+      if (InlineIsEqualGUID(*arr[i], riid))
          return S_OK;
 
    return S_FALSE;
@@ -793,7 +793,7 @@ STDMETHODIMP Flasher::get_X(float *pVal)
 
 STDMETHODIMP Flasher::put_X(float newVal)
 {
-   if(m_d.m_vCenter.x!= newVal)
+   if (m_d.m_vCenter.x != newVal)
    {
       STARTUNDO
 
@@ -815,7 +815,7 @@ STDMETHODIMP Flasher::get_Y(float *pVal)
 
 STDMETHODIMP Flasher::put_Y(float newVal)
 {
-   if(m_d.m_vCenter.y != newVal)
+   if (m_d.m_vCenter.y != newVal)
    {
       STARTUNDO
 
@@ -837,7 +837,7 @@ STDMETHODIMP Flasher::get_RotX(float *pVal)
 
 STDMETHODIMP Flasher::put_RotX(float newVal)
 {
-   if(m_d.m_rotX != newVal)
+   if (m_d.m_rotX != newVal)
    {
       STARTUNDO
 
@@ -859,7 +859,7 @@ STDMETHODIMP Flasher::get_RotY(float *pVal)
 
 STDMETHODIMP Flasher::put_RotY(float newVal)
 {
-   if(m_d.m_rotY != newVal)
+   if (m_d.m_rotY != newVal)
    {
       STARTUNDO
 
@@ -881,7 +881,7 @@ STDMETHODIMP Flasher::get_RotZ(float *pVal)
 
 STDMETHODIMP Flasher::put_RotZ(float newVal)
 {
-   if(m_d.m_rotZ != newVal)
+   if (m_d.m_rotZ != newVal)
    {
       STARTUNDO
 
@@ -903,7 +903,7 @@ STDMETHODIMP Flasher::get_Height(float *pVal)
 
 STDMETHODIMP Flasher::put_Height(float newVal)
 {
-   if(m_d.m_height != newVal)
+   if (m_d.m_height != newVal)
    {
       STARTUNDO
 
@@ -925,7 +925,7 @@ STDMETHODIMP Flasher::get_Color(OLE_COLOR *pVal)
 
 STDMETHODIMP Flasher::put_Color(OLE_COLOR newVal)
 {
-   if(m_d.m_color != newVal)
+   if (m_d.m_color != newVal)
    {
       STARTUNDO
 
@@ -981,7 +981,7 @@ STDMETHODIMP Flasher::put_ImageA(BSTR newVal)
    char m_szImage[MAXTOKEN];
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_szImage, 32, NULL, NULL);
 
-   if(strcmp(m_szImage,m_d.m_szImageA) != 0)
+   if (strcmp(m_szImage, m_d.m_szImageA) != 0)
    {
       STARTUNDO
 
@@ -1008,7 +1008,7 @@ STDMETHODIMP Flasher::put_ImageB(BSTR newVal)
    char m_szImage[MAXTOKEN];
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_szImage, 32, NULL, NULL);
 
-   if(strcmp(m_szImage,m_d.m_szImageB) != 0)
+   if (strcmp(m_szImage, m_d.m_szImageB) != 0)
    {
       STARTUNDO
 
@@ -1024,34 +1024,34 @@ STDMETHODIMP Flasher::get_Filter(BSTR *pVal)
 {
    WCHAR wz[512];
 
-   switch( m_d.m_filter )
+   switch (m_d.m_filter)
    {
    case Filter_Additive:
-      {
-         MultiByteToWideChar(CP_ACP, 0, "Additive", -1, wz, 32);
-         break;
-      }
+   {
+      MultiByteToWideChar(CP_ACP, 0, "Additive", -1, wz, 32);
+      break;
+   }
    case Filter_Multiply:
-      {
-         MultiByteToWideChar(CP_ACP, 0, "Multiply", -1, wz, 32);
-         break;
-      }
+   {
+      MultiByteToWideChar(CP_ACP, 0, "Multiply", -1, wz, 32);
+      break;
+   }
    case Filter_Overlay:
-      {
-         MultiByteToWideChar(CP_ACP, 0, "Overlay", -1, wz, 32);
-         break;
-      }
+   {
+      MultiByteToWideChar(CP_ACP, 0, "Overlay", -1, wz, 32);
+      break;
+   }
    case Filter_Screen:
-      {
-         MultiByteToWideChar(CP_ACP, 0, "Screen", -1, wz, 32);
-         break;
-      }
+   {
+      MultiByteToWideChar(CP_ACP, 0, "Screen", -1, wz, 32);
+      break;
+   }
    default:
    case Filter_None:
-      {
-         MultiByteToWideChar(CP_ACP, 0, "None", -1, wz, 32);
-         break;
-      }
+   {
+      MultiByteToWideChar(CP_ACP, 0, "None", -1, wz, 32);
+      break;
+   }
    }
    *pVal = SysAllocString(wz);
 
@@ -1063,40 +1063,40 @@ STDMETHODIMP Flasher::put_Filter(BSTR newVal)
    char m_szFilter[32];
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_szFilter, 32, NULL, NULL);
 
-   if(strcmp(m_szFilter,"Additive") == 0 && m_d.m_filter!=Filter_Additive)
+   if (strcmp(m_szFilter, "Additive") == 0 && m_d.m_filter != Filter_Additive)
    {
       STARTUNDO
          m_d.m_filter = Filter_Additive;
       STOPUNDO
-         dynamicVertexBufferRegenerate=true;
+         dynamicVertexBufferRegenerate = true;
    }
-   else if(strcmp(m_szFilter,"Multiply") == 0 && m_d.m_filter!=Filter_Multiply)
+   else if (strcmp(m_szFilter, "Multiply") == 0 && m_d.m_filter != Filter_Multiply)
    {
       STARTUNDO
          m_d.m_filter = Filter_Multiply;
       STOPUNDO
-         dynamicVertexBufferRegenerate=true;
+         dynamicVertexBufferRegenerate = true;
    }
-   else if(strcmp(m_szFilter,"Overlay") == 0 && m_d.m_filter!=Filter_Overlay)
+   else if (strcmp(m_szFilter, "Overlay") == 0 && m_d.m_filter != Filter_Overlay)
    {
       STARTUNDO
          m_d.m_filter = Filter_Overlay;
       STOPUNDO
-         dynamicVertexBufferRegenerate=true;
+         dynamicVertexBufferRegenerate = true;
    }
-   else if(strcmp(m_szFilter,"Screen") == 0 && m_d.m_filter!=Filter_Screen)
+   else if (strcmp(m_szFilter, "Screen") == 0 && m_d.m_filter != Filter_Screen)
    {
       STARTUNDO
          m_d.m_filter = Filter_Screen;
       STOPUNDO
-         dynamicVertexBufferRegenerate=true;
+         dynamicVertexBufferRegenerate = true;
    }
-   else if(strcmp(m_szFilter,"None") == 0 && m_d.m_filter!=Filter_None)
+   else if (strcmp(m_szFilter, "None") == 0 && m_d.m_filter != Filter_None)
    {
       STARTUNDO
          m_d.m_filter = Filter_None;
       STOPUNDO
-         dynamicVertexBufferRegenerate=true;
+         dynamicVertexBufferRegenerate = true;
    }
 
    return S_OK;
@@ -1114,7 +1114,7 @@ STDMETHODIMP Flasher::put_Opacity(long newVal)
 
       m_d.m_fAlpha = newVal;
    //if (m_d.m_fAlpha>100 ) m_d.m_fAlpha=100;
-   if (m_d.m_fAlpha<0 ) m_d.m_fAlpha=0;
+   if (m_d.m_fAlpha < 0) m_d.m_fAlpha = 0;
 
    STOPUNDO
 
@@ -1167,7 +1167,7 @@ STDMETHODIMP Flasher::put_Amount(long newVal)
 
       m_d.m_fFilterAmount = newVal;
    //if (m_d.m_fFilterAmount>100 ) m_d.m_fFilterAmount=100;
-   if (m_d.m_fFilterAmount<0 ) m_d.m_fFilterAmount=0;
+   if (m_d.m_fFilterAmount < 0) m_d.m_fFilterAmount = 0;
 
    STOPUNDO
 
@@ -1182,7 +1182,7 @@ STDMETHODIMP Flasher::get_Visible(VARIANT_BOOL *pVal) //temporary value of objec
 }
 
 STDMETHODIMP Flasher::put_Visible(VARIANT_BOOL newVal)
-{	
+{
    //   if (!g_pplayer )
    {
       STARTUNDO
@@ -1202,8 +1202,8 @@ STDMETHODIMP Flasher::get_DisplayTexture(VARIANT_BOOL *pVal) //temporary value o
 }
 
 STDMETHODIMP Flasher::put_DisplayTexture(VARIANT_BOOL newVal)
-{	
-   if (!g_pplayer )
+{
+   if (!g_pplayer)
    {
       STARTUNDO
 
@@ -1223,10 +1223,10 @@ STDMETHODIMP Flasher::get_AddBlend(VARIANT_BOOL *pVal) //temporary value of obje
 }
 
 STDMETHODIMP Flasher::put_AddBlend(VARIANT_BOOL newVal)
-{	
+{
    STARTUNDO
 
-      m_d.m_fAddBlend = VBTOF(newVal);			
+      m_d.m_fAddBlend = VBTOF(newVal);
 
    STOPUNDO
 
@@ -1242,7 +1242,7 @@ STDMETHODIMP Flasher::get_DepthBias(float *pVal)
 
 STDMETHODIMP Flasher::put_DepthBias(float newVal)
 {
-   if(m_d.m_depthBias != newVal)
+   if (m_d.m_depthBias != newVal)
    {
       STARTUNDO
 
@@ -1264,7 +1264,7 @@ STDMETHODIMP Flasher::get_ImageAlignment(RampImageAlignment *pVal)
 
 STDMETHODIMP Flasher::put_ImageAlignment(RampImageAlignment newVal)
 {
-   if(m_d.m_imagealignment != newVal)
+   if (m_d.m_imagealignment != newVal)
    {
       STARTUNDO
 
@@ -1284,36 +1284,36 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
 {
    TRACE_FUNCTION();
    // Don't render if invisible.
-   if(!m_d.m_IsVisible || dynamicVertexBuffer==NULL || m_ptable->m_fReflectionEnabled) 
+   if (!m_d.m_IsVisible || dynamicVertexBuffer == NULL || m_ptable->m_fReflectionEnabled)
       return;
 
-   const D3DXVECTOR4 color = convertColor(m_d.m_color,(float)m_d.m_fAlpha*m_d.m_intensity_scale/100.0f);
-   if(color.w == 0.f)
-       return;
+   const D3DXVECTOR4 color = convertColor(m_d.m_color, (float)m_d.m_fAlpha*m_d.m_intensity_scale / 100.0f);
+   if (color.w == 0.f)
+      return;
 
-   if(color.x == 0.f && color.y == 0.f && color.z == 0.f)
-       return;
+   if (color.x == 0.f && color.y == 0.f && color.z == 0.f)
+      return;
 
    //Pin3D * const ppin3d = &g_pplayer->m_pin3d;
    Texture * const pinA = m_ptable->GetImage(m_d.m_szImageA);
    Texture * const pinB = m_ptable->GetImage(m_d.m_szImageB);
 
-   const D3DXVECTOR4 ab((float)m_d.m_fFilterAmount/100.0f, min(max(m_d.m_modulate_vs_add,0.00001f),0.9999f), 0.f,0.f); // avoid 0, as it disables the blend and avoid 1 as it looks not good with day->night changes
+   const D3DXVECTOR4 ab((float)m_d.m_fFilterAmount / 100.0f, min(max(m_d.m_modulate_vs_add, 0.00001f), 0.9999f), 0.f, 0.f); // avoid 0, as it disables the blend and avoid 1 as it looks not good with day->night changes
    pd3dDevice->flasherShader->SetVector("amount__blend_modulate_vs_add", &ab);
-   
+
    pd3dDevice->flasherShader->SetFlasherColorAlpha(color);
 
    pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
 
-   D3DXVECTOR4 flasherData(-1.f,-1.f, (float)m_d.m_filter,m_d.m_fAddBlend ? 1.f : 0.f);
+   D3DXVECTOR4 flasherData(-1.f, -1.f, (float)m_d.m_filter, m_d.m_fAddBlend ? 1.f : 0.f);
 
    if (pinA && !pinB)
    {
       pd3dDevice->flasherShader->SetTechnique("basic_with_textureOne_noLight");
       pd3dDevice->flasherShader->SetTexture("Texture0", pinA);
-   
-      if ( !m_d.m_fAddBlend )
-          flasherData.x = pinA->m_alphaTestValue / 255.0f;
+
+      if (!m_d.m_fAddBlend)
+         flasherData.x = pinA->m_alphaTestValue / 255.0f;
 
       //ppin3d->SetTextureFilter( 0, TEXTURE_MODE_TRILINEAR );
    }
@@ -1321,9 +1321,9 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
    {
       pd3dDevice->flasherShader->SetTechnique("basic_with_textureOne_noLight");
       pd3dDevice->flasherShader->SetTexture("Texture0", pinB);
-      
-      if ( !m_d.m_fAddBlend )
-          flasherData.x = pinB->m_alphaTestValue / 255.0f;
+
+      if (!m_d.m_fAddBlend)
+         flasherData.x = pinB->m_alphaTestValue / 255.0f;
 
       //ppin3d->SetTextureFilter( 0, TEXTURE_MODE_TRILINEAR );
    }
@@ -1333,10 +1333,10 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
       pd3dDevice->flasherShader->SetTexture("Texture1", pinB);
       pd3dDevice->flasherShader->SetTechnique("basic_with_textureAB_noLight");
 
-      if ( !m_d.m_fAddBlend )
+      if (!m_d.m_fAddBlend)
       {
-        flasherData.x = pinA->m_alphaTestValue / 255.0f;
-		flasherData.y = pinB->m_alphaTestValue / 255.0f;
+         flasherData.x = pinA->m_alphaTestValue / 255.0f;
+         flasherData.y = pinB->m_alphaTestValue / 255.0f;
       }
 
       //ppin3d->SetTextureFilter( 0, TEXTURE_MODE_TRILINEAR );
@@ -1346,7 +1346,7 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
 
    pd3dDevice->flasherShader->SetFlasherData(flasherData);
 
-   if(dynamicVertexBufferRegenerate)
+   if (dynamicVertexBufferRegenerate)
    {
       dynamicVertexBufferRegenerate = false;
       UpdateMesh();
@@ -1361,7 +1361,7 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
 
    pd3dDevice->flasherShader->Begin(0);
-   pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_TEX, dynamicVertexBuffer, 0, numVertices, dynamicIndexBuffer, 0, numPolys*3);
+   pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_TEX, dynamicVertexBuffer, 0, numVertices, dynamicIndexBuffer, 0, numPolys * 3);
    pd3dDevice->flasherShader->End();
 
    //pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
@@ -1371,22 +1371,22 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
 
 void Flasher::UpdatePropertyPanes()
 {
-   if ( m_propVisual==NULL )
+   if (m_propVisual == NULL)
       return;
 
-   if ( m_d.m_szImageA[0]==0 && m_d.m_szImageB[0]==0 )
-      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,8), FALSE);
+   if (m_d.m_szImageA[0] == 0 && m_d.m_szImageB[0] == 0)
+      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, 8), FALSE);
    else
-      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,8), TRUE);
+      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, 8), TRUE);
 
-   if ( m_d.m_szImageB[0]==0 || m_d.m_szImageA[0]==0 )
+   if (m_d.m_szImageB[0] == 0 || m_d.m_szImageA[0] == 0)
    {
-      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_EFFECT_COMBO), FALSE);
-      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_FILTERAMOUNT_EDIT), FALSE);
+      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_EFFECT_COMBO), FALSE);
+      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_FILTERAMOUNT_EDIT), FALSE);
    }
    else
    {
-      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_EFFECT_COMBO), TRUE);
-      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_FILTERAMOUNT_EDIT), TRUE);
+      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_EFFECT_COMBO), TRUE);
+      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_FILTERAMOUNT_EDIT), TRUE);
    }
 }

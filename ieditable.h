@@ -6,40 +6,40 @@ class Collection;
 class IScriptable;
 
 class IFireEvents
-	{
+{
 public:
-	virtual void FireGroupEvent(int dispid) = 0;
-	virtual IDispatch *GetDispatch() = 0;
-	virtual IDebugCommands *GetDebugCommands() = 0;
-	};
+   virtual void FireGroupEvent(int dispid) = 0;
+   virtual IDispatch *GetDispatch() = 0;
+   virtual IDebugCommands *GetDebugCommands() = 0;
+};
 
 #define STARTUNDO \
 	if (g_fKeepUndoRecords) \
-		{ \
+   		{ \
 		BeginUndo(); \
 		MarkForUndo(); \
-		}
+   		}
 
 #define STOPUNDO \
 	if (g_fKeepUndoRecords) \
-		{ \
+   		{ \
 		EndUndo(); \
 		SetDirtyDraw(); \
-		}
+   		}
 
 #define STARTUNDOSELECT \
 	if (g_fKeepUndoRecords) \
-		{ \
+   		{ \
 		GetIEditable()->BeginUndo(); \
 		GetIEditable()->MarkForUndo(); \
-		}
+   		}
 
 #define STOPUNDOSELECT \
 	if (g_fKeepUndoRecords) \
-		{ \
+   		{ \
 		GetIEditable()->EndUndo(); \
 		GetIEditable()->SetDirtyDraw(); \
-		}
+   		}
 
 
 #define INITVBA(ItemType) \
@@ -47,12 +47,12 @@ public:
 		{ \
 		WCHAR wzUniqueName[128]; \
 		if (fNew && !wzName) \
-			{ \
+      			{ \
 				{ \
 				GetPTable()->GetUniqueName(ItemType, wzUniqueName); \
 				WideStrCopy(wzUniqueName, (WCHAR *)m_wzName);/*lstrcpyW((WCHAR *)m_wzName, wzUniqueName);*/ \
 				} \
-			} \
+      			} \
 		InitScript(); \
 		return S_OK; \
 		}
@@ -91,14 +91,14 @@ public:
 		{ \
 		int len = lstrlenW(newVal); \
 		if (len > 32 || len < 1) \
-			{ \
+      			{ \
 			return E_FAIL; \
-			} \
+      			} \
 		if (GetPTable()->m_pcv->ReplaceName(this, newVal) == S_OK) \
-			{ \
+      			{ \
 			WideStrCopy(newVal, (WCHAR *)m_wzName);/*lstrcpyW((WCHAR *)m_wzName, newVal);*/ \
 			return S_OK; \
-			} \
+      			} \
 		return E_FAIL; \
 		} \
 	STDMETHOD(get_TimerInterval)(/*[out, retval]*/ long *pVal) {*pVal = m_d.m_tdr.m_TimerInterval; return S_OK;} \
@@ -116,9 +116,9 @@ public:
     { \
         CComObject<T> *obj = NULL; \
         if (FAILED(CComObject<T>::CreateInstance(&obj))) \
-        { \
+                { \
             MessageBox(0, "Failed to create COM object.", "Visual Pinball", MB_ICONEXCLAMATION); \
-        } \
+                } \
         obj->AddRef(); \
         return obj; \
     } \
@@ -174,71 +174,71 @@ class EventProxyBase;
 // Example:  Bumper is an IEditable and ISelect, but DragPoint is only ISelect.
 
 class IEditable
-	{
+{
 public:
-	IEditable();
-	virtual ~IEditable();
+   IEditable();
+   virtual ~IEditable();
 
-	virtual void PreRender(Sur * const psur) = 0;
-	virtual void Render(Sur * const psur) = 0;
-	virtual void RenderBlueprint(Sur *psur);
+   virtual void PreRender(Sur * const psur) = 0;
+   virtual void Render(Sur * const psur) = 0;
+   virtual void RenderBlueprint(Sur *psur);
    virtual void ExportMesh(FILE *f) {}
-	
-	virtual ULONG STDMETHODCALLTYPE AddRef() = 0;
-	virtual ULONG STDMETHODCALLTYPE Release() = 0;
 
-	virtual PinTable *GetPTable()=0;
+   virtual ULONG STDMETHODCALLTYPE AddRef() = 0;
+   virtual ULONG STDMETHODCALLTYPE Release() = 0;
 
-	void SetDirtyDraw();
+   virtual PinTable *GetPTable() = 0;
 
-	virtual Hitable *GetIHitable();
+   void SetDirtyDraw();
 
-	virtual HRESULT SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey) = 0;
-	virtual void ClearForOverwrite();
-	virtual HRESULT InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)=0;
-	virtual HRESULT InitPostLoad()=0;
-	virtual HRESULT InitVBA(BOOL fNew, int id, WCHAR *wzName)=0;
-	virtual ISelect *GetISelect()=0;
-	virtual void SetDefaults(bool fromMouseClick)=0;
-	virtual IScriptable *GetScriptable() = 0;
-	virtual IFireEvents *GetIFireEvents() = 0;
-	virtual ItemTypeEnum GetItemType() = 0;
+   virtual Hitable *GetIHitable();
 
-	virtual void GetBoundingVertices(Vector<Vertex3Ds> * const pvvertex3D) {}
-	virtual void WriteRegDefaults(){}
-	
-	void BeginUndo();
-	void EndUndo();
-	void MarkForUndo();
-	void MarkForDelete();
-	void Undelete();
+   virtual HRESULT SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey) = 0;
+   virtual void ClearForOverwrite();
+   virtual HRESULT InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey) = 0;
+   virtual HRESULT InitPostLoad() = 0;
+   virtual HRESULT InitVBA(BOOL fNew, int id, WCHAR *wzName) = 0;
+   virtual ISelect *GetISelect() = 0;
+   virtual void SetDefaults(bool fromMouseClick) = 0;
+   virtual IScriptable *GetScriptable() = 0;
+   virtual IFireEvents *GetIFireEvents() = 0;
+   virtual ItemTypeEnum GetItemType() = 0;
 
-	void Delete();
-	void Uncreate();
+   virtual void GetBoundingVertices(Vector<Vertex3Ds> * const pvvertex3D) {}
+   virtual void WriteRegDefaults(){}
 
-	void InitScript();
+   void BeginUndo();
+   void EndUndo();
+   void MarkForUndo();
+   void MarkForDelete();
+   void Undelete();
 
-	HRESULT put_TimerEnabled(VARIANT_BOOL newVal, BOOL *pte);
-	HRESULT put_TimerInterval(long newVal, int *pti);
+   void Delete();
+   void Uncreate();
 
-	HRESULT get_UserValue(VARIANT *pVal);
-	HRESULT put_UserValue(VARIANT *newVal);
+   void InitScript();
 
-	void BeginPlay();
-	void EndPlay();
+   HRESULT put_TimerEnabled(VARIANT_BOOL newVal, BOOL *pte);
+   HRESULT put_TimerInterval(long newVal, int *pti);
 
-	HitTimer *m_phittimer;
+   HRESULT get_UserValue(VARIANT *pVal);
+   HRESULT put_UserValue(VARIANT *newVal);
 
-	VARIANT m_uservalue;
+   void BeginPlay();
+   void EndPlay();
 
-	Vector<Collection> m_vCollection;
-	Vector<int> m_viCollection;
+   HitTimer *m_phittimer;
 
-	// Optimizations for in-game
-	Vector<Collection> m_vEventCollection;
-	Vector<int> m_viEventCollection;
-	bool m_fSingleEvents;
+   VARIANT m_uservalue;
 
-        bool m_fBackglass; // if the light is on the table (false) or a backglass view
-        bool m_isVisible;
-	};
+   Vector<Collection> m_vCollection;
+   Vector<int> m_viCollection;
+
+   // Optimizations for in-game
+   Vector<Collection> m_vEventCollection;
+   Vector<int> m_viEventCollection;
+   bool m_fSingleEvents;
+
+   bool m_fBackglass; // if the light is on the table (false) or a backglass view
+   bool m_isVisible;
+};

@@ -9,37 +9,37 @@ LightCenter::LightCenter(Light *plight)
 
 HRESULT LightCenter::GetTypeName(BSTR *pVal)
 {
-	return m_plight->GetTypeName(pVal);
+   return m_plight->GetTypeName(pVal);
 }
 
-IDispatch *LightCenter::GetDispatch() 
+IDispatch *LightCenter::GetDispatch()
 {
-	return m_plight->GetDispatch();
+   return m_plight->GetDispatch();
 }
 
 void LightCenter::GetDialogPanes(Vector<PropertyPane> *pvproppane)
 {
-	m_plight->GetDialogPanes(pvproppane);
+   m_plight->GetDialogPanes(pvproppane);
 }
 
 void LightCenter::Delete()
 {
-	m_plight->Delete();
+   m_plight->Delete();
 }
 
 void LightCenter::Uncreate()
 {
-	m_plight->Uncreate();
+   m_plight->Uncreate();
 }
 
 IEditable *LightCenter::GetIEditable()
 {
-	return (IEditable *)m_plight;
+   return (IEditable *)m_plight;
 }
 
 PinTable *LightCenter::GetPTable()
 {
-	return m_plight->GetPTable();
+   return m_plight->GetPTable();
 }
 
 void LightCenter::GetCenter(Vertex2D * const pv) const
@@ -81,41 +81,41 @@ Light::Light() : m_lightcenter(this)
    m_d.m_fVisible = true;
    m_roundLight = false;
    m_propVisual = NULL;
-   memset(m_d.m_szOffImage,0,MAXTOKEN);
-   memset(m_d.m_szSurface,0,MAXTOKEN);
+   memset(m_d.m_szOffImage, 0, MAXTOKEN);
+   memset(m_d.m_szSurface, 0, MAXTOKEN);
 }
 
 Light::~Light()
 {
-   if( customMoverVBuffer )
+   if (customMoverVBuffer)
    {
       customMoverVBuffer->release();
-      customMoverVBuffer=0;
+      customMoverVBuffer = 0;
    }
-   if( customMoverIBuffer )
+   if (customMoverIBuffer)
    {
       customMoverIBuffer->release();
-      customMoverIBuffer=0;
+      customMoverIBuffer = 0;
    }
-   if( bulbLightIndexBuffer )
+   if (bulbLightIndexBuffer)
    {
-       bulbLightIndexBuffer->release();
-       bulbLightIndexBuffer=0;
+      bulbLightIndexBuffer->release();
+      bulbLightIndexBuffer = 0;
    }
-   if( bulbLightVBuffer )
+   if (bulbLightVBuffer)
    {
-       bulbLightVBuffer->release();
-       bulbLightVBuffer=0;
+      bulbLightVBuffer->release();
+      bulbLightVBuffer = 0;
    }
-   if( bulbSocketIndexBuffer )
+   if (bulbSocketIndexBuffer)
    {
-       bulbSocketIndexBuffer->release();
-       bulbSocketIndexBuffer=0;
+      bulbSocketIndexBuffer->release();
+      bulbSocketIndexBuffer = 0;
    }
-   if( bulbSocketVBuffer )
+   if (bulbSocketVBuffer)
    {
-       bulbSocketVBuffer->release();
-       bulbSocketVBuffer=0;
+      bulbSocketVBuffer->release();
+      bulbSocketVBuffer = 0;
    }
 }
 
@@ -131,7 +131,7 @@ HRESULT Light::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
    InitShape();
 
    m_fLockedByLS = false;			//>>> added by chris
-   m_realState	= m_d.m_state;		//>>> added by chris
+   m_realState = m_d.m_state;		//>>> added by chris
    m_d.m_fVisible = true;
 
    return InitVBA(fTrue, 0, NULL);
@@ -143,19 +143,19 @@ void Light::SetDefaults(bool fromMouseClick)
    float fTmp;
    int iTmp;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Light","Falloff", &fTmp);
+   hr = GetRegStringAsFloat("DefaultProps\\Light", "Falloff", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_falloff = fTmp;
    else
       m_d.m_falloff = 50.f;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Light","FalloffPower", &fTmp);
+   hr = GetRegStringAsFloat("DefaultProps\\Light", "FalloffPower", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_falloff_power = fTmp;
    else
       m_d.m_falloff_power = 2.0f;
 
-   hr = GetRegInt("DefaultProps\\Light","LightState", &iTmp);
+   hr = GetRegInt("DefaultProps\\Light", "LightState", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_state = (enum LightState)iTmp;
    else
@@ -163,51 +163,51 @@ void Light::SetDefaults(bool fromMouseClick)
 
    m_d.m_shape = ShapeCustom;
 
-   hr = GetRegInt("DefaultProps\\Light","TimerEnabled", &iTmp);
+   hr = GetRegInt("DefaultProps\\Light", "TimerEnabled", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_tdr.m_fTimerEnabled = iTmp == 0 ? false : true;
    else
       m_d.m_tdr.m_fTimerEnabled = false;
 
-   hr = GetRegInt("DefaultProps\\Light","TimerInterval", &iTmp);
+   hr = GetRegInt("DefaultProps\\Light", "TimerInterval", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_tdr.m_TimerInterval = iTmp;
    else
       m_d.m_tdr.m_TimerInterval = 100;
 
-   hr = GetRegInt("DefaultProps\\Light","Color", &iTmp);
+   hr = GetRegInt("DefaultProps\\Light", "Color", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_color = iTmp;
    else
-      m_d.m_color = RGB(255,255,0);
+      m_d.m_color = RGB(255, 255, 0);
 
-   hr = GetRegInt("DefaultProps\\Light","ColorFull", &iTmp);
+   hr = GetRegInt("DefaultProps\\Light", "ColorFull", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_color2 = iTmp;
    else
-      m_d.m_color2 = RGB(255,255,255);
+      m_d.m_color2 = RGB(255, 255, 255);
 
-   hr = GetRegString("DefaultProps\\Light","OffImage", m_d.m_szOffImage, MAXTOKEN);
+   hr = GetRegString("DefaultProps\\Light", "OffImage", m_d.m_szOffImage, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szOffImage[0] = 0;
 
-   hr = GetRegString("DefaultProps\\Light","BlinkPattern", m_rgblinkpattern, MAXTOKEN);
+   hr = GetRegString("DefaultProps\\Light", "BlinkPattern", m_rgblinkpattern, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
       strcpy_s(m_rgblinkpattern, sizeof(m_rgblinkpattern), "10");
 
-   hr = GetRegInt("DefaultProps\\Light","BlinkInterval", &iTmp);
+   hr = GetRegInt("DefaultProps\\Light", "BlinkInterval", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_blinkinterval = iTmp;
    else
       m_blinkinterval = 125;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Light","Intensity", &fTmp);
+   hr = GetRegStringAsFloat("DefaultProps\\Light", "Intensity", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_intensity = fTmp;
    else
       m_d.m_intensity = 1.0f;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Light","TransmissionScale", &fTmp);
+   hr = GetRegStringAsFloat("DefaultProps\\Light", "TransmissionScale", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_transmissionScale = fTmp;
    else
@@ -217,63 +217,63 @@ void Light::SetDefaults(bool fromMouseClick)
 
    /*hr = GetRegInt("DefaultProps\\Light","BorderColor", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
-      m_d.m_bordercolor = iTmp;
+   m_d.m_bordercolor = iTmp;
    else
-      m_d.m_bordercolor = RGB(0,0,0);*/
+   m_d.m_bordercolor = RGB(0,0,0);*/
 
    hr = GetRegString("DefaultProps\\Light", "Surface", &m_d.m_szSurface, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szSurface[0] = 0;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Light","FadeSpeedUp", &fTmp);
+   hr = GetRegStringAsFloat("DefaultProps\\Light", "FadeSpeedUp", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_fadeSpeedUp = fTmp;
    else
       m_d.m_fadeSpeedUp = 0.2f;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Light","FadeSpeedDown", &fTmp);
+   hr = GetRegStringAsFloat("DefaultProps\\Light", "FadeSpeedDown", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_fadeSpeedDown = fTmp;
    else
       m_d.m_fadeSpeedDown = 0.2f;
 
-   hr = GetRegInt("DefaultProps\\Light","Bulb", &iTmp);
+   hr = GetRegInt("DefaultProps\\Light", "Bulb", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
-       m_d.m_BulbLight = iTmp ? true : false;
+      m_d.m_BulbLight = iTmp ? true : false;
    else
-       m_d.m_BulbLight = false;
+      m_d.m_BulbLight = false;
 
-   hr = GetRegInt("DefaultProps\\Light","ImageMode", &iTmp);
+   hr = GetRegInt("DefaultProps\\Light", "ImageMode", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
-       m_d.m_imageMode = iTmp ? true : false;
+      m_d.m_imageMode = iTmp ? true : false;
    else
-       m_d.m_imageMode = false;
+      m_d.m_imageMode = false;
 
-   hr = GetRegInt("DefaultProps\\Light","ShowBulbMesh", &iTmp);
+   hr = GetRegInt("DefaultProps\\Light", "ShowBulbMesh", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
-       m_d.m_showBulbMesh = iTmp ? true : false;
+      m_d.m_showBulbMesh = iTmp ? true : false;
    else
-       m_d.m_showBulbMesh = false;
+      m_d.m_showBulbMesh = false;
 
-   hr = GetRegInt("DefaultProps\\Light","ShowReflectionOnBall", &iTmp);
+   hr = GetRegInt("DefaultProps\\Light", "ShowReflectionOnBall", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
-       m_d.m_showReflectionOnBall = iTmp ? true : false;
+      m_d.m_showReflectionOnBall = iTmp ? true : false;
    else
-       m_d.m_showReflectionOnBall = true;
+      m_d.m_showReflectionOnBall = true;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Light","ScaleBulbMesh", &fTmp);
+   hr = GetRegStringAsFloat("DefaultProps\\Light", "ScaleBulbMesh", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
-       m_d.m_meshRadius = fTmp;
+      m_d.m_meshRadius = fTmp;
    else
-       m_d.m_meshRadius = 20.0f;
+      m_d.m_meshRadius = 20.0f;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Light","BulbModulateVsAdd", &fTmp);
+   hr = GetRegStringAsFloat("DefaultProps\\Light", "BulbModulateVsAdd", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
-       m_d.m_modulate_vs_add = fTmp;
+      m_d.m_modulate_vs_add = fTmp;
    else
-       m_d.m_modulate_vs_add = 0.9f;
+      m_d.m_modulate_vs_add = 0.9f;
 
-   hr = GetRegStringAsFloat("DefaultProps\\Light","BulbHaloHeight", &fTmp);
+   hr = GetRegStringAsFloat("DefaultProps\\Light", "BulbHaloHeight", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_bulbHaloHeight = fTmp;
    else
@@ -282,78 +282,78 @@ void Light::SetDefaults(bool fromMouseClick)
 
 void Light::WriteRegDefaults()
 {
-   SetRegValueFloat("DefaultProps\\Light","Falloff", m_d.m_falloff);
-   SetRegValueFloat("DefaultProps\\Light","FalloffPower", m_d.m_falloff_power);
-   SetRegValue("DefaultProps\\Light","LightState",REG_DWORD,&m_d.m_state,4);
-   SetRegValueBool("DefaultProps\\Light","TimerEnabled",m_d.m_tdr.m_fTimerEnabled);
-   SetRegValue("DefaultProps\\Light","TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval, 4);
-   SetRegValue("DefaultProps\\Light","Color",REG_DWORD,&m_d.m_color,4);
-   SetRegValue("DefaultProps\\Light","ColorFull",REG_DWORD,&m_d.m_color2,4);
-   SetRegValue("DefaultProps\\Light","OffImage", REG_SZ, &m_d.m_szOffImage,lstrlen(m_d.m_szOffImage));
-   SetRegValue("DefaultProps\\Light","BlinkPattern", REG_SZ, &m_rgblinkpattern, lstrlen(m_rgblinkpattern));
-   SetRegValue("DefaultProps\\Light","BlinkInterval", REG_DWORD, &m_blinkinterval,4);
+   SetRegValueFloat("DefaultProps\\Light", "Falloff", m_d.m_falloff);
+   SetRegValueFloat("DefaultProps\\Light", "FalloffPower", m_d.m_falloff_power);
+   SetRegValue("DefaultProps\\Light", "LightState", REG_DWORD, &m_d.m_state, 4);
+   SetRegValueBool("DefaultProps\\Light", "TimerEnabled", m_d.m_tdr.m_fTimerEnabled);
+   SetRegValue("DefaultProps\\Light", "TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval, 4);
+   SetRegValue("DefaultProps\\Light", "Color", REG_DWORD, &m_d.m_color, 4);
+   SetRegValue("DefaultProps\\Light", "ColorFull", REG_DWORD, &m_d.m_color2, 4);
+   SetRegValue("DefaultProps\\Light", "OffImage", REG_SZ, &m_d.m_szOffImage, lstrlen(m_d.m_szOffImage));
+   SetRegValue("DefaultProps\\Light", "BlinkPattern", REG_SZ, &m_rgblinkpattern, lstrlen(m_rgblinkpattern));
+   SetRegValue("DefaultProps\\Light", "BlinkInterval", REG_DWORD, &m_blinkinterval, 4);
    //SetRegValue("DefaultProps\\Light","BorderColor", REG_DWORD, &m_d.m_bordercolor,4);
-   SetRegValue("DefaultProps\\Light","Surface", REG_SZ, &m_d.m_szSurface, lstrlen(m_d.m_szSurface));
-   SetRegValueFloat("DefaultProps\\Light","FadeSpeedUp", m_d.m_fadeSpeedUp);
-   SetRegValueFloat("DefaultProps\\Light","FadeSpeedDown", m_d.m_fadeSpeedDown);
-   SetRegValueFloat("DefaultProps\\Light","Intensity", m_d.m_intensity);
-   SetRegValueFloat("DefaultProps\\Light","TransmissionScale", m_d.m_transmissionScale);
-   SetRegValueBool("DefaultProps\\Light","Bulb", m_d.m_BulbLight);
-   SetRegValueBool("DefaultProps\\Light","ImageMode", m_d.m_imageMode);
-   SetRegValueBool("DefaultProps\\Light","ShowBulbMesh", m_d.m_showBulbMesh);
-   SetRegValueBool("DefaultProps\\Light","ShowReflectionOnBall", m_d.m_showReflectionOnBall);
-   SetRegValueFloat("DefaultProps\\Light","ScaleBulbMesh", m_d.m_meshRadius);
-   SetRegValueFloat("DefaultProps\\Light","BulbModulateVsAdd", m_d.m_modulate_vs_add);
-   SetRegValueFloat("DefaultProps\\Light","BulbHaloHeight", m_d.m_bulbHaloHeight);
+   SetRegValue("DefaultProps\\Light", "Surface", REG_SZ, &m_d.m_szSurface, lstrlen(m_d.m_szSurface));
+   SetRegValueFloat("DefaultProps\\Light", "FadeSpeedUp", m_d.m_fadeSpeedUp);
+   SetRegValueFloat("DefaultProps\\Light", "FadeSpeedDown", m_d.m_fadeSpeedDown);
+   SetRegValueFloat("DefaultProps\\Light", "Intensity", m_d.m_intensity);
+   SetRegValueFloat("DefaultProps\\Light", "TransmissionScale", m_d.m_transmissionScale);
+   SetRegValueBool("DefaultProps\\Light", "Bulb", m_d.m_BulbLight);
+   SetRegValueBool("DefaultProps\\Light", "ImageMode", m_d.m_imageMode);
+   SetRegValueBool("DefaultProps\\Light", "ShowBulbMesh", m_d.m_showBulbMesh);
+   SetRegValueBool("DefaultProps\\Light", "ShowReflectionOnBall", m_d.m_showReflectionOnBall);
+   SetRegValueFloat("DefaultProps\\Light", "ScaleBulbMesh", m_d.m_meshRadius);
+   SetRegValueFloat("DefaultProps\\Light", "BulbModulateVsAdd", m_d.m_modulate_vs_add);
+   SetRegValueFloat("DefaultProps\\Light", "BulbHaloHeight", m_d.m_bulbHaloHeight);
 }
 
 Texture *Light::GetDisplayTexture()
 {
-    switch (m_d.m_state)
-    {
-        case LightStateOff: return m_ptable->GetImage(m_d.m_szOffImage);
-        default:            return NULL;
-    }
+   switch (m_d.m_state)
+   {
+   case LightStateOff: return m_ptable->GetImage(m_d.m_szOffImage);
+   default:            return NULL;
+   }
 }
 
 void Light::PreRender(Sur * const psur)
 {
-   psur->SetBorderColor(-1,false,0);
-   psur->SetFillColor(m_ptable->RenderSolid() ? (((m_d.m_color&0xFEFEFE)+(m_d.m_color2&0xFEFEFE))/2) : -1);
+   psur->SetBorderColor(-1, false, 0);
+   psur->SetFillColor(m_ptable->RenderSolid() ? (((m_d.m_color & 0xFEFEFE) + (m_d.m_color2 & 0xFEFEFE)) / 2) : -1);
    psur->SetObject(this);
 
    // workaround for the old round light object
    // after loading m_roundLight is true if an pre VP10 table was loaded
    // init the round light to the new custom one
-   if( m_roundLight )
+   if (m_roundLight)
    {
       InitShape();
-      m_roundLight=false;
+      m_roundLight = false;
    }
 
    switch (m_d.m_shape)
    {
    default:
    case ShapeCustom:
-       std::vector<RenderVertex> vvertex;
-       GetRgVertex(vvertex);
+      std::vector<RenderVertex> vvertex;
+      GetRgVertex(vvertex);
 
-       // Check if we should display the image in the editor.
-       psur->Polygon(vvertex);
+      // Check if we should display the image in the editor.
+      psur->Polygon(vvertex);
 
-       break;
+      break;
    }
 }
 
 void Light::Render(Sur * const psur)
 {
-   bool fDrawDragpoints = ( (m_selectstate != eNotSelected) || (g_pvp->m_fAlwaysDrawDragPoints) );		//>>> added by chris
-   
+   bool fDrawDragpoints = ((m_selectstate != eNotSelected) || (g_pvp->m_fAlwaysDrawDragPoints));		//>>> added by chris
+
    // if the item is selected then draw the dragpoints (or if we are always to draw dragpoints)
    if (!fDrawDragpoints)
    {
       // if any of the dragpoints of this object are selected then draw all the dragpoints
-      for (int i=0; i<m_vdpoint.Size(); i++)
+      for (int i = 0; i < m_vdpoint.Size(); i++)
       {
          const CComObject<DragPoint> * const pdp = m_vdpoint.ElementAt(i);
          if (pdp->m_selectstate != eNotSelected)
@@ -366,18 +366,18 @@ void Light::Render(Sur * const psur)
 
    RenderOutline(psur);
 
-   if ( (m_d.m_shape == ShapeCustom) && fDrawDragpoints )	//<<< modified by chris
+   if ((m_d.m_shape == ShapeCustom) && fDrawDragpoints)	//<<< modified by chris
    {
-      for (int i=0; i<m_vdpoint.Size(); i++)
+      for (int i = 0; i < m_vdpoint.Size(); i++)
       {
          CComObject<DragPoint> *pdp;
          pdp = m_vdpoint.ElementAt(i);
          psur->SetFillColor(-1);
-         psur->SetBorderColor(RGB(0,0,200),false,0);
+         psur->SetBorderColor(RGB(0, 0, 200), false, 0);
          psur->SetObject(pdp);
 
          if (pdp->m_fDragging)
-            psur->SetBorderColor(RGB(0,255,0),false,0);
+            psur->SetBorderColor(RGB(0, 255, 0), false, 0);
 
          psur->Ellipse2(pdp->m_v.x, pdp->m_v.y, 8);
       }
@@ -386,8 +386,8 @@ void Light::Render(Sur * const psur)
 
 void Light::RenderOutline(Sur * const psur)
 {
-   psur->SetBorderColor(RGB(0,0,0),false,0);
-   psur->SetLineColor(RGB(0,0,0),false,0);
+   psur->SetBorderColor(RGB(0, 0, 0), false, 0);
+   psur->SetLineColor(RGB(0, 0, 0), false, 0);
    psur->SetFillColor(-1);
    psur->SetObject(this);
    psur->SetObject(NULL);
@@ -395,27 +395,27 @@ void Light::RenderOutline(Sur * const psur)
    switch (m_d.m_shape)
    {
    case ShapeCircle:
-   default: 
-       {
-          psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_falloff /*+ m_d.m_borderwidth*/);
-          break;
-       }
+   default:
+   {
+      psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_falloff /*+ m_d.m_borderwidth*/);
+      break;
+   }
 
-   case ShapeCustom: 
-       {
-          std::vector<RenderVertex> vvertex;
-          GetRgVertex(vvertex);
-          if (m_selectstate != eNotSelected)  
-          {
-              psur->SetBorderColor(RGB(255,0,0),false,0);
-              psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_falloff /*+ m_d.m_borderwidth*/);
-              psur->SetBorderColor(RGB(0,0,0),false,0);
-          }
-          psur->Polygon(vvertex);
+   case ShapeCustom:
+   {
+      std::vector<RenderVertex> vvertex;
+      GetRgVertex(vvertex);
+      if (m_selectstate != eNotSelected)
+      {
+         psur->SetBorderColor(RGB(255, 0, 0), false, 0);
+         psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_falloff /*+ m_d.m_borderwidth*/);
+         psur->SetBorderColor(RGB(0, 0, 0), false, 0);
+      }
+      psur->Polygon(vvertex);
 
-          psur->SetObject((ISelect *)&m_lightcenter);
-          break;
-       }
+      psur->SetObject((ISelect *)&m_lightcenter);
+      break;
+   }
    }
 
    if (m_d.m_shape == ShapeCustom || g_pvp->m_fAlwaysDrawLightCenters)
@@ -460,7 +460,7 @@ void Light::GetHitShapesDebug(Vector<HitObject> * const pvho)
       HitObject * const pho = CreateCircularHitPoly(m_d.m_vCenter.x, m_d.m_vCenter.y, height, m_d.m_falloff, 32);
       pvho->AddElement(pho);
 
-	  break;
+      break;
    }
 
    case ShapeCustom: {
@@ -470,7 +470,7 @@ void Light::GetHitShapesDebug(Vector<HitObject> * const pvho)
       const int cvertex = vvertex.size();
       Vertex3Ds * const rgv3d = new Vertex3Ds[cvertex];
 
-      for (int i=0; i<cvertex; i++)
+      for (int i = 0; i < cvertex; i++)
       {
          rgv3d[i].x = vvertex[i].x;
          rgv3d[i].y = vvertex[i].y;
@@ -479,43 +479,43 @@ void Light::GetHitShapesDebug(Vector<HitObject> * const pvho)
 
       Hit3DPoly * const ph3dp = new Hit3DPoly(rgv3d, cvertex);
       pvho->AddElement(ph3dp);
-      
-	  break;
+
+      break;
    }
    }
 }
 
 void Light::FreeBuffers()
 {
-   if( customMoverVBuffer )
+   if (customMoverVBuffer)
    {
       customMoverVBuffer->release();
-      customMoverVBuffer=0;
+      customMoverVBuffer = 0;
    }
-   if( customMoverIBuffer )
+   if (customMoverIBuffer)
    {
       customMoverIBuffer->release();
-      customMoverIBuffer=0;
+      customMoverIBuffer = 0;
    }
-   if( bulbLightIndexBuffer )
+   if (bulbLightIndexBuffer)
    {
-       bulbLightIndexBuffer->release();
-       bulbLightIndexBuffer=0;
+      bulbLightIndexBuffer->release();
+      bulbLightIndexBuffer = 0;
    }
-   if( bulbLightVBuffer )
+   if (bulbLightVBuffer)
    {
-       bulbLightVBuffer->release();
-       bulbLightVBuffer=0;
+      bulbLightVBuffer->release();
+      bulbLightVBuffer = 0;
    }
-   if( bulbSocketIndexBuffer )
+   if (bulbSocketIndexBuffer)
    {
-       bulbSocketIndexBuffer->release();
-       bulbSocketIndexBuffer=0;
+      bulbSocketIndexBuffer->release();
+      bulbSocketIndexBuffer = 0;
    }
-   if( bulbSocketVBuffer )
+   if (bulbSocketVBuffer)
    {
-       bulbSocketVBuffer->release();
-       bulbSocketVBuffer=0;
+      bulbSocketVBuffer->release();
+      bulbSocketVBuffer = 0;
    }
 }
 
@@ -528,8 +528,8 @@ void Light::EndPlay()
    FreeBuffers();
 }
 
-float Light::GetDepth(const Vertex3Ds& viewDir) 
-{ 
+float Light::GetDepth(const Vertex3Ds& viewDir)
+{
    return (!m_fBackglass) ? (m_d.m_depthBias + viewDir.x * m_d.m_vCenter.x + viewDir.y * m_d.m_vCenter.y + viewDir.z * m_surfaceHeight) : 0.f;
 }
 
@@ -540,208 +540,208 @@ void Light::ClearForOverwrite()
 
 void Light::RenderBulbMesh(RenderDevice *pd3dDevice, COLORREF color, bool isOn)
 {
-    pd3dDevice->basicShader->SetTechnique("basic_without_texture");
-    Material mat;
-    mat.m_cBase = 0x181818;
-    mat.m_fWrapLighting = 0.5f;
-    mat.m_bOpacityActive = false;
-    mat.m_fOpacity = 1.0f;
-    mat.m_cGlossy = 0xB4B4B4;
-    mat.m_bIsMetal = false;
-    mat.m_fEdge = 1.0f;
-    mat.m_fEdgeAlpha = 1.0f;
-    mat.m_fRoughness = 0.9f;
-    mat.m_cClearcoat = 0;
-    pd3dDevice->basicShader->SetMaterial(&mat);
+   pd3dDevice->basicShader->SetTechnique("basic_without_texture");
+   Material mat;
+   mat.m_cBase = 0x181818;
+   mat.m_fWrapLighting = 0.5f;
+   mat.m_bOpacityActive = false;
+   mat.m_fOpacity = 1.0f;
+   mat.m_cGlossy = 0xB4B4B4;
+   mat.m_bIsMetal = false;
+   mat.m_fEdge = 1.0f;
+   mat.m_fEdgeAlpha = 1.0f;
+   mat.m_fRoughness = 0.9f;
+   mat.m_cClearcoat = 0;
+   pd3dDevice->basicShader->SetMaterial(&mat);
 
-    pd3dDevice->basicShader->Begin(0);
-    pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, bulbSocketVBuffer, 0, bulbSocketNumVertices, bulbSocketIndexBuffer, 0, bulbSocketNumFaces );
-    pd3dDevice->basicShader->End();
+   pd3dDevice->basicShader->Begin(0);
+   pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, bulbSocketVBuffer, 0, bulbSocketNumVertices, bulbSocketIndexBuffer, 0, bulbSocketNumFaces);
+   pd3dDevice->basicShader->End();
 
-    mat.m_cBase = 0;
-    mat.m_fWrapLighting = 0.5f;
-    mat.m_bOpacityActive = true;
-    mat.m_fOpacity = 0.2f;
-    mat.m_cGlossy = 0xFFFFFF;
-    mat.m_bIsMetal = false;
-    mat.m_fEdge = 1.0f;
-    mat.m_fEdgeAlpha = 1.0f;
-    mat.m_fRoughness = 0.9f;
-    mat.m_cClearcoat = 0xFFFFFF;
-    pd3dDevice->basicShader->SetMaterial(&mat);
+   mat.m_cBase = 0;
+   mat.m_fWrapLighting = 0.5f;
+   mat.m_bOpacityActive = true;
+   mat.m_fOpacity = 0.2f;
+   mat.m_cGlossy = 0xFFFFFF;
+   mat.m_bIsMetal = false;
+   mat.m_fEdge = 1.0f;
+   mat.m_fEdgeAlpha = 1.0f;
+   mat.m_fRoughness = 0.9f;
+   mat.m_cClearcoat = 0xFFFFFF;
+   pd3dDevice->basicShader->SetMaterial(&mat);
 
-    pd3dDevice->basicShader->Begin(0);
-    pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, bulbLightVBuffer, 0, bulbLightNumVertices, bulbLightIndexBuffer, 0, bulbLightNumFaces );
-    pd3dDevice->basicShader->End();
+   pd3dDevice->basicShader->Begin(0);
+   pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, bulbLightVBuffer, 0, bulbLightNumVertices, bulbLightIndexBuffer, 0, bulbLightNumFaces);
+   pd3dDevice->basicShader->End();
 }
 
 void Light::PostRenderStatic(RenderDevice* pd3dDevice)
 {
-    TRACE_FUNCTION();
+   TRACE_FUNCTION();
 
-	if(!m_d.m_fVisible || m_ptable->m_fReflectionEnabled )
-		return;
+   if (!m_d.m_fVisible || m_ptable->m_fReflectionEnabled)
+      return;
 
-	if(customMoverVBuffer == NULL) // in case of degenerate light
-		return;
+   if (customMoverVBuffer == NULL) // in case of degenerate light
+      return;
 
-    if (m_fBackglass && !GetPTable()->GetDecalsEnabled())
-        return;
+   if (m_fBackglass && !GetPTable()->GetDecalsEnabled())
+      return;
 
-	const U32 old_time_msec = (m_d.m_time_msec < g_pplayer->m_time_msec) ? m_d.m_time_msec : g_pplayer->m_time_msec;
-    m_d.m_time_msec = g_pplayer->m_time_msec;
-	const float diff_time_msec = (float)(g_pplayer->m_time_msec-old_time_msec);
+   const U32 old_time_msec = (m_d.m_time_msec < g_pplayer->m_time_msec) ? m_d.m_time_msec : g_pplayer->m_time_msec;
+   m_d.m_time_msec = g_pplayer->m_time_msec;
+   const float diff_time_msec = (float)(g_pplayer->m_time_msec - old_time_msec);
 
-    if (m_realState == LightStateBlinking)
-        UpdateBlinker(g_pplayer->m_time_msec);
+   if (m_realState == LightStateBlinking)
+      UpdateBlinker(g_pplayer->m_time_msec);
 
-    const bool isOn = (m_realState == LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : !!m_realState;
+   const bool isOn = (m_realState == LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : !!m_realState;
 
-	if ( isOn )
-    {
-       if (m_d.m_currentIntensity < m_d.m_intensity*m_d.m_intensity_scale)
-       {
-          m_d.m_currentIntensity += m_d.m_fadeSpeedUp*diff_time_msec;
-          if(m_d.m_currentIntensity > m_d.m_intensity*m_d.m_intensity_scale)
-             m_d.m_currentIntensity = m_d.m_intensity*m_d.m_intensity_scale;
-       }
-    }
-    else
-    {
-       if (m_d.m_currentIntensity>0.0f )
-       {
-          m_d.m_currentIntensity -= m_d.m_fadeSpeedDown*diff_time_msec;
-          if(m_d.m_currentIntensity < 0.0f)
-             m_d.m_currentIntensity = 0.0f;
-       }
-    }
+   if (isOn)
+   {
+      if (m_d.m_currentIntensity < m_d.m_intensity*m_d.m_intensity_scale)
+      {
+         m_d.m_currentIntensity += m_d.m_fadeSpeedUp*diff_time_msec;
+         if (m_d.m_currentIntensity > m_d.m_intensity*m_d.m_intensity_scale)
+            m_d.m_currentIntensity = m_d.m_intensity*m_d.m_intensity_scale;
+      }
+   }
+   else
+   {
+      if (m_d.m_currentIntensity > 0.0f)
+      {
+         m_d.m_currentIntensity -= m_d.m_fadeSpeedDown*diff_time_msec;
+         if (m_d.m_currentIntensity < 0.0f)
+            m_d.m_currentIntensity = 0.0f;
+      }
+   }
 
-	Texture *offTexel = NULL;
+   Texture *offTexel = NULL;
 
-	// early out all lights with no contribution
-    const D3DXVECTOR4 lightColor2_falloff_power = convertColor(m_d.m_color2, m_d.m_falloff_power);
-    D3DXVECTOR4 lightColor_intensity = convertColor(m_d.m_color);
-    if(m_d.m_BulbLight ||
+   // early out all lights with no contribution
+   const D3DXVECTOR4 lightColor2_falloff_power = convertColor(m_d.m_color2, m_d.m_falloff_power);
+   D3DXVECTOR4 lightColor_intensity = convertColor(m_d.m_color);
+   if (m_d.m_BulbLight ||
       (!m_d.m_BulbLight && (m_surfaceTexture == (offTexel = m_ptable->GetImage(m_d.m_szOffImage))) && (offTexel != NULL) && !m_fBackglass && !m_d.m_imageMode)) // assumes/requires that the light in this kind of state is basically -exactly- the same as the static/(un)lit playfield/surface and accompanying image
-    {
-		if(m_d.m_currentIntensity == 0.f)
-			return;
-		if(lightColor_intensity.x == 0.f && lightColor_intensity.y == 0.f && lightColor_intensity.z == 0.f &&
-		   lightColor2_falloff_power.x == 0.f && lightColor2_falloff_power.y == 0.f && lightColor2_falloff_power.z == 0.f)
-			return;
-    }
+   {
+      if (m_d.m_currentIntensity == 0.f)
+         return;
+      if (lightColor_intensity.x == 0.f && lightColor_intensity.y == 0.f && lightColor_intensity.z == 0.f &&
+         lightColor2_falloff_power.x == 0.f && lightColor2_falloff_power.y == 0.f && lightColor2_falloff_power.z == 0.f)
+         return;
+   }
 
-    if (!m_fBackglass)
-    {
-	    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
-        const float depthbias = -BASEDEPTHBIAS;
-        pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, *((DWORD*)&depthbias));
-    }
-	else
-	{
-	    pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
-		pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-	}
+   if (!m_fBackglass)
+   {
+      pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
+      const float depthbias = -BASEDEPTHBIAS;
+      pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, *((DWORD*)&depthbias));
+   }
+   else
+   {
+      pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
+      pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+   }
 
-    if(m_fBackglass && g_pplayer->m_ptable->m_tblMirrorEnabled)
-		pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
-	else
- 	    pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+   if (m_fBackglass && g_pplayer->m_ptable->m_tblMirrorEnabled)
+      pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
+   else
+      pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 
-	Vertex3D_NoTex2 centerHUD;
-	centerHUD.x = m_d.m_vCenter.x;
-	centerHUD.y = m_d.m_vCenter.y;
-	centerHUD.z = 0.0f;
-	if(m_fBackglass)
-		SetHUDVertices(&centerHUD,1);
-	const D3DXVECTOR4 center_range(centerHUD.x, centerHUD.y, !m_fBackglass ? m_surfaceHeight+0.05f : 0.0f, 1.0f/max(m_d.m_falloff, 0.1f));
+   Vertex3D_NoTex2 centerHUD;
+   centerHUD.x = m_d.m_vCenter.x;
+   centerHUD.y = m_d.m_vCenter.y;
+   centerHUD.z = 0.0f;
+   if (m_fBackglass)
+      SetHUDVertices(&centerHUD, 1);
+   const D3DXVECTOR4 center_range(centerHUD.x, centerHUD.y, !m_fBackglass ? m_surfaceHeight + 0.05f : 0.0f, 1.0f / max(m_d.m_falloff, 0.1f));
 
-    if ( !m_d.m_BulbLight )
-    {
-		pd3dDevice->classicLightShader->SetLightData(center_range);
-		pd3dDevice->classicLightShader->SetLightColor2FalloffPower(lightColor2_falloff_power);
-        
-		pd3dDevice->classicLightShader->SetLightImageBackglassMode(m_d.m_imageMode,m_fBackglass);
-        pd3dDevice->classicLightShader->SetMaterial(m_surfaceMaterial);
+   if (!m_d.m_BulbLight)
+   {
+      pd3dDevice->classicLightShader->SetLightData(center_range);
+      pd3dDevice->classicLightShader->SetLightColor2FalloffPower(lightColor2_falloff_power);
 
-	    if (offTexel != NULL)
-        {
-            pd3dDevice->classicLightShader->SetTechnique("light_with_texture");
-            pd3dDevice->classicLightShader->SetTexture("Texture0", offTexel );
-			if (m_ptable->m_fReflectElementsOnPlayfield)
-			{
+      pd3dDevice->classicLightShader->SetLightImageBackglassMode(m_d.m_imageMode, m_fBackglass);
+      pd3dDevice->classicLightShader->SetMaterial(m_surfaceMaterial);
+
+      if (offTexel != NULL)
+      {
+         pd3dDevice->classicLightShader->SetTechnique("light_with_texture");
+         pd3dDevice->classicLightShader->SetTexture("Texture0", offTexel);
+         if (m_ptable->m_fReflectElementsOnPlayfield)
+         {
             pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
-				pd3dDevice->SetRenderState(RenderDevice::SRCBLEND, D3DBLEND_ONE);
-				pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_ONE);
-			}
-		}
-        else
-            pd3dDevice->classicLightShader->SetTechnique("light_without_texture");
-    }
-    else
-	{
-		pd3dDevice->lightShader->SetLightData(center_range);
-		pd3dDevice->lightShader->SetLightColor2FalloffPower(lightColor2_falloff_power);
+            pd3dDevice->SetRenderState(RenderDevice::SRCBLEND, D3DBLEND_ONE);
+            pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_ONE);
+         }
+      }
+      else
+         pd3dDevice->classicLightShader->SetTechnique("light_without_texture");
+   }
+   else
+   {
+      pd3dDevice->lightShader->SetLightData(center_range);
+      pd3dDevice->lightShader->SetLightColor2FalloffPower(lightColor2_falloff_power);
 
-        pd3dDevice->lightShader->SetTechnique("bulb_light");
+      pd3dDevice->lightShader->SetTechnique("bulb_light");
 
-		Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-		ppin3d->EnableAlphaBlend(false, false, false);
-		//pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);  // add the lightcontribution
-		pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_INVSRCCOLOR); // but also modulate the light first with the underlying elements by (1+lightcontribution, e.g. a very crude approximation of real lighting)
-		pd3dDevice->SetRenderState(RenderDevice::BLENDOP, D3DBLENDOP_REVSUBTRACT);
+      Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+      ppin3d->EnableAlphaBlend(false, false, false);
+      //pd3dDevice->SetRenderState(RenderDevice::SRCBLEND,  D3DBLEND_SRCALPHA);  // add the lightcontribution
+      pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_INVSRCCOLOR); // but also modulate the light first with the underlying elements by (1+lightcontribution, e.g. a very crude approximation of real lighting)
+      pd3dDevice->SetRenderState(RenderDevice::BLENDOP, D3DBLENDOP_REVSUBTRACT);
 
-		if ( m_d.m_showBulbMesh ) // blend bulb mesh hull additive over "normal" bulb to approximate the emission directly reaching the camera
-		{
-			lightColor_intensity.w = m_d.m_currentIntensity*0.02f; //!! make configurable?
-			if(g_pplayer->m_current_renderstage == 1)
-			    lightColor_intensity.w *= m_d.m_transmissionScale;
-			pd3dDevice->lightShader->SetLightColorIntensity(lightColor_intensity);
-			pd3dDevice->lightShader->SetFloat("blend_modulate_vs_add",0.00001f); // additive, but avoid full 0, as it disables the blend
+      if (m_d.m_showBulbMesh) // blend bulb mesh hull additive over "normal" bulb to approximate the emission directly reaching the camera
+      {
+         lightColor_intensity.w = m_d.m_currentIntensity*0.02f; //!! make configurable?
+         if (g_pplayer->m_current_renderstage == 1)
+            lightColor_intensity.w *= m_d.m_transmissionScale;
+         pd3dDevice->lightShader->SetLightColorIntensity(lightColor_intensity);
+         pd3dDevice->lightShader->SetFloat("blend_modulate_vs_add", 0.00001f); // additive, but avoid full 0, as it disables the blend
 
-			pd3dDevice->lightShader->Begin(0);
-			pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, bulbLightVBuffer, 0, bulbLightNumVertices, bulbLightIndexBuffer, 0, bulbLightNumFaces );
-			pd3dDevice->lightShader->End();
-		}
+         pd3dDevice->lightShader->Begin(0);
+         pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, bulbLightVBuffer, 0, bulbLightNumVertices, bulbLightIndexBuffer, 0, bulbLightNumFaces);
+         pd3dDevice->lightShader->End();
+      }
 
-		pd3dDevice->lightShader->SetFloat("blend_modulate_vs_add", (g_pplayer->m_current_renderstage == 0) ? min(max(m_d.m_modulate_vs_add,0.00001f),0.9999f) : 0.00001f); // avoid 0, as it disables the blend and avoid 1 as it looks not good with day->night changes // in the separate bulb light render stage only enable additive
-	}
+      pd3dDevice->lightShader->SetFloat("blend_modulate_vs_add", (g_pplayer->m_current_renderstage == 0) ? min(max(m_d.m_modulate_vs_add, 0.00001f), 0.9999f) : 0.00001f); // avoid 0, as it disables the blend and avoid 1 as it looks not good with day->night changes // in the separate bulb light render stage only enable additive
+   }
 
-    // render light shape
-	lightColor_intensity.w = m_d.m_currentIntensity;
-    if ( !m_d.m_BulbLight )
-    {
-		pd3dDevice->classicLightShader->SetLightColorIntensity(lightColor_intensity);
-		pd3dDevice->classicLightShader->Begin(0);
-	}
-	else
-	{
-	    if(g_pplayer->m_current_renderstage == 1)
-		    lightColor_intensity.w *= m_d.m_transmissionScale;
-		pd3dDevice->lightShader->SetLightColorIntensity(lightColor_intensity);
-		pd3dDevice->lightShader->Begin(0);
-	}
-	pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, (!m_fBackglass) ? MY_D3DFVF_NOTEX2_VERTEX : MY_D3DTRANSFORMED_NOTEX2_VERTEX, customMoverVBuffer, 0, customMoverVertexNum, customMoverIBuffer, 0, customMoverIndexNum);
-    if ( !m_d.m_BulbLight )
-	    pd3dDevice->classicLightShader->End();
-	else
-	    pd3dDevice->lightShader->End();
+   // render light shape
+   lightColor_intensity.w = m_d.m_currentIntensity;
+   if (!m_d.m_BulbLight)
+   {
+      pd3dDevice->classicLightShader->SetLightColorIntensity(lightColor_intensity);
+      pd3dDevice->classicLightShader->Begin(0);
+   }
+   else
+   {
+      if (g_pplayer->m_current_renderstage == 1)
+         lightColor_intensity.w *= m_d.m_transmissionScale;
+      pd3dDevice->lightShader->SetLightColorIntensity(lightColor_intensity);
+      pd3dDevice->lightShader->Begin(0);
+   }
+   pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, (!m_fBackglass) ? MY_D3DFVF_NOTEX2_VERTEX : MY_D3DTRANSFORMED_NOTEX2_VERTEX, customMoverVBuffer, 0, customMoverVertexNum, customMoverIBuffer, 0, customMoverIndexNum);
+   if (!m_d.m_BulbLight)
+      pd3dDevice->classicLightShader->End();
+   else
+      pd3dDevice->lightShader->End();
 
-    if (!m_d.m_BulbLight && offTexel!=NULL && m_ptable->m_fReflectElementsOnPlayfield)
-    {
-       pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
-       pd3dDevice->SetRenderState(RenderDevice::SRCBLEND, D3DBLEND_SRCALPHA);
-       pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_INVSRCALPHA);
-    }
+   if (!m_d.m_BulbLight && offTexel != NULL && m_ptable->m_fReflectElementsOnPlayfield)
+   {
+      pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
+      pd3dDevice->SetRenderState(RenderDevice::SRCBLEND, D3DBLEND_SRCALPHA);
+      pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_INVSRCALPHA);
+   }
 
-	/*if ( m_d.m_BulbLight ) //!! not necessary anymore
-	{
-		ppin3d->DisableAlphaBlend();
-	    pd3dDevice->SetRenderState(RenderDevice::BLENDOP, D3DBLENDOP_ADD);
-	}*/
+   /*if ( m_d.m_BulbLight ) //!! not necessary anymore
+   {
+   ppin3d->DisableAlphaBlend();
+   pd3dDevice->SetRenderState(RenderDevice::BLENDOP, D3DBLENDOP_ADD);
+   }*/
 
-	//if(m_fBackglass && g_pplayer->m_ptable->m_tblMirrorEnabled)
-	//	pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+   //if(m_fBackglass && g_pplayer->m_ptable->m_tblMirrorEnabled)
+   //	pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 }
 
 void Light::PrepareMoversCustom()
@@ -750,12 +750,12 @@ void Light::PrepareMoversCustom()
    GetRgVertex(vvertex);
    const int cvertex = vvertex.size();
 
-   if(cvertex == 0)
-	   return;
+   if (cvertex == 0)
+      return;
 
    VectorVoid vpoly;
    float maxdist = 0;
-   for (int i=0; i<cvertex; i++)
+   for (int i = 0; i < cvertex; i++)
    {
       vpoly.AddElement((void *)i);
 
@@ -765,83 +765,83 @@ void Light::PrepareMoversCustom()
       if (dist > maxdist)
          maxdist = dist;
    }
-   
-   const float inv_maxdist = (maxdist > 0.0f) ? 0.5f/sqrtf(maxdist) : 0.0f;
-   const float inv_tablewidth = 1.0f/(m_ptable->m_right - m_ptable->m_left);
-   const float inv_tableheight = 1.0f/(m_ptable->m_bottom - m_ptable->m_top);
+
+   const float inv_maxdist = (maxdist > 0.0f) ? 0.5f / sqrtf(maxdist) : 0.0f;
+   const float inv_tablewidth = 1.0f / (m_ptable->m_right - m_ptable->m_left);
+   const float inv_tableheight = 1.0f / (m_ptable->m_bottom - m_ptable->m_top);
 
    Vector<Triangle> vtri;
    PolygonToTriangles(vvertex, &vpoly, &vtri);
 
    float height = m_surfaceHeight;
-   if ( m_d.m_BulbLight )
+   if (m_d.m_BulbLight)
    {
-       height += m_d.m_bulbHaloHeight*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
-       m_surfaceHeight = height;
+      height += m_d.m_bulbHaloHeight*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+      m_surfaceHeight = height;
    }
 
-   customMoverIndexNum = vtri.Size()*3;
-   if ( customMoverIBuffer )
-	   customMoverIBuffer->release();
+   customMoverIndexNum = vtri.Size() * 3;
+   if (customMoverIBuffer)
+      customMoverIBuffer->release();
 
-   g_pplayer->m_pin3d.m_pd3dDevice->CreateIndexBuffer( customMoverIndexNum, 0, IndexBuffer::FMT_INDEX16, &customMoverIBuffer);
+   g_pplayer->m_pin3d.m_pd3dDevice->CreateIndexBuffer(customMoverIndexNum, 0, IndexBuffer::FMT_INDEX16, &customMoverIBuffer);
 
    WORD* bufi;
-   customMoverIBuffer->lock(0,0,(void**)&bufi, 0);
-   for(int i = 0; i < vtri.Size(); ++i)
+   customMoverIBuffer->lock(0, 0, (void**)&bufi, 0);
+   for (int i = 0; i < vtri.Size(); ++i)
    {
-	   const Triangle * const ptri = vtri.ElementAt(i);
+      const Triangle * const ptri = vtri.ElementAt(i);
 
-	   bufi[i*3  ] = ptri->a;
-	   bufi[i*3+1] = ptri->c;
-	   bufi[i*3+2] = ptri->b;
+      bufi[i * 3] = ptri->a;
+      bufi[i * 3 + 1] = ptri->c;
+      bufi[i * 3 + 2] = ptri->b;
    }
    customMoverIBuffer->unlock();
 
-   for (int i=0;i<vtri.Size();i++)
+   for (int i = 0; i < vtri.Size(); i++)
       delete vtri.ElementAt(i);
 
    customMoverVertexNum = vvertex.size();
-   if ( customMoverVBuffer )
-	   customMoverVBuffer->release();
+   if (customMoverVBuffer)
+      customMoverVBuffer->release();
    const DWORD vertexType = (!m_fBackglass) ? MY_D3DFVF_NOTEX2_VERTEX : MY_D3DTRANSFORMED_NOTEX2_VERTEX;
-   g_pplayer->m_pin3d.m_pd3dDevice->CreateVertexBuffer( customMoverVertexNum, 0, vertexType, &customMoverVBuffer);
+   g_pplayer->m_pin3d.m_pd3dDevice->CreateVertexBuffer(customMoverVertexNum, 0, vertexType, &customMoverVBuffer);
 
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
    Texture* pin = m_ptable->GetImage(m_d.m_szOffImage);
 
    Vertex3D_NoTex2 *buf;
-   customMoverVBuffer->lock(0,0,(void**)&buf, VertexBuffer::WRITEONLY);
-   for (int t=0;t<customMoverVertexNum;t++)
+   customMoverVBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
+   for (int t = 0; t < customMoverVertexNum; t++)
    {
-	   const RenderVertex * const pv0 = &vvertex[t];
+      const RenderVertex * const pv0 = &vvertex[t];
 
-	   buf[t].x = pv0->x;
-	   buf[t].y = pv0->y;
+      buf[t].x = pv0->x;
+      buf[t].y = pv0->y;
 
-	   if(!m_fBackglass)
-	   {
-		   buf[t].z = height+0.1f;
-	
-		   // Check if we are using a custom texture.
-		   if (pin != NULL)
-		   {
-			   buf[t].tu = pv0->x * inv_tablewidth;
-			   buf[t].tv = pv0->y * inv_tableheight;
-		   }
-		   else
-		   {
-			   // Set texture coordinates for default light.
-			   buf[t].tu = 0.5f + (pv0->x - m_d.m_vCenter.x) * inv_maxdist;
-			   buf[t].tv = 0.5f + (pv0->y - m_d.m_vCenter.y) * inv_maxdist;
-		   }
+      if (!m_fBackglass)
+      {
+         buf[t].z = height + 0.1f;
 
-		   buf[t].nx = 0; buf[t].ny = 0; buf[t].nz = 1.0f;
-	   }
+         // Check if we are using a custom texture.
+         if (pin != NULL)
+         {
+            buf[t].tu = pv0->x * inv_tablewidth;
+            buf[t].tv = pv0->y * inv_tableheight;
+         }
+         else
+         {
+            // Set texture coordinates for default light.
+            buf[t].tu = 0.5f + (pv0->x - m_d.m_vCenter.x) * inv_maxdist;
+            buf[t].tv = 0.5f + (pv0->y - m_d.m_vCenter.y) * inv_maxdist;
+         }
+
+         buf[t].nx = 0; buf[t].ny = 0; buf[t].nz = 1.0f;
+      }
    }
 
-   if(m_fBackglass)
-	   SetHUDVertices(buf, customMoverVertexNum);
+   if (m_fBackglass)
+      SetHUDVertices(buf, customMoverVertexNum);
 
    customMoverVBuffer->unlock();
 }
@@ -849,76 +849,76 @@ void Light::PrepareMoversCustom()
 void Light::RenderSetup(RenderDevice* pd3dDevice)
 {
    m_iblinkframe = 0;
-    m_d.m_time_msec = g_pplayer->m_time_msec;
+   m_d.m_time_msec = g_pplayer->m_time_msec;
 
-    m_surfaceHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
-    m_surfaceMaterial = m_ptable->GetSurfaceMaterial(m_d.m_szSurface);
-	m_surfaceTexture = m_ptable->GetSurfaceImage(m_d.m_szSurface);
+   m_surfaceHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+   m_surfaceMaterial = m_ptable->GetSurfaceMaterial(m_d.m_szSurface);
+   m_surfaceTexture = m_ptable->GetSurfaceImage(m_d.m_szSurface);
 
-    if (m_realState == LightStateBlinking)
-        RestartBlinker(g_pplayer->m_time_msec);
+   if (m_realState == LightStateBlinking)
+      RestartBlinker(g_pplayer->m_time_msec);
 
-    const bool isOn = (m_realState == LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : !!m_realState;
-    if( isOn )
-       m_d.m_currentIntensity = m_d.m_intensity*m_d.m_intensity_scale;
-    else
-       m_d.m_currentIntensity = 0.0f;
+   const bool isOn = (m_realState == LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : !!m_realState;
+   if (isOn)
+      m_d.m_currentIntensity = m_d.m_intensity*m_d.m_intensity_scale;
+   else
+      m_d.m_currentIntensity = 0.0f;
 
-    if ( m_d.m_BulbLight && m_d.m_showBulbMesh )
-    {
-        if (bulbLightIndexBuffer)
-            bulbLightIndexBuffer->release();
-        bulbLightIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer( bulbLightNumFaces, bulbLightIndices );
+   if (m_d.m_BulbLight && m_d.m_showBulbMesh)
+   {
+      if (bulbLightIndexBuffer)
+         bulbLightIndexBuffer->release();
+      bulbLightIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(bulbLightNumFaces, bulbLightIndices);
 
-        if (bulbLightVBuffer)
-			bulbLightVBuffer->release();
-        pd3dDevice->CreateVertexBuffer(bulbLightNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &bulbLightVBuffer);
+      if (bulbLightVBuffer)
+         bulbLightVBuffer->release();
+      pd3dDevice->CreateVertexBuffer(bulbLightNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &bulbLightVBuffer);
 
-        Vertex3D_NoTex2 *buf;
-        bulbLightVBuffer->lock(0, 0, (void**)&buf, 0);
-        for( int i=0;i<bulbLightNumVertices;i++ )
-        {
-            buf[i].x = bulbLight[i].x*m_d.m_meshRadius+m_d.m_vCenter.x;
-            buf[i].y = bulbLight[i].y*m_d.m_meshRadius+m_d.m_vCenter.y;
-            buf[i].z = bulbLight[i].z*m_d.m_meshRadius*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_surfaceHeight;
-            buf[i].nx = bulbLight[i].nx;
-            buf[i].ny = bulbLight[i].ny;
-            buf[i].nz = bulbLight[i].nz;
-            buf[i].tu = bulbLight[i].tu;
-            buf[i].tv = bulbLight[i].tv;
-        }
-        bulbLightVBuffer->unlock();
+      Vertex3D_NoTex2 *buf;
+      bulbLightVBuffer->lock(0, 0, (void**)&buf, 0);
+      for (int i = 0; i < bulbLightNumVertices; i++)
+      {
+         buf[i].x = bulbLight[i].x*m_d.m_meshRadius + m_d.m_vCenter.x;
+         buf[i].y = bulbLight[i].y*m_d.m_meshRadius + m_d.m_vCenter.y;
+         buf[i].z = bulbLight[i].z*m_d.m_meshRadius*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_surfaceHeight;
+         buf[i].nx = bulbLight[i].nx;
+         buf[i].ny = bulbLight[i].ny;
+         buf[i].nz = bulbLight[i].nz;
+         buf[i].tu = bulbLight[i].tu;
+         buf[i].tv = bulbLight[i].tv;
+      }
+      bulbLightVBuffer->unlock();
 
-        if (bulbSocketIndexBuffer)
-            bulbSocketIndexBuffer->release();
-        bulbSocketIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer( bulbSocketNumFaces, bulbSocketIndices );
+      if (bulbSocketIndexBuffer)
+         bulbSocketIndexBuffer->release();
+      bulbSocketIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(bulbSocketNumFaces, bulbSocketIndices);
 
-        if (bulbSocketVBuffer)
-			bulbSocketVBuffer->release();
-        pd3dDevice->CreateVertexBuffer(bulbSocketNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &bulbSocketVBuffer);
+      if (bulbSocketVBuffer)
+         bulbSocketVBuffer->release();
+      pd3dDevice->CreateVertexBuffer(bulbSocketNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &bulbSocketVBuffer);
 
-        bulbSocketVBuffer->lock(0, 0, (void**)&buf, 0);
-        for( int i=0;i<bulbSocketNumVertices;i++ )
-        {
-            buf[i].x = bulbSocket[i].x*m_d.m_meshRadius+m_d.m_vCenter.x;
-            buf[i].y = bulbSocket[i].y*m_d.m_meshRadius+m_d.m_vCenter.y;
-            buf[i].z = bulbSocket[i].z*m_d.m_meshRadius*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_surfaceHeight;
-            buf[i].nx = bulbSocket[i].nx;
-            buf[i].ny = bulbSocket[i].ny;
-            buf[i].nz = bulbSocket[i].nz;
-            buf[i].tu = bulbSocket[i].tu;
-            buf[i].tv = bulbSocket[i].tv;
-        }
-        bulbSocketVBuffer->unlock();
-    }
+      bulbSocketVBuffer->lock(0, 0, (void**)&buf, 0);
+      for (int i = 0; i < bulbSocketNumVertices; i++)
+      {
+         buf[i].x = bulbSocket[i].x*m_d.m_meshRadius + m_d.m_vCenter.x;
+         buf[i].y = bulbSocket[i].y*m_d.m_meshRadius + m_d.m_vCenter.y;
+         buf[i].z = bulbSocket[i].z*m_d.m_meshRadius*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_surfaceHeight;
+         buf[i].nx = bulbSocket[i].nx;
+         buf[i].ny = bulbSocket[i].ny;
+         buf[i].nz = bulbSocket[i].nz;
+         buf[i].tu = bulbSocket[i].tu;
+         buf[i].tv = bulbSocket[i].tv;
+      }
+      bulbSocketVBuffer->unlock();
+   }
 
-    PrepareMoversCustom();
+   PrepareMoversCustom();
 }
 
 void Light::RenderStatic(RenderDevice* pd3dDevice)
 {
-    if (m_d.m_BulbLight && m_d.m_showBulbMesh)
-        RenderBulbMesh(pd3dDevice,0,false);
+   if (m_d.m_BulbLight && m_d.m_showBulbMesh)
+      RenderBulbMesh(pd3dDevice, 0, false);
 }
 
 void Light::SetObjectPos()
@@ -931,7 +931,7 @@ void Light::MoveOffset(const float dx, const float dy)
    m_d.m_vCenter.x += dx;
    m_d.m_vCenter.y += dy;
 
-   for (int i=0; i<m_vdpoint.Size(); i++)
+   for (int i = 0; i < m_vdpoint.Size(); i++)
    {
       CComObject<DragPoint> * const pdp = m_vdpoint.ElementAt(i);
 
@@ -978,7 +978,7 @@ HRESULT Light::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptke
 
    //bw.WriteTag(FID(PNTS));
    HRESULT hr;
-   if(FAILED(hr = SavePointData(pstm, hcrypthash, hcryptkey)))
+   if (FAILED(hr = SavePointData(pstm, hcrypthash, hcryptkey)))
       return hr;
 
    bw.WriteTag(FID(ENDB));
@@ -998,8 +998,8 @@ HRESULT Light::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, 
    m_d.m_tdr.m_fTimerEnabled = false;
    m_d.m_tdr.m_TimerInterval = 100;
 
-   m_d.m_color = RGB(255,255,0);
-   m_d.m_color2 = RGB(255,255,255);
+   m_d.m_color = RGB(255, 255, 0);
+   m_d.m_color2 = RGB(255, 255, 255);
 
    strcpy_s(m_rgblinkpattern, sizeof(m_rgblinkpattern), "10");
    m_blinkinterval = 125;
@@ -1011,7 +1011,7 @@ HRESULT Light::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, 
    m_ptable = ptable;
 
    m_fLockedByLS = false;			//>>> added by chris
-   m_realState	= m_d.m_state;		//>>> added by chris
+   m_realState = m_d.m_state;		//>>> added by chris
 
    br.Load();
    return S_OK;
@@ -1038,7 +1038,7 @@ BOOL Light::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(STAT))
    {
       pbr->GetInt(&m_d.m_state);
-      m_realState	= m_d.m_state;		//>>> added by chris
+      m_realState = m_d.m_state;		//>>> added by chris
    }
    else if (id == FID(COLR))
    {
@@ -1062,7 +1062,7 @@ BOOL Light::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(SHAP))
    {
-      m_roundLight=true;
+      m_roundLight = true;
    }
    else if (id == FID(BPAT))
    {
@@ -1074,7 +1074,7 @@ BOOL Light::LoadToken(int id, BiffReader *pbr)
    }
    /*else if (id == FID(BCOL))
    {
-      pbr->GetInt(&m_d.m_bordercolor);
+   pbr->GetInt(&m_d.m_bordercolor);
    }*/
    else if (id == FID(BWTH))
    {
@@ -1102,35 +1102,35 @@ BOOL Light::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(FASP))
    {
-       pbr->GetFloat(&m_d.m_fadeSpeedUp);
+      pbr->GetFloat(&m_d.m_fadeSpeedUp);
    }
    else if (id == FID(FASD))
    {
-       pbr->GetFloat(&m_d.m_fadeSpeedDown);
+      pbr->GetFloat(&m_d.m_fadeSpeedDown);
    }
    else if (id == FID(BULT))
    {
-       pbr->GetBool(&m_d.m_BulbLight);
+      pbr->GetBool(&m_d.m_BulbLight);
    }
    else if (id == FID(IMMO))
    {
-       pbr->GetBool(&m_d.m_imageMode);
+      pbr->GetBool(&m_d.m_imageMode);
    }
    else if (id == FID(SHBM))
    {
-       pbr->GetBool(&m_d.m_showBulbMesh);
+      pbr->GetBool(&m_d.m_showBulbMesh);
    }
    else if (id == FID(SHRB))
    {
-       pbr->GetBool(&m_d.m_showReflectionOnBall);
+      pbr->GetBool(&m_d.m_showReflectionOnBall);
    }
    else if (id == FID(BMSC))
    {
-       pbr->GetFloat(&m_d.m_meshRadius);
+      pbr->GetFloat(&m_d.m_meshRadius);
    }
    else if (id == FID(BMVA))
    {
-       pbr->GetFloat(&m_d.m_modulate_vs_add);
+      pbr->GetFloat(&m_d.m_modulate_vs_add);
    }
    else if (id == FID(BHHI))
    {
@@ -1178,20 +1178,20 @@ void Light::DoCommand(int icmd, int x, int y)
    switch (icmd)
    {
    case ID_WALLMENU_FLIP:
-      {
-         Vertex2D vCenter;
-         GetPointCenter(&vCenter);
-         FlipPointY(&vCenter);
-      }
-      break;
+   {
+      Vertex2D vCenter;
+      GetPointCenter(&vCenter);
+      FlipPointY(&vCenter);
+   }
+   break;
 
    case ID_WALLMENU_MIRROR:
-      {
-         Vertex2D vCenter;
-         GetPointCenter(&vCenter);
-         FlipPointX(&vCenter);
-      }
-      break;
+   {
+      Vertex2D vCenter;
+      GetPointCenter(&vCenter);
+      FlipPointX(&vCenter);
+   }
+   break;
 
    case ID_WALLMENU_ROTATE:
       RotateDialog();
@@ -1206,40 +1206,40 @@ void Light::DoCommand(int icmd, int x, int y)
       break;
 
    case ID_WALLMENU_ADDPOINT:
-      {
-         STARTUNDO
+   {
+      STARTUNDO
          const Vertex2D v = m_ptable->TransformPoint(x, y);
 
-         std::vector<RenderVertex> vvertex;
-         GetRgVertex(vvertex);
+      std::vector<RenderVertex> vvertex;
+      GetRgVertex(vvertex);
 
-         int iSeg;
-         Vertex2D vOut;
-         ClosestPointOnPolygon(vvertex, v, &vOut, &iSeg, true);
+      int iSeg;
+      Vertex2D vOut;
+      ClosestPointOnPolygon(vvertex, v, &vOut, &iSeg, true);
 
-         // Go through vertices (including iSeg itself) counting control points until iSeg
-         int icp = 0;
-         for (int i=0;i<(iSeg+1);i++)
-            if (vvertex[i].fControlPoint)
-               icp++;
+      // Go through vertices (including iSeg itself) counting control points until iSeg
+      int icp = 0;
+      for (int i = 0; i < (iSeg + 1); i++)
+         if (vvertex[i].fControlPoint)
+            icp++;
 
-         //if (icp == 0) // need to add point after the last point
-         //icp = m_vdpoint.Size();
+      //if (icp == 0) // need to add point after the last point
+      //icp = m_vdpoint.Size();
 
-         CComObject<DragPoint> *pdp;
-         CComObject<DragPoint>::CreateInstance(&pdp);
-         if (pdp)
-         {
-            pdp->AddRef();
-            pdp->Init(this, vOut.x, vOut.y);
-            m_vdpoint.InsertElementAt(pdp, icp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
-         }
-
-         SetDirtyDraw();
-
-         STOPUNDO
+      CComObject<DragPoint> *pdp;
+      CComObject<DragPoint>::CreateInstance(&pdp);
+      if (pdp)
+      {
+         pdp->AddRef();
+         pdp->Init(this, vOut.x, vOut.y);
+         m_vdpoint.InsertElementAt(pdp, icp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
       }
-      break;
+
+      SetDirtyDraw();
+
+      STOPUNDO
+   }
+   break;
    }
 }
 
@@ -1250,9 +1250,9 @@ STDMETHODIMP Light::InterfaceSupportsErrorInfo(REFIID riid)
       &IID_ILight,
    };
 
-   for (int i=0;i<sizeof(arr)/sizeof(arr[0]);i++)
+   for (int i = 0; i < sizeof(arr) / sizeof(arr[0]); i++)
    {
-      if (InlineIsEqualGUID(*arr[i],riid))
+      if (InlineIsEqualGUID(*arr[i], riid))
          return S_OK;
    }
    return S_FALSE;
@@ -1274,11 +1274,11 @@ STDMETHODIMP Light::put_Falloff(float newVal)
 
    STARTUNDO
 
-   m_d.m_falloff = newVal;
+      m_d.m_falloff = newVal;
 
    STOPUNDO
 
-   return S_OK;
+      return S_OK;
 }
 
 STDMETHODIMP Light::get_FalloffPower(float *pVal)
@@ -1292,11 +1292,11 @@ STDMETHODIMP Light::put_FalloffPower(float newVal)
 {
    STARTUNDO
 
-   m_d.m_falloff_power = newVal;
+      m_d.m_falloff_power = newVal;
 
    STOPUNDO
 
-   return S_OK;
+      return S_OK;
 }
 
 STDMETHODIMP Light::get_State(LightState *pVal)
@@ -1310,14 +1310,14 @@ STDMETHODIMP Light::put_State(LightState newVal)
 {
    STARTUNDO
 
-   // if the light is locked by the LS then just change the state and don't change the actual light
-   if (!m_fLockedByLS)
-      setLightState(newVal);
+      // if the light is locked by the LS then just change the state and don't change the actual light
+      if (!m_fLockedByLS)
+         setLightState(newVal);
    m_d.m_state = newVal;
 
    STOPUNDO
 
-   return S_OK;
+      return S_OK;
 }
 
 void Light::FlipY(Vertex2D * const pvCenter)
@@ -1356,11 +1356,11 @@ STDMETHODIMP Light::put_Color(OLE_COLOR newVal)
 {
    STARTUNDO
 
-   m_d.m_color = newVal;
+      m_d.m_color = newVal;
 
    STOPUNDO
 
-   return S_OK;
+      return S_OK;
 }
 
 STDMETHODIMP Light::get_ColorFull(OLE_COLOR *pVal)
@@ -1374,11 +1374,11 @@ STDMETHODIMP Light::put_ColorFull(OLE_COLOR newVal)
 {
    STARTUNDO
 
-   m_d.m_color2 = newVal;
+      m_d.m_color2 = newVal;
 
    STOPUNDO
 
-   return S_OK;
+      return S_OK;
 }
 
 STDMETHODIMP Light::get_X(float *pVal)
@@ -1392,11 +1392,11 @@ STDMETHODIMP Light::put_X(float newVal)
 {
    STARTUNDO
 
-   m_d.m_vCenter.x = newVal;
+      m_d.m_vCenter.x = newVal;
 
    STOPUNDO
 
-   return S_OK;
+      return S_OK;
 }
 
 STDMETHODIMP Light::get_Y(float *pVal)
@@ -1410,16 +1410,16 @@ STDMETHODIMP Light::put_Y(float newVal)
 {
    STARTUNDO
 
-   m_d.m_vCenter.y = newVal;
+      m_d.m_vCenter.y = newVal;
 
    STOPUNDO
 
-   return S_OK;
+      return S_OK;
 }
 
 void Light::InitShape()
 {
-   if ( m_vdpoint.Size() == 0 )
+   if (m_vdpoint.Size() == 0)
    {
       // First time shape has been set to custom - set up some points
       const float x = m_d.m_vCenter.x;
@@ -1427,9 +1427,9 @@ void Light::InitShape()
 
       CComObject<DragPoint> *pdp;
 
-      for( int i=8;i>0;i-- )
+      for (int i = 8; i > 0; i--)
       {
-         const float angle = (float)(M_PI*2.0/8.0)*(float)i;
+         const float angle = (float)(M_PI*2.0 / 8.0)*(float)i;
          float xx = x + sinf(angle)*m_d.m_falloff;
          float yy = y - cosf(angle)*m_d.m_falloff;
          CComObject<DragPoint>::CreateInstance(&pdp);
@@ -1458,7 +1458,7 @@ STDMETHODIMP Light::put_BlinkPattern(BSTR newVal)
 {
    STARTUNDO
 
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_rgblinkpattern, 32, NULL, NULL);
+      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_rgblinkpattern, 32, NULL, NULL);
 
    if (m_rgblinkpattern[0] == '\0')
    {
@@ -1467,11 +1467,11 @@ STDMETHODIMP Light::put_BlinkPattern(BSTR newVal)
    }
 
    if (g_pplayer)
-       RestartBlinker(g_pplayer->m_time_msec);
+      RestartBlinker(g_pplayer->m_time_msec);
 
    STOPUNDO
 
-   return S_OK;
+      return S_OK;
 }
 
 STDMETHODIMP Light::get_BlinkInterval(long *pVal)
@@ -1485,14 +1485,14 @@ STDMETHODIMP Light::put_BlinkInterval(long newVal)
 {
    STARTUNDO
 
-   m_blinkinterval = newVal;
+      m_blinkinterval = newVal;
 
    if (g_pplayer)
       m_timenextblink = g_pplayer->m_time_msec + m_blinkinterval;
 
    STOPUNDO
 
-   return S_OK;
+      return S_OK;
 }
 
 STDMETHODIMP Light::get_Intensity(float *pVal)
@@ -1506,13 +1506,13 @@ STDMETHODIMP Light::put_Intensity(float newVal)
 {
    STARTUNDO
 
-   m_d.m_intensity = max(0.f, newVal);
+      m_d.m_intensity = max(0.f, newVal);
    const bool isOn = (m_realState == LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : !!m_realState;
-   if( isOn )
+   if (isOn)
       m_d.m_currentIntensity = m_d.m_intensity*m_d.m_intensity_scale;
    STOPUNDO
 
-   return S_OK;
+      return S_OK;
 }
 
 STDMETHODIMP Light::get_TransmissionScale(float *pVal)
@@ -1526,11 +1526,11 @@ STDMETHODIMP Light::put_TransmissionScale(float newVal)
 {
    STARTUNDO
 
-   m_d.m_transmissionScale = max(0.f, newVal);
+      m_d.m_transmissionScale = max(0.f, newVal);
 
    STOPUNDO
 
-   return S_OK;
+      return S_OK;
 }
 
 STDMETHODIMP Light::get_IntensityScale(float *pVal)
@@ -1544,13 +1544,13 @@ STDMETHODIMP Light::put_IntensityScale(float newVal)
 {
    STARTUNDO
 
-   m_d.m_intensity_scale = newVal;
+      m_d.m_intensity_scale = newVal;
    const bool isOn = (m_realState == LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : !!m_realState;
-   if( isOn )
+   if (isOn)
       m_d.m_currentIntensity = m_d.m_intensity*m_d.m_intensity_scale;
    STOPUNDO
 
-   return S_OK;
+      return S_OK;
 }
 
 STDMETHODIMP Light::get_Surface(BSTR *pVal)
@@ -1567,11 +1567,11 @@ STDMETHODIMP Light::put_Surface(BSTR newVal)
 {
    STARTUNDO
 
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSurface, 32, NULL, NULL);
+      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSurface, 32, NULL, NULL);
 
    STOPUNDO
 
-   return S_OK;
+      return S_OK;
 }
 
 
@@ -1589,11 +1589,11 @@ STDMETHODIMP Light::put_Image(BSTR newVal)
 {
    STARTUNDO
 
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szOffImage, 32, NULL, NULL);
+      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szOffImage, 32, NULL, NULL);
 
    STOPUNDO
 
-   return S_OK;
+      return S_OK;
 }
 
 STDMETHODIMP Light::get_DepthBias(float *pVal)
@@ -1607,11 +1607,11 @@ STDMETHODIMP Light::put_DepthBias(float newVal)
 {
    STARTUNDO
 
-   m_d.m_depthBias = newVal;
+      m_d.m_depthBias = newVal;
 
    STOPUNDO
 
-   return S_OK;
+      return S_OK;
 }
 
 STDMETHODIMP Light::get_FadeSpeedUp(float *pVal)
@@ -1625,11 +1625,11 @@ STDMETHODIMP Light::put_FadeSpeedUp(float newVal)
 {
    STARTUNDO
 
-   m_d.m_fadeSpeedUp = newVal;
+      m_d.m_fadeSpeedUp = newVal;
 
    STOPUNDO
 
-   return S_OK;
+      return S_OK;
 }
 
 STDMETHODIMP Light::get_FadeSpeedDown(float *pVal)
@@ -1643,119 +1643,119 @@ STDMETHODIMP Light::put_FadeSpeedDown(float newVal)
 {
    STARTUNDO
 
-   m_d.m_fadeSpeedDown = newVal;
+      m_d.m_fadeSpeedDown = newVal;
 
    STOPUNDO
 
-   return S_OK;
+      return S_OK;
 }
 
 STDMETHODIMP Light::get_Bulb(VARIANT_BOOL *pVal)
 {
    *pVal = VBTOF(m_d.m_BulbLight);
 
-    return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Light::put_Bulb(VARIANT_BOOL newVal)
 {
-    STARTUNDO
+   STARTUNDO
 
-    m_d.m_BulbLight = VBTOF(newVal);
+      m_d.m_BulbLight = VBTOF(newVal);
 
-    STOPUNDO
+   STOPUNDO
 
-    return S_OK;
+      return S_OK;
 }
 
 STDMETHODIMP Light::get_ImageMode(VARIANT_BOOL *pVal)
 {
    *pVal = VBTOF(m_d.m_imageMode);
 
-    return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Light::put_ImageMode(VARIANT_BOOL newVal)
 {
-    STARTUNDO
+   STARTUNDO
 
-    m_d.m_imageMode = VBTOF(newVal);
+      m_d.m_imageMode = VBTOF(newVal);
 
-    STOPUNDO
+   STOPUNDO
 
-    return S_OK;
+      return S_OK;
 }
 
 STDMETHODIMP Light::get_ShowBulbMesh(VARIANT_BOOL *pVal)
 {
    *pVal = VBTOF(m_d.m_showBulbMesh);
 
-    return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Light::put_ShowBulbMesh(VARIANT_BOOL newVal)
 {
-    STARTUNDO
+   STARTUNDO
 
-    m_d.m_showBulbMesh = VBTOF(newVal);
+      m_d.m_showBulbMesh = VBTOF(newVal);
 
-    STOPUNDO
+   STOPUNDO
 
-    return S_OK;
+      return S_OK;
 }
 
 STDMETHODIMP Light::get_ShowReflectionOnBall(VARIANT_BOOL *pVal)
 {
    *pVal = VBTOF(m_d.m_showReflectionOnBall);
 
-    return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Light::put_ShowReflectionOnBall(VARIANT_BOOL newVal)
 {
-    STARTUNDO
+   STARTUNDO
 
-    m_d.m_showReflectionOnBall = VBTOF(newVal);
+      m_d.m_showReflectionOnBall = VBTOF(newVal);
 
-    STOPUNDO
+   STOPUNDO
 
-    return S_OK;
+      return S_OK;
 }
 
 STDMETHODIMP Light::get_ScaleBulbMesh(float *pVal)
 {
-    *pVal = m_d.m_meshRadius;
+   *pVal = m_d.m_meshRadius;
 
-    return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Light::put_ScaleBulbMesh(float newVal)
 {
-    STARTUNDO
+   STARTUNDO
 
-    m_d.m_meshRadius = newVal;
+      m_d.m_meshRadius = newVal;
 
-    STOPUNDO
+   STOPUNDO
 
-    return S_OK;
+      return S_OK;
 }
 
 STDMETHODIMP Light::get_BulbModulateVsAdd(float *pVal)
 {
-    *pVal = m_d.m_modulate_vs_add;
+   *pVal = m_d.m_modulate_vs_add;
 
-    return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Light::put_BulbModulateVsAdd(float newVal)
 {
-    STARTUNDO
+   STARTUNDO
 
-    m_d.m_modulate_vs_add = newVal;
+      m_d.m_modulate_vs_add = newVal;
 
-    STOPUNDO
+   STOPUNDO
 
-    return S_OK;
+      return S_OK;
 }
 
 STDMETHODIMP Light::get_BulbHaloHeight(float *pVal)
@@ -1832,45 +1832,45 @@ void Light::setLightState(const LightState newVal)
 
 STDMETHODIMP Light::get_Visible(VARIANT_BOOL *pVal) //temporary value of object
 {
-	*pVal = (VARIANT_BOOL)FTOVB(m_d.m_fVisible);
+   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fVisible);
 
-	return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Light::put_Visible(VARIANT_BOOL newVal)
 {
-	STARTUNDO
-	m_d.m_fVisible = VBTOF(newVal);
-	STOPUNDO
+   STARTUNDO
+      m_d.m_fVisible = VBTOF(newVal);
+   STOPUNDO
 
-	return S_OK;
+      return S_OK;
 }
 
 void Light::UpdatePropertyPanes()
 {
-    if ( m_propVisual==NULL )
-        return;
+   if (m_propVisual == NULL)
+      return;
 
-    if ( !m_d.m_BulbLight )
-    {
-        EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_SHOW_BULB_MESH), FALSE);
-        EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_SCALE_BULB_MESH), FALSE);
-        EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_BULB_MODULATE_VS_ADD), FALSE);
-        EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_REFLECT_ON_BALLS), FALSE);
-		  EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_TRANSMISSION_SCALE), FALSE);
-		  EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_HALO_EDIT), FALSE);
-        EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_IMAGE_MODE), TRUE);
-        EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, DISPID_Image), TRUE);
-    }
-    else
-    {
-        EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_SHOW_BULB_MESH), TRUE);
-        EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_SCALE_BULB_MESH), TRUE);
-        EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_BULB_MODULATE_VS_ADD), TRUE);
-        EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_REFLECT_ON_BALLS), TRUE);
-		EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_TRANSMISSION_SCALE), TRUE);
-		EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_HALO_EDIT), TRUE);
-        EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,IDC_IMAGE_MODE), FALSE);
-        EnableWindow(GetDlgItem(m_propVisual->dialogHwnd,DISPID_Image), FALSE);
-    }
+   if (!m_d.m_BulbLight)
+   {
+      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_SHOW_BULB_MESH), FALSE);
+      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_SCALE_BULB_MESH), FALSE);
+      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_BULB_MODULATE_VS_ADD), FALSE);
+      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_REFLECT_ON_BALLS), FALSE);
+      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_TRANSMISSION_SCALE), FALSE);
+      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_HALO_EDIT), FALSE);
+      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_IMAGE_MODE), TRUE);
+      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, DISPID_Image), TRUE);
+   }
+   else
+   {
+      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_SHOW_BULB_MESH), TRUE);
+      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_SCALE_BULB_MESH), TRUE);
+      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_BULB_MODULATE_VS_ADD), TRUE);
+      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_REFLECT_ON_BALLS), TRUE);
+      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_TRANSMISSION_SCALE), TRUE);
+      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_HALO_EDIT), TRUE);
+      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_IMAGE_MODE), FALSE);
+      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, DISPID_Image), FALSE);
+   }
 }

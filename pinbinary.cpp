@@ -1,186 +1,186 @@
 #include "StdAfx.h"
 
 PinBinary::PinBinary()
-	{
-	m_pdata = NULL;
-	}
+{
+   m_pdata = NULL;
+}
 
 PinBinary::~PinBinary()
-	{
-	if (m_pdata)
-		{
-		delete [] m_pdata;
-		}
-	}
+{
+   if (m_pdata)
+   {
+      delete[] m_pdata;
+   }
+}
 
 void PinBinary::ReadFromFile(char *szfilename)
-	{
-	HANDLE hFile = CreateFile(szfilename,
-		GENERIC_READ, FILE_SHARE_READ,
-		NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+{
+   HANDLE hFile = CreateFile(szfilename,
+      GENERIC_READ, FILE_SHARE_READ,
+      NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
-	if (hFile == INVALID_HANDLE_VALUE)
-		{
-		ShowError("The file could not be opened.");
-		return;
-		}
+   if (hFile == INVALID_HANDLE_VALUE)
+   {
+      ShowError("The file could not be opened.");
+      return;
+   }
 
-	if (m_pdata)
-		{
-		delete [] m_pdata;
-		}
+   if (m_pdata)
+   {
+      delete[] m_pdata;
+   }
 
-	m_cdata = GetFileSize(hFile, NULL);
+   m_cdata = GetFileSize(hFile, NULL);
 
-	m_pdata = new char[m_cdata];
+   m_pdata = new char[m_cdata];
 
-	DWORD read;
+   DWORD read;
 
-	/*int fFoo =*/ ReadFile(hFile, m_pdata, m_cdata, &read, NULL);
+   /*int fFoo =*/ ReadFile(hFile, m_pdata, m_cdata, &read, NULL);
 
-	/*fFoo =*/ CloseHandle(hFile);
+   /*fFoo =*/ CloseHandle(hFile);
 
-	lstrcpy(m_szPath, szfilename);
+   lstrcpy(m_szPath, szfilename);
 
-	TitleFromFilename(szfilename, m_szName);
+   TitleFromFilename(szfilename, m_szName);
 
-	lstrcpy(m_szInternalName, m_szName);
+   lstrcpy(m_szInternalName, m_szName);
 
-	CharLowerBuff(m_szInternalName, lstrlen(m_szInternalName));
-	}
+   CharLowerBuff(m_szInternalName, lstrlen(m_szInternalName));
+}
 
 bool PinBinary::WriteToFile(char *szfilename)
-	{
-	HANDLE hFile = CreateFile(szfilename,
-		GENERIC_WRITE, FILE_SHARE_READ,
-		NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+{
+   HANDLE hFile = CreateFile(szfilename,
+      GENERIC_WRITE, FILE_SHARE_READ,
+      NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 
-	if (hFile == INVALID_HANDLE_VALUE)
-		{
-		ShowError("The temporary file could not be written.");
-		return false;
-		}
+   if (hFile == INVALID_HANDLE_VALUE)
+   {
+      ShowError("The temporary file could not be written.");
+      return false;
+   }
 
-	DWORD write;
-	/*int foo =*/ WriteFile(hFile, m_pdata, m_cdata, &write, NULL);
+   DWORD write;
+   /*int foo =*/ WriteFile(hFile, m_pdata, m_cdata, &write, NULL);
 
-	/*foo =*/ GetLastError();
+   /*foo =*/ GetLastError();
 
-	CloseHandle(hFile);
-	return true;
-	}
+   CloseHandle(hFile);
+   return true;
+}
 
 HRESULT PinBinary::SaveToStream(IStream *pstream)
-	{
-	//HRESULT hr;
+{
+   //HRESULT hr;
 
-	BiffWriter bw(pstream, NULL, NULL);
+   BiffWriter bw(pstream, NULL, NULL);
 
-	bw.WriteString(FID(NAME), m_szName);
+   bw.WriteString(FID(NAME), m_szName);
 
-	bw.WriteString(FID(INME), m_szInternalName);
+   bw.WriteString(FID(INME), m_szInternalName);
 
-	bw.WriteString(FID(PATH), m_szPath);
+   bw.WriteString(FID(PATH), m_szPath);
 
-	bw.WriteInt(FID(SIZE), m_cdata);
+   bw.WriteInt(FID(SIZE), m_cdata);
 
-	bw.WriteStruct(FID(DATA), m_pdata, m_cdata);
+   bw.WriteStruct(FID(DATA), m_pdata, m_cdata);
 
-	bw.WriteTag(FID(ENDB));
+   bw.WriteTag(FID(ENDB));
 
-	return S_OK;
-	}
+   return S_OK;
+}
 
 HRESULT PinBinary::LoadFromStream(IStream *pstream, int version)
-	{
-	BiffReader br(pstream, this, NULL, version, NULL, NULL);
+{
+   BiffReader br(pstream, this, NULL, version, NULL, NULL);
 
-	br.Load();
+   br.Load();
 
-	return S_OK;
-	}
+   return S_OK;
+}
 
 BOOL PinBinary::LoadToken(int id, BiffReader *pbr)
-	{
-	if (id == FID(NAME))
-		{
-		pbr->GetString(m_szName);
-		}
-	else if (id == FID(INME))
-		{
-		pbr->GetString(m_szInternalName);
-		}
-	else if (id == FID(PATH))
-		{
-		pbr->GetString(m_szPath);
-		}
-	else if (id == FID(SIZE))
-		{
-		pbr->GetInt(&m_cdata);
-		m_pdata = new char[m_cdata];
-		}
-	else if (id == FID(DATA))
-		{
-		// Size must come before data, otherwise our structure won't be allocated
-		pbr->GetStruct(m_pdata, m_cdata);
-		}
-	return fTrue;
-	}
+{
+   if (id == FID(NAME))
+   {
+      pbr->GetString(m_szName);
+   }
+   else if (id == FID(INME))
+   {
+      pbr->GetString(m_szInternalName);
+   }
+   else if (id == FID(PATH))
+   {
+      pbr->GetString(m_szPath);
+   }
+   else if (id == FID(SIZE))
+   {
+      pbr->GetInt(&m_cdata);
+      m_pdata = new char[m_cdata];
+   }
+   else if (id == FID(DATA))
+   {
+      // Size must come before data, otherwise our structure won't be allocated
+      pbr->GetStruct(m_pdata, m_cdata);
+   }
+   return fTrue;
+}
 
 int CALLBACK EnumFontFamExProc(
-  ENUMLOGFONTEX *lpelfe,    // logical-font data
-  NEWTEXTMETRICEX *lpntme,  // physical-font data
-  DWORD FontType,           // type of font
-  LPARAM lParam             // application-defined data
-)
-	{
-	return 1;
-	}
+   ENUMLOGFONTEX *lpelfe,    // logical-font data
+   NEWTEXTMETRICEX *lpntme,  // physical-font data
+   DWORD FontType,           // type of font
+   LPARAM lParam             // application-defined data
+   )
+{
+   return 1;
+}
 
 void PinFont::Register()
-	{
+{
 
-	HDC hdcScreen = GetDC(NULL);
+   HDC hdcScreen = GetDC(NULL);
 
-	LOGFONT lf;
+   LOGFONT lf;
 
-	lf.lfCharSet = DEFAULT_CHARSET;
-	lstrcpy(lf.lfFaceName, "");
-	lf.lfPitchAndFamily = 0;
+   lf.lfCharSet = DEFAULT_CHARSET;
+   lstrcpy(lf.lfFaceName, "");
+   lf.lfPitchAndFamily = 0;
 
-	EnumFontFamiliesEx(hdcScreen, &lf, (FONTENUMPROC)EnumFontFamExProc, (size_t)this, 0);
+   EnumFontFamiliesEx(hdcScreen, &lf, (FONTENUMPROC)EnumFontFamExProc, (size_t)this, 0);
 
-	ReleaseDC(NULL, hdcScreen);
+   ReleaseDC(NULL, hdcScreen);
 
-	char szPath[MAX_PATH];
+   char szPath[MAX_PATH];
 
-	GetModuleFileName(NULL, szPath, MAX_PATH);
+   GetModuleFileName(NULL, szPath, MAX_PATH);
 
-	char *szEnd = szPath + lstrlen(szPath);
+   char *szEnd = szPath + lstrlen(szPath);
 
-	while (szEnd > szPath)
-		{
-		if (*szEnd == '\\')
-			{
-			break;
-			}
-		szEnd--;
-		}
+   while (szEnd > szPath)
+   {
+      if (*szEnd == '\\')
+      {
+         break;
+      }
+      szEnd--;
+   }
 
-	*(szEnd+1) = '\0'; // Get rid of exe name
+   *(szEnd + 1) = '\0'; // Get rid of exe name
 
-	lstrcat(szPath, "VPTemp.ttf");
+   lstrcat(szPath, "VPTemp.ttf");
 
-	strcpy_s(m_szTempFile, sizeof(m_szTempFile), szPath);
+   strcpy_s(m_szTempFile, sizeof(m_szTempFile), szPath);
 
-	WriteToFile(m_szTempFile);
+   WriteToFile(m_szTempFile);
 
-	/*const int fonts =*/ AddFontResource(m_szTempFile);
-	}
+   /*const int fonts =*/ AddFontResource(m_szTempFile);
+}
 
 void PinFont::UnRegister()
-	{
-	/*const BOOL fFoo =*/ RemoveFontResource(m_szTempFile);
+{
+   /*const BOOL fFoo =*/ RemoveFontResource(m_szTempFile);
 
-	DeleteFile(m_szTempFile);
-	}
+   DeleteFile(m_szTempFile);
+}

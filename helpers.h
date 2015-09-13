@@ -6,10 +6,10 @@
 /*	Copyright (C) Microsoft Corporation, 1999.  All rights reserved.
 
 
-	This source code is intended only as a supplement to Microsoft
-	Development Tools and/or on-line documentation.  See these other
-	materials for detailed information regarding Microsoft code samples.
-*/
+   This source code is intended only as a supplement to Microsoft
+   Development Tools and/or on-line documentation.  See these other
+   materials for detailed information regarding Microsoft code samples.
+   */
 
 #pragma once
 
@@ -20,26 +20,30 @@
 // class directly; use the macro(s) below.
 //---------------------------------------------------------------------------
 class TempBuffer
-  {
-  public:
-    TempBuffer(const ULONG cb)
-      {
+{
+public:
+   TempBuffer(const ULONG cb)
+   {
       m_fAlloc = (cb > 256);
       if (m_fAlloc)
-        m_pbBuf = new char[cb];
+         m_pbBuf = new char[cb];
       else
-        m_pbBuf = m_szBufT;
-      }
-    ~TempBuffer()
-      { if (m_pbBuf && m_fAlloc) delete [] m_pbBuf; }
-    void *GetBuffer() const
-      { return m_pbBuf; }
+         m_pbBuf = m_szBufT;
+   }
+   ~TempBuffer()
+   {
+      if (m_pbBuf && m_fAlloc) delete[] m_pbBuf;
+   }
+   void *GetBuffer() const
+   {
+      return m_pbBuf;
+   }
 
-  private:
-    void *m_pbBuf;
-    char  m_szBufT[256];  // We'll use this temp buffer for small cases.
-    bool  m_fAlloc;
-  };
+private:
+   void *m_pbBuf;
+   char  m_szBufT[256];  // We'll use this temp buffer for small cases.
+   bool  m_fAlloc;
+};
 
 
 //---------------------------------------------------------------------------
