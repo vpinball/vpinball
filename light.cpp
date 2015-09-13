@@ -670,7 +670,7 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
             pd3dDevice->classicLightShader->SetTexture("Texture0", offTexel );
 			if (m_ptable->m_fReflectElementsOnPlayfield)
 			{
-				pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
+            pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, TRUE);
 				pd3dDevice->SetRenderState(RenderDevice::SRCBLEND, D3DBLEND_ONE);
 				pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_ONE);
 			}
@@ -726,6 +726,13 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
 	    pd3dDevice->classicLightShader->End();
 	else
 	    pd3dDevice->lightShader->End();
+
+    if (!m_d.m_BulbLight && offTexel!=NULL && m_ptable->m_fReflectElementsOnPlayfield)
+    {
+       pd3dDevice->SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE);
+       pd3dDevice->SetRenderState(RenderDevice::SRCBLEND, D3DBLEND_SRCALPHA);
+       pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, D3DBLEND_INVSRCALPHA);
+    }
 
 	/*if ( m_d.m_BulbLight ) //!! not necessary anymore
 	{
