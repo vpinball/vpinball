@@ -6,8 +6,10 @@ VP 9.9.2 Changelog
 
 - extend right click behavior for multi-select to hidden items
 
+- fix EMReel crash when image is missing and reel value is nonzero
+
 - updated to latest FreeImage.dll (3.17.0)
-- script editor updated to use latest scintilla (3.6.0)
+- script editor updated to use latest scintilla (3.6.1)
 
 VP 9.9.1 Changelog
 ------------------------
