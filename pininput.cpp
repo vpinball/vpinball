@@ -14,6 +14,7 @@ PinInput::PinInput()
 
    leftMouseButtonDown = false;
    rightMouseButtonDown = false;
+   middleMouseButtonDown = false;
 
    m_head = m_tail = 0;
    m_PreviousKeys = 0;
@@ -463,7 +464,7 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
          {
             if (g_pplayer->m_fThrowBalls) // debug ball throw functionality
             {
-               if ((mouseState.rgbButtons[0] & 0x80) && !leftMouseButtonDown && !rightMouseButtonDown)
+               if ((mouseState.rgbButtons[0] & 0x80) && !leftMouseButtonDown && !rightMouseButtonDown && !middleMouseButtonDown)
                {
                   POINT curPos;
                   GetCursorPos(&curPos);
@@ -471,7 +472,7 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
                   mouseY = curPos.y;
                   leftMouseButtonDown = true;
                }
-               if (!(mouseState.rgbButtons[0] & 0x80) && leftMouseButtonDown && !rightMouseButtonDown)
+               if (!(mouseState.rgbButtons[0] & 0x80) && leftMouseButtonDown && !rightMouseButtonDown && !middleMouseButtonDown)
                {
                   POINT curPos;
                   GetCursorPos(&curPos);
@@ -481,7 +482,7 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
                   PushQueue(&didod[0], APP_MOUSE);
                   leftMouseButtonDown = false;
                }
-               if ((mouseState.rgbButtons[1] & 0x80) && !rightMouseButtonDown && !leftMouseButtonDown)
+               if ((mouseState.rgbButtons[1] & 0x80) && !rightMouseButtonDown && !leftMouseButtonDown && !middleMouseButtonDown)
                {
                   POINT curPos;
                   GetCursorPos(&curPos);
@@ -489,7 +490,7 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
                   mouseY = curPos.y;
                   rightMouseButtonDown = true;
                }
-               if (!(mouseState.rgbButtons[1] & 0x80) && !leftMouseButtonDown && rightMouseButtonDown)
+               if (!(mouseState.rgbButtons[1] & 0x80) && !leftMouseButtonDown && rightMouseButtonDown && !middleMouseButtonDown)
                {
                   POINT curPos;
                   GetCursorPos(&curPos);
@@ -498,6 +499,24 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
                   didod[0].dwData = 2;
                   PushQueue(&didod[0], APP_MOUSE);
                   rightMouseButtonDown = false;
+               }
+               if ((mouseState.rgbButtons[2] & 0x80) && !rightMouseButtonDown && !leftMouseButtonDown && !middleMouseButtonDown)
+               {
+                  POINT curPos;
+                  GetCursorPos(&curPos);
+                  mouseX = curPos.x;
+                  mouseY = curPos.y;
+                  middleMouseButtonDown = true;
+               }
+               if (!(mouseState.rgbButtons[2] & 0x80) && !rightMouseButtonDown && !leftMouseButtonDown && middleMouseButtonDown)
+               {
+                  POINT curPos;
+                  GetCursorPos(&curPos);
+                  mouseDX = curPos.x - mouseX;
+                  mouseDY = curPos.y - mouseY;
+                  didod[0].dwData = 3;
+                  PushQueue(&didod[0], APP_MOUSE);
+                  middleMouseButtonDown = false;
                }
             }
          }
@@ -934,7 +953,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
       {
          if (g_pplayer->m_fThrowBalls)
          {
-            if (input->dwData == 1)
+            if (input->dwData == 1 || input->dwData==3)
             {
                POINT point = { mouseX, mouseY };
                ScreenToClient(m_hwnd, &point);
@@ -954,30 +973,36 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
                   vy = -vy2;
                }
                bool ballGrabbed = false;
-               for (unsigned i = 0; i < g_pplayer->m_vball.size(); i++)
+               if (input->dwData == 1)
                {
-                  Ball * const pBall = g_pplayer->m_vball[i];
-                  const float dx = fabsf(vertex.x - pBall->m_pos.x);
-                  const float dy = fabsf(vertex.y - pBall->m_pos.y);
-                  if (dx < 50.f && dy < 50.f)
+                  for (unsigned i = 0; i < g_pplayer->m_vball.size(); i++)
                   {
-                     POINT newPoint;
-                     GetCursorPos(&newPoint);
-                     ScreenToClient(m_hwnd, &newPoint);
-                     const Vertex3Ds vert = g_pplayer->m_pin3d.Get3DPointFrom2D(newPoint);
+                     Ball * const pBall = g_pplayer->m_vball[i];
+                     const float dx = fabsf(vertex.x - pBall->m_pos.x);
+                     const float dy = fabsf(vertex.y - pBall->m_pos.y);
+                     if (dx < 50.f && dy < 50.f)
+                     {
+                        POINT newPoint;
+                        GetCursorPos(&newPoint);
+                        ScreenToClient(m_hwnd, &newPoint);
+                        const Vertex3Ds vert = g_pplayer->m_pin3d.Get3DPointFrom2D(newPoint);
 
-                     ballGrabbed = true;
-                     pBall->m_pos.x = vert.x;
-                     pBall->m_pos.y = vert.y;
-                     pBall->m_vel.x = vx;
-                     pBall->m_vel.y = vy;
-                     pBall->Init();
-                     break;
+                        ballGrabbed = true;
+                        pBall->m_pos.x = vert.x;
+                        pBall->m_pos.y = vert.y;
+                        pBall->m_vel.x = vx;
+                        pBall->m_vel.y = vy;
+                        pBall->Init();
+                        break;
+                     }
                   }
                }
                if (!ballGrabbed)
                {
-                  Ball * const pball = g_pplayer->CreateBall(vertex.x, vertex.y, g_pplayer->m_ptable->m_tableheight, vx, vy, 0);
+                  float z = g_pplayer->m_ptable->m_tableheight;
+                  if (input->dwData == 3)
+                     z = g_pplayer->m_ptable->m_glassheight;
+                  Ball * const pball = g_pplayer->CreateBall(vertex.x, vertex.y, z, vx, vy, 0);
                   pball->m_pballex->AddRef();
                }
             }
