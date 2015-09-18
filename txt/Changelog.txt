@@ -140,7 +140,6 @@ VP 10.0.0 Changelog
 - new (optional) playfield reflections
   This option is a table option and can't be blindly activated on all tables. Because authors have so many different ways to build tables it's nearly impossible to handle the reflection in every case.
   If you're building a table and you want to use this option the following rules apply:
-  - only static elements reflect on the table (for now)
   - the reflection only applies on the playfield not on upper playfield areas or separate walls used as a playfield.
   - don't overdo the reflection strength of the ball/playfield reflection. Depending on the playfield texture a value around 50-120 should be good enough. Otherwise it looks unnatural.
   - don't use decals of the size of the playfield as an overlay or you won't see the reflection neither.
@@ -260,7 +259,7 @@ VP 10.0.0 Changelog
 - 64bit port (handle with care, might still cause issues)
 
 - updated to latest FreeImage.dll (3.17.0)
-- script editor updated to use latest Scintilla (3.5.7)
+- script editor updated to use latest Scintilla (3.6.1)
 
 - DirectX 8 port for input handling (currently disabled)
 
@@ -276,8 +275,10 @@ VP 9.9.2 Changelog
 
 - extend right click behavior for multi-select to hidden items
 
+- fix EMReel crash when image is missing and reel value is nonzero
+
 - updated to latest FreeImage.dll (3.17.0)
-- script editor updated to use latest scintilla (3.5.7)
+- script editor updated to use latest scintilla (3.6.1)
 
 VP 9.9.1 Changelog
 ------------------------
