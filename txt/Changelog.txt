@@ -197,6 +197,8 @@ VP 10.0.0 Changelog
 
 - ctrl+mouse wheel zooms in/out. The old way of using ctrl+left click for zooming in and ctrl+right click for zooming out is still possible.
 
+- Enable "Throw Balls in Player" mode and by pressing the middle mouse button a ball will fall from the table glass height onto the table. This way you can place some balls on tables if a wall is used as the playfield.
+
 - extend right click behavior for multi-select to hidden items
 
 - the property menu can now be a floating window (old behavior can be restored in the editor options)
