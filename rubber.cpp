@@ -512,9 +512,9 @@ void Rubber::GetHitShapes(Vector<HitObject> * const pvho)
       rgv3D[2] = Vertex3Ds(v->x, v->y, v->z);
       SetupHitObject(pvho, new HitTriangle(rgv3D));
 
-      AddHitEdge(pvho, addedEdges, ringIndices[i], ringIndices[i + 1]);
-      AddHitEdge(pvho, addedEdges, ringIndices[i + 1], ringIndices[i + 2]);
-      AddHitEdge(pvho, addedEdges, ringIndices[i + 2], ringIndices[i]);
+      AddHitEdge(pvho, addedEdges, ringIndices[i], ringIndices[i + 2]);
+      AddHitEdge(pvho, addedEdges, ringIndices[i + 2], ringIndices[i + 1]);
+      AddHitEdge(pvho, addedEdges, ringIndices[i + 1], ringIndices[i]);
    }
 
    // add collision vertices
