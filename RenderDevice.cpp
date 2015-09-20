@@ -637,6 +637,7 @@ RenderDevice::~RenderDevice()
 
    m_texMan.UnloadAll();
    SAFE_RELEASE(m_pOffscreenBackBufferTexture);
+   SAFE_RELEASE(m_pOffscreenBackBufferTmpTexture);
 
    const bool drawBallReflection = ((g_pplayer->m_fReflectionForBalls && (g_pplayer->m_ptable->m_useReflectionForBalls == -1)) || (g_pplayer->m_ptable->m_useReflectionForBalls == 1));
    if (g_pplayer->m_ptable->m_fReflectElementsOnPlayfield || drawBallReflection)
@@ -644,7 +645,7 @@ RenderDevice::~RenderDevice()
       SAFE_RELEASE(m_pMirrorBufferTexture);
       SAFE_RELEASE(m_pMirrorTmpBufferTexture);
    }
-   SAFE_RELEASE(m_pOffscreenBackBufferTmpTexture);
+
    SAFE_RELEASE(m_pBloomBufferTexture);
    SAFE_RELEASE(m_pBloomTmpBufferTexture);
    SAFE_RELEASE(m_pBackBuffer);

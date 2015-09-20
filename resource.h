@@ -609,7 +609,6 @@
 #define IDC_ALPHA_SLIDER                420
 #define IDC_GLOBAL_TRAIL_CHECK          421
 #define IDC_VP_WIDTH                    421
-#define IDC_ALPHA_SLIDER2               421
 #define IDC_VP_HEIGHT                   422
 #define IDC_TABLE_DIM_LIST              423
 #define IDC_AO_ALL_TABLES               424

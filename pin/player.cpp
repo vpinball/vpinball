@@ -1267,23 +1267,24 @@ void Player::RenderStaticMirror(const bool onlyBalls)
    m_pin3d.m_pd3dDevice->GetMirrorBufferTexture()->GetSurfaceLevel(0, &tmpMirrorSurface);
 
    m_pin3d.m_pd3dDevice->Clear(0, NULL, D3DCLEAR_ZBUFFER, 0, 1.0f, 0L);
-   m_pin3d.m_pd3dDevice->FBShader->SetFloat("mirrorFactor", (float)m_ptable->m_playfieldReflectionStrength / 255.0f);
+   m_pin3d.m_pd3dDevice->FBShader->SetFloat("mirrorFactor", (float)m_ptable->m_playfieldReflectionStrength*(float)(1.0/255.0));
 
    if (!onlyBalls)
    {
       m_pin3d.m_pd3dDevice->GetTransform(TRANSFORMSTATE_VIEW, &viewMat);
       // flip camera
-      viewMat._33 *= -1.0f;
+      viewMat._33 = -viewMat._33;
       if (rotation != 0.0f)
-         viewMat._31 *= -1.0f;
+         viewMat._31 = -viewMat._31;
       else
       {
-         viewMat._32 *= -1.0f;
+         viewMat._32 = -viewMat._32;
       }
       m_pin3d.m_pd3dDevice->SetTransform(TRANSFORMSTATE_VIEW, &viewMat);
 
-      m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
       m_ptable->m_fReflectionEnabled = true;
+      m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE); // re-init/thrash cache entry due to the hacky nature of the table mirroring
+      m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
       UpdateBasicShaderMatrix();
 
       // render mirrored static elements
@@ -1300,15 +1301,16 @@ void Player::RenderStaticMirror(const bool onlyBalls)
       }
 
       m_ptable->m_fReflectionEnabled = false;
+      m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE); // re-init/thrash cache entry due to the hacky nature of the table mirroring
       m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 
       // and flip back camera
-      viewMat._33 *= -1.0f;
+      viewMat._33 = -viewMat._33;
       if (rotation != 0.0f)
-         viewMat._31 *= -1.0f;
+         viewMat._31 = -viewMat._31;
       else
       {
-         viewMat._32 *= -1.0f;
+         viewMat._32 = -viewMat._32;
       }
       m_pin3d.m_pd3dDevice->SetTransform(TRANSFORMSTATE_VIEW, &viewMat);
       UpdateBasicShaderMatrix();
@@ -1351,11 +1353,11 @@ void Player::RenderDynamicMirror(const bool onlyBalls)
 
    m_pin3d.m_pd3dDevice->GetTransform(TRANSFORMSTATE_VIEW, &viewMat);
    // flip camera
-   viewMat._33 *= -1.0f;
-   if (rotation != 0.0f)
-      viewMat._31 *= -1.0f;
+   viewMat._33 = -viewMat._33;
+   if (rotation!=0.0f)
+      viewMat._31 = -viewMat._31;
    else
-      viewMat._32 *= -1.0f;
+      viewMat._32 = -viewMat._32;
    m_pin3d.m_pd3dDevice->SetTransform(TRANSFORMSTATE_VIEW, &viewMat);
 
    if (!onlyBalls)
@@ -1364,8 +1366,9 @@ void Player::RenderDynamicMirror(const bool onlyBalls)
    UpdateBallShaderMatrix();
    m_pin3d.m_pd3dDevice->BeginScene();
 
-   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
    m_ptable->m_fReflectionEnabled = true;
+   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE); // re-init/thrash cache entry due to the hacky nature of the table mirroring
+   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 
    if (!onlyBalls)
    {
@@ -1385,16 +1388,17 @@ void Player::RenderDynamicMirror(const bool onlyBalls)
 
 
    m_ptable->m_fReflectionEnabled = false;
+   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE); // re-init/thrash cache entry due to the hacky nature of the table mirroring
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 
    m_pin3d.m_pd3dDevice->EndScene();
 
    // and flip back camera
-   viewMat._33 *= -1.0f;
-   if (rotation != 0.0f)
-      viewMat._31 *= -1.0f;
+   viewMat._33 = -viewMat._33;
+   if (rotation!=0.0f)
+      viewMat._31 = -viewMat._31;
    else
-      viewMat._32 *= -1.0f;
+      viewMat._32 = -viewMat._32;
    m_pin3d.m_pd3dDevice->SetTransform(TRANSFORMSTATE_VIEW, &viewMat);
    if (!onlyBalls)
       UpdateBasicShaderMatrix();
@@ -3262,6 +3266,7 @@ void Player::UpdateBackdropSettings(const bool up)
    }
    }
 }
+
 void Player::UpdateCameraModeDisplay()
 {
    HDC hdcNull = GetDC(NULL);
@@ -3739,12 +3744,12 @@ void Player::GetBallAspectRatio(const Ball * const pball, float &stretchX, float
 }
 
 // not used anymore. Reflection of the ball is done in RenderDynamicMirror()!
-void Player::DrawBallReflection(Ball *pball, const float zheight, const bool lowDetailBall)
+/*void Player::DrawBallReflection(Ball *pball, const float zheight, const bool lowDetailBall)
 {
    // this is the old ball reflection hack and can be removed if the new reflection works!
    const D3DXVECTOR4 pos_radRef(pball->m_pos.x, pball->m_pos.y, zheight + m_ptable->m_tableheight, pball->m_radius);
    ballShader->SetVector("position_radius", &pos_radRef);
-   const D3DXVECTOR4 refl((float)m_ptable->m_ballReflectionStrength / 255.0f, (float)m_ptable->m_playfieldReflectionStrength / 255.0f, 0.f, 0.f);
+   const D3DXVECTOR4 refl((float)m_ptable->m_ballReflectionStrength * (float)(1.0 / 255.0), (float)m_ptable->m_playfieldReflectionStrength * (float)(1.0 / 255.0), 0.f, 0.f);
    ballShader->SetVector("reflection_ball_playfield", &refl);
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
    m_pin3d.EnableAlphaBlend(false, false);
@@ -3756,7 +3761,7 @@ void Player::DrawBallReflection(Ball *pball, const float zheight, const bool low
    ballShader->End();
 
    m_pin3d.DisableAlphaBlend();
-}
+}*/
 
 void Player::DrawBalls()
 {
