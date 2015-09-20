@@ -2250,7 +2250,7 @@ void Ramp::RenderRamp(RenderDevice *pd3dDevice, const Material * const mat)
       {
          pd3dDevice->basicShader->SetTechnique("basic_with_texture");
          pd3dDevice->basicShader->SetTexture("Texture0", pin);
-         pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue / 255.0f);
+         pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
 
          //ppin3d->SetTextureFilter ( 0, TEXTURE_MODE_TRILINEAR );
       }

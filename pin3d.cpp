@@ -475,7 +475,7 @@ void Pin3D::InitLayoutFS()
    for (int i = 0; i < vvertex3D.Size(); ++i)
       delete vvertex3D.ElementAt(i);
 
-   m_proj.m_cameraLength = sqrtf(m_proj.m_vertexcamera.x*m_proj.m_vertexcamera.x + m_proj.m_vertexcamera.y*m_proj.m_vertexcamera.y + m_proj.m_vertexcamera.z*m_proj.m_vertexcamera.z);
+   //m_proj.m_cameraLength = sqrtf(m_proj.m_vertexcamera.x*m_proj.m_vertexcamera.x + m_proj.m_vertexcamera.y*m_proj.m_vertexcamera.y + m_proj.m_vertexcamera.z*m_proj.m_vertexcamera.z);
 
    m_pd3dDevice->SetTransform(TRANSFORMSTATE_PROJECTION, &m_proj.m_matProj);
    m_pd3dDevice->SetTransform(TRANSFORMSTATE_VIEW, &m_proj.m_matView);
@@ -533,7 +533,7 @@ void Pin3D::InitLayout()
    for (int i = 0; i < vvertex3D.Size(); ++i)
       delete vvertex3D.ElementAt(i);
 
-   m_proj.m_cameraLength = sqrtf(m_proj.m_vertexcamera.x*m_proj.m_vertexcamera.x + m_proj.m_vertexcamera.y*m_proj.m_vertexcamera.y + m_proj.m_vertexcamera.z*m_proj.m_vertexcamera.z);
+   //m_proj.m_cameraLength = sqrtf(m_proj.m_vertexcamera.x*m_proj.m_vertexcamera.x + m_proj.m_vertexcamera.y*m_proj.m_vertexcamera.y + m_proj.m_vertexcamera.z*m_proj.m_vertexcamera.z);
 
    m_pd3dDevice->SetTransform(TRANSFORMSTATE_PROJECTION, &m_proj.m_matProj);
    m_pd3dDevice->SetTransform(TRANSFORMSTATE_VIEW, &m_proj.m_matView);
@@ -621,7 +621,7 @@ void Pin3D::RenderPlayfieldGraphics()
       SetTextureFilter(0, TEXTURE_MODE_ANISOTROPIC);
       m_pd3dDevice->basicShader->SetTechnique("basic_with_texture");
       m_pd3dDevice->basicShader->SetTexture("Texture0", pin);
-      m_pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue / 255.0f);
+      m_pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
    }
    else // No image by that name
       m_pd3dDevice->basicShader->SetTechnique("basic_without_texture");

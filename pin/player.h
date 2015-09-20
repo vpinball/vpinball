@@ -438,7 +438,7 @@ public:
    void UpdateBallShaderMatrix();
    void CalcBallAspectRatio();
    void GetBallAspectRatio(const Ball * const pball, float &stretchX, float &stretchY, const float zHeight);
-   void DrawBallReflection(Ball *pball, const float zheight, const bool lowDetailBall);
+   //void DrawBallReflection(Ball *pball, const float zheight, const bool lowDetailBall);
 #endif
 
 #ifdef STEPPING

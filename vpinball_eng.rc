@@ -2539,7 +2539,7 @@ END
 STRINGTABLE
 BEGIN
     IDS_EDITOR              "Editor"
-    IDS_DEFAULTBALL         "Ball"
+    IDS_DEFAULTBALL         "Ball and Reflections"
     IDS_NONE                "<None>"
     IDS_VALUE               "Value"
     IDS_MAKEACTIVEBALL      "Make ActiveBall"

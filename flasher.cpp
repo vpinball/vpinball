@@ -1313,7 +1313,7 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
       pd3dDevice->flasherShader->SetTexture("Texture0", pinA);
 
       if (!m_d.m_fAddBlend)
-         flasherData.x = pinA->m_alphaTestValue / 255.0f;
+         flasherData.x = pinA->m_alphaTestValue * (float)(1.0 / 255.0);
 
       //ppin3d->SetTextureFilter( 0, TEXTURE_MODE_TRILINEAR );
    }
@@ -1323,7 +1323,7 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
       pd3dDevice->flasherShader->SetTexture("Texture0", pinB);
 
       if (!m_d.m_fAddBlend)
-         flasherData.x = pinB->m_alphaTestValue / 255.0f;
+         flasherData.x = pinB->m_alphaTestValue * (float)(1.0 / 255.0);
 
       //ppin3d->SetTextureFilter( 0, TEXTURE_MODE_TRILINEAR );
    }
@@ -1335,8 +1335,8 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
 
       if (!m_d.m_fAddBlend)
       {
-         flasherData.x = pinA->m_alphaTestValue / 255.0f;
-         flasherData.y = pinB->m_alphaTestValue / 255.0f;
+         flasherData.x = pinA->m_alphaTestValue * (float)(1.0 / 255.0);
+         flasherData.y = pinB->m_alphaTestValue * (float)(1.0 / 255.0);
       }
 
       //ppin3d->SetTextureFilter( 0, TEXTURE_MODE_TRILINEAR );
