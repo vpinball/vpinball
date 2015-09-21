@@ -1229,6 +1229,13 @@ STDMETHODIMP Bumper::put_ReflectionEnabled(VARIANT_BOOL newVal)
       return S_OK;
 }
 
+STDMETHODIMP Bumper::PlayHit()
+{
+    if ( m_pbumperhitcircle )
+        m_pbumperhitcircle->m_bumperanim.m_fHitEvent=true;
+    return S_OK;
+}
+
 void Bumper::UpdatePropertyPanes()
 {
    if (m_propVisual == NULL)

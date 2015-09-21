@@ -229,6 +229,7 @@ public:
    STDMETHOD(put_SlingshotAnimation)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_SlingshotMaterial)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(put_SlingshotMaterial)(/*[in]*/ BSTR newVal);
+   STDMETHODIMP PlaySlingshotHit();
 };
 
 #endif //__SURFACE_H_
