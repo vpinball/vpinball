@@ -56,6 +56,8 @@ public:
       m_elasticity = 0.3f;
       SetFriction(0.3f);
       m_scatter = 0;
+      m_doHitEvent=false;
+      m_EventTimeReset=0;
    }
 
    virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
@@ -66,7 +68,8 @@ public:
    SlingshotAnimObject m_slingshotanim;
 
    float m_force;
-
+   bool m_doHitEvent;
+   unsigned int m_EventTimeReset;
    Surface *m_psurface;
 };
 

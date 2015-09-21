@@ -162,6 +162,11 @@ UserValue(any)
 *BaseVisible(bool) - default=true
 *ReflectionEnabled(bool) - default=true
 
+Methods
+-------
+
+PlayHit() - if called the bumper will play the hit animation without triggering the actual hit event.
+
 DECAL
 ==============================================================================================================================================
 
@@ -603,6 +608,12 @@ SlingshotThreshold(float)
 Friction(float)
 Scatter(float)
 *ReflectionEnabled(bool) - default=true
+
+Methods
+-------
+
+PlaySlingshotHit() - if the wall has slingshots defined, a call to this function will play the hit animation without triggering the actual hit event.
+
 
 FLASHER
 ==============================================================================================================================================

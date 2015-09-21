@@ -1024,7 +1024,7 @@ void Surface::RenderSlingshots(RenderDevice* pd3dDevice)
    for (unsigned i = 0; i < m_vlinesling.size(); i++)
    {
       LineSegSlingshot * const plinesling = m_vlinesling[i];
-      if (plinesling->m_slingshotanim.m_iframe == 1)
+      if (plinesling->m_slingshotanim.m_iframe == 1 || plinesling->m_doHitEvent)
       {
          nothing_to_draw = false;
          break;
@@ -1046,8 +1046,18 @@ void Surface::RenderSlingshots(RenderDevice* pd3dDevice)
    for (unsigned i = 0; i < m_vlinesling.size(); i++)
    {
       LineSegSlingshot * const plinesling = m_vlinesling[i];
-      if (plinesling->m_slingshotanim.m_iframe != 1)
+      if (plinesling->m_slingshotanim.m_iframe != 1 && !plinesling->m_doHitEvent)
          continue;
+      else if (plinesling->m_doHitEvent)
+      {
+          if (plinesling->m_EventTimeReset == 0)
+             plinesling->m_EventTimeReset = g_pplayer->m_time_msec+100;
+          else if ( plinesling->m_EventTimeReset < g_pplayer->m_time_msec )
+          {
+              plinesling->m_doHitEvent = false;
+              plinesling->m_EventTimeReset=0;
+          }
+      }
 
       pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, slingshotVBuffer, i * 9, 9, slingIBuffer, 0, 24);
    }
@@ -2055,6 +2065,17 @@ STDMETHODIMP Surface::put_ReflectionEnabled(VARIANT_BOOL newVal)
    STOPUNDO
 
       return S_OK;
+}
+
+STDMETHODIMP Surface::PlaySlingshotHit()
+{
+    for (unsigned i = 0; i < m_vlinesling.size(); i++)
+    {
+        LineSegSlingshot * const plinesling = m_vlinesling[i];
+        if ( plinesling )
+            plinesling->m_doHitEvent=true;
+    }
+    return S_OK;
 }
 
 void Surface::UpdatePropertyPanes()

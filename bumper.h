@@ -170,6 +170,7 @@ public:
    STDMETHOD(put_BaseVisible)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_ReflectionEnabled)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_ReflectionEnabled)(/*[in]*/ VARIANT_BOOL newVal);
+   STDMETHOD(PlayHit)();
 };
 
 #endif // !defined(AFX_BUMPER_H__9A202FF0_7FAE_49BF_AA4C_C01C692E6DD9__INCLUDED_)
