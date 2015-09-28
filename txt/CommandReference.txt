@@ -115,6 +115,8 @@ NightDay(int) - 0..100 value set in the UI (by the user) that defines if its nig
 *LightHeight(float) - height of lights
 *LightRange(float) - range of lights
 
+ColorGradeImage(String) - the 256x16 LUT texture used for the color grading post process
+
 Methods
 -------
 
