@@ -1,7 +1,6 @@
 #pragma once
 #include <activscp.h>
 #include <activdbg.h>
-
 #include "atlcom.h"
 
 enum SecurityLevelEnum
@@ -72,6 +71,19 @@ public:
    // for VectorSortString
    int SortAgainst(CodeViewDispatch *pcvd/*void *pvoid*/);
    int SortAgainstValue(void *pv);
+};
+
+class UserData
+{
+public:
+	string functionName;
+	string functionDesc;
+	int functionLine;
+
+	UserData();
+	UserData(int LineNo, string Desc, string Name);
+	~UserData();
+
 };
 
 class CodeViewer :
@@ -225,10 +237,18 @@ public:
    void Replace(FINDREPLACE *pfr);
    void SaveToStream(IStream *pistream, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey);	//<<< modified by chris as part of table protection
    void LoadFromStream(IStream *pistream, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey);	//<<< modified by chris as part of table protection
-
    void SetCaption(char *szCaption);
+	string upperCase(string input);
 
-   void ListEventsFromItem();
+	void ParseVPCore();
+	bool ShowTooltip(SCNotification *Scn);
+	void ShowAutoComplete(SCNotification *Scn);
+	string lowerCase(string input);
+	void szLower(char * incstr);
+	void szUpper(char * incstr);
+	void ParseForFunction(); 
+
+	void ListEventsFromItem();
    void FindCodeFromEvent();
    void TellHostToSelectItem();
    void GetParamsFromEvent(int iEvent, char *szParams);
@@ -246,18 +266,21 @@ public:
    HWND m_hwndStatus;
    HWND m_hwndFind;
 
-   HWND m_hwndItemList;
+   
+	HWND m_hwndItemList;
+	HWND m_hwndItemText;
    HWND m_hwndEventList;
+	HWND m_hwndEventText;
    HWND m_hwndFunctionList;
+	HWND m_hwndFunctionText;
 
    SaveDirtyState m_sdsDirty;
    BOOL m_fIgnoreDirty;
-
    HACCEL m_haccel; // Accelerator keys
 
    FINDREPLACE m_findreplaceold; //the last thing found/replaced
 
-   int m_errorLineNumber;
+	int m_errorLineNumber;
 };
 
 class Collection :
@@ -334,6 +357,8 @@ inline bool FIsWhitespace(const char ch)
 {
    return (ch == ' ' || ch == 9/*tab*/);
 }
+
+
 
 inline void AddEventToList(char * const sz, const int index, const int dispid, const LPARAM lparam)
 {

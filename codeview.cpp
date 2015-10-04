@@ -2,7 +2,6 @@
 
 #include <initguid.h>
 
-
 // The GUID used to identify the coclass of the VB Script engine
 // 	{B54F3741-5B07-11cf-A4B0-00AA004A55E8}
 #define szCLSID_VBScript "{B54F3741-5B07-11cf-A4B0-00AA004A55E8}"
@@ -11,27 +10,154 @@ DEFINE_GUID(CLSID_VBScript, 0xb54f3741, 0x5b07, 0x11cf, 0xa4, 0xb0, 0x0, 0xaa, 0
 //DEFINE_GUID(IID_IActiveScriptParse64,0xc7ef7658,0xe1ee,0x480e,0x97,0xea,0xd5,0x2c,0xb4,0xd7,0x6d,0x17);
 //DEFINE_GUID(IID_IActiveScriptDebug, 0x51973C10, 0xCB0C, 0x11d0, 0xB5, 0xC9, 0x00, 0xA0, 0x24, 0x4A, 0x0E, 0x7A);
 
-
 #define RECOLOR_LINE	WM_USER+100
-
 #define CONTEXTCOOKIE_NORMAL 1000
 #define CONTEXTCOOKIE_DEBUG 1001
 
-
 UINT g_FindMsgString; // Windows message for the FindText dialog
-const char vbsKeyWords[] =
+
+//Scintillia Lexer parses only lower case unless otherwise told
+const char vbsReservedWords[] =
 "and as byref byval case call const "
 "continue dim do each else elseif end error exit false for function global "
 "goto if in loop me new next not nothing on optional or private public "
 "redim rem resume select set sub then to true type while with "
 "boolean byte currency date double integer long object single string type "
-"variant";
+"variant option explicit randomize";
 
 
-LRESULT CALLBACK CodeViewWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 WNDPROC g_RichEditProc;
-int *functionLines;
+bool g_ToolTipActive;
+string vbsKeyWords;
+list<UserData> *g_VBwords;
+list<string> *g_AutoComp;
+list<UserData> *g_UserFunc;
+list<UserData> *g_Components;
+string g_AutoCompList;
+bool FindOrInsertUD(list<UserData>* ListIn, UserData ud);
+bool FindOrInsertStringIntoAutolist(list<string>* ListIn, string strIn);
+bool FuncSortUD (const UserData first, const UserData second);
+
+UserData::UserData()
+{
+	functionLine=0;
+	functionDesc="";
+	functionName="";
+}
+
+UserData::~UserData()
+{
+}
+
+UserData::UserData(int LineNo, string Desc, string Name)
+{
+	functionLine=LineNo;
+	functionDesc=Desc;
+	functionName=Name;
+}
+
+//Ajs only to be used on a fresh data set or when data order could be corrupted
+bool FuncSortUD (const UserData first, const UserData second)
+{
+  basic_string <char>::size_type i=0;
+  while ( (i<first.functionName.length()) && (i<second.functionName.length() ) )
+  {
+	  if (first.functionName[i]<second.functionName[i]) return true;
+	  else if (first.functionName[i]>second.functionName[i]) return false;
+    ++i;
+  }
+  return ( first.functionName.length() < second.functionName.length() );
+}
+
+//Ajs WIP Need to be updated to Binary find. (too slow on AMH table)
+//Assumes sorted list (found = false):
+bool FindOrInsertUD(list<UserData>* ListIn, UserData ud)
+{
+	//First in the list
+	if (ListIn->size() == 0)
+	{
+		ListIn->push_front(ud);
+		return true;
+	}
+	list<UserData>::iterator i = ListIn->begin();
+	int counter = ListIn->size();
+	int result = -1;
+	while (counter)
+	{
+		result = i->functionName.compare(ud.functionName);
+		if (result < 0)
+		{
+			i++;
+			counter--;
+		}
+		else
+		{
+			break;
+		}
+	}
+	if (result == 0) return false;//Already Exists.
+	if (result > 0 && (counter != 0))//Add new ud somewhere in middle.
+	{
+		ListIn->insert(i,ud);
+		return true;
+	}
+	if (result > 0 && (counter == 0))	//It's new at and at the very bottom.
+	{
+		ListIn->push_back(ud);
+		return true;
+	}
+	else //it's 1 above the last on the list.
+	{
+		ListIn->insert(i,ud);
+		return true;
+	}
+	return false;//Oh crap, never should hit here.
+}
+
+bool FindOrInsertStringIntoAutolist(list<string>* ListIn, string strIn)
+{
+	//First in the list
+	if (ListIn->empty())
+	{
+		ListIn->push_front(strIn);
+		return true;
+	}
+	list<string>::iterator i = ListIn->begin();
+	int counter = ListIn->size();
+	int result = -1;
+	while (counter)
+	{
+		result = i->compare(strIn);
+		if (result < 0)
+		{
+			i++;
+			counter--;
+		}
+		else
+		{
+			break;
+		}
+	}
+	if (result == 0) return false;//Already Exists.
+	if (result > 0 && (counter != 0))//Add new ud somewhere in middle.
+	{
+		ListIn->insert(i,strIn);
+		return true;
+	}
+	if (result > 0 && (counter == 0))	//It's new at and at the very bottom.
+	{
+		ListIn->push_back(strIn);
+		return true;
+	}
+	else //it's 1 above the last on the list.
+	{
+		ListIn->insert(i,strIn);
+		return true;
+	}
+	return false;//Oh crap, never should hit here.
+}
 
 IScriptable::IScriptable()
 {
@@ -116,6 +242,15 @@ CodeViewer::~CodeViewer()
    m_pdm->Release();
 }
 
+void GetRange(HWND m_hwndScintilla, int start, int end, char *text)
+{
+   Sci_TextRange tr;
+   tr.chrg.cpMin = start;
+   tr.chrg.cpMax = end;
+   tr.lpstrText = text;
+   SendMessage(m_hwndScintilla, SCI_GETTEXTRANGE, 0, (LPARAM)&tr);
+}
+
 void CodeViewer::SetClean(SaveDirtyState sds)
 {
    if (sds == eSaveClean)
@@ -149,7 +284,7 @@ HRESULT CodeViewer::AddTemporaryItem(BSTR bstr, IDispatch *pdisp)
    if (m_vcvd.GetSortedIndex(pcvd) != -1 || m_vcvdTemp.GetSortedIndex(pcvd) != -1)
    {
       delete pcvd;
-      return E_FAIL;
+      return E_FAIL; //already exists
    }
 
    m_vcvdTemp.AddSortedString(pcvd);
@@ -190,7 +325,7 @@ HRESULT CodeViewer::AddItem(IScriptable *piscript, BOOL fGlobal)
    WideCharToMultiByte(CP_ACP, 0, pcvd->m_wzName, -1, szT, 64, NULL, NULL);
    const size_t index = SendMessage(m_hwndItemList, CB_ADDSTRING, 0, (size_t)szT);
    SendMessage(m_hwndItemList, CB_SETITEMDATA, index, (size_t)piscript);
-
+	//AndyS - WIP insert new item into autocomplete list??
    return S_OK;
 }
 
@@ -383,18 +518,57 @@ void CodeViewer::Create()
    SetWindowLongPtr(m_hwndMain, GWLP_USERDATA, (size_t)this);
 
    SetWindowPos(m_hwndMain, NULL,
-      0, 0, 640, 480, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+      0, 0, 640, 490, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
 
    m_hwndScintilla = CreateWindowEx(0, "Scintilla", "",
       WS_CHILD | ES_NOHIDESEL | WS_VISIBLE | ES_SUNKEN | WS_HSCROLL | WS_VSCROLL | ES_MULTILINE | ES_WANTRETURN,
-      0, 10 + 22, 300, 300, m_hwndMain, NULL, g_hinst, 0);
-
+      0, 10 + 32, 300, 290, m_hwndMain, NULL, g_hinst, 0);
+// Create new list of user functions & Collections- filled in ParseForFunction(), first called in LoadFromStrem()
+	g_AutoComp = new list<string>();
+	g_Components = new list<UserData>();
+	g_UserFunc = new list<UserData>(); 
+// parse vb reserved words for auto complete.
+	g_VBwords = new list<UserData>;
+	int intWordFinish =-1; //skip space
+	char WordChar= vbsReservedWords[0];
+	char szWord[256];
+	int wordlen=0;
+	while (WordChar != 0) //Just make sure with chars, we reached EOL
+	{
+		memset(szWord,0,256);
+		wordlen=0;
+		intWordFinish++; //skip space
+		WordChar= vbsReservedWords[intWordFinish];
+		while (WordChar != 0 && WordChar != ' ')
+		{
+			szWord[wordlen]=WordChar;
+			intWordFinish++;
+			wordlen++;
+			WordChar= vbsReservedWords[intWordFinish];
+		}
+		UserData ud;
+		ud.functionName = string(szWord);
+		g_VBwords->push_front(ud);
+	}
+	g_VBwords->sort(FuncSortUD);
+	vbsKeyWords = new char[strlen(vbsReservedWords)+2];
+	for (list<UserData>::iterator i = g_VBwords->begin();i != g_VBwords->end(); i++)
+	{
+		//make vbsKeyWords in order. (the cat has been kicked out :)
+		vbsKeyWords += i->functionName.data();
+		vbsKeyWords += " ";
+		//Then capitalise first letter
+		WordChar = i->functionName.at(0);
+		if (WordChar >= 'a' && WordChar <= 'z' ) WordChar -= ('a'- 'A');
+		i->functionName.at(0) = WordChar;	
+	}
    SendMessage(m_hwndScintilla, SCI_SETLEXER, (WPARAM)SCLEX_VBSCRIPT, 0);
-
-   SendMessage(m_hwndScintilla, SCI_SETKEYWORDS, 0, (LPARAM)vbsKeyWords);
+   SendMessage(m_hwndScintilla, SCI_SETKEYWORDS, 0, (LPARAM)vbsReservedWords );
    SendMessage(m_hwndScintilla, SCI_SETTABWIDTH, 4, 0);
 
    SendMessage(m_hwndScintilla, SCI_SETMODEVENTMASK, SC_MOD_INSERTTEXT, 0);
+   // AndyS 17/9/15 - Turn On & Set Dwell to 1 sec
+   SendMessage(m_hwndScintilla,SCI_SETMOUSEDWELLTIME,1000,0);
 
    // The null visibility policy is like Visual Studio - if a search goes
    // off the screen, the newly selected text is placed in the middle of the
@@ -432,21 +606,31 @@ void CodeViewer::Create()
 
    SendMessage(m_hwndScintilla, SCI_STYLESETSIZE, 32, 10);
    SendMessage(m_hwndScintilla, SCI_STYLESETFONT, 32, (LPARAM)"Courier");
-   SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_DEFAULT, RGB(0, 0, 0));
+   SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_DEFAULT, RGB(255, 0, 0));
    SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_COMMENT, RGB(0, 130, 0));
    SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_NUMBER, RGB(0, 100, 100));
    SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_KEYWORD, RGB(0, 0, 160));
    SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_STRING, RGB(0, 100, 100));
    SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_PREPROCESSOR, RGB(255, 0, 0));
-   SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_OPERATOR, RGB(0, 0, 0));
+   SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_OPERATOR, RGB(0, 0, 160));
    SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_IDENTIFIER, RGB(0, 0, 0));
    SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_DATE, RGB(0, 0, 0));
 
-   //////////////////////// Status Window (& Sizing Box)
+   SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_KEYWORD2, RGB(128, 0, 128));// AndyS
+	SendMessage(m_hwndScintilla, SCI_AUTOCSETIGNORECASE, TRUE, 0);// AndyS
+	SendMessage(m_hwndScintilla, SCI_AUTOCSETCASEINSENSITIVEBEHAVIOUR, SC_CASEINSENSITIVEBEHAVIOUR_IGNORECASE,0);
+	char *Foo="[]{}(). " ;
+	SendMessage(m_hwndScintilla, SCI_AUTOCSETFILLUPS, 0,(LPARAM) Foo);// AndyS
+	SendMessage(m_hwndScintilla, SCI_AUTOCSETORDER, SC_ORDER_PERFORMSORT,0);
+	// AndyS - Get scint to sort - should use 0 and pre sort but function list changes
+	Foo=" " ;
+	SendMessage(m_hwndScintilla, SCI_AUTOCSTOPS, 0,(LPARAM) Foo);// AndyS
+
+	//////////////////////// Status Window (& Sizing Box)
 
    m_hwndStatus = CreateStatusWindow((WS_CHILD | WS_VISIBLE), "", m_hwndMain, 1);
 
-   int foo[4] = { 120, 300, 350, 400 };
+   int foo[4] = { 120, 320, 350, 400 };
    SendMessage(m_hwndStatus, SB_SETPARTS, 4, (size_t)foo);
 
    /////////////////// Compile / Find Buttons
@@ -455,27 +639,53 @@ void CodeViewer::Create()
 
    m_hwndItemList = CreateWindowEx(0, "ComboBox", "Objects",
       WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL,
-      5, 5, 150, 400, m_hwndMain, NULL, g_hinst, 0);
+      5, 17, 150, 400, m_hwndMain, NULL, g_hinst, 0);
    SetWindowLong(m_hwndItemList, GWL_ID, IDC_ITEMLIST);
    SendMessage(m_hwndItemList, WM_SETFONT, (size_t)GetStockObject(DEFAULT_GUI_FONT), 0);
 
-   m_hwndEventList = CreateWindowEx(0, "ComboBox", "Events",
+   m_hwndItemText = CreateWindowEx(0, "Static", "ObjectsText",
+		WS_CHILD | WS_VISIBLE | SS_SIMPLE,
+      5, 0, 150, 15, m_hwndMain, NULL, g_hinst, 0);
+	Foo = "Table component:\0";
+	SetWindowText(m_hwndItemText, Foo );
+   SendMessage(m_hwndItemText, WM_SETFONT, (size_t)GetStockObject(DEFAULT_GUI_FONT), 0);
+
+	m_hwndEventList = CreateWindowEx(0, "ComboBox", "Events",
       WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL,
-      180 + 5, 5, 150, 400, m_hwndMain, NULL, g_hinst, 0);
+      180 + 5, 17, 150, 400, m_hwndMain, NULL, g_hinst, 0);
    SetWindowLong(m_hwndEventList, GWL_ID, IDC_EVENTLIST);
    SendMessage(m_hwndEventList, WM_SETFONT, (size_t)GetStockObject(DEFAULT_GUI_FONT), 0);
 
-   m_hwndFunctionList = CreateWindowEx(0, "ComboBox", "Functions",
+   m_hwndEventText = CreateWindowEx(0, "Static", "EventsText",
+		WS_CHILD | WS_VISIBLE | SS_SIMPLE,
+      180 + 5, 0, 150, 15, m_hwndMain, NULL, g_hinst, 0);
+	Foo = "Create Sub from component:\0";
+	SetWindowText(m_hwndEventText, Foo );
+   SendMessage(m_hwndEventText, WM_SETFONT, (size_t)GetStockObject(DEFAULT_GUI_FONT), 0);
+	
+	m_hwndFunctionList = CreateWindowEx(0, "ComboBox", "Functions",
       WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | WS_VSCROLL,
-      360 + 5, 5, 150, 400, m_hwndMain, NULL, g_hinst, 0);
+      360 + 5, 17, 150, 400, m_hwndMain, NULL, g_hinst, 0);
    SetWindowLong(m_hwndFunctionList, GWL_ID, IDC_FUNCTIONLIST);
    SendMessage(m_hwndFunctionList, WM_SETFONT, (size_t)GetStockObject(DEFAULT_GUI_FONT), 0);
 
-   SendMessage(m_hwndMain, WM_SIZE, 0, 0); // Make our window relay itself out
+    m_hwndFunctionText = CreateWindowEx(0, "Static", "FunctionsText",
+		WS_CHILD | WS_VISIBLE | SS_SIMPLE,
+      360 + 5, 0, 150, 15, m_hwndMain, NULL, g_hinst, 0);
+	Foo = "Go to Sub/Functions:\0";
+	SetWindowText(m_hwndFunctionText, Foo );
+   SendMessage(m_hwndFunctionText, WM_SETFONT, (size_t)GetStockObject(DEFAULT_GUI_FONT), 0);
+
+	SendMessage(m_hwndMain, WM_SIZE, 0, 0); // Make our window relay itself out
 }
 
 void CodeViewer::Destroy()
 {
+	g_VBwords->clear();
+	delete g_VBwords; //AndyS
+	g_UserFunc->clear();
+	delete g_UserFunc;
+
    if (m_hwndFind)
       DestroyWindow(m_hwndFind);
 
@@ -903,7 +1113,7 @@ void CodeViewer::LoadFromStream(IStream *pistream, HCRYPTHASH hcrypthash, HCRYPT
       cchar = cryptlen;
    }
 
-   // ensure that the script is null terminated (as a encypted script can leave junk at
+   // ensure that the script is null terminated (as an encrypted script can leave junk at
    // the end of the buffer)
    szText[cchar] = L'\0';
 
@@ -915,8 +1125,10 @@ void CodeViewer::LoadFromStream(IStream *pistream, HCRYPTHASH hcrypthash, HCRYPT
    }
    SendMessage(m_hwndScintilla, SCI_SETTEXT, 0, (size_t)szText);
    SendMessage(m_hwndScintilla, SCI_EMPTYUNDOBUFFER, 0, 0);
-
    delete[] szText;
+	//initalise autocomplete, tooltips etc. - AndyS
+	ParseForFunction();
+	//if (g_UserFunc->size() > 2) g_UserFunc->sort(FuncSortUD);
 
    m_fIgnoreDirty = fFalse;
    m_sdsDirty = eSaveClean;
@@ -1068,13 +1280,15 @@ void CodeViewer::FindCodeFromEvent()
    const size_t iEventIndex = SendMessage(m_hwndEventList, CB_GETITEMDATA, index, 0);
    lstrcat(szItemName, "_"); // VB Specific event names
    lstrcat(szItemName, szEventName);
+   // AndyS Gain a few ticks!
 
    size_t codelen = SendMessage(m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
    size_t startChar = 0;
    size_t stopChar = codelen;
-
-   SendMessage(m_hwndScintilla, SCI_SETTARGETSTART, startChar, 0);
-   SendMessage(m_hwndScintilla, SCI_SETTARGETEND, stopChar, 0);
+   //SendMessage(m_hwndScintilla, SCI_SETTARGETSTART, startChar, 0); 
+   //SendMessage(m_hwndScintilla, SCI_SETTARGETEND, stopChar, 0);
+   SendMessage(m_hwndScintilla, SCI_TARGETWHOLEDOCUMENT, 0, 0);
+   //AndyS - Finish
    SendMessage(m_hwndScintilla, SCI_SETSEARCHFLAGS, SCFIND_WHOLEWORD, 0);
 
    size_t posFind;
@@ -1359,6 +1573,81 @@ HRESULT STDMETHODCALLTYPE CodeViewer::QueryService(
 
    return hr;
 }
+//Ajs
+void CodeViewer::ShowAutoComplete(SCNotification *pSCN)
+{
+	// 1. get current word
+	int CurPos = SendMessage(m_hwndScintilla,SCI_GETCURRENTPOS,0,0);
+	int wordstart = SendMessage(m_hwndScintilla,SCI_WORDSTARTPOSITION,CurPos, TRUE);
+	int wordfinish = SendMessage(m_hwndScintilla,SCI_WORDENDPOSITION,CurPos, TRUE);
+	// 2. if word length >3 start auto complete
+	char pcWord[256] = {};
+	GetRange(m_hwndScintilla,wordstart,wordfinish,pcWord);
+	int intWordLen = strlen(pcWord);
+	if (intWordLen > 3)
+	{
+		const char * McStr = g_AutoCompList.c_str();
+		SendMessage(m_hwndScintilla,SCI_AUTOCSHOW,intWordLen,(LPARAM)McStr);
+	}
+}
+//Ajs
+bool CodeViewer::ShowTooltip(SCNotification *pSCN)
+{
+	//get word under pointer
+	int dwellpos = pSCN->position;
+	int wordstart = SendMessage(m_hwndScintilla,SCI_WORDSTARTPOSITION,dwellpos, FALSE );
+	int wordfinish = SendMessage(m_hwndScintilla,SCI_WORDENDPOSITION,dwellpos, FALSE );
+	char Mess[256] = {}; int MessLen = 0;
+	char DwellWord[256] = {};
+	// is it a valid 'word'
+	if ((SendMessage(m_hwndScintilla, SCI_ISRANGEWORD, wordstart , wordfinish )) && ((wordfinish - wordstart) < 255))
+	{
+		//Retrieve the word
+		GetRange(m_hwndScintilla,wordstart,wordfinish,DwellWord);
+		// Serarch for VBS reserved words
+		// ToDo: Should be able rape MS help for better descriptions
+		MessLen = 0;
+		char RetResult[256] = {};
+		//
+		const int RetIndex = vbsKeyWords.find(lowerCase( DwellWord ) );
+		if (RetIndex != -1)
+		{
+			MessLen = sprintf_s(Mess, "VBS:%s", DwellWord);
+		}
+
+		// Search subs list
+		if (MessLen == 0)
+		{
+			/// has function list been filled?
+			if ( g_UserFunc->size() == 0 ) ParseForFunction();
+			//now search
+			int iTemp= 0;
+			for (list<UserData>::iterator i = g_UserFunc->begin();i != g_UserFunc->end(); i++) 
+			{
+				if (i->functionName == (string(DwellWord)))
+				{
+					const char *ptemp = (i->functionDesc.c_str());
+					if (*ptemp)
+					{
+						MessLen = sprintf_s(Mess, "%s", ptemp);
+						iTemp = g_UserFunc->size(); 
+					}
+				}
+			}
+		}
+		//ajs will be used!
+		if (MessLen == 0 )
+		{
+			MessLen = sprintf_s(Mess, "Test:%s", DwellWord);
+		}
+	}
+	if (MessLen > 0)
+	{
+		SendMessage(m_hwndScintilla,SCI_CALLTIPSHOW,dwellpos, (size_t)Mess );
+		return true;
+	}
+	return false;
+}
 
 void CodeViewer::MarginClick(int position, int modifiers)
 {
@@ -1402,147 +1691,244 @@ void CodeViewer::MarginClick(int position, int modifiers)
    }
 }
 
-void AddComment(HWND sciHwnd)
+void AddComment(HWND m_hwndScintilla)
 {
    char *comment = "'";
 
-   size_t startSel = SendMessage(sciHwnd, SCI_GETSELECTIONSTART, 0, 0);
-   size_t endSel = SendMessage(sciHwnd, SCI_GETSELECTIONEND, 0, 0);
-   size_t pos = SendMessage(sciHwnd, SCI_GETCURRENTPOS, 0, 0);
+   size_t startSel = SendMessage(m_hwndScintilla, SCI_GETSELECTIONSTART, 0, 0);
+   size_t endSel = SendMessage(m_hwndScintilla, SCI_GETSELECTIONEND, 0, 0);
+   size_t pos = SendMessage(m_hwndScintilla, SCI_GETCURRENTPOS, 0, 0);
 
-   size_t selStartLine = SendMessage(sciHwnd, SCI_LINEFROMPOSITION, startSel, 0);
-   size_t selEndLine = SendMessage(sciHwnd, SCI_LINEFROMPOSITION, endSel, 0);
+   size_t selStartLine = SendMessage(m_hwndScintilla, SCI_LINEFROMPOSITION, startSel, 0);
+   size_t selEndLine = SendMessage(m_hwndScintilla, SCI_LINEFROMPOSITION, endSel, 0);
    size_t lines = selEndLine - selStartLine + 1;
-   size_t posFromLine = SendMessage(sciHwnd, SCI_POSITIONFROMLINE, selEndLine, 0);
+   size_t posFromLine = SendMessage(m_hwndScintilla, SCI_POSITIONFROMLINE, selEndLine, 0);
 
    if (lines > 1 && endSel == posFromLine)
    {
       selEndLine--;
       lines--;
-      endSel = SendMessage(sciHwnd, SCI_GETLINEENDPOSITION, selEndLine, 0);
+      endSel = SendMessage(m_hwndScintilla, SCI_GETLINEENDPOSITION, selEndLine, 0);
    }
-   SendMessage(sciHwnd, SCI_BEGINUNDOACTION, 0, 0);
-   size_t lineStart = SendMessage(sciHwnd, SCI_POSITIONFROMLINE, selStartLine, 0);
+   SendMessage(m_hwndScintilla, SCI_BEGINUNDOACTION, 0, 0);
+   size_t lineStart = SendMessage(m_hwndScintilla, SCI_POSITIONFROMLINE, selStartLine, 0);
    if (lines <= 1)
    {
       // Only a single line was selected, so just append whitespace + end-comment at end of line if needed
-      size_t lineEnd = SendMessage(sciHwnd, SCI_GETLINEENDPOSITION, selEndLine, 0);
-      SendMessage(sciHwnd, SCI_INSERTTEXT, lineStart, (LPARAM)comment);
+      size_t lineEnd = SendMessage(m_hwndScintilla, SCI_GETLINEENDPOSITION, selEndLine, 0);
+      SendMessage(m_hwndScintilla, SCI_INSERTTEXT, lineStart, (LPARAM)comment);
    }
    else
    {
       // More than one line selected, so insert middle_comments where needed
       for (size_t i = selStartLine; i < selEndLine + 1; i++)
       {
-         lineStart = SendMessage(sciHwnd, SCI_POSITIONFROMLINE, i, 0);
-         SendMessage(sciHwnd, SCI_INSERTTEXT, lineStart, (LPARAM)comment);
+         lineStart = SendMessage(m_hwndScintilla, SCI_POSITIONFROMLINE, i, 0);
+         SendMessage(m_hwndScintilla, SCI_INSERTTEXT, lineStart, (LPARAM)comment);
       }
    }
-   SendMessage(sciHwnd, SCI_ENDUNDOACTION, 0, 0);
+   SendMessage(m_hwndScintilla, SCI_ENDUNDOACTION, 0, 0);
 }
 
-void GetRange(HWND sciHwnd, int start, int end, char *text)
-{
-   Sci_TextRange tr;
-   tr.chrg.cpMin = start;
-   tr.chrg.cpMax = end;
-   tr.lpstrText = text;
-   SendMessage(sciHwnd, SCI_GETTEXTRANGE, 0, (LPARAM)&tr);
-}
 
-void RemoveComment(HWND sciHwnd)
+
+void RemoveComment(HWND m_hwndScintilla)
 {
    char *comment = "\b";
-   size_t startSel = SendMessage(sciHwnd, SCI_GETSELECTIONSTART, 0, 0);
-   size_t endSel = SendMessage(sciHwnd, SCI_GETSELECTIONEND, 0, 0);
-   size_t pos = SendMessage(sciHwnd, SCI_GETCURRENTPOS, 0, 0);
+   size_t startSel = SendMessage(m_hwndScintilla, SCI_GETSELECTIONSTART, 0, 0);
+   size_t endSel = SendMessage(m_hwndScintilla, SCI_GETSELECTIONEND, 0, 0);
+   size_t pos = SendMessage(m_hwndScintilla, SCI_GETCURRENTPOS, 0, 0);
 
-   size_t selStartLine = SendMessage(sciHwnd, SCI_LINEFROMPOSITION, startSel, 0);
-   size_t selEndLine = SendMessage(sciHwnd, SCI_LINEFROMPOSITION, endSel, 0);
+   size_t selStartLine = SendMessage(m_hwndScintilla, SCI_LINEFROMPOSITION, startSel, 0);
+   size_t selEndLine = SendMessage(m_hwndScintilla, SCI_LINEFROMPOSITION, endSel, 0);
    size_t lines = selEndLine - selStartLine + 1;
-   size_t posFromLine = SendMessage(sciHwnd, SCI_POSITIONFROMLINE, selEndLine, 0);
+   size_t posFromLine = SendMessage(m_hwndScintilla, SCI_POSITIONFROMLINE, selEndLine, 0);
 
    if (lines > 1 && endSel == posFromLine)
    {
       selEndLine--;
       lines--;
-      endSel = SendMessage(sciHwnd, SCI_GETLINEENDPOSITION, selEndLine, 0);
+      endSel = SendMessage(m_hwndScintilla, SCI_GETLINEENDPOSITION, selEndLine, 0);
    }
 
-   SendMessage(sciHwnd, SCI_BEGINUNDOACTION, 0, 0);
+   SendMessage(m_hwndScintilla, SCI_BEGINUNDOACTION, 0, 0);
 
    for (size_t i = selStartLine; i < selEndLine + 1; i++)
    {
-      size_t lineStart = SendMessage(sciHwnd, SCI_POSITIONFROMLINE, i, 0);
-      size_t lineEnd = SendMessage(sciHwnd, SCI_GETLINEENDPOSITION, i, 0);
+      size_t lineStart = SendMessage(m_hwndScintilla, SCI_POSITIONFROMLINE, i, 0);
+      size_t lineEnd = SendMessage(m_hwndScintilla, SCI_GETLINEENDPOSITION, i, 0);
       char buf[1024];
       if (lineEnd - lineStart < 1023)
       {
-         GetRange(sciHwnd, lineStart, lineEnd, buf);
+         GetRange(m_hwndScintilla, lineStart, lineEnd, buf);
          string line(buf);
          size_t idx = line.find_first_of("'");
          if (idx == 0)
          {
-            SendMessage(sciHwnd, SCI_SETSEL, lineStart, lineStart + 1);
-            SendMessage(sciHwnd, SCI_REPLACESEL, 0, (LPARAM)"");
+            SendMessage(m_hwndScintilla, SCI_SETSEL, lineStart, lineStart + 1);
+            SendMessage(m_hwndScintilla, SCI_REPLACESEL, 0, (LPARAM)"");
          }
       }
    }
-   SendMessage(sciHwnd, SCI_ENDUNDOACTION, 0, 0);
+   SendMessage(m_hwndScintilla, SCI_ENDUNDOACTION, 0, 0);
 }
 
-string upperCase(string input)
+string CodeViewer::upperCase(string input)
 {
    for (string::iterator it = input.begin(); it != input.end(); ++it)
       *it = toupper(*it);
    return input;
 }
 
-void ParseForFunction(CodeViewer *pcv)
+string CodeViewer::lowerCase(string input)
 {
-   HWND sciHwnd = pcv->m_hwndScintilla;
+   for (string::iterator it = input.begin(); it != input.end(); ++it)
+      *it = tolower(*it);
+   return input;
+}
+
+void CodeViewer::szLower(char * incstr)
+{
+	char *pC = incstr;
+	while (*pC)
+	{
+		if (*pC >= 'A' && *pC <= 'Z')
+			*pC = *pC + ('a' - 'A');
+		pC++;
+	}
+}
+
+void CodeViewer::szUpper(char * incstr)
+{
+	char *pC = incstr;
+	while (*pC)
+	{
+		if (*pC >= 'a' && *pC <= 'z')
+			*pC = *pC - ('a' - 'A' );
+		pC++;
+	}
+}
+void CodeViewer::ParseForFunction() // & Subs & Collections AndyS - WIP - Totally overhaul of this!
+{
    char text[1024];
-   size_t scriptLines = SendMessage(sciHwnd, SCI_GETLINECOUNT, 0, 0);
-
-   delete[] functionLines;
-   SendMessage(pcv->m_hwndFunctionList, CB_RESETCONTENT, 0, 0);
-
-   functionLines = new int[scriptLines];
-   for (size_t i = 0; i < scriptLines; i++)
+   size_t scriptLines = SendMessage(m_hwndScintilla, SCI_GETLINECOUNT, 0, 0);
+   SendMessage(m_hwndFunctionList, CB_RESETCONTENT, 0, 0);
+	char szValidChars[256] = {};  //AndyS - 191 valid from UK locale 
+   SendMessage(m_hwndScintilla, SCI_GETWORDCHARS, 0, (LPARAM)szValidChars);//Lparam or size_t ?????
+   string ValidChars(szValidChars);
+	//g_UserFunc->clear(); //is refilled below
+	const int szMaxFun = 1024 *16; // Max Buffer for scintillia
+	char vbsFunctions[szMaxFun] = "";// WIP - char array should be dynamic as people who put massive vars & lots of them in will crash it! eg "intNumberOfUserFunctions" :)
+   for (size_t i = 0; i < scriptLines; i++) // i i captin'
    {
+		
+      const size_t lineLength = SendMessage(m_hwndScintilla, SCI_LINELENGTH, i, 0);
+      if (lineLength > 1023 || lineLength < 4) 
+			continue;
       memset(text, 0, 1024);
-      const size_t lineLength = SendMessage(sciHwnd, SCI_LINELENGTH, i, 0);
-      if (lineLength > 1023)
-         continue;
-      SendMessage(sciHwnd, SCI_GETLINE, i, (LPARAM)text);
+		SendMessage(m_hwndScintilla, SCI_GETLINE, i, (LPARAM)text);
       string line(text);
-      const size_t idx = upperCase(line).find("SUB");
+		size_t idx = line.find(":"); //One liners (Pub talk :)
+		if (idx > 0)
+		{
+			string NewLine ="";
+			NewLine = line.substr(0,idx);
+			line = NewLine;
+		}
+		int SearchLength =3;
+      idx = upperCase(line).find("SUB");
+		if (idx == -1)
+		{
+			idx = upperCase(line).find("FUNCTION");
+			SearchLength =8;
+		}
       if ((SSIZE_T)idx >= 0)
       {
-         const size_t endIdx = upperCase(line).find("END", idx - 4);
-         const size_t exitIdx = upperCase(line).find("EXIT", idx - 5);
+         const size_t endIdx = upperCase(line).find("END");
+         const size_t exitIdx = upperCase(line).find("EXIT");
          const size_t commentIdx = upperCase(line).find("'");
+         const size_t doubleQuoteIdx = upperCase(line).find("\""); //AndyS
          if (endIdx == -1 && exitIdx == -1)
          {
-            if ((SSIZE_T)commentIdx >= 0 && commentIdx < idx)
-               continue;
+				if ((commentIdx >= 0)  && (commentIdx < idx)) continue;
+				if ((doubleQuoteIdx >= 0)  && (doubleQuoteIdx < idx)) continue;//AndyS - combine?
+				string sSubName;
+				size_t Substart = idx + SearchLength;
+				char linechar = 0;
+				//scan for first valid char of sub name (should loop at least once)
+				linechar = line[Substart];
+				while ((ValidChars.find(linechar) == -1) && (Substart < lineLength))
+				{
+					Substart++;
+					linechar = line[Substart];
+				}
+				//scan for last valid char
+				size_t Subfinish = Substart;
+				while ((ValidChars.find(linechar) != -1) && (Subfinish < lineLength))
+				{
+					Subfinish++;
+					linechar = line[Subfinish];
+				}
+				sSubName = line.substr(Substart,Subfinish-Substart);
+				const char *c_str1 = sSubName.c_str ( );
+				const size_t MyErr = strcat_s(vbsFunctions, szMaxFun, c_str1);
+				if (MyErr == EINVAL || MyErr == ERANGE )
+				{
+					break; // testing never hit this yet!
+					
+				}
+				strcat_s(vbsFunctions, szMaxFun, " ");
 
-            size_t end = line.find("(", idx);
-            if (end == -1)
-            {
-               end = line.find(":", idx);
-               if (end == -1)
-                  end = line.find("\n", idx);
-            }
-            if (end != -1)
-            {
-               const size_t index = SendMessage(pcv->m_hwndFunctionList, CB_ADDSTRING, 0, (LPARAM)line.substr(idx + 3, end - 3).c_str());
-               functionLines[index] = i;
-            }
+				UserData ud;
+				ud.functionLine =i;
+				ud.functionName= sSubName;
+				ud.functionDesc = line.substr( 0, line.length()-2 );//remove \r\n
+				FindOrInsertUD( g_UserFunc , ud );
          }
       }
+	}
+   //if (g_UserFunc->size() > 2) g_UserFunc->sort(FuncSortUD); //Nope should be done by FindOrInsert
+   //Propergate subs&funcs in menu in order
+	for (list<UserData>::iterator i = g_UserFunc->begin(); i != g_UserFunc->end(); i++) 
+   {
+		const char *c_str1 = i->functionName.c_str ();
+		SendMessage(m_hwndFunctionList, CB_ADDSTRING, 0, (LPARAM)(c_str1) );
    }
-
+	//Collect Objects/Components from the menu.
+	int CBCount;
+	CBCount = SendMessage(m_hwndItemList, CB_GETCOUNT, 0, 0)-1;//Zero Based
+	char c_str1[256]={0};
+	UserData ud;
+	while (CBCount >= 0) 
+   {
+		memset(c_str1,0,256);
+		SendMessage(m_hwndItemList, CB_GETLBTEXT, CBCount, (LPARAM)c_str1);
+		if(strlen(c_str1)>1)
+		{
+		ud.functionName = string(c_str1);
+		FindOrInsertUD(g_Components,ud);
+		}
+		CBCount--;
+   }
+	//g_Components->sort(FuncSortUD); // nope FindOrInsertListString() does it all
+	//Now merge the lot for Auto complete...
+	g_AutoComp->clear();
+	for (list<UserData>::iterator i = g_Components->begin(); i != g_Components->end(); i++)
+		FindOrInsertStringIntoAutolist(g_AutoComp,i->functionName);
+	for (list<UserData>::iterator i = g_VBwords->begin(); i != g_VBwords->end(); i++)
+		FindOrInsertStringIntoAutolist(g_AutoComp,i->functionName);
+	for (list<UserData>::iterator i = g_UserFunc->begin(); i != g_UserFunc->end(); i++)
+		FindOrInsertStringIntoAutolist(g_AutoComp,i->functionName);
+	g_AutoCompList = "";
+	for (list<string>::iterator i = g_AutoComp->begin(); i != g_AutoComp->end();i++)
+	{
+		const char *c_str1 = i->c_str();
+		g_AutoCompList.append(c_str1);
+		g_AutoCompList += " ";
+	}
+   //Send the collected subs to scintilla for highlighting - always lowercase as VBS is case insensitive.
+    szLower(vbsFunctions);
+    SendMessage(m_hwndScintilla, SCI_SETKEYWORDS, 1, (LPARAM)vbsFunctions);
 }
 
 static CodeViewer* GetCodeViewerPtr(HWND hwndDlg)
@@ -1601,6 +1987,7 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 
       switch (code)
       {
+
       case SCEN_CHANGE:
       {
          CodeViewer * const pcv = GetCodeViewerPtr(hwndDlg);
@@ -1621,7 +2008,8 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
          {
          case ID_COMPILE:
             pcv->Compile();
-            // Setting the script to started, and the back to initialized will clear the script out so we can re-do it later - is this behavior just random or is it the way it's supposed to work?
+            // Setting the script to started, and the back to initialized will clear the script out so we can re-do it later
+			// - is this behavior just random or is it the way it's supposed to work?
             //pcv->m_pScript->SetScriptState(SCRIPTSTATE_CLOSED /*SCRIPTSTATE_STARTED*/);
             pcv->EndSession();
             break;
@@ -1666,9 +2054,11 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
       break;
       case CBN_SETFOCUS:
       {
-         CodeViewer * const pcv = GetCodeViewerPtr(hwndDlg);
          if (id == IDC_FUNCTIONLIST)
-            ParseForFunction(pcv);
+			{
+	        CodeViewer * const pcv = GetCodeViewerPtr(hwndDlg);
+				pcv->ParseForFunction();
+			}
          break;
       }
       case CBN_SELCHANGE: // Or accelerator
@@ -1711,7 +2101,10 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
          case IDC_FUNCTIONLIST:
          {
             const size_t index = SendMessage(pcv->m_hwndFunctionList, CB_GETCURSEL, 0, 0);
-            SendMessage(pcv->m_hwndScintilla, SCI_GOTOLINE, functionLines[index], 0);
+				list<UserData>::iterator i = g_UserFunc->begin();
+				for (size_t t = 0; t < index; t++)	i++;
+				int foo = i->functionLine;
+            SendMessage(pcv->m_hwndScintilla, SCI_GOTOLINE, foo, 0);
             SendMessage(pcv->m_hwndScintilla, SCI_GRABFOCUS, 0, 0);
          }
          break;
@@ -1741,6 +2134,7 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 
       switch (code)
       {
+
       case SCN_SAVEPOINTREACHED:
       {
          CodeViewer *pcv = GetCodeViewerPtr(hwndDlg);
@@ -1751,8 +2145,31 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
          }
       }
       break;
+	  case SCN_DWELLSTART:
+		{
+			SCNotification * const pscn = (SCNotification *)lParam;
+         CodeViewer *pcv = GetCodeViewerPtr(hwndDlg);
+			g_ToolTipActive = pcv->ShowTooltip(pscn);
+		} break;
 
-      case SCN_UPDATEUI:
+	  case SCN_DWELLEND:
+		{
+			if (g_ToolTipActive)
+			{
+				CodeViewer *pcv = GetCodeViewerPtr(hwndDlg);
+				SendMessage(pcv->m_hwndScintilla,SCI_CALLTIPCANCEL , 0, 0 );
+				g_ToolTipActive = false;
+			}
+		} break;
+
+		case SCN_CHARADDED:
+		{
+			CodeViewer *pcv = GetCodeViewerPtr(hwndDlg);
+			SCNotification * const pSCN = (SCNotification *)lParam;
+			pcv->ShowAutoComplete(pSCN);
+		}
+		break;
+	  case SCN_UPDATEUI:
       {
          SCNotification * const pscn = (SCNotification *)lParam;
 
@@ -1808,7 +2225,7 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
          const int buttonwidth = 0;
 
          SetWindowPos(pcv->m_hwndScintilla, NULL,
-            0, 0, rc.right - rc.left - buttonwidth/* - 20*/, rc.bottom - rc.top - 10 - statheight - 22, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+            0, 0, rc.right - rc.left - buttonwidth/* - 20*/, rc.bottom - rc.top - 10 - statheight - 30, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
       }
    }
    break;

@@ -27,10 +27,8 @@ public:
       m_searchstart = i;
    }
 
-   inline int AddSortedString(T * const pT)
+   inline void AddSortedString(T * const pT)
    {
-      bool fFound = fFalse;
-
       int currentnode = m_searchstart - 1;  // Zero based
       int jumpnode = m_searchstart >> 1;
 
@@ -60,12 +58,8 @@ public:
          jumpnode >>= 1;
       }
 
-      if (!fFound)
-      {
-         InsertElementAt(pT, currentnode);
-         RecomputeSearchStart();
-      }
-      return fFound;
+      InsertElementAt(pT, currentnode);
+      RecomputeSearchStart();
    }
 
    inline int GetSortedIndex(void * const pvoid) const
