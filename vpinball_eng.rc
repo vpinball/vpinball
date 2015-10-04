@@ -255,7 +255,8 @@ BEGIN
     CONTROL         IDC_RIGHTFLIPPERBUTTON,IDC_STATIC,"Static",SS_BITMAP,7,7,94,27
     LTEXT           "A Randy Davis Production",IDC_STATIC,13,36,94,8
     LTEXT           "Version 10.0.0",IDC_ABOUT_VERSION,13,47,121,10
-    GROUPBOX        "Credits",IDC_STATIC,7,62,216,103
+    GROUPBOX        "Credits",IDC_STATIC,7,57,216,108
+    LTEXT           "Original VP8/VP9 Team",IDC_STATIC,68,65,88,9
     LTEXT           "Randy Davis - designer, developer",IDC_STATIC,13,77,115,9
     LTEXT           "Noah Fentz - testing",IDC_STATIC,150,77,66,9
     LTEXT           "Chris Leathley - additional development",IDC_STATIC,13,87,123,9
@@ -263,7 +264,7 @@ BEGIN
     LTEXT           "Jerry Rice - music",IDC_STATIC,86,97,66,9
     LTEXT           "Rolle Cruz - physics",IDC_STATIC,150,97,67,9
     LTEXT           "",IDC_TRANSNAME2,140,142,83,9,NOT WS_VISIBLE | WS_DISABLED
-    LTEXT           "Open Source Contributors",IDC_STATIC,65,111,88,9
+    LTEXT           "VP9/VP10 Open Source Contributors",IDC_STATIC,47,109,128,9
     LTEXT           "Brian Smith",IDC_STATIC,13,121,42,9
     LTEXT           "Shagendo",IDC_STATIC,150,121,42,9
     LTEXT           "Toxie^ainc",IDC_STATIC,85,121,42,9
@@ -275,6 +276,7 @@ BEGIN
     LTEXT           "Koadic",IDC_STATIC,150,141,42,9
     LTEXT           "Mjr",IDC_STATIC,13,151,21,8
     CTEXT           "Mukuste",IDC_STATIC,82,151,42,9
+    LTEXT           "Brandrew", IDC_STATIC, 150,151,42,9
     CTEXT           "Copyright (C) 2000-2015 Randy Davis. All rights reserved",IDC_STATIC,7,174,118,19
     LTEXT           "Translator's Name - Translation",IDC_TRANSNAME,108,36,115,9,NOT WS_VISIBLE | WS_DISABLED
     LTEXT           "Translator's web site address",IDC_TRANSWEBSITE,50,184,32,8,NOT WS_VISIBLE | WS_DISABLED
