@@ -68,9 +68,9 @@ public:
    SlingshotAnimObject m_slingshotanim;
 
    float m_force;
-   bool m_doHitEvent;
    unsigned int m_EventTimeReset;
    Surface *m_psurface;
+   bool m_doHitEvent;
 };
 
 class Hit3DPoly : public HitObject

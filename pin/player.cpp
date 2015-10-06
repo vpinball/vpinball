@@ -1546,6 +1546,15 @@ void Player::DestroyBall(Ball *pball)
 {
    if (!pball) return;
 
+   bool debugball;
+   if (m_pactiveballDebug == pball)
+   {
+	   debugball = true;
+	   m_pactiveballDebug = NULL;
+   }
+   else
+	   debugball = false;
+
    if (pball->m_pballex)
    {
       pball->m_pballex->m_pball = NULL;
@@ -1560,8 +1569,8 @@ void Player::DestroyBall(Ball *pball)
 
    m_vballDelete.push_back(pball);
 
-   if (m_pactiveballDebug == pball)
-      m_pactiveballDebug = (!m_vball.empty()) ? m_vball.front() : NULL;
+   if (debugball)
+	   m_pactiveballDebug = (!m_vball.empty()) ? m_vball.front() : NULL;
 }
 
 void Player::InitWindow()
