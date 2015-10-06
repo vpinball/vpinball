@@ -688,9 +688,9 @@ STDMETHODIMP Kicker::DestroyBall(int *pVal)
    {
       _ASSERTE(g_pplayer);
       ++cnt;
-      g_pplayer->DestroyBall(m_phitkickercircle->m_pball);
-
-      m_phitkickercircle->m_pball = NULL;
+	  Ball * b = m_phitkickercircle->m_pball;
+	  m_phitkickercircle->m_pball = NULL;
+	  g_pplayer->DestroyBall(b);
    }
 
    if (pVal) *pVal = cnt;
@@ -1063,10 +1063,10 @@ void KickerHitCircle::DoCollide(Ball * const pball, const Vertex3Ds& hitnormal, 
 
    const int i = pball->m_vpVolObjs->IndexOf(m_pObj);	// check if kicker in ball's volume set
 
-   if (newBall || ((hitvelocity.x != 1.f) == (i < 0))) // New or (Hit && !Vol || UnHit && Vol)
+   if (newBall || ((hitvelocity.x != 1.f) == (i < 0)))  // New or (Hit && !Vol || UnHit && Vol)
    {
       if (m_pkicker->m_d.m_legacyMode || newBall)
-         pball->m_pos += STATICTIME * pball->m_vel;        // move ball slightly forward
+         pball->m_pos += STATICTIME * pball->m_vel;  // move ball slightly forward
 
       if (i < 0)	//entering Kickers volume
       {
@@ -1108,9 +1108,9 @@ void KickerHitCircle::DoCollide(Ball * const pball, const Vertex3Ds& hitnormal, 
                               {
                               // ball is on a surface(e.g. upper playfield) use a high friction and a different calculation to compensate surface collision
                               friction = 1.0f;
-                              surfP = -pball->m_radius * hitnorm;    // surface contact point relative to center of mass
+                              surfP = -pball->m_radius * hitnorm;      // surface contact point relative to center of mass
 
-                              surfVel = pball->SurfaceVelocity(surfP);       // velocity at impact point
+                              surfVel = pball->SurfaceVelocity(surfP); // velocity at impact point
 
                               tangent = surfVel - surfVel.Dot(hitnorm) * hitnorm; // calc the tangential velocity
                               }
@@ -1118,11 +1118,11 @@ void KickerHitCircle::DoCollide(Ball * const pball, const Vertex3Ds& hitnormal, 
                               */
                surfP = -pball->m_radius * hitnormal;    // surface contact point relative to center of mass
 
-               surfVel = pball->SurfaceVelocity(surfP);       // velocity at impact point
+               surfVel = pball->SurfaceVelocity(surfP);         // velocity at impact point
 
                tangent = surfVel - surfVel.Dot(hitnormal) * hitnorm; // calc the tangential velocity
 
-               pball->m_vel += dot * hitnorm;     // apply collision impulse (along normal, so no torque)
+               pball->m_vel += dot * hitnorm; // apply collision impulse (along normal, so no torque)
                pball->m_dynamic = C_DYNAMIC;
 
                const float friction = 0.3f;
@@ -1185,7 +1185,7 @@ void KickerHitCircle::DoCollide(Ball * const pball, const Vertex3Ds& hitnormal, 
       }
       else // exiting kickers volume
       {
-         pball->m_vpVolObjs->RemoveElementAt(i);		// remove kicker to ball's volume set
+         pball->m_vpVolObjs->RemoveElementAt(i); // remove kicker to ball's volume set
          m_pkicker->FireGroupEvent(DISPID_HitEvents_Unhit);
       }
    }
