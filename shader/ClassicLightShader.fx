@@ -62,6 +62,8 @@ float4 lightColor2_falloff_power;
 float4 lightCenter_maxRange;
 float2 imageBackglassMode; // actually bool2
 
+bool hdrTexture0;
+
 struct VS_LIGHT_OUTPUT 
 { 
    float4 pos           : POSITION;
@@ -92,8 +94,9 @@ VS_LIGHT_OUTPUT vs_light_main (float4 vPosition : POSITION0,
 
 float4 PS_LightWithTexel(in VS_LIGHT_OUTPUT IN) : COLOR
 {	
-    float4 pixel = tex2D(texSampler0, IN.tex0); //!! IN.tex0 abused in backglass mode  
-    pixel.xyz = InvGamma(pixel.xyz);
+    float4 pixel = tex2D(texSampler0, IN.tex0); //!! IN.tex0 abused in backglass mode
+    if(!hdrTexture0)
+        pixel.xyz = InvGamma(pixel.xyz);
 
     float4 color;
 	// no lighting if HUD vertices or passthrough mode
@@ -101,7 +104,8 @@ float4 PS_LightWithTexel(in VS_LIGHT_OUTPUT IN) : COLOR
         color = pixel;
     else
 	{
-	    const float3 diffuse = pixel.xyz*cBase_Alpha.xyz;
+        pixel.xyz = saturate(pixel.xyz); // could be HDR
+        const float3 diffuse = pixel.xyz*cBase_Alpha.xyz;
         const float3 glossy = (Roughness_WrapL_Edge_IsMetal.w != 0.0) ? diffuse : pixel.xyz*cGlossy*0.08; //!! use AO for glossy? specular?
         const float3 specular = cClearcoat_EdgeAlpha.xyz*0.08;
         const float edge = (Roughness_WrapL_Edge_IsMetal.w != 0.0) ? 1.0 : Roughness_WrapL_Edge_IsMetal.z;
@@ -117,7 +121,9 @@ float4 PS_LightWithTexel(in VS_LIGHT_OUTPUT IN) : COLOR
         const float atten = pow(1.0 - saturate(len), lightColor2_falloff_power.w);
         const float3 lcolor = lerp(lightColor2_falloff_power.xyz, lightColor_intensity.xyz, sqrt(len));
         color += float4(lcolor*(atten*lightColor_intensity.w),
-		                saturate(atten*lightColor_intensity.w));
+                        saturate(atten*lightColor_intensity.w));
+        pixel.xyz = saturate(pixel.xyz); // could be HDR
+        color.xyz = saturate(color.xyz); // because of overlay and screen restrictions
         color = Overlay(pixel, color);
         color = Screen(pixel, color);
     }

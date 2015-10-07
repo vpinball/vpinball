@@ -6783,9 +6783,18 @@ STDMETHODIMP PinTable::get_Image(BSTR *pVal)
 
 STDMETHODIMP PinTable::put_Image(BSTR newVal)
 {
+   char szImage[MAXTOKEN];
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, szImage, 32, NULL, NULL);
+   const Texture * const tex = GetImage(szImage);
+   if(tex && tex->IsHDR())
+   {
+       ShowError("Cannot use a HDR image (.exr/.hdr) here");
+       return E_FAIL;
+   }
+
    STARTUNDO
 
-      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_szImage, 32, NULL, NULL);
+   strcpy_s(m_szImage,szImage);
 
    if (!g_pplayer)
    {
@@ -6795,7 +6804,7 @@ STDMETHODIMP PinTable::put_Image(BSTR newVal)
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaStringsOut, CADWORD *pcaCookiesOut)

@@ -666,6 +666,7 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
 
       if (offTexel != NULL)
       {
+         pd3dDevice->classicLightShader->SetBool("hdrTexture0", offTexel->IsHDR());
          pd3dDevice->classicLightShader->SetTechnique("light_with_texture");
          pd3dDevice->classicLightShader->SetTexture("Texture0", offTexel);
          if (m_ptable->m_fReflectElementsOnPlayfield)
@@ -1589,11 +1590,11 @@ STDMETHODIMP Light::put_Image(BSTR newVal)
 {
    STARTUNDO
 
-      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szOffImage, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szOffImage, 32, NULL, NULL);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Light::get_DepthBias(float *pVal)
@@ -1679,11 +1680,11 @@ STDMETHODIMP Light::put_ImageMode(VARIANT_BOOL newVal)
 {
    STARTUNDO
 
-      m_d.m_imageMode = VBTOF(newVal);
+   m_d.m_imageMode = VBTOF(newVal);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Light::get_ShowBulbMesh(VARIANT_BOOL *pVal)
@@ -1697,11 +1698,11 @@ STDMETHODIMP Light::put_ShowBulbMesh(VARIANT_BOOL newVal)
 {
    STARTUNDO
 
-      m_d.m_showBulbMesh = VBTOF(newVal);
+   m_d.m_showBulbMesh = VBTOF(newVal);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Light::get_ShowReflectionOnBall(VARIANT_BOOL *pVal)

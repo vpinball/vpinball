@@ -166,6 +166,7 @@ STDMETHODIMP BallEx::get_Image(BSTR *pVal)
 
    MultiByteToWideChar(CP_ACP, 0, m_pball->m_szImage, -1, wz, 32);
    *pVal = SysAllocString(wz);
+
    return S_OK;
 }
 
@@ -174,8 +175,8 @@ STDMETHODIMP BallEx::put_Image(BSTR newVal)
    WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_pball->m_szImage, 32, NULL, NULL);
 
    m_pball->m_pinballEnv = g_pplayer->m_ptable->GetImage(m_pball->m_szImage);
-   // recalculate texture coords for new texture
-   m_pball->RenderSetup();
+   m_pball->RenderSetup(); // nowadays does not do anything, but call it in case this changes in the future
+
    return S_OK;
 }
 
