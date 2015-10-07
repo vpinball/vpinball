@@ -879,11 +879,11 @@ STDMETHODIMP Decal::put_Rotation(float newVal)
 {
    STARTUNDO
 
-      m_d.m_rotation = newVal;
+   m_d.m_rotation = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Decal::get_Image(BSTR *pVal)
@@ -900,11 +900,11 @@ STDMETHODIMP Decal::put_Image(BSTR newVal)
 {
    STARTUNDO
 
-      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szImage, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szImage, 32, NULL, NULL);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Decal::get_Width(float *pVal)
@@ -918,13 +918,13 @@ STDMETHODIMP Decal::put_Width(float newVal)
 {
    STARTUNDO
 
-      m_d.m_width = newVal;
+   m_d.m_width = newVal;
 
    EnsureSize();
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Decal::get_Height(float *pVal)
@@ -938,13 +938,13 @@ STDMETHODIMP Decal::put_Height(float newVal)
 {
    STARTUNDO
 
-      m_d.m_height = newVal;
+   m_d.m_height = newVal;
 
    EnsureSize();
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Decal::get_X(float *pVal)
@@ -958,11 +958,11 @@ STDMETHODIMP Decal::put_X(float newVal)
 {
    STARTUNDO
 
-      m_d.m_vCenter.x = newVal;
+   m_d.m_vCenter.x = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Decal::get_Y(float *pVal)
@@ -976,11 +976,11 @@ STDMETHODIMP Decal::put_Y(float newVal)
 {
    STARTUNDO
 
-      m_d.m_vCenter.y = newVal;
+   m_d.m_vCenter.y = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Decal::get_Surface(BSTR *pVal)
@@ -997,11 +997,11 @@ STDMETHODIMP Decal::put_Surface(BSTR newVal)
 {
    STARTUNDO
 
-      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSurface, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSurface, 32, NULL, NULL);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 void Decal::GetDialogPanes(Vector<PropertyPane> *pvproppane)
@@ -1026,13 +1026,13 @@ STDMETHODIMP Decal::put_Type(DecalType newVal)
 {
    STARTUNDO
 
-      m_d.m_decaltype = newVal;
+   m_d.m_decaltype = newVal;
 
    EnsureSize();
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Decal::get_Text(BSTR *pVal)
@@ -1051,7 +1051,7 @@ STDMETHODIMP Decal::put_Text(BSTR newVal)
    {
       STARTUNDO
 
-         WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_sztext, 512, NULL, NULL);
+      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_sztext, 512, NULL, NULL);
 
       EnsureSize();
 
@@ -1072,13 +1072,13 @@ STDMETHODIMP Decal::put_SizingType(SizingType newVal)
 {
    STARTUNDO
 
-      m_d.m_sizingtype = newVal;
+   m_d.m_sizingtype = newVal;
 
    EnsureSize();
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Decal::get_FontColor(OLE_COLOR *pVal)
@@ -1092,11 +1092,11 @@ STDMETHODIMP Decal::put_FontColor(OLE_COLOR newVal)
 {
    STARTUNDO
 
-      m_d.m_color = newVal;
+   m_d.m_color = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Decal::get_Material(BSTR *pVal)
@@ -1113,11 +1113,11 @@ STDMETHODIMP Decal::put_Material(BSTR newVal)
 {
    STARTUNDO
 
-      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szMaterial, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szMaterial, 32, NULL, NULL);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Decal::get_Font(IFontDisp **pVal)
@@ -1149,7 +1149,7 @@ STDMETHODIMP Decal::put_HasVerticalText(VARIANT_BOOL newVal)
 {
    STARTUNDO
 
-      m_d.m_fVerticalText = VBTOF(newVal);
+   m_d.m_fVerticalText = VBTOF(newVal);
 
    SetDirtyDraw();
 
@@ -1157,5 +1157,5 @@ STDMETHODIMP Decal::put_HasVerticalText(VARIANT_BOOL newVal)
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }

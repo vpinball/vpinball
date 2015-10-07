@@ -41,16 +41,17 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib)
       dibResized = FreeImage_Rescale(dib, newWidth, newHeight, FILTER_BOX);
    }
 
-   FIBITMAP* dib32 = FreeImage_ConvertTo32Bits(dibResized);
+   const bool rgbf = (FreeImage_GetBPP(dibResized) > 32);
+   FIBITMAP* dib32 = rgbf ? FreeImage_ConvertToRGBF(dibResized) : FreeImage_ConvertTo32Bits(dibResized);
 
-   BaseTexture* tex = new BaseTexture(FreeImage_GetWidth(dib32), FreeImage_GetHeight(dib32));
+   BaseTexture* tex = new BaseTexture(FreeImage_GetWidth(dib32), FreeImage_GetHeight(dib32), rgbf ? RGB_FP : RGBA);
 
    BYTE * const psrc = FreeImage_GetBits(dib32), *pdst = tex->data();
    const int pitchdst = FreeImage_GetPitch(dib32), pitchsrc = tex->pitch();
    const int height = tex->height();
 
    for (int y = 0; y < height; ++y)
-      memcpy(pdst + (height - y - 1)*pitchdst, psrc + y*pitchsrc, 4 * tex->width());
+      memcpy(pdst + (height - y - 1)*pitchdst, psrc + y*pitchsrc, pitchsrc);
 
    FreeImage_Unload(dib32);
    if (dibResized != dib)      // did we allocate a rescaled copy?
@@ -373,6 +374,9 @@ void Texture::CreateTextureOffscreen(const int width, const int height)
 
 void Texture::SetOpaque(BaseTexture* const pdds)
 {
+   if (pdds->m_format == BaseTexture::RGB_FP)
+      return;
+
    const int width = pdds->width();
    const int height = pdds->height();
    const int pitch = pdds->pitch();
