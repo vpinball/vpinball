@@ -3048,7 +3048,7 @@ INT_PTR CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
             ofn.hInstance = g_hinst;
             ofn.hwndOwner = g_pvp->m_hwnd;
 
-            ofn.lpstrFilter = "Bitmap, JPEG and PNG Files (.bmp/.jpg/.png)\0*.bmp;*.jpg;*.jpeg;*.png\0";
+            ofn.lpstrFilter = "Bitmap, JPEG, PNG, EXR, HDR Files (.bmp/.jpg/.png/.exr/.hdr)\0*.bmp;*.jpg;*.jpeg;*.png;*.exr;*.hdr\0";
             ofn.lpstrFile = szFileName;
             ofn.nMaxFile = 10240;
             ofn.lpstrDefExt = "png";
@@ -3125,7 +3125,7 @@ INT_PTR CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                      ofn.hInstance = g_hinst;
                      ofn.hwndOwner = g_pvp->m_hwnd;
                      //TEXT
-                     ofn.lpstrFilter = "PNG (.png)\0*.png;\0Bitmap (.bmp)\0*.bmp;\0JPEG (.jpg/.jpeg)\0*.jpg;*.jpeg;\0IFF (.iff)\0*.IFF;\0PCX (.pcx)\0*.PCX;\0PICT (.pict)\0*.PICT;\0Photoshop (.psd)\0*.psd;\0TGA (.tga)\0*.tga;\0TIFF (.tiff/.tif)\0*.tiff;*.tif\0";
+					 ofn.lpstrFilter = "PNG (.png)\0*.png;\0Bitmap (.bmp)\0*.bmp;\0JPEG (.jpg/.jpeg)\0*.jpg;*.jpeg;\0IFF (.iff)\0*.IFF;\0PCX (.pcx)\0*.PCX;\0PICT (.pict)\0*.PICT;\0Photoshop (.psd)\0*.psd;\0TGA (.tga)\0*.tga;\0TIFF (.tiff/.tif)\0*.tiff;*.tif;\0EXR (.exr)\0*.exr;\0HDR (.hdr)\0*.hdr\0";
                      int begin;		//select only file name from pathfilename
                      int len = lstrlen(ppi->m_szPath);
                      memset(g_filename, 0, MAX_PATH);
@@ -3300,7 +3300,7 @@ INT_PTR CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                   ofn.hInstance = g_hinst;
                   ofn.hwndOwner = g_pvp->m_hwnd;
                   // TEXT
-                  ofn.lpstrFilter = "Bitmap, JPEG and PNG Files (.bmp/.jpg/.png)\0*.bmp;*.jpg;*.jpeg;*.png\0";
+                  ofn.lpstrFilter = "Bitmap, JPEG, PNG, EXR, HDR Files (.bmp/.jpg/.png/.exr/.hdr)\0*.bmp;*.jpg;*.jpeg;*.png;*.exr;*.hdr\0";
                   ofn.lpstrFile = szFileName;
                   ofn.nMaxFile = _MAX_PATH;
                   ofn.lpstrDefExt = "png";

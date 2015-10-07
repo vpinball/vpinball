@@ -3908,9 +3908,15 @@ void Player::DrawBalls()
 
       const D3DXVECTOR4 pos_rad(pball->m_pos.x, pball->m_pos.y, zheight, pball->m_radius);
       if (!pball->m_pinballEnv)
+      {
+         ballShader->SetBool("hdrTexture0", m_pin3d.pinballEnvTexture.IsHDR());
          ballShader->SetTexture("Texture0", &m_pin3d.pinballEnvTexture);
+      }
       else
+      {
+         ballShader->SetBool("hdrTexture0", pball->m_pinballEnv->IsHDR());
          ballShader->SetTexture("Texture0", pball->m_pinballEnv);
+      }
 
       if (pball->m_pinballDecal)
          ballShader->SetTexture("Texture2", pball->m_pinballDecal);

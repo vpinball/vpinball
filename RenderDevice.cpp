@@ -879,8 +879,9 @@ D3DTexture* RenderDevice::CreateSystemTexture(BaseTexture* surf)
 {
    const int texwidth = surf->width();
    const int texheight = surf->height();
+   const BaseTexture::Format basetexformat = surf->m_format;
 
-   const D3DFORMAT texformat = (m_compress_textures && ((texwidth & 3) == 0) && ((texheight & 3) == 0)) ? D3DFMT_DXT5 : D3DFMT_A8R8G8B8;
+   const D3DFORMAT texformat = (m_compress_textures && ((texwidth & 3) == 0) && ((texheight & 3) == 0) && (basetexformat != BaseTexture::RGB_FP)) ? D3DFMT_DXT5 : ((basetexformat == BaseTexture::RGB_FP) ? D3DFMT_A32B32G32R32F : D3DFMT_A8R8G8B8);
 
    IDirect3DTexture9 *sysTex;
    HRESULT hr;
@@ -891,24 +892,40 @@ D3DTexture* RenderDevice::CreateSystemTexture(BaseTexture* surf)
    }
 
    // copy data into system memory texture
-   /*D3DLOCKED_RECT locked;
-   CHECKD3D(sysTex->LockRect(0, &locked, NULL, 0));
-   BYTE *pdest = (BYTE*)locked.pBits;
-   for (int y = 0; y < surf->height(); ++y)
+   if (texformat == D3DFMT_A32B32G32R32F)
    {
-   memcpy(pdest + y*locked.Pitch, surf->data() + y*surf->pitch(), 4 * surf->width());
-   }
-   CHECKD3D(sysTex->UnlockRect(0));*/
+      D3DLOCKED_RECT locked;
+      CHECKD3D(sysTex->LockRect(0, &locked, NULL, 0));
 
-   IDirect3DSurface9* sysSurf;
-   CHECKD3D(sysTex->GetSurfaceLevel(0, &sysSurf));
-   RECT sysRect;
-   sysRect.top = 0;
-   sysRect.left = 0;
-   sysRect.right = texwidth;
-   sysRect.bottom = texheight;
-   CHECKD3D(D3DXLoadSurfaceFromMemory(sysSurf, NULL, NULL, surf->data(), D3DFMT_A8R8G8B8, surf->pitch(), NULL, &sysRect, D3DX_FILTER_NONE, 0));
-   SAFE_RELEASE_NO_RCC(sysSurf);
+      // old RGBA copy code, just for reference:
+      //BYTE *pdest = (BYTE*)locked.pBits;
+      //for (int y = 0; y < surf->height(); ++y)
+      //   memcpy(pdest + y*locked.Pitch, surf->data() + y*surf->pitch(), 4 * surf->width());
+
+      float * const pdest = (float*)locked.pBits;
+      float * const psrc = (float*)surf->data();
+      for (int i = 0; i < surf->width()*surf->height(); ++i)
+      {
+         pdest[i * 4    ] = psrc[i * 3    ];
+         pdest[i * 4 + 1] = psrc[i * 3 + 1];
+         pdest[i * 4 + 2] = psrc[i * 3 + 2];
+         pdest[i * 4 + 3] = 1.f;
+      }
+
+      CHECKD3D(sysTex->UnlockRect(0));
+   }
+   else
+   {
+      IDirect3DSurface9* sysSurf;
+      CHECKD3D(sysTex->GetSurfaceLevel(0, &sysSurf));
+      RECT sysRect;
+      sysRect.top = 0;
+      sysRect.left = 0;
+      sysRect.right = texwidth;
+      sysRect.bottom = texheight;
+      CHECKD3D(D3DXLoadSurfaceFromMemory(sysSurf, NULL, NULL, surf->data(), D3DFMT_A8R8G8B8, surf->pitch(), NULL, &sysRect, D3DX_FILTER_NONE, 0));
+      SAFE_RELEASE_NO_RCC(sysSurf);
+   }
 
    if (!(texformat != D3DFMT_DXT5 && m_autogen_mipmap))
       CHECKD3D(D3DXFilterTexture(sysTex, NULL, D3DX_DEFAULT, D3DX_DEFAULT)); //!! D3DX_FILTER_SRGB
@@ -927,9 +944,11 @@ D3DTexture* RenderDevice::UploadTexture(BaseTexture* surf, int *pTexWidth, int *
    if (pTexWidth) *pTexWidth = texwidth;
    if (pTexHeight) *pTexHeight = texheight;
 
+   const BaseTexture::Format basetexformat = surf->m_format;
+
    sysTex = CreateSystemTexture(surf);
 
-   const D3DFORMAT texformat = (m_compress_textures && ((texwidth & 3) == 0) && ((texheight & 3) == 0)) ? D3DFMT_DXT5 : D3DFMT_A8R8G8B8;
+   const D3DFORMAT texformat = (m_compress_textures && ((texwidth & 3) == 0) && ((texheight & 3) == 0) && (basetexformat != BaseTexture::RGB_FP)) ? D3DFMT_DXT5 : ((basetexformat == BaseTexture::RGB_FP) ? D3DFMT_A32B32G32R32F : D3DFMT_A8R8G8B8);
 
    hr = m_pD3DDevice->CreateTexture(texwidth, texheight, (texformat != D3DFMT_DXT5 && m_autogen_mipmap) ? 0 : sysTex->GetLevelCount(), (texformat != D3DFMT_DXT5 && m_autogen_mipmap) ? D3DUSAGE_AUTOGENMIPMAP : 0, texformat, D3DPOOL_DEFAULT, &tex, NULL);
    if (FAILED(hr))
@@ -1135,7 +1154,7 @@ RenderTarget* RenderDevice::AttachZBufferTo(RenderTarget* surf)
 
    IDirect3DSurface9 *pZBuf;
    hr = m_pD3DDevice->CreateDepthStencilSurface(desc.Width, desc.Height, D3DFMT_D16 /*D3DFMT_D24X8*/,
-      desc.MultiSampleType, desc.MultiSampleQuality, FALSE, &pZBuf, NULL);
+                                                desc.MultiSampleType, desc.MultiSampleQuality, FALSE, &pZBuf, NULL);
    if (FAILED(hr))
       ReportError("Fatal Error: unable to create depth buffer!", hr, __FILE__, __LINE__);
 

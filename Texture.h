@@ -2,25 +2,32 @@
 
 struct FIBITMAP;
 
-// texture stored in main memory in 32bit ARGB format
+// texture stored in main memory in 32bit ARGB uchar format or 96bit RGB float
 class BaseTexture
 {
 public:
+   enum Format
+   {
+      RGBA,
+      RGB_FP
+   };
+
    BaseTexture()
-      : m_width(0), m_height(0)
+      : m_width(0), m_height(0), m_format(RGBA)
    { }
 
-   BaseTexture(const int w, const int h)
-      : m_width(w), m_height(h), m_data(4 * w*h)
+   BaseTexture(const int w, const int h, const Format format = RGBA)
+      : m_width(w), m_height(h), m_format(format), m_data((format == RGBA ? 4 : 3*4) * (w*h))
    { }
 
    int width() const   { return m_width; }
    int height() const  { return m_height; }
-   int pitch() const   { return 4 * m_width; }
+   int pitch() const   { return (m_format == RGBA ? 4 : 3*4) * m_width; } // pitch in bytes
    BYTE* data()        { return &m_data[0]; }
 
    int m_width;
    int m_height;
+   Format m_format;
    std::vector<BYTE> m_data;
 
    void CopyFrom_Raw(const void* bits)  // copy bits which are already in the right format
@@ -28,24 +35,44 @@ public:
       memcpy(data(), bits, m_data.size());
    }
 
-   void CopyTo_ConvertAlpha(void* bits) // adds checkerboard pattern where alpha is set to output bits
+   void CopyTo_ConvertAlpha(BYTE* const bits) // adds checkerboard pattern where alpha is set to output bits OR converts rgb_fp format to 32bits
    {
-      unsigned int o = 0;
-      for (int j = 0; j < m_height; ++j)
-         for (int i = 0; i < m_width; ++i, ++o)
-         {
-            const unsigned int alpha = m_data[o * 4 + 3];
-            if (alpha != 255)
-            {
-               const unsigned int c = (((((i >> 4) ^ (j >> 4)) & 1) << 7) + 127) * (255 - alpha);
-               ((BYTE*)bits)[o * 4] = ((unsigned int)m_data[o * 4] * alpha + c) >> 8;
-               ((BYTE*)bits)[o * 4 + 1] = ((unsigned int)m_data[o * 4 + 1] * alpha + c) >> 8;
-               ((BYTE*)bits)[o * 4 + 2] = ((unsigned int)m_data[o * 4 + 2] * alpha + c) >> 8;
-               ((BYTE*)bits)[o * 4 + 3] = m_data[o * 4 + 3];
-            }
-            else
-               ((DWORD*)bits)[o] = ((DWORD*)data())[o];
-         }
+     if(m_format == RGB_FP) // Tonemap for 8bpc-Display
+     {
+        unsigned int o = 0;
+        for (int j = 0; j < m_height; ++j)
+			  for (int i = 0; i < m_width; ++i, ++o)
+			  {
+				  const float r = ((float*)&m_data[0])[o * 3];
+				  const float g = ((float*)&m_data[0])[o * 3 + 1];
+				  const float b = ((float*)&m_data[0])[o * 3 + 2];
+				  const float l = r*0.176204f + g*0.812985f + b*0.0108109f;
+				  const float n = (l*0.25f + 1.0f) / (l + 1.0f); // overflow is handled by clamp
+				  bits[o * 4    ] = (BYTE)(clamp(b*n, 0.f, 1.f) * 255.f);
+				  bits[o * 4 + 1] = (BYTE)(clamp(g*n, 0.f, 1.f) * 255.f);
+				  bits[o * 4 + 2] = (BYTE)(clamp(r*n, 0.f, 1.f) * 255.f);
+				  bits[o * 4 + 3] = 255;
+			  }
+      }
+	  else
+	  {
+		  unsigned int o = 0;
+		  for (int j = 0; j < m_height; ++j)
+			  for (int i = 0; i < m_width; ++i, ++o)
+			  {
+				  const unsigned int alpha = m_data[o * 4 + 3];
+				  if (alpha != 255)
+				  {
+					  const unsigned int c = (((((i >> 4) ^ (j >> 4)) & 1) << 7) + 127) * (255 - alpha);
+					  bits[o * 4    ] = ((unsigned int)m_data[o * 4    ] * alpha + c) >> 8;
+					  bits[o * 4 + 1] = ((unsigned int)m_data[o * 4 + 1] * alpha + c) >> 8;
+					  bits[o * 4 + 2] = ((unsigned int)m_data[o * 4 + 2] * alpha + c) >> 8;
+					  bits[o * 4 + 3] = alpha;
+				  }
+				  else
+					  ((DWORD*)bits)[o] = ((DWORD*)&m_data[0])[o];
+			  }
+	  }
    }
 
    static BaseTexture *CreateFromHBitmap(HBITMAP hbm);
@@ -75,6 +102,8 @@ public:
    void CreateFromResource(const int id, int * const pwidth = NULL, int * const pheight = NULL);
 
    static void SetOpaque(BaseTexture* const pdds);
+
+   bool IsHDR() const  { return (m_pdsBuffer->m_format == BaseTexture::RGB_FP); }
 
    // create/release a DC which contains a (read-only) copy of the texture; for editor use
    void GetTextureDC(HDC *pdc);

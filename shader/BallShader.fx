@@ -66,6 +66,7 @@ float3x3 orientation;
 
 bool     decalMode;
 bool     cabMode;
+bool     hdrTexture0;
 
 //------------------------------------
 
@@ -229,8 +230,10 @@ float4 psBall( in vout IN ) : COLOR
       uv0.x = r.x*0.5 + 0.5;
       uv0.y = -r.y*0.5 + 0.5;
    }
-   float3 ballImageColor = InvGamma(tex2Dlod(texSampler0, float4(cabMode ? float2(uv0.y, 1.0 - uv0.x) : uv0, 0., lod)).xyz);
-   
+   float3 ballImageColor = tex2Dlod(texSampler0, float4(cabMode ? float2(uv0.y, 1.0 - uv0.x) : uv0, 0., lod)).xyz;
+   if (!hdrTexture0)
+      ballImageColor = InvGamma(ballImageColor);
+
 	const float4 decalColorT = tex2D( texSampler7, IN.tex0 );
 	float3 decalColor = InvGamma(decalColorT.xyz);
 	if ( !decalMode )
@@ -241,7 +244,7 @@ float4 psBall( in vout IN ) : COLOR
 	   ballImageColor = (ballImageColor+decalColor) * fenvEmissionScale_TexWidth.x;
 	}
 	else
-	   ballImageColor = Screen( ballImageColor, decalColor ) * (0.5*fenvEmissionScale_TexWidth.x); //!! 0.5=magic
+	   ballImageColor = Screen( saturate(ballImageColor), decalColor ) * (0.5*fenvEmissionScale_TexWidth.x); //!! 0.5=magic
 	
 	/*float3 normal = float3(0,0,1); //!! not true!!
 	float NdotR = dot(normal,r);*/
@@ -265,7 +268,7 @@ float4 psBall( in vout IN ) : COLOR
 	   uv.y = (position_radius.y + hit.y) * ballStretch_invTableRes.w;
 	   playfieldColor = InvGamma(tex2Dlod( texSampler1, float4(uv, 0.,0.) ).xyz); //!! rather use screen space sample from previous frame??
 
-	   //!! hack to get some lighting on sample, but only diffuse, the rest is not setup correctly anyhow
+	   //!! hack to get some lighting on sample, but only fake diffuse, the rest is not setup correctly anyhow
 	   playfieldColor = lightLoop(mid, normalize(mul(float4(/*normal=*/0,0,1,0), matWorldView).xyz), normalize(/*camera=0,0,0,1*/-mid), playfieldColor, float3(0,0,0), float3(0,0,0), 1.0);
 	   
 	   //!! magic falloff & weight the rest in from the ballImage
@@ -276,11 +279,11 @@ float4 psBall( in vout IN ) : COLOR
 	else
 	   playfieldColor = ballImageColor;
 
-	float3 diffuse  = cBase_Alpha.xyz*0.075;
+	float3 diffuse = cBase_Alpha.xyz*0.075;
 	if(!decalMode)
 	    diffuse *= decalColor; // scratches make the material more rough
-    const float3 glossy   = max(diffuse*2.0, float3(0.1,0.1,0.1)); //!! meh
-    float3 specular = playfieldColor*cBase_Alpha.xyz;
+    const float3 glossy = max(diffuse*2.0, float3(0.1,0.1,0.1)); //!! meh
+    float3 specular = playfieldColor*cBase_Alpha.xyz; //!! meh, too, as only added in ballLightLoop anyhow
 	if(!decalMode)
 	    specular *= float3(1.,1.,1.)-decalColor; // see above
    
@@ -295,15 +298,21 @@ float4 psBall( in vout IN ) : COLOR
 float4 psBallReflection( in voutReflection IN ) : COLOR
 {
    const float2 envTex = cabMode ? float2(IN.r.y*0.5f + 0.5f, -IN.r.x*0.5f + 0.5f) : float2(IN.r.x*0.5f + 0.5f, IN.r.y*0.5f + 0.5f);
-   const float3 ballImageColor = (cBase_Alpha.xyz*(0.075*0.25) + InvGamma(tex2D(texSampler0, envTex).xyz))*fenvEmissionScale_TexWidth.x; //!! just add the ballcolor in, this is a whacky reflection anyhow
+   float3 ballImageColor = tex2D(texSampler0, envTex).xyz;
+   if(!hdrTexture0)
+      ballImageColor = InvGamma(ballImageColor);
+   ballImageColor = (cBase_Alpha.xyz*(0.075*0.25) + ballImageColor)*fenvEmissionScale_TexWidth.x; //!! just add the ballcolor in, this is a whacky reflection anyhow
    float alpha = saturate((IN.tex0.y - position_radius.y) / position_radius.w);
-	alpha = (alpha*alpha)*(alpha*alpha)*reflection_ball_playfield.x;
-	return float4(ballImageColor,alpha);
+   alpha = (alpha*alpha)*(alpha*alpha)*reflection_ball_playfield.x;
+   return float4(ballImageColor,alpha);
 }
 
 float4 psBallTrail( in voutTrail IN ) : COLOR
 {
-	return float4((cBase_Alpha.xyz*(0.075*0.25) + InvGamma(tex2D( texSampler0, IN.tex0_alpha.xy ).xyz))*fenvEmissionScale_TexWidth.x, IN.tex0_alpha.z); //!! just add the ballcolor in, this is a whacky trail anyhow
+   float3 ballImageColor = tex2D(texSampler0, IN.tex0_alpha.xy).xyz;
+   if (!hdrTexture0)
+      ballImageColor = InvGamma(ballImageColor);
+   return float4((cBase_Alpha.xyz*(0.075*0.25) + ballImageColor)*fenvEmissionScale_TexWidth.x, IN.tex0_alpha.z); //!! just add the ballcolor in, this is a whacky trail anyhow
 }
 
 //------------------------------------
