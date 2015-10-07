@@ -985,7 +985,7 @@ STDMETHODIMP Flasher::put_ImageA(BSTR newVal)
    {
       STARTUNDO
 
-         strcpy_s(m_d.m_szImageA, MAXTOKEN, m_szImage);
+      strcpy_s(m_d.m_szImageA, MAXTOKEN, m_szImage);
 
       STOPUNDO
    }
@@ -1012,7 +1012,7 @@ STDMETHODIMP Flasher::put_ImageB(BSTR newVal)
    {
       STARTUNDO
 
-         strcpy_s(m_d.m_szImageB, MAXTOKEN, m_szImage);
+      strcpy_s(m_d.m_szImageB, MAXTOKEN, m_szImage);
 
       STOPUNDO
    }
@@ -1268,7 +1268,7 @@ STDMETHODIMP Flasher::put_ImageAlignment(RampImageAlignment newVal)
    {
       STARTUNDO
 
-         m_d.m_imagealignment = newVal;
+      m_d.m_imagealignment = newVal;
       dynamicVertexBufferRegenerate = true;
 
       STOPUNDO
@@ -1309,6 +1309,7 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
 
    if (pinA && !pinB)
    {
+      pd3dDevice->flasherShader->SetBool("hdrTexture0", pinA->IsHDR());
       pd3dDevice->flasherShader->SetTechnique("basic_with_textureOne_noLight");
       pd3dDevice->flasherShader->SetTexture("Texture0", pinA);
 
@@ -1319,6 +1320,7 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
    }
    else if (!pinA && pinB)
    {
+      pd3dDevice->flasherShader->SetBool("hdrTexture0", pinB->IsHDR());
       pd3dDevice->flasherShader->SetTechnique("basic_with_textureOne_noLight");
       pd3dDevice->flasherShader->SetTexture("Texture0", pinB);
 
@@ -1329,6 +1331,8 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
    }
    else if (pinA && pinB)
    {
+      pd3dDevice->flasherShader->SetBool("hdrTexture0", pinA->IsHDR());
+      pd3dDevice->flasherShader->SetBool("hdrTexture1", pinB->IsHDR());
       pd3dDevice->flasherShader->SetTexture("Texture0", pinA);
       pd3dDevice->flasherShader->SetTexture("Texture1", pinB);
       pd3dDevice->flasherShader->SetTechnique("basic_with_textureAB_noLight");

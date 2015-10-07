@@ -103,7 +103,13 @@ public:
 
    static void SetOpaque(BaseTexture* const pdds);
 
-   bool IsHDR() const  { return (m_pdsBuffer->m_format == BaseTexture::RGB_FP); }
+   bool IsHDR() const
+   {
+       if(m_pdsBuffer == NULL)
+	   return false;
+       else
+	   return (m_pdsBuffer->m_format == BaseTexture::RGB_FP);
+   }
 
    // create/release a DC which contains a (read-only) copy of the texture; for editor use
    void GetTextureDC(HDC *pdc);

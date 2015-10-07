@@ -13,6 +13,9 @@ float4 staticColor_Alpha;
 float4 alphaTestValueAB_filterMode_addBlend;
 float2 amount__blend_modulate_vs_add;
 
+bool hdrTexture0;
+bool hdrTexture1;
+
 texture Texture0; // base texture
 texture Texture1; // second image
 
@@ -56,13 +59,16 @@ VS_OUTPUT_2D vs_simple_main (float4 vPosition : POSITION0,
 
 float4 ps_main_textureOne_noLight(in VS_OUTPUT_2D IN) : COLOR
 {
-   const float4 pixel = tex2D(texSampler0, IN.tex0);
+   float4 pixel = tex2D(texSampler0, IN.tex0);
 
    if (pixel.a<=alphaTestValueAB_filterMode_addBlend.x)
     clip(-1);           //stop the pixel shader if alpha test should reject pixel
 
+   if(!hdrTexture0)
+       pixel.xyz = InvGamma(pixel.xyz);
+
    float4 result;
-   result.xyz = staticColor_Alpha.xyz*InvGamma(pixel.xyz);
+   result.xyz = staticColor_Alpha.xyz*pixel.xyz;
    result.a = pixel.a*staticColor_Alpha.w;
 
    if(alphaTestValueAB_filterMode_addBlend.w == 0.)
@@ -80,19 +86,21 @@ float4 ps_main_textureAB_noLight(in VS_OUTPUT_2D IN) : COLOR
    if (pixel1.a<=alphaTestValueAB_filterMode_addBlend.x || pixel2.a<=alphaTestValueAB_filterMode_addBlend.y)
     clip(-1);           //stop the pixel shader if alpha test should reject pixel
 
-   pixel1.xyz = InvGamma(pixel1.xyz);
-   pixel2.xyz = InvGamma(pixel2.xyz);
+   if(!hdrTexture0)
+      pixel1.xyz = InvGamma(pixel1.xyz);
+   if(!hdrTexture1)
+      pixel2.xyz = InvGamma(pixel2.xyz);
 
    float4 result = staticColor_Alpha;
 
    if ( alphaTestValueAB_filterMode_addBlend.z == Filter_Overlay )
-      result *= Overlay(pixel1,pixel2);
+      result *= Overlay(saturate(pixel1),saturate(pixel2));
    else if ( alphaTestValueAB_filterMode_addBlend.z == Filter_Multiply )
       result *= Multiply(pixel1,pixel2, amount__blend_modulate_vs_add.x);
    else if ( alphaTestValueAB_filterMode_addBlend.z == Filter_Additive )
       result *= Additive(pixel1,pixel2, amount__blend_modulate_vs_add.x);
    else if ( alphaTestValueAB_filterMode_addBlend.z == Filter_Screen )
-      result *= Screen(pixel1,pixel2);
+      result *= Screen(saturate(pixel1),saturate(pixel2));
 
    if(alphaTestValueAB_filterMode_addBlend.w == 0.)
       return result;

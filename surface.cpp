@@ -1561,13 +1561,22 @@ STDMETHODIMP Surface::get_Image(BSTR *pVal)
 
 STDMETHODIMP Surface::put_Image(BSTR newVal)
 {
+   char szImage[MAXTOKEN];
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, szImage, 32, NULL, NULL);
+   const Texture * const tex = m_ptable->GetImage(szImage);
+   if(tex && tex->IsHDR())
+   {
+       ShowError("Cannot use a HDR image (.exr/.hdr) here");
+       return E_FAIL;
+   }
+
    STARTUNDO
 
-      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szImage, 32, NULL, NULL);
+   strcpy_s(m_d.m_szImage,szImage);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Surface::get_SideMaterial(BSTR *pVal)
@@ -1605,11 +1614,11 @@ STDMETHODIMP Surface::put_SlingshotMaterial(BSTR newVal)
 {
    STARTUNDO
 
-      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSlingShotMaterial, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSlingShotMaterial, 32, NULL, NULL);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Surface::get_ImageAlignment(ImageAlignment *pVal)
@@ -1636,11 +1645,11 @@ STDMETHODIMP Surface::put_HeightBottom(float newVal)
 {
    STARTUNDO
 
-      m_d.m_heightbottom = newVal;
+   m_d.m_heightbottom = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Surface::get_HeightTop(float *pVal)
@@ -1654,11 +1663,11 @@ STDMETHODIMP Surface::put_HeightTop(float newVal)
 {
    STARTUNDO
 
-      m_d.m_heighttop = newVal;
+   m_d.m_heighttop = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Surface::get_TopMaterial(BSTR *pVal)
@@ -1675,11 +1684,11 @@ STDMETHODIMP Surface::put_TopMaterial(BSTR newVal)
 {
    STARTUNDO
 
-      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szTopMaterial, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szTopMaterial, 32, NULL, NULL);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 void Surface::GetDialogPanes(Vector<PropertyPane> *pvproppane)
@@ -1724,11 +1733,11 @@ STDMETHODIMP Surface::put_CanDrop(VARIANT_BOOL newVal)
 {
    STARTUNDO
 
-      m_d.m_fDroppable = VBTOF(newVal);
+   m_d.m_fDroppable = VBTOF(newVal);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Surface::get_FlipbookAnimation(VARIANT_BOOL *pVal)
@@ -1742,11 +1751,11 @@ STDMETHODIMP Surface::put_FlipbookAnimation(VARIANT_BOOL newVal)
 {
    STARTUNDO
 
-      m_d.m_fFlipbook = VBTOF(newVal);
+   m_d.m_fFlipbook = VBTOF(newVal);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Surface::get_IsBottomSolid(VARIANT_BOOL *pVal)
@@ -1760,11 +1769,11 @@ STDMETHODIMP Surface::put_IsBottomSolid(VARIANT_BOOL newVal)
 {
    STARTUNDO
 
-      m_d.m_fIsBottomSolid = VBTOF(newVal);
+   m_d.m_fIsBottomSolid = VBTOF(newVal);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Surface::get_IsDropped(VARIANT_BOOL *pVal)
@@ -1806,11 +1815,11 @@ STDMETHODIMP Surface::put_DisplayTexture(VARIANT_BOOL newVal)
 {
    STARTUNDO
 
-      m_d.m_fDisplayTexture = VBTOF(newVal);
+   m_d.m_fDisplayTexture = VBTOF(newVal);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Surface::get_SlingshotStrength(float *pVal)
@@ -1826,11 +1835,11 @@ STDMETHODIMP Surface::put_SlingshotStrength(float newVal)
 {
    STARTUNDO
 
-      m_d.m_slingshotforce = newVal*10.0f;
+   m_d.m_slingshotforce = newVal*10.0f;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Surface::get_Elasticity(float *pVal)
@@ -1844,11 +1853,11 @@ STDMETHODIMP Surface::put_Elasticity(float newVal)
 {
    STARTUNDO
 
-      m_d.m_elasticity = newVal;
+   m_d.m_elasticity = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 
@@ -1863,14 +1872,14 @@ STDMETHODIMP Surface::put_Friction(float newVal)
 {
    STARTUNDO
 
-      if (newVal > 1.0f) newVal = 1.0f;
+   if (newVal > 1.0f) newVal = 1.0f;
       else if (newVal < 0.f) newVal = 0.f;
 
-      m_d.m_friction = newVal;
+   m_d.m_friction = newVal;
 
-      STOPUNDO
+   STOPUNDO
 
-         return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Surface::get_Scatter(float *pVal)
@@ -1884,11 +1893,11 @@ STDMETHODIMP Surface::put_Scatter(float newVal)
 {
    STARTUNDO
 
-      m_d.m_scatter = newVal;
+   m_d.m_scatter = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Surface::get_Visible(VARIANT_BOOL *pVal)
@@ -1921,13 +1930,22 @@ STDMETHODIMP Surface::get_SideImage(BSTR *pVal)
 
 STDMETHODIMP Surface::put_SideImage(BSTR newVal)
 {
+   char szSideImage[MAXTOKEN];
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, szSideImage, 32, NULL, NULL);
+   const Texture * const tex = m_ptable->GetImage(szSideImage);
+   if(tex && tex->IsHDR())
+   {
+       ShowError("Cannot use a HDR image (.exr/.hdr) here");
+       return E_FAIL;
+   }
+
    STARTUNDO
 
-      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szSideImage, 32, NULL, NULL);
+   strcpy_s(m_d.m_szSideImage,szSideImage);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Surface::get_Disabled(VARIANT_BOOL *pVal)

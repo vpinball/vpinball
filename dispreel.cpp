@@ -852,11 +852,22 @@ STDMETHODIMP DispReel::get_Image(BSTR *pVal)
 
 STDMETHODIMP DispReel::put_Image(BSTR newVal)
 {
+   char szImage[MAXTOKEN];
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, szImage, 32, NULL, NULL);
+   const Texture * const tex = m_ptable->GetImage(szImage);
+   if(tex && tex->IsHDR())
+   {
+       ShowError("Cannot use a HDR image (.exr/.hdr) here");
+       return E_FAIL;
+   }
+
    STARTUNDO
-      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szImage, 32, NULL, NULL);
+
+   strcpy_s(m_d.m_szImage,szImage);
+
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP DispReel::get_Spacing(float *pVal)
@@ -993,10 +1004,10 @@ STDMETHODIMP DispReel::get_ImagesPerGridRow(long *pVal)
 STDMETHODIMP DispReel::put_ImagesPerGridRow(long newVal)
 {
    STARTUNDO
-      m_d.m_imagesPerGridRow = max(1, newVal);
+   m_d.m_imagesPerGridRow = max(1, newVal);
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 

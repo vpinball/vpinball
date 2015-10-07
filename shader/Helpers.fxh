@@ -34,6 +34,14 @@ float3 FBToneMap(const float3 color)
     return color * ((l*BURN_HIGHLIGHTS + 1.0) / (l + 1.0)); // overflow is handled by bloom
 }
 
+float3 FilmicToneMap(const float3 hdr, const float whitepoint) //!! test/experimental
+{
+    const float4 vh = float4(hdr,whitepoint);
+    const float4 va = 1.425*vh + 0.05;
+    const float4 vf = (vh*va + 0.004)/(vh*(va+0.55) + 0.0491) - 0.0821;
+    return vf.rgb/vf.aaa;
+}
+
 //
 // Blends
 //
