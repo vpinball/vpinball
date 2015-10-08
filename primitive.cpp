@@ -151,11 +151,12 @@ void Primitive::CreateRenderGroup(Collection *collection, RenderDevice *pd3dDevi
       Texture  *texel = g_pplayer->m_ptable->GetImage(prims[i]->m_d.m_szImage);
       if (mat == groupMaterial && texel == groupTexel)
       {
-         for (size_t k = 0; k < prims[i]->m_mesh.NumIndices(); k++)
-            indices[m_numGroupIndices + k] = m_numGroupVertices + prims[i]->m_mesh.m_indices[k];
+         const Mesh &m = prims[i]->m_mesh;
+         for (size_t k = 0; k < m.NumIndices(); k++)
+            indices[m_numGroupIndices + k] = m_numGroupVertices + m.m_indices[k];
 
-         m_numGroupVertices += prims[i]->m_mesh.NumVertices();
-         m_numGroupIndices += prims[i]->m_mesh.NumIndices();
+         m_numGroupVertices += m.NumVertices();
+         m_numGroupIndices += m.NumIndices();
          prims[i]->m_d.m_fSkipRendering = true;
          renderedPrims.push_back(prims[i]);
       }
@@ -177,9 +178,10 @@ void Primitive::CreateRenderGroup(Collection *collection, RenderDevice *pd3dDevi
    for (size_t i = 0; i < renderedPrims.size(); i++)
    {
       renderedPrims[i]->RecalculateMatrices();
-      for (size_t t = 0; t < renderedPrims[i]->m_mesh.NumVertices(); t++)
+      const Mesh &m = renderedPrims[i]->m_mesh;
+      for (size_t t = 0; t < m.NumVertices(); t++)
       {
-         Vertex3D_NoTex2 vt = renderedPrims[i]->m_mesh.m_vertices[t];
+         Vertex3D_NoTex2 vt = m.m_vertices[t];
          renderedPrims[i]->fullMatrix.MultiplyVector(vt, vt);
          Vertex3Ds n;
          renderedPrims[i]->fullMatrix.MultiplyVectorNoTranslateNormal(vt, n);
@@ -799,19 +801,20 @@ void Primitive::ExportMesh(FILE *f)
       RecalculateMatrices();
       for (unsigned int i = 0; i < m_mesh.NumVertices(); i++)
       {
-         Vertex3Ds vert(m_mesh.m_vertices[i].x, m_mesh.m_vertices[i].y, m_mesh.m_vertices[i].z);
+         const Vertex3D_NoTex2 &v = m_mesh.m_vertices[i];
+         Vertex3Ds vert(v.x, v.y, v.z);
          vert = fullMatrix.MultiplyVector(vert);
 
          buf[i].x = vert.x;
          buf[i].y = vert.y;
          buf[i].z = vert.z;
-         vert = Vertex3Ds(m_mesh.m_vertices[i].nx, m_mesh.m_vertices[i].ny, m_mesh.m_vertices[i].nz);
+         vert = Vertex3Ds(v.nx, v.ny, v.nz);
          vert = fullMatrix.MultiplyVectorNoTranslate(vert);
          buf[i].nx = vert.x;
          buf[i].ny = vert.y;
          buf[i].nz = vert.z;
-         buf[i].tu = m_mesh.m_vertices[i].tu;
-         buf[i].tv = m_mesh.m_vertices[i].tv;
+         buf[i].tu = v.tu;
+         buf[i].tv = v.tv;
       }
       WaveFrontObj_WriteObjectName(f, name);
       WaveFrontObj_WriteVertexInfo(f, buf, m_mesh.NumVertices());
