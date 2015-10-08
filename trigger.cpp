@@ -749,7 +749,7 @@ void Trigger::RenderSetup(RenderDevice* pd3dDevice)
          tmp[i].z += tmp[i].nz * m_d.m_wireThickness;
       }
       memcpy(buf, tmp, sizeof(Vertex3D_NoTex2)*m_numVertices);
-      delete tmp;
+      delete [] tmp;
    }
    else
       memcpy(buf, triggerVertices, sizeof(Vertex3D_NoTex2)*m_numVertices);

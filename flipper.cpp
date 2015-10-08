@@ -757,8 +757,8 @@ void Flipper::ExportMesh(FILE *f)
       WaveFrontObj_WriteFaceInfoList(f, flipperBaseIndices, flipperBaseNumFaces);
       WaveFrontObj_UpdateFaceOffset(flipperBaseVertices);
    }
-   delete flipper;
 
+   delete [] flipper;
 }
 
 void Flipper::GenerateBaseMesh(Vertex3D_NoTex2 *buf)
@@ -874,7 +874,7 @@ void Flipper::GenerateBaseMesh(Vertex3D_NoTex2 *buf)
       }
    }
 
-   delete temp;
+   delete [] temp;
 }
 
 void Flipper::RenderSetup(RenderDevice* pd3dDevice)
