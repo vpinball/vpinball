@@ -7878,7 +7878,7 @@ STDMETHODIMP PinTable::put_BackdropImage_DT(BSTR newVal)
 {
    STARTUNDO
 
-      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_BG_szImage[0], 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_BG_szImage[0], 32, NULL, NULL);
 
    if (!g_pplayer)
    {
@@ -7888,7 +7888,7 @@ STDMETHODIMP PinTable::put_BackdropImage_DT(BSTR newVal)
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_BackdropImage_FS(BSTR *pVal)
@@ -7905,7 +7905,7 @@ STDMETHODIMP PinTable::put_BackdropImage_FS(BSTR newVal)
 {
    STARTUNDO
 
-      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_BG_szImage[1], 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_BG_szImage[1], 32, NULL, NULL);
 
    if (!g_pplayer)
    {
@@ -7915,7 +7915,7 @@ STDMETHODIMP PinTable::put_BackdropImage_FS(BSTR newVal)
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_ColorGradeImage(BSTR *pVal)
@@ -7930,13 +7930,22 @@ STDMETHODIMP PinTable::get_ColorGradeImage(BSTR *pVal)
 
 STDMETHODIMP PinTable::put_ColorGradeImage(BSTR newVal)
 {
+   char szImage[MAXTOKEN];
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, szImage, 32, NULL, NULL);
+   const Texture * const tex = GetImage(szImage);
+   if(tex && (tex->m_width != 256 || tex->m_height != 16))
+   {
+       ShowError("Wrong image size, needs to be 256x16 resolution");
+       return E_FAIL;
+   }
+
    STARTUNDO
 
-      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_szImageColorGrade, 32, NULL, NULL);
+   strcpy_s(m_szImageColorGrade,szImage);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_Gravity(float *pVal)
