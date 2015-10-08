@@ -81,9 +81,8 @@ public:
 	int functionLine;
 
 	UserData();
-	UserData(int LineNo, string Desc, string Name);
+	UserData(const int LineNo, const string &Desc, const string &Name);
 	~UserData();
-
 };
 
 class CodeViewer :
