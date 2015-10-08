@@ -38,7 +38,7 @@ list<UserData> *g_Components;
 string g_AutoCompList;
 bool FindOrInsertUD(list<UserData>* ListIn, UserData ud);
 bool FindOrInsertStringIntoAutolist(list<string>* ListIn, string strIn);
-bool FuncSortUD (const UserData first, const UserData second);
+bool FuncSortUD (const UserData &first, const UserData &second);
 
 UserData::UserData()
 {
@@ -51,7 +51,7 @@ UserData::~UserData()
 {
 }
 
-UserData::UserData(int LineNo, string Desc, string Name)
+UserData::UserData(const int LineNo, const string &Desc, const string &Name)
 {
 	functionLine=LineNo;
 	functionDesc=Desc;
@@ -59,7 +59,7 @@ UserData::UserData(int LineNo, string Desc, string Name)
 }
 
 //Ajs only to be used on a fresh data set or when data order could be corrupted
-bool FuncSortUD (const UserData first, const UserData second)
+bool FuncSortUD (const UserData &first, const UserData &second)
 {
   basic_string <char>::size_type i=0;
   while ( (i<first.functionName.length()) && (i<second.functionName.length() ) )
@@ -89,7 +89,7 @@ bool FindOrInsertUD(list<UserData>* ListIn, UserData ud)
 		result = i->functionName.compare(ud.functionName);
 		if (result < 0)
 		{
-			i++;
+			++i;
 			counter--;
 		}
 		else
@@ -132,7 +132,7 @@ bool FindOrInsertStringIntoAutolist(list<string>* ListIn, string strIn)
 		result = i->compare(strIn);
 		if (result < 0)
 		{
-			i++;
+			++i;
 			counter--;
 		}
 		else
@@ -552,7 +552,7 @@ void CodeViewer::Create()
 	}
 	g_VBwords->sort(FuncSortUD);
 	vbsKeyWords = new char[strlen(vbsReservedWords)+2];
-	for (list<UserData>::iterator i = g_VBwords->begin();i != g_VBwords->end(); i++)
+	for (list<UserData>::iterator i = g_VBwords->begin();i != g_VBwords->end(); ++i)
 	{
 		//make vbsKeyWords in order. (the cat has been kicked out :)
 		vbsKeyWords += i->functionName.data();
@@ -1607,7 +1607,6 @@ bool CodeViewer::ShowTooltip(SCNotification *pSCN)
 		// Serarch for VBS reserved words
 		// ToDo: Should be able rape MS help for better descriptions
 		MessLen = 0;
-		char RetResult[256] = {};
 		//
 		const int RetIndex = vbsKeyWords.find(lowerCase( DwellWord ) );
 		if (RetIndex != -1)
@@ -1622,7 +1621,7 @@ bool CodeViewer::ShowTooltip(SCNotification *pSCN)
 			if ( g_UserFunc->size() == 0 ) ParseForFunction();
 			//now search
 			int iTemp= 0;
-			for (list<UserData>::iterator i = g_UserFunc->begin();i != g_UserFunc->end(); i++) 
+			for (list<UserData>::iterator i = g_UserFunc->begin();i != g_UserFunc->end(); ++i) 
 			{
 				if (i->functionName == (string(DwellWord)))
 				{
@@ -1889,7 +1888,7 @@ void CodeViewer::ParseForFunction() // & Subs & Collections AndyS - WIP - Totall
 	}
    //if (g_UserFunc->size() > 2) g_UserFunc->sort(FuncSortUD); //Nope should be done by FindOrInsert
    //Propergate subs&funcs in menu in order
-	for (list<UserData>::iterator i = g_UserFunc->begin(); i != g_UserFunc->end(); i++) 
+	for (list<UserData>::iterator i = g_UserFunc->begin(); i != g_UserFunc->end(); ++i) 
    {
 		const char *c_str1 = i->functionName.c_str ();
 		SendMessage(m_hwndFunctionList, CB_ADDSTRING, 0, (LPARAM)(c_str1) );
@@ -1913,14 +1912,14 @@ void CodeViewer::ParseForFunction() // & Subs & Collections AndyS - WIP - Totall
 	//g_Components->sort(FuncSortUD); // nope FindOrInsertListString() does it all
 	//Now merge the lot for Auto complete...
 	g_AutoComp->clear();
-	for (list<UserData>::iterator i = g_Components->begin(); i != g_Components->end(); i++)
+	for (list<UserData>::iterator i = g_Components->begin(); i != g_Components->end(); ++i)
 		FindOrInsertStringIntoAutolist(g_AutoComp,i->functionName);
-	for (list<UserData>::iterator i = g_VBwords->begin(); i != g_VBwords->end(); i++)
+	for (list<UserData>::iterator i = g_VBwords->begin(); i != g_VBwords->end(); ++i)
 		FindOrInsertStringIntoAutolist(g_AutoComp,i->functionName);
-	for (list<UserData>::iterator i = g_UserFunc->begin(); i != g_UserFunc->end(); i++)
+	for (list<UserData>::iterator i = g_UserFunc->begin(); i != g_UserFunc->end(); ++i)
 		FindOrInsertStringIntoAutolist(g_AutoComp,i->functionName);
 	g_AutoCompList = "";
-	for (list<string>::iterator i = g_AutoComp->begin(); i != g_AutoComp->end();i++)
+	for (list<string>::iterator i = g_AutoComp->begin(); i != g_AutoComp->end(); ++i)
 	{
 		const char *c_str1 = i->c_str();
 		g_AutoCompList.append(c_str1);
@@ -2102,7 +2101,7 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
          {
             const size_t index = SendMessage(pcv->m_hwndFunctionList, CB_GETCURSEL, 0, 0);
 				list<UserData>::iterator i = g_UserFunc->begin();
-				for (size_t t = 0; t < index; t++)	i++;
+				for (size_t t = 0; t < index; t++)	++i;
 				int foo = i->functionLine;
             SendMessage(pcv->m_hwndScintilla, SCI_GOTOLINE, foo, 0);
             SendMessage(pcv->m_hwndScintilla, SCI_GRABFOCUS, 0, 0);
