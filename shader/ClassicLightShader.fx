@@ -55,6 +55,8 @@ float3 cClearcoat_EdgeAlpha; // actually doesn't feature edge-alpha
 //!! Metals have high specular reflectance:  0.5-1.0
 
 //float  fAlphaTestValue;
+
+bool hdrEnvTextures;
 #endif
 
 float4 lightColor_intensity;

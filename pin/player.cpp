@@ -791,13 +791,15 @@ void Player::InitShader()
    //m_pin3d.m_pd3dDevice->classicLightShader->SetVector("camera", &cam);
 #endif
 
-   m_pin3d.m_pd3dDevice->basicShader->SetTexture("Texture1", &m_pin3d.envTexture);
+   m_pin3d.m_pd3dDevice->basicShader->SetBool("hdrEnvTextures", (m_pin3d.m_envTexture ? m_pin3d.m_envTexture : &m_pin3d.envTexture)->IsHDR());
+   m_pin3d.m_pd3dDevice->basicShader->SetTexture("Texture1", m_pin3d.m_envTexture ? m_pin3d.m_envTexture : &m_pin3d.envTexture);
    m_pin3d.m_pd3dDevice->basicShader->SetTexture("Texture2", m_pin3d.m_device_envRadianceTexture);
 #ifdef SEPARATE_CLASSICLIGHTSHADER
-   m_pin3d.m_pd3dDevice->classicLightShader->SetTexture("Texture1", &m_pin3d.envTexture);
+   m_pin3d.m_pd3dDevice->classicLightShader->SetBool("hdrEnvTextures", (m_pin3d.m_envTexture ? m_pin3d.m_envTexture : &m_pin3d.envTexture)->IsHDR());
+   m_pin3d.m_pd3dDevice->classicLightShader->SetTexture("Texture1", m_pin3d.m_envTexture ? m_pin3d.m_envTexture : &m_pin3d.envTexture);
    m_pin3d.m_pd3dDevice->classicLightShader->SetTexture("Texture2", m_pin3d.m_device_envRadianceTexture);
 #endif
-   const D3DXVECTOR4 st(m_ptable->m_envEmissionScale*m_ptable->m_globalEmissionScale, (float)m_pin3d.envTexture.m_height/*+m_pin3d.envTexture.m_width)*0.5f*/, 0.f, 0.f);
+   const D3DXVECTOR4 st(m_ptable->m_envEmissionScale*m_ptable->m_globalEmissionScale, m_pin3d.m_envTexture ? (float)m_pin3d.m_envTexture->m_height/*+m_pin3d.m_envTexture->m_width)*0.5f*/ : (float)m_pin3d.envTexture.m_height/*+m_pin3d.envTexture.m_width)*0.5f*/, 0.f, 0.f);
    m_pin3d.m_pd3dDevice->basicShader->SetVector("fenvEmissionScale_TexWidth", &st);
 #ifdef SEPARATE_CLASSICLIGHTSHADER
    m_pin3d.m_pd3dDevice->classicLightShader->SetVector("fenvEmissionScale_TexWidth", &st);
@@ -879,7 +881,7 @@ void Player::InitBallShader()
 
    //D3DXVECTOR4 cam( matView._41, matView._42, matView._43, 1 );
    //ballShader->SetVector("camera", &cam);
-   const D3DXVECTOR4 st(m_ptable->m_envEmissionScale*m_ptable->m_globalEmissionScale, (float)m_pin3d.envTexture.m_height/*+m_pin3d.envTexture.m_width)*0.5f*/, 0.f, 0.f);
+   const D3DXVECTOR4 st(m_ptable->m_envEmissionScale*m_ptable->m_globalEmissionScale, m_pin3d.m_envTexture ? (float)m_pin3d.m_envTexture->m_height/*+m_pin3d.m_envTexture->m_width)*0.5f*/ : (float)m_pin3d.envTexture.m_height/*+m_pin3d.envTexture.m_width)*0.5f*/, 0.f, 0.f);
    ballShader->SetVector("fenvEmissionScale_TexWidth", &st);
    //ballShader->SetInt("iLightPointNum",MAX_LIGHT_SOURCES);
 
@@ -2798,7 +2800,7 @@ void Player::RenderDynamics()
    {
       m_pin3d.InitLights();
 
-      const D3DXVECTOR4 st(m_ptable->m_envEmissionScale*m_ptable->m_globalEmissionScale, (float)m_pin3d.envTexture.m_height/*+m_pin3d.envTexture.m_width)*0.5f*/, 0.f, 0.f); //!! dto.
+      const D3DXVECTOR4 st(m_ptable->m_envEmissionScale*m_ptable->m_globalEmissionScale, m_pin3d.m_envTexture ? (float)m_pin3d.m_envTexture->m_height/*+m_pin3d.m_envTexture->m_width)*0.5f*/ : (float)m_pin3d.envTexture.m_height/*+m_pin3d.envTexture.m_width)*0.5f*/, 0.f, 0.f); //!! dto.
       m_pin3d.m_pd3dDevice->basicShader->SetVector("fenvEmissionScale_TexWidth", &st);
 #ifdef SEPARATE_CLASSICLIGHTSHADER
       m_pin3d.m_pd3dDevice->classicLightShader->SetVector("fenvEmissionScale_TexWidth", &st);
@@ -3920,7 +3922,7 @@ void Player::DrawBalls()
       const D3DXVECTOR4 pos_rad(pball->m_pos.x, pball->m_pos.y, zheight, pball->m_radius);
       if (!pball->m_pinballEnv)
       {
-         ballShader->SetBool("hdrTexture0", m_pin3d.pinballEnvTexture.IsHDR());
+         ballShader->SetBool("hdrTexture0", m_pin3d.pinballEnvTexture.IsHDR()); // should always be false, as read from (LDR-Bitmap-)Resources
          ballShader->SetTexture("Texture0", &m_pin3d.pinballEnvTexture);
       }
       else

@@ -280,6 +280,9 @@ public:
    STDMETHOD(get_BallDecalMode)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_BallDecalMode)(/*[in]*/ VARIANT_BOOL newVal);
 
+   STDMETHOD(get_EnvironmentImage)(/*[out, retval]*/ BSTR *pVal);
+   STDMETHOD(put_EnvironmentImage)(/*[in]*/ BSTR newVal);
+
    STDMETHOD(Version)(/*[out, retval]*/ int *pVal);
 
    /////////////////////////////////////////////
@@ -314,7 +317,6 @@ public:
 
    void ExportBlueprint();
    void ExportTableMesh();
-
 
    //void FireVoidEvent(int dispid);
    void FireKeyEvent(int dispid, int keycode);
@@ -612,7 +614,7 @@ public:
 
    short m_oldMousePosX;
    short m_oldMousePosY;
-   _protectionData	m_protectionData;
+   _protectionData m_protectionData;
 
    char m_szImage[MAXTOKEN];
    char m_szPlayfieldMaterial[32];
@@ -624,6 +626,8 @@ public:
    char m_szBallImage[MAXTOKEN];
    char m_szBallImageFront[MAXTOKEN];
    bool m_BallDecalMode;
+
+   char m_szEnvImage[MAXTOKEN];
 
    //CComObject<Surface> *m_psur;
 

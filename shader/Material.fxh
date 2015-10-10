@@ -90,7 +90,10 @@ float3 DoEnvmapDiffuse(const float3 N, const float3 diffuse)
 		atan2(N.y, N.x) * (0.5/PI) + 0.5,
 	    acos(N.z) * (1.0/PI));
 
-   return diffuse * InvGamma(tex2Dlod(texSampler2, float4(uv, 0.,0.)).xyz)*fenvEmissionScale_TexWidth.x; //!! replace by real HDR instead? -> remove invgamma then
+   float3 env = tex2Dlod(texSampler2, float4(uv, 0.,0.)).xyz;
+   if(!hdrEnvTextures)
+       env = InvGamma(env);
+   return diffuse * env*fenvEmissionScale_TexWidth.x;
 }
 
 //!! PI?
@@ -98,15 +101,20 @@ float3 DoEnvmapDiffuse(const float3 N, const float3 diffuse)
 float3 DoEnvmapGlossy(const float3 N, const float3 V, const float2 Ruv, const float3 glossy, const float glossyPower)
 {
    const float mip = log2(fenvEmissionScale_TexWidth.y * sqrt(3.0)) - 0.5*log2(glossyPower + 1.0);
-
-   return glossy * InvGamma(tex2Dlod(texSampler1, float4(Ruv, 0., mip)).xyz)*fenvEmissionScale_TexWidth.x; //!! replace by real HDR instead? -> remove invgamma then
+   float3 env = tex2Dlod(texSampler1, float4(Ruv, 0., mip)).xyz;
+   if(!hdrEnvTextures)
+       env = InvGamma(env);
+   return glossy * env*fenvEmissionScale_TexWidth.x;
 }
 
 //!! PI?
 float3 DoEnvmap2ndLayer(const float3 color1stLayer, const float3 pos, const float3 N, const float3 V, const float NdotV, const float2 Ruv, const float3 specular)
 {
    const float3 w = FresnelSchlick(specular, NdotV, Roughness_WrapL_Edge_IsMetal.z); //!! ?
-   return lerp(color1stLayer, InvGamma(tex2Dlod(texSampler1, float4(Ruv, 0., 0.)).xyz)*fenvEmissionScale_TexWidth.x, w); // weight (optional) lower diffuse/glossy layer with clearcoat/specular //!! replace by real HDR instead? -> remove invgamma then
+   float3 env = tex2Dlod(texSampler1, float4(Ruv, 0., 0.)).xyz;
+   if(!hdrEnvTextures)
+       env = InvGamma(env);
+   return lerp(color1stLayer, env*fenvEmissionScale_TexWidth.x, w); // weight (optional) lower diffuse/glossy layer with clearcoat/specular
 }
 
 float3 lightLoop(const float3 pos, float3 N, const float3 V, float3 diffuse, float3 glossy, const float3 specular, const float edge) // input vectors (N,V) are normalized for BRDF evals

@@ -97,7 +97,7 @@ void Pin3D::TransformVertices(const Vertex3D_NoTex2 * rgv, const WORD * rgi, int
    }
 }
 
-void EnvmapPrecalc(const DWORD* const __restrict envmap, const DWORD env_xres, const DWORD env_yres, DWORD* const __restrict rad_envmap, const DWORD rad_env_xres, const DWORD rad_env_yres)
+void EnvmapPrecalc(const void* const __restrict envmap, const DWORD env_xres, const DWORD env_yres, void* const __restrict rad_envmap, const DWORD rad_env_xres, const DWORD rad_env_yres, const bool isHDR)
 {
    // brute force sampling over hemisphere for each normal direction of the to-be-(ir)radiance-baked environment
    // not the fastest solution, could do a "cosine convolution" over the picture instead (where also just 1024 or x samples could be used per pixel)
@@ -135,10 +135,26 @@ void EnvmapPrecalc(const DWORD* const __restrict envmap, const DWORD env_xres, c
             const float u = atan2f(l.y, l.x) * (float)(0.5 / M_PI) + 0.5f;
             const float v = acosf(l.z) * (float)(1.0 / M_PI);
 
-            const DWORD rgb = envmap[(int)(u*(float)env_xres) + (int)(v*(float)env_yres)*env_xres];
-            const float r = invGammaApprox((float)(rgb & 255) * (float)(1.0 / 255.0)); //!! remove invgamma as soon as HDR
-            const float g = invGammaApprox((float)(rgb & 65280) * (float)(1.0 / 65280.0));
-            const float b = invGammaApprox((float)(rgb & 16711680) * (float)(1.0 / 16711680.0));
+	    float r,g,b;
+	    if(isHDR)
+	    {
+		unsigned int offs = ((int)(u*(float)env_xres) + (int)(v*(float)env_yres)*env_xres)*3;
+		if(offs >= env_yres*env_xres*3)
+		    offs = 0;
+		r = ((float*)envmap)[offs];
+		g = ((float*)envmap)[offs+1];
+		b = ((float*)envmap)[offs+2];
+	    }
+	    else
+	    {
+               unsigned int offs = (int)(u*(float)env_xres) + (int)(v*(float)env_yres)*env_xres;
+	       if(offs >= env_yres*env_xres)
+		   offs = 0;
+               const DWORD rgb = ((DWORD*)envmap)[offs];
+               r = invGammaApprox((float)(rgb & 255) * (float)(1.0 / 255.0));
+               g = invGammaApprox((float)(rgb & 65280) * (float)(1.0 / 65280.0));
+               b = invGammaApprox((float)(rgb & 16711680) * (float)(1.0 / 16711680.0));
+	    }
 #ifndef USE_ENVMAP_PRECALC_COSINE
             sum[0] += r * NdotL;
             sum[1] += g * NdotL;
@@ -160,10 +176,20 @@ void EnvmapPrecalc(const DWORD* const __restrict envmap, const DWORD env_xres, c
          sum[1] *= (float)(1.0 / num_samples);
          sum[2] *= (float)(1.0 / num_samples);
 #endif
-         sum[0] = gammaApprox(sum[0]); //!! remove gamma as soon as HDR
-         sum[1] = gammaApprox(sum[1]);
-         sum[2] = gammaApprox(sum[2]);
-         rad_envmap[y*rad_env_xres + x] = ((int)(sum[0] * 255.0f)) | (((int)(sum[1] * 255.0f)) << 8) | (((int)(sum[2] * 255.0f)) << 16);
+	 if(isHDR)
+	 {
+            const unsigned int offs = (y*rad_env_xres + x)*3;
+            ((float*)rad_envmap)[offs  ] = sum[0];
+	    ((float*)rad_envmap)[offs+1] = sum[1];
+	    ((float*)rad_envmap)[offs+2] = sum[2];
+	 }
+	 else
+	 {
+            sum[0] = gammaApprox(sum[0]);
+            sum[1] = gammaApprox(sum[1]);
+            sum[2] = gammaApprox(sum[2]);
+	    ((DWORD*)rad_envmap)[y*rad_env_xres + x] = ((int)(sum[0] * 255.0f)) | (((int)(sum[1] * 255.0f)) << 8) | (((int)(sum[2] * 255.0f)) << 16);
+	 }
       }
 }
 
@@ -215,16 +241,25 @@ HRESULT Pin3D::InitPin3D(const HWND hwnd, const bool fullScreen, const int width
 
    pinballEnvTexture.CreateFromResource(IDB_BALL);
 
+   //
+
+   m_envTexture = g_pplayer->m_ptable->GetImage(g_pplayer->m_ptable->m_szEnvImage);
    envTexture.CreateFromResource(IDB_ENV);
 
-   m_envRadianceTexture = new BaseTexture(envTexture.m_pdsBuffer->width() / 8, envTexture.m_pdsBuffer->height() / 8);
+   Texture * const envTex = m_envTexture ? m_envTexture : &envTexture;
 
-   EnvmapPrecalc((DWORD*)envTexture.m_pdsBuffer->data(), envTexture.m_pdsBuffer->width(), envTexture.m_pdsBuffer->height(),
-      (DWORD*)m_envRadianceTexture->data(), envTexture.m_pdsBuffer->width() / 8, envTexture.m_pdsBuffer->height() / 8);
+   const unsigned int envTexHeight = min(envTex->m_pdsBuffer->height(),256) / 8;
+   const unsigned int envTexWidth = envTexHeight*2;
+   
+   m_envRadianceTexture = new BaseTexture(envTexWidth, envTexHeight, envTex->m_pdsBuffer->m_format);
 
+   EnvmapPrecalc(envTex->m_pdsBuffer->data(), envTex->m_pdsBuffer->width(), envTex->m_pdsBuffer->height(),
+                 m_envRadianceTexture->data(), envTexWidth, envTexHeight, envTex->IsHDR());
 
    m_device_envRadianceTexture = m_pd3dDevice->m_texMan.LoadTexture(m_envRadianceTexture);
    m_pd3dDevice->m_texMan.SetDirty(m_envRadianceTexture);
+
+   //
 
    if (stereo3D || useAO) {
       m_pdds3DZBuffer = m_pd3dDevice->DuplicateDepthTexture(m_pddsZBuffer);

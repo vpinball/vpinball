@@ -758,6 +758,7 @@ PinTable::PinTable()
    m_tblMirrorEnabled = false;
 
    memset(m_szImage, 0, MAXTOKEN);
+   memset(m_szEnvImage, 0, MAXTOKEN);
    m_hMaterialManager = NULL;
    m_hSearchSelectDialog = NULL;
 
@@ -1313,6 +1314,7 @@ void PinTable::Init(VPinball *pvp)
    m_szImage[0] = 0;
    m_szImageBackdrop[0] = 0;
    m_ImageBackdropNightDay = false;
+   m_szEnvImage[0] = 0;
 
    m_szImageColorGrade[0] = 0;
 
@@ -2813,6 +2815,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
    bw.WriteString(FID(IMCG), m_szImageColorGrade);
    bw.WriteString(FID(BLIM), m_szBallImage);
    bw.WriteString(FID(BLIF), m_szBallImageFront);
+   bw.WriteString(FID(EIMG), m_szEnvImage);
 
    bw.WriteString(FID(SSHT), m_szScreenShot);
 
@@ -3252,6 +3255,7 @@ void PinTable::SetLoadDefaults()
    m_szBallImage[0] = 0;
    m_szBallImageFront[0] = 0;
    m_ImageBackdropNightDay = false;
+   m_szEnvImage[0] = 0;
 
    m_szScreenShot[0] = 0;
 
@@ -3580,6 +3584,10 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(IMCG))
    {
       pbr->GetString(m_szImageColorGrade);
+   }
+   else if (id == FID(EIMG))
+   {
+      pbr->GetString(m_szEnvImage);
    }
    else if (id == FID(PLMA))
    {
@@ -6835,6 +6843,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
    case DISPID_Image4:
    case DISPID_Image5:
    case DISPID_Image6:
+   case DISPID_Image7:
    {
       cvar = m_vimage.size();
 
@@ -7065,6 +7074,7 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
    case DISPID_Image4:
    case DISPID_Image5:
    case DISPID_Image6:
+   case DISPID_Image7:
    {
       if (dwCookie == -1)
       {
@@ -8563,11 +8573,43 @@ STDMETHODIMP PinTable::put_BallImage(BSTR newVal)
 {
    STARTUNDO
 
-      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_szBallImage, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_szBallImage, 32, NULL, NULL);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::get_EnvironmentImage(BSTR *pVal)
+{
+   WCHAR wz[512];
+
+   MultiByteToWideChar(CP_ACP, 0, m_szEnvImage, -1, wz, 32);
+   *pVal = SysAllocString(wz);
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_EnvironmentImage(BSTR newVal)
+{
+   char szImage[MAXTOKEN];
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, szImage, 32, NULL, NULL);
+   const Texture * const tex = GetImage(szImage);
+   if(tex && (tex->m_width != tex->m_height*2))
+   {
+       ShowError("Wrong image size, needs to be 2x width in comparison to height");
+       return E_FAIL;
+   }
+
+   STARTUNDO
+
+   strcpy_s(m_szEnvImage,szImage);
+
+   STOPUNDO
+
+   return S_OK;
+
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_YieldTime(long *pVal)
@@ -9050,10 +9092,10 @@ STDMETHODIMP PinTable::get_TiltTriggerTime(int *pVal)
 STDMETHODIMP PinTable::put_TiltTriggerTime(int newVal)
 {
    STARTUNDO
-      m_tilt_trigger_time = newVal;
+   m_tilt_trigger_time = newVal;
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 #endif
 
@@ -9071,19 +9113,18 @@ STDMETHODIMP PinTable::put_BallFrontDecal(BSTR newVal)
 {
    STARTUNDO
 
-      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_szBallImageFront, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_szBallImageFront, 32, NULL, NULL);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::FireKnocker(int Count)
 {
    if (g_pplayer)
-   {
       hid_knock(Count);
-   }
+
    return S_OK;
 }
 
