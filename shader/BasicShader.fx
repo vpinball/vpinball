@@ -57,6 +57,7 @@ sampler2D texSamplerBL : TEXUNIT3 = sampler_state // bulb light/transmission buf
 	ADDRESSV  = Clamp;
 };
 
+bool hdrEnvTextures;
 
 #include "Material.fxh"
 

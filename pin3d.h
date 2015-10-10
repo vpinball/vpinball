@@ -97,9 +97,10 @@ public:
 
    //RenderTarget* m_bloomTexture;
 
-   Texture pinballEnvTexture;
+   Texture pinballEnvTexture; // loaded from Resources
+   Texture envTexture; // loaded from Resources
 
-   Texture envTexture;
+   Texture* m_envTexture;
    BaseTexture* m_envRadianceTexture;
    D3DTexture* m_device_envRadianceTexture;
 

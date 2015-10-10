@@ -25,7 +25,7 @@ sampler2D texSampler0 : TEXUNIT0 = sampler_state // base texture
 	//ADDRESSV  = Wrap;
 };
 
-sampler2D texSampler1 : TEXUNIT1 = sampler_state // environment
+sampler2D texSampler1 : TEXUNIT1 = sampler_state // playfield (should actually be environment if specular and glossy needed in lightloop!)
 {
 	Texture	  = (Texture1);
     MIPFILTER = LINEAR; //!! ?
@@ -35,7 +35,7 @@ sampler2D texSampler1 : TEXUNIT1 = sampler_state // environment
 	ADDRESSV  = Wrap;
 };
 
-sampler2D texSampler2 : TEXUNIT2 = sampler_state // diffuse environment contribution/radiance
+sampler2D texSampler2 : TEXUNIT2 = sampler_state // see below (should actually be diffuse environment contribution/radiance if diffuse needed in lightloop!)
 {
 	Texture	  = (Texture2);
     MIPFILTER = NONE;
@@ -54,6 +54,8 @@ sampler2D texSampler7 : TEXUNIT2 = sampler_state // ball decal
 	ADDRESSU  = Wrap;
 	ADDRESSV  = Wrap;
 };
+
+bool     hdrEnvTextures = false;
 
 #include "Material.fxh"
 

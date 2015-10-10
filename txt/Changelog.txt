@@ -129,10 +129,13 @@ VP 10.0.0 Changelog
 - new shader based materials/lighting (full HDR pipeline)
 
   -> due to the new lighting and materials the orientation of vertex normals on imported primitives is now extremely important!
-     to test if everything is correct, try to tone down the environment emission scale and see if your objects are correctly lit from above
+     to test if everything is correct, try to tone down the environment emission scale and see if all your objects are correctly lit -only- from above
 
-  -> always try to tweak the two lighting components (some lightsources above the table plus an environment light surrounding the table) separately
-     by setting one emission scale to 0 and then configuring the other one on its own
+  -> always try to tweak the two lighting components (some lightsources above the table plus the environment image light surrounding the table) separately
+     by setting one of the two emission scales to 0 and then configuring the other one on its own
+
+  -> the new environment image -must- be in Latitude/Longitude format (see for example http://gl.ict.usc.edu/HDRShop/tutorial/tutorial04.php),
+     and also keep the resolution low (512x256 should be enough)
 
   -> the night->day slider will scale these two lighting components, and in addition
      the script now offers NightDay, which returns the range in 0..100, so that additional tweaks can be done in the script, depending on this value
@@ -162,6 +165,11 @@ VP 10.0.0 Changelog
   -> do not save the new LUT texture as jpg, but rather as lossless png or bmp!
 
 - images/textures transparency is now -only- based on the alpha channel of the loaded images, no transparency color/hack support anymore
+
+- images can now feature high dynamic range (HDR), via the .exr and .hdr file formats, which is supported on:
+  - the ball image (use the Angular Map format, see http://gl.ict.usc.edu/HDRShop/tutorial/tutorial04.php),
+  - flashers and (pass-through-mode-)lights and the background image (don't know where to get useful HDR images for these though),
+  - and -especially- the environment image (use the Latitude/Longitude format, again see http://gl.ict.usc.edu/HDRShop/tutorial/tutorial04.php)
 
 - add new PlayHit() and PlaySlingshotHit() function to the bumper / wall. If called the bumper/wall will play the hit animation as if a ball hits the element but without triggering the actual hit event.
 
