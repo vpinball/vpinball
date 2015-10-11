@@ -204,9 +204,18 @@ STDMETHODIMP BallEx::get_FrontDecal(BSTR *pVal)
 
 STDMETHODIMP BallEx::put_FrontDecal(BSTR newVal)
 {
-   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_pball->m_szImageFront, 32, NULL, NULL);
+   char szImage[MAXTOKEN];
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, szImage, 32, NULL, NULL);
+   const Texture * const tex = g_pplayer->m_ptable->GetImage(szImage);
+   if(tex && tex->IsHDR())
+   {
+       ShowError("Cannot use a HDR image (.exr/.hdr) here");
+       return E_FAIL;
+   }
 
-   m_pball->m_pinballDecal = g_pplayer->m_ptable->GetImage(m_pball->m_szImageFront);
+   strcpy_s(m_pball->m_szImageFront, szImage);
+
+   m_pball->m_pinballDecal = tex;
 
    return S_OK;
 }
