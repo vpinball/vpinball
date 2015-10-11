@@ -247,8 +247,7 @@ float4 ps_main_fb_bloom_vert( in VS_OUTPUT_2D IN) : COLOR
 // mirror
 float4 ps_main_fb_mirror(in VS_OUTPUT_2D IN) : COLOR
 {
-   float4 col1 = tex2D(texSamplerMirror, IN.tex0) * mirrorFactor;
-   return col1;
+   return tex2D(texSamplerMirror, IN.tex0) * mirrorFactor;
 }
 
 
