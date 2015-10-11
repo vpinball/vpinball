@@ -151,6 +151,8 @@ VP 10.0.0 Changelog
     because e.g. a mirrored post isn't mirrored under the actual post instead it's rendered a bit below on the playfield and the reflection looks odd.
   - if needed, disable certain elements from the reflection via the respective flag in its options
   
+- Ball reflection on playfield can be enabled/disabled via script for separate balls with "ReflectionEnabled". For example when you create a new ball from a kicker then: kicker1.CreateBall.ReflectionEnabled=1 activates the reflection on the playfield
+
 - new (optional) color grading step
   like in movies or photography, one can now add an (almost) artificial color grading step at the very end of the rendering process
   (see https://docs.unrealengine.com/latest/INT/Engine/Rendering/PostProcessEffects/ColorGrading/index.html
