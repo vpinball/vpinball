@@ -174,8 +174,6 @@ public:
    STDMETHOD(put_AOScale)(/*[in]*/ float newVal);
    STDMETHOD(get_BallReflection)(/*[out, retval]*/ int *pVal);
    STDMETHOD(put_BallReflection)(/*[in]*/ int newVal);
-   STDMETHOD(get_ReflectionStrength)(/*[out, retval]*/ int *pVal);
-   STDMETHOD(put_ReflectionStrength)(/*[in]*/ int newVal);
    STDMETHOD(get_PlayfieldReflectionStrength)(/*[out, retval]*/ int *pVal);
    STDMETHOD(put_PlayfieldReflectionStrength)(/*[in]*/ int newVal);
    STDMETHOD(get_BallTrail)(/*[out, retval]*/ int *pVal);
@@ -703,7 +701,6 @@ public:
    float m_AOScale;
 
    int   m_useReflectionForBalls;
-   int   m_ballReflectionStrength;
    int   m_playfieldReflectionStrength;
    int   m_useTrailForBalls;
    int   m_ballTrailStrength;

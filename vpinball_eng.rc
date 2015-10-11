@@ -14,7 +14,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (United States) resources
+// Englisch (USA) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
@@ -1374,7 +1374,7 @@ BEGIN
     CONTROL         "",IDC_DAYNIGHT_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | TBS_TOP | WS_TABSTOP,9,175,107,19
 END
 
-IDD_PROPTABLE_BALL DIALOGEX 0, 0, 125, 162
+IDD_PROPTABLE_BALL DIALOGEX 0, 0, 125, 145
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
@@ -1383,20 +1383,17 @@ BEGIN
     LTEXT           "&Ball Image",IDC_STATIC,7,9,74,8
     LTEXT           "&Decal",IDC_STATIC,7,32,40,8
     CONTROL         "Logo Mode",IDC_BALL_DECAL_MODE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,50,32,98,8
-    GROUPBOX        "Reflection",IDC_STATIC,7,57,113,55
+    GROUPBOX        "Reflection",IDC_STATIC,7,57,113,40
     LTEXT           "Enable",IDC_STATIC,11,69,25,8
     EDITTEXT        IDC_BALL_REFLECTION,41,67,20,12,ES_AUTOHSCROLL
-    LTEXT           "Ball Strength",IDC_STATIC,12,83,41,8
-    EDITTEXT        IDC_REFLECTION_EDIT,68,81,20,12,ES_AUTOHSCROLL
-    EDITTEXT        IDC_REFLECTION_PLAYFIELD,68,96,20,12,ES_AUTOHSCROLL
-    GROUPBOX        "Trail/Motion Blur",IDC_STATIC,7,115,113,42
-    LTEXT           "Enable",IDC_STATIC,11,127,24,8
-    EDITTEXT        IDC_BALL_TRAIL,41,126,20,12,ES_AUTOHSCROLL
-    LTEXT           "Strength (0..255)",IDC_STATIC,12,142,54,8
-    EDITTEXT        IDC_TRAIL_EDIT,69,139,31,12,ES_AUTOHSCROLL
-    LTEXT           "Playfield Strength",IDC_STATIC,12,97,56,8
-    LTEXT           "(0..255)",IDC_STATIC,89,83,25,8
-    LTEXT           "(0..255)",IDC_STATIC,89,98,25,8
+    EDITTEXT        IDC_REFLECTION_PLAYFIELD,68,82,20,12,ES_AUTOHSCROLL
+    GROUPBOX        "Trail/Motion Blur",IDC_STATIC,7,97,113,42
+    LTEXT           "Enable",IDC_STATIC,11,109,24,8
+    EDITTEXT        IDC_BALL_TRAIL,41,108,20,12,ES_AUTOHSCROLL
+    LTEXT           "Strength (0..255)",IDC_STATIC,12,124,54,8
+    EDITTEXT        IDC_TRAIL_EDIT,69,121,31,12,ES_AUTOHSCROLL
+    LTEXT           "Playfield Strength",IDC_STATIC,12,83,56,8
+    LTEXT           "(0..255)",IDC_STATIC,89,84,25,8
 END
 
 IDD_PROPBACKGLASS_VISUALS DIALOGEX 0, 0, 125, 270
@@ -1945,7 +1942,7 @@ BEGIN
 
     IDD_PROPTABLE_BALL, DIALOG
     BEGIN
-        BOTTOMMARGIN, 151
+        BOTTOMMARGIN, 141
     END
 
     IDD_PROPBACKGLASS_VISUALS, DIALOG
@@ -2562,7 +2559,7 @@ BEGIN
     IDS_STEP                "Step"
 END
 
-#endif    // English (United States) resources
+#endif    // Englisch (USA) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

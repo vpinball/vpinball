@@ -593,8 +593,6 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propput, id(585), helpstring("property TableAdaptiveVSync")] HRESULT TableAdaptiveVSync([in] int newVal);
                 [propget, id(1700), helpstring("property BallReflection")] HRESULT BallReflection([out, retval] int *pVal);
                 [propput, id(1700), helpstring("property BallReflection")] HRESULT BallReflection([in] int newVal);
-                [propget, id(1701), helpstring("property ReflectionStrength")] HRESULT ReflectionStrength([out, retval] int *pVal);
-                [propput, id(1701), helpstring("property ReflectionStrength")] HRESULT ReflectionStrength([in] int newVal);
                 [propget, id(1707), helpstring("property PlayfieldReflectionStrength")] HRESULT PlayfieldReflectionStrength([out, retval] int *pVal);
                 [propput, id(1707), helpstring("property PlayfieldReflectionStrength")] HRESULT PlayfieldReflectionStrength([in] int newVal);
                 [propget, id(1704), helpstring("property BallTrail")] HRESULT BallTrail([out, retval] int *pVal);
