@@ -218,13 +218,14 @@ float4 psBall( in vout IN ) : COLOR
 {
     const float3 v = normalize(/*camera=0,0,0,1*/-IN.worldPos);
     const float3 r = reflect(v, normalize(IN.normal));
-
+    // calculate the intermediate value for the final texture coords. found here http://www.ozone3d.net/tutorials/glsl_texturing_p04.php
+    const float  m = 1.0f/(2.0 * sqrt(r.x*r.x + r.y*r.y + (r.z + 1.0)*(r.z + 1.0)) );
     const float edge = dot(v, r);
     const float lod = (edge > 0.6) ? // edge falloff to reduce aliasing on edges (picks smaller mipmap -> more blur)
 		edge*(6.0*1.0/0.4)-(6.0*0.6/0.4) :
 		0.0;
 
-    const float2 uv0 = cabMode ? float2(r.y*-0.5 + 0.5, r.x*-0.5 + 0.5) : float2(r.x*-0.5 + 0.5, r.y*0.5 + 0.5);
+    const float2 uv0 = cabMode ? float2(r.y*-m + 0.5, r.x*-m + 0.5) : float2(r.x*-m + 0.5, r.y*m + 0.5);
     float3 ballImageColor = tex2Dlod(texSampler0, float4(uv0, 0., lod)).xyz;
     if (!hdrTexture0)
         ballImageColor = InvGamma(ballImageColor);
