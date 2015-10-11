@@ -167,7 +167,7 @@ VP 10.0.0 Changelog
 - images/textures transparency is now -only- based on the alpha channel of the loaded images, no transparency color/hack support anymore
 
 - images can now feature high dynamic range (HDR), via the .exr and .hdr file formats, which is supported on:
-  - the ball image (use the Angular Map format, see http://gl.ict.usc.edu/HDRShop/tutorial/tutorial04.php),
+  - the ball image (use the Mirror Ball Map format, see http://gl.ict.usc.edu/HDRShop/tutorial/tutorial04.php),
   - flashers and (pass-through-mode-)lights and the background image (don't know where to get useful HDR images for these though),
   - and -especially- the environment image (use the Latitude/Longitude format, again see http://gl.ict.usc.edu/HDRShop/tutorial/tutorial04.php)
 
