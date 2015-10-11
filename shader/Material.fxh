@@ -149,12 +149,12 @@ float3 lightLoop(const float3 pos, float3 N, const float3 V, float3 diffuse, flo
    }
          
    if((Roughness_WrapL_Edge_IsMetal.w == 0.0) && (diffuseMax > 0.0))
-      color += DoEnvmapDiffuse(N, diffuse);
+      color += DoEnvmapDiffuse(normalize(mul(float4(N,0.0), matViewInverseInverseTranspose).xyz), diffuse); // trafo back to world for lookup into world space envmap
 
    if((glossyMax > 0.0) || (specularMax > 0.0))
    {
 	   float3 R = (2.0*NdotV)*N - V; // reflect(-V,n);
-	   R = normalize(mul(float4(R,0.0), matViewInverse).xyz); // trafo back to world
+	   R = normalize(mul(float4(R,0.0), matViewInverseInverseTranspose).xyz); // trafo back to world for lookup into world space envmap
 
 	   const float2 Ruv = float2( // remap to 2D envmap coords
 			atan2(R.y, R.x) * (0.5/PI) + 0.5,
