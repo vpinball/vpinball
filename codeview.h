@@ -73,14 +73,15 @@ public:
    int SortAgainstValue(void *pv);
 };
 
-class UserData
+class UserData 
 {
 public:
-	string functionName;
-	string functionDesc;
-	int functionLine;
+	string strKeyName;
+	string strDescription;
+	int intLineNum;
 
 	UserData();
+	static bool FuncSortUD (const UserData &first, const UserData &second);
 	UserData(const int LineNo, const string &Desc, const string &Name);
 	~UserData();
 };
@@ -93,7 +94,8 @@ class CodeViewer :
    public IActiveScriptSite,
    public IActiveScriptSiteWindow,
    public IInternetHostSecurityManager,
-   public IServiceProvider
+   public IServiceProvider,
+	public UserData
 {
 public:
    CodeViewer();
@@ -239,10 +241,10 @@ public:
    void SetCaption(char *szCaption);
 	string upperCase(string input);
 
-	void ParseVPCore();
+	//void ParseVPCore();
 	bool ShowTooltip(SCNotification *Scn);
 	void ShowAutoComplete(SCNotification *Scn);
-	string lowerCase(string input);
+	static string lowerCase(string input);
 	void szLower(char * incstr);
 	void szUpper(char * incstr);
 	void ParseForFunction(); 
