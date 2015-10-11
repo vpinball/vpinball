@@ -841,13 +841,16 @@ void Player::UpdateBallShaderMatrix()
    Matrix3D temp;
    memcpy(temp.m, matWorldView.m, 4 * 4 * sizeof(float));
    temp.Invert();
+   D3DXMATRIX matWorldViewInv;
+   memcpy(matWorldViewInv.m, temp.m, 4 * 4 * sizeof(float));
    temp.Transpose();
    D3DXMATRIX matWorldViewInvTrans;
    memcpy(matWorldViewInvTrans.m, temp.m, 4 * 4 * sizeof(float));
 
    ballShader->SetMatrix("matWorldViewProj", &matWorldViewProj);
    ballShader->SetMatrix("matWorldView", &matWorldView);
-   //ballShader->SetMatrix("matWorldViewInverseTranspose", &matWorldViewInvTrans);
+   ballShader->SetMatrix("matWorldViewInverse", &matWorldViewInv);
+   ballShader->SetMatrix("matWorldViewInverseTranspose", &matWorldViewInvTrans);
    ballShader->SetMatrix("matView", &matView);
 
    memcpy(temp.m, matView.m, 4 * 4 * sizeof(float));
@@ -3950,6 +3953,7 @@ void Player::DrawBalls()
          continue;
 
       ballShader->SetVector("position_radius", &pos_rad);
+      //ballShader->SetFloat("reflection_ball_playfield", (float)m_ptable->m_playfieldReflectionStrength * (float)(1.0 / 255.0));
       m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
       ballShader->SetTechnique("RenderBall");
 

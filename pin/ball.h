@@ -97,9 +97,10 @@ public:
 
    float m_bulb_intensity_scale; // to dampen/increase contribution of the bulb lights (locally/by script)
 
+   int  m_reflectionStrength;
+
    bool m_frozen;
    bool m_reflectionEnabled;
-   int  m_reflectionStrength;
 
    static unsigned int ballID; // increased for each ball created to have an unique ID for scripts for each ball
 };
