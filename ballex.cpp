@@ -300,6 +300,38 @@ STDMETHODIMP BallEx::put_BulbIntensityScale(float newVal)
    return S_OK;
 }
 
+STDMETHODIMP BallEx::get_ReflectionEnabled(VARIANT_BOOL *pVal)
+{
+   *pVal = (VARIANT_BOOL)FTOVB(m_pball->m_reflectionEnabled);
+
+   return S_OK;
+}
+
+STDMETHODIMP BallEx::put_ReflectionEnabled(VARIANT_BOOL newVal)
+{
+   m_pball->m_reflectionEnabled = VBTOF(newVal);
+
+   return S_OK;
+}
+
+STDMETHODIMP BallEx::get_ReflectionStrength(int *pVal)
+{
+   CHECKSTALEBALL
+
+      *pVal = m_pball->m_reflectionStrength;
+
+   return S_OK;
+}
+
+STDMETHODIMP BallEx::put_ReflectionStrength(int newVal)
+{
+   CHECKSTALEBALL
+
+      m_pball->m_reflectionStrength = newVal;
+
+   return S_OK;
+}
+
 STDMETHODIMP BallEx::DestroyBall(int *pVal)
 {
    int cnt = 0;

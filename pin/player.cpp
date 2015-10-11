@@ -3805,7 +3805,7 @@ void Player::DrawBalls()
    }
 
    bool drawReflection = ((m_fReflectionForBalls && (m_ptable->m_useReflectionForBalls == -1)) || (m_ptable->m_useReflectionForBalls == 1));
-
+   bool oldDrawReflection = drawReflection;
    //     if (reflectionOnly && !drawReflection)
    //        return;
 
@@ -3815,6 +3815,11 @@ void Player::DrawBalls()
    for (unsigned i = 0; i < m_vball.size(); i++)
    {
       Ball * const pball = m_vball[i];
+
+      if (oldDrawReflection && !pball->m_reflectionEnabled)
+         drawReflection = false;
+      if (oldDrawReflection && pball->m_reflectionEnabled)
+         drawReflection = true;
 
       // collect the x nearest lights that can reflect on balls
       Light* light_nearest[MAX_BALL_LIGHT_SOURCES];
@@ -3881,7 +3886,7 @@ void Player::DrawBalls()
 
       const float maxz = pball->m_defaultZ + 3.0f;
       const float minz = pball->m_defaultZ - 0.1f;
-      if ((m_fReflectionForBalls && (m_ptable->m_useReflectionForBalls == -1)) || (m_ptable->m_useReflectionForBalls == 1))
+      if ((m_fReflectionForBalls && pball->m_reflectionEnabled && (m_ptable->m_useReflectionForBalls == -1)) || (m_ptable->m_useReflectionForBalls == 1))
          // don't draw reflection if the ball is not on the playfield (e.g. on a ramp/kicker)
          drawReflection = !((zheight > maxz) || pball->m_frozen || (pball->m_pos.z < minz));
 

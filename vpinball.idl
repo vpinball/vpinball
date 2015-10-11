@@ -1961,6 +1961,10 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propput, id(DISPID_Name), helpstring("property Name")] HRESULT Name([in] BSTR newVal);
                 [propget, id(451), helpstring("property BulbIntensityScale")] HRESULT BulbIntensityScale([out, retval] float *pVal);
                 [propput, id(451), helpstring("property BulbIntensityScale")] HRESULT BulbIntensityScale([in] float newVal);
+                [propget, id(484), helpstring("property ReflectionEnabled")] HRESULT ReflectionEnabled([out, retval] VARIANT_BOOL *pVal);
+                [propput, id(484), helpstring("property ReflectionEnabled")] HRESULT ReflectionEnabled([in] VARIANT_BOOL newVal);
+                [propget, id(485), helpstring("property ReflectionStrength")] HRESULT ReflectionStrength([out, retval] int *pVal);
+                [propput, id(485), helpstring("property ReflectionStrength")] HRESULT ReflectionStrength([in] int newVal);
                 [id(100), helpstring("method DestroyBall")] HRESULT DestroyBall([out, retval] int *pVal);
         };
 
