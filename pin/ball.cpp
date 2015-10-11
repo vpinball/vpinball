@@ -28,6 +28,7 @@ Ball::Ball()
    m_orientation.Identity();
    m_inertia = (float)(2.0 / 5.0) * m_radius*m_radius * m_mass;
    m_bulb_intensity_scale = 1.0f;
+   m_reflectionEnabled = true;
 
    memset(m_szImage, 0, MAXTOKEN);
    memset(m_szImageFront, 0, MAXTOKEN);

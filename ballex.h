@@ -62,6 +62,10 @@ public:
    STDMETHOD(DestroyBall)(/*[out, retval]*/ int *pVal);
    STDMETHOD(get_BulbIntensityScale)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_BulbIntensityScale)(/*[in]*/ float newVal);
+   STDMETHOD(get_ReflectionEnabled)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   STDMETHOD(put_ReflectionEnabled)(/*[in]*/ VARIANT_BOOL newVal);
+   STDMETHOD(get_ReflectionStrength)(/*[out, retval]*/ int *pVal);
+   STDMETHOD(put_ReflectionStrength)(/*[in]*/ int newVal);
 
    virtual void FireGroupEvent(int dispid) {}
    virtual IDispatch *GetDispatch() { return ((IDispatch *) this); }

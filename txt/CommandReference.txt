@@ -82,7 +82,6 @@ BallDecalMode(bool) - switch between using the ball decal as ball logo or ball '
 *RenderDecals(bool) - default=true
 *TableAdaptiveVSync(int) - sets adaptive vsync option for this table (-1=use global setting, 0=off, 1=automatic, any other number is refresh rate in Hz)
 *BallReflection - enable ball reflection on table. depending on the global video setting 'Reflect Ball on Playfield' this is on or off. Or it is defined specific for this table.
-*ReflectionStrength(int) - defines the reflection strength of the ball reflection (0-255)
 *PlayfieldReflectionStrength(int) - defines the reflection strength of the playfield on the ball (0-255)
 *BallTrail - enable ball trail/motion blur on table. depending on the global video setting 'Ball Trail/Motion Blur' this is on or off. Or it is defined specific for this table.
 *TrailStrength(int) - defines the strength of the ball trail (0-255)
@@ -659,6 +658,7 @@ VelZ(float)
 Image(string)
 ID(int) - gets a unique ID for each ball created or allows to set an artificial one to distinguish different balls on the table
 BulbIntensityScale(float) - allows to dampen/scale the intensity of (bulb-)light reflections on each ball (e.g. to simulate shadowing in the ball lane, etc)
+ReflectionEnabled(bool) - if playfield reflects objects this can be used to enable/disable the reflection for a specific ball
 
 RUBBER
 ==============================================================================================================================================
