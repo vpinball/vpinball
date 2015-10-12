@@ -1014,7 +1014,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 
                for (unsigned i = 0; i < g_pplayer->m_vball.size(); i++)
                {
-                  Ball *pBall = g_pplayer->m_vball[i];
+                  Ball * const pBall = g_pplayer->m_vball[i];
                   const float dx = fabsf(vertex.x - pBall->m_pos.x);
                   const float dy = fabsf(vertex.y - pBall->m_pos.y);
                   if (dx < 50.f && dy < 50.f)

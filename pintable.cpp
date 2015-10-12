@@ -6447,7 +6447,8 @@ void PinTable::ReImportImage(HWND hwndListView, Texture *ppi, char *filename)
 
 bool PinTable::ExportImage(HWND hwndListView, Texture *ppi, char *szfilename)
 {
-   if (ppi->m_ppb != NULL)return ppi->m_ppb->WriteToFile(szfilename);
+   if (ppi->m_ppb != NULL)
+      return ppi->m_ppb->WriteToFile(szfilename);
    else if (ppi->m_pdsBuffer != NULL)
    {
       HANDLE hFile = CreateFile(szfilename, GENERIC_WRITE, FILE_SHARE_READ,

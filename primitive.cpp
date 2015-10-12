@@ -340,6 +340,7 @@ void Primitive::GetHitShapes(Vector<HitObject> * const pvho)
          prog_vertices[i].z = vertices[i].z;
       }
       std::vector<ProgMesh::tridata> prog_indices(m_mesh.NumIndices() / 3);
+	  {
       size_t i2 = 0;
       for (size_t i = 0; i < m_mesh.NumIndices(); i += 3)
       {
@@ -352,7 +353,7 @@ void Primitive::GetHitShapes(Vector<HitObject> * const pvho)
       }
       if (i2 < prog_indices.size())
          prog_indices.resize(i2);
-
+	  }
       std::vector<unsigned int> prog_map;
       std::vector<unsigned int> prog_perm;
       ProgMesh::ProgressiveMesh(prog_vertices, prog_indices, prog_map, prog_perm);
