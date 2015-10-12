@@ -234,7 +234,6 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
    : m_texMan(*this)
 {
    m_adapter = D3DADAPTER_DEFAULT;     // for now, always use the default adapter
-   HRESULT hr;
 
    mDwmIsCompositionEnabled = NULL;
    mDwmFlush = NULL;
@@ -249,7 +248,7 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
    mDirect3DCreate9Ex = (pD3DC9Ex)GetProcAddress(GetModuleHandle(TEXT("d3d9.dll")), "Direct3DCreate9Ex"); //!! remove as soon as win xp support dropped and use static link
    if (mDirect3DCreate9Ex)
    {
-      hr = mDirect3DCreate9Ex(D3D_SDK_VERSION, &m_pD3DEx);
+      const HRESULT hr = mDirect3DCreate9Ex(D3D_SDK_VERSION, &m_pD3DEx);
       if (FAILED(hr))
          ReportError("Fatal Error: unable to create D3D9Ex object!", hr, __FILE__, __LINE__);
 
@@ -395,7 +394,7 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
    else
 #endif
    {
-      hr = m_pD3D->CreateDevice(
+      HRESULT hr = m_pD3D->CreateDevice(
          m_adapter,
          devtype,
          hwnd,
@@ -416,7 +415,7 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
    }
 
    // Retrieve a reference to the back buffer.
-   hr = m_pD3DDevice->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &m_pBackBuffer);
+   HRESULT hr = m_pD3DDevice->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &m_pBackBuffer);
    if (FAILED(hr))
       ReportError("Fatal Error: unable to create back buffer!", hr, __FILE__, __LINE__);
 

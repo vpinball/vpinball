@@ -61,8 +61,8 @@ UserData::UserData(const int LineNo, const string &Desc, const string &Name)
 
 bool UserData::FuncSortUD (const UserData &first, const UserData &second)
 {
-  string strF = CodeViewer::lowerCase(first.strKeyName);
-  string strS = CodeViewer::lowerCase(second.strKeyName);
+  const string strF = CodeViewer::lowerCase(first.strKeyName);
+  const string strS = CodeViewer::lowerCase(second.strKeyName);
   basic_string <char>::size_type i=0;
   while ( (i<strF.length()) && (i<strS.length() ) )
   {
@@ -86,11 +86,11 @@ bool FindOrInsertUD(list<UserData>* ListIn, UserData ud)
 	list<UserData>::iterator i = ListIn->begin();
 	int counter = ListIn->size();
 	int result = -1;
-	string strSearchData =  CodeViewer::lowerCase( ud.strKeyName );
+	const string strSearchData =  CodeViewer::lowerCase( ud.strKeyName );
 
 	while (counter)
 	{
-		string strTableData = CodeViewer::lowerCase(i->strKeyName);
+		const string strTableData = CodeViewer::lowerCase(i->strKeyName);
 		result = strTableData.compare(strSearchData);
 		if (result < 0)
 		{
@@ -126,13 +126,13 @@ bool FindOrInsertStringIntoAutolist(list<string>* ListIn, string strIn)
 		ListIn->push_front(strIn);
 		return true;
 	}
-	string strLowerIn = CodeViewer::lowerCase(strIn);
+	const string strLowerIn = CodeViewer::lowerCase(strIn);
 	list<string>::iterator i = ListIn->begin();
 	int counter = ListIn->size();
 	int result = -1;
 	while (counter)
 	{
-		string strLowerComp = CodeViewer::lowerCase(string(i->data()));
+		const string strLowerComp = CodeViewer::lowerCase(string(i->data()));
 		result = strLowerComp.compare(strLowerIn);
 		if (result < 0)
 		{
@@ -1869,7 +1869,7 @@ void CodeViewer::ParseForFunction() // & Subs & Collections AndyS - WIP - Totall
 					linechar = line[Subfinish];
 				}
 				sSubName = line.substr(Substart,Subfinish-Substart);
-				UserData ud(i ,line.substr( 0, line.length()-2 ) , sSubName );
+				const UserData ud(i ,line.substr( 0, line.length()-2 ) , sSubName );
 				FindOrInsertUD( g_UserFunc , ud );
          }
       }
