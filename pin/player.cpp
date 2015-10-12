@@ -336,6 +336,7 @@ void Player::Shutdown()
       ballShader->Core()->SetTexture("Texture0", NULL);
       ballShader->Core()->SetTexture("Texture1", NULL);
       ballShader->Core()->SetTexture("Texture2", NULL);
+      ballShader->Core()->SetTexture("Texture3", NULL);
       delete ballShader;
       ballShader = 0;
    }
@@ -893,6 +894,12 @@ void Player::InitBallShader()
    const float Roughness = 0.8f;
    const D3DXVECTOR4 rwem(exp2f(10.0f * Roughness + 1.0f), 0.f, 1.f, 0.0f); // no metal, as ball collects the diffuse playfield which uses this flag!
    ballShader->SetVector("Roughness_WrapL_Edge_IsMetal", &rwem);
+
+   Texture * const playfield = m_ptable->GetImage((char *)m_ptable->m_szImage);
+   if (playfield)
+      ballShader->SetTexture("Texture1", playfield);
+
+   ballShader->SetTexture("Texture2", m_pin3d.m_device_envRadianceTexture);
 
    assert(ballIndexBuffer == NULL);
    const bool lowDetailBall = m_ptable->GetDetailLevel() < 10;
@@ -3903,10 +3910,6 @@ void Player::DrawBalls()
             zheight *= (m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] * 0.96f);
       }
 
-      Texture * const playfield = m_ptable->GetImage((char *)m_ptable->m_szImage);
-      if (playfield)
-         ballShader->SetTexture("Texture1", playfield);
-
       // ************************* draw the ball itself ****************************
       if (m_antiStretchBall && m_ptable->m_BG_rotation[m_ptable->m_BG_current_set] != 0.0f)
       {
@@ -3942,7 +3945,7 @@ void Player::DrawBalls()
       }
 
       if (pball->m_pinballDecal)
-         ballShader->SetTexture("Texture2", pball->m_pinballDecal);
+         ballShader->SetTexture("Texture3", pball->m_pinballDecal);
 
       const bool lowDetailBall = m_ptable->GetDetailLevel() < 10;
 
@@ -3984,7 +3987,7 @@ void Player::DrawBalls()
                vec.x = pball->m_oldpos[io].x - pball->m_oldpos[i3].x;
                vec.y = pball->m_oldpos[io].y - pball->m_oldpos[i3].y;
                vec.z = pball->m_oldpos[io].z - pball->m_oldpos[i3].z;
-               const float bc = (float)m_ptable->m_ballTrailStrength * powf(1.f - 1.f / max(vec.Length(), 1.0f), 16.0f); //!! 16=magic alpha falloff
+               const float bc = (float)m_ptable->m_ballTrailStrength * (float)(1.0/255.0) * powf(1.f - 1.f / max(vec.Length(), 1.0f), 64.0f); //!! 64=magic alpha falloff
                const float r = min(pball->m_radius*0.9f, 2.0f*pball->m_radius / powf((float)(i2 + 2), 0.6f)); //!! consts are for magic radius falloff
 
                if (bc > 0.f && r > FLT_MIN)
@@ -4011,7 +4014,7 @@ void Player::DrawBalls()
                   rgv3D[3].y = pball->m_oldpos[io].y - n.y;
                   rgv3D[3].z = pball->m_oldpos[io].z - n.z;
 
-                  rgv3D[0].nx = rgv3D[1].nx = rgv3D[2].nx = rgv3D[3].nx = bc*(float)(1.0 / 255.0); //!! abuses normal for now for the color/alpha
+                  rgv3D[0].nx = rgv3D[1].nx = rgv3D[2].nx = rgv3D[3].nx = bc; //!! abuses normal for now for the color/alpha
 
                   rgv3D[0].tu = 0.5f + (float)(i2)*(float)(1.0 / (2.0*(MAX_BALL_TRAIL_POS - 1)));
                   rgv3D[0].tv = 0.f;

@@ -13,8 +13,9 @@ float4x4 matWorldViewInverseTranspose;
 float4x4 matView;
 float4x4 matViewInverseInverseTranspose;
 texture  Texture0; // base texture
-texture  Texture1; // envmap
+texture  Texture1; // playfield (should be envmap if specular or glossy needed/enabled, see below)
 texture  Texture2; // envmap radiance
+texture  Texture3; // decal
 
 sampler2D texSampler0 : TEXUNIT0 = sampler_state // base texture
 {
@@ -26,7 +27,7 @@ sampler2D texSampler0 : TEXUNIT0 = sampler_state // base texture
 	//ADDRESSV  = Wrap;
 };
 
-sampler2D texSampler1 : TEXUNIT1 = sampler_state // playfield (should actually be environment if specular and glossy needed in lightloop!)
+sampler2D texSampler1 : TEXUNIT1 = sampler_state // playfield (should actually be environment if specular and glossy needed/enabled in lightloop!)
 {
 	Texture	  = (Texture1);
     MIPFILTER = LINEAR; //!! ?
@@ -36,7 +37,7 @@ sampler2D texSampler1 : TEXUNIT1 = sampler_state // playfield (should actually b
 	ADDRESSV  = Wrap;
 };
 
-sampler2D texSampler2 : TEXUNIT2 = sampler_state // see below (should actually be diffuse environment contribution/radiance if diffuse needed in lightloop!)
+sampler2D texSampler2 : TEXUNIT2 = sampler_state // diffuse environment contribution/radiance
 {
 	Texture	  = (Texture2);
     MIPFILTER = NONE;
@@ -46,9 +47,9 @@ sampler2D texSampler2 : TEXUNIT2 = sampler_state // see below (should actually b
 	ADDRESSV  = Wrap;
 };
 
-sampler2D texSampler7 : TEXUNIT2 = sampler_state // ball decal
+sampler2D texSampler7 : TEXUNIT3 = sampler_state // ball decal
 {
-	Texture	  = (Texture2);
+	Texture	  = (Texture3);
     MIPFILTER = LINEAR;
     MAGFILTER = LINEAR;
     MINFILTER = LINEAR;
@@ -206,10 +207,13 @@ float3 ballLightLoop(float3 pos, float3 N, float3 V, float3 diffuse, float3 glos
          color += DoPointLight(pos, N, V, diffuse, glossy, edge, Roughness_WrapL_Edge_IsMetal.x, i); // no clearcoat needed as only pointlights so far
    }
 
+   if((Roughness_WrapL_Edge_IsMetal.w == 0.0) && (diffuseMax > 0.0))
+      color += DoEnvmapDiffuse(normalize(mul(float4(N, 0.0), matViewInverseInverseTranspose).xyz), diffuse); // trafo back to world for lookup into world space envmap
+
    if(specularMax > 0.0)
       color += specular; //!! blend? //!! Fresnel with 1st layer?
   
-   return /*Gamma(ToneMap(*/color/*))*/;
+   return color;
 }
 
 
@@ -262,7 +266,7 @@ float4 psBall( in vout IN ) : COLOR
        playfieldColor = lightLoop(playfield_hit, playfield_normal, -r, playfieldColor, float3(0.,0.,0.), float3(0.,0.,0.), 1.0);
 
 	   //!! magic falloff & weight the rest in from the ballImage
-	   const float weight = /*reflection_ball_playfield*/NdotR; //!! sqrt(NdotR)?
+	   const float weight = /*reflection_ball_playfield**/NdotR*NdotR;
 	   playfieldColor *= weight;
 	   playfieldColor += ballImageColor*(1.0-weight);
 	}
