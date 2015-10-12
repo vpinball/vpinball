@@ -67,6 +67,8 @@ float4   ballStretch_invTableRes;
 
 float3x3 orientation;
 
+float    playfield_height;
+
 bool     decalMode;
 bool     cabMode;
 bool     hdrTexture0;
@@ -248,7 +250,7 @@ float4 psBall( in vout IN ) : COLOR
 	float3 playfieldColor;
 	if(/*(reflection_ball_playfield > 0.0) &&*/ (NdotR > 0.0))
 	{
-       const float3 playfield_p0 = mul(float4(/*pos=*/0.,0.,0.,1.), matWorldView).xyz;
+       const float3 playfield_p0 = mul(float4(/*playfield_pos=*/0.,0.,playfield_height,1.), matWorldView).xyz;
 	   const float t = dot(playfield_normal, IN.worldPos - playfield_p0) / NdotR;
        const float3 playfield_hit = IN.worldPos - t*r;
 
