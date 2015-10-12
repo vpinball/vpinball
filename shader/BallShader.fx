@@ -219,7 +219,7 @@ float4 psBall( in vout IN ) : COLOR
     const float3 v = normalize(/*camera=0,0,0,1*/-IN.worldPos);
     const float3 r = reflect(v, normalize(IN.normal));
     // calculate the intermediate value for the final texture coords. found here http://www.ozone3d.net/tutorials/glsl_texturing_p04.php
-    const float  m = 1.0f/(2.0 * sqrt(r.x*r.x + r.y*r.y + (r.z + 1.0)*(r.z + 1.0)) );
+	const float  m = (r.z + 1.0 > 0.) ? 0.3535533905932737622 / sqrt(r.z + 1.0) : 0.; // 0.353...=0.5/sqrt(2)
     const float edge = dot(v, r);
     const float lod = (edge > 0.6) ? // edge falloff to reduce aliasing on edges (picks smaller mipmap -> more blur)
 		edge*(6.0*1.0/0.4)-(6.0*0.6/0.4) :
@@ -253,7 +253,7 @@ float4 psBall( in vout IN ) : COLOR
        const float3 playfield_hit = IN.worldPos - t*r;
 
        const float2 uv = mul(float4(playfield_hit,1.), matWorldViewInverse).xy * ballStretch_invTableRes.zw;
-	   playfieldColor = (t < 0.) ? float4(0., 0., 0., 1.) // happens for example when inside kicker
+	   playfieldColor = (t < 0.) ? float3(0., 0., 0.) // happens for example when inside kicker
                                  : InvGamma(tex2Dlod(texSampler1, float4(uv, 0., 0.)).xyz); //!! rather use screen space sample from previous frame??
 
        //!! hack to get some lighting on sample, but only diffuse, the rest is not setup correctly anyhow
