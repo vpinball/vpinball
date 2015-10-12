@@ -61,6 +61,11 @@ float4 Screen (const float4 cBase, const float4 cBlend)
 	return 1.0 - (1.0 - cBase) * (1.0 - cBlend);
 }
 
+float4 ScreenHDR (const float4 cBase, const float4 cBlend)
+{
+	return 1.0 - (1.0 - saturate(cBase)) * (1.0 - saturate(cBlend));
+}
+
 float4 Multiply (const float4 cBase, const float4 cBlend, const float percent)
 {
 	return cBase * cBlend*percent;
@@ -83,6 +88,28 @@ float4 Overlay (const float4 cBase, const float4 cBlend)
 	// interpolate between the two, 
 	// using color as influence value
 	cNew = lerp(cBase*cBlend*2.0, 1.0-2.0*(1.0-cBase)*(1.0-cBlend), cNew);
+
+	//cNew.a = 1.0f;
+	return cNew;
+}
+
+float4 OverlayHDR (const float4 cBase, const float4 cBlend)
+{
+	// overlay has two output possbilities
+	// which is taken is decided if pixel value
+	// is below half or not
+
+	float4 cNew = step(0.5, cBase);
+	
+	// we pick either solution
+	// depending on pixel
+	
+	// first is case of < 0.5
+	// second is case for >= 0.5
+	
+	// interpolate between the two, 
+	// using color as influence value
+	cNew = lerp(cBase*cBlend*2.0, 1.0-2.0*(1.0-saturate(cBase))*(1.0-saturate(cBlend)), cNew);
 
 	//cNew.a = 1.0f;
 	return cNew;

@@ -124,10 +124,8 @@ float4 PS_LightWithTexel(in VS_LIGHT_OUTPUT IN) : COLOR
         const float3 lcolor = lerp(lightColor2_falloff_power.xyz, lightColor_intensity.xyz, sqrt(len));
         color += float4(lcolor*(atten*lightColor_intensity.w),
                         saturate(atten*lightColor_intensity.w));
-        pixel.xyz = saturate(pixel.xyz); // could be HDR
-        color.xyz = saturate(color.xyz); // because of overlay and screen restrictions
-        color = Overlay(pixel, color);
-        color = Screen(pixel, color);
+        color = OverlayHDR(pixel, color); // could be HDR //!! have mode to choose: if simple mode picked and surface images match then can skip lighting texel above and JUST alpha blend with this here
+        color = ScreenHDR(pixel, color);
     }
 
     return color;

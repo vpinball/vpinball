@@ -94,13 +94,13 @@ float4 ps_main_textureAB_noLight(in VS_OUTPUT_2D IN) : COLOR
    float4 result = staticColor_Alpha;
 
    if ( alphaTestValueAB_filterMode_addBlend.z == Filter_Overlay )
-      result *= Overlay(saturate(pixel1),saturate(pixel2));
+      result *= OverlayHDR(pixel1,pixel2); // could be HDR
    else if ( alphaTestValueAB_filterMode_addBlend.z == Filter_Multiply )
       result *= Multiply(pixel1,pixel2, amount__blend_modulate_vs_add.x);
    else if ( alphaTestValueAB_filterMode_addBlend.z == Filter_Additive )
       result *= Additive(pixel1,pixel2, amount__blend_modulate_vs_add.x);
    else if ( alphaTestValueAB_filterMode_addBlend.z == Filter_Screen )
-      result *= Screen(saturate(pixel1),saturate(pixel2));
+      result *= ScreenHDR(pixel1,pixel2); // could be HDR
 
    if(alphaTestValueAB_filterMode_addBlend.w == 0.)
       return result;
