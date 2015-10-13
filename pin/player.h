@@ -150,9 +150,9 @@ public:
    virtual ~Player();
 
    HRESULT Init(PinTable * const ptable, const HWND hwndProgress, const HWND hwndProgressName);
-   void RenderStaticMirror(const bool onlyBalls = false);
-   void RenderDynamicMirror(const bool onlyBalls = false);
-   void RenderMirrorOverlay(bool onlyStatic = true);
+   void RenderStaticMirror(const bool onlyBalls);
+   void RenderDynamicMirror(const bool onlyBalls);
+   void RenderMirrorOverlay(const bool onlyStatic);
    void InitBallShader();
    void InitWindow();
    void InitKeys();

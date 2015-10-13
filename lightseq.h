@@ -189,7 +189,7 @@ public:
    LightSeqData 	m_d;
    LightSeqCenter	m_LightSeqCenter;
 
-   void		RenderAnimation();
+   void		Animate();
 
 private:
    LightSeqAnimObject m_lightseqanim;

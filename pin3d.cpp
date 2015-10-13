@@ -15,6 +15,8 @@ Pin3D::Pin3D()
    m_pddsStaticZ = NULL;
    m_envRadianceTexture = NULL;
    m_device_envRadianceTexture = NULL;
+   m_mirrorZBuffer = NULL;
+   m_mirrorBuffer = NULL;
    tableVBuffer = NULL;
    tableIBuffer = NULL;
 }
@@ -54,6 +56,10 @@ Pin3D::~Pin3D()
    {
       SAFE_RELEASE(m_mirrorZBuffer);
       SAFE_RELEASE_NO_RCC(m_mirrorBuffer);
+   }
+   else
+   {
+      assert(m_mirrorZBuffer == NULL && m_mirrorBuffer == NULL);
    }
 
    delete m_pd3dDevice;

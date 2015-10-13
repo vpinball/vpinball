@@ -587,7 +587,6 @@ TimerInterval(int)
 Threshold(float)
 *Image(string) - texture name
 *SideColor(OLE_COLOR)
-*ImageAlignment(ImageAlignment) - 0=ImageAlignWorld, 1=ImageAlignTopLeft, 2=ImageAlignCenter
 *HeightBottom(float)
 *HeightTop(float)
 *FaceColor(OLE_COLOR)

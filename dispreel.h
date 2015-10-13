@@ -93,9 +93,9 @@ public:
    // ISupportsErrorInfo
    STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
-   void        RenderAnimation();
+   void        Animate();
 
-   void		WriteRegDefaults();
+   void        WriteRegDefaults();
 
    PinTable    *m_ptable;
 

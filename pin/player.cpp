@@ -1251,7 +1251,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
    // 0 means disable limiting of draw-ahead queue
    m_limiter.Init(m_fMaxPrerenderedFrames);
 
-   Render();
+   Render(); //!! why here already? potentially not all initialized yet??
 
    return S_OK;
 }
@@ -1378,7 +1378,6 @@ void Player::RenderDynamicMirror(const bool onlyBalls)
       UpdateBasicShaderMatrix();
 
    UpdateBallShaderMatrix();
-   m_pin3d.m_pd3dDevice->BeginScene();
 
    m_ptable->m_fReflectionEnabled = true;
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE); // re-init/thrash cache entry due to the hacky nature of the table mirroring
@@ -1400,12 +1399,9 @@ void Player::RenderDynamicMirror(const bool onlyBalls)
          m_vHitNonTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
    }
 
-
    m_ptable->m_fReflectionEnabled = false;
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE); // re-init/thrash cache entry due to the hacky nature of the table mirroring
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
-
-   m_pin3d.m_pd3dDevice->EndScene();
 
    // and flip back camera
    viewMat._33 = -viewMat._33;
@@ -1423,7 +1419,7 @@ void Player::RenderDynamicMirror(const bool onlyBalls)
    SAFE_RELEASE_NO_RCC(tmpMirrorSurface);
 }
 
-void Player::RenderMirrorOverlay(bool onlyStatic)
+void Player::RenderMirrorOverlay(const bool onlyStatic)
 {
    // render the mirrored texture over the playfield
    if (onlyStatic)
@@ -1457,7 +1453,6 @@ void Player::InitStatic(HWND hwndProgress)
       ph->RenderSetup(m_pin3d.m_pd3dDevice);
    }
 
-
    m_pin3d.m_pd3dDevice->BeginScene();
 
    // Direct all renders to the "static" buffer.
@@ -1480,11 +1475,11 @@ void Player::InitStatic(HWND hwndProgress)
          RenderStaticMirror(true);
       else
          if (m_ptable->m_fReflectElementsOnPlayfield)
-            RenderStaticMirror();
+            RenderStaticMirror(false);
 
       m_pin3d.RenderPlayfieldGraphics();
       if (m_ptable->m_fReflectElementsOnPlayfield)
-         RenderMirrorOverlay();
+         RenderMirrorOverlay(true);
 
       // now render everything else
       for (int i = 0; i < m_ptable->m_vedit.Size(); i++)
@@ -2896,13 +2891,17 @@ void Player::CheckAndUpdateRegions()
 
       if (!m_ptable->m_fReflectElementsOnPlayfield && drawBallReflection)
       {
+         m_pin3d.m_pd3dDevice->BeginScene();
          RenderDynamicMirror(true);
          RenderMirrorOverlay(false);
+         m_pin3d.m_pd3dDevice->EndScene();
       }
       else if (m_ptable->m_fReflectElementsOnPlayfield)
       {
-         RenderDynamicMirror();
+         m_pin3d.m_pd3dDevice->BeginScene();
+         RenderDynamicMirror(false);
          RenderMirrorOverlay(false);
+         m_pin3d.m_pd3dDevice->EndScene();
       }
    }
    m_pin3d.m_pd3dDevice->CopySurface(m_pin3d.m_pddsZBuffer, m_pin3d.m_pddsStaticZ);
