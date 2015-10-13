@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="VPinball"
 	ProjectGUID="{11B81620-ADF1-46FB-98B0-AF83AB34CAAC}"
 	RootNamespace="VPinball"
@@ -2428,7 +2428,7 @@
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="&quot;$(DXSDK_DIR)\Include&quot;;inc;pin;media"
+				AdditionalIncludeDirectories="&quot;$(DXSDK_DIR)\Include&quot;;shader;inc;pin;media"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
 				StringPooling="true"
 				ExceptionHandling="0"
@@ -17914,7 +17914,19 @@
 			Filter="h;hpp;hxx;hm;inl"
 			>
 			<File
+				RelativePath=".\pin\ball.h"
+				>
+			</File>
+			<File
 				RelativePath=".\ballex.h"
+				>
+			</File>
+			<File
+				RelativePath=".\pin\ballMesh.h"
+				>
+			</File>
+			<File
+				RelativePath=".\math\bbox.h"
 				>
 			</File>
 			<File
@@ -17927,6 +17939,14 @@
 			</File>
 			<File
 				RelativePath=".\codeview.h"
+				>
+			</File>
+			<File
+				RelativePath=".\pin\collide.h"
+				>
+			</File>
+			<File
+				RelativePath=".\pin\collideex.h"
 				>
 			</File>
 			<File
@@ -17994,11 +18014,27 @@
 				>
 			</File>
 			<File
+				RelativePath=".\pin\hitable.h"
+				>
+			</File>
+			<File
+				RelativePath=".\pin\hitflipper.h"
+				>
+			</File>
+			<File
+				RelativePath=".\pin\hitplunger.h"
+				>
+			</File>
+			<File
 				RelativePath=".\hitrectsur.h"
 				>
 			</File>
 			<File
 				RelativePath=".\hitsur.h"
+				>
+			</File>
+			<File
+				RelativePath=".\pin\hittimer.h"
 				>
 			</File>
 			<File
@@ -18035,6 +18071,10 @@
 			</File>
 			<File
 				RelativePath=".\Material.h"
+				>
+			</File>
+			<File
+				RelativePath=".\math\matrix.h"
 				>
 			</File>
 			<File
@@ -18079,6 +18119,10 @@
 			</File>
 			<File
 				RelativePath=".\pinundo.h"
+				>
+			</File>
+			<File
+				RelativePath=".\pin\player.h"
 				>
 			</File>
 			<File
@@ -18175,6 +18219,10 @@
 			</File>
 			<File
 				RelativePath=".\vector.h"
+				>
+			</File>
+			<File
+				RelativePath=".\math\vector.h"
 				>
 			</File>
 			<File
