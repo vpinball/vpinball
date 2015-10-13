@@ -1378,7 +1378,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)\lib;$(DXSDK_DIR)\Include;inc;pin;media;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(DXSDK_DIR)\lib;$(DXSDK_DIR)\Include;inc;shader;pin;media;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>COR_ENABLE_PROFILING;WIN32;_DEBUG;_WINDOWS;MYDEBUG;_DEBUGPHYSICS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -1399,7 +1399,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <Link>
       <AdditionalDependencies>comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;bass.lib;imm32.lib;setupapi.lib;hid.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib;.\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x86;.\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <IgnoreSpecificDefaultLibraries>LIBC;LIBCMT;LIBCD;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -1410,6 +1410,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <DataExecutionPrevention />
       <TargetMachine>MachineX86</TargetMachine>
       <LargeAddressAware>true</LargeAddressAware>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
     <Xdcmake>
       <SuppressStartupBanner>false</SuppressStartupBanner>
@@ -4510,6 +4511,14 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">shader\%(Filename).h</HeaderFileOutput>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">
       </ObjectFileOutput>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">
+      </AdditionalOptions>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">ballShaderCode</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">2.0</ShaderModel>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">shader\%(Filename).h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </ObjectFileOutput>
     </FxCompile>
     <FxCompile Include="shader\BasicShader.fx">
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">basicShaderCode</EntryPointName>
@@ -4517,6 +4526,14 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">2.0</ShaderModel>
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">shader\%(Filename).h</HeaderFileOutput>
       <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">
+      </ObjectFileOutput>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">
+      </AdditionalOptions>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">basicShaderCode</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">2.0</ShaderModel>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">shader\%(Filename).h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
       </ObjectFileOutput>
     </FxCompile>
     <FxCompile Include="shader\DMDShader.fx">
@@ -4526,6 +4543,12 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">dmdShaderCode</EntryPointName>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">Effect</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">2.0</ShaderModel>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">shader\%(Filename).h</HeaderFileOutput>
+      <ObjectFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </ObjectFileOutput>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">dmdShaderCode</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">2.0</ShaderModel>
     </FxCompile>
     <FxCompile Include="shader\FBShader.fx">
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">shader\%(Filename).h</HeaderFileOutput>
@@ -4534,6 +4557,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">FBShaderCode</EntryPointName>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">Effect</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">2.0</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">FBShaderCode</EntryPointName>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">2.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Effect</ShaderType>
     </FxCompile>
     <FxCompile Include="shader\FlasherShader.fx">
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">shader\%(Filename).h</HeaderFileOutput>
@@ -4542,6 +4568,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">flasherShaderCode</EntryPointName>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">Effect</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">2.0</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">flasherShaderCode</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">2.0</ShaderModel>
     </FxCompile>
     <FxCompile Include="shader\LightShader.fx">
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">shader\%(Filename).h</HeaderFileOutput>
@@ -4550,6 +4579,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">lightShaderCode</EntryPointName>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">Effect</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">2.0</ShaderModel>
+      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">lightShaderCode</EntryPointName>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Effect</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">2.0</ShaderModel>
     </FxCompile>
     <FxCompile Include="shader\ClassicLightShader.fx">
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'">shader\%(Filename).h</HeaderFileOutput>
