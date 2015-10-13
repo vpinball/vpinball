@@ -411,7 +411,7 @@ void DispReel::RenderStatic(RenderDevice* pd3dDevice)
 //
 // if a screen update is required it returns true..
 //
-void DispReel::RenderAnimation()
+void DispReel::Animate()
 {
    OLECHAR mySound[256];
 

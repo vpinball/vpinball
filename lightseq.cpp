@@ -347,7 +347,7 @@ void LightSeq::RenderStatic(RenderDevice* pd3dDevice)
 
 // This function is called during Animate().  It basically check to see if the update
 // interval has expired and if so handles the light effect
-void LightSeq::RenderAnimation()
+void LightSeq::Animate()
 {
    if (m_playInProgress)
    {

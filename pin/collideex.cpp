@@ -903,7 +903,7 @@ void HitLine3D::CalcHitRect()
 void DispReelAnimObject::Animate()
 {
    // update the reels animation (returns saying weither to redraw the frame object or not)
-   m_pDispReel->RenderAnimation();
+   m_pDispReel->Animate();
 }
 
 // this function is called every frame to see if the object needs updating
@@ -911,7 +911,7 @@ void DispReelAnimObject::Animate()
 void LightSeqAnimObject::Animate()
 {
    // update the reels animation (returns saying weither to redraw the frame object or not)
-   m_pLightSeq->RenderAnimation();
+   m_pLightSeq->Animate();
 }
 
 
