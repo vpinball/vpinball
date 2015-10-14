@@ -136,7 +136,7 @@ void HitKD::FillFromIndices()
    m_rootNode.m_rectbounds.Clear();
 
    m_rootNode.m_start = 0;
-   m_rootNode.m_items = m_org_idx.size();
+   m_rootNode.m_items = (unsigned int)m_org_idx.size();
 
    for (unsigned i = 0; i < m_rootNode.m_items; ++i)
    {
@@ -146,7 +146,7 @@ void HitKD::FillFromIndices()
    }
 
 #ifdef _DEBUGPHYSICS
-   g_pplayer->c_octObjects = m_org_idx.size();
+   g_pplayer->c_octObjects = (U32)m_org_idx.size();
 #endif
 
    m_rootNode.CreateNextLevel(0, 0);
@@ -158,12 +158,12 @@ void HitKD::FillFromIndices(const FRect3D& initialBounds)
    m_rootNode.m_rectbounds = initialBounds;
 
    m_rootNode.m_start = 0;
-   m_rootNode.m_items = m_org_idx.size();
+   m_rootNode.m_items = (unsigned int)m_org_idx.size();
 
    // assume that CalcHitRect() was already called on the hit objects
 
 #ifdef _DEBUGPHYSICS
-   g_pplayer->c_octObjects = m_org_idx.size();
+   g_pplayer->c_octObjects = (U32)m_org_idx.size();
 #endif
 
    m_rootNode.CreateNextLevel(0, 0);

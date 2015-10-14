@@ -942,7 +942,7 @@ BOOL PinTable::FVerifySaveToClose()
 {
    if (m_vAsyncHandles.size() > 0)
    {
-      /*const DWORD wait =*/ WaitForMultipleObjects(m_vAsyncHandles.size(), &m_vAsyncHandles[0], TRUE, INFINITE);
+      /*const DWORD wait =*/ WaitForMultipleObjects((DWORD)m_vAsyncHandles.size(), &m_vAsyncHandles[0], TRUE, INFINITE);
       //MessageBox(NULL, "Async work items not done", NULL, 0);
 
       // Close the remaining handles here, since the window messages will never be processed
@@ -2261,7 +2261,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
 
    ////////////// End Encryption
 
-   int ctotalitems = m_vedit.Size() + m_vsound.Size() + m_vimage.size() + m_vfont.Size() + m_vcollection.Size();
+   int ctotalitems = (int)(m_vedit.Size() + m_vsound.Size() + m_vimage.size() + m_vfont.Size() + m_vcollection.Size());
    int csaveditems = 0;
 
    SendMessage(hwndProgressBar, PBM_SETRANGE, 0, MAKELPARAM(0, ctotalitems));
@@ -2886,7 +2886,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
    {
       bw.WriteInt(FID(SEDT), m_vedit.Size());
       bw.WriteInt(FID(SSND), m_vsound.Size());
-      bw.WriteInt(FID(SIMG), m_vimage.size());
+      bw.WriteInt(FID(SIMG), (int)m_vimage.size());
       bw.WriteInt(FID(SFNT), m_vfont.Size());
       bw.WriteInt(FID(SCOL), m_vcollection.Size());
 
@@ -6840,7 +6840,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
    case DISPID_Image6:
    case DISPID_Image7:
    {
-      cvar = m_vimage.size();
+      cvar = (int)m_vimage.size();
 
       rgstr = (WCHAR **)CoTaskMemAlloc((cvar + 1) * sizeof(WCHAR *));
       rgdw = (DWORD *)CoTaskMemAlloc((cvar + 1) * sizeof(DWORD));

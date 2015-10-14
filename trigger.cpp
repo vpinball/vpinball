@@ -339,7 +339,7 @@ void Trigger::Render(Sur * const psur)
             drawVertices[o] = Vertex2D(B.x, B.y);
          }
 
-         psur->Polyline(&drawVertices[0], drawVertices.size());
+         psur->Polyline(&drawVertices[0], (int)drawVertices.size());
       }
    }
 }
@@ -420,7 +420,7 @@ void Trigger::GetHitShapesDebug(Vector<HitObject> * const pvho)
       std::vector<RenderVertex> vvertex;
       GetRgVertex(vvertex);
 
-      const int cvertex = vvertex.size();
+      const int cvertex = (int)vvertex.size();
       Vertex3Ds * const rgv3d = new Vertex3Ds[cvertex];
 
       for (int i = 0; i < cvertex; i++)
@@ -447,7 +447,7 @@ void Trigger::CurvesToShapes(Vector<HitObject> * const pvho)
    std::vector<RenderVertex> vvertex;
    GetRgVertex(vvertex);
 
-   const int count = vvertex.size();
+   const int count = (int)vvertex.size();
    RenderVertex * const rgv = new RenderVertex[count];
    Vertex3Ds * const rgv3D = new Vertex3Ds[count];
 

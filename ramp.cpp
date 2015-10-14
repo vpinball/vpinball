@@ -343,7 +343,7 @@ Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** co
    GetCentralCurve(vvertex);
    // vvertex are the 2D vertices forming the central curve of the ramp as seen from above
 
-   const int cvertex = vvertex.size();
+   const int cvertex = (int)vvertex.size();
    Vertex2D * rgvLocal = NULL;
    if (m_d.m_type != RampTypeFlat)
       rgvLocal = new Vertex2D[(cvertex + 1) * 2];
@@ -509,7 +509,7 @@ float Ramp::GetSurfaceHeight(float x, float y)
    std::vector<RenderVertex3D> vvertex;
    GetCentralCurve(vvertex);
 
-   const int cvertex = vvertex.size();
+   const int cvertex = (int)vvertex.size();
    const float topHeight = m_d.m_heighttop + m_ptable->m_tableheight;
    const float bottomHeight = m_d.m_heightbottom + m_ptable->m_tableheight;
 
@@ -2130,7 +2130,7 @@ void Ramp::ExportMesh(FILE *f)
             WORD * const idx = new WORD[m_meshIndices.size()];
             for (unsigned int i = 0; i < m_meshIndices.size(); i++)
                idx[i] = m_meshIndices[i] + m_numVertices;
-            WaveFrontObj_WriteFaceInfoList(f, idx, m_meshIndices.size());
+            WaveFrontObj_WriteFaceInfoList(f, idx, (unsigned int)m_meshIndices.size());
             WaveFrontObj_UpdateFaceOffset(m_numVertices * 2);
             delete[] idx;
          }
@@ -2154,13 +2154,13 @@ void Ramp::ExportMesh(FILE *f)
             WORD * const idx = new WORD[m_meshIndices.size()];
             for (unsigned int i = 0; i < m_meshIndices.size(); i++)
                idx[i] = m_meshIndices[i] + m_numVertices;
-            WaveFrontObj_WriteFaceInfoList(f, idx, m_meshIndices.size());
+            WaveFrontObj_WriteFaceInfoList(f, idx, (unsigned int)m_meshIndices.size());
             for (unsigned int i = 0; i < m_meshIndices.size(); i++)
                idx[i] = m_meshIndices[i] + m_numVertices * 2;
-            WaveFrontObj_WriteFaceInfoList(f, idx, m_meshIndices.size());
+            WaveFrontObj_WriteFaceInfoList(f, idx, (unsigned int)m_meshIndices.size());
             for (unsigned int i = 0; i < m_meshIndices.size(); i++)
                idx[i] = m_meshIndices[i] + m_numVertices * 3;
-            WaveFrontObj_WriteFaceInfoList(f, idx, m_meshIndices.size());
+            WaveFrontObj_WriteFaceInfoList(f, idx, (unsigned int)m_meshIndices.size());
             WaveFrontObj_UpdateFaceOffset(m_numVertices * 4);
             delete[] idx;
          }
@@ -2183,10 +2183,10 @@ void Ramp::ExportMesh(FILE *f)
             WORD * const idx = new WORD[m_meshIndices.size()];
             for (unsigned int i = 0; i < m_meshIndices.size(); i++)
                idx[i] = m_meshIndices[i] + m_numVertices;
-            WaveFrontObj_WriteFaceInfoList(f, idx, m_meshIndices.size());
+            WaveFrontObj_WriteFaceInfoList(f, idx, (unsigned int)m_meshIndices.size());
             for (unsigned int i = 0; i < m_meshIndices.size(); i++)
                idx[i] = m_meshIndices[i] + m_numVertices * 2;
-            WaveFrontObj_WriteFaceInfoList(f, idx, m_meshIndices.size());
+            WaveFrontObj_WriteFaceInfoList(f, idx, (unsigned int)m_meshIndices.size());
             WaveFrontObj_UpdateFaceOffset(m_numVertices * 3);
             delete[] idx;
          }
@@ -2209,10 +2209,10 @@ void Ramp::ExportMesh(FILE *f)
             WORD * const idx = new WORD[m_meshIndices.size()];
             for (unsigned int i = 0; i < m_meshIndices.size(); i++)
                idx[i] = m_meshIndices[i] + m_numVertices;
-            WaveFrontObj_WriteFaceInfoList(f, idx, m_meshIndices.size());
+            WaveFrontObj_WriteFaceInfoList(f, idx, (unsigned int)m_meshIndices.size());
             for (unsigned int i = 0; i < m_meshIndices.size(); i++)
                idx[i] = m_meshIndices[i] + m_numVertices * 2;
-            WaveFrontObj_WriteFaceInfoList(f, idx, m_meshIndices.size());
+            WaveFrontObj_WriteFaceInfoList(f, idx, (unsigned int)m_meshIndices.size());
             WaveFrontObj_UpdateFaceOffset(m_numVertices * 3);
             delete[] idx;
          }

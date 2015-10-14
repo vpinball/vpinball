@@ -300,7 +300,7 @@ bool WaveFrontObj_Load(const char *filename, const bool flipTv, const bool conve
          tmp.ny = tmpNorms[tmpFaces[i].ni0].y;
          tmp.nz = tmpNorms[tmpFaces[i].ni0].z;
          verts.push_back(tmp);
-         faces.push_back(verts.size() - 1);
+         faces.push_back((int)(verts.size() - 1));
       }
       else
       {
@@ -320,7 +320,7 @@ bool WaveFrontObj_Load(const char *filename, const bool flipTv, const bool conve
          tmp.ny = tmpNorms[tmpFaces[i].ni1].y;
          tmp.nz = tmpNorms[tmpFaces[i].ni1].z;
          verts.push_back(tmp);
-         faces.push_back(verts.size() - 1);
+         faces.push_back((int)(verts.size() - 1));
       }
       else
       {
@@ -340,7 +340,7 @@ bool WaveFrontObj_Load(const char *filename, const bool flipTv, const bool conve
          tmp.ny = tmpNorms[tmpFaces[i].ni2].y;
          tmp.nz = tmpNorms[tmpFaces[i].ni2].z;
          verts.push_back(tmp);
-         faces.push_back(verts.size() - 1);
+         faces.push_back((int)(verts.size() - 1));
       }
       else
       {
@@ -578,7 +578,7 @@ void WaveFrontObj_Save(const char *filename, const char *description, const Mesh
    fprintf_s(f, "# Visual Pinball OBJ file\n");
    fprintf_s(f, "# numVerts: %u numFaces: %u\n", mesh.NumVertices(), mesh.NumIndices());
    WaveFrontObj_WriteObjectName(f, description);
-   WaveFrontObj_WriteVertexInfo(f, mesh.m_vertices.data(), mesh.m_vertices.size());
+   WaveFrontObj_WriteVertexInfo(f, mesh.m_vertices.data(), (unsigned int)mesh.m_vertices.size());
    WaveFrontObj_WriteFaceInfoLong(f, mesh.m_indices);
    WaveFrontObj_ExportEnd(f);
 }

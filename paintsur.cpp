@@ -119,7 +119,7 @@ void PaintSur::Polygon(const std::vector<RenderVertex> &rgv)
    SelectObject(m_hdc, m_hbr);
    SelectObject(m_hdc, m_hpnOutline);
 
-   ::Polygon(m_hdc, &rgpt[0], rgv.size());
+   ::Polygon(m_hdc, &rgpt[0], (int)rgv.size());
 }
 
 void PaintSur::PolygonImage(const std::vector<RenderVertex> &rgv, HBITMAP hbm, const float left, const float top, const float right, const float bottom, const int bitmapwidth, const int bitmapheight)
@@ -146,7 +146,7 @@ void PaintSur::PolygonImage(const std::vector<RenderVertex> &rgv, HBITMAP hbm, c
       rgpt[i].y = SCALEYf(rgv[i].y);
    }
 
-   ::Polygon(m_hdc, &rgpt[0], rgv.size());
+   ::Polygon(m_hdc, &rgpt[0], (int)rgv.size());
 
    SetStretchBltMode(m_hdc, HALFTONE); // somehow enables filtering
    StretchBlt(m_hdc, ix, iy, ix2 - ix, iy2 - iy, hdcNew, 0, 0, bitmapwidth, bitmapheight, SRCINVERT);

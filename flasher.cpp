@@ -399,7 +399,7 @@ void Flasher::RenderSetup(RenderDevice* pd3dDevice)
    std::vector<RenderVertex> vvertex;
    GetRgVertex(vvertex);
 
-   numVertices = vvertex.size();
+   numVertices = (int)vvertex.size();
 
    VectorVoid vpoly;
 

@@ -388,7 +388,7 @@ void Surface::CurvesToShapes(Vector<HitObject> * const pvho)
    std::vector<RenderVertex> vvertex;
    GetRgVertex(vvertex);
 
-   const int count = vvertex.size();
+   const int count = (int)vvertex.size();
    Vertex3Ds * const rgv3Dt = new Vertex3Ds[count];
    Vertex3Ds * const rgv3Db = m_d.m_fIsBottomSolid ? new Vertex3Ds[count] : NULL;
 
@@ -575,7 +575,7 @@ void Surface::GenerateMesh(Vertex3D_NoTex2 **topBuf, Vertex3D_NoTex2 **sideBuf)
    if (pinSide)
       GetTextureCoords(vvertex, &rgtexcoord);
 
-   numVertices = vvertex.size();
+   numVertices = (int)vvertex.size();
    Vertex2D * const rgnormal = new Vertex2D[numVertices];
 
    for (int i = 0; i < numVertices; i++)
@@ -818,7 +818,7 @@ void Surface::ExportMesh(FILE *f)
       memcpy(idx, sideIndices.data(), sideIndices.size()*sizeof(WORD));
       for (unsigned int i = 0; i < topIndices.size(); i++)
          idx[sideIndices.size() + i] = topIndices[i] + numVertices * 4;
-      WaveFrontObj_WriteFaceInfoList(f, idx, topIndices.size() + sideIndices.size());
+      WaveFrontObj_WriteFaceInfoList(f, idx, (unsigned int)(topIndices.size() + sideIndices.size()));
       WaveFrontObj_UpdateFaceOffset(numVertices * 5);
       delete[] idx;
    }
@@ -928,7 +928,7 @@ void Surface::PrepareSlingshots(RenderDevice *pd3dDevice)
 
    if (slingshotVBuffer)
       slingshotVBuffer->release();
-   pd3dDevice->CreateVertexBuffer(m_vlinesling.size() * 9, 0, MY_D3DFVF_NOTEX2_VERTEX, &slingshotVBuffer);
+   pd3dDevice->CreateVertexBuffer((unsigned int)m_vlinesling.size() * 9, 0, MY_D3DFVF_NOTEX2_VERTEX, &slingshotVBuffer);
 
    Vertex3D_NoTex2 *buf;
    slingshotVBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);

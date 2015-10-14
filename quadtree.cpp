@@ -31,7 +31,7 @@ void HitQuadtree::Initialize()
       bounds.Extend(m_vho[i]->m_rcHitRect);
 
 #ifdef _DEBUGPHYSICS
-   g_pplayer->c_quadObjects = m_vho.size();
+   g_pplayer->c_quadObjects = (U32)m_vho.size();
 #endif
 
    CreateNextLevel(bounds, 0, 0);
@@ -40,7 +40,7 @@ void HitQuadtree::Initialize()
 void HitQuadtree::Initialize(const FRect3D& bounds)
 {
 #ifdef _DEBUGPHYSICS
-   g_pplayer->c_quadObjects = m_vho.size();
+   g_pplayer->c_quadObjects = (U32)m_vho.size();
 #endif
 
    CreateNextLevel(bounds, 0, 0);
