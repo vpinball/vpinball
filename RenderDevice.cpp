@@ -1136,12 +1136,12 @@ IndexBuffer* RenderDevice::CreateAndFillIndexBuffer(const unsigned int numIndice
 
 IndexBuffer* RenderDevice::CreateAndFillIndexBuffer(const std::vector<WORD>& indices)
 {
-   return CreateAndFillIndexBuffer(indices.size(), &indices[0]);
+   return CreateAndFillIndexBuffer((unsigned int)indices.size(), &indices[0]);
 }
 
 IndexBuffer* RenderDevice::CreateAndFillIndexBuffer(const std::vector<unsigned int>& indices)
 {
-   return CreateAndFillIndexBuffer(indices.size(), &indices[0]);
+   return CreateAndFillIndexBuffer((unsigned int)indices.size(), &indices[0]);
 }
 
 

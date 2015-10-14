@@ -467,7 +467,7 @@ void Light::GetHitShapesDebug(Vector<HitObject> * const pvho)
       std::vector<RenderVertex> vvertex;
       GetRgVertex(vvertex);
 
-      const int cvertex = vvertex.size();
+      const int cvertex = (int)vvertex.size();
       Vertex3Ds * const rgv3d = new Vertex3Ds[cvertex];
 
       for (int i = 0; i < cvertex; i++)
@@ -749,7 +749,7 @@ void Light::PrepareMoversCustom()
 {
    std::vector<RenderVertex> vvertex;
    GetRgVertex(vvertex);
-   const int cvertex = vvertex.size();
+   const int cvertex = (int)vvertex.size();
 
    if (cvertex == 0)
       return;
@@ -802,7 +802,7 @@ void Light::PrepareMoversCustom()
    for (int i = 0; i < vtri.Size(); i++)
       delete vtri.ElementAt(i);
 
-   customMoverVertexNum = vvertex.size();
+   customMoverVertexNum = (int)vvertex.size();
    if (customMoverVBuffer)
       customMoverVBuffer->release();
    const DWORD vertexType = (!m_fBackglass) ? MY_D3DFVF_NOTEX2_VERTEX : MY_D3DTRANSFORMED_NOTEX2_VERTEX;

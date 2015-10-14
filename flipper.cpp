@@ -212,7 +212,7 @@ void Flipper::WriteRegDefaults()
    SetRegValueInt(regKey, "TimerInterval", m_d.m_tdr.m_TimerInterval);
    SetRegValueInt(regKey, "Color", m_d.m_color);
    SetRegValueInt(regKey, "RubberColor", m_d.m_rubbercolor);
-   SetRegValue(regKey, "Surface", REG_SZ, &m_d.m_szSurface, strlen(m_d.m_szSurface));
+   SetRegValue(regKey, "Surface", REG_SZ, &m_d.m_szSurface, (DWORD)strlen(m_d.m_szSurface));
    SetRegValueFloat(regKey, "Strength", m_d.m_strength);
    SetRegValueFloat(regKey, "Height", m_d.m_height);
    SetRegValueInt(regKey, "RubberThickness", m_d.m_rubberthickness);

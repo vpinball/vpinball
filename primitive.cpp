@@ -128,7 +128,7 @@ void Primitive::CreateRenderGroup(Collection *collection, RenderDevice *pd3dDevi
 
       prims.push_back(prim);
 
-      overall_size += prim->m_mesh.NumIndices();
+      overall_size += (unsigned int)prim->m_mesh.NumIndices();
    }
 
    if (prims.size() == 0)
@@ -139,8 +139,8 @@ void Primitive::CreateRenderGroup(Collection *collection, RenderDevice *pd3dDevi
    // the rest of the group is marked as skipped rendering
    Material *groupMaterial = g_pplayer->m_ptable->GetMaterial(prims[0]->m_d.m_szMaterial);
    Texture *groupTexel = g_pplayer->m_ptable->GetImage(prims[0]->m_d.m_szImage);
-   m_numGroupVertices = prims[0]->m_mesh.NumVertices();
-   m_numGroupIndices = prims[0]->m_mesh.NumIndices();
+   m_numGroupVertices = (int)prims[0]->m_mesh.NumVertices();
+   m_numGroupIndices = (int)prims[0]->m_mesh.NumIndices();
    prims[0]->m_d.m_fGroupdRendering = true;
    vector<unsigned int> indices(overall_size);
    memcpy(&indices[0], &prims[0]->m_mesh.m_indices[0], prims[0]->m_mesh.NumIndices());
@@ -155,8 +155,8 @@ void Primitive::CreateRenderGroup(Collection *collection, RenderDevice *pd3dDevi
          for (size_t k = 0; k < m.NumIndices(); k++)
             indices[m_numGroupIndices + k] = m_numGroupVertices + m.m_indices[k];
 
-         m_numGroupVertices += m.NumVertices();
-         m_numGroupIndices += m.NumIndices();
+         m_numGroupVertices += (int)m.NumVertices();
+         m_numGroupIndices += (int)m.NumIndices();
          prims[i]->m_d.m_fSkipRendering = true;
          renderedPrims.push_back(prims[i]);
       }
@@ -576,7 +576,7 @@ void Primitive::Render(Sur * const psur)
                drawVertices[o] = Vertex2D(B.x, B.y);
             }
 
-            psur->Polyline(&drawVertices[0], drawVertices.size());
+            psur->Polyline(&drawVertices[0], (int)drawVertices.size());
          }
       }
    }
@@ -609,7 +609,7 @@ void Primitive::Render(Sur * const psur)
       }
 
       if (drawVertices.size() > 0)
-         psur->Lines(&drawVertices[0], drawVertices.size() / 2);
+         psur->Lines(&drawVertices[0], (int)(drawVertices.size() / 2));
    }
 
    // draw center marker
@@ -818,12 +818,12 @@ void Primitive::ExportMesh(FILE *f)
          buf[i].tv = v.tv;
       }
       WaveFrontObj_WriteObjectName(f, name);
-      WaveFrontObj_WriteVertexInfo(f, buf, m_mesh.NumVertices());
+      WaveFrontObj_WriteVertexInfo(f, buf, (unsigned int)m_mesh.NumVertices());
       Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
       WaveFrontObj_WriteMaterial(m_d.m_szMaterial, NULL, mat);
       WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
       WaveFrontObj_WriteFaceInfoLong(f, m_mesh.m_indices);
-      WaveFrontObj_UpdateFaceOffset(m_mesh.NumVertices());
+      WaveFrontObj_UpdateFaceOffset((unsigned int)m_mesh.NumVertices());
       delete[] buf;
    }
 }
@@ -874,7 +874,7 @@ void Primitive::RenderObject(RenderDevice *pd3dDevice)
    if (m_d.m_fGroupdRendering)
       pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, m_numGroupVertices, indexBuffer, 0, m_numGroupIndices);
    else
-      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, m_mesh.NumVertices(), indexBuffer, 0, m_mesh.NumIndices());
+      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, (DWORD)m_mesh.NumVertices(), indexBuffer, 0, (DWORD)m_mesh.NumIndices());
    pd3dDevice->basicShader->End();
 
    // reset transform
@@ -908,7 +908,7 @@ void Primitive::RenderSetup(RenderDevice* pd3dDevice)
    if (vertexBuffer)
       vertexBuffer->release();
 
-   pd3dDevice->CreateVertexBuffer(m_mesh.NumVertices(), 0, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer);
+   pd3dDevice->CreateVertexBuffer((unsigned int)m_mesh.NumVertices(), 0, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer);
 
    if (indexBuffer)
       indexBuffer->release();
@@ -1089,7 +1089,7 @@ HRESULT Primitive::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int versi
    if (!m_d.m_use3DMesh)
       CalculateBuiltinOriginal();
 
-   unsigned int* tmp = reorderForsyth(&m_mesh.m_indices[0], m_mesh.NumIndices() / 3, m_mesh.NumVertices());
+   unsigned int* tmp = reorderForsyth(&m_mesh.m_indices[0], (int)(m_mesh.NumIndices() / 3), (int)m_mesh.NumVertices());
    if (tmp != NULL)
    {
       memcpy(&m_mesh.m_indices[0], tmp, m_mesh.NumIndices()*sizeof(unsigned int));

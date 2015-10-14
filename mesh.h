@@ -380,7 +380,7 @@ inline bool FlatWithAccuracy(const Vertex3Ds & v1, const Vertex3Ds & v2, const V
 template <class VtxContType>
 inline void ClosestPointOnPolygon(const VtxContType &rgv, const Vertex2D &pvin, Vertex2D * const pvout, int * const piseg, const bool fClosed)
 {
-   const int count = rgv.size();
+   const int count = (int)rgv.size();
 
    float mindist = FLT_MAX;
    int seg = -1;
@@ -509,5 +509,5 @@ void ComputeNormals(Vertex3D_NoTex2* const vertices, const unsigned int numVerti
 template <typename T>
 void ComputeNormals(std::vector<Vertex3D_NoTex2>& vertices, const std::vector<T>& indices)
 {
-   ComputeNormals(&vertices[0], vertices.size(), &indices[0], indices.size());
+   ComputeNormals(&vertices[0], (unsigned int)vertices.size(), &indices[0], (unsigned int)indices.size());
 }

@@ -1187,7 +1187,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
       }
 
       assert(m_ballDebugPoints == NULL);
-      m_pin3d.m_pd3dDevice->CreateVertexBuffer(ballDbgVtx.size(), 0, MY_D3DFVF_TEX, &m_ballDebugPoints);
+      m_pin3d.m_pd3dDevice->CreateVertexBuffer((unsigned int)ballDbgVtx.size(), 0, MY_D3DFVF_TEX, &m_ballDebugPoints);
       void *buf;
       m_ballDebugPoints->lock(0, 0, &buf, 0);
       memcpy(buf, &ballDbgVtx[0], ballDbgVtx.size() * sizeof(ballDbgVtx[0]));
@@ -2341,7 +2341,7 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
       }
 
 #ifdef _DEBUGPHYSICS
-      c_contactcnt = m_contacts.size();
+      c_contactcnt = (U32)m_contacts.size();
 #endif
       /*
        * Now handle contacts.
@@ -4111,7 +4111,7 @@ void AddEventToDebugMenu(char *sz, int index, int dispid, LPARAM lparam)
 {
    DebugMenuItem * const pdmi = (DebugMenuItem *)lparam;
    HMENU hmenu = pdmi->hmenu;
-   const int menuid = ((pdmi->objectindex + 1) << 16) | pdmi->pvdispid->size();
+   const int menuid = ((pdmi->objectindex + 1) << 16) | (int)pdmi->pvdispid->size();
    pdmi->pvdispid->push_back(dispid);
    AppendMenu(hmenu, MF_STRING, menuid, sz);
 }

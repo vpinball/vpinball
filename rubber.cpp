@@ -154,7 +154,7 @@ void Rubber::DrawRubberMesh(Sur * const psur)
       }
    }
    if (drawVertices.size() > 0)
-      psur->Lines(&drawVertices[0], drawVertices.size() / 2);
+      psur->Lines(&drawVertices[0], (int)(drawVertices.size() / 2));
 
 }
 
@@ -318,7 +318,7 @@ Vertex2D *Rubber::GetSplineVertex(int &pcvertex, bool ** const ppfCross, Vertex2
    GetCentralCurve(vvertex);
    // vvertex are the 2D vertices forming the central curve of the rubber as seen from above
 
-   const int cvertex = vvertex.size();
+   const int cvertex = (int)vvertex.size();
    Vertex2D * const rgvLocal = new Vertex2D[(cvertex + 1) * 2];
 
    if (pMiddlePoints)
@@ -437,7 +437,7 @@ float Rubber::GetSurfaceHeight(float x, float y)
    std::vector<RenderVertex> vvertex;
    GetCentralCurve(vvertex);
 
-   const int cvertex = vvertex.size();
+   const int cvertex = (int)vvertex.size();
 
    int iSeg;
    Vertex2D vOut;

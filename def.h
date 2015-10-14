@@ -69,7 +69,7 @@ inline int FindIndexOf(std::vector<T>& v, const T& val)
 {
    std::vector<T>::const_iterator it = std::find(v.begin(), v.end(), val);
    if (it != v.end())
-      return (it - v.begin());
+      return (int)(it - v.begin());
    else
       return -1;
 }

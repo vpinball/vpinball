@@ -84,7 +84,7 @@ bool FindOrInsertUD(list<UserData>* ListIn, UserData ud)
 		return true;
 	}
 	list<UserData>::iterator i = ListIn->begin();
-	int counter = ListIn->size();
+	int counter = (int)ListIn->size();
 	int result = -1;
 	const string strSearchData =  CodeViewer::lowerCase( ud.strKeyName );
 
@@ -128,7 +128,7 @@ bool FindOrInsertStringIntoAutolist(list<string>* ListIn, string strIn)
 	}
 	const string strLowerIn = CodeViewer::lowerCase(strIn);
 	list<string>::iterator i = ListIn->begin();
-	int counter = ListIn->size();
+	int counter = (int)ListIn->size();
 	int result = -1;
 	while (counter)
 	{
