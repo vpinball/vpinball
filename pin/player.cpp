@@ -1355,9 +1355,6 @@ void Player::RenderDynamicMirror(const bool onlyBalls)
    D3DMATRIX viewMat;
    const float rotation = fmodf(m_ptable->m_BG_rotation[m_ptable->m_BG_current_set], 360.f);
 
-   // copy the special mirror z-Buffer to the current z-buffer
-   m_pin3d.m_pd3dDevice->CopySurface(m_pin3d.m_pddsZBuffer, m_pin3d.m_mirrorZBuffer);
-
    // render into temp back buffer 
    RenderTarget *tmpMirrorSurface = NULL;
    m_pin3d.m_pd3dDevice->GetMirrorTmpBufferTexture()->GetSurfaceLevel(0, &tmpMirrorSurface);
@@ -2891,6 +2888,9 @@ void Player::CheckAndUpdateRegions()
 
       if (!m_ptable->m_fReflectElementsOnPlayfield && drawBallReflection)
       {
+         // copy the special mirror z-Buffer to the current z-buffer
+         m_pin3d.m_pd3dDevice->CopySurface(m_pin3d.m_pddsZBuffer, m_pin3d.m_mirrorZBuffer); // cannot be called inside BeginScene -> EndScene cycle
+
          m_pin3d.m_pd3dDevice->BeginScene();
          RenderDynamicMirror(true);
          RenderMirrorOverlay(false);
@@ -2898,13 +2898,17 @@ void Player::CheckAndUpdateRegions()
       }
       else if (m_ptable->m_fReflectElementsOnPlayfield)
       {
+         // copy the special mirror z-Buffer to the current z-buffer
+         m_pin3d.m_pd3dDevice->CopySurface(m_pin3d.m_pddsZBuffer, m_pin3d.m_mirrorZBuffer); // cannot be called inside BeginScene -> EndScene cycle
+
          m_pin3d.m_pd3dDevice->BeginScene();
          RenderDynamicMirror(false);
          RenderMirrorOverlay(false);
          m_pin3d.m_pd3dDevice->EndScene();
       }
    }
-   m_pin3d.m_pd3dDevice->CopySurface(m_pin3d.m_pddsZBuffer, m_pin3d.m_pddsStaticZ);
+
+   m_pin3d.m_pd3dDevice->CopySurface(m_pin3d.m_pddsZBuffer, m_pin3d.m_pddsStaticZ); // cannot be called inside BeginScene -> EndScene cycle
 }
 
 void Player::Bloom()
