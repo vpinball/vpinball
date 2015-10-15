@@ -41,7 +41,8 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib)
       dibResized = FreeImage_Rescale(dib, newWidth, newHeight, FILTER_BOX);
    }
 
-   const bool rgbf = (FreeImage_GetBPP(dibResized) > 32);
+   const FREE_IMAGE_TYPE img_type = FreeImage_GetImageType(dibResized);
+   const bool rgbf = (img_type == FIT_FLOAT) || (img_type == FIT_DOUBLE) || (img_type == FIT_RGBF) || (img_type == FIT_RGBAF); //(FreeImage_GetBPP(dibResized) > 32);
    FIBITMAP* dib32 = rgbf ? FreeImage_ConvertToRGBF(dibResized) : FreeImage_ConvertTo32Bits(dibResized);
 
    BaseTexture* tex = new BaseTexture(FreeImage_GetWidth(dib32), FreeImage_GetHeight(dib32), rgbf ? RGB_FP : RGBA);
