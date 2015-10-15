@@ -698,6 +698,9 @@
     <ClInclude Include="objloader.h">
       <Filter>headers</Filter>
     </ClInclude>
+    <ClInclude Include="inc\forsyth.h" />
+    <ClInclude Include="inc\progmesh.h" />
+    <ClInclude Include="inc\progmesh_vecmatquat_minimal.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="shader\BallShader.fx">
