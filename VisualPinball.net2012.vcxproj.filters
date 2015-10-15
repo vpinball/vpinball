@@ -705,6 +705,8 @@
     <ClInclude Include="inc\progmesh.h">
       <Filter>inc</Filter>
     </ClInclude>
+    <ClInclude Include="inc\progmesh_vecmatquat_minimal.h" />
+    <ClInclude Include="objloader.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="shader\BallShader.fx">
