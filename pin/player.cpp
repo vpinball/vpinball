@@ -3038,7 +3038,7 @@ void Player::FlipVideoBuffersNormal(const bool vsync)
    const bool FXAA3 = (((m_fFXAA == 3) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == 3));
 
    if (stereo)
-      m_pin3d.m_pd3dDevice->CopyDepth(m_pin3d.m_pdds3DZBuffer, m_pin3d.m_pddsZBuffer);
+      m_pin3d.m_pd3dDevice->CopyDepth(m_pin3d.m_pdds3DZBuffer, m_pin3d.m_pddsZBuffer); // do not put inside BeginScene/EndScene Block
 
    float shiftedVerts[4 * 5] =
    {
@@ -3125,7 +3125,7 @@ void Player::FlipVideoBuffersAO(const bool vsync)
    const bool FXAA2 = (((m_fFXAA == 2) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == 2));
    const bool FXAA3 = (((m_fFXAA == 3) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == 3));
 
-   m_pin3d.m_pd3dDevice->CopyDepth(m_pin3d.m_pdds3DZBuffer, m_pin3d.m_pddsZBuffer);
+   m_pin3d.m_pd3dDevice->CopyDepth(m_pin3d.m_pdds3DZBuffer, m_pin3d.m_pddsZBuffer); // do not put inside BeginScene/EndScene Block
 
    m_pin3d.m_pd3dDevice->BeginScene();
 
