@@ -573,12 +573,12 @@ STDMETHODIMP ScriptGlobalTable::put_DMDPixels(VARIANT pVal) //!! use 64bit inste
       DWORD* const data = (DWORD*)g_pplayer->m_texdmd->data(); //!! assumes tex data to be always 32bit
 
       VARIANT DMDState;
-      DMDState.vt = VT_UI8;
+      DMDState.vt = VT_UI1;
 
       for (LONG ofs = 0; ofs < size; ++ofs)
       {
          SafeArrayGetElement(psa, &ofs, &DMDState);
-         data[ofs] = DMDState.uintVal; // store raw values (0..100), let shader do the rest
+         data[ofs] = DMDState.cVal; // store raw values (0..100), let shader do the rest
       }
 
       g_pplayer->m_device_texdmd = g_pplayer->m_pin3d.m_pd3dDevice->m_texMan.LoadTexture(g_pplayer->m_texdmd);
