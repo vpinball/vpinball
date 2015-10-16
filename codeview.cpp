@@ -31,10 +31,11 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 WNDPROC g_RichEditProc;
 bool g_ToolTipActive;
 string vbsKeyWords;
-bool FindOrInsertUD(list<UserData>* ListIn, UserData ud);
 bool FindOrInsertStringIntoAutolist(list<string>* ListIn, string strIn);
-list<UserData> *g_VBwords;
 list<string> *g_AutoComp;
+bool FindOrInsertUD( list<UserData>* ListIn,const UserData& udIn);
+int FindUD(list<UserData>* ListIn, const string &strIn,list<UserData>::iterator& UDiterOut);
+list<UserData> *g_VBwords;
 list<UserData> *g_UserFunc;
 list<UserData> *g_Components;
 string g_AutoCompList;
@@ -73,46 +74,51 @@ bool UserData::FuncSortUD (const UserData &first, const UserData &second)
   return ( strF.length() < strF.length() );
 }
 
-
-//Assumes case insensitive sorted list (found = false):
-bool FindOrInsertUD(list<UserData>* ListIn, UserData ud)
+/*	FindUD - TODO: make a binary split search for performance...
+0=Found & UDiterOut set to point at UD in list.
+-1=Not Found - Insert point at at end of list
+1=Not Found - Insert point in the middle of list
+-2=some undefined error*/
+int FindUD(list<UserData>* ListIn, const string &strIn, list<UserData>::iterator& UDiterOut)
 {
-	//First in the list
-	if (ListIn->size() == 0)
-	{
-		ListIn->push_front(ud);
-		return true;
-	}
-	list<UserData>::iterator i = ListIn->begin();
+	UDiterOut = ListIn->begin();
 	int counter = (int)ListIn->size();
-	int result = -1;
-	const string strSearchData =  CodeViewer::lowerCase( ud.strKeyName );
+	int result = -2;
+	string strSearchData =  CodeViewer::lowerCase( strIn );
 
-	while (counter)
+	while ( (counter) && (UDiterOut != ListIn->end() ) )
 	{
-		const string strTableData = CodeViewer::lowerCase(i->strKeyName);
+		const string strTableData = CodeViewer::lowerCase(UDiterOut->strKeyName);
 		result = strTableData.compare(strSearchData);
-		if (result < 0)
+		if ( result < 0 )
 		{
-			++i;
+			++UDiterOut;
 			counter--;
 		}
 		else break;
 	}
-	if (result == 0) return false;//Already Exists.
-	if (result > 0 && (counter != 0))//Add new ud somewhere in middle.
+	return result ;
+}
+//Assumes case insensitive sorted list (found = false):
+bool FindOrInsertUD(list<UserData>* ListIn,const UserData &udIn)
+{
+	if (ListIn->size() == 0)	//First in the list
 	{
-		ListIn->insert(i,ud);
+		ListIn->push_front(udIn);
 		return true;
 	}
-	if (result > 0 && (counter == 0))	//It's new at and at the very bottom.
+	list<UserData>::iterator iterFound;
+	const int KeyFound = FindUD(ListIn, udIn.strKeyName , iterFound);
+	if (KeyFound == 0)return false;//Already Exists.
+
+	if (KeyFound > 0) //insert somewhere in the middle
 	{
-		ListIn->push_back(ud);
+		ListIn->insert(iterFound, udIn);
 		return true;
 	}
-	else //it's 1 above the last on the list.
+	if (KeyFound < 0) //went in at the bottom
 	{
-		ListIn->insert(i,ud);
+		ListIn->push_back(udIn);
 		return true;
 	}
 	return false;//Oh pop poop, never should hit here.
@@ -128,7 +134,7 @@ bool FindOrInsertStringIntoAutolist(list<string>* ListIn, string strIn)
 	}
 	const string strLowerIn = CodeViewer::lowerCase(strIn);
 	list<string>::iterator i = ListIn->begin();
-	int counter = (int)ListIn->size();
+	int counter = ListIn->size();
 	int result = -1;
 	while (counter)
 	{
@@ -147,7 +153,7 @@ bool FindOrInsertStringIntoAutolist(list<string>* ListIn, string strIn)
 		ListIn->insert(i,strIn);
 		return true;
 	}
-	if (result > 0 && (counter == 0))	//It's new at and at the very bottom.
+	if (result > 0 && (counter == 0))	//It's new and at the very bottom.
 	{
 		ListIn->push_back(strIn);
 		return true;
@@ -1577,7 +1583,7 @@ HRESULT STDMETHODCALLTYPE CodeViewer::QueryService(
 
    return hr;
 }
-//Ajs
+
 void CodeViewer::ShowAutoComplete(SCNotification *pSCN)
 {
 	// 1. get current word
@@ -1602,46 +1608,49 @@ bool CodeViewer::ShowTooltip(SCNotification *pSCN)
 	int wordstart = SendMessage(m_hwndScintilla,SCI_WORDSTARTPOSITION,dwellpos, FALSE );
 	int wordfinish = SendMessage(m_hwndScintilla,SCI_WORDENDPOSITION,dwellpos, FALSE );
 	char Mess[256] = {}; int MessLen = 0;
-	char DwellWord[256] = {};
+	char szDwellWord[256] = {};
+	char szLCDwellWord[256] = {};
 	// is it a valid 'word'
 	if ((SendMessage(m_hwndScintilla, SCI_ISRANGEWORD, wordstart , wordfinish )) && ((wordfinish - wordstart) < 255))
 	{
 		//Retrieve the word
-		GetRange(m_hwndScintilla,wordstart,wordfinish,DwellWord);
-		szLower(DwellWord);
+		GetRange(m_hwndScintilla,wordstart,wordfinish,szDwellWord);
+		strcpy_s( szLCDwellWord,  szDwellWord);
+		szLower(szLCDwellWord);
+		
 		// Serarch for VBS reserved words
 		// ToDo: Should be able get some MS help for better descriptions
-		const int RetIndex = vbsKeyWords.find( DwellWord );
+		const int RetIndex = vbsKeyWords.find( szLCDwellWord );
 		if (RetIndex != -1)
 		{
-			MessLen = sprintf_s(Mess, "VBS:%s", DwellWord);
+			MessLen = sprintf_s(Mess, "VBS:%s", szDwellWord);
 		}
 
 		// Search subs list
 		if (MessLen == 0)
 		{
-			/// has function list been filled?
+			// has function list been filled?
 			if ( g_UserFunc->size() == 0 ) ParseForFunction();
-			//now search
-			int iTemp= 0;
-			for (list<UserData>::iterator i = g_UserFunc->begin();i != g_UserFunc->end(); ++i) 
+			//now search subs/funs
+			list<UserData>::iterator i;
+			if (FindUD(g_UserFunc,string(szLCDwellWord),i) == 0)
 			{
-				if (i->strKeyName == (string(DwellWord)))
+				const char *ptemp = (i->strDescription.c_str());
+				if (*ptemp)
 				{
-					const char *ptemp = (i->strDescription.c_str());
-					if (*ptemp)
-					{
-						MessLen = sprintf_s(Mess, "%s", ptemp);
-						iTemp = g_UserFunc->size(); 
-					}
+					MessLen = sprintf_s(Mess, "%s", ptemp);
 				}
 			}
+			//now search components
+			if ( ( FindUD(g_Components, string(szLCDwellWord), i)  == 0 ) && ( MessLen == 0 ) )
+			{
+				MessLen = sprintf_s(Mess, "Component: %s", szDwellWord);
+			}
 		}
-		//ajs will be used!
-		if (MessLen == 0 )
-		{
-			MessLen = sprintf_s(Mess, "Test:%s", DwellWord);
-		}
+		//if (MessLen == 0 )
+		//{
+		//	MessLen = sprintf_s(Mess, "Test:%s", szDwellWord);
+		//}
 	}
 	if (MessLen > 0)
 	{
@@ -1851,7 +1860,6 @@ void CodeViewer::ParseForFunction() // & Subs & Collections AndyS - WIP - Totall
          {
 				if ((commentIdx >= 0)  && (commentIdx < idx)) continue;
 				if ((doubleQuoteIdx >= 0)  && (doubleQuoteIdx < idx)) continue;//AndyS - combine?
-				string sSubName;
 				size_t Substart = idx + SearchLength;
 				char linechar = 0;
 				//scan for first valid char of sub name (should loop at least once)
@@ -1868,7 +1876,7 @@ void CodeViewer::ParseForFunction() // & Subs & Collections AndyS - WIP - Totall
 					Subfinish++;
 					linechar = line[Subfinish];
 				}
-				sSubName = line.substr(Substart,Subfinish-Substart);
+				const string sSubName = line.substr(Substart,Subfinish-Substart);
 				const UserData ud(i ,line.substr( 0, line.length()-2 ) , sSubName );
 				FindOrInsertUD( g_UserFunc , ud );
          }
@@ -1898,16 +1906,16 @@ void CodeViewer::ParseForFunction() // & Subs & Collections AndyS - WIP - Totall
    }
 	//Now merge the lot for Auto complete...
 	g_AutoComp->clear();
+	for (list<UserData>::iterator i = g_VBwords->begin(); i != g_VBwords->end(); ++i)
+	{
+		FindOrInsertStringIntoAutolist(g_AutoComp,i->strKeyName);
+	}
 	string strCompOut ="";
 	for (list<UserData>::iterator i = g_Components->begin(); i != g_Components->end(); ++i)
 	{
 		FindOrInsertStringIntoAutolist(g_AutoComp,i->strKeyName);
 		strCompOut.append(i->strKeyName);
 		strCompOut.append(" ");
-	}
-	for (list<UserData>::iterator i = g_VBwords->begin(); i != g_VBwords->end(); ++i)
-	{
-		FindOrInsertStringIntoAutolist(g_AutoComp,i->strKeyName);
 	}
 	string sSubFunOut = "";
 	for (list<UserData>::iterator i = g_UserFunc->begin(); i != g_UserFunc->end(); ++i)
@@ -1923,13 +1931,12 @@ void CodeViewer::ParseForFunction() // & Subs & Collections AndyS - WIP - Totall
 		g_AutoCompList += " ";
 	}
    //Send the collected func/subs to scintilla for highlighting - always lowercase as VBS is case insensitive.
+	//TODO: Need to comune with scintilla closer (COM pointers)
 	sSubFunOut = lowerCase(sSubFunOut);
-	const char * strOut = sSubFunOut.c_str();
-	SendMessage(m_hwndScintilla, SCI_SETKEYWORDS, 1, (LPARAM)strOut);
+	SendMessage(m_hwndScintilla, SCI_SETKEYWORDS, 1, (LPARAM)sSubFunOut.c_str());
 	//Send Components to Scintilla for highlighting
 	strCompOut = lowerCase(strCompOut);
-	strOut = strCompOut.c_str();
-	SendMessage(m_hwndScintilla, SCI_SETKEYWORDS, 2 , (LPARAM)strOut);
+	SendMessage(m_hwndScintilla, SCI_SETKEYWORDS, 2 , (LPARAM)strCompOut.c_str());
 }
 
 static CodeViewer* GetCodeViewerPtr(HWND hwndDlg)

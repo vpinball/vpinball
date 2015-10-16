@@ -73,7 +73,7 @@ public:
    int SortAgainstValue(void *pv);
 };
 
-class UserData 
+class UserData
 {
 public:
 	string strKeyName;
@@ -81,8 +81,8 @@ public:
 	int intLineNum;
 
 	UserData();
-	static bool FuncSortUD (const UserData &first, const UserData &second);
 	UserData(const int LineNo, const string &Desc, const string &Name);
+	static bool FuncSortUD (const UserData &first, const UserData &second);
 	~UserData();
 };
 
