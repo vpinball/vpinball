@@ -39,6 +39,7 @@ public:
    STDMETHOD(put_DMDWidth)(/*[in]*/ int pVal);
    STDMETHOD(put_DMDHeight)(/*[in]*/ int pVal);
    STDMETHOD(put_DMDPixels)(/*[in]*/ VARIANT pVal);
+   STDMETHOD(put_DMDColoredPixels)(/*[in]*/ VARIANT pVal);
 
    STDMETHOD(get_NightDay)(/*[out, retval]*/ int *pVal);
    //STDMETHOD(put_NightDay)(/*[in]*/ int newVal);
