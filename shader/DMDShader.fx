@@ -1,3 +1,5 @@
+//!! split into pure sprite & pure DMD?
+
 #include "Helpers.fxh"
 
 float4 vColor_Intensity;
@@ -54,8 +56,12 @@ VS_OUTPUT vs_main (float4 vPosition : POSITION0,
 
 float4 ps_main_DMD_big(in VS_OUTPUT IN) : COLOR
 {
-   const float l = tex2Dlod(texSampler0, float4(IN.tex0, 0.,0.)).z * (255.9/100.);
-   float3 color = vColor_Intensity.xyz * (vColor_Intensity.w * l); //!! create function that resembles LUT from VPM?
+   const float4 rgba = tex2Dlod(texSampler0, float4(IN.tex0, 0.,0.));
+   float3 color = vColor_Intensity.xyz * vColor_Intensity.w; //!! create function that resembles LUT from VPM?
+   if(rgba.a == 1.0)
+      color *= rgba.bgr;
+   else
+      color *= rgba.b * (255.9 / 100.);
 
    const float2 xy = IN.tex0 * vRes;
    const float2 dist = (xy-floor(xy))*2.2-1.1;
@@ -75,8 +81,12 @@ float4 ps_main_DMD_big(in VS_OUTPUT IN) : COLOR
 
 float4 ps_main_DMD(in VS_OUTPUT IN) : COLOR
 {
-   const float l = tex2Dlod(texSampler0, float4(IN.tex0, 0.,0.)).z * (255.9/100.);
-   float3 color = vColor_Intensity.xyz * (1.25 * vColor_Intensity.w * l); //!! create function that resembles LUT from VPM?  //!! 1.25 meh
+   const float4 rgba = tex2Dlod(texSampler0, float4(IN.tex0, 0.,0.));
+   float3 color = vColor_Intensity.xyz * (1.25 * vColor_Intensity.w); //!! create function that resembles LUT from VPM?
+   if(rgba.a == 1.0)
+      color *= rgba.bgr;
+   else
+      color *= rgba.b * (255.9 / 100.);
 
    const float2 xy = IN.tex0 * vRes;
    const float2 dist = (xy-floor(xy))*2.-1.;
@@ -96,8 +106,12 @@ float4 ps_main_DMD(in VS_OUTPUT IN) : COLOR
 
 float4 ps_main_DMD_tiny(in VS_OUTPUT IN) : COLOR
 {
-   const float l = tex2Dlod(texSampler0, float4(IN.tex0, 0.,0.)).z * (255.9/100.);
-   float3 color = vColor_Intensity.xyz * (1.5 * vColor_Intensity.w * l); //!! create function that resembles LUT from VPM?  //!! 1.5 meh
+   const float4 rgba = tex2Dlod(texSampler0, float4(IN.tex0, 0.,0.));
+   float3 color = vColor_Intensity.xyz * (1.5 * vColor_Intensity.w); //!! create function that resembles LUT from VPM?
+   if(rgba.a == 1.0)
+      color *= rgba.bgr;
+   else
+      color *= rgba.b * (255.9 / 100.);
 
    const float2 xy = IN.tex0 * vRes;
    const float2 dist = (xy-floor(xy))*1.4142-0.7071;

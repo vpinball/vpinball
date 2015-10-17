@@ -20,7 +20,7 @@ VP 10.0.0 Changelog
 
 - a special thanks has to go out to our awesome alpha testers/improvers: Unclewilly, JPSalas and JimmyFingers!
 
-- for all the changes regarding the core vbs script file package (like cvpmTrough,cvpmSaucer,BallMass,UseVPMDMD and the new Coindoor key functionality)
+- for all the changes regarding the core vbs script file package (like cvpmTrough,cvpmSaucer,BallMass,UseVPMDMD,UseVPMColoredDMD and the new Coindoor key functionality)
   look into core.vbs for the full changelog
 
 
@@ -177,10 +177,10 @@ VP 10.0.0 Changelog
 
 - EM Reels do not feature raw Text/Font input anymore, only Images (this was already unsupported in 9.9.X, but is now officially discarded)
 
-- internal DMD support (access via script, input levels are 0..100)
+- internal DMD support (access via script, input levels are 0..100 (or RGB/0..255 for DMDColoredPixels))
   to display the DMD, use a TextBox with the magic keyword "DMD" as text
   to be able to connect to VPM, use a recent VPM (2.6 or newer) and a recent core.vbs (3.44 or newer) and follow the instructions there
-- DMDWidth, DMDHeight, DMDPixels to steer the DMD added to Table Script methods
+- DMDWidth, DMDHeight, DMDPixels (or DMDColoredPixels) to steer the DMD added to Table Script methods
 
 - improved smoothness for ramps (centripetal Catmull-Rom splines)
 - ramps can now in addition use the height parameter of their control points (its used as an offset in addition to the normal ramp behaviour)

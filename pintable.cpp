@@ -588,6 +588,42 @@ STDMETHODIMP ScriptGlobalTable::put_DMDPixels(VARIANT pVal) //!! use 64bit inste
    return S_OK;
 }
 
+STDMETHODIMP ScriptGlobalTable::put_DMDColoredPixels(VARIANT pVal) //!! use 64bit instead of 8bit to reduce overhead??
+{
+	SAFEARRAY *psa = pVal.parray;
+
+	if (psa && g_pplayer && g_pplayer->m_dmdx > 0 && g_pplayer->m_dmdy > 0)
+	{
+		const LONG size = g_pplayer->m_dmdx*g_pplayer->m_dmdy;
+		if (!g_pplayer->m_texdmd || (g_pplayer->m_texdmd->width()*g_pplayer->m_texdmd->height() != size))
+		{
+			if (g_pplayer->m_texdmd)
+			{
+				g_pplayer->m_pin3d.m_pd3dDevice->DMDShader->SetTexture("Texture0", (D3DTexture*)NULL);
+				g_pplayer->m_pin3d.m_pd3dDevice->m_texMan.UnloadTexture(g_pplayer->m_texdmd);
+				delete g_pplayer->m_texdmd;
+			}
+			g_pplayer->m_texdmd = new BaseTexture(g_pplayer->m_dmdx, g_pplayer->m_dmdy);
+		}
+
+		DWORD* const data = (DWORD*)g_pplayer->m_texdmd->data(); //!! assumes tex data to be always 32bit
+
+		VARIANT DMDState;
+		DMDState.vt = VT_UI4;
+
+		for (LONG ofs = 0; ofs < size; ++ofs)
+		{
+			SafeArrayGetElement(psa, &ofs, &DMDState);
+			data[ofs] = DMDState.uintVal | 0xFF000000u; // store RGB values and let shader do the rest (set alpha to let shader know that this is RGB and not just brightness)
+		}
+
+		g_pplayer->m_device_texdmd = g_pplayer->m_pin3d.m_pd3dDevice->m_texMan.LoadTexture(g_pplayer->m_texdmd);
+		g_pplayer->m_pin3d.m_pd3dDevice->m_texMan.SetDirty(g_pplayer->m_texdmd);
+	}
+
+	return S_OK;
+}
+
 STDMETHODIMP ScriptGlobalTable::GetBalls(LPSAFEARRAY *pVal)
 {
    if (!pVal || !g_pplayer)

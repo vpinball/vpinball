@@ -668,7 +668,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propput, id(44), helpstring("method DMDWidth")] HRESULT DMDWidth([in] int pVal);
                 [propput, id(45), helpstring("method DMDHeight")] HRESULT DMDHeight([in] int pVal);
                 [propput, id(46), helpstring("method DMDPixels")] HRESULT DMDPixels([in] VARIANT pVal);
-                }
+				[propput, id(47), helpstring("method DMDColoredPixels")] HRESULT DMDColoredPixels([in] VARIANT pVal);
+		}
 
         [
         uuid(D3AD16E8-633B-47de-A3B8-92507F37CF65),
