@@ -31,13 +31,13 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 WNDPROC g_RichEditProc;
 bool g_ToolTipActive;
 string vbsKeyWords;
-bool FindOrInsertStringIntoAutolist(list<string>* ListIn, string strIn);
-list<string> *g_AutoComp;
-bool FindOrInsertUD( list<UserData>* ListIn,const UserData& udIn);
-int FindUD(list<UserData>* ListIn, const string &strIn,list<UserData>::iterator& UDiterOut);
-list<UserData> *g_VBwords;
-list<UserData> *g_UserFunc;
-list<UserData> *g_Components;
+bool FindOrInsertStringIntoAutolist(vector<string>* ListIn, string strIn);
+vector<string> *g_AutoComp;
+bool FindOrInsertUD( vector<UserData>* ListIn,const UserData& udIn);
+int FindUD(vector<UserData>* ListIn, const string &strIn,vector<UserData>::iterator& UDiterOut);
+vector<UserData> *g_VBwords;
+vector<UserData> *g_UserFunc;
+vector<UserData> *g_Components;
 string g_AutoCompList;
 
 
@@ -60,7 +60,7 @@ UserData::UserData(const int LineNo, const string &Desc, const string &Name)
 }
 
 
-bool UserData::FuncSortUD (const UserData &first, const UserData &second)
+bool UserData::FuncCompareUD (const UserData &first, const UserData &second)
 {
   const string strF = CodeViewer::lowerCase(first.strKeyName);
   const string strS = CodeViewer::lowerCase(second.strKeyName);
@@ -74,66 +74,86 @@ bool UserData::FuncSortUD (const UserData &first, const UserData &second)
   return ( strF.length() < strF.length() );
 }
 
-/*	FindUD - TODO: make a binary split search for performance...
-0=Found & UDiterOut set to point at UD in list.
--1=Not Found - Insert point at at end of list
-1=Not Found - Insert point in the middle of list
--2=some undefined error*/
-int FindUD(list<UserData>* ListIn, const string &strIn, list<UserData>::iterator& UDiterOut)
+/*	FindUD - Binary Search.
+0  =Found & UDiterOut set to point at UD in list.
+-1 =Not Found - Insert point before UDiterOut
+1  =Not Found - Insert point after UDiterOut
+-2 =error*/
+int FindUD(vector<UserData>* ListIn, const string &strIn, vector<UserData>::iterator &UDiterOut)
 {
-	UDiterOut = ListIn->begin();
-	int counter = (int)ListIn->size();
 	int result = -2;
-	string strSearchData =  CodeViewer::lowerCase( strIn );
-
-	while ( (counter) && (UDiterOut != ListIn->end() ) )
+	if (ListIn && (strIn.size() > 2) )// Sanity chq.
 	{
-		const string strTableData = CodeViewer::lowerCase(UDiterOut->strKeyName);
-		result = strTableData.compare(strSearchData);
-		if ( result < 0 )
+		const unsigned int ListSize = (int)ListIn->size();
+		UINT32 iCurPos = (ListSize >> 1);
+		UINT32 iNewPos = 1u << 31;
+		while ((!(iNewPos & ListSize)) && (iNewPos > 1))
+      {
+         iNewPos >>= 1;
+      }
+		int iJumpDelta = ((iNewPos) >> 1);
+		--iNewPos;//Zero Base
+		const string strSearchData =  CodeViewer::lowerCase( strIn );
+		do
 		{
-			++UDiterOut;
-			counter--;
-		}
-		else break;
+			iCurPos = iNewPos;
+			if (iCurPos >= ListSize) { result = -1; }
+			else
+			{
+				const string strTableData = CodeViewer::lowerCase(ListIn->at(iCurPos).strKeyName);
+				result = strSearchData.compare(strTableData);
+			}
+			if (iJumpDelta == 0 || result == 0) break;
+			if ( result < 0 )	{ iNewPos = iCurPos - iJumpDelta; }
+			else  { iNewPos = iCurPos + iJumpDelta; }
+			iJumpDelta >>= 1;
+		} while (iNewPos >= 0);
+		UDiterOut = ListIn->begin() + iCurPos;
 	}
 	return result ;
 }
+
 //Assumes case insensitive sorted list (found = false):
-bool FindOrInsertUD(list<UserData>* ListIn,const UserData &udIn)
+bool FindOrInsertUD(vector<UserData>* ListIn,const UserData &udIn)
 {
-	if (ListIn->size() == 0)	//First in the list
+	if (ListIn->size() == 0)	//First in
 	{
-		ListIn->push_front(udIn);
+		ListIn->push_back(udIn);
 		return true;
 	}
-	list<UserData>::iterator iterFound;
+	vector<UserData>::iterator iterFound;
 	const int KeyFound = FindUD(ListIn, udIn.strKeyName , iterFound);
 	if (KeyFound == 0)return false;//Already Exists.
-
-	if (KeyFound > 0) //insert somewhere in the middle
+	if (KeyFound == -1) //insert before, somewhere in the middle
 	{
 		ListIn->insert(iterFound, udIn);
 		return true;
 	}
-	if (KeyFound < 0) //went in at the bottom
-	{
+	if (iterFound == ( ListIn->end() - 1) )
+	{//insert at end
 		ListIn->push_back(udIn);
+		return true;
+	}
+
+	if (KeyFound == 1) //insert after, somewhere in the middle
+	{
+		++iterFound;
+		ListIn->insert(iterFound, udIn);
 		return true;
 	}
 	return false;//Oh pop poop, never should hit here.
 }
 
-bool FindOrInsertStringIntoAutolist(list<string>* ListIn, string strIn)
+bool FindOrInsertStringIntoAutolist(vector<string>* ListIn,const string strIn)
 {
 	//First in the list
 	if (ListIn->empty())
 	{
-		ListIn->push_front(strIn);
+		ListIn->push_back(strIn);
 		return true;
 	}
-	const string strLowerIn = CodeViewer::lowerCase(strIn);
-	list<string>::iterator i = ListIn->begin();
+	string strLowerIn = CodeViewer::lowerCase(strIn);
+	vector<string>::iterator i = ListIn->begin();
 	int counter = ListIn->size();
 	int result = -1;
 	while (counter)
@@ -531,11 +551,11 @@ void CodeViewer::Create()
       WS_CHILD | ES_NOHIDESEL | WS_VISIBLE | ES_SUNKEN | WS_HSCROLL | WS_VSCROLL | ES_MULTILINE | ES_WANTRETURN,
       0, 10 + 32, 300, 290, m_hwndMain, NULL, g_hinst, 0);
 // Create new list of user functions & Collections- filled in ParseForFunction(), first called in LoadFromStrem()
-	g_AutoComp = new list<string>();
-	g_Components = new list<UserData>();
-	g_UserFunc = new list<UserData>(); 
+	g_AutoComp = new vector<string>();
+	g_Components = new vector<UserData>();
+	g_UserFunc = new vector<UserData>(); 
 // parse vb reserved words for auto complete.
-	g_VBwords = new list<UserData>;
+	g_VBwords = new vector<UserData>;
 	int intWordFinish =-1; //skip space
 	char WordChar= vbsReservedWords[0];
 	char szWord[256];
@@ -553,14 +573,12 @@ void CodeViewer::Create()
 			wordlen++;
 			WordChar= vbsReservedWords[intWordFinish];
 		}
-		UserData ud;
-		ud.strKeyName = string(szWord);
-		g_VBwords->push_front(ud);
+
+		FindOrInsertStringIntoAutolist(g_AutoComp, string(szWord));
 	}
-	g_VBwords->sort(UserData::FuncSortUD);
 	vbsKeyWords = new char[strlen(vbsReservedWords)+2];
 	vbsKeyWords.clear();
-	for (list<UserData>::iterator i = g_VBwords->begin();i != g_VBwords->end(); ++i)
+	for (vector<UserData>::iterator i = g_VBwords->begin();i != g_VBwords->end(); ++i)
 	{
 		//make vbsKeyWords in order. (the cat has been kicked out :)
 		vbsKeyWords += lowerCase( i->strKeyName);
@@ -686,6 +704,19 @@ void CodeViewer::Create()
 
 void CodeViewer::Destroy()
 {
+
+	if(g_AutoComp)
+	{
+		g_AutoComp->clear();
+		delete g_AutoComp;
+	}
+
+	if(g_Components)
+	{
+		g_Components->clear();
+		delete g_Components;
+	}
+
 	if(g_VBwords)
 	{
 		g_VBwords->clear();
@@ -1290,18 +1321,12 @@ void CodeViewer::FindCodeFromEvent()
    const size_t iEventIndex = SendMessage(m_hwndEventList, CB_GETITEMDATA, index, 0);
    lstrcat(szItemName, "_"); // VB Specific event names
    lstrcat(szItemName, szEventName);
-   // AndyS Gain a few ticks!
-
    size_t codelen = SendMessage(m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
    size_t startChar = 0;
    size_t stopChar = codelen;
-   //SendMessage(m_hwndScintilla, SCI_SETTARGETSTART, startChar, 0); 
-   //SendMessage(m_hwndScintilla, SCI_SETTARGETEND, stopChar, 0);
    SendMessage(m_hwndScintilla, SCI_TARGETWHOLEDOCUMENT, 0, 0);
-   //AndyS - Finish
-   SendMessage(m_hwndScintilla, SCI_SETSEARCHFLAGS, SCFIND_WHOLEWORD, 0);
-
-   size_t posFind;
+	SendMessage(m_hwndScintilla, SCI_SETSEARCHFLAGS, SCFIND_WHOLEWORD, 0);
+	size_t posFind;
    while ((posFind = SendMessage(m_hwndScintilla, SCI_SEARCHINTARGET, lstrlen(szItemName), (LPARAM)szItemName)) != -1)
    {
       const size_t line = SendMessage(m_hwndScintilla, SCI_LINEFROMPOSITION, posFind, 0);
@@ -1632,7 +1657,7 @@ bool CodeViewer::ShowTooltip(SCNotification *pSCN)
 			// has function list been filled?
 			if ( g_UserFunc->size() == 0 ) ParseForFunction();
 			//now search subs/funs
-			list<UserData>::iterator i;
+			vector<UserData>::iterator i;
 			if (FindUD(g_UserFunc,string(szLCDwellWord),i) == 0)
 			{
 				const char *ptemp = (i->strDescription.c_str());
@@ -1883,7 +1908,7 @@ void CodeViewer::ParseForFunction() // & Subs & Collections AndyS - WIP - Totall
       }
 	}
    //Propergate subs&funcs in menu in order
-	for (list<UserData>::iterator i = g_UserFunc->begin(); i != g_UserFunc->end(); ++i) 
+	for (vector<UserData>::iterator i = g_UserFunc->begin(); i != g_UserFunc->end(); ++i) 
    {
 		const char *c_str1 = i->strKeyName.c_str ();
 		SendMessage(m_hwndFunctionList, CB_ADDSTRING, 0, (LPARAM)(c_str1) );
@@ -1906,26 +1931,26 @@ void CodeViewer::ParseForFunction() // & Subs & Collections AndyS - WIP - Totall
    }
 	//Now merge the lot for Auto complete...
 	g_AutoComp->clear();
-	for (list<UserData>::iterator i = g_VBwords->begin(); i != g_VBwords->end(); ++i)
+	for (vector<UserData>::iterator i = g_VBwords->begin(); i != g_VBwords->end(); ++i)
 	{
 		FindOrInsertStringIntoAutolist(g_AutoComp,i->strKeyName);
 	}
 	string strCompOut ="";
-	for (list<UserData>::iterator i = g_Components->begin(); i != g_Components->end(); ++i)
+	for (vector<UserData>::iterator i = g_Components->begin(); i != g_Components->end(); ++i)
 	{
 		FindOrInsertStringIntoAutolist(g_AutoComp,i->strKeyName);
 		strCompOut.append(i->strKeyName);
 		strCompOut.append(" ");
 	}
 	string sSubFunOut = "";
-	for (list<UserData>::iterator i = g_UserFunc->begin(); i != g_UserFunc->end(); ++i)
+	for (vector<UserData>::iterator i = g_UserFunc->begin(); i != g_UserFunc->end(); ++i)
 	{
 		FindOrInsertStringIntoAutolist(g_AutoComp,i->strKeyName);
 		sSubFunOut.append(i->strKeyName);
 		sSubFunOut.append(" ");
 	}
 	g_AutoCompList = "";
-	for (list<string>::iterator i = g_AutoComp->begin(); i != g_AutoComp->end();++i)
+	for (vector<string>::iterator i = g_AutoComp->begin(); i != g_AutoComp->end();++i)
 	{
 		g_AutoCompList.append(i->data());
 		g_AutoCompList += " ";
@@ -2111,7 +2136,7 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
             const size_t index = SendMessage(pcv->m_hwndFunctionList, CB_GETCURSEL, 0, 0);
 				if (index != -1)
 				{
-					list<UserData>::iterator i = g_UserFunc->begin();
+					vector<UserData>::iterator i = g_UserFunc->begin();
 					for (size_t t = 0; t < index; t++)	++i;
 					SendMessage(pcv->m_hwndScintilla, SCI_GOTOLINE, i->intLineNum, 0);
 					SendMessage(pcv->m_hwndScintilla, SCI_GRABFOCUS, 0, 0);
