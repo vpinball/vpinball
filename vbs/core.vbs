@@ -3,6 +3,10 @@ Const VPinMAMEDriverVer = 3.46
 '=======================
 ' VPinMAME driver core.
 '=======================
+' New in 3.47 (Update by Toxie)
+' - (Core changes)
+'   - Add UseVPMColoredDMD = true to the table script (place before LoadVPM, or otherwise calling core.vbs)
+'     to automatically pass the raw colored DMD data (RGB from 0..255) from VPM to VP (see VP10+ for details on how to display it)
 ' New in 3.46 (Update by KieferSkunk)
 ' - (Core changes)
 '   - Added two new classes: cvpmTrough and cvpmSaucer
@@ -325,6 +329,7 @@ Dim vpmCreateBall   ' Called whenever a vpm class needs to create a ball
 Dim BSize:If IsEmpty(Eval("BallSize"))=true Then BSize=25 Else BSize = BallSize/2
 Dim BMass:If IsEmpty(Eval("BallMass"))=true Then BMass=1 Else BMass = BallMass
 Dim UseDMD:If IsEmpty(Eval("UseVPMDMD"))=true Then UseDMD=false Else UseDMD = UseVPMDMD
+Dim UseColoredDMD:If IsEmpty(Eval("UseVPMColoredDMD"))=true Then UseColoredDMD=false Else UseColoredDMD = UseVPMColoredDMD
 
 ' Assign Null Default Sub so script won't error if only one is defined in a script (should redefine in your script)
 Set GICallback = GetRef("NullSub")
@@ -2428,10 +2433,17 @@ Sub PinMAMETimer_Timer
 	On Error Resume Next
 		If UseDMD Then
 			DMDp = Controller.RawDmdPixels
-			If Not IsEmpty(DMDp) Then 
+			If Not IsEmpty(DMDp) Then
 				DMDWidth = Controller.RawDmdWidth
 				DMDHeight = Controller.RawDmdHeight
 				DMDPixels = DMDp
+			End If
+		ElseIf UseColoredDMD Then
+			DMDp = Controller.RawDmdColoredPixels
+			If Not IsEmpty(DMDp) Then
+				DMDWidth = Controller.RawDmdWidth
+				DMDHeight = Controller.RawDmdHeight
+				DMDColoredPixels = DMDp
 			End If
 		End If
 		If UseLamps Then ChgLamp = Controller.ChangedLamps Else LampCallback
