@@ -76,15 +76,15 @@ public:
 class UserData
 {
 public:
-	string strKeyName;
-	string strDescription;
-	int intLineNum;
-
+	string strKeyName; //Unique Name
+	string strDescription;//Brief Description
+	int intLineNum; //Line No. Declaration
 	UserData();
 	UserData(const int LineNo, const string &Desc, const string &Name);
-	static bool FuncSortUD (const UserData &first, const UserData &second);
+	bool FuncCompareUD (const UserData &first, const UserData &second);
 	~UserData();
 };
+
 
 class CodeViewer :
    public CComObjectRoot,
@@ -241,7 +241,7 @@ public:
    void SetCaption(char *szCaption);
 	string upperCase(string input);
 
-	//void ParseVPCore();
+	//! TODO:void ParseVPCore();
 	bool ShowTooltip(SCNotification *Scn);
 	void ShowAutoComplete(SCNotification *Scn);
 	static string lowerCase(string input);
