@@ -1609,7 +1609,7 @@ HRESULT STDMETHODCALLTYPE CodeViewer::QueryService(
    return hr;
 }
 
-void CodeViewer::ShowAutoComplete(SCNotification *pSCN)
+void CodeViewer::ShowAutoComplete()
 {
 	// 1. get current word
 	int CurPos = SendMessage(m_hwndScintilla,SCI_GETCURRENTPOS,0,0);
@@ -2153,6 +2153,11 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
             RemoveComment(pcv->m_hwndScintilla);
             break;
          }
+			case ID_SHOWTOOLTIP:
+			{
+				pcv->ShowAutoComplete();
+				break;
+			}
          }
       }
       break;
@@ -2200,8 +2205,7 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 		case SCN_CHARADDED:
 		{
 			CodeViewer *pcv = GetCodeViewerPtr(hwndDlg);
-			SCNotification * const pSCN = (SCNotification *)lParam;
-			pcv->ShowAutoComplete(pSCN);
+			pcv->ShowAutoComplete();
 		}
 		break;
 	  case SCN_UPDATEUI:
