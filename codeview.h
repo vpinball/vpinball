@@ -243,7 +243,7 @@ public:
 
 	//! TODO:void ParseVPCore();
 	bool ShowTooltip(SCNotification *Scn);
-	void ShowAutoComplete(SCNotification *Scn);
+	void ShowAutoComplete();
 	static string lowerCase(string input);
 	void szLower(char * incstr);
 	void szUpper(char * incstr);
