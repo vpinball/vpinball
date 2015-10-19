@@ -80,11 +80,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
     <IntDir>$(Configuration)\</IntDir>
-    <TargetName>VPinball</TargetName>
+    <TargetName>vpinballx</TargetName>
     <TargetExt>.exe</TargetExt>
     <LinkIncremental>
     </LinkIncremental>
     <PreBuildEventUseInBuild>false</PreBuildEventUseInBuild>
+    <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <TargetName>VPinball</TargetName>
@@ -94,13 +95,14 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
     <IntDir>$(Configuration)\</IntDir>
-    <TargetName>VPinball</TargetName>
+    <TargetName>vpinballx</TargetName>
     <TargetExt>.exe</TargetExt>
     <LinkIncremental />
     <GenerateManifest>true</GenerateManifest>
     <EmbedManifest>true</EmbedManifest>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <PreBuildEventUseInBuild>false</PreBuildEventUseInBuild>
+    <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <TargetName>VPinball</TargetName>
@@ -163,13 +165,10 @@
       <SuppressStartupBanner>false</SuppressStartupBanner>
     </Xdcmake>
     <PostBuildEvent>
-      <Message>Copies exe to production directory.</Message>
-      <Command>%40echo off
-if ".%25VPIN_DIR%25" == "." set VPIN_DIR=C:\UPin\VisualPinball\data\exe
-echo VPIN_DIR="%25VPIN_DIR%25"
-if not exist "%25VPIN_DIR%25" mkdir "%25VPIN_DIR%25"
-copy "$(TargetPath)" "%25VPIN_DIR%25"
-</Command>
+      <Message>
+      </Message>
+      <Command>
+      </Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>SubWCRev.exe $(SolutionDir) $(ProjectDir)svn_version.tmpl $(ProjectDir)svn_version.h</Command>
@@ -288,12 +287,8 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <LargeAddressAware>true</LargeAddressAware>
     </Link>
     <PostBuildEvent>
-      <Command>%40echo off
-if ".%25VPIN_DIR%25" == "." set VPIN_DIR=C:\UPin\VisualPinball\data\exe
-echo VPIN_DIR="%25VPIN_DIR%25"
-if not exist "%25VPIN_DIR%25" mkdir "%25VPIN_DIR%25"
-copy "$(TargetPath)" "%25VPIN_DIR%25"
-</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>SubWCRev.exe $(SolutionDir) $(ProjectDir)svn_version.tmpl $(ProjectDir)svn_version.h</Command>
