@@ -101,7 +101,7 @@
     <GenerateManifest>true</GenerateManifest>
     <EmbedManifest>true</EmbedManifest>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-    <PreBuildEventUseInBuild>false</PreBuildEventUseInBuild>
+    <PreBuildEventUseInBuild>true</PreBuildEventUseInBuild>
     <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
