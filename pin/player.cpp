@@ -3820,7 +3820,7 @@ void Player::DrawBalls()
    }
 
    bool drawReflection = ((m_fReflectionForBalls && (m_ptable->m_useReflectionForBalls == -1)) || (m_ptable->m_useReflectionForBalls == 1));
-   bool oldDrawReflection = drawReflection;
+   const bool orgDrawReflection = drawReflection;
    //     if (reflectionOnly && !drawReflection)
    //        return;
 
@@ -3831,69 +3831,12 @@ void Player::DrawBalls()
    {
       Ball * const pball = m_vball[i];
 
-      if (oldDrawReflection && !pball->m_reflectionEnabled)
+      if (orgDrawReflection && !pball->m_reflectionEnabled)
          drawReflection = false;
-      if (oldDrawReflection && pball->m_reflectionEnabled)
+      if (orgDrawReflection && pball->m_reflectionEnabled)
          drawReflection = true;
 
-      // collect the x nearest lights that can reflect on balls
-      Light* light_nearest[MAX_BALL_LIGHT_SOURCES];
-      search_for_nearest(pball, lights, light_nearest);
-
-      struct CLight
-      {
-         float vPos[3];
-         float vEmission[3];
-      };
-      CLight l[MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES];
-
-      D3DXVECTOR4 emission = convertColor(m_ptable->m_Light[0].emission);
-      emission.x *= m_ptable->m_lightEmissionScale*m_ptable->m_globalEmissionScale;
-      emission.y *= m_ptable->m_lightEmissionScale*m_ptable->m_globalEmissionScale;
-      emission.z *= m_ptable->m_lightEmissionScale*m_ptable->m_globalEmissionScale;
-
-      for (unsigned int i2 = 0; i2 < MAX_LIGHT_SOURCES; ++i2)
-      {
-         memcpy(&l[i2].vPos, &g_pplayer->m_ptable->m_Light[i2].pos, sizeof(float) * 3);
-         memcpy(&l[i2].vEmission, &emission, sizeof(float) * 3);
-      }
-
-      for (unsigned int light_i = 0; light_i < MAX_BALL_LIGHT_SOURCES; ++light_i)
-         if (light_nearest[light_i] != NULL)
-         {
-            l[light_i + MAX_LIGHT_SOURCES].vPos[0] = light_nearest[light_i]->m_d.m_vCenter.x;
-            l[light_i + MAX_LIGHT_SOURCES].vPos[1] = light_nearest[light_i]->m_d.m_vCenter.y;
-            l[light_i + MAX_LIGHT_SOURCES].vPos[2] = light_nearest[light_i]->m_d.m_meshRadius + light_nearest[light_i]->m_surfaceHeight; //!! z pos
-            const float c = map_bulblight_to_emission(light_nearest[light_i]) * pball->m_bulb_intensity_scale;
-            const D3DXVECTOR4 color = convertColor(light_nearest[light_i]->m_d.m_color);
-            l[light_i + MAX_LIGHT_SOURCES].vEmission[0] = color.x*c;
-            l[light_i + MAX_LIGHT_SOURCES].vEmission[1] = color.y*c;
-            l[light_i + MAX_LIGHT_SOURCES].vEmission[2] = color.z*c;
-         }
-         else //!! rather just set the max number of ball lights!?
-         {
-            l[light_i + MAX_LIGHT_SOURCES].vPos[0] = -100000.0f;
-            l[light_i + MAX_LIGHT_SOURCES].vPos[1] = -100000.0f;
-            l[light_i + MAX_LIGHT_SOURCES].vPos[2] = -100000.0f;
-            l[light_i + MAX_LIGHT_SOURCES].vEmission[0] = 0.0f;
-            l[light_i + MAX_LIGHT_SOURCES].vEmission[1] = 0.0f;
-            l[light_i + MAX_LIGHT_SOURCES].vEmission[2] = 0.0f;
-         }
-
-      ballShader->SetValue("packedLights", l, sizeof(CLight)*(MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES));
-
-      // now for a weird hack: make material more rough, depending on how near the nearest lightsource is, to 'emulate' the area of the bulbs (as VP only features point lights so far)
-      float Roughness = 0.8f;
-      if (light_nearest[0] != NULL)
-      {
-         const float dist = Vertex3Ds(light_nearest[0]->m_d.m_vCenter.x - pball->m_pos.x, light_nearest[0]->m_d.m_vCenter.y - pball->m_pos.y, light_nearest[0]->m_d.m_meshRadius + light_nearest[0]->m_surfaceHeight - pball->m_pos.z).Length(); //!! z pos
-         Roughness = min(max(dist*0.006f, 0.3f), Roughness);
-      }
-      const D3DXVECTOR4 rwem(exp2f(10.0f * Roughness + 1.0f), 0.f, 1.f, 0.0f);
-      ballShader->SetVector("Roughness_WrapL_Edge_IsMetal", &rwem);
-
-      // start drawing
-
+      // calculate/adapt height of ball
       float zheight = (!pball->m_frozen) ? pball->m_pos.z : (pball->m_pos.z - pball->m_radius);
 
       if (m_ptable->m_fReflectionEnabled)
@@ -3905,13 +3848,72 @@ void Player::DrawBalls()
          // don't draw reflection if the ball is not on the playfield (e.g. on a ramp/kicker)
          drawReflection = !((zheight > maxz) || pball->m_frozen || (pball->m_pos.z < minz));
 
-      if ((zheight > maxz) || (pball->m_pos.z < minz))
+	  if (!drawReflection && m_ptable->m_fReflectionEnabled)
+		  continue;
+	  
+	  if ((zheight > maxz) || (pball->m_pos.z < minz))
       {
          // scaling the ball height by the z scale value results in a flying ball over the playfield/ramp
          // by reducing it with 0.96f (a factor found by trial'n error) the ball is on the ramp again
          if (m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] != 1.0f)
             zheight *= (m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] * 0.96f);
       }
+
+	  // collect the x nearest lights that can reflect on balls
+	  Light* light_nearest[MAX_BALL_LIGHT_SOURCES];
+	  search_for_nearest(pball, lights, light_nearest);
+
+	  struct CLight
+	  {
+		  float vPos[3];
+		  float vEmission[3];
+	  };
+	  CLight l[MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES];
+
+	  D3DXVECTOR4 emission = convertColor(m_ptable->m_Light[0].emission);
+	  emission.x *= m_ptable->m_lightEmissionScale*m_ptable->m_globalEmissionScale;
+	  emission.y *= m_ptable->m_lightEmissionScale*m_ptable->m_globalEmissionScale;
+	  emission.z *= m_ptable->m_lightEmissionScale*m_ptable->m_globalEmissionScale;
+
+	  for (unsigned int i2 = 0; i2 < MAX_LIGHT_SOURCES; ++i2)
+	  {
+		  memcpy(&l[i2].vPos, &g_pplayer->m_ptable->m_Light[i2].pos, sizeof(float) * 3);
+		  memcpy(&l[i2].vEmission, &emission, sizeof(float) * 3);
+	  }
+
+	  for (unsigned int light_i = 0; light_i < MAX_BALL_LIGHT_SOURCES; ++light_i)
+		  if (light_nearest[light_i] != NULL)
+		  {
+			  l[light_i + MAX_LIGHT_SOURCES].vPos[0] = light_nearest[light_i]->m_d.m_vCenter.x;
+			  l[light_i + MAX_LIGHT_SOURCES].vPos[1] = light_nearest[light_i]->m_d.m_vCenter.y;
+			  l[light_i + MAX_LIGHT_SOURCES].vPos[2] = light_nearest[light_i]->m_d.m_meshRadius + light_nearest[light_i]->m_surfaceHeight; //!! z pos
+			  const float c = map_bulblight_to_emission(light_nearest[light_i]) * pball->m_bulb_intensity_scale;
+			  const D3DXVECTOR4 color = convertColor(light_nearest[light_i]->m_d.m_color);
+			  l[light_i + MAX_LIGHT_SOURCES].vEmission[0] = color.x*c;
+			  l[light_i + MAX_LIGHT_SOURCES].vEmission[1] = color.y*c;
+			  l[light_i + MAX_LIGHT_SOURCES].vEmission[2] = color.z*c;
+		  }
+		  else //!! rather just set the max number of ball lights!?
+		  {
+			  l[light_i + MAX_LIGHT_SOURCES].vPos[0] = -100000.0f;
+			  l[light_i + MAX_LIGHT_SOURCES].vPos[1] = -100000.0f;
+			  l[light_i + MAX_LIGHT_SOURCES].vPos[2] = -100000.0f;
+			  l[light_i + MAX_LIGHT_SOURCES].vEmission[0] = 0.0f;
+			  l[light_i + MAX_LIGHT_SOURCES].vEmission[1] = 0.0f;
+			  l[light_i + MAX_LIGHT_SOURCES].vEmission[2] = 0.0f;
+		  }
+
+	  ballShader->SetValue("packedLights", l, sizeof(CLight)*(MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES));
+
+	  // now for a weird hack: make material more rough, depending on how near the nearest lightsource is, to 'emulate' the area of the bulbs (as VP only features point lights so far)
+	  float Roughness = 0.8f;
+	  if (light_nearest[0] != NULL)
+	  {
+		  const float dist = Vertex3Ds(light_nearest[0]->m_d.m_vCenter.x - pball->m_pos.x, light_nearest[0]->m_d.m_vCenter.y - pball->m_pos.y, light_nearest[0]->m_d.m_meshRadius + light_nearest[0]->m_surfaceHeight - pball->m_pos.z).Length(); //!! z pos
+		  Roughness = min(max(dist*0.006f, 0.3f), Roughness);
+	  }
+	  const D3DXVECTOR4 rwem(exp2f(10.0f * Roughness + 1.0f), 0.f, 1.f, 0.0f);
+	  ballShader->SetVector("Roughness_WrapL_Edge_IsMetal", &rwem);
 
       // ************************* draw the ball itself ****************************
       if (m_antiStretchBall && m_ptable->m_BG_rotation[m_ptable->m_BG_current_set] != 0.0f)
@@ -3952,13 +3954,9 @@ void Player::DrawBalls()
 
       const bool lowDetailBall = m_ptable->GetDetailLevel() < 10;
 
-      // 	  if (drawReflection)
-      // 	  {
-      //         DrawBallReflection(pball, zheight, lowDetailBall);
-      //      }
-
-      if (!drawReflection &&  m_ptable->m_fReflectionEnabled)
-         continue;
+	  // old ball reflection code
+      //if (drawReflection)
+      //   DrawBallReflection(pball, zheight, lowDetailBall);
 
       ballShader->SetVector("position_radius", &pos_rad);
       //ballShader->SetFloat("reflection_ball_playfield", (float)m_ptable->m_playfieldReflectionStrength * (float)(1.0 / 255.0));
