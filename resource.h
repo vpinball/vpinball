@@ -322,6 +322,8 @@
 #define IDC_OUT                         281
 #define IDC_SENDMAIL                    281
 #define IDC_LMAGSAVEBUTTON              281
+#define IDC_CVP_BUT_CANCEL2             281
+#define IDC_CVP_BUT_OK                  281
 #define IDC_EVENTLIST                   282
 #define IDC_OFFSETX                     282
 #define IDC_RIGHTMAGNASAVE              282
