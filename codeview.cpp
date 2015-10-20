@@ -39,10 +39,6 @@ vector<UserData> *g_UserFunc;
 vector<UserData> *g_Components;
 string g_AutoCompList;
 
-
-
-
-
 /*	FindUD - Binary Search.
 0  =Found & UDiterOut set to point at UD in list.
 -1 =Not Found - Insert point before UDiterOut
@@ -561,21 +557,22 @@ void CodeViewer::Create()
 	pCVPrefs = new CVPrefs;
 	rgbDefaultText = RGB(0,0,0);
 	VBS.rgb = RGB(0,0,160);
-	VBS.b = true;
+	VBS.b = GetRegBoolWithDefault("CVEdit","ShowVBS",true);
 	Comps.rgb = RGB(120,120,0);
-	Comps.b = true;
+	Comps.b = GetRegBoolWithDefault("CVEdit","ShowComponents",true);
 	Subs.rgb = RGB(120,0,120);
-	Subs.b = true;
+	Subs.b = GetRegBoolWithDefault("CVEdit","ShowSubs",true);
 	Remarks.rgb = RGB(0,120,0);
-	Remarks.b = true;
+	Remarks.b = GetRegBoolWithDefault("CVEdit","ShowRemarks",true);
 	Literals.rgb = RGB(0,120,120);
-	Literals.b = true;
+	Literals.b = GetRegBoolWithDefault("CVEdit","ShowLierals",true);
+	//#define SMSCIN (x,y,z) ( SendMessage(m_hwndScintilla, UINT x,  y, z) );
 
    SendMessage(m_hwndScintilla, SCI_SETLEXER, (WPARAM)SCLEX_VBSCRIPT, 0); 
 	SendMessage(m_hwndScintilla, SCI_SETKEYWORDS, 0, (LPARAM)vbsReservedWords );
    SendMessage(m_hwndScintilla, SCI_SETTABWIDTH, 4, 0);
    SendMessage(m_hwndScintilla, SCI_SETMODEVENTMASK, SC_MOD_INSERTTEXT, 0);
-   SendMessage(m_hwndScintilla,SCI_SETMOUSEDWELLTIME,700,0);
+   SendMessage(m_hwndScintilla, SCI_SETMOUSEDWELLTIME,700,0);
 
    // The null visibility policy is like Visual Studio - if a search goes
    // off the screen, the newly selected text is placed in the middle of the
@@ -1826,17 +1823,16 @@ void CodeViewer::szUpper(char * incstr)
 }
 
 
-void CodeViewer::ParseForFunction() // & Subs & Collections AndyS - WIP - Totally overhaul of this!
+void CodeViewer::ParseForFunction() // Subs & Collections AndyS - WIP 
 {
    char text[1024];
    size_t scriptLines = SendMessage(m_hwndScintilla, SCI_GETLINECOUNT, 0, 0);
    SendMessage(m_hwndFunctionList, CB_RESETCONTENT, 0, 0);
-	char szValidChars[256] = {};  //AndyS - 191 valid from UK locale 
+	char szValidChars[256] = {};  
    SendMessage(m_hwndScintilla, SCI_GETWORDCHARS, 0, (LPARAM)szValidChars);//Lparam or size_t ?????
    string ValidChars(szValidChars);
-	//g_UserFunc->clear(); //is refilled below
 	string str ="";
-	for (size_t i = 0; i < scriptLines; ++i) // i i captin'
+	for (size_t i = 0; i < scriptLines; ++i) 
    {
 		
       const size_t lineLength = SendMessage(m_hwndScintilla, SCI_LINELENGTH, i, 0);
@@ -1862,11 +1858,11 @@ void CodeViewer::ParseForFunction() // & Subs & Collections AndyS - WIP - Totall
          const size_t endIdx = upperCase(line).find("END");
          const size_t exitIdx = upperCase(line).find("EXIT");
          const size_t commentIdx = upperCase(line).find("'");
-         const size_t doubleQuoteIdx = upperCase(line).find("\""); //AndyS
+         const size_t doubleQuoteIdx = upperCase(line).find("\"");
          if (endIdx == -1 && exitIdx == -1)
          {
 				if ((commentIdx >= 0)  && (commentIdx < idx)) continue;
-				if ((doubleQuoteIdx >= 0)  && (doubleQuoteIdx < idx)) continue;//AndyS - combine?
+				if ((doubleQuoteIdx >= 0)  && (doubleQuoteIdx < idx)) continue;
 				size_t Substart = idx + SearchLength;
 				char linechar = 0;
 				//scan for first valid char of sub name (should loop at least once)
@@ -2260,12 +2256,16 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
       RECT rcMain;
       GetWindowRect(hwndParent, &rcMain);
       GetWindowRect(hwndDlg, &rcDlg);
-
       SetWindowPos(hwndDlg, NULL,
          (rcMain.right + rcMain.left) / 2 - (rcDlg.right - rcDlg.left) / 2,
          (rcMain.bottom + rcMain.top) / 2 - (rcDlg.bottom - rcDlg.top) / 2,
-         0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE/* | SWP_NOMOVE*/);
+         0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
 		CodeViewer * const pcv = GetCodeViewerPtr(GetParent(hwndDlg));
+		pcv->VBS.b = GetRegBoolWithDefault("CVEdit","ShowVBS",true);
+		pcv->Comps.b = GetRegBoolWithDefault("CVEdit","ShowComponents",true);
+		pcv->Subs.b = GetRegBoolWithDefault("CVEdit","ShowSubs",true);
+		pcv->Remarks.b = GetRegBoolWithDefault("CVEdit","ShowRemarks",true);
+		pcv->Literals.b = GetRegBoolWithDefault("CVEdit","ShowLierals",true);
 		if(pcv->VBS.b)  
 		{
 				HWND hChkBox = GetDlgItem(hwndDlg,IDC_CVP_CHECKBOX_VBS);
@@ -2321,7 +2321,25 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 				switch (LOWORD(wParam))
 				{
 				case IDC_CVP_BUT_CANCEL:
+					{
+					pcv->VBS.b = GetRegBoolWithDefault("CVEdit","ShowVBS",true);
+					pcv->Comps.b = GetRegBoolWithDefault("CVEdit","ShowComponents",true);
+					pcv->Subs.b = GetRegBoolWithDefault("CVEdit","ShowSubs",true);
+					pcv->Remarks.b = GetRegBoolWithDefault("CVEdit","ShowRemarks",true);
+					pcv->Literals.b = GetRegBoolWithDefault("CVEdit","ShowLierals",true);
 					EndDialog(hwndDlg, TRUE);
+					}
+					break;
+
+				case IDC_CVP_BUT_OK:
+					{
+					SetRegValueBool("CVEdit","ShowVBS",pcv->VBS.b);
+					SetRegValueBool("CVEdit","ShowComponents",pcv->Comps.b);
+					SetRegValueBool("CVEdit","ShowSubs",pcv->Subs.b);
+					SetRegValueBool("CVEdit","ShowRemarks",pcv->Remarks.b);
+					SetRegValueBool("CVEdit","ShowLierals",pcv->Literals.b);
+					EndDialog(hwndDlg, TRUE);
+					}
 					break;
 
 				case IDC_CVP_CHECKBOX_VBS:
