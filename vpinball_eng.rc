@@ -14,7 +14,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Englisch (USA) resources
+// English (United States) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
@@ -252,7 +252,7 @@ BEGIN
     PUSHBUTTON      "Web Site",IDC_WEBSITE,156,174,67,14
     PUSHBUTTON      "Translator's Web Site Name",IDC_TRANSLATEWEBSITE,130,44,93,14,NOT WS_VISIBLE | WS_DISABLED
     CTEXT           "This application uses Visual Basic Scripting Edition by Microsoft",IDC_STATIC,0,198,150,17
-    CONTROL         IDC_RIGHTFLIPPERBUTTON,IDC_STATIC,"Static",SS_BITMAP,7,7,94,27
+    CONTROL         264,IDC_STATIC,"Static",SS_BITMAP,7,7,94,27
     LTEXT           "A Randy Davis Production",IDC_STATIC,13,35,94,8
     LTEXT           "Version 10.0.0",IDC_ABOUT_VERSION,13,45,121,10
     GROUPBOX        "Credits",IDC_STATIC,7,57,216,108
@@ -1872,6 +1872,20 @@ BEGIN
     PUSHBUTTON      "Clone",IDC_CLONE_BUTTON,408,38,50,14
 END
 
+IDD_CODEVIEW_PREFS DIALOGEX 0, 0, 141, 128
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Code Viewer Options"
+FONT 8, "MS Sans Serif", 400, 0, 0x0
+BEGIN
+    LTEXT           "Highlighting Options",IDC_CVP_TITLE,30,6,77,8
+    PUSHBUTTON      "Close",IDC_CVP_BUT_CANCEL,30,95,77,17
+    CONTROL         "Visual Basic Script",IDC_CVP_CHECKBOX_VBS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,30,48,77,10
+    CONTROL         "Components",IDC_CVP_CHKB_COMP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,30,20,77,11
+    CONTROL         "Subs and Functions",IDC_CVP_CHKB_SUBS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,30,33,77,13
+    CONTROL         "Literals",IDC_CVP_CHKB_LITERALS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,30,75,77,8
+    CONTROL         "Comments",IDC_CVP_CHKB_COMMENTS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,30,60,77,13
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1898,7 +1912,15 @@ BEGIN
     BEGIN
     END
 
+    IDD_CODEVIEW, DIALOG
+    BEGIN
+    END
+
     IDD_ABOUT, DIALOG
+    BEGIN
+    END
+
+    IDD_EDITOR_OPTIONS, DIALOG
     BEGIN
     END
 
@@ -1940,7 +1962,6 @@ BEGIN
 
     IDD_PROPTABLE_BALL, DIALOG
     BEGIN
-        BOTTOMMARGIN, 141
     END
 
     IDD_PROPBACKGLASS_VISUALS, DIALOG
@@ -1974,6 +1995,14 @@ BEGIN
 
     IDD_MATERIALDIALOG, DIALOG
     BEGIN
+    END
+
+    IDD_CODEVIEW_PREFS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 134
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 121
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -2233,6 +2262,7 @@ BEGIN
     POPUP "&Script"
     BEGIN
         MENUITEM "&Compile",                    ID_COMPILE
+        MENUITEM "&Preferences",                ID_SCRIPT_PREFERENCES
     END
     POPUP "&Edit"
     BEGIN
@@ -2558,7 +2588,7 @@ BEGIN
     IDS_STEP                "Step"
 END
 
-#endif    // Englisch (USA) resources
+#endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

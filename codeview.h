@@ -2,6 +2,7 @@
 #include <activscp.h>
 #include <activdbg.h>
 #include "atlcom.h"
+#include "CodeViewEdit.h"
 
 enum SecurityLevelEnum
 {
@@ -73,18 +74,6 @@ public:
    int SortAgainstValue(void *pv);
 };
 
-class UserData
-{
-public:
-	string strKeyName; //Unique Name
-	string strDescription;//Brief Description
-	int intLineNum; //Line No. Declaration
-	UserData();
-	UserData(const int LineNo, const string &Desc, const string &Name);
-	bool FuncCompareUD (const UserData &first, const UserData &second);
-	~UserData();
-};
-
 
 class CodeViewer :
    public CComObjectRoot,
@@ -95,7 +84,9 @@ class CodeViewer :
    public IActiveScriptSiteWindow,
    public IInternetHostSecurityManager,
    public IServiceProvider,
-	public UserData
+	public UserData,
+	public CVPrefs
+
 {
 public:
    CodeViewer();
@@ -241,14 +232,25 @@ public:
    void SetCaption(char *szCaption);
 	string upperCase(string input);
 
-	//! TODO:void ParseVPCore();
+	//!  TODO:void ParseVPCore();
 	bool ShowTooltip(SCNotification *Scn);
 	void ShowAutoComplete();
-	static string lowerCase(string input);
 	void szLower(char * incstr);
 	void szUpper(char * incstr);
-	void ParseForFunction(); 
+	void ParseForFunction();
+	string lowerCase(string input);
+	bool FindOrInsertStringIntoAutolist(vector<string>* ListIn, string strIn);
+	bool FindOrInsertUD( vector<UserData>* ListIn,const UserData& udIn);
+	int FindUD(vector<UserData>* ListIn, const string &strIn,vector<UserData>::iterator& UDiterOut);
+	// CodeViewer Preferences
+	CVPrefs* pCVPrefs;
+	ControlBut VBS;
+	ControlBut Comps;
+	ControlBut Subs;
+	ControlBut Remarks;
+	ControlBut Literals;
 
+	void UpdateScinFromPrefs();
 	void ListEventsFromItem();
    void FindCodeFromEvent();
    void TellHostToSelectItem();
