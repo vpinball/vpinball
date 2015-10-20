@@ -78,6 +78,7 @@
     <ClCompile Include="inc\progmesh.cpp">
       <Filter>inc</Filter>
     </ClCompile>
+    <ClCompile Include="codeviewedit.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="vpinball.rc" />
@@ -142,6 +143,13 @@
     <Image Include="res\light.bmp">
       <Filter>res</Filter>
     </Image>
+    <Image Include="res\envmap.bmp" />
+    <Image Include="res\bumperbase.bmp" />
+    <Image Include="res\ringenvmap.bmp" />
+    <Image Include="res\bumperCap.bmp" />
+    <Image Include="res\bumperSocket.bmp" />
+    <Image Include="res\kickerHoleWood.bmp" />
+    <Image Include="res\kickerCup.bmp" />
   </ItemGroup>
   <ItemGroup>
     <Midl Include="vpinball.idl" />
@@ -707,6 +715,25 @@
     </ClInclude>
     <ClInclude Include="inc\progmesh_vecmatquat_minimal.h" />
     <ClInclude Include="objloader.h" />
+    <ClInclude Include="meshes\ballMesh.h" />
+    <ClInclude Include="meshes\bulbLightMesh.h" />
+    <ClInclude Include="meshes\bulbSocketMesh.h" />
+    <ClInclude Include="meshes\bumperBaseMesh.h" />
+    <ClInclude Include="meshes\bumperCapMesh.h" />
+    <ClInclude Include="meshes\bumperRingMesh.h" />
+    <ClInclude Include="meshes\bumperSocketMesh.h" />
+    <ClInclude Include="meshes\gateBracketMesh.h" />
+    <ClInclude Include="meshes\gateWireMesh.h" />
+    <ClInclude Include="meshes\kickerCupMesh.h" />
+    <ClInclude Include="meshes\kickerHitMesh.h" />
+    <ClInclude Include="meshes\kickerHoleMesh.h" />
+    <ClInclude Include="meshes\spinnerBracketMesh.h" />
+    <ClInclude Include="meshes\spinnerPlateMesh.h" />
+    <ClInclude Include="meshes\triggerSimpleMesh.h" />
+    <ClInclude Include="meshes\triggerStarMesh.h" />
+    <ClInclude Include="codeviewedit.h">
+      <Filter>headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="shader\BallShader.fx">

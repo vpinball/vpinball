@@ -53,6 +53,7 @@
 #define IDR_VPINBALL                    100
 #define IDR_SURFACE                     101
 #define IDS_TB_TIMER                    101
+#define IDD_CODEVIEW_PREFS              101
 #define IDS_DRAGPOINT_DESC              102
 #define IDR_DRAG_POINT                  103
 #define IDS_TB_SELECT                   103
@@ -316,6 +317,7 @@
 #define IDC_COL_UP_BUTTON               280
 #define IDC_ADD_BUTTON                  280
 #define IDC_BROWSE_BUTTON               280
+#define IDC_CVP_BUT_CANCEL              280
 #define IDC_ITEMLIST                    281
 #define IDC_OUT                         281
 #define IDC_SENDMAIL                    281
@@ -642,6 +644,7 @@
 #define IDC_GATE_REFLECT_ENABLED_CHECK  431
 #define IDC_PLUNGER_REFLECT_ENABLED_CHECK 431
 #define IDC_TRIGGER_REFLECT_ENABLED_CHECK 431
+#define IDC_CVP_CHECKBOX_VBS            431
 #define IDC_LIGHT_FALLOFF_POWER         432
 #define IDC_MODULATE_VS_ADD             433
 #define IDC_INTENSITY_SCALE_LIGHT       434
@@ -692,10 +695,16 @@
 #define IDC_CHECK3                      479
 #define IDC_CENTER_MESH                 479
 #define IDC_RUBBER_REFLECT_ENABLED_CHECK 479
+#define IDC_CVP_CHKB_SUBS               479
 #define IDC_IMPORT_MATERIAL             480
 #define IDC_COLLISION_REDUCTION_FACTOR  481
 #define IDC_PRIM_REFLECT_ENABLE_CHECK   483
 #define IDC_WALL_REFLECT_ENABLED_CHECK  484
+#define IDC_CVP_TITLE                   485
+#define IDC_CVP_CHKB_COMP               486
+#define IDC_CVP_CHKB_LITERALS           487
+#define IDC_CHECK5                      488
+#define IDC_CVP_CHKB_COMMENTS           488
 #define IDC_JOYLFLIPCOMBO               501
 #define IDC_JOYRFLIPCOMBO               502
 #define IDC_JOYPLUNGERCOMBO             503
@@ -808,6 +817,7 @@
 #define IDC_PLAYFIELD_SCATTER           1710
 #define IDC_TABLE_FILENAME              1711
 #define ID_SHOWTOOLTIP                  4001
+#define ID_SCRIPT_PREFERENCES           4002
 #define IDM_NEW                         32768
 #define IDM_OPEN                        32769
 #define IDM_CLOSE                       32770
@@ -912,8 +922,8 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        620
-#define _APS_NEXT_COMMAND_VALUE         4002
-#define _APS_NEXT_CONTROL_VALUE         485
+#define _APS_NEXT_COMMAND_VALUE         4003
+#define _APS_NEXT_CONTROL_VALUE         489
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif

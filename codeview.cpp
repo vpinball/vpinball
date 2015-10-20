@@ -1,7 +1,7 @@
 #include "stdafx.h"
 
 #include <initguid.h>
-
+//#include <Windowsx.h>
 // The GUID used to identify the coclass of the VB Script engine
 // 	{B54F3741-5B07-11cf-A4B0-00AA004A55E8}
 #define szCLSID_VBScript "{B54F3741-5B07-11cf-A4B0-00AA004A55E8}"
@@ -27,59 +27,28 @@ const char vbsReservedWords[] =
 
 
 LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 WNDPROC g_RichEditProc;
 bool g_ToolTipActive;
 string vbsKeyWords;
-bool FindOrInsertStringIntoAutolist(vector<string>* ListIn, string strIn);
+
 vector<string> *g_AutoComp;
-bool FindOrInsertUD( vector<UserData>* ListIn,const UserData& udIn);
-int FindUD(vector<UserData>* ListIn, const string &strIn,vector<UserData>::iterator& UDiterOut);
 vector<UserData> *g_VBwords;
 vector<UserData> *g_UserFunc;
 vector<UserData> *g_Components;
 string g_AutoCompList;
 
 
-UserData::UserData()
-{
-	intLineNum=0;
-	strDescription="";
-	strKeyName="";
-}
-
-UserData::~UserData()
-{
-}
-
-UserData::UserData(const int LineNo, const string &Desc, const string &Name)
-{
-	intLineNum=LineNo;
-	strDescription=Desc;
-	strKeyName=Name;
-}
 
 
-bool UserData::FuncCompareUD (const UserData &first, const UserData &second)
-{
-  const string strF = CodeViewer::lowerCase(first.strKeyName);
-  const string strS = CodeViewer::lowerCase(second.strKeyName);
-  basic_string <char>::size_type i=0;
-  while ( (i<strF.length()) && (i<strS.length() ) )
-  {
-	  if (strF[i]<strS[i]) return true;
-	  else if (strF[i]>strS[i]) return false;
-    ++i;
-  }
-  return ( strF.length() < strF.length() );
-}
 
 /*	FindUD - Binary Search.
 0  =Found & UDiterOut set to point at UD in list.
 -1 =Not Found - Insert point before UDiterOut
 1  =Not Found - Insert point after UDiterOut
 -2 =error*/
-int FindUD(vector<UserData>* ListIn, const string &strIn, vector<UserData>::iterator &UDiterOut)
+int CodeViewer::FindUD(vector<UserData>* ListIn, const string &strIn, vector<UserData>::iterator &UDiterOut)
 {
 	int result = -2;
 	if (ListIn && (strIn.size() > 2) )// Sanity chq.
@@ -93,14 +62,14 @@ int FindUD(vector<UserData>* ListIn, const string &strIn, vector<UserData>::iter
       }
 		int iJumpDelta = ((iNewPos) >> 1);
 		--iNewPos;//Zero Base
-		const string strSearchData =  CodeViewer::lowerCase( strIn );
+		const string strSearchData = lowerCase( strIn );
 		do
 		{
 			iCurPos = iNewPos;
 			if (iCurPos >= ListSize) { result = -1; }
 			else
 			{
-				const string strTableData = CodeViewer::lowerCase(ListIn->at(iCurPos).strKeyName);
+				const string strTableData = lowerCase(ListIn->at(iCurPos).strKeyName);
 				result = strSearchData.compare(strTableData);
 			}
 			if (iJumpDelta == 0 || result == 0) break;
@@ -114,7 +83,7 @@ int FindUD(vector<UserData>* ListIn, const string &strIn, vector<UserData>::iter
 }
 
 //Assumes case insensitive sorted list (found = false):
-bool FindOrInsertUD(vector<UserData>* ListIn,const UserData &udIn)
+bool CodeViewer::FindOrInsertUD(vector<UserData>* ListIn,const UserData &udIn)
 {
 	if (ListIn->size() == 0)	//First in
 	{
@@ -144,7 +113,7 @@ bool FindOrInsertUD(vector<UserData>* ListIn,const UserData &udIn)
 	return false;//Oh pop poop, never should hit here.
 }
 
-bool FindOrInsertStringIntoAutolist(vector<string>* ListIn,const string strIn)
+bool CodeViewer::FindOrInsertStringIntoAutolist(vector<string>* ListIn,const string strIn)
 {
 	//First in the list
 	if (ListIn->empty())
@@ -152,13 +121,13 @@ bool FindOrInsertStringIntoAutolist(vector<string>* ListIn,const string strIn)
 		ListIn->push_back(strIn);
 		return true;
 	}
-	string strLowerIn = CodeViewer::lowerCase(strIn);
+	string strLowerIn = lowerCase(strIn);
 	vector<string>::iterator i = ListIn->begin();
 	int counter = ListIn->size();
 	int result = -1;
 	while (counter)
 	{
-		const string strLowerComp = CodeViewer::lowerCase(string(i->data()));
+		const string strLowerComp = lowerCase(string(i->data()));
 		result = strLowerComp.compare(strLowerIn);
 		if (result < 0)
 		{
@@ -540,7 +509,7 @@ void CodeViewer::Create()
    RegisterClassEx(&wcex);
    m_hwndMain = CreateWindowEx(0, "CVFrame", "Script",
       WS_POPUP | WS_SIZEBOX | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX,
-      10, 10, 300, 300, m_hwndMain, NULL, g_hinst, 0);
+      10, 10, 300, 300, m_hwndMain, NULL, g_hinst, 0);// child becomes parent?
 
    SetWindowLongPtr(m_hwndMain, GWLP_USERDATA, (size_t)this);
 
@@ -588,14 +557,25 @@ void CodeViewer::Create()
 		if (WordChar >= 'a' && WordChar <= 'z' ) WordChar -= ('a'- 'A');
 		i->strKeyName.at(0) = WordChar;	
 	}
-   SendMessage(m_hwndScintilla, SCI_SETLEXER, (WPARAM)SCLEX_VBSCRIPT, 0);
-   
+	///// Preferences
+	pCVPrefs = new CVPrefs;
+	rgbDefaultText = RGB(0,0,0);
+	VBS.rgb = RGB(0,0,160);
+	VBS.b = true;
+	Comps.rgb = RGB(120,120,0);
+	Comps.b = true;
+	Subs.rgb = RGB(120,0,120);
+	Subs.b = true;
+	Remarks.rgb = RGB(0,120,0);
+	Remarks.b = true;
+	Literals.rgb = RGB(0,120,120);
+	Literals.b = true;
+
+   SendMessage(m_hwndScintilla, SCI_SETLEXER, (WPARAM)SCLEX_VBSCRIPT, 0); 
 	SendMessage(m_hwndScintilla, SCI_SETKEYWORDS, 0, (LPARAM)vbsReservedWords );
    SendMessage(m_hwndScintilla, SCI_SETTABWIDTH, 4, 0);
-
    SendMessage(m_hwndScintilla, SCI_SETMODEVENTMASK, SC_MOD_INSERTTEXT, 0);
-   // AndyS 17/9/15 - Turn On & Set Dwell to 1 sec
-   SendMessage(m_hwndScintilla,SCI_SETMOUSEDWELLTIME,1000,0);
+   SendMessage(m_hwndScintilla,SCI_SETMOUSEDWELLTIME,700,0);
 
    // The null visibility policy is like Visual Studio - if a search goes
    // off the screen, the newly selected text is placed in the middle of the
@@ -634,10 +614,7 @@ void CodeViewer::Create()
    SendMessage(m_hwndScintilla, SCI_STYLESETSIZE, 32, 10);
    SendMessage(m_hwndScintilla, SCI_STYLESETFONT, 32, (LPARAM)"Courier");
    SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_DEFAULT, RGB(255, 0, 0));
-   SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_COMMENT, RGB(0, 130, 0));
-   SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_NUMBER, RGB(0, 100, 100));
-   SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_KEYWORD, RGB(0, 0, 160));
-   SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_STRING, RGB(0, 100, 100));
+
    SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_PREPROCESSOR, RGB(255, 0, 0));
    SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_OPERATOR, RGB(0, 0, 160));
    SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_IDENTIFIER, RGB(0, 0, 0));
@@ -646,8 +623,7 @@ void CodeViewer::Create()
 	SendMessage(m_hwndScintilla, SCI_SETWORDCHARS, 0,(LPARAM) "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_");
 	//SendMessage(m_hwndScintilla, SCI_SETWHITESPACECHARS,0,(LPARAM) ".");
 	//SendMessage(m_hwndScintilla, SCI_SETPUNCTUATIONCHARS,0 ,(LPARAM)".");
-	SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_KEYWORD2, RGB(128, 0, 128));
-   SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_KEYWORD3, RGB(128, 128, 0));
+	UpdateScinFromPrefs();
 
 	SendMessage(m_hwndScintilla, SCI_AUTOCSETIGNORECASE, TRUE, 0);
 	SendMessage(m_hwndScintilla, SCI_AUTOCSETCASEINSENSITIVEBEHAVIOUR, SC_CASEINSENSITIVEBEHAVIOUR_IGNORECASE,0);
@@ -704,29 +680,34 @@ void CodeViewer::Create()
 
 void CodeViewer::Destroy()
 {
-
+	if (pCVPrefs)	delete pCVPrefs;
+	pCVPrefs = 0;
 	if(g_AutoComp)
 	{
 		g_AutoComp->clear();
 		delete g_AutoComp;
 	}
+	g_AutoComp = 0;
 
 	if(g_Components)
 	{
 		g_Components->clear();
 		delete g_Components;
 	}
+	g_Components = 0;
 
 	if(g_VBwords)
 	{
 		g_VBwords->clear();
 		delete g_VBwords;
 	}
+	g_VBwords = 0;
 	if(g_UserFunc)
 	{
 		g_UserFunc->clear();
 		delete g_UserFunc;
 	}
+	g_UserFunc = 0;
    if (m_hwndFind)
       DestroyWindow(m_hwndFind);
 
@@ -1167,8 +1148,7 @@ void CodeViewer::LoadFromStream(IStream *pistream, HCRYPTHASH hcrypthash, HCRYPT
    SendMessage(m_hwndScintilla, SCI_SETTEXT, 0, (size_t)szText);
    SendMessage(m_hwndScintilla, SCI_EMPTYUNDOBUFFER, 0, 0);
    delete[] szText;
-	//initalise autocomplete, tooltips etc. - AndyS
-	ParseForFunction();
+
 
 
    m_fIgnoreDirty = fFalse;
@@ -1844,6 +1824,8 @@ void CodeViewer::szUpper(char * incstr)
 		pC++;
 	}
 }
+
+
 void CodeViewer::ParseForFunction() // & Subs & Collections AndyS - WIP - Totally overhaul of this!
 {
    char text[1024];
@@ -2001,6 +1983,7 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
    {
       if (LOWORD(wParam) != WA_INACTIVE)
          g_pvp->m_pcv = GetCodeViewerPtr(hwndDlg);
+		g_pvp->m_pcv->ParseForFunction();
    }
    break;
 
@@ -2047,6 +2030,10 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
             pcv->EndSession();
             break;
 
+			case ID_SCRIPT_PREFERENCES:
+				
+				DialogBox(g_hinst, MAKEINTRESOURCE(IDD_CODEVIEW_PREFS), hwndDlg, CVPrefProc);
+				break;
          case ID_FIND:
             pcv->ShowFindDialog();
             break;
@@ -2155,7 +2142,8 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
          }
 			case ID_SHOWTOOLTIP:
 			{
-				pcv->ShowAutoComplete();
+				SCNotification * const pscn = (SCNotification *)lParam;;
+				pcv->ShowTooltip(pscn);
 				break;
 			}
          }
@@ -2171,68 +2159,56 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
       NMHDR * const pnmh = (LPNMHDR)lParam;
       HWND hwndRE = pnmh->hwndFrom;
       const int code = pnmh->code;
-
+      CodeViewer *pcv = GetCodeViewerPtr(hwndDlg);
+		SCNotification * const pscn = (SCNotification *)lParam;
       switch (code)
       {
 
-      case SCN_SAVEPOINTREACHED:
-      {
-         CodeViewer *pcv = GetCodeViewerPtr(hwndDlg);
-         if (pcv->m_sdsDirty > eSaveClean)
-         {
-            pcv->m_sdsDirty = eSaveClean;
-            pcv->m_psh->SetDirtyScript(eSaveClean);
-         }
-      }
-      break;
-	  case SCN_DWELLSTART:
-		{
-			SCNotification * const pscn = (SCNotification *)lParam;
-         CodeViewer *pcv = GetCodeViewerPtr(hwndDlg);
-			g_ToolTipActive = pcv->ShowTooltip(pscn);
-		} break;
-
-	  case SCN_DWELLEND:
-		{
-			if (g_ToolTipActive)
+			case SCN_SAVEPOINTREACHED:
 			{
-				CodeViewer *pcv = GetCodeViewerPtr(hwndDlg);
-				SendMessage(pcv->m_hwndScintilla,SCI_CALLTIPCANCEL , 0, 0 );
-				g_ToolTipActive = false;
+				if (pcv->m_sdsDirty > eSaveClean)
+				{
+					pcv->m_sdsDirty = eSaveClean;
+					pcv->m_psh->SetDirtyScript(eSaveClean);
+				}
 			}
-		} break;
+			break;
+		  case SCN_DWELLSTART:
+				g_ToolTipActive = pcv->ShowTooltip(pscn);
+		    break;
 
-		case SCN_CHARADDED:
-		{
-			CodeViewer *pcv = GetCodeViewerPtr(hwndDlg);
-			pcv->ShowAutoComplete();
-		}
-		break;
-	  case SCN_UPDATEUI:
-      {
-         SCNotification * const pscn = (SCNotification *)lParam;
+		  case SCN_DWELLEND:
+			{
+				if (g_ToolTipActive)
+				{
+					SendMessage(pcv->m_hwndScintilla,SCI_CALLTIPCANCEL , 0, 0 );
+					g_ToolTipActive = false;
+				}
+			} break;
 
-         char szT[256];
-         CodeViewer * const pcv = GetCodeViewerPtr(hwndDlg);
-         size_t pos = SendMessage(hwndRE, SCI_GETCURRENTPOS, 0, 0);
-         const size_t line = SendMessage(hwndRE, SCI_LINEFROMPOSITION, pos, 0) + 1;
-         const size_t column = SendMessage(hwndRE, SCI_GETCOLUMN, pos, 0);
+			case SCN_CHARADDED:
+				pcv->ShowAutoComplete();
+			break;
 
-         sprintf_s(szT, "Line %u, Col %u", (U32)line, (U32)column);
-         SendMessage(pcv->m_hwndStatus, SB_SETTEXT, 0 | 0, (size_t)szT);
-      }
-      break;
-      case SCN_MARGINCLICK:
-      {
-         SCNotification * const pscn = (SCNotification *)lParam;
-         CodeViewer * const pcv = GetCodeViewerPtr(hwndDlg);
-         if (pscn->margin == 1)
-         {
-            pcv->MarginClick(pscn->position, pscn->modifiers);
-         }
-      }
-      break;
+		  case SCN_UPDATEUI:
+			{
+				char szT[256];
+				size_t pos = SendMessage(hwndRE, SCI_GETCURRENTPOS, 0, 0);
+				const size_t line = SendMessage(hwndRE, SCI_LINEFROMPOSITION, pos, 0) + 1;
+				const size_t column = SendMessage(hwndRE, SCI_GETCOLUMN, pos, 0);
 
+				sprintf_s(szT, "Line %u, Col %u", (U32)line, (U32)column);
+				SendMessage(pcv->m_hwndStatus, SB_SETTEXT, 0 | 0, (size_t)szT);
+			}
+			break;
+			case SCN_MARGINCLICK:
+			{
+				if (pscn->margin == 1)
+				{
+					pcv->MarginClick(pscn->position, pscn->modifiers);
+				}
+			}
+			break;
       }
 
       break;
@@ -2271,6 +2247,149 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
    }
 
    return DefWindowProc(hwndDlg, uMsg, wParam, lParam);
+}
+
+INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+   switch (uMsg)
+   {
+   case WM_INITDIALOG:
+   {
+      HWND hwndParent = GetParent(hwndDlg);
+      RECT rcDlg;
+      RECT rcMain;
+      GetWindowRect(hwndParent, &rcMain);
+      GetWindowRect(hwndDlg, &rcDlg);
+
+      SetWindowPos(hwndDlg, NULL,
+         (rcMain.right + rcMain.left) / 2 - (rcDlg.right - rcDlg.left) / 2,
+         (rcMain.bottom + rcMain.top) / 2 - (rcDlg.bottom - rcDlg.top) / 2,
+         0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE/* | SWP_NOMOVE*/);
+		CodeViewer * const pcv = GetCodeViewerPtr(GetParent(hwndDlg));
+		if(pcv->VBS.b)  
+		{
+				HWND hChkBox = GetDlgItem(hwndDlg,IDC_CVP_CHECKBOX_VBS);
+				SNDMSG(hChkBox, BM_SETCHECK, BST_CHECKED, 0L);
+		}
+		if(pcv->Comps.b)
+		{
+				HWND hChkBox = GetDlgItem(hwndDlg,IDC_CVP_CHKB_COMP);
+				SNDMSG(hChkBox, BM_SETCHECK, BST_CHECKED, 0L);
+		}
+		if(pcv->Subs.b)
+		{
+				HWND hChkBox = GetDlgItem(hwndDlg,IDC_CVP_CHKB_SUBS);
+				SNDMSG(hChkBox, BM_SETCHECK, BST_CHECKED, 0L);
+		}
+		if(pcv->Literals.b)
+		{
+				HWND hChkBox = GetDlgItem(hwndDlg,IDC_CVP_CHKB_LITERALS);
+				SNDMSG(hChkBox, BM_SETCHECK, BST_CHECKED, 0L);
+		}
+		if(pcv->Remarks.b)
+		{
+				HWND hChkBox = GetDlgItem(hwndDlg,IDC_CVP_CHKB_COMMENTS);
+				SNDMSG(hChkBox, BM_SETCHECK, BST_CHECKED, 0L);
+		}
+
+		//write to a text box
+      //HWND hVersion = GetDlgItem(hwndDlg, IDC_CVP_TITLE);
+      //char versionString[256];
+      //sprintf_s(versionString, "Code Viewer Preferences");
+      //SetWindowText(hVersion, versionString);
+		//#if !(defined(IMSPANISH) | defined(IMGERMAN) | defined(IMFRENCH))
+		//      HWND hwndTransName = GetDlgItem(hwndDlg, IDC_TRANSNAME);
+		//      ShowWindow(hwndTransName, SW_HIDE);
+		//#endif
+		//
+		//#if !(defined(IMSPANISH))
+		//      HWND hwndTransSite = GetDlgItem(hwndDlg, IDC_TRANSLATEWEBSITE);
+		//      ShowWindow(hwndTransSite, SW_HIDE);
+		//#endif
+   }
+   return TRUE;
+   break;///???
+
+   case WM_COMMAND:
+   {
+      switch (HIWORD(wParam))
+      {
+      case BN_CLICKED:
+			CodeViewer * const pcv = GetCodeViewerPtr(GetParent(hwndDlg));
+			if (pcv)
+			{
+				switch (LOWORD(wParam))
+				{
+				case IDC_CVP_BUT_CANCEL:
+					EndDialog(hwndDlg, TRUE);
+					break;
+
+				case IDC_CVP_CHECKBOX_VBS:
+					{
+						if(IsDlgButtonChecked(hwndDlg,IDC_CVP_CHECKBOX_VBS) )
+						{pcv->VBS.b = true;}
+						else
+						{pcv->VBS.b = false;}
+					}
+					break;
+
+				case IDC_CVP_CHKB_COMP:
+					{
+						if(IsDlgButtonChecked(hwndDlg,IDC_CVP_CHKB_COMP) )
+						{pcv->Comps.b = true;}
+						else
+						{pcv->Comps.b = false;}
+					}
+					break;
+
+				case IDC_CVP_CHKB_SUBS:
+					{
+						if(IsDlgButtonChecked(hwndDlg,IDC_CVP_CHKB_SUBS))
+						{pcv->Subs.b = true;}
+						else
+						{pcv->Subs.b = false;}
+					}
+					break;
+
+				case IDC_CVP_CHKB_COMMENTS:
+					{
+						if(IsDlgButtonChecked(hwndDlg,IDC_CVP_CHKB_COMMENTS))
+						{pcv->Remarks.b = true;}
+						else
+						{pcv->Remarks.b = false;}
+					}
+					break;
+
+				case IDC_CVP_CHKB_LITERALS:
+					{
+						if(IsDlgButtonChecked(hwndDlg,IDC_CVP_CHKB_LITERALS))
+						{pcv->Literals.b = true;}
+						else
+						{pcv->Literals.b = false;}
+					}
+					break;
+				}// end switch Button clicked
+			 pcv->UpdateScinFromPrefs();
+			}// if pcv
+      }// end switch Hiword Wparam
+   }
+   break;
+   case WM_CLOSE:
+      EndDialog(hwndDlg, TRUE);
+      break;
+   }
+   return FALSE;
+}
+
+void CodeViewer::UpdateScinFromPrefs()
+{
+	SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_KEYWORD, ColorBut(VBS));
+	SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_KEYWORD2, ColorBut(Subs));
+	SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_KEYWORD3, ColorBut(Comps));
+	SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_NUMBER, ColorBut(Literals));
+   SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_STRING, ColorBut(Literals));
+	SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_COMMENT, ColorBut(Remarks));
+
 }
 
 Collection::Collection()
