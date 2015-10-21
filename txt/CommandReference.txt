@@ -345,9 +345,7 @@ Fall Through(bool) - if checked the ball will fall through the surface assigned 
 HitAccuracy(float) - defines the accuracy how fast the ball gets caught when rolling over the kicker center (0-1.0)
 *Orientation(float)
 *Radius(float)
-LastCapturedBall   - returns an instance to the last captured ball. However care must be taken when using this. You must be 100% sure that the ball is still in 
-                     play and you should never call this function if no ball was ever captured by that kicker otherwise VP will crash!
-					 It is save to use this function while processing the Hit/Unhit event of a kicker.
+LastCapturedBall   - returns an instance to the last captured ball or the current captured ball. If no ball was captured before or was destroyed before an error message will be displayed.
 
 Methods
 -------
