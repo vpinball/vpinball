@@ -175,6 +175,9 @@ VP 10.0.0 Changelog
 
 - add new PlayHit() and PlaySlingshotHit() function to the bumper / wall. If called the bumper/wall will play the hit animation as if a ball hits the element but without triggering the actual hit event.
 
+- add LastCapturedBall function to the kicker element. It returns the last captured ball but care must be taken if this is called when no ball was ever catched by that kicker.
+  It is save to use it when handling the hit/unhit event of a kicker.
+
 - EM Reels do not feature raw Text/Font input anymore, only Images (this was already unsupported in 9.9.X, but is now officially discarded)
 
 - internal DMD support (access via script, input levels are 0..100 (or RGB/0..255 for DMDColoredPixels))
