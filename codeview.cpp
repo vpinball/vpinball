@@ -30,126 +30,7 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 WNDPROC g_RichEditProc;
-bool g_ToolTipActive;
-string vbsKeyWords;
 
-vector<string> *g_AutoComp;
-vector<UserData> *g_VBwords;
-vector<UserData> *g_UserFunc;
-vector<UserData> *g_Components;
-string g_AutoCompList;
-
-/*	FindUD - Binary Search.
-0  =Found & UDiterOut set to point at UD in list.
--1 =Not Found - Insert point before UDiterOut
-1  =Not Found - Insert point after UDiterOut
--2 =error*/
-int CodeViewer::FindUD(vector<UserData>* ListIn, const string &strIn, vector<UserData>::iterator &UDiterOut)
-{
-	int result = -2;
-	if (ListIn && (strIn.size() > 2) )// Sanity chq.
-	{
-		const unsigned int ListSize = (int)ListIn->size();
-		UINT32 iCurPos = (ListSize >> 1);
-		UINT32 iNewPos = 1u << 31;
-		while ((!(iNewPos & ListSize)) && (iNewPos > 1))
-      {
-         iNewPos >>= 1;
-      }
-		int iJumpDelta = ((iNewPos) >> 1);
-		--iNewPos;//Zero Base
-		const string strSearchData = lowerCase( strIn );
-		do
-		{
-			iCurPos = iNewPos;
-			if (iCurPos >= ListSize) { result = -1; }
-			else
-			{
-				const string strTableData = lowerCase(ListIn->at(iCurPos).strKeyName);
-				result = strSearchData.compare(strTableData);
-			}
-			if (iJumpDelta == 0 || result == 0) break;
-			if ( result < 0 )	{ iNewPos = iCurPos - iJumpDelta; }
-			else  { iNewPos = iCurPos + iJumpDelta; }
-			iJumpDelta >>= 1;
-		} while (iNewPos >= 0);
-		UDiterOut = ListIn->begin() + iCurPos;
-	}
-	return result ;
-}
-
-//Assumes case insensitive sorted list (found = false):
-bool CodeViewer::FindOrInsertUD(vector<UserData>* ListIn,const UserData &udIn)
-{
-	if (ListIn->size() == 0)	//First in
-	{
-		ListIn->push_back(udIn);
-		return true;
-	}
-	vector<UserData>::iterator iterFound;
-	const int KeyFound = FindUD(ListIn, udIn.strKeyName , iterFound);
-	if (KeyFound == 0)return false;//Already Exists.
-	if (KeyFound == -1) //insert before, somewhere in the middle
-	{
-		ListIn->insert(iterFound, udIn);
-		return true;
-	}
-	if (iterFound == ( ListIn->end() - 1) )
-	{//insert at end
-		ListIn->push_back(udIn);
-		return true;
-	}
-
-	if (KeyFound == 1) //insert after, somewhere in the middle
-	{
-		++iterFound;
-		ListIn->insert(iterFound, udIn);
-		return true;
-	}
-	return false;//Oh pop poop, never should hit here.
-}
-
-bool CodeViewer::FindOrInsertStringIntoAutolist(vector<string>* ListIn,const string strIn)
-{
-	//First in the list
-	if (ListIn->empty())
-	{
-		ListIn->push_back(strIn);
-		return true;
-	}
-	string strLowerIn = lowerCase(strIn);
-	vector<string>::iterator i = ListIn->begin();
-	int counter = ListIn->size();
-	int result = -1;
-	while (counter)
-	{
-		const string strLowerComp = lowerCase(string(i->data()));
-		result = strLowerComp.compare(strLowerIn);
-		if (result < 0)
-		{
-			++i;
-			counter--;
-		}
-		else break;
-	}
-	if (result == 0) return false;//Already Exists.
-	if (result > 0 && (counter != 0))//Add new ud somewhere in middle.
-	{
-		ListIn->insert(i,strIn);
-		return true;
-	}
-	if (result > 0 && (counter == 0))	//It's new and at the very bottom.
-	{
-		ListIn->push_back(strIn);
-		return true;
-	}
-	else //it's 1 above the last on the list.
-	{
-		ListIn->insert(i,strIn);
-		return true;
-	}
-	return false;//Oh pop poop, never should hit here.
-}
 
 IScriptable::IScriptable()
 {
@@ -518,7 +399,8 @@ void CodeViewer::Create()
 // Create new list of user functions & Collections- filled in ParseForFunction(), first called in LoadFromStrem()
 	g_AutoComp = new vector<string>();
 	g_Components = new vector<UserData>();
-	g_UserFunc = new vector<UserData>(); 
+	g_UserFunc = new vector<UserData>();
+	g_VP_Core = new vector<UserData>();
 // parse vb reserved words for auto complete.
 	g_VBwords = new vector<UserData>;
 	int intWordFinish =-1; //skip space
@@ -554,7 +436,7 @@ void CodeViewer::Create()
 		i->strKeyName.at(0) = WordChar;	
 	}
 	///// Preferences
-	pCVPrefs = new CVPrefs;
+	//pCVPrefs = new CVPrefs;
 	rgbDefaultText = RGB(0,0,0);
 	VBS.rgb = RGB(0,0,160);
 	VBS.b = GetRegBoolWithDefault("CVEdit","ShowVBS",true);
@@ -566,7 +448,9 @@ void CodeViewer::Create()
 	Remarks.b = GetRegBoolWithDefault("CVEdit","ShowRemarks",true);
 	Literals.rgb = RGB(0,120,120);
 	Literals.b = GetRegBoolWithDefault("CVEdit","ShowLierals",true);
-	//#define SMSCIN (x,y,z) ( SendMessage(m_hwndScintilla, UINT x,  y, z) );
+	VPcore.rgb = RGB(200,10,10);
+	VPcore.b = GetRegBoolWithDefault("CVEdit","ShowVPcore",true);
+	#define SMSCIN (x,y,z) ( SendMessage(m_hwndScintilla, x,  y, z) );
 
    SendMessage(m_hwndScintilla, SCI_SETLEXER, (WPARAM)SCLEX_VBSCRIPT, 0); 
 	SendMessage(m_hwndScintilla, SCI_SETKEYWORDS, 0, (LPARAM)vbsReservedWords );
@@ -671,14 +555,15 @@ void CodeViewer::Create()
 		WS_CHILD | WS_VISIBLE | SS_SIMPLE, 360 + 5, 0, 150, 15, m_hwndMain, NULL, g_hinst, 0);
 	SetWindowText(m_hwndFunctionText, "Go to Sub/Function:" );
    SendMessage(m_hwndFunctionText, WM_SETFONT, (size_t)GetStockObject(DEFAULT_GUI_FONT), 0);
-
+	ParseVPCore();
 	SendMessage(m_hwndMain, WM_SIZE, 0, 0); // Make our window relay itself out
+	return;
 }
 
 void CodeViewer::Destroy()
 {
-	if (pCVPrefs)	delete pCVPrefs;
-	pCVPrefs = 0;
+	//if (pCVPrefs)	delete pCVPrefs;
+	//pCVPrefs = 0;
 	if(g_AutoComp)
 	{
 		g_AutoComp->clear();
@@ -705,8 +590,14 @@ void CodeViewer::Destroy()
 		delete g_UserFunc;
 	}
 	g_UserFunc = 0;
-   if (m_hwndFind)
-      DestroyWindow(m_hwndFind);
+	if(g_VP_Core)
+	{
+		g_VP_Core->clear();
+		delete g_VP_Core;
+	}
+	g_VP_Core = 0;
+
+	if (m_hwndFind) DestroyWindow(m_hwndFind);
 
    DestroyWindow(m_hwndMain);
 }
@@ -1825,65 +1716,85 @@ void CodeViewer::szUpper(char * incstr)
 
 void CodeViewer::ParseForFunction() // Subs & Collections AndyS - WIP 
 {
-   char text[1024];
+   char text[MAX_LINE_LENGTH];
    size_t scriptLines = SendMessage(m_hwndScintilla, SCI_GETLINECOUNT, 0, 0);
    SendMessage(m_hwndFunctionList, CB_RESETCONTENT, 0, 0);
 	char szValidChars[256] = {};  
    SendMessage(m_hwndScintilla, SCI_GETWORDCHARS, 0, (LPARAM)szValidChars);//Lparam or size_t ?????
    string ValidChars(szValidChars);
-	string str ="";
 	for (size_t i = 0; i < scriptLines; ++i) 
    {
-		
-      const size_t lineLength = SendMessage(m_hwndScintilla, SCI_LINELENGTH, i, 0);
-      if (lineLength > 1023 || lineLength < 4) 
+/////////////////////		
+      const int lineLength = SendMessage(m_hwndScintilla, SCI_LINELENGTH, i, 0);
+      if (lineLength > MAX_LINE_LENGTH)
+		{
+			char szText[256] = {};
+			sprintf_s(szText,"The current maximum script line length is %d",MAX_LINE_LENGTH);
+			char szCaption[256] = {};
+			sprintf_s(szCaption,"Line too long on line %d",i);
+			MessageBox(m_hwndMain,szText,szCaption,MB_OK);
 			continue;
+		}
+		if (lineLength <4) continue;
       memset(text, 0, 1024);
 		SendMessage(m_hwndScintilla, SCI_GETLINE, i, (LPARAM)text);
-      string line(text);
-		size_t idx = line.find(":"); 
-		if (idx > 0)
+      string wholeline(text);
+		string line;
+		while (wholeline.length() > 1)
 		{
-			line = line.substr(0,idx);
-		}
-		int SearchLength =3;
-      idx = upperCase(line).find("SUB");
-		if (idx == -1)
-		{
-			idx = upperCase(line).find("FUNCTION");
-			SearchLength =8;
-		}
-      if ((SSIZE_T)idx >= 0)
-      {
-         const size_t endIdx = upperCase(line).find("END");
-         const size_t exitIdx = upperCase(line).find("EXIT");
-         const size_t commentIdx = upperCase(line).find("'");
-         const size_t doubleQuoteIdx = upperCase(line).find("\"");
-         if (endIdx == -1 && exitIdx == -1)
-         {
-				if ((commentIdx >= 0)  && (commentIdx < idx)) continue;
-				if ((doubleQuoteIdx >= 0)  && (doubleQuoteIdx < idx)) continue;
-				size_t Substart = idx + SearchLength;
-				char linechar = 0;
-				//scan for first valid char of sub name (should loop at least once)
-				linechar = line[Substart];
-				while ((ValidChars.find(linechar) == -1) && (Substart < lineLength))
+			//Chop up line by ":"
+			line = wholeline;
+			int idx = line.find(":"); 
+			if (idx > 0)
+			{
+				line = wholeline.substr(0,idx);
+				wholeline = wholeline.substr(idx, (wholeline.length()) - (line.length()) );
+			}
+			else
+			{
+				wholeline = "";
+			}
+
+			int SearchLength =3;
+			string UCline = upperCase(line);
+			idx = UCline.find("SUB");
+			if (idx == -1)
+			{
+				idx = UCline.find("FUNCTION");
+				SearchLength =8;
+			}
+			if ((SSIZE_T)idx >= 0)
+			{
+				const int endIdx = UCline.find("END");
+				const int exitIdx = UCline.find("EXIT");
+				const int commentIdx = UCline.find("'");
+				const int doubleQuoteIdx = UCline.find("\"");
+				if (endIdx == -1 && exitIdx == -1)
 				{
-					Substart++;
+					if ((commentIdx >= 0)  && (commentIdx < idx)) continue;
+					if ((doubleQuoteIdx >= 0)  && (doubleQuoteIdx < idx)) continue;
+					int Substart = idx + SearchLength;
+					char linechar = 0;
+					//scan for first valid char of sub name (should loop at least once)
 					linechar = line[Substart];
+					while ((ValidChars.find(linechar) == -1) && (Substart < lineLength))
+					{
+						Substart++;
+						linechar = line[Substart];
+					}
+					//scan for last valid char
+					int Subfinish = Substart;
+					while ((ValidChars.find(linechar) != -1) && (Subfinish < lineLength))
+					{
+						Subfinish++;
+						linechar = line[Subfinish];
+					}
+					const string sSubName = line.substr(Substart,Subfinish-Substart);
+					const UserData ud(i ,line.substr( 0, line.length()-2 ) , sSubName );
+					FindOrInsertUD( g_UserFunc , ud );
 				}
-				//scan for last valid char
-				size_t Subfinish = Substart;
-				while ((ValidChars.find(linechar) != -1) && (Subfinish < lineLength))
-				{
-					Subfinish++;
-					linechar = line[Subfinish];
-				}
-				const string sSubName = line.substr(Substart,Subfinish-Substart);
-				const UserData ud(i ,line.substr( 0, line.length()-2 ) , sSubName );
-				FindOrInsertUD( g_UserFunc , ud );
-         }
-      }
+			}
+		}// while (line.length > 1) 
 	}
    //Propergate subs&funcs in menu in order
 	for (vector<UserData>::iterator i = g_UserFunc->begin(); i != g_UserFunc->end(); ++i) 
@@ -1913,6 +1824,13 @@ void CodeViewer::ParseForFunction() // Subs & Collections AndyS - WIP
 	{
 		FindOrInsertStringIntoAutolist(g_AutoComp,i->strKeyName);
 	}
+	string strVPcoreWords = "";
+	for (vector<UserData>::iterator i = g_VP_Core->begin(); i != g_VP_Core->end(); ++i)
+	{
+		FindOrInsertStringIntoAutolist(g_AutoComp,i->strKeyName);
+		strVPcoreWords.append(i->strKeyName);
+		strVPcoreWords.append(" ");
+	}
 	string strCompOut ="";
 	for (vector<UserData>::iterator i = g_Components->begin(); i != g_Components->end(); ++i)
 	{
@@ -1937,9 +1855,112 @@ void CodeViewer::ParseForFunction() // Subs & Collections AndyS - WIP
 	//TODO: Need to comune with scintilla closer (COM pointers)
 	sSubFunOut = lowerCase(sSubFunOut);
 	SendMessage(m_hwndScintilla, SCI_SETKEYWORDS, 1, (LPARAM)sSubFunOut.c_str());
-	//Send Components to Scintilla for highlighting
 	strCompOut = lowerCase(strCompOut);
 	SendMessage(m_hwndScintilla, SCI_SETKEYWORDS, 2 , (LPARAM)strCompOut.c_str());
+	strVPcoreWords = lowerCase(strVPcoreWords);
+	SendMessage(m_hwndScintilla, SCI_SETKEYWORDS, 3 , (LPARAM)strVPcoreWords.c_str());
+}
+
+void CodeViewer::ParseVPCore()
+{
+	//Open file
+	FILE* fCore;
+	char buffer[MAX_PATH];
+	GetModuleFileName( NULL, buffer, MAX_PATH );
+   string::size_type pos = string( buffer ).find_last_of( "\\/" );
+   string sPath = string( buffer ).substr( 0, pos) + "\\Scripts\\core.vbs";
+	if (fopen_s(&fCore, sPath.c_str() ,"r") != 0)
+	if (!fCore)
+	{
+		MessageBox(m_hwndMain,"","/vbs/core not found",MB_OK);
+		return;
+	}
+///////////////////////
+	char text[MAX_LINE_LENGTH] = {};
+	char szValidChars[256] = {};  
+   SendMessage(m_hwndScintilla, SCI_GETWORDCHARS, 0, (LPARAM)szValidChars);//Lparam or size_t ?????
+   string ValidChars(szValidChars);
+	int linecount = 0;
+	while (!feof(fCore))
+	{
+      memset(text, 0, MAX_LINE_LENGTH);
+		//char myerr[256]={};
+		fgets(text, MAX_LINE_LENGTH, fCore);
+		if (errno = STRUNCATE)
+		++linecount;
+      string wholeline(text);
+		int lineLength = wholeline.length();
+		string line;
+		if (lineLength > MAX_LINE_LENGTH)
+		{
+			char szText[256] = {};
+			sprintf_s(szText,"The current maximum script line length is %d",MAX_LINE_LENGTH);
+			char szCaption[256] = {};
+			sprintf_s(szCaption,"Line too long on line %d",linecount);
+			MessageBox(m_hwndMain,szText,szCaption,MB_OK);
+			continue;
+		}
+		if (lineLength <4) continue;
+		while (wholeline.length() > 1)
+		{
+			//Chop up line by ":"
+			line = wholeline;
+			int idx = line.find(":"); 
+			if (idx > 0)
+			{
+				line = wholeline.substr(0,idx);
+				wholeline = wholeline.substr(idx, (wholeline.length()) - (line.length()) );
+			}
+			else
+			{
+				wholeline = "";
+			}
+
+			int SearchLength =3;
+			string UCline = upperCase(line);
+			idx = UCline.find("SUB");
+			if (idx == -1)
+			{
+				idx = UCline.find("FUNCTION");
+				SearchLength =8;
+			}
+			if ((SSIZE_T)idx >= 0)
+			{
+				const int endIdx = UCline.find("END");
+				const int exitIdx = UCline.find("EXIT");
+				const int commentIdx = UCline.find("'");
+				const int doubleQuoteIdx = UCline.find("\"");
+				if (endIdx == -1 && exitIdx == -1)
+				{
+					if ((commentIdx >= 0)  && (commentIdx < idx)) continue;
+					if ((doubleQuoteIdx >= 0)  && (doubleQuoteIdx < idx)) continue;
+					int Substart = idx + SearchLength;
+					char linechar = 0;
+					//scan for first valid char of sub name (should loop at least once)
+					linechar = line[Substart];
+					while ((ValidChars.find(linechar) == -1) && (Substart < lineLength))
+					{
+						Substart++;
+						linechar = line[Substart];
+					}
+					//scan for last valid char
+					int Subfinish = Substart;
+					while ((ValidChars.find(linechar) != -1) && (Subfinish < lineLength))
+					{
+						Subfinish++;
+						linechar = line[Subfinish];
+					}
+					const string sSubName = line.substr(Substart,Subfinish-Substart);
+
+					const UserData ud(linecount ,line.substr( 0, line.length()-2 ) , sSubName );
+					FindOrInsertUD( g_VP_Core , ud );
+				}
+			}
+		}// while (line.length > 1) 
+	}
+
+	fclose(fCore);
+	return;
 }
 
 static CodeViewer* GetCodeViewerPtr(HWND hwndDlg)
@@ -2119,7 +2140,7 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
             const size_t index = SendMessage(pcv->m_hwndFunctionList, CB_GETCURSEL, 0, 0);
 				if (index != -1)
 				{
-					vector<UserData>::iterator i = g_UserFunc->begin();
+					vector<UserData>::iterator i = pcv->g_UserFunc->begin();
 					for (size_t t = 0; t < index; t++)	++i;
 					SendMessage(pcv->m_hwndScintilla, SCI_GOTOLINE, i->intLineNum, 0);
 					SendMessage(pcv->m_hwndScintilla, SCI_GRABFOCUS, 0, 0);
@@ -2136,13 +2157,13 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
             RemoveComment(pcv->m_hwndScintilla);
             break;
          }
-			case ID_SHOWTOOLTIP:
+			case ID_SHOWAUTOCOMPLETE:
 			{
 				SCNotification * const pscn = (SCNotification *)lParam;;
-				pcv->ShowTooltip(pscn);
+				pcv->ShowAutoComplete();
 				break;
 			}
-         }
+         }//switch
       }
       break;
       }
@@ -2170,15 +2191,15 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 			}
 			break;
 		  case SCN_DWELLSTART:
-				g_ToolTipActive = pcv->ShowTooltip(pscn);
+				pcv->g_ToolTipActive = pcv->ShowTooltip(pscn);
 		    break;
 
 		  case SCN_DWELLEND:
 			{
-				if (g_ToolTipActive)
+				if (pcv->g_ToolTipActive)
 				{
 					SendMessage(pcv->m_hwndScintilla,SCI_CALLTIPCANCEL , 0, 0 );
-					g_ToolTipActive = false;
+					pcv->g_ToolTipActive = false;
 				}
 			} break;
 
@@ -2266,6 +2287,7 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 		pcv->Subs.b = GetRegBoolWithDefault("CVEdit","ShowSubs",true);
 		pcv->Remarks.b = GetRegBoolWithDefault("CVEdit","ShowRemarks",true);
 		pcv->Literals.b = GetRegBoolWithDefault("CVEdit","ShowLierals",true);
+		pcv->VPcore.b = GetRegBoolWithDefault("CVEdit","ShowVPcore",true);
 		if(pcv->VBS.b)  
 		{
 				HWND hChkBox = GetDlgItem(hwndDlg,IDC_CVP_CHECKBOX_VBS);
@@ -2291,12 +2313,11 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 				HWND hChkBox = GetDlgItem(hwndDlg,IDC_CVP_CHKB_COMMENTS);
 				SNDMSG(hChkBox, BM_SETCHECK, BST_CHECKED, 0L);
 		}
-
-		//write to a text box
-      //HWND hVersion = GetDlgItem(hwndDlg, IDC_CVP_TITLE);
-      //char versionString[256];
-      //sprintf_s(versionString, "Code Viewer Preferences");
-      //SetWindowText(hVersion, versionString);
+		if(pcv->VPcore.b)
+		{
+				HWND hChkBox = GetDlgItem(hwndDlg,IDC_CVP_CHKB_VPCORE);
+				SNDMSG(hChkBox, BM_SETCHECK, BST_CHECKED, 0L);
+		}
 		//#if !(defined(IMSPANISH) | defined(IMGERMAN) | defined(IMFRENCH))
 		//      HWND hwndTransName = GetDlgItem(hwndDlg, IDC_TRANSNAME);
 		//      ShowWindow(hwndTransName, SW_HIDE);
@@ -2327,6 +2348,7 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 					pcv->Subs.b = GetRegBoolWithDefault("CVEdit","ShowSubs",true);
 					pcv->Remarks.b = GetRegBoolWithDefault("CVEdit","ShowRemarks",true);
 					pcv->Literals.b = GetRegBoolWithDefault("CVEdit","ShowLierals",true);
+					pcv->VPcore.b = GetRegBoolWithDefault("CVEdit","ShowVPcore",true);
 					EndDialog(hwndDlg, TRUE);
 					}
 					break;
@@ -2338,6 +2360,7 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 					SetRegValueBool("CVEdit","ShowSubs",pcv->Subs.b);
 					SetRegValueBool("CVEdit","ShowRemarks",pcv->Remarks.b);
 					SetRegValueBool("CVEdit","ShowLierals",pcv->Literals.b);
+					SetRegValueBool("CVEdit","ShowVPcore",pcv->VPcore.b);
 					EndDialog(hwndDlg, TRUE);
 					}
 					break;
@@ -2386,9 +2409,18 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 						{pcv->Literals.b = false;}
 					}
 					break;
+
+				case IDC_CVP_CHKB_VPCORE:
+					{
+						if(IsDlgButtonChecked(hwndDlg,IDC_CVP_CHKB_VPCORE))
+						{pcv->VPcore.b = true;}
+						else
+						{pcv->VPcore.b = false;}
+					}
+					break;
 				}// end switch Button clicked
 			 pcv->UpdateScinFromPrefs();
-			}// if pcv
+			}
       }// end switch Hiword Wparam
    }
    break;
@@ -2401,13 +2433,13 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 
 void CodeViewer::UpdateScinFromPrefs()
 {
-	SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_KEYWORD, ColorBut(VBS));
-	SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_KEYWORD2, ColorBut(Subs));
-	SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_KEYWORD3, ColorBut(Comps));
-	SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_NUMBER, ColorBut(Literals));
-   SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_STRING, ColorBut(Literals));
-	SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_COMMENT, ColorBut(Remarks));
-
+	SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_KEYWORD, CVColorControl(VBS));
+	SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_KEYWORD2, CVColorControl(Subs));
+	SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_KEYWORD3, CVColorControl(Comps));
+	SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_NUMBER, CVColorControl(Literals));
+   SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_STRING, CVColorControl(Literals));
+	SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_COMMENT, CVColorControl(Remarks));
+	SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_KEYWORD4, CVColorControl(VPcore));
 }
 
 Collection::Collection()

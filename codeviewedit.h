@@ -1,6 +1,6 @@
 #ifndef _CVEDIT_
 #define _CVEDIT_
-
+#include "stdafx.h"
 class UserData
 {
 public:
@@ -11,6 +11,9 @@ public:
 	UserData(const int LineNo, const string &Desc, const string &Name);
 	bool FuncCompareUD (const UserData &first, const UserData &second);
 	string lowerCase(string input);
+	bool FindOrInsertStringIntoAutolist(vector<string>* ListIn, string strIn);
+	bool FindOrInsertUD( vector<UserData>* ListIn,const UserData& udIn);
+	int FindUD(vector<UserData>* ListIn, const string &strIn,vector<UserData>::iterator& UDiterOut);
 	~UserData();
 };
 
@@ -20,13 +23,13 @@ class CVPrefs
 {
 public:
 	COLORREF rgbDefaultText;
-	struct ControlBut
+	struct CVControl
 	{
 		COLORREF rgb;
 		bool b;
 	};
 public:
-	COLORREF ColorBut (ControlBut x)	{ if(x.b) return x.rgb; else return rgbDefaultText; }; 
+	COLORREF CVColorControl (CVControl x)	{ if(x.b) return x.rgb; else return rgbDefaultText; }; 
 };
 
 #endif

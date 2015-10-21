@@ -231,24 +231,32 @@ public:
    void LoadFromStream(IStream *pistream, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey);	//<<< modified by chris as part of table protection
    void SetCaption(char *szCaption);
 	string upperCase(string input);
+	string lowerCase(string input);
 
-	//!  TODO:void ParseVPCore();
+	void ParseVPCore();
 	bool ShowTooltip(SCNotification *Scn);
 	void ShowAutoComplete();
 	void szLower(char * incstr);
 	void szUpper(char * incstr);
 	void ParseForFunction();
-	string lowerCase(string input);
-	bool FindOrInsertStringIntoAutolist(vector<string>* ListIn, string strIn);
-	bool FindOrInsertUD( vector<UserData>* ListIn,const UserData& udIn);
-	int FindUD(vector<UserData>* ListIn, const string &strIn,vector<UserData>::iterator& UDiterOut);
+
 	// CodeViewer Preferences
 	CVPrefs* pCVPrefs;
-	ControlBut VBS;
-	ControlBut Comps;
-	ControlBut Subs;
-	ControlBut Remarks;
-	ControlBut Literals;
+	CVControl VBS;
+	CVControl Comps;
+	CVControl Subs;
+	CVControl Remarks;
+	CVControl Literals;
+	CVControl VPcore;
+	bool g_ToolTipActive;
+	string vbsKeyWords;
+
+	vector<string> *g_AutoComp;
+	vector<UserData> *g_VBwords;
+	vector<UserData> *g_UserFunc;
+	vector<UserData> *g_Components;
+	vector<UserData> *g_VP_Core;
+	string g_AutoCompList;
 
 	void UpdateScinFromPrefs();
 	void ListEventsFromItem();
@@ -331,6 +339,8 @@ public:
    BOOL m_fStopSingleEvents;
    BOOL m_fGroupElements;
 };
+
+#define MAX_LINE_LENGTH 1024
 
 class OMCollectionEnum :
    public CComObjectRootEx<CComSingleThreadModel>,
