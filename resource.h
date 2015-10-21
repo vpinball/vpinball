@@ -322,7 +322,6 @@
 #define IDC_OUT                         281
 #define IDC_SENDMAIL                    281
 #define IDC_LMAGSAVEBUTTON              281
-#define IDC_CVP_BUT_CANCEL2             281
 #define IDC_CVP_BUT_OK                  281
 #define IDC_EVENTLIST                   282
 #define IDC_OFFSETX                     282
@@ -707,6 +706,7 @@
 #define IDC_CVP_CHKB_LITERALS           487
 #define IDC_CHECK5                      488
 #define IDC_CVP_CHKB_COMMENTS           488
+#define IDC_CVP_CHKB_VPCORE             489
 #define IDC_JOYLFLIPCOMBO               501
 #define IDC_JOYRFLIPCOMBO               502
 #define IDC_JOYPLUNGERCOMBO             503
@@ -819,6 +819,7 @@
 #define IDC_PLAYFIELD_SCATTER           1710
 #define IDC_TABLE_FILENAME              1711
 #define ID_SHOWTOOLTIP                  4001
+#define ID_SHOWAUTOCOMPLETE             4001
 #define ID_SCRIPT_PREFERENCES           4002
 #define IDM_NEW                         32768
 #define IDM_OPEN                        32769
@@ -925,7 +926,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        620
 #define _APS_NEXT_COMMAND_VALUE         4003
-#define _APS_NEXT_CONTROL_VALUE         489
+#define _APS_NEXT_CONTROL_VALUE         490
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif
