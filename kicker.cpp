@@ -1046,9 +1046,25 @@ STDMETHODIMP Kicker::BallCntOver(int *pVal)
    return S_OK;
 }
 
+STDMETHODIMP Kicker::get_LastCapturedBall(IBall **pVal)
+{
+    if (!pVal || !g_pplayer || (!m_phitkickercircle && !m_phitkickercircle->m_lastCapturedBall))
+        return E_POINTER;
+
+    BallEx *pballex = m_phitkickercircle->m_lastCapturedBall->m_pballex;
+
+    if (!pballex)
+        return E_POINTER;
+
+    pballex->QueryInterface(IID_IBall, (void **)pVal);
+
+    return S_OK;
+}
+
 KickerHitCircle::KickerHitCircle()
 {
    m_pball = NULL;
+   m_lastCapturedBall = NULL;
    m_pkicker = NULL;
 }
 
@@ -1155,6 +1171,7 @@ void KickerHitCircle::DoCollide(Ball * const pball, const Vertex3Ds& hitnormal, 
                pball->m_frozen = true;
                pball->m_vpVolObjs->AddElement(m_pObj);		// add kicker to ball's volume set
                m_pball = pball;
+               m_lastCapturedBall = pball;
             }
             // Don't fire the hit event if the ball was just created
             // Fire the event before changing ball attributes, so scripters can get a useful ball state
@@ -1186,7 +1203,7 @@ void KickerHitCircle::DoCollide(Ball * const pball, const Vertex3Ds& hitnormal, 
       else // exiting kickers volume
       {
          pball->m_vpVolObjs->RemoveElementAt(i); // remove kicker to ball's volume set
-         m_pkicker->FireGroupEvent(DISPID_HitEvents_Unhit);
+         m_pkicker->FireGroupEvent(DISPID_HitEvents_Unhit);         
       }
    }
 }

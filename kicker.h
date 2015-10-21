@@ -138,7 +138,8 @@ public:
    STDMETHOD(put_FallThrough)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_Legacy)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_Legacy)(/*[in]*/ VARIANT_BOOL newVal);
-};
+   STDMETHOD(get_LastCapturedBall)(/*[out, retval]*/ IBall **pVal);
+   };
 
 class KickerHitCircle : public HitCircle
 {
@@ -153,6 +154,7 @@ public:
 
    Kicker *m_pkicker;
    Ball *m_pball;  //The ball inside this kicker
+   Ball *m_lastCapturedBall; // same as m_pball but this one won't be nulled only overwritten from another captured ball
 };
 
 #endif // !defined(AFX_KICKER_H__3A9F3FC4_605A_43AD_A430_830279CFE059__INCLUDED_)
