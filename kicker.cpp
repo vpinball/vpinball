@@ -1061,7 +1061,10 @@ STDMETHODIMP Kicker::get_LastCapturedBall(IBall **pVal)
     for (unsigned int i = 0; i < g_pplayer->m_vball.size(); i++)
     {
         if (g_pplayer->m_vball[i] == m_phitkickercircle->m_lastCapturedBall)
+	{
             ballFound = true;
+	    break;
+	}
     }
 
     if (!ballFound)
@@ -1070,7 +1073,7 @@ STDMETHODIMP Kicker::get_LastCapturedBall(IBall **pVal)
         return E_POINTER;
     }
 
-    BallEx *pballex = m_phitkickercircle->m_lastCapturedBall->m_pballex;
+    BallEx * const pballex = m_phitkickercircle->m_lastCapturedBall->m_pballex;
 
     if (!pballex)
     {
@@ -1223,7 +1226,7 @@ void KickerHitCircle::DoCollide(Ball * const pball, const Vertex3Ds& hitnormal, 
       else // exiting kickers volume
       {
          pball->m_vpVolObjs->RemoveElementAt(i); // remove kicker to ball's volume set
-         m_pkicker->FireGroupEvent(DISPID_HitEvents_Unhit);         
+         m_pkicker->FireGroupEvent(DISPID_HitEvents_Unhit);
       }
    }
 }
