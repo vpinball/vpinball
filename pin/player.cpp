@@ -716,7 +716,9 @@ void Player::UpdateBasicShaderMatrix(const Matrix3D& objectTrafo)
 
    if (m_ptable->m_fReflectionEnabled)
    {
-      matObject._43 -= m_ptable->m_tableheight*2.0f; // why factor 2.0f?
+      // *2.0f because every element is calculated that the lowest edge is around z=0 + table height so to get a correct
+      // reflection the translation must be 1x table height + 1x table height to center around table height or 0
+      matObject._43 -= m_ptable->m_tableheight*2.0f; 
    }
 
    D3DXMATRIX matWorldView = matObject * matWorld * matView;
