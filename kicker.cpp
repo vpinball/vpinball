@@ -1048,14 +1048,34 @@ STDMETHODIMP Kicker::BallCntOver(int *pVal)
 
 STDMETHODIMP Kicker::get_LastCapturedBall(IBall **pVal)
 {
-    if (!pVal || !g_pplayer || (!m_phitkickercircle && !m_phitkickercircle->m_lastCapturedBall))
+    if (!pVal || !g_pplayer || !m_phitkickercircle)
+    {
         return E_POINTER;
+    }
+    if (!m_phitkickercircle->m_lastCapturedBall)
+    {
+        ShowError("LastCapturedBall was called but no ball was captured!");
+        return E_POINTER;
+    }
+    bool ballFound = false;
+    for (unsigned int i = 0; i < g_pplayer->m_vball.size(); i++)
+    {
+        if (g_pplayer->m_vball[i] == m_phitkickercircle->m_lastCapturedBall)
+            ballFound = true;
+    }
+
+    if (!ballFound)
+    {
+        ShowError("LastCapturedBall was called but ball is already destroyed!");
+        return E_POINTER;
+    }
 
     BallEx *pballex = m_phitkickercircle->m_lastCapturedBall->m_pballex;
 
     if (!pballex)
+    {
         return E_POINTER;
-
+    }
     pballex->QueryInterface(IID_IBall, (void **)pVal);
 
     return S_OK;
