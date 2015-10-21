@@ -86,6 +86,7 @@
     <ClCompile Include="inc\progmesh.cpp">
       <Filter>inc</Filter>
     </ClCompile>
+    <ClCompile Include="codeviewedit.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="vpinball.rc" />
@@ -798,6 +799,7 @@
     <ClInclude Include="inc\progmesh_vecmatquat_minimal.h">
       <Filter>inc</Filter>
     </ClInclude>
+    <ClInclude Include="codeviewedit.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="shader\BallShader.fx">
