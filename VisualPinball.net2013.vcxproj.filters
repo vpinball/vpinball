@@ -799,7 +799,12 @@
     <ClInclude Include="inc\progmesh_vecmatquat_minimal.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="codeviewedit.h" />
+    <ClInclude Include="inc\Sci_Position.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="codeviewedit.h">
+      <Filter>headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="shader\BallShader.fx">
