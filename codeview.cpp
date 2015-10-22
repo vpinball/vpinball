@@ -207,14 +207,12 @@ void CodeViewer::RemoveItem(IScriptable *piscript)
    CComBSTR bstr;
    piscript->get_Name(&bstr);
 
-   CodeViewDispatch *pcvd;
-
    int idx = m_vcvd.GetSortedIndex(bstr);
 
    if (idx == -1)
       return;
 
-   pcvd = m_vcvd.ElementAt(idx);
+   CodeViewDispatch *pcvd = m_vcvd.ElementAt(idx);
 
    _ASSERTE(pcvd);
 
@@ -410,9 +408,9 @@ void CodeViewer::Create()
 	while (WordChar != 0) //Just make sure with chars, we reached EOL
 	{
 		memset(szWord,0,256);
-		wordlen=0;
+		wordlen = 0;
 		intWordFinish++; //skip space
-		WordChar= vbsReservedWords[intWordFinish];
+		WordChar = vbsReservedWords[intWordFinish];
 		while (WordChar != 0 && WordChar != ' ')
 		{
 			szWord[wordlen]=WordChar;
@@ -453,7 +451,7 @@ void CodeViewer::Create()
 	#define SMSCIN (x,y,z) ( SendMessage(m_hwndScintilla, x,  y, z) );
 
    SendMessage(m_hwndScintilla, SCI_SETLEXER, (WPARAM)SCLEX_VBSCRIPT, 0); 
-	SendMessage(m_hwndScintilla, SCI_SETKEYWORDS, 0, (LPARAM)vbsReservedWords );
+   SendMessage(m_hwndScintilla, SCI_SETKEYWORDS, 0, (LPARAM)vbsReservedWords );
    SendMessage(m_hwndScintilla, SCI_SETTABWIDTH, 4, 0);
    SendMessage(m_hwndScintilla, SCI_SETMODEVENTMASK, SC_MOD_INSERTTEXT, 0);
    SendMessage(m_hwndScintilla, SCI_SETMOUSEDWELLTIME,700,0);
@@ -557,7 +555,6 @@ void CodeViewer::Create()
    SendMessage(m_hwndFunctionText, WM_SETFONT, (size_t)GetStockObject(DEFAULT_GUI_FONT), 0);
 	ParseVPCore();
 	SendMessage(m_hwndMain, WM_SIZE, 0, 0); // Make our window relay itself out
-	return;
 }
 
 void CodeViewer::Destroy()
@@ -1036,8 +1033,6 @@ void CodeViewer::LoadFromStream(IStream *pistream, HCRYPTHASH hcrypthash, HCRYPT
    SendMessage(m_hwndScintilla, SCI_SETTEXT, 0, (size_t)szText);
    SendMessage(m_hwndScintilla, SCI_EMPTYUNDOBUFFER, 0, 0);
    delete[] szText;
-
-
 
    m_fIgnoreDirty = fFalse;
    m_sdsDirty = eSaveClean;
@@ -1863,17 +1858,21 @@ void CodeViewer::ParseForFunction() // Subs & Collections AndyS - WIP
 
 void CodeViewer::ParseVPCore()
 {
-	//Open file
-	FILE* fCore;
-	char buffer[MAX_PATH];
-	GetModuleFileName( NULL, buffer, MAX_PATH );
-   string::size_type pos = string( buffer ).find_last_of( "\\/" );
-   string sPath = string( buffer ).substr( 0, pos) + "\\Scripts\\core.vbs";
-	if (fopen_s(&fCore, sPath.c_str() ,"r") != 0)
+   //Open file
+   const string sPath = string(g_pvp->m_szMyPath) + "\\Scripts\\core.vbs";
+   FILE* fCore;
+   if (fopen_s(&fCore, sPath.c_str(), "r") != 0)
 	if (!fCore)
 	{
-		MessageBox(m_hwndMain,"","/vbs/core not found",MB_OK);
-		return;
+		char szLoadDir[MAX_PATH];
+		const HRESULT hr = GetRegString("RecentDir", "LoadDir", szLoadDir, MAX_PATH);
+		strcat_s(szLoadDir, "\\core.vbs");
+		if (fopen_s(&fCore, szLoadDir, "r") != 0)
+			if (!fCore)
+			{
+				MessageBox(m_hwndMain, "core.vbs not found", "Script Error", MB_OK);
+				return;
+			}
 	}
 ///////////////////////
 	char text[MAX_LINE_LENGTH] = {};
@@ -1960,7 +1959,6 @@ void CodeViewer::ParseVPCore()
 	}
 
 	fclose(fCore);
-	return;
 }
 
 static CodeViewer* GetCodeViewerPtr(HWND hwndDlg)
