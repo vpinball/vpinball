@@ -4,8 +4,8 @@
 void TitleFromFilename(char *szfilename, char *sztitle);
 void ExtensionFromFilename(char *szfilename, char *szextension);
 BOOL RawReadFromFile(char *szfilename, int *psize, char **pszout);
-void PathFromFilename(char *szfilename, char *szpath);
-void TitleAndPathFromFilename(char *szfilename, char *szpath);
+void PathFromFilename(const char * const szfilename, char *szpath);
+void TitleAndPathFromFilename(const char * const szfilename, char *szpath);
 
 class BiffReader;
 
