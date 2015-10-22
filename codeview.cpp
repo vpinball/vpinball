@@ -450,11 +450,11 @@ void CodeViewer::Create()
 	VPcore.b = GetRegBoolWithDefault("CVEdit","ShowVPcore",true);
 	#define SMSCIN (x,y,z) ( SendMessage(m_hwndScintilla, x,  y, z) );
 
-   SendMessage(m_hwndScintilla, SCI_SETLEXER, (WPARAM)SCLEX_VBSCRIPT, 0); 
+	SendMessage(m_hwndScintilla, SCI_SETLEXER, (WPARAM)SCLEX_VBSCRIPT, 0);
    SendMessage(m_hwndScintilla, SCI_SETKEYWORDS, 0, (LPARAM)vbsReservedWords );
    SendMessage(m_hwndScintilla, SCI_SETTABWIDTH, 4, 0);
    SendMessage(m_hwndScintilla, SCI_SETMODEVENTMASK, SC_MOD_INSERTTEXT, 0);
-   SendMessage(m_hwndScintilla, SCI_SETMOUSEDWELLTIME,700,0);
+   SendMessage(m_hwndScintilla, SCI_SETMOUSEDWELLTIME,300,0);
 
    // The null visibility policy is like Visual Studio - if a search goes
    // off the screen, the newly selected text is placed in the middle of the
@@ -1495,7 +1495,7 @@ bool CodeViewer::ShowTooltip(SCNotification *pSCN)
 	int dwellpos = pSCN->position;
 	int wordstart = SendMessage(m_hwndScintilla,SCI_WORDSTARTPOSITION,dwellpos, FALSE );
 	int wordfinish = SendMessage(m_hwndScintilla,SCI_WORDENDPOSITION,dwellpos, FALSE );
-	char Mess[256] = {}; int MessLen = 0;
+	char Mess[1024] = {}; int MessLen = 0;
 	char szDwellWord[256] = {};
 	char szLCDwellWord[256] = {};
 	// is it a valid 'word'
@@ -1514,12 +1514,12 @@ bool CodeViewer::ShowTooltip(SCNotification *pSCN)
 			MessLen = sprintf_s(Mess, "VBS:%s", szDwellWord);
 		}
 
-		// Search subs list
+		//Search lists
 		if (MessLen == 0)
 		{
-			// has function list been filled?
+			//Has function list been filled?
 			if ( g_UserFunc->size() == 0 ) ParseForFunction();
-			//now search subs/funs
+			//search subs/funcs
 			vector<UserData>::iterator i;
 			if (FindUD(g_UserFunc,string(szLCDwellWord),i) == 0)
 			{
@@ -1529,16 +1529,26 @@ bool CodeViewer::ShowTooltip(SCNotification *pSCN)
 					MessLen = sprintf_s(Mess, "%s", ptemp);
 				}
 			}
-			//now search components
-			if ( ( FindUD(g_Components, string(szLCDwellWord), i)  == 0 ) && ( MessLen == 0 ) )
+			//Search VP core
+			else if (FindUD(g_VP_Core,string(szLCDwellWord),i) == 0)
+			{
+				const char *ptemp = (i->strDescription.c_str());
+				if (*ptemp)
+				{
+					MessLen = sprintf_s(Mess, "%s", ptemp);
+				}
+			}
+			else if ( ( FindUD(g_Components, string(szLCDwellWord), i)  == 0 ) )
 			{
 				MessLen = sprintf_s(Mess, "Component: %s", szDwellWord);
 			}
 		}
-		//if (MessLen == 0 )
-		//{
-		//	MessLen = sprintf_s(Mess, "Test:%s", szDwellWord);
-		//}
+#ifdef _DEBUG
+		if (MessLen == 0 )
+		{
+			MessLen = sprintf_s(Mess, "Test:%s", szDwellWord);
+		}
+#endif
 	}
 	if (MessLen > 0)
 	{
@@ -1882,24 +1892,24 @@ void CodeViewer::ParseVPCore()
 	int linecount = 0;
 	while (!feof(fCore))
 	{
+		// Read line
       memset(text, 0, MAX_LINE_LENGTH);
-		//char myerr[256]={};
+		++linecount;
 		fgets(text, MAX_LINE_LENGTH, fCore);
 		if (errno = STRUNCATE)
-		++linecount;
-      string wholeline(text);
-		int lineLength = wholeline.length();
-		string line;
-		if (lineLength > MAX_LINE_LENGTH)
 		{
 			char szText[256] = {};
 			sprintf_s(szText,"The current maximum script line length is %d",MAX_LINE_LENGTH);
 			char szCaption[256] = {};
-			sprintf_s(szCaption,"Line too long on line %d",linecount);
+			sprintf_s(szCaption,"Line too long on:%d",linecount);
 			MessageBox(m_hwndMain,szText,szCaption,MB_OK);
 			continue;
 		}
+      string wholeline(text);
+		int lineLength = wholeline.length();
+		if (lineLength > MAX_LINE_LENGTH)
 		if (lineLength <4) continue;
+		string line;
 		while (wholeline.length() > 1)
 		{
 			//Chop up line by ":"
@@ -2380,7 +2390,11 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 						{pcv->Comps.b = false;}
 					}
 					break;
-
+				//case IDC_CVP_COL_COMP:
+				//	{
+				//		CHOOSECOLOR
+				//	}
+				//break;
 				case IDC_CVP_CHKB_SUBS:
 					{
 						if(IsDlgButtonChecked(hwndDlg,IDC_CVP_CHKB_SUBS))
