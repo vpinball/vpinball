@@ -847,15 +847,15 @@ BEGIN
     COMBOBOX        DISPID_Image,7,18,111,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Display &Image in Editor",13,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,31,87,10
     COMBOBOX        IDC_MATERIAL_COMBO,7,54,111,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Side Visi&ble",109,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,62,76,52,10
+    CONTROL         "Side Visi&ble",109,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,69,76,52,10
     COMBOBOX        DISPID_Image2,7,89,111,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     COMBOBOX        IDC_MATERIAL_COMBO2,7,112,111,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     COMBOBOX        IDC_MATERIAL_COMBO3,7,136,111,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Animate Slingshot",112,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,153,111,10
-    CONTROL         "Flipbook Animation",113,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,164,111,10
+    CONTROL         "Flipbook (don't show if dropped?)",113,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,164,140,10
     LTEXT           "Top Image",-1,7,8,35,8
     LTEXT           "Top Material",-1,7,43,40,8
-    LTEXT           "Side Material",-1,7,104,42,8
+    LTEXT           "Side Material",-1,7,102,42,8
     LTEXT           "Si&de Image",-1,7,78,37,8
     LTEXT           "Slingshot Material",-1,7,128,56,8
     CONTROL         "Disable Lighting",IDC_DISABLE_LIGHTING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,175,66,10
