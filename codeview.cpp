@@ -1896,7 +1896,10 @@ void CodeViewer::ParseVPCore()
       memset(text, 0, MAX_LINE_LENGTH);
 		++linecount;
 		fgets(text, MAX_LINE_LENGTH, fCore);
-		if (errno = STRUNCATE)
+      string wholeline(text);
+		int lineLength = wholeline.length();
+		if (lineLength <4) continue;
+		if (lineLength > MAX_LINE_LENGTH)
 		{
 			char szText[256] = {};
 			sprintf_s(szText,"The current maximum script line length is %d",MAX_LINE_LENGTH);
@@ -1905,10 +1908,6 @@ void CodeViewer::ParseVPCore()
 			MessageBox(m_hwndMain,szText,szCaption,MB_OK);
 			continue;
 		}
-      string wholeline(text);
-		int lineLength = wholeline.length();
-		if (lineLength > MAX_LINE_LENGTH)
-		if (lineLength <4) continue;
 		string line;
 		while (wholeline.length() > 1)
 		{
