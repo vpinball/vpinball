@@ -1112,6 +1112,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="inc\progmesh_vecmatquat_minimal.h" />
     <ClInclude Include="inc\scilexer.h" />
     <ClInclude Include="inc\scintilla.h" />
+    <ClInclude Include="inc\Sci_Position.h" />
     <ClInclude Include="inc\xaudio\aac_codec.h" />
     <ClInclude Include="inc\xaudio\audio_output.h" />
     <ClInclude Include="inc\xaudio\control.h" />
