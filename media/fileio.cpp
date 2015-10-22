@@ -57,7 +57,7 @@ void TitleFromFilename(char *szfilename, char *sztitle)
    *sztitle = '\0';
 }
 
-void PathFromFilename(char *szfilename, char *szpath)
+void PathFromFilename(const char * const szfilename, char *szpath)
 {
    const int len = lstrlen(szfilename);
    // find the last '\' in the filename
@@ -76,14 +76,14 @@ void PathFromFilename(char *szfilename, char *szpath)
    }
 
    // copy from the start of the string to the end (or last '\')
-   char *szT = szfilename;
+   const char * szT = szfilename;
    int count = end + 1;
 
    while (count--) { *szpath++ = *szT++; }
    *szpath = '\0';
 }
 
-void TitleAndPathFromFilename(char *szfilename, char *szpath)
+void TitleAndPathFromFilename(const char * const szfilename, char *szpath)
 {
    const int len = lstrlen(szfilename);
    // find the last '.' in the filename
@@ -102,7 +102,7 @@ void TitleAndPathFromFilename(char *szfilename, char *szpath)
    }
 
    // copy from the start of the string to the end (or last '\')
-   char *szT = szfilename;
+   const char *szT = szfilename;
    int count = end;
 
    while (count-- > 0) { *szpath++ = *szT++; }
