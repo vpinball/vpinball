@@ -15,7 +15,6 @@ public:
    float m_rotation;
    char m_szMaterial[32];
    TimerDataRoot m_tdr;
-   float m_overhang;
    float m_height;
    float m_antifriction;
    float m_angleMax;
@@ -117,8 +116,6 @@ public:
    STDMETHOD(put_Image)(/*[in]*/ BSTR newVal);
    STDMETHOD(get_Friction)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_Friction)(/*[in]*/ float newVal);
-   STDMETHOD(get_Overhang)(/*[out, retval]*/ float *pVal);
-   STDMETHOD(put_Overhang)(/*[in]*/ float newVal);
    STDMETHOD(get_Height)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_Height)(/*[in]*/ float newVal);
    STDMETHOD(get_Rotation)(/*[out, retval]*/ float *pVal);

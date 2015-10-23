@@ -1683,8 +1683,6 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propput, id(4), helpstring("property Rotation")] HRESULT Rotation([in] float newVal);
                 [propget, id(5), helpstring("property Height")] HRESULT Height([out, retval] float *pVal);
                 [propput, id(5), helpstring("property Height")] HRESULT Height([in] float newVal);
-                [propget, id(6), helpstring("property Overhang")] HRESULT Overhang([out, retval] float *pVal);
-                [propput, id(6), helpstring("property Overhang")] HRESULT Overhang([in] float newVal);
                 [propget, id(7), helpstring("property Friction")] HRESULT Friction([out, retval] float *pVal);
                 [propput, id(7), helpstring("property Friction")] HRESULT Friction([in] float newVal);
                 [propget, id(DISPID_Image), helpstring("property Image")] HRESULT Image([out, retval] BSTR *pVal);
