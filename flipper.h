@@ -78,7 +78,7 @@ public:
    Flipper();
    virtual ~Flipper();
 
-   void SetVertices(float basex, float basey, const float angle, Vertex2D * const pvEndCenter, Vertex2D * const rgvTangents, const float baseradius, const float endradius) const;
+   void SetVertices(const float basex, const float basey, const float angle, Vertex2D * const pvEndCenter, Vertex2D * const rgvTangents, const float baseradius, const float endradius) const;
 
    virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
 

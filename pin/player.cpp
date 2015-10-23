@@ -1274,7 +1274,6 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 //  5. render all dynamic objects as normal
 void Player::RenderStaticMirror(const bool onlyBalls)
 {
-   D3DMATRIX viewMat;
    const float rotation = fmodf(m_ptable->m_BG_rotation[m_ptable->m_BG_current_set], 360.f);
 
    // Direct all renders to the "static" buffer.
@@ -1287,6 +1286,7 @@ void Player::RenderStaticMirror(const bool onlyBalls)
 
    if (!onlyBalls)
    {
+      D3DMATRIX viewMat;
       m_pin3d.m_pd3dDevice->GetTransform(TRANSFORMSTATE_VIEW, &viewMat);
       // flip camera
       viewMat._33 = -viewMat._33;
@@ -1331,8 +1331,8 @@ void Player::RenderStaticMirror(const bool onlyBalls)
       m_pin3d.m_pd3dDevice->SetTransform(TRANSFORMSTATE_VIEW, &viewMat);
       UpdateBasicShaderMatrix();
    }
-   m_pin3d.m_pd3dDevice->SetRenderTarget(m_pin3d.m_pddsStatic);
 
+   m_pin3d.m_pd3dDevice->SetRenderTarget(m_pin3d.m_pddsStatic);
 
    // render normal static elements but into mirrored z-buffer
    for (int i = 0; i < m_ptable->m_vedit.Size(); i++)
@@ -1346,6 +1346,7 @@ void Player::RenderStaticMirror(const bool onlyBalls)
          }
       }
    }
+
    m_pin3d.SetRenderTarget(m_pin3d.m_pddsStatic, m_pin3d.m_pddsStaticZ);
    // copy mirror back buffer into mirror texture for rendering it over the playfield later on
    m_pin3d.m_pd3dDevice->CopySurface(tmpMirrorSurface, m_pin3d.m_mirrorBuffer);
@@ -1354,9 +1355,6 @@ void Player::RenderStaticMirror(const bool onlyBalls)
 
 void Player::RenderDynamicMirror(const bool onlyBalls)
 {
-   D3DMATRIX viewMat;
-   const float rotation = fmodf(m_ptable->m_BG_rotation[m_ptable->m_BG_current_set], 360.f);
-
    // render into temp back buffer 
    RenderTarget *tmpMirrorSurface = NULL;
    m_pin3d.m_pd3dDevice->GetMirrorTmpBufferTexture()->GetSurfaceLevel(0, &tmpMirrorSurface);
@@ -1364,21 +1362,24 @@ void Player::RenderDynamicMirror(const bool onlyBalls)
 
    m_pin3d.m_pd3dDevice->Clear(0, NULL, D3DCLEAR_TARGET, 0, 1.0f, 0L);
 
+   D3DMATRIX viewMat;
    m_pin3d.m_pd3dDevice->GetTransform(TRANSFORMSTATE_VIEW, &viewMat);
    // flip camera
    viewMat._33 = -viewMat._33;
-   if (rotation!=0.0f)
+   const float rotation = fmodf(m_ptable->m_BG_rotation[m_ptable->m_BG_current_set], 360.f);
+   if (rotation != 0.0f)
       viewMat._31 = -viewMat._31;
    else
       viewMat._32 = -viewMat._32;
    m_pin3d.m_pd3dDevice->SetTransform(TRANSFORMSTATE_VIEW, &viewMat);
+
+   m_ptable->m_fReflectionEnabled = true; // set to let matrices and postrenderstatics know that we need to handle reflections now
 
    if (!onlyBalls)
       UpdateBasicShaderMatrix();
 
    UpdateBallShaderMatrix();
 
-   m_ptable->m_fReflectionEnabled = true;
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE); // re-init/thrash cache entry due to the hacky nature of the table mirroring
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 
@@ -1409,6 +1410,7 @@ void Player::RenderDynamicMirror(const bool onlyBalls)
    else
       viewMat._32 = -viewMat._32;
    m_pin3d.m_pd3dDevice->SetTransform(TRANSFORMSTATE_VIEW, &viewMat);
+
    if (!onlyBalls)
       UpdateBasicShaderMatrix();
 
