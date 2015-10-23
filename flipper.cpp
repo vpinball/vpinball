@@ -662,13 +662,16 @@ void Flipper::PostRenderStatic(RenderDevice* pd3dDevice)
    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
    pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 
-   Matrix3D matTrafo, matTemp;
+   Matrix3D matTrafo;
    matTrafo.SetIdentity();
    matTrafo._41 = m_d.m_Center.x;
    matTrafo._42 = m_d.m_Center.y;
    if (m_phitflipper)
+   {
+      Matrix3D matTemp;
       matTemp.RotateZMatrix(m_phitflipper->m_flipperanim.m_angleCur);
-   matTrafo.Multiply(matTemp, matTrafo);
+      matTrafo.Multiply(matTemp, matTrafo);
+   }
    g_pplayer->UpdateBasicShaderMatrix(matTrafo);
    pd3dDevice->basicShader->Begin(0);
    pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, flipperBaseVertices, indexBuffer, 0, flipperBaseNumFaces);
