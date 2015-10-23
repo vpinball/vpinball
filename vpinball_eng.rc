@@ -252,7 +252,7 @@ BEGIN
     PUSHBUTTON      "Web Site",IDC_WEBSITE,156,174,67,14
     PUSHBUTTON      "Translator's Web Site Name",IDC_TRANSLATEWEBSITE,130,44,93,14,NOT WS_VISIBLE | WS_DISABLED
     CTEXT           "This application uses Visual Basic Scripting Edition by Microsoft",IDC_STATIC,0,198,150,17
-    CONTROL         264,IDC_STATIC,"Static",SS_BITMAP,7,7,94,27
+    CONTROL         IDC_RIGHTFLIPPERBUTTON,IDC_STATIC,"Static",SS_BITMAP,7,7,94,27
     LTEXT           "A Randy Davis Production",IDC_STATIC,13,35,94,8
     LTEXT           "Version 10.0.0",IDC_ABOUT_VERSION,13,45,121,10
     GROUPBOX        "Credits",IDC_STATIC,7,57,216,108
@@ -1060,7 +1060,7 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,82,76,10
 END
 
-IDD_PROPSPINNER_POSITION DIALOGEX 0, 0, 125, 173
+IDD_PROPSPINNER_POSITION DIALOGEX 0, 0, 125, 161
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
@@ -1069,21 +1069,19 @@ BEGIN
     EDITTEXT        DISPID_Spinner_Length,47,38,43,12,ES_AUTOHSCROLL
     EDITTEXT        5,47,52,43,12,ES_AUTOHSCROLL
     EDITTEXT        4,47,71,43,12,ES_AUTOHSCROLL
-    EDITTEXT        6,47,85,43,12,ES_AUTOHSCROLL
-    EDITTEXT        13,47,102,43,12,ES_AUTOHSCROLL
-    EDITTEXT        14,47,116,43,12,ES_AUTOHSCROLL
-    EDITTEXT        15,47,131,43,12,ES_AUTOHSCROLL
-    COMBOBOX        1502,7,156,111,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        13,47,89,43,12,ES_AUTOHSCROLL
+    EDITTEXT        14,47,103,43,12,ES_AUTOHSCROLL
+    EDITTEXT        15,47,118,43,12,ES_AUTOHSCROLL
+    COMBOBOX        1502,7,143,111,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     LTEXT           "&X",-1,7,9,8,8
     LTEXT           "&Y",-1,7,23,8,8
     LTEXT           "&Length",-1,7,39,23,8
     LTEXT           "&Height",-1,7,53,22,8
     LTEXT           "&Rotation",-1,7,73,38,8
-    LTEXT           "&Overhang",-1,7,88,38,8
-    LTEXT           "&Surface",-1,7,145,26,9
-    LTEXT           "Angle Max",-1,7,104,38,8
-    LTEXT           "Angle Min",-1,7,118,38,8
-    LTEXT           "Elasticity",-1,7,133,38,8
+    LTEXT           "&Surface",-1,7,132,26,9
+    LTEXT           "Angle Max",-1,7,91,38,8
+    LTEXT           "Angle Min",-1,7,105,38,8
+    LTEXT           "Elasticity",-1,7,120,38,8
 END
 
 IDD_PROPSPINNER_PHYSICS DIALOGEX 0, 0, 125, 26
@@ -1945,6 +1943,10 @@ BEGIN
     END
 
     IDD_PROPSPINNER_VISUALS, DIALOG
+    BEGIN
+    END
+
+    IDD_PROPSPINNER_POSITION, DIALOG
     BEGIN
     END
 

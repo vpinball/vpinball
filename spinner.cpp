@@ -59,7 +59,6 @@ void Spinner::WriteRegDefaults()
    SetRegValueFloat("DefaultProps\\Spinner", "Rotation", m_d.m_rotation);
    SetRegValueBool("DefaultProps\\Spinner", "ShowBracket", m_d.m_fShowBracket);
    SetRegValueFloat("DefaultProps\\Spinner", "Height", m_d.m_height);
-   SetRegValueFloat("DefaultProps\\Spinner", "Overhang", m_d.m_overhang);
    SetRegValueFloat("DefaultProps\\Spinner", "AngleMax", m_d.m_angleMax);
    SetRegValueFloat("DefaultProps\\Spinner", "AngleMin", m_d.m_angleMin);
    SetRegValueFloat("DefaultProps\\Spinner", "Elasticity", m_d.m_elasticity);
@@ -102,12 +101,6 @@ void Spinner::SetDefaults(bool fromMouseClick)
       m_d.m_height = (float)iTmp / 1000.0f;
    else
       m_d.m_height = 60;
-
-   hr = GetRegStringAsFloat("DefaultProps\\Spinner", "Overhang", &fTmp);
-   if ((hr == S_OK) && fromMouseClick)
-      m_d.m_overhang = fTmp;
-   else
-      m_d.m_overhang = 10;
 
    SetDefaultPhysics(fromMouseClick);
    // Anti-friction is 1-friction (throughput)
@@ -179,8 +172,6 @@ void Spinner::Render(Sur * const psur)
    psur->SetLineColor(RGB(0, 0, 0), false, 1);
    psur->SetObject(this);
 
-   halflength += m_d.m_overhang;
-
    psur->Line(m_d.m_vCenter.x + cs*halflength, m_d.m_vCenter.y + sn*halflength,
       m_d.m_vCenter.x - cs*halflength, m_d.m_vCenter.y - sn*halflength);
 }
@@ -205,7 +196,7 @@ void Spinner::GetTimers(Vector<HitTimer> * const pvht)
 void Spinner::GetHitShapes(Vector<HitObject> * const pvho)
 {
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
-   const float h = m_d.m_height*0.5f + 30.0f;
+   const float h = m_d.m_height + 30.0f;
 
    const float angleMin = min(m_d.m_angleMin, m_d.m_angleMax); // correct angle inversions
    const float angleMax = max(m_d.m_angleMin, m_d.m_angleMax);
@@ -220,30 +211,30 @@ void Spinner::GetHitShapes(Vector<HitObject> * const pvho)
 
    if (m_d.m_fShowBracket)
    {
+       /*add a hit shape for the bracket if shown, just in case if the bracket spinner height is low enough so the ball can hit it*/
       float halflength = m_d.m_length * 0.5f;
       const float radangle = ANGTORAD(m_d.m_rotation);
       const float sn = sinf(radangle);
       const float cs = cosf(radangle);
 
-      halflength += m_d.m_overhang;
-
+      halflength += (m_d.m_length*0.1875f);
       HitCircle *phitcircle;
       phitcircle = new HitCircle();
       phitcircle->m_pfe = NULL;
       phitcircle->center.x = m_d.m_vCenter.x + cs*halflength;
       phitcircle->center.y = m_d.m_vCenter.y + sn*halflength;
-      phitcircle->radius = 0.01f;
-      phitcircle->zlow = height;
-      phitcircle->zhigh = height + h;//+50.0f;
+      phitcircle->radius = m_d.m_length*0.075f;
+      phitcircle->zlow = height + m_d.m_height;
+      phitcircle->zhigh = height + h;
       pvho->AddElement(phitcircle);
 
       phitcircle = new HitCircle();
       phitcircle->m_pfe = NULL;
       phitcircle->center.x = m_d.m_vCenter.x - cs*halflength;
       phitcircle->center.y = m_d.m_vCenter.y - sn*halflength;
-      phitcircle->radius = 0.01f;
-      phitcircle->zlow = height;
-      phitcircle->zhigh = height + h; //+50.0f;
+      phitcircle->radius = m_d.m_length*0.075f;
+      phitcircle->zlow = height + m_d.m_height;
+      phitcircle->zhigh = height + h;
       pvho->AddElement(phitcircle);
    }
 }
@@ -500,7 +491,6 @@ HRESULT Spinner::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
    bw.WriteFloat(FID(SELA), m_d.m_elasticity);
    bw.WriteBool(FID(SVIS), m_d.m_fVisible);
    bw.WriteBool(FID(SSUPT), m_d.m_fShowBracket);
-   bw.WriteFloat(FID(OVRH), m_d.m_overhang);
    bw.WriteString(FID(MATR), m_d.m_szMaterial);
    bw.WriteString(FID(IMGF), m_d.m_szImage);
    bw.WriteString(FID(SURF), m_d.m_szSurface);
@@ -582,10 +572,6 @@ BOOL Spinner::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(SVIS))
    {
       pbr->GetBool(&m_d.m_fVisible);
-   }
-   else if (id == FID(OVRH))
-   {
-      pbr->GetFloat(&m_d.m_overhang);
    }
    else if (id == FID(IMGF))
    {
@@ -675,24 +661,6 @@ STDMETHODIMP Spinner::put_Height(float newVal)
    STARTUNDO
 
       m_d.m_height = newVal;
-
-   STOPUNDO
-
-      return S_OK;
-}
-
-STDMETHODIMP Spinner::get_Overhang(float *pVal)
-{
-   *pVal = m_d.m_overhang;
-
-   return S_OK;
-}
-
-STDMETHODIMP Spinner::put_Overhang(float newVal)
-{
-   STARTUNDO
-
-      m_d.m_overhang = newVal;
 
    STOPUNDO
 
