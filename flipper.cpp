@@ -79,7 +79,6 @@ static const float vertsBaseTopf[13 * 3] =
 
 static const Vertex3Ds* const vertsBaseTop = (Vertex3Ds*)vertsBaseTopf;
 
-const int numIndices = 294;
 Flipper::Flipper()
 {
    m_phitflipper = NULL;
@@ -162,7 +161,7 @@ void Flipper::SetDefaults(bool fromMouseClick)
    m_d.m_strength = (hr == S_OK) && fromMouseClick ? fTmp : 2200.0f;
 
    hr = GetRegStringAsFloat("DefaultProps\\Flipper", "Height", &fTmp);
-   m_d.m_height = (hr == S_OK) && fromMouseClick ? fTmp : 50;
+   m_d.m_height = (hr == S_OK) && fromMouseClick ? fTmp : 50.f;
 
    hr = GetRegInt("DefaultProps\\Flipper", "RubberThickness", &iTmp);
    m_d.m_rubberthickness = (hr == S_OK) && fromMouseClick ? iTmp : 7;
@@ -366,7 +365,7 @@ void Flipper::EndPlay()
    IEditable::EndPlay();
 }
 
-void Flipper::SetVertices(float basex, float basey, const float angle, Vertex2D * const pvEndCenter, Vertex2D * const rgvTangents, const float baseradius, const float endradius) const
+void Flipper::SetVertices(const float basex, const float basey, const float angle, Vertex2D * const pvEndCenter, Vertex2D * const rgvTangents, const float baseradius, const float endradius) const
 {
    const float fradius = m_d.m_FlipperRadius;
    const float fa = asinf((baseradius - endradius) / fradius); //face to centerline angle (center to center)
