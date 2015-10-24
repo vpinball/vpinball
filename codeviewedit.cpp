@@ -151,4 +151,61 @@ bool UserData::FindOrInsertStringIntoAutolist(vector<string>* ListIn,const strin
 	return false;//Oh pop poop, never should hit here.
 }
 
+COLORREF g_crDefaultTextColor = 0;
+
+CVPrefrence::CVPrefrence()
+{
+		szControlName = nullptr;
+		rgb = 0;
+		b = false;
+		szRegName = nullptr;
+		szSciKeywordID = 0;
+
+}
+
+CVPrefrence* CVPrefrence::FillCVPreference(const char* szCtrlNameIn,const COLORREF &crTextColor, \
+		const bool &bDisplay,const char* szRegistryName,const int &szScintillaKeyword ,const int &IDControl_Code )
+{
+	szControlName = szCtrlNameIn;
+	rgb = crTextColor;
+	b = bDisplay;
+	szRegName = szRegistryName;
+	szSciKeywordID = szScintillaKeyword;
+	IDC_code = IDControl_Code;
+	return (CVPrefrence *)this;
+}
+
+void CVPrefrence::SetCheckBox(const HWND hwndDlg)
+{
+		const HWND hChkBox = GetDlgItem(hwndDlg,this->IDC_code);
+		SNDMSG(hChkBox, BM_SETCHECK, this->b ? BST_CHECKED : BST_UNCHECKED, 0L);
+}
+
+void CVPrefrence::ReadCheckBox(const HWND hwndDlg)
+{
+	if(IsDlgButtonChecked(hwndDlg,this->IDC_code))
+	{this->b = true;}
+	else
+	{this->b = false;}
+}
+
+void CVPrefrence::GetShowFromReg()
+{
+	this->b = GetRegBoolWithDefault("CVEdit",this->szRegName,true);
+}
+
+void CVPrefrence::SetShowToReg()
+{
+	SetRegValueBool("CVEdit",this->szRegName,this->b);
+}
+
+void CVPrefrence::ColorText(const HWND hwndScin)
+{
+	SendMessage(hwndScin, SCI_STYLESETFORE, this->szSciKeywordID,this->b ? this->rgb : g_crDefaultTextColor);
+}
+
+CVPrefrence::~CVPrefrence()
+{
+	//everything automatically detroyed 2260
+}
 

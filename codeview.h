@@ -2,7 +2,7 @@
 #include <activscp.h>
 #include <activdbg.h>
 #include "atlcom.h"
-#include "CodeViewEdit.h"
+#include "codeviewedit.h"
 
 enum SecurityLevelEnum
 {
@@ -75,6 +75,7 @@ public:
 };
 
 
+
 class CodeViewer :
    public CComObjectRoot,
    //public IDispatchImpl<IDragPoint, &IID_IDragPoint, &LIBID_VPinballLib>,
@@ -85,7 +86,7 @@ class CodeViewer :
    public IInternetHostSecurityManager,
    public IServiceProvider,
 	public UserData,
-	public CVPrefs
+	public CVPrefrence
 
 {
 public:
@@ -241,13 +242,14 @@ public:
 	void ParseForFunction();
 
 	// CodeViewer Preferences
-	CVPrefs* pCVPrefs;
-	CVControl VBS;
-	CVControl Comps;
-	CVControl Subs;
-	CVControl Remarks;
-	CVControl Literals;
-	CVControl VPcore;
+	vector<CVPrefrence*> *lPrefsList;
+	CVPrefrence *prefVBS;
+	CVPrefrence *prefComps;
+	CVPrefrence *prefSubs;
+	CVPrefrence *prefComments;
+	CVPrefrence *prefLiterals;
+	CVPrefrence *prefVPcore ;
+
 	bool g_ToolTipActive;
 	string vbsKeyWords;
 

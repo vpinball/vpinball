@@ -734,6 +734,9 @@
     <ClInclude Include="codeviewedit.h">
       <Filter>headers</Filter>
     </ClInclude>
+    <ClInclude Include="inc\Sci_Position.h">
+      <Filter>inc</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="shader\BallShader.fx">
