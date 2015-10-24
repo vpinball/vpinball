@@ -152,19 +152,23 @@ private:
    PropertyPane *m_propPosition;
    PropertyPane *m_propPhysics;
 
-
    bool isHabitrail() const;
+   static const float HIT_SHAPE_DETAIL_LEVEL;
 
    // Get an approximation of the curve described by the control points of this ramp.
    template <typename T>
-   void GetCentralCurve(std::vector<T> &vv)
+   void GetCentralCurve(std::vector<T> &vv, float _accuracy=-1 )
    {
-      const float accuracy = 4.0f*powf(10.0f, (10.0f - m_ptable->GetDetailLevel())*(float)(1.0 / 1.5)); // min = 4, max = 4 * 10^(10/1.5) = 18.000.000
+      float accuracy = _accuracy;
+      if (accuracy==-1)
+         accuracy = 4.0f*powf(10.0f, (10.0f - m_ptable->GetDetailLevel())*(float)(1.0 / 1.5)); // min = 4, max = 4 * 10^(10/1.5) = 18.000.000
+       else
+          accuracy = 4.0f*powf(10.0f, (10.0f - _accuracy)*(float)(1.0 / 1.5)); // used for hit shape calculation, always!
       IHaveDragPoints::GetRgVertex(vv, false, accuracy);
    }
 
 
-   Vertex2D *GetRampVertex(int &pcvertex, float ** const ppheight, bool ** const ppfCross, float ** const ppratio, Vertex2D **pMiddlePoints, bool forRendering = false);
+   Vertex2D *GetRampVertex(int &pcvertex, float ** const ppheight, bool ** const ppfCross, float ** const ppratio, Vertex2D **pMiddlePoints, float _accuracy, bool forRendering = false);
    void prepareHabitrail(RenderDevice* pd3dDevice);
    void AddJoint(Vector<HitObject> * pvho, const Vertex3Ds& v1, const Vertex3Ds& v2);
    void AddJoint2D(Vector<HitObject> * pvho, const Vertex2D& p, float zlow, float zhigh);

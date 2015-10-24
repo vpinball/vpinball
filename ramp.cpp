@@ -2,6 +2,8 @@
 #include "forsyth.h"
 #include "objloader.h"
 
+const float Ramp::HIT_SHAPE_DETAIL_LEVEL = 7.0f;
+
 Ramp::Ramp()
 {
    m_menuid = IDR_SURFACEMENU;
@@ -78,7 +80,7 @@ HRESULT Ramp::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 void Ramp::SetDefaults(bool fromMouseClick)
 {
    static const char strKeyName[] = "DefaultProps\\Ramp";
-
+   
    m_d.m_heightbottom = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "HeightBottom", 0.0f) : 0.0f;
    m_d.m_heighttop = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "HeightTop", 50.0f) : 50.0f;
    m_d.m_widthbottom = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "WidthBottom", 75.0f) : 75.0f;
@@ -164,7 +166,7 @@ void Ramp::PreRender(Sur * const psur)
 
    int cvertex;
    Vertex2D *middlePoints;
-   Vertex2D * const rgvLocal = GetRampVertex(cvertex, NULL, NULL, NULL, &middlePoints);
+   Vertex2D * const rgvLocal = GetRampVertex(cvertex, NULL, NULL, NULL, &middlePoints, HIT_SHAPE_DETAIL_LEVEL);
    psur->Polygon(rgvLocal, cvertex * 2);
 
    delete[] rgvLocal;
@@ -181,7 +183,7 @@ void Ramp::Render(Sur * const psur)
    int cvertex;
    bool *pfCross;
    Vertex2D *middlePoints;
-   Vertex2D *rgvLocal = GetRampVertex(cvertex, NULL, &pfCross, NULL, &middlePoints);
+   Vertex2D *rgvLocal = GetRampVertex(cvertex, NULL, &pfCross, NULL, &middlePoints, HIT_SHAPE_DETAIL_LEVEL);
    psur->Polygon(rgvLocal, cvertex * 2);
    if (isHabitrail())
    {
@@ -257,7 +259,7 @@ void Ramp::RenderOutline(Sur * const psur)
    int cvertex;
    bool *pfCross;
    Vertex2D *middlePoints;
-   const Vertex2D *rgvLocal = GetRampVertex(cvertex, NULL, &pfCross, NULL, &middlePoints);
+   const Vertex2D *rgvLocal = GetRampVertex(cvertex, NULL, &pfCross, NULL, &middlePoints, HIT_SHAPE_DETAIL_LEVEL);
 
    psur->Polygon(rgvLocal, cvertex * 2);
    if (isHabitrail())
@@ -293,7 +295,7 @@ void Ramp::GetBoundingVertices(Vector<Vertex3Ds> * const pvvertex3D)
 {
    float *rgheight1;
    int cvertex;
-   const Vertex2D * const rgvLocal = GetRampVertex(cvertex, &rgheight1, NULL, NULL, NULL);
+   const Vertex2D * const rgvLocal = GetRampVertex(cvertex, &rgheight1, NULL, NULL, NULL, HIT_SHAPE_DETAIL_LEVEL);
 
    for (int i = 0; i < cvertex; i++)
    {
@@ -337,10 +339,10 @@ void Ramp::AssignHeightToControlPoint(const RenderVertex3D &v, float height)
  *  ppfCross     - size cvertex, true if i-th vertex corresponds to a control point
  *  ppratio      - how far along the ramp length the i-th vertex is, 1=start=bottom, 0=end=top (??)
  */
-Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** const ppfCross, float ** const ppratio, Vertex2D **pMiddlePoints, bool forRendering)
+Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** const ppfCross, float ** const ppratio, Vertex2D **pMiddlePoints, float _accuracy, bool forRendering)
 {
    std::vector<RenderVertex3D> vvertex;
-   GetCentralCurve(vvertex);
+   GetCentralCurve(vvertex, _accuracy);
    // vvertex are the 2D vertices forming the central curve of the ramp as seen from above
 
    const int cvertex = (int)vvertex.size();
@@ -564,7 +566,7 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
 {
    int cvertex;
    float *rgheight1;
-   Vertex2D * const rgvLocal = GetRampVertex(cvertex, &rgheight1, NULL, NULL, NULL);
+   Vertex2D * const rgvLocal = GetRampVertex(cvertex, &rgheight1, NULL, NULL, NULL, HIT_SHAPE_DETAIL_LEVEL);
 
    float wallheightright, wallheightleft;
 
@@ -1036,7 +1038,7 @@ void Ramp::GenerateWireMesh(Vertex3D_NoTex2 **meshBuf1, Vertex3D_NoTex2 **meshBu
       accuracy = (int)(m_ptable->GetDetailLevel()*1.3f);
    }
 
-   const Vertex2D *rgvLocal = GetRampVertex(splinePoints, &rgheightInit, NULL, &rgratioInit, &middlePoints, true);
+   const Vertex2D *rgvLocal = GetRampVertex(splinePoints, &rgheightInit, NULL, &rgratioInit, &middlePoints, -1, true);
 
    const int numRings = splinePoints;
    const int numSegments = accuracy;
@@ -2329,7 +2331,7 @@ void Ramp::GenerateRampMesh(Vertex3D_NoTex2 **meshBuf)
 {
    Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
    float *rgheight, *rgratio;
-   const Vertex2D * const rgvLocal = GetRampVertex(rampVertex, &rgheight, NULL, &rgratio, NULL, true);
+   const Vertex2D * const rgvLocal = GetRampVertex(rampVertex, &rgheight, NULL, &rgratio, NULL, -1, true);
 
    const float inv_tablewidth = 1.0f / (m_ptable->m_right - m_ptable->m_left);
    const float inv_tableheight = 1.0f / (m_ptable->m_bottom - m_ptable->m_top);

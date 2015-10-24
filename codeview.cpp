@@ -1874,7 +1874,7 @@ void CodeViewer::ParseVPCore()
    if (fopen_s(&fCore, sPath.c_str(), "r") != 0)
 	if (!fCore)
 	{
-      char szLoadDir[MAX_PATH];
+      char szLoadDir[MAX_PATH] = { 0 };
 	  strcpy_s(szLoadDir, g_pvp->m_currentTablePath);
 	  strcat_s(szLoadDir, "\\core.vbs");
 	  if (fopen_s(&fCore, szLoadDir, "r") != 0)

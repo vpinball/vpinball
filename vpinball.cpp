@@ -209,6 +209,7 @@ VPinball::VPinball()
    m_cref = 0;				//inits Reference Count for IUnknown Interface. Every com Object must 
    //implement this and StdMethods QueryInterface, AddRef and Release
    m_open_minimized = 0;
+   memset(m_currentTablePath, 0, MAX_PATH);
 
    m_pcv = NULL;			// no currently active code window
 }
