@@ -97,7 +97,7 @@ void Bumper::SetDefaults(bool fromMouseClick)
    int iTmp;
 
    hr = GetRegStringAsFloat("DefaultProps\\Bumper", "Radius", &fTmp);
-   m_d.m_radius = (hr == S_OK) && fromMouseClick ? fTmp : 45;
+   m_d.m_radius = (hr == S_OK) && fromMouseClick ? fTmp : 45.f;
 
    SetDefaultPhysics(fromMouseClick);
 
@@ -111,7 +111,7 @@ void Bumper::SetDefaults(bool fromMouseClick)
    m_d.m_orientation = (hr == S_OK) && fromMouseClick ? fTmp : 0.0f;
 
    hr = GetRegStringAsFloat("DefaultProps\\Bumper", "Threshold", &fTmp);
-   m_d.m_threshold = (hr == S_OK) && fromMouseClick ? fTmp : 1;
+   m_d.m_threshold = (hr == S_OK) && fromMouseClick ? fTmp : 1.f;
 
    hr = GetRegString("DefaultProps\\Bumper", "Surface", m_d.m_szSurface, MAXTOKEN);
    if (hr != S_OK || !fromMouseClick)
@@ -143,7 +143,6 @@ void Bumper::SetDefaults(bool fromMouseClick)
       m_d.m_fReflectionEnabled = iTmp == 0 ? false : true;
    else
       m_d.m_fReflectionEnabled = true;
-
 }
 
 void Bumper::WriteRegDefaults()
@@ -643,11 +642,11 @@ void Bumper::GenerateCapMesh(Vertex3D_NoTex2 *buf)
       buf[i].tv = bumperCap[i].tv;
    }
 }
+
 void Bumper::RenderSetup(RenderDevice* pd3dDevice)
 {
    m_d.m_time_msec = g_pplayer->m_time_msec;
 
-   //   const float outerradius = m_d.m_radius + m_d.m_overhang;
    baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
    const float scalez = m_d.m_radius*m_d.m_heightScale*2.0f*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];

@@ -885,8 +885,6 @@ void Player::InitBallShader()
    const float rotation = fmodf(m_ptable->m_BG_rotation[m_ptable->m_BG_current_set], 360.f);
    ballShader->SetBool("cabMode", rotation != 0.f);
 
-   ballShader->SetFloat("playfield_height", m_ptable->m_tableheight);
-
    //D3DXVECTOR4 cam( matView._41, matView._42, matView._43, 1 );
    //ballShader->SetVector("camera", &cam);
    const D3DXVECTOR4 st(m_ptable->m_envEmissionScale*m_ptable->m_globalEmissionScale, m_pin3d.m_envTexture ? (float)m_pin3d.m_envTexture->m_height/*+m_pin3d.m_envTexture->m_width)*0.5f*/ : (float)m_pin3d.envTexture.m_height/*+m_pin3d.envTexture.m_width)*0.5f*/, 0.f, 0.f);
@@ -3854,6 +3852,9 @@ void Player::DrawBalls()
 
 	  if (!drawReflection && m_ptable->m_fReflectionEnabled)
 		  continue;
+
+	  const D3DXVECTOR4 phr(m_ptable->m_tableheight, m_ptable->m_ballPlayfieldReflectionStrength*pball->m_playfieldReflectionStrength, 0.f, 0.f);
+	  ballShader->SetVector("playfield_height_reflection", &phr);
 	  
 	  if ((zheight > maxz) || (pball->m_pos.z < minz))
       {

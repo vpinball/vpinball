@@ -63,12 +63,11 @@ bool     hdrEnvTextures = false;
 
 float4   position_radius;
 float4   ballStretch_invTableRes;
+float2   playfield_height_reflection;
 
 //float    reflection_ball_playfield;
 
 float3x3 orientation;
-
-float    playfield_height;
 
 bool     decalMode;
 bool     cabMode;
@@ -254,19 +253,19 @@ float4 psBall( in vout IN ) : COLOR
 	float3 playfieldColor;
 	if(/*(reflection_ball_playfield > 0.0) &&*/ (NdotR > 0.0))
 	{
-       const float3 playfield_p0 = mul(float4(/*playfield_pos=*/0.,0.,playfield_height,1.), matWorldView).xyz;
+       const float3 playfield_p0 = mul(float4(/*playfield_pos=*/0.,0.,playfield_height_reflection.x,1.), matWorldView).xyz;
 	   const float t = dot(playfield_normal, IN.worldPos - playfield_p0) / NdotR;
        const float3 playfield_hit = IN.worldPos - t*r;
 
        const float2 uv = mul(float4(playfield_hit,1.), matWorldViewInverse).xy * ballStretch_invTableRes.zw;
 	   playfieldColor = (t < 0.) ? float3(0., 0., 0.) // happens for example when inside kicker
-                                 : InvGamma(tex2Dlod(texSampler1, float4(uv, 0., 0.)).xyz); //!! rather use screen space sample from previous frame??
+                                 : InvGamma(tex2Dlod(texSampler1, float4(uv, 0., 0.)).xyz)*playfield_height_reflection.y; //!! rather use screen space sample from previous frame??
 
        //!! hack to get some lighting on sample, but only diffuse, the rest is not setup correctly anyhow
        playfieldColor = lightLoop(playfield_hit, playfield_normal, -r, playfieldColor, float3(0.,0.,0.), float3(0.,0.,0.), 1.0);
 
 	   //!! magic falloff & weight the rest in from the ballImage
-	   const float weight = /*reflection_ball_playfield**/NdotR*NdotR;
+	   const float weight = NdotR*NdotR;
 	   playfieldColor *= weight;
 	   playfieldColor += ballImageColor*(1.0-weight);
 	}

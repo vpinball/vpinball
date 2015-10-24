@@ -28,6 +28,7 @@ Ball::Ball()
    m_orientation.Identity();
    m_inertia = (float)(2.0 / 5.0) * m_radius*m_radius * m_mass;
    m_bulb_intensity_scale = 1.0f;
+   m_playfieldReflectionStrength = 1.f;
    m_reflectionEnabled = true;
 
    memset(m_szImage, 0, MAXTOKEN);
@@ -57,6 +58,7 @@ void Ball::Init(const float mass)
    m_frozen = false;
 
    m_bulb_intensity_scale = 1.0f;
+   m_playfieldReflectionStrength = 1.f;
 
    m_coll.obj = NULL;
    m_dynamic = C_DYNAMIC; // assume dynamic

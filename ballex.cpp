@@ -323,20 +323,20 @@ STDMETHODIMP BallEx::put_ReflectionEnabled(VARIANT_BOOL newVal)
    return S_OK;
 }
 
-STDMETHODIMP BallEx::get_ReflectionStrength(int *pVal)
+STDMETHODIMP BallEx::get_PlayfieldReflectionScale(float *pVal)
 {
    CHECKSTALEBALL
 
-      *pVal = m_pball->m_reflectionStrength;
+   *pVal = m_pball->m_playfieldReflectionStrength;
 
    return S_OK;
 }
 
-STDMETHODIMP BallEx::put_ReflectionStrength(int newVal)
+STDMETHODIMP BallEx::put_PlayfieldReflectionScale(float newVal)
 {
    CHECKSTALEBALL
 
-      m_pball->m_reflectionStrength = newVal;
+   m_pball->m_playfieldReflectionStrength = newVal;
 
    return S_OK;
 }
