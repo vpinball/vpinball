@@ -384,7 +384,7 @@ void CodeViewer::Create()
    RegisterClassEx(&wcex);
    m_hwndMain = CreateWindowEx(0, "CVFrame", "Script",
       WS_POPUP | WS_SIZEBOX | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX,
-      10, 10, 300, 300, m_hwndMain, NULL, g_hinst, 0);// child becomes parent?
+      10, 10, 300, 300, m_hwndMain, NULL, g_hinst, 0);
 
    SetWindowLongPtr(m_hwndMain, GWLP_USERDATA, (size_t)this);
 
@@ -434,23 +434,40 @@ void CodeViewer::Create()
 		i->strKeyName.at(0) = WordChar;	
 	}
 	///// Preferences
-	//pCVPrefs = new CVPrefs;
-	rgbDefaultText = RGB(0,0,0);
-	VBS.rgb = RGB(0,0,160);
-	VBS.b = GetRegBoolWithDefault("CVEdit","ShowVBS",true);
-	Comps.rgb = RGB(120,120,0);
-	Comps.b = GetRegBoolWithDefault("CVEdit","ShowComponents",true);
-	Subs.rgb = RGB(120,0,120);
-	Subs.b = GetRegBoolWithDefault("CVEdit","ShowSubs",true);
-	Remarks.rgb = RGB(0,120,0);
-	Remarks.b = GetRegBoolWithDefault("CVEdit","ShowRemarks",true);
-	Literals.rgb = RGB(0,120,120);
-	Literals.b = GetRegBoolWithDefault("CVEdit","ShowLierals",true);
-	VPcore.rgb = RGB(200,10,10);
-	VPcore.b = GetRegBoolWithDefault("CVEdit","ShowVPcore",true);
-	#define SMSCIN (x,y,z) ( SendMessage(m_hwndScintilla, x,  y, z) );
+	lPrefsList = new vector<CVPrefrence*>();
+	//vector<CVPrefrence*>::iterator iterPrefs = lPrefsList->begin();
+	prefVBS = new CVPrefrence();
+	prefVBS->FillCVPreference("VBs", RGB(0,0,160), true, "ShowVBS", SCE_B_KEYWORD, IDC_CVP_CHECKBOX_VBS);
+	prefVBS->GetShowFromReg();
+	lPrefsList->push_back(prefVBS);
+	prefComps = new CVPrefrence();
+	prefComps->FillCVPreference("Components", RGB(120,120,0), true, "ShowComponents", SCE_B_KEYWORD3, IDC_CVP_CHKB_COMP);
+	prefComps->GetShowFromReg();
+	lPrefsList->push_back(prefComps);
+	prefSubs = new CVPrefrence();
+	prefSubs->FillCVPreference("SubFuns", RGB(120,0,120), true, "ShowSubs", SCE_B_KEYWORD2, IDC_CVP_CHKB_SUBS);
+	prefSubs->GetShowFromReg();
+	lPrefsList->push_back(prefSubs);
+	prefComments = new CVPrefrence();
+	prefComments->FillCVPreference("Remarks", RGB(0,120,0), true, "ShowRemarks", SCE_B_COMMENT, IDC_CVP_CHKB_COMMENTS);
+	prefComments->GetShowFromReg();
+	lPrefsList->push_back(prefComments);
+	prefLiterals = new CVPrefrence();
+	prefLiterals->FillCVPreference("Literals", RGB(0,120,160), true, "ShowLierals", SCE_B_STRING, IDC_CVP_CHKB_LITERALS);
+	prefLiterals->GetShowFromReg();
+	lPrefsList->push_back(prefLiterals);
+	prefVPcore = new CVPrefrence();
+	prefVPcore->FillCVPreference("VPcore", RGB(200,50,60), true, "ShowVPcore", SCE_B_KEYWORD4, IDC_CVP_CHKB_VPCORE);
+	prefVPcore->GetShowFromReg();
+	lPrefsList->push_back(prefVPcore);
 
 	SendMessage(m_hwndScintilla, SCI_SETLEXER, (WPARAM)SCLEX_VBSCRIPT, 0);
+	//if still using old dll load VB lexer insted
+	//int lexVersion = SendMessage(m_hwndScintilla, SCI_GETLEXER, 0, 0);
+	//if (lexVersion != SCLEX_VP)
+	//{
+	//	SendMessage(m_hwndScintilla, SCI_SETLEXER, (WPARAM)SCLEX_VBSCRIPT, 0);
+	//}
    SendMessage(m_hwndScintilla, SCI_SETKEYWORDS, 0, (LPARAM)vbsReservedWords );
    SendMessage(m_hwndScintilla, SCI_SETTABWIDTH, 4, 0);
    SendMessage(m_hwndScintilla, SCI_SETMODEVENTMASK, SC_MOD_INSERTTEXT, 0);
@@ -554,13 +571,23 @@ void CodeViewer::Create()
 	SetWindowText(m_hwndFunctionText, "Go to Sub/Function:" );
    SendMessage(m_hwndFunctionText, WM_SETFONT, (size_t)GetStockObject(DEFAULT_GUI_FONT), 0);
 	ParseVPCore();
+	UpdateScinFromPrefs();
 	SendMessage(m_hwndMain, WM_SIZE, 0, 0); // Make our window relay itself out
 }
 
 void CodeViewer::Destroy()
 {
-	//if (pCVPrefs)	delete pCVPrefs;
-	//pCVPrefs = 0;
+	if (prefVBS) delete prefVBS;
+	if (prefComps) delete prefComps;
+	if (prefSubs) delete prefSubs;
+	if (prefComments) delete prefComments;
+	if (prefLiterals) delete prefLiterals;
+	if (prefVPcore) delete prefVPcore;
+	if (lPrefsList)
+	{
+		lPrefsList->clear();
+		delete lPrefsList;
+	}
 	if(g_AutoComp)
 	{
 		g_AutoComp->clear();
@@ -984,7 +1011,6 @@ void CodeViewer::SaveToStream(IStream *pistream, HCRYPTHASH hcrypthash, HCRYPTKE
    delete[] szText;
 }
 
-
 void CodeViewer::LoadFromStream(IStream *pistream, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
 {
    m_fIgnoreDirty = fTrue;
@@ -1038,7 +1064,6 @@ void CodeViewer::LoadFromStream(IStream *pistream, HCRYPTHASH hcrypthash, HCRYPT
    m_sdsDirty = eSaveClean;
 }
 
-
 void CodeViewer::ColorLine(int line)
 {
    //!!
@@ -1064,7 +1089,6 @@ void CodeViewer::ColorError(int line, int nchar)
    SendMessage(m_hwndScintilla, SCI_INDICATORFILLRANGE, startChar, length);
    SendMessage(m_hwndScintilla, SCI_GOTOLINE, line, 0);
 }
-
 
 STDMETHODIMP CodeViewer::OnEnterScript()
 {
@@ -1639,8 +1663,6 @@ void AddComment(HWND m_hwndScintilla)
    SendMessage(m_hwndScintilla, SCI_ENDUNDOACTION, 0, 0);
 }
 
-
-
 void RemoveComment(HWND m_hwndScintilla)
 {
    char *comment = "\b";
@@ -1717,7 +1739,6 @@ void CodeViewer::szUpper(char * incstr)
 		pC++;
 	}
 }
-
 
 void CodeViewer::ParseForFunction() // Subs & Collections AndyS - WIP 
 {
@@ -2173,7 +2194,6 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
          }
 			case ID_SHOWAUTOCOMPLETE:
 			{
-				SCNotification * const pscn = (SCNotification *)lParam;;
 				pcv->ShowAutoComplete();
 				break;
 			}
@@ -2295,42 +2315,15 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
          (rcMain.right + rcMain.left) / 2 - (rcDlg.right - rcDlg.left) / 2,
          (rcMain.bottom + rcMain.top) / 2 - (rcDlg.bottom - rcDlg.top) / 2,
          0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
-		CodeViewer * const pcv = GetCodeViewerPtr(GetParent(hwndDlg));
-		pcv->VBS.b = GetRegBoolWithDefault("CVEdit","ShowVBS",true);
-		pcv->Comps.b = GetRegBoolWithDefault("CVEdit","ShowComponents",true);
-		pcv->Subs.b = GetRegBoolWithDefault("CVEdit","ShowSubs",true);
-		pcv->Remarks.b = GetRegBoolWithDefault("CVEdit","ShowRemarks",true);
-		pcv->Literals.b = GetRegBoolWithDefault("CVEdit","ShowLierals",true);
-		pcv->VPcore.b = GetRegBoolWithDefault("CVEdit","ShowVPcore",true);
-		if(pcv->VBS.b)  
+		CodeViewer* pcv = GetCodeViewerPtr(hwndParent);
+		if (pcv->prefVBS)
 		{
-				HWND hChkBox = GetDlgItem(hwndDlg,IDC_CVP_CHECKBOX_VBS);
-				SNDMSG(hChkBox, BM_SETCHECK, BST_CHECKED, 0L);
-		}
-		if(pcv->Comps.b)
-		{
-				HWND hChkBox = GetDlgItem(hwndDlg,IDC_CVP_CHKB_COMP);
-				SNDMSG(hChkBox, BM_SETCHECK, BST_CHECKED, 0L);
-		}
-		if(pcv->Subs.b)
-		{
-				HWND hChkBox = GetDlgItem(hwndDlg,IDC_CVP_CHKB_SUBS);
-				SNDMSG(hChkBox, BM_SETCHECK, BST_CHECKED, 0L);
-		}
-		if(pcv->Literals.b)
-		{
-				HWND hChkBox = GetDlgItem(hwndDlg,IDC_CVP_CHKB_LITERALS);
-				SNDMSG(hChkBox, BM_SETCHECK, BST_CHECKED, 0L);
-		}
-		if(pcv->Remarks.b)
-		{
-				HWND hChkBox = GetDlgItem(hwndDlg,IDC_CVP_CHKB_COMMENTS);
-				SNDMSG(hChkBox, BM_SETCHECK, BST_CHECKED, 0L);
-		}
-		if(pcv->VPcore.b)
-		{
-				HWND hChkBox = GetDlgItem(hwndDlg,IDC_CVP_CHKB_VPCORE);
-				SNDMSG(hChkBox, BM_SETCHECK, BST_CHECKED, 0L);
+			for (size_t i = 0; i < pcv->lPrefsList->size(); i++)
+			{
+				pcv->lPrefsList->at(i)->GetShowFromReg();
+				pcv->lPrefsList->at(i)->SetCheckBox(hwndDlg);
+			}
+			pcv->UpdateScinFromPrefs();
 		}
 		//#if !(defined(IMSPANISH) | defined(IMGERMAN) | defined(IMFRENCH))
 		//      HWND hwndTransName = GetDlgItem(hwndDlg, IDC_TRANSNAME);
@@ -2341,9 +2334,9 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 		//      HWND hwndTransSite = GetDlgItem(hwndDlg, IDC_TRANSLATEWEBSITE);
 		//      ShowWindow(hwndTransSite, SW_HIDE);
 		//#endif
-   }
-   return TRUE;
-   break;///???
+    return TRUE;
+	}
+   break; //case WM_INITDIALOG:
 
    case WM_COMMAND:
    {
@@ -2357,88 +2350,52 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 				{
 				case IDC_CVP_BUT_CANCEL:
 					{
-					pcv->VBS.b = GetRegBoolWithDefault("CVEdit","ShowVBS",true);
-					pcv->Comps.b = GetRegBoolWithDefault("CVEdit","ShowComponents",true);
-					pcv->Subs.b = GetRegBoolWithDefault("CVEdit","ShowSubs",true);
-					pcv->Remarks.b = GetRegBoolWithDefault("CVEdit","ShowRemarks",true);
-					pcv->Literals.b = GetRegBoolWithDefault("CVEdit","ShowLierals",true);
-					pcv->VPcore.b = GetRegBoolWithDefault("CVEdit","ShowVPcore",true);
-					EndDialog(hwndDlg, TRUE);
+						for (size_t i = 0; i < pcv->lPrefsList->size(); i++)
+						{
+							pcv->lPrefsList->at(i)->GetShowFromReg();
+						}
+						pcv->UpdateScinFromPrefs();
+						EndDialog(hwndDlg, TRUE);
 					}
 					break;
 
 				case IDC_CVP_BUT_OK:
 					{
-					SetRegValueBool("CVEdit","ShowVBS",pcv->VBS.b);
-					SetRegValueBool("CVEdit","ShowComponents",pcv->Comps.b);
-					SetRegValueBool("CVEdit","ShowSubs",pcv->Subs.b);
-					SetRegValueBool("CVEdit","ShowRemarks",pcv->Remarks.b);
-					SetRegValueBool("CVEdit","ShowLierals",pcv->Literals.b);
-					SetRegValueBool("CVEdit","ShowVPcore",pcv->VPcore.b);
-					EndDialog(hwndDlg, TRUE);
+						for (size_t i = 0; i < pcv->lPrefsList->size(); i++)
+						{
+							pcv->lPrefsList->at(i)->SetShowToReg();
+						}
+						pcv->UpdateScinFromPrefs();
+						EndDialog(hwndDlg, TRUE);
 					}
 					break;
 
 				case IDC_CVP_CHECKBOX_VBS:
-					{
-						if(IsDlgButtonChecked(hwndDlg,IDC_CVP_CHECKBOX_VBS) )
-						{pcv->VBS.b = true;}
-						else
-						{pcv->VBS.b = false;}
-					}
-					break;
-
+					pcv->prefVBS->ReadCheckBox(hwndDlg);
+				break;
 				case IDC_CVP_CHKB_COMP:
-					{
-						if(IsDlgButtonChecked(hwndDlg,IDC_CVP_CHKB_COMP) )
-						{pcv->Comps.b = true;}
-						else
-						{pcv->Comps.b = false;}
-					}
+					pcv->prefComps->ReadCheckBox(hwndDlg);
 					break;
-				//case IDC_CVP_COL_COMP:
+				case IDC_CVP_CHKB_SUBS:
+					pcv->prefSubs->ReadCheckBox(hwndDlg);
+					break;
+				case IDC_CVP_CHKB_COMMENTS:
+					pcv->prefComments->ReadCheckBox(hwndDlg);
+					break;
+				case IDC_CVP_CHKB_LITERALS:
+					pcv->prefLiterals->ReadCheckBox(hwndDlg);
+					break;
+				case IDC_CVP_CHKB_VPCORE:
+					pcv->prefVPcore->ReadCheckBox(hwndDlg);
+					break;
+				//case IDC_CVP_COL_XXXX:
 				//	{
-				//		CHOOSECOLOR
+				//		CHOOSECOLOR ccXXXX
 				//	}
 				//break;
-				case IDC_CVP_CHKB_SUBS:
-					{
-						if(IsDlgButtonChecked(hwndDlg,IDC_CVP_CHKB_SUBS))
-						{pcv->Subs.b = true;}
-						else
-						{pcv->Subs.b = false;}
-					}
-					break;
-
-				case IDC_CVP_CHKB_COMMENTS:
-					{
-						if(IsDlgButtonChecked(hwndDlg,IDC_CVP_CHKB_COMMENTS))
-						{pcv->Remarks.b = true;}
-						else
-						{pcv->Remarks.b = false;}
-					}
-					break;
-
-				case IDC_CVP_CHKB_LITERALS:
-					{
-						if(IsDlgButtonChecked(hwndDlg,IDC_CVP_CHKB_LITERALS))
-						{pcv->Literals.b = true;}
-						else
-						{pcv->Literals.b = false;}
-					}
-					break;
-
-				case IDC_CVP_CHKB_VPCORE:
-					{
-						if(IsDlgButtonChecked(hwndDlg,IDC_CVP_CHKB_VPCORE))
-						{pcv->VPcore.b = true;}
-						else
-						{pcv->VPcore.b = false;}
-					}
-					break;
 				}// end switch Button clicked
 			 pcv->UpdateScinFromPrefs();
-			}
+			}// end if (pcv->prefVBS)
       }// end switch Hiword Wparam
    }
    break;
@@ -2451,13 +2408,12 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 
 void CodeViewer::UpdateScinFromPrefs()
 {
-	SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_KEYWORD, CVColorControl(VBS));
-	SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_KEYWORD2, CVColorControl(Subs));
-	SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_KEYWORD3, CVColorControl(Comps));
-	SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_NUMBER, CVColorControl(Literals));
-   SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_STRING, CVColorControl(Literals));
-	SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_COMMENT, CVColorControl(Remarks));
-	SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_KEYWORD4, CVColorControl(VPcore));
+	prefVBS->ColorText(m_hwndScintilla);
+	prefSubs->ColorText(m_hwndScintilla);
+	prefComps->ColorText(m_hwndScintilla);
+	prefLiterals->ColorText(m_hwndScintilla);
+	prefComments->ColorText(m_hwndScintilla);
+	prefVPcore->ColorText(m_hwndScintilla);
 }
 
 Collection::Collection()
