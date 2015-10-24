@@ -1874,15 +1874,22 @@ void CodeViewer::ParseVPCore()
    if (fopen_s(&fCore, sPath.c_str(), "r") != 0)
 	if (!fCore)
 	{
-      char szLoadDir[MAX_PATH] = { 0 };
-		const HRESULT hr = GetRegString("RecentDir", "LoadDir", szLoadDir, MAX_PATH);
-		strcat_s(szLoadDir, "\\core.vbs");
-		if (fopen_s(&fCore, szLoadDir, "r") != 0)
-			if (!fCore)
-			{
-				MessageBox(m_hwndMain, "Couldn't find core.vbs for code completion parsing!", "Script Parser Warning", MB_OK);
-				return;
-			}
+      char szLoadDir[MAX_PATH];
+	  strcpy_s(szLoadDir, g_pvp->m_currentTablePath);
+	  strcat_s(szLoadDir, "\\core.vbs");
+	  if (fopen_s(&fCore, szLoadDir, "r") != 0)
+		  if (!fCore)
+		  {
+			  szLoadDir[0] = '\0';
+			  const HRESULT hr = GetRegString("RecentDir", "LoadDir", szLoadDir, MAX_PATH);
+			  strcat_s(szLoadDir, "\\core.vbs");
+			  if (fopen_s(&fCore, szLoadDir, "r") != 0)
+				  if (!fCore)
+				  {
+					  MessageBox(m_hwndMain, "Couldn't find core.vbs for code completion parsing!", "Script Parser Warning", MB_OK);
+					  return;
+				  }
+		  }
 	}
 ///////////////////////
 	char text[MAX_LINE_LENGTH] = {};
