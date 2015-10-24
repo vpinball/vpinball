@@ -97,7 +97,7 @@ public:
 
    float m_bulb_intensity_scale; // to dampen/increase contribution of the bulb lights (locally/by script)
 
-   int  m_reflectionStrength;
+   float m_playfieldReflectionStrength;
 
    bool m_frozen;
    bool m_reflectionEnabled;

@@ -180,6 +180,8 @@ public:
    STDMETHOD(put_BallTrail)(/*[in]*/ int newVal);
    STDMETHOD(get_TrailStrength)(/*[out, retval]*/ int *pVal);
    STDMETHOD(put_TrailStrength)(/*[in]*/ int newVal);
+   STDMETHOD(get_BallPlayfieldReflectionScale)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_BallPlayfieldReflectionScale)(/*[in]*/ float newVal);
 
    STDMETHOD(get_Height)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_Height)(/*[in]*/ float newVal);
@@ -704,6 +706,7 @@ public:
    int   m_playfieldReflectionStrength;
    int   m_useTrailForBalls;
    int   m_ballTrailStrength;
+   float m_ballPlayfieldReflectionStrength;
    int   m_useAA;
    int   m_useFXAA;
    int   m_useAO;

@@ -1303,7 +1303,6 @@ void PinTable::Init(VPinball *pvp)
    lstrcat(m_szTitle, szSuffix);
    g_pvp->m_NextTableID++;
    m_szFileName[0] = '\0';
-   //lstrcpy(m_szFileName, m_szFileName);
 
    LoadGameFromStorage(pis);
 
@@ -2883,6 +2882,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
    bw.WriteInt(FID(PLST), m_playfieldReflectionStrength);
    bw.WriteInt(FID(BTRA), m_useTrailForBalls);
    bw.WriteBool(FID(BDMO), m_BallDecalMode);
+   bw.WriteFloat(FID(BPRS), m_ballPlayfieldReflectionStrength);
    bw.WriteInt(FID(BTST), m_ballTrailStrength);
    bw.WriteInt(FID(ARAC), m_userDetailLevel);
    bw.WriteBool(FID(OGAC), m_overwriteGlobalDetailLevel);
@@ -3318,6 +3318,7 @@ void PinTable::SetLoadDefaults()
 
    m_useTrailForBalls = -1;
    m_ballTrailStrength = 100;
+   m_ballPlayfieldReflectionStrength = 1.f;
 
    m_useAA = -1;
    m_useFXAA = -1;
@@ -3674,6 +3675,10 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(BTST))
    {
       pbr->GetInt(&m_ballTrailStrength);
+   }
+   else if (id == FID(BPRS))
+   {
+	   pbr->GetFloat(&m_ballPlayfieldReflectionStrength);
    }
    else if (id == FID(UAAL))
    {
@@ -7541,11 +7546,11 @@ STDMETHODIMP PinTable::put_LightRange(float newVal)
 {
    STARTUNDO
 
-      m_lightRange = newVal;
+   m_lightRange = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_LightEmissionScale(float *pVal)
@@ -7559,11 +7564,11 @@ STDMETHODIMP PinTable::put_LightEmissionScale(float newVal)
 {
    STARTUNDO
 
-      m_lightEmissionScale = newVal;
+   m_lightEmissionScale = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_NightDay(int *pVal)
@@ -7577,11 +7582,11 @@ STDMETHODIMP PinTable::put_NightDay(int newVal)
 {
    STARTUNDO
 
-      m_globalEmissionScale = (float)newVal / 100.0f;
+   m_globalEmissionScale = (float)newVal / 100.0f;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_AOScale(float *pVal)
@@ -7595,11 +7600,11 @@ STDMETHODIMP PinTable::put_AOScale(float newVal)
 {
    STARTUNDO
 
-      m_AOScale = newVal;
+   m_AOScale = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_EnvironmentEmissionScale(float *pVal)
@@ -7613,11 +7618,11 @@ STDMETHODIMP PinTable::put_EnvironmentEmissionScale(float newVal)
 {
    STARTUNDO
 
-      m_envEmissionScale = newVal;
+   m_envEmissionScale = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_BallReflection(int *pVal)
@@ -7631,11 +7636,11 @@ STDMETHODIMP PinTable::put_BallReflection(int newVal)
 {
    STARTUNDO
 
-      m_useReflectionForBalls = newVal;
+   m_useReflectionForBalls = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_PlayfieldReflectionStrength(int *pVal)
@@ -7649,11 +7654,11 @@ STDMETHODIMP PinTable::put_PlayfieldReflectionStrength(int newVal)
 {
    STARTUNDO
 
-      m_playfieldReflectionStrength = newVal;
+   m_playfieldReflectionStrength = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_BallTrail(int *pVal)
@@ -7667,11 +7672,11 @@ STDMETHODIMP PinTable::put_BallTrail(int newVal)
 {
    STARTUNDO
 
-      m_useTrailForBalls = newVal;
+   m_useTrailForBalls = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_TrailStrength(int *pVal)
@@ -7685,11 +7690,29 @@ STDMETHODIMP PinTable::put_TrailStrength(int newVal)
 {
    STARTUNDO
 
-      m_ballTrailStrength = newVal;
+   m_ballTrailStrength = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::get_BallPlayfieldReflectionScale(float *pVal)
+{
+	*pVal = m_ballPlayfieldReflectionStrength;
+
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::put_BallPlayfieldReflectionScale(float newVal)
+{
+	STARTUNDO
+
+	m_ballPlayfieldReflectionStrength = newVal;
+
+	STOPUNDO
+
+	return S_OK;
 }
 
 STDMETHODIMP PinTable::get_BloomStrength(float *pVal)
@@ -7703,11 +7726,11 @@ STDMETHODIMP PinTable::put_BloomStrength(float newVal)
 {
    STARTUNDO
 
-      m_bloom_strength = newVal;
+   m_bloom_strength = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_TableSoundVolume(int *pVal)
@@ -7721,11 +7744,11 @@ STDMETHODIMP PinTable::put_TableSoundVolume(int newVal)
 {
    STARTUNDO
 
-      m_TableSoundVolume = (float)newVal / 100.0f;
+   m_TableSoundVolume = (float)newVal / 100.0f;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_DetailLevel(int *pVal)
@@ -7742,14 +7765,12 @@ STDMETHODIMP PinTable::put_DetailLevel(int newVal)
 {
    STARTUNDO
 
-      if (m_overwriteGlobalDetailLevel)
-      {
-         m_userDetailLevel = newVal;
-      }
+   if (m_overwriteGlobalDetailLevel)
+      m_userDetailLevel = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_GlobalAlphaAcc(VARIANT_BOOL *pVal)
@@ -7763,7 +7784,7 @@ STDMETHODIMP PinTable::put_GlobalAlphaAcc(VARIANT_BOOL newVal)
 {
    STARTUNDO
 
-      m_overwriteGlobalDetailLevel = !!newVal;
+   m_overwriteGlobalDetailLevel = !!newVal;
    if (!m_overwriteGlobalDetailLevel)
    {
       m_userDetailLevel = m_globalDetailLevel;
@@ -7771,7 +7792,7 @@ STDMETHODIMP PinTable::put_GlobalAlphaAcc(VARIANT_BOOL newVal)
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_GlobalStereo3D(VARIANT_BOOL *pVal)
@@ -7785,7 +7806,7 @@ STDMETHODIMP PinTable::put_GlobalStereo3D(VARIANT_BOOL newVal)
 {
    STARTUNDO
 
-      m_overwriteGlobalStereo3D = !!newVal;
+   m_overwriteGlobalStereo3D = !!newVal;
    if (!m_overwriteGlobalStereo3D)
    {
       m_maxSeparation = m_globalMaxSeparation;
@@ -7794,7 +7815,7 @@ STDMETHODIMP PinTable::put_GlobalStereo3D(VARIANT_BOOL newVal)
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_BallDecalMode(VARIANT_BOOL *pVal)
@@ -8339,8 +8360,6 @@ STDMETHODIMP PinTable::put_Xlatez(float newVal)
       return S_OK;
 }
 
-
-
 STDMETHODIMP PinTable::get_FieldOfViewFS(float *pVal)
 {
    *pVal = m_BG_FOV[1];
@@ -8521,7 +8540,6 @@ STDMETHODIMP PinTable::put_XlatezFS(float newVal)
       return S_OK;
 }
 
-
 STDMETHODIMP PinTable::get_SlopeMax(float *pVal)
 {
    if (m_angletiltMax == 726.0f) m_angletiltMax = m_angletiltMin;
@@ -8546,7 +8564,6 @@ STDMETHODIMP PinTable::put_SlopeMax(float newVal)
    }
    return S_OK;
 }
-
 
 STDMETHODIMP PinTable::get_SlopeMin(float *pVal)
 {
