@@ -72,13 +72,48 @@
 ' nudge that we don't want).
 
 Class cvpmNudge2
-	Public TiltSwitch, Sensitivity, TiltObj
+	Private mCount, mSensitivity, mNudgeTimer, mSlingBump, mForce
+	Public TiltSwitch
+
+	Private Sub Class_Initialize
+		mCount = 0 : TiltSwitch = 0 : mSensitivity = 5 : vpmTimer.AddResetObj Me
+	End sub
+
+	Private Property Let NeedUpdate(aEnabled) : vpmTimer.EnableUpdate Me, False, aEnabled : End Property
+
+	Public Property Let TiltObj(aSlingBump)
+		Dim ii
+		ReDim mForce(vpmSetArray(mSlingBump, aSlingBump))
+		For ii = 0 To UBound(mForce)
+			If TypeName(mSlingBump(ii)) = "Bumper" Then mForce(ii) = mSlingBump(ii).Threshold
+			If TypeName(mSlingBump(ii)) = "Wall" Then mForce(ii) = mSlingBump(ii).SlingshotThreshold
+		Next
+	End Property
+
+	Public Property Let Sensitivity(aSens) : mSensitivity = (10-aSens)+1 : End property
 
 	Public Sub DoNudge(ByVal aDir, ByVal aForce)
                If TiltSwitch <> 0 Then vpmTimer.PulseSw TiltSwitch
         End sub
 
         Public Sub Update : End Sub
+
         Public Sub Reset : End Sub
-        Public Sub SolGameOn(aEnabled) : End Sub
+
+        Public Sub SolGameOn(aEnabled)
+		Dim obj, ii
+		If aEnabled Then
+			ii = 0
+			For Each obj In mSlingBump
+				If TypeName(obj) = "Bumper" Then obj.Threshold = mForce(ii) 
+				If TypeName(obj) = "Wall" Then obj.SlingshotThreshold = mForce(ii)
+				ii = ii + 1
+			Next
+		Else
+			For Each obj In mSlingBump
+				If TypeName(obj) = "Bumper" Then obj.Threshold = 100
+				If TypeName(obj) = "Wall" Then obj.SlingshotThreshold = 100
+			Next
+		End If
+	End Sub
 End Class

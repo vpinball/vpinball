@@ -48,8 +48,8 @@ class cvpmNudge2
 		Dim ii
 		ReDim mForce(vpmSetArray(mSlingBump, aSlingBump))
 		For ii = 0 To UBound(mForce)
-			If TypeName(mSlingBump(ii)) = "Bumper" Then mForce(ii) = mSlingBump(ii).Force
-			If TypeName(mSlingBump(ii)) = "Wall" Then mForce(ii) = mSlingBump(ii).SlingshotStrength
+			If TypeName(mSlingBump(ii)) = "Bumper" Then mForce(ii) = mSlingBump(ii).Threshold
+			If TypeName(mSlingBump(ii)) = "Wall" Then mForce(ii) = mSlingBump(ii).SlingshotThreshold
 		Next
 	End Property
 
@@ -95,14 +95,14 @@ class cvpmNudge2
 		If aEnabled Then
 			ii = 0
 			For Each obj In mSlingBump
-				If TypeName(obj) = "Bumper" Then obj.Force = mForce(ii) 
-				If TypeName(obj) = "Wall" Then obj.SlingshotStrength = mForce(ii)
+				If TypeName(obj) = "Bumper" Then obj.Threshold = mForce(ii) 
+				If TypeName(obj) = "Wall" Then obj.SlingshotThreshold = mForce(ii)
 				ii = ii + 1
 			Next
 		Else
 			For Each obj In mSlingBump
-				If TypeName(obj) = "Bumper" Then obj.Force = 0
-				If TypeName(obj) = "Wall" Then obj.SlingshotStrength = 0
+				If TypeName(obj) = "Bumper" Then obj.Threshold = 100
+				If TypeName(obj) = "Wall" Then obj.SlingshotThreshold = 100
 			Next
 		End If
 	End Sub

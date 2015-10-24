@@ -1,8 +1,14 @@
 Option Explicit
-Const VPinMAMEDriverVer = 3.46
+Const VPinMAMEDriverVer = 3.48
 '=======================
 ' VPinMAME driver core.
 '=======================
+' New in 3.48 (Update by JimmyFingers)
+' - (Core changes)
+'   - Changed vpmNudge.TiltObj handling to use Bumper.Threshold / Wall.SlingshotThreshold temporary value changes rather than force / SlingshotStrength changes to disable tiltobj array objects
+'   - There existed a bug in VP since at least the 9.x versions where the Wall.SlingshotThreshold value being set by scripting during game play did change the value but the slingshot behaviour / "Slingshot Force" (from the editor) of the wall object did not change (i.e. did not have an effect); As a result the attempted disabling of bumpers and slingshots after a tilt event on supported games (that can send a relay for vpmNudge.SolGameOn ) would only work for the bumper objects
+'   - Using thresholds instead also now has added benefit by not actually triggering the related _Hit or _Slingshot routines so animations, sound processing, and other potential nested subroutine calls will also not activate resulting in a better tilt simulation
+'   Note: NudgePlugin option .vbs files were also updated as they contain and are reassigned the vpmNudge routines when invoked
 ' New in 3.47 (Update by Toxie)
 ' - (Core changes)
 '   - Add UseVPMColoredDMD = true to the table script (place before LoadVPM, or otherwise calling core.vbs)
@@ -1531,8 +1537,8 @@ class cvpmNudge
 		Dim ii
 		ReDim mForce(vpmSetArray(mSlingBump, aSlingBump))
 		For ii = 0 To UBound(mForce)
-			If TypeName(mSlingBump(ii)) = "Bumper" Then mForce(ii) = mSlingBump(ii).Force
-			If TypeName(mSlingBump(ii)) = "Wall" Then mForce(ii) = mSlingBump(ii).SlingshotStrength
+			If TypeName(mSlingBump(ii)) = "Bumper" Then mForce(ii) = mSlingBump(ii).Threshold
+			If TypeName(mSlingBump(ii)) = "Wall" Then mForce(ii) = mSlingBump(ii).SlingshotThreshold
 		Next
 	End Property
 
@@ -1567,14 +1573,14 @@ class cvpmNudge
 		If aEnabled Then
 			ii = 0
 			For Each obj In mSlingBump
-				If TypeName(obj) = "Bumper" Then obj.Force = mForce(ii) 
-				If TypeName(obj) = "Wall" Then obj.SlingshotStrength = mForce(ii)
+				If TypeName(obj) = "Bumper" Then obj.Threshold = mForce(ii) 
+				If TypeName(obj) = "Wall" Then obj.SlingshotThreshold = mForce(ii)
 				ii = ii + 1
 			Next
 		Else
 			For Each obj In mSlingBump
-				If TypeName(obj) = "Bumper" Then obj.Force = 0
-				If TypeName(obj) = "Wall" Then obj.SlingshotStrength = 0
+				If TypeName(obj) = "Bumper" Then obj.Threshold = 100
+				If TypeName(obj) = "Wall" Then obj.SlingshotThreshold = 100
 			Next
 		End If
 	End Sub
