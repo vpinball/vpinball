@@ -1572,6 +1572,8 @@ void VPinball::LoadFile()
 
 void VPinball::LoadFileName(char *szFileName)
 {
+   PathFromFilename(szFileName, m_currentTablePath);
+
    CComObject<PinTable> *ppt;
    CComObject<PinTable>::CreateInstance(&ppt);
    ppt->AddRef();
@@ -1592,18 +1594,15 @@ void VPinball::LoadFileName(char *szFileName)
    }
    else
    {
-      char szLoadDir[MAX_PATH];
-
       ppt->InitPostLoad(this);
       TitleFromFilename(szFileName, ppt->m_szTitle);
       ppt->SetCaption(ppt->m_szTitle);
 
       // get the load path from the filename
-      PathFromFilename(szFileName, szLoadDir);
-      SetRegValue("RecentDir", "LoadDir", REG_SZ, szLoadDir, lstrlen(szLoadDir));
+	  SetRegValue("RecentDir", "LoadDir", REG_SZ, m_currentTablePath, lstrlen(m_currentTablePath));
 
       // make sure the load directory is the active directory
-      SetCurrentDirectory(szLoadDir);
+	  SetCurrentDirectory(m_currentTablePath);
 
       UpdateRecentFileList(szFileName);
 

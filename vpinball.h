@@ -134,6 +134,7 @@ public:
 
    char m_szMyPath[MAX_PATH];
    WCHAR m_wzMyPath[MAX_PATH];
+   char m_currentTablePath[MAX_PATH];
 
    STDMETHOD(PlaySound)(BSTR bstr);
 
