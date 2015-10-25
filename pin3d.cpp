@@ -915,7 +915,7 @@ void PinProjection::ComputeNearFarPlane(const Vector<Vertex3Ds>& verts)
    // beware the div-0 problem
    if (m_rznear < 0.001f)
       m_rznear = 0.001f;
-   m_rznear *= 0.89f;
+   //m_rznear *= 0.89f; //!! magic, influences also stereo3D code
    m_rzfar *= 1.01f;
 }
 
