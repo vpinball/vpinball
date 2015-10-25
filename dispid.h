@@ -7,6 +7,7 @@
 #define DISPID_Table_MaxSeparation 1041
 #define DISPID_Table_ZPD 1042
 #define DISPID_Table_OverridePhysics 1043
+#define DISPID_Table_Offset 1045
 #define DISPID_Table_DisplayGrid 106
 #define DISPID_Table_DisplayBackdrop 107
 #define DISPID_Table_Nudge 21

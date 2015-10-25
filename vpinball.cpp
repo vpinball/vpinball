@@ -4187,13 +4187,6 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
          stereo3D = 0;
       SendMessage(hwndCheck, BM_SETCHECK, (stereo3D != 0) ? BST_CHECKED : BST_UNCHECKED, 0);
 
-      hwndCheck = GetDlgItem(hwndDlg, IDC_3D_STEREO_AA);
-      int stereo3DAA;
-      hr = GetRegInt("Player", "Stereo3DAntialias", &stereo3DAA);
-      if (hr != S_OK)
-         stereo3DAA = fFalse;
-      SendMessage(hwndCheck, BM_SETCHECK, stereo3DAA ? BST_CHECKED : BST_UNCHECKED, 0);
-
       hwndCheck = GetDlgItem(hwndDlg, IDC_3D_STEREO_Y);
       int stereo3DY;
       hr = GetRegInt("Player", "Stereo3DYAxis", &stereo3DY);
@@ -4201,7 +4194,14 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
          stereo3DY = fFalse;
       SendMessage(hwndCheck, BM_SETCHECK, stereo3DY ? BST_CHECKED : BST_UNCHECKED, 0);
 
-      float stereo3DMS;
+	  float stereo3DOfs;
+	  hr = GetRegStringAsFloat("Player", "Stereo3DOffset", &stereo3DOfs);
+	  if (hr != S_OK)
+		  stereo3DOfs = 0.0f;
+	  sprintf_s(tmp, 256, "%f", stereo3DOfs);
+	  SetDlgItemTextA(hwndDlg, IDC_3D_STEREO_OFS, tmp);
+
+	  float stereo3DMS;
       hr = GetRegStringAsFloat("Player", "Stereo3DMaxSeparation", &stereo3DMS);
       if (hr != S_OK)
          stereo3DMS = 0.03f;
@@ -4397,10 +4397,6 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
             SetRegValue("Player", "Stereo3D", REG_DWORD, &stereo3D, 4);
             SetRegValue("Player", "Stereo3DEnabled", REG_DWORD, &stereo3D, 4);
 
-            HWND hwndStereo3DAA = GetDlgItem(hwndDlg, IDC_3D_STEREO_AA);
-            size_t stereo3DAA = SendMessage(hwndStereo3DAA, BM_GETCHECK, 0, 0);
-            SetRegValue("Player", "Stereo3DAntialias", REG_DWORD, &stereo3DAA, 4);
-
             HWND hwndStereo3DY = GetDlgItem(hwndDlg, IDC_3D_STEREO_Y);
             size_t stereo3DY = SendMessage(hwndStereo3DY, BM_GETCHECK, 0, 0);
             SetRegValue("Player", "Stereo3DYAxis", REG_DWORD, &stereo3DY, 4);
@@ -4421,6 +4417,9 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
             size_t alphaRampsAccuracy = SendMessage(hwndAraSlider, TBM_GETPOS, 0, 0);
             SetRegValue("Player", "AlphaRampAccuracy", REG_DWORD, &alphaRampsAccuracy, 4);
 
+			GetDlgItemTextA(hwndDlg, IDC_3D_STEREO_OFS, strTmp, 256);
+			SetRegValue("Player", "Stereo3DOffset", REG_SZ, &strTmp, lstrlen(strTmp));
+			
             GetDlgItemTextA(hwndDlg, IDC_3D_STEREO_MS, strTmp, 256);
             SetRegValue("Player", "Stereo3DMaxSeparation", REG_SZ, &strTmp, lstrlen(strTmp));
 

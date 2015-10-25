@@ -895,16 +895,21 @@ PinTable::PinTable()
    m_userDetailLevel = 10;
    m_overwriteGlobalDetailLevel = false;
 
-   if (FAILED(GetRegStringAsFloat("Player", "Stereo3DZPD", &m_globalZPD)))
+   if (FAILED(GetRegStringAsFloat("Player", "Stereo3DZPD", &m_global3DZPD)))
    {
-      m_globalZPD = 0.5f;
+      m_global3DZPD = 0.5f;
    }
-   m_ZPD = 0.5f;
-   if (FAILED(GetRegStringAsFloat("Player", "Stereo3DMaxSeparation", &m_globalMaxSeparation)))
+   m_3DZPD = 0.5f;
+   if (FAILED(GetRegStringAsFloat("Player", "Stereo3DMaxSeparation", &m_global3DMaxSeparation)))
    {
-      m_globalMaxSeparation = 0.03f;
+      m_global3DMaxSeparation = 0.03f;
    }
-   m_maxSeparation = 0.03f;
+   m_3DmaxSeparation = 0.03f;
+   if (FAILED(GetRegStringAsFloat("Player", "Stereo3DOffset", &m_global3DOffset)))
+   {
+	   m_global3DOffset = 0.0f;
+   }
+   m_3DOffset = 0.0f;
    m_overwriteGlobalStereo3D = false;
 
 #ifdef UNUSED_TILT
@@ -2839,8 +2844,9 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
    bw.WriteFloat(FID(SLPX), m_angletiltMax);
    bw.WriteFloat(FID(SLOP), m_angletiltMin);
 
-   bw.WriteFloat(FID(MAXSEP), m_maxSeparation);
-   bw.WriteFloat(FID(ZPD), m_ZPD);
+   bw.WriteFloat(FID(MAXSEP), m_3DmaxSeparation);
+   bw.WriteFloat(FID(ZPD), m_3DZPD);
+   bw.WriteFloat(FID(STO), m_3DOffset);
    bw.WriteBool(FID(OGST), m_overwriteGlobalStereo3D);
 
    bw.WriteString(FID(IMAG), m_szImage);
@@ -3533,11 +3539,15 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(MAXSEP))
    {
-      pbr->GetFloat(&m_maxSeparation);
+      pbr->GetFloat(&m_3DmaxSeparation);
    }
    else if (id == FID(ZPD))
    {
-      pbr->GetFloat(&m_ZPD);
+      pbr->GetFloat(&m_3DZPD);
+   }
+   else if (id == FID(STO))
+   {
+	   pbr->GetFloat(&m_3DOffset);
    }
    else if (id == FID(OGST))
    {
@@ -4075,12 +4085,17 @@ int PinTable::GetDetailLevel()
 
 float PinTable::GetZPD()
 {
-   return m_overwriteGlobalStereo3D ? m_ZPD : m_globalZPD;
+   return m_overwriteGlobalStereo3D ? m_3DZPD : m_global3DZPD;
 }
 
 float PinTable::GetMaxSeparation()
 {
-   return m_overwriteGlobalStereo3D ? m_maxSeparation : m_globalMaxSeparation;
+   return m_overwriteGlobalStereo3D ? m_3DmaxSeparation : m_global3DMaxSeparation;
+}
+
+float PinTable::Get3DOffset()
+{
+	return m_overwriteGlobalStereo3D ? m_3DOffset : m_global3DOffset;
 }
 
 FRect3D PinTable::GetBoundingBox()
@@ -6194,9 +6209,9 @@ STDMETHODIMP PinTable::put_Name(BSTR newVal)
 STDMETHODIMP PinTable::get_MaxSeparation(float *pVal)
 {
    if (m_overwriteGlobalStereo3D)
-      *pVal = m_maxSeparation;
+      *pVal = m_3DmaxSeparation;
    else
-      *pVal = m_globalMaxSeparation;
+      *pVal = m_global3DMaxSeparation;
 
    return S_OK;
 }
@@ -6205,20 +6220,20 @@ STDMETHODIMP PinTable::put_MaxSeparation(float newVal)
 {
    STARTUNDO
 
-      if (m_overwriteGlobalStereo3D)
-         m_maxSeparation = newVal;
+   if (m_overwriteGlobalStereo3D)
+      m_3DmaxSeparation = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_ZPD(float *pVal)
 {
    if (m_overwriteGlobalStereo3D)
-      *pVal = m_ZPD;
+      *pVal = m_3DZPD;
    else
-      *pVal = m_globalZPD;
+      *pVal = m_global3DZPD;
 
    return S_OK;
 }
@@ -6227,12 +6242,34 @@ STDMETHODIMP PinTable::put_ZPD(float newVal)
 {
    STARTUNDO
 
-      if (m_overwriteGlobalStereo3D)
-         m_ZPD = newVal;
+   if (m_overwriteGlobalStereo3D)
+      m_3DZPD = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::get_Offset(float *pVal)
+{
+	if (m_overwriteGlobalStereo3D)
+		*pVal = m_3DOffset;
+	else
+		*pVal = m_global3DOffset;
+
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::put_Offset(float newVal)
+{
+	STARTUNDO
+
+	if (m_overwriteGlobalStereo3D)
+		m_3DOffset = newVal;
+
+	STOPUNDO
+
+	return S_OK;
 }
 
 void PinTable::ClearOldSounds()
@@ -7809,8 +7846,9 @@ STDMETHODIMP PinTable::put_GlobalStereo3D(VARIANT_BOOL newVal)
    m_overwriteGlobalStereo3D = !!newVal;
    if (!m_overwriteGlobalStereo3D)
    {
-      m_maxSeparation = m_globalMaxSeparation;
-      m_ZPD = m_globalZPD;
+      m_3DmaxSeparation = m_global3DMaxSeparation;
+      m_3DZPD = m_global3DZPD;
+	  m_3DOffset = m_global3DOffset;
    }
 
    STOPUNDO
