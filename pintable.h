@@ -226,6 +226,8 @@ public:
    STDMETHOD(put_MaxSeparation)(/*[in]*/ float newVal);
    STDMETHOD(get_ZPD)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_ZPD)(/*[in]*/ float newVal);
+   STDMETHOD(get_Offset)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_Offset)(/*[in]*/ float newVal);
 
    STDMETHOD(get_EnableDecals)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_EnableDecals)(/*[in]*/ VARIANT_BOOL newVal);
@@ -504,6 +506,7 @@ public:
    int GetDetailLevel();
    float GetZPD();
    float GetMaxSeparation();
+   float Get3DOffset();
 
    FRect3D GetBoundingBox();
 
@@ -557,10 +560,12 @@ public:
    float m_glassheight;
    float m_tableheight;
 
-   float m_maxSeparation;
-   float m_globalMaxSeparation;
-   float m_ZPD;
-   float m_globalZPD;
+   float m_3DmaxSeparation;
+   float m_global3DMaxSeparation;
+   float m_3DZPD;
+   float m_global3DZPD;
+   float m_3DOffset;
+   float m_global3DOffset;
 
    unsigned int m_BG_current_set;
    float m_BG_inclination[NUM_BG_SETS];

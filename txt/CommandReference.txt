@@ -41,7 +41,8 @@ Variables
 *FieldOfViewFS(float) - Perspective of Table. default=45
 
 *MaxSeparation(float) - Maximum separation/scale effect for Stereo 3D (ranges from 0..1)
-*ZPD(float) - Sets the depth where the Stereo 3D should happen (ranges from 0..1)
+*ZPD(float) - Reads the depth where the Stereo 3D should happen (ranges from 0..1)
+*Offset(float) - Reads the constant offset for the Stereo 3D effect (ranges from 0..1)
 *PlayfieldColor(OLE_COLOR)
 *BackDropColor(OLE_COLOR)
 BackdropImage(string)

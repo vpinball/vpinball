@@ -750,7 +750,7 @@
 #define IDC_GLOBALTILT                  541
 #define IDC_3D_STEREO                   542
 #define IDC_DisableESC_CB               542
-#define IDC_3D_STEREO_AA                543
+#define IDC_3D_STEREO_OFS               543
 #define IDC_3D_STEREO_Y                 544
 #define IDC_ADAPTIVE_VSYNC              545
 #define IDC_STATIC_SOUNDDEVICE          546

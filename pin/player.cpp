@@ -232,12 +232,6 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
       stereo3Denabled = (m_fStereo3D != 0); // The default
    m_fStereo3Denabled = (stereo3Denabled == 1);
 
-   int stereo3DAA;
-   hr = GetRegInt("Player", "Stereo3DAntialias", &stereo3DAA);
-   if (hr != S_OK)
-      stereo3DAA = fTrue; // The default
-   m_fStereo3DAA = (stereo3DAA == 1);
-
    int stereo3DY;
    hr = GetRegInt("Player", "Stereo3DYAxis", &stereo3DY);
    if (hr != S_OK)
@@ -3002,8 +2996,8 @@ void Player::StereoFXAA(const bool stereo, const bool FXAA1, const bool FXAA2, c
 
       const D3DXVECTOR4 ms_zpd_ya_td(m_ptable->GetMaxSeparation(), m_ptable->GetZPD(), m_fStereo3DY ? 1.0f : 0.0f, (m_fStereo3D == 1) ? 1.0f : 0.0f);
       m_pin3d.m_pd3dDevice->FBShader->SetVector("ms_zpd_ya_td", &ms_zpd_ya_td);
-      const D3DXVECTOR4 w_h_height((float)(1.0 / (double)m_width), (float)(1.0 / (double)m_height), (float)m_height, m_fStereo3DAA ? 1.0f : 0.0f);
 
+      const D3DXVECTOR4 w_h_height((float)(1.0 / (double)m_width), (float)(1.0 / (double)m_height), (float)m_height, m_ptable->Get3DOffset());
       m_pin3d.m_pd3dDevice->FBShader->SetVector("w_h_height", &w_h_height);
 
       m_pin3d.m_pd3dDevice->FBShader->SetTechnique("stereo");
