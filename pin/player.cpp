@@ -1274,6 +1274,8 @@ void Player::RenderStaticMirror(const bool onlyBalls)
 
    if (!onlyBalls)
    {
+      SetClipPlanePlayfield();
+
       D3DMATRIX viewMat;
       m_pin3d.m_pd3dDevice->GetTransform(TRANSFORMSTATE_VIEW, &viewMat);
       // flip camera
@@ -1316,6 +1318,8 @@ void Player::RenderStaticMirror(const bool onlyBalls)
          viewMat._32 = -viewMat._32;
       m_pin3d.m_pd3dDevice->SetTransform(TRANSFORMSTATE_VIEW, &viewMat);
       UpdateBasicShaderMatrix();
+
+      m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CLIPPLANEENABLE, 0); // disable playfield clipplane again
    }
 
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::COLORWRITEENABLE, 0); //m_pin3d.m_pd3dDevice->SetRenderTarget(NULL); // disable color writes
@@ -2866,6 +2870,18 @@ void Player::RenderDynamics()
    m_pin3d.m_pd3dDevice->EndScene();
 }
 
+void Player::SetClipPlanePlayfield()
+{
+	Matrix3D mT = m_pin3d.m_proj.m_matrixTotal; // = world * view * proj
+	mT.Invert();
+	mT.Transpose();
+	D3DXMATRIX m(mT);
+	D3DXPLANE clipSpacePlane;
+	const D3DXPLANE plane(0.0f, 0.0f, -1.0f, m_ptable->m_tableheight);
+	D3DXPlaneTransform(&clipSpacePlane, &plane, &m);
+	m_pin3d.m_pd3dDevice->GetCoreDevice()->SetClipPlane(0, clipSpacePlane);
+	m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CLIPPLANEENABLE, D3DCLIPPLANE0);
+}
 
 void Player::CheckAndUpdateRegions()
 {
@@ -2890,6 +2906,7 @@ void Player::CheckAndUpdateRegions()
          m_pin3d.m_pd3dDevice->CopySurface(m_pin3d.m_pddsZBuffer, m_pin3d.m_mirrorZBuffer); // cannot be called inside BeginScene -> EndScene cycle
 
          m_pin3d.m_pd3dDevice->BeginScene();
+         SetClipPlanePlayfield();
          RenderDynamicMirror(true);
 
          reflection_path = true;
@@ -2900,6 +2917,7 @@ void Player::CheckAndUpdateRegions()
          m_pin3d.m_pd3dDevice->CopySurface(m_pin3d.m_pddsZBuffer, m_pin3d.m_mirrorZBuffer); // cannot be called inside BeginScene -> EndScene cycle
 
          m_pin3d.m_pd3dDevice->BeginScene();
+         SetClipPlanePlayfield();
          RenderDynamicMirror(false);
 
          reflection_path = true;
@@ -2908,6 +2926,7 @@ void Player::CheckAndUpdateRegions()
 
    if(reflection_path)
    {
+       m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CLIPPLANEENABLE, 0); // disable playfield clipplane again
        RenderMirrorOverlay(false);
        m_pin3d.RenderPlayfieldGraphics(true); // mirror depth buffer only contained static objects, but no playfield yet -> render depth only
        m_pin3d.m_pd3dDevice->EndScene();
