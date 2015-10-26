@@ -89,9 +89,6 @@ public:
 
    RenderTarget* m_pddsZBuffer;
 
-   RenderTarget* m_mirrorZBuffer;
-   RenderTarget* m_mirrorBuffer;
-
    RenderTarget* m_pddsStatic;
    RenderTarget* m_pddsStaticZ;
 
