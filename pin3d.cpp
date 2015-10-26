@@ -649,23 +649,32 @@ void Pin3D::InitPlayfieldGraphics()
    tableVBuffer->unlock();
 }
 
-void Pin3D::RenderPlayfieldGraphics()
+void Pin3D::RenderPlayfieldGraphics(const bool depth_only)
 {
    TRACE_FUNCTION();
 
-   Texture * const pin = g_pplayer->m_ptable->GetImage((char *)g_pplayer->m_ptable->m_szImage);
-   Material *mat = g_pplayer->m_ptable->GetMaterial(g_pplayer->m_ptable->m_szPlayfieldMaterial);
-   m_pd3dDevice->basicShader->SetMaterial(mat);
+   Texture * const pin = depth_only ? NULL : g_pplayer->m_ptable->GetImage((char *)g_pplayer->m_ptable->m_szImage);
 
-   if (pin)
+   if(depth_only)
    {
-      SetTextureFilter(0, TEXTURE_MODE_ANISOTROPIC);
-      m_pd3dDevice->basicShader->SetTechnique("basic_with_texture");
-      m_pd3dDevice->basicShader->SetTexture("Texture0", pin);
-      m_pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
+       m_pd3dDevice->SetRenderState(RenderDevice::COLORWRITEENABLE, 0); //m_pin3d.m_pd3dDevice->SetRenderTarget(NULL); // disable color writes
+       m_pd3dDevice->basicShader->SetTechnique("basic_depth_only");
    }
-   else // No image by that name
-      m_pd3dDevice->basicShader->SetTechnique("basic_without_texture");
+   else
+   {
+       Material *mat = g_pplayer->m_ptable->GetMaterial(g_pplayer->m_ptable->m_szPlayfieldMaterial);
+       m_pd3dDevice->basicShader->SetMaterial(mat);
+
+       if (pin)
+       {
+           SetTextureFilter(0, TEXTURE_MODE_ANISOTROPIC);
+           m_pd3dDevice->basicShader->SetTechnique("basic_with_texture");
+           m_pd3dDevice->basicShader->SetTexture("Texture0", pin);
+           m_pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
+       }
+       else // No image by that name
+           m_pd3dDevice->basicShader->SetTechnique("basic_without_texture");
+   }
 
    assert(tableVBuffer != NULL);
    assert(tableIBuffer != NULL);
@@ -673,7 +682,7 @@ void Pin3D::RenderPlayfieldGraphics()
    m_pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, tableVBuffer, 0, 4, tableIBuffer, 0, 6);
    m_pd3dDevice->basicShader->End();
 
-   if (pin)
+   if(!depth_only && pin)
    {
       //m_pd3dDevice->basicShader->SetTexture("Texture0",(D3DTexture*)NULL);
       //m_pd3dDevice->m_texMan.UnloadTexture(pin->m_pdsBuffer); //!! is used by ball reflection later-on
@@ -684,6 +693,9 @@ void Pin3D::RenderPlayfieldGraphics()
    m_pd3dDevice->basicShader->Begin(0);
    m_pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLEFAN, MY_D3DFVF_NOTEX2_VERTEX, tableVBuffer, 4, 7, tableIBuffer, 6, 4);
    m_pd3dDevice->basicShader->End();
+
+   if(depth_only)
+       m_pd3dDevice->SetRenderState(RenderDevice::COLORWRITEENABLE, 0x0000000Fu); // reenable color writes with default value
 
    // Apparently, releasing the vertex buffer here immediately can cause rendering glitches in
    // later rendering steps, so we keep it around for now.

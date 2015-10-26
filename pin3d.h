@@ -65,7 +65,7 @@ public:
    void DisableAlphaBlend() const;
 
    void DrawBackground();
-   void RenderPlayfieldGraphics();
+   void RenderPlayfieldGraphics(const bool depth_only);
 
    const Matrix3D& GetWorldTransform() const   { return m_proj.m_matWorld; }
    const Matrix3D& GetViewTransform() const    { return m_proj.m_matView; }
