@@ -2900,50 +2900,37 @@ void Player::CheckAndUpdateRegions()
    // copy static buffers to back buffer and z buffer
    //
    m_pin3d.m_pd3dDevice->CopySurface(m_pin3d.m_pddsBackBuffer, m_pin3d.m_pddsStatic);
+   m_pin3d.m_pd3dDevice->CopySurface(m_pin3d.m_pddsZBuffer, m_pin3d.m_pddsStaticZ); // cannot be called inside BeginScene -> EndScene cycle
 
    // Process all AnimObjects (currently only DispReel, LightSeq and Slingshot)
    for (int l = 0; l < m_vanimate.Size(); ++l)
       m_vanimate.ElementAt(l)->Animate();
 
-   bool reflection_path = false;
+   unsigned int reflection_path = 0;
 
    if (!cameraMode)
    {
       const bool drawBallReflection = ((m_fReflectionForBalls && (m_ptable->m_useReflectionForBalls == -1)) || (m_ptable->m_useReflectionForBalls == 1));
 
       if (!m_ptable->m_fReflectElementsOnPlayfield && drawBallReflection)
-      {
-         // copy the special mirror z-Buffer to the current z-buffer
-         m_pin3d.m_pd3dDevice->CopySurface(m_pin3d.m_pddsZBuffer, m_pin3d.m_pddsStaticZ); // cannot be called inside BeginScene -> EndScene cycle
-
-         m_pin3d.m_pd3dDevice->BeginScene();
-         SetClipPlanePlayfield();
-         RenderDynamicMirror(true);
-
-         reflection_path = true;
-      }
+         reflection_path = 1;
       else if (m_ptable->m_fReflectElementsOnPlayfield)
-      {
-         // copy the special mirror z-Buffer to the current z-buffer
-         m_pin3d.m_pd3dDevice->CopySurface(m_pin3d.m_pddsZBuffer, m_pin3d.m_pddsStaticZ); // cannot be called inside BeginScene -> EndScene cycle
-
-         m_pin3d.m_pd3dDevice->BeginScene();
-         SetClipPlanePlayfield();
-         RenderDynamicMirror(false);
-
-         reflection_path = true;
-      }
+         reflection_path = 2;
    }
 
-   if(reflection_path)
+   if(reflection_path != 0)
    {
-       m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CLIPPLANEENABLE, 0); // disable playfield clipplane again
-       RenderMirrorOverlay(false);
-       m_pin3d.RenderPlayfieldGraphics(true); // mirror depth buffer only contained static objects, but no playfield yet -> render depth only
-       m_pin3d.m_pd3dDevice->EndScene();
+	   m_pin3d.m_pd3dDevice->BeginScene();
+
+	   SetClipPlanePlayfield();
+	   RenderDynamicMirror(reflection_path == 1);
+	   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CLIPPLANEENABLE, 0); // disable playfield clipplane again
+
+	   RenderMirrorOverlay(false);
+	   m_pin3d.RenderPlayfieldGraphics(true); // mirror depth buffer only contained static objects, but no playfield yet -> so render depth only to add this
+
+	   m_pin3d.m_pd3dDevice->EndScene();
    }
-   else
-       m_pin3d.m_pd3dDevice->CopySurface(m_pin3d.m_pddsZBuffer, m_pin3d.m_pddsStaticZ); // cannot be called inside BeginScene -> EndScene cycle
 }
 
 void Player::Bloom()
