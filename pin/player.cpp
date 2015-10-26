@@ -1254,7 +1254,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 // for the static objects:
 //  1. switch to an extra mirror back buffer and mirror z-buffer
 //  2. render the mirrored elements into these buffers (normal rendering)
-//  3. switch back to normal camera mode and use the static back buffer but still use mirror z-buffer
+//  3. switch back to normal camera mode and disable color buffer rendering (only depth)
 //  4. render all static elements again to fill the mirror z-buffer with the correct depth information
 //  5. copy the mirror back buffer into the mirror texture for blending the texture over the playfield in a later step
 //
@@ -1318,9 +1318,9 @@ void Player::RenderStaticMirror(const bool onlyBalls)
       UpdateBasicShaderMatrix();
    }
 
-   m_pin3d.m_pd3dDevice->SetRenderTarget(m_pin3d.m_pddsStatic);
+   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::COLORWRITEENABLE, 0); //m_pin3d.m_pd3dDevice->SetRenderTarget(NULL); // disable color writes
 
-   // render normal static elements but into mirrored z-buffer
+   // render normal static elements also into mirrored z-buffer
    for (int i = 0; i < m_ptable->m_vedit.Size(); i++)
    {
       if (m_ptable->m_vedit.ElementAt(i)->GetItemType() != eItemDecal)
@@ -1332,6 +1332,8 @@ void Player::RenderStaticMirror(const bool onlyBalls)
          }
       }
    }
+
+   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::COLORWRITEENABLE, 0x0000000Fu); // reenable color writes with default value
 
    m_pin3d.SetRenderTarget(m_pin3d.m_pddsStatic, m_pin3d.m_pddsStaticZ);
    // copy mirror back buffer into mirror texture for rendering it over the playfield later on
@@ -1465,7 +1467,8 @@ void Player::InitStatic(HWND hwndProgress)
          if (m_ptable->m_fReflectElementsOnPlayfield)
             RenderStaticMirror(false);
 
-      m_pin3d.RenderPlayfieldGraphics();
+      m_pin3d.RenderPlayfieldGraphics(false);
+
       if (m_ptable->m_fReflectElementsOnPlayfield)
          RenderMirrorOverlay(true);
 
@@ -2802,7 +2805,9 @@ void Player::RenderDynamics()
 #endif
 
       UpdateBallShaderMatrix();
-      m_pin3d.RenderPlayfieldGraphics();
+
+      m_pin3d.RenderPlayfieldGraphics(false);
+
       for (int i = 0; i < m_ptable->m_vedit.Size(); i++)
       {
          if (m_ptable->m_vedit.ElementAt(i)->GetItemType() != eItemDecal)
@@ -2873,6 +2878,8 @@ void Player::CheckAndUpdateRegions()
    for (int l = 0; l < m_vanimate.Size(); ++l)
       m_vanimate.ElementAt(l)->Animate();
 
+   bool reflection_path = false;
+
    if (!cameraMode)
    {
       const bool drawBallReflection = ((m_fReflectionForBalls && (m_ptable->m_useReflectionForBalls == -1)) || (m_ptable->m_useReflectionForBalls == 1));
@@ -2884,8 +2891,8 @@ void Player::CheckAndUpdateRegions()
 
          m_pin3d.m_pd3dDevice->BeginScene();
          RenderDynamicMirror(true);
-         RenderMirrorOverlay(false);
-         m_pin3d.m_pd3dDevice->EndScene();
+
+         reflection_path = true;
       }
       else if (m_ptable->m_fReflectElementsOnPlayfield)
       {
@@ -2894,12 +2901,19 @@ void Player::CheckAndUpdateRegions()
 
          m_pin3d.m_pd3dDevice->BeginScene();
          RenderDynamicMirror(false);
-         RenderMirrorOverlay(false);
-         m_pin3d.m_pd3dDevice->EndScene();
+
+         reflection_path = true;
       }
    }
 
-   m_pin3d.m_pd3dDevice->CopySurface(m_pin3d.m_pddsZBuffer, m_pin3d.m_pddsStaticZ); // cannot be called inside BeginScene -> EndScene cycle
+   if(reflection_path)
+   {
+       RenderMirrorOverlay(false);
+       m_pin3d.RenderPlayfieldGraphics(true); // mirror depth buffer only contained static objects, but no playfield yet -> render depth only
+       m_pin3d.m_pd3dDevice->EndScene();
+   }
+   else
+       m_pin3d.m_pd3dDevice->CopySurface(m_pin3d.m_pddsZBuffer, m_pin3d.m_pddsStaticZ); // cannot be called inside BeginScene -> EndScene cycle
 }
 
 void Player::Bloom()

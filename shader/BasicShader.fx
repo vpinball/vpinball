@@ -87,6 +87,11 @@ struct VS_NOTEX_OUTPUT
    float3 normal   : TEXCOORD2;
 };
 
+struct VS_DEPTH_ONLY_OUTPUT 
+{ 
+   float4 pos      : POSITION; 
+};
+
 //------------------------------------
 //
 // Standard Materials
@@ -127,6 +132,15 @@ VS_NOTEX_OUTPUT vs_notex_main (float4 vPosition : POSITION0,
       Out.tex1 = Out.pos.xy/Out.pos.w;
    Out.worldPos = P;
    Out.normal = N;
+   
+   return Out; 
+}
+
+VS_DEPTH_ONLY_OUTPUT vs_depth_only_main (float4 vPosition : POSITION0) 
+{ 
+   VS_DEPTH_ONLY_OUTPUT Out;
+
+   Out.pos = mul(vPosition, matWorldViewProj);
    
    return Out; 
 }
@@ -195,6 +209,11 @@ float4 ps_main_texture(in VS_OUTPUT IN) : COLOR
    return result;
 }
 
+float4 ps_main_depth_only(in VS_DEPTH_ONLY_OUTPUT IN) : COLOR
+{
+    return float4(0.,0.,0.,1.);
+}
+
 //------------------------------------------
 // Kicker boolean vertex shader
 
@@ -234,7 +253,7 @@ technique basic_without_texture
    pass P0 
    { 
       VertexShader = compile vs_3_0 vs_notex_main(); 
-	  PixelShader = compile ps_3_0 ps_main();
+      PixelShader = compile ps_3_0 ps_main();
    } 
 }
 
@@ -243,7 +262,16 @@ technique basic_with_texture
    pass P0 
    { 
       VertexShader = compile vs_3_0 vs_main(); 
-	  PixelShader = compile ps_3_0 ps_main_texture();
+      PixelShader = compile ps_3_0 ps_main_texture();
+   } 
+}
+
+technique basic_depth_only
+{ 
+   pass P0 
+   { 
+      VertexShader = compile vs_3_0 vs_depth_only_main(); 
+      PixelShader = compile ps_3_0 ps_main_depth_only();
    } 
 }
 
@@ -257,7 +285,7 @@ technique kickerBoolean
    { 
       //ZWriteEnable=TRUE;
       VertexShader = compile vs_3_0 vs_kicker(); 
-	  PixelShader = compile ps_3_0 ps_main();
+      PixelShader = compile ps_3_0 ps_main();
    } 
 }
 
