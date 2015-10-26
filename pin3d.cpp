@@ -15,8 +15,6 @@ Pin3D::Pin3D()
    m_pddsStaticZ = NULL;
    m_envRadianceTexture = NULL;
    m_device_envRadianceTexture = NULL;
-   m_mirrorZBuffer = NULL;
-   m_mirrorBuffer = NULL;
    tableVBuffer = NULL;
    tableIBuffer = NULL;
 }
@@ -50,17 +48,6 @@ Pin3D::~Pin3D()
    SAFE_RELEASE(m_pddsZBuffer);
    SAFE_RELEASE(m_pddsStatic);
    SAFE_RELEASE_NO_RCC(m_pddsBackBuffer);
-
-   const bool drawBallReflection = ((g_pplayer->m_fReflectionForBalls && (g_pplayer->m_ptable->m_useReflectionForBalls == -1)) || (g_pplayer->m_ptable->m_useReflectionForBalls == 1));
-   if (g_pplayer->m_ptable->m_fReflectElementsOnPlayfield || drawBallReflection)
-   {
-      SAFE_RELEASE(m_mirrorZBuffer);
-      SAFE_RELEASE_NO_RCC(m_mirrorBuffer);
-   }
-   else
-   {
-      assert(m_mirrorZBuffer == NULL && m_mirrorBuffer == NULL);
-   }
 
    delete m_pd3dDevice;
 }
@@ -235,13 +222,6 @@ HRESULT Pin3D::InitPin3D(const HWND hwnd, const bool fullScreen, const int width
 
    m_pddsZBuffer = m_pd3dDevice->AttachZBufferTo(m_pddsBackBuffer);
    m_pddsStaticZ = m_pd3dDevice->AttachZBufferTo(m_pddsStatic);
-
-   const bool drawBallReflection = ((g_pplayer->m_fReflectionForBalls && (g_pplayer->m_ptable->m_useReflectionForBalls == -1)) || (g_pplayer->m_ptable->m_useReflectionForBalls == 1));
-   if (g_pplayer->m_ptable->m_fReflectElementsOnPlayfield || drawBallReflection)
-   {
-      m_mirrorBuffer = m_pd3dDevice->DuplicateRenderTarget(m_pddsBackBuffer);
-      m_mirrorZBuffer = m_pd3dDevice->AttachZBufferTo(m_mirrorBuffer);
-   }
    if (!m_pddsZBuffer || !m_pddsStaticZ)
       return E_FAIL;
 
