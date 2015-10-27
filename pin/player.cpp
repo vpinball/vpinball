@@ -1252,24 +1252,26 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 
 // reflection is split into two parts static and dynamic
 // for the static objects:
-//  1. switch to a temporary mirror back buffer and mirror z-buffer (e.g. the normal backbuffer)
+//  1. switch to a temporary mirror texture/back buffer and mirror z-buffer (e.g. the standard depthbuffer)
 //  2. render the mirrored elements into these buffers (normal rendering)
-//  3. switch back to normal camera mode and disable color buffer rendering (only depth)
+//  3. switch back to normal camera mode and disable color buffer rendering (render only depth)
 //  4. render all static elements again to fill the mirror z-buffer with the correct depth information
-//  5. copy the mirror back buffer into the mirror texture for blending the texture over the playfield in a later step
+//  5. use the mirror texture for blending the texture over the playfield in a later step and the depthbuffer for compositing during play
 //
 // for the dynamic objects:
-//  1. copy the mirror z-buffer into the normal z-buffer
+//  1. use the previous mirror depthbuffer
 //  2. switch to a temporary mirror texture and render all dynamic elements into that buffer 
 //  3. switch back to normal back buffer
 //  4. render the dynamic mirror texture over the scene
 //  5. render all dynamic objects as normal
 void Player::RenderStaticMirror(const bool onlyBalls)
 {
-   // Direct all renders to the temporary mirror buffer (e.g. the standard back buffer)
-   m_pin3d.SetRenderTarget(m_pin3d.m_pddsBackBuffer, m_pin3d.m_pddsZBuffer);
+   // Direct all renders to the temporary mirror buffer (plus the standard z depthbuffer)
+   RenderTarget *tmpMirrorSurface = NULL;
+   m_pin3d.m_pd3dDevice->GetMirrorTmpBufferTexture()->GetSurfaceLevel(0, &tmpMirrorSurface);
+   m_pin3d.SetRenderTarget(tmpMirrorSurface, m_pin3d.m_pddsZBuffer);
 
-   m_pin3d.m_pd3dDevice->Clear(0, NULL, D3DCLEAR_ZBUFFER, 0, 1.0f, 0L);
+   m_pin3d.m_pd3dDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, 0, 1.0f, 0L);
    m_pin3d.m_pd3dDevice->FBShader->SetFloat("mirrorFactor", (float)m_ptable->m_playfieldReflectionStrength*(float)(1.0/255.0));
 
    if (!onlyBalls)
@@ -1340,11 +1342,7 @@ void Player::RenderStaticMirror(const bool onlyBalls)
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::COLORWRITEENABLE, 0x0000000Fu); // reenable color writes with default value
 
    m_pin3d.SetRenderTarget(m_pin3d.m_pddsStatic, m_pin3d.m_pddsStaticZ);
-   // copy mirror back buffer into the temporary mirror texture for rendering it over the playfield in the next step of static pre-rendering
-   RenderTarget *mirrorSurface = NULL;
-   m_pin3d.m_pd3dDevice->GetMirrorTmpBufferTexture()->GetSurfaceLevel(0, &mirrorSurface);
-   m_pin3d.m_pd3dDevice->CopySurface(mirrorSurface, m_pin3d.m_pddsBackBuffer);
-   SAFE_RELEASE_NO_RCC(mirrorSurface);
+   SAFE_RELEASE_NO_RCC(tmpMirrorSurface);
 }
 
 void Player::RenderDynamicMirror(const bool onlyBalls)
