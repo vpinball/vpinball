@@ -177,7 +177,6 @@ public:
 
    D3DTexture* GetBackBufferTexture() const { return m_pOffscreenBackBufferTexture; }
    D3DTexture* GetBackBufferTmpTexture() const { return m_pOffscreenBackBufferTmpTexture; }
-   D3DTexture* GetMirrorBufferTexture() const { return m_pMirrorBufferTexture; }
    D3DTexture* GetMirrorTmpBufferTexture() const { return m_pMirrorTmpBufferTexture; }
    RenderTarget* GetOutputBackBuffer() const { return m_pBackBuffer; }
 
@@ -278,7 +277,6 @@ private:
 
    D3DTexture* m_pBloomBufferTexture;
    D3DTexture* m_pBloomTmpBufferTexture;
-   D3DTexture* m_pMirrorBufferTexture;
    D3DTexture* m_pMirrorTmpBufferTexture;
 
    UINT m_adapter;      // index of the display adapter to use

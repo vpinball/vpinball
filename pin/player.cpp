@@ -1340,9 +1340,9 @@ void Player::RenderStaticMirror(const bool onlyBalls)
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::COLORWRITEENABLE, 0x0000000Fu); // reenable color writes with default value
 
    m_pin3d.SetRenderTarget(m_pin3d.m_pddsStatic, m_pin3d.m_pddsStaticZ);
-   // copy mirror back buffer into mirror texture for rendering it over the playfield later on
+   // copy mirror back buffer into the temporary mirror texture for rendering it over the playfield in the next step of static pre-rendering
    RenderTarget *mirrorSurface = NULL;
-   m_pin3d.m_pd3dDevice->GetMirrorBufferTexture()->GetSurfaceLevel(0, &mirrorSurface);
+   m_pin3d.m_pd3dDevice->GetMirrorTmpBufferTexture()->GetSurfaceLevel(0, &mirrorSurface);
    m_pin3d.m_pd3dDevice->CopySurface(mirrorSurface, m_pin3d.m_pddsBackBuffer);
    SAFE_RELEASE_NO_RCC(mirrorSurface);
 }
@@ -1413,13 +1413,10 @@ void Player::RenderDynamicMirror(const bool onlyBalls)
    SAFE_RELEASE_NO_RCC(tmpMirrorSurface);
 }
 
-void Player::RenderMirrorOverlay(const bool onlyStatic)
+void Player::RenderMirrorOverlay()
 {
    // render the mirrored texture over the playfield
-   if (onlyStatic)
-      m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetMirrorBufferTexture());
-   else
-      m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetMirrorTmpBufferTexture());
+   m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetMirrorTmpBufferTexture());
 
    m_pin3d.m_pd3dDevice->FBShader->SetTechnique("fb_mirror");
 
@@ -1476,7 +1473,7 @@ void Player::InitStatic(HWND hwndProgress)
       m_pin3d.RenderPlayfieldGraphics(false);
 
       if (m_ptable->m_fReflectElementsOnPlayfield)
-         RenderMirrorOverlay(true);
+         RenderMirrorOverlay();
 
       // now render everything else
       for (int i = 0; i < m_ptable->m_vedit.Size(); i++)
@@ -2926,7 +2923,7 @@ void Player::CheckAndUpdateRegions()
 	   RenderDynamicMirror(reflection_path == 1);
 	   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CLIPPLANEENABLE, 0); // disable playfield clipplane again
 
-	   RenderMirrorOverlay(false);
+	   RenderMirrorOverlay();
 	   m_pin3d.RenderPlayfieldGraphics(true); // mirror depth buffer only contained static objects, but no playfield yet -> so render depth only to add this
 
 	   m_pin3d.m_pd3dDevice->EndScene();
@@ -3113,22 +3110,6 @@ void Player::FlipVideoBuffersNormal(const bool vsync)
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 
-
-   //    m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetMirrorTmpBufferTexture());
-   //    m_pin3d.m_pd3dDevice->FBShader->SetTechnique("fb_mirror");
-   // 
-   //    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
-   //    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
-   //    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, FALSE);
-   // 
-   //    m_pin3d.m_pd3dDevice->FBShader->Begin(0);
-   //    m_pin3d.m_pd3dDevice->DrawFullscreenQuad();
-   //    m_pin3d.m_pd3dDevice->FBShader->End();
-   // 
-   //    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, TRUE);
-   //    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-   //    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
-   // 
    m_pin3d.m_pd3dDevice->EndScene();
    // display frame
    m_pin3d.Flip(vsync);
