@@ -1134,7 +1134,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
    }
 
    // Pre-render all non-changing elements such as 
-   // static walls, rails, backdrops, etc.
+   // static walls, rails, backdrops, etc. and also static playfield reflections
    InitStatic(hwndProgress);
 
    for (int i = 0; i < m_ptable->m_vedit.Size(); ++i)
@@ -1276,7 +1276,7 @@ void Player::RenderStaticMirror(const bool onlyBalls)
 
    if (!onlyBalls)
    {
-      SetClipPlanePlayfield();
+      m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CLIPPLANEENABLE, D3DCLIPPLANE0);
 
       D3DMATRIX viewMat;
       m_pin3d.m_pd3dDevice->GetTransform(TRANSFORMSTATE_VIEW, &viewMat);
@@ -1457,6 +1457,9 @@ void Player::InitStatic(HWND hwndProgress)
    }
 
    m_pin3d.InitPlayfieldGraphics();
+
+   // Initialize one User Clipplane to be the playfield (but not enabled yet)
+   SetClipPlanePlayfield();
 
    if (!cameraMode)
    {
@@ -2886,7 +2889,6 @@ void Player::SetClipPlanePlayfield()
 	const D3DXPLANE plane(0.0f, 0.0f, -1.0f, m_ptable->m_tableheight);
 	D3DXPlaneTransform(&clipSpacePlane, &plane, &m);
 	m_pin3d.m_pd3dDevice->GetCoreDevice()->SetClipPlane(0, clipSpacePlane);
-	m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CLIPPLANEENABLE, D3DCLIPPLANE0);
 }
 
 void Player::CheckAndUpdateRegions()
@@ -2917,7 +2919,7 @@ void Player::CheckAndUpdateRegions()
    {
 	   m_pin3d.m_pd3dDevice->BeginScene();
 
-	   SetClipPlanePlayfield();
+	   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CLIPPLANEENABLE, D3DCLIPPLANE0);
 	   RenderDynamicMirror(reflection_path == 1);
 	   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CLIPPLANEENABLE, 0); // disable playfield clipplane again
 
