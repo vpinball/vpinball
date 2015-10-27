@@ -87,9 +87,15 @@ struct VS_NOTEX_OUTPUT
    float3 normal   : TEXCOORD2;
 };
 
-struct VS_DEPTH_ONLY_OUTPUT 
+struct VS_DEPTH_ONLY_NOTEX_OUTPUT 
 { 
    float4 pos      : POSITION; 
+};
+
+struct VS_DEPTH_ONLY_TEX_OUTPUT
+{
+   float4 pos      : POSITION;
+   float2 tex0     : TEXCOORD0;
 };
 
 //------------------------------------
@@ -136,13 +142,24 @@ VS_NOTEX_OUTPUT vs_notex_main (float4 vPosition : POSITION0,
    return Out; 
 }
 
-VS_DEPTH_ONLY_OUTPUT vs_depth_only_main (float4 vPosition : POSITION0) 
+VS_DEPTH_ONLY_NOTEX_OUTPUT vs_depth_only_main_without_texture (float4 vPosition : POSITION0) 
 { 
-   VS_DEPTH_ONLY_OUTPUT Out;
+   VS_DEPTH_ONLY_NOTEX_OUTPUT Out;
 
    Out.pos = mul(vPosition, matWorldViewProj);
    
    return Out; 
+}
+
+VS_DEPTH_ONLY_TEX_OUTPUT vs_depth_only_main_with_texture(float4 vPosition : POSITION0,
+                                                         float2 tc : TEXCOORD0)
+{
+   VS_DEPTH_ONLY_TEX_OUTPUT Out;
+
+   Out.pos = mul(vPosition, matWorldViewProj);
+   Out.tex0 = tc;
+
+   return Out;
 }
 
 float4 ps_main(in VS_NOTEX_OUTPUT IN) : COLOR
@@ -209,9 +226,17 @@ float4 ps_main_texture(in VS_OUTPUT IN) : COLOR
    return result;
 }
 
-float4 ps_main_depth_only(in VS_DEPTH_ONLY_OUTPUT IN) : COLOR
+float4 ps_main_depth_only_without_texture(in VS_DEPTH_ONLY_NOTEX_OUTPUT IN) : COLOR
 {
     return float4(0.,0.,0.,1.);
+}
+
+float4 ps_main_depth_only_with_texture(in VS_DEPTH_ONLY_TEX_OUTPUT IN) : COLOR
+{
+   if (tex2D(texSampler0, IN.tex0).a <= fAlphaTestValue)
+      clip(-1);           //stop the pixel shader if alpha test should reject pixel
+
+   return float4(0., 0., 0., 1.);
 }
 
 //------------------------------------------
@@ -266,12 +291,21 @@ technique basic_with_texture
    } 
 }
 
-technique basic_depth_only
+technique basic_depth_only_without_texture
+{
+   pass P0
+   {
+      VertexShader = compile vs_3_0 vs_depth_only_main_without_texture();
+      PixelShader = compile ps_3_0 ps_main_depth_only_without_texture();
+   }
+}
+
+technique basic_depth_only_with_texture
 { 
    pass P0 
    { 
-      VertexShader = compile vs_3_0 vs_depth_only_main(); 
-      PixelShader = compile ps_3_0 ps_main_depth_only();
+      VertexShader = compile vs_3_0 vs_depth_only_main_with_texture(); 
+      PixelShader = compile ps_3_0 ps_main_depth_only_with_texture();
    } 
 }
 

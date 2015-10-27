@@ -222,8 +222,8 @@ HRESULT Pin3D::InitPin3D(const HWND hwnd, const bool fullScreen, const int width
 
    m_pddsZBuffer = m_pd3dDevice->AttachZBufferTo(m_pddsBackBuffer);
    m_pddsStaticZ = m_pd3dDevice->AttachZBufferTo(m_pddsStatic);
-   if (!m_pddsZBuffer || !m_pddsStaticZ)
-      return E_FAIL;
+   if (!m_pddsStatic || !m_pddsZBuffer || !m_pddsStaticZ)
+	   return E_FAIL;
 
    pinballEnvTexture.CreateFromResource(IDB_BALL);
 
@@ -633,16 +633,25 @@ void Pin3D::RenderPlayfieldGraphics(const bool depth_only)
 {
    TRACE_FUNCTION();
 
-   Texture * const pin = depth_only ? NULL : g_pplayer->m_ptable->GetImage((char *)g_pplayer->m_ptable->m_szImage);
+   const Material * const mat = g_pplayer->m_ptable->GetMaterial(g_pplayer->m_ptable->m_szPlayfieldMaterial);
+   Texture * const pin = (depth_only && (!mat || !mat->m_bOpacityActive)) ? NULL : g_pplayer->m_ptable->GetImage((char *)g_pplayer->m_ptable->m_szImage);
 
    if(depth_only)
    {
        m_pd3dDevice->SetRenderState(RenderDevice::COLORWRITEENABLE, 0); //m_pin3d.m_pd3dDevice->SetRenderTarget(NULL); // disable color writes
-       m_pd3dDevice->basicShader->SetTechnique("basic_depth_only");
+	   // even with depth-only rendering we have to take care of alpha textures (stencil playfield to see underlying objects)
+	   if (pin)
+	   {
+		   SetTextureFilter(0, TEXTURE_MODE_ANISOTROPIC);
+		   m_pd3dDevice->basicShader->SetTechnique("basic_depth_only_with_texture");
+		   m_pd3dDevice->basicShader->SetTexture("Texture0", pin);
+		   m_pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
+	   }
+	   else // No image by that name
+		   m_pd3dDevice->basicShader->SetTechnique("basic_depth_only_without_texture");
    }
    else
    {
-       Material *mat = g_pplayer->m_ptable->GetMaterial(g_pplayer->m_ptable->m_szPlayfieldMaterial);
        m_pd3dDevice->basicShader->SetMaterial(mat);
 
        if (pin)
@@ -662,7 +671,12 @@ void Pin3D::RenderPlayfieldGraphics(const bool depth_only)
    m_pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, tableVBuffer, 0, 4, tableIBuffer, 0, 6);
    m_pd3dDevice->basicShader->End();
 
-   if(!depth_only && pin)
+   if(depth_only && pin)
+   {
+	   SetTextureFilter(0, TEXTURE_MODE_TRILINEAR);
+	   m_pd3dDevice->basicShader->SetTechnique("basic_depth_only_without_texture");
+   }
+   else if(!depth_only && pin)
    {
       //m_pd3dDevice->basicShader->SetTexture("Texture0",(D3DTexture*)NULL);
       //m_pd3dDevice->m_texMan.UnloadTexture(pin->m_pdsBuffer); //!! is used by ball reflection later-on
