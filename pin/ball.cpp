@@ -169,18 +169,18 @@ void Ball::Collide3DWall(const Vertex3Ds& hitNormal, float elasticity, float ela
          ApplySurfaceImpulse(surfP, jt * tangent);
    }
 
-   if (scatter_angle < 0.0f) scatter_angle = c_hardScatter;         // if < 0 use global value
-   scatter_angle *= g_pplayer->m_ptable->m_globalDifficulty;        // apply difficulty weighting
+   if (scatter_angle < 0.0f) scatter_angle = c_hardScatter;  // if < 0 use global value
+   scatter_angle *= g_pplayer->m_ptable->m_globalDifficulty; // apply difficulty weighting
 
    if (dot > 1.0f && scatter_angle > 1.0e-5f) //no scatter at low velocity
    {
-      float scatter = rand_mt_m11();                                // -1.0f..1.0f
+      float scatter = rand_mt_m11();      // -1.0f..1.0f
       scatter *= (1.0f - scatter*scatter)*2.59808f * scatter_angle;	// shape quadratic distribution and scale
       const float radsin = sinf(scatter); // Green's transform matrix... rotate angle delta
       const float radcos = cosf(scatter); // rotational transform from current position to position at time t
       const float vxt = m_vel.x;
       const float vyt = m_vel.y;
-      m_vel.x = vxt *radcos - vyt *radsin;  // rotate to random scatter angle
+      m_vel.x = vxt *radcos - vyt *radsin;// rotate to random scatter angle
       m_vel.y = vyt *radcos + vxt *radsin;
    }
 }
@@ -355,7 +355,7 @@ void Ball::ApplyFriction(const Vertex3Ds& hitnormal, const float dtime, const fl
 {
    const Vertex3Ds surfP = -m_radius * hitnormal;    // surface contact point relative to center of mass
 
-   Vertex3Ds surfVel = SurfaceVelocity(surfP);
+   const Vertex3Ds surfVel = SurfaceVelocity(surfP);
    const Vertex3Ds slip = surfVel - surfVel.Dot(hitnormal) * hitnormal;       // calc the tangential slip velocity
 
    const float maxFric = fricCoeff * m_mass * -g_pplayer->m_gravity.Dot(hitnormal);
@@ -367,7 +367,7 @@ void Ball::ApplyFriction(const Vertex3Ds& hitnormal, const float dtime, const fl
    //if (slipspeed > 1e-6f)
 
    const float normVel = m_vel.Dot(hitnormal);
-   if ((normVel <= 0.f) || (slipspeed < C_PRECISION)) // check for <=0 originates from ball<->rubber collisions pushing the ball upwards
+   if((normVel <= 0.05f) || (slipspeed < C_PRECISION)) // check for <=0.05 originates from ball<->rubber collisions pushing the ball upwards
    {
       // slip speed zero - static friction case
 
@@ -395,7 +395,7 @@ void Ball::ApplyFriction(const Vertex3Ds& hitnormal, const float dtime, const fl
    const float fric = clamp(numer / denom, -maxFric, maxFric);
 
    if (!infNaN(fric))
-       ApplySurfaceImpulse(surfP, (dtime * fric) * slipDir);
+      ApplySurfaceImpulse(surfP, (dtime * fric) * slipDir);
 }
 
 Vertex3Ds Ball::SurfaceVelocity(const Vertex3Ds& surfP) const
