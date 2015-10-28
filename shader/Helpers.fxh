@@ -114,7 +114,7 @@ float4 OverlayHDR (const float4 cBase, const float4 cBlend)
 	
 	// interpolate between the two, 
 	// using color as influence value
-	cNew = lerp(cBase*cBlend*2.0, max(1.0-2.0*(1.0-cBase)*(1.0-cBlend), float4(0.,0.,0.,0.)), cNew);
+	cNew = max(lerp(cBase*cBlend*2.0, 1.0-2.0*(1.0-cBase)*(1.0-cBlend), cNew), float4(0.,0.,0.,0.));
 
 	//cNew.a = 1.0f;
 	return cNew;
