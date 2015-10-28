@@ -1298,7 +1298,7 @@ void Player::RenderStaticMirror(const bool onlyBalls)
       // render mirrored static elements
       for (int i = 0; i < m_ptable->m_vedit.Size(); i++)
       {
-         if (m_ptable->m_vedit.ElementAt(i)->GetItemType() != eItemDecal)
+         //if (m_ptable->m_vedit.ElementAt(i)->GetItemType() != eItemDecal) //!! Decals are all dynamic nowadays
          {
             Hitable * const ph = m_ptable->m_vedit.ElementAt(i)->GetIHitable();
             if (ph)
@@ -1329,7 +1329,7 @@ void Player::RenderStaticMirror(const bool onlyBalls)
    // render normal static elements also into mirrored z-buffer
    for (int i = 0; i < m_ptable->m_vedit.Size(); i++)
    {
-      if (m_ptable->m_vedit.ElementAt(i)->GetItemType() != eItemDecal)
+      //if (m_ptable->m_vedit.ElementAt(i)->GetItemType() != eItemDecal) //!! Decals are all dynamic nowadays
       {
          Hitable * const ph = m_ptable->m_vedit.ElementAt(i)->GetIHitable();
          if (ph)
@@ -1479,7 +1479,7 @@ void Player::InitStatic(HWND hwndProgress)
       // now render everything else
       for (int i = 0; i < m_ptable->m_vedit.Size(); i++)
       {
-         if (m_ptable->m_vedit.ElementAt(i)->GetItemType() != eItemDecal)
+         //if (m_ptable->m_vedit.ElementAt(i)->GetItemType() != eItemDecal) //!! Decals are all dynamic nowadays
          {
             Hitable * const ph = m_ptable->m_vedit.ElementAt(i)->GetIHitable();
             if (ph)
@@ -1492,7 +1492,8 @@ void Player::InitStatic(HWND hwndProgress)
       }
 
       // Draw decals (they have transparency, so they have to be drawn after the wall they are on)
-      for (int i = 0; i < m_ptable->m_vedit.Size(); i++)
+	  //!! Decals are all dynamic nowadays
+      /*for (int i = 0; i < m_ptable->m_vedit.Size(); i++)
       {
          if (m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemDecal)
          {
@@ -1504,7 +1505,7 @@ void Player::InitStatic(HWND hwndProgress)
                   SendMessage(hwndProgress, PBM_SETPOS, 75 + ((15 * i) / m_ptable->m_vedit.Size()), 0);
             }
          }
-      }
+      }*/
 
 	  // Finish the frame.
 	  m_pin3d.m_pd3dDevice->EndScene();
@@ -2823,7 +2824,7 @@ void Player::RenderDynamics()
 
       for (int i = 0; i < m_ptable->m_vedit.Size(); i++)
       {
-         if (m_ptable->m_vedit.ElementAt(i)->GetItemType() != eItemDecal)
+         //if (m_ptable->m_vedit.ElementAt(i)->GetItemType() != eItemDecal) //!! Decals are all dynamic nowadays
          {
             Hitable * const ph = m_ptable->m_vedit.ElementAt(i)->GetIHitable();
             if (ph)
@@ -2833,7 +2834,8 @@ void Player::RenderDynamics()
          }
       }
       // Draw decals (they have transparency, so they have to be drawn after the wall they are on)
-      for (int i = 0; i < m_ptable->m_vedit.Size(); i++)
+	  //!! Decals are all dynamic nowadays
+      /*for (int i = 0; i < m_ptable->m_vedit.Size(); i++)
       {
          if (m_ptable->m_vedit.ElementAt(i)->GetItemType() == eItemDecal)
          {
@@ -2843,7 +2845,7 @@ void Player::RenderDynamics()
                ph->RenderStatic(m_pin3d.m_pd3dDevice);
             }
          }
-      }
+      }*/
    }
 
    // Draw non-transparent objects.
