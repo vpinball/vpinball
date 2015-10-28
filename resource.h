@@ -317,12 +317,10 @@
 #define IDC_COL_UP_BUTTON               280
 #define IDC_ADD_BUTTON                  280
 #define IDC_BROWSE_BUTTON               280
-#define IDC_CVP_BUT_CANCEL              280
 #define IDC_ITEMLIST                    281
 #define IDC_OUT                         281
 #define IDC_SENDMAIL                    281
 #define IDC_LMAGSAVEBUTTON              281
-#define IDC_CVP_BUT_OK                  281
 #define IDC_EVENTLIST                   282
 #define IDC_OFFSETX                     282
 #define IDC_RIGHTMAGNASAVE              282
@@ -645,7 +643,6 @@
 #define IDC_GATE_REFLECT_ENABLED_CHECK  431
 #define IDC_PLUNGER_REFLECT_ENABLED_CHECK 431
 #define IDC_TRIGGER_REFLECT_ENABLED_CHECK 431
-#define IDC_CVP_CHECKBOX_VBS            431
 #define IDC_LIGHT_FALLOFF_POWER         432
 #define IDC_MODULATE_VS_ADD             433
 #define IDC_INTENSITY_SCALE_LIGHT       434
@@ -696,17 +693,11 @@
 #define IDC_CHECK3                      479
 #define IDC_CENTER_MESH                 479
 #define IDC_RUBBER_REFLECT_ENABLED_CHECK 479
-#define IDC_CVP_CHKB_SUBS               479
 #define IDC_IMPORT_MATERIAL             480
 #define IDC_COLLISION_REDUCTION_FACTOR  481
 #define IDC_PRIM_REFLECT_ENABLE_CHECK   483
 #define IDC_WALL_REFLECT_ENABLED_CHECK  484
-#define IDC_CVP_TITLE                   485
-#define IDC_CVP_CHKB_COMP               486
-#define IDC_CVP_CHKB_LITERALS           487
 #define IDC_CHECK5                      488
-#define IDC_CVP_CHKB_COMMENTS           488
-#define IDC_CVP_CHKB_VPCORE             489
 #define IDC_JOYLFLIPCOMBO               501
 #define IDC_JOYRFLIPCOMBO               502
 #define IDC_JOYPLUNGERCOMBO             503
@@ -801,6 +792,29 @@
 #define IDC_TRANSMISSION_SCALE          617
 #define IDC_EDGEALPHA_EDIT              618
 #define IDD_MESH_IMPORT_DIALOG          619
+#define IDC_CVP_BUT_CANCEL              701
+#define IDC_CVP_BUT_OK                  702
+#define IDC_CVP_BUT_COL_COMPS           703
+#define IDC_CVP_BUT_COL_SUBS            704
+#define IDC_CVP_BUT_COL_VBS             705
+#define IDC_CVP_BUT_COL_COMMENTS        706
+#define IDC_CVP_BUT_COL_LITERALS        707
+#define IDC_CVP_BUT_COL_VPCORE          708
+#define IDC_CVP_CHECKBOX_VBS            709
+#define IDC_CVP_CHKB_SUBS               710
+#define IDC_CVP_TITLE                   711
+#define IDC_CVP_CHKB_COMP               712
+#define IDC_CVP_CHKB_LITERALS           713
+#define IDC_CVP_CHKB_COMMENTS           714
+#define IDC_CVP_CHKB_VPCORE             715
+#define IDC_CVP_EXAMPLE_COMPS           716
+#define IDC_CVP_BUT_FONT_COMPS          716
+#define IDC_CVP_BUT_FONT_SUBS           717
+#define IDC_CVP_BUT_FONT_VBS            718
+#define IDC_CVP_BUT_FONT_COMMENTS       719
+#define IDC_CVP_BUT_FONT_LITERALS       720
+#define IDC_CVP_FONT_C_VPCORE           721
+#define IDC_CVP_BUT_FONT_VPCORE         721
 #define DISPID_Gate_Height1             1142
 #define DISPID_Image                    1500
 #define IDC_MESH_FILENAME_EDIT          1601
@@ -927,7 +941,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        620
 #define _APS_NEXT_COMMAND_VALUE         4003
-#define _APS_NEXT_CONTROL_VALUE         490
+#define _APS_NEXT_CONTROL_VALUE         717
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif

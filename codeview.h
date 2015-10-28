@@ -249,10 +249,11 @@ public:
 	CVPrefrence *prefComments;
 	CVPrefrence *prefLiterals;
 	CVPrefrence *prefVPcore ;
+	COLORREF g_PrefCols[16];
 
+	//User data keyword lists
 	bool g_ToolTipActive;
 	string vbsKeyWords;
-
 	vector<string> *g_AutoComp;
 	vector<UserData> *g_VBwords;
 	vector<UserData> *g_UserFunc;
