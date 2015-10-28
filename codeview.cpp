@@ -1506,11 +1506,11 @@ void CodeViewer::ShowAutoComplete()
 	int CurPos = SendMessage(m_hwndScintilla,SCI_GETCURRENTPOS,0,0);
 	int wordstart = SendMessage(m_hwndScintilla,SCI_WORDSTARTPOSITION,CurPos, TRUE);
 	int wordfinish = SendMessage(m_hwndScintilla,SCI_WORDENDPOSITION,CurPos, TRUE);
-	// 2. if word length >3 start auto complete
+	// 2. if word length >1 start auto complete
 	char pcWord[256] = {};
 	GetRange(m_hwndScintilla,wordstart,wordfinish,pcWord);
 	int intWordLen = strlen(pcWord);
-	if (intWordLen > 3)
+	if (intWordLen > 1)
 	{
 		const char * McStr = g_AutoCompList.c_str();
 		SendMessage(m_hwndScintilla,SCI_AUTOCSHOW,intWordLen,(LPARAM)McStr);
