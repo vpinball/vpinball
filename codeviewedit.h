@@ -22,25 +22,30 @@ class CVPrefrence;
 // CodeViewer Preferences 
 class CVPrefrence
 {
-private:
-
 public:
+	LOGFONT PrefLogFont;
 	const char* szControlName;
 	COLORREF rgb ;
-	bool b;
+	bool Highlight;
 	const char *szRegName;
-	int szSciKeywordID;
-	int IDC_code;
-
+	int SciKeywordID;
+	int IDC_ChkBox_code;
+	int IDC_ColorBut_code;
+	int IDC_Font_code;
 	CVPrefrence();
-	CVPrefrence* FillCVPreference(const char* szCtrlNameIn,const COLORREF &crTextColor, \
-		const bool &bDisplay,const char* szRegistryName,const int &szScintillaKeyword ,const int &IDControl_Code );
-	void GetShowFromReg();
-	void SetShowToReg();
-	void ColorText(const HWND hwndScin);
-	void SetCheckBox(const HWND hwndDlg);
-	void ReadCheckBox(const HWND hwndDlg);
+	CVPrefrence* FillCVPreference( \
+		const char* szCtrlNameIn,const COLORREF &crTextColor, \
+		const bool &bDisplay, const char* szRegistryName, \
+		const int &szScintillaKeyword, const int &IDC_ChkBox, \
+		const int &IDC_ColorBut, const int &IDC_Font);
+	void GetPrefsFromReg();
+	void SetPrefsToReg();
+	void SetColorText(const HWND &hwndScin);
+	void SetCheckBox(const HWND &hwndDlg);
+	void ReadCheckBox(const HWND &hwndDlg);
+	void SetDefaultFont();
+	void ApplyFontScin(const HWND &hwndScin);
 	~CVPrefrence();
 };
 
-#endif
+#endif //_CVEDIT_

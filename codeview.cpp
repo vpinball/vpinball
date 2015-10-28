@@ -434,33 +434,37 @@ void CodeViewer::Create()
 		i->strKeyName.at(0) = WordChar;	
 	}
 	///// Preferences
+	for (int i = 0 ; i<16 ; ++i)
+	{
+		g_PrefCols[i] = 0;
+	}
 	lPrefsList = new vector<CVPrefrence*>();
 	//vector<CVPrefrence*>::iterator iterPrefs = lPrefsList->begin();
 	prefVBS = new CVPrefrence();
-	prefVBS->FillCVPreference("VBs", RGB(0,0,160), true, "ShowVBS", SCE_B_KEYWORD, IDC_CVP_CHECKBOX_VBS);
-	prefVBS->GetShowFromReg();
+	prefVBS->FillCVPreference("VBs", RGB(0,0,160), true, "ShowVBS", SCE_B_KEYWORD, IDC_CVP_CHECKBOX_VBS, IDC_CVP_BUT_COL_VBS, IDC_CVP_BUT_FONT_VBS);
 	lPrefsList->push_back(prefVBS);
 	prefComps = new CVPrefrence();
-	prefComps->FillCVPreference("Components", RGB(120,120,0), true, "ShowComponents", SCE_B_KEYWORD3, IDC_CVP_CHKB_COMP);
-	prefComps->GetShowFromReg();
+	prefComps->FillCVPreference("Components", RGB(120,120,0), true, "ShowComponents", SCE_B_KEYWORD3, IDC_CVP_CHKB_COMP, IDC_CVP_BUT_COL_COMPS, IDC_CVP_BUT_FONT_COMPS);
 	lPrefsList->push_back(prefComps);
 	prefSubs = new CVPrefrence();
-	prefSubs->FillCVPreference("SubFuns", RGB(120,0,120), true, "ShowSubs", SCE_B_KEYWORD2, IDC_CVP_CHKB_SUBS);
-	prefSubs->GetShowFromReg();
+	prefSubs->FillCVPreference("SubFuns", RGB(120,0,120), true, "ShowSubs", SCE_B_KEYWORD2, IDC_CVP_CHKB_SUBS, IDC_CVP_BUT_COL_SUBS, IDC_CVP_BUT_FONT_SUBS);
 	lPrefsList->push_back(prefSubs);
 	prefComments = new CVPrefrence();
-	prefComments->FillCVPreference("Remarks", RGB(0,120,0), true, "ShowRemarks", SCE_B_COMMENT, IDC_CVP_CHKB_COMMENTS);
-	prefComments->GetShowFromReg();
+	prefComments->FillCVPreference("Remarks", RGB(0,120,0), true, "ShowRemarks", SCE_B_COMMENT, IDC_CVP_CHKB_COMMENTS, IDC_CVP_BUT_COL_COMMENTS, IDC_CVP_BUT_FONT_COMMENTS);
 	lPrefsList->push_back(prefComments);
 	prefLiterals = new CVPrefrence();
-	prefLiterals->FillCVPreference("Literals", RGB(0,120,160), true, "ShowLierals", SCE_B_STRING, IDC_CVP_CHKB_LITERALS);
-	prefLiterals->GetShowFromReg();
+	prefLiterals->FillCVPreference("Literals", RGB(0,120,160), true, "ShowLierals", SCE_B_STRING, IDC_CVP_CHKB_LITERALS, IDC_CVP_BUT_COL_LITERALS, IDC_CVP_BUT_FONT_LITERALS);
 	lPrefsList->push_back(prefLiterals);
 	prefVPcore = new CVPrefrence();
-	prefVPcore->FillCVPreference("VPcore", RGB(200,50,60), true, "ShowVPcore", SCE_B_KEYWORD4, IDC_CVP_CHKB_VPCORE);
-	prefVPcore->GetShowFromReg();
+	prefVPcore->FillCVPreference("VPcore", RGB(200,50,60), true, "ShowVPcore", SCE_B_KEYWORD4, IDC_CVP_CHKB_VPCORE, IDC_CVP_BUT_COL_VPCORE, IDC_CVP_BUT_FONT_VPCORE);
 	lPrefsList->push_back(prefVPcore);
-
+// load prefs from registory
+	for (size_t i = 0; i < lPrefsList->size(); ++i)
+	{
+		CVPrefrence* Pref = lPrefsList->at(i);
+		Pref->GetPrefsFromReg();
+		Pref->SetDefaultFont();
+	}
 	SendMessage(m_hwndScintilla, SCI_SETLEXER, (WPARAM)SCLEX_VBSCRIPT, 0);
 	//if still using old dll load VB lexer insted
 	//int lexVersion = SendMessage(m_hwndScintilla, SCI_GETLEXER, 0, 0);
@@ -507,8 +511,8 @@ void CodeViewer::Create()
    SendMessage(m_hwndScintilla, SCI_MARKERDEFINE, SC_MARKNUM_FOLDEROPENMID, SC_MARK_EMPTY);
    SendMessage(m_hwndScintilla, SCI_MARKERDEFINE, SC_MARKNUM_FOLDERMIDTAIL, SC_MARK_EMPTY);
 
-   SendMessage(m_hwndScintilla, SCI_STYLESETSIZE, 32, 10);
-   SendMessage(m_hwndScintilla, SCI_STYLESETFONT, 32, (LPARAM)"Courier");
+   SendMessage(m_hwndScintilla, SCI_STYLESETSIZE, STYLE_DEFAULT, 10);
+   SendMessage(m_hwndScintilla, SCI_STYLESETFONT, STYLE_DEFAULT, (LPARAM)"Courier");
    SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_DEFAULT, RGB(255, 0, 0));
 
    SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_PREPROCESSOR, RGB(255, 0, 0));
@@ -2034,8 +2038,10 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
    case WM_ACTIVATE:
    {
       if (LOWORD(wParam) != WA_INACTIVE)
+		{
          g_pvp->m_pcv = GetCodeViewerPtr(hwndDlg);
-		g_pvp->m_pcv->ParseForFunction();
+			g_pvp->m_pcv->ParseForFunction();
+		}
    }
    break;
 
@@ -2128,7 +2134,7 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
       {
          if (id == IDC_FUNCTIONLIST)
 			{
-	        CodeViewer * const pcv = GetCodeViewerPtr(hwndDlg);
+				CodeViewer * const pcv = GetCodeViewerPtr(hwndDlg);
 				pcv->ParseForFunction();
 			}
          break;
@@ -2320,11 +2326,12 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 		{
 			for (size_t i = 0; i < pcv->lPrefsList->size(); i++)
 			{
-				pcv->lPrefsList->at(i)->GetShowFromReg();
+				pcv->lPrefsList->at(i)->GetPrefsFromReg();
 				pcv->lPrefsList->at(i)->SetCheckBox(hwndDlg);
 			}
 			pcv->UpdateScinFromPrefs();
 		}
+		SetFocus(hwndDlg);
 		//#if !(defined(IMSPANISH) | defined(IMGERMAN) | defined(IMFRENCH))
 		//      HWND hwndTransName = GetDlgItem(hwndDlg, IDC_TRANSNAME);
 		//      ShowWindow(hwndTransName, SW_HIDE);
@@ -2334,7 +2341,6 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 		//      HWND hwndTransSite = GetDlgItem(hwndDlg, IDC_TRANSLATEWEBSITE);
 		//      ShowWindow(hwndTransSite, SW_HIDE);
 		//#endif
-    return TRUE;
 	}
    break; //case WM_INITDIALOG:
 
@@ -2346,74 +2352,112 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 			CodeViewer * const pcv = GetCodeViewerPtr(GetParent(hwndDlg));
 			if (pcv)
 			{
-				switch (LOWORD(wParam))
+				int wParamLowWord = LOWORD(wParam);
+				switch (wParamLowWord)
 				{
 				case IDC_CVP_BUT_CANCEL:
 					{
 						for (size_t i = 0; i < pcv->lPrefsList->size(); i++)
 						{
-							pcv->lPrefsList->at(i)->GetShowFromReg();
+							pcv->lPrefsList->at(i)->GetPrefsFromReg();
 						}
 						pcv->UpdateScinFromPrefs();
-						EndDialog(hwndDlg, TRUE);
+						EndDialog(hwndDlg, FALSE);
 					}
 					break;
-
 				case IDC_CVP_BUT_OK:
 					{
 						for (size_t i = 0; i < pcv->lPrefsList->size(); i++)
 						{
-							pcv->lPrefsList->at(i)->SetShowToReg();
+							pcv->lPrefsList->at(i)->SetPrefsToReg();
 						}
 						pcv->UpdateScinFromPrefs();
 						EndDialog(hwndDlg, TRUE);
 					}
 					break;
+				default:
+					for (size_t i = 0 ; i < pcv->lPrefsList->size(); ++i)
+					{
+						CVPrefrence* Pref = pcv->lPrefsList->at(i);
+						if (Pref->IDC_ChkBox_code == wParamLowWord)
+						{
+							Pref->ReadCheckBox(hwndDlg);
+							Pref->SetColorText(pcv->m_hwndScintilla);
+							break;
+						}
+						if (Pref->IDC_ColorBut_code == wParamLowWord)
+						{
+							CHOOSECOLOR cc;
+							cc.lStructSize = sizeof(CHOOSECOLOR);
+							cc.hwndOwner = hwndDlg;
+							cc.hInstance = NULL;
+							cc.rgbResult = Pref->rgb;
+							//SendMessage( GetParent(hwndDlg), GET_COLOR_TABLE, 0, (size_t)&cc.lpCustColors);
+							cc.lpCustColors = &pcv->g_PrefCols[0]; //(unsigned long *)SendMessage(hwndDlg, GET_COLOR_TABLE, 0, 0);//psb->m_pisel->GetPTable()->m_rgcolorcustom;//cr;
+							cc.Flags = CC_ANYCOLOR | CC_FULLOPEN | CC_RGBINIT;
+							cc.lCustData = NULL;
+							cc.lpfnHook = NULL;
+							cc.lpTemplateName = NULL;
+							if (ChooseColor(&cc))
+							{
+								const int id = GetDlgCtrlID(hwndDlg);
+								Pref->rgb = cc.rgbResult;
+								Pref->SetColorText(pcv->m_hwndScintilla);
+								break;
+							}
+						}
 
-				case IDC_CVP_CHECKBOX_VBS:
-					pcv->prefVBS->ReadCheckBox(hwndDlg);
-				break;
-				case IDC_CVP_CHKB_COMP:
-					pcv->prefComps->ReadCheckBox(hwndDlg);
-					break;
-				case IDC_CVP_CHKB_SUBS:
-					pcv->prefSubs->ReadCheckBox(hwndDlg);
-					break;
-				case IDC_CVP_CHKB_COMMENTS:
-					pcv->prefComments->ReadCheckBox(hwndDlg);
-					break;
-				case IDC_CVP_CHKB_LITERALS:
-					pcv->prefLiterals->ReadCheckBox(hwndDlg);
-					break;
-				case IDC_CVP_CHKB_VPCORE:
-					pcv->prefVPcore->ReadCheckBox(hwndDlg);
-					break;
-				//case IDC_CVP_COL_XXXX:
-				//	{
-				//		CHOOSECOLOR ccXXXX
-				//	}
-				//break;
+						if (Pref->IDC_Font_code == wParamLowWord)
+						{
+							CHOOSEFONT cf;
+							ZeroMemory(&cf,sizeof(CHOOSEFONT));
+							cf.lStructSize = sizeof(CHOOSEFONT);
+							cf.Flags = CF_FIXEDPITCHONLY | CF_NOVERTFONTS | CF_EFFECTS | CF_INITTOLOGFONTSTRUCT ;
+							//cf.hDC = NULL;
+							//cf.hInstance = NULL;
+							cf.hwndOwner = hwndDlg;
+							cf.iPointSize = 80;
+							//cf.lCustData = NULL;
+							cf.lpLogFont = &Pref->PrefLogFont;
+							cf.rgbColors = Pref->rgb;
+							//cf.lpfnHook = NULL;
+							//cf.lpTemplateName = NULL;
+							//cf.lpszStyle = NULL;
+							//cf.nFontType = NULL;
+							//cf.nSizeMax = 4;
+							//cf.nSizeMax = 30;
+							if (ChooseFont(&cf))
+							{
+								Pref->rgb = cf.rgbColors;
+								Pref->ApplyFontScin(pcv->m_hwndScintilla);
+								break;
+							}
+						}
+						
+					}// for pref
+
 				}// end switch Button clicked
-			 pcv->UpdateScinFromPrefs();
 			}// end if (pcv->prefVBS)
       }// end switch Hiword Wparam
-   }
+   }// case WM_COMMAND
    break;
    case WM_CLOSE:
       EndDialog(hwndDlg, TRUE);
-      break;
+   break;
    }
-   return FALSE;
+   return FALSE; // be selfish - consume all
+   //return DefWindowProc(hwndDlg, uMsg, wParam, lParam);
+
 }
 
 void CodeViewer::UpdateScinFromPrefs()
 {
-	prefVBS->ColorText(m_hwndScintilla);
-	prefSubs->ColorText(m_hwndScintilla);
-	prefComps->ColorText(m_hwndScintilla);
-	prefLiterals->ColorText(m_hwndScintilla);
-	prefComments->ColorText(m_hwndScintilla);
-	prefVPcore->ColorText(m_hwndScintilla);
+	prefVBS->SetColorText(m_hwndScintilla);
+	prefSubs->SetColorText(m_hwndScintilla);
+	prefComps->SetColorText(m_hwndScintilla);
+	prefLiterals->SetColorText(m_hwndScintilla);
+	prefComments->SetColorText(m_hwndScintilla);
+	prefVPcore->SetColorText(m_hwndScintilla);
 }
 
 Collection::Collection()

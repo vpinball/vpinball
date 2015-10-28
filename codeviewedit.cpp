@@ -153,55 +153,98 @@ bool UserData::FindOrInsertStringIntoAutolist(vector<string>* ListIn,const strin
 
 COLORREF g_crDefaultTextColor = 0;
 
+
 CVPrefrence::CVPrefrence()
 {
 		szControlName = nullptr;
 		rgb = 0;
-		b = false;
+		Highlight = false;
 		szRegName = nullptr;
-		szSciKeywordID = 0;
+		SciKeywordID = 0;
 
 }
 
-CVPrefrence* CVPrefrence::FillCVPreference(const char* szCtrlNameIn,const COLORREF &crTextColor, \
-		const bool &bDisplay,const char* szRegistryName,const int &szScintillaKeyword ,const int &IDControl_Code )
+CVPrefrence* CVPrefrence::FillCVPreference( \
+		const char* szCtrlNameIn,const COLORREF &crTextColor, \
+		const bool &bDisplay, const char* szRegistryName, \
+		const int &szScintillaKeyword, const int &IDC_ChkBox, \
+		const int &IDC_ColorBut, const int &IDC_Font)
 {
 	szControlName = szCtrlNameIn;
 	rgb = crTextColor;
-	b = bDisplay;
+	Highlight = bDisplay;
 	szRegName = szRegistryName;
-	szSciKeywordID = szScintillaKeyword;
-	IDC_code = IDControl_Code;
+	SciKeywordID = szScintillaKeyword;
+	IDC_ChkBox_code = IDC_ChkBox;
+	IDC_ColorBut_code = IDC_ColorBut;
+	IDC_Font_code = IDC_Font;
 	return (CVPrefrence *)this;
 }
 
-void CVPrefrence::SetCheckBox(const HWND hwndDlg)
+void CVPrefrence::SetCheckBox(const HWND &hwndDlg)
 {
-		const HWND hChkBox = GetDlgItem(hwndDlg,this->IDC_code);
-		SNDMSG(hChkBox, BM_SETCHECK, this->b ? BST_CHECKED : BST_UNCHECKED, 0L);
+		const HWND hChkBox = GetDlgItem(hwndDlg,this->IDC_ChkBox_code);
+		SNDMSG(hChkBox, BM_SETCHECK, this->Highlight ? BST_CHECKED : BST_UNCHECKED, 0L);
 }
 
-void CVPrefrence::ReadCheckBox(const HWND hwndDlg)
+void CVPrefrence::ReadCheckBox(const HWND &hwndDlg)
 {
-	if(IsDlgButtonChecked(hwndDlg,this->IDC_code))
-	{this->b = true;}
+	if(IsDlgButtonChecked(hwndDlg,this->IDC_ChkBox_code))
+	{this->Highlight = true;}
 	else
-	{this->b = false;}
+	{this->Highlight = false;}
 }
 
-void CVPrefrence::GetShowFromReg()
+void CVPrefrence::GetPrefsFromReg()
 {
-	this->b = GetRegBoolWithDefault("CVEdit",this->szRegName,true);
+	int intT = 0;
+	char RegEntry[33] = {0};
+	strcpy_s(RegEntry, this->szRegName);
+	this->Highlight = GetRegBoolWithDefault("CVEdit", RegEntry,true);
+	ZeroMemory(RegEntry, 33);
+	strcpy_s(RegEntry, this->szRegName);
+	strcat_s(RegEntry, "_color");
+	GetRegInt("CVEdit", RegEntry,&intT);
+	this->rgb = intT;
 }
 
-void CVPrefrence::SetShowToReg()
+void CVPrefrence::SetPrefsToReg()
 {
-	SetRegValueBool("CVEdit",this->szRegName,this->b);
+	int intT = 0;
+	char RegEntry[33] = {0};
+	strcpy_s(RegEntry, this->szRegName);
+	SetRegValueBool("CVEdit", RegEntry, this->Highlight);
+	ZeroMemory(RegEntry, 33);
+	strcpy_s(RegEntry, this->szRegName);
+	strcat_s(RegEntry, "_color");
+	intT = this->rgb;
+	SetRegValueInt("CVEdit", RegEntry,intT);
 }
 
-void CVPrefrence::ColorText(const HWND hwndScin)
+void CVPrefrence::SetColorText(const HWND &hwndScin)
 {
-	SendMessage(hwndScin, SCI_STYLESETFORE, this->szSciKeywordID,this->b ? this->rgb : g_crDefaultTextColor);
+	SendMessage(hwndScin, SCI_STYLESETFORE, this->SciKeywordID,this->Highlight ? this->rgb : g_crDefaultTextColor);
+}
+
+void CVPrefrence::SetDefaultFont()
+{
+	LOGFONT* plfont = &this->PrefLogFont;
+	ZeroMemory(plfont, sizeof(LOGFONT) );
+	HFONT hFont = (HFONT) GetStockObject(DEFAULT_GUI_FONT);
+	if (hFont == NULL)
+		hFont = (HFONT) GetStockObject(SYSTEM_FONT);
+	GetObject(hFont, sizeof(LOGFONT), plfont);
+	//StrCpy(plfont->lfFaceName, "Courier");
+	//plfont->lfHeight = 10;
+}
+
+void CVPrefrence::ApplyFontScin(const HWND &hwndScin)
+{
+	SendMessage(hwndScin, SCI_STYLESETFONT, this->SciKeywordID, (LPARAM)this->PrefLogFont.lfFaceName );
+	SendMessage(hwndScin, SCI_STYLESETSIZE, this->SciKeywordID, (ULONG)(this->PrefLogFont.lfHeight) );
+	SendMessage(hwndScin, SCI_STYLESETWEIGHT, this->SciKeywordID, (LPARAM)this->PrefLogFont.lfWeight );
+	SendMessage(hwndScin, SCI_STYLESETITALIC, this->SciKeywordID, (LPARAM)this->PrefLogFont.lfItalic );
+	SendMessage(hwndScin, SCI_STYLESETUNDERLINE, this->SciKeywordID, (LPARAM)this->PrefLogFont.lfUnderline );
 }
 
 CVPrefrence::~CVPrefrence()
