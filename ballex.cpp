@@ -341,6 +341,20 @@ STDMETHODIMP BallEx::put_PlayfieldReflectionScale(float newVal)
    return S_OK;
 }
 
+STDMETHODIMP BallEx::get_ForceReflection(VARIANT_BOOL *pVal)
+{
+    *pVal = (VARIANT_BOOL)FTOVB(m_pball->m_forceReflection);
+
+    return S_OK;
+}
+
+STDMETHODIMP BallEx::put_ForceReflection(VARIANT_BOOL newVal)
+{
+    m_pball->m_forceReflection = VBTOF(newVal);
+
+    return S_OK;
+}
+
 STDMETHODIMP BallEx::DestroyBall(int *pVal)
 {
    int cnt = 0;

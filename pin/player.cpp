@@ -3847,7 +3847,7 @@ void Player::DrawBalls()
 
       const float maxz = pball->m_defaultZ + 3.0f;
       const float minz = pball->m_defaultZ - 0.1f;
-      if ((m_fReflectionForBalls && pball->m_reflectionEnabled && (m_ptable->m_useReflectionForBalls == -1)) || (m_ptable->m_useReflectionForBalls == 1))
+      if ((m_fReflectionForBalls && pball->m_reflectionEnabled && !pball->m_forceReflection && (m_ptable->m_useReflectionForBalls == -1)) || (m_ptable->m_useReflectionForBalls == 1))
          // don't draw reflection if the ball is not on the playfield (e.g. on a ramp/kicker)
          drawReflection = !((zheight > maxz) || pball->m_frozen || (pball->m_pos.z < minz));
 
