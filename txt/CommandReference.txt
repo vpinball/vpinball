@@ -661,6 +661,7 @@ ID(int) - gets a unique ID for each ball created or allows to set an artificial 
 BulbIntensityScale(float) - allows to dampen/scale the intensity of (bulb-)light reflections on each ball (e.g. to simulate shadowing in the ball lane, etc)
 ReflectionEnabled(bool) - if playfield reflects objects this can be used to enable/disable the reflection for a specific ball
 PlayfieldReflectionScale(float) - allows to dampen/scale the contribution of the playfield reflections on each ball (see BallPlayfieldReflectionScale() for the Table)
+ForceReflection(bool) - if enabled the ball will be reflection on the playfield even it's on a ramp or an upper playfield. (default=0)
 
 RUBBER
 ==============================================================================================================================================

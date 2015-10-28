@@ -66,6 +66,8 @@ public:
    STDMETHOD(put_ReflectionEnabled)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_PlayfieldReflectionScale)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_PlayfieldReflectionScale)(/*[in]*/ float newVal);
+   STDMETHOD(get_ForceReflection)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   STDMETHOD(put_ForceReflection)(/*[in]*/ VARIANT_BOOL newVal);
 
    virtual void FireGroupEvent(int dispid) {}
    virtual IDispatch *GetDispatch() { return ((IDispatch *) this); }
