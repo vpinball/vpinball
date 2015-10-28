@@ -245,7 +245,7 @@ float4 psBall( in vout IN ) : COLOR
 	   ballImageColor = (ballImageColor+decalColor) * fenvEmissionScale_TexWidth.x;
 	}
 	else
-	   ballImageColor = Screen( saturate(ballImageColor), decalColor ) * (0.5*fenvEmissionScale_TexWidth.x); //!! 0.5=magic
+	   ballImageColor = ScreenHDR( ballImageColor, decalColor ) * (0.5*fenvEmissionScale_TexWidth.x); //!! 0.5=magic
 	
 	const float3 playfield_normal = mul(float4(0.,0.,1.,0.), matWorldViewInverseTranspose).xyz;
 	const float NdotR = dot(playfield_normal,r);
