@@ -813,8 +813,11 @@
 #define IDC_CVP_BUT_FONT_VBS            718
 #define IDC_CVP_BUT_FONT_COMMENTS       719
 #define IDC_CVP_BUT_FONT_LITERALS       720
-#define IDC_CVP_FONT_C_VPCORE           721
 #define IDC_CVP_BUT_FONT_VPCORE         721
+#define IDC_CVP_BUT_COL_EVERYTHINGELSE  724
+#define IDC_CVP_BUT_FONT_EVERYTHINGELSE 725
+#define IDC_CVP_BUT_COL_BACKGROUNDCOLOR 727
+#define IDC_CVP_BUT_COL_BACKGROUND      727
 #define DISPID_Gate_Height1             1142
 #define DISPID_Image                    1500
 #define IDC_MESH_FILENAME_EDIT          1601

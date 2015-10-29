@@ -438,8 +438,15 @@ void CodeViewer::Create()
 	{
 		g_PrefCols[i] = 0;
 	}
+	crBackColor= RGB(255,255,255);
 	lPrefsList = new vector<CVPrefrence*>();
-	//vector<CVPrefrence*>::iterator iterPrefs = lPrefsList->begin();
+
+	prefEverythingElse = new CVPrefrence();
+	prefEverythingElse->FillCVPreference("EverythingElse", RGB(0,0,0), true, "EverythingElse",  STYLE_DEFAULT, 0 , IDC_CVP_BUT_COL_EVERYTHINGELSE, IDC_CVP_BUT_FONT_EVERYTHINGELSE);
+	lPrefsList->push_back(prefEverythingElse);
+	prefDefault = new CVPrefrence();
+	prefDefault->FillCVPreference("Default", RGB(0,0,0), true, "Default", SCE_B_DEFAULT, 0 , 0, 0);
+	lPrefsList->push_back(prefDefault);
 	prefVBS = new CVPrefrence();
 	prefVBS->FillCVPreference("VBs", RGB(0,0,160), true, "ShowVBS", SCE_B_KEYWORD, IDC_CVP_CHECKBOX_VBS, IDC_CVP_BUT_COL_VBS, IDC_CVP_BUT_FONT_VBS);
 	lPrefsList->push_back(prefVBS);
@@ -458,14 +465,19 @@ void CodeViewer::Create()
 	prefVPcore = new CVPrefrence();
 	prefVPcore->FillCVPreference("VPcore", RGB(200,50,60), true, "ShowVPcore", SCE_B_KEYWORD4, IDC_CVP_CHKB_VPCORE, IDC_CVP_BUT_COL_VPCORE, IDC_CVP_BUT_FONT_VPCORE);
 	lPrefsList->push_back(prefVPcore);
-// load prefs from registory
+	// load prefs from registery
+
 	for (size_t i = 0; i < lPrefsList->size(); ++i)
 	{
 		CVPrefrence* Pref = lPrefsList->at(i);
+		Pref->SetDefaultFont(m_hwndMain);
 		Pref->GetPrefsFromReg();
-		Pref->SetDefaultFont();
 	}
+	crBackColor = GetRegIntWithDefault("CVEdit", "BackGroundColor", RGB(255,255,255));
+	UpdateScinFromPrefs();
+
 	SendMessage(m_hwndScintilla, SCI_SETLEXER, (WPARAM)SCLEX_VBSCRIPT, 0);
+	//WIP
 	//if still using old dll load VB lexer insted
 	//int lexVersion = SendMessage(m_hwndScintilla, SCI_GETLEXER, 0, 0);
 	//if (lexVersion != SCLEX_VP)
@@ -481,39 +493,52 @@ void CodeViewer::Create()
    // off the screen, the newly selected text is placed in the middle of the
    // screen
    SendMessage(m_hwndScintilla, SCI_SETVISIBLEPOLICY, 0, 0);
-
+	//Set up line numbering
    SendMessage(m_hwndScintilla, SCI_SETMARGINTYPEN, 0, SC_MARGIN_NUMBER);
    SendMessage(m_hwndScintilla, SCI_SETMARGINSENSITIVEN, 1, 1);
    SendMessage(m_hwndScintilla, SCI_SETMARGINWIDTHN, 0, 40);
-
+	//Cursor line dimmed
    SendMessage(m_hwndScintilla, SCI_SETCARETLINEVISIBLE, 1, 0);
    SendMessage(m_hwndScintilla, SCI_SETCARETLINEBACK, RGB(240, 240, 255), 0);
-
+	//Highlight Errors
    SendMessage(m_hwndScintilla, SCI_INDICSETSTYLE, 0, INDIC_ROUNDBOX);
    SendMessage(m_hwndScintilla, SCI_SETINDICATORCURRENT, 0, 0);
    SendMessage(m_hwndScintilla, SCI_INDICSETFORE, 0, RGB(255, 0, 0));
    SendMessage(m_hwndScintilla, SCI_INDICSETALPHA, 0, 90);
-
+	//Set up folding.
    SendMessage(m_hwndScintilla, SCI_SETPROPERTY, (WPARAM)"fold", (LPARAM)"1");
    SendMessage(m_hwndScintilla, SCI_SETPROPERTY, (WPARAM)"fold.compact", (LPARAM)"0");
+	//Set up folding margin
    SendMessage(m_hwndScintilla, SCI_SETMARGINTYPEN, 1, SC_MARGIN_SYMBOL);
    SendMessage(m_hwndScintilla, SCI_SETMARGINMASKN, 1, SC_MASK_FOLDERS);
    SendMessage(m_hwndScintilla, SCI_SETMARGINWIDTHN, 1, 20);
 
    SendMessage(m_hwndScintilla, SCI_MARKERDEFINE, SC_MARKNUM_FOLDEROPEN, SC_MARK_MINUS);
-   SendMessage(m_hwndScintilla, SCI_MARKERSETFORE, SC_MARKNUM_FOLDEROPEN, RGB(0, 0, 0));
-   SendMessage(m_hwndScintilla, SCI_MARKERSETBACK, SC_MARKNUM_FOLDEROPEN, RGB(255, 255, 255));
-
+	SendMessage(m_hwndScintilla, SCI_MARKERSETFORE, SC_MARKNUM_FOLDEROPEN, prefEverythingElse->rgb);
+	SendMessage(m_hwndScintilla, SCI_MARKERSETBACK, SC_MARKNUM_FOLDEROPEN, crBackColor);
+	//WIP markers
    SendMessage(m_hwndScintilla, SCI_MARKERDEFINE, SC_MARKNUM_FOLDER, SC_MARK_PLUS);
+	SendMessage(m_hwndScintilla, SCI_MARKERSETFORE, SC_MARKNUM_FOLDER, prefEverythingElse->rgb);
+	SendMessage(m_hwndScintilla, SCI_MARKERSETBACK, SC_MARKNUM_FOLDER, crBackColor);
    SendMessage(m_hwndScintilla, SCI_MARKERDEFINE, SC_MARKNUM_FOLDERSUB, SC_MARK_EMPTY);
+	SendMessage(m_hwndScintilla, SCI_MARKERSETFORE, SC_MARKNUM_FOLDERSUB, prefEverythingElse->rgb);
+	SendMessage(m_hwndScintilla, SCI_MARKERSETBACK, SC_MARKNUM_FOLDERSUB, crBackColor);
    SendMessage(m_hwndScintilla, SCI_MARKERDEFINE, SC_MARKNUM_FOLDERTAIL, SC_MARK_EMPTY);
+	SendMessage(m_hwndScintilla, SCI_MARKERSETFORE, SC_MARKNUM_FOLDERTAIL, prefEverythingElse->rgb);
+	SendMessage(m_hwndScintilla, SCI_MARKERSETBACK, SC_MARKNUM_FOLDERTAIL, crBackColor);
    SendMessage(m_hwndScintilla, SCI_MARKERDEFINE, SC_MARKNUM_FOLDEREND, SC_MARK_EMPTY);
+	SendMessage(m_hwndScintilla, SCI_MARKERSETFORE, SC_MARKNUM_FOLDEREND, prefEverythingElse->rgb);
+	SendMessage(m_hwndScintilla, SCI_MARKERSETBACK, SC_MARKNUM_FOLDEREND, crBackColor);
    SendMessage(m_hwndScintilla, SCI_MARKERDEFINE, SC_MARKNUM_FOLDEROPENMID, SC_MARK_EMPTY);
+	SendMessage(m_hwndScintilla, SCI_MARKERSETFORE, SC_MARKNUM_FOLDEROPENMID, prefEverythingElse->rgb);
+	SendMessage(m_hwndScintilla, SCI_MARKERSETBACK, SC_MARKNUM_FOLDEROPENMID, crBackColor);
    SendMessage(m_hwndScintilla, SCI_MARKERDEFINE, SC_MARKNUM_FOLDERMIDTAIL, SC_MARK_EMPTY);
+	SendMessage(m_hwndScintilla, SCI_MARKERSETFORE, SC_MARKNUM_FOLDERMIDTAIL, prefEverythingElse->rgb);
+	SendMessage(m_hwndScintilla, SCI_MARKERSETBACK, SC_MARKNUM_FOLDERMIDTAIL, crBackColor);
+
 
    SendMessage(m_hwndScintilla, SCI_STYLESETSIZE, STYLE_DEFAULT, 10);
    SendMessage(m_hwndScintilla, SCI_STYLESETFONT, STYLE_DEFAULT, (LPARAM)"Courier");
-   SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_DEFAULT, RGB(255, 0, 0));
 
    SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_PREPROCESSOR, RGB(255, 0, 0));
    SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_OPERATOR, RGB(0, 0, 160));
@@ -521,9 +546,9 @@ void CodeViewer::Create()
    SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_DATE, RGB(0, 0, 0));
 
 	SendMessage(m_hwndScintilla, SCI_SETWORDCHARS, 0,(LPARAM) "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_");
+	// WIP - The skint problem...
 	//SendMessage(m_hwndScintilla, SCI_SETWHITESPACECHARS,0,(LPARAM) ".");
 	//SendMessage(m_hwndScintilla, SCI_SETPUNCTUATIONCHARS,0 ,(LPARAM)".");
-	UpdateScinFromPrefs();
 
 	SendMessage(m_hwndScintilla, SCI_AUTOCSETIGNORECASE, TRUE, 0);
 	SendMessage(m_hwndScintilla, SCI_AUTOCSETCASEINSENSITIVEBEHAVIOUR, SC_CASEINSENSITIVEBEHAVIOUR_IGNORECASE,0);
@@ -581,6 +606,8 @@ void CodeViewer::Create()
 
 void CodeViewer::Destroy()
 {
+	if (prefEverythingElse) delete prefEverythingElse;
+	if (prefDefault) delete prefDefault;
 	if (prefVBS) delete prefVBS;
 	if (prefComps) delete prefComps;
 	if (prefSubs) delete prefSubs;
@@ -1793,7 +1820,7 @@ void CodeViewer::ParseForFunction() // Subs & Collections AndyS - WIP
 				idx = UCline.find("FUNCTION");
 				SearchLength =8;
 			}
-			if ((SSIZE_T)idx >= 0)
+			if (idx >= 0)
 			{
 				const int endIdx = UCline.find("END");
 				const int exitIdx = UCline.find("EXIT");
@@ -1882,7 +1909,7 @@ void CodeViewer::ParseForFunction() // Subs & Collections AndyS - WIP
 		g_AutoCompList += " ";
 	}
    //Send the collected func/subs to scintilla for highlighting - always lowercase as VBS is case insensitive.
-	//TODO: Need to comune with scintilla closer (COM pointers)
+	//TODO: Need to comune with scintilla closer (COM pointers??)
 	sSubFunOut = lowerCase(sSubFunOut);
 	SendMessage(m_hwndScintilla, SCI_SETKEYWORDS, 1, (LPARAM)sSubFunOut.c_str());
 	strCompOut = lowerCase(strCompOut);
@@ -2322,13 +2349,14 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
          (rcMain.bottom + rcMain.top) / 2 - (rcDlg.bottom - rcDlg.top) / 2,
          0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
 		CodeViewer* pcv = GetCodeViewerPtr(hwndParent);
-		if (pcv->prefVBS)
+		if (pcv->lPrefsList)
 		{
 			for (size_t i = 0; i < pcv->lPrefsList->size(); i++)
 			{
 				pcv->lPrefsList->at(i)->GetPrefsFromReg();
 				pcv->lPrefsList->at(i)->SetCheckBox(hwndDlg);
 			}
+			pcv->crBackColor = GetRegIntWithDefault("CVEdit", "BackGroundColor", RGB(255,255,255));
 			pcv->UpdateScinFromPrefs();
 		}
 		SetFocus(hwndDlg);
@@ -2356,86 +2384,134 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 				switch (wParamLowWord)
 				{
 				case IDC_CVP_BUT_CANCEL:
+				{
+					for (size_t i = 0; i < pcv->lPrefsList->size(); i++)
 					{
-						for (size_t i = 0; i < pcv->lPrefsList->size(); i++)
-						{
-							pcv->lPrefsList->at(i)->GetPrefsFromReg();
-						}
-						pcv->UpdateScinFromPrefs();
-						EndDialog(hwndDlg, FALSE);
+						pcv->lPrefsList->at(i)->GetPrefsFromReg();
 					}
-					break;
+					pcv->crBackColor = GetRegIntWithDefault("CVEdit", "BackGroundColor", RGB(255,255,255));
+					pcv->UpdateScinFromPrefs();
+					EndDialog(hwndDlg, FALSE);
+				}
+				break;
 				case IDC_CVP_BUT_OK:
+				{
+					for (size_t i = 0; i < pcv->lPrefsList->size(); i++)
 					{
-						for (size_t i = 0; i < pcv->lPrefsList->size(); i++)
-						{
-							pcv->lPrefsList->at(i)->SetPrefsToReg();
-						}
-						pcv->UpdateScinFromPrefs();
-						EndDialog(hwndDlg, TRUE);
+						pcv->lPrefsList->at(i)->SetPrefsToReg();
 					}
-					break;
+					SetRegValueInt("CVEdit", "BackGroundColor", pcv->crBackColor);
+					pcv->UpdateScinFromPrefs();
+					EndDialog(hwndDlg, TRUE);
+				}
+				break;
+				case IDC_CVP_BUT_COL_BACKGROUND:
+				{
+					CHOOSECOLOR cc;
+					memset(&cc, 0, sizeof(CHOOSECOLOR));
+					cc.lStructSize = sizeof(CHOOSECOLOR);
+					cc.hwndOwner = hwndDlg;
+					cc.rgbResult = pcv->crBackColor;
+					cc.lpCustColors = &pcv->g_PrefCols[0]; 
+					cc.Flags = CC_ANYCOLOR | CC_FULLOPEN | CC_RGBINIT;
+					if (ChooseColor(&cc))
+					{
+						pcv->crBackColor = cc.rgbResult;
+						pcv->UpdateScinFromPrefs();
+						return DefWindowProc(hwndDlg, uMsg, wParam, lParam);
+					}
+				}
+				break;
+				case IDC_CVP_BUT_COL_EVERYTHINGELSE:
+				{
+					CHOOSECOLOR cc;
+					memset(&cc, 0, sizeof(CHOOSECOLOR));
+					cc.lStructSize = sizeof(CHOOSECOLOR);
+					cc.hwndOwner = hwndDlg;
+					cc.rgbResult = pcv->prefEverythingElse->rgb;
+					cc.lpCustColors = &pcv->g_PrefCols[0]; 
+					cc.Flags = CC_ANYCOLOR | CC_FULLOPEN | CC_RGBINIT;
+					if (ChooseColor(&cc))
+					{
+						pcv->prefEverythingElse->rgb = cc.rgbResult;
+						pcv->UpdateScinFromPrefs();
+						return DefWindowProc(hwndDlg, uMsg, wParam, lParam);
+					}
+				}
+				break;
+				case IDC_CVP_BUT_FONT_EVERYTHINGELSE:
+				{
+					pcv->prefEverythingElse->LogFont.lfHeight = pcv->prefEverythingElse->GetHeightFromPointSize(hwndDlg);
+					CHOOSEFONT cf;
+					memset(&cf, 0, sizeof(CHOOSEFONT));
+					cf.lStructSize = sizeof(CHOOSEFONT);
+					cf.Flags = CF_NOVERTFONTS | CF_EFFECTS | CF_INITTOLOGFONTSTRUCT ;
+					cf.hDC = GetDC(hwndDlg);
+					cf.hwndOwner = hwndDlg;
+					cf.iPointSize = pcv->prefEverythingElse->PointSize * 10;
+					cf.lpLogFont = &(pcv->prefEverythingElse->LogFont);
+					cf.rgbColors = pcv->prefEverythingElse->rgb;
+					if (ChooseFont(&cf))
+					{
+						pcv->prefEverythingElse->rgb = cf.rgbColors;
+						pcv->prefEverythingElse->PointSize = cf.iPointSize / 10;
+						pcv->UpdateScinFromPrefs();
+						return DefWindowProc(hwndDlg, uMsg, wParam, lParam);
+					}
+				}
+				break;
 				default:
-					for (size_t i = 0 ; i < pcv->lPrefsList->size(); ++i)
+					//EverythingElse=0, default=1, consumed above
+					for (size_t i = 2 ; i < pcv->lPrefsList->size(); ++i)
 					{
 						CVPrefrence* Pref = pcv->lPrefsList->at(i);
-						if (Pref->IDC_ChkBox_code == wParamLowWord)
+						if (Pref->IDC_ChkBox_code == wParamLowWord)// && Pref->IDC_ChkBox_code != 0)
 						{
 							Pref->ReadCheckBox(hwndDlg);
-							Pref->SetColorText(pcv->m_hwndScintilla);
+							pcv->UpdateScinFromPrefs();
 							break;
 						}
+
 						if (Pref->IDC_ColorBut_code == wParamLowWord)
 						{
 							CHOOSECOLOR cc;
+							memset(&cc, 0, sizeof(CHOOSECOLOR));
 							cc.lStructSize = sizeof(CHOOSECOLOR);
 							cc.hwndOwner = hwndDlg;
-							cc.hInstance = NULL;
 							cc.rgbResult = Pref->rgb;
-							//SendMessage( GetParent(hwndDlg), GET_COLOR_TABLE, 0, (size_t)&cc.lpCustColors);
-							cc.lpCustColors = &pcv->g_PrefCols[0]; //(unsigned long *)SendMessage(hwndDlg, GET_COLOR_TABLE, 0, 0);//psb->m_pisel->GetPTable()->m_rgcolorcustom;//cr;
+							cc.lpCustColors = &pcv->g_PrefCols[0];
 							cc.Flags = CC_ANYCOLOR | CC_FULLOPEN | CC_RGBINIT;
-							cc.lCustData = NULL;
-							cc.lpfnHook = NULL;
-							cc.lpTemplateName = NULL;
 							if (ChooseColor(&cc))
 							{
-								const int id = GetDlgCtrlID(hwndDlg);
 								Pref->rgb = cc.rgbResult;
-								Pref->SetColorText(pcv->m_hwndScintilla);
-								break;
+								pcv->UpdateScinFromPrefs();
+								return DefWindowProc(hwndDlg, uMsg, wParam, lParam);
 							}
+							break;
 						}
 
 						if (Pref->IDC_Font_code == wParamLowWord)
 						{
+							Pref->LogFont.lfHeight = Pref->GetHeightFromPointSize(hwndDlg);
 							CHOOSEFONT cf;
-							ZeroMemory(&cf,sizeof(CHOOSEFONT));
+							memset(&cf, 0, sizeof(CHOOSEFONT));
 							cf.lStructSize = sizeof(CHOOSEFONT);
-							cf.Flags = CF_FIXEDPITCHONLY | CF_NOVERTFONTS | CF_EFFECTS | CF_INITTOLOGFONTSTRUCT ;
-							//cf.hDC = NULL;
-							//cf.hInstance = NULL;
+							cf.Flags = CF_NOVERTFONTS | CF_EFFECTS | CF_INITTOLOGFONTSTRUCT ;
+							cf.hDC = GetDC(hwndDlg);
 							cf.hwndOwner = hwndDlg;
-							cf.iPointSize = 80;
-							//cf.lCustData = NULL;
-							cf.lpLogFont = &Pref->PrefLogFont;
+							cf.iPointSize = Pref->PointSize * 10;
+							cf.lpLogFont = &Pref->LogFont;
 							cf.rgbColors = Pref->rgb;
-							//cf.lpfnHook = NULL;
-							//cf.lpTemplateName = NULL;
-							//cf.lpszStyle = NULL;
-							//cf.nFontType = NULL;
-							//cf.nSizeMax = 4;
-							//cf.nSizeMax = 30;
 							if (ChooseFont(&cf))
 							{
 								Pref->rgb = cf.rgbColors;
-								Pref->ApplyFontScin(pcv->m_hwndScintilla);
+								Pref->PointSize = cf.iPointSize / 10;
+								pcv->UpdateScinFromPrefs();
+								return DefWindowProc(hwndDlg, uMsg, wParam, lParam);
 								break;
 							}
 						}
-						
 					}// for pref
-
 				}// end switch Button clicked
 			}// end if (pcv->prefVBS)
       }// end switch Hiword Wparam
@@ -2452,12 +2528,18 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 
 void CodeViewer::UpdateScinFromPrefs()
 {
-	prefVBS->SetColorText(m_hwndScintilla);
-	prefSubs->SetColorText(m_hwndScintilla);
-	prefComps->SetColorText(m_hwndScintilla);
-	prefLiterals->SetColorText(m_hwndScintilla);
-	prefComments->SetColorText(m_hwndScintilla);
-	prefVPcore->SetColorText(m_hwndScintilla);
+	SendMessage(m_hwndScintilla, SCI_STYLESETBACK, prefEverythingElse->SciKeywordID, crBackColor);
+	prefEverythingElse->ApplyPreferences(m_hwndScintilla, prefEverythingElse);
+	SendMessage(m_hwndScintilla,SCI_STYLECLEARALL,0,0);
+	SendMessage(m_hwndScintilla, SCI_MARKERSETFORE, SC_MARKNUM_FOLDEROPEN, prefEverythingElse->rgb);
+	SendMessage(m_hwndScintilla, SCI_MARKERSETBACK, SC_MARKNUM_FOLDEROPEN, crBackColor);
+	prefDefault->ApplyPreferences(m_hwndScintilla, prefEverythingElse);
+	prefVBS->ApplyPreferences(m_hwndScintilla, prefEverythingElse);
+	prefSubs->ApplyPreferences(m_hwndScintilla, prefEverythingElse);
+	prefComps->ApplyPreferences(m_hwndScintilla, prefEverythingElse);
+	prefLiterals->ApplyPreferences(m_hwndScintilla, prefEverythingElse);
+	prefComments->ApplyPreferences(m_hwndScintilla, prefEverythingElse);
+	prefVPcore->ApplyPreferences(m_hwndScintilla, prefEverythingElse);
 }
 
 Collection::Collection()
