@@ -14,6 +14,7 @@ Decal::Decal()
    memset(m_d.m_szImage, 0, MAXTOKEN);
    memset(m_d.m_szMaterial, 0, 32);
    memset(m_d.m_szSurface, 0, MAXTOKEN);
+
 }
 
 Decal::~Decal()
@@ -441,7 +442,8 @@ void Decal::EndPlay()
 
 void Decal::PostRenderStatic(RenderDevice* pd3dDevice)
 {
-   RenderObject(pd3dDevice);
+   if (!m_fBackglass)
+      RenderObject(pd3dDevice);
 }
 
 static const WORD rgi0123[4] = { 0, 1, 2, 3 };
@@ -597,6 +599,8 @@ void Decal::RenderObject(RenderDevice* pd3dDevice)
 
 void Decal::RenderStatic(RenderDevice* pd3dDevice)
 {
+   if (m_fBackglass)
+      RenderObject(pd3dDevice);
 }
 
 void Decal::SetObjectPos()
