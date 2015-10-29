@@ -2885,7 +2885,7 @@ void Player::SetClipPlanePlayfield(const bool clip_orientation)
 	mT.Transpose();
 	D3DXMATRIX m(mT);
 	D3DXPLANE clipSpacePlane;
-	const D3DXPLANE plane(0.0f, 0.0f, clip_orientation ? -1.0f : 1.0f, m_ptable->m_tableheight);
+	const D3DXPLANE plane(0.0f, 0.0f, clip_orientation ? -1.0f : 1.0f, clip_orientation ? m_ptable->m_tableheight : -m_ptable->m_tableheight);
 	D3DXPlaneTransform(&clipSpacePlane, &plane, &m);
 	m_pin3d.m_pd3dDevice->GetCoreDevice()->SetClipPlane(0, clipSpacePlane);
 }
