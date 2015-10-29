@@ -35,10 +35,12 @@ WNDPROC g_RichEditProc;
 IScriptable::IScriptable()
 {
    m_wzName[0] = 0;
+   m_wzMatchName[0] = 0;
 }
 
 CodeViewDispatch::CodeViewDispatch()
 {
+   m_wzName[0] = 0;
 }
 
 CodeViewDispatch::~CodeViewDispatch()
@@ -1809,7 +1811,7 @@ void CodeViewer::ParseForFunction() // Subs & Collections AndyS - WIP
 			}
 			else
 			{
-				wholeline = "";
+				wholeline.clear();
 			}
 
 			int SearchLength =3;
@@ -1980,7 +1982,7 @@ void CodeViewer::ParseVPCore()
 			}
 			else
 			{
-				wholeline = "";
+				wholeline.clear();
 			}
 
 			int SearchLength =3;

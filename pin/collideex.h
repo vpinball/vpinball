@@ -24,6 +24,7 @@ public:
       SetFriction(0.3f);
       m_scatter = 0;
       m_bumperanim.m_fVisible = true;
+      m_pbumper = NULL;
    }
 
    virtual void Collide(CollisionEvent* coll);
@@ -57,7 +58,9 @@ public:
       SetFriction(0.3f);
       m_scatter = 0;
       m_doHitEvent=false;
+      m_force = 0.f;
       m_EventTimeReset=0;
+      m_psurface = NULL;
    }
 
    virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);

@@ -2906,17 +2906,18 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
       SaveMaterial *mats = (SaveMaterial*)malloc(sizeof(SaveMaterial)*m_materials.Size());
       for (int i = 0; i < m_materials.Size(); i++)
       {
-         mats[i].cBase = m_materials.ElementAt(i)->m_cBase;
-         mats[i].cGlossy = m_materials.ElementAt(i)->m_cGlossy;
-         mats[i].cClearcoat = m_materials.ElementAt(i)->m_cClearcoat;
-         mats[i].fWrapLighting = m_materials.ElementAt(i)->m_fWrapLighting;
-         mats[i].fRoughness = m_materials.ElementAt(i)->m_fRoughness;
-         mats[i].fEdge = m_materials.ElementAt(i)->m_fEdge;
-         mats[i].fOpacity = m_materials.ElementAt(i)->m_fOpacity;
-         mats[i].bIsMetal = m_materials.ElementAt(i)->m_bIsMetal;
-         mats[i].bOpacityActive_fEdgeAlpha = m_materials.ElementAt(i)->m_bOpacityActive ? 1 : 0;
-         mats[i].bOpacityActive_fEdgeAlpha |= ((unsigned char)(clamp(m_materials.ElementAt(i)->m_fEdgeAlpha, 0.f, 1.f)*127.f)) << 1;
-         strcpy_s(mats[i].szName, m_materials.ElementAt(i)->m_szName);
+         const Material* const m = m_materials.ElementAt(i);
+         mats[i].cBase = m->m_cBase;
+         mats[i].cGlossy = m->m_cGlossy;
+         mats[i].cClearcoat = m->m_cClearcoat;
+         mats[i].fWrapLighting = m->m_fWrapLighting;
+         mats[i].fRoughness = m->m_fRoughness;
+         mats[i].fEdge = m->m_fEdge;
+         mats[i].fOpacity = m->m_fOpacity;
+         mats[i].bIsMetal = m->m_bIsMetal;
+         mats[i].bOpacityActive_fEdgeAlpha = m->m_bOpacityActive ? 1 : 0;
+         mats[i].bOpacityActive_fEdgeAlpha |= ((unsigned char)(clamp(m->m_fEdgeAlpha, 0.f, 1.f)*127.f)) << 1;
+         strcpy_s(mats[i].szName, m->m_szName);
       }
       bw.WriteStruct(FID(MATE), mats, sizeof(SaveMaterial)*m_materials.Size());
       free(mats);

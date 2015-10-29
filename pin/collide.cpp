@@ -35,15 +35,6 @@ void HitObject::FireHitEvent(Ball* pball)
 }
 
 
-
-LineSeg::LineSeg(const Vertex2D& p1, const Vertex2D& p2, const float _zlow, const float _zhigh)
-   : v1(p1), v2(p2)
-{
-   m_rcHitRect.zlow = _zlow;
-   m_rcHitRect.zhigh = _zhigh;
-   CalcNormal();
-}
-
 void LineSeg::CalcHitRect()
 {
    // Allow roundoff

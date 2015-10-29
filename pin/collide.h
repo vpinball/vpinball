@@ -79,7 +79,7 @@ public:
 
    HitObject() : m_fEnabled(fTrue), m_ObjType(eNull), m_pObj(NULL),
       m_elasticity(0.3f), m_elasticityFalloff(0.0f), m_friction(0.3f), m_scatter(0.0f),
-      m_pfe(NULL), m_pfedebug(NULL), m_pe(NULL) {}
+      m_pfe(NULL), m_threshold(0.f), m_pfedebug(NULL), m_pe(NULL) {}
    virtual ~HitObject() {}
 
    virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll) { return -1.f; } //!! shouldn't need to do this, but for whatever reason there is a pure virtual function call triggered otherwise that refuses to be debugged
@@ -131,7 +131,13 @@ class LineSeg : public HitObject
 {
 public:
    LineSeg() { }
-   LineSeg(const Vertex2D& p1, const Vertex2D& p2, const float _zlow, const float _zhigh);
+   LineSeg(const Vertex2D& p1, const Vertex2D& p2, const float _zlow, const float _zhigh)
+       : v1(p1), v2(p2)
+   {
+      m_rcHitRect.zlow = _zlow;
+      m_rcHitRect.zhigh = _zhigh;
+      CalcNormal();
+   }
 
    virtual float HitTestBasic(const Ball * pball, const float dtime, CollisionEvent& coll, const bool direction, const bool lateral, const bool rigid);
    virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);

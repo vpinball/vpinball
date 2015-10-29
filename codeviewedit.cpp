@@ -36,7 +36,7 @@ bool UserData::FuncCompareUD (const UserData &first, const UserData &second)
 	  else if (strF[i]>strS[i]) return false;
     ++i;
   }
-  return ( strF.length() < strF.length() );
+  return ( strF.length() < strS.length() );
 }
 
 /*	FindUD - Binary Search.
@@ -51,7 +51,7 @@ int UserData::FindUD(vector<UserData>* ListIn, const string &strIn, vector<UserD
 	{
 		const unsigned int ListSize = (int)ListIn->size();
 		UINT32 iCurPos = (ListSize >> 1);
-		UINT32 iNewPos = 1u << 31;
+		int iNewPos = 1u << 31;
 		while ((!(iNewPos & ListSize)) && (iNewPos > 1))
       {
          iNewPos >>= 1;
@@ -109,7 +109,7 @@ bool UserData::FindOrInsertUD(vector<UserData>* ListIn,const UserData &udIn)
 	return false;//Oh pop poop, never should hit here.
 }
 
-bool UserData::FindOrInsertStringIntoAutolist(vector<string>* ListIn,const string strIn)
+bool UserData::FindOrInsertStringIntoAutolist(vector<string>* ListIn,const string &strIn)
 {
 	//First in the list
 	if (ListIn->empty())
