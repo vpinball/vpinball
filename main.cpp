@@ -248,7 +248,7 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
          // Remove " "
          if (filename[0] == '"') {
             strcpy_s(szTableFileName, filename + 1);
-            szTableFileName[lstrlen(szTableFileName)] = '\0';
+            szTableFileName[lstrlen(szTableFileName)-1] = '\0';
          }
          else
             strcpy_s(szTableFileName, filename);

@@ -13,7 +13,7 @@ public:
 	UserData(const int LineNo, const string &Desc, const string &Name);
 	bool FuncCompareUD (const UserData &first, const UserData &second);
 	string lowerCase(string input);
-	bool FindOrInsertStringIntoAutolist(vector<string>* ListIn, string strIn);
+	bool FindOrInsertStringIntoAutolist(vector<string>* ListIn, const string &strIn);
 	bool FindOrInsertUD( vector<UserData>* ListIn,const UserData& udIn);
 	int FindUD(vector<UserData>* ListIn, const string &strIn,vector<UserData>::iterator& UDiterOut);
 	~UserData();

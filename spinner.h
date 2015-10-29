@@ -95,7 +95,6 @@ public:
    HitSpinner *m_phitspinner;
 
 private:
-   Vertex3D_NoTex2 staticVertices[8];
    VertexBuffer *bracketVertexBuffer;
    IndexBuffer *bracketIndexBuffer;
    VertexBuffer *plateVertexBuffer;

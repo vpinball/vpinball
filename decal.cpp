@@ -782,7 +782,7 @@ void Decal::EnsureSize()
 {
    if (((m_d.m_sizingtype != AutoSize) ||
       (m_d.m_decaltype == DecalImage)) && (m_d.m_sizingtype != AutoWidth) ||
-      (m_d.m_decaltype == DecalText && (lstrlen(m_d.m_sztext) == 0)))
+      (m_d.m_decaltype == DecalText && (m_d.m_sztext[0] == '\0')))
    {
       m_realwidth = m_d.m_width;
       m_realheight = m_d.m_height;

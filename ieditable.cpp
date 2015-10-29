@@ -184,7 +184,7 @@ void IEditable::InitScript()
    if (!GetScriptable())
       return;
 
-   if (lstrlenW(GetScriptable()->m_wzName) == 0)
+   if (GetScriptable()->m_wzName[0] == '\0')
       // Just in case something screws up - not good having a null script name
       swprintf_s(GetScriptable()->m_wzName, L"%d", (long)this);
 
