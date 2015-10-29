@@ -1252,11 +1252,8 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 
 // reflection is split into two parts static and dynamic
 // for the static objects:
-//  1. switch to a temporary mirror texture/back buffer and mirror z-buffer (e.g. the static z-buffer)
-//  2. render the mirrored elements into these buffers (normal rendering)
-//  3. switch back to normal camera mode and disable color buffer rendering (render only depth)
-//  4. render all static elements (excluding the playfields depth update) again to fill the mirror z-buffer with the correct depth information
-//  5. use the mirror texture for blending the texture over the playfield in a later step and the depthbuffer for compositing during play
+//  1. switch to a temporary mirror texture/back buffer and a mirror z-buffer (e.g. the static z-buffer)
+//  2. render the mirrored elements into these buffers
 //
 // for the dynamic objects:
 //  1. use the previous mirror depthbuffer
@@ -1272,7 +1269,6 @@ void Player::RenderStaticMirror(const bool onlyBalls)
    m_pin3d.m_pd3dDevice->SetRenderTarget(tmpMirrorSurface);
 
    m_pin3d.m_pd3dDevice->Clear(0, NULL, D3DCLEAR_TARGET, 0, 1.0f, 0L);
-   m_pin3d.m_pd3dDevice->FBShader->SetFloat("mirrorFactor", (float)m_ptable->m_playfieldReflectionStrength*(float)(1.0/255.0));
 
    if (!onlyBalls)
    {
@@ -1323,23 +1319,6 @@ void Player::RenderStaticMirror(const bool onlyBalls)
 
       m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CLIPPLANEENABLE, 0); // disable playfield clipplane again
    }
-
-   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::COLORWRITEENABLE, 0); //m_pin3d.m_pd3dDevice->SetRenderTarget(NULL); // disable color writes
-
-   // render normal static elements also into mirrored z-buffer
-   for (int i = 0; i < m_ptable->m_vedit.Size(); i++)
-   {
-      if (m_ptable->m_vedit.ElementAt(i)->GetItemType() != eItemDecal)
-      {
-         Hitable * const ph = m_ptable->m_vedit.ElementAt(i)->GetIHitable();
-         if (ph)
-         {
-            ph->RenderStatic(m_pin3d.m_pd3dDevice);
-         }
-      }
-   }
-
-   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::COLORWRITEENABLE, 0x0000000Fu); // reenable color writes with default value
 
    m_pin3d.m_pd3dDevice->SetRenderTarget(m_pin3d.m_pddsStatic);
    SAFE_RELEASE_NO_RCC(tmpMirrorSurface);
@@ -1415,7 +1394,7 @@ void Player::RenderMirrorOverlay()
 {
    // render the mirrored texture over the playfield
    m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetMirrorTmpBufferTexture());
-
+   m_pin3d.m_pd3dDevice->FBShader->SetFloat("mirrorFactor", (float)m_ptable->m_playfieldReflectionStrength*(float)(1.0 / 255.0));
    m_pin3d.m_pd3dDevice->FBShader->SetTechnique("fb_mirror");
 
    m_pin3d.EnableAlphaBlend(false, false);
@@ -1430,6 +1409,7 @@ void Player::RenderMirrorOverlay()
 
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+   m_pin3d.DisableAlphaBlend();
 }
 
 void Player::InitStatic(HWND hwndProgress)
@@ -1514,6 +1494,8 @@ void Player::InitStatic(HWND hwndProgress)
 
       m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CLIPPLANEENABLE, 0);
       SetClipPlanePlayfield(true);
+
+      m_pin3d.DisableAlphaBlend();
    }
 
    // Finish the frame.
@@ -2803,9 +2785,6 @@ void Player::RenderDynamics()
 {
    TRACE_FUNCTION();
 
-   // Start rendering the next frame.
-   m_pin3d.m_pd3dDevice->BeginScene();
-
    if (cameraMode)
    {
       m_pin3d.InitLights();
@@ -2890,7 +2869,7 @@ void Player::SetClipPlanePlayfield(const bool clip_orientation)
 	m_pin3d.m_pd3dDevice->GetCoreDevice()->SetClipPlane(0, clipSpacePlane);
 }
 
-void Player::CheckAndUpdateRegions()
+void Player::CopyStaticAndAnimate()
 {
    //
    // copy static buffers to back buffer and z buffer
@@ -2903,7 +2882,6 @@ void Player::CheckAndUpdateRegions()
       m_vanimate.ElementAt(l)->Animate();
 
    unsigned int reflection_path = 0;
-
    if (!cameraMode)
    {
       const bool drawBallReflection = ((m_fReflectionForBalls && (m_ptable->m_useReflectionForBalls == -1)) || (m_ptable->m_useReflectionForBalls == 1));
@@ -2914,19 +2892,18 @@ void Player::CheckAndUpdateRegions()
          reflection_path = 2;
    }
 
-   if(reflection_path != 0)
-   {
-	   m_pin3d.m_pd3dDevice->BeginScene();
+   m_pin3d.m_pd3dDevice->BeginScene();
 
+   if (reflection_path != 0)
+   {
 	   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CLIPPLANEENABLE, D3DCLIPPLANE0);
 	   RenderDynamicMirror(reflection_path == 1);
 	   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CLIPPLANEENABLE, 0); // disable playfield clipplane again
 
 	   RenderMirrorOverlay();
-	   m_pin3d.RenderPlayfieldGraphics(true); // mirror depth buffer only contained static objects, but no playfield yet -> so render depth only to add this
-
-	   m_pin3d.m_pd3dDevice->EndScene();
    }
+
+   m_pin3d.RenderPlayfieldGraphics(true); // static depth buffer only contained static (&mirror) objects, but no playfield yet -> so render depth only to add this
 }
 
 void Player::Bloom()
@@ -3438,7 +3415,7 @@ void Player::Render()
 
    m_LastKnownGoodCounter++;
 
-   CheckAndUpdateRegions();
+   CopyStaticAndAnimate();
    RenderDynamics();
 
    // Check if we should turn animate the plunger light.

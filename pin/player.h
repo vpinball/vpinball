@@ -169,7 +169,7 @@ public:
    void RenderDynamics();
 
    void DrawBalls();
-   void CheckAndUpdateRegions();
+   void CopyStaticAndAnimate();
 
    void SetClipPlanePlayfield(const bool clip_orientation);
 
