@@ -243,13 +243,17 @@ public:
 
 	// CodeViewer Preferences
 	vector<CVPrefrence*> *lPrefsList;
+	CVPrefrence *prefDefault;
+	CVPrefrence *prefEverythingElse;
 	CVPrefrence *prefVBS;
 	CVPrefrence *prefComps;
 	CVPrefrence *prefSubs;
 	CVPrefrence *prefComments;
 	CVPrefrence *prefLiterals;
-	CVPrefrence *prefVPcore ;
+	CVPrefrence *prefVPcore;
 	COLORREF g_PrefCols[16];
+	COLORREF crBackColor;
+	void UpdateScinFromPrefs();
 
 	//User data keyword lists
 	bool g_ToolTipActive;
@@ -261,7 +265,6 @@ public:
 	vector<UserData> *g_VP_Core;
 	string g_AutoCompList;
 
-	void UpdateScinFromPrefs();
 	void ListEventsFromItem();
    void FindCodeFromEvent();
    void TellHostToSelectItem();

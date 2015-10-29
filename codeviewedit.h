@@ -18,13 +18,14 @@ public:
 	int FindUD(vector<UserData>* ListIn, const string &strIn,vector<UserData>::iterator& UDiterOut);
 	~UserData();
 };
-class CVPrefrence;
+
 // CodeViewer Preferences 
 class CVPrefrence
 {
 public:
-	LOGFONT PrefLogFont;
 	const char* szControlName;
+	LOGFONT LogFont;
+	int PointSize;
 	COLORREF rgb ;
 	bool Highlight;
 	const char *szRegName;
@@ -40,11 +41,11 @@ public:
 		const int &IDC_ColorBut, const int &IDC_Font);
 	void GetPrefsFromReg();
 	void SetPrefsToReg();
-	void SetColorText(const HWND &hwndScin);
 	void SetCheckBox(const HWND &hwndDlg);
 	void ReadCheckBox(const HWND &hwndDlg);
-	void SetDefaultFont();
-	void ApplyFontScin(const HWND &hwndScin);
+	void SetDefaultFont(const HWND &hwndDlg);
+	int GetHeightFromPointSize(const HWND &hwndDlg);
+	void ApplyPreferences(const HWND &hwndScin,const CVPrefrence* DefaultPref);
 	~CVPrefrence();
 };
 
