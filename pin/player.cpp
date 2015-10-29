@@ -1252,10 +1252,10 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 
 // reflection is split into two parts static and dynamic
 // for the static objects:
-//  1. switch to a temporary mirror texture/back buffer and mirror z-buffer (e.g. the standard depthbuffer)
+//  1. switch to a temporary mirror texture/back buffer and mirror z-buffer (e.g. the static z-buffer)
 //  2. render the mirrored elements into these buffers (normal rendering)
 //  3. switch back to normal camera mode and disable color buffer rendering (render only depth)
-//  4. render all static elements again to fill the mirror z-buffer with the correct depth information
+//  4. render all static elements (excluding the playfields depth update) again to fill the mirror z-buffer with the correct depth information
 //  5. use the mirror texture for blending the texture over the playfield in a later step and the depthbuffer for compositing during play
 //
 // for the dynamic objects:
@@ -1266,12 +1266,12 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 //  5. render all dynamic objects as normal
 void Player::RenderStaticMirror(const bool onlyBalls)
 {
-   // Direct all renders to the temporary mirror buffer (plus the standard z depthbuffer)
+   // Direct all renders to the temporary mirror buffer (plus the static z-buffer)
    RenderTarget *tmpMirrorSurface = NULL;
    m_pin3d.m_pd3dDevice->GetMirrorTmpBufferTexture()->GetSurfaceLevel(0, &tmpMirrorSurface);
-   m_pin3d.SetRenderTarget(tmpMirrorSurface, m_pin3d.m_pddsZBuffer);
+   m_pin3d.m_pd3dDevice->SetRenderTarget(tmpMirrorSurface);
 
-   m_pin3d.m_pd3dDevice->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, 0, 1.0f, 0L);
+   m_pin3d.m_pd3dDevice->Clear(0, NULL, D3DCLEAR_TARGET, 0, 1.0f, 0L);
    m_pin3d.m_pd3dDevice->FBShader->SetFloat("mirrorFactor", (float)m_ptable->m_playfieldReflectionStrength*(float)(1.0/255.0));
 
    if (!onlyBalls)
@@ -1341,7 +1341,7 @@ void Player::RenderStaticMirror(const bool onlyBalls)
 
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::COLORWRITEENABLE, 0x0000000Fu); // reenable color writes with default value
 
-   m_pin3d.SetRenderTarget(m_pin3d.m_pddsStatic, m_pin3d.m_pddsStaticZ);
+   m_pin3d.m_pd3dDevice->SetRenderTarget(m_pin3d.m_pddsStatic);
    SAFE_RELEASE_NO_RCC(tmpMirrorSurface);
 }
 
@@ -1459,11 +1459,10 @@ void Player::InitStatic(HWND hwndProgress)
    m_pin3d.InitPlayfieldGraphics();
 
    // Initialize one User Clipplane to be the playfield (but not enabled yet)
-   SetClipPlanePlayfield();
+   SetClipPlanePlayfield(true);
 
    if (!cameraMode)
    {
-	  // this will setup m_pin3d.m_pddsZBuffer which is then copied later-on below to the static zbuffer
       const bool drawBallReflection = ((m_fReflectionForBalls && (m_ptable->m_useReflectionForBalls == -1)) || (m_ptable->m_useReflectionForBalls == 1));
       if (!m_ptable->m_fReflectElementsOnPlayfield && drawBallReflection)
          RenderStaticMirror(true);
@@ -1471,10 +1470,17 @@ void Player::InitStatic(HWND hwndProgress)
          if (m_ptable->m_fReflectElementsOnPlayfield)
             RenderStaticMirror(false);
 
+      // exclude playfield depth as dynamic mirror objects have to be added later-on
+      m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
       m_pin3d.RenderPlayfieldGraphics(false);
+      m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
 
       if (m_ptable->m_fReflectElementsOnPlayfield)
          RenderMirrorOverlay();
+
+      // to compensate for this when rendering the static objects, enable clipplane
+      SetClipPlanePlayfield(false);
+      m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CLIPPLANEENABLE, D3DCLIPPLANE0);
 
       // now render everything else
       for (int i = 0; i < m_ptable->m_vedit.Size(); i++)
@@ -1506,19 +1512,12 @@ void Player::InitStatic(HWND hwndProgress)
          }
       }
 
-	  // Finish the frame.
-	  m_pin3d.m_pd3dDevice->EndScene();
-
-	  // copy the temporary mirror z-Buffer (e.g. normal backbuffer) to the static z-buffer for later use
-	  if (!m_ptable->m_fReflectElementsOnPlayfield && drawBallReflection)
-		  m_pin3d.m_pd3dDevice->CopySurface(m_pin3d.m_pddsStaticZ, m_pin3d.m_pddsZBuffer); // cannot be called inside BeginScene -> EndScene cycle
-	  else
-         if (m_ptable->m_fReflectElementsOnPlayfield)
-			m_pin3d.m_pd3dDevice->CopySurface(m_pin3d.m_pddsStaticZ, m_pin3d.m_pddsZBuffer); // cannot be called inside BeginScene -> EndScene cycle
+      m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CLIPPLANEENABLE, 0);
+      SetClipPlanePlayfield(true);
    }
-   else
-	   // Finish the frame.
-	   m_pin3d.m_pd3dDevice->EndScene();
+
+   // Finish the frame.
+   m_pin3d.m_pd3dDevice->EndScene();
 }
 
 Ball *Player::CreateBall(const float x, const float y, const float z, const float vx, const float vy, const float vz, const float radius, const float mass)
@@ -2879,14 +2878,14 @@ void Player::RenderDynamics()
    m_pin3d.m_pd3dDevice->EndScene();
 }
 
-void Player::SetClipPlanePlayfield()
+void Player::SetClipPlanePlayfield(const bool clip_orientation)
 {
 	Matrix3D mT = m_pin3d.m_proj.m_matrixTotal; // = world * view * proj
 	mT.Invert();
 	mT.Transpose();
 	D3DXMATRIX m(mT);
 	D3DXPLANE clipSpacePlane;
-	const D3DXPLANE plane(0.0f, 0.0f, -1.0f, m_ptable->m_tableheight);
+	const D3DXPLANE plane(0.0f, 0.0f, clip_orientation ? -1.0f : 1.0f, m_ptable->m_tableheight);
 	D3DXPlaneTransform(&clipSpacePlane, &plane, &m);
 	m_pin3d.m_pd3dDevice->GetCoreDevice()->SetClipPlane(0, clipSpacePlane);
 }
@@ -3121,7 +3120,6 @@ void Player::FlipVideoBuffersNormal(const bool vsync)
 
 void Player::FlipVideoBuffersAO(const bool vsync)
 {
-   const bool useAO = (m_fAO && (m_ptable->m_useAO == -1)) || (m_ptable->m_useAO == 1);
    const bool useAA = (m_fAA && (m_ptable->m_useAA == -1)) || (m_ptable->m_useAA == 1);
    const bool stereo = ((m_fStereo3D != 0) && m_fStereo3Denabled);
    const bool FXAA1 = (((m_fFXAA == 1) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == 1));
