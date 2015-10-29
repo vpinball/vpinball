@@ -171,7 +171,7 @@ public:
    void DrawBalls();
    void CheckAndUpdateRegions();
 
-   void SetClipPlanePlayfield();
+   void SetClipPlanePlayfield(const bool clip_orientation);
 
    void DrawBulbLightBuffer();
    void Bloom();
