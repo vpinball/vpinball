@@ -442,7 +442,9 @@ void Decal::EndPlay()
 
 void Decal::PostRenderStatic(RenderDevice* pd3dDevice)
 {
-   if (!m_fBackglass)
+   const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
+   if (!m_fBackglass //!! should just check if material has opacity enabled, but this is crucial for HV setup performance like-is
+      && mat && mat->m_bOpacityActive)
       RenderObject(pd3dDevice);
 }
 
@@ -599,7 +601,9 @@ void Decal::RenderObject(RenderDevice* pd3dDevice)
 
 void Decal::RenderStatic(RenderDevice* pd3dDevice)
 {
-   if (m_fBackglass)
+   const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
+   if (m_fBackglass //!! should just check if material has no opacity enabled, but this is crucial for HV setup performance like-is
+      || !mat || !mat->m_bOpacityActive)
       RenderObject(pd3dDevice);
 }
 
