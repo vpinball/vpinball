@@ -245,6 +245,7 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
    m_fDetectScriptHang = (detecthang == 1);
 
    m_fShowFPS = false;
+   m_staticOnly = false;
 
    m_fCloseDown = false;
    m_fCloseType = 0;
@@ -409,6 +410,8 @@ void Player::Shutdown()
 
 void Player::ToggleFPS()
 {
+   if (m_fShowFPS)
+      m_staticOnly = !m_staticOnly;
    m_fShowFPS = !m_fShowFPS;
    m_lastfpstime = m_time_msec;
    m_cframes = 0;
@@ -1037,6 +1040,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 #ifdef FPS
    ToggleFPS();
    m_fShowFPS = false;
+   m_staticOnly = false;
 #endif
 
    for (int i = 0; i < m_ptable->m_vedit.Size(); i++)
@@ -2785,6 +2789,35 @@ void Player::RenderDynamics()
 {
    TRACE_FUNCTION();
 
+   unsigned int reflection_path = 0;
+   if (!cameraMode)
+   {
+	   const bool drawBallReflection = ((m_fReflectionForBalls && (m_ptable->m_useReflectionForBalls == -1)) || (m_ptable->m_useReflectionForBalls == 1));
+
+	   if (!m_ptable->m_fReflectElementsOnPlayfield && drawBallReflection)
+		   reflection_path = 1;
+	   else if (m_ptable->m_fReflectElementsOnPlayfield)
+		   reflection_path = 2;
+   }
+
+   m_pin3d.m_pd3dDevice->BeginScene();
+
+   if (reflection_path != 0)
+   {
+	   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CLIPPLANEENABLE, D3DCLIPPLANE0);
+	   RenderDynamicMirror(reflection_path == 1);
+	   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CLIPPLANEENABLE, 0); // disable playfield clipplane again
+
+	   // depth-'remove' mirror objects from holes again for objects that vanish into the table //!! disabled as it will also look stupid and costs too much for this special case
+	   //m_pin3d.m_pd3dDevice->EndScene();
+	   //m_pin3d.m_pd3dDevice->CopySurface(m_pin3d.m_pddsZBuffer, m_pin3d.m_pddsStaticZ); // cannot be called inside BeginScene -> EndScene cycle
+	   //m_pin3d.m_pd3dDevice->BeginScene();
+
+	   RenderMirrorOverlay();
+   }
+
+   m_pin3d.RenderPlayfieldGraphics(true); // static depth buffer only contained static (&mirror) objects, but no playfield yet -> so render depth only to add this
+
    if (cameraMode)
    {
       m_pin3d.InitLights();
@@ -2880,30 +2913,6 @@ void Player::CopyStaticAndAnimate()
    // Process all AnimObjects (currently only DispReel, LightSeq and Slingshot)
    for (int l = 0; l < m_vanimate.Size(); ++l)
       m_vanimate.ElementAt(l)->Animate();
-
-   unsigned int reflection_path = 0;
-   if (!cameraMode)
-   {
-      const bool drawBallReflection = ((m_fReflectionForBalls && (m_ptable->m_useReflectionForBalls == -1)) || (m_ptable->m_useReflectionForBalls == 1));
-
-      if (!m_ptable->m_fReflectElementsOnPlayfield && drawBallReflection)
-         reflection_path = 1;
-      else if (m_ptable->m_fReflectElementsOnPlayfield)
-         reflection_path = 2;
-   }
-
-   m_pin3d.m_pd3dDevice->BeginScene();
-
-   if (reflection_path != 0)
-   {
-	   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CLIPPLANEENABLE, D3DCLIPPLANE0);
-	   RenderDynamicMirror(reflection_path == 1);
-	   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CLIPPLANEENABLE, 0); // disable playfield clipplane again
-
-	   RenderMirrorOverlay();
-   }
-
-   m_pin3d.RenderPlayfieldGraphics(true); // static depth buffer only contained static (&mirror) objects, but no playfield yet -> so render depth only to add this
 }
 
 void Player::Bloom()
@@ -3416,7 +3425,8 @@ void Player::Render()
    m_LastKnownGoodCounter++;
 
    CopyStaticAndAnimate();
-   RenderDynamics();
+   if(!m_fShowFPS || !m_staticOnly)
+      RenderDynamics();
 
    // Check if we should turn animate the plunger light.
    hid_set_output(HID_OUTPUT_PLUNGER, ((m_time_msec - m_LastPlungerHit) < 512) && ((m_time_msec & 512) > 0));
@@ -3492,18 +3502,13 @@ void Player::Render()
 
       // Draw the amount of video memory used.
       // Disabled in DX9 until we can compute this correctly.
-      int len = sprintf_s(szFoo, " Used Graphics Memory: %.2f MB ", (float)NumVideoBytes / (float)(1024 * 1024));
+      //int len = sprintf_s(szFoo, " Used Graphics Memory: %.2f MB ", (float)NumVideoBytes / (float)(1024 * 1024));
       // TextOut(hdcNull, 10, 30, szFoo, len);
 
       // Draw the framerate.
       const float fpsAvg = (m_fpsCount == 0) ? 0.0f : m_fpsAvg / m_fpsCount;
-      int len2 = sprintf_s(szFoo, " FPS: %.1f FPS(avg): %.1f", m_fps, fpsAvg);
-      if (len2 >= 0)
-      {
-         for (int l = len2; l < len + 1; ++l)
-            szFoo[l] = ' ';
-         TextOut(hdcNull, 10, 10, szFoo, len);
-      }
+      int len2 = sprintf_s(szFoo, " FPS: %.1f FPS(avg): %.1f  Display %s Objects ", m_fps, fpsAvg, m_staticOnly ? "only static" : "all");
+      TextOut(hdcNull, 10, 10, szFoo, len2);
 
       const U64 period = m_lastFrameDuration;
       if (period > m_max || m_time_msec - m_lastMaxChangeTime > 1000)
@@ -3549,40 +3554,40 @@ void Player::Render()
         }
 #endif
 
-        len = sprintf_s(szFoo, sizeof(szFoo), "period: %.1f ms (%.1f avg %.1f max)      ",
-           float(1e-3f*period), float(1e-3f*(m_total / m_count)), float(1e-3f*m_max));
+        int len = sprintf_s(szFoo, sizeof(szFoo), " Period: %.1f ms (%.1f avg %.1f max) ",
+           float(1e-3*period), float(1e-3*(m_total / m_count)), float(1e-3*m_max));
         TextOut(hdcNull, 10, 30, szFoo, len);
 
         // performance counters
-        len = sprintf_s(szFoo, sizeof(szFoo), "Draw calls: %u      ", m_pin3d.m_pd3dDevice->Perf_GetNumDrawCalls());
+        len = sprintf_s(szFoo, sizeof(szFoo), " Draw calls: %u ", m_pin3d.m_pd3dDevice->Perf_GetNumDrawCalls());
         TextOut(hdcNull, 10, 65, szFoo, len);
-        len = sprintf_s(szFoo, sizeof(szFoo), "State changes: %u      ", m_pin3d.m_pd3dDevice->Perf_GetNumStateChanges());
+        len = sprintf_s(szFoo, sizeof(szFoo), " State changes: %u ", m_pin3d.m_pd3dDevice->Perf_GetNumStateChanges());
         TextOut(hdcNull, 10, 85, szFoo, len);
-        len = sprintf_s(szFoo, sizeof(szFoo), "Texture changes: %u      ", m_pin3d.m_pd3dDevice->Perf_GetNumTextureChanges());
+        len = sprintf_s(szFoo, sizeof(szFoo), " Texture changes: %u ", m_pin3d.m_pd3dDevice->Perf_GetNumTextureChanges());
         TextOut(hdcNull, 10, 105, szFoo, len);
-        len = sprintf_s(szFoo, sizeof(szFoo), "Parameter changes: %u      ", m_pin3d.m_pd3dDevice->Perf_GetNumParameterChanges());
+        len = sprintf_s(szFoo, sizeof(szFoo), " Parameter changes: %u ", m_pin3d.m_pd3dDevice->Perf_GetNumParameterChanges());
         TextOut(hdcNull, 10, 125, szFoo, len);
-        len = sprintf_s(szFoo, sizeof(szFoo), "Objects: %u Trans, %u Solid      ", m_vHitTrans.size(), m_vHitNonTrans.size());
+        len = sprintf_s(szFoo, sizeof(szFoo), " Objects: %u Transparent, %u Solid ", m_vHitTrans.size(), m_vHitNonTrans.size());
         TextOut(hdcNull, 10, 145, szFoo, len);
 
 #ifdef _DEBUGPHYSICS
-        len = sprintf_s(szFoo, sizeof(szFoo), "physTimes %10u uS(%12u avg %12u max)    ",
+        len = sprintf_s(szFoo, sizeof(szFoo), " PhysTimes %10u uS (%12u avg %12u max) ",
            (U32)phys_period,
            (U32)(m_phys_total / m_count),
            (U32)m_phys_max );
         TextOut(hdcNull, 10, 180, szFoo, len);
 
-        len = sprintf_s(szFoo, sizeof(szFoo), "phys:%5u iterations(%5u avg %5u max))   ",
+        len = sprintf_s(szFoo, sizeof(szFoo), " Phys: %5u iterations (%5u avg %5u max)) ",
            phys_iterations,
            (U32)( m_phys_total_iterations / m_count ),
            (U32)m_phys_max_iterations );
         TextOut(hdcNull, 10, 200, szFoo, len);
 
-        len = sprintf_s(szFoo, sizeof(szFoo), "Hits:%5u Collide:%5u Ctacs:%5u Static:%5u Embed:%5u TimeSearch:%5u    ",
+        len = sprintf_s(szFoo, sizeof(szFoo), " Hits:%5u Collide:%5u Ctacs:%5u Static:%5u Embed:%5u TimeSearch:%5u ",
            c_hitcnts, c_collisioncnt, c_contactcnt, c_staticcnt, c_embedcnts, c_timesearch);
         TextOut(hdcNull, 10, 220, szFoo, len);
 
-        len = sprintf_s(szFoo, sizeof(szFoo), "OctObjects: %5u Octree:%5u QuadObjects: %5u Quadtree:%5u Traversed:%5u Tested:%5u DeepTested:%5u  ",
+        len = sprintf_s(szFoo, sizeof(szFoo), " OctObjects: %5u Octree:%5u QuadObjects: %5u Quadtree:%5u Traversed:%5u Tested:%5u DeepTested:%5u ",
            c_octObjects,c_octNextlevels,c_quadObjects,c_quadNextlevels,c_traversed,c_tested,c_deepTested);
         TextOut(hdcNull, 10, 240, szFoo, len);
 #endif

@@ -452,6 +452,7 @@ public:
 
    bool m_firstFrame;
    bool m_fShowFPS;
+   bool m_staticOnly;
 
    bool m_fStereo3DY;
 };
