@@ -60,6 +60,8 @@ void Ball::Init(const float mass)
 
    m_bulb_intensity_scale = 1.0f;
    m_playfieldReflectionStrength = 1.f;
+   m_reflectionEnabled = true;
+   m_forceReflection = false;
 
    m_coll.obj = NULL;
    m_dynamic = C_DYNAMIC; // assume dynamic
