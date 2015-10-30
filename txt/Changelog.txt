@@ -234,6 +234,7 @@ VP 10.0.0 Changelog
 
 - adaptive vsync works again, it will disable vsync automatically if FPS drop below monitor refresh rate (not on windows XP though due to missing functionality there)
   enable it by setting the FPS Limiter to 2 (1 will still be using 'real' VSync and any number above the monitor refresh rate (usually 60Hz) will just limit the FPS)
+  - additional note: remember to -not- disable Aero on Windows 7/8/10 to be able to use vsync!
 
 - optional texture compression to save some gfx video memory (at the cost of rendering quality and loading time)
   (for now the textures have to be a multiple of 4 in both x & y resolution to make them compressable.
@@ -271,6 +272,9 @@ VP 10.0.0 Changelog
                                 Blender transparency alpha value -> VP opacity amount
                                When imported the primitive has the imported material automatically assigned.
 							   Note that any textures aren't imported automatically though, this must be done as usual with the help of the image manager.
+
+- add additional debug mode when pressing F11 multiple times to visualize the content of only the static buffer.
+  this can be used to optimize for performance by trying to put as many elements as possible into this buffer
 
 - reactivate old VP9.0 easter egg (and improve it :))
 
