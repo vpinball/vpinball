@@ -1308,6 +1308,12 @@ void Player::RenderStaticMirror(const bool onlyBalls)
          }
       }
 
+      m_pin3d.DisableAlphaBlend();
+      m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0); //!! paranoia set of old state, remove as soon as sure that no other code still relies on that legacy set
+      m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+      m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::BLENDOP, D3DBLENDOP_ADD);
+      //m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+
       m_ptable->m_fReflectionEnabled = false;
       m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE); // re-init/thrash cache entry due to the hacky nature of the table mirroring
       m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
@@ -1372,6 +1378,12 @@ void Player::RenderDynamicMirror(const bool onlyBalls)
       for (unsigned int i = 0; i < m_vHitNonTrans.size(); ++i)
          m_vHitNonTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
    }
+
+   m_pin3d.DisableAlphaBlend();
+   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0); //!! paranoia set of old state, remove as soon as sure that no other code still relies on that legacy set
+   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+   m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::BLENDOP, D3DBLENDOP_ADD);
+   //m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 
    m_ptable->m_fReflectionEnabled = false;
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE); // re-init/thrash cache entry due to the hacky nature of the table mirroring
@@ -1496,10 +1508,14 @@ void Player::InitStatic(HWND hwndProgress)
          }
       }
 
+      m_pin3d.DisableAlphaBlend();
+      m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0); //!! paranoia set of old state, remove as soon as sure that no other code still relies on that legacy set
+      m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+      m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::BLENDOP, D3DBLENDOP_ADD);
+      m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+
       m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CLIPPLANEENABLE, 0);
       SetClipPlanePlayfield(true);
-
-      m_pin3d.DisableAlphaBlend();
    }
 
    // Finish the frame.
@@ -2716,6 +2732,11 @@ void Player::DrawBulbLightBuffer()
       for (unsigned int i = 0; i < m_vHitTrans.size(); ++i)
          if (m_vHitTrans[i]->RenderToLightBuffer())
             m_vHitTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
+
+      m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0); //!! paranoia set of old state, remove as soon as sure that no other code still relies on that legacy set
+      //m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+      m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::BLENDOP, D3DBLENDOP_ADD);
+      //m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 
       m_pin3d.DisableAlphaBlend();
       m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
