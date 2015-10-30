@@ -39,7 +39,7 @@ class DebuggerModule :
 
    STDMETHOD(Print)(VARIANT *pvar);
 
-   void Init(CodeViewer *pcv);
+   void Init(CodeViewer * const pcv);
 
    virtual IDispatch *GetDispatch();
 
@@ -97,26 +97,26 @@ public:
 
    void Create();
    void Destroy();
-   void SetVisible(BOOL fVisible);
+   void SetVisible(const BOOL fVisible);
 
-   void SetEnabled(BOOL fEnabled);
+   void SetEnabled(const BOOL fEnabled);
 
-   void SetClean(SaveDirtyState sds);
+   void SetClean(const SaveDirtyState sds);
 
    // Script Class
    STDMETHOD(CleanUpScriptEngine)();
    STDMETHOD(InitializeScriptEngine)();
 
-   HRESULT AddItem(IScriptable *piscript, BOOL fGlobal);
-   void RemoveItem(IScriptable *piscript);
-   HRESULT ReplaceName(IScriptable *piscript, WCHAR *wzNew);
-   void SelectItem(IScriptable *piscript);
+   HRESULT AddItem(IScriptable * const piscript, const BOOL fGlobal);
+   void RemoveItem(IScriptable * const piscript);
+   HRESULT ReplaceName(IScriptable * const piscript, WCHAR * const wzNew);
+   void SelectItem(IScriptable * const piscript);
 
    void Compile();
    void Start();
 
    void EndSession();
-   HRESULT AddTemporaryItem(BSTR bstr, IDispatch *pdisp);
+   HRESULT AddTemporaryItem(const BSTR bstr, IDispatch * const pdisp);
 
    STDMETHOD(GetItemInfo)(LPCOLESTR pstrName, DWORD dwReturnMask,
       IUnknown **ppiunkItem, ITypeInfo **ppti);
@@ -221,24 +221,24 @@ private:
 
 public:
    // Edit Class
-   void ColorLine(int line);
+   void ColorLine(const int line);
    void UncolorError();
-   void ColorError(int line, int nchar);
+   void ColorError(const int line, const int nchar);
    void ShowFindDialog();
    void ShowFindReplaceDialog();
-   void Find(FINDREPLACE *pfr);
-   void Replace(FINDREPLACE *pfr);
-   void SaveToStream(IStream *pistream, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey);	//<<< modified by chris as part of table protection
-   void LoadFromStream(IStream *pistream, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey);	//<<< modified by chris as part of table protection
-   void SetCaption(char *szCaption);
+   void Find(const FINDREPLACE * const pfr);
+   void Replace(const FINDREPLACE * const pfr);
+   void SaveToStream(IStream *pistream, HCRYPTHASH const hcrypthash, const HCRYPTKEY hcryptkey);	//<<< modified by chris as part of table protection
+   void LoadFromStream(IStream *pistream, HCRYPTHASH const hcrypthash, const HCRYPTKEY hcryptkey);	//<<< modified by chris as part of table protection
+   void SetCaption(const char * const szCaption);
 	string upperCase(string input);
 	string lowerCase(string input);
 
 	void ParseVPCore();
 	bool ShowTooltip(SCNotification *Scn);
 	void ShowAutoComplete();
-	void szLower(char * incstr);
-	void szUpper(char * incstr);
+	void szLower(char * const incstr);
+	void szUpper(char * const incstr);
 	void ParseForFunction();
 
 	// CodeViewer Preferences
@@ -268,12 +268,12 @@ public:
 	void ListEventsFromItem();
    void FindCodeFromEvent();
    void TellHostToSelectItem();
-   void GetParamsFromEvent(int iEvent, char *szParams);
+   void GetParamsFromEvent(const int iEvent, char * const szParams);
 
-   void MarginClick(int position, int modifiers);
+   void MarginClick(const int position, const int modifiers);
 
-   void EvaluateScriptStatement(char *szScript);
-   void AddToDebugOutput(char *szText);
+   void EvaluateScriptStatement(const char * const szScript);
+   void AddToDebugOutput(const char * const szText);
 
    CComObject<DebuggerModule> *m_pdm; // Object to expose to script for global functions
    //ULONG m_cref;
