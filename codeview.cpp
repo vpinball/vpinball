@@ -117,7 +117,7 @@ CodeViewer::~CodeViewer()
    m_pdm->Release();
 }
 
-void GetRange(HWND m_hwndScintilla, int start, int end, char *text)
+void GetRange(const HWND m_hwndScintilla, const int start, const int end, char * const text)
 {
    Sci_TextRange tr;
    tr.chrg.cpMin = start;
@@ -126,7 +126,7 @@ void GetRange(HWND m_hwndScintilla, int start, int end, char *text)
    SendMessage(m_hwndScintilla, SCI_GETTEXTRANGE, 0, (LPARAM)&tr);
 }
 
-void CodeViewer::SetClean(SaveDirtyState sds)
+void CodeViewer::SetClean(const SaveDirtyState sds)
 {
    if (sds == eSaveClean)
       SendMessage(m_hwndScintilla, SCI_SETSAVEPOINT, 0, 0);
@@ -145,7 +145,7 @@ void CodeViewer::EndSession()
    m_vcvdTemp.RemoveAllElements();
 }
 
-HRESULT CodeViewer::AddTemporaryItem(BSTR bstr, IDispatch *pdisp)
+HRESULT CodeViewer::AddTemporaryItem(const BSTR bstr, IDispatch * const pdisp)
 {
    CodeViewDispatch * const pcvd = new CodeViewDispatch();
 
@@ -173,7 +173,7 @@ HRESULT CodeViewer::AddTemporaryItem(BSTR bstr, IDispatch *pdisp)
    return S_OK;
 }
 
-HRESULT CodeViewer::AddItem(IScriptable *piscript, BOOL fGlobal)
+HRESULT CodeViewer::AddItem(IScriptable * const piscript, const BOOL fGlobal)
 {
    CodeViewDispatch * const pcvd = new CodeViewDispatch();
 
@@ -204,7 +204,7 @@ HRESULT CodeViewer::AddItem(IScriptable *piscript, BOOL fGlobal)
    return S_OK;
 }
 
-void CodeViewer::RemoveItem(IScriptable *piscript)
+void CodeViewer::RemoveItem(IScriptable * const piscript)
 {
    CComBSTR bstr;
    piscript->get_Name(&bstr);
@@ -229,7 +229,7 @@ void CodeViewer::RemoveItem(IScriptable *piscript)
    delete pcvd;
 }
 
-void CodeViewer::SelectItem(IScriptable *piscript)
+void CodeViewer::SelectItem(IScriptable * const piscript)
 {
    CComBSTR bstr;
    piscript->get_Name(&bstr);
@@ -243,7 +243,7 @@ void CodeViewer::SelectItem(IScriptable *piscript)
    ListEventsFromItem();
 }
 
-HRESULT CodeViewer::ReplaceName(IScriptable *piscript, WCHAR *wzNew)
+HRESULT CodeViewer::ReplaceName(IScriptable * const piscript, WCHAR * const wzNew)
 {
    if (m_vcvd.GetSortedIndex(wzNew) != -1)
       return E_FAIL;
@@ -327,7 +327,7 @@ STDMETHODIMP CodeViewer::CleanUpScriptEngine()
    return S_OK;
 }
 
-void CodeViewer::SetVisible(BOOL fVisible)
+void CodeViewer::SetVisible(const BOOL fVisible)
 {
    if (m_hwndFind && !fVisible)
    {
@@ -350,7 +350,7 @@ void CodeViewer::SetVisible(BOOL fVisible)
       0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 }
 
-void CodeViewer::SetEnabled(BOOL fEnabled)
+void CodeViewer::SetEnabled(const BOOL fEnabled)
 {
    SendMessage(m_hwndScintilla, SCI_SETREADONLY, !fEnabled, 0);
 
@@ -358,7 +358,7 @@ void CodeViewer::SetEnabled(BOOL fEnabled)
    EnableWindow(m_hwndEventList, fEnabled);
 }
 
-void CodeViewer::SetCaption(char *szCaption)
+void CodeViewer::SetCaption(const char * const szCaption)
 {
    char szT[_MAX_PATH];
    strcpy_s(szT, sizeof(szT), szCaption);
@@ -797,7 +797,7 @@ void CodeViewer::Start()
       m_pScript->SetScriptState(SCRIPTSTATE_CONNECTED);
 }
 
-void CodeViewer::EvaluateScriptStatement(char *szScript)
+void CodeViewer::EvaluateScriptStatement(const char * const szScript)
 {
    EXCEPINFO exception;
    ZeroMemory(&exception, sizeof(exception));
@@ -813,7 +813,7 @@ void CodeViewer::EvaluateScriptStatement(char *szScript)
    delete[] wzScript;
 }
 
-void CodeViewer::AddToDebugOutput(char *szText)
+void CodeViewer::AddToDebugOutput(const char * const szText)
 {
    SendMessage(g_pplayer->m_hwndDebugOutput, SCI_ADDTEXT, lstrlen(szText), (LPARAM)szText);
    SendMessage(g_pplayer->m_hwndDebugOutput, SCI_ADDTEXT, lstrlen("\n"), (LPARAM)"\n");
@@ -863,7 +863,7 @@ void CodeViewer::ShowFindReplaceDialog()
    }
 }
 
-void CodeViewer::Find(FINDREPLACE *pfr)
+void CodeViewer::Find(const FINDREPLACE * const pfr)
 {
    if (pfr->lStructSize == 0) // Our built-in signal that we are doing 'find next' and nothing has been searched for yet
       return;
@@ -951,7 +951,7 @@ void CodeViewer::Find(FINDREPLACE *pfr)
    }
 }
 
-void CodeViewer::Replace(FINDREPLACE *pfr)
+void CodeViewer::Replace(const FINDREPLACE * const pfr)
 {
    const size_t selstart = SendMessage(m_hwndScintilla, SCI_GETSELECTIONSTART, 0, 0);
    const size_t selend = SendMessage(m_hwndScintilla, SCI_GETSELECTIONEND, 0, 0);
@@ -1006,7 +1006,7 @@ next:
    }
 }
 
-void CodeViewer::SaveToStream(IStream *pistream, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+void CodeViewer::SaveToStream(IStream *pistream, const HCRYPTHASH hcrypthash, const HCRYPTKEY hcryptkey)
 {
    size_t cchar = SendMessage(m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
    const size_t bufferSize = cchar + 32;
@@ -1044,7 +1044,7 @@ void CodeViewer::SaveToStream(IStream *pistream, HCRYPTHASH hcrypthash, HCRYPTKE
    delete[] szText;
 }
 
-void CodeViewer::LoadFromStream(IStream *pistream, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
+void CodeViewer::LoadFromStream(IStream *pistream, const HCRYPTHASH hcrypthash, const HCRYPTKEY hcryptkey)
 {
    m_fIgnoreDirty = fTrue;
 
@@ -1097,7 +1097,7 @@ void CodeViewer::LoadFromStream(IStream *pistream, HCRYPTHASH hcrypthash, HCRYPT
    m_sdsDirty = eSaveClean;
 }
 
-void CodeViewer::ColorLine(int line)
+void CodeViewer::ColorLine(const int line)
 {
    //!!
 }
@@ -1112,7 +1112,7 @@ void CodeViewer::UncolorError()
    m_errorLineNumber = -1;
 }
 
-void CodeViewer::ColorError(int line, int nchar)
+void CodeViewer::ColorError(const int line, const int nchar)
 {
    m_errorLineNumber = line - 1;
 
@@ -1141,7 +1141,7 @@ void CodeViewer::TellHostToSelectItem()
    m_psh->SelectItem(pscript);
 }
 
-void CodeViewer::GetParamsFromEvent(int iEvent, char *szParams)
+void CodeViewer::GetParamsFromEvent(const int iEvent, char * const szParams)
 {
    szParams[0] = '\0';
 
@@ -1615,7 +1615,7 @@ bool CodeViewer::ShowTooltip(SCNotification *pSCN)
 	return false;
 }
 
-void CodeViewer::MarginClick(int position, int modifiers)
+void CodeViewer::MarginClick(const int position, const int modifiers)
 {
    const size_t lineClick = SendMessage(m_hwndScintilla, SCI_LINEFROMPOSITION, position, 0);
    if ((modifiers & SCMOD_SHIFT) && (modifiers & SCMOD_CTRL))
@@ -1657,7 +1657,7 @@ void CodeViewer::MarginClick(int position, int modifiers)
    }
 }
 
-void AddComment(HWND m_hwndScintilla)
+void AddComment(const HWND m_hwndScintilla)
 {
    char *comment = "'";
 
@@ -1696,7 +1696,7 @@ void AddComment(HWND m_hwndScintilla)
    SendMessage(m_hwndScintilla, SCI_ENDUNDOACTION, 0, 0);
 }
 
-void RemoveComment(HWND m_hwndScintilla)
+void RemoveComment(const HWND m_hwndScintilla)
 {
    char *comment = "\b";
    size_t startSel = SendMessage(m_hwndScintilla, SCI_GETSELECTIONSTART, 0, 0);
@@ -1751,7 +1751,7 @@ string CodeViewer::lowerCase(string input)
    return input;
 }
 
-void CodeViewer::szLower(char * incstr)
+void CodeViewer::szLower(char * const incstr)
 {
 	char *pC = incstr;
 	while (*pC)
@@ -1762,7 +1762,7 @@ void CodeViewer::szLower(char * incstr)
 	}
 }
 
-void CodeViewer::szUpper(char * incstr)
+void CodeViewer::szUpper(char * const incstr)
 {
 	char *pC = incstr;
 	while (*pC)
@@ -2753,7 +2753,7 @@ STDMETHODIMP OMCollectionEnum::Clone(IEnumVARIANT __RPC_FAR *__RPC_FAR *ppEnum)
    return hr;
 }
 
-void DebuggerModule::Init(CodeViewer *pcv)
+void DebuggerModule::Init(CodeViewer * const pcv)
 {
    m_pcv = pcv;
 }
