@@ -339,8 +339,9 @@ void HitQuadtree::HitTestBallSse(Ball * const pball, CollisionEvent& coll) const
             }
          }
       }
-
-      current = stack[stackpos--];
+      if (stackpos > 0)
+          stackpos--;
+      current = stack[stackpos];
    } while (current);
 }
 

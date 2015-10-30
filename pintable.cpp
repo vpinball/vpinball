@@ -2596,7 +2596,6 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm)
    {
       m_vsound.AddElement(pps);
    }
-
    return S_OK;
 }
 
@@ -6520,7 +6519,7 @@ void PinTable::ReImportImage(HWND hwndListView, Texture *ppi, char *filename)
    ppi->m_height = tex->height();
    ppi->m_pdsBuffer = tex;
 
-   lstrcpy(ppi->m_szPath, filename);
+   lstrcpyn(ppi->m_szPath, filename, MAX_PATH);
 }
 
 
@@ -6652,11 +6651,11 @@ void PinTable::ImportImage(HWND hwndListView, char *filename)
       end = len - 1;
    }
 
-   lstrcpy(ppi->m_szName, &filename[begin]);
+   lstrcpyn(ppi->m_szName, &filename[begin], MAXTOKEN);
 
    ppi->m_szName[end - begin] = 0;
 
-   lstrcpy(ppi->m_szInternalName, ppi->m_szName);
+   lstrcpyn(ppi->m_szInternalName, ppi->m_szName, MAXTOKEN);
 
    CharLowerBuff(ppi->m_szInternalName, lstrlen(ppi->m_szInternalName));
 

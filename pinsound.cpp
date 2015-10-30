@@ -159,11 +159,11 @@ PinSound *PinDirectSound::LoadWaveFile(TCHAR* strFileName)
       //OnEnablePlayUI( hDlg, TRUE );
    }
 
-   lstrcpy(pps->m_szPath, strFileName);
+   lstrcpyn(pps->m_szPath, strFileName, MAX_PATH);
 
    TitleFromFilename(strFileName, pps->m_szName);
 
-   lstrcpy(pps->m_szInternalName, pps->m_szName);
+   lstrcpyn(pps->m_szInternalName, pps->m_szName, MAXTOKEN);
 
    CharLowerBuff(pps->m_szInternalName, lstrlen(pps->m_szInternalName));
 

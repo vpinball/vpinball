@@ -2417,8 +2417,8 @@ INT_PTR CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
          lvitem.iSubItem = 0;
          ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
          PinSound *pps = (PinSound *)lvitem.lParam;
-         lstrcpy(pps->m_szName, pinfo->item.pszText);
-         lstrcpy(pps->m_szInternalName, pinfo->item.pszText);
+         lstrcpyn(pps->m_szName, pinfo->item.pszText, MAXTOKEN);
+         lstrcpyn(pps->m_szInternalName, pinfo->item.pszText, MAXTOKEN);
          CharLowerBuff(pps->m_szInternalName, lstrlen(pps->m_szInternalName));
          pt->SetNonUndoableDirty(eSaveDirty);
          return TRUE;
@@ -2848,8 +2848,8 @@ INT_PTR CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
          Texture * const ppi = (Texture *)lvitem.lParam;
          if (ppi != NULL)
          {
-            lstrcpy(ppi->m_szName, pinfo->item.pszText);
-            lstrcpy(ppi->m_szInternalName, pinfo->item.pszText);
+            lstrcpyn(ppi->m_szName, pinfo->item.pszText, MAXTOKEN);
+            lstrcpyn(ppi->m_szInternalName, pinfo->item.pszText, MAXTOKEN);
             CharLowerBuff(ppi->m_szInternalName, lstrlen(ppi->m_szInternalName));
             pt->SetNonUndoableDirty(eSaveDirty);
          }
@@ -8348,10 +8348,7 @@ void UpdateDrawingOrder(HWND hwndDlg, IEditable *ptr, bool up)
             ISelect *psel = pt->m_vmultisel.ElementAt(idx);
             pt->m_vmultisel.RemoveElementAt(idx);
 
-            if (idx - 1 < 0)
-               pt->m_vmultisel.InsertElementAt(psel, 0);
-            else
-               pt->m_vmultisel.InsertElementAt(psel, idx - 1);
+            pt->m_vmultisel.InsertElementAt(psel, idx - 1);
 
             for (int i = pt->m_vmultisel.Size() - 1; i >= 0; i--)
             {
@@ -8371,10 +8368,7 @@ void UpdateDrawingOrder(HWND hwndDlg, IEditable *ptr, bool up)
             ISelect *psel = pt->m_allHitElements.ElementAt(idx);
             pt->m_allHitElements.RemoveElementAt(idx);
 
-            if (idx - 1 < 0)
-               pt->m_allHitElements.InsertElementAt(psel, 0);
-            else
-               pt->m_allHitElements.InsertElementAt(psel, idx - 1);
+            pt->m_allHitElements.InsertElementAt(psel, idx - 1);
 
             for (int i = pt->m_allHitElements.Size() - 1; i >= 0; i--)
             {

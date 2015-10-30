@@ -689,6 +689,11 @@ void Plunger::RenderSetup(RenderDevice* pd3dDevice)
       // maps to the centerline of the top of the cylinder surface.
       // Work outwards on the texture to wrap it around the cylinder.
       float tu = 0.51f;
+
+      // prevent a div-by-zero
+      if (circlePoints == 0)
+          circlePoints = 1;
+
       const float stepU = 1.0f / (float)circlePoints;
       for (int l = 0, offset = 0; l < circlePoints; l++, offset += lathePoints, tu += stepU)
       {
