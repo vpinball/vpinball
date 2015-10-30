@@ -339,7 +339,7 @@ void Ramp::AssignHeightToControlPoint(const RenderVertex3D &v, float height)
  *  ppfCross     - size cvertex, true if i-th vertex corresponds to a control point
  *  ppratio      - how far along the ramp length the i-th vertex is, 1=start=bottom, 0=end=top (??)
  */
-Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** const ppfCross, float ** const ppratio, Vertex2D **pMiddlePoints, float _accuracy, bool forRendering)
+Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** const ppfCross, float ** const ppratio, Vertex2D **pMiddlePoints, const float _accuracy, const bool forRendering)
 {
    std::vector<RenderVertex3D> vvertex;
    GetCentralCurve(vvertex, _accuracy);
@@ -801,7 +801,7 @@ void Ramp::AddJoint(Vector<HitObject> * pvho, const Vertex3Ds& v1, const Vertex3
    SetupHitObject(pvho, new HitLine3D(v1, v2));
 }
 
-void Ramp::AddJoint2D(Vector<HitObject> * pvho, const Vertex2D& p, float zlow, float zhigh)
+void Ramp::AddJoint2D(Vector<HitObject> * pvho, const Vertex2D& p, const float zlow, const float zhigh)
 {
    SetupHitObject(pvho, new HitLineZ(p, zlow, zhigh));
 }
@@ -1210,8 +1210,8 @@ void Ramp::RenderStatic(RenderDevice* pd3dDevice)
     * with transparent textures. Probably the option should simply be renamed to ImageModeClamp,
     * since the texture coordinates always stay within [0,1] anyway.
     */
-   if (m_d.m_imagealignment == ImageModeWrap)
-      pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP);
+   //if (m_d.m_imagealignment == ImageModeWrap)
+   //    pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP);
 
    if (isHabitrail())
       RenderStaticHabitrail(pd3dDevice, mat);
