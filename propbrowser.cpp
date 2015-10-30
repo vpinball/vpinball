@@ -344,8 +344,11 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, Vector<ISelect> *pvsel)
    for (int i = (int)m_vhwndExpand.size() - 1; i >= 0; --i)
       SendMessage(m_vhwndExpand[i], EXPANDO_EXPAND, 1, 0);
 
-   for (int i = 0; i < m_pvsel->Size(); i++)
-      m_pvsel->ElementAt(i)->UpdatePropertyPanes();
+   if (m_pvsel)
+   {
+       for (int i = 0; i < m_pvsel->Size(); i++)
+           m_pvsel->ElementAt(i)->UpdatePropertyPanes();
+   }
 
 }
 

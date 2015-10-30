@@ -219,10 +219,12 @@ HRESULT Pin3D::InitPin3D(const HWND hwnd, const bool fullScreen, const int width
    // Create the "static" color buffer.  
    // This will hold a pre-rendered image of the table and any non-changing elements (ie ramps, decals, etc).
    m_pddsStatic = m_pd3dDevice->DuplicateRenderTarget(m_pddsBackBuffer);
+   if (!m_pddsStatic)
+       return E_FAIL;
 
    m_pddsZBuffer = m_pd3dDevice->AttachZBufferTo(m_pddsBackBuffer);
    m_pddsStaticZ = m_pd3dDevice->AttachZBufferTo(m_pddsStatic);
-   if (!m_pddsStatic || !m_pddsZBuffer || !m_pddsStaticZ)
+   if (!m_pddsZBuffer || !m_pddsStaticZ)
 	   return E_FAIL;
 
    pinballEnvTexture.CreateFromResource(IDB_BALL);

@@ -97,7 +97,7 @@ bool WaveFrontObjLoadMaterial(const char *filename, Material *mat)
       if (res == EOF)
       {
          fclose(f);
-         break;
+         return true;
       }
       if (strcmp(lineHeader, "newmtl") == 0)
       {

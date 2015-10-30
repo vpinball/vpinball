@@ -261,7 +261,7 @@ HRESULT CodeViewer::ReplaceName(IScriptable * const piscript, WCHAR * const wzNe
 
    m_vcvd.RemoveElementAt(idx);
 
-   lstrcpyW(pcvd->m_wzName, wzNew);
+   lstrcpynW(pcvd->m_wzName, wzNew, 32);
 
    m_vcvd.AddSortedString(pcvd);
 
