@@ -40,7 +40,7 @@ void PinBinary::ReadFromFile(char *szfilename)
 
    /*fFoo =*/ CloseHandle(hFile);
 
-   lstrcpy,(m_szPath, szfilename, MAX_PATH);
+   lstrcpyn(m_szPath, szfilename, MAX_PATH);
 
    TitleFromFilename(szfilename, m_szName);
 

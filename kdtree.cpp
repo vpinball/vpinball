@@ -573,9 +573,12 @@ void HitKDNode::HitTestBallSse(Ball * const pball, CollisionEvent& coll) const
                if (pball->m_rcHitRect.zhigh >= vcenter) stack[++stackpos] = current->m_children + 1;
             }
       }
-      current = stack[stackpos];
-      if (stackpos > 0)
-          stackpos--;
+
+      //current = stack[stackpos];
+      //if (stackpos > 0)
+      //    stackpos--;
+      current = stack[stackpos--]; // above test not needed due to sentinel in stack[0]=NULL
+
    } while (current);
 }
 #endif

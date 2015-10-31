@@ -93,7 +93,7 @@ public:
 
    void release(void)
    {
-      SAFE_RELEASE_NO_SET(this);
+      SAFE_RELEASE_NO_CHECK_NO_SET(this);
    }
 private:
    VertexBuffer();     // disable default constructor
@@ -127,7 +127,7 @@ public:
 
    void release(void)
    {
-      SAFE_RELEASE_NO_SET(this);
+      SAFE_RELEASE_NO_CHECK_NO_SET(this);
    }
 
 private:
