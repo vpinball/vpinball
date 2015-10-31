@@ -293,10 +293,13 @@ void VPinball::Init()
 
    RegisterClasses();											//TODO - brief description of what happens in the function
 
-   m_scintillaDll = LoadLibrary("SciLexer.DLL");
+	m_scintillaDll = LoadLibrary("SciLexerVP.DLL");
    if (m_scintillaDll == NULL)
-      ShowError("Unable to load SciLexer.DLL");
-
+	{
+		m_scintillaDll = LoadLibrary("SciLexer.DLL");
+		if (m_scintillaDll == NULL)
+			ShowError("Unable to load SciLexer.DLL");
+	}
    char szName[256];
    LoadString(g_hinst, IDS_PROJNAME, szName, 256);
    // loading String "Visual Pinball" from Exe properties

@@ -33,6 +33,7 @@ public:
 	int IDC_ChkBox_code;
 	int IDC_ColorBut_code;
 	int IDC_Font_code;
+
 	CVPrefrence();
 	CVPrefrence* FillCVPreference( \
 		const char* szCtrlNameIn,const COLORREF &crTextColor, \

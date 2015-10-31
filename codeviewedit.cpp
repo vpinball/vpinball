@@ -222,6 +222,10 @@ void CVPrefrence::GetPrefsFromReg()
 	strcpy_s(RegEntry, this->szRegName);
 	strcat_s(RegEntry, "_FontUnderline");
 	this->LogFont.lfUnderline = GetRegIntWithDefault( "CVEdit", RegEntry, this->LogFont.lfUnderline);
+	ZeroMemory(RegEntry, 33);
+	strcpy_s(RegEntry, this->szRegName);
+	strcat_s(RegEntry, "_FontStrike");
+	this->LogFont.lfStrikeOut = GetRegIntWithDefault( "CVEdit", RegEntry, this->LogFont.lfStrikeOut);
 }
 
 void CVPrefrence::SetPrefsToReg()
@@ -253,6 +257,10 @@ void CVPrefrence::SetPrefsToReg()
 	strcpy_s(RegEntry, this->szRegName);
 	strcat_s(RegEntry, "_FontUnderline");
 	SetRegValueInt( "CVEdit", RegEntry, this->LogFont.lfUnderline);
+	ZeroMemory(RegEntry, 33);
+	strcpy_s(RegEntry, this->szRegName);
+	strcat_s(RegEntry, "_FontStrike");
+	SetRegValueInt( "CVEdit", RegEntry, this->LogFont.lfStrikeOut);
 }
 
 void CVPrefrence::SetDefaultFont(const HWND &hwndDlg)
@@ -285,10 +293,11 @@ void CVPrefrence::ApplyPreferences(const HWND &hwndScin,const CVPrefrence* Defau
 	SendMessage(hwndScin, SCI_STYLESETWEIGHT, id, HL ? (LPARAM)this->LogFont.lfWeight : (LPARAM)DefaultPref->LogFont.lfWeight);
 	SendMessage(hwndScin, SCI_STYLESETITALIC, id, HL ? (LPARAM)this->LogFont.lfItalic : (LPARAM)DefaultPref->LogFont.lfItalic);
 	SendMessage(hwndScin, SCI_STYLESETUNDERLINE, id, HL ? (LPARAM)this->LogFont.lfUnderline : (LPARAM)DefaultPref->LogFont.lfUnderline);
+	// There is no strike through in Scintilla
 }
 
 CVPrefrence::~CVPrefrence()
 {
-	//everything should be automatically detroyed!
+	//everything should be automatically detroyed.
 }
 
