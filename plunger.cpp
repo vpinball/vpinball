@@ -683,16 +683,14 @@ void Plunger::RenderSetup(RenderDevice* pd3dDevice)
    {
       const float ytip = beginy + dyPerFrame*(float)i;
 
+      if(m_d.m_type != PlungerTypeFlat)
+      {
       // Go around in a circle starting at the top, stepping through
       // 'circlePoints' angles along the circle.  Start the texture
       // mapping in the middle, so that the centerline of the texture
       // maps to the centerline of the top of the cylinder surface.
       // Work outwards on the texture to wrap it around the cylinder.
       float tu = 0.51f;
-
-      // prevent a div-by-zero
-      if (circlePoints == 0)
-          circlePoints = 1;
 
       const float stepU = 1.0f / (float)circlePoints;
       for (int l = 0, offset = 0; l < circlePoints; l++, offset += lathePoints, tu += stepU)
@@ -739,6 +737,7 @@ void Plunger::RenderSetup(RenderDevice* pd3dDevice)
             pm->tu = tu;
             pm->tv = tv;
          }
+      }
       }
 
       // Build the flat plunger rectangle, if desired
