@@ -396,6 +396,16 @@ void CodeViewer::Create()
    m_hwndScintilla = CreateWindowEx(0, "Scintilla", "",
       WS_CHILD | ES_NOHIDESEL | WS_VISIBLE | ES_SUNKEN | WS_HSCROLL | WS_VSCROLL | ES_MULTILINE | ES_WANTRETURN,
       0, 10 + 32, 300, 290, m_hwndMain, NULL, g_hinst, 0);
+
+	//if still using old dll load VB lexer insted
+	//use SCI_SETLEXERLANGUAGE as SCI_GETLEXER doesn't return the correct value with SCI_SETLEXER
+	SendMessage(m_hwndScintilla, SCI_SETLEXERLANGUAGE, 0 , (LPARAM)"vpscript");
+	int lexVersion = SendMessage(m_hwndScintilla, SCI_GETLEXER, 0, 0);
+	if (lexVersion != SCLEX_VPSCRIPT)
+	{
+		SendMessage(m_hwndScintilla, SCI_SETLEXER, (WPARAM)SCLEX_VBSCRIPT, 0);
+	}
+
 // Create new list of user functions & Collections- filled in ParseForFunction(), first called in LoadFromStrem()
 	g_AutoComp = new vector<string>();
 	g_Components = new vector<UserData>();
@@ -478,14 +488,6 @@ void CodeViewer::Create()
 	crBackColor = GetRegIntWithDefault("CVEdit", "BackGroundColor", RGB(255,255,255));
 	UpdateScinFromPrefs();
 
-	SendMessage(m_hwndScintilla, SCI_SETLEXER, (WPARAM)SCLEX_VBSCRIPT, 0);
-	//WIP
-	//if still using old dll load VB lexer insted
-	//int lexVersion = SendMessage(m_hwndScintilla, SCI_GETLEXER, 0, 0);
-	//if (lexVersion != SCLEX_VP)
-	//{
-	//	SendMessage(m_hwndScintilla, SCI_SETLEXER, (WPARAM)SCLEX_VBSCRIPT, 0);
-	//}
    SendMessage(m_hwndScintilla, SCI_SETKEYWORDS, 0, (LPARAM)vbsReservedWords );
    SendMessage(m_hwndScintilla, SCI_SETTABWIDTH, 4, 0);
    SendMessage(m_hwndScintilla, SCI_SETMODEVENTMASK, SC_MOD_INSERTTEXT, 0);
