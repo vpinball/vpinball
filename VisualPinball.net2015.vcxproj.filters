@@ -78,6 +78,7 @@
     <ClCompile Include="inc\progmesh.cpp">
       <Filter>inc</Filter>
     </ClCompile>
+    <ClCompile Include="codeviewedit.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="vpinball.rc" />
@@ -701,6 +702,12 @@
     <ClInclude Include="inc\forsyth.h" />
     <ClInclude Include="inc\progmesh.h" />
     <ClInclude Include="inc\progmesh_vecmatquat_minimal.h" />
+    <ClInclude Include="codeviewedit.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\Sci_Position.h">
+      <Filter>headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="shader\BallShader.fx">

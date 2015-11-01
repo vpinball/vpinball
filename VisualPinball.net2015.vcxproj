@@ -355,6 +355,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="BlackBox.cpp" />
+    <ClCompile Include="codeviewedit.cpp" />
     <ClCompile Include="CrashHandler.cpp" />
     <ClCompile Include="flasher.cpp" />
     <ClCompile Include="inc\progmesh.cpp" />
@@ -1047,6 +1048,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="buildnumber.h" />
     <ClInclude Include="bumper.h" />
     <ClInclude Include="codeview.h" />
+    <ClInclude Include="codeviewedit.h" />
     <ClInclude Include="CrashHandler.h" />
     <ClInclude Include="decal.h" />
     <ClInclude Include="def.h" />
@@ -1091,6 +1093,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="inc\progmesh_vecmatquat_minimal.h" />
     <ClInclude Include="inc\scilexer.h" />
     <ClInclude Include="inc\scintilla.h" />
+    <ClInclude Include="inc\Sci_Position.h" />
     <ClInclude Include="inc\xaudio\aac_codec.h" />
     <ClInclude Include="inc\xaudio\audio_output.h" />
     <ClInclude Include="inc\xaudio\control.h" />
