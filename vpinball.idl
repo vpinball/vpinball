@@ -229,10 +229,9 @@ typedef [uuid(A5C333FD-0AD4-490a-BA6B-994CAB23501E)]
 typedef [uuid(C0E543A2-50B3-4546-85F8-4D35BFBE09A2)]
         enum KickerType
                 {
-                KickerHidden = 0,
+                KickerInvisible = 0,
                 KickerHole = 1,
                 KickerCup = 2,
-                KickerInvisible = 3,
                 }
                 KickerType;
 
