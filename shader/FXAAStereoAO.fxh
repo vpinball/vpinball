@@ -72,7 +72,7 @@ float4 ps_main_ao(in VS_OUTPUT_2D IN) : COLOR
 	const float falloff = 0.0002; //!!
 	const float radius = 0.007; //!!
 	const int samples = 9; //4,8,9,13,21,25 korobov,fibonacci
-	const float total_strength = AO_scale * (/*1.0 for uniform*/0.5 / samples);
+	const float total_strength = AO_scale_timeblur.x * (/*1.0 for uniform*/0.5 / samples);
 	const float3 normal = normalize(get_nonunit_normal(depth0, u));
 	const float radius_depth = radius/depth0;
 
@@ -94,7 +94,7 @@ float4 ps_main_ao(in VS_OUTPUT_2D IN) : COLOR
 				   +tex2Dlod(texSampler5, float4(u-w_h_height.xy*0.5, 0.,0.)).x
 				   +tex2Dlod(texSampler5, float4(u+float2(w_h_height.x,-w_h_height.y)*0.5, 0.,0.)).x
 				   +tex2Dlod(texSampler5, float4(u-float2(w_h_height.x,-w_h_height.y)*0.5, 0.,0.)).x)
-		*(0.25*0.5)+saturate(ao /*+base*/)*0.5, 0.,0.,0.);
+		*(0.25*(1.0-AO_scale_timeblur.y))+saturate(ao /*+base*/)*AO_scale_timeblur.y, 0.,0.,0.);
 }
 
 // stereo

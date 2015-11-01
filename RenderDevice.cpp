@@ -525,6 +525,11 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
    CreateVertexDeclaration(VertexTrafoTexelElement, &m_pVertexTrafoTexelDeclaration);
 }
 
+bool RenderDevice::DepthBufferReadBackAvailable()
+{
+   return NVAPIinit;
+}
+
 #ifdef _DEBUG
 static void CheckForD3DLeak(IDirect3DDevice9* d3d)
 {
