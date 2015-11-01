@@ -573,35 +573,35 @@ void CodeViewer::Create()
 
    m_hwndItemList = CreateWindowEx(0, "ComboBox", "Objects",
       WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL,
-      5, 17, 150, 400, m_hwndMain, NULL, g_hinst, 0);
+      5, 17, 180, 400, m_hwndMain, NULL, g_hinst, 0);
    SetWindowLong(m_hwndItemList, GWL_ID, IDC_ITEMLIST);
    SendMessage(m_hwndItemList, WM_SETFONT, (size_t)GetStockObject(DEFAULT_GUI_FONT), 0);
 
    m_hwndItemText = CreateWindowEx(0, "Static", "ObjectsText",
-		WS_CHILD | WS_VISIBLE | SS_SIMPLE, 5, 0, 150, 15, m_hwndMain, NULL, g_hinst, 0);
-	SetWindowText(m_hwndItemText, "Table component:" );
+		WS_CHILD | WS_VISIBLE | SS_SIMPLE, 5, 0, 180, 15, m_hwndMain, NULL, g_hinst, 0);
+   SetWindowText(m_hwndItemText, "Table component:" );
    SendMessage(m_hwndItemText, WM_SETFONT, (size_t)GetStockObject(DEFAULT_GUI_FONT), 0);
 
 	m_hwndEventList = CreateWindowEx(0, "ComboBox", "Events",
       WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL,
-      180 + 5, 17, 150, 400, m_hwndMain, NULL, g_hinst, 0);
+      210 + 5, 17, 180, 400, m_hwndMain, NULL, g_hinst, 0);
    SetWindowLong(m_hwndEventList, GWL_ID, IDC_EVENTLIST);
    SendMessage(m_hwndEventList, WM_SETFONT, (size_t)GetStockObject(DEFAULT_GUI_FONT), 0);
 
    m_hwndEventText = CreateWindowEx(0, "Static", "EventsText",
-		WS_CHILD | WS_VISIBLE | SS_SIMPLE, 180 + 5, 0, 150, 15, m_hwndMain, NULL, g_hinst, 0);
-	SetWindowText(m_hwndEventText, "Create Sub from component:" );
+		WS_CHILD | WS_VISIBLE | SS_SIMPLE, 210 + 5, 0, 180, 15, m_hwndMain, NULL, g_hinst, 0);
+   SetWindowText(m_hwndEventText, "Create Sub from component:" );
    SendMessage(m_hwndEventText, WM_SETFONT, (size_t)GetStockObject(DEFAULT_GUI_FONT), 0);
 	
 	m_hwndFunctionList = CreateWindowEx(0, "ComboBox", "Functions",
       WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | WS_VSCROLL,
-      360 + 5, 17, 150, 400, m_hwndMain, NULL, g_hinst, 0);
+      430 + 5, 17, 180, 400, m_hwndMain, NULL, g_hinst, 0);
    SetWindowLong(m_hwndFunctionList, GWL_ID, IDC_FUNCTIONLIST);
    SendMessage(m_hwndFunctionList, WM_SETFONT, (size_t)GetStockObject(DEFAULT_GUI_FONT), 0);
 
     m_hwndFunctionText = CreateWindowEx(0, "Static", "FunctionsText",
-		WS_CHILD | WS_VISIBLE | SS_SIMPLE, 360 + 5, 0, 150, 15, m_hwndMain, NULL, g_hinst, 0);
-	SetWindowText(m_hwndFunctionText, "Go to Sub/Function:" );
+		WS_CHILD | WS_VISIBLE | SS_SIMPLE, 430 + 5, 0, 180, 15, m_hwndMain, NULL, g_hinst, 0);
+   SetWindowText(m_hwndFunctionText, "Go to Sub/Function:" );
    SendMessage(m_hwndFunctionText, WM_SETFONT, (size_t)GetStockObject(DEFAULT_GUI_FONT), 0);
 	ParseVPCore();
 	UpdateScinFromPrefs();
