@@ -90,6 +90,7 @@ struct vout
 	float2 tex0        : TEXCOORD0;
 	float3 normal      : TEXCOORD1;
 	float3 worldPos    : TEXCOORD2;
+   float4 screenPos   : TEXCOORD3;
 };
 
 //vertex to pixel shader structure
@@ -105,6 +106,12 @@ struct voutTrail
 {
     float4 position	   : POSITION0;
     float3 tex0_alpha  : TEXCOORD0;
+};
+
+struct PS_OUTPUT
+{
+   float4 color:COLOR0;
+   float4 depth:COLOR1;
 };
 
 //------------------------------------
@@ -131,6 +138,7 @@ vout vsBall( in vin IN )
     OUT.tex0	 = IN.tex0;
 	OUT.normal   = normal;
 	OUT.worldPos = p;
+   OUT.screenPos = OUT.position;
 	return OUT;
 }
 
@@ -219,8 +227,10 @@ float3 ballLightLoop(float3 pos, float3 N, float3 V, float3 diffuse, float3 glos
 //------------------------------------
 // PIXEL SHADER
 
-float4 psBall( in vout IN ) : COLOR
+PS_OUTPUT psBall( in vout IN ) 
 {
+   PS_OUTPUT output;
+   output.depth = IN.screenPos.z/IN.screenPos.w;
     const float3 v = normalize(/*camera=0,0,0,1*/-IN.worldPos);
     const float3 r = reflect(v, normalize(IN.normal));
     // calculate the intermediate value for the final texture coords. found here http://www.ozone3d.net/tutorials/glsl_texturing_p04.php
@@ -283,8 +293,8 @@ float4 psBall( in vout IN ) : COLOR
     float4 result;
 	result.xyz = ballLightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular, 1.0);
 	result.a = cBase_Alpha.a;
-
-    return result;
+   output.color = result;
+    return output;
 }
 
 #if 0

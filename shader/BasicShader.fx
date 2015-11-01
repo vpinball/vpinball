@@ -77,6 +77,7 @@ struct VS_OUTPUT
    float2 tex1     : TEXCOORD1;
    float3 worldPos : TEXCOORD2; 
    float3 normal   : TEXCOORD3;
+   float4 screenPos: TEXCOORD4;
 };
 
 struct VS_NOTEX_OUTPUT 
@@ -85,6 +86,7 @@ struct VS_NOTEX_OUTPUT
    float2 tex1     : TEXCOORD0;
    float3 worldPos : TEXCOORD1; 
    float3 normal   : TEXCOORD2;
+   float4 screenPos: TEXCOORD3;
 };
 
 struct VS_DEPTH_ONLY_NOTEX_OUTPUT 
@@ -98,6 +100,11 @@ struct VS_DEPTH_ONLY_TEX_OUTPUT
    float2 tex0     : TEXCOORD0;
 };
 
+struct PS_OUTPUT
+{
+   float4 color:COLOR0;
+   float4 depth:COLOR1;
+};
 //------------------------------------
 //
 // Standard Materials
@@ -119,7 +126,7 @@ VS_OUTPUT vs_main (float4 vPosition : POSITION0,
       Out.tex1 = Out.pos.xy/Out.pos.w;
    Out.worldPos = P;
    Out.normal = N;
-   
+   Out.screenPos = Out.pos;
    return Out; 
 }
 
@@ -138,7 +145,7 @@ VS_NOTEX_OUTPUT vs_notex_main (float4 vPosition : POSITION0,
       Out.tex1 = Out.pos.xy/Out.pos.w;
    Out.worldPos = P;
    Out.normal = N;
-   
+   Out.screenPos = Out.pos;
    return Out; 
 }
 
@@ -162,10 +169,11 @@ VS_DEPTH_ONLY_TEX_OUTPUT vs_depth_only_main_with_texture(float4 vPosition : POSI
    return Out;
 }
 
-float4 ps_main(in VS_NOTEX_OUTPUT IN) : COLOR
+PS_OUTPUT ps_main(in VS_NOTEX_OUTPUT IN) 
 {
    //return float4((IN.normal+1.0)*0.5,1.0); // visualize normals
-   
+   PS_OUTPUT output;
+   output.depth = IN.screenPos.z/IN.screenPos.w;
    const float3 diffuse  = cBase_Alpha.xyz;
    const float3 glossy   = (Roughness_WrapL_Edge_IsMetal.w != 0.0) ? cBase_Alpha.xyz : cGlossy*0.08;
    const float3 specular = cClearcoat_EdgeAlpha.xyz*0.08;
@@ -185,13 +193,14 @@ float4 ps_main(in VS_NOTEX_OUTPUT IN) : COLOR
       result.xyz += sqrt(diffuse)*tex2Dlod(texSamplerBL, float4(float2(0.5*IN.tex1.x,-0.5*IN.tex1.y)+0.5, 0.,0.)).xyz*result.a; //!! depend on normal of light (unknown though) vs geom normal, too?
    }
 
-   return result;
+   output.color = result;
+   return output;
 }
 
-float4 ps_main_texture(in VS_OUTPUT IN) : COLOR
+PS_OUTPUT ps_main_texture(in VS_OUTPUT IN) 
 {
-   //return float4((IN.normal+1.0)*0.5,1.0); // visualize normals
-   
+   PS_OUTPUT output;
+   output.depth = IN.screenPos.z / IN.screenPos.w;
    float4 pixel = tex2D(texSampler0, IN.tex0);
 
    if (pixel.a<=fAlphaTestValue)
@@ -201,8 +210,11 @@ float4 ps_main_texture(in VS_OUTPUT IN) : COLOR
    const float3 t = InvGamma(pixel.xyz);
 
    // early out if no normal set (e.g. decal vertices)
-   if(!any(IN.normal))
-      return float4(InvToneMap(t*cBase_Alpha.xyz),pixel.a);
+   if (!any(IN.normal))
+   {
+      output.color = float4(InvToneMap(t*cBase_Alpha.xyz), pixel.a);
+      return output;
+   }
       
    const float3 diffuse  = t*cBase_Alpha.xyz;
    const float3 glossy   = (Roughness_WrapL_Edge_IsMetal.w != 0.0) ? diffuse : t*cGlossy*0.08; //!! use AO for glossy? specular?
@@ -223,7 +235,8 @@ float4 ps_main_texture(in VS_OUTPUT IN) : COLOR
       result.xyz += sqrt(diffuse)*tex2Dlod(texSamplerBL, float4(float2(0.5*IN.tex1.x,-0.5*IN.tex1.y)+0.5, 0.,0.)).xyz*result.a; //!! depend on normal of light (unknown though) vs geom normal, too?
    }
 
-   return result;
+   output.color = result;
+   return output;
 }
 
 float4 ps_main_depth_only_without_texture(in VS_DEPTH_ONLY_NOTEX_OUTPUT IN) : COLOR
@@ -261,7 +274,7 @@ VS_NOTEX_OUTPUT vs_kicker (float4 vPosition : POSITION0,
         Out.tex1 = Out.pos.xy/Out.pos.w; //!! not necessary
     Out.worldPos = P;
     Out.normal = N;
-   
+    Out.screenPos = Out.pos;
     return Out; 
 }
 

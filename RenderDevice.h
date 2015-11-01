@@ -182,6 +182,8 @@ public:
 
    D3DTexture* GetBloomBufferTexture() const { return m_pBloomBufferTexture; }
    D3DTexture* GetBloomTmpBufferTexture() const { return m_pBloomTmpBufferTexture; }
+   D3DTexture* GetDepthBufferTexture() const { return m_pDepthBufferTexture; }
+   RenderTarget* GetDepthBufferSurface() const { return m_pDepthSurface; }
 
    RenderTarget* DuplicateRenderTarget(RenderTarget* src);
    D3DTexture* DuplicateTexture(RenderTarget* src);
@@ -280,6 +282,8 @@ private:
    D3DTexture* m_pBloomBufferTexture;
    D3DTexture* m_pBloomTmpBufferTexture;
    D3DTexture* m_pMirrorTmpBufferTexture;
+   D3DTexture* m_pDepthBufferTexture;
+   RenderTarget *m_pDepthSurface;
 
    UINT m_adapter;      // index of the display adapter to use
 
