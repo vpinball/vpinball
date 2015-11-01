@@ -3237,7 +3237,7 @@ void Player::FlipVideoBuffersAO(const bool vsync)
       radical_inverse(m_overall_frames)*(float)(1. / 9.0),
       sobol(m_overall_frames)*(float)(2. / 9.0)); // jitter within lattice cell
    m_pin3d.m_pd3dDevice->FBShader->SetVector("w_h_height", &w_h_height);
-   const D3DXVECTOR4 ao_s_tb(m_ptable->m_AOScale, 0.5f, 0.f,0.f); //!! 0.5f: fake global option in video pref? or time dependent?
+   const D3DXVECTOR4 ao_s_tb(m_ptable->m_AOScale, 0.4f, 0.f,0.f); //!! 0.4f: fake global option in video pref? or time dependent?
    m_pin3d.m_pd3dDevice->FBShader->SetVector("AO_scale_timeblur", &ao_s_tb);
 
    m_pin3d.m_pd3dDevice->FBShader->SetTechnique("AO");

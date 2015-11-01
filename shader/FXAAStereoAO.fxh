@@ -68,10 +68,11 @@ float4 ps_main_ao(in VS_OUTPUT_2D IN) : COLOR
 
 	const float2 ushift = hash(IN.tex0) + w_h_height.zw; // jitter samples via hash of position on screen and then jitter samples by time //!! see below for non-shifted variant
 	//const float base = 0.0;
-	const float area = 0.05; //!!
+	const float area = 0.06; //!!
 	const float falloff = 0.0002; //!!
-	const float radius = 0.007; //!!
 	const int samples = 9; //4,8,9,13,21,25 korobov,fibonacci
+	const float radius = 0.001+frac(ushift.x+w_h_height.z*(float)(samples-1))*0.009; //!! sample radius (fully correlated with ushift obviously, meh!)
+	const float depth_threshold_normal = 0.005;
 	const float total_strength = AO_scale_timeblur.x * (/*1.0 for uniform*/0.5 / samples);
 	const float3 normal = normalize(get_nonunit_normal(depth0, u));
 	const float radius_depth = radius/depth0;
@@ -87,7 +88,7 @@ float4 ps_main_ao(in VS_OUTPUT_2D IN) : COLOR
 		const float3 occ_normal = get_nonunit_normal(occ_depth, hemi_ray);
 		const float diff_depth = depth0 - occ_depth;
 		const float diff_norm = dot(occ_normal,normal);
-		occlusion += step(falloff, diff_depth) * /*abs(rdotn)* for uniform*/ (1.0-diff_norm*diff_norm/dot(occ_normal,occ_normal)) * (1.0-smoothstep(falloff, area, diff_depth));
+		occlusion += step(falloff, diff_depth) * /*abs(rdotn)* for uniform*/ (diff_depth < depth_threshold_normal ? (1.0-diff_norm*diff_norm/dot(occ_normal,occ_normal)) : 1.0) * (1.0-smoothstep(falloff, area, diff_depth));
 	}
 	const float ao = 1.0 - total_strength * occlusion;
 	return float4( (tex2Dlod(texSampler5, float4(u+w_h_height.xy*0.5, 0.,0.)).x //abuse bilerp for filtering (by using half texel/pixel shift)
