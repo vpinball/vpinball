@@ -237,7 +237,7 @@ void Kicker::EndPlay()
    IEditable::EndPlay();
 }
 
-void Kicker::PostRenderStatic(RenderDevice* pd3dDevice)
+void Kicker::RenderStatic(RenderDevice* pd3dDevice)
 {
 }
 
@@ -393,7 +393,7 @@ void Kicker::SetDefaultPhysics(bool fromMouseClick)
 
 }
 
-void Kicker::RenderStatic(RenderDevice* pd3dDevice)
+void Kicker::PostRenderStatic(RenderDevice* pd3dDevice)
 {
    if (m_ptable->m_fReflectionEnabled)
       return;
@@ -418,6 +418,8 @@ void Kicker::RenderStatic(RenderDevice* pd3dDevice)
       }
 
       pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
+	  pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+	  pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 
       Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
       pd3dDevice->basicShader->SetMaterial(mat);
@@ -433,7 +435,7 @@ void Kicker::RenderStatic(RenderDevice* pd3dDevice)
       pd3dDevice->SetRenderState(RenderDevice::ZFUNC, D3DCMP_LESSEQUAL);
       delete[] buf;
 
-      //      if ( m_d.m_kickertype == KickerHole )
+      //if ( m_d.m_kickertype == KickerHole )
       {
          pd3dDevice->basicShader->SetTechnique("basic_with_texture");
          pd3dDevice->basicShader->SetTexture("Texture0", &texture);
@@ -446,13 +448,13 @@ void Kicker::RenderStatic(RenderDevice* pd3dDevice)
 
          //g_pplayer->m_pin3d.DisableAlphaBlend(); //!! not necessary anymore
       }
-      //       else
-      //       {
-      //          pd3dDevice->basicShader->SetTechnique("basic_without_texture");
-      //          pd3dDevice->basicShader->Begin(0);
-      //          pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, vertexBuffer, 0, numVertices, indexBuffer, 0, numFaces);
-      //          pd3dDevice->basicShader->End();
-      //       }
+      //else
+      //{
+      //   pd3dDevice->basicShader->SetTechnique("basic_without_texture");
+      //   pd3dDevice->basicShader->Begin(0);
+      //   pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, vertexBuffer, 0, numVertices, indexBuffer, 0, numFaces);
+      //   pd3dDevice->basicShader->End();
+      //}
    }
 }
 
