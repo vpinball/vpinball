@@ -4126,7 +4126,7 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
       int maxPrerenderedFrames;
       hr = GetRegInt("Player", "MaxPrerenderedFrames", &maxPrerenderedFrames);
       if (hr != S_OK)
-         maxPrerenderedFrames = 2;
+         maxPrerenderedFrames = 0;
       SetDlgItemInt(hwndDlg, IDC_MAX_PRE_FRAMES, maxPrerenderedFrames, FALSE);
 
 

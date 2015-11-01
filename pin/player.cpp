@@ -181,7 +181,7 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
    int maxPrerenderedFrames;
    hr = GetRegInt("Player", "MaxPrerenderedFrames", &maxPrerenderedFrames);
    if (hr != S_OK)
-      maxPrerenderedFrames = 2; // The default
+      maxPrerenderedFrames = 0;
    m_fMaxPrerenderedFrames = maxPrerenderedFrames;
 
    float nudgeStrength;
