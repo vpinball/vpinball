@@ -1431,6 +1431,9 @@ void Player::RenderMirrorOverlay()
 void Player::InitStatic(HWND hwndProgress)
 {
    TRACE_FUNCTION();
+#ifdef USE_MRT
+   m_pin3d.m_pd3dDevice->GetCoreDevice()->SetRenderTarget(1, m_pin3d.m_pd3dDevice->GetDepthBufferSurface());
+#endif
    // Start the frame.
    for (unsigned i = 0; i < m_vhitables.size(); ++i)
    {
@@ -3143,6 +3146,10 @@ void Player::FlipVideoBuffersNormal(const bool vsync)
    const bool FXAA2 = (((m_fFXAA == 2) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == 2));
    const bool FXAA3 = (((m_fFXAA == 3) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == 3));
 
+#ifdef USE_MRT
+   m_pin3d.m_pd3dDevice->GetCoreDevice()->SetRenderTarget(1, NULL);
+#endif
+
    if (stereo)
       m_pin3d.m_pd3dDevice->CopyDepth(m_pin3d.m_pdds3DZBuffer, m_pin3d.m_pddsZBuffer); // do not put inside BeginScene/EndScene Block
 
@@ -3214,7 +3221,12 @@ void Player::FlipVideoBuffersAO(const bool vsync)
    const bool FXAA2 = (((m_fFXAA == 2) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == 2));
    const bool FXAA3 = (((m_fFXAA == 3) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == 3));
 
+#ifdef USE_MRT
+   m_pin3d.m_pd3dDevice->GetCoreDevice()->SetRenderTarget(1, NULL);
+#else
    m_pin3d.m_pd3dDevice->CopyDepth(m_pin3d.m_pdds3DZBuffer, m_pin3d.m_pddsZBuffer); // do not put inside BeginScene/EndScene Block
+#endif
+
 
    m_pin3d.m_pd3dDevice->BeginScene();
 

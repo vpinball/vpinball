@@ -297,6 +297,9 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
    if (((caps.TextureCaps & D3DPTEXTURECAPS_NONPOW2CONDITIONAL) != 0) || ((caps.TextureCaps & D3DPTEXTURECAPS_POW2) != 0))
       ShowError("D3D device does only support power of 2 textures");
 
+   if (caps.NumSimultaneousRTs < 2)
+      ShowError("D3D device doesn't support multiple render targets!");
+
    // get the current display format
    D3DFORMAT format;
    if (!fullscreen)
@@ -445,6 +448,15 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
       D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &m_pBloomTmpBufferTexture, NULL); //!! 8bit are enough! //!! but used also for bulb light hack now!
    if (FAILED(hr))
       ReportError("Fatal Error: unable to create blur buffer!", hr, __FILE__, __LINE__);
+
+#ifdef USE_MRT
+   hr = m_pD3DDevice->CreateTexture(width, height, 1,
+      D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &m_pDepthBufferTexture, NULL); //!! 32bit depth buffer
+   if (FAILED(hr))
+      ReportError("Fatal Error: unable to create depth buffer!", hr, __FILE__, __LINE__);
+
+   m_pDepthBufferTexture->GetSurfaceLevel(0, &m_pDepthSurface);
+#endif
 
    // alloc temporary buffer for postprocessing
    if (stereo3D || FXAA)
@@ -645,6 +657,11 @@ RenderDevice::~RenderDevice()
    SAFE_RELEASE(m_pBloomBufferTexture);
    SAFE_RELEASE(m_pBloomTmpBufferTexture);
    SAFE_RELEASE(m_pBackBuffer);
+
+#ifdef USE_MRT
+   SAFE_RELEASE(m_pDepthSurface);
+   SAFE_RELEASE(m_pDepthBufferTexture);
+#endif
 
 #ifdef _DEBUG
    CheckForD3DLeak(m_pD3DDevice);
