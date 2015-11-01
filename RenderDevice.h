@@ -198,6 +198,8 @@ public:
    void CopySurface(D3DTexture* dest, D3DTexture* src);
    void CopyDepth(D3DTexture* dest, RenderTarget* src);
 
+   bool DepthBufferReadBackAvailable();
+
    D3DTexture* CreateSystemTexture(BaseTexture* surf);
    D3DTexture* UploadTexture(BaseTexture* surf, int *pTexWidth = NULL, int *pTexHeight = NULL);
    void UpdateTexture(D3DTexture* tex, BaseTexture* surf);

@@ -219,7 +219,8 @@ VP 10.0.0 Changelog
 
 - the property menu can now be a floating window (old behavior can be restored in the editor options)
   
-- remove old shadowing code and replace it with optional screen space ambient occlusion (via the global video preferences and also the table options)
+- remove old shadowing code and replace it with screen space ambient occlusion
+  additionally one can also enable ambient occlusion for dynamic objects (via the global video preferences and also the table options)
 
 - its not necessary anymore to manually override the texture filtering quality in the global gfx cards options (NVIDIA control panel, etc)
   if you need HQ filtering, please only use the checkbox in the VP video preferences instead
@@ -274,7 +275,10 @@ VP 10.0.0 Changelog
 							   Note that any textures aren't imported automatically though, this must be done as usual with the help of the image manager.
 
 - add additional debug mode when pressing F11 multiple times to visualize the content of only the static buffer.
-  this can be used to optimize for performance by trying to put as many elements as possible into this buffer
+  this can be used to optimize for performance by trying to put as many elements as possible into this buffer, for example:
+  - objects that are un-necessarily using a material with opacity enabled
+  - objects missing the static rendering flag (if there is one for this type)
+  - walls that can drop but never use this flag
 
 - reactivate old VP9.0 easter egg (and improve it :))
 

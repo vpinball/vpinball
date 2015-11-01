@@ -1520,6 +1520,87 @@ void Player::InitStatic(HWND hwndProgress)
 
    // Finish the frame.
    m_pin3d.m_pd3dDevice->EndScene();
+
+   // Dynamic AO disabled? -> Pre-Render Static AO
+   const bool useAO = ((m_fAO && (m_ptable->m_useAO == -1)) || (m_ptable->m_useAO == 1));
+   if (!useAO && m_pin3d.m_pd3dDevice->DepthBufferReadBackAvailable())
+   {
+      const bool useAA = (m_fAA && (m_ptable->m_useAA == -1)) || (m_ptable->m_useAA == 1);
+
+      m_pin3d.m_pd3dDevice->CopySurface(m_pin3d.m_pddsZBuffer, m_pin3d.m_pddsStaticZ); // cannot be called inside BeginScene -> EndScene cycle
+
+      m_pin3d.m_pd3dDevice->BeginScene();
+      m_pin3d.RenderPlayfieldGraphics(true); // mirror depth buffer only contained static objects, but no playfield yet -> so render depth only to add this
+      m_pin3d.m_pd3dDevice->EndScene();
+
+      m_pin3d.m_pd3dDevice->CopyDepth(m_pin3d.m_pdds3DZBuffer, m_pin3d.m_pddsStaticZ); // do not put inside BeginScene/EndScene Block
+      m_pin3d.m_pd3dDevice->CopySurface(m_pin3d.m_pd3dDevice->GetBackBufferTexture(), m_pin3d.m_pddsStatic);
+      m_pin3d.m_pd3dDevice->CopySurface(m_pin3d.m_pddsStaticZ, m_pin3d.m_pddsZBuffer); // cannot be called inside BeginScene -> EndScene cycle
+
+      m_pin3d.m_pd3dDevice->BeginScene();
+
+      m_pin3d.DisableAlphaBlend();
+      m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
+      m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
+      m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, FALSE);
+
+      RenderTarget* tmpAOSurface;
+      m_pin3d.m_pddsAOBackTmpBuffer->GetSurfaceLevel(0, &tmpAOSurface);
+      m_pin3d.m_pd3dDevice->SetRenderTarget(tmpAOSurface);
+      SAFE_RELEASE_NO_RCC(tmpAOSurface); //!!
+
+      m_pin3d.m_pd3dDevice->Clear(0, NULL, D3DCLEAR_TARGET, 0, 1.0f, 0L);
+
+      m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture3", m_pin3d.m_pdds3DZBuffer);
+      const D3DXVECTOR4 ao_s_tb(m_ptable->m_AOScale, 0.1f, 0.f,0.f);
+      m_pin3d.m_pd3dDevice->FBShader->SetVector("AO_scale_timeblur", &ao_s_tb);
+      m_pin3d.m_pd3dDevice->FBShader->SetTechnique("AO");
+
+      for (unsigned int i = 0; i < 50; ++i) // 50 iterations to get AO smooth
+      {
+         if (i != 0)
+         {
+			   m_pin3d.m_pddsAOBackTmpBuffer->GetSurfaceLevel(0, &tmpAOSurface);
+			   m_pin3d.m_pd3dDevice->SetRenderTarget(tmpAOSurface);
+			   SAFE_RELEASE_NO_RCC(tmpAOSurface); //!!
+         }
+
+         m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pddsAOBackBuffer); //!! ?
+
+         const D3DXVECTOR4 w_h_height((float)(1.0 / (double)m_width), (float)(1.0 / (double)m_height),
+            radical_inverse(i)*(float)(1. / 9.0),
+            sobol(i)*(float)(2. / 9.0)); // jitter within lattice cell //!! ?
+         m_pin3d.m_pd3dDevice->FBShader->SetVector("w_h_height", &w_h_height);
+
+         m_pin3d.m_pd3dDevice->FBShader->Begin(0);
+         m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_TEX, (LPVOID)quadVerts, 4);
+         m_pin3d.m_pd3dDevice->FBShader->End();
+
+         // flip AO buffers (avoids copy)
+         D3DTexture *tmpAO = m_pin3d.m_pddsAOBackBuffer;
+         m_pin3d.m_pddsAOBackBuffer = m_pin3d.m_pddsAOBackTmpBuffer;
+         m_pin3d.m_pddsAOBackTmpBuffer = tmpAO;
+      }
+
+      m_pin3d.SetRenderTarget(m_pin3d.m_pddsStatic, m_pin3d.m_pddsStaticZ);
+
+      m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetBackBufferTexture());
+      m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture3", m_pin3d.m_pddsAOBackBuffer);
+
+      const D3DXVECTOR4 fb_inv_resolution_05((float)(0.5 / (double)m_width), (float)(0.5 / (double)m_height), 1.0f, 1.0f);
+      m_pin3d.m_pd3dDevice->FBShader->SetVector("w_h_height", &fb_inv_resolution_05);
+      m_pin3d.m_pd3dDevice->FBShader->SetTechnique(useAA ? "fb_tonemap_AO_static" : "fb_tonemap_AO_no_filter_static");
+
+      m_pin3d.m_pd3dDevice->FBShader->Begin(0);
+      m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_TEX, (LPVOID)quadVerts, 4);
+      m_pin3d.m_pd3dDevice->FBShader->End();
+
+      m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, TRUE);
+      m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+      m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+
+      m_pin3d.m_pd3dDevice->EndScene();
+   }
 }
 
 Ball *Player::CreateBall(const float x, const float y, const float z, const float vx, const float vy, const float vz, const float radius, const float mass)
@@ -3156,7 +3237,8 @@ void Player::FlipVideoBuffersAO(const bool vsync)
       radical_inverse(m_overall_frames)*(float)(1. / 9.0),
       sobol(m_overall_frames)*(float)(2. / 9.0)); // jitter within lattice cell
    m_pin3d.m_pd3dDevice->FBShader->SetVector("w_h_height", &w_h_height);
-   m_pin3d.m_pd3dDevice->FBShader->SetFloat("AO_scale", m_ptable->m_AOScale);
+   const D3DXVECTOR4 ao_s_tb(m_ptable->m_AOScale, 0.5f, 0.f,0.f); //!! 0.5f: fake global option in video pref? or time dependent?
+   m_pin3d.m_pd3dDevice->FBShader->SetVector("AO_scale_timeblur", &ao_s_tb);
 
    m_pin3d.m_pd3dDevice->FBShader->SetTechnique("AO");
 
@@ -3471,10 +3553,11 @@ void Player::Render()
             vsync = true;
    }
 
-   if (!((m_fAO && (m_ptable->m_useAO == -1)) || (m_ptable->m_useAO == 1)) || !m_pin3d.m_pddsAOBackBuffer)
-      FlipVideoBuffersNormal(vsync);
-   else
+   const bool useAO = ((m_fAO && (m_ptable->m_useAO == -1)) || (m_ptable->m_useAO == 1)) && m_pin3d.m_pd3dDevice->DepthBufferReadBackAvailable();
+   if (useAO)
       FlipVideoBuffersAO(vsync);
+   else
+      FlipVideoBuffersNormal(vsync);
 
 #ifndef ACCURATETIMERS
    m_pactiveball = NULL;  // No ball is the active ball for timers/key events
