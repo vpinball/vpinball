@@ -104,6 +104,10 @@ void Kicker::SetDefaults(bool fromMouseClick)
    else
       m_d.m_kickertype = KickerHole;
 
+   //legacy handling:
+   if (m_d.m_kickertype > KickerCup)
+	   m_d.m_kickertype = KickerInvisible;
+
    hr = GetRegInt("DefaultProps\\Kicker", "FallThrough", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_fFallThrough = iTmp == 0 ? false : true;
@@ -324,7 +328,7 @@ void Kicker::GenerateHoleMesh(Vertex3D_NoTex2 *buf)
 
 void Kicker::RenderSetup(RenderDevice* pd3dDevice)
 {
-   if ((m_d.m_kickertype == KickerInvisible) || (m_d.m_kickertype == KickerHidden))
+   if (m_d.m_kickertype == KickerInvisible)
       return;
 
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
@@ -572,6 +576,9 @@ BOOL Kicker::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(TYPE))
    {
       pbr->GetInt(&m_d.m_kickertype);
+	  //legacy handling:
+	  if (m_d.m_kickertype > KickerCup)
+		  m_d.m_kickertype = KickerInvisible;
    }
    else if (id == FID(SURF))
    {
@@ -998,11 +1005,14 @@ STDMETHODIMP Kicker::put_DrawStyle(KickerType newVal)
 {
    STARTUNDO
 
-      m_d.m_kickertype = newVal;
+   m_d.m_kickertype = newVal;
+   //legacy handling:
+   if (m_d.m_kickertype > KickerCup)
+	   m_d.m_kickertype = KickerInvisible;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Kicker::get_Material(BSTR *pVal)
