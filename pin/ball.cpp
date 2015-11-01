@@ -419,8 +419,8 @@ void Ball::ApplySurfaceImpulse(const Vertex3Ds& surfP, const Vertex3Ds& impulse)
    const Vertex3Ds rotI = CrossProduct(surfP, impulse);
    m_angularmomentum += rotI;
    const float aml = m_angularmomentum.Length();
-   if (aml > m_inertia*0.5f) //!! hack to limit ball spin
-      m_angularmomentum *= (m_inertia*0.5f) / aml;
+   if (aml > m_inertia/**1.0f*/) //!! hack to limit ball spin
+      m_angularmomentum *= (m_inertia/**1.0f*/) / aml;
    m_angularvelocity = m_angularmomentum / m_inertia;
 }
 
