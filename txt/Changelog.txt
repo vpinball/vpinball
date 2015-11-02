@@ -230,6 +230,7 @@ VP 10.0.0 Changelog
 
 - add third mode for FXAA: extreme (and retweak the quality FXAA mode)
 
+- stereo 3D now also works on Intel and AMD, not just on NVIDIA 
 - removed stereo 3D AA, its always enabled now
 - added stereo 3D offset, which can be used to offset the table "into" the monitor
 
