@@ -297,8 +297,8 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
    if (((caps.TextureCaps & D3DPTEXTURECAPS_NONPOW2CONDITIONAL) != 0) || ((caps.TextureCaps & D3DPTEXTURECAPS_POW2) != 0))
       ShowError("D3D device does only support power of 2 textures");
 
-   if (caps.NumSimultaneousRTs < 2)
-      ShowError("D3D device doesn't support multiple render targets!");
+   //if (caps.NumSimultaneousRTs < 2)
+   //   ShowError("D3D device doesn't support multiple render targets!");
 
    // get the current display format
    D3DFORMAT format;
