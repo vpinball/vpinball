@@ -76,12 +76,11 @@ sampler2D texSamplerBloom : TEXUNIT1 = sampler_state // Bloom
 sampler2D texSamplerMirror : TEXUNIT0 = sampler_state // base texture
 {
    Texture = (Texture0);
-   //MIPFILTER = LINEAR; //!! HACK: not set here as user can choose to override trilinear by anisotropic
-   //MAGFILTER = LINEAR;
-   //MINFILTER = LINEAR;
-   //ADDRESSU  = Wrap; //!! ?
-   //ADDRESSV  = Wrap;
-   //!! SRGBTexture = true;
+   MIPFILTER = NONE; //!! ??
+   MAGFILTER = LINEAR;
+   MINFILTER = LINEAR;
+   ADDRESSU  = Clamp;
+   ADDRESSV  = Clamp;
 };
 
 struct VS_OUTPUT_2D
