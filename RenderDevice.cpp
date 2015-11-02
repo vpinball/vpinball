@@ -451,11 +451,9 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
 
 #ifdef USE_MRT
    hr = m_pD3DDevice->CreateTexture(width, height, 1,
-      D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &m_pDepthBufferTexture, NULL); //!! 32bit depth buffer
+      D3DUSAGE_RENDERTARGET, D3DFMT_L16, D3DPOOL_DEFAULT, &m_pDepthBufferTexture, NULL); //!! D3DFMT_R32F?
    if (FAILED(hr))
       ReportError("Fatal Error: unable to create depth buffer!", hr, __FILE__, __LINE__);
-
-   m_pDepthBufferTexture->GetSurfaceLevel(0, &m_pDepthSurface);
 #endif
 
    // alloc temporary buffer for postprocessing
@@ -539,7 +537,11 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
 
 bool RenderDevice::DepthBufferReadBackAvailable()
 {
+#ifdef USE_MRT
+   return true;
+#else
    return NVAPIinit;
+#endif
 }
 
 #ifdef _DEBUG
@@ -659,7 +661,6 @@ RenderDevice::~RenderDevice()
    SAFE_RELEASE(m_pBackBuffer);
 
 #ifdef USE_MRT
-   SAFE_RELEASE(m_pDepthSurface);
    SAFE_RELEASE(m_pDepthBufferTexture);
 #endif
 
