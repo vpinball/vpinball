@@ -405,6 +405,11 @@ void CodeViewer::Create()
 	{
 		SendMessage(m_hwndScintilla, SCI_SETLEXER, (WPARAM)SCLEX_VBSCRIPT, 0);
 	}
+	char szValidChars[256] = {};  
+   SendMessage(m_hwndScintilla, SCI_GETWORDCHARS, 0, (LPARAM)szValidChars);
+   ValidChars = string(szValidChars);
+
+	VBValidChars = string("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_");
 
 // Create new list of user functions & Collections- filled in ParseForFunction(), first called in LoadFromStrem()
 	g_AutoComp = new vector<string>();
@@ -446,6 +451,7 @@ void CodeViewer::Create()
 		i->strKeyName.at(0) = WordChar;	
 	}
 	///// Preferences
+	DisplayAutoComplete = GetRegBoolWithDefault("CVEdit", "DisplayAutoComplete", true );
 	for (int i = 0 ; i<16 ; ++i)
 	{
 		g_PrefCols[i] = 0;
@@ -1775,6 +1781,30 @@ void CodeViewer::szUpper(char * const incstr)
 	}
 }
 
+// Makes sure what is found is not part of a var etc..
+int CodeViewer::SureFind(const string &LineIn, const string &ToFind)
+{
+	int Pos = LineIn.find(ToFind);
+	if (Pos == -1) return -1;
+	const char EndChr = LineIn[Pos + ToFind.length() ];
+	int IsValidVBChr = VBValidChars.find( EndChr );
+	if (IsValidVBChr >= 0 )
+	{// Extra char on end - not what we want
+		return -1;
+	}
+
+	if (Pos > 0)
+	{
+		const char StartChr = LineIn[Pos -1];
+		IsValidVBChr = VBValidChars.find( StartChr );
+		if (IsValidVBChr >= 0 )
+		{
+			return -1;
+		}
+	}
+	return Pos;
+}
+
 void CodeViewer::ParseForFunction() // Subs & Collections AndyS - WIP 
 {
    char text[MAX_LINE_LENGTH];
@@ -1834,23 +1864,8 @@ void CodeViewer::ParseForFunction() // Subs & Collections AndyS - WIP
 				{
 					if ((commentIdx >= 0)  && (commentIdx < idx)) continue;
 					if ((doubleQuoteIdx >= 0)  && (doubleQuoteIdx < idx)) continue;
-					int Substart = idx + SearchLength;
-					char linechar = 0;
-					//scan for first valid char of sub name (should loop at least once)
-					linechar = line[Substart];
-					while ((ValidChars.find(linechar) == -1) && (Substart < lineLength))
-					{
-						Substart++;
-						linechar = line[Substart];
-					}
-					//scan for last valid char
-					int Subfinish = Substart;
-					while ((ValidChars.find(linechar) != -1) && (Subfinish < lineLength))
-					{
-						Subfinish++;
-						linechar = line[Subfinish];
-					}
-					const string sSubName = line.substr(Substart,Subfinish-Substart);
+
+					const string sSubName = ExtractWord(line, (idx + SearchLength) );
 					const UserData ud(i ,line.substr( 0, line.length()-2 ) , sSubName );
 					FindOrInsertUD( g_UserFunc , ud );
 				}
@@ -1925,7 +1940,7 @@ void CodeViewer::ParseForFunction() // Subs & Collections AndyS - WIP
 void CodeViewer::ParseVPCore()
 {
    //Open file
-   const string sPath = string(g_pvp->m_szMyPath) + "\\Scripts\\core.vbs";
+   const string sPath = string(g_pvp->m_szMyPath) + "Scripts\\core.vbs";
    FILE* fCore;
    if (fopen_s(&fCore, sPath.c_str(), "r") != 0)
 	if (!fCore)
@@ -1949,12 +1964,14 @@ void CodeViewer::ParseVPCore()
 	}
 ///////////////////////
 	char text[MAX_LINE_LENGTH] = {};
-	char szValidChars[256] = {};  
-   SendMessage(m_hwndScintilla, SCI_GETWORDCHARS, 0, (LPARAM)szValidChars);//Lparam or size_t ?????
-   string ValidChars(szValidChars);
 	int linecount = 0;
+	//intalise Parent child
+	int ParentLevel = 0; //root
+	string CurrentParent = "";
+	int ConstructorsCount = 0;
 	while (!feof(fCore))
 	{
+
 		// Read line
       memset(text, 0, MAX_LINE_LENGTH);
 		++linecount;
@@ -1965,72 +1982,138 @@ void CodeViewer::ParseVPCore()
 		if (lineLength > MAX_LINE_LENGTH)
 		{
 			char szText[256] = {};
-			sprintf_s(szText,"The current maximum script line length is %d",MAX_LINE_LENGTH);
+			sprintf_s(szText,"The current maximum script line length is %d", MAX_LINE_LENGTH);
 			char szCaption[256] = {};
 			sprintf_s(szCaption,"Line too long on:%d",linecount);
 			MessageBox(m_hwndMain,szText,szCaption,MB_OK);
 			continue;
 		}
+		const int commentIdx = wholeline.find("'");
+		if (commentIdx > 0)
+		{// chop everything off after comment
+				wholeline = wholeline.substr(0 , commentIdx );
+		}
+		else
+		{
+			if (commentIdx == 0)	continue;
+		}
 		string line;
 		while (wholeline.length() > 1)
 		{
-			//Chop up line by ":"
 			line = wholeline;
 			int idx = line.find(":"); 
 			if (idx > 0)
 			{
 				line = wholeline.substr(0,idx);
-				wholeline = wholeline.substr(idx, (wholeline.length()) - (line.length()) );
+				wholeline = wholeline.substr(idx + 1, (wholeline.length()) - (line.length()) );
 			}
 			else
 			{
+				line = wholeline;
 				wholeline.clear();
 			}
 
 			int SearchLength =3;
 			string UCline = upperCase(line);
-			idx = UCline.find("SUB");
+			idx = SureFind(UCline,"SUB"); //UCline.find("SUB");
 			if (idx == -1)
 			{
-				idx = UCline.find("FUNCTION");
+				idx = SureFind(UCline,"FUNCTION");  //UCline.find("FUNCTION");
 				SearchLength =8;
 			}
-			if ((SSIZE_T)idx >= 0)
+			if (idx == -1)
 			{
-				const int endIdx = UCline.find("END");
-				const int exitIdx = UCline.find("EXIT");
-				const int commentIdx = UCline.find("'");
-				const int doubleQuoteIdx = UCline.find("\"");
-				if (endIdx == -1 && exitIdx == -1)
-				{
-					if ((commentIdx >= 0)  && (commentIdx < idx)) continue;
-					if ((doubleQuoteIdx >= 0)  && (doubleQuoteIdx < idx)) continue;
-					int Substart = idx + SearchLength;
-					char linechar = 0;
-					//scan for first valid char of sub name (should loop at least once)
-					linechar = line[Substart];
-					while ((ValidChars.find(linechar) == -1) && (Substart < lineLength))
-					{
-						Substart++;
-						linechar = line[Substart];
-					}
-					//scan for last valid char
-					int Subfinish = Substart;
-					while ((ValidChars.find(linechar) != -1) && (Subfinish < lineLength))
-					{
-						Subfinish++;
-						linechar = line[Subfinish];
-					}
-					const string sSubName = line.substr(Substart,Subfinish-Substart);
-
-					const UserData ud(linecount ,line.substr( 0, line.length()-2 ) , sSubName );
-					FindOrInsertUD( g_VP_Core , ud );
-				}
+				idx = SureFind(UCline,"CLASS");   //UCline.find("CLASS");
+				SearchLength =5;
 			}
+
+			if ( idx >= 0) // Found something something structrual
+			{
+				const int endIdx = SureFind(UCline,"END");   //UCline.find("END");
+				const int exitIdx = SureFind(UCline,"EXIT");  //UCline.find("EXIT");
+				const int doubleQuoteIdx = UCline.find("\"");
+				if ((doubleQuoteIdx >= 0)  && (doubleQuoteIdx < idx)) continue; // in a string literal
+				const string sSubName = ExtractWord(line, (idx + SearchLength) );
+				UserData ud(linecount, line.substr(0, line.length() -1), sSubName);
+
+				if (endIdx == -1 && exitIdx == -1) //Its something new and therefore a parent (ATM!)
+				{
+					// is this a child? everything contained is a child until END/EXIT
+					if (ParentLevel == 0)// its a root, like a class
+					{
+						FindOrInsertUD( g_VP_Core, ud);
+						CurrentParent = sSubName;
+					}
+					else //contained within a structure
+					{//whos the daddy?
+						ud.Parent = CurrentParent;
+						FindOrInsertUD( g_VP_Core, ud);
+						int iUDIndx = UDIndex(g_VP_Core, CurrentParent);
+						if (iUDIndx == -1)
+						{
+							char szCaption[256] = {};
+							sprintf_s(szCaption,"Parsing error on line:%d", linecount);
+							MessageBox(m_hwndMain, "Sub, Function construct not closed", szCaption, MB_OK);
+							continue;
+						}
+						UserData *iCurParent = &(g_VP_Core->at(iUDIndx));
+						iCurParent->Children.push_back(sSubName);//add child to parent
+						CurrentParent = sSubName;
+					}
+					++ParentLevel;
+					++ConstructorsCount;
+				}
+				else
+				{
+					if (endIdx >= 0)
+					{
+						if (ParentLevel == -1)
+						{
+							// you messed up andy. (or the script is wrong)
+							false;
+						}
+						else
+						{ 
+							if (ParentLevel > 0)
+							{//finished with child
+								int iCurParent = UDIndex(g_VP_Core, CurrentParent);
+								CurrentParent = g_VP_Core->at(iCurParent).Parent;
+								ParentLevel--;
+							}
+							else
+							{//close a root structure
+								CurrentParent.clear();
+							}
+						}//if (ParentLevel == -1)
+					}//if (endIdx >= 0)
+				}
+
+			}//while (wholeline.length() > 1)
 		}// while (line.length > 1) 
 	}
 
 	fclose(fCore);
+}
+
+string CodeViewer::ExtractWord(const string &line, const int &StartPos)
+{
+	size_t Substart = StartPos;
+	const size_t lineLength = line.size();
+	char linechar = 0;
+	linechar = line[Substart];
+	while ((ValidChars.find(linechar) == -1) && (Substart < lineLength))
+	{
+		Substart++;
+		linechar = line[Substart];
+	}
+	//scan for last valid char
+	size_t Subfinish = Substart;
+	while ((ValidChars.find(linechar) != -1) && (Subfinish < lineLength))
+	{
+		Subfinish++;
+		linechar = line[Subfinish];
+	}
+	return line.substr(Substart,Subfinish-Substart);
 }
 
 static CodeViewer* GetCodeViewerPtr(HWND hwndDlg)
@@ -2275,7 +2358,10 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 			} break;
 
 			case SCN_CHARADDED:
+			{
+			if (pcv->DisplayAutoComplete)
 				pcv->ShowAutoComplete();
+			}
 			break;
 
 		  case SCN_UPDATEUI:
@@ -2363,6 +2449,8 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 			pcv->crBackColor = GetRegIntWithDefault("CVEdit", "BackGroundColor", RGB(255,255,255));
 			pcv->UpdateScinFromPrefs();
 		}
+		const HWND hChkBox = GetDlgItem(hwndDlg,IDC_CVP_CHKBOX_SHOWAUTOCOMPLETE);
+		SNDMSG(hChkBox, BM_SETCHECK, pcv->DisplayAutoComplete ? BST_CHECKED : BST_UNCHECKED, 0L);
 		SetFocus(hwndDlg);
 		//#if !(defined(IMSPANISH) | defined(IMGERMAN) | defined(IMFRENCH))
 		//      HWND hwndTransName = GetDlgItem(hwndDlg, IDC_TRANSNAME);
@@ -2424,6 +2512,15 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 						pcv->UpdateScinFromPrefs();
 						return DefWindowProc(hwndDlg, uMsg, wParam, lParam);
 					}
+				}
+				break;
+				case IDC_CVP_CHKBOX_SHOWAUTOCOMPLETE:
+				{
+					if(IsDlgButtonChecked(hwndDlg, IDC_CVP_CHKBOX_SHOWAUTOCOMPLETE) )
+						{pcv->DisplayAutoComplete = true;}
+					else
+						{pcv->DisplayAutoComplete = false;}
+					SetRegValueBool("CVEdit", "DisplayAutoComplete", pcv->DisplayAutoComplete );
 				}
 				break;
 				case IDC_CVP_BUT_COL_EVERYTHINGELSE:

@@ -235,11 +235,15 @@ public:
 	string lowerCase(string input);
 
 	void ParseVPCore();
+	void ParseForFunction();
+	int SureFind(const string &LineIn, const string &ToFind);
+	string ExtractWord(const string &line, const int &StartPos);
 	bool ShowTooltip(SCNotification *Scn);
 	void ShowAutoComplete();
 	void szLower(char * const incstr);
 	void szUpper(char * const incstr);
-	void ParseForFunction();
+	string ValidChars;
+	string VBValidChars;
 
 	// CodeViewer Preferences
 	vector<CVPrefrence*> *lPrefsList;
@@ -254,6 +258,7 @@ public:
 	COLORREF g_PrefCols[16];
 	COLORREF crBackColor;
 	void UpdateScinFromPrefs();
+	bool DisplayAutoComplete;
 
 	//User data keyword lists
 	bool g_ToolTipActive;

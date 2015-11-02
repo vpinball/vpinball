@@ -8,14 +8,17 @@ public:
 	string strKeyName; //Unique Name
 	string strDescription;//Brief Description
 	int intLineNum; //Line No. Declaration
-
+	vector<string> Children;
+	string Parent;
 	UserData();
 	UserData(const int LineNo, const string &Desc, const string &Name);
 	bool FuncCompareUD (const UserData &first, const UserData &second);
 	string lowerCase(string input);
 	bool FindOrInsertStringIntoAutolist(vector<string>* ListIn, const string &strIn);
-	bool FindOrInsertUD( vector<UserData>* ListIn,const UserData& udIn);
+	int FindOrInsertUD( vector<UserData>* ListIn,const UserData& udIn);
 	int FindUD(vector<UserData>* ListIn, const string &strIn,vector<UserData>::iterator& UDiterOut);
+	int FindUD(vector<UserData>* ListIn, const string &strIn,vector<UserData>::iterator& UDiterOut, int PosOut);
+	int UDIndex(vector<UserData>* ListIn, const string &strIn);
 	~UserData();
 };
 

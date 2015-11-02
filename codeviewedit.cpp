@@ -5,10 +5,7 @@ UserData::UserData()
 	intLineNum=0;
 	strDescription="";
 	strKeyName="";
-}
-
-UserData::~UserData()
-{
+	Parent="";
 }
 
 UserData::UserData(const int LineNo, const string &Desc, const string &Name)
@@ -16,6 +13,11 @@ UserData::UserData(const int LineNo, const string &Desc, const string &Name)
 	intLineNum=LineNo;
 	strDescription=Desc;
 	strKeyName=Name;
+	Parent="";
+}
+
+UserData::~UserData()
+{
 }
 
 string UserData::lowerCase(string input)
@@ -44,10 +46,16 @@ bool UserData::FuncCompareUD (const UserData &first, const UserData &second)
 -1 =Not Found - Insert point before UDiterOut
 1  =Not Found - Insert point after UDiterOut
 -2 =error*/
-int UserData::FindUD(vector<UserData>* ListIn, const string &strIn, vector<UserData>::iterator &UDiterOut)
+int UserData::FindUD(vector<UserData>* ListIn, const string &strIn,vector<UserData>::iterator& UDiterOut)
+{
+	int Disregard=0;
+	return FindUD(ListIn, strIn, UDiterOut, Disregard);
+}
+
+int UserData::FindUD(vector<UserData>* ListIn, const string &strIn, vector<UserData>::iterator &UDiterOut, int PosOut )
 {
 	int result = -2;
-	if (ListIn && (strIn.size() > 2) )// Sanity chq.
+	if (ListIn && (strIn.size() > 0) )// Sanity chq.
 	{
 		const unsigned int ListSize = (int)ListIn->size();
 		UINT32 iCurPos = (ListSize >> 1);
@@ -74,39 +82,83 @@ int UserData::FindUD(vector<UserData>* ListIn, const string &strIn, vector<UserD
 			iJumpDelta >>= 1;
 		} while (iNewPos >= 0);
 		UDiterOut = ListIn->begin() + iCurPos;
+		PosOut = iCurPos;
 	}
 	return result ;
 }
 
-//Assumes case insensitive sorted list (found = false):
-bool UserData::FindOrInsertUD(vector<UserData>* ListIn,const UserData &udIn)
+//Returns current Index of strIn in ListIn
+int UserData::UDIndex(vector<UserData>* ListIn, const string &strIn)
 {
+	if ( (!ListIn) || (strIn.size() <= 0) ) return -1;
+	int result = -2;
+	const unsigned int ListSize = (int)ListIn->size();
+	UINT32 iCurPos = (ListSize >> 1);
+	UINT32 iNewPos = 1u << 30;
+	while ( (!(iNewPos & ListSize)) && (iNewPos > 1) )
+   {
+      iNewPos >>= 1;
+   }
+	int iJumpDelta = ((iNewPos) >> 1);
+	--iNewPos;//Zero Base
+	const string strSearchData = lowerCase( strIn );
+	do
+	{
+		iCurPos = iNewPos;
+		if (iCurPos >= ListSize) { result = -1; }
+		else
+		{
+			const string strTableData = lowerCase(ListIn->at(iCurPos).strKeyName);
+			result = strSearchData.compare(strTableData);
+		}
+		if (iJumpDelta == 0 || result == 0) break;
+		if ( result < 0 )	{ iNewPos = iCurPos - iJumpDelta; }
+		else  { iNewPos = iCurPos + iJumpDelta; }
+		iJumpDelta >>= 1;
+	} while (iNewPos >= 0);
+	return iCurPos ;
+}
+
+//Assumes case insensitive sorted list Returns point of insertion
+int UserData::FindOrInsertUD(vector<UserData>* ListIn,const UserData &udIn)
+{
+	vector<UserData>::iterator iterFound;
+	int Pos = 0;
 	if (ListIn->size() == 0)	//First in
 	{
 		ListIn->push_back(udIn);
-		return true;
+		return 0;
 	}
-	vector<UserData>::iterator iterFound;
-	const int KeyFound = FindUD(ListIn, udIn.strKeyName , iterFound);
-	if (KeyFound == 0)return false;//Already Exists.
-	if (KeyFound == -1) //insert before, somewhere in the middle
+	const int KeyFound = FindUD(ListIn, udIn.strKeyName ,iterFound, Pos);
+	if (KeyFound == 0)
 	{
-		ListIn->insert(iterFound, udIn);
-		return true;
+		//Already Exists.
 	}
-	if (iterFound == ( ListIn->end() - 1) )
-	{//insert at end
-		ListIn->push_back(udIn);
-		return true;
-	}
-
-	if (KeyFound == 1) //insert after, somewhere in the middle
+	else
 	{
-		++iterFound;
-		ListIn->insert(iterFound, udIn);
-		return true;
+		if (KeyFound == -1) //insert before, somewhere in the middle
+		{
+			ListIn->insert(iterFound, udIn);
+		}
+		else
+		{
+			if (iterFound == ( ListIn->end() - 1) )
+			{//insert at end
+				ListIn->push_back(udIn);
+				return ListIn->size() -1;//Zero Base
+			}
+			else
+			{
+				if (KeyFound == 1) //insert Above last element - Special case
+				{
+					++iterFound;
+					++Pos;
+					ListIn->insert(iterFound, udIn);
+				}
+			}
+		}
 	}
-	return false;//Oh pop poop, never should hit here.
+	return Pos;
 }
 
 bool UserData::FindOrInsertStringIntoAutolist(vector<string>* ListIn,const string &strIn)
