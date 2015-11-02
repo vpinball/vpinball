@@ -14,7 +14,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (United States) resources
+// Englisch (USA) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
@@ -252,7 +252,7 @@ BEGIN
     PUSHBUTTON      "Web Site",IDC_WEBSITE,156,174,67,14
     PUSHBUTTON      "Translator's Web Site Name",IDC_TRANSLATEWEBSITE,130,44,93,14,NOT WS_VISIBLE | WS_DISABLED
     CTEXT           "This application uses Visual Basic Scripting Edition by Microsoft",IDC_STATIC,0,198,150,17
-    CONTROL         264,IDC_STATIC,"Static",SS_BITMAP,7,7,94,27
+    CONTROL         IDC_RIGHTFLIPPERBUTTON,IDC_STATIC,"Static",SS_BITMAP,7,7,94,27
     LTEXT           "A Randy Davis Production",IDC_STATIC,13,35,94,8
     LTEXT           "Version 10.0.0",IDC_ABOUT_VERSION,13,45,121,10
     GROUPBOX        "Credits",IDC_STATIC,7,57,216,108
@@ -331,7 +331,7 @@ BEGIN
     LTEXT           "fps  (1=VSync,2=Adapt)",IDC_STATIC,267,126,90,10
     GROUPBOX        "Video Mode",IDC_STATIC,7,7,142,266
     GROUPBOX        "Ball Rendering",IDC_STATIC,154,7,103,40
-    GROUPBOX        "3D Stereo Output",IDC_STATIC,259,7,85,80
+    GROUPBOX        "3D Stereo Output",IDC_STATIC,262,7,84,80
     GROUPBOX        "Performance and Troubleshooting",IDC_STATIC,154,113,190,160
     GROUPBOX        "Max Texture Dimension (for low-end gfx boards)",IDC_STATIC,159,181,180,54
     LTEXT           "Object Detail Level (decrease = performance)",IDC_STATIC,162,238,156,8
@@ -1947,6 +1947,10 @@ BEGIN
     BEGIN
     END
 
+    IDD_VIDEO_OPTIONS, DIALOG
+    BEGIN
+    END
+
     IDD_EDITOR_OPTIONS, DIALOG
     BEGIN
     END
@@ -2631,7 +2635,7 @@ BEGIN
     IDS_STEP                "Step"
 END
 
-#endif    // English (United States) resources
+#endif    // Englisch (USA) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
