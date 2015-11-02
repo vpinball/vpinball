@@ -58,6 +58,7 @@ public:
    void Flip(bool vsync);
 
    void SetRenderTarget(RenderTarget* pddsSurface, RenderTarget* pddsZ) const;
+   void SetRenderTarget(RenderTarget* pddsSurface, D3DTexture* pddsZ) const;
    void SetTextureFilter(const int TextureNum, const int Mode) const;
 
    void EnableAlphaTestReference(const DWORD alphaRefValue) const;
@@ -87,10 +88,10 @@ public:
 
    D3DTexture* m_pdds3DZBuffer;
 
-   RenderTarget* m_pddsZBuffer;
+   D3DTexture* m_pddsZBuffer;
 
    RenderTarget* m_pddsStatic;
-   RenderTarget* m_pddsStaticZ;
+   D3DTexture* m_pddsStaticZ;
 
    //RenderTarget* m_bloomTexture;
 

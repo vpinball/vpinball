@@ -449,13 +449,6 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
    if (FAILED(hr))
       ReportError("Fatal Error: unable to create blur buffer!", hr, __FILE__, __LINE__);
 
-#ifdef USE_MRT
-   hr = m_pD3DDevice->CreateTexture(width, height, 1,
-      D3DUSAGE_RENDERTARGET, D3DFMT_L16, D3DPOOL_DEFAULT, &m_pDepthBufferTexture, NULL); //!! D3DFMT_R32F?
-   if (FAILED(hr))
-      ReportError("Fatal Error: unable to create depth buffer!", hr, __FILE__, __LINE__);
-#endif
-
    // alloc temporary buffer for postprocessing
    if (stereo3D || FXAA)
    {
@@ -463,7 +456,6 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
          D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &m_pOffscreenBackBufferTmpTexture, NULL);
       if (FAILED(hr))
          ReportError("Fatal Error: unable to create stereo3D/FXAA buffer!", hr, __FILE__, __LINE__);
-
    }
    else
       m_pOffscreenBackBufferTmpTexture = NULL;
@@ -537,7 +529,7 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
 
 bool RenderDevice::DepthBufferReadBackAvailable()
 {
-#ifdef USE_MRT
+#ifndef NVAPI_DEPTH_READ
    return true;
 #else
    return NVAPIinit;
@@ -564,7 +556,8 @@ static void CheckForD3DLeak(IDirect3DDevice9* d3d)
 #endif
 
 
-static RenderTarget *src_cache = NULL; //!! meh, for nvidia depth read only
+static RenderTarget *srcr_cache = NULL; //!! meh, for nvidia depth read only
+static D3DTexture *srct_cache = NULL;
 static D3DTexture* dest_cache = NULL;
 
 void RenderDevice::FreeShader()
@@ -620,9 +613,12 @@ void RenderDevice::FreeShader()
 RenderDevice::~RenderDevice()
 {
 #ifndef DISABLE_FORCE_NVIDIA_OPTIMUS
-   if (src_cache != NULL)
-      CHECKNVAPI(NvAPI_D3D9_UnregisterResource(src_cache)); //!! meh
-   src_cache = NULL;
+   if (srcr_cache != NULL)
+      CHECKNVAPI(NvAPI_D3D9_UnregisterResource(srcr_cache)); //!! meh
+   srcr_cache = NULL;
+   if (srct_cache != NULL)
+      CHECKNVAPI(NvAPI_D3D9_UnregisterResource(srct_cache)); //!! meh
+   srct_cache = NULL;
    if (dest_cache != NULL)
       CHECKNVAPI(NvAPI_D3D9_UnregisterResource(dest_cache)); //!! meh
    dest_cache = NULL;
@@ -659,10 +655,6 @@ RenderDevice::~RenderDevice()
    SAFE_RELEASE(m_pBloomBufferTexture);
    SAFE_RELEASE(m_pBloomTmpBufferTexture);
    SAFE_RELEASE(m_pBackBuffer);
-
-#ifdef USE_MRT
-   SAFE_RELEASE(m_pDepthBufferTexture);
-#endif
 
 #ifdef _DEBUG
    CheckForD3DLeak(m_pD3DDevice);
@@ -821,12 +813,12 @@ void RenderDevice::CopyDepth(D3DTexture* dest, RenderTarget* src)
 #ifndef DISABLE_FORCE_NVIDIA_OPTIMUS
    if (NVAPIinit)
    {
-      if (src != src_cache)
+      if (src != srcr_cache)
       {
-         if (src_cache != NULL)
-            CHECKNVAPI(NvAPI_D3D9_UnregisterResource(src_cache)); //!! meh
+         if (srcr_cache != NULL)
+            CHECKNVAPI(NvAPI_D3D9_UnregisterResource(srcr_cache)); //!! meh
          CHECKNVAPI(NvAPI_D3D9_RegisterResource(src)); //!! meh
-         src_cache = src;
+         srcr_cache = src;
       }
       if (dest != dest_cache)
       {
@@ -886,6 +878,65 @@ void RenderDevice::CopyDepth(D3DTexture* dest, RenderTarget* src)
       SAFE_RELEASE_NO_RCC(pINTZDSTSurface);
       SAFE_RELEASE(pDSTSurface);
    }
+#endif
+}
+
+void RenderDevice::CopyDepth(D3DTexture* dest, D3DTexture* src)
+{
+#ifndef NVAPI_DEPTH_READ
+   CopySurface(dest, src); // if INTZ used as texture format this works, although not really specified somewhere
+#else
+#ifndef DISABLE_FORCE_NVIDIA_OPTIMUS
+   if (NVAPIinit)
+   {
+      if (src != srct_cache)
+      {
+         if (srct_cache != NULL)
+            CHECKNVAPI(NvAPI_D3D9_UnregisterResource(srct_cache)); //!! meh
+         CHECKNVAPI(NvAPI_D3D9_RegisterResource(src)); //!! meh
+         srct_cache = src;
+      }
+      if (dest != dest_cache)
+      {
+         if (dest_cache != NULL)
+            CHECKNVAPI(NvAPI_D3D9_UnregisterResource(dest_cache)); //!! meh
+         CHECKNVAPI(NvAPI_D3D9_RegisterResource(dest)); //!! meh
+         dest_cache = dest;
+      }
+
+      //CHECKNVAPI(NvAPI_D3D9_AliasSurfaceAsTexture(m_pD3DDevice,src,dest,0));
+      CHECKNVAPI(NvAPI_D3D9_StretchRectEx(m_pD3DDevice, src, NULL, dest, NULL, D3DTEXF_NONE));
+   }
+#endif
+#endif
+#if 0 // leftover manual pixel shader texture copy
+   BeginScene(); //!!
+
+   IDirect3DSurface9 *oldRT;
+   CHECKD3D(m_pD3DDevice->GetRenderTarget(0, &oldRT));
+
+   IDirect3DSurface9 *destTextureSurface;
+   CHECKD3D(dest->GetSurfaceLevel(0, &destTextureSurface));
+   SetRenderTarget(destTextureSurface);
+
+   FBShader->SetTexture("Texture0", src);
+   FBShader->SetFloat("mirrorFactor", 1.f); //!! use separate pass-through shader instead??
+   FBShader->SetTechnique("fb_mirror");
+
+   SetRenderState(RenderDevice::ALPHABLENDENABLE, FALSE); // paranoia set //!!
+   SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
+   SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
+   SetRenderState(RenderDevice::ZENABLE, FALSE);
+
+   FBShader->Begin(0);
+   DrawFullscreenQuad();
+   FBShader->End();
+
+   SetRenderTarget(oldRT);
+   SAFE_RELEASE_NO_RCC(oldRT);
+   SAFE_RELEASE_NO_RCC(destTextureSurface);
+
+   EndScene(); //!!
 #endif
 }
 
@@ -1160,19 +1211,24 @@ IndexBuffer* RenderDevice::CreateAndFillIndexBuffer(const std::vector<unsigned i
 }
 
 
-RenderTarget* RenderDevice::AttachZBufferTo(RenderTarget* surf)
+D3DTexture* RenderDevice::AttachZBufferTo(RenderTarget* surf)
 {
    D3DSURFACE_DESC desc;
-   HRESULT hr;
    surf->GetDesc(&desc);
+   D3DTexture* dup;
+   CHECKD3D(m_pD3DDevice->CreateTexture(desc.Width, desc.Height, 1,
+      D3DUSAGE_DEPTHSTENCIL, (D3DFORMAT)MAKEFOURCC('I', 'N', 'T', 'Z'), D3DPOOL_DEFAULT, &dup, NULL)); // D3DUSAGE_AUTOGENMIPMAP?
 
+   return dup;
+#if 0
    IDirect3DSurface9 *pZBuf;
-   hr = m_pD3DDevice->CreateDepthStencilSurface(desc.Width, desc.Height, D3DFMT_D16 /*D3DFMT_D24X8*/,
-                                                desc.MultiSampleType, desc.MultiSampleQuality, FALSE, &pZBuf, NULL);
+   HRESULT hr = m_pD3DDevice->CreateDepthStencilSurface(desc.Width, desc.Height, D3DFMT_D16 /*D3DFMT_D24X8*/,
+                                                        desc.MultiSampleType, desc.MultiSampleQuality, FALSE, &pZBuf, NULL);
    if (FAILED(hr))
       ReportError("Fatal Error: unable to create depth buffer!", hr, __FILE__, __LINE__);
 
    return pZBuf;
+#endif
 }
 
 void RenderDevice::DrawPrimitive(const D3DPRIMITIVETYPE type, const DWORD fvf, const void* vertices, const DWORD vertexCount)
@@ -1302,10 +1358,10 @@ Shader::Shader(RenderDevice *renderDevice)
    currentAlphaTestValue = -FLT_MAX;
    currentDisableLighting = ~0u;
    currentFlasherData =
-      currentFlasherColor =
-      currentLightColor =
-      currentLightColor2 =
-      currentLightData = D3DXVECTOR4(-FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
+   currentFlasherColor =
+   currentLightColor =
+   currentLightColor2 =
+   currentLightData = D3DXVECTOR4(-FLT_MAX, -FLT_MAX, -FLT_MAX, -FLT_MAX);
    currentLightImageMode = ~0u;
    currentLightBackglassMode = ~0u;
    currentTechnique[0] = 0;

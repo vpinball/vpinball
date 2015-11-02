@@ -77,7 +77,6 @@ struct VS_OUTPUT
    float2 tex1     : TEXCOORD1;
    float3 worldPos : TEXCOORD2; 
    float3 normal   : TEXCOORD3;
-   float2 screenPos: TEXCOORD4; // z & w
 };
 
 struct VS_NOTEX_OUTPUT 
@@ -86,7 +85,6 @@ struct VS_NOTEX_OUTPUT
    float2 tex1     : TEXCOORD0;
    float3 worldPos : TEXCOORD1; 
    float3 normal   : TEXCOORD2;
-   float2 screenPos: TEXCOORD3; // z & w
 };
 
 struct VS_DEPTH_ONLY_NOTEX_OUTPUT 
@@ -103,7 +101,6 @@ struct VS_DEPTH_ONLY_TEX_OUTPUT
 struct PS_OUTPUT
 {
    float4 color:COLOR0;
-   float4 depth:COLOR1;
 };
 //------------------------------------
 //
@@ -126,7 +123,6 @@ VS_OUTPUT vs_main (float4 vPosition : POSITION0,
       Out.tex1 = Out.pos.xy/Out.pos.w;
    Out.worldPos = P;
    Out.normal = N;
-   Out.screenPos = Out.pos.zw;
    return Out; 
 }
 
@@ -145,7 +141,6 @@ VS_NOTEX_OUTPUT vs_notex_main (float4 vPosition : POSITION0,
       Out.tex1 = Out.pos.xy/Out.pos.w;
    Out.worldPos = P;
    Out.normal = N;
-   Out.screenPos = Out.pos.zw;
    return Out; 
 }
 
@@ -173,8 +168,6 @@ PS_OUTPUT ps_main(in VS_NOTEX_OUTPUT IN)
 {
    //return float4((IN.normal+1.0)*0.5,1.0); // visualize normals
    PS_OUTPUT output;
-   output.depth = IN.screenPos.x/IN.screenPos.y; // z/w
-   //output.depth.y = output.depth.z = output.depth.w = 0.;
    const float3 diffuse  = cBase_Alpha.xyz;
    const float3 glossy   = (Roughness_WrapL_Edge_IsMetal.w != 0.0) ? cBase_Alpha.xyz : cGlossy*0.08;
    const float3 specular = cClearcoat_EdgeAlpha.xyz*0.08;
@@ -201,8 +194,6 @@ PS_OUTPUT ps_main(in VS_NOTEX_OUTPUT IN)
 PS_OUTPUT ps_main_texture(in VS_OUTPUT IN) 
 {
    PS_OUTPUT output;
-   output.depth = IN.screenPos.x/IN.screenPos.y; // z/w
-   //output.depth.y = output.depth.z = output.depth.w = 0.;
    float4 pixel = tex2D(texSampler0, IN.tex0);
 
    if (pixel.a<=fAlphaTestValue)
@@ -276,7 +267,6 @@ VS_NOTEX_OUTPUT vs_kicker (float4 vPosition : POSITION0,
         Out.tex1 = Out.pos.xy/Out.pos.w; //!! not necessary
     Out.worldPos = P;
     Out.normal = N;
-    Out.screenPos = Out.pos.zw;
     return Out; 
 }
 
