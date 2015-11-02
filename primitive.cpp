@@ -846,7 +846,11 @@ void Primitive::RenderObject(RenderDevice *pd3dDevice)
 
    pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+#ifdef TWOSIDED_TRANSPARENCY
+   pd3dDevice->SetRenderState(RenderDevice::CULLMODE, mat->m_bOpacityActive ? D3DCULL_CW : D3DCULL_CCW);
+#else
    pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+#endif
 
    if (m_d.m_fDisableLighting)
       pd3dDevice->basicShader->SetDisableLighting(m_d.m_fDisableLighting);
@@ -876,6 +880,19 @@ void Primitive::RenderObject(RenderDevice *pd3dDevice)
    else
       pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, (DWORD)m_mesh.NumVertices(), indexBuffer, 0, (DWORD)m_mesh.NumIndices());
    pd3dDevice->basicShader->End();
+
+#ifdef TWOSIDED_TRANSPARENCY
+   if(mat->m_bOpacityActive)
+   {
+       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+       pd3dDevice->basicShader->Begin(0);
+       if (m_d.m_fGroupdRendering)
+          pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, m_numGroupVertices, indexBuffer, 0, m_numGroupIndices);
+       else
+          pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, (DWORD)m_mesh.NumVertices(), indexBuffer, 0, (DWORD)m_mesh.NumIndices());
+       pd3dDevice->basicShader->End();
+   }
+#endif
 
    // reset transform
    if (!m_d.m_fGroupdRendering)
