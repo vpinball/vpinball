@@ -1443,12 +1443,6 @@ void Player::InitStatic(HWND hwndProgress)
 
    // Direct all renders to the "static" buffer.
    m_pin3d.SetRenderTarget(m_pin3d.m_pddsStatic, m_pin3d.m_pddsStaticZ);
-#ifdef USE_MRT
-   RenderTarget* depthSurface;
-   m_pin3d.m_pd3dDevice->GetDepthBufferTexture()->GetSurfaceLevel(0, &depthSurface);
-   m_pin3d.m_pd3dDevice->GetCoreDevice()->SetRenderTarget(1, depthSurface);
-   SAFE_RELEASE_NO_RCC(depthSurface); //!!
-#endif
 
    m_pin3d.DrawBackground();
 
@@ -1525,9 +1519,6 @@ void Player::InitStatic(HWND hwndProgress)
       SetClipPlanePlayfield(true);
    }
 
-#ifdef USE_MRT
-   m_pin3d.m_pd3dDevice->GetCoreDevice()->SetRenderTarget(1, NULL);
-#endif
    // Finish the frame.
    m_pin3d.m_pd3dDevice->EndScene();
 
@@ -1544,10 +1535,6 @@ void Player::InitStatic(HWND hwndProgress)
       m_pin3d.m_pd3dDevice->EndScene();
 
       m_pin3d.m_pd3dDevice->CopyDepth(m_pin3d.m_pdds3DZBuffer, m_pin3d.m_pddsStaticZ); // do not put inside BeginScene/EndScene Block
-#ifdef USE_MRT
-      D3DTexture *tmpBuffer = m_pin3d.m_pdds3DZBuffer;
-      m_pin3d.m_pdds3DZBuffer = m_pin3d.m_pd3dDevice->GetDepthBufferTexture();
-#endif
       m_pin3d.m_pd3dDevice->CopySurface(m_pin3d.m_pd3dDevice->GetBackBufferTexture(), m_pin3d.m_pddsStatic);
       m_pin3d.m_pd3dDevice->CopySurface(m_pin3d.m_pddsStaticZ, m_pin3d.m_pddsZBuffer); // cannot be called inside BeginScene -> EndScene cycle
 
@@ -1614,10 +1601,6 @@ void Player::InitStatic(HWND hwndProgress)
       m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 
       m_pin3d.m_pd3dDevice->EndScene();
-
-#ifdef USE_MRT
-      m_pin3d.m_pdds3DZBuffer = tmpBuffer;
-#endif
    }
 }
 
@@ -3161,10 +3144,6 @@ void Player::FlipVideoBuffersNormal(const bool vsync)
    const bool FXAA2 = (((m_fFXAA == 2) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == 2));
    const bool FXAA3 = (((m_fFXAA == 3) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == 3));
 
-#ifdef USE_MRT
-   m_pin3d.m_pd3dDevice->GetCoreDevice()->SetRenderTarget(1, NULL);
-#endif
-
    if (stereo)
       m_pin3d.m_pd3dDevice->CopyDepth(m_pin3d.m_pdds3DZBuffer, m_pin3d.m_pddsZBuffer); // do not put inside BeginScene/EndScene Block
 
@@ -3236,12 +3215,7 @@ void Player::FlipVideoBuffersAO(const bool vsync)
    const bool FXAA2 = (((m_fFXAA == 2) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == 2));
    const bool FXAA3 = (((m_fFXAA == 3) && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA == 3));
 
-#ifdef USE_MRT
-   m_pin3d.m_pd3dDevice->GetCoreDevice()->SetRenderTarget(1, NULL);
-#else
    m_pin3d.m_pd3dDevice->CopyDepth(m_pin3d.m_pdds3DZBuffer, m_pin3d.m_pddsZBuffer); // do not put inside BeginScene/EndScene Block
-#endif
-
 
    m_pin3d.m_pd3dDevice->BeginScene();
 

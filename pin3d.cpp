@@ -250,11 +250,7 @@ HRESULT Pin3D::InitPin3D(const HWND hwnd, const bool fullScreen, const int width
    //
 
    if(m_pd3dDevice->DepthBufferReadBackAvailable()) /*(stereo3D || useAO)*/ {
-      m_pdds3DZBuffer = m_pd3dDevice->DuplicateDepthTexture(m_pddsZBuffer);
-
-      //!! could use this as depth render target, if not had to render to & copy static z also around (stretchrect does not work with textures)
-      //CHECKD3D(m_pdds3DZBuffer->GetSurfaceLevel(0, &m_pOffscreenBackBufferZ));
-      //m_pd3dDevice->SetDepthStencilSurface(m_pOffscreenBackBufferZ);
+      m_pdds3DZBuffer = m_pd3dDevice->AttachZBufferTo(m_pddsBackBuffer); //m_pd3dDevice->DuplicateDepthTexture(m_pddsZBuffer);
 
       if (!m_pdds3DZBuffer)
          return E_FAIL;
@@ -289,6 +285,15 @@ void Pin3D::SetRenderTarget(RenderTarget* pddsSurface, RenderTarget* pddsZ) cons
 {
    m_pd3dDevice->SetRenderTarget(pddsSurface);
    m_pd3dDevice->SetZBuffer(pddsZ);
+}
+
+void Pin3D::SetRenderTarget(RenderTarget* pddsSurface, D3DTexture* pddsZ) const
+{
+   m_pd3dDevice->SetRenderTarget(pddsSurface);
+   IDirect3DSurface9 *textureSurface;
+   CHECKD3D(pddsZ->GetSurfaceLevel(0, &textureSurface));
+   m_pd3dDevice->SetZBuffer(textureSurface);
+   SAFE_RELEASE_NO_RCC(textureSurface);
 }
 
 void Pin3D::InitRenderState()

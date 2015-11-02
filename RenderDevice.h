@@ -192,12 +192,13 @@ public:
    void SetRenderTarget(RenderTarget*);
    void SetZBuffer(RenderTarget*);
 
-   RenderTarget* AttachZBufferTo(RenderTarget* surf);
+   D3DTexture* AttachZBufferTo(RenderTarget* surf);
    void CopySurface(RenderTarget* dest, RenderTarget* src);
    void CopySurface(D3DTexture* dest, RenderTarget* src);
    void CopySurface(RenderTarget* dest, D3DTexture* src);
    void CopySurface(D3DTexture* dest, D3DTexture* src);
    void CopyDepth(D3DTexture* dest, RenderTarget* src);
+   void CopyDepth(D3DTexture* dest, D3DTexture* src);
 
    bool DepthBufferReadBackAvailable();
 
