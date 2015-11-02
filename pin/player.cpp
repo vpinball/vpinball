@@ -1431,9 +1431,7 @@ void Player::RenderMirrorOverlay()
 void Player::InitStatic(HWND hwndProgress)
 {
    TRACE_FUNCTION();
-#ifdef USE_MRT
-   m_pin3d.m_pd3dDevice->GetCoreDevice()->SetRenderTarget(1, m_pin3d.m_pd3dDevice->GetDepthBufferSurface());
-#endif
+
    // Start the frame.
    for (unsigned i = 0; i < m_vhitables.size(); ++i)
    {
@@ -1445,6 +1443,12 @@ void Player::InitStatic(HWND hwndProgress)
 
    // Direct all renders to the "static" buffer.
    m_pin3d.SetRenderTarget(m_pin3d.m_pddsStatic, m_pin3d.m_pddsStaticZ);
+#ifdef USE_MRT
+   RenderTarget* depthSurface;
+   m_pin3d.m_pd3dDevice->GetDepthBufferTexture()->GetSurfaceLevel(0, &depthSurface);
+   m_pin3d.m_pd3dDevice->GetCoreDevice()->SetRenderTarget(1, depthSurface);
+   SAFE_RELEASE_NO_RCC(depthSurface); //!!
+#endif
 
    m_pin3d.DrawBackground();
 
@@ -1521,6 +1525,9 @@ void Player::InitStatic(HWND hwndProgress)
       SetClipPlanePlayfield(true);
    }
 
+#ifdef USE_MRT
+   m_pin3d.m_pd3dDevice->GetCoreDevice()->SetRenderTarget(1, NULL);
+#endif
    // Finish the frame.
    m_pin3d.m_pd3dDevice->EndScene();
 
@@ -1537,6 +1544,10 @@ void Player::InitStatic(HWND hwndProgress)
       m_pin3d.m_pd3dDevice->EndScene();
 
       m_pin3d.m_pd3dDevice->CopyDepth(m_pin3d.m_pdds3DZBuffer, m_pin3d.m_pddsStaticZ); // do not put inside BeginScene/EndScene Block
+#ifdef USE_MRT
+      D3DTexture *tmpBuffer = m_pin3d.m_pdds3DZBuffer;
+      m_pin3d.m_pdds3DZBuffer = m_pin3d.m_pd3dDevice->GetDepthBufferTexture();
+#endif
       m_pin3d.m_pd3dDevice->CopySurface(m_pin3d.m_pd3dDevice->GetBackBufferTexture(), m_pin3d.m_pddsStatic);
       m_pin3d.m_pd3dDevice->CopySurface(m_pin3d.m_pddsStaticZ, m_pin3d.m_pddsZBuffer); // cannot be called inside BeginScene -> EndScene cycle
 
@@ -1603,6 +1614,10 @@ void Player::InitStatic(HWND hwndProgress)
       m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 
       m_pin3d.m_pd3dDevice->EndScene();
+
+#ifdef USE_MRT
+      m_pin3d.m_pdds3DZBuffer = tmpBuffer;
+#endif
    }
 }
 
