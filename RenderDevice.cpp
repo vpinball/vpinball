@@ -799,9 +799,17 @@ void RenderDevice::CopySurface(RenderTarget* dest, D3DTexture* src)
    SAFE_RELEASE_NO_RCC(textureSurface);
 }
 
+void RenderDevice::CopySurface(void* dest, void* src)
+{
+   if (!m_useNvidiaApi && m_INTZ_support)
+      CopySurface((D3DTexture*)dest, (D3DTexture*)src);
+   else
+      CopySurface((RenderTarget*)dest, (RenderTarget*)src);
+}
+
 void RenderDevice::CopySurface(D3DTexture* dest, D3DTexture* src)
 {
-    HRESULT hr;
+   HRESULT hr;
    IDirect3DSurface9 *destTextureSurface;
    CHECKD3D(dest->GetSurfaceLevel(0, &destTextureSurface));
    IDirect3DSurface9 *srcTextureSurface;
@@ -809,7 +817,7 @@ void RenderDevice::CopySurface(D3DTexture* dest, D3DTexture* src)
    hr=m_pD3DDevice->StretchRect(srcTextureSurface, NULL, destTextureSurface, NULL, D3DTEXF_NONE);
    if (FAILED(hr))
    {
-       ShowError("Unable to access texture surface! \r\nIf you use a NVIDIA card try to set \"Use NVIDIA API\" in the video options!");
+       ShowError("Unable to access texture surface! \r\nIf you use a NVIDIA card try to set \"Use NVIDIA API\" in the video options!\n\nOtherwise disable Ambient Occlusion.");
    }
    SAFE_RELEASE_NO_RCC(destTextureSurface);
    SAFE_RELEASE_NO_RCC(srcTextureSurface);
@@ -891,11 +899,10 @@ void RenderDevice::CopyDepth(D3DTexture* dest, RenderTarget* src)
 
 void RenderDevice::CopyDepth(D3DTexture* dest, D3DTexture* src)
 {
-#ifndef NVAPI_DEPTH_READ
-   CopySurface(dest, src); // if INTZ used as texture format this works, although not really specified somewhere
-#else
+   if (!m_useNvidiaApi)
+      CopySurface(dest, src); // if INTZ used as texture format this (usually) works, although not really specified somewhere
 #ifndef DISABLE_FORCE_NVIDIA_OPTIMUS
-   if (NVAPIinit)
+   else if (NVAPIinit)
    {
       if (src != srct_cache)
       {
@@ -915,7 +922,6 @@ void RenderDevice::CopyDepth(D3DTexture* dest, D3DTexture* src)
       //CHECKNVAPI(NvAPI_D3D9_AliasSurfaceAsTexture(m_pD3DDevice,src,dest,0));
       CHECKNVAPI(NvAPI_D3D9_StretchRectEx(m_pD3DDevice, src, NULL, dest, NULL, D3DTEXF_NONE));
    }
-#endif
 #endif
 #if 0 // leftover manual pixel shader texture copy
    BeginScene(); //!!
@@ -946,6 +952,14 @@ void RenderDevice::CopyDepth(D3DTexture* dest, D3DTexture* src)
 
    EndScene(); //!!
 #endif
+}
+
+void RenderDevice::CopyDepth(D3DTexture* dest, void* src)
+{
+   if (!m_useNvidiaApi && m_INTZ_support)
+      CopyDepth(dest, (D3DTexture*)src);
+   else
+      CopyDepth(dest, (RenderTarget*)src);
 }
 
 D3DTexture* RenderDevice::CreateSystemTexture(BaseTexture* surf)
@@ -1219,24 +1233,29 @@ IndexBuffer* RenderDevice::CreateAndFillIndexBuffer(const std::vector<unsigned i
 }
 
 
-D3DTexture* RenderDevice::AttachZBufferTo(RenderTarget* surf)
+void* RenderDevice::AttachZBufferTo(RenderTarget* surf)
 {
    D3DSURFACE_DESC desc;
    surf->GetDesc(&desc);
-   D3DTexture* dup;
-   CHECKD3D(m_pD3DDevice->CreateTexture(desc.Width, desc.Height, 1,
-      D3DUSAGE_DEPTHSTENCIL, (D3DFORMAT)MAKEFOURCC('I', 'N', 'T', 'Z'), D3DPOOL_DEFAULT, &dup, NULL)); // D3DUSAGE_AUTOGENMIPMAP?
+   
+   if (!m_useNvidiaApi && m_INTZ_support)
+   {
+      D3DTexture* dup;
+      CHECKD3D(m_pD3DDevice->CreateTexture(desc.Width, desc.Height, 1,
+               D3DUSAGE_DEPTHSTENCIL, (D3DFORMAT)MAKEFOURCC('I', 'N', 'T', 'Z'), D3DPOOL_DEFAULT, &dup, NULL)); // D3DUSAGE_AUTOGENMIPMAP?
 
-   return dup;
-#if 0
-   IDirect3DSurface9 *pZBuf;
-   HRESULT hr = m_pD3DDevice->CreateDepthStencilSurface(desc.Width, desc.Height, D3DFMT_D16 /*D3DFMT_D24X8*/,
-                                                        desc.MultiSampleType, desc.MultiSampleQuality, FALSE, &pZBuf, NULL);
-   if (FAILED(hr))
-      ReportError("Fatal Error: unable to create depth buffer!", hr, __FILE__, __LINE__);
+      return dup;
+   }
+   else
+   {
+      IDirect3DSurface9 *pZBuf;
+      HRESULT hr = m_pD3DDevice->CreateDepthStencilSurface(desc.Width, desc.Height, D3DFMT_D16 /*D3DFMT_D24X8*/, //!!
+                                                           desc.MultiSampleType, desc.MultiSampleQuality, FALSE, &pZBuf, NULL);
+      if (FAILED(hr))
+         ReportError("Fatal Error: unable to create depth buffer!", hr, __FILE__, __LINE__);
 
-   return pZBuf;
-#endif
+      return pZBuf;
+   }
 }
 
 void RenderDevice::DrawPrimitive(const D3DPRIMITIVETYPE type, const DWORD fvf, const void* vertices, const DWORD vertexCount)
