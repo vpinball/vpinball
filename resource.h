@@ -613,6 +613,7 @@
 #define IDC_VP_HEIGHT                   422
 #define IDC_TABLE_DIM_LIST              423
 #define IDC_AO_ALL_TABLES               424
+#define IDC_DYNAMIC_AO                  424
 #define IDC_FORCE_ANISO                 425
 #define IDC_WIRE_DISTY                  425
 #define IDC_SCALE_BULB_MESH             425
@@ -644,7 +645,6 @@
 #define IDC_PLUNGER_REFLECT_ENABLED_CHECK 431
 #define IDC_TRIGGER_REFLECT_ENABLED_CHECK 431
 #define IDC_CVP_CHKBOX_SHOWAUTOCOMPLETE 431
-#define IDC_USE_NVIDIA_API              431
 #define IDC_USE_NVIDIA_API_CHECK        431
 #define IDC_LIGHT_FALLOFF_POWER         432
 #define IDC_MODULATE_VS_ADD             433
@@ -813,6 +813,7 @@
 #define IDC_CVP_EXAMPLE_COMPS           716
 #define IDC_CVP_BUT_FONT_COMPS          716
 #define IDC_CVP_BUT_FONT_SUBS           717
+#define IDC_DISABLE_AO                  717
 #define IDC_CVP_BUT_FONT_VBS            718
 #define IDC_CVP_BUT_FONT_COMMENTS       719
 #define IDC_CVP_BUT_FONT_LITERALS       720
@@ -946,7 +947,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        620
 #define _APS_NEXT_COMMAND_VALUE         4003
-#define _APS_NEXT_CONTROL_VALUE         717
+#define _APS_NEXT_CONTROL_VALUE         718
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif

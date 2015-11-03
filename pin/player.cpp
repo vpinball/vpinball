@@ -216,11 +216,17 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
       m_fAA = (AA == 1);
 
    int AO;
-   hr = GetRegInt("Player", "USEAO", &AO);
+   hr = GetRegInt("Player", "DynamicAO", &AO);
    if (hr != S_OK)
-      m_fAO = false; // The default = off
+      m_dynamicAO = false; // The default = off
    else
-      m_fAO = (AO == 1);
+      m_dynamicAO = (AO == 1);
+
+   hr = GetRegInt("Player", "DisableAO", &AO);
+   if (hr != S_OK)
+       m_disableAO = false; // The default = off
+   else
+       m_disableAO = (AO == 1);
 
    hr = GetRegInt("Player", "Stereo3D", &m_fStereo3D);
    if (hr != S_OK)
@@ -945,7 +951,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 
    int vsync = (m_ptable->m_TableAdaptiveVSync == -1) ? m_fVSync : m_ptable->m_TableAdaptiveVSync;
 
-   const bool useAO = (m_fAO && (m_ptable->m_useAO == -1)) || (m_ptable->m_useAO == 1);
+   const bool useAO = (!m_disableAO && ((m_dynamicAO && (m_ptable->m_useAO == -1)) || (m_ptable->m_useAO == 1)));
    const bool useAA = (m_fAA && (m_ptable->m_useAA == -1)) || (m_ptable->m_useAA == 1);
    const bool stereo3D = (!!m_fStereo3D);
    const bool FXAA = ((m_fFXAA && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA > 0));
@@ -1530,8 +1536,8 @@ void Player::InitStatic(HWND hwndProgress)
    m_pin3d.m_pd3dDevice->EndScene();
 
    // Dynamic AO disabled? -> Pre-Render Static AO
-   const bool useAO = ((m_fAO && (m_ptable->m_useAO == -1)) || (m_ptable->m_useAO == 1));
-   if (!useAO && m_pin3d.m_pd3dDevice->DepthBufferReadBackAvailable())
+   const bool useAO = ((m_dynamicAO && (m_ptable->m_useAO == -1)) || (m_ptable->m_useAO == 1));
+   if (!m_disableAO && !useAO && m_pin3d.m_pd3dDevice->DepthBufferReadBackAvailable())
    {
       const bool useAA = (m_fAA && (m_ptable->m_useAA == -1)) || (m_ptable->m_useAA == 1);
 
@@ -3561,8 +3567,8 @@ void Player::Render()
             vsync = true;
    }
 
-   const bool useAO = ((m_fAO && (m_ptable->m_useAO == -1)) || (m_ptable->m_useAO == 1)) && m_pin3d.m_pd3dDevice->DepthBufferReadBackAvailable();
-   if (useAO)
+   const bool useAO = ((m_dynamicAO && (m_ptable->m_useAO == -1)) || (m_ptable->m_useAO == 1)) && m_pin3d.m_pd3dDevice->DepthBufferReadBackAvailable();
+   if (useAO && !m_disableAO)
       FlipVideoBuffersAO(vsync);
    else
       FlipVideoBuffersNormal(vsync);
