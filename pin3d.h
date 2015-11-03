@@ -59,6 +59,7 @@ public:
 
    void SetRenderTarget(RenderTarget* pddsSurface, RenderTarget* pddsZ) const;
    void SetRenderTarget(RenderTarget* pddsSurface, D3DTexture* pddsZ) const;
+   void SetRenderTarget(RenderTarget* pddsSurface, void* pddsZ) const;
    void SetTextureFilter(const int TextureNum, const int Mode) const;
 
    void EnableAlphaTestReference(const DWORD alphaRefValue) const;
@@ -88,10 +89,10 @@ public:
 
    D3DTexture* m_pdds3DZBuffer;
 
-   D3DTexture* m_pddsZBuffer;
+   void* m_pddsZBuffer; // D3DTexture* or RenderTarget*, depending on HW support
 
    RenderTarget* m_pddsStatic;
-   D3DTexture* m_pddsStaticZ;
+   void* m_pddsStaticZ; // D3DTexture* or RenderTarget*, depending on HW support
 
    //RenderTarget* m_bloomTexture;
 

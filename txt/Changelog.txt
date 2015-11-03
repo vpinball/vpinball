@@ -219,12 +219,8 @@ VP 10.0.0 Changelog
 
 - the property menu can now be a floating window (old behavior can be restored in the editor options)
   
-- remove old shadowing code and replace it with screen space ambient occlusion
+- remove old shadowing code and replace it with optional screen space ambient occlusion
   additionally one can also enable ambient occlusion for dynamic objects (via the global video preferences and also the table options)
-
-- add flag "Use NVIDIA API" to the video options to force using the NVIDIA API for ambient occlusion ()only for NVIDIA cards). Use this option if the default detection gives you errors.
-
-- add ambient occlusion disable flag which disables AO completely
 
 - its not necessary anymore to manually override the texture filtering quality in the global gfx cards options (NVIDIA control panel, etc)
   if you need HQ filtering, please only use the checkbox in the VP video preferences instead
@@ -237,6 +233,9 @@ VP 10.0.0 Changelog
 - stereo 3D now also works on Intel and AMD, not just on NVIDIA 
 - removed stereo 3D AA, its always enabled now
 - added stereo 3D offset, which can be used to offset the table "into" the monitor
+
+- add flag "Use NVIDIA API" to the video options to force using the NVIDIA API for ambient occlusion or stereo 3D
+  use this option if the default detection gives you errors on NVIDIA cards
 
 - adaptive vsync works again, it will disable vsync automatically if FPS drop below monitor refresh rate (not on windows XP though due to missing functionality there)
   enable it by setting the FPS Limiter to 2 (1 will still be using 'real' VSync and any number above the monitor refresh rate (usually 60Hz) will just limit the FPS)

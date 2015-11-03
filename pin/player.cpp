@@ -1537,7 +1537,7 @@ void Player::InitStatic(HWND hwndProgress)
 
    // Dynamic AO disabled? -> Pre-Render Static AO
    const bool useAO = ((m_dynamicAO && (m_ptable->m_useAO == -1)) || (m_ptable->m_useAO == 1));
-   if (!m_disableAO && !useAO && m_pin3d.m_pd3dDevice->DepthBufferReadBackAvailable())
+   if (!m_disableAO && !useAO && m_pin3d.m_pd3dDevice->DepthBufferReadBackAvailable() && (m_ptable->m_AOScale > 0.f))
    {
       const bool useAA = (m_fAA && (m_ptable->m_useAA == -1)) || (m_ptable->m_useAA == 1);
 
@@ -3567,7 +3567,7 @@ void Player::Render()
             vsync = true;
    }
 
-   const bool useAO = ((m_dynamicAO && (m_ptable->m_useAO == -1)) || (m_ptable->m_useAO == 1)) && m_pin3d.m_pd3dDevice->DepthBufferReadBackAvailable();
+   const bool useAO = ((m_dynamicAO && (m_ptable->m_useAO == -1)) || (m_ptable->m_useAO == 1)) && m_pin3d.m_pd3dDevice->DepthBufferReadBackAvailable() && (m_ptable->m_AOScale > 0.f);
    if (useAO && !m_disableAO)
       FlipVideoBuffersAO(vsync);
    else

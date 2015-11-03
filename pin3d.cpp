@@ -43,9 +43,19 @@ Pin3D::~Pin3D()
 
    SAFE_RELEASE(m_pddsAOBackBuffer);
    SAFE_RELEASE(m_pddsAOBackTmpBuffer);
+   if (!m_pd3dDevice->m_useNvidiaApi && m_pd3dDevice->m_INTZ_support)
+   {
+      SAFE_RELEASE_NO_SET((D3DTexture*)m_pddsStaticZ);
+      SAFE_RELEASE_NO_SET((D3DTexture*)m_pddsZBuffer);
+   }
+   else
+   {
+      SAFE_RELEASE_NO_SET((RenderTarget*)m_pddsStaticZ);
+      SAFE_RELEASE_NO_SET((RenderTarget*)m_pddsZBuffer);
+   }
+   m_pddsStaticZ = NULL;
+   m_pddsZBuffer = NULL;
    SAFE_RELEASE(m_pdds3DZBuffer);
-   SAFE_RELEASE(m_pddsStaticZ);
-   SAFE_RELEASE(m_pddsZBuffer);
    SAFE_RELEASE(m_pddsStatic);
    SAFE_RELEASE_NO_RCC(m_pddsBackBuffer);
 
@@ -250,7 +260,7 @@ HRESULT Pin3D::InitPin3D(const HWND hwnd, const bool fullScreen, const int width
    //
 
    if(m_pd3dDevice->DepthBufferReadBackAvailable()) /*(stereo3D || useAO)*/ {
-      m_pdds3DZBuffer = m_pd3dDevice->AttachZBufferTo(m_pddsBackBuffer); //m_pd3dDevice->DuplicateDepthTexture(m_pddsZBuffer);
+      m_pdds3DZBuffer = !m_pd3dDevice->m_useNvidiaApi ? (D3DTexture*)m_pd3dDevice->AttachZBufferTo(m_pddsBackBuffer) : m_pd3dDevice->DuplicateDepthTexture((RenderTarget*)m_pddsZBuffer);
 
       if (!m_pdds3DZBuffer)
          return E_FAIL;
@@ -262,13 +272,13 @@ HRESULT Pin3D::InitPin3D(const HWND hwnd, const bool fullScreen, const int width
        hr = m_pd3dDevice->GetCoreDevice()->CreateTexture(width, height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_L8, D3DPOOL_DEFAULT, &m_pddsAOBackTmpBuffer, NULL);
        if (FAILED(hr))
        {
-           ShowError("Unable to create AO buffers! \r\nIf you use a NVIDIA card try to set \"Use NVIDIA API\" in the video options!");
+           ShowError("Unable to create AO buffers! \r\nIf you use a NVIDIA card try to set \"Use NVIDIA API\" in the video options!\n\nOtherwise disable Ambient Occlusion.");
            return E_FAIL;
        }
        hr = m_pd3dDevice->GetCoreDevice()->CreateTexture(width, height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_L8, D3DPOOL_DEFAULT, &m_pddsAOBackBuffer, NULL);
        if (FAILED(hr))
        {
-           ShowError("Unable to create AO buffers! \r\nIf you use a NVIDIA card try to set \"Use NVIDIA API\" in the video options!");
+           ShowError("Unable to create AO buffers! \r\nIf you use a NVIDIA card try to set \"Use NVIDIA API\" in the video options!\n\nOtherwise disable Ambient Occlusion.");
            return E_FAIL;
        }
        if (!m_pddsAOBackBuffer || !m_pddsAOBackTmpBuffer)
@@ -294,6 +304,14 @@ void Pin3D::SetRenderTarget(RenderTarget* pddsSurface, RenderTarget* pddsZ) cons
 {
    m_pd3dDevice->SetRenderTarget(pddsSurface);
    m_pd3dDevice->SetZBuffer(pddsZ);
+}
+
+void Pin3D::SetRenderTarget(RenderTarget* pddsSurface, void* pddsZ) const
+{   
+   if (!m_pd3dDevice->m_useNvidiaApi && m_pd3dDevice->m_INTZ_support)
+      SetRenderTarget(pddsSurface, (D3DTexture*)pddsZ);
+   else
+      SetRenderTarget(pddsSurface, (RenderTarget*)pddsZ);
 }
 
 void Pin3D::SetRenderTarget(RenderTarget* pddsSurface, D3DTexture* pddsZ) const

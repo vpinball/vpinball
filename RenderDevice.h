@@ -191,13 +191,15 @@ public:
    void SetRenderTarget(RenderTarget*);
    void SetZBuffer(RenderTarget*);
 
-   D3DTexture* AttachZBufferTo(RenderTarget* surf);
+   void* AttachZBufferTo(RenderTarget* surf);
    void CopySurface(RenderTarget* dest, RenderTarget* src);
    void CopySurface(D3DTexture* dest, RenderTarget* src);
    void CopySurface(RenderTarget* dest, D3DTexture* src);
    void CopySurface(D3DTexture* dest, D3DTexture* src);
+   void CopySurface(void* dest, void* src);
    void CopyDepth(D3DTexture* dest, RenderTarget* src);
    void CopyDepth(D3DTexture* dest, D3DTexture* src);
+   void CopyDepth(D3DTexture* dest, void* src);
 
    bool DepthBufferReadBackAvailable();
 
@@ -303,10 +305,11 @@ private:
    //bool m_RESZ_support;
    bool m_force_aniso;
    bool m_compress_textures;
+
+public:
    static bool m_useNvidiaApi;
    static bool m_INTZ_support;
 
-public:
    // performance counters
    unsigned m_curDrawCalls, m_frameDrawCalls;
    unsigned m_curStateChanges, m_frameStateChanges;
