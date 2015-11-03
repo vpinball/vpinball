@@ -14,7 +14,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Englisch (USA) resources
+// English (United States) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
@@ -307,7 +307,7 @@ BEGIN
     EDITTEXT        IDC_3D_STEREO_MS,304,58,36,12,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "ZPD",IDC_STATIC,266,73,50,10
     EDITTEXT        IDC_3D_STEREO_ZPD,304,71,36,12,ES_RIGHT | ES_AUTOHSCROLL
-    CONTROL         "Dynamic Ambient Occlusion",IDC_AO_ALL_TABLES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,57,100,10
+    CONTROL         "Dynamic AO",IDC_AO_ALL_TABLES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,160,59,54,10
     LTEXT           "Visual Nudge Strength",IDC_STATIC,162,97,100,10
     EDITTEXT        IDC_NUDGE_STRENGTH,246,95,36,12,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "FPS limiter/VSync",IDC_STATIC,162,126,100,10
@@ -341,6 +341,9 @@ BEGIN
     EDITTEXT        IDC_CORRECTION_X,39,251,35,12,ES_AUTOHSCROLL
     LTEXT           "Y",IDC_STATIC,85,252,8,8
     EDITTEXT        IDC_CORRECTION_Y,93,251,35,12,ES_AUTOHSCROLL
+    CONTROL         "Use NVIDIA API",IDC_USE_NVIDIA_API_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,160,70,68,10
+    GROUPBOX        "Ambient Occlusion",IDC_STATIC,154,49,103,40
+    LTEXT           "(NVIDIA cards only)",IDC_STATIC,170,78,63,8
 END
 
 IDD_FONTDIALOG DIALOG 0, 0, 316, 167
@@ -2635,7 +2638,7 @@ BEGIN
     IDS_STEP                "Step"
 END
 
-#endif    // Englisch (USA) resources
+#endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

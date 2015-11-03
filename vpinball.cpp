@@ -4218,6 +4218,13 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
       sprintf_s(tmp, 256, "%f", stereo3DZPD);
       SetDlgItemTextA(hwndDlg, IDC_3D_STEREO_ZPD, tmp);
 
+      hwndCheck = GetDlgItem(hwndDlg, IDC_USE_NVIDIA_API_CHECK);
+      int nvidiaApi;
+      hr = GetRegInt("Player", "UseNVidiaAPI", &nvidiaApi);
+      if (hr != S_OK)
+          nvidiaApi = 0;
+      SendMessage(hwndCheck, BM_SETCHECK, (nvidiaApi != 0) ? BST_CHECKED : BST_UNCHECKED, 0);
+
       const bool forceAniso = (GetRegIntWithDefault("Player", "ForceAnisotropicFiltering", 1) != 0);
       SendMessage(GetDlgItem(hwndDlg, IDC_FORCE_ANISO), BM_SETCHECK, forceAniso ? BST_CHECKED : BST_UNCHECKED, 0);
 
@@ -4428,6 +4435,10 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
 
             GetDlgItemTextA(hwndDlg, IDC_3D_STEREO_ZPD, strTmp, 256);
             SetRegValue("Player", "Stereo3DZPD", REG_SZ, &strTmp, lstrlen(strTmp));
+
+            HWND hwndNvidiaApi = GetDlgItem(hwndDlg, IDC_USE_NVIDIA_API_CHECK);
+            size_t nvidiaApi = SendMessage(hwndNvidiaApi, BM_GETCHECK, 0, 0);
+            SetRegValue("Player", "UseNVidiaAPI", REG_DWORD, &nvidiaApi, 4);
 
             //HWND hwndBallStretchNo = GetDlgItem(hwndDlg, IDC_StretchNo);
             HWND hwndBallStretchYes = GetDlgItem(hwndDlg, IDC_StretchYes);
