@@ -218,6 +218,7 @@ void EnumerateDisplayModes(const int adapter, std::vector<VideoMode>& modes)
 
 #define CHECKNVAPI(s) { NvAPI_Status hr = (s); if (hr != NVAPI_OK) { NvAPI_ShortString ss; NvAPI_GetErrorMessage(hr,ss); MessageBox(NULL, ss, "NVAPI", MB_OK | MB_ICONEXCLAMATION); } }
 static bool NVAPIinit = false; //!! meh
+static bool INTZ_support = false;
 
 #ifdef USE_D3D9EX
 typedef HRESULT(WINAPI *pD3DC9Ex)(UINT SDKVersion, IDirect3D9Ex**);
@@ -351,9 +352,9 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
    }
 #endif
 
-   // Determine if RESZ is supported
-   //m_RESZ_support = (m_pD3D->CheckDeviceFormat(m_adapter, devtype, params.BackBufferFormat,
-   //				  D3DUSAGE_RENDERTARGET, D3DRTYPE_SURFACE, ((D3DFORMAT)(MAKEFOURCC('R','E','S','Z'))))) == D3D_OK;
+   // Determine if INTZ is supported
+   INTZ_support = (m_pD3D->CheckDeviceFormat( m_adapter, devtype, params.BackBufferFormat,
+                      D3DUSAGE_DEPTHSTENCIL, D3DRTYPE_TEXTURE, ((D3DFORMAT)(MAKEFOURCC('I','N','T','Z'))))) == D3D_OK;
 
    // check if requested MSAA is possible
    DWORD MultiSampleQualityLevels;
@@ -529,11 +530,10 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
 
 bool RenderDevice::DepthBufferReadBackAvailable()
 {
-#ifndef NVAPI_DEPTH_READ
-   return true;
-#else
-   return NVAPIinit;
-#endif
+    if (INTZ_support)
+        return true;
+    // fall back to NVIDIA only AO if API was initialized
+    return NVAPIinit;
 }
 
 #ifdef _DEBUG
