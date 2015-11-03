@@ -238,6 +238,13 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
       stereo3DY = fFalse; // The default
    m_fStereo3DY = (stereo3DY == 1);
 
+   int nvidiaApi;
+   hr = GetRegInt("Player", "UseNVidiaAPI", &nvidiaApi);
+   if (hr != S_OK)
+       m_useNvidiaApi = false;
+   else
+       m_useNvidiaApi = (nvidiaApi == 1);
+
    int detecthang;
    hr = GetRegInt("Player", "DetectHang", &detecthang);
    if (hr != S_OK)

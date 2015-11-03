@@ -193,7 +193,7 @@ HRESULT Pin3D::InitPin3D(const HWND hwnd, const bool fullScreen, const int width
    m_useAA = useAA;
 
    try {
-      m_pd3dDevice = new RenderDevice(m_hwnd, width, height, fullScreen, colordepth, refreshrate, VSync, useAA, stereo3D, FXAA);
+      m_pd3dDevice = new RenderDevice(m_hwnd, width, height, fullScreen, colordepth, refreshrate, VSync, useAA, stereo3D, FXAA, g_pplayer->m_useNvidiaApi);
    }
    catch (...) {
       return E_FAIL;
@@ -256,14 +256,23 @@ HRESULT Pin3D::InitPin3D(const HWND hwnd, const bool fullScreen, const int width
          return E_FAIL;
    }
 
-   if(m_pd3dDevice->DepthBufferReadBackAvailable()) /*(useAO)*/ {
-      CHECKD3D(m_pd3dDevice->GetCoreDevice()->CreateTexture(width, height, 1,
-         D3DUSAGE_RENDERTARGET, D3DFMT_L8, D3DPOOL_DEFAULT, &m_pddsAOBackTmpBuffer, NULL));
-      CHECKD3D(m_pd3dDevice->GetCoreDevice()->CreateTexture(width, height, 1,
-         D3DUSAGE_RENDERTARGET, D3DFMT_L8, D3DPOOL_DEFAULT, &m_pddsAOBackBuffer, NULL));
-
-      if (!m_pddsAOBackBuffer || !m_pddsAOBackTmpBuffer)
-         return E_FAIL;
+   if(m_pd3dDevice->DepthBufferReadBackAvailable()) /*(useAO)*/ 
+   {
+       HRESULT hr;
+       hr = m_pd3dDevice->GetCoreDevice()->CreateTexture(width, height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_L8, D3DPOOL_DEFAULT, &m_pddsAOBackTmpBuffer, NULL);
+       if (FAILED(hr))
+       {
+           ShowError("Unable to create AO buffers! \r\nIf you use a NVIDIA card try to set \"Use NVIDIA API\" in the video options!");
+           return E_FAIL;
+       }
+       hr = m_pd3dDevice->GetCoreDevice()->CreateTexture(width, height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_L8, D3DPOOL_DEFAULT, &m_pddsAOBackBuffer, NULL);
+       if (FAILED(hr))
+       {
+           ShowError("Unable to create AO buffers! \r\nIf you use a NVIDIA card try to set \"Use NVIDIA API\" in the video options!");
+           return E_FAIL;
+       }
+       if (!m_pddsAOBackBuffer || !m_pddsAOBackTmpBuffer)
+          return E_FAIL;
    }
 
    InitRenderState();

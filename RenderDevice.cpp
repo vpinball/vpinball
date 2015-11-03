@@ -218,7 +218,9 @@ void EnumerateDisplayModes(const int adapter, std::vector<VideoMode>& modes)
 
 #define CHECKNVAPI(s) { NvAPI_Status hr = (s); if (hr != NVAPI_OK) { NvAPI_ShortString ss; NvAPI_GetErrorMessage(hr,ss); MessageBox(NULL, ss, "NVAPI", MB_OK | MB_ICONEXCLAMATION); } }
 static bool NVAPIinit = false; //!! meh
-static bool INTZ_support = false;
+
+bool RenderDevice::m_INTZ_support = false;
+bool RenderDevice::m_useNvidiaApi = false;
 
 #ifdef USE_D3D9EX
 typedef HRESULT(WINAPI *pD3DC9Ex)(UINT SDKVersion, IDirect3D9Ex**);
@@ -231,9 +233,10 @@ static pDICE mDwmIsCompositionEnabled = NULL;
 typedef HRESULT(STDAPICALLTYPE *pDF)();
 static pDF mDwmFlush = NULL;
 
-RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, const bool fullscreen, const int colordepth, int &refreshrate, int VSync, const bool useAA, const bool stereo3D, const bool FXAA)
+RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, const bool fullscreen, const int colordepth, int &refreshrate, int VSync, const bool useAA, const bool stereo3D, const bool FXAA, const bool useNvidiaApi)
    : m_texMan(*this)
 {
+   m_useNvidiaApi = useNvidiaApi;
    m_adapter = D3DADAPTER_DEFAULT;     // for now, always use the default adapter
 
    mDwmIsCompositionEnabled = NULL;
@@ -353,8 +356,8 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
 #endif
 
    // Determine if INTZ is supported
-   INTZ_support = (m_pD3D->CheckDeviceFormat( m_adapter, devtype, params.BackBufferFormat,
-                      D3DUSAGE_DEPTHSTENCIL, D3DRTYPE_TEXTURE, ((D3DFORMAT)(MAKEFOURCC('I','N','T','Z'))))) == D3D_OK;
+   m_INTZ_support = (m_pD3D->CheckDeviceFormat( m_adapter, devtype, params.BackBufferFormat,
+                    D3DUSAGE_DEPTHSTENCIL, D3DRTYPE_TEXTURE, ((D3DFORMAT)(MAKEFOURCC('I','N','T','Z'))))) == D3D_OK;
 
    // check if requested MSAA is possible
    DWORD MultiSampleQualityLevels;
@@ -530,9 +533,9 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
 
 bool RenderDevice::DepthBufferReadBackAvailable()
 {
-    if (INTZ_support)
+    if (m_INTZ_support && !m_useNvidiaApi)
         return true;
-    // fall back to NVIDIA only AO if API was initialized
+    // fall back to NVIDIA, only handle AO if API was initialized
     return NVAPIinit;
 }
 
@@ -798,11 +801,16 @@ void RenderDevice::CopySurface(RenderTarget* dest, D3DTexture* src)
 
 void RenderDevice::CopySurface(D3DTexture* dest, D3DTexture* src)
 {
+    HRESULT hr;
    IDirect3DSurface9 *destTextureSurface;
    CHECKD3D(dest->GetSurfaceLevel(0, &destTextureSurface));
    IDirect3DSurface9 *srcTextureSurface;
    CHECKD3D(src->GetSurfaceLevel(0, &srcTextureSurface));
-   CHECKD3D(m_pD3DDevice->StretchRect(srcTextureSurface, NULL, destTextureSurface, NULL, D3DTEXF_NONE));
+   hr=m_pD3DDevice->StretchRect(srcTextureSurface, NULL, destTextureSurface, NULL, D3DTEXF_NONE);
+   if (FAILED(hr))
+   {
+       ShowError("Unable to access texture surface! \r\nIf you use a NVIDIA card try to set \"Use NVIDIA API\" in the video options!");
+   }
    SAFE_RELEASE_NO_RCC(destTextureSurface);
    SAFE_RELEASE_NO_RCC(srcTextureSurface);
 }
