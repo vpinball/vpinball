@@ -813,7 +813,6 @@
 #define IDC_CVP_EXAMPLE_COMPS           716
 #define IDC_CVP_BUT_FONT_COMPS          716
 #define IDC_CVP_BUT_FONT_SUBS           717
-#define IDC_DISABLE_AO                  717
 #define IDC_CVP_BUT_FONT_VBS            718
 #define IDC_DELETE_MATERIAL             718
 #define IDC_CVP_BUT_FONT_COMMENTS       719

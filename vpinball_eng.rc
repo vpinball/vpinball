@@ -308,8 +308,8 @@ BEGIN
     LTEXT           "ZPD",IDC_STATIC,266,73,50,10
     EDITTEXT        IDC_3D_STEREO_ZPD,304,71,36,12,ES_RIGHT | ES_AUTOHSCROLL
     GROUPBOX        "Ambient Occlusion",IDC_STATIC,154,49,103,38
-    CONTROL         "Disable Static+Dynamic",IDC_DISABLE_AO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,60,89,10
-    CONTROL         "Enable Dynamic AO",IDC_DYNAMIC_AO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,73,89,10
+    CONTROL         "Enable",IDC_ENABLE_AO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,60,89,10
+    CONTROL         "Update in-game (slow)",IDC_DYNAMIC_AO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,73,89,10
     CONTROL         "Use NVIDIA API for AO and 3D Stereo",IDC_USE_NVIDIA_API_CHECK,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,154,90,150,10
     LTEXT           "(NVIDIA cards only)",IDC_STATIC,164,98,63,10
@@ -336,7 +336,7 @@ BEGIN
     LTEXT           "fps  (1=VSync,2=Adapt)",IDC_STATIC,267,126,90,10
     GROUPBOX        "Video Mode",IDC_STATIC,7,7,142,266
     GROUPBOX        "Ball Rendering",IDC_STATIC,154,7,103,40
-    GROUPBOX        "3D Stereo Output",IDC_STATIC,262,7,84,80
+    GROUPBOX        "3D Stereo Output",IDC_STATIC,262,7,82,80
     GROUPBOX        "Performance and Troubleshooting",IDC_STATIC,154,113,190,160
     GROUPBOX        "Max Texture Dimension (for low-end gfx boards)",IDC_STATIC,159,181,180,54
     LTEXT           "Object Detail Level (decrease = performance)",IDC_STATIC,162,238,156,8

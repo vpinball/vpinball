@@ -4152,24 +4152,24 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
       SetDlgItemTextA(hwndDlg, IDC_NUDGE_STRENGTH, tmp);
 
       hwndCheck = GetDlgItem(hwndDlg, IDC_AA_ALL_TABLES);
-      int m_useAA;
-      hr = GetRegInt("Player", "USEAA", &m_useAA);
+      int useAA;
+      hr = GetRegInt("Player", "USEAA", &useAA);
       if (hr != S_OK)
-         m_useAA = 0;
-      SendMessage(hwndCheck, BM_SETCHECK, (m_useAA != 0) ? BST_CHECKED : BST_UNCHECKED, 0);
+         useAA = 0;
+      SendMessage(hwndCheck, BM_SETCHECK, (useAA != 0) ? BST_CHECKED : BST_UNCHECKED, 0);
 
       hwndCheck = GetDlgItem(hwndDlg, IDC_DYNAMIC_AO);
-      int m_useAO;
-      hr = GetRegInt("Player", "DynamicAO", &m_useAO);
+      int useAO;
+      hr = GetRegInt("Player", "DynamicAO", &useAO);
       if (hr != S_OK)
-         m_useAO = 0;
-      SendMessage(hwndCheck, BM_SETCHECK, (m_useAO != 0) ? BST_CHECKED : BST_UNCHECKED, 0);
+         useAO = 0;
+      SendMessage(hwndCheck, BM_SETCHECK, (useAO != 0) ? BST_CHECKED : BST_UNCHECKED, 0);
 
-      hwndCheck = GetDlgItem(hwndDlg, IDC_DISABLE_AO);
-      hr = GetRegInt("Player", "DisableAO", &m_useAO);
+      hwndCheck = GetDlgItem(hwndDlg, IDC_ENABLE_AO);
+      hr = GetRegInt("Player", "DisableAO", &useAO);
       if (hr != S_OK)
-          m_useAO = 0;
-      SendMessage(hwndCheck, BM_SETCHECK, (m_useAO != 0) ? BST_CHECKED : BST_UNCHECKED, 0);
+          useAO = 0;
+      SendMessage(hwndCheck, BM_SETCHECK, (useAO != 0) ? BST_UNCHECKED : BST_CHECKED, 0); // inverted logic
 
       int fxaa;
       hr = GetRegInt("Player", "FXAA", &fxaa);
@@ -4397,20 +4397,20 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                SetRegValue("Player", "FXAA", REG_DWORD, &ffxaa, 4);
 
             HWND hwndBGSet = GetDlgItem(hwndDlg, IDC_BG_SET);
-            size_t m_BGSet = SendMessage(hwndBGSet, BM_GETCHECK, 0, 0);
-            SetRegValue("Player", "BGSet", REG_DWORD, &m_BGSet, 4);
+            size_t BGSet = SendMessage(hwndBGSet, BM_GETCHECK, 0, 0);
+            SetRegValue("Player", "BGSet", REG_DWORD, &BGSet, 4);
 
             HWND hwndUseAA = GetDlgItem(hwndDlg, IDC_AA_ALL_TABLES);
-            size_t m_useAA = SendMessage(hwndUseAA, BM_GETCHECK, 0, 0);
-            SetRegValue("Player", "USEAA", REG_DWORD, &m_useAA, 4);
+            size_t useAA = SendMessage(hwndUseAA, BM_GETCHECK, 0, 0);
+            SetRegValue("Player", "USEAA", REG_DWORD, &useAA, 4);
 
             HWND hwndUseAO = GetDlgItem(hwndDlg, IDC_DYNAMIC_AO);
-            size_t m_useAO = SendMessage(hwndUseAO, BM_GETCHECK, 0, 0);
-            SetRegValue("Player", "DynamicAO", REG_DWORD, &m_useAO, 4);
+            size_t useAO = SendMessage(hwndUseAO, BM_GETCHECK, 0, 0);
+            SetRegValue("Player", "DynamicAO", REG_DWORD, &useAO, 4);
 
-            hwndUseAO = GetDlgItem(hwndDlg, IDC_DISABLE_AO);
-            m_useAO = SendMessage(hwndUseAO, BM_GETCHECK, 0, 0);
-            SetRegValue("Player", "DisableAO", REG_DWORD, &m_useAO, 4);
+            hwndUseAO = GetDlgItem(hwndDlg, IDC_ENABLE_AO);
+            useAO = SendMessage(hwndUseAO, BM_GETCHECK, 0, 0) ? 0 : 1; // inverted logic
+            SetRegValue("Player", "DisableAO", REG_DWORD, &useAO, 4);
 
             HWND hwndStereo3D = GetDlgItem(hwndDlg, IDC_3D_STEREO);
             size_t stereo3D = SendMessage(hwndStereo3D, BM_GETCHECK, 0, 0);
