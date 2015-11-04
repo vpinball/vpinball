@@ -4093,15 +4093,15 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
       {
           SendMessage(toolTipHwnd, TTM_SETMAXTIPWIDTH, 0, 180);
           HWND controlHwnd = GetDlgItem(hwndDlg, IDC_USE_NVIDIA_API_CHECK);
-          AddToolTip("Use NVIDIA API if your NVIDIA card has problems handling AO or 3D stereo", hwndDlg, toolTipHwnd, controlHwnd);
+          AddToolTip("Activate this if you get the corresponding error message on table start", hwndDlg, toolTipHwnd, controlHwnd);
           controlHwnd = GetDlgItem(hwndDlg, IDC_TEX_COMPRESS);
-          AddToolTip("This saves memory on your gfx card but harms quality of the textures", hwndDlg, toolTipHwnd, controlHwnd);
+          AddToolTip("This saves memory on your graphics card but harms quality of the textures", hwndDlg, toolTipHwnd, controlHwnd);
           controlHwnd = GetDlgItem(hwndDlg, IDC_SOFTWARE_VP);
-          AddToolTip("Activate this if you have problems rendering on Intel graphic cards.", hwndDlg, toolTipHwnd, controlHwnd);
+          AddToolTip("Activate this if you have issues using an Intel graphics chip", hwndDlg, toolTipHwnd, controlHwnd);
           controlHwnd = GetDlgItem(hwndDlg, IDC_ADAPTIVE_VSYNC);
-          AddToolTip("1-activates VSYNC for every frame\r\n2-adaptive VSYNC waits on VSYNC only for fast frames (over 60fps)\r\nor set it to 60,120 to only VSYNC if fps is over that value", hwndDlg, toolTipHwnd, controlHwnd);
+          AddToolTip("1-activates VSYNC for every frame (avoids tearing)\r\n2-adaptive VSYNC, waits only for fast frames (e.g. over 60fps)\r\nor set it to e.g. 60 or 120 to limit the fps to that value (energy saving/less heat)", hwndDlg, toolTipHwnd, controlHwnd);
           controlHwnd = GetDlgItem(hwndDlg, IDC_MAX_PRE_FRAMES);
-          AddToolTip("outdated setting and will be removed. Set it to 0", hwndDlg, toolTipHwnd, controlHwnd);
+          AddToolTip("Outdated setting and will be removed. Set it to 0 (or experiment with 1, 2 for a slight chance of lag reduction)", hwndDlg, toolTipHwnd, controlHwnd);
           controlHwnd = GetDlgItem(hwndDlg, IDC_StretchMonitor);
           AddToolTip("If played in cabinet mode and you get an egg shaped ball activate this.\r\nFor screen ratios other than 16:9 you may have to adjust the offsets.\r\nNormally you have to set the Y offset (around 1.5) but you have to experiment.", hwndDlg, toolTipHwnd, controlHwnd);
       }
