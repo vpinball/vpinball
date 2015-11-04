@@ -8717,10 +8717,10 @@ STDMETHODIMP PinTable::get_EnableAntialiasing(int *pVal)
 STDMETHODIMP PinTable::put_EnableAntialiasing(int newVal)
 {
    STARTUNDO
-      m_useAA = newVal;
+   m_useAA = newVal;
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_EnableAO(int *pVal)
@@ -8733,10 +8733,10 @@ STDMETHODIMP PinTable::get_EnableAO(int *pVal)
 STDMETHODIMP PinTable::put_EnableAO(int newVal)
 {
    STARTUNDO
-      m_useAO = newVal;
+   m_useAO = newVal;
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_EnableFXAA(int *pVal)

@@ -230,12 +230,12 @@ VP 10.0.0 Changelog
 
 - add third mode for FXAA: extreme (and retweak the quality FXAA mode)
 
-- stereo 3D now also works on Intel and AMD, not just on NVIDIA 
-- removed stereo 3D AA, its always enabled now
-- added stereo 3D offset, which can be used to offset the table "into" the monitor
+- 3D stereo now also works on most Intel and AMD systems, not just on NVIDIA 
+- removed 3D stereo AA, its always enabled now
+- added 3D stereo offset, which can be used to offset the table "into" or "nearer to" the monitor
 
-- add flag "Use NVIDIA API" to the video options to force using the NVIDIA API for ambient occlusion or stereo 3D
-  use this option if the default detection gives you errors on NVIDIA cards
+- add flag "Alternative Depth Buffer processing" to the video options
+  use this option if you get the corresponding error message on table launch
 
 - adaptive vsync works again, it will disable vsync automatically if FPS drop below monitor refresh rate (not on windows XP though due to missing functionality there)
   enable it by setting the FPS Limiter to 2 (1 will still be using 'real' VSync and any number above the monitor refresh rate (usually 60Hz) will just limit the FPS)

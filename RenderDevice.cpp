@@ -809,15 +809,14 @@ void RenderDevice::CopySurface(void* dest, void* src)
 
 void RenderDevice::CopySurface(D3DTexture* dest, D3DTexture* src)
 {
-   HRESULT hr;
    IDirect3DSurface9 *destTextureSurface;
    CHECKD3D(dest->GetSurfaceLevel(0, &destTextureSurface));
    IDirect3DSurface9 *srcTextureSurface;
    CHECKD3D(src->GetSurfaceLevel(0, &srcTextureSurface));
-   hr=m_pD3DDevice->StretchRect(srcTextureSurface, NULL, destTextureSurface, NULL, D3DTEXF_NONE);
+   const HRESULT hr = m_pD3DDevice->StretchRect(srcTextureSurface, NULL, destTextureSurface, NULL, D3DTEXF_NONE);
    if (FAILED(hr))
    {
-       ShowError("Unable to access texture surface! \r\nIf you use a NVIDIA card try to set \"Use NVIDIA API\" in the video options!\n\nOtherwise disable Ambient Occlusion.");
+       ShowError("Unable to access texture surface!\r\nTry to set \"Alternative Depth Buffer processing\" in the video options!\r\nOr disable Ambient Occlusion and/or 3D stereo!");
    }
    SAFE_RELEASE_NO_RCC(destTextureSurface);
    SAFE_RELEASE_NO_RCC(srcTextureSurface);

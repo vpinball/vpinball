@@ -288,15 +288,15 @@ CAPTION "Video Options"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     CONTROL         "Rotate for Cabinet Usage",IDC_BG_SET,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,140,110,10
-    CONTROL         "Enable Fast FXAA",IDC_FFXAA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,155,90,10
-    CONTROL         "Enable Quality FXAA",IDC_QFXAA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,165,90,10
-    CONTROL         "Enable Extreme FXAA",IDC_EFXAA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,175,90,10
-    CONTROL         "Enable 4xAntiAliasing",IDC_AA_ALL_TABLES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,190,126,10
-    CONTROL         "Stretch Ball with Table",IDC_StretchNo,"Button",BS_AUTORADIOBUTTON | WS_GROUP,16,211,83,10
-    CONTROL         "Don't stretch the Ball",IDC_StretchYes,"Button",BS_AUTORADIOBUTTON,16,221,81,10
+    CONTROL         "Enable Fast FXAA",IDC_FFXAA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,154,90,10
+    CONTROL         "Enable Quality FXAA",IDC_QFXAA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,164,90,10
+    CONTROL         "Enable Extreme FXAA",IDC_EFXAA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,174,90,10
+    CONTROL         "Enable 4xAntiAliasing",IDC_AA_ALL_TABLES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,187,126,10
+    CONTROL         "Stretch Ball with Table",IDC_StretchNo,"Button",BS_AUTORADIOBUTTON | WS_GROUP,16,210,83,10
+    CONTROL         "Don't stretch the Ball",IDC_StretchYes,"Button",BS_AUTORADIOBUTTON,16,220,81,10
     CONTROL         "Cabinet anti-stretch the ball",IDC_StretchMonitor,
-                    "Button",BS_AUTORADIOBUTTON,16,231,111,10
-    GROUPBOX        "Aspect Ratio Offset",IDC_STATIC,25,242,110,25
+                    "Button",BS_AUTORADIOBUTTON,16,230,111,10
+    GROUPBOX        "Aspect Ratio Offset",IDC_STATIC,25,241,110,25
     LTEXT           "X",IDC_STATIC,31,253,8,8
     EDITTEXT        IDC_CORRECTION_X,39,251,35,12,ES_AUTOHSCROLL
     LTEXT           "Y",IDC_STATIC,85,252,8,8
@@ -304,8 +304,8 @@ BEGIN
     CONTROL         "Reflect Ball on Playfield",IDC_GLOBAL_REFLECTION_CHECK,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,18,91,10
     CONTROL         "Ball Trails/Motion Blur",IDC_GLOBAL_TRAIL_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,31,91,10
-    CONTROL         "Enable 3D Stereo",IDC_3D_STEREO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,266,18,70,10
-    CONTROL         "Use Y-Axis for 3D",IDC_3D_STEREO_Y,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,266,31,70,10
+    CONTROL         "Enable 3D Stereo",IDC_3D_STEREO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,265,18,70,10
+    CONTROL         "Use Y-Axis for 3D (Cab)",IDC_3D_STEREO_Y,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,265,31,80,10
     LTEXT           "Offset",IDC_STATIC,266,47,50,10
     EDITTEXT        IDC_3D_STEREO_OFS,304,45,36,12,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Separation",IDC_STATIC,266,60,50,10
@@ -314,34 +314,34 @@ BEGIN
     EDITTEXT        IDC_3D_STEREO_ZPD,304,71,36,12,ES_RIGHT | ES_AUTOHSCROLL
     GROUPBOX        "Ambient Occlusion",IDC_STATIC,154,49,103,38
     CONTROL         "Enable",IDC_ENABLE_AO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,60,89,10
-    CONTROL         "Update in-game (slow)",IDC_DYNAMIC_AO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,73,90,10
-    LTEXT           "Visual Nudge Strength",IDC_STATIC,236,91,75,10
-    EDITTEXT        IDC_NUDGE_STRENGTH,310,89,36,12,ES_RIGHT | ES_AUTOHSCROLL
+    CONTROL         "Update in-game (quality)",IDC_DYNAMIC_AO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,73,90,10
+    LTEXT           "Visual Nudge Strength",IDC_STATIC,235,91,75,10
+    EDITTEXT        IDC_NUDGE_STRENGTH,304,90,36,12,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "FPS limiter/VSync",IDC_STATIC,162,115,75,10
     EDITTEXT        IDC_ADAPTIVE_VSYNC,239,113,20,12,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Max prerendered frames",IDC_STATIC,162,127,77,8
-    EDITTEXT        IDC_MAX_PRE_FRAMES,239,125,20,12,ES_RIGHT | ES_AUTOHSCROLL
-    CONTROL         "Texture compression",IDC_TEX_COMPRESS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,151,175,10
+    LTEXT           "Max prerendered frames",IDC_STATIC,162,128,77,8
+    EDITTEXT        IDC_MAX_PRE_FRAMES,239,126,20,12,ES_RIGHT | ES_AUTOHSCROLL
+    CONTROL         "Texture compression (performance)",IDC_TEX_COMPRESS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,139,124,10
     CONTROL         "Force Anisotropic Texture Filtering (quality)",IDC_FORCE_ANISO,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,160,155,10
-    CONTROL         "Use NVAPI for AO and 3D Stereo ",IDC_USE_NVIDIA_API_CHECK,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,141,181,10
-    CONTROL         "Software vertex processing",IDC_SOFTWARE_VP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,169,175,10
-    CONTROL         "512",IDC_Tex512,"Button",BS_AUTORADIOBUTTON | WS_GROUP,166,193,28,10
-    CONTROL         "1024",IDC_Tex1024,"Button",BS_AUTORADIOBUTTON,166,203,32,10
-    CONTROL         "2048",IDC_Tex2048,"Button",BS_AUTORADIOBUTTON,166,213,32,10
-    CONTROL         "Unlimited",IDC_TexUnlimited,"Button",BS_AUTORADIOBUTTON,166,223,45,10
-    CONTROL         "",IDC_ARASlider,"msctls_trackbar32",TBS_AUTOTICKS | TBS_TOP | WS_TABSTOP,156,249,183,20
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,149,140,10
+    CONTROL         "Alternative Depth Buffer processing",IDC_USE_NVIDIA_API_CHECK,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,159,117,10
+    CONTROL         "Software vertex processing",IDC_SOFTWARE_VP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,169,94,10
+    CONTROL         "512",IDC_Tex512,"Button",BS_AUTORADIOBUTTON | WS_GROUP,166,194,28,10
+    CONTROL         "1024",IDC_Tex1024,"Button",BS_AUTORADIOBUTTON,166,204,32,10
+    CONTROL         "2048",IDC_Tex2048,"Button",BS_AUTORADIOBUTTON,166,214,32,10
+    CONTROL         "Unlimited",IDC_TexUnlimited,"Button",BS_AUTORADIOBUTTON,166,224,45,10
+    CONTROL         "",IDC_ARASlider,"msctls_trackbar32",TBS_AUTOTICKS | TBS_TOP | WS_TABSTOP,156,250,183,20
     DEFPUSHBUTTON   "OK",IDOK,218,280,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,277,280,50,14
-    LISTBOX         IDC_SIZELIST,14,19,129,120,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "fps",IDC_STATIC,261,115,11,9
+    LISTBOX         IDC_SIZELIST,14,19,129,117,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
     GROUPBOX        "Video Mode",IDC_STATIC,7,7,142,266
     GROUPBOX        "Ball Rendering",IDC_STATIC,154,7,103,40
     GROUPBOX        "3D Stereo Output",IDC_STATIC,262,7,85,80
-    GROUPBOX        "Performance and Troubleshooting",IDC_STATIC,154,101,193,172
-    GROUPBOX        "Max Texture Dimension (for low-end gfx boards)",IDC_STATIC,159,182,180,54
-    LTEXT           "Object Detail Level (decrease = performance)",IDC_STATIC,162,240,156,8
+    GROUPBOX        "Performance and Troubleshooting",IDC_STATIC,154,102,193,171
+    GROUPBOX        "Max Texture Dimension (for low-end gfx boards)",IDC_STATIC,159,183,180,54
+    LTEXT           "Object Detail Level (decrease = performance)",IDC_STATIC,162,241,156,8
     GROUPBOX        "Ball aspect ratio for stretched Tables",IDC_STATIC,12,200,133,69
 END
 
