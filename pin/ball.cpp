@@ -368,13 +368,12 @@ void Ball::ApplyFriction(const Vertex3Ds& hitnormal, const float dtime, const fl
    //slintf("Velocity: %.2f Angular velocity: %.2f Surface velocity: %.2f Slippage: %.2f\n", m_vel.Length(), m_angularvelocity.Length(), surfVel.Length(), slipspeed);
    //if (slipspeed > 1e-6f)
 
-   const float normVel = m_vel.Dot(hitnormal);
-   if((normVel <= 0.05f) || (slipspeed < C_PRECISION)) // check for <=0.05 originates from ball<->rubber collisions pushing the ball upwards
+   //if(slipspeed < C_PRECISION) // exclusively called from Ball::HandleStaticContact, so forced for now to be always static friction case due to ball<->rubber collisions pushing the ball upwards otherwise
    {
       // slip speed zero - static friction case
 
       const Vertex3Ds surfAcc = SurfaceAcceleration(surfP);
-      const Vertex3Ds slipAcc = surfAcc - surfAcc.Dot(hitnormal) * hitnormal;       // calc the tangential slip acceleration
+      const Vertex3Ds slipAcc = surfAcc - surfAcc.Dot(hitnormal) * hitnormal; // calc the tangential slip acceleration
 
       // neither slip velocity nor slip acceleration? nothing to do here
       if (slipAcc.LengthSquared() < 1e-6f)
@@ -385,13 +384,13 @@ void Ball::ApplyFriction(const Vertex3Ds& hitnormal, const float dtime, const fl
 
       numer = -slipDir.Dot(surfAcc);
    }
-   else
+   /*else
    {
       // nonzero slip speed - dynamic friction case
       slipDir = slip / slipspeed;
 
       numer = -slipDir.Dot(surfVel);
-   }
+   }*/
 
    const float denom = m_invMass + slipDir.Dot(CrossProduct(CrossProduct(surfP, slipDir) / m_inertia, surfP));
    const float fric = clamp(numer / denom, -maxFric, maxFric);
