@@ -198,6 +198,17 @@ INT_PTR CALLBACK AboutProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 INT_PTR CALLBACK SearchSelectProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 INT_PTR CALLBACK DrawingOrderProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
+void AddToolTip(char *text, HWND parentHwnd, HWND toolTipHwnd, HWND controlHwnd)
+{
+    TOOLINFO toolInfo = { 0 };
+    toolInfo.cbSize = sizeof(toolInfo);
+    toolInfo.hwnd = parentHwnd;
+    toolInfo.uFlags = TTF_IDISHWND | TTF_SUBCLASS;
+    toolInfo.uId = (UINT_PTR)controlHwnd;
+    toolInfo.lpszText = text;
+    SendMessage(toolTipHwnd, TTM_ADDTOOL, 0, (LPARAM)&toolInfo);
+}
+
 ///<summary>
 ///VPinball Constructor
 ///<para>Init</para>
@@ -1177,22 +1188,19 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
 
    case ID_EDIT_AUDIOOPTIONS:
    {
-      /*const DWORD foo =*/ DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_AUDIO_OPTIONS),
-         m_hwnd, AudioOptionsProc, 0);
+      DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_AUDIO_OPTIONS), m_hwnd, AudioOptionsProc, 0);
    }
    break;
 
    case ID_EDIT_PHYSICSOPTIONS:
    {
-      /*const DWORD foo =*/ DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_PHYSICS_OPTIONS),
-         m_hwnd, PhysicsOptionsProc, 0);
+      DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_PHYSICS_OPTIONS), m_hwnd, PhysicsOptionsProc, 0);
    }
    break;
 
    case ID_EDIT_EDITOROPTIONS:
    {
-      /*const DWORD foo =*/ DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_EDITOR_OPTIONS),
-         m_hwnd, EditorOptionsProc, 0);
+      DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_EDITOR_OPTIONS), m_hwnd, EditorOptionsProc, 0);
       // refresh editor options from the registry
       InitRegValues();
       // force a screen refresh (it an active table is loaded)
@@ -1204,15 +1212,13 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
 
    case ID_EDIT_VIDEOOPTIONS:
    {
-      /*const DWORD foo =*/ DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_VIDEO_OPTIONS),
-         m_hwnd, VideoOptionsProc, 0);
+      DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_VIDEO_OPTIONS), m_hwnd, VideoOptionsProc, 0);
    }
    break;
 
    case ID_PREFERENCES_SECURITYOPTIONS:
    {
-      /*const DWORD foo =*/ DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_SECURITY_OPTIONS),
-         m_hwnd, SecurityOptionsProc, 0);
+      DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_SECURITY_OPTIONS), m_hwnd, SecurityOptionsProc, 0);
 
       // refresh editor options from the registry
       InitRegValues();
@@ -1221,7 +1227,7 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
 
    case ID_EDIT_KEYS:
    {
-      /*const DWORD foo =*/ DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_KEYS), m_hwnd, KeysProc, 0);
+      DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_KEYS), m_hwnd, KeysProc, 0);
    }
    break;
 
@@ -4082,7 +4088,23 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
       RECT rcMain;
       GetWindowRect(hwndParent, &rcMain);
       GetWindowRect(hwndDlg, &rcDlg);
-
+      HWND toolTipHwnd = CreateWindowEx(NULL, TOOLTIPS_CLASS, NULL, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, hwndDlg, NULL, g_hinst, NULL);
+      if (toolTipHwnd)
+      {
+          SendMessage(toolTipHwnd, TTM_SETMAXTIPWIDTH, 0, 180);
+          HWND controlHwnd = GetDlgItem(hwndDlg, IDC_USE_NVIDIA_API_CHECK);
+          AddToolTip("Use NVIDIA API if your NVIDIA card has problems handling AO or 3D stereo", hwndDlg, toolTipHwnd, controlHwnd);
+          controlHwnd = GetDlgItem(hwndDlg, IDC_TEX_COMPRESS);
+          AddToolTip("This saves memory on your gfx card but harms quality of the textures", hwndDlg, toolTipHwnd, controlHwnd);
+          controlHwnd = GetDlgItem(hwndDlg, IDC_SOFTWARE_VP);
+          AddToolTip("Activate this if you have problems rendering on Intel graphic cards.", hwndDlg, toolTipHwnd, controlHwnd);
+          controlHwnd = GetDlgItem(hwndDlg, IDC_ADAPTIVE_VSYNC);
+          AddToolTip("1-activates VSYNC for every frame\r\n2-adaptive VSYNC waits on VSYNC only for fast frames (over 60fps)\r\nor set it to 60,120 to only VSYNC if fps is over that value", hwndDlg, toolTipHwnd, controlHwnd);
+          controlHwnd = GetDlgItem(hwndDlg, IDC_MAX_PRE_FRAMES);
+          AddToolTip("outdated setting and will be removed. Set it to 0", hwndDlg, toolTipHwnd, controlHwnd);
+          controlHwnd = GetDlgItem(hwndDlg, IDC_StretchMonitor);
+          AddToolTip("If played in cabinet mode and you get an egg shaped ball activate this.\r\nFor screen ratios other than 16:9 you may have to adjust the offsets.\r\nNormally you have to set the Y offset (around 1.5) but you have to experiment.", hwndDlg, toolTipHwnd, controlHwnd);
+      }
       SetWindowPos(hwndDlg, NULL,
          (rcMain.right + rcMain.left) / 2 - (rcDlg.right - rcDlg.left) / 2,
          (rcMain.bottom + rcMain.top) / 2 - (rcDlg.bottom - rcDlg.top) / 2,
