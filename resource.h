@@ -827,6 +827,17 @@
 #define IDC_CVP_BUT_COL_BACKGROUND      727
 #define DISPID_Gate_Height1             1142
 #define DISPID_Image                    1500
+#define DISPID_Image2					1501
+#define DISPID_Surface					1502
+#define DISPID_Shape					1503
+#define DISPID_UserValue				1504
+#define DISPID_Image3					1505
+#define DISPID_Sound					1506
+#define DISPID_Collection				1507
+#define DISPID_Image4					1508
+#define DISPID_Image5					1509
+#define DISPID_Image6					1510
+#define DISPID_Image7					1511
 #define IDC_MESH_FILENAME_EDIT          1601
 #define IDC_LOAD_MESH_BUTTON            1602
 #define IDC_EXPORT_MESH_BUTTON          1603
