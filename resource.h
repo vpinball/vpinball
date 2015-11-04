@@ -815,9 +815,13 @@
 #define IDC_CVP_BUT_FONT_SUBS           717
 #define IDC_DISABLE_AO                  717
 #define IDC_CVP_BUT_FONT_VBS            718
+#define IDC_DELETE_MATERIAL             718
 #define IDC_CVP_BUT_FONT_COMMENTS       719
+#define IDC_DELETE_SOUND                719
 #define IDC_CVP_BUT_FONT_LITERALS       720
+#define IDC_DELETE_IMAGE                720
 #define IDC_CVP_BUT_FONT_VPCORE         721
+#define IDC_DELETE_COLLECTION           721
 #define IDC_CVP_BUT_COL_EVERYTHINGELSE  724
 #define IDC_CVP_BUT_FONT_EVERYTHINGELSE 725
 #define IDC_CVP_BUT_COL_BACKGROUND      727
@@ -947,7 +951,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        620
 #define _APS_NEXT_COMMAND_VALUE         4003
-#define _APS_NEXT_CONTROL_VALUE         718
+#define _APS_NEXT_CONTROL_VALUE         722
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif

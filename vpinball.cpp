@@ -2746,7 +2746,7 @@ INT_PTR CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
          }
          break;
 
-         case IDC_DELETE:
+         case IDC_DELETE_SOUND:
          {
             const int count = ListView_GetSelectedCount(GetDlgItem(hwndDlg, IDC_SOUNDLIST));
             if (count > 0)
@@ -3209,7 +3209,7 @@ INT_PTR CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
          }
          break;
 
-         case IDC_DELETE:
+         case IDC_DELETE_IMAGE:
          {
             const int count = ListView_GetSelectedCount(GetDlgItem(hwndDlg, IDC_SOUNDLIST));
             if (count > 0)
@@ -3886,7 +3886,7 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
          }
          break;
 
-         case IDC_DELETE:
+         case IDC_DELETE_MATERIAL:
          {
             const int count = ListView_GetSelectedCount(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST));
             if (count > 0)
@@ -5028,7 +5028,7 @@ INT_PTR CALLBACK CollectManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPAR
             }
          }
          break;
-         case IDC_DELETE:
+         case IDC_DELETE_COLLECTION:
          {
             const int sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), -1, LVNI_SELECTED);
             if (sel != -1)
