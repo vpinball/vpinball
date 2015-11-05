@@ -2485,7 +2485,7 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
 
             const float threshold = (pball->m_angularmomentum.x*pball->m_angularmomentum.x + pball->m_angularmomentum.y*pball->m_angularmomentum.y) / max(mag, mag2);
 
-            if (!NaN(threshold) && threshold > 666.f)
+            if (!infNaN(threshold) && threshold > 666.f)
             {
                const float damp = clamp(1.0f - (threshold - 666.f) / 10000.f, 0.23f, 1.f); // do not kill spin completely, otherwise stuck balls will happen during regular gameplay
                pball->m_angularmomentum *= damp;
