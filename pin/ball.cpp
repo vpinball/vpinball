@@ -368,7 +368,8 @@ void Ball::ApplyFriction(const Vertex3Ds& hitnormal, const float dtime, const fl
    //slintf("Velocity: %.2f Angular velocity: %.2f Surface velocity: %.2f Slippage: %.2f\n", m_vel.Length(), m_angularvelocity.Length(), surfVel.Length(), slipspeed);
    //if (slipspeed > 1e-6f)
 
-   //if(slipspeed < C_PRECISION) // exclusively called from Ball::HandleStaticContact, so forced for now to be always static friction case due to ball<->rubber collisions pushing the ball upwards otherwise
+   const float normVel = m_vel.Dot(hitnormal);
+   if((normVel <= 0.025f) || (slipspeed < C_PRECISION)) // check for <=0.025 originates from ball<->rubber collisions pushing the ball upwards, but this is still not enough, some could even use <=0.2
    {
       // slip speed zero - static friction case
 
@@ -384,13 +385,13 @@ void Ball::ApplyFriction(const Vertex3Ds& hitnormal, const float dtime, const fl
 
       numer = -slipDir.Dot(surfAcc);
    }
-   /*else
+   else
    {
       // nonzero slip speed - dynamic friction case
       slipDir = slip / slipspeed;
 
       numer = -slipDir.Dot(surfVel);
-   }*/
+   }
 
    const float denom = m_invMass + slipDir.Dot(CrossProduct(CrossProduct(surfP, slipDir) / m_inertia, surfP));
    const float fric = clamp(numer / denom, -maxFric, maxFric);
@@ -417,9 +418,9 @@ void Ball::ApplySurfaceImpulse(const Vertex3Ds& surfP, const Vertex3Ds& impulse)
 
    const Vertex3Ds rotI = CrossProduct(surfP, impulse);
    m_angularmomentum += rotI;
-   const float aml = m_angularmomentum.Length();
-   if (aml > m_inertia*135.0f) //!! hack to limit ball spin
-      m_angularmomentum *= (m_inertia*135.0f) / aml;
+   //const float aml = m_angularmomentum.Length();
+   //if (aml > m_inertia*135.0f) //!! hack to limit ball spin
+   //   m_angularmomentum *= (m_inertia*135.0f) / aml;
    m_angularvelocity = m_angularmomentum / m_inertia;
 }
 
