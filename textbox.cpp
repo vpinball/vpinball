@@ -216,7 +216,7 @@ void Textbox::PostRenderStatic(RenderDevice* pd3dDevice)
    if (!m_d.m_fVisible)
       return;
 
-   if (g_pplayer->m_ptable->m_tblMirrorEnabled)
+   if (g_pplayer->m_ptable->m_tblMirrorEnabled^g_pplayer->m_ptable->m_fReflectionEnabled)
       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
    else
       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
@@ -236,7 +236,7 @@ void Textbox::PostRenderStatic(RenderDevice* pd3dDevice)
    {
       g_pplayer->m_pin3d.DisableAlphaBlend();
       g_pplayer->DMDdraw(x, y, width, height,
-         m_d.m_fontcolor, m_d.m_intensity_scale); //!! replace??!
+                         m_d.m_fontcolor, m_d.m_intensity_scale); //!! replace??!
    }
    else
       if (m_texture)
@@ -250,7 +250,7 @@ void Textbox::PostRenderStatic(RenderDevice* pd3dDevice)
          pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, FALSE);
       }
 
-   //if(g_pplayer->m_ptable->m_tblMirrorEnabled)
+   //if(g_pplayer->m_ptable->m_tblMirrorEnabled^g_pplayer->m_ptable->m_fReflectionEnabled)
    //	pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 }
 

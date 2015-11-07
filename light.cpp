@@ -643,7 +643,7 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
       pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
    }
 
-   if (m_fBackglass && g_pplayer->m_ptable->m_tblMirrorEnabled)
+   if (m_fBackglass && (g_pplayer->m_ptable->m_tblMirrorEnabled^g_pplayer->m_ptable->m_fReflectionEnabled))
       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
    else
       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
@@ -741,7 +741,7 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
    pd3dDevice->SetRenderState(RenderDevice::BLENDOP, D3DBLENDOP_ADD);
    }*/
 
-   //if(m_fBackglass && g_pplayer->m_ptable->m_tblMirrorEnabled)
+   //if(m_fBackglass && (g_pplayer->m_ptable->m_tblMirrorEnabled^g_pplayer->m_ptable->m_fReflectionEnabled))
    //	pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 }
 

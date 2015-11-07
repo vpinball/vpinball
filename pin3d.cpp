@@ -362,14 +362,14 @@ void Pin3D::DrawBackground()
       m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
       m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, FALSE);
 
-      if (g_pplayer->m_ptable->m_tblMirrorEnabled)
+      if (g_pplayer->m_ptable->m_tblMirrorEnabled^g_pplayer->m_ptable->m_fReflectionEnabled)
          m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
 
       g_pplayer->m_pin3d.DisableAlphaBlend();
 
       g_pplayer->Spritedraw(0.f, 0.f, 1.f, 1.f, 0xFFFFFFFF, pin, 0.0f, 0.0f, 1.0f, 1.0f, ptable->m_ImageBackdropNightDay ? sqrtf(ptable->m_globalEmissionScale) : 1.0f);
 
-      if (g_pplayer->m_ptable->m_tblMirrorEnabled)
+      if (g_pplayer->m_ptable->m_tblMirrorEnabled^g_pplayer->m_ptable->m_fReflectionEnabled)
          m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 
       m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, TRUE);
