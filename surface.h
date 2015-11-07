@@ -159,12 +159,12 @@ private:
    bool m_isDynamic;
    int numVertices, numPolys;
    std::vector<WORD> sideIndices;
-   std::vector<WORD> topIndices;
+   std::vector<WORD> topBottomIndices;
 
    // TODO: all these vertex buffers should be combined into one
    VertexBuffer *slingshotVBuffer;
-   VertexBuffer *topVBuffer;
-   IndexBuffer *topIBuffer;
+   VertexBuffer *topBottomVBuffer;
+   IndexBuffer *topBottomIBuffer;
    VertexBuffer *sideVBuffer;
    IndexBuffer *sideIBuffer;
 

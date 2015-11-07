@@ -14,8 +14,8 @@ Surface::Surface()
    m_d.m_fInner = true;
    m_d.m_fIsBottomSolid = false;
    slingshotVBuffer = 0;
-   topVBuffer = 0;
-   topIBuffer = 0;
+   topBottomVBuffer = 0;
+   topBottomIBuffer = 0;
    sideVBuffer = 0;
    sideIBuffer = 0;
    m_propPhysics = NULL;
@@ -723,23 +723,23 @@ void Surface::GenerateMesh(Vertex3D_NoTex2 **topBuf, Vertex3D_NoTex2 **sideBuf)
       const float inv_tablewidth = 1.0f / (m_ptable->m_right - m_ptable->m_left);
       const float inv_tableheight = 1.0f / (m_ptable->m_bottom - m_ptable->m_top);
 
-      topIndices.resize(numPolys * 3);
+      topBottomIndices.resize(numPolys * 3);
 
       for (int i = 0; i < numPolys; ++i)
       {
          const Triangle * const ptri = vtri.ElementAt(i);
 
-         topIndices[i * 3] = ptri->a;
-         topIndices[i * 3 + 1] = ptri->c;
-         topIndices[i * 3 + 2] = ptri->b;
-      }
+         topBottomIndices[i * 3] = ptri->a;
+		 topBottomIndices[i * 3 + 1] = ptri->c;
+		 topBottomIndices[i * 3 + 2] = ptri->b;
+	  }
 
       for (int i = 0; i < numPolys; i++)
          delete vtri.ElementAt(i);
 
-      *topBuf = new Vertex3D_NoTex2[numVertices * 2];
-      memset(*topBuf, 0, sizeof(Vertex3D_NoTex2)*numVertices * 2);
-      Vertex3D_NoTex2 * const vertsTop[2] = { *topBuf, *topBuf + numVertices };
+      *topBuf = new Vertex3D_NoTex2[numVertices * 3];
+      memset(*topBuf, 0, sizeof(Vertex3D_NoTex2)*numVertices * 3);
+	  Vertex3D_NoTex2 * const vertsTop[3] = { *topBuf, *topBuf + numVertices, *topBuf + numVertices*2 };
 
       for (int i = 0; i < numVertices; i++)
       {
@@ -762,7 +762,16 @@ void Surface::GenerateMesh(Vertex3D_NoTex2 **topBuf, Vertex3D_NoTex2 **sideBuf)
          vertsTop[1][i].nx = 0;
          vertsTop[1][i].ny = 0;
          vertsTop[1][i].nz = 1.0f;
-      }
+
+		 vertsTop[2][i].x = pv0->x;
+		 vertsTop[2][i].y = pv0->y;
+		 vertsTop[2][i].z = m_d.m_heightbottom;
+		 vertsTop[2][i].tu = pv0->x * inv_tablewidth;
+		 vertsTop[2][i].tv = pv0->y * inv_tableheight;
+		 vertsTop[2][i].nx = 0;
+		 vertsTop[2][i].ny = 0;
+		 vertsTop[2][i].nz = -1.0f;
+	  }
    }
 }
 
@@ -799,7 +808,7 @@ void Surface::ExportMesh(FILE *f)
          WaveFrontObj_WriteMaterial("none", NULL, mat);
          WaveFrontObj_UseTexture(f, "none");
       }
-      WaveFrontObj_WriteFaceInfo(f, topIndices);
+      WaveFrontObj_WriteFaceInfo(f, topBottomIndices);
       WaveFrontObj_UpdateFaceOffset(numVertices);
    }
    else if (topBuf != NULL && sideBuf != NULL && m_d.m_fVisible && m_d.m_fSideVisible)
@@ -814,11 +823,11 @@ void Surface::ExportMesh(FILE *f)
       Material *mat = m_ptable->GetMaterial(m_d.m_szTopMaterial);
       WaveFrontObj_WriteMaterial(m_d.m_szTopMaterial, NULL, mat);
       WaveFrontObj_UseTexture(f, m_d.m_szTopMaterial);
-      WORD *idx = new WORD[topIndices.size() + sideIndices.size()];
+      WORD *idx = new WORD[topBottomIndices.size() + sideIndices.size()];
       memcpy(idx, sideIndices.data(), sideIndices.size()*sizeof(WORD));
-      for (unsigned int i = 0; i < topIndices.size(); i++)
-         idx[sideIndices.size() + i] = topIndices[i] + numVertices * 4;
-      WaveFrontObj_WriteFaceInfoList(f, idx, (unsigned int)(topIndices.size() + sideIndices.size()));
+      for (unsigned int i = 0; i < topBottomIndices.size(); i++)
+         idx[sideIndices.size() + i] = topBottomIndices[i] + numVertices * 4;
+      WaveFrontObj_WriteFaceInfoList(f, idx, (unsigned int)(topBottomIndices.size() + sideIndices.size()));
       WaveFrontObj_UpdateFaceOffset(numVertices * 5);
       delete[] idx;
    }
@@ -840,9 +849,9 @@ void Surface::ExportMesh(FILE *f)
 
 void Surface::PrepareWallsAtHeight(RenderDevice* pd3dDevice)
 {
-   Vertex3D_NoTex2 *topBuf = NULL;
+   Vertex3D_NoTex2 *topBottomBuf = NULL;
    Vertex3D_NoTex2 *sideBuf = NULL;
-   GenerateMesh(&topBuf, &sideBuf);
+   GenerateMesh(&topBottomBuf, &sideBuf);
    if (sideBuf != NULL)
    {
       if (sideVBuffer)
@@ -857,26 +866,26 @@ void Surface::PrepareWallsAtHeight(RenderDevice* pd3dDevice)
       sideIBuffer = pd3dDevice->CreateAndFillIndexBuffer(sideIndices);
       delete[] sideBuf;
    }
-   if (topBuf != NULL)
+   if (topBottomBuf != NULL)
    {
       // draw top
       if (m_d.m_fVisible)      //!! BUG? Visible could still be set later if rendered dynamically?
       {
-         if (topIBuffer)
-            topIBuffer->release();
+         if (topBottomIBuffer)
+            topBottomIBuffer->release();
 
-         topIBuffer = pd3dDevice->CreateAndFillIndexBuffer(topIndices);
+         topBottomIBuffer = pd3dDevice->CreateAndFillIndexBuffer(topBottomIndices);
 
-         if (topVBuffer)
-            topVBuffer->release();
-         pd3dDevice->CreateVertexBuffer(2 * numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &topVBuffer);
+         if (topBottomVBuffer)
+            topBottomVBuffer->release();
+         pd3dDevice->CreateVertexBuffer(3 * numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &topBottomVBuffer);
 
          Vertex3D_NoTex2 *buf;
-         topVBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
-         memcpy(buf, topBuf, sizeof(Vertex3D_NoTex2)*numVertices * 2);
-         topVBuffer->unlock();
+         topBottomVBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
+         memcpy(buf, topBottomBuf, sizeof(Vertex3D_NoTex2)*numVertices * 3);
+         topBottomVBuffer->unlock();
       }
-      delete[] topBuf;
+      delete[] topBottomBuf;
    }
 }
 
@@ -988,15 +997,15 @@ void Surface::FreeBuffers()
       sideIBuffer->release();
       sideIBuffer = 0;
    }
-   if (topVBuffer)
+   if (topBottomVBuffer)
    {
-      topVBuffer->release();
-      topVBuffer = 0;
+      topBottomVBuffer->release();
+	  topBottomVBuffer = 0;
    }
-   if (topIBuffer)
+   if (topBottomIBuffer)
    {
-      topIBuffer->release();
-      topIBuffer = 0;
+      topBottomIBuffer->release();
+	  topBottomIBuffer = 0;
    }
    if (slingIBuffer)    // NB: global instance
    {
@@ -1068,13 +1077,13 @@ void Surface::RenderSlingshots(RenderDevice* pd3dDevice)
 
 void Surface::RenderWallsAtHeight(RenderDevice* pd3dDevice, const bool fDrop)
 {
-   // render side
-   if (m_ptable->m_fReflectionEnabled && (m_d.m_heightbottom < 0.0f || m_d.m_heighttop < 0.0f))
+   if (m_ptable->m_fReflectionEnabled && (/*m_d.m_heightbottom < 0.0f ||*/ m_d.m_heighttop < 0.0f))
       return;
 
    if (m_d.m_fDisableLighting && (m_d.m_fSideVisible || m_d.m_fVisible))
       pd3dDevice->basicShader->SetDisableLighting(m_d.m_fDisableLighting);
 
+   // render side
    if (m_d.m_fSideVisible && !fDrop && (numVertices > 0)) // Don't need to render walls if dropped
    {
       Material *mat = m_ptable->GetMaterial(m_d.m_szSideMaterial);
@@ -1106,7 +1115,7 @@ void Surface::RenderWallsAtHeight(RenderDevice* pd3dDevice, const bool fDrop)
       pd3dDevice->basicShader->End();
    }
 
-   // render top
+   // render top&bottom
    if (m_d.m_fVisible && (numPolys > 0))
    {
       Material *mat = m_ptable->GetMaterial(m_d.m_szTopMaterial);
@@ -1132,9 +1141,23 @@ void Surface::RenderWallsAtHeight(RenderDevice* pd3dDevice, const bool fDrop)
       else
          pd3dDevice->basicShader->SetTechnique("basic_without_texture");
 
+	  // Top
       pd3dDevice->basicShader->Begin(0);
-      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, topVBuffer, !fDrop ? 0 : numVertices, numVertices, topIBuffer, 0, numPolys * 3);
+      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, topBottomVBuffer, !fDrop ? 0 : numVertices, numVertices, topBottomIBuffer, 0, numPolys * 3);
       pd3dDevice->basicShader->End();
+
+	  // Only render Bottom for Reflections
+	  if (m_ptable->m_fReflectionEnabled)
+	  {
+		  if (mat->m_bOpacityActive)
+			  pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
+		  else
+			  pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CW);
+
+		  pd3dDevice->basicShader->Begin(0);
+		  pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, topBottomVBuffer, numVertices * 2, numVertices, topBottomIBuffer, 0, numPolys * 3);
+		  pd3dDevice->basicShader->End();
+	  }
    }
 
    // reset render states
