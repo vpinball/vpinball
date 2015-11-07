@@ -268,7 +268,7 @@ void DispReel::PostRenderStatic(RenderDevice* pd3dDevice)
    if (!pin)
       return;
 
-   if (g_pplayer->m_ptable->m_tblMirrorEnabled)
+   if (g_pplayer->m_ptable->m_tblMirrorEnabled^g_pplayer->m_ptable->m_fReflectionEnabled)
       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
    else
       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
@@ -294,7 +294,7 @@ void DispReel::PostRenderStatic(RenderDevice* pd3dDevice)
    //g_pplayer->m_pin3d.DisableAlphaBlend(); //!! not necessary anymore
    pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, FALSE);
 
-   //if(g_pplayer->m_ptable->m_tblMirrorEnabled)
+   //if(g_pplayer->m_ptable->m_tblMirrorEnabled^g_pplayer->m_ptable->m_fReflectionEnabled)
    //	pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 }
 
