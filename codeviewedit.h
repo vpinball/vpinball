@@ -1,24 +1,31 @@
 #ifndef _CVEDIT_
 #define _CVEDIT_
-#include "stdafx.h"
-#include "regutil.h"
+
+enum WordType {eUnknown, eClass, eSub, eFunction, ePropGet, ePropLet, ePropSet};
+
 class UserData
 {
+private:
 public:
-	string strKeyName; //Unique Name
-	string strDescription;//Brief Description
+	string strUniqueKey;
 	int intLineNum; //Line No. Declaration
+	string strKeyName; //Name
+	WordType eTyping;
+	string strUniqueParent;
 	vector<string> Children;
-	string Parent;
+	string strDescription;//Brief Description
+	string Comment;
+
+public:
 	UserData();
-	UserData(const int LineNo, const string &Desc, const string &Name);
+	UserData(const int LineNo, const string &Desc, const string &Name, const WordType &TypeIn);
 	bool FuncCompareUD (const UserData &first, const UserData &second);
 	string lowerCase(string input);
 	bool FindOrInsertStringIntoAutolist(vector<string>* ListIn, const string &strIn);
-	int FindOrInsertUD( vector<UserData>* ListIn,const UserData& udIn);
+	int FindOrInsertUD( vector<UserData>* ListIn, UserData& udIn);
 	int FindUD(vector<UserData>* ListIn, const string &strIn,vector<UserData>::iterator& UDiterOut);
-	int FindUD(vector<UserData>* ListIn, const string &strIn,vector<UserData>::iterator& UDiterOut, int PosOut);
-	int UDIndex(vector<UserData>* ListIn, const string &strIn);
+	int FindUDbyKey(vector<UserData>* ListIn, const string &strIn,vector<UserData>::iterator& UDiterOut, int &PosOut);
+	int UDKeyIndex(vector<UserData>* ListIn, const string &strIn);
 	~UserData();
 };
 

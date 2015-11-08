@@ -5,15 +5,15 @@ UserData::UserData()
 	intLineNum=0;
 	strDescription="";
 	strKeyName="";
-	Parent="";
+	eTyping = eUnknown;
 }
 
-UserData::UserData(const int LineNo, const string &Desc, const string &Name)
+UserData::UserData(const int LineNo, const string &Desc, const string &Name, const WordType &TypeIn)
 {
 	intLineNum=LineNo;
 	strDescription=Desc;
 	strKeyName=Name;
-	Parent="";
+	eTyping = TypeIn;
 }
 
 UserData::~UserData()
@@ -48,11 +48,39 @@ bool UserData::FuncCompareUD (const UserData &first, const UserData &second)
 -2 =error*/
 int UserData::FindUD(vector<UserData>* ListIn, const string &strIn,vector<UserData>::iterator& UDiterOut)
 {
-	int Disregard=0;
-	return FindUD(ListIn, strIn, UDiterOut, Disregard);
+	int result = -2;
+	if (ListIn && (strIn.size() > 0) )// Sanity chq.
+	{
+		const unsigned int ListSize = (int)ListIn->size();
+		UINT32 iCurPos = (ListSize >> 1);
+		int iNewPos = 1u << 30;
+		while ((!(iNewPos & ListSize)) && (iNewPos > 1))
+      {
+         iNewPos >>= 1;
+      }
+		int iJumpDelta = ((iNewPos) >> 1);
+		--iNewPos;//Zero Base
+		const string strSearchData = lowerCase( strIn );
+		while (true)
+		{
+			iCurPos = iNewPos;
+			if (iCurPos >= ListSize) { result = -1; }
+			else
+			{
+				const string strTableData = lowerCase(ListIn->at(iCurPos).strKeyName);
+				result = strSearchData.compare(strTableData);
+			}
+			if (iJumpDelta == 0 || result == 0) break;
+			if ( result < 0 )	{ iNewPos = iCurPos - iJumpDelta; }
+			else  { iNewPos = iCurPos + iJumpDelta; }
+			iJumpDelta >>= 1;
+		} 
+		UDiterOut = ListIn->begin() + iCurPos;
+	}
+	return result ;
 }
 
-int UserData::FindUD(vector<UserData>* ListIn, const string &strIn, vector<UserData>::iterator &UDiterOut, int PosOut )
+int UserData::FindUDbyKey(vector<UserData>* ListIn, const string &strIn, vector<UserData>::iterator &UDiterOut, int &PosOut )
 {
 	int result = -2;
 	if (ListIn && (strIn.size() > 0) )// Sanity chq.
@@ -67,28 +95,28 @@ int UserData::FindUD(vector<UserData>* ListIn, const string &strIn, vector<UserD
 		int iJumpDelta = ((iNewPos) >> 1);
 		--iNewPos;//Zero Base
 		const string strSearchData = lowerCase( strIn );
-		do
+		while (true)
 		{
 			iCurPos = iNewPos;
 			if (iCurPos >= ListSize) { result = -1; }
 			else
 			{
-				const string strTableData = lowerCase(ListIn->at(iCurPos).strKeyName);
+				const string strTableData = lowerCase(ListIn->at(iCurPos).strUniqueKey);
 				result = strSearchData.compare(strTableData);
 			}
 			if (iJumpDelta == 0 || result == 0) break;
 			if ( result < 0 )	{ iNewPos = iCurPos - iJumpDelta; }
 			else  { iNewPos = iCurPos + iJumpDelta; }
 			iJumpDelta >>= 1;
-		} while (iNewPos >= 0);
+		} 
 		UDiterOut = ListIn->begin() + iCurPos;
 		PosOut = iCurPos;
 	}
 	return result ;
 }
 
-//Returns current Index of strIn in ListIn
-int UserData::UDIndex(vector<UserData>* ListIn, const string &strIn)
+//Returns current Index of strIn in ListIn, or -1 if not found
+int UserData::UDKeyIndex(vector<UserData>* ListIn, const string &strIn)
 {
 	if ( (!ListIn) || (strIn.size() <= 0) ) return -1;
 	int result = -2;
@@ -102,63 +130,70 @@ int UserData::UDIndex(vector<UserData>* ListIn, const string &strIn)
 	int iJumpDelta = ((iNewPos) >> 1);
 	--iNewPos;//Zero Base
 	const string strSearchData = lowerCase( strIn );
-	do
+	while (true)
 	{
 		iCurPos = iNewPos;
 		if (iCurPos >= ListSize) { result = -1; }
 		else
 		{
-			const string strTableData = lowerCase(ListIn->at(iCurPos).strKeyName);
+			const string strTableData = lowerCase(ListIn->at(iCurPos).strUniqueKey);
 			result = strSearchData.compare(strTableData);
 		}
 		if (iJumpDelta == 0 || result == 0) break;
 		if ( result < 0 )	{ iNewPos = iCurPos - iJumpDelta; }
 		else  { iNewPos = iCurPos + iJumpDelta; }
 		iJumpDelta >>= 1;
-	} while (iNewPos >= 0);
-	return iCurPos ;
+	} 
+	/// neads to consider children...
+	if (result == 0)
+		return iCurPos ;
+	else
+		return -1;
 }
 
-//Assumes case insensitive sorted list Returns point of insertion
-int UserData::FindOrInsertUD(vector<UserData>* ListIn,const UserData &udIn)
+//Assumes case insensitive sorted list
+//Returns point of insertion (-1 == error)
+int UserData::FindOrInsertUD(vector<UserData>* ListIn, UserData &udIn)
 {
-	vector<UserData>::iterator iterFound;
+	vector<UserData>::iterator iterFound  = ListIn->begin();
 	int Pos = 0;
 	if (ListIn->size() == 0)	//First in
 	{
 		ListIn->push_back(udIn);
 		return 0;
 	}
-	const int KeyFound = FindUD(ListIn, udIn.strKeyName ,iterFound, Pos);
-	if (KeyFound == 0)
+	const int KeyFound = FindUDbyKey(ListIn, udIn.strUniqueKey ,iterFound, Pos);
+	//Same name, different parents. 
+	if ( (KeyFound == 0) && (ListIn->at(Pos).strUniqueParent.compare(udIn.strUniqueParent) != 0) )
 	{
-		//Already Exists.
+		ListIn->insert(iterFound, udIn);
+		return Pos;
 	}
-	else
+
+	if ( (KeyFound != 0) ) 
 	{
 		if (KeyFound == -1) //insert before, somewhere in the middle
 		{
 			ListIn->insert(iterFound, udIn);
+			return Pos;
 		}
 		else
 		{
-			if (iterFound == ( ListIn->end() - 1) )
+			if (KeyFound == 1) 
+			{
+				++iterFound;
+				ListIn->insert(iterFound, udIn);
+				return ++Pos;
+			}
+			else
+			if (iterFound == ( ListIn->end() - 1) )//insert Above last element - Special case
 			{//insert at end
 				ListIn->push_back(udIn);
 				return ListIn->size() -1;//Zero Base
 			}
-			else
-			{
-				if (KeyFound == 1) //insert Above last element - Special case
-				{
-					++iterFound;
-					++Pos;
-					ListIn->insert(iterFound, udIn);
-				}
-			}
 		}
 	}
-	return Pos;
+	return -1;
 }
 
 bool UserData::FindOrInsertStringIntoAutolist(vector<string>* ListIn,const string &strIn)
@@ -177,7 +212,7 @@ bool UserData::FindOrInsertStringIntoAutolist(vector<string>* ListIn,const strin
 	{
 		const string strLowerComp = lowerCase(string(i->data()));
 		result = strLowerComp.compare(strLowerIn);
-		if (result < 0)
+		if (result != 0)
 		{
 			++i;
 			counter--;
@@ -202,7 +237,6 @@ bool UserData::FindOrInsertStringIntoAutolist(vector<string>* ListIn,const strin
 	}
 	return false;//Oh pop poop, never should hit here.
 }
-
 
 ////////////////Preferences
 CVPrefrence::CVPrefrence()
