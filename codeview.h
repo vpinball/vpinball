@@ -234,10 +234,22 @@ public:
 	string upperCase(string input);
 	string lowerCase(string input);
 
+	bool StopErrorDisplay;
+	bool ParentTreeInvalid;
 	void ParseVPCore();
 	void ParseForFunction();
+	void ReadLineToParseBrain(string wholeline, int linecount, vector<UserData> *ListIn);
+	bool ParseOKLineLength(const int LineLen);
+	string ParseRemoveLineComments(string *Line);
+	void ParseDelimtByColon(string *result, string *wholeline);
+	void ParseFindConstruct(int &Pos, const string *UCLine, WordType &Type, int &ConstructSize);
+	bool ParseStructureName(vector<UserData> *ListIn, UserData ud,
+									const string UCline, const string line, const int Lineno);
+	
 	int SureFind(const string &LineIn, const string &ToFind);
-	string ExtractWord(const string &line, const int &StartPos);
+	void RemovePadding(string &line); 
+	string ExtractWordOperand(const string &line, const int &StartPos);
+
 	bool ShowTooltip(SCNotification *Scn);
 	void ShowAutoComplete();
 	void szLower(char * const incstr);
@@ -260,7 +272,7 @@ public:
 	void UpdateScinFromPrefs();
 	bool DisplayAutoComplete;
 
-	//User data keyword lists
+	// keyword lists
 	bool g_ToolTipActive;
 	string vbsKeyWords;
 	vector<string> *g_AutoComp;

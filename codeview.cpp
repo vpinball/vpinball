@@ -408,9 +408,8 @@ void CodeViewer::Create()
 	char szValidChars[256] = {};  
    SendMessage(m_hwndScintilla, SCI_GETWORDCHARS, 0, (LPARAM)szValidChars);
    ValidChars = string(szValidChars);
-
 	VBValidChars = string("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_");
-
+	StopErrorDisplay = false;
 // Create new list of user functions & Collections- filled in ParseForFunction(), first called in LoadFromStrem()
 	g_AutoComp = new vector<string>();
 	g_Components = new vector<UserData>();
@@ -492,7 +491,6 @@ void CodeViewer::Create()
 		Pref->GetPrefsFromReg();
 	}
 	crBackColor = GetRegIntWithDefault("CVEdit", "BackGroundColor", RGB(255,255,255));
-	UpdateScinFromPrefs();
 
    SendMessage(m_hwndScintilla, SCI_SETKEYWORDS, 0, (LPARAM)vbsReservedWords );
    SendMessage(m_hwndScintilla, SCI_SETTABWIDTH, 4, 0);
@@ -546,7 +544,6 @@ void CodeViewer::Create()
 	SendMessage(m_hwndScintilla, SCI_MARKERSETFORE, SC_MARKNUM_FOLDERMIDTAIL, prefEverythingElse->rgb);
 	SendMessage(m_hwndScintilla, SCI_MARKERSETBACK, SC_MARKNUM_FOLDERMIDTAIL, crBackColor);
 
-
    SendMessage(m_hwndScintilla, SCI_STYLESETSIZE, STYLE_DEFAULT, 10);
    SendMessage(m_hwndScintilla, SCI_STYLESETFONT, STYLE_DEFAULT, (LPARAM)"Courier");
 
@@ -563,7 +560,7 @@ void CodeViewer::Create()
 	SendMessage(m_hwndScintilla, SCI_AUTOCSETIGNORECASE, TRUE, 0);
 	SendMessage(m_hwndScintilla, SCI_AUTOCSETCASEINSENSITIVEBEHAVIOUR, SC_CASEINSENSITIVEBEHAVIOUR_IGNORECASE,0);
 
-	SendMessage(m_hwndScintilla, SCI_AUTOCSETFILLUPS, 0,(LPARAM) "[]{}(). ");
+	SendMessage(m_hwndScintilla, SCI_AUTOCSETFILLUPS, 0,(LPARAM) "[]{}().");
 	SendMessage(m_hwndScintilla, SCI_AUTOCSTOPS, 0,(LPARAM) " ");
 
 	//////////////////////// Status Window (& Sizing Box)
@@ -1567,8 +1564,8 @@ bool CodeViewer::ShowTooltip(SCNotification *pSCN)
 	if ((SendMessage(m_hwndScintilla, SCI_ISRANGEWORD, wordstart , wordfinish )) && ((wordfinish - wordstart) < 255))
 	{
 		//Retrieve the word
-		GetRange(m_hwndScintilla,wordstart,wordfinish,szDwellWord);
-		strcpy_s( szLCDwellWord,  szDwellWord);
+		GetRange(m_hwndScintilla, wordstart, wordfinish,szDwellWord);
+		strcpy_s( szLCDwellWord, szDwellWord);
 		szLower(szLCDwellWord);
 		
 		// Serarch for VBS reserved words
@@ -1583,25 +1580,28 @@ bool CodeViewer::ShowTooltip(SCNotification *pSCN)
 		if (MessLen == 0)
 		{
 			//Has function list been filled?
+			StopErrorDisplay = true;
 			if ( g_UserFunc->size() == 0 ) ParseForFunction();
 			//search subs/funcs
 			vector<UserData>::iterator i;
-			if (FindUD(g_UserFunc,string(szLCDwellWord),i) == 0)
+			if (FindUD(g_UserFunc, string(szLCDwellWord), i) == 0)
 			{
-				const char *ptemp = (i->strDescription.c_str());
-				if (*ptemp)
+				string ptemp = i->strDescription;
+				if (i->Comment.length() >1)
 				{
-					MessLen = sprintf_s(Mess, "%s", ptemp);
+					ptemp += "\n" +  i->Comment;
 				}
+				MessLen = sprintf_s(Mess, "%s", ptemp.c_str() );
 			}
 			//Search VP core
-			else if (FindUD(g_VP_Core,string(szLCDwellWord),i) == 0)
+			else if (FindUD(g_VP_Core, string(szLCDwellWord), i) == 0)
 			{
-				const char *ptemp = (i->strDescription.c_str());
-				if (*ptemp)
+				string ptemp = i->strDescription;
+				if (i->Comment.length() >1)
 				{
-					MessLen = sprintf_s(Mess, "%s", ptemp);
+					ptemp += "\n" +  i->Comment;
 				}
+				MessLen = sprintf_s(Mess, "%s", ptemp.c_str());
 			}
 			else if ( ( FindUD(g_Components, string(szLCDwellWord), i)  == 0 ) )
 			{
@@ -1805,72 +1805,289 @@ int CodeViewer::SureFind(const string &LineIn, const string &ToFind)
 	return Pos;
 }
 
-void CodeViewer::ParseForFunction() // Subs & Collections AndyS - WIP 
+
+string CodeViewer::ParseRemoveLineComments(string *Line)
 {
-   char text[MAX_LINE_LENGTH];
-   size_t scriptLines = SendMessage(m_hwndScintilla, SCI_GETLINECOUNT, 0, 0);
-   SendMessage(m_hwndFunctionList, CB_RESETCONTENT, 0, 0);
-	char szValidChars[256] = {};  
-   SendMessage(m_hwndScintilla, SCI_GETWORDCHARS, 0, (LPARAM)szValidChars);//Lparam or size_t ?????
-   string ValidChars(szValidChars);
-	for (size_t i = 0; i < scriptLines; ++i) 
-   {
-/////////////////////		
-      const int lineLength = SendMessage(m_hwndScintilla, SCI_LINELENGTH, i, 0);
-      if (lineLength > MAX_LINE_LENGTH)
+	int commentIdx = Line->find("'");
+	if (commentIdx == -1) return "";
+	string RetVal = Line->substr(commentIdx+1, string::npos);
+	RemovePadding(RetVal);
+	if (commentIdx > 0)
+	{
+		*Line = string(Line->substr(0, commentIdx));
+		return RetVal;
+	}
+	Line->clear();
+	return RetVal;
+}
+
+bool CodeViewer::ParseOKLineLength(const int LineLen)
+{
+	if (LineLen > MAX_LINE_LENGTH)
+	{
+		char szText[256] = {};
+		sprintf_s(szText, "The current maximum script line length is %d", MAX_LINE_LENGTH);
+		char szCaption[256] = {};
+		sprintf_s(szCaption, "Line too long on line %d", LineLen);
+		MessageBox(m_hwndMain, szText,szCaption, MB_OK);
+		return false;
+	}
+	if (LineLen <3) return false;
+	return true;
+}
+
+bool CodeViewer::ParseStructureName(vector<UserData> *ListIn, UserData ud,
+												const string UCline, const string line, const int Lineno)
+{
+	static int ParentLevel = 0;
+	static string CurrentParentKey = "";
+	const int endIdx = SureFind(UCline,"END"); 
+	const int exitIdx = SureFind(UCline,"EXIT"); 
+
+	if (endIdx == -1 && exitIdx == -1) //Its something new and therefore we are now a parent
+	{
+		if (ParentLevel == 0)// its a root
 		{
-			char szText[256] = {};
-			sprintf_s(szText,"The current maximum script line length is %d",MAX_LINE_LENGTH);
-			char szCaption[256] = {};
-			sprintf_s(szCaption,"Line too long on line %d",i);
-			MessageBox(m_hwndMain,szText,szCaption,MB_OK);
-			continue;
+			string foo;
+			foo = (char)((ud.eTyping)+64);
+
+			ud.strUniqueKey = ud.strKeyName  + foo + "\0";
+			FindOrInsertUD( ListIn, ud);
+			CurrentParentKey = ud.strUniqueKey;
 		}
-		if (lineLength <4) continue;
-      memset(text, 0, 1024);
-		SendMessage(m_hwndScintilla, SCI_GETLINE, i, (LPARAM)text);
-      string wholeline(text);
-		string line;
-		while (wholeline.length() > 1)
+		else 
 		{
-			//Chop up line by ":"
-			line = wholeline;
-			int idx = line.find(":"); 
-			if (idx > 0)
+			ud.strUniqueParent = CurrentParentKey;
+			string foo;
+			foo = (char)((ud.eTyping)+64);
+			ud.strUniqueKey = ud.strKeyName + foo  + CurrentParentKey + "\0";
+			FindOrInsertUD( ListIn, ud);
+			int iUDIndx = UDKeyIndex( ListIn, CurrentParentKey);
+			if (iUDIndx == -1)
 			{
-				line = wholeline.substr(0,idx);
-				wholeline = wholeline.substr(idx, (wholeline.length()) - (line.length()) );
+				ParentTreeInvalid = true;
+				ParentLevel = 0;
+				if (!StopErrorDisplay)
+				{
+					StopErrorDisplay = true;
+					char szCaption[256] = {};
+					sprintf_s(szCaption,"Parse error on line:%d", Lineno);
+					MessageBox(m_hwndMain, "Construct not closed", szCaption, MB_OK);
+				}
+				return true;
+			}
+			UserData *iCurParent = &(ListIn->at(iUDIndx));
+			iCurParent->Children.push_back(ud.strUniqueKey);//add child to parent
+			CurrentParentKey = ud.strUniqueKey;
+		}
+		++ParentLevel;
+	}
+	else
+	{
+		if (endIdx >= 0)
+		{
+			if (ParentLevel == -1)
+			{
+				ParentTreeInvalid = true;
+				ParentLevel = 0;
+				if (!StopErrorDisplay)
+				{
+					StopErrorDisplay = true;
+					char szCaption[256] = {};
+					sprintf_s(szCaption,"Parse error on line:%d", Lineno);
+					MessageBox(m_hwndMain, "Construct not opened", szCaption, MB_OK);
+				}
+
+				return true;
 			}
 			else
-			{
-				wholeline.clear();
-			}
-
-			int SearchLength =3;
-			string UCline = upperCase(line);
-			idx = UCline.find("SUB");
-			if (idx == -1)
-			{
-				idx = UCline.find("FUNCTION");
-				SearchLength =8;
-			}
-			if (idx >= 0)
-			{
-				const int endIdx = UCline.find("END");
-				const int exitIdx = UCline.find("EXIT");
-				const int commentIdx = UCline.find("'");
-				const int doubleQuoteIdx = UCline.find("\"");
-				if (endIdx == -1 && exitIdx == -1)
-				{
-					if ((commentIdx >= 0)  && (commentIdx < idx)) continue;
-					if ((doubleQuoteIdx >= 0)  && (doubleQuoteIdx < idx)) continue;
-
-					const string sSubName = ExtractWord(line, (idx + SearchLength) );
-					const UserData ud(i ,line.substr( 0, line.length()-2 ) , sSubName );
-					FindOrInsertUD( g_UserFunc , ud );
+			{ 
+				if (ParentLevel > 0)
+				{//finished with child ===== END =====
+					int iCurParent = UDKeyIndex(ListIn, CurrentParentKey);
+					if (iCurParent != -1 )
+					{
+						UserData *CurrentParentUD = (&ListIn->at(iCurParent));
+						int iGrandParent = UDKeyIndex(ListIn, CurrentParentUD->strUniqueParent);
+						if (iGrandParent != -1 )
+						{
+							UserData *CurrentGrandParentUD = (&ListIn->at(iGrandParent));
+							CurrentParentKey = CurrentGrandParentUD->strUniqueKey; 
+						}
+						else
+						{
+							CurrentParentKey.clear();
+						}
+						ParentLevel--;
+						return true;
+					}
+					/// error - end without start
+					CurrentParentKey.clear();
+					ParentLevel--;
+					return false;
 				}
+				else
+				{	//Error - end without start
+					ParentLevel = 0;
+					return false;
+				}
+			}//if (ParentLevel == -1)
+		}//if (endIdx >= 0)
+	}
+	return false;
+}
+
+void CodeViewer::ParseDelimtByColon(string *result, string *wholeline)
+{
+	*result = *wholeline ;
+	int idx = result->find(":"); 
+	if (idx == -1)
+	{
+		wholeline->clear();
+		return;
+	}
+	if (idx > 0)
+	{
+		*result = wholeline->substr(0,idx);
+		*wholeline = wholeline->substr(idx + 1, (wholeline->length()) - (result->length()) ) ;
+		return;
+	}
+	wholeline->clear();
+}
+
+void CodeViewer::ParseFindConstruct(int &Pos, const string *UCLineIn, WordType &Type,int &ConstructSize)
+{
+	if ( (Pos = SureFind( *UCLineIn ,"SUB")) != -1 )
+	{
+		ConstructSize =3;
+		Type = eSub;
+		return;
+	}
+	if ( (Pos = SureFind( *UCLineIn ,"FUNCTION")) != -1)
+	{
+		ConstructSize = 8;
+		Type = eFunction;
+		return;
+	}
+	if ( (Pos = SureFind( *UCLineIn ,"CLASS")) != -1)
+	{
+		ConstructSize = 5;
+		Type = eClass;
+		return;
+	}
+	if ( (Pos = SureFind( *UCLineIn ,"PROPERTY")) != -1)
+	{
+		int GetLetPos;
+		if ( (GetLetPos = SureFind( *UCLineIn ,"GET")) != -1)
+		{
+			if (Pos < GetLetPos)
+			{
+				Pos = GetLetPos;
+				ConstructSize = 3;
+				Type = ePropGet;
+				return;
 			}
-		}// while (line.length > 1) 
+		}
+		if ( (GetLetPos = SureFind( *UCLineIn ,"LET")) != -1)
+		{
+			if (Pos < GetLetPos)
+			{
+				Pos = GetLetPos;
+				ConstructSize = 3;
+				Type = ePropLet;
+				return;
+			}
+		}
+		if ( (GetLetPos = SureFind( *UCLineIn ,"SET")) != -1)
+		{
+			if (Pos < GetLetPos)
+			{
+				Pos = GetLetPos;
+				ConstructSize = 3;
+				Type = ePropSet;
+				return;
+			}
+		}
+		ConstructSize = 8;
+		return;
+	}
+	Pos = -1;
+	return;
+}
+
+void CodeViewer::ReadLineToParseBrain(string wholeline, int linecount, vector<UserData> *ListIn)
+{
+		string Comment = ParseRemoveLineComments(&wholeline);
+		RemovePadding(Comment);
+		while (wholeline.length() > 1)
+		{
+			string line;
+			ParseDelimtByColon(&line, &wholeline);
+			RemovePadding(line);
+			string UCline = upperCase(line);
+			UserData UD;
+			UD.eTyping = eUnknown;
+			UD.intLineNum = linecount;
+			UD.Comment = Comment;
+			int SearchLength = 0 ;
+			int idx = -1;
+			ParseFindConstruct(idx, &UCline, UD.eTyping, SearchLength);
+			if (idx == -1) continue;
+			if ( idx >= 0) // Found something something structrual
+			{
+				const int doubleQuoteIdx = line.find("\"");
+				if ((doubleQuoteIdx >= 0)  && (doubleQuoteIdx < idx)) continue; // in a string literal
+				const string sSubName = ExtractWordOperand(line, (idx + SearchLength) );
+				UD.strDescription = line;
+				UD.strKeyName = sSubName;
+				//UserData ud(linecount, line, sSubName, Type);
+				if (!ParseStructureName( ListIn, UD, UCline, line, linecount))
+				{/*A critical brain error occured */}
+			}// if ( idx >= 0)
+		}// while (wholeline.length > 1) 
+}
+
+void CodeViewer::RemovePadding(string &line)
+{
+	size_t LL = line.length();
+	size_t Pos = (line.find_first_not_of("\n\r\t "));
+	if (Pos == -1)
+	{
+		line.clear();
+		return;
+	}
+	if (Pos > 0)
+	{
+		if ( (LL-Pos) < 1 ) return;
+		line = line.substr(Pos, (LL-Pos) );
+	}
+
+	Pos =  (line.find_last_not_of("\n\r\t "));
+	if (Pos != -1)
+	{
+		if ( Pos < 1 ) return;
+		line = line.erase(Pos+1);
+	}
+}
+
+void CodeViewer::ParseForFunction() // Subs & Collections AndyS - WIP 
+{
+  char text[MAX_LINE_LENGTH];
+   size_t scriptLines = SendMessage(m_hwndScintilla, SCI_GETLINECOUNT, 0, 0);
+   SendMessage(m_hwndFunctionList, CB_RESETCONTENT, 0, 0);
+ ////////////////////
+	int ParentLevel = 0; //root
+	string CurrentParent = "";
+	ParentTreeInvalid = false;
+	for (size_t linecount = 0; linecount < scriptLines; ++linecount) 
+   {
+		// Read line
+      const int lineLength = SendMessage(m_hwndScintilla, SCI_LINELENGTH, linecount, 0);
+		if ( !ParseOKLineLength(lineLength) ) continue;
+		memset(text, 0, 1024);
+		SendMessage(m_hwndScintilla, SCI_GETLINE, linecount, (LPARAM)text);
+      string wholeline(text);
+		ReadLineToParseBrain( wholeline, linecount, g_UserFunc);
 	}
    //Propergate subs&funcs in menu in order
 	for (vector<UserData>::iterator i = g_UserFunc->begin(); i != g_UserFunc->end(); ++i) 
@@ -1878,7 +2095,7 @@ void CodeViewer::ParseForFunction() // Subs & Collections AndyS - WIP
 		const char *c_str1 = i->strKeyName.c_str ();
 		SendMessage(m_hwndFunctionList, CB_ADDSTRING, 0, (LPARAM)(c_str1) );
    }
-	//Collect Objects/Components from the menu.
+	//Collect Objects/Components from the menu. (cheat!)
 	int CBCount;
 	CBCount = SendMessage(m_hwndItemList, CB_GETCOUNT, 0, 0)-1;//Zero Based
 	char c_str1[256]={0};
@@ -1890,6 +2107,7 @@ void CodeViewer::ParseForFunction() // Subs & Collections AndyS - WIP
 		if(strlen(c_str1)>1)
 		{
 			ud.strKeyName = string(c_str1);
+			ud.strUniqueKey = ud.strKeyName;
 			FindOrInsertUD(g_Components,ud);
 		}
 		CBCount--;
@@ -1903,23 +2121,29 @@ void CodeViewer::ParseForFunction() // Subs & Collections AndyS - WIP
 	string strVPcoreWords = "";
 	for (vector<UserData>::iterator i = g_VP_Core->begin(); i != g_VP_Core->end(); ++i)
 	{
-		FindOrInsertStringIntoAutolist(g_AutoComp,i->strKeyName);
-		strVPcoreWords.append(i->strKeyName);
-		strVPcoreWords.append(" ");
+		if (FindOrInsertStringIntoAutolist(g_AutoComp,i->strKeyName))
+		{
+			strVPcoreWords.append(i->strKeyName);
+			strVPcoreWords.append(" ");
+		}
 	}
 	string strCompOut ="";
 	for (vector<UserData>::iterator i = g_Components->begin(); i != g_Components->end(); ++i)
 	{
-		FindOrInsertStringIntoAutolist(g_AutoComp,i->strKeyName);
-		strCompOut.append(i->strKeyName);
-		strCompOut.append(" ");
+		if (FindOrInsertStringIntoAutolist(g_AutoComp,i->strKeyName))
+		{
+			strCompOut.append(i->strKeyName);
+			strCompOut.append(" ");
+		}
 	}
 	string sSubFunOut = "";
 	for (vector<UserData>::iterator i = g_UserFunc->begin(); i != g_UserFunc->end(); ++i)
 	{
-		FindOrInsertStringIntoAutolist(g_AutoComp,i->strKeyName);
-		sSubFunOut.append(i->strKeyName);
-		sSubFunOut.append(" ");
+		if (FindOrInsertStringIntoAutolist(g_AutoComp,i->strKeyName))
+		{
+			sSubFunOut.append(i->strKeyName);
+			sSubFunOut.append(" ");
+		}
 	}
 	g_AutoCompList = "";
 	for (vector<string>::iterator i = g_AutoComp->begin(); i != g_AutoComp->end();++i)
@@ -1962,140 +2186,28 @@ void CodeViewer::ParseVPCore()
 				  }
 		  }
 	}
-///////////////////////
 	char text[MAX_LINE_LENGTH] = {};
-	int linecount = 0;
 	//intalise Parent child
+///////////////////////
 	int ParentLevel = 0; //root
 	string CurrentParent = "";
-	int ConstructorsCount = 0;
+	StopErrorDisplay = false;/// WIP BRANDREW
+	ParentTreeInvalid = false;
+	int linecount = 0;
 	while (!feof(fCore))
 	{
-
-		// Read line
       memset(text, 0, MAX_LINE_LENGTH);
-		++linecount;
 		fgets(text, MAX_LINE_LENGTH, fCore);
       string wholeline(text);
+		++linecount;
 		int lineLength = wholeline.length();
-		if (lineLength <4) continue;
-		if (lineLength > MAX_LINE_LENGTH)
-		{
-			char szText[256] = {};
-			sprintf_s(szText,"The current maximum script line length is %d", MAX_LINE_LENGTH);
-			char szCaption[256] = {};
-			sprintf_s(szCaption,"Line too long on:%d",linecount);
-			MessageBox(m_hwndMain,szText,szCaption,MB_OK);
-			continue;
-		}
-		const int commentIdx = wholeline.find("'");
-		if (commentIdx > 0)
-		{// chop everything off after comment
-				wholeline = wholeline.substr(0 , commentIdx );
-		}
-		else
-		{
-			if (commentIdx == 0)	continue;
-		}
-		string line;
-		while (wholeline.length() > 1)
-		{
-			line = wholeline;
-			int idx = line.find(":"); 
-			if (idx > 0)
-			{
-				line = wholeline.substr(0,idx);
-				wholeline = wholeline.substr(idx + 1, (wholeline.length()) - (line.length()) );
-			}
-			else
-			{
-				line = wholeline;
-				wholeline.clear();
-			}
-
-			int SearchLength =3;
-			string UCline = upperCase(line);
-			idx = SureFind(UCline,"SUB"); //UCline.find("SUB");
-			if (idx == -1)
-			{
-				idx = SureFind(UCline,"FUNCTION");  //UCline.find("FUNCTION");
-				SearchLength =8;
-			}
-			if (idx == -1)
-			{
-				idx = SureFind(UCline,"CLASS");   //UCline.find("CLASS");
-				SearchLength =5;
-			}
-
-			if ( idx >= 0) // Found something something structrual
-			{
-				const int endIdx = SureFind(UCline,"END");   //UCline.find("END");
-				const int exitIdx = SureFind(UCline,"EXIT");  //UCline.find("EXIT");
-				const int doubleQuoteIdx = UCline.find("\"");
-				if ((doubleQuoteIdx >= 0)  && (doubleQuoteIdx < idx)) continue; // in a string literal
-				const string sSubName = ExtractWord(line, (idx + SearchLength) );
-				UserData ud(linecount, line.substr(0, line.length() -1), sSubName);
-
-				if (endIdx == -1 && exitIdx == -1) //Its something new and therefore a parent (ATM!)
-				{
-					// is this a child? everything contained is a child until END/EXIT
-					if (ParentLevel == 0)// its a root, like a class
-					{
-						FindOrInsertUD( g_VP_Core, ud);
-						CurrentParent = sSubName;
-					}
-					else //contained within a structure
-					{//whos the daddy?
-						ud.Parent = CurrentParent;
-						FindOrInsertUD( g_VP_Core, ud);
-						int iUDIndx = UDIndex(g_VP_Core, CurrentParent);
-						if (iUDIndx == -1)
-						{
-							char szCaption[256] = {};
-							sprintf_s(szCaption,"Parsing error on line:%d", linecount);
-							MessageBox(m_hwndMain, "Sub, Function construct not closed", szCaption, MB_OK);
-							continue;
-						}
-						UserData *iCurParent = &(g_VP_Core->at(iUDIndx));
-						iCurParent->Children.push_back(sSubName);//add child to parent
-						CurrentParent = sSubName;
-					}
-					++ParentLevel;
-					++ConstructorsCount;
-				}
-				else
-				{
-					if (endIdx >= 0)
-					{
-						if (ParentLevel == -1)
-						{
-							// you messed up andy. (or the script is wrong)
-							false;
-						}
-						else
-						{ 
-							if (ParentLevel > 0)
-							{//finished with child
-								int iCurParent = UDIndex(g_VP_Core, CurrentParent);
-								CurrentParent = g_VP_Core->at(iCurParent).Parent;
-								ParentLevel--;
-							}
-							else
-							{//close a root structure
-								CurrentParent.clear();
-							}
-						}//if (ParentLevel == -1)
-					}//if (endIdx >= 0)
-				}
-
-			}//while (wholeline.length() > 1)
-		}// while (line.length > 1) 
+		if ( !ParseOKLineLength(lineLength) ) continue;
+		ReadLineToParseBrain( wholeline, linecount, g_VP_Core);
 	}
-
 	fclose(fCore);
 }
 
-string CodeViewer::ExtractWord(const string &line, const int &StartPos)
+string CodeViewer::ExtractWordOperand(const string &line, const int &StartPos)
 {
 	size_t Substart = StartPos;
 	const size_t lineLength = line.size();
@@ -2154,7 +2266,14 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
       if (LOWORD(wParam) != WA_INACTIVE)
 		{
          g_pvp->m_pcv = GetCodeViewerPtr(hwndDlg);
-			g_pvp->m_pcv->ParseForFunction();
+			CodeViewer * const pcv = g_pvp->m_pcv;
+			pcv->StopErrorDisplay = false;
+			if (!(pcv->StopErrorDisplay))
+			{
+				pcv->StopErrorDisplay = true; ///stop Error reporting WIP
+				pcv->ParseForFunction();
+			}
+			pcv->StopErrorDisplay = false;
 		}
    }
    break;
@@ -2197,50 +2316,40 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
          case ID_COMPILE:
             pcv->Compile();
             // Setting the script to started, and the back to initialized will clear the script out so we can re-do it later
-			// - is this behavior just random or is it the way it's supposed to work?
+				// - is this behavior just random or is it the way it's supposed to work?
             //pcv->m_pScript->SetScriptState(SCRIPTSTATE_CLOSED /*SCRIPTSTATE_STARTED*/);
             pcv->EndSession();
             break;
-
-			case ID_SCRIPT_PREFERENCES:
-				
+			case ID_SCRIPT_PREFERENCES:			
 				DialogBox(g_hinst, MAKEINTRESOURCE(IDD_CODEVIEW_PREFS), hwndDlg, CVPrefProc);
 				break;
-         case ID_FIND:
+ 			case ID_FIND:
             pcv->ShowFindDialog();
             break;
-         case ID_REPLACE:
+			case ID_REPLACE:
             pcv->ShowFindReplaceDialog();
             break;
-         case ID_EDIT_FINDNEXT:
+			case ID_EDIT_FINDNEXT:
             pcv->Find(&pcv->m_findreplaceold);
             break;
-
          case ID_EDIT_UNDO:
             SendMessage(pcv->m_hwndScintilla, SCI_UNDO, 0, 0);
             break;
-
          case ID_EDIT_COPY:
             SendMessage(pcv->m_hwndScintilla, WM_COPY, 0, 0);
             break;
-
          case ID_EDIT_CUT:
             SendMessage(pcv->m_hwndScintilla, WM_CUT, 0, 0);
             break;
-
          case ID_EDIT_PASTE:
             SendMessage(pcv->m_hwndScintilla, WM_PASTE, 0, 0);
             break;
-         case ID_ADD_COMMENT:
-         {
+ 			case ID_ADD_COMMENT:
             AddComment(pcv->m_hwndScintilla);
             break;
-         }
-         case ID_REMOVE_COMMENT:
-         {
+ 			case ID_REMOVE_COMMENT:
             RemoveComment(pcv->m_hwndScintilla);
             break;
-         }
          }
       }
       break;
@@ -2249,6 +2358,7 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
          if (id == IDC_FUNCTIONLIST)
 			{
 				CodeViewer * const pcv = GetCodeViewerPtr(hwndDlg);
+				pcv->StopErrorDisplay = true;
 				pcv->ParseForFunction();
 			}
          break;
@@ -2265,19 +2375,15 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
          case ID_TABLE_PLAY:
             pcv->m_psh->DoCodeViewCommand(id);
             break;
-
          case ID_EDIT_FINDNEXT:
             pcv->Find(&pcv->m_findreplaceold);
             break;
-
          case ID_REPLACE:
             pcv->ShowFindReplaceDialog();
             break;
-
          case ID_EDIT_UNDO:
             SendMessage(pcv->m_hwndScintilla, SCI_UNDO, 0, 0);
             break;
-
          case IDC_ITEMLIST:
          {
             pcv->ListEventsFromItem();
@@ -2346,7 +2452,7 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 			break;
 		  case SCN_DWELLSTART:
 				pcv->g_ToolTipActive = pcv->ShowTooltip(pscn);
-		    break;
+				break;
 
 		  case SCN_DWELLEND:
 			{
