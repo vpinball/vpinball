@@ -259,14 +259,14 @@ HRESULT Pin3D::InitPin3D(const HWND hwnd, const bool fullScreen, const int width
 
    //
 
-   if(m_pd3dDevice->DepthBufferReadBackAvailable()) /*(stereo3D || useAO)*/ {
+   if(m_pd3dDevice->DepthBufferReadBackAvailable() && (stereo3D || useAO)) {
       m_pdds3DZBuffer = !m_pd3dDevice->m_useNvidiaApi ? (D3DTexture*)m_pd3dDevice->AttachZBufferTo(m_pddsBackBuffer) : m_pd3dDevice->DuplicateDepthTexture((RenderTarget*)m_pddsZBuffer);
 
       if (!m_pdds3DZBuffer)
          return E_FAIL;
    }
 
-   if(m_pd3dDevice->DepthBufferReadBackAvailable()) /*(useAO)*/ 
+   if(m_pd3dDevice->DepthBufferReadBackAvailable() && useAO) 
    {
        HRESULT hr;
        hr = m_pd3dDevice->GetCoreDevice()->CreateTexture(width, height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_L8, D3DPOOL_DEFAULT, &m_pddsAOBackTmpBuffer, NULL);
