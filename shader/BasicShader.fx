@@ -9,7 +9,7 @@ float4x4 matWorldViewProj : WORLDVIEWPROJ;
 float4x4 matWorldView     : WORLDVIEW;
 float4x4 matWorldViewInverseTranspose;
 float4x4 matView;
-float4x4 matViewInverseInverseTranspose;
+//float4x4 matViewInverseInverseTranspose; // matView used instead and multiplied from other side
 
 texture Texture0; // base texture
 texture Texture1; // envmap
@@ -167,6 +167,7 @@ VS_DEPTH_ONLY_TEX_OUTPUT vs_depth_only_main_with_texture(float4 vPosition : POSI
 PS_OUTPUT ps_main(in VS_NOTEX_OUTPUT IN) 
 {
    //return float4((IN.normal+1.0)*0.5,1.0); // visualize normals
+
    PS_OUTPUT output;
    const float3 diffuse  = cBase_Alpha.xyz;
    const float3 glossy   = (Roughness_WrapL_Edge_IsMetal.w != 0.0) ? cBase_Alpha.xyz : cGlossy*0.08;
@@ -193,6 +194,8 @@ PS_OUTPUT ps_main(in VS_NOTEX_OUTPUT IN)
 
 PS_OUTPUT ps_main_texture(in VS_OUTPUT IN) 
 {
+   //return float4((IN.normal+1.0)*0.5,1.0); // visualize normals
+
    PS_OUTPUT output;
    float4 pixel = tex2D(texSampler0, IN.tex0);
 

@@ -132,7 +132,7 @@ public:
    VertexBuffer *vertexBuffer;
    IndexBuffer *triggerIndexBuffer;
    std::vector<Vertex3Ds> vertices;
-   WORD *faceIndices;
+   const WORD *faceIndices;
    Vertex3D_NoTex2 *triggerVertices;
    PropertyPane *m_propVisual;
 

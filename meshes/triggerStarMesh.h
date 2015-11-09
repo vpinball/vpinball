@@ -235,7 +235,7 @@ const Vertex3D_NoTex2 triggerStar[231]=
 { 0.768531f,0.591459f,-0.036548f, -0.553100f,0.833100f,-0.000000f, 0.489685f,0.998195f}
 };
 
-WORD triggerStarIndices[510]=
+const WORD triggerStarIndices[510]=
 {
 19, 20, 21,
 22, 21, 20,

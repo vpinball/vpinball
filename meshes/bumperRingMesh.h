@@ -362,7 +362,7 @@ const Vertex3D_NoTex2 bumperRing[358]=
 { -0.388860f,0.111472f,0.621622f, 0.515800f,-0.138200f,0.845500f, 0.410248f,0.165042f}
 };
 
-WORD bumperRingIndices[1008]=
+const WORD bumperRingIndices[1008]=
 {
 6, 7, 5,
 5, 4, 6,

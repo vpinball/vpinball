@@ -774,14 +774,14 @@ void Player::UpdateBasicShaderMatrix(const Matrix3D& objectTrafo)
    m_pin3d.m_pd3dDevice->classicLightShader->SetMatrix("matView", &matView);
 #endif
 
-   memcpy(temp.m, matView.m, 4 * 4 * sizeof(float));
-   temp.Transpose();
-   D3DXMATRIX matViewInvInvTrans;
-   memcpy(matViewInvInvTrans.m, temp.m, 4 * 4 * sizeof(float));
+   //memcpy(temp.m, matView.m, 4 * 4 * sizeof(float));
+   //temp.Transpose();
+   //D3DXMATRIX matViewInvInvTrans;
+   //memcpy(matViewInvInvTrans.m, temp.m, 4 * 4 * sizeof(float));
 
-   m_pin3d.m_pd3dDevice->basicShader->SetMatrix("matViewInverseInverseTranspose", &matViewInvInvTrans);
+   //m_pin3d.m_pd3dDevice->basicShader->SetMatrix("matViewInverseInverseTranspose", &matViewInvInvTrans);
 #ifdef SEPARATE_CLASSICLIGHTSHADER
-   m_pin3d.m_pd3dDevice->classicLightShader->SetMatrix("matViewInverseInverseTranspose", &matViewInvInvTrans);
+   //m_pin3d.m_pd3dDevice->classicLightShader->SetMatrix("matViewInverseInverseTranspose", &matViewInvInvTrans);
 #endif
 }
 
@@ -858,22 +858,22 @@ void Player::UpdateBallShaderMatrix()
    temp.Invert();
    D3DXMATRIX matWorldViewInv;
    memcpy(matWorldViewInv.m, temp.m, 4 * 4 * sizeof(float));
-   temp.Transpose();
-   D3DXMATRIX matWorldViewInvTrans;
-   memcpy(matWorldViewInvTrans.m, temp.m, 4 * 4 * sizeof(float));
+   //temp.Transpose();
+   //D3DXMATRIX matWorldViewInvTrans;
+   //memcpy(matWorldViewInvTrans.m, temp.m, 4 * 4 * sizeof(float));
 
    ballShader->SetMatrix("matWorldViewProj", &matWorldViewProj);
    ballShader->SetMatrix("matWorldView", &matWorldView);
    ballShader->SetMatrix("matWorldViewInverse", &matWorldViewInv);
-   ballShader->SetMatrix("matWorldViewInverseTranspose", &matWorldViewInvTrans);
+   //ballShader->SetMatrix("matWorldViewInverseTranspose", &matWorldViewInvTrans);
    ballShader->SetMatrix("matView", &matView);
 
-   memcpy(temp.m, matView.m, 4 * 4 * sizeof(float));
-   temp.Transpose();
-   D3DXMATRIX matViewInvInvTrans;
-   memcpy(matViewInvInvTrans.m, temp.m, 4 * 4 * sizeof(float));
+   //memcpy(temp.m, matView.m, 4 * 4 * sizeof(float));
+   //temp.Transpose();
+   //D3DXMATRIX matViewInvInvTrans;
+   //memcpy(matViewInvInvTrans.m, temp.m, 4 * 4 * sizeof(float));
 
-   ballShader->SetMatrix("matViewInverseInverseTranspose", &matViewInvInvTrans);
+   //ballShader->SetMatrix("matViewInverseInverseTranspose", &matViewInvInvTrans);
 }
 
 void Player::InitBallShader()

@@ -156,7 +156,7 @@ const Vertex3D_NoTex2 spinnerBracket[152]=
 { 0.940624f,0.096001f,-0.045435f, -0.000000f,0.000000f,1.000000f, 0.000000f,0.000000f}
 };
 
-WORD spinnerBracketIndices[420]=
+const WORD spinnerBracketIndices[420]=
 {
 0, 1, 2,
 1, 3, 2,

@@ -190,7 +190,7 @@ const Vertex3D_NoTex2 gateWire[186]=
 { -0.383752f,0.004682f,-0.003990f, -1.000000f,0.000000f,0.000000f, 0.500000f,0.500000f}
 };
 
-WORD gateWireIndices[1008]=
+const WORD gateWireIndices[1008]=
 {
 160, 161, 162,
 160, 163, 161,

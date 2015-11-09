@@ -179,8 +179,8 @@ public:
 
    HitTargetData m_d;
    Matrix3D fullMatrix;
-   Vertex3D_NoTex2 *m_vertices;
-   WORD            *m_indices;
+   const Vertex3D_NoTex2 *m_vertices;
+   const WORD      *m_indices;
    unsigned int     m_numVertices;
    unsigned int     m_numIndices;
 

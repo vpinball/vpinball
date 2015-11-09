@@ -188,7 +188,7 @@ const Vertex3D_NoTex2 gateBracket[184]=
 { -0.507902f,-0.018984f,-0.067141f, -0.000000f,0.000000f,-1.000000f, 0.500000f,0.500000f}
 };
 
-WORD gateBracketIndices[516]=
+const WORD gateBracketIndices[516]=
 {
 144, 145, 146,
 145, 144, 147,
