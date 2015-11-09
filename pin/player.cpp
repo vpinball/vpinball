@@ -110,6 +110,8 @@ static const float quadVerts[4 * 5] =
    -1.0f, -1.0f, 0.0f, 0.0f, 1.0f
 };
 
+static unsigned int material_flips = 0;
+
 //
 
 #define RECOMPUTEBUTTONCHECK WM_USER+100
@@ -951,9 +953,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 
    int vsync = (m_ptable->m_TableAdaptiveVSync == -1) ? m_fVSync : m_ptable->m_TableAdaptiveVSync;
 
-   const bool useAO = (!m_disableAO && ((m_dynamicAO && (m_ptable->m_useAO == -1)) || (m_ptable->m_useAO == 1)));
    const bool useAA = (m_fAA && (m_ptable->m_useAA == -1)) || (m_ptable->m_useAA == 1);
-   const bool stereo3D = (!!m_fStereo3D);
    const bool FXAA = ((m_fFXAA && (m_ptable->m_useFXAA == -1)) || (m_ptable->m_useFXAA > 0));
 
    int colordepth;
@@ -962,7 +962,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 
    // colordepth & refreshrate are only defined if fullscreen is true.
    HRESULT hr = m_pin3d.InitPin3D(m_hwnd, m_fFullScreen, m_width, m_height, colordepth,
-      m_refreshrate, vsync, useAA, stereo3D, FXAA, useAO);
+                                  m_refreshrate, vsync, useAA, !!m_fStereo3D, FXAA, !m_disableAO);
 
    if (hr != S_OK)
    {
@@ -1171,8 +1171,28 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
    std::stable_sort(m_vHitNonTrans.begin(), m_vHitNonTrans.end(), CompareHitableDepthReverse); // stable, so that em reels (=same depth) will keep user defined order
    std::stable_sort(m_vHitNonTrans.begin(), m_vHitNonTrans.end(), CompareHitableMaterial); // stable, so that objects with same materials will keep depth order
 
+   material_flips = 0;
+   unsigned long long m;
+   if(m_vHitNonTrans.size() > 0)
+      m = m_vHitNonTrans[0]->GetMaterialID();
+   for(unsigned int i = 1; i < m_vHitNonTrans.size(); ++i)
+      if(m_vHitNonTrans[i]->GetMaterialID() != m)
+      {
+         material_flips++;
+         m = m_vHitNonTrans[i]->GetMaterialID();
+      }
+   
    std::stable_sort(m_vHitTrans.begin(), m_vHitTrans.end(), CompareHitableMaterial); // see above
    std::stable_sort(m_vHitTrans.begin(), m_vHitTrans.end(), CompareHitableDepth);
+
+   if(m_vHitTrans.size() > 0)
+      m = m_vHitTrans[0]->GetMaterialID();
+   for(unsigned int i = 1; i < m_vHitTrans.size(); ++i)
+      if(m_vHitTrans[i]->GetMaterialID() != m)
+      {
+         material_flips++;
+         m = m_vHitTrans[i]->GetMaterialID();
+      }
 
    // Direct all renders to the back buffer.
    m_pin3d.SetRenderTarget(m_pin3d.m_pddsBackBuffer, m_pin3d.m_pddsZBuffer);
@@ -3685,7 +3705,7 @@ void Player::Render()
         TextOut(hdcNull, 10, 105, szFoo, len);
         len = sprintf_s(szFoo, sizeof(szFoo), " Parameter changes: %u ", m_pin3d.m_pd3dDevice->Perf_GetNumParameterChanges());
         TextOut(hdcNull, 10, 125, szFoo, len);
-        len = sprintf_s(szFoo, sizeof(szFoo), " Objects: %u Transparent, %u Solid ", m_vHitTrans.size(), m_vHitNonTrans.size());
+        len = sprintf_s(szFoo, sizeof(szFoo), " Objects: %u Transparent, %u Solid (%u Flips) ", m_vHitTrans.size(), m_vHitNonTrans.size(), material_flips);
         TextOut(hdcNull, 10, 145, szFoo, len);
 
 #ifdef _DEBUGPHYSICS
