@@ -171,6 +171,7 @@ public:
 
    void    RecalculateMatrices();
    void    TransformVertices();
+   void    SetMeshType(int type);
 
    static INT_PTR CALLBACK ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
@@ -178,8 +179,10 @@ public:
 
    HitTargetData m_d;
    Matrix3D fullMatrix;
-   int m_numGroupVertices;
-   int m_numGroupIndices;
+   Vertex3D_NoTex2 *m_vertices;
+   WORD            *m_indices;
+   unsigned int     m_numVertices;
+   unsigned int     m_numIndices;
 
 private:        // private member functions
 
@@ -196,8 +199,6 @@ private:        // private member functions
    void RenderObject(RenderDevice *pd3dDevice);
    void SetupHitObject(Vector<HitObject> * pvho, HitObject * obj);
    void AddHitEdge(Vector<HitObject> * pvho, std::set< std::pair<unsigned, unsigned> >& addedEdges, const unsigned i, const unsigned j, const Vertex3Ds &vi, const Vertex3Ds &vj);
-
-   void CalculateBuiltinOriginal();
 
    PropertyPane *m_propVisual;
    PropertyPane *m_propPosition;
