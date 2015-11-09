@@ -28,6 +28,7 @@
     <ClCompile Include="Pin\hitplunger.cpp" />
     <ClCompile Include="hitrectsur.cpp" />
     <ClCompile Include="hitsur.cpp" />
+    <ClCompile Include="hittarget.cpp" />
     <ClCompile Include="ieditable.cpp" />
     <ClCompile Include="iselect.cpp" />
     <ClCompile Include="kicker.cpp" />
@@ -185,6 +186,9 @@
       <Filter>res</Filter>
     </None>
     <None Include="res\flasher.cur">
+      <Filter>res</Filter>
+    </None>
+    <None Include="res\hittarget.rgs">
       <Filter>res</Filter>
     </None>
     <None Include="res\flasher.rgs">
@@ -489,6 +493,9 @@
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="hitsur.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="hittarget.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="idebug.h">
