@@ -20,8 +20,9 @@ enum
    eDispReel,
    eLightSeq,
    ePrimitive,
+   eHitTarget,
    eTrigger,	// this value and greater are volume set tested, add rigid or non-volume set above
-   eKicker		// this is done to limit to one test
+   eKicker,		// this is done to limit to one test
 };
 
 extern float c_hardScatter;
@@ -79,7 +80,7 @@ public:
 
    HitObject() : m_fEnabled(fTrue), m_ObjType(eNull), m_pObj(NULL),
       m_elasticity(0.3f), m_elasticityFalloff(0.0f), m_friction(0.3f), m_scatter(0.0f),
-      m_pfe(NULL), m_threshold(0.f), m_pfedebug(NULL), m_pe(NULL) {}
+      m_pfe(NULL), m_threshold(0.f), m_pfedebug(NULL), m_pe(NULL), m_objHitEvent(NULL) {}
    virtual ~HitObject() {}
 
    virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll) { return -1.f; } //!! shouldn't need to do this, but for whatever reason there is a pure virtual function call triggered otherwise that refuses to be debugged
@@ -110,6 +111,7 @@ public:
 
    int   m_ObjType;
    void* m_pObj;
+   void* m_objHitEvent;
    float m_elasticity;
    float m_elasticityFalloff;
    float m_friction;

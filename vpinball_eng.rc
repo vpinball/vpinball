@@ -14,7 +14,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (United States) resources
+// Englisch (USA) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
@@ -1915,31 +1915,31 @@ BEGIN
     LTEXT           "Background Color:",IDC_STATIC,13,133,60,8,NOT WS_VISIBLE
 END
 
-IDD_PROPHITTARGET_VISUALS DIALOGEX 0, 0, 125, 110
+IDD_PROPHITTARGET_VISUALS DIALOGEX 0, 0, 125, 122
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    LTEXT           "Image",-1,7,7,20,8
+    LTEXT           "Image",IDC_STATIC,7,7,20,8
     COMBOBOX        DISPID_Image,7,17,111,124,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Material",-1,7,34,63,9
+    LTEXT           "Material",IDC_STATIC,7,34,63,9
     COMBOBOX        IDC_MATERIAL_COMBO,7,44,111,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Visible",103,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,65,56,10
-    CONTROL         "Static Rendering",IDC_STATIC_RENDERING_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,75,69,10
-    LTEXT           "Depth Bias",-1,80,63,36,8
-    EDITTEXT        IDC_DEPTH_BIAS,79,72,36,12,ES_AUTOHSCROLL
-    CONTROL         "Disable Lighting",IDC_DISABLE_LIGHTING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,95,66,10
+    CONTROL         "Visible",103,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,86,56,10
+    LTEXT           "Depth Bias",IDC_STATIC,5,75,36,8
+    EDITTEXT        IDC_DEPTH_BIAS,51,74,36,12,ES_AUTOHSCROLL
+    CONTROL         "Disable Lighting",IDC_DISABLE_LIGHTING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,96,66,10
     CONTROL         "Reflection Enabled",IDC_PRIM_REFLECT_ENABLE_CHECK,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,85,76,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,106,73,10
+    LTEXT           "Drop Speed",IDC_STATIC,5,60,39,8
+    EDITTEXT        IDC_TARGET_MOVE_SPEED_EDIT,51,59,36,12,ES_AUTOHSCROLL
 END
 
-IDD_PROPHITTARGET_POSITION DIALOGEX 0, 0, 125, 125
+IDD_PROPHITTARGET_POSITION DIALOGEX 0, 0, 125, 78
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    GROUPBOX        "Base Position / Size",-1,7,3,111,53
-    LTEXT           "XSize",-1,64,15,23,8
-    LTEXT           "YSize",-1,64,28,23,8
-    LTEXT           "ZSize",-1,64,42,23,8
+    LTEXT           "ScaleX",-1,64,15,23,8
+    LTEXT           "ScaleY",-1,64,28,23,8
+    LTEXT           "ScaleZ",-1,64,42,23,8
     LTEXT           "&X",-1,14,15,10,8
     LTEXT           "&Y",-1,14,28,10,8
     LTEXT           "&Z",-1,14,42,10,8
@@ -1949,16 +1949,12 @@ BEGIN
     EDITTEXT        DISPID_SIZE_X,87,13,27,12,ES_AUTOHSCROLL
     EDITTEXT        DISPID_SIZE_Y,87,27,27,12,ES_AUTOHSCROLL
     EDITTEXT        DISPID_SIZE_Z,87,40,27,12,ES_AUTOHSCROLL
-    GROUPBOX        "Rotation",-1,7,62,111,57
-    LTEXT           "RotX",-1,16,74,25,8
-    LTEXT           "RotY",-1,16,88,25,8
-    LTEXT           "RotZ",-1,16,102,25,8
-    EDITTEXT        DISPID_ROTRA1,45,72,40,12,ES_AUTOHSCROLL
-    EDITTEXT        DISPID_ROTRA2,45,86,40,12,ES_AUTOHSCROLL
-    EDITTEXT        DISPID_ROTRA3,45,100,40,12,ES_AUTOHSCROLL
+    LTEXT           "Orientation",-1,9,60,37,8
+    EDITTEXT        DISPID_ROT_Z,47,58,27,12,ES_AUTOHSCROLL
+    GROUPBOX        "Position / Scale",-1,7,3,111,53
 END
 
-IDD_PROPHITTARGET_PHYSICS DIALOGEX 0, 0, 125, 101
+IDD_PROPHITTARGET_PHYSICS DIALOGEX 0, 0, 125, 112
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
@@ -1974,6 +1970,7 @@ BEGIN
     LTEXT           "&Friction",-1,7,60,63,8
     LTEXT           "&Scatter Angle",-1,7,73,63,8
     CONTROL         "Collidable (switchable in script)",111,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,86,115,10
+    CONTROL         "IsDropped",IDC_TARGET_ISDROPPED_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,97,49,10
 END
 
 
@@ -2050,6 +2047,10 @@ BEGIN
     IDD_PROPRAMP_VISUALS, DIALOG
     BEGIN
         BOTTOMMARGIN, 119
+    END
+
+    IDD_PROPFLIPPER_POSITION, DIALOG
+    BEGIN
     END
 
     IDD_PROPPLUNGER_PHYSICS, DIALOG
@@ -2141,6 +2142,7 @@ BEGIN
 
     IDD_PROPHITTARGET_VISUALS, DIALOG
     BEGIN
+        BOTTOMMARGIN, 118
     END
 
     IDD_PROPHITTARGET_POSITION, DIALOG
@@ -2149,6 +2151,7 @@ BEGIN
 
     IDD_PROPHITTARGET_PHYSICS, DIALOG
     BEGIN
+        BOTTOMMARGIN, 101
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -2735,7 +2738,7 @@ BEGIN
     IDS_STEP                "Step"
 END
 
-#endif    // English (United States) resources
+#endif    // Englisch (USA) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

@@ -567,6 +567,11 @@ void Hit3DPoly::Collide(CollisionEvent *coll)
 
       if (m_ObjType == ePrimitive && dot <= -m_threshold)
          FireHitEvent(pball);
+      if (m_ObjType == eHitTarget && dot <= -m_threshold)
+      {
+         ((HitTarget*)m_objHitEvent)->m_hitEvent = true;
+         FireHitEvent(pball);
+      }
    }
    else
    {
@@ -728,6 +733,11 @@ void HitTriangle::Collide(CollisionEvent* coll)
 
    if (m_ObjType == ePrimitive && dot <= -m_threshold)
       FireHitEvent(pball);
+   if (m_ObjType == eHitTarget && dot <= -m_threshold)
+   {
+      ((HitTarget*)m_objHitEvent)->m_hitEvent = true;
+      FireHitEvent(pball);
+   }
 }
 
 void HitTriangle::Contact(CollisionEvent& coll, float dtime)
@@ -890,6 +900,11 @@ void HitLine3D::Collide(CollisionEvent* coll)
 
    if (m_ObjType == ePrimitive && dot <= -m_threshold)
       FireHitEvent(pball);
+   if (m_ObjType == eHitTarget && dot <= -m_threshold)
+   {
+      ((HitTarget*)m_objHitEvent)->m_hitEvent = true;
+      FireHitEvent(pball);
+   }
 }
 
 void HitLine3D::CalcHitRect()

@@ -12,8 +12,6 @@ HitTarget::HitTarget()
    vertexBuffer = 0;
    vertexBufferRegenerate = true;
    indexBuffer = 0;
-   m_d.m_meshFileName[0] = 0;
-   m_d.m_staticRendering = false;
    m_d.m_depthBias = 0.0f;
    m_d.m_fSkipRendering = false;
    m_d.m_fReflectionEnabled = true;
@@ -29,6 +27,11 @@ HitTarget::HitTarget()
    m_indices = NULL;
    m_numIndices = 0;
    m_numVertices = 0;
+   m_moveAnimation = false;
+   m_moveDown = true;
+   m_moveAnimationOffset = 0.0f;
+   m_hitEvent = false;
+
 }
 
 HitTarget::~HitTarget()
@@ -55,6 +58,7 @@ HRESULT HitTarget::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
    m_d.m_vPosition.y = y;
 
    SetDefaults(false);
+   m_hitEvent = false;
 
    InitVBA(fTrue, 0, NULL);
 
@@ -69,30 +73,20 @@ void HitTarget::SetDefaults(bool fromMouseClick)
 
    HRESULT hr;
 
-   m_d.m_meshFileName[0] = 0;
-   // sides
-   m_d.m_Sides = fromMouseClick ? GetRegIntWithDefault(strKeyName, "Sides", 4) : 4;
-   if (m_d.m_Sides > Max_Primitive_Sides)
-      m_d.m_Sides = Max_Primitive_Sides;
-
-   // colors
-   m_d.m_SideColor = fromMouseClick ? GetRegIntWithDefault(strKeyName, "SideColor", RGB(150, 150, 150)) : RGB(150, 150, 150);
-
    m_d.m_fVisible = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "Visible", true) : true;
-   m_d.m_staticRendering = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "StaticRendering", true) : true;
-
+   m_d.m_isDropped = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "IsDropped", false) : false;
+   m_d.m_dropSpeed = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "DropSpeed", 0.5f) : 0.5f;
+   
    // Position (X and Y is already set by the click of the user)
    m_d.m_vPosition.z = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "Position_Z", 0.0f) : 0.0f;
 
    // Size
-   m_d.m_vSize.x = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "Size_X", 100.0f) : 100.0f;
-   m_d.m_vSize.y = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "Size_Y", 100.0f) : 100.0f;
-   m_d.m_vSize.z = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "Size_Z", 100.0f) : 100.0f;
+   m_d.m_vSize.x = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "ScaleX", 32.0f) : 32.0f;
+   m_d.m_vSize.y = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "ScaleY", 32.0f) : 32.0f;
+   m_d.m_vSize.z = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "ScaleZ", 32.0f) : 32.0f;
 
    // Rotation and Transposition
-   m_d.m_rotX = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "RotX", 0.0f) : 0.0f;
-   m_d.m_rotY = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "RotY", 0.0f) : 0.0f;
-   m_d.m_rotZ = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "RotZ", 0.0f) : 0.0f;
+   m_d.m_rotZ = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "Orientation", 0.0f) : 0.0f;
 
    hr = GetRegString(strKeyName, "Image", m_d.m_szImage, MAXTOKEN);
    if ((hr != S_OK) && fromMouseClick)
@@ -112,22 +106,20 @@ void HitTarget::WriteRegDefaults()
 {
    static const char strKeyName[] = "DefaultProps\\HitTarget";
 
-   SetRegValueInt(strKeyName, "SideColor", m_d.m_SideColor);
    SetRegValueBool(strKeyName, "Visible", m_d.m_fVisible);
-   SetRegValueBool(strKeyName, "StaticRendering", m_d.m_staticRendering);
+   SetRegValueBool(strKeyName, "IsDropped", m_d.m_isDropped);
 
    SetRegValueFloat(strKeyName, "Position_Z", m_d.m_vPosition.z);
+   SetRegValueFloat(strKeyName, "DropSpeed", m_d.m_dropSpeed);
 
-   SetRegValueFloat(strKeyName, "Size_X", m_d.m_vSize.x);
-   SetRegValueFloat(strKeyName, "Size_Y", m_d.m_vSize.y);
-   SetRegValueFloat(strKeyName, "Size_Z", m_d.m_vSize.z);
+   SetRegValueFloat(strKeyName, "ScaleX", m_d.m_vSize.x);
+   SetRegValueFloat(strKeyName, "ScaleY", m_d.m_vSize.y);
+   SetRegValueFloat(strKeyName, "ScaleZ", m_d.m_vSize.z);
 
-   SetRegValueFloat(strKeyName, "RotX", m_d.m_rotX);
-   SetRegValueFloat(strKeyName, "RotY", m_d.m_rotY);
-   SetRegValueFloat(strKeyName, "RotZ", m_d.m_rotZ);
+   SetRegValueFloat(strKeyName, "Orientation", m_d.m_rotZ);
 
    SetRegValueString(strKeyName, "Image", m_d.m_szImage);
-   SetRegValueBool(strKeyName, "HitEvent", m_d.m_fHitEvent);
+   SetRegValueBool(strKeyName, "HitEvent", m_d.m_fUseHitEvent);
    SetRegValueFloat(strKeyName, "HitThreshold", m_d.m_threshold);
    SetRegValueFloat(strKeyName, "Elasticity", m_d.m_elasticity);
    SetRegValueFloat(strKeyName, "ElasticityFalloff", m_d.m_elasticityFalloff);
@@ -147,7 +139,6 @@ void HitTarget::GetTimers(Vector<HitTimer> * const pvht)
 
 void HitTarget::GetHitShapes(Vector<HitObject> * const pvho)
 {
-   RecalculateMatrices();
    TransformVertices(); //!! could also only do this for the optional reduced variant!
 
     std::set< std::pair<unsigned, unsigned> > addedEdges;
@@ -172,7 +163,7 @@ void HitTarget::GetHitShapes(Vector<HitObject> * const pvho)
     }
 
     // add collision vertices
-    for (unsigned i = 0; i < m_mesh.NumVertices(); ++i)
+    for (unsigned i = 0; i < m_numVertices; ++i)
         SetupHitObject(pvho, new HitPoint(vertices[i]));
 }
 
@@ -199,12 +190,11 @@ void HitTarget::SetupHitObject(Vector<HitObject> * pvho, HitObject * obj)
    obj->SetFriction(m_d.m_friction);
    obj->m_scatter = ANGTORAD(m_d.m_scatter);
    obj->m_threshold = m_d.m_threshold;
-   obj->m_ObjType = ePrimitive;
+   obj->m_ObjType = eHitTarget;
    obj->m_fEnabled = m_d.m_fCollidable;
-   if (m_d.m_fHitEvent)
+   if (m_d.m_fUseHitEvent)
       obj->m_pfe = (IFireEvents *)this;
-   obj->m_pe = this;
-
+   obj->m_objHitEvent = this;
    pvho->AddElement(obj);
    m_vhoCollidable.AddElement(obj);	//remember hit components of primitive
 }
@@ -231,50 +221,68 @@ void HitTarget::EndPlay()
 // Calculation
 //////////////////////////////
 
-void HitTarget::RecalculateMatrices()
+void HitTarget::GenerateMesh(Vertex3D_NoTex2 *buf)
 {
-   // scale matrix
-   Matrix3D Smatrix;
-   Smatrix.SetIdentity();
-   Smatrix.SetScaling(m_d.m_vSize.x, m_d.m_vSize.y, m_d.m_vSize.z);
-
-   // translation matrix
-   Matrix3D Tmatrix;
-   Tmatrix.SetIdentity();
-   Tmatrix.SetTranslation(m_d.m_vPosition.x, m_d.m_vPosition.y, m_d.m_vPosition.z + m_ptable->m_tableheight);
-
-   // translation + rotation matrix
-   Matrix3D RTmatrix, tempMatrix;
-   RTmatrix.SetIdentity();
+   Matrix3D fullMatrix,tempMatrix;
+   SetMeshType(0);
+   fullMatrix.SetIdentity();
    tempMatrix.SetIdentity();
-   tempMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotX));
-   tempMatrix.Multiply(RTmatrix, RTmatrix);
+   tempMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotZ));
+   tempMatrix.Multiply(fullMatrix, fullMatrix);
    tempMatrix.RotateYMatrix(ANGTORAD(m_d.m_rotY));
-   tempMatrix.Multiply(RTmatrix, RTmatrix);
-   tempMatrix.RotateXMatrix(ANGTORAD(m_d.m_rotZ));
-   tempMatrix.Multiply(RTmatrix, RTmatrix);
+   tempMatrix.Multiply(fullMatrix, fullMatrix);
+   tempMatrix.RotateXMatrix(ANGTORAD(m_d.m_rotX));
+   tempMatrix.Multiply(fullMatrix, fullMatrix);
 
-   fullMatrix = Smatrix;
-   RTmatrix.Multiply(fullMatrix, fullMatrix);
-   Tmatrix.Multiply(fullMatrix, fullMatrix);        // fullMatrix = Smatrix * RTmatrix * Tmatrix
-   Smatrix.SetScaling(1.0f, 1.0f, m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]);
-   Smatrix.Multiply(fullMatrix, fullMatrix);
+
+   for (unsigned int i = 0; i < m_numVertices; i++)
+   {
+      Vertex3Ds vert(m_vertices[i].x, m_vertices[i].y, m_vertices[i].z);
+      vert = fullMatrix.MultiplyVector(vert);
+
+      buf[i].x = vert.x*m_d.m_vSize.x + m_d.m_vPosition.x;
+      buf[i].y = vert.y*m_d.m_vSize.y + m_d.m_vPosition.y;
+      buf[i].z = vert.z*m_d.m_vSize.z*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_d.m_vPosition.z + m_ptable->m_tableheight;
+      vert = Vertex3Ds(m_vertices[i].nx, m_vertices[i].ny, m_vertices[i].nz);
+      vert = fullMatrix.MultiplyVectorNoTranslate(vert);
+      buf[i].nx = vert.x;
+      buf[i].ny = vert.y;
+      buf[i].nz = vert.z;
+      buf[i].tu = m_vertices[i].tu;
+      buf[i].tv = m_vertices[i].tv;
+   }
 }
 
 // recalculate vertices for editor display
 void HitTarget::TransformVertices()
 {
-    SetMeshType(0);
+   Matrix3D fullMatrix, tempMatrix;
+   
+   SetMeshType(0);
    vertices.resize(m_numIndices);
    normals.resize(m_numVertices);
+   fullMatrix.SetIdentity();
+   tempMatrix.SetIdentity();
+   tempMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotZ));
+   tempMatrix.Multiply(fullMatrix, fullMatrix);
+   tempMatrix.RotateYMatrix(ANGTORAD(m_d.m_rotY));
+   tempMatrix.Multiply(fullMatrix, fullMatrix);
+   tempMatrix.RotateXMatrix(ANGTORAD(m_d.m_rotX));
+   tempMatrix.Multiply(fullMatrix, fullMatrix);
 
    for (unsigned i = 0; i < m_numVertices; i++)
    {
-      fullMatrix.MultiplyVector(m_vertices[i], vertices[i]);
-      Vertex3Ds n;
-      fullMatrix.MultiplyVectorNoTranslateNormal(m_vertices[i], n);
-      n.Normalize();
-      normals[i] = n.z;
+      Vertex3Ds vert(m_vertices[i].x, m_vertices[i].y, m_vertices[i].z);
+      vert = fullMatrix.MultiplyVector(vert);
+
+      vertices[i].x = vert.x*m_d.m_vSize.x + m_d.m_vPosition.x;
+      vertices[i].y = vert.y*m_d.m_vSize.y + m_d.m_vPosition.y;
+      vertices[i].z = vert.z*m_d.m_vSize.z*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_d.m_vPosition.z + m_ptable->m_tableheight;
+      vert = Vertex3Ds(m_vertices[i].nx, m_vertices[i].ny, m_vertices[i].nz);
+      vert = fullMatrix.MultiplyVectorNoTranslate(vert);
+      // only z is needed for collision
+      normals[i] = vert.z;
+
    }
 }
 
@@ -294,23 +302,59 @@ void HitTarget::Render(Sur * const psur)
 
     for (unsigned i = 0; i < m_numIndices; i += 3)
     {
-    const Vertex3Ds * const A = &vertices[m_indices[i]];
-    const Vertex3Ds * const B = &vertices[m_indices[i + 1]];
-    const Vertex3Ds * const C = &vertices[m_indices[i + 2]];
-    psur->Line(A->x, A->y, B->x, B->y);
-    psur->Line(B->x, B->y, C->x, C->y);
-    psur->Line(C->x, C->y, A->x, A->y);
+       const Vertex3Ds * const A = &vertices[m_indices[i]];
+       const Vertex3Ds * const B = &vertices[m_indices[i + 1]];
+       const Vertex3Ds * const C = &vertices[m_indices[i + 2]];
+       psur->Line(A->x, A->y, B->x, B->y);
+       psur->Line(B->x, B->y, C->x, C->y);
+       psur->Line(C->x, C->y, A->x, A->y);
     }
 
+    if (m_selectstate == eNotSelected)
+       return;
+
+    const float radangle = ANGTORAD(m_d.m_rotZ-180.0f);
+    const float halflength = 50.0f;
+    const float len1 = halflength *0.5f;
+    const float len2 = len1*0.5f;
+    Vertex2D tmp;
+    {
+       const float sn = sinf(radangle);
+       const float cs = cosf(radangle);
+
+       // Draw Arrow
+       psur->SetLineColor(RGB(255, 0, 0), false, 1);
+
+       tmp.x = m_d.m_vPosition.x + sn*len1;
+       tmp.y = m_d.m_vPosition.y - cs*len1;
+
+       psur->Line(tmp.x, tmp.y,
+          m_d.m_vPosition.x, m_d.m_vPosition.y);
+       {
+          const float arrowang = radangle + 0.6f;
+          const float sn = sinf(arrowang);
+          const float cs = cosf(arrowang);
+
+          psur->Line(tmp.x, tmp.y,  m_d.m_vPosition.x + sn*len2, m_d.m_vPosition.y - cs*len2);
+       }
+      {
+         const float arrowang = ANGTORAD(m_d.m_rotZ-180.0f) - 0.6f;
+         const float sn = sinf(arrowang);
+         const float cs = cosf(arrowang);
+
+         psur->Line(tmp.x, tmp.y,
+            m_d.m_vPosition.x + sn*len2, m_d.m_vPosition.y - cs*len2);
+      }
+
+    }
    // draw center marker
-   psur->SetLineColor(RGB(128, 128, 128), false, 1);
-   psur->Line(m_d.m_vPosition.x - 10.0f, m_d.m_vPosition.y, m_d.m_vPosition.x + 10.0f, m_d.m_vPosition.y);
-   psur->Line(m_d.m_vPosition.x, m_d.m_vPosition.y - 10.0f, m_d.m_vPosition.x, m_d.m_vPosition.y + 10.0f);
+//    psur->SetLineColor(RGB(128, 128, 128), false, 1);
+//    psur->Line(m_d.m_vPosition.x - 10.0f, m_d.m_vPosition.y, m_d.m_vPosition.x + 10.0f, m_d.m_vPosition.y);
+//    psur->Line(m_d.m_vPosition.x, m_d.m_vPosition.y - 10.0f, m_d.m_vPosition.x, m_d.m_vPosition.y + 10.0f);
 }
 
 void HitTarget::UpdateEditorView()
 {
-   RecalculateMatrices();
    TransformVertices();
 }
 
@@ -344,9 +388,47 @@ void HitTarget::RenderObject(RenderDevice *pd3dDevice)
    else
       pd3dDevice->basicShader->SetTechnique("basic_without_texture");
 
-   // set transform
-   g_pplayer->UpdateBasicShaderMatrix(fullMatrix);
+   const U32 old_time_msec = (m_d.m_time_msec < g_pplayer->m_time_msec) ? m_d.m_time_msec : g_pplayer->m_time_msec;
+   m_d.m_time_msec = g_pplayer->m_time_msec;
+   const float diff_time_msec = (float)(g_pplayer->m_time_msec - old_time_msec);
 
+   if (m_hitEvent)
+   {
+      if (!m_d.m_isDropped)
+      {
+         m_moveAnimation = true;
+         m_moveDown = true;
+      }
+      m_hitEvent = false;
+   }
+   if (m_moveAnimation)
+   {
+      float step = m_d.m_dropSpeed*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+      const float limit = 57.f*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+      if (m_moveDown)
+         step = -step;
+      m_moveAnimationOffset += step*diff_time_msec;
+      if (m_moveDown)
+      {
+         if (m_moveAnimationOffset <= -limit)
+         {
+            m_moveAnimationOffset = -limit;
+            m_moveDown = false;
+            m_d.m_isDropped = true;
+            m_moveAnimation = false;
+         }
+      }
+      else
+      {
+         if (m_moveAnimationOffset >= 0.0f)
+         {
+            m_moveAnimationOffset = 0.0f;
+            m_moveAnimation = false;
+            m_d.m_isDropped = false;
+         }
+      }
+      UpdateTarget(pd3dDevice);
+   }
    // draw the mesh
    pd3dDevice->basicShader->Begin(0);
    pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, m_numVertices, indexBuffer, 0, m_numIndices);
@@ -362,8 +444,6 @@ void HitTarget::RenderObject(RenderDevice *pd3dDevice)
    }
 #endif
 
-   // reset transform
-      g_pplayer->UpdateBasicShaderMatrix();
 
    pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP);
    //g_pplayer->m_pin3d.DisableAlphaBlend(); //!! not necessary anymore
@@ -371,16 +451,33 @@ void HitTarget::RenderObject(RenderDevice *pd3dDevice)
       pd3dDevice->basicShader->SetDisableLighting(false);
 }
 
+void HitTarget::UpdateTarget(RenderDevice *pd3dDevice)
+{
+   Vertex3D_NoTex2 *buf;
+   vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
+   for (unsigned int i = 0; i < m_numVertices; i++)
+   {
+      buf[i].x = transformedVertices[i].x;
+      buf[i].y = transformedVertices[i].y;
+      buf[i].z = transformedVertices[i].z + m_moveAnimationOffset;
+      buf[i].nx = transformedVertices[i].nx;
+      buf[i].ny = transformedVertices[i].ny;
+      buf[i].nz = transformedVertices[i].nz;
+      buf[i].tu = transformedVertices[i].tu;
+      buf[i].tv = transformedVertices[i].tv;
+   }
+   vertexBuffer->unlock();
+}
+
 // Always called each frame to render over everything else (along with alpha ramps)
 void HitTarget::PostRenderStatic(RenderDevice* pd3dDevice)
 {
    TRACE_FUNCTION();
 
-   if (m_d.m_staticRendering || !m_d.m_fVisible || m_d.m_fSkipRendering)
+   if (!m_d.m_fVisible || m_d.m_fSkipRendering)
       return;
    if (m_ptable->m_fReflectionEnabled && !m_d.m_fReflectionEnabled)
       return;
-
    RenderObject(pd3dDevice);
 }
 
@@ -398,17 +495,17 @@ void HitTarget::RenderSetup(RenderDevice* pd3dDevice)
    if (indexBuffer)
       indexBuffer->release();
    indexBuffer = pd3dDevice->CreateAndFillIndexBuffer(m_numIndices, m_indices);
+
+   transformedVertices = new Vertex3D_NoTex2[m_numVertices];
+   GenerateMesh(transformedVertices);
+   Vertex3D_NoTex2 *buf;
+   vertexBuffer->lock(0, 0, (void**)&buf, 0);
+   memcpy(buf, transformedVertices, m_numVertices*sizeof(Vertex3D_NoTex2));
+   vertexBuffer->unlock();
 }
 
 void HitTarget::RenderStatic(RenderDevice* pd3dDevice)
 {
-   if (m_d.m_staticRendering && m_d.m_fVisible)
-   {
-      if (m_ptable->m_fReflectionEnabled && !m_d.m_fReflectionEnabled)
-         return;
-
-      RenderObject(pd3dDevice);
-   }
 }
 
 //////////////////////////////
@@ -466,20 +563,19 @@ HRESULT HitTarget::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcry
    bw.WriteInt(FID(SIDS), m_d.m_Sides);
    bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
    bw.WriteString(FID(MATR), m_d.m_szMaterial);
-   bw.WriteInt(FID(SCOL), m_d.m_SideColor);
    bw.WriteBool(FID(TVIS), m_d.m_fVisible);
-   bw.WriteBool(FID(HTEV), m_d.m_fHitEvent);
+   bw.WriteBool(FID(HTEV), m_d.m_fUseHitEvent);
    bw.WriteFloat(FID(THRS), m_d.m_threshold);
    bw.WriteFloat(FID(ELAS), m_d.m_elasticity);
    bw.WriteFloat(FID(ELFO), m_d.m_elasticityFalloff);
    bw.WriteFloat(FID(RFCT), m_d.m_friction);
    bw.WriteFloat(FID(RSCT), m_d.m_scatter);
    bw.WriteBool(FID(CLDRP), m_d.m_fCollidable);
-   bw.WriteBool(FID(STRE), m_d.m_staticRendering);
    bw.WriteBool(FID(DILI), m_d.m_fDisableLighting);
    bw.WriteBool(FID(REEN), m_d.m_fReflectionEnabled);
    bw.WriteFloat(FID(PIDB), m_d.m_depthBias);
-
+   bw.WriteBool(FID(ISDR), m_d.m_isDropped);
+   bw.WriteFloat(FID(DRSP), m_d.m_dropSpeed);
    ISelect::SaveData(pstm, hcrypthash, hcryptkey);
 
    bw.WriteTag(FID(ENDB));
@@ -543,13 +639,17 @@ BOOL HitTarget::LoadToken(int id, BiffReader *pbr)
    {
       pbr->GetString(m_d.m_szMaterial);
    }
-   else if (id == FID(SCOL))
-   {
-      pbr->GetInt(&m_d.m_SideColor);
-   }
    else if (id == FID(TVIS))
    {
       pbr->GetBool(&m_d.m_fVisible);
+   }
+   else if (id == FID(ISDR))
+   {
+      pbr->GetBool(&m_d.m_isDropped);
+   }
+   else if (id == FID(DRSP))
+   {
+      pbr->GetFloat(&m_d.m_dropSpeed);
    }
    else if (id == FID(REEN))
    {
@@ -557,7 +657,7 @@ BOOL HitTarget::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(HTEV))
    {
-      pbr->GetBool(&m_d.m_fHitEvent);
+      pbr->GetBool(&m_d.m_fUseHitEvent);
    }
    else if (id == FID(THRS))
    {
@@ -582,10 +682,6 @@ BOOL HitTarget::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(CLDRP))
    {
       pbr->GetBool(&m_d.m_fCollidable);
-   }
-   else if (id == FID(STRE))
-   {
-      pbr->GetBool(&m_d.m_staticRendering);
    }
    else if (id == FID(DILI))
    {
@@ -678,24 +774,6 @@ STDMETHODIMP HitTarget::put_Material(BSTR newVal)
       return S_OK;
 }
 
-STDMETHODIMP HitTarget::get_SideColor(OLE_COLOR *pVal)
-{
-   *pVal = m_d.m_SideColor;
-
-   return S_OK;
-}
-
-STDMETHODIMP HitTarget::put_SideColor(OLE_COLOR newVal)
-{
-   if (m_d.m_SideColor != newVal)
-   {
-      STARTUNDO
-         m_d.m_SideColor = newVal;
-      STOPUNDO
-   }
-
-   return S_OK;
-}
 
 STDMETHODIMP HitTarget::get_Visible(VARIANT_BOOL *pVal)
 {
@@ -778,14 +856,14 @@ STDMETHODIMP HitTarget::put_Z(float newVal)
    return S_OK;
 }
 
-STDMETHODIMP HitTarget::get_Size_X(float *pVal)
+STDMETHODIMP HitTarget::get_ScaleX(float *pVal)
 {
    *pVal = m_d.m_vSize.x;
 
    return S_OK;
 }
 
-STDMETHODIMP HitTarget::put_Size_X(float newVal)
+STDMETHODIMP HitTarget::put_ScaleX(float newVal)
 {
    if (m_d.m_vSize.x != newVal)
    {
@@ -800,14 +878,14 @@ STDMETHODIMP HitTarget::put_Size_X(float newVal)
    return S_OK;
 }
 
-STDMETHODIMP HitTarget::get_Size_Y(float *pVal)
+STDMETHODIMP HitTarget::get_ScaleY(float *pVal)
 {
    *pVal = m_d.m_vSize.y;
 
    return S_OK;
 }
 
-STDMETHODIMP HitTarget::put_Size_Y(float newVal)
+STDMETHODIMP HitTarget::put_ScaleY(float newVal)
 {
    if (m_d.m_vSize.y != newVal)
    {
@@ -822,14 +900,14 @@ STDMETHODIMP HitTarget::put_Size_Y(float newVal)
    return S_OK;
 }
 
-STDMETHODIMP HitTarget::get_Size_Z(float *pVal)
+STDMETHODIMP HitTarget::get_ScaleZ(float *pVal)
 {
    *pVal = m_d.m_vSize.z;
 
    return S_OK;
 }
 
-STDMETHODIMP HitTarget::put_Size_Z(float newVal)
+STDMETHODIMP HitTarget::put_ScaleZ(float newVal)
 {
    if (m_d.m_vSize.z != newVal)
    {
@@ -845,55 +923,13 @@ STDMETHODIMP HitTarget::put_Size_Z(float newVal)
 }
 
 
-STDMETHODIMP HitTarget::get_RotX(float *pVal)
-{
-   *pVal = m_d.m_rotX;
-   return S_OK;
-}
-
-STDMETHODIMP HitTarget::put_RotX(float newVal)
-{
-   if (m_d.m_rotX != newVal)
-   {
-      STARTUNDO
-         m_d.m_rotX = newVal;
-      STOPUNDO
-
-         if (!g_pplayer)
-            UpdateEditorView();
-   }
-
-   return S_OK;
-}
-
-STDMETHODIMP HitTarget::get_RotY(float *pVal)
-{
-   *pVal = m_d.m_rotY;
-   return S_OK;
-}
-
-STDMETHODIMP HitTarget::put_RotY(float newVal)
-{
-   if (m_d.m_rotY != newVal)
-   {
-      STARTUNDO
-          m_d.m_rotY = newVal;
-      STOPUNDO
-
-         if (!g_pplayer)
-            UpdateEditorView();
-   }
-
-   return S_OK;
-}
-
-STDMETHODIMP HitTarget::get_RotZ(float *pVal)
+STDMETHODIMP HitTarget::get_Orientation(float *pVal)
 {
     *pVal = m_d.m_rotZ;
    return S_OK;
 }
 
-STDMETHODIMP HitTarget::put_RotZ(float newVal)
+STDMETHODIMP HitTarget::put_Orientation(float newVal)
 {
    if (m_d.m_rotZ != newVal)
    {
@@ -908,27 +944,9 @@ STDMETHODIMP HitTarget::put_RotZ(float newVal)
    return S_OK;
 }
 
-STDMETHODIMP HitTarget::get_EnableStaticRendering(VARIANT_BOOL *pVal)
-{
-   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_staticRendering);
-
-   return S_OK;
-}
-
-STDMETHODIMP HitTarget::put_EnableStaticRendering(VARIANT_BOOL newVal)
-{
-   STARTUNDO
-
-      m_d.m_staticRendering = VBTOF(newVal);
-
-   STOPUNDO
-
-      return S_OK;
-}
-
 STDMETHODIMP HitTarget::get_HasHitEvent(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fHitEvent);
+   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fUseHitEvent);
 
    return S_OK;
 }
@@ -937,7 +955,7 @@ STDMETHODIMP HitTarget::put_HasHitEvent(VARIANT_BOOL newVal)
 {
    STARTUNDO
 
-      m_d.m_fHitEvent = VBTOF(newVal);
+      m_d.m_fUseHitEvent = VBTOF(newVal);
 
    STOPUNDO
 
@@ -1192,4 +1210,57 @@ STDMETHODIMP HitTarget::put_DepthBias(float newVal)
    }
 
    return S_OK;
+}
+STDMETHODIMP HitTarget::get_DropSpeed(float *pVal)
+{
+   *pVal = m_d.m_dropSpeed;
+
+   return S_OK;
+}
+
+STDMETHODIMP HitTarget::put_DropSpeed(float newVal)
+{
+   if (m_d.m_dropSpeed != newVal)
+   {
+      STARTUNDO
+
+         m_d.m_dropSpeed = newVal;
+
+      STOPUNDO
+   }
+
+   return S_OK;
+}
+
+STDMETHODIMP HitTarget::get_IsDropped(VARIANT_BOOL *pVal)
+{
+   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_isDropped);
+
+   return S_OK;
+}
+
+STDMETHODIMP HitTarget::put_IsDropped(VARIANT_BOOL newVal)
+{
+   STARTUNDO
+      const bool val = VBTOF(newVal);
+   if (g_pplayer && m_d.m_isDropped != val)
+   {
+      if (val)
+      {
+         m_moveAnimation = true;
+         m_moveAnimationOffset = 0.0f;
+         m_moveDown = true;
+      }
+      else
+      {
+         m_moveAnimation = true;
+         m_moveAnimationOffset = -57.f*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+         m_moveDown = false;
+      }
+   }
+   else
+      m_d.m_isDropped = val;
+
+   STOPUNDO
+      return S_OK;
 }
