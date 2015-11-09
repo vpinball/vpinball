@@ -5672,18 +5672,8 @@ void PinTable::UseTool(int x, int y, int tool)
    Vertex2D v = TransformPoint(x, y);
    IEditable *pie = NULL;
 
-   // special case for target which is a special kind of wall
-   if (tool == ID_INSERT_TARGET)
-   {
-      Surface* psurf = Surface::COMCreate();
-      psurf->InitTarget(this, v.x, v.y, true);
-      pie = psurf;
-   }
-   else
-   {
-      ItemTypeEnum type = EditableRegistry::TypeFromToolID(tool);
-      pie = EditableRegistry::CreateAndInit(type, this, v.x, v.y);
-   }
+    ItemTypeEnum type = EditableRegistry::TypeFromToolID(tool);
+    pie = EditableRegistry::CreateAndInit(type, this, v.x, v.y);
 
    if (pie)
    {

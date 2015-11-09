@@ -758,7 +758,7 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
    CComObject<PinTable> *ptCur;
 
    // check if it's an Editable tool
-   ItemTypeEnum type = (code == ID_INSERT_TARGET ? eItemSurface : EditableRegistry::TypeFromToolID(code));
+   ItemTypeEnum type = EditableRegistry::TypeFromToolID(code);
    if (type != eItemInvalid)
    {
       SendMessage(m_hwndToolbarMain, TB_CHECKBUTTON, m_ToolCur, MAKELONG(FALSE, 0));
@@ -1475,7 +1475,7 @@ void VPinball::SetEnablePalette()
       const int id = g_tbbuttonPalette[i].idCommand;
 
       // Targets don't have their own Editable type, they're just surfaces
-      ItemTypeEnum type = (id == ID_INSERT_TARGET ? eItemSurface : EditableRegistry::TypeFromToolID(id));
+      ItemTypeEnum type = EditableRegistry::TypeFromToolID(id);
       const unsigned int enablecode = EditableRegistry::GetAllowedViews(type);
 
       const bool fEnable = fTableActive && ((enablecode & state) != 0);

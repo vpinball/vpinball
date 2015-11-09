@@ -1,6 +1,6 @@
 #ifndef _SVN_VERSION_H_
 #define _SVN_VERSION_H_
 
-#define SVN_REVISION            2356       // Highest committed revision number in the working copy
+#define SVN_REVISION            2364       // Highest committed revision number in the working copy
 
 #endif
