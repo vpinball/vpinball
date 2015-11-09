@@ -3,6 +3,7 @@
 //////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h" 
+#include "meshes/dropTargetT2Mesh.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -16,8 +17,6 @@ HitTarget::HitTarget()
    m_d.m_depthBias = 0.0f;
    m_d.m_fSkipRendering = false;
    m_d.m_fReflectionEnabled = true;
-   m_numGroupIndices = 0;
-   m_numGroupVertices = 0;
 
    numIndices = 0;
    numVertices = 0;
@@ -26,6 +25,10 @@ HitTarget::HitTarget()
    m_propVisual = NULL;
    memset(m_d.m_szImage, 0, MAXTOKEN);
    memset(m_d.m_szMaterial, 0, 32);
+   m_vertices = NULL;
+   m_indices = NULL;
+   m_numIndices = 0;
+   m_numVertices = 0;
 }
 
 HitTarget::~HitTarget()
@@ -36,6 +39,13 @@ HitTarget::~HitTarget()
       indexBuffer->release();
 }
 
+void HitTarget::SetMeshType(int type)
+{
+    m_vertices = hitTargetT2Mesh;
+    m_indices = hitTargetT2Indices;
+    m_numIndices = hitTargetT2NumFaces;
+    m_numVertices = hitTargetT2Vertices;
+}
 
 HRESULT HitTarget::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 {
@@ -143,11 +153,11 @@ void HitTarget::GetHitShapes(Vector<HitObject> * const pvho)
     std::set< std::pair<unsigned, unsigned> > addedEdges;
 
     // add collision triangles and edges
-    for (unsigned i = 0; i < m_mesh.NumIndices(); i += 3)
+    for (unsigned i = 0; i < m_numIndices; i += 3)
     {
-        const unsigned int i0 = m_mesh.m_indices[i];
-        const unsigned int i1 = m_mesh.m_indices[i + 1];
-        const unsigned int i2 = m_mesh.m_indices[i + 2];
+        const unsigned int i0 = m_indices[i];
+        const unsigned int i1 = m_indices[i + 1];
+        const unsigned int i2 = m_indices[i + 2];
 
         Vertex3Ds rgv3D[3];
         // NB: HitTriangle wants CCW vertices, but for rendering we have them in CW order
@@ -225,15 +235,18 @@ void HitTarget::RecalculateMatrices()
 {
    // scale matrix
    Matrix3D Smatrix;
+   Smatrix.SetIdentity();
    Smatrix.SetScaling(m_d.m_vSize.x, m_d.m_vSize.y, m_d.m_vSize.z);
 
    // translation matrix
    Matrix3D Tmatrix;
+   Tmatrix.SetIdentity();
    Tmatrix.SetTranslation(m_d.m_vPosition.x, m_d.m_vPosition.y, m_d.m_vPosition.z + m_ptable->m_tableheight);
 
    // translation + rotation matrix
    Matrix3D RTmatrix, tempMatrix;
-
+   RTmatrix.SetIdentity();
+   tempMatrix.SetIdentity();
    tempMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotX));
    tempMatrix.Multiply(RTmatrix, RTmatrix);
    tempMatrix.RotateYMatrix(ANGTORAD(m_d.m_rotY));
@@ -251,14 +264,15 @@ void HitTarget::RecalculateMatrices()
 // recalculate vertices for editor display
 void HitTarget::TransformVertices()
 {
-   vertices.resize(m_mesh.NumVertices());
-   normals.resize(m_mesh.NumVertices());
+    SetMeshType(0);
+   vertices.resize(m_numIndices);
+   normals.resize(m_numVertices);
 
-   for (unsigned i = 0; i < m_mesh.NumVertices(); i++)
+   for (unsigned i = 0; i < m_numVertices; i++)
    {
-      fullMatrix.MultiplyVector(m_mesh.m_vertices[i], vertices[i]);
+      fullMatrix.MultiplyVector(m_vertices[i], vertices[i]);
       Vertex3Ds n;
-      fullMatrix.MultiplyVectorNoTranslateNormal(m_mesh.m_vertices[i], n);
+      fullMatrix.MultiplyVectorNoTranslateNormal(m_vertices[i], n);
       n.Normalize();
       normals[i] = n.z;
    }
@@ -278,11 +292,11 @@ void HitTarget::Render(Sur * const psur)
    psur->SetLineColor(RGB(0, 0, 0), false, 1);
    psur->SetObject(this);
 
-    for (unsigned i = 0; i < m_mesh.NumIndices(); i += 3)
+    for (unsigned i = 0; i < m_numIndices; i += 3)
     {
-    const Vertex3Ds * const A = &vertices[m_mesh.m_indices[i]];
-    const Vertex3Ds * const B = &vertices[m_mesh.m_indices[i + 1]];
-    const Vertex3Ds * const C = &vertices[m_mesh.m_indices[i + 2]];
+    const Vertex3Ds * const A = &vertices[m_indices[i]];
+    const Vertex3Ds * const B = &vertices[m_indices[i + 1]];
+    const Vertex3Ds * const C = &vertices[m_indices[i + 2]];
     psur->Line(A->x, A->y, B->x, B->y);
     psur->Line(B->x, B->y, C->x, C->y);
     psur->Line(C->x, C->y, A->x, A->y);
@@ -292,130 +306,6 @@ void HitTarget::Render(Sur * const psur)
    psur->SetLineColor(RGB(128, 128, 128), false, 1);
    psur->Line(m_d.m_vPosition.x - 10.0f, m_d.m_vPosition.y, m_d.m_vPosition.x + 10.0f, m_d.m_vPosition.y);
    psur->Line(m_d.m_vPosition.x, m_d.m_vPosition.y - 10.0f, m_d.m_vPosition.x, m_d.m_vPosition.y + 10.0f);
-}
-
-void HitTarget::CalculateBuiltinOriginal()
-{
-   // this recalculates the Original Vertices -> should be only called, when sides are altered.
-   const float outerRadius = -0.5f / (cosf((float)M_PI / (float)m_d.m_Sides));
-   const float addAngle = (float)(2.0*M_PI) / (float)m_d.m_Sides;
-   const float offsAngle = (float)M_PI / (float)m_d.m_Sides;
-   float minX = FLT_MAX;
-   float minY = FLT_MAX;
-   float maxX = -FLT_MAX;
-   float maxY = -FLT_MAX;
-
-   m_mesh.m_vertices.resize(4 * m_d.m_Sides + 2);
-
-   Vertex3D_NoTex2 *middle;
-   middle = &m_mesh.m_vertices[0]; // middle point top
-   middle->x = 0.0f;
-   middle->y = 0.0f;
-   middle->z = 0.5f;
-   middle = &m_mesh.m_vertices[m_d.m_Sides + 1]; // middle point bottom
-   middle->x = 0.0f;
-   middle->y = 0.0f;
-   middle->z = -0.5f;
-   for (int i = 0; i < m_d.m_Sides; ++i)
-   {
-      // calculate Top
-      Vertex3D_NoTex2 * const topVert = &m_mesh.m_vertices[i + 1]; // top point at side
-      const float currentAngle = addAngle*(float)i + offsAngle;
-      topVert->x = sinf(currentAngle)*outerRadius;
-      topVert->y = cosf(currentAngle)*outerRadius;
-      topVert->z = 0.5f;
-
-      // calculate bottom
-      Vertex3D_NoTex2 * const bottomVert = &m_mesh.m_vertices[i + 1 + m_d.m_Sides + 1]; // bottompoint at side
-      bottomVert->x = topVert->x;
-      bottomVert->y = topVert->y;
-      bottomVert->z = -0.5f;
-
-      // calculate sides
-      m_mesh.m_vertices[m_d.m_Sides * 2 + 2 + i] = *topVert; // sideTopVert
-      m_mesh.m_vertices[m_d.m_Sides * 3 + 2 + i] = *bottomVert; // sideBottomVert
-
-      // calculate bounds for X and Y
-      if (topVert->x < minX)
-         minX = topVert->x;
-      if (topVert->x > maxX)
-         maxX = topVert->x;
-      if (topVert->y < minY)
-         minY = topVert->y;
-      if (topVert->y > maxY)
-         maxY = topVert->y;
-   }
-
-   // these have to be replaced for image mapping
-   middle = &m_mesh.m_vertices[0]; // middle point top
-   middle->tu = 0.25f;   // /4
-   middle->tv = 0.25f;   // /4
-   middle = &m_mesh.m_vertices[m_d.m_Sides + 1]; // middle point bottom
-   middle->tu = (float)(0.25*3.); // /4*3
-   middle->tv = 0.25f;   // /4
-   const float invx = 0.5f / (maxX - minX);
-   const float invy = 0.5f / (maxY - minY);
-   const float invs = 1.0f / (float)m_d.m_Sides;
-   for (int i = 0; i < m_d.m_Sides; i++)
-   {
-      Vertex3D_NoTex2 * const topVert = &m_mesh.m_vertices[i + 1]; // top point at side
-      topVert->tu = (topVert->x - minX)*invx;
-      topVert->tv = (topVert->y - minY)*invy;
-
-      Vertex3D_NoTex2 * const bottomVert = &m_mesh.m_vertices[i + 1 + m_d.m_Sides + 1]; // bottompoint at side
-      bottomVert->tu = topVert->tu + 0.5f;
-      bottomVert->tv = topVert->tv;
-
-      Vertex3D_NoTex2 * const sideTopVert = &m_mesh.m_vertices[m_d.m_Sides * 2 + 2 + i];
-      Vertex3D_NoTex2 * const sideBottomVert = &m_mesh.m_vertices[m_d.m_Sides * 3 + 2 + i];
-
-      sideTopVert->tu = (float)i*invs;
-      sideTopVert->tv = 0.5f;
-      sideBottomVert->tu = sideTopVert->tu;
-      sideBottomVert->tv = 1.0f;
-   }
-
-   // So how many indices are needed?
-   // 3 per Triangle top - we have m_sides triangles -> 0, 1, 2, 0, 2, 3, 0, 3, 4, ...
-   // 3 per Triangle bottom - we have m_sides triangles
-   // 6 per Side at the side (two triangles form a rectangle) - we have m_sides sides
-   // == 12 * m_sides
-   // * 2 for both cullings (m_DrawTexturesInside == true)
-   // == 24 * m_sides
-   // this will also be the initial sorting, when depths, Vertices and Indices are recreated, because calculateRealTimeOriginal is called.
-
-    // no: only out-facing polygons
-    // restore indices
-    m_mesh.m_indices.resize(m_d.m_Sides * 12);
-    for (int i = 0; i < m_d.m_Sides; i++)
-    {
-        const int tmp = (i == m_d.m_Sides - 1) ? 1 : (i + 2); // wrapping around
-        // top
-        m_mesh.m_indices[i * 3] = 0;
-        m_mesh.m_indices[i * 3 + 2] = i + 1;
-        m_mesh.m_indices[i * 3 + 1] = tmp;
-
-        //SetNormal(&m_mesh.m_vertices[0], &m_mesh.m_indices[i+3], 3); // see below
-
-        const int tmp2 = tmp + 1;
-        // bottom
-        m_mesh.m_indices[3 * (i + m_d.m_Sides)] = m_d.m_Sides + 1;
-        m_mesh.m_indices[3 * (i + m_d.m_Sides) + 1] = m_d.m_Sides + 2 + i;
-        m_mesh.m_indices[3 * (i + m_d.m_Sides) + 2] = m_d.m_Sides + tmp2;
-
-        //SetNormal(&m_mesh.m_vertices[0], &m_mesh.m_indices[3*(i+m_d.m_Sides)], 3); // see below
-
-        // sides
-        m_mesh.m_indices[6 * (i + m_d.m_Sides)] = m_d.m_Sides * 2 + tmp2;
-        m_mesh.m_indices[6 * (i + m_d.m_Sides) + 1] = m_d.m_Sides * 3 + 2 + i;
-        m_mesh.m_indices[6 * (i + m_d.m_Sides) + 2] = m_d.m_Sides * 2 + 2 + i;
-        m_mesh.m_indices[6 * (i + m_d.m_Sides) + 3] = m_d.m_Sides * 2 + tmp2;
-        m_mesh.m_indices[6 * (i + m_d.m_Sides) + 4] = m_d.m_Sides * 3 + tmp2;
-        m_mesh.m_indices[6 * (i + m_d.m_Sides) + 5] = m_d.m_Sides * 3 + 2 + i;
-    }
-
-   //SetNormal(&m_mesh.m_vertices[0], &m_mesh.m_indices[0], m_mesh.NumIndices()); // SetNormal only works for plane polygons
-   ComputeNormals(m_mesh.m_vertices, m_mesh.m_indices);
 }
 
 void HitTarget::UpdateEditorView()
@@ -459,7 +349,7 @@ void HitTarget::RenderObject(RenderDevice *pd3dDevice)
 
    // draw the mesh
    pd3dDevice->basicShader->Begin(0);
-   pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, m_numGroupVertices, indexBuffer, 0, m_numGroupIndices);
+   pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, m_numVertices, indexBuffer, 0, m_numIndices);
    pd3dDevice->basicShader->End();
 
 #ifdef TWOSIDED_TRANSPARENCY
@@ -467,10 +357,7 @@ void HitTarget::RenderObject(RenderDevice *pd3dDevice)
    {
        pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
        pd3dDevice->basicShader->Begin(0);
-       if (m_d.m_fGroupdRendering)
-          pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, m_numGroupVertices, indexBuffer, 0, m_numGroupIndices);
-       else
-          pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, (DWORD)m_mesh.NumVertices(), indexBuffer, 0, (DWORD)m_mesh.NumIndices());
+       pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, m_numVertices, indexBuffer, 0, m_numIndices);
        pd3dDevice->basicShader->End();
    }
 #endif
@@ -505,11 +392,12 @@ void HitTarget::RenderSetup(RenderDevice* pd3dDevice)
    if (vertexBuffer)
       vertexBuffer->release();
 
-   pd3dDevice->CreateVertexBuffer((unsigned int)m_mesh.NumVertices(), 0, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer);
+   SetMeshType(0);
+   pd3dDevice->CreateVertexBuffer((unsigned int)m_numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer);
 
    if (indexBuffer)
       indexBuffer->release();
-   indexBuffer = pd3dDevice->CreateAndFillIndexBuffer(m_mesh.m_indices);
+   indexBuffer = pd3dDevice->CreateAndFillIndexBuffer(m_numIndices, m_indices);
 }
 
 void HitTarget::RenderStatic(RenderDevice* pd3dDevice)
