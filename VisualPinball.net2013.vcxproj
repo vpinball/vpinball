@@ -992,7 +992,6 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <None Include="res\gate.cur" />
     <None Include="res\flasher.cur" />
     <None Include="res\hittarget.rgs" />
-    <None Include="res\primitiv.bin" />
     <None Include="res\rubber.cur" />
     <None Include="res\kicker.cur" />
     <None Include="res\spinner.cur" />

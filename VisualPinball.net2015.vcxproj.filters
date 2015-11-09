@@ -28,6 +28,7 @@
     <ClCompile Include="Pin\hitplunger.cpp" />
     <ClCompile Include="hitrectsur.cpp" />
     <ClCompile Include="hitsur.cpp" />
+    <ClCompile Include="hittarget.cpp" />
     <ClCompile Include="ieditable.cpp" />
     <ClCompile Include="iselect.cpp" />
     <ClCompile Include="kicker.cpp" />
@@ -150,8 +151,15 @@
     <Midl Include="vpinball.idl" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="res\vpinball.rgs" />
-    <None Include="res\table.vpx" />
+    <None Include="res\vpinball.rgs">
+      <Filter>res</Filter>
+    </None>
+    <None Include="res\table.vpx">
+      <Filter>res</Filter>
+    </None>
+    <None Include="res\hittarget.rgs">
+      <Filter>res</Filter>
+    </None>
     <None Include="res\ball.rgs">
       <Filter>res</Filter>
     </None>
@@ -478,6 +486,9 @@
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="hitsur.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="hittarget.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="idebug.h">
