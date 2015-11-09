@@ -315,7 +315,7 @@ BEGIN
     GROUPBOX        "Ambient Occlusion",IDC_STATIC,154,49,103,38
     CONTROL         "Enable",IDC_ENABLE_AO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,60,89,10
     CONTROL         "Update in-game (quality)",IDC_DYNAMIC_AO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,73,90,10
-    LTEXT           "Visual Nudge Strength",IDC_STATIC,235,91,75,10
+    LTEXT           "Visual Nudge Strength",IDC_STATIC,230,91,75,10
     EDITTEXT        IDC_NUDGE_STRENGTH,304,90,36,12,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "FPS limiter/VSync",IDC_STATIC,162,115,75,10
     EDITTEXT        IDC_ADAPTIVE_VSYNC,239,113,20,12,ES_RIGHT | ES_AUTOHSCROLL
@@ -324,10 +324,10 @@ BEGIN
     CONTROL         "Texture compression (performance)",IDC_TEX_COMPRESS,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,139,124,10
     CONTROL         "Force Anisotropic Texture Filtering (quality)",IDC_FORCE_ANISO,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,149,140,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,149,150,10
     CONTROL         "Alternative Depth Buffer processing",IDC_USE_NVIDIA_API_CHECK,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,159,117,10
-    CONTROL         "Software vertex processing",IDC_SOFTWARE_VP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,169,94,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,159,127,10
+    CONTROL         "Software vertex processing",IDC_SOFTWARE_VP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,169,104,10
     CONTROL         "512",IDC_Tex512,"Button",BS_AUTORADIOBUTTON | WS_GROUP,166,194,28,10
     CONTROL         "1024",IDC_Tex1024,"Button",BS_AUTORADIOBUTTON,166,204,32,10
     CONTROL         "2048",IDC_Tex2048,"Button",BS_AUTORADIOBUTTON,166,214,32,10
