@@ -126,6 +126,7 @@ class PinBinary;
 #include "Kicker.h"
 #include "Decal.h"
 #include "Primitive.h"
+#include "hittarget.h"
 #include "Gate.h"
 #include "Spinner.h"
 #include "Ramp.h"

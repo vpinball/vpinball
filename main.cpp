@@ -337,6 +337,7 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
          EditableRegistry::RegisterEditable<Textbox>();
          EditableRegistry::RegisterEditable<Timer>();
          EditableRegistry::RegisterEditable<Trigger>();
+         EditableRegistry::RegisterEditable<HitTarget>();
       }
 
       g_pvp = new VPinball();

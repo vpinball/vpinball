@@ -23,6 +23,7 @@ enum ItemTypeEnum
    eItemDispReel,
    eItemLightSeq,
    eItemPrimitive,
+   eItemHitTarget,
    eItemFlasher,
    eItemRubber,
    eItemLightSeqCenter,

@@ -87,6 +87,7 @@
       <Filter>inc</Filter>
     </ClCompile>
     <ClCompile Include="codeviewedit.cpp" />
+    <ClCompile Include="hittarget.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="vpinball.rc" />
@@ -321,6 +322,8 @@
     <None Include="res\table.vpx">
       <Filter>res</Filter>
     </None>
+    <None Include="res\primitiv.bin" />
+    <None Include="res\hittarget.rgs" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="inc">
@@ -803,6 +806,9 @@
       <Filter>inc</Filter>
     </ClInclude>
     <ClInclude Include="codeviewedit.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="hittarget.h">
       <Filter>headers</Filter>
     </ClInclude>
   </ItemGroup>
