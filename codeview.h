@@ -244,7 +244,7 @@ public:
 	void ParseDelimtByColon(string *result, string *wholeline);
 	void ParseFindConstruct(int &Pos, const string *UCLine, WordType &Type, int &ConstructSize);
 	bool ParseStructureName(vector<UserData> *ListIn, UserData ud,
-									const string UCline, const string line, const int Lineno);
+									const string &UCline, const string &line, const int Lineno);
 	
 	int SureFind(const string &LineIn, const string &ToFind);
 	void RemovePadding(string &line); 

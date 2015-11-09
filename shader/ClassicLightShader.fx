@@ -8,7 +8,7 @@ float4x4 matWorldViewProj : WORLDVIEWPROJ;
 float4x4 matWorldView     : WORLDVIEW;
 float4x4 matWorldViewInverseTranspose;
 float4x4 matView;
-float4x4 matViewInverseInverseTranspose;
+//float4x4 matViewInverseInverseTranspose; // matView used instead and multiplied from other side
 
 texture Texture0; // base texture
 texture Texture1; // envmap

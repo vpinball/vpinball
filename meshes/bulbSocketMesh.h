@@ -596,7 +596,7 @@ const Vertex3D_NoTex2 bulbSocket[592]=
 { 0.011041f,0.083194f,0.717502f, 0.590800f,0.800900f,0.097200f, 0.270999f,0.037063f}
 };
 
-WORD bulbSocketIndices[3384]=
+const WORD bulbSocketIndices[3384]=
 {
 176, 177, 178,
 178, 177, 131,

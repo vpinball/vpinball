@@ -1837,7 +1837,7 @@ bool CodeViewer::ParseOKLineLength(const int LineLen)
 }
 
 bool CodeViewer::ParseStructureName(vector<UserData> *ListIn, UserData ud,
-												const string UCline, const string line, const int Lineno)
+												const string &UCline, const string &line, const int Lineno)
 {
 	static int ParentLevel = 0;
 	static string CurrentParentKey = "";

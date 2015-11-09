@@ -1161,7 +1161,7 @@ const Vertex3D_NoTex2 bumperBase[1157]=
 { 0.120904f,0.361824f,0.207045f, -0.956300f,0.292300f,0.000000f, 0.737631f,0.370285f}
 };
 
-WORD bumperBaseIndices[1848]=
+const WORD bumperBaseIndices[1848]=
 {
 59, 60, 61,
 0, 1, 2,

@@ -232,7 +232,7 @@ const Vertex3D_NoTex2 spinnerPlate[228]=
 { 0.698483f,-0.008905f,0.008908f, 1.000000f,-0.000000f,-0.000000f, 0.029806f,0.106694f}
 };
 
-WORD spinnerPlateIndices[912]=
+const WORD spinnerPlateIndices[912]=
 {
 10, 9, 11,
 8, 9, 10,

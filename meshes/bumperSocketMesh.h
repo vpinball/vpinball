@@ -221,7 +221,7 @@ const Vertex3D_NoTex2 bumperSocket[217]=
 { -0.036403f,0.434509f,0.003146f, 0.258800f,-0.965900f,-0.000000f, 0.821064f,0.119843f}
 };
 
-WORD bumperSocketIndices[576]=
+const WORD bumperSocketIndices[576]=
 {
 95, 92, 69,
 92, 68, 69,

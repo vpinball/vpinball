@@ -71,7 +71,7 @@ const Vertex3D_NoTex2 bulbLight[67]=
 { -0.220295f,-0.381570f,-0.012635f, -0.486000f,-0.841800f,-0.234800f, 0.926171f,0.253950f}
 };
 
-WORD bulbLightIndices[360]=
+const WORD bulbLightIndices[360]=
 {
 44, 56, 55,
 56, 44, 66,

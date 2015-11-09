@@ -843,7 +843,7 @@ const Vertex3D_NoTex2 bumperCap[839]=
 { -0.156848f,0.791251f,-0.321858f, -0.290300f,0.956900f,-0.000000f, 0.403302f,0.990462f}
 };
 
-WORD bumperCapIndices[1194]=
+const WORD bumperCapIndices[1194]=
 {
 0, 1, 2,
 3, 4, 5,

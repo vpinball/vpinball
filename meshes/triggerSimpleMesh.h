@@ -53,7 +53,7 @@ const Vertex3D_NoTex2 triggerSimple[49]=
 { 0.641842f,42.753124f,-29.149363f, 0.507300f,0.857900f,-0.082000f, 0.333333f,0.000000f}
 };
 
-WORD triggerSimpleIndices[216]=
+const WORD triggerSimpleIndices[216]=
 {
 4, 5, 6,
 6, 7, 4,

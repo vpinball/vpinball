@@ -9,9 +9,9 @@
 float4x4 matWorldViewProj : WORLDVIEWPROJ;
 float4x4 matWorldView     : WORLDVIEW;
 float4x4 matWorldViewInverse;
-float4x4 matWorldViewInverseTranspose;
+//float4x4 matWorldViewInverseTranspose; // matWorldViewInverse used instead and multiplied from other side
 float4x4 matView;
-float4x4 matViewInverseInverseTranspose;
+//float4x4 matViewInverseInverseTranspose; // matView used instead and multiplied from other side
 texture  Texture0; // base texture
 texture  Texture1; // playfield (should be envmap if specular or glossy needed/enabled, see below)
 texture  Texture2; // envmap radiance
@@ -130,7 +130,7 @@ vout vsBall( in vin IN )
 	
 	// apply spinning to the normals too to get the sphere mapping effect
 	const float3 nspin = mul(IN.normal, orientation);
-    const float3 normal = normalize(mul(float4(nspin,0.), matWorldViewInverseTranspose).xyz);
+    const float3 normal = normalize(mul(matWorldViewInverse, float4(nspin,0.)).xyz); // actually: mul(float4(nspin,0.), matWorldViewInverseTranspose), but optimized to save one matrix
     
 	OUT.position = mul(pos, matWorldViewProj);
     OUT.tex0	 = IN.tex0;
@@ -159,7 +159,7 @@ voutReflection vsBallReflection( in vin IN )
 	const float3 p = mul(pos, matWorldView).xyz;
 	
     const float3 nspin = mul(IN.normal, orientation);
-    const float3 normal = normalize(mul(float4(nspin,0.), matWorldViewInverseTranspose).xyz);
+    const float3 normal = normalize(mul(matWorldViewInverse, float4(nspin,0.)).xyz); // actually: mul(float4(nspin,0.), matWorldViewInverseTranspose), but optimized to save one matrix
     
     const float3 r = reflect(normalize(/*camera=0,0,0,1*/-p), normal);
 
@@ -212,7 +212,7 @@ float3 ballLightLoop(float3 pos, float3 N, float3 V, float3 diffuse, float3 glos
    }
 
    if((Roughness_WrapL_Edge_IsMetal.w == 0.0) && (diffuseMax > 0.0))
-      color += DoEnvmapDiffuse(normalize(mul(float4(N, 0.0), matViewInverseInverseTranspose).xyz), diffuse); // trafo back to world for lookup into world space envmap
+      color += DoEnvmapDiffuse(normalize(mul(matView, float4(N, 0.0)).xyz), diffuse); // trafo back to world for lookup into world space envmap // actually: mul(float4(N, 0.0), matViewInverseInverseTranspose)
 
    if(specularMax > 0.0)
       color += specular; //!! blend? //!! Fresnel with 1st layer?
@@ -253,7 +253,7 @@ PS_OUTPUT psBall( in vout IN )
 	else
 	   ballImageColor = ScreenHDR( ballImageColor, decalColor ) * (0.5*fenvEmissionScale_TexWidth.x); //!! 0.5=magic
 	
-	const float3 playfield_normal = mul(float4(0.,0.,1.,0.), matWorldViewInverseTranspose).xyz;
+	const float3 playfield_normal = mul(matWorldViewInverse, float4(0.,0.,1.,0.)).xyz; // actually: mul(float4(0.,0.,1.,0.), matWorldViewInverseTranspose), but optimized to save one matrix
 	const float NdotR = dot(playfield_normal,r);
 	
 	float3 playfieldColor;
