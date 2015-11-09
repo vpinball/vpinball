@@ -27,10 +27,8 @@ public:
    Vertex3Ds m_vSize;
    float m_rotX, m_rotY, m_rotZ;
    char m_szImage[MAXTOKEN];
-   char m_meshFileName[256];
 
    char m_szMaterial[32];
-   COLORREF m_SideColor;
 
    TimerDataRoot m_tdr;
 
@@ -39,13 +37,15 @@ public:
    float m_elasticityFalloff;
    float m_friction;
    float m_scatter;
+   float m_dropSpeed;
+   bool  m_isDropped;
+   U32   m_time_msec;
 
    float m_depthBias;      // for determining depth sorting
    bool m_fVisible;
-   bool m_staticRendering;
    bool m_fDisableLighting;
 
-   bool m_fHitEvent;
+   bool m_fUseHitEvent;
    bool m_fCollidable;
    bool m_fSkipRendering;
    bool m_fReflectionEnabled;
@@ -68,12 +68,8 @@ class HitTarget :
    public IPerPropertyBrowsing // Ability to fill in dropdown in property browser
 {
 public:
-   static const int Max_Primitive_Sides = 100; //!! 100 works for sleepy, 99 doesn't
-
    STDMETHOD(get_Material)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(put_Material)(/*[in]*/ BSTR newVal);
-   STDMETHOD(get_SideColor)(/*[out, retval]*/ OLE_COLOR *pVal);
-   STDMETHOD(put_SideColor)(/*[in]*/ OLE_COLOR newVal);
 
    STDMETHOD(get_Visible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_Visible)(/*[in]*/ VARIANT_BOOL newVal);
@@ -84,24 +80,18 @@ public:
    STDMETHOD(put_Y)(/*[in]*/ float newVal);
    STDMETHOD(get_Z)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_Z)(/*[in]*/ float newVal);
-   STDMETHOD(get_Size_X)(/*[out, retval]*/ float *pVal);
-   STDMETHOD(put_Size_X)(/*[in]*/ float newVal);
-   STDMETHOD(get_Size_Y)(/*[out, retval]*/ float *pVal);
-   STDMETHOD(put_Size_Y)(/*[in]*/ float newVal);
-   STDMETHOD(get_Size_Z)(/*[out, retval]*/ float *pVal);
-   STDMETHOD(put_Size_Z)(/*[in]*/ float newVal);
+   STDMETHOD(get_ScaleX)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_ScaleX)(/*[in]*/ float newVal);
+   STDMETHOD(get_ScaleY)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_ScaleY)(/*[in]*/ float newVal);
+   STDMETHOD(get_ScaleZ)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_ScaleZ)(/*[in]*/ float newVal);
 
-   STDMETHOD(get_RotX)(/*[out, retval]*/ float *pVal);
-   STDMETHOD(put_RotX)(/*[in]*/ float newVal);
-   STDMETHOD(get_RotY)(/*[out, retval]*/ float *pVal);
-   STDMETHOD(put_RotY)(/*[in]*/ float newVal);
-   STDMETHOD(get_RotZ)(/*[out, retval]*/ float *pVal);
-   STDMETHOD(put_RotZ)(/*[in]*/ float newVal);
+   STDMETHOD(get_Orientation)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_Orientation)(/*[in]*/ float newVal);
 
    STDMETHOD(get_Image)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(put_Image)(/*[in]*/ BSTR newVal);
-   STDMETHOD(get_EnableStaticRendering)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-   STDMETHOD(put_EnableStaticRendering)(/*[in]*/ VARIANT_BOOL newVal);
 
    STDMETHOD(get_HasHitEvent)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_HasHitEvent)(/*[in]*/ VARIANT_BOOL newVal);
@@ -119,10 +109,14 @@ public:
    STDMETHOD(put_Scatter)(/*[in]*/ float newVal);
    STDMETHOD(get_DepthBias)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_DepthBias)(/*[in]*/ float newVal);
+   STDMETHOD(get_DropSpeed)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_DropSpeed)(/*[in]*/ float newVal);
    STDMETHOD(get_DisableLighting)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_DisableLighting)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_ReflectionEnabled)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_ReflectionEnabled)(/*[in]*/ VARIANT_BOOL newVal);
+   STDMETHOD(get_IsDropped)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   STDMETHOD(put_IsDropped)(/*[in]*/ VARIANT_BOOL newVal);
 
    HitTarget();
    virtual ~HitTarget();
@@ -169,20 +163,19 @@ public:
    virtual void UpdatePropertyPanes();
    virtual void SetDefaultPhysics(bool fromMouseClick);
 
-   void    RecalculateMatrices();
+   void GenerateMesh(Vertex3D_NoTex2 *buf);
    void    TransformVertices();
    void    SetMeshType(int type);
 
    static INT_PTR CALLBACK ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-   Mesh m_mesh;
 
    HitTargetData m_d;
-   Matrix3D fullMatrix;
    const Vertex3D_NoTex2 *m_vertices;
    const WORD      *m_indices;
    unsigned int     m_numVertices;
    unsigned int     m_numIndices;
+   bool m_hitEvent;
 
 private:        // private member functions
 
@@ -197,6 +190,7 @@ private:        // private member functions
 
    bool BrowseFor3DMeshFile();
    void RenderObject(RenderDevice *pd3dDevice);
+   void UpdateTarget(RenderDevice *pd3dDevice);
    void SetupHitObject(Vector<HitObject> * pvho, HitObject * obj);
    void AddHitEdge(Vector<HitObject> * pvho, std::set< std::pair<unsigned, unsigned> >& addedEdges, const unsigned i, const unsigned j, const Vertex3Ds &vi, const Vertex3Ds &vj);
 
@@ -208,51 +202,13 @@ private:        // private data members
 
    Vector<HitObject> m_vhoCollidable; // Objects to that may be collide selectable
 
-   //!! outdated(?) information (along with the variable decls) for the old builtin primitive code, kept for reference:
-
-   // Vertices for 3d Display
-   //	Vertex3D_NoTex2 rgv3DTopOriginal[Max_Primitive_Sides+1]; // without transformation at index=0 is the middle point
-   //	Vertex3D_NoTex2 rgv3DBottomOriginal[Max_Primitive_Sides+1];
-
-   // these will be deleted:
-   //	Vertex3D_NoTex2 rgv3DTop[Max_Primitive_Sides]; // with transformation
-   //	WORD wTopIndices[Max_Primitive_Sides*6]; // *6 because of each point could be a triangle (*3) and for both sides because of culling (*2)
-   //	Vertex3D_NoTex2 rgv3DBottom[Max_Primitive_Sides];
-   //	WORD wBottomIndices[Max_Primitive_Sides*6];
-
-   // OK here are our vertices that should be drawn:
-   // Index				: Length		: Description
-   // 0					: 1				: Middle Point Top
-   // 1					: m_sides		: Top Vertices (no special order, will be sorted via Indices)
-   // m_sides+1			: 1				: Middle Point Bottom
-   // m_sides+2			: m_sides		: Bottom Vertices
-   // m_sides*2 + 2		: m_sides+1		: Top Sides (with normals to the side) the first/last pioint is doubled, for textures
-   // m_sides*3 + 3		: m_sides+1		: bottom Sides (With Normals to the side)
-   //Example: 4 sides
-   // Index				: Length		: Description
-   // 0					: 1				: Middle Point Top
-   // 1 to 4				: 4				: Top Vertices (no special order, will be sorted via Indices)
-   // 5					: 1				: Middle Point Bottom
-   // 6 to 9				: 4				: Bottom Vertices
-   // 10 to 13		 		: 4				: Top Sides (with normals to the side)
-   // 14 to 17				: 4				: bottom Sides (With Normals to the side)
-   // These Vertices will always be complete. even if the user does not want to draw them (sides disabled or top/bottom disabled).
-   // maybe they are not updated anymore, but they will be there.
-
-   // per side i will use the following mem:
-   // 13 * float * sides * 3 (vertices) = 13 * 4 * sides * 3 = 156 * sides bytes
-   // word * 24 (indices) * sides = 4 * 24 * sides = 104 * sides bytes
-   // float * 4 * sides = 16 * sidesm
-   // so we will have: 276 bytes per side.
-   // at 100 sides: 27.6 kb... per primitive That's OK
-   // additional mem:
-   // 13 * float * 2 (additional middle points at top and bottom)
-   // = nothing...
-
    // Vertices for editor display
    std::vector<Vertex3Ds> vertices;
    std::vector<float> normals; // only z component actually
-
+   Vertex3D_NoTex2 *transformedVertices;
+   float m_moveAnimationOffset;
+   bool  m_moveAnimation;
+   bool  m_moveDown;
 
    VertexBuffer *vertexBuffer;
    IndexBuffer *indexBuffer;

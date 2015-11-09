@@ -1604,8 +1604,6 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propput, id(103), helpstring("property Top Visible")] HRESULT Visible([in] VARIANT_BOOL newVal);
                 [propget, id(340), helpstring("property Material")] HRESULT Material([out, retval] BSTR *pVal);
                 [propput, id(340), helpstring("property Material")] HRESULT Material([in] BSTR newVal);
-                [propget, id(104), helpstring("property Side Color")] HRESULT SideColor([out, retval] OLE_COLOR *pVal);
-                [propput, id(104), helpstring("property Side Color")] HRESULT SideColor([in] OLE_COLOR newVal);
 
                 [propget, id(DISPID_Image), helpstring("property Image")] HRESULT Image([out, retval] BSTR *pVal);
                 [propput, id(DISPID_Image), helpstring("property Image")] HRESULT Image([in] BSTR newVal);
@@ -1616,26 +1614,18 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propput, id(DISPID_POSITION_Y), helpstring("property Y")] HRESULT Y([in] float newVal);
                 [propget, id(DISPID_POSITION_Z), helpstring("property Z")] HRESULT Z([out, retval] float *pVal);
                 [propput, id(DISPID_POSITION_Z), helpstring("property Z")] HRESULT Z([in] float newVal);
-                [propget, id(DISPID_SIZE_X), helpstring("property Size X")] HRESULT Size_X([out, retval] float *pVal);
-                [propput, id(DISPID_SIZE_X), helpstring("property Size X")] HRESULT Size_X([in] float newVal);
-                [propget, id(DISPID_SIZE_Y), helpstring("property Size Y")] HRESULT Size_Y([out, retval] float *pVal);
-                [propput, id(DISPID_SIZE_Y), helpstring("property Size Y")] HRESULT Size_Y([in] float newVal);
-                [propget, id(DISPID_SIZE_Z), helpstring("property Size Z")] HRESULT Size_Z([out, retval] float *pVal);
-                [propput, id(DISPID_SIZE_Z), helpstring("property Size Z")] HRESULT Size_Z([in] float newVal);
+                [propget, id(DISPID_SIZE_X), helpstring("property ScaleX")] HRESULT ScaleX([out, retval] float *pVal);
+                [propput, id(DISPID_SIZE_X), helpstring("property ScaleX")] HRESULT ScaleX([in] float newVal);
+                [propget, id(DISPID_SIZE_Y), helpstring("property ScaleY")] HRESULT ScaleY([out, retval] float *pVal);
+                [propput, id(DISPID_SIZE_Y), helpstring("property ScaleY")] HRESULT ScaleY([in] float newVal);
+                [propget, id(DISPID_SIZE_Z), helpstring("property ScaleZ")] HRESULT ScaleZ([out, retval] float *pVal);
+                [propput, id(DISPID_SIZE_Z), helpstring("property ScaleZ")] HRESULT ScaleZ([in] float newVal);
 
-                [propget, id(DISPID_ROT_X), helpstring("property Rotx")] HRESULT RotX([out, retval] float *pVal);
-                [propput, id(DISPID_ROT_X), helpstring("property Rotx")] HRESULT RotX([in] float newVal);
-
-                [propget, id(DISPID_ROT_Y), helpstring("property Rot and Tra 2")] HRESULT RotY([out, retval] float *pVal);
-                [propput, id(DISPID_ROT_Y), helpstring("property Rot and Tra 2")] HRESULT RotY([in] float newVal);
-
-                [propget, id(DISPID_ROT_Z), helpstring("property Rot and Tra 3")] HRESULT RotZ([out, retval] float *pVal);
-                [propput, id(DISPID_ROT_Z), helpstring("property Rot and Tra 3")] HRESULT RotZ([in] float newVal);
+                [propget, id(DISPID_ROT_Z), helpstring("property Orientation")] HRESULT Orientation([out, retval] float *pVal);
+                [propput, id(DISPID_ROT_Z), helpstring("property Orientation")] HRESULT Orientation([in] float newVal);
                 
                 [propget, id(DISPID_Name), helpstring("property Name")] HRESULT Name([out, retval] BSTR *pVal);
                 [propput, id(DISPID_Name), helpstring("property Name")] HRESULT Name([in] BSTR newVal);
-                [propget, id(398), helpstring("property static rendering")] HRESULT EnableStaticRendering([out, retval] VARIANT_BOOL *pVal);
-                [propput, id(398), helpstring("property static rendering")] HRESULT EnableStaticRendering([in] VARIANT_BOOL newVal);
 
                 [propget, id(110), helpstring("property Elasticity")] HRESULT Elasticity([out, retval] float *pVal);
                 [propput, id(110), helpstring("property Elasticity")] HRESULT Elasticity([in] float newVal);
@@ -1659,6 +1649,11 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 
                 [propget, id(397), helpstring("property DepthBias")] HRESULT DepthBias([out, retval] float *pVal);
                 [propput, id(397), helpstring("property DepthBias")] HRESULT DepthBias([in] float newVal);
+
+                [propget, id(377), helpstring("property DropSpeed")] HRESULT DropSpeed([out, retval] float *pVal);
+                [propput, id(377), helpstring("property DropSpeed")] HRESULT DropSpeed([in] float newVal);
+				[propget, id(432), helpstring("property IsDropped")] HRESULT IsDropped([out, retval] VARIANT_BOOL *pVal);
+                [propput, id(432), helpstring("property IsDropped")] HRESULT IsDropped([in] VARIANT_BOOL newVal);
 
         };
 
