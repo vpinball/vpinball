@@ -534,6 +534,12 @@ void DoHitTest(Ball *pball, HitObject *pho, CollisionEvent& coll)
 #ifdef _DEBUGPHYSICS
    g_pplayer->c_deepTested++;
 #endif
+   if (pho->m_ObjType == eHitTarget)
+   {
+      if (((HitTarget*)pho->m_objHitEvent)->m_d.m_isDropped == true)
+         return;
+   }
+
    if (!g_pplayer->m_fRecordContacts)  // simply find first event
    {
       const float newtime = pho->HitTest(pball, coll.hittime, coll);

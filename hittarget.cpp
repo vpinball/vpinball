@@ -396,9 +396,9 @@ void HitTarget::RenderObject(RenderDevice *pd3dDevice)
    {
       if (!m_d.m_isDropped)
       {
-         m_moveAnimation = true;
          m_moveDown = true;
       }
+      m_moveAnimation = true;
       m_hitEvent = false;
    }
    if (m_moveAnimation)

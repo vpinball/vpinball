@@ -569,8 +569,11 @@ void Hit3DPoly::Collide(CollisionEvent *coll)
          FireHitEvent(pball);
       if (m_ObjType == eHitTarget && dot <= -m_threshold)
       {
-         ((HitTarget*)m_objHitEvent)->m_hitEvent = true;
-         FireHitEvent(pball);
+         if (((HitTarget*)m_objHitEvent)->m_d.m_isDropped == false)
+         {
+            ((HitTarget*)m_objHitEvent)->m_hitEvent = true;
+            FireHitEvent(pball);
+         }
       }
    }
    else
@@ -735,8 +738,11 @@ void HitTriangle::Collide(CollisionEvent* coll)
       FireHitEvent(pball);
    if (m_ObjType == eHitTarget && dot <= -m_threshold)
    {
-      ((HitTarget*)m_objHitEvent)->m_hitEvent = true;
-      FireHitEvent(pball);
+      if (((HitTarget*)m_objHitEvent)->m_d.m_isDropped == false)
+      {
+         ((HitTarget*)m_objHitEvent)->m_hitEvent = true;
+         FireHitEvent(pball);
+      }
    }
 }
 
@@ -902,8 +908,11 @@ void HitLine3D::Collide(CollisionEvent* coll)
       FireHitEvent(pball);
    if (m_ObjType == eHitTarget && dot <= -m_threshold)
    {
-      ((HitTarget*)m_objHitEvent)->m_hitEvent = true;
-      FireHitEvent(pball);
+      if (((HitTarget*)m_objHitEvent)->m_d.m_isDropped == false)
+      {
+         ((HitTarget*)m_objHitEvent)->m_hitEvent = true;
+         FireHitEvent(pball);
+      }
    }
 }
 
