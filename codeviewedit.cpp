@@ -2,17 +2,17 @@
 #include "codeviewedit.h"
 UserData::UserData()
 {
-	intLineNum=0;
-	strDescription="";
-	strKeyName="";
+	LineNum=0;
+	Description="";
+	KeyName="";
 	eTyping = eUnknown;
 }
 
 UserData::UserData(const int LineNo, const string &Desc, const string &Name, const WordType &TypeIn)
 {
-	intLineNum=LineNo;
-	strDescription=Desc;
-	strKeyName=Name;
+	LineNum=LineNo;
+	Description=Desc;
+	KeyName=Name;
 	eTyping = TypeIn;
 }
 
@@ -29,8 +29,8 @@ string UserData::lowerCase(string input)
 
 bool UserData::FuncCompareUD (const UserData &first, const UserData &second)
 {
-  const string strF = lowerCase(first.strKeyName);
-  const string strS = lowerCase(second.strKeyName);
+  const string strF = lowerCase(first.KeyName);
+  const string strS = lowerCase(second.KeyName);
   basic_string <char>::size_type i=0;
   while ( (i<strF.length()) && (i<strS.length() ) )
   {
@@ -67,7 +67,7 @@ int UserData::FindUD(vector<UserData>* ListIn, const string &strIn,vector<UserDa
 			if (iCurPos >= ListSize) { result = -1; }
 			else
 			{
-				const string strTableData = lowerCase(ListIn->at(iCurPos).strKeyName);
+				const string strTableData = lowerCase(ListIn->at(iCurPos).KeyName);
 				result = strSearchData.compare(strTableData);
 			}
 			if (iJumpDelta == 0 || result == 0) break;
@@ -101,7 +101,7 @@ int UserData::FindUDbyKey(vector<UserData>* ListIn, const string &strIn, vector<
 			if (iCurPos >= ListSize) { result = -1; }
 			else
 			{
-				const string strTableData = lowerCase(ListIn->at(iCurPos).strUniqueKey);
+				const string strTableData = lowerCase(ListIn->at(iCurPos).UniqueKey);
 				result = strSearchData.compare(strTableData);
 			}
 			if (iJumpDelta == 0 || result == 0) break;
@@ -136,7 +136,7 @@ int UserData::UDKeyIndex(vector<UserData>* ListIn, const string &strIn)
 		if (iCurPos >= ListSize) { result = -1; }
 		else
 		{
-			const string strTableData = lowerCase(ListIn->at(iCurPos).strUniqueKey);
+			const string strTableData = lowerCase(ListIn->at(iCurPos).UniqueKey);
 			result = strSearchData.compare(strTableData);
 		}
 		if (iJumpDelta == 0 || result == 0) break;
@@ -162,9 +162,9 @@ int UserData::FindOrInsertUD(vector<UserData>* ListIn, UserData &udIn)
 		ListIn->push_back(udIn);
 		return 0;
 	}
-	const int KeyFound = FindUDbyKey(ListIn, udIn.strUniqueKey ,iterFound, Pos);
+	const int KeyFound = FindUDbyKey(ListIn, udIn.UniqueKey ,iterFound, Pos);
 	//Same name, different parents. 
-	if ( (KeyFound == 0) && (ListIn->at(Pos).strUniqueParent.compare(udIn.strUniqueParent) != 0) )
+	if ( (KeyFound == 0) && (ListIn->at(Pos).UniqueParent.compare(udIn.UniqueParent) != 0) )
 	{
 		ListIn->insert(iterFound, udIn);
 		return Pos;

@@ -7,13 +7,13 @@ class UserData
 {
 private:
 public:
-	string strUniqueKey;
-	int intLineNum; //Line No. Declaration
-	string strKeyName; //Name
+	string UniqueKey;
+	int LineNum; //Line No. Declaration
+	string KeyName; //Name
 	WordType eTyping;
-	string strUniqueParent;
+	string UniqueParent;
 	vector<string> Children;
-	string strDescription;//Brief Description
+	string Description;//Brief Description
 	string Comment;
 
 public:

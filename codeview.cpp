@@ -126,6 +126,16 @@ void GetRange(const HWND m_hwndScintilla, const int start, const int end, char *
    SendMessage(m_hwndScintilla, SCI_GETTEXTRANGE, 0, (LPARAM)&tr);
 }
 
+void GetWordUnderCaret(const HWND m_hwndScintilla, Sci_TextRange* tr)
+{
+
+	int CurPos = SendMessage(m_hwndScintilla, SCI_GETCURRENTPOS, 0, 0 );
+	tr->chrg.cpMin = SendMessage(m_hwndScintilla, SCI_WORDSTARTPOSITION, CurPos, TRUE);
+	tr->chrg.cpMax = SendMessage(m_hwndScintilla, SCI_WORDENDPOSITION, CurPos, TRUE);
+	if (( tr->chrg.cpMax - tr->chrg.cpMin) > MAX_FIND_LENGTH) return;
+
+   SendMessage(m_hwndScintilla, SCI_GETTEXTRANGE, 0, (LPARAM)tr);
+}
 void CodeViewer::SetClean(const SaveDirtyState sds)
 {
    if (sds == eSaveClean)
@@ -411,7 +421,7 @@ void CodeViewer::Create()
 	VBValidChars = string("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_");
 	StopErrorDisplay = false;
 // Create new list of user functions & Collections- filled in ParseForFunction(), first called in LoadFromStrem()
-	g_AutoComp = new vector<string>();
+	AutoCompList = new vector<string>();
 	g_Components = new vector<UserData>();
 	g_UserFunc = new vector<UserData>();
 	g_VP_Core = new vector<UserData>();
@@ -435,19 +445,19 @@ void CodeViewer::Create()
 			WordChar= vbsReservedWords[intWordFinish];
 		}
 
-		FindOrInsertStringIntoAutolist(g_AutoComp, string(szWord));
+		FindOrInsertStringIntoAutolist(AutoCompList, string(szWord));
 	}
 	vbsKeyWords = new char[strlen(vbsReservedWords)+2];
 	vbsKeyWords.clear();
 	for (vector<UserData>::iterator i = g_VBwords->begin();i != g_VBwords->end(); ++i)
 	{
 		//make vbsKeyWords in order. (the cat has been kicked out :)
-		vbsKeyWords += lowerCase( i->strKeyName);
+		vbsKeyWords += lowerCase( i->KeyName);
 		vbsKeyWords += " ";
 		//Then capitalise first letter
-		WordChar = i->strKeyName.at(0);
+		WordChar = i->KeyName.at(0);
 		if (WordChar >= 'a' && WordChar <= 'z' ) WordChar -= ('a'- 'A');
-		i->strKeyName.at(0) = WordChar;	
+		i->KeyName.at(0) = WordChar;	
 	}
 	///// Preferences
 	DisplayAutoComplete = GetRegBoolWithDefault("CVEdit", "DisplayAutoComplete", true );
@@ -626,12 +636,12 @@ void CodeViewer::Destroy()
 		lPrefsList->clear();
 		delete lPrefsList;
 	}
-	if(g_AutoComp)
+	if(AutoCompList)
 	{
-		g_AutoComp->clear();
-		delete g_AutoComp;
+		AutoCompList->clear();
+		delete AutoCompList;
 	}
-	g_AutoComp = 0;
+	AutoCompList = 0;
 
 	if(g_Components)
 	{
@@ -832,12 +842,16 @@ void CodeViewer::ShowFindDialog()
 {
    if (m_hwndFind == NULL)
    {
-      m_findreplacestruct.lStructSize = sizeof(FINDREPLACE);
-      m_findreplacestruct.hwndOwner = m_hwndMain;
-      m_findreplacestruct.hInstance = NULL;
-      m_findreplacestruct.Flags = FR_DOWN | FR_HIDEWHOLEWORD;
-      m_findreplacestruct.lpstrFindWhat = szFindString;
-      m_findreplacestruct.lpstrReplaceWith = NULL;
+		Sci_TextRange trWord;
+		trWord.lpstrText = szFindString;
+ 		GetWordUnderCaret(m_hwndScintilla, &trWord);
+
+		m_findreplacestruct.lStructSize = sizeof(FINDREPLACE);
+		m_findreplacestruct.hwndOwner = m_hwndMain;
+		m_findreplacestruct.hInstance = NULL;
+		m_findreplacestruct.Flags = FR_DOWN | FR_HIDEWHOLEWORD;
+		m_findreplacestruct.lpstrFindWhat = szFindString;
+		m_findreplacestruct.lpstrReplaceWith = NULL;
       m_findreplacestruct.wFindWhatLen = 80;
       m_findreplacestruct.wReplaceWithLen = 0;
       m_findreplacestruct.lCustData = 0;
@@ -852,6 +866,10 @@ void CodeViewer::ShowFindReplaceDialog()
 {
    if (m_hwndFind == NULL)
    {
+		Sci_TextRange trWord;
+		trWord.lpstrText = szFindString;
+ 		GetWordUnderCaret(m_hwndScintilla, &trWord);
+
       m_findreplacestruct.lStructSize = sizeof(FINDREPLACE);
       m_findreplacestruct.hwndOwner = m_hwndMain;
       m_findreplacestruct.hInstance = NULL;
@@ -1536,18 +1554,16 @@ HRESULT STDMETHODCALLTYPE CodeViewer::QueryService(
 
 void CodeViewer::ShowAutoComplete()
 {
-	// 1. get current word
-	int CurPos = SendMessage(m_hwndScintilla,SCI_GETCURRENTPOS,0,0);
-	int wordstart = SendMessage(m_hwndScintilla,SCI_WORDSTARTPOSITION,CurPos, TRUE);
-	int wordfinish = SendMessage(m_hwndScintilla,SCI_WORDENDPOSITION,CurPos, TRUE);
-	// 2. if word length >1 start auto complete
-	char pcWord[256] = {};
-	GetRange(m_hwndScintilla,wordstart,wordfinish,pcWord);
-	int intWordLen = strlen(pcWord);
-	if (intWordLen > 1)
+
+	char m_Word[MAX_FIND_LENGTH] = {0};
+	Sci_TextRange Word;
+	Word.lpstrText = &m_Word[0];
+	GetWordUnderCaret(m_hwndScintilla, &Word);
+	const int intWordLen = strlen(Word.lpstrText);
+	if (intWordLen > 1 && intWordLen < MAX_FIND_LENGTH)
 	{
-		const char * McStr = g_AutoCompList.c_str();
-		SendMessage(m_hwndScintilla,SCI_AUTOCSHOW,intWordLen,(LPARAM)McStr);
+		const char * McStr = AutoCompString.c_str();
+		SendMessage(m_hwndScintilla, SCI_AUTOCSHOW, intWordLen, (LPARAM)McStr);
 	}
 }
 
@@ -1586,7 +1602,7 @@ bool CodeViewer::ShowTooltip(SCNotification *pSCN)
 			vector<UserData>::iterator i;
 			if (FindUD(g_UserFunc, string(szLCDwellWord), i) == 0)
 			{
-				string ptemp = i->strDescription;
+				string ptemp = i->Description;
 				if (i->Comment.length() >1)
 				{
 					ptemp += "\n" +  i->Comment;
@@ -1596,7 +1612,7 @@ bool CodeViewer::ShowTooltip(SCNotification *pSCN)
 			//Search VP core
 			else if (FindUD(g_VP_Core, string(szLCDwellWord), i) == 0)
 			{
-				string ptemp = i->strDescription;
+				string ptemp = i->Description;
 				if (i->Comment.length() >1)
 				{
 					ptemp += "\n" +  i->Comment;
@@ -1851,16 +1867,16 @@ bool CodeViewer::ParseStructureName(vector<UserData> *ListIn, UserData ud,
 			string foo;
 			foo = (char)((ud.eTyping)+64);
 
-			ud.strUniqueKey = ud.strKeyName  + foo + "\0";
+			ud.UniqueKey = ud.KeyName  + foo + "\0";
 			FindOrInsertUD( ListIn, ud);
-			CurrentParentKey = ud.strUniqueKey;
+			CurrentParentKey = ud.UniqueKey;
 		}
 		else 
 		{
-			ud.strUniqueParent = CurrentParentKey;
+			ud.UniqueParent = CurrentParentKey;
 			string foo;
 			foo = (char)((ud.eTyping)+64);
-			ud.strUniqueKey = ud.strKeyName + foo  + CurrentParentKey + "\0";
+			ud.UniqueKey = ud.KeyName + foo  + CurrentParentKey + "\0";
 			FindOrInsertUD( ListIn, ud);
 			int iUDIndx = UDKeyIndex( ListIn, CurrentParentKey);
 			if (iUDIndx == -1)
@@ -1877,8 +1893,8 @@ bool CodeViewer::ParseStructureName(vector<UserData> *ListIn, UserData ud,
 				return true;
 			}
 			UserData *iCurParent = &(ListIn->at(iUDIndx));
-			iCurParent->Children.push_back(ud.strUniqueKey);//add child to parent
-			CurrentParentKey = ud.strUniqueKey;
+			iCurParent->Children.push_back(ud.UniqueKey);//add child to parent
+			CurrentParentKey = ud.UniqueKey;
 		}
 		++ParentLevel;
 	}
@@ -1908,11 +1924,11 @@ bool CodeViewer::ParseStructureName(vector<UserData> *ListIn, UserData ud,
 					if (iCurParent != -1 )
 					{
 						UserData *CurrentParentUD = (&ListIn->at(iCurParent));
-						int iGrandParent = UDKeyIndex(ListIn, CurrentParentUD->strUniqueParent);
+						int iGrandParent = UDKeyIndex(ListIn, CurrentParentUD->UniqueParent);
 						if (iGrandParent != -1 )
 						{
 							UserData *CurrentGrandParentUD = (&ListIn->at(iGrandParent));
-							CurrentParentKey = CurrentGrandParentUD->strUniqueKey; 
+							CurrentParentKey = CurrentGrandParentUD->UniqueKey; 
 						}
 						else
 						{
@@ -2027,7 +2043,7 @@ void CodeViewer::ReadLineToParseBrain(string wholeline, int linecount, vector<Us
 			string UCline = upperCase(line);
 			UserData UD;
 			UD.eTyping = eUnknown;
-			UD.intLineNum = linecount;
+			UD.LineNum = linecount;
 			UD.Comment = Comment;
 			int SearchLength = 0 ;
 			int idx = -1;
@@ -2038,8 +2054,8 @@ void CodeViewer::ReadLineToParseBrain(string wholeline, int linecount, vector<Us
 				const int doubleQuoteIdx = line.find("\"");
 				if ((doubleQuoteIdx >= 0)  && (doubleQuoteIdx < idx)) continue; // in a string literal
 				const string sSubName = ExtractWordOperand(line, (idx + SearchLength) );
-				UD.strDescription = line;
-				UD.strKeyName = sSubName;
+				UD.Description = line;
+				UD.KeyName = sSubName;
 				//UserData ud(linecount, line, sSubName, Type);
 				if (!ParseStructureName( ListIn, UD, UCline, line, linecount))
 				{/*A critical brain error occured */}
@@ -2092,7 +2108,7 @@ void CodeViewer::ParseForFunction() // Subs & Collections AndyS - WIP
    //Propergate subs&funcs in menu in order
 	for (vector<UserData>::iterator i = g_UserFunc->begin(); i != g_UserFunc->end(); ++i) 
    {
-		const char *c_str1 = i->strKeyName.c_str ();
+		const char *c_str1 = i->KeyName.c_str ();
 		SendMessage(m_hwndFunctionList, CB_ADDSTRING, 0, (LPARAM)(c_str1) );
    }
 	//Collect Objects/Components from the menu. (cheat!)
@@ -2106,50 +2122,50 @@ void CodeViewer::ParseForFunction() // Subs & Collections AndyS - WIP
 		SendMessage(m_hwndItemList, CB_GETLBTEXT, CBCount, (LPARAM)c_str1);
 		if(strlen(c_str1)>1)
 		{
-			ud.strKeyName = string(c_str1);
-			ud.strUniqueKey = ud.strKeyName;
+			ud.KeyName = string(c_str1);
+			ud.UniqueKey = ud.KeyName;
 			FindOrInsertUD(g_Components,ud);
 		}
 		CBCount--;
    }
 	//Now merge the lot for Auto complete...
-	g_AutoComp->clear();
+	AutoCompList->clear();
 	for (vector<UserData>::iterator i = g_VBwords->begin(); i != g_VBwords->end(); ++i)
 	{
-		FindOrInsertStringIntoAutolist(g_AutoComp,i->strKeyName);
+		FindOrInsertStringIntoAutolist(AutoCompList,i->KeyName);
 	}
 	string strVPcoreWords = "";
 	for (vector<UserData>::iterator i = g_VP_Core->begin(); i != g_VP_Core->end(); ++i)
 	{
-		if (FindOrInsertStringIntoAutolist(g_AutoComp,i->strKeyName))
+		if (FindOrInsertStringIntoAutolist(AutoCompList,i->KeyName))
 		{
-			strVPcoreWords.append(i->strKeyName);
+			strVPcoreWords.append(i->KeyName);
 			strVPcoreWords.append(" ");
 		}
 	}
 	string strCompOut ="";
 	for (vector<UserData>::iterator i = g_Components->begin(); i != g_Components->end(); ++i)
 	{
-		if (FindOrInsertStringIntoAutolist(g_AutoComp,i->strKeyName))
+		if (FindOrInsertStringIntoAutolist(AutoCompList,i->KeyName))
 		{
-			strCompOut.append(i->strKeyName);
+			strCompOut.append(i->KeyName);
 			strCompOut.append(" ");
 		}
 	}
 	string sSubFunOut = "";
 	for (vector<UserData>::iterator i = g_UserFunc->begin(); i != g_UserFunc->end(); ++i)
 	{
-		if (FindOrInsertStringIntoAutolist(g_AutoComp,i->strKeyName))
+		if (FindOrInsertStringIntoAutolist(AutoCompList,i->KeyName))
 		{
-			sSubFunOut.append(i->strKeyName);
+			sSubFunOut.append(i->KeyName);
 			sSubFunOut.append(" ");
 		}
 	}
-	g_AutoCompList = "";
-	for (vector<string>::iterator i = g_AutoComp->begin(); i != g_AutoComp->end();++i)
+	AutoCompString = "";
+	for (vector<string>::iterator i = AutoCompList->begin(); i != AutoCompList->end();++i)
 	{
-		g_AutoCompList.append(i->data());
-		g_AutoCompList += " ";
+		AutoCompString.append(i->data());
+		AutoCompString += " ";
 	}
    //Send the collected func/subs to scintilla for highlighting - always lowercase as VBS is case insensitive.
 	//TODO: Need to comune with scintilla closer (COM pointers??)
@@ -2403,7 +2419,7 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 				{
 					vector<UserData>::iterator i = pcv->g_UserFunc->begin();
 					for (size_t t = 0; t < index; t++)	++i;
-					SendMessage(pcv->m_hwndScintilla, SCI_GOTOLINE, i->intLineNum, 0);
+					SendMessage(pcv->m_hwndScintilla, SCI_GOTOLINE, i->LineNum, 0);
 					SendMessage(pcv->m_hwndScintilla, SCI_GRABFOCUS, 0, 0);
 				}
          }

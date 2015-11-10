@@ -209,15 +209,26 @@ public:
    BOOL m_fScriptError; // Whether a script error has occured - used for polling from the game
 
 private:
+#define MAX_FIND_LENGTH 81
 
    IActiveScriptParse* m_pScriptParse;
    IActiveScriptDebug* m_pScriptDebug;
-
    FINDREPLACE m_findreplacestruct;
-   char szFindString[81];
-   char szReplaceString[81];
+   char szFindString[MAX_FIND_LENGTH];
+   char szReplaceString[MAX_FIND_LENGTH];
 
    VectorSortString<CodeViewDispatch> m_vcvdTemp; // Objects added through script
+
+	bool ParseOKLineLength(const int LineLen);
+	string ParseRemoveLineComments(string *Line);
+	void ParseDelimtByColon(string *result, string *wholeline);
+	void ParseFindConstruct(int &Pos, const string *UCLine, WordType &Type, int &ConstructSize);
+	bool ParseStructureName(vector<UserData> *ListIn, UserData ud,
+									const string &UCline, const string &line, const int Lineno);
+	
+	int SureFind(const string &LineIn, const string &ToFind);
+	void RemovePadding(string &line); 
+	string ExtractWordOperand(const string &line, const int &StartPos);
 
 public:
    // Edit Class
@@ -236,20 +247,11 @@ public:
 
 	bool StopErrorDisplay;
 	bool ParentTreeInvalid;
+	// WIP VBS page parse
 	void ParseVPCore();
 	void ParseForFunction();
-	void ReadLineToParseBrain(string wholeline, int linecount, vector<UserData> *ListIn);
-	bool ParseOKLineLength(const int LineLen);
-	string ParseRemoveLineComments(string *Line);
-	void ParseDelimtByColon(string *result, string *wholeline);
-	void ParseFindConstruct(int &Pos, const string *UCLine, WordType &Type, int &ConstructSize);
-	bool ParseStructureName(vector<UserData> *ListIn, UserData ud,
-									const string &UCline, const string &line, const int Lineno);
-	
-	int SureFind(const string &LineIn, const string &ToFind);
-	void RemovePadding(string &line); 
-	string ExtractWordOperand(const string &line, const int &StartPos);
 
+	void ReadLineToParseBrain(string wholeline, int linecount, vector<UserData> *ListIn);
 	bool ShowTooltip(SCNotification *Scn);
 	void ShowAutoComplete();
 	void szLower(char * const incstr);
@@ -275,12 +277,12 @@ public:
 	// keyword lists
 	bool g_ToolTipActive;
 	string vbsKeyWords;
-	vector<string> *g_AutoComp;
+	vector<string> *AutoCompList;
 	vector<UserData> *g_VBwords;
 	vector<UserData> *g_UserFunc;
 	vector<UserData> *g_Components;
 	vector<UserData> *g_VP_Core;
-	string g_AutoCompList;
+	string AutoCompString;
 
 	void ListEventsFromItem();
    void FindCodeFromEvent();
