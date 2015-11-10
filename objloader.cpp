@@ -544,10 +544,10 @@ void WaveFrontObj_Save(const char *filename, const char *description, const Mesh
 {
    FILE *f;
 
-   /*f = fopen(filename, "wt");
-   fprintf_s(f,"const unsigned int kickerHitVertices=%i;\n",mesh.NumVertices());
-   fprintf_s(f,"const unsigned int kickerHitNumFaces=%i;\n", mesh.NumIndices());
-   fprintf_s(f,"Vertex3D_NoTex2 kickerHitMesh[%i]=\n{\n",mesh.NumVertices());
+   f = fopen(filename, "wt");
+   fprintf_s(f,"const unsigned int hitTargetT2Vertices=%i;\n",mesh.NumVertices());
+   fprintf_s(f,"const unsigned int hitTargetT2NumFaces=%i;\n", mesh.NumIndices());
+   fprintf_s(f,"Vertex3D_NoTex2 hitTargetT2Mesh[%i]=\n{\n",mesh.NumVertices());
 
    for( int i=0;i<mesh.NumVertices();i++ )
    {
@@ -556,7 +556,7 @@ void WaveFrontObj_Save(const char *filename, const char *description, const Mesh
    mesh.m_vertices[i].tu, mesh.m_vertices[i].tv);
    }
 
-   fprintf_s(f,"};\nWORD bumperBaseIndices[%i]=\n{\n   ",mesh.NumIndices());
+   fprintf_s(f,"};\nWORD hitTargetT2Indices[%i]=\n{\n   ",mesh.NumIndices());
 
    int ofs=0;
    for( int i=0;i<mesh.NumIndices();i++ )
@@ -571,7 +571,8 @@ void WaveFrontObj_Save(const char *filename, const char *description, const Mesh
    }
    fprintf_s(f,"\n};");
    fclose(f);
-   return;*/
+   return;
+
    f = WaveFrontObj_ExportStart(filename);
    if (!f)
       return;

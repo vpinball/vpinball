@@ -5,6 +5,8 @@
 #include "stdafx.h" 
 #include "meshes/dropTargetT2Mesh.h"
 #include "meshes/dropTargetT3Mesh.h"
+#include "meshes/hitTargetRoundMesh.h"
+#include "meshes/hitTargetRectangleMesh.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 const float HitTarget::DROP_TARGET_LIMIT = 52.0f;
@@ -58,6 +60,20 @@ void HitTarget::SetMeshType(const TargetType type)
         m_indices = hitTargetT3Indices;
         m_numIndices = hitTargetT3NumFaces;
         m_numVertices = hitTargetT3Vertices;
+    }
+    if (type == HitTargetRound)
+    {
+        m_vertices = hitTargetRoundMesh;
+        m_indices = hitTargetRoundIndices;
+        m_numIndices = hitTargetRoundNumFaces;
+        m_numVertices = hitTargetRoundVertices;
+    }
+    if (type == HitTargetRectangle)
+    {
+        m_vertices = hitTargetRectangleMesh;
+        m_indices = hitTargetRectangleIndices;
+        m_numIndices = hitTargetRectangleNumFaces;
+        m_numVertices = hitTargetRectangleVertices;
     }
 }
 
@@ -373,17 +389,17 @@ void HitTarget::UpdateAnimation(RenderDevice *pd3dDevice)
     m_d.m_time_msec = g_pplayer->m_time_msec;
     const float diff_time_msec = (float)(g_pplayer->m_time_msec - old_time_msec);
 
+    if (m_hitEvent)
+    {
+        if (!m_d.m_isDropped)
+        {
+            m_moveDown = true;
+        }
+        m_moveAnimation = true;
+        m_hitEvent = false;
+    }
     if (m_d.m_targetType == DropTargetBeveled || m_d.m_targetType == DropTargetSimple)
     {
-        if (m_hitEvent)
-        {
-            if (!m_d.m_isDropped)
-            {
-                m_moveDown = true;
-            }
-            m_moveAnimation = true;
-            m_hitEvent = false;
-        }
         if (m_moveAnimation)
         {
             float step = m_d.m_dropSpeed*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
@@ -408,6 +424,34 @@ void HitTarget::UpdateAnimation(RenderDevice *pd3dDevice)
                     m_moveAnimationOffset = 0.0f;
                     m_moveAnimation = false;
                     m_d.m_isDropped = false;
+                }
+            }
+            UpdateTarget(pd3dDevice);
+        }
+    }
+    else
+    {
+        if (m_moveAnimation)
+        {
+            float step = m_d.m_dropSpeed*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+            const float limit = 13.0f*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+            if (!m_moveDown)
+                step = -step;
+            m_moveAnimationOffset += step*diff_time_msec;
+            if (m_moveDown)
+            {
+                if (m_moveAnimationOffset <= limit)
+                {
+                    m_moveAnimationOffset = limit;
+                    m_moveDown = false;
+                }
+            }
+            else
+            {
+                if (m_moveAnimationOffset <= 0.0f)
+                {
+                    m_moveAnimationOffset = 0.0f;
+                    m_moveAnimation = false;
                 }
             }
             UpdateTarget(pd3dDevice);
@@ -473,16 +517,46 @@ void HitTarget::UpdateTarget(RenderDevice *pd3dDevice)
 {
    Vertex3D_NoTex2 *buf;
    vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
-   for (unsigned int i = 0; i < m_numVertices; i++)
+   if (m_d.m_targetType == DropTargetBeveled || m_d.m_targetType == DropTargetSimple)
    {
-      buf[i].x = transformedVertices[i].x;
-      buf[i].y = transformedVertices[i].y;
-      buf[i].z = transformedVertices[i].z + m_moveAnimationOffset;
-      buf[i].nx = transformedVertices[i].nx;
-      buf[i].ny = transformedVertices[i].ny;
-      buf[i].nz = transformedVertices[i].nz;
-      buf[i].tu = transformedVertices[i].tu;
-      buf[i].tv = transformedVertices[i].tv;
+       for (unsigned int i = 0; i < m_numVertices; i++)
+       {
+           buf[i].x = transformedVertices[i].x;
+           buf[i].y = transformedVertices[i].y;
+           buf[i].z = transformedVertices[i].z + m_moveAnimationOffset;
+           buf[i].nx = transformedVertices[i].nx;
+           buf[i].ny = transformedVertices[i].ny;
+           buf[i].nz = transformedVertices[i].nz;
+           buf[i].tu = transformedVertices[i].tu;
+           buf[i].tv = transformedVertices[i].tv;
+       }
+   }
+   else
+   {
+       Matrix3D fullMatrix, tempMatrix;
+       fullMatrix.SetIdentity();
+       tempMatrix.SetIdentity();
+       tempMatrix.RotateXMatrix(ANGTORAD(m_moveAnimationOffset));
+       tempMatrix.Multiply(fullMatrix, fullMatrix);
+       tempMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotZ));
+       tempMatrix.Multiply(fullMatrix, fullMatrix);
+
+       for (unsigned int i = 0; i < m_numVertices; i++)
+       {
+           Vertex3Ds vert(m_vertices[i].x, m_vertices[i].y, m_vertices[i].z);
+           vert = fullMatrix.MultiplyVector(vert);
+
+           buf[i].x = vert.x*m_d.m_vSize.x + m_d.m_vPosition.x;
+           buf[i].y = vert.y*m_d.m_vSize.y + m_d.m_vPosition.y;
+           buf[i].z = vert.z*m_d.m_vSize.z*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_d.m_vPosition.z + m_ptable->m_tableheight;
+           vert = Vertex3Ds(m_vertices[i].nx, m_vertices[i].ny, m_vertices[i].nz);
+           vert = fullMatrix.MultiplyVectorNoTranslate(vert);
+           buf[i].nx = vert.x;
+           buf[i].ny = vert.y;
+           buf[i].nz = vert.z;
+           buf[i].tu = m_vertices[i].tu;
+           buf[i].tv = m_vertices[i].tv;
+       }
    }
    vertexBuffer->unlock();
 }
