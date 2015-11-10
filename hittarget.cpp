@@ -100,6 +100,8 @@ void HitTarget::SetDefaults(bool fromMouseClick)
    HRESULT hr;
    int iTmp;
 
+   m_d.m_tdr.m_fTimerEnabled = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "TimerEnabled", false) : false;
+   m_d.m_tdr.m_TimerInterval = fromMouseClick ? GetRegIntWithDefault(strKeyName, "TimerInterval", 100) : 100;
    m_d.m_fUseHitEvent = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "HitEvent", true) : true;
    m_d.m_fVisible = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "Visible", true) : true;
    m_d.m_isDropped = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "IsDropped", false) : false;
@@ -139,6 +141,8 @@ void HitTarget::WriteRegDefaults()
 {
    static const char strKeyName[] = "DefaultProps\\HitTarget";
 
+   SetRegValueBool(strKeyName, "TimerEnabled", m_d.m_tdr.m_fTimerEnabled);
+   SetRegValueInt(strKeyName, "TimerInterval", m_d.m_tdr.m_TimerInterval);
    SetRegValueBool(strKeyName, "Visible", m_d.m_fVisible);
    SetRegValueBool(strKeyName, "IsDropped", m_d.m_isDropped);
 
@@ -164,11 +168,6 @@ void HitTarget::WriteRegDefaults()
    SetRegValueBool(strKeyName, "Collidable", m_d.m_fCollidable);
    SetRegValueBool(strKeyName, "DisableLighting", m_d.m_fDisableLighting);
    SetRegValueBool(strKeyName, "ReflectionEnabled", m_d.m_fReflectionEnabled);
-}
-
-void HitTarget::GetTimers(Vector<HitTimer> * const pvht)
-{
-   IEditable::BeginPlay();
 }
 
 void HitTarget::GetHitShapes(Vector<HitObject> * const pvho)
@@ -676,6 +675,8 @@ HRESULT HitTarget::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcry
    bw.WriteFloat(FID(PIDB), m_d.m_depthBias);
    bw.WriteBool(FID(ISDR), m_d.m_isDropped);
    bw.WriteFloat(FID(DRSP), m_d.m_dropSpeed);
+   bw.WriteBool(FID(TMON), m_d.m_tdr.m_fTimerEnabled);
+   bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
    ISelect::SaveData(pstm, hcrypthash, hcryptkey);
 
    bw.WriteTag(FID(ENDB));
@@ -782,6 +783,14 @@ BOOL HitTarget::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(PIDB))
    {
       pbr->GetFloat(&m_d.m_depthBias);
+   }
+   else if (id == FID(TMON))
+   {
+       pbr->GetBool(&m_d.m_tdr.m_fTimerEnabled);
+   }
+   else if (id == FID(TMIN))
+   {
+       pbr->GetInt(&m_d.m_tdr.m_TimerInterval);
    }
    else
    {
@@ -1219,49 +1228,36 @@ void HitTarget::GetDialogPanes(Vector<PropertyPane> *pvproppane)
 
    m_propPhysics = new PropertyPane(IDD_PROPHITTARGET_PHYSICS, IDS_PHYSICS);
    pvproppane->AddElement(m_propPhysics);
+
+   pproppane = new PropertyPane(IDD_PROP_TIMER, IDS_MISC);
+   pvproppane->AddElement(pproppane);
+
 }
 
 void HitTarget::UpdatePropertyPanes()
 {
-    /*
+    
    if (m_propVisual == NULL || m_propPosition == NULL || m_propPhysics == NULL)
       return;
 
-   if (m_d.m_use3DMesh) {
-      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, 106), FALSE);
-      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, 101), FALSE);
-   }
-   else {
-      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, 106), TRUE);
-      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, 101), TRUE);
-   }
-
-   if (m_d.m_fToy || !m_d.m_fCollidable)
+   if (!m_d.m_fCollidable)
    {
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 34), FALSE);
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 33), FALSE);
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 110), FALSE);
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 112), FALSE);
-      if (m_d.m_fToy)
-      {
-         EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 481), FALSE);
-         EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 111), FALSE);
-      }
-      else
-      {
-         EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 481), TRUE);
-         EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 111), TRUE);
-      }
+      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 481), TRUE);
+      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 111), TRUE);
 
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 114), FALSE);
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 115), FALSE);
    }
-   else if (!m_d.m_fToy && m_d.m_fCollidable)
+   else if (m_d.m_fCollidable)
    {
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 34), TRUE);
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 111), TRUE);
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 481), TRUE);
-      if (m_d.m_fHitEvent)
+      if (m_d.m_fUseHitEvent)
          EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 33), TRUE);
       else
          EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 33), FALSE);
@@ -1271,7 +1267,12 @@ void HitTarget::UpdatePropertyPanes()
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 114), TRUE);
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 115), TRUE);
    }
-   */
+
+   if (m_d.m_targetType == HitTargetRectangle || m_d.m_targetType == HitTargetRound)
+       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, IDC_TARGET_ISDROPPED_CHECK), FALSE);
+   else
+       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, IDC_TARGET_ISDROPPED_CHECK), TRUE);
+
 }
 
 void HitTarget::SetDefaultPhysics(bool fromMouseClick)
@@ -1373,4 +1374,19 @@ STDMETHODIMP HitTarget::put_DrawStyle(TargetType newVal)
     STOPUNDO
 
         return S_OK;
+}
+
+void HitTarget::GetTimers(Vector<HitTimer> * const pvht)
+{
+    IEditable::BeginPlay();
+
+    HitTimer * const pht = new HitTimer();
+    pht->m_interval = m_d.m_tdr.m_TimerInterval;
+    pht->m_nextfire = pht->m_interval;
+    pht->m_pfe = (IFireEvents *)this;
+
+    m_phittimer = pht;
+
+    if (m_d.m_tdr.m_fTimerEnabled)
+        pvht->AddElement(pht);
 }

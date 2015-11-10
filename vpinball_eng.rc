@@ -1972,7 +1972,7 @@ BEGIN
     LTEXT           "&Friction",-1,7,60,63,8
     LTEXT           "&Scatter Angle",-1,7,73,63,8
     CONTROL         "Collidable (switchable in script)",111,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,86,115,10
-    CONTROL         "IsDropped",IDC_TARGET_ISDROPPED_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,97,49,10
+    CONTROL         "IsDropped",IDC_TARGET_ISDROPPED_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,96,49,10
 END
 
 
@@ -2153,7 +2153,6 @@ BEGIN
 
     IDD_PROPHITTARGET_PHYSICS, DIALOG
     BEGIN
-        BOTTOMMARGIN, 101
     END
 END
 #endif    // APSTUDIO_INVOKED

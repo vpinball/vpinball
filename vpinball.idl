@@ -1610,6 +1610,10 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
         {
                 //[propget, id(DISPID_Name), helpstring("property Name")] HRESULT Name([out, retval] BSTR *pVal);
                 //[propput, id(DISPID_Name), helpstring("property Name")] HRESULT Name([in] BSTR newVal);
+                [propget, id(DISPID_Timer_Enabled), helpstring("property TimerEnabled")] HRESULT TimerEnabled([out, retval] VARIANT_BOOL *pVal);
+                [propput, id(DISPID_Timer_Enabled), helpstring("property TimerEnabled")] HRESULT TimerEnabled([in] VARIANT_BOOL newVal);
+                [propget, id(DISPID_Timer_Interval), helpstring("property TimerInterval")] HRESULT TimerInterval([out, retval] long *pVal);
+                [propput, id(DISPID_Timer_Interval), helpstring("property TimerInterval")] HRESULT TimerInterval([in] long newVal);
                 [propget, id(103), helpstring("property Top Visible")] HRESULT Visible([out, retval] VARIANT_BOOL *pVal);
                 [propput, id(103), helpstring("property Top Visible")] HRESULT Visible([in] VARIANT_BOOL newVal);
                 [propget, id(340), helpstring("property Material")] HRESULT Material([out, retval] BSTR *pVal);
@@ -1678,7 +1682,7 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
         properties:
         methods:
                 [id(DISPID_GameEvents_Init)]  void Init();
-//              [id(DISPID_TimerEvents_Timer)]  void Timer();
+                [id(DISPID_TimerEvents_Timer)]  void Timer();
                 [id(DISPID_HitEvents_Hit)]  void Hit();
         }
 
