@@ -136,14 +136,14 @@ private:
    void RenderWallsAtHeight(RenderDevice* pd3dDevice, const bool fDrop);
    void PrepareWallsAtHeight(RenderDevice* pd3dDevice);
    void PrepareSlingshots(RenderDevice *pd3dDevice);
-   void GenerateMesh(Vertex3D_NoTex2 **topBuf, Vertex3D_NoTex2**sideBuf);
+   void GenerateMesh(std::vector<Vertex3D_NoTex2> &topBuf, std::vector<Vertex3D_NoTex2> &sideBuf, std::vector<WORD> &topBottomIndices, std::vector<WORD> &sideIndices);
 
    void FreeBuffers();
 
 public:
    SurfaceData m_d;
 
-   BOOL m_fIsDropped;
+   bool m_fIsDropped;
    bool m_fDisabled;
 
 private:
@@ -155,20 +155,16 @@ private:
    std::vector<HitObject*> m_vhoDrop; // Objects to disable when dropped
    std::vector<HitObject*> m_vhoCollidable; // Objects to that may be collide selectable
 
-   bool m_isWall;
-   bool m_isDynamic;
-   int numVertices, numPolys;
-   std::vector<WORD> sideIndices;
-   std::vector<WORD> topBottomIndices;
+   unsigned int numVertices, numPolys;
 
-   // TODO: all these vertex buffers should be combined into one
    VertexBuffer *slingshotVBuffer;
-   VertexBuffer *topBottomVBuffer;
-   IndexBuffer *topBottomIBuffer;
-   VertexBuffer *sideVBuffer;
-   IndexBuffer *sideIBuffer;
+   VertexBuffer *VBuffer;
+   IndexBuffer *IBuffer;
 
    PropertyPane *m_propPhysics;
+
+   bool m_isWall;
+   bool m_isDynamic;
 
    // ISurface
 public:
