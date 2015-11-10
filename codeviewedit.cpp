@@ -206,35 +206,60 @@ bool UserData::FindOrInsertStringIntoAutolist(vector<string>* ListIn,const strin
 	}
 	string strLowerIn = lowerCase(strIn);
 	vector<string>::iterator i = ListIn->begin();
-	int counter = ListIn->size();
-	int result = -1;
-	while (counter)
+	int result = -2;
+	const unsigned int ListSize = (int)ListIn->size();
+	UINT32 iCurPos = (ListSize >> 1);
+	UINT32 iNewPos = 1u << 31;
+	while ((!(iNewPos & ListSize)) && (iNewPos > 1))
+   {
+      iNewPos >>= 1;
+   }
+	int iJumpDelta = ((iNewPos) >> 1);
+	--iNewPos;//Zero Base
+	const string strSearchData = lowerCase( strIn );
+	while (true)
 	{
-		const string strLowerComp = lowerCase(string(i->data()));
-		result = strLowerComp.compare(strLowerIn);
-		if (result != 0)
+		iCurPos = iNewPos;
+		if (iCurPos >= ListSize) { result = -1; }
+		else
 		{
-			++i;
-			counter--;
+			const string strTableData = lowerCase(ListIn->at(iCurPos) );
+			result = strSearchData.compare(strTableData);
 		}
-		else break;
-	}
-	if (result == 0) return false;//Already Exists.
-	if (result > 0 && (counter != 0))//Add new ud somewhere in middle.
+		if (iJumpDelta == 0 || result == 0) break;
+		if ( result < 0 )	{ iNewPos = iCurPos - iJumpDelta; }
+		else  { iNewPos = iCurPos + iJumpDelta; }
+		iJumpDelta >>= 1;
+	} 
+	i = ListIn->begin() + iCurPos;
+
+	if (result == 0) return false; // Already in list.
+
+	if (result == -1) //insert before, somewhere in the middle
 	{
-		ListIn->insert(i,strIn);
+		ListIn->insert(i, strIn);
 		return true;
 	}
-	if (result > 0 && (counter == 0))	//It's new and at the very bottom.
+
+	if (i == ( ListIn->end() - 1) )//insert Above last element - Special case
 	{
 		ListIn->push_back(strIn);
 		return true;
 	}
-	else //it's 1 above the last on the list.
+
+	if (result == 1) 
 	{
-		ListIn->insert(i,strIn);
+		++i;
+		ListIn->insert(i, strIn);
 		return true;
 	}
+
+	if (i == ( ListIn->end() - 1) )//insert Above last element - Special case
+	{//insert at end
+		ListIn->push_back(strIn);
+		return true;
+	}
+
 	return false;//Oh pop poop, never should hit here.
 }
 
