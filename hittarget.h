@@ -22,12 +22,11 @@
 class HitTargetData
 {
 public:
-   int m_Sides;
    Vertex3Ds m_vPosition;
    Vertex3Ds m_vSize;
-   float m_rotX, m_rotY, m_rotZ;
+   float m_rotZ;
    char m_szImage[MAXTOKEN];
-
+   TargetType m_targetType;
    char m_szMaterial[32];
 
    TimerDataRoot m_tdr;
@@ -68,6 +67,8 @@ class HitTarget :
    public IPerPropertyBrowsing // Ability to fill in dropdown in property browser
 {
 public:
+   static const float DROP_TARGET_LIMIT;
+    
    STDMETHOD(get_Material)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(put_Material)(/*[in]*/ BSTR newVal);
 
@@ -117,6 +118,8 @@ public:
    STDMETHOD(put_ReflectionEnabled)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_IsDropped)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_IsDropped)(/*[in]*/ VARIANT_BOOL newVal);
+   STDMETHOD(get_DrawStyle)(/*[out, retval]*/ TargetType *pVal);
+   STDMETHOD(put_DrawStyle)(/*[in]*/ TargetType newVal);
 
    HitTarget();
    virtual ~HitTarget();
@@ -165,7 +168,7 @@ public:
 
    void GenerateMesh(Vertex3D_NoTex2 *buf);
    void    TransformVertices();
-   void    SetMeshType(int type);
+   void    SetMeshType(const TargetType type);
 
    static INT_PTR CALLBACK ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
@@ -188,6 +191,7 @@ private:        // private member functions
 
    void UpdateEditorView();
 
+   void UpdateAnimation(RenderDevice *pd3dDevice);
    bool BrowseFor3DMeshFile();
    void RenderObject(RenderDevice *pd3dDevice);
    void UpdateTarget(RenderDevice *pd3dDevice);
