@@ -4,9 +4,10 @@
 
 #include "stdafx.h" 
 #include "meshes/dropTargetT2Mesh.h"
+#include "meshes/dropTargetT3Mesh.h"
 
 ////////////////////////////////////////////////////////////////////////////////
-
+const float HitTarget::DROP_TARGET_LIMIT = 52.0f;
 HitTarget::HitTarget()
 {
    vertexBuffer = 0;
@@ -31,7 +32,7 @@ HitTarget::HitTarget()
    m_moveDown = true;
    m_moveAnimationOffset = 0.0f;
    m_hitEvent = false;
-
+   
 }
 
 HitTarget::~HitTarget()
@@ -42,12 +43,22 @@ HitTarget::~HitTarget()
       indexBuffer->release();
 }
 
-void HitTarget::SetMeshType(int type)
+void HitTarget::SetMeshType(const TargetType type)
 {
-    m_vertices = hitTargetT2Mesh;
-    m_indices = hitTargetT2Indices;
-    m_numIndices = hitTargetT2NumFaces;
-    m_numVertices = hitTargetT2Vertices;
+    if (type == DropTargetBeveled)
+    {
+        m_vertices = hitTargetT2Mesh;
+        m_indices = hitTargetT2Indices;
+        m_numIndices = hitTargetT2NumFaces;
+        m_numVertices = hitTargetT2Vertices;
+    }
+    if (type == DropTargetSimple)
+    {
+        m_vertices = hitTargetT3Mesh;
+        m_indices = hitTargetT3Indices;
+        m_numIndices = hitTargetT3NumFaces;
+        m_numVertices = hitTargetT3Vertices;
+    }
 }
 
 HRESULT HitTarget::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
@@ -70,9 +81,10 @@ HRESULT HitTarget::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
 void HitTarget::SetDefaults(bool fromMouseClick)
 {
    static const char strKeyName[] = "DefaultProps\\HitTarget";
-
    HRESULT hr;
+   int iTmp;
 
+   m_d.m_fUseHitEvent = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "HitEvent", true) : true;
    m_d.m_fVisible = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "Visible", true) : true;
    m_d.m_isDropped = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "IsDropped", false) : false;
    m_d.m_dropSpeed = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "DropSpeed", 0.5f) : 0.5f;
@@ -92,10 +104,15 @@ void HitTarget::SetDefaults(bool fromMouseClick)
    if ((hr != S_OK) && fromMouseClick)
       m_d.m_szImage[0] = 0;
 
+   hr = GetRegInt(strKeyName, "TargetType", &iTmp);
+   if ((hr == S_OK) && fromMouseClick)
+       m_d.m_targetType = (enum TargetType)iTmp;
+   else
+       m_d.m_targetType = DropTargetSimple;
+
    m_d.m_threshold = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "HitThreshold", 2.0f) : 2.0f;
 
    SetDefaultPhysics(fromMouseClick);
-
 
    m_d.m_fCollidable = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "Collidable", true) : true;
    m_d.m_fDisableLighting = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "DisableLighting", false) : false;
@@ -126,6 +143,7 @@ void HitTarget::WriteRegDefaults()
    SetRegValueFloat(strKeyName, "Friction", m_d.m_friction);
    SetRegValueFloat(strKeyName, "Scatter", m_d.m_scatter);
 
+   SetRegValue(strKeyName, "TargetType", REG_DWORD, &m_d.m_targetType, 4);
 
    SetRegValueBool(strKeyName, "Collidable", m_d.m_fCollidable);
    SetRegValueBool(strKeyName, "DisableLighting", m_d.m_fDisableLighting);
@@ -224,16 +242,11 @@ void HitTarget::EndPlay()
 void HitTarget::GenerateMesh(Vertex3D_NoTex2 *buf)
 {
    Matrix3D fullMatrix,tempMatrix;
-   SetMeshType(0);
+   SetMeshType(m_d.m_targetType);
    fullMatrix.SetIdentity();
    tempMatrix.SetIdentity();
    tempMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotZ));
    tempMatrix.Multiply(fullMatrix, fullMatrix);
-   tempMatrix.RotateYMatrix(ANGTORAD(m_d.m_rotY));
-   tempMatrix.Multiply(fullMatrix, fullMatrix);
-   tempMatrix.RotateXMatrix(ANGTORAD(m_d.m_rotX));
-   tempMatrix.Multiply(fullMatrix, fullMatrix);
-
 
    for (unsigned int i = 0; i < m_numVertices; i++)
    {
@@ -258,16 +271,12 @@ void HitTarget::TransformVertices()
 {
    Matrix3D fullMatrix, tempMatrix;
    
-   SetMeshType(0);
+   SetMeshType(m_d.m_targetType);
    vertices.resize(m_numIndices);
    normals.resize(m_numVertices);
    fullMatrix.SetIdentity();
    tempMatrix.SetIdentity();
    tempMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotZ));
-   tempMatrix.Multiply(fullMatrix, fullMatrix);
-   tempMatrix.RotateYMatrix(ANGTORAD(m_d.m_rotY));
-   tempMatrix.Multiply(fullMatrix, fullMatrix);
-   tempMatrix.RotateXMatrix(ANGTORAD(m_d.m_rotX));
    tempMatrix.Multiply(fullMatrix, fullMatrix);
 
    for (unsigned i = 0; i < m_numVertices; i++)
@@ -358,6 +367,54 @@ void HitTarget::UpdateEditorView()
    TransformVertices();
 }
 
+void HitTarget::UpdateAnimation(RenderDevice *pd3dDevice)
+{
+    const U32 old_time_msec = (m_d.m_time_msec < g_pplayer->m_time_msec) ? m_d.m_time_msec : g_pplayer->m_time_msec;
+    m_d.m_time_msec = g_pplayer->m_time_msec;
+    const float diff_time_msec = (float)(g_pplayer->m_time_msec - old_time_msec);
+
+    if (m_d.m_targetType == DropTargetBeveled || m_d.m_targetType == DropTargetSimple)
+    {
+        if (m_hitEvent)
+        {
+            if (!m_d.m_isDropped)
+            {
+                m_moveDown = true;
+            }
+            m_moveAnimation = true;
+            m_hitEvent = false;
+        }
+        if (m_moveAnimation)
+        {
+            float step = m_d.m_dropSpeed*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+            const float limit = DROP_TARGET_LIMIT*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+            if (m_moveDown)
+                step = -step;
+            m_moveAnimationOffset += step*diff_time_msec;
+            if (m_moveDown)
+            {
+                if (m_moveAnimationOffset <= -limit)
+                {
+                    m_moveAnimationOffset = -limit;
+                    m_moveDown = false;
+                    m_d.m_isDropped = true;
+                    m_moveAnimation = false;
+                }
+            }
+            else
+            {
+                if (m_moveAnimationOffset >= 0.0f)
+                {
+                    m_moveAnimationOffset = 0.0f;
+                    m_moveAnimation = false;
+                    m_d.m_isDropped = false;
+                }
+            }
+            UpdateTarget(pd3dDevice);
+        }
+    }
+}
+
 void HitTarget::RenderObject(RenderDevice *pd3dDevice)
 {
    Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
@@ -388,47 +445,8 @@ void HitTarget::RenderObject(RenderDevice *pd3dDevice)
    else
       pd3dDevice->basicShader->SetTechnique("basic_without_texture");
 
-   const U32 old_time_msec = (m_d.m_time_msec < g_pplayer->m_time_msec) ? m_d.m_time_msec : g_pplayer->m_time_msec;
-   m_d.m_time_msec = g_pplayer->m_time_msec;
-   const float diff_time_msec = (float)(g_pplayer->m_time_msec - old_time_msec);
+   UpdateAnimation(pd3dDevice);
 
-   if (m_hitEvent)
-   {
-      if (!m_d.m_isDropped)
-      {
-         m_moveDown = true;
-      }
-      m_moveAnimation = true;
-      m_hitEvent = false;
-   }
-   if (m_moveAnimation)
-   {
-      float step = m_d.m_dropSpeed*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
-      const float limit = 57.f*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
-      if (m_moveDown)
-         step = -step;
-      m_moveAnimationOffset += step*diff_time_msec;
-      if (m_moveDown)
-      {
-         if (m_moveAnimationOffset <= -limit)
-         {
-            m_moveAnimationOffset = -limit;
-            m_moveDown = false;
-            m_d.m_isDropped = true;
-            m_moveAnimation = false;
-         }
-      }
-      else
-      {
-         if (m_moveAnimationOffset >= 0.0f)
-         {
-            m_moveAnimationOffset = 0.0f;
-            m_moveAnimation = false;
-            m_d.m_isDropped = false;
-         }
-      }
-      UpdateTarget(pd3dDevice);
-   }
    // draw the mesh
    pd3dDevice->basicShader->Begin(0);
    pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, m_numVertices, indexBuffer, 0, m_numIndices);
@@ -489,7 +507,7 @@ void HitTarget::RenderSetup(RenderDevice* pd3dDevice)
    if (vertexBuffer)
       vertexBuffer->release();
 
-   SetMeshType(0);
+   SetMeshType(m_d.m_targetType);
    pd3dDevice->CreateVertexBuffer((unsigned int)m_numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer);
 
    if (indexBuffer)
@@ -498,6 +516,16 @@ void HitTarget::RenderSetup(RenderDevice* pd3dDevice)
 
    transformedVertices = new Vertex3D_NoTex2[m_numVertices];
    GenerateMesh(transformedVertices);
+   if (m_d.m_targetType == DropTargetBeveled || m_d.m_targetType == DropTargetSimple)
+   {
+       if (m_d.m_isDropped)
+       {
+           m_moveDown = false;
+           m_moveAnimationOffset = -DROP_TARGET_LIMIT*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+           UpdateTarget(pd3dDevice);
+           return;
+       }
+   }
    Vertex3D_NoTex2 *buf;
    vertexBuffer->lock(0, 0, (void**)&buf, 0);
    memcpy(buf, transformedVertices, m_numVertices*sizeof(Vertex3D_NoTex2));
@@ -556,11 +584,9 @@ HRESULT HitTarget::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcry
     */
    bw.WriteVector3Padded(FID(VPOS), &m_d.m_vPosition);
    bw.WriteVector3Padded(FID(VSIZ), &m_d.m_vSize);
-   bw.WriteFloat(FID(ROTX), m_d.m_rotX);
-   bw.WriteFloat(FID(ROTY), m_d.m_rotY);
    bw.WriteFloat(FID(ROTZ), m_d.m_rotZ);
    bw.WriteString(FID(IMAG), m_d.m_szImage);
-   bw.WriteInt(FID(SIDS), m_d.m_Sides);
+   bw.WriteInt(FID(TRTY), m_d.m_targetType);
    bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
    bw.WriteString(FID(MATR), m_d.m_szMaterial);
    bw.WriteBool(FID(TVIS), m_d.m_fVisible);
@@ -611,14 +637,6 @@ BOOL HitTarget::LoadToken(int id, BiffReader *pbr)
    {
       pbr->GetVector3Padded(&m_d.m_vSize);
    }
-   else if (id == FID(ROTX))
-   {
-      pbr->GetFloat(&m_d.m_rotX);
-   }
-   else if (id == FID(ROTY))
-   {
-      pbr->GetFloat(&m_d.m_rotY);
-   }
    else if (id == FID(ROTZ))
    {
       pbr->GetFloat(&m_d.m_rotZ);
@@ -627,9 +645,9 @@ BOOL HitTarget::LoadToken(int id, BiffReader *pbr)
    {
       pbr->GetString(m_d.m_szImage);
    }
-   else if (id == FID(SIDS))
+   else if (id == FID(TRTY))
    {
-      pbr->GetInt(&m_d.m_Sides);
+       pbr->GetInt(&m_d.m_targetType);
    }
    else if (id == FID(NAME))
    {
@@ -1254,7 +1272,7 @@ STDMETHODIMP HitTarget::put_IsDropped(VARIANT_BOOL newVal)
       else
       {
          m_moveAnimation = true;
-         m_moveAnimationOffset = -57.f*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+         m_moveAnimationOffset = -DROP_TARGET_LIMIT*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
          m_moveDown = false;
       }
    }
@@ -1263,4 +1281,22 @@ STDMETHODIMP HitTarget::put_IsDropped(VARIANT_BOOL newVal)
 
    STOPUNDO
       return S_OK;
+}
+
+STDMETHODIMP HitTarget::get_DrawStyle(TargetType *pVal)
+{
+    *pVal = m_d.m_targetType;
+
+    return S_OK;
+}
+
+STDMETHODIMP HitTarget::put_DrawStyle(TargetType newVal)
+{
+    STARTUNDO
+
+        m_d.m_targetType = newVal;
+        UpdateEditorView();
+    STOPUNDO
+
+        return S_OK;
 }

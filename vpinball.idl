@@ -100,7 +100,15 @@ typedef [uuid(4DD01BC6-6A50-4061-A01E-5798021A04AE)]
                 }
                 PlungerType;
 
-typedef [uuid(08844451-F92F-4d5c-8FFF-5973F7DBFFB0)]
+typedef [uuid(704231FA-A3F9-47EE-9278-BA21A1E12566)]
+        enum TargetType
+                {
+                DropTargetBeveled = 1,
+                DropTargetSimple = 2,
+                }
+                TargetType;
+
+				typedef [uuid(08844451-F92F-4d5c-8FFF-5973F7DBFFB0)]
         enum TextAlignment
                 {
                 TextAlignLeft = 0,
@@ -1654,6 +1662,9 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propput, id(377), helpstring("property DropSpeed")] HRESULT DropSpeed([in] float newVal);
 				[propget, id(432), helpstring("property IsDropped")] HRESULT IsDropped([out, retval] VARIANT_BOOL *pVal);
                 [propput, id(432), helpstring("property IsDropped")] HRESULT IsDropped([in] VARIANT_BOOL newVal);
+                [propget, id(9), helpstring("property DrawStyle")] HRESULT DrawStyle([out, retval] TargetType *pVal);
+                [propput, id(9), helpstring("property DrawStyle")] HRESULT DrawStyle([in] TargetType newVal);
+
 
         };
 
