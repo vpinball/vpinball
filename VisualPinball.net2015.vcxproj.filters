@@ -309,6 +309,9 @@
     <Filter Include="shaders">
       <UniqueIdentifier>{67a3c1e1-f7b5-45a4-ba1a-453f61d1e6d9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="meshes">
+      <UniqueIdentifier>{b39805e8-e924-4cf4-95aa-738c843b1afe}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\activdbg.h">
@@ -425,9 +428,6 @@
     <ClInclude Include="ballex.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="buildnumber.h">
-      <Filter>headers</Filter>
-    </ClInclude>
     <ClInclude Include="bumper.h">
       <Filter>headers</Filter>
     </ClInclude>
@@ -441,9 +441,6 @@
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="dispid.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="display.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="dispreel.h">
@@ -590,9 +587,6 @@
     <ClInclude Include="stdafx.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="stereo3D.h">
-      <Filter>headers</Filter>
-    </ClInclude>
     <ClInclude Include="sur.h">
       <Filter>headers</Filter>
     </ClInclude>
@@ -710,14 +704,83 @@
     <ClInclude Include="objloader.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="inc\forsyth.h" />
-    <ClInclude Include="inc\progmesh.h" />
-    <ClInclude Include="inc\progmesh_vecmatquat_minimal.h" />
     <ClInclude Include="codeviewedit.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="inc\Sci_Position.h">
       <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\forsyth.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\progmesh.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\progmesh_vecmatquat_minimal.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\ballMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\bulbLightMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\bulbSocketMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\bumperBaseMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\bumperCapMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\bumperRingMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\bumperSocketMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\dropTargetT2Mesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\dropTargetT3Mesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\flipperBase.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\gateBracketMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\gateWireMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\hitTargetRectangleMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\hitTargetRoundMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\kickerCupMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\kickerHitMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\kickerHoleMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\spinnerBracketMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\spinnerPlateMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\triggerSimpleMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\triggerStarMesh.h">
+      <Filter>meshes</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
