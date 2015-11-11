@@ -82,6 +82,9 @@ VP 10.0.0 Changelog
 - the thickness of a wire trigger can be scaled. 0 is the default thickness. To make it thicker use values like 0.5, 1, 1.5, 2... 
 
 - spinners are mesh based. If the spinner bracket isn't the right one disable the "Show Bracket" settings and you will only see the spinner plate.
+
+- introducing drop/hit target element. A drop/hit target is now a separate VP element. It is mesh based and different shapes can be selected from a drop
+  down list. A target fires a hit event and has it's own timer like walls when used as drop targets.
   
 - kickers are mesh based. In the kicker settings you can set "Fall through" so that if a ball hits a kicker(hole) the ball will fall through the 
   surface which is attached to it. This only works if the wall is higher than the playfield, it won't work if the hole is on the playfield.

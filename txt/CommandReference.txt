@@ -687,3 +687,26 @@ RotZ(float)                 - angle to rotate the whole rubber around the Z axis
 *EnableShowInEditor(bool)   - if set one cannot adjust the control points of the rubber but the 
                               rotation angles are applied to the rubber mesh in the editor.
 *ReflectionEnabled(bool)    - default=true
+
+
+TARGET
+==============================================================================================================================================
+
+Variables
+---------
+*Name(string)
+*HasHitEvent(bool)
+*Collidable(bool)
+Visible(bool)
+Material(string)
+Image(string) - texture name
+Elasticity(float)
+ElasticityFalloff(float)
+Friction(float)
+Scatter(float)
+*Orientation(float)         - angle to rotate the whole target around the Z axis 
+*ReflectionEnabled(bool)    - default=true
+DropSpeed(float)            - the speed how fast the drop or hit target will move 
+IsDropped(bool)             - can only be used for drop targets if the drop target is raised or dropped
+TimerEnabled(bool)			- each target has a build-in timer which can be enabled by setting this to 1
+TimerInterval(int)			- the time in milliseconds when the timer expires
