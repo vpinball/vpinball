@@ -1056,7 +1056,6 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
   <ItemGroup>
     <ClInclude Include="ballex.h" />
     <ClInclude Include="BlackBox.h" />
-    <ClInclude Include="buildnumber.h" />
     <ClInclude Include="bumper.h" />
     <ClInclude Include="codeview.h" />
     <ClInclude Include="codeviewedit.h" />
@@ -1064,7 +1063,6 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="decal.h" />
     <ClInclude Include="def.h" />
     <ClInclude Include="dispid.h" />
-    <ClInclude Include="display.h" />
     <ClInclude Include="dispreel.h" />
     <ClInclude Include="disputil.h" />
     <ClInclude Include="dragpoint.h" />
@@ -1142,6 +1140,27 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="MemoryStatus.h" />
     <ClInclude Include="memutil.h" />
     <ClInclude Include="mesh.h" />
+    <ClInclude Include="meshes\ballMesh.h" />
+    <ClInclude Include="meshes\bulbLightMesh.h" />
+    <ClInclude Include="meshes\bulbSocketMesh.h" />
+    <ClInclude Include="meshes\bumperBaseMesh.h" />
+    <ClInclude Include="meshes\bumperCapMesh.h" />
+    <ClInclude Include="meshes\bumperRingMesh.h" />
+    <ClInclude Include="meshes\bumperSocketMesh.h" />
+    <ClInclude Include="meshes\dropTargetT2Mesh.h" />
+    <ClInclude Include="meshes\dropTargetT3Mesh.h" />
+    <ClInclude Include="meshes\flipperBase.h" />
+    <ClInclude Include="meshes\gateBracketMesh.h" />
+    <ClInclude Include="meshes\gateWireMesh.h" />
+    <ClInclude Include="meshes\hitTargetRectangleMesh.h" />
+    <ClInclude Include="meshes\hitTargetRoundMesh.h" />
+    <ClInclude Include="meshes\kickerCupMesh.h" />
+    <ClInclude Include="meshes\kickerHitMesh.h" />
+    <ClInclude Include="meshes\kickerHoleMesh.h" />
+    <ClInclude Include="meshes\spinnerBracketMesh.h" />
+    <ClInclude Include="meshes\spinnerPlateMesh.h" />
+    <ClInclude Include="meshes\triggerSimpleMesh.h" />
+    <ClInclude Include="meshes\triggerStarMesh.h" />
     <ClInclude Include="mixer.h" />
     <ClInclude Include="objloader.h" />
     <ClInclude Include="paintsur.h" />
@@ -1174,7 +1193,6 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="spinner.h" />
     <ClInclude Include="StackTrace.h" />
     <ClInclude Include="stdafx.h" />
-    <ClInclude Include="stereo3D.h" />
     <ClInclude Include="sur.h" />
     <ClInclude Include="surface.h" />
     <ClInclude Include="tableglobal.h" />
