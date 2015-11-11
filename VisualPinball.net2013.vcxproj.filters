@@ -464,9 +464,6 @@
     <ClInclude Include="ballex.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="buildnumber.h">
-      <Filter>headers</Filter>
-    </ClInclude>
     <ClInclude Include="bumper.h">
       <Filter>headers</Filter>
     </ClInclude>
@@ -480,9 +477,6 @@
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="dispid.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="display.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="dispreel.h">
@@ -624,9 +618,6 @@
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="stdafx.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="stereo3D.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="sur.h">
@@ -811,6 +802,21 @@
     </ClInclude>
     <ClInclude Include="hittarget.h">
       <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\dropTargetT2Mesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\dropTargetT3Mesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\flipperBase.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\hitTargetRectangleMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\hitTargetRoundMesh.h">
+      <Filter>meshes</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
