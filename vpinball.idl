@@ -73,9 +73,10 @@ typedef [uuid(5323810C-F833-48ef-B049-D07506A179B5)]
 typedef [uuid(28F7715B-E800-49B6-B86E-A0C55898297E)]
         enum TriggerShape
                 {
-                TriggerNone = 0,
-                TriggerWire = 1,
-        TriggerStar = 2,
+                TriggerNone  = 0,
+                TriggerWireA = 1,
+                TriggerStar  = 2,
+				TriggerWireB = 3,
                 }
                 TriggerShape;
 

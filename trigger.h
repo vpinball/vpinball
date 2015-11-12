@@ -110,6 +110,7 @@ public:
    void UpdateEditorView();
    void TriggerAnimationHit();
    void TriggerAnimationUnhit();
+   void UpdateAnimation(RenderDevice *pd3dDevice);
    void GenerateMesh();
 
    PinTable *m_ptable;

@@ -53,7 +53,7 @@ void Trigger::UpdateEditorView()
       float maxy = -FLT_MAX;
       float miny = FLT_MAX;
 
-      if (m_d.m_shape == TriggerWire)
+      if (m_d.m_shape == TriggerWireA || m_d.m_shape == TriggerWireB)
       {
          m_numVertices = triggerSimpleNumVertices;
          m_numFaces = triggerSimpleNumFaces;
@@ -220,7 +220,7 @@ void Trigger::SetDefaults(bool fromMouseClick)
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_shape = (enum TriggerShape)iTmp;
    else
-      m_d.m_shape = TriggerWire;
+      m_d.m_shape = TriggerWireA;
    hr = GetRegString("DefaultProps\\Trigger", "Surface", &m_d.m_szSurface, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szSurface[0] = 0;
@@ -322,7 +322,7 @@ void Trigger::Render(Sur * const psur)
       psur->Line(m_d.m_vCenter.x - r2, m_d.m_vCenter.y + r2, m_d.m_vCenter.x + r2, m_d.m_vCenter.y - r2);
    }
 
-   if (m_d.m_shape == TriggerWire)
+   if (m_d.m_shape == TriggerWireA || m_d.m_shape == TriggerWireB)
    {
       if (m_numFaces > 0)
       {
@@ -415,7 +415,8 @@ void Trigger::GetHitShapesDebug(Vector<HitObject> * const pvho)
    }
 
    default:
-   case TriggerWire:
+   case TriggerWireA:
+   case TriggerWireB:
    {
       std::vector<RenderVertex> vvertex;
       GetRgVertex(vvertex);
@@ -535,28 +536,14 @@ void Trigger::TriggerAnimationUnhit()
    unhitEvent = true;
 }
 
-void Trigger::PostRenderStatic(RenderDevice* pd3dDevice)
+void Trigger::UpdateAnimation(RenderDevice *pd3dDevice)
 {
    const U32 old_time_msec = (m_d.m_time_msec < g_pplayer->m_time_msec) ? m_d.m_time_msec : g_pplayer->m_time_msec;
    m_d.m_time_msec = g_pplayer->m_time_msec;
    const float diff_time_msec = (float)(g_pplayer->m_time_msec - old_time_msec);
 
-   if (!m_d.m_fVisible || m_d.m_shape == TriggerNone)
-      return;
-   if (m_ptable->m_fReflectionEnabled && !m_d.m_fReflectionEnabled)
-      return;
-
-   const float animLimit = (m_d.m_shape == TriggerStar) ? m_d.m_radius / 4.7f : 29.0f;
+   const float animLimit = (m_d.m_shape == TriggerStar) ? m_d.m_radius / 5.0f : 32.0f;
    const float limit = animLimit*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
-
-   pd3dDevice->basicShader->SetTechnique("basic_without_texture");
-
-   Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
-   pd3dDevice->basicShader->SetMaterial(mat);
-
-   pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
-   pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-   pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 
    if (hitEvent)
    {
@@ -588,6 +575,7 @@ void Trigger::PostRenderStatic(RenderDevice* pd3dDevice)
          {
             animHeightOffset = -limit;
             doAnimation = false;
+            moveDown = false;
          }
       }
       else
@@ -596,6 +584,7 @@ void Trigger::PostRenderStatic(RenderDevice* pd3dDevice)
          {
             animHeightOffset = 0.0f;
             doAnimation = false;
+            moveDown = true;
          }
       }
 
@@ -603,7 +592,7 @@ void Trigger::PostRenderStatic(RenderDevice* pd3dDevice)
       vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
       for (int i = 0; i < m_numVertices; i++)
       {
-         if (m_d.m_shape == TriggerWire)
+         if (m_d.m_shape == TriggerWireA || m_d.m_shape == TriggerWireB)
          {
             buf[i].x = triggerVertices[i].x + triggerVertices[i].nx*m_d.m_wireThickness;
             buf[i].y = triggerVertices[i].y + triggerVertices[i].ny*m_d.m_wireThickness;
@@ -623,6 +612,26 @@ void Trigger::PostRenderStatic(RenderDevice* pd3dDevice)
       }
       vertexBuffer->unlock();
    }
+}
+void Trigger::PostRenderStatic(RenderDevice* pd3dDevice)
+{
+
+   if (!m_d.m_fVisible || m_d.m_shape == TriggerNone)
+      return;
+   if (m_ptable->m_fReflectionEnabled && !m_d.m_fReflectionEnabled)
+      return;
+
+   UpdateAnimation(pd3dDevice);
+
+   pd3dDevice->basicShader->SetTechnique("basic_without_texture");
+
+   Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
+   pd3dDevice->basicShader->SetMaterial(mat);
+
+   pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
+   pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+   pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+
 
    pd3dDevice->basicShader->Begin(0);
    pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, m_numVertices, triggerIndexBuffer, 0, m_numFaces);
@@ -643,7 +652,7 @@ void Trigger::ExportMesh(FILE *f)
    Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
    WaveFrontObj_WriteMaterial(m_d.m_szMaterial, NULL, mat);
    WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
-   WaveFrontObj_WriteFaceInfoList(f, m_d.m_shape == TriggerWire ? triggerSimpleIndices : triggerStarIndices, m_numFaces);
+   WaveFrontObj_WriteFaceInfoList(f, (m_d.m_shape == TriggerWireA || m_d.m_shape==TriggerWireB) ? triggerSimpleIndices : triggerStarIndices, m_numFaces);
    WaveFrontObj_UpdateFaceOffset(m_numVertices);
 
 }
@@ -655,7 +664,7 @@ void Trigger::GenerateMesh()
 
    fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotation));
 
-   if (m_d.m_shape == TriggerWire)
+   if (m_d.m_shape == TriggerWireA || m_d.m_shape==TriggerWireB)
    {
       m_numVertices = triggerSimpleNumVertices;
       m_numFaces = triggerSimpleNumFaces;
@@ -673,7 +682,18 @@ void Trigger::GenerateMesh()
          delete[] triggerVertices;
       triggerVertices = new Vertex3D_NoTex2[m_numVertices];
    }
+   if (m_d.m_shape == TriggerWireB)
+   {
+      Matrix3D tempMatrix;
+      tempMatrix.SetIdentity();
+      fullMatrix.SetIdentity();
 
+      tempMatrix.RotateXMatrix(ANGTORAD(-23));
+      tempMatrix.Multiply(fullMatrix, fullMatrix);
+      tempMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotation));
+      tempMatrix.Multiply(fullMatrix, fullMatrix);
+
+   }
    for (int i = 0; i < m_numVertices; i++)
    {
       Vertex3Ds vert(verts[i].x, verts[i].y, verts[i].z);
@@ -715,7 +735,7 @@ void Trigger::RenderSetup(RenderDevice* pd3dDevice)
       return;
 
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-   if (m_d.m_shape == TriggerWire)
+   if (m_d.m_shape == TriggerWireA || m_d.m_shape == TriggerWireB)
    {
       m_numVertices = triggerSimpleNumVertices;
       m_numFaces = triggerSimpleNumFaces;
@@ -728,7 +748,7 @@ void Trigger::RenderSetup(RenderDevice* pd3dDevice)
 
    if (triggerIndexBuffer)
       triggerIndexBuffer->release();
-   triggerIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(m_numFaces, (m_d.m_shape == TriggerWire) ? triggerSimpleIndices : triggerStarIndices);
+   triggerIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(m_numFaces, (m_d.m_shape == TriggerWireA || m_d.m_shape == TriggerWireB) ? triggerSimpleIndices : triggerStarIndices);
 
    if (vertexBuffer)
       vertexBuffer->release();
@@ -738,7 +758,7 @@ void Trigger::RenderSetup(RenderDevice* pd3dDevice)
    GenerateMesh();
    Vertex3D_NoTex2 *buf;
    vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
-   if (m_d.m_shape == TriggerWire)
+   if (m_d.m_shape == TriggerWireA || m_d.m_shape == TriggerWireB)
    {
       Vertex3D_NoTex2 *tmp = new Vertex3D_NoTex2[m_numVertices];
       for (int i = 0; i < m_numVertices; i++)
@@ -1434,7 +1454,7 @@ void Trigger::UpdatePropertyPanes()
       EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_RINGSPEED_EDIT), TRUE);
       EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_STAR_THICKNESS_EDIT), FALSE);
    }
-   else if (m_d.m_shape == TriggerWire)
+   else if (m_d.m_shape == TriggerWireA || m_d.m_shape == TriggerWireB)
    {
       EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_STAR_RADIUS_EDIT), FALSE);
       EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_STAR_THICKNESS_EDIT), TRUE);
