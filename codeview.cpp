@@ -136,6 +136,7 @@ void GetWordUnderCaret(const HWND m_hwndScintilla, Sci_TextRange* tr)
 
    SendMessage(m_hwndScintilla, SCI_GETTEXTRANGE, 0, (LPARAM)tr);
 }
+
 void CodeViewer::SetClean(const SaveDirtyState sds)
 {
    if (sds == eSaveClean)
@@ -378,6 +379,76 @@ void CodeViewer::SetCaption(const char * const szCaption)
    SetWindowText(m_hwndMain, szT);
 }
 
+void CodeViewer::UpdatePrefsfromReg()
+{
+	crBackColor = GetRegIntWithDefault("CVEdit", "BackGroundColor", RGB(255,255,255));
+	DisplayAutoComplete = GetRegBoolWithDefault("CVEdit", "DisplayAutoComplete", true );
+	DisplayAutoCompleteAfter = GetRegIntWithDefault("CVEdit", "DisplayAutoCompleteAfter", 1);
+	DwellDisplay = GetRegBoolWithDefault("CVEdit", "DwellDisplay", true );
+	DwellHelp = GetRegBoolWithDefault("CVEdit", "DwellHelp", true );
+	DwellDisplayTime = GetRegIntWithDefault("CVEdit", "DwellDisplayTime", 700);
+	for (size_t i = 0; i < lPrefsList->size(); ++i)
+	{
+		lPrefsList->at(i)->GetPrefsFromReg();
+	}
+}
+
+void CodeViewer::UpdateRegWithPrefs()
+{
+	SetRegValueInt("CVEdit", "BackGroundColor", crBackColor);
+	SetRegValueBool("CVEdit","DisplayAutoComplete", DisplayAutoComplete);
+	SetRegValueInt("CVEdit","DisplayAutoCompleteAfter", DisplayAutoCompleteAfter);
+	SetRegValueBool("CVEdit","DwellDisplay", DwellDisplay);
+	SetRegValueBool("CVEdit","DwellHelp", DwellHelp);
+	SetRegValueInt("CVEdit","DwellDisplayTime", DwellDisplayTime);
+	for (size_t i = 0; i < lPrefsList->size(); i++)
+	{
+		lPrefsList->at(i)->SetPrefsToReg();
+	}
+}
+
+void CodeViewer::InitPreferences()
+{
+	for (int i = 0 ; i<16 ; ++i)
+	{
+		g_PrefCols[i] = 0;
+	}
+	crBackColor= RGB(255,255,255);
+	lPrefsList = new vector<CVPrefrence*>();
+
+	prefEverythingElse = new CVPrefrence();
+	prefEverythingElse->FillCVPreference("EverythingElse", RGB(0,0,0), true, "EverythingElse",  STYLE_DEFAULT, 0 , IDC_CVP_BUT_COL_EVERYTHINGELSE, IDC_CVP_BUT_FONT_EVERYTHINGELSE);
+	lPrefsList->push_back(prefEverythingElse);
+	prefDefault = new CVPrefrence();
+	prefDefault->FillCVPreference("Default", RGB(0,0,0), true, "Default", SCE_B_DEFAULT, 0 , 0, 0);
+	lPrefsList->push_back(prefDefault);
+	prefVBS = new CVPrefrence();
+	prefVBS->FillCVPreference("VBs", RGB(0,0,160), true, "ShowVBS", SCE_B_KEYWORD, IDC_CVP_CHECKBOX_VBS, IDC_CVP_BUT_COL_VBS, IDC_CVP_BUT_FONT_VBS);
+	lPrefsList->push_back(prefVBS);
+	prefComps = new CVPrefrence();
+	prefComps->FillCVPreference("Components", RGB(120,120,0), true, "ShowComponents", SCE_B_KEYWORD3, IDC_CVP_CHKB_COMP, IDC_CVP_BUT_COL_COMPS, IDC_CVP_BUT_FONT_COMPS);
+	lPrefsList->push_back(prefComps);
+	prefSubs = new CVPrefrence();
+	prefSubs->FillCVPreference("SubFuns", RGB(120,0,120), true, "ShowSubs", SCE_B_KEYWORD2, IDC_CVP_CHKB_SUBS, IDC_CVP_BUT_COL_SUBS, IDC_CVP_BUT_FONT_SUBS);
+	lPrefsList->push_back(prefSubs);
+	prefComments = new CVPrefrence();
+	prefComments->FillCVPreference("Remarks", RGB(0,120,0), true, "ShowRemarks", SCE_B_COMMENT, IDC_CVP_CHKB_COMMENTS, IDC_CVP_BUT_COL_COMMENTS, IDC_CVP_BUT_FONT_COMMENTS);
+	lPrefsList->push_back(prefComments);
+	prefLiterals = new CVPrefrence();
+	prefLiterals->FillCVPreference("Literals", RGB(0,120,160), true, "ShowLierals", SCE_B_STRING, IDC_CVP_CHKB_LITERALS, IDC_CVP_BUT_COL_LITERALS, IDC_CVP_BUT_FONT_LITERALS);
+	lPrefsList->push_back(prefLiterals);
+	prefVPcore = new CVPrefrence();
+	prefVPcore->FillCVPreference("VPcore", RGB(200,50,60), true, "ShowVPcore", SCE_B_KEYWORD4, IDC_CVP_CHKB_VPCORE, IDC_CVP_BUT_COL_VPCORE, IDC_CVP_BUT_FONT_VPCORE);
+	lPrefsList->push_back(prefVPcore);
+	for (size_t i = 0; i < lPrefsList->size(); ++i)
+	{
+		CVPrefrence* Pref = lPrefsList->at(i);
+		Pref->SetDefaultFont(m_hwndMain);
+	}
+	// load prefs from registery
+	UpdatePrefsfromReg();
+}
+
 void CodeViewer::Create()
 {
    m_haccel = LoadAccelerators(g_hinst, MAKEINTRESOURCE(IDR_CODEVIEWACCEL));// Accelerator keys
@@ -415,7 +486,8 @@ void CodeViewer::Create()
 	{
 		SendMessage(m_hwndScintilla, SCI_SETLEXER, (WPARAM)SCLEX_VBSCRIPT, 0);
 	}
-	char szValidChars[256] = {};  
+	char szValidChars[256] = {};
+
    SendMessage(m_hwndScintilla, SCI_GETWORDCHARS, 0, (LPARAM)szValidChars);
    ValidChars = string(szValidChars);
 	VBValidChars = string("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_");
@@ -460,52 +532,12 @@ void CodeViewer::Create()
 		i->KeyName.at(0) = WordChar;	
 	}
 	///// Preferences
-	DisplayAutoComplete = GetRegBoolWithDefault("CVEdit", "DisplayAutoComplete", true );
-	for (int i = 0 ; i<16 ; ++i)
-	{
-		g_PrefCols[i] = 0;
-	}
-	crBackColor= RGB(255,255,255);
-	lPrefsList = new vector<CVPrefrence*>();
+	InitPreferences();
 
-	prefEverythingElse = new CVPrefrence();
-	prefEverythingElse->FillCVPreference("EverythingElse", RGB(0,0,0), true, "EverythingElse",  STYLE_DEFAULT, 0 , IDC_CVP_BUT_COL_EVERYTHINGELSE, IDC_CVP_BUT_FONT_EVERYTHINGELSE);
-	lPrefsList->push_back(prefEverythingElse);
-	prefDefault = new CVPrefrence();
-	prefDefault->FillCVPreference("Default", RGB(0,0,0), true, "Default", SCE_B_DEFAULT, 0 , 0, 0);
-	lPrefsList->push_back(prefDefault);
-	prefVBS = new CVPrefrence();
-	prefVBS->FillCVPreference("VBs", RGB(0,0,160), true, "ShowVBS", SCE_B_KEYWORD, IDC_CVP_CHECKBOX_VBS, IDC_CVP_BUT_COL_VBS, IDC_CVP_BUT_FONT_VBS);
-	lPrefsList->push_back(prefVBS);
-	prefComps = new CVPrefrence();
-	prefComps->FillCVPreference("Components", RGB(120,120,0), true, "ShowComponents", SCE_B_KEYWORD3, IDC_CVP_CHKB_COMP, IDC_CVP_BUT_COL_COMPS, IDC_CVP_BUT_FONT_COMPS);
-	lPrefsList->push_back(prefComps);
-	prefSubs = new CVPrefrence();
-	prefSubs->FillCVPreference("SubFuns", RGB(120,0,120), true, "ShowSubs", SCE_B_KEYWORD2, IDC_CVP_CHKB_SUBS, IDC_CVP_BUT_COL_SUBS, IDC_CVP_BUT_FONT_SUBS);
-	lPrefsList->push_back(prefSubs);
-	prefComments = new CVPrefrence();
-	prefComments->FillCVPreference("Remarks", RGB(0,120,0), true, "ShowRemarks", SCE_B_COMMENT, IDC_CVP_CHKB_COMMENTS, IDC_CVP_BUT_COL_COMMENTS, IDC_CVP_BUT_FONT_COMMENTS);
-	lPrefsList->push_back(prefComments);
-	prefLiterals = new CVPrefrence();
-	prefLiterals->FillCVPreference("Literals", RGB(0,120,160), true, "ShowLierals", SCE_B_STRING, IDC_CVP_CHKB_LITERALS, IDC_CVP_BUT_COL_LITERALS, IDC_CVP_BUT_FONT_LITERALS);
-	lPrefsList->push_back(prefLiterals);
-	prefVPcore = new CVPrefrence();
-	prefVPcore->FillCVPreference("VPcore", RGB(200,50,60), true, "ShowVPcore", SCE_B_KEYWORD4, IDC_CVP_CHKB_VPCORE, IDC_CVP_BUT_COL_VPCORE, IDC_CVP_BUT_FONT_VPCORE);
-	lPrefsList->push_back(prefVPcore);
-	// load prefs from registery
-
-	for (size_t i = 0; i < lPrefsList->size(); ++i)
-	{
-		CVPrefrence* Pref = lPrefsList->at(i);
-		Pref->SetDefaultFont(m_hwndMain);
-		Pref->GetPrefsFromReg();
-	}
-	crBackColor = GetRegIntWithDefault("CVEdit", "BackGroundColor", RGB(255,255,255));
-
+   SendMessage(m_hwndScintilla, SCI_SETMODEVENTMASK, SC_MOD_INSERTTEXT, 0);
    SendMessage(m_hwndScintilla, SCI_SETKEYWORDS, 0, (LPARAM)vbsReservedWords );
    SendMessage(m_hwndScintilla, SCI_SETTABWIDTH, 4, 0);
-   SendMessage(m_hwndScintilla, SCI_SETMODEVENTMASK, SC_MOD_INSERTTEXT, 0);
-   SendMessage(m_hwndScintilla, SCI_SETMOUSEDWELLTIME,300,0);
+
 
    // The null visibility policy is like Visual Studio - if a search goes
    // off the screen, the newly selected text is placed in the middle of the
@@ -563,9 +595,6 @@ void CodeViewer::Create()
    SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_DATE, RGB(0, 0, 0));
 
 	SendMessage(m_hwndScintilla, SCI_SETWORDCHARS, 0,(LPARAM) "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_");
-	// WIP - The skint problem...
-	//SendMessage(m_hwndScintilla, SCI_SETWHITESPACECHARS,0,(LPARAM) ".");
-	//SendMessage(m_hwndScintilla, SCI_SETPUNCTUATIONCHARS,0 ,(LPARAM)".");
 
 	SendMessage(m_hwndScintilla, SCI_AUTOCSETIGNORECASE, TRUE, 0);
 	SendMessage(m_hwndScintilla, SCI_AUTOCSETCASEINSENSITIVEBEHAVIOUR, SC_CASEINSENSITIVEBEHAVIOUR_IGNORECASE,0);
@@ -1560,7 +1589,7 @@ void CodeViewer::ShowAutoComplete()
 	Word.lpstrText = &m_Word[0];
 	GetWordUnderCaret(m_hwndScintilla, &Word);
 	const int intWordLen = strlen(Word.lpstrText);
-	if (intWordLen > 1 && intWordLen < MAX_FIND_LENGTH)
+	if (intWordLen > DisplayAutoCompleteAfter && intWordLen < MAX_FIND_LENGTH)
 	{
 		const char * McStr = AutoCompString.c_str();
 		SendMessage(m_hwndScintilla, SCI_AUTOCSHOW, intWordLen, (LPARAM)McStr);
@@ -1603,7 +1632,7 @@ bool CodeViewer::ShowTooltip(SCNotification *pSCN)
 			if (FindUD(g_UserFunc, string(szLCDwellWord), i) == 0)
 			{
 				string ptemp = i->Description;
-				if (i->Comment.length() >1)
+				if ( (i->Comment.length() >1) && DwellHelp )
 				{
 					ptemp += "\n" +  i->Comment;
 				}
@@ -1613,7 +1642,7 @@ bool CodeViewer::ShowTooltip(SCNotification *pSCN)
 			else if (FindUD(g_VP_Core, string(szLCDwellWord), i) == 0)
 			{
 				string ptemp = i->Description;
-				if (i->Comment.length() >1)
+				if ( (i->Comment.length() >1) && DwellHelp )
 				{
 					ptemp += "\n" +  i->Comment;
 				}
@@ -1820,7 +1849,6 @@ int CodeViewer::SureFind(const string &LineIn, const string &ToFind)
 	}
 	return Pos;
 }
-
 
 string CodeViewer::ParseRemoveLineComments(string *Line)
 {
@@ -2170,7 +2198,7 @@ void CodeViewer::ParseForFunction() // Subs & Collections AndyS - WIP
    //Send the collected func/subs to scintilla for highlighting - always lowercase as VBS is case insensitive.
 	//TODO: Need to comune with scintilla closer (COM pointers??)
 	sSubFunOut = lowerCase(sSubFunOut);
-	SendMessage(m_hwndScintilla, SCI_SETKEYWORDS, 1, (LPARAM)sSubFunOut.c_str());
+	SendMessage(m_hwndScintilla, SCI_SETKEYWORDS, 1 , (LPARAM)sSubFunOut.c_str());
 	strCompOut = lowerCase(strCompOut);
 	SendMessage(m_hwndScintilla, SCI_SETKEYWORDS, 2 , (LPARAM)strCompOut.c_str());
 	strVPcoreWords = lowerCase(strVPcoreWords);
@@ -2311,8 +2339,16 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
       switch (code)
       {
 
+		case SCEN_SETFOCUS:
+		{
+         CodeViewer * const pcv = GetCodeViewerPtr(hwndDlg);
+			pcv->ParseForFunction();
+		}
+		break;
+
       case SCEN_CHANGE:
       {
+			// TODO: Line Parse Brain here?
          CodeViewer * const pcv = GetCodeViewerPtr(hwndDlg);
          if (pcv->m_errorLineNumber != -1)
             pcv->UncolorError();
@@ -2321,7 +2357,17 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
             pcv->m_sdsDirty = eSaveDirty;
             pcv->m_psh->SetDirtyScript(eSaveDirty);
          }
-      }
+			Sci_TextRange sciWord;
+			char WordText[MAX_FIND_LENGTH] = {0};
+			sciWord.lpstrText = WordText;
+			GetWordUnderCaret(pcv->m_hwndScintilla, &sciWord);
+			pcv->szLower(sciWord.lpstrText);
+
+			//// set back ground colour of all words on display
+			//SendMessage(pcv->m_hwndScintilla, SCI_STYLESETFORE, SCE_B_KEYWORD5, RGB(100,100,200) );
+			//SendMessage(pcv->m_hwndScintilla, SCI_STYLESETBACK, SCE_B_KEYWORD5, RGB(0,0,100) );
+			//SendMessage(pcv->m_hwndScintilla, SCI_SETKEYWORDS, 4 , (LPARAM)WordText);
+		}
       break;
 
       case BN_CLICKED: // or menu
@@ -2439,7 +2485,7 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 				pcv->ShowAutoComplete();
 				break;
 			}
-         }//switch
+         }//switch (id)
       }
       break;
       }
@@ -2467,8 +2513,11 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 			}
 			break;
 		  case SCN_DWELLSTART:
-				pcv->g_ToolTipActive = pcv->ShowTooltip(pscn);
-				break;
+			{
+				if (pcv->DwellDisplay)
+					pcv->g_ToolTipActive = pcv->ShowTooltip(pscn);
+			}
+			break;
 
 		  case SCN_DWELLEND:
 			{
@@ -2570,10 +2619,23 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 			}
 			pcv->crBackColor = GetRegIntWithDefault("CVEdit", "BackGroundColor", RGB(255,255,255));
 			pcv->UpdateScinFromPrefs();
+			HWND hChkBox = GetDlgItem(hwndDlg,IDC_CVP_CHKBOX_SHOWAUTOCOMPLETE);
+			SNDMSG(hChkBox, BM_SETCHECK, pcv->DisplayAutoComplete ? BST_CHECKED : BST_UNCHECKED, 0L);
+			hChkBox = GetDlgItem(hwndDlg, IDC_CVP_CHKBOX_DISPLAYDWELL);
+			SNDMSG(hChkBox, BM_SETCHECK, pcv->DwellDisplay ? BST_CHECKED : BST_UNCHECKED, 0L);
+			hChkBox = GetDlgItem(hwndDlg, IDC_CVP_CHKBOX_HELPWITHDWELL);
+			SNDMSG(hChkBox, BM_SETCHECK, pcv->DwellHelp ? BST_CHECKED : BST_UNCHECKED, 0L);
+
+			char foo[65] = {0};
+			sprintf_s(foo,"%i", pcv->DisplayAutoCompleteAfter );
+			SetDlgItemText( hwndDlg, IDC_CVP_EDIT_AUTOCHARS, foo);
+		
+			ZeroMemory(foo,5);
+			sprintf_s(foo,"%i", pcv->DwellDisplayTime );
+			SetDlgItemText( hwndDlg, IDC_CVP_EDIT_MOUSEDWELL, foo);
 		}
-		const HWND hChkBox = GetDlgItem(hwndDlg,IDC_CVP_CHKBOX_SHOWAUTOCOMPLETE);
-		SNDMSG(hChkBox, BM_SETCHECK, pcv->DisplayAutoComplete ? BST_CHECKED : BST_UNCHECKED, 0L);
-		SetFocus(hwndDlg);
+
+		//SetFocus(hwndDlg);
 		//#if !(defined(IMSPANISH) | defined(IMGERMAN) | defined(IMFRENCH))
 		//      HWND hwndTransName = GetDlgItem(hwndDlg, IDC_TRANSNAME);
 		//      ShowWindow(hwndTransName, SW_HIDE);
@@ -2599,27 +2661,50 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 				{
 				case IDC_CVP_BUT_CANCEL:
 				{
-					for (size_t i = 0; i < pcv->lPrefsList->size(); i++)
-					{
-						pcv->lPrefsList->at(i)->GetPrefsFromReg();
-					}
-					pcv->crBackColor = GetRegIntWithDefault("CVEdit", "BackGroundColor", RGB(255,255,255));
+					pcv->UpdatePrefsfromReg();
 					pcv->UpdateScinFromPrefs();
 					EndDialog(hwndDlg, FALSE);
 				}
 				break;
 				case IDC_CVP_BUT_OK:
 				{
-					for (size_t i = 0; i < pcv->lPrefsList->size(); i++)
-					{
-						pcv->lPrefsList->at(i)->SetPrefsToReg();
-					}
-					SetRegValueInt("CVEdit", "BackGroundColor", pcv->crBackColor);
+					//Save to reg.
+					pcv->DisplayAutoCompleteAfter = GetDlgItemInt(hwndDlg, IDC_CVP_EDIT_AUTOCHARS, 0 , false);
+					pcv->DwellDisplayTime = GetDlgItemInt(hwndDlg, IDC_CVP_EDIT_MOUSEDWELL, 0 , false);
+					pcv->UpdateRegWithPrefs();
 					pcv->UpdateScinFromPrefs();
 					EndDialog(hwndDlg, TRUE);
 				}
 				break;
-				case IDC_CVP_BUT_COL_BACKGROUND:
+				case IDC_CVP_CHKBOX_DISPLAYDWELL:
+				{
+					if(IsDlgButtonChecked(hwndDlg, IDC_CVP_CHKBOX_DISPLAYDWELL) )
+						{pcv->DwellDisplay = true;}
+					else
+						{pcv->DwellDisplay = false;}
+					SetRegValueBool("CVEdit", "DwellDisplay", pcv->DwellDisplay );
+				}
+				break;
+				case IDC_CVP_CHKBOX_HELPWITHDWELL:
+				{
+					if(IsDlgButtonChecked(hwndDlg, IDC_CVP_CHKBOX_HELPWITHDWELL) )
+						{pcv->DwellHelp = true;}
+					else
+						{pcv->DwellHelp = false;}
+					SetRegValueBool("CVEdit", "DwellHelp", pcv->DwellHelp );
+				}
+				break;
+				case IDC_CVP_CHKBOX_SHOWAUTOCOMPLETE:
+				{
+					if(IsDlgButtonChecked(hwndDlg, IDC_CVP_CHKBOX_SHOWAUTOCOMPLETE) )
+						{pcv->DisplayAutoComplete = true;}
+					else
+						{pcv->DisplayAutoComplete = false;}
+					SetRegValueBool("CVEdit", "DisplayAutoComplete", pcv->DisplayAutoComplete );
+				}
+				break;
+				//TODO: Impliment IDC_CVP_BUT_COL_BACKGROUND
+/*				case IDC_CVP_BUT_COL_BACKGROUND:
 				{
 					CHOOSECOLOR cc;
 					memset(&cc, 0, sizeof(CHOOSECOLOR));
@@ -2635,16 +2720,8 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 						return DefWindowProc(hwndDlg, uMsg, wParam, lParam);
 					}
 				}
-				break;
-				case IDC_CVP_CHKBOX_SHOWAUTOCOMPLETE:
-				{
-					if(IsDlgButtonChecked(hwndDlg, IDC_CVP_CHKBOX_SHOWAUTOCOMPLETE) )
-						{pcv->DisplayAutoComplete = true;}
-					else
-						{pcv->DisplayAutoComplete = false;}
-					SetRegValueBool("CVEdit", "DisplayAutoComplete", pcv->DisplayAutoComplete );
-				}
-				break;
+				break;*/
+
 				case IDC_CVP_BUT_COL_EVERYTHINGELSE:
 				{
 					CHOOSECOLOR cc;
@@ -2751,8 +2828,9 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 
 void CodeViewer::UpdateScinFromPrefs()
 {
+   SendMessage(m_hwndScintilla, SCI_SETMOUSEDWELLTIME, DwellDisplayTime, 0);
 	SendMessage(m_hwndScintilla, SCI_STYLESETBACK, prefEverythingElse->SciKeywordID, crBackColor);
-	prefEverythingElse->ApplyPreferences(m_hwndScintilla, prefEverythingElse);
+	prefEverythingElse->ApplyPreferences(m_hwndScintilla, prefEverythingElse);//Update internally
 	SendMessage(m_hwndScintilla,SCI_STYLECLEARALL,0,0);
 	SendMessage(m_hwndScintilla, SCI_MARKERSETFORE, SC_MARKNUM_FOLDEROPEN, prefEverythingElse->rgb);
 	SendMessage(m_hwndScintilla, SCI_MARKERSETBACK, SC_MARKNUM_FOLDEROPEN, crBackColor);

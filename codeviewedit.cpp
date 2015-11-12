@@ -404,7 +404,7 @@ void CVPrefrence::ApplyPreferences(const HWND &hwndScin,const CVPrefrence* Defau
 	SendMessage(hwndScin, SCI_STYLESETWEIGHT, id, HL ? (LPARAM)this->LogFont.lfWeight : (LPARAM)DefaultPref->LogFont.lfWeight);
 	SendMessage(hwndScin, SCI_STYLESETITALIC, id, HL ? (LPARAM)this->LogFont.lfItalic : (LPARAM)DefaultPref->LogFont.lfItalic);
 	SendMessage(hwndScin, SCI_STYLESETUNDERLINE, id, HL ? (LPARAM)this->LogFont.lfUnderline : (LPARAM)DefaultPref->LogFont.lfUnderline);
-	// There is no strike through in Scintilla
+	// There is no strike through in Scintilla (yet!)
 }
 
 CVPrefrence::~CVPrefrence()
