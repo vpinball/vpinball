@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
-// Von Microsoft Visual C++ generierte Includedatei.
-// Verwendet durch vpinball_eng.rc
+// Microsoft Visual C++ generated include file.
+// Used by vpinball_eng.rc
 //
 #define VP_VERSION_MINOR                0
 #define VP_VERSION_REV                  0
@@ -700,6 +700,7 @@
 #define IDC_CHECK3                      479
 #define IDC_CENTER_MESH                 479
 #define IDC_RUBBER_REFLECT_ENABLED_CHECK 479
+#define IDC_CVP_CHKBOX_HELPWITHDWELL    479
 #define IDC_IMPORT_MATERIAL             480
 #define IDC_COLLISION_REDUCTION_FACTOR  481
 #define IDC_PRIM_REFLECT_ENABLE_CHECK   483
@@ -828,9 +829,12 @@
 #define IDC_DELETE_IMAGE                720
 #define IDC_CVP_BUT_FONT_VPCORE         721
 #define IDC_DELETE_COLLECTION           721
+#define IDC_CVP_CHKBOX_DISPLAYDWELL     722
 #define IDC_CVP_BUT_COL_EVERYTHINGELSE  724
 #define IDC_CVP_BUT_FONT_EVERYTHINGELSE 725
 #define IDC_CVP_BUT_COL_BACKGROUND      727
+#define IDC_CVP_EDIT_AUTOCHARS          728
+#define IDC_CVP_EDIT_MOUSEDWELL         729
 #define DISPID_Gate_Height1             1142
 #define DISPID_Image                    1500
 #define DISPID_Image2                   1501
@@ -968,7 +972,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        620
 #define _APS_NEXT_COMMAND_VALUE         4003
-#define _APS_NEXT_CONTROL_VALUE         722
+#define _APS_NEXT_CONTROL_VALUE         723
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif

@@ -271,13 +271,23 @@ public:
 	CVPrefrence *prefVPcore;
 	COLORREF g_PrefCols[16];
 	COLORREF crBackColor;
-	void UpdateScinFromPrefs();
 	bool DisplayAutoComplete;
+	//TODO: int TabStop;
+	int DisplayAutoCompleteAfter;
+	bool DwellDisplay;
+	bool DwellHelp;
+	int DwellDisplayTime;
+
+	void InitPreferences();
+	void UpdateRegWithPrefs();
+	void UpdatePrefsfromReg();
+	void UpdateScinFromPrefs();
 
 	// keyword lists
 	bool g_ToolTipActive;
 	string vbsKeyWords;
 	vector<string> *AutoCompList;
+	// Dictionaries
 	vector<UserData> *g_VBwords;
 	vector<UserData> *g_UserFunc;
 	vector<UserData> *g_Components;

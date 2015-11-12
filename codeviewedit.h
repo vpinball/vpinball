@@ -1,7 +1,14 @@
 #ifndef _CVEDIT_
 #define _CVEDIT_
 
+//#define STYLE_SUBFUN 10
+//#define STYLE_COMPONENTS 11
+//#define STYLE_VPCORE 12
+//#define STYLE_CURRENTWORD 13
+
+
 enum WordType {eUnknown, eClass, eSub, eFunction, ePropGet, ePropLet, ePropSet};
+//Extend scintilla a bit...
 
 class UserData
 {
