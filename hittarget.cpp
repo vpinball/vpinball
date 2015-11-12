@@ -5,8 +5,11 @@
 #include "stdafx.h" 
 #include "meshes/dropTargetT2Mesh.h"
 #include "meshes/dropTargetT3Mesh.h"
+#include "meshes/dropTargetT4Mesh.h"
 #include "meshes/hitTargetRoundMesh.h"
 #include "meshes/hitTargetRectangleMesh.h"
+#include "meshes/hitTargetFatRectangleMesh.h"
+#include "meshes/hitTargetFatSquareMesh.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 const float HitTarget::DROP_TARGET_LIMIT = 52.0f;
@@ -61,6 +64,13 @@ void HitTarget::SetMeshType(const TargetType type)
         m_numIndices = hitTargetT3NumFaces;
         m_numVertices = hitTargetT3Vertices;
     }
+    if (type == DropTargetFlatSimple)
+    {
+        m_vertices = hitTargetT4Mesh;
+        m_indices = hitTargetT4Indices;
+        m_numIndices = hitTargetT4NumFaces;
+        m_numVertices = hitTargetT4Vertices;
+    }
     if (type == HitTargetRound)
     {
         m_vertices = hitTargetRoundMesh;
@@ -74,6 +84,20 @@ void HitTarget::SetMeshType(const TargetType type)
         m_indices = hitTargetRectangleIndices;
         m_numIndices = hitTargetRectangleNumFaces;
         m_numVertices = hitTargetRectangleVertices;
+    }
+    if (type == HitFatTargetRectangle)
+    {
+        m_vertices = hitFatTargetRectangleMesh;
+        m_indices = hitFatTargetRectangleIndices;
+        m_numIndices = hitFatTargetRectangleNumFaces;
+        m_numVertices = hitFatTargetRectangleVertices;
+    }
+    if (type == HitFatTargetSquare)
+    {
+        m_vertices = hitFatTargetSquareMesh;
+        m_indices = hitFatTargetSquareIndices;
+        m_numIndices = hitFatTargetSquareNumFaces;
+        m_numVertices = hitFatTargetSquareVertices;
     }
 }
 
@@ -105,7 +129,6 @@ void HitTarget::SetDefaults(bool fromMouseClick)
    m_d.m_fUseHitEvent = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "HitEvent", true) : true;
    m_d.m_fVisible = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "Visible", true) : true;
    m_d.m_isDropped = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "IsDropped", false) : false;
-   m_d.m_dropSpeed = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "DropSpeed", 0.5f) : 0.5f;
    
    // Position (X and Y is already set by the click of the user)
    m_d.m_vPosition.z = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "Position_Z", 0.0f) : 0.0f;
@@ -129,6 +152,10 @@ void HitTarget::SetDefaults(bool fromMouseClick)
        m_d.m_targetType = DropTargetSimple;
 
    m_d.m_threshold = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "HitThreshold", 2.0f) : 2.0f;
+   if (m_d.m_targetType == DropTargetBeveled || m_d.m_targetType == DropTargetSimple || m_d.m_targetType == DropTargetFlatSimple )
+       m_d.m_dropSpeed = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "DropSpeed", 0.5f) : 0.5f;
+   else
+       m_d.m_dropSpeed = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "DropSpeed", 0.2f) : 0.2f;
 
    SetDefaultPhysics(fromMouseClick);
 
@@ -397,7 +424,7 @@ void HitTarget::UpdateAnimation(RenderDevice *pd3dDevice)
         m_moveAnimation = true;
         m_hitEvent = false;
     }
-    if (m_d.m_targetType == DropTargetBeveled || m_d.m_targetType == DropTargetSimple)
+    if (m_d.m_targetType == DropTargetBeveled || m_d.m_targetType == DropTargetSimple || m_d.m_targetType == DropTargetFlatSimple)
     {
         if (m_moveAnimation)
         {
@@ -516,7 +543,7 @@ void HitTarget::UpdateTarget(RenderDevice *pd3dDevice)
 {
    Vertex3D_NoTex2 *buf;
    vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
-   if (m_d.m_targetType == DropTargetBeveled || m_d.m_targetType == DropTargetSimple)
+   if (m_d.m_targetType == DropTargetBeveled || m_d.m_targetType == DropTargetSimple || m_d.m_targetType == DropTargetFlatSimple)
    {
        for (unsigned int i = 0; i < m_numVertices; i++)
        {
@@ -589,7 +616,7 @@ void HitTarget::RenderSetup(RenderDevice* pd3dDevice)
 
    transformedVertices = new Vertex3D_NoTex2[m_numVertices];
    GenerateMesh(transformedVertices);
-   if (m_d.m_targetType == DropTargetBeveled || m_d.m_targetType == DropTargetSimple)
+   if (m_d.m_targetType == DropTargetBeveled || m_d.m_targetType == DropTargetSimple || m_d.m_targetType == DropTargetFlatSimple)
    {
        if (m_d.m_isDropped)
        {
@@ -1268,7 +1295,7 @@ void HitTarget::UpdatePropertyPanes()
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 115), TRUE);
    }
 
-   if (m_d.m_targetType == HitTargetRectangle || m_d.m_targetType == HitTargetRound)
+   if (m_d.m_targetType == HitTargetRectangle || m_d.m_targetType == HitTargetRound || m_d.m_targetType == HitFatTargetRectangle || m_d.m_targetType == HitFatTargetSquare)
        EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, IDC_TARGET_ISDROPPED_CHECK), FALSE);
    else
        EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, IDC_TARGET_ISDROPPED_CHECK), TRUE);

@@ -107,6 +107,9 @@ typedef [uuid(704231FA-A3F9-47EE-9278-BA21A1E12566)]
                 DropTargetSimple = 2,
 				HitTargetRound = 3,
 				HitTargetRectangle = 4,
+				HitFatTargetRectangle = 5,
+				HitFatTargetSquare = 6,
+                DropTargetFlatSimple = 7,
                 }
                 TargetType;
 
