@@ -818,6 +818,15 @@
     <ClInclude Include="meshes\hitTargetRoundMesh.h">
       <Filter>meshes</Filter>
     </ClInclude>
+    <ClInclude Include="meshes\dropTargetT4Mesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\hitTargetFatRectangleMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\hitTargetFatSquareMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="shader\BallShader.fx">
