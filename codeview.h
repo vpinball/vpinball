@@ -278,6 +278,7 @@ public:
 	bool DwellHelp;
 	int DwellDisplayTime;
 
+	void GetWordUnderCaret();
 	void InitPreferences();
 	void UpdateRegWithPrefs();
 	void UpdatePrefsfromReg();
@@ -293,6 +294,7 @@ public:
 	vector<UserData> *g_Components;
 	vector<UserData> *g_VP_Core;
 	string AutoCompString;
+	Sci_TextRange WordUnderCaret;
 
 	void ListEventsFromItem();
    void FindCodeFromEvent();

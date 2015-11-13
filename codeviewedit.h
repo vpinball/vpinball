@@ -7,7 +7,7 @@
 //#define STYLE_CURRENTWORD 13
 
 
-enum WordType {eUnknown, eClass, eSub, eFunction, ePropGet, ePropLet, ePropSet};
+enum WordType {eUnknown, eClass, eSub, eFunction, ePropGet, ePropLet, ePropSet, eDim};
 //Extend scintilla a bit...
 
 class UserData
