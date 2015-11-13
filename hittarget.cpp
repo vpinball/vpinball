@@ -287,11 +287,14 @@ void HitTarget::GenerateMesh(Vertex3D_NoTex2 *buf)
    for (unsigned int i = 0; i < m_numVertices; i++)
    {
       Vertex3Ds vert(m_vertices[i].x, m_vertices[i].y, m_vertices[i].z);
+      vert.x *= m_d.m_vSize.x;
+      vert.y *= m_d.m_vSize.y;
+      vert.z *= m_d.m_vSize.z;
       vert = fullMatrix.MultiplyVector(vert);
 
-      buf[i].x = vert.x*m_d.m_vSize.x + m_d.m_vPosition.x;
-      buf[i].y = vert.y*m_d.m_vSize.y + m_d.m_vPosition.y;
-      buf[i].z = vert.z*m_d.m_vSize.z*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_d.m_vPosition.z + m_ptable->m_tableheight;
+      buf[i].x = vert.x + m_d.m_vPosition.x;
+      buf[i].y = vert.y + m_d.m_vPosition.y;
+      buf[i].z = vert.z*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_d.m_vPosition.z + m_ptable->m_tableheight;
       vert = Vertex3Ds(m_vertices[i].nx, m_vertices[i].ny, m_vertices[i].nz);
       vert = fullMatrix.MultiplyVectorNoTranslate(vert);
       buf[i].nx = vert.x;
@@ -317,11 +320,14 @@ void HitTarget::TransformVertices()
    for (unsigned i = 0; i < m_numVertices; i++)
    {
       Vertex3Ds vert(m_vertices[i].x, m_vertices[i].y, m_vertices[i].z);
+      vert.x *= m_d.m_vSize.x;
+      vert.y *= m_d.m_vSize.y;
+      vert.z *= m_d.m_vSize.z;
       vert = fullMatrix.MultiplyVector(vert);
 
-      vertices[i].x = vert.x*m_d.m_vSize.x + m_d.m_vPosition.x;
-      vertices[i].y = vert.y*m_d.m_vSize.y + m_d.m_vPosition.y;
-      vertices[i].z = vert.z*m_d.m_vSize.z*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_d.m_vPosition.z + m_ptable->m_tableheight;
+      vertices[i].x = vert.x + m_d.m_vPosition.x;
+      vertices[i].y = vert.y + m_d.m_vPosition.y;
+      vertices[i].z = vert.z*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_d.m_vPosition.z + m_ptable->m_tableheight;
    }
 }
 
@@ -557,11 +563,14 @@ void HitTarget::UpdateTarget(RenderDevice *pd3dDevice)
        for (unsigned int i = 0; i < m_numVertices; i++)
        {
            Vertex3Ds vert(m_vertices[i].x, m_vertices[i].y, m_vertices[i].z);
+           vert.x *= m_d.m_vSize.x;
+           vert.y *= m_d.m_vSize.y;
+           vert.z *= m_d.m_vSize.z;
            vert = fullMatrix.MultiplyVector(vert);
-
-           buf[i].x = vert.x*m_d.m_vSize.x + m_d.m_vPosition.x;
-           buf[i].y = vert.y*m_d.m_vSize.y + m_d.m_vPosition.y;
-           buf[i].z = vert.z*m_d.m_vSize.z*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_d.m_vPosition.z + m_ptable->m_tableheight;
+           
+           buf[i].x = vert.x + m_d.m_vPosition.x;
+           buf[i].y = vert.y + m_d.m_vPosition.y;
+           buf[i].z = vert.z*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_d.m_vPosition.z + m_ptable->m_tableheight;
            vert = Vertex3Ds(m_vertices[i].nx, m_vertices[i].ny, m_vertices[i].nz);
            vert = fullMatrix.MultiplyVectorNoTranslate(vert);
            buf[i].nx = vert.x;
