@@ -126,15 +126,15 @@ void GetRange(const HWND m_hwndScintilla, const int start, const int end, char *
    SendMessage(m_hwndScintilla, SCI_GETTEXTRANGE, 0, (LPARAM)&tr);
 }
 
-void GetWordUnderCaret(const HWND m_hwndScintilla, Sci_TextRange* tr)
+void CodeViewer::GetWordUnderCaret()
 {
 
 	int CurPos = SendMessage(m_hwndScintilla, SCI_GETCURRENTPOS, 0, 0 );
-	tr->chrg.cpMin = SendMessage(m_hwndScintilla, SCI_WORDSTARTPOSITION, CurPos, TRUE);
-	tr->chrg.cpMax = SendMessage(m_hwndScintilla, SCI_WORDENDPOSITION, CurPos, TRUE);
-	if (( tr->chrg.cpMax - tr->chrg.cpMin) > MAX_FIND_LENGTH) return;
+	WordUnderCaret.chrg.cpMin = SendMessage(m_hwndScintilla, SCI_WORDSTARTPOSITION, CurPos, TRUE);
+	WordUnderCaret.chrg.cpMax = SendMessage(m_hwndScintilla, SCI_WORDENDPOSITION, CurPos, TRUE);
+	if (( WordUnderCaret.chrg.cpMax - WordUnderCaret.chrg.cpMin) > MAX_FIND_LENGTH) return;
 
-   SendMessage(m_hwndScintilla, SCI_GETTEXTRANGE, 0, (LPARAM)tr);
+   SendMessage(m_hwndScintilla, SCI_GETTEXTRANGE, 0, (LPARAM)&WordUnderCaret);
 }
 
 void CodeViewer::SetClean(const SaveDirtyState sds)
@@ -594,12 +594,13 @@ void CodeViewer::Create()
    SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_IDENTIFIER, RGB(0, 0, 0));
    SendMessage(m_hwndScintilla, SCI_STYLESETFORE, SCE_B_DATE, RGB(0, 0, 0));
 
-	SendMessage(m_hwndScintilla, SCI_SETWORDCHARS, 0,(LPARAM) "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_");
+	SendMessage(m_hwndScintilla, SCI_SETWORDCHARS, 0, (LPARAM)"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_");
 
+	SendMessage(m_hwndScintilla, SCI_SETMOUSEDOWNCAPTURES ,0,0); //send mouse events through scintilla.
 	SendMessage(m_hwndScintilla, SCI_AUTOCSETIGNORECASE, TRUE, 0);
 	SendMessage(m_hwndScintilla, SCI_AUTOCSETCASEINSENSITIVEBEHAVIOUR, SC_CASEINSENSITIVEBEHAVIOUR_IGNORECASE,0);
 
-	SendMessage(m_hwndScintilla, SCI_AUTOCSETFILLUPS, 0,(LPARAM) "[]{}().");
+	SendMessage(m_hwndScintilla, SCI_AUTOCSETFILLUPS, 0,(LPARAM) "[]{}()");
 	SendMessage(m_hwndScintilla, SCI_AUTOCSTOPS, 0,(LPARAM) " ");
 
 	//////////////////////// Status Window (& Sizing Box)
@@ -871,9 +872,8 @@ void CodeViewer::ShowFindDialog()
 {
    if (m_hwndFind == NULL)
    {
-		Sci_TextRange trWord;
-		trWord.lpstrText = szFindString;
- 		GetWordUnderCaret(m_hwndScintilla, &trWord);
+		WordUnderCaret.lpstrText = szFindString;
+ 		GetWordUnderCaret();
 
 		m_findreplacestruct.lStructSize = sizeof(FINDREPLACE);
 		m_findreplacestruct.hwndOwner = m_hwndMain;
@@ -895,9 +895,8 @@ void CodeViewer::ShowFindReplaceDialog()
 {
    if (m_hwndFind == NULL)
    {
-		Sci_TextRange trWord;
-		trWord.lpstrText = szFindString;
- 		GetWordUnderCaret(m_hwndScintilla, &trWord);
+		WordUnderCaret.lpstrText = szFindString;
+ 		GetWordUnderCaret();
 
       m_findreplacestruct.lStructSize = sizeof(FINDREPLACE);
       m_findreplacestruct.hwndOwner = m_hwndMain;
@@ -1585,10 +1584,9 @@ void CodeViewer::ShowAutoComplete()
 {
 
 	char m_Word[MAX_FIND_LENGTH] = {0};
-	Sci_TextRange Word;
-	Word.lpstrText = &m_Word[0];
-	GetWordUnderCaret(m_hwndScintilla, &Word);
-	const int intWordLen = strlen(Word.lpstrText);
+	WordUnderCaret.lpstrText = &m_Word[0];
+	GetWordUnderCaret();
+	const int intWordLen = strlen(WordUnderCaret.lpstrText);
 	if (intWordLen > DisplayAutoCompleteAfter && intWordLen < MAX_FIND_LENGTH)
 	{
 		const char * McStr = AutoCompString.c_str();
@@ -1888,23 +1886,52 @@ bool CodeViewer::ParseStructureName(vector<UserData> *ListIn, UserData ud,
 	const int endIdx = SureFind(UCline,"END"); 
 	const int exitIdx = SureFind(UCline,"EXIT"); 
 
-	if (endIdx == -1 && exitIdx == -1) //Its something new and therefore we are now a parent
+	if (endIdx == -1 && exitIdx == -1) 
 	{
+		if (ud.eTyping == eDim)
+		{
+			string foo;
+			foo = (char)((ud.eTyping)+64);
+			ud.UniqueKey = ud.KeyName  + foo + CurrentParentKey + "\0";
+			FindOrInsertUD(ListIn, ud);
+			string RemainingLine = line;
+			int CommPos = UCline.find_first_of(',');
+			while (CommPos != -1)
+			{
+				//Insert stuff after comma after cleaning up
+				int NewCommPos = RemainingLine.find_first_of(',', CommPos+1);
+				//get word @
+				string crWord;
+				crWord = RemainingLine.substr(CommPos+1, (NewCommPos == -1) ? string::npos : (NewCommPos - CommPos) );
+				RemovePadding(crWord);
+				if (crWord.size() <= MAX_FIND_LENGTH) 
+				{
+					ud.KeyName = crWord;
+					ud.UniqueKey = ud.KeyName  + foo + CurrentParentKey + "\0";
+					
+					FindOrInsertUD(ListIn, ud);
+				}
+				RemainingLine = RemainingLine.substr(CommPos+1, string::npos);
+				CommPos = RemainingLine.find_first_of(',');
+			}
+			return false;
+		}
+		//Its something new and structrual and therefore we are now a parent
 		if (ParentLevel == 0)// its a root
 		{
 			string foo;
 			foo = (char)((ud.eTyping)+64);
-
 			ud.UniqueKey = ud.KeyName  + foo + "\0";
 			FindOrInsertUD( ListIn, ud);
 			CurrentParentKey = ud.UniqueKey;
+			++ParentLevel;
 		}
 		else 
 		{
 			ud.UniqueParent = CurrentParentKey;
 			string foo;
 			foo = (char)((ud.eTyping)+64);
-			ud.UniqueKey = ud.KeyName + foo  + CurrentParentKey + "\0";
+			ud.UniqueKey = ud.KeyName + foo + CurrentParentKey + "\0";
 			FindOrInsertUD( ListIn, ud);
 			int iUDIndx = UDKeyIndex( ListIn, CurrentParentKey);
 			if (iUDIndx == -1)
@@ -1923,8 +1950,8 @@ bool CodeViewer::ParseStructureName(vector<UserData> *ListIn, UserData ud,
 			UserData *iCurParent = &(ListIn->at(iUDIndx));
 			iCurParent->Children.push_back(ud.UniqueKey);//add child to parent
 			CurrentParentKey = ud.UniqueKey;
+			++ParentLevel;
 		}
-		++ParentLevel;
 	}
 	else
 	{
@@ -2001,6 +2028,12 @@ void CodeViewer::ParseDelimtByColon(string *result, string *wholeline)
 
 void CodeViewer::ParseFindConstruct(int &Pos, const string *UCLineIn, WordType &Type,int &ConstructSize)
 {
+	if ( (Pos = SureFind( *UCLineIn ,"DIM")) != -1 )
+	{
+		ConstructSize =3;
+		Type = eDim;
+		return;
+	}
 	if ( (Pos = SureFind( *UCLineIn ,"SUB")) != -1 )
 	{
 		ConstructSize =3;
@@ -2094,7 +2127,7 @@ void CodeViewer::ReadLineToParseBrain(string wholeline, int linecount, vector<Us
 void CodeViewer::RemovePadding(string &line)
 {
 	size_t LL = line.length();
-	size_t Pos = (line.find_first_not_of("\n\r\t "));
+	size_t Pos = (line.find_first_not_of("\n\r\t ,"));
 	if (Pos == -1)
 	{
 		line.clear();
@@ -2106,7 +2139,7 @@ void CodeViewer::RemovePadding(string &line)
 		line = line.substr(Pos, (LL-Pos) );
 	}
 
-	Pos =  (line.find_last_not_of("\n\r\t "));
+	Pos =  (line.find_last_not_of("\n\r\t ,"));
 	if (Pos != -1)
 	{
 		if ( Pos < 1 ) return;
@@ -2345,7 +2378,6 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 			pcv->ParseForFunction();
 		}
 		break;
-
       case SCEN_CHANGE:
       {
 			// TODO: Line Parse Brain here?
@@ -2357,16 +2389,6 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
             pcv->m_sdsDirty = eSaveDirty;
             pcv->m_psh->SetDirtyScript(eSaveDirty);
          }
-			Sci_TextRange sciWord;
-			char WordText[MAX_FIND_LENGTH] = {0};
-			sciWord.lpstrText = WordText;
-			GetWordUnderCaret(pcv->m_hwndScintilla, &sciWord);
-			pcv->szLower(sciWord.lpstrText);
-
-			//// set back ground colour of all words on display
-			//SendMessage(pcv->m_hwndScintilla, SCI_STYLESETFORE, SCE_B_KEYWORD5, RGB(100,100,200) );
-			//SendMessage(pcv->m_hwndScintilla, SCI_STYLESETBACK, SCE_B_KEYWORD5, RGB(0,0,100) );
-			//SendMessage(pcv->m_hwndScintilla, SCI_SETKEYWORDS, 4 , (LPARAM)WordText);
 		}
       break;
 
@@ -2546,6 +2568,19 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 				SendMessage(pcv->m_hwndStatus, SB_SETTEXT, 0 | 0, (size_t)szT);
 			}
 			break;
+
+			case SCN_DOUBLECLICK:
+			{
+				char WordText[MAX_FIND_LENGTH] = {0};
+				pcv->WordUnderCaret.lpstrText = WordText;
+				pcv->GetWordUnderCaret();
+				pcv->szLower(pcv->WordUnderCaret.lpstrText);
+				// set back ground colour of all words on display
+				SendMessage(pcv->m_hwndScintilla, SCI_STYLESETBACK, SCE_B_KEYWORD5, RGB(200,200,200) );
+				SendMessage(pcv->m_hwndScintilla, SCI_SETKEYWORDS, 4 , (LPARAM)WordText);
+			}
+			break;
+
 			case SCN_MARGINCLICK:
 			{
 				if (pscn->margin == 1)
@@ -2559,14 +2594,14 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
       break;
    }
 
-   case RECOLOR_LINE:
-   {
-      CodeViewer * const pcv = GetCodeViewerPtr(hwndDlg);
+   //case RECOLOR_LINE:
+   //{
+   //   CodeViewer * const pcv = GetCodeViewerPtr(hwndDlg);
 
-      for (size_t i = wParam; i <= (size_t)lParam; ++i)
-         pcv->ColorLine(i);
-   }
-   break;
+   //   for (size_t i = wParam; i <= (size_t)lParam; ++i)
+   //      pcv->ColorLine(i);
+   //}
+   //break;
 
    case WM_SIZE:
    {
@@ -2841,6 +2876,9 @@ void CodeViewer::UpdateScinFromPrefs()
 	prefLiterals->ApplyPreferences(m_hwndScintilla, prefEverythingElse);
 	prefComments->ApplyPreferences(m_hwndScintilla, prefEverythingElse);
 	prefVPcore->ApplyPreferences(m_hwndScintilla, prefEverythingElse);
+	SendMessage(m_hwndScintilla, SCI_STYLESETBACK, SCE_B_KEYWORD5, RGB(200,200,200) );
+	SendMessage(m_hwndScintilla, SCI_SETKEYWORDS, 4 , (LPARAM)WordUnderCaret.lpstrText);
+
 }
 
 Collection::Collection()
