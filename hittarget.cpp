@@ -13,17 +13,14 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 const float HitTarget::DROP_TARGET_LIMIT = 52.0f;
+
 HitTarget::HitTarget()
 {
    vertexBuffer = 0;
-   vertexBufferRegenerate = true;
    indexBuffer = 0;
    m_d.m_depthBias = 0.0f;
-   m_d.m_fSkipRendering = false;
    m_d.m_fReflectionEnabled = true;
 
-   numIndices = 0;
-   numVertices = 0;
    m_propPhysics = NULL;
    m_propPosition = NULL;
    m_propVisual = NULL;
@@ -37,7 +34,6 @@ HitTarget::HitTarget()
    m_moveDown = true;
    m_moveAnimationOffset = 0.0f;
    m_hitEvent = false;
-   
 }
 
 HitTarget::~HitTarget()
@@ -199,7 +195,7 @@ void HitTarget::WriteRegDefaults()
 
 void HitTarget::GetHitShapes(Vector<HitObject> * const pvho)
 {
-   TransformVertices(); //!! could also only do this for the optional reduced variant!
+    TransformVertices();
 
     std::set< std::pair<unsigned, unsigned> > addedEdges;
 
@@ -267,14 +263,12 @@ void HitTarget::EndPlay()
    {
       vertexBuffer->release();
       vertexBuffer = 0;
-      vertexBufferRegenerate = true;
    }
    if (indexBuffer)
    {
       indexBuffer->release();
       indexBuffer = 0;
    }
-   m_d.m_fSkipRendering = false;
 }
 
 //////////////////////////////
@@ -315,7 +309,6 @@ void HitTarget::TransformVertices()
    
    SetMeshType(m_d.m_targetType);
    vertices.resize(m_numIndices);
-   normals.resize(m_numVertices);
    fullMatrix.SetIdentity();
    tempMatrix.SetIdentity();
    tempMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotZ));
@@ -329,11 +322,6 @@ void HitTarget::TransformVertices()
       vertices[i].x = vert.x*m_d.m_vSize.x + m_d.m_vPosition.x;
       vertices[i].y = vert.y*m_d.m_vSize.y + m_d.m_vPosition.y;
       vertices[i].z = vert.z*m_d.m_vSize.z*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_d.m_vPosition.z + m_ptable->m_tableheight;
-      vert = Vertex3Ds(m_vertices[i].nx, m_vertices[i].ny, m_vertices[i].nz);
-      vert = fullMatrix.MultiplyVectorNoTranslate(vert);
-      // only z is needed for collision
-      normals[i] = vert.z;
-
    }
 }
 
@@ -532,7 +520,6 @@ void HitTarget::RenderObject(RenderDevice *pd3dDevice)
    }
 #endif
 
-
    pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP);
    //g_pplayer->m_pin3d.DisableAlphaBlend(); //!! not necessary anymore
    if (m_d.m_fDisableLighting)
@@ -592,7 +579,7 @@ void HitTarget::PostRenderStatic(RenderDevice* pd3dDevice)
 {
    TRACE_FUNCTION();
 
-   if (!m_d.m_fVisible || m_d.m_fSkipRendering)
+   if (!m_d.m_fVisible)
       return;
    if (m_ptable->m_fReflectionEnabled && !m_d.m_fReflectionEnabled)
       return;
@@ -601,9 +588,6 @@ void HitTarget::PostRenderStatic(RenderDevice* pd3dDevice)
 
 void HitTarget::RenderSetup(RenderDevice* pd3dDevice)
 {
-   if (m_d.m_fSkipRendering)
-      return;
-
    if (vertexBuffer)
       vertexBuffer->release();
 
@@ -871,9 +855,6 @@ STDMETHODIMP HitTarget::put_Image(BSTR newVal)
 
 bool HitTarget::IsTransparent()
 {
-   if (m_d.m_fSkipRendering)
-      return false;
-
    Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
    return mat->m_bOpacityActive;
 }
@@ -896,10 +877,10 @@ STDMETHODIMP HitTarget::get_Material(BSTR *pVal)
 STDMETHODIMP HitTarget::put_Material(BSTR newVal)
 {
    STARTUNDO
-      WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szMaterial, 32, NULL, NULL);
+   WideCharToMultiByte(CP_ACP, 0, newVal, -1, m_d.m_szMaterial, 32, NULL, NULL);
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 
@@ -913,9 +894,10 @@ STDMETHODIMP HitTarget::get_Visible(VARIANT_BOOL *pVal)
 STDMETHODIMP HitTarget::put_Visible(VARIANT_BOOL newVal)
 {
    STARTUNDO
-      m_d.m_fVisible = VBTOF(newVal);
+   m_d.m_fVisible = VBTOF(newVal);
    STOPUNDO
-      return S_OK;
+
+   return S_OK;
 }
 
 STDMETHODIMP HitTarget::get_X(float *pVal)
@@ -930,11 +912,11 @@ STDMETHODIMP HitTarget::put_X(float newVal)
    if (m_d.m_vPosition.x != newVal)
    {
       STARTUNDO
-         m_d.m_vPosition.x = newVal;
+      m_d.m_vPosition.x = newVal;
       STOPUNDO
 
-         if (!g_pplayer)
-            UpdateEditorView();
+      if (!g_pplayer)
+         UpdateEditorView();
    }
 
    return S_OK;
@@ -952,11 +934,11 @@ STDMETHODIMP HitTarget::put_Y(float newVal)
    if (m_d.m_vPosition.y != newVal)
    {
       STARTUNDO
-         m_d.m_vPosition.y = newVal;
+      m_d.m_vPosition.y = newVal;
       STOPUNDO
 
-         if (!g_pplayer)
-            UpdateEditorView();
+      if (!g_pplayer)
+         UpdateEditorView();
    }
 
    return S_OK;
@@ -974,11 +956,11 @@ STDMETHODIMP HitTarget::put_Z(float newVal)
    if (m_d.m_vPosition.z != newVal)
    {
       STARTUNDO
-         m_d.m_vPosition.z = newVal;
+      m_d.m_vPosition.z = newVal;
       STOPUNDO
 
-         if (!g_pplayer)
-            UpdateEditorView();
+      if (!g_pplayer)
+         UpdateEditorView();
    }
 
    return S_OK;
@@ -996,11 +978,11 @@ STDMETHODIMP HitTarget::put_ScaleX(float newVal)
    if (m_d.m_vSize.x != newVal)
    {
       STARTUNDO
-         m_d.m_vSize.x = newVal;
+      m_d.m_vSize.x = newVal;
       STOPUNDO
 
-         if (!g_pplayer)
-            UpdateEditorView();
+      if (!g_pplayer)
+         UpdateEditorView();
    }
 
    return S_OK;
@@ -1018,11 +1000,11 @@ STDMETHODIMP HitTarget::put_ScaleY(float newVal)
    if (m_d.m_vSize.y != newVal)
    {
       STARTUNDO
-         m_d.m_vSize.y = newVal;
+      m_d.m_vSize.y = newVal;
       STOPUNDO
 
-         if (!g_pplayer)
-            UpdateEditorView();
+      if (!g_pplayer)
+         UpdateEditorView();
    }
 
    return S_OK;
@@ -1040,11 +1022,11 @@ STDMETHODIMP HitTarget::put_ScaleZ(float newVal)
    if (m_d.m_vSize.z != newVal)
    {
       STARTUNDO
-         m_d.m_vSize.z = newVal;
+      m_d.m_vSize.z = newVal;
       STOPUNDO
 
-         if (!g_pplayer)
-            UpdateEditorView();
+      if (!g_pplayer)
+         UpdateEditorView();
    }
 
    return S_OK;
@@ -1101,11 +1083,11 @@ STDMETHODIMP HitTarget::put_Threshold(float newVal)
 {
    STARTUNDO
 
-      m_d.m_threshold = newVal;
+   m_d.m_threshold = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP HitTarget::get_Elasticity(float *pVal)
@@ -1118,10 +1100,10 @@ STDMETHODIMP HitTarget::get_Elasticity(float *pVal)
 STDMETHODIMP HitTarget::put_Elasticity(float newVal)
 {
    STARTUNDO
-      m_d.m_elasticity = newVal;
+   m_d.m_elasticity = newVal;
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP HitTarget::get_ElasticityFalloff(float *pVal)
@@ -1134,10 +1116,10 @@ STDMETHODIMP HitTarget::get_ElasticityFalloff(float *pVal)
 STDMETHODIMP HitTarget::put_ElasticityFalloff(float newVal)
 {
    STARTUNDO
-      m_d.m_elasticityFalloff = newVal;
+   m_d.m_elasticityFalloff = newVal;
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP HitTarget::get_Friction(float *pVal)
@@ -1151,14 +1133,14 @@ STDMETHODIMP HitTarget::put_Friction(float newVal)
 {
    STARTUNDO
 
-      if (newVal > 1.0f) newVal = 1.0f;
+   if (newVal > 1.0f) newVal = 1.0f;
       else if (newVal < 0.f) newVal = 0.f;
 
-      m_d.m_friction = newVal;
+   m_d.m_friction = newVal;
 
-      STOPUNDO
+   STOPUNDO
 
-         return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP HitTarget::get_Scatter(float *pVal)
@@ -1172,11 +1154,11 @@ STDMETHODIMP HitTarget::put_Scatter(float newVal)
 {
    STARTUNDO
 
-      m_d.m_scatter = newVal;
+   m_d.m_scatter = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP HitTarget::get_Collidable(VARIANT_BOOL *pVal)
@@ -1193,7 +1175,7 @@ STDMETHODIMP HitTarget::put_Collidable(VARIANT_BOOL newVal)
    {
       STARTUNDO
 
-         m_d.m_fCollidable = !!fNewVal;
+      m_d.m_fCollidable = !!fNewVal;
 
       STOPUNDO
    }
@@ -1215,11 +1197,11 @@ STDMETHODIMP HitTarget::put_DisableLighting(VARIANT_BOOL newVal)
 {
    STARTUNDO
 
-      m_d.m_fDisableLighting = VBTOF(newVal);
+   m_d.m_fDisableLighting = VBTOF(newVal);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP HitTarget::get_ReflectionEnabled(VARIANT_BOOL *pVal)
@@ -1233,11 +1215,11 @@ STDMETHODIMP HitTarget::put_ReflectionEnabled(VARIANT_BOOL newVal)
 {
    STARTUNDO
 
-      m_d.m_fReflectionEnabled = VBTOF(newVal);
+   m_d.m_fReflectionEnabled = VBTOF(newVal);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 void HitTarget::GetDialogPanes(Vector<PropertyPane> *pvproppane)
@@ -1258,12 +1240,10 @@ void HitTarget::GetDialogPanes(Vector<PropertyPane> *pvproppane)
 
    pproppane = new PropertyPane(IDD_PROP_TIMER, IDS_MISC);
    pvproppane->AddElement(pproppane);
-
 }
 
 void HitTarget::UpdatePropertyPanes()
 {
-    
    if (m_propVisual == NULL || m_propPosition == NULL || m_propPhysics == NULL)
       return;
 
@@ -1299,7 +1279,6 @@ void HitTarget::UpdatePropertyPanes()
        EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, IDC_TARGET_ISDROPPED_CHECK), FALSE);
    else
        EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, IDC_TARGET_ISDROPPED_CHECK), TRUE);
-
 }
 
 void HitTarget::SetDefaultPhysics(bool fromMouseClick)
@@ -1331,6 +1310,7 @@ STDMETHODIMP HitTarget::put_DepthBias(float newVal)
 
    return S_OK;
 }
+
 STDMETHODIMP HitTarget::get_DropSpeed(float *pVal)
 {
    *pVal = m_d.m_dropSpeed;
@@ -1344,7 +1324,7 @@ STDMETHODIMP HitTarget::put_DropSpeed(float newVal)
    {
       STARTUNDO
 
-         m_d.m_dropSpeed = newVal;
+      m_d.m_dropSpeed = newVal;
 
       STOPUNDO
    }
@@ -1362,7 +1342,8 @@ STDMETHODIMP HitTarget::get_IsDropped(VARIANT_BOOL *pVal)
 STDMETHODIMP HitTarget::put_IsDropped(VARIANT_BOOL newVal)
 {
    STARTUNDO
-      const bool val = VBTOF(newVal);
+   
+   const bool val = VBTOF(newVal);
    if (g_pplayer && m_d.m_isDropped != val)
    {
       if (val)
@@ -1382,7 +1363,8 @@ STDMETHODIMP HitTarget::put_IsDropped(VARIANT_BOOL newVal)
       m_d.m_isDropped = val;
 
    STOPUNDO
-      return S_OK;
+
+   return S_OK;
 }
 
 STDMETHODIMP HitTarget::get_DrawStyle(TargetType *pVal)
@@ -1396,11 +1378,12 @@ STDMETHODIMP HitTarget::put_DrawStyle(TargetType newVal)
 {
     STARTUNDO
 
-        m_d.m_targetType = newVal;
-        UpdateEditorView();
+    m_d.m_targetType = newVal;
+    UpdateEditorView();
+
     STOPUNDO
 
-        return S_OK;
+    return S_OK;
 }
 
 void HitTarget::GetTimers(Vector<HitTimer> * const pvht)

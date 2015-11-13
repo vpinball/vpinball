@@ -37,7 +37,6 @@ public:
    float m_friction;
    float m_scatter;
    float m_dropSpeed;
-   bool  m_isDropped;
    U32   m_time_msec;
 
    float m_depthBias;      // for determining depth sorting
@@ -46,8 +45,9 @@ public:
 
    bool m_fUseHitEvent;
    bool m_fCollidable;
-   bool m_fSkipRendering;
    bool m_fReflectionEnabled;
+
+   bool  m_isDropped;
 };
 
 class HitTarget :
@@ -143,7 +143,7 @@ public:
 
    STANDARD_EDITABLE_DECLARES(HitTarget, eItemHitTarget, TARGET, 1)
 
-      DECLARE_REGISTRY_RESOURCEID(IDR_HITTARGET)
+   DECLARE_REGISTRY_RESOURCEID(IDR_HITTARGET)
 
    virtual void MoveOffset(const float dx, const float dy);
    virtual void SetObjectPos();
@@ -157,8 +157,6 @@ public:
    void WriteRegDefaults();
    virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
 
-   PinTable *m_ptable;
-
    virtual bool IsTransparent();
    virtual float GetDepth(const Vertex3Ds& viewDir);
    virtual unsigned long long GetMaterialID() { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
@@ -167,27 +165,21 @@ public:
    virtual void SetDefaultPhysics(bool fromMouseClick);
 
    void GenerateMesh(Vertex3D_NoTex2 *buf);
-   void    TransformVertices();
-   void    SetMeshType(const TargetType type);
+   void TransformVertices();
+   void SetMeshType(const TargetType type);
 
    static INT_PTR CALLBACK ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
+   PinTable        *m_ptable;
 
-   HitTargetData m_d;
+   HitTargetData    m_d;
    const Vertex3D_NoTex2 *m_vertices;
    const WORD      *m_indices;
    unsigned int     m_numVertices;
    unsigned int     m_numIndices;
-   bool m_hitEvent;
+   bool             m_hitEvent;
 
 private:        // private member functions
-
-   int numIndices;         // only used during loading
-   int numVertices;        // only used during loading
-#ifdef COMPRESS_MESHES
-   int compressedIndices;  // only used during loading
-   int compressedVertices; // only used during loading
-#endif
 
    void UpdateEditorView();
 
@@ -202,21 +194,17 @@ private:        // private member functions
    PropertyPane *m_propPosition;
    PropertyPane *m_propPhysics;
 
-private:        // private data members
-
    Vector<HitObject> m_vhoCollidable; // Objects to that may be collide selectable
+
+   VertexBuffer *vertexBuffer;
+   IndexBuffer *indexBuffer;
 
    // Vertices for editor display
    std::vector<Vertex3Ds> vertices;
-   std::vector<float> normals; // only z component actually
    Vertex3D_NoTex2 *transformedVertices;
    float m_moveAnimationOffset;
    bool  m_moveAnimation;
    bool  m_moveDown;
-
-   VertexBuffer *vertexBuffer;
-   IndexBuffer *indexBuffer;
-   bool vertexBufferRegenerate;
 };
 
 #endif // !defined(AFX_HITTARGET_H__A67DE998_7D97_4E03_BE91_55BFD3A48DB6__INCLUDED_)
