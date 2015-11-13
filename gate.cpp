@@ -131,7 +131,7 @@ void Gate::SetDefaults(bool fromMouseClick)
    if ((hr == S_OK) && fromMouseClick)
        m_d.m_type= (enum GateType)iTmp;
    else
-       m_d.m_type = GateWireRectangle;
+       m_d.m_type = GateWireW;
 
    hr = GetRegInt("DefaultProps\\Gate", "Collidable", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
