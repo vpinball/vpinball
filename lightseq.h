@@ -61,35 +61,6 @@ typedef struct {
    float	stepAngle;
 } _tracer;
 
-class LightSeqCenter : public ISelect
-{
-public:
-   LightSeqCenter(LightSeq * const pLightSeq);
-   virtual HRESULT GetTypeName(BSTR *pVal);
-   virtual IDispatch *GetDispatch();
-   virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
-
-   virtual void Delete();
-   virtual void Uncreate();
-
-   virtual int GetSelectLevel();
-
-   virtual IEditable *GetIEditable();
-
-   virtual PinTable *GetPTable();
-
-   virtual BOOL LoadToken(int id, BiffReader *pbr) { return fTrue; }
-
-   virtual void GetCenter(Vertex2D * const pv) const;
-   virtual void PutCenter(const Vertex2D * const pv);
-
-   virtual void MoveOffset(const float dx, const float dy);
-
-   virtual ItemTypeEnum GetItemType() { return eItemLightSeqCenter; }
-
-   LightSeq *m_pLightSeq;
-};
-
 class LightSeq :
    public CComObjectRootEx<CComSingleThreadModel>,
    public IDispatchImpl<ILightSeq, &IID_ILightSeq, &LIBID_VPinballLib>,
@@ -187,7 +158,6 @@ public:
 
    PinTable 		*m_ptable;
    LightSeqData 	m_d;
-   LightSeqCenter	m_LightSeqCenter;
 
    void		Animate();
 

@@ -1,6 +1,6 @@
 #include "StdAfx.h"
 
-LightSeq::LightSeq() : m_LightSeqCenter(this)
+LightSeq::LightSeq()
 {
 }
 
@@ -158,7 +158,7 @@ void LightSeq::Render(Sur * const psur)
 void LightSeq::RenderOutline(Sur * const psur)
 {
    psur->SetBorderColor(RGB(0, 0, 0), false, 0);
-   psur->SetObject((ISelect *)&m_LightSeqCenter);
+   psur->SetObject((ISelect *)this);
 
    psur->Line(m_d.m_vCenter.x - 10.0f, m_d.m_vCenter.y, m_d.m_vCenter.x + 10.0f, m_d.m_vCenter.y);
    psur->Line(m_d.m_vCenter.x, m_d.m_vCenter.y - 10.0f, m_d.m_vCenter.x, m_d.m_vCenter.y + 10.0f);
@@ -1807,73 +1807,6 @@ LightState LightSeq::GetElementState(const int index)
    }
    return rc;
 }
-
-
-// Methods used by the light sequencer center marker
-
-LightSeqCenter::LightSeqCenter(LightSeq * const pLightSeq)
-{
-   m_pLightSeq = pLightSeq;
-}
-
-HRESULT LightSeqCenter::GetTypeName(BSTR *pVal)
-{
-   return m_pLightSeq->GetTypeName(pVal);
-}
-
-IDispatch *LightSeqCenter::GetDispatch()
-{
-   return m_pLightSeq->GetDispatch();
-}
-
-void LightSeqCenter::GetDialogPanes(Vector<PropertyPane> *pvproppane)
-{
-   m_pLightSeq->GetDialogPanes(pvproppane);
-}
-
-void LightSeqCenter::Delete()
-{
-   m_pLightSeq->Delete();
-}
-
-void LightSeqCenter::Uncreate()
-{
-   m_pLightSeq->Uncreate();
-}
-
-IEditable *LightSeqCenter::GetIEditable()
-{
-   return (IEditable *)m_pLightSeq;
-}
-
-PinTable *LightSeqCenter::GetPTable()
-{
-   return m_pLightSeq->GetPTable();
-}
-
-void LightSeqCenter::GetCenter(Vertex2D * const pv) const
-{
-   *pv = m_pLightSeq->m_d.m_vCenter;
-}
-
-void LightSeqCenter::PutCenter(const Vertex2D * const pv)
-{
-   m_pLightSeq->m_d.m_vCenter = *pv;
-}
-
-void LightSeqCenter::MoveOffset(const float dx, const float dy)
-{
-   m_pLightSeq->m_d.m_vCenter.x += dx;
-   m_pLightSeq->m_d.m_vCenter.y += dy;
-
-   GetPTable()->SetDirtyDraw();
-}
-
-int LightSeqCenter::GetSelectLevel()
-{
-   return 2;
-}
-
 
 
 // un-used code but kept
