@@ -114,7 +114,17 @@ typedef [uuid(704231FA-A3F9-47EE-9278-BA21A1E12566)]
                 }
                 TargetType;
 
-				typedef [uuid(08844451-F92F-4d5c-8FFF-5973F7DBFFB0)]
+typedef [uuid(5E83616D-C764-4071-8C17-AB2A73D1B7A9)]
+        enum GateType
+                {
+                GateWireW = 1,
+                GateWireRectangle = 2,
+				GatePlate = 3,
+				GateLongPlate = 4,
+                }
+                GateType;
+
+typedef [uuid(08844451-F92F-4d5c-8FFF-5973F7DBFFB0)]
         enum TextAlignment
                 {
                 TextAlignLeft = 0,
@@ -1750,6 +1760,9 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propget, id(16), nonbrowsable, helpstring("property CurrentAngle")] HRESULT CurrentAngle([out, retval] float *pVal);
                 [propget, id(431), helpstring("property ReflectionEnabled")] HRESULT ReflectionEnabled([out, retval] VARIANT_BOOL *pVal);
                 [propput, id(431), helpstring("property ReflectionEnabled")] HRESULT ReflectionEnabled([in] VARIANT_BOOL newVal);
+                [propget, id(9), helpstring("property DrawStyle")] HRESULT DrawStyle([out, retval] GateType *pVal);
+                [propput, id(9), helpstring("property DrawStyle")] HRESULT DrawStyle([in] GateType newVal);
+
         };
 
         [
