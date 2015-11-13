@@ -2,6 +2,9 @@
 #include "objloader.h"
 #include "meshes/gateBracketMesh.h"
 #include "meshes/gateWireMesh.h"
+#include "meshes/gateLongPlateMesh.h"
+#include "meshes/gatePlateMesh.h"
+#include "meshes/gateWireRectangleMesh.h"
 
 Gate::Gate()
 {
@@ -16,6 +19,42 @@ Gate::Gate()
    memset(m_d.m_szImageFront, 0, MAXTOKEN);
    memset(m_d.m_szMaterial, 0, 32);
    memset(m_d.m_szSurface, 0, MAXTOKEN);
+   m_vertices = 0;
+   m_indices = 0;
+   m_numIndices = 0;
+   m_numVertices = 0;
+}
+
+void Gate::SetGateType(GateType type)
+{
+    if (m_d.m_type == GateWireW)
+    {
+        m_vertices = gateWire;
+        m_indices = gateWireIndices;
+        m_numIndices = gateWireNumFaces;
+        m_numVertices = gateWireNumVertices;
+    }
+    else if (m_d.m_type == GateWireRectangle)
+    {
+        m_vertices = gateWireRectangleMesh;
+        m_indices = gateWireRectangleIndices;
+        m_numIndices = gateWireRectangleNumFaces;
+        m_numVertices = gateWireRectangleNumVertices;
+    }
+    else if (m_d.m_type == GateLongPlate)
+    {
+        m_vertices = gateLongPlateMesh;
+        m_indices = gateLongPlateIndices;
+        m_numIndices = gateLongPlateNumFaces;
+        m_numVertices = gateLongPlateVertices;
+    }
+    else if (m_d.m_type == GatePlate)
+    {
+        m_vertices = gatePlateMesh;
+        m_indices = gatePlateIndices;
+        m_numIndices = gatePlateNumFaces;
+        m_numVertices = gatePlateNumVertices;
+    }
 }
 
 Gate::~Gate()
@@ -84,9 +123,15 @@ void Gate::SetDefaults(bool fromMouseClick)
 
    hr = GetRegInt("DefaultProps\\Gate", "ShowBracket", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
-      m_d.m_fShowBracket = iTmp == 0 ? false : true;
+       m_d.m_fShowBracket = iTmp == 0 ? false : true;
    else
-      m_d.m_fShowBracket = true;
+       m_d.m_fShowBracket = true;
+
+   hr = GetRegInt("DefaultProps\\Gate", "GateType", &iTmp);
+   if ((hr == S_OK) && fromMouseClick)
+       m_d.m_type= (enum GateType)iTmp;
+   else
+       m_d.m_type = GateWireRectangle;
 
    hr = GetRegInt("DefaultProps\\Gate", "Collidable", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
@@ -172,6 +217,8 @@ void Gate::WriteRegDefaults()
    SetRegValue("DefaultProps\\Gate", "ImageBack", REG_SZ, &m_d.m_szImageBack, lstrlen(m_d.m_szImageBack));
    SetRegValueBool("DefaultProps\\Gate", "TwoWay", m_d.m_twoWay);
    SetRegValueBool("DefaultProps\\Gate", "ReflectionEnabled", m_d.m_fReflectionEnabled);
+   SetRegValue("DefaultProps\\Gate", "GateType", REG_DWORD, &m_d.m_type, 4);
+
 }
 
 void Gate::PreRender(Sur * const psur)
@@ -414,21 +461,21 @@ void Gate::UpdateWire(RenderDevice *pd3dDevice)
    rotzMat.Multiply(fullMatrix, fullMatrix);
 
    wireVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
-   for (int i = 0; i < gateWireNumVertices; i++)
+   for (unsigned int i = 0; i < m_numVertices; i++)
    {
-      Vertex3Ds vert(gateWire[i].x, gateWire[i].y, gateWire[i].z);
+      Vertex3Ds vert(m_vertices[i].x, m_vertices[i].y, m_vertices[i].z);
       vert = fullMatrix.MultiplyVector(vert);
 
       buf[i].x = vert.x*m_d.m_length + m_d.m_vCenter.x;
       buf[i].y = vert.y*m_d.m_length + m_d.m_vCenter.y;
       buf[i].z = vert.z*m_d.m_length*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_d.m_height*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + baseHeight;
-      vert = Vertex3Ds(gateWire[i].nx, gateWire[i].ny, gateWire[i].nz);
+      vert = Vertex3Ds(m_vertices[i].nx, m_vertices[i].ny, m_vertices[i].nz);
       vert = fullMatrix.MultiplyVectorNoTranslate(vert);
       buf[i].nx = vert.x;
       buf[i].ny = vert.y;
       buf[i].nz = vert.z;
-      buf[i].tu = gateWire[i].tu;
-      buf[i].tv = gateWire[i].tv;
+      buf[i].tu = m_vertices[i].tu;
+      buf[i].tv = m_vertices[i].tv;
    }
    wireVertexBuffer->unlock();
 }
@@ -457,7 +504,7 @@ void Gate::RenderObject(RenderDevice* pd3dDevice)
    UpdateWire(pd3dDevice);
    // render wire
    pd3dDevice->basicShader->Begin(0);
-   pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, wireVertexBuffer, 0, gateWireNumVertices, wireIndexBuffer, 0, gateWireNumFaces);
+   pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, wireVertexBuffer, 0, m_numVertices, wireIndexBuffer, 0, m_numIndices);
    pd3dDevice->basicShader->End();
 }
 
@@ -540,21 +587,21 @@ void Gate::GenerateWireMesh(Vertex3D_NoTex2 *buf)
    Matrix3D fullMatrix;
    fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotation));
 
-   for (int i = 0; i < gateWireNumVertices; i++)
+   for (unsigned int i = 0; i < m_numVertices; i++)
    {
-      Vertex3Ds vert(gateWire[i].x, gateWire[i].y, gateWire[i].z);
+      Vertex3Ds vert(m_vertices[i].x, m_vertices[i].y, m_vertices[i].z);
       vert = fullMatrix.MultiplyVector(vert);
 
       buf[i].x = vert.x*m_d.m_length + m_d.m_vCenter.x;
       buf[i].y = vert.y*m_d.m_length + m_d.m_vCenter.y;
       buf[i].z = vert.z*m_d.m_length*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_d.m_height*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + baseHeight;
-      vert = Vertex3Ds(gateWire[i].nx, gateWire[i].ny, gateWire[i].nz);
+      vert = Vertex3Ds(m_vertices[i].nx, m_vertices[i].ny, m_vertices[i].nz);
       vert = fullMatrix.MultiplyVectorNoTranslate(vert);
       buf[i].nx = vert.x;
       buf[i].ny = vert.y;
       buf[i].nz = vert.z;
-      buf[i].tu = gateWire[i].tu;
-      buf[i].tv = gateWire[i].tv;
+      buf[i].tu = m_vertices[i].tu;
+      buf[i].tv = m_vertices[i].tv;
    }
 }
 
@@ -569,6 +616,8 @@ void Gate::RenderSetup(RenderDevice* pd3dDevice)
       bracketVertexBuffer->release();
    pd3dDevice->CreateVertexBuffer(gateBracketNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &bracketVertexBuffer);
 
+   SetGateType(m_d.m_type);
+
    baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
    Vertex3D_NoTex2 *buf;
@@ -576,13 +625,14 @@ void Gate::RenderSetup(RenderDevice* pd3dDevice)
    GenerateBracketMesh(buf);
    bracketVertexBuffer->unlock();
 
+
    if (wireIndexBuffer)
       wireIndexBuffer->release();
-   wireIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(gateWireNumFaces, gateWireIndices);
+   wireIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(m_numIndices, m_indices);
 
    if (wireVertexBuffer)
       wireVertexBuffer->release();
-   pd3dDevice->CreateVertexBuffer(gateWireNumVertices, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &wireVertexBuffer);
+   pd3dDevice->CreateVertexBuffer(m_numVertices, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &wireVertexBuffer);
 
    wireVertexBuffer->lock(0, 0, (void**)&buf, 0);
    GenerateWireMesh(buf);
@@ -642,6 +692,7 @@ HRESULT Gate::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey
    bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
    bw.WriteBool(FID(TWWA), m_d.m_twoWay);
    bw.WriteBool(FID(REEN), m_d.m_fReflectionEnabled);
+   bw.WriteInt(FID(GATY), m_d.m_type);
 
    ISelect::SaveData(pstm, hcrypthash, hcryptkey);
 
@@ -667,6 +718,10 @@ BOOL Gate::LoadToken(int id, BiffReader *pbr)
    if (id == FID(PIID))
    {
       pbr->GetInt((int *)pbr->m_pdata);
+   }
+   else if (id == FID(GATY))
+   {
+       pbr->GetInt(&m_d.m_type);
    }
    else if (id == FID(VCEN))
    {
@@ -1242,6 +1297,24 @@ STDMETHODIMP Gate::get_CurrentAngle(float *pVal)
    }
    else
       return E_FAIL;
+}
+
+STDMETHODIMP Gate::get_DrawStyle(GateType *pVal)
+{
+    *pVal = m_d.m_type;
+
+    return S_OK;
+}
+
+STDMETHODIMP Gate::put_DrawStyle(GateType newVal)
+{
+    STARTUNDO
+
+        m_d.m_type = newVal;
+
+    STOPUNDO
+
+        return S_OK;
 }
 
 void Gate::GetDialogPanes(Vector<PropertyPane> *pvproppane)

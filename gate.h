@@ -32,6 +32,7 @@ public:
    bool m_fVisible;
    bool m_twoWay;
    bool m_fReflectionEnabled;
+   GateType m_type;
 };
 
 class Gate :
@@ -51,6 +52,7 @@ class Gate :
 {
 public:
    Gate();
+   void SetGateType(GateType type);
    ~Gate();
 
    BEGIN_COM_MAP(Gate)
@@ -119,6 +121,11 @@ private:
    VertexBuffer *bracketVertexBuffer;
    IndexBuffer *bracketIndexBuffer;
 
+   const Vertex3D_NoTex2 *m_vertices;
+   const WORD            *m_indices;
+   unsigned int     m_numVertices;
+   unsigned int     m_numIndices;
+
    float baseHeight;
 
    // IGate
@@ -164,6 +171,8 @@ public:
    STDMETHOD(get_CurrentAngle)(/*[out, retval]*/ float *pVal);
    STDMETHOD(get_ReflectionEnabled)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_ReflectionEnabled)(/*[in]*/ VARIANT_BOOL newVal);
+   STDMETHOD(get_DrawStyle)(/*[out, retval]*/ GateType *pVal);
+   STDMETHOD(put_DrawStyle)(/*[in]*/ GateType newVal);
 };
 
 #endif // !defined(AFX_GATE_H__EDC63CB2_226F_4606_99A9_0C2DB8FE1E3B__INCLUDED_)
