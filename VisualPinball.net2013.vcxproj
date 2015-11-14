@@ -1162,7 +1162,10 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="meshes\dropTargetT4Mesh.h" />
     <ClInclude Include="meshes\flipperBase.h" />
     <ClInclude Include="meshes\gateBracketMesh.h" />
+    <ClInclude Include="meshes\gateLongPlateMesh.h" />
+    <ClInclude Include="meshes\gatePlateMesh.h" />
     <ClInclude Include="meshes\gateWireMesh.h" />
+    <ClInclude Include="meshes\gateWireRectangleMesh.h" />
     <ClInclude Include="meshes\hitTargetFatRectangleMesh.h" />
     <ClInclude Include="meshes\hitTargetFatSquareMesh.h" />
     <ClInclude Include="meshes\hitTargetRectangleMesh.h" />
