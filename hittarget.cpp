@@ -609,6 +609,7 @@ void HitTarget::RenderSetup(RenderDevice* pd3dDevice)
 
    transformedVertices = new Vertex3D_NoTex2[m_numVertices];
    GenerateMesh(transformedVertices);
+   m_moveAnimationOffset = 0.0f;
    if (m_d.m_targetType == DropTargetBeveled || m_d.m_targetType == DropTargetSimple || m_d.m_targetType == DropTargetFlatSimple)
    {
        if (m_d.m_isDropped)
@@ -623,6 +624,7 @@ void HitTarget::RenderSetup(RenderDevice* pd3dDevice)
    vertexBuffer->lock(0, 0, (void**)&buf, 0);
    memcpy(buf, transformedVertices, m_numVertices*sizeof(Vertex3D_NoTex2));
    vertexBuffer->unlock();
+   m_d.m_time_msec = g_pplayer->m_time_msec;
 }
 
 void HitTarget::RenderStatic(RenderDevice* pd3dDevice)
