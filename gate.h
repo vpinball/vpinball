@@ -27,12 +27,12 @@ public:
    char m_szImageBack[MAXTOKEN];
    float m_angleMin;
    float m_angleMax;
+   GateType m_type;
    bool m_fShowBracket;
    bool m_fCollidable;
    bool m_fVisible;
    bool m_twoWay;
    bool m_fReflectionEnabled;
-   GateType m_type;
 };
 
 class Gate :

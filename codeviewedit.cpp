@@ -292,16 +292,16 @@ CVPrefrence* CVPrefrence::FillCVPreference( \
 
 void CVPrefrence::SetCheckBox(const HWND &hwndDlg)
 {
-		const HWND hChkBox = GetDlgItem(hwndDlg,this->IDC_ChkBox_code);
-		SNDMSG(hChkBox, BM_SETCHECK, this->Highlight ? BST_CHECKED : BST_UNCHECKED, 0L);
+	const HWND hChkBox = GetDlgItem(hwndDlg,this->IDC_ChkBox_code);
+	SNDMSG(hChkBox, BM_SETCHECK, this->Highlight ? BST_CHECKED : BST_UNCHECKED, 0L);
 }
 
 void CVPrefrence::ReadCheckBox(const HWND &hwndDlg)
 {
 	if(IsDlgButtonChecked(hwndDlg,this->IDC_ChkBox_code))
-	{this->Highlight = true;}
+		this->Highlight = true;
 	else
-	{this->Highlight = false;}
+		this->Highlight = false;
 }
 
 void CVPrefrence::GetPrefsFromReg()
@@ -411,4 +411,3 @@ CVPrefrence::~CVPrefrence()
 {
 	//everything should be automatically detroyed.
 }
-

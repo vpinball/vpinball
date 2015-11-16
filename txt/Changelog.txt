@@ -75,10 +75,12 @@ VP 10.0.0 Changelog
 - new table field height setting in the "Dimension & Slope Settings":
   Now you can define a real playfield height. If this value is raised, all elements on the table are also moved by that amount.
   For example: "table field height"=50 means everything on the table is raised by 50 units. This allows for real ball tunnels and more.
+- objects can be placed -under- the playfield or move 'through' the playfield (think Ringmaster or Trolls)
+  and will still be visible through alpha channel/cutouts in the playfield image (note that only -dynamic- objects will show up though, due to restrictions in the engine)
 
 - new rubber element
   rubber object can be rotated around the X/Y/Z axis and shown in the editor if the checkbox "Show In Editor" is checked
-  
+
 - the thickness of a wire trigger can be scaled. 0 is the default thickness. To make it thicker use values like 0.5, 1, 1.5, 2... 
 
 - spinners are mesh based. If the spinner bracket isn't the right one disable the "Show Bracket" settings and you will only see the spinner plate.

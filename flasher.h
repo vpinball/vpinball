@@ -115,9 +115,11 @@ public:
 
       VertexBuffer *dynamicVertexBuffer;
       IndexBuffer *dynamicIndexBuffer;
-      bool dynamicVertexBufferRegenerate;
-      PropertyPane *m_propVisual;
-      // IFlasher
+      
+	  PropertyPane *m_propVisual;
+	  
+	  bool dynamicVertexBufferRegenerate;
+	  // IFlasher
 public:
    STDMETHOD(get_ImageA)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(put_ImageA)(/*[in]*/ BSTR newVal);
