@@ -15,7 +15,8 @@ texture Texture0; // base texture
 texture Texture1; // envmap
 texture Texture2; // envmap radiance
 texture Texture3; // bulb light buffer
- 
+//texture Texture4; // normal map
+
 sampler2D texSampler0 : TEXUNIT0 = sampler_state // base texture
 {
 	Texture	  = (Texture0);
@@ -56,6 +57,16 @@ sampler2D texSamplerBL : TEXUNIT3 = sampler_state // bulb light/transmission buf
 	ADDRESSU  = Clamp;
 	ADDRESSV  = Clamp;
 };
+
+/*sampler2D texSamplerN : TEXUNIT4 = sampler_state // normal map texture
+{
+	Texture = (Texture4);
+	//MIPFILTER = LINEAR; //!! HACK: not set here as user can choose to override trilinear by anisotropic
+	//MAGFILTER = LINEAR;
+	//MINFILTER = LINEAR;
+	//ADDRESSU  = Wrap; //!! ?
+	//ADDRESSV  = Wrap;
+};*/
 
 bool hdrEnvTextures;
 
@@ -102,6 +113,31 @@ struct PS_OUTPUT
 {
    float4 color:COLOR0;
 };
+
+/*float3x3 TBN_trafo(const float3 N, const float3 V, const float2 uv)
+{
+	// derivatives: edge vectors for tri-pos and tri-uv
+	const float3 dpx = ddx(V);
+	const float3 dpy = ddy(V);
+	const float2 duvx = ddx(uv);
+	const float2 duvy = ddy(uv);
+
+	// solve linear system
+	const float3 dp2perp = cross(N, dpy);
+	const float3 dp1perp = cross(dpx, N);
+	const float3 T = dp2perp * duvx.x + dp1perp * duvy.x;
+	const float3 B = dp2perp * duvx.y + dp1perp * duvy.y;
+
+	// construct scale-invariant transformation
+	return float3x3(T, B, N * sqrt( max(dot(T,T), dot(B,B)) )); // inverse scale, as will be normalized anyhow later-on (to save some mul's)
+}
+
+float3 normal_map(const float3 N, const float3 V, const float2 uv)
+{
+    return normalize( mul(tex2D(texSamplerN, uv).xyz * (255./127.) - (128./127.),
+                          TBN_trafo(N, V, uv)) );
+}*/
+
 //------------------------------------
 //
 // Standard Materials
@@ -166,16 +202,16 @@ VS_DEPTH_ONLY_TEX_OUTPUT vs_depth_only_main_with_texture(float4 vPosition : POSI
 
 PS_OUTPUT ps_main(in VS_NOTEX_OUTPUT IN) 
 {
-   //return float4((IN.normal+1.0)*0.5,1.0); // visualize normals
-
    PS_OUTPUT output;
    const float3 diffuse  = cBase_Alpha.xyz;
    const float3 glossy   = (Roughness_WrapL_Edge_IsMetal.w != 0.0) ? cBase_Alpha.xyz : cGlossy*0.08;
    const float3 specular = cClearcoat_EdgeAlpha.xyz*0.08;
    const float  edge     = (Roughness_WrapL_Edge_IsMetal.w != 0.0) ? 1.0 : Roughness_WrapL_Edge_IsMetal.z;
    
-   const float3 N = normalize(IN.normal);
    const float3 V = normalize(/*camera=0,0,0,1*/-IN.worldPos);
+   const float3 N = normalize(IN.normal);
+
+   //return float4((N+1.0)*0.5,1.0); // visualize normals
 
    float4 result;
    result.xyz = lightLoop(IN.worldPos, N, V, diffuse, glossy, specular, edge); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
@@ -194,8 +230,6 @@ PS_OUTPUT ps_main(in VS_NOTEX_OUTPUT IN)
 
 PS_OUTPUT ps_main_texture(in VS_OUTPUT IN) 
 {
-   //return float4((IN.normal+1.0)*0.5,1.0); // visualize normals
-
    PS_OUTPUT output;
    float4 pixel = tex2D(texSampler0, IN.tex0);
 
@@ -217,8 +251,10 @@ PS_OUTPUT ps_main_texture(in VS_OUTPUT IN)
    const float3 specular = cClearcoat_EdgeAlpha.xyz*0.08;
    const float  edge     = (Roughness_WrapL_Edge_IsMetal.w != 0.0) ? 1.0 : Roughness_WrapL_Edge_IsMetal.z;
 
-   const float3 N = normalize(IN.normal);
-   const float3 V = normalize(/*camera=0,0,0,1*/-IN.worldPos);   
+   const float3 V = normalize(/*camera=0,0,0,1*/-IN.worldPos);
+   const float3 N = /*normal_map(*/normalize(IN.normal)/*,V,IN.tex0)*/;
+
+   //return float4((N+1.0)*0.5,1.0); // visualize normals
 
    float4 result;
    result.xyz = lightLoop(IN.worldPos, N, V, diffuse, glossy, specular, edge);

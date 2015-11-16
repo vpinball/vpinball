@@ -129,7 +129,7 @@ void GetRange(const HWND m_hwndScintilla, const int start, const int end, char *
 void CodeViewer::GetWordUnderCaret()
 {
 
-	int CurPos = SendMessage(m_hwndScintilla, SCI_GETCURRENTPOS, 0, 0 );
+	const int CurPos = SendMessage(m_hwndScintilla, SCI_GETCURRENTPOS, 0, 0 );
 	WordUnderCaret.chrg.cpMin = SendMessage(m_hwndScintilla, SCI_WORDSTARTPOSITION, CurPos, TRUE);
 	WordUnderCaret.chrg.cpMax = SendMessage(m_hwndScintilla, SCI_WORDENDPOSITION, CurPos, TRUE);
 	if (( WordUnderCaret.chrg.cpMax - WordUnderCaret.chrg.cpMin) > MAX_FIND_LENGTH) return;
@@ -262,7 +262,7 @@ HRESULT CodeViewer::ReplaceName(IScriptable * const piscript, WCHAR * const wzNe
    CComBSTR bstr;
    piscript->get_Name(&bstr);
 
-   int idx = m_vcvd.GetSortedIndex(bstr);
+   const int idx = m_vcvd.GetSortedIndex(bstr);
    if (idx == -1)
       return E_FAIL;
 
@@ -607,7 +607,7 @@ void CodeViewer::Create()
 
    m_hwndStatus = CreateStatusWindow((WS_CHILD | WS_VISIBLE), "", m_hwndMain, 1);
 
-   int foo[4] = { 120, 320, 350, 400 };
+   const int foo[4] = { 120, 320, 350, 400 };
    SendMessage(m_hwndStatus, SB_SETPARTS, 4, (size_t)foo);
 
    /////////////////// Compile / Find Buttons
@@ -1827,7 +1827,7 @@ void CodeViewer::szUpper(char * const incstr)
 // Makes sure what is found is not part of a var etc..
 int CodeViewer::SureFind(const string &LineIn, const string &ToFind)
 {
-	int Pos = LineIn.find(ToFind);
+	const int Pos = LineIn.find(ToFind);
 	if (Pos == -1) return -1;
 	const char EndChr = LineIn[Pos + ToFind.length() ];
 	int IsValidVBChr = VBValidChars.find( EndChr );
@@ -1850,7 +1850,7 @@ int CodeViewer::SureFind(const string &LineIn, const string &ToFind)
 
 string CodeViewer::ParseRemoveLineComments(string *Line)
 {
-	int commentIdx = Line->find("'");
+	const int commentIdx = Line->find("'");
 	if (commentIdx == -1) return "";
 	string RetVal = Line->substr(commentIdx+1, string::npos);
 	RemovePadding(RetVal);
@@ -2011,7 +2011,7 @@ bool CodeViewer::ParseStructureName(vector<UserData> *ListIn, UserData ud,
 void CodeViewer::ParseDelimtByColon(string *result, string *wholeline)
 {
 	*result = *wholeline ;
-	int idx = result->find(":"); 
+	const int idx = result->find(":"); 
 	if (idx == -1)
 	{
 		wholeline->clear();
@@ -2126,7 +2126,7 @@ void CodeViewer::ReadLineToParseBrain(string wholeline, int linecount, vector<Us
 
 void CodeViewer::RemovePadding(string &line)
 {
-	size_t LL = line.length();
+	const size_t LL = line.length();
 	size_t Pos = (line.find_first_not_of("\n\r\t ,"));
 	if (Pos == -1)
 	{
@@ -2150,7 +2150,7 @@ void CodeViewer::RemovePadding(string &line)
 void CodeViewer::ParseForFunction() // Subs & Collections AndyS - WIP 
 {
   char text[MAX_LINE_LENGTH];
-   size_t scriptLines = SendMessage(m_hwndScintilla, SCI_GETLINECOUNT, 0, 0);
+   const size_t scriptLines = SendMessage(m_hwndScintilla, SCI_GETLINECOUNT, 0, 0);
    SendMessage(m_hwndFunctionList, CB_RESETCONTENT, 0, 0);
  ////////////////////
 	int ParentLevel = 0; //root
@@ -2173,8 +2173,7 @@ void CodeViewer::ParseForFunction() // Subs & Collections AndyS - WIP
 		SendMessage(m_hwndFunctionList, CB_ADDSTRING, 0, (LPARAM)(c_str1) );
    }
 	//Collect Objects/Components from the menu. (cheat!)
-	int CBCount;
-	CBCount = SendMessage(m_hwndItemList, CB_GETCOUNT, 0, 0)-1;//Zero Based
+	int CBCount = SendMessage(m_hwndItemList, CB_GETCOUNT, 0, 0)-1;//Zero Based
 	char c_str1[256]={0};
 	UserData ud;
 	while (CBCount >= 0) 

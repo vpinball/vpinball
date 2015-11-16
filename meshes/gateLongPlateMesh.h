@@ -66,7 +66,7 @@ const Vertex3D_NoTex2 gateLongPlateMesh[62]=
 { 0.379500f,-0.004875f,0.010210f, -0.000000f,0.000000f,1.000000f, 0.304109f,0.106320f}
 };
 
-WORD gateLongPlateIndices[132]=
+const WORD gateLongPlateIndices[132]=
 {
    0,1,2,1,0,3,4,5,6,6,7,4,8,9,10,
    11,10,9,12,13,14,14,15,12,16,12,15,15,17,16,

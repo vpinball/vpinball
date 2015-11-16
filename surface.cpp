@@ -6,9 +6,6 @@ Surface::Surface()
 {
    m_menuid = IDR_SURFACEMENU;
 
-   m_d.m_szImage[0] = 0;
-   m_d.m_szSideImage[0] = 0;
-
    m_d.m_fCollidable = true;
    m_d.m_fSlingshotAnimation = true;
    m_d.m_fInner = true;
@@ -34,12 +31,12 @@ bool Surface::IsTransparent()
    bool result = false;
    if (m_d.m_fSideVisible)
    {
-      Material *mat = m_ptable->GetMaterial(m_d.m_szSideMaterial);
+      const Material *mat = m_ptable->GetMaterial(m_d.m_szSideMaterial);
       result = mat->m_bOpacityActive;
    }
-   if (m_d.m_fVisible)
+   if (m_d.m_fTopBottomVisible)
    {
-      Material *mat = m_ptable->GetMaterial(m_d.m_szTopMaterial);
+      const Material *mat = m_ptable->GetMaterial(m_d.m_szTopMaterial);
       result = result || mat->m_bOpacityActive;
    }
    return result;
@@ -116,7 +113,7 @@ void Surface::WriteRegDefaults()
    SetRegValueFloat(strKeyName, "Elasticity", m_d.m_elasticity);
    SetRegValueFloat(strKeyName, "Friction", m_d.m_friction);
    SetRegValueFloat(strKeyName, "Scatter", m_d.m_scatter);
-   SetRegValueBool(strKeyName, "Visible", m_d.m_fVisible);
+   SetRegValueBool(strKeyName, "Visible", m_d.m_fTopBottomVisible);
    SetRegValueBool(strKeyName, "SideVisible", m_d.m_fSideVisible);
    SetRegValueBool(strKeyName, "Collidable", m_d.m_fCollidable);
    SetRegValueBool(strKeyName, "DisableLighting", m_d.m_fDisableLighting);
@@ -207,7 +204,7 @@ HRESULT Surface::InitTarget(PinTable * const ptable, const float x, const float 
    m_d.m_friction = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "Friction", 0.3f) : 0.3f;
    m_d.m_scatter = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "Scatter", 0) : 0;
 
-   m_d.m_fVisible = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "Visible", true) : true;
+   m_d.m_fTopBottomVisible = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "Visible", true) : true;
    m_d.m_fSideVisible = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "SideVisible", true) : true;
    m_d.m_fCollidable = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "Collidable", true) : true;
 
@@ -248,7 +245,7 @@ void Surface::SetDefaults(bool fromMouseClick)
 
    SetDefaultPhysics(fromMouseClick);
 
-   m_d.m_fVisible = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "Visible", true) : true;
+   m_d.m_fTopBottomVisible = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "Visible", true) : true;
    m_d.m_fSideVisible = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "SideVisible", true) : true;
    m_d.m_fCollidable = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "Collidable", true) : true;
    m_d.m_fDisableLighting = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "DisableLighting", false) : false;
@@ -589,7 +586,6 @@ void Surface::GenerateMesh(std::vector<Vertex3D_NoTex2> &topBuf, std::vector<Ver
       rgnormal[i].y = dx*inv_len;
    }
 
-
    sideBuf.resize(numVertices * 4);
    memset(&sideBuf[0], 0, sizeof(Vertex3D_NoTex2)*numVertices * 4);
    Vertex3D_NoTex2 *verts = &sideBuf[0];
@@ -789,7 +785,7 @@ void Surface::ExportMesh(FILE *f)
 
    char name[MAX_PATH];
    WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, MAX_PATH, NULL, NULL);
-   if (topBuf.size() > 0 && m_d.m_fVisible && !m_d.m_fSideVisible)
+   if (topBuf.size() > 0 && m_d.m_fTopBottomVisible && !m_d.m_fSideVisible)
    {
       WaveFrontObj_WriteObjectName(f, name);
       WaveFrontObj_WriteVertexInfo(f, &topBuf[0], numVertices);
@@ -808,7 +804,7 @@ void Surface::ExportMesh(FILE *f)
       WaveFrontObj_WriteFaceInfo(f, topBottomIndices);
       WaveFrontObj_UpdateFaceOffset(numVertices);
    }
-   else if (topBuf.size() > 0 && m_d.m_fVisible && m_d.m_fSideVisible)
+   else if (topBuf.size() > 0 && m_d.m_fTopBottomVisible && m_d.m_fSideVisible)
    {
       Vertex3D_NoTex2 *tmp = new Vertex3D_NoTex2[numVertices * 5];
       memcpy(tmp, &sideBuf[0], sizeof(Vertex3D_NoTex2) * numVertices * 4);
@@ -828,7 +824,7 @@ void Surface::ExportMesh(FILE *f)
       WaveFrontObj_UpdateFaceOffset(numVertices * 5);
       delete[] idx;
    }
-   else if (!m_d.m_fVisible && m_d.m_fSideVisible)
+   else if (!m_d.m_fTopBottomVisible && m_d.m_fSideVisible)
    {
       WaveFrontObj_WriteObjectName(f, name);
       WaveFrontObj_WriteVertexInfo(f, &sideBuf[0], numVertices * 4);
@@ -842,32 +838,28 @@ void Surface::ExportMesh(FILE *f)
 
 void Surface::PrepareWallsAtHeight(RenderDevice* pd3dDevice)
 {
+   if (IBuffer)
+	   IBuffer->release();
+   if (VBuffer)
+	   VBuffer->release();
+
    std::vector<Vertex3D_NoTex2> topBottomBuf;
    std::vector<Vertex3D_NoTex2> sideBuf;
    std::vector<WORD> topBottomIndices;
    std::vector<WORD> sideIndices;
    GenerateMesh(topBottomBuf, sideBuf, topBottomIndices, sideIndices);
 
-   if (IBuffer)
-	   IBuffer->release();
-   if (VBuffer)
-	   VBuffer->release();
-
-   const unsigned int overallVertices = numVertices * 4 + ((topBottomBuf.size() > 0) ? numVertices * 3 : 0);
-   pd3dDevice->CreateVertexBuffer(overallVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &VBuffer);
+   pd3dDevice->CreateVertexBuffer(numVertices * 4 + ((topBottomBuf.size() > 0) ? numVertices * 3 : 0), 0, MY_D3DFVF_NOTEX2_VERTEX, &VBuffer);
 
    Vertex3D_NoTex2 *verts;
    VBuffer->lock(0, 0, (void**)&verts, VertexBuffer::WRITEONLY);
-
    memcpy(verts, &sideBuf[0], sizeof(Vertex3D_NoTex2)*numVertices * 4);
 
    if (topBottomBuf.size() > 0)
-   {
       //if (m_d.m_fVisible) // Visible could still be set later if rendered dynamically
       {
          memcpy(verts+numVertices * 4, &topBottomBuf[0], sizeof(Vertex3D_NoTex2)*numVertices * 3);
       }
-   }
 
    VBuffer->unlock();
 
@@ -961,7 +953,7 @@ void Surface::RenderSetup(RenderDevice* pd3dDevice)
       if (mat->m_bOpacityActive)
          m_isDynamic = true;
    }
-   if (m_d.m_fVisible)
+   if (m_d.m_fTopBottomVisible)
    {
       Material *mat = m_ptable->GetMaterial(m_d.m_szTopMaterial);
       if (mat->m_bOpacityActive)
@@ -1064,7 +1056,7 @@ void Surface::RenderWallsAtHeight(RenderDevice* pd3dDevice, const bool fDrop)
    if (m_ptable->m_fReflectionEnabled && (/*m_d.m_heightbottom < 0.0f ||*/ m_d.m_heighttop < 0.0f))
       return;
 
-   if (m_d.m_fDisableLighting && (m_d.m_fSideVisible || m_d.m_fVisible))
+   if (m_d.m_fDisableLighting && (m_d.m_fSideVisible || m_d.m_fTopBottomVisible))
       pd3dDevice->basicShader->SetDisableLighting(m_d.m_fDisableLighting);
 
    // render side
@@ -1100,7 +1092,7 @@ void Surface::RenderWallsAtHeight(RenderDevice* pd3dDevice, const bool fDrop)
    }
 
    // render top&bottom
-   if (m_d.m_fVisible && (numPolys > 0))
+   if (m_d.m_fTopBottomVisible && (numPolys > 0))
    {
       Material *mat = m_ptable->GetMaterial(m_d.m_szTopMaterial);
       pd3dDevice->basicShader->SetMaterial(mat);
@@ -1147,7 +1139,7 @@ void Surface::RenderWallsAtHeight(RenderDevice* pd3dDevice, const bool fDrop)
    // reset render states
    //g_pplayer->m_pin3d.DisableAlphaBlend(); //!!  not necessary anymore
    //pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
-   if (m_d.m_fDisableLighting && (m_d.m_fSideVisible || m_d.m_fVisible))
+   if (m_d.m_fDisableLighting && (m_d.m_fSideVisible || m_d.m_fTopBottomVisible))
       pd3dDevice->basicShader->SetDisableLighting(false);
 }
 
@@ -1273,7 +1265,7 @@ HRESULT Surface::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
    bw.WriteFloat(FID(ELAS), m_d.m_elasticity);
    bw.WriteFloat(FID(WFCT), m_d.m_friction);
    bw.WriteFloat(FID(WSCT), m_d.m_scatter);
-   bw.WriteBool(FID(VSBL), m_d.m_fVisible);
+   bw.WriteBool(FID(VSBL), m_d.m_fTopBottomVisible);
    bw.WriteBool(FID(SLGA), m_d.m_fSlingshotAnimation);
    bw.WriteBool(FID(SVBL), m_d.m_fSideVisible);
    bw.WriteBool(FID(DILI), m_d.m_fDisableLighting);
@@ -1489,7 +1481,7 @@ BOOL Surface::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(VSBL))
    {
-      pbr->GetBool(&m_d.m_fVisible);
+      pbr->GetBool(&m_d.m_fTopBottomVisible);
    }
    else if (id == FID(SLGA))
    {
@@ -1909,7 +1901,7 @@ STDMETHODIMP Surface::put_Scatter(float newVal)
 
 STDMETHODIMP Surface::get_Visible(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fVisible);
+   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fTopBottomVisible);
 
    return S_OK;
 }
@@ -1918,11 +1910,11 @@ STDMETHODIMP Surface::put_Visible(VARIANT_BOOL newVal)
 {
    STARTUNDO
 
-      m_d.m_fVisible = VBTOF(newVal);
+   m_d.m_fTopBottomVisible = VBTOF(newVal);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Surface::get_SideImage(BSTR *pVal)

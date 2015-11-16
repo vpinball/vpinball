@@ -33,8 +33,7 @@ public:
    bool m_fIsBottomSolid; //is the bottom closed (lower side of the 'cube') or not (legacy behavior has bottom open, e.g. balls can drop into walls from below, or leave them if inside walls (if bottom area is large enough of course))
    bool m_fSlingshotAnimation;
    bool m_fDisableLighting;
-   //bool m_fUseOneVBuffer;
-   bool m_fVisible;
+   bool m_fTopBottomVisible;
    bool m_fHitEvent;
    bool m_fReflectionEnabled;
 
@@ -118,7 +117,7 @@ public:
          unsigned long long h = 0;
          if (m_d.m_fSideVisible)
             h = m_ptable->GetMaterial(m_d.m_szSideMaterial)->hash();
-         if (m_d.m_fVisible)
+         if (m_d.m_fTopBottomVisible)
             h = m_ptable->GetMaterial(m_d.m_szTopMaterial)->hash();
          return h;
       }
