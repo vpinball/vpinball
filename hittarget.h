@@ -46,7 +46,7 @@ public:
    bool m_fUseHitEvent;
    bool m_fCollidable;
    bool m_fReflectionEnabled;
-
+   bool m_legacy;
    bool  m_isDropped;
 };
 
@@ -118,6 +118,8 @@ public:
    STDMETHOD(put_ReflectionEnabled)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_IsDropped)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_IsDropped)(/*[in]*/ VARIANT_BOOL newVal);
+   STDMETHOD(get_LegacyMode)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   STDMETHOD(put_LegacyMode)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_DrawStyle)(/*[out, retval]*/ TargetType *pVal);
    STDMETHOD(put_DrawStyle)(/*[in]*/ TargetType newVal);
 
@@ -187,8 +189,8 @@ private:        // private member functions
    bool BrowseFor3DMeshFile();
    void RenderObject(RenderDevice *pd3dDevice);
    void UpdateTarget(RenderDevice *pd3dDevice);
-   void SetupHitObject(Vector<HitObject> * pvho, HitObject * obj);
-   void AddHitEdge(Vector<HitObject> * pvho, std::set< std::pair<unsigned, unsigned> >& addedEdges, const unsigned i, const unsigned j, const Vertex3Ds &vi, const Vertex3Ds &vj);
+   void SetupHitObject(Vector<HitObject> * pvho, HitObject * obj, const bool setHitObject=true);
+   void AddHitEdge(Vector<HitObject> * pvho, std::set< std::pair<unsigned, unsigned> >& addedEdges, const unsigned i, const unsigned j, const Vertex3Ds &vi, const Vertex3Ds &vj, const bool setHitObject=true);
 
    PropertyPane *m_propVisual;
    PropertyPane *m_propPosition;
