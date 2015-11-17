@@ -14,7 +14,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (United States) resources
+// Englisch (USA) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
@@ -1967,7 +1967,7 @@ BEGIN
     GROUPBOX        "Position / Scale",-1,7,3,111,53
 END
 
-IDD_PROPHITTARGET_PHYSICS DIALOGEX 0, 0, 125, 112
+IDD_PROPHITTARGET_PHYSICS DIALOGEX 0, 0, 125, 116
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
@@ -1982,8 +1982,9 @@ BEGIN
     LTEXT           "Elasticity Falloff",-1,7,47,63,8
     LTEXT           "&Friction",-1,7,60,63,8
     LTEXT           "&Scatter Angle",-1,7,73,63,8
-    CONTROL         "Collidable (switchable in script)",111,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,86,115,10
-    CONTROL         "IsDropped",IDC_TARGET_ISDROPPED_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,96,49,10
+    CONTROL         "Collidable (switchable in script)",111,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,96,115,10
+    CONTROL         "IsDropped",IDC_TARGET_ISDROPPED_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,106,49,10
+    CONTROL         "Legacy Mode",IDC_TARGET_LEGACY_MODE_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,86,59,10
 END
 
 
@@ -2766,7 +2767,7 @@ BEGIN
     IDS_STEP                "Step"
 END
 
-#endif    // English (United States) resources
+#endif    // Englisch (USA) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

@@ -120,6 +120,7 @@ void HitTarget::SetDefaults(bool fromMouseClick)
    HRESULT hr;
    int iTmp;
 
+   m_d.m_legacy = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "LegacyMode", false) : false;
    m_d.m_tdr.m_fTimerEnabled = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "TimerEnabled", false) : false;
    m_d.m_tdr.m_TimerInterval = fromMouseClick ? GetRegIntWithDefault(strKeyName, "TimerInterval", 100) : 100;
    m_d.m_fUseHitEvent = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "HitEvent", true) : true;
@@ -164,6 +165,7 @@ void HitTarget::WriteRegDefaults()
 {
    static const char strKeyName[] = "DefaultProps\\HitTarget";
 
+   SetRegValueBool(strKeyName, "LegacyMode", m_d.m_legacy);
    SetRegValueBool(strKeyName, "TimerEnabled", m_d.m_tdr.m_fTimerEnabled);
    SetRegValueInt(strKeyName, "TimerInterval", m_d.m_tdr.m_TimerInterval);
    SetRegValueBool(strKeyName, "Visible", m_d.m_fVisible);
@@ -193,41 +195,143 @@ void HitTarget::WriteRegDefaults()
    SetRegValueBool(strKeyName, "ReflectionEnabled", m_d.m_fReflectionEnabled);
 }
 
+const Vertex3Ds dropTargetHitPlaneVertices[16] =
+{
+   { 0.525000f, 0.209778f, 0.135199f },
+   { -0.525000f, 0.209778f, 0.135199f },
+   { 0.525000f, 0.209778f, 1.735199f },
+   { -0.525000f, 0.209778f, 1.735199f },
+   { -0.525000f, 0.209778f, 1.735199f },
+   { -0.525000f, 0.124961f, 1.735199f },
+   { 0.525000f, 0.124961f, 1.735199f },
+   { 0.525000f, 0.209778f, 1.735199f },
+   { -0.525000f, 0.124961f, 1.735199f },
+   { -0.525000f, 0.209778f, 0.135199f },
+   { -0.525000f, 0.124961f, 0.135199f },
+   { -0.525000f, 0.209778f, 1.735199f },
+   { 0.525000f, 0.209778f, 1.735199f },
+   { 0.525000f, 0.124961f, 1.735199f },
+   { 0.525000f, 0.209778f, 0.135199f },
+   { 0.525000f, 0.124961f, 0.135199f },
+};
+
+const WORD dropTargetHitPlaneIndices[24] =
+{
+   0, 1, 2, 1, 3, 2, 4, 5, 6, 6, 7, 4, 8, 9, 10,
+   8, 11, 9, 12, 13, 14, 14, 13, 15
+};
 void HitTarget::GetHitShapes(Vector<HitObject> * const pvho)
 {
     TransformVertices();
 
-    std::set< std::pair<unsigned, unsigned> > addedEdges;
 
-    // add collision triangles and edges
-    for (unsigned i = 0; i < m_numIndices; i += 3)
+    if (m_d.m_targetType == DropTargetBeveled || m_d.m_targetType == DropTargetFlatSimple || m_d.m_targetType == DropTargetSimple)
     {
-        const unsigned int i0 = m_indices[i];
-        const unsigned int i1 = m_indices[i + 1];
-        const unsigned int i2 = m_indices[i + 2];
+       std::set< std::pair<unsigned, unsigned> > addedEdges;
+       Vertex3Ds rgv3D[16];
+       Matrix3D fullMatrix, tempMatrix;
 
-        Vertex3Ds rgv3D[3];
-        // NB: HitTriangle wants CCW vertices, but for rendering we have them in CW order
-        rgv3D[0] = vertices[i0];
-        rgv3D[1] = vertices[i2];
-        rgv3D[2] = vertices[i1];
-        SetupHitObject(pvho, new HitTriangle(rgv3D));
+       fullMatrix.SetIdentity();
+       tempMatrix.SetIdentity();
+       tempMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotZ));
+       tempMatrix.Multiply(fullMatrix, fullMatrix);
 
-        AddHitEdge(pvho, addedEdges, i0, i1, rgv3D[0], rgv3D[2]);
-        AddHitEdge(pvho, addedEdges, i1, i2, rgv3D[2], rgv3D[1]);
-        AddHitEdge(pvho, addedEdges, i2, i0, rgv3D[1], rgv3D[0]);
+
+       // add the normal drop target as collidable but without hit event
+       for (unsigned i = 0; i < m_numIndices; i += 3)
+       {
+          const unsigned int i0 = m_indices[i];
+          const unsigned int i1 = m_indices[i + 1];
+          const unsigned int i2 = m_indices[i + 2];
+
+          Vertex3Ds rgv3D[3];
+          // NB: HitTriangle wants CCW vertices, but for rendering we have them in CW order
+          rgv3D[0] = vertices[i0];
+          rgv3D[1] = vertices[i2];
+          rgv3D[2] = vertices[i1];
+          SetupHitObject(pvho, new HitTriangle(rgv3D), m_d.m_legacy);
+
+          AddHitEdge(pvho, addedEdges, i0, i1, rgv3D[0], rgv3D[2], m_d.m_legacy);
+          AddHitEdge(pvho, addedEdges, i1, i2, rgv3D[2], rgv3D[1], m_d.m_legacy);
+          AddHitEdge(pvho, addedEdges, i2, i0, rgv3D[1], rgv3D[0], m_d.m_legacy);
+       }
+
+       // add collision vertices
+       for (unsigned i = 0; i < m_numVertices; ++i)
+          SetupHitObject(pvho, new HitPoint(vertices[i]), m_d.m_legacy);
+       if (!m_d.m_legacy)
+       {
+          // now create a special hit shape with hit event enabled to prevent a hit event when hit from behind
+          for (unsigned i = 0; i < 16; i++)
+          {
+             Vertex3Ds vert(dropTargetHitPlaneVertices[i].x, dropTargetHitPlaneVertices[i].y, dropTargetHitPlaneVertices[i].z);
+             vert.x *= m_d.m_vSize.x;
+             vert.y *= m_d.m_vSize.y;
+             vert.z *= m_d.m_vSize.z;
+             vert = fullMatrix.MultiplyVector(vert);
+
+             rgv3D[i].x = vert.x + m_d.m_vPosition.x;
+             rgv3D[i].y = vert.y + m_d.m_vPosition.y;
+             rgv3D[i].z = vert.z*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_d.m_vPosition.z + m_ptable->m_tableheight;
+          }
+
+          for (unsigned int i = 0; i < 24; i += 3)
+          {
+             const unsigned int i0 = dropTargetHitPlaneIndices[i];
+             const unsigned int i1 = dropTargetHitPlaneIndices[i + 1];
+             const unsigned int i2 = dropTargetHitPlaneIndices[i + 2];
+
+             Vertex3Ds rgv3D2[3];
+             // NB: HitTriangle wants CCW vertices, but for rendering we have them in CW order
+             rgv3D2[0] = rgv3D[i0];
+             rgv3D2[1] = rgv3D[i2];
+             rgv3D2[2] = rgv3D[i1];
+             SetupHitObject(pvho, new HitTriangle(rgv3D2));
+
+             AddHitEdge(pvho, addedEdges, i0, i1, rgv3D2[0], rgv3D2[2]);
+             AddHitEdge(pvho, addedEdges, i1, i2, rgv3D2[2], rgv3D2[1]);
+             AddHitEdge(pvho, addedEdges, i2, i0, rgv3D2[1], rgv3D2[0]);
+          }
+
+          // add collision vertices
+          for (unsigned i = 0; i < 16; ++i)
+             SetupHitObject(pvho, new HitPoint(rgv3D[i]));
+       }
+
     }
+    else
+    {
+       std::set< std::pair<unsigned, unsigned> > addedEdges;
+       // add collision triangles and edges
+       for (unsigned i = 0; i < m_numIndices; i += 3)
+       {
+          const unsigned int i0 = m_indices[i];
+          const unsigned int i1 = m_indices[i + 1];
+          const unsigned int i2 = m_indices[i + 2];
 
-    // add collision vertices
-    for (unsigned i = 0; i < m_numVertices; ++i)
-        SetupHitObject(pvho, new HitPoint(vertices[i]));
+          Vertex3Ds rgv3D[3];
+          // NB: HitTriangle wants CCW vertices, but for rendering we have them in CW order
+          rgv3D[0] = vertices[i0];
+          rgv3D[1] = vertices[i2];
+          rgv3D[2] = vertices[i1];
+          SetupHitObject(pvho, new HitTriangle(rgv3D));
+
+          AddHitEdge(pvho, addedEdges, i0, i1, rgv3D[0], rgv3D[2]);
+          AddHitEdge(pvho, addedEdges, i1, i2, rgv3D[2], rgv3D[1]);
+          AddHitEdge(pvho, addedEdges, i2, i0, rgv3D[1], rgv3D[0]);
+       }
+
+       // add collision vertices
+       for (unsigned i = 0; i < m_numVertices; ++i)
+          SetupHitObject(pvho, new HitPoint(vertices[i]));
+    }
 }
 
 void HitTarget::GetHitShapesDebug(Vector<HitObject> * const pvho)
 {
 }
 
-void HitTarget::AddHitEdge(Vector<HitObject> * pvho, std::set< std::pair<unsigned, unsigned> >& addedEdges, const unsigned i, const unsigned j, const Vertex3Ds &vi, const Vertex3Ds &vj)
+void HitTarget::AddHitEdge(Vector<HitObject> * pvho, std::set< std::pair<unsigned, unsigned> >& addedEdges, const unsigned i, const unsigned j, const Vertex3Ds &vi, const Vertex3Ds &vj, const bool setHitObject)
 {
    // create pair uniquely identifying the edge (i,j)
    std::pair<unsigned, unsigned> p(std::min(i, j), std::max(i, j));
@@ -235,22 +339,28 @@ void HitTarget::AddHitEdge(Vector<HitObject> * pvho, std::set< std::pair<unsigne
    if (addedEdges.count(p) == 0)   // edge not yet added?
    {
       addedEdges.insert(p);
-      SetupHitObject(pvho, new HitLine3D(vi, vj));
+      SetupHitObject(pvho, new HitLine3D(vi, vj), setHitObject);
    }
 }
 
-void HitTarget::SetupHitObject(Vector<HitObject> * pvho, HitObject * obj)
+void HitTarget::SetupHitObject(Vector<HitObject> * pvho, HitObject * obj, const bool setHitObject)
 {
    obj->m_elasticity = m_d.m_elasticity;
    obj->m_elasticityFalloff = m_d.m_elasticityFalloff;
    obj->SetFriction(m_d.m_friction);
    obj->m_scatter = ANGTORAD(m_d.m_scatter);
    obj->m_threshold = m_d.m_threshold;
-   obj->m_ObjType = eHitTarget;
    obj->m_fEnabled = m_d.m_fCollidable;
-   if (m_d.m_fUseHitEvent)
-      obj->m_pfe = (IFireEvents *)this;
+   obj->m_ObjType = eHitTarget;
    obj->m_objHitEvent = this;
+   if (setHitObject)
+   {
+      if (m_d.m_fUseHitEvent)
+         obj->m_pfe = (IFireEvents *)this;
+   }
+   else
+      obj->m_pfe = NULL;
+
    pvho->AddElement(obj);
    m_vhoCollidable.AddElement(obj);	//remember hit components of primitive
 }
@@ -685,6 +795,7 @@ HRESULT HitTarget::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcry
    bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
    bw.WriteString(FID(MATR), m_d.m_szMaterial);
    bw.WriteBool(FID(TVIS), m_d.m_fVisible);
+   bw.WriteBool(FID(LEMO), m_d.m_legacy);
    bw.WriteBool(FID(HTEV), m_d.m_fUseHitEvent);
    bw.WriteFloat(FID(THRS), m_d.m_threshold);
    bw.WriteFloat(FID(ELAS), m_d.m_elasticity);
@@ -757,6 +868,10 @@ BOOL HitTarget::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(TVIS))
    {
       pbr->GetBool(&m_d.m_fVisible);
+   }
+   else if (id == FID(LEMO))
+   {
+      pbr->GetBool(&m_d.m_legacy);
    }
    else if (id == FID(ISDR))
    {
@@ -1287,9 +1402,15 @@ void HitTarget::UpdatePropertyPanes()
    }
 
    if (m_d.m_targetType == HitTargetRectangle || m_d.m_targetType == HitTargetRound || m_d.m_targetType == HitFatTargetRectangle || m_d.m_targetType == HitFatTargetSquare)
-       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, IDC_TARGET_ISDROPPED_CHECK), FALSE);
+   {
+      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, IDC_TARGET_ISDROPPED_CHECK), FALSE);
+      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, IDC_TARGET_LEGACY_MODE_CHECK), FALSE);
+   }
    else
-       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, IDC_TARGET_ISDROPPED_CHECK), TRUE);
+   {
+      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, IDC_TARGET_ISDROPPED_CHECK), TRUE);
+      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, IDC_TARGET_LEGACY_MODE_CHECK), TRUE);
+   }
 }
 
 void HitTarget::SetDefaultPhysics(bool fromMouseClick)
@@ -1377,6 +1498,25 @@ STDMETHODIMP HitTarget::put_IsDropped(VARIANT_BOOL newVal)
 
    return S_OK;
 }
+
+STDMETHODIMP HitTarget::get_LegacyMode(VARIANT_BOOL *pVal)
+{
+   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_legacy);
+
+   return S_OK;
+}
+
+STDMETHODIMP HitTarget::put_LegacyMode(VARIANT_BOOL newVal)
+{
+   STARTUNDO
+
+      m_d.m_legacy = VBTOF(newVal);
+
+   STOPUNDO
+
+      return S_OK;
+}
+
 
 STDMETHODIMP HitTarget::get_DrawStyle(TargetType *pVal)
 {

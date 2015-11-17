@@ -567,13 +567,13 @@ void Hit3DPoly::Collide(CollisionEvent *coll)
 
       if (m_ObjType == ePrimitive && dot <= -m_threshold)
          FireHitEvent(pball);
-      if (m_ObjType == eHitTarget && dot <= -m_threshold)
+      if (m_pfe && m_ObjType == eHitTarget && dot <= -m_threshold)
       {
-         if (((HitTarget*)m_objHitEvent)->m_d.m_isDropped == false)
-         {
-            ((HitTarget*)m_objHitEvent)->m_hitEvent = true;
-            FireHitEvent(pball);
-         }
+            if (m_objHitEvent && (((HitTarget*)m_objHitEvent)->m_d.m_isDropped == false))
+            {
+               ((HitTarget*)m_objHitEvent)->m_hitEvent = true;
+               FireHitEvent(pball);
+            }
       }
    }
    else
@@ -736,13 +736,13 @@ void HitTriangle::Collide(CollisionEvent* coll)
 
    if (m_ObjType == ePrimitive && dot <= -m_threshold)
       FireHitEvent(pball);
-   if (m_ObjType == eHitTarget && dot <= -m_threshold)
+   if (m_pfe && m_ObjType == eHitTarget && dot <= -m_threshold)
    {
-      if (((HitTarget*)m_objHitEvent)->m_d.m_isDropped == false)
-      {
-         ((HitTarget*)m_objHitEvent)->m_hitEvent = true;
-         FireHitEvent(pball);
-      }
+         if (m_objHitEvent && (((HitTarget*)m_objHitEvent)->m_d.m_isDropped == false))
+         {
+            ((HitTarget*)m_objHitEvent)->m_hitEvent = true;
+            FireHitEvent(pball);
+         }
    }
 }
 
@@ -906,13 +906,13 @@ void HitLine3D::Collide(CollisionEvent* coll)
 
    if (m_ObjType == ePrimitive && dot <= -m_threshold)
       FireHitEvent(pball);
-   if (m_ObjType == eHitTarget && dot <= -m_threshold)
+   if (m_pfe && m_ObjType == eHitTarget && dot <= -m_threshold)
    {
-      if (((HitTarget*)m_objHitEvent)->m_d.m_isDropped == false)
-      {
-         ((HitTarget*)m_objHitEvent)->m_hitEvent = true;
-         FireHitEvent(pball);
-      }
+         if (m_objHitEvent && (((HitTarget*)m_objHitEvent)->m_d.m_isDropped == false))
+         {
+            ((HitTarget*)m_objHitEvent)->m_hitEvent = true;
+            FireHitEvent(pball);
+         }
    }
 }
 

@@ -536,7 +536,8 @@ void DoHitTest(Ball *pball, HitObject *pho, CollisionEvent& coll)
 #endif
    if (pho->m_ObjType == eHitTarget)
    {
-      if (((HitTarget*)pho->m_objHitEvent)->m_d.m_isDropped == true)
+
+      if ( pho->m_objHitEvent && (((HitTarget*)pho->m_objHitEvent)->m_d.m_isDropped == true) )
          return;
    }
 
