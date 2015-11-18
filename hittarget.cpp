@@ -53,47 +53,57 @@ void HitTarget::SetMeshType(const TargetType type)
         m_numIndices = hitTargetT2NumFaces;
         m_numVertices = hitTargetT2Vertices;
     }
-    if (type == DropTargetSimple)
+    else if (type == DropTargetSimple)
     {
         m_vertices = hitTargetT3Mesh;
         m_indices = hitTargetT3Indices;
         m_numIndices = hitTargetT3NumFaces;
         m_numVertices = hitTargetT3Vertices;
     }
-    if (type == DropTargetFlatSimple)
+    else if (type == DropTargetFlatSimple)
     {
         m_vertices = hitTargetT4Mesh;
         m_indices = hitTargetT4Indices;
         m_numIndices = hitTargetT4NumFaces;
         m_numVertices = hitTargetT4Vertices;
     }
-    if (type == HitTargetRound)
+    else if (type == HitTargetRound)
     {
         m_vertices = hitTargetRoundMesh;
         m_indices = hitTargetRoundIndices;
         m_numIndices = hitTargetRoundNumFaces;
         m_numVertices = hitTargetRoundVertices;
     }
-    if (type == HitTargetRectangle)
+    else if (type == HitTargetRectangle)
     {
         m_vertices = hitTargetRectangleMesh;
         m_indices = hitTargetRectangleIndices;
         m_numIndices = hitTargetRectangleNumFaces;
         m_numVertices = hitTargetRectangleVertices;
     }
-    if (type == HitFatTargetRectangle)
+    else if (type == HitFatTargetRectangle)
     {
         m_vertices = hitFatTargetRectangleMesh;
         m_indices = hitFatTargetRectangleIndices;
         m_numIndices = hitFatTargetRectangleNumFaces;
         m_numVertices = hitFatTargetRectangleVertices;
     }
-    if (type == HitFatTargetSquare)
+    else if (type == HitFatTargetSquare)
     {
         m_vertices = hitFatTargetSquareMesh;
         m_indices = hitFatTargetSquareIndices;
         m_numIndices = hitFatTargetSquareNumFaces;
         m_numVertices = hitFatTargetSquareVertices;
+    }
+    else
+    {
+        // just in case if something went wrong with the target type
+        // set it to the standard simple drop target to prevent crashing
+        m_vertices = hitTargetT3Mesh;
+        m_indices = hitTargetT3Indices;
+        m_numIndices = hitTargetT3NumFaces;
+        m_numVertices = hitTargetT3Vertices;
+        m_d.m_targetType = DropTargetSimple;
     }
 }
 
