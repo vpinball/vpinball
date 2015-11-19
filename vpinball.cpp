@@ -2717,10 +2717,19 @@ INT_PTR CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                   //strcpy_s(pps->m_szPath, "* Backglass Output *");
                   pps->m_bToBackglassOutput ^= true;
 
-                  sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), sel, LVNI_SELECTED); //next selected item
+                  char pathName[MAX_PATH];
+                  memset(pathName, 0, MAX_PATH);
+                  if (pps->m_bToBackglassOutput)
+                  {
+                      strcpy_s(pathName, "*BG* ");
+                  }
+                  strcat_s(pathName, pps->m_szPath);
+                  ListView_SetItemText(GetDlgItem(hwndDlg, IDC_SOUNDLIST), sel, 1, pathName);
+                  pt->SetNonUndoableDirty(eSaveDirty);
 
+                  sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), sel, LVNI_SELECTED); //next selected item
                }
-               EndDialog(hwndDlg, TRUE);
+               //EndDialog(hwndDlg, TRUE);
             }
          }
          break;
