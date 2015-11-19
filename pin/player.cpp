@@ -3952,6 +3952,9 @@ void Player::DrawBalls()
    {
       Ball * const pball = m_vball[i];
 
+      if(!pball->m_visible)
+          continue;
+
       if (orgDrawReflection && !pball->m_reflectionEnabled)
          drawReflection = false;
       if (orgDrawReflection && pball->m_reflectionEnabled)

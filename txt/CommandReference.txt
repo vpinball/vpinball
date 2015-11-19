@@ -662,6 +662,7 @@ BulbIntensityScale(float) - allows to dampen/scale the intensity of (bulb-)light
 ReflectionEnabled(bool) - if playfield reflects objects this can be used to enable/disable the reflection for a specific ball
 PlayfieldReflectionScale(float) - allows to dampen/scale the contribution of the playfield reflections on each ball (see BallPlayfieldReflectionScale() for the Table)
 ForceReflection(bool) - if enabled the ball will be reflection on the playfield even it's on a ramp or an upper playfield. (default=0)
+Visible(bool) - changes if the ball is visible on the playfield or not (e.g. only physics simulated)
 
 RUBBER
 ==============================================================================================================================================
