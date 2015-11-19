@@ -31,6 +31,7 @@ Ball::Ball()
    m_playfieldReflectionStrength = 1.f;
    m_reflectionEnabled = true;
    m_forceReflection = false;
+   m_visible = true;
 
    memset(m_szImage, 0, MAXTOKEN);
    memset(m_szImageFront, 0, MAXTOKEN);
@@ -62,6 +63,7 @@ void Ball::Init(const float mass)
    m_playfieldReflectionStrength = 1.f;
    m_reflectionEnabled = true;
    m_forceReflection = false;
+   m_visible = true;
 
    m_coll.obj = NULL;
    m_dynamic = C_DYNAMIC; // assume dynamic

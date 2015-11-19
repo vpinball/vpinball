@@ -32,7 +32,7 @@ STDMETHODIMP BallEx::get_X(float *pVal)
 {
    CHECKSTALEBALL
 
-      *pVal = m_pball->m_pos.x;
+   *pVal = m_pball->m_pos.x;
 
    return S_OK;
 }
@@ -41,7 +41,7 @@ STDMETHODIMP BallEx::put_X(float newVal)
 {
    CHECKSTALEBALL
 
-      m_pball->m_pos.x = newVal;
+   m_pball->m_pos.x = newVal;
 
    return S_OK;
 }
@@ -50,7 +50,7 @@ STDMETHODIMP BallEx::get_Y(float *pVal)
 {
    CHECKSTALEBALL
 
-      *pVal = m_pball->m_pos.y;
+   *pVal = m_pball->m_pos.y;
 
    return S_OK;
 }
@@ -59,7 +59,7 @@ STDMETHODIMP BallEx::put_Y(float newVal)
 {
    CHECKSTALEBALL
 
-      m_pball->m_pos.y = newVal;
+   m_pball->m_pos.y = newVal;
 
    return S_OK;
 }
@@ -68,7 +68,7 @@ STDMETHODIMP BallEx::get_VelX(float *pVal)
 {
    CHECKSTALEBALL
 
-      *pVal = m_pball->m_vel.x;
+   *pVal = m_pball->m_vel.x;
 
    return S_OK;
 }
@@ -77,7 +77,7 @@ STDMETHODIMP BallEx::put_VelX(float newVal)
 {
    CHECKSTALEBALL
 
-      m_pball->m_vel.x = newVal;
+   m_pball->m_vel.x = newVal;
 
    m_pball->CalcHitRect();
 
@@ -88,7 +88,7 @@ STDMETHODIMP BallEx::get_VelY(float *pVal)
 {
    CHECKSTALEBALL
 
-      *pVal = m_pball->m_vel.y;
+   *pVal = m_pball->m_vel.y;
 
    return S_OK;
 }
@@ -97,7 +97,7 @@ STDMETHODIMP BallEx::put_VelY(float newVal)
 {
    CHECKSTALEBALL
 
-      m_pball->m_vel.y = newVal;
+   m_pball->m_vel.y = newVal;
 
    m_pball->CalcHitRect();
 
@@ -108,7 +108,7 @@ STDMETHODIMP BallEx::get_Z(float *pVal)
 {
    CHECKSTALEBALL
 
-      *pVal = m_pball->m_pos.z;
+   *pVal = m_pball->m_pos.z;
 
    return S_OK;
 }
@@ -117,7 +117,7 @@ STDMETHODIMP BallEx::put_Z(float newVal)
 {
    CHECKSTALEBALL
 
-      m_pball->m_pos.z = newVal;
+   m_pball->m_pos.z = newVal;
 
    return S_OK;
 }
@@ -126,7 +126,7 @@ STDMETHODIMP BallEx::get_VelZ(float *pVal)
 {
    CHECKSTALEBALL
 
-      *pVal = m_pball->m_vel.z;
+   *pVal = m_pball->m_vel.z;
 
    return S_OK;
 }
@@ -135,7 +135,7 @@ STDMETHODIMP BallEx::put_VelZ(float newVal)
 {
    CHECKSTALEBALL
 
-      m_pball->m_vel.z = newVal;
+   m_pball->m_vel.z = newVal;
 
    m_pball->CalcHitRect();
 
@@ -146,7 +146,7 @@ STDMETHODIMP BallEx::get_Color(OLE_COLOR *pVal)
 {
    CHECKSTALEBALL
 
-      *pVal = m_pball->m_color;
+   *pVal = m_pball->m_color;
 
    return S_OK;
 }
@@ -155,7 +155,7 @@ STDMETHODIMP BallEx::put_Color(OLE_COLOR newVal)
 {
    CHECKSTALEBALL
 
-      m_pball->m_color = newVal;
+   m_pball->m_color = newVal;
 
    return S_OK;
 }
@@ -235,7 +235,7 @@ STDMETHODIMP BallEx::get_Mass(float *pVal)
 {
    CHECKSTALEBALL
 
-      *pVal = m_pball->m_mass;
+   *pVal = m_pball->m_mass;
 
    return S_OK;
 }
@@ -244,7 +244,7 @@ STDMETHODIMP BallEx::put_Mass(float newVal)
 {
    CHECKSTALEBALL
 
-      m_pball->m_mass = newVal;
+   m_pball->m_mass = newVal;
    m_pball->m_invMass = 1.0f / newVal;
 
    m_pball->m_inertia = (float)(2.0 / 5.0) * m_pball->m_radius*m_pball->m_radius * m_pball->m_mass;
@@ -256,7 +256,7 @@ STDMETHODIMP BallEx::get_ID(int *pVal)
 {
    CHECKSTALEBALL
 
-      *pVal = m_pball->m_id;
+   *pVal = m_pball->m_id;
 
    return S_OK;
 }
@@ -265,7 +265,7 @@ STDMETHODIMP BallEx::put_ID(int newVal)
 {
    CHECKSTALEBALL
 
-      m_pball->m_id = newVal;
+   m_pball->m_id = newVal;
 
    return S_OK;
 }
@@ -274,7 +274,7 @@ STDMETHODIMP BallEx::get_Radius(float *pVal)
 {
    CHECKSTALEBALL
 
-      *pVal = m_pball->m_radius;
+   *pVal = m_pball->m_radius;
 
    return S_OK;
 }
@@ -283,7 +283,7 @@ STDMETHODIMP BallEx::put_Radius(float newVal)
 {
    CHECKSTALEBALL
 
-      m_pball->m_radius = newVal;
+   m_pball->m_radius = newVal;
    m_pball->m_inertia = (float)(2.0 / 5.0) * m_pball->m_radius*m_pball->m_radius * m_pball->m_mass;
 
    m_pball->CalcHitRect();
@@ -295,7 +295,7 @@ STDMETHODIMP BallEx::get_BulbIntensityScale(float *pVal)
 {
    CHECKSTALEBALL
 
-      *pVal = m_pball->m_bulb_intensity_scale;
+   *pVal = m_pball->m_bulb_intensity_scale;
 
    return S_OK;
 }
@@ -304,7 +304,7 @@ STDMETHODIMP BallEx::put_BulbIntensityScale(float newVal)
 {
    CHECKSTALEBALL
 
-      m_pball->m_bulb_intensity_scale = newVal;
+   m_pball->m_bulb_intensity_scale = newVal;
 
    return S_OK;
 }
@@ -355,14 +355,28 @@ STDMETHODIMP BallEx::put_ForceReflection(VARIANT_BOOL newVal)
     return S_OK;
 }
 
+STDMETHODIMP BallEx::get_Visible(VARIANT_BOOL *pVal)
+{
+    *pVal = (VARIANT_BOOL)FTOVB(m_pball->m_visible);
+
+    return S_OK;
+}
+
+STDMETHODIMP BallEx::put_Visible(VARIANT_BOOL newVal)
+{
+    m_pball->m_visible = VBTOF(newVal);
+
+    return S_OK;
+}
+
 STDMETHODIMP BallEx::DestroyBall(int *pVal)
 {
    int cnt = 0;
    if (g_pplayer)
    {
       ++cnt;
-	  Ball * b = g_pplayer->m_pactiveball;
-	  g_pplayer->m_pactiveball = NULL;
+      Ball * b = g_pplayer->m_pactiveball;
+      g_pplayer->m_pactiveball = NULL;
       g_pplayer->DestroyBall(b); // clear ActiveBall
    }
 

@@ -102,6 +102,7 @@ public:
    bool m_frozen;
    bool m_reflectionEnabled;
    bool m_forceReflection;
+   bool m_visible;
 
    static unsigned int ballID; // increased for each ball created to have an unique ID for scripts for each ball
 };
