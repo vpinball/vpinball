@@ -111,6 +111,7 @@ static const float quadVerts[4 * 5] =
 };
 
 static unsigned int material_flips = 0;
+static unsigned int stats_drawn_static_triangles = 0;
 
 //
 
@@ -1281,6 +1282,8 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 
    // 0 means disable limiting of draw-ahead queue
    m_limiter.Init(m_fMaxPrerenderedFrames);
+
+   stats_drawn_static_triangles = m_pin3d.m_pd3dDevice->m_stats_drawn_triangles;
 
    Render(); //!! why here already? potentially not all initialized yet??
 
@@ -3561,6 +3564,8 @@ void Player::Render()
 
    m_LastKnownGoodCounter++;
 
+   m_pin3d.m_pd3dDevice->m_stats_drawn_triangles = 0;
+
    CopyStaticAndAnimate();
    if(!m_fShowFPS || !m_staticOnly)
       RenderDynamics();
@@ -3645,7 +3650,7 @@ void Player::Render()
 
       // Draw the framerate.
       const float fpsAvg = (m_fpsCount == 0) ? 0.0f : m_fpsAvg / m_fpsCount;
-      int len2 = sprintf_s(szFoo, " FPS: %.1f FPS(avg): %.1f  Display %s Objects ", m_fps, fpsAvg, m_staticOnly ? "only static" : "all");
+      int len2 = sprintf_s(szFoo, " FPS: %.1f FPS(avg): %.1f  Display %s Objects (%u/%u Triangles) ", m_fps, fpsAvg, m_staticOnly ? "only static" : "all", m_pin3d.m_pd3dDevice->m_stats_drawn_triangles, stats_drawn_static_triangles+m_pin3d.m_pd3dDevice->m_stats_drawn_triangles);
       TextOut(hdcNull, 10, 10, szFoo, len2);
 
       const U64 period = m_lastFrameDuration;

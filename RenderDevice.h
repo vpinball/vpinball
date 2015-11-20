@@ -6,9 +6,9 @@
 #include "Material.h"
 #include "Texture.h"
 
-#define CHECKD3D(s) { HRESULT hr = (s); if (FAILED(hr)) ReportFatalError(hr, __FILE__, __LINE__); }
+#define CHECKD3D(s) { const HRESULT hr = (s); if (FAILED(hr)) ReportFatalError(hr, __FILE__, __LINE__); }
 
-void ReportFatalError(HRESULT hr, const char *file, int line);
+void ReportFatalError(const HRESULT hr, const char *file, const int line);
 void ReportError(const char *errorText, const HRESULT hr, const char *file, const int line);
 
 typedef IDirect3DTexture9 D3DTexture;
@@ -330,6 +330,8 @@ public:
    //Shader* m_curShader; // for caching
 
    TextureManager m_texMan;
+
+   unsigned int m_stats_drawn_triangles;
 
    static VertexDeclaration* m_pVertexTexelDeclaration;
    static VertexDeclaration* m_pVertexNormalTexelDeclaration;

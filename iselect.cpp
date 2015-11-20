@@ -331,7 +331,7 @@ void ISelect::GetTypeNameForType(ItemTypeEnum type, WCHAR * buf)
    case eItemTable:        strID = IDS_TABLE; break;
    case eItemLightCenter:  strID = IDS_TB_LIGHT; break;
    case eItemDragPoint:    strID = IDS_CONTROLPOINT; break;
-   case eItemLightSeqCenter: strID = IDS_TB_LIGHTSEQ; break;
+   //case eItemLightSeqCenter: strID = IDS_TB_LIGHTSEQ; break;
    default:
       strID = EditableRegistry::GetTypeNameStringID(type); break;
    }

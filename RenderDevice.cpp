@@ -236,6 +236,8 @@ static pDF mDwmFlush = NULL;
 RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, const bool fullscreen, const int colordepth, int &refreshrate, int VSync, const bool useAA, const bool stereo3D, const bool FXAA, const bool useNvidiaApi)
    : m_texMan(*this)
 {
+   m_stats_drawn_triangles = 0;
+
    m_useNvidiaApi = useNvidiaApi;
    m_adapter = D3DADAPTER_DEFAULT;     // for now, always use the default adapter
 
@@ -1258,7 +1260,9 @@ void RenderDevice::DrawPrimitive(const D3DPRIMITIVETYPE type, const DWORD fvf, c
    VertexDeclaration * declaration = fvfToDecl(fvf);
    SetVertexDeclaration(declaration);
 
-   hr = m_pD3DDevice->DrawPrimitiveUP(type, ComputePrimitiveCount(type, vertexCount), vertices, fvfToSize(fvf));
+   const unsigned int np = ComputePrimitiveCount(type, vertexCount);
+   m_stats_drawn_triangles += np;
+   hr = m_pD3DDevice->DrawPrimitiveUP(type, np, vertices, fvfToSize(fvf));
 
    if (FAILED(hr))
       ReportError("Fatal Error: DrawPrimitiveUP failed!", hr, __FILE__, __LINE__);
@@ -1274,10 +1278,14 @@ void RenderDevice::DrawIndexedPrimitive(const D3DPRIMITIVETYPE type, const DWORD
    VertexDeclaration * declaration = fvfToDecl(fvf);
    SetVertexDeclaration(declaration);
 
-   hr = m_pD3DDevice->DrawIndexedPrimitiveUP(type, 0, vertexCount, ComputePrimitiveCount(type, indexCount),
+   const unsigned int np = ComputePrimitiveCount(type, indexCount);
+   m_stats_drawn_triangles += np;
+   hr = m_pD3DDevice->DrawIndexedPrimitiveUP(type, 0, vertexCount, np,
       indices, D3DFMT_INDEX16, vertices, fvfToSize(fvf));
+
    if (FAILED(hr))
       ReportError("Fatal Error: DrawIndexedPrimitive failed!", hr, __FILE__, __LINE__);
+
    m_curVertexBuffer = 0;      // DrawIndexedPrimitiveUP sets the VB to NULL
    m_curIndexBuffer = 0;       // DrawIndexedPrimitiveUP sets the IB to NULL
 
@@ -1297,7 +1305,9 @@ void RenderDevice::DrawPrimitiveVB(const D3DPRIMITIVETYPE type, const DWORD fvf,
       m_curVertexBuffer = vb;
    }
 
-   hr = m_pD3DDevice->DrawPrimitive(type, startVertex, ComputePrimitiveCount(type, vertexCount));
+   const unsigned int np = ComputePrimitiveCount(type, vertexCount);
+   m_stats_drawn_triangles += np;
+   hr = m_pD3DDevice->DrawPrimitive(type, startVertex, np);
    if (FAILED(hr))
       ReportError("Fatal Error: DrawPrimitive failed!", hr, __FILE__, __LINE__);
 
@@ -1324,7 +1334,9 @@ void RenderDevice::DrawIndexedPrimitiveVB(const D3DPRIMITIVETYPE type, const DWO
    }
 
    // render
-   CHECKD3D(m_pD3DDevice->DrawIndexedPrimitive(type, startVertex, 0, vertexCount, startIndex, ComputePrimitiveCount(type, indexCount)));
+   const unsigned int np = ComputePrimitiveCount(type, indexCount);
+   m_stats_drawn_triangles += np;
+   CHECKD3D(m_pD3DDevice->DrawIndexedPrimitive(type, startVertex, 0, vertexCount, startIndex, np));
 
    m_curDrawCalls++;
 }
