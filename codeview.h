@@ -253,7 +253,7 @@ public:
 
 	void ReadLineToParseBrain(string wholeline, int linecount, vector<UserData> *ListIn);
 	bool ShowTooltip(SCNotification *Scn);
-	void ShowAutoComplete();
+	void ShowAutoComplete(SCNotification *pSCN);
 	void szLower(char * const incstr);
 	void szUpper(char * const incstr);
 	string ValidChars;
@@ -272,8 +272,9 @@ public:
 	COLORREF g_PrefCols[16];
 	COLORREF crBackColor;
 	bool DisplayAutoComplete;
+	void GetMembers(vector<UserData>* ListIn, const string &StrIn);
 	//TODO: int TabStop;
-	int DisplayAutoCompleteAfter;
+	int DisplayAutoCompleteLength;
 	bool DwellDisplay;
 	bool DwellHelp;
 	int DwellDisplayTime;
@@ -289,13 +290,17 @@ public:
 	string vbsKeyWords;
 	vector<string> *AutoCompList;
 	// Dictionaries
-	vector<UserData> *g_VBwords;
-	vector<UserData> *g_UserFunc;
-	vector<UserData> *g_Components;
-	vector<UserData> *g_VP_Core;
+	vector<UserData> *VBwordsDict;
+	vector<UserData> *PageConstructsDict;
+	vector<UserData> *ComponentsDict;
+	vector<UserData> *VP_CoreDict;
+	vector<UserData> *CurrentMembers;
 	string AutoCompString;
+	string AutoCompMembersString;
 	Sci_TextRange WordUnderCaret;
-
+	char CaretTextBuff[MAX_FIND_LENGTH];
+	Sci_TextRange CurrentConstruct;
+ 	char ConstructTextBuff[MAX_FIND_LENGTH];
 	void ListEventsFromItem();
    void FindCodeFromEvent();
    void TellHostToSelectItem();
@@ -377,7 +382,7 @@ public:
    BOOL m_fGroupElements;
 };
 
-#define MAX_LINE_LENGTH 1024
+#define MAX_LINE_LENGTH 2048
 
 class OMCollectionEnum :
    public CComObjectRootEx<CComSingleThreadModel>,

@@ -383,7 +383,7 @@ void CodeViewer::UpdatePrefsfromReg()
 {
 	crBackColor = GetRegIntWithDefault("CVEdit", "BackGroundColor", RGB(255,255,255));
 	DisplayAutoComplete = GetRegBoolWithDefault("CVEdit", "DisplayAutoComplete", true );
-	DisplayAutoCompleteAfter = GetRegIntWithDefault("CVEdit", "DisplayAutoCompleteAfter", 1);
+	DisplayAutoCompleteLength = GetRegIntWithDefault("CVEdit", "DisplayAutoCompleteAfter", 1);
 	DwellDisplay = GetRegBoolWithDefault("CVEdit", "DwellDisplay", true );
 	DwellHelp = GetRegBoolWithDefault("CVEdit", "DwellHelp", true );
 	DwellDisplayTime = GetRegIntWithDefault("CVEdit", "DwellDisplayTime", 700);
@@ -397,7 +397,7 @@ void CodeViewer::UpdateRegWithPrefs()
 {
 	SetRegValueInt("CVEdit", "BackGroundColor", crBackColor);
 	SetRegValueBool("CVEdit","DisplayAutoComplete", DisplayAutoComplete);
-	SetRegValueInt("CVEdit","DisplayAutoCompleteAfter", DisplayAutoCompleteAfter);
+	SetRegValueInt("CVEdit","DisplayAutoCompleteAfter", DisplayAutoCompleteLength);
 	SetRegValueBool("CVEdit","DwellDisplay", DwellDisplay);
 	SetRegValueBool("CVEdit","DwellHelp", DwellHelp);
 	SetRegValueInt("CVEdit","DwellDisplayTime", DwellDisplayTime);
@@ -494,11 +494,14 @@ void CodeViewer::Create()
 	StopErrorDisplay = false;
 // Create new list of user functions & Collections- filled in ParseForFunction(), first called in LoadFromStrem()
 	AutoCompList = new vector<string>();
-	g_Components = new vector<UserData>();
-	g_UserFunc = new vector<UserData>();
-	g_VP_Core = new vector<UserData>();
-// parse vb reserved words for auto complete.
-	g_VBwords = new vector<UserData>;
+	ComponentsDict = new vector<UserData>();
+	PageConstructsDict = new vector<UserData>();
+	VP_CoreDict = new vector<UserData>();
+	CurrentMembers = new vector<UserData>();
+	WordUnderCaret.lpstrText = (char *) CaretTextBuff;
+	CurrentConstruct.lpstrText = (char *) ConstructTextBuff;
+	// parse vb reserved words for auto complete.
+	VBwordsDict = new vector<UserData>;
 	int intWordFinish =-1; //skip space
 	char WordChar= vbsReservedWords[0];
 	char szWord[256];
@@ -521,7 +524,7 @@ void CodeViewer::Create()
 	}
 	vbsKeyWords = new char[strlen(vbsReservedWords)+2];
 	vbsKeyWords.clear();
-	for (vector<UserData>::iterator i = g_VBwords->begin();i != g_VBwords->end(); ++i)
+	for (vector<UserData>::iterator i = VBwordsDict->begin();i != VBwordsDict->end(); ++i)
 	{
 		//make vbsKeyWords in order. (the cat has been kicked out :)
 		vbsKeyWords += lowerCase( i->KeyName);
@@ -673,31 +676,37 @@ void CodeViewer::Destroy()
 	}
 	AutoCompList = 0;
 
-	if(g_Components)
+	if(ComponentsDict)
 	{
-		g_Components->clear();
-		delete g_Components;
+		ComponentsDict->clear();
+		delete ComponentsDict;
 	}
-	g_Components = 0;
+	ComponentsDict = 0;
 
-	if(g_VBwords)
+	if(PageConstructsDict)
 	{
-		g_VBwords->clear();
-		delete g_VBwords;
+		PageConstructsDict->clear();
+		delete PageConstructsDict;
 	}
-	g_VBwords = 0;
-	if(g_UserFunc)
+	PageConstructsDict = 0;
+	if(VBwordsDict)
 	{
-		g_UserFunc->clear();
-		delete g_UserFunc;
+		VBwordsDict->clear();
+		delete VBwordsDict;
 	}
-	g_UserFunc = 0;
-	if(g_VP_Core)
+	VBwordsDict = 0;
+	if(CurrentMembers)
 	{
-		g_VP_Core->clear();
-		delete g_VP_Core;
+		CurrentMembers->clear();
+		delete CurrentMembers;
 	}
-	g_VP_Core = 0;
+	CurrentMembers = 0;
+	if(VP_CoreDict)
+	{
+		VP_CoreDict->clear();
+		delete VP_CoreDict;
+	}
+	VP_CoreDict = 0;
 
 	if (m_hwndFind) DestroyWindow(m_hwndFind);
 
@@ -772,7 +781,7 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
       ColorError(nLine, nChar);
    }
 
-   OLECHAR wszOutput[1024];
+   OLECHAR wszOutput[MAX_LINE_LENGTH];
    swprintf_s(wszOutput, L"Line: %u\n%s",
       nLine, ei.bstrDescription);
 
@@ -1305,9 +1314,9 @@ void CodeViewer::FindCodeFromEvent()
       const size_t beginchar = SendMessage(m_hwndScintilla, SCI_POSITIONFROMLINE, line, 0);
       bool fGoodMatch = true;
 
-      char szLine[1024];
-      SOURCE_TEXT_ATTR wzFormat[1024];
-      WCHAR wzText[1024];
+      char szLine[MAX_LINE_LENGTH];
+      SOURCE_TEXT_ATTR wzFormat[MAX_LINE_LENGTH];
+      WCHAR wzText[MAX_LINE_LENGTH];
 
       const size_t cchar = SendMessage(m_hwndScintilla, SCI_GETLINE, line, (size_t)szLine);
       MultiByteToWideChar(CP_ACP, 0, szLine, -1, wzText, (int)cchar);
@@ -1364,7 +1373,7 @@ void CodeViewer::FindCodeFromEvent()
 
    if (!fFound)
    {
-      char szNewCode[1024];
+      char szNewCode[MAX_LINE_LENGTH];
       char szEnd[2];
 
       TEXTRANGE tr;
@@ -1392,7 +1401,7 @@ void CodeViewer::FindCodeFromEvent()
       // Add the new function at the end
       SendMessage(m_hwndScintilla, SCI_SETSEL, codelen, codelen);
 
-      char szParams[1024];
+      char szParams[MAX_LINE_LENGTH];
 
       GetParamsFromEvent(iEventIndex, szParams);
 
@@ -1580,19 +1589,72 @@ HRESULT STDMETHODCALLTYPE CodeViewer::QueryService(
    return hr;
 }
 
-void CodeViewer::ShowAutoComplete()
+void CodeViewer::ShowAutoComplete(SCNotification *pSCN)
 {
-
-	char m_Word[MAX_FIND_LENGTH] = {0};
-	WordUnderCaret.lpstrText = &m_Word[0];
-	GetWordUnderCaret();
-	const int intWordLen = strlen(WordUnderCaret.lpstrText);
-	if (intWordLen > DisplayAutoCompleteAfter && intWordLen < MAX_FIND_LENGTH)
+	char KeyPressed = pSCN->ch;
+	if (KeyPressed != '.')
 	{
-		const char * McStr = AutoCompString.c_str();
-		SendMessage(m_hwndScintilla, SCI_AUTOCSHOW, intWordLen, (LPARAM)McStr);
+		char m_Word[MAX_FIND_LENGTH] = {0};
+		WordUnderCaret.lpstrText = &m_Word[0];
+		GetWordUnderCaret();
+		const int intWordLen = strlen(WordUnderCaret.lpstrText);
+		if (intWordLen > DisplayAutoCompleteLength && intWordLen < MAX_FIND_LENGTH)
+		{
+			const char * McStr = AutoCompString.c_str();
+			SendMessage(m_hwndScintilla, SCI_AUTOCSHOW, intWordLen, (LPARAM)McStr);
+		}
+	}
+	else
+	{
+		//Get contruct construct
+
+		int ConstructPos = SendMessage(m_hwndScintilla, SCI_GETCURRENTPOS, 0, 0 ) - 2;
+		CurrentConstruct.chrg.cpMin = SendMessage(m_hwndScintilla, SCI_WORDSTARTPOSITION, ConstructPos, TRUE);
+		CurrentConstruct.chrg.cpMax = SendMessage(m_hwndScintilla, SCI_WORDENDPOSITION, ConstructPos, TRUE);
+		if (( CurrentConstruct.chrg.cpMax - CurrentConstruct.chrg.cpMin) > MAX_FIND_LENGTH) return;
+		SendMessage(m_hwndScintilla, SCI_GETTEXTRANGE, 0, (LPARAM)&CurrentConstruct);
+		//Check Core dict first
+		CurrentConstruct.lpstrText = (char *) ConstructTextBuff;
+		GetMembers(VP_CoreDict, string(CurrentConstruct.lpstrText) );
+		//Check Table Script
+		if (CurrentMembers->size() == 0)
+		{
+			CurrentConstruct.lpstrText = (char *) ConstructTextBuff;
+			GetMembers(PageConstructsDict, string(CurrentConstruct.lpstrText) );	
+		}
+		//if no contruct (no children) exit
+		if (CurrentMembers->size() == 0) return;
+		//autocomp string  = members of construct
+		AutoCompMembersString = "";
+		for (vector<UserData>::iterator i = CurrentMembers->begin(); i != CurrentMembers->end(); ++i)
+		{
+			AutoCompMembersString.append(i->KeyName);
+			AutoCompMembersString.append(" ");
+		}
+		//display
+		const char * McStr = AutoCompMembersString.c_str();
+		SendMessage(m_hwndScintilla, SCI_AUTOCSHOW, 0, (LPARAM)McStr);
 	}
 }
+
+void CodeViewer::GetMembers(vector<UserData>* ListIn, const string &strIn)
+{
+	CurrentMembers->clear();
+	const int idx = UDIndex(ListIn , strIn);
+	if (idx > -1)
+	{
+		const UserData udParent = ListIn->at(idx);
+		const size_t NumberOfMembers = udParent.Children.size();
+		size_t i = 0;
+		while (i < NumberOfMembers)
+		{
+			UserData UD = GetUDfromUniqueKey(ListIn, udParent.Children.at(i) );
+			FindOrInsertUD(CurrentMembers, UD);
+			++i;
+		}
+	}
+}
+
 
 bool CodeViewer::ShowTooltip(SCNotification *pSCN)
 {
@@ -1600,7 +1662,7 @@ bool CodeViewer::ShowTooltip(SCNotification *pSCN)
 	int dwellpos = pSCN->position;
 	int wordstart = SendMessage(m_hwndScintilla,SCI_WORDSTARTPOSITION,dwellpos, FALSE );
 	int wordfinish = SendMessage(m_hwndScintilla,SCI_WORDENDPOSITION,dwellpos, FALSE );
-	char Mess[1024] = {}; int MessLen = 0;
+	char Mess[MAX_LINE_LENGTH*4] = {}; int MessLen = 0;
 	char szDwellWord[256] = {};
 	char szLCDwellWord[256] = {};
 	// is it a valid 'word'
@@ -1624,10 +1686,11 @@ bool CodeViewer::ShowTooltip(SCNotification *pSCN)
 		{
 			//Has function list been filled?
 			StopErrorDisplay = true;
-			if ( g_UserFunc->size() == 0 ) ParseForFunction();
+			if ( PageConstructsDict->size() == 0 ) ParseForFunction();
 			//search subs/funcs
 			vector<UserData>::iterator i;
-			if (FindUD(g_UserFunc, string(szLCDwellWord), i) == 0)
+			int FindResult = FindUD(PageConstructsDict, string(szLCDwellWord), i);
+			if (FindResult == 0)
 			{
 				string ptemp = i->Description;
 				if ( (i->Comment.length() >1) && DwellHelp )
@@ -1637,7 +1700,8 @@ bool CodeViewer::ShowTooltip(SCNotification *pSCN)
 				MessLen = sprintf_s(Mess, "%s", ptemp.c_str() );
 			}
 			//Search VP core
-			else if (FindUD(g_VP_Core, string(szLCDwellWord), i) == 0)
+
+			else if (FindUD(VP_CoreDict, string(szLCDwellWord), i) == 0)
 			{
 				string ptemp = i->Description;
 				if ( (i->Comment.length() >1) && DwellHelp )
@@ -1646,7 +1710,7 @@ bool CodeViewer::ShowTooltip(SCNotification *pSCN)
 				}
 				MessLen = sprintf_s(Mess, "%s", ptemp.c_str());
 			}
-			else if ( ( FindUD(g_Components, string(szLCDwellWord), i)  == 0 ) )
+			else if ( ( FindUD(ComponentsDict, string(szLCDwellWord), i)  == 0 ) )
 			{
 				MessLen = sprintf_s(Mess, "Component: %s", szDwellWord);
 			}
@@ -1660,7 +1724,7 @@ bool CodeViewer::ShowTooltip(SCNotification *pSCN)
 	}
 	if (MessLen > 0)
 	{
-		SendMessage(m_hwndScintilla,SCI_CALLTIPSHOW,dwellpos, (size_t)Mess );
+		SendMessage(m_hwndScintilla,SCI_CALLTIPSHOW,dwellpos, (LPARAM)Mess );
 		return true;
 	}
 	return false;
@@ -1772,8 +1836,8 @@ void RemoveComment(const HWND m_hwndScintilla)
    {
       size_t lineStart = SendMessage(m_hwndScintilla, SCI_POSITIONFROMLINE, i, 0);
       size_t lineEnd = SendMessage(m_hwndScintilla, SCI_GETLINEENDPOSITION, i, 0);
-      char buf[1024];
-      if (lineEnd - lineStart < 1023)
+      char buf[MAX_LINE_LENGTH];
+      if (lineEnd - lineStart < (MAX_LINE_LENGTH -1) )
       {
          GetRange(m_hwndScintilla, lineStart, lineEnd, buf);
          string line(buf);
@@ -1878,9 +1942,12 @@ bool CodeViewer::ParseOKLineLength(const int LineLen)
 	return true;
 }
 
+
+//false is a fail/syntax error
 bool CodeViewer::ParseStructureName(vector<UserData> *ListIn, UserData ud,
 												const string &UCline, const string &line, const int Lineno)
 {
+	// xxx0 < xxx needs to be enforced
 	static int ParentLevel = 0;
 	static string CurrentParentKey = "";
 	const int endIdx = SureFind(UCline,"END"); 
@@ -1893,7 +1960,13 @@ bool CodeViewer::ParseStructureName(vector<UserData> *ListIn, UserData ud,
 			string foo;
 			foo = (char)((ud.eTyping)+64);
 			ud.UniqueKey = ud.KeyName  + foo + CurrentParentKey + "\0";
+			ud.UniqueParent = CurrentParentKey;
 			FindOrInsertUD(ListIn, ud);
+			int iCurParent = GetUDPointerfromUniqueKey(ListIn, CurrentParentKey);
+			if (CurrentParentKey.size() !=0)
+			{
+				ListIn->at(iCurParent).Children.push_back(ud.UniqueKey);//add child to parent
+			}
 			string RemainingLine = line;
 			int CommPos = UCline.find_first_of(',');
 			while (CommPos != -1)
@@ -1908,8 +1981,12 @@ bool CodeViewer::ParseStructureName(vector<UserData> *ListIn, UserData ud,
 				{
 					ud.KeyName = crWord;
 					ud.UniqueKey = ud.KeyName  + foo + CurrentParentKey + "\0";
-					
+					ud.UniqueParent = CurrentParentKey;
 					FindOrInsertUD(ListIn, ud);
+					if (CurrentParentKey.size() != 0)
+					{
+						ListIn->at(iCurParent).Children.push_back(ud.UniqueKey);//add child to parent
+					}	
 				}
 				RemainingLine = RemainingLine.substr(CommPos+1, string::npos);
 				CommPos = RemainingLine.find_first_of(',');
@@ -1922,6 +1999,7 @@ bool CodeViewer::ParseStructureName(vector<UserData> *ListIn, UserData ud,
 			string foo;
 			foo = (char)((ud.eTyping)+64);
 			ud.UniqueKey = ud.KeyName  + foo + "\0";
+			ud.UniqueParent = "";
 			FindOrInsertUD( ListIn, ud);
 			CurrentParentKey = ud.UniqueKey;
 			++ParentLevel;
@@ -1990,17 +2068,17 @@ bool CodeViewer::ParseStructureName(vector<UserData> *ListIn, UserData ud,
 							CurrentParentKey.clear();
 						}
 						ParentLevel--;
-						return true;
+						return false;
 					}
 					/// error - end without start
 					CurrentParentKey.clear();
 					ParentLevel--;
-					return false;
+					return true;
 				}
 				else
 				{	//Error - end without start
 					ParentLevel = 0;
-					return false;
+					return true;
 				}
 			}//if (ParentLevel == -1)
 		}//if (endIdx >= 0)
@@ -2161,13 +2239,13 @@ void CodeViewer::ParseForFunction() // Subs & Collections AndyS - WIP
 		// Read line
       const int lineLength = SendMessage(m_hwndScintilla, SCI_LINELENGTH, linecount, 0);
 		if ( !ParseOKLineLength(lineLength) ) continue;
-		memset(text, 0, 1024);
+		memset(text, 0, MAX_LINE_LENGTH);
 		SendMessage(m_hwndScintilla, SCI_GETLINE, linecount, (LPARAM)text);
       string wholeline(text);
-		ReadLineToParseBrain( wholeline, linecount, g_UserFunc);
+		ReadLineToParseBrain( wholeline, linecount, PageConstructsDict);
 	}
    //Propergate subs&funcs in menu in order
-	for (vector<UserData>::iterator i = g_UserFunc->begin(); i != g_UserFunc->end(); ++i) 
+	for (vector<UserData>::iterator i = PageConstructsDict->begin(); i != PageConstructsDict->end(); ++i) 
    {
 		const char *c_str1 = i->KeyName.c_str ();
 		SendMessage(m_hwndFunctionList, CB_ADDSTRING, 0, (LPARAM)(c_str1) );
@@ -2184,18 +2262,18 @@ void CodeViewer::ParseForFunction() // Subs & Collections AndyS - WIP
 		{
 			ud.KeyName = string(c_str1);
 			ud.UniqueKey = ud.KeyName;
-			FindOrInsertUD(g_Components,ud);
+			FindOrInsertUD(ComponentsDict,ud);
 		}
 		CBCount--;
    }
 	//Now merge the lot for Auto complete...
 	AutoCompList->clear();
-	for (vector<UserData>::iterator i = g_VBwords->begin(); i != g_VBwords->end(); ++i)
+	for (vector<UserData>::iterator i = VBwordsDict->begin(); i != VBwordsDict->end(); ++i)
 	{
 		FindOrInsertStringIntoAutolist(AutoCompList,i->KeyName);
 	}
 	string strVPcoreWords = "";
-	for (vector<UserData>::iterator i = g_VP_Core->begin(); i != g_VP_Core->end(); ++i)
+	for (vector<UserData>::iterator i = VP_CoreDict->begin(); i != VP_CoreDict->end(); ++i)
 	{
 		if (FindOrInsertStringIntoAutolist(AutoCompList,i->KeyName))
 		{
@@ -2204,7 +2282,7 @@ void CodeViewer::ParseForFunction() // Subs & Collections AndyS - WIP
 		}
 	}
 	string strCompOut ="";
-	for (vector<UserData>::iterator i = g_Components->begin(); i != g_Components->end(); ++i)
+	for (vector<UserData>::iterator i = ComponentsDict->begin(); i != ComponentsDict->end(); ++i)
 	{
 		if (FindOrInsertStringIntoAutolist(AutoCompList,i->KeyName))
 		{
@@ -2213,7 +2291,7 @@ void CodeViewer::ParseForFunction() // Subs & Collections AndyS - WIP
 		}
 	}
 	string sSubFunOut = "";
-	for (vector<UserData>::iterator i = g_UserFunc->begin(); i != g_UserFunc->end(); ++i)
+	for (vector<UserData>::iterator i = PageConstructsDict->begin(); i != PageConstructsDict->end(); ++i)
 	{
 		if (FindOrInsertStringIntoAutolist(AutoCompList,i->KeyName))
 		{
@@ -2278,7 +2356,7 @@ void CodeViewer::ParseVPCore()
 		++linecount;
 		int lineLength = wholeline.length();
 		if ( !ParseOKLineLength(lineLength) ) continue;
-		ReadLineToParseBrain( wholeline, linecount, g_VP_Core);
+		ReadLineToParseBrain( wholeline, linecount, VP_CoreDict);
 	}
 	fclose(fCore);
 }
@@ -2484,7 +2562,7 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
             const size_t index = SendMessage(pcv->m_hwndFunctionList, CB_GETCURSEL, 0, 0);
 				if (index != -1)
 				{
-					vector<UserData>::iterator i = pcv->g_UserFunc->begin();
+					vector<UserData>::iterator i = pcv->PageConstructsDict->begin();
 					for (size_t t = 0; t < index; t++)	++i;
 					SendMessage(pcv->m_hwndScintilla, SCI_GOTOLINE, i->LineNum, 0);
 					SendMessage(pcv->m_hwndScintilla, SCI_GRABFOCUS, 0, 0);
@@ -2503,7 +2581,7 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
          }
 			case ID_SHOWAUTOCOMPLETE:
 			{
-				pcv->ShowAutoComplete();
+				pcv->ShowAutoComplete((SCNotification *)lParam);
 				break;
 			}
          }//switch (id)
@@ -2551,8 +2629,9 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 
 			case SCN_CHARADDED:
 			{
-			if (pcv->DisplayAutoComplete)
-				pcv->ShowAutoComplete();
+				// Member selection
+				if (pcv->DisplayAutoComplete)
+					pcv->ShowAutoComplete((SCNotification *)lParam);
 			}
 			break;
 
@@ -2661,7 +2740,7 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 			SNDMSG(hChkBox, BM_SETCHECK, pcv->DwellHelp ? BST_CHECKED : BST_UNCHECKED, 0L);
 
 			char foo[65] = {0};
-			sprintf_s(foo,"%i", pcv->DisplayAutoCompleteAfter );
+			sprintf_s(foo,"%i", pcv->DisplayAutoCompleteLength );
 			SetDlgItemText( hwndDlg, IDC_CVP_EDIT_AUTOCHARS, foo);
 		
 			ZeroMemory(foo,5);
@@ -2703,7 +2782,7 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 				case IDC_CVP_BUT_OK:
 				{
 					//Save to reg.
-					pcv->DisplayAutoCompleteAfter = GetDlgItemInt(hwndDlg, IDC_CVP_EDIT_AUTOCHARS, 0 , false);
+					pcv->DisplayAutoCompleteLength = GetDlgItemInt(hwndDlg, IDC_CVP_EDIT_AUTOCHARS, 0 , false);
 					pcv->DwellDisplayTime = GetDlgItemInt(hwndDlg, IDC_CVP_EDIT_MOUSEDWELL, 0 , false);
 					pcv->UpdateRegWithPrefs();
 					pcv->UpdateScinFromPrefs();

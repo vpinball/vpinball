@@ -6,6 +6,9 @@ UserData::UserData()
 	Description="";
 	KeyName="";
 	eTyping = eUnknown;
+	UniqueParent = "";
+	Comment="";
+
 }
 
 UserData::UserData(const int LineNo, const string &Desc, const string &Name, const WordType &TypeIn)
@@ -41,18 +44,43 @@ bool UserData::FuncCompareUD (const UserData &first, const UserData &second)
   return ( strF.length() < strS.length() );
 }
 
+void UserData::RemovePadding(string &line)
+{
+	const size_t LL = line.length();
+	size_t Pos = (line.find_first_not_of("\n\r\t ,"));
+	if (Pos == -1)
+	{
+		line.clear();
+		return;
+	}
+	if (Pos > 0)
+	{
+		if ( (LL-Pos) < 1 ) return;
+		line = line.substr(Pos, (LL-Pos) );
+	}
+
+	Pos =  (line.find_last_not_of("\n\r\t ,"));
+	if (Pos != -1)
+	{
+		if ( Pos < 1 ) return;
+		line = line.erase(Pos+1);
+	}
+}
+
 /*	FindUD - Binary Search.
 0  =Found & UDiterOut set to point at UD in list.
 -1 =Not Found - Insert point before UDiterOut
 1  =Not Found - Insert point after UDiterOut
--2 =error*/
-int UserData::FindUD(vector<UserData>* ListIn, const string &strIn,vector<UserData>::iterator& UDiterOut)
+-2 =Zero Length string or error*/
+int UserData::FindUD(vector<UserData>* ListIn, string &strIn,vector<UserData>::iterator& UDiterOut)
 {
 	int result = -2;
-	if (ListIn && (strIn.size() > 0) )// Sanity chq.
+	RemovePadding(strIn);
+	if (strIn.size() == 0) return result;
+	if (ListIn)// Sanity chq.
 	{
-		const unsigned int ListSize = (int)ListIn->size();
-		UINT32 iCurPos = (ListSize >> 1);
+		const unsigned int ListSize = (int)ListIn->size() - 1; //Zero Base
+		UINT32 iCurPos = 0;
 		int iNewPos = 1u << 30;
 		while ((!(iNewPos & ListSize)) && (iNewPos > 1))
       {
@@ -115,7 +143,7 @@ int UserData::FindUDbyKey(vector<UserData>* ListIn, const string &strIn, vector<
 	return result ;
 }
 
-//Returns current Index of strIn in ListIn, or -1 if not found
+//Returns current Index of strIn in ListIn based on UniqueKey, or -1 if not found
 int UserData::UDKeyIndex(vector<UserData>* ListIn, const string &strIn)
 {
 	if ( (!ListIn) || (strIn.size() <= 0) ) return -1;
@@ -144,11 +172,81 @@ int UserData::UDKeyIndex(vector<UserData>* ListIn, const string &strIn)
 		else  { iNewPos = iCurPos + iJumpDelta; }
 		iJumpDelta >>= 1;
 	} 
-	/// neads to consider children...
+	///TODO: neads to consider children?
 	if (result == 0)
 		return iCurPos ;
 	else
 		return -1;
+}
+
+//Returns current Index of strIn in ListIn based on KeyName, or -1 if not found
+int UserData::UDIndex(vector<UserData>* ListIn, const string &strIn)
+{
+	if ( (!ListIn) || (strIn.size() <= 0) ) return -1;
+	int result = -2;
+	const unsigned int ListSize = (int)ListIn->size();
+	UINT32 iCurPos = (ListSize >> 1);
+	UINT32 iNewPos = 1u << 30;
+	while ( (!(iNewPos & ListSize)) && (iNewPos > 1) )
+   {
+      iNewPos >>= 1;
+   }
+	int iJumpDelta = ((iNewPos) >> 1);
+	--iNewPos;//Zero Base
+	const string strSearchData = lowerCase( strIn );
+	while (true)
+	{
+		iCurPos = iNewPos;
+		if (iCurPos >= ListSize) { result = -1; }
+		else
+		{
+			const string strTableData = lowerCase(ListIn->at(iCurPos).KeyName);
+			result = strSearchData.compare(strTableData);
+		}
+		if (iJumpDelta == 0 || result == 0) break;
+		if ( result < 0 )	{ iNewPos = iCurPos - iJumpDelta; }
+		else  { iNewPos = iCurPos + iJumpDelta; }
+		iJumpDelta >>= 1;
+	} 
+	///TODO: neads to consider children?
+	if (result == 0)
+		return iCurPos ;
+	else
+		return -1;
+}
+//Needs speeding up.
+UserData UserData::GetUDfromUniqueKey(vector<UserData>* ListIn, const string &UniKey)
+{
+	UserData RetVal;
+	RetVal.eTyping = eUnknown;
+	int i = 0;
+	const int ListSize = ListIn->size();
+	while ( (RetVal.eTyping == eUnknown) && (i < ListSize) )
+	{
+		if (UniKey == ListIn->at(i).UniqueKey)
+		{
+			RetVal = ListIn->at(i);
+		}
+		++i;
+	}
+	return RetVal;
+}
+//Needs speeding up.
+int UserData::GetUDPointerfromUniqueKey(vector<UserData>* ListIn, const string &UniKey)
+{
+	UserData RetVal;
+	RetVal.eTyping = eUnknown;
+	int i = 0;
+	const int ListSize = ListIn->size();
+	while ( (RetVal.eTyping == eUnknown) && (i < ListSize) )
+	{
+		if (UniKey == ListIn->at(i).UniqueKey)
+		{
+			return i;
+		}
+		else ++i;
+	}
+	return -1;
 }
 
 //Assumes case insensitive sorted list
@@ -164,7 +262,7 @@ int UserData::FindOrInsertUD(vector<UserData>* ListIn, UserData &udIn)
 	}
 	const int KeyFound = FindUDbyKey(ListIn, udIn.UniqueKey ,iterFound, Pos);
 	//Same name, different parents. 
-	if ( (KeyFound == 0) && (ListIn->at(Pos).UniqueParent.compare(udIn.UniqueParent) != 0) )
+	if ( (KeyFound == 0) &&  (udIn.UniqueParent.compare(ListIn->at(Pos).UniqueParent) != 0) )
 	{
 		ListIn->insert(iterFound, udIn);
 		return Pos;

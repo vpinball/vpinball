@@ -19,7 +19,7 @@ public:
 	string KeyName; //Name
 	WordType eTyping;
 	string UniqueParent;
-	vector<string> Children;
+	vector<string> Children; //Unique key
 	string Description;//Brief Description
 	string Comment;
 
@@ -30,9 +30,13 @@ public:
 	string lowerCase(string input);
 	bool FindOrInsertStringIntoAutolist(vector<string>* ListIn, const string &strIn);
 	int FindOrInsertUD( vector<UserData>* ListIn, UserData& udIn);
-	int FindUD(vector<UserData>* ListIn, const string &strIn,vector<UserData>::iterator& UDiterOut);
+	int FindUD(vector<UserData>* ListIn, string &strIn,vector<UserData>::iterator& UDiterOut);
 	int FindUDbyKey(vector<UserData>* ListIn, const string &strIn,vector<UserData>::iterator& UDiterOut, int &PosOut);
 	int UDKeyIndex(vector<UserData>* ListIn, const string &strIn);
+	int UDIndex(vector<UserData>* ListIn, const string &strIn);
+	UserData GetUDfromUniqueKey(vector<UserData>* ListIn, const string &UniKey);
+	int GetUDPointerfromUniqueKey(vector<UserData>* ListIn, const string &UniKey);
+	void UserData::RemovePadding(string &line);
 	~UserData();
 };
 

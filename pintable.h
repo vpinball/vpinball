@@ -540,7 +540,7 @@ public:
    char m_szFileName[_MAX_PATH];
    char m_szBlueprintFileName[_MAX_PATH];
    char m_szObjFileName[_MAX_PATH];
-   char m_szTitle[1024];
+   char m_szTitle[MAX_LINE_LENGTH];
 
    HWND m_hwnd;
    VPinball *m_pvp;
