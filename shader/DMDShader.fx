@@ -64,7 +64,7 @@ float4 ps_main_DMD_big(in VS_OUTPUT IN) : COLOR
       color *= rgba.b * (255.9 / 100.);
 
    const float2 xy = IN.tex0 * vRes;
-   const float2 dist = (xy-floor(xy))*2.2-1.1;
+   const float2 dist = frac(xy)*2.2-1.1;
    const float d = dist.x*dist.x+dist.y*dist.y;
 
    color *= smoothstep(0.,1.,1.0-d*d);
@@ -89,7 +89,7 @@ float4 ps_main_DMD(in VS_OUTPUT IN) : COLOR
       color *= rgba.b * (255.9 / 100.);
 
    const float2 xy = IN.tex0 * vRes;
-   const float2 dist = (xy-floor(xy))*2.-1.;
+   const float2 dist = frac(xy)*2.-1.;
    const float d = dist.x*dist.x+dist.y*dist.y;
 
    color *= saturate(1.0-d);
@@ -114,7 +114,7 @@ float4 ps_main_DMD_tiny(in VS_OUTPUT IN) : COLOR
       color *= rgba.b * (255.9 / 100.);
 
    const float2 xy = IN.tex0 * vRes;
-   const float2 dist = (xy-floor(xy))*1.4142-0.7071;
+   const float2 dist = frac(xy)*1.4142-0.7071;
    const float d = dist.x*dist.x+dist.y*dist.y;
 
    color *= 1.0-pow(d, 0.375);
@@ -126,7 +126,7 @@ float4 ps_main_DMD_tiny(in VS_OUTPUT IN) : COLOR
 	 //collect glow from neighbors
 	 }*/
 
-   return float4(InvToneMap(InvGamma(color/*+color2*/)), 1.); //!! meh, this sucks a bit performance-wise, but how to avoid this when doing fullscreen-tonemap/gamma without stencil and depth read?
+   return float4(InvToneMap(InvGamma(min(color,float3(1.5,1.5,1.5))/*+color2*/)), 1.); //!! meh, this sucks a bit performance-wise, but how to avoid this when doing fullscreen-tonemap/gamma without stencil and depth read?
 }
 
 float4 ps_main_noDMD(in VS_OUTPUT IN) : COLOR
