@@ -120,9 +120,9 @@ vout vsBall( in vin IN )
 
 	// apply spinning and move the ball to it's actual position
 	float4 pos = IN.position;
-	pos.xyz = mul(pos, orientation).xyz;
+	pos.xyz = mul(float4(pos.xyz,1.), orientation).xyz;
 	
-	const float3 p = mul(pos, matWorldView).xyz;
+	const float3 p = mul(float4(pos.xyz,1.), matWorldView).xyz;
 	
 	// apply spinning to the normals too to get the sphere mapping effect
 	const float3 nspin = mul(float4(IN.normal,0.), orientation).xyz;
@@ -142,17 +142,17 @@ voutReflection vsBallReflection( in vin IN )
     
 	// apply spinning and move the ball to it's actual position
 	float4 pos = IN.position;
-	pos.xyz = mul(pos, orientation).xyz;
+	pos.xyz = mul(float4(pos.xyz,1.), orientation).xyz;
 
 	// this is not a 100% ball reflection on the table due to the quirky camera setup
 	// the ball is moved a bit down and rendered again
 	pos.y += position_radius.w*(2.0*0.35);
 	pos.z = pos.z*0.5 - 10.0;
 	
-	const float3 p = mul(pos, matWorldView).xyz;
+	const float3 p = mul(float4(pos.xyz,1.), matWorldView).xyz;
 	
     const float3 nspin = mul(float4(IN.normal,0.0), orientation).xyz;
-	const float3 normal = normalize(mul(matWorldViewInverse, float4(nspin, 0.)).xyz); // actually: mul(float4(nspin,0.), matWorldViewInverseTranspose), but optimized to save one matrix
+	const float3 normal = normalize(mul(matWorldViewInverse, nspin).xyz); // actually: mul(float4(nspin,0.), matWorldViewInverseTranspose), but optimized to save one matrix
     
     const float3 r = reflect(normalize(/*camera=0,0,0,1*/-p), normal);
 
