@@ -6,8 +6,8 @@
 // transformation matrices
 float4x4 matWorldViewProj : WORLDVIEWPROJ;
 float4x4 matWorldView     : WORLDVIEW;
-float4x4 matWorldViewInverseTranspose;
-float4x4 matView;
+float3x4 matWorldViewInverseTranspose;
+float4x3 matView;
 //float4x4 matViewInverseInverseTranspose; // matView used instead and multiplied from other side
 
 texture Texture0; // base texture
@@ -83,7 +83,7 @@ VS_LIGHT_OUTPUT vs_light_main (float4 vPosition : POSITION0,
 
    // trafo all into worldview space (as most of the weird trafos happen in view, world is identity so far)
    const float3 P = mul(vPosition, matWorldView).xyz;
-   const float3 N = normalize(mul(float4(vNormal,0.0), matWorldViewInverseTranspose).xyz);
+   const float3 N = normalize(mul(vNormal, matWorldViewInverseTranspose).xyz);
 
    Out.pos = mul(vPosition, matWorldViewProj);
    Out.tex0 = tc;

@@ -8,10 +8,11 @@
 // transformation matrices
 float4x4 matWorldViewProj : WORLDVIEWPROJ;
 float4x4 matWorldView     : WORLDVIEW;
-float4x4 matWorldViewInverse;
+float4x3 matWorldViewInverse;
 //float4x4 matWorldViewInverseTranspose; // matWorldViewInverse used instead and multiplied from other side
-float4x4 matView;
+float4x3 matView;
 //float4x4 matViewInverseInverseTranspose; // matView used instead and multiplied from other side
+
 texture  Texture0; // base texture
 texture  Texture1; // playfield (should be envmap if specular or glossy needed/enabled, see below)
 texture  Texture2; // envmap radiance
@@ -61,13 +62,11 @@ bool     hdrEnvTextures = false;
 
 #include "Material.fxh"
 
-float4   position_radius;
-float4   ballStretch_invTableRes;
-float2   playfield_height_reflection;
+float4   invTableRes__playfield_height_reflection;
 
 //float    reflection_ball_playfield;
 
-float3x3 orientation;
+float4x3 orientation;
 
 bool     decalMode;
 bool     cabMode;
@@ -121,16 +120,13 @@ vout vsBall( in vin IN )
 
 	// apply spinning and move the ball to it's actual position
 	float4 pos = IN.position;
-	pos.xyz = mul(pos.xyz, orientation);
-	pos.x = pos.x*position_radius.w*ballStretch_invTableRes.x + position_radius.x;
-	pos.y = pos.y*position_radius.w*ballStretch_invTableRes.y + position_radius.y;
-	pos.z = pos.z*position_radius.w + position_radius.z;
+	pos.xyz = mul(pos, orientation).xyz;
 	
 	const float3 p = mul(pos, matWorldView).xyz;
 	
 	// apply spinning to the normals too to get the sphere mapping effect
-	const float3 nspin = mul(IN.normal, orientation);
-    const float3 normal = normalize(mul(matWorldViewInverse, float4(nspin,0.)).xyz); // actually: mul(float4(nspin,0.), matWorldViewInverseTranspose), but optimized to save one matrix
+	const float3 nspin = mul(float4(IN.normal,0.), orientation).xyz;
+	const float3 normal = normalize(mul(matWorldViewInverse, nspin).xyz); // actually: mul(float4(nspin,0.), matWorldViewInverseTranspose), but optimized to save one matrix
     
 	OUT.position = mul(pos, matWorldViewProj);
     OUT.tex0	 = IN.tex0;
@@ -146,10 +142,7 @@ voutReflection vsBallReflection( in vin IN )
     
 	// apply spinning and move the ball to it's actual position
 	float4 pos = IN.position;
-	pos.xyz = mul(pos.xyz, orientation);
-	pos.x = pos.x*position_radius.w*ballStretch_invTableRes.x + position_radius.x;
-	pos.y = pos.y*position_radius.w*ballStretch_invTableRes.y + position_radius.y;
-	pos.z = pos.z*position_radius.w + position_radius.z;
+	pos.xyz = mul(pos, orientation).xyz;
 
 	// this is not a 100% ball reflection on the table due to the quirky camera setup
 	// the ball is moved a bit down and rendered again
@@ -158,8 +151,8 @@ voutReflection vsBallReflection( in vin IN )
 	
 	const float3 p = mul(pos, matWorldView).xyz;
 	
-    const float3 nspin = mul(IN.normal, orientation);
-    const float3 normal = normalize(mul(matWorldViewInverse, float4(nspin,0.)).xyz); // actually: mul(float4(nspin,0.), matWorldViewInverseTranspose), but optimized to save one matrix
+    const float3 nspin = mul(float4(IN.normal,0.0), orientation).xyz;
+	const float3 normal = normalize(mul(matWorldViewInverse, float4(nspin, 0.)).xyz); // actually: mul(float4(nspin,0.), matWorldViewInverseTranspose), but optimized to save one matrix
     
     const float3 r = reflect(normalize(/*camera=0,0,0,1*/-p), normal);
 
@@ -212,7 +205,7 @@ float3 ballLightLoop(float3 pos, float3 N, float3 V, float3 diffuse, float3 glos
    }
 
    if((Roughness_WrapL_Edge_IsMetal.w == 0.0) && (diffuseMax > 0.0))
-      color += DoEnvmapDiffuse(normalize(mul(matView, float4(N, 0.0)).xyz), diffuse); // trafo back to world for lookup into world space envmap // actually: mul(float4(N, 0.0), matViewInverseInverseTranspose)
+      color += DoEnvmapDiffuse(normalize(mul(matView, N).xyz), diffuse); // trafo back to world for lookup into world space envmap // actually: mul(float4(N, 0.0), matViewInverseInverseTranspose)
 
    if(specularMax > 0.0)
       color += specular; //!! blend? //!! Fresnel with 1st layer?
@@ -230,7 +223,7 @@ PS_OUTPUT psBall( in vout IN )
     const float3 v = normalize(/*camera=0,0,0,1*/-IN.worldPos);
     const float3 r = reflect(v, normalize(IN.normal));
     // calculate the intermediate value for the final texture coords. found here http://www.ozone3d.net/tutorials/glsl_texturing_p04.php
-	const float  m = (r.z + 1.0 > 0.) ? 0.3535533905932737622 / sqrt(r.z + 1.0) : 0.; // 0.353...=0.5/sqrt(2)
+	const float  m = (r.z + 1.0 > 0.) ? 0.3535533905932737622 * rsqrt(r.z + 1.0) : 0.; // 0.353...=0.5/sqrt(2)
     const float edge = dot(v, r);
     const float lod = (edge > 0.6) ? // edge falloff to reduce aliasing on edges (picks smaller mipmap -> more blur)
 		edge*(6.0*1.0/0.4)-(6.0*0.6/0.4) :
@@ -253,19 +246,19 @@ PS_OUTPUT psBall( in vout IN )
 	else
 	   ballImageColor = ScreenHDR( ballImageColor, decalColor ) * (0.5*fenvEmissionScale_TexWidth.x); //!! 0.5=magic
 	
-	const float3 playfield_normal = mul(matWorldViewInverse, float4(0.,0.,1.,0.)).xyz; // actually: mul(float4(0.,0.,1.,0.), matWorldViewInverseTranspose), but optimized to save one matrix
+	const float3 playfield_normal = mul(matWorldViewInverse, float3(0.,0.,1.)).xyz; // actually: mul(float4(0.,0.,1.,0.), matWorldViewInverseTranspose), but optimized to save one matrix
 	const float NdotR = dot(playfield_normal,r);
 	
 	float3 playfieldColor;
 	if(/*(reflection_ball_playfield > 0.0) &&*/ (NdotR > 0.0))
 	{
-       const float3 playfield_p0 = mul(float4(/*playfield_pos=*/0.,0.,playfield_height_reflection.x,1.), matWorldView).xyz;
+       const float3 playfield_p0 = mul(float4(/*playfield_pos=*/0.,0.,invTableRes__playfield_height_reflection.z,1.), matWorldView).xyz;
 	   const float t = dot(playfield_normal, IN.worldPos - playfield_p0) / NdotR;
        const float3 playfield_hit = IN.worldPos - t*r;
 
-       const float2 uv = mul(float4(playfield_hit,1.), matWorldViewInverse).xy * ballStretch_invTableRes.zw;
+       const float2 uv = mul(float4(playfield_hit,1.), matWorldViewInverse).xy * invTableRes__playfield_height_reflection.xy;
 	   playfieldColor = (t < 0.) ? float3(0., 0., 0.) // happens for example when inside kicker
-                                 : InvGamma(tex2Dlod(texSampler1, float4(uv, 0., 0.)).xyz)*playfield_height_reflection.y; //!! rather use screen space sample from previous frame??
+                                 : InvGamma(tex2Dlod(texSampler1, float4(uv, 0., 0.)).xyz)*invTableRes__playfield_height_reflection.w; //!! rather use screen space sample from previous frame??
 
        //!! hack to get some lighting on sample, but only diffuse, the rest is not setup correctly anyhow
        playfieldColor = lightLoop(playfield_hit, playfield_normal, -r, playfieldColor, float3(0.,0.,0.), float3(0.,0.,0.), 1.0);

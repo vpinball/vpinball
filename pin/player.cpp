@@ -888,12 +888,6 @@ void Player::InitBallShader()
 
    UpdateBallShaderMatrix();
 
-   const float inv_tablewidth = 1.0f / (m_ptable->m_right - m_ptable->m_left);
-   const float inv_tableheight = 1.0f / (m_ptable->m_bottom - m_ptable->m_top);
-   //const float inclination = ANGTORAD(m_ptable->m_inclination);
-
-   const D3DXVECTOR4 bs(m_BallStretchX, m_BallStretchY, inv_tablewidth, inv_tableheight);
-   ballShader->SetVector("ballStretch_invTableRes", &bs);
    ballShader->SetBool("decalMode", m_ptable->m_BallDecalMode);
    const float rotation = fmodf(m_ptable->m_BG_rotation[m_ptable->m_BG_current_set], 360.f);
    ballShader->SetBool("cabMode", rotation != 0.f);
@@ -3865,45 +3859,43 @@ void search_for_nearest(const Ball * const pball, const std::vector<Light*> &lig
 
 void Player::GetBallAspectRatio(const Ball * const pball, float &stretchX, float &stretchY, const float zHeight)
 {
-   Vertex3D_NoTex2 *rgvIn;
-   Vertex2D *rgvOut;
+   // always use lowest detail level for fastest update
+   Vertex3Ds rgvIn[(basicBallLoNumVertices+1) / 2];
+   Vertex2D rgvOut[(basicBallLoNumVertices + 1) / 2];
 
-   //     rgvIn[0].x = pball->m_pos.x;                    rgvIn[0].y=pball->m_pos.y+pball->m_radius;    rgvIn[0].z=zHeight;
-   //     rgvIn[1].x = pball->m_pos.x + pball->m_radius;    rgvIn[1].y = pball->m_pos.y;                    rgvIn[1].z = zHeight;
-   //     rgvIn[2].x = pball->m_pos.x;                    rgvIn[2].y = pball->m_pos.y - pball->m_radius;    rgvIn[2].z = zHeight;
-   //     rgvIn[3].x = pball->m_pos.x - pball->m_radius;    rgvIn[3].y = pball->m_pos.y;                    rgvIn[3].z = zHeight;
+   //     rgvIn[0].x = pball->m_pos.x;                    rgvIn[0].y = pball->m_pos.y+pball->m_radius;    rgvIn[0].z = zHeight;
+   //     rgvIn[1].x = pball->m_pos.x + pball->m_radius;  rgvIn[1].y = pball->m_pos.y;                    rgvIn[1].z = zHeight;
+   //     rgvIn[2].x = pball->m_pos.x;                    rgvIn[2].y = pball->m_pos.y - pball->m_radius;  rgvIn[2].z = zHeight;
+   //     rgvIn[3].x = pball->m_pos.x - pball->m_radius;  rgvIn[3].y = pball->m_pos.y;                    rgvIn[3].z = zHeight;
    //     rgvIn[4].x = pball->m_pos.x;                    rgvIn[4].y = pball->m_pos.y;                    rgvIn[4].z = zHeight + pball->m_radius;
    //     rgvIn[5].x = pball->m_pos.x;                    rgvIn[5].y = pball->m_pos.y;                    rgvIn[5].z = zHeight - pball->m_radius;
-   const bool lowDetailBall = m_ptable->GetDetailLevel() < 10;
-   const int numVerts = lowDetailBall ? basicBallLoNumVertices : basicBallMidNumVertices;
-   const Vertex3D_NoTex2 * const ball = lowDetailBall ? basicBallLo : basicBallMid;
-   rgvIn = new Vertex3D_NoTex2[(numVerts + 1) / 2];
-   rgvOut = new Vertex2D[(numVerts + 1) / 2];
-   for (int i = 0, t = 0; i < numVerts; i += 2, t++)
+   
+   for (unsigned int i = 0, t = 0; i < basicBallLoNumVertices; i += 2, t++)
    {
-      rgvIn[t].x = ball[i].x*pball->m_radius + pball->m_pos.x;
-      rgvIn[t].y = ball[i].y*pball->m_radius + pball->m_pos.y;
-      rgvIn[t].z = ball[i].z*pball->m_radius + zHeight;
+      rgvIn[t].x = basicBallLo[i].x*pball->m_radius + pball->m_pos.x;
+      rgvIn[t].y = basicBallLo[i].y*pball->m_radius + pball->m_pos.y;
+      rgvIn[t].z = basicBallLo[i].z*pball->m_radius + zHeight;
    }
-   m_pin3d.m_proj.TransformVertices(rgvIn, NULL, numVerts / 2, rgvOut);
+   
+   m_pin3d.m_proj.TransformVertices(rgvIn, NULL, basicBallLoNumVertices / 2, rgvOut);
+   
    float maxX = FLT_MIN;
    float minX = FLT_MAX;
    float maxY = FLT_MIN;
    float minY = FLT_MAX;
-   for (int i = 0; i < numVerts / 2; i++)
+   for (unsigned int i = 0; i < basicBallLoNumVertices / 2; i++)
    {
       if (maxX < rgvOut[i].x) maxX = rgvOut[i].x;
       if (minX > rgvOut[i].x) minX = rgvOut[i].x;
       if (maxY < rgvOut[i].y) maxY = rgvOut[i].y;
       if (minY > rgvOut[i].y) minY = rgvOut[i].y;
    }
+
    const float midX = maxX - minX;
    const float midY = maxY - minY;
    stretchY = midY / midX;
    //stretchX = midX/midY;
    stretchX = 1.0f;
-   delete[] rgvIn;
-   delete[] rgvOut;
 }
 
 // not used anymore. Reflection of the ball is done in RenderDynamicMirror()!
@@ -3980,8 +3972,11 @@ void Player::DrawBalls()
 	  if (!drawReflection && m_ptable->m_fReflectionEnabled)
 		  continue;
 
-	  const D3DXVECTOR4 phr(m_ptable->m_tableheight, m_ptable->m_ballPlayfieldReflectionStrength*pball->m_playfieldReflectionStrength, 0.f, 0.f);
-	  ballShader->SetVector("playfield_height_reflection", &phr);
+	  const float inv_tablewidth = 1.0f / (m_ptable->m_right - m_ptable->m_left);
+	  const float inv_tableheight = 1.0f / (m_ptable->m_bottom - m_ptable->m_top);
+	  //const float inclination = ANGTORAD(m_ptable->m_inclination);
+	  const D3DXVECTOR4 phr(inv_tablewidth, inv_tableheight, m_ptable->m_tableheight, m_ptable->m_ballPlayfieldReflectionStrength*pball->m_playfieldReflectionStrength);
+	  ballShader->SetVector("invTableRes__playfield_height_reflection", &phr);
 	  
 	  if ((zheight > maxz) || (pball->m_pos.z < minz))
       {
@@ -4048,28 +4043,33 @@ void Player::DrawBalls()
 	  ballShader->SetVector("Roughness_WrapL_Edge_IsMetal", &rwem);
 
       // ************************* draw the ball itself ****************************
+	  float sx, sy;
       if (m_antiStretchBall && m_ptable->m_BG_rotation[m_ptable->m_BG_current_set] != 0.0f)
-      {
-         float sx, sy;
-         GetBallAspectRatio(pball, sx, sy, zheight);
-
-         const float inv_tablewidth = 1.0f / (m_ptable->m_right - m_ptable->m_left);
-         const float inv_tableheight = 1.0f / (m_ptable->m_bottom - m_ptable->m_top);
          //const D3DXVECTOR4 bs(m_BallStretchX/* +sx*/, m_BallStretchY - sy, inv_tablewidth, inv_tableheight);
-         const D3DXVECTOR4 bs(sx, sy, inv_tablewidth, inv_tableheight);
-         ballShader->SetVector("ballStretch_invTableRes", &bs);
+         GetBallAspectRatio(pball, sx, sy, zheight);
+	  else
+      {
+		 sx = m_BallStretchX;
+		 sy = m_BallStretchY;
       }
 
       const D3DXVECTOR4 diffuse = convertColor(pball->m_color, 1.0f);
       ballShader->SetVector("cBase_Alpha", &diffuse);
 
-      const D3DXMATRIX m(pball->m_orientation.m_d[0][0], pball->m_orientation.m_d[1][0], pball->m_orientation.m_d[2][0], 0.0f,
+      D3DXMATRIX m(pball->m_orientation.m_d[0][0], pball->m_orientation.m_d[1][0], pball->m_orientation.m_d[2][0], 0.0f,
          pball->m_orientation.m_d[0][1], pball->m_orientation.m_d[1][1], pball->m_orientation.m_d[2][1], 0.0f,
          pball->m_orientation.m_d[0][2], pball->m_orientation.m_d[1][2], pball->m_orientation.m_d[2][2], 0.0f,
          0.f, 0.f, 0.f, 1.f);
-      ballShader->SetMatrix("orientation", &m);
+	  Matrix3D temp;
+	  memcpy(temp.m, m.m, 4 * 4 * sizeof(float));
+	  Matrix3D m3D_full;
+	  m3D_full.SetScaling(pball->m_radius*sx, pball->m_radius*sy, pball->m_radius);
+	  m3D_full.Multiply(temp, m3D_full);
+	  temp.SetTranslation(pball->m_pos.x, pball->m_pos.y, zheight);
+	  temp.Multiply(m3D_full, m3D_full);
+	  memcpy(m.m, m3D_full.m, 4 * 4 * sizeof(float));
+	  ballShader->SetMatrix("orientation", &m);
 
-      const D3DXVECTOR4 pos_rad(pball->m_pos.x, pball->m_pos.y, zheight, pball->m_radius);
       if (!pball->m_pinballEnv)
       {
          ballShader->SetBool("hdrTexture0", m_pin3d.pinballEnvTexture.IsHDR()); // should always be false, as read from (LDR-Bitmap-)Resources
@@ -4090,7 +4090,6 @@ void Player::DrawBalls()
       //if (drawReflection)
       //   DrawBallReflection(pball, zheight, lowDetailBall);
 
-      ballShader->SetVector("position_radius", &pos_rad);
       //ballShader->SetFloat("reflection_ball_playfield", (float)m_ptable->m_playfieldReflectionStrength * (float)(1.0 / 255.0));
       m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
       ballShader->SetTechnique("RenderBall");

@@ -44,6 +44,8 @@ float3 FresnelSchlick(const float3 spec, const float LdotH, const float edge)
     return spec + (float3(edge,edge,edge) - spec) * pow(1.0 - LdotH, 5); // UE4: float3(edge,edge,edge) = saturate(50.0*spec.g)
 }
 
+//
+
 float3 DoPointLight(const float3 pos, const float3 N, const float3 V, const float3 diffuse, const float3 glossy, const float edge, const float glossyPower, const int i) 
 { 
    // early out here or maybe we can add more material elements without lighting later?
@@ -149,12 +151,12 @@ float3 lightLoop(const float3 pos, float3 N, const float3 V, float3 diffuse, flo
    }
 
    if((Roughness_WrapL_Edge_IsMetal.w == 0.0) && (diffuseMax > 0.0))
-      color += DoEnvmapDiffuse(normalize(mul(matView, float4(N,0.0)).xyz), diffuse); // trafo back to world for lookup into world space envmap // actually: mul(float4(N,0.0), matViewInverseInverseTranspose), but optimized to save one matrix
+      color += DoEnvmapDiffuse(normalize(mul(matView, N).xyz), diffuse); // trafo back to world for lookup into world space envmap // actually: mul(float4(N,0.0), matViewInverseInverseTranspose), but optimized to save one matrix
 
    if((glossyMax > 0.0) || (specularMax > 0.0))
    {
 	   float3 R = (2.0*NdotV)*N - V; // reflect(-V,n);
-	   R = normalize(mul(matView, float4(R,0.0)).xyz); // trafo back to world for lookup into world space envmap // actually: mul(float4(R,0.0), matViewInverseInverseTranspose), but optimized to save one matrix
+	   R = normalize(mul(matView, R).xyz); // trafo back to world for lookup into world space envmap // actually: mul(float4(R,0.0), matViewInverseInverseTranspose), but optimized to save one matrix
 
 	   const float2 Ruv = float2( // remap to 2D envmap coords
 			atan2(R.y, R.x) * (0.5/PI) + 0.5,

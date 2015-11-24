@@ -47,7 +47,7 @@ public:
    bool m_fCollidable;
    bool m_fReflectionEnabled;
    bool m_legacy;
-   bool  m_isDropped;
+   bool m_isDropped;
 };
 
 class HitTarget :
