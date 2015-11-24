@@ -1,6 +1,6 @@
 #include "Helpers.fxh"
 
-#define Filter_None	0.
+#define Filter_None	    0.
 #define Filter_Additive	1.
 #define Filter_Overlay	2.
 #define Filter_Multiply	3.
@@ -10,11 +10,8 @@
 float4x4 matWorldViewProj : WORLDVIEWPROJ;
 
 float4 staticColor_Alpha;
-float4 alphaTestValueAB_filterMode_addBlend;
-float2 amount__blend_modulate_vs_add;
-
-bool hdrTexture0;
-bool hdrTexture1;
+float4 alphaTestValueAB_filterMode_addBlend; // last one bool
+float4 amount__blend_modulate_vs_add__hdrTexture01; // last two are bools
 
 texture Texture0; // base texture
 texture Texture1; // second image
@@ -64,7 +61,7 @@ float4 ps_main_textureOne_noLight(in VS_OUTPUT_2D IN) : COLOR
    if (pixel.a<=alphaTestValueAB_filterMode_addBlend.x)
     clip(-1);           //stop the pixel shader if alpha test should reject pixel
 
-   if(!hdrTexture0)
+   if(amount__blend_modulate_vs_add__hdrTexture01.z == 0.)
        pixel.xyz = InvGamma(pixel.xyz);
 
    float4 result;
@@ -74,8 +71,8 @@ float4 ps_main_textureOne_noLight(in VS_OUTPUT_2D IN) : COLOR
    if(alphaTestValueAB_filterMode_addBlend.w == 0.)
       return result;
    else
-      return float4(result.xyz*(-amount__blend_modulate_vs_add.y*result.a), // negative as it will be blended with '1.0-thisvalue' (the 1.0 is needed to modulate the underlying elements correctly, but not wanted for the term below)
-                    1.0/amount__blend_modulate_vs_add.y - 1.0);
+      return float4(result.xyz*(-amount__blend_modulate_vs_add__hdrTexture01.y*result.a), // negative as it will be blended with '1.0-thisvalue' (the 1.0 is needed to modulate the underlying elements correctly, but not wanted for the term below)
+                    1.0/amount__blend_modulate_vs_add__hdrTexture01.y - 1.0);
 }
 
 float4 ps_main_textureAB_noLight(in VS_OUTPUT_2D IN) : COLOR
@@ -86,9 +83,9 @@ float4 ps_main_textureAB_noLight(in VS_OUTPUT_2D IN) : COLOR
    if (pixel1.a<=alphaTestValueAB_filterMode_addBlend.x || pixel2.a<=alphaTestValueAB_filterMode_addBlend.y)
     clip(-1);           //stop the pixel shader if alpha test should reject pixel
 
-   if(!hdrTexture0)
+   if(amount__blend_modulate_vs_add__hdrTexture01.z == 0.)
       pixel1.xyz = InvGamma(pixel1.xyz);
-   if(!hdrTexture1)
+   if(amount__blend_modulate_vs_add__hdrTexture01.w == 0.)
       pixel2.xyz = InvGamma(pixel2.xyz);
 
    float4 result = staticColor_Alpha;
@@ -96,17 +93,17 @@ float4 ps_main_textureAB_noLight(in VS_OUTPUT_2D IN) : COLOR
    if ( alphaTestValueAB_filterMode_addBlend.z == Filter_Overlay )
       result *= OverlayHDR(pixel1,pixel2); // could be HDR
    else if ( alphaTestValueAB_filterMode_addBlend.z == Filter_Multiply )
-      result *= Multiply(pixel1,pixel2, amount__blend_modulate_vs_add.x);
+      result *= Multiply(pixel1,pixel2, amount__blend_modulate_vs_add__hdrTexture01.x);
    else if ( alphaTestValueAB_filterMode_addBlend.z == Filter_Additive )
-      result *= Additive(pixel1,pixel2, amount__blend_modulate_vs_add.x);
+      result *= Additive(pixel1,pixel2, amount__blend_modulate_vs_add__hdrTexture01.x);
    else if ( alphaTestValueAB_filterMode_addBlend.z == Filter_Screen )
       result *= ScreenHDR(pixel1,pixel2); // could be HDR
 
    if(alphaTestValueAB_filterMode_addBlend.w == 0.)
       return result;
    else
-      return float4(result.xyz*(-amount__blend_modulate_vs_add.y*result.a), // negative as it will be blended with '1.0-thisvalue' (the 1.0 is needed to modulate the underlying elements correctly, but not wanted for the term below)
-                    1.0/amount__blend_modulate_vs_add.y - 1.0);
+      return float4(result.xyz*(-amount__blend_modulate_vs_add__hdrTexture01.y*result.a), // negative as it will be blended with '1.0-thisvalue' (the 1.0 is needed to modulate the underlying elements correctly, but not wanted for the term below)
+                    1.0/amount__blend_modulate_vs_add__hdrTexture01.y - 1.0);
 }
 
 float4 ps_main_noLight(in VS_OUTPUT_2D IN) : COLOR
@@ -114,8 +111,8 @@ float4 ps_main_noLight(in VS_OUTPUT_2D IN) : COLOR
 	if(alphaTestValueAB_filterMode_addBlend.w == 0.)
       return staticColor_Alpha;
 	else
-	  return float4(staticColor_Alpha.xyz*(-amount__blend_modulate_vs_add.y*staticColor_Alpha.w), // negative as it will be blended with '1.0-thisvalue' (the 1.0 is needed to modulate the underlying elements correctly, but not wanted for the term below)
-	                1.0/amount__blend_modulate_vs_add.y - 1.0);
+	  return float4(staticColor_Alpha.xyz*(-amount__blend_modulate_vs_add__hdrTexture01.y*staticColor_Alpha.w), // negative as it will be blended with '1.0-thisvalue' (the 1.0 is needed to modulate the underlying elements correctly, but not wanted for the term below)
+	                1.0/amount__blend_modulate_vs_add__hdrTexture01.y - 1.0);
 }
 
 //

@@ -966,7 +966,7 @@ void PinProjection::CacheTransform()
    matT.Multiply(m_matWorld, m_matrixTotal);   // total = matWorld * matView * matProj
 }
 
-void PinProjection::TransformVertices(const Vertex3D_NoTex2 * const rgv, const WORD * const rgi, const int count, Vertex2D * const rgvout) const
+void PinProjection::TransformVertices(const Vertex3Ds * const rgv, const WORD * const rgi, const int count, Vertex2D * const rgvout) const
 {
    const float rClipWidth = (m_rcviewport.right - m_rcviewport.left)*0.5f;
    const float rClipHeight = (m_rcviewport.bottom - m_rcviewport.top)*0.5f;

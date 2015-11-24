@@ -1698,7 +1698,7 @@ void PinTable::Render3DProjection(Sur * const psur)
    psur->SetFillColor(RGB(200, 200, 200));
    psur->SetBorderColor(-1, false, 0);
 
-   Vertex3D_NoTex2 rgvIn[8];
+   Vertex3Ds rgvIn[8];
    rgvIn[0].x = m_left;    rgvIn[0].y = m_top;    rgvIn[0].z = 50.0f;
    rgvIn[1].x = m_left;    rgvIn[1].y = m_top;    rgvIn[1].z = m_glassheight;
    rgvIn[2].x = m_right;   rgvIn[2].y = m_top;    rgvIn[2].z = m_glassheight;

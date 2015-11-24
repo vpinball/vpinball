@@ -23,7 +23,7 @@ public:
    void FitCameraToVerticesFS(Vector<Vertex3Ds> * const pvvertex3D, float aspect, float rotation, float inclination, float FOV, float xlatez, float layback);
    void FitCameraToVertices(Vector<Vertex3Ds> * const pvvertex3D, float aspect, float rotation, float inclination, float FOV, float xlatez, float layback);
    void CacheTransform();      // compute m_matrixTotal = m_World * m_View * m_Proj
-   void TransformVertices(const Vertex3D_NoTex2 * const rgv, const WORD * const rgi, const int count, Vertex2D * const rgvout) const;
+   void TransformVertices(const Vertex3Ds * const rgv, const WORD * const rgi, const int count, Vertex2D * const rgvout) const;
 
    void ComputeNearFarPlane(const Vector<Vertex3Ds>& verts);
 
