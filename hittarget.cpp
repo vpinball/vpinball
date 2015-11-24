@@ -580,7 +580,7 @@ void HitTarget::UpdateAnimation(RenderDevice *pd3dDevice)
             m_moveAnimationOffset += step*diff_time_msec;
             if (m_moveDown)
             {
-                if (m_moveAnimationOffset <= limit)
+                if (m_moveAnimationOffset >= limit)
                 {
                     m_moveAnimationOffset = limit;
                     m_moveDown = false;
