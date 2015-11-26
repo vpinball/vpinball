@@ -1043,7 +1043,7 @@ void Ramp::GenerateWireMesh(Vertex3D_NoTex2 **meshBuf1, Vertex3D_NoTex2 **meshBu
 
    if(rgheightInit)
        delete [] rgheightInit;
-   const Vertex2D *rgvLocal = GetRampVertex(splinePoints, &rgheightInit, NULL, NULL, &middlePoints, -1, true);
+   const Vertex2D *rgvLocal = GetRampVertex(splinePoints, &rgheightInit, NULL, NULL, (m_d.m_type != RampType1Wire) ? NULL : &middlePoints, -1, true);
 
    const int numRings = splinePoints;
    const int numSegments = accuracy;
@@ -1135,7 +1135,8 @@ void Ramp::GenerateWireMesh(Vertex3D_NoTex2 **meshBuf1, Vertex3D_NoTex2 **meshBu
    }*/
 
    delete[] rgvLocal;
-   delete[] middlePoints;
+   if (middlePoints)
+      delete[] middlePoints;
    delete[] tmpPoints;
 }
 
@@ -2315,6 +2316,7 @@ void Ramp::RenderRamp(RenderDevice *pd3dDevice, const Material * const mat)
       //g_pplayer->m_pin3d.DisableAlphaBlend(); //!! not necessary anymore
    }
 }
+
 // Always called each frame to render over everything else (along with primitives)
 // Same code as RenderStatic (with the exception of the alpha tests).
 // Also has less drawing calls by bundling seperate calls.
@@ -2335,8 +2337,9 @@ void Ramp::PostRenderStatic(RenderDevice* pd3dDevice)
 void Ramp::GenerateRampMesh(Vertex3D_NoTex2 **meshBuf)
 {
    Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
-   float *rgheight, *rgratio;
-   const Vertex2D * const rgvLocal = GetRampVertex(rampVertex, &rgheight, NULL, &rgratio, NULL, -1, true);
+   float *rgheight;
+   float *rgratio = NULL;
+   const Vertex2D * const rgvLocal = GetRampVertex(rampVertex, &rgheight, NULL, (m_d.m_imagealignment == ImageModeWorld) ? NULL : &rgratio, NULL, -1, true);
 
    const float inv_tablewidth = 1.0f / (m_ptable->m_right - m_ptable->m_left);
    const float inv_tableheight = 1.0f / (m_ptable->m_bottom - m_ptable->m_top);
@@ -2513,7 +2516,8 @@ void Ramp::GenerateRampMesh(Vertex3D_NoTex2 **meshBuf)
    delete[] m_vertBuffer;
    delete[] rgvLocal;
    delete[] rgheight;
-   delete[] rgratio;
+   if (rgratio)
+      delete[] rgratio;
 }
 
 void Ramp::GenerateVertexBuffer(RenderDevice* pd3dDevice)
