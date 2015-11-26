@@ -80,6 +80,9 @@
       <Filter>inc</Filter>
     </ClCompile>
     <ClCompile Include="codeviewedit.cpp" />
+    <ClCompile Include="inc\miniz.c">
+      <Filter>inc</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="vpinball.rc" />
@@ -144,20 +147,33 @@
     <Image Include="res\light.bmp">
       <Filter>res</Filter>
     </Image>
-    <Image Include="res\envmap.bmp" />
-    <Image Include="res\bumperbase.bmp" />
-    <Image Include="res\ringenvmap.bmp" />
-    <Image Include="res\bumperCap.bmp" />
-    <Image Include="res\bumperSocket.bmp" />
-    <Image Include="res\kickerHoleWood.bmp" />
-    <Image Include="res\kickerCup.bmp" />
+    <Image Include="res\bumperbase.bmp">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\bumperCap.bmp">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\bumperSocket.bmp">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\envmap.bmp">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\kickerCup.bmp">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\kickerHoleWood.bmp">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\ringenvmap.bmp">
+      <Filter>res</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="vpinball.idl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="res\vpinball.rgs" />
-    <None Include="res\table.vpx" />
     <None Include="res\ball.rgs">
       <Filter>res</Filter>
     </None>
@@ -299,6 +315,9 @@
     <None Include="shader\Material.fxh">
       <Filter>shaders</Filter>
     </None>
+    <None Include="res\table.vpx">
+      <Filter>res</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="inc">
@@ -315,6 +334,9 @@
     </Filter>
     <Filter Include="shaders">
       <UniqueIdentifier>{951ea5ae-543e-4fde-aca0-fdc7105aa730}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="meshes">
+      <UniqueIdentifier>{79c100ef-bf3a-49dd-b93f-d08d73496bf9}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -432,9 +454,6 @@
     <ClInclude Include="ballex.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="buildnumber.h">
-      <Filter>headers</Filter>
-    </ClInclude>
     <ClInclude Include="bumper.h">
       <Filter>headers</Filter>
     </ClInclude>
@@ -448,9 +467,6 @@
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="dispid.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="display.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="dispreel.h">
@@ -597,9 +613,6 @@
     <ClInclude Include="stdafx.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="stereo3D.h">
-      <Filter>headers</Filter>
-    </ClInclude>
     <ClInclude Include="sur.h">
       <Filter>headers</Filter>
     </ClInclude>
@@ -720,29 +733,98 @@
     <ClInclude Include="inc\progmesh.h">
       <Filter>inc</Filter>
     </ClInclude>
-    <ClInclude Include="inc\progmesh_vecmatquat_minimal.h" />
-    <ClInclude Include="objloader.h" />
-    <ClInclude Include="meshes\ballMesh.h" />
-    <ClInclude Include="meshes\bulbLightMesh.h" />
-    <ClInclude Include="meshes\bulbSocketMesh.h" />
-    <ClInclude Include="meshes\bumperBaseMesh.h" />
-    <ClInclude Include="meshes\bumperCapMesh.h" />
-    <ClInclude Include="meshes\bumperRingMesh.h" />
-    <ClInclude Include="meshes\bumperSocketMesh.h" />
-    <ClInclude Include="meshes\gateBracketMesh.h" />
-    <ClInclude Include="meshes\gateWireMesh.h" />
-    <ClInclude Include="meshes\kickerCupMesh.h" />
-    <ClInclude Include="meshes\kickerHitMesh.h" />
-    <ClInclude Include="meshes\kickerHoleMesh.h" />
-    <ClInclude Include="meshes\spinnerBracketMesh.h" />
-    <ClInclude Include="meshes\spinnerPlateMesh.h" />
-    <ClInclude Include="meshes\triggerSimpleMesh.h" />
-    <ClInclude Include="meshes\triggerStarMesh.h" />
     <ClInclude Include="codeviewedit.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="inc\Sci_Position.h">
       <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\bulbLightMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\bulbSocketMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\bumperBaseMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\bumperCapMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\bumperRingMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\bumperSocketMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\gateBracketMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\gateWireMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\kickerCupMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\kickerHitMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\kickerHoleMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\spinnerBracketMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\spinnerPlateMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\triggerSimpleMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\triggerStarMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\dropTargetT2Mesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\dropTargetT3Mesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\dropTargetT4Mesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\flipperBase.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\hitTargetFatRectangleMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\hitTargetFatSquareMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\hitTargetRectangleMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\hitTargetRoundMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\progmesh_vecmatquat_minimal.h">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\ballMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="objloader.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\gateLongPlateMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\gatePlateMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\gateWireRectangleMesh.h">
+      <Filter>meshes</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

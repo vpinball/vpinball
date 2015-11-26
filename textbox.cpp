@@ -174,8 +174,7 @@ void Textbox::GetTimers(Vector<HitTimer> * const pvht)
 {
    IEditable::BeginPlay();
 
-   HitTimer *pht;
-   pht = new HitTimer();
+   HitTimer * const pht = new HitTimer();
    pht->m_interval = m_d.m_tdr.m_TimerInterval;
    pht->m_nextfire = pht->m_interval;
    pht->m_pfe = (IFireEvents *)this;

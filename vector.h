@@ -5,7 +5,7 @@
 #define START_SIZE 32
 #define GROW_SIZE  32
 
-class VectorVoid
+class VectorVoid // keeps only -pointers- of elements and does -not- free them afterwards!
 {
 protected:
    int		m_cMax;		// Number of elements allocated
@@ -283,11 +283,13 @@ public:
    }
 };
 
-template<class T> class Vector : public VectorVoid
+template<class T> class Vector : public VectorVoid // convenience wrapper for VectorVoid, so does only keep -pointers- internally, also -no- free later-on
 {
 public:
    Vector() : VectorVoid() {}
    Vector(const int cSize) : VectorVoid(cSize) {}
+
+   ~Vector() {}
 
    typedef T value_type;
 
@@ -296,15 +298,8 @@ public:
       return (T *)(m_rg[iItem]);
    }
 
-   T& operator[](const int iItem)        { return *ElementAt(iItem); }
-   const T& operator[](const int iItem) const  { return *ElementAt(iItem); }
-
-   // for compatibility with std::vector -- allocates a new copy of elem
-   void push_back(const T& elem)
-   {
-      AddElement(new T(elem));
-   }
-
+   T& operator[](const int iItem) { return *ElementAt(iItem); }
+   const T& operator[](const int iItem) const { return *ElementAt(iItem); }
 };
 
 #endif

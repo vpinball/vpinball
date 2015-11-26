@@ -64,6 +64,7 @@ int CodeViewDispatch::SortAgainstValue(void *pv)
 CodeViewer::CodeViewer()
 {
    m_haccel = NULL;
+   WordUnderCaret.lpstrText = NULL;
 }
 
 void CodeViewer::Init(IScriptableHost *psh)
@@ -522,7 +523,6 @@ void CodeViewer::Create()
 
 		FindOrInsertStringIntoAutolist(AutoCompList, string(szWord));
 	}
-	vbsKeyWords = new char[strlen(vbsReservedWords)+2];
 	vbsKeyWords.clear();
 	for (vector<UserData>::iterator i = VBwordsDict->begin();i != VBwordsDict->end(); ++i)
 	{
@@ -1963,7 +1963,7 @@ bool CodeViewer::ParseStructureName(vector<UserData> *ListIn, UserData ud,
 			ud.UniqueParent = CurrentParentKey;
 			FindOrInsertUD(ListIn, ud);
 			int iCurParent = GetUDPointerfromUniqueKey(ListIn, CurrentParentKey);
-			if (CurrentParentKey.size() !=0)
+			if (CurrentParentKey.size() !=0 && ud.UniqueKey.size() != 0)
 			{
 				ListIn->at(iCurParent).Children.push_back(ud.UniqueKey);//add child to parent
 			}
@@ -2088,7 +2088,7 @@ bool CodeViewer::ParseStructureName(vector<UserData> *ListIn, UserData ud,
 
 void CodeViewer::ParseDelimtByColon(string *result, string *wholeline)
 {
-	*result = *wholeline ;
+	*result = *wholeline;
 	const int idx = result->find(":"); 
 	if (idx == -1)
 	{
@@ -2241,8 +2241,11 @@ void CodeViewer::ParseForFunction() // Subs & Collections AndyS - WIP
 		if ( !ParseOKLineLength(lineLength) ) continue;
 		memset(text, 0, MAX_LINE_LENGTH);
 		SendMessage(m_hwndScintilla, SCI_GETLINE, linecount, (LPARAM)text);
-      string wholeline(text);
-		ReadLineToParseBrain( wholeline, linecount, PageConstructsDict);
+		if(text[0] != '\0')
+		{
+		    string wholeline(text);
+		    ReadLineToParseBrain( wholeline, linecount, PageConstructsDict);
+		}
 	}
    //Propergate subs&funcs in menu in order
 	for (vector<UserData>::iterator i = PageConstructsDict->begin(); i != PageConstructsDict->end(); ++i) 
@@ -2350,13 +2353,16 @@ void CodeViewer::ParseVPCore()
 	int linecount = 0;
 	while (!feof(fCore))
 	{
-      memset(text, 0, MAX_LINE_LENGTH);
+		memset(text, 0, MAX_LINE_LENGTH);
 		fgets(text, MAX_LINE_LENGTH, fCore);
-      string wholeline(text);
-		++linecount;
-		int lineLength = wholeline.length();
-		if ( !ParseOKLineLength(lineLength) ) continue;
-		ReadLineToParseBrain( wholeline, linecount, VP_CoreDict);
+		if(text[0] != '\0')
+		{
+		    string wholeline(text);
+		    ++linecount;
+		    const int lineLength = wholeline.length();
+		    if ( !ParseOKLineLength(lineLength) ) continue;
+		    ReadLineToParseBrain( wholeline, linecount, VP_CoreDict);
+		}
 	}
 	fclose(fCore);
 }

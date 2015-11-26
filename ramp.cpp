@@ -21,6 +21,7 @@ Ramp::Ramp()
    m_propPhysics = NULL;
    memset(m_d.m_szImage, 0, MAXTOKEN);
    memset(m_d.m_szMaterial, 0, 32);
+   rgheightInit = NULL;
 }
 
 Ramp::~Ramp()
@@ -33,6 +34,9 @@ Ramp::~Ramp()
 
    if (dynamicIndexBuffer)
       dynamicIndexBuffer->release();
+
+   if(rgheightInit)
+       delete [] rgheightInit;
 }
 
 
@@ -165,8 +169,7 @@ void Ramp::PreRender(Sur * const psur)
    psur->SetObject(this);
 
    int cvertex;
-   Vertex2D *middlePoints;
-   Vertex2D * const rgvLocal = GetRampVertex(cvertex, NULL, NULL, NULL, &middlePoints, HIT_SHAPE_DETAIL_LEVEL);
+   Vertex2D * const rgvLocal = GetRampVertex(cvertex, NULL, NULL, NULL, NULL, HIT_SHAPE_DETAIL_LEVEL);
    psur->Polygon(rgvLocal, cvertex * 2);
 
    delete[] rgvLocal;
@@ -972,7 +975,7 @@ void Ramp::CreateWire(const int numRings, const int numSegments, const Vertex2D 
    for (int i = 0, index = 0; i < numRings; i++)
    {
       const int i2 = (i == (numRings - 1)) ? i : i + 1;
-      float height = rgheightInit[i];
+      const float height = rgheightInit[i];
 
       Vertex3Ds tangent(midPoints[i2].x - midPoints[i].x, midPoints[i2].y - midPoints[i].y, 0.0f);
       if (i == numRings - 1)
@@ -983,7 +986,7 @@ void Ramp::CreateWire(const int numRings, const int numSegments, const Vertex2D 
       }
       if (i == 0)
       {
-         Vertex3Ds up(midPoints[i2].x + midPoints[i].x, midPoints[i2].y + midPoints[i].y, rgheightInit[i2] - rgheightInit[i]);
+         Vertex3Ds up(midPoints[i2].x + midPoints[i].x, midPoints[i2].y + midPoints[i].y, rgheightInit[i2] - height);
          normal = CrossProduct(tangent, up);     //normal
          binorm = CrossProduct(tangent, normal);
       }
@@ -1038,7 +1041,9 @@ void Ramp::GenerateWireMesh(Vertex3D_NoTex2 **meshBuf1, Vertex3D_NoTex2 **meshBu
       accuracy = (int)(m_ptable->GetDetailLevel()*1.3f);
    }
 
-   const Vertex2D *rgvLocal = GetRampVertex(splinePoints, &rgheightInit, NULL, &rgratioInit, &middlePoints, -1, true);
+   if(rgheightInit)
+       delete [] rgheightInit;
+   const Vertex2D *rgvLocal = GetRampVertex(splinePoints, &rgheightInit, NULL, NULL, &middlePoints, -1, true);
 
    const int numRings = splinePoints;
    const int numSegments = accuracy;

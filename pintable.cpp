@@ -707,6 +707,8 @@ PinTable::PinTable()
 
    ClearMultiSel();
 
+   m_hbmOffScreen = NULL;
+
    m_undo.m_ptable = this;
    m_fGrid = true;
    m_fBackdrop = true;
@@ -939,6 +941,9 @@ PinTable::~PinTable()
 
    for (unsigned i = 0; i < m_vimage.size(); i++)
       delete m_vimage[i];
+
+   for(int i = 0; i < m_materials.size(); ++i)
+      delete m_materials.ElementAt(i);
 
    for (int i = 0; i < m_vfont.Size(); i++)
    {
@@ -2592,10 +2597,13 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm)
       return hr;
    }
 
-   if (pps->GetPinDirectSound()->CreateDirectFromNative(pps, &wfx) == S_OK)
+   if (FAILED(hr = pps->GetPinDirectSound()->CreateDirectFromNative(pps, &wfx)))
    {
-      m_vsound.AddElement(pps);
+      delete pps;
+      return hr;
    }
+
+   m_vsound.AddElement(pps);
    return S_OK;
 }
 
@@ -3783,7 +3791,11 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    {
       SaveMaterial *mats = (SaveMaterial*)malloc(sizeof(SaveMaterial)*m_numMaterials);
       pbr->GetStruct(mats, sizeof(SaveMaterial)*m_numMaterials);
+
+      for(int i = 0; i < m_materials.size(); ++i)
+          delete m_materials.ElementAt(i);
       m_materials.Reset();
+
       for (int i = 0; i < m_numMaterials; i++)
       {
          Material *pmat = new Material();
@@ -6750,6 +6762,7 @@ void PinTable::AddMaterial(Material *pmat)
       } while (!IsMaterialNameUnique(textBuf));
       lstrcpy(pmat->m_szName, textBuf);
    }
+
    m_materials.AddElement(pmat);
 }
 
