@@ -34,6 +34,8 @@ HitTarget::HitTarget()
    m_moveDown = true;
    m_moveAnimationOffset = 0.0f;
    m_hitEvent = false;
+
+   transformedVertices = NULL;
 }
 
 HitTarget::~HitTarget()
@@ -42,6 +44,9 @@ HitTarget::~HitTarget()
       vertexBuffer->release();
    if (indexBuffer)
       indexBuffer->release();
+
+   if(transformedVertices)
+       delete [] transformedVertices;
 }
 
 void HitTarget::SetMeshType(const TargetType type)
@@ -727,7 +732,10 @@ void HitTarget::RenderSetup(RenderDevice* pd3dDevice)
       indexBuffer->release();
    indexBuffer = pd3dDevice->CreateAndFillIndexBuffer(m_numIndices, m_indices);
 
+   if(transformedVertices)
+       delete [] transformedVertices;
    transformedVertices = new Vertex3D_NoTex2[m_numVertices];
+
    GenerateMesh(transformedVertices);
    m_moveAnimationOffset = 0.0f;
    if (m_d.m_targetType == DropTargetBeveled || m_d.m_targetType == DropTargetSimple || m_d.m_targetType == DropTargetFlatSimple)
@@ -1551,7 +1559,7 @@ void HitTarget::GetTimers(Vector<HitTimer> * const pvht)
 {
     IEditable::BeginPlay();
 
-    HitTimer * const pht = new HitTimer();
+    HitTimer * const pht = new HitTimer(); //!! claims to be leaking
     pht->m_interval = m_d.m_tdr.m_TimerInterval;
     pht->m_nextfire = pht->m_interval;
     pht->m_pfe = (IFireEvents *)this;

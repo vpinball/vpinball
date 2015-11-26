@@ -3,6 +3,7 @@
 PinBinary::PinBinary()
 {
    m_pdata = NULL;
+   m_cdata = 0;
 }
 
 PinBinary::~PinBinary()

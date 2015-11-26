@@ -50,7 +50,7 @@ private:
 
 #ifndef NDEBUG
 public:
-   void DumpTree(int indentLevel)
+   void DumpTree(const int indentLevel)
    {
       char indent[256];
       for (int i = 0; i <= indentLevel; ++i)

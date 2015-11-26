@@ -84,6 +84,8 @@ Flipper::Flipper()
    m_phitflipper = NULL;
    vertexBuffer = NULL;
    indexBuffer = NULL;
+
+   memset(m_d.m_szImage, 0, MAXTOKEN);
 }
 
 Flipper::~Flipper()

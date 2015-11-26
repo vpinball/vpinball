@@ -134,7 +134,7 @@ private:
    int splinePoints;
    int rampVertex;
    Vertex2D *rgvInit;    // just for setup/static drawing
-   float *rgheightInit, *rgratioInit;
+   float *rgheightInit;
 
    int m_numVertices;      // this goes along with dynamicVertexBuffer
    int m_numIndices;

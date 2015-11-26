@@ -280,7 +280,7 @@ void PaintSur::SetBorderColor(const int rgb, const bool fDashed, const int width
    else
    {
       const int style = fDashed ? PS_DOT : PS_SOLID;
-      m_hpnOutline = CreatePen(style, width, rgb);
+      m_hpnOutline = CreatePen(style, width, rgb); //!! claims to be leaking mem
       m_fNullBorder = false;
    }
 }
