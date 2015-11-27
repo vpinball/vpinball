@@ -10,6 +10,9 @@
 #include "meshes/hitTargetRectangleMesh.h"
 #include "meshes/hitTargetFatRectangleMesh.h"
 #include "meshes/hitTargetFatSquareMesh.h"
+#include "meshes/hitTargetT1SlimMesh.h"
+#include "meshes/hitTargetT2SlimMesh.h"
+
 
 ////////////////////////////////////////////////////////////////////////////////
 const float HitTarget::DROP_TARGET_LIMIT = 52.0f;
@@ -99,6 +102,20 @@ void HitTarget::SetMeshType(const TargetType type)
         m_indices = hitFatTargetSquareIndices;
         m_numIndices = hitFatTargetSquareNumFaces;
         m_numVertices = hitFatTargetSquareVertices;
+    }
+    else if (type == HitTargetSlim)
+    {
+        m_vertices = hitTargetT1SlimMesh;
+        m_indices = hitTargetT1SlimIndices;
+        m_numIndices = hitTargetT1SlimNumFaces;
+        m_numVertices = hitTargetT1SlimVertices;
+    }
+    else if (type == HitFatTargetSlim)
+    {
+        m_vertices = hitTargetT2SlimMesh;
+        m_indices = hitTargetT2SlimIndices;
+        m_numIndices = hitTargetT2SlimNumFaces;
+        m_numVertices = hitTargetT2SlimVertices;
     }
     else
     {
@@ -1419,7 +1436,7 @@ void HitTarget::UpdatePropertyPanes()
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 115), TRUE);
    }
 
-   if (m_d.m_targetType == HitTargetRectangle || m_d.m_targetType == HitTargetRound || m_d.m_targetType == HitFatTargetRectangle || m_d.m_targetType == HitFatTargetSquare)
+   if (m_d.m_targetType == HitTargetRectangle || m_d.m_targetType == HitTargetRound || m_d.m_targetType == HitFatTargetRectangle || m_d.m_targetType == HitFatTargetSquare || m_d.m_targetType == HitTargetSlim || m_d.m_targetType == HitFatTargetSlim)
    {
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, IDC_TARGET_ISDROPPED_CHECK), FALSE);
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, IDC_TARGET_LEGACY_MODE_CHECK), FALSE);
