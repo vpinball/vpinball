@@ -42,8 +42,7 @@ Ramp::~Ramp()
 
 bool Ramp::IsTransparent()
 {
-   Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
-   return mat->m_bOpacityActive;
+   return m_ptable->GetMaterial(m_d.m_szMaterial)->m_bOpacityActive;
 }
 
 HRESULT Ramp::Init(PinTable *ptable, float x, float y, bool fromMouseClick)
@@ -161,15 +160,12 @@ void Ramp::GetPointDialogPanes(Vector<PropertyPane> *pvproppane)
 void Ramp::PreRender(Sur * const psur)
 {
    //make 1 wire ramps look unique in editor - uses ramp color
-   if (m_ptable->RenderSolid())
-      psur->SetFillColor(RGB(192, 192, 192));
-   else
-      psur->SetFillColor(-1);
+   psur->SetFillColor(m_ptable->RenderSolid() ? RGB(192, 192, 192) : -1);
    psur->SetBorderColor(-1, false, 0);
    psur->SetObject(this);
 
    int cvertex;
-   Vertex2D * const rgvLocal = GetRampVertex(cvertex, NULL, NULL, NULL, NULL, HIT_SHAPE_DETAIL_LEVEL);
+   const Vertex2D * const rgvLocal = GetRampVertex(cvertex, NULL, NULL, NULL, NULL, HIT_SHAPE_DETAIL_LEVEL, false, false);
    psur->Polygon(rgvLocal, cvertex * 2);
 
    delete[] rgvLocal;
@@ -183,11 +179,12 @@ void Ramp::Render(Sur * const psur)
    psur->SetObject(this);
    psur->SetObject(NULL); // NULL so this won't be hit-tested
 
-   int cvertex;
    bool *pfCross;
    Vertex2D *middlePoints;
-   Vertex2D *rgvLocal = GetRampVertex(cvertex, NULL, &pfCross, NULL, &middlePoints, HIT_SHAPE_DETAIL_LEVEL);
+   int cvertex;
+   const Vertex2D * const rgvLocal = GetRampVertex(cvertex, NULL, &pfCross, NULL, &middlePoints, HIT_SHAPE_DETAIL_LEVEL, false, false);
    psur->Polygon(rgvLocal, cvertex * 2);
+
    if (isHabitrail())
    {
       psur->Polyline(middlePoints, cvertex);
@@ -259,12 +256,12 @@ void Ramp::RenderOutline(Sur * const psur)
    psur->SetObject(this);
    psur->SetObject(NULL); // NULL so this won't be hit-tested
 
-   int cvertex;
    bool *pfCross;
    Vertex2D *middlePoints;
-   const Vertex2D *rgvLocal = GetRampVertex(cvertex, NULL, &pfCross, NULL, &middlePoints, HIT_SHAPE_DETAIL_LEVEL);
-
+   int cvertex;
+   const Vertex2D * const rgvLocal = GetRampVertex(cvertex, NULL, &pfCross, NULL, &middlePoints, HIT_SHAPE_DETAIL_LEVEL, false, false);
    psur->Polygon(rgvLocal, cvertex * 2);
+
    if (isHabitrail())
    {
       psur->Polyline(middlePoints, cvertex - 1);
@@ -298,7 +295,7 @@ void Ramp::GetBoundingVertices(Vector<Vertex3Ds> * const pvvertex3D)
 {
    float *rgheight1;
    int cvertex;
-   const Vertex2D * const rgvLocal = GetRampVertex(cvertex, &rgheight1, NULL, NULL, NULL, HIT_SHAPE_DETAIL_LEVEL);
+   const Vertex2D * const rgvLocal = GetRampVertex(cvertex, &rgheight1, NULL, NULL, NULL, HIT_SHAPE_DETAIL_LEVEL, false, true);
 
    for (int i = 0; i < cvertex; i++)
    {
@@ -342,18 +339,14 @@ void Ramp::AssignHeightToControlPoint(const RenderVertex3D &v, float height)
  *  ppfCross     - size cvertex, true if i-th vertex corresponds to a control point
  *  ppratio      - how far along the ramp length the i-th vertex is, 1=start=bottom, 0=end=top (??)
  */
-Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** const ppfCross, float ** const ppratio, Vertex2D **pMiddlePoints, const float _accuracy, const bool forRendering)
+Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** const ppfCross, float ** const ppratio, Vertex2D ** const pMiddlePoints, const float _accuracy, const bool forRendering, const bool inc_width)
 {
    std::vector<RenderVertex3D> vvertex;
    GetCentralCurve(vvertex, _accuracy);
    // vvertex are the 2D vertices forming the central curve of the ramp as seen from above
 
    const int cvertex = (int)vvertex.size();
-   Vertex2D * rgvLocal = NULL;
-   if (m_d.m_type != RampTypeFlat)
-      rgvLocal = new Vertex2D[(cvertex + 1) * 2];
-   else
-      rgvLocal = new Vertex2D[cvertex * 2];
+   Vertex2D * const rgvLocal = new Vertex2D[(m_d.m_type != RampTypeFlat) ? (cvertex + 1) * 2 : (cvertex * 2)];
 
    if (ppheight)
    {
@@ -367,11 +360,11 @@ Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** co
    {
       *ppratio = new float[cvertex];
    }
-
    if (pMiddlePoints)
    {
       *pMiddlePoints = new Vertex2D[cvertex];
    }
+
    // Compute an approximation to the length of the central curve
    // by adding up the lengths of the line segments.
    float totallength = 0;
@@ -419,17 +412,14 @@ Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** co
          {
             v1normal.Normalize();
             v2normal.Normalize();
-            if (fabsf(v1normal.x - v2normal.x) < 0.0001f && fabsf(v1normal.y - v2normal.y) < 0.0001f)
+
+			if (fabsf(v1normal.x - v2normal.x) < 0.0001f && fabsf(v1normal.y - v2normal.y) < 0.0001f)
             {
                // Two parallel segments
-               v1normal.Normalize();
                vnormal = v1normal;
             }
             else
             {
-               v1normal.Normalize();
-               v2normal.Normalize();
-
                // Find intersection of the two edges meeting this points, but
                // shift those lines outwards along their normals
 
@@ -485,7 +475,7 @@ Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** co
       if (isHabitrail() && m_d.m_type != RampType1Wire)
       {
          widthcur = m_d.m_wireDistanceX;
-         if (pMiddlePoints == NULL)
+         if (inc_width)
             widthcur += 20.0f;
       }
       else if (m_d.m_type == RampType1Wire)
@@ -567,9 +557,9 @@ void Ramp::GetTimers(Vector<HitTimer> * const pvht)
 
 void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
 {
-   int cvertex;
    float *rgheight1;
-   Vertex2D * const rgvLocal = GetRampVertex(cvertex, &rgheight1, NULL, NULL, NULL, HIT_SHAPE_DETAIL_LEVEL);
+   int cvertex;
+   Vertex2D * const rgvLocal = GetRampVertex(cvertex, &rgheight1, NULL, NULL, NULL, HIT_SHAPE_DETAIL_LEVEL, false, true);
 
    float wallheightright, wallheightleft;
 
@@ -1043,7 +1033,7 @@ void Ramp::GenerateWireMesh(Vertex3D_NoTex2 **meshBuf1, Vertex3D_NoTex2 **meshBu
 
    if(rgheightInit)
        delete [] rgheightInit;
-   const Vertex2D *rgvLocal = GetRampVertex(splinePoints, &rgheightInit, NULL, NULL, (m_d.m_type != RampType1Wire) ? NULL : &middlePoints, -1, true);
+   const Vertex2D * const rgvLocal = GetRampVertex(splinePoints, &rgheightInit, NULL, NULL, (m_d.m_type != RampType1Wire) ? NULL : &middlePoints, -1, true, false);
 
    const int numRings = splinePoints;
    const int numSegments = accuracy;
@@ -2072,7 +2062,7 @@ void Ramp::ExportMesh(FILE *f)
       {
          Vertex3D_NoTex2 *rampMesh = NULL;
          GenerateRampMesh(&rampMesh);
-         Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
+         const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
          const int listLength = (rampVertex - 1) * 6;
          unsigned int numVers = m_numVertices * 3;
          if (m_d.m_rightwallheightvisible == 0.0f && m_d.m_leftwallheightvisible == 0.0f)
@@ -2336,10 +2326,10 @@ void Ramp::PostRenderStatic(RenderDevice* pd3dDevice)
 
 void Ramp::GenerateRampMesh(Vertex3D_NoTex2 **meshBuf)
 {
-   Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
+   const Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
    float *rgheight;
    float *rgratio = NULL;
-   const Vertex2D * const rgvLocal = GetRampVertex(rampVertex, &rgheight, NULL, (m_d.m_imagealignment == ImageModeWorld) ? NULL : &rgratio, NULL, -1, true);
+   const Vertex2D * const rgvLocal = GetRampVertex(rampVertex, &rgheight, NULL, (m_d.m_imagealignment == ImageModeWorld) ? NULL : &rgratio, NULL, -1, true, true);
 
    const float inv_tablewidth = 1.0f / (m_ptable->m_right - m_ptable->m_left);
    const float inv_tableheight = 1.0f / (m_ptable->m_bottom - m_ptable->m_top);
