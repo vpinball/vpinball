@@ -2521,11 +2521,6 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
    } // end physics loop
 }
 
-U32 phys_iterations;
-#ifdef FPS
-U64 phys_period = 0;
-#endif
-
 void Player::UpdatePhysics()
 {
    const U64 initial_time_usec = usec();
@@ -2575,7 +2570,7 @@ void Player::UpdatePhysics()
    // Get time in milliseconds for timers
    m_time_msec = (U32)((initial_time_usec - m_StartTime_usec) / 1000);
 
-   phys_iterations = 0;
+   m_phys_iterations = 0;
 
    m_overall_frames++;
 
@@ -2597,8 +2592,6 @@ void Player::UpdatePhysics()
          m_cframes = 0;
       }
    }
-
-   phys_period = initial_time_usec;
 #endif
 
 #ifdef LOG
@@ -2623,7 +2616,7 @@ void Player::UpdatePhysics()
 
    while (m_curPhysicsFrameTime < initial_time_usec) // loop here until current (real) time matches the physics (simulated) time
    {
-      phys_iterations++;
+      m_phys_iterations++;
 
       // Get the time until the next physics tick is done, and get the time
       // until the next frame is done
@@ -2641,7 +2634,7 @@ void Player::UpdatePhysics()
       //}                     // some rare cases will exit from while()
 
       const U64 cur_time_usec = usec();
-      if ((cur_time_usec - initial_time_usec > 200000) || (phys_iterations > ((m_ptable->m_PhysicsMaxLoops == 0) || (m_ptable->m_PhysicsMaxLoops == 0xFFFFFFFFu) ? 0xFFFFFFFFu : (m_ptable->m_PhysicsMaxLoops*(10000 / PHYSICS_STEPTIME))/*2*/))) // hung in the physics loop over 200 milliseconds or the number of physics iterations to catch up on is high (i.e. very low/unplayable FPS)
+      if ((cur_time_usec - initial_time_usec > 200000) || (m_phys_iterations > ((m_ptable->m_PhysicsMaxLoops == 0) || (m_ptable->m_PhysicsMaxLoops == 0xFFFFFFFFu) ? 0xFFFFFFFFu : (m_ptable->m_PhysicsMaxLoops*(10000 / PHYSICS_STEPTIME))/*2*/))) // hung in the physics loop over 200 milliseconds or the number of physics iterations to catch up on is high (i.e. very low/unplayable FPS)
       {                                                                                                                        // can not keep up to real time
          m_curPhysicsFrameTime = initial_time_usec;                               // skip physics forward ... slip-cycles -> 'slowed' down physics
          m_nextPhysicsFrameTime = initial_time_usec + PHYSICS_STEPTIME;
@@ -2723,7 +2716,7 @@ void Player::UpdatePhysics()
    } // end while (m_curPhysicsFrameTime < initial_time_usec)
 
 #ifdef FPS
-   phys_period = usec() - phys_period;
+   m_phys_period = usec() - initial_time_usec;
 #endif
 }
 
@@ -3647,7 +3640,7 @@ void Player::Render()
 
       // Draw the framerate.
       const float fpsAvg = (m_fpsCount == 0) ? 0.0f : m_fpsAvg / m_fpsCount;
-      int len2 = sprintf_s(szFoo, " FPS: %.1f FPS(avg): %.1f  Display %s Objects (%u/%u Triangles) ", m_fps, fpsAvg, m_staticOnly ? "only static" : "all", m_pin3d.m_pd3dDevice->m_stats_drawn_triangles, stats_drawn_static_triangles+m_pin3d.m_pd3dDevice->m_stats_drawn_triangles);
+      int len2 = sprintf_s(szFoo, " FPS: %.1f FPS(avg): %.1f  Display %s Objects (%uk/%uk Triangles) ", m_fps, fpsAvg, m_staticOnly ? "only static" : "all", (m_pin3d.m_pd3dDevice->m_stats_drawn_triangles+999)/1000, (stats_drawn_static_triangles+m_pin3d.m_pd3dDevice->m_stats_drawn_triangles+999)/1000);
       TextOut(hdcNull, 10, 10, szFoo, len2);
 
       const U64 period = m_lastFrameDuration;
@@ -3657,21 +3650,21 @@ void Player::Render()
          m_lastMaxChangeTime = m_time_msec;
       }
 
-      if (phys_period > m_phys_max) m_phys_max = phys_period;
-      if (phys_iterations > m_phys_max_iterations) m_phys_max_iterations = phys_iterations;
+      if (m_phys_period > m_phys_max) m_phys_max = m_phys_period;
+      if (m_phys_iterations > m_phys_max_iterations) m_phys_max_iterations = m_phys_iterations;
 
       if (m_count == 0)
       {
          m_total = period;
-         m_phys_total = phys_period;
-         m_phys_total_iterations = phys_iterations;
+         m_phys_total = m_phys_period;
+         m_phys_total_iterations = m_phys_iterations;
          m_count = 1;
       }
       else
       {
          m_total += period;
-         m_phys_total += phys_period;
-         m_phys_total_iterations += phys_iterations;
+         m_phys_total += m_phys_period;
+         m_phys_total_iterations += m_phys_iterations;
          m_count++;
       }
 
@@ -3694,8 +3687,10 @@ void Player::Render()
         }
 #endif
 
-        int len = sprintf_s(szFoo, sizeof(szFoo), " Period: %.1f ms (%.1f avg %.1f max) ",
-           float(1e-3*period), float(1e-3*(m_total / m_count)), float(1e-3*m_max));
+        int len = sprintf_s(szFoo, sizeof(szFoo), " Period: %.1f ms (%.1f avg %.1f max), %.2f%% Physics: %.1f ms (%.1f (%.2f%%) avg %.1f max) ",
+			float(1e-3*period), float(1e-3 * (double)m_total/(double)m_count), float(1e-3*m_max),
+			float(m_phys_period*100.0/period),
+			float(1e-3*m_phys_period), float(1e-3 * (double)m_phys_total/(double)m_count), float((double)m_phys_total*100.0/(double)m_total), float(1e-3*m_phys_max));
         TextOut(hdcNull, 10, 30, szFoo, len);
 
         // performance counters
@@ -3711,14 +3706,8 @@ void Player::Render()
         TextOut(hdcNull, 10, 145, szFoo, len);
 
 #ifdef _DEBUGPHYSICS
-        len = sprintf_s(szFoo, sizeof(szFoo), " PhysTimes %10u uS (%12u avg %12u max) ",
-           (U32)phys_period,
-           (U32)(m_phys_total / m_count),
-           (U32)m_phys_max );
-        TextOut(hdcNull, 10, 180, szFoo, len);
-
         len = sprintf_s(szFoo, sizeof(szFoo), " Phys: %5u iterations (%5u avg %5u max)) ",
-           phys_iterations,
+           m_phys_iterations,
            (U32)( m_phys_total_iterations / m_count ),
            (U32)m_phys_max_iterations );
         TextOut(hdcNull, 10, 200, szFoo, len);
