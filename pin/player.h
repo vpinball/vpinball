@@ -414,6 +414,8 @@ private:
 
    int m_overall_frames;
 
+   U32 m_phys_iterations;
+
 #ifdef FPS
    int m_lastfpstime;
    int m_cframes;
@@ -430,6 +432,7 @@ private:
    U64 m_phys_max;
    U64 m_phys_total_iterations;
    U64 m_phys_max_iterations;
+   U64 m_phys_period;
 
    FrameQueueLimiter m_limiter;
 
