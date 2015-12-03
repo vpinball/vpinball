@@ -228,6 +228,7 @@ private:
 	
 	int SureFind(const string &LineIn, const string &ToFind);
 	void RemovePadding(string &line); 
+	void RemoveNonVBSChars(string &line);
 	string ExtractWordOperand(const string &line, const int &StartPos);
 
 public:
@@ -297,10 +298,10 @@ public:
 	vector<UserData> *CurrentMembers;
 	string AutoCompString;
 	string AutoCompMembersString;
-	Sci_TextRange WordUnderCaret;
 	char CaretTextBuff[MAX_FIND_LENGTH];
-	Sci_TextRange CurrentConstruct;
+	Sci_TextRange WordUnderCaret;
  	char ConstructTextBuff[MAX_FIND_LENGTH];
+	Sci_TextRange CurrentConstruct;
 	void ListEventsFromItem();
    void FindCodeFromEvent();
    void TellHostToSelectItem();
