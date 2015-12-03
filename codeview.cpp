@@ -2719,7 +2719,7 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 			case SCN_DOUBLECLICK:
 			{
 				pcv->WordUnderCaret.lpstrText = &CaretTextBuff[0];
-				memcpy(CaretTextBuff, 0, MAX_FIND_LENGTH);
+				memset(CaretTextBuff, 0, MAX_FIND_LENGTH);
 				pcv->GetWordUnderCaret();
 				pcv->szLower(pcv->WordUnderCaret.lpstrText);
 				// set back ground colour of all words on display
