@@ -30,20 +30,6 @@ string UserData::lowerCase(string input)
    return input;
 }
 
-bool UserData::FuncCompareUD (const UserData &first, const UserData &second)
-{
-  const string strF = lowerCase(first.KeyName);
-  const string strS = lowerCase(second.KeyName);
-  basic_string <char>::size_type i=0;
-  while ( (i<strF.length()) && (i<strS.length() ) )
-  {
-	  if (strF[i]<strS[i]) return true;
-	  else if (strF[i]>strS[i]) return false;
-    ++i;
-  }
-  return ( strF.length() < strS.length() );
-}
-
 void UserData::RemovePadding(string &line)
 {
 	const size_t LL = line.length();
@@ -67,45 +53,100 @@ void UserData::RemovePadding(string &line)
 	}
 }
 
-/*	FindUD - Binary Search.
+/*	FindUD - Now a human Search!
 0  =Found & UDiterOut set to point at UD in list.
--1 =Not Found - Insert point before UDiterOut
-1  =Not Found - Insert point after UDiterOut
+-1 =Not Found 
+1  =Not Found
 -2 =Zero Length string or error*/
-int UserData::FindUD(vector<UserData>* ListIn, string &strIn,vector<UserData>::iterator& UDiterOut)
+int UserData::FindUD(vector<UserData>* ListIn, string &strIn, vector<UserData>::iterator& UDiterOut, int &Pos)
 {
 	int result = -2;
 	RemovePadding(strIn);
-	if (strIn.size() == 0) return result;
-	if (ListIn)// Sanity chq.
+	if (strIn.size() == 0 || (!ListIn) ) return -2;
+
+	Pos = -1;
+	int KeyResult = FindUDbyKey(ListIn, strIn, UDiterOut, Pos);
+	//If it's a top level construct it will have no parents and therefore have a unique key.
+	if (KeyResult == 0) return 0;
+
+	//Now see if it's in the Name list
+	//Jumpdelta should be intalised to the maximum count of am individual KeyName
+	//But for the momment the biggest is 64 x's in AMH
+	int iNewPos = Pos + KeyResult;//Start Very close to the result of key search
+	if (iNewPos < 0) iNewPos = 0;
+	//Find the start of other instances of strIn by crawling up list
+	//Usually (but not always) FindUDbyKey returns top of the list so its fast
+	const string strSearchData = lowerCase(strIn);
+	string strTableData = "";
+	const int SearchWidth = strSearchData.size();
+	while (true)
 	{
-		const unsigned int ListSize = (int)ListIn->size() - 1; //Zero Base
-		UINT32 iCurPos = 0;
-		int iNewPos = 1u << 30;
-		while ((!(iNewPos & ListSize)) && (iNewPos > 1))
-      {
-         iNewPos >>= 1;
-      }
-		int iJumpDelta = ((iNewPos) >> 1);
-		--iNewPos;//Zero Base
-		const string strSearchData = lowerCase( strIn );
-		while (true)
-		{
-			iCurPos = iNewPos;
-			if (iCurPos >= ListSize) { result = -1; }
-			else
-			{
-				const string strTableData = lowerCase(ListIn->at(iCurPos).KeyName);
-				result = strSearchData.compare(strTableData);
-			}
-			if (iJumpDelta == 0 || result == 0) break;
-			if ( result < 0 )	{ iNewPos = iCurPos - iJumpDelta; }
-			else  { iNewPos = iCurPos + iJumpDelta; }
-			iJumpDelta >>= 1;
-		} 
-		UDiterOut = ListIn->begin() + iCurPos;
+		iNewPos-- ;
+		if (iNewPos < 0) break;
+		strTableData = lowerCase(ListIn->at(iNewPos).UniqueKey).substr(0, SearchWidth);
+		if (strSearchData.compare(strTableData) != 0) break;
 	}
+	++iNewPos;
+	// now walk down list of Keynames looking for what we want.
+	while (true)
+	{
+		strTableData = lowerCase(ListIn->at(iNewPos).KeyName);
+		result = strSearchData.compare(strTableData); 
+		if (result == 0) break; //Found
+		++iNewPos;
+		if (iNewPos == ListIn->size() ) break;
+		strTableData = lowerCase(ListIn->at(iNewPos).KeyName).substr(0, SearchWidth);
+		result = strSearchData.compare(strTableData);
+		if (result != 0) break;	//EO SubList
+	}
+	UDiterOut = ListIn->begin() + iNewPos;
+	Pos = iNewPos;
 	return result ;
+}
+
+//Finds the closest UD from CurrentLine in ListIn
+//On entry CurrentIdx must be set to the UD in the line
+int UserData::FindClosestUD(vector<UserData>* ListIn, const int &CurrentLine, const int &CurrentIdx)
+{
+
+	const string strSearchData = lowerCase(ListIn->at(CurrentIdx).KeyName);
+	const int SearchWidth = strSearchData.size();
+	//Find the start of other instances of strIn by crawling up list
+	int iNewPos = CurrentIdx;
+	string strTableData = "";
+	while (true)
+	{
+		iNewPos-- ;
+		if (iNewPos < 0) break;
+		strTableData = lowerCase(ListIn->at(iNewPos).UniqueKey).substr(0, SearchWidth);
+		if (strSearchData.compare(strTableData) != 0) break;
+	}
+	++iNewPos;
+	//Now at top of list
+	//find nearest definition above current line
+	int ClosestLineNum = 0;
+	int ClosestPos = CurrentIdx;
+	int Delta = - (INT_MAX - 1);
+	while (true)
+	{
+		int NewLineNum = ListIn->at(iNewPos).LineNum;
+		int NewDelta = NewLineNum - CurrentLine;
+		if (NewDelta >= Delta && NewLineNum <= CurrentLine)
+		{
+			if (lowerCase(ListIn->at(iNewPos).KeyName).compare(strSearchData) == 0)
+			{
+				Delta = NewDelta;
+				ClosestLineNum = NewLineNum;
+				ClosestPos = iNewPos;
+			}
+		}
+		++iNewPos;
+		if (iNewPos == ListIn->size() ) break;
+		strTableData = lowerCase(ListIn->at(iNewPos).KeyName).substr(0, SearchWidth);
+		if (strSearchData.compare(strTableData) != 0) break;
+	}
+	--iNewPos;
+	return ClosestPos;
 }
 
 int UserData::FindUDbyKey(vector<UserData>* ListIn, const string &strIn, vector<UserData>::iterator &UDiterOut, int &PosOut )
@@ -231,7 +272,7 @@ UserData UserData::GetUDfromUniqueKey(vector<UserData>* ListIn, const string &Un
 	}
 	return RetVal;
 }
-//Needs speeding up.
+//TODO: Needs speeding up.
 int UserData::GetUDPointerfromUniqueKey(vector<UserData>* ListIn, const string &UniKey)
 {
 	UserData RetVal;
@@ -250,45 +291,52 @@ int UserData::GetUDPointerfromUniqueKey(vector<UserData>* ListIn, const string &
 }
 
 //Assumes case insensitive sorted list
-//Returns point of insertion (-1 == error)
+//Returns index or insertion point (-1 == error)
 int UserData::FindOrInsertUD(vector<UserData>* ListIn, UserData &udIn)
 {
-	vector<UserData>::iterator iterFound  = ListIn->begin();
-	int Pos = 0;
 	if (ListIn->size() == 0)	//First in
 	{
 		ListIn->push_back(udIn);
 		return 0;
 	}
-	const int KeyFound = FindUDbyKey(ListIn, udIn.UniqueKey ,iterFound, Pos);
-	//Same name, different parents. 
-	if ( (KeyFound == 0) &&  (udIn.UniqueParent.compare(ListIn->at(Pos).UniqueParent) != 0) )
+	vector<UserData>::iterator iterFound  = ListIn->begin();
+	int Pos = 0;
+	const int KeyFound = FindUDbyKey(ListIn, udIn.UniqueKey, iterFound, Pos);
+	if (KeyFound == 0)
+	{
+		//Same name, different parents.
+		int ParentResult = udIn.UniqueParent.compare(iterFound->UniqueParent);
+		if (ParentResult == -1)
+		{
+			ListIn->insert(iterFound, udIn);
+		}
+		else if (ParentResult == -1)
+		{
+			++iterFound;
+			++Pos;
+			ListIn->insert(iterFound, udIn);
+		}	
+		return Pos;
+	}
+
+	if (KeyFound == -1) //insert before, somewhere in the middle
 	{
 		ListIn->insert(iterFound, udIn);
 		return Pos;
 	}
-
-	if ( (KeyFound != 0) ) 
+	else
 	{
-		if (KeyFound == -1) //insert before, somewhere in the middle
+		if (KeyFound == 1)//insert Above last element - Special case 
 		{
+			++iterFound;
 			ListIn->insert(iterFound, udIn);
-			return Pos;
+			return ++Pos;
 		}
 		else
-		{
-			if (KeyFound == 1) 
-			{
-				++iterFound;
-				ListIn->insert(iterFound, udIn);
-				return ++Pos;
-			}
-			else
-			if (iterFound == ( ListIn->end() - 1) )//insert Above last element - Special case
-			{//insert at end
-				ListIn->push_back(udIn);
-				return ListIn->size() -1;//Zero Base
-			}
+		if (iterFound == ( ListIn->end() - 1) )
+		{//insert at end
+			ListIn->push_back(udIn);
+			return ListIn->size() -1;//Zero Base
 		}
 	}
 	return -1;

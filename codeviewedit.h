@@ -26,17 +26,17 @@ public:
 public:
 	UserData();
 	UserData(const int LineNo, const string &Desc, const string &Name, const WordType &TypeIn);
-	bool FuncCompareUD (const UserData &first, const UserData &second);
 	string lowerCase(string input);
 	bool FindOrInsertStringIntoAutolist(vector<string>* ListIn, const string &strIn);
 	int FindOrInsertUD( vector<UserData>* ListIn, UserData& udIn);
-	int FindUD(vector<UserData>* ListIn, string &strIn,vector<UserData>::iterator& UDiterOut);
+	int FindUD(vector<UserData>* ListIn, string &strIn,vector<UserData>::iterator& UDiterOut, int &Pos);
+	int FindClosestUD(vector<UserData>* ListIn, const int &CurrentLine,const int &CurrentIdx);
 	int FindUDbyKey(vector<UserData>* ListIn, const string &strIn,vector<UserData>::iterator& UDiterOut, int &PosOut);
 	int UDKeyIndex(vector<UserData>* ListIn, const string &strIn);
 	int UDIndex(vector<UserData>* ListIn, const string &strIn);
 	UserData GetUDfromUniqueKey(vector<UserData>* ListIn, const string &UniKey);
 	int GetUDPointerfromUniqueKey(vector<UserData>* ListIn, const string &UniKey);
-	void UserData::RemovePadding(string &line);
+	void RemovePadding(string &line);
 	~UserData();
 };
 
