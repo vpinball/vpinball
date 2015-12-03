@@ -298,9 +298,7 @@ public:
 	vector<UserData> *CurrentMembers;
 	string AutoCompString;
 	string AutoCompMembersString;
-	char CaretTextBuff[MAX_FIND_LENGTH];
 	Sci_TextRange WordUnderCaret;
- 	char ConstructTextBuff[MAX_FIND_LENGTH];
 	Sci_TextRange CurrentConstruct;
 	void ListEventsFromItem();
    void FindCodeFromEvent();

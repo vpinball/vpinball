@@ -310,7 +310,7 @@ int UserData::FindOrInsertUD(vector<UserData>* ListIn, UserData &udIn)
 		{
 			ListIn->insert(iterFound, udIn);
 		}
-		else if (ParentResult == -1)
+		else if (ParentResult == 1)
 		{
 			++iterFound;
 			++Pos;

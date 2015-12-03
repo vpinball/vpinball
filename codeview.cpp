@@ -25,6 +25,8 @@ const char vbsReservedWords[] =
 "boolean byte currency date double integer long object single string type "
 "variant option explicit randomize";
 
+char CaretTextBuff[MAX_FIND_LENGTH];
+char ConstructTextBuff[MAX_FIND_LENGTH];
 
 LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -1597,8 +1599,7 @@ void CodeViewer::ShowAutoComplete(SCNotification *pSCN)
 	char KeyPressed = pSCN->ch;
 	if (KeyPressed != '.')
 	{
-		char m_Word[MAX_FIND_LENGTH] = {0};
-		WordUnderCaret.lpstrText = &m_Word[0];
+		WordUnderCaret.lpstrText = &CaretTextBuff[0];
 		GetWordUnderCaret();
 		const int intWordLen = strlen(WordUnderCaret.lpstrText);
 		if (intWordLen > DisplayAutoCompleteLength && intWordLen < MAX_FIND_LENGTH)
@@ -2005,10 +2006,10 @@ bool CodeViewer::ParseStructureName(vector<UserData> *ListIn, UserData ud,
 			ud.UniqueKey = lowerCase(ud.KeyName) + "\0";
 			ud.UniqueParent = "";
 			int iCurParent = FindOrInsertUD( ListIn, ud);
-			if (iCurParent == -1)
-			{
-				ShowError("Parent == -1");
-			}
+			//if (iCurParent == -1)
+			//{
+			//	ShowError("Parent == -1");
+			//}
 			CurrentParentKey = ud.UniqueKey;
 			++ParentLevel;
 			// get construct autodims
@@ -2717,13 +2718,13 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 
 			case SCN_DOUBLECLICK:
 			{
-				char WordText[MAX_FIND_LENGTH] = {0};
-				pcv->WordUnderCaret.lpstrText = WordText;
+				pcv->WordUnderCaret.lpstrText = &CaretTextBuff[0];
+				memcpy(CaretTextBuff, 0, MAX_FIND_LENGTH);
 				pcv->GetWordUnderCaret();
 				pcv->szLower(pcv->WordUnderCaret.lpstrText);
 				// set back ground colour of all words on display
 				SendMessage(pcv->m_hwndScintilla, SCI_STYLESETBACK, SCE_B_KEYWORD5, RGB(200,200,200) );
-				SendMessage(pcv->m_hwndScintilla, SCI_SETKEYWORDS, 4 , (LPARAM)WordText);
+				SendMessage(pcv->m_hwndScintilla, SCI_SETKEYWORDS, 4 , (LPARAM)CaretTextBuff);
 			}
 			break;
 
