@@ -1,18 +1,24 @@
 Option Explicit
-Const VPinMAMEDriverVer = 3.48
+Const VPinMAMEDriverVer = 3.49
 '=======================
 ' VPinMAME driver core.
 '=======================
+' New in 3.49 (Update by Arngrim)
+' - Add new Controller.vbs to abstract DOF, B2S, VPM and EM controller loading, usage and sound/effect handling,
+'   see Controller.vbs header on how to use it exactly
+'
 ' New in 3.48 (Update by JimmyFingers)
 ' - (Core changes)
 '   - Changed vpmNudge.TiltObj handling to use Bumper.Threshold / Wall.SlingshotThreshold temporary value changes rather than force / SlingshotStrength changes to disable tiltobj array objects
 '   - There existed a bug in VP since at least the 9.x versions where the Wall.SlingshotStrength value being set by scripting during game play did change the value but the slingshot behaviour / "Slingshot Force" (from the editor) of the wall object did not change (i.e. did not have an effect); As a result the attempted disabling of bumpers and slingshots after a tilt event on supported games (that can send a relay for vpmNudge.SolGameOn ) would only work for the bumper objects
 '   - Using thresholds instead also now has added benefit by not actually triggering the related _Hit or _Slingshot routines so animations, sound processing, and other potential nested subroutine calls will also not activate resulting in a better tilt simulation
 '   Note: NudgePlugin option .vbs files were also updated as they contain and are reassigned the vpmNudge routines when invoked
+'
 ' New in 3.47 (Update by Toxie)
 ' - (Core changes)
 '   - Add UseVPMColoredDMD = true to the table script (place before LoadVPM, or otherwise calling core.vbs)
 '     to automatically pass the raw colored DMD data (RGB from 0..255) from VPM to VP (see VP10+ for details on how to display it)
+'
 ' New in 3.46 (Update by KieferSkunk)
 ' - (Core changes)
 '   - Added two new classes: cvpmTrough and cvpmSaucer
