@@ -1451,10 +1451,10 @@ void HitTarget::UpdatePropertyPanes()
 void HitTarget::SetDefaultPhysics(bool fromMouseClick)
 {
    static const char strKeyName[] = "DefaultProps\\HitTarget";
-   m_d.m_elasticity = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "Elasticity", 0.3f) : 0.3f;
+   m_d.m_elasticity = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "Elasticity", 0.35f) : 0.35f;
    m_d.m_elasticityFalloff = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "ElasticityFalloff", 0.5f) : 0.5f;
-   m_d.m_friction = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "Friction", 0.3f) : 0.3f;
-   m_d.m_scatter = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "Scatter", 0) : 0;
+   m_d.m_friction = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "Friction", 0.2f) : 0.2f;
+   m_d.m_scatter = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "Scatter", 5) : 5;
 }
 
 STDMETHODIMP HitTarget::get_DepthBias(float *pVal)

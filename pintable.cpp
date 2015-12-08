@@ -720,13 +720,14 @@ PinTable::PinTable()
 
    m_fOverridePhysics = 0;
 
-   m_Gravity = GRAVITYCONST;
+   SetDefaultPhysics(false);
+/*   m_Gravity = GRAVITYCONST;
 
    m_friction = 0.3f;
    m_elasticity = 0.2f;
    m_elasticityFalloff = 0.f;
    m_scatter = 0.f;
-
+*/
    m_defaultScatter = 0;
    m_nudgeTime = 5.0f;
 
@@ -816,7 +817,7 @@ PinTable::PinTable()
       nudgesens = (float)tmp*(float)(1.0 / 1000.0);
    nudge_set_sensitivity(nudgesens);
 
-   m_globalDifficulty = 0;			// easy by default
+   m_globalDifficulty = 0.2f;			// easy by default
    hr = GetRegInt("Player", "GlobalDifficulty", &tmp);
    if (hr == S_OK)
       m_globalDifficulty = (float)tmp*(float)(1.0 / 100.0);
@@ -5471,6 +5472,17 @@ ISelect *PinTable::GetISelect()
 
 void PinTable::SetDefaults(bool fromMouseClick)
 {
+}
+
+void PinTable::SetDefaultPhysics(bool fromMouseClick)
+{
+   m_Gravity = 0.97f*GRAVITYCONST;
+
+   m_friction = 0.075f;
+   m_elasticity = 0.25f;
+   m_elasticityFalloff = 0.f;
+   m_scatter = 0.f;
+
 }
 
 IScriptable *PinTable::GetScriptable()

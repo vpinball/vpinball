@@ -388,6 +388,7 @@ public:
    virtual ISelect *GetISelect();
    virtual void SetDefaults(bool fromMouseClick);
    virtual IScriptable *GetScriptable();
+   virtual void SetDefaultPhysics(bool fromMouseClick);
 
    virtual PinTable *GetPTable() { return this; }
    char *GetElementName(IEditable *pedit);
