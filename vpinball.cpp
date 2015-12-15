@@ -3375,7 +3375,7 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
    {
       SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
       LVCOLUMN lvcol;
-      ListView_SetExtendedListViewStyle(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST), LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
+      ListView_SetExtendedListViewStyle(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST), LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES );
       lvcol.mask = LVCF_TEXT | LVCF_WIDTH;
       LocalString ls(IDS_NAME);
       lvcol.pszText = ls.m_szbuffer;// = "Name";
@@ -3621,8 +3621,8 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
 
             pt->SetNonUndoableDirty(eSaveDirty);
          }
+         break;
       }
-      break;
 
       case BN_CLICKED:
       {
@@ -3682,12 +3682,13 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
                   sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST), sel, LVNI_SELECTED);
                }
             }
-            //EndDialog(hwndDlg, TRUE);
-            DestroyWindow(pt->m_hMaterialManager);
-            pt->m_hMaterialManager = NULL;
-            SetForegroundWindow(g_pvp->m_hwnd);
-
+            SendMessage(hwndDlg, WM_CLOSE, 0, 0);
             break;
+         }
+         case IDCANCEL:
+         {
+            SendMessage(hwndDlg, WM_CLOSE, 0, 0);
+            return TRUE;
          }
          case IDC_CLONE_BUTTON:
          {
@@ -3727,14 +3728,6 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
                g_pvp->m_sb.RefreshProperties();
                pt->SetNonUndoableDirty(eSaveDirty);
             }
-            break;
-         }
-         case IDCANCEL:
-         {
-            //EndDialog(hwndDlg, FALSE);
-            DestroyWindow(pt->m_hMaterialManager);
-            pt->m_hMaterialManager = NULL;
-
             break;
          }
          case IDC_ADD_BUTTON:
