@@ -780,10 +780,21 @@ void Light::PrepareMoversCustom()
       height += m_d.m_bulbHaloHeight*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
       m_surfaceHeight = height;
    }
-
-   customMoverIndexNum = vtri.Size() * 3;
    if (customMoverIBuffer)
       customMoverIBuffer->release();
+   if (customMoverVBuffer)
+      customMoverVBuffer->release();
+
+   if (vtri.Size() == 0)
+   {
+      char name[MAX_PATH];
+      char textBuffer[MAX_PATH];
+      WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, MAX_PATH, NULL, NULL);
+      _snprintf_s(textBuffer, MAX_PATH-1, "%s has a wrong shape! It can not be rendered!", name);
+      ShowError(textBuffer);
+      return;
+   }
+   customMoverIndexNum = vtri.Size() * 3;
 
    g_pplayer->m_pin3d.m_pd3dDevice->CreateIndexBuffer(customMoverIndexNum, 0, IndexBuffer::FMT_INDEX16, &customMoverIBuffer);
 
@@ -803,8 +814,6 @@ void Light::PrepareMoversCustom()
       delete vtri.ElementAt(i);
 
    customMoverVertexNum = (int)vvertex.size();
-   if (customMoverVBuffer)
-      customMoverVBuffer->release();
    const DWORD vertexType = (!m_fBackglass) ? MY_D3DFVF_NOTEX2_VERTEX : MY_D3DTRANSFORMED_NOTEX2_VERTEX;
    g_pplayer->m_pin3d.m_pd3dDevice->CreateVertexBuffer(customMoverVertexNum, 0, vertexType, &customMoverVBuffer);
 
