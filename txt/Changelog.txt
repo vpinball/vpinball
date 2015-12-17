@@ -20,7 +20,7 @@ VP 10.0.0 Changelog
 
 - a special thanks has to go out to our awesome alpha testers/improvers: Unclewilly, JPSalas and JimmyFingers!
 
-- for all the changes regarding the core vbs script file package (like cvpmTrough,cvpmSaucer,BallMass,UseVPMDMD,UseVPMColoredDMD and the new Coindoor key functionality)
+- for all the changes regarding the core vbs script file package (like cvpmTrough,cvpmSaucer,BallMass,UseVPMDMD,UseVPMColoredDMD, the Controller abstraction (DOF,B2S,VPM,EM) and the new Coindoor key functionality)
   look into core.vbs for the full changelog
 
 
