@@ -4103,10 +4103,33 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
           controlHwnd = GetDlgItem(hwndDlg, IDC_ADAPTIVE_VSYNC);
           AddToolTip("1-activates VSYNC for every frame (avoids tearing)\r\n2-adaptive VSYNC, waits only for fast frames (e.g. over 60fps)\r\nor set it to e.g. 60 or 120 to limit the fps to that value (energy saving/less heat)", hwndDlg, toolTipHwnd, controlHwnd);
           controlHwnd = GetDlgItem(hwndDlg, IDC_MAX_PRE_FRAMES);
-          AddToolTip("Outdated setting and will be removed. Set it to 0 (or experiment with 1, 2 for a slight chance of lag reduction)", hwndDlg, toolTipHwnd, controlHwnd);
+          AddToolTip("Outdated setting and will be removed. Leave this at 0 (or experiment with 1, 2 for a slight chance of lag reduction)", hwndDlg, toolTipHwnd, controlHwnd);
           controlHwnd = GetDlgItem(hwndDlg, IDC_StretchMonitor);
           AddToolTip("If played in cabinet mode and you get an egg shaped ball activate this.\r\nFor screen ratios other than 16:9 you may have to adjust the offsets.\r\nNormally you have to set the Y offset (around 1.5) but you have to experiment.", hwndDlg, toolTipHwnd, controlHwnd);
+          controlHwnd = GetDlgItem(hwndDlg, IDC_NUDGE_STRENGTH);
+          AddToolTip("Changes the visual effect/screen shaking when nudging the table.", hwndDlg, toolTipHwnd, controlHwnd);
+          controlHwnd = GetDlgItem(hwndDlg, IDC_DYNAMIC_DN);
+          AddToolTip("Activate this to switch the table brightness automatically based on your PC date,clock and location.\r\nThis requires to fill in geographic coordinates for your PCs location to work correctly.\r\nYou may use openstreetmap.org for example to get these in the correct format.", hwndDlg, toolTipHwnd, controlHwnd);
+          controlHwnd = GetDlgItem(hwndDlg, IDC_DN_LATITUDE);
+          AddToolTip("In decimal degrees (-90..90, North positive)", hwndDlg, toolTipHwnd, controlHwnd);
+          controlHwnd = GetDlgItem(hwndDlg, IDC_DN_LONGITUDE);
+          AddToolTip("In decimal degrees (-180..180, East positive)", hwndDlg, toolTipHwnd, controlHwnd);
+          controlHwnd = GetDlgItem(hwndDlg, IDC_DYNAMIC_AO);
+          AddToolTip("Activate this to enable dynamic Ambient Occlusion.\r\nThis slows down performance, but enables contact shadows for dynamic objects.", hwndDlg, toolTipHwnd, controlHwnd);
+          controlHwnd = GetDlgItem(hwndDlg, IDC_FORCE_ANISO);
+          AddToolTip("Activate this to enhance the texture filtering.\r\nThis slows down performance only a bit (on most systems), but increases quality tremendously.", hwndDlg, toolTipHwnd, controlHwnd);
+          controlHwnd = GetDlgItem(hwndDlg, IDC_ENABLE_AO);
+          AddToolTip("Activate this to enable Ambient Occlusion.\r\nThis enables contact shadows between objects.", hwndDlg, toolTipHwnd, controlHwnd);
+          controlHwnd = GetDlgItem(hwndDlg, IDC_3D_STEREO);
+          AddToolTip("Activate this to enable 3D Stereo output.\r\nThis requires that your TV can display 3D Stereo and respective 3D glasses.", hwndDlg, toolTipHwnd, controlHwnd);
+          controlHwnd = GetDlgItem(hwndDlg, IDC_3D_STEREO_Y);
+          AddToolTip("Switches 3D Stereo effect to use the Y Axis.\r\nThis should usually be selected for Cabinets.", hwndDlg, toolTipHwnd, controlHwnd);
+          controlHwnd = GetDlgItem(hwndDlg, IDC_BG_SET);
+          AddToolTip("Switches all tables to use the respective Cabinet display setup.\r\nAlso useful if a 270 degree rotated Desktop monitor is used.", hwndDlg, toolTipHwnd, controlHwnd);
+          controlHwnd = GetDlgItem(hwndDlg, IDC_AA_ALL_TABLES);
+          AddToolTip("Enables brute force 4x Anti-Aliasing.\r\nThis delivers very good quality, but slows down performance significantly.", hwndDlg, toolTipHwnd, controlHwnd);
       }
+
       SetWindowPos(hwndDlg, NULL,
          (rcMain.right + rcMain.left) / 2 - (rcDlg.right - rcDlg.left) / 2,
          (rcMain.bottom + rcMain.top) / 2 - (rcDlg.bottom - rcDlg.top) / 2,
@@ -4168,6 +4191,20 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
       sprintf_s(tmp, 256, "%f", ballAspecRatioOffsetY);
       SetDlgItemTextA(hwndDlg, IDC_CORRECTION_Y, tmp);
 
+      float latitude;
+      hr = GetRegStringAsFloat("Player", "Latitude", &latitude);
+      if (hr != S_OK)
+          latitude = 52.52;
+      sprintf_s(tmp, 256, "%f", latitude);
+      SetDlgItemTextA(hwndDlg, IDC_DN_LATITUDE, tmp);
+
+      float longitude;
+      hr = GetRegStringAsFloat("Player", "Longitude", &longitude);
+      if (hr != S_OK)
+          longitude = 13.37;
+      sprintf_s(tmp, 256, "%f", longitude);
+      SetDlgItemTextA(hwndDlg, IDC_DN_LONGITUDE, tmp);
+
       float nudgeStrength;
       hr = GetRegStringAsFloat("Player", "NudgeStrength", &nudgeStrength);
       if (hr != S_OK)
@@ -4181,6 +4218,13 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
       if (hr != S_OK)
          useAA = 0;
       SendMessage(hwndCheck, BM_SETCHECK, (useAA != 0) ? BST_CHECKED : BST_UNCHECKED, 0);
+
+      hwndCheck = GetDlgItem(hwndDlg, IDC_DYNAMIC_DN);
+      int useDN;
+      hr = GetRegInt("Player", "DynamicDayNight", &useDN);
+      if (hr != S_OK)
+         useDN = 0;
+      SendMessage(hwndCheck, BM_SETCHECK, (useDN != 0) ? BST_CHECKED : BST_UNCHECKED, 0);
 
       hwndCheck = GetDlgItem(hwndDlg, IDC_DYNAMIC_AO);
       int useAO;
@@ -4404,6 +4448,12 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
             GetDlgItemTextA(hwndDlg, IDC_CORRECTION_Y, strTmp, 256);
             SetRegValue("Player", "BallCorrectionY", REG_SZ, &strTmp, lstrlen(strTmp));
 
+            GetDlgItemTextA(hwndDlg, IDC_DN_LONGITUDE, strTmp, 256);
+            SetRegValue("Player", "Longitude", REG_SZ, &strTmp, lstrlen(strTmp));
+
+            GetDlgItemTextA(hwndDlg, IDC_DN_LATITUDE, strTmp, 256);
+            SetRegValue("Player", "Latitude", REG_SZ, &strTmp, lstrlen(strTmp));
+
             GetDlgItemTextA(hwndDlg, IDC_NUDGE_STRENGTH, strTmp, 256);
             SetRegValue("Player", "NudgeStrength", REG_SZ, &strTmp, lstrlen(strTmp));
 
@@ -4427,6 +4477,10 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
             HWND hwndUseAA = GetDlgItem(hwndDlg, IDC_AA_ALL_TABLES);
             size_t useAA = SendMessage(hwndUseAA, BM_GETCHECK, 0, 0);
             SetRegValue("Player", "USEAA", REG_DWORD, &useAA, 4);
+
+            HWND hwndUseDN = GetDlgItem(hwndDlg, IDC_DYNAMIC_DN);
+            size_t useDN = SendMessage(hwndUseDN, BM_GETCHECK, 0, 0);
+            SetRegValue("Player", "DynamicDayNight", REG_DWORD, &useDN, 4);
 
             HWND hwndUseAO = GetDlgItem(hwndDlg, IDC_DYNAMIC_AO);
             size_t useAO = SendMessage(hwndUseAO, BM_GETCHECK, 0, 0);

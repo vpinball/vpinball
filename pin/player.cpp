@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include <algorithm>
+#include <time.h>
 #include "../meshes/ballMesh.h"
 #include "BallShader.h"
 
@@ -815,7 +816,7 @@ void Player::InitShader()
    m_pin3d.m_pd3dDevice->classicLightShader->SetTexture("Texture1", m_pin3d.m_envTexture ? m_pin3d.m_envTexture : &m_pin3d.envTexture);
    m_pin3d.m_pd3dDevice->classicLightShader->SetTexture("Texture2", m_pin3d.m_device_envRadianceTexture);
 #endif
-   const D3DXVECTOR4 st(m_ptable->m_envEmissionScale*m_ptable->m_globalEmissionScale, m_pin3d.m_envTexture ? (float)m_pin3d.m_envTexture->m_height/*+m_pin3d.m_envTexture->m_width)*0.5f*/ : (float)m_pin3d.envTexture.m_height/*+m_pin3d.envTexture.m_width)*0.5f*/, 0.f, 0.f);
+   const D3DXVECTOR4 st(m_ptable->m_envEmissionScale*m_globalEmissionScale, m_pin3d.m_envTexture ? (float)m_pin3d.m_envTexture->m_height/*+m_pin3d.m_envTexture->m_width)*0.5f*/ : (float)m_pin3d.envTexture.m_height/*+m_pin3d.envTexture.m_width)*0.5f*/, 0.f, 0.f);
    m_pin3d.m_pd3dDevice->basicShader->SetVector("fenvEmissionScale_TexWidth", &st);
 #ifdef SEPARATE_CLASSICLIGHTSHADER
    m_pin3d.m_pd3dDevice->classicLightShader->SetVector("fenvEmissionScale_TexWidth", &st);
@@ -833,11 +834,11 @@ void Player::UpdateBallShaderMatrix()
    m_pin3d.m_pd3dDevice->GetTransform(TRANSFORMSTATE_VIEW, &viewMat);
    m_pin3d.m_pd3dDevice->GetTransform(TRANSFORMSTATE_PROJECTION, &projMat);
 
-   D3DXMATRIX matProj(projMat);
-   D3DXMATRIX matView(viewMat);
-   D3DXMATRIX matWorld(worldMat);
+   const D3DXMATRIX matProj(projMat);
+   const D3DXMATRIX matView(viewMat);
+   const D3DXMATRIX matWorld(worldMat);
 
-   D3DXMATRIX matWorldView = matWorld * matView;
+   const D3DXMATRIX matWorldView = matWorld * matView;
    D3DXMATRIX matWorldViewProj = matWorldView * matProj;
 
    if (m_ptable->m_tblMirrorEnabled)
@@ -894,7 +895,7 @@ void Player::InitBallShader()
 
    //D3DXVECTOR4 cam( matView._41, matView._42, matView._43, 1 );
    //ballShader->SetVector("camera", &cam);
-   const D3DXVECTOR4 st(m_ptable->m_envEmissionScale*m_ptable->m_globalEmissionScale, m_pin3d.m_envTexture ? (float)m_pin3d.m_envTexture->m_height/*+m_pin3d.m_envTexture->m_width)*0.5f*/ : (float)m_pin3d.envTexture.m_height/*+m_pin3d.envTexture.m_width)*0.5f*/, 0.f, 0.f);
+   const D3DXVECTOR4 st(m_ptable->m_envEmissionScale*m_globalEmissionScale, m_pin3d.m_envTexture ? (float)m_pin3d.m_envTexture->m_height/*+m_pin3d.m_envTexture->m_width)*0.5f*/ : (float)m_pin3d.envTexture.m_height/*+m_pin3d.envTexture.m_width)*0.5f*/, 0.f, 0.f);
    ballShader->SetVector("fenvEmissionScale_TexWidth", &st);
    //ballShader->SetInt("iLightPointNum",MAX_LIGHT_SOURCES);
 
@@ -923,9 +924,9 @@ void Player::InitBallShader()
    ballVertexBuffer->unlock();
 
    D3DXVECTOR4 amb_lr = convertColor(m_ptable->m_lightAmbient, m_ptable->m_lightRange);
-   amb_lr.x *= m_ptable->m_globalEmissionScale;
-   amb_lr.y *= m_ptable->m_globalEmissionScale;
-   amb_lr.z *= m_ptable->m_globalEmissionScale;
+   amb_lr.x *= m_globalEmissionScale;
+   amb_lr.y *= m_globalEmissionScale;
+   amb_lr.z *= m_globalEmissionScale;
    ballShader->SetVector("cAmbient_LightRange", &amb_lr);
 }
 
@@ -946,6 +947,52 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
    InitKeys();
    InitRegValues();
 
+   //
+
+   int DN;
+   bool dynamicDayNight;
+   HRESULT hr = GetRegInt("Player", "DynamicDayNight", &DN);
+   if (hr != S_OK)
+       dynamicDayNight = false; // The default = off
+   else
+       dynamicDayNight = (DN == 1);
+
+   if (dynamicDayNight)
+   {
+       time_t hour_machine;
+       time(&hour_machine);
+       tm local_hour;
+       localtime_s(&local_hour, &hour_machine);
+
+       float lat;
+       hr = GetRegStringAsFloat("Player", "Latitude", &lat);
+       if (hr != S_OK)
+           lat = 52.52;
+       float lon;
+       hr = GetRegStringAsFloat("Player", "Longitude", &lon);
+       if (hr != S_OK)
+           lon = 13.37;
+
+       const double rlat = lat * (M_PI / 180.);
+       const double rlong = lon * (M_PI / 180.);
+
+       const double tr = TheoreticRadiation(local_hour.tm_mday, local_hour.tm_mon + 1, local_hour.tm_year + 1900, rlat);
+       const double max_tr = MaxTheoreticRadiation(local_hour.tm_year + 1900, rlat);
+       const double sset = SunsetSunriseLocalTime(local_hour.tm_mday, local_hour.tm_mon + 1, local_hour.tm_year + 1900, rlong, rlat, false);
+       const double srise = SunsetSunriseLocalTime(local_hour.tm_mday, local_hour.tm_mon + 1, local_hour.tm_year + 1900, rlong, rlat, true);
+
+       const double cur = local_hour.tm_hour + local_hour.tm_min / 60.0;
+
+       const float factor = (float)(sin(M_PI* clamp((cur - srise) / (sset - srise), 0., 1.)) //!! leave space before sunrise and after sunset?
+           * sqrt(tr / max_tr)); //!! magic, "emulates" that shorter days are usually also "darker",cloudier,whatever in most regions
+
+       m_globalEmissionScale = clamp(factor, 0.15f, 1.f); //!! configurable clamp?
+   }
+   else
+       m_globalEmissionScale = m_ptable->m_globalEmissionScale;
+
+   //
+
    int vsync = (m_ptable->m_TableAdaptiveVSync == -1) ? m_fVSync : m_ptable->m_TableAdaptiveVSync;
 
    const bool useAA = (m_fAA && (m_ptable->m_useAA == -1)) || (m_ptable->m_useAA == 1);
@@ -956,13 +1003,13 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
       colordepth = 32; // The default
 
    // colordepth & refreshrate are only defined if fullscreen is true.
-   HRESULT hr = m_pin3d.InitPin3D(m_hwnd, m_fFullScreen, m_width, m_height, colordepth,
-                                  m_refreshrate, vsync, useAA, !!m_fStereo3D, FXAA, !m_disableAO);
+   hr = m_pin3d.InitPin3D(m_hwnd, m_fFullScreen, m_width, m_height, colordepth,
+                          m_refreshrate, vsync, useAA, !!m_fStereo3D, FXAA, !m_disableAO);
 
    if (hr != S_OK)
    {
       char szfoo[64];
-      sprintf_s(szfoo, "Error code: %x", hr);
+      sprintf_s(szfoo, "InitPin3D Error code: %x", hr);
       ShowError(szfoo);
       return hr;
    }
@@ -2951,7 +2998,7 @@ void Player::RenderDynamics()
    {
       m_pin3d.InitLights();
 
-      const D3DXVECTOR4 st(m_ptable->m_envEmissionScale*m_ptable->m_globalEmissionScale, m_pin3d.m_envTexture ? (float)m_pin3d.m_envTexture->m_height/*+m_pin3d.m_envTexture->m_width)*0.5f*/ : (float)m_pin3d.envTexture.m_height/*+m_pin3d.envTexture.m_width)*0.5f*/, 0.f, 0.f); //!! dto.
+      const D3DXVECTOR4 st(m_ptable->m_envEmissionScale*m_globalEmissionScale, m_pin3d.m_envTexture ? (float)m_pin3d.m_envTexture->m_height/*+m_pin3d.m_envTexture->m_width)*0.5f*/ : (float)m_pin3d.envTexture.m_height/*+m_pin3d.envTexture.m_width)*0.5f*/, 0.f, 0.f); //!! dto.
       m_pin3d.m_pd3dDevice->basicShader->SetVector("fenvEmissionScale_TexWidth", &st);
 #ifdef SEPARATE_CLASSICLIGHTSHADER
       m_pin3d.m_pd3dDevice->classicLightShader->SetVector("fenvEmissionScale_TexWidth", &st);
@@ -3631,16 +3678,16 @@ void Player::Render()
    if (m_fShowFPS && !cameraMode)
    {
       HDC hdcNull = GetDC(NULL);
-      char szFoo[128];
+      char szFoo[256];
 
       // Draw the amount of video memory used.
-      // Disabled in DX9 until we can compute this correctly.
+      //!! Disabled until we can compute this correctly.
       //int len = sprintf_s(szFoo, " Used Graphics Memory: %.2f MB ", (float)NumVideoBytes / (float)(1024 * 1024));
       // TextOut(hdcNull, 10, 30, szFoo, len);
 
       // Draw the framerate.
       const float fpsAvg = (m_fpsCount == 0) ? 0.0f : m_fpsAvg / m_fpsCount;
-      int len2 = sprintf_s(szFoo, " FPS: %.1f FPS(avg): %.1f  Display %s Objects (%uk/%uk Triangles) ", m_fps, fpsAvg, m_staticOnly ? "only static" : "all", (m_pin3d.m_pd3dDevice->m_stats_drawn_triangles+999)/1000, (stats_drawn_static_triangles+m_pin3d.m_pd3dDevice->m_stats_drawn_triangles+999)/1000);
+      int len2 = sprintf_s(szFoo, " FPS: %.1f FPS(avg): %.1f  Display %s Objects (%uk/%uk Triangles)  DayNight %d%% ", m_fps, fpsAvg, m_staticOnly ? "only static" : "all", (m_pin3d.m_pd3dDevice->m_stats_drawn_triangles+999)/1000, (stats_drawn_static_triangles+m_pin3d.m_pd3dDevice->m_stats_drawn_triangles+999)/1000, (int)(m_globalEmissionScale*100.f));
       TextOut(hdcNull, 10, 10, szFoo, len2);
 
       const U64 period = m_lastFrameDuration;
@@ -3990,9 +4037,9 @@ void Player::DrawBalls()
 	  CLight l[MAX_LIGHT_SOURCES + MAX_BALL_LIGHT_SOURCES];
 
 	  D3DXVECTOR4 emission = convertColor(m_ptable->m_Light[0].emission);
-	  emission.x *= m_ptable->m_lightEmissionScale*m_ptable->m_globalEmissionScale;
-	  emission.y *= m_ptable->m_lightEmissionScale*m_ptable->m_globalEmissionScale;
-	  emission.z *= m_ptable->m_lightEmissionScale*m_ptable->m_globalEmissionScale;
+	  emission.x *= m_ptable->m_lightEmissionScale*m_globalEmissionScale;
+	  emission.y *= m_ptable->m_lightEmissionScale*m_globalEmissionScale;
+	  emission.z *= m_ptable->m_lightEmissionScale*m_globalEmissionScale;
 
 	  for (unsigned int i2 = 0; i2 < MAX_LIGHT_SOURCES; ++i2)
 	  {

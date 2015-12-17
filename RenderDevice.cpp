@@ -714,7 +714,7 @@ void RenderDevice::Flip(const bool vsync)
 #ifdef USE_D3D9EX
    if (m_pD3DEx && vsync && !dwm)
    {
-      m_pD3DDeviceEx->WaitForVBlank(0); //!! does not seem to work on win8??
+      m_pD3DDeviceEx->WaitForVBlank(0); //!! does not seem to work on win8?? -> may depend on desktop compositing and the like
       /*D3DRASTER_STATUS r;
       CHECKD3D(m_pD3DDevice->GetRasterStatus(0, &r)); // usually not supported, also only for pure devices?!
 
@@ -726,7 +726,7 @@ void RenderDevice::Flip(const bool vsync)
    }
 #endif
 
-   CHECKD3D(m_pD3DDevice->Present(NULL, NULL, NULL, NULL));
+   CHECKD3D(m_pD3DDevice->Present(NULL, NULL, NULL, NULL)); //!! could use D3DPRESENT_DONOTWAIT and do some physics work meanwhile??
 
    if (mDwmFlush && vsync && dwm)
       mDwmFlush(); //!! also above present?? (internet sources are not clear about order)
