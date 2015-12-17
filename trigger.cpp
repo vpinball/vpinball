@@ -625,7 +625,7 @@ void Trigger::PostRenderStatic(RenderDevice* pd3dDevice)
 
    pd3dDevice->basicShader->SetTechnique("basic_without_texture");
 
-   Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
+   const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
    pd3dDevice->basicShader->SetMaterial(mat);
 
    pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
@@ -649,13 +649,13 @@ void Trigger::ExportMesh(FILE *f)
    GenerateMesh();
    WaveFrontObj_WriteObjectName(f, name);
    WaveFrontObj_WriteVertexInfo(f, triggerVertices, m_numVertices);
-   Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
+   const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
    WaveFrontObj_WriteMaterial(m_d.m_szMaterial, NULL, mat);
    WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
    WaveFrontObj_WriteFaceInfoList(f, (m_d.m_shape == TriggerWireA || m_d.m_shape==TriggerWireB) ? triggerSimpleIndices : triggerStarIndices, m_numFaces);
    WaveFrontObj_UpdateFaceOffset(m_numVertices);
-
 }
+
 void Trigger::GenerateMesh()
 {
    const float baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];

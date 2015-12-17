@@ -257,7 +257,7 @@ void Kicker::ExportMesh(FILE *f)
       GenerateCupMesh(cup);
       WaveFrontObj_WriteObjectName(f, name);
       WaveFrontObj_WriteVertexInfo(f, cup, kickerCupNumVertices);
-      Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
+      const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
       WaveFrontObj_WriteMaterial(m_d.m_szMaterial, NULL, mat);
       WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
       WaveFrontObj_WriteFaceInfoList(f, kickerCupIndices, kickerCupNumFaces);
@@ -266,18 +266,17 @@ void Kicker::ExportMesh(FILE *f)
    }
    else if (m_d.m_kickertype == KickerHole)
    {
-      Vertex3D_NoTex2 *hole = new Vertex3D_NoTex2[kickerHoleNumVertices];
+      Vertex3D_NoTex2 * const hole = new Vertex3D_NoTex2[kickerHoleNumVertices];
       GenerateHoleMesh(hole);
       WaveFrontObj_WriteObjectName(f, name);
       WaveFrontObj_WriteVertexInfo(f, hole, kickerHoleNumVertices);
-      Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
+      const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
       WaveFrontObj_WriteMaterial(m_d.m_szMaterial, NULL, mat);
       WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
       WaveFrontObj_WriteFaceInfoList(f, kickerHoleIndices, kickerHoleNumFaces);
       WaveFrontObj_UpdateFaceOffset(kickerHoleNumVertices);
       delete[] hole;
    }
-
 }
 
 void Kicker::GenerateCupMesh(Vertex3D_NoTex2 *buf)
@@ -425,7 +424,7 @@ void Kicker::PostRenderStatic(RenderDevice* pd3dDevice)
 	  pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
 	  pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 
-      Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
+      const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
       pd3dDevice->basicShader->SetMaterial(mat);
 
       pd3dDevice->basicShader->SetTechnique("kickerBoolean");

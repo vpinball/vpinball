@@ -390,7 +390,10 @@ Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** co
       const RenderVertex3D & vnext = vvertex[(i < (cvertex - 1)) ? i + 1 : i];
       const RenderVertex3D & vmiddle = vvertex[i];
 
-      Vertex2D vnormal;
+	  if (ppfCross)
+		  (*ppfCross)[i] = vmiddle.fControlPoint;
+	  
+	  Vertex2D vnormal;
       {
          // Get normal at this point
          // Notice that these values equal the ones in the line
@@ -491,10 +494,6 @@ Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** co
       rgvLocal[cvertex * 2 - i - 1] = Vertex2D(vmiddle.x, vmiddle.y) - (widthcur*0.5f) * vnormal;
    }
 
-   if (ppfCross)
-      for (int i = 0; i < cvertex; i++)
-         (*ppfCross)[i] = vvertex[i].fControlPoint;
-
    pcvertex = cvertex;
    return rgvLocal;
 }
@@ -504,22 +503,18 @@ float Ramp::GetSurfaceHeight(float x, float y)
    std::vector<RenderVertex3D> vvertex;
    GetCentralCurve(vvertex);
 
-   const int cvertex = (int)vvertex.size();
-   const float topHeight = m_d.m_heighttop + m_ptable->m_tableheight;
-   const float bottomHeight = m_d.m_heightbottom + m_ptable->m_tableheight;
-
    int iSeg;
    Vertex2D vOut;
    ClosestPointOnPolygon(vvertex, Vertex2D(x, y), &vOut, &iSeg, false);
 
-   // Go through vertices (including iSeg itself) counting control points until iSeg
-   float totallength = 0.f;
-   float startlength = 0.f;
-   float zheight = 0.f;
-
    if (iSeg == -1)
       return 0.0f; // Object is not on ramp path
 
+   // Go through vertices (including iSeg itself) counting control points until iSeg
+   float totallength = 0.f;
+   float startlength = 0.f;
+
+   const int cvertex = (int)vvertex.size();
    for (int i2 = 1; i2 < cvertex; i2++)
    {
       const float dx = vvertex[i2].x - vvertex[i2 - 1].x;
@@ -535,9 +530,10 @@ float Ramp::GetSurfaceHeight(float x, float y)
    const float len = sqrtf(dx*dx + dy*dy);
    startlength += len; // Add the distance the object is between the two closest polyline segments.  Matters mostly for straight edges. Z does not respect that yet!
 
-   zheight = vvertex[iSeg].z + (startlength / totallength) * (topHeight - bottomHeight) + bottomHeight;
+   const float topHeight = m_d.m_heighttop + m_ptable->m_tableheight;
+   const float bottomHeight = m_d.m_heightbottom + m_ptable->m_tableheight;
 
-   return zheight;
+   return vvertex[iSeg].z + (startlength / totallength) * (topHeight - bottomHeight) + bottomHeight;
 }
 
 void Ramp::GetTimers(Vector<HitTimer> * const pvht)
@@ -956,12 +952,9 @@ void Ramp::RenderStaticHabitrail(RenderDevice* pd3dDevice, const Material * cons
    //pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 }
 
-void Ramp::CreateWire(const int numRings, const int numSegments, const Vertex2D *midPoints, Vertex3D_NoTex2 *rgvbuf)
+void Ramp::CreateWire(const int numRings, const int numSegments, const Vertex2D * const midPoints, Vertex3D_NoTex2 * const rgvbuf)
 {
    Vertex3Ds prevB;
-   Vertex3Ds binorm;
-   Vertex3Ds normal;
-
    for (int i = 0, index = 0; i < numRings; i++)
    {
       const int i2 = (i == (numRings - 1)) ? i : i + 1;
@@ -974,7 +967,9 @@ void Ramp::CreateWire(const int numRings, const int numSegments, const Vertex2D 
          tangent.x = midPoints[i].x - midPoints[i - 1].x;
          tangent.y = midPoints[i].y - midPoints[i - 1].y;
       }
-      if (i == 0)
+	  Vertex3Ds binorm;
+	  Vertex3Ds normal;
+	  if (i == 0)
       {
          Vertex3Ds up(midPoints[i2].x + midPoints[i].x, midPoints[i2].y + midPoints[i].y, rgheightInit[i2] - height);
          normal = CrossProduct(tangent, up);     //normal
@@ -989,15 +984,12 @@ void Ramp::CreateWire(const int numRings, const int numSegments, const Vertex2D 
       normal.Normalize();
       prevB = binorm;
 
-      int si = index;
       const float inv_numRings = 1.0f / (float)numRings;
       const float inv_numSegments = 1.0f / (float)numSegments;
-      for (int j = 0; j < numSegments; j++, index++)
+	  const float u = (float)i*inv_numRings;
+	  for (int j = 0; j < numSegments; j++, index++)
       {
-         const float u = (float)i*inv_numRings;
          const float v = ((float)j + u)*inv_numSegments;
-         const float u_angle = u*(float)(2.0*M_PI);
-         const float v_angle = v*(float)(2.0*M_PI);
          const Vertex3Ds tmp = GetRotatedAxis((float)j*(360.0f*inv_numSegments), tangent, normal) * ((float)m_d.m_wireDiameter*0.5f);
          rgvbuf[index].x = midPoints[i].x + tmp.x;
          rgvbuf[index].y = midPoints[i].y + tmp.y;

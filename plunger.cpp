@@ -380,7 +380,7 @@ void Plunger::PostRenderStatic(RenderDevice* pd3dDevice)
    const int frame0 = (int)((pa.m_pos - pa.m_frameStart) / (pa.m_frameEnd - pa.m_frameStart) * (cframes - 1) + 0.5f);
    const int frame = (frame0 < 0 ? 0 : frame0 >= cframes ? cframes - 1 : frame0);
 
-   Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
+   const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
    pd3dDevice->basicShader->SetMaterial(mat);
 
    pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);

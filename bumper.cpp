@@ -194,7 +194,7 @@ void Bumper::PreRender(Sur * const psur)
 
    if (m_ptable->m_renderSolid)
    {
-      Material *mat = m_ptable->GetMaterial(m_d.m_szCapMaterial);
+      const Material * const mat = m_ptable->GetMaterial(m_d.m_szCapMaterial);
       psur->SetFillColor(mat->m_cBase);
    }
    else
@@ -203,7 +203,7 @@ void Bumper::PreRender(Sur * const psur)
    psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius*1.5f);
    if (m_ptable->m_renderSolid)
    {
-      Material *mat = m_ptable->GetMaterial(m_d.m_szBaseMaterial);
+      const Material * const mat = m_ptable->GetMaterial(m_d.m_szBaseMaterial);
       psur->SetFillColor(mat->m_cBase);
    }
    else
@@ -509,7 +509,7 @@ void Bumper::ExportMesh(FILE *f)
 
       GenerateBaseMesh(base);
       WaveFrontObj_WriteVertexInfo(f, base, bumperBaseNumVertices);
-      Material *mat = m_ptable->GetMaterial(m_d.m_szBaseMaterial);
+      const Material * mat = m_ptable->GetMaterial(m_d.m_szBaseMaterial);
       WaveFrontObj_WriteMaterial(m_d.m_szBaseMaterial, NULL, mat);
       WaveFrontObj_UseTexture(f, m_d.m_szBaseMaterial);
       WaveFrontObj_WriteFaceInfoList(f, bumperBaseIndices, bumperBaseNumFaces);
@@ -550,7 +550,7 @@ void Bumper::ExportMesh(FILE *f)
 
       GenerateCapMesh(cap);
       WaveFrontObj_WriteVertexInfo(f, cap, bumperCapNumVertices);
-      Material *mat = m_ptable->GetMaterial(m_d.m_szCapMaterial);
+      const Material * const mat = m_ptable->GetMaterial(m_d.m_szCapMaterial);
       WaveFrontObj_WriteMaterial(m_d.m_szCapMaterial, NULL, mat);
       WaveFrontObj_UseTexture(f, m_d.m_szCapMaterial);
       WaveFrontObj_WriteFaceInfoList(f, bumperCapIndices, bumperCapNumFaces);
@@ -731,7 +731,7 @@ void Bumper::RenderStatic(RenderDevice* pd3dDevice)
    {
       pd3dDevice->basicShader->SetTechnique("basic_with_texture");
 
-      Material *mat = m_ptable->GetMaterial(m_d.m_szSkirtMaterial);
+      const Material *mat = m_ptable->GetMaterial(m_d.m_szSkirtMaterial);
       if (!mat->m_bOpacityActive)
       {
          RenderSocket(pd3dDevice, mat);
@@ -745,7 +745,7 @@ void Bumper::RenderStatic(RenderDevice* pd3dDevice)
    }
    if (m_d.m_fCapVisible)
    {
-      Material *mat = m_ptable->GetMaterial(m_d.m_szCapMaterial);
+      const Material * const mat = m_ptable->GetMaterial(m_d.m_szCapMaterial);
       if (!mat->m_bOpacityActive)
       {
          pd3dDevice->basicShader->SetTechnique("basic_with_texture");

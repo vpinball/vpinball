@@ -31,13 +31,11 @@ bool Surface::IsTransparent()
    bool result = false;
    if (m_d.m_fSideVisible)
    {
-      const Material *mat = m_ptable->GetMaterial(m_d.m_szSideMaterial);
-      result = mat->m_bOpacityActive;
+	  result = m_ptable->GetMaterial(m_d.m_szSideMaterial)->m_bOpacityActive;
    }
    if (m_d.m_fTopBottomVisible)
    {
-      const Material *mat = m_ptable->GetMaterial(m_d.m_szTopMaterial);
-      result = result || mat->m_bOpacityActive;
+	  result = result || m_ptable->GetMaterial(m_d.m_szTopMaterial)->m_bOpacityActive;
    }
    return result;
 }
@@ -789,8 +787,8 @@ void Surface::ExportMesh(FILE *f)
    {
       WaveFrontObj_WriteObjectName(f, name);
       WaveFrontObj_WriteVertexInfo(f, &topBuf[0], numVertices);
-      Texture *tex = m_ptable->GetImage(m_d.m_szImage);
-      Material *mat = m_ptable->GetMaterial(m_d.m_szTopMaterial);
+      const Texture * const tex = m_ptable->GetImage(m_d.m_szImage);
+      const Material * const mat = m_ptable->GetMaterial(m_d.m_szTopMaterial);
       if (tex)
       {
          WaveFrontObj_WriteMaterial(m_d.m_szImage, tex->m_szPath, mat);
@@ -813,10 +811,10 @@ void Surface::ExportMesh(FILE *f)
       WaveFrontObj_WriteVertexInfo(f, tmp, numVertices * 5);
       delete[] tmp;
 
-      Material *mat = m_ptable->GetMaterial(m_d.m_szTopMaterial);
+      const Material * const mat = m_ptable->GetMaterial(m_d.m_szTopMaterial);
       WaveFrontObj_WriteMaterial(m_d.m_szTopMaterial, NULL, mat);
       WaveFrontObj_UseTexture(f, m_d.m_szTopMaterial);
-      WORD *idx = new WORD[topBottomIndices.size() + sideIndices.size()];
+      WORD * const idx = new WORD[topBottomIndices.size() + sideIndices.size()];
       memcpy(idx, sideIndices.data(), sideIndices.size()*sizeof(WORD));
       for (unsigned int i = 0; i < topBottomIndices.size(); i++)
          idx[sideIndices.size() + i] = topBottomIndices[i] + numVertices * 4;
@@ -828,7 +826,7 @@ void Surface::ExportMesh(FILE *f)
    {
       WaveFrontObj_WriteObjectName(f, name);
       WaveFrontObj_WriteVertexInfo(f, &sideBuf[0], numVertices * 4);
-      Material *mat = m_ptable->GetMaterial(m_d.m_szSideMaterial);
+      const Material * const mat = m_ptable->GetMaterial(m_d.m_szSideMaterial);
       WaveFrontObj_WriteMaterial(m_d.m_szSideMaterial, NULL, mat);
       WaveFrontObj_UseTexture(f, m_d.m_szSideMaterial);
       WaveFrontObj_WriteFaceInfo(f, sideIndices);
@@ -949,14 +947,12 @@ void Surface::RenderSetup(RenderDevice* pd3dDevice)
    m_isDynamic = false;
    if (m_d.m_fSideVisible)
    {
-      Material *mat = m_ptable->GetMaterial(m_d.m_szSideMaterial);
-      if (mat->m_bOpacityActive)
+	  if (m_ptable->GetMaterial(m_d.m_szSideMaterial)->m_bOpacityActive)
          m_isDynamic = true;
    }
    if (m_d.m_fTopBottomVisible)
    {
-      Material *mat = m_ptable->GetMaterial(m_d.m_szTopMaterial);
-      if (mat->m_bOpacityActive)
+	  if (m_ptable->GetMaterial(m_d.m_szTopMaterial)->m_bOpacityActive)
          m_isDynamic = true;
    }
 
@@ -1020,7 +1016,7 @@ void Surface::RenderSlingshots(RenderDevice* pd3dDevice)
       return;
 
    pd3dDevice->basicShader->SetTechnique("basic_without_texture");
-   Material *mat = m_ptable->GetMaterial(m_d.m_szSlingShotMaterial);
+   const Material * const mat = m_ptable->GetMaterial(m_d.m_szSlingShotMaterial);
    pd3dDevice->basicShader->SetMaterial(mat);
 
    pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
@@ -1062,7 +1058,7 @@ void Surface::RenderWallsAtHeight(RenderDevice* pd3dDevice, const bool fDrop)
    // render side
    if (m_d.m_fSideVisible && !fDrop && (numVertices > 0)) // Don't need to render walls if dropped
    {
-      Material *mat = m_ptable->GetMaterial(m_d.m_szSideMaterial);
+      const Material * const mat = m_ptable->GetMaterial(m_d.m_szSideMaterial);
       pd3dDevice->basicShader->SetMaterial(mat);
 
       pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
@@ -1094,7 +1090,7 @@ void Surface::RenderWallsAtHeight(RenderDevice* pd3dDevice, const bool fDrop)
    // render top&bottom
    if (m_d.m_fTopBottomVisible && (numPolys > 0))
    {
-      Material *mat = m_ptable->GetMaterial(m_d.m_szTopMaterial);
+      const Material * const mat = m_ptable->GetMaterial(m_d.m_szTopMaterial);
       pd3dDevice->basicShader->SetMaterial(mat);
 
       pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);

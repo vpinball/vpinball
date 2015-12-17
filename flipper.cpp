@@ -644,7 +644,7 @@ void Flipper::PostRenderStatic(RenderDevice* pd3dDevice)
 
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
-   Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
+   const Material * mat = m_ptable->GetMaterial(m_d.m_szMaterial);
    pd3dDevice->basicShader->SetMaterial(mat);
 
    Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
@@ -729,7 +729,7 @@ void Flipper::ExportMesh(FILE *f)
    strcat_s(subObjName, "Base");
    WaveFrontObj_WriteObjectName(f, subObjName);
    WaveFrontObj_WriteVertexInfo(f, flipper, flipperBaseVertices);
-   Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
+   const Material * mat = m_ptable->GetMaterial(m_d.m_szMaterial);
    WaveFrontObj_WriteMaterial(m_d.m_szMaterial, NULL, mat);
    WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
    WaveFrontObj_WriteFaceInfoList(f, flipperBaseIndices, flipperBaseNumFaces);

@@ -146,7 +146,7 @@ private:
 
    void GetCentralCurve(std::vector<RenderVertex> & vv);
 
-   Vertex2D *GetSplineVertex(int &pcvertex, bool ** const ppfCross, Vertex2D **pMiddlePoints);
+   Vertex2D *GetSplineVertex(int &pcvertex, bool ** const ppfCross, Vertex2D ** const pMiddlePoints);
 
    void GenerateVertexBuffer(RenderDevice* pd3dDevice);
 

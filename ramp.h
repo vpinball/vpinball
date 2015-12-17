@@ -183,7 +183,7 @@ private:
    void SetupHitObject(Vector<HitObject> * pvho, HitObject * obj);
 
    void RenderRamp(RenderDevice *pd3dDevice, const Material * const mat);
-   void CreateWire(const int numRings, const int numSegments, const Vertex2D *midPoints, Vertex3D_NoTex2 *rgvBuf);
+   void CreateWire(const int numRings, const int numSegments, const Vertex2D * const midPoints, Vertex3D_NoTex2 * const rgvBuf);
    void GenerateWireMesh(Vertex3D_NoTex2 **meshBuf, Vertex3D_NoTex2 **meshBuf2);
    void Ramp::GenerateRampMesh(Vertex3D_NoTex2 **meshBuf);
 
