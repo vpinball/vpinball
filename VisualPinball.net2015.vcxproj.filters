@@ -80,6 +80,9 @@
       <Filter>inc</Filter>
     </ClCompile>
     <ClCompile Include="codeviewedit.cpp" />
+    <ClCompile Include="inc\miniz.c">
+      <Filter>inc</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="vpinball.rc" />
@@ -144,6 +147,27 @@
       <Filter>res</Filter>
     </Image>
     <Image Include="res\white.bmp">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\bumperbase.bmp">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\bumperCap.bmp">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\bumperSocket.bmp">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\envmap.bmp">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\kickerCup.bmp">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\kickerHoleWood.bmp">
+      <Filter>res</Filter>
+    </Image>
+    <Image Include="res\ringenvmap.bmp">
       <Filter>res</Filter>
     </Image>
   </ItemGroup>
@@ -798,6 +822,12 @@
       <Filter>meshes</Filter>
     </ClInclude>
     <ClInclude Include="meshes\gateWireRectangleMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\hitTargetT1SlimMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\hitTargetT2SlimMesh.h">
       <Filter>meshes</Filter>
     </ClInclude>
   </ItemGroup>
