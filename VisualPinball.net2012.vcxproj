@@ -1183,6 +1183,8 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="meshes\hitTargetFatSquareMesh.h" />
     <ClInclude Include="meshes\hitTargetRectangleMesh.h" />
     <ClInclude Include="meshes\hitTargetRoundMesh.h" />
+    <ClInclude Include="meshes\hitTargetT1SlimMesh.h" />
+    <ClInclude Include="meshes\hitTargetT2SlimMesh.h" />
     <ClInclude Include="meshes\kickerCupMesh.h" />
     <ClInclude Include="meshes\kickerHitMesh.h" />
     <ClInclude Include="meshes\kickerHoleMesh.h" />
