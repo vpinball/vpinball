@@ -350,7 +350,6 @@ bool UserData::FindOrInsertStringIntoAutolist(vector<string>* ListIn,const strin
 		ListIn->push_back(strIn);
 		return true;
 	}
-	string strLowerIn = lowerCase(strIn);
 	vector<string>::iterator i = ListIn->begin();
 	int result = -2;
 	const unsigned int ListSize = (int)ListIn->size();
