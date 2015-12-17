@@ -144,6 +144,8 @@ VP 10.0.0 Changelog
 
   -> the night->day slider will scale these two lighting components, and in addition
      the script now offers NightDay, which returns the range in 0..100, so that additional tweaks can be done in the script, depending on this value
+     this night->day setting can also be set automatically via the video preferences, but requires to fill in the correct latitude and longitude of your location
+      (in decimal degrees,-90..90 (North positive) and -180..180 (East positive), like openstreetmap.org does)
 
 - new (optional) playfield reflections
   This option is a table option and can't be blindly activated on all tables. Because authors have so many different ways to build tables it's nearly impossible to handle the reflection in every case.

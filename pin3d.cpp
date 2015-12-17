@@ -367,7 +367,7 @@ void Pin3D::DrawBackground()
 
       g_pplayer->m_pin3d.DisableAlphaBlend();
 
-      g_pplayer->Spritedraw(0.f, 0.f, 1.f, 1.f, 0xFFFFFFFF, pin, 0.0f, 0.0f, 1.0f, 1.0f, ptable->m_ImageBackdropNightDay ? sqrtf(ptable->m_globalEmissionScale) : 1.0f);
+      g_pplayer->Spritedraw(0.f, 0.f, 1.f, 1.f, 0xFFFFFFFF, pin, 0.0f, 0.0f, 1.0f, 1.0f, ptable->m_ImageBackdropNightDay ? sqrtf(g_pplayer->m_globalEmissionScale) : 1.0f);
 
       if (g_pplayer->m_ptable->m_tblMirrorEnabled^g_pplayer->m_ptable->m_fReflectionEnabled)
          m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
@@ -397,9 +397,9 @@ void Pin3D::InitLights()
    g_pplayer->m_ptable->m_Light[1].pos.z = g_pplayer->m_ptable->m_lightHeight;
 
    D3DXVECTOR4 emission = convertColor(g_pplayer->m_ptable->m_Light[0].emission);
-   emission.x *= g_pplayer->m_ptable->m_lightEmissionScale*g_pplayer->m_ptable->m_globalEmissionScale;
-   emission.y *= g_pplayer->m_ptable->m_lightEmissionScale*g_pplayer->m_ptable->m_globalEmissionScale;
-   emission.z *= g_pplayer->m_ptable->m_lightEmissionScale*g_pplayer->m_ptable->m_globalEmissionScale;
+   emission.x *= g_pplayer->m_ptable->m_lightEmissionScale*g_pplayer->m_globalEmissionScale;
+   emission.y *= g_pplayer->m_ptable->m_lightEmissionScale*g_pplayer->m_globalEmissionScale;
+   emission.z *= g_pplayer->m_ptable->m_lightEmissionScale*g_pplayer->m_globalEmissionScale;
 
    struct CLight
    {
@@ -418,9 +418,9 @@ void Pin3D::InitLights()
 #endif
 
    D3DXVECTOR4 amb_lr = convertColor(g_pplayer->m_ptable->m_lightAmbient, g_pplayer->m_ptable->m_lightRange);
-   amb_lr.x *= g_pplayer->m_ptable->m_globalEmissionScale;
-   amb_lr.y *= g_pplayer->m_ptable->m_globalEmissionScale;
-   amb_lr.z *= g_pplayer->m_ptable->m_globalEmissionScale;
+   amb_lr.x *= g_pplayer->m_globalEmissionScale;
+   amb_lr.y *= g_pplayer->m_globalEmissionScale;
+   amb_lr.z *= g_pplayer->m_globalEmissionScale;
    m_pd3dDevice->basicShader->SetVector("cAmbient_LightRange", &amb_lr);
 #ifdef SEPARATE_CLASSICLIGHTSHADER
    m_pd3dDevice->classicLightShader->SetVector("cAmbient_LightRange", &amb_lr);

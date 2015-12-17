@@ -53,11 +53,11 @@ void uSleep(const unsigned long long u)
 
 //
 
+static const unsigned int daysPerMonths[12] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }; // Number of days per month
+
 // (Rough) angle of the day (radian)
 double AngleOfDay(const unsigned int day, const unsigned int month, const unsigned int year)
 {
-	static const unsigned int daysPerMonths[11] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30 }; // Number of days per month
-	
 	bool leapYear;
 	unsigned int totalDaysInYear;
     if ((year % 400) == 0)
@@ -138,12 +138,12 @@ double LocalTimeAdjust()
 {
     time_t hour_machine;
     time(&hour_machine);
-	struct tm *gmt_hour;
-	gmtime_s(gmt_hour, &hour_machine);
-	struct tm *local_hour;
-	localtime_s(local_hour, &hour_machine);
+	tm gmt_hour;
+	gmtime_s(&gmt_hour, &hour_machine);
+	tm local_hour;
+	localtime_s(&local_hour, &hour_machine);
 
-	const int dif = local_hour->tm_hour - gmt_hour->tm_hour;
+	const int dif = local_hour.tm_hour - gmt_hour.tm_hour;
 	return (dif < -12) ? dif + 24 : dif;
 }
 
@@ -153,7 +153,6 @@ double SunsetSunriseLocalTime(const unsigned int day, const unsigned int month, 
 	return SunsetSunriseUniversalTime(day, month, year, rlong, rlat, sunrise) + LocalTimeAdjust();
 }
 
-#if 0
 double OrbitalExcentricity(const double dayAngle)
 {
 	const double c = cos(dayAngle);
@@ -165,8 +164,8 @@ double OrbitalExcentricity(const double dayAngle)
 		+ 0.000077 * 2.*c*s;
 }
 
-// Theoretical energy flux for the day radiation (radian)
-double TheoreticRadiation(const unsigned int day, const unsigned int month, const unsigned int year, const double rlat)
+// Theoretical energy flux for the day radiation
+double TheoreticRadiation(const unsigned int day, const unsigned int month, const unsigned int year, const double rlat) // radian
 {
 	const double dayAngle = AngleOfDay(day, month, year);
 	const double declination = SolarDeclination(dayAngle);
@@ -180,6 +179,21 @@ double TheoreticRadiation(const unsigned int day, const unsigned int month, cons
 	return 0.5 * solarConst * e0 * ((c0 + c1)*sin(sunriseHourAngle) / sunriseHourAngle + c0 - c1);
 }
 
+// Max/Year Theoretical energy flux for the day radiation
+double MaxTheoreticRadiation(const unsigned int year, const double rlat) // radian
+{
+    double maxTR = 0.;
+    for(unsigned int month = 0; month < 12; ++month)
+        for(unsigned int day = 0; day < daysPerMonths[month]; ++day)
+        {
+            const double TR = TheoreticRadiation(day,month,year,rlat);
+            if(TR > maxTR)
+                maxTR = TR;
+        }
+    return maxTR;
+}
+
+#if 0
 // Height of sun in radians
 double SolarHeight(const unsigned int tu, // universal time (0,1,2,.....,23)
 	               const unsigned int day, const unsigned int month, const unsigned int year, const double rlong, const double rlat) // longitude in radian (positive east and negative west)
@@ -200,10 +214,8 @@ int JulianConversion(const unsigned int year, const unsigned int month, const un
     const int a = (14 - month) / 12;
     const int y = year + 4800 - a;
     const int m = month + 12 * a - 3;
-    if (year > 1582 || (year == 1582 && month > 10) || (year == 1582 && month == 10 && day >= 15))
-        return day + (153 * m + 2) / 5 + 365 * y + y / 4 - y / 100 + y / 400 - 32045;
-    else
-        return day + (153 * m + 2) / 5 + 365 * y + y / 4 - 32083;
+    return day + (153 * m + 2) / 5 + 365 * y + y / 4 + 
+        ((year > 1582 || (year == 1582 && month > 10) || (year == 1582 && month == 10 && day >= 15)) ? (- y / 100 + y / 400 - 32045) : - 32083);
 }
 
 int _tmain(int argc, _TCHAR* argv[])
@@ -226,7 +238,7 @@ int _tmain(int argc, _TCHAR* argv[])
     std::cout << "Declination (Delta): " << _Declination << "\n";
 
 	const double _EquationOfTime = EquationOfTimeRadian(_AngleOfDay) * (12. / M_PI);
-    std::cout << "_EquationOfTime (Delta): " << _EquationOfTime << "\n";
+    std::cout << "Equation Of Time (Delta): " << _EquationOfTime << "\n";
 
 	const double _DayDurationHours = DayDurationHours(_Declination, rlat);
     std::cout << "Day duration: " << _DayDurationHours << "\n";
@@ -236,6 +248,9 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	const double _TheoreticRadiation = TheoreticRadiation(day, month, year, rlat);
     std::cout << "Theoretical radiation: " << _TheoreticRadiation << "\n";
+
+	const double _MaxTheoreticRadiation = MaxTheoreticRadiation(year, rlat);
+    std::cout << "Max./Year Theoretical radiation: " << _MaxTheoreticRadiation << "\n";
 
 	const double _SunriseLocalTime = SunsetSunriseLocalTime(day, month, year, rlong, rlat, true);
     std::cout << "Sunrise Local Time: " << _SunriseLocalTime << "\n";

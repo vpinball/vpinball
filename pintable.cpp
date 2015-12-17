@@ -520,7 +520,7 @@ return S_OK;
 STDMETHODIMP ScriptGlobalTable::get_NightDay(int *pVal)
 {
    if (g_pplayer)
-      *pVal = (int)(g_pplayer->m_ptable->m_globalEmissionScale*100.0f);
+      *pVal = (int)(g_pplayer->m_globalEmissionScale*100.0f);
    return S_OK;
 }
 
@@ -7971,7 +7971,7 @@ STDMETHODIMP PinTable::get_BackdropImage_DT(BSTR *pVal)
    return S_OK;
 }
 
-STDMETHODIMP PinTable::put_BackdropImage_DT(BSTR newVal)
+STDMETHODIMP PinTable::put_BackdropImage_DT(BSTR newVal) //!! HDR??
 {
    STARTUNDO
 
@@ -7998,7 +7998,7 @@ STDMETHODIMP PinTable::get_BackdropImage_FS(BSTR *pVal)
    return S_OK;
 }
 
-STDMETHODIMP PinTable::put_BackdropImage_FS(BSTR newVal)
+STDMETHODIMP PinTable::put_BackdropImage_FS(BSTR newVal) //!! HDR??
 {
    STARTUNDO
 

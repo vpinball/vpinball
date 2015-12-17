@@ -275,19 +275,21 @@ public:
    int m_fFXAA;
    bool m_fAA;
 
+   float m_globalEmissionScale;
+
    bool m_dynamicAO;
    bool m_disableAO;
 
+   bool m_useNvidiaApi;
    bool m_fStereo3Denabled;
    int m_fStereo3D; // 0=off, 1=top/down, 2=interlaced/LG //!! support sidebyside, too?
-   bool m_useNvidiaApi;
-
-   XAudPlayer *m_pxap;
 
    bool m_fPlayMusic;
    bool m_fPlaySound;
    int m_MusicVolume;
    int m_SoundVolume;
+
+   XAudPlayer *m_pxap;
 
    int m_lastcursorx, m_lastcursory; // used for the dumb task of seeing if the mouse has really moved when we get a WM_MOUSEMOVE message
 

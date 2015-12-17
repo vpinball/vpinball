@@ -14,7 +14,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Englisch (USA) resources
+// English (United States) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
@@ -282,25 +282,25 @@ BEGIN
     LTEXT           "Translator's web site address",IDC_TRANSWEBSITE,50,184,32,8,NOT WS_VISIBLE | WS_DISABLED
 END
 
-IDD_VIDEO_OPTIONS DIALOGEX 0, 0, 351, 297
+IDD_VIDEO_OPTIONS DIALOGEX 0, 0, 351, 306
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Video Options"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     CONTROL         "Rotate for Cabinet Usage",IDC_BG_SET,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,140,110,10
-    CONTROL         "Enable Fast FXAA",IDC_FFXAA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,154,90,10
-    CONTROL         "Enable Quality FXAA",IDC_QFXAA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,164,90,10
-    CONTROL         "Enable Extreme FXAA",IDC_EFXAA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,174,90,10
-    CONTROL         "Enable 4xAntiAliasing",IDC_AA_ALL_TABLES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,187,126,10
-    CONTROL         "Stretch Ball with Table",IDC_StretchNo,"Button",BS_AUTORADIOBUTTON | WS_GROUP,16,210,83,10
-    CONTROL         "Don't stretch the Ball",IDC_StretchYes,"Button",BS_AUTORADIOBUTTON,16,220,81,10
+    CONTROL         "Enable Fast FXAA",IDC_FFXAA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,155,90,10
+    CONTROL         "Enable Quality FXAA",IDC_QFXAA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,165,90,10
+    CONTROL         "Enable Extreme FXAA",IDC_EFXAA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,175,90,10
+    CONTROL         "Enable 4xAntiAliasing",IDC_AA_ALL_TABLES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,189,126,10
+    CONTROL         "Stretch Ball with Table",IDC_StretchNo,"Button",BS_AUTORADIOBUTTON | WS_GROUP,16,213,83,10
+    CONTROL         "Don't stretch the Ball",IDC_StretchYes,"Button",BS_AUTORADIOBUTTON,16,224,81,10
     CONTROL         "Cabinet anti-stretch the ball",IDC_StretchMonitor,
-                    "Button",BS_AUTORADIOBUTTON,16,230,111,10
-    GROUPBOX        "Aspect Ratio Offset",IDC_STATIC,25,241,110,25
-    LTEXT           "X",IDC_STATIC,31,253,8,8
-    EDITTEXT        IDC_CORRECTION_X,39,251,35,12,ES_AUTOHSCROLL
-    LTEXT           "Y",IDC_STATIC,85,252,8,8
-    EDITTEXT        IDC_CORRECTION_Y,93,251,35,12,ES_AUTOHSCROLL
+                    "Button",BS_AUTORADIOBUTTON,16,235,111,10
+    GROUPBOX        "Aspect Ratio Offset",IDC_STATIC,25,247,110,25
+    LTEXT           "X",IDC_STATIC,31,259,8,8
+    EDITTEXT        IDC_CORRECTION_X,39,257,35,12,ES_AUTOHSCROLL
+    LTEXT           "Y",IDC_STATIC,85,258,8,8
+    EDITTEXT        IDC_CORRECTION_Y,93,257,35,12,ES_AUTOHSCROLL
     CONTROL         "Reflect Ball on Playfield",IDC_GLOBAL_REFLECTION_CHECK,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,18,91,10
     CONTROL         "Ball Trails/Motion Blur",IDC_GLOBAL_TRAIL_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,31,91,10
@@ -315,34 +315,39 @@ BEGIN
     GROUPBOX        "Ambient Occlusion",IDC_STATIC,154,49,103,38
     CONTROL         "Enable",IDC_ENABLE_AO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,60,89,10
     CONTROL         "Update in-game (quality)",IDC_DYNAMIC_AO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,73,90,10
-    LTEXT           "Visual Nudge Strength",IDC_STATIC,230,91,75,10
+    LTEXT           "Visual Nudge Strength",IDC_STATIC,227,92,75,10
     EDITTEXT        IDC_NUDGE_STRENGTH,304,90,36,12,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "FPS limiter/VSync",IDC_STATIC,162,115,75,10
-    EDITTEXT        IDC_ADAPTIVE_VSYNC,239,113,20,12,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Max prerendered frames",IDC_STATIC,162,128,77,8
-    EDITTEXT        IDC_MAX_PRE_FRAMES,239,126,20,12,ES_RIGHT | ES_AUTOHSCROLL
+    CONTROL         "Automatic Day->Night cycle",IDC_DYNAMIC_DN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,107,116,10
+    LTEXT           "Latitude",IDC_STATIC,172,121,33,10
+    EDITTEXT        IDC_DN_LATITUDE,223,119,36,12,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Longitude",IDC_STATIC,266,121,35,10
+    EDITTEXT        IDC_DN_LONGITUDE,304,119,36,12,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "FPS limiter/VSync",IDC_STATIC,162,153,75,10
+    EDITTEXT        IDC_ADAPTIVE_VSYNC,239,151,20,12,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Max prerendered frames",IDC_STATIC,162,166,77,8
+    EDITTEXT        IDC_MAX_PRE_FRAMES,239,164,20,12,ES_RIGHT | ES_AUTOHSCROLL
     CONTROL         "Texture compression (performance)",IDC_TEX_COMPRESS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,139,124,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,178,124,10
     CONTROL         "Force Anisotropic Texture Filtering (quality)",IDC_FORCE_ANISO,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,149,150,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,188,150,10
     CONTROL         "Alternative Depth Buffer processing",IDC_USE_NVIDIA_API_CHECK,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,159,127,10
-    CONTROL         "Software vertex processing",IDC_SOFTWARE_VP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,169,104,10
-    CONTROL         "512",IDC_Tex512,"Button",BS_AUTORADIOBUTTON | WS_GROUP,166,194,28,10
-    CONTROL         "1024",IDC_Tex1024,"Button",BS_AUTORADIOBUTTON,166,204,32,10
-    CONTROL         "2048",IDC_Tex2048,"Button",BS_AUTORADIOBUTTON,166,214,32,10
-    CONTROL         "Unlimited",IDC_TexUnlimited,"Button",BS_AUTORADIOBUTTON,166,224,45,10
-    CONTROL         "",IDC_ARASlider,"msctls_trackbar32",TBS_AUTOTICKS | TBS_TOP | WS_TABSTOP,156,250,183,20
-    DEFPUSHBUTTON   "OK",IDOK,218,280,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,277,280,50,14
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,198,127,10
+    CONTROL         "Software vertex processing",IDC_SOFTWARE_VP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,208,104,10
+    CONTROL         "512",IDC_Tex512,"Button",BS_AUTORADIOBUTTON | WS_GROUP,290,232,28,10
+    CONTROL         "1024",IDC_Tex1024,"Button",BS_AUTORADIOBUTTON,252,232,32,10
+    CONTROL         "2048",IDC_Tex2048,"Button",BS_AUTORADIOBUTTON,214,232,32,10
+    CONTROL         "Unlimited",IDC_TexUnlimited,"Button",BS_AUTORADIOBUTTON,166,232,45,10
+    CONTROL         "",IDC_ARASlider,"msctls_trackbar32",TBS_AUTOTICKS | TBS_TOP | WS_TABSTOP,156,259,183,20
+    DEFPUSHBUTTON   "OK",IDOK,238,288,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,297,288,50,14
     LISTBOX         IDC_SIZELIST,14,19,129,117,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "Video Mode",IDC_STATIC,7,7,142,266
+    GROUPBOX        "Video Mode",IDC_STATIC,7,7,142,274
     GROUPBOX        "Ball Rendering",IDC_STATIC,154,7,103,40
     GROUPBOX        "3D Stereo Output",IDC_STATIC,262,7,85,80
-    GROUPBOX        "Performance and Troubleshooting",IDC_STATIC,154,102,193,171
-    GROUPBOX        "Max Texture Dimension (for low-end gfx boards)",IDC_STATIC,159,183,180,54
-    LTEXT           "Object Detail Level (decrease = performance)",IDC_STATIC,162,241,156,8
-    GROUPBOX        "Ball aspect ratio for stretched Tables",IDC_STATIC,12,200,133,69
+    GROUPBOX        "Performance and Troubleshooting",IDC_STATIC,154,139,193,142
+    GROUPBOX        "Max Texture Dimension (for low-end gfx boards)",IDC_STATIC,159,221,180,25
+    LTEXT           "Object Detail Level (decrease = performance)",IDC_STATIC,162,250,156,8
+    GROUPBOX        "Ball aspect ratio for stretched Tables",IDC_STATIC,12,202,133,75
 END
 
 IDD_FONTDIALOG DIALOG 0, 0, 316, 167
@@ -2257,25 +2262,45 @@ END
 //
 
 IDR_VPINBALL            REGISTRY                "res\\vpinball.rgs"
+
 IDR_SURFACE             REGISTRY                "res\\surface.rgs"
+
 IDR_DRAG_POINT          REGISTRY                "res\\dragpoint.rgs"
+
 IDR_FLIPPER             REGISTRY                "res\\flipper.rgs"
+
 IDR_TIMER               REGISTRY                "res\\timer.rgs"
+
 IDR_PLUNGER             REGISTRY                "res\\plunger.rgs"
+
 IDR_TEXTBOX             REGISTRY                "res\\textbox.rgs"
+
 IDR_BUMPER              REGISTRY                "res\\bumper.rgs"
+
 IDR_PI_EVENT_HANDLER    REGISTRY                "res\\pieventhandler.rgs"
+
 IDR_TRIGGER             REGISTRY                "res\\trigger.rgs"
+
 IDR_LIGHT               REGISTRY                "res\\light.rgs"
+
 IDR_KICKER              REGISTRY                "res\\kicker.rgs"
+
 IDR_GATE                REGISTRY                "res\\gate.rgs"
+
 IDR_SPINNER             REGISTRY                "res\\spinner.rgs"
+
 IDR_RAMP                REGISTRY                "res\\ramp.rgs"
+
 IDR_DISP_REEL           REGISTRY                "res\\dispreel.rgs"
+
 IDR_LIGHT_SEQ           REGISTRY                "res\\lightseq.rgs"
+
 IDR_PRIMITIVE           REGISTRY                "res\\primitive.rgs"
+
 IDR_RUBBER              REGISTRY                "res\\rubber.rgs"
+
 IDR_HITTARGET           REGISTRY                "res\\hittarget.rgs"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -2483,16 +2508,27 @@ END
 //
 
 IDB_TOOLBAR             BITMAP                  "res\\toolbar.bmp"
+
 IDB_BALL                BITMAP                  "res\\ball.bmp"
+
 IDB_ENV                 BITMAP                  "res\\envmap.bmp"
+
 IDB_LOGO                BITMAP                  "res\\logo.bmp"
+
 IDB_CHEVRON             BITMAP                  "res\\chevron.bmp"
+
 IDB_BUMPERBASE          BITMAP                  "res\\bumperbase.bmp"
+
 IDB_RINGENVMAP          BITMAP                  "res\\ringenvmap.bmp"
+
 IDB_BUMPERCAP           BITMAP                  "res\\bumperCap.bmp"
+
 IDB_BUMPERSOCKET        BITMAP                  "res\\bumperSocket.bmp"
+
 IDB_KICKER_HOLE_WOOD    BITMAP                  "res\\kickerHoleWood.bmp"
+
 IDB_KICKER_CUP          BITMAP                  "res\\kickerCup.bmp"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -2560,11 +2596,17 @@ END
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDI_VPINBALL            ICON                    "res\\vpinball.ico"
+
 IDI_SCRIPT              ICON                    "res\\script.ico"
+
 IDI_TABLE               ICON                    "res\\table.ico"
+
 IDI_PLAY                ICON                    "res\\play.ico"
+
 IDI_PAUSE               ICON                    "res\\pause.ico"
+
 IDI_STEP                ICON                    "res\\step.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -2572,25 +2614,45 @@ IDI_STEP                ICON                    "res\\step.ico"
 //
 
 IDC_MAGNIFY             CURSOR                  "res\\magnify.cur"
+
 IDC_LIGHT               CURSOR                  "res\\light.cur"
+
 IDC_WALL                CURSOR                  "res\\wall.cur"
+
 IDC_FLIPPER             CURSOR                  "res\\flipper.cur"
+
 IDC_TRIGGER             CURSOR                  "res\\trigger.cur"
+
 IDC_GATE                CURSOR                  "res\\gate.cur"
+
 IDC_TIMER               CURSOR                  "res\\timer.cur"
+
 IDC_PLUNGER             CURSOR                  "res\\plunger.cur"
+
 IDC_TEXTBOX             CURSOR                  "res\\textbox.cur"
+
 IDC_BUMPER              CURSOR                  "res\\bumper.cur"
+
 IDC_KICKER              CURSOR                  "res\\kicker.cur"
+
 IDC_TARGET              CURSOR                  "res\\target.cur"
+
 IDC_DECAL               CURSOR                  "res\\decal.cur"
+
 IDC_SPINNER             CURSOR                  "res\\spinner.cur"
+
 IDC_RAMP                CURSOR                  "res\\ramp.cur"
+
 IDC_DISPREEL            CURSOR                  "res\\dispreel.cur"
+
 IDC_LIGHTSEQ            CURSOR                  "res\\lightseq.cur"
+
 IDC_PRIMITIVE           CURSOR                  "res\\primitive.cur"
+
 IDC_FLASHER             CURSOR                  "res\\flasher.cur"
+
 IDC_RUBBER              CURSOR                  "res\\rubber.cur"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -2598,6 +2660,7 @@ IDC_RUBBER              CURSOR                  "res\\rubber.cur"
 //
 
 IDR_TABLE               TABLE                   "res\\table.vpx"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -2767,7 +2830,7 @@ BEGIN
     IDS_STEP                "Step"
 END
 
-#endif    // Englisch (USA) resources
+#endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
