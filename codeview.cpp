@@ -2289,7 +2289,6 @@ void CodeViewer::ParseForFunction() // Subs & Collections AndyS - WIP
    SendMessage(m_hwndFunctionList, CB_RESETCONTENT, 0, 0);
  ////////////////////
 	int ParentLevel = 0; //root
-	string CurrentParent = "";
 	ParentTreeInvalid = false;
 	for (size_t linecount = 0; linecount < scriptLines; ++linecount) 
    {
@@ -2407,7 +2406,6 @@ void CodeViewer::ParseVPCore()
 	//intalise Parent child
 ///////////////////////
 	int ParentLevel = 0; //root
-	string CurrentParent = "";
 	StopErrorDisplay = false;/// WIP BRANDREW
 	ParentTreeInvalid = false;
 	int linecount = 0;
@@ -2812,7 +2810,6 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 			sprintf_s(foo,"%i", pcv->DisplayAutoCompleteLength );
 			SetDlgItemText( hwndDlg, IDC_CVP_EDIT_AUTOCHARS, foo);
 		
-			ZeroMemory(foo,5);
 			sprintf_s(foo,"%i", pcv->DwellDisplayTime );
 			SetDlgItemText( hwndDlg, IDC_CVP_EDIT_MOUSEDWELL, foo);
 		}
