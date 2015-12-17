@@ -88,6 +88,9 @@
     </ClCompile>
     <ClCompile Include="codeviewedit.cpp" />
     <ClCompile Include="hittarget.cpp" />
+    <ClCompile Include="inc\miniz.c">
+      <Filter>inc</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="vpinball.rc" />
@@ -834,6 +837,12 @@
       <Filter>meshes</Filter>
     </ClInclude>
     <ClInclude Include="meshes\gateWireRectangleMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\hitTargetT1SlimMesh.h">
+      <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="meshes\hitTargetT2SlimMesh.h">
       <Filter>meshes</Filter>
     </ClInclude>
   </ItemGroup>

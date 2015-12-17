@@ -369,6 +369,12 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="CrashHandler.cpp" />
     <ClCompile Include="flasher.cpp" />
     <ClCompile Include="hittarget.cpp" />
+    <ClCompile Include="inc\miniz.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="inc\progmesh.cpp" />
     <ClCompile Include="math\math.cpp" />
     <ClCompile Include="MemoryStatus.cpp" />
@@ -1170,6 +1176,8 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="meshes\hitTargetFatSquareMesh.h" />
     <ClInclude Include="meshes\hitTargetRectangleMesh.h" />
     <ClInclude Include="meshes\hitTargetRoundMesh.h" />
+    <ClInclude Include="meshes\hitTargetT1SlimMesh.h" />
+    <ClInclude Include="meshes\hitTargetT2SlimMesh.h" />
     <ClInclude Include="meshes\kickerCupMesh.h" />
     <ClInclude Include="meshes\kickerHitMesh.h" />
     <ClInclude Include="meshes\kickerHoleMesh.h" />
