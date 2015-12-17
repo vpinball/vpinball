@@ -623,7 +623,7 @@ void HitTarget::UpdateAnimation(RenderDevice *pd3dDevice)
 
 void HitTarget::RenderObject(RenderDevice *pd3dDevice)
 {
-   Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
+   const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
    pd3dDevice->basicShader->SetMaterial(mat);
 
    pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
@@ -1016,8 +1016,7 @@ STDMETHODIMP HitTarget::put_Image(BSTR newVal)
 
 bool HitTarget::IsTransparent()
 {
-   Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
-   return mat->m_bOpacityActive;
+   return m_ptable->GetMaterial(m_d.m_szMaterial)->m_bOpacityActive;
 }
 
 float HitTarget::GetDepth(const Vertex3Ds& viewDir)

@@ -314,7 +314,7 @@ void Spinner::PostRenderStatic(RenderDevice* pd3dDevice)
 
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
 
-   Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
+   const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
    pd3dDevice->basicShader->SetMaterial(mat);
 
    pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);

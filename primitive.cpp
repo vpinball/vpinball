@@ -137,8 +137,8 @@ void Primitive::CreateRenderGroup(Collection *collection, RenderDevice *pd3dDevi
    // The first primitive in the group is the base primitive
    // this element gets rendered by rendering all other group primitives
    // the rest of the group is marked as skipped rendering
-   Material *groupMaterial = g_pplayer->m_ptable->GetMaterial(prims[0]->m_d.m_szMaterial);
-   Texture *groupTexel = g_pplayer->m_ptable->GetImage(prims[0]->m_d.m_szImage);
+   const Material * const groupMaterial = g_pplayer->m_ptable->GetMaterial(prims[0]->m_d.m_szMaterial);
+   const Texture * const groupTexel = g_pplayer->m_ptable->GetImage(prims[0]->m_d.m_szImage);
    m_numGroupVertices = (int)prims[0]->m_mesh.NumVertices();
    m_numGroupIndices = (int)prims[0]->m_mesh.NumIndices();
    prims[0]->m_d.m_fGroupdRendering = true;
@@ -147,8 +147,8 @@ void Primitive::CreateRenderGroup(Collection *collection, RenderDevice *pd3dDevi
 
    for (size_t i = 1; i < prims.size(); i++)
    {
-      Material *mat = g_pplayer->m_ptable->GetMaterial(prims[i]->m_d.m_szMaterial);
-      Texture  *texel = g_pplayer->m_ptable->GetImage(prims[i]->m_d.m_szImage);
+      const Material * const mat = g_pplayer->m_ptable->GetMaterial(prims[i]->m_d.m_szMaterial);
+      const Texture * const texel = g_pplayer->m_ptable->GetImage(prims[i]->m_d.m_szImage);
       if (mat == groupMaterial && texel == groupTexel)
       {
          const Mesh &m = prims[i]->m_mesh;
@@ -819,7 +819,7 @@ void Primitive::ExportMesh(FILE *f)
       }
       WaveFrontObj_WriteObjectName(f, name);
       WaveFrontObj_WriteVertexInfo(f, buf, (unsigned int)m_mesh.NumVertices());
-      Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
+      const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
       WaveFrontObj_WriteMaterial(m_d.m_szMaterial, NULL, mat);
       WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
       WaveFrontObj_WriteFaceInfoLong(f, m_mesh.m_indices);
@@ -841,7 +841,7 @@ void Primitive::RenderObject(RenderDevice *pd3dDevice)
       }
    }
 
-   Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
+   const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
    pd3dDevice->basicShader->SetMaterial(mat);
 
    pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
@@ -1735,8 +1735,7 @@ bool Primitive::IsTransparent()
    if (m_d.m_fSkipRendering)
       return false;
 
-   Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
-   return mat->m_bOpacityActive;
+   return m_ptable->GetMaterial(m_d.m_szMaterial)->m_bOpacityActive;
 }
 
 float Primitive::GetDepth(const Vertex3Ds& viewDir)

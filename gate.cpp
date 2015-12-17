@@ -482,7 +482,7 @@ void Gate::UpdateWire(RenderDevice *pd3dDevice)
 
 void Gate::RenderObject(RenderDevice* pd3dDevice)
 {
-   Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
+   const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
    pd3dDevice->basicShader->SetMaterial(mat);
 
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
@@ -538,7 +538,7 @@ void Gate::ExportMesh(FILE *f)
       WaveFrontObj_WriteObjectName(f, subName);
       GenerateBracketMesh(buf);
       WaveFrontObj_WriteVertexInfo(f, buf, gateBracketNumVertices);
-      Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
+      const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
       WaveFrontObj_WriteMaterial(m_d.m_szMaterial, NULL, mat);
       WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
       WaveFrontObj_WriteFaceInfoList(f, gateBracketIndices, gateBracketNumFaces);
@@ -552,7 +552,7 @@ void Gate::ExportMesh(FILE *f)
    WaveFrontObj_WriteObjectName(f, subName);
    GenerateWireMesh(buf);
    WaveFrontObj_WriteVertexInfo(f, buf, gateWireNumVertices);
-   Material *mat = m_ptable->GetMaterial(m_d.m_szMaterial);
+   const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
    WaveFrontObj_WriteMaterial(m_d.m_szMaterial, NULL, mat);
    WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
    WaveFrontObj_WriteFaceInfoList(f, gateWireIndices, gateWireNumFaces);
