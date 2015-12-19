@@ -957,7 +957,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
    else
        dynamicDayNight = (DN == 1);
 
-   if (dynamicDayNight)
+   if (dynamicDayNight && !m_ptable->m_overwriteGlobalDayNight)
    {
        time_t hour_machine;
        time(&hour_machine);

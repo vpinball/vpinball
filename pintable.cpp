@@ -898,6 +898,8 @@ PinTable::PinTable()
    m_userDetailLevel = 10;
    m_overwriteGlobalDetailLevel = false;
 
+   m_overwriteGlobalDayNight = true;
+
    if (FAILED(GetRegStringAsFloat("Player", "Stereo3DZPD", &m_global3DZPD)))
    {
       m_global3DZPD = 0.5f;
@@ -2900,6 +2902,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
    bw.WriteInt(FID(BTST), m_ballTrailStrength);
    bw.WriteInt(FID(ARAC), m_userDetailLevel);
    bw.WriteBool(FID(OGAC), m_overwriteGlobalDetailLevel);
+   bw.WriteBool(FID(OGDN), m_overwriteGlobalDayNight);
    bw.WriteBool(FID(GDAC), m_fGrid);
    bw.WriteBool(FID(REOP), m_fReflectElementsOnPlayfield);
 
@@ -3771,6 +3774,10 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(OGAC))
    {
       pbr->GetBool(&m_overwriteGlobalDetailLevel);
+   }
+   else if (id == FID(OGDN))
+   {
+	   pbr->GetBool(&m_overwriteGlobalDayNight);
    }
    else if (id == FID(GDAC))
    {
@@ -5132,7 +5139,7 @@ void PinTable::ExportMesh(FILE *f)
 
    WaveFrontObj_WriteObjectName(f, name);
    WaveFrontObj_WriteVertexInfo(f, buffer, 4);
-   Material *mat = GetMaterial(m_szPlayfieldMaterial);
+   const Material * const mat = GetMaterial(m_szPlayfieldMaterial);
    WaveFrontObj_WriteMaterial(m_szPlayfieldMaterial, NULL, mat);
    WaveFrontObj_UseTexture(f, m_szPlayfieldMaterial);
    WaveFrontObj_WriteFaceInfoList(f, playfieldPolyIndices, 6);
@@ -7845,6 +7852,24 @@ STDMETHODIMP PinTable::put_GlobalAlphaAcc(VARIANT_BOOL newVal)
    STOPUNDO
 
    return S_OK;
+}
+
+STDMETHODIMP PinTable::get_GlobalDayNight(VARIANT_BOOL *pVal)
+{
+	*pVal = (VARIANT_BOOL)FTOVB(m_overwriteGlobalDayNight);
+
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::put_GlobalDayNight(VARIANT_BOOL newVal)
+{
+	STARTUNDO
+
+	m_overwriteGlobalDayNight = !!newVal;
+
+	STOPUNDO
+
+	return S_OK;
 }
 
 STDMETHODIMP PinTable::get_GlobalStereo3D(VARIANT_BOOL *pVal)
