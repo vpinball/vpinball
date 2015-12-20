@@ -3956,7 +3956,7 @@ INT_PTR CALLBACK AboutProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 
       HWND hVersion = GetDlgItem(hwndDlg, IDC_ABOUT_VERSION);
       char versionString[256];
-      sprintf_s(versionString, "Version 10.0 - Revision %i", SVN_REVISION);
+      sprintf_s(versionString, "Version 10.0 Final (Revision %i)", SVN_REVISION);
       SetWindowText(hVersion, versionString);
 
 #if !(defined(IMSPANISH) | defined(IMGERMAN) | defined(IMFRENCH))
