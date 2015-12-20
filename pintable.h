@@ -276,6 +276,9 @@ public:
    STDMETHOD(get_GlobalAlphaAcc)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_GlobalAlphaAcc)(/*[in]*/ VARIANT_BOOL newVal);
 
+   STDMETHOD(get_GlobalDayNight)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   STDMETHOD(put_GlobalDayNight)(/*[in]*/ VARIANT_BOOL newVal);
+
    STDMETHOD(get_GlobalStereo3D)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_GlobalStereo3D)(/*[in]*/ VARIANT_BOOL newVal);
 
@@ -698,6 +701,8 @@ public:
    int  m_globalDetailLevel;
    int  m_userDetailLevel;
    bool m_overwriteGlobalDetailLevel;
+
+   bool m_overwriteGlobalDayNight;
 
    LightSource m_Light[MAX_LIGHT_SOURCES];
    COLORREF m_lightAmbient;

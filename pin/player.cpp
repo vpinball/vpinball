@@ -4076,7 +4076,7 @@ void Player::DrawBalls()
 	  if (light_nearest[0] != NULL)
 	  {
 		  const float dist = Vertex3Ds(light_nearest[0]->m_d.m_vCenter.x - pball->m_pos.x, light_nearest[0]->m_d.m_vCenter.y - pball->m_pos.y, light_nearest[0]->m_d.m_meshRadius + light_nearest[0]->m_surfaceHeight - pball->m_pos.z).Length(); //!! z pos
-		  Roughness = min(max(dist*0.006f, 0.3f), Roughness);
+		  Roughness = min(max(dist*0.006f, 0.4f), Roughness);
 	  }
 	  const D3DXVECTOR4 rwem(exp2f(10.0f * Roughness + 1.0f), 0.f, 1.f, 0.0f);
 	  ballShader->SetVector("Roughness_WrapL_Edge_IsMetal", &rwem);
