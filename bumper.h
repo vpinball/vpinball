@@ -89,6 +89,21 @@ public:
       virtual void SetDefaultPhysics(bool fromMouseClick);
       virtual void ExportMesh(FILE *f);
 
+	  virtual unsigned long long GetMaterialID()
+	  {
+		  if (!m_d.m_fBaseVisible && m_d.m_fCapVisible)
+			  return m_ptable->GetMaterial(m_d.m_szCapMaterial)->hash();
+		  else
+			  return 64-3; //!! some constant number
+	  }
+	  virtual unsigned long long GetImageID()
+	  {
+		  if (!m_d.m_fBaseVisible && m_d.m_fCapVisible)
+			  return (unsigned long long)&capTexture; //!! meh
+		  else
+			  return NULL;
+	  }
+
       void WriteRegDefaults();
 
       PinTable *m_ptable;

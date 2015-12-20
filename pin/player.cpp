@@ -714,6 +714,11 @@ static bool CompareHitableMaterial(Hitable* h1, Hitable* h2)
    return h1->GetMaterialID() < h2->GetMaterialID();
 }
 
+static bool CompareHitableImage(Hitable* h1, Hitable* h2)
+{
+	return h1->GetImageID() < h2->GetImageID();
+}
+
 void Player::UpdateBasicShaderMatrix(const Matrix3D& objectTrafo)
 {
    D3DMATRIX worldMat;
@@ -1211,7 +1216,8 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
    }
 
    std::stable_sort(m_vHitNonTrans.begin(), m_vHitNonTrans.end(), CompareHitableDepthReverse); // stable, so that em reels (=same depth) will keep user defined order
-   std::stable_sort(m_vHitNonTrans.begin(), m_vHitNonTrans.end(), CompareHitableMaterial); // stable, so that objects with same materials will keep depth order
+   std::stable_sort(m_vHitNonTrans.begin(), m_vHitNonTrans.end(), CompareHitableImage); // stable, so that objects with same images will keep depth order
+   std::stable_sort(m_vHitNonTrans.begin(), m_vHitNonTrans.end(), CompareHitableMaterial); // stable, so that objects with same materials will keep image order
 
    material_flips = 0;
    unsigned long long m;
@@ -1224,7 +1230,8 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
          m = m_vHitNonTrans[i]->GetMaterialID();
       }
    
-   std::stable_sort(m_vHitTrans.begin(), m_vHitTrans.end(), CompareHitableMaterial); // see above
+   std::stable_sort(m_vHitTrans.begin(), m_vHitTrans.end(), CompareHitableImage); // see above
+   std::stable_sort(m_vHitTrans.begin(), m_vHitTrans.end(), CompareHitableMaterial);
    std::stable_sort(m_vHitTrans.begin(), m_vHitTrans.end(), CompareHitableDepth);
 
    if(m_vHitTrans.size() > 0)

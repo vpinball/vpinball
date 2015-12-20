@@ -84,6 +84,9 @@ public:
    virtual void PutCenter(const Vertex2D * const pv);
    virtual void SetDefaultPhysics(bool fromMouseClick);
 
+   virtual unsigned long long GetMaterialID() { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
+   virtual unsigned long long GetImageID() { return (unsigned long long)(m_ptable->GetImage(m_d.m_szImage)); }
+
    void WriteRegDefaults();
    void UpdatePlate(RenderDevice *pd3dDevice);
 

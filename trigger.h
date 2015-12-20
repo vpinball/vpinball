@@ -103,6 +103,8 @@ public:
    void CurvesToShapes(Vector<HitObject> * const pvho);
    void AddLine(Vector<HitObject> * const pvho, const RenderVertex * const pv1, const RenderVertex * const pv2, const RenderVertex * const pv3, const float height);
 
+   virtual unsigned long long GetMaterialID() { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
+
    virtual void ClearForOverwrite();
 
    void WriteRegDefaults();

@@ -15,8 +15,6 @@ Gate::Gate()
    wireIndexBuffer = NULL;
    wireVertexBuffer = NULL;
    m_vertexbuffer_angle = FLT_MAX;
-   memset(m_d.m_szImageBack, 0, MAXTOKEN);
-   memset(m_d.m_szImageFront, 0, MAXTOKEN);
    memset(m_d.m_szMaterial, 0, 32);
    memset(m_d.m_szSurface, 0, MAXTOKEN);
    m_vertices = 0;
@@ -175,14 +173,6 @@ void Gate::SetDefaults(bool fromMouseClick)
 
    SetDefaultPhysics(fromMouseClick);
 
-   hr = GetRegString("DefaultProps\\Gate", "ImageFront", &m_d.m_szImageFront, MAXTOKEN);
-   if ((hr != S_OK) || !fromMouseClick)
-      m_d.m_szImageFront[0] = 0;
-
-   hr = GetRegString("DefaultProps\\Gate", "ImageBack", &m_d.m_szImageBack, MAXTOKEN);
-   if ((hr != S_OK) || !fromMouseClick)
-      m_d.m_szImageBack[0] = 0;
-
    hr = GetRegInt("DefaultProps\\Gate", "TwoWay", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_twoWay = iTmp == 0 ? false : true;
@@ -213,8 +203,6 @@ void Gate::WriteRegDefaults()
    SetRegValueFloat("DefaultProps\\Gate", "Elasticity", m_d.m_elasticity);
    SetRegValueFloat("DefaultProps\\Gate", "Friction", m_d.m_friction);
    SetRegValueFloat("DefaultProps\\Gate", "Scatter", m_d.m_scatter);
-   SetRegValue("DefaultProps\\Gate", "ImageFront", REG_SZ, &m_d.m_szImageFront, lstrlen(m_d.m_szImageFront));
-   SetRegValue("DefaultProps\\Gate", "ImageBack", REG_SZ, &m_d.m_szImageBack, lstrlen(m_d.m_szImageBack));
    SetRegValueBool("DefaultProps\\Gate", "TwoWay", m_d.m_twoWay);
    SetRegValueBool("DefaultProps\\Gate", "ReflectionEnabled", m_d.m_fReflectionEnabled);
    SetRegValue("DefaultProps\\Gate", "GateType", REG_DWORD, &m_d.m_type, 4);
@@ -681,8 +669,6 @@ HRESULT Gate::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey
    bw.WriteBool(FID(GSUPT), m_d.m_fShowBracket);
    bw.WriteBool(FID(GCOLD), m_d.m_fCollidable);
    bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
-   bw.WriteString(FID(IMGF), m_d.m_szImageFront);
-   bw.WriteString(FID(IMGB), m_d.m_szImageBack);
    bw.WriteString(FID(SURF), m_d.m_szSurface);
    bw.WriteFloat(FID(ELAS), m_d.m_elasticity);
    bw.WriteFloat(FID(GAMAX), m_d.m_angleMax);
@@ -770,14 +756,6 @@ BOOL Gate::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(TMIN))
    {
       pbr->GetInt(&m_d.m_tdr.m_TimerInterval);
-   }
-   else if (id == FID(IMGF))
-   {
-      pbr->GetString(m_d.m_szImageFront);
-   }
-   else if (id == FID(IMGB))
-   {
-      pbr->GetString(m_d.m_szImageBack);
    }
    else if (id == FID(SURF))
    {

@@ -16,5 +16,6 @@ public:
    virtual bool IsTransparent()                        { return false; }
    virtual float GetDepth(const Vertex3Ds& viewDir)    { return 0.0f; }
    virtual unsigned long long GetMaterialID()          { return 0; }
+   virtual unsigned long long GetImageID()             { return 0; }
    virtual bool RenderToLightBuffer()                  { return false; }
 };
