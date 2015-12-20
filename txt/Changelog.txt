@@ -301,13 +301,12 @@ VP 10.0.0 Changelog
 - 64bit port (handle with care, might still cause issues)
 
 - updated to latest FreeImage.dll (3.17.0)
-- script editor updated to use latest Scintilla (3.6.1)
+- script editor updated to use latest Scintilla (3.6.2), with custom extensions
+
+- technical compile note: make sure to install Microsoft SDK 5.0,7.0A,7.1 or 7.1A, if you compile VP and get missing header errors (optionally set the include path inc\winsdk)
 
 - DirectX 8 port for input handling (currently disabled)
-
 - texture size limit/downscale now respects aspect ratio (currently disabled)
-
-- technical note: make sure to install Microsoft SDK 5.0,7.0A,7.1 or 7.1A, if you compile VP and get missing header errors (optionally set the include path inc\winsdk)
 
 VP 9.9.2 Changelog
 ------------------------
@@ -320,7 +319,7 @@ VP 9.9.2 Changelog
 - fix EMReel crash when image is missing and reel value is nonzero
 
 - updated to latest FreeImage.dll (3.17.0)
-- script editor updated to use latest scintilla (3.6.1)
+- script editor updated to use latest scintilla (3.6.2)
 
 VP 9.9.1 Changelog
 ------------------------
