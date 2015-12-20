@@ -182,7 +182,8 @@ public:
    virtual bool IsTransparent() { return m_d.m_BulbLight || (m_surfaceMaterial && m_surfaceMaterial->m_bOpacityActive); }
    virtual bool RenderToLightBuffer()		{ return m_d.m_BulbLight && (m_d.m_transmissionScale > 0.f); }
    virtual float GetDepth(const Vertex3Ds& viewDir);
-   virtual unsigned long long GetMaterialID() { return m_surfaceMaterial ? m_surfaceMaterial->hash() : 0; }
+   virtual unsigned long long GetMaterialID() { return m_surfaceMaterial ? m_surfaceMaterial->hash() : 64-2; } //!! 2 = some constant number
+   virtual unsigned long long GetImageID() { return (m_d.m_BulbLight ? 0 : (unsigned long long)(m_ptable->GetImage(m_d.m_szOffImage))); }
    virtual void UpdatePropertyPanes();
 
    void WriteRegDefaults();

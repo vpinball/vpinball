@@ -84,6 +84,8 @@ public:
    virtual void SetDefaultPhysics(bool fromMouseClick);
    virtual void ExportMesh(FILE *f);
 
+   virtual unsigned long long GetMaterialID() { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
+
    void WriteRegDefaults();
    void GenerateCupMesh(Vertex3D_NoTex2 *buf);
    void GenerateHoleMesh(Vertex3D_NoTex2 *buf);

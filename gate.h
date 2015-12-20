@@ -23,8 +23,6 @@ public:
    float m_friction;
    float m_scatter;
    char m_szSurface[MAXTOKEN];
-   char m_szImageFront[MAXTOKEN];
-   char m_szImageBack[MAXTOKEN];
    float m_angleMin;
    float m_angleMax;
    GateType m_type;
@@ -95,6 +93,8 @@ public:
 
    virtual void RenderBlueprint(Sur *psur);
    virtual void ExportMesh(FILE *f);
+
+   virtual unsigned long long GetMaterialID() { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
 
    int angleToFrame(float angle) const;
 

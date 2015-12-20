@@ -99,6 +99,18 @@ public:
       {
          return m_d.m_depthBias + viewDir.x * m_d.m_vCenter.x + viewDir.y * m_d.m_vCenter.y + viewDir.z * m_d.m_height;
       }
+	  virtual unsigned long long GetMaterialID() { return 64-1; } //!! some constant number
+	  virtual unsigned long long GetImageID()
+	  {
+		  Texture * const pinA = m_ptable->GetImage(m_d.m_szImageA);
+		  Texture * const pinB = m_ptable->GetImage(m_d.m_szImageB);
+		  Texture *tex = NULL;
+		  if (pinA && !pinB)
+			  tex = pinA;
+		  else if (!pinA && pinB)
+			  tex = pinB;
+		  return (unsigned long long)tex;
+	  }
 
       virtual void UpdatePropertyPanes();
 

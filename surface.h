@@ -121,7 +121,16 @@ public:
             h = m_ptable->GetMaterial(m_d.m_szTopMaterial)->hash();
          return h;
       }
-      virtual bool IsTransparent();
+	  virtual unsigned long long GetImageID()
+	  {
+		  Texture* tex = NULL;
+		  if (m_d.m_fSideVisible)
+			  tex = m_ptable->GetImage(m_d.m_szSideImage);
+		  if (m_d.m_fTopBottomVisible)
+			  tex = m_ptable->GetImage(m_d.m_szImage);
+		  return (unsigned long long)tex;
+	  }
+	  virtual bool IsTransparent();
       virtual void UpdatePropertyPanes();
       virtual void SetDefaultPhysics(bool fromMouseClick);
       virtual void ExportMesh(FILE *f);
