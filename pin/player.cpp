@@ -703,6 +703,12 @@ static bool CompareHitableDepth(Hitable* h1, Hitable* h2)
    return h1->GetDepth(g_viewDir) >= h2->GetDepth(g_viewDir);
 }
 
+static bool CompareHitableDepthInverse(Hitable* h1, Hitable* h2)
+{
+	// GetDepth approximates direction in view distance to camera; sort descending
+	return h1->GetDepth(g_viewDir) <= h2->GetDepth(g_viewDir);
+}
+
 static bool CompareHitableDepthReverse(Hitable* h1, Hitable* h2)
 {
    // GetDepth approximates direction in view distance to camera; sort descending
@@ -1217,6 +1223,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 
    std::stable_sort(m_vHitNonTrans.begin(), m_vHitNonTrans.end(), CompareHitableDepthReverse); // stable, so that em reels (=same depth) will keep user defined order
    std::stable_sort(m_vHitNonTrans.begin(), m_vHitNonTrans.end(), CompareHitableImage); // stable, so that objects with same images will keep depth order
+   // sort by vertexbuffer not useful currently
    std::stable_sort(m_vHitNonTrans.begin(), m_vHitNonTrans.end(), CompareHitableMaterial); // stable, so that objects with same materials will keep image order
 
    material_flips = 0;
@@ -1231,6 +1238,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
       }
    
    std::stable_sort(m_vHitTrans.begin(), m_vHitTrans.end(), CompareHitableImage); // see above
+   // sort by vertexbuffer not useful currently
    std::stable_sort(m_vHitTrans.begin(), m_vHitTrans.end(), CompareHitableMaterial);
    std::stable_sort(m_vHitTrans.begin(), m_vHitTrans.end(), CompareHitableDepth);
 
@@ -1449,9 +1457,13 @@ void Player::RenderDynamicMirror(const bool onlyBalls)
 
    if (!onlyBalls)
    {
+      std::stable_sort(m_vHitTrans.begin(), m_vHitTrans.end(), CompareHitableDepthInverse);
+
       // Draw transparent objects.
       for (unsigned int i = 0; i < m_vHitTrans.size(); ++i)
          m_vHitTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
+
+      std::stable_sort(m_vHitTrans.begin(), m_vHitTrans.end(), CompareHitableDepth);
    }
 
    DrawBalls();
