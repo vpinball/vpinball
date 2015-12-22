@@ -1285,8 +1285,8 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
             ShowPermissionError();
          else
          {
-            //DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_MATERIALDIALOG), m_hwnd, MaterialManagerProc, (size_t)ptCur);
-            if (ptCur->m_hMaterialManager == NULL)
+            DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_MATERIALDIALOG), m_hwnd, MaterialManagerProc, (size_t)ptCur);
+/*            if (ptCur->m_hMaterialManager == NULL)
             {
                ptCur->m_hMaterialManager = CreateDialogParam(g_hinst, MAKEINTRESOURCE(IDD_MATERIALDIALOG), m_hwnd, MaterialManagerProc, (size_t)ptCur);
                if (ptCur->m_hMaterialManager != NULL)
@@ -1296,11 +1296,12 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
                   strncat_s(windowName, ptCur->m_szFileName, 255);
                   SetWindowText(ptCur->m_hMaterialManager, windowName);
                   ShowWindow(ptCur->m_hMaterialManager, SW_SHOW);
+                  SetForegroundWindow(ptCur->m_hMaterialManager);
                }
             }
             else
                SetForegroundWindow(ptCur->m_hMaterialManager);
-
+*/
             m_sb.PopulateDropdowns(); // May need to update list of images
             m_sb.RefreshProperties();
          }
@@ -1676,8 +1677,8 @@ BOOL VPinball::CloseTable(PinTable *ppt)
 
    if (ppt->m_hSearchSelectDialog)
       DestroyWindow(ppt->m_hSearchSelectDialog);
-   if (ppt->m_hMaterialManager)
-      DestroyWindow(ppt->m_hMaterialManager);
+//    if (ppt->m_hMaterialManager)
+//       DestroyWindow(ppt->m_hMaterialManager);
 
    /*const BOOL fSafe =*/ ppt->FVerifySaveToClose();
 
@@ -3389,10 +3390,10 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
    }
    case WM_CLOSE:
    {
-      //EndDialog(hwndDlg, FALSE);
-      DestroyWindow(pt->m_hMaterialManager);
-      pt->m_hMaterialManager = NULL;
-      SetForegroundWindow(g_pvp->m_hwnd);
+      EndDialog(hwndDlg, FALSE);
+//       DestroyWindow(pt->m_hMaterialManager);
+//       pt->m_hMaterialManager = NULL;
+//       SetForegroundWindow(g_pvp->m_hwnd);
       break;
    }
 
@@ -3584,8 +3585,6 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
       }
       return TRUE;
    }
-   break;
-
    case WM_COMMAND:
    {
       switch (HIWORD(wParam))
