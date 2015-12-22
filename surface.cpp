@@ -1064,7 +1064,7 @@ void Surface::RenderWallsAtHeight(RenderDevice* pd3dDevice, const bool fDrop)
       pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
       pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
 
-      if (mat->m_bOpacityActive)
+      if (mat->m_bOpacityActive || !m_isDynamic)
          pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
       else
          pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
@@ -1096,7 +1096,7 @@ void Surface::RenderWallsAtHeight(RenderDevice* pd3dDevice, const bool fDrop)
       pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
       pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
 
-      if (mat->m_bOpacityActive)
+      if (mat->m_bOpacityActive || !m_isDynamic)
          pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
       else
          pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
@@ -1121,8 +1121,8 @@ void Surface::RenderWallsAtHeight(RenderDevice* pd3dDevice, const bool fDrop)
 	  // Only render Bottom for Reflections
 	  if (m_ptable->m_fReflectionEnabled)
 	  {
-		  if (mat->m_bOpacityActive)
-			  pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
+        if (mat->m_bOpacityActive || !m_isDynamic)
+           pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
 		  else
 			  pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CW);
 
