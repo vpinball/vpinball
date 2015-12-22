@@ -6,9 +6,7 @@
 //#define STYLE_VPCORE 12
 //#define STYLE_CURRENTWORD 13
 
-
-enum WordType {eUnknown, eClass, eSub, eFunction, ePropGet, ePropLet, ePropSet, eDim};
-//Extend scintilla a bit...
+enum WordType {eUnknown, eClass, eSub, eFunction, ePropGet, ePropLet, ePropSet, eDim, eConst};
 
 class UserData
 {

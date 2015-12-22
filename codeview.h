@@ -228,6 +228,7 @@ private:
 	
 	int SureFind(const string &LineIn, const string &ToFind);
 	void RemovePadding(string &line); 
+	void RemoveByVal(string &line); 
 	void RemoveNonVBSChars(string &line);
 	string ExtractWordOperand(const string &line, const int &StartPos);
 
