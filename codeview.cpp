@@ -604,7 +604,7 @@ void CodeViewer::Create()
 
 	SendMessage(m_hwndScintilla, SCI_SETWORDCHARS, 0, (LPARAM)"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_");
 
-	SendMessage(m_hwndScintilla, SCI_SETMOUSEDOWNCAPTURES ,0,0); //send mouse events through scintilla.
+	//SendMessage(m_hwndScintilla, SCI_SETMOUSEDOWNCAPTURES ,0,0); //send mouse events through scintilla.
 	SendMessage(m_hwndScintilla, SCI_AUTOCSETIGNORECASE, TRUE, 0);
 	SendMessage(m_hwndScintilla, SCI_AUTOCSETCASEINSENSITIVEBEHAVIOUR, SC_CASEINSENSITIVEBEHAVIOUR_IGNORECASE,0);
 
@@ -1596,6 +1596,7 @@ HRESULT STDMETHODCALLTYPE CodeViewer::QueryService(
 
 void CodeViewer::ShowAutoComplete(SCNotification *pSCN)
 {
+	if(!pSCN) return;
 	char KeyPressed = pSCN->ch;
 	if (KeyPressed != '.')
 	{
@@ -1610,7 +1611,7 @@ void CodeViewer::ShowAutoComplete(SCNotification *pSCN)
 	}
 	else
 	{
-		//Get contruct construct
+		//Get member construct
 
 		int ConstructPos = SendMessage(m_hwndScintilla, SCI_GETCURRENTPOS, 0, 0 ) - 2;
 		CurrentConstruct.chrg.cpMin = SendMessage(m_hwndScintilla, SCI_WORDSTARTPOSITION, ConstructPos, TRUE);
@@ -1669,6 +1670,20 @@ bool CodeViewer::ShowTooltip(SCNotification *pSCN)
 	char szDwellWord[256] = {};
 	char szLCDwellWord[256] = {};
 	const int CurrentLineNo = SendMessage(m_hwndScintilla, SCI_LINEFROMPOSITION, dwellpos, 0);
+	//return if in a comment
+	char text[MAX_LINE_LENGTH] = {0};
+	SendMessage(m_hwndScintilla, SCI_GETLINE, CurrentLineNo, (LPARAM)text);
+	if(text[0] != '\0')
+	{
+		string strText = string(text);
+		int t = strText.find_first_of('\'', 0 );
+		if ((t != string::npos ) )
+		{
+			int linestart = SendMessage(m_hwndScintilla, SCI_POSITIONFROMLINE, CurrentLineNo, 0 );
+			if ( (wordstart - linestart) >= t ) return false;
+		}
+	}
+
 	// is it a valid 'word'
 	if ((SendMessage(m_hwndScintilla, SCI_ISRANGEWORD, wordstart , wordfinish )) && ((wordfinish - wordstart) < 255))
 	{
@@ -1698,11 +1713,14 @@ bool CodeViewer::ShowTooltip(SCNotification *pSCN)
 			//search subs/funcs
 			if (FindUD(PageConstructsDict, DwellWord, i, idx) == 0)
 			{
-				idx = FindClosestUD(PageConstructsDict, CurrentLineNo, idx); 
-				string ptemp = PageConstructsDict->at(idx).Description;
-				if ( (PageConstructsDict->at(idx).Comment.length() >1) && DwellHelp )
+				idx = FindClosestUD(PageConstructsDict, CurrentLineNo, idx);
+				UserData* Word = &PageConstructsDict->at(idx);
+				string ptemp = Word->Description;
+				ptemp += " (Line:" + to_string(Word->LineNum + 1) + ")";
+				if ( (Word->Comment.length() >1) && DwellHelp )
 				{
 					ptemp += "\n" +  PageConstructsDict->at(idx).Comment;
+
 				}
 				MessLen = sprintf_s(Mess, "%s", ptemp.c_str() );
 			}
@@ -1710,7 +1728,7 @@ bool CodeViewer::ShowTooltip(SCNotification *pSCN)
 			//Search VP core
 			else if (FindUD(VP_CoreDict, DwellWord, i, idx) == 0)
 			{
-				const int idx = FindClosestUD(VP_CoreDict, CurrentLineNo, pSCN->line) ; 
+				idx = FindClosestUD(VP_CoreDict, CurrentLineNo, idx) ; 
 				string ptemp = VP_CoreDict->at(idx).Description;
 				if ( (VP_CoreDict->at(idx).Comment.length() >1) && DwellHelp )
 				{
@@ -1896,7 +1914,7 @@ void CodeViewer::szUpper(char * const incstr)
 	}
 }
 
-// Makes sure what is found is not part of a var etc..
+// Makes sure what is found has only VBS Chars in..
 int CodeViewer::SureFind(const string &LineIn, const string &ToFind)
 {
 	const int Pos = LineIn.find(ToFind);
@@ -1963,7 +1981,7 @@ bool CodeViewer::ParseStructureName(vector<UserData> *ListIn, UserData ud,
 
 	if (endIdx == -1 && exitIdx == -1) 
 	{
-		if (ud.eTyping == eDim)
+		if (ud.eTyping == eDim || ud.eTyping == eConst)
 		{
 			ud.UniqueKey = lowerCase( ud.KeyName ) + CurrentParentKey + "\0";
 			ud.UniqueParent = CurrentParentKey;
@@ -1982,6 +2000,7 @@ bool CodeViewer::ParseStructureName(vector<UserData> *ListIn, UserData ud,
 				//get word @
 				string crWord;
 				crWord = RemainingLine.substr(CommPos+1, (NewCommPos == -1) ? string::npos : (NewCommPos - CommPos)-1 );
+				RemoveByVal(crWord);
 				RemovePadding(crWord);
 				RemoveNonVBSChars(crWord);
 				if (crWord.size() <= MAX_FIND_LENGTH && crWord.size() > 0) 
@@ -2022,6 +2041,7 @@ bool CodeViewer::ParseStructureName(vector<UserData> *ListIn, UserData ud,
 				//get word @
 				string crWord;
 				crWord = RemainingLine.substr(CommPos+1, (NewCommPos == -1) ? string::npos : (NewCommPos - CommPos)-1 );
+				RemoveByVal(crWord);
 				RemovePadding(crWord);
 				RemoveNonVBSChars(crWord);
 				if (crWord.size() <= MAX_FIND_LENGTH && crWord.size() > 0)
@@ -2147,6 +2167,12 @@ void CodeViewer::ParseFindConstruct(int &Pos, const string *UCLineIn, WordType &
 		Type = eDim;
 		return;
 	}
+	if ( (Pos = SureFind( *UCLineIn ,"CONST")) != -1 )
+	{
+		ConstructSize =5;
+		Type = eConst;
+		return;
+	}
 	if ( (Pos = SureFind( *UCLineIn ,"SUB")) != -1 )
 	{
 		ConstructSize =3;
@@ -2237,6 +2263,19 @@ void CodeViewer::ReadLineToParseBrain(string wholeline, int linecount, vector<Us
 		}// while (wholeline.length > 1) 
 }
 
+void CodeViewer::RemoveByVal(string &line)
+{
+	const size_t LL = line.length();
+	string SearhLine = lowerCase(line);
+	int Pos = SureFind( SearhLine, "byval");
+	if (Pos > -1)
+	{
+		Pos += 5;
+		if ( (LL-Pos) < 0 ) return;
+		line = line.substr(Pos, (LL-Pos) );
+	}
+}
+
 void CodeViewer::RemovePadding(string &line)
 {
 	const size_t LL = line.length();
@@ -2282,12 +2321,11 @@ void CodeViewer::RemoveNonVBSChars(string &line)
 	}
 }
 
-void CodeViewer::ParseForFunction() // Subs & Collections AndyS - WIP 
+void CodeViewer::ParseForFunction() // Subs & Collections WIP 
 {
   char text[MAX_LINE_LENGTH];
    const size_t scriptLines = SendMessage(m_hwndScintilla, SCI_GETLINECOUNT, 0, 0);
    SendMessage(m_hwndFunctionList, CB_RESETCONTENT, 0, 0);
- ////////////////////
 	int ParentLevel = 0; //root
 	ParentTreeInvalid = false;
 	for (size_t linecount = 0; linecount < scriptLines; ++linecount) 
@@ -2471,7 +2509,7 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
       if ((pfr->Flags & FR_REPLACE) || (pfr->Flags & FR_REPLACEALL))
          pcv->Replace(pfr);
    }
-
+	SCNotification * const pscn = (SCNotification *)lParam;
    switch (uMsg)
    {
    case WM_DESTROY:
@@ -2508,7 +2546,6 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
    {
       const int code = HIWORD(wParam);
       const int id = LOWORD(wParam);
-      //HWND hwndControl = (HWND)lParam;
 
       switch (code)
       {
@@ -2648,7 +2685,7 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
          }
 			case ID_SHOWAUTOCOMPLETE:
 			{
-				pcv->ShowAutoComplete((SCNotification *)lParam);
+				pcv->ShowAutoComplete(pscn);
 				break;
 			}
          }//switch (id)
@@ -2665,7 +2702,7 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
       HWND hwndRE = pnmh->hwndFrom;
       const int code = pnmh->code;
       CodeViewer *pcv = GetCodeViewerPtr(hwndDlg);
-		SCNotification * const pscn = (SCNotification *)lParam;
+		//SCNotification * const pscn = (SCNotification *)lParam;
       switch (code)
       {
 
@@ -2698,7 +2735,7 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 			{
 				// Member selection
 				if (pcv->DisplayAutoComplete)
-					pcv->ShowAutoComplete((SCNotification *)lParam);
+					pcv->ShowAutoComplete(pscn);
 			}
 			break;
 
