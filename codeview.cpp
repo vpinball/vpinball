@@ -2265,7 +2265,7 @@ void CodeViewer::ReadLineToParseBrain(string wholeline, int linecount, vector<Us
 
 void CodeViewer::RemoveByVal(string &line)
 {
-	const size_t LL = line.length();
+	const int LL = line.length();
 	string SearhLine = lowerCase(line);
 	int Pos = SureFind( SearhLine, "byval");
 	if (Pos > -1)
