@@ -1067,8 +1067,12 @@ void Surface::RenderWallsAtHeight(RenderDevice* pd3dDevice, const bool fDrop)
       if (mat->m_bOpacityActive || !m_isDynamic)
          pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
       else
-         pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
-
+      {
+         if (m_d.m_fTopBottomVisible && m_isDynamic)
+            pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
+         else
+           pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+      }
       Texture * const pinSide = m_ptable->GetImage(m_d.m_szSideImage);
       if (pinSide)
       {
