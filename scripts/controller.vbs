@@ -185,10 +185,10 @@ Sub LoadController(TableType)
 	Else
 		Set DOFConfig=FileObj.GetFile(UserDirectory & ControllerFile)
 		Set TextStr2=DOFConfig.OpenAsTextStream(1,0)
-		If (TextStr2.AtEndOfStream=False) then
+		If (TextStr2.AtEndOfStream=False) Then
 			count = 0
 			Do Until TextStr2.AtEndOfStream
-				IF count=0 then
+				If count=0 Then
 					tempC=(right(TextStr2.ReadLine,1))
 				Else
 					DOFeffects(count)=(right(TextStr2.ReadLine,1))
@@ -200,17 +200,19 @@ Sub LoadController(TableType)
 	If tempC = 0 Then
 		On Error Resume Next
 		Set Controller = CreateObject("B2S.Server")
-		Controller.B2SName = cGameName
-		If TableType = "EM" Then
-			Controller.Run()
-		End If
-		On Error Goto 0
-		B2SOn = True  
 		If Controller is Nothing Then
+			Err.Clear
 			If TableType = "VPM" Then 
 				LoadVPinMAME
 			End If
-		End If	
+		Else
+			Controller.B2SName = cGameName
+			If TableType = "EM" Then
+				Controller.Run()
+			End If
+			On Error Goto 0
+			B2SOn = True
+		End If
 	Else
 		If TableType = "VPM" Then 
 			LoadVPinMAME
