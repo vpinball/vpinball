@@ -102,7 +102,7 @@ float4 PS_LightWithTexel(in VS_LIGHT_OUTPUT IN) : COLOR
 
     float4 color;
 	// no lighting if HUD vertices or passthrough mode
-    if(imageBackglassMode.x != 0. || imageBackglassMode.y != 0.)
+	[branch] if(imageBackglassMode.x != 0. || imageBackglassMode.y != 0.)
         color = pixel;
     else
 	{
@@ -117,7 +117,7 @@ float4 PS_LightWithTexel(in VS_LIGHT_OUTPUT IN) : COLOR
     }
     color.a *= cBase_Alpha.a;
 
-    if ( lightColor_intensity.w!=0.0 )
+	[branch] if(lightColor_intensity.w != 0.0)
     {
         const float len = length(lightCenter_maxRange.xyz - (imageBackglassMode.y == 0. ? IN.tablePos : float3(IN.tex0,0.0))) * lightCenter_maxRange.w;
         const float atten = pow(1.0 - saturate(len), lightColor2_falloff_power.w);
@@ -134,7 +134,7 @@ float4 PS_LightWithTexel(in VS_LIGHT_OUTPUT IN) : COLOR
 float4 PS_LightWithoutTexel(in VS_LIGHT_OUTPUT IN) : COLOR
 {
     float4 result = float4(0.0, 0.0, 0.0, 0.0);
-    if (lightColor_intensity.w != 0.0)
+	[branch] if (lightColor_intensity.w != 0.0)
     {
         const float len = length(lightCenter_maxRange.xyz - (imageBackglassMode.y == 0. ? IN.tablePos : float3(IN.tex0,0.0))) * lightCenter_maxRange.w;
         const float atten = pow(1.0 - saturate(len), lightColor2_falloff_power.w);
@@ -145,7 +145,7 @@ float4 PS_LightWithoutTexel(in VS_LIGHT_OUTPUT IN) : COLOR
 
 	float4 color;
 	// no lighting if HUD vertices or passthrough mode
-    if(imageBackglassMode.x != 0. || imageBackglassMode.y != 0.)
+	[branch] if(imageBackglassMode.x != 0. || imageBackglassMode.y != 0.)
         color.xyz = lightColor_intensity.xyz;
     else
 	{
