@@ -83,18 +83,17 @@ float fAlphaTestValue;
 
 struct VS_OUTPUT 
 { 
-   float4 pos      : POSITION; 
-   float2 tex0     : TEXCOORD0; 
-   float2 tex1     : TEXCOORD1;
-   float3 worldPos : TEXCOORD2; 
-   float3 normal   : TEXCOORD3;
+   float4 pos      : POSITION;
+   float4 tex01    : TEXCOORD0; // pack tex0 and tex1 into one float4
+   float3 worldPos : TEXCOORD1;
+   float3 normal   : TEXCOORD2;
 };
 
 struct VS_NOTEX_OUTPUT 
-{ 
-   float4 pos      : POSITION; 
+{
+   float4 pos      : POSITION;
    float2 tex1     : TEXCOORD0;
-   float3 worldPos : TEXCOORD1; 
+   float3 worldPos : TEXCOORD1;
    float3 normal   : TEXCOORD2;
 };
 
@@ -154,9 +153,7 @@ VS_OUTPUT vs_main (float4 vPosition : POSITION0,
    const float3 N = normalize(mul(vNormal, matWorldViewInverseTranspose).xyz);
 
    Out.pos = mul(vPosition, matWorldViewProj);
-   Out.tex0 = tc;
-   //if(cBase_Alpha.a < 1.0)
-      Out.tex1 = Out.pos.xy/Out.pos.w;
+   Out.tex01 = float4(tc, /*(cBase_Alpha.a < 1.0) ?*/Out.pos.xy/Out.pos.w);
    Out.worldPos = P;
    Out.normal = N;
    return Out; 
@@ -217,7 +214,7 @@ PS_OUTPUT ps_main(in VS_NOTEX_OUTPUT IN)
    result.xyz = lightLoop(IN.worldPos, N, V, diffuse, glossy, specular, edge); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
    result.a = cBase_Alpha.a;
 
-   if(cBase_Alpha.a < 1.0) {
+   [branch] if(cBase_Alpha.a < 1.0) {
       result.a = lerp(result.a, 1.0, cClearcoat_EdgeAlpha.w*pow(1.0-abs(dot(N,V)),5)); // fresnel for falloff towards silhouette, flip normal in case of wrong orientation (backside lighting)
 
       // add light from "below" from user-flagged bulb lights, pre-rendered/blurred in previous renderpass //!! sqrt = magic
@@ -231,7 +228,7 @@ PS_OUTPUT ps_main(in VS_NOTEX_OUTPUT IN)
 PS_OUTPUT ps_main_texture(in VS_OUTPUT IN) 
 {
    PS_OUTPUT output;
-   float4 pixel = tex2D(texSampler0, IN.tex0);
+   float4 pixel = tex2D(texSampler0, IN.tex01.xy);
 
    if (pixel.a<=fAlphaTestValue)
       clip(-1);           //stop the pixel shader if alpha test should reject pixel
@@ -252,7 +249,7 @@ PS_OUTPUT ps_main_texture(in VS_OUTPUT IN)
    const float  edge     = (Roughness_WrapL_Edge_IsMetal.w != 0.0) ? 1.0 : Roughness_WrapL_Edge_IsMetal.z;
 
    const float3 V = normalize(/*camera=0,0,0,1*/-IN.worldPos);
-   const float3 N = /*normal_map(*/normalize(IN.normal)/*,V,IN.tex0)*/;
+   const float3 N = /*normal_map(*/normalize(IN.normal)/*,V,IN.tex01.xy);
 
    //return float4((N+1.0)*0.5,1.0); // visualize normals
 
@@ -260,11 +257,11 @@ PS_OUTPUT ps_main_texture(in VS_OUTPUT IN)
    result.xyz = lightLoop(IN.worldPos, N, V, diffuse, glossy, specular, edge);
    result.a = pixel.a;
 
-   if(cBase_Alpha.a < 1.0 && result.a < 1.0) {
+   [branch] if(cBase_Alpha.a < 1.0 && result.a < 1.0) {
       result.a = lerp(result.a, 1.0, cClearcoat_EdgeAlpha.w*pow(1.0-abs(dot(N,V)),5)); // fresnel for falloff towards silhouette, flip normal in case of wrong orientation (backside lighting)
 
       // add light from "below" from user-flagged bulb lights, pre-rendered/blurred in previous renderpass //!! sqrt = magic
-      result.xyz += sqrt(diffuse)*tex2Dlod(texSamplerBL, float4(float2(0.5*IN.tex1.x,-0.5*IN.tex1.y)+0.5, 0.,0.)).xyz*result.a; //!! depend on normal of light (unknown though) vs geom normal, too?
+      result.xyz += sqrt(diffuse)*tex2Dlod(texSamplerBL, float4(float2(0.5*IN.tex01.z,-0.5*IN.tex01.w)+0.5, 0.,0.)).xyz*result.a; //!! depend on normal of light (unknown though) vs geom normal, too?
    }
 
    output.color = result;
@@ -295,10 +292,10 @@ VS_NOTEX_OUTPUT vs_kicker (float4 vPosition : POSITION0,
 { 
     VS_NOTEX_OUTPUT Out;
     const float3 P = mul(vPosition, matWorldView).xyz;
-    float4 P2 = vPosition;
     const float3 N = normalize(mul(vNormal, matWorldViewInverseTranspose).xyz);
 
     Out.pos = mul(vPosition, matWorldViewProj);
+    float4 P2 = vPosition;
     P2.z -= 30.0f*fKickerScale;
     P2 = mul(P2, matWorldViewProj);
     Out.pos.z = P2.z;

@@ -120,14 +120,14 @@ vout vsBall( in vin IN )
 
 	// apply spinning and move the ball to it's actual position
 	float4 pos = IN.position;
-	pos.xyz = mul(float4(pos.xyz,1.), orientation).xyz;
-	
-	const float3 p = mul(float4(pos.xyz,1.), matWorldView).xyz;
+	pos.xyz = mul_w1(pos.xyz, orientation);
 	
 	// apply spinning to the normals too to get the sphere mapping effect
-	const float3 nspin = mul(float4(IN.normal,0.), orientation).xyz;
+	const float3 nspin = mul_w0(IN.normal, orientation);
 	const float3 normal = normalize(mul(matWorldViewInverse, nspin).xyz); // actually: mul(float4(nspin,0.), matWorldViewInverseTranspose), but optimized to save one matrix
     
+	const float3 p = mul_w1(pos.xyz, matWorldView);
+
 	OUT.position = mul(pos, matWorldViewProj);
     OUT.tex0	 = IN.tex0;
 	OUT.normal   = normal;
@@ -142,16 +142,16 @@ voutReflection vsBallReflection( in vin IN )
     
 	// apply spinning and move the ball to it's actual position
 	float4 pos = IN.position;
-	pos.xyz = mul(float4(pos.xyz,1.), orientation).xyz;
+	pos.xyz = mul_w1(pos.xyz, orientation);
 
 	// this is not a 100% ball reflection on the table due to the quirky camera setup
 	// the ball is moved a bit down and rendered again
 	pos.y += position_radius.w*(2.0*0.35);
 	pos.z = pos.z*0.5 - 10.0;
 	
-	const float3 p = mul(float4(pos.xyz,1.), matWorldView).xyz;
+	const float3 p = mul_w1(pos.xyz, matWorldView);
 	
-    const float3 nspin = mul(float4(IN.normal,0.0), orientation).xyz;
+    const float3 nspin = mul_w0(IN.normal, orientation);
 	const float3 normal = normalize(mul(matWorldViewInverse, nspin).xyz); // actually: mul(float4(nspin,0.), matWorldViewInverseTranspose), but optimized to save one matrix
     
     const float3 r = reflect(normalize(/*camera=0,0,0,1*/-p), normal);
@@ -198,13 +198,13 @@ float3 ballLightLoop(float3 pos, float3 N, float3 V, float3 diffuse, float3 glos
 
    float3 color = float3(0.0, 0.0, 0.0);
       
-   if(((Roughness_WrapL_Edge_IsMetal.w == 0.0) && (diffuseMax > 0.0)) || (glossyMax > 0.0))
+   [branch] if(((Roughness_WrapL_Edge_IsMetal.w == 0.0) && (diffuseMax > 0.0)) || (glossyMax > 0.0))
    {
       for(int i = 0; i < iLightPointBallsNum; i++)  
          color += DoPointLight(pos, N, V, diffuse, glossy, edge, Roughness_WrapL_Edge_IsMetal.x, i); // no clearcoat needed as only pointlights so far
    }
 
-   if((Roughness_WrapL_Edge_IsMetal.w == 0.0) && (diffuseMax > 0.0))
+   [branch] if((Roughness_WrapL_Edge_IsMetal.w == 0.0) && (diffuseMax > 0.0))
       color += DoEnvmapDiffuse(normalize(mul(matView, N).xyz), diffuse); // trafo back to world for lookup into world space envmap // actually: mul(float4(N, 0.0), matViewInverseInverseTranspose)
 
    if(specularMax > 0.0)
@@ -250,13 +250,13 @@ PS_OUTPUT psBall( in vout IN )
 	const float NdotR = dot(playfield_normal,r);
 	
 	float3 playfieldColor;
-	if(/*(reflection_ball_playfield > 0.0) &&*/ (NdotR > 0.0))
+	[branch] if(/*(reflection_ball_playfield > 0.0) &&*/ (NdotR > 0.0))
 	{
-       const float3 playfield_p0 = mul(float4(/*playfield_pos=*/0.,0.,invTableRes__playfield_height_reflection.z,1.), matWorldView).xyz;
+       const float3 playfield_p0 = mul_w1(float3(/*playfield_pos=*/0.,0.,invTableRes__playfield_height_reflection.z), matWorldView);
 	   const float t = dot(playfield_normal, IN.worldPos - playfield_p0) / NdotR;
        const float3 playfield_hit = IN.worldPos - t*r;
 
-       const float2 uv = mul(float4(playfield_hit,1.), matWorldViewInverse).xy * invTableRes__playfield_height_reflection.xy;
+       const float2 uv = mul_w1(playfield_hit, matWorldViewInverse).xy * invTableRes__playfield_height_reflection.xy;
 	   playfieldColor = (t < 0.) ? float3(0., 0., 0.) // happens for example when inside kicker
                                  : InvGamma(tex2Dlod(texSampler1, float4(uv, 0., 0.)).xyz)*invTableRes__playfield_height_reflection.w; //!! rather use screen space sample from previous frame??
 

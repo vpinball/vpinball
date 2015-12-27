@@ -50,19 +50,19 @@ float3 DoPointLight(const float3 pos, const float3 N, const float3 V, const floa
 { 
    // early out here or maybe we can add more material elements without lighting later?
    if( bDisableLighting )
-    return diffuse;
+      return diffuse;
 
-   const float3 lightDir = mul(float4(lights[i].vPos,1.0), matView).xyz - pos; //!! do in vertex shader?! or completely before?!
+   const float3 lightDir = mul_w1(lights[i].vPos, matView) - pos; //!! do in vertex shader?! or completely before?!
    const float3 L = normalize(lightDir);
    const float NdotL = dot(N, L);
    float3 Out = float3(0.0,0.0,0.0);
    
    // compute diffuse color (lambert with optional rim/wrap component)
    if((Roughness_WrapL_Edge_IsMetal.w == 0.0) && (NdotL + Roughness_WrapL_Edge_IsMetal.y > 0.0))
-      Out = diffuse * ((NdotL + Roughness_WrapL_Edge_IsMetal.y) / ((1.0+Roughness_WrapL_Edge_IsMetal.y) * (1.0+Roughness_WrapL_Edge_IsMetal.y)));
+      Out = diffuse * ((NdotL + Roughness_WrapL_Edge_IsMetal.y) / sqr(1.0+Roughness_WrapL_Edge_IsMetal.y));
     
    // add glossy component (modified ashikhmin/blinn bastard), not fully energy conserving, but good enough
-   if(NdotL > 0.0)
+   [branch] if(NdotL > 0.0)
    {
 	 const float3 H = normalize(L + V); // half vector
 	 const float NdotH = dot(N, H);
@@ -89,8 +89,8 @@ float3 DoPointLight(const float3 pos, const float3 N, const float3 V, const floa
 float3 DoEnvmapDiffuse(const float3 N, const float3 diffuse)
 {
    const float2 uv = float2( // remap to 2D envmap coords
-		atan2(N.y, N.x) * (0.5/PI) + 0.5,
-	    acos(N.z) * (1.0/PI));
+		0.5 + atan2_approx_div2PI(N.y, N.x),
+	    acos_approx_divPI(N.z));
 
    float3 env = tex2Dlod(texSampler2, float4(uv, 0.,0.)).xyz;
    if(!hdrEnvTextures)
@@ -144,23 +144,23 @@ float3 lightLoop(const float3 pos, float3 N, const float3 V, float3 diffuse, flo
    float3 color = float3(0.0, 0.0, 0.0);
 
    // 1st Layer
-   if(((Roughness_WrapL_Edge_IsMetal.w == 0.0) && (diffuseMax > 0.0)) || (glossyMax > 0.0))
+   [branch] if(((Roughness_WrapL_Edge_IsMetal.w == 0.0) && (diffuseMax > 0.0)) || (glossyMax > 0.0))
    {
       for(int i = 0; i < iLightPointNum; i++)
          color += DoPointLight(pos, N, V, diffuse, glossy, edge, Roughness_WrapL_Edge_IsMetal.x, i); // no clearcoat needed as only pointlights so far
    }
 
-   if((Roughness_WrapL_Edge_IsMetal.w == 0.0) && (diffuseMax > 0.0))
+   [branch] if((Roughness_WrapL_Edge_IsMetal.w == 0.0) && (diffuseMax > 0.0))
       color += DoEnvmapDiffuse(normalize(mul(matView, N).xyz), diffuse); // trafo back to world for lookup into world space envmap // actually: mul(float4(N,0.0), matViewInverseInverseTranspose), but optimized to save one matrix
 
-   if((glossyMax > 0.0) || (specularMax > 0.0))
+   [branch] if((glossyMax > 0.0) || (specularMax > 0.0))
    {
 	   float3 R = (2.0*NdotV)*N - V; // reflect(-V,n);
 	   R = normalize(mul(matView, R).xyz); // trafo back to world for lookup into world space envmap // actually: mul(float4(R,0.0), matViewInverseInverseTranspose), but optimized to save one matrix
 
 	   const float2 Ruv = float2( // remap to 2D envmap coords
-			atan2(R.y, R.x) * (0.5/PI) + 0.5,
-			acos(R.z) * (1.0/PI));
+			0.5 + atan2_approx_div2PI(R.y, R.x),
+			acos_approx_divPI(R.z));
 
 	   if(glossyMax > 0.0)
 		  color += DoEnvmapGlossy(N, V, Ruv, glossy, Roughness_WrapL_Edge_IsMetal.x);

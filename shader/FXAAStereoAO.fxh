@@ -63,7 +63,7 @@ float4 ps_main_ao(in VS_OUTPUT_2D IN) : COLOR
 	const float2 u = IN.tex0 + w_h_height.xy*0.5;
 
 	const float depth0 = tex2Dlod(texSamplerDepth, float4(u, 0.,0.)).x;
-	if((depth0 == 1.0) || (depth0 == 0.0)) //!! early out if depth too large (=BG) or too small (=DMD,etc -> retweak render options (depth write on), otherwise also screwup with stereo)
+	[branch] if((depth0 == 1.0) || (depth0 == 0.0)) //!! early out if depth too large (=BG) or too small (=DMD,etc -> retweak render options (depth write on), otherwise also screwup with stereo)
 		return float4(1.0, 0.,0.,0.);
 
 	const float2 ushift = hash(IN.tex0) + w_h_height.zw; // jitter samples via hash of position on screen and then jitter samples by time //!! see below for non-shifted variant
@@ -78,7 +78,7 @@ float4 ps_main_ao(in VS_OUTPUT_2D IN) : COLOR
 	const float radius_depth = radius/depth0;
 
 	float occlusion = 0.0;
-	for(int i=0; i < samples; ++i) {
+	[unroll] for(int i=0; i < samples; ++i) {
 		const float2 r = float2(i*(1.0 / samples), i*(2.0 / samples)); //1,5,2,8,13,7 korobov,fibonacci //!! could also use progressive/extensible lattice via rad_inv(i)*(1501825329, 359975893) (check precision though as this should be done in double or uint64)
 		//const float3 ray = sphere_sample(frac(r+ushift)); // shift lattice // uniform variant
 		const float2 ray = rotate_to_vector_upper(cos_hemisphere_sample(frac(r+ushift)), normal).xy; // shift lattice
@@ -149,7 +149,7 @@ float4 ps_main_fxaa1(in VS_OUTPUT_2D IN) : COLOR
     if(w_h_height.w == 1.0) // depth buffer available?
 	{
 		const float depth0 = tex2Dlod(texSamplerDepth, float4(u, 0.,0.)).x;
-		if((depth0 == 1.0) || (depth0 == 0.0)) // early out if depth too large (=BG) or too small (=DMD,etc)
+		[branch] if((depth0 == 1.0) || (depth0 == 0.0)) // early out if depth too large (=BG) or too small (=DMD,etc)
 			return float4(rMc, 1.0);
 	}
 
@@ -201,7 +201,7 @@ float4 ps_main_fxaa2(in VS_OUTPUT_2D IN) : COLOR
     if(w_h_height.w == 1.0) // depth buffer available?
 	{
 		const float depth0 = tex2Dlod(texSamplerDepth, float4(u, 0.,0.)).x;
-		if((depth0 == 1.0) || (depth0 == 0.0)) // early out if depth too large (=BG) or too small (=DMD,etc)
+		[branch] if((depth0 == 1.0) || (depth0 == 0.0)) // early out if depth too large (=BG) or too small (=DMD,etc)
 			return float4(rgbyM, 1.0);
 	}
 
@@ -348,7 +348,7 @@ float4 ps_main_fxaa3(in VS_OUTPUT_2D IN) : COLOR
     if(w_h_height.w == 1.0) // depth buffer available?
 	{
 		const float depth0 = tex2Dlod(texSamplerDepth, float4(u, 0.,0.)).x;
-		if((depth0 == 1.0) || (depth0 == 0.0)) // early out if depth too large (=BG) or too small (=DMD,etc)
+		[branch] if((depth0 == 1.0) || (depth0 == 0.0)) // early out if depth too large (=BG) or too small (=DMD,etc)
 			return float4(rgbyM, 1.0);
 	}
 

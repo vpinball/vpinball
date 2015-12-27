@@ -1,5 +1,54 @@
 #define PI 3.1415926535897932384626433832795
 
+float sqr(const float v)
+{
+    return v*v;
+}
+
+float3 mul_w1(const float3 v, const float4x3 m)
+{
+    return v.x*m[0] + (v.y*m[1] + (v.z*m[2] + m[3]));
+}
+
+float3 mul_w0(const float3 v, const float4x3 m)
+{
+    return v.x*m[0] + v.y*m[1] + v.z*m[2];
+}
+
+float acos_approx(const float v)
+{
+    const float x = abs(v);
+    const float res = (-0.155972/*C1*/ * x + 1.56467/*C0*/) * sqrt(1.0 - x);
+    return (v >= 0.) ? res : PI - res;
+}
+
+float acos_approx_divPI(const float v)
+{
+    const float x = abs(v);
+    const float res = ((-0.155972/PI)/*C1*/ * x + (1.56467/PI)/*C0*/) * sqrt(1.0 - x);
+    return (v >= 0.) ? res : 1. - res;
+}
+
+float atan2_approx(const float y, const float x)
+{
+	const float abs_y = abs(y);
+	const float abs_x = abs(x);
+	const float r = (abs_x - abs_y) / (abs_x + abs_y);
+	const float angle = ((x < 0.) ? (0.75*PI) : (0.25*PI))
+	                  + (0.211868/*C3*/ * r * r - 0.987305/*C1*/) * ((x < 0.) ? -r : r);
+	return (y < 0.) ? -angle : angle;
+}
+
+float atan2_approx_div2PI(const float y, const float x)
+{
+	const float abs_y = abs(y);
+	const float abs_x = abs(x);
+	const float r = (abs_x - abs_y) / (abs_x + abs_y);
+	const float angle = ((x < 0.) ? (3./8.) : (1./8.))
+	                  + (0.211868/*C3*//(2.*PI) * r * r - 0.987305/*C1*//(2.*PI)) * ((x < 0.) ? -r : r);
+	return (y < 0.) ? -angle : angle;
+}
+
 //
 // Gamma & ToneMapping
 //
