@@ -1675,11 +1675,11 @@ bool CodeViewer::ShowTooltip(SCNotification *pSCN)
 	SendMessage(m_hwndScintilla, SCI_GETLINE, CurrentLineNo, (LPARAM)text);
 	if(text[0] != '\0')
 	{
-		string strText = string(text);
-		int t = strText.find_first_of('\'', 0 );
-		if ((t != string::npos ) )
+		const string strText = string(text);
+		const int t = strText.find_first_of('\'', 0 );
+		if (t != string::npos)
 		{
-			int linestart = SendMessage(m_hwndScintilla, SCI_POSITIONFROMLINE, CurrentLineNo, 0 );
+			const int linestart = SendMessage(m_hwndScintilla, SCI_POSITIONFROMLINE, CurrentLineNo, 0 );
 			if ( (wordstart - linestart) >= t ) return false;
 		}
 	}
@@ -1714,13 +1714,12 @@ bool CodeViewer::ShowTooltip(SCNotification *pSCN)
 			if (FindUD(PageConstructsDict, DwellWord, i, idx) == 0)
 			{
 				idx = FindClosestUD(PageConstructsDict, CurrentLineNo, idx);
-				UserData* Word = &PageConstructsDict->at(idx);
+				const UserData* const Word = &PageConstructsDict->at(idx);
 				string ptemp = Word->Description;
 				ptemp += " (Line:" + to_string(Word->LineNum + 1) + ")";
-				if ( (Word->Comment.length() >1) && DwellHelp )
+				if ( (Word->Comment.length() > 1) && DwellHelp )
 				{
 					ptemp += "\n" +  PageConstructsDict->at(idx).Comment;
-
 				}
 				MessLen = sprintf_s(Mess, "%s", ptemp.c_str() );
 			}
@@ -2266,8 +2265,8 @@ void CodeViewer::ReadLineToParseBrain(string wholeline, int linecount, vector<Us
 void CodeViewer::RemoveByVal(string &line)
 {
 	const int LL = line.length();
-	string SearhLine = lowerCase(line);
-	int Pos = SureFind( SearhLine, "byval");
+	const string SearchLine = lowerCase(line);
+	int Pos = SureFind( SearchLine, "byval");
 	if (Pos > -1)
 	{
 		Pos += 5;
