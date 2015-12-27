@@ -5,6 +5,11 @@ float sqr(const float v)
     return v*v;
 }
 
+float3 mul_w1(const float3 v, const float4x4 m)
+{
+    return v.x*m[0].xyz + (v.y*m[1].xyz + (v.z*m[2].xyz + m[3].xyz));
+}
+
 float3 mul_w1(const float3 v, const float4x3 m)
 {
     return v.x*m[0] + (v.y*m[1] + (v.z*m[2] + m[3]));
