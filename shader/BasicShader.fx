@@ -249,7 +249,7 @@ PS_OUTPUT ps_main_texture(in VS_OUTPUT IN)
    const float  edge     = (Roughness_WrapL_Edge_IsMetal.w != 0.0) ? 1.0 : Roughness_WrapL_Edge_IsMetal.z;
 
    const float3 V = normalize(/*camera=0,0,0,1*/-IN.worldPos);
-   const float3 N = /*normal_map(*/normalize(IN.normal)/*,V,IN.tex01.xy);
+   const float3 N = /*normal_map(*/normalize(IN.normal)/*,V,IN.tex01.xy)*/;
 
    //return float4((N+1.0)*0.5,1.0); // visualize normals
 
