@@ -304,12 +304,24 @@ void VPinball::Init()
 
    RegisterClasses();											//TODO - brief description of what happens in the function
 
+#ifdef _WIN64
+	m_scintillaDll = LoadLibrary("SciLexerVP64.DLL");
+#else
 	m_scintillaDll = LoadLibrary("SciLexerVP.DLL");
+#endif
    if (m_scintillaDll == NULL)
 	{
+#ifdef _WIN64
+		m_scintillaDll = LoadLibrary("SciLexer64.DLL");
+#else
 		m_scintillaDll = LoadLibrary("SciLexer.DLL");
+#endif
 		if (m_scintillaDll == NULL)
+#ifdef _WIN64
+			ShowError("Unable to load SciLexer64.DLL");
+#else
 			ShowError("Unable to load SciLexer.DLL");
+#endif
 	}
    char szName[256];
    LoadString(g_hinst, IDS_PROJNAME, szName, 256);
