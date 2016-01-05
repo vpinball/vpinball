@@ -439,7 +439,7 @@ void Flasher::RenderSetup(RenderDevice* pd3dDevice)
    if (dynamicVertexBuffer)
       dynamicVertexBuffer->release();
    pd3dDevice->CreateVertexBuffer(numVertices, USAGE_DYNAMIC, MY_D3DFVF_TEX, &dynamicVertexBuffer);
-   NumVideoBytes += numVertices*sizeof(Vertex3D_TexelOnly);
+   NumVideoBytes += numVertices*(int)sizeof(Vertex3D_TexelOnly);
 
    if (vertices)
       delete[] vertices;

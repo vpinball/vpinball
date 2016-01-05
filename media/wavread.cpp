@@ -127,7 +127,7 @@ HRESULT WaveStartDataRead(HMMIO* phmmioIn, MMCKINFO* pckIn,
    MMCKINFO* pckInRIFF)
 {
    // Seek to the data
-   if (-1 == mmioSeek(*phmmioIn, pckInRIFF->dwDataOffset + sizeof(FOURCC),
+   if (-1 == mmioSeek(*phmmioIn, pckInRIFF->dwDataOffset + (DWORD)sizeof(FOURCC),
       SEEK_SET))
       return E_FAIL;
 

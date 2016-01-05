@@ -4,6 +4,7 @@
 
 #include "StdAfx.h"
 #include "resource.h"
+#include "vpversion.h"
 #include "svn_version.h"
 
 #if defined(IMSPANISH)
@@ -2439,8 +2440,8 @@ INT_PTR CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
          lvitem.iSubItem = 0;
          ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
          PinSound *pps = (PinSound *)lvitem.lParam;
-         lstrcpyn(pps->m_szName, pinfo->item.pszText, MAXTOKEN);
-         lstrcpyn(pps->m_szInternalName, pinfo->item.pszText, MAXTOKEN);
+         strncpy_s(pps->m_szName, pinfo->item.pszText, MAXTOKEN);
+         strncpy_s(pps->m_szInternalName, pinfo->item.pszText, MAXTOKEN);
          CharLowerBuff(pps->m_szInternalName, lstrlen(pps->m_szInternalName));
          pt->SetNonUndoableDirty(eSaveDirty);
          return TRUE;
@@ -2879,8 +2880,8 @@ INT_PTR CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
          Texture * const ppi = (Texture *)lvitem.lParam;
          if (ppi != NULL)
          {
-            lstrcpyn(ppi->m_szName, pinfo->item.pszText, MAXTOKEN);
-            lstrcpyn(ppi->m_szInternalName, pinfo->item.pszText, MAXTOKEN);
+            strncpy_s(ppi->m_szName, pinfo->item.pszText, MAXTOKEN);
+            strncpy_s(ppi->m_szInternalName, pinfo->item.pszText, MAXTOKEN);
             CharLowerBuff(ppi->m_szInternalName, lstrlen(ppi->m_szInternalName));
             pt->SetNonUndoableDirty(eSaveDirty);
          }
@@ -3435,7 +3436,7 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
          Material *pmat = (Material*)lvitem.lParam;
          if (pt->IsMaterialNameUnique(pinfo->item.pszText))
          {
-            lstrcpyn(pmat->m_szName, pinfo->item.pszText, 31);
+            strncpy_s(pmat->m_szName, pinfo->item.pszText, 31);
             ListView_SetItemText(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST), pinfo->item.iItem, 0, pinfo->item.pszText);
          }
          else
@@ -3447,7 +3448,7 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
                sprintf_s(textBuf, "%s%i", pinfo->item.pszText, suffix);
                suffix++;
             } while (!pt->IsMaterialNameUnique(textBuf));
-            lstrcpyn(pmat->m_szName, textBuf, 31);
+            strncpy_s(pmat->m_szName, textBuf, 31);
             ListView_SetItemText(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST), pinfo->item.iItem, 0, pmat->m_szName);
          }
          g_pvp->m_sb.PopulateDropdowns();
@@ -3967,7 +3968,7 @@ INT_PTR CALLBACK AboutProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 
       HWND hVersion = GetDlgItem(hwndDlg, IDC_ABOUT_VERSION);
       char versionString[256];
-      sprintf_s(versionString, "Version 10.0 Final (Revision %i)", SVN_REVISION);
+      sprintf_s(versionString, "Version %i.%i.%i (Revision %i)", VP_VERSION_MAJOR,VP_VERSION_MINOR,VP_VERSION_REV, SVN_REVISION);
       SetWindowText(hVersion, versionString);
 
 #if !(defined(IMSPANISH) | defined(IMGERMAN) | defined(IMFRENCH))
@@ -5158,7 +5159,7 @@ INT_PTR CALLBACK CollectionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
    case WM_INITDIALOG:
    {
       pcds = (CollectionDialogStruct *)lParam;
-      SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG)pcds);
+      SetWindowLongPtr(hwndDlg, GWLP_USERDATA, (LONG_PTR)pcds);
 
       Collection * const pcol = pcds->pcol;
 

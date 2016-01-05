@@ -863,7 +863,7 @@ void Surface::PrepareWallsAtHeight(RenderDevice* pd3dDevice)
 
    //
 
-   pd3dDevice->CreateIndexBuffer(topBottomIndices.size() + sideIndices.size(), 0, IndexBuffer::FMT_INDEX16, &IBuffer);
+   pd3dDevice->CreateIndexBuffer((unsigned int)topBottomIndices.size() + (unsigned int)sideIndices.size(), 0, IndexBuffer::FMT_INDEX16, &IBuffer);
 
    WORD* buf;
    IBuffer->lock(0, 0, (void**)&buf, 0);

@@ -283,8 +283,8 @@ inline bool AdvancePoint(const RenderVertexCont& rgv, const VectorVoid * const p
 
    for (int i = 0; i < pvpoly->Size(); ++i)
    {
-      const RenderVertex * const pvCross1 = &rgv[(int)pvpoly->ElementAt(i)];
-      const RenderVertex * const pvCross2 = &rgv[(int)pvpoly->ElementAt((i < pvpoly->Size() - 1) ? (i + 1) : 0)];
+      const RenderVertex * const pvCross1 = &rgv[(size_t)pvpoly->ElementAt(i)];
+      const RenderVertex * const pvCross2 = &rgv[(size_t)pvpoly->ElementAt((i < pvpoly->Size() - 1) ? (i + 1) : 0)];
 
       if (pvCross1 != pv1 && pvCross2 != pv1 && pvCross1 != pv3 && pvCross2 != pv3 &&
          (pvCross1->y >= miny || pvCross2->y >= miny) &&

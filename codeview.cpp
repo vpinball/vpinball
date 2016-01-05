@@ -119,7 +119,7 @@ CodeViewer::~CodeViewer()
    m_pdm->Release();
 }
 
-void GetRange(const HWND m_hwndScintilla, const int start, const int end, char * const text)
+void GetRange(const HWND m_hwndScintilla, const size_t start, const size_t end, char * const text)
 {
    Sci_TextRange tr;
    tr.chrg.cpMin = start;
@@ -131,7 +131,7 @@ void GetRange(const HWND m_hwndScintilla, const int start, const int end, char *
 void CodeViewer::GetWordUnderCaret()
 {
 
-	const int CurPos = SendMessage(m_hwndScintilla, SCI_GETCURRENTPOS, 0, 0 );
+	const LRESULT CurPos = SendMessage(m_hwndScintilla, SCI_GETCURRENTPOS, 0, 0 );
 	WordUnderCaret.chrg.cpMin = SendMessage(m_hwndScintilla, SCI_WORDSTARTPOSITION, CurPos, TRUE);
 	WordUnderCaret.chrg.cpMax = SendMessage(m_hwndScintilla, SCI_WORDENDPOSITION, CurPos, TRUE);
 	if (( WordUnderCaret.chrg.cpMax - WordUnderCaret.chrg.cpMin) > MAX_FIND_LENGTH) return;
@@ -483,7 +483,7 @@ void CodeViewer::Create()
 	//if still using old dll load VB lexer insted
 	//use SCI_SETLEXERLANGUAGE as SCI_GETLEXER doesn't return the correct value with SCI_SETLEXER
 	SendMessage(m_hwndScintilla, SCI_SETLEXERLANGUAGE, 0 , (LPARAM)"vpscript");
-	int lexVersion = SendMessage(m_hwndScintilla, SCI_GETLEXER, 0, 0);
+	LRESULT lexVersion = SendMessage(m_hwndScintilla, SCI_GETLEXER, 0, 0);
 	if (lexVersion != SCLEX_VPSCRIPT)
 	{
 		SendMessage(m_hwndScintilla, SCI_SETLEXER, (WPARAM)SCLEX_VBSCRIPT, 0);
@@ -506,7 +506,7 @@ void CodeViewer::Create()
 	CurrentConstruct.lpstrText = (char *) ConstructTextBuff;
 	// parse vb reserved words for auto complete.
 	VBwordsDict = new vector<UserData>;
-	int intWordFinish =-1; //skip space
+	int intWordFinish = -1; //skip space
 	char WordChar= vbsReservedWords[0];
 	char szWord[256];
 	int wordlen=0;
@@ -625,7 +625,7 @@ void CodeViewer::Create()
    m_hwndItemList = CreateWindowEx(0, "ComboBox", "Objects",
       WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL,
       5, 17, 180, 400, m_hwndMain, NULL, g_hinst, 0);
-   SetWindowLong(m_hwndItemList, GWL_ID, IDC_ITEMLIST);
+   SetWindowLongPtr(m_hwndItemList, GWL_ID, IDC_ITEMLIST);
    SendMessage(m_hwndItemList, WM_SETFONT, (size_t)GetStockObject(DEFAULT_GUI_FONT), 0);
 
    m_hwndItemText = CreateWindowEx(0, "Static", "ObjectsText",
@@ -636,7 +636,7 @@ void CodeViewer::Create()
 	m_hwndEventList = CreateWindowEx(0, "ComboBox", "Events",
       WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL,
       210 + 5, 17, 180, 400, m_hwndMain, NULL, g_hinst, 0);
-   SetWindowLong(m_hwndEventList, GWL_ID, IDC_EVENTLIST);
+   SetWindowLongPtr(m_hwndEventList, GWL_ID, IDC_EVENTLIST);
    SendMessage(m_hwndEventList, WM_SETFONT, (size_t)GetStockObject(DEFAULT_GUI_FONT), 0);
 
    m_hwndEventText = CreateWindowEx(0, "Static", "EventsText",
@@ -647,7 +647,7 @@ void CodeViewer::Create()
 	m_hwndFunctionList = CreateWindowEx(0, "ComboBox", "Functions",
       WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | WS_VSCROLL,
       430 + 5, 17, 180, 400, m_hwndMain, NULL, g_hinst, 0);
-   SetWindowLong(m_hwndFunctionList, GWL_ID, IDC_FUNCTIONLIST);
+   SetWindowLongPtr(m_hwndFunctionList, GWL_ID, IDC_FUNCTIONLIST);
    SendMessage(m_hwndFunctionList, WM_SETFONT, (size_t)GetStockObject(DEFAULT_GUI_FONT), 0);
 
     m_hwndFunctionText = CreateWindowEx(0, "Static", "FunctionsText",
@@ -1119,7 +1119,7 @@ void CodeViewer::LoadFromStream(IStream *pistream, const HCRYPTHASH hcrypthash, 
 
    BYTE * const szText = new BYTE[cchar + 1];
 
-   pistream->Read(szText, (cchar)*sizeof(char), &read);
+   pistream->Read(szText, cchar*(int)sizeof(char), &read);
 
    CryptHashData(hcrypthash, (BYTE *)szText, cchar, 0);
 
@@ -1128,7 +1128,7 @@ void CodeViewer::LoadFromStream(IStream *pistream, const HCRYPTHASH hcrypthash, 
    if (hcryptkey != NULL)
    {
       // get the size of the data to decrypt
-      DWORD cryptlen = cchar*sizeof(char);
+      DWORD cryptlen = cchar*(int)sizeof(char);
 
       // decrypt the script
       CryptDecrypt(hcryptkey,			// key to use
@@ -1602,7 +1602,7 @@ void CodeViewer::ShowAutoComplete(SCNotification *pSCN)
 	{
 		WordUnderCaret.lpstrText = &CaretTextBuff[0];
 		GetWordUnderCaret();
-		const int intWordLen = strlen(WordUnderCaret.lpstrText);
+		const size_t intWordLen = strlen(WordUnderCaret.lpstrText);
 		if (intWordLen > DisplayAutoCompleteLength && intWordLen < MAX_FIND_LENGTH)
 		{
 			const char * McStr = AutoCompString.c_str();
@@ -1613,7 +1613,7 @@ void CodeViewer::ShowAutoComplete(SCNotification *pSCN)
 	{
 		//Get member construct
 
-		int ConstructPos = SendMessage(m_hwndScintilla, SCI_GETCURRENTPOS, 0, 0 ) - 2;
+		LRESULT ConstructPos = SendMessage(m_hwndScintilla, SCI_GETCURRENTPOS, 0, 0 ) - 2;
 		CurrentConstruct.chrg.cpMin = SendMessage(m_hwndScintilla, SCI_WORDSTARTPOSITION, ConstructPos, TRUE);
 		CurrentConstruct.chrg.cpMax = SendMessage(m_hwndScintilla, SCI_WORDENDPOSITION, ConstructPos, TRUE);
 		if (( CurrentConstruct.chrg.cpMax - CurrentConstruct.chrg.cpMin) > MAX_FIND_LENGTH) return;
@@ -1646,7 +1646,7 @@ void CodeViewer::GetMembers(vector<UserData>* ListIn, const string &strIn)
 {
 	CurrentMembers->clear();
 	const int idx = UDIndex(ListIn , strIn);
-	if (idx > -1)
+	if (idx != -1)
 	{
 		const UserData udParent = ListIn->at(idx);
 		const size_t NumberOfMembers = udParent.Children.size();
@@ -1664,8 +1664,8 @@ bool CodeViewer::ShowTooltip(SCNotification *pSCN)
 {
 	//get word under pointer
 	const int dwellpos = pSCN->position;
-	int wordstart = SendMessage(m_hwndScintilla, SCI_WORDSTARTPOSITION, dwellpos, TRUE );
-	int wordfinish = SendMessage(m_hwndScintilla, SCI_WORDENDPOSITION, dwellpos, TRUE );
+	LRESULT wordstart = SendMessage(m_hwndScintilla, SCI_WORDSTARTPOSITION, dwellpos, TRUE );
+	LRESULT wordfinish = SendMessage(m_hwndScintilla, SCI_WORDENDPOSITION, dwellpos, TRUE );
 	char Mess[MAX_LINE_LENGTH*4] = {}; int MessLen = 0;
 	char szDwellWord[256] = {};
 	char szLCDwellWord[256] = {};
@@ -1676,10 +1676,10 @@ bool CodeViewer::ShowTooltip(SCNotification *pSCN)
 	if(text[0] != '\0')
 	{
 		const string strText = string(text);
-		const int t = strText.find_first_of('\'', 0 );
+		const size_t t = strText.find_first_of('\'', 0 );
 		if (t != string::npos)
 		{
-			const int linestart = SendMessage(m_hwndScintilla, SCI_POSITIONFROMLINE, CurrentLineNo, 0 );
+			const LRESULT linestart = SendMessage(m_hwndScintilla, SCI_POSITIONFROMLINE, CurrentLineNo, 0 );
 			if ( (wordstart - linestart) >= t ) return false;
 		}
 	}
@@ -1916,7 +1916,7 @@ void CodeViewer::szUpper(char * const incstr)
 // Makes sure what is found has only VBS Chars in..
 int CodeViewer::SureFind(const string &LineIn, const string &ToFind)
 {
-	const int Pos = LineIn.find(ToFind);
+	const size_t Pos = LineIn.find(ToFind);
 	if (Pos == -1) return -1;
 	const char EndChr = LineIn[Pos + ToFind.length() ];
 	int IsValidVBChr = VBValidChars.find( EndChr );
@@ -1985,7 +1985,7 @@ bool CodeViewer::ParseStructureName(vector<UserData> *ListIn, UserData ud,
 			ud.UniqueKey = lowerCase( ud.KeyName ) + CurrentParentKey + "\0";
 			ud.UniqueParent = CurrentParentKey;
 			FindOrInsertUD(ListIn, ud);
-			int iCurParent = GetUDPointerfromUniqueKey(ListIn, CurrentParentKey);
+			size_t iCurParent = GetUDPointerfromUniqueKey(ListIn, CurrentParentKey);
 			if (CurrentParentKey.size() !=0 && ud.UniqueKey.size() != 0)
 			{
 				ListIn->at(iCurParent).Children.push_back(ud.UniqueKey);//add child to parent
@@ -2023,7 +2023,7 @@ bool CodeViewer::ParseStructureName(vector<UserData> *ListIn, UserData ud,
 		{
 			ud.UniqueKey = lowerCase(ud.KeyName) + "\0";
 			ud.UniqueParent = "";
-			int iCurParent = FindOrInsertUD( ListIn, ud);
+			size_t iCurParent = FindOrInsertUD( ListIn, ud);
 			//if (iCurParent == -1)
 			//{
 			//	ShowError("Parent == -1");
