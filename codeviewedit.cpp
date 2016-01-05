@@ -78,7 +78,7 @@ int UserData::FindUD(vector<UserData>* ListIn, string &strIn, vector<UserData>::
 	//Usually (but not always) FindUDbyKey returns top of the list so its fast
 	const string strSearchData = lowerCase(strIn);
 	string strTableData = "";
-	const int SearchWidth = strSearchData.size();
+	const size_t SearchWidth = strSearchData.size();
 	while (true)
 	{
 		iNewPos-- ;
@@ -106,11 +106,10 @@ int UserData::FindUD(vector<UserData>* ListIn, string &strIn, vector<UserData>::
 
 //Finds the closest UD from CurrentLine in ListIn
 //On entry CurrentIdx must be set to the UD in the line
-int UserData::FindClosestUD(vector<UserData>* ListIn, const int &CurrentLine, const int &CurrentIdx)
+int UserData::FindClosestUD(vector<UserData>* ListIn, const int CurrentLine, const int CurrentIdx)
 {
-
 	const string strSearchData = lowerCase(ListIn->at(CurrentIdx).KeyName);
-	const int SearchWidth = strSearchData.size();
+	const size_t SearchWidth = strSearchData.size();
 	//Find the start of other instances of strIn by crawling up list
 	int iNewPos = CurrentIdx;
 	string strTableData = "";
@@ -181,7 +180,7 @@ int UserData::FindUDbyKey(vector<UserData>* ListIn, const string &strIn, vector<
 		UDiterOut = ListIn->begin() + iCurPos;
 		PosOut = iCurPos;
 	}
-	return result ;
+	return result;
 }
 
 //Returns current Index of strIn in ListIn based on UniqueKey, or -1 if not found
@@ -215,7 +214,7 @@ int UserData::UDKeyIndex(vector<UserData>* ListIn, const string &strIn)
 	} 
 	///TODO: neads to consider children?
 	if (result == 0)
-		return iCurPos ;
+		return iCurPos;
 	else
 		return -1;
 }
@@ -251,7 +250,7 @@ int UserData::UDIndex(vector<UserData>* ListIn, const string &strIn)
 	} 
 	///TODO: neads to consider children?
 	if (result == 0)
-		return iCurPos ;
+		return iCurPos;
 	else
 		return -1;
 }
@@ -260,8 +259,8 @@ UserData UserData::GetUDfromUniqueKey(vector<UserData>* ListIn, const string &Un
 {
 	UserData RetVal;
 	RetVal.eTyping = eUnknown;
-	int i = 0;
-	const int ListSize = ListIn->size();
+	size_t i = 0;
+	const size_t ListSize = ListIn->size();
 	while ( (RetVal.eTyping == eUnknown) && (i < ListSize) )
 	{
 		if (UniKey == ListIn->at(i).UniqueKey)
@@ -273,26 +272,24 @@ UserData UserData::GetUDfromUniqueKey(vector<UserData>* ListIn, const string &Un
 	return RetVal;
 }
 //TODO: Needs speeding up.
-int UserData::GetUDPointerfromUniqueKey(vector<UserData>* ListIn, const string &UniKey)
+size_t UserData::GetUDPointerfromUniqueKey(vector<UserData>* ListIn, const string &UniKey)
 {
-	UserData RetVal;
-	RetVal.eTyping = eUnknown;
-	int i = 0;
-	const int ListSize = ListIn->size();
-	while ( (RetVal.eTyping == eUnknown) && (i < ListSize) )
+	size_t i = 0;
+	const size_t ListSize = ListIn->size();
+	while (i < ListSize)
 	{
 		if (UniKey == ListIn->at(i).UniqueKey)
 		{
 			return i;
 		}
-		else ++i;
+		++i;
 	}
 	return -1;
 }
 
 //Assumes case insensitive sorted list
 //Returns index or insertion point (-1 == error)
-int UserData::FindOrInsertUD(vector<UserData>* ListIn, UserData &udIn)
+size_t UserData::FindOrInsertUD(vector<UserData>* ListIn, UserData &udIn)
 {
 	if (ListIn->size() == 0)	//First in
 	{

@@ -401,7 +401,7 @@ STDMETHODIMP ScriptGlobalTable::SaveValue(BSTR TableName, BSTR ValueName, VARIAN
 
    DWORD writ;
 
-   pstmValue->Write((WCHAR *)bstr, lstrlenW((WCHAR *)bstr) * sizeof(WCHAR), &writ);
+   pstmValue->Write((WCHAR *)bstr, lstrlenW((WCHAR *)bstr) * (int)sizeof(WCHAR), &writ);
 
    SysFreeString(bstr);
 
@@ -461,7 +461,7 @@ STDMETHODIMP ScriptGlobalTable::LoadValue(BSTR TableName, BSTR ValueName, VARIAN
 
    DWORD read;
 
-   hr = pstmValue->Read(wzT, size * sizeof(WCHAR), &read);
+   hr = pstmValue->Read(wzT, size * (int)sizeof(WCHAR), &read);
    wzT[size] = L'\0';
 
    pstmValue->Release();
@@ -2625,7 +2625,7 @@ HRESULT PinTable::WriteInfoValue(IStorage* pstg, WCHAR *wzName, char *szValue, H
       WCHAR *wzT = new WCHAR[len + 1];
       MultiByteToWideChar(CP_ACP, 0, szValue, -1, wzT, len + 1);
 
-      bw.WriteBytes(wzT, len*sizeof(WCHAR), &writ);
+      bw.WriteBytes(wzT, len*(int)sizeof(WCHAR), &writ);
       delete[] wzT;
       pstm->Release();
       pstm = NULL;
@@ -2708,7 +2708,7 @@ HRESULT PinTable::ReadInfoValue(IStorage* pstg, WCHAR *wzName, char **pszValue, 
       STATSTG ss;
       pstm->Stat(&ss, STATFLAG_NONAME);
 
-      const int len = ss.cbSize.LowPart / sizeof(WCHAR);
+      const int len = ss.cbSize.LowPart / (DWORD)sizeof(WCHAR);
       WCHAR *wzT = new WCHAR[len + 1];
       *pszValue = new char[len + 1];
 
@@ -2930,7 +2930,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
          mats[i].bOpacityActive_fEdgeAlpha |= ((unsigned char)(clamp(m->m_fEdgeAlpha, 0.f, 1.f)*127.f)) << 1;
          strcpy_s(mats[i].szName, m->m_szName);
       }
-      bw.WriteStruct(FID(MATE), mats, sizeof(SaveMaterial)*m_materials.Size());
+      bw.WriteStruct(FID(MATE), mats, (int)sizeof(SaveMaterial)*m_materials.Size());
       free(mats);
    }
    // HACK!!!! - Don't save special values when copying for undo.  For instance, don't reset the code.
@@ -3798,7 +3798,7 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(MATE))
    {
       SaveMaterial *mats = (SaveMaterial*)malloc(sizeof(SaveMaterial)*m_numMaterials);
-      pbr->GetStruct(mats, sizeof(SaveMaterial)*m_numMaterials);
+      pbr->GetStruct(mats, (int)sizeof(SaveMaterial)*m_numMaterials);
 
       for(int i = 0; i < m_materials.size(); ++i)
           delete m_materials.ElementAt(i);
@@ -3854,7 +3854,7 @@ bool PinTable::ExportSound(HWND hwndListView, PinSound *pps, char *szfilename)
       // Write the wave format data.
       int i = 16;
       mmioWrite(hmmio, (char *)&i, 4);
-      mmioWrite(hmmio, (char*)&wfx, sizeof(wfx) - 2); //END OF CORRECTION
+      mmioWrite(hmmio, (char*)&wfx, (LONG)sizeof(wfx) - 2); //END OF CORRECTION
 
       mmioWrite(hmmio, "data", 4);						//data chunk
       i = pps->m_cdata; mmioWrite(hmmio, (char *)&i, 4);	// data size bytes
@@ -5017,7 +5017,7 @@ void PinTable::ExportBlueprint()
    ZeroMemory(&bmfh, sizeof(bmfh));
    bmfh.bfType = 'M' << 8 | 'B';
    bmfh.bfSize = sizeof(bmfh) + sizeof(BITMAPINFOHEADER) + totallinebytes*bmheight;
-   bmfh.bfOffBits = sizeof(bmfh) + sizeof(BITMAPINFOHEADER);
+   bmfh.bfOffBits = (DWORD)sizeof(bmfh) + (DWORD)sizeof(BITMAPINFOHEADER);
 
    DWORD foo;
    WriteFile(hfile, &bmfh, sizeof(bmfh), &foo, NULL);
@@ -6540,7 +6540,7 @@ void PinTable::ReImportImage(HWND hwndListView, Texture *ppi, char *filename)
    ppi->m_height = tex->height();
    ppi->m_pdsBuffer = tex;
 
-   lstrcpyn(ppi->m_szPath, filename, MAX_PATH);
+   strncpy_s(ppi->m_szPath, filename, MAX_PATH);
 }
 
 
@@ -6570,7 +6570,7 @@ bool PinTable::ExportImage(HWND hwndListView, Texture *ppi, char *szfilename)
       bmpf.bfSize = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) + surfheight*bmplnsize;
       bmpf.bfReserved1 = 0;
       bmpf.bfReserved2 = 0;
-      bmpf.bfOffBits = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER);
+      bmpf.bfOffBits = (DWORD)sizeof(BITMAPFILEHEADER) + (DWORD)sizeof(BITMAPINFOHEADER);
 
       DWORD write;
       // write BMP file header	
@@ -6672,11 +6672,11 @@ void PinTable::ImportImage(HWND hwndListView, char *filename)
       end = len - 1;
    }
 
-   lstrcpyn(ppi->m_szName, &filename[begin], MAXTOKEN);
+   strncpy_s(ppi->m_szName, &filename[begin], MAXTOKEN);
 
    ppi->m_szName[end - begin] = 0;
 
-   lstrcpyn(ppi->m_szInternalName, ppi->m_szName, MAXTOKEN);
+   strncpy_s(ppi->m_szInternalName, ppi->m_szName, MAXTOKEN);
 
    CharLowerBuff(ppi->m_szInternalName, lstrlen(ppi->m_szInternalName));
 
@@ -7231,7 +7231,7 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
       }
       else
       {
-         DWORD cwch = sizeof(m_vcollection.ElementAt(dwCookie)->m_wzName) + sizeof(DWORD); //!! +DWORD?
+         size_t cwch = sizeof(m_vcollection.ElementAt(dwCookie)->m_wzName) + sizeof(DWORD); //!! +DWORD?
          wzDst = (WCHAR *)CoTaskMemAlloc(cwch);
          if (wzDst == NULL)
             ShowError("DISPID_Collection alloc failed (2)");
@@ -7275,7 +7275,7 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
             ShowError("DISPID_Surface alloc failed (2)");
          }
          else
-            WideStrNCopy(bstr, wzDst, cwch*sizeof(WCHAR));
+            WideStrNCopy(bstr, wzDst, cwch*(DWORD)sizeof(WCHAR));
       }
    }
    break;

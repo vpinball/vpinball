@@ -1263,7 +1263,7 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
    {
       m_mesh.m_vertices.clear();
       m_mesh.m_vertices.resize(numVertices);
-      pbr->GetStruct(&m_mesh.m_vertices[0], sizeof(Vertex3D_NoTex2)*numVertices);
+      pbr->GetStruct(&m_mesh.m_vertices[0], (int)sizeof(Vertex3D_NoTex2)*numVertices);
    }
 #ifdef COMPRESS_MESHES
    else if (id == FID(M3CY))
@@ -1297,11 +1297,11 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
    {
       m_mesh.m_indices.resize(numIndices);
       if (numVertices > 65535)
-         pbr->GetStruct(&m_mesh.m_indices[0], sizeof(unsigned int)*numIndices);
+         pbr->GetStruct(&m_mesh.m_indices[0], (int)sizeof(unsigned int)*numIndices);
       else
       {
          std::vector<WORD> tmp(numIndices);
-         pbr->GetStruct(&tmp[0], sizeof(WORD)*numIndices);
+         pbr->GetStruct(&tmp[0], (int)sizeof(WORD)*numIndices);
          for (int i = 0; i < numIndices; ++i)
             m_mesh.m_indices[i] = tmp[i];
       }

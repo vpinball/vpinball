@@ -2537,10 +2537,10 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
        * could also work.
        */
       if (rand_mt_01() < 0.5f) // swap order of contact handling randomly
-         for (unsigned i = 0; i < m_contacts.size(); ++i)
+         for (size_t i = 0; i < m_contacts.size(); ++i)
             m_contacts[i].obj->Contact(m_contacts[i], hittime);
       else
-         for (unsigned i = m_contacts.size() - 1; i != -1; --i)
+         for (size_t i = m_contacts.size() - 1; i != -1; --i)
             m_contacts[i].obj->Contact(m_contacts[i], hittime);
 
       m_contacts.clear();

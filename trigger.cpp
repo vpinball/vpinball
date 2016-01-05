@@ -753,7 +753,7 @@ void Trigger::RenderSetup(RenderDevice* pd3dDevice)
    if (vertexBuffer)
       vertexBuffer->release();
    ppin3d->m_pd3dDevice->CreateVertexBuffer(m_numVertices, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer);
-   NumVideoBytes += m_numVertices*sizeof(Vertex3D_NoTex2);
+   NumVideoBytes += m_numVertices*(int)sizeof(Vertex3D_NoTex2);
 
    GenerateMesh();
    Vertex3D_NoTex2 *buf;

@@ -92,7 +92,7 @@ public:
 
 private:
    std::vector<VertexBuffer*> m_buffers;
-   unsigned m_curIdx;
+   size_t m_curIdx;
 };
 
 ////////////////////////////////////////////////////////////////////////////////

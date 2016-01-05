@@ -185,7 +185,7 @@ HRESULT BiffWriter::WriteString(int id, char *szvalue)
    HRESULT hr;
    int len = lstrlen(szvalue);
 
-   if (FAILED(hr = WriteRecordSize(sizeof(int) * 2 + len)))
+   if (FAILED(hr = WriteRecordSize((int)sizeof(int) * 2 + len)))
       return hr;
 
    if (FAILED(hr = WriteBytes(&id, sizeof(int), &writ)))
@@ -203,9 +203,9 @@ HRESULT BiffWriter::WriteWideString(int id, WCHAR *wzvalue)
 {
    ULONG writ = 0;
    HRESULT hr;
-   int len = lstrlenW(wzvalue) * sizeof(WCHAR);
+   int len = lstrlenW(wzvalue) * (int)sizeof(WCHAR);
 
-   if (FAILED(hr = WriteRecordSize(sizeof(int) * 2 + len)))
+   if (FAILED(hr = WriteRecordSize((int)sizeof(int) * 2 + len)))
       return hr;
 
    if (FAILED(hr = WriteBytes(&id, sizeof(int), &writ)))
@@ -256,7 +256,7 @@ HRESULT BiffWriter::WriteStruct(int id, void *pvalue, int size)
    ULONG writ = 0;
    HRESULT hr;
 
-   if (FAILED(hr = WriteRecordSize(sizeof(int) + size)))
+   if (FAILED(hr = WriteRecordSize((int)sizeof(int) + size)))
       return hr;
 
    if (FAILED(hr = WriteBytes(&id, sizeof(int), &writ)))
@@ -346,7 +346,7 @@ HRESULT BiffReader::GetString(char *szvalue)
    if (FAILED(hr = ReadBytes(&len, sizeof(int), &read)))
       return hr;
 
-   m_bytesinrecordremaining -= len + sizeof(int);
+   m_bytesinrecordremaining -= len + (int)sizeof(int);
 
    hr = ReadBytes(szvalue, len, &read);
    szvalue[len] = 0;
@@ -362,7 +362,7 @@ HRESULT BiffReader::GetWideString(WCHAR *wzvalue)
    if (FAILED(hr = ReadBytes(&len, sizeof(int), &read)))
       return hr;
 
-   m_bytesinrecordremaining -= len + sizeof(int);
+   m_bytesinrecordremaining -= len + (int)sizeof(int);
 
    hr = ReadBytes(wzvalue, len, &read);
    wzvalue[len / sizeof(WCHAR)] = 0;

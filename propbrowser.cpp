@@ -720,7 +720,7 @@ void SmartBrowser::GetControlValue(HWND hwndControl)
       {
          char szT[512];
 
-         const int style = GetWindowLong(hwndControl, GWL_STYLE);
+         const LONG_PTR style = GetWindowLongPtr(hwndControl, GWL_STYLE);
 
          if (SUCCEEDED(VariantChangeType(&varResult, &var, 0, VT_BSTR)))
          {

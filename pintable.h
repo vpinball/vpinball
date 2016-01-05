@@ -730,7 +730,7 @@ public:
 
    bool  m_activeLayers[8];
    bool  m_toggleAllLayers;
-   bool  m_savingActive;
+   volatile bool m_savingActive;
 
    bool  m_renderSolid;
 

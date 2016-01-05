@@ -2,8 +2,6 @@
 // Von Microsoft Visual C++ generierte Includedatei.
 // Verwendet durch vpinball_eng.rc
 //
-#define VP_VERSION_MINOR                0
-#define VP_VERSION_REV                  0
 #define DISPID_Textbox_BackColor        1
 #define DISPID_Textbox_FontColor        2
 #define DISPID_Light_State              2
@@ -25,7 +23,6 @@
 #define DISPID_Decal_SizingType         9
 #define DISPID_Surface_FaceColor        10
 #define DISPID_Light_BlinkInterval      10
-#define VP_VERSION_MAJOR                10
 #define DISPID_Decal_Font               12
 #define DISPID_ROTRA1                   12
 #define DISPID_ROTRA2                   13
