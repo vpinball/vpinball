@@ -1,3 +1,8 @@
+VP 10.1.0 Changelog
+------------------------
+
+- add abilty to show the image size in the image manager for each texture
+
 VP 10.0.0 Changelog
 ------------------------
 

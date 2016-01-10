@@ -192,6 +192,7 @@
 #define IDS_LOCK                        177
 #define IDS_MISC                        178
 #define ID_LOCK                         179
+#define IDS_IMAGESIZE                   179
 #define IDS_LIGHTSEQ_DESC               180
 #define IDR_LIGHT_SEQ                   181
 #define IDS_VISUALS                     182
