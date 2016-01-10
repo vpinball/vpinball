@@ -6697,16 +6697,20 @@ void PinTable::ListImages(HWND hwndListView)
 
 int PinTable::AddListImage(HWND hwndListView, Texture *ppi)
 {
+   char sizeString[MAXTOKEN] = { 0 };
+
    LVITEM lvitem;
    lvitem.mask = LVIF_DI_SETITEM | LVIF_TEXT | LVIF_PARAM;
    lvitem.iItem = 0;
    lvitem.iSubItem = 0;
    lvitem.pszText = ppi->m_szName;
    lvitem.lParam = (size_t)ppi;
-
+   
+   _snprintf_s(sizeString, MAXTOKEN, "%ix%i", ppi->m_width, ppi->m_height);
    const int index = ListView_InsertItem(hwndListView, &lvitem);
 
    ListView_SetItemText(hwndListView, index, 1, ppi->m_szPath);
+   ListView_SetItemText(hwndListView, index, 2, sizeString);
 
    return index;
 }

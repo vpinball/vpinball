@@ -2836,6 +2836,11 @@ INT_PTR CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
       lvcol.cx = 200;
       ListView_InsertColumn(GetDlgItem(hwndDlg, IDC_SOUNDLIST), 1, &lvcol);
 
+      LocalString ls3(IDS_IMAGESIZE);
+      lvcol.pszText = ls3.m_szbuffer; // = "Image Size";
+      lvcol.cx = 100;
+      ListView_InsertColumn(GetDlgItem(hwndDlg, IDC_SOUNDLIST), 2, &lvcol);
+
       pt = (CCO(PinTable) *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 
       pt->ListImages(GetDlgItem(hwndDlg, IDC_SOUNDLIST));
