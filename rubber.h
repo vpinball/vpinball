@@ -153,7 +153,7 @@ private:
 
    void RenderObject(RenderDevice *pd3dDevice);
    void UpdateRubber(RenderDevice *pd3dDevice, bool updateVB = true);
-   void GenerateMesh(int _accuracy = -1);
+   void GenerateMesh(int _accuracy = -1, bool createHitShape=false);
    void DrawRubberMesh(Sur * const psur);
 
    // IRamp

@@ -495,7 +495,7 @@ void Rubber::GetHitShapes(Vector<HitObject> * const pvho)
 {
    std::set< std::pair<unsigned, unsigned> > addedEdges;
 
-   GenerateMesh(6);
+   GenerateMesh(6, true);
    UpdateRubber(NULL, false);
 
    // add collision triangles and edges
@@ -1339,7 +1339,7 @@ void Rubber::ExportMesh(FILE *f)
       WaveFrontObj_UpdateFaceOffset(m_numVertices);
    }
 }
-void Rubber::GenerateMesh(int _accuracy)
+void Rubber::GenerateMesh(int _accuracy, bool createHitShape)
 {
    int accuracy;
    if (m_ptable->GetDetailLevel() < 5)
@@ -1397,9 +1397,14 @@ void Rubber::GenerateMesh(int _accuracy)
 	  for (int j = 0; j < numSegments; j++, index++)
       {
 		 const float v = ((float)j + u) * invNS;
-         const Vertex3Ds tmp = GetRotatedAxis((float)j*(360.0f * invNS), tangent, normal) * ((float)m_d.m_thickness*0.5f);
+         Vertex3Ds tmp = GetRotatedAxis((float)j*((360.0f) * invNS), tangent, normal) * ((float)m_d.m_thickness*0.5f);
          m_vertices[index].x = middlePoints[i].x + tmp.x;
          m_vertices[index].y = middlePoints[i].y + tmp.y;
+         if (createHitShape && (j==0 || j==3) )
+         {
+             // for a hit shape create a more rectangle mesh and not a smooth one
+             tmp.z *= 0.6f;
+         }
          m_vertices[index].z = height + tmp.z;
          //texel
          m_vertices[index].tu = u;
