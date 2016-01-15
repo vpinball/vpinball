@@ -126,7 +126,8 @@ typedef enum _NVAPI_D3D_SETRESOURCEHINT_CATEGORY
 
 
 //
-//  NVAPI_D3D_SRH_SLI_APP_CONTROLLED_INTERFRAME_CONTENT_SYNC: 
+//  NVAPI_D3D_SRH_SLI_APP_CONTROLLED_INTERFRAME_CONTENT_SYNC:
+//  NVAPI_D3D_SRH_SLI_ASK_FOR_BROADCAST_USING: 
 
 
 //! \ingroup dx
@@ -135,9 +136,15 @@ typedef enum _NVAPI_D3D_SETRESOURCEHINT_CATEGORY
 //!  Default value: 0 \n
 //!  Explanation: If the value is 1, the driver will not track any rendering operations that would mark this resource as dirty, 
 //!  avoiding any form of synchronization across frames rendered in parallel in multiple GPUs in AFR mode.
+//! 
+//!  NVAPI_D3D_SRH_SLI_ASK_FOR_BROADCAST_USAGE: Valid values : 0 or 1 \n
+//!  Default value: 0 \n
+//!  Explanation: If the value is 1, the driver will try to perform operations which involved target resource in broadcast, 
+//!  where its possible. Hint is static and must be set before resource starts using. 
 typedef enum _NVAPI_D3D_SETRESOURCEHINT_SLI
 {
-    NVAPI_D3D_SRH_SLI_APP_CONTROLLED_INTERFRAME_CONTENT_SYNC = 1
+    NVAPI_D3D_SRH_SLI_APP_CONTROLLED_INTERFRAME_CONTENT_SYNC = 1,
+    NVAPI_D3D_SRH_SLI_ASK_FOR_BROADCAST_USAGE = 2
 }  NVAPI_D3D_SETRESOURCEHINT_SLI;
 
 //! \ingroup dx
