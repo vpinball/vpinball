@@ -70,6 +70,7 @@ typedef signed long        NvS32; /* -2147483648 to 2147483647  */
 typedef signed int         NvS32; /* -2147483648 to 2147483647 */  
 #endif
 
+#ifndef __unix
 // mac os 32-bit still needs this
 #if ( (defined(macintosh) && defined(__LP64__) && (__NVAPI_RESERVED0__)) || \
       (!defined(macintosh) && defined(__NVAPI_RESERVED0__)) ) 
@@ -77,11 +78,21 @@ typedef unsigned int       NvU32; /* 0 to 4294967295                         */
 #else
 typedef unsigned long      NvU32; /* 0 to 4294967295                         */
 #endif
+#else
+typedef unsigned int       NvU32; /* 0 to 4294967295                         */
+#endif
 
+typedef unsigned long    temp_NvU32; /* 0 to 4294967295                         */
 typedef signed   short   NvS16;
 typedef unsigned short   NvU16;
 typedef unsigned char    NvU8;
 typedef signed   char    NvS8;
+
+/* Boolean type */
+typedef NvU8 NvBool;
+#define NV_TRUE           ((NvBool)(0 == 0))
+#define NV_FALSE          ((NvBool)(0 != 0))
+
 
 typedef struct _NV_RECT
 {
@@ -340,6 +351,13 @@ typedef enum _NvAPI_Status
     NVAPI_ECID_KEY_VERIFICATION_FAILED          = -198,    //!< The encrypted public key verification has failed.
     NVAPI_FIRMWARE_OUT_OF_DATE                  = -199,    //!< The device's firmware is out of date.
     NVAPI_FIRMWARE_REVISION_NOT_SUPPORTED       = -200,    //!< The device's firmware is not supported.
+    NVAPI_LICENSE_CALLER_AUTHENTICATION_FAILED  = -201,    //!< The caller is not authorized to modify the License.		
+    NVAPI_D3D_DEVICE_NOT_REGISTERED             = -202,    //!< The user tried to use a deferred context without registering the device first 	 
+    NVAPI_RESOURCE_NOT_ACQUIRED                 = -203,    //!< Head or SourceId was not reserved for the VR Display before doing the Modeset.
+    NVAPI_TIMING_NOT_SUPPORTED                  = -204,    //!< Provided timing is not supported.
+    NVAPI_HDCP_ENCRYPTION_FAILED                = -205,    //!< HDCP Encryption Failed for the device. Would be applicable when the device is HDCP Capable.
+    NVAPI_PCLK_LIMITATION_FAILED                = -206,    //!< Provided mode is over sink device pclk limitation.
+    NVAPI_NO_CONNECTOR_FOUND                    = -207,    //!< No connector on GPU found.
 } NvAPI_Status;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -388,9 +406,23 @@ typedef struct
 
 } NV_DISPLAY_DRIVER_MEMORY_INFO_V2;
 
+//! \ingroup driverapi
+//! Used in NvAPI_GPU_GetMemoryInfo().
+typedef struct
+{
+    NvU32   version;                           //!< Version info
+    NvU32   dedicatedVideoMemory;              //!< Size(in kb) of the physical framebuffer.
+    NvU32   availableDedicatedVideoMemory;     //!< Size(in kb) of the available physical framebuffer for allocating video memory surfaces.
+    NvU32   systemVideoMemory;                 //!< Size(in kb) of system memory the driver allocates at load time.
+    NvU32   sharedSystemMemory;                //!< Size(in kb) of shared system memory that driver is allowed to commit for surfaces across all allocations.
+    NvU32   curAvailableDedicatedVideoMemory;  //!< Size(in kb) of the current available physical framebuffer for allocating video memory surfaces.
+	NvU32   dedicatedVideoMemoryEvictionsSize; //!< Size(in kb) of the total size of memory released as a result of the evictions.
+	NvU32   dedicatedVideoMemoryEvictionCount; //!< Indicates the number of eviction events that caused an allocation to be removed from dedicated video memory to free GPU
+	                                           //!< video memory to make room for other allocations.
+} NV_DISPLAY_DRIVER_MEMORY_INFO_V3;
 
 //! \ingroup driverapi
-typedef NV_DISPLAY_DRIVER_MEMORY_INFO_V2 NV_DISPLAY_DRIVER_MEMORY_INFO;
+typedef NV_DISPLAY_DRIVER_MEMORY_INFO_V3 NV_DISPLAY_DRIVER_MEMORY_INFO;
 
 //! \ingroup driverapi
 //! Macro for constructing the version field of NV_DISPLAY_DRIVER_MEMORY_INFO_V1
@@ -401,7 +433,11 @@ typedef NV_DISPLAY_DRIVER_MEMORY_INFO_V2 NV_DISPLAY_DRIVER_MEMORY_INFO;
 #define NV_DISPLAY_DRIVER_MEMORY_INFO_VER_2  MAKE_NVAPI_VERSION(NV_DISPLAY_DRIVER_MEMORY_INFO_V2,2)
 
 //! \ingroup driverapi
-#define NV_DISPLAY_DRIVER_MEMORY_INFO_VER    NV_DISPLAY_DRIVER_MEMORY_INFO_VER_2
+//! Macro for constructing the version field of NV_DISPLAY_DRIVER_MEMORY_INFO_V3
+#define NV_DISPLAY_DRIVER_MEMORY_INFO_VER_3  MAKE_NVAPI_VERSION(NV_DISPLAY_DRIVER_MEMORY_INFO_V3,3)
+
+//! \ingroup driverapi
+#define NV_DISPLAY_DRIVER_MEMORY_INFO_VER    NV_DISPLAY_DRIVER_MEMORY_INFO_VER_3
 
 
 
