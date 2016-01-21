@@ -303,7 +303,7 @@ Const VPinMAMEDriverVer = 3.49
 '	On Error Resume Next
 '		With Controller
 '			.GameName = cGameName
-'			If Err Then MsgBox "Can't start Game" & cGameName & vbNewLine & Err.Description : Exit Sub
+'			If Err Then MsgBox "Can't start Game " & cGameName & vbNewLine & Err.Description : Exit Sub
 '			.SplashInfoLine = cCredits
 '			.HandleMechanics = 0
 '			.ShowDMDOnly = True : .ShowFrame = False : .ShowTitle = False
