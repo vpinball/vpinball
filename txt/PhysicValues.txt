@@ -1,12 +1,12 @@
-This small document should give you a rough idea what kind of values you should use for the physics settings of some of the VP elements. All values are just recommendations!
-The "Scatter Angle" is used in a calculation together with the "Global Difficulty Level" and to have a better global control for all elements set the "Scatter Angle" elements to 5
-and limit the behavior/impact with the "Global Difficulty Level" by setting it to 0.2+ to control the overall playing difficulty.
+This small document should give you a rough idea of what kind of values you should use for the physics settings of some of the VP elements. All values are just recommendations!
+The "Scatter Angle" (basically the 'randomness' of physics interactions) is used in calculations together with the "Global Difficulty Level", so to have a better global control
+for all elements, set the "Scatter Angle" of elements to 5 and limit the behavior/impact of the "Global Difficulty Level" by setting it to 0.2+ to control the overall gameplay difficulty.
 
 Playfield:
 ----------
 Gravity Constant   : 0.97 - 1.0
-Playfield Friction : 0.075+       (This depends how fast the ball should roll on the playfield. 
-                                   EM tables are usually slower than modern tables. So for slower ball movements raise this value)
+Playfield Friction : 0.075+       (This depends on how fast the ball should roll on the playfield. 
+                                   EM tables are usually slower than modern tables. So for slower ball movements raise this value and/or modify the table slope)
 Playfield Elasticity: 0.25
 
 
@@ -16,25 +16,25 @@ Mass               : 1.0
 Strength           : 1200-1800 (for EM tables) 2200-2800(for modern tables)
 Elasticity         : 0.8
 Elasticity Falloff : 0.43
-Friction		   : 0.5 or 0.6
+Friction           : 0.5 or 0.6
 Return Strength    : 0.058
 Coil Up Ramp       : 2.4 - 3.5
 
 Rubbers (default):
---------
+------------------
 Elasticity         : 0.8
 Elasticity Falloff : 0.4
 Friction           : 0.5 - 0.6
 Scatter Angle      : 5
 
-Rubber for posts (the yellow or black kind)
--------------------------------------------
+Rubber for posts (the yellow or black kind):
+--------------------------------------------
 Elasticity         : 0.65 - 0.75
 Friction           : 0.65
 Scatter Angle      : 5
 
 Walls as metal side walls:
-----------------------------
+--------------------------
 Elasticity         : 0.3
 Friction           : 0.15 - 0.3
 Scatter Angle      : 5
@@ -52,7 +52,7 @@ Friction           : 0.2 - 0.3
 Scatter Angle      : 5
 
 Plastic drop targets:
---------------------
+---------------------
 Elasticity         : 0.35 - 0.4
 Friction           : 0.15
 Scatter Angle      : 5
