@@ -1986,7 +1986,7 @@ bool CodeViewer::ParseStructureName(vector<UserData> *ListIn, UserData ud,
 			ud.UniqueParent = CurrentParentKey;
 			FindOrInsertUD(ListIn, ud);
 			size_t iCurParent = GetUDPointerfromUniqueKey(ListIn, CurrentParentKey);
-			if (CurrentParentKey.size() !=0 && ud.UniqueKey.size() != 0)
+			if (CurrentParentKey.size() !=0 && ud.UniqueKey.size() != 0 && iCurParent<ListIn->size())
 			{
 				ListIn->at(iCurParent).Children.push_back(ud.UniqueKey);//add child to parent
 			}
@@ -2008,7 +2008,7 @@ bool CodeViewer::ParseStructureName(vector<UserData> *ListIn, UserData ud,
 					ud.UniqueKey = lowerCase(ud.KeyName) + CurrentParentKey + "\0";
 					ud.UniqueParent = CurrentParentKey;
 					FindOrInsertUD(ListIn, ud);
-					if (CurrentParentKey.size() != 0)
+					if (CurrentParentKey.size() != 0 && iCurParent<ListIn->size())
 					{
 						ListIn->at(iCurParent).Children.push_back(ud.UniqueKey);//add child to parent
 					}	
