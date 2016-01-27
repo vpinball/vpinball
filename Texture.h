@@ -27,6 +27,7 @@ public:
 
    int m_width;
    int m_height;
+   int m_realWidth, m_realHeight;
    Format m_format;
    std::vector<BYTE> m_data;
 
@@ -122,6 +123,8 @@ private:
    {
       m_width = tex->width();
       m_height = tex->height();
+      m_realWidth = tex->m_realWidth;
+      m_realHeight = tex->m_realHeight;
    }
 
 public:
@@ -129,6 +132,7 @@ public:
    // width and height of texture can be different than width and height
    // of m_pdsBuffer, since the surface can be limited to smaller sizes by the user
    int m_width, m_height;
+   int m_realWidth, m_realHeight;
    float m_alphaTestValue;
    BaseTexture* m_pdsBuffer;
 
