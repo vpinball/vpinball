@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
-// Von Microsoft Visual C++ generierte Includedatei.
-// Verwendet durch vpinball_eng.rc
+// Microsoft Visual C++ generated include file.
+// Used by vpinball_eng.rc
 //
 #define DISPID_Textbox_BackColor        1
 #define DISPID_Textbox_FontColor        2
@@ -869,6 +869,11 @@
 #define ID_SHOWTOOLTIP                  4001
 #define ID_SHOWAUTOCOMPLETE             4001
 #define ID_SCRIPT_PREFERENCES           4002
+#define ID_EXPORT_BACKGLASSPOV          4003
+#define ID_FILE_IMPORT                  4004
+#define ID_IMPORT_BACKGLASSPOV          4005
+#define ID_IMPORT_BACKDROPPOV           4006
+#define ID_EXPORT_BACKDROPPOV           4007
 #define IDM_NEW                         32768
 #define IDM_OPEN                        32769
 #define IDM_CLOSE                       32770
@@ -973,7 +978,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        620
-#define _APS_NEXT_COMMAND_VALUE         4003
+#define _APS_NEXT_COMMAND_VALUE         4008
 #define _APS_NEXT_CONTROL_VALUE         723
 #define _APS_NEXT_SYMED_VALUE           188
 #endif

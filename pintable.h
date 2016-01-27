@@ -322,6 +322,8 @@ public:
 
    void ExportBlueprint();
    void ExportTableMesh();
+   void ImportBackdropPOV();
+   void ExportBackdropPOV();
 
    //void FireVoidEvent(int dispid);
    void FireKeyEvent(int dispid, int keycode);
