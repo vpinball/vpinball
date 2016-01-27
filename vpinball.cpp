@@ -1192,9 +1192,32 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
          else
             ptCur->ExportTableMesh();
       }
+      break;
    }
-   break;
-
+   case ID_IMPORT_BACKDROPPOV:
+   {
+       ptCur = GetActiveTable();
+       if (ptCur)
+       {
+           if (ptCur->CheckPermissions(DISABLE_TABLE_SAVE))
+               ShowPermissionError();
+           else
+               ptCur->ImportBackdropPOV();
+       }
+       break;
+   }
+   case ID_EXPORT_BACKDROPPOV:
+   {
+       ptCur = GetActiveTable();
+       if (ptCur)
+       {
+           if (ptCur->CheckPermissions(DISABLE_TABLE_SAVE))
+               ShowPermissionError();
+           else
+               ptCur->ExportBackdropPOV();
+       }
+       break;
+   }
    case ID_FILE_EXIT:
       PostMessage(m_hwnd, WM_CLOSE, 0, 0);
       break;

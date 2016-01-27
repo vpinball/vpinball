@@ -5,6 +5,12 @@
 #include <algorithm>
 #include <atlsafe.h>
 #include "objloader.h"
+#include <rapidxml.hpp>
+#include <rapidxml_print.hpp>
+#include <fstream>
+#include <sstream>
+
+using namespace rapidxml;
 
 #define HASHLENGTH 16
 
@@ -5186,6 +5192,185 @@ void PinTable::ExportTableMesh()
    WaveFrontObj_ExportEnd(f);
    MessageBox(NULL, "Export finished!", "Info", MB_OK | MB_ICONEXCLAMATION);
 
+}
+
+void PinTable::ImportBackdropPOV()
+{
+    char szFileName[1024];
+    szFileName[0] = '\0';
+
+    OPENFILENAME ofn;
+    ZeroMemory(&ofn, sizeof(OPENFILENAME));
+    ofn.lStructSize = sizeof(OPENFILENAME);
+    ofn.hInstance = g_hinst;
+    ofn.hwndOwner = g_pvp->m_hwnd;
+    // TEXT
+    ofn.lpstrFilter = "XML file (*.xml)\0*.xml\0";
+    ofn.lpstrFile = szFileName;
+    ofn.nMaxFile = _MAX_PATH;
+    ofn.lpstrDefExt = "xml";
+    ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
+
+    const int ret = GetOpenFileName(&ofn);
+    if (ret == 0)
+        return;
+
+    xml_document<> xmlDoc;
+
+    try
+    {
+        std::stringstream buffer;
+        std::ifstream myFile(szFileName);
+        buffer << myFile.rdbuf();
+        myFile.close();
+
+        std::string content(buffer.str());
+        xmlDoc.parse<0>(&content[0]);
+
+        xml_node<> *root = xmlDoc.first_node("POV");
+        xml_node<> *desktop = root->first_node("desktop");
+        sscanf_s(desktop->first_node("inclination")->value(), "%f", &m_BG_inclination[0]);
+        sscanf_s(desktop->first_node("fov")->value(), "%f", &m_BG_FOV[0]);
+        sscanf_s(desktop->first_node("layback")->value(), "%f", &m_BG_layback[0]);
+        sscanf_s(desktop->first_node("rotation")->value(), "%f", &m_BG_rotation[0]);
+        sscanf_s(desktop->first_node("xscale")->value(), "%f", &m_BG_scalex[0]);
+        sscanf_s(desktop->first_node("yscale")->value(), "%f", &m_BG_scaley[0]);
+        sscanf_s(desktop->first_node("zscale")->value(), "%f", &m_BG_scalez[0]);
+        sscanf_s(desktop->first_node("xoffset")->value(), "%f", &m_BG_xlatex[0]);
+        sscanf_s(desktop->first_node("yoffset")->value(), "%f", &m_BG_xlatey[0]);
+        sscanf_s(desktop->first_node("zoffset")->value(), "%f", &m_BG_xlatez[0]);
+
+        xml_node<> *fullscreen = root->first_node("fullscreen");
+        sscanf_s(fullscreen->first_node("inclination")->value(), "%f", &m_BG_inclination[1]);
+        sscanf_s(fullscreen->first_node("fov")->value(), "%f", &m_BG_FOV[1]);
+        sscanf_s(fullscreen->first_node("layback")->value(), "%f", &m_BG_layback[1]);
+        sscanf_s(fullscreen->first_node("rotation")->value(), "%f", &m_BG_rotation[1]);
+        sscanf_s(fullscreen->first_node("xscale")->value(), "%f", &m_BG_scalex[1]);
+        sscanf_s(fullscreen->first_node("yscale")->value(), "%f", &m_BG_scaley[1]);
+        sscanf_s(fullscreen->first_node("zscale")->value(), "%f", &m_BG_scalez[1]);
+        sscanf_s(fullscreen->first_node("xoffset")->value(), "%f", &m_BG_xlatex[1]);
+        sscanf_s(fullscreen->first_node("yoffset")->value(), "%f", &m_BG_xlatey[1]);
+        sscanf_s(fullscreen->first_node("zoffset")->value(), "%f", &m_BG_xlatez[1]);
+    }
+    catch (...)
+    {
+        ShowError("Error parsing XML file");
+    }
+
+    xmlDoc.clear();
+}
+
+void PinTable::ExportBackdropPOV()
+{
+    OPENFILENAME ofn;
+    memset(m_szObjFileName, 0, MAX_PATH);
+    ZeroMemory(&ofn, sizeof(OPENFILENAME));
+    ofn.lStructSize = sizeof(OPENFILENAME);
+    ofn.hInstance = g_hinst;
+    ofn.hwndOwner = g_pvp->m_hwnd;
+    // TEXT
+    ofn.lpstrFilter = "XML file(*.xml)\0*.xml\0";
+    ofn.lpstrFile = m_szObjFileName;
+    ofn.nMaxFile = _MAX_PATH;
+    ofn.lpstrDefExt = "xml";
+    ofn.Flags = OFN_OVERWRITEPROMPT;
+
+    int ret = GetSaveFileName(&ofn);
+
+    // user canceled
+    if (ret == 0)
+        return;// S_FALSE;
+
+    char strBuf[MAX_PATH];
+    xml_document<> xmlDoc;
+    try
+    {
+        xml_node<>*dcl = xmlDoc.allocate_node(node_declaration);
+        dcl->append_attribute(xmlDoc.allocate_attribute("version", "1.0"));
+        dcl->append_attribute(xmlDoc.allocate_attribute("encoding", "utf-8"));
+        xmlDoc.append_node(dcl);
+
+        //root node
+        xml_node<>*root = xmlDoc.allocate_node(node_element, "POV");
+
+        xml_node<>*desktop = xmlDoc.allocate_node(node_element, "desktop");
+        sprintf_s(strBuf, "%f", m_BG_inclination[0]);
+        xml_node<>*dtIncl = xmlDoc.allocate_node(node_element, "inclination", (new string(strBuf))->c_str());
+        desktop->append_node(dtIncl);
+        sprintf_s(strBuf, "%f", m_BG_FOV[0]);
+        xml_node<>*dtFov = xmlDoc.allocate_node(node_element, "fov", (new string(strBuf))->c_str());
+        desktop->append_node(dtFov);
+        sprintf_s(strBuf, "%f", m_BG_layback[0]);
+        xml_node<>*dtLayback = xmlDoc.allocate_node(node_element, "layback", (new string(strBuf))->c_str());
+        desktop->append_node(dtLayback);
+        sprintf_s(strBuf, "%f", m_BG_rotation[0]);
+        xml_node<>*dtRotation = xmlDoc.allocate_node(node_element, "rotation", (new string(strBuf))->c_str());
+        desktop->append_node(dtRotation);
+        sprintf_s(strBuf, "%f", m_BG_scalex[0]);
+        xml_node<>*dtScalex = xmlDoc.allocate_node(node_element, "xscale", (new string(strBuf))->c_str());
+        desktop->append_node(dtScalex);
+        sprintf_s(strBuf, "%f", m_BG_scaley[0]);
+        xml_node<>*dtScaley = xmlDoc.allocate_node(node_element, "yscale", (new string(strBuf))->c_str());
+        desktop->append_node(dtScaley);
+        sprintf_s(strBuf, "%f", m_BG_scalez[0]);
+        xml_node<>*dtScalez = xmlDoc.allocate_node(node_element, "zscale", (new string(strBuf))->c_str());
+        desktop->append_node(dtScalez);
+        sprintf_s(strBuf, "%f", m_BG_xlatex[0]);
+        xml_node<>*dtOffsetx = xmlDoc.allocate_node(node_element, "xoffset", (new string(strBuf))->c_str());
+        desktop->append_node(dtOffsetx);
+        sprintf_s(strBuf, "%f", m_BG_xlatey[0]);
+        xml_node<>*dtOffsety = xmlDoc.allocate_node(node_element, "yoffset", (new string(strBuf))->c_str());
+        desktop->append_node(dtOffsety);
+        sprintf_s(strBuf, "%f", m_BG_xlatez[0]);
+        xml_node<>*dtOffsetz = xmlDoc.allocate_node(node_element, "zoffset", (new string(strBuf))->c_str());
+        desktop->append_node(dtOffsetz);
+
+        root->append_node(desktop);
+
+        xml_node<>*fullscreen = xmlDoc.allocate_node(node_element, "fullscreen");
+        sprintf_s(strBuf, "%f", m_BG_inclination[1]);
+        xml_node<>*fsIncl = xmlDoc.allocate_node(node_element, "inclination", (new string(strBuf))->c_str());
+        fullscreen->append_node(fsIncl);
+        sprintf_s(strBuf, "%f", m_BG_FOV[1]);
+        xml_node<>*fsFov = xmlDoc.allocate_node(node_element, "fov", (new string(strBuf))->c_str());
+        fullscreen->append_node(fsFov);
+        sprintf_s(strBuf, "%f", m_BG_layback[1]);
+        xml_node<>*fsLayback = xmlDoc.allocate_node(node_element, "layback", (new string(strBuf))->c_str());
+        fullscreen->append_node(fsLayback);
+        sprintf_s(strBuf, "%f", m_BG_rotation[1]);
+        xml_node<>*fsRotation = xmlDoc.allocate_node(node_element, "rotation", (new string(strBuf))->c_str());
+        fullscreen->append_node(fsRotation);
+        sprintf_s(strBuf, "%f", m_BG_scalex[1]);
+        xml_node<>*fsScalex = xmlDoc.allocate_node(node_element, "xscale", (new string(strBuf))->c_str());
+        fullscreen->append_node(fsScalex);
+        sprintf_s(strBuf, "%f", m_BG_scaley[1]);
+        xml_node<>*fsScaley = xmlDoc.allocate_node(node_element, "yscale", (new string(strBuf))->c_str());
+        fullscreen->append_node(fsScaley);
+        sprintf_s(strBuf, "%f", m_BG_scalez[1]);
+        xml_node<>*fsScalez = xmlDoc.allocate_node(node_element, "zscale", (new string(strBuf))->c_str());
+        fullscreen->append_node(fsScalez);
+        sprintf_s(strBuf, "%f", m_BG_xlatex[1]);
+        xml_node<>*fsOffsetx = xmlDoc.allocate_node(node_element, "xoffset", (new string(strBuf))->c_str());
+        fullscreen->append_node(fsOffsetx);
+        sprintf_s(strBuf, "%f", m_BG_xlatey[1]);
+        xml_node<>*fsOffsety = xmlDoc.allocate_node(node_element, "yoffset", (new string(strBuf))->c_str());
+        fullscreen->append_node(fsOffsety);
+        sprintf_s(strBuf, "%f", m_BG_xlatez[1]);
+        xml_node<>*fsOffsetz = xmlDoc.allocate_node(node_element, "zoffset", (new string(strBuf))->c_str());
+        fullscreen->append_node(fsOffsetz);
+
+        root->append_node(fullscreen);
+
+        xmlDoc.append_node(root);
+        std::ofstream myfile(m_szObjFileName);
+        myfile << xmlDoc;
+        myfile.close();
+    }
+    catch (...)
+    {
+        ShowError("Error exporting POV settings!");
+    }
+    xmlDoc.clear();
 }
 
 void PinTable::SelectItem(IScriptable *piscript)

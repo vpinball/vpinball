@@ -14,7 +14,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Englisch (USA) resources
+// English (United States) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
@@ -2300,10 +2300,15 @@ BEGIN
         MENUITEM "Save &As...",                 IDM_SAVEAS
         MENUITEM "Save As Pro&tected...",       IDM_SAVEASPROTECTED
         MENUITEM SEPARATOR
+        POPUP "&Import"
+        BEGIN
+            MENUITEM "Backdrop &POV",               ID_IMPORT_BACKDROPPOV
+        END
         POPUP "Ex&port"
         BEGIN
             MENUITEM "&Blueprint...",               ID_FILE_EXPORT_BLUEPRINT
             MENUITEM "OBJ &Mesh",                   ID_EXPORT_TABLEMESH
+            MENUITEM "Backdrop &POV",               ID_EXPORT_BACKDROPPOV
         END
         MENUITEM "Unlock",                      IDM_UNLOCKPROTECTED
         MENUITEM SEPARATOR
@@ -2774,7 +2779,7 @@ BEGIN
     IDS_STEP                "Step"
 END
 
-#endif    // Englisch (USA) resources
+#endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
