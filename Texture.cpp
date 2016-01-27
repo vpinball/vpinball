@@ -46,6 +46,8 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib)
    FIBITMAP* dib32 = rgbf ? FreeImage_ConvertToRGBF(dibResized) : FreeImage_ConvertTo32Bits(dibResized);
 
    BaseTexture* tex = new BaseTexture(FreeImage_GetWidth(dib32), FreeImage_GetHeight(dib32), rgbf ? RGB_FP : RGBA);
+   tex->m_realWidth = pictureWidth;
+   tex->m_realHeight = pictureHeight;
 
    BYTE * const psrc = FreeImage_GetBits(dib32), *pdst = tex->data();
    const int pitchdst = FreeImage_GetPitch(dib32), pitchsrc = tex->pitch();
@@ -76,7 +78,7 @@ BaseTexture* BaseTexture::CreateFromFile(const char *szfile)
    if ((fif != FIF_UNKNOWN) && FreeImage_FIFSupportsReading(fif)) {
       // ok, let's load the file
       FIBITMAP *dib = FreeImage_Load(fif, szfile, 0);
-
+      
       BaseTexture* mySurface = BaseTexture::CreateFromFreeImage(dib);
       FreeImage_Unload(dib);
 

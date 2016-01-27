@@ -6891,7 +6891,7 @@ int PinTable::AddListImage(HWND hwndListView, Texture *ppi)
    lvitem.pszText = ppi->m_szName;
    lvitem.lParam = (size_t)ppi;
    
-   _snprintf_s(sizeString, MAXTOKEN, "%ix%i", ppi->m_width, ppi->m_height);
+   _snprintf_s(sizeString, MAXTOKEN, "%ix%i", ppi->m_realWidth, ppi->m_realHeight);
    const int index = ListView_InsertItem(hwndListView, &lvitem);
 
    ListView_SetItemText(hwndListView, index, 1, ppi->m_szPath);
