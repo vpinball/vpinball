@@ -4168,6 +4168,8 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
           AddToolTip("Switches all tables to use the respective Cabinet display setup.\r\nAlso useful if a 270 degree rotated Desktop monitor is used.", hwndDlg, toolTipHwnd, controlHwnd);
           controlHwnd = GetDlgItem(hwndDlg, IDC_AA_ALL_TABLES);
           AddToolTip("Enables brute force 4x Anti-Aliasing.\r\nThis delivers very good quality, but slows down performance significantly.", hwndDlg, toolTipHwnd, controlHwnd);
+          controlHwnd = GetDlgItem(hwndDlg, IDC_OVERWRITE_BALL_IMAGE_CHECK);
+          AddToolTip("When checked it overwrites the ball image/decal image(s) for every table.", hwndDlg, toolTipHwnd, controlHwnd);
       }
 
       SetWindowPos(hwndDlg, NULL,
@@ -4279,6 +4281,30 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
           useAO = 0;
       SendMessage(hwndCheck, BM_SETCHECK, (useAO != 0) ? BST_UNCHECKED : BST_CHECKED, 0); // inverted logic
 
+      hwndCheck = GetDlgItem(hwndDlg, IDC_OVERWRITE_BALL_IMAGE_CHECK);
+      int overwiteBallImage;
+      hr = GetRegInt("Player", "OverwriteBallImage", &overwiteBallImage);
+      if (hr != S_OK)
+          overwiteBallImage = 0;
+      SendMessage(hwndCheck, BM_SETCHECK, (overwiteBallImage != 0) ? BST_CHECKED : BST_UNCHECKED, 0);
+
+      char imageName[MAX_PATH];
+      hr = GetRegString("Player", "BallImage", imageName, MAX_PATH);
+      if (hr != S_OK)
+          imageName[0] = 0;
+      SetDlgItemText(hwndDlg, IDC_BALL_IMAGE_EDIT, imageName);
+      imageName[0] = 0;
+      hr = GetRegString("Player", "DecalImage", imageName, MAX_PATH);
+      if (hr != S_OK)
+          imageName[0] = 0;
+      SetDlgItemText(hwndDlg, IDC_BALL_DECAL_EDIT, imageName);
+      if (overwiteBallImage == 0)
+      {
+          EnableWindow(GetDlgItem(hwndDlg, IDC_BROWSE_BALL_IMAGE), FALSE);
+          EnableWindow(GetDlgItem(hwndDlg, IDC_BROWSE_BALL_DECAL), FALSE);
+          EnableWindow(GetDlgItem(hwndDlg, IDC_BALL_IMAGE_EDIT), FALSE);
+          EnableWindow(GetDlgItem(hwndDlg, IDC_BALL_DECAL_EDIT), FALSE);
+      }
       int fxaa;
       hr = GetRegInt("Player", "FXAA", &fxaa);
       if (hr != S_OK)
@@ -4586,10 +4612,89 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                selected = 1; // assume a 16:9 Monitor as standard
             SetRegValue("Player", "BallStretchMonitor", REG_DWORD, &selected, 4);
 
-            EndDialog(hwndDlg, TRUE);
-         }
-         break;
+            const bool overwriteEnabled = IsDlgButtonChecked(hwndDlg, IDC_OVERWRITE_BALL_IMAGE_CHECK) == BST_CHECKED;
+            if (overwriteEnabled)
+            {
+                char fileName[MAX_PATH];
+                SetRegValueInt("Player", "OverwriteBallImage", 1);
+                GetDlgItemText(hwndDlg, IDC_BALL_IMAGE_EDIT, fileName, MAX_PATH);
+                SetRegValueString("Player", "BallImage", fileName);
+                fileName[0] = 0;
+                GetDlgItemText(hwndDlg, IDC_BALL_DECAL_EDIT, fileName, MAX_PATH);
+                SetRegValueString("Player", "DecalImage", fileName);
+            }
+            else
+                SetRegValueInt("Player", "OverwriteBallImage", 0);
 
+            EndDialog(hwndDlg, TRUE);
+            break; 
+         }
+         
+         case IDC_OVERWRITE_BALL_IMAGE_CHECK:
+         {
+             const bool overwriteEnabled = IsDlgButtonChecked(hwndDlg, IDC_OVERWRITE_BALL_IMAGE_CHECK) == BST_CHECKED;
+             if (overwriteEnabled)
+             {
+                 EnableWindow(GetDlgItem(hwndDlg, IDC_BROWSE_BALL_IMAGE), TRUE);
+                 EnableWindow(GetDlgItem(hwndDlg, IDC_BROWSE_BALL_DECAL), TRUE);
+                 EnableWindow(GetDlgItem(hwndDlg, IDC_BALL_IMAGE_EDIT), TRUE);
+                 EnableWindow(GetDlgItem(hwndDlg, IDC_BALL_DECAL_EDIT), TRUE);
+             }
+             else
+             {
+                 EnableWindow(GetDlgItem(hwndDlg, IDC_BROWSE_BALL_IMAGE), FALSE);
+                 EnableWindow(GetDlgItem(hwndDlg, IDC_BROWSE_BALL_DECAL), FALSE);
+                 EnableWindow(GetDlgItem(hwndDlg, IDC_BALL_IMAGE_EDIT), FALSE);
+                 EnableWindow(GetDlgItem(hwndDlg, IDC_BALL_DECAL_EDIT), FALSE);
+             }
+             break;
+         }
+         case IDC_BROWSE_BALL_IMAGE:
+         {
+             char szFileName[1024];
+             szFileName[0] = '\0';
+
+             OPENFILENAME ofn;
+             ZeroMemory(&ofn, sizeof(OPENFILENAME));
+             ofn.lStructSize = sizeof(OPENFILENAME);
+             ofn.hInstance = g_hinst;
+             ofn.hwndOwner = g_pvp->m_hwnd;
+             // TEXT
+             ofn.lpstrFilter = "Bitmap, JPEG, PNG, EXR, HDR Files (.bmp/.jpg/.png/.exr/.hdr)\0*.bmp;*.jpg;*.jpeg;*.png;*.exr;*.hdr\0";
+             ofn.lpstrFile = szFileName;
+             ofn.nMaxFile = _MAX_PATH;
+             ofn.lpstrDefExt = "png";
+             ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
+             const int ret = GetOpenFileName(&ofn);
+             if (!ret)
+                 break;
+             SetDlgItemText(hwndDlg, IDC_BALL_IMAGE_EDIT, szFileName);
+
+             break;
+         }
+         case IDC_BROWSE_BALL_DECAL:
+         {
+             char szFileName[1024];
+             szFileName[0] = '\0';
+
+             OPENFILENAME ofn;
+             ZeroMemory(&ofn, sizeof(OPENFILENAME));
+             ofn.lStructSize = sizeof(OPENFILENAME);
+             ofn.hInstance = g_hinst;
+             ofn.hwndOwner = g_pvp->m_hwnd;
+             // TEXT
+             ofn.lpstrFilter = "Bitmap, JPEG, PNG, EXR, HDR Files (.bmp/.jpg/.png/.exr/.hdr)\0*.bmp;*.jpg;*.jpeg;*.png;*.exr;*.hdr\0";
+             ofn.lpstrFile = szFileName;
+             ofn.nMaxFile = _MAX_PATH;
+             ofn.lpstrDefExt = "png";
+             ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
+             const int ret = GetOpenFileName(&ofn);
+             if (!ret)
+                 break;
+             SetDlgItemText(hwndDlg, IDC_BALL_DECAL_EDIT, szFileName);
+
+             break;
+         }
          case IDC_WINDOW:
             SendMessage(hwndDlg, GET_WINDOW_MODES, 0, 0);
             break;

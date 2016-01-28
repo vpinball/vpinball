@@ -317,10 +317,12 @@
 #define IDC_BROWSE_BUTTON               280
 #define IDR_PRIMITIVE1                  280
 #define IDR_HITTARGET                   280
+#define IDC_BROWSE_BALL_IMAGE           280
 #define IDC_ITEMLIST                    281
 #define IDC_OUT                         281
 #define IDC_SENDMAIL                    281
 #define IDC_LMAGSAVEBUTTON              281
+#define IDC_BROWSE_BALL_DECAL           281
 #define IDC_EVENTLIST                   282
 #define IDC_OFFSETX                     282
 #define IDC_RIGHTMAGNASAVE              282
@@ -699,6 +701,7 @@
 #define IDC_CENTER_MESH                 479
 #define IDC_RUBBER_REFLECT_ENABLED_CHECK 479
 #define IDC_CVP_CHKBOX_HELPWITHDWELL    479
+#define IDC_OVERWRITE_BALL_IMAGE_CHECK  479
 #define IDC_IMPORT_MATERIAL             480
 #define IDC_COLLISION_REDUCTION_FACTOR  481
 #define IDC_PRIM_REFLECT_ENABLE_CHECK   483
@@ -833,7 +836,9 @@
 #define IDC_DELETE_COLLECTION           721
 #define IDC_CVP_CHKBOX_DISPLAYDWELL     722
 #define IDC_CVP_BUT_COL_EVERYTHINGELSE  724
+#define IDC_BALL_IMAGE_EDIT             724
 #define IDC_CVP_BUT_FONT_EVERYTHINGELSE 725
+#define IDC_BALL_DECAL_EDIT             725
 #define IDC_CVP_BUT_COL_BACKGROUND      727
 #define IDC_CVP_EDIT_AUTOCHARS          728
 #define IDC_CVP_EDIT_MOUSEDWELL         729
@@ -979,7 +984,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        620
 #define _APS_NEXT_COMMAND_VALUE         4008
-#define _APS_NEXT_CONTROL_VALUE         723
+#define _APS_NEXT_CONTROL_VALUE         725
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif
