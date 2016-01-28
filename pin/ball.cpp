@@ -76,24 +76,44 @@ void Ball::Init(const float mass)
 
    if (g_pplayer->m_ptable->m_szBallImage[0] == '\0')
    {
-      m_szImage[0] = '\0';
-      m_pinballEnv = NULL;
+       if (g_pplayer->m_fOverwriteBallImages && g_pplayer->m_ballImage)
+           m_pinballEnv = g_pplayer->m_ballImage;
+       else
+       {
+           m_szImage[0] = '\0';
+           m_pinballEnv = NULL;
+       }
    }
    else
    {
-      lstrcpy(m_szImage, g_pplayer->m_ptable->m_szBallImage);
-      m_pinballEnv = g_pplayer->m_ptable->GetImage(m_szImage);
+       if (g_pplayer->m_fOverwriteBallImages && g_pplayer->m_ballImage)
+           m_pinballEnv = g_pplayer->m_ballImage;
+       else
+       {
+           lstrcpy(m_szImage, g_pplayer->m_ptable->m_szBallImage);
+           m_pinballEnv = g_pplayer->m_ptable->GetImage(m_szImage);
+       }
    }
 
    if (g_pplayer->m_ptable->m_szBallImageFront[0] == '\0')
    {
-      m_szImageFront[0] = '\0';
-      m_pinballDecal = NULL;
+       if (g_pplayer->m_fOverwriteBallImages && g_pplayer->m_decalImage)
+           m_pinballDecal = g_pplayer->m_decalImage;
+       else
+       {
+           m_szImageFront[0] = '\0';
+           m_pinballDecal = NULL;
+       }
    }
    else
    {
-      lstrcpy(m_szImageFront, g_pplayer->m_ptable->m_szBallImageFront);
-      m_pinballDecal = g_pplayer->m_ptable->GetImage(m_szImageFront);
+       if (g_pplayer->m_fOverwriteBallImages && g_pplayer->m_decalImage)
+           m_pinballDecal = g_pplayer->m_decalImage;
+       else
+       {
+           lstrcpy(m_szImageFront, g_pplayer->m_ptable->m_szBallImageFront);
+           m_pinballDecal = g_pplayer->m_ptable->GetImage(m_szImageFront);
+       }
    }
 
    RenderSetup();

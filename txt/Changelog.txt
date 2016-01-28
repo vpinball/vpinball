@@ -4,6 +4,7 @@ VP 10.1.0 Changelog
 - add abilty to show the image size in the image manager for each texture
 - hit shape of the rubber object refined
 - add support to import/export backdrop POV(Point Of View) settings to a XML file. It's under File->Import->Backdrop POV or File->Export->Backdrop POV
+- add support to overwrite the ball image/decal texture globally under Preferences->Video Settings
 
 VP 10.0.0 Changelog
 ------------------------

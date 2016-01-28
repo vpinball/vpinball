@@ -261,6 +261,128 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
       detecthang = fFalse; // The default
    m_fDetectScriptHang = (detecthang == 1);
 
+   m_ballImage = NULL;
+   m_decalImage = NULL;
+   hr = GetRegInt("Player", "OverwriteBallImage", &detecthang);
+   if (hr != S_OK)
+       m_fOverwriteBallImages = false;
+   else
+       m_fOverwriteBallImages = (detecthang == 1);
+
+   if (m_fOverwriteBallImages)
+   {
+       char imageName[MAX_PATH];
+       bool result = true;
+
+       hr = GetRegString("Player", "BallImage", imageName, MAX_PATH);
+       if (hr == S_OK)
+       {
+           m_ballImage = new Texture();
+
+           BOOL fBinary;
+           char szextension[MAX_PATH];
+           ExtensionFromFilename(imageName, szextension);
+
+           if (!lstrcmpi(szextension, "bmp"))
+           {
+               fBinary = fFalse;
+           }
+           else // other format
+           {
+               fBinary = fTrue;
+           }
+
+           PinBinary *ppb = 0;
+           if (fBinary)
+           {
+               ppb = new PinBinary();
+               result = ppb->ReadFromFile(imageName);
+           }
+           if (!result)
+           {
+               m_ballImage->FreeStuff();
+               delete m_ballImage;
+               m_ballImage = NULL;
+           }
+           else
+           {
+               BaseTexture *tex = BaseTexture::CreateFromFile(imageName);
+
+               if (tex == NULL)
+               {
+                   if (ppb) delete ppb;
+                   return;
+               }
+
+               m_ballImage->FreeStuff();
+
+               if (fBinary)
+               {
+                   m_ballImage->m_ppb = ppb;
+               }
+
+
+               m_ballImage->m_width = tex->width();
+               m_ballImage->m_height = tex->height();
+               m_ballImage->m_pdsBuffer = tex;
+           }
+       }
+
+       hr = GetRegString("Player", "DecalImage", imageName, MAX_PATH);
+       if (hr == S_OK)
+       {
+           m_decalImage = new Texture();
+
+           BOOL fBinary;
+           char szextension[MAX_PATH];
+           ExtensionFromFilename(imageName, szextension);
+
+           if (!lstrcmpi(szextension, "bmp"))
+           {
+               fBinary = fFalse;
+           }
+           else // other format
+           {
+               fBinary = fTrue;
+           }
+
+           PinBinary *ppb = 0;
+           if (fBinary)
+           {
+               ppb = new PinBinary();
+               result = ppb->ReadFromFile(imageName);
+           }
+           if (!result)
+           {
+               m_decalImage->FreeStuff();
+               delete m_decalImage;
+               m_decalImage = NULL;
+           }
+           else
+           {
+               BaseTexture *tex = BaseTexture::CreateFromFile(imageName);
+
+               if (tex == NULL)
+               {
+                   if (ppb) delete ppb;
+                   return;
+               }
+
+               m_decalImage->FreeStuff();
+
+               if (fBinary)
+               {
+                   m_decalImage->m_ppb = ppb;
+               }
+
+
+               m_decalImage->m_width = tex->width();
+               m_decalImage->m_height = tex->height();
+               m_decalImage->m_pdsBuffer = tex;
+           }
+       }
+   }
+
    m_fShowFPS = false;
    m_staticOnly = false;
 
@@ -355,6 +477,18 @@ void Player::Shutdown()
 #ifdef DEBUG_BALL_SPIN
    SAFE_RELEASE(m_ballDebugPoints);
 #endif
+   if (m_ballImage)
+   {
+       m_ballImage->FreeStuff();
+       delete m_ballImage;
+       m_ballImage = NULL;
+   }
+   if (m_decalImage)
+   {
+       m_decalImage->FreeStuff();
+       delete m_decalImage;
+       m_decalImage = NULL;
+   }
 
    m_limiter.Shutdown();
 

@@ -14,7 +14,7 @@ PinBinary::~PinBinary()
    }
 }
 
-void PinBinary::ReadFromFile(char *szfilename)
+bool PinBinary::ReadFromFile(char *szfilename)
 {
    HANDLE hFile = CreateFile(szfilename,
       GENERIC_READ, FILE_SHARE_READ,
@@ -22,8 +22,10 @@ void PinBinary::ReadFromFile(char *szfilename)
 
    if (hFile == INVALID_HANDLE_VALUE)
    {
-      ShowError("The file could not be opened.");
-      return;
+      char text[MAX_PATH];
+      sprintf(text, "The file \"%s\" could not be opened.", szfilename);
+      ShowError(text);
+      return false;
    }
 
    if (m_pdata)
@@ -48,6 +50,7 @@ void PinBinary::ReadFromFile(char *szfilename)
    strncpy_s(m_szInternalName, m_szName, MAXTOKEN);
 
    CharLowerBuff(m_szInternalName, lstrlen(m_szInternalName));
+   return true;
 }
 
 bool PinBinary::WriteToFile(char *szfilename)
