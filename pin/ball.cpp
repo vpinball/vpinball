@@ -465,6 +465,8 @@ void Ball::CalcHitRect()
    m_rcHitRect.zlow = m_pos.z - vl;
    m_rcHitRect.zhigh = m_pos.z + vl;
 
+   m_rcHitRadiusSqr = vl*vl;
+
    // update defaultZ for ball reflection
    // if the ball was created by a kicker which is higher than the playfield 
    // the defaultZ must be updated if the ball falls onto the playfield that means the Z value is equal to the radius
