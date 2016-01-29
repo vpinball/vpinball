@@ -23,7 +23,7 @@ bool PinBinary::ReadFromFile(char *szfilename)
    if (hFile == INVALID_HANDLE_VALUE)
    {
       char text[MAX_PATH];
-      sprintf(text, "The file \"%s\" could not be opened.", szfilename);
+      sprintf_s(text, "The file \"%s\" could not be opened.", szfilename);
       ShowError(text);
       return false;
    }

@@ -5,6 +5,10 @@ VP 10.1.0 Changelog
 - hit shape of the rubber object refined
 - add support to import/export backdrop POV(Point Of View) settings to a XML file. It's under File->Import->Backdrop POV or File->Export->Backdrop POV
 - add support to overwrite the ball image/decal texture globally under Preferences->Video Settings
+- "Throw Balls In Player" mode can now be activated permanently in the Preferences->Editor menu, also you can define the default ball size for this mode. 
+  The ball size for this mode can also be defined in the debugger menu.
+- add an "Update All" button to the image manager for updating all images without any further inquiry. Only an error message is shown after updating if some 
+  images can't be updated (e.g. files not found)
 
 VP 10.0.0 Changelog
 ------------------------

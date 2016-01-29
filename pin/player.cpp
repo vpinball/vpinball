@@ -382,6 +382,9 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
            }
        }
    }
+   
+   m_fThrowBalls=(GetRegIntWithDefault("Editor", "ThrowBallsAlwaysOn", 0)==1);
+   m_DebugBallSize = GetRegIntWithDefault("Editor", "ThrowBallSize", 50);
 
    m_fShowFPS = false;
    m_staticOnly = false;
@@ -4830,6 +4833,8 @@ INT_PTR CALLBACK DebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
          HWND hwndExpand = GetDlgItem(hwndDlg, IDC_EXPAND);
          ShowWindow(hwndExpand, SW_HIDE);
       }
+      SendDlgItemMessage(hwndDlg, IDC_BALL_THROWING, BM_SETCHECK, g_pplayer->m_fThrowBalls ? BST_CHECKED : BST_UNCHECKED, 0);
+      SetDlgItemInt(hwndDlg, IDC_THROW_BALL_SIZE_EDIT2, g_pplayer->m_DebugBallSize, FALSE);
 
       SendMessage(hwndDlg, RESIZE_FROM_EXPAND, 0, 0);
 
@@ -4921,6 +4926,7 @@ INT_PTR CALLBACK DebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
       g_pplayer->m_PauseTimeTarget = 0;
       g_pplayer->m_fUserDebugPaused = false;
       g_pplayer->RecomputePseudoPauseState();
+      g_pplayer->m_DebugBallSize = GetDlgItemInt(hwndDlg, IDC_THROW_BALL_SIZE_EDIT2, NULL, FALSE);
       g_pplayer->m_fDebugMode = false;
       ShowWindow(hwndDlg, SW_HIDE);
       break;

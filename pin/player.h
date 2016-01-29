@@ -303,6 +303,7 @@ public:
    bool m_fTrailForBalls;
 
    bool m_fThrowBalls;
+   int  m_DebugBallSize;
 
    bool m_fDetectScriptHang;
    bool m_fNoTimeCorrect;		// Used so the frame after debugging does not do normal time correction

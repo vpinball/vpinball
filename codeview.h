@@ -276,7 +276,7 @@ public:
 	bool DisplayAutoComplete;
 	void GetMembers(vector<UserData>* ListIn, const string &StrIn);
 	//TODO: int TabStop;
-	int DisplayAutoCompleteLength;
+	size_t DisplayAutoCompleteLength;
 	bool DwellDisplay;
 	bool DwellHelp;
 	int DwellDisplayTime;

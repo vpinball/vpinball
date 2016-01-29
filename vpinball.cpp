@@ -3337,9 +3337,40 @@ INT_PTR CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                // Display new image
                InvalidateRect(GetDlgItem(hwndDlg, IDC_PICTUREPREVIEW), NULL, fTrue);
             }
+            break;
          }
-         break;
-
+    
+         case IDC_UPDATE_ALL_BUTTON:
+         {
+             const int count = ListView_GetItemCount(GetDlgItem(hwndDlg, IDC_SOUNDLIST));
+             bool  errorOccurred = false;;
+             for (int sel = 0; sel < count; sel++)
+             {
+                 LVITEM lvitem;
+                 lvitem.mask = LVIF_PARAM;
+                 lvitem.iItem = sel;
+                 lvitem.iSubItem = 0;
+                 ListView_GetItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), &lvitem);
+                 Texture * const ppi = (Texture*)lvitem.lParam;
+                 if (ppi != NULL)
+                 {
+                     HANDLE hFile = CreateFile(ppi->m_szPath, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);                     
+                     if (hFile != INVALID_HANDLE_VALUE)
+                     {
+                         CloseHandle(hFile);
+                         pt->ReImportImage(GetDlgItem(hwndDlg, IDC_SOUNDLIST), ppi, ppi->m_szPath);
+                         pt->SetNonUndoableDirty(eSaveDirty);
+                     }
+                     else
+                         errorOccurred = true;
+                 }
+                 // Display new image
+                 InvalidateRect(GetDlgItem(hwndDlg, IDC_PICTUREPREVIEW), NULL, fTrue);
+             }
+             if ( errorOccurred )
+                MessageBox(hwndDlg, "Not all images were updated!", "  FILES NOT FOUND!  ", MB_OK);
+             break;
+         }
          case IDC_REIMPORTFROM:
          {
             int sel = ListView_GetNextItem(GetDlgItem(hwndDlg, IDC_SOUNDLIST), -1, LVNI_SELECTED);
@@ -7761,6 +7792,15 @@ INT_PTR CALLBACK EditorOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARA
          (rcMain.bottom + rcMain.top) / 2 - (rcDlg.bottom - rcDlg.top) / 2,
          0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE/* | SWP_NOMOVE*/);
 
+      HWND toolTipHwnd = CreateWindowEx(NULL, TOOLTIPS_CLASS, NULL, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, hwndDlg, NULL, g_hinst, NULL);
+      if (toolTipHwnd)
+      {
+          SendMessage(toolTipHwnd, TTM_SETMAXTIPWIDTH, 0, 180);
+          HWND controlHwnd = GetDlgItem(hwndDlg, IDC_THROW_BALLS_ALWAYS_ON_CHECK);
+          AddToolTip("If checked the throw balls in player option is always active. You don't need to activate it in the debug menu again.", hwndDlg, toolTipHwnd, controlHwnd);
+          controlHwnd = GetDlgItem(hwndDlg, IDC_THROW_BALLS_SIZE_EDIT);
+          AddToolTip("Defines the default size of the ball when dropped on the table", hwndDlg, toolTipHwnd, controlHwnd);
+      }
       HWND hwndControl;
 
       // drag points
@@ -7787,6 +7827,12 @@ INT_PTR CALLBACK EditorOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARA
 
       int gridsize = GetRegIntWithDefault("Editor", "GridSize", 50);
       SetDlgItemInt(hwndDlg, IDC_GRID_SIZE, gridsize, FALSE);
+
+      int throwBallsAlwaysOn = GetRegIntWithDefault("Editor", "ThrowBallsAlwaysOn", 0);
+      SendDlgItemMessage(hwndDlg, IDC_THROW_BALLS_ALWAYS_ON_CHECK, BM_SETCHECK, throwBallsAlwaysOn ? BST_CHECKED : BST_UNCHECKED, 0);
+
+      int throwBallSize = GetRegIntWithDefault("Editor", "ThrowBallSize", 50);
+      SetDlgItemInt(hwndDlg, IDC_THROW_BALLS_SIZE_EDIT, throwBallSize, FALSE);
    }
 
    return TRUE;
@@ -7835,6 +7881,12 @@ INT_PTR CALLBACK EditorOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARA
 
             int gridsize = GetDlgItemInt(hwndDlg, IDC_GRID_SIZE, NULL, FALSE);
             SetRegValueInt("Editor", "GridSize", gridsize);
+
+            checked = (SendDlgItemMessage(hwndDlg, IDC_THROW_BALLS_ALWAYS_ON_CHECK, BM_GETCHECK, 0, 0) == BST_CHECKED);
+            SetRegValueBool("Editor", "ThrowBallsAlwaysOn", checked);
+
+            int ballSize = GetDlgItemInt(hwndDlg, IDC_THROW_BALLS_SIZE_EDIT, NULL, FALSE);
+            SetRegValueInt("Editor", "ThrowBallSize", ballSize);
 
             // Go through and reset the autosave time on all the tables
             g_pvp->SetAutoSaveMinutes(autosavetime);
