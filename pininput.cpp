@@ -1002,7 +1002,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
                   float z = g_pplayer->m_ptable->m_tableheight;
                   if (input->dwData == 3)
                      z = g_pplayer->m_ptable->m_glassheight;
-                  Ball * const pball = g_pplayer->CreateBall(vertex.x, vertex.y, z, vx, vy, 0);
+                  Ball * const pball = g_pplayer->CreateBall(vertex.x, vertex.y, z, vx, vy, 0, (float)g_pplayer->m_DebugBallSize/2.0f);
                   pball->m_pballex->AddRef();
                }
             }

@@ -318,6 +318,7 @@
 #define IDR_PRIMITIVE1                  280
 #define IDR_HITTARGET                   280
 #define IDC_BROWSE_BALL_IMAGE           280
+#define IDC_UPDATE_ALL_BUTTON           280
 #define IDC_ITEMLIST                    281
 #define IDC_OUT                         281
 #define IDC_SENDMAIL                    281
@@ -519,6 +520,8 @@
 #define IDC_FILENAME_EDIT               377
 #define IDC_CALC_HEIGHT_EDIT            377
 #define IDC_TARGET_MOVE_SPEED_EDIT      377
+#define IDC_THROW_BALLS_SIZE_EDIT       377
+#define IDC_THROW_BALL_SIZE_EDIT2       377
 #define IDC_HEIGHT_EDIT                 378
 #define IDD_COMLIST                     378
 #define IDC_RADIO1                      378
@@ -839,6 +842,7 @@
 #define IDC_BALL_IMAGE_EDIT             724
 #define IDC_CVP_BUT_FONT_EVERYTHINGELSE 725
 #define IDC_BALL_DECAL_EDIT             725
+#define IDC_THROW_BALLS_ALWAYS_ON_CHECK 725
 #define IDC_CVP_BUT_COL_BACKGROUND      727
 #define IDC_CVP_EDIT_AUTOCHARS          728
 #define IDC_CVP_EDIT_MOUSEDWELL         729
@@ -984,7 +988,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        620
 #define _APS_NEXT_COMMAND_VALUE         4008
-#define _APS_NEXT_CONTROL_VALUE         725
+#define _APS_NEXT_CONTROL_VALUE         726
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif

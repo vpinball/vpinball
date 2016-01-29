@@ -1680,7 +1680,7 @@ bool CodeViewer::ShowTooltip(SCNotification *pSCN)
 		if (t != string::npos)
 		{
 			const LRESULT linestart = SendMessage(m_hwndScintilla, SCI_POSITIONFROMLINE, CurrentLineNo, 0 );
-			if ( (wordstart - linestart) >= t ) return false;
+			if ( ((size_t)(wordstart - linestart)) >= t ) return false;
 		}
 	}
 
