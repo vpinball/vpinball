@@ -207,7 +207,7 @@ void HitQuadtree::HitTestBall(Ball * const pball, CollisionEvent& coll) const
       g_pplayer->c_tested++;
 #endif
       if ((pball != m_vho[i]) // ball can not hit itself
-         /*&& fRectIntersect3D(pball->m_rcHitRect, m_vho[i]->m_rcHitRect)*/
+         && fRectIntersect3D(pball->m_rcHitRect, m_vho[i]->m_rcHitRect)
 		 && fRectIntersect3D(pball->m_pos, pball->m_rcHitRadiusSqr, m_vho[i]->m_rcHitRect))
       {
          DoHitTest(pball, m_vho[i], coll);
@@ -245,12 +245,12 @@ void HitQuadtree::HitTestBallSse(Ball * const pball, CollisionEvent& coll) const
    const HitQuadtree* __restrict current = this;
 
    // init SSE registers with ball bbox
-   /*const __m128 bleft = _mm_set1_ps(pball->m_rcHitRect.left);
+   const __m128 bleft = _mm_set1_ps(pball->m_rcHitRect.left);
    const __m128 bright = _mm_set1_ps(pball->m_rcHitRect.right);
    const __m128 btop = _mm_set1_ps(pball->m_rcHitRect.top);
    const __m128 bbottom = _mm_set1_ps(pball->m_rcHitRect.bottom);
    const __m128 bzlow = _mm_set1_ps(pball->m_rcHitRect.zlow);
-   const __m128 bzhigh = _mm_set1_ps(pball->m_rcHitRect.zhigh);*/
+   const __m128 bzhigh = _mm_set1_ps(pball->m_rcHitRect.zhigh);
 
    const __m128 posx = _mm_set1_ps(pball->m_pos.x);
    const __m128 posy = _mm_set1_ps(pball->m_pos.y);
@@ -285,7 +285,7 @@ void HitQuadtree::HitTestBallSse(Ball * const pball, CollisionEvent& coll) const
 #endif
                // comparisons set bits if bounds miss. if all bits are set, there is no collision. otherwise continue comparisons
                // bits set, there is a bounding box collision
-               /*__m128 cmp = _mm_cmpge_ps(bright, pL[i]);
+               __m128 cmp = _mm_cmpge_ps(bright, pL[i]);
                int mask = _mm_movemask_ps(cmp);
                if (mask == 0) continue;
 
@@ -307,7 +307,7 @@ void HitQuadtree::HitTestBallSse(Ball * const pball, CollisionEvent& coll) const
 
                cmp = _mm_cmple_ps(bzlow, pZh[i]);
                mask &= _mm_movemask_ps(cmp);
-               if (mask == 0) continue;*/
+               if (mask == 0) continue;
 
 			   // test actual sphere against box(es)
 			   const __m128 zero = _mm_setzero_ps();
@@ -374,7 +374,7 @@ void HitQuadtree::HitTestXRay(Ball * const pball, Vector<HitObject> * const pvho
 #ifdef _DEBUGPHYSICS
       g_pplayer->c_tested++;
 #endif
-      if ((pball != m_vho[i]) && /*fRectIntersect3D(pball->m_rcHitRect, m_vho[i]->m_rcHitRect) &&*/ fRectIntersect3D(pball->m_pos, pball->m_rcHitRadiusSqr, m_vho[i]->m_rcHitRect))
+      if ((pball != m_vho[i]) && fRectIntersect3D(pball->m_rcHitRect, m_vho[i]->m_rcHitRect) && fRectIntersect3D(pball->m_pos, pball->m_rcHitRadiusSqr, m_vho[i]->m_rcHitRect))
       {
 #ifdef _DEBUGPHYSICS
          g_pplayer->c_deepTested++;

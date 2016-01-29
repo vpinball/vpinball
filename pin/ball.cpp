@@ -457,7 +457,7 @@ void Ball::CalcHitRect()
    m_rcHitRect.zhigh  = max(m_pos.z, m_pos.z + m_vel.z) + (m_radius + 0.1f);
    */
 
-   const float vl = m_vel.Length() + m_radius + 0.1f; //!! 0.1f = paranoia
+   const float vl = m_vel.Length() + m_radius + 0.05f; //!! 0.05f = paranoia
    m_rcHitRect.left = m_pos.x - vl;
    m_rcHitRect.right = m_pos.x + vl;
    m_rcHitRect.top = m_pos.y - vl;
