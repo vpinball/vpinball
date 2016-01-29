@@ -7797,9 +7797,9 @@ INT_PTR CALLBACK EditorOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARA
       {
           SendMessage(toolTipHwnd, TTM_SETMAXTIPWIDTH, 0, 180);
           HWND controlHwnd = GetDlgItem(hwndDlg, IDC_THROW_BALLS_ALWAYS_ON_CHECK);
-          AddToolTip("If checked the throw balls in player option is always active. You don't need to activate it in the debug menu again.", hwndDlg, toolTipHwnd, controlHwnd);
+          AddToolTip("If checked, the 'Throw Balls in Player' option is always active. You don't need to activate it in the debug menu again.", hwndDlg, toolTipHwnd, controlHwnd);
           controlHwnd = GetDlgItem(hwndDlg, IDC_THROW_BALLS_SIZE_EDIT);
-          AddToolTip("Defines the default size of the ball when dropped on the table", hwndDlg, toolTipHwnd, controlHwnd);
+          AddToolTip("Defines the default size of the ball when dropped onto the table.", hwndDlg, toolTipHwnd, controlHwnd);
       }
       HWND hwndControl;
 

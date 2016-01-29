@@ -10,6 +10,9 @@ VP 10.1.0 Changelog
 - add an "Update All" button to the image manager for updating all images without any further inquiry. Only an error message is shown after updating if some 
   images can't be updated (e.g. files not found)
 
+- DirectX 8 port for input handling (currently disabled)
+- texture size limit/downscale now respects aspect ratio (currently disabled)
+
 VP 10.0.0 Changelog
 ------------------------
 
@@ -347,9 +350,6 @@ VP 10.0.0 Changelog
 - script editor updated to use custom extensions within Scintilla (based on 3.6.2)
 
 - technical compile note: make sure to install Microsoft SDK 5.0,7.0A,7.1 or 7.1A, if you compile VP and get missing header errors (optionally set the include path inc\winsdk)
-
-- DirectX 8 port for input handling (currently disabled)
-- texture size limit/downscale now respects aspect ratio (currently disabled)
 
 VP 9.9.2 Changelog
 ------------------------

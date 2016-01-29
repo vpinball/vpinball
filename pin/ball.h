@@ -86,6 +86,8 @@ public:
    float m_mass;
    float m_invMass;
 
+   float m_rcHitRadiusSqr; // extended (by m_vel + magic) squared radius, used in collision detection
+
    Vertex3Ds m_Event_Pos; // last hit event position (to filter hit 'equal' hit events)
 
    Matrix3 m_orientation;
