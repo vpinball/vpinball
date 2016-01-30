@@ -532,8 +532,10 @@ void PlungerAnimObject::UpdateVelocities()
    }
 }
 
-float HitPlunger::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
+float HitPlunger::HitTest(const Ball * pball_, float dtime, CollisionEvent& coll)
 {
+   Ball * pball = const_cast<Ball*>(pball_);   // HACK; needed below // evil cast to non-const, but not so expensive as constructor for full copy (and avoids screwing with the ball IDs)
+
    float hittime = dtime; //start time
    bool fHit = false;
 
@@ -600,7 +602,7 @@ float HitPlunger::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
    // (nominally) const Ball instance, save the old value so that we can
    // restore it when we're done.
    const float oldvely = pball->m_vel.y;   // save the old velocity value
-   ((Ball *)pball)->m_vel.y -= m_plungeranim.m_speed;     // WARNING! EVIL OVERRIDE OF CONST INSTANCE POINTER!!!
+   pball->m_vel.y -= m_plungeranim.m_speed;     // WARNING! EVIL OVERRIDE OF CONST INSTANCE POINTER!!!
 
    // Figure the impulse from hitting the moving end.
    // Calculate this as the product of the plunger speed and the
@@ -656,7 +658,7 @@ float HitPlunger::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
    }
 
    // restore the original ball velocity (WARNING! CONST POINTER OVERRIDE!)
-   ((Ball *)pball)->m_vel.y = oldvely;
+   pball->m_vel.y = oldvely;
 
    // check for a hit
    if (fHit)

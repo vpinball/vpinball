@@ -271,10 +271,10 @@ float Ball::HitTest(const Ball * pball_, float dtime, CollisionEvent& coll)
       hittime = std::min(time1, time2);
       if (hittime < 0.f)
          hittime = std::max(time1, time2);
-
-      if (infNaN(hittime) || hittime < 0.f || hittime > dtime)
-         return -1.0f; // .. was some time previous || beyond the next physics tick
    }
+
+   if (infNaN(hittime) || hittime < 0.f || hittime > dtime)
+	   return -1.0f; // .. was some time previous || beyond the next physics tick
 
    const Vertex3Ds hitPos = pball->m_pos + hittime * dv; // new ball position
 

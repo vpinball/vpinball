@@ -650,17 +650,15 @@ float HitTriangle::HitTest(const Ball * pball, float dtime, CollisionEvent& coll
       return -1.0f;
 
    // Point on the ball that will hit the polygon, if it hits at all
-   const float bRadius = pball->m_radius;
-   Vertex3Ds hitPos = pball->m_pos - bRadius * normal; // nearest point on ball ... projected radius along norm
+   Vertex3Ds hitPos = pball->m_pos - pball->m_radius * normal; // nearest point on ball ... projected radius along norm
 
    const float bnd = normal.Dot(hitPos - m_rgv[0]);  // distance from plane to ball
-
-   float hittime;
 
    if (bnd < -pball->m_radius/**2.0f*/) //!! *2 necessary?
       return -1.0f;	// (ball normal distance) excessive pentratration of object skin ... no collision HACK
 
    bool isContact = false;
+   float hittime;
 
    if (bnd <= (float)PHYS_TOUCH)
    {
@@ -773,7 +771,7 @@ float HitPlane::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 
    const float bnv = normal.Dot(pball->m_vel);       // speed in normal direction
 
-   if (bnv >= (float)C_CONTACTVEL)                 // return if clearly ball is receding from object
+   if (bnv >= C_CONTACTVEL)                 // return if clearly ball is receding from object
       return -1.0f;
 
    const float bnd = normal.Dot(pball->m_pos) - pball->m_radius - d; // distance from plane to ball surface
@@ -782,7 +780,7 @@ float HitPlane::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
       return -1.0f;   // excessive penetration of plane ... no collision HACK
 
    // slow moving ball? then either contact or no collision at all
-   if (fabsf(bnv) <= (float)C_CONTACTVEL)
+   if (fabsf(bnv) <= C_CONTACTVEL)
    {
       if (fabsf(bnd) <= (float)PHYS_TOUCH)
       {
@@ -874,21 +872,23 @@ HitLine3D::HitLine3D(const Vertex3Ds& v1, const Vertex3Ds& v2)
    m_rcHitRect.zhigh = max(v1.z, v2.z);
 }
 
-float HitLine3D::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
+float HitLine3D::HitTest(const Ball * pball_, float dtime, CollisionEvent& coll)
 {
    if (!m_fEnabled)
       return -1.0f;
 
+   Ball * pball = const_cast<Ball*>(pball_);   // HACK; needed below // evil cast to non-const, but not so expensive as constructor for full copy (and avoids screwing with the ball IDs)
+
    // transform ball to cylinder coordinate system
    const Vertex3Ds old_pos = pball->m_pos;
    const Vertex3Ds old_vel = pball->m_vel;
-   ((Ball *)pball)->m_pos = matTrans * pball->m_pos; // evil cast to non-const, but not so expensive as constructor for full copy (and avoids screwing with the ball IDs)
-   ((Ball *)pball)->m_vel = matTrans * pball->m_vel;
+   pball->m_pos = matTrans * pball->m_pos;
+   pball->m_vel = matTrans * pball->m_vel;
 
    const float hittime = HitLineZ::HitTest(pball, dtime, coll);
 
-   ((Ball *)pball)->m_pos = old_pos; // see above
-   ((Ball *)pball)->m_vel = old_vel;
+   pball->m_pos = old_pos; // see above
+   pball->m_vel = old_vel;
 
    if (hittime >= 0.f)       // transform hit normal back to world coordinate system
       coll.hitnormal = matTrans.MultiplyVectorT(coll.hitnormal);

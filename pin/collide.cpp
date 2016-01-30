@@ -146,8 +146,8 @@ float LineSeg::HitTestBasic(const Ball * pball, const float dtime, CollisionEven
 }
 
 float LineSeg::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
-{															// normal face, lateral, rigid
-   return HitTestBasic(pball, dtime, coll, true, true, true);
+{
+   return HitTestBasic(pball, dtime, coll, true, true, true); // normal face, lateral, rigid
 }
 
 void LineSeg::Collide(CollisionEvent *coll)
@@ -312,12 +312,6 @@ float HitCircle::HitTestBasicRadius(const Ball * pball, float dtime, CollisionEv
    return hittime;
 }
 
-float HitCircle::HitTestRadius(const Ball *pball, float dtime, CollisionEvent& coll)
-{
-   //normal face, lateral, rigid
-   return HitTestBasicRadius(pball, dtime, coll, true, true, true);
-}
-
 void HitCircle::CalcHitRect()
 {
    // Allow roundoff
@@ -331,7 +325,8 @@ void HitCircle::CalcHitRect()
 
 float HitCircle::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 {
-   return HitTestRadius(pball, dtime, coll);
+	//normal face, lateral, rigid
+	return HitTestBasicRadius(pball, dtime, coll, true, true, true);
 }
 
 void HitCircle::Collide(CollisionEvent *coll)
@@ -528,45 +523,46 @@ void HitPoint::Contact(CollisionEvent& coll, float dtime)
    coll.ball->HandleStaticContact(coll.hitnormal, coll.hitvelocity.z, m_friction, dtime);
 }
 
-
-void DoHitTest(Ball *pball, HitObject *pho, CollisionEvent& coll)
+void DoHitTest(Ball *const pball, HitObject *const pho, CollisionEvent& coll)
 {
 #ifdef _DEBUGPHYSICS
    g_pplayer->c_deepTested++;
 #endif
+
    if (pho->m_ObjType == eHitTarget)
    {
       if ( pho->m_objHitEvent && (((HitTarget*)pho->m_objHitEvent)->m_d.m_isDropped == true) )
          return;
    }
 
-   if (!g_pplayer->m_fRecordContacts)  // simply find first event
+   CollisionEvent newColl;
+   newColl.isContact = false;
+   const float newtime = pho->HitTest(pball, coll.hittime, !g_pplayer->m_fRecordContacts ? coll : newColl);
+   const bool validhit = ((newtime >= 0.f) && !sign(newtime) && (newtime <= coll.hittime));
+
+   if (!g_pplayer->m_fRecordContacts) // simply find first event
    {
-      const float newtime = pho->HitTest(pball, coll.hittime, coll);
-      if ((newtime >= 0.f) && !sign(newtime) && (newtime <= coll.hittime))
+      if (validhit)
       {
          coll.ball = pball;
          coll.obj = pho;
          coll.hittime = newtime;
       }
    }
-   else    // find first collision, but also remember all contacts
+   else // find first collision, but also remember all contacts
    {
-      CollisionEvent newColl;
-      newColl.isContact = false;
-      const float newtime = pho->HitTest(pball, coll.hittime, newColl);
-      if (newColl.isContact || ((newtime >= 0.f) && !sign(newtime) && (newtime <= coll.hittime)))
+      if (newColl.isContact || validhit)
       {
          newColl.ball = pball;
          newColl.obj = pho;
-      }
-
-      if (newColl.isContact)
-         g_pplayer->m_contacts.push_back(newColl);
-      else if (newtime >= 0.f && !sign(newtime) && newtime <= coll.hittime)
-      {
-         coll = newColl;
-         coll.hittime = newtime;
-      }
+		
+		 if (newColl.isContact)
+			 g_pplayer->m_contacts.push_back(newColl);
+		 else //if (validhit)
+		 {
+			 coll = newColl;
+			 coll.hittime = newtime;
+		 }
+	  }
    }
 }

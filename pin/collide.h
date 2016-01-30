@@ -166,8 +166,6 @@ public:
    float HitTestBasicRadius(const Ball * pball, float dtime, CollisionEvent& coll,
       bool direction, bool lateral, bool rigid);
 
-   float HitTestRadius(const Ball * pball, const float dtime, CollisionEvent& coll);
-
    virtual int GetType() const { return eCircle; }
 
    virtual void Collide(CollisionEvent *coll);
@@ -219,4 +217,4 @@ public:
 // Callback for the broadphase collision test.
 // Perform the actual hittest between ball and hit object and update
 // collision information if a hit occurred.
-void DoHitTest(Ball *pball, HitObject *pho, CollisionEvent& coll);
+void DoHitTest(Ball * const pball, HitObject * const pho, CollisionEvent& coll);

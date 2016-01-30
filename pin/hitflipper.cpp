@@ -456,7 +456,7 @@ float HitFlipper::HitTestFlipperEnd(const Ball * pball, const float dtime, Colli
    } //for loop
    //+++ End time interation loop found time t soultion ++++++
 
-   if (t < 0 || t > dtime							// time is outside this frame ... no collision
+   if (infNaN(t) || t < 0 || t > dtime							// time is outside this frame ... no collision
       ||
       ((k > C_INTERATIONS) && (fabsf(bfend) > pball->m_radius*0.25f))) // last ditch effort to accept a solution
       return -1.0f; // no solution
@@ -610,7 +610,7 @@ float HitFlipper::HitTestFlipperFace(const Ball * pball, const float dtime, Coll
 
    //+++ End time interation loop found time t soultion ++++++
 
-   if (t < 0 || t > dtime								// time is outside this frame ... no collision
+   if (infNaN(t) || t < 0 || t > dtime								// time is outside this frame ... no collision
       ||
       ((k > C_INTERATIONS) && (fabsf(bffnd) > pball->m_radius*0.25f))) // last ditch effort to accept a near solution
       return -1.0f; // no solution
