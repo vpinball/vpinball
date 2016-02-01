@@ -1191,7 +1191,7 @@ void KickerHitCircle::DoCollide(Ball * const pball, const Vertex3Ds& hitnormal, 
                   const float maxFric = friction * reactionImpulse;
                   const float jt = clamp(-vt / kt, -maxFric, maxFric);
 
-                  pball->ApplySurfaceImpulse(surfP, jt * tangent);
+                  pball->ApplySurfaceImpulse(jt * cross, jt * tangent);
                }
             }
          }

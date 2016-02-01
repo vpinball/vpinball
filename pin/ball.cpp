@@ -190,7 +190,7 @@ void Ball::Collide3DWall(const Vertex3Ds& hitNormal, float elasticity, float ela
       const float jt = clamp(-vt / kt, -maxFric, maxFric);
 
       if (!infNaN(jt))
-         ApplySurfaceImpulse(surfP, jt * tangent);
+         ApplySurfaceImpulse(jt * cross, jt * tangent);
    }
 
    if (scatter_angle < 0.0f) scatter_angle = c_hardScatter;  // if < 0 use global value
@@ -415,11 +415,12 @@ void Ball::ApplyFriction(const Vertex3Ds& hitnormal, const float dtime, const fl
       numer = -slipDir.Dot(surfVel);
    }
 
-   const float denom = m_invMass + slipDir.Dot(CrossProduct(CrossProduct(surfP, slipDir) / m_inertia, surfP));
+   const Vertex3Ds cp = CrossProduct(surfP, slipDir);
+   const float denom = m_invMass + slipDir.Dot(CrossProduct(cp / m_inertia, surfP));
    const float fric = clamp(numer / denom, -maxFric, maxFric);
 
    if (!infNaN(fric))
-      ApplySurfaceImpulse(surfP, (dtime * fric) * slipDir);
+      ApplySurfaceImpulse((dtime * fric) * cp, (dtime * fric) * slipDir);
 }
 
 Vertex3Ds Ball::SurfaceVelocity(const Vertex3Ds& surfP) const
@@ -434,11 +435,10 @@ Vertex3Ds Ball::SurfaceAcceleration(const Vertex3Ds& surfP) const
       + CrossProduct(m_angularvelocity, CrossProduct(m_angularvelocity, surfP)); // centripetal acceleration
 }
 
-void Ball::ApplySurfaceImpulse(const Vertex3Ds& surfP, const Vertex3Ds& impulse)
+void Ball::ApplySurfaceImpulse(const Vertex3Ds& rotI, const Vertex3Ds& impulse)
 {
    m_vel += m_invMass * impulse;
 
-   const Vertex3Ds rotI = CrossProduct(surfP, impulse);
    m_angularmomentum += rotI;
    //const float aml = m_angularmomentum.Length();
    //if (aml > m_inertia*135.0f) //!! hack to limit ball spin
@@ -511,15 +511,12 @@ void BallAnimObject::UpdateVelocities()
 
 void Ball::UpdateVelocities()
 {
-   const float nx = g_pplayer->m_NudgeX;     // TODO: depends on STEPTIME
-   const float ny = g_pplayer->m_NudgeY;
-
    if (!m_frozen)  // Gravity
    {
       m_vel += (float)PHYS_FACTOR * g_pplayer->m_gravity;
 
-      m_vel.x += nx;
-      m_vel.y += ny;
+      m_vel.x += g_pplayer->m_NudgeX;     // TODO: depends on STEPTIME
+      m_vel.y += g_pplayer->m_NudgeY;
 
       m_vel -= g_pplayer->m_tableVelDelta;
    }

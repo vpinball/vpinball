@@ -70,11 +70,7 @@ public:
             pmat1->m_d[i][1] * pmat2->m_d[1][l] +
             pmat1->m_d[i][2] * pmat2->m_d[2][l];
 
-      // Copy the final values over later.  This makes it so pmat1 and pmat2 can
-      // point to the same matrix.
-      for (int i = 0; i < 3; ++i)
-         for (int l = 0; l < 3; ++l)
-            m_d[i][l] = matans.m_d[i][l];
+      *this = matans;
    }
 
    void AddMatrix(const Matrix3 * const pmat1, const Matrix3 * const pmat2)
@@ -88,11 +84,11 @@ public:
    {
       Vertex3Ds vX(m_d[0][0], m_d[1][0], m_d[2][0]);
       Vertex3Ds vY(m_d[0][1], m_d[1][1], m_d[2][1]);
-      vX.Normalize();
       Vertex3Ds vZ = CrossProduct(vX, vY);
+      vX.Normalize();
       vZ.Normalize();
       vY = CrossProduct(vZ, vX);
-      vY.Normalize();
+      //vY.Normalize(); // not needed
 
       m_d[0][0] = vX.x; m_d[0][1] = vY.x; m_d[0][2] = vZ.x;
       m_d[1][0] = vX.y; m_d[1][1] = vY.y; m_d[1][2] = vZ.y;
@@ -318,6 +314,6 @@ public:
          tmp.m[2][i] = m[i][2];
          tmp.m[3][i] = m[i][3];
       }
-      memcpy(this->m, tmp.m, 4 * 4 * sizeof(float));
+      *this = tmp;
    }
 };

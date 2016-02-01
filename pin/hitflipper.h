@@ -28,7 +28,7 @@ public:
 
    float GetHitTime() const;
 
-   void ApplyImpulse(const Vertex3Ds& surfP, const Vertex3Ds& impulse);
+   void ApplyImpulse(const Vertex3Ds& rotI);
 
    Flipper *m_pflipper;
 
