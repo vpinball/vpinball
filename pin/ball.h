@@ -49,7 +49,7 @@ public:
    Vertex3Ds SurfaceVelocity(const Vertex3Ds& surfP) const;
    Vertex3Ds SurfaceAcceleration(const Vertex3Ds& surfP) const;
 
-   void ApplySurfaceImpulse(const Vertex3Ds& surfP, const Vertex3Ds& impulse);
+   void ApplySurfaceImpulse(const Vertex3Ds& rotI, const Vertex3Ds& impulse);
 
    void EnsureOMObject();
 
