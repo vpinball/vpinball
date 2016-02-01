@@ -29,7 +29,7 @@ void HitObject::FireHitEvent(Ball* pball)
       const Vertex3Ds dist = pball->m_Event_Pos - pball->m_pos;
       pball->m_Event_Pos = pball->m_pos;    //remember last collide position
 
-      if (dist.LengthSquared() > 0.25f) // must be a new place if only by a little
+      if (dist.LengthSquared() > 0.25f) // must be a new place if only by a little //!! magic distance
          m_pfe->FireGroupEvent(DISPID_HitEvents_Hit);
    }
 }

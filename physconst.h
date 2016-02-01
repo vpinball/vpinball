@@ -1,20 +1,18 @@
 #pragma once
 
 
-//#define PHYSICS_STEPTIME    10000	// usecs to go between each physics update
 #define PHYSICS_STEPTIME    1000	// usecs to go between each physics update
 
 #define PHYSICS_STEPTIME_S  (PHYSICS_STEPTIME * 1e-6)     // step time in seconds
 
-#define DEFAULT_STEPTIME      10000      // default physics rate: 100Hz
-#define DEFAULT_STEPTIME_S    0.01       // default physics rate: 100Hz
+#define DEFAULT_STEPTIME      10000      // default physics rate: 1000Hz
+#define DEFAULT_STEPTIME_S    0.01       // default physics rate: 1000Hz
 
 #define PHYS_FACTOR         (PHYSICS_STEPTIME_S / DEFAULT_STEPTIME_S)
 
 #define DEFAULT_TABLE_GRAVITY           1.6774f
 #define DEFAULT_TABLE_CONTACTFRICTION   0.10f
 #define DEFAULT_TABLE_SCATTERANGLE      0.5f
-
 
 /*
  * NOTE ABOUT VP PHYSICAL UNITS:

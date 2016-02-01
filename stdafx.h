@@ -52,7 +52,8 @@
 
 #define ADAPT_VSYNC_FACTOR 0.95 // safety factor where vsync is turned off (f.e. drops below 60fps * 0.95 = 57fps)
 
-#define ACCURATETIMERS 1
+#define ACCURATETIMERS 1        // if commented out, timers will only be triggered as often as frames are rendered (e.g. they can fall behind)
+#define MAX_TIMER_MSEC_INTERVAL 5 // amount of msecs to wait (at least) until same timer can be triggered again (e.g. they can fall behind, if > 0)
 
 #define FPS 1                   // Enable FPS computation (default 'F11')
 #define STEPPING 1              // Enable Physics stepping

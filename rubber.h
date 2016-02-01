@@ -113,7 +113,7 @@ public:
    virtual void ExportMesh(FILE *f);
 
    void WriteRegDefaults();
-   void AddHitEdge(Vector<HitObject> * pvho, std::set< std::pair<unsigned, unsigned> >& addedEdges, unsigned i, unsigned j);
+   void AddHitEdge(Vector<HitObject> * pvho, std::set< std::pair<unsigned, unsigned> >& addedEdges, const unsigned i, const unsigned j);
    void SetupHitObject(Vector<HitObject> * pvho, HitObject * obj);
 
    // IHaveDragPoints
@@ -151,9 +151,9 @@ private:
 
    void GenerateVertexBuffer(RenderDevice* pd3dDevice);
 
-   void RenderObject(RenderDevice *pd3dDevice);
-   void UpdateRubber(RenderDevice *pd3dDevice, bool updateVB = true);
-   void GenerateMesh(int _accuracy = -1, bool createHitShape=false);
+   void RenderObject(RenderDevice * const pd3dDevice);
+   void UpdateRubber(RenderDevice * const pd3dDevice, const bool updateVB = true);
+   void GenerateMesh(const int _accuracy = -1, const bool createHitShape = false);
    void DrawRubberMesh(Sur * const psur);
 
    // IRamp

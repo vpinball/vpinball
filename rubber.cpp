@@ -481,7 +481,7 @@ void Rubber::GetTimers(Vector<HitTimer> * const pvht)
    IEditable::BeginPlay();
 
    HitTimer * const pht = new HitTimer();
-   pht->m_interval = m_d.m_tdr.m_TimerInterval;
+   pht->m_interval = max(m_d.m_tdr.m_TimerInterval,MAX_TIMER_MSEC_INTERVAL);
    pht->m_nextfire = pht->m_interval;
    pht->m_pfe = (IFireEvents *)this;
 
@@ -495,7 +495,7 @@ void Rubber::GetHitShapes(Vector<HitObject> * const pvho)
 {
    std::set< std::pair<unsigned, unsigned> > addedEdges;
 
-   GenerateMesh(6, true);
+   GenerateMesh(6, true); //!! adapt hacky code in the function if changing the "6" here
    UpdateRubber(NULL, false);
 
    // add collision triangles and edges
@@ -524,7 +524,7 @@ void Rubber::GetHitShapes(Vector<HitObject> * const pvho)
    }
 }
 
-void Rubber::AddHitEdge(Vector<HitObject> * pvho, std::set< std::pair<unsigned, unsigned> >& addedEdges, unsigned i, unsigned j)
+void Rubber::AddHitEdge(Vector<HitObject> * pvho, std::set< std::pair<unsigned, unsigned> >& addedEdges, const unsigned i, const unsigned j)
 {
    // create pair uniquely identifying the edge (i,j)
    std::pair<unsigned, unsigned> p(std::min(i, j), std::max(i, j));
@@ -532,8 +532,8 @@ void Rubber::AddHitEdge(Vector<HitObject> * pvho, std::set< std::pair<unsigned, 
    if (addedEdges.count(p) == 0)   // edge not yet added?
    {
       addedEdges.insert(p);
-      Vertex3Ds v1 = Vertex3Ds(m_vertices[i].x, m_vertices[i].y, m_vertices[i].z);
-      Vertex3Ds v2 = Vertex3Ds(m_vertices[j].x, m_vertices[j].y, m_vertices[j].z);
+      const Vertex3Ds v1(m_vertices[i].x, m_vertices[i].y, m_vertices[i].z);
+      const Vertex3Ds v2(m_vertices[j].x, m_vertices[j].y, m_vertices[j].z);
       SetupHitObject(pvho, new HitLine3D(v1, v2));
    }
 }
@@ -1266,7 +1266,7 @@ STDMETHODIMP Rubber::put_RotZ(float newVal)
    return S_OK;
 }
 
-void Rubber::RenderObject(RenderDevice *pd3dDevice)
+void Rubber::RenderObject(RenderDevice * const pd3dDevice)
 {
    TRACE_FUNCTION();
 
@@ -1339,7 +1339,7 @@ void Rubber::ExportMesh(FILE *f)
       WaveFrontObj_UpdateFaceOffset(m_numVertices);
    }
 }
-void Rubber::GenerateMesh(int _accuracy, bool createHitShape)
+void Rubber::GenerateMesh(const int _accuracy, const bool createHitShape)
 {
    int accuracy;
    if (m_ptable->GetDetailLevel() < 5)
@@ -1392,15 +1392,15 @@ void Rubber::GenerateMesh(int _accuracy, bool createHitShape)
       }
       binorm.Normalize();
       normal.Normalize();
-	  prevB = binorm;
-	  const float u = (float)i * invNR;
-	  for (int j = 0; j < numSegments; j++, index++)
+      prevB = binorm;
+      const float u = (float)i * invNR;
+      for (int j = 0; j < numSegments; j++, index++)
       {
-		 const float v = ((float)j + u) * invNS;
-         Vertex3Ds tmp = GetRotatedAxis((float)j*((360.0f) * invNS), tangent, normal) * ((float)m_d.m_thickness*0.5f);
+         const float v = ((float)j + u) * invNS;
+         Vertex3Ds tmp = GetRotatedAxis((float)j*(360.0f * invNS), tangent, normal) * ((float)m_d.m_thickness*0.5f);
          m_vertices[index].x = middlePoints[i].x + tmp.x;
          m_vertices[index].y = middlePoints[i].y + tmp.y;
-         if (createHitShape && (j==0 || j==3) )
+         if (createHitShape && (j==0 || j==3)) //!! hack, adapt if changing detail level for hitshape
          {
              // for a hit shape create a more rectangle mesh and not a smooth one
              tmp.z *= 0.6f;
@@ -1505,7 +1505,7 @@ void Rubber::GenerateVertexBuffer(RenderDevice* pd3dDevice)
    dynamicIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(ringIndices);
 }
 
-void Rubber::UpdateRubber(RenderDevice *pd3dDevice, bool updateVB)
+void Rubber::UpdateRubber(RenderDevice * const pd3dDevice, const bool updateVB)
 {
    Matrix3D fullMatrix;
    fullMatrix.SetIdentity();
