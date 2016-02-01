@@ -316,6 +316,8 @@ public:
    bool m_swap_ball_collision_handling; // Swaps the order of ball-ball collision handling around each physics cycle (in ragard to the RLC comment block in quadtree.cpp (hopefully ;)))
 
 #ifdef _DEBUGPHYSICS
+   U32 c_script_period;
+
    U32 c_hitcnts;
    U32 c_collisioncnt;
    U32 c_contactcnt;

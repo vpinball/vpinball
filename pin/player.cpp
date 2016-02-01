@@ -2737,6 +2737,10 @@ void Player::UpdatePhysics()
       m_fNoTimeCorrect = false;
    }
 
+#ifdef _DEBUGPHYSICS
+   c_script_period = 0;
+#endif
+
 #ifdef STEPPING
 #ifndef EVENTIME
    if (m_fDebugWindowActive || m_fUserDebugPaused)
@@ -2868,6 +2872,10 @@ void Player::UpdatePhysics()
             pht->m_nextfire += pht->m_interval;
          }
       }
+
+#ifdef _DEBUGPHYSICS
+      c_script_period += usec() - cur_time_usec;
+#endif
 #endif
       NudgeUpdate();           // physics_diff_time is the balance of time to move from the graphic frame position to the next
       mechPlungerUpdate(); // integral physics frame. So the previous graphics frame was (1.0 - physics_diff_time) before 
@@ -3922,6 +3930,10 @@ void Player::Render()
         len = sprintf_s(szFoo, sizeof(szFoo), " OctObjects: %5u Octree:%5u QuadObjects: %5u Quadtree:%5u Traversed:%5u Tested:%5u DeepTested:%5u ",
            c_octObjects,c_octNextlevels,c_quadObjects,c_quadNextlevels,c_traversed,c_tested,c_deepTested);
         TextOut(hdcNull, 10, 240, szFoo, len);
+
+        len = sprintf_s(szFoo, sizeof(szFoo), " %.2f%% Script Period: %.1f ms ",
+            float(c_script_period*100.0 / period), float(1e-3*c_script_period));
+        TextOut(hdcNull, 10, 260, szFoo, len);
 #endif
         ReleaseDC(NULL, hdcNull);
    }
