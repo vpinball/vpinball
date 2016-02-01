@@ -11,7 +11,7 @@
 '
 'Controller.vbs will also create a Controller.txt inside the user folder of VP, here an example of its content:
 '
-'forcedisableB2S=0
+'ForceDisableB2S=0
 'UseDOFcontactors=1
 'UseDOFKnocker=1
 'UseDOFChimes=0
@@ -19,7 +19,7 @@
 'UseDOFGear=1
 'UseDOFShaker=1
 '
-'If B2S.Server is setup but one doesn't want to use it, one should change the first line to forcedisableB2S=1
+'If B2S.Server is setup but one doesn't want to use it, one should change the first line to ForceDisableB2S=1
 '
 '
 'Table script usage:
@@ -97,7 +97,7 @@
 
 
 Const ControllerFile = "Controller.txt"
-Dim popupmessage
+Dim PopupMessage
 Dim Controller
 Const DOFContactors = 1
 Const DOFKnocker = 2
@@ -133,7 +133,7 @@ Sub LoadVPinMAME
 	On Error Goto 0
 End Sub
 
-'Check if Controller.txt exists, if not it creates it and adds forcedisableB2S= with value 0,
+'Check if Controller.txt exists, if not it creates it and adds ForceDisableB2S= with value 0,
 'e.g. try to load b2s.server and if not possible, load VPinMAME.Controller instead.
 'The user can put a value of 1, which will force to load VPinMAME or no controller for EM tables.
 'Also defines the array of toy categories that will either play the sound or trigger the DOF effect.
@@ -150,10 +150,13 @@ Sub LoadController(TableType)
 	tempC = 0
 	
     Set FileObj=CreateObject("Scripting.FileSystemObject")
+        If Not FileObj.FolderExists(UserDirectory) Then
+                FileObj.CreateFolder(UserDirectory)
+        End If
 	If Not FileObj.FileExists(UserDirectory & ControllerFile) Then
-		popupmessage = "A new file, " & ControllerFile & ", has been created in your User folder within your VP Directory. It defines the controller type that VP will use (value 0 is default). "
-		popupmessage = popupmessage & "This will select B2S for loading, or the VPinMAME.Controller (if B2S fails), or no controller (for EM tables). "
-		popupmessage = popupmessage & "Changing the value of forcedisableB2S to 1 in this file will force loading the VPinMAME.Controller, or no controller (for EM tables). "
+		PopupMessage = "A new file, " & ControllerFile & ", has been created in your User folder within your VP Directory. It defines the controller type that VP will use (value 0 is default). "
+		PopupMessage = PopupMessage & "This will select B2S for loading, or the VPinMAME.Controller (if B2S fails), or no controller (for EM tables). "
+		PopupMessage = PopupMessage & "Changing the value of ForceDisableB2S to 1 in this file will force loading the VPinMAME.Controller, or no controller (for EM tables). "
 		ISDOF = msgBox("Are you using DOF?." & vbCrLf & vbCrLf & "This is a question situation with Yes or No only",4+32, "Question?")
 		Select Case ISDOF
 		Case 6		
@@ -163,7 +166,7 @@ Sub LoadController(TableType)
 			YesNoPrompt "Are you using a bell?", 4
 			YesNoPrompt "Are you using a gear?", 5
 			YesNoPrompt "Are you using a shaker?", 6
-			popupmessage = popupmessage & "DOF lines added based on your answers, a 0 plays the respective sound, a 1 only uses the DOF toy instead. "
+			PopupMessage = PopupMessage & "DOF lines added based on your answers, a 0 plays the respective sound, a 1 only uses the DOF toy instead. "
         Case 7
 			DOFeffects(1) = 0 'contactors
 			DOFeffects(2) = 0 'knocker
@@ -173,7 +176,7 @@ Sub LoadController(TableType)
 			DOFeffects(6) = 0 'shaker
 		End Select
 		Set DOFConfig=FileObj.CreateTextFile(UserDirectory & ControllerFile)
-		DOFConfig.WriteLine "forcedisableB2S=" & tempC
+		DOFConfig.WriteLine "ForceDisableB2S=" & tempC
 		DOFConfig.WriteLine "UseDOFcontactors=" & DOFeffects(1)
 		DOFConfig.WriteLine "UseDOFKnocker=" & DOFeffects(2)
 		DOFConfig.WriteLine "UseDOFChimes=" & DOFeffects(3)
@@ -181,7 +184,7 @@ Sub LoadController(TableType)
 		DOFConfig.WriteLine "UseDOFGear=" & DOFeffects(5)
 		DOFConfig.WriteLine "UseDOFShaker=" & DOFeffects(6)
 		DOFConfig.Close
-		MsgBox popupmessage
+		MsgBox PopupMessage
 	Else
 		Set DOFConfig=FileObj.GetFile(UserDirectory & ControllerFile)
 		Set TextStr2=DOFConfig.OpenAsTextStream(1,0)
@@ -195,8 +198,8 @@ Sub LoadController(TableType)
 				End If
 				count = count + 1
 			Loop
-		End if
-	End if
+		End If
+	End If
 	If tempC = 0 Then
 		On Error Resume Next
 		Set Controller = CreateObject("B2S.Server")
