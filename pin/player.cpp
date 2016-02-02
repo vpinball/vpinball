@@ -2737,9 +2737,7 @@ void Player::UpdatePhysics()
       m_fNoTimeCorrect = false;
    }
 
-#ifdef _DEBUGPHYSICS
-   c_script_period = 0;
-#endif
+   m_script_period = 0;
 
 #ifdef STEPPING
 #ifndef EVENTIME
@@ -2861,21 +2859,22 @@ void Player::UpdatePhysics()
 #ifdef ACCURATETIMERS
       m_pactiveball = NULL; // No ball is the active ball for timers/key events
 
-      const int p_timeCur = (int)((m_curPhysicsFrameTime - m_StartTime_usec) / 1000); // milliseconds
-
-      for (int i = 0; i < m_vht.Size(); i++)
+      if(m_script_period <= 1000*MAX_TIMERS_MSEC_OVERALL) // if overall script time per frame exceeded, skip
       {
-         HitTimer * const pht = m_vht.ElementAt(i);
-         if (pht->m_nextfire <= p_timeCur)
-         {
-            pht->m_pfe->FireGroupEvent(DISPID_TimerEvents_Timer);
-            pht->m_nextfire += pht->m_interval;
-         }
-      }
+         const unsigned int p_timeCur = (unsigned int)((m_curPhysicsFrameTime - m_StartTime_usec) / 1000); // milliseconds
 
-#ifdef _DEBUGPHYSICS
-      c_script_period += usec() - cur_time_usec;
-#endif
+         for (int i = 0; i < m_vht.Size(); i++)
+         {
+            HitTimer * const pht = m_vht.ElementAt(i);
+            if (pht->m_nextfire <= p_timeCur)
+            {
+               pht->m_pfe->FireGroupEvent(DISPID_TimerEvents_Timer);
+               pht->m_nextfire += pht->m_interval;
+            }
+         }
+
+         m_script_period += (unsigned int)(usec() - cur_time_usec);
+      }
 #endif
       NudgeUpdate();           // physics_diff_time is the balance of time to move from the graphic frame position to the next
       mechPlungerUpdate(); // integral physics frame. So the previous graphics frame was (1.0 - physics_diff_time) before 
@@ -3903,18 +3902,21 @@ void Player::Render()
 			float(m_phys_period*100.0/period),
 			float(1e-3*m_phys_period), float(1e-3 * (double)m_phys_total/(double)m_count), float((double)m_phys_total*100.0/(double)m_total), float(1e-3*m_phys_max));
         TextOut(hdcNull, 10, 30, szFoo, len);
+		len = sprintf_s(szFoo, sizeof(szFoo), " %.2f%% Script Period: %.1f ms ",
+			float(m_script_period*100.0 / period), float(1e-3*m_script_period));
+		TextOut(hdcNull, 10, 50, szFoo, len);
 
         // performance counters
         len = sprintf_s(szFoo, sizeof(szFoo), " Draw calls: %u ", m_pin3d.m_pd3dDevice->Perf_GetNumDrawCalls());
-        TextOut(hdcNull, 10, 65, szFoo, len);
+        TextOut(hdcNull, 10, 75, szFoo, len);
         len = sprintf_s(szFoo, sizeof(szFoo), " State changes: %u ", m_pin3d.m_pd3dDevice->Perf_GetNumStateChanges());
-        TextOut(hdcNull, 10, 85, szFoo, len);
+        TextOut(hdcNull, 10, 95, szFoo, len);
         len = sprintf_s(szFoo, sizeof(szFoo), " Texture changes: %u ", m_pin3d.m_pd3dDevice->Perf_GetNumTextureChanges());
-        TextOut(hdcNull, 10, 105, szFoo, len);
+        TextOut(hdcNull, 10, 115, szFoo, len);
         len = sprintf_s(szFoo, sizeof(szFoo), " Parameter changes: %u ", m_pin3d.m_pd3dDevice->Perf_GetNumParameterChanges());
-        TextOut(hdcNull, 10, 125, szFoo, len);
+        TextOut(hdcNull, 10, 135, szFoo, len);
         len = sprintf_s(szFoo, sizeof(szFoo), " Objects: %u Transparent, %u Solid (%u Flips) ", m_vHitTrans.size(), m_vHitNonTrans.size(), material_flips);
-        TextOut(hdcNull, 10, 145, szFoo, len);
+        TextOut(hdcNull, 10, 155, szFoo, len);
 
 #ifdef _DEBUGPHYSICS
         len = sprintf_s(szFoo, sizeof(szFoo), " Phys: %5u iterations (%5u avg %5u max)) ",
@@ -3930,10 +3932,6 @@ void Player::Render()
         len = sprintf_s(szFoo, sizeof(szFoo), " OctObjects: %5u Octree:%5u QuadObjects: %5u Quadtree:%5u Traversed:%5u Tested:%5u DeepTested:%5u ",
            c_octObjects,c_octNextlevels,c_quadObjects,c_quadNextlevels,c_traversed,c_tested,c_deepTested);
         TextOut(hdcNull, 10, 240, szFoo, len);
-
-        len = sprintf_s(szFoo, sizeof(szFoo), " %.2f%% Script Period: %.1f ms ",
-            float(c_script_period*100.0 / period), float(1e-3*c_script_period));
-        TextOut(hdcNull, 10, 260, szFoo, len);
 #endif
         ReleaseDC(NULL, hdcNull);
    }
