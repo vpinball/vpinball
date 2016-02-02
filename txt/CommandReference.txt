@@ -708,6 +708,7 @@ Scatter(float)
 *Orientation(float)         - angle to rotate the whole target around the Z axis 
 *ReflectionEnabled(bool)    - default=true
 DropSpeed(float)            - the speed how fast the drop or hit target will move 
+RaiseDelay(int)             - defines a delay in milliseconds after the dropped target will start to raise to it's normal position
 IsDropped(bool)             - can only be used for drop targets if the drop target is raised or dropped
 TimerEnabled(bool)			- each target has a build-in timer which can be enabled by setting this to 1
 TimerInterval(int)			- the time in milliseconds when the timer expires
