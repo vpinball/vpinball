@@ -48,6 +48,7 @@ public:
    bool m_fReflectionEnabled;
    bool m_legacy;
    bool m_isDropped;
+   int  m_RaiseDelay;
 };
 
 class HitTarget :
@@ -122,6 +123,8 @@ public:
    STDMETHOD(put_LegacyMode)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_DrawStyle)(/*[out, retval]*/ TargetType *pVal);
    STDMETHOD(put_DrawStyle)(/*[in]*/ TargetType newVal);
+   STDMETHOD(get_RaiseDelay)(/*[out, retval]*/ long *pVal);
+   STDMETHOD(put_RaiseDelay)(/*[in]*/ long newVal);
 
    HitTarget();
    virtual ~HitTarget();
@@ -208,6 +211,7 @@ private:        // private member functions
    float m_moveAnimationOffset;
    bool  m_moveAnimation;
    bool  m_moveDown;
+   U32   m_timeStamp;
 };
 
 #endif // !defined(AFX_HITTARGET_H__A67DE998_7D97_4E03_BE91_55BFD3A48DB6__INCLUDED_)

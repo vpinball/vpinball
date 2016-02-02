@@ -191,6 +191,8 @@ void HitTarget::SetDefaults(bool fromMouseClick)
    m_d.m_fCollidable = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "Collidable", true) : true;
    m_d.m_fDisableLighting = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "DisableLighting", false) : false;
    m_d.m_fReflectionEnabled = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "ReflectionEnabled", true) : true;
+   m_d.m_RaiseDelay = fromMouseClick ? GetRegIntWithDefault(strKeyName, "RaiseDelay", 100) : 100;
+
 }
 
 void HitTarget::WriteRegDefaults()
@@ -225,6 +227,8 @@ void HitTarget::WriteRegDefaults()
    SetRegValueBool(strKeyName, "Collidable", m_d.m_fCollidable);
    SetRegValueBool(strKeyName, "DisableLighting", m_d.m_fDisableLighting);
    SetRegValueBool(strKeyName, "ReflectionEnabled", m_d.m_fReflectionEnabled);
+   SetRegValueInt(strKeyName, "RaiseDelay", m_d.m_RaiseDelay);
+
 }
 
 const Vertex3Ds dropTargetHitPlaneVertices[16] =
@@ -568,6 +572,10 @@ void HitTarget::UpdateAnimation(RenderDevice *pd3dDevice)
             const float limit = DROP_TARGET_LIMIT*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
             if (m_moveDown)
                 step = -step;
+            else if ((m_d.m_time_msec - m_timeStamp) < m_d.m_RaiseDelay)
+            {
+                step = 0.0f;
+            }
             m_moveAnimationOffset += step*diff_time_msec;
             if (m_moveDown)
             {
@@ -577,10 +585,11 @@ void HitTarget::UpdateAnimation(RenderDevice *pd3dDevice)
                     m_moveDown = false;
                     m_d.m_isDropped = true;
                     m_moveAnimation = false;
+                    m_timeStamp = 0;
                 }
             }
-            else
-            {
+            else 
+            {                 
                 if (m_moveAnimationOffset >= 0.0f)
                 {
                     m_moveAnimationOffset = 0.0f;
@@ -845,6 +854,7 @@ HRESULT HitTarget::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcry
    bw.WriteFloat(FID(DRSP), m_d.m_dropSpeed);
    bw.WriteBool(FID(TMON), m_d.m_tdr.m_fTimerEnabled);
    bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
+   bw.WriteInt(FID(RADE), m_d.m_RaiseDelay);
    ISelect::SaveData(pstm, hcrypthash, hcryptkey);
 
    bw.WriteTag(FID(ENDB));
@@ -963,6 +973,10 @@ BOOL HitTarget::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(TMIN))
    {
        pbr->GetInt(&m_d.m_tdr.m_TimerInterval);
+   }
+   else if (id == FID(RADE))
+   {
+       pbr->GetInt(&m_d.m_RaiseDelay);
    }
    else
    {
@@ -1523,6 +1537,7 @@ STDMETHODIMP HitTarget::put_IsDropped(VARIANT_BOOL newVal)
          m_moveAnimation = true;
          m_moveAnimationOffset = -DROP_TARGET_LIMIT*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
          m_moveDown = false;
+         m_timeStamp = g_pplayer->m_time_msec;
       }
    }
    else
@@ -1584,4 +1599,22 @@ void HitTarget::GetTimers(Vector<HitTimer> * const pvht)
 
     if (m_d.m_tdr.m_fTimerEnabled)
         pvht->AddElement(pht);
+}
+
+STDMETHODIMP HitTarget::get_RaiseDelay(long *pVal)
+{
+    *pVal = m_d.m_RaiseDelay;
+
+    return S_OK;
+}
+
+STDMETHODIMP HitTarget::put_RaiseDelay(long newVal)
+{
+    STARTUNDO
+
+        m_d.m_RaiseDelay = newVal;
+
+    STOPUNDO
+
+        return S_OK;
 }
