@@ -154,6 +154,8 @@ public:
    void RenderDynamicMirror(const bool onlyBalls);
    void RenderMirrorOverlay();
    void InitBallShader();
+   void CreateDebugFont();
+   void DebugPrint(int x, int y, LPCSTR text, int stringLen);
    void InitWindow();
    void InitKeys();
    void InitRegValues();
@@ -468,4 +470,5 @@ public:
    bool m_fOverwriteBallImages;
    Texture *m_ballImage;
    Texture *m_decalImage;
+   ID3DXFont *m_pFont;
 };
