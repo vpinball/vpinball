@@ -843,7 +843,6 @@
 #define IDC_CVP_BUT_FONT_EVERYTHINGELSE 725
 #define IDC_BALL_DECAL_EDIT             725
 #define IDC_THROW_BALLS_ALWAYS_ON_CHECK 725
-#define IDC_                            726
 #define IDC_TARGET_RAISE_DELAY_EDIT     726
 #define IDC_CVP_BUT_COL_BACKGROUND      727
 #define IDC_CVP_EDIT_AUTOCHARS          728
