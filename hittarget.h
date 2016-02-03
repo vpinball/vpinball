@@ -38,6 +38,7 @@ public:
    float m_scatter;
    float m_dropSpeed;
    U32   m_time_msec;
+   int   m_RaiseDelay;
 
    float m_depthBias;      // for determining depth sorting
    bool m_fVisible;
@@ -48,7 +49,6 @@ public:
    bool m_fReflectionEnabled;
    bool m_legacy;
    bool m_isDropped;
-   int  m_RaiseDelay;
 };
 
 class HitTarget :
@@ -208,10 +208,10 @@ private:        // private member functions
    // Vertices for editor display
    std::vector<Vertex3Ds> vertices;
    Vertex3D_NoTex2 *transformedVertices;
+   U32   m_timeStamp;
    float m_moveAnimationOffset;
    bool  m_moveAnimation;
    bool  m_moveDown;
-   U32   m_timeStamp;
 };
 
 #endif // !defined(AFX_HITTARGET_H__A67DE998_7D97_4E03_BE91_55BFD3A48DB6__INCLUDED_)
