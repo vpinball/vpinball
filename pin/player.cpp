@@ -422,7 +422,7 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
    c_embedcnts = 0;
    c_timesearch = 0;
 
-   c_octNextlevels = 0;
+   c_kDNextlevels = 0;
    c_quadNextlevels = 0;
 
    c_traversed = 0;
@@ -435,10 +435,6 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
 
    for (unsigned int i = 0; i < 8; ++i)
       m_touchregion_pressed[i] = false;
-
-#ifdef DEBUG_FPS
-   ToggleFPS();
-#endif
 
    m_fRecordContacts = false;
    m_contacts.reserve(8);
@@ -581,13 +577,19 @@ void Player::ToggleFPS()
    m_total = 0;
    m_count = 0;
    m_max = 0;
+   m_max_total = 0;
    m_lastMaxChangeTime = 0;
    m_lastTime_usec = 0;
 
    m_phys_total = 0;
    m_phys_max = 0;
+   m_phys_max_total = 0;
    m_phys_max_iterations = 0;
    m_phys_total_iterations = 0;
+
+   m_script_total = 0;
+   m_script_max = 0;
+   m_script_max_total = 0;
 }
 
 void Player::RecomputePauseState()
@@ -1089,7 +1091,7 @@ void Player::CreateDebugFont()
     HRESULT hr = D3DXCreateFont(m_pin3d.m_pd3dDevice->GetCoreDevice(), //device
                                 20,                                    //font height 
                                 0,                                     //font width
-                                FW_NORMAL,                             //font weight
+                                FW_BOLD,                               //font weight
                                 1,                                     //mip levels 
                                 false,                                 //italic     
                                 DEFAULT_CHARSET,                       //charset
@@ -2824,7 +2826,7 @@ void Player::UpdatePhysics()
 #ifdef FPS
    //if (m_fShowFPS)
    {
-      m_lastFrameDuration = initial_time_usec - m_lastTime_usec;
+      m_lastFrameDuration = (U32)(initial_time_usec - m_lastTime_usec);
       if (m_lastFrameDuration > 1000000)
          m_lastFrameDuration = 0;
       m_lastTime_usec = initial_time_usec;
@@ -2968,7 +2970,7 @@ void Player::UpdatePhysics()
    } // end while (m_curPhysicsFrameTime < initial_time_usec)
 
 #ifdef FPS
-   m_phys_period = usec() - initial_time_usec;
+   m_phys_period = (U32)(usec() - initial_time_usec - m_script_period);
 #endif
 }
 
@@ -3677,7 +3679,7 @@ void Player::UpdateCameraModeDisplay()
 {
    char szFoo[128];
    int len;
-   len = sprintf_s(szFoo, "Camera & Light Mode                                 ");
+   len = sprintf_s(szFoo, "Camera & Light Mode");
    DebugPrint( 10, 30, szFoo, len);
    len = sprintf_s(szFoo, "Left / Right flipper key = decrease / increase value");
    DebugPrint(10, 50, szFoo, len);
@@ -3688,72 +3690,72 @@ void Player::UpdateCameraModeDisplay()
    {
    case 0:
    {
-      len = sprintf_s(szFoo, "Inclination: %f           ", m_ptable->m_BG_inclination[m_ptable->m_BG_current_set]);
+      len = sprintf_s(szFoo, "Inclination: %f", m_ptable->m_BG_inclination[m_ptable->m_BG_current_set]);
       break;
    }
    case 1:
    {
-      len = sprintf_s(szFoo, "Field Of View: %f         ", m_ptable->m_BG_FOV[m_ptable->m_BG_current_set]);
+      len = sprintf_s(szFoo, "Field Of View: %f", m_ptable->m_BG_FOV[m_ptable->m_BG_current_set]);
       break;
    }
    case 2:
    {
-      len = sprintf_s(szFoo, "Layback: %f               ", m_ptable->m_BG_layback[m_ptable->m_BG_current_set]);
+      len = sprintf_s(szFoo, "Layback: %f", m_ptable->m_BG_layback[m_ptable->m_BG_current_set]);
       break;
    }
    case 3:
    {
-      len = sprintf_s(szFoo, "X Scale: %f               ", m_ptable->m_BG_scalex[m_ptable->m_BG_current_set]);
+      len = sprintf_s(szFoo, "X Scale: %f", m_ptable->m_BG_scalex[m_ptable->m_BG_current_set]);
       break;
    }
    case 4:
    {
-      len = sprintf_s(szFoo, "Y Scale: %f               ", m_ptable->m_BG_scaley[m_ptable->m_BG_current_set]);
+      len = sprintf_s(szFoo, "Y Scale: %f", m_ptable->m_BG_scaley[m_ptable->m_BG_current_set]);
       break;
    }
    case 5:
    {
-      len = sprintf_s(szFoo, "Z Scale: %f               ", m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]);
+      len = sprintf_s(szFoo, "Z Scale: %f", m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]);
       break;
    }
    case 6:
    {
-      len = sprintf_s(szFoo, "X Offset: %f              ", m_ptable->m_BG_xlatex[m_ptable->m_BG_current_set]);
+      len = sprintf_s(szFoo, "X Offset: %f", m_ptable->m_BG_xlatex[m_ptable->m_BG_current_set]);
       break;
    }
    case 7:
    {
-      len = sprintf_s(szFoo, "Y Offset: %f              ", m_ptable->m_BG_xlatey[m_ptable->m_BG_current_set]);
+      len = sprintf_s(szFoo, "Y Offset: %f", m_ptable->m_BG_xlatey[m_ptable->m_BG_current_set]);
       break;
    }
    case 8:
    {
-      len = sprintf_s(szFoo, "Z Offset: %f              ", m_ptable->m_BG_xlatez[m_ptable->m_BG_current_set]);
+      len = sprintf_s(szFoo, "Z Offset: %f", m_ptable->m_BG_xlatez[m_ptable->m_BG_current_set]);
       break;
    }
    case 9:
    {
-      len = sprintf_s(szFoo, "Light Emission Scale: %f  ", m_ptable->m_lightEmissionScale);
+      len = sprintf_s(szFoo, "Light Emission Scale: %f", m_ptable->m_lightEmissionScale);
       break;
    }
    case 10:
    {
-      len = sprintf_s(szFoo, "Light Range: %f           ", m_ptable->m_lightRange);
+      len = sprintf_s(szFoo, "Light Range: %f", m_ptable->m_lightRange);
       break;
    }
    case 11:
    {
-      len = sprintf_s(szFoo, "Light Height: %f          ", m_ptable->m_lightHeight);
+      len = sprintf_s(szFoo, "Light Height: %f", m_ptable->m_lightHeight);
       break;
    }
    case 12:
    {
-      len = sprintf_s(szFoo, "Environment Emission: %f  ", m_ptable->m_envEmissionScale);
+      len = sprintf_s(szFoo, "Environment Emission: %f", m_ptable->m_envEmissionScale);
       break;
    }
    default:
    {
-      len = sprintf_s(szFoo, "unknown                ");
+      len = sprintf_s(szFoo, "unknown");
    }
    }
    DebugPrint(10, 100, szFoo, len);
@@ -3788,7 +3790,7 @@ void Player::Render()
    c_embedcnts = 0;
    c_timesearch = 0;
 
-   c_octNextlevels = 0;
+   c_kDNextlevels = 0;
    //c_quadNextlevels = 0; // not updated per frame so keep!
 
    c_traversed = 0;
@@ -3847,24 +3849,36 @@ void Player::Render()
 
        // Draw the framerate.
        const float fpsAvg = (m_fpsCount == 0) ? 0.0f : m_fpsAvg / m_fpsCount;
-       int len2 = sprintf_s(szFoo, " FPS: %.1f FPS(avg): %.1f  Display %s Objects (%uk/%uk Triangles)  DayNight %d%% ", m_fps, fpsAvg, m_staticOnly ? "only static" : "all", (m_pin3d.m_pd3dDevice->m_stats_drawn_triangles + 999) / 1000, (stats_drawn_static_triangles + m_pin3d.m_pd3dDevice->m_stats_drawn_triangles + 999) / 1000, (int)(m_globalEmissionScale*100.f));
+       int len2 = sprintf_s(szFoo, "FPS: %.1f (%.1f avg)  Display %s Objects (%uk/%uk Triangles)  DayNight %d%%", m_fps, fpsAvg, m_staticOnly ? "only static" : "all", (m_pin3d.m_pd3dDevice->m_stats_drawn_triangles + 999) / 1000, (stats_drawn_static_triangles + m_pin3d.m_pd3dDevice->m_stats_drawn_triangles + 999) / 1000, (int)(m_globalEmissionScale*100.f));
        DebugPrint(10, 10, szFoo, len2);
 
-       const U64 period = m_lastFrameDuration;
+       const U32 period = m_lastFrameDuration;
        if (period > m_max || m_time_msec - m_lastMaxChangeTime > 1000)
-       {
            m_max = period;
-           m_lastMaxChangeTime = m_time_msec;
-       }
+       if (period > m_max_total && period < 100000)
+           m_max_total = period;
 
-       if (m_phys_period > m_phys_max) m_phys_max = m_phys_period;
-       if (m_phys_iterations > m_phys_max_iterations) m_phys_max_iterations = m_phys_iterations;
+       if (m_phys_period > m_phys_max || m_time_msec - m_lastMaxChangeTime > 1000)
+           m_phys_max = m_phys_period;
+       if (m_phys_period > m_phys_max_total)
+           m_phys_max_total = m_phys_period;
+       if (m_phys_iterations > m_phys_max_iterations || m_time_msec - m_lastMaxChangeTime > 1000)
+           m_phys_max_iterations = m_phys_iterations;
+
+       if (m_script_period > m_script_max || m_time_msec - m_lastMaxChangeTime > 1000)
+           m_script_max = m_script_period;
+       if (m_script_period > m_script_max_total)
+           m_script_max_total = m_script_period;
+
+       if (m_time_msec - m_lastMaxChangeTime > 1000)
+           m_lastMaxChangeTime = m_time_msec;
 
        if (m_count == 0)
        {
            m_total = period;
            m_phys_total = m_phys_period;
            m_phys_total_iterations = m_phys_iterations;
+           m_script_total = m_script_period;
            m_count = 1;
        }
        else
@@ -3872,63 +3886,48 @@ void Player::Render()
            m_total += period;
            m_phys_total += m_phys_period;
            m_phys_total_iterations += m_phys_iterations;
+           m_script_total += m_script_period;
            m_count++;
        }
 
-#ifdef DEBUG_FPS
-        {
-#define TSIZE 20
-            static int period[TSIZE];
-            static int speriod[TSIZE];
-            static int idx;
+       int len = sprintf_s(szFoo, "Overall: %.1f ms (%.1f (%.1f) avg %.1f max)",
+           float(1e-3*period), float(1e-3 * (double)m_total / (double)m_count), float(1e-3*m_max), float(1e-3*m_max_total));
+       DebugPrint(10, 30, szFoo, len);
+       len = sprintf_s(szFoo, "%.1f%% Physics: %.1f ms (%.1f (%.1f %.1f%%) avg %.1f max)",
+           float(m_phys_period*100.0 / period), float(1e-3*m_phys_period),
+           float(1e-3 * (double)m_phys_total / (double)m_count), float(1e-3*m_phys_max), float((double)m_phys_total*100.0 / (double)m_total), float(1e-3*m_phys_max_total));
+       DebugPrint(10, 50, szFoo, len);
+       len = sprintf_s(szFoo, "%.1f%% Scripts: %.1f ms (%.1f (%.1f %.1f%%) avg %.1f max)",
+           float(m_script_period*100.0 / period), float(1e-3*m_script_period),
+           float(1e-3 * (double)m_script_total / (double)m_count), float(1e-3*m_script_max), float((double)m_script_total*100.0 / (double)m_total), float(1e-3*m_script_max_total));
+       DebugPrint(10, 70, szFoo, len);
 
-            period[idx] = period;
-            idx++;
-            if (idx >= TSIZE) idx = 0;
-
-            for (int i = 0; i < TSIZE; i++)
-            {
-                len = sprintf_s(szFoo, " %d ", period[i]);
-                DebugPrint(20 + i * 20, 10 + period[i], szFoo, len);
-            }
-        }
-#endif
-
-        int len = sprintf_s(szFoo, sizeof(szFoo), " Period: %.1f ms (%.1f avg %.1f max), %.2f%% Physics: %.1f ms (%.1f (%.2f%%) avg %.1f max) ",
-            float(1e-3*period), float(1e-3 * (double)m_total / (double)m_count), float(1e-3*m_max),
-            float(m_phys_period*100.0 / period),
-            float(1e-3*m_phys_period), float(1e-3 * (double)m_phys_total / (double)m_count), float((double)m_phys_total*100.0 / (double)m_total), float(1e-3*m_phys_max));
-        DebugPrint(10, 30, szFoo, len);
-        len = sprintf_s(szFoo, sizeof(szFoo), " %.2f%% Script Period: %.1f ms ",
-            float(m_script_period*100.0 / period), float(1e-3*m_script_period));
-        DebugPrint(10, 50, szFoo, len);
-
-        // performance counters
-        len = sprintf_s(szFoo, sizeof(szFoo), " Draw calls: %u ", m_pin3d.m_pd3dDevice->Perf_GetNumDrawCalls());
-        DebugPrint(10, 75, szFoo, len);
-        len = sprintf_s(szFoo, sizeof(szFoo), " State changes: %u ", m_pin3d.m_pd3dDevice->Perf_GetNumStateChanges());
-        DebugPrint(10, 95, szFoo, len);
-        len = sprintf_s(szFoo, sizeof(szFoo), " Texture changes: %u ", m_pin3d.m_pd3dDevice->Perf_GetNumTextureChanges());
-        DebugPrint(10, 115, szFoo, len);
-        len = sprintf_s(szFoo, sizeof(szFoo), " Parameter changes: %u ", m_pin3d.m_pd3dDevice->Perf_GetNumParameterChanges());
-        DebugPrint(10, 135, szFoo, len);
-        len = sprintf_s(szFoo, sizeof(szFoo), " Objects: %u Transparent, %u Solid (%u Flips) ", m_vHitTrans.size(), m_vHitNonTrans.size(), material_flips);
-        DebugPrint(10, 155, szFoo, len);
+       // performance counters
+       len = sprintf_s(szFoo, "Draw calls: %u", m_pin3d.m_pd3dDevice->Perf_GetNumDrawCalls());
+       DebugPrint(10, 95, szFoo, len);
+       len = sprintf_s(szFoo, "State changes: %u", m_pin3d.m_pd3dDevice->Perf_GetNumStateChanges());
+       DebugPrint(10, 115, szFoo, len);
+       len = sprintf_s(szFoo, "Texture changes: %u", m_pin3d.m_pd3dDevice->Perf_GetNumTextureChanges());
+       DebugPrint(10, 135, szFoo, len);
+       len = sprintf_s(szFoo, "Parameter changes: %u (%u Material ID changes)", m_pin3d.m_pd3dDevice->Perf_GetNumParameterChanges(), material_flips);
+       DebugPrint(10, 155, szFoo, len);
+       len = sprintf_s(szFoo, "Objects: %u Transparent, %u Solid", m_vHitTrans.size(), m_vHitNonTrans.size());
+       DebugPrint(10, 175, szFoo, len);
 
 #ifdef _DEBUGPHYSICS
-        len = sprintf_s(szFoo, sizeof(szFoo), " Phys: %5u iterations (%5u avg %5u max)) ",
-            m_phys_iterations,
-            (U32)(m_phys_total_iterations / m_count),
-            (U32)m_phys_max_iterations);
-        DebugPrint(10, 200, szFoo, len);
+       len = sprintf_s(szFoo, "Phys: %5u iterations (%5u avg %5u max))",
+           m_phys_iterations,
+          (U32)(m_phys_total_iterations / m_count),
+          m_phys_max_iterations);
+       DebugPrint(10, 200, szFoo, len);
 
-        len = sprintf_s(szFoo, sizeof(szFoo), " Hits:%5u Collide:%5u Ctacs:%5u Static:%5u Embed:%5u TimeSearch:%5u ",
-            c_hitcnts, c_collisioncnt, c_contactcnt, c_staticcnt, c_embedcnts, c_timesearch);
-        DebugPrint(10, 220, szFoo, len);
+       len = sprintf_s(szFoo, "Hits:%5u Collide:%5u Ctacs:%5u Static:%5u Embed:%5u TimeSearch:%5u",
+          c_hitcnts, c_collisioncnt, c_contactcnt, c_staticcnt, c_embedcnts, c_timesearch);
+       DebugPrint(10, 220, szFoo, len);
 
-        len = sprintf_s(szFoo, sizeof(szFoo), " OctObjects: %5u Octree:%5u QuadObjects: %5u Quadtree:%5u Traversed:%5u Tested:%5u DeepTested:%5u ",
-            c_octObjects, c_octNextlevels, c_quadObjects, c_quadNextlevels, c_traversed, c_tested, c_deepTested);
-        DebugPrint(10, 240, szFoo, len);
+       len = sprintf_s(szFoo, "kDObjects: %5u kD:%5u QuadObjects: %5u Quadtree:%5u Traversed:%5u Tested:%5u DeepTested:%5u",
+          c_kDObjects, c_kDNextlevels, c_quadObjects, c_quadNextlevels, c_traversed, c_tested, c_deepTested);
+       DebugPrint(10, 240, szFoo, len);
 #endif
    }
 #endif /*FPS*/

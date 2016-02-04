@@ -315,9 +315,12 @@ public:
    bool m_DebugBalls;			 // Draw balls in the foreground.
    bool m_ToggleDebugBalls;
 
-   bool m_swap_ball_collision_handling; // Swaps the order of ball-ball collision handling around each physics cycle (in ragard to the RLC comment block in quadtree.cpp (hopefully ;)))
+   bool m_swap_ball_collision_handling; // Swaps the order of ball-ball collision handling around each physics cycle (in regard to the RLC comment block in quadtree.cpp (hopefully ;)))
 
    U32 m_script_period;
+   U64 m_script_total;
+   U32 m_script_max;
+   U32 m_script_max_total;
 
 #ifdef _DEBUGPHYSICS
    U32 c_hitcnts;
@@ -327,8 +330,8 @@ public:
    U32 c_embedcnts;
    U32 c_timesearch;
 
-   U32 c_octObjects;
-   U32 c_octNextlevels;
+   U32 c_kDObjects;
+   U32 c_kDNextlevels;
    U32 c_quadObjects;
    U32 c_quadNextlevels;
 
@@ -424,22 +427,24 @@ private:
    U32 m_phys_iterations;
 
 #ifdef FPS
-   int m_lastfpstime;
-   int m_cframes;
+   U32 m_lastfpstime;
+   U32 m_cframes;
    float m_fps;
    float m_fpsAvg;
-   int m_fpsCount;
+   U32 m_fpsCount;
    U64 m_lastTime_usec;
-   U64 m_lastFrameDuration;
+   U32 m_lastFrameDuration;
+   U32 m_max;
+   U32 m_max_total;
    U64 m_count;
    U64 m_total;
-   U64 m_max;
    int m_lastMaxChangeTime;
    U64 m_phys_total;
-   U64 m_phys_max;
    U64 m_phys_total_iterations;
-   U64 m_phys_max_iterations;
-   U64 m_phys_period;
+   U32 m_phys_max_iterations;
+   U32 m_phys_period;
+   U32 m_phys_max;
+   U32 m_phys_max_total;
 
    FrameQueueLimiter m_limiter;
 
