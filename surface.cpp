@@ -493,16 +493,16 @@ void Surface::AddLine(Vector<HitObject> * const pvho, const RenderVertex * const
    }
 }
 
-void Surface::GetBoundingVertices(Vector<Vertex3Ds> * const pvvertex3D)
+void Surface::GetBoundingVertices(std::vector<Vertex3Ds>& pvvertex3D)
 {
    for (int i = 0; i < 8; i++)
    {
-      Vertex3Ds * const pv = new Vertex3Ds();
-      pv->x = i & 1 ? m_ptable->m_right : m_ptable->m_left;
-      pv->y = i & 2 ? m_ptable->m_bottom : m_ptable->m_top;
-      pv->z = i & 4 ? m_d.m_heighttop : m_d.m_heightbottom;
+      const Vertex3Ds pv(
+        i & 1 ? m_ptable->m_right : m_ptable->m_left,
+        i & 2 ? m_ptable->m_bottom : m_ptable->m_top,
+        i & 4 ? m_d.m_heighttop : m_d.m_heightbottom);
 
-      pvvertex3D->AddElement(pv);
+      pvvertex3D.push_back(pv);
    }
 }
 
@@ -693,14 +693,17 @@ void Surface::GenerateMesh(std::vector<Vertex3D_NoTex2> &topBuf, std::vector<Ver
    SAFE_VECTOR_DELETE(rgtexcoord);
    //if (m_d.m_fVisible)      // Visible could still be set later if rendered dynamically
    {
-      VectorVoid vpoly;
+      topBottomIndices.clear();
+
+      {
+      std::vector<unsigned int> vpoly(numVertices);
       for (unsigned int i = 0; i < numVertices; i++)
-         vpoly.AddElement((void *)i);
+         vpoly[i] = i;
 
-      Vector<Triangle> vtri;
-      PolygonToTriangles(vvertex, &vpoly, &vtri);
+      PolygonToTriangles(vvertex, vpoly, topBottomIndices);
+      }
 
-      numPolys = vtri.Size();
+      numPolys = topBottomIndices.size() / 3;
       if (numPolys == 0)
       {
          // no polys to render leave vertex buffer undefined 
@@ -712,20 +715,6 @@ void Surface::GenerateMesh(std::vector<Vertex3D_NoTex2> &topBuf, std::vector<Ver
 
       const float inv_tablewidth = 1.0f / (m_ptable->m_right - m_ptable->m_left);
       const float inv_tableheight = 1.0f / (m_ptable->m_bottom - m_ptable->m_top);
-
-      topBottomIndices.resize(numPolys * 3);
-
-      for (unsigned int i = 0; i < numPolys; ++i)
-      {
-         const Triangle * const ptri = vtri.ElementAt(i);
-
-         topBottomIndices[i * 3] = ptri->a;
-		 topBottomIndices[i * 3 + 1] = ptri->c;
-		 topBottomIndices[i * 3 + 2] = ptri->b;
-	  }
-
-      for (unsigned int i = 0; i < numPolys; i++)
-         delete vtri.ElementAt(i);
 
       topBuf.resize(numVertices * 3);
 	  Vertex3D_NoTex2 * const vertsTop[3] = { &topBuf[0], &topBuf[numVertices], &topBuf[numVertices*2] };
@@ -752,15 +741,15 @@ void Surface::GenerateMesh(std::vector<Vertex3D_NoTex2> &topBuf, std::vector<Ver
          vertsTop[1][i].ny = 0;
          vertsTop[1][i].nz = 1.0f;
 
-		 vertsTop[2][i].x = pv0->x;
-		 vertsTop[2][i].y = pv0->y;
-		 vertsTop[2][i].z = m_d.m_heightbottom;
-		 vertsTop[2][i].tu = pv0->x * inv_tablewidth;
-		 vertsTop[2][i].tv = pv0->y * inv_tableheight;
-		 vertsTop[2][i].nx = 0;
-		 vertsTop[2][i].ny = 0;
-		 vertsTop[2][i].nz = -1.0f;
-	  }
+         vertsTop[2][i].x = pv0->x;
+         vertsTop[2][i].y = pv0->y;
+         vertsTop[2][i].z = m_d.m_heightbottom;
+         vertsTop[2][i].tu = pv0->x * inv_tablewidth;
+         vertsTop[2][i].tv = pv0->y * inv_tableheight;
+         vertsTop[2][i].nx = 0;
+         vertsTop[2][i].ny = 0;
+         vertsTop[2][i].nz = -1.0f;
+      }
    }
 }
 
@@ -1796,8 +1785,10 @@ STDMETHODIMP Surface::put_IsDropped(VARIANT_BOOL newVal)
    {
       m_fIsDropped = fNewVal;
 
-      for (unsigned i = 0; i < m_vhoDrop.size(); i++)
-         m_vhoDrop[i]->m_fEnabled = !m_fIsDropped && m_d.m_fCollidable; //disable hit on enities composing the object 
+      const bool b = !m_fIsDropped && m_d.m_fCollidable;
+      if(m_vhoDrop.size() > 0 && m_vhoDrop[0]->m_fEnabled != b)
+        for (size_t i = 0; i < m_vhoDrop.size(); i++) //!! costly
+          m_vhoDrop[i]->m_fEnabled = b; //disable hit on enities composing the object 
    }
 
    return S_OK;
@@ -1994,19 +1985,21 @@ STDMETHODIMP Surface::put_Collidable(VARIANT_BOOL newVal)
 {
    const BOOL fNewVal = VBTOF(newVal);
 
-   STARTUNDO
-
-   m_d.m_fCollidable = VBTOF(fNewVal);
-
-   for (unsigned i = 0; i < m_vhoCollidable.size(); i++)
+   if (!g_pplayer)
    {
-      if (m_d.m_fDroppable)
-		  m_vhoCollidable[i]->m_fEnabled = fNewVal && !m_fIsDropped;
-      else
-		  m_vhoCollidable[i]->m_fEnabled = VBTOF(fNewVal); //copy to hit checking on enities composing the object 
-   }
+       STARTUNDO
 
-   STOPUNDO
+       m_d.m_fCollidable = VBTOF(fNewVal);
+
+       STOPUNDO
+   }
+   else
+   {
+       const bool b = m_d.m_fDroppable ? (!!fNewVal && !m_fIsDropped) : !!fNewVal;
+       if (m_vhoCollidable.size() > 0 && m_vhoCollidable[0]->m_fEnabled != b)
+           for (size_t i = 0; i < m_vhoCollidable.size(); i++) //!! costly
+              m_vhoCollidable[i]->m_fEnabled = b; //copy to hit checking on enities composing the object 
+   }
 
    return S_OK;
 }

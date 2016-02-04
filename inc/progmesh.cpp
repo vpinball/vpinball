@@ -297,13 +297,13 @@ __forceinline void Collapse(Vertex * const u, Vertex * const v)
 __forceinline void AddVertex(const std::vector<float3> &vert)
 {
 	for (size_t i = 0; i < vert.size(); i++)
-		Vertex *v = new Vertex(vert[i], i);
+		Vertex *v = new Vertex(vert[i], i); //!! braindead design, actually fills up "vertices"
 }
 
 __forceinline void AddFaces(const std::vector<tridata> &tri)
 {
 	for (size_t i = 0; i < tri.size(); i++)
-		Triangle *t = new Triangle(vertices[tri[i].v[0]],
+		Triangle *t = new Triangle(vertices[tri[i].v[0]], //!! braindead design, actually fills up "triangles"
 								   vertices[tri[i].v[1]],
 								   vertices[tri[i].v[2]]);
 }

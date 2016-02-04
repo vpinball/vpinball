@@ -398,12 +398,12 @@ void HitTarget::SetupHitObject(Vector<HitObject> * pvho, HitObject * obj, const 
       obj->m_pfe = NULL;
 
    pvho->AddElement(obj);
-   m_vhoCollidable.AddElement(obj);	//remember hit components of primitive
+   m_vhoCollidable.push_back(obj);	//remember hit components of primitive
 }
 
 void HitTarget::EndPlay()
 {
-   m_vhoCollidable.RemoveAllElements();
+   m_vhoCollidable.clear();
 
    if (vertexBuffer)
    {
@@ -632,6 +632,8 @@ void HitTarget::UpdateAnimation(RenderDevice *pd3dDevice)
 
 void HitTarget::RenderObject(RenderDevice *pd3dDevice)
 {
+   UpdateAnimation(pd3dDevice);
+
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
    pd3dDevice->basicShader->SetMaterial(mat);
 
@@ -659,8 +661,6 @@ void HitTarget::RenderObject(RenderDevice *pd3dDevice)
    }
    else
       pd3dDevice->basicShader->SetTechnique("basic_without_texture");
-
-   UpdateAnimation(pd3dDevice);
 
    // draw the mesh
    pd3dDevice->basicShader->Begin(0);
@@ -743,6 +743,7 @@ void HitTarget::PostRenderStatic(RenderDevice* pd3dDevice)
       return;
    if (m_ptable->m_fReflectionEnabled && !m_d.m_fReflectionEnabled)
       return;
+
    RenderObject(pd3dDevice);
 }
 
@@ -1337,7 +1338,7 @@ STDMETHODIMP HitTarget::put_Scatter(float newVal)
 
 STDMETHODIMP HitTarget::get_Collidable(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB((!g_pplayer) ? m_d.m_fCollidable : m_vhoCollidable.ElementAt(0)->m_fEnabled);
+   *pVal = (VARIANT_BOOL)FTOVB((!g_pplayer) ? m_d.m_fCollidable : m_vhoCollidable[0]->m_fEnabled);
 
    return S_OK;
 }
@@ -1354,8 +1355,12 @@ STDMETHODIMP HitTarget::put_Collidable(VARIANT_BOOL newVal)
       STOPUNDO
    }
    else
-      for (int i = 0; i < m_vhoCollidable.Size(); i++)
-         m_vhoCollidable.ElementAt(i)->m_fEnabled = VBTOF(fNewVal);	//copy to hit checking on entities composing the object 
+   {
+       const bool b = !!fNewVal;
+       if (m_vhoCollidable.size() > 0 && m_vhoCollidable[0]->m_fEnabled != b)
+           for (size_t i = 0; i < m_vhoCollidable.size(); i++) //!! costly
+               m_vhoCollidable[i]->m_fEnabled = b;	//copy to hit checking on entities composing the object 
+   }
 
    return S_OK;
 }

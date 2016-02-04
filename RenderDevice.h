@@ -81,10 +81,7 @@ public:
       DISCARDCONTENTS = D3DLOCK_DISCARD     // discard previous contents; only works with dynamic VBs
    };
 
-   void lock(unsigned int offsetToLock, unsigned int sizeToLock, void **dataBuffer, DWORD flags)
-   {
-      CHECKD3D(this->Lock(offsetToLock, sizeToLock, dataBuffer, flags));
-   }
+   void lock(const unsigned int offsetToLock, const unsigned int sizeToLock, void **dataBuffer, const DWORD flags);
 
    void unlock(void)
    {
@@ -115,10 +112,7 @@ public:
       DISCARD = D3DLOCK_DISCARD           // discard previous contents; only works with dynamic VBs
    };
 
-   void lock(unsigned int offsetToLock, unsigned int sizeToLock, void **dataBuffer, DWORD flags)
-   {
-      CHECKD3D(this->Lock(offsetToLock, sizeToLock, dataBuffer, flags));
-   }
+   void lock(const unsigned int offsetToLock, const unsigned int sizeToLock, void **dataBuffer, const DWORD flags);
 
    void unlock(void)
    {
@@ -241,6 +235,8 @@ public:
    unsigned int Perf_GetNumStateChanges() const   { return m_frameStateChanges; }
    unsigned int Perf_GetNumTextureChanges() const { return m_frameTextureChanges; }
    unsigned int Perf_GetNumParameterChanges() const { return m_frameParameterChanges; }
+   unsigned int Perf_GetNumTextureUploads() const { return m_frameTextureUpdates; }
+   unsigned int Perf_GetNumLockCalls() const;
 
    void FreeShader();
 
@@ -315,6 +311,7 @@ public:
    unsigned m_curStateChanges, m_frameStateChanges;
    unsigned m_curTextureChanges, m_frameTextureChanges;
    unsigned m_curParameterChanges, m_frameParameterChanges;
+   unsigned m_curTextureUpdates, m_frameTextureUpdates;
 
    Shader *basicShader;
    Shader *DMDShader;

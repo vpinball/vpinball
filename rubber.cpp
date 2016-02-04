@@ -278,7 +278,7 @@ void Rubber::RenderBlueprint(Sur *psur)
    RenderOutline(psur);
 }
 
-void Rubber::GetBoundingVertices(Vector<Vertex3Ds> * const pvvertex3D)
+void Rubber::GetBoundingVertices(std::vector<Vertex3Ds>& pvvertex3D)
 {
    int cvertex;
    const Vertex2D * const rgvLocal = GetSplineVertex(cvertex, NULL, NULL);
@@ -286,18 +286,12 @@ void Rubber::GetBoundingVertices(Vector<Vertex3Ds> * const pvvertex3D)
    for (int i = 0; i < cvertex; i++)
    {
       {
-         Vertex3Ds * const pv = new Vertex3Ds();
-         pv->x = rgvLocal[i].x;
-         pv->y = rgvLocal[i].y;
-         pv->z = m_d.m_height + 50.0f; // leave room for ball
-         pvvertex3D->AddElement(pv);
+      const Vertex3Ds pv(rgvLocal[i].x,rgvLocal[i].y,m_d.m_height + 50.0f); // leave room for ball
+      pvvertex3D.push_back(pv);
       }
 
-      Vertex3Ds * const pv = new Vertex3Ds();
-      pv->x = rgvLocal[cvertex * 2 - i - 1].x;
-      pv->y = rgvLocal[cvertex * 2 - i - 1].y;
-      pv->z = m_d.m_height + 50.0f; // leave room for ball
-      pvvertex3D->AddElement(pv);
+      const Vertex3Ds pv(rgvLocal[cvertex * 2 - i - 1].x,rgvLocal[cvertex * 2 - i - 1].y,m_d.m_height + 50.0f); // leave room for ball
+      pvvertex3D.push_back(pv);
    }
 
    delete[] rgvLocal;
@@ -1122,8 +1116,12 @@ STDMETHODIMP Rubber::put_Collidable(VARIANT_BOOL newVal)
       STOPUNDO
    }
    else
-      for (unsigned i = 0; i < m_vhoCollidable.size(); i++)
-         m_vhoCollidable[i]->m_fEnabled = VBTOF(fNewVal);	//copy to hit checking on enities composing the object
+   {
+       const bool b = !!fNewVal;
+       if (m_vhoCollidable.size() > 0 && m_vhoCollidable[0]->m_fEnabled != b)
+           for (size_t i = 0; i < m_vhoCollidable.size(); i++) //!! costly
+               m_vhoCollidable[i]->m_fEnabled = b;	//copy to hit checking on enities composing the object
+   }
 
    return S_OK;
 }
@@ -1279,6 +1277,10 @@ void Rubber::RenderObject(RenderDevice * const pd3dDevice)
       dynamicVertexBufferRegenerate = false;
       return;
    }
+
+   if (dynamicVertexBufferRegenerate)
+       UpdateRubber(pd3dDevice, true);
+
    pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP);
 
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
@@ -1297,9 +1299,6 @@ void Rubber::RenderObject(RenderDevice * const pd3dDevice)
    }
    else
       pd3dDevice->basicShader->SetTechnique("basic_without_texture");
-
-   if (dynamicVertexBufferRegenerate)
-      UpdateRubber(pd3dDevice);
 
    pd3dDevice->basicShader->Begin(0);
    pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, dynamicVertexBuffer, 0, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
@@ -1339,6 +1338,7 @@ void Rubber::ExportMesh(FILE *f)
       WaveFrontObj_UpdateFaceOffset(m_numVertices);
    }
 }
+
 void Rubber::GenerateMesh(const int _accuracy, const bool createHitShape)
 {
    int accuracy;
@@ -1539,6 +1539,7 @@ void Rubber::UpdateRubber(RenderDevice * const pd3dDevice, const bool updateVB)
       buf[i].tu = m_vertices[i].tu;
       buf[i].tv = m_vertices[i].tv;
    }
+
    if (updateVB)
    {
       dynamicVertexBuffer->unlock();

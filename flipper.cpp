@@ -642,8 +642,6 @@ void Flipper::PostRenderStatic(RenderDevice* pd3dDevice)
    if (m_ptable->m_fReflectionEnabled && !m_d.m_fReflectionEnabled)
       return;
 
-   Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-
    const Material * mat = m_ptable->GetMaterial(m_d.m_szMaterial);
    pd3dDevice->basicShader->SetMaterial(mat);
 

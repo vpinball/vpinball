@@ -421,8 +421,8 @@ void Kicker::PostRenderStatic(RenderDevice* pd3dDevice)
       }
 
       pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
-	  pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-	  pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+      pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+      pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 
       const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
       pd3dDevice->basicShader->SetMaterial(mat);
@@ -1063,11 +1063,13 @@ STDMETHODIMP Kicker::get_LastCapturedBall(IBall **pVal)
     {
         return E_POINTER;
     }
+
     if (!m_phitkickercircle->m_lastCapturedBall)
     {
         ShowError("LastCapturedBall was called but no ball was captured!");
         return E_POINTER;
     }
+
     bool ballFound = false;
     for (unsigned int i = 0; i < g_pplayer->m_vball.size(); i++)
     {

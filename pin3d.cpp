@@ -367,7 +367,7 @@ void Pin3D::DrawBackground()
 
       g_pplayer->m_pin3d.DisableAlphaBlend();
 
-      g_pplayer->Spritedraw(0.f, 0.f, 1.f, 1.f, 0xFFFFFFFF, pin, 0.0f, 0.0f, 1.0f, 1.0f, ptable->m_ImageBackdropNightDay ? sqrtf(g_pplayer->m_globalEmissionScale) : 1.0f);
+      g_pplayer->Spritedraw(0.f, 0.f, 1.f, 1.f, 0xFFFFFFFF, pin, ptable->m_ImageBackdropNightDay ? sqrtf(g_pplayer->m_globalEmissionScale) : 1.0f);
 
       if (g_pplayer->m_ptable->m_tblMirrorEnabled^g_pplayer->m_ptable->m_fReflectionEnabled)
          m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
@@ -460,9 +460,9 @@ void Pin3D::InitLayoutFS()
    const float inclination = 0.0f;// ANGTORAD(g_pplayer->m_ptable->m_BG_inclination[g_pplayer->m_ptable->m_BG_current_set]);
    //const float FOV = (g_pplayer->m_ptable->m_BG_FOV[g_pplayer->m_ptable->m_BG_current_set] < 1.0f) ? 1.0f : g_pplayer->m_ptable->m_BG_FOV[g_pplayer->m_ptable->m_BG_current_set];
 
-   Vector<Vertex3Ds> vvertex3D;
+   std::vector<Vertex3Ds> vvertex3D;
    for (int i = 0; i < g_pplayer->m_ptable->m_vedit.Size(); ++i)
-      g_pplayer->m_ptable->m_vedit.ElementAt(i)->GetBoundingVertices(&vvertex3D);
+      g_pplayer->m_ptable->m_vedit.ElementAt(i)->GetBoundingVertices(vvertex3D);
 
    m_proj.m_rcviewport.left = 0;
    m_proj.m_rcviewport.top = 0;
@@ -471,7 +471,7 @@ void Pin3D::InitLayoutFS()
 
    const float aspect = (float)vp.Width / (float)vp.Height; //(float)(4.0/3.0);
 
-   //m_proj.FitCameraToVerticesFS(&vvertex3D, aspect, rotation, inclination, FOV, g_pplayer->m_ptable->m_BG_xlatez[g_pplayer->m_ptable->m_BG_current_set], g_pplayer->m_ptable->m_BG_layback[g_pplayer->m_ptable->m_BG_current_set]);
+   //m_proj.FitCameraToVerticesFS(vvertex3D, aspect, rotation, inclination, FOV, g_pplayer->m_ptable->m_BG_xlatez[g_pplayer->m_ptable->m_BG_current_set], g_pplayer->m_ptable->m_BG_layback[g_pplayer->m_ptable->m_BG_current_set]);
    const float yof = g_pplayer->m_ptable->m_bottom*0.5f + g_pplayer->m_ptable->m_BG_xlatey[g_pplayer->m_ptable->m_BG_current_set];
    const float camx = 0.0f;
    const float camy = g_pplayer->m_ptable->m_bottom*0.5f + g_pplayer->m_ptable->m_BG_xlatex[g_pplayer->m_ptable->m_BG_current_set];
@@ -527,9 +527,6 @@ void Pin3D::InitLayoutFS()
 
    memcpy(m_proj.m_matProj.m, proj.m, sizeof(float) * 4 * 4);
 
-   for (int i = 0; i < vvertex3D.Size(); ++i)
-      delete vvertex3D.ElementAt(i);
-
    //m_proj.m_cameraLength = sqrtf(m_proj.m_vertexcamera.x*m_proj.m_vertexcamera.x + m_proj.m_vertexcamera.y*m_proj.m_vertexcamera.y + m_proj.m_vertexcamera.z*m_proj.m_vertexcamera.z);
 
    m_pd3dDevice->SetTransform(TRANSFORMSTATE_PROJECTION, &m_proj.m_matProj);
@@ -557,9 +554,9 @@ void Pin3D::InitLayout()
    const float inclination = ANGTORAD(g_pplayer->m_ptable->m_BG_inclination[g_pplayer->m_ptable->m_BG_current_set]);
    const float FOV = (g_pplayer->m_ptable->m_BG_FOV[g_pplayer->m_ptable->m_BG_current_set] < 1.0f) ? 1.0f : g_pplayer->m_ptable->m_BG_FOV[g_pplayer->m_ptable->m_BG_current_set];
 
-   Vector<Vertex3Ds> vvertex3D;
+   std::vector<Vertex3Ds> vvertex3D;
    for (int i = 0; i < g_pplayer->m_ptable->m_vedit.Size(); ++i)
-      g_pplayer->m_ptable->m_vedit.ElementAt(i)->GetBoundingVertices(&vvertex3D);
+      g_pplayer->m_ptable->m_vedit.ElementAt(i)->GetBoundingVertices(vvertex3D);
 
    m_proj.m_rcviewport.left = 0;
    m_proj.m_rcviewport.top = 0;
@@ -568,7 +565,7 @@ void Pin3D::InitLayout()
 
    const float aspect = ((float)vp.Width) / ((float)vp.Height); //(float)(4.0/3.0);
 
-   m_proj.FitCameraToVertices(&vvertex3D, aspect, rotation, inclination, FOV, g_pplayer->m_ptable->m_BG_xlatez[g_pplayer->m_ptable->m_BG_current_set], g_pplayer->m_ptable->m_BG_layback[g_pplayer->m_ptable->m_BG_current_set]);
+   m_proj.FitCameraToVertices(vvertex3D, aspect, rotation, inclination, FOV, g_pplayer->m_ptable->m_BG_xlatez[g_pplayer->m_ptable->m_BG_current_set], g_pplayer->m_ptable->m_BG_layback[g_pplayer->m_ptable->m_BG_current_set]);
 
    m_proj.m_matWorld.SetIdentity();
 
@@ -584,9 +581,6 @@ void Pin3D::InitLayout()
    D3DXMATRIX proj;
    D3DXMatrixPerspectiveFovLH(&proj, ANGTORAD(FOV), aspect, m_proj.m_rznear, m_proj.m_rzfar);
    memcpy(m_proj.m_matProj.m, proj.m, sizeof(float) * 4 * 4);
-
-   for (int i = 0; i < vvertex3D.Size(); ++i)
-      delete vvertex3D.ElementAt(i);
 
    //m_proj.m_cameraLength = sqrtf(m_proj.m_vertexcamera.x*m_proj.m_vertexcamera.x + m_proj.m_vertexcamera.y*m_proj.m_vertexcamera.y + m_proj.m_vertexcamera.z*m_proj.m_vertexcamera.z);
 
@@ -814,7 +808,7 @@ void PinProjection::MultiplyView(const Matrix3D& mat)
    m_matView.Multiply(mat, m_matView);
 }
 
-void PinProjection::FitCameraToVerticesFS(Vector<Vertex3Ds> * const pvvertex3D, float aspect, float rotation, float inclination, float FOV, float xlatez, float layback)
+void PinProjection::FitCameraToVerticesFS(std::vector<Vertex3Ds>& pvvertex3D, float aspect, float rotation, float inclination, float FOV, float xlatez, float layback)
 {
    // Determine camera distance
    const float rrotsin = sinf(rotation);
@@ -836,9 +830,9 @@ void PinProjection::FitCameraToVerticesFS(Vector<Vertex3Ds> * const pvvertex3D, 
 
    Matrix3D laybackTrans = ComputeLaybackTransform(layback);
 
-   for (int i = 0; i < pvvertex3D->Size(); ++i)
+   for (size_t i = 0; i < pvvertex3D.size(); ++i)
    {
-      Vertex3Ds v = *pvvertex3D->ElementAt(i);
+      Vertex3Ds v = pvvertex3D[i];
       float temp;
 
       //v = laybackTrans.MultiplyVector(v);
@@ -874,7 +868,7 @@ void PinProjection::FitCameraToVerticesFS(Vector<Vertex3Ds> * const pvvertex3D, 
    m_vertexcamera.x = (float)((maxxintercept + minxintercept) * 0.5f);
 }
 
-void PinProjection::FitCameraToVertices(Vector<Vertex3Ds> * const pvvertex3D, float aspect, float rotation, float inclination, float FOV, float xlatez, float layback)
+void PinProjection::FitCameraToVertices(std::vector<Vertex3Ds>& pvvertex3D, float aspect, float rotation, float inclination, float FOV, float xlatez, float layback)
 {
    // Determine camera distance
    const float rrotsin = sinf(rotation);
@@ -896,10 +890,9 @@ void PinProjection::FitCameraToVertices(Vector<Vertex3Ds> * const pvvertex3D, fl
 
    Matrix3D laybackTrans = ComputeLaybackTransform(layback);
 
-   for (int i = 0; i < pvvertex3D->Size(); ++i)
+   for (size_t i = 0; i < pvvertex3D.size(); ++i)
    {
-      Vertex3Ds v = *pvvertex3D->ElementAt(i);
-      v = laybackTrans.MultiplyVector(v);
+      Vertex3Ds v = laybackTrans.MultiplyVector(pvvertex3D[i]);
 
       // Rotate vertex about x axis according to incoming inclination
       float temp = v.y;
@@ -932,7 +925,7 @@ void PinProjection::FitCameraToVertices(Vector<Vertex3Ds> * const pvvertex3D, fl
    m_vertexcamera.x = (maxxintercept + minxintercept) * 0.5f;
 }
 
-void PinProjection::ComputeNearFarPlane(const Vector<Vertex3Ds>& verts)
+void PinProjection::ComputeNearFarPlane(std::vector<Vertex3Ds>& verts)
 {
    m_rznear = FLT_MAX;
    m_rzfar = -FLT_MAX;
@@ -940,7 +933,7 @@ void PinProjection::ComputeNearFarPlane(const Vector<Vertex3Ds>& verts)
    Matrix3D matWorldView;
    m_matView.Multiply(m_matWorld, matWorldView);
 
-   for (int i = 0; i < verts.Size(); ++i)
+   for (size_t i = 0; i < verts.size(); ++i)
    {
       const float tempz = matWorldView.MultiplyVector(verts[i]).z;
 

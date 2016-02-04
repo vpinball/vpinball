@@ -722,7 +722,9 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
       pd3dDevice->lightShader->SetLightColorIntensity(lightColor_intensity);
       pd3dDevice->lightShader->Begin(0);
    }
+
    pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, (!m_fBackglass) ? MY_D3DFVF_NOTEX2_VERTEX : MY_D3DTRANSFORMED_NOTEX2_VERTEX, customMoverVBuffer, 0, customMoverVertexNum, customMoverIBuffer, 0, customMoverIndexNum);
+
    if (!m_d.m_BulbLight)
       pd3dDevice->classicLightShader->End();
    else
@@ -749,16 +751,19 @@ void Light::PrepareMoversCustom()
 {
    std::vector<RenderVertex> vvertex;
    GetRgVertex(vvertex);
-   const int cvertex = (int)vvertex.size();
+   const unsigned int cvertex = (unsigned int)vvertex.size();
 
    if (cvertex == 0)
       return;
 
-   VectorVoid vpoly;
    float maxdist = 0;
-   for (int i = 0; i < cvertex; i++)
+   std::vector<WORD> vtri;
+
    {
-      vpoly.AddElement((void *)i);
+   std::vector<unsigned int> vpoly(cvertex);   
+   for (unsigned int i = 0; i < cvertex; i++)
+   {
+      vpoly[i] = i;
 
       const float dx = vvertex[i].x - m_d.m_vCenter.x;
       const float dy = vvertex[i].y - m_d.m_vCenter.y;
@@ -767,12 +772,12 @@ void Light::PrepareMoversCustom()
          maxdist = dist;
    }
 
+   PolygonToTriangles(vvertex, vpoly, vtri);
+   }
+
    const float inv_maxdist = (maxdist > 0.0f) ? 0.5f / sqrtf(maxdist) : 0.0f;
    const float inv_tablewidth = 1.0f / (m_ptable->m_right - m_ptable->m_left);
    const float inv_tableheight = 1.0f / (m_ptable->m_bottom - m_ptable->m_top);
-
-   Vector<Triangle> vtri;
-   PolygonToTriangles(vvertex, &vpoly, &vtri);
 
    float height = m_surfaceHeight;
    if (m_d.m_BulbLight)
@@ -785,7 +790,7 @@ void Light::PrepareMoversCustom()
    if (customMoverVBuffer)
       customMoverVBuffer->release();
 
-   if (vtri.Size() == 0)
+   if (vtri.size() == 0)
    {
       char name[MAX_PATH];
       char textBuffer[MAX_PATH];
@@ -794,24 +799,14 @@ void Light::PrepareMoversCustom()
       ShowError(textBuffer);
       return;
    }
-   customMoverIndexNum = vtri.Size() * 3;
+   customMoverIndexNum = vtri.size();
 
    g_pplayer->m_pin3d.m_pd3dDevice->CreateIndexBuffer(customMoverIndexNum, 0, IndexBuffer::FMT_INDEX16, &customMoverIBuffer);
 
    WORD* bufi;
    customMoverIBuffer->lock(0, 0, (void**)&bufi, 0);
-   for (int i = 0; i < vtri.Size(); ++i)
-   {
-      const Triangle * const ptri = vtri.ElementAt(i);
-
-      bufi[i * 3] = ptri->a;
-      bufi[i * 3 + 1] = ptri->c;
-      bufi[i * 3 + 2] = ptri->b;
-   }
+   memcpy(bufi, &vtri[0], vtri.size()*sizeof(WORD));
    customMoverIBuffer->unlock();
-
-   for (int i = 0; i < vtri.Size(); i++)
-      delete vtri.ElementAt(i);
 
    customMoverVertexNum = (int)vvertex.size();
    const DWORD vertexType = (!m_fBackglass) ? MY_D3DFVF_NOTEX2_VERTEX : MY_D3DTRANSFORMED_NOTEX2_VERTEX;

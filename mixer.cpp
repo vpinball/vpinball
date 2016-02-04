@@ -241,7 +241,6 @@ void mixer_draw()
             (cabMode ? size[0] : size[1]) + (float)(2.0/1000.0), (cabMode ? size[1] : size[0]) + (float)(2.0/1000.0),
             drop_color,
             (Texture*)NULL,
-            0.f,0.f,1.f,1.f,
             fade);
             */
       // Set the color.
@@ -250,7 +249,6 @@ void mixer_draw()
          cabMode ? size[0] : size[1], cabMode ? size[1] : size[0],
          color,
          (Texture*)NULL,
-         0.f, 0.f, 1.f, 1.f,
          fade);
    }
 

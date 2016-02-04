@@ -126,6 +126,19 @@ void ReportError(const char *errorText, const HRESULT hr, const char *file, cons
    exit(-1);
 }
 
+static unsigned m_curLockCalls, m_frameLockCalls; //!! meh
+void VertexBuffer::lock(const unsigned int offsetToLock, const unsigned int sizeToLock, void **dataBuffer, const DWORD flags)
+{
+    m_curLockCalls++;
+    CHECKD3D(this->Lock(offsetToLock, sizeToLock, dataBuffer, flags));
+}
+void IndexBuffer::lock(const unsigned int offsetToLock, const unsigned int sizeToLock, void **dataBuffer, const DWORD flags)
+{
+    m_curLockCalls++;
+    CHECKD3D(this->Lock(offsetToLock, sizeToLock, dataBuffer, flags));
+}
+unsigned int RenderDevice::Perf_GetNumLockCalls() const { return m_frameLockCalls; }
+
 D3DTexture* TextureManager::LoadTexture(BaseTexture* memtex)
 {
    Iter it = m_map.find(memtex);
@@ -481,6 +494,9 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
    m_curStateChanges = m_frameStateChanges = 0;
    m_curTextureChanges = m_frameTextureChanges = 0;
    m_curParameterChanges = m_frameParameterChanges = 0;
+   m_curTextureUpdates = m_frameTextureUpdates = 0;
+
+   m_curLockCalls = m_frameLockCalls = 0; //!! meh
 
    basicShader = new Shader(this);
 #if _MSC_VER >= 1700
@@ -737,6 +753,11 @@ void RenderDevice::Flip(const bool vsync)
    m_frameTextureChanges = m_curTextureChanges;
    m_frameParameterChanges = m_curParameterChanges;
    m_curDrawCalls = m_curStateChanges = m_curTextureChanges = m_curParameterChanges = 0;
+   m_frameTextureUpdates = m_curTextureUpdates;
+   m_curTextureUpdates = 0;
+
+   m_frameLockCalls = m_curLockCalls;
+   m_curLockCalls = 0;
 }
 
 RenderTarget* RenderDevice::DuplicateRenderTarget(RenderTarget* src)
@@ -1042,6 +1063,7 @@ D3DTexture* RenderDevice::UploadTexture(BaseTexture* surf, int *pTexWidth, int *
    if (FAILED(hr))
       ReportError("Fatal Error: out of VRAM!", hr, __FILE__, __LINE__);
 
+   m_curTextureUpdates++;
    hr = m_pD3DDevice->UpdateTexture(sysTex, tex);
    if (FAILED(hr))
       ReportError("Fatal Error: uploading texture failed!", hr, __FILE__, __LINE__);
@@ -1057,6 +1079,7 @@ D3DTexture* RenderDevice::UploadTexture(BaseTexture* surf, int *pTexWidth, int *
 void RenderDevice::UpdateTexture(D3DTexture* tex, BaseTexture* surf)
 {
    IDirect3DTexture9* sysTex = CreateSystemTexture(surf);
+   m_curTextureUpdates++;
    CHECKD3D(m_pD3DDevice->UpdateTexture(sysTex, tex));
    SAFE_RELEASE(sysTex);
 }

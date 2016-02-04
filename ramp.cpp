@@ -291,7 +291,7 @@ void Ramp::RenderBlueprint(Sur *psur)
    RenderOutline(psur);
 }
 
-void Ramp::GetBoundingVertices(Vector<Vertex3Ds> * const pvvertex3D)
+void Ramp::GetBoundingVertices(std::vector<Vertex3Ds>& pvvertex3D)
 {
    float *rgheight1;
    int cvertex;
@@ -300,18 +300,12 @@ void Ramp::GetBoundingVertices(Vector<Vertex3Ds> * const pvvertex3D)
    for (int i = 0; i < cvertex; i++)
    {
       {
-         Vertex3Ds * const pv = new Vertex3Ds();
-         pv->x = rgvLocal[i].x;
-         pv->y = rgvLocal[i].y;
-         pv->z = rgheight1[i] + 50.0f; // leave room for ball
-         pvvertex3D->AddElement(pv);
+      const Vertex3Ds pv(rgvLocal[i].x,rgvLocal[i].y,rgheight1[i] + 50.0f); // leave room for ball
+      pvvertex3D.push_back(pv);
       }
 
-      Vertex3Ds * const pv = new Vertex3Ds();
-      pv->x = rgvLocal[cvertex * 2 - i - 1].x;
-      pv->y = rgvLocal[cvertex * 2 - i - 1].y;
-      pv->z = rgheight1[i] + 50.0f; // leave room for ball
-      pvvertex3D->AddElement(pv);
+      const Vertex3Ds pv(rgvLocal[cvertex * 2 - i - 1].x,rgvLocal[cvertex * 2 - i - 1].y,rgheight1[i] + 50.0f); // leave room for ball
+      pvvertex3D.push_back(pv);
    }
 
    delete[] rgvLocal;
@@ -1921,8 +1915,12 @@ STDMETHODIMP Ramp::put_Collidable(VARIANT_BOOL newVal)
       STOPUNDO
    }
    else
-      for (unsigned i = 0; i < m_vhoCollidable.size(); i++)
-         m_vhoCollidable[i]->m_fEnabled = VBTOF(fNewVal);	//copy to hit checking on entities composing the object
+   {
+       const bool b = !!fNewVal;
+       if (m_vhoCollidable.size() > 0 && m_vhoCollidable[0]->m_fEnabled != b)
+           for (size_t i = 0; i < m_vhoCollidable.size(); i++) //!! costly
+               m_vhoCollidable[i]->m_fEnabled = b; //copy to hit checking on entities composing the object
+   }
 
    return S_OK;
 }
@@ -2233,6 +2231,9 @@ void Ramp::RenderRamp(RenderDevice *pd3dDevice, const Material * const mat)
       RenderStaticHabitrail(pd3dDevice, mat);
    else
    {
+      if (!dynamicVertexBuffer || dynamicVertexBufferRegenerate)
+         GenerateVertexBuffer(pd3dDevice);
+
       pd3dDevice->basicShader->SetMaterial(mat);
 
       pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
@@ -2252,9 +2253,6 @@ void Ramp::RenderRamp(RenderDevice *pd3dDevice, const Material * const mat)
       }
       else
          pd3dDevice->basicShader->SetTechnique("basic_without_texture");
-
-      if (!dynamicVertexBuffer || dynamicVertexBufferRegenerate)
-         GenerateVertexBuffer(pd3dDevice);
 
       //ppin3d->EnableAlphaBlend( false ); //!! not necessary anymore
 

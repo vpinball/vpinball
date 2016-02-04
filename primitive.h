@@ -283,7 +283,7 @@ private:        // private member functions
 
 private:        // private data members
 
-   Vector<HitObject> m_vhoCollidable; // Objects to that may be collide selectable
+   std::vector<HitObject*> m_vhoCollidable; // Objects to that may be collide selectable
 
    //!! outdated(?) information (along with the variable decls) for the old builtin primitive code, kept for reference:
 

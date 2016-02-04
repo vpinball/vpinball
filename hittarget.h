@@ -200,7 +200,7 @@ private:        // private member functions
    PropertyPane *m_propPosition;
    PropertyPane *m_propPhysics;
 
-   Vector<HitObject> m_vhoCollidable; // Objects to that may be collide selectable
+   std::vector<HitObject*> m_vhoCollidable; // Objects to that may be collide selectable
 
    VertexBuffer *vertexBuffer;
    IndexBuffer *indexBuffer;

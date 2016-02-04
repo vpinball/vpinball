@@ -12,6 +12,7 @@ Trigger::Trigger()
    doAnimation = false;
    moveDown = false;
    animHeightOffset = 0.0f;
+   vertexBuffer_animHeightOffset = -FLT_MAX;
 
    m_hitEnabled = true;
    vertexBuffer = NULL;
@@ -588,29 +589,34 @@ void Trigger::UpdateAnimation(RenderDevice *pd3dDevice)
          }
       }
 
-      Vertex3D_NoTex2 *buf;
-      vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
-      for (int i = 0; i < m_numVertices; i++)
+      if (animHeightOffset != vertexBuffer_animHeightOffset)
       {
-         if (m_d.m_shape == TriggerWireA || m_d.m_shape == TriggerWireB)
-         {
-            buf[i].x = triggerVertices[i].x + triggerVertices[i].nx*m_d.m_wireThickness;
-            buf[i].y = triggerVertices[i].y + triggerVertices[i].ny*m_d.m_wireThickness;
-            buf[i].z = (triggerVertices[i].z + triggerVertices[i].nz*m_d.m_wireThickness) + animHeightOffset;
-         }
-         else
-         {
-            buf[i].x = triggerVertices[i].x;
-            buf[i].y = triggerVertices[i].y;
-            buf[i].z = triggerVertices[i].z + animHeightOffset;
-         }
-         buf[i].nx = triggerVertices[i].nx;
-         buf[i].ny = triggerVertices[i].ny;
-         buf[i].nz = triggerVertices[i].nz;
-         buf[i].tu = triggerVertices[i].tu;
-         buf[i].tv = triggerVertices[i].tv;
+          vertexBuffer_animHeightOffset = animHeightOffset;
+
+          Vertex3D_NoTex2 *buf;
+          vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
+          for (int i = 0; i < m_numVertices; i++)
+          {
+              if (m_d.m_shape == TriggerWireA || m_d.m_shape == TriggerWireB)
+              {
+                  buf[i].x = triggerVertices[i].x + triggerVertices[i].nx*m_d.m_wireThickness;
+                  buf[i].y = triggerVertices[i].y + triggerVertices[i].ny*m_d.m_wireThickness;
+                  buf[i].z = triggerVertices[i].z + triggerVertices[i].nz*m_d.m_wireThickness + animHeightOffset;
+              }
+              else
+              {
+                  buf[i].x = triggerVertices[i].x;
+                  buf[i].y = triggerVertices[i].y;
+                  buf[i].z = triggerVertices[i].z + animHeightOffset;
+              }
+              buf[i].nx = triggerVertices[i].nx;
+              buf[i].ny = triggerVertices[i].ny;
+              buf[i].nz = triggerVertices[i].nz;
+              buf[i].tu = triggerVertices[i].tu;
+              buf[i].tv = triggerVertices[i].tv;
+          }
+          vertexBuffer->unlock();
       }
-      vertexBuffer->unlock();
    }
 }
 void Trigger::PostRenderStatic(RenderDevice* pd3dDevice)
@@ -631,7 +637,6 @@ void Trigger::PostRenderStatic(RenderDevice* pd3dDevice)
    pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
    pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
-
 
    pd3dDevice->basicShader->Begin(0);
    pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, m_numVertices, triggerIndexBuffer, 0, m_numFaces);
@@ -730,6 +735,7 @@ void Trigger::RenderSetup(RenderDevice* pd3dDevice)
    doAnimation = false;
    moveDown = false;
    animHeightOffset = 0.0f;
+   vertexBuffer_animHeightOffset = -FLT_MAX;
 
    if (!m_d.m_fVisible || m_d.m_shape == TriggerNone)
       return;

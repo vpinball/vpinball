@@ -121,7 +121,8 @@ public:
       PinTable *m_ptable;
 
       FlasherData m_d;
-      int numVertices, numPolys;
+      unsigned int numVertices;
+      int numPolys;
       float minx, maxx, miny, maxy;
       Vertex3D_TexelOnly *vertices;
 
