@@ -103,7 +103,7 @@ public:
    virtual void GetCenter(Vertex2D * const pv) const { GetPointCenter(pv); }
    virtual void PutCenter(const Vertex2D * const pv) { PutPointCenter(pv); }
 
-   virtual void GetBoundingVertices(Vector<Vertex3Ds> * const pvvertex3D);
+   virtual void GetBoundingVertices(std::vector<Vertex3Ds>& pvvertex3D);
 
    virtual float GetDepth(const Vertex3Ds& viewDir);
    virtual unsigned long long GetMaterialID() { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
@@ -152,7 +152,7 @@ private:
    void GenerateVertexBuffer(RenderDevice* pd3dDevice);
 
    void RenderObject(RenderDevice * const pd3dDevice);
-   void UpdateRubber(RenderDevice * const pd3dDevice, const bool updateVB = true);
+   void UpdateRubber(RenderDevice * const pd3dDevice, const bool updateVB);
    void GenerateMesh(const int _accuracy = -1, const bool createHitShape = false);
    void DrawRubberMesh(Sur * const psur);
 

@@ -204,8 +204,8 @@ public:
    virtual IFireEvents *GetIFireEvents() = 0;
    virtual ItemTypeEnum GetItemType() = 0;
 
-   virtual void GetBoundingVertices(Vector<Vertex3Ds> * const pvvertex3D) {}
-   virtual void WriteRegDefaults(){}
+   virtual void GetBoundingVertices(std::vector<Vertex3Ds>& pvvertex3D) {}
+   virtual void WriteRegDefaults() {}
 
    void BeginUndo();
    void EndUndo();

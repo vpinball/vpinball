@@ -453,12 +453,12 @@ void Primitive::SetupHitObject(Vector<HitObject> * pvho, HitObject * obj)
    obj->m_pe = this;
 
    pvho->AddElement(obj);
-   m_vhoCollidable.AddElement(obj);	//remember hit components of primitive
+   m_vhoCollidable.push_back(obj);	//remember hit components of primitive
 }
 
 void Primitive::EndPlay()
 {
-   m_vhoCollidable.RemoveAllElements();
+   m_vhoCollidable.clear();
 
    if (vertexBuffer)
    {
@@ -836,8 +836,8 @@ void Primitive::RenderObject(RenderDevice *pd3dDevice)
 
       if (vertexBufferRegenerate)
       {
-         vertexBufferRegenerate = false;
          m_mesh.UploadToVB(vertexBuffer);
+         vertexBufferRegenerate = false;
       }
    }
 
@@ -1540,7 +1540,6 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
 
 bool Primitive::BrowseFor3DMeshFile()
 {
-
    DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_MESH_IMPORT_DIALOG), g_pvp->m_hwnd, ObjImportProc, (size_t)this);
    return false;
 
@@ -2416,7 +2415,7 @@ STDMETHODIMP Primitive::put_Scatter(float newVal)
 
 STDMETHODIMP Primitive::get_Collidable(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB((!g_pplayer) ? m_d.m_fCollidable : m_vhoCollidable.ElementAt(0)->m_fEnabled);
+   *pVal = (VARIANT_BOOL)FTOVB((!g_pplayer) ? m_d.m_fCollidable : m_vhoCollidable[0]->m_fEnabled);
 
    return S_OK;
 }
@@ -2433,8 +2432,12 @@ STDMETHODIMP Primitive::put_Collidable(VARIANT_BOOL newVal)
       STOPUNDO
    }
    else
-      for (int i = 0; i < m_vhoCollidable.Size(); i++)
-         m_vhoCollidable.ElementAt(i)->m_fEnabled = VBTOF(fNewVal);	//copy to hit checking on entities composing the object 
+   {
+       const bool b = !!fNewVal;
+       if (m_vhoCollidable.size() > 0 && m_vhoCollidable[0]->m_fEnabled != b)
+           for (size_t i = 0; i < m_vhoCollidable.size(); i++) //!! costly
+               m_vhoCollidable[i]->m_fEnabled = b; //copy to hit-testing on entities composing the object
+   }
 
    return S_OK;
 }

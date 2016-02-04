@@ -26,7 +26,7 @@ public:
    {
       m_fAlloc = (cb > 256);
       if (m_fAlloc)
-         m_pbBuf = new char[cb];
+         m_pbBuf = (void*)(new char[cb]);
       else
          m_pbBuf = m_szBufT;
    }

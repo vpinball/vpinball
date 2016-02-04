@@ -3008,14 +3008,14 @@ void Player::DMDdraw(const float DMDposx, const float DMDposy, const float DMDwi
    }
 }
 
-void Player::Spritedraw(const float posx, const float posy, const float width, const float height, const COLORREF color, Texture * const tex, const float u0, const float v0, const float u1, const float v1, const float intensity)
+void Player::Spritedraw(const float posx, const float posy, const float width, const float height, const COLORREF color, Texture * const tex, const float intensity)
 {
    float Verts[4 * 5] =
    {
-      1.0f, 1.0f, 0.0f, u1, v1,
-      0.0f, 1.0f, 0.0f, u0, v1,
-      1.0f, 0.0f, 0.0f, u1, v0,
-      0.0f, 0.0f, 0.0f, u0, v0
+       1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+       0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+       1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+       0.0f, 0.0f, 0.0f, 0.0f, 0.0f
    };
 
    for (unsigned int i = 0; i < 4; ++i)
@@ -3903,11 +3903,11 @@ void Player::Render()
        DebugPrint(10, 70, szFoo, len);
 
        // performance counters
-       len = sprintf_s(szFoo, "Draw calls: %u", m_pin3d.m_pd3dDevice->Perf_GetNumDrawCalls());
+       len = sprintf_s(szFoo, "Draw calls: %u (%u Locks)", m_pin3d.m_pd3dDevice->Perf_GetNumDrawCalls(), m_pin3d.m_pd3dDevice->Perf_GetNumLockCalls());
        DebugPrint(10, 95, szFoo, len);
        len = sprintf_s(szFoo, "State changes: %u", m_pin3d.m_pd3dDevice->Perf_GetNumStateChanges());
        DebugPrint(10, 115, szFoo, len);
-       len = sprintf_s(szFoo, "Texture changes: %u", m_pin3d.m_pd3dDevice->Perf_GetNumTextureChanges());
+       len = sprintf_s(szFoo, "Texture changes: %u (%u Uploads)", m_pin3d.m_pd3dDevice->Perf_GetNumTextureChanges(), m_pin3d.m_pd3dDevice->Perf_GetNumTextureUploads());
        DebugPrint(10, 135, szFoo, len);
        len = sprintf_s(szFoo, "Parameter changes: %u (%u Material ID changes)", m_pin3d.m_pd3dDevice->Perf_GetNumParameterChanges(), material_flips);
        DebugPrint(10, 155, szFoo, len);

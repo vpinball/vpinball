@@ -16,7 +16,6 @@ HANDLE connectToIthUSBHIDDevice(DWORD deviceIndex)
    SP_DEVICE_INTERFACE_DATA deviceInterfaceData;
    PSP_INTERFACE_DEVICE_DETAIL_DATA deviceDetail;
    ULONG requiredSize;
-   HANDLE deviceHandle = INVALID_HANDLE_VALUE;
    DWORD result;
 
    //Get the HID GUID value - used as mask to get list of devices
@@ -73,7 +72,7 @@ HANDLE connectToIthUSBHIDDevice(DWORD deviceIndex)
    }
 
    //Open file on the device
-   deviceHandle = CreateFile(deviceDetail->DevicePath,
+   const HANDLE deviceHandle = CreateFile(deviceDetail->DevicePath,
       GENERIC_READ | GENERIC_WRITE,
       FILE_SHARE_READ | FILE_SHARE_WRITE,
       NULL,        // no SECURITY_ATTRIBUTES structure

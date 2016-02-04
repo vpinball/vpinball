@@ -91,7 +91,7 @@ public:
       virtual void WriteRegDefaults();
       virtual void RenderBlueprint(Sur *psur);
 
-      virtual void GetBoundingVertices(Vector<Vertex3Ds> * const pvvertex3D);
+      virtual void GetBoundingVertices(std::vector<Vertex3Ds>& pvvertex3D);
       virtual void ClearForOverwrite();
       // end IEditable
 

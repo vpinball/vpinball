@@ -118,13 +118,13 @@ public:
    PinTable *m_ptable;
 
    TriggerData m_d;
-   Vector<HitObject> m_vhoCollidable; // Objects to that may be collide selectable
 
    TriggerHitCircle *m_ptriggerhitcircle;
 
    int m_numVertices;
    int m_numFaces;
    float animHeightOffset;
+   float vertexBuffer_animHeightOffset;
    bool hitEvent;
    bool unhitEvent;
    bool doAnimation;

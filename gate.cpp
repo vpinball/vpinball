@@ -470,6 +470,8 @@ void Gate::UpdateWire(RenderDevice *pd3dDevice)
 
 void Gate::RenderObject(RenderDevice* pd3dDevice)
 {
+   UpdateWire(pd3dDevice);
+
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
    pd3dDevice->basicShader->SetMaterial(mat);
 
@@ -481,18 +483,14 @@ void Gate::RenderObject(RenderDevice* pd3dDevice)
    pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 
    pd3dDevice->basicShader->SetTechnique("basic_without_texture");
-   if (m_d.m_fShowBracket)
-   {
-      // render bracket
-      pd3dDevice->basicShader->Begin(0);
-      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, bracketVertexBuffer, 0, gateBracketNumVertices, bracketIndexBuffer, 0, gateBracketNumFaces);
-      pd3dDevice->basicShader->End();
-   }
-
-   UpdateWire(pd3dDevice);
-   // render wire
    pd3dDevice->basicShader->Begin(0);
+
+   // render bracket      
+   if (m_d.m_fShowBracket)
+      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, bracketVertexBuffer, 0, gateBracketNumVertices, bracketIndexBuffer, 0, gateBracketNumFaces);
+   // render wire
    pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, wireVertexBuffer, 0, m_numVertices, wireIndexBuffer, 0, m_numIndices);
+
    pd3dDevice->basicShader->End();
 }
 
@@ -1074,7 +1072,7 @@ STDMETHODIMP Gate::put_OpenAngle(float newVal)
 
       if (m_phitgate->m_gateanim.m_angleMin < newVal)	// min is smaller
          m_phitgate->m_gateanim.m_angleMax = newVal;	//then set new maximum
-      else m_phitgate->m_gateanim.m_angleMin = newVal;//else set new min
+      else m_phitgate->m_gateanim.m_angleMin = newVal;  //else set new min
    }
    else
    {
@@ -1120,7 +1118,7 @@ STDMETHODIMP Gate::put_Collidable(VARIANT_BOOL newVal)
    return S_OK;
 }
 
-STDMETHODIMP Gate::Move(int dir, float speed, float angle)//move non-collidable gate, for graphic effects only
+STDMETHODIMP Gate::Move(int dir, float speed, float angle) //move non-collidable gate, for graphic effects only
 {
    if (g_pplayer)
    {

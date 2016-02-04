@@ -1668,11 +1668,9 @@ void PinTable::Render3DProjection(Sur * const psur)
    const float inclination = ANGTORAD(m_BG_inclination[m_BG_current_set]);
    const float FOV = (m_BG_FOV[m_BG_current_set] < 1.0f) ? 1.0f : m_BG_FOV[m_BG_current_set]; // Can't have a real zero FOV, but this will look almost the same
 
-   Vector<Vertex3Ds> vvertex3D;
+   std::vector<Vertex3Ds> vvertex3D;
    for (int i = 0; i < m_vedit.Size(); i++)
-   {
-      m_vedit.ElementAt(i)->GetBoundingVertices(&vvertex3D);
-   }
+      m_vedit.ElementAt(i)->GetBoundingVertices(vvertex3D);
 
    // dummy coordinate system for backdrop view
    PinProjection pinproj;
@@ -1687,7 +1685,7 @@ void PinTable::Render3DProjection(Sur * const psur)
    GetRegInt("Player", "Height", &renderHeight);
    const float aspect = ((float)renderWidth) / ((float)renderHeight); //(float)(4.0/3.0);
 
-   pinproj.FitCameraToVertices(&vvertex3D, aspect, rotation, inclination, FOV, m_BG_xlatez[m_BG_current_set], m_BG_layback[m_BG_current_set]);
+   pinproj.FitCameraToVertices(vvertex3D, aspect, rotation, inclination, FOV, m_BG_xlatez[m_BG_current_set], m_BG_layback[m_BG_current_set]);
    pinproj.m_matView.RotateXMatrix((float)M_PI);  // convert Z=out to Z=in (D3D coordinate system)
    pinproj.m_matWorld.SetIdentity();
    D3DXMATRIX proj;
@@ -1703,11 +1701,6 @@ void PinTable::Render3DProjection(Sur * const psur)
    pinproj.MultiplyView(ComputeLaybackTransform(m_BG_layback[m_BG_current_set]));
 
    pinproj.CacheTransform();
-
-   for (int i = 0; i < vvertex3D.Size(); i++)
-   {
-      delete vvertex3D.ElementAt(i);
-   }
 
    psur->SetFillColor(RGB(200, 200, 200));
    psur->SetBorderColor(-1, false, 0);

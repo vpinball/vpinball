@@ -2,12 +2,6 @@
 #include "Material.h"
 #include "Texture.h"
 
-class Triangle
-{
-public:
-   int a, b, c;
-};
-
 /*
  * Compute coefficients for a cubic polynomial
  *   p(s) = c0 + c1*s + c2*s^2 + c3*s^3
@@ -254,7 +248,7 @@ inline bool FLinesIntersect(const Vertex2D * const Start1, const Vertex2D * cons
 
 // RenderVertexCont is either an array or a Vector<> of RenderVertex
 template <class RenderVertexCont>
-inline bool AdvancePoint(const RenderVertexCont& rgv, const VectorVoid * const pvpoly, const int a, const int b, const int c, const int pre, const int post)
+inline bool AdvancePoint(const RenderVertexCont& rgv, const std::vector<unsigned int>& pvpoly, const unsigned int a, const unsigned int b, const unsigned int c, const int pre, const int post)
 {
    const RenderVertex * const pv1 = &rgv[a];
    const RenderVertex * const pv2 = &rgv[b];
@@ -281,10 +275,10 @@ inline bool AdvancePoint(const RenderVertexCont& rgv, const VectorVoid * const p
    const float miny = min(pv1->y, pv3->y);
    const float maxy = max(pv1->y, pv3->y);
 
-   for (int i = 0; i < pvpoly->Size(); ++i)
+   for (size_t i = 0; i < pvpoly.size(); ++i)
    {
-      const RenderVertex * const pvCross1 = &rgv[(size_t)pvpoly->ElementAt(i)];
-      const RenderVertex * const pvCross2 = &rgv[(size_t)pvpoly->ElementAt((i < pvpoly->Size() - 1) ? (i + 1) : 0)];
+      const RenderVertex * const pvCross1 = &rgv[pvpoly[i]];
+      const RenderVertex * const pvCross2 = &rgv[pvpoly[(i < pvpoly.size() - 1) ? (i + 1) : 0]];
 
       if (pvCross1 != pv1 && pvCross2 != pv1 && pvCross1 != pv3 && pvCross2 != pv3 &&
          (pvCross1->y >= miny || pvCross2->y >= miny) &&
@@ -436,34 +430,32 @@ inline void ClosestPointOnPolygon(const VtxContType &rgv, const Vertex2D &pvin, 
    }
 }
 
-template <class RenderVertexCont>
-void PolygonToTriangles(const RenderVertexCont& rgv, VectorVoid * const pvpoly, Vector<Triangle> * const pvtri)
+template <class RenderVertexCont, class Idx>
+void PolygonToTriangles(const RenderVertexCont& rgv, std::vector<unsigned int>& pvpoly, std::vector<Idx>& pvtri)
 {
    // There should be this many convex triangles.
    // If not, the polygon is self-intersecting
-   const int tricount = pvpoly->Size() - 2;
+   const size_t tricount = pvpoly.size() - 2;
 
    assert(tricount > 0);
 
-   for (int l = 0; l < tricount; ++l)
+   for (size_t l = 0; l < tricount; ++l)
       //while (pvpoly->Size() > 2)
    {
-      for (int i = 0; i < pvpoly->Size(); ++i)
+      for (size_t i = 0; i < pvpoly.size(); ++i)
       {
-         const int s = pvpoly->Size();
-         const int pre = (int)pvpoly->ElementAt((i == 0) ? (s - 1) : (i - 1));
-         const int a = (int)pvpoly->ElementAt(i);
-         const int b = (int)pvpoly->ElementAt((i < s - 1) ? (i + 1) : 0);
-         const int c = (int)pvpoly->ElementAt((i < s - 2) ? (i + 2) : ((i + 2) - s));
-         const int post = (int)pvpoly->ElementAt((i < s - 3) ? (i + 3) : ((i + 3) - s));
+         const size_t s = pvpoly.size();
+         const unsigned int pre = pvpoly[(i == 0) ? (s - 1) : (i - 1)];
+         const unsigned int a = pvpoly[i];
+         const unsigned int b = pvpoly[(i < s - 1) ? (i + 1) : 0];
+         const unsigned int c = pvpoly[(i < s - 2) ? (i + 2) : ((i + 2) - s)];
+         const unsigned int post = pvpoly[(i < s - 3) ? (i + 3) : ((i + 3) - s)];
          if (AdvancePoint(rgv, pvpoly, a, b, c, pre, post))
          {
-            Triangle * const ptri = new Triangle();
-            ptri->a = a;
-            ptri->b = b;
-            ptri->c = c;
-            pvtri->AddElement(ptri);
-            pvpoly->RemoveElementAt((i < s - 1) ? (i + 1) : 0); // b
+            pvtri.push_back(a);
+            pvtri.push_back(c);
+            pvtri.push_back(b);
+            pvpoly.erase(pvpoly.begin() + ((i < s - 1) ? (i + 1) : 0)); // b
             break;
          }
       }

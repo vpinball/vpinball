@@ -2232,8 +2232,8 @@ void CodeViewer::ParseFindConstruct(int &Pos, const string *UCLineIn, WordType &
 
 void CodeViewer::ReadLineToParseBrain(string wholeline, int linecount, vector<UserData> *ListIn)
 {
-		string Comment = ParseRemoveLineComments(&wholeline);
-		RemovePadding(Comment);
+		string CommentTmp = ParseRemoveLineComments(&wholeline);
+		RemovePadding(CommentTmp);
 		while (wholeline.length() > 1)
 		{
 			string line;
@@ -2243,7 +2243,7 @@ void CodeViewer::ReadLineToParseBrain(string wholeline, int linecount, vector<Us
 			UserData UD;
 			UD.eTyping = eUnknown;
 			UD.LineNum = linecount;
-			UD.Comment = Comment;
+			UD.Comment = CommentTmp;
 			int SearchLength = 0 ;
 			int idx = -1;
 			ParseFindConstruct(idx, &UCline, UD.eTyping, SearchLength);

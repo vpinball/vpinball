@@ -363,7 +363,7 @@ void Flasher::UpdateMesh()
    const float movx = minx + (maxx - minx)*0.5f;
    const float movy = miny + (maxy - miny)*0.5f;
 
-   for (int i = 0; i < numVertices; i++)
+   for (unsigned int i = 0; i < numVertices; i++)
    {
       Matrix3D tempMatrix, RTmatrix, TMatrix, T2Matrix;
       RTmatrix.SetIdentity();
@@ -399,17 +399,19 @@ void Flasher::RenderSetup(RenderDevice* pd3dDevice)
    std::vector<RenderVertex> vvertex;
    GetRgVertex(vvertex);
 
-   numVertices = (int)vvertex.size();
+   numVertices = (unsigned int)vvertex.size();
 
-   VectorVoid vpoly;
+   std::vector<WORD> vtri;
+   
+   {
+   std::vector<unsigned int> vpoly(numVertices);
+   for (unsigned int i = 0; i < numVertices; i++)
+      vpoly[i] = i;
 
-   for (int i = 0; i < numVertices; i++)
-      vpoly.AddElement((void *)i);
+   PolygonToTriangles(vvertex, vpoly, vtri);
+   }
 
-   Vector<Triangle> vtri;
-   PolygonToTriangles(vvertex, &vpoly, &vtri);
-
-   numPolys = vtri.Size();
+   numPolys = vtri.size()/3;
    if (numPolys == 0)
    {
       // no polys to render leave vertex buffer undefined 
@@ -423,23 +425,13 @@ void Flasher::RenderSetup(RenderDevice* pd3dDevice)
 
    WORD* bufi;
    dynamicIndexBuffer->lock(0, 0, (void**)&bufi, 0);
-   for (int i = 0; i < numPolys; ++i)
-   {
-      const Triangle * const ptri = vtri.ElementAt(i);
-
-      bufi[i * 3] = ptri->a;
-      bufi[i * 3 + 1] = ptri->c;
-      bufi[i * 3 + 2] = ptri->b;
-   }
+   memcpy(bufi, &vtri[0], vtri.size()*sizeof(WORD));
    dynamicIndexBuffer->unlock();
-
-   for (int i = 0; i < numPolys; i++)
-      delete vtri.ElementAt(i);
 
    if (dynamicVertexBuffer)
       dynamicVertexBuffer->release();
    pd3dDevice->CreateVertexBuffer(numVertices, USAGE_DYNAMIC, MY_D3DFVF_TEX, &dynamicVertexBuffer);
-   NumVideoBytes += numVertices*(int)sizeof(Vertex3D_TexelOnly);
+   NumVideoBytes += (int)(numVertices*sizeof(Vertex3D_TexelOnly));
 
    if (vertices)
       delete[] vertices;
@@ -452,7 +444,7 @@ void Flasher::RenderSetup(RenderDevice* pd3dDevice)
    maxx = -FLT_MAX;
    maxy = -FLT_MAX;
 
-   for (int i = 0; i < numVertices; i++)
+   for (unsigned int i = 0; i < numVertices; i++)
    {
       const RenderVertex * const pv0 = &vvertex[i];
 
@@ -473,7 +465,7 @@ void Flasher::RenderSetup(RenderDevice* pd3dDevice)
    m_d.m_vCenter.x = minx + ((maxx - minx)*0.5f);
    m_d.m_vCenter.y = miny + ((maxy - miny)*0.5f);
 
-   for (int i = 0; i < numVertices; i++)
+   for (unsigned int i = 0; i < numVertices; i++)
    {
       if (m_d.m_imagealignment == ImageModeWrap)
       {
@@ -1278,8 +1270,6 @@ STDMETHODIMP Flasher::put_ImageAlignment(RampImageAlignment newVal)
 }
 
 // Always called each frame to render over everything else (along with primitives)
-// Same code as RenderStatic (with the exception of the alpha tests).
-// Also has less drawing calls by bundling seperate calls.
 void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
 {
    TRACE_FUNCTION();
@@ -1293,6 +1283,12 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
 
    if (color.x == 0.f && color.y == 0.f && color.z == 0.f)
       return;
+
+   if (dynamicVertexBufferRegenerate)
+   {
+       UpdateMesh();
+       dynamicVertexBufferRegenerate = false;
+   }
 
    //Pin3D * const ppin3d = &g_pplayer->m_pin3d;
    Texture * const pinA = m_ptable->GetImage(m_d.m_szImageA);
@@ -1356,12 +1352,6 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
       pd3dDevice->flasherShader->SetTechnique("basic_with_noLight");
 
    pd3dDevice->flasherShader->SetFlasherData(flasherData);
-
-   if (dynamicVertexBufferRegenerate)
-   {
-      dynamicVertexBufferRegenerate = false;
-      UpdateMesh();
-   }
 
    pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
 

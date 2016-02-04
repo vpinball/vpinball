@@ -104,6 +104,8 @@ private:
    IndexBuffer *plateIndexBuffer;
    Matrix3D fullMatrix;
 
+   float vertexBuffer_spinneranimangle;
+
    // ISpinner
 public:
    STDMETHOD(get_Surface)(/*[out, retval]*/ BSTR *pVal);

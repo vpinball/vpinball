@@ -9,6 +9,7 @@ Spinner::Spinner()
    bracketIndexBuffer = 0;
    plateVertexBuffer = 0;
    plateIndexBuffer = 0;
+   vertexBuffer_spinneranimangle = -FLT_MAX;
    memset(m_d.m_szImage, 0, MAXTOKEN);
    memset(m_d.m_szMaterial, 0, 32);
    memset(m_d.m_szSurface, 0, MAXTOKEN);
@@ -272,6 +273,12 @@ void Spinner::EndPlay()
 
 void Spinner::UpdatePlate(RenderDevice *pd3dDevice)
 {
+   // early out in case still same rotation
+   if(m_phitspinner->m_spinneranim.m_angle == vertexBuffer_spinneranimangle)
+       return;
+
+   vertexBuffer_spinneranimangle = m_phitspinner->m_spinneranim.m_angle;
+
    Matrix3D _fullMatrix;
    Matrix3D rotzMat, rotxMat;
 
@@ -287,15 +294,16 @@ void Spinner::UpdatePlate(RenderDevice *pd3dDevice)
    {
       Vertex3Ds vert(spinnerPlate[i].x, spinnerPlate[i].y, spinnerPlate[i].z);
       vert = _fullMatrix.MultiplyVector(vert);
-
       buf[i].x = vert.x*m_d.m_length + m_d.m_vCenter.x;
       buf[i].y = vert.y*m_d.m_length + m_d.m_vCenter.y;
       buf[i].z = vert.z*m_d.m_length*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_posZ;
+
       vert = Vertex3Ds(spinnerPlate[i].nx, spinnerPlate[i].ny, spinnerPlate[i].nz);
       vert = _fullMatrix.MultiplyVectorNoTranslate(vert);
       buf[i].nx = vert.x;
       buf[i].ny = vert.y;
       buf[i].nz = vert.z;
+
       buf[i].tu = spinnerPlate[i].tu;
       buf[i].tv = spinnerPlate[i].tv;
    }
@@ -312,7 +320,7 @@ void Spinner::PostRenderStatic(RenderDevice* pd3dDevice)
    if (m_ptable->m_fReflectionEnabled && !m_d.m_fReflectionEnabled)
       return;
 
-   Pin3D * const ppin3d = &g_pplayer->m_pin3d;
+   UpdatePlate(pd3dDevice);
 
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
    pd3dDevice->basicShader->SetMaterial(mat);
@@ -322,8 +330,6 @@ void Spinner::PostRenderStatic(RenderDevice* pd3dDevice)
    pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 
    Texture * const image = m_ptable->GetImage(m_d.m_szImage);
-
-   UpdatePlate(pd3dDevice);
    if (image)
    {
       pd3dDevice->basicShader->SetTechnique("basic_with_texture");
@@ -367,15 +373,16 @@ void Spinner::RenderSetup(RenderDevice* pd3dDevice)
    {
       Vertex3Ds vert(spinnerBracket[i].x, spinnerBracket[i].y, spinnerBracket[i].z);
       vert = fullMatrix.MultiplyVector(vert);
-
       buf[i].x = vert.x*m_d.m_length + m_d.m_vCenter.x;
       buf[i].y = vert.y*m_d.m_length + m_d.m_vCenter.y;
-      buf[i].z = vert.z*m_d.m_length*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + height + m_d.m_height;
+      buf[i].z = vert.z*m_d.m_length*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_posZ;
+
       vert = Vertex3Ds(spinnerBracket[i].nx, spinnerBracket[i].ny, spinnerBracket[i].nz);
       vert = fullMatrix.MultiplyVectorNoTranslate(vert);
       buf[i].nx = vert.x;
       buf[i].ny = vert.y;
       buf[i].nz = vert.z;
+
       buf[i].tu = spinnerBracket[i].tu;
       buf[i].tv = spinnerBracket[i].tv;
    }
@@ -389,25 +396,8 @@ void Spinner::RenderSetup(RenderDevice* pd3dDevice)
       plateVertexBuffer->release();
    pd3dDevice->CreateVertexBuffer(spinnerPlateNumVertices, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &plateVertexBuffer);
 
-   plateVertexBuffer->lock(0, 0, (void**)&buf, 0);
-   for (int i = 0; i < spinnerPlateNumVertices; i++)
-   {
-      Vertex3Ds vert(spinnerPlate[i].x, spinnerPlate[i].y, spinnerPlate[i].z);
-      vert = fullMatrix.MultiplyVector(vert);
-
-      buf[i].x = vert.x*m_d.m_length;//+m_d.m_vCenter.x;
-      buf[i].y = vert.y*m_d.m_length;//+m_d.m_vCenter.y;
-      buf[i].z = vert.z*m_d.m_length*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]; // + m_posZ;      
-
-      vert = Vertex3Ds(spinnerPlate[i].nx, spinnerPlate[i].ny, spinnerPlate[i].nz);
-      vert = fullMatrix.MultiplyVectorNoTranslate(vert);
-      buf[i].nx = vert.x;
-      buf[i].ny = vert.y;
-      buf[i].nz = vert.z;
-      buf[i].tu = spinnerPlate[i].tu;
-      buf[i].tv = spinnerPlate[i].tv;
-   }
-   plateVertexBuffer->unlock();
+   vertexBuffer_spinneranimangle = -FLT_MAX;
+   UpdatePlate(pd3dDevice);
 }
 
 void Spinner::RenderStatic(RenderDevice* pd3dDevice)

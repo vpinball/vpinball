@@ -280,16 +280,42 @@ void DispReel::PostRenderStatic(RenderDevice* pd3dDevice)
    pd3dDevice->SetRenderState(RenderDevice::ALPHAFUNC, D3DCMP_GREATER); //!! still necessary?
    g_pplayer->m_pin3d.EnableAlphaBlend(false);
 
-   for (int i = 0; i < m_d.m_reelcount; ++i)
+   pd3dDevice->DMDShader->SetTechnique("basic_noDMD");
+
+   const D3DXVECTOR4 c = convertColor(0xFFFFFFFF, 1.f);
+   pd3dDevice->DMDShader->SetVector("vColor_Intensity", &c);
+
+   pd3dDevice->DMDShader->SetTexture("Texture0", pin);
+   
+   pd3dDevice->DMDShader->Begin(0);
+   for (int i = 0; i < m_d.m_reelcount; ++i) //!! optimize by doing all in one
    {
-      g_pplayer->Spritedraw(ReelInfo[i].position.left, ReelInfo[i].position.top,
-         ReelInfo[i].position.right,
-         ReelInfo[i].position.bottom,
-         0xFFFFFFFF, pin,
-         m_digitTexCoords[ReelInfo[i].currentValue].u_min, m_digitTexCoords[ReelInfo[i].currentValue].v_min,
-         m_digitTexCoords[ReelInfo[i].currentValue].u_max, m_digitTexCoords[ReelInfo[i].currentValue].v_max,
-         1.0f); //!!
+       const float posx = ReelInfo[i].position.left;
+       const float posy = ReelInfo[i].position.top;
+       const float width = ReelInfo[i].position.right;
+       const float height = ReelInfo[i].position.bottom;
+       const float u0 = m_digitTexCoords[ReelInfo[i].currentValue].u_min;
+       const float v0 = m_digitTexCoords[ReelInfo[i].currentValue].v_min;
+       const float u1 = m_digitTexCoords[ReelInfo[i].currentValue].u_max;
+       const float v1 = m_digitTexCoords[ReelInfo[i].currentValue].v_max;       
+
+       float Verts[4 * 5] =
+       {
+           1.0f, 1.0f, 0.0f, u1, v1,
+           0.0f, 1.0f, 0.0f, u0, v1,
+           1.0f, 0.0f, 0.0f, u1, v0,
+           0.0f, 0.0f, 0.0f, u0, v0
+       };
+
+       for (unsigned int i = 0; i < 4; ++i)
+       {
+           Verts[i * 5] = (Verts[i * 5] * width + posx)*2.0f - 1.0f;
+           Verts[i * 5 + 1] = 1.0f - (Verts[i * 5 + 1] * height + posy)*2.0f;
+       }
+
+       pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_TEX, (LPVOID)Verts, 4);
    }
+   pd3dDevice->DMDShader->End();
 
    //g_pplayer->m_pin3d.DisableAlphaBlend(); //!! not necessary anymore
    pd3dDevice->SetRenderState(RenderDevice::ALPHATESTENABLE, FALSE);
