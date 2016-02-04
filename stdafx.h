@@ -68,7 +68,6 @@
 //#define LOG
 
 //#define _DEBUGPHYSICS
-//#define DEBUG_FPS
 //#define EVENTIME 1
 
 #define DEBUG_BALL_SPIN

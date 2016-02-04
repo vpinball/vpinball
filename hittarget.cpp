@@ -572,7 +572,7 @@ void HitTarget::UpdateAnimation(RenderDevice *pd3dDevice)
             const float limit = DROP_TARGET_LIMIT*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
             if (m_moveDown)
                 step = -step;
-            else if ((m_d.m_time_msec - m_timeStamp) < m_d.m_RaiseDelay)
+            else if ((m_d.m_time_msec - m_timeStamp) < (unsigned int)m_d.m_RaiseDelay)
             {
                 step = 0.0f;
             }

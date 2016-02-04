@@ -124,7 +124,7 @@ void HitKD::FillFromVector(Vector<HitObject>& vho)
    }
 
 #ifdef _DEBUGPHYSICS
-   g_pplayer->c_octObjects = vho.size();
+   g_pplayer->c_kDObjects = vho.size();
 #endif
 
    m_rootNode.CreateNextLevel(0, 0);
@@ -146,7 +146,7 @@ void HitKD::FillFromIndices()
    }
 
 #ifdef _DEBUGPHYSICS
-   g_pplayer->c_octObjects = (U32)m_org_idx.size();
+   g_pplayer->c_kDObjects = (U32)m_org_idx.size();
 #endif
 
    m_rootNode.CreateNextLevel(0, 0);
@@ -163,7 +163,7 @@ void HitKD::FillFromIndices(const FRect3D& initialBounds)
    // assume that CalcHitRect() was already called on the hit objects
 
 #ifdef _DEBUGPHYSICS
-   g_pplayer->c_octObjects = (U32)m_org_idx.size();
+   g_pplayer->c_kDObjects = (U32)m_org_idx.size();
 #endif
 
    m_rootNode.CreateNextLevel(0, 0);
@@ -219,7 +219,7 @@ void HitKDNode::CreateNextLevel(const unsigned int level, unsigned int level_emp
    m_children[1].m_rectbounds = m_rectbounds;
 
 #ifdef _DEBUGPHYSICS
-   g_pplayer->c_octNextlevels++;
+   g_pplayer->c_kDNextlevels++;
 #endif
 
    const Vertex3Ds vcenter((m_rectbounds.left + m_rectbounds.right)*0.5f, (m_rectbounds.top + m_rectbounds.bottom)*0.5f, (m_rectbounds.zlow + m_rectbounds.zhigh)*0.5f);
@@ -406,7 +406,7 @@ void HitKDNode::HitTestBall(Ball * const pball, CollisionEvent& coll) const
 #endif
       HitObject * const pho = m_hitoct->GetItemAt( i );
       if ((pball != pho) // ball can not hit itself
-         /*&& fRectIntersect3D(pball->m_rcHitRect, pho->m_rcHitRect)*/
+		  /*&& fRectIntersect3D(pball->m_rcHitRect, pho->m_rcHitRect)*/ //!! do bbox test before to save alu-instructions? or not to save registers? -> currently not, as just sphere vs sphere
 		 && fRectIntersect3D(pball->m_pos, pball->m_rcHitRadiusSqr, pho->m_rcHitRect))
       {
          DoHitTest(pball, pho, coll);
@@ -521,7 +521,7 @@ void HitKDNode::HitTestBallSse(Ball * const pball, CollisionEvent& coll) const
 
          cmp = _mm_cmple_ps(bzlow, pZh[i]);
          mask &= _mm_movemask_ps(cmp);
-         if (mask == 0) continue;*/
+         if (mask == 0) continue;*/ //!! do bbox test before to save alu-instructions? or not to save registers? -> currently not, as just sphere vs sphere
 
 		 // test actual sphere against box(es)
 		 const __m128 zero = _mm_setzero_ps();
@@ -614,7 +614,7 @@ void HitKDNode::HitTestXRay(Ball * const pball, Vector<HitObject> * const pvhoHi
 #endif
       HitObject * const pho = m_hitoct->GetItemAt(i);
       if ((pball != pho) && // ball cannot hit itself
-         /*fRectIntersect3D(pball->m_rcHitRect, pho->m_rcHitRect) &&*/
+         /*fRectIntersect3D(pball->m_rcHitRect, pho->m_rcHitRect) &&*/ //!! do bbox test before to save alu-instructions? or not to save registers? -> currently not, as just sphere vs sphere
 		 fRectIntersect3D(pball->m_pos, pball->m_rcHitRadiusSqr, pho->m_rcHitRect))
       {
 #ifdef _DEBUGPHYSICS
