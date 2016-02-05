@@ -4257,7 +4257,7 @@ void PinTable::DoLButtonDown(int x, int y, bool zoomIn)
          m_offset = TransformPoint(x, y);
 
          if (zoomIn)
-            SetZoom(m_zoom * 2.0f);
+            SetZoom(m_zoom * 1.5f);
          else
             SetZoom(m_zoom * 0.5f);
 
@@ -6306,13 +6306,18 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 
    case WM_MOUSEWHEEL:
    {
+      //zoom in/out by pressing CTRL+mouse wheel
       pt = (CComObject<PinTable> *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
       const short zDelta = GET_WHEEL_DELTA_WPARAM(wParam);
       const int ksctrl = GetKeyState(VK_CONTROL);
       if ((ksctrl & 0x80000000))
       {
-         const short x = (short)(lParam & 0xffff);
-         const short y = (short)((lParam >> 16) & 0xffff);
+          POINT curpt;
+          curpt.x = GET_X_LPARAM(lParam);
+          curpt.y = GET_Y_LPARAM(lParam);
+          ScreenToClient(hwnd, &curpt);
+          const short x = (short)curpt.x;
+          const short y = (short)curpt.y;
          if ((g_pvp->m_ToolCur == IDC_SELECT) || (g_pvp->m_ToolCur == ID_TABLE_MAGNIFY))
          {
             pt->DoLButtonDown(x, y, zDelta != -120);
