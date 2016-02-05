@@ -1109,21 +1109,21 @@ float KickerHitCircle::HitTest(const Ball * pball, float dtime, CollisionEvent& 
    return HitTestBasicRadius(pball, dtime, coll, false, false, false); //any face, not-lateral, non-rigid
 }
 
-void KickerHitCircle::DoChangeBallVelocity(Ball *pball, const Vertex3Ds& hitnormal)
+void KickerHitCircle::DoChangeBallVelocity(Ball *const pball, const Vertex3Ds& hitnormal)
 {
-    float minDist = FLT_MAX;
+    float minDist_sqr = FLT_MAX;
     unsigned int idx = ~0u;
-    for (unsigned int t = 0; t < m_pkicker->hitMesh.size(); t++)
+    for (size_t t = 0; t < m_pkicker->hitMesh.size(); t++)
     {
         // find the right normal by calculating the distance from current ball position to vertex of the kicker mesh               
-        const float length = (pball->m_pos - m_pkicker->hitMesh[t]).LengthSquared();
-        if (length < minDist)
+        const float length_sqr = (pball->m_pos - m_pkicker->hitMesh[t]).LengthSquared();
+        if (length_sqr < minDist_sqr)
         {
-            minDist = length;
-            idx = t;
+            minDist_sqr = length_sqr;
+            idx = (unsigned int)t;
         }
     }
-    //minDist = sqrtf(minDist);
+    //minDist_sqr = sqrtf(minDist_sqr);
 
     if (idx != ~0u)
     {
@@ -1207,7 +1207,7 @@ void KickerHitCircle::DoCollide(Ball * const pball, const Vertex3Ds& hitnormal, 
             // if so we take the last "good" velocity to help the ball moving over the critical spot at the kicker bevel
             // this hack seems to work only if the kicker is on the playfield, a kicker attached to a wall has still problems
             // because the friction calculation for a wall is also different
-            float length = pball->m_vel.Length();
+            const float length = pball->m_vel.Length();
             if (length < 0.2f)
             {
                 pball->m_vel = pball->m_oldVel;

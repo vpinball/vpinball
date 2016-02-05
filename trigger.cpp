@@ -47,13 +47,6 @@ void Trigger::UpdateEditorView()
    if (m_d.m_shape != TriggerNone)
    {
       const Vertex3D_NoTex2 *meshVertices;
-      float lengthX = 30.0f;
-      float lengthY = 30.0f;
-      float maxx = -FLT_MAX;
-      float minx = FLT_MAX;
-      float maxy = -FLT_MAX;
-      float miny = FLT_MAX;
-
       if (m_d.m_shape == TriggerWireA || m_d.m_shape == TriggerWireB)
       {
          m_numVertices = triggerSimpleNumVertices;
@@ -87,10 +80,6 @@ void Trigger::UpdateEditorView()
          }
          vertices[i].x += m_d.m_vCenter.x;
          vertices[i].y += m_d.m_vCenter.y;
-         if (vertices[i].x > maxx) maxx = vertices[i].x;
-         if (vertices[i].x < minx) minx = vertices[i].x;
-         if (vertices[i].y > maxy) maxy = vertices[i].y;
-         if (vertices[i].y < miny) miny = vertices[i].y;
       }
    }
 }
@@ -665,9 +654,6 @@ void Trigger::GenerateMesh()
 {
    const float baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
    const Vertex3D_NoTex2 *verts;
-   Matrix3D fullMatrix;
-
-   fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotation));
 
    if (m_d.m_shape == TriggerWireA || m_d.m_shape==TriggerWireB)
    {
@@ -687,18 +673,18 @@ void Trigger::GenerateMesh()
          delete[] triggerVertices;
       triggerVertices = new Vertex3D_NoTex2[m_numVertices];
    }
+
+   Matrix3D fullMatrix;
    if (m_d.m_shape == TriggerWireB)
    {
       Matrix3D tempMatrix;
-      tempMatrix.SetIdentity();
-      fullMatrix.SetIdentity();
-
-      tempMatrix.RotateXMatrix(ANGTORAD(-23));
-      tempMatrix.Multiply(fullMatrix, fullMatrix);
+      fullMatrix.RotateXMatrix(ANGTORAD(-23.f));
       tempMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotation));
       tempMatrix.Multiply(fullMatrix, fullMatrix);
-
    }
+   else
+      fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotation));
+
    for (int i = 0; i < m_numVertices; i++)
    {
       Vertex3Ds vert(verts[i].x, verts[i].y, verts[i].z);
@@ -716,6 +702,7 @@ void Trigger::GenerateMesh()
          triggerVertices[i].y = (vert.y*m_d.m_radius) + m_d.m_vCenter.y;
          triggerVertices[i].z = (vert.z*m_d.m_radius*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]) + baseHeight;
       }
+
       vert = Vertex3Ds(verts[i].nx, verts[i].ny, verts[i].nz);
       vert = fullMatrix.MultiplyVectorNoTranslate(vert);
       triggerVertices[i].nx = vert.x;

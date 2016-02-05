@@ -149,7 +149,7 @@ public:
    KickerHitCircle();
 
    virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
-   void DoChangeBallVelocity(Ball *pball, const Vertex3Ds& hitnormal);
+   void DoChangeBallVelocity(Ball * const pball, const Vertex3Ds& hitnormal);
    void DoCollide(Ball * const pball, const Vertex3Ds& phitnormal, const Vertex3Ds& phitvelocity, const bool newBall);
    virtual void Collide(CollisionEvent *coll)  { DoCollide(coll->ball, coll->hitnormal, coll->hitvelocity, false); }
 

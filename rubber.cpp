@@ -280,6 +280,7 @@ void Rubber::RenderBlueprint(Sur *psur)
 
 void Rubber::GetBoundingVertices(std::vector<Vertex3Ds>& pvvertex3D)
 {
+   //!! meh, this is delivering something loosely related to the bounding vertices, but its only used in the cam fitting code so far, so keep for legacy reasons
    int cvertex;
    const Vertex2D * const rgvLocal = GetSplineVertex(cvertex, NULL, NULL);
 
@@ -1507,15 +1508,20 @@ void Rubber::GenerateVertexBuffer(RenderDevice* pd3dDevice)
 
 void Rubber::UpdateRubber(RenderDevice * const pd3dDevice, const bool updateVB)
 {
-   Matrix3D fullMatrix;
-   fullMatrix.SetIdentity();
-   Matrix3D rotMat;
-   rotMat.RotateZMatrix(ANGTORAD(m_d.m_rotZ));
-   rotMat.Multiply(fullMatrix, fullMatrix);
-   rotMat.RotateYMatrix(ANGTORAD(m_d.m_rotY));
-   rotMat.Multiply(fullMatrix, fullMatrix);
-   rotMat.RotateXMatrix(ANGTORAD(m_d.m_rotX));
-   rotMat.Multiply(fullMatrix, fullMatrix);
+   Matrix3D fullMatrix,tempMat;
+   fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotZ));
+   tempMat.RotateYMatrix(ANGTORAD(m_d.m_rotY));
+   tempMat.Multiply(fullMatrix, fullMatrix);
+   tempMat.RotateXMatrix(ANGTORAD(m_d.m_rotX));
+   tempMat.Multiply(fullMatrix, fullMatrix);
+
+   Matrix3D vertMatrix;
+   tempMat.SetTranslation(-middlePoint.x, -middlePoint.y, -middlePoint.z);
+   fullMatrix.Multiply(tempMat, vertMatrix);
+   tempMat.SetScaling(1.f, 1.f, m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]);
+   tempMat.Multiply(vertMatrix, vertMatrix);
+   tempMat.SetTranslation(middlePoint.x, middlePoint.y, m_d.m_height*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_ptable->m_tableheight);
+   tempMat.Multiply(vertMatrix, vertMatrix);
 
    Vertex3D_NoTex2 *buf;
    if (updateVB)
@@ -1523,14 +1529,14 @@ void Rubber::UpdateRubber(RenderDevice * const pd3dDevice, const bool updateVB)
    else
       buf = m_vertices.data();
 
-   const float height = m_d.m_height*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_ptable->m_tableheight;
    for (int i = 0; i < m_numVertices; i++)
    {
-      Vertex3Ds vert(m_vertices[i].x - middlePoint.x, m_vertices[i].y - middlePoint.y, m_vertices[i].z - middlePoint.z);
-      vert = fullMatrix.MultiplyVector(vert);
-      buf[i].x = vert.x + middlePoint.x;
-      buf[i].y = vert.y + middlePoint.y;
-      buf[i].z = vert.z*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + height;
+      Vertex3Ds vert(m_vertices[i].x, m_vertices[i].y, m_vertices[i].z);
+      vert = vertMatrix.MultiplyVector(vert);
+      buf[i].x = vert.x;
+      buf[i].y = vert.y;
+      buf[i].z = vert.z;
+
       vert = Vertex3Ds(m_vertices[i].nx, m_vertices[i].ny, m_vertices[i].nz);
       vert = fullMatrix.MultiplyVectorNoTranslate(vert);
       buf[i].nx = vert.x;

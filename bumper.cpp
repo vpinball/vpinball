@@ -566,10 +566,10 @@ void Bumper::GenerateBaseMesh(Vertex3D_NoTex2 *buf)
    {
       Vertex3Ds vert(bumperBase[i].x, bumperBase[i].y, bumperBase[i].z);
       vert = fullMatrix.MultiplyVector(vert);
-
       buf[i].x = vert.x*scalexy + m_d.m_vCenter.x;
       buf[i].y = vert.y*scalexy + m_d.m_vCenter.y;
       buf[i].z = (vert.z * m_d.m_heightScale)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + baseHeight;
+
       vert = Vertex3Ds(bumperBase[i].nx, bumperBase[i].ny, bumperBase[i].nz);
       vert = fullMatrix.MultiplyVectorNoTranslate(vert);
       buf[i].nx = vert.x;
@@ -583,14 +583,15 @@ void Bumper::GenerateBaseMesh(Vertex3D_NoTex2 *buf)
 void Bumper::GenerateSocketMesh(Vertex3D_NoTex2 *buf)
 {
    const float scalexy = m_d.m_radius*2.0f;
+
    for (int i = 0; i < bumperSocketNumVertices; i++)
    {
       Vertex3Ds vert(bumperSocket[i].x, bumperSocket[i].y, bumperSocket[i].z);
       vert = fullMatrix.MultiplyVector(vert);
-
       buf[i].x = vert.x*scalexy + m_d.m_vCenter.x;
       buf[i].y = vert.y*scalexy + m_d.m_vCenter.y;
       buf[i].z = (vert.z*m_d.m_heightScale)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + baseHeight;
+
       vert = Vertex3Ds(bumperSocket[i].nx, bumperSocket[i].ny, bumperSocket[i].nz);
       vert = fullMatrix.MultiplyVectorNoTranslate(vert);
       buf[i].nx = vert.x;
@@ -612,6 +613,7 @@ void Bumper::GenerateRingMesh(Vertex3D_NoTex2 *buf)
       buf[i].x = vert.x*scalexy + m_d.m_vCenter.x;
       buf[i].y = vert.y*scalexy + m_d.m_vCenter.y;
       buf[i].z = (vert.z * m_d.m_heightScale)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + baseHeight;
+
       vert = Vertex3Ds(bumperRing[i].nx, bumperRing[i].ny, bumperRing[i].nz);
       vert = fullMatrix.MultiplyVectorNoTranslate(vert);
       buf[i].nx = vert.x;
@@ -633,6 +635,7 @@ void Bumper::GenerateCapMesh(Vertex3D_NoTex2 *buf)
       buf[i].x = vert.x*scalexy + m_d.m_vCenter.x;
       buf[i].y = vert.y*scalexy + m_d.m_vCenter.y;
       buf[i].z = (vert.z *m_d.m_heightScale + m_d.m_heightScale)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + baseHeight;
+
       vert = Vertex3Ds(bumperCap[i].nx, bumperCap[i].ny, bumperCap[i].nz);
       vert = fullMatrix.MultiplyVectorNoTranslate(vert);
       buf[i].nx = vert.x;
