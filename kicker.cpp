@@ -1109,6 +1109,72 @@ float KickerHitCircle::HitTest(const Ball * pball, float dtime, CollisionEvent& 
    return HitTestBasicRadius(pball, dtime, coll, false, false, false); //any face, not-lateral, non-rigid
 }
 
+void KickerHitCircle::DoChangeBallVelocity(Ball *pball, const Vertex3Ds& hitnormal)
+{
+    float minDist = FLT_MAX;
+    unsigned int idx = ~0u;
+    for (unsigned int t = 0; t < m_pkicker->hitMesh.size(); t++)
+    {
+        // find the right normal by calculating the distance from current ball position to vertex of the kicker mesh               
+        const float length = (pball->m_pos - m_pkicker->hitMesh[t]).LengthSquared();
+        if (length < minDist)
+        {
+            minDist = length;
+            idx = t;
+        }
+    }
+    //minDist = sqrtf(minDist);
+
+    if (idx != ~0u)
+    {
+        // we have the nearest vertex now use the normal and damp it so it doesn't speed up the ball velocity too much
+        const Vertex3Ds hitnorm(kickerHitMesh[idx].nx, kickerHitMesh[idx].ny, kickerHitMesh[idx].nz);
+        Vertex3Ds surfVel, tangent, surfP;
+        const float dot = -pball->m_vel.Dot(hitnorm);
+        const float reactionImpulse = pball->m_mass * fabsf(dot);
+        /*
+        if (pball->m_pos.z > pball->m_defaultZ)
+        {
+        // ball is on a surface(e.g. upper playfield) use a high friction and a different calculation to compensate surface collision
+        friction = 1.0f;
+        surfP = -pball->m_radius * hitnorm;      // surface contact point relative to center of mass
+
+        surfVel = pball->SurfaceVelocity(surfP); // velocity at impact point
+
+        tangent = surfVel - surfVel.Dot(hitnorm) * hitnorm; // calc the tangential velocity
+        }
+        else
+        */
+        surfP = -pball->m_radius * hitnormal;    // surface contact point relative to center of mass
+
+        surfVel = pball->SurfaceVelocity(surfP);         // velocity at impact point
+
+        tangent = surfVel - surfVel.Dot(hitnormal) * hitnorm; // calc the tangential velocity
+
+        pball->m_vel += dot * hitnorm; // apply collision impulse (along normal, so no torque)
+        pball->m_dynamic = C_DYNAMIC;
+
+        const float friction = 0.3f;
+        const float tangentSpSq = tangent.LengthSquared();
+
+        if (tangentSpSq > 1e-6f)
+        {
+            tangent /= sqrtf(tangentSpSq);           // normalize to get tangent direction
+            const float vt = surfVel.Dot(tangent);   // get speed in tangential direction
+
+            // compute friction impulse
+            const Vertex3Ds cross = CrossProduct(surfP, tangent);
+            const float kt = pball->m_invMass + tangent.Dot(CrossProduct(cross / pball->m_inertia, surfP));
+
+            // friction impulse can't be greater than coefficient of friction times collision impulse (Coulomb friction cone)
+            const float maxFric = friction * reactionImpulse;
+            const float jt = clamp(-vt / kt, -maxFric, maxFric);
+
+            pball->ApplySurfaceImpulse(jt * cross, jt * tangent);
+        }
+    }
+}
+
 void KickerHitCircle::DoCollide(Ball * const pball, const Vertex3Ds& hitnormal, const Vertex3Ds& hitvelocity, const bool newBall)
 {
    if (m_pball) return;								    // a previous ball already in kicker
@@ -1133,69 +1199,20 @@ void KickerHitCircle::DoCollide(Ball * const pball, const Vertex3Ds& hitnormal, 
          else
          {
             hitEvent = false;
+            DoChangeBallVelocity(pball, hitnormal);
 
-            float minDist = FLT_MAX;
-            unsigned int idx = ~0u;
-            for (unsigned int t = 0; t < m_pkicker->hitMesh.size(); t++)
+            // this is an ugly hack to prevent the ball stopping rapidly at the kicker bevel 
+            // something with the friction calculation is wrong in the physics engine
+            // so we monitor the ball velocity if it drop under a length value of 0.2
+            // if so we take the last "good" velocity to help the ball moving over the critical spot at the kicker bevel
+            // this hack seems to work only if the kicker is on the playfield, a kicker attached to a wall has still problems
+            // because the friction calculation for a wall is also different
+            float length = pball->m_vel.Length();
+            if (length < 0.2f)
             {
-               // find the right normal by calculating the distance from current ball position to vertex of the kicker mesh               
-               const float length = (pball->m_pos - m_pkicker->hitMesh[t]).LengthSquared();
-               if (length < minDist)
-               {
-                  minDist = length;
-                  idx = t;
-               }
+                pball->m_vel = pball->m_oldVel;
             }
-            //minDist = sqrtf(minDist);
-
-            if (idx != ~0u)
-            {
-               // we have the nearest vertex now use the normal and damp it so it doesn't speed up the ball velocity too much
-               const Vertex3Ds hitnorm(kickerHitMesh[idx].nx, kickerHitMesh[idx].ny, kickerHitMesh[idx].nz);
-               Vertex3Ds surfVel, tangent, surfP;
-               const float dot = -pball->m_vel.Dot(hitnorm);
-               const float reactionImpulse = pball->m_mass * fabsf(dot);
-               /*
-                              if (pball->m_pos.z > pball->m_defaultZ)
-                              {
-                              // ball is on a surface(e.g. upper playfield) use a high friction and a different calculation to compensate surface collision
-                              friction = 1.0f;
-                              surfP = -pball->m_radius * hitnorm;      // surface contact point relative to center of mass
-
-                              surfVel = pball->SurfaceVelocity(surfP); // velocity at impact point
-
-                              tangent = surfVel - surfVel.Dot(hitnorm) * hitnorm; // calc the tangential velocity
-                              }
-                              else
-                              */
-               surfP = -pball->m_radius * hitnormal;    // surface contact point relative to center of mass
-
-               surfVel = pball->SurfaceVelocity(surfP);         // velocity at impact point
-
-               tangent = surfVel - surfVel.Dot(hitnormal) * hitnorm; // calc the tangential velocity
-
-               pball->m_vel += dot * hitnorm; // apply collision impulse (along normal, so no torque)
-               pball->m_dynamic = C_DYNAMIC;
-
-               const float friction = 0.3f;
-               const float tangentSpSq = tangent.LengthSquared();
-
-               if (tangentSpSq > 1e-6f)
-               {
-                  tangent /= sqrtf(tangentSpSq);           // normalize to get tangent direction
-                  const float vt = surfVel.Dot(tangent);   // get speed in tangential direction
-
-                  // compute friction impulse
-                  const Vertex3Ds cross = CrossProduct(surfP, tangent);
-                  const float kt = pball->m_invMass + tangent.Dot(CrossProduct(cross / pball->m_inertia, surfP));
-
-                  // friction impulse can't be greater than coefficient of friction times collision impulse (Coulomb friction cone)
-                  const float maxFric = friction * reactionImpulse;
-                  const float jt = clamp(-vt / kt, -maxFric, maxFric);
-
-                  pball->ApplySurfaceImpulse(jt * cross, jt * tangent);
-               }
-            }
+            pball->m_oldVel = pball->m_vel;
          }
 
          if (hitEvent)

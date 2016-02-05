@@ -79,6 +79,7 @@ public:
    unsigned int m_ringcounter_oldpos;
 
    Vertex3Ds m_vel;      // ball velocity
+   Vertex3Ds m_oldVel;
 
    float m_drsq;	// square of distance moved
 
