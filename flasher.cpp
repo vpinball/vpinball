@@ -356,38 +356,33 @@ void Flasher::EndPlay()
 
 void Flasher::UpdateMesh()
 {
-   Vertex3D_TexelOnly *buf;
-   dynamicVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
-
    const float height = (m_d.m_height + m_ptable->m_tableheight)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
    const float movx = minx + (maxx - minx)*0.5f;
    const float movy = miny + (maxy - miny)*0.5f;
 
+   Matrix3D tempMatrix, TMatrix;
+   TMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotZ));
+   tempMatrix.RotateYMatrix(ANGTORAD(m_d.m_rotY));
+   tempMatrix.Multiply(TMatrix, TMatrix);
+   tempMatrix.RotateXMatrix(ANGTORAD(m_d.m_rotX));
+   tempMatrix.Multiply(TMatrix, TMatrix);
+
+   tempMatrix.SetTranslation(m_d.m_vCenter.x,m_d.m_vCenter.y,height);
+   tempMatrix.Multiply(TMatrix, tempMatrix);
+
+   TMatrix.SetTranslation(
+       -movx, //-m_d.m_vCenter.x,
+       -movy, //-m_d.m_vCenter.y,
+       0.f);
+   tempMatrix.Multiply(TMatrix, tempMatrix);
+
+   Vertex3D_TexelOnly *buf;
+   dynamicVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
+
    for (unsigned int i = 0; i < numVertices; i++)
    {
-      Matrix3D tempMatrix, RTmatrix, TMatrix, T2Matrix;
-      RTmatrix.SetIdentity();
-      TMatrix.SetIdentity();
-      T2Matrix.SetIdentity();
-      T2Matrix._41 = -movx;//-m_d.m_vCenter.x;
-      T2Matrix._42 = -movy;//-m_d.m_vCenter.y;
-      T2Matrix._43 = 0;
-      TMatrix._41 = m_d.m_vCenter.x;
-      TMatrix._42 = m_d.m_vCenter.y;
-      TMatrix._43 = height;
-
-      tempMatrix.SetIdentity();
-      tempMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotZ));
-      tempMatrix.Multiply(RTmatrix, RTmatrix);
-      tempMatrix.RotateYMatrix(ANGTORAD(m_d.m_rotY));
-      tempMatrix.Multiply(RTmatrix, RTmatrix);
-      tempMatrix.RotateXMatrix(ANGTORAD(m_d.m_rotX));
-      tempMatrix.Multiply(RTmatrix, RTmatrix);
-
       Vertex3D_TexelOnly vert = vertices[i];
-      T2Matrix.MultiplyVector(vert, vert);
-      RTmatrix.MultiplyVector(vert, vert);
-      TMatrix.MultiplyVector(vert, vert);
+      tempMatrix.MultiplyVector(vert, vert);
       buf[i] = vert;
    }
 

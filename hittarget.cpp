@@ -256,10 +256,10 @@ const WORD dropTargetHitPlaneIndices[24] =
    0, 1, 2, 1, 3, 2, 4, 5, 6, 6, 7, 4, 8, 9, 10,
    8, 11, 9, 12, 13, 14, 14, 13, 15
 };
+
 void HitTarget::GetHitShapes(Vector<HitObject> * const pvho)
 {
     TransformVertices();
-
 
     if (m_d.m_targetType == DropTargetBeveled || m_d.m_targetType == DropTargetFlatSimple || m_d.m_targetType == DropTargetSimple)
     {
@@ -271,7 +271,6 @@ void HitTarget::GetHitShapes(Vector<HitObject> * const pvho)
        tempMatrix.SetIdentity();
        tempMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotZ));
        tempMatrix.Multiply(fullMatrix, fullMatrix);
-
 
        // add the normal drop target as collidable but without hit event
        for (unsigned i = 0; i < m_numIndices; i += 3)
@@ -473,7 +472,7 @@ void HitTarget::TransformVertices()
 
       vertices[i].x = vert.x + m_d.m_vPosition.x;
       vertices[i].y = vert.y + m_d.m_vPosition.y;
-      vertices[i].z = vert.z*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_d.m_vPosition.z + m_ptable->m_tableheight;
+      vertices[i].z = vert.z*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + (m_d.m_vPosition.z + m_ptable->m_tableheight);
    }
 }
 
@@ -704,24 +703,26 @@ void HitTarget::UpdateTarget(RenderDevice *pd3dDevice)
    else
    {
        Matrix3D fullMatrix, tempMatrix;
-       fullMatrix.SetIdentity();
-       tempMatrix.SetIdentity();
-       tempMatrix.RotateXMatrix(ANGTORAD(m_moveAnimationOffset));
-       tempMatrix.Multiply(fullMatrix, fullMatrix);
+       fullMatrix.RotateXMatrix(ANGTORAD(m_moveAnimationOffset));
        tempMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotZ));
        tempMatrix.Multiply(fullMatrix, fullMatrix);
+
+       Matrix3D vertMatrix;
+       vertMatrix.SetScaling(m_d.m_vSize.x, m_d.m_vSize.y, m_d.m_vSize.z);
+       fullMatrix.Multiply(vertMatrix, vertMatrix);
+       tempMatrix.SetScaling(1.f, 1.f, m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]);
+       tempMatrix.Multiply(vertMatrix, vertMatrix);
+       tempMatrix.SetTranslation(m_d.m_vPosition.x, m_d.m_vPosition.y, m_d.m_vPosition.z + m_ptable->m_tableheight);
+       tempMatrix.Multiply(vertMatrix, vertMatrix);
 
        for (unsigned int i = 0; i < m_numVertices; i++)
        {
            Vertex3Ds vert(m_vertices[i].x, m_vertices[i].y, m_vertices[i].z);
-           vert.x *= m_d.m_vSize.x;
-           vert.y *= m_d.m_vSize.y;
-           vert.z *= m_d.m_vSize.z;
-           vert = fullMatrix.MultiplyVector(vert);
-           
-           buf[i].x = vert.x + m_d.m_vPosition.x;
-           buf[i].y = vert.y + m_d.m_vPosition.y;
-           buf[i].z = vert.z*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_d.m_vPosition.z + m_ptable->m_tableheight;
+           vert = vertMatrix.MultiplyVector(vert);           
+           buf[i].x = vert.x;
+           buf[i].y = vert.y;
+           buf[i].z = vert.z;
+
            vert = Vertex3Ds(m_vertices[i].nx, m_vertices[i].ny, m_vertices[i].nz);
            vert = fullMatrix.MultiplyVectorNoTranslate(vert);
            buf[i].nx = vert.x;

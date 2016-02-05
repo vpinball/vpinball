@@ -438,25 +438,28 @@ void Gate::UpdateWire(RenderDevice *pd3dDevice)
 
    m_vertexbuffer_angle = m_phitgate->m_gateanim.m_angle;
 
-   Matrix3D fullMatrix;
-   Matrix3D rotzMat, rotxMat;
+   Matrix3D fullMatrix, tempMat;
+
+   fullMatrix.RotateXMatrix(m_d.m_twoWay ? m_phitgate->m_gateanim.m_angle : -m_phitgate->m_gateanim.m_angle);
+   tempMat.RotateZMatrix(ANGTORAD(m_d.m_rotation));
+   tempMat.Multiply(fullMatrix, fullMatrix);
+
+   Matrix3D vertMatrix;
+   tempMat.SetScaling(m_d.m_length, m_d.m_length, m_d.m_length*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]);
+   tempMat.Multiply(fullMatrix, vertMatrix);
+   tempMat.SetTranslation(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_height*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + baseHeight);
+   tempMat.Multiply(vertMatrix, vertMatrix);
+
    Vertex3D_NoTex2 *buf;
-
-   fullMatrix.SetIdentity();
-   rotxMat.RotateXMatrix(m_d.m_twoWay ? m_phitgate->m_gateanim.m_angle : -m_phitgate->m_gateanim.m_angle);
-   rotxMat.Multiply(fullMatrix, fullMatrix);
-   rotzMat.RotateZMatrix(ANGTORAD(m_d.m_rotation));
-   rotzMat.Multiply(fullMatrix, fullMatrix);
-
    wireVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
    for (unsigned int i = 0; i < m_numVertices; i++)
    {
       Vertex3Ds vert(m_vertices[i].x, m_vertices[i].y, m_vertices[i].z);
-      vert = fullMatrix.MultiplyVector(vert);
+      vert = vertMatrix.MultiplyVector(vert);
+      buf[i].x = vert.x;
+      buf[i].y = vert.y;
+      buf[i].z = vert.z;
 
-      buf[i].x = vert.x*m_d.m_length + m_d.m_vCenter.x;
-      buf[i].y = vert.y*m_d.m_length + m_d.m_vCenter.y;
-      buf[i].z = vert.z*m_d.m_length*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_d.m_height*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + baseHeight;
       vert = Vertex3Ds(m_vertices[i].nx, m_vertices[i].ny, m_vertices[i].nz);
       vert = fullMatrix.MultiplyVectorNoTranslate(vert);
       buf[i].nx = vert.x;
@@ -554,10 +557,10 @@ void Gate::GenerateBracketMesh(Vertex3D_NoTex2 *buf)
    {
       Vertex3Ds vert(gateBracket[i].x, gateBracket[i].y, gateBracket[i].z);
       vert = fullMatrix.MultiplyVector(vert);
-
       buf[i].x = vert.x*m_d.m_length + m_d.m_vCenter.x;
       buf[i].y = vert.y*m_d.m_length + m_d.m_vCenter.y;
-      buf[i].z = vert.z*m_d.m_length*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_d.m_height*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + baseHeight;
+      buf[i].z = vert.z*m_d.m_length*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + (m_d.m_height*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + baseHeight);
+
       vert = Vertex3Ds(gateBracket[i].nx, gateBracket[i].ny, gateBracket[i].nz);
       vert = fullMatrix.MultiplyVectorNoTranslate(vert);
       buf[i].nx = vert.x;
@@ -577,10 +580,10 @@ void Gate::GenerateWireMesh(Vertex3D_NoTex2 *buf)
    {
       Vertex3Ds vert(m_vertices[i].x, m_vertices[i].y, m_vertices[i].z);
       vert = fullMatrix.MultiplyVector(vert);
-
       buf[i].x = vert.x*m_d.m_length + m_d.m_vCenter.x;
       buf[i].y = vert.y*m_d.m_length + m_d.m_vCenter.y;
-      buf[i].z = vert.z*m_d.m_length*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_d.m_height*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + baseHeight;
+      buf[i].z = vert.z*m_d.m_length*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + (m_d.m_height*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + baseHeight);
+
       vert = Vertex3Ds(m_vertices[i].nx, m_vertices[i].ny, m_vertices[i].nz);
       vert = fullMatrix.MultiplyVectorNoTranslate(vert);
       buf[i].nx = vert.x;

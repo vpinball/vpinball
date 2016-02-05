@@ -293,6 +293,7 @@ void Ramp::RenderBlueprint(Sur *psur)
 
 void Ramp::GetBoundingVertices(std::vector<Vertex3Ds>& pvvertex3D)
 {
+   //!! meh, this is delivering something loosely related to the bounding vertices, but its only used in the cam fitting code so far, so keep for legacy reasons
    float *rgheight1;
    int cvertex;
    const Vertex2D * const rgvLocal = GetRampVertex(cvertex, &rgheight1, NULL, NULL, NULL, HIT_SHAPE_DETAIL_LEVEL, false, true);
@@ -410,7 +411,7 @@ Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** co
             v1normal.Normalize();
             v2normal.Normalize();
 
-			if (fabsf(v1normal.x - v2normal.x) < 0.0001f && fabsf(v1normal.y - v2normal.y) < 0.0001f)
+            if (fabsf(v1normal.x - v2normal.x) < 0.0001f && fabsf(v1normal.y - v2normal.y) < 0.0001f)
             {
                // Two parallel segments
                vnormal = v1normal;

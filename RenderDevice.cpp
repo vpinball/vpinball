@@ -1391,7 +1391,7 @@ void RenderDevice::GetViewport(ViewPort* p1)
 
 void RenderDevice::DrawFullscreenQuad()
 {
-   float verts[4 * 5] =
+   static const float verts[4 * 5] =
    {
       1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
       -1.0f, 1.0f, 0.0f, 0.0f, 0.0f,

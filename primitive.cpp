@@ -183,6 +183,7 @@ void Primitive::CreateRenderGroup(Collection *collection, RenderDevice *pd3dDevi
       {
          Vertex3D_NoTex2 vt = m.m_vertices[t];
          renderedPrims[i]->fullMatrix.MultiplyVector(vt, vt);
+
          Vertex3Ds n;
          renderedPrims[i]->fullMatrix.MultiplyVectorNoTranslateNormal(vt, n);
          vt.nx = n.x; vt.ny = n.y; vt.nz = n.z;
@@ -805,10 +806,10 @@ void Primitive::ExportMesh(FILE *f)
          const Vertex3D_NoTex2 &v = m_mesh.m_vertices[i];
          Vertex3Ds vert(v.x, v.y, v.z);
          vert = fullMatrix.MultiplyVector(vert);
-
          buf[i].x = vert.x;
          buf[i].y = vert.y;
          buf[i].z = vert.z;
+
          vert = Vertex3Ds(v.nx, v.ny, v.nz);
          vert = fullMatrix.MultiplyVectorNoTranslate(vert);
          buf[i].nx = vert.x;
