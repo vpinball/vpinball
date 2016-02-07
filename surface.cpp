@@ -495,20 +495,16 @@ void Surface::AddLine(Vector<HitObject> * const pvho, const RenderVertex * const
 
 void Surface::GetBoundingVertices(std::vector<Vertex3Ds>& pvvertex3D)
 {
-   // hardwired to table dimensions, but with bottom/top of surface
-   const Vertex3Ds pv(
-        m_ptable->m_right,
-        m_ptable->m_bottom,
-        m_d.m_heighttop);
+   // hardwired to table dimensions, but with bottom/top of surface, returns all 8 corners as this will be used for further transformations later-on
+	for (int i = 0; i < 8; i++)
+	{
+		const Vertex3Ds pv(
+			i & 1 ? m_ptable->m_right : m_ptable->m_left,
+			i & 2 ? m_ptable->m_bottom : m_ptable->m_top,
+			i & 4 ? m_d.m_heighttop : m_d.m_heightbottom);
 
-   pvvertex3D.push_back(pv);
-
-   const Vertex3Ds pv2(
-       m_ptable->m_left,
-       m_ptable->m_top,
-       m_d.m_heightbottom);
-
-   pvvertex3D.push_back(pv2);
+		pvvertex3D.push_back(pv);
+	}
 }
 
 void Surface::EndPlay()
