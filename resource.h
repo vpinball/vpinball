@@ -774,7 +774,9 @@
 #define IDS_UNHIDEALL                   552
 #define IDS_HIDE                        553
 #define IDC_MODIFY3DSTEREO              554
+#define IDC_DMD2                        555
 #define IDC_ADDBLEND                    556
+#define IDC_DMD                         557
 #define IDC_LIGHTAMBIENT                558
 #define IDC_LIGHT0EMISSION              559
 #define IDC_LIGHTHEIGHT                 564

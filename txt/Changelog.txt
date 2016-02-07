@@ -7,9 +7,10 @@ VP 10.1.0 Changelog
 - add support to overwrite the ball image/decal texture globally under Preferences->Video Settings
 - "Throw Balls In Player" mode can now be activated permanently in the Preferences->Editor menu, also you can define the default ball size for this mode. 
   The ball size for this mode can also be defined in the debugger menu.
-- add an "Update All" button to the image manager for updating all images without any further inquiry. Only an error message is shown after updating if some 
-  images can't be updated (e.g. files not found)
-- add a "Raise Delay" setting to drop targets. 
+- add an "Update All" button to the image manager for updating all images without any further inquiry. Only an error message is shown after updating, if some 
+  images can't be updated (e.g. files not found).
+- add a "Raise Delay" setting to drop targets.
+- add DMD image connection (if enabled in script) for flashers (and also as checkbox for textboxes)
 
 - DirectX 8 port for input handling (currently disabled)
 - texture size limit/downscale now respects aspect ratio (currently disabled)

@@ -921,6 +921,8 @@ void Player::UpdateBasicShaderMatrix(const Matrix3D& objectTrafo)
    m_pin3d.m_pd3dDevice->classicLightShader->SetMatrix("matWorldViewProj", &matWorldViewProj);
 #endif
 
+   m_pin3d.m_pd3dDevice->DMDShader->SetMatrix("matWorldViewProj", &matWorldViewProj);
+
    m_pin3d.m_pd3dDevice->basicShader->SetMatrix("matWorldView", &matWorldView);
    m_pin3d.m_pd3dDevice->basicShader->SetMatrix("matWorldViewInverseTranspose", &matWorldViewInvTrans);
    //m_pin3d.m_pd3dDevice->basicShader->SetMatrix("matWorld", &matWorld);
