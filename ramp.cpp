@@ -298,19 +298,45 @@ void Ramp::GetBoundingVertices(std::vector<Vertex3Ds>& pvvertex3D)
    int cvertex;
    const Vertex2D * const rgvLocal = GetRampVertex(cvertex, &rgheight1, NULL, NULL, NULL, HIT_SHAPE_DETAIL_LEVEL, false, true);
 
+   //pvvertex3D.reserve(pvvertex3D.size() + cvertex * 2);
+   Vertex3Ds bbox_min(FLT_MAX, FLT_MAX, FLT_MAX);
+   Vertex3Ds bbox_max(-FLT_MAX, -FLT_MAX, -FLT_MAX);
    for (int i = 0; i < cvertex; i++)
    {
       {
       const Vertex3Ds pv(rgvLocal[i].x,rgvLocal[i].y,rgheight1[i] + 50.0f); // leave room for ball
-      pvvertex3D.push_back(pv);
-      }
+      //pvvertex3D.push_back(pv);
+	  bbox_min.x = min(bbox_min.x, pv.x);
+	  bbox_min.y = min(bbox_min.y, pv.y);
+	  bbox_min.z = min(bbox_min.z, pv.z);
+	  bbox_max.x = max(bbox_max.x, pv.x);
+	  bbox_max.y = max(bbox_max.y, pv.y);
+	  bbox_max.z = max(bbox_max.z, pv.z);
+	  }
 
       const Vertex3Ds pv(rgvLocal[cvertex * 2 - i - 1].x,rgvLocal[cvertex * 2 - i - 1].y,rgheight1[i] + 50.0f); // leave room for ball
-      pvvertex3D.push_back(pv);
+      //pvvertex3D.push_back(pv);
+	  bbox_min.x = min(bbox_min.x, pv.x);
+	  bbox_min.y = min(bbox_min.y, pv.y);
+	  bbox_min.z = min(bbox_min.z, pv.z);
+	  bbox_max.x = max(bbox_max.x, pv.x);
+	  bbox_max.y = max(bbox_max.y, pv.y);
+	  bbox_max.z = max(bbox_max.z, pv.z);
    }
 
    delete[] rgvLocal;
    delete[] rgheight1;
+
+   // returns all 8 corners as this will be used for further transformations later-on
+   for (int i = 0; i < 8; i++)
+   {
+	   const Vertex3Ds pv(
+		   i & 1 ? bbox_min.x : bbox_max.x,
+		   i & 2 ? bbox_min.y : bbox_max.y,
+		   i & 4 ? bbox_min.z : bbox_max.z);
+
+	   pvvertex3D.push_back(pv);
+   }
 }
 
 void Ramp::AssignHeightToControlPoint(const RenderVertex3D &v, float height)
