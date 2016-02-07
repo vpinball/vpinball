@@ -179,6 +179,12 @@ void Flasher::SetDefaults(bool fromMouseClick)
    else
       m_d.m_fAddBlend = false;
 
+   hr = GetRegInt("DefaultProps\\Flasher", "DMD", &iTmp);
+   if ((hr == S_OK) && fromMouseClick)
+	   m_d.m_IsDMD = iTmp == 0 ? false : true;
+   else
+	   m_d.m_IsDMD = false;
+
    hr = GetRegInt("DefaultProps\\Flasher", "DisplayTexture", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_fDisplayTexture = (iTmp == 0) ? false : true;
@@ -205,6 +211,7 @@ void Flasher::WriteRegDefaults()
    SetRegValueBool("DefaultProps\\Flasher", "Visible", m_d.m_IsVisible);
    SetRegValueBool("DefaultProps\\Flasher", "DisplayTexture", m_d.m_fDisplayTexture);
    SetRegValueBool("DefaultProps\\Flasher", "AddBlend", m_d.m_fAddBlend);
+   SetRegValueBool("DefaultProps\\Flasher", "DMD", m_d.m_IsDMD);
    SetRegValue("DefaultProps\\Flasher", "ImageMode", REG_DWORD, &m_d.m_imagealignment, 4);
    SetRegValue("DefaultProps\\Flasher", "Filter", REG_DWORD, &m_d.m_filter, 4);
    SetRegValueInt("DefaultProps\\Flasher", "FilterAmount", m_d.m_fFilterAmount);
@@ -614,6 +621,7 @@ HRESULT Flasher::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
    bw.WriteBool(FID(FVIS), m_d.m_IsVisible);
    bw.WriteBool(FID(DSPT), m_d.m_fDisplayTexture);
    bw.WriteBool(FID(ADDB), m_d.m_fAddBlend);
+   bw.WriteBool(FID(IDMD), m_d.m_IsDMD);
    bw.WriteFloat(FID(FLDB), m_d.m_depthBias);
    bw.WriteInt(FID(ALGN), m_d.m_imagealignment);
    bw.WriteInt(FID(FILT), m_d.m_filter);
@@ -723,6 +731,12 @@ BOOL Flasher::LoadToken(int id, BiffReader *pbr)
       BOOL iTmp;
       pbr->GetBool(&iTmp);
       m_d.m_fAddBlend = (iTmp == 1);
+   }
+   else if (id == FID(IDMD))
+   {
+	   BOOL iTmp;
+	   pbr->GetBool(&iTmp);
+	   m_d.m_IsDMD = (iTmp == 1);
    }
    else if (id == FID(DSPT))
    {
@@ -1213,11 +1227,29 @@ STDMETHODIMP Flasher::put_AddBlend(VARIANT_BOOL newVal)
 {
    STARTUNDO
 
-      m_d.m_fAddBlend = VBTOF(newVal);
+   m_d.m_fAddBlend = VBTOF(newVal);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
+}
+
+STDMETHODIMP Flasher::get_DMD(VARIANT_BOOL *pVal) //temporary value of object
+{
+	*pVal = (VARIANT_BOOL)FTOVB(m_d.m_IsDMD);
+
+	return S_OK;
+}
+
+STDMETHODIMP Flasher::put_DMD(VARIANT_BOOL newVal)
+{
+	STARTUNDO
+
+	m_d.m_IsDMD = VBTOF(newVal);
+
+	STOPUNDO
+
+	return S_OK;
 }
 
 STDMETHODIMP Flasher::get_DepthBias(float *pVal)
@@ -1268,8 +1300,8 @@ STDMETHODIMP Flasher::put_ImageAlignment(RampImageAlignment newVal)
 void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
 {
    TRACE_FUNCTION();
-   // Don't render if invisible.
-   if (!m_d.m_IsVisible || dynamicVertexBuffer == NULL || m_ptable->m_fReflectionEnabled)
+   // Don't render if invisible (or DMD connection not set)
+   if (!m_d.m_IsVisible || dynamicVertexBuffer == NULL || m_ptable->m_fReflectionEnabled || (m_d.m_IsDMD && !g_pplayer->m_device_texdmd))
       return;
 
    const D3DXVECTOR4 color = convertColor(m_d.m_color, (float)m_d.m_fAlpha*m_d.m_intensity_scale / 100.0f);
@@ -1285,80 +1317,98 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
        dynamicVertexBufferRegenerate = false;
    }
 
-   //Pin3D * const ppin3d = &g_pplayer->m_pin3d;
-   Texture * const pinA = m_ptable->GetImage(m_d.m_szImageA);
-   Texture * const pinB = m_ptable->GetImage(m_d.m_szImageB);
-
-   bool hdrTex0;
-   if (pinA && !pinB)
-      hdrTex0 = pinA->IsHDR();
-   else if (!pinA && pinB)
-      hdrTex0 = pinB->IsHDR();
-   else if (pinA && pinB)
-      hdrTex0 = pinA->IsHDR();
-   else
-      hdrTex0 = false;
-
-   const D3DXVECTOR4 ab((float)m_d.m_fFilterAmount / 100.0f, min(max(m_d.m_modulate_vs_add, 0.00001f), 0.9999f), // avoid 0, as it disables the blend and avoid 1 as it looks not good with day->night changes
-                        hdrTex0 ? 1.f : 0.f, (pinA && pinB && pinB->IsHDR()) ? 1.f : 0.f);
-   pd3dDevice->flasherShader->SetVector("amount__blend_modulate_vs_add__hdrTexture01", &ab);
-
-   pd3dDevice->flasherShader->SetFlasherColorAlpha(color);
-
    pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
-
-   D3DXVECTOR4 flasherData(-1.f, -1.f, (float)m_d.m_filter, m_d.m_fAddBlend ? 1.f : 0.f);
-
-   if (pinA && !pinB)
-   {
-      pd3dDevice->flasherShader->SetTechnique("basic_with_textureOne_noLight");
-      pd3dDevice->flasherShader->SetTexture("Texture0", pinA);
-
-      if (!m_d.m_fAddBlend)
-         flasherData.x = pinA->m_alphaTestValue * (float)(1.0 / 255.0);
-
-      //ppin3d->SetTextureFilter( 0, TEXTURE_MODE_TRILINEAR );
-   }
-   else if (!pinA && pinB)
-   {
-      pd3dDevice->flasherShader->SetTechnique("basic_with_textureOne_noLight");
-      pd3dDevice->flasherShader->SetTexture("Texture0", pinB);
-
-      if (!m_d.m_fAddBlend)
-         flasherData.x = pinB->m_alphaTestValue * (float)(1.0 / 255.0);
-
-      //ppin3d->SetTextureFilter( 0, TEXTURE_MODE_TRILINEAR );
-   }
-   else if (pinA && pinB)
-   {
-      pd3dDevice->flasherShader->SetTechnique("basic_with_textureAB_noLight");
-      pd3dDevice->flasherShader->SetTexture("Texture0", pinA);
-      pd3dDevice->flasherShader->SetTexture("Texture1", pinB);
-
-      if (!m_d.m_fAddBlend)
-      {
-         flasherData.x = pinA->m_alphaTestValue * (float)(1.0 / 255.0);
-         flasherData.y = pinB->m_alphaTestValue * (float)(1.0 / 255.0);
-      }
-
-      //ppin3d->SetTextureFilter( 0, TEXTURE_MODE_TRILINEAR );
-   }
-   else
-      pd3dDevice->flasherShader->SetTechnique("basic_with_noLight");
-
-   pd3dDevice->flasherShader->SetFlasherData(flasherData);
-
    pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
 
-   g_pplayer->m_pin3d.EnableAlphaBlend(m_d.m_fAddBlend, false, false);
-   pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, m_d.m_fAddBlend ? D3DBLEND_INVSRCCOLOR : D3DBLEND_INVSRCALPHA);
-   pd3dDevice->SetRenderState(RenderDevice::BLENDOP, m_d.m_fAddBlend ? D3DBLENDOP_REVSUBTRACT : D3DBLENDOP_ADD);
+   if (m_d.m_IsDMD)
+   {
+       pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+       g_pplayer->m_pin3d.DisableAlphaBlend();
 
-   pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
+       //const float width = g_pplayer->m_pin3d.m_useAA ? 2.0f*(float)m_width : (float)m_width;
+       pd3dDevice->DMDShader->SetTechnique("basic_DMD_tiny_world"); //width*DMDwidth / (float)m_dmdx <= 3.74f ? "basic_DMD_tiny" : (width*DMDwidth / (float)m_dmdx <= 7.49f ? "basic_DMD" : "basic_DMD_big")); // use different smoothing functions for LED/Plasma emulation (rule of thumb here: up to quarter width of 1920HD = tiny, up to half width of 1920HD = normal, up to full width of 1920HD = big)
 
-   pd3dDevice->flasherShader->Begin(0);
-   pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_TEX, dynamicVertexBuffer, 0, numVertices, dynamicIndexBuffer, 0, numPolys * 3);
-   pd3dDevice->flasherShader->End();
+       pd3dDevice->DMDShader->SetVector("vColor_Intensity", &color);
+       const D3DXVECTOR4 r((float)g_pplayer->m_dmdx, (float)g_pplayer->m_dmdy, 1.f, 1.f); //(float)(0.5 / m_width), (float)(0.5 / m_height));
+       pd3dDevice->DMDShader->SetVector("vRes", &r);
+
+       pd3dDevice->DMDShader->SetTexture("Texture0", g_pplayer->m_device_texdmd);
+
+       pd3dDevice->DMDShader->Begin(0);
+       pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_TEX, dynamicVertexBuffer, 0, numVertices, dynamicIndexBuffer, 0, numPolys * 3);
+       pd3dDevice->DMDShader->End();
+   }
+   else
+   {
+       Texture * const pinA = m_ptable->GetImage(m_d.m_szImageA);
+       Texture * const pinB = m_ptable->GetImage(m_d.m_szImageB);
+
+       bool hdrTex0;
+       if (pinA && !pinB)
+           hdrTex0 = pinA->IsHDR();
+       else if (!pinA && pinB)
+           hdrTex0 = pinB->IsHDR();
+       else if (pinA && pinB)
+           hdrTex0 = pinA->IsHDR();
+       else
+           hdrTex0 = false;
+
+       const D3DXVECTOR4 ab((float)m_d.m_fFilterAmount / 100.0f, min(max(m_d.m_modulate_vs_add, 0.00001f), 0.9999f), // avoid 0, as it disables the blend and avoid 1 as it looks not good with day->night changes
+           hdrTex0 ? 1.f : 0.f, (pinA && pinB && pinB->IsHDR()) ? 1.f : 0.f);
+       pd3dDevice->flasherShader->SetVector("amount__blend_modulate_vs_add__hdrTexture01", &ab);
+
+       pd3dDevice->flasherShader->SetFlasherColorAlpha(color);
+
+       D3DXVECTOR4 flasherData(-1.f, -1.f, (float)m_d.m_filter, m_d.m_fAddBlend ? 1.f : 0.f);
+
+       if (pinA && !pinB)
+       {
+           pd3dDevice->flasherShader->SetTechnique("basic_with_textureOne_noLight");
+           pd3dDevice->flasherShader->SetTexture("Texture0", pinA);
+
+           if (!m_d.m_fAddBlend)
+               flasherData.x = pinA->m_alphaTestValue * (float)(1.0 / 255.0);
+
+           //ppin3d->SetTextureFilter( 0, TEXTURE_MODE_TRILINEAR );
+       }
+       else if (!pinA && pinB)
+       {
+           pd3dDevice->flasherShader->SetTechnique("basic_with_textureOne_noLight");
+           pd3dDevice->flasherShader->SetTexture("Texture0", pinB);
+
+           if (!m_d.m_fAddBlend)
+               flasherData.x = pinB->m_alphaTestValue * (float)(1.0 / 255.0);
+
+           //ppin3d->SetTextureFilter( 0, TEXTURE_MODE_TRILINEAR );
+       }
+       else if (pinA && pinB)
+       {
+           pd3dDevice->flasherShader->SetTechnique("basic_with_textureAB_noLight");
+           pd3dDevice->flasherShader->SetTexture("Texture0", pinA);
+           pd3dDevice->flasherShader->SetTexture("Texture1", pinB);
+
+           if (!m_d.m_fAddBlend)
+           {
+               flasherData.x = pinA->m_alphaTestValue * (float)(1.0 / 255.0);
+               flasherData.y = pinB->m_alphaTestValue * (float)(1.0 / 255.0);
+           }
+
+           //ppin3d->SetTextureFilter( 0, TEXTURE_MODE_TRILINEAR );
+       }
+       else
+           pd3dDevice->flasherShader->SetTechnique("basic_with_noLight");
+
+       pd3dDevice->flasherShader->SetFlasherData(flasherData);
+
+       pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
+       g_pplayer->m_pin3d.EnableAlphaBlend(m_d.m_fAddBlend, false, false);
+       pd3dDevice->SetRenderState(RenderDevice::DESTBLEND, m_d.m_fAddBlend ? D3DBLEND_INVSRCCOLOR : D3DBLEND_INVSRCALPHA);
+       pd3dDevice->SetRenderState(RenderDevice::BLENDOP, m_d.m_fAddBlend ? D3DBLENDOP_REVSUBTRACT : D3DBLENDOP_ADD);
+       
+       pd3dDevice->flasherShader->Begin(0);
+       pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_TEX, dynamicVertexBuffer, 0, numVertices, dynamicIndexBuffer, 0, numPolys * 3);
+       pd3dDevice->flasherShader->End();
+   }
 
    //pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
    //pd3dDevice->SetRenderState(RenderDevice::BLENDOP, D3DBLENDOP_ADD); //!! not necessary anymore

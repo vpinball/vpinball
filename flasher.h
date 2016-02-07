@@ -27,6 +27,7 @@ public:
    bool m_fDisplayTexture;
    bool m_IsVisible;
    bool m_fAddBlend;
+   bool m_IsDMD;
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -94,7 +95,7 @@ public:
       virtual void PutCenter(const Vertex2D * const pv) { m_d.m_vCenter = *pv; m_ptable->SetDirtyDraw(); }
       virtual void DoCommand(int icmd, int x, int y);
 
-      virtual bool IsTransparent() { return true; }
+	  virtual bool IsTransparent() { return !m_d.m_IsDMD; }
       virtual float GetDepth(const Vertex3Ds& viewDir)
       {
          return m_d.m_depthBias + viewDir.x * m_d.m_vCenter.x + viewDir.y * m_d.m_vCenter.y + viewDir.z * m_d.m_height;
@@ -164,6 +165,8 @@ public:
    STDMETHOD(put_DisplayTexture)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_AddBlend)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_AddBlend)(/*[in]*/ VARIANT_BOOL newVal);
+   STDMETHOD(get_DMD)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   STDMETHOD(put_DMD)(/*[in]*/ VARIANT_BOOL newVal);
 
    STDMETHOD(get_DepthBias)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_DepthBias)(/*[in]*/ float newVal);

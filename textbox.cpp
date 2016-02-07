@@ -47,7 +47,8 @@ void Textbox::SetDefaults(bool fromMouseClick)
       m_d.m_tdr.m_TimerInterval = 100;
       m_d.m_talign = TextAlignRight;
       m_d.m_fTransparent = false;
-      lstrcpy(m_d.sztext, "0");
+	  m_d.m_IsDMD = false;
+	  lstrcpy(m_d.sztext, "0");
 
       fd.cySize.int64 = (LONGLONG)(14.25f * 10000.0f);
       fd.lpstrName = L"Arial";
@@ -66,6 +67,7 @@ void Textbox::SetDefaults(bool fromMouseClick)
       m_d.m_tdr.m_TimerInterval = GetRegIntWithDefault("DefaultProps\\TextBox", "TimerInterval", 100);
       m_d.m_talign = (TextAlignment)GetRegIntWithDefault("DefaultProps\\TextBox", "TextAlignment", TextAlignRight);
       m_d.m_fTransparent = GetRegBoolWithDefault("DefaultProps\\TextBox", "Transparent", false);
+	  m_d.m_IsDMD = GetRegBoolWithDefault("DefaultProps\\TextBox", "DMD", false);
 
       const float fontSize = GetRegStringAsFloatWithDefault("DefaultProps\\TextBox", "FontSize", 14.25f);
       fd.cySize.int64 = (LONGLONG)(fontSize * 10000.0f);
@@ -109,6 +111,7 @@ void Textbox::WriteRegDefaults()
    SetRegValueBool("DefaultProps\\TextBox", "TimerEnabled", m_d.m_tdr.m_fTimerEnabled);
    SetRegValue("DefaultProps\\TextBox", "TimerInterval", REG_DWORD, &m_d.m_tdr.m_TimerInterval, 4);
    SetRegValueBool("DefaultProps\\TextBox", "Transparent", m_d.m_fTransparent);
+   SetRegValueBool("DefaultProps\\TextBox", "DMD", m_d.m_IsDMD);
 
    FONTDESC fd;
    fd.cbSizeofstruct = sizeof(FONTDESC);
@@ -212,7 +215,9 @@ void Textbox::PostRenderStatic(RenderDevice* pd3dDevice)
 {
    TRACE_FUNCTION();
 
-   if (!m_d.m_fVisible)
+   const bool dmd = (m_d.m_IsDMD || strstr(m_d.sztext, "DMD") != NULL); //!! second part is VP10.0 legacy
+
+   if (!m_d.m_fVisible || (dmd && !g_pplayer->m_device_texdmd))
       return;
 
    if (g_pplayer->m_ptable->m_tblMirrorEnabled^g_pplayer->m_ptable->m_fReflectionEnabled)
@@ -231,7 +236,7 @@ void Textbox::PostRenderStatic(RenderDevice* pd3dDevice)
    const float width = (float)(m_rect.right - m_rect.left)*mult;
    const float height = (float)(m_rect.bottom - m_rect.top)*ymult;
 
-   if (strstr(m_d.sztext, "DMD") != NULL) //!! meh
+   if (dmd)
    {
       g_pplayer->m_pin3d.DisableAlphaBlend();
       g_pplayer->DMDdraw(x, y, width, height,
@@ -478,6 +483,7 @@ HRESULT Textbox::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
    bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
    bw.WriteInt(FID(ALGN), m_d.m_talign);
    bw.WriteBool(FID(TRNS), m_d.m_fTransparent);
+   bw.WriteBool(FID(IDMD), m_d.m_IsDMD);
 
    ISelect::SaveData(pstm, hcrypthash, hcryptkey);
 
@@ -553,6 +559,10 @@ BOOL Textbox::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(TRNS))
    {
       pbr->GetBool(&m_d.m_fTransparent);
+   }
+   else if (id == FID(IDMD))
+   {
+	   pbr->GetBool(&m_d.m_IsDMD);
    }
    else if (id == FID(FONT))
    {
@@ -759,11 +769,29 @@ STDMETHODIMP Textbox::put_IsTransparent(VARIANT_BOOL newVal)
 {
    STARTUNDO
 
-      m_d.m_fTransparent = VBTOF(newVal);
+   m_d.m_fTransparent = VBTOF(newVal);
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
+}
+
+STDMETHODIMP Textbox::get_DMD(VARIANT_BOOL *pVal)
+{
+	*pVal = (VARIANT_BOOL)FTOVB(m_d.m_IsDMD);
+
+	return S_OK;
+}
+
+STDMETHODIMP Textbox::put_DMD(VARIANT_BOOL newVal)
+{
+	STARTUNDO
+
+	m_d.m_IsDMD = VBTOF(newVal);
+
+	STOPUNDO
+
+	return S_OK;
 }
 
 STDMETHODIMP Textbox::get_Visible(VARIANT_BOOL *pVal)

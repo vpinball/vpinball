@@ -47,7 +47,21 @@ VS_OUTPUT vs_main (float4 vPosition : POSITION0,
    Out.pos = float4(vPosition.xy, 0.0,1.0);
    Out.tex0 = tc;
    
-   return Out; 
+   return Out;
+}
+
+// transformation matrices (only used for flashers so far)
+float4x4 matWorldViewProj : WORLDVIEWPROJ;
+
+VS_OUTPUT vs_simple_main(float4 vPosition : POSITION0,
+    float2 tc : TEXCOORD0)
+{
+    VS_OUTPUT Out;
+
+    Out.pos = mul(vPosition, matWorldViewProj);
+    Out.tex0 = tc;
+
+    return Out;
 }
 
 //
@@ -185,4 +199,13 @@ technique basic_noDMD_notex
       VertexShader = compile vs_3_0 vs_main(); 
 	  PixelShader = compile ps_3_0 ps_main_noDMD_notex();
    } 
+}
+
+technique basic_DMD_tiny_world
+{
+    pass P0
+    {
+        VertexShader = compile vs_3_0 vs_simple_main();
+        PixelShader = compile ps_3_0 ps_main_DMD_tiny();
+    }
 }

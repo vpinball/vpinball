@@ -24,6 +24,7 @@ public:
    TextAlignment m_talign;
    bool m_fTransparent;
    bool m_fVisible;
+   bool m_IsDMD;
 };
 
 class Textbox :
@@ -95,6 +96,8 @@ private:
 public:
    STDMETHOD(get_IsTransparent)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_IsTransparent)(/*[in]*/ VARIANT_BOOL newVal);
+   STDMETHOD(get_DMD)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   STDMETHOD(put_DMD)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_Visible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_Visible)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_Alignment)(/*[out, retval]*/ TextAlignment *pVal);
