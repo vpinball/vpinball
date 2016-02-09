@@ -1374,18 +1374,18 @@ IDD_PROPTABLE_PHYSICS DIALOGEX 0, 0, 125, 95
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    EDITTEXT        14,81,7,40,12,ES_AUTOHSCROLL
-    EDITTEXT        13,81,20,40,12,ES_AUTOHSCROLL
-    EDITTEXT        3,81,34,40,12,ES_AUTOHSCROLL
-    EDITTEXT        214,81,48,40,12,ES_AUTOHSCROLL
-    EDITTEXT        6,81,62,40,12,ES_AUTOHSCROLL
-    EDITTEXT        215,81,76,40,12,ES_AUTOHSCROLL
-    LTEXT           "Table &Width",-1,7,10,74,8
-    LTEXT           "Table &Height/Length",-1,7,22,74,8
-    LTEXT           "Top &Glass Height",-1,7,36,74,8
-    LTEXT           "Table &Field Height",-1,7,50,74,8
-    LTEXT           "&Slope Min. Difficulty",-1,7,64,74,8
-    LTEXT           "Slope &Max. Difficulty",-1,7,78,74,8
+    LTEXT           "Table &Width",-1,7,8,74,8
+    EDITTEXT        14,81,6,40,12,ES_AUTOHSCROLL
+	LTEXT           "Table &Height/Length", -1, 7, 22, 74, 8
+	EDITTEXT        13, 81, 20, 40, 12, ES_AUTOHSCROLL
+	LTEXT           "Top &Glass Height", -1, 7, 36, 74, 8
+	EDITTEXT        3, 81, 34, 40, 12, ES_AUTOHSCROLL
+	LTEXT           "Table &Field Height", -1, 7, 50, 74, 8
+	EDITTEXT        214, 81, 48, 40, 12, ES_AUTOHSCROLL
+	LTEXT           "&Slope for Min. Difficulty", -1, 7, 64, 74, 8
+	EDITTEXT        6, 81, 62, 40, 12, ES_AUTOHSCROLL
+	LTEXT           "Slope for &Max. Difficulty", -1, 7, 78, 74, 8
+	EDITTEXT        215, 81, 76, 40, 12, ES_AUTOHSCROLL
 END
 
 IDD_PROPTABLE_LIGHTSOURCES DIALOGEX 0, 0, 125, 165
@@ -1436,7 +1436,7 @@ BEGIN
     COMBOBOX        DISPID_Image2,7,44,113,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     LTEXT           "FS Image",IDC_STATIC,7,58,60,8
     COMBOBOX        DISPID_Image6,7,68,113,69,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Test DT              DT         FS",13434,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,84,109,10
+    CONTROL         "Test DT                DT             FS",13434,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,84,109,10
     EDITTEXT        104,65,97,25,12,ES_AUTOHSCROLL
     EDITTEXT        105,65,110,25,12,ES_AUTOHSCROLL
     EDITTEXT        1040,65,123,25,12,ES_AUTOHSCROLL
@@ -1481,7 +1481,7 @@ BEGIN
     "Button", BS_AUTOCHECKBOX | WS_TABSTOP, 7, 327, 115, 8
 END
 
-IDD_PROPBACKGLASS_PHYSICS DIALOGEX 0, 0, 125, 209
+IDD_PROPTABLE_PHYSICS2 DIALOGEX 0, 0, 125, 209
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
@@ -2729,7 +2729,6 @@ BEGIN
     IDS_VISUALS             "Colors & Formatting"
     IDS_POSITION            "Position"
     IDS_STATE               "State & Physics"
-    IDS_PHYSICS             "Physics"
     IDS_TB_PRIMITIVE        "Primitive"
     IDS_POSITION_TRANSLATION "Position & Translation"
 END
@@ -2747,7 +2746,7 @@ END
 
 STRINGTABLE
 BEGIN
-    IDS_PHYSICSGFX          "Physics"
+    IDS_PHYSICS             "Physics"
     IDS_DIMENSIONSSLOPE     "Dimensions & Slope"
     IDS_LIGHTSOURCES        "Lighting"
     IDS_INPUT               "Input"

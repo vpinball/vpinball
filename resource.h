@@ -759,9 +759,8 @@
 #define IDC_3D_STEREO_Y                 544
 #define IDC_ADAPTIVE_VSYNC              545
 #define IDC_STATIC_SOUNDDEVICE          546
-#define IDD_PROPBACKGLASS_PHYSICS       547
+#define IDD_PROPTABLE_PHYSICS2          547
 #define IDC_STATIC_SOUNDDEVICE2         547
-#define IDS_PHYSICSGFX                  548
 #define IDD_PROPFLASHER_POSITION        548
 #define IDS_DIMENSIONSSLOPE             549
 #define IDD_PROPFLASHER_VISUALS         549
