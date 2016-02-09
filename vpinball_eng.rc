@@ -1493,13 +1493,13 @@ BEGIN
     LTEXT           "Playfield Elasticity",IDC_STATIC,7,37,69,8
     EDITTEXT        1709,80,49,40,12,ES_AUTOHSCROLL
     LTEXT           "Pf. Elasticity Falloff",IDC_STATIC,7,51,69,8
-    EDITTEXT        1710,80,63,40,12,ES_AUTOHSCROLL
+    EDITTEXT        1710,100,63,20,12,ES_AUTOHSCROLL
     LTEXT           "Playfield Scatter Angle",IDC_STATIC,7,65,69,8
-    EDITTEXT        1102,80,77,40,12,ES_AUTOHSCROLL
-    EDITTEXT        1103,80,91,40,12,ES_AUTOHSCROLL
-    EDITTEXT        1105,80,112,40,12,ES_AUTOHSCROLL
+    EDITTEXT        1102,100,77,20,12,ES_AUTOHSCROLL
+    EDITTEXT        1103,100,91,20,12,ES_AUTOHSCROLL
+    EDITTEXT        1105,100,112,20,12,ES_AUTOHSCROLL
     EDITTEXT        1104,100,133,20,12,ES_AUTOHSCROLL
-    LTEXT           "Default Scatter Angle",IDC_STATIC,7,79,69,8
+    LTEXT           "Default Elements Scatter Angle",IDC_STATIC,7,79,92,8
     LTEXT           "Nudge Time",IDC_STATIC,7,93,69,8
     LTEXT           "Physics Max. Loops",IDC_STATIC,7,114,70,8
     LTEXT           "Mech-Plunger Adjust (0..100)",IDC_STATIC,7,135,90,8
