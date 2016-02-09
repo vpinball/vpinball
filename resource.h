@@ -188,7 +188,6 @@
 #define IDS_UNSECURECONTROL2            173
 #define IDS_COLLECTION                  174
 #define IDS_DEFAULTPHYSICS              175
-#define IDS_NEED_DD9                    176
 #define IDS_LOCK                        177
 #define IDS_MISC                        178
 #define ID_LOCK                         179
@@ -200,6 +199,7 @@
 #define IDS_STATE                       184
 #define IDS_PHYSICS                     185
 #define IDS_TB_PRIMITIVE                186
+#define IDS_VISUALS2                    187
 #define IDS_POSITION_TRANSLATION        188
 #define IDS_DRAWING_ORDER_SELECT        200
 #define IDR_APPMENU                     201
@@ -622,7 +622,6 @@
 #define IDC_FORCE_ANISO                 425
 #define IDC_WIRE_DISTY                  425
 #define IDC_SCALE_BULB_MESH             425
-#define IDC_QFXAA                       426
 #define IDC_MATERIAL_COMBO3             426
 #define IDC_GLOBAL_3DSTEREO             427
 #define IDC_TWO_WAY_CHECK               427
@@ -684,7 +683,7 @@
 #define IDC_CORRECTION_X                460
 #define IDC_EDIT3                       461
 #define IDC_CORRECTION_Y                461
-#define IDC_EFXAA                       462
+#define IDC_FXAACB                      462
 #define IDC_ABOUT_VERSION               463
 #define DISPID_PluFrames                464
 #define DISPID_Width                    465
@@ -770,7 +769,6 @@
 #define IDD_PROPRAMP_PHYSICS1           550
 #define IDD_PROPPRIMITIVE_PHYSICS       550
 #define IDS_INPUT                       551
-#define IDC_FFXAA                       552
 #define IDS_UNHIDEALL                   552
 #define IDS_HIDE                        553
 #define IDC_MODIFY3DSTEREO              554
@@ -786,7 +784,9 @@
 #define IDC_AOSCALE                     568
 #define IDC_TABLESOUNDVOLUME            579
 #define IDC_TABLEMUSICVOLUME            580
-#define IDS_VISUALS_SOUND               581
+#define IDS_PLAYFIELD                   581
+#define IDD_PROPTABLE_USER              582
+#define IDS_TABLE_USER                  583
 #define IDC_TABLEAVSYNC                 585
 #define IDC_SOFTWARE_VP                 586
 #define IDC_TEXT_INTENSITY              587
