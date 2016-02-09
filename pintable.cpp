@@ -6038,7 +6038,10 @@ void PinTable::GetDialogPanes(Vector<PropertyPane> *pvproppane)
       pproppane = new PropertyPane(IDD_PROPTABLE_PHYSICS, IDS_DIMENSIONSSLOPE);
       pvproppane->AddElement(pproppane);
 
-      pproppane = new PropertyPane(IDD_PROPTABLE_LIGHTSOURCES, IDS_LIGHTSOURCES);
+	  pproppane = new PropertyPane(IDD_PROPTABLE_PHYSICS2, IDS_PHYSICS);
+	  pvproppane->AddElement(pproppane);
+	  
+	  pproppane = new PropertyPane(IDD_PROPTABLE_LIGHTSOURCES, IDS_LIGHTSOURCES);
       pvproppane->AddElement(pproppane);
    }
    else
@@ -6046,9 +6049,6 @@ void PinTable::GetDialogPanes(Vector<PropertyPane> *pvproppane)
       PropertyPane *pproppane;
 
       pproppane = new PropertyPane(IDD_PROPBACKGLASS_VISUALS, IDS_VISUALS2);
-      pvproppane->AddElement(pproppane);
-
-      pproppane = new PropertyPane(IDD_PROPBACKGLASS_PHYSICS, IDS_PHYSICSGFX);
       pvproppane->AddElement(pproppane);
    }
 }
