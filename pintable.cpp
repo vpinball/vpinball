@@ -2894,11 +2894,11 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
    bw.WriteInt(FID(AVSY), m_TableAdaptiveVSync);
 
    bw.WriteInt(FID(BREF), m_useReflectionForBalls);
-   bw.WriteInt(FID(PLST), m_playfieldReflectionStrength);
+   bw.WriteInt(FID(PLST), (int)(m_playfieldReflectionStrength*255.f + 0.5f));
    bw.WriteInt(FID(BTRA), m_useTrailForBalls);
    bw.WriteBool(FID(BDMO), m_BallDecalMode);
    bw.WriteFloat(FID(BPRS), m_ballPlayfieldReflectionStrength);
-   bw.WriteInt(FID(BTST), m_ballTrailStrength);
+   bw.WriteInt(FID(BTST), (int)(m_ballTrailStrength*255.f + 0.5f));
    bw.WriteInt(FID(ARAC), m_userDetailLevel);
    bw.WriteBool(FID(OGAC), m_overwriteGlobalDetailLevel);
    bw.WriteBool(FID(OGDN), m_overwriteGlobalDayNight);
@@ -3330,11 +3330,11 @@ void PinTable::SetLoadDefaults()
    m_angletiltMin = 4.5f;
 
    m_useReflectionForBalls = -1;
-   m_playfieldReflectionStrength = 50;
+   m_playfieldReflectionStrength = 0.2f;
    m_fReflectElementsOnPlayfield = false;
 
    m_useTrailForBalls = -1;
-   m_ballTrailStrength = 100;
+   m_ballTrailStrength = 0.4f;
    m_ballPlayfieldReflectionStrength = 1.f;
 
    m_useAA = -1;
@@ -3687,7 +3687,9 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(PLST))
    {
-      pbr->GetInt(&m_playfieldReflectionStrength);
+      int tmp;
+      pbr->GetInt(&tmp);
+	  m_playfieldReflectionStrength = (float)tmp*(float)(1.0 / 255.);
    }
    else if (id == FID(BTRA))
    {
@@ -3695,7 +3697,9 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(BTST))
    {
-      pbr->GetInt(&m_ballTrailStrength);
+      int tmp;
+      pbr->GetInt(&tmp);
+	  m_ballTrailStrength = (float)tmp*(float)(1.0 / 255.);
    }
    else if (id == FID(BPRS))
    {
@@ -7894,7 +7898,7 @@ STDMETHODIMP PinTable::put_BallReflection(int newVal)
 
 STDMETHODIMP PinTable::get_PlayfieldReflectionStrength(int *pVal)
 {
-   *pVal = m_playfieldReflectionStrength;
+   *pVal = (int)(m_playfieldReflectionStrength*100.f+0.5f);
 
    return S_OK;
 }
@@ -7903,7 +7907,7 @@ STDMETHODIMP PinTable::put_PlayfieldReflectionStrength(int newVal)
 {
    STARTUNDO
 
-   m_playfieldReflectionStrength = newVal;
+   m_playfieldReflectionStrength = (float)newVal*(float)(1./100.);
 
    STOPUNDO
 
@@ -7930,7 +7934,7 @@ STDMETHODIMP PinTable::put_BallTrail(int newVal)
 
 STDMETHODIMP PinTable::get_TrailStrength(int *pVal)
 {
-   *pVal = m_ballTrailStrength;
+   *pVal = (int)(m_ballTrailStrength*100.f+0.5f);
 
    return S_OK;
 }
@@ -7939,7 +7943,7 @@ STDMETHODIMP PinTable::put_TrailStrength(int newVal)
 {
    STARTUNDO
 
-   m_ballTrailStrength = newVal;
+   m_ballTrailStrength = (float)newVal*(float)(1./100.);
 
    STOPUNDO
 
@@ -9228,15 +9232,15 @@ STDMETHODIMP PinTable::get_EnableEMReels(VARIANT_BOOL *pVal)
 STDMETHODIMP PinTable::put_EnableEMReels(VARIANT_BOOL newVal)
 {
    STARTUNDO
-      m_fRenderEMReels = !!newVal;
+   m_fRenderEMReels = !!newVal;
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_GlobalDifficulty(float *pVal)
 {
-   *pVal = m_globalDifficulty;						//VP Editor
+	*pVal = m_globalDifficulty*100.f;						//VP Editor
 
    return S_OK;
 }
@@ -9247,15 +9251,15 @@ STDMETHODIMP PinTable::put_GlobalDifficulty(float newVal)
    {						//VP Editor
       int tmp;
       const HRESULT hr = GetRegInt("Player", "GlobalDifficulty", &tmp);
-      if (hr == S_OK) m_globalDifficulty = (float)tmp*(float)(1.0 / 100.0);
+      if (hr == S_OK)
+		  m_globalDifficulty = (float)tmp*(float)(1.0 / 100.0);
       else
       {
+         if (newVal < 0) newVal = 0;
+            else if (newVal > 100.0f) newVal = 100.0f;
          STARTUNDO
-            if (newVal < 0) newVal = 0;
-            else if (newVal > 1.0f) newVal = 1.0f;
-
-            m_globalDifficulty = newVal;
-            STOPUNDO
+		 m_globalDifficulty = newVal*(float)(1.0 / 100.0);
+         STOPUNDO
       }
    }
    return S_OK;

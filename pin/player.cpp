@@ -1689,7 +1689,7 @@ void Player::RenderMirrorOverlay()
 {
    // render the mirrored texture over the playfield
    m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->GetMirrorTmpBufferTexture());
-   m_pin3d.m_pd3dDevice->FBShader->SetFloat("mirrorFactor", (float)m_ptable->m_playfieldReflectionStrength*(float)(1.0 / 255.0));
+   m_pin3d.m_pd3dDevice->FBShader->SetFloat("mirrorFactor", m_ptable->m_playfieldReflectionStrength);
    m_pin3d.m_pd3dDevice->FBShader->SetTechnique("fb_mirror");
 
    m_pin3d.EnableAlphaBlend(false, false);
@@ -4148,7 +4148,7 @@ void Player::GetBallAspectRatio(const Ball * const pball, float &stretchX, float
    // this is the old ball reflection hack and can be removed if the new reflection works!
    const D3DXVECTOR4 pos_radRef(pball->m_pos.x, pball->m_pos.y, zheight + m_ptable->m_tableheight, pball->m_radius);
    ballShader->SetVector("position_radius", &pos_radRef);
-   const D3DXVECTOR4 refl((float)m_ptable->m_ballReflectionStrength * (float)(1.0 / 255.0), (float)m_ptable->m_playfieldReflectionStrength * (float)(1.0 / 255.0), 0.f, 0.f);
+   const D3DXVECTOR4 refl((float)m_ptable->m_ballReflectionStrength * (float)(1.0 / 255.0), m_ptable->m_playfieldReflectionStrength, 0.f, 0.f);
    ballShader->SetVector("reflection_ball_playfield", &refl);
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
    m_pin3d.EnableAlphaBlend(false, false);
@@ -4334,7 +4334,7 @@ void Player::DrawBalls()
       //if (drawReflection)
       //   DrawBallReflection(pball, zheight, lowDetailBall);
 
-      //ballShader->SetFloat("reflection_ball_playfield", (float)m_ptable->m_playfieldReflectionStrength * (float)(1.0 / 255.0));
+      //ballShader->SetFloat("reflection_ball_playfield", m_ptable->m_playfieldReflectionStrength);
       m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
       ballShader->SetTechnique("RenderBall");
 
@@ -4363,7 +4363,7 @@ void Player::DrawBalls()
                vec.x = pball->m_oldpos[io].x - pball->m_oldpos[i3].x;
                vec.y = pball->m_oldpos[io].y - pball->m_oldpos[i3].y;
                vec.z = pball->m_oldpos[io].z - pball->m_oldpos[i3].z;
-               const float bc = (float)m_ptable->m_ballTrailStrength * (float)(1.0/255.0) * powf(1.f - 1.f / max(vec.Length(), 1.0f), 64.0f); //!! 64=magic alpha falloff
+               const float bc = m_ptable->m_ballTrailStrength * powf(1.f - 1.f / max(vec.Length(), 1.0f), 64.0f); //!! 64=magic alpha falloff
                const float r = min(pball->m_radius*0.9f, 2.0f*pball->m_radius / powf((float)(i2 + 2), 0.6f)); //!! consts are for magic radius falloff
 
                if (bc > 0.f && r > FLT_MIN)

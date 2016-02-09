@@ -53,7 +53,7 @@ DMDPixels(VARIANT) - set array of (byte-)values (0..100), size needs to match th
 
 *SlopeMax(float) - Angle of Playfield within Cabinet (used for Physics only)
 *SlopeMin(float) - Angle of Playfield within Cabinet (used for Physics only)
-*GlobalDifficulty(float) - Mainly chooses/weights between SlopeMax and SlopeMin, but also affects precision of flippers/scattering
+*GlobalDifficulty(float) - Mainly chooses/weights between SlopeMax and SlopeMin, but also affects precision of flippers/scattering (0..100)
 Gravity(float) - default=0.86543
 Friction(float) - for the Playfield, default=0.0025
 Elasticity(float) - for the Playfield, default=0.2
@@ -83,10 +83,10 @@ BallDecalMode(bool) - switch between using the ball decal as ball logo or ball '
 *RenderDecals(bool) - default=true
 *TableAdaptiveVSync(int) - sets adaptive vsync option for this table (-1=use global setting, 0=off, 1=automatic, any other number is refresh rate in Hz)
 *BallReflection - enable ball reflection on table. depending on the global video setting 'Reflect Ball on Playfield' this is on or off. Or it is defined specific for this table.
-PlayfieldReflectionStrength(int) - defines the reflection strength of the (dynamic) table elements on the playfield (0-255)
+PlayfieldReflectionStrength(int) - defines the reflection strength of the (dynamic) table elements on the playfield (0-100)
 BallPlayfieldReflectionScale(float) - scale/dampen the contribution of the playfield to the ball reflections
 *BallTrail - enable ball trail/motion blur on table. depending on the global video setting 'Ball Trail/Motion Blur' this is on or off. Or it is defined specific for this table.
-*TrailStrength(int) - defines the strength of the ball trail (0-255)
+*TrailStrength(int) - defines the strength of the ball trail (0-100)
 *DetailLevel(int) - defines the ramp accuracy for this table and overrides the global setting from the video options (range 0-10).
 
 PlungerNormalize(int) - Mech-Plunger component adjustment or weak spring, aging. default=100
