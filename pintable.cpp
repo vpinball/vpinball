@@ -6026,7 +6026,10 @@ void PinTable::GetDialogPanes(Vector<PropertyPane> *pvproppane)
       pproppane = new PropertyPane(IDD_PROP_NAME, NULL);
       pvproppane->AddElement(pproppane);
 
-      pproppane = new PropertyPane(IDD_PROPTABLE_VISUALS, IDS_VISUALS_SOUND);
+      pproppane = new PropertyPane(IDD_PROPTABLE_USER, IDS_TABLE_USER);
+      pvproppane->AddElement(pproppane);
+
+      pproppane = new PropertyPane(IDD_PROPTABLE_VISUALS, IDS_PLAYFIELD);
       pvproppane->AddElement(pproppane);
 
       pproppane = new PropertyPane(IDD_PROPTABLE_BALL, IDS_DEFAULTBALL);
@@ -6042,7 +6045,7 @@ void PinTable::GetDialogPanes(Vector<PropertyPane> *pvproppane)
    {
       PropertyPane *pproppane;
 
-      pproppane = new PropertyPane(IDD_PROPBACKGLASS_VISUALS, IDS_VISUALS);
+      pproppane = new PropertyPane(IDD_PROPBACKGLASS_VISUALS, IDS_VISUALS2);
       pvproppane->AddElement(pproppane);
 
       pproppane = new PropertyPane(IDD_PROPBACKGLASS_PHYSICS, IDS_PHYSICSGFX);

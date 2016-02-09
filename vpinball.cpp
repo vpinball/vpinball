@@ -4174,7 +4174,7 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
           controlHwnd = GetDlgItem(hwndDlg, IDC_ADAPTIVE_VSYNC);
           AddToolTip("1-activates VSYNC for every frame (avoids tearing)\r\n2-adaptive VSYNC, waits only for fast frames (e.g. over 60fps)\r\nor set it to e.g. 60 or 120 to limit the fps to that value (energy saving/less heat)", hwndDlg, toolTipHwnd, controlHwnd);
           controlHwnd = GetDlgItem(hwndDlg, IDC_MAX_PRE_FRAMES);
-          AddToolTip("Outdated setting and will be removed. Leave this at 0 (or experiment with 1, 2 for a slight chance of lag reduction)", hwndDlg, toolTipHwnd, controlHwnd);
+          AddToolTip("Usually just leave at 0 (or experiment with 1, 2 for a slight chance of lag reduction)", hwndDlg, toolTipHwnd, controlHwnd);
           controlHwnd = GetDlgItem(hwndDlg, IDC_StretchMonitor);
           AddToolTip("If played in cabinet mode and you get an egg shaped ball activate this.\r\nFor screen ratios other than 16:9 you may have to adjust the offsets.\r\nNormally you have to set the Y offset (around 1.5) but you have to experiment.", hwndDlg, toolTipHwnd, controlHwnd);
           controlHwnd = GetDlgItem(hwndDlg, IDC_NUDGE_STRENGTH);
@@ -4197,8 +4197,10 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
           AddToolTip("Switches 3D Stereo effect to use the Y Axis.\r\nThis should usually be selected for Cabinets.", hwndDlg, toolTipHwnd, controlHwnd);
           controlHwnd = GetDlgItem(hwndDlg, IDC_BG_SET);
           AddToolTip("Switches all tables to use the respective Cabinet display setup.\r\nAlso useful if a 270 degree rotated Desktop monitor is used.", hwndDlg, toolTipHwnd, controlHwnd);
+          controlHwnd = GetDlgItem(hwndDlg, IDC_FXAACB);
+          AddToolTip("Enables post-processed Anti-Aliasing.\r\nThis delivers smoother images, at the cost of slight blurring.\r\n'Quality' leads to less artifacts, but harms performance on low-end graphics cards.", hwndDlg, toolTipHwnd, controlHwnd);
           controlHwnd = GetDlgItem(hwndDlg, IDC_AA_ALL_TABLES);
-          AddToolTip("Enables brute force 4x Anti-Aliasing.\r\nThis delivers very good quality, but slows down performance significantly.", hwndDlg, toolTipHwnd, controlHwnd);
+          AddToolTip("Enables brute-force 4x Anti-Aliasing.\r\nThis delivers very good quality, but slows down performance significantly.", hwndDlg, toolTipHwnd, controlHwnd);
           controlHwnd = GetDlgItem(hwndDlg, IDC_OVERWRITE_BALL_IMAGE_CHECK);
           AddToolTip("When checked it overwrites the ball image/decal image(s) for every table.", hwndDlg, toolTipHwnd, controlHwnd);
       }
@@ -4336,16 +4338,16 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
           EnableWindow(GetDlgItem(hwndDlg, IDC_BALL_IMAGE_EDIT), FALSE);
           EnableWindow(GetDlgItem(hwndDlg, IDC_BALL_DECAL_EDIT), FALSE);
       }
+
       int fxaa;
       hr = GetRegInt("Player", "FXAA", &fxaa);
       if (hr != S_OK)
-         fxaa = 0;
-      hwndCheck = GetDlgItem(hwndDlg, IDC_FFXAA);
-      SendMessage(hwndCheck, BM_SETCHECK, (fxaa == 1) ? BST_CHECKED : BST_UNCHECKED, 0);
-      hwndCheck = GetDlgItem(hwndDlg, IDC_QFXAA);
-      SendMessage(hwndCheck, BM_SETCHECK, (fxaa == 2) ? BST_CHECKED : BST_UNCHECKED, 0);
-      hwndCheck = GetDlgItem(hwndDlg, IDC_EFXAA);
-      SendMessage(hwndCheck, BM_SETCHECK, (fxaa == 3) ? BST_CHECKED : BST_UNCHECKED, 0);
+          fxaa = 0;
+      SendMessage(GetDlgItem(hwndDlg, IDC_FXAACB), CB_ADDSTRING, 0, (LPARAM)"Disabled");
+      SendMessage(GetDlgItem(hwndDlg, IDC_FXAACB), CB_ADDSTRING, 0, (LPARAM)"Fast");
+      SendMessage(GetDlgItem(hwndDlg, IDC_FXAACB), CB_ADDSTRING, 0, (LPARAM)"Standard");
+      SendMessage(GetDlgItem(hwndDlg, IDC_FXAACB), CB_ADDSTRING, 0, (LPARAM)"Quality");
+      SendMessage(GetDlgItem(hwndDlg, IDC_FXAACB), CB_SETCURSEL, fxaa, 0);
 
       hwndCheck = GetDlgItem(hwndDlg, IDC_BG_SET);
       int bgset;
@@ -4554,18 +4556,11 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
             GetDlgItemTextA(hwndDlg, IDC_NUDGE_STRENGTH, strTmp, 256);
             SetRegValue("Player", "NudgeStrength", REG_SZ, &strTmp, lstrlen(strTmp));
 
-            HWND hwndFXAA = GetDlgItem(hwndDlg, IDC_FFXAA);
-            size_t ffxaa = SendMessage(hwndFXAA, BM_GETCHECK, 0, 0);
-            hwndFXAA = GetDlgItem(hwndDlg, IDC_QFXAA);
-            size_t qfxaa = SendMessage(hwndFXAA, BM_GETCHECK, 0, 0) * 2;
-            hwndFXAA = GetDlgItem(hwndDlg, IDC_EFXAA);
-            size_t efxaa = SendMessage(hwndFXAA, BM_GETCHECK, 0, 0) * 3;
-            if (efxaa)
-               SetRegValue("Player", "FXAA", REG_DWORD, &efxaa, 4);
-            else if (qfxaa)
-               SetRegValue("Player", "FXAA", REG_DWORD, &qfxaa, 4);
-            else
-               SetRegValue("Player", "FXAA", REG_DWORD, &ffxaa, 4);
+            HWND hwndFXAA = GetDlgItem(hwndDlg, IDC_FXAACB);
+            size_t fxaa = SendMessage(hwndFXAA, CB_GETCURSEL, 0, 0);
+            if (fxaa == LB_ERR)
+                fxaa = 0;
+            SetRegValue("Player", "FXAA", REG_DWORD, &fxaa, 4);
 
             HWND hwndBGSet = GetDlgItem(hwndDlg, IDC_BG_SET);
             size_t BGSet = SendMessage(hwndBGSet, BM_GETCHECK, 0, 0);
