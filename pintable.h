@@ -716,9 +716,9 @@ public:
    float m_AOScale;
 
    int   m_useReflectionForBalls;
-   int   m_playfieldReflectionStrength;
+   float m_playfieldReflectionStrength;
    int   m_useTrailForBalls;
-   int   m_ballTrailStrength;
+   float m_ballTrailStrength;
    float m_ballPlayfieldReflectionStrength;
    int   m_useAA;
    int   m_useFXAA;
