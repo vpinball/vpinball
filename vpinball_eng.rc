@@ -290,7 +290,7 @@ FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     CONTROL         "Rotate for Cabinet Usage",IDC_BG_SET,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,185,110,10
     LTEXT           "FXAA (post-processed Anti-Aliasing)", IDC_STATIC, 14, 205, 140, 9
-    COMBOBOX        IDC_FXAACB, 14, 216, 111, 60, CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_FXAACB, 14, 216, 111, 60, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Enable brute-force 4x Anti-Aliasing",IDC_AA_ALL_TABLES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,234,140,10
     CONTROL         "Stretch Ball with Table",IDC_StretchNo,"Button",BS_AUTORADIOBUTTON | WS_GROUP,16,260,83,10
     CONTROL         "Don't stretch the Ball",IDC_StretchYes,"Button",BS_AUTORADIOBUTTON,16,271,81,10
@@ -998,7 +998,7 @@ BEGIN
     EDITTEXT        IDC_WIRE_DISTY,59,173,40,12,ES_AUTOHSCROLL
 END
 
-IDD_PROPFLIPPER_POSITION DIALOGEX 0, 0, 125, 151
+IDD_PROPFLIPPER_POSITION DIALOGEX 0, 0, 125, 153
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
@@ -1014,7 +1014,7 @@ BEGIN
     COMBOBOX        1502,7,136,109,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     LTEXT           "&X",-1,7,9,8,8
     LTEXT           "&Y",-1,66,9,8,8
-    LTEXT           "&Surface",-1,7,125,36,9
+    LTEXT           "&Surface",-1,7,126,36,9
     LTEXT           "&Base Radius",-1,7,24,53,8
     LTEXT           "&End Radius",-1,7,39,51,8
     LTEXT           "&Length",-1,7,54,35,8
@@ -1035,8 +1035,8 @@ BEGIN
     EDITTEXT        26,76,67,40,12,ES_AUTOHSCROLL
     EDITTEXT        23,76,82,40,12,ES_AUTOHSCROLL
     EDITTEXT        27,76,97,40,12,ES_AUTOHSCROLL
-    EDITTEXT        1044,106,130,10,12,ES_AUTOHSCROLL
-    LTEXT           "Override by Global Physics Set",-1,7,132,98,8
+    LTEXT           "Overwrite Physics by Global Set", -1, 7, 127, 60, 16
+    COMBOBOX        1044, 71, 130, 50, 60, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Mass",-1,7,9,66,8
     LTEXT           "Strength",-1,7,24,66,8
     LTEXT           "Elasticity",-1,7,39,66,8
@@ -1337,39 +1337,39 @@ BEGIN
     EDITTEXT        IDC_REFLECTION_PLAYFIELD,101,66,20,12,ES_AUTOHSCROLL
 END
 
-IDD_PROPTABLE_USER DIALOGEX 0, 0, 125, 290
+IDD_PROPTABLE_USER DIALOGEX 0, 0, 125, 310
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     LTEXT           "4x Anti-Aliasing",IDC_STATIC,7,4,50,8
-    EDITTEXT        IDC_ENABLE_AA,57,2,20,12,ES_AUTOHSCROLL
-    LTEXT           "FXAA",IDC_STATIC,80,4,19,8
-    EDITTEXT        IDC_ENABLE_FXAA,101,2,20,12,ES_AUTOHSCROLL
-    LTEXT           "Update in-game AO (-1=def.)",IDC_STATIC,7,18,94,8
-    EDITTEXT        IDC_ENABLE_AO,101,16,20,12,ES_AUTOHSCROLL
-    LTEXT           "FPS Limiter/VSync (-1=def.)",IDC_STATIC,7,32,94,8
-    EDITTEXT        IDC_TABLEAVSYNC,101,30,20,12,ES_AUTOHSCROLL
-    LTEXT           "Sound Effect Volume (0..100)",IDC_STATIC,7,51,94,8
-    EDITTEXT        IDC_TABLESOUNDVOLUME,101,49,20,12,ES_AUTOHSCROLL
-    LTEXT           "Music Volume (0..100)",IDC_STATIC,7,65,94,8
-    EDITTEXT        IDC_TABLEMUSICVOLUME,101,63,20,12,ES_AUTOHSCROLL
-    CONTROL         "",IDC_ALPHA_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | TBS_TOP | WS_TABSTOP,9,91,107,19
-    GROUPBOX        "Elements Detail Level",IDC_STATIC,7,82,114,42
-    CONTROL         "Overwrite Global Settings",IDC_GLOBAL_ALPHA_ACC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,112,95,10
-    GROUPBOX        "Ball", IDC_STATIC, 7, 135, 114, 54
-    LTEXT           "Enable Trails/Motion Blur", IDC_STATIC, 12, 147, 100, 8
-    EDITTEXT        IDC_BALL_TRAIL, 95, 146, 20, 12, ES_AUTOHSCROLL
-    LTEXT           "Trail Strength (0..100)", IDC_STATIC, 12, 162, 84, 8
-    EDITTEXT        IDC_TRAIL_EDIT, 95, 160, 20, 12, ES_AUTOHSCROLL
-    LTEXT           "Enable Reflection", IDC_STATIC, 12, 176, 85, 8
-    EDITTEXT        IDC_BALL_REFLECTION, 95, 174, 20, 12, ES_AUTOHSCROLL
-    GROUPBOX        "Night->Day cycle", IDC_STATIC, 7, 200, 114, 42
-    CONTROL         "", IDC_DAYNIGHT_SLIDER, "msctls_trackbar32", TBS_AUTOTICKS | TBS_TOP | WS_TABSTOP, 9, 209, 107, 19
-    CONTROL         "Overwrite Global Settings", IDC_GLOBAL_DAYNIGHT, "Button", BS_AUTOCHECKBOX | WS_TABSTOP, 10, 230, 95, 10
-    LTEXT           "Gameplay Difficulty (0..100)",-1,7,252,90,8
-    EDITTEXT        209,101,250,20,12,ES_AUTOHSCROLL
-	EDITTEXT        1043, 106, 270, 14, 12, ES_AUTOHSCROLL
-	LTEXT           "Overwrite Physics by Global Set", IDC_STATIC, 7, 272, 98, 8
+    COMBOBOX        IDC_ENABLE_AA, 81, 2, 40, 60, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "FXAA",IDC_STATIC,7,18,19,8
+    COMBOBOX        IDC_ENABLE_FXAA, 81, 16, 40, 60, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Update in-game AO",IDC_STATIC,7,32,94,8
+    COMBOBOX        IDC_ENABLE_AO, 81, 30, 40, 60, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "FPS Limiter/VSync (-1=def.)",IDC_STATIC,7,46,94,8
+    EDITTEXT        IDC_TABLEAVSYNC,101,44,20,12,ES_AUTOHSCROLL
+    CONTROL         "",IDC_ALPHA_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | TBS_TOP | WS_TABSTOP,9,71,107,19
+    GROUPBOX        "Elements Detail Level",IDC_STATIC,7,62,114,42
+    CONTROL         "Overwrite Global Settings",IDC_GLOBAL_ALPHA_ACC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,92,95,10
+    GROUPBOX        "Ball", IDC_STATIC, 7, 115, 114, 56
+    LTEXT           "Reflection", IDC_STATIC, 12, 128, 85, 8
+    COMBOBOX        IDC_BALL_REFLECTION, 75, 126, 40, 60, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Trail/Motion Blur", IDC_STATIC, 12, 142, 100, 8
+    COMBOBOX        IDC_BALL_TRAIL, 75, 140, 40, 60, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Trail Strength (0..100)", IDC_STATIC, 12, 156, 84, 8
+    EDITTEXT        IDC_TRAIL_EDIT, 95, 154, 20, 12, ES_AUTOHSCROLL
+    GROUPBOX        "Night->Day cycle", IDC_STATIC, 7, 180, 114, 42
+    CONTROL         "", IDC_DAYNIGHT_SLIDER, "msctls_trackbar32", TBS_AUTOTICKS | TBS_TOP | WS_TABSTOP, 9, 189, 107, 19
+    CONTROL         "Overwrite Global Settings", IDC_GLOBAL_DAYNIGHT, "Button", BS_AUTOCHECKBOX | WS_TABSTOP, 10, 210, 95, 10
+    LTEXT           "Gameplay Difficulty (0..100)",-1,7,232,90,8
+    EDITTEXT        209,101,230,20,12,ES_AUTOHSCROLL
+    LTEXT           "Overwrite Physics by Global Set", IDC_STATIC, 7, 252, 60, 16
+    COMBOBOX        1043, 71, 255, 50, 60, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Sound Effect Volume (0..100)",IDC_STATIC,7,281,94,8
+    EDITTEXT        IDC_TABLESOUNDVOLUME,101,279,20,12,ES_AUTOHSCROLL
+    LTEXT           "Music Volume (0..100)",IDC_STATIC,7,295,94,8
+    EDITTEXT        IDC_TABLEMUSICVOLUME,101,293,20,12,ES_AUTOHSCROLL
 END
 
 IDD_PROPTABLE_PHYSICS DIALOGEX 0, 0, 125, 95
@@ -1487,26 +1487,26 @@ IDD_PROPTABLE_PHYSICS2 DIALOGEX 0, 0, 125, 202
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    EDITTEXT        1100,80,7,40,12,ES_AUTOHSCROLL
-    EDITTEXT        1101,80,21,40,12,ES_AUTOHSCROLL
     LTEXT           "Gravity Constant",IDC_STATIC,7,9,69,8
-    LTEXT           "Playfield Friction",IDC_STATIC,7,23,69,8
-    EDITTEXT        1708,80,35,40,12,ES_AUTOHSCROLL
-    LTEXT           "Playfield Elasticity",IDC_STATIC,7,37,69,8
-    EDITTEXT        1709,80,49,40,12,ES_AUTOHSCROLL
-    LTEXT           "Pf. Elasticity Falloff",IDC_STATIC,7,51,69,8
-    EDITTEXT        1710,100,63,20,12,ES_AUTOHSCROLL
+    EDITTEXT        1100,90,7,30,12,ES_AUTOHSCROLL
+    LTEXT           "Playfield Friction", IDC_STATIC, 7, 23, 69, 8
+    EDITTEXT        1101,90,21,30,12,ES_AUTOHSCROLL
+    LTEXT           "Playfield Elasticity", IDC_STATIC, 7, 37, 69, 8
+    EDITTEXT        1708,90,35,30,12,ES_AUTOHSCROLL
+    LTEXT           "Playfield Elasticity Falloff", IDC_STATIC, 7, 51, 95, 8
+    EDITTEXT        1709,90,49,30,12,ES_AUTOHSCROLL
     LTEXT           "Playfield Scatter Angle",IDC_STATIC,7,65,69,8
-    EDITTEXT        1102,100,77,20,12,ES_AUTOHSCROLL
-	LTEXT           "Default Elements Scatter Angle", IDC_STATIC, 7, 79, 92, 8
+    EDITTEXT        1710,90,63,30,12,ES_AUTOHSCROLL
+    LTEXT           "Default Elements Scatter Angle", IDC_STATIC, 7, 79, 92, 8
+    EDITTEXT        1102,90,77,30,12,ES_AUTOHSCROLL
     PUSHBUTTON      "Import Physics Set (incl. Flippers)",IDC_IMPORT_PHYSICS_BUTTON,7,93,113,14
     PUSHBUTTON      "Export Physics Set (incl. Flippers)",IDC_EXPORT_PHYSICS_BUTTON,7,108,113,14
-	EDITTEXT        1103, 100, 130, 20, 12, ES_AUTOHSCROLL
-	LTEXT           "Nudge Time", IDC_STATIC, 7, 132, 69, 8
-	EDITTEXT        1105, 100, 151, 20, 12, ES_AUTOHSCROLL
-	LTEXT           "Physics Max. Loops", IDC_STATIC, 7, 153, 70, 8
-	EDITTEXT        1104, 100, 172, 20, 12, ES_AUTOHSCROLL
-    LTEXT           "Mech-Plunger Adjust (0..100)",IDC_STATIC,7,174,90,8
+    LTEXT           "Nudge Time", IDC_STATIC, 7, 132, 69, 8
+    EDITTEXT        1103, 100, 130, 20, 12, ES_AUTOHSCROLL
+    LTEXT           "Physics Max. Loops (-1=def.)", IDC_STATIC, 7, 153, 95, 8
+    EDITTEXT        1105, 100, 151, 20, 12, ES_AUTOHSCROLL
+    LTEXT           "Mech-Plunger Adjust (0..100)", IDC_STATIC, 7, 174, 95, 8
+    EDITTEXT        1104, 100, 172, 20, 12, ES_AUTOHSCROLL
     CONTROL         "Filter Mechanical Plunger",1107,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,187,111,9
 END
 
@@ -1852,7 +1852,7 @@ STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     LTEXT           "&Image",IDC_STATIC,7,1,22,8
-    COMBOBOX        1500,7,11,111,60,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        1500,7,11,111,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Material",IDC_STATIC,7,31,26,8
     COMBOBOX        IDC_MATERIAL_COMBO,7,39,111,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Static Rendering",IDC_STATIC_RENDERING_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,57,69,10

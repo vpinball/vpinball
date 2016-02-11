@@ -172,12 +172,12 @@ public:
    STDMETHOD(put_NightDay)(/*[in]*/ int newVal);
    STDMETHOD(get_AOScale)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_AOScale)(/*[in]*/ float newVal);
-   STDMETHOD(get_BallReflection)(/*[out, retval]*/ int *pVal);
-   STDMETHOD(put_BallReflection)(/*[in]*/ int newVal);
+   STDMETHOD(get_BallReflection)(/*[out, retval]*/ UserDefaultOnOff *pVal);
+   STDMETHOD(put_BallReflection)(/*[in]*/ UserDefaultOnOff newVal);
    STDMETHOD(get_PlayfieldReflectionStrength)(/*[out, retval]*/ int *pVal);
    STDMETHOD(put_PlayfieldReflectionStrength)(/*[in]*/ int newVal);
-   STDMETHOD(get_BallTrail)(/*[out, retval]*/ int *pVal);
-   STDMETHOD(put_BallTrail)(/*[in]*/ int newVal);
+   STDMETHOD(get_BallTrail)(/*[out, retval]*/ UserDefaultOnOff *pVal);
+   STDMETHOD(put_BallTrail)(/*[in]*/ UserDefaultOnOff newVal);
    STDMETHOD(get_TrailStrength)(/*[out, retval]*/ int *pVal);
    STDMETHOD(put_TrailStrength)(/*[in]*/ int newVal);
    STDMETHOD(get_BallPlayfieldReflectionScale)(/*[out, retval]*/ float *pVal);
@@ -206,18 +206,18 @@ public:
 
    STDMETHOD(get_Name)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(put_Name)(/*[in]*/ BSTR newVal);
-   STDMETHOD(get_EnableAntialiasing)(/*[out, retval]*/ int *pVal);
-   STDMETHOD(put_EnableAntialiasing)(/*[in]*/ int newVal);
-   STDMETHOD(get_EnableAO)(/*[out, retval]*/ int *pVal);
-   STDMETHOD(put_EnableAO)(/*[in]*/ int newVal);
-   STDMETHOD(get_EnableFXAA)(/*[out, retval]*/ int *pVal);
-   STDMETHOD(put_EnableFXAA)(/*[in]*/ int newVal);
+   STDMETHOD(get_EnableAntialiasing)(/*[out, retval]*/ UserDefaultOnOff *pVal);
+   STDMETHOD(put_EnableAntialiasing)(/*[in]*/ UserDefaultOnOff newVal);
+   STDMETHOD(get_EnableAO)(/*[out, retval]*/ UserDefaultOnOff *pVal);
+   STDMETHOD(put_EnableAO)(/*[in]*/ UserDefaultOnOff newVal);
+   STDMETHOD(get_EnableFXAA)(/*[out, retval]*/ FXAASettings *pVal);
+   STDMETHOD(put_EnableFXAA)(/*[in]*/ FXAASettings newVal);
 
    STDMETHOD(get_BloomStrength)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_BloomStrength)(/*[in]*/ float newVal);
 
-   STDMETHOD(get_OverridePhysics)(/*[out, retval]*/ long *pVal);
-   STDMETHOD(put_OverridePhysics)(/*[in]*/ long newVal);
+   STDMETHOD(get_OverridePhysics)(/*[out, retval]*/ PhysicsSet *pVal);
+   STDMETHOD(put_OverridePhysics)(/*[in]*/ PhysicsSet newVal);
 
    STDMETHOD(ImportPhysics)();
    STDMETHOD(ExportPhysics)();
