@@ -101,6 +101,41 @@ typedef [uuid(4DD01BC6-6A50-4061-A01E-5798021A04AE)]
                 }
                 PlungerType;
 
+typedef [uuid(C7891DB6-F553-4E12-9423-E5F7B90CDA14)]
+        enum UserDefaultOnOff
+                {
+                Default = -1,
+                Off = 0,
+                On = 1,
+                }
+                UserDefaultOnOff;
+
+typedef [uuid(C8D1C791-3B7E-49F7-8F9B-D3BF4ECFB975)]
+        enum FXAASettings
+                {
+                Defaults = -1,
+                Disabled = 0,
+                Fast = 1,
+                Standard = 2,
+                Quality = 3,
+                }
+                FXAASettings;
+
+typedef [uuid(222A3EDE-7508-4D89-BE82-30BF9AA2F77A)]
+        enum PhysicsSet
+                {
+                Disable = 0,
+                Set1 = 1,
+                Set2 = 2,
+                Set3 = 3,
+                Set4 = 4,
+                Set5 = 5,
+                Set6 = 6,
+                Set7 = 7,
+                Set8 = 8,
+                }
+        PhysicsSet;
+
 typedef [uuid(704231FA-A3F9-47EE-9278-BA21A1E12566)]
         enum TargetType
                 {
@@ -544,18 +579,18 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propget, id(1711), helpstring("property FileName")] HRESULT FileName([out, retval] BSTR *pVal);
                 [propget, id(DISPID_Name), helpstring("property Name")] HRESULT Name([out, retval] BSTR *pVal);
                 [propput, id(DISPID_Name), helpstring("property Name")] HRESULT Name([in] BSTR newVal);
-                [propget, id(394), helpstring("property enableAA")] HRESULT EnableAntialiasing([out, retval] int *pVal);
-                [propput, id(394), helpstring("property enableAA")] HRESULT EnableAntialiasing([in] int newVal);
-                [propget, id(396), helpstring("property enableAO")] HRESULT EnableAO([out, retval] int *pVal);
-                [propput, id(396), helpstring("property enableAO")] HRESULT EnableAO([in] int newVal);
-                [propget, id(395), helpstring("property enableFXAA")] HRESULT EnableFXAA([out, retval] int *pVal);
-                [propput, id(395), helpstring("property enableFXAA")] HRESULT EnableFXAA([in] int newVal);
+                [propget, id(394), helpstring("property enableAA")] HRESULT EnableAntialiasing([out, retval] UserDefaultOnOff *pVal);
+                [propput, id(394), helpstring("property enableAA")] HRESULT EnableAntialiasing([in] UserDefaultOnOff newVal);
+                [propget, id(396), helpstring("property enableAO")] HRESULT EnableAO([out, retval] UserDefaultOnOff *pVal);
+                [propput, id(396), helpstring("property enableAO")] HRESULT EnableAO([in] UserDefaultOnOff newVal);
+                [propget, id(395), helpstring("property enableFXAA")] HRESULT EnableFXAA([out, retval] FXAASettings *pVal);
+                [propput, id(395), helpstring("property enableFXAA")] HRESULT EnableFXAA([in] FXAASettings newVal);
                 [propget, id(450), helpstring("property BloomStrength")] HRESULT BloomStrength([out, retval] float *pVal);
                 [propput, id(450), helpstring("property BloomStrength")] HRESULT BloomStrength([in] float newVal);
                 [propget, id(DISPID_Image4), helpstring("property BallFrontDecal")] HRESULT BallFrontDecal([out, retval] BSTR *pVal);
                 [propput, id(DISPID_Image4), helpstring("property BallFrontDecal")] HRESULT BallFrontDecal([in] BSTR newVal);
-                [propget, id(DISPID_Table_OverridePhysics), helpstring("property OverridePhysics")] HRESULT OverridePhysics([out, retval] long *pVal);
-                [propput, id(DISPID_Table_OverridePhysics), helpstring("property OverridePhysics")] HRESULT OverridePhysics([in] long newVal);
+                [propget, id(DISPID_Table_OverridePhysics), helpstring("property OverridePhysics")] HRESULT OverridePhysics([out, retval] PhysicsSet *pVal);
+                [propput, id(DISPID_Table_OverridePhysics), helpstring("property OverridePhysics")] HRESULT OverridePhysics([in] PhysicsSet newVal);
                 [propget, id(13432), helpstring("property RenderEMReels")] HRESULT EnableEMReels([out, retval] VARIANT_BOOL *pVal);
                 [propput, id(13432), helpstring("property RenderEMReels")] HRESULT EnableEMReels([in] VARIANT_BOOL newVal);
                 [propget, id(13433), helpstring("property RenderDecals")] HRESULT EnableDecals([out, retval] VARIANT_BOOL *pVal);
@@ -618,12 +653,12 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propput, id(580), helpstring("property TableMusicVolume")] HRESULT TableMusicVolume([in] int newVal);
                 [propget, id(585), helpstring("property TableAdaptiveVSync")] HRESULT TableAdaptiveVSync([out, retval] int *pVal);
                 [propput, id(585), helpstring("property TableAdaptiveVSync")] HRESULT TableAdaptiveVSync([in] int newVal);
-                [propget, id(1700), helpstring("property BallReflection")] HRESULT BallReflection([out, retval] int *pVal);
-                [propput, id(1700), helpstring("property BallReflection")] HRESULT BallReflection([in] int newVal);
+                [propget, id(1700), helpstring("property BallReflection")] HRESULT BallReflection([out, retval] UserDefaultOnOff *pVal);
+                [propput, id(1700), helpstring("property BallReflection")] HRESULT BallReflection([in] UserDefaultOnOff newVal);
                 [propget, id(1707), helpstring("property PlayfieldReflectionStrength")] HRESULT PlayfieldReflectionStrength([out, retval] int *pVal);
                 [propput, id(1707), helpstring("property PlayfieldReflectionStrength")] HRESULT PlayfieldReflectionStrength([in] int newVal);
-                [propget, id(1704), helpstring("property BallTrail")] HRESULT BallTrail([out, retval] int *pVal);
-                [propput, id(1704), helpstring("property BallTrail")] HRESULT BallTrail([in] int newVal);
+                [propget, id(1704), helpstring("property BallTrail")] HRESULT BallTrail([out, retval] UserDefaultOnOff *pVal);
+                [propput, id(1704), helpstring("property BallTrail")] HRESULT BallTrail([in] UserDefaultOnOff newVal);
                 [propget, id(1705), helpstring("property TrailStrength")] HRESULT TrailStrength([out, retval] int *pVal);
                 [propput, id(1705), helpstring("property TrailStrength")] HRESULT TrailStrength([in] int newVal);
                 [propget, id(1712), helpstring("property BallPlayfieldReflectionScale")] HRESULT BallPlayfieldReflectionScale([out, retval] float *pVal);
@@ -892,8 +927,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propput, id(340), helpstring("property Material")] HRESULT Material([in] BSTR newVal);
                 [propget, id(DISPID_Flipper_Speed), helpstring("property Mass")] HRESULT Mass([out, retval] float *pVal);
                 [propput, id(DISPID_Flipper_Speed), helpstring("property Mass")] HRESULT Mass([in] float newVal);
-                [propget, id(DISPID_Flipper_OverridePhysics), helpstring("property OverridePhysics")] HRESULT OverridePhysics([out, retval] long *pVal);
-                [propput, id(DISPID_Flipper_OverridePhysics), helpstring("property OverridePhysics")] HRESULT OverridePhysics([in] long newVal);
+                [propget, id(DISPID_Flipper_OverridePhysics), helpstring("property OverridePhysics")] HRESULT OverridePhysics([out, retval] PhysicsSet *pVal);
+                [propput, id(DISPID_Flipper_OverridePhysics), helpstring("property OverridePhysics")] HRESULT OverridePhysics([in] PhysicsSet newVal);
                 [propget, id(341), helpstring("property RubberMaterial")] HRESULT RubberMaterial([out, retval] BSTR *pVal);
                 [propput, id(341), helpstring("property RubberMaterial")] HRESULT RubberMaterial([in] BSTR newVal);
                 [propget, id(18), helpstring("property RubberThickness")] HRESULT RubberThickness([out, retval] long *pVal);

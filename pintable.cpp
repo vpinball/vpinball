@@ -7878,18 +7878,18 @@ STDMETHODIMP PinTable::put_EnvironmentEmissionScale(float newVal)
    return S_OK;
 }
 
-STDMETHODIMP PinTable::get_BallReflection(int *pVal)
+STDMETHODIMP PinTable::get_BallReflection(UserDefaultOnOff *pVal)
 {
-   *pVal = m_useReflectionForBalls;
+   *pVal = (UserDefaultOnOff)m_useReflectionForBalls;
 
    return S_OK;
 }
 
-STDMETHODIMP PinTable::put_BallReflection(int newVal)
+STDMETHODIMP PinTable::put_BallReflection(UserDefaultOnOff newVal)
 {
    STARTUNDO
 
-   m_useReflectionForBalls = newVal;
+   m_useReflectionForBalls = (int)newVal;
 
    STOPUNDO
 
@@ -7914,18 +7914,18 @@ STDMETHODIMP PinTable::put_PlayfieldReflectionStrength(int newVal)
    return S_OK;
 }
 
-STDMETHODIMP PinTable::get_BallTrail(int *pVal)
+STDMETHODIMP PinTable::get_BallTrail(UserDefaultOnOff *pVal)
 {
-   *pVal = m_useTrailForBalls;
+   *pVal = (UserDefaultOnOff)m_useTrailForBalls;
 
    return S_OK;
 }
 
-STDMETHODIMP PinTable::put_BallTrail(int newVal)
+STDMETHODIMP PinTable::put_BallTrail(UserDefaultOnOff newVal)
 {
    STARTUNDO
 
-   m_useTrailForBalls = newVal;
+   m_useTrailForBalls = (int)newVal;
 
    STOPUNDO
 
@@ -8941,65 +8941,65 @@ STDMETHODIMP PinTable::put_YieldTime(long newVal)
    return S_OK;
 }
 
-STDMETHODIMP PinTable::get_EnableAntialiasing(int *pVal)
+STDMETHODIMP PinTable::get_EnableAntialiasing(UserDefaultOnOff *pVal)
 {
-   *pVal = m_useAA;
+   *pVal = (UserDefaultOnOff)m_useAA;
 
    return S_OK;
 }
 
-STDMETHODIMP PinTable::put_EnableAntialiasing(int newVal)
+STDMETHODIMP PinTable::put_EnableAntialiasing(UserDefaultOnOff newVal)
 {
    STARTUNDO
-   m_useAA = newVal;
+   m_useAA = (int)newVal;
    STOPUNDO
 
    return S_OK;
 }
 
-STDMETHODIMP PinTable::get_EnableAO(int *pVal)
+STDMETHODIMP PinTable::get_EnableAO(UserDefaultOnOff *pVal)
 {
-   *pVal = m_useAO;
+   *pVal = (UserDefaultOnOff)m_useAO;
 
    return S_OK;
 }
 
-STDMETHODIMP PinTable::put_EnableAO(int newVal)
+STDMETHODIMP PinTable::put_EnableAO(UserDefaultOnOff newVal)
 {
    STARTUNDO
-   m_useAO = newVal;
+   m_useAO = (int)newVal;
    STOPUNDO
 
    return S_OK;
 }
 
-STDMETHODIMP PinTable::get_EnableFXAA(int *pVal)
+STDMETHODIMP PinTable::get_EnableFXAA(FXAASettings *pVal)
 {
-   *pVal = m_useFXAA;
+   *pVal = (FXAASettings)m_useFXAA;
 
    return S_OK;
 }
 
-STDMETHODIMP PinTable::put_EnableFXAA(int newVal)
+STDMETHODIMP PinTable::put_EnableFXAA(FXAASettings newVal)
 {
    STARTUNDO
-      m_useFXAA = newVal;
+   m_useFXAA = (int)newVal;
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
-STDMETHODIMP PinTable::get_OverridePhysics(long *pVal)
+STDMETHODIMP PinTable::get_OverridePhysics(PhysicsSet *pVal)
 {
-   *pVal = m_fOverridePhysics;
+   *pVal = (PhysicsSet)m_fOverridePhysics;
 
    return S_OK;
 }
 
-STDMETHODIMP PinTable::put_OverridePhysics(long newVal)
+STDMETHODIMP PinTable::put_OverridePhysics(PhysicsSet newVal)
 {
    STARTUNDO
-      m_fOverridePhysics = newVal;
+      m_fOverridePhysics = (int)newVal;
    STOPUNDO
 
       return S_OK;

@@ -162,8 +162,8 @@ public:
    STDMETHOD(put_RubberMaterial)(/*[in]*/ BSTR newVal);
    STDMETHOD(get_Mass)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_Mass)(/*[in]*/ float newVal);
-   STDMETHOD(get_OverridePhysics)(/*[out, retval]*/ long *pVal);
-   STDMETHOD(put_OverridePhysics)(/*[in]*/ long newVal);
+   STDMETHOD(get_OverridePhysics)(/*[out, retval]*/ PhysicsSet *pVal);
+   STDMETHOD(put_OverridePhysics)(/*[in]*/ PhysicsSet newVal);
    STDMETHOD(get_Material)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(put_Material)(/*[in]*/ BSTR newVal);
    STDMETHOD(get_Surface)(/*[out, retval]*/ BSTR *pVal);

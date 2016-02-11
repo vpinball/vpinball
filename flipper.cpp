@@ -1347,17 +1347,17 @@ STDMETHODIMP Flipper::put_Mass(float newVal)
    return S_OK;
 }
 
-STDMETHODIMP Flipper::get_OverridePhysics(long *pVal)
+STDMETHODIMP Flipper::get_OverridePhysics(PhysicsSet *pVal)
 {
-   *pVal = m_d.m_OverridePhysics;
+   *pVal = (PhysicsSet)m_d.m_OverridePhysics;
 
    return S_OK;
 }
 
-STDMETHODIMP Flipper::put_OverridePhysics(long newVal)
+STDMETHODIMP Flipper::put_OverridePhysics(PhysicsSet newVal)
 {
    STARTUNDO
-      m_d.m_OverridePhysics = newVal;
+      m_d.m_OverridePhysics = (int)newVal;
    STOPUNDO
 
       return S_OK;
