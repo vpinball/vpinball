@@ -1,8 +1,11 @@
 Option Explicit
-Const VPinMAMEDriverVer = 3.49
+Const VPinMAMEDriverVer = 3.50
 '=======================
 ' VPinMAME driver core.
 '=======================
+' New in 3.50
+' - Added MAC.vbs & IronBalls.vbs
+'
 ' New in 3.49 (Update by Arngrim)
 ' - Add new Controller.vbs to abstract DOF, B2S, VPM and EM controller loading, usage and sound/effect handling,
 '   see Controller.vbs header on how to use it exactly
