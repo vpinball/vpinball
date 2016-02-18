@@ -4291,7 +4291,9 @@ void PinTable::DoLButtonDown(int x, int y, bool zoomIn)
 
       for (int i = 0; i < m_vmultisel.Size(); i++)
       {
-         m_vmultisel.ElementAt(i)->OnLButtonDown(x, y);
+         ISelect *pisel = m_vmultisel.ElementAt(i);
+         if ( pisel )
+            pisel->OnLButtonDown(x, y);
       }
    }
 }
@@ -4304,7 +4306,8 @@ void PinTable::DoLButtonUp(int x, int y)
    {
       for (int i = 0; i < m_vmultisel.Size(); i++)
       {
-         m_vmultisel.ElementAt(i)->OnLButtonUp(x, y);
+         ISelect *pisel = m_vmultisel.ElementAt(i);
+         pisel->OnLButtonUp(x, y);
       }
    }
    else
@@ -5704,7 +5707,7 @@ bool PinTable::MultiSelIsEmpty()
 void PinTable::AddMultiSel(ISelect *psel, bool fAdd, bool fUpdate, bool fContextClick)
 {
    int index = m_vmultisel.IndexOf(psel);
-
+   ISelect *piSelect = NULL;
    //_ASSERTE(m_vmultisel.ElementAt(0)->m_selectstate == eSelected);
 
    if (index == -1) // If we aren't selected yet, do that
@@ -5738,7 +5741,9 @@ void PinTable::AddMultiSel(ISelect *psel, bool fAdd, bool fUpdate, bool fContext
       else
       {
          // Make this new selection the primary one for the group
-         m_vmultisel.ElementAt(0)->m_selectstate = eMultiSelected;
+         piSelect = m_vmultisel.ElementAt(0);
+         if ( piSelect!=NULL )
+            piSelect->m_selectstate = eMultiSelected;
          m_vmultisel.InsertElementAt(psel, 0);
       }
 
@@ -5758,7 +5763,9 @@ void PinTable::AddMultiSel(ISelect *psel, bool fAdd, bool fUpdate, bool fContext
          m_vmultisel.AddElement((ISelect *)this);
       }
       // The main element might have changed
-      m_vmultisel.ElementAt(0)->m_selectstate = eSelected;
+      piSelect = m_vmultisel.ElementAt(0);
+      if (piSelect != NULL)
+         piSelect->m_selectstate = eSelected;
 
       if (fUpdate)
          SetDirtyDraw();
@@ -5772,7 +5779,9 @@ void PinTable::AddMultiSel(ISelect *psel, bool fAdd, bool fUpdate, bool fContext
          _ASSERTE(psel->m_selectstate != eNotSelected);
 
          // Make this new selection the primary one for the group
-         m_vmultisel.ElementAt(0)->m_selectstate = eMultiSelected;
+         piSelect = m_vmultisel.ElementAt(0);
+         if (piSelect != NULL)
+            piSelect->m_selectstate = eMultiSelected;
          m_vmultisel.RemoveElementAt(index);
          m_vmultisel.InsertElementAt(psel, 0);
 
@@ -5790,9 +5799,10 @@ void PinTable::AddMultiSel(ISelect *psel, bool fAdd, bool fUpdate, bool fContext
       g_pvp->SetPropSel(&m_vmultisel);
    }
 
-   if (m_vmultisel.ElementAt(0)->GetIEditable() && m_vmultisel.ElementAt(0)->GetIEditable()->GetScriptable())
+   piSelect = m_vmultisel.ElementAt(0);
+   if (piSelect && piSelect->GetIEditable() && piSelect->GetIEditable()->GetScriptable())
    {
-      m_pcv->SelectItem(m_vmultisel.ElementAt(0)->GetIEditable()->GetScriptable());
+      m_pcv->SelectItem(piSelect->GetIEditable()->GetScriptable());
    }
 }
 
