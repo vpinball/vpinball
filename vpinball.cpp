@@ -5,7 +5,13 @@
 #include "StdAfx.h"
 #include "resource.h"
 #include "vpversion.h"
+#include <rapidxml.hpp>
+#include <rapidxml_print.hpp>
+#include <fstream>
+#include <sstream>
 #include "svn_version.h"
+
+using namespace rapidxml;
 
 #if defined(IMSPANISH)
 #define TOOLBAR_WIDTH 152
@@ -7579,55 +7585,41 @@ INT_PTR CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPAR
             if (ret == 0)
                break;
 
-            FILE *f;
-            fopen_s(&f, ofn.lpstrFile, "r");
-            if (!f)
-               break;
+            xml_document<> xmlDoc;
+            try
+            {
+                std::stringstream buffer;
+                std::ifstream myFile(ofn.lpstrFile);
+                buffer << myFile.rdbuf();
+                myFile.close();
 
-            char tmp[256];
-            char tmp2[256];
+                std::string content(buffer.str());
+                xmlDoc.parse<0>(&content[0]);
+                xml_node<> *root = xmlDoc.first_node("physics");
+                xml_node<> *table = root->first_node("table");
+                xml_node<> *flipper = root->first_node("flipper");
+                SetDlgItemTextA(hwndDlg, 1100, table->first_node("gravityConstant")->value());
+                SetDlgItemTextA(hwndDlg, 1101, table->first_node("contactFriction")->value());
+                SetDlgItemTextA(hwndDlg, 1102, table->first_node("contactScatterAngle")->value());
 
-            float FlipperPhysicsMass, FlipperPhysicsStrength, FlipperPhysicsElasticity, FlipperPhysicsScatter, FlipperPhysicsReturnStrength, FlipperPhysicsElasticityFalloff, FlipperPhysicsFriction, FlipperPhysicsCoilRampUp;
-            fscanf_s(f, "%f %f %f %f %f %f %f %f\n", &FlipperPhysicsMass, &FlipperPhysicsStrength, &FlipperPhysicsElasticity, &FlipperPhysicsScatter, &FlipperPhysicsReturnStrength, &FlipperPhysicsElasticityFalloff, &FlipperPhysicsFriction, &FlipperPhysicsCoilRampUp);
-            float TablePhysicsGravityConstant, TablePhysicsContactFriction, TablePhysicsContactScatterAngle;
-            fscanf_s(f, "%f %f %f\n", &TablePhysicsGravityConstant, &TablePhysicsContactFriction, &TablePhysicsContactScatterAngle);
-            fscanf_s(f, "%s", tmp2, sizeof(tmp2));
-            fclose(f);
+                SetDlgItemTextA(hwndDlg, DISPID_Flipper_Speed, flipper->first_node("speed")->value());
+                SetDlgItemTextA(hwndDlg, 19, flipper->first_node("strength")->value());
+                SetDlgItemTextA(hwndDlg, 21, flipper->first_node("elasticity")->value());
+                SetDlgItemTextA(hwndDlg, 112, flipper->first_node("scatter")->value());
+                SetDlgItemTextA(hwndDlg, 23, flipper->first_node("returnStrength")->value());
+                SetDlgItemTextA(hwndDlg, 22, flipper->first_node("elasticityFalloff")->value());
+                SetDlgItemTextA(hwndDlg, 109, flipper->first_node("friction")->value());
+                SetDlgItemTextA(hwndDlg, 110, flipper->first_node("coilRampUp")->value());
 
-            sprintf_s(tmp, 256, "%f", FlipperPhysicsMass);
-            SetDlgItemTextA(hwndDlg, DISPID_Flipper_Speed, tmp);
+                SetDlgItemTextA(hwndDlg, 1110, root->first_node("name")->value());
+            }
+            catch (...)
+            {
+                ShowError("Error parsing physics settings file");
+            }
+            xmlDoc.clear();
 
-            sprintf_s(tmp, 256, "%f", FlipperPhysicsStrength);
-            SetDlgItemTextA(hwndDlg, 19, tmp);
 
-            sprintf_s(tmp, 256, "%f", FlipperPhysicsElasticity);
-            SetDlgItemTextA(hwndDlg, 21, tmp);
-
-            sprintf_s(tmp, 256, "%f", FlipperPhysicsScatter);
-            SetDlgItemTextA(hwndDlg, 112, tmp);
-
-            sprintf_s(tmp, 256, "%f", FlipperPhysicsReturnStrength);
-            SetDlgItemTextA(hwndDlg, 23, tmp);
-
-            sprintf_s(tmp, 256, "%f", FlipperPhysicsElasticityFalloff);
-            SetDlgItemTextA(hwndDlg, 22, tmp);
-
-            sprintf_s(tmp, 256, "%f", FlipperPhysicsFriction);
-            SetDlgItemTextA(hwndDlg, 109, tmp);
-
-            sprintf_s(tmp, 256, "%f", FlipperPhysicsCoilRampUp);
-            SetDlgItemTextA(hwndDlg, 110, tmp);
-
-            sprintf_s(tmp, 256, "%f", TablePhysicsGravityConstant);
-            SetDlgItemTextA(hwndDlg, 1100, tmp);
-
-            sprintf_s(tmp, 256, "%f", TablePhysicsContactFriction);
-            SetDlgItemTextA(hwndDlg, 1101, tmp);
-
-            sprintf_s(tmp, 256, "%f", TablePhysicsContactScatterAngle);
-            SetDlgItemTextA(hwndDlg, 1102, tmp);
-
-            SetDlgItemTextA(hwndDlg, 1110, tmp2);
          }
          break;
 
@@ -7665,58 +7657,72 @@ INT_PTR CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPAR
             if (ret == 0)
                break;
 
-            FILE *f;
-            fopen_s(&f, ofn.lpstrFile, "w");
-            if (!f)
-               break;
-
             char tmp[256];
+            xml_document<> xmlDoc;
+            xml_node<>*dcl = xmlDoc.allocate_node(node_declaration);
+            dcl->append_attribute(xmlDoc.allocate_attribute("version", "1.0"));
+            dcl->append_attribute(xmlDoc.allocate_attribute("encoding", "utf-8"));
+            xmlDoc.append_node(dcl);
+
+            //root node
+            xml_node<>*root = xmlDoc.allocate_node(node_element, "physics");
+            xml_node<>*flipper = xmlDoc.allocate_node(node_element, "flipper");
+            xml_node<>*table = xmlDoc.allocate_node(node_element, "table");
 
             GetDlgItemTextA(hwndDlg, DISPID_Flipper_Speed, tmp, 256);
-            fprintf_s(f, "%s ", tmp);
+            xml_node<>*flipSpeed = xmlDoc.allocate_node(node_element, "speed", (new string(tmp))->c_str());
+            flipper->append_node(flipSpeed);
 
             GetDlgItemTextA(hwndDlg, 19, tmp, 256);
-            fprintf_s(f, "%s ", tmp);
+            xml_node<>*flipPhysStrength = xmlDoc.allocate_node(node_element, "strength", (new string(tmp))->c_str());
+            flipper->append_node(flipPhysStrength);
 
             GetDlgItemTextA(hwndDlg, 21, tmp, 256);
-            fprintf_s(f, "%s ", tmp);
+            xml_node<>*flipElasticity = xmlDoc.allocate_node(node_element, "elasticity", (new string(tmp))->c_str());
+            flipper->append_node(flipElasticity);
 
             GetDlgItemTextA(hwndDlg, 112, tmp, 256);
-            fprintf_s(f, "%s ", tmp);
+            xml_node<>*flipScatter = xmlDoc.allocate_node(node_element, "scatter", (new string(tmp))->c_str());
+            flipper->append_node(flipScatter);
 
             GetDlgItemTextA(hwndDlg, 23, tmp, 256);
-            fprintf_s(f, "%s ", tmp);
+            xml_node<>*flipReturnStrength = xmlDoc.allocate_node(node_element, "returnStrength", (new string(tmp))->c_str());
+            flipper->append_node(flipReturnStrength);
 
             GetDlgItemTextA(hwndDlg, 22, tmp, 256);
-            fprintf_s(f, "%s ", tmp);
+            xml_node<>*flipElasticityFalloff = xmlDoc.allocate_node(node_element, "elasticityFalloff", (new string(tmp))->c_str());
+            flipper->append_node(flipElasticityFalloff);
 
             GetDlgItemTextA(hwndDlg, 109, tmp, 256);
-            fprintf_s(f, "%s ", tmp);
+            xml_node<>*flipfriction = xmlDoc.allocate_node(node_element, "friction", (new string(tmp))->c_str());
+            flipper->append_node(flipfriction);
 
             GetDlgItemTextA(hwndDlg, 110, tmp, 256);
-            fprintf_s(f, "%s\n", tmp);
-
+            xml_node<>*flipCoilRampUp = xmlDoc.allocate_node(node_element, "coilRampUp", (new string(tmp))->c_str());
+            flipper->append_node(flipCoilRampUp);
 
             GetDlgItemTextA(hwndDlg, 1100, tmp, 256);
-            fprintf_s(f, "%s ", tmp);
+            xml_node<>*tabGravityConst = xmlDoc.allocate_node(node_element, "gravityConstant", (new string(tmp))->c_str());
+            table->append_node(tabGravityConst);
 
             GetDlgItemTextA(hwndDlg, 1101, tmp, 256);
-            fprintf_s(f, "%s ", tmp);
+            xml_node<>*tabContactFriction = xmlDoc.allocate_node(node_element, "contactFriction", (new string(tmp))->c_str());
+            table->append_node(tabContactFriction);
 
             GetDlgItemTextA(hwndDlg, 1102, tmp, 256);
-            fprintf_s(f, "%s ", tmp);
-
-            GetDlgItemTextA(hwndDlg, 1103, tmp, 256);
-            fprintf_s(f, "%s ", tmp);
-
-            GetDlgItemTextA(hwndDlg, 1106, tmp, 256);
-            fprintf_s(f, "%s\n", tmp);
-
+            xml_node<>*tabContactScatterAngle = xmlDoc.allocate_node(node_element, "contactScatterAngle", (new string(tmp))->c_str());
+            table->append_node(tabContactScatterAngle);
 
             GetDlgItemTextA(hwndDlg, 1110, tmp, 256);
-            fprintf_s(f, "%s", tmp);
+            xml_node<>*settingName = xmlDoc.allocate_node(node_element, "name", (new string(tmp))->c_str());
+            root->append_node(settingName);
+            root->append_node(table);
+            root->append_node(flipper);
+            xmlDoc.append_node(root);
 
-            fclose(f);
+            std::ofstream myfile(ofn.lpstrFile);
+            myfile << xmlDoc;
+            myfile.close();
          }
          break;
          }
