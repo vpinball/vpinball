@@ -4307,7 +4307,8 @@ void PinTable::DoLButtonUp(int x, int y)
       for (int i = 0; i < m_vmultisel.Size(); i++)
       {
          ISelect *pisel = m_vmultisel.ElementAt(i);
-         pisel->OnLButtonUp(x, y);
+         if ( pisel )
+            pisel->OnLButtonUp(x, y);
       }
    }
    else
