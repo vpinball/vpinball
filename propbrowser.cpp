@@ -140,35 +140,40 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, Vector<ISelect> *pvsel)
       // If not, we can't edit their collective properties
       for (int i = 1; i < pvsel->Size(); i++)
       {
-         if (pvsel->ElementAt(i)->GetItemType() != maintype)
+         ISelect *pisel = pvsel->ElementAt(i);
+         if (pisel)
          {
-            PropertyPane *pproppane = new PropertyPane(IDD_PROPMULTI, NULL);
-            m_vproppane.AddElement(pproppane);
-            //resourceid = IDD_PROPMULTI;
-            fSame = false;
-         }
-         bool endLoop = false;
-         for (int t = 0; t < g_pvp->m_ptableActive->m_vcollection.Size() && !endLoop; t++)
-         {
-            Collection *pcol = g_pvp->m_ptableActive->m_vcollection.ElementAt(t);
-            if (pcol)
+            if (pisel->GetItemType() != maintype)
             {
-               for (int k = 0; k < pcol->m_visel.Size(); k++)
+               PropertyPane *pproppane = new PropertyPane(IDD_PROPMULTI, NULL);
+               m_vproppane.AddElement(pproppane);
+               //resourceid = IDD_PROPMULTI;
+               fSame = false;
+            }
+            bool endLoop = false;
+            for (int t = 0; t < g_pvp->m_ptableActive->m_vcollection.Size() && !endLoop; t++)
+            {
+               Collection *pcol = g_pvp->m_ptableActive->m_vcollection.ElementAt(t);
+               if (pcol)
                {
-                  if ((col == NULL) && (pcol->m_visel.ElementAt(k) == pvsel->ElementAt(i)))
-                     col = pcol;
-                  else if ((col != NULL) && (col == pcol) && (pcol->m_visel.ElementAt(k) == pvsel->ElementAt(i)))
+                  for (int k = 0; k < pcol->m_visel.Size(); k++)
                   {
-                     // user selected one or more elements from a collection and some elements aren't in the collection
-                     endLoop = true;
-                     break;
+                     ISelect *pisel2 = pcol->m_visel.ElementAt(k);
+                     if ((col == NULL) && (pisel2!=NULL) && (pisel2 == pisel))
+                        col = pcol;
+                     else if ((col != NULL) && (col == pcol) && (pisel2 != NULL) && (pisel2 == pisel))
+                     {
+                        // user selected one or more elements from a collection and some elements aren't in the collection
+                        endLoop = true;
+                        break;
+                     }
                   }
                }
             }
-         }
-         if (!endLoop && col != NULL)
-         {
-            WideCharToMultiByte(CP_ACP, 0, col->m_wzName, -1, colName, 64, NULL, NULL);
+            if (!endLoop && col != NULL)
+            {
+               WideCharToMultiByte(CP_ACP, 0, col->m_wzName, -1, colName, 64, NULL, NULL);
+            }
          }
       }
 
