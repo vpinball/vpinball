@@ -4321,7 +4321,7 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
           overwiteBallImage = 0;
       SendMessage(hwndCheck, BM_SETCHECK, (overwiteBallImage != 0) ? BST_CHECKED : BST_UNCHECKED, 0);
 
-      char imageName[MAX_PATH];
+      char imageName[MAX_PATH] = { 0 };
       hr = GetRegString("Player", "BallImage", imageName, MAX_PATH);
       if (hr != S_OK)
           imageName[0] = 0;
@@ -4641,7 +4641,7 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
             const bool overwriteEnabled = IsDlgButtonChecked(hwndDlg, IDC_OVERWRITE_BALL_IMAGE_CHECK) == BST_CHECKED;
             if (overwriteEnabled)
             {
-                char fileName[MAX_PATH];
+                char fileName[MAX_PATH] = { 0 };
                 SetRegValueInt("Player", "OverwriteBallImage", 1);
                 GetDlgItemText(hwndDlg, IDC_BALL_IMAGE_EDIT, fileName, MAX_PATH);
                 SetRegValueString("Player", "BallImage", fileName);
