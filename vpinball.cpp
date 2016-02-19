@@ -2506,7 +2506,6 @@ INT_PTR CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
             SortData.sortUpDown = columnSortOrder[columnNumber];
             ListView_SortItems(SortData.hwndList, MyCompProc, &SortData);
          }
-         break;
       }
       switch (pnmhdr->code)
       {
@@ -2964,7 +2963,6 @@ INT_PTR CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
             SortData.sortUpDown = columnSortOrder[columnNumber];
             ListView_SortItems(SortData.hwndList, MyCompProc, &SortData);
          }
-         break;
       }
       switch (pnmhdr->code)
       {
@@ -3569,7 +3567,6 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
             SortData.sortUpDown = columnSortOrder[columnNumber];
             ListView_SortItems(SortData.hwndList, MyCompProc, &SortData);
          }
-         break;
       }      
       switch (pnmhdr->code)
       {
@@ -5245,7 +5242,6 @@ INT_PTR CALLBACK CollectManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPAR
             SortData.sortUpDown = columnSortOrder[columnNumber];
             ListView_SortItems(SortData.hwndList, MyCompProc, &SortData);
          }
-         break;
       }
       if (pnmhdr->code == LVN_ENDLABELEDIT)
       {
