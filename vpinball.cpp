@@ -2416,6 +2416,42 @@ void VPinball::Quit()
       PostMessage(m_hwnd, WM_CLOSE, 0, 0);
 }
 
+typedef struct _tagSORTDATA
+{
+   HWND hwndList;
+   int subItemIndex;
+   int sortUpDown;
+}SORTDATA;
+
+SORTDATA SortData;
+static int columnSortOrder[4] = { 0 };
+static int columnNumber;
+
+int CALLBACK MyCompProc(LPARAM lSortParam1, LPARAM lSortParam2, LPARAM lSortOption)
+{
+
+   static LVFINDINFO lvf;
+   static int nItem1, nItem2;
+   static char buf1[MAX_PATH], buf2[MAX_PATH];
+   SORTDATA *lpsd;
+
+   lpsd = (SORTDATA *)lSortOption;
+
+   lvf.flags = LVFI_PARAM;
+   lvf.lParam = lSortParam1;
+   nItem1 = ListView_FindItem(lpsd->hwndList, -1, &lvf);
+
+   lvf.lParam = lSortParam2;
+   nItem2 = ListView_FindItem(lpsd->hwndList, -1, &lvf);
+
+   ListView_GetItemText(lpsd->hwndList, nItem1, lpsd->subItemIndex, buf1, sizeof(buf1));
+
+   ListView_GetItemText(lpsd->hwndList, nItem2, lpsd->subItemIndex, buf2, sizeof(buf2));
+   if (lpsd->sortUpDown == 1)
+      return(_stricmp(buf1, buf2));
+   else
+      return(_stricmp(buf1, buf2) * -1);
+}
 
 INT_PTR CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -2455,6 +2491,23 @@ INT_PTR CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
    case WM_NOTIFY:
    {
       LPNMHDR pnmhdr = (LPNMHDR)lParam;
+      if (wParam == IDC_SOUNDLIST)
+      {
+         LPNMLISTVIEW lpnmListView = (LPNMLISTVIEW)lParam;
+         if (lpnmListView->hdr.code == LVN_COLUMNCLICK)
+         {
+            columnNumber = lpnmListView->iSubItem;
+            if (columnSortOrder[columnNumber] == 1)
+               columnSortOrder[columnNumber] = 0;
+            else
+               columnSortOrder[columnNumber] = 1;
+            SortData.hwndList = GetDlgItem(hwndDlg, IDC_SOUNDLIST);
+            SortData.subItemIndex = columnNumber;
+            SortData.sortUpDown = columnSortOrder[columnNumber];
+            ListView_SortItems(SortData.hwndList, MyCompProc, &SortData);
+         }
+         break;
+      }
       switch (pnmhdr->code)
       {
       case LVN_ENDLABELEDIT:
@@ -2896,6 +2949,23 @@ INT_PTR CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
    case WM_NOTIFY:
    {
       LPNMHDR pnmhdr = (LPNMHDR)lParam;
+      if (wParam == IDC_SOUNDLIST)
+      {
+         LPNMLISTVIEW lpnmListView = (LPNMLISTVIEW)lParam;
+         if (lpnmListView->hdr.code == LVN_COLUMNCLICK)
+         {
+            columnNumber = lpnmListView->iSubItem;
+            if (columnSortOrder[columnNumber] == 1)
+               columnSortOrder[columnNumber] = 0;
+            else
+               columnSortOrder[columnNumber] = 1;
+            SortData.hwndList = GetDlgItem(hwndDlg, IDC_SOUNDLIST);
+            SortData.subItemIndex = columnNumber;
+            SortData.sortUpDown = columnSortOrder[columnNumber];
+            ListView_SortItems(SortData.hwndList, MyCompProc, &SortData);
+         }
+         break;
+      }
       switch (pnmhdr->code)
       {
       case LVN_ENDLABELEDIT:
@@ -3484,6 +3554,23 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
    case WM_NOTIFY:
    {
       LPNMHDR pnmhdr = (LPNMHDR)lParam;
+      if (wParam == IDC_MATERIAL_LIST)
+      {
+         LPNMLISTVIEW lpnmListView = (LPNMLISTVIEW)lParam;
+         if (lpnmListView->hdr.code == LVN_COLUMNCLICK)
+         {
+            columnNumber = lpnmListView->iSubItem;
+            if (columnSortOrder[columnNumber] == 1)
+               columnSortOrder[columnNumber] = 0;
+            else
+               columnSortOrder[columnNumber] = 1;
+            SortData.hwndList = GetDlgItem(hwndDlg, IDC_MATERIAL_LIST);
+            SortData.subItemIndex = columnNumber;
+            SortData.sortUpDown = columnSortOrder[columnNumber];
+            ListView_SortItems(SortData.hwndList, MyCompProc, &SortData);
+         }
+         break;
+      }      
       switch (pnmhdr->code)
       {
       case LVN_ENDLABELEDIT:
@@ -5123,12 +5210,13 @@ INT_PTR CALLBACK CollectManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPAR
    case WM_INITDIALOG:
    {
       SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
+      ListView_SetExtendedListViewStyle(GetDlgItem(hwndDlg, IDC_SOUNDLIST), LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
 
       LVCOLUMN lvcol;
       lvcol.mask = LVCF_TEXT | LVCF_WIDTH;
       LocalString ls(IDS_NAME);
       lvcol.pszText = ls.m_szbuffer;// = "Name";
-      lvcol.cx = 200;
+      lvcol.cx = 330;
       ListView_InsertColumn(GetDlgItem(hwndDlg, IDC_SOUNDLIST), 0, &lvcol);
 
       pt = (CCO(PinTable) *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
@@ -5142,6 +5230,23 @@ INT_PTR CALLBACK CollectManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPAR
    case WM_NOTIFY:
    {
       LPNMHDR pnmhdr = (LPNMHDR)lParam;
+      if (wParam == IDC_SOUNDLIST)
+      {
+         LPNMLISTVIEW lpnmListView = (LPNMLISTVIEW)lParam;
+         if (lpnmListView->hdr.code == LVN_COLUMNCLICK)
+         {
+            columnNumber = lpnmListView->iSubItem;
+            if (columnSortOrder[columnNumber] == 1)
+               columnSortOrder[columnNumber] = 0;
+            else
+               columnSortOrder[columnNumber] = 1;
+            SortData.hwndList = GetDlgItem(hwndDlg, IDC_SOUNDLIST);
+            SortData.subItemIndex = columnNumber;
+            SortData.sortUpDown = columnSortOrder[columnNumber];
+            ListView_SortItems(SortData.hwndList, MyCompProc, &SortData);
+         }
+         break;
+      }
       if (pnmhdr->code == LVN_ENDLABELEDIT)
       {
          NMLVDISPINFO *pinfo = (NMLVDISPINFO *)lParam;
@@ -8401,42 +8506,6 @@ void AddSearchItemToList(HWND listHwnd, IEditable * const piedit, int idx)
       ListView_SetItemText(listHwnd, idx, 4, textBuf);
    }
 
-}
-typedef struct _tagSORTDATA
-{
-   HWND hwndList;
-   int subItemIndex;
-   int sortUpDown;
-}SORTDATA;
-
-SORTDATA SortData;
-static int columnSortOrder[4] = { 0 };
-static int columnNumber;
-
-int CALLBACK MyCompProc(LPARAM lSortParam1, LPARAM lSortParam2, LPARAM lSortOption)
-{
-
-   static LVFINDINFO lvf;
-   static int nItem1, nItem2;
-   static char buf1[MAX_PATH], buf2[MAX_PATH];
-   SORTDATA *lpsd;
-
-   lpsd = (SORTDATA *)lSortOption;
-
-   lvf.flags = LVFI_PARAM;
-   lvf.lParam = lSortParam1;
-   nItem1 = ListView_FindItem(lpsd->hwndList, -1, &lvf);
-
-   lvf.lParam = lSortParam2;
-   nItem2 = ListView_FindItem(lpsd->hwndList, -1, &lvf);
-
-   ListView_GetItemText(lpsd->hwndList, nItem1, lpsd->subItemIndex, buf1, sizeof(buf1));
-
-   ListView_GetItemText(lpsd->hwndList, nItem2, lpsd->subItemIndex, buf2, sizeof(buf2));
-   if (lpsd->sortUpDown == 1)
-      return(_stricmp(buf1, buf2));
-   else
-      return(_stricmp(buf1, buf2) * -1);
 }
 
 INT_PTR CALLBACK SearchSelectProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
