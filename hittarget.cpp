@@ -1520,7 +1520,7 @@ STDMETHODIMP HitTarget::put_DropSpeed(float newVal)
 
 STDMETHODIMP HitTarget::get_IsDropped(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_isDropped);
+   *pVal = (VARIANT_BOOL)(m_d.m_isDropped); //don't use FTOVB here because it converts a TRUE to -1 instead to 1
 
    return S_OK;
 }
