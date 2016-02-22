@@ -592,7 +592,7 @@ BEGIN
 	EDITTEXT        1709, 83, 205, 40, 12, ES_AUTOHSCROLL
 	LTEXT           "Scatter Angle", IDC_STATIC, 11, 223, 69, 8
 	EDITTEXT        1710, 83, 220, 40, 12, ES_AUTOHSCROLL
-	LTEXT           "Default Elements Scatter Angle", IDC_STATIC, 11, 238, 69, 8
+	LTEXT           "Default Elements Scatter Angle", IDC_STATIC, 11, 238, 92, 8
 	EDITTEXT        1102, 83, 235, 40, 12, ES_AUTOHSCROLL
 	LTEXT           "Set Name", IDC_STATIC, 5, 266, 35, 8
 	EDITTEXT        1110, 43, 264, 80, 12, ES_AUTOHSCROLL
