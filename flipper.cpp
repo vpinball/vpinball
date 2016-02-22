@@ -247,29 +247,35 @@ void Flipper::GetHitShapes(Vector<HitObject> * const pvho)
    if (m_d.m_OverridePhysics)
    {
       char tmp[256];
-      m_d.m_OverrideMass = 0.15f;
+      m_d.m_OverrideMass = 1.f;
       sprintf_s(tmp, 256, "FlipperPhysicsMass%d", m_d.m_OverridePhysics - 1);
       HRESULT hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideMass);
       if (hr != S_OK)
-         m_d.m_OverrideMass = 0.15f;
+         m_d.m_OverrideMass = 1.f;
 
-      m_d.m_OverrideStrength = 3.f;
+      m_d.m_OverrideStrength = 2200.f;
       sprintf_s(tmp, 256, "FlipperPhysicsStrength%d", m_d.m_OverridePhysics - 1);
       hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideStrength);
       if (hr != S_OK)
-         m_d.m_OverrideStrength = 3.f;
+         m_d.m_OverrideStrength = 2200.f;
 
-      m_d.m_OverrideElasticity = 0.55f;
+      m_d.m_OverrideElasticity = 0.8f;
       sprintf_s(tmp, 256, "FlipperPhysicsElasticity%d", m_d.m_OverridePhysics - 1);
       hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideElasticity);
       if (hr != S_OK)
-         m_d.m_OverrideElasticity = 0.55f;
+         m_d.m_OverrideElasticity = 0.8f;
 
-      m_d.m_OverrideReturnStrength = 0.09f;
+	  m_d.m_OverrideScatterAngle = 0.f;
+	  sprintf_s(tmp, 256, "FlipperPhysicsScatter%d", m_d.m_OverridePhysics - 1);
+	  hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideScatterAngle);
+	  if (hr != S_OK)
+		  m_d.m_OverrideScatterAngle = 0.f;
+
+      m_d.m_OverrideReturnStrength = 0.058f;
       sprintf_s(tmp, 256, "FlipperPhysicsReturnStrength%d", m_d.m_OverridePhysics - 1);
       hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideReturnStrength);
       if (hr != S_OK)
-         m_d.m_OverrideReturnStrength = 0.09f;
+         m_d.m_OverrideReturnStrength = 0.058f;
 
       m_d.m_OverrideElasticityFalloff = 0.43f;
       sprintf_s(tmp, 256, "FlipperPhysicsElasticityFalloff%d", m_d.m_OverridePhysics - 1);
@@ -277,17 +283,17 @@ void Flipper::GetHitShapes(Vector<HitObject> * const pvho)
       if (hr != S_OK)
          m_d.m_OverrideElasticityFalloff = 0.43f;
 
-      m_d.m_OverrideFriction = 0.8f;
+      m_d.m_OverrideFriction = 0.6f;
       sprintf_s(tmp, 256, "FlipperPhysicsFriction%d", m_d.m_OverridePhysics - 1);
       hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideFriction);
       if (hr != S_OK)
-         m_d.m_OverrideFriction = 0.8f;
+         m_d.m_OverrideFriction = 0.6f;
 
-      m_d.m_OverrideCoilRampUp = 0.f;
+      m_d.m_OverrideCoilRampUp = 3.f;
       sprintf_s(tmp, 256, "FlipperPhysicsCoilRampUp%d", m_d.m_OverridePhysics - 1);
       hr = GetRegStringAsFloat("Player", tmp, &m_d.m_OverrideCoilRampUp);
       if (hr != S_OK)
-         m_d.m_OverrideCoilRampUp = 0.f;
+         m_d.m_OverrideCoilRampUp = 3.f;
    }
 
    //
@@ -311,7 +317,7 @@ void Flipper::GetHitShapes(Vector<HitObject> * const pvho)
 
    phf->m_elasticity = m_d.m_OverridePhysics ? m_d.m_OverrideElasticity : m_d.m_elasticity;
    phf->SetFriction(m_d.m_OverridePhysics ? m_d.m_OverrideFriction : m_d.m_friction);
-   phf->m_scatter = m_d.m_scatter;
+   phf->m_scatter = ANGTORAD(m_d.m_OverridePhysics ? m_d.m_OverrideScatterAngle : m_d.m_scatter);
 
    const float coil_ramp_up = m_d.m_OverridePhysics ? m_d.m_OverrideCoilRampUp : m_d.m_rampUp;
 
@@ -588,8 +594,7 @@ void Flipper::SetDefaultPhysics(bool fromMouseClick)
    m_d.m_friction = GetRegStringAsFloatWithDefault("DefaultProps\\Flipper", "Friction", 0.6f);
    m_d.m_rampUp = GetRegStringAsFloatWithDefault("DefaultProps\\Flipper", "RampUp", 3.0f);
    
-   m_d.m_scatter = 0.0;
-   
+   m_d.m_scatter = GetRegStringAsFloatWithDefault("DefaultProps\\Flipper", "Scatter", 0.0f);
 }
 
 STDMETHODIMP Flipper::InterfaceSupportsErrorInfo(REFIID riid)
@@ -928,6 +933,7 @@ HRESULT Flipper::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
    bw.WriteFloat(FID(ELFO), m_d.m_elasticityFalloff);
    bw.WriteFloat(FID(FRIC), m_d.m_friction);
    bw.WriteFloat(FID(RPUP), m_d.m_rampUp);
+   bw.WriteFloat(FID(SCTR), m_d.m_scatter);
    bw.WriteBool(FID(VSBL), m_d.m_fVisible);
    bw.WriteBool(FID(ENBL), m_d.m_fEnabled);
    bw.WriteFloat(FID(FRMN), m_d.m_FlipperRadiusMin);
@@ -1063,6 +1069,10 @@ BOOL Flipper::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(RPUP))
    {
       pbr->GetFloat(&m_d.m_rampUp);
+   }
+   else if (id == FID(SCTR))
+   {
+	  pbr->GetFloat(&m_d.m_scatter);
    }
    else if (id == FID(FRMN))
    {
@@ -1531,6 +1541,29 @@ STDMETHODIMP Flipper::put_Elasticity(float newVal)
    }
 
    return S_OK;
+}
+
+STDMETHODIMP Flipper::get_Scatter(float *pVal)
+{
+	*pVal = (m_phitflipper) ? m_phitflipper->m_scatter : m_d.m_scatter;
+
+	return S_OK;
+}
+
+STDMETHODIMP Flipper::put_Scatter(float newVal)
+{
+	if (m_phitflipper)
+	{
+		m_phitflipper->m_scatter = ANGTORAD(m_d.m_OverridePhysics ? m_d.m_OverrideScatterAngle : m_d.m_scatter);
+	}
+	else
+	{
+		STARTUNDO
+			m_d.m_scatter = newVal;
+		STOPUNDO
+	}
+
+	return S_OK;
 }
 
 STDMETHODIMP Flipper::get_ElasticityFalloff(float *pVal)

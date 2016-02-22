@@ -727,13 +727,7 @@ PinTable::PinTable()
    m_fOverridePhysics = 0;
 
    SetDefaultPhysics(false);
-/*   m_Gravity = GRAVITYCONST;
 
-   m_friction = 0.3f;
-   m_elasticity = 0.2f;
-   m_elasticityFalloff = 0.f;
-   m_scatter = 0.f;
-*/
    m_defaultScatter = 0;
    m_nudgeTime = 5.0f;
 
@@ -1893,8 +1887,7 @@ void PinTable::Play(bool _cameraMode)
       HRESULT hr = g_pplayer->Init(this, hwndProgressBar, hwndStatusName);
       if (!m_pcv->m_fScriptError)
       {
-         float m_fOverrideContactFriction;
-         float m_fOverrideContactScatterAngle;
+         float fOverrideContactScatterAngle;
 
          if (m_fOverridePhysics)
          {
@@ -1913,15 +1906,32 @@ void PinTable::Play(bool _cameraMode)
             if (hr != S_OK)
                m_fOverrideContactFriction = DEFAULT_TABLE_CONTACTFRICTION;
 
-            m_fOverrideContactScatterAngle = DEFAULT_TABLE_SCATTERANGLE;
+			m_fOverrideElasticity = DEFAULT_TABLE_ELASTICITY;
+			sprintf_s(tmp, 256, "TablePhysicsElasticity%d", m_fOverridePhysics - 1);
+			hr = GetRegStringAsFloat("Player", tmp, &m_fOverrideElasticity);
+			if (hr != S_OK)
+				m_fOverrideElasticity = DEFAULT_TABLE_ELASTICITY;
+			
+			m_fOverrideElasticityFalloff = DEFAULT_TABLE_ELASTICITY_FALLOFF;
+			sprintf_s(tmp, 256, "TablePhysicsElasticityFalloff%d", m_fOverridePhysics - 1);
+			hr = GetRegStringAsFloat("Player", tmp, &m_fOverrideElasticityFalloff);
+			if (hr != S_OK)
+				m_fOverrideElasticityFalloff = DEFAULT_TABLE_ELASTICITY_FALLOFF;
+			
+			m_fOverrideScatterAngle = DEFAULT_TABLE_PFSCATTERANGLE;
+			sprintf_s(tmp, 256, "TablePhysicsScatterAngle%d", m_fOverridePhysics - 1);
+			hr = GetRegStringAsFloat("Player", tmp, &m_fOverrideScatterAngle);
+			if (hr != S_OK)
+				m_fOverrideScatterAngle = DEFAULT_TABLE_PFSCATTERANGLE;
+
+			fOverrideContactScatterAngle = DEFAULT_TABLE_SCATTERANGLE;
             sprintf_s(tmp, 256, "TablePhysicsContactScatterAngle%d", m_fOverridePhysics - 1);
-            hr = GetRegStringAsFloat("Player", tmp, &m_fOverrideContactScatterAngle);
+            hr = GetRegStringAsFloat("Player", tmp, &fOverrideContactScatterAngle);
             if (hr != S_OK)
-               m_fOverrideContactScatterAngle = DEFAULT_TABLE_SCATTERANGLE;
-            m_fOverrideContactScatterAngle = ANGTORAD(m_fOverrideContactScatterAngle);
+               fOverrideContactScatterAngle = DEFAULT_TABLE_SCATTERANGLE;
          }
 
-         c_hardScatter = (m_fOverridePhysics ? m_fOverrideContactScatterAngle : m_defaultScatter);
+         c_hardScatter = ANGTORAD(m_fOverridePhysics ? fOverrideContactScatterAngle : m_defaultScatter);
 
          const float slope = m_angletiltMin + (m_angletiltMax - m_angletiltMin)* m_globalDifficulty;
 
@@ -5671,11 +5681,10 @@ void PinTable::SetDefaultPhysics(bool fromMouseClick)
 {
    m_Gravity = 0.97f*GRAVITYCONST;
 
-   m_friction = 0.075f;
-   m_elasticity = 0.25f;
-   m_elasticityFalloff = 0.f;
-   m_scatter = 0.f;
-
+   m_friction = DEFAULT_TABLE_CONTACTFRICTION;
+   m_elasticity = DEFAULT_TABLE_ELASTICITY;
+   m_elasticityFalloff = DEFAULT_TABLE_ELASTICITY_FALLOFF;
+   m_scatter = DEFAULT_TABLE_PFSCATTERANGLE;
 }
 
 IScriptable *PinTable::GetScriptable()
@@ -8357,7 +8366,7 @@ STDMETHODIMP PinTable::put_ElasticityFalloff(float newVal)
 
 STDMETHODIMP PinTable::get_Scatter(float *pVal)
 {
-   *pVal = RADTOANG(m_scatter);
+   *pVal = m_scatter;
 
    return S_OK;
 }
@@ -8366,7 +8375,7 @@ STDMETHODIMP PinTable::put_Scatter(float newVal)
 {
    STARTUNDO
 
-      m_scatter = ANGTORAD(newVal);
+      m_scatter = newVal;
 
    STOPUNDO
 
@@ -8375,7 +8384,7 @@ STDMETHODIMP PinTable::put_Scatter(float newVal)
 
 STDMETHODIMP PinTable::get_DefaultScatter(float *pVal)
 {
-   *pVal = RADTOANG(m_defaultScatter);
+   *pVal = m_defaultScatter;
 
    return S_OK;
 }
@@ -8384,7 +8393,7 @@ STDMETHODIMP PinTable::put_DefaultScatter(float newVal)
 {
    STARTUNDO
 
-      m_defaultScatter = ANGTORAD(newVal);
+      m_defaultScatter = newVal;
 
    STOPUNDO
 
@@ -9074,6 +9083,7 @@ STDMETHODIMP PinTable::ImportPhysics()
          flipper->put_ElasticityFalloff(FlipperPhysicsElasticityFalloff);
          flipper->put_Friction(FlipperPhysicsFriction);
          flipper->put_RampUp(FlipperPhysicsCoilRampUp);
+         flipper->put_Scatter(FlipperPhysicsScatter);
       }
 
    put_Gravity(TablePhysicsGravityConstant);

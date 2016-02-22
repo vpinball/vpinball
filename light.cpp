@@ -799,7 +799,7 @@ void Light::PrepareMoversCustom()
       ShowError(textBuffer);
       return;
    }
-   customMoverIndexNum = vtri.size();
+   customMoverIndexNum = (int)vtri.size();
 
    g_pplayer->m_pin3d.m_pd3dDevice->CreateIndexBuffer(customMoverIndexNum, 0, IndexBuffer::FMT_INDEX16, &customMoverIBuffer);
 

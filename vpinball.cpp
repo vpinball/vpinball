@@ -2425,24 +2425,20 @@ typedef struct _tagSORTDATA
 
 SORTDATA SortData;
 static int columnSortOrder[4] = { 0 };
-static int columnNumber;
 
 int CALLBACK MyCompProc(LPARAM lSortParam1, LPARAM lSortParam2, LPARAM lSortOption)
 {
+   LVFINDINFO lvf;
+   char buf1[MAX_PATH], buf2[MAX_PATH];
 
-   static LVFINDINFO lvf;
-   static int nItem1, nItem2;
-   static char buf1[MAX_PATH], buf2[MAX_PATH];
-   SORTDATA *lpsd;
-
-   lpsd = (SORTDATA *)lSortOption;
+   SORTDATA *lpsd = (SORTDATA *)lSortOption;
 
    lvf.flags = LVFI_PARAM;
    lvf.lParam = lSortParam1;
-   nItem1 = ListView_FindItem(lpsd->hwndList, -1, &lvf);
+   const int nItem1 = ListView_FindItem(lpsd->hwndList, -1, &lvf);
 
    lvf.lParam = lSortParam2;
-   nItem2 = ListView_FindItem(lpsd->hwndList, -1, &lvf);
+   const int nItem2 = ListView_FindItem(lpsd->hwndList, -1, &lvf);
 
    ListView_GetItemText(lpsd->hwndList, nItem1, lpsd->subItemIndex, buf1, sizeof(buf1));
 
@@ -2496,7 +2492,7 @@ INT_PTR CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
          LPNMLISTVIEW lpnmListView = (LPNMLISTVIEW)lParam;
          if (lpnmListView->hdr.code == LVN_COLUMNCLICK)
          {
-            columnNumber = lpnmListView->iSubItem;
+            const int columnNumber = lpnmListView->iSubItem;
             if (columnSortOrder[columnNumber] == 1)
                columnSortOrder[columnNumber] = 0;
             else
@@ -2953,7 +2949,7 @@ INT_PTR CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
          LPNMLISTVIEW lpnmListView = (LPNMLISTVIEW)lParam;
          if (lpnmListView->hdr.code == LVN_COLUMNCLICK)
          {
-            columnNumber = lpnmListView->iSubItem;
+            const int columnNumber = lpnmListView->iSubItem;
             if (columnSortOrder[columnNumber] == 1)
                columnSortOrder[columnNumber] = 0;
             else
@@ -3557,7 +3553,7 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
          LPNMLISTVIEW lpnmListView = (LPNMLISTVIEW)lParam;
          if (lpnmListView->hdr.code == LVN_COLUMNCLICK)
          {
-            columnNumber = lpnmListView->iSubItem;
+            const int columnNumber = lpnmListView->iSubItem;
             if (columnSortOrder[columnNumber] == 1)
                columnSortOrder[columnNumber] = 0;
             else
@@ -5232,7 +5228,7 @@ INT_PTR CALLBACK CollectManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPAR
          LPNMLISTVIEW lpnmListView = (LPNMLISTVIEW)lParam;
          if (lpnmListView->hdr.code == LVN_COLUMNCLICK)
          {
-            columnNumber = lpnmListView->iSubItem;
+            const int columnNumber = lpnmListView->iSubItem;
             if (columnSortOrder[columnNumber] == 1)
                columnSortOrder[columnNumber] = 0;
             else
@@ -7468,6 +7464,16 @@ void savecurrentphysicssetting(HWND hwndDlg)
    sprintf_s(tmp2, 256, "TablePhysicsContactFriction%u", physicsselection);
    SetRegValue("Player", tmp2, REG_SZ, tmp, lstrlen(tmp));
 
+   GetDlgItemTextA(hwndDlg, 1708, tmp, 256);
+   sprintf_s(tmp2, 256, "TablePhysicsElasticity%u", physicsselection);
+   SetRegValue("Player", tmp2, REG_SZ, tmp, lstrlen(tmp));
+   GetDlgItemTextA(hwndDlg, 1709, tmp, 256);
+   sprintf_s(tmp2, 256, "TablePhysicsElasticityFalloff%u", physicsselection);
+   SetRegValue("Player", tmp2, REG_SZ, tmp, lstrlen(tmp));
+   GetDlgItemTextA(hwndDlg, 1710, tmp, 256);
+   sprintf_s(tmp2, 256, "TablePhysicsScatterAngle%u", physicsselection);
+   SetRegValue("Player", tmp2, REG_SZ, tmp, lstrlen(tmp));
+
    GetDlgItemTextA(hwndDlg, 1102, tmp, 256);
    sprintf_s(tmp2, 256, "TablePhysicsContactScatterAngle%u", physicsselection);
    SetRegValue("Player", tmp2, REG_SZ, tmp, lstrlen(tmp));
@@ -7528,47 +7534,47 @@ INT_PTR CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPAR
 
       HRESULT hr;
 
-      float FlipperPhysicsMass = 0.15f;
+      float FlipperPhysicsMass = 1.f;
       sprintf_s(tmp, 256, "FlipperPhysicsMass%u", physicsselection);
       hr = GetRegStringAsFloat("Player", tmp, &FlipperPhysicsMass);
       if (hr != S_OK)
-         FlipperPhysicsMass = 0.15f;
+         FlipperPhysicsMass = 1.f;
 
       sprintf_s(tmp, 256, "%f", FlipperPhysicsMass);
       SetDlgItemTextA(hwndDlg, DISPID_Flipper_Speed, tmp);
 
-      float FlipperPhysicsStrength = 3.f;
+      float FlipperPhysicsStrength = 2200.f;
       sprintf_s(tmp, 256, "FlipperPhysicsStrength%u", physicsselection);
       hr = GetRegStringAsFloat("Player", tmp, &FlipperPhysicsStrength);
       if (hr != S_OK)
-         FlipperPhysicsStrength = 3.f;
+         FlipperPhysicsStrength = 2200.f;
 
       sprintf_s(tmp, 256, "%f", FlipperPhysicsStrength);
       SetDlgItemTextA(hwndDlg, 19, tmp);
 
-      float FlipperPhysicsElasticity = 0.55f;
+      float FlipperPhysicsElasticity = 0.8f;
       sprintf_s(tmp, 256, "FlipperPhysicsElasticity%u", physicsselection);
       hr = GetRegStringAsFloat("Player", tmp, &FlipperPhysicsElasticity);
       if (hr != S_OK)
-         FlipperPhysicsElasticity = 0.55f;
+         FlipperPhysicsElasticity = 0.8f;
 
       sprintf_s(tmp, 256, "%f", FlipperPhysicsElasticity);
       SetDlgItemTextA(hwndDlg, 21, tmp);
 
-      float FlipperPhysicsScatter = -11.f;
+      float FlipperPhysicsScatter = 0.f;
       sprintf_s(tmp, 256, "FlipperPhysicsScatter%u", physicsselection);
       hr = GetRegStringAsFloat("Player", tmp, &FlipperPhysicsScatter);
       if (hr != S_OK)
-         FlipperPhysicsScatter = -11.f;
+         FlipperPhysicsScatter = 0.f;
 
       sprintf_s(tmp, 256, "%f", FlipperPhysicsScatter);
       SetDlgItemTextA(hwndDlg, 112, tmp);
 
-      float FlipperPhysicsReturnStrength = 0.09f;
+      float FlipperPhysicsReturnStrength = 0.058f;
       sprintf_s(tmp, 256, "FlipperPhysicsReturnStrength%u", physicsselection);
       hr = GetRegStringAsFloat("Player", tmp, &FlipperPhysicsReturnStrength);
       if (hr != S_OK)
-         FlipperPhysicsReturnStrength = 0.09f;
+         FlipperPhysicsReturnStrength = 0.058f;
 
       sprintf_s(tmp, 256, "%f", FlipperPhysicsReturnStrength);
       SetDlgItemTextA(hwndDlg, 23, tmp);
@@ -7582,20 +7588,20 @@ INT_PTR CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPAR
       sprintf_s(tmp, 256, "%f", FlipperPhysicsElasticityFalloff);
       SetDlgItemTextA(hwndDlg, 22, tmp);
 
-      float FlipperPhysicsFriction = 0.8f;
+      float FlipperPhysicsFriction = 0.6f;
       sprintf_s(tmp, 256, "FlipperPhysicsFriction%u", physicsselection);
       hr = GetRegStringAsFloat("Player", tmp, &FlipperPhysicsFriction);
       if (hr != S_OK)
-         FlipperPhysicsFriction = 0.8f;
+         FlipperPhysicsFriction = 0.6f;
 
       sprintf_s(tmp, 256, "%f", FlipperPhysicsFriction);
       SetDlgItemTextA(hwndDlg, 109, tmp);
 
-      float FlipperPhysicsCoilRampUp = 0.f;
+      float FlipperPhysicsCoilRampUp = 3.f;
       sprintf_s(tmp, 256, "FlipperPhysicsCoilRampUp%u", physicsselection);
       hr = GetRegStringAsFloat("Player", tmp, &FlipperPhysicsCoilRampUp);
       if (hr != S_OK)
-         FlipperPhysicsCoilRampUp = 0.f;
+         FlipperPhysicsCoilRampUp = 3.f;
 
       sprintf_s(tmp, 256, "%f", FlipperPhysicsCoilRampUp);
       SetDlgItemTextA(hwndDlg, 110, tmp);
@@ -7618,7 +7624,34 @@ INT_PTR CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPAR
       sprintf_s(tmp, 256, "%f", TablePhysicsContactFriction);
       SetDlgItemTextA(hwndDlg, 1101, tmp);
 
-      float TablePhysicsContactScatterAngle = DEFAULT_TABLE_SCATTERANGLE;
+	  float TablePhysicsElasticity = DEFAULT_TABLE_ELASTICITY;
+	  sprintf_s(tmp, 256, "TablePhysicsElasticity%u", physicsselection);
+	  hr = GetRegStringAsFloat("Player", tmp, &TablePhysicsElasticity);
+	  if (hr != S_OK)
+		  TablePhysicsElasticity = DEFAULT_TABLE_ELASTICITY;
+
+	  sprintf_s(tmp, 256, "%f", TablePhysicsElasticity);
+	  SetDlgItemTextA(hwndDlg, 1708, tmp);
+	  
+	  float TablePhysicsElasticityFalloff = DEFAULT_TABLE_ELASTICITY_FALLOFF;
+	  sprintf_s(tmp, 256, "TablePhysicsElasticityFalloff%u", physicsselection);
+	  hr = GetRegStringAsFloat("Player", tmp, &TablePhysicsElasticityFalloff);
+	  if (hr != S_OK)
+		  TablePhysicsElasticityFalloff = DEFAULT_TABLE_ELASTICITY_FALLOFF;
+
+	  sprintf_s(tmp, 256, "%f", TablePhysicsElasticityFalloff);
+	  SetDlgItemTextA(hwndDlg, 1709, tmp);
+
+	  float TablePhysicsScatterAngle = DEFAULT_TABLE_PFSCATTERANGLE;
+	  sprintf_s(tmp, 256, "TablePhysicsScatterAngle%u", physicsselection);
+	  hr = GetRegStringAsFloat("Player", tmp, &TablePhysicsScatterAngle);
+	  if (hr != S_OK)
+		  TablePhysicsScatterAngle = DEFAULT_TABLE_PFSCATTERANGLE;
+
+	  sprintf_s(tmp, 256, "%f", TablePhysicsScatterAngle);
+	  SetDlgItemTextA(hwndDlg, 1710, tmp);
+	  
+	  float TablePhysicsContactScatterAngle = DEFAULT_TABLE_SCATTERANGLE;
       sprintf_s(tmp, 256, "TablePhysicsContactScatterAngle%u", physicsselection);
       hr = GetRegStringAsFloat("Player", tmp, &TablePhysicsContactScatterAngle);
       if (hr != S_OK)
@@ -7701,7 +7734,10 @@ INT_PTR CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPAR
                 xml_node<> *flipper = root->first_node("flipper");
                 SetDlgItemTextA(hwndDlg, 1100, table->first_node("gravityConstant")->value());
                 SetDlgItemTextA(hwndDlg, 1101, table->first_node("contactFriction")->value());
-                SetDlgItemTextA(hwndDlg, 1102, table->first_node("contactScatterAngle")->value());
+				SetDlgItemTextA(hwndDlg, 1708, table->first_node("elasticity")->value());
+				SetDlgItemTextA(hwndDlg, 1709, table->first_node("elasticityFalloff")->value());
+				SetDlgItemTextA(hwndDlg, 1710, table->first_node("scatterAngle")->value());
+				SetDlgItemTextA(hwndDlg, 1102, table->first_node("contactScatterAngle")->value());
 
                 SetDlgItemTextA(hwndDlg, DISPID_Flipper_Speed, flipper->first_node("speed")->value());
                 SetDlgItemTextA(hwndDlg, 19, flipper->first_node("strength")->value());
@@ -7810,7 +7846,17 @@ INT_PTR CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPAR
             xml_node<>*tabContactFriction = xmlDoc.allocate_node(node_element, "contactFriction", (new string(tmp))->c_str());
             table->append_node(tabContactFriction);
 
-            GetDlgItemTextA(hwndDlg, 1102, tmp, 256);
+			GetDlgItemTextA(hwndDlg, 1708, tmp, 256);
+			xml_node<>*tabElasticity = xmlDoc.allocate_node(node_element, "elasticity", (new string(tmp))->c_str());
+			table->append_node(tabElasticity);
+			GetDlgItemTextA(hwndDlg, 1709, tmp, 256);
+			xml_node<>*tabElasticityFalloff = xmlDoc.allocate_node(node_element, "elasticityFalloff", (new string(tmp))->c_str());
+			table->append_node(tabElasticityFalloff);
+			GetDlgItemTextA(hwndDlg, 1710, tmp, 256);
+			xml_node<>*tabScatterAngle = xmlDoc.allocate_node(node_element, "scatterAngle", (new string(tmp))->c_str());
+			table->append_node(tabScatterAngle);
+			
+			GetDlgItemTextA(hwndDlg, 1102, tmp, 256);
             xml_node<>*tabContactScatterAngle = xmlDoc.allocate_node(node_element, "contactScatterAngle", (new string(tmp))->c_str());
             table->append_node(tabContactScatterAngle);
 
@@ -8592,7 +8638,7 @@ INT_PTR CALLBACK SearchSelectProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
          LPNMLISTVIEW lpnmListView = (LPNMLISTVIEW)lParam;
          if (lpnmListView->hdr.code == LVN_COLUMNCLICK)
          {
-            columnNumber = lpnmListView->iSubItem;
+            const int columnNumber = lpnmListView->iSubItem;
             if (columnSortOrder[columnNumber] == 1)
                columnSortOrder[columnNumber] = 0;
             else

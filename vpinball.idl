@@ -941,6 +941,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propput, id(394), helpstring("property Enabled")] HRESULT Enabled([in] VARIANT_BOOL newVal);
                 [propget, id(21), helpstring("property Elasticity")] HRESULT Elasticity([out, retval] float *pVal);
                 [propput, id(21), helpstring("property Elasticity")] HRESULT Elasticity([in] float newVal);
+                [propget, id(112), helpstring("property Scatter")] HRESULT Scatter([out, retval] float *pVal);
+                [propput, id(112), helpstring("property Scatter")] HRESULT Scatter([in] float newVal);
                 [propget, id(23), helpstring("property Return")] HRESULT Return([out, retval] float *pVal);
                 [propput, id(23), helpstring("property Return")] HRESULT Return([in] float newVal);
                 [propget, id(24), helpstring("property RubberHeight")] HRESULT RubberHeight([out, retval] long *pVal);
