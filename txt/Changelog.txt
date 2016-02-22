@@ -4,6 +4,7 @@ VP 10.1.0 Changelog
 - add abilty to show the image size in the image manager for each texture
 - hit shape of the rubber object refined
 - add support to import/export backdrop POV(Point Of View) settings to a XML file. It's under File->Import->Backdrop POV or File->Export->Backdrop POV
+- fix/extend support for different user-selectable physics presets and also save as XML file.
 - add support to overwrite the ball image/decal texture globally under Preferences->Video Settings
 - "Throw Balls In Player" mode can now be activated permanently in the Preferences->Editor menu, also you can define the default ball size for this mode. 
   The ball size for this mode can also be defined in the debugger menu.
@@ -11,6 +12,7 @@ VP 10.1.0 Changelog
   images can't be updated (e.g. files not found).
 - add a "Raise Delay" setting to drop targets.
 - add DMD image connection (if enabled in script) for flashers (and also as checkbox for textboxes)
+- combine all common user-tweakable table settings in one simple UI panel
 
 - DirectX 8 port for input handling (currently disabled)
 - texture size limit/downscale now respects aspect ratio (currently disabled)
