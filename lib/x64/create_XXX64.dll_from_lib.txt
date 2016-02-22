@@ -1,0 +1,5 @@
+dumpbin /EXPORTS bass.dll >bass64.def
+
+add EXPORTS at beginning of file, only leave function names in after that
+
+lib /MACHINE:X64 /def:bass64.def /OUT:bass64.lib
