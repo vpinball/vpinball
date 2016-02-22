@@ -206,7 +206,6 @@ void Gate::WriteRegDefaults()
    SetRegValueBool("DefaultProps\\Gate", "TwoWay", m_d.m_twoWay);
    SetRegValueBool("DefaultProps\\Gate", "ReflectionEnabled", m_d.m_fReflectionEnabled);
    SetRegValue("DefaultProps\\Gate", "GateType", REG_DWORD, &m_d.m_type, 4);
-
 }
 
 void Gate::PreRender(Sur * const psur)
@@ -318,7 +317,6 @@ void Gate::SetDefaultPhysics(bool fromMouseClick)
       m_d.m_scatter = fTmp;
    else
       m_d.m_scatter = 0;
-
 }
 
 void Gate::RenderBlueprint(Sur *psur)
@@ -371,7 +369,7 @@ void Gate::GetHitShapes(Vector<HitObject> * const pvho)
 
       m_plineseg->m_elasticity = m_d.m_elasticity;
       m_plineseg->SetFriction(m_d.m_friction);
-      m_plineseg->m_scatter = m_d.m_scatter;
+      m_plineseg->m_scatter = ANGTORAD(m_d.m_scatter);
 
       pvho->AddElement(m_plineseg);
    }
