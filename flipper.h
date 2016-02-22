@@ -43,7 +43,7 @@ public:
    float m_return;
    float m_rampUp;
 
-   float m_scatter; //!! expose? scatter on hit, currently hardwired to 0
+   float m_scatter; // scatter angle on hit
    //float m_angleEOS; // angle at which EOS switch opens, as measured from EOS parked position //!! reenable?
 
    float m_OverrideMass;
@@ -53,6 +53,7 @@ public:
    float m_OverrideFriction;
    float m_OverrideReturnStrength;
    float m_OverrideCoilRampUp;
+   float m_OverrideScatterAngle;
    int m_OverridePhysics;
 
    bool  m_fVisible;
@@ -140,6 +141,8 @@ public:
 public:
    STDMETHOD(get_Elasticity)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_Elasticity)(/*[in]*/ float newVal);
+   STDMETHOD(get_Scatter)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_Scatter)(/*[in]*/ float newVal);
    STDMETHOD(get_ElasticityFalloff)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_ElasticityFalloff)(/*[in]*/ float newVal);
    STDMETHOD(get_Friction)(/*[out, retval]*/ float *pVal);

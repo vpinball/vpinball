@@ -650,10 +650,10 @@ void Player::CreateBoundingHitShapes(Vector<HitObject> *pvho)
    pvho->AddElement(ph3dpoly);
 
    m_hitPlayfield = HitPlane(Vertex3Ds(0, 0, 1), m_ptable->m_tableheight);
-   m_hitPlayfield.SetFriction(m_ptable->m_friction);
-   m_hitPlayfield.m_elasticity = m_ptable->m_elasticity;
-   m_hitPlayfield.m_elasticityFalloff = m_ptable->m_elasticityFalloff;
-   m_hitPlayfield.m_scatter = m_ptable->m_scatter;
+   m_hitPlayfield.SetFriction(m_ptable->m_fOverridePhysics ? m_ptable->m_fOverrideContactFriction : m_ptable->m_friction);
+   m_hitPlayfield.m_elasticity = m_ptable->m_fOverridePhysics ? m_ptable->m_fOverrideElasticity : m_ptable->m_elasticity;
+   m_hitPlayfield.m_elasticityFalloff = m_ptable->m_fOverridePhysics ? m_ptable->m_fOverrideElasticityFalloff : m_ptable->m_elasticityFalloff;
+   m_hitPlayfield.m_scatter = ANGTORAD(m_ptable->m_fOverridePhysics ? m_ptable->m_fOverrideScatterAngle : m_ptable->m_scatter);
 
    m_hitTopGlass = HitPlane(Vertex3Ds(0, 0, -1), m_ptable->m_glassheight);
    m_hitTopGlass.SetFriction(0.3f);

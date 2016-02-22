@@ -413,7 +413,7 @@ void Flasher::RenderSetup(RenderDevice* pd3dDevice)
    PolygonToTriangles(vvertex, vpoly, vtri);
    }
 
-   numPolys = vtri.size()/3;
+   numPolys = (int)(vtri.size()/3);
    if (numPolys == 0)
    {
       // no polys to render leave vertex buffer undefined 

@@ -559,40 +559,48 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,243,148,50,14
 END
 
-IDD_PHYSICS_OPTIONS DIALOGEX 0, 0, 198, 270
+IDD_PHYSICS_OPTIONS DIALOGEX 0, 0, 198, 320
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Global Physics Options"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    DEFPUSHBUTTON   "&OK",IDOK,144,10,50,14
-    EDITTEXT        DISPID_Flipper_Speed,83,21,40,12,ES_AUTOHSCROLL
-    EDITTEXT        19,83,36,40,12,ES_AUTOHSCROLL
-    EDITTEXT        21,83,51,40,12,ES_AUTOHSCROLL
-    EDITTEXT        23,83,79,40,12,ES_AUTOHSCROLL
-    EDITTEXT        22,83,94,40,12,ES_AUTOHSCROLL
-    EDITTEXT        109,83,109,40,12,ES_AUTOHSCROLL
-    EDITTEXT        110,83,122,40,12,ES_AUTOHSCROLL
-    EDITTEXT        1100,83,161,40,12,ES_AUTOHSCROLL
-    EDITTEXT        1101,83,175,40,12,ES_AUTOHSCROLL
-    EDITTEXT        1102,83,188,40,12,ES_AUTOHSCROLL
-    EDITTEXT        1110,43,211,80,12,ES_AUTOHSCROLL
-    LISTBOX         IDC_PhysicsList,5,229,188,35,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
-    PUSHBUTTON      "&Cancel",IDCANCEL,144,28,50,14
-    PUSHBUTTON      "&Import Set",1111,144,189,50,14
-    PUSHBUTTON      "&Export Set",1112,144,207,50,14
-    LTEXT           "Mass",IDC_STATIC,11,23,66,8
-    LTEXT           "Strength",IDC_STATIC,11,38,66,8
-    LTEXT           "Elasticity",IDC_STATIC,11,53,66,8
-    LTEXT           "Return Strength Ratio",IDC_STATIC,11,81,66,8
-    LTEXT           "Elasticity Falloff",IDC_STATIC,11,96,66,8
-    LTEXT           "Friction",IDC_STATIC,11,111,66,8
-    LTEXT           "Coil Ramp Up",IDC_STATIC,11,124,66,8
-    LTEXT           "Gravity Constant",IDC_STATIC,11,163,69,8
-    LTEXT           "Playfield Friction",IDC_STATIC,11,177,69,8
-    LTEXT           "Contact Scatter Angle",IDC_STATIC,11,191,69,8
-    GROUPBOX        "Flipper Settings",IDC_STATIC,5,10,127,129
-    GROUPBOX        "Table Settings",IDC_STATIC,5,148,127,57
-    LTEXT           "Set Name",IDC_STATIC,5,214,35,8
+	GROUPBOX        "Flipper Settings", IDC_STATIC, 5, 10, 127, 134
+	LTEXT           "Mass", IDC_STATIC, 11, 23, 66, 8
+	EDITTEXT        DISPID_Flipper_Speed, 83, 21, 40, 12, ES_AUTOHSCROLL
+	LTEXT           "Strength", IDC_STATIC, 11, 38, 66, 8
+	EDITTEXT        19, 83, 36, 40, 12, ES_AUTOHSCROLL
+	LTEXT           "Elasticity", IDC_STATIC, 11, 53, 66, 8
+	EDITTEXT        21, 83, 51, 40, 12, ES_AUTOHSCROLL
+	LTEXT           "Elasticity Falloff", IDC_STATIC, 11, 68, 66, 8
+	EDITTEXT        22, 83, 66, 40, 12, ES_AUTOHSCROLL
+	LTEXT           "Friction", IDC_STATIC, 11, 83, 66, 8
+	EDITTEXT        109, 83, 81, 40, 12, ES_AUTOHSCROLL
+	LTEXT           "Return Strength Ratio", IDC_STATIC, 11, 98, 66, 8
+	EDITTEXT        23, 83, 96, 40, 12, ES_AUTOHSCROLL
+	LTEXT           "Coil Ramp Up", IDC_STATIC, 11, 113, 66, 8
+	EDITTEXT        110, 83, 111, 40, 12, ES_AUTOHSCROLL
+	LTEXT           "Scatter Angle", IDC_STATIC, 11, 128, 66, 8
+	EDITTEXT        112, 83, 126, 40, 12, ES_AUTOHSCROLL
+	GROUPBOX        "Playfield Settings", IDC_STATIC, 5, 148, 127, 105
+	LTEXT           "Gravity Constant", IDC_STATIC, 11, 163, 69, 8
+	EDITTEXT        1100, 83, 161, 40, 12, ES_AUTOHSCROLL
+	LTEXT           "Friction", IDC_STATIC, 11, 178, 69, 8
+	EDITTEXT        1101, 83, 175, 40, 12, ES_AUTOHSCROLL
+	LTEXT           "Elasticity", IDC_STATIC, 11, 193, 69, 8
+	EDITTEXT        1708, 83, 190, 40, 12, ES_AUTOHSCROLL
+	LTEXT           "Elasticity Falloff", IDC_STATIC, 11, 208, 69, 8
+	EDITTEXT        1709, 83, 205, 40, 12, ES_AUTOHSCROLL
+	LTEXT           "Scatter Angle", IDC_STATIC, 11, 223, 69, 8
+	EDITTEXT        1710, 83, 220, 40, 12, ES_AUTOHSCROLL
+	LTEXT           "Default Elements Scatter Angle", IDC_STATIC, 11, 238, 69, 8
+	EDITTEXT        1102, 83, 235, 40, 12, ES_AUTOHSCROLL
+	LTEXT           "Set Name", IDC_STATIC, 5, 266, 35, 8
+	EDITTEXT        1110, 43, 264, 80, 12, ES_AUTOHSCROLL
+	LISTBOX         IDC_PhysicsList,5,280,188,35,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+	DEFPUSHBUTTON   "&OK", IDOK, 144, 10, 50, 14
+	PUSHBUTTON      "&Cancel", IDCANCEL, 144, 28, 50, 14
+    PUSHBUTTON      "&Import Set",1111,144,220,50,14
+    PUSHBUTTON      "&Export Set",1112,144,238,50,14
 END
 
 IDD_GAMEPAUSE DIALOGEX 0, 0, 78, 80
@@ -1035,15 +1043,17 @@ BEGIN
     EDITTEXT        26,76,67,40,12,ES_AUTOHSCROLL
     EDITTEXT        23,76,82,40,12,ES_AUTOHSCROLL
     EDITTEXT        27,76,97,40,12,ES_AUTOHSCROLL
-    LTEXT           "Overwrite Physics by Global Set", -1, 7, 127, 60, 16
+	EDITTEXT        112, 76, 112, 40, 12, ES_AUTOHSCROLL
+	LTEXT           "Overwrite Physics by Global Set", -1, 7, 127, 60, 16
     COMBOBOX        1044, 71, 130, 50, 60, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Mass",-1,7,9,66,8
     LTEXT           "Strength",-1,7,24,66,8
     LTEXT           "Elasticity",-1,7,39,66,8
     LTEXT           "Elasticity Falloff",-1,7,54,66,8
     LTEXT           "Friction",-1,7,69,66,8
-    LTEXT           "Coil Ramp Up",-1,7,99,66,8
     LTEXT           "Return Strength Ratio",-1,7,84,66,8
+	LTEXT           "Coil Ramp Up", -1, 7, 99, 66, 8
+	LTEXT           "Scatter Angle", -1, 7, 114, 66, 8
 END
 
 IDD_PROPPLUNGER_PHYSICS DIALOGEX 0, 0, 125, 125
