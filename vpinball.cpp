@@ -7736,9 +7736,9 @@ INT_PTR CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPAR
                 SetDlgItemTextA(hwndDlg, 1101, table->first_node("contactFriction")->value());
 				SetDlgItemTextA(hwndDlg, 1708, table->first_node("elasticity")->value());
 				SetDlgItemTextA(hwndDlg, 1709, table->first_node("elasticityFalloff")->value());
-				SetDlgItemTextA(hwndDlg, 1710, table->first_node("scatterAngle")->value());
-				SetDlgItemTextA(hwndDlg, 1102, table->first_node("contactScatterAngle")->value());
-
+				SetDlgItemTextA(hwndDlg, 1710, table->first_node("playfieldScatter")->value());
+				SetDlgItemTextA(hwndDlg, 1102, table->first_node("defaultElementScatter")->value());
+            
                 SetDlgItemTextA(hwndDlg, DISPID_Flipper_Speed, flipper->first_node("speed")->value());
                 SetDlgItemTextA(hwndDlg, 19, flipper->first_node("strength")->value());
                 SetDlgItemTextA(hwndDlg, 21, flipper->first_node("elasticity")->value());
@@ -7853,11 +7853,11 @@ INT_PTR CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPAR
 			xml_node<>*tabElasticityFalloff = xmlDoc.allocate_node(node_element, "elasticityFalloff", (new string(tmp))->c_str());
 			table->append_node(tabElasticityFalloff);
 			GetDlgItemTextA(hwndDlg, 1710, tmp, 256);
-			xml_node<>*tabScatterAngle = xmlDoc.allocate_node(node_element, "scatterAngle", (new string(tmp))->c_str());
+			xml_node<>*tabScatterAngle = xmlDoc.allocate_node(node_element, "playfieldScatter", (new string(tmp))->c_str());
 			table->append_node(tabScatterAngle);
-			
+         
 			GetDlgItemTextA(hwndDlg, 1102, tmp, 256);
-            xml_node<>*tabContactScatterAngle = xmlDoc.allocate_node(node_element, "contactScatterAngle", (new string(tmp))->c_str());
+            xml_node<>*tabContactScatterAngle = xmlDoc.allocate_node(node_element, "defaultElementScatter", (new string(tmp))->c_str());
             table->append_node(tabContactScatterAngle);
 
             GetDlgItemTextA(hwndDlg, 1110, tmp, 256);
