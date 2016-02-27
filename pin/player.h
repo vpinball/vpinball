@@ -179,6 +179,8 @@ public:
    void Bloom();
    void StereoFXAA(const bool stereo, const bool FXAA1, const bool FXAA2, const bool FXAA3, const bool depth_available);
 
+   void UpdateHUD();
+
    void FlipVideoBuffersNormal(const bool vsync);
    void FlipVideoBuffersAO(const bool vsync);
 

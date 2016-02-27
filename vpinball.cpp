@@ -4278,9 +4278,9 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
           controlHwnd = GetDlgItem(hwndDlg, IDC_ENABLE_AO);
           AddToolTip("Activate this to enable Ambient Occlusion.\r\nThis enables contact shadows between objects.", hwndDlg, toolTipHwnd, controlHwnd);
           controlHwnd = GetDlgItem(hwndDlg, IDC_3D_STEREO);
-          AddToolTip("Activate this to enable 3D Stereo output.\r\nThis requires that your TV can display 3D Stereo and respective 3D glasses.", hwndDlg, toolTipHwnd, controlHwnd);
+          AddToolTip("Activate this to enable 3D Stereo output.\r\nSwitch on/off during play with the F10 key.\r\nThis requires that your TV can display 3D Stereo and respective 3D glasses.", hwndDlg, toolTipHwnd, controlHwnd);
           controlHwnd = GetDlgItem(hwndDlg, IDC_3D_STEREO_Y);
-          AddToolTip("Switches 3D Stereo effect to use the Y Axis.\r\nThis should usually be selected for Cabinets.", hwndDlg, toolTipHwnd, controlHwnd);
+          AddToolTip("Switches 3D Stereo effect to use the Y Axis.\r\nThis should usually be selected for Cabinets/rotated displays.", hwndDlg, toolTipHwnd, controlHwnd);
           controlHwnd = GetDlgItem(hwndDlg, IDC_BG_SET);
           AddToolTip("Switches all tables to use the respective Cabinet display setup.\r\nAlso useful if a 270 degree rotated Desktop monitor is used.", hwndDlg, toolTipHwnd, controlHwnd);
           controlHwnd = GetDlgItem(hwndDlg, IDC_FXAACB);
@@ -7755,8 +7755,6 @@ INT_PTR CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPAR
                 ShowError("Error parsing physics settings file");
             }
             xmlDoc.clear();
-
-
          }
          break;
 
