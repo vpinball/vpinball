@@ -67,7 +67,11 @@ float LineSeg::HitTestBasic(const Ball * pball, const float dtime, CollisionEven
 
    const float rollingRadius = lateral ? pball->m_radius : C_TOL_RADIUS; //lateral or rolling point
    const float bcpd = (ballx - v1.x)*normal.x + (bally - v1.y)*normal.y; // ball center to plane distance
-   const float bnd = bcpd - rollingRadius;
+   float bnd = bcpd - rollingRadius;
+
+   // for a spinner add the ball radius otherwise the ball goes half through the spinner until it moves
+   if (m_ObjType == eSpinner)
+      bnd = bcpd + rollingRadius;
 
    const bool inside = (bnd <= 0.f);									  // in ball inside object volume
 

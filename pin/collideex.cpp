@@ -262,12 +262,13 @@ HitSpinner::HitSpinner(Spinner * const pspinner, const float height)
 
    m_lineseg[0].m_pfe = NULL;
    m_lineseg[1].m_pfe = NULL;
+   m_lineseg[0].m_ObjType = eSpinner;
+   m_lineseg[1].m_ObjType = eSpinner;
 
    m_lineseg[0].v2.x = pspinner->m_d.m_vCenter.x + cs*(halflength + (float)PHYS_SKIN); //oversize by the ball radius
    m_lineseg[0].v2.y = pspinner->m_d.m_vCenter.y + sn*(halflength + (float)PHYS_SKIN); //this will prevent clipping
    m_lineseg[0].v1.x = pspinner->m_d.m_vCenter.x - cs*(halflength + (float)PHYS_SKIN); //through the edge of the
    m_lineseg[0].v1.y = pspinner->m_d.m_vCenter.y - sn*(halflength + (float)PHYS_SKIN); //spinner
-
    m_lineseg[1].v1.x = m_lineseg[0].v2.x;
    m_lineseg[1].v1.y = m_lineseg[0].v2.y;
    m_lineseg[1].v2.x = m_lineseg[0].v1.x;
@@ -308,16 +309,14 @@ float HitSpinner::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 
    return hittime;
 }
-
 void HitSpinner::Collide(CollisionEvent* coll)
 {
    Ball *pball = coll->ball;
    const Vertex3Ds& hitnormal = coll->hitnormal;
-
    const float dot = pball->m_vel.x * hitnormal.x + pball->m_vel.y * hitnormal.y;
    if (dot < 0) return;	//hit from back doesn't count
 
-   const float h = m_spinneranim.m_pspinner->m_d.m_height*0.5f + 30.0f;
+   const float h = m_spinneranim.m_pspinner->m_d.m_height*0.5f + 5.0f; //add offset 5 so the spinner reacts on even slow balls traveling the spinner
 
    //linear speed = ball speed
    //angular speed = linear/radius (height of hit)
