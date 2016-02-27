@@ -9059,18 +9059,76 @@ STDMETHODIMP PinTable::ImportPhysics()
    if (ret == 0)
       return S_OK;
 
-   FILE *f;
-   fopen_s(&f, ofn.lpstrFile, "r");
-   if (!f)
-      return S_OK;
-
+   xml_document<> xmlDoc;
    float FlipperPhysicsMass, FlipperPhysicsStrength, FlipperPhysicsElasticity, FlipperPhysicsScatter, FlipperPhysicsReturnStrength, FlipperPhysicsElasticityFalloff, FlipperPhysicsFriction, FlipperPhysicsCoilRampUp;
-   fscanf_s(f, "%f %f %f %f %f %f %f %f\n", &FlipperPhysicsMass, &FlipperPhysicsStrength, &FlipperPhysicsElasticity, &FlipperPhysicsScatter, &FlipperPhysicsReturnStrength, &FlipperPhysicsElasticityFalloff, &FlipperPhysicsFriction, &FlipperPhysicsCoilRampUp);
-   float TablePhysicsGravityConstant, TablePhysicsContactFriction, TablePhysicsContactScatterAngle;
-   fscanf_s(f, "%f %f %f\n", &TablePhysicsGravityConstant, &TablePhysicsContactFriction, &TablePhysicsContactScatterAngle);
-   //char tmp2[256]; // not used here
-   //fscanf_s(f,"%s",tmp2);
-   fclose(f);
+   try
+   {
+      std::stringstream buffer;
+      std::ifstream myFile(ofn.lpstrFile);
+      buffer << myFile.rdbuf();
+      myFile.close();
+
+      std::string content(buffer.str());
+      xmlDoc.parse<0>(&content[0]);
+      xml_node<> *root = xmlDoc.first_node("physics");
+      xml_node<> *physTab = root->first_node("table");
+      xml_node<> *physFlip = root->first_node("flipper");
+
+      char str[16];
+      float val;
+      strcpy_s(str, physTab->first_node("gravityConstant")->value());
+      sscanf_s(str, "%f", &val);
+      put_Gravity(val);
+
+      strcpy_s(str, physTab->first_node("contactFriction")->value());
+      sscanf_s(str, "%f", &val);
+      put_Friction(val);
+
+      strcpy_s(str, physTab->first_node("elasticity")->value());
+      sscanf_s(str, "%f", &val);
+      put_Elasticity(val);
+
+      strcpy_s(str, physTab->first_node("elasticityFalloff")->value());
+      sscanf_s(str, "%f", &val);
+      put_ElasticityFalloff(val);
+
+      strcpy_s(str, physTab->first_node("playfieldScatter")->value());
+      sscanf_s(str, "%f", &val);
+      put_Scatter(val);
+
+      strcpy_s(str, physTab->first_node("defaultElementScatter")->value());
+      sscanf_s(str, "%f", &val);
+      put_DefaultScatter(val);
+
+      strcpy_s(str, physFlip->first_node("speed")->value());
+      sscanf_s(str, "%f", &FlipperPhysicsMass);
+      
+      strcpy_s(str, physFlip->first_node("strength")->value());
+      sscanf_s(str, "%f", &FlipperPhysicsStrength);
+
+      strcpy_s(str, physFlip->first_node("elasticity")->value());
+      sscanf_s(str, "%f", &FlipperPhysicsElasticity);
+
+      strcpy_s(str, physFlip->first_node("scatter")->value());
+      sscanf_s(str, "%f", &FlipperPhysicsScatter);
+
+      strcpy_s(str, physFlip->first_node("returnStrength")->value());
+      sscanf_s(str, "%f", &FlipperPhysicsReturnStrength);
+
+      strcpy_s(str, physFlip->first_node("elasticityFalloff")->value());
+      sscanf_s(str, "%f", &FlipperPhysicsElasticityFalloff);
+
+      strcpy_s(str, physFlip->first_node("friction")->value());
+      sscanf_s(str, "%f", &FlipperPhysicsFriction);
+
+      strcpy_s(str, physFlip->first_node("coilRampUp")->value());
+      sscanf_s(str, "%f", &FlipperPhysicsCoilRampUp);
+   }
+   catch (...)
+   {
+      ShowError("Error parsing physics settings file");
+   }
+   xmlDoc.clear();
 
    for (int i = 0; i < m_vedit.Size(); i++)
       if (m_vedit.ElementAt(i)->GetItemType() == eItemFlipper)
@@ -9085,10 +9143,6 @@ STDMETHODIMP PinTable::ImportPhysics()
          flipper->put_RampUp(FlipperPhysicsCoilRampUp);
          flipper->put_Scatter(FlipperPhysicsScatter);
       }
-
-   put_Gravity(TablePhysicsGravityConstant);
-   put_Friction(TablePhysicsContactFriction);
-   put_DefaultScatter(TablePhysicsContactScatterAngle);
 
    return S_OK;
 }
@@ -9146,52 +9200,102 @@ STDMETHODIMP PinTable::ExportPhysics()
    if (ret == 0)
       return S_OK;
 
-   FILE *f;
-   fopen_s(&f, ofn.lpstrFile, "w");
-   if (!f)
-      return S_OK;
+   xml_document<> xmlDoc;
+   xml_node<>*dcl = xmlDoc.allocate_node(node_declaration);
+   dcl->append_attribute(xmlDoc.allocate_attribute("version", "1.0"));
+   dcl->append_attribute(xmlDoc.allocate_attribute("encoding", "utf-8"));
+   xmlDoc.append_node(dcl);
+
+   //root node
+   xml_node<>*root = xmlDoc.allocate_node(node_element, "physics");
+   xml_node<>*physFlip = xmlDoc.allocate_node(node_element, "flipper");
+   xml_node<>*physTab = xmlDoc.allocate_node(node_element, "table");
 
    float val;
+   char fspeed[16], fstrength[16], felasticity[16], fscatter[16], freturn[16], felasticityFalloff[16], fFriction[16], fRampup[16];
 
    flipper->get_Mass(&val); // was speed
-   fprintf_s(f, "%f ", val);
+   sprintf_s(fspeed, "%f", val);
+   xml_node<>*flipSpeed = xmlDoc.allocate_node(node_element, "speed", fspeed);
+   physFlip->append_node(flipSpeed);
 
    flipper->get_Strength(&val);
-   fprintf_s(f, "%f ", val);
+   sprintf_s(fstrength, "%f", val);
+   xml_node<>*flipPhysStrength = xmlDoc.allocate_node(node_element, "strength", fstrength);
+   physFlip->append_node(flipPhysStrength);
 
    flipper->get_Elasticity(&val);
-   fprintf_s(f, "%f ", val);
+   sprintf_s(felasticity, "%f", val);
+   xml_node<>*flipElasticity = xmlDoc.allocate_node(node_element, "elasticity", felasticity);
+   physFlip->append_node(flipElasticity);
 
    val = 0.0f; // was scatter angle
-   fprintf_s(f, "%f ", val);
+   flipper->get_Scatter(&val);
+   sprintf_s(fscatter, "%f", val);
+   xml_node<>*flipScatter = xmlDoc.allocate_node(node_element, "scatter", fscatter);
+   physFlip->append_node(flipScatter);
 
    flipper->get_Return(&val);
-   fprintf_s(f, "%f ", val);
+   sprintf_s(freturn, "%f", val);
+   xml_node<>*flipReturnStrength = xmlDoc.allocate_node(node_element, "returnStrength", freturn);
+   physFlip->append_node(flipReturnStrength);
 
    flipper->get_ElasticityFalloff(&val);
-   fprintf_s(f, "%f ", val);
+   sprintf_s(felasticityFalloff, "%f", val);
+   xml_node<>*flipElasticityFalloff = xmlDoc.allocate_node(node_element, "elasticityFalloff", felasticityFalloff);
+   physFlip->append_node(flipElasticityFalloff);
 
    flipper->get_Friction(&val);
-   fprintf_s(f, "%f ", val);
+   sprintf_s(fFriction, "%f", val);
+   xml_node<>*flipfriction = xmlDoc.allocate_node(node_element, "friction", fFriction);
+   physFlip->append_node(flipfriction);
 
    flipper->get_RampUp(&val);
-   fprintf_s(f, "%f\n", val);
+   sprintf_s(fRampup, "%f", val);
+   xml_node<>*flipCoilRampUp = xmlDoc.allocate_node(node_element, "coilRampUp", fRampup);
+   physFlip->append_node(flipCoilRampUp);
 
+   char tgravity[16], tFriction[16], tDefaultScatter[16], telasticity[16], telasticityFallOff[16], tcontactScatter[16];
 
    get_Gravity(&val);
-   fprintf_s(f, "%f ", val);
+   sprintf_s(tgravity, "%f", val);
+   xml_node<>*tabGravityConst = xmlDoc.allocate_node(node_element, "gravityConstant", tgravity);
+   physTab->append_node(tabGravityConst);
 
    get_Friction(&val);
-   fprintf_s(f, "%f ", val);
+   sprintf_s(tFriction, "%f", val);
+   xml_node<>*tabContactFriction = xmlDoc.allocate_node(node_element, "contactFriction", tFriction);
+   physTab->append_node(tabContactFriction);
+
+   get_Elasticity(&val);
+   sprintf_s(telasticity, "%f", val);
+   xml_node<>*tabElasticity = xmlDoc.allocate_node(node_element, "elasticity", telasticity);
+   physTab->append_node(tabElasticity);
+
+   get_ElasticityFalloff(&val);
+   sprintf_s(telasticityFallOff, "%f", val);
+   xml_node<>*tabElasticityFalloff = xmlDoc.allocate_node(node_element, "elasticityFalloff", telasticityFallOff);
+   physTab->append_node(tabElasticityFalloff);
 
    get_DefaultScatter(&val);
-   fprintf_s(f, "%f ", val);
+   sprintf_s(tDefaultScatter, "%f", val);
+   xml_node<>*tabScatterAngle = xmlDoc.allocate_node(node_element, "defaultElementScatter", tDefaultScatter);
+   physTab->append_node(tabScatterAngle);
 
+   get_Scatter(&val);
+   sprintf_s(tcontactScatter, "%f", val);
+   xml_node<>*tabContactScatterAngle = xmlDoc.allocate_node(node_element, "playfieldScatter", tcontactScatter);
+   physTab->append_node(tabContactScatterAngle);
 
-   fprintf_s(f, "%s", m_szTitle);
+   xml_node<>*settingName = xmlDoc.allocate_node(node_element, "name", m_szTitle);
+   root->append_node(settingName);
+   root->append_node(physTab);
+   root->append_node(physFlip);
+   xmlDoc.append_node(root);
 
-   fclose(f);
-
+   std::ofstream myfile(ofn.lpstrFile);
+   myfile << xmlDoc;
+   myfile.close();
    return S_OK;
 }
 
