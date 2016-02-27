@@ -3418,6 +3418,104 @@ void Player::StereoFXAA(const bool stereo, const bool FXAA1, const bool FXAA2, c
    }
 }
 
+void Player::UpdateHUD()
+{
+#ifdef FPS
+	if (m_fShowFPS && !cameraMode)
+	{
+		char szFoo[256];
+
+		// Draw the amount of video memory used.
+		//!! Disabled until we can compute this correctly.
+		//int len = sprintf_s(szFoo, " Used Graphics Memory: %.2f MB ", (float)NumVideoBytes / (float)(1024 * 1024));
+		// TextOut(hdcNull, 10, 30, szFoo, len);
+
+		// Draw the framerate.
+		const float fpsAvg = (m_fpsCount == 0) ? 0.0f : m_fpsAvg / m_fpsCount;
+		int len2 = sprintf_s(szFoo, "FPS: %.1f (%.1f avg)  Display %s Objects (%uk/%uk Triangles)  DayNight %d%%", m_fps, fpsAvg, m_staticOnly ? "only static" : "all", (m_pin3d.m_pd3dDevice->m_stats_drawn_triangles + 999) / 1000, (stats_drawn_static_triangles + m_pin3d.m_pd3dDevice->m_stats_drawn_triangles + 999) / 1000, (int)(m_globalEmissionScale*100.f));
+		DebugPrint(10, 10, szFoo, len2);
+
+		const U32 period = m_lastFrameDuration;
+		if (period > m_max || m_time_msec - m_lastMaxChangeTime > 1000)
+			m_max = period;
+		if (period > m_max_total && period < 100000)
+			m_max_total = period;
+
+		if (m_phys_period > m_phys_max || m_time_msec - m_lastMaxChangeTime > 1000)
+			m_phys_max = m_phys_period;
+		if (m_phys_period > m_phys_max_total)
+			m_phys_max_total = m_phys_period;
+		if (m_phys_iterations > m_phys_max_iterations || m_time_msec - m_lastMaxChangeTime > 1000)
+			m_phys_max_iterations = m_phys_iterations;
+
+		if (m_script_period > m_script_max || m_time_msec - m_lastMaxChangeTime > 1000)
+			m_script_max = m_script_period;
+		if (m_script_period > m_script_max_total)
+			m_script_max_total = m_script_period;
+
+		if (m_time_msec - m_lastMaxChangeTime > 1000)
+			m_lastMaxChangeTime = m_time_msec;
+
+		if (m_count == 0)
+		{
+			m_total = period;
+			m_phys_total = m_phys_period;
+			m_phys_total_iterations = m_phys_iterations;
+			m_script_total = m_script_period;
+			m_count = 1;
+		}
+		else
+		{
+			m_total += period;
+			m_phys_total += m_phys_period;
+			m_phys_total_iterations += m_phys_iterations;
+			m_script_total += m_script_period;
+			m_count++;
+		}
+
+		int len = sprintf_s(szFoo, "Overall: %.1f ms (%.1f (%.1f) avg %.1f max)",
+			float(1e-3*period), float(1e-3 * (double)m_total / (double)m_count), float(1e-3*m_max), float(1e-3*m_max_total));
+		DebugPrint(10, 30, szFoo, len);
+		len = sprintf_s(szFoo, "%.1f%% Physics: %.1f ms (%.1f (%.1f %.1f%%) avg %.1f max)",
+			float(m_phys_period*100.0 / period), float(1e-3*m_phys_period),
+			float(1e-3 * (double)m_phys_total / (double)m_count), float(1e-3*m_phys_max), float((double)m_phys_total*100.0 / (double)m_total), float(1e-3*m_phys_max_total));
+		DebugPrint(10, 50, szFoo, len);
+		len = sprintf_s(szFoo, "%.1f%% Scripts: %.1f ms (%.1f (%.1f %.1f%%) avg %.1f max)",
+			float(m_script_period*100.0 / period), float(1e-3*m_script_period),
+			float(1e-3 * (double)m_script_total / (double)m_count), float(1e-3*m_script_max), float((double)m_script_total*100.0 / (double)m_total), float(1e-3*m_script_max_total));
+		DebugPrint(10, 70, szFoo, len);
+
+		// performance counters
+		len = sprintf_s(szFoo, "Draw calls: %u (%u Locks)", m_pin3d.m_pd3dDevice->Perf_GetNumDrawCalls(), m_pin3d.m_pd3dDevice->Perf_GetNumLockCalls());
+		DebugPrint(10, 95, szFoo, len);
+		len = sprintf_s(szFoo, "State changes: %u", m_pin3d.m_pd3dDevice->Perf_GetNumStateChanges());
+		DebugPrint(10, 115, szFoo, len);
+		len = sprintf_s(szFoo, "Texture changes: %u (%u Uploads)", m_pin3d.m_pd3dDevice->Perf_GetNumTextureChanges(), m_pin3d.m_pd3dDevice->Perf_GetNumTextureUploads());
+		DebugPrint(10, 135, szFoo, len);
+		len = sprintf_s(szFoo, "Parameter changes: %u (%u Material ID changes)", m_pin3d.m_pd3dDevice->Perf_GetNumParameterChanges(), material_flips);
+		DebugPrint(10, 155, szFoo, len);
+		len = sprintf_s(szFoo, "Objects: %u Transparent, %u Solid", m_vHitTrans.size(), m_vHitNonTrans.size());
+		DebugPrint(10, 175, szFoo, len);
+
+#ifdef _DEBUGPHYSICS
+		len = sprintf_s(szFoo, "Phys: %5u iterations (%5u avg %5u max))",
+			m_phys_iterations,
+			(U32)(m_phys_total_iterations / m_count),
+			m_phys_max_iterations);
+		DebugPrint(10, 200, szFoo, len);
+
+		len = sprintf_s(szFoo, "Hits:%5u Collide:%5u Ctacs:%5u Static:%5u Embed:%5u TimeSearch:%5u",
+			c_hitcnts, c_collisioncnt, c_contactcnt, c_staticcnt, c_embedcnts, c_timesearch);
+		DebugPrint(10, 220, szFoo, len);
+
+		len = sprintf_s(szFoo, "kDObjects: %5u kD:%5u QuadObjects: %5u Quadtree:%5u Traversed:%5u Tested:%5u DeepTested:%5u",
+			c_kDObjects, c_kDNextlevels, c_quadObjects, c_quadNextlevels, c_traversed, c_tested, c_deepTested);
+		DebugPrint(10, 240, szFoo, len);
+#endif
+	}
+#endif /*FPS*/
+}
+
 void Player::FlipVideoBuffersNormal(const bool vsync)
 {
    const bool useAA = (m_fAA && (m_ptable->m_useAA == -1)) || (m_ptable->m_useAA == 1);
@@ -3480,7 +3578,10 @@ void Player::FlipVideoBuffersNormal(const bool vsync)
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 
+   UpdateHUD();
+
    m_pin3d.m_pd3dDevice->EndScene();
+
    // display frame
    m_pin3d.Flip(vsync);
 
@@ -3577,6 +3678,8 @@ void Player::FlipVideoBuffersAO(const bool vsync)
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, TRUE);
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+
+   UpdateHUD();
 
    m_pin3d.m_pd3dDevice->EndScene();
 
@@ -3838,101 +3941,6 @@ void Player::Render()
 
    if (cameraMode)
        UpdateCameraModeDisplay();
-
-#ifdef FPS
-   if (m_fShowFPS && !cameraMode)
-   {
-       char szFoo[256];
-
-       // Draw the amount of video memory used.
-       //!! Disabled until we can compute this correctly.
-       //int len = sprintf_s(szFoo, " Used Graphics Memory: %.2f MB ", (float)NumVideoBytes / (float)(1024 * 1024));
-       // TextOut(hdcNull, 10, 30, szFoo, len);
-
-       // Draw the framerate.
-       const float fpsAvg = (m_fpsCount == 0) ? 0.0f : m_fpsAvg / m_fpsCount;
-       int len2 = sprintf_s(szFoo, "FPS: %.1f (%.1f avg)  Display %s Objects (%uk/%uk Triangles)  DayNight %d%%", m_fps, fpsAvg, m_staticOnly ? "only static" : "all", (m_pin3d.m_pd3dDevice->m_stats_drawn_triangles + 999) / 1000, (stats_drawn_static_triangles + m_pin3d.m_pd3dDevice->m_stats_drawn_triangles + 999) / 1000, (int)(m_globalEmissionScale*100.f));
-       DebugPrint(10, 10, szFoo, len2);
-
-       const U32 period = m_lastFrameDuration;
-       if (period > m_max || m_time_msec - m_lastMaxChangeTime > 1000)
-           m_max = period;
-       if (period > m_max_total && period < 100000)
-           m_max_total = period;
-
-       if (m_phys_period > m_phys_max || m_time_msec - m_lastMaxChangeTime > 1000)
-           m_phys_max = m_phys_period;
-       if (m_phys_period > m_phys_max_total)
-           m_phys_max_total = m_phys_period;
-       if (m_phys_iterations > m_phys_max_iterations || m_time_msec - m_lastMaxChangeTime > 1000)
-           m_phys_max_iterations = m_phys_iterations;
-
-       if (m_script_period > m_script_max || m_time_msec - m_lastMaxChangeTime > 1000)
-           m_script_max = m_script_period;
-       if (m_script_period > m_script_max_total)
-           m_script_max_total = m_script_period;
-
-       if (m_time_msec - m_lastMaxChangeTime > 1000)
-           m_lastMaxChangeTime = m_time_msec;
-
-       if (m_count == 0)
-       {
-           m_total = period;
-           m_phys_total = m_phys_period;
-           m_phys_total_iterations = m_phys_iterations;
-           m_script_total = m_script_period;
-           m_count = 1;
-       }
-       else
-       {
-           m_total += period;
-           m_phys_total += m_phys_period;
-           m_phys_total_iterations += m_phys_iterations;
-           m_script_total += m_script_period;
-           m_count++;
-       }
-
-       int len = sprintf_s(szFoo, "Overall: %.1f ms (%.1f (%.1f) avg %.1f max)",
-           float(1e-3*period), float(1e-3 * (double)m_total / (double)m_count), float(1e-3*m_max), float(1e-3*m_max_total));
-       DebugPrint(10, 30, szFoo, len);
-       len = sprintf_s(szFoo, "%.1f%% Physics: %.1f ms (%.1f (%.1f %.1f%%) avg %.1f max)",
-           float(m_phys_period*100.0 / period), float(1e-3*m_phys_period),
-           float(1e-3 * (double)m_phys_total / (double)m_count), float(1e-3*m_phys_max), float((double)m_phys_total*100.0 / (double)m_total), float(1e-3*m_phys_max_total));
-       DebugPrint(10, 50, szFoo, len);
-       len = sprintf_s(szFoo, "%.1f%% Scripts: %.1f ms (%.1f (%.1f %.1f%%) avg %.1f max)",
-           float(m_script_period*100.0 / period), float(1e-3*m_script_period),
-           float(1e-3 * (double)m_script_total / (double)m_count), float(1e-3*m_script_max), float((double)m_script_total*100.0 / (double)m_total), float(1e-3*m_script_max_total));
-       DebugPrint(10, 70, szFoo, len);
-
-       // performance counters
-       len = sprintf_s(szFoo, "Draw calls: %u (%u Locks)", m_pin3d.m_pd3dDevice->Perf_GetNumDrawCalls(), m_pin3d.m_pd3dDevice->Perf_GetNumLockCalls());
-       DebugPrint(10, 95, szFoo, len);
-       len = sprintf_s(szFoo, "State changes: %u", m_pin3d.m_pd3dDevice->Perf_GetNumStateChanges());
-       DebugPrint(10, 115, szFoo, len);
-       len = sprintf_s(szFoo, "Texture changes: %u (%u Uploads)", m_pin3d.m_pd3dDevice->Perf_GetNumTextureChanges(), m_pin3d.m_pd3dDevice->Perf_GetNumTextureUploads());
-       DebugPrint(10, 135, szFoo, len);
-       len = sprintf_s(szFoo, "Parameter changes: %u (%u Material ID changes)", m_pin3d.m_pd3dDevice->Perf_GetNumParameterChanges(), material_flips);
-       DebugPrint(10, 155, szFoo, len);
-       len = sprintf_s(szFoo, "Objects: %u Transparent, %u Solid", m_vHitTrans.size(), m_vHitNonTrans.size());
-       DebugPrint(10, 175, szFoo, len);
-
-#ifdef _DEBUGPHYSICS
-       len = sprintf_s(szFoo, "Phys: %5u iterations (%5u avg %5u max))",
-           m_phys_iterations,
-          (U32)(m_phys_total_iterations / m_count),
-          m_phys_max_iterations);
-       DebugPrint(10, 200, szFoo, len);
-
-       len = sprintf_s(szFoo, "Hits:%5u Collide:%5u Ctacs:%5u Static:%5u Embed:%5u TimeSearch:%5u",
-          c_hitcnts, c_collisioncnt, c_contactcnt, c_staticcnt, c_embedcnts, c_timesearch);
-       DebugPrint(10, 220, szFoo, len);
-
-       len = sprintf_s(szFoo, "kDObjects: %5u kD:%5u QuadObjects: %5u Quadtree:%5u Traversed:%5u Tested:%5u DeepTested:%5u",
-          c_kDObjects, c_kDNextlevels, c_quadObjects, c_quadNextlevels, c_traversed, c_tested, c_deepTested);
-       DebugPrint(10, 240, szFoo, len);
-#endif
-   }
-#endif /*FPS*/
 
    const bool useAO = ((m_dynamicAO && (m_ptable->m_useAO == -1)) || (m_ptable->m_useAO == 1)) && m_pin3d.m_pd3dDevice->DepthBufferReadBackAvailable() && (m_ptable->m_AOScale > 0.f);
    if (useAO && !m_disableAO)
