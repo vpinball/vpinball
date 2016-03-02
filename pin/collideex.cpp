@@ -93,20 +93,22 @@ void SlingshotAnimObject::Animate()
 
 HitGate::HitGate(Gate * const pgate, const float height)
 {
-   m_pgate = pgate;
-   const float halflength = pgate->m_d.m_length * 0.5f;
+    m_pgate = pgate;
+    const float halflength = pgate->m_d.m_length * 0.5f;
 
-   const float radangle = ANGTORAD(pgate->m_d.m_rotation);
-   const float sn = sinf(radangle);
-   const float cs = cosf(radangle);
+    const float radangle = ANGTORAD(pgate->m_d.m_rotation);
+    const float sn = sinf(radangle);
+    const float cs = cosf(radangle);
 
-   m_lineseg[0].m_rcHitRect.zlow = height;
-   m_lineseg[0].m_rcHitRect.zhigh = height + 50.0f;
-   m_lineseg[1].m_rcHitRect.zlow = height;
-   m_lineseg[1].m_rcHitRect.zhigh = height + 50.0f;
+    m_lineseg[0].m_rcHitRect.zlow = height;
+    m_lineseg[0].m_rcHitRect.zhigh = height + 50.0f;
+    m_lineseg[1].m_rcHitRect.zlow = height;
+    m_lineseg[1].m_rcHitRect.zhigh = height + 50.0f;
 
-   m_lineseg[0].m_pfe = NULL;
-   m_lineseg[1].m_pfe = NULL;
+    m_lineseg[0].m_pfe = NULL;
+    m_lineseg[1].m_pfe = NULL;
+    m_lineseg[0].m_ObjType = eGate;
+    m_lineseg[1].m_ObjType = eGate;
 
    m_lineseg[0].v2.x = pgate->m_d.m_vCenter.x + cs*(halflength + (float)PHYS_SKIN); //oversize by the ball radius
    m_lineseg[0].v2.y = pgate->m_d.m_vCenter.y + sn*(halflength + (float)PHYS_SKIN); //this will prevent clipping
@@ -128,7 +130,8 @@ HitGate::HitGate(Gate * const pgate, const float height)
    m_gateanim.m_fVisible = pgate->m_d.m_fVisible;
 
    m_gateanim.m_angle = m_gateanim.m_angleMin;
-   m_gateanim.m_anglespeed = 0;
+   m_gateanim.m_anglespeed = 0.0f;
+   m_gateanim.m_damping = 0.996f;
 
    m_gateanim.m_pgate = pgate;
    m_gateanim.m_fOpen = false;
@@ -163,30 +166,37 @@ float HitGate::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 
    return hittime;
 }
-
 void HitGate::Collide(CollisionEvent* coll)
 {
+    if ( fabsf(m_gateanim.m_anglespeed) != 0.0f)
+        return;
    Ball *pball = coll->ball;
    const Vertex3Ds& hitnormal = coll->hitnormal;
 
    const float dot = pball->m_vel.x * hitnormal.x + pball->m_vel.y * hitnormal.y;
-   if (dot > 0.0f && !m_twoWay) return;	//hit from back doesn't count
+   if (dot < 0.0f && !m_twoWay) return;	//hit from back doesn't count
 
-   const float h = m_pgate->m_d.m_height;
+   const float h = m_pgate->m_d.m_height*0.5f+10.0f;
 
    //linear speed = ball speed
    //angular speed = linear/radius (height of hit)
-
+   float speed = fabsf(dot);
    // h is the height of the gate axis.
-   m_gateanim.m_anglespeed = fabsf(dot); // use this until a better value comes along
+  if (fabsf(h - pball->m_radius) > 1.0f)				// avoid divide by zero
+      speed /= (h - pball->m_radius);
 
-   if (fabsf(h - pball->m_radius) > 1.0f)				// avoid divide by zero
-      m_gateanim.m_anglespeed /= h - pball->m_radius;
+  if (speed >= 0.5f)
+      m_gateanim.m_anglespeed = 0.2f;
+  else if (speed >= 0.3f)
+      m_gateanim.m_anglespeed = 0.16;
+  else if (speed >= 0.1f)
+      m_gateanim.m_anglespeed = 0.12f;
+  else
+      m_gateanim.m_anglespeed = speed;
 
    // We encoded which side of the spinner the ball hit
    if (coll->hitvelocity.x == 0.0f && m_twoWay)
-      m_gateanim.m_anglespeed = -m_gateanim.m_anglespeed;
-
+       m_gateanim.m_anglespeed = -m_gateanim.m_anglespeed;
    FireHitEvent(pball);
 }
 
@@ -199,20 +209,37 @@ void HitGate::CalcHitRect()
 
 void GateAnimObject::UpdateDisplacements(const float dtime)
 {
+   float oldAngle = m_angle;
    m_angle += m_anglespeed * dtime;
+
 
    if (m_pgate->m_d.m_twoWay)
    {
-      if (fabsf(m_angle) > m_angleMax)
-      {
-         if (m_angle < 0.0f)
-            m_angle = -m_angleMax;
-         else
-            m_angle = m_angleMax;
-         m_pgate->FireVoidEventParm(DISPID_LimitEvents_EOS, fabsf(RADTOANG(m_anglespeed)));	// send EOS event
-         if (m_anglespeed > 0.0f)
-            m_anglespeed = 0.0f;
-      }
+       if (m_angle > m_angleMax)
+       {
+           m_angle = m_angleMax;
+           m_pgate->FireVoidEventParm(DISPID_LimitEvents_EOS, fabsf(RADTOANG(m_anglespeed)));	// send EOS event
+           if (m_anglespeed > 0.0f)
+               m_anglespeed *= -1.0f;
+       }
+       else if (m_angle < -m_angleMax)
+       {
+           m_angle = m_angleMax;
+           m_pgate->FireVoidEventParm(DISPID_LimitEvents_EOS, fabsf(RADTOANG(m_anglespeed)));	// send EOS event
+           if (m_anglespeed > 0.0f)
+               m_anglespeed *= -1.0f;
+       }
+
+       if (fabsf(m_angle)<0.002f)
+       {
+           if (m_anglespeed < 0.0f)
+               m_anglespeed *= m_damping;
+           if (fabsf(m_anglespeed) < 0.001f)
+           {
+               m_anglespeed = 0.0f;
+               m_angle = m_angleMin;
+           }
+       }
    }
    else
    {
@@ -221,14 +248,20 @@ void GateAnimObject::UpdateDisplacements(const float dtime)
          m_angle = m_angleMax;
          m_pgate->FireVoidEventParm(DISPID_LimitEvents_EOS, fabsf(RADTOANG(m_anglespeed)));	// send EOS event
          if (m_anglespeed > 0.0f)
-            m_anglespeed = 0.0f;
+             m_anglespeed *= -1.0f;
       }
+      
       if (m_angle < m_angleMin)
       {
          m_angle = m_angleMin;
          m_pgate->FireVoidEventParm(DISPID_LimitEvents_BOS, fabsf(RADTOANG(m_anglespeed)));	// send Park event
          if (m_anglespeed < 0.0f)
-            m_anglespeed = 0.0f;
+             m_anglespeed *= -m_damping;
+         if (fabsf(m_anglespeed) < 0.03f)
+         {
+             m_anglespeed = 0.0f;
+             m_angle = m_angleMin;
+         }
       }
    }
 }
@@ -237,11 +270,12 @@ void GateAnimObject::UpdateVelocities()
 {
    if (!m_fOpen)
    {
-      if (m_angle == m_angleMin)
-         m_anglespeed = 0.0f;
-      else
-         m_anglespeed = (m_anglespeed - sinf(m_angle) * 0.0025f) * (1.0f - m_friction); // Center of gravity towards bottom of object, makes it stop vertical
-      //else m_anglespeed = (m_anglespeed-sinf((m_angle - m_angleMin)*0.5f) * 0.02f)*(1.0f - m_friction); // Center of gravity towards bottom of object, makes it stop vertical
+      m_anglespeed -= sinf(m_angle) * (float)(0.0025 * PHYS_FACTOR); // Center of gravity towards bottom of object, makes it stop vertical
+      m_anglespeed *= m_damping;
+      if (fabsf(m_anglespeed) < 0.0001f && !m_pgate->m_d.m_twoWay)
+      {
+          m_anglespeed = 0.0f;
+      }
    }
 }
 
@@ -329,7 +363,7 @@ void HitSpinner::Collide(CollisionEvent* coll)
    m_spinneranim.m_anglespeed = fabsf(dot);		// use this until a better value comes along
 
    if (fabsf(h - pball->m_radius) > 1.0f)			// avoid divide by zero
-      m_spinneranim.m_anglespeed /= h - pball->m_radius;
+      m_spinneranim.m_anglespeed /= (h - pball->m_radius);
 
    // We encoded which side of the spinner the ball hit
    if (coll->hitvelocity.x != 0.0f)

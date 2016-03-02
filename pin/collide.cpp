@@ -70,8 +70,8 @@ float LineSeg::HitTestBasic(const Ball * pball, const float dtime, CollisionEven
    float bnd = bcpd - rollingRadius;
 
    // for a spinner add the ball radius otherwise the ball goes half through the spinner until it moves
-   if (m_ObjType == eSpinner)
-      bnd = bcpd + rollingRadius;
+   if (m_ObjType == eSpinner || m_ObjType==eGate)
+       bnd = bcpd + rollingRadius;
 
    const bool inside = (bnd <= 0.f);									  // in ball inside object volume
 
@@ -99,12 +99,13 @@ float LineSeg::HitTestBasic(const Ball * pball, const float dtime, CollisionEven
    {
       if (bnv * bnd >= 0.f)									// outside-receding || inside-approaching
       {
-         if ((m_ObjType != eTrigger) ||						// no a trigger
-            (!pball->m_vpVolObjs) ||
-            (fabsf(bnd) >= pball->m_radius*0.5f) ||		    // not too close ... nor too far away
-            (inside != (pball->m_vpVolObjs->IndexOf(m_pObj) < 0))) // ...ball outside and hit set or ball inside and no hit set
-            return -1.0f;
-
+          if ((m_ObjType != eTrigger) ||						// no a trigger
+              (!pball->m_vpVolObjs) ||
+              (fabsf(bnd) >= pball->m_radius*0.5f) ||		    // not too close ... nor too far away
+              (inside != (pball->m_vpVolObjs->IndexOf(m_pObj) < 0))) // ...ball outside and hit set or ball inside and no hit set
+          {
+              return -1.0f;
+          }
          hittime = 0;
          bUnHit = !inside;	// ball on outside is UnHit, otherwise it's a Hit
       }
@@ -113,15 +114,17 @@ float LineSeg::HitTestBasic(const Ball * pball, const float dtime, CollisionEven
    }
 
    if (infNaN(hittime) || hittime < 0.f || hittime > dtime)
-      return -1.0f; // time is outside this frame ... no collision
-
+   {
+       return -1.0f; // time is outside this frame ... no collision
+   }
    const float btv = ballvx*normal.y - ballvy*normal.x;				 // ball velocity tangent to segment with respect to direction from V1 to V2
    const float btd = (ballx - v1.x)*normal.y - (bally - v1.y)*normal.x  // ball tangent distance 
       + btv * hittime;								     // ball tangent distance (projection) (initial position + velocity * hitime)
 
    if (btd < -C_TOL_ENDPNTS || btd > length + C_TOL_ENDPNTS) // is the contact off the line segment??? 
-      return -1.0f;
-
+   {
+       return -1.0f;
+   }
    if (!rigid)												  // non rigid body collision? return direction
       coll.hitvelocity.x = bUnHit ? 1.0f : 0.0f;			  // UnHit signal is receding from outside target
 
@@ -129,9 +132,10 @@ float LineSeg::HitTestBasic(const Ball * pball, const float dtime, CollisionEven
    const float hitz = pball->m_pos.z - ballr + pball->m_vel.z*hittime;  // check too high or low relative to ball rolling point at hittime
 
    if (hitz + ballr * 1.5f < m_rcHitRect.zlow				  // check limits of object's height and depth  
-      || hitz + ballr * 0.5f > m_rcHitRect.zhigh)
-      return -1.0f;
-
+       || hitz + ballr * 0.5f > m_rcHitRect.zhigh)
+   {
+       return -1.0f;
+   }
    coll.hitnormal.x = normal.x;		// hit normal is same as line segment normal
    coll.hitnormal.y = normal.y;
    coll.hitnormal.z = 0.0f;
