@@ -8545,6 +8545,17 @@ void AddSearchItemToList(HWND listHwnd, IEditable * const piedit, int idx)
          sprintf_s(textBuf, "%s", primitive->m_d.m_szMaterial);
       ListView_SetItemText(listHwnd, idx, 4, textBuf);
    }
+   else if (piedit->GetItemType() == eItemHitTarget)
+   {
+       HitTarget *hitTraget = (HitTarget*)piedit;
+       if (IsValidString(hitTraget->m_d.m_szImage))
+           sprintf_s(textBuf, "%s", hitTraget->m_d.m_szImage);
+       ListView_SetItemText(listHwnd, idx, 1, "Target");
+       ListView_SetItemText(listHwnd, idx, 3, textBuf);
+       if (IsValidString(hitTraget->m_d.m_szMaterial))
+           sprintf_s(textBuf, "%s", hitTraget->m_d.m_szMaterial);
+       ListView_SetItemText(listHwnd, idx, 4, textBuf);
+   }
 
 }
 
