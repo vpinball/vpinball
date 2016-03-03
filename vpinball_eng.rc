@@ -14,7 +14,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Englisch (USA) resources
+// English (United States) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
@@ -1482,8 +1482,8 @@ BEGIN
     LTEXT           "X Offset",IDC_STATIC,7,193,55,8
     LTEXT           "Y Offset",IDC_STATIC,7,207,55,8
     LTEXT           "Z Offset",IDC_STATIC,7,221,55,8
-    CONTROL         "Enable EMReels",13432,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,269,104,10
-    CONTROL         "Enable Decals",13433,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,69,269,104,10
+    CONTROL         "Enable EMReels",13432,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,269,60,10
+    CONTROL         "Enable Decals",13433,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,69,269,53,10
     EDITTEXT        1045,80,284,40,12,ES_AUTOHSCROLL
     LTEXT           "3D Stereo Offset",IDC_STATIC,7,286,70,8
     EDITTEXT        1041,80,298,40,12,ES_AUTOHSCROLL
@@ -2872,7 +2872,7 @@ BEGIN
     IDS_STEP                "Step"
 END
 
-#endif    // Englisch (USA) resources
+#endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
