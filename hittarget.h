@@ -69,7 +69,30 @@ class HitTarget :
 {
 public:
    static const float DROP_TARGET_LIMIT;
-    
+
+   HitTarget();
+   virtual ~HitTarget();
+
+   BEGIN_COM_MAP(HitTarget)
+       COM_INTERFACE_ENTRY(IDispatch)
+       COM_INTERFACE_ENTRY(IHitTarget)
+
+       COM_INTERFACE_ENTRY_IMPL(IConnectionPointContainer)
+
+       COM_INTERFACE_ENTRY(IPerPropertyBrowsing)
+
+       COM_INTERFACE_ENTRY(IProvideClassInfo)
+       COM_INTERFACE_ENTRY(IProvideClassInfo2)
+   END_COM_MAP()
+
+
+   STANDARD_EDITABLE_DECLARES(HitTarget, eItemHitTarget, TARGET, 1)
+       BEGIN_CONNECTION_POINT_MAP(HitTarget)
+           CONNECTION_POINT_ENTRY(DIID_IHitTargetEvents)
+       END_CONNECTION_POINT_MAP()
+
+       DECLARE_REGISTRY_RESOURCEID(IDR_HITTARGET)
+
    STDMETHOD(get_Material)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(put_Material)(/*[in]*/ BSTR newVal);
 
@@ -126,29 +149,6 @@ public:
    STDMETHOD(get_RaiseDelay)(/*[out, retval]*/ long *pVal);
    STDMETHOD(put_RaiseDelay)(/*[in]*/ long newVal);
 
-   HitTarget();
-   virtual ~HitTarget();
-
-   BEGIN_COM_MAP(HitTarget)
-      COM_INTERFACE_ENTRY(IDispatch)
-      COM_INTERFACE_ENTRY(IHitTarget)
-
-      COM_INTERFACE_ENTRY_IMPL(IConnectionPointContainer)
-
-      COM_INTERFACE_ENTRY(IPerPropertyBrowsing)
-
-      COM_INTERFACE_ENTRY(IProvideClassInfo)
-      COM_INTERFACE_ENTRY(IProvideClassInfo2)
-   END_COM_MAP()
-
-   BEGIN_CONNECTION_POINT_MAP(HitTarget)
-      CONNECTION_POINT_ENTRY(DIID_IHitTargetEvents)
-   END_CONNECTION_POINT_MAP()
-
-
-   STANDARD_EDITABLE_DECLARES(HitTarget, eItemHitTarget, TARGET, 1)
-
-   DECLARE_REGISTRY_RESOURCEID(IDR_HITTARGET)
 
    virtual void MoveOffset(const float dx, const float dy);
    virtual void SetObjectPos();
