@@ -53,6 +53,14 @@ void Gate::SetGateType(GateType type)
         m_numIndices = gatePlateNumFaces;
         m_numVertices = gatePlateNumVertices;
     }
+    else
+    {
+       m_vertices = gateWire;
+       m_indices = gateWireIndices;
+       m_numIndices = gateWireNumFaces;
+       m_numVertices = gateWireNumVertices;
+       m_d.m_type = GateWireW;
+    }
 }
 
 Gate::~Gate()
