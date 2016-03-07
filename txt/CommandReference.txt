@@ -704,7 +704,8 @@ TARGET
 Variables
 ---------
 *Name(string)
-*HasHitEvent(bool)
+*HasHitEvent(bool)           - if set a hit event is fired when the ball hits the drop/hit target without animation. An additional dropped/raised event
+                               is fired for drop targets after the mesh animation is over.
 *Collidable(bool)
 Visible(bool)
 Material(string)
