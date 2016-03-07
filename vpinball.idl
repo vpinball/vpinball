@@ -453,6 +453,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [id(DISPID_TimerEvents_Timer)]  void Timer(long index);
                 [id(DISPID_SpinnerEvents_Spin)]  void Spin(long index);
                 [id(DISPID_HitEvents_Unhit)]  void Unhit(long index);
+                [id(DISPID_TargetEvents_Dropped)]  void Dropped(long index);
+                [id(DISPID_TargetEvents_Raised)]  void Raised(long index);
         }
 
         //////////////////////
@@ -1745,6 +1747,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [id(DISPID_GameEvents_Init)]  void Init();
                 [id(DISPID_TimerEvents_Timer)]  void Timer();
                 [id(DISPID_HitEvents_Hit)]  void Hit();
+                [id(DISPID_TargetEvents_Dropped)]  void Dropped();
+                [id(DISPID_TargetEvents_Raised)]  void Raised();
         }
 
         //////////////////////////////

@@ -70,6 +70,10 @@
 // Spinner
 #define DISPID_SpinnerEvents_Spin 1301
 
+// HitTarget
+#define DISPID_TargetEvents_Dropped 1302 
+#define DISPID_TargetEvents_Raised  1303 
+
 // Light Sequencer
 #define DISPID_LightSeqEvents_PlayDone 1320
 

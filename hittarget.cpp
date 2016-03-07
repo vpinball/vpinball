@@ -585,6 +585,8 @@ void HitTarget::UpdateAnimation(RenderDevice *pd3dDevice)
                     m_d.m_isDropped = true;
                     m_moveAnimation = false;
                     m_timeStamp = 0;
+                    if (m_d.m_fUseHitEvent)
+                        FireGroupEvent(DISPID_TargetEvents_Dropped);
                 }
             }
             else 
@@ -594,6 +596,8 @@ void HitTarget::UpdateAnimation(RenderDevice *pd3dDevice)
                     m_moveAnimationOffset = 0.0f;
                     m_moveAnimation = false;
                     m_d.m_isDropped = false;
+                    if (m_d.m_fUseHitEvent)
+                        FireGroupEvent(DISPID_TargetEvents_Raised);
                 }
             }
             UpdateTarget(pd3dDevice);
