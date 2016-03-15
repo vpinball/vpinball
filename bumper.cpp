@@ -143,6 +143,18 @@ void Bumper::SetDefaults(bool fromMouseClick)
       m_d.m_fReflectionEnabled = iTmp == 0 ? false : true;
    else
       m_d.m_fReflectionEnabled = true;
+
+   hr = GetRegInt("DefaultProps\\Bumper", "HasHitEvent", &iTmp);
+   if ((hr == S_OK) && fromMouseClick)
+       m_d.m_fHitEvent= iTmp == 0 ? false : true;
+   else
+       m_d.m_fHitEvent = true;
+
+   hr = GetRegInt("DefaultProps\\Bumper", "Collidable", &iTmp);
+   if ((hr == S_OK) && fromMouseClick)
+       m_d.m_fCollidable = iTmp == 0 ? false : true;
+   else
+       m_d.m_fCollidable = true;
 }
 
 void Bumper::WriteRegDefaults()
@@ -157,6 +169,8 @@ void Bumper::WriteRegDefaults()
    SetRegValueInt("DefaultProps\\Bumper", "TimerInterval", m_d.m_tdr.m_TimerInterval);
    SetRegValueInt("DefaultProps\\Bumper", "CapVisible", m_d.m_fCapVisible);
    SetRegValueInt("DefaultProps\\Bumper", "BaseVisible", m_d.m_fBaseVisible);
+   SetRegValueInt("DefaultProps\\Bumper", "HasHitEvent", m_d.m_fHitEvent);
+   SetRegValueInt("DefaultProps\\Bumper", "Collidable", m_d.m_fCollidable);
    SetRegValueInt("DefaultProps\\Bumper", "ReflectionEnabled", m_d.m_fReflectionEnabled);
    SetRegValue("DefaultProps\\Bumper", "Surface", REG_SZ, &m_d.m_szSurface, lstrlen(m_d.m_szSurface));
 }
@@ -260,6 +274,7 @@ void Bumper::GetHitShapes(Vector<HitObject> * const pvho)
    BumperHitCircle * const phitcircle = new BumperHitCircle();
 
    phitcircle->m_pfe = NULL;
+   phitcircle->m_fEnabled = m_d.m_fCollidable;
 
    phitcircle->center.x = m_d.m_vCenter.x;
    phitcircle->center.y = m_d.m_vCenter.y;
@@ -721,8 +736,6 @@ void Bumper::RenderSetup(RenderDevice* pd3dDevice)
       capVertexBuffer->unlock();
    }
 
-   // ensure we are not disabled at game start
-   m_fDisabled = false;
 }
 
 void Bumper::RenderStatic(RenderDevice* pd3dDevice)
@@ -803,6 +816,8 @@ HRESULT Bumper::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptk
 
    bw.WriteBool(FID(CAVI), m_d.m_fCapVisible);
    bw.WriteBool(FID(BSVS), m_d.m_fBaseVisible);
+   bw.WriteBool(FID(HAHE), m_d.m_fHitEvent);
+   bw.WriteBool(FID(COLI), m_d.m_fCollidable);
    bw.WriteBool(FID(REEN), m_d.m_fReflectionEnabled);
 
    ISelect::SaveData(pstm, hcrypthash, hcryptkey);
@@ -898,6 +913,14 @@ BOOL Bumper::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(CAVI))
    {
       pbr->GetBool(&m_d.m_fCapVisible);
+   }
+   else if (id == FID(HAHE))
+   {
+       pbr->GetBool(&m_d.m_fHitEvent);
+   }
+   else if (id == FID(COLI))
+   {
+       pbr->GetBool(&m_d.m_fCollidable);
    }
    else if (id == FID(BSVS))
    {
@@ -1167,21 +1190,42 @@ void Bumper::GetDialogPanes(Vector<PropertyPane> *pvproppane)
    pvproppane->AddElement(pproppane);
 }
 
-STDMETHODIMP Bumper::get_Disabled(VARIANT_BOOL *pVal)
+STDMETHODIMP Bumper::get_HasHitEvent(VARIANT_BOOL *pVal)
 {
-   *pVal = (VARIANT_BOOL)FTOVB(m_fDisabled);
+   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fHitEvent);
 
    return S_OK;
 }
 
-STDMETHODIMP Bumper::put_Disabled(VARIANT_BOOL newVal)
+STDMETHODIMP Bumper::put_HasHitEvent(VARIANT_BOOL newVal)
 {
    STARTUNDO
-      m_fDisabled = VBTOF(newVal);
+      m_d.m_fHitEvent = VBTOF(newVal);
    STOPUNDO
 
       return S_OK;
 }
+
+STDMETHODIMP Bumper::get_Collidable(VARIANT_BOOL *pVal)
+{
+    *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fCollidable);
+
+    return S_OK;
+}
+
+STDMETHODIMP Bumper::put_Collidable(VARIANT_BOOL newVal)
+{
+    STARTUNDO
+        m_d.m_fCollidable = VBTOF(newVal);
+
+    if (m_pbumperhitcircle)
+        m_pbumperhitcircle->m_fEnabled = m_d.m_fCollidable;
+
+    STOPUNDO
+
+        return S_OK;
+}
+
 
 STDMETHODIMP Bumper::get_CapVisible(VARIANT_BOOL *pVal)
 {

@@ -164,6 +164,8 @@ UserValue(any)
 *CapVisible(bool) - default=true
 *BaseVisible(bool) - default=true
 *ReflectionEnabled(bool) - default=true
+HasHitEvent(bool)
+Collidable(bool)
 
 Methods
 -------
