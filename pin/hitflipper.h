@@ -18,6 +18,8 @@ public:
    void SetSolenoidState(bool s);
    float GetStrokeRatio() const;
 
+   void SetStartAngle(const float r);
+   void SetEndAngle(const float r);
    float GetReturnRatio();
    void SetReturnRatio(const float r);
    float GetMass();

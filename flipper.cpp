@@ -1145,11 +1145,11 @@ STDMETHODIMP Flipper::put_EndRadius(float newVal)
 {
    STARTUNDO
 
-      m_d.m_EndRadius = newVal;
+   m_d.m_EndRadius = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Flipper::get_Length(float *pVal)
@@ -1163,45 +1163,65 @@ STDMETHODIMP Flipper::put_Length(float newVal)
 {
    STARTUNDO
 
-      m_d.m_FlipperRadiusMax = newVal;
+   m_d.m_FlipperRadiusMax = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Flipper::get_StartAngle(float *pVal)
 {
-   *pVal = m_d.m_StartAngle;
+   if (m_phitflipper)
+   {
+      *pVal = RADTOANG(m_phitflipper->m_flipperanim.m_angleStart);
+   }
+   else
+      *pVal = m_d.m_StartAngle;
 
    return S_OK;
 }
 
 STDMETHODIMP Flipper::put_StartAngle(float newVal)
 {
-   STARTUNDO
-
+   if (m_phitflipper)
+   {
+      m_phitflipper->m_flipperanim.SetStartAngle(ANGTORAD(newVal));
+   }
+   else
+   {
+      STARTUNDO
       m_d.m_StartAngle = newVal;
+      STOPUNDO
+   }
 
-   STOPUNDO
-
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Flipper::get_EndAngle(float *pVal)
 {
-   *pVal = m_d.m_EndAngle;
+   if (m_phitflipper)
+   {
+      *pVal = RADTOANG(m_phitflipper->m_flipperanim.m_angleEnd);
+   }
+   else
+      *pVal = m_d.m_EndAngle;
 
    return S_OK;
 }
 
 STDMETHODIMP Flipper::put_EndAngle(float newVal)
 {
-   STARTUNDO
-
+   if (m_phitflipper)
+   {
+      m_phitflipper->m_flipperanim.SetEndAngle(ANGTORAD(newVal));
+   }
+   else
+   {
+      STARTUNDO
       m_d.m_EndAngle = newVal;
-
-   STOPUNDO;
+      STOPUNDO;
+   }
 
    return S_OK;
 }
@@ -1216,7 +1236,6 @@ STDMETHODIMP Flipper::get_CurrentAngle(float *pVal)
    else
       return E_FAIL;
 }
-
 
 STDMETHODIMP Flipper::get_X(float *pVal)
 {
