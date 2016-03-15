@@ -2,6 +2,8 @@
 
 void BumperHitCircle::Collide(CollisionEvent* coll)
 {
+   if (!m_fEnabled) return;
+
    Ball *pball = coll->ball;
    const Vertex3Ds& hitnormal = coll->hitnormal;
 
@@ -9,11 +11,7 @@ void BumperHitCircle::Collide(CollisionEvent* coll)
 
    pball->Collide2DWall(hitnormal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter);	//reflect ball from wall
 
-   // if the bumper is disabled then don't activate the bumper
-   if (m_pbumper->m_fDisabled)
-      return;
-
-   if (dot <= -m_pbumper->m_d.m_threshold) // if velocity greater than threshold level
+   if ((!m_pbumper->m_d.m_fHitEvent) && (dot <= -m_pbumper->m_d.m_threshold)) // if velocity greater than threshold level
    {
       pball->m_vel.x += hitnormal.x * m_pbumper->m_d.m_force; // add a chunk of velocity to drive ball away
       pball->m_vel.y += hitnormal.y * m_pbumper->m_d.m_force;

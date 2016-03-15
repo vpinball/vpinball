@@ -26,6 +26,8 @@ public:
    bool m_fCapVisible;
    bool m_fBaseVisible;
    bool m_fReflectionEnabled;
+   bool m_fHitEvent;
+   bool m_fCollidable;
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -112,7 +114,6 @@ public:
 
       BumperHitCircle *m_pbumperhitcircle;
 
-      bool m_fDisabled;
 
 private:
    void RenderBase(RenderDevice *pd3dDevice, const Material * const baseMaterial);
@@ -177,8 +178,10 @@ public:
    STDMETHOD(put_Orientation)(/*[in]*/ float newVal);
    STDMETHOD(get_Radius)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_Radius)(/*[in]*/ float newVal);
-   STDMETHOD(get_Disabled)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-   STDMETHOD(put_Disabled)(/*[in]*/ VARIANT_BOOL newVal);
+   STDMETHOD(get_HasHitEvent)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   STDMETHOD(put_HasHitEvent)(/*[in]*/ VARIANT_BOOL newVal);
+   STDMETHOD(get_Collidable)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   STDMETHOD(put_Collidable)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_CapVisible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_CapVisible)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_BaseVisible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
