@@ -132,6 +132,11 @@ void FlipperAnimObject::SetStartAngle(const float r)
     m_angleStart = r;
     m_angleMin = min(m_angleStart, m_angleEnd);
     m_angleMax = max(m_angleStart, m_angleEnd);
+
+    if (m_angleCur > m_angleMax)
+        m_angleCur = m_angleMax;
+    if (m_angleCur < m_angleMin)
+        m_angleCur = m_angleMin;
 }
 
 void FlipperAnimObject::SetEndAngle(const float r)
@@ -139,6 +144,11 @@ void FlipperAnimObject::SetEndAngle(const float r)
     m_angleEnd = r;
     m_angleMin = min(m_angleStart, m_angleEnd);
     m_angleMax = max(m_angleStart, m_angleEnd);
+
+    if (m_angleCur > m_angleMax)
+        m_angleCur = m_angleMax;
+    if (m_angleCur < m_angleMin)
+        m_angleCur = m_angleMin;
 }
 
 float FlipperAnimObject::GetReturnRatio()
