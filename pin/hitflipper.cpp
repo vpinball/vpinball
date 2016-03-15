@@ -127,14 +127,29 @@ void HitFlipper::CalcHitRect()
    m_rcHitRect.zhigh = m_flipperanim.m_hitcircleBase.zhigh;
 }
 
+float FlipperAnimObject::GetReturnRatio()
+{
+   return m_returnRatio;
+}
+
 void FlipperAnimObject::SetReturnRatio(const float r)
 {
    m_returnRatio = r;
 }
 
+float FlipperAnimObject::GetMass()
+{
+   return 3.0f * m_inertia / (m_flipperradius*m_flipperradius); //!! also change if wiring of moment of inertia happens (see ctor)
+}
+
 void FlipperAnimObject::SetMass(const float m)
 {
    m_inertia = (float)(1.0 / 3.0) * m * (m_flipperradius*m_flipperradius); //!! also change if wiring of moment of inertia happens (see ctor)
+}
+
+float FlipperAnimObject::GetStrength()
+{
+   return m_force;
 }
 
 void FlipperAnimObject::SetStrength(const float s)
