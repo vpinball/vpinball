@@ -1336,7 +1336,12 @@ void Flipper::GetDialogPanes(Vector<PropertyPane> *pvproppane)
 
 STDMETHODIMP Flipper::get_Mass(float *pVal)
 {
-   *pVal = m_d.m_mass;
+    if (m_phitflipper)
+    {
+        *pVal = m_d.m_OverridePhysics ? m_d.m_OverrideMass : m_phitflipper->m_flipperanim.GetMass();
+    }
+    else
+        *pVal = m_d.m_mass;
 
    return S_OK;
 }
@@ -1453,7 +1458,12 @@ STDMETHODIMP Flipper::put_RubberWidth(long newVal)
 
 STDMETHODIMP Flipper::get_Strength(float *pVal)
 {
-   *pVal = m_d.m_strength;
+   if (m_phitflipper)
+   {
+       *pVal = m_d.m_OverridePhysics ? m_d.m_OverrideStrength : m_phitflipper->m_flipperanim.GetStrength();
+   }
+   else
+	   *pVal = m_d.m_strength;
 
    return S_OK;
 }
@@ -1468,7 +1478,7 @@ STDMETHODIMP Flipper::put_Strength(float newVal)
    {
       STARTUNDO
 
-         m_d.m_strength = newVal;
+      m_d.m_strength = newVal;
 
       STOPUNDO
    }
@@ -1629,16 +1639,21 @@ STDMETHODIMP Flipper::put_Height(float newVal)
 {
    STARTUNDO
 
-      m_d.m_height = newVal;
+   m_d.m_height = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Flipper::get_Return(float *pVal)
 {
-   *pVal = m_d.m_return;
+   if (m_phitflipper)
+   {
+       *pVal = m_d.m_OverridePhysics ? m_d.m_OverrideReturnStrength : m_phitflipper->m_flipperanim.GetReturnRatio();
+   }
+   else
+       *pVal = m_d.m_return;
 
    return S_OK;
 }
@@ -1653,7 +1668,7 @@ STDMETHODIMP Flipper::put_Return(float newVal)
    {
       STARTUNDO
 
-         m_d.m_return = clamp(newVal, 0.0f, 1.0f);
+      m_d.m_return = clamp(newVal, 0.0f, 1.0f);
 
       STOPUNDO
    }
@@ -1672,13 +1687,13 @@ STDMETHODIMP Flipper::put_FlipperRadiusMin(float newVal)
 {
    STARTUNDO
 
-      if (newVal < 0.0f) newVal = 0.0f;
+   if (newVal < 0.0f) newVal = 0.0f;
 
    m_d.m_FlipperRadiusMin = newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Flipper::get_Image(BSTR *pVal)

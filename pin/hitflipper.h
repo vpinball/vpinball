@@ -18,8 +18,11 @@ public:
    void SetSolenoidState(bool s);
    float GetStrokeRatio() const;
 
+   float GetReturnRatio();
    void SetReturnRatio(const float r);
+   float GetMass();
    void SetMass(const float m);
+   float GetStrength();
    void SetStrength(const float s);
 
    // rigid body functions
