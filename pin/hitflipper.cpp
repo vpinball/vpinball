@@ -127,6 +127,20 @@ void HitFlipper::CalcHitRect()
    m_rcHitRect.zhigh = m_flipperanim.m_hitcircleBase.zhigh;
 }
 
+void FlipperAnimObject::SetStartAngle(const float r)
+{
+    m_angleStart = r;
+    m_angleMin = min(m_angleStart, m_angleEnd);
+    m_angleMax = max(m_angleStart, m_angleEnd);
+}
+
+void FlipperAnimObject::SetEndAngle(const float r)
+{
+    m_angleEnd = r;
+    m_angleMin = min(m_angleStart, m_angleEnd);
+    m_angleMax = max(m_angleStart, m_angleEnd);
+}
+
 float FlipperAnimObject::GetReturnRatio()
 {
    return m_returnRatio;
