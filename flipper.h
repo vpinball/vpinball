@@ -31,9 +31,9 @@ public:
 
    COLORREF m_rubbercolor;
    char m_szRubberMaterial[32];
-   int m_rubberthickness;
-   int m_rubberheight;
-   int m_rubberwidth;
+   float m_rubberthickness;
+   float m_rubberheight;
+   float m_rubberwidth;
 
    float m_mass;
    float m_strength;
@@ -110,7 +110,7 @@ public:
 	  {
 		  const unsigned long long m1 = m_ptable->GetMaterial(m_d.m_szMaterial)->hash();
 		  const unsigned long long m2 = m_ptable->GetMaterial(m_d.m_szRubberMaterial)->hash();
-		  if (m1 == m2 || (m_d.m_rubberthickness <= 0))
+		  if (m1 == m2 || (m_d.m_rubberthickness <= 0.f))
 			  return m1;
 		  else
 			  return 0;
@@ -155,12 +155,12 @@ public:
    STDMETHOD(put_Enabled)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_Strength)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_Strength)(/*[in]*/ float newVal);
-   STDMETHOD(get_RubberThickness)(/*[out, retval]*/ long *pVal);
-   STDMETHOD(put_RubberThickness)(/*[in]*/ long newVal);
-   STDMETHOD(get_RubberWidth)(/*[out, retval]*/ long *pVal);
-   STDMETHOD(put_RubberWidth)(/*[in]*/ long newVal);
-   STDMETHOD(get_RubberHeight)(/*[out, retval]*/ long *pVal);
-   STDMETHOD(put_RubberHeight)(/*[in]*/ long newVal);
+   STDMETHOD(get_RubberThickness)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_RubberThickness)(/*[in]*/ float newVal);
+   STDMETHOD(get_RubberWidth)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_RubberWidth)(/*[in]*/ float newVal);
+   STDMETHOD(get_RubberHeight)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_RubberHeight)(/*[in]*/ float newVal);
    STDMETHOD(get_RubberMaterial)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(put_RubberMaterial)(/*[in]*/ BSTR newVal);
    STDMETHOD(get_Mass)(/*[out, retval]*/ float *pVal);
