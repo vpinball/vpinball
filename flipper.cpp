@@ -165,14 +165,14 @@ void Flipper::SetDefaults(bool fromMouseClick)
    hr = GetRegStringAsFloat("DefaultProps\\Flipper", "Height", &fTmp);
    m_d.m_height = (hr == S_OK) && fromMouseClick ? fTmp : 50.f;
 
-   hr = GetRegInt("DefaultProps\\Flipper", "RubberThickness", &iTmp);
-   m_d.m_rubberthickness = (hr == S_OK) && fromMouseClick ? iTmp : 7;
+   hr = GetRegStringAsFloat("DefaultProps\\Flipper", "RubberThickness", &fTmp);
+   m_d.m_rubberthickness = (hr == S_OK) && fromMouseClick ? fTmp : 7.f;
 
-   hr = GetRegInt("DefaultProps\\Flipper", "RubberHeight", &iTmp);
-   m_d.m_rubberheight = (hr == S_OK) && fromMouseClick ? iTmp : 19;
+   hr = GetRegStringAsFloat("DefaultProps\\Flipper", "RubberHeight", &fTmp);
+   m_d.m_rubberheight = (hr == S_OK) && fromMouseClick ? fTmp : 19.f;
 
-   hr = GetRegInt("DefaultProps\\Flipper", "RubberWidth", &iTmp);
-   m_d.m_rubberwidth = (hr == S_OK) && fromMouseClick ? iTmp : 24;
+   hr = GetRegStringAsFloat("DefaultProps\\Flipper", "RubberWidth", &fTmp);
+   m_d.m_rubberwidth = (hr == S_OK) && fromMouseClick ? fTmp : 24.f;
 
    hr = GetRegInt("DefaultProps\\Flipper", "Visible", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
@@ -216,9 +216,9 @@ void Flipper::WriteRegDefaults()
    SetRegValue(regKey, "Surface", REG_SZ, &m_d.m_szSurface, (DWORD)strlen(m_d.m_szSurface));
    SetRegValueFloat(regKey, "Strength", m_d.m_strength);
    SetRegValueFloat(regKey, "Height", m_d.m_height);
-   SetRegValueInt(regKey, "RubberThickness", m_d.m_rubberthickness);
-   SetRegValueInt(regKey, "RubberHeight", m_d.m_rubberheight);
-   SetRegValueInt(regKey, "RubberWidth", m_d.m_rubberwidth);
+   SetRegValueFloat(regKey, "RubberThickness", m_d.m_rubberthickness);
+   SetRegValueFloat(regKey, "RubberHeight", m_d.m_rubberheight);
+   SetRegValueFloat(regKey, "RubberWidth", m_d.m_rubberwidth);
    SetRegValueBool(regKey, "Visible", m_d.m_fVisible);
    SetRegValueBool(regKey, "Enabled", m_d.m_fEnabled);
    SetRegValueBool(regKey, "ReflectionEnabled", m_d.m_fReflectionEnabled);
@@ -684,7 +684,7 @@ void Flipper::PostRenderStatic(RenderDevice* pd3dDevice)
    pd3dDevice->basicShader->End();
 
    //render rubber
-   if (m_d.m_rubberthickness > 0)
+   if (m_d.m_rubberthickness > 0.f)
    {
       mat = m_ptable->GetMaterial(m_d.m_szRubberMaterial);
       pd3dDevice->basicShader->SetMaterial(mat);
@@ -737,7 +737,7 @@ void Flipper::ExportMesh(FILE *f)
    WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
    WaveFrontObj_WriteFaceInfoList(f, flipperBaseIndices, flipperBaseNumFaces);
    WaveFrontObj_UpdateFaceOffset(flipperBaseVertices);
-   if (m_d.m_rubberthickness > 0.0f)
+   if (m_d.m_rubberthickness > 0.f)
    {
       Vertex3D_NoTex2 *buf = &flipper[flipperBaseVertices];
       for (int i = 0; i < flipperBaseVertices; i++)
@@ -814,14 +814,12 @@ void Flipper::GenerateBaseMesh(Vertex3D_NoTex2 *buf)
    }
    for (int i = 0; i < flipperBaseVertices; i++)
    {
-      Vertex3Ds vert(temp[i].x, temp[i].y, temp[i].z);
-      vert = fullMatrix.MultiplyVector(vert);
+      Vertex3Ds vert = fullMatrix.MultiplyVector(Vertex3Ds(temp[i].x, temp[i].y, temp[i].z));
       buf[i].x = vert.x;
       buf[i].y = vert.y;
       buf[i].z = vert.z*m_d.m_height*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + height;
 
-      vert = Vertex3Ds(flipperBaseMesh[i].nx, flipperBaseMesh[i].ny, flipperBaseMesh[i].nz);
-      vert = fullMatrix.MultiplyVectorNoTranslate(vert);
+      vert = fullMatrix.MultiplyVectorNoTranslate(Vertex3Ds(flipperBaseMesh[i].nx, flipperBaseMesh[i].ny, flipperBaseMesh[i].nz));
       buf[i].nx = vert.x;
       buf[i].ny = vert.y;
       buf[i].nz = vert.z;
@@ -830,7 +828,7 @@ void Flipper::GenerateBaseMesh(Vertex3D_NoTex2 *buf)
    }
 
    //rubber
-   if (m_d.m_rubberthickness > 0.0f)
+   if (m_d.m_rubberthickness > 0.f)
    {
       const float rubberBaseScale = 10.0f;
       const float rubberTipScale = 10.0f;
@@ -866,14 +864,12 @@ void Flipper::GenerateBaseMesh(Vertex3D_NoTex2 *buf)
 
       for (int i = 0; i < flipperBaseVertices; i++)
       {
-         Vertex3Ds vert(temp[i].x, temp[i].y, temp[i].z);
-         vert = fullMatrix.MultiplyVector(vert);
+         Vertex3Ds vert = fullMatrix.MultiplyVector(Vertex3Ds(temp[i].x, temp[i].y, temp[i].z));
          buf[i + flipperBaseVertices].x = vert.x;
          buf[i + flipperBaseVertices].y = vert.y;
-         buf[i + flipperBaseVertices].z = vert.z*m_d.m_rubberwidth*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + height + m_d.m_rubberheight;
+         buf[i + flipperBaseVertices].z = vert.z*m_d.m_rubberwidth*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + (height + m_d.m_rubberheight);
 
-         vert = Vertex3Ds(flipperBaseMesh[i].nx, flipperBaseMesh[i].ny, flipperBaseMesh[i].nz);
-         vert = fullMatrix.MultiplyVectorNoTranslate(vert);
+         vert = fullMatrix.MultiplyVectorNoTranslate(Vertex3Ds(flipperBaseMesh[i].nx, flipperBaseMesh[i].ny, flipperBaseMesh[i].nz));
          buf[i + flipperBaseVertices].nx = vert.x;
          buf[i + flipperBaseVertices].ny = vert.y;
          buf[i + flipperBaseVertices].nz = vert.z;
@@ -925,9 +921,12 @@ HRESULT Flipper::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
    bw.WriteString(FID(MATR), m_d.m_szMaterial);
    bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
    bw.WriteString(FID(RUMA), m_d.m_szRubberMaterial);
-   bw.WriteInt(FID(RTHK), m_d.m_rubberthickness);
-   bw.WriteInt(FID(RHGT), m_d.m_rubberheight);
-   bw.WriteInt(FID(RWDT), m_d.m_rubberwidth);
+   bw.WriteInt(FID(RTHK), (int)m_d.m_rubberthickness); //!! deprecated, remove
+   bw.WriteFloat(FID(RTHF), m_d.m_rubberthickness);
+   bw.WriteInt(FID(RHGT), (int)m_d.m_rubberheight); //!! deprecated, remove
+   bw.WriteFloat(FID(RHGF), m_d.m_rubberheight);
+   bw.WriteInt(FID(RWDT), (int)m_d.m_rubberwidth); //!! deprecated, remove
+   bw.WriteFloat(FID(RWDF), m_d.m_rubberwidth);
    bw.WriteFloat(FID(STRG), m_d.m_strength);
    bw.WriteFloat(FID(ELAS), m_d.m_elasticity);
    bw.WriteFloat(FID(ELFO), m_d.m_elasticityFalloff);
@@ -1034,17 +1033,35 @@ BOOL Flipper::LoadToken(int id, BiffReader *pbr)
    {
       pbr->GetWideString((WCHAR *)m_wzName);
    }
-   else if (id == FID(RTHK))
+   else if (id == FID(RTHK)) //!! deprecated, remove
    {
-      pbr->GetInt(&m_d.m_rubberthickness);
+      int rt;
+      pbr->GetInt(&rt);
+      m_d.m_rubberthickness = (float)rt;
    }
-   else if (id == FID(RHGT))
+   else if (id == FID(RTHF))
    {
-      pbr->GetInt(&m_d.m_rubberheight);
+      pbr->GetFloat(&m_d.m_rubberthickness);
    }
-   else if (id == FID(RWDT))
+   else if (id == FID(RHGT)) //!! deprecated, remove
    {
-      pbr->GetInt(&m_d.m_rubberwidth);
+      int rh;
+      pbr->GetInt(&rh);
+      m_d.m_rubberheight = (float)rh;
+   }
+   else if (id == FID(RHGF))
+   {
+      pbr->GetFloat(&m_d.m_rubberheight);
+   }
+   else if (id == FID(RWDT)) //!! deprecated, remove
+   {
+      int rw;
+      pbr->GetInt(&rw);
+      m_d.m_rubberwidth = (float)rw;
+   }
+   else if (id == FID(RWDF))
+   {
+      pbr->GetFloat(&m_d.m_rubberwidth);
    }
    else if (id == FID(FHGT))
    {
@@ -1106,12 +1123,12 @@ HRESULT Flipper::InitPostLoad()
 {
    if (m_d.m_height > 1000.0f)
       m_d.m_height = 50.0f;
-   if (m_d.m_rubberheight > 1000)
-      m_d.m_rubberheight = 8;
-   if (m_d.m_rubberthickness > 0 && m_d.m_height > 16.0f && m_d.m_rubberwidth == 0)
-      m_d.m_rubberwidth = (int)(m_d.m_height - 16.0f);
-   if (m_d.m_rubberwidth > 1000)
-      m_d.m_rubberwidth = (int)(m_d.m_height - 16.0f);
+   if (m_d.m_rubberheight > 1000.f)
+      m_d.m_rubberheight = 8.f;
+   if (m_d.m_rubberthickness > 0.f && m_d.m_height > 16.0f && m_d.m_rubberwidth == 0.f)
+      m_d.m_rubberwidth = m_d.m_height - 16.0f;
+   if (m_d.m_rubberwidth > 1000.f)
+      m_d.m_rubberwidth = m_d.m_height - 16.0f;
 
    return S_OK;
 }
@@ -1418,28 +1435,28 @@ STDMETHODIMP Flipper::put_RubberMaterial(BSTR newVal)
       return S_OK;
 }
 
-STDMETHODIMP Flipper::get_RubberThickness(long *pVal)
+STDMETHODIMP Flipper::get_RubberThickness(float *pVal)
 {
    *pVal = m_d.m_rubberthickness;
 
    return S_OK;
 }
 
-STDMETHODIMP Flipper::get_RubberHeight(long *pVal)
+STDMETHODIMP Flipper::get_RubberHeight(float *pVal)
 {
    *pVal = m_d.m_rubberheight;
 
    return S_OK;
 }
 
-STDMETHODIMP Flipper::get_RubberWidth(long *pVal)
+STDMETHODIMP Flipper::get_RubberWidth(float *pVal)
 {
    *pVal = m_d.m_rubberwidth;
 
    return S_OK;
 }
 
-STDMETHODIMP Flipper::put_RubberThickness(long newVal)
+STDMETHODIMP Flipper::put_RubberThickness(float newVal)
 {
    STARTUNDO
 
@@ -1450,12 +1467,12 @@ STDMETHODIMP Flipper::put_RubberThickness(long newVal)
       return S_OK;
 }
 
-STDMETHODIMP Flipper::put_RubberHeight(long newVal)
+STDMETHODIMP Flipper::put_RubberHeight(float newVal)
 {
    STARTUNDO
 
-      if (newVal < 0) newVal = 0;
-      else if (newVal > 1000) newVal = 50;
+      if (newVal < 0.f) newVal = 0.f;
+      else if (newVal > 1000.f) newVal = 50.f;
 
       m_d.m_rubberheight = newVal;
 
@@ -1464,7 +1481,7 @@ STDMETHODIMP Flipper::put_RubberHeight(long newVal)
          return S_OK;
 }
 
-STDMETHODIMP Flipper::put_RubberWidth(long newVal)
+STDMETHODIMP Flipper::put_RubberWidth(float newVal)
 {
    STARTUNDO
 

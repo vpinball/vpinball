@@ -933,8 +933,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propput, id(DISPID_Flipper_OverridePhysics), helpstring("property OverridePhysics")] HRESULT OverridePhysics([in] PhysicsSet newVal);
                 [propget, id(341), helpstring("property RubberMaterial")] HRESULT RubberMaterial([out, retval] BSTR *pVal);
                 [propput, id(341), helpstring("property RubberMaterial")] HRESULT RubberMaterial([in] BSTR newVal);
-                [propget, id(18), helpstring("property RubberThickness")] HRESULT RubberThickness([out, retval] long *pVal);
-                [propput, id(18), helpstring("property RubberThickness")] HRESULT RubberThickness([in] long newVal);
+                [propget, id(18), helpstring("property RubberThickness")] HRESULT RubberThickness([out, retval] float *pVal);
+                [propput, id(18), helpstring("property RubberThickness")] HRESULT RubberThickness([in] float newVal);
                 [propget, id(19), helpstring("property Strength")] HRESULT Strength([out, retval] float *pVal);
                 [propput, id(19), helpstring("property Strength")] HRESULT Strength([in] float newVal);
                 [propget, id(20), helpstring("property Visible")] HRESULT Visible([out, retval] VARIANT_BOOL *pVal);
@@ -947,10 +947,10 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propput, id(112), helpstring("property Scatter")] HRESULT Scatter([in] float newVal);
                 [propget, id(23), helpstring("property Return")] HRESULT Return([out, retval] float *pVal);
                 [propput, id(23), helpstring("property Return")] HRESULT Return([in] float newVal);
-                [propget, id(24), helpstring("property RubberHeight")] HRESULT RubberHeight([out, retval] long *pVal);
-                [propput, id(24), helpstring("property RubberHeight")] HRESULT RubberHeight([in] long newVal);
-                [propget, id(25), helpstring("property RubberWidth")] HRESULT RubberWidth([out, retval] long *pVal);
-                [propput, id(25), helpstring("property RubberWidth")] HRESULT RubberWidth([in] long newVal);
+                [propget, id(24), helpstring("property RubberHeight")] HRESULT RubberHeight([out, retval] float *pVal);
+                [propput, id(24), helpstring("property RubberHeight")] HRESULT RubberHeight([in] float newVal);
+                [propget, id(25), helpstring("property RubberWidth")] HRESULT RubberWidth([out, retval] float *pVal);
+                [propput, id(25), helpstring("property RubberWidth")] HRESULT RubberWidth([in] float newVal);
                 [propget, id(26), helpstring("property Friction")] HRESULT Friction([out, retval] float *pVal);
                 [propput, id(26), helpstring("property Friction")] HRESULT Friction([in] float newVal);
                 [propget, id(27), helpstring("property RampUp")] HRESULT RampUp([out, retval] float *pVal);
