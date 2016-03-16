@@ -1152,7 +1152,7 @@ INT_PTR CALLBACK PropertyProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
             psb->GetBaseIDisp()->QueryInterface(IID_IPerPropertyBrowsing, (void **)&pippb);
 
             CComVariant var;
-            pippb->GetPredefinedValue(dispid, cookie, &var);
+            pippb->GetPredefinedValue(dispid, (DWORD)cookie, &var);
 
             pippb->Release();
 

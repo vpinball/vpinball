@@ -635,7 +635,7 @@ STDMETHODIMP ScriptGlobalTable::GetBalls(LPSAFEARRAY *pVal)
    if (!pVal || !g_pplayer)
       return E_POINTER;
 
-   CComSafeArray<VARIANT> balls(g_pplayer->m_vball.size());
+   CComSafeArray<VARIANT> balls((ULONG)g_pplayer->m_vball.size());
 
    for (unsigned i = 0; i < g_pplayer->m_vball.size(); ++i)
    {
@@ -6257,7 +6257,7 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
    case WM_KEYDOWN:
    {
       pt = (CComObject<PinTable> *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
-      pt->OnKeyDown(wParam);
+      pt->OnKeyDown((int)wParam);
       break;
    }
 

@@ -1024,10 +1024,10 @@ void CodeViewer::Replace(const FINDREPLACE * const pfr)
    const size_t len = SendMessage(m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
 
    FINDTEXTEX ft;
-   ft.chrg.cpMax = len;			// search through end of the text
-   ft.chrg.cpMin = selstart;
+   ft.chrg.cpMax = (LONG)len;			// search through end of the text
+   ft.chrg.cpMin = (LONG)selstart;
    if (!(pfr->Flags & (FR_REPLACE | FR_REPLACEALL)))
-      ft.chrg.cpMin = selend;
+      ft.chrg.cpMin = (LONG)selend;
    ft.lpstrText = pfr->lpstrFindWhat;
 
    LONG cszReplaced = 0;
@@ -1064,8 +1064,8 @@ next:
    if (((pfr->Flags & FR_REPLACE) && cszReplaced == 0) || (pfr->Flags & FR_REPLACEALL))
    {
       SendMessage(m_hwndScintilla, SCI_REPLACESEL, true, (LPARAM)pfr->lpstrReplaceWith);
-      ft.chrg.cpMin = cpMatch + lstrlen(pfr->lpstrReplaceWith);
-      ft.chrg.cpMax = len;	// search through end of the text
+      ft.chrg.cpMin = (LONG)(cpMatch + lstrlen(pfr->lpstrReplaceWith));
+      ft.chrg.cpMax = (LONG)len;	// search through end of the text
       cszReplaced++;
       goto next;
    }
@@ -1382,8 +1382,8 @@ void CodeViewer::FindCodeFromEvent()
       char szEnd[2];
 
       TEXTRANGE tr;
-      tr.chrg.cpMax = codelen;
-      tr.chrg.cpMin = codelen - 1;
+      tr.chrg.cpMax = (LONG)codelen;
+      tr.chrg.cpMin = (LONG)codelen - 1;
       tr.lpstrText = szEnd;
 
       // Make sure there is at least a one space gap between the last function and this new one
@@ -1603,7 +1603,7 @@ void CodeViewer::ShowAutoComplete(SCNotification *pSCN)
 		WordUnderCaret.lpstrText = &CaretTextBuff[0];
 		GetWordUnderCaret();
 		const size_t intWordLen = strlen(WordUnderCaret.lpstrText);
-		if (intWordLen > DisplayAutoCompleteLength && intWordLen < MAX_FIND_LENGTH)
+		if ((int)intWordLen > DisplayAutoCompleteLength && intWordLen < MAX_FIND_LENGTH)
 		{
 			const char * McStr = AutoCompString.c_str();
 			SendMessage(m_hwndScintilla, SCI_AUTOCSHOW, intWordLen, (LPARAM)McStr);
@@ -1669,7 +1669,7 @@ bool CodeViewer::ShowTooltip(SCNotification *pSCN)
 	char Mess[MAX_LINE_LENGTH*4] = {}; int MessLen = 0;
 	char szDwellWord[256] = {};
 	char szLCDwellWord[256] = {};
-	const int CurrentLineNo = SendMessage(m_hwndScintilla, SCI_LINEFROMPOSITION, dwellpos, 0);
+	const int CurrentLineNo = (int)SendMessage(m_hwndScintilla, SCI_LINEFROMPOSITION, dwellpos, 0);
 	//return if in a comment
 	char text[MAX_LINE_LENGTH] = {0};
 	SendMessage(m_hwndScintilla, SCI_GETLINE, CurrentLineNo, (LPARAM)text);
@@ -2323,14 +2323,14 @@ void CodeViewer::RemoveNonVBSChars(string &line)
 void CodeViewer::ParseForFunction() // Subs & Collections WIP 
 {
   char text[MAX_LINE_LENGTH];
-   const size_t scriptLines = SendMessage(m_hwndScintilla, SCI_GETLINECOUNT, 0, 0);
+   const int scriptLines = (int)SendMessage(m_hwndScintilla, SCI_GETLINECOUNT, 0, 0);
    SendMessage(m_hwndFunctionList, CB_RESETCONTENT, 0, 0);
 	int ParentLevel = 0; //root
 	ParentTreeInvalid = false;
-	for (size_t linecount = 0; linecount < scriptLines; ++linecount) 
+	for (int linecount = 0; linecount < scriptLines; ++linecount) 
    {
 		// Read line
-      const int lineLength = SendMessage(m_hwndScintilla, SCI_LINELENGTH, linecount, 0);
+      const int lineLength = (int)SendMessage(m_hwndScintilla, SCI_LINELENGTH, linecount, 0);
 		if ( !ParseOKLineLength(lineLength) ) continue;
 		memset(text, 0, MAX_LINE_LENGTH);
 		SendMessage(m_hwndScintilla, SCI_GETLINE, linecount, (LPARAM)text);
@@ -2350,7 +2350,7 @@ void CodeViewer::ParseForFunction() // Subs & Collections WIP
 		}
    }
 	//Collect Objects/Components from the menu. (cheat!)
-	int CBCount = SendMessage(m_hwndItemList, CB_GETCOUNT, 0, 0)-1;//Zero Based
+	int CBCount = (int)SendMessage(m_hwndItemList, CB_GETCOUNT, 0, 0)-1;//Zero Based
 	char c_str1[256]={0};
 	UserData ud;
 	while (CBCount >= 0) 
@@ -2454,7 +2454,7 @@ void CodeViewer::ParseVPCore()
 		{
 		    string wholeline(text);
 		    ++linecount;
-		    const int lineLength = wholeline.length();
+		    const int lineLength = (int)wholeline.length();
 		    if ( !ParseOKLineLength(lineLength) ) continue;
 		    ReadLineToParseBrain( wholeline, linecount, VP_CoreDict);
 		}
