@@ -777,13 +777,13 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
    CComObject<PinTable> *ptCur;
 
    // check if it's an Editable tool
-   ItemTypeEnum type = EditableRegistry::TypeFromToolID(code);
+   ItemTypeEnum type = EditableRegistry::TypeFromToolID((int)code);
    if (type != eItemInvalid)
    {
       SendMessage(m_hwndToolbarMain, TB_CHECKBUTTON, m_ToolCur, MAKELONG(FALSE, 0));
       SendMessage(m_hwndToolbarPalette, TB_CHECKBUTTON, code, MAKELONG(TRUE, 0));
 
-      m_ToolCur = code;
+      m_ToolCur = (int)code;
 
       if (notify == 1) // accelerator - mouse can be over table already
       {
@@ -1009,7 +1009,7 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
       SendMessage(m_hwndToolbarPalette, TB_CHECKBUTTON, m_ToolCur, MAKELONG(FALSE, 0));
       SendMessage(m_hwndToolbarMain, TB_CHECKBUTTON, code, MAKELONG(TRUE, 0));
 
-      m_ToolCur = code;
+      m_ToolCur = (int)code;
 
       if (notify == 1) // accelerator - mouse can be over table already
       {
@@ -5613,15 +5613,15 @@ INT_PTR CALLBACK CollectionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
 
             HWND hwndFireEvents = GetDlgItem(hwndDlg, IDC_FIRE);
             const size_t fEvents = SendMessage(hwndFireEvents, BM_GETCHECK, 0, 0);
-            pcol->m_fFireEvents = fEvents;
+            pcol->m_fFireEvents = (BOOL)fEvents;
 
             HWND hwndStopSingle = GetDlgItem(hwndDlg, IDC_SUPPRESS);
             const size_t fStopSingle = SendMessage(hwndStopSingle, BM_GETCHECK, 0, 0);
-            pcol->m_fStopSingleEvents = fStopSingle;
+            pcol->m_fStopSingleEvents = (BOOL)fStopSingle;
 
             HWND hwndGroupElements = GetDlgItem(hwndDlg, IDC_GROUP_CHECK);
             const size_t fGroupElements = SendMessage(hwndGroupElements, BM_GETCHECK, 0, 0);
-            pcol->m_fGroupElements = fGroupElements;
+            pcol->m_fGroupElements = (BOOL)fGroupElements;
 
             char szT[1024];
             HWND hwndName = GetDlgItem(hwndDlg, IDC_NAME);
@@ -7886,7 +7886,7 @@ INT_PTR CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPAR
                savecurrentphysicssetting(hwndDlg);
             if (result != IDCANCEL)
             {
-               physicsselection = tmp;
+               physicsselection = (unsigned int)tmp;
                SendMessage(hwndDlg, WM_INITDIALOG, 0, 0); // reinit all boxes
             }
             else
