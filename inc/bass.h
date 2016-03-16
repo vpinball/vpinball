@@ -1,6 +1,6 @@
 /*
 	BASS 2.4 C/C++ header file
-	Copyright (c) 1999-2014 Un4seen Developments Ltd.
+	Copyright (c) 1999-2016 Un4seen Developments Ltd.
 
 	See the BASS.CHM file for more detailed documentation
 */
@@ -135,6 +135,9 @@ typedef DWORD HPLUGIN;		// Plugin handle
 #define BASS_CONFIG_DEV_NONSTOP		50
 #define BASS_CONFIG_IOS_NOCATEGORY	51
 #define BASS_CONFIG_VERIFY_NET		52
+#define BASS_CONFIG_DEV_PERIOD		53
+#define BASS_CONFIG_FLOAT			54
+#define BASS_CONFIG_NET_SEEK		56
 
 // BASS_SetConfigPtr options
 #define BASS_CONFIG_NET_AGENT		16
@@ -142,15 +145,17 @@ typedef DWORD HPLUGIN;		// Plugin handle
 #define BASS_CONFIG_IOS_NOTIFY		46
 
 // BASS_Init flags
-#define BASS_DEVICE_8BITS		1		// 8 bit resolution, else 16 bit
-#define BASS_DEVICE_MONO		2		// mono, else stereo
+#define BASS_DEVICE_8BITS		1		// 8 bit
+#define BASS_DEVICE_MONO		2		// mono
 #define BASS_DEVICE_3D			4		// enable 3D functionality
+#define BASS_DEVICE_16BITS		8		// limit output to 16 bit
 #define BASS_DEVICE_LATENCY		0x100	// calculate device latency (BASS_INFO struct)
 #define BASS_DEVICE_CPSPEAKERS	0x400	// detect speakers via Windows control panel
 #define BASS_DEVICE_SPEAKERS	0x800	// force enabling of speaker assignment
 #define BASS_DEVICE_NOSPEAKER	0x1000	// ignore speaker arrangement
 #define BASS_DEVICE_DMIX		0x2000	// use ALSA "dmix" plugin
 #define BASS_DEVICE_FREQ		0x4000	// set device sample rate
+#define BASS_DEVICE_STEREO		0x8000	// limit output to stereo
 
 // DirectSound interfaces (for use with BASS_GetDSoundObject)
 #define BASS_OBJECT_DS		1	// IDirectSound
@@ -266,7 +271,7 @@ typedef struct {
 } BASS_SAMPLE;
 
 #define BASS_SAMPLE_8BITS		1	// 8 bit
-#define BASS_SAMPLE_FLOAT		256	// 32-bit floating-point
+#define BASS_SAMPLE_FLOAT		256	// 32 bit floating-point
 #define BASS_SAMPLE_MONO		2	// mono
 #define BASS_SAMPLE_LOOP		4	// looped
 #define BASS_SAMPLE_3D			8	// 3D functionality
@@ -299,6 +304,7 @@ typedef struct {
 #define BASS_MUSIC_RAMPS		0x400	// sensitive ramping
 #define BASS_MUSIC_SURROUND		0x800	// surround sound
 #define BASS_MUSIC_SURROUND2	0x1000	// surround sound (mode 2)
+#define BASS_MUSIC_FT2PAN		0x2000	// apply FastTracker 2 panning to XM files
 #define BASS_MUSIC_FT2MOD		0x2000	// play .MOD as FastTracker 2 does
 #define BASS_MUSIC_PT1MOD		0x4000	// play .MOD as ProTracker 1 does
 #define BASS_MUSIC_NONINTER		0x10000	// non-interpolated sample mixing
@@ -540,8 +546,8 @@ user   : The 'user' parameter value given when calling BASS_StreamCreateURL */
 #define BASS_SYNC_MUSICINST		1
 #define BASS_SYNC_MUSICFX		3
 #define BASS_SYNC_OGG_CHANGE	12
-#define BASS_SYNC_MIXTIME		0x40000000	// FLAG: sync at mixtime, else at playtime
-#define BASS_SYNC_ONETIME		0x80000000	// FLAG: sync only once, else continuously
+#define BASS_SYNC_MIXTIME		0x40000000	// flag: sync at mixtime, else at playtime
+#define BASS_SYNC_ONETIME		0x80000000	// flag: sync only once, else continuously
 
 typedef void (CALLBACK SYNCPROC)(HSYNC handle, DWORD channel, DWORD data, void *user);
 /* Sync callback function. NOTE: a sync callback function should be very
@@ -588,6 +594,8 @@ RETURN : TRUE = continue recording, FALSE = stop */
 #define BASS_ATTRIB_SRC				8
 #define BASS_ATTRIB_NET_RESUME		9
 #define BASS_ATTRIB_SCANINFO		10
+#define BASS_ATTRIB_NORAMP			11
+#define BASS_ATTRIB_BITRATE			12
 #define BASS_ATTRIB_MUSIC_AMPLIFY	0x100
 #define BASS_ATTRIB_MUSIC_PANSEP	0x101
 #define BASS_ATTRIB_MUSIC_PSCALER	0x102
@@ -609,6 +617,7 @@ RETURN : TRUE = continue recording, FALSE = stop */
 #define BASS_DATA_FFT4096	0x80000004	// 4096 FFT
 #define BASS_DATA_FFT8192	0x80000005	// 8192 FFT
 #define BASS_DATA_FFT16384	0x80000006	// 16384 FFT
+#define BASS_DATA_FFT32768	0x80000007	// 32768 FFT
 #define BASS_DATA_FFT_INDIVIDUAL 0x10	// FFT flag: FFT for each channel, else all combined
 #define BASS_DATA_FFT_NOWINDOW	0x20	// FFT flag: no Hanning window
 #define BASS_DATA_FFT_REMOVEDC	0x40	// FFT flag: pre-remove DC bias
@@ -628,6 +637,7 @@ RETURN : TRUE = continue recording, FALSE = stop */
 #define BASS_TAG_META		5	// ICY metadata : ANSI string
 #define BASS_TAG_APE		6	// APE tags : series of null-terminated UTF-8 strings
 #define BASS_TAG_MP4 		7	// MP4/iTunes metadata : series of null-terminated UTF-8 strings
+#define BASS_TAG_WMA		8	// WMA tags : series of null-terminated UTF-8 strings
 #define BASS_TAG_VENDOR		9	// OGG encoder : UTF-8 string
 #define BASS_TAG_LYRICS3	10	// Lyric3v2 tag : ASCII string
 #define BASS_TAG_CA_CODEC	11	// CoreAudio codec info : TAG_CA_CODEC structure
@@ -641,6 +651,7 @@ RETURN : TRUE = continue recording, FALSE = stop */
 #define BASS_TAG_MUSIC_NAME		0x10000	// MOD music name : ANSI string
 #define BASS_TAG_MUSIC_MESSAGE	0x10001	// MOD message : ANSI string
 #define BASS_TAG_MUSIC_ORDERS	0x10002	// MOD order list : BYTE array of pattern numbers
+#define BASS_TAG_MUSIC_AUTH		0x10003	// MOD author : UTF-8 string
 #define BASS_TAG_MUSIC_INST		0x10100	// + instrument #, MOD instrument name : ANSI string
 #define BASS_TAG_MUSIC_SAMPLE	0x10300	// + sample #, MOD sample name : ANSI string
 
@@ -999,6 +1010,7 @@ BOOL BASSDEF(BASS_ChannelRemoveFX)(DWORD handle, HFX fx);
 BOOL BASSDEF(BASS_FXSetParameters)(HFX handle, const void *params);
 BOOL BASSDEF(BASS_FXGetParameters)(HFX handle, void *params);
 BOOL BASSDEF(BASS_FXReset)(HFX handle);
+BOOL BASSDEF(BASS_FXSetPriority)(HFX handle, int priority);
 
 #ifdef __cplusplus
 }
@@ -1027,6 +1039,11 @@ static inline HSTREAM BASS_StreamCreateFile(BOOL mem, const WCHAR *file, QWORD o
 static inline HSTREAM BASS_StreamCreateURL(const WCHAR *url, DWORD offset, DWORD flags, DOWNLOADPROC *proc, void *user)
 {
 	return BASS_StreamCreateURL((const char*)url, offset, flags|BASS_UNICODE, proc, user);
+}
+
+static inline BOOL BASS_SetConfigPtr(DWORD option, const WCHAR *value)
+{
+	return BASS_SetConfigPtr(option|BASS_UNICODE, (const void*)value);
 }
 #endif
 #endif
