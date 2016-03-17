@@ -535,6 +535,8 @@ void DoHitTest(Ball *const pball, HitObject *const pho, CollisionEvent& coll)
 #ifdef _DEBUGPHYSICS
    g_pplayer->c_deepTested++;
 #endif
+   if (pho == NULL || pball==NULL)
+      return;
 
    if (pho->m_ObjType == eHitTarget)
    {
