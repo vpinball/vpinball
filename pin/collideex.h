@@ -18,7 +18,7 @@ class BumperHitCircle : public HitCircle
 public:
    BumperHitCircle()
    {
-      m_bumperanim.m_fHitEvent = false;
+      m_bumperanim.m_fHitEvent = true;
       m_bumperanim.m_ringAnimOffset = 0.0f;
       m_elasticity = 0.3f;
       SetFriction(0.3f);
