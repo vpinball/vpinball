@@ -11,7 +11,7 @@ void BumperHitCircle::Collide(CollisionEvent* coll)
 
    pball->Collide2DWall(hitnormal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter);	//reflect ball from wall
 
-   if ((!m_pbumper->m_d.m_fHitEvent) && (dot <= -m_pbumper->m_d.m_threshold)) // if velocity greater than threshold level
+   if ((m_pbumper->m_d.m_fHitEvent) && (dot <= -m_pbumper->m_d.m_threshold)) // if velocity greater than threshold level
    {
       pball->m_vel.x += hitnormal.x * m_pbumper->m_d.m_force; // add a chunk of velocity to drive ball away
       pball->m_vel.y += hitnormal.y * m_pbumper->m_d.m_force;

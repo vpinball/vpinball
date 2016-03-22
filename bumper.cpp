@@ -274,6 +274,7 @@ void Bumper::GetHitShapes(Vector<HitObject> * const pvho)
    BumperHitCircle * const phitcircle = new BumperHitCircle();
 
    phitcircle->m_pfe = NULL;
+   phitcircle->m_bumperanim.m_fHitEvent = m_d.m_fHitEvent;
    phitcircle->m_fEnabled = m_d.m_fCollidable;
 
    phitcircle->center.x = m_d.m_vCenter.x;
