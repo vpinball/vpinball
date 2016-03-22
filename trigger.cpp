@@ -2,6 +2,7 @@
 #include "objloader.h"
 #include "meshes/triggerSimpleMesh.h"
 #include "meshes/triggerStarMesh.h"
+#include "meshes/triggerButtonMesh.h"
 
 Trigger::Trigger()
 {
@@ -54,6 +55,13 @@ void Trigger::UpdateEditorView()
          faceIndices = triggerSimpleIndices;
          meshVertices = triggerSimple;
       }
+      else if (m_d.m_shape == TriggerButton)
+      {
+         m_numVertices = triggerButtonNumVertices;
+         m_numFaces = triggerButtonNumFaces;
+         faceIndices = triggerButtonIndices;
+         meshVertices = triggerButtonMesh;
+      }
       else if (m_d.m_shape == TriggerStar)
       {
          m_numVertices = triggerStarNumVertices;
@@ -68,7 +76,7 @@ void Trigger::UpdateEditorView()
       {
          Vertex3Ds vert(meshVertices[i].x, meshVertices[i].y, meshVertices[i].z);
          fullMatrix.MultiplyVector(vert, vertices[i]);
-         if (m_d.m_shape != TriggerStar)
+         if (m_d.m_shape != TriggerStar && m_d.m_shape!=TriggerButton)
          {
             vertices[i].x *= m_d.m_scaleX;
             vertices[i].y *= m_d.m_scaleY;
@@ -234,7 +242,7 @@ void Trigger::PreRender(Sur * const psur)
    psur->SetBorderColor(-1, false, 0);
    psur->SetObject(this);
 
-   if (m_d.m_shape != TriggerStar)
+   if (m_d.m_shape != TriggerStar && m_d.m_shape != TriggerButton)
    {
       psur->SetFillColor(m_ptable->RenderSolid() ? RGB(200, 220, 200) : -1);
 
@@ -256,7 +264,7 @@ void Trigger::Render(Sur * const psur)
    psur->SetObject(this);
    psur->SetFillColor(-1);
 
-   if (m_d.m_shape != TriggerStar)
+   if (m_d.m_shape != TriggerStar && m_d.m_shape != TriggerButton)
    {
       std::vector<RenderVertex> vvertex;
       GetRgVertex(vvertex);
@@ -362,7 +370,7 @@ void Trigger::GetHitShapes(Vector<HitObject> * const pvho)
 {
    m_hitEnabled = m_d.m_fEnabled;
 
-   if (m_d.m_shape == TriggerStar)
+   if (m_d.m_shape == TriggerStar || m_d.m_shape==TriggerButton)
    {
       const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
@@ -394,6 +402,7 @@ void Trigger::GetHitShapesDebug(Vector<HitObject> * const pvho)
    m_hitEnabled = m_d.m_fEnabled;
    switch (m_d.m_shape)
    {
+   case TriggerButton:
    case TriggerStar:
    {
       HitObject * const pho = CreateCircularHitPoly(m_d.m_vCenter.x, m_d.m_vCenter.y, height + 10, m_d.m_radius, 32);
@@ -532,8 +541,12 @@ void Trigger::UpdateAnimation(RenderDevice *pd3dDevice)
    m_d.m_time_msec = g_pplayer->m_time_msec;
    const float diff_time_msec = (float)(g_pplayer->m_time_msec - old_time_msec);
 
-   const float animLimit = (m_d.m_shape == TriggerStar) ? m_d.m_radius / 5.0f : 32.0f;
+   float animLimit = (m_d.m_shape == TriggerStar) ? m_d.m_radius / 5.0f : 32.0f;
+   if (m_d.m_shape == TriggerButton)
+      animLimit = m_d.m_radius / 10.0f;
+
    const float limit = animLimit*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+
 
    if (hitEvent)
    {
@@ -646,7 +659,12 @@ void Trigger::ExportMesh(FILE *f)
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
    WaveFrontObj_WriteMaterial(m_d.m_szMaterial, NULL, mat);
    WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
-   WaveFrontObj_WriteFaceInfoList(f, (m_d.m_shape == TriggerWireA || m_d.m_shape==TriggerWireB) ? triggerSimpleIndices : triggerStarIndices, m_numFaces);
+   if (m_d.m_shape == TriggerWireA || m_d.m_shape == TriggerWireA)
+      WaveFrontObj_WriteFaceInfoList(f, triggerSimpleIndices, m_numFaces);
+   else if ( m_d.m_shape==TriggerButton)
+      WaveFrontObj_WriteFaceInfoList(f, triggerButtonIndices, m_numFaces);
+   else if (m_d.m_shape==TriggerStar )
+      WaveFrontObj_WriteFaceInfoList(f, triggerStarIndices, m_numFaces);
    WaveFrontObj_UpdateFaceOffset(m_numVertices);
 }
 
@@ -654,12 +672,21 @@ void Trigger::GenerateMesh()
 {
    const float baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
    const Vertex3D_NoTex2 *verts;
-
+   const float zoffset = (m_d.m_shape==TriggerButton) ? 5.0f : 0.0f;
    if (m_d.m_shape == TriggerWireA || m_d.m_shape==TriggerWireB)
    {
       m_numVertices = triggerSimpleNumVertices;
       m_numFaces = triggerSimpleNumFaces;
       verts = triggerSimple;
+      if (triggerVertices)
+         delete[] triggerVertices;
+      triggerVertices = new Vertex3D_NoTex2[m_numVertices];
+   }
+   else if (m_d.m_shape == TriggerButton)
+   {
+      m_numVertices = triggerButtonNumVertices;
+      m_numFaces = triggerButtonNumFaces;
+      verts = triggerButtonMesh;
       if (triggerVertices)
          delete[] triggerVertices;
       triggerVertices = new Vertex3D_NoTex2[m_numVertices];
@@ -690,17 +717,17 @@ void Trigger::GenerateMesh()
       Vertex3Ds vert(verts[i].x, verts[i].y, verts[i].z);
       vert = fullMatrix.MultiplyVector(vert);
 
-      if (m_d.m_shape != TriggerStar)
+      if (m_d.m_shape == TriggerButton || m_d.m_shape==TriggerStar)
+      {
+         triggerVertices[i].x = (vert.x*m_d.m_radius) + m_d.m_vCenter.x;
+         triggerVertices[i].y = (vert.y*m_d.m_radius) + m_d.m_vCenter.y;
+         triggerVertices[i].z = (vert.z*m_d.m_radius*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]) + baseHeight+zoffset;
+      }
+      else 
       {
          triggerVertices[i].x = (vert.x*m_d.m_scaleX) + m_d.m_vCenter.x;
          triggerVertices[i].y = (vert.y*m_d.m_scaleY) + m_d.m_vCenter.y;
          triggerVertices[i].z = (vert.z*1.0f*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]) + baseHeight;
-      }
-      else
-      {
-         triggerVertices[i].x = (vert.x*m_d.m_radius) + m_d.m_vCenter.x;
-         triggerVertices[i].y = (vert.y*m_d.m_radius) + m_d.m_vCenter.y;
-         triggerVertices[i].z = (vert.z*m_d.m_radius*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]) + baseHeight;
       }
 
       vert = Vertex3Ds(verts[i].nx, verts[i].ny, verts[i].nz);
@@ -733,6 +760,11 @@ void Trigger::RenderSetup(RenderDevice* pd3dDevice)
       m_numVertices = triggerSimpleNumVertices;
       m_numFaces = triggerSimpleNumFaces;
    }
+   else if (m_d.m_shape == TriggerButton)
+   {
+      m_numVertices = triggerButtonNumVertices;
+      m_numFaces = triggerButtonNumFaces;
+   }
    else if (m_d.m_shape == TriggerStar)
    {
       m_numVertices = triggerStarNumVertices;
@@ -741,8 +773,12 @@ void Trigger::RenderSetup(RenderDevice* pd3dDevice)
 
    if (triggerIndexBuffer)
       triggerIndexBuffer->release();
-   triggerIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(m_numFaces, (m_d.m_shape == TriggerWireA || m_d.m_shape == TriggerWireB) ? triggerSimpleIndices : triggerStarIndices);
-
+   if ( m_d.m_shape==TriggerWireA || m_d.m_shape==TriggerWireB)
+      triggerIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(m_numFaces, triggerSimpleIndices);
+   else if ( m_d.m_shape==TriggerStar )
+      triggerIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(m_numFaces, triggerStarIndices);
+   else if ( m_d.m_shape==TriggerButton )
+      triggerIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(m_numFaces, triggerButtonIndices);
    if (vertexBuffer)
       vertexBuffer->release();
    ppin3d->m_pd3dDevice->CreateVertexBuffer(m_numVertices, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer);
@@ -1440,7 +1476,7 @@ void Trigger::UpdatePropertyPanes()
    if (m_propVisual == NULL)
       return;
 
-   if (m_d.m_shape == TriggerStar)
+   if (m_d.m_shape == TriggerStar || m_d.m_shape==TriggerButton)
    {
       EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_STAR_RADIUS_EDIT), TRUE);
       EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_ROTATION_EDIT), TRUE);
