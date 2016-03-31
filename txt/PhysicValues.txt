@@ -1,6 +1,6 @@
 This small document should give you a rough idea of what kind of values you should use for the physics settings of some of the VP elements. All values are just recommendations!
 The "Scatter Angle" (basically the 'randomness' of physics interactions) is used in calculations together with the "Global Difficulty Level", so to have a better global control
-for all elements, set the "Scatter Angle" of elements to 5 and limit the behavior/impact of the "Global Difficulty Level" by setting it to 0.2+ to control the overall gameplay difficulty.
+for all elements, set the "Scatter Angle" of elements to 5 and limit the behavior/impact of the "Global Difficulty Level" by setting it to 10-20% or higher to control the overall gameplay difficulty.
 
 Playfield:
 ----------
