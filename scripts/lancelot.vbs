@@ -24,11 +24,11 @@ End Sub
 Const swStartButton    = 37 'ok
 Const swCoin1          = 38 'ok
 Const swCoin2          = 39 'ok
-'Const swCoin3          = 
+Const swCoin3          = 38 'avoid missing Coin Switch mappings 
 Const swTilt           = 36 'ok 
 'Const swSlamDoorHit    = 
-Const swLRFlip         = 82 'ok
-Const swLLFlip         = 84 'ok
+Const swLRFlip         = 82 'ok 34
+Const swLLFlip         = 84 'ok 35
 
 ' Help Window
 vpmSystemHelp = "Atari keys:" & vbNewLine &_
