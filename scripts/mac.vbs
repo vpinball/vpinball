@@ -21,6 +21,7 @@ End Sub
 Const swStartButton	  = 1 'ok
 Const swCoin1     		= 2 'ok
 Const swCoin2		      = 3 'ok
+Const swCoin3		      = 2 'avoid missing Coin Switch mappings
 Const swTilt		      = 4 'ok
 Const swBallRollTilt	= 4 'ok
 Const swSlamTilt	    = 5 'ok
@@ -32,6 +33,7 @@ Const swLLFlip    		= 84'ok
 vpmSystemHelp="MAC Keys:"&vbNewLine&_
   vpmKeyName(keyInsertCoin1)  & vbTab & "Insert Coin #1" & vbNewLine &_
   vpmKeyName(keyInsertCoin2)  & vbTab & "Insert Coin #2" & vbNewLine &_
+  vpmKeyName(keyInsertCoin3)  & vbTab & "Insert Coin #3" & vbNewLine &_
   vpmKeyName(keySlamDoorHit)  & vbTab & "Slam Tilt"
 
 ' Dip Switch / Options Menu
