@@ -1785,6 +1785,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propput, id(6), helpstring("property Y")] HRESULT Y([in] float newVal);
                 [propget, id(7), helpstring("property Open")] HRESULT Open([out, retval] VARIANT_BOOL *pVal);
                 [propput, id(7), helpstring("property Open")] HRESULT Open([in] VARIANT_BOOL newVal);
+                [propget, id(13), helpstring("property AntiFriction")] HRESULT AntiFriction([out, retval] float *pVal);
+                [propput, id(13), helpstring("property AntiFriction")] HRESULT AntiFriction([in] float newVal);
 
                 [id(2147), helpstring("method Move")] HRESULT Move(int dir, [defaultvalue(0)] float speed, [defaultvalue(0)] float angle);
 

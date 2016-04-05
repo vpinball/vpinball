@@ -14,7 +14,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (United States) resources
+// Englisch (USA) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
@@ -1584,18 +1584,20 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,110,123,10
 END
 
-IDD_PROPGATE_PHYSICS DIALOGEX 0, 0, 125, 62
+IDD_PROPGATE_PHYSICS DIALOGEX 0, 0, 125, 73
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     EDITTEXT        11,74,7,44,12,ES_AUTOHSCROLL
     EDITTEXT        12,74,21,44,12,ES_AUTOHSCROLL
-    CONTROL         "",2146,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,52,36,9,10
+    CONTROL         "",2146,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,52,52,9,10
     LTEXT           "&Elasticity",IDC_STATIC,7,9,44,8
     LTEXT           "&Friction",IDC_STATIC,7,23,44,8
-    LTEXT           "Collidable",IDC_STATIC,7,36,40,8
-    CONTROL         "",IDC_TWO_WAY_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,52,47,9,10
-    LTEXT           "Two Way",IDC_STATIC,7,47,32,8
+    LTEXT           "Collidable",IDC_STATIC,7,52,40,8
+    CONTROL         "",IDC_TWO_WAY_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,52,63,9,10
+    LTEXT           "Two Way",IDC_STATIC,7,63,32,8
+    EDITTEXT        13,74,35,44,12,ES_AUTOHSCROLL
+    LTEXT           "Anti&Friction",IDC_STATIC,7,37,38,8
 END
 
 IDD_DEBUGGER DIALOGEX 0, 0, 347, 214
@@ -2193,6 +2195,10 @@ BEGIN
     BEGIN
     END
 
+    IDD_PROPSPINNER_PHYSICS, DIALOG
+    BEGIN
+    END
+
     IDD_PROPTRIGGER_VISUALS, DIALOG
     BEGIN
         BOTTOMMARGIN, 138
@@ -2229,6 +2235,7 @@ BEGIN
 
     IDD_PROPGATE_PHYSICS, DIALOG
     BEGIN
+        BOTTOMMARGIN, 71
     END
 
     IDD_DEBUGGER, DIALOG
@@ -2883,7 +2890,7 @@ BEGIN
     IDS_STEP                "Step"
 END
 
-#endif    // English (United States) resources
+#endif    // Englisch (USA) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

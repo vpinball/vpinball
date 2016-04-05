@@ -320,6 +320,12 @@ void Gate::SetDefaultPhysics(bool fromMouseClick)
    else
       m_d.m_friction = 0.02f;
 
+   hr = GetRegStringAsFloat("DefaultProps\\Gate", "AntiFriction", &fTmp);
+   if ((hr == S_OK) && fromMouseClick)
+      m_d.m_antifriction = fTmp;
+   else
+      m_d.m_antifriction = 0.9549f;
+
    hr = GetRegStringAsFloat("DefaultProps\\Gate", "Scatter", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_scatter = fTmp;
@@ -681,6 +687,7 @@ HRESULT Gate::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey
    bw.WriteFloat(FID(GAMAX), m_d.m_angleMax);
    bw.WriteFloat(FID(GAMIN), m_d.m_angleMin);
    bw.WriteFloat(FID(GFRCT), m_d.m_friction);
+   bw.WriteFloat(FID(AFRC), m_d.m_antifriction);
    bw.WriteBool(FID(GVSBL), m_d.m_fVisible);
    bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
    bw.WriteBool(FID(TWWA), m_d.m_twoWay);
@@ -787,6 +794,10 @@ BOOL Gate::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(GFRCT))
    {
       pbr->GetFloat(&m_d.m_friction);
+   }
+   else if (id == FID(AFRC))
+   {
+      pbr->GetFloat(&m_d.m_antifriction);
    }
    else
    {
@@ -1203,6 +1214,24 @@ STDMETHODIMP Gate::put_Friction(float newVal)
    }
 
    return S_OK;
+}
+
+STDMETHODIMP Gate::get_AntiFriction(float *pVal)
+{
+   *pVal = (1.0f - m_d.m_antifriction)*100.0f;
+
+   return S_OK;
+}
+
+STDMETHODIMP Gate::put_AntiFriction(float newVal)
+{
+   STARTUNDO
+
+      m_d.m_antifriction = clamp(1.0f - newVal*(float)(1.0 / 100.0), 0.0f, 1.0f);
+
+   STOPUNDO
+
+      return S_OK;
 }
 
 STDMETHODIMP Gate::get_Visible(VARIANT_BOOL *pVal)
