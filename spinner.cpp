@@ -63,7 +63,7 @@ void Spinner::WriteRegDefaults()
    SetRegValueFloat("DefaultProps\\Spinner", "AngleMax", m_d.m_angleMax);
    SetRegValueFloat("DefaultProps\\Spinner", "AngleMin", m_d.m_angleMin);
    SetRegValueFloat("DefaultProps\\Spinner", "Elasticity", m_d.m_elasticity);
-   //SetRegValueFloat("DefaultProps\\Spinner","Friction", m_d.m_friction);
+   SetRegValueFloat("DefaultProps\\Spinner","AntiFriction", m_d.m_antifriction);
    SetRegValueFloat("DefaultProps\\Spinner", "Scatter", m_d.m_scatter);
    SetRegValue("DefaultProps\\Spinner", "Visible", REG_DWORD, &m_d.m_fVisible, 4);
    SetRegValueBool("DefaultProps\\Spinner", "TimerEnabled", m_d.m_tdr.m_fTimerEnabled);
@@ -104,8 +104,6 @@ void Spinner::SetDefaults(bool fromMouseClick)
       m_d.m_height = 60;
 
    SetDefaultPhysics(fromMouseClick);
-   // Anti-friction is 1-friction (throughput)
-   m_d.m_antifriction = 0.99f;
 
    hr = GetRegStringAsFloat("DefaultProps\\Spinner", "AngleMax", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
@@ -462,6 +460,11 @@ void Spinner::SetDefaultPhysics(bool fromMouseClick)
       m_d.m_elasticity = fTmp;
    else
       m_d.m_elasticity = 0.3f;
+   hr = GetRegStringAsFloat("DefaultProps\\Spinner", "AntiFriction", &fTmp);
+   if ((hr == S_OK) && fromMouseClick)
+      m_d.m_antifriction = fTmp;
+   else
+      m_d.m_antifriction = 0.975f;
 }
 
 HRESULT Spinner::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)

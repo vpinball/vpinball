@@ -363,6 +363,10 @@ void HitSpinner::Collide(CollisionEvent* coll)
    if (fabsf(h - pball->m_radius) > 1.0f)			// avoid divide by zero
       m_spinneranim.m_anglespeed /= (h - pball->m_radius);
 
+   if (m_spinneranim.m_anglespeed > 1.0f)
+      m_spinneranim.m_anglespeed = 1.0f;
+   if (m_spinneranim.m_anglespeed < -1.0f)
+      m_spinneranim.m_anglespeed = -1.0f;
    // We encoded which side of the spinner the ball hit
    if (coll->hitvelocity.x != 0.0f)
       m_spinneranim.m_anglespeed = -m_spinneranim.m_anglespeed;
