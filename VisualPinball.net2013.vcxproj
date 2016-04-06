@@ -992,9 +992,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
   </ItemGroup>
   <ItemGroup>
     <None Include="res\ball.rgs" />
-    <None Include="bin00001.bin" />
     <None Include="res\bumper.rgs" />
-    <None Include="res\comcontrol.rgs" />
     <None Include="res\gate.cur" />
     <None Include="res\flasher.cur" />
     <None Include="res\hittarget.rgs" />
@@ -1028,7 +1026,6 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <None Include="res\plunger.rgs" />
     <None Include="res\primitive.rgs" />
     <None Include="res\ramp.rgs" />
-    <None Include="registry.bin" />
     <None Include="res\spinner.rgs" />
     <None Include="res\surface.rgs" />
     <None Include="res\textbox.rgs" />
@@ -1053,21 +1050,12 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <Image Include="res\ringenvmap.bmp" />
     <Image Include="res\script.ico" />
     <Image Include="res\vpinball.ico" />
-    <Image Include="res\flipper.bmp" />
-    <Image Include="res\light.bmp" />
-    <Image Include="res\timer.bmp" />
-    <Image Include="res\trigger.bmp" />
     <Image Include="res\logo.bmp" />
     <Image Include="res\step.ico" />
     <Image Include="res\pause.ico" />
     <Image Include="res\play.ico" />
-    <Image Include="res\sunburst.bmp" />
-    <Image Include="res\sunburst2.bmp" />
     <Image Include="res\table.ico" />
-    <Image Include="target.bmp" />
     <Image Include="res\toolbar.bmp" />
-    <Image Include="toolbardebug.bmp" />
-    <Image Include="res\white.bmp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ballex.h" />
@@ -1096,17 +1084,12 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="hittarget.h" />
     <ClInclude Include="idebug.h" />
     <ClInclude Include="ieditable.h" />
-    <ClInclude Include="inc\activdbg.h" />
-    <ClInclude Include="inc\activscp.h" />
     <ClInclude Include="inc\bass.h" />
-    <ClInclude Include="inc\dbghelp.h" />
-    <ClInclude Include="inc\dbgprop.h" />
     <ClInclude Include="inc\forsyth.h" />
     <ClInclude Include="inc\freeimage.h" />
     <ClInclude Include="inc\hidpi.h" />
     <ClInclude Include="inc\hidsdi.h" />
     <ClInclude Include="inc\hidusage.h" />
-    <ClInclude Include="inc\msscript.h" />
     <ClInclude Include="inc\nvapi.h" />
     <ClInclude Include="inc\nvapi_lite_common.h" />
     <ClInclude Include="inc\nvapi_lite_d3dext.h" />
