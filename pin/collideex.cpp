@@ -138,21 +138,14 @@ HitGate::HitGate(Gate * const pgate, const float height)
 
 float HitGate::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 {
-   // 	if (!m_fEnabled) return -1.0f;		
-   // 
-   // 	return HitTestBasic(pball, dtime, coll, true, true, false); // normal face, lateral, non-rigid
    if (!m_fEnabled) return -1.0f;
 
-   //     if ( !m_twoWay )
-   //     {
-   //         const float hittime = m_lineseg[2].HitTestBasic(pball, dtime, coll, true, true, false);// any face, lateral, non-rigid
-   //         return hittime;
-   //     }
    {
       const float hittime = m_lineseg[0].HitTestBasic(pball, dtime, coll, false, true, false);// any face, lateral, non-rigid
       if (hittime >= 0.f)
       {
-         coll.hitvelocity.x = 1.0f;
+         // signal the Collide() function that the hit is on the front side
+         coll.hitvelocity.x = 0.0f;
 
          return hittime;
       }
@@ -160,7 +153,8 @@ float HitGate::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 
    const float hittime = m_lineseg[1].HitTestBasic(pball, dtime, coll, false, true, false);// any face, lateral, non-rigid
    if (hittime >= 0.f)
-      coll.hitvelocity.x = 0.0f;
+      // signal the Collide() function that the hit is on the back side
+      coll.hitvelocity.x = 1.0f;
 
    return hittime;
 }
@@ -170,9 +164,10 @@ void HitGate::Collide(CollisionEvent* coll)
         return;
    Ball *pball = coll->ball;
    const Vertex3Ds& hitnormal = coll->hitnormal;
-
+   
    const float dot = pball->m_vel.x * hitnormal.x + pball->m_vel.y * hitnormal.y;
-   if (dot < 0.0f && !m_twoWay) return;	//hit from back doesn't count
+
+   if (coll->hitvelocity.x == 0.0f && !m_twoWay) return;	//hit from back doesn't count if not two-way
 
    const float h = m_pgate->m_d.m_height*0.5f+10.0f;
 
@@ -209,7 +204,6 @@ void GateAnimObject::UpdateDisplacements(const float dtime)
 {
    float oldAngle = m_angle;
    m_angle += m_anglespeed * dtime;
-
 
    if (m_pgate->m_d.m_twoWay)
    {
