@@ -255,6 +255,12 @@ void Light::SetDefaults(bool fromMouseClick)
    else
       m_d.m_showBulbMesh = false;
 
+   hr = GetRegInt("DefaultProps\\Light", "StaticBulbMesh", &iTmp);
+   if ((hr == S_OK) && fromMouseClick)
+      m_d.m_staticBulbMesh = iTmp ? true : false;
+   else
+      m_d.m_staticBulbMesh = true;
+
    hr = GetRegInt("DefaultProps\\Light", "ShowReflectionOnBall", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_showReflectionOnBall = iTmp ? true : false;
@@ -301,6 +307,7 @@ void Light::WriteRegDefaults()
    SetRegValueBool("DefaultProps\\Light", "Bulb", m_d.m_BulbLight);
    SetRegValueBool("DefaultProps\\Light", "ImageMode", m_d.m_imageMode);
    SetRegValueBool("DefaultProps\\Light", "ShowBulbMesh", m_d.m_showBulbMesh);
+   SetRegValueBool("DefaultProps\\Light", "StaticBulbMesh", m_d.m_staticBulbMesh);
    SetRegValueBool("DefaultProps\\Light", "ShowReflectionOnBall", m_d.m_showReflectionOnBall);
    SetRegValueFloat("DefaultProps\\Light", "ScaleBulbMesh", m_d.m_meshRadius);
    SetRegValueFloat("DefaultProps\\Light", "BulbModulateVsAdd", m_d.m_modulate_vs_add);
@@ -587,6 +594,9 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
 
    if (m_fBackglass && !GetPTable()->GetDecalsEnabled())
       return;
+
+   if (m_d.m_BulbLight && m_d.m_showBulbMesh && !m_d.m_staticBulbMesh)
+      RenderBulbMesh(pd3dDevice, 0, false);
 
    const U32 old_time_msec = (m_d.m_time_msec < g_pplayer->m_time_msec) ? m_d.m_time_msec : g_pplayer->m_time_msec;
    m_d.m_time_msec = g_pplayer->m_time_msec;
@@ -922,7 +932,7 @@ void Light::RenderSetup(RenderDevice* pd3dDevice)
 
 void Light::RenderStatic(RenderDevice* pd3dDevice)
 {
-   if (m_d.m_BulbLight && m_d.m_showBulbMesh)
+   if (m_d.m_BulbLight && m_d.m_showBulbMesh && m_d.m_staticBulbMesh)
       RenderBulbMesh(pd3dDevice, 0, false);
 }
 
@@ -974,6 +984,7 @@ HRESULT Light::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptke
    bw.WriteBool(FID(BULT), m_d.m_BulbLight);
    bw.WriteBool(FID(IMMO), m_d.m_imageMode);
    bw.WriteBool(FID(SHBM), m_d.m_showBulbMesh);
+   bw.WriteBool(FID(STBM), m_d.m_staticBulbMesh);
    bw.WriteBool(FID(SHRB), m_d.m_showReflectionOnBall);
    bw.WriteFloat(FID(BMSC), m_d.m_meshRadius);
    bw.WriteFloat(FID(BMVA), m_d.m_modulate_vs_add);
@@ -1124,6 +1135,10 @@ BOOL Light::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(SHBM))
    {
       pbr->GetBool(&m_d.m_showBulbMesh);
+   }
+   else if (id == FID(STBM))
+   {
+      pbr->GetBool(&m_d.m_staticBulbMesh);
    }
    else if (id == FID(SHRB))
    {
@@ -1709,6 +1724,24 @@ STDMETHODIMP Light::put_ShowBulbMesh(VARIANT_BOOL newVal)
    return S_OK;
 }
 
+STDMETHODIMP Light::get_StaticBulbMesh(VARIANT_BOOL *pVal)
+{
+   *pVal = VBTOF(m_d.m_staticBulbMesh);
+
+   return S_OK;
+}
+
+STDMETHODIMP Light::put_StaticBulbMesh(VARIANT_BOOL newVal)
+{
+   STARTUNDO
+
+      m_d.m_staticBulbMesh = VBTOF(newVal);
+
+   STOPUNDO
+
+      return S_OK;
+}
+
 STDMETHODIMP Light::get_ShowReflectionOnBall(VARIANT_BOOL *pVal)
 {
    *pVal = VBTOF(m_d.m_showReflectionOnBall);
@@ -1859,6 +1892,7 @@ void Light::UpdatePropertyPanes()
    if (!m_d.m_BulbLight)
    {
       EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_SHOW_BULB_MESH), FALSE);
+      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_STATIC_BULB_MESH), FALSE);
       EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_SCALE_BULB_MESH), FALSE);
       EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_BULB_MODULATE_VS_ADD), FALSE);
       EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_REFLECT_ON_BALLS), FALSE);
@@ -1870,6 +1904,10 @@ void Light::UpdatePropertyPanes()
    else
    {
       EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_SHOW_BULB_MESH), TRUE);
+      if (m_d.m_showBulbMesh)
+         EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_STATIC_BULB_MESH), TRUE);
+      else
+         EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_STATIC_BULB_MESH), FALSE);
       EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_SCALE_BULB_MESH), TRUE);
       EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_BULB_MODULATE_VS_ADD), TRUE);
       EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_REFLECT_ON_BALLS), TRUE);
