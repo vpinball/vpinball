@@ -342,8 +342,7 @@ void HitSpinner::Collide(CollisionEvent* coll)
    const float dot = pball->m_vel.x * hitnormal.x + pball->m_vel.y * hitnormal.y;
    if (dot < 0) return;	//hit from back doesn't count
 
-   const float h = m_spinneranim.m_pspinner->m_d.m_height*0.5f + 5.0f; //add offset 5 so the spinner reacts on even slow balls traveling the spinner
-
+   float h = m_spinneranim.m_pspinner->m_d.m_height*0.5f + pball->m_radius; //add the radius as offset so the spinner reacts on even slow balls traveling the spinner
    //linear speed = ball speed
    //angular speed = linear/radius (height of hit)
 
@@ -356,11 +355,7 @@ void HitSpinner::Collide(CollisionEvent* coll)
 
    if (fabsf(h - pball->m_radius) > 1.0f)			// avoid divide by zero
       m_spinneranim.m_anglespeed /= (h - pball->m_radius);
-
-   if (m_spinneranim.m_anglespeed > 1.0f)
-      m_spinneranim.m_anglespeed = 1.0f;
-   if (m_spinneranim.m_anglespeed < -1.0f)
-      m_spinneranim.m_anglespeed = -1.0f;
+   m_spinneranim.m_anglespeed *= m_spinneranim.m_damping;
    // We encoded which side of the spinner the ball hit
    if (coll->hitvelocity.x != 0.0f)
       m_spinneranim.m_anglespeed = -m_spinneranim.m_anglespeed;
