@@ -47,6 +47,7 @@ public:
    bool m_BulbLight;
    bool m_showBulbMesh;
    bool m_showReflectionOnBall;
+   bool m_staticBulbMesh;
 };
 
 class LightCenter : public ISelect
@@ -269,6 +270,8 @@ public:
    STDMETHOD(put_Bulb)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_ShowBulbMesh)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_ShowBulbMesh)(/*[in]*/ VARIANT_BOOL newVal);
+   STDMETHOD(get_StaticBulbMesh)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   STDMETHOD(put_StaticBulbMesh)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_ScaleBulbMesh)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_ScaleBulbMesh)(/*[in]*/ float newVal);
    STDMETHOD(get_BulbModulateVsAdd)(/*[out, retval]*/ float *pVal);

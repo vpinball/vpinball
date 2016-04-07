@@ -106,12 +106,6 @@
     <Image Include="res\chevron.bmp">
       <Filter>res</Filter>
     </Image>
-    <Image Include="res\flipper.bmp">
-      <Filter>res</Filter>
-    </Image>
-    <Image Include="res\light.bmp">
-      <Filter>res</Filter>
-    </Image>
     <Image Include="res\logo.bmp">
       <Filter>res</Filter>
     </Image>
@@ -127,34 +121,13 @@
     <Image Include="res\step.ico">
       <Filter>res</Filter>
     </Image>
-    <Image Include="res\sunburst.bmp">
-      <Filter>res</Filter>
-    </Image>
-    <Image Include="res\sunburst2.bmp">
-      <Filter>res</Filter>
-    </Image>
     <Image Include="res\table.ico">
-      <Filter>res</Filter>
-    </Image>
-    <Image Include="target.bmp">
-      <Filter>res</Filter>
-    </Image>
-    <Image Include="res\timer.bmp">
       <Filter>res</Filter>
     </Image>
     <Image Include="res\toolbar.bmp">
       <Filter>res</Filter>
     </Image>
-    <Image Include="toolbardebug.bmp">
-      <Filter>res</Filter>
-    </Image>
-    <Image Include="res\trigger.bmp">
-      <Filter>res</Filter>
-    </Image>
     <Image Include="res\vpinball.ico">
-      <Filter>res</Filter>
-    </Image>
-    <Image Include="res\white.bmp">
       <Filter>res</Filter>
     </Image>
     <Image Include="res\bumperbase.bmp">
@@ -187,16 +160,10 @@
     <None Include="res\ball.rgs">
       <Filter>res</Filter>
     </None>
-    <None Include="bin00001.bin">
-      <Filter>res</Filter>
-    </None>
     <None Include="res\bumper.cur">
       <Filter>res</Filter>
     </None>
     <None Include="res\bumper.rgs">
-      <Filter>res</Filter>
-    </None>
-    <None Include="res\comcontrol.rgs">
       <Filter>res</Filter>
     </None>
     <None Include="res\decal.cur">
@@ -269,9 +236,6 @@
       <Filter>res</Filter>
     </None>
     <None Include="res\ramp.rgs">
-      <Filter>res</Filter>
-    </None>
-    <None Include="registry.bin">
       <Filter>res</Filter>
     </None>
     <None Include="res\rubber.cur">
@@ -353,18 +317,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="inc\activdbg.h">
-      <Filter>inc</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\activscp.h">
-      <Filter>inc</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\dbghelp.h">
-      <Filter>inc</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\dbgprop.h">
-      <Filter>inc</Filter>
-    </ClInclude>
     <ClInclude Include="inc\freeimage.h">
       <Filter>inc</Filter>
     </ClInclude>
@@ -375,9 +327,6 @@
       <Filter>inc</Filter>
     </ClInclude>
     <ClInclude Include="inc\hidusage.h">
-      <Filter>inc</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\msscript.h">
       <Filter>inc</Filter>
     </ClInclude>
     <ClInclude Include="inc\nvapi.h">
