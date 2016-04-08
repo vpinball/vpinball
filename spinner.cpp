@@ -464,7 +464,7 @@ void Spinner::SetDefaultPhysics(bool fromMouseClick)
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_antifriction = fTmp;
    else
-      m_d.m_antifriction = 0.975f;
+      m_d.m_antifriction = 0.9879f;
 }
 
 HRESULT Spinner::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
