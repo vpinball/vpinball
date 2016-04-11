@@ -324,7 +324,7 @@ void Gate::SetDefaultPhysics(bool fromMouseClick)
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_antifriction = fTmp;
    else
-      m_d.m_antifriction = 0.9549f;
+      m_d.m_antifriction = 0.985f;
 
    hr = GetRegStringAsFloat("DefaultProps\\Gate", "Scatter", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
