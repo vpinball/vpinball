@@ -15,7 +15,8 @@ VP 10.1.0 Changelog
 - combine all common user-tweakable table settings in one simple UI panel
 - drop targets (not hit targets) have an additional dropped and raised event that is fired if a drop target is really dropped or raised (after animation of the mesh). 
   The normal hit event is also supported but decoupled from the animation, so if a hit event is fired the isdropped flag can still be false because it is set after the animation.
-
+- hotkeys.txt added
+- spinner and gate animation reworked
 - new core scripts by mfuegemann
 
 - DirectX 8 port for input handling (currently disabled)
