@@ -107,27 +107,30 @@ float4 ps_main_stereo(in VS_OUTPUT_2D IN) : COLOR
 	const float MaxSeparation = ms_zpd_ya_td.x;
 	const float ZPD = ms_zpd_ya_td.y;
 	const bool yaxis = (ms_zpd_ya_td.z != 0.0); //!! uniform
-	const bool topdown = (ms_zpd_ya_td.w != 0.0); //!! uniform
+	const bool topdown = (ms_zpd_ya_td.w == 1.0); //!! uniform
+	const bool sidebyside = (ms_zpd_ya_td.w == 2.0); //!! uniform
 	const int y = w_h_height.z*u.y;
-	const bool l = topdown ? (u.y < 0.5) : ((y+1)/2 == y/2); //last check actually means (y&1)
+	const bool l = sidebyside ? (u.x < 0.5) : topdown ? (u.y < 0.5) : ((y+1)/2 == y/2); //last check actually means (y&1) //!! %2 //!! float diff = frac(dot(tex,(screen_size / 2.0))+0.25); if(diff < 0.5)... //returns 0.25 and 0.75
 	if(topdown) { u.y *= 2.0; if(!l) u.y -= 1.0; }  //!! !topdown: (u.y+w_h_height.y) ?
+	else if(sidebyside) { u.x *= 2.0; if(!l) u.x -= 1.0; }
 	const float su = l ? MaxSeparation : -MaxSeparation;
-	float minDepth = min(min(tex2Dlod(texSamplerDepth, float4(u + (yaxis ? float2(0.0,0.5*su) : float2(0.5*su,0.0)), 0.,0.)).x, tex2Dlod(texSamplerDepth, float4(u + (yaxis ? float2(0.0,0.666*su) : float2(0.666*su,0.0)), 0.,0.)).x), tex2Dlod(texSamplerDepth, float4(u + (yaxis ? float2(0.0,su) : float2(su,0.0)), 0.f,0.f)).x);
+	float minDepth = min(min(tex2Dlod(texSamplerDepth, float4(u + (yaxis ? float2(0.0,0.5*su) : float2(0.5*su,0.0)), 0.,0.)).x, tex2Dlod(texSamplerDepth, float4(u + (yaxis ? float2(0.0,0.666*su) : float2(0.666*su,0.0)), 0.,0.)).x), tex2Dlod(texSamplerDepth, float4(u + (yaxis ? float2(0.0,su) : float2(su,0.0)), 0.,0.)).x);
 	float parallax = (w_h_height.w+MaxSeparation) - min(MaxSeparation/(0.5+minDepth*(1.0/ZPD-0.5)), (w_h_height.w+MaxSeparation));
 	if(!l)
 		parallax = -parallax;
 	if(yaxis)
 		parallax = -parallax;
-	const float3 col = tex2Dlod(texSampler5, float4(u + (yaxis ? float2(0.0,parallax) : float2(parallax,0.0)), 0.f,0.f)).xyz;
+	const float3 col = tex2Dlod(texSampler5, float4(u + (yaxis ? float2(0.0,parallax) : float2(parallax,0.0)), 0.,0.)).xyz;
 	//if(!aa)
-	//	return float4(col, 1.0f); // otherwise blend with 'missing' scanline
-	minDepth = min(min(tex2Dlod(texSamplerDepth, float4(u + (yaxis ? float2(0.0,0.5*su+w_h_height.y) : float2(0.5*su,w_h_height.y)), 0.f,0.f)).x, tex2Dlod(texSamplerDepth, float4(u + (yaxis ? float2(0.0,0.666*su+w_h_height.y) : float2(0.666*su,w_h_height.y)), 0.f,0.f)).x), tex2Dlod(texSamplerDepth, float4(u + (yaxis ? float2(0.0,su+w_h_height.y) : float2(su,w_h_height.y)), 0.f,0.f)).x);
+	//	return float4(col, 1.0); // otherwise blend with 'missing' scanline
+	const float2 aaoffs = sidebyside ? float2(w_h_height.x,0.0) : float2(0.0,w_h_height.y);
+	minDepth = min(min(tex2Dlod(texSamplerDepth, float4(u + (yaxis ? float2(0.0,0.5*su) : float2(0.5*su,0.0)) + aaoffs, 0.,0.)).x, tex2Dlod(texSamplerDepth, float4(u + (yaxis ? float2(0.0,0.666*su) : float2(0.666*su,0.0)) + aaoffs, 0.,0.)).x), tex2Dlod(texSamplerDepth, float4(u + (yaxis ? float2(0.0,su) : float2(su,0.0)) + aaoffs, 0.,0.)).x);
 	parallax = (w_h_height.w+MaxSeparation) - min(MaxSeparation/(0.5+minDepth*(1.0/ZPD-0.5)), (w_h_height.w+MaxSeparation));
 	if(!l)
 		parallax = -parallax;
 	if(yaxis)
 		parallax = -parallax;
-	return float4((col + tex2Dlod(texSampler5, float4(u + (yaxis ? float2(0.0,parallax+w_h_height.y) : float2(parallax,w_h_height.y)), 0.f,0.f)).xyz)*0.5, 1.0f);
+	return float4((col + tex2Dlod(texSampler5, float4(u + (yaxis ? float2(0.0,parallax) : float2(parallax,0.0)) + aaoffs, 0.,0.)).xyz)*0.5, 1.0);
 }
 
 // FXAA

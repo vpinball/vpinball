@@ -1,4 +1,4 @@
-Function          Key Combination
+Function                    Key Combination
 ----------------------------------------------
 Sound Manager               F2
 Image Manager               F3
@@ -36,3 +36,7 @@ Insert Trigger              Ctrl + T
 Insert Wall                 Ctrl + W
 Lock Element                Ctrl + Shift + L
 
+
+Function during Play        Key Combination
+----------------------------------------------
+Toggle Stereo 3D            F10
