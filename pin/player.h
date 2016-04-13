@@ -286,7 +286,7 @@ public:
 
    bool m_useNvidiaApi;
    bool m_fStereo3Denabled;
-   int m_fStereo3D; // 0=off, 1=top/down, 2=interlaced/LG //!! support sidebyside, too?
+   int m_fStereo3D; // 0=off, 1=top/down, 2=interlaced/LG, 3=sidebyside
 
    bool m_fPlayMusic;
    bool m_fPlaySound;
