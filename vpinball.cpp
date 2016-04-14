@@ -3507,6 +3507,33 @@ INT_PTR CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
    return FALSE;
 }
 
+void DisableAllMaterialDialogItems(HWND hwndDlg)
+{   
+   EnableWindow(GetDlgItem(hwndDlg, IDC_DIFFUSE_CHECK), FALSE);
+   EnableWindow(GetDlgItem(hwndDlg, IDC_DIFFUSE_EDIT), FALSE);
+   EnableWindow(GetDlgItem(hwndDlg, IDC_GLOSSY_EDIT), FALSE);
+   EnableWindow(GetDlgItem(hwndDlg, IDC_SPECULAR_EDIT), FALSE);
+   EnableWindow(GetDlgItem(hwndDlg, IDC_OPACITY_EDIT), FALSE);
+   EnableWindow(GetDlgItem(hwndDlg, IDC_OPACITY_CHECK), FALSE);
+   EnableWindow(GetDlgItem(hwndDlg, IDC_EDGEALPHA_EDIT), FALSE);
+   EnableWindow(GetDlgItem(hwndDlg, IDC_CLONE_BUTTON), FALSE);
+   EnableWindow(GetDlgItem(hwndDlg, IDC_RENAME), FALSE);
+   EnableWindow(GetDlgItem(hwndDlg, IDC_IMPORT), FALSE);
+}
+
+void EnableAllMaterialDialogItems(HWND hwndDlg)
+{
+   EnableWindow(GetDlgItem(hwndDlg, IDC_DIFFUSE_CHECK), TRUE);
+   EnableWindow(GetDlgItem(hwndDlg, IDC_DIFFUSE_EDIT), TRUE);
+   EnableWindow(GetDlgItem(hwndDlg, IDC_GLOSSY_EDIT), TRUE);
+   EnableWindow(GetDlgItem(hwndDlg, IDC_SPECULAR_EDIT), TRUE);
+   EnableWindow(GetDlgItem(hwndDlg, IDC_OPACITY_EDIT), TRUE);
+   EnableWindow(GetDlgItem(hwndDlg, IDC_OPACITY_CHECK), TRUE);
+   EnableWindow(GetDlgItem(hwndDlg, IDC_EDGEALPHA_EDIT), TRUE);
+   EnableWindow(GetDlgItem(hwndDlg, IDC_CLONE_BUTTON), TRUE);
+   EnableWindow(GetDlgItem(hwndDlg, IDC_RENAME), TRUE);
+   EnableWindow(GetDlgItem(hwndDlg, IDC_IMPORT), TRUE);
+}
 
 INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -3603,10 +3630,18 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
       }
       case LVN_ITEMCHANGING:
       {
+         const int count = ListView_GetSelectedCount(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST));
+         if (count > 1)
+         {
+            DisableAllMaterialDialogItems(hwndDlg);
+            break;
+         }
+         EnableAllMaterialDialogItems(hwndDlg);
+
          NMLISTVIEW * const plistview = (LPNMLISTVIEW)lParam;
          if ((plistview->uNewState & LVIS_SELECTED) != (plistview->uOldState & LVIS_SELECTED))
          {
-            if (plistview->uNewState & LVIS_SELECTED)
+            if ((plistview->uNewState & LVIS_SELECTED) == LVIS_SELECTED)
             {
                const int sel = plistview->iItem;
                LVITEM lvitem;
@@ -3621,7 +3656,7 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
                SendMessage(hwndColor, CHANGE_COLOR, 0, pmat->m_cGlossy);
                hwndColor = GetDlgItem(hwndDlg, IDC_COLOR3);
                SendMessage(hwndColor, CHANGE_COLOR, 0, pmat->m_cClearcoat);
-               char textBuf[256];
+               char textBuf[256] = {0};
                f2sz(pmat->m_fWrapLighting, textBuf);
                SetDlgItemText(hwndDlg, IDC_DIFFUSE_EDIT, textBuf);
                f2sz(pmat->m_fRoughness, textBuf);
@@ -3645,6 +3680,14 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
       break;
       case LVN_ITEMCHANGED:
       {
+         const int count = ListView_GetSelectedCount(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST));
+
+         if (count > 1)
+         {
+            DisableAllMaterialDialogItems(hwndDlg);
+            break;
+         }
+         EnableAllMaterialDialogItems(hwndDlg);
          NMLISTVIEW * const plistview = (LPNMLISTVIEW)lParam;
          const int sel = plistview->iItem;
          LVITEM lvitem;
@@ -3655,7 +3698,7 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
          Material * const pmat = (Material*)lvitem.lParam;
          if ((plistview->uNewState & LVIS_SELECTED) == 0)
          {
-            char textBuf[256];
+            char textBuf[256] = { 0 };
             float fv;
             GetDlgItemText(hwndDlg, IDC_DIFFUSE_EDIT, textBuf, 31);
             fv = sz2f(textBuf);
@@ -3690,8 +3733,8 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
             if (pmat->m_fEdgeAlpha != fv)
                pt->SetNonUndoableDirty(eSaveDirty);
             pmat->m_fEdgeAlpha = fv;
-         }
-         else
+         }     
+         else if ((plistview->uOldState & LVIS_SELECTED) == 0)
          {
             HWND hwndColor = GetDlgItem(hwndDlg, IDC_COLOR);
             SendMessage(hwndColor, CHANGE_COLOR, 0, pmat->m_cBase);
@@ -3699,7 +3742,7 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
             SendMessage(hwndColor, CHANGE_COLOR, 0, pmat->m_cGlossy);
             hwndColor = GetDlgItem(hwndDlg, IDC_COLOR3);
             SendMessage(hwndColor, CHANGE_COLOR, 0, pmat->m_cClearcoat);
-            char textBuf[256];
+            char textBuf[256] = { 0 };
             f2sz(pmat->m_fWrapLighting, textBuf);
             SetDlgItemText(hwndDlg, IDC_DIFFUSE_EDIT, textBuf);
             f2sz(pmat->m_fRoughness, textBuf);
@@ -3715,9 +3758,6 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
             f2sz(pmat->m_fEdgeAlpha, textBuf);
             SetDlgItemText(hwndDlg, IDC_EDGEALPHA_EDIT, textBuf);
          }
-         const int count = ListView_GetSelectedCount(GetDlgItem(hwndDlg, IDC_MATERIAL_LIST));
-         const int fEnable = !(count > 1);
-         EnableWindow(GetDlgItem(hwndDlg, IDC_RENAME), fEnable);
          //EnableWindow(GetDlgItem(hwndDlg, IDC_EXPORT), fEnable);
       }
       break;
