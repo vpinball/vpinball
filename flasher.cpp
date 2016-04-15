@@ -1329,7 +1329,11 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
        pd3dDevice->DMDShader->SetTechnique("basic_DMD_tiny_world"); //width*DMDwidth / (float)m_dmdx <= 3.74f ? "basic_DMD_tiny" : (width*DMDwidth / (float)m_dmdx <= 7.49f ? "basic_DMD" : "basic_DMD_big")); // use different smoothing functions for LED/Plasma emulation (rule of thumb here: up to quarter width of 1920HD = tiny, up to half width of 1920HD = normal, up to full width of 1920HD = big)
 
        pd3dDevice->DMDShader->SetVector("vColor_Intensity", &color);
+#ifdef DMD_UPSCALE
+       const D3DXVECTOR4 r((float)(g_pplayer->m_dmdx*3), (float)(g_pplayer->m_dmdy*3), 1.f, 1.f); //(float)(0.5 / m_width), (float)(0.5 / m_height));
+#else
        const D3DXVECTOR4 r((float)g_pplayer->m_dmdx, (float)g_pplayer->m_dmdy, 1.f, 1.f); //(float)(0.5 / m_width), (float)(0.5 / m_height));
+#endif
        pd3dDevice->DMDShader->SetVector("vRes", &r);
 
        pd3dDevice->DMDShader->SetTexture("Texture0", g_pplayer->m_device_texdmd);

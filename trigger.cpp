@@ -541,9 +541,9 @@ void Trigger::UpdateAnimation(RenderDevice *pd3dDevice)
    m_d.m_time_msec = g_pplayer->m_time_msec;
    const float diff_time_msec = (float)(g_pplayer->m_time_msec - old_time_msec);
 
-   float animLimit = (m_d.m_shape == TriggerStar) ? m_d.m_radius / 5.0f : 32.0f;
+   float animLimit = (m_d.m_shape == TriggerStar) ? m_d.m_radius * (float)(1.0/5.0) : 32.0f;
    if (m_d.m_shape == TriggerButton)
-      animLimit = m_d.m_radius / 10.0f;
+      animLimit = m_d.m_radius * (float)(1.0/10.0);
 
    const float limit = animLimit*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 

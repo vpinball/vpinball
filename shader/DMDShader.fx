@@ -68,11 +68,25 @@ VS_OUTPUT vs_simple_main(float4 vPosition : POSITION0,
 // PS functions (DMD and "sprites")
 //
 
+#if 0 // raw pixelated output
+float4 ps_main_DMD_no(in VS_OUTPUT IN) : COLOR
+{
+   const float4 rgba = tex2Dlod(texSampler0, float4(IN.tex0, 0.,0.));
+   float3 color = vColor_Intensity.xyz * vColor_Intensity.w; //!! create function that resembles LUT from VPM?
+   if(rgba.a != 0.0)
+      color *= rgba.bgr;
+   else
+      color *= rgba.b * (255.9 / 100.);
+
+   return float4(InvToneMap(InvGamma(color)), 1.); //!! meh, this sucks a bit performance-wise, but how to avoid this when doing fullscreen-tonemap/gamma without stencil and depth read?
+}
+#endif
+
 float4 ps_main_DMD_big(in VS_OUTPUT IN) : COLOR
 {
    const float4 rgba = tex2Dlod(texSampler0, float4(IN.tex0, 0.,0.));
    float3 color = vColor_Intensity.xyz * vColor_Intensity.w; //!! create function that resembles LUT from VPM?
-   if(rgba.a == 1.0)
+   if(rgba.a != 0.0)
       color *= rgba.bgr;
    else
       color *= rgba.b * (255.9 / 100.);
@@ -97,7 +111,7 @@ float4 ps_main_DMD(in VS_OUTPUT IN) : COLOR
 {
    const float4 rgba = tex2Dlod(texSampler0, float4(IN.tex0, 0.,0.));
    float3 color = vColor_Intensity.xyz * (1.25 * vColor_Intensity.w); //!! create function that resembles LUT from VPM?
-   if(rgba.a == 1.0)
+   if(rgba.a != 0.0)
       color *= rgba.bgr;
    else
       color *= rgba.b * (255.9 / 100.);
@@ -122,7 +136,7 @@ float4 ps_main_DMD_tiny(in VS_OUTPUT IN) : COLOR
 {
    const float4 rgba = tex2Dlod(texSampler0, float4(IN.tex0, 0.,0.));
    float3 color = vColor_Intensity.xyz * (1.5 * vColor_Intensity.w); //!! create function that resembles LUT from VPM?
-   if(rgba.a == 1.0)
+   if(rgba.a != 0.0)
       color *= rgba.bgr;
    else
       color *= rgba.b * (255.9 / 100.);
