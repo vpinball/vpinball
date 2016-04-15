@@ -595,9 +595,6 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
    if (m_fBackglass && !GetPTable()->GetDecalsEnabled())
       return;
 
-   if (m_d.m_BulbLight && m_d.m_showBulbMesh && !m_d.m_staticBulbMesh)
-      RenderBulbMesh(pd3dDevice, 0, false);
-
    const U32 old_time_msec = (m_d.m_time_msec < g_pplayer->m_time_msec) ? m_d.m_time_msec : g_pplayer->m_time_msec;
    m_d.m_time_msec = g_pplayer->m_time_msec;
    const float diff_time_msec = (float)(g_pplayer->m_time_msec - old_time_msec);
