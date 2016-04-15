@@ -4475,6 +4475,13 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
       SendMessage(GetDlgItem(hwndDlg, IDC_FXAACB), CB_ADDSTRING, 0, (LPARAM)"Quality");
       SendMessage(GetDlgItem(hwndDlg, IDC_FXAACB), CB_SETCURSEL, fxaa, 0);
 
+      hwndCheck = GetDlgItem(hwndDlg, IDC_SCALE_FX_DMD);
+      int scaleFX_DMD;
+      hr = GetRegInt("Player", "ScaleFXDMD", &scaleFX_DMD);
+      if (hr != S_OK)
+          scaleFX_DMD = fFalse;
+      SendMessage(hwndCheck, BM_SETCHECK, scaleFX_DMD ? BST_CHECKED : BST_UNCHECKED, 0);
+
       hwndCheck = GetDlgItem(hwndDlg, IDC_BG_SET);
       int bgset;
       hr = GetRegInt("Player", "BGSet", &bgset);
@@ -4687,6 +4694,10 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
             if (fxaa == LB_ERR)
                 fxaa = 0;
             SetRegValue("Player", "FXAA", REG_DWORD, &fxaa, 4);
+
+            HWND hwndScaleFXDMD = GetDlgItem(hwndDlg, IDC_SCALE_FX_DMD);
+            size_t scaleFX_DMD = SendMessage(hwndScaleFXDMD, BM_GETCHECK, 0, 0);
+            SetRegValue("Player", "ScaleFXDMD", REG_DWORD, &scaleFX_DMD, 4);
 
             HWND hwndBGSet = GetDlgItem(hwndDlg, IDC_BG_SET);
             size_t BGSet = SendMessage(hwndBGSet, BM_GETCHECK, 0, 0);

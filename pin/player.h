@@ -473,6 +473,8 @@ public:
    bool m_fShowFPS;
    bool m_staticOnly;
 
+   bool m_scaleFX_DMD;
+
    bool m_fStereo3DY;
    bool m_fOverwriteBallImages;
    Texture *m_ballImage;

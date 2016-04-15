@@ -870,7 +870,6 @@ void upscale(DWORD * const data, const unsigned int xres, const unsigned int yre
 #ifndef DMD_UPSCALE
             unsigned int r = 0, g = 0, b = 0, a = 0;
 #endif
-
             unsigned int o2 = 0;
             for (unsigned int j2 = 0; j2 < 3; ++j2)
                 for (unsigned int i2 = 0; i2 < 3; ++i2,++o2)
@@ -965,7 +964,8 @@ STDMETHODIMP ScriptGlobalTable::put_DMDPixels(VARIANT pVal) //!! use 64bit inste
          data[ofs] = DMDState.cVal; // store raw values (0..100), let shader do the rest
       }
 
-      //!! upscale(data, g_pplayer->m_dmdx, g_pplayer->m_dmdy, true);
+      if (g_pplayer->m_scaleFX_DMD)
+         upscale(data, g_pplayer->m_dmdx, g_pplayer->m_dmdy, true);
 
       g_pplayer->m_device_texdmd = g_pplayer->m_pin3d.m_pd3dDevice->m_texMan.LoadTexture(g_pplayer->m_texdmd);
       g_pplayer->m_pin3d.m_pd3dDevice->m_texMan.SetDirty(g_pplayer->m_texdmd);
@@ -1012,7 +1012,8 @@ STDMETHODIMP ScriptGlobalTable::put_DMDColoredPixels(VARIANT pVal) //!! use 64bi
 			data[ofs] = DMDState.uintVal | 0xFF000000u; // store RGB values and let shader do the rest (set alpha to let shader know that this is RGB and not just brightness)
 		}
 
-		//!! upscale(data, g_pplayer->m_dmdx, g_pplayer->m_dmdy, false);
+        if (g_pplayer->m_scaleFX_DMD)
+            upscale(data, g_pplayer->m_dmdx, g_pplayer->m_dmdy, false);
 
 		g_pplayer->m_device_texdmd = g_pplayer->m_pin3d.m_pd3dDevice->m_texMan.LoadTexture(g_pplayer->m_texdmd);
 		g_pplayer->m_pin3d.m_pd3dDevice->m_texMan.SetDirty(g_pplayer->m_texdmd);
