@@ -659,7 +659,7 @@ void Trigger::ExportMesh(FILE *f)
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
    WaveFrontObj_WriteMaterial(m_d.m_szMaterial, NULL, mat);
    WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
-   if (m_d.m_shape == TriggerWireA || m_d.m_shape == TriggerWireA)
+   if (m_d.m_shape == TriggerWireA || m_d.m_shape == TriggerWireB)
       WaveFrontObj_WriteFaceInfoList(f, triggerSimpleIndices, m_numFaces);
    else if ( m_d.m_shape==TriggerButton)
       WaveFrontObj_WriteFaceInfoList(f, triggerButtonIndices, m_numFaces);
