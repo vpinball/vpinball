@@ -88,6 +88,7 @@ float3 FBToneMap(const float3 color)
     return color * ((l*BURN_HIGHLIGHTS + 1.0) / (l + 1.0)); // overflow is handled by bloom
 }
 
+#if 0
 float3 FilmicToneMap(const float3 hdr, const float whitepoint) //!! test/experimental
 {
     const float4 vh = float4(hdr,whitepoint);
@@ -95,6 +96,33 @@ float3 FilmicToneMap(const float3 hdr, const float whitepoint) //!! test/experim
     const float4 vf = (vh*va + 0.004)/(vh*(va+0.55) + 0.0491) - 0.0821;
     return vf.rgb/vf.aaa;
 }
+
+// RGBM/RGBD
+
+float3 DecodeRGBM(const float4 rgbm)
+{
+    return rgbm.rgb * (rgbm.a * MaxRange);
+}
+
+float4 EncodeRGBM(const float3 rgb)
+{
+    const float maxRGB = max(rgb.r, max(rgb.g, rgb.b));
+    const float M = ceil(maxRGB * (255.0 / MaxRange)) * (1.0/255.0);
+    return float4(rgb / (M * MaxRange), M); //!! handle rgb ~= 0 0 0
+}
+
+float3 DecodeRGBD(const float4 rgbd)
+{
+    return rgbd.rgb * ((MaxRange / 255.0) / rgbd.a);
+}
+
+float4 EncodeRGBD(const float3 rgb)
+{
+    const float maxRGB = max(rgb.r, max(rgb.g, rgb.b));
+    const float D = saturate(floor(max(MaxRange / maxRGB, 1.0)) * (1.0/255.0)); //!! handle rgb ~= 0 0 0
+    return float4(rgb * (D * (255.0 / MaxRange)), D);
+}
+#endif
 
 //
 // Blends

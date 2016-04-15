@@ -2995,11 +2995,19 @@ void Player::DMDdraw(const float DMDposx, const float DMDposy, const float DMDwi
       }
 
       const float width = g_pplayer->m_pin3d.m_useAA ? 2.0f*(float)m_width : (float)m_width;
+#ifdef DMD_UPSCALE
+      m_pin3d.m_pd3dDevice->DMDShader->SetTechnique(width*DMDwidth / (float)(m_dmdx*3) <= 3.74f ? "basic_DMD_tiny" : (width*DMDwidth / (float)(m_dmdx*3) <= 7.49f ? "basic_DMD" : "basic_DMD_big")); // use different smoothing functions for LED/Plasma emulation (rule of thumb here: up to quarter width of 1920HD = tiny, up to half width of 1920HD = normal, up to full width of 1920HD = big)
+#else
       m_pin3d.m_pd3dDevice->DMDShader->SetTechnique(width*DMDwidth / (float)m_dmdx <= 3.74f ? "basic_DMD_tiny" : (width*DMDwidth / (float)m_dmdx <= 7.49f ? "basic_DMD" : "basic_DMD_big")); // use different smoothing functions for LED/Plasma emulation (rule of thumb here: up to quarter width of 1920HD = tiny, up to half width of 1920HD = normal, up to full width of 1920HD = big)
+#endif
 
       const D3DXVECTOR4 c = convertColor(DMDcolor, intensity);
       m_pin3d.m_pd3dDevice->DMDShader->SetVector("vColor_Intensity", &c);
+#ifdef DMD_UPSCALE
+      const D3DXVECTOR4 r((float)(m_dmdx*3), (float)(m_dmdy*3), 0.f, 0.f);
+#else
       const D3DXVECTOR4 r((float)m_dmdx, (float)m_dmdy, 0.f, 0.f);
+#endif
       m_pin3d.m_pd3dDevice->DMDShader->SetVector("vRes", &r);
 
       m_pin3d.m_pd3dDevice->DMDShader->SetTexture("Texture0", m_device_texdmd);
