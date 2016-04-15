@@ -697,6 +697,7 @@
 #define DISPID_SpringLoops              473
 #define DISPID_RingGap                  474
 #define DISPID_SpringEndLoops           475
+#define IDC_SCALE_FX_DMD                476
 #define IDC_REL_POSITION_RADIO          477
 #define IDC_ABS_POSITION_RADIO          478
 #define IDC_CHECK3                      479

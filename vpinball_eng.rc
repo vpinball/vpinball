@@ -292,16 +292,18 @@ BEGIN
     LTEXT           "FXAA (post-processed Anti-Aliasing)",IDC_STATIC,14,205,140,9
     COMBOBOX        IDC_FXAACB,14,216,111,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Enable brute-force 4x Anti-Aliasing",IDC_AA_ALL_TABLES,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,234,140,10
-    CONTROL         "Stretch Ball with Table",IDC_StretchNo,"Button",BS_AUTORADIOBUTTON | WS_GROUP,16,260,83,10
-    CONTROL         "Don't stretch the Ball",IDC_StretchYes,"Button",BS_AUTORADIOBUTTON,16,271,81,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,234,133,10
+    CONTROL         "Enable ScaleFX for internal DMD",IDC_SCALE_FX_DMD,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,251,121,10
+    CONTROL         "Stretch Ball with Table",IDC_StretchNo,"Button",BS_AUTORADIOBUTTON | WS_GROUP,16,287,83,10
+    CONTROL         "Don't stretch the Ball",IDC_StretchYes,"Button",BS_AUTORADIOBUTTON,16,298,81,10
     CONTROL         "Cabinet anti-stretch the ball",IDC_StretchMonitor,
-                    "Button",BS_AUTORADIOBUTTON,16,282,111,10
-    GROUPBOX        "Aspect Ratio Offset",IDC_STATIC,24,295,110,25
-    LTEXT           "X",IDC_STATIC,29,306,8,8
-    EDITTEXT        IDC_CORRECTION_X,39,304,35,12,ES_AUTOHSCROLL
-    LTEXT           "Y",IDC_STATIC,85,306,8,8
-    EDITTEXT        IDC_CORRECTION_Y,93,304,35,12,ES_AUTOHSCROLL
+                    "Button",BS_AUTORADIOBUTTON,16,309,111,10
+    GROUPBOX        "Aspect Ratio Offset",IDC_STATIC,24,322,110,25
+    LTEXT           "X",IDC_STATIC,29,333,8,8
+    EDITTEXT        IDC_CORRECTION_X,39,331,35,12,ES_AUTOHSCROLL
+    LTEXT           "Y",IDC_STATIC,85,333,8,8
+    EDITTEXT        IDC_CORRECTION_Y,93,331,35,12,ES_AUTOHSCROLL
     CONTROL         "Reflect Ball on Playfield",IDC_GLOBAL_REFLECTION_CHECK,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,159,18,91,10
     CONTROL         "Ball Trails/Motion Blur",IDC_GLOBAL_TRAIL_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,159,29,91,10
@@ -342,13 +344,13 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,237,340,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,297,340,50,14
     LISTBOX         IDC_SIZELIST,14,19,129,156,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "Video Mode",IDC_STATIC,7,7,142,324
+    GROUPBOX        "Video Mode",IDC_STATIC,7,7,142,347
     GROUPBOX        "Ball Rendering",IDC_STATIC,154,7,103,92
     GROUPBOX        "3D Stereo Output",IDC_STATIC,262,7,85,80
     GROUPBOX        "Performance and Troubleshooting",IDC_STATIC,154,188,193,142
     GROUPBOX        "Max Texture Dimension (for low-end gfx boards)",IDC_STATIC,159,270,180,25
     LTEXT           "Elements Detail Level (decrease = performance)",IDC_STATIC,162,299,156,8
-    GROUPBOX        "Ball aspect ratio for stretched Tables",IDC_STATIC,12,249,133,75
+    GROUPBOX        "Ball aspect ratio for stretched Tables",IDC_STATIC,12,276,133,75
     PUSHBUTTON      "...",IDC_BROWSE_BALL_IMAGE,236,60,17,12
     EDITTEXT        IDC_BALL_IMAGE_EDIT,159,60,75,12,ES_AUTOHSCROLL
     LTEXT           "Ball Image",IDC_STATIC,159,52,34,8
@@ -359,6 +361,7 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,159,40,81,10
     GROUPBOX        "Automatic Night->Day cycle",IDC_STATIC,154,145,193,39
     LTEXT           "(Cabinet usage)",IDC_STATIC,24,190,50,8
+    LTEXT           "(post-processed Anti-Aliasing)",IDC_STATIC,24,261,101,8
 END
 
 IDD_FONTDIALOG DIALOG 0, 0, 316, 167
