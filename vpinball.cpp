@@ -4318,7 +4318,7 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
           controlHwnd = GetDlgItem(hwndDlg, IDC_ENABLE_AO);
           AddToolTip("Activate this to enable Ambient Occlusion.\r\nThis enables contact shadows between objects.", hwndDlg, toolTipHwnd, controlHwnd);
           controlHwnd = GetDlgItem(hwndDlg, IDC_3D_STEREO);
-          AddToolTip("Activate this to enable 3D Stereo output.\r\nSwitch on/off during play with the F10 key.\r\nThis requires that your TV can display 3D Stereo and respective 3D glasses.", hwndDlg, toolTipHwnd, controlHwnd);
+          AddToolTip("Activate this to enable 3D Stereo output using the requested format.\r\nSwitch on/off during play with the F10 key.\r\nThis requires that your TV can display 3D Stereo and respective 3D glasses.", hwndDlg, toolTipHwnd, controlHwnd);
           controlHwnd = GetDlgItem(hwndDlg, IDC_3D_STEREO_Y);
           AddToolTip("Switches 3D Stereo effect to use the Y Axis.\r\nThis should usually be selected for Cabinets/rotated displays.", hwndDlg, toolTipHwnd, controlHwnd);
           controlHwnd = GetDlgItem(hwndDlg, IDC_BG_SET);
@@ -4489,12 +4489,15 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
          bgset = 0;
       SendMessage(hwndCheck, BM_SETCHECK, (bgset != 0) ? BST_CHECKED : BST_UNCHECKED, 0);
 
-      hwndCheck = GetDlgItem(hwndDlg, IDC_3D_STEREO);
       int stereo3D;
       hr = GetRegInt("Player", "Stereo3D", &stereo3D);
       if (hr != S_OK)
-         stereo3D = 0;
-      SendMessage(hwndCheck, BM_SETCHECK, (stereo3D != 0) ? BST_CHECKED : BST_UNCHECKED, 0);
+          stereo3D = 0;
+      SendMessage(GetDlgItem(hwndDlg, IDC_3D_STEREO), CB_ADDSTRING, 0, (LPARAM)"Disabled");
+      SendMessage(GetDlgItem(hwndDlg, IDC_3D_STEREO), CB_ADDSTRING, 0, (LPARAM)"TB (Top / Bottom)");
+      SendMessage(GetDlgItem(hwndDlg, IDC_3D_STEREO), CB_ADDSTRING, 0, (LPARAM)"Interlaced (e.g. LG TVs)");
+      SendMessage(GetDlgItem(hwndDlg, IDC_3D_STEREO), CB_ADDSTRING, 0, (LPARAM)"SBS (Side by Side)");
+      SendMessage(GetDlgItem(hwndDlg, IDC_3D_STEREO), CB_SETCURSEL, stereo3D, 0);
 
       hwndCheck = GetDlgItem(hwndDlg, IDC_3D_STEREO_Y);
       int stereo3DY;
@@ -4720,7 +4723,9 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
             SetRegValue("Player", "DisableAO", REG_DWORD, &useAO, 4);
 
             HWND hwndStereo3D = GetDlgItem(hwndDlg, IDC_3D_STEREO);
-            size_t stereo3D = SendMessage(hwndStereo3D, BM_GETCHECK, 0, 0);
+            size_t stereo3D = SendMessage(hwndStereo3D, CB_GETCURSEL, 0, 0);
+            if (stereo3D == LB_ERR)
+                stereo3D = 0;
             SetRegValue("Player", "Stereo3D", REG_DWORD, &stereo3D, 4);
             SetRegValue("Player", "Stereo3DEnabled", REG_DWORD, &stereo3D, 4);
 
