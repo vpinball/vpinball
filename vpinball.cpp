@@ -4156,6 +4156,30 @@ INT_PTR CALLBACK AboutProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
       sprintf_s(versionString, "Version %i.%i.%i (Revision %i)", VP_VERSION_MAJOR,VP_VERSION_MINOR,VP_VERSION_REV, SVN_REVISION);
       SetWindowText(hVersion, versionString);
 
+      {
+      const string sPath = string(g_pvp->m_szMyPath) + "Changelog.txt";
+      std::ifstream file(sPath);
+      std::string line;
+      std::string text;
+      while (std::getline(file, line))
+      {
+          line += "\r\n";
+          text += line;
+      }
+      SetDlgItemText(hwndDlg, IDC_CHANGELOG, text.c_str());
+
+      HWND hChangelog = GetDlgItem(hwndDlg, IDC_CHANGELOG);
+
+      HFONT hFont = CreateFont(14, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_OUTLINE_PRECIS,
+          CLIP_DEFAULT_PRECIS, ANTIALIASED_QUALITY, VARIABLE_PITCH, TEXT("Courier New"));
+
+      SendMessage(hChangelog,
+          WM_SETFONT,
+          (WPARAM)hFont,
+          MAKELPARAM(TRUE, 0) // Redraw text
+          );
+      }
+
 #if !(defined(IMSPANISH) | defined(IMGERMAN) | defined(IMFRENCH))
       HWND hwndTransName = GetDlgItem(hwndDlg, IDC_TRANSNAME);
       ShowWindow(hwndTransName, SW_HIDE);

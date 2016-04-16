@@ -244,15 +244,16 @@ BEGIN
     COMBOBOX        IDC_FUNCTIONLIST,263,7,75,30,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
 END
 
-IDD_ABOUT DIALOGEX 0, 0, 232, 222
+IDD_ABOUT DIALOGEX 0, 0, 232, 300
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "About Visual Pinball"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,173,198,50,14
-    PUSHBUTTON      "Web Site",IDC_WEBSITE,156,174,67,14
+    DEFPUSHBUTTON   "OK",IDOK,173,279,50,14
+    PUSHBUTTON      "Web Site",IDC_WEBSITE,156,255,67,14
     PUSHBUTTON      "Translator's Web Site Name",IDC_TRANSLATEWEBSITE,130,44,93,14,NOT WS_VISIBLE | WS_DISABLED
-    CTEXT           "This application uses Visual Basic Scripting Edition by Microsoft",IDC_STATIC,0,198,150,17
+    EDITTEXT        IDC_CHANGELOG, 7, 171, 216, 79, ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY | ES_WANTRETURN | WS_VSCROLL
+    CTEXT           "This application uses Visual Basic Scripting Edition by Microsoft", IDC_STATIC, 0, 279, 150, 17
     CONTROL         IDC_RIGHTFLIPPERBUTTON,IDC_STATIC,"Static",SS_BITMAP,7,7,94,27
     LTEXT           "A Randy Davis Production",IDC_STATIC,13,35,94,8
     LTEXT           "Version 10.0.0",IDC_ABOUT_VERSION,13,45,121,10
@@ -264,7 +265,7 @@ BEGIN
     LTEXT           "Mark Parris - testing",IDC_STATIC,13,97,67,9
     LTEXT           "Jerry Rice - music",IDC_STATIC,86,97,66,9
     LTEXT           "Rolle Cruz - physics",IDC_STATIC,150,97,67,9
-    LTEXT           "",IDC_TRANSNAME2,140,142,83,9,NOT WS_VISIBLE | WS_DISABLED
+    LTEXT           "",IDC_TRANSNAME2,140,142,76,9,NOT WS_VISIBLE | WS_DISABLED
     LTEXT           "VP9/VP10 Open Source Contributors",IDC_STATIC,47,109,128,9
     LTEXT           "Brian Smith",IDC_STATIC,13,121,42,9
     LTEXT           "Shagendo",IDC_STATIC,150,121,42,9
@@ -278,9 +279,9 @@ BEGIN
     LTEXT           "Mjr",IDC_STATIC,13,151,21,8
     CTEXT           "Mukuste",IDC_STATIC,82,151,42,9
     LTEXT           "Brandrew",IDC_STATIC,150,151,42,9
-    CTEXT           "Copyright (C) 2000-2016 Randy Davis All rights reserved",IDC_STATIC,7,174,118,19
+    CTEXT           "Copyright (C) 2000-2016 Randy Davis All rights reserved",IDC_STATIC,7,255,118,19
     LTEXT           "Translator's Name - Translation",IDC_TRANSNAME,108,35,115,9,NOT WS_VISIBLE | WS_DISABLED
-    LTEXT           "Translator's web site address",IDC_TRANSWEBSITE,50,184,32,8,NOT WS_VISIBLE | WS_DISABLED
+    LTEXT           "Translator's web site address",IDC_TRANSWEBSITE,50,265,32,8,NOT WS_VISIBLE | WS_DISABLED
 END
 
 IDD_VIDEO_OPTIONS DIALOGEX 0, 0, 353, 359
@@ -2101,6 +2102,7 @@ BEGIN
 
     IDD_ABOUT, DIALOG
     BEGIN
+        BOTTOMMARGIN, 222
     END
 
     IDD_VIDEO_OPTIONS, DIALOG

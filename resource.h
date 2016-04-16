@@ -266,6 +266,7 @@
 #define IDI_SCRIPT                      252
 #define IDC_DESCRIPTION                 252
 #define IDC_RULES                       253
+#define IDC_CHANGELOG                   254
 #define IDC_WINDOW                      255
 #define IDD_VIDEO_OPTIONS               255
 #define IDC_FULLSCREEN                  256
