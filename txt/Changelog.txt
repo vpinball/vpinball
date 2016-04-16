@@ -2,23 +2,35 @@ VP 10.1.0 Changelog
 ------------------------
 
 - add abilty to show the image size in the image manager for each texture
-- hit shape of the rubber object refined
+- add an "Update All" button to the image manager for updating all images without any further inquiry.
+  Only an error message is shown after updating, if some images can't be updated (e.g. files not found).
+
 - add support to import/export backdrop POV(Point Of View) settings to a XML file. It's under File->Import->Backdrop POV or File->Export->Backdrop POV
-- fix/extend support for different user-selectable physics presets and also save as XML file.
-- add support to overwrite the ball image/decal texture globally under Preferences->Video Settings
-- "Throw Balls In Player" mode can now be activated permanently in the Preferences->Editor menu, also you can define the default ball size for this mode. 
-  The ball size for this mode can also be defined in the debugger menu.
-- add an "Update All" button to the image manager for updating all images without any further inquiry. Only an error message is shown after updating, if some 
-  images can't be updated (e.g. files not found).
-- add a "Raise Delay" setting to drop targets.
-- add DMD image connection (if enabled in script) for flashers (and also as checkbox for textboxes)
-- combine all common user-tweakable table settings in one simple UI panel
+- fix/extend support for different user-selectable physics presets and also save as XML file
+
+- hit shape of the rubber object refined
+
+- spinner and gate animation reworked
+
+- add a "Raise Delay" setting to drop targets
 - drop targets (not hit targets) have an additional dropped and raised event that is fired if a drop target is really dropped or raised (after animation of the mesh). 
   The normal hit event is also supported but decoupled from the animation, so if a hit event is fired the isdropped flag can still be false because it is set after the animation.
-- hotkeys.txt added
-- spinner and gate animation reworked
-- optional post-processing of the internal DMD (via scaleFX algorithm)
+
+- add DMD image connection (if enabled in script) for flashers (and also as checkbox for textboxes)
+
+- "Throw Balls In Player" mode can now be activated permanently in the Preferences->Editor menu, also you can define the default ball size for this mode. 
+  The ball size for this mode can also be defined in the debugger menu.
+
+- new video preferences
+  - add support to overwrite the ball image/decal texture globally
+  - optional post-processing of the internal DMD (via scaleFX algorithm)
+  - add SBS (Side by Side) and Interlaced 3D Stereo mode outputs
+
+- combine all common user-tweakable table settings in one simple UI panel in the table options
+
 - new core scripts by mfuegemann
+
+- hotkeys.txt added, containing all editor shortcuts
 
 - DirectX 8 port for input handling (currently disabled)
 - texture size limit/downscale now respects aspect ratio (currently disabled)
