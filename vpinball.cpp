@@ -4298,6 +4298,83 @@ const int rgwindowsize[] = { 640, 720, 800, 912, 1024, 1152, 1280, 1600 };  // w
 
 std::vector<VideoMode> allVideoModes;
 
+void ResetVideoPreferences(const HWND hwndDlg)
+{
+    char tmp[256];
+    SendMessage(GetDlgItem(hwndDlg, IDC_Tex512), BM_SETCHECK, BST_UNCHECKED, 0);
+    SendMessage(GetDlgItem(hwndDlg, IDC_Tex1024), BM_SETCHECK, BST_UNCHECKED, 0);
+    SendMessage(GetDlgItem(hwndDlg, IDC_Tex2048), BM_SETCHECK, BST_UNCHECKED, 0);
+    SendMessage(GetDlgItem(hwndDlg, IDC_TexUnlimited), BM_SETCHECK, BST_CHECKED, 0);
+    HWND hwndCheck = GetDlgItem(hwndDlg, IDC_GLOBAL_REFLECTION_CHECK);
+    SendMessage(hwndCheck, BM_SETCHECK, true ? BST_CHECKED : BST_UNCHECKED, 0);
+    hwndCheck = GetDlgItem(hwndDlg, IDC_GLOBAL_TRAIL_CHECK);
+    SendMessage(hwndCheck, BM_SETCHECK, true ? BST_CHECKED : BST_UNCHECKED, 0);
+    SetDlgItemInt(hwndDlg, IDC_ADAPTIVE_VSYNC, 0, FALSE);
+    SetDlgItemInt(hwndDlg, IDC_MAX_PRE_FRAMES, 0, FALSE);
+    float ballAspecRatioOffsetX = 0.0f;
+    sprintf_s(tmp, 256, "%f", ballAspecRatioOffsetX);
+    SetDlgItemTextA(hwndDlg, IDC_CORRECTION_X, tmp);
+    float ballAspecRatioOffsetY = 0.0f;
+    sprintf_s(tmp, 256, "%f", ballAspecRatioOffsetY);
+    SetDlgItemTextA(hwndDlg, IDC_CORRECTION_Y, tmp);
+    float latitude = 52.52;
+    sprintf_s(tmp, 256, "%f", latitude);
+    SetDlgItemTextA(hwndDlg, IDC_DN_LATITUDE, tmp);
+    float longitude = 13.37;
+    sprintf_s(tmp, 256, "%f", longitude);
+    SetDlgItemTextA(hwndDlg, IDC_DN_LONGITUDE, tmp);
+    float nudgeStrength = 2e-2f;
+    sprintf_s(tmp, 256, "%f", nudgeStrength);
+    SetDlgItemTextA(hwndDlg, IDC_NUDGE_STRENGTH, tmp);
+    hwndCheck = GetDlgItem(hwndDlg, IDC_AA_ALL_TABLES);
+    SendMessage(hwndCheck, BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
+    hwndCheck = GetDlgItem(hwndDlg, IDC_DYNAMIC_DN);
+    SendMessage(hwndCheck, BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
+    hwndCheck = GetDlgItem(hwndDlg, IDC_DYNAMIC_AO);
+    SendMessage(hwndCheck, BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
+    hwndCheck = GetDlgItem(hwndDlg, IDC_ENABLE_AO);
+    SendMessage(hwndCheck, BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
+    hwndCheck = GetDlgItem(hwndDlg, IDC_OVERWRITE_BALL_IMAGE_CHECK);
+    SendMessage(hwndCheck, BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
+    SetDlgItemText(hwndDlg, IDC_BALL_IMAGE_EDIT, "");
+    SetDlgItemText(hwndDlg, IDC_BALL_DECAL_EDIT, "");
+    if (true)
+    {
+        EnableWindow(GetDlgItem(hwndDlg, IDC_BROWSE_BALL_IMAGE), FALSE);
+        EnableWindow(GetDlgItem(hwndDlg, IDC_BROWSE_BALL_DECAL), FALSE);
+        EnableWindow(GetDlgItem(hwndDlg, IDC_BALL_IMAGE_EDIT), FALSE);
+        EnableWindow(GetDlgItem(hwndDlg, IDC_BALL_DECAL_EDIT), FALSE);
+    }
+    SendMessage(GetDlgItem(hwndDlg, IDC_FXAACB), CB_SETCURSEL, 0, 0);
+    hwndCheck = GetDlgItem(hwndDlg, IDC_SCALE_FX_DMD);
+    SendMessage(hwndCheck, BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
+    hwndCheck = GetDlgItem(hwndDlg, IDC_BG_SET);
+    SendMessage(hwndCheck, BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
+    SendMessage(GetDlgItem(hwndDlg, IDC_3D_STEREO), CB_SETCURSEL, 0, 0);
+    hwndCheck = GetDlgItem(hwndDlg, IDC_3D_STEREO_Y);
+    SendMessage(hwndCheck, BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
+    float stereo3DOfs = 0.0f;
+    sprintf_s(tmp, 256, "%f", stereo3DOfs);
+    SetDlgItemTextA(hwndDlg, IDC_3D_STEREO_OFS, tmp);
+    float stereo3DMS = 0.03f;
+    sprintf_s(tmp, 256, "%f", stereo3DMS);
+    SetDlgItemTextA(hwndDlg, IDC_3D_STEREO_MS, tmp);
+    float stereo3DZPD = 0.5f;
+    sprintf_s(tmp, 256, "%f", stereo3DZPD);
+    SetDlgItemTextA(hwndDlg, IDC_3D_STEREO_ZPD, tmp);
+    hwndCheck = GetDlgItem(hwndDlg, IDC_USE_NVIDIA_API_CHECK);
+    SendMessage(hwndCheck, BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
+    SendMessage(GetDlgItem(hwndDlg, IDC_FORCE_ANISO), BM_SETCHECK, true ? BST_CHECKED : BST_UNCHECKED, 0);
+    SendMessage(GetDlgItem(hwndDlg, IDC_TEX_COMPRESS), BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
+    SendMessage(GetDlgItem(hwndDlg, IDC_SOFTWARE_VP), BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
+    HWND hwndARASlider = GetDlgItem(hwndDlg, IDC_ARASlider);
+    SendMessage(hwndARASlider, TBM_SETPOS, TRUE, 10);
+    SendMessage(GetDlgItem(hwndDlg, IDC_StretchYes), BM_SETCHECK, BST_UNCHECKED, 0);
+    SendMessage(GetDlgItem(hwndDlg, IDC_StretchMonitor), BM_SETCHECK, BST_UNCHECKED, 0);
+    SendMessage(GetDlgItem(hwndDlg, IDC_StretchNo), BM_SETCHECK, BST_CHECKED, 0);
+    SendMessage(GetDlgItem(hwndDlg, IDC_MonitorCombo), CB_SETCURSEL, 1, 0);
+}
+
 INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
    char tmp[256];
@@ -4368,9 +4445,9 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
       {
       case 512:	SendMessage(GetDlgItem(hwndDlg, IDC_Tex512), BM_SETCHECK, BST_CHECKED, 0);
          break;
-      case 1024:  SendMessage(GetDlgItem(hwndDlg, IDC_Tex1024), BM_SETCHECK, BST_CHECKED, 0);
+      case 1024:SendMessage(GetDlgItem(hwndDlg, IDC_Tex1024), BM_SETCHECK, BST_CHECKED, 0);
          break;
-      case 2048:  SendMessage(GetDlgItem(hwndDlg, IDC_Tex2048), BM_SETCHECK, BST_CHECKED, 0);
+      case 2048:SendMessage(GetDlgItem(hwndDlg, IDC_Tex2048), BM_SETCHECK, BST_CHECKED, 0);
          break;
       default:	SendMessage(GetDlgItem(hwndDlg, IDC_TexUnlimited), BM_SETCHECK, BST_CHECKED, 0);
       }
@@ -4400,7 +4477,6 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
       if (hr != S_OK)
          maxPrerenderedFrames = 0;
       SetDlgItemInt(hwndDlg, IDC_MAX_PRE_FRAMES, maxPrerenderedFrames, FALSE);
-
 
       float ballAspecRatioOffsetX;
       hr = GetRegStringAsFloat("Player", "BallCorrectionX", &ballAspecRatioOffsetX);
@@ -4655,6 +4731,9 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
       case BN_CLICKED:
          switch (LOWORD(wParam))
          {
+         case IDC_DEFAULTS:
+             ResetVideoPreferences(hwndDlg);
+             break;
          case IDOK:
          {
             HWND hwndFullScreen = GetDlgItem(hwndDlg, IDC_FULLSCREEN);
