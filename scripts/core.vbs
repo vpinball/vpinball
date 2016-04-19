@@ -5,6 +5,7 @@ Const VPinMAMEDriverVer = 3.50
 '=======================
 ' New in 3.50
 ' - Added MAC.vbs & IronBalls.vbs
+' - Increased NVOffset limit from 10 to 20
 '
 ' New in 3.49 (Update by Arngrim)
 ' - Add new Controller.vbs to abstract DOF, B2S, VPM and EM controller loading, usage and sound/effect handling,
@@ -2885,7 +2886,7 @@ Sub NVOffset(version) ' version 2 for dB2S compatibility
 	Set nvcheck = CreateObject("WScript.Shell")
 	nvpath = nvcheck.RegRead("HKCU\Software\Freeware\Visual PinMame\globals\nvram_directory") & "\"
 	rom = controller.gamename
-	For v=1 to 10 'check up to 10 possible versions using same rom, it's overkill, but can be changed to a lower number
+	For v=1 to 20 'check up to 20 possible versions using same rom, it's overkill, but can be changed to a lower number
 		If check.FileExists(nvpath & rom & " v" & v & ".txt") Then vv=v : exit For : End If
 		vv=0
 	Next
