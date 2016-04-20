@@ -1031,7 +1031,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <None Include="res\vpinball.rgs" />
     <None Include="res\light.cur" />
     <None Include="res\table.vpx" />
-    <None Include="shader\Globals.fxh" />
+    <None Include="shader\FXAAStereoAO.fxh" />
+    <None Include="shader\Helpers.fxh" />
+    <None Include="shader\Material.fxh" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\ball.bmp" />
