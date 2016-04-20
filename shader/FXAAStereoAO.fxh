@@ -16,7 +16,7 @@ float2 hash(const float2 gridcell)
 	                   sin(dot(gridcell, float2(12.9898, 78.233)      ))) * 43758.5453);
 }
 
-float3 get_nonunit_normal(const float depth0, const float2 u) // use neighboring pixels
+float3 get_nonunit_normal(const float depth0, const float2 u) // use neighboring pixels // quite some tex access by this
 {
 	const float depth1 = tex2Dlod(texSamplerDepth, float4(u.x, u.y+w_h_height.y, 0.,0.)).x;
 	const float depth2 = tex2Dlod(texSamplerDepth, float4(u.x+w_h_height.x, u.y, 0.,0.)).x;
@@ -58,6 +58,78 @@ float3 rotate_to_vector_upper(const float3 vec, const float3 normal)
 	else return -vec;
 }
 
+/*float4 ps_main_normals(in VS_OUTPUT_2D IN) : COLOR // separate pass to generate normals (should actually reduce bandwidth needed in AO pass, but overall close to no performance difference or even much worse perf, depending on gfxboard)
+{
+	const float2 u = IN.tex0 + w_h_height.xy*0.5;
+
+	const float depth0 = tex2Dlod(texSamplerDepth, float4(u, 0.,0.)).x;
+	[branch] if((depth0 == 1.0) || (depth0 == 0.0)) //!! early out if depth too large (=BG) or too small (=DMD,etc -> retweak render options (depth write on), otherwise also screwup with stereo)
+		return float4(0.0, 0.,0.,0.);
+
+	const float3 normal = normalize(get_nonunit_normal(depth0, u)) *0.5+0.5;
+	return float4(normal,0.);
+}*/
+
+#if 0
+float2 UnitVectorToOctahedron( float3 N )
+{
+	N.xy /= dot( 1., abs(N) );
+	if( N.z <= 0. )
+		N.xy = ( 1. - abs(N.yx) ) * ( N.xy >= 0. ? float2(1.,1.) : float2(-1.,-1.) );
+	return N.xy;
+}
+
+float3 OctahedronToUnitVector( const float2 Oct )
+{
+	float3 N = float3( Oct, 1. - dot( 1., abs(Oct) ) );
+	if( N.z < 0. )
+		N.xy = ( 1. - abs(N.yx) ) * ( N.xy >= 0. ? float2(1.,1.) : float2(-1.,-1.) );
+	return normalize(N);
+}
+
+float3 Pack1212To888( const float2 x )
+{
+	// Pack 12:12 to 8:8:8
+	const float2 x1212 = floor( x * 4095. );
+	const float2 High = floor( x1212 / 256. );	// x1212 >> 8
+	const float2 Low = x1212 - High * 256.;	// x1212 & 255
+	const float3 x888 = float3( Low, High.x + High.y * 16. );
+	return saturate( x888 / 255. );
+}
+
+float2 Pack888To1212( const float3 x )
+{
+	// Pack 8:8:8 to 12:12
+	const float3 x888 = floor( x * 255. );
+	const float High = floor( x888.z / 16. );	// x888.z >> 4
+	const float Low = x888.z - High * 16.;		// x888.z & 15
+	const float2 x1212 = x888.xy + float2( Low, High ) * 256.;
+	return saturate( x1212 / 4095. );
+}
+
+float3 EncodeNormal( const float3 N )
+{
+	return Pack1212To888( UnitVectorToOctahedron( N ) * 0.5 + 0.5 );
+}
+
+float3 DecodeNormal( const float3 N )
+{
+	return OctahedronToUnitVector( Pack888To1212( N ) * 2. - 1. );
+}
+float2 compress_normal(const float3 n)
+{
+    const float p = sqrt(n.z*8.+8.);
+    return n.xy/p + 0.5;
+}
+
+float3 decompress_normal(const float2 c)
+{
+    const float2 fc = c*4.-2.;
+    const float f = dot(fc,fc);
+    return float3(fc*sqrt(1.-f*0.25), 1.-f*0.5);
+}
+#endif
+
 float4 ps_main_ao(in VS_OUTPUT_2D IN) : COLOR
 {
 	const float2 u = IN.tex0 + w_h_height.xy*0.5;
@@ -75,6 +147,7 @@ float4 ps_main_ao(in VS_OUTPUT_2D IN) : COLOR
 	const float depth_threshold_normal = 0.005;
 	const float total_strength = AO_scale_timeblur.x * (/*1.0 for uniform*/0.5 / samples);
 	const float3 normal = normalize(get_nonunit_normal(depth0, u));
+	//const float3 normal = tex2Dlod(texSamplerNormals, float4(u, 0.,0.)).xyz *2.0-1.0; // use 8bitRGB pregenerated normals
 	const float radius_depth = radius/depth0;
 
 	float occlusion = 0.0;
@@ -86,10 +159,12 @@ float4 ps_main_ao(in VS_OUTPUT_2D IN) : COLOR
 		const float2 hemi_ray = u + (radius_depth /** sign(rdotn) for uniform*/) * ray.xy;
 		const float occ_depth = tex2Dlod(texSamplerDepth, float4(hemi_ray, 0.,0.)).x;
 		const float3 occ_normal = get_nonunit_normal(occ_depth, hemi_ray);
+		//const float3 occ_normal = tex2Dlod(texSamplerNormals, float4(hemi_ray, 0.,0.)).xyz *2.0-1.0;  // use 8bitRGB pregenerated normals, can also omit normalization below then
 		const float diff_depth = depth0 - occ_depth;
 		const float diff_norm = dot(occ_normal,normal);
 		occlusion += step(falloff, diff_depth) * /*abs(rdotn)* for uniform*/ (diff_depth < depth_threshold_normal ? (1.0-diff_norm*diff_norm/dot(occ_normal,occ_normal)) : 1.0) * (1.0-smoothstep(falloff, area, diff_depth));
 	}
+	// weight with result(s) from previous frames
 	const float ao = 1.0 - total_strength * occlusion;
 	return float4( (tex2Dlod(texSampler5, float4(u+w_h_height.xy*0.5, 0.,0.)).x //abuse bilerp for filtering (by using half texel/pixel shift)
 				   +tex2Dlod(texSampler5, float4(u-w_h_height.xy*0.5, 0.,0.)).x

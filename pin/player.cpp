@@ -3623,12 +3623,32 @@ void Player::FlipVideoBuffersAO(const bool vsync)
 
    Bloom();
 
+   // separate normal generation pass, currently roughly same perf or even much worse
+   /*RenderTarget* tmpSurface;
+   m_pin3d.m_pd3dDevice->GetBackBufferTmpTexture()->GetSurfaceLevel(0, &tmpSurface); //!! expects stereo or FXAA enabled
+   m_pin3d.m_pd3dDevice->SetRenderTarget(tmpSurface);
+   SAFE_RELEASE_NO_RCC(tmpSurface); //!!
+
+   m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture3", m_pin3d.m_pdds3DZBuffer);
+   
+   const D3DXVECTOR4 w_h_height((float)(1.0 / (double)m_width), (float)(1.0 / (double)m_height),
+      radical_inverse(m_overall_frames)*(float)(1. / 9.0),
+      sobol(m_overall_frames)*(float)(2. / 9.0)); // jitter within lattice cell
+   m_pin3d.m_pd3dDevice->FBShader->SetVector("w_h_height", &w_h_height);
+
+   m_pin3d.m_pd3dDevice->FBShader->SetTechnique("normals");
+
+   m_pin3d.m_pd3dDevice->FBShader->Begin(0);
+   m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_TEX, (LPVOID)quadVerts, 4);
+   m_pin3d.m_pd3dDevice->FBShader->End();*/
+
    RenderTarget* tmpAOSurface;
    m_pin3d.m_pddsAOBackTmpBuffer->GetSurfaceLevel(0, &tmpAOSurface);
    m_pin3d.m_pd3dDevice->SetRenderTarget(tmpAOSurface);
    SAFE_RELEASE_NO_RCC(tmpAOSurface); //!!
 
    m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pddsAOBackBuffer);
+   //m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture1", m_pin3d.m_pd3dDevice->GetBackBufferTmpTexture()); // temporary normals
    m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture3", m_pin3d.m_pdds3DZBuffer);
 
    const D3DXVECTOR4 w_h_height((float)(1.0 / (double)m_width), (float)(1.0 / (double)m_height),

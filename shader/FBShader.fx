@@ -73,6 +73,16 @@ sampler2D texSamplerBloom : TEXUNIT1 = sampler_state // Bloom
 	ADDRESSV  = Clamp;
 };
 
+/*sampler2D texSamplerNormals : TEXUNIT1 = sampler_state // Normals (unfiltered)
+{
+	Texture	  = (Texture1);
+    MIPFILTER = NONE; //!! ??
+    MAGFILTER = POINT;
+    MINFILTER = POINT;
+	ADDRESSU  = Clamp;
+	ADDRESSV  = Clamp;
+};*/
+
 sampler2D texSamplerMirror : TEXUNIT0 = sampler_state // base texture
 {
    Texture = (Texture0);
@@ -267,6 +277,15 @@ float4 ps_main_fb_mirror(in VS_OUTPUT_2D IN) : COLOR
 //
 // Techniques
 //
+
+/*technique normals // generate normals into 8bit RGB
+{ 
+   pass P0 
+   { 
+      VertexShader = compile vs_3_0 vs_main_no_trafo();
+	  PixelShader = compile ps_3_0 ps_main_normals();
+   } 
+}*/
 
 technique AO
 { 
