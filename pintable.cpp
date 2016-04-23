@@ -898,7 +898,7 @@ void upscale(DWORD * const data, const unsigned int xres, const unsigned int yre
                     case 2: res = ((i <= 1) ? 0xdeadbeef : -2); break;
                     case 3: res = ((i == xres - 1) ? 0xdeadbeef : 1); break;
                     case 4: res = ((i >= xres - 2) ? 0xdeadbeef : 2); break;
-                    case 5: res = ((j == 0) ? 0xdeadbeef : -xres); break;
+                    case 5: res = ((j == 0) ? 0xdeadbeef : (unsigned int)(-(int)xres)); break;
                     case 6: res = ((j <= 1) ? 0xdeadbeef : -2 * xres); break;
                     case 7: res = ((j == yres - 1) ? 0xdeadbeef : xres); break;
                     case 8: res = ((j >= yres - 2) ? 0xdeadbeef : 2 * xres); break;

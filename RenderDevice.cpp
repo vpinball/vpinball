@@ -202,7 +202,8 @@ void EnumerateDisplayModes(const int adapter, std::vector<VideoMode>& modes)
 
    modes.clear();
 
-   for (int j = 0; j < 2; ++j)
+   //for (int j = 0; j < 2; ++j)
+   const int j = 0; // limit to 32bit only nowadays
    {
       const D3DFORMAT fmt = (j == 0) ? D3DFMT_X8R8G8B8 : D3DFMT_R5G6B5;
       const unsigned numModes = d3d->GetAdapterModeCount(adapter, fmt);
@@ -319,6 +320,17 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
    //if (caps.NumSimultaneousRTs < 2)
    //   ShowError("D3D device doesn't support multiple render targets!");
 
+   int video10bit;
+   HRESULT hr = GetRegInt("Player", "Render10Bit", &video10bit);
+   if (hr != S_OK)
+      video10bit = fFalse; // The default = off
+
+   if(!fullscreen && video10bit)
+   {
+      ShowError("10Bit-Monitor support requires 'Force exclusive Fullscreen Mode' to be also enabled!");
+      video10bit = fFalse;
+   }
+
    // get the current display format
    D3DFORMAT format;
    if (!fullscreen)
@@ -330,7 +342,7 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
    }
    else
    {
-      format = (colordepth == 16) ? D3DFMT_R5G6B5 : D3DFMT_X8R8G8B8;
+      format = (video10bit ? D3DFMT_A2R10G10B10 : ((colordepth == 16) ? D3DFMT_R5G6B5 : D3DFMT_X8R8G8B8));
    }
 
    // limit vsync rate to actual refresh rate, otherwise special handling in renderloop
@@ -397,6 +409,15 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
    {
       D3DDISPLAYMODEEX mode;
       mode.Size = sizeof(D3DDISPLAYMODEEX);
+      if(fullscreen)
+      {
+          mode.Format = params.BackBufferFormat;
+          mode.Width = params.BackBufferWidth;
+          mode.Height = params.BackBufferHeight;
+          mode.RefreshRate = params.FullScreen_RefreshRateInHz;
+          mode.ScanLineOrdering = D3DSCANLINEORDERING_PROGRESSIVE;
+      }
+
       CHECKD3D(m_pD3DEx->CreateDeviceEx(
          m_adapter,
          devtype,
@@ -437,7 +458,7 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
    }
 
    // Retrieve a reference to the back buffer.
-   HRESULT hr = m_pD3DDevice->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &m_pBackBuffer);
+   hr = m_pD3DDevice->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &m_pBackBuffer);
    if (FAILED(hr))
       ReportError("Fatal Error: unable to create back buffer!", hr, __FILE__, __LINE__);
 
@@ -464,7 +485,7 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
 
    // temporary buffer for gaussian blur
    hr = m_pD3DDevice->CreateTexture(width / 3, height / 3, 1,
-      D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &m_pBloomTmpBufferTexture, NULL); //!! 8bit are enough! //!! but used also for bulb light hack now!
+      D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &m_pBloomTmpBufferTexture, NULL); //!! 8bit are enough! //!! but used also for bulb light transmission hack now!
    if (FAILED(hr))
       ReportError("Fatal Error: unable to create blur buffer!", hr, __FILE__, __LINE__);
 
@@ -472,7 +493,7 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
    if (stereo3D || FXAA)
    {
       hr = m_pD3DDevice->CreateTexture(width, height, 1,
-         D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &m_pOffscreenBackBufferTmpTexture, NULL);
+         D3DUSAGE_RENDERTARGET, video10bit ? D3DFMT_A2R10G10B10 : D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &m_pOffscreenBackBufferTmpTexture, NULL);
       if (FAILED(hr))
          ReportError("Fatal Error: unable to create stereo3D/FXAA buffer!", hr, __FILE__, __LINE__);
    }

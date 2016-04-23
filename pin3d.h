@@ -109,7 +109,6 @@ public:
 
    //Vertex3Ds m_viewVec;        // direction the camera is facing
 
-   //bool fullscreen;
    bool m_useAA;
    ViewPort vp;
 

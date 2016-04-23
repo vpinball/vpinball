@@ -25,6 +25,8 @@ VP 10.1.0 Changelog
   - add support to overwrite the ball image/decal texture globally
   - optional post-processing of the internal DMD (via scaleFX algorithm)
   - add SBS (Side by Side) and Interlaced 3D Stereo mode outputs
+  - resurrect exclusive fullscreen mode (note that this will not allow to let other windows show up, like VPinMAME)
+  - add 10bit output for all compatible graphics cards and monitors (non-HDR/Rec2020 for now, just plain sRGB), needs exclusive fullscreen mode for now
 
 - combine all common user-tweakable table settings in one simple UI panel in the table options
 

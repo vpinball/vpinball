@@ -267,7 +267,6 @@
 #define IDC_DESCRIPTION                 252
 #define IDC_RULES                       253
 #define IDC_CHANGELOG                   254
-#define IDC_WINDOW                      255
 #define IDD_VIDEO_OPTIONS               255
 #define IDC_FULLSCREEN                  256
 #define IDD_FONTDIALOG                  256
@@ -275,6 +274,7 @@
 #define IDC_SoundList                   258
 #define IDC_PhysicsList                 259
 #define IDC_SoundListBG                 259
+#define IDC_10BIT_VIDEO                 260
 #define IDD_KEYS                        261
 #define IDC_LEFTFLIPPERBUTTON           262
 #define IDD_TRANSLATE                   262
