@@ -4286,7 +4286,7 @@ void FillVideoModesList(HWND hwnd, const std::vector<VideoMode>& modes, const Vi
    {
       char szT[128];
       if (modes[i].depth)
-         sprintf_s(szT, "%d x %d x %d", modes[i].width, modes[i].height, modes[i].depth);
+         sprintf_s(szT, "%d x %d (%dHz)", modes[i].width, modes[i].height, /*modes[i].depth,*/ modes[i].refreshrate);
       else
          sprintf_s(szT, "%d x %d", modes[i].width, modes[i].height);
       SendMessage(hwnd, LB_ADDSTRING, 0, (LPARAM)szT);
@@ -4294,7 +4294,8 @@ void FillVideoModesList(HWND hwnd, const std::vector<VideoMode>& modes, const Vi
       if (curSelMode &&
          modes[i].width == curSelMode->width &&
          modes[i].height == curSelMode->height &&
-         modes[i].depth == curSelMode->depth)
+         modes[i].depth == curSelMode->depth &&
+         modes[i].refreshrate == curSelMode->refreshrate)
          SendMessage(hwnd, LB_SETCURSEL, i, 0);
    }
 }
@@ -4307,11 +4308,18 @@ std::vector<VideoMode> allVideoModes;
 void ResetVideoPreferences(const HWND hwndDlg)
 {
     char tmp[256];
+    
+    HWND hwndCheck = GetDlgItem(hwndDlg, IDC_FULLSCREEN);
+    SendMessage(hwndCheck, BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
+    SendMessage(hwndDlg, false ? GET_FULLSCREENMODES : GET_WINDOW_MODES, 0, 0);
+
+    hwndCheck = GetDlgItem(hwndDlg, IDC_10BIT_VIDEO);
+    SendMessage(hwndCheck, BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
     SendMessage(GetDlgItem(hwndDlg, IDC_Tex512), BM_SETCHECK, BST_UNCHECKED, 0);
     SendMessage(GetDlgItem(hwndDlg, IDC_Tex1024), BM_SETCHECK, BST_UNCHECKED, 0);
     SendMessage(GetDlgItem(hwndDlg, IDC_Tex2048), BM_SETCHECK, BST_UNCHECKED, 0);
     SendMessage(GetDlgItem(hwndDlg, IDC_TexUnlimited), BM_SETCHECK, BST_CHECKED, 0);
-    HWND hwndCheck = GetDlgItem(hwndDlg, IDC_GLOBAL_REFLECTION_CHECK);
+    hwndCheck = GetDlgItem(hwndDlg, IDC_GLOBAL_REFLECTION_CHECK);
     SendMessage(hwndCheck, BM_SETCHECK, true ? BST_CHECKED : BST_UNCHECKED, 0);
     hwndCheck = GetDlgItem(hwndDlg, IDC_GLOBAL_TRAIL_CHECK);
     SendMessage(hwndCheck, BM_SETCHECK, true ? BST_CHECKED : BST_UNCHECKED, 0);
@@ -4339,7 +4347,7 @@ void ResetVideoPreferences(const HWND hwndDlg)
     hwndCheck = GetDlgItem(hwndDlg, IDC_DYNAMIC_AO);
     SendMessage(hwndCheck, BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
     hwndCheck = GetDlgItem(hwndDlg, IDC_ENABLE_AO);
-    SendMessage(hwndCheck, BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
+    SendMessage(hwndCheck, BM_SETCHECK, true ? BST_CHECKED : BST_UNCHECKED, 0);
     hwndCheck = GetDlgItem(hwndDlg, IDC_OVERWRITE_BALL_IMAGE_CHECK);
     SendMessage(hwndCheck, BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
     SetDlgItemText(hwndDlg, IDC_BALL_IMAGE_EDIT, "");
@@ -4428,6 +4436,10 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
           AddToolTip("Activate this to enable 3D Stereo output using the requested format.\r\nSwitch on/off during play with the F10 key.\r\nThis requires that your TV can display 3D Stereo and respective 3D glasses.", hwndDlg, toolTipHwnd, controlHwnd);
           controlHwnd = GetDlgItem(hwndDlg, IDC_3D_STEREO_Y);
           AddToolTip("Switches 3D Stereo effect to use the Y Axis.\r\nThis should usually be selected for Cabinets/rotated displays.", hwndDlg, toolTipHwnd, controlHwnd);
+          controlHwnd = GetDlgItem(hwndDlg, IDC_FULLSCREEN);
+          AddToolTip("Enforces exclusive Fullscreen Mode.\r\nDo not enable if you require to see the VPinMAME or B2S windows for example.\r\nOtherwise this can slightly reduce input lag.", hwndDlg, toolTipHwnd, controlHwnd);
+          controlHwnd = GetDlgItem(hwndDlg, IDC_10BIT_VIDEO);
+          AddToolTip("Enforces 10bit (WCG) rendering.\r\nRequires a corresponding 10bit output capable graphics card and monitor.\r\nAlso requires to have exclusive fullscreen mode enforced (for now).", hwndDlg, toolTipHwnd, controlHwnd);
           controlHwnd = GetDlgItem(hwndDlg, IDC_BG_SET);
           AddToolTip("Switches all tables to use the respective Cabinet display setup.\r\nAlso useful if a 270 degree rotated Desktop monitor is used.", hwndDlg, toolTipHwnd, controlHwnd);
           controlHwnd = GetDlgItem(hwndDlg, IDC_FXAACB);
@@ -4649,6 +4661,9 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
       const bool softwareVP = (GetRegIntWithDefault("Player", "SoftwareVertexProcessing", 0) != 0);
       SendMessage(GetDlgItem(hwndDlg, IDC_SOFTWARE_VP), BM_SETCHECK, softwareVP ? BST_CHECKED : BST_UNCHECKED, 0);
 
+      const bool video10bit = (GetRegIntWithDefault("Player", "Render10Bit", 0) != 0);
+      SendMessage(GetDlgItem(hwndDlg, IDC_10BIT_VIDEO), BM_SETCHECK, video10bit ? BST_CHECKED : BST_UNCHECKED, 0);
+
       int widthcur;
       hr = GetRegInt("Player", "Width", &widthcur);
       if (hr != S_OK)
@@ -4664,22 +4679,26 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
       if (hr != S_OK)
          depthcur = 32;
 
+      int refreshrate;
+      hr = GetRegInt("Player", "RefreshRate", &refreshrate);
+      if (hr != S_OK)
+         refreshrate = 0; // The default
+
       int fullscreen;
       hr = GetRegInt("Player", "FullScreen", &fullscreen);
       if (hr != S_OK)
          fullscreen = 0;
 
+      HWND hwndFullscreen = GetDlgItem(hwndDlg, IDC_FULLSCREEN);
       if (fullscreen)
       {
-         SendMessage(hwndDlg, GET_FULLSCREENMODES, widthcur, heightcur << 16 | depthcur);
-         HWND hwndRadio = GetDlgItem(hwndDlg, IDC_FULLSCREEN);
-         SendMessage(hwndRadio, BM_SETCHECK, BST_CHECKED, 0);
+         SendMessage(hwndDlg, GET_FULLSCREENMODES, widthcur << 16 | refreshrate, heightcur << 16 | depthcur);         
+         SendMessage(hwndFullscreen, BM_SETCHECK, BST_CHECKED, 0);
       }
       else
       {
          SendMessage(hwndDlg, GET_WINDOW_MODES, widthcur, heightcur);
-         HWND hwndRadio = GetDlgItem(hwndDlg, IDC_WINDOW);
-         SendMessage(hwndRadio, BM_SETCHECK, BST_CHECKED, 0);
+         SendMessage(hwndFullscreen, BM_SETCHECK, BST_UNCHECKED, 0);
       }
 
       int alphaRampsAccuracy;
@@ -4756,6 +4775,10 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                SetRegValue("Player", "ColorDepth", REG_DWORD, &pvm->depth, 4);
                SetRegValue("Player", "RefreshRate", REG_DWORD, &pvm->refreshrate, 4);
             }
+
+            HWND hwnd10bit = GetDlgItem(hwndDlg, IDC_10BIT_VIDEO);
+            size_t video10bit = SendMessage(hwnd10bit, BM_GETCHECK, 0, 0);
+            SetRegValue("Player", "Render10Bit", REG_DWORD, &video10bit, 4);
 
             HWND maxTexDim512 = GetDlgItem(hwndDlg, IDC_Tex512);
             HWND maxTexDim1024 = GetDlgItem(hwndDlg, IDC_Tex1024);
@@ -4972,13 +4995,12 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
 
              break;
          }
-         case IDC_WINDOW:
-            SendMessage(hwndDlg, GET_WINDOW_MODES, 0, 0);
-            break;
-
          case IDC_FULLSCREEN:
-            SendMessage(hwndDlg, GET_FULLSCREENMODES, 0, 0);
+         {
+            const size_t checked = SendDlgItemMessage(hwndDlg, IDC_FULLSCREEN, BM_GETCHECK, 0, 0);
+            SendMessage(hwndDlg, checked ? GET_FULLSCREENMODES : GET_WINDOW_MODES, 0, 0);
             break;
+         }
 
          case IDCANCEL:
             EndDialog(hwndDlg, FALSE);
@@ -5031,7 +5053,7 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
       allVideoModes.push_back(mode);
 
       char szT[128];
-      sprintf_s(szT, "%d x %d (windowed fullscreen)", mode.width, mode.height);
+      sprintf_s(szT, "%d x %d (Windowed Fullscreen)", mode.width, mode.height);
       SendMessage(hwndList, LB_ADDSTRING, 0, (LPARAM)szT);
       if (mode.width == widthcur && mode.height == heightcur)
          indexcur = SendMessage(hwndList, LB_GETCOUNT, 0, 0) - 1;
@@ -5046,9 +5068,10 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
       EnumerateDisplayModes(0, allVideoModes);
 
       VideoMode curSelMode;
-      curSelMode.width = wParam;
+      curSelMode.width = wParam >> 16;
       curSelMode.height = lParam >> 16;
       curSelMode.depth = lParam & 0xffff;
+      curSelMode.refreshrate = wParam & 0xffff;
 
       FillVideoModesList(hwndList, allVideoModes, &curSelMode);
 
