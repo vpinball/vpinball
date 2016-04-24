@@ -109,8 +109,8 @@ public:
 
    //Vertex3Ds m_viewVec;        // direction the camera is facing
 
-   bool m_useAA;
    ViewPort vp;
+   bool m_useAA;
 
 private:
    VertexBuffer *tableVBuffer;
