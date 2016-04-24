@@ -3528,6 +3528,13 @@ void Player::UpdateHUD()
 #endif
 	}
 #endif /*FPS*/
+
+	if (m_fFullScreen && m_fCloseDown)
+	{
+		char szFoo[256];
+		int len2 = sprintf_s(szFoo, "Press Return to continue, Hold ESC to quit");
+		DebugPrint(m_width/2-210, m_height/2-5, szFoo, len2);
+	}
 }
 
 void Player::FlipVideoBuffersNormal(const bool vsync)
@@ -4823,19 +4830,23 @@ LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
    break;
 
    case WM_ACTIVATE:
-      if (wParam != WA_INACTIVE)
-      {
-         g_pplayer->m_fGameWindowActive = true;
-         SetCursor(NULL);
-         g_pplayer->m_fNoTimeCorrect = true;
-         g_pplayer->m_fPause = false;
-      }
-      else
-      {
-         g_pplayer->m_fGameWindowActive = false;
-         g_pplayer->m_fPause = true;
-      }
-      g_pplayer->RecomputePauseState();
+	  if (wParam != WA_INACTIVE)
+		   SetCursor(NULL);
+	  if (g_pplayer)
+	  {
+		   if (wParam != WA_INACTIVE)
+		   {
+			   g_pplayer->m_fGameWindowActive = true;
+			   g_pplayer->m_fNoTimeCorrect = true;
+			   g_pplayer->m_fPause = false;
+		   }
+		   else
+		   {
+			   g_pplayer->m_fGameWindowActive = false;
+			   g_pplayer->m_fPause = true;
+		   }
+		   g_pplayer->RecomputePauseState();
+	  }
       break;
 
    case WM_EXITMENULOOP:
