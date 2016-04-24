@@ -3532,7 +3532,7 @@ void Player::UpdateHUD()
 	if (m_fFullScreen && m_fCloseDown)
 	{
 		char szFoo[256];
-		int len2 = sprintf_s(szFoo, "Press Return to continue, Hold ESC to quit");
+		int len2 = sprintf_s(szFoo, "Press 'Enter' to continue, Hold ESC to quit");
 		DebugPrint(m_width/2-210, m_height/2-5, szFoo, len2);
 	}
 }
