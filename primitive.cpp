@@ -96,6 +96,7 @@ Primitive::Primitive()
    m_propPosition = NULL;
    m_propVisual = NULL;
    memset(m_d.m_szImage, 0, MAXTOKEN);
+   memset(m_d.m_szNormalMap, 0, MAXTOKEN);
    memset(m_d.m_szMaterial, 0, 32);
 }
 
@@ -875,7 +876,7 @@ void Primitive::RenderObject(RenderDevice *pd3dDevice)
        // accomodate models with UV coords outside of [0,1]
        pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_WRAP);
    }
-   if (pin)
+   else if (pin)
    {
       pd3dDevice->basicShader->SetTechnique("basic_with_texture");
       pd3dDevice->basicShader->SetTexture("Texture0", pin);
