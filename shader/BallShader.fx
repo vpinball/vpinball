@@ -261,7 +261,7 @@ PS_OUTPUT psBall( in vout IN )
                                  : InvGamma(tex2Dlod(texSampler1, float4(uv, 0., 0.)).xyz)*invTableRes__playfield_height_reflection.w; //!! rather use screen space sample from previous frame??
 
        //!! hack to get some lighting on sample, but only diffuse, the rest is not setup correctly anyhow
-       playfieldColor = lightLoop(playfield_hit, playfield_normal, -r, playfieldColor, float3(0.,0.,0.), float3(0.,0.,0.), 1.0);
+       playfieldColor = lightLoop(playfield_hit, playfield_normal, -r, playfieldColor, float3(0.,0.,0.), float3(0.,0.,0.), 1.0, true);
 
 	   //!! magic falloff & weight the rest in from the ballImage
 	   const float weight = NdotR*NdotR;
