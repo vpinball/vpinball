@@ -43,6 +43,7 @@ public:
    Vertex3Ds m_vSize;
    float m_aRotAndTra[9];
    char m_szImage[MAXTOKEN];
+   char m_szNormalMap[MAXTOKEN];
    char m_meshFileName[256];
 
    char m_szMaterial[32];
@@ -164,6 +165,8 @@ public:
 
    STDMETHOD(get_Image)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(put_Image)(/*[in]*/ BSTR newVal);
+   STDMETHOD(get_NormalMap)(/*[out, retval]*/ BSTR *pVal);
+   STDMETHOD(put_NormalMap)(/*[in]*/ BSTR newVal);
    STDMETHOD(get_MeshFileName)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(put_MeshFileName)(/*[in]*/ BSTR newVal);
    STDMETHOD(get_EnableStaticRendering)(/*[out, retval]*/ VARIANT_BOOL *pVal);

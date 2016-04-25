@@ -259,6 +259,10 @@ void Primitive::SetDefaults(bool fromMouseClick)
    if ((hr != S_OK) && fromMouseClick)
       m_d.m_szImage[0] = 0;
 
+   hr = GetRegString(strKeyName, "NormalMap", m_d.m_szNormalMap, MAXTOKEN);
+   if ((hr != S_OK) && fromMouseClick)
+       m_d.m_szNormalMap[0] = 0;
+
    m_d.m_threshold = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "HitThreshold", 2.0f) : 2.0f;
 
    SetDefaultPhysics(fromMouseClick);
@@ -298,6 +302,7 @@ void Primitive::WriteRegDefaults()
    SetRegValueFloat(strKeyName, "RotAndTra8", m_d.m_aRotAndTra[8]);
 
    SetRegValueString(strKeyName, "Image", m_d.m_szImage);
+   SetRegValueString(strKeyName, "NormalMap", m_d.m_szNormalMap);
    SetRegValueBool(strKeyName, "HitEvent", m_d.m_fHitEvent);
    SetRegValueFloat(strKeyName, "HitThreshold", m_d.m_threshold);
    SetRegValueFloat(strKeyName, "Elasticity", m_d.m_elasticity);
@@ -857,6 +862,19 @@ void Primitive::RenderObject(RenderDevice *pd3dDevice)
       pd3dDevice->basicShader->SetDisableLighting(m_d.m_fDisableLighting);
 
    Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
+   Texture * const nMap = m_ptable->GetImage(m_d.m_szNormalMap);
+
+   if (pin && nMap)
+   {
+       pd3dDevice->basicShader->SetTechnique("basic_with_texture_normalmap");
+       pd3dDevice->basicShader->SetTexture("Texture0", pin);
+       pd3dDevice->basicShader->SetTexture("Texture4", nMap);
+       pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
+
+       //g_pplayer->m_pin3d.SetTextureFilter(0, TEXTURE_MODE_TRILINEAR);
+       // accomodate models with UV coords outside of [0,1]
+       pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_WRAP);
+   }
    if (pin)
    {
       pd3dDevice->basicShader->SetTechnique("basic_with_texture");
@@ -1002,6 +1020,7 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcry
    bw.WriteFloat(FID(RTV7), m_d.m_aRotAndTra[7]);
    bw.WriteFloat(FID(RTV8), m_d.m_aRotAndTra[8]);
    bw.WriteString(FID(IMAG), m_d.m_szImage);
+   bw.WriteString(FID(NRMA), m_d.m_szNormalMap);
    bw.WriteInt(FID(SIDS), m_d.m_Sides);
    bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
    bw.WriteString(FID(MATR), m_d.m_szMaterial);
@@ -1171,6 +1190,10 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(IMAG))
    {
       pbr->GetString(m_d.m_szImage);
+   }
+   else if (id == FID(NRMA))
+   {
+       pbr->GetString(m_d.m_szNormalMap);
    }
    else if (id == FID(SIDS))
    {
@@ -1655,6 +1678,36 @@ STDMETHODIMP Primitive::put_Image(BSTR newVal)
    STOPUNDO
 
    return S_OK;
+}
+
+STDMETHODIMP Primitive::get_NormalMap(BSTR *pVal)
+{
+    WCHAR wz[512];
+
+    MultiByteToWideChar(CP_ACP, 0, m_d.m_szNormalMap, -1, wz, 32);
+    *pVal = SysAllocString(wz);
+
+    return S_OK;
+}
+
+STDMETHODIMP Primitive::put_NormalMap(BSTR newVal)
+{
+    char szImage[MAXTOKEN];
+    WideCharToMultiByte(CP_ACP, 0, newVal, -1, szImage, 32, NULL, NULL);
+    const Texture * const tex = m_ptable->GetImage(szImage);
+    if (tex && tex->IsHDR())
+    {
+        ShowError("Cannot use a HDR image (.exr/.hdr) here");
+        return E_FAIL;
+    }
+
+    STARTUNDO
+
+        strcpy_s(m_d.m_szNormalMap, szImage);
+
+    STOPUNDO
+
+        return S_OK;
 }
 
 STDMETHODIMP Primitive::get_MeshFileName(BSTR *pVal)
