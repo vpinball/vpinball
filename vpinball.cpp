@@ -4437,7 +4437,7 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
           controlHwnd = GetDlgItem(hwndDlg, IDC_3D_STEREO_Y);
           AddToolTip("Switches 3D Stereo effect to use the Y Axis.\r\nThis should usually be selected for Cabinets/rotated displays.", hwndDlg, toolTipHwnd, controlHwnd);
           controlHwnd = GetDlgItem(hwndDlg, IDC_FULLSCREEN);
-          AddToolTip("Enforces exclusive Fullscreen Mode.\r\nDo not enable if you require to see the VPinMAME or B2S windows for example.\r\nOtherwise this can slightly reduce input lag.", hwndDlg, toolTipHwnd, controlHwnd);
+          AddToolTip("Enforces exclusive Fullscreen Mode.\r\nDo not enable if you require to see the VPinMAME or B2S windows for example.\r\nEnforcing exclusive FS can slightly reduce input lag though.", hwndDlg, toolTipHwnd, controlHwnd);
           controlHwnd = GetDlgItem(hwndDlg, IDC_10BIT_VIDEO);
           AddToolTip("Enforces 10bit (WCG) rendering.\r\nRequires a corresponding 10bit output capable graphics card and monitor.\r\nAlso requires to have exclusive fullscreen mode enforced (for now).", hwndDlg, toolTipHwnd, controlHwnd);
           controlHwnd = GetDlgItem(hwndDlg, IDC_BG_SET);
