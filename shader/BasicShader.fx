@@ -133,8 +133,8 @@ float3x3 TBN_trafo(const float3 N, const float3 V, const float2 uv)
 
 float3 normal_map(const float3 N, const float3 V, const float2 uv)
 {
-    return normalize( mul(tex2D(texSamplerN, uv).xyz * (255./127.) - (128./127.),
-                          TBN_trafo(N, V, uv)) );
+    return normalize( mul(TBN_trafo(N, V, uv),
+                          tex2D(texSamplerN, uv).xyz * (255./127.) - (128./127.)) );
 }
 
 //------------------------------------
@@ -211,7 +211,7 @@ PS_OUTPUT ps_main(in VS_NOTEX_OUTPUT IN)
    //return float4((N+1.0)*0.5,1.0); // visualize normals
 
    float4 result;
-   result.xyz = lightLoop(IN.worldPos, N, V, diffuse, glossy, specular, edge); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
+   result.xyz = lightLoop(IN.worldPos, N, V, diffuse, glossy, specular, edge, true); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
    result.a = cBase_Alpha.a;
 
    [branch] if(cBase_Alpha.a < 1.0) {
@@ -254,7 +254,7 @@ PS_OUTPUT ps_main_texture(in VS_OUTPUT IN)
    //return float4((N+1.0)*0.5,1.0); // visualize normals
 
    float4 result;
-   result.xyz = lightLoop(IN.worldPos, N, V, diffuse, glossy, specular, edge);
+   result.xyz = lightLoop(IN.worldPos, N, V, diffuse, glossy, specular, edge, true);
    result.a = pixel.a;
 
    [branch] if(cBase_Alpha.a < 1.0 && result.a < 1.0) {
@@ -297,7 +297,7 @@ PS_OUTPUT ps_main_texture_normalmap(in VS_OUTPUT IN)
     //return float4((N+1.0)*0.5,1.0); // visualize normals
 
     float4 result;
-    result.xyz = lightLoop(IN.worldPos, N, V, diffuse, glossy, specular, edge);
+    result.xyz = lightLoop(IN.worldPos, N, V, diffuse, glossy, specular, edge, false);
     result.a = pixel.a;
 
     [branch] if (cBase_Alpha.a < 1.0 && result.a < 1.0) {

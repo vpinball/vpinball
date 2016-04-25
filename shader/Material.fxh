@@ -119,7 +119,7 @@ float3 DoEnvmap2ndLayer(const float3 color1stLayer, const float3 pos, const floa
    return lerp(color1stLayer, env*fenvEmissionScale_TexWidth.x, w); // weight (optional) lower diffuse/glossy layer with clearcoat/specular
 }
 
-float3 lightLoop(const float3 pos, float3 N, const float3 V, float3 diffuse, float3 glossy, const float3 specular, const float edge) // input vectors (N,V) are normalized for BRDF evals
+float3 lightLoop(const float3 pos, float3 N, const float3 V, float3 diffuse, float3 glossy, const float3 specular, const float edge, const bool fix_normal_orientation) // input vectors (N,V) are normalized for BRDF evals
 {
    // normalize BRDF layer inputs //!! use diffuse = (1-glossy)*diffuse instead?
    const float diffuseMax = max(diffuse.x,max(diffuse.y,diffuse.z));
@@ -135,7 +135,7 @@ float3 lightLoop(const float3 pos, float3 N, const float3 V, float3 diffuse, flo
    }
 
    float NdotV = dot(N,V);
-   if(NdotV < 0.0) // flip normal in case of wrong orientation? (backside lighting)
+   if(fix_normal_orientation && (NdotV < 0.0)) // flip normal in case of wrong orientation? (backside lighting), currently disabled if normal mapping active
    {
       N = -N;
 	  NdotV = -NdotV;
