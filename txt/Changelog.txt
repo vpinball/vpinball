@@ -1,6 +1,7 @@
 VP 10.1.0 Changelog
 ------------------------
 
+- add normal mapping support to primitive
 - add abilty to show the image size in the image manager for each texture
 - add an "Update All" button to the image manager for updating all images without any further inquiry.
   Only an error message is shown after updating, if some images can't be updated (e.g. files not found).
