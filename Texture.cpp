@@ -238,6 +238,7 @@ BOOL Texture::LoadToken(int id, BiffReader *pbr)
       lzwreader.Decoder();
 
       const int lpitch = m_pdsBuffer->pitch();
+      SetSizeFrom(m_pdsBuffer);
 
       // Assume our 32 bit color structure
       // Find out if all alpha values are zero
