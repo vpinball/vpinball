@@ -1,6 +1,8 @@
 #include "stdafx.h"
 
-//#include "Dwmapi.h"
+#include <DxErr.h>
+
+//#include "Dwmapi.h" // use when we get rid of XP at some point, get rid of the manual dll loads in here then
 
 #ifndef DISABLE_FORCE_NVIDIA_OPTIMUS
 #include "nvapi.h"
@@ -19,6 +21,7 @@
 
 #pragma comment(lib, "d3d9.lib")        // TODO: put into build system
 #pragma comment(lib, "d3dx9.lib")       // TODO: put into build system
+#pragma comment(lib, "dxerr.lib")       // TODO: put into build system
 
 const VertexElement VertexTexelElement[] =
 {
@@ -113,7 +116,7 @@ static UINT ComputePrimitiveCount(const D3DPRIMITIVETYPE type, const int vertexC
 void ReportFatalError(const HRESULT hr, const char *file, const int line)
 {
    char msg[128];
-   sprintf_s(msg, 128, "Fatal error: HRESULT %x at %s:%d", hr, file, line);
+   sprintf_s(msg, 128, "Fatal error %s (0x%x: %s) at %s:%d", DXGetErrorString(hr), hr, DXGetErrorDescription(hr), file, line);
    ShowError(msg);
    exit(-1);
 }
@@ -121,7 +124,7 @@ void ReportFatalError(const HRESULT hr, const char *file, const int line)
 void ReportError(const char *errorText, const HRESULT hr, const char *file, const int line)
 {
    char msg[128];
-   sprintf_s(msg, 128, "%s HRESULT %x at %s:%d", errorText, hr, file, line);
+   sprintf_s(msg, 128, "%s %s (0x%x: %s) at %s:%d", errorText, DXGetErrorString(hr), hr, DXGetErrorDescription(hr), file, line);
    ShowError(msg);
    exit(-1);
 }
@@ -141,7 +144,7 @@ unsigned int RenderDevice::Perf_GetNumLockCalls() const { return m_frameLockCall
 
 D3DTexture* TextureManager::LoadTexture(BaseTexture* memtex)
 {
-   Iter it = m_map.find(memtex);
+   const Iter it = m_map.find(memtex);
    if (it == m_map.end())
    {
       TexInfo texinfo;
@@ -165,14 +168,14 @@ D3DTexture* TextureManager::LoadTexture(BaseTexture* memtex)
 
 void TextureManager::SetDirty(BaseTexture* memtex)
 {
-   Iter it = m_map.find(memtex);
+   const Iter it = m_map.find(memtex);
    if (it != m_map.end())
       it->second.dirty = true;
 }
 
 void TextureManager::UnloadTexture(BaseTexture* memtex)
 {
-   Iter it = m_map.find(memtex);
+   const Iter it = m_map.find(memtex);
    if (it != m_map.end())
    {
       SAFE_RELEASE(it->second.d3dtex);
@@ -192,8 +195,7 @@ void TextureManager::UnloadAll()
 
 void EnumerateDisplayModes(const int adapter, std::vector<VideoMode>& modes)
 {
-   IDirect3D9 *d3d;
-   d3d = Direct3DCreate9(D3D_SDK_VERSION);
+   IDirect3D9 *d3d = Direct3DCreate9(D3D_SDK_VERSION);
    if (d3d == NULL)
    {
       ShowError("Could not create D3D9 object.");
@@ -237,15 +239,18 @@ bool RenderDevice::m_INTZ_support = false;
 bool RenderDevice::m_useNvidiaApi = false;
 
 #ifdef USE_D3D9EX
-typedef HRESULT(WINAPI *pD3DC9Ex)(UINT SDKVersion, IDirect3D9Ex**);
-static pD3DC9Ex mDirect3DCreate9Ex = NULL;
+ typedef HRESULT(WINAPI *pD3DC9Ex)(UINT SDKVersion, IDirect3D9Ex**);
+ static pD3DC9Ex mDirect3DCreate9Ex = NULL;
 #endif
 
+#define DWM_EC_DISABLECOMPOSITION         0
+#define DWM_EC_ENABLECOMPOSITION          1
 typedef HRESULT(STDAPICALLTYPE *pDICE)(BOOL* pfEnabled);
 static pDICE mDwmIsCompositionEnabled = NULL;
-
 typedef HRESULT(STDAPICALLTYPE *pDF)();
 static pDF mDwmFlush = NULL;
+typedef HRESULT(STDAPICALLTYPE *pDEC)(UINT uCompositionAction);
+static pDEC mDwmEnableComposition = NULL;
 
 RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, const bool fullscreen, const int colordepth, int &refreshrate, int VSync, const bool useAA, const bool stereo3D, const bool FXAA, const bool useNvidiaApi)
    : m_texMan(*this)
@@ -255,10 +260,8 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
    m_useNvidiaApi = useNvidiaApi;
    m_adapter = D3DADAPTER_DEFAULT;     // for now, always use the default adapter
 
-   mDwmIsCompositionEnabled = NULL;
-   mDwmFlush = NULL;
-
    mDwmIsCompositionEnabled = (pDICE)GetProcAddress(GetModuleHandle(TEXT("dwmapi.dll")), "DwmIsCompositionEnabled"); //!! remove as soon as win xp support dropped and use static link
+   mDwmEnableComposition = (pDEC)GetProcAddress(GetModuleHandle(TEXT("dwmapi.dll")), "DwmEnableComposition"); //!! remove as soon as win xp support dropped and use static link
    mDwmFlush = (pDF)GetProcAddress(GetModuleHandle(TEXT("dwmapi.dll")), "DwmFlush"); //!! remove as soon as win xp support dropped and use static link
 
 #ifdef USE_D3D9EX
@@ -361,7 +364,7 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
    params.Windowed = !fullscreen;
    params.EnableAutoDepthStencil = FALSE;
    params.AutoDepthStencilFormat = D3DFMT_UNKNOWN;      // ignored
-   params.Flags = /*stereo3D ?*/ 0 /*: D3DPRESENTFLAG_DISCARD_DEPTHSTENCIL*/;
+   params.Flags = fullscreen ? D3DPRESENTFLAG_LOCKABLE_BACKBUFFER : /*(stereo3D ?*/ 0 /*: D3DPRESENTFLAG_DISCARD_DEPTHSTENCIL)*/; // D3DPRESENTFLAG_LOCKABLE_BACKBUFFER only needed for SetDialogBoxMode() below
    params.FullScreen_RefreshRateInHz = fullscreen ? refreshrate : 0;
 #ifdef USE_D3D9EX
    params.PresentationInterval = (m_pD3DEx && (VSync != 1)) ? D3DPRESENT_INTERVAL_IMMEDIATE : (!!VSync ? D3DPRESENT_INTERVAL_ONE : D3DPRESENT_INTERVAL_IMMEDIATE); //!! or have a special mode to force normal vsync?
@@ -456,6 +459,9 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
 
       refreshrate = mode.RefreshRate;
    }
+
+   if(fullscreen)
+       hr = m_pD3DDevice->SetDialogBoxMode(TRUE);
 
    // Retrieve a reference to the back buffer.
    hr = m_pD3DDevice->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &m_pBackBuffer);
@@ -574,7 +580,7 @@ bool RenderDevice::DepthBufferReadBackAvailable()
 {
     if (m_INTZ_support && !m_useNvidiaApi)
         return true;
-    // fall back to NVIDIA, only handle AO if API was initialized
+    // fall back to NVIDIAs NVAPI, only handle AO if API was initialized
     return NVAPIinit;
 }
 
@@ -610,6 +616,7 @@ void RenderDevice::FreeShader()
       basicShader->Core()->SetTexture("Texture1", NULL);
       basicShader->Core()->SetTexture("Texture2", NULL);
       basicShader->Core()->SetTexture("Texture3", NULL);
+      basicShader->Core()->SetTexture("Texture4", NULL);
       delete basicShader;
       basicShader = 0;
    }
