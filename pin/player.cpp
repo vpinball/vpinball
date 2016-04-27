@@ -3529,12 +3529,12 @@ void Player::UpdateHUD()
 	}
 #endif /*FPS*/
 
-	/*if (m_fFullScreen && m_fCloseDown) // currently can use dialog boxes in fullscreen, not necessary
+	if (m_fFullScreen && m_fCloseDown) // currently cannot use dialog boxes in fullscreen, so necessary
 	{
 		char szFoo[256];
 		int len2 = sprintf_s(szFoo, "Press 'Enter' to continue, Hold ESC to quit");
 		DebugPrint(m_width/2-210, m_height/2-5, szFoo, len2);
-	}*/
+	}
 }
 
 void Player::FlipVideoBuffersNormal(const bool vsync)

@@ -367,7 +367,7 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
    params.Windowed = !fullscreen;
    params.EnableAutoDepthStencil = FALSE;
    params.AutoDepthStencilFormat = D3DFMT_UNKNOWN;      // ignored
-   params.Flags = fullscreen ? D3DPRESENTFLAG_LOCKABLE_BACKBUFFER : /*(stereo3D ?*/ 0 /*: D3DPRESENTFLAG_DISCARD_DEPTHSTENCIL)*/; // D3DPRESENTFLAG_LOCKABLE_BACKBUFFER only needed for SetDialogBoxMode() below
+   params.Flags = /*fullscreen ? D3DPRESENTFLAG_LOCKABLE_BACKBUFFER :*/ /*(stereo3D ?*/ 0 /*: D3DPRESENTFLAG_DISCARD_DEPTHSTENCIL)*/; // D3DPRESENTFLAG_LOCKABLE_BACKBUFFER only needed for SetDialogBoxMode() below, but makes rendering slower on some systems :/
    params.FullScreen_RefreshRateInHz = fullscreen ? refreshrate : 0;
 #ifdef USE_D3D9EX
    params.PresentationInterval = (m_pD3DEx && (VSync != 1)) ? D3DPRESENT_INTERVAL_IMMEDIATE : (!!VSync ? D3DPRESENT_INTERVAL_ONE : D3DPRESENT_INTERVAL_IMMEDIATE); //!! or have a special mode to force normal vsync?
@@ -463,8 +463,8 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
       refreshrate = mode.RefreshRate;
    }
 
-   if(fullscreen)
-       hr = m_pD3DDevice->SetDialogBoxMode(TRUE);
+   /*if(fullscreen)
+       hr = m_pD3DDevice->SetDialogBoxMode(TRUE);*/ // needs D3DPRESENTFLAG_LOCKABLE_BACKBUFFER, but makes rendering slower on some systems :/
 
    // Retrieve a reference to the back buffer.
    hr = m_pD3DDevice->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &m_pBackBuffer);
