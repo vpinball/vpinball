@@ -13,11 +13,11 @@ public:
    };
 
    BaseTexture()
-      : m_width(0), m_height(0), m_format(RGBA)
+      : m_width(0), m_height(0), m_realWidth(0), m_realHeight(0), m_format(RGBA)
    { }
 
    BaseTexture(const int w, const int h, const Format format = RGBA)
-      : m_width(w), m_height(h), m_format(format), m_data((format == RGBA ? 4 : 3*4) * (w*h))
+      : m_width(w), m_height(h), m_realWidth(w), m_realHeight(h), m_format(format), m_data((format == RGBA ? 4 : 3*4) * (w*h))
    { }
 
    int width() const   { return m_width; }
