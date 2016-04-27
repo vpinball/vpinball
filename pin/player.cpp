@@ -254,6 +254,13 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
        scaleFX_DMD = fFalse; // The default
    m_scaleFX_DMD = (scaleFX_DMD == 1);
 
+   int disableDWM;
+   hr = GetRegInt("Player", "DisableDWM", &disableDWM);
+   if (hr != S_OK)
+       m_disableDWM = false;
+   else
+       m_disableDWM = (disableDWM == 1);
+
    int nvidiaApi;
    hr = GetRegInt("Player", "UseNVidiaAPI", &nvidiaApi);
    if (hr != S_OK)

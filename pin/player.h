@@ -274,17 +274,19 @@ public:
 
    int m_sleeptime;			// time to sleep during each frame - can helps side threads like vpinmame
 
+   float m_globalEmissionScale;
+
    int m_fVSync; // targeted refresh rate in Hz, if larger refresh rate it will limit FPS by uSleep() //!! currently does not work adaptively as it would require IDirect3DDevice9Ex which is not supported on WinXP
    int m_fMaxPrerenderedFrames;
    int m_fFXAA;
    bool m_fAA;
 
-   float m_globalEmissionScale;
-
    bool m_dynamicAO;
    bool m_disableAO;
 
    bool m_useNvidiaApi;
+   bool m_disableDWM;
+
    bool m_fStereo3Denabled;
    int m_fStereo3D; // 0=off, 1=top/down, 2=interlaced/LG, 3=sidebyside
 

@@ -203,7 +203,7 @@ HRESULT Pin3D::InitPin3D(const HWND hwnd, const bool fullScreen, const int width
    m_useAA = useAA;
 
    try {
-      m_pd3dDevice = new RenderDevice(m_hwnd, width, height, fullScreen, colordepth, refreshrate, VSync, useAA, stereo3D, FXAA, g_pplayer->m_useNvidiaApi);
+      m_pd3dDevice = new RenderDevice(m_hwnd, width, height, fullScreen, colordepth, refreshrate, VSync, useAA, stereo3D, FXAA, g_pplayer->m_useNvidiaApi, g_pplayer->m_disableDWM);
    }
    catch (...) {
       return E_FAIL;
