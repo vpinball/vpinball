@@ -468,6 +468,7 @@ TopColor(OLE_COLOR) - topColor of the old standard primitive (only valid if no i
 SideColor(OLE_COLOR) - sideColor of the old standard primitive (only valid if no image was set)
 DrawTexturesInside(bool) - textures the inside of the old standard primitive
 Image(string) - texture name
+NormalMap(string) - normal map name
 X(float) - X position
 Y(float) - Y position
 Z(float) - Z position
