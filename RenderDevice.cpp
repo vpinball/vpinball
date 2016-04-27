@@ -255,7 +255,7 @@ static pDF mDwmFlush = NULL;
 typedef HRESULT(STDAPICALLTYPE *pDEC)(UINT uCompositionAction);
 static pDEC mDwmEnableComposition = NULL;
 
-RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, const bool fullscreen, const int colordepth, int &refreshrate, int VSync, const bool useAA, const bool stereo3D, const bool FXAA, const bool useNvidiaApi)
+RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, const bool fullscreen, const int colordepth, int &refreshrate, int VSync, const bool useAA, const bool stereo3D, const bool FXAA, const bool useNvidiaApi, const bool disable_dwm)
    : m_texMan(*this)
 {
    m_stats_drawn_triangles = 0;
@@ -266,6 +266,24 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
    mDwmIsCompositionEnabled = (pDICE)GetProcAddress(GetModuleHandle(TEXT("dwmapi.dll")), "DwmIsCompositionEnabled"); //!! remove as soon as win xp support dropped and use static link
    mDwmEnableComposition = (pDEC)GetProcAddress(GetModuleHandle(TEXT("dwmapi.dll")), "DwmEnableComposition"); //!! remove as soon as win xp support dropped and use static link
    mDwmFlush = (pDF)GetProcAddress(GetModuleHandle(TEXT("dwmapi.dll")), "DwmFlush"); //!! remove as soon as win xp support dropped and use static link
+
+   if (mDwmIsCompositionEnabled && mDwmEnableComposition)
+   {
+       BOOL dwm = 0;
+       mDwmIsCompositionEnabled(&dwm);
+       m_dwm_enabled = m_dwm_was_enabled = !!dwm;
+
+       if (m_dwm_was_enabled && disable_dwm)
+       {
+           mDwmEnableComposition(DWM_EC_DISABLECOMPOSITION);
+           m_dwm_enabled = false;
+       }
+   }
+   else
+   {
+       m_dwm_was_enabled = false;
+       m_dwm_enabled = false;
+   }
 
 #ifdef USE_D3D9EX
    m_pD3DEx = NULL;
@@ -726,6 +744,9 @@ RenderDevice::~RenderDevice()
     * but doesn't bother to reset the FPU when it's destroyed. We reset it manually here.
     */
    _fpreset();
+
+   if(m_dwm_was_enabled)
+      mDwmEnableComposition(DWM_EC_ENABLECOMPOSITION);
 }
 
 void RenderDevice::BeginScene()
@@ -755,8 +776,8 @@ static void FlushGPUCommandBuffer(IDirect3DDevice9* pd3dDevice)
 void RenderDevice::Flip(const bool vsync)
 {
    BOOL dwm = 0;
-   if (mDwmIsCompositionEnabled && vsync) // xp does neither have d3dex nor dwm, so vsync will always be specified during device set
-      mDwmIsCompositionEnabled(&dwm);
+   if (vsync) // xp does neither have d3dex nor dwm, so vsync will always be specified during device set
+      dwm = m_dwm_enabled;
 
 #ifdef USE_D3D9EX
    if (m_pD3DEx && vsync && !dwm)

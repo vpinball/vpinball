@@ -4378,6 +4378,8 @@ void ResetVideoPreferences(const HWND hwndDlg)
     SetDlgItemTextA(hwndDlg, IDC_3D_STEREO_ZPD, tmp);
     hwndCheck = GetDlgItem(hwndDlg, IDC_USE_NVIDIA_API_CHECK);
     SendMessage(hwndCheck, BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
+    hwndCheck = GetDlgItem(hwndDlg, IDC_DISABLE_DWM);
+    SendMessage(hwndCheck, BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
     SendMessage(GetDlgItem(hwndDlg, IDC_FORCE_ANISO), BM_SETCHECK, true ? BST_CHECKED : BST_UNCHECKED, 0);
     SendMessage(GetDlgItem(hwndDlg, IDC_TEX_COMPRESS), BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
     SendMessage(GetDlgItem(hwndDlg, IDC_SOFTWARE_VP), BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
@@ -4410,6 +4412,8 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
           AddToolTip("Activate this if you get the corresponding error message on table start", hwndDlg, toolTipHwnd, controlHwnd);
           controlHwnd = GetDlgItem(hwndDlg, IDC_TEX_COMPRESS);
           AddToolTip("This saves memory on your graphics card but harms quality of the textures", hwndDlg, toolTipHwnd, controlHwnd);
+          controlHwnd = GetDlgItem(hwndDlg, IDC_DISABLE_DWM);
+          AddToolTip("Disable Windows Desktop Composition (should actually only work on Windows 7 systems).\r\nMay reduce lag and improve performance on some setups.", hwndDlg, toolTipHwnd, controlHwnd);
           controlHwnd = GetDlgItem(hwndDlg, IDC_SOFTWARE_VP);
           AddToolTip("Activate this if you have issues using an Intel graphics chip", hwndDlg, toolTipHwnd, controlHwnd);
           controlHwnd = GetDlgItem(hwndDlg, IDC_ADAPTIVE_VSYNC);
@@ -4644,6 +4648,13 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
          stereo3DZPD = 0.5f;
       sprintf_s(tmp, 256, "%f", stereo3DZPD);
       SetDlgItemTextA(hwndDlg, IDC_3D_STEREO_ZPD, tmp);
+
+      hwndCheck = GetDlgItem(hwndDlg, IDC_DISABLE_DWM);
+      int disableDWM;
+      hr = GetRegInt("Player", "DisableDWM", &disableDWM);
+      if (hr != S_OK)
+          disableDWM = 0;
+      SendMessage(hwndCheck, BM_SETCHECK, (disableDWM != 0) ? BST_CHECKED : BST_UNCHECKED, 0);
 
       hwndCheck = GetDlgItem(hwndDlg, IDC_USE_NVIDIA_API_CHECK);
       int nvidiaApi;
@@ -4881,14 +4892,18 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
             size_t alphaRampsAccuracy = SendMessage(hwndAraSlider, TBM_GETPOS, 0, 0);
             SetRegValue("Player", "AlphaRampAccuracy", REG_DWORD, &alphaRampsAccuracy, 4);
 
-			GetDlgItemTextA(hwndDlg, IDC_3D_STEREO_OFS, strTmp, 256);
-			SetRegValue("Player", "Stereo3DOffset", REG_SZ, &strTmp, lstrlen(strTmp));
-			
+            GetDlgItemTextA(hwndDlg, IDC_3D_STEREO_OFS, strTmp, 256);
+            SetRegValue("Player", "Stereo3DOffset", REG_SZ, &strTmp, lstrlen(strTmp));
+
             GetDlgItemTextA(hwndDlg, IDC_3D_STEREO_MS, strTmp, 256);
             SetRegValue("Player", "Stereo3DMaxSeparation", REG_SZ, &strTmp, lstrlen(strTmp));
 
             GetDlgItemTextA(hwndDlg, IDC_3D_STEREO_ZPD, strTmp, 256);
             SetRegValue("Player", "Stereo3DZPD", REG_SZ, &strTmp, lstrlen(strTmp));
+
+            HWND hwndDisableDWM = GetDlgItem(hwndDlg, IDC_DISABLE_DWM);
+            size_t disableDWM = SendMessage(hwndDisableDWM, BM_GETCHECK, 0, 0);
+            SetRegValue("Player", "DisableDWM", REG_DWORD, &disableDWM, 4);
 
             HWND hwndNvidiaApi = GetDlgItem(hwndDlg, IDC_USE_NVIDIA_API_CHECK);
             size_t nvidiaApi = SendMessage(hwndNvidiaApi, BM_GETCHECK, 0, 0);
