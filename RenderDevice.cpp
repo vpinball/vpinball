@@ -26,6 +26,31 @@
 #endif
 #pragma comment(lib, "dxerr.lib")       // TODO: put into build system
 
+static bool IsWindowsVistaOr7()
+{
+	OSVERSIONINFOEXW osvi = { sizeof(osvi), 0, 0, 0, 0,{ 0 }, 0, 0 };
+	const DWORDLONG dwlConditionMask = VerSetConditionMask(
+		VerSetConditionMask(
+			VerSetConditionMask(
+				0, VER_MAJORVERSION, VER_EQUAL),
+			VER_MINORVERSION, VER_EQUAL),
+		VER_SERVICEPACKMAJOR, VER_GREATER_EQUAL);
+	osvi.dwMajorVersion = HIBYTE(_WIN32_WINNT_VISTA);
+	osvi.dwMinorVersion = LOBYTE(_WIN32_WINNT_VISTA);
+	osvi.wServicePackMajor = 0;
+
+	const bool vista = VerifyVersionInfoW(&osvi, VER_MAJORVERSION | VER_MINORVERSION | VER_SERVICEPACKMAJOR, dwlConditionMask) != FALSE;
+
+	osvi = { sizeof(osvi), 0, 0, 0, 0,{ 0 }, 0, 0 };
+	osvi.dwMajorVersion = HIBYTE(_WIN32_WINNT_WIN7);
+	osvi.dwMinorVersion = LOBYTE(_WIN32_WINNT_WIN7);
+	osvi.wServicePackMajor = 0;
+
+	const bool win7 = VerifyVersionInfoW(&osvi, VER_MAJORVERSION | VER_MINORVERSION | VER_SERVICEPACKMAJOR, dwlConditionMask) != FALSE;
+
+	return vista || win7;
+}
+
 const VertexElement VertexTexelElement[] =
 {
    { 0, 0 * sizeof(float), D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },  // pos
@@ -273,7 +298,7 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
        mDwmIsCompositionEnabled(&dwm);
        m_dwm_enabled = m_dwm_was_enabled = !!dwm;
 
-       if (m_dwm_was_enabled && disable_dwm)
+       if (m_dwm_was_enabled && disable_dwm && IsWindowsVistaOr7()) // windows 8 and above will not allow do disable it, but will still return S_OK
        {
            mDwmEnableComposition(DWM_EC_DISABLECOMPOSITION);
            m_dwm_enabled = false;

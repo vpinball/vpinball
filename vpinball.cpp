@@ -4413,7 +4413,7 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
           controlHwnd = GetDlgItem(hwndDlg, IDC_TEX_COMPRESS);
           AddToolTip("This saves memory on your graphics card but harms quality of the textures", hwndDlg, toolTipHwnd, controlHwnd);
           controlHwnd = GetDlgItem(hwndDlg, IDC_DISABLE_DWM);
-          AddToolTip("Disable Windows Desktop Composition (should actually only work on Windows 7 systems).\r\nMay reduce lag and improve performance on some setups.", hwndDlg, toolTipHwnd, controlHwnd);
+          AddToolTip("Disable Windows Desktop Composition (only works on Windows Vista and Windows 7 systems).\r\nMay reduce lag and improve performance on some setups.", hwndDlg, toolTipHwnd, controlHwnd);
           controlHwnd = GetDlgItem(hwndDlg, IDC_SOFTWARE_VP);
           AddToolTip("Activate this if you have issues using an Intel graphics chip", hwndDlg, toolTipHwnd, controlHwnd);
           controlHwnd = GetDlgItem(hwndDlg, IDC_ADAPTIVE_VSYNC);

@@ -1,7 +1,7 @@
 VP 10.1.0 Changelog
 ------------------------
 
-- add normal mapping support to primitive
+- add (tangent space-)normal mapping support to primitive
 
 - add abilty to show the image size in the image manager for each texture
 - add an "Update All" button to the image manager for updating all images without any further inquiry.
@@ -29,7 +29,7 @@ VP 10.1.0 Changelog
   - add SBS (Side by Side) and Interlaced 3D Stereo mode outputs
   - resurrect exclusive fullscreen mode (note that this will not allow to let other windows show up, like VPinMAME)
   - add 10bit output for all compatible graphics cards and monitors (non-HDR/Rec2020 for now, just plain sRGB), needs exclusive fullscreen mode for now
-  - possibility to disable desktop composition (should only be useful on Windows 7 systems, can reduce lag and/or increase performance)
+  - possibility to disable desktop composition (only works on Windows Vista and Windows 7 systems, can reduce lag and/or increase performance)
 
 - combine all common user-tweakable table settings in one simple UI panel in the table options
 
