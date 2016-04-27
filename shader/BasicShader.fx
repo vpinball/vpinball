@@ -11,6 +11,8 @@ float3x4 matWorldViewInverseTranspose;
 float4x3 matView;
 //float4x4 matViewInverseInverseTranspose; // matView used instead and multiplied from other side
 
+bool use_normalmap = false;
+
 texture Texture0; // base texture
 texture Texture1; // envmap
 texture Texture2; // envmap radiance
@@ -161,7 +163,7 @@ VS_OUTPUT vs_main (float4 vPosition : POSITION0,
 
 VS_NOTEX_OUTPUT vs_notex_main (float4 vPosition : POSITION0,  
                                float3 vNormal   : NORMAL0,  
-                               float2 tc        : TEXCOORD0) 
+                               float2 tc        : TEXCOORD0)
 { 
    VS_NOTEX_OUTPUT Out;
 
@@ -249,7 +251,9 @@ PS_OUTPUT ps_main_texture(in VS_OUTPUT IN)
    const float  edge     = (Roughness_WrapL_Edge_IsMetal.w != 0.0) ? 1.0 : Roughness_WrapL_Edge_IsMetal.z;
 
    const float3 V = normalize(/*camera=0,0,0,1*/-IN.worldPos);
-   const float3 N = /*normal_map(*/normalize(IN.normal)/*,V,IN.tex01.xy)*/;
+   float3 N = normalize(IN.normal);
+   [branch] if(use_normalmap)
+      N = normal_map(N,V,IN.tex01.xy);
 
    //return float4((N+1.0)*0.5,1.0); // visualize normals
 
@@ -266,49 +270,6 @@ PS_OUTPUT ps_main_texture(in VS_OUTPUT IN)
 
    output.color = result;
    return output;
-}
-
-PS_OUTPUT ps_main_texture_normalmap(in VS_OUTPUT IN)
-{
-    PS_OUTPUT output;
-    float4 pixel = tex2D(texSampler0, IN.tex01.xy);
-
-        if (pixel.a <= fAlphaTestValue)
-            clip(-1);           //stop the pixel shader if alpha test should reject pixel
-
-    pixel.a *= cBase_Alpha.a;
-    const float3 t = InvGamma(pixel.xyz);
-
-    // early out if no normal set (e.g. decal vertices)
-    if (!any(IN.normal))
-    {
-        output.color = float4(InvToneMap(t*cBase_Alpha.xyz), pixel.a);
-        return output;
-    }
-
-    const float3 diffuse = t*cBase_Alpha.xyz;
-    const float3 glossy = (Roughness_WrapL_Edge_IsMetal.w != 0.0) ? diffuse : t*cGlossy*0.08; //!! use AO for glossy? specular?
-    const float3 specular = cClearcoat_EdgeAlpha.xyz*0.08;
-    const float  edge = (Roughness_WrapL_Edge_IsMetal.w != 0.0) ? 1.0 : Roughness_WrapL_Edge_IsMetal.z;
-
-    const float3 V = normalize(/*camera=0,0,0,1*/-IN.worldPos);
-    const float3 N = normal_map(normalize(IN.normal),V,IN.tex01.xy);
-
-    //return float4((N+1.0)*0.5,1.0); // visualize normals
-
-    float4 result;
-    result.xyz = lightLoop(IN.worldPos, N, V, diffuse, glossy, specular, edge, false);
-    result.a = pixel.a;
-
-    [branch] if (cBase_Alpha.a < 1.0 && result.a < 1.0) {
-        result.a = lerp(result.a, 1.0, cClearcoat_EdgeAlpha.w*pow(1.0 - abs(dot(N, V)), 5)); // fresnel for falloff towards silhouette, flip normal in case of wrong orientation (backside lighting)
-
-        // add light from "below" from user-flagged bulb lights, pre-rendered/blurred in previous renderpass //!! sqrt = magic
-        result.xyz += sqrt(diffuse)*tex2Dlod(texSamplerBL, float4(float2(0.5*IN.tex01.z, -0.5*IN.tex01.w) + 0.5, 0., 0.)).xyz*result.a; //!! depend on normal of light (unknown though) vs geom normal, too?
-    }
-
-    output.color = result;
-    return output;
 }
 
 float4 ps_main_depth_only_without_texture(in VS_DEPTH_ONLY_NOTEX_OUTPUT IN) : COLOR
@@ -373,15 +334,6 @@ technique basic_with_texture
       VertexShader = compile vs_3_0 vs_main(); 
       PixelShader = compile ps_3_0 ps_main_texture();
    } 
-}
-
-technique basic_with_texture_normalmap
-{
-    pass P0
-    {
-        VertexShader = compile vs_3_0 vs_main();
-        PixelShader = compile ps_3_0 ps_main_texture_normalmap();
-    }
 }
 
 technique basic_depth_only_without_texture
