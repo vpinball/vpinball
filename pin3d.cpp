@@ -426,7 +426,6 @@ void Pin3D::InitLights()
    m_pd3dDevice->classicLightShader->SetVector("cAmbient_LightRange", &amb_lr);
 #endif
 
-   m_pd3dDevice->basicShader->SetBool("use_normalmap", false); //!! only parked here, as everything except for primitives does not init it
 }
 
 // currently unused
