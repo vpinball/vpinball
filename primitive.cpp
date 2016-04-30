@@ -867,8 +867,7 @@ void Primitive::RenderObject(RenderDevice *pd3dDevice)
 
    if (pin && nMap)
    {
-       pd3dDevice->basicShader->SetBool("use_normalmap", true);
-       pd3dDevice->basicShader->SetTechnique("basic_with_texture");
+       pd3dDevice->basicShader->SetTechnique("basic_with_texture_normal");
        pd3dDevice->basicShader->SetTexture("Texture0", pin);
        pd3dDevice->basicShader->SetTexture("Texture4", nMap);
        pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
@@ -924,8 +923,6 @@ void Primitive::RenderObject(RenderDevice *pd3dDevice)
    if (m_d.m_fDisableLighting)
       pd3dDevice->basicShader->SetDisableLighting(false);
 
-   if (pin && nMap)
-      pd3dDevice->basicShader->SetBool("use_normalmap", false); //!! meh, simple hack to reset this directly here, to avoid that all other shaders will have to set this (for now, change as soon as not only primitives do this)
 }
 
 // Always called each frame to render over everything else (along with alpha ramps)
