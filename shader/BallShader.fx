@@ -68,8 +68,6 @@ float4   invTableRes__playfield_height_reflection;
 
 float4x3 orientation;
 
-bool     decalMode;
-bool     cabMode;
 bool     hdrTexture0;
 
 //------------------------------------
@@ -217,7 +215,7 @@ float3 ballLightLoop(float3 pos, float3 N, float3 V, float3 diffuse, float3 glos
 //------------------------------------
 // PIXEL SHADER
 
-PS_OUTPUT psBall( in vout IN ) 
+PS_OUTPUT psBall( in vout IN, uniform bool cabMode, uniform bool decalMode ) 
 {
     PS_OUTPUT output;
     const float3 v = normalize(/*camera=0,0,0,1*/-IN.worldPos);
@@ -316,8 +314,34 @@ technique RenderBall
 	pass p0 
 	{		
 		vertexshader = compile vs_3_0 vsBall();
-		pixelshader  = compile ps_3_0 psBall();
+		pixelshader  = compile ps_3_0 psBall(false,false);
 	}
+}
+
+technique RenderBall_DecalMode
+{
+   pass p0
+   {
+      vertexshader = compile vs_3_0 vsBall();
+      pixelshader = compile ps_3_0 psBall(false, true);
+   }
+}
+
+technique RenderBall_CabMode
+{
+   pass p0
+   {
+      vertexshader = compile vs_3_0 vsBall();
+      pixelshader = compile ps_3_0 psBall(true,false);
+   }
+}
+technique RenderBall_CabMode_DecalMode
+{
+   pass p0
+   {
+      vertexshader = compile vs_3_0 vsBall();
+      pixelshader = compile ps_3_0 psBall(true,true);
+   }
 }
 
 /*technique RenderBallReflection
