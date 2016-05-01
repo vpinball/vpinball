@@ -362,9 +362,10 @@ public:
    bool m_fGameWindowActive;
    bool m_fUserDebugPaused;
    bool m_fDebugWindowActive;
-
+   bool m_fCabinetMode;
    bool m_fRecordContacts;             // flag for DoHitTest()
    std::vector< CollisionEvent > m_contacts;
+   char m_ballShaderTechnique[MAX_PATH];
 
    int m_dmdx;
    int m_dmdy;
