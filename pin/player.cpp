@@ -103,14 +103,6 @@ EnumAssignKeys touchkeymap[8] = {
 
 //
 
-static const float quadVerts[4 * 5] =
-{
-   1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-   -1.0f, 1.0f, 0.0f, 0.0f, 0.0f,
-   1.0f, -1.0f, 0.0f, 1.0f, 1.0f,
-   -1.0f, -1.0f, 0.0f, 0.0f, 1.0f
-};
-
 static unsigned int material_flips = 0;
 static unsigned int stats_drawn_static_triangles = 0;
 
@@ -465,6 +457,7 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
    ballIndexBuffer = NULL;
    ballVertexBuffer = NULL;
    m_ballDebugPoints = NULL;
+   m_ballTrailVertexBuffer = NULL;
    m_pFont = NULL;
 }
 
@@ -495,6 +488,7 @@ void Player::Shutdown()
 #ifdef DEBUG_BALL_SPIN
    SAFE_RELEASE(m_ballDebugPoints);
 #endif
+   SAFE_RELEASE(m_ballTrailVertexBuffer);
    if (m_ballImage)
    {
        m_ballImage->FreeStuff();
@@ -1489,6 +1483,8 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
       m_ballDebugPoints->unlock();
    }
 #endif
+   assert(m_ballTrailVertexBuffer == NULL);
+   m_pin3d.m_pd3dDevice->CreateVertexBuffer((MAX_BALL_TRAIL_POS-2)*2+4, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &m_ballTrailVertexBuffer);
 
    m_ptable->m_pcv->Start(); // Hook up to events and start cranking script
 
@@ -1723,7 +1719,7 @@ void Player::RenderMirrorOverlay()
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
 
    m_pin3d.m_pd3dDevice->FBShader->Begin(0);
-   m_pin3d.m_pd3dDevice->DrawFullscreenQuad();
+   m_pin3d.m_pd3dDevice->DrawFullscreenTexturedQuad();
    m_pin3d.m_pd3dDevice->FBShader->End();
 
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
@@ -1877,7 +1873,7 @@ void Player::InitStatic(HWND hwndProgress)
          m_pin3d.m_pd3dDevice->FBShader->SetVector("w_h_height", &w_h_height);
 
          m_pin3d.m_pd3dDevice->FBShader->Begin(0);
-         m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_TEX, (LPVOID)quadVerts, 4);
+         m_pin3d.m_pd3dDevice->DrawFullscreenTexturedQuad();
          m_pin3d.m_pd3dDevice->FBShader->End();
 
          // flip AO buffers (avoids copy)
@@ -1896,7 +1892,7 @@ void Player::InitStatic(HWND hwndProgress)
       m_pin3d.m_pd3dDevice->FBShader->SetTechnique(useAA ? "fb_tonemap_AO_static" : "fb_tonemap_AO_no_filter_static");
 
       m_pin3d.m_pd3dDevice->FBShader->Begin(0);
-      m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_TEX, (LPVOID)quadVerts, 4);
+      m_pin3d.m_pd3dDevice->DrawFullscreenTexturedQuad();
       m_pin3d.m_pd3dDevice->FBShader->End();
 
       m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, TRUE);
@@ -3037,7 +3033,7 @@ void Player::DMDdraw(const float DMDposx, const float DMDposy, const float DMDwi
       m_pin3d.m_pd3dDevice->DMDShader->SetTexture("Texture0", m_device_texdmd);
 
       m_pin3d.m_pd3dDevice->DMDShader->Begin(0);
-      m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_TEX, (LPVOID)DMDVerts, 4);
+      m_pin3d.m_pd3dDevice->DrawTexturedQuad((Vertex3D_TexelOnly*)DMDVerts);
       m_pin3d.m_pd3dDevice->DMDShader->End();
    }
 }
@@ -3067,7 +3063,7 @@ void Player::Spritedraw(const float posx, const float posy, const float width, c
       m_pin3d.m_pd3dDevice->DMDShader->SetTexture("Texture0", tex);
 
    m_pin3d.m_pd3dDevice->DMDShader->Begin(0);
-   m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_TEX, (LPVOID)Verts, 4);
+   m_pin3d.m_pd3dDevice->DrawTexturedQuad((Vertex3D_TexelOnly*)Verts);
    m_pin3d.m_pd3dDevice->DMDShader->End();
 }
 
@@ -3096,7 +3092,7 @@ void Player::Spritedraw(const float posx, const float posy, const float width, c
       m_pin3d.m_pd3dDevice->DMDShader->SetTexture("Texture0", tex);
 
    m_pin3d.m_pd3dDevice->DMDShader->Begin(0);
-   m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_TEX, (LPVOID)Verts, 4);
+   m_pin3d.m_pd3dDevice->DrawTexturedQuad((Vertex3D_TexelOnly*)Verts);
    m_pin3d.m_pd3dDevice->DMDShader->End();
 }
 
@@ -3139,15 +3135,6 @@ void Player::DrawBulbLightBuffer()
       m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
       m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, FALSE);
 
-      float verts[4 * 5] =
-      {
-         1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-         -1.0f, 1.0f, 0.0f, 0.0f, 0.0f,
-         1.0f, -1.0f, 0.0f, 1.0f, 1.0f,
-         -1.0f, -1.0f, 0.0f, 0.0f, 1.0f
-      };
-
-
       for (unsigned int blur = 0; blur < 2; ++blur) //!!! opt.: use larger blur kernel instead?!
       {
          RenderTarget* tmpBloomSurface2;
@@ -3164,7 +3151,7 @@ void Player::DrawBulbLightBuffer()
             m_pin3d.m_pd3dDevice->FBShader->SetTechnique("fb_bloom_horiz");
 
             m_pin3d.m_pd3dDevice->FBShader->Begin(0);
-            m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_TEX, (LPVOID)verts, 4);
+            m_pin3d.m_pd3dDevice->DrawFullscreenTexturedQuad();
             m_pin3d.m_pd3dDevice->FBShader->End();
          }
          RenderTarget* tmpBloomSurface3;
@@ -3181,7 +3168,7 @@ void Player::DrawBulbLightBuffer()
             m_pin3d.m_pd3dDevice->FBShader->SetTechnique("fb_bloom_vert");
 
             m_pin3d.m_pd3dDevice->FBShader->Begin(0);
-            m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_TEX, (LPVOID)verts, 4);
+            m_pin3d.m_pd3dDevice->DrawFullscreenTexturedQuad();
             m_pin3d.m_pd3dDevice->FBShader->End();
          }
          SAFE_RELEASE_NO_RCC(tmpBloomSurface2);
@@ -3367,7 +3354,7 @@ void Player::Bloom()
       m_pin3d.m_pd3dDevice->FBShader->SetTechnique("fb_bloom");
 
       m_pin3d.m_pd3dDevice->FBShader->Begin(0);
-      m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_TEX, (LPVOID)shiftedVerts, 4);
+      m_pin3d.m_pd3dDevice->DrawTexturedQuad((Vertex3D_TexelOnly*)shiftedVerts);
       m_pin3d.m_pd3dDevice->FBShader->End();
    }
    RenderTarget* tmpBloomSurface2;
@@ -3384,7 +3371,7 @@ void Player::Bloom()
       m_pin3d.m_pd3dDevice->FBShader->SetTechnique("fb_bloom_horiz");
 
       m_pin3d.m_pd3dDevice->FBShader->Begin(0);
-      m_pin3d.m_pd3dDevice->DrawFullscreenQuad();
+      m_pin3d.m_pd3dDevice->DrawFullscreenTexturedQuad();
       m_pin3d.m_pd3dDevice->FBShader->End();
    }
    RenderTarget* tmpBloomSurface3;
@@ -3401,7 +3388,7 @@ void Player::Bloom()
       m_pin3d.m_pd3dDevice->FBShader->SetTechnique("fb_bloom_vert");
 
       m_pin3d.m_pd3dDevice->FBShader->Begin(0);
-      m_pin3d.m_pd3dDevice->DrawFullscreenQuad();
+      m_pin3d.m_pd3dDevice->DrawFullscreenTexturedQuad();
       m_pin3d.m_pd3dDevice->FBShader->End();
    }
 
@@ -3428,7 +3415,7 @@ void Player::StereoFXAA(const bool stereo, const bool FXAA1, const bool FXAA2, c
       m_pin3d.m_pd3dDevice->FBShader->SetTechnique("stereo");
 
       m_pin3d.m_pd3dDevice->FBShader->Begin(0);
-      m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_TEX, (LPVOID)quadVerts, 4);
+      m_pin3d.m_pd3dDevice->DrawFullscreenTexturedQuad();
       m_pin3d.m_pd3dDevice->FBShader->End();
    }
    else if (FXAA1 || FXAA2 || FXAA3)
@@ -3445,7 +3432,7 @@ void Player::StereoFXAA(const bool stereo, const bool FXAA1, const bool FXAA2, c
       m_pin3d.m_pd3dDevice->FBShader->SetTechnique(FXAA3 ? "FXAA3" : (FXAA2 ? "FXAA2" : "FXAA1"));
 
       m_pin3d.m_pd3dDevice->FBShader->Begin(0);
-      m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_TEX, (LPVOID)quadVerts, 4);
+      m_pin3d.m_pd3dDevice->DrawFullscreenTexturedQuad();
       m_pin3d.m_pd3dDevice->FBShader->End();
    }
 }
@@ -3608,7 +3595,7 @@ void Player::FlipVideoBuffersNormal(const bool vsync)
    m_pin3d.m_pd3dDevice->FBShader->SetTechnique(useAA ? "fb_tonemap" : "fb_tonemap_no_filter");
 
    m_pin3d.m_pd3dDevice->FBShader->Begin(0);
-   m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_TEX, (LPVOID)shiftedVerts, 4);
+   m_pin3d.m_pd3dDevice->DrawTexturedQuad((Vertex3D_TexelOnly*)shiftedVerts);
    m_pin3d.m_pd3dDevice->FBShader->End();
 
    StereoFXAA(stereo, FXAA1, FXAA2, FXAA3, false);
@@ -3664,7 +3651,7 @@ void Player::FlipVideoBuffersAO(const bool vsync)
    m_pin3d.m_pd3dDevice->FBShader->SetTechnique("normals");
 
    m_pin3d.m_pd3dDevice->FBShader->Begin(0);
-   m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_TEX, (LPVOID)quadVerts, 4);
+   m_pin3d.m_pd3dDevice->DrawFullscreenTexturedQuad();
    m_pin3d.m_pd3dDevice->FBShader->End();*/
 
    RenderTarget* tmpAOSurface;
@@ -3686,7 +3673,7 @@ void Player::FlipVideoBuffersAO(const bool vsync)
    m_pin3d.m_pd3dDevice->FBShader->SetTechnique("AO");
 
    m_pin3d.m_pd3dDevice->FBShader->Begin(0);
-   m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_TEX, (LPVOID)quadVerts, 4);
+   m_pin3d.m_pd3dDevice->DrawFullscreenTexturedQuad();
    m_pin3d.m_pd3dDevice->FBShader->End();
 
    // flip AO buffers (avoids copy)
@@ -3727,7 +3714,7 @@ void Player::FlipVideoBuffersAO(const bool vsync)
    m_pin3d.m_pd3dDevice->FBShader->SetTechnique(useAA ? "fb_tonemap_AO" : "fb_tonemap_AO_no_filter");
 
    m_pin3d.m_pd3dDevice->FBShader->Begin(0);
-   m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_TEX, (LPVOID)shiftedVerts, 4);
+   m_pin3d.m_pd3dDevice->DrawTexturedQuad((Vertex3D_TexelOnly*)shiftedVerts);
    m_pin3d.m_pd3dDevice->FBShader->End();
 
    StereoFXAA(stereo, FXAA1, FXAA2, FXAA3, true);
@@ -4411,7 +4398,8 @@ void Player::DrawBalls()
       ballShader->End();
 
       // ball trails
-      if ((m_fTrailForBalls && (m_ptable->m_useTrailForBalls == -1)) || (m_ptable->m_useTrailForBalls == 1))
+      if((!m_ptable->m_fReflectionEnabled) && // do not render trails in reflection pass
+         ((m_fTrailForBalls && (m_ptable->m_useTrailForBalls == -1)) || (m_ptable->m_useTrailForBalls == 1)))
       {
          Vertex3D_NoTex2 rgv3D_all[MAX_BALL_TRAIL_POS * 2];
          unsigned int num_rgv3D = 0;
@@ -4498,12 +4486,17 @@ void Player::DrawBalls()
 
          if (num_rgv3D > 0)
          {
+            Vertex3D_NoTex2 *bufvb;
+            m_ballTrailVertexBuffer->lock(0, 0, (void**)&bufvb, VertexBuffer::DISCARDCONTENTS);
+            memcpy(bufvb,rgv3D_all,num_rgv3D*sizeof(Vertex3D_NoTex2));
+            m_ballTrailVertexBuffer->unlock();
+
             m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, FALSE);
             m_pin3d.EnableAlphaBlend(false);
 
             ballShader->SetTechnique("RenderBallTrail");
             ballShader->Begin(0);
-            m_pin3d.m_pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_NOTEX2_VERTEX, rgv3D_all, num_rgv3D);
+            m_pin3d.m_pd3dDevice->DrawPrimitiveVB(D3DPT_TRIANGLESTRIP, MY_D3DFVF_NOTEX2_VERTEX, m_ballTrailVertexBuffer, 0, num_rgv3D);
             ballShader->End();
          }
       }

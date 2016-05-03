@@ -313,7 +313,7 @@ void DispReel::PostRenderStatic(RenderDevice* pd3dDevice)
            Verts[i * 5 + 1] = 1.0f - (Verts[i * 5 + 1] * height + posy)*2.0f;
        }
 
-       pd3dDevice->DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_TEX, (LPVOID)Verts, 4);
+       pd3dDevice->DrawTexturedQuad((Vertex3D_TexelOnly*)Verts);
    }
    pd3dDevice->DMDShader->End();
 

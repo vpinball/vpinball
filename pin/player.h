@@ -228,11 +228,12 @@ public:
    Shader      *ballShader;
    IndexBuffer *ballIndexBuffer;
    VertexBuffer *ballVertexBuffer;
+   VertexBuffer *m_ballTrailVertexBuffer;
    bool m_antiStretchBall;
 
-   PinTable *m_ptable;
    bool cameraMode;
    int backdropSettingActive;
+   PinTable *m_ptable;
 
    Pin3D m_pin3d;
 
@@ -482,5 +483,6 @@ public:
    bool m_fOverwriteBallImages;
    Texture *m_ballImage;
    Texture *m_decalImage;
+
    ID3DXFont *m_pFont;
 };
