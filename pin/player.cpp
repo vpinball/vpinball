@@ -1082,8 +1082,8 @@ void Player::InitBallShader()
    //ballShader->SetInt("iLightPointNum",MAX_LIGHT_SOURCES);
 
    const float Roughness = 0.8f;
-   const D3DXVECTOR4 rwem(exp2f(10.0f * Roughness + 1.0f), 0.f, 1.f, 0.0f); // no metal, as ball collects the diffuse playfield which uses this flag!
-   ballShader->SetVector("Roughness_WrapL_Edge_IsMetal", &rwem);
+   const D3DXVECTOR4 rwem(exp2f(10.0f * Roughness + 1.0f), 0.f, 1.f, 0.f);
+   ballShader->SetVector("Roughness_WrapL_Edge", &rwem);
 
    Texture * const playfield = m_ptable->GetImage((char *)m_ptable->m_szImage);
    if (playfield)
@@ -1484,7 +1484,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
       assert(m_ballDebugPoints == NULL);
       m_pin3d.m_pd3dDevice->CreateVertexBuffer((unsigned int)ballDbgVtx.size(), 0, MY_D3DFVF_TEX, &m_ballDebugPoints);
       void *buf;
-      m_ballDebugPoints->lock(0, 0, &buf, 0);
+      m_ballDebugPoints->lock(0, 0, &buf, VertexBuffer::WRITEONLY);
       memcpy(buf, &ballDbgVtx[0], ballDbgVtx.size() * sizeof(ballDbgVtx[0]));
       m_ballDebugPoints->unlock();
    }
@@ -4350,8 +4350,8 @@ void Player::DrawBalls()
 		  const float dist = Vertex3Ds(light_nearest[0]->m_d.m_vCenter.x - pball->m_pos.x, light_nearest[0]->m_d.m_vCenter.y - pball->m_pos.y, light_nearest[0]->m_d.m_meshRadius + light_nearest[0]->m_surfaceHeight - pball->m_pos.z).Length(); //!! z pos
 		  Roughness = min(max(dist*0.006f, 0.4f), Roughness);
 	  }
-	  const D3DXVECTOR4 rwem(exp2f(10.0f * Roughness + 1.0f), 0.f, 1.f, 0.0f);
-	  ballShader->SetVector("Roughness_WrapL_Edge_IsMetal", &rwem);
+	  const D3DXVECTOR4 rwem(exp2f(10.0f * Roughness + 1.0f), 0.f, 1.f, 0.f);
+	  ballShader->SetVector("Roughness_WrapL_Edge", &rwem);
 
       // ************************* draw the ball itself ****************************
 	  float sx, sy;

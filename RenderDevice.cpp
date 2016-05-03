@@ -1636,17 +1636,17 @@ void Shader::SetMaterial(const Material * const mat)
       bOpacityActive = false;
    }
 
+   // bIsMetal is nowadays handled via a separate technique! (so not in here)
+
    if (fRoughness != currentMaterial.m_fRoughness ||
       fEdge != currentMaterial.m_fEdge ||
-      fWrapLighting != currentMaterial.m_fWrapLighting ||
-      bIsMetal != currentMaterial.m_bIsMetal)
+      fWrapLighting != currentMaterial.m_fWrapLighting)
    {
-      const D3DXVECTOR4 rwem(fRoughness, fWrapLighting, fEdge, bIsMetal ? 1.0f : 0.0f);
-      SetVector("Roughness_WrapL_Edge_IsMetal", &rwem);
+      const D3DXVECTOR4 rwem(fRoughness, fWrapLighting, fEdge, 0.f);
+      SetVector("Roughness_WrapL_Edge", &rwem);
       currentMaterial.m_fRoughness = fRoughness;
       currentMaterial.m_fWrapLighting = fWrapLighting;
       currentMaterial.m_fEdge = fEdge;
-      currentMaterial.m_bIsMetal = bIsMetal;
    }
 
    const float alpha = bOpacityActive ? fOpacity : 1.0f;

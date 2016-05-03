@@ -77,7 +77,7 @@ float3 cGlossy;
 //!! No value is under 0.02
 //!! Non-metals value are un-intuitively low: 0.02-0.08
 //!! Gemstones are 0.05-0.17
-//!! Metals have high specular reflectance:  0.5-1.0
+//!! Metals have high specular reflectance: 0.5-1.0
 
 float fAlphaTestValue;
 
@@ -92,9 +92,8 @@ struct VS_OUTPUT
 struct VS_NOTEX_OUTPUT 
 {
    float4 pos      : POSITION;
-   float2 tex1     : TEXCOORD0;
-   float3 worldPos : TEXCOORD1;
-   float3 normal   : TEXCOORD2;
+   float4 worldPos_t1x : TEXCOORD0; // pack tex1 into w component of the float4s
+   float4 normal_t1y : TEXCOORD1;
 };
 
 struct VS_DEPTH_ONLY_NOTEX_OUTPUT 
@@ -110,7 +109,7 @@ struct VS_DEPTH_ONLY_TEX_OUTPUT
 
 struct PS_OUTPUT
 {
-   float4 color:COLOR0;
+   float4 color    : COLOR0;
 };
 
 float3x3 TBN_trafo(const float3 N, const float3 V, const float2 uv)
@@ -171,9 +170,12 @@ VS_NOTEX_OUTPUT vs_notex_main (float4 vPosition : POSITION0,
 
    Out.pos = mul(vPosition, matWorldViewProj);
    //if(cBase_Alpha.a < 1.0)
-      Out.tex1 = Out.pos.xy/Out.pos.w;
-   Out.worldPos = P;
-   Out.normal = N;
+   {
+      Out.worldPos_t1x.w = Out.pos.x/Out.pos.w;
+      Out.normal_t1y.w = Out.pos.y/Out.pos.w;
+   }
+   Out.worldPos_t1x.xyz = P;
+   Out.normal_t1y.xyz = N;
    return Out; 
 }
 
@@ -197,35 +199,35 @@ VS_DEPTH_ONLY_TEX_OUTPUT vs_depth_only_main_with_texture(float4 vPosition : POSI
    return Out;
 }
 
-PS_OUTPUT ps_main(in VS_NOTEX_OUTPUT IN) 
+PS_OUTPUT ps_main(in VS_NOTEX_OUTPUT IN, uniform int is_metal) 
 {
    PS_OUTPUT output;
    const float3 diffuse  = cBase_Alpha.xyz;
-   const float3 glossy   = (Roughness_WrapL_Edge_IsMetal.w != 0.0) ? cBase_Alpha.xyz : cGlossy*0.08;
+   const float3 glossy   = is_metal ? cBase_Alpha.xyz : cGlossy*0.08;
    const float3 specular = cClearcoat_EdgeAlpha.xyz*0.08;
-   const float  edge     = (Roughness_WrapL_Edge_IsMetal.w != 0.0) ? 1.0 : Roughness_WrapL_Edge_IsMetal.z;
+   const float  edge     = is_metal ? 1.0 : Roughness_WrapL_Edge.z;
    
-   const float3 V = normalize(/*camera=0,0,0,1*/-IN.worldPos);
-   const float3 N = normalize(IN.normal);
+   const float3 V = normalize(/*camera=0,0,0,1*/-IN.worldPos_t1x.xyz);
+   const float3 N = normalize(IN.normal_t1y.xyz);
 
    //return float4((N+1.0)*0.5,1.0); // visualize normals
 
    float4 result;
-   result.xyz = lightLoop(IN.worldPos, N, V, diffuse, glossy, specular, edge, true); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
+   result.xyz = lightLoop(IN.worldPos_t1x.xyz, N, V, diffuse, glossy, specular, edge, true, is_metal); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
    result.a = cBase_Alpha.a;
 
    [branch] if(cBase_Alpha.a < 1.0) {
       result.a = lerp(result.a, 1.0, cClearcoat_EdgeAlpha.w*pow(1.0-abs(dot(N,V)),5)); // fresnel for falloff towards silhouette, flip normal in case of wrong orientation (backside lighting)
 
       // add light from "below" from user-flagged bulb lights, pre-rendered/blurred in previous renderpass //!! sqrt = magic
-      result.xyz += sqrt(diffuse)*tex2Dlod(texSamplerBL, float4(float2(0.5*IN.tex1.x,-0.5*IN.tex1.y)+0.5, 0.,0.)).xyz*result.a; //!! depend on normal of light (unknown though) vs geom normal, too?
+      result.xyz += sqrt(diffuse)*tex2Dlod(texSamplerBL, float4(float2(0.5*IN.worldPos_t1x.w,-0.5*IN.normal_t1y.w)+0.5, 0.,0.)).xyz*result.a; //!! depend on normal of light (unknown though) vs geom normal, too?
    }
 
    output.color = result;
    return output;
 }
 
-PS_OUTPUT ps_main_texture(in VS_OUTPUT IN, uniform int doNormalMapping)
+PS_OUTPUT ps_main_texture(in VS_OUTPUT IN, uniform int is_metal, uniform int doNormalMapping)
 {
    PS_OUTPUT output;
    float4 pixel = tex2D(texSampler0, IN.tex01.xy);
@@ -244,9 +246,9 @@ PS_OUTPUT ps_main_texture(in VS_OUTPUT IN, uniform int doNormalMapping)
    }
 
    const float3 diffuse = t*cBase_Alpha.xyz;
-   const float3 glossy = (Roughness_WrapL_Edge_IsMetal.w != 0.0) ? diffuse : t*cGlossy*0.08; //!! use AO for glossy? specular?
+   const float3 glossy = is_metal ? diffuse : t*cGlossy*0.08; //!! use AO for glossy? specular?
    const float3 specular = cClearcoat_EdgeAlpha.xyz*0.08;
-   const float  edge = (Roughness_WrapL_Edge_IsMetal.w != 0.0) ? 1.0 : Roughness_WrapL_Edge_IsMetal.z;
+   const float  edge = is_metal ? 1.0 : Roughness_WrapL_Edge.z;
 
    const float3 V = normalize(/*camera=0,0,0,1*/-IN.worldPos);
    float3 N = normalize(IN.normal);
@@ -257,7 +259,7 @@ PS_OUTPUT ps_main_texture(in VS_OUTPUT IN, uniform int doNormalMapping)
    //return float4((N+1.0)*0.5,1.0); // visualize normals
 
    float4 result;
-   result.xyz = lightLoop(IN.worldPos, N, V, diffuse, glossy, specular, edge, true);
+   result.xyz = lightLoop(IN.worldPos, N, V, diffuse, glossy, specular, edge, true, is_metal);
    result.a = pixel.a;
 
    [branch] if (cBase_Alpha.a < 1.0 && result.a < 1.0) {
@@ -297,15 +299,17 @@ VS_NOTEX_OUTPUT vs_kicker (float4 vPosition : POSITION0,
     const float3 P = mul(vPosition, matWorldView).xyz;
     const float3 N = normalize(mul(vNormal, matWorldViewInverseTranspose).xyz);
 
-    Out.pos = mul(vPosition, matWorldViewProj);
+    Out.pos.xyw = mul(vPosition, matWorldViewProj).xyw;
     float4 P2 = vPosition;
     P2.z -= 30.0f*fKickerScale;
-    P2 = mul(P2, matWorldViewProj);
-    Out.pos.z = P2.z;
+    Out.pos.z = mul(P2, matWorldViewProj).z;
     //if(cBase_Alpha.a < 1.0)
-        Out.tex1 = Out.pos.xy/Out.pos.w; //!! not necessary
-    Out.worldPos = P;
-    Out.normal = N;
+    {
+        Out.worldPos_t1x.w = Out.pos.x/Out.pos.w; //!! not necessary
+        Out.normal_t1y.w = Out.pos.y/Out.pos.w; //!! not necessary
+    }
+    Out.worldPos_t1x.xyz = P;
+    Out.normal_t1y.xyz = N;
     return Out; 
 }
 
@@ -317,30 +321,57 @@ VS_NOTEX_OUTPUT vs_kicker (float4 vPosition : POSITION0,
 // Standard Materials
 //
 
-technique basic_without_texture
+technique basic_without_texture_isMetal
 { 
    pass P0 
    { 
       VertexShader = compile vs_3_0 vs_notex_main(); 
-      PixelShader = compile ps_3_0 ps_main();
+      PixelShader = compile ps_3_0 ps_main(1);
    } 
 }
 
-technique basic_with_texture
+technique basic_without_texture_isNotMetal
+{ 
+   pass P0 
+   { 
+      VertexShader = compile vs_3_0 vs_notex_main(); 
+      PixelShader = compile ps_3_0 ps_main(0);
+   } 
+}
+
+technique basic_with_texture_isMetal
 { 
    pass P0 
    { 
       VertexShader = compile vs_3_0 vs_main(); 
-      PixelShader = compile ps_3_0 ps_main_texture(0);
+      PixelShader = compile ps_3_0 ps_main_texture(1,0);
    } 
 }
 
-technique basic_with_texture_normal
+technique basic_with_texture_isNotMetal
+{ 
+   pass P0 
+   { 
+      VertexShader = compile vs_3_0 vs_main(); 
+      PixelShader = compile ps_3_0 ps_main_texture(0,0);
+   } 
+}
+
+technique basic_with_texture_normal_isMetal
 {
    pass P0
    {
       VertexShader = compile vs_3_0 vs_main();
-      PixelShader = compile ps_3_0 ps_main_texture(1);
+      PixelShader = compile ps_3_0 ps_main_texture(1,1);
+   }
+}
+
+technique basic_with_texture_normal_isNotMetal
+{
+   pass P0
+   {
+      VertexShader = compile vs_3_0 vs_main();
+      PixelShader = compile ps_3_0 ps_main_texture(0,1);
    }
 }
 
@@ -366,13 +397,23 @@ technique basic_depth_only_with_texture
 // Kicker
 //
 
-technique kickerBoolean
+technique kickerBoolean_isMetal
 { 
    pass P0 
    { 
       //ZWriteEnable=TRUE;
       VertexShader = compile vs_3_0 vs_kicker(); 
-      PixelShader = compile ps_3_0 ps_main();
+      PixelShader = compile ps_3_0 ps_main(1);
+   } 
+}
+
+technique kickerBoolean_isNotMetal
+{ 
+   pass P0 
+   { 
+      //ZWriteEnable=TRUE;
+      VertexShader = compile vs_3_0 vs_kicker(); 
+      PixelShader = compile ps_3_0 ps_main(0);
    } 
 }
 

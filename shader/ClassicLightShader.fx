@@ -94,7 +94,7 @@ VS_LIGHT_OUTPUT vs_light_main (float4 vPosition : POSITION0,
    return Out; 
 }
 
-float4 PS_LightWithTexel(in VS_LIGHT_OUTPUT IN) : COLOR
+float4 PS_LightWithTexel(in VS_LIGHT_OUTPUT IN, uniform int is_metal) : COLOR
 {	
     float4 pixel = tex2D(texSampler0, IN.tex0); //!! IN.tex0 abused in backglass mode
     if(!hdrTexture0)
@@ -108,11 +108,11 @@ float4 PS_LightWithTexel(in VS_LIGHT_OUTPUT IN) : COLOR
 	{
         pixel.xyz = saturate(pixel.xyz); // could be HDR
         const float3 diffuse = pixel.xyz*cBase_Alpha.xyz;
-        const float3 glossy = (Roughness_WrapL_Edge_IsMetal.w != 0.0) ? diffuse : pixel.xyz*cGlossy*0.08; //!! use AO for glossy? specular?
+        const float3 glossy = is_metal ? diffuse : pixel.xyz*cGlossy*0.08; //!! use AO for glossy? specular?
         const float3 specular = cClearcoat_EdgeAlpha.xyz*0.08;
-        const float edge = (Roughness_WrapL_Edge_IsMetal.w != 0.0) ? 1.0 : Roughness_WrapL_Edge_IsMetal.z;
+        const float edge = is_metal ? 1.0 : Roughness_WrapL_Edge.z;
 
-	    color.xyz = lightLoop(IN.worldPos, normalize(IN.normal), normalize(/*camera=0,0,0,1*/-IN.worldPos), diffuse, glossy, specular, edge, true); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
+	    color.xyz = lightLoop(IN.worldPos, normalize(IN.normal), normalize(/*camera=0,0,0,1*/-IN.worldPos), diffuse, glossy, specular, edge, true, is_metal); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
 		color.a = pixel.a;
     }
     color.a *= cBase_Alpha.a;
@@ -131,7 +131,7 @@ float4 PS_LightWithTexel(in VS_LIGHT_OUTPUT IN) : COLOR
     return color;
 }
 
-float4 PS_LightWithoutTexel(in VS_LIGHT_OUTPUT IN) : COLOR
+float4 PS_LightWithoutTexel(in VS_LIGHT_OUTPUT IN, uniform int is_metal) : COLOR
 {
     float4 result = float4(0.0, 0.0, 0.0, 0.0);
 	[branch] if (lightColor_intensity.w != 0.0)
@@ -150,18 +150,18 @@ float4 PS_LightWithoutTexel(in VS_LIGHT_OUTPUT IN) : COLOR
     else
 	{
 	    const float3 diffuse  = lightColor_intensity.xyz*cBase_Alpha.xyz;
-        const float3 glossy   = (Roughness_WrapL_Edge_IsMetal.w != 0.0) ? diffuse : lightColor_intensity.xyz*cGlossy*0.08;
+        const float3 glossy   = is_metal ? diffuse : lightColor_intensity.xyz*cGlossy*0.08;
         const float3 specular = cClearcoat_EdgeAlpha.xyz*0.08;
-	    const float edge = (Roughness_WrapL_Edge_IsMetal.w != 0.0) ? 1.0 : Roughness_WrapL_Edge_IsMetal.z;
+	    const float edge = is_metal ? 1.0 : Roughness_WrapL_Edge.z;
 
-	    color.xyz = lightLoop(IN.worldPos, normalize(IN.normal), normalize(/*camera=0,0,0,1*/-IN.worldPos), diffuse, glossy, specular, edge, true); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
+	    color.xyz = lightLoop(IN.worldPos, normalize(IN.normal), normalize(/*camera=0,0,0,1*/-IN.worldPos), diffuse, glossy, specular, edge, true, is_metal); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
 	}
     color.a = cBase_Alpha.a;
     
     return color+result;
 }
 
-technique light_with_texture
+technique light_with_texture_isMetal
 { 
    pass P0 
    { 
@@ -169,15 +169,36 @@ technique light_with_texture
 //       SrcBlend = One;
 //       DestBlend = One;
        VertexShader = compile vs_3_0 vs_light_main();
-	  PixelShader = compile ps_3_0 PS_LightWithTexel();
+	  PixelShader = compile ps_3_0 PS_LightWithTexel(1);
    } 
 }
 
-technique light_without_texture
+technique light_with_texture_isNotMetal
+{ 
+   pass P0 
+   { 
+//       AlphaBlendEnable = true;
+//       SrcBlend = One;
+//       DestBlend = One;
+       VertexShader = compile vs_3_0 vs_light_main();
+	  PixelShader = compile ps_3_0 PS_LightWithTexel(0);
+   } 
+}
+
+technique light_without_texture_isMetal
 { 
    pass P0 
    { 
       VertexShader = compile vs_3_0 vs_light_main(); 
-	  PixelShader = compile ps_3_0 PS_LightWithoutTexel();
+	  PixelShader = compile ps_3_0 PS_LightWithoutTexel(1);
+   } 
+}
+
+technique light_without_texture_isNotMetal
+{ 
+   pass P0 
+   { 
+      VertexShader = compile vs_3_0 vs_light_main(); 
+	  PixelShader = compile ps_3_0 PS_LightWithoutTexel(0);
    } 
 }

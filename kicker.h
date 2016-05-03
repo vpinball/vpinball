@@ -102,6 +102,9 @@ public:
    unsigned int numFaces;
    Texture texture;
    float  m_baseHeight;
+
+   VertexBuffer *plateVertexBuffer;
+   IndexBuffer *plateIndexBuffer;
    // IKicker
 public:
    STDMETHOD(get_Material)(/*[out, retval]*/ BSTR *pVal);

@@ -653,7 +653,7 @@ void Flipper::PostRenderStatic(RenderDevice* pd3dDevice)
    Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
    if (pin)
    {
-      pd3dDevice->basicShader->SetTechnique("basic_with_texture");
+      pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_with_texture_isMetal" : "basic_with_texture_isNotMetal");
       pd3dDevice->basicShader->SetTexture("Texture0", pin);
       pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
 
@@ -662,7 +662,7 @@ void Flipper::PostRenderStatic(RenderDevice* pd3dDevice)
       //pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_WRAP);
    }
    else
-      pd3dDevice->basicShader->SetTechnique("basic_without_texture");
+      pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_without_texture_isMetal" : "basic_without_texture_isNotMetal");
 
    pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
@@ -687,6 +687,7 @@ void Flipper::PostRenderStatic(RenderDevice* pd3dDevice)
    if (m_d.m_rubberthickness > 0.f)
    {
       mat = m_ptable->GetMaterial(m_d.m_szRubberMaterial);
+      pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_with_texture_isMetal" : "basic_with_texture_isNotMetal");
       pd3dDevice->basicShader->SetMaterial(mat);
 
       pd3dDevice->basicShader->Begin(0);
@@ -892,7 +893,7 @@ void Flipper::RenderSetup(RenderDevice* pd3dDevice)
    pd3dDevice->CreateVertexBuffer(flipperBaseVertices * 2, 0, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer);
 
    Vertex3D_NoTex2 *buf;
-   vertexBuffer->lock(0, 0, (void**)&buf, 0);
+   vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
    GenerateBaseMesh(buf);
    vertexBuffer->unlock();
 }

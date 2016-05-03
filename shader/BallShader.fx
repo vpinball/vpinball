@@ -172,7 +172,7 @@ voutTrail vsBallTrail( in vin IN )
 
 //------------------------------------
 
-float3 ballLightLoop(float3 pos, float3 N, float3 V, float3 diffuse, float3 glossy, float3 specular, float edge)
+float3 ballLightLoop(float3 pos, float3 N, float3 V, float3 diffuse, float3 glossy, float3 specular, float edge, const bool is_metal)
 {
    // normalize input vectors for BRDF evals
    N = normalize(N);
@@ -196,13 +196,13 @@ float3 ballLightLoop(float3 pos, float3 N, float3 V, float3 diffuse, float3 glos
 
    float3 color = float3(0.0, 0.0, 0.0);
       
-   [branch] if(((Roughness_WrapL_Edge_IsMetal.w == 0.0) && (diffuseMax > 0.0)) || (glossyMax > 0.0))
+   [branch] if((!is_metal && (diffuseMax > 0.0)) || (glossyMax > 0.0))
    {
       for(int i = 0; i < iLightPointBallsNum; i++)  
-         color += DoPointLight(pos, N, V, diffuse, glossy, edge, Roughness_WrapL_Edge_IsMetal.x, i); // no clearcoat needed as only pointlights so far
+         color += DoPointLight(pos, N, V, diffuse, glossy, edge, Roughness_WrapL_Edge.x, i, is_metal); // no clearcoat needed as only pointlights so far
    }
 
-   [branch] if((Roughness_WrapL_Edge_IsMetal.w == 0.0) && (diffuseMax > 0.0))
+   [branch] if(!is_metal && (diffuseMax > 0.0))
       color += DoEnvmapDiffuse(normalize(mul(matView, N).xyz), diffuse); // trafo back to world for lookup into world space envmap // actually: mul(float4(N, 0.0), matViewInverseInverseTranspose)
 
    if(specularMax > 0.0)
@@ -259,7 +259,7 @@ PS_OUTPUT psBall( in vout IN, uniform bool cabMode, uniform bool decalMode )
                                  : InvGamma(tex2Dlod(texSampler1, float4(uv, 0., 0.)).xyz)*invTableRes__playfield_height_reflection.w; //!! rather use screen space sample from previous frame??
 
        //!! hack to get some lighting on sample, but only diffuse, the rest is not setup correctly anyhow
-       playfieldColor = lightLoop(playfield_hit, playfield_normal, -r, playfieldColor, float3(0.,0.,0.), float3(0.,0.,0.), 1.0, true);
+       playfieldColor = lightLoop(playfield_hit, playfield_normal, -r, playfieldColor, float3(0.,0.,0.), float3(0.,0.,0.), 1.0, true, false);
 
 	   //!! magic falloff & weight the rest in from the ballImage
 	   const float weight = NdotR*NdotR;
@@ -276,9 +276,9 @@ PS_OUTPUT psBall( in vout IN, uniform bool cabMode, uniform bool decalMode )
     float3 specular = playfieldColor*cBase_Alpha.xyz; //!! meh, too, as only added in ballLightLoop anyhow
 	if(!decalMode)
 	    specular *= float3(1.,1.,1.)-decalColor; // see above
-   
+
     float4 result;
-	result.xyz = ballLightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular, 1.0);
+	result.xyz = ballLightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular, 1.0, true);
 	result.a = cBase_Alpha.a;
     output.color = result;
     return output;

@@ -1320,12 +1320,12 @@ void Rubber::RenderObject(RenderDevice * const pd3dDevice)
    Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
    if (pin)
    {
-      pd3dDevice->basicShader->SetTechnique("basic_with_texture");
+      pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_with_texture_isMetal" : "basic_with_texture_isNotMetal");
       pd3dDevice->basicShader->SetTexture("Texture0", pin);
       pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
    }
    else
-      pd3dDevice->basicShader->SetTechnique("basic_without_texture");
+      pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_without_texture_isMetal" : "basic_without_texture_isNotMetal");
 
    pd3dDevice->basicShader->Begin(0);
    pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, dynamicVertexBuffer, 0, m_numVertices, dynamicIndexBuffer, 0, m_numIndices);
@@ -1522,7 +1522,7 @@ void Rubber::GenerateVertexBuffer(RenderDevice* pd3dDevice)
 
    // Draw the floor of the ramp.
    Vertex3D_NoTex2 *buf;
-   dynamicVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
+   dynamicVertexBuffer->lock(0, 0, (void**)&buf, m_d.m_staticRendering ? VertexBuffer::WRITEONLY : VertexBuffer::DISCARDCONTENTS);
    memcpy(&buf[0], &m_vertices[0], sizeof(Vertex3D_NoTex2)*m_numVertices);
    dynamicVertexBuffer->unlock();
 
