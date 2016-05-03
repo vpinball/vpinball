@@ -26,27 +26,31 @@
 #endif
 #pragma comment(lib, "dxerr.lib")       // TODO: put into build system
 
+#if _MSC_VER <= 1700
+ #define VerSetConditionMask(_m_,_t_,_c_) (_m_|(_c_<<(1<<_t_))) //!! does not work with VER_SERVICEPACKMAJOR! (see below)
+#endif
+
 static bool IsWindowsVistaOr7()
 {
 	OSVERSIONINFOEXW osvi = { sizeof(osvi), 0, 0, 0, 0,{ 0 }, 0, 0 };
-	const DWORDLONG dwlConditionMask = VerSetConditionMask(
+	const DWORDLONG dwlConditionMask = //VerSetConditionMask(
 		VerSetConditionMask(
 			VerSetConditionMask(
 				0, VER_MAJORVERSION, VER_EQUAL),
-			VER_MINORVERSION, VER_EQUAL),
-		VER_SERVICEPACKMAJOR, VER_GREATER_EQUAL);
+			VER_MINORVERSION, VER_EQUAL)/*,
+		VER_SERVICEPACKMAJOR, VER_GREATER_EQUAL)*/;
 	osvi.dwMajorVersion = HIBYTE(_WIN32_WINNT_VISTA);
 	osvi.dwMinorVersion = LOBYTE(_WIN32_WINNT_VISTA);
-	osvi.wServicePackMajor = 0;
+	//osvi.wServicePackMajor = 0;
 
-	const bool vista = VerifyVersionInfoW(&osvi, VER_MAJORVERSION | VER_MINORVERSION | VER_SERVICEPACKMAJOR, dwlConditionMask) != FALSE;
+	const bool vista = VerifyVersionInfoW(&osvi, VER_MAJORVERSION | VER_MINORVERSION /*| VER_SERVICEPACKMAJOR*/, dwlConditionMask) != FALSE;
 
-	osvi = { sizeof(osvi), 0, 0, 0, 0,{ 0 }, 0, 0 };
-	osvi.dwMajorVersion = HIBYTE(_WIN32_WINNT_WIN7);
-	osvi.dwMinorVersion = LOBYTE(_WIN32_WINNT_WIN7);
-	osvi.wServicePackMajor = 0;
+	OSVERSIONINFOEXW osvi2 = { sizeof(osvi), 0, 0, 0, 0,{ 0 }, 0, 0 };
+	osvi2.dwMajorVersion = HIBYTE(_WIN32_WINNT_WIN7);
+	osvi2.dwMinorVersion = LOBYTE(_WIN32_WINNT_WIN7);
+	//osvi2.wServicePackMajor = 0;
 
-	const bool win7 = VerifyVersionInfoW(&osvi, VER_MAJORVERSION | VER_MINORVERSION | VER_SERVICEPACKMAJOR, dwlConditionMask) != FALSE;
+	const bool win7 = VerifyVersionInfoW(&osvi2, VER_MAJORVERSION | VER_MINORVERSION /*| VER_SERVICEPACKMAJOR*/, dwlConditionMask) != FALSE;
 
 	return vista || win7;
 }
