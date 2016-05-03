@@ -94,7 +94,7 @@ VS_LIGHT_OUTPUT vs_light_main (float4 vPosition : POSITION0,
    return Out; 
 }
 
-float4 PS_LightWithTexel(in VS_LIGHT_OUTPUT IN, uniform int is_metal) : COLOR
+float4 PS_LightWithTexel(in VS_LIGHT_OUTPUT IN, uniform bool is_metal) : COLOR
 {	
     float4 pixel = tex2D(texSampler0, IN.tex0); //!! IN.tex0 abused in backglass mode
     if(!hdrTexture0)
@@ -131,7 +131,7 @@ float4 PS_LightWithTexel(in VS_LIGHT_OUTPUT IN, uniform int is_metal) : COLOR
     return color;
 }
 
-float4 PS_LightWithoutTexel(in VS_LIGHT_OUTPUT IN, uniform int is_metal) : COLOR
+float4 PS_LightWithoutTexel(in VS_LIGHT_OUTPUT IN, uniform bool is_metal) : COLOR
 {
     float4 result = float4(0.0, 0.0, 0.0, 0.0);
 	[branch] if (lightColor_intensity.w != 0.0)

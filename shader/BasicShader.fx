@@ -199,7 +199,7 @@ VS_DEPTH_ONLY_TEX_OUTPUT vs_depth_only_main_with_texture(float4 vPosition : POSI
    return Out;
 }
 
-PS_OUTPUT ps_main(in VS_NOTEX_OUTPUT IN, uniform int is_metal) 
+PS_OUTPUT ps_main(in VS_NOTEX_OUTPUT IN, uniform bool is_metal) 
 {
    PS_OUTPUT output;
    const float3 diffuse  = cBase_Alpha.xyz;
@@ -227,7 +227,7 @@ PS_OUTPUT ps_main(in VS_NOTEX_OUTPUT IN, uniform int is_metal)
    return output;
 }
 
-PS_OUTPUT ps_main_texture(in VS_OUTPUT IN, uniform int is_metal, uniform int doNormalMapping)
+PS_OUTPUT ps_main_texture(in VS_OUTPUT IN, uniform bool is_metal, uniform bool doNormalMapping)
 {
    PS_OUTPUT output;
    float4 pixel = tex2D(texSampler0, IN.tex01.xy);

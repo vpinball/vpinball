@@ -94,13 +94,16 @@ public:
 
    KickerData m_d;
 
-   KickerHitCircle *m_phitkickercircle;
-   VertexBuffer *vertexBuffer;
    std::vector<Vertex3Ds> hitMesh;
+   KickerHitCircle *m_phitkickercircle;
+
+   VertexBuffer *vertexBuffer;
    IndexBuffer  *indexBuffer;
    unsigned int numVertices;
    unsigned int numFaces;
+
    Texture texture;
+
    float  m_baseHeight;
 
    VertexBuffer *plateVertexBuffer;
