@@ -624,6 +624,23 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
    CreateVertexDeclaration(VertexNormalTexelElement, &m_pVertexNormalTexelDeclaration);
    //CreateVertexDeclaration( VertexNormalTexelTexelElement, &m_pVertexNormalTexelTexelDeclaration );
    CreateVertexDeclaration(VertexTrafoTexelElement, &m_pVertexTrafoTexelDeclaration);
+
+   m_quadVertexBuffer = NULL;
+   CreateVertexBuffer(4, 0, MY_D3DFVF_TEX, &m_quadVertexBuffer);
+   Vertex3D_TexelOnly* bufvb;
+   m_quadVertexBuffer->lock(0, 0, (void**)&bufvb, VertexBuffer::WRITEONLY);
+   static const float verts[4 * 5] =
+   {
+      1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+      -1.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+      1.0f, -1.0f, 0.0f, 1.0f, 1.0f,
+      -1.0f, -1.0f, 0.0f, 0.0f, 1.0f
+   };
+   memcpy(bufvb,verts,4*sizeof(Vertex3D_TexelOnly));
+   m_quadVertexBuffer->unlock();
+
+   //m_quadDynVertexBuffer = NULL;
+   //CreateVertexBuffer(4, USAGE_DYNAMIC, MY_D3DFVF_TEX, &m_quadDynVertexBuffer);
 }
 
 bool RenderDevice::DepthBufferReadBackAvailable()
@@ -711,6 +728,9 @@ void RenderDevice::FreeShader()
 
 RenderDevice::~RenderDevice()
 {
+   m_quadVertexBuffer->release();
+   //m_quadDynVertexBuffer->release();
+
 #ifndef DISABLE_FORCE_NVIDIA_OPTIMUS
    if (srcr_cache != NULL)
       CHECKNVAPI(NvAPI_D3D9_UnregisterResource(srcr_cache)); //!! meh
@@ -1376,24 +1396,29 @@ void RenderDevice::DrawPrimitive(const D3DPRIMITIVETYPE type, const DWORD fvf, c
    m_curDrawCalls++;
 }
 
-void RenderDevice::DrawIndexedPrimitive(const D3DPRIMITIVETYPE type, const DWORD fvf, const void* vertices, const DWORD vertexCount, const WORD* indices, const DWORD indexCount)
+void RenderDevice::DrawTexturedQuad(const Vertex3D_TexelOnly* vertices)
 {
-   HRESULT hr;
-   VertexDeclaration * declaration = fvfToDecl(fvf);
-   SetVertexDeclaration(declaration);
+   /*Vertex3D_TexelOnly* bufvb;
+   m_quadDynVertexBuffer->lock(0, 0, (void**)&bufvb, VertexBuffer::DISCARDCONTENTS);
+   memcpy(bufvb,vertices,4*sizeof(Vertex3D_TexelOnly));
+   m_quadDynVertexBuffer->unlock();
+   DrawPrimitiveVB(D3DPT_TRIANGLESTRIP,MY_D3DFVF_TEX,m_quadDynVertexBuffer,0,4);*/
 
-   const unsigned int np = ComputePrimitiveCount(type, indexCount);
-   m_stats_drawn_triangles += np;
-   hr = m_pD3DDevice->DrawIndexedPrimitiveUP(type, 0, vertexCount, np,
-      indices, D3DFMT_INDEX16, vertices, fvfToSize(fvf));
+   DrawPrimitive(D3DPT_TRIANGLESTRIP,MY_D3DFVF_TEX,vertices,4); // having a VB and lock/copying stuff each time is slower :/
+}
 
-   if (FAILED(hr))
-      ReportError("Fatal Error: DrawIndexedPrimitive failed!", hr, __FILE__, __LINE__);
+void RenderDevice::DrawFullscreenTexturedQuad()
+{
+   /*static const float verts[4 * 5] =
+   {
+      1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+      -1.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+      1.0f, -1.0f, 0.0f, 1.0f, 1.0f,
+      -1.0f, -1.0f, 0.0f, 0.0f, 1.0f
+   };   
+   DrawTexturedQuad((Vertex3D_TexelOnly*)verts);*/
 
-   m_curVertexBuffer = 0;      // DrawIndexedPrimitiveUP sets the VB to NULL
-   m_curIndexBuffer = 0;       // DrawIndexedPrimitiveUP sets the IB to NULL
-
-   m_curDrawCalls++;
+   DrawPrimitiveVB(D3DPT_TRIANGLESTRIP,MY_D3DFVF_TEX,m_quadVertexBuffer,0,4);
 }
 
 void RenderDevice::DrawPrimitiveVB(const D3DPRIMITIVETYPE type, const DWORD fvf, VertexBuffer* vb, const DWORD startVertex, const DWORD vertexCount)
@@ -1468,18 +1493,6 @@ void RenderDevice::SetViewport(const ViewPort* p1)
 void RenderDevice::GetViewport(ViewPort* p1)
 {
    CHECKD3D(m_pD3DDevice->GetViewport((D3DVIEWPORT9*)p1));
-}
-
-void RenderDevice::DrawFullscreenQuad()
-{
-   static const float verts[4 * 5] =
-   {
-      1.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-      -1.0f, 1.0f, 0.0f, 0.0f, 0.0f,
-      1.0f, -1.0f, 0.0f, 1.0f, 1.0f,
-      -1.0f, -1.0f, 0.0f, 0.0f, 1.0f
-   };
-   DrawPrimitive(D3DPT_TRIANGLESTRIP, MY_D3DFVF_TEX, (LPVOID)verts, 4);
 }
 
 //

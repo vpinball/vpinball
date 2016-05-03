@@ -35,7 +35,7 @@ enum TransformStateType {
 };
 
 enum UsageFlags {
-   USAGE_DYNAMIC = D3DUSAGE_DYNAMIC      // to be used for vertex/index buffers which are locked every frame
+   USAGE_DYNAMIC = D3DUSAGE_DYNAMIC      // to be used for vertex/index buffers which are locked every frame/very often
 };
 
 class RenderDevice;
@@ -215,15 +215,15 @@ public:
    IndexBuffer* CreateAndFillIndexBuffer(const std::vector<unsigned int>& indices);
    IndexBuffer* CreateAndFillIndexBuffer(const std::vector<WORD>& indices);
 
-   void DrawPrimitive(const D3DPRIMITIVETYPE type, const DWORD fvf, const void* vertices, const DWORD vertexCount);
-   void DrawIndexedPrimitive(const D3DPRIMITIVETYPE type, const DWORD fvf, const void* vertices, const DWORD vertexCount, const WORD* indices, const DWORD indexCount);
+   void DrawTexturedQuad(const Vertex3D_TexelOnly* vertices);
+   void DrawFullscreenTexturedQuad();
+   
    void DrawPrimitiveVB(const D3DPRIMITIVETYPE type, const DWORD fvf, VertexBuffer* vb, const DWORD startVertex, const DWORD vertexCount);
    void DrawIndexedPrimitiveVB(const D3DPRIMITIVETYPE type, const DWORD fvf, VertexBuffer* vb, const DWORD startVertex, const DWORD vertexCount, IndexBuffer* ib, const DWORD startIndex, const DWORD indexCount);
 
    void SetViewport(const ViewPort*);
    void GetViewport(ViewPort*);
 
-   void DrawFullscreenQuad();
    void SetTransform(const TransformStateType, const D3DMATRIX*);
    void GetTransform(const TransformStateType, D3DMATRIX*);
 
@@ -262,6 +262,8 @@ public:
    }
 
 private:
+   void DrawPrimitive(const D3DPRIMITIVETYPE type, const DWORD fvf, const void* vertices, const DWORD vertexCount);
+
 #ifdef USE_D3D9EX
    IDirect3D9Ex* m_pD3DEx;
 
@@ -293,6 +295,9 @@ private:
    VertexBuffer* m_curVertexBuffer;       // for caching
    IndexBuffer* m_curIndexBuffer;         // dto.
    VertexDeclaration *currentDeclaration; // dto.
+
+   VertexBuffer *m_quadVertexBuffer;      // internal vb for rendering quads
+   //VertexBuffer *m_quadDynVertexBuffer;   // internal vb for rendering dynamic quads
 
    DWORD m_maxaniso;
    bool m_mag_aniso;
