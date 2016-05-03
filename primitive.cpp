@@ -867,7 +867,7 @@ void Primitive::RenderObject(RenderDevice *pd3dDevice)
 
    if (pin && nMap)
    {
-       pd3dDevice->basicShader->SetTechnique("basic_with_texture_normal");
+       pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_with_texture_normal_isMetal" : "basic_with_texture_normal_isNotMetal");
        pd3dDevice->basicShader->SetTexture("Texture0", pin);
        pd3dDevice->basicShader->SetTexture("Texture4", nMap);
        pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
@@ -878,7 +878,7 @@ void Primitive::RenderObject(RenderDevice *pd3dDevice)
    }
    else if (pin)
    {
-      pd3dDevice->basicShader->SetTechnique("basic_with_texture");
+      pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_with_texture_isMetal" : "basic_with_texture_isNotMetal");
       pd3dDevice->basicShader->SetTexture("Texture0", pin);
       pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
 
@@ -887,7 +887,7 @@ void Primitive::RenderObject(RenderDevice *pd3dDevice)
       pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_WRAP);
    }
    else
-      pd3dDevice->basicShader->SetTechnique("basic_without_texture");
+      pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_without_texture_isMetal" : "basic_without_texture_isNotMetal");
 
    // set transform
    if (!m_d.m_fGroupdRendering)

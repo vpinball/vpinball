@@ -497,7 +497,7 @@ void Gate::RenderObject(RenderDevice* pd3dDevice)
    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
    pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 
-   pd3dDevice->basicShader->SetTechnique("basic_without_texture");
+   pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_without_texture_isMetal" : "basic_without_texture_isNotMetal");
    pd3dDevice->basicShader->Begin(0);
 
    // render bracket      
@@ -622,7 +622,7 @@ void Gate::RenderSetup(RenderDevice* pd3dDevice)
    baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
    Vertex3D_NoTex2 *buf;
-   bracketVertexBuffer->lock(0, 0, (void**)&buf, 0);
+   bracketVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
    GenerateBracketMesh(buf);
    bracketVertexBuffer->unlock();
 
@@ -635,7 +635,7 @@ void Gate::RenderSetup(RenderDevice* pd3dDevice)
       wireVertexBuffer->release();
    pd3dDevice->CreateVertexBuffer(m_numVertices, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &wireVertexBuffer);
 
-   wireVertexBuffer->lock(0, 0, (void**)&buf, 0);
+   wireVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
    GenerateWireMesh(buf);
    wireVertexBuffer->unlock();
 }

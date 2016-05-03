@@ -631,9 +631,8 @@ void Trigger::PostRenderStatic(RenderDevice* pd3dDevice)
 
    UpdateAnimation(pd3dDevice);
 
-   pd3dDevice->basicShader->SetTechnique("basic_without_texture");
-
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
+   pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_without_texture_isMetal" : "basic_without_texture_isNotMetal");
    pd3dDevice->basicShader->SetMaterial(mat);
 
    pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
@@ -786,7 +785,7 @@ void Trigger::RenderSetup(RenderDevice* pd3dDevice)
 
    GenerateMesh();
    Vertex3D_NoTex2 *buf;
-   vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
+   vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
    if (m_d.m_shape == TriggerWireA || m_d.m_shape == TriggerWireB)
    {
       Vertex3D_NoTex2 *tmp = new Vertex3D_NoTex2[m_numVertices];

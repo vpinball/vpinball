@@ -887,11 +887,11 @@ void Ramp::RenderStaticHabitrail(RenderDevice* pd3dDevice, const Material * cons
 
    Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
    if (!pin)
-      pd3dDevice->basicShader->SetTechnique("basic_without_texture");
+      pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_without_texture_isMetal" : "basic_without_texture_isNotMetal");
    else
    {
       pd3dDevice->basicShader->SetTexture("Texture0", pin);
-      pd3dDevice->basicShader->SetTechnique("basic_with_texture");
+      pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_with_texture_isMetal" : "basic_with_texture_isNotMetal");
 
       //g_pplayer->m_pin3d.SetTextureFilter(0, TEXTURE_MODE_TRILINEAR);
    }
@@ -1155,9 +1155,9 @@ void Ramp::prepareHabitrail(RenderDevice* pd3dDevice)
    if (dynamicVertexBuffer2)
       dynamicVertexBuffer2->release();
 
-   pd3dDevice->CreateVertexBuffer(m_numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &dynamicVertexBuffer);
+   pd3dDevice->CreateVertexBuffer(m_numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &dynamicVertexBuffer); //!! use USAGE_DYNAMIC if it would actually be "really" dynamic
    if (m_d.m_type != RampType1Wire)
-      pd3dDevice->CreateVertexBuffer(m_numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &dynamicVertexBuffer2);
+      pd3dDevice->CreateVertexBuffer(m_numVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &dynamicVertexBuffer2); //!! use USAGE_DYNAMIC if it would actually be "really" dynamic
 
    // Draw the floor of the ramp.
    Vertex3D_NoTex2 *buf;
@@ -2272,14 +2272,14 @@ void Ramp::RenderRamp(RenderDevice *pd3dDevice, const Material * const mat)
 
       if (pin)
       {
-         pd3dDevice->basicShader->SetTechnique("basic_with_texture");
+         pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_with_texture_isMetal" : "basic_with_texture_isNotMetal");
          pd3dDevice->basicShader->SetTexture("Texture0", pin);
          pd3dDevice->basicShader->SetAlphaTestValue(pin->m_alphaTestValue * (float)(1.0 / 255.0));
 
          //ppin3d->SetTextureFilter ( 0, TEXTURE_MODE_TRILINEAR );
       }
       else
-         pd3dDevice->basicShader->SetTechnique("basic_without_texture");
+         pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_without_texture_isMetal" : "basic_without_texture_isNotMetal");
 
       //ppin3d->EnableAlphaBlend( false ); //!! not necessary anymore
 
@@ -2301,7 +2301,7 @@ void Ramp::RenderRamp(RenderDevice *pd3dDevice, const Material * const mat)
             if (pin && !m_d.m_fImageWalls)
             {
                pd3dDevice->basicShader->End();
-               pd3dDevice->basicShader->SetTechnique("basic_without_texture");
+               pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_without_texture_isMetal" : "basic_without_texture_isNotMetal");
                pd3dDevice->basicShader->Begin(0);
             }
 
@@ -2537,7 +2537,7 @@ void Ramp::GenerateVertexBuffer(RenderDevice* pd3dDevice)
    if (dynamicVertexBuffer)
       dynamicVertexBuffer->release();
 
-   pd3dDevice->CreateVertexBuffer(m_numVertices * 3, 0, MY_D3DFVF_NOTEX2_VERTEX, &dynamicVertexBuffer);
+   pd3dDevice->CreateVertexBuffer(m_numVertices * 3, 0, MY_D3DFVF_NOTEX2_VERTEX, &dynamicVertexBuffer); //!! use USAGE_DYNAMIC if it would actually be "really" dynamic
 
    Vertex3D_NoTex2 *buf;
    dynamicVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);

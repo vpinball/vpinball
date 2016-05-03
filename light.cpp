@@ -547,7 +547,6 @@ void Light::ClearForOverwrite()
 
 void Light::RenderBulbMesh(RenderDevice *pd3dDevice, COLORREF color, bool isOn)
 {
-   pd3dDevice->basicShader->SetTechnique("basic_without_texture");
    Material mat;
    mat.m_cBase = 0x181818;
    mat.m_fWrapLighting = 0.5f;
@@ -559,6 +558,7 @@ void Light::RenderBulbMesh(RenderDevice *pd3dDevice, COLORREF color, bool isOn)
    mat.m_fEdgeAlpha = 1.0f;
    mat.m_fRoughness = 0.9f;
    mat.m_cClearcoat = 0;
+   pd3dDevice->basicShader->SetTechnique(mat.m_bIsMetal ? "basic_without_texture_isMetal" : "basic_without_texture_isNotMetal");
    pd3dDevice->basicShader->SetMaterial(&mat);
 
    pd3dDevice->basicShader->Begin(0);
@@ -575,6 +575,7 @@ void Light::RenderBulbMesh(RenderDevice *pd3dDevice, COLORREF color, bool isOn)
    mat.m_fEdgeAlpha = 1.0f;
    mat.m_fRoughness = 0.9f;
    mat.m_cClearcoat = 0xFFFFFF;
+   pd3dDevice->basicShader->SetTechnique(mat.m_bIsMetal ? "basic_without_texture_isMetal" : "basic_without_texture_isNotMetal");
    pd3dDevice->basicShader->SetMaterial(&mat);
 
    pd3dDevice->basicShader->Begin(0);
@@ -674,7 +675,7 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
       if (offTexel != NULL)
       {
          pd3dDevice->classicLightShader->SetBool("hdrTexture0", offTexel->IsHDR());
-         pd3dDevice->classicLightShader->SetTechnique("light_with_texture");
+         pd3dDevice->classicLightShader->SetTechnique(m_surfaceMaterial->m_bIsMetal ? "light_with_texture_isMetal" : "light_with_texture_isNotMetal");
          pd3dDevice->classicLightShader->SetTexture("Texture0", offTexel);
          if (m_ptable->m_fReflectElementsOnPlayfield)
          {
@@ -684,7 +685,7 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
          }
       }
       else
-         pd3dDevice->classicLightShader->SetTechnique("light_without_texture");
+         pd3dDevice->classicLightShader->SetTechnique(m_surfaceMaterial->m_bIsMetal ? "light_without_texture_isMetal" : "light_without_texture_isNotMetal");
    }
    else
    {
@@ -887,7 +888,7 @@ void Light::RenderSetup(RenderDevice* pd3dDevice)
       pd3dDevice->CreateVertexBuffer(bulbLightNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &bulbLightVBuffer);
 
       Vertex3D_NoTex2 *buf;
-      bulbLightVBuffer->lock(0, 0, (void**)&buf, 0);
+      bulbLightVBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
       for (int i = 0; i < bulbLightNumVertices; i++)
       {
          buf[i].x = bulbLight[i].x*m_d.m_meshRadius + m_d.m_vCenter.x;
@@ -909,7 +910,7 @@ void Light::RenderSetup(RenderDevice* pd3dDevice)
          bulbSocketVBuffer->release();
       pd3dDevice->CreateVertexBuffer(bulbSocketNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &bulbSocketVBuffer);
 
-      bulbSocketVBuffer->lock(0, 0, (void**)&buf, 0);
+      bulbSocketVBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
       for (int i = 0; i < bulbSocketNumVertices; i++)
       {
          buf[i].x = bulbSocket[i].x*m_d.m_meshRadius + m_d.m_vCenter.x;
