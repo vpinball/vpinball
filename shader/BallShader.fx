@@ -84,9 +84,8 @@ struct vin
 struct vout
 {
     float4 position	   : POSITION0;
-	float2 tex0        : TEXCOORD0;
-	float3 normal      : TEXCOORD1;
-	float3 worldPos    : TEXCOORD2;
+	float4 normal_t0x  : TEXCOORD0; // tex0 is stored in w of float4s
+	float4 worldPos_t0y: TEXCOORD1;
 };
 
 //vertex to pixel shader structure
@@ -127,9 +126,8 @@ vout vsBall( in vin IN )
 	const float3 p = mul_w1(pos.xyz, matWorldView);
 
 	OUT.position = mul(pos, matWorldViewProj);
-    OUT.tex0	 = IN.tex0;
-	OUT.normal   = normal;
-	OUT.worldPos = p;
+	OUT.normal_t0x = float4(normal,IN.tex0.x);
+	OUT.worldPos_t0y = float4(p,IN.tex0.y);
 	return OUT;
 }
 
@@ -172,7 +170,7 @@ voutTrail vsBallTrail( in vin IN )
 
 //------------------------------------
 
-float3 ballLightLoop(float3 pos, float3 N, float3 V, float3 diffuse, float3 glossy, float3 specular, float edge, const bool is_metal)
+float3 ballLightLoop(const float3 pos, float3 N, float3 V, float3 diffuse, float3 glossy, const float3 specular, const float edge, const bool is_metal)
 {
    // normalize input vectors for BRDF evals
    N = normalize(N);
@@ -218,8 +216,8 @@ float3 ballLightLoop(float3 pos, float3 N, float3 V, float3 diffuse, float3 glos
 PS_OUTPUT psBall( in vout IN, uniform bool cabMode, uniform bool decalMode ) 
 {
     PS_OUTPUT output;
-    const float3 v = normalize(/*camera=0,0,0,1*/-IN.worldPos);
-    const float3 r = reflect(v, normalize(IN.normal));
+    const float3 v = normalize(/*camera=0,0,0,1*/-IN.worldPos_t0y.xyz);
+    const float3 r = reflect(v, normalize(IN.normal_t0x.xyz));
     // calculate the intermediate value for the final texture coords. found here http://www.ozone3d.net/tutorials/glsl_texturing_p04.php
 	const float  m = (r.z + 1.0 > 0.) ? 0.3535533905932737622 * rsqrt(r.z + 1.0) : 0.; // 0.353...=0.5/sqrt(2)
     const float edge = dot(v, r);
@@ -232,7 +230,7 @@ PS_OUTPUT psBall( in vout IN, uniform bool cabMode, uniform bool decalMode )
     if (!hdrTexture0)
         ballImageColor = InvGamma(ballImageColor);
 
-	const float4 decalColorT = tex2D( texSampler7, IN.tex0 );
+	const float4 decalColorT = tex2D(texSampler7, float2(IN.normal_t0x.w,IN.worldPos_t0y.w));
 	float3 decalColor = InvGamma(decalColorT.xyz);
 	if ( !decalMode )
 	{
@@ -251,8 +249,8 @@ PS_OUTPUT psBall( in vout IN, uniform bool cabMode, uniform bool decalMode )
 	[branch] if(/*(reflection_ball_playfield > 0.0) &&*/ (NdotR > 0.0))
 	{
        const float3 playfield_p0 = mul_w1(float3(/*playfield_pos=*/0.,0.,invTableRes__playfield_height_reflection.z), matWorldView);
-	   const float t = dot(playfield_normal, IN.worldPos - playfield_p0) / NdotR;
-       const float3 playfield_hit = IN.worldPos - t*r;
+       const float t = dot(playfield_normal, IN.worldPos_t0y.xyz - playfield_p0) / NdotR;
+       const float3 playfield_hit = IN.worldPos_t0y.xyz - t*r;
 
        const float2 uv = mul_w1(playfield_hit, matWorldViewInverse).xy * invTableRes__playfield_height_reflection.xy;
 	   playfieldColor = (t < 0.) ? float3(0., 0., 0.) // happens for example when inside kicker
@@ -278,7 +276,7 @@ PS_OUTPUT psBall( in vout IN, uniform bool cabMode, uniform bool decalMode )
 	    specular *= float3(1.,1.,1.)-decalColor; // see above
 
     float4 result;
-	result.xyz = ballLightLoop(IN.worldPos, IN.normal, /*camera=0,0,0,1*/-IN.worldPos, diffuse, glossy, specular, 1.0, true);
+	result.xyz = ballLightLoop(IN.worldPos_t0y.xyz, IN.normal_t0x.xyz, /*camera=0,0,0,1*/-IN.worldPos_t0y.xyz, diffuse, glossy, specular, 1.0, false);
 	result.a = cBase_Alpha.a;
     output.color = result;
     return output;
