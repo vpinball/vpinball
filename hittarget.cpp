@@ -58,63 +58,63 @@ void HitTarget::SetMeshType(const TargetType type)
     {
         m_vertices = hitTargetT2Mesh;
         m_indices = hitTargetT2Indices;
-        m_numIndices = hitTargetT2NumFaces;
+        m_numIndices = hitTargetT2NumIndices;
         m_numVertices = hitTargetT2Vertices;
     }
     else if (type == DropTargetSimple)
     {
         m_vertices = hitTargetT3Mesh;
         m_indices = hitTargetT3Indices;
-        m_numIndices = hitTargetT3NumFaces;
+        m_numIndices = hitTargetT3NumIndices;
         m_numVertices = hitTargetT3Vertices;
     }
     else if (type == DropTargetFlatSimple)
     {
         m_vertices = hitTargetT4Mesh;
         m_indices = hitTargetT4Indices;
-        m_numIndices = hitTargetT4NumFaces;
+        m_numIndices = hitTargetT4NumIndices;
         m_numVertices = hitTargetT4Vertices;
     }
     else if (type == HitTargetRound)
     {
         m_vertices = hitTargetRoundMesh;
         m_indices = hitTargetRoundIndices;
-        m_numIndices = hitTargetRoundNumFaces;
+        m_numIndices = hitTargetRoundNumIndices;
         m_numVertices = hitTargetRoundVertices;
     }
     else if (type == HitTargetRectangle)
     {
         m_vertices = hitTargetRectangleMesh;
         m_indices = hitTargetRectangleIndices;
-        m_numIndices = hitTargetRectangleNumFaces;
+        m_numIndices = hitTargetRectangleNumIndices;
         m_numVertices = hitTargetRectangleVertices;
     }
     else if (type == HitFatTargetRectangle)
     {
         m_vertices = hitFatTargetRectangleMesh;
         m_indices = hitFatTargetRectangleIndices;
-        m_numIndices = hitFatTargetRectangleNumFaces;
+        m_numIndices = hitFatTargetRectangleNumIndices;
         m_numVertices = hitFatTargetRectangleVertices;
     }
     else if (type == HitFatTargetSquare)
     {
         m_vertices = hitFatTargetSquareMesh;
         m_indices = hitFatTargetSquareIndices;
-        m_numIndices = hitFatTargetSquareNumFaces;
+        m_numIndices = hitFatTargetSquareNumIndices;
         m_numVertices = hitFatTargetSquareVertices;
     }
     else if (type == HitTargetSlim)
     {
         m_vertices = hitTargetT1SlimMesh;
         m_indices = hitTargetT1SlimIndices;
-        m_numIndices = hitTargetT1SlimNumFaces;
+        m_numIndices = hitTargetT1SlimNumIndices;
         m_numVertices = hitTargetT1SlimVertices;
     }
     else if (type == HitFatTargetSlim)
     {
         m_vertices = hitTargetT2SlimMesh;
         m_indices = hitTargetT2SlimIndices;
-        m_numIndices = hitTargetT2SlimNumFaces;
+        m_numIndices = hitTargetT2SlimNumIndices;
         m_numVertices = hitTargetT2SlimVertices;
     }
     else
@@ -123,7 +123,7 @@ void HitTarget::SetMeshType(const TargetType type)
         // set it to the standard simple drop target to prevent crashing
         m_vertices = hitTargetT3Mesh;
         m_indices = hitTargetT3Indices;
-        m_numIndices = hitTargetT3NumFaces;
+        m_numIndices = hitTargetT3NumIndices;
         m_numVertices = hitTargetT3Vertices;
         m_d.m_targetType = DropTargetSimple;
     }

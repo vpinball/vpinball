@@ -122,7 +122,7 @@ public:
    TriggerHitCircle *m_ptriggerhitcircle;
 
    int m_numVertices;
-   int m_numFaces;
+   int m_numIndices;
    float animHeightOffset;
    float vertexBuffer_animHeightOffset;
    bool hitEvent;

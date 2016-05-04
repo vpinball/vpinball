@@ -51,21 +51,21 @@ void Trigger::UpdateEditorView()
       if (m_d.m_shape == TriggerWireA || m_d.m_shape == TriggerWireB)
       {
          m_numVertices = triggerSimpleNumVertices;
-         m_numFaces = triggerSimpleNumFaces;
+         m_numIndices = triggerSimpleNumIndices;
          faceIndices = triggerSimpleIndices;
          meshVertices = triggerSimple;
       }
       else if (m_d.m_shape == TriggerButton)
       {
          m_numVertices = triggerButtonNumVertices;
-         m_numFaces = triggerButtonNumFaces;
+         m_numIndices = triggerButtonNumIndices;
          faceIndices = triggerButtonIndices;
          meshVertices = triggerButtonMesh;
       }
       else if (m_d.m_shape == TriggerStar)
       {
          m_numVertices = triggerStarNumVertices;
-         m_numFaces = triggerStarNumFaces;
+         m_numIndices = triggerStarNumIndices;
          faceIndices = triggerStarIndices;
          meshVertices = triggerStar;
       }
@@ -322,16 +322,16 @@ void Trigger::Render(Sur * const psur)
 
    if (m_d.m_shape == TriggerWireA || m_d.m_shape == TriggerWireB)
    {
-      if (m_numFaces > 0)
+      if (m_numIndices > 0)
       {
-         const size_t numPts = m_numFaces / 3 + 1;
+         const size_t numPts = m_numIndices / 3 + 1;
          std::vector<Vertex2D> drawVertices(numPts);
 
          const Vertex3Ds& A = vertices[faceIndices[0]];
          drawVertices[0] = Vertex2D(A.x, A.y);
 
          size_t o = 1;
-         for (int i = 0; i < m_numFaces; i += 3, ++o)
+         for (int i = 0; i < m_numIndices; i += 3, ++o)
          {
             const Vertex3Ds& B = vertices[faceIndices[i + 1]];
             drawVertices[o] = Vertex2D(B.x, B.y);
@@ -640,7 +640,7 @@ void Trigger::PostRenderStatic(RenderDevice* pd3dDevice)
    pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 
    pd3dDevice->basicShader->Begin(0);
-   pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, m_numVertices, triggerIndexBuffer, 0, m_numFaces);
+   pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, m_numVertices, triggerIndexBuffer, 0, m_numIndices);
    pd3dDevice->basicShader->End();
 }
 
@@ -659,11 +659,11 @@ void Trigger::ExportMesh(FILE *f)
    WaveFrontObj_WriteMaterial(m_d.m_szMaterial, NULL, mat);
    WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
    if (m_d.m_shape == TriggerWireA || m_d.m_shape == TriggerWireB)
-      WaveFrontObj_WriteFaceInfoList(f, triggerSimpleIndices, m_numFaces);
+      WaveFrontObj_WriteFaceInfoList(f, triggerSimpleIndices, m_numIndices);
    else if ( m_d.m_shape==TriggerButton)
-      WaveFrontObj_WriteFaceInfoList(f, triggerButtonIndices, m_numFaces);
+      WaveFrontObj_WriteFaceInfoList(f, triggerButtonIndices, m_numIndices);
    else if (m_d.m_shape==TriggerStar )
-      WaveFrontObj_WriteFaceInfoList(f, triggerStarIndices, m_numFaces);
+      WaveFrontObj_WriteFaceInfoList(f, triggerStarIndices, m_numIndices);
    WaveFrontObj_UpdateFaceOffset(m_numVertices);
 }
 
@@ -675,7 +675,7 @@ void Trigger::GenerateMesh()
    if (m_d.m_shape == TriggerWireA || m_d.m_shape==TriggerWireB)
    {
       m_numVertices = triggerSimpleNumVertices;
-      m_numFaces = triggerSimpleNumFaces;
+      m_numIndices = triggerSimpleNumIndices;
       verts = triggerSimple;
       if (triggerVertices)
          delete[] triggerVertices;
@@ -684,7 +684,7 @@ void Trigger::GenerateMesh()
    else if (m_d.m_shape == TriggerButton)
    {
       m_numVertices = triggerButtonNumVertices;
-      m_numFaces = triggerButtonNumFaces;
+      m_numIndices = triggerButtonNumIndices;
       verts = triggerButtonMesh;
       if (triggerVertices)
          delete[] triggerVertices;
@@ -693,7 +693,7 @@ void Trigger::GenerateMesh()
    else if (m_d.m_shape == TriggerStar)
    {
       m_numVertices = triggerStarNumVertices;
-      m_numFaces = triggerStarNumFaces;
+      m_numIndices = triggerStarNumIndices;
       verts = triggerStar;
       if (triggerVertices)
          delete[] triggerVertices;
@@ -757,27 +757,27 @@ void Trigger::RenderSetup(RenderDevice* pd3dDevice)
    if (m_d.m_shape == TriggerWireA || m_d.m_shape == TriggerWireB)
    {
       m_numVertices = triggerSimpleNumVertices;
-      m_numFaces = triggerSimpleNumFaces;
+      m_numIndices = triggerSimpleNumIndices;
    }
    else if (m_d.m_shape == TriggerButton)
    {
       m_numVertices = triggerButtonNumVertices;
-      m_numFaces = triggerButtonNumFaces;
+      m_numIndices = triggerButtonNumIndices;
    }
    else if (m_d.m_shape == TriggerStar)
    {
       m_numVertices = triggerStarNumVertices;
-      m_numFaces = triggerStarNumFaces;
+      m_numIndices = triggerStarNumIndices;
    }
 
    if (triggerIndexBuffer)
       triggerIndexBuffer->release();
    if ( m_d.m_shape==TriggerWireA || m_d.m_shape==TriggerWireB)
-      triggerIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(m_numFaces, triggerSimpleIndices);
+      triggerIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(m_numIndices, triggerSimpleIndices);
    else if ( m_d.m_shape==TriggerStar )
-      triggerIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(m_numFaces, triggerStarIndices);
+      triggerIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(m_numIndices, triggerStarIndices);
    else if ( m_d.m_shape==TriggerButton )
-      triggerIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(m_numFaces, triggerButtonIndices);
+      triggerIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(m_numIndices, triggerButtonIndices);
    if (vertexBuffer)
       vertexBuffer->release();
    ppin3d->m_pd3dDevice->CreateVertexBuffer(m_numVertices, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &vertexBuffer);

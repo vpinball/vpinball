@@ -1,5 +1,4 @@
 #include "StdAfx.h"
-#include "forsyth.h"
 #include "meshes/flipperBase.h"
 #include "objloader.h"
 
@@ -680,7 +679,7 @@ void Flipper::PostRenderStatic(RenderDevice* pd3dDevice)
    }
    g_pplayer->UpdateBasicShaderMatrix(matTrafo);
    pd3dDevice->basicShader->Begin(0);
-   pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, flipperBaseVertices, indexBuffer, 0, flipperBaseNumFaces);
+   pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, flipperBaseVertices, indexBuffer, 0, flipperBaseNumIndices);
    pd3dDevice->basicShader->End();
 
    //render rubber
@@ -691,7 +690,7 @@ void Flipper::PostRenderStatic(RenderDevice* pd3dDevice)
       pd3dDevice->basicShader->SetMaterial(mat);
 
       pd3dDevice->basicShader->Begin(0);
-      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, flipperBaseVertices, flipperBaseVertices, indexBuffer, 0, flipperBaseNumFaces);
+      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, flipperBaseVertices, flipperBaseVertices, indexBuffer, 0, flipperBaseNumIndices);
       pd3dDevice->basicShader->End();
    }
    g_pplayer->UpdateBasicShaderMatrix();
@@ -736,7 +735,7 @@ void Flipper::ExportMesh(FILE *f)
    const Material * mat = m_ptable->GetMaterial(m_d.m_szMaterial);
    WaveFrontObj_WriteMaterial(m_d.m_szMaterial, NULL, mat);
    WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
-   WaveFrontObj_WriteFaceInfoList(f, flipperBaseIndices, flipperBaseNumFaces);
+   WaveFrontObj_WriteFaceInfoList(f, flipperBaseIndices, flipperBaseNumIndices);
    WaveFrontObj_UpdateFaceOffset(flipperBaseVertices);
    if (m_d.m_rubberthickness > 0.f)
    {
@@ -763,7 +762,7 @@ void Flipper::ExportMesh(FILE *f)
       mat = m_ptable->GetMaterial(m_d.m_szRubberMaterial);
       WaveFrontObj_WriteMaterial(m_d.m_szRubberMaterial, NULL, mat);
       WaveFrontObj_UseTexture(f, m_d.m_szRubberMaterial);
-      WaveFrontObj_WriteFaceInfoList(f, flipperBaseIndices, flipperBaseNumFaces);
+      WaveFrontObj_WriteFaceInfoList(f, flipperBaseIndices, flipperBaseNumIndices);
       WaveFrontObj_UpdateFaceOffset(flipperBaseVertices);
    }
 
@@ -886,7 +885,7 @@ void Flipper::RenderSetup(RenderDevice* pd3dDevice)
 {
    if (indexBuffer)
       indexBuffer->release();
-   indexBuffer = pd3dDevice->CreateAndFillIndexBuffer(flipperBaseNumFaces, flipperBaseIndices);
+   indexBuffer = pd3dDevice->CreateAndFillIndexBuffer(flipperBaseNumIndices, flipperBaseIndices);
 
    if (vertexBuffer)
       vertexBuffer->release();

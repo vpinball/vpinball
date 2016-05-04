@@ -15,7 +15,7 @@ Kicker::Kicker()
    memset(m_d.m_szSurface, 0, MAXTOKEN);
    m_ptable = NULL;
    numVertices = 0;
-   numFaces = 0;
+   numIndices = 0;
    m_baseHeight = 0.0f;
 }
 
@@ -284,7 +284,7 @@ void Kicker::ExportMesh(FILE *f)
       const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
       WaveFrontObj_WriteMaterial(m_d.m_szMaterial, NULL, mat);
       WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
-      WaveFrontObj_WriteFaceInfoList(f, kickerCupIndices, kickerCupNumFaces);
+      WaveFrontObj_WriteFaceInfoList(f, kickerCupIndices, kickerCupNumIndices);
       WaveFrontObj_UpdateFaceOffset(kickerCupNumVertices);
       delete[] cup;
    }
@@ -297,7 +297,7 @@ void Kicker::ExportMesh(FILE *f)
       const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
       WaveFrontObj_WriteMaterial(m_d.m_szMaterial, NULL, mat);
       WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
-      WaveFrontObj_WriteFaceInfoList(f, kickerHoleIndices, kickerHoleNumFaces);
+      WaveFrontObj_WriteFaceInfoList(f, kickerHoleIndices, kickerHoleNumIndices);
       WaveFrontObj_UpdateFaceOffset(kickerHoleNumVertices);
       delete[] hole;
    }
@@ -378,7 +378,7 @@ void Kicker::RenderSetup(RenderDevice* pd3dDevice)
 
       if (plateIndexBuffer)
          plateIndexBuffer->release();
-      plateIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(kickerPlateNumFaces, kickerPlateIndices);
+      plateIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(kickerPlateNumIndices, kickerPlateIndices);
 
       if (plateVertexBuffer)
          plateVertexBuffer->release();
@@ -396,12 +396,12 @@ void Kicker::RenderSetup(RenderDevice* pd3dDevice)
    {
       texture.CreateFromResource(IDB_KICKER_CUP);
 
-      numFaces = kickerCupNumFaces;
+      numIndices = kickerCupNumIndices;
       numVertices = kickerCupNumVertices;
 
       if (indexBuffer)
          indexBuffer->release();
-      indexBuffer = pd3dDevice->CreateAndFillIndexBuffer(kickerCupNumFaces, kickerCupIndices);
+      indexBuffer = pd3dDevice->CreateAndFillIndexBuffer(kickerCupNumIndices, kickerCupIndices);
 
       if (vertexBuffer)
          vertexBuffer->release();
@@ -417,12 +417,12 @@ void Kicker::RenderSetup(RenderDevice* pd3dDevice)
       {
          texture.CreateFromResource(IDB_KICKER_HOLE_WOOD);
 
-         numFaces = kickerHoleNumFaces;
+         numIndices = kickerHoleNumIndices;
          numVertices = kickerHoleNumVertices;
 
          if (indexBuffer)
             indexBuffer->release();
-         indexBuffer = pd3dDevice->CreateAndFillIndexBuffer(kickerHoleNumFaces, kickerHoleIndices);
+         indexBuffer = pd3dDevice->CreateAndFillIndexBuffer(kickerHoleNumIndices, kickerHoleIndices);
 
          if (vertexBuffer)
             vertexBuffer->release();
@@ -471,7 +471,7 @@ void Kicker::PostRenderStatic(RenderDevice* pd3dDevice)
       pd3dDevice->SetRenderState(RenderDevice::ZFUNC, D3DCMP_ALWAYS);
 
       pd3dDevice->basicShader->Begin(0);
-      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, plateVertexBuffer, 0, kickerPlateNumVertices, plateIndexBuffer, 0, kickerPlateNumFaces);
+      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, plateVertexBuffer, 0, kickerPlateNumVertices, plateIndexBuffer, 0, kickerPlateNumIndices);
       pd3dDevice->basicShader->End();
 
       pd3dDevice->SetRenderState(RenderDevice::ZFUNC, D3DCMP_LESSEQUAL);
@@ -484,7 +484,7 @@ void Kicker::PostRenderStatic(RenderDevice* pd3dDevice)
          pd3dDevice->basicShader->SetAlphaTestValue(-1.0f);
 
          pd3dDevice->basicShader->Begin(0);
-         pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, numVertices, indexBuffer, 0, numFaces);
+         pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, vertexBuffer, 0, numVertices, indexBuffer, 0, numIndices);
          pd3dDevice->basicShader->End();
 
          //g_pplayer->m_pin3d.DisableAlphaBlend(); //!! not necessary anymore
@@ -493,7 +493,7 @@ void Kicker::PostRenderStatic(RenderDevice* pd3dDevice)
       //{
       //   pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_without_texture_isMetal" : "basic_without_texture_isNotMetal");
       //   pd3dDevice->basicShader->Begin(0);
-      //   pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, vertexBuffer, 0, numVertices, indexBuffer, 0, numFaces);
+      //   pd3dDevice->DrawIndexedPrimitiveVB( D3DPT_TRIANGLELIST, vertexBuffer, 0, numVertices, indexBuffer, 0, numIndices);
       //   pd3dDevice->basicShader->End();
       //}
    }

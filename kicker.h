@@ -100,7 +100,7 @@ public:
    VertexBuffer *vertexBuffer;
    IndexBuffer  *indexBuffer;
    unsigned int numVertices;
-   unsigned int numFaces;
+   unsigned int numIndices;
 
    Texture texture;
 

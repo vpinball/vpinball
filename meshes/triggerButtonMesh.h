@@ -1,5 +1,5 @@
 const unsigned int triggerButtonNumVertices=528;
-const unsigned int triggerButtonNumFaces=948;
+const unsigned int triggerButtonNumIndices=948;
 const Vertex3D_NoTex2 triggerButtonMesh[528]=
 {
 { -0.813925f,-0.564010f,0.010946f, -0.556500f,-0.437200f,0.706500f, 0.531556f,0.878973f},
