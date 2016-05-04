@@ -518,10 +518,10 @@ void WaveFrontObj_WriteFaceInfo(FILE *f, const std::vector<WORD> &in_faces)
    }
 }
 
-void WaveFrontObj_WriteFaceInfoList(FILE *f, const WORD *in_faces, unsigned int numFaces)
+void WaveFrontObj_WriteFaceInfoList(FILE *f, const WORD *in_faces, const unsigned int numIndices)
 {
    fprintf_s(f, "s 1\n");
-   for (unsigned i = 0; i < numFaces; i += 3)
+   for (unsigned i = 0; i < numIndices; i += 3)
    {
       fprintf_s(f, "f %u/%u/%u %u/%u/%u %u/%u/%u\n", in_faces[i + 2] + 1 + faceIndexOffset, in_faces[i + 2] + 1 + faceIndexOffset, in_faces[i + 2] + 1 + faceIndexOffset
          , in_faces[i + 1] + 1 + faceIndexOffset, in_faces[i + 1] + 1 + faceIndexOffset, in_faces[i + 1] + 1 + faceIndexOffset

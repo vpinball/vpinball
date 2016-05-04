@@ -1,5 +1,5 @@
 #include "StdAfx.h"
-#include "forsyth.h"
+//#include "forsyth.h"
 #include "objloader.h"
 
 Surface::Surface()

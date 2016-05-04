@@ -1,5 +1,5 @@
 const unsigned int triggerStarNumVertices=231;
-const unsigned int triggerStarNumFaces=510;
+const unsigned int triggerStarNumIndices=510;
 const Vertex3D_NoTex2 triggerStar[231]=
 {
 { 0.000000f,0.002343f,0.291799f, 0.000000f,0.000000f,1.000000f, 0.500000f,0.430000f},

@@ -1,5 +1,5 @@
 const unsigned int triggerSimpleNumVertices=49;
-const unsigned int triggerSimpleNumFaces=216;
+const unsigned int triggerSimpleNumIndices=216;
 const Vertex3D_NoTex2 triggerSimple[49]=
 {
 { 1.283477f,-22.522591f,33.562248f, 0.999100f,-0.036100f,0.019600f, 0.166667f,0.625000f},

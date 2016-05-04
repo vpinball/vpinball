@@ -29,35 +29,35 @@ void Gate::SetGateType(GateType type)
     {
         m_vertices = gateWire;
         m_indices = gateWireIndices;
-        m_numIndices = gateWireNumFaces;
+        m_numIndices = gateWireNumIndices;
         m_numVertices = gateWireNumVertices;
     }
     else if (m_d.m_type == GateWireRectangle)
     {
         m_vertices = gateWireRectangleMesh;
         m_indices = gateWireRectangleIndices;
-        m_numIndices = gateWireRectangleNumFaces;
+        m_numIndices = gateWireRectangleNumIndices;
         m_numVertices = gateWireRectangleNumVertices;
     }
     else if (m_d.m_type == GateLongPlate)
     {
         m_vertices = gateLongPlateMesh;
         m_indices = gateLongPlateIndices;
-        m_numIndices = gateLongPlateNumFaces;
+        m_numIndices = gateLongPlateNumIndices;
         m_numVertices = gateLongPlateVertices;
     }
     else if (m_d.m_type == GatePlate)
     {
         m_vertices = gatePlateMesh;
         m_indices = gatePlateIndices;
-        m_numIndices = gatePlateNumFaces;
+        m_numIndices = gatePlateNumIndices;
         m_numVertices = gatePlateNumVertices;
     }
     else
     {
        m_vertices = gateWire;
        m_indices = gateWireIndices;
-       m_numIndices = gateWireNumFaces;
+       m_numIndices = gateWireNumIndices;
        m_numVertices = gateWireNumVertices;
        m_d.m_type = GateWireW;
     }
@@ -502,7 +502,7 @@ void Gate::RenderObject(RenderDevice* pd3dDevice)
 
    // render bracket      
    if (m_d.m_fShowBracket)
-      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, bracketVertexBuffer, 0, gateBracketNumVertices, bracketIndexBuffer, 0, gateBracketNumFaces);
+      pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, bracketVertexBuffer, 0, gateBracketNumVertices, bracketIndexBuffer, 0, gateBracketNumIndices);
    // render wire
    pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, wireVertexBuffer, 0, m_numVertices, wireIndexBuffer, 0, m_numIndices);
 
@@ -542,7 +542,7 @@ void Gate::ExportMesh(FILE *f)
       const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
       WaveFrontObj_WriteMaterial(m_d.m_szMaterial, NULL, mat);
       WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
-      WaveFrontObj_WriteFaceInfoList(f, gateBracketIndices, gateBracketNumFaces);
+      WaveFrontObj_WriteFaceInfoList(f, gateBracketIndices, gateBracketNumIndices);
       WaveFrontObj_UpdateFaceOffset(gateBracketNumVertices);
       delete[] buf;
    }
@@ -556,7 +556,7 @@ void Gate::ExportMesh(FILE *f)
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
    WaveFrontObj_WriteMaterial(m_d.m_szMaterial, NULL, mat);
    WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
-   WaveFrontObj_WriteFaceInfoList(f, gateWireIndices, gateWireNumFaces);
+   WaveFrontObj_WriteFaceInfoList(f, gateWireIndices, gateWireNumIndices);
    WaveFrontObj_UpdateFaceOffset(gateWireNumVertices);
    delete[] buf;
 
@@ -611,7 +611,7 @@ void Gate::RenderSetup(RenderDevice* pd3dDevice)
 
    if (bracketIndexBuffer)
       bracketIndexBuffer->release();
-   bracketIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(gateBracketNumFaces, gateBracketIndices);
+   bracketIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(gateBracketNumIndices, gateBracketIndices);
 
    if (bracketVertexBuffer)
       bracketVertexBuffer->release();
