@@ -133,6 +133,7 @@ HitGate::HitGate(Gate * const pgate, const float height)
 
    m_gateanim.m_pgate = pgate;
    m_gateanim.m_fOpen = false;
+   m_gateanim.m_forcedMove = false;
    m_twoWay = false;
 }
 
@@ -204,8 +205,13 @@ void GateAnimObject::UpdateDisplacements(const float dtime)
          else
             m_angle = m_angleMax;
          m_pgate->FireVoidEventParm(DISPID_LimitEvents_EOS, fabsf(RADTOANG(m_anglespeed)));	// send EOS event
-         m_anglespeed *=-1.0f;
-         m_anglespeed *= m_damping * 0.8f; //just some extra damping to reduce the anglespeed a bit faster
+         if (!m_forcedMove)
+         {
+            m_anglespeed *= -1.0f;
+            m_anglespeed *= m_damping * 0.8f; //just some extra damping to reduce the anglespeed a bit faster
+         }
+         else if (m_anglespeed>0.0f)
+            m_anglespeed = 0.0f;
       }
       if (fabsf(m_angle) < m_angleMin)
       {
@@ -213,8 +219,13 @@ void GateAnimObject::UpdateDisplacements(const float dtime)
             m_angle = -m_angleMin;
          else
             m_angle = m_angleMin;
-         m_anglespeed *= -1.0f;
-         m_anglespeed *= m_damping * 0.8f; //just some extra damping to reduce the anglespeed a bit faster
+         if (!m_forcedMove)
+         {
+            m_anglespeed *= -1.0f;
+            m_anglespeed *= m_damping * 0.8f; //just some extra damping to reduce the anglespeed a bit faster
+         }
+         else if (m_anglespeed<0.0f)
+            m_anglespeed = 0.0f;
       }
    }
    else
@@ -223,15 +234,25 @@ void GateAnimObject::UpdateDisplacements(const float dtime)
       {
          m_angle = m_angleMax;
          m_pgate->FireVoidEventParm(DISPID_LimitEvents_EOS, fabsf(RADTOANG(m_anglespeed)));	// send EOS event
-         m_anglespeed *= -1.0f;
-         m_anglespeed *= m_damping * 0.8f; //just some extra damping to reduce the anglespeed a bit faster
+         if (!m_forcedMove)
+         {
+            m_anglespeed *= -1.0f;
+            m_anglespeed *= m_damping * 0.8f; //just some extra damping to reduce the anglespeed a bit faster
+         }
+         else if (m_anglespeed > 0.0f)
+            m_anglespeed = 0.0f;
       }
       if (m_angle < m_angleMin)
       {
          m_angle = m_angleMin;
          m_pgate->FireVoidEventParm(DISPID_LimitEvents_BOS, fabsf(RADTOANG(m_anglespeed)));	// send Park event
-         m_anglespeed *= -1.0f;
-         m_anglespeed *= m_damping * 0.8f; //just some extra damping to reduce the anglespeed a bit faster
+         if (!m_forcedMove)
+         {
+            m_anglespeed *= -1.0f;
+            m_anglespeed *= m_damping * 0.8f; //just some extra damping to reduce the anglespeed a bit faster
+         }
+         else if (m_anglespeed<0.0f)
+            m_anglespeed = 0.0f;
       }
    }
    m_angle += m_anglespeed * dtime;

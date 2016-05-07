@@ -971,6 +971,7 @@ STDMETHODIMP Gate::put_Open(VARIANT_BOOL newVal)
    {
       m_phitgate->m_gateanim.m_angleMax = m_d.m_angleMax;
       m_phitgate->m_gateanim.m_angleMin = m_d.m_angleMin;
+      m_phitgate->m_gateanim.m_forcedMove = true;
 
       if (newVal)
       {
@@ -1142,6 +1143,7 @@ STDMETHODIMP Gate::Move(int dir, float speed, float angle) //move non-collidable
 {
    if (g_pplayer)
    {
+      m_phitgate->m_gateanim.m_forcedMove = true;
       m_phitgate->m_gateanim.m_fOpen = true;// move always turns off natural swing
       m_phitgate->m_fEnabled = false;		// and collidable off
       if (!m_d.m_twoWay)

@@ -186,6 +186,7 @@ public:
    float m_damping;
    bool m_fVisible;
    bool m_fOpen; // True when the table logic is opening the gate, not just the ball passing through
+   bool m_forcedMove; // is true if the table logic is opening/closing the gate
 };
 
 class HitGate : public HitObject
