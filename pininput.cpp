@@ -518,6 +518,21 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
                   PushQueue(&didod[0], APP_MOUSE);
                   middleMouseButtonDown = false;
                }
+            } //if (g_pplayer->m_fThrowBalls)
+            else
+            {
+               for (DWORD i = 0; i < 3; i++)
+               {
+                  if (oldMouseButtonState[i] != mouseState.rgbButtons[i])
+                  {
+                     didod[i].dwData = mouseState.rgbButtons[i];
+                     didod[i].dwOfs = i + 1;
+                     didod[i].dwSequence = APP_MOUSE;
+                     PushQueue(&didod[i], APP_MOUSE);
+                     oldMouseButtonState[i] = mouseState.rgbButtons[i];
+                  }
+               }
+
             }
          }
       }
@@ -1023,6 +1038,21 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
                      break;
                   }
                }
+            }
+         }
+         else
+         {
+            if (input->dwOfs == 1 && m_joylflipkey==25)
+            {
+               FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, (DWORD)g_pplayer->m_rgKeys[eLeftFlipperKey]);
+            }
+            if (input->dwOfs == 2 && m_joyrflipkey==26)
+            {
+               FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, (DWORD)g_pplayer->m_rgKeys[eRightFlipperKey]);
+            }
+            if (input->dwOfs == 3 && m_joyplungerkey==27)
+            {
+               FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, (DWORD)g_pplayer->m_rgKeys[ePlungerKey]);
             }
          }
       }

@@ -6552,6 +6552,12 @@ INT_PTR CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
          SendMessage(GetDlgItem(hwndDlg, item), CB_ADDSTRING, 0, (LPARAM)"Button 22");
          SendMessage(GetDlgItem(hwndDlg, item), CB_ADDSTRING, 0, (LPARAM)"Button 23");
          SendMessage(GetDlgItem(hwndDlg, item), CB_ADDSTRING, 0, (LPARAM)"Button 24");
+         if (item == IDC_JOYLFLIPCOMBO || item == IDC_JOYRFLIPCOMBO || item == IDC_JOYPLUNGERCOMBO)
+         {
+            SendMessage(GetDlgItem(hwndDlg, item), CB_ADDSTRING, 0, (LPARAM)"Left Mouse");
+            SendMessage(GetDlgItem(hwndDlg, item), CB_ADDSTRING, 0, (LPARAM)"Right Mouse");
+            SendMessage(GetDlgItem(hwndDlg, item), CB_ADDSTRING, 0, (LPARAM)"Middle Mouse");
+         }
          SendMessage(GetDlgItem(hwndDlg, item), CB_SETCURSEL, selected, 0);
       }
 
