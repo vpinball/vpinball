@@ -2,7 +2,7 @@ VP 10.1.0 Changelog
 ------------------------
 
 - add (tangent space-)normal mapping support to primitive
-- add support to assign left/right flipper button to left/right mouse buttons and middle mouse button to plunger key
+
 - add abilty to show the image size in the image manager for each texture
 - add an "Update All" button to the image manager for updating all images without any further inquiry.
   Only an error message is shown after updating, if some images can't be updated (e.g. files not found).
@@ -19,6 +19,8 @@ VP 10.1.0 Changelog
   The normal hit event is also supported but decoupled from the animation, so if a hit event is fired the isdropped flag can still be false because it is set after the animation.
 
 - add DMD image connection (if enabled in script) for flashers (and also as checkbox for textboxes)
+
+- add support to assign left/right flipper button to left/right mouse buttons and middle mouse button to plunger key (this can introduce less lag for the flipper buttons, compared to using a keyboard remapper)
 
 - "Throw Balls In Player" mode can now be activated permanently in the Preferences->Editor menu, also you can define the default ball size for this mode. 
   The ball size for this mode can also be defined in the debugger menu.
