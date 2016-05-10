@@ -183,53 +183,52 @@ void FlipperAnimObject::SetStrength(const float s)
 
 void FlipperAnimObject::UpdateDisplacements(const float dtime)
 {
+   m_angleCur += m_anglespeed*dtime;	// move flipper angle
+
+   if (m_angleCur > m_angleMax)
+      m_angleCur = m_angleMax;
+   if (m_angleCur < m_angleMin)
+      m_angleCur = m_angleMin;
+
    if (fabsf(m_anglespeed) < 0.0005f)   // avoids 'jumping balls' when two or more balls held on flipper (and more other balls are in play) //!! make dependent on physics update rate
       return;
-
-   m_angleCur += m_anglespeed*dtime;	// move flipper angle
 
    //if (m_anglespeed)
    //    slintf("Ang.speed: %f\n", m_anglespeed);
 
-   if (m_angleCur >= m_angleMax)        // hit stop?
-   {
-      m_angleCur = m_angleMax;
+   bool handle_event = false;
 
+   if (m_angleCur == m_angleMax)        // hit stop?
+   {
       if (m_anglespeed > 0.f)
       {
 #ifdef DEBUG_FLIPPERS
          if (m_startTime)
          {
-            U32 dur = g_pplayer->m_time_msec - m_startTime;
+            const U32 dur = g_pplayer->m_time_msec - m_startTime;
             m_startTime = 0;
             slintf("Stroke duration: %u ms\nAng. velocity: %f\n", dur, m_anglespeed);
             slintf("Ball velocity: %f\n", g_pplayer->m_vball[0]->vel.Length());
          }
 #endif
-
-         const float anglespd = fabsf(RADTOANG(m_anglespeed));
-         m_angularMomentum *= -0.3f;
-         m_anglespeed = m_angularMomentum / m_inertia;
-
-         if (m_EnableRotateEvent > 0) m_pflipper->FireVoidEventParm(DISPID_LimitEvents_EOS, anglespd); // send EOS event
-         else if (m_EnableRotateEvent < 0) m_pflipper->FireVoidEventParm(DISPID_LimitEvents_BOS, anglespd);	// send Beginning of Stroke event
-         m_EnableRotateEvent = 0;
+         handle_event = true;
       }
    }
-   else if (m_angleCur <= m_angleMin)
+   else if (m_angleCur == m_angleMin)
    {
-      m_angleCur = m_angleMin;
-
       if (m_anglespeed < 0.f)
-      {
-         const float anglespd = fabsf(RADTOANG(m_anglespeed));
-         m_angularMomentum *= -0.3f;
-         m_anglespeed = m_angularMomentum / m_inertia;
+         handle_event = true;
+   }
 
-         if (m_EnableRotateEvent > 0) m_pflipper->FireVoidEventParm(DISPID_LimitEvents_EOS, anglespd); // send EOS event
-         else if (m_EnableRotateEvent < 0) m_pflipper->FireVoidEventParm(DISPID_LimitEvents_BOS, anglespd);	// send Park event
-         m_EnableRotateEvent = 0;
-      }
+   if(handle_event)
+   {
+      const float anglespd = fabsf(RADTOANG(m_anglespeed));
+      m_angularMomentum *= -0.3f;
+      m_anglespeed = m_angularMomentum / m_inertia;
+
+      if (m_EnableRotateEvent > 0) m_pflipper->FireVoidEventParm(DISPID_LimitEvents_EOS, anglespd);      // send EOS event
+      else if (m_EnableRotateEvent < 0) m_pflipper->FireVoidEventParm(DISPID_LimitEvents_BOS, anglespd); // send Beginning of Stroke/Park event
+      m_EnableRotateEvent = 0;
    }
 }
 
@@ -264,19 +263,21 @@ void FlipperAnimObject::UpdateVelocities()
    m_isInContact = false;
    if (fabsf(m_anglespeed) <= 1e-2f)
    {
-      if (m_angleCur >= m_angleMax - 1e-2f && torque > 0)
+      if (m_angleCur >= m_angleMax - 1e-2f && torque > 0.f)
       {
+         m_angleCur = m_angleMax;
          m_isInContact = true;
          m_contactTorque = torque;
-         m_angularMomentum = 0;
-         torque = 0;
+         m_angularMomentum = 0.f;
+         torque = 0.f;
       }
-      else if (m_angleCur <= m_angleMin + 1e-2f && torque < 0)
+      else if (m_angleCur <= m_angleMin + 1e-2f && torque < 0.f)
       {
+         m_angleCur = m_angleMin;
          m_isInContact = true;
          m_contactTorque = torque;
-         m_angularMomentum = 0;
-         torque = 0;
+         m_angularMomentum = 0.f;
+         torque = 0.f;
       }
    }
 
