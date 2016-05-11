@@ -1048,7 +1048,7 @@ BEGIN
     LTEXT           "Max.Difficulty Length",-1,7,113,68,8
 END
 
-IDD_PROPFLIPPER_PHYSICS DIALOGEX 0, 0, 125, 145
+IDD_PROPFLIPPER_PHYSICS DIALOGEX 0, 0, 125, 156
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
@@ -1058,18 +1058,20 @@ BEGIN
     EDITTEXT        28,76,52,40,12,ES_AUTOHSCROLL
     EDITTEXT        26,76,67,40,12,ES_AUTOHSCROLL
     EDITTEXT        23,76,82,40,12,ES_AUTOHSCROLL
-    EDITTEXT        27,76,97,40,12,ES_AUTOHSCROLL
-    EDITTEXT        112,76,112,40,12,ES_AUTOHSCROLL
-    LTEXT           "Overwrite Physics by Global Set",-1,7,127,60,16
-    COMBOBOX        1044,71,130,50,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        27,76,96,40,12,ES_AUTOHSCROLL
+    EDITTEXT        112,76,111,40,12,ES_AUTOHSCROLL
+    LTEXT           "Overwrite Physics by Global Set",-1,7,138,60,16
+    COMBOBOX        1044,71,141,50,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Mass",-1,7,9,66,8
     LTEXT           "Strength",-1,7,24,66,8
     LTEXT           "Elasticity",-1,7,39,66,8
     LTEXT           "Elasticity Falloff",-1,7,54,66,8
     LTEXT           "Friction",-1,7,69,66,8
     LTEXT           "Return Strength Ratio",-1,7,84,66,8
-    LTEXT           "Coil Ramp Up",-1,7,99,66,8
-    LTEXT           "Scatter Angle",-1,7,114,66,8
+    LTEXT           "Coil Ramp Up",-1,7,98,66,8
+    LTEXT           "Scatter Angle",-1,7,113,66,8
+    EDITTEXT        113,76,125,40,12,ES_AUTOHSCROLL
+    LTEXT           "Torque Damping",-1,8,126,66,8
 END
 
 IDD_PROPPLUNGER_PHYSICS DIALOGEX 0, 0, 125, 125
@@ -2202,6 +2204,11 @@ BEGIN
 
     IDD_PROPFLIPPER_POSITION, DIALOG
     BEGIN
+    END
+
+    IDD_PROPFLIPPER_PHYSICS, DIALOG
+    BEGIN
+        BOTTOMMARGIN, 145
     END
 
     IDD_PROPPLUNGER_PHYSICS, DIALOG

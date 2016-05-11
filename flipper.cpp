@@ -196,7 +196,8 @@ void Flipper::WriteRegDefaults()
 {
    static const char regKey[] = "DefaultProps\\Flipper";
 
-   SetRegValueFloat(regKey, "StartAngle", m_d.m_StartAngle);
+   SetRegValueFloat( regKey, "TorqueDamp", m_d.m_torqueDamping );
+   SetRegValueFloat( regKey, "StartAngle", m_d.m_StartAngle );
    SetRegValueFloat(regKey, "EndAngle", m_d.m_EndAngle);
    SetRegValueFloat(regKey, "BaseRadius", m_d.m_BaseRadius);
    SetRegValueFloat(regKey, "EndRadius", m_d.m_EndRadius);
@@ -327,6 +328,7 @@ void Flipper::GetHitShapes(Vector<HitObject> * const pvho)
 
    phf->m_flipperanim.m_EnableRotateEvent = 0;
    phf->m_pfe = NULL;
+   phf->m_flipperanim.m_torqueDamping=m_d.m_torqueDamping;
 
    phf->m_flipperanim.m_fEnabled = m_d.m_fEnabled;
    phf->m_flipperanim.m_fVisible = m_d.m_fVisible;
@@ -593,7 +595,11 @@ void Flipper::SetDefaultPhysics(bool fromMouseClick)
    m_d.m_friction = GetRegStringAsFloatWithDefault("DefaultProps\\Flipper", "Friction", 0.6f);
    m_d.m_rampUp = GetRegStringAsFloatWithDefault("DefaultProps\\Flipper", "RampUp", 3.0f);
    
-   m_d.m_scatter = GetRegStringAsFloatWithDefault("DefaultProps\\Flipper", "Scatter", 0.0f);
+   m_d.m_scatter = GetRegStringAsFloatWithDefault( "DefaultProps\\Flipper", "Scatter", 0.0f );
+   
+   m_d.m_scatter = GetRegStringAsFloatWithDefault( "DefaultProps\\Flipper", "Scatter", 0.0f );
+
+   m_d.m_torqueDamping = GetRegStringAsFloatWithDefault( "DefaultProps\\Flipper", "TorqueDamp", 0.75f );
 }
 
 STDMETHODIMP Flipper::InterfaceSupportsErrorInfo(REFIID riid)
@@ -932,7 +938,8 @@ HRESULT Flipper::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
    bw.WriteFloat(FID(ELFO), m_d.m_elasticityFalloff);
    bw.WriteFloat(FID(FRIC), m_d.m_friction);
    bw.WriteFloat(FID(RPUP), m_d.m_rampUp);
-   bw.WriteFloat(FID(SCTR), m_d.m_scatter);
+   bw.WriteFloat( FID( SCTR ), m_d.m_scatter );
+   bw.WriteFloat( FID( TODA ), m_d.m_torqueDamping );
    bw.WriteBool(FID(VSBL), m_d.m_fVisible);
    bw.WriteBool(FID(ENBL), m_d.m_fEnabled);
    bw.WriteFloat(FID(FRMN), m_d.m_FlipperRadiusMin);
@@ -1091,6 +1098,10 @@ BOOL Flipper::LoadToken(int id, BiffReader *pbr)
    {
 	  pbr->GetFloat(&m_d.m_scatter);
    }
+   else if ( id == FID( TODA ) )
+   {
+       pbr->GetFloat( &m_d.m_torqueDamping );
+   }
    else if (id == FID(FRMN))
    {
       pbr->GetFloat(&m_d.m_FlipperRadiusMin);
@@ -1185,6 +1196,35 @@ STDMETHODIMP Flipper::put_Length(float newVal)
    STOPUNDO
 
    return S_OK;
+}
+
+STDMETHODIMP Flipper::get_TorqueDamping( float *pVal )
+{
+    if ( m_phitflipper )
+    {
+        *pVal = m_phitflipper->m_flipperanim.m_torqueDamping;
+    }
+    else
+        *pVal = m_d.m_torqueDamping;
+
+    return S_OK;
+}
+
+STDMETHODIMP Flipper::put_TorqueDamping( float newVal )
+{
+    if ( m_phitflipper )
+    {
+        m_phitflipper->m_flipperanim.m_torqueDamping = newVal;
+        m_d.m_torqueDamping = newVal;    
+    }
+    else
+    {
+        STARTUNDO
+            m_d.m_torqueDamping = newVal;
+        STOPUNDO
+    }
+
+    return S_OK;
 }
 
 STDMETHODIMP Flipper::get_StartAngle(float *pVal)
