@@ -266,7 +266,9 @@ Variables
 *StartAngle(float)
 *EndAngle(float)
 *FlipperRadiusMin(float)
-*TorqueDamping(float) - default is 0.75
+*EOSTorque(float) - This value/factor effects the way how long a flipper arm stays in the up/raised position even when you depressed the flipper button. 
+                    On real pinballs it will take some time until the flipper solenoid loses it's power until the flipper drops down or is forced to move by a hitting ball.
+                    The default value is 0.75. For fine tuning you can change that but not higher than 1 or lower than 0.5 or the result will be totally unrealistic.
 CurrentAngle(float) - only readable
 
 Friction(float)

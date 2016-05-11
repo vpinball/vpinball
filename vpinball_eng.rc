@@ -14,7 +14,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (United States) resources
+// Englisch (USA) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
@@ -1071,7 +1071,7 @@ BEGIN
     LTEXT           "Coil Ramp Up",-1,7,98,66,8
     LTEXT           "Scatter Angle",-1,7,113,66,8
     EDITTEXT        113,76,125,40,12,ES_AUTOHSCROLL
-    LTEXT           "Torque Damping",-1,8,126,66,8
+    LTEXT           "EOS Torque",-1,8,126,66,8
 END
 
 IDD_PROPPLUNGER_PHYSICS DIALOGEX 0, 0, 125, 125
@@ -2918,7 +2918,7 @@ BEGIN
     IDS_STEP                "Step"
 END
 
-#endif    // English (United States) resources
+#endif    // Englisch (USA) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
