@@ -115,11 +115,14 @@ void Flipper::SetDefaults(bool fromMouseClick)
    float fTmp;
    int iTmp;
 
+   hr = GetRegStringAsFloat("DefaultProps\\Flipper", "EOSTorque", &fTmp);
+   m_d.m_torqueDamping = (hr == S_OK) && fromMouseClick ? fTmp : 0.75f;
+
    hr = GetRegStringAsFloat("DefaultProps\\Flipper", "StartAngle", &fTmp);
-   m_d.m_StartAngle = (hr == S_OK) && fromMouseClick ? fTmp : 121;
+   m_d.m_StartAngle = (hr == S_OK) && fromMouseClick ? fTmp : 121.f;
 
    hr = GetRegStringAsFloat("DefaultProps\\Flipper", "EndAngle", &fTmp);
-   m_d.m_EndAngle = (hr == S_OK) && fromMouseClick ? fTmp : 70;
+   m_d.m_EndAngle = (hr == S_OK) && fromMouseClick ? fTmp : 70.f;
 
    hr = GetRegStringAsFloat("DefaultProps\\Flipper", "BaseRadius", &fTmp);
    m_d.m_BaseRadius = (hr == S_OK) && fromMouseClick ? fTmp : 21.5f;		// 15
@@ -131,7 +134,7 @@ void Flipper::SetDefaults(bool fromMouseClick)
    m_d.m_FlipperRadiusMax = (hr == S_OK) && fromMouseClick ? fTmp : 130.f;	// 80
 
    hr = GetRegStringAsFloat("DefaultProps\\Flipper", "MaxDifLength", &fTmp);
-   m_d.m_FlipperRadiusMin = (hr == S_OK) && fromMouseClick ? fTmp : 0;
+   m_d.m_FlipperRadiusMin = (hr == S_OK) && fromMouseClick ? fTmp : 0.f;
 
    m_d.m_FlipperRadius = m_d.m_FlipperRadiusMax;
 
@@ -196,8 +199,8 @@ void Flipper::WriteRegDefaults()
 {
    static const char regKey[] = "DefaultProps\\Flipper";
 
-   SetRegValueFloat( regKey, "EOSTorque", m_d.m_torqueDamping );
-   SetRegValueFloat( regKey, "StartAngle", m_d.m_StartAngle );
+   SetRegValueFloat(regKey, "EOSTorque", m_d.m_torqueDamping);
+   SetRegValueFloat(regKey, "StartAngle", m_d.m_StartAngle);
    SetRegValueFloat(regKey, "EndAngle", m_d.m_EndAngle);
    SetRegValueFloat(regKey, "BaseRadius", m_d.m_BaseRadius);
    SetRegValueFloat(regKey, "EndRadius", m_d.m_EndRadius);
@@ -938,8 +941,8 @@ HRESULT Flipper::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
    bw.WriteFloat(FID(ELFO), m_d.m_elasticityFalloff);
    bw.WriteFloat(FID(FRIC), m_d.m_friction);
    bw.WriteFloat(FID(RPUP), m_d.m_rampUp);
-   bw.WriteFloat( FID( SCTR ), m_d.m_scatter );
-   bw.WriteFloat( FID( TODA ), m_d.m_torqueDamping );
+   bw.WriteFloat(FID(SCTR), m_d.m_scatter);
+   bw.WriteFloat(FID(TODA), m_d.m_torqueDamping);
    bw.WriteBool(FID(VSBL), m_d.m_fVisible);
    bw.WriteBool(FID(ENBL), m_d.m_fEnabled);
    bw.WriteFloat(FID(FRMN), m_d.m_FlipperRadiusMin);

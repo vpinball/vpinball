@@ -7648,6 +7648,10 @@ void savecurrentphysicssetting(HWND hwndDlg)
    sprintf_s(tmp2, 256, "FlipperPhysicsScatter%u", physicsselection);
    SetRegValue("Player", tmp2, REG_SZ, tmp, lstrlen(tmp));
 
+   GetDlgItemTextA(hwndDlg, 113, tmp, 256);
+   sprintf_s(tmp2, 256, "FlipperPhysicsEOSTorque%u", physicsselection);
+   SetRegValue("Player", tmp2, REG_SZ, tmp, lstrlen(tmp));
+
    GetDlgItemTextA(hwndDlg, 23, tmp, 256);
    sprintf_s(tmp2, 256, "FlipperPhysicsReturnStrength%u", physicsselection);
    SetRegValue("Player", tmp2, REG_SZ, tmp, lstrlen(tmp));
@@ -7778,6 +7782,15 @@ INT_PTR CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPAR
 
       sprintf_s(tmp, 256, "%f", FlipperPhysicsScatter);
       SetDlgItemTextA(hwndDlg, 112, tmp);
+
+      float FlipperPhysicsTorqueDamping = 0.75f;
+      sprintf_s(tmp, 256, "FlipperPhysicsEOSTorque%u", physicsselection);
+      hr = GetRegStringAsFloat("Player", tmp, &FlipperPhysicsTorqueDamping);
+      if (hr != S_OK)
+          FlipperPhysicsTorqueDamping = 0.75f;
+
+      sprintf_s(tmp, 256, "%f", FlipperPhysicsTorqueDamping);
+      SetDlgItemTextA(hwndDlg, 113, tmp);
 
       float FlipperPhysicsReturnStrength = 0.058f;
       sprintf_s(tmp, 256, "FlipperPhysicsReturnStrength%u", physicsselection);
@@ -7952,6 +7965,7 @@ INT_PTR CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPAR
                 SetDlgItemTextA(hwndDlg, 19, flipper->first_node("strength")->value());
                 SetDlgItemTextA(hwndDlg, 21, flipper->first_node("elasticity")->value());
                 SetDlgItemTextA(hwndDlg, 112, flipper->first_node("scatter")->value());
+                SetDlgItemTextA(hwndDlg, 113, flipper->first_node("eosTorque")->value());
                 SetDlgItemTextA(hwndDlg, 23, flipper->first_node("returnStrength")->value());
                 SetDlgItemTextA(hwndDlg, 22, flipper->first_node("elasticityFalloff")->value());
                 SetDlgItemTextA(hwndDlg, 109, flipper->first_node("friction")->value());
@@ -8028,6 +8042,10 @@ INT_PTR CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPAR
             GetDlgItemTextA(hwndDlg, 112, tmp, 256);
             xml_node<>*flipScatter = xmlDoc.allocate_node(node_element, "scatter", (new string(tmp))->c_str());
             flipper->append_node(flipScatter);
+
+            GetDlgItemTextA(hwndDlg, 113, tmp, 256);
+            xml_node<>*flipTorqueDamping = xmlDoc.allocate_node(node_element, "eosTorque", (new string(tmp))->c_str());
+            flipper->append_node(flipTorqueDamping);
 
             GetDlgItemTextA(hwndDlg, 23, tmp, 256);
             xml_node<>*flipReturnStrength = xmlDoc.allocate_node(node_element, "returnStrength", (new string(tmp))->c_str());
