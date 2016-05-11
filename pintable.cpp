@@ -2065,7 +2065,7 @@ void PinTable::Render3DProjection(Sur * const psur)
    pinproj.m_rcviewport.right = EDITOR_BG_WIDTH;
    pinproj.m_rcviewport.bottom = EDITOR_BG_HEIGHT;
 
-   //   const float aspect = 4.0f/3.0f;
+   //const float aspect = 4.0f/3.0f;
    int renderWidth, renderHeight;
    GetRegInt("Player", "Width", &renderWidth);
    GetRegInt("Player", "Height", &renderHeight);
@@ -9537,7 +9537,7 @@ STDMETHODIMP PinTable::ImportPhysics()
          flipper->put_Friction(FlipperPhysicsFriction);
          flipper->put_RampUp(FlipperPhysicsCoilRampUp);
          flipper->put_Scatter(FlipperPhysicsScatter);
-         flipper->put_TorqueDamping(FlipperPhysicsTorqueDamping);
+         flipper->put_EOSTorque(FlipperPhysicsTorqueDamping);
       }
 
    return S_OK;
@@ -9630,7 +9630,7 @@ STDMETHODIMP PinTable::ExportPhysics()
    xml_node<>*flipScatter = xmlDoc.allocate_node(node_element, "scatter", fscatter);
    physFlip->append_node(flipScatter);
 
-   flipper->get_TorqueDamping(&val);
+   flipper->get_EOSTorque(&val);
    sprintf_s(ftorquedamping, "%f", val);
    xml_node<>*flipTorqueDamping = xmlDoc.allocate_node(node_element, "eosTorque", ftorquedamping);
    physFlip->append_node(flipTorqueDamping);
