@@ -63,6 +63,7 @@ public:
 
    float m_inertia;	//moment of inertia
 
+   float m_torqueDamping;
    int m_EnableRotateEvent;
 
    Vertex2D zeroAngNorm; // base norms at zero degrees	

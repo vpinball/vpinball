@@ -266,6 +266,7 @@ Variables
 *StartAngle(float)
 *EndAngle(float)
 *FlipperRadiusMin(float)
+*TorqueDamping(float) - default is 0.75
 CurrentAngle(float) - only readable
 
 Friction(float)
