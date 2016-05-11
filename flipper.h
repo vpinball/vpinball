@@ -201,8 +201,8 @@ public:
    STDMETHOD(put_Image)(/*[in]*/ BSTR newVal);
    STDMETHOD(get_ReflectionEnabled)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_ReflectionEnabled)(/*[in]*/ VARIANT_BOOL newVal);
-   STDMETHOD( get_TorqueDamping )(/*[out, retval]*/ float *pVal);
-   STDMETHOD( put_TorqueDamping )(/*[in]*/ float newVal);
+   STDMETHOD(get_EOSTorque)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_EOSTorque)(/*[in]*/ float newVal);
 };
 
 #endif // !defined(AFX_FLIPPER_H__D65AA2A2_9F89_4AA4_88F3_D325B1001825__INCLUDED_)

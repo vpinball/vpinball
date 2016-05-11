@@ -196,7 +196,7 @@ void Flipper::WriteRegDefaults()
 {
    static const char regKey[] = "DefaultProps\\Flipper";
 
-   SetRegValueFloat( regKey, "TorqueDamp", m_d.m_torqueDamping );
+   SetRegValueFloat( regKey, "EOSTorque", m_d.m_torqueDamping );
    SetRegValueFloat( regKey, "StartAngle", m_d.m_StartAngle );
    SetRegValueFloat(regKey, "EndAngle", m_d.m_EndAngle);
    SetRegValueFloat(regKey, "BaseRadius", m_d.m_BaseRadius);
@@ -599,7 +599,7 @@ void Flipper::SetDefaultPhysics(bool fromMouseClick)
    
    m_d.m_scatter = GetRegStringAsFloatWithDefault( "DefaultProps\\Flipper", "Scatter", 0.0f );
 
-   m_d.m_torqueDamping = GetRegStringAsFloatWithDefault( "DefaultProps\\Flipper", "TorqueDamp", 0.75f );
+   m_d.m_torqueDamping = GetRegStringAsFloatWithDefault( "DefaultProps\\Flipper", "EOSTorque", 0.75f );
 }
 
 STDMETHODIMP Flipper::InterfaceSupportsErrorInfo(REFIID riid)
@@ -1198,7 +1198,7 @@ STDMETHODIMP Flipper::put_Length(float newVal)
    return S_OK;
 }
 
-STDMETHODIMP Flipper::get_TorqueDamping( float *pVal )
+STDMETHODIMP Flipper::get_EOSTorque(float *pVal)
 {
     if ( m_phitflipper )
     {
@@ -1210,7 +1210,7 @@ STDMETHODIMP Flipper::get_TorqueDamping( float *pVal )
     return S_OK;
 }
 
-STDMETHODIMP Flipper::put_TorqueDamping( float newVal )
+STDMETHODIMP Flipper::put_EOSTorque(float newVal)
 {
     if ( m_phitflipper )
     {

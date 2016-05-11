@@ -966,8 +966,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propput, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([in] VARIANT* newVal);
                 [propget, id(107), helpstring("property Height")] HRESULT Height([out, retval] float *pVal);
                 [propput, id(107), helpstring("property Height")] HRESULT Height([in] float newVal);
-                [propget, id(113), helpstring("property TorqueDamping")] HRESULT TorqueDamping([out, retval] float *pVal);
-                [propput, id(113), helpstring("property TorqueDamping")] HRESULT TorqueDamping([in] float newVal);
+                [propget, id(113), helpstring("property EOSTorque")] HRESULT EOSTorque([out, retval] float *pVal);
+                [propput, id(113), helpstring("property EOSTorque")] HRESULT EOSTorque([in] float newVal);
 
                 [propget, id(111), helpstring("property FlipperRadiusMin")] HRESULT FlipperRadiusMin([out, retval] float *pVal);
                 [propput, id(111), helpstring("property FlipperRadiusMin")] HRESULT FlipperRadiusMin([in] float newVal);
