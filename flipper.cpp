@@ -695,7 +695,10 @@ void Flipper::PostRenderStatic(RenderDevice* pd3dDevice)
    if (m_d.m_rubberthickness > 0.f)
    {
       mat = m_ptable->GetMaterial(m_d.m_szRubberMaterial);
-      pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_with_texture_isMetal" : "basic_with_texture_isNotMetal");
+      if (pin)
+        pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_with_texture_isMetal" : "basic_with_texture_isNotMetal");
+      else
+        pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_without_texture_isMetal" : "basic_without_texture_isNotMetal");
       pd3dDevice->basicShader->SetMaterial(mat);
 
       pd3dDevice->basicShader->Begin(0);
