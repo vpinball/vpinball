@@ -2061,6 +2061,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propput, id(DISPID_Name), helpstring("property Name")] HRESULT Name([in] BSTR newVal);
                 [propget, id(2), helpstring("property Height")] HRESULT Height([out, retval] float *pVal);
                 [propput, id(2), helpstring("property Height")] HRESULT Height([in] float newVal);
+                [propget, id(116), helpstring("property HitHeight")] HRESULT HitHeight([out, retval] float *pVal);
+                [propput, id(116), helpstring("property HitHeight")] HRESULT HitHeight([in] float newVal);
                 [propget, id(3), helpstring("property HitEvent")] HRESULT HasHitEvent([out, retval] VARIANT_BOOL *pVal);
                 [propput, id(3), helpstring("property HitEvent")] HRESULT HasHitEvent([in] VARIANT_BOOL newVal);
                 [propget, id(4), helpstring("property Thickness")] HRESULT Thickness([out, retval] int *pVal);

@@ -95,6 +95,7 @@ void Rubber::WriteRegDefaults()
    static const char strKeyName[] = "DefaultProps\\Rubber";
 
    SetRegValueFloat(strKeyName, "Height", m_d.m_height);
+   SetRegValueFloat(strKeyName, "HitHeight", m_d.m_hitHeight);
    SetRegValueInt(strKeyName, "Thickness", m_d.m_thickness);
    SetRegValueBool(strKeyName, "HitEvent", m_d.m_fHitEvent);
    SetRegValueBool(strKeyName, "TimerEnabled", m_d.m_tdr.m_fTimerEnabled);
@@ -130,7 +131,7 @@ void Rubber::DrawRubberMesh(Sur * const psur)
    std::vector<Vertex2D> drawVertices;
 
    GenerateMesh(4);
-   UpdateRubber(NULL, false);
+   UpdateRubber(NULL, false, m_d.m_height);
 
    for (int i = 0; i < (int)ringIndices.size(); i += 3)
    {
@@ -517,7 +518,7 @@ void Rubber::GetHitShapes(Vector<HitObject> * const pvho)
    std::set< std::pair<unsigned, unsigned> > addedEdges;
 
    GenerateMesh(6, true); //!! adapt hacky code in the function if changing the "6" here
-   UpdateRubber(NULL, false);
+   UpdateRubber(NULL, false, m_d.m_hitHeight);
 
    // add collision triangles and edges
    for (unsigned i = 0; i < ringIndices.size(); i += 3)
@@ -653,6 +654,7 @@ HRESULT Rubber::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptk
    BiffWriter bw(pstm, hcrypthash, hcryptkey);
 
    bw.WriteFloat(FID(HTTP), m_d.m_height);
+   bw.WriteFloat(FID(HTHI), m_d.m_hitHeight);
    bw.WriteInt(FID(WDTP), m_d.m_thickness);
    bw.WriteBool(FID(HTEV), m_d.m_fHitEvent);
    bw.WriteString(FID(MATR), m_d.m_szMaterial);
@@ -706,6 +708,10 @@ BOOL Rubber::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(HTTP))
    {
       pbr->GetFloat(&m_d.m_height);
+   }
+   else if (id == FID(HTHI))
+   {
+      pbr->GetFloat(&m_d.m_hitHeight);
    }
    else if (id == FID(WDTP))
    {
@@ -929,6 +935,27 @@ STDMETHODIMP Rubber::put_Height(float newVal)
 
       m_d.m_height = newVal;
       dynamicVertexBufferRegenerate = true;
+
+      STOPUNDO
+   }
+
+   return S_OK;
+}
+
+STDMETHODIMP Rubber::get_HitHeight(float *pVal)
+{
+   *pVal = m_d.m_hitHeight;
+
+   return S_OK;
+}
+
+STDMETHODIMP Rubber::put_HitHeight(float newVal)
+{
+   if (m_d.m_hitHeight != newVal)
+   {
+      STARTUNDO
+
+      m_d.m_hitHeight = newVal;
 
       STOPUNDO
    }
@@ -1306,7 +1333,7 @@ void Rubber::RenderObject(RenderDevice * const pd3dDevice)
    }
 
    if (dynamicVertexBufferRegenerate)
-       UpdateRubber(pd3dDevice, true);
+       UpdateRubber(pd3dDevice, true, m_d.m_height);
 
    pd3dDevice->SetTextureAddressMode(0, RenderDevice::TEX_CLAMP);
 
@@ -1354,7 +1381,7 @@ void Rubber::ExportMesh(FILE *f)
 
       WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, MAX_PATH, NULL, NULL);
       GenerateMesh();
-      UpdateRubber(NULL, false);
+      UpdateRubber(NULL, false, m_d.m_height);
 
       WaveFrontObj_WriteObjectName(f, name);
       WaveFrontObj_WriteVertexInfo(f, m_vertices.data(), m_numVertices);
@@ -1393,7 +1420,7 @@ void Rubber::GenerateMesh(const int _accuracy, const bool createHitShape)
 
    m_vertices.resize(m_numVertices);
    ringIndices.resize(m_numIndices);
-   const float height = m_d.m_height + m_ptable->m_tableheight;
+   const float height = m_d.m_hitHeight + m_ptable->m_tableheight;
 
    Vertex3Ds prevB;
    const float invNR = 1.0f / (float)numRings;
@@ -1532,7 +1559,7 @@ void Rubber::GenerateVertexBuffer(RenderDevice* pd3dDevice)
    dynamicIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(ringIndices);
 }
 
-void Rubber::UpdateRubber(RenderDevice * const pd3dDevice, const bool updateVB)
+void Rubber::UpdateRubber(RenderDevice * const pd3dDevice, const bool updateVB, const float height)
 {
    Matrix3D fullMatrix,tempMat;
    fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotZ));
@@ -1546,7 +1573,10 @@ void Rubber::UpdateRubber(RenderDevice * const pd3dDevice, const bool updateVB)
    fullMatrix.Multiply(tempMat, vertMatrix);
    tempMat.SetScaling(1.f, 1.f, m_ptable->m_BG_scalez[m_ptable->m_BG_current_set]);
    tempMat.Multiply(vertMatrix, vertMatrix);
-   tempMat.SetTranslation(middlePoint.x, middlePoint.y, m_d.m_height*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_ptable->m_tableheight);
+   if ( height==m_d.m_hitHeight )   // do not z-scale the hit mesh
+      tempMat.SetTranslation(middlePoint.x, middlePoint.y, height + m_ptable->m_tableheight);
+   else
+      tempMat.SetTranslation(middlePoint.x, middlePoint.y, height*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_ptable->m_tableheight);
    tempMat.Multiply(vertMatrix, vertMatrix);
 
    Vertex3D_NoTex2 *buf;
@@ -1608,4 +1638,6 @@ void Rubber::SetDefaultPhysics(bool fromMouseClick)
    m_d.m_elasticityFalloff = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "ElasticityFalloff", 0.3f) : 0.3f;
    m_d.m_friction = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "Friction", 0.6f) : 0.6f;
    m_d.m_scatter = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "Scatter", 5) : 5;
+   m_d.m_hitHeight = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "HitHeight", 25.0f) : 25.0f;
+
 }

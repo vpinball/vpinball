@@ -688,6 +688,7 @@ Variables
 *HasHitEvent(bool)
 *Thickness(int)
 *Collidable(bool)
+*HitHeight(float)           - defines the collision height of a rubber (default is 25.0 midpoint of a standard ball with size 50)
 *Material(string)
 Visible(bool)
 *EnableStaticRendering(bool) - if set the rubber is only rendered once (like walls) any dynamic changes later 
