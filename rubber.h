@@ -13,6 +13,7 @@ public:
    char m_szMaterial[32];
    TimerDataRoot m_tdr;
    float m_height;
+   float m_hitHeight;
    int m_thickness;
    char m_szImage[MAXTOKEN];
    float m_elasticity;
@@ -152,7 +153,7 @@ private:
    void GenerateVertexBuffer(RenderDevice* pd3dDevice);
 
    void RenderObject(RenderDevice * const pd3dDevice);
-   void UpdateRubber(RenderDevice * const pd3dDevice, const bool updateVB);
+   void UpdateRubber(RenderDevice * const pd3dDevice, const bool updateVB, const float height);
    void GenerateMesh(const int _accuracy = -1, const bool createHitShape = false);
    void DrawRubberMesh(Sur * const psur);
 
@@ -164,6 +165,8 @@ public:
    STDMETHOD(put_Material)(/*[in]*/ BSTR newVal);
    STDMETHOD(get_Height)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_Height)(/*[in]*/ float newVal);
+   STDMETHOD(get_HitHeight)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_HitHeight)(/*[in]*/ float newVal);
    STDMETHOD(get_Thickness)(/*[out, retval]*/ int *pVal);
    STDMETHOD(put_Thickness)(/*[in]*/ int newVal);
    STDMETHOD(get_HasHitEvent)(/*[out, retval]*/ VARIANT_BOOL *pVal);
