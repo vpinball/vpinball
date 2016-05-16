@@ -3468,14 +3468,17 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
             pstmVersion->Release();
             if (version > CURRENT_FILE_FORMAT_VERSION)
             {
-               LocalString ls2(IDS_WRONGFILEVERSION);
-               ShowError(ls2.m_szbuffer);
+               char errorMsg[MAX_PATH] = { 0 };
+               sprintf_s(errorMsg, "This table was saved with version %i.%02i and is newer than the supported version %i.%02i! You might get problems loading/playing it!", version / 100, version % 100, CURRENT_FILE_FORMAT_VERSION / 100, CURRENT_FILE_FORMAT_VERSION%100);
+               ShowError(errorMsg);
+/*
                pstgRoot->Release();
                pstmGame->Release();
                pstgData->Release();
                DestroyWindow(hwndProgressBar);
                g_pvp->SetCursorCur(NULL, IDC_ARROW);
                return -1;
+*/
             }
 
             // Create a block cipher session key based on the hash of the password.
