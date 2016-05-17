@@ -706,6 +706,7 @@ RotZ(float)                 - angle to rotate the whole rubber around the Z axis
 *EnableShowInEditor(bool)   - if set one cannot adjust the control points of the rubber but the 
                               rotation angles are applied to the rubber mesh in the editor.
 *ReflectionEnabled(bool)    - default=true
+UserValue(any)              - can store any user defined value for re-use later-on
 
 
 TARGET
