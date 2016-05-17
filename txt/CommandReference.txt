@@ -685,6 +685,8 @@ RUBBER
 Variables
 ---------
 *Name(string)
+TimerEnabled(bool)
+TimerInterval(int)
 *HasHitEvent(bool)
 *Thickness(int)
 *Collidable(bool)
