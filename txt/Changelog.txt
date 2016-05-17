@@ -2,9 +2,10 @@ VP 10.1.0 Changelog
 ------------------------
 
 - add (tangent space-)normal mapping support to primitive
-- add EOSTorque to the flipper physics settings. This value/factor effects the way how long a flipper arm stays in the up/raised position even when you depressed the flipper button. 
-- rubbers now have an extra HitHeight property to decouple the collision detection from the actual visible rubber height. Also the HitHeight isn't effected by the z-scaling.
+
+- add EOSTorque to the flipper physics settings. This value/factor effects the way how long a flipper arm stays in the up/raised position even when you depressed the flipper button.
   On real pinballs it will take some time until the flipper solenoid loses it's power until the flipper drops down or is forced to move by a hitting ball.
+
 - add abilty to show the image size in the image manager for each texture
 - add an "Update All" button to the image manager for updating all images without any further inquiry.
   Only an error message is shown after updating, if some images can't be updated (e.g. files not found).
@@ -13,6 +14,7 @@ VP 10.1.0 Changelog
 - fix/extend support for different user-selectable physics presets and also save as XML file
 
 - hit shape of the rubber object refined
+- rubbers also now have an extra HitHeight property to further decouple the collision detection from the actual visible rubber height. Also the HitHeight isn't affected by the z-scaling.
 
 - spinner and gate animation reworked
 
