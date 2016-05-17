@@ -2077,8 +2077,6 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propput, id(340), helpstring("property Material")] HRESULT Material([in] BSTR newVal);
                 [propget, id(DISPID_Image), helpstring("property Image")] HRESULT Image([out, retval] BSTR *pVal);
                 [propput, id(DISPID_Image), helpstring("property Image")] HRESULT Image([in] BSTR newVal);
-                [propget, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([out, retval] VARIANT* pVal);
-                [propput, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([in] VARIANT* newVal);
                 [propget, id(110), helpstring("property Elasticity")] HRESULT Elasticity([out, retval] float *pVal);
                 [propput, id(110), helpstring("property Elasticity")] HRESULT Elasticity([in] float newVal);
                 [propget, id(120), helpstring("property ElasticityFalloff")] HRESULT ElasticityFalloff([out, retval] float *pVal);
@@ -2103,6 +2101,14 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 
                 [propget, id(479), helpstring("property ReflectionEnabled")] HRESULT ReflectionEnabled([out, retval] VARIANT_BOOL *pVal);
                 [propput, id(479), helpstring("property ReflectionEnabled")] HRESULT ReflectionEnabled([in] VARIANT_BOOL newVal);
+
+                [propget, id(DISPID_Timer_Enabled), helpstring("property TimerEnabled")] HRESULT TimerEnabled([out, retval] VARIANT_BOOL *pVal);
+                [propput, id(DISPID_Timer_Enabled), helpstring("property TimerEnabled")] HRESULT TimerEnabled([in] VARIANT_BOOL newVal);
+                [propget, id(DISPID_Timer_Interval), helpstring("property TimerInterval")] HRESULT TimerInterval([out, retval] long *pVal);
+                [propput, id(DISPID_Timer_Interval), helpstring("property TimerInterval")] HRESULT TimerInterval([in] long newVal);
+                [propget, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([out, retval] VARIANT* pVal);
+                [propput, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([in] VARIANT* newVal);
+                
         };
    
    
@@ -2190,7 +2196,7 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
         methods:
                 [id(DISPID_GameEvents_Init)]  void Init();
                 [id(DISPID_HitEvents_Hit)]  void Hit();
-                //[id(DISPID_TimerEvents_Timer)]  void Timer();
+                [id(DISPID_TimerEvents_Timer)]  void Timer();
         }
 
         //////////////////////////////
