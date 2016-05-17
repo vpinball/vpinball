@@ -162,6 +162,7 @@ void Rubber::DrawRubberMesh(Sur * const psur)
 void Rubber::PreRender(Sur * const psur)
 {
    //make 1 wire ramps look unique in editor - uses ramp color
+    psur->SetLineColor( RGB( 0, 0, 0 ), false, 0 );
    if (m_ptable->RenderSolid())
       psur->SetFillColor(RGB(192, 192, 192));
    else
