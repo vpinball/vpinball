@@ -691,7 +691,7 @@ HRESULT Rubber::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptk
 HRESULT Rubber::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
 {
    SetDefaults(false);
-
+   m_d.m_hitHeight = -1.0;
    BiffReader br(pstm, this, pid, version, hcrypthash, hcryptkey);
 
    m_ptable = ptable;
@@ -800,6 +800,10 @@ BOOL Rubber::LoadToken(int id, BiffReader *pbr)
 
 HRESULT Rubber::InitPostLoad()
 {
+   if (m_d.m_hitHeight == -1.0f)
+   {
+      m_d.m_hitHeight = m_d.m_height;
+   }
    return S_OK;
 }
 
@@ -1640,5 +1644,4 @@ void Rubber::SetDefaultPhysics(bool fromMouseClick)
    m_d.m_friction = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "Friction", 0.6f) : 0.6f;
    m_d.m_scatter = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "Scatter", 5) : 5;
    m_d.m_hitHeight = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "HitHeight", 25.0f) : 25.0f;
-
 }
