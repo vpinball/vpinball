@@ -331,7 +331,9 @@ public:
    U32 c_hitcnts;
    U32 c_collisioncnt;
    U32 c_contactcnt;
+#ifdef C_DYNAMIC
    U32 c_staticcnt;
+#endif
    U32 c_embedcnts;
    U32 c_timesearch;
 
