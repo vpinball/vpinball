@@ -780,7 +780,9 @@ STDMETHODIMP Kicker::KickXYZ(float angle, float speed, float inclination, float 
       m_phitkickercircle->m_pball->m_vel.y = -cosf(anglerad) * speed;
       m_phitkickercircle->m_pball->m_vel.z = speedz;
       m_phitkickercircle->m_pball->m_frozen = false;
-      m_phitkickercircle->m_pball->m_dynamic = 2;
+#ifdef C_DYNAMIC
+      m_phitkickercircle->m_pball->m_dynamic = C_DYNAMIC;
+#endif
       m_phitkickercircle->m_pball->m_coll.isContact = false;
       m_phitkickercircle->m_pball->m_coll.hitmoment_bit = true;
       m_phitkickercircle->m_pball = NULL;
@@ -1190,7 +1192,9 @@ void KickerHitCircle::DoChangeBallVelocity(Ball *const pball, const Vertex3Ds& h
         tangent = surfVel - surfVel.Dot(hitnormal) * hitnorm; // calc the tangential velocity
 
         pball->m_vel += dot * hitnorm; // apply collision impulse (along normal, so no torque)
+#ifdef C_DYNAMIC
         pball->m_dynamic = C_DYNAMIC;
+#endif
 
         const float friction = 0.3f;
         const float tangentSpSq = tangent.LengthSquared();
@@ -1281,7 +1285,9 @@ void KickerHitCircle::DoCollide(Ball * const pball, const Vertex3Ds& hitnormal, 
                pball->m_angularvelocity.SetZero();
                pball->m_pos.x = center.x;
                pball->m_pos.y = center.y;
+#ifdef C_DYNAMIC
                pball->m_dynamic = 0;
+#endif
                if (m_pkicker->m_d.m_fFallThrough)
                   pball->m_pos.z = zlow - pball->m_radius - 5.0f;
                else

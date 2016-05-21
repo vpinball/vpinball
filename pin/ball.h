@@ -68,7 +68,9 @@ public:
 
    CollisionEvent m_coll;  // collision information, may not be a actual hit if something else happens first
 
+#ifdef C_DYNAMIC
    int m_dynamic;			// used to determine static ball conditions and velocity quenching
+#endif
 
    BallAnimObject m_ballanim;
 

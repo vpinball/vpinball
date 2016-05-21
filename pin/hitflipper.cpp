@@ -244,7 +244,7 @@ void FlipperAnimObject::UpdateVelocities()
    {
       desiredTorque = m_force;
       if (fabsf(m_angleCur - m_angleEnd) <= (float)(3.0*M_PI / 180.0))
-         desiredTorque *= m_torqueDamping;//0.75f;     // hold coil is weaker
+         desiredTorque *= m_torqueDamping; // hold coil is weaker
    }
    else
       desiredTorque = -m_returnRatio * m_force;
@@ -863,7 +863,9 @@ void HitFlipper::Collide(CollisionEvent *coll)
       m_flipperanim.ApplyImpulse(-jt * crossF);
    }
 
+#ifdef C_DYNAMIC
    pball->m_dynamic = C_DYNAMIC;           // reactive ball if quenched
+#endif
 
    if ((bnv < -0.25f) && (g_pplayer->m_time_msec - m_last_hittime) > 250) // limit rate to 250 milliseconds per event
    {

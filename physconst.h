@@ -57,7 +57,8 @@
 // Contact displacement corrections, hard ridgid contacts i.e. steel on hard plastic or hard wood
 #define C_DISP_GAIN 0.9875f
 #define C_DISP_LIMIT 5.0f
-#define C_DYNAMIC 2
+// Have special cases for balls that are determined static? (C_DYNAMIC is kind of a counter for detection) -> does not work stable enough anymore nowadays
+//#define C_DYNAMIC 2
 //trigger/kicker boundary crossing hysterisis
 #define STATICTIME 0.005f
 

@@ -793,7 +793,9 @@ void HitPlunger::Collide(CollisionEvent *coll)
       pball->m_vel.y += scatter;
    }
 
+#ifdef C_DYNAMIC
    pball->m_dynamic = C_DYNAMIC;
+#endif
 }
 
 void HitPlunger::Contact(CollisionEvent& coll, float dtime)

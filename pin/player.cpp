@@ -423,7 +423,9 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
    c_hitcnts = 0;
    c_collisioncnt = 0;
    c_contactcnt = 0;
+#ifdef C_DYNAMIC
    c_staticcnt = 0;
+#endif
    c_embedcnts = 0;
    c_timesearch = 0;
 
@@ -2616,7 +2618,11 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
       {
          Ball * const pball = m_vball[i];
 
-         if (!pball->m_frozen && pball->m_dynamic > 0) // don't play with frozen balls
+         if (!pball->m_frozen
+#ifdef C_DYNAMIC
+             && pball->m_dynamic > 0
+#endif
+            ) // don't play with frozen balls
          {
             pball->m_coll.hittime = hittime;          // search upto current hittime
             pball->m_coll.obj = NULL;
@@ -2683,7 +2689,11 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
       {
          Ball * const pball = m_vball[i];
 
-         if (pball->m_dynamic > 0 && pball->m_coll.obj && pball->m_coll.hittime <= hittime) // find balls with hit objects and minimum time
+         if (
+#ifdef C_DYNAMIC
+             pball->m_dynamic > 0 &&
+#endif
+             pball->m_coll.obj && pball->m_coll.hittime <= hittime) // find balls with hit objects and minimum time
          {
             // now collision, contact and script reactions on active ball (object)+++++++++
             HitObject * const pho = pball->m_coll.obj; // object that ball hit in trials
@@ -2706,6 +2716,7 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
             {
                pball->CalcHitRect(); // do new boundings 
 
+#ifdef C_DYNAMIC
                // is this ball static? .. set static and quench        
                if (/*pball->m_coll.hitRigid &&*/ (pball->m_coll.hitdistance < (float)PHYS_TOUCH)) //rigid and close distance contacts
                {
@@ -2722,6 +2733,7 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
                      }
                   }
                }
+#endif
             }
          }
       }
@@ -3523,8 +3535,13 @@ void Player::UpdateHUD()
 			m_phys_max_iterations);
 		DebugPrint(10, 200, szFoo, len);
 
+#ifdef C_DYNAMIC
 		len = sprintf_s(szFoo, "Hits:%5u Collide:%5u Ctacs:%5u Static:%5u Embed:%5u TimeSearch:%5u",
 			c_hitcnts, c_collisioncnt, c_contactcnt, c_staticcnt, c_embedcnts, c_timesearch);
+#else
+		len = sprintf_s(szFoo, "Hits:%5u Collide:%5u Ctacs:%5u Embed:%5u TimeSearch:%5u",
+			c_hitcnts, c_collisioncnt, c_contactcnt, c_embedcnts, c_timesearch);
+#endif
 		DebugPrint(10, 220, szFoo, len);
 
 		len = sprintf_s(szFoo, "kDObjects: %5u kD:%5u QuadObjects: %5u Quadtree:%5u Traversed:%5u Tested:%5u DeepTested:%5u",
@@ -3937,7 +3954,9 @@ void Player::Render()
    c_hitcnts = 0;
    c_collisioncnt = 0;
    c_contactcnt = 0;
+#ifdef C_DYNAMIC
    c_staticcnt = 0;
+#endif
    c_embedcnts = 0;
    c_timesearch = 0;
 

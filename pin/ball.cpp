@@ -17,7 +17,9 @@ Ball::Ball()
    m_Event_Pos.x = m_Event_Pos.y = m_Event_Pos.z = -1.0f;
    m_frozen = false;
    m_color = RGB(255, 255, 255);
+#ifdef C_DYNAMIC
    m_dynamic = C_DYNAMIC; // assume dynamic
+#endif
    m_vel.SetZero();
    m_angularmomentum.SetZero();
    m_angularvelocity.SetZero();
@@ -66,7 +68,9 @@ void Ball::Init(const float mass)
    m_visible = true;
 
    m_coll.obj = NULL;
+#ifdef C_DYNAMIC
    m_dynamic = C_DYNAMIC; // assume dynamic
+#endif
 
    m_pballex = NULL;
 
@@ -139,7 +143,6 @@ void Ball::Collide3DWall(const Vertex3Ds& hitNormal, float elasticity, float ela
    if (dot >= -C_LOWNORMVEL)							// nearly receding ... make sure of conditions
    {													// otherwise if clearly approaching .. process the collision
       if (dot > C_LOWNORMVEL) return;					//is this velocity clearly receding (i.e must > a minimum)
-
 #ifdef C_EMBEDDED
       if (m_coll.hitdistance < -C_EMBEDDED)
          dot = -C_EMBEDSHOT;							// has ball become embedded???, give it a kick
@@ -351,10 +354,14 @@ void Ball::Collide(CollisionEvent *coll)
    if (!m_frozen)
    {
       m_vel -= (impulse * myInvMass) * vnormal;
+#ifdef C_DYNAMIC
       m_dynamic = C_DYNAMIC;
+#endif
    }
    pball->m_vel += (impulse * pball->m_invMass) * vnormal;
+#ifdef C_DYNAMIC
    pball->m_dynamic = C_DYNAMIC;
+#endif
 }
 
 void Ball::HandleStaticContact(const Vertex3Ds& normal, const float origNormVel, const float friction, const float dtime)
@@ -521,7 +528,9 @@ void Ball::UpdateVelocities()
       m_vel -= g_pplayer->m_tableVelDelta;
    }
 
+#ifdef C_DYNAMIC
    m_dynamic = C_DYNAMIC; // always set .. after adding velocity
+#endif
 
    CalcHitRect();
 }
