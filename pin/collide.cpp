@@ -545,7 +545,6 @@ void DoHitTest(Ball *const pball, HitObject *const pho, CollisionEvent& coll)
    }
 
    CollisionEvent newColl;
-   newColl.isContact = false;
    const float newtime = pho->HitTest(pball, coll.hittime, !g_pplayer->m_fRecordContacts ? coll : newColl);
    const bool validhit = ((newtime >= 0.f) && !sign(newtime) && (newtime <= coll.hittime));
 

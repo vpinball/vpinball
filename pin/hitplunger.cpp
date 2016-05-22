@@ -550,36 +550,38 @@ float HitPlunger::HitTest(const Ball * pball_, float dtime, CollisionEvent& coll
 
    // Check for hits on the non-moving parts, like the side of back
    // of the plunger.  These are just like hitting a wall.
+   // Check all and find the nearest collision.
+
    newtime = m_plungeranim.m_linesegBase.HitTest(pball, dtime, hit);
-   if (newtime >= 0 && newtime <= hittime)
+   if (newtime >= 0.f && newtime <= hittime)
    {
       fHit = true;
       hittime = newtime;
       coll = hit;
-      coll.hitvelocity.x = 0;
-      coll.hitvelocity.y = 0;
+      coll.hitvelocity.x = 0.f;
+      coll.hitvelocity.y = 0.f;
    }
 
    for (int i = 0; i < 2; i++)
    {
       newtime = m_plungeranim.m_linesegSide[i].HitTest(pball, hittime, hit);
-      if (newtime >= 0 && newtime <= hittime)
+      if (newtime >= 0.f && newtime <= hittime)
       {
          fHit = true;
          hittime = newtime;
          coll = hit;
-         coll.hitvelocity.x = 0;
-         coll.hitvelocity.y = 0;
+         coll.hitvelocity.x = 0.f;
+         coll.hitvelocity.y = 0.f;
       }
 
       newtime = m_plungeranim.m_jointBase[i].HitTest(pball, hittime, hit);
-      if (newtime >= 0 && newtime <= hittime)
+      if (newtime >= 0.f && newtime <= hittime)
       {
          fHit = true;
          hittime = newtime;
          coll = hit;
-         coll.hitvelocity.x = 0;
-         coll.hitvelocity.y = 0;
+         coll.hitvelocity.x = 0.f;
+         coll.hitvelocity.y = 0.f;
       }
    }
 
@@ -635,24 +637,24 @@ float HitPlunger::HitTest(const Ball * pball_, float dtime, CollisionEvent& coll
 
    // check the moving bits
    newtime = m_plungeranim.m_linesegEnd.HitTest(pball, hittime, hit);
-   if (newtime >= 0 && newtime <= hittime)
+   if (newtime >= 0.f && newtime <= hittime)
    {
       fHit = true;
       hittime = newtime;
       coll = hit;
-      coll.hitvelocity.x = 0;
+      coll.hitvelocity.x = 0.f;
       coll.hitvelocity.y = deltay;
    }
 
    for (int i = 0; i < 2; i++)
    {
       newtime = m_plungeranim.m_jointEnd[i].HitTest(pball, hittime, hit);
-      if (newtime >= 0 && newtime <= hittime)
+      if (newtime >= 0.f && newtime <= hittime)
       {
          fHit = true;
          hittime = newtime;
          coll = hit;
-         coll.hitvelocity.x = 0;
+         coll.hitvelocity.x = 0.f;
          coll.hitvelocity.y = deltay;
       }
    }
@@ -699,7 +701,7 @@ float HitPlunger::HitTest(const Ball * pball_, float dtime, CollisionEvent& coll
       if (coll.hitdistance <= 0.0f
          && coll.hitvelocity.y == deltay
          && fabsf(deltay) < fabsf(coll.hitdistance))
-         coll.hitvelocity.y = -fabs(coll.hitdistance);
+         coll.hitvelocity.y = -fabsf(coll.hitdistance);
 
       // return the collision time delta
       return hittime;
@@ -800,5 +802,5 @@ void HitPlunger::Collide(CollisionEvent *coll)
 
 void HitPlunger::Contact(CollisionEvent& coll, float dtime)
 {
-   coll.ball->HandleStaticContact(coll.hitnormal, coll.hitvelocity.z, m_friction /*0.3f*/, dtime);
+   coll.ball->HandleStaticContact(coll.hitnormal, coll.hitvelocity.z, m_friction, dtime);
 }

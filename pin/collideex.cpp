@@ -195,7 +195,6 @@ void HitGate::CalcHitRect()
 
 void GateAnimObject::UpdateDisplacements(const float dtime)
 {
-
    if (m_pgate->m_d.m_twoWay)
    {
       if (fabsf(m_angle) > m_angleMax)
@@ -340,6 +339,7 @@ float HitSpinner::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 
    return hittime;
 }
+
 void HitSpinner::Collide(CollisionEvent* coll)
 {
    Ball *pball = coll->ball;
@@ -482,6 +482,7 @@ float Hit3DPoly::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 
    const bool rigid = (m_ObjType != eTrigger);
    float hittime;
+   bool isContact = false;
    if (rigid) //rigid polygon
    {
       if (bnd < -pball->m_radius/**2.0f*/) return -1.0f;	// (ball normal distance) excessive penetration of object skin ... no collision HACK //!! *2 necessary?
@@ -494,6 +495,9 @@ float Hit3DPoly::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
             hittime = 0;
          else
             hittime = bnd*(float)(1.0 / (2.0*PHYS_TOUCH)) + 0.5f;	// don't compete for fast zero time events
+
+         if (fabsf(bnv) <= C_CONTACTVEL)
+            isContact = true;
       }
       else if (fabsf(bnv) > C_LOWNORMVEL)					// not velocity low ????
          hittime = bnd / (-bnv);								// rate ok for safe divide 
@@ -577,6 +581,10 @@ float Hit3DPoly::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
       coll.hitdistance = bnd;				// 3dhit actual contact distance ... 
       //coll.hitRigid = rigid;				// collision type
 
+      coll.isContact = isContact;
+      if (isContact)
+         coll.hitvelocity.z = bnv;
+
       return hittime;
    }
 
@@ -627,6 +635,11 @@ void Hit3DPoly::Collide(CollisionEvent *coll)
          }
       }
    }
+}
+
+void Hit3DPoly::Contact(CollisionEvent& coll, float dtime)
+{
+   coll.ball->HandleStaticContact(coll.hitnormal, coll.hitvelocity.z, m_friction, dtime);
 }
 
 void Hit3DPoly::CalcHitRect()
@@ -775,7 +788,7 @@ void HitTriangle::Collide(CollisionEvent* coll)
 
 void HitTriangle::Contact(CollisionEvent& coll, float dtime)
 {
-   coll.ball->HandleStaticContact(coll.hitnormal, coll.hitvelocity.z, m_friction /*0.3f*/, dtime);
+   coll.ball->HandleStaticContact(coll.hitnormal, coll.hitvelocity.z, m_friction, dtime);
 }
 
 void HitTriangle::CalcHitRect()

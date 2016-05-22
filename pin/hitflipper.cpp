@@ -395,11 +395,6 @@ float HitFlipper::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
       coll.hitmoment_bit = true;
       //!! unused coll.hitangularrate = 0;		//radians/time at collison
 
-      // Flipper::Contact() expects origNormVel,
-      // but HitCircle puts it in normal[1].z
-      if (coll.isContact)
-         origNormVel = coll.hitvelocity.z;
-
       return hittime;
    }
    else
@@ -543,7 +538,7 @@ float HitFlipper::HitTestFlipperEnd(const Ball * pball, const float dtime, Colli
    if (fabsf(bnv) <= C_CONTACTVEL && bfend <= (float)PHYS_TOUCH)
    {
       coll.isContact = true;
-      origNormVel = bnv;
+      coll.hitvelocity.z = bnv;
    }
    if (bnv >= 0)
       return -1.0f; // not hit ... ball is receding from face already, must have been embedded or shallow angled
@@ -711,7 +706,7 @@ float HitFlipper::HitTestFlipperFace(const Ball * pball, const float dtime, Coll
    if (fabsf(bnv) <= C_CONTACTVEL && bffnd <= (float)PHYS_TOUCH)
    {
       coll.isContact = true;
-      origNormVel = bnv;
+      coll.hitvelocity.z = bnv;
    }
    else if (bnv > C_LOWNORMVEL)
       return -1.0f; // not hit ... ball is receding from endradius already, must have been embedded
@@ -946,7 +941,7 @@ void HitFlipper::Contact(CollisionEvent& coll, float dtime)
 
       const float j = -normAcc / contactForceAcc;
 
-      pball->m_vel += ((j * dtime) * pball->m_invMass - origNormVel) * normal; // kill any existing normal velocity
+      pball->m_vel += ((j * dtime) * pball->m_invMass - coll.hitvelocity.z) * normal; // kill any existing normal velocity
       m_flipperanim.ApplyImpulse((j * dtime) * cross);
 
       // apply friction
