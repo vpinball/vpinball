@@ -19,13 +19,13 @@ Ball::Ball()
    m_color = RGB(255, 255, 255);
 #ifdef C_DYNAMIC
    m_dynamic = C_DYNAMIC; // assume dynamic
+   m_drsq = 0.0f;
 #endif
    m_vel.SetZero();
    m_angularmomentum.SetZero();
    m_angularvelocity.SetZero();
    m_mass = 1.0f;
    m_invMass = 1.0f / m_mass;
-   m_drsq = 0.0f;
    m_radius = 25.0f;
    m_orientation.Identity();
    m_inertia = (float)(2.0 / 5.0) * m_radius*m_radius * m_mass;
@@ -243,6 +243,7 @@ float Ball::HitTest(const Ball * pball_, float dtime, CollisionEvent& coll)
    const float bnd = bcdd - totalradius;   // distance between ball surfaces
 
    float hittime;
+   bool isContact = false;
    if (bnd < (float)PHYS_TOUCH)			// in contact??? 
    {
       if (bnd <= pball->m_radius*-2.0f)
@@ -254,6 +255,9 @@ float Ball::HitTest(const Ball * pball_, float dtime, CollisionEvent& coll)
          hittime = 0;					// slow moving but embedded
       else
          hittime = bnd / (float)(2.0*PHYS_TOUCH) + 0.5f;	// don't compete for fast zero time events
+
+      if (fabsf(bnv) <= C_CONTACTVEL)
+         isContact = true;
    }
    else
    {
@@ -285,11 +289,16 @@ float Ball::HitTest(const Ball * pball_, float dtime, CollisionEvent& coll)
    const Vertex3Ds hitnormal = hitPos - m_pos;
    if (fabsf(hitnormal.x) <= FLT_MIN && fabsf(hitnormal.y) <= FLT_MIN && fabsf(hitnormal.z) <= FLT_MIN)
       return -1.f;
+
    coll.hitnormal = hitnormal;
    coll.hitnormal.Normalize();
 
    coll.hitdistance = bnd;			// actual contact distance
    //coll.hitRigid = true;			// rigid collision type
+
+   coll.isContact = isContact;
+   if (isContact)
+      coll.hitvelocity.z = bnv;
 
    return hittime;
 }
@@ -493,7 +502,9 @@ void Ball::UpdateDisplacements(const float dtime)
       const Vertex3Ds ds = dtime * m_vel;
       m_pos += ds;
 
+#ifdef C_DYNAMIC
       m_drsq = ds.LengthSquared(); // used to determine if static ball
+#endif
 
       CalcHitRect();
 

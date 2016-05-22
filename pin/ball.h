@@ -70,6 +70,7 @@ public:
 
 #ifdef C_DYNAMIC
    int m_dynamic;			// used to determine static ball conditions and velocity quenching
+   float m_drsq;			// square of distance moved
 #endif
 
    BallAnimObject m_ballanim;
@@ -82,8 +83,6 @@ public:
 
    Vertex3Ds m_vel;      // ball velocity
    Vertex3Ds m_oldVel;
-
-   float m_drsq;	// square of distance moved
 
    float m_radius;
    float m_mass;
