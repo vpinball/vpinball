@@ -387,6 +387,11 @@ void Ball::HandleStaticContact(const Vertex3Ds& normal, const float origNormVel,
       // Add just enough to kill original normal velocity and counteract the external forces.
       m_vel += normalForce * normal;
 
+      //!! hacky killing of ball spin
+      const float damp = (1.f - friction * clamp(fabsf(origNormVel) / C_CONTACTVEL, 0.f,1.f)) * (float)C_BALL_SPIN_HACK + (float)(1.0-C_BALL_SPIN_HACK); // do not kill spin completely, otherwise stuck balls will happen during regular gameplay
+      m_angularmomentum *= damp;
+      m_angularvelocity *= damp;
+
       ApplyFriction(normal, dtime, friction);
    }
 }
@@ -406,8 +411,8 @@ void Ball::ApplyFriction(const Vertex3Ds& hitnormal, const float dtime, const fl
    //slintf("Velocity: %.2f Angular velocity: %.2f Surface velocity: %.2f Slippage: %.2f\n", m_vel.Length(), m_angularvelocity.Length(), surfVel.Length(), slipspeed);
    //if (slipspeed > 1e-6f)
 
-   const float normVel = m_vel.Dot(hitnormal);
-   if((normVel <= 0.025f) || (slipspeed < C_PRECISION)) // check for <=0.025 originates from ball<->rubber collisions pushing the ball upwards, but this is still not enough, some could even use <=0.2
+   //const float normVel = m_vel.Dot(hitnormal);
+   if(/*(normVel <= 0.025f) ||*/ (slipspeed < C_PRECISION)) // check for <=0.025 originated from ball<->rubber collisions pushing the ball upwards, but this is still not enough, some could even use <=0.2
    {
       // slip speed zero - static friction case
 

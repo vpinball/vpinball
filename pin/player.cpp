@@ -2760,38 +2760,17 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
 
       m_contacts.clear();
 
-      // hacky killing of ball spin on resting balls (very low and very high spinning)
+      // handle contacts of balls<->balls
       for (unsigned i = 0; i < m_vball.size(); i++)
       {
          Ball * const pball = m_vball[i];
 
-         const unsigned int p0 = (pball->m_ringcounter_oldpos / (10000 / PHYSICS_STEPTIME) + 1) % MAX_BALL_TRAIL_POS;
-         const unsigned int p1 = (pball->m_ringcounter_oldpos / (10000 / PHYSICS_STEPTIME) + 2) % MAX_BALL_TRAIL_POS;
-
-         if (/*pball->m_coll.hitRigid &&*/ (pball->m_coll.hitdistance < (float)PHYS_TOUCH) && (pball->m_oldpos[p0].x != FLT_MAX) && (pball->m_oldpos[p1].x != FLT_MAX)) // only if already initialized
+         if(pball->m_coll.isContact)
          {
-            /*const float mag = pball->m_vel.x*pball->m_vel.x + pball->m_vel.y*pball->m_vel.y; // values below are copy pasted from above
-            if (pball->m_drsq < 8.0e-5f && mag < 1.0e-3f*m_ptable->m_Gravity*m_ptable->m_Gravity / GRAVITYCONST / GRAVITYCONST && fabsf(pball->m_vel.z) < 0.2f*m_ptable->m_Gravity / GRAVITYCONST
-            && pball->m_angularmomentum.Length() < 0.9f*m_ptable->m_Gravity / GRAVITYCONST
-            ) //&& rand_mt_01() < 0.95f)
-            {
-            pball->m_angularmomentum *= 0.05f; // do not kill spin completely, otherwise stuck balls will happen during regular gameplay
-            pball->m_angularvelocity *= 0.05f;
-            }*/
-
-            const Vertex3Ds diff_pos = pball->m_oldpos[p0] - pball->m_pos;
-            const float mag = diff_pos.x*diff_pos.x + diff_pos.y*diff_pos.y;
-            const Vertex3Ds diff_pos2 = pball->m_oldpos[p1] - pball->m_pos;
-            const float mag2 = diff_pos2.x*diff_pos2.x + diff_pos2.y*diff_pos2.y;
-
-            const float threshold = (pball->m_angularmomentum.x*pball->m_angularmomentum.x + pball->m_angularmomentum.y*pball->m_angularmomentum.y) / max(mag, mag2);
-
-            if (!infNaN(threshold) && threshold > 666.f)
-            {
-               const float damp = clamp(1.0f - (threshold - 666.f) / 10000.f, 0.23f, 1.f); // do not kill spin completely, otherwise stuck balls will happen during regular gameplay
-               pball->m_angularmomentum *= damp;
-               pball->m_angularvelocity *= damp;
-            }
+             //!! hacky killing of ball spin
+             const float damp = (1.f - pball->m_friction * clamp(fabsf(pball->m_coll.hitvelocity.z) / C_CONTACTVEL, 0.f,1.f)) * (float)C_BALL_SPIN_HACK + (float)(1.0-C_BALL_SPIN_HACK); // do not kill spin completely, otherwise stuck balls will happen during regular gameplay
+             pball->m_angularmomentum *= damp;
+             pball->m_angularvelocity *= damp;
          }
       }
 
