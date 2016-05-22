@@ -2765,10 +2765,13 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
       {
          Ball * const pball = m_vball[i];
 
-         if(pball->m_coll.isContact)
+         //!! hacky killing of ball spin
+         float vell = pball->m_vel.Length();
+         if (pball->m_coll.isContact
+             && vell < 1.f) //!! 1.f=magic, also see below
          {
-             //!! hacky killing of ball spin
-             const float damp = (1.f - pball->m_friction * clamp(fabsf(pball->m_coll.hitvelocity.z) / C_CONTACTVEL, 0.f,1.f)) * (float)C_BALL_SPIN_HACK + (float)(1.0-C_BALL_SPIN_HACK); // do not kill spin completely, otherwise stuck balls will happen during regular gameplay
+             vell = (1.f-vell)*(float)C_BALL_SPIN_HACK;
+             const float damp = (1.0f - pball->m_friction * clamp(-pball->m_coll.hitvelocity.z / C_CONTACTVEL, 0.0f,1.0f)) * vell + (1.0f-vell); // do not kill spin completely, otherwise stuck balls will happen during regular gameplay
              pball->m_angularmomentum *= damp;
              pball->m_angularvelocity *= damp;
          }

@@ -388,9 +388,14 @@ void Ball::HandleStaticContact(const Vertex3Ds& normal, const float origNormVel,
       m_vel += normalForce * normal;
 
       //!! hacky killing of ball spin
-      const float damp = (1.f - friction * clamp(fabsf(origNormVel) / C_CONTACTVEL, 0.f,1.f)) * (float)C_BALL_SPIN_HACK + (float)(1.0-C_BALL_SPIN_HACK); // do not kill spin completely, otherwise stuck balls will happen during regular gameplay
-      m_angularmomentum *= damp;
-      m_angularvelocity *= damp;
+      float vell = m_vel.Length();
+      if (m_vel.Length() < 1.f) //!! 1.f=magic, also see below
+      {
+         vell = (1.f-vell)*(float)C_BALL_SPIN_HACK;
+         const float damp = (1.0f - friction * clamp(-origNormVel / C_CONTACTVEL, 0.0f,1.0f)) * vell + (1.0f-vell); // do not kill spin completely, otherwise stuck balls will happen during regular gameplay
+         m_angularmomentum *= damp;
+         m_angularvelocity *= damp;
+      }
 
       ApplyFriction(normal, dtime, friction);
    }
