@@ -84,6 +84,7 @@ public:
    virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
    virtual int GetType() const { return e3DPoly; }
    virtual void Collide(CollisionEvent *coll);
+   virtual void Contact(CollisionEvent& coll, float dtime);
    virtual void CalcHitRect();
 
    Vertex3Ds *m_rgv;

@@ -85,7 +85,6 @@ class HitFlipper :
 {
 public:
    Vertex2D v;
-   float origNormVel;
 
    HitFlipper(const Vertex2D& center, float baser, float endr, float flipr, float angleStart, float angleEnd,
       float zlow, float zhigh, float strength, float mass, float returnRatio);
