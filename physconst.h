@@ -59,6 +59,7 @@
 #define C_DISP_LIMIT 5.0f
 // Have special cases for balls that are determined static? (C_DYNAMIC is kind of a counter for detection) -> does not work stable enough anymore nowadays
 //#define C_DYNAMIC 2
+#define C_BALL_SPIN_HACK 0.1 // dampens ball spin on contacts (smaller = less damp)
 //trigger/kicker boundary crossing hysterisis
 #define STATICTIME 0.005f
 
