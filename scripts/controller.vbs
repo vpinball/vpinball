@@ -98,6 +98,7 @@
 
 Const ControllerFile = "Controller.txt"
 Dim PopupMessage
+Dim B2SController
 Dim Controller
 Const DOFContactors = 1
 Const DOFKnocker = 2
@@ -115,6 +116,14 @@ Dim B2SOn
 
 Sub LoadEM
 	LoadController("EM")
+End Sub
+
+Sub LoadPROC(VPMver, VBSfile, VBSver)
+	On Error Resume Next
+	If ScriptEngineMajorVersion < 5 Then MsgBox "VB Script Engine 5.0 or higher required"
+	ExecuteGlobal GetTextFile(VBSfile)
+	If Err Then MsgBox "Unable to open " & VBSfile & ". Ensure that it is in the same folder as this table. " & vbNewLine & Err.Description
+	LoadController("PROC")
 End Sub
 
 Sub LoadVPM(VPMver, VBSfile, VBSver)
@@ -200,29 +209,42 @@ Sub LoadController(TableType)
 			Loop
 		End If
 	End If
-	If tempC = 0 Then
-		On Error Resume Next
-		Set Controller = CreateObject("B2S.Server")
-		If Controller is Nothing Then
-			Err.Clear
+
+	If TableType = "PROC" Then
+		Set Controller = CreateObject("VPROC.Controller")
+		If Err Then MsgBox "Can't load PROC"
+		If tempC = 0 Then
+			Set B2SController = CreateObject("B2S.Server")
+				B2SController.B2SName = B2SPROCcGameName
+				B2SController.Run()
+				On Error Goto 0
+				B2SOn = True
+		End If
+	Else
+		If tempC = 0 Then
+			On Error Resume Next
+			Set Controller = CreateObject("B2S.Server")
+			If Controller is Nothing Then
+				Err.Clear
+				If TableType = "VPM" Then 
+					LoadVPinMAME
+				End If
+			Else
+				Controller.B2SName = cGameName
+				If TableType = "EM" Then
+					Controller.Run()
+				End If
+				On Error Goto 0
+				B2SOn = True
+			End If
+		Else
 			If TableType = "VPM" Then 
 				LoadVPinMAME
 			End If
-		Else
-			Controller.B2SName = cGameName
-			If TableType = "EM" Then
-				Controller.Run()
-			End If
-			On Error Goto 0
-			B2SOn = True
 		End If
-	Else
-		If TableType = "VPM" Then 
-			LoadVPinMAME
-		End If
+		Set DOFConfig=Nothing
+		Set FileObj=Nothing
 	End If
-	Set DOFConfig=Nothing
-	Set FileObj=Nothing
 End sub
 
 Sub YesNoPrompt(question,count)
