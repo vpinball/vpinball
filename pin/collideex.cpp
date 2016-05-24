@@ -572,8 +572,7 @@ float Hit3DPoly::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 
    if (crosscount & 1)
    {
-      coll.hitnormal.x = m_rgv[0].z;
-      coll.hitnormal.y = m_rgv[2].z;
+      coll.hitnormal = normal;
 
       if (!rigid)								// non rigid body collision? return direction
          coll.hitvelocity.x = bUnHit ? 1.0f : 0.0f;	// UnHit signal	is receding from outside target
@@ -598,7 +597,7 @@ void Hit3DPoly::Collide(CollisionEvent *coll)
 
    if (m_ObjType != eTrigger)
    {
-      const float dot = hitnormal.x * pball->m_vel.x + hitnormal.y * pball->m_vel.y;
+      const float dot = hitnormal.Dot(pball->m_vel);
 
       pball->Collide3DWall(normal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter);
 
