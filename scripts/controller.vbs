@@ -297,3 +297,13 @@ Sub DOF(DOFevent, State)
 		End If
 	End If
 End Sub
+
+Sub DOFALT(DOFevent, State)
+	If B2SOn Then
+		If State = 2 Then
+			B2SController.B2SSetData DOFevent, 1:B2SController.B2SSetData DOFevent, 0
+		Else
+			B2SController.B2SSetData DOFevent, State
+		End If
+	End If
+End Sub
