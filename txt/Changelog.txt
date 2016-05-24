@@ -39,7 +39,7 @@ VP 10.1.0 Changelog
 
 - combine all common user-tweakable table settings in one simple UI panel in the table options
 
-- new core scripts by mfuegemann
+- new core scripts by mfuegemann and PROC controller modifications by arngrim
 
 - hotkeys.txt added, containing all editor shortcuts
 
