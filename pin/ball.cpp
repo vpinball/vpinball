@@ -244,9 +244,9 @@ float Ball::HitTest(const Ball * pball_, float dtime, CollisionEvent& coll)
 
    float hittime;
    bool isContact = false;
-   if (bnd < (float)PHYS_TOUCH)			// in contact??? 
+   if (bnd <= (float)PHYS_TOUCH)			// in contact??? 
    {
-      if (bnd <= pball->m_radius*-2.0f)
+      if (bnd < pball->m_radius*-2.0f)
          return -1.0f;					// embedded too deep?
 
       if ((fabsf(bnv) > C_CONTACTVEL)		// >fast velocity, return zero time
@@ -311,7 +311,7 @@ void Ball::Collide(CollisionEvent *coll)
    // (but if we are frozen, there won't be a second collision event, so deal with it now!)
    if (((g_pplayer->m_swap_ball_collision_handling && pball >= this) ||
       (!g_pplayer->m_swap_ball_collision_handling && pball <= this)) &&
-      !this->m_frozen)
+      !m_frozen)
       return;
 
    // target ball to object ball delta velocity

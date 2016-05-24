@@ -430,7 +430,7 @@ float HitFlipper::HitTestFlipperEnd(const Ball * pball, const float dtime, Colli
    float bfend, cbcedist;
    float t0, t1, d0, d1, dp; // Modified False Position control
 
-   float t = 0; //start first interval ++++++++++++++++++++++++++
+   float t = 0.f; //start first interval ++++++++++++++++++++++++++
    int k;
    for (k = 1; k <= C_INTERATIONS; ++k)
    {
@@ -476,11 +476,11 @@ float HitFlipper::HitTestFlipperEnd(const Ball * pball, const float dtime, Colli
       {
          if (bfend*d0 <= 0.0f)										// zero crossing
          {
-            t1 = t; d1 = bfend; if (dp*bfend > 0.0) d0 *= 0.5f;
+            t1 = t; d1 = bfend; if (dp*bfend > 0.f) d0 *= 0.5f;
          } // 	move right interval limit			
          else
          {
-            t0 = t; d0 = bfend; if (dp*bfend > 0.0) d1 *= 0.5f;
+            t0 = t; d0 = bfend; if (dp*bfend > 0.f) d1 *= 0.5f;
          }	// 	move left interval limit		
       }
 
@@ -490,7 +490,7 @@ float HitFlipper::HitTestFlipperEnd(const Ball * pball, const float dtime, Colli
    } //for loop
    //+++ End time interation loop found time t soultion ++++++
 
-   if (infNaN(t) || t < 0 || t > dtime							// time is outside this frame ... no collision
+   if (infNaN(t) || t < 0.f || t > dtime							// time is outside this frame ... no collision
       ||
       ((k > C_INTERATIONS) && (fabsf(bfend) > pball->m_radius*0.25f))) // last ditch effort to accept a solution
       return -1.0f; // no solution
@@ -517,8 +517,8 @@ float HitFlipper::HitTestFlipperEnd(const Ball * pball, const float dtime, Colli
 
    const float distance = sqrtf(dist.x*dist.x + dist.y*dist.y);	// distance from base center to contact point
 
-   if ((contactAng >= angleMax && anglespeed > 0) || (contactAng <= angleMin && anglespeed < 0))	// hit limits ??? 
-      anglespeed = 0;							// rotation stopped
+   if ((contactAng >= angleMax && anglespeed > 0.f) || (contactAng <= angleMin && anglespeed < 0.f))	// hit limits ??? 
+      anglespeed = 0.f;							// rotation stopped
 
    const float inv_distance = 1.0f / distance;
    coll.hitvelocity.x = -dist.y*inv_distance; //Unit Tangent vector velocity of contact point(rotate normal right)
@@ -535,13 +535,14 @@ float HitFlipper::HitTestFlipperEnd(const Ball * pball, const float dtime, Colli
 
    const float bnv = dv.x*coll.hitnormal.x + dv.y*coll.hitnormal.y;  //dot Normal to delta v
 
+   if (bnv >= 0.f)
+      return -1.0f; // not hit ... ball is receding from face already, must have been embedded or shallow angled
+
    if (fabsf(bnv) <= C_CONTACTVEL && bfend <= (float)PHYS_TOUCH)
    {
       coll.isContact = true;
       coll.hitvelocity.z = bnv;
    }
-   if (bnv >= 0)
-      return -1.0f; // not hit ... ball is receding from face already, must have been embedded or shallow angled
 
    coll.hitdistance = bfend;			//actual contact distance ..
    //coll.hitRigid = true;				// collision type
@@ -583,7 +584,7 @@ float HitFlipper::HitTestFlipperFace(const Ball * pball, const float dtime, Coll
 
    float t, t0, t1, d0, d1, dp; // Modified False Position control
 
-   t = 0; //start first interval ++++++++++++++++++++++++++
+   t = 0.f; //start first interval ++++++++++++++++++++++++++
    int k;
    for (k = 1; k <= C_INTERATIONS; ++k)
    {
@@ -619,22 +620,22 @@ float HitFlipper::HitTestFlipperFace(const Ball * pball, const float dtime, Coll
          if (bffnd <= (float)PHYS_TOUCH)
             break; // inside the clearance limits, go check face endpoints
 
-         t0 = t1 = dtime; d0 = 0; d1 = bffnd; // set for second pass, so t=dtime
+         t0 = t1 = dtime; d0 = 0.f; d1 = bffnd; // set for second pass, so t=dtime
       }
       else if (k == 2)// end pass two, check if zero crossing on initial interval, exit
       {
-         if (dp*bffnd > 0.0) return -1.0f;	// no solution ... no obvious zero crossing
+         if (dp*bffnd > 0.0f) return -1.0f;	// no solution ... no obvious zero crossing
          t0 = 0; t1 = dtime; d0 = dp; d1 = bffnd; // testing MFP estimates			
       }
       else // (k >= 3) // MFP root search +++++++++++++++++++++++++++++++++++++++++
       {
-         if (bffnd*d0 <= 0.0)									// zero crossing
+         if (bffnd*d0 <= 0.0f)									// zero crossing
          {
-            t1 = t; d1 = bffnd; if (dp*bffnd > 0.0) d0 *= 0.5f;
+            t1 = t; d1 = bffnd; if (dp*bffnd > 0.0f) d0 *= 0.5f;
          } // 	move right limits
          else
          {
-            t0 = t; d0 = bffnd; if (dp*bffnd > 0.0) d1 *= 0.5f;
+            t0 = t; d0 = bffnd; if (dp*bffnd > 0.0f) d1 *= 0.5f;
          } // move left limits
       }
 
@@ -644,7 +645,7 @@ float HitFlipper::HitTestFlipperFace(const Ball * pball, const float dtime, Coll
 
    //+++ End time interation loop found time t soultion ++++++
 
-   if (infNaN(t) || t < 0 || t > dtime								// time is outside this frame ... no collision
+   if (infNaN(t) || t < 0.f || t > dtime								// time is outside this frame ... no collision
       ||
       ((k > C_INTERATIONS) && (fabsf(bffnd) > pball->m_radius*0.25f))) // last ditch effort to accept a near solution
       return -1.0f; // no solution
@@ -688,9 +689,10 @@ float HitFlipper::HitTestFlipperFace(const Ball * pball, const float dtime, Coll
    const float inv_dist = 1.0f / distance;
    coll.hitvelocity.x = -dist.y*inv_dist;		//Unit Tangent velocity of contact point(rotate Normal clockwise)
    coll.hitvelocity.y = dist.x*inv_dist;
-   coll.hitvelocity.z = 0.0f;
 
-   if (contactAng >= angleMax && anglespeed > 0 || contactAng <= angleMin && anglespeed < 0)	// hit limits ??? 
+   //coll.hitvelocity.z = 0.0f; // used as normal velocity so far, only if isContact is set, see below
+
+   if (contactAng >= angleMax && anglespeed > 0.f || contactAng <= angleMin && anglespeed < 0.f)	// hit limits ??? 
       anglespeed = 0.0f;							// rotation stopped
 
    //!! unused coll.hitmoment = distance;				//moment arm diameter

@@ -2760,23 +2760,6 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
 
       m_contacts.clear();
 
-      // handle contacts of balls<->balls
-      for (unsigned i = 0; i < m_vball.size(); i++)
-      {
-         Ball * const pball = m_vball[i];
-
-         //!! hacky killing of ball spin
-         float vell = pball->m_vel.Length();
-         if (pball->m_coll.isContact
-             && vell < 1.f) //!! 1.f=magic, also see below
-         {
-             vell = (1.f-vell)*(float)C_BALL_SPIN_HACK;
-             const float damp = (1.0f - pball->m_friction * clamp(-pball->m_coll.hitvelocity.z / C_CONTACTVEL, 0.0f,1.0f)) * vell + (1.0f-vell); // do not kill spin completely, otherwise stuck balls will happen during regular gameplay
-             pball->m_angularmomentum *= damp;
-             pball->m_angularvelocity *= damp;
-         }
-      }
-
       dtime -= hittime;       //new delta .. i.e. time remaining
 
       m_swap_ball_collision_handling = !m_swap_ball_collision_handling; // swap order of ball-ball collisions
