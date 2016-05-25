@@ -677,7 +677,7 @@ STDMETHODIMP Kicker::CreateSizedBallWithMass(/*[in]*/float radius, /*[in]*/float
 
       pball->m_coll.hitvelocity.x = 1.0f;           // HACK: avoid capture leaving kicker
       Vertex3Ds hitnormal(FLT_MAX, FLT_MAX, FLT_MAX);
-      Vertex3Ds hitvelocity(FLT_MAX, FLT_MAX, FLT_MAX);
+      Vertex2D hitvelocity(FLT_MAX, FLT_MAX);
       m_phitkickercircle->DoCollide(pball, hitnormal, hitvelocity, true);
    }
 
@@ -698,7 +698,7 @@ STDMETHODIMP Kicker::CreateSizedBall(/*[in]*/float radius, /*out, retval]*/ IBal
 
       pball->m_coll.hitvelocity.x = 1.0f;           // HACK: avoid capture leaving kicker
       Vertex3Ds hitnormal(FLT_MAX, FLT_MAX, FLT_MAX);
-      Vertex3Ds hitvelocity(FLT_MAX, FLT_MAX, FLT_MAX);
+      Vertex2D hitvelocity(FLT_MAX, FLT_MAX);
       m_phitkickercircle->DoCollide(pball, hitnormal, hitvelocity, true);
    }
 
@@ -718,7 +718,7 @@ STDMETHODIMP Kicker::CreateBall(IBall **pBallEx)
 
       pball->m_coll.hitvelocity.x = 1.0f;           // HACK: avoid capture leaving kicker
       Vertex3Ds hitnormal(FLT_MAX, FLT_MAX, FLT_MAX);
-      Vertex3Ds hitvelocity(FLT_MAX, FLT_MAX, FLT_MAX);
+      Vertex2D hitvelocity(FLT_MAX, FLT_MAX);
       m_phitkickercircle->DoCollide(pball, hitnormal, hitvelocity, true);
    }
 
@@ -1217,7 +1217,7 @@ void KickerHitCircle::DoChangeBallVelocity(Ball *const pball, const Vertex3Ds& h
     }
 }
 
-void KickerHitCircle::DoCollide(Ball * const pball, const Vertex3Ds& hitnormal, const Vertex3Ds& hitvelocity, const bool newBall)
+void KickerHitCircle::DoCollide(Ball * const pball, const Vertex3Ds& hitnormal, const Vertex2D& hitvelocity, const bool newBall)
 {
    if (m_pball) return;								    // a previous ball already in kicker
 

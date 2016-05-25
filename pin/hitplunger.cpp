@@ -802,5 +802,5 @@ void HitPlunger::Collide(CollisionEvent *coll)
 
 void HitPlunger::Contact(CollisionEvent& coll, float dtime)
 {
-   coll.ball->HandleStaticContact(coll.hitnormal, coll.hitvelocity.z, m_friction, dtime);
+   coll.ball->HandleStaticContact(coll.hitnormal, coll.hit_org_normalvelocity, m_friction, dtime);
 }

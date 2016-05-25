@@ -582,7 +582,7 @@ float Hit3DPoly::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 
       coll.isContact = isContact;
       if (isContact)
-         coll.hitvelocity.z = bnv;
+         coll.hit_org_normalvelocity = bnv;
 
       return hittime;
    }
@@ -638,7 +638,7 @@ void Hit3DPoly::Collide(CollisionEvent *coll)
 
 void Hit3DPoly::Contact(CollisionEvent& coll, float dtime)
 {
-   coll.ball->HandleStaticContact(coll.hitnormal, coll.hitvelocity.z, m_friction, dtime);
+   coll.ball->HandleStaticContact(coll.hitnormal, coll.hit_org_normalvelocity, m_friction, dtime);
 }
 
 void Hit3DPoly::CalcHitRect()
@@ -755,7 +755,7 @@ float HitTriangle::HitTest(const Ball * pball, float dtime, CollisionEvent& coll
       if (isContact)
       {
          coll.isContact = true;
-         coll.hitvelocity.z = bnv;
+         coll.hit_org_normalvelocity = bnv;
       }
 
       return hittime;
@@ -787,7 +787,7 @@ void HitTriangle::Collide(CollisionEvent* coll)
 
 void HitTriangle::Contact(CollisionEvent& coll, float dtime)
 {
-   coll.ball->HandleStaticContact(coll.hitnormal, coll.hitvelocity.z, m_friction, dtime);
+   coll.ball->HandleStaticContact(coll.hitnormal, coll.hit_org_normalvelocity, m_friction, dtime);
 }
 
 void HitTriangle::CalcHitRect()
@@ -827,7 +827,7 @@ float HitPlane::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
       {
          coll.isContact = true;
          coll.hitnormal = normal;
-         coll.hitvelocity.z = bnv; // remember original normal velocity
+         coll.hit_org_normalvelocity = bnv; // remember original normal velocity
          coll.hitdistance = bnd;
          //coll.hitRigid = true;
          return 0.0f;    // hittime is ignored for contacts
@@ -865,7 +865,7 @@ void HitPlane::Collide(CollisionEvent* coll)
 
 void HitPlane::Contact(CollisionEvent& coll, float dtime)
 {
-   coll.ball->HandleStaticContact(coll.hitnormal, coll.hitvelocity.z, m_friction, dtime);
+   coll.ball->HandleStaticContact(coll.hitnormal, coll.hit_org_normalvelocity, m_friction, dtime);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

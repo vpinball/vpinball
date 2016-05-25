@@ -512,8 +512,8 @@ float HitFlipper::HitTestFlipperEnd(const Ball * pball, const float dtime, Colli
    coll.hitnormal.z = 0.0f;
 
    const Vertex2D dist(
-      (pball->m_pos.x + ballvx*t - ballr*coll.hitnormal.x - m_flipperanim.m_hitcircleBase.center.x), // vector from base to flipperEnd plus the projected End radius
-      (pball->m_pos.y + ballvy*t - ballr*coll.hitnormal.y - m_flipperanim.m_hitcircleBase.center.y));
+      pball->m_pos.x + ballvx*t - ballr*coll.hitnormal.x - m_flipperanim.m_hitcircleBase.center.x, // vector from base to flipperEnd plus the projected End radius
+      pball->m_pos.y + ballvy*t - ballr*coll.hitnormal.y - m_flipperanim.m_hitcircleBase.center.y);
 
    const float distance = sqrtf(dist.x*dist.x + dist.y*dist.y);	// distance from base center to contact point
 
@@ -541,7 +541,7 @@ float HitFlipper::HitTestFlipperEnd(const Ball * pball, const float dtime, Colli
    if (fabsf(bnv) <= C_CONTACTVEL && bfend <= (float)PHYS_TOUCH)
    {
       coll.isContact = true;
-      coll.hitvelocity.z = bnv;
+      coll.hit_org_normalvelocity = bnv;
    }
 
    coll.hitdistance = bfend;			//actual contact distance ..
@@ -681,8 +681,8 @@ float HitFlipper::HitTestFlipperFace(const Ball * pball, const float dtime, Coll
    coll.hitnormal.z = 0.0f;
 
    const Vertex2D dist( // calculate moment from flipper base center
-      (pball->m_pos.x + ballvx*t - ballr*F.x - m_flipperanim.m_hitcircleBase.center.x),  //center of ball + projected radius to contact point
-      (pball->m_pos.y + ballvy*t - ballr*F.y - m_flipperanim.m_hitcircleBase.center.y)); // all at time t
+      pball->m_pos.x + ballvx*t - ballr*F.x - m_flipperanim.m_hitcircleBase.center.x,  //center of ball + projected radius to contact point
+      pball->m_pos.y + ballvy*t - ballr*F.y - m_flipperanim.m_hitcircleBase.center.y); // all at time t
 
    const float distance = sqrtf(dist.x*dist.x + dist.y*dist.y);	// distance from base center to contact point
 
@@ -708,7 +708,7 @@ float HitFlipper::HitTestFlipperFace(const Ball * pball, const float dtime, Coll
    if (fabsf(bnv) <= C_CONTACTVEL && bffnd <= (float)PHYS_TOUCH)
    {
       coll.isContact = true;
-      coll.hitvelocity.z = bnv;
+      coll.hit_org_normalvelocity = bnv;
    }
    else if (bnv > C_LOWNORMVEL)
       return -1.0f; // not hit ... ball is receding from endradius already, must have been embedded
@@ -943,7 +943,7 @@ void HitFlipper::Contact(CollisionEvent& coll, float dtime)
 
       const float j = -normAcc / contactForceAcc;
 
-      pball->m_vel += ((j * dtime) * pball->m_invMass - coll.hitvelocity.z) * normal; // kill any existing normal velocity
+      pball->m_vel += ((j * dtime) * pball->m_invMass - coll.hit_org_normalvelocity) * normal; // kill any existing normal velocity
       m_flipperanim.ApplyImpulse((j * dtime) * cross);
 
       // apply friction
