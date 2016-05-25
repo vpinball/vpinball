@@ -99,7 +99,7 @@
 Const ControllerFile = "Controller.txt"
 Dim PopupMessage
 Dim B2SController
-Dim Controller
+'Dim Controller
 Const DOFContactors = 1
 Const DOFKnocker = 2
 Const DOFChimes = 3
@@ -218,15 +218,19 @@ Sub LoadController(TableType)
 		If Err Then MsgBox "Can't load PROC"
 		If tempC = 0 Then
 			On Error Resume Next
-			Set B2SController = CreateObject("B2S.Server")
-			If B2SController is Nothing Then
+			If Controller is Nothing Then
 				Err.Clear
 			Else
-				B2SController.B2SName = B2ScGameName
-				B2SController.Run()
-				On Error Goto 0
-				B2SOn = True
-				B2SOnALT = True
+				Set B2SController = CreateObject("B2S.Server")
+				If B2SController is Nothing Then
+					Err.Clear
+				Else
+					B2SController.B2SName = B2ScGameName
+					B2SController.Run()
+					On Error Goto 0
+					B2SOn = True
+					B2SOnALT = True
+				End If
 			End If
 		End If
 	Else
