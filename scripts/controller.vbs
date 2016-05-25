@@ -113,6 +113,7 @@ Const DOFPulse = 2
 
 Dim DOFeffects(6)
 Dim B2SOn
+Dim B2SOnALT
 
 Sub LoadEM
 	LoadController("EM")
@@ -157,6 +158,7 @@ Sub LoadController(TableType)
 	Dim Answer
 	
 	B2SOn = False
+	B2SOnALT = False
 	tempC = 0
 	
     Set FileObj=CreateObject("Scripting.FileSystemObject")
@@ -215,11 +217,13 @@ Sub LoadController(TableType)
 		Set Controller = CreateObject("VPROC.Controller")
 		If Err Then MsgBox "Can't load PROC"
 		If tempC = 0 Then
+			On Error Resume Next
 			Set B2SController = CreateObject("B2S.Server")
 				B2SController.B2SName = B2ScGameName
 				B2SController.Run()
 				On Error Goto 0
 				B2SOn = True
+				B2SOnALT = True
 		End If
 	Else
 		If tempC = 0 Then
@@ -302,7 +306,7 @@ End Sub
 'If PROC Controller is used, we need to pass B2S events to the B2SController instead of the usual Controller
 'Use this method to pass information to DOF instead of the Sub DOF
 Sub DOFALT(DOFevent, State)
-	If B2SOn Then
+	If B2SOnALT Then
 		If State = 2 Then
 			B2SController.B2SSetData DOFevent, 1:B2SController.B2SSetData DOFevent, 0
 		Else
