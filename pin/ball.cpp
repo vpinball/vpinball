@@ -243,7 +243,9 @@ float Ball::HitTest(const Ball * pball_, float dtime, CollisionEvent& coll)
    const float bnd = bcdd - totalradius;   // distance between ball surfaces
 
    float hittime;
+#ifdef BALL_CONTACTS //!! leads to trouble currently, might be due to missing contact handling for -both- balls?!
    bool isContact = false;
+#endif
    if (bnd <= (float)PHYS_TOUCH)			// in contact??? 
    {
       if (bnd < pball->m_radius*-2.0f)
@@ -256,8 +258,10 @@ float Ball::HitTest(const Ball * pball_, float dtime, CollisionEvent& coll)
       else
          hittime = bnd / (float)(2.0*PHYS_TOUCH) + 0.5f;	// don't compete for fast zero time events
 
+#ifdef BALL_CONTACTS
       if (fabsf(bnv) <= C_CONTACTVEL)
          isContact = true;
+#endif
    }
    else
    {
@@ -296,9 +300,11 @@ float Ball::HitTest(const Ball * pball_, float dtime, CollisionEvent& coll)
    coll.hitdistance = bnd;			// actual contact distance
    //coll.hitRigid = true;			// rigid collision type
 
+#ifdef BALL_CONTACTS
    coll.isContact = isContact;
    if (isContact)
       coll.hitvelocity.z = bnv;
+#endif
 
    return hittime;
 }
