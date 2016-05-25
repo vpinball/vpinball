@@ -119,19 +119,20 @@ Sub LoadEM
 End Sub
 
 Sub LoadPROC(VPMver, VBSfile, VBSver)
-	On Error Resume Next
-	If ScriptEngineMajorVersion < 5 Then MsgBox "VB Script Engine 5.0 or higher required"
-	ExecuteGlobal GetTextFile(VBSfile)
-	If Err Then MsgBox "Unable to open " & VBSfile & ". Ensure that it is in the same folder as this table. " & vbNewLine & Err.Description
+	LoadVBSFiles VPMver, VBSfile, VBSver
 	LoadController("PROC")
 End Sub
 
 Sub LoadVPM(VPMver, VBSfile, VBSver)
+	LoadVBSFiles VPMver, VBSfile, VBSver
+	LoadController("VPM")
+End Sub
+
+Sub LoadVBSFiles(VPMver, VBSfile, VBSver)
 	On Error Resume Next
 	If ScriptEngineMajorVersion < 5 Then MsgBox "VB Script Engine 5.0 or higher required"
 	ExecuteGlobal GetTextFile(VBSfile)
-	If Err Then MsgBox "Unable to open " & VBSfile & ". Ensure that it is in the same folder as this table. " & vbNewLine & Err.Description
-	LoadController("VPM")
+	If Err Then MsgBox "Unable to open " & VBSfile & ". Ensure that it is in the same folder as this table. " & vbNewLine & Err.Description	
 End Sub
 
 Sub LoadVPinMAME
@@ -215,7 +216,7 @@ Sub LoadController(TableType)
 		If Err Then MsgBox "Can't load PROC"
 		If tempC = 0 Then
 			Set B2SController = CreateObject("B2S.Server")
-				B2SController.B2SName = B2SPROCcGameName
+				B2SController.B2SName = B2ScGameName
 				B2SController.Run()
 				On Error Goto 0
 				B2SOn = True
@@ -298,6 +299,8 @@ Sub DOF(DOFevent, State)
 	End If
 End Sub
 
+'If PROC Controller is used, we need to pass B2S events to the B2SController instead of the usual Controller
+'Use this method to pass information to DOF instead of the Sub DOF
 Sub DOFALT(DOFevent, State)
 	If B2SOn Then
 		If State = 2 Then
