@@ -1912,6 +1912,7 @@ Ball *Player::CreateBall(const float x, const float y, const float z, const floa
    pball->m_pos.x = x;
    pball->m_pos.y = y;
    pball->m_pos.z = z + pball->m_radius;
+   pball->m_bulb_intensity_scale = m_ptable->m_defaultBulbIntensityScaleOnBall;
 
    //pball->z = z;
    pball->m_vel.x = vx;

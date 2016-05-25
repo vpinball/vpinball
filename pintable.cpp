@@ -1117,6 +1117,7 @@ PinTable::PinTable()
    m_fReflectionEnabled = false;
 
    m_fOverridePhysics = 0;
+   m_defaultBulbIntensityScaleOnBall = 1.0f;
 
    SetDefaultPhysics(false);
 
@@ -3300,6 +3301,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
    bw.WriteInt(FID(BTRA), m_useTrailForBalls);
    bw.WriteBool(FID(BDMO), m_BallDecalMode);
    bw.WriteFloat(FID(BPRS), m_ballPlayfieldReflectionStrength);
+   bw.WriteFloat(FID(DBIS), m_defaultBulbIntensityScaleOnBall);
    bw.WriteInt(FID(BTST), (int)(m_ballTrailStrength*255.f + 0.5f));
    bw.WriteInt(FID(ARAC), m_userDetailLevel);
    bw.WriteBool(FID(OGAC), m_overwriteGlobalDetailLevel);
@@ -4108,7 +4110,11 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(BPRS))
    {
-	   pbr->GetFloat(&m_ballPlayfieldReflectionStrength);
+      pbr->GetFloat(&m_ballPlayfieldReflectionStrength);
+   }
+   else if (id == FID(DBIS))
+   {
+      pbr->GetFloat(&m_defaultBulbIntensityScaleOnBall);
    }
    else if (id == FID(UAAL))
    {
@@ -8381,6 +8387,24 @@ STDMETHODIMP PinTable::put_BallPlayfieldReflectionScale(float newVal)
 	STOPUNDO
 
 	return S_OK;
+}
+
+STDMETHODIMP PinTable::get_DefaultBulbIntensityScale(float *pVal)
+{
+   *pVal = m_defaultBulbIntensityScaleOnBall;
+
+   return S_OK;
+}
+
+STDMETHODIMP PinTable::put_DefaultBulbIntensityScale(float newVal)
+{
+   STARTUNDO
+
+      m_defaultBulbIntensityScaleOnBall = newVal;
+
+   STOPUNDO
+
+      return S_OK;
 }
 
 STDMETHODIMP PinTable::get_BloomStrength(float *pVal)
