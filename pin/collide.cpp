@@ -146,7 +146,7 @@ float LineSeg::HitTestBasic(const Ball * pball, const float dtime, CollisionEven
    if (fabsf(bnv) <= C_CONTACTVEL && fabsf(bnd) <= (float)PHYS_TOUCH)
    {
       coll.isContact = true;
-      coll.hitvelocity.z = bnv;
+      coll.hit_org_normalvelocity = bnv;
    }
 
    return hittime;
@@ -179,7 +179,7 @@ void LineSeg::CalcNormal()
 
 void LineSeg::Contact(CollisionEvent& coll, float dtime)
 {
-   coll.ball->HandleStaticContact(coll.hitnormal, coll.hitvelocity.z, m_friction, dtime);
+   coll.ball->HandleStaticContact(coll.hitnormal, coll.hit_org_normalvelocity, m_friction, dtime);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -311,7 +311,7 @@ float HitCircle::HitTestBasicRadius(const Ball * pball, float dtime, CollisionEv
 
    coll.isContact = isContact;
    if (isContact)
-      coll.hitvelocity.z = bnv;
+      coll.hit_org_normalvelocity = bnv;
 
    coll.hitdistance = bnd;				//actual contact distance ... 
    //coll.hitRigid = rigid;			// collision type
@@ -343,7 +343,7 @@ void HitCircle::Collide(CollisionEvent *coll)
 
 void HitCircle::Contact(CollisionEvent& coll, float dtime)
 {
-   coll.ball->HandleStaticContact(coll.hitnormal, coll.hitvelocity.z, m_friction, dtime);
+   coll.ball->HandleStaticContact(coll.hitnormal, coll.hit_org_normalvelocity, m_friction, dtime);
 }
 
 
@@ -416,7 +416,7 @@ float HitLineZ::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 
    coll.isContact = isContact;
    if (isContact)
-      coll.hitvelocity.z = bnv;
+      coll.hit_org_normalvelocity = bnv;
 
    coll.hitdistance = bnd;                    // actual contact distance
    //coll.hitRigid = true;
@@ -440,7 +440,7 @@ void HitLineZ::Collide(CollisionEvent *coll)
 
 void HitLineZ::Contact(CollisionEvent& coll, float dtime)
 {
-   coll.ball->HandleStaticContact(coll.hitnormal, coll.hitvelocity.z, m_friction, dtime);
+   coll.ball->HandleStaticContact(coll.hitnormal, coll.hit_org_normalvelocity, m_friction, dtime);
 }
 
 
@@ -503,7 +503,7 @@ float HitPoint::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 
    coll.isContact = isContact;
    if (isContact)
-      coll.hitvelocity.z = bnv;
+      coll.hit_org_normalvelocity = bnv;
 
    coll.hitdistance = bnd;                    // actual contact distance
    //coll.hitRigid = true;
@@ -527,7 +527,7 @@ void HitPoint::Collide(CollisionEvent *coll)
 
 void HitPoint::Contact(CollisionEvent& coll, float dtime)
 {
-   coll.ball->HandleStaticContact(coll.hitnormal, coll.hitvelocity.z, m_friction, dtime);
+   coll.ball->HandleStaticContact(coll.hitnormal, coll.hit_org_normalvelocity, m_friction, dtime);
 }
 
 void DoHitTest(Ball *const pball, HitObject *const pho, CollisionEvent& coll)

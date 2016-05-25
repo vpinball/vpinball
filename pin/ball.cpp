@@ -303,7 +303,7 @@ float Ball::HitTest(const Ball * pball_, float dtime, CollisionEvent& coll)
 #ifdef BALL_CONTACTS
    coll.isContact = isContact;
    if (isContact)
-      coll.hitvelocity.z = bnv;
+      coll.hit_org_normalvelocity = bnv;
 #endif
 
    return hittime;
