@@ -219,11 +219,15 @@ Sub LoadController(TableType)
 		If tempC = 0 Then
 			On Error Resume Next
 			Set B2SController = CreateObject("B2S.Server")
+			If B2SController is Nothing Then
+				Err.Clear
+			Else
 				B2SController.B2SName = B2ScGameName
 				B2SController.Run()
 				On Error Goto 0
 				B2SOn = True
 				B2SOnALT = True
+			End If
 		End If
 	Else
 		If tempC = 0 Then
