@@ -182,6 +182,8 @@ public:
    STDMETHOD(put_TrailStrength)(/*[in]*/ int newVal);
    STDMETHOD(get_BallPlayfieldReflectionScale)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_BallPlayfieldReflectionScale)(/*[in]*/ float newVal);
+   STDMETHOD(get_DefaultBulbIntensityScale)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_DefaultBulbIntensityScale)(/*[in]*/ float newVal);
 
    STDMETHOD(get_Height)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_Height)(/*[in]*/ float newVal);
@@ -572,6 +574,7 @@ public:
    float m_global3DZPD;
    float m_3DOffset;
    float m_global3DOffset;
+   float m_defaultBulbIntensityScaleOnBall;
 
    unsigned int m_BG_current_set;
    float m_BG_inclination[NUM_BG_SETS];

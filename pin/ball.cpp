@@ -61,7 +61,6 @@ void Ball::Init(const float mass)
 
    m_frozen = false;
 
-   m_bulb_intensity_scale = 1.0f;
    m_playfieldReflectionStrength = 1.f;
    m_reflectionEnabled = true;
    m_forceReflection = false;
@@ -119,6 +118,7 @@ void Ball::Init(const float mass)
            m_pinballDecal = g_pplayer->m_ptable->GetImage(m_szImageFront);
        }
    }
+   m_bulb_intensity_scale = g_pplayer->m_ptable->m_defaultBulbIntensityScaleOnBall;
 
    RenderSetup();
 }
