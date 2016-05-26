@@ -2586,8 +2586,6 @@ void Player::SetGravity(float slopeDeg, float strength)
    m_gravity.z = -cosf(ANGTORAD(slopeDeg)) * strength;
 }
 
-#define STATICCNTS 10
-
 void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this time
 {
    float hittime;
