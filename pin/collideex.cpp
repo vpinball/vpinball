@@ -342,10 +342,10 @@ float HitSpinner::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 
 void HitSpinner::Collide(CollisionEvent* coll)
 {
-   Ball *pball = coll->ball;
+   Ball * const pball = coll->ball;
    const Vertex3Ds& hitnormal = coll->hitnormal;
    const float dot = pball->m_vel.x * hitnormal.x + pball->m_vel.y * hitnormal.y;
-   if (dot < 0) return;	//hit from back doesn't count
+   if (dot < 0.f) return;	//hit from back doesn't count
 
    float h = m_spinneranim.m_pspinner->m_d.m_height*0.5f;
    //linear speed = ball speed
@@ -377,7 +377,7 @@ void SpinnerAnimObject::UpdateDisplacements(const float dtime)
          m_angle = m_angleMax;
          m_pspinner->FireVoidEventParm(DISPID_LimitEvents_EOS, fabsf(RADTOANG(m_anglespeed)));	// send EOS event
 
-         if (m_anglespeed > 0)
+         if (m_anglespeed > 0.f)
             m_anglespeed *= -0.005f - m_elasticity;
       }
       if (m_angle < m_angleMin)
@@ -386,20 +386,20 @@ void SpinnerAnimObject::UpdateDisplacements(const float dtime)
 
          m_pspinner->FireVoidEventParm(DISPID_LimitEvents_BOS, fabsf(RADTOANG(m_anglespeed)));	// send Park event
 
-         if (m_anglespeed < 0)
+         if (m_anglespeed < 0.f)
             m_anglespeed *= -0.005f - m_elasticity;
       }
    }
    else
    {
-      const float target = (m_anglespeed > 0) ?
+      const float target = (m_anglespeed > 0.f) ?
          ((m_angle < (float)M_PI) ? (float)M_PI : (float)(3.0*M_PI))
          :
          ((m_angle < (float)M_PI) ? (float)(-M_PI) : (float)M_PI);
 
       m_angle += m_anglespeed * dtime;
 
-      if (m_anglespeed > 0)
+      if (m_anglespeed > 0.f)
       {
          if (m_angle > target)
             m_pspinner->FireGroupEvent(DISPID_SpinnerEvents_Spin);
@@ -455,7 +455,7 @@ Hit3DPoly::Hit3DPoly(Vertex3Ds * const rgv, const int count) : m_rgv(rgv), m_cve
 
    m_elasticity = 0.3f;
    SetFriction(0.3f);
-   m_scatter = 0;
+   m_scatter = 0.f;
 }
 
 Hit3DPoly::~Hit3DPoly()
@@ -469,7 +469,7 @@ float Hit3DPoly::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 
    const float bnv = normal.Dot(pball->m_vel);  //speed in Normal-vector direction
 
-   if ((m_ObjType != eTrigger) && (bnv >= 0.f)) // return if clearly ball is receding from object
+   if ((m_ObjType != eTrigger) && (bnv > C_LOWNORMVEL)) // return if clearly ball is receding from object
       return -1.0f;
 
    // Point on the ball that will hit the polygon, if it hits at all
@@ -478,35 +478,35 @@ float Hit3DPoly::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
    const float bnd = normal.Dot(hitPos - m_rgv[0]); // distance from plane to ball
 
    bool bUnHit = (bnv > C_LOWNORMVEL);
-   const bool inside = (bnd <= 0);									// in ball inside object volume
+   const bool inside = (bnd <= 0.f);                // in ball inside object volume
 
    const bool rigid = (m_ObjType != eTrigger);
    float hittime;
    bool isContact = false;
    if (rigid) //rigid polygon
    {
-      if (bnd < -pball->m_radius/**2.0f*/) return -1.0f;	// (ball normal distance) excessive penetration of object skin ... no collision HACK //!! *2 necessary?
+      if (bnd < -pball->m_radius/**2.0f*/) return -1.0f; // (ball normal distance) excessive penetration of object skin ... no collision HACK //!! *2 necessary?
 
       if (bnd <= (float)PHYS_TOUCH)
       {
-         if (inside || (fabsf(bnv) > C_CONTACTVEL)		// fast velocity, return zero time
-            //zero time for rigid fast bodies
-            || (bnd <= (float)(-PHYS_TOUCH)))				// slow moving but embedded
-            hittime = 0;
-         else
-            hittime = bnd*(float)(1.0 / (2.0*PHYS_TOUCH)) + 0.5f;	// don't compete for fast zero time events
-
-         if (fabsf(bnv) <= C_CONTACTVEL)
-            isContact = true;
+          if (fabsf(bnv) <= C_CONTACTVEL)
+          {
+              hittime = 0;
+              isContact = true;
+          }
+          else if (inside)
+              hittime = 0;                          // zero time for rigid fast bodies
+          else
+              hittime = bnd / -bnv;
       }
-      else if (fabsf(bnv) > C_LOWNORMVEL)					// not velocity low ????
-         hittime = bnd / (-bnv);								// rate ok for safe divide 
+      else if (fabsf(bnv) > C_LOWNORMVEL)           // not velocity low?
+          hittime = bnd / -bnv;                     // rate ok for safe divide 
       else
-         return -1.0f;										// wait for touching
+          return -1.0f;                             // wait for touching
    }
    else //non-rigid polygon
    {
-      if (bnv * bnd >= 0)										// outside-receding || inside-approaching
+      if (bnv * bnd >= 0.f)                         // outside-receding || inside-approaching
       {
          if ((m_ObjType != eTrigger) ||				// not a trigger
             (!pball->m_vpVolObjs) ||					// temporary ball
@@ -638,7 +638,7 @@ void Hit3DPoly::Collide(CollisionEvent *coll)
 
 void Hit3DPoly::Contact(CollisionEvent& coll, float dtime)
 {
-   coll.ball->HandleStaticContact(coll.hitnormal, coll.hit_org_normalvelocity, m_friction, dtime);
+   coll.ball->HandleStaticContact(coll, m_friction, dtime);
 }
 
 void Hit3DPoly::CalcHitRect()
@@ -678,7 +678,7 @@ HitTriangle::HitTriangle(const Vertex3Ds rgv[3])
 
    m_elasticity = 0.3f;
    SetFriction(0.3f);
-   m_scatter = 0;
+   m_scatter = 0.f;
 }
 
 float HitTriangle::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
@@ -687,7 +687,7 @@ float HitTriangle::HitTest(const Ball * pball, float dtime, CollisionEvent& coll
 
    const float bnv = normal.Dot(pball->m_vel);     // speed in Normal-vector direction
 
-   if (bnv >= C_CONTACTVEL)						// return if clearly ball is receding from object
+   if (bnv > C_CONTACTVEL)						// return if clearly ball is receding from object
       return -1.0f;
 
    // Point on the ball that will hit the polygon, if it hits at all
@@ -708,7 +708,7 @@ float HitTriangle::HitTest(const Ball * pball, float dtime, CollisionEvent& coll
          hittime = 0;
          isContact = true;
       }
-      else if (bnd <= 0)
+      else if (bnd <= 0.f)
          hittime = 0;                            // zero time for rigid fast bodies
       else
          hittime = bnd / -bnv;
@@ -787,7 +787,7 @@ void HitTriangle::Collide(CollisionEvent* coll)
 
 void HitTriangle::Contact(CollisionEvent& coll, float dtime)
 {
-   coll.ball->HandleStaticContact(coll.hitnormal, coll.hit_org_normalvelocity, m_friction, dtime);
+   coll.ball->HandleStaticContact(coll, m_friction, dtime);
 }
 
 void HitTriangle::CalcHitRect()
@@ -812,7 +812,7 @@ float HitPlane::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 
    const float bnv = normal.Dot(pball->m_vel);       // speed in normal direction
 
-   if (bnv >= C_CONTACTVEL)                 // return if clearly ball is receding from object
+   if (bnv > C_CONTACTVEL)                 // return if clearly ball is receding from object
       return -1.0f;
 
    const float bnd = normal.Dot(pball->m_pos) - pball->m_radius - d; // distance from plane to ball surface
@@ -820,32 +820,38 @@ float HitPlane::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
    if (bnd < pball->m_radius*-2.0f) //!! solely responsible for ball through playfield?? check other places, too (radius*2??)
       return -1.0f;   // excessive penetration of plane ... no collision HACK
 
+   float hittime;
+   bool isContact = false;
    // slow moving ball? then either contact or no collision at all
-   if (fabsf(bnv) <= C_CONTACTVEL)
+   if (bnd <= (float)PHYS_TOUCH)
    {
-      if (fabsf(bnd) <= (float)PHYS_TOUCH)
-      {
-         coll.isContact = true;
-         coll.hitnormal = normal;
-         coll.hit_org_normalvelocity = bnv; // remember original normal velocity
-         coll.hitdistance = bnd;
-         //coll.hitRigid = true;
-         return 0.0f;    // hittime is ignored for contacts
-      }
-      else
-         return -1.0f;   // large distance, small velocity -> no hit
+       if (fabsf(bnv) <= C_CONTACTVEL)
+       {
+           hittime = 0;
+           isContact = true;
+       }
+       else if (bnd <= 0.f)
+           hittime = 0;                // zero time for rigid fast bodies
+       else
+           hittime = bnd / -bnv;
    }
+   else if (fabsf(bnv) > C_LOWNORMVEL) // not velocity low?
+       hittime = bnd / -bnv;           // rate ok for safe divide 
+   else
+       return -1.0f;                   // wait for touching
 
-   float hittime = bnd / (-bnv);                   // rate ok for safe divide
-   if (hittime < 0.f)
-      hittime = 0.0f;     // already penetrating? then collide immediately
-
-   if (infNaN(hittime) || hittime > dtime)
+   if (infNaN(hittime) || hittime < 0.f || hittime > dtime)
       return -1.0f;       // time is outside this frame ... no collision
 
    coll.hitnormal = normal;
    coll.hitdistance = bnd;                // actual contact distance
    //coll.hitRigid = true;               // collision type
+
+   if (isContact)
+   {
+      coll.isContact = true;
+      coll.hit_org_normalvelocity = bnv; // remember original normal velocity
+   }
 
    return hittime;
 }
@@ -857,15 +863,17 @@ void HitPlane::Collide(CollisionEvent* coll)
    //        coll->ball->m_vel.x, coll->ball->m_vel.y, coll->ball->m_vel.z);
    coll->ball->Collide3DWall(coll->hitnormal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter);
 
+#ifdef C_EMBEDSHOT_PLANE
    // if ball has penetrated, push it out of the plane
    const float bnd = normal.Dot(coll->ball->m_pos) - coll->ball->m_radius - d; // distance from plane to ball surface
    if (bnd < 0.f)
       coll->ball->m_pos -= bnd * normal;
+#endif
 }
 
 void HitPlane::Contact(CollisionEvent& coll, float dtime)
 {
-   coll.ball->HandleStaticContact(coll.hitnormal, coll.hit_org_normalvelocity, m_friction, dtime);
+   coll.ball->HandleStaticContact(coll, m_friction, dtime);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -885,7 +893,7 @@ HitLine3D::HitLine3D(const Vertex3Ds& v1, const Vertex3Ds& v2)
    transaxis.z = 0.0f;
 
    if (transaxis.LengthSquared() <= 1e-6f)     // line already points in z axis?
-      transaxis.Set(1, 0, 0);                 // choose arbitrary rotation vector
+      transaxis.Set(1.f, 0.f, 0.f);            // choose arbitrary rotation vector
    else
       transaxis.Normalize();
 
