@@ -56,7 +56,7 @@ float LineSeg::HitTestBasic(const Ball * pball, const float dtime, CollisionEven
    const float bnv = ballvx*normal.x + ballvy*normal.y;	// ball velocity normal to segment, positive if receding, zero=parallel
    bool bUnHit = (bnv > C_LOWNORMVEL);
 
-   if (direction && (bnv > C_CONTACTVEL))					// direction true and clearly receding from normal face
+   if (direction && (bnv > C_LOWNORMVEL))					// direction true and clearly receding from normal face
       return -1.0f;
 
    const float ballx = pball->m_pos.x;						// ball position
@@ -87,7 +87,7 @@ float LineSeg::HitTestBasic(const Ball * pball, const float dtime, CollisionEven
             || (bnd <= (float)(-PHYS_TOUCH)))
             hittime = 0;										// slow moving but embedded
          else
-            hittime = bnd*(float)(1.0 / (2.0*PHYS_TOUCH)) + 0.5f;	// don't compete for fast zero time events
+            hittime = bnd / (-bnv);	// don't compete for fast zero time events
       }
       else if (fabsf(bnv) > C_LOWNORMVEL) 					// not velocity low ????
          hittime = bnd / (-bnv);								// rate ok for safe divide 
@@ -179,7 +179,7 @@ void LineSeg::CalcNormal()
 
 void LineSeg::Contact(CollisionEvent& coll, float dtime)
 {
-   coll.ball->HandleStaticContact(coll.hitnormal, coll.hit_org_normalvelocity, m_friction, dtime);
+   coll.ball->HandleStaticContact(coll, m_friction, dtime);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -249,7 +249,7 @@ float HitCircle::HitTestBasicRadius(const Ball * pball, float dtime, CollisionEv
          hittime = 0;
       }
       else
-         hittime = std::max(0.0f, -bnd / bnv);   // estimate based on distance and speed along distance
+         hittime = /*std::max(0.0f,*/ -bnd / bnv /*)*/;   // estimate based on distance and speed along distance
    }
    else if (m_ObjType >= eTrigger // triggers & kickers
       && pball->m_vpVolObjs && ((bnd < 0.f) == (pball->m_vpVolObjs->IndexOf(m_pObj) < 0)))
@@ -343,7 +343,7 @@ void HitCircle::Collide(CollisionEvent *coll)
 
 void HitCircle::Contact(CollisionEvent& coll, float dtime)
 {
-   coll.ball->HandleStaticContact(coll.hitnormal, coll.hit_org_normalvelocity, m_friction, dtime);
+   coll.ball->HandleStaticContact(coll, m_friction, dtime);
 }
 
 
@@ -385,7 +385,7 @@ float HitLineZ::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
          hittime = 0;
       }
       else
-         hittime = std::max(0.0f, -bnd / bnv);   // estimate based on distance and speed along distance
+         hittime = /*std::max(0.0f,*/ -bnd / bnv /*)*/;   // estimate based on distance and speed along distance
    }
    else
    {
@@ -396,7 +396,7 @@ float HitLineZ::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
       if (!SolveQuadraticEq(a, 2.0f*b, bcddsq - pball->m_radius*pball->m_radius, time1, time2))
          return -1.0f;
 
-      hittime = (time1*time2 < 0) ? max(time1, time2) : min(time1, time2); // find smallest nonnegative solution
+      hittime = (time1*time2 < 0.f) ? max(time1, time2) : min(time1, time2); // find smallest nonnegative solution
    }
 
    if (infNaN(hittime) || hittime < 0 || hittime > dtime)
@@ -440,7 +440,7 @@ void HitLineZ::Collide(CollisionEvent *coll)
 
 void HitLineZ::Contact(CollisionEvent& coll, float dtime)
 {
-   coll.ball->HandleStaticContact(coll.hitnormal, coll.hit_org_normalvelocity, m_friction, dtime);
+   coll.ball->HandleStaticContact(coll, m_friction, dtime);
 }
 
 
@@ -480,7 +480,7 @@ float HitPoint::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
          hittime = 0;
       }
       else
-         hittime = std::max(0.0f, -bnd / bnv);   // estimate based on distance and speed along distance
+         hittime = /*std::max(0.0f,*/ -bnd / bnv /*)*/;   // estimate based on distance and speed along distance
    }
    else
    {
@@ -491,7 +491,7 @@ float HitPoint::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
       if (!SolveQuadraticEq(a, 2.0f*b, bcddsq - pball->m_radius*pball->m_radius, time1, time2))
          return -1.0f;
 
-      hittime = (time1*time2 < 0) ? max(time1, time2) : min(time1, time2); // find smallest nonnegative solution
+      hittime = (time1*time2 < 0.f) ? max(time1, time2) : min(time1, time2); // find smallest nonnegative solution
    }
 
    if (infNaN(hittime) || hittime < 0 || hittime > dtime)
@@ -527,7 +527,7 @@ void HitPoint::Collide(CollisionEvent *coll)
 
 void HitPoint::Contact(CollisionEvent& coll, float dtime)
 {
-   coll.ball->HandleStaticContact(coll.hitnormal, coll.hit_org_normalvelocity, m_friction, dtime);
+   coll.ball->HandleStaticContact(coll, m_friction, dtime);
 }
 
 void DoHitTest(Ball *const pball, HitObject *const pho, CollisionEvent& coll)

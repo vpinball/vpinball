@@ -256,7 +256,7 @@ float Ball::HitTest(const Ball * pball_, float dtime, CollisionEvent& coll)
          || (bnd <= (float)(-PHYS_TOUCH)))
          hittime = 0;					// slow moving but embedded
       else
-         hittime = bnd / (float)(2.0*PHYS_TOUCH) + 0.5f;	// don't compete for fast zero time events
+         hittime = bnd / -bnv;	// don't compete for fast zero time events
 
 #ifdef BALL_CONTACTS
       if (fabsf(bnv) <= C_CONTACTVEL)
@@ -278,10 +278,7 @@ float Ball::HitTest(const Ball * pball_, float dtime, CollisionEvent& coll)
       if (!SolveQuadraticEq(a, 2.0f*b, bcddsq - totalradius*totalradius, time1, time2))
          return -1.0f;
 
-      // choose smallest non-negative solution
-      hittime = std::min(time1, time2);
-      if (hittime < 0.f)
-         hittime = std::max(time1, time2);
+      hittime = (time1*time2 < 0.f) ? std::max(time1, time2) : std::min(time1, time2); // find smallest nonnegative solution
    }
 
    if (infNaN(hittime) || hittime < 0.f || hittime > dtime)
@@ -379,21 +376,24 @@ void Ball::Collide(CollisionEvent *coll)
 #endif
 }
 
-void Ball::HandleStaticContact(const Vertex3Ds& normal, const float origNormVel, const float friction, const float dtime)
+void Ball::HandleStaticContact(const CollisionEvent& coll, const float friction, const float dtime)
 {
-   const float normVel = m_vel.Dot(normal);   // this should be zero, but only up to +/- C_CONTACTVEL
+   const float normVel = m_vel.Dot(coll.hitnormal);   // this should be zero, but only up to +/- C_CONTACTVEL
 
    // If some collision has changed the ball's velocity, we may not have to do anything.
    if (normVel <= C_CONTACTVEL)
    {
       const Vertex3Ds fe = m_mass * g_pplayer->m_gravity;      // external forces (only gravity for now)
-      const float dot = fe.Dot(normal);
-      const float normalForce = std::max(0.0f, -(dot*dtime + origNormVel)); // normal force is always nonnegative
+      const float dot = fe.Dot(coll.hitnormal);
+      const float normalForce = std::max(0.0f, -(dot*dtime + coll.hit_org_normalvelocity)); // normal force is always nonnegative
 
       // Add just enough to kill original normal velocity and counteract the external forces.
-      m_vel += normalForce * normal;
+      m_vel += normalForce * coll.hitnormal;
 
-      //!! hacky killing of ball spin
+      if (coll.hitdistance <= (float)PHYS_TOUCH)
+          m_vel += coll.hitnormal*max(min(C_EMBEDVELLIMIT,-coll.hitdistance),(float)PHYS_TOUCH);
+
+#ifdef C_BALL_SPIN_HACK // hacky killing of ball spin
       float vell = m_vel.Length();
       if (m_vel.Length() < 1.f) //!! 1.f=magic, also see below
       {
@@ -402,8 +402,9 @@ void Ball::HandleStaticContact(const Vertex3Ds& normal, const float origNormVel,
          m_angularmomentum *= damp;
          m_angularvelocity *= damp;
       }
+#endif
 
-      ApplyFriction(normal, dtime, friction);
+      ApplyFriction(coll.hitnormal, dtime, friction);
    }
 }
 

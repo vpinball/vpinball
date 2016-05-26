@@ -51,17 +51,23 @@
 #define C_LOWNORMVEL 0.0001f
 #define C_CONTACTVEL 0.099f
 
-// low velocity stabilization ... if embedding occurs add some velocity 
-#define C_EMBEDDED 0.0f
-#define C_EMBEDSHOT 0.05f
+// low velocity stabilization ... if embedding occurs add some velocity
+#define C_EMBEDVELLIMIT 5.f
+
+// old workarounds, not needed anymore?!
+//#define C_EMBEDSHOT_PLANE // push pos up if ball embedded in plane
+//#define C_EMBEDDED 0.0f
+//#define C_EMBEDSHOT 0.05f
 // Contact displacement corrections, hard ridgid contacts i.e. steel on hard plastic or hard wood
-#define C_DISP_GAIN 0.9875f
-#define C_DISP_LIMIT 5.0f
+//#define C_DISP_GAIN 0.9875f
+//#define C_DISP_LIMIT 5.0f
 // Have special cases for balls that are determined static? (C_DYNAMIC is kind of a counter for detection) -> does not work stable enough anymore nowadays
 //#define C_DYNAMIC 2
-#define C_BALL_SPIN_HACK 0.1 // dampens ball spin on contacts (smaller = less damp)
+//#define C_BALL_SPIN_HACK 0.1 // dampens ball spin on collision contacts and very slow moving balls (smaller = less damp)
+
 //trigger/kicker boundary crossing hysterisis
 #define STATICTIME 0.005f
+#define STATICCNTS 10
 
 //Flippers:
 #define C_INTERATIONS 20 // Precision level and cycles for interative calculations // acceptable contact time ... near zero time

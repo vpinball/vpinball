@@ -44,7 +44,7 @@ public:
    void Collide3DWall(const Vertex3Ds& hitNormal, float elasticity, float elastFalloff, float friction, float scatter_angle);
 
    void ApplyFriction(const Vertex3Ds& hitnormal, const float dtime, const float fricCoeff);
-   void HandleStaticContact(const Vertex3Ds& normal, const float origNormVel, const float friction, const float dtime);
+   void HandleStaticContact(const CollisionEvent& coll, const float friction, const float dtime);
 
    Vertex3Ds SurfaceVelocity(const Vertex3Ds& surfP) const;
    Vertex3Ds SurfaceAcceleration(const Vertex3Ds& surfP) const;
