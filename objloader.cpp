@@ -395,8 +395,12 @@ FILE* WaveFrontObj_ExportStart(const char *filename)
    FILE *f;
    char matName[MAX_PATH];
    char nameOnly[MAX_PATH] = { 0 };
-   int len = lstrlen(filename);
+   int len = lstrlen(filename); 
    int i;
+
+   if ( len > MAX_PATH )
+       len = MAX_PATH - 1;
+
    for (i = len; i >= 0; i--)
    {
       if (filename[i] == '.')
@@ -407,7 +411,7 @@ FILE* WaveFrontObj_ExportStart(const char *filename)
    }
    strcpy_s(matName, filename);
    if (i < len)
-   {
+   {      
       memcpy(matName, filename, i);
       matName[i] = 0;
       strcat_s(matName, "mtl");

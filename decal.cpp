@@ -102,8 +102,8 @@ void Decal::SetDefaults(bool fromMouseClick)
       {
          int len = lstrlen(&tmp[0]) + 1;
          fd.lpstrName = (LPOLESTR)malloc(len*sizeof(WCHAR));
+         memset(fd.lpstrName, 0, len*sizeof(WCHAR));
          UNICODE_FROM_ANSI(fd.lpstrName, &tmp[0], len);
-         fd.lpstrName[len] = 0;
       }
 
       hr = GetRegInt("DefaultProps\\Decal", "FontWeight", &iTmp);

@@ -2756,6 +2756,10 @@ INT_PTR CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                            break;
                         }
                      }
+
+                     if( begin>MAX_PATH )
+                         begin=MAX_PATH-1;
+
                      memcpy(pathName, ofn.lpstrFile, begin);
                      pathName[begin] = 0;
                      while (sel != -1)
