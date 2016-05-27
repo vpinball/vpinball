@@ -256,7 +256,12 @@ float Ball::HitTest(const Ball * pball_, float dtime, CollisionEvent& coll)
          || (bnd <= (float)(-PHYS_TOUCH)))
          hittime = 0;					// slow moving but embedded
       else
-         hittime = bnd / -bnv;	// don't compete for fast zero time events
+         hittime = bnd
+#ifdef NEW_PHYSICS
+          / -bnv;
+#else
+          *(float)(1.0/(2.0*PHYS_TOUCH)) + 0.5f;	// don't compete for fast zero time events
+#endif
 
 #ifdef BALL_CONTACTS
       if (fabsf(bnv) <= C_CONTACTVEL)
@@ -390,15 +395,17 @@ void Ball::HandleStaticContact(const CollisionEvent& coll, const float friction,
       // Add just enough to kill original normal velocity and counteract the external forces.
       m_vel += normalForce * coll.hitnormal;
 
+#ifdef C_EMBEDVELLIMIT
       if (coll.hitdistance <= (float)PHYS_TOUCH)
           m_vel += coll.hitnormal*max(min(C_EMBEDVELLIMIT,-coll.hitdistance),(float)PHYS_TOUCH);
+#endif
 
 #ifdef C_BALL_SPIN_HACK // hacky killing of ball spin
       float vell = m_vel.Length();
       if (m_vel.Length() < 1.f) //!! 1.f=magic, also see below
       {
          vell = (1.f-vell)*(float)C_BALL_SPIN_HACK;
-         const float damp = (1.0f - friction * clamp(-origNormVel / C_CONTACTVEL, 0.0f,1.0f)) * vell + (1.0f-vell); // do not kill spin completely, otherwise stuck balls will happen during regular gameplay
+         const float damp = (1.0f - friction * clamp(-coll.hit_org_normalvelocity / C_CONTACTVEL, 0.0f,1.0f)) * vell + (1.0f-vell); // do not kill spin completely, otherwise stuck balls will happen during regular gameplay
          m_angularmomentum *= damp;
          m_angularvelocity *= damp;
       }
@@ -423,8 +430,13 @@ void Ball::ApplyFriction(const Vertex3Ds& hitnormal, const float dtime, const fl
    //slintf("Velocity: %.2f Angular velocity: %.2f Surface velocity: %.2f Slippage: %.2f\n", m_vel.Length(), m_angularvelocity.Length(), surfVel.Length(), slipspeed);
    //if (slipspeed > 1e-6f)
 
-   //const float normVel = m_vel.Dot(hitnormal);
-   if(/*(normVel <= 0.025f) ||*/ (slipspeed < C_PRECISION)) // check for <=0.025 originated from ball<->rubber collisions pushing the ball upwards, but this is still not enough, some could even use <=0.2
+#ifdef C_BALL_SPIN_HACK
+   const float normVel = m_vel.Dot(hitnormal);
+   if((normVel <= 0.025f) || // check for <=0.025 originated from ball<->rubber collisions pushing the ball upwards, but this is still not enough, some could even use <=0.2
+#else
+   if(
+#endif
+       (slipspeed < C_PRECISION))
    {
       // slip speed zero - static friction case
 

@@ -482,13 +482,16 @@ float Hit3DPoly::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 
    const bool rigid = (m_ObjType != eTrigger);
    float hittime;
+#ifdef NEW_PHYSICS
    bool isContact = false;
+#endif
    if (rigid) //rigid polygon
    {
       if (bnd < -pball->m_radius/**2.0f*/) return -1.0f; // (ball normal distance) excessive penetration of object skin ... no collision HACK //!! *2 necessary?
 
       if (bnd <= (float)PHYS_TOUCH)
       {
+#ifdef NEW_PHYSICS
           if (fabsf(bnv) <= C_CONTACTVEL)
           {
               hittime = 0;
@@ -498,6 +501,14 @@ float Hit3DPoly::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
               hittime = 0;                          // zero time for rigid fast bodies
           else
               hittime = bnd / -bnv;
+#else
+          if (inside || (fabsf(bnv) > C_CONTACTVEL)		// fast velocity, return zero time
+                                                                //zero time for rigid fast bodies
+              || (bnd <= (float)(-PHYS_TOUCH)))				// slow moving but embedded
+              hittime = 0;
+          else
+              hittime = bnd*(float)(1.0/(2.0*PHYS_TOUCH)) + 0.5f;	// don't compete for fast zero time events
+#endif
       }
       else if (fabsf(bnv) > C_LOWNORMVEL)           // not velocity low?
           hittime = bnd / -bnv;                     // rate ok for safe divide 
@@ -580,9 +591,11 @@ float Hit3DPoly::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
       coll.hitdistance = bnd;				// 3dhit actual contact distance ... 
       //coll.hitRigid = rigid;				// collision type
 
+#ifdef NEW_PHYSICS
       coll.isContact = isContact;
       if (isContact)
          coll.hit_org_normalvelocity = bnv;
+#endif
 
       return hittime;
    }
@@ -821,6 +834,7 @@ float HitPlane::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
       return -1.0f;   // excessive penetration of plane ... no collision HACK
 
    float hittime;
+#ifdef NEW_PHYSICS
    bool isContact = false;
    // slow moving ball? then either contact or no collision at all
    if (bnd <= (float)PHYS_TOUCH)
@@ -839,6 +853,26 @@ float HitPlane::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
        hittime = bnd / -bnv;           // rate ok for safe divide 
    else
        return -1.0f;                   // wait for touching
+#else
+   if (fabsf(bnv) <= C_CONTACTVEL)
+   {
+       if (fabsf(bnd) <= (float)PHYS_TOUCH)
+       {
+           coll.isContact = true;
+           coll.hitnormal = normal;
+           coll.hit_org_normalvelocity = bnv; // remember original normal velocity
+           coll.hitdistance = bnd;
+           //coll.hitRigid = true;
+           return 0.0f;    // hittime is ignored for contacts
+       }
+       else
+           return -1.0f;   // large distance, small velocity -> no hit
+   }
+
+   hittime = bnd / (-bnv);                   // rate ok for safe divide
+   if (hittime < 0.f)
+       hittime = 0.0f;     // already penetrating? then collide immediately
+#endif
 
    if (infNaN(hittime) || hittime < 0.f || hittime > dtime)
       return -1.0f;       // time is outside this frame ... no collision
@@ -847,11 +881,13 @@ float HitPlane::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
    coll.hitdistance = bnd;                // actual contact distance
    //coll.hitRigid = true;               // collision type
 
+#ifdef NEW_PHYSICS
    if (isContact)
    {
       coll.isContact = true;
       coll.hit_org_normalvelocity = bnv; // remember original normal velocity
    }
+#endif
 
    return hittime;
 }
