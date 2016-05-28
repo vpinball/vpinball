@@ -7,7 +7,7 @@
 
 #include "RenderDevice.h"
 
-#define CURRENT_FILE_FORMAT_VERSION 1001
+#define CURRENT_FILE_FORMAT_VERSION 1011
 
 #define DEFAULT_SECURITY_LEVEL 0
 
