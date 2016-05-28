@@ -470,6 +470,18 @@ Player::~Player()
         m_pFont->Release();
         m_pFont = NULL;
     }
+    if (m_ballImage)
+    {
+       m_ballImage->FreeStuff();
+       delete m_ballImage;
+       m_ballImage = NULL;
+    }
+    if (m_decalImage)
+    {
+       m_decalImage->FreeStuff();
+       delete m_decalImage;
+       m_decalImage = NULL;
+    }
 }
 
 void Player::Shutdown()
