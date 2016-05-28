@@ -1443,29 +1443,31 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 
    material_flips = 0;
    unsigned long long m;
-   if(m_vHitNonTrans.size() > 0)
+   if (m_vHitNonTrans.size() > 0)
+   {
       m = m_vHitNonTrans[0]->GetMaterialID();
-   for(unsigned int i = 1; i < m_vHitNonTrans.size(); ++i)
-      if(m_vHitNonTrans[i]->GetMaterialID() != m)
-      {
-         material_flips++;
-         m = m_vHitNonTrans[i]->GetMaterialID();
-      }
-   
+      for (unsigned int i = 1; i < m_vHitNonTrans.size(); ++i)
+         if (m_vHitNonTrans[i]->GetMaterialID() != m)
+         {
+            material_flips++;
+            m = m_vHitNonTrans[i]->GetMaterialID();
+         }
+   }
    std::stable_sort(m_vHitTrans.begin(), m_vHitTrans.end(), CompareHitableImage); // see above
    // sort by vertexbuffer not useful currently
    std::stable_sort(m_vHitTrans.begin(), m_vHitTrans.end(), CompareHitableMaterial);
    std::stable_sort(m_vHitTrans.begin(), m_vHitTrans.end(), CompareHitableDepth);
 
-   if(m_vHitTrans.size() > 0)
+   if (m_vHitTrans.size() > 0)
+   {
       m = m_vHitTrans[0]->GetMaterialID();
-   for(unsigned int i = 1; i < m_vHitTrans.size(); ++i)
-      if(m_vHitTrans[i]->GetMaterialID() != m)
-      {
-         material_flips++;
-         m = m_vHitTrans[i]->GetMaterialID();
-      }
-
+      for (unsigned int i = 1; i < m_vHitTrans.size(); ++i)
+         if (m_vHitTrans[i]->GetMaterialID() != m)
+         {
+            material_flips++;
+            m = m_vHitTrans[i]->GetMaterialID();
+         }
+   }
    // Direct all renders to the back buffer.
    m_pin3d.SetRenderTarget(m_pin3d.m_pddsBackBuffer, m_pin3d.m_pddsZBuffer);
 
