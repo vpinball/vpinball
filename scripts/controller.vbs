@@ -99,7 +99,7 @@
 Const ControllerFile = "Controller.txt"
 Dim PopupMessage
 Dim B2SController
-'Dim Controller
+Dim Controller
 Const DOFContactors = 1
 Const DOFKnocker = 2
 Const DOFChimes = 3
