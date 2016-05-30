@@ -400,11 +400,11 @@ void Ball::HandleStaticContact(const CollisionEvent& coll, const float friction,
           m_vel += coll.hitnormal*max(min(C_EMBEDVELLIMIT,-coll.hitdistance),(float)PHYS_TOUCH);
 #endif
 
-#ifdef C_BALL_SPIN_HACK // hacky killing of ball spin
+#ifdef C_BALL_SPIN_HACK2 // hacky killing of ball spin
       float vell = m_vel.Length();
       if (m_vel.Length() < 1.f) //!! 1.f=magic, also see below
       {
-         vell = (1.f-vell)*(float)C_BALL_SPIN_HACK;
+         vell = (1.f-vell)*(float)C_BALL_SPIN_HACK2;
          const float damp = (1.0f - friction * clamp(-coll.hit_org_normalvelocity / C_CONTACTVEL, 0.0f,1.0f)) * vell + (1.0f-vell); // do not kill spin completely, otherwise stuck balls will happen during regular gameplay
          m_angularmomentum *= damp;
          m_angularvelocity *= damp;

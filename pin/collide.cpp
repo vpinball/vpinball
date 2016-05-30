@@ -474,7 +474,7 @@ float HitPoint::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 
    const float a = pball->m_vel.LengthSquared();
 
-   float hittime = 0;
+   float hittime = 0.f;
    bool isContact = false;
 
    if (bnd < (float)PHYS_TOUCH)       // already in collision distance?
@@ -482,10 +482,14 @@ float HitPoint::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
       if (fabsf(bnv) <= C_CONTACTVEL)
       {
          isContact = true;
-         hittime = 0;
+         hittime = 0.f;
       }
-      else
-         hittime = /*std::max(0.0f,*/ -bnd / bnv /*)*/;   // estimate based on distance and speed along distance
+      else   // estimate based on distance and speed along distance
+#ifdef NEW_PHYSICS
+         hittime = -bnd / bnv;
+#else
+         hittime = std::max(0.0f, -bnd / bnv );
+#endif
    }
    else
    {
