@@ -2773,7 +2773,7 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
 
       m_contacts.clear();
 
-#ifndef NEW_PHYSICS
+#ifdef C_BALL_SPIN_HACK
       // hacky killing of ball spin on resting balls (very low and very high spinning)
       for (unsigned i = 0; i < m_vball.size(); i++)
       {

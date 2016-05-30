@@ -68,7 +68,9 @@
  #define C_DISP_LIMIT 5.0f
  // Have special cases for balls that are determined static? (C_DYNAMIC is kind of a counter for detection) -> does not work stable enough anymore nowadays
  //#define C_DYNAMIC 2
- #define C_BALL_SPIN_HACK 0.1 // dampens ball spin on collision contacts and very slow moving balls (smaller = less damp)
+ // choose only one of these two heuristics:
+ #define C_BALL_SPIN_HACK // original ball spin reduction code, based on automatic detection/heuristic of resting balls
+ //#define C_BALL_SPIN_HACK2 0.1 // dampens ball spin on collision contacts and at the same time very slow moving balls (smaller = less damp)
 #endif
 
 //trigger/kicker boundary crossing hysterisis
