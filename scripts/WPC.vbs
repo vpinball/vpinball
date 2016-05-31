@@ -73,6 +73,7 @@ Private vpmDips
 
 ' Keyboard handlers
 Function vpmKeyDown(ByVal keycode)
+	Dim swCopy
 	On Error Resume Next
 	vpmKeyDown = True ' assume we handle the key
 	With Controller
@@ -83,13 +84,13 @@ Function vpmKeyDown(ByVal keycode)
 			Case keyInsertCoin2  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin2'" : Playsound SCoin
 			Case keyInsertCoin3  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin3'" : Playsound SCoin
 			Case keyInsertCoin4  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin4'" : Playsound SCoin
-			Case StartGameKey    .Switch(swStartButtonX) = True
-			Case keyCancel       .Switch(swCancel)       = True
-			Case keyDown         .Switch(swDown)         = True
-			Case keyUp           .Switch(swUp)           = True
-			Case keyEnter        .Switch(swEnter)        = True
-			Case keySlamDoorHit  .Switch(swSlamTiltX)    = True
-			Case keyCoinDoor     If toggleKeyCoinDoor Then .Switch(swCoinDoorX) = Not .Switch(swCoinDoorX) Else .Switch(swCoinDoorX) = Not inverseKeyCoinDoor
+			Case StartGameKey    swCopy = swStartButtonX : .Switch(swCopy) = True
+			Case keyCancel       swCopy = swCancel :       .Switch(swCopy) = True
+			Case keyDown         swCopy = swDown :         .Switch(swCopy) = True
+			Case keyUp           swCopy = swUp :           .Switch(swCopy) = True
+			Case keyEnter        swCopy = swEnter :        .Switch(swCopy) = True
+			Case keySlamDoorHit  swCopy = swSlamTiltX :    .Switch(swCopy) = True
+			Case keyCoinDoor     swCopy = swCoinDoorX :    If toggleKeyCoinDoor Then .Switch(swCopy) = Not .Switch(swCopy) Else .Switch(swCopy) = Not inverseKeyCoinDoor
 			Case keyBangBack     vpmNudge.DoNudge   0,6
 			Case LeftTiltKey     vpmNudge.DoNudge  75,2
 			Case RightTiltKey    vpmNudge.DoNudge 285,2
@@ -102,19 +103,20 @@ Function vpmKeyDown(ByVal keycode)
 End Function
 
 Function vpmKeyUp(ByVal keycode)
+	Dim swCopy
 	On Error Resume Next
 	vpmKeyUp = True ' assume we handle the key
 	With Controller
 		If keycode = RightFlipperKey Then .Switch(swLRFlip) = False : If cSingleRFlip Or Err Then .Switch(swURFlip) = False
 		If keycode = LeftFlipperKey  Then .Switch(swLLFlip) = False : If cSingleLFlip Or Err Then .Switch(swULFlip) = False
 		Select Case keycode
-			Case keyCancel       .Switch(swCancel)       = False
-			Case keyDown         .Switch(swDown)         = False
-			Case keyUp           .Switch(swUp)           = False
-			Case keyEnter        .Switch(swEnter)        = False
-			Case keySlamDoorHit  .Switch(swSlamTiltX)    = False
-			Case StartGameKey    .Switch(swStartButtonX) = False
-			Case keyCoinDoor     If toggleKeyCoinDoor = False Then .Switch(swCoinDoorX) = inverseKeyCoinDoor
+			Case keyCancel       swCopy = swCancel :       .Switch(swCopy) = False
+			Case keyDown         swCopy = swDown :         .Switch(swCopy) = False
+			Case keyUp           swCopy = swUp :           .Switch(swCopy) = False
+			Case keyEnter        swCopy = swEnter :        .Switch(swCopy) = False
+			Case keySlamDoorHit  swCopy = swSlamTiltX :    .Switch(swCopy) = False
+			Case StartGameKey    swCopy = swStartButtonX : .Switch(swCopy) = False
+			Case keyCoinDoor     swCopy = swCoinDoorX :    If toggleKeyCoinDoor = False Then .Switch(swCopy) = inverseKeyCoinDoor
 			Case keyShowOpts     .Pause = True : .ShowOptsDialog GetPlayerHWnd : .Pause = False
 			Case keyShowKeys     .Pause = True : vpmShowHelp : .Pause = False
 			Case keyShowDips     If IsObject(vpmShowDips) Then .Pause = True : vpmShowDips : .Pause = False
