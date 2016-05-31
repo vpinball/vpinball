@@ -604,7 +604,7 @@ Dim vpmShowDips     ' Show DIPs function
 '
 ' Exported variables:
 ' -------------------
-' vpmTimer      - Timer class for PulsSwitch etc
+' vpmTimer      - Timer class for PulseSwitch etc
 ' vpmNudge      - Class for table nudge handling
 '-----------------------------------------------------
 Private Const PinMameInterval = 1
@@ -614,7 +614,7 @@ Private Const conMaxBalls   = 13 ' Because of Apollo 13
 Private Const conMaxTimers  = 20 ' Spinners can generate a lot of timers
 Private Const conTimerPulse = 40 ' Timer runs at 25Hz
 Private Const conFastTicks  = 4  ' Fast is 4 times per timer pulse
-Private Const conMaxSwHit   = 5  ' Don't stack up more that 5 events for each switch
+Private Const conMaxSwHit   = 5  ' Don't stack up more than 5 events for each switch
 
 Private Const conFlipRetStrength = 0.01  ' Flipper return strength
 Private Const conFlipRetSpeed    = 0.137 ' Flipper return strength
@@ -742,7 +742,7 @@ Class cvpmTimer
 	End Sub
 
 	Public Sub Update
-		Dim ii, jj, sw, obj
+		Dim ii, jj, sw, obj, mQuecopy
 
 		For Each obj In mSlowUpdates.Keys : obj.Update : Next
 		If mTimers = 0 Then Exit Sub
@@ -759,10 +759,12 @@ Class cvpmTimer
 					mTimers = mTimers - 1
 					For jj = ii To mTimers : mQue(jj) = mQue(jj+1) : Next : ii = ii - 1
 				ElseIf mQue(ii)(1) = 1 Then
-					Controller.Switch(mQue(ii)(2)) = False
+					mQuecopy = mQue(ii)(2)
+					Controller.Switch(mQuecopy) = False
 					mQue(ii)(0) = mNow + mQue(ii)(4) : mQue(ii)(1) = 0
 				Else '2
-					Controller.Switch(mQue(ii)(2)) = True
+					mQuecopy = mQue(ii)(2)
+					Controller.Switch(mQuecopy) = True
 					mQue(ii)(1) = 1
 				End If
 			End If
@@ -991,8 +993,12 @@ Class cvpmTrough
 	Private Property Let NeedUpdate(aEnabled) : vpmTimer.EnableUpdate Me, False, aEnabled : End Property
 
 	Public Sub Reset
+		Dim mEntrySwcopy
 		UpdateTroughSwitches
-        If mEntrySw Then Controller.Switch(mEntrySw) = (mBallsInEntry > 0)
+		If mEntrySw Then
+			mEntrySwcopy = mEntrySw
+			Controller.Switch(mEntrySwcopy) = (mBallsInEntry > 0)
+		End If
 	End Sub
 
 	Public Sub Update
@@ -1003,24 +1009,30 @@ Class cvpmTrough
     ' Switch and slot management
 
     Private Sub setSw(slotNo, enabled)
-        If mSw(slotNo) Then Controller.Switch(mSw(slotNo)) = enabled
+        Dim mSwcopy
+        If mSw(slotNo) Then
+            mSwcopy = mSw(slotNo)
+            Controller.Switch(mSwcopy) = enabled
+        End If
     End Sub
 
     Private Sub UpdateTroughSwitches
-        Dim ii
+		Dim ii, mSwcopy
 		For ii = 0 to UBound(mSw)
 			If mSw(ii) Then
-				Controller.Switch(mSw(ii)) = (mSlot(ii*2) > 0)
+				mSwcopy = mSw(ii)
+				Controller.Switch(mSwcopy) = (mSlot(ii*2) > 0)
 			End If
 		Next
 		If mDebug Then UpdateDebugBox
     End Sub
 
 	Private Sub UpdateDebugBox   ' Requires a textbox named DebugBox
-		Dim str, ii
+		Dim str, ii, mSwcopy
 		str = "Entry: " & mBallsInEntry & " (sw" & mEntrySw & " = "
 		If mEntrySw > 0 Then
-			str = str & Controller.Switch(mEntrySw)
+			mSwcopy = mEntrySw
+			str = str & Controller.Switch(mSwcopy)
 		Else
 			str = str & "n/a"
 		End If
@@ -1034,7 +1046,8 @@ Class cvpmTrough
 		For ii = UBound(mSlot) To 0 Step -1
 			If ii Mod 2 = 0 Then
 				If mSw(ii\2) Then
-					If Controller.Switch(mSw(ii\2)) Then
+					mSwcopy = mSw(ii\2)
+					If Controller.Switch(mSwcopy) Then
 						str = str & "1"
 					Else
 						str = str & "0"
@@ -1094,6 +1107,7 @@ Class cvpmTrough
     ' Ball management
 
     Private Function AddBallAtEntrance
+        Dim mSwcopy
         Dim maxSlot : maxSlot = UBound(mSlot)
         AddBallAtEntrance = False
 
@@ -1105,12 +1119,16 @@ Class cvpmTrough
         If mSlot(maxSlot) = 0 AND mSlot(maxSlot-1) = 0 Then
             mSlot(maxSlot) = 1
             mBallsInEntry = vpMax(0, mBallsInEntry - 1)
-            If mBallsInEntry = 0 AND mEntrySw Then Controller.Switch(mEntrySw) = False
+            If mBallsInEntry = 0 AND mEntrySw Then
+                mSwcopy = mEntrySw
+                Controller.Switch(mSwcopy) = False
+            End If
             AddBallAtEntrance = True
         End If
     End Function
 
     Public Sub AddBall(aKicker)
+        Dim mSwcopy
         Dim addDone : addDone = False
         If IsObject(aKicker) Then
             aKicker.DestroyBall
@@ -1126,10 +1144,11 @@ Class cvpmTrough
         If Not addDone Then
             ' Ball came in from entrance.  Queue it up for entry.
             mBallsInEntry = mBallsInEntry + 1
-	    	If mEntrySw > 0 Then
-		        ' Trough has an entry kicker.  Ball will not enter trough
-		        ' until the entry solenoid is fired.
-    			Controller.Switch(mEntrySw) = True
+		If mEntrySw > 0 Then
+			mSwcopy = mEntrySw
+			' Trough has an entry kicker.  Ball will not enter trough
+			' until the entry solenoid is fired.
+			Controller.Switch(mSwcopy) = True
 	    	End If
             NeedUpdate = True
 	    End If
@@ -1257,7 +1276,8 @@ Class cvpmSaucer
     ' Ball management
 
     Public Sub AddBall(aKicker)
-        If isObject(aKicker) Then
+		Dim mSwcopy
+		If isObject(aKicker) Then
 			If aKicker Is mKicker Then
 				mKicker.Enabled = False
 				mExternalKicker = 0
@@ -1270,7 +1290,10 @@ Class cvpmSaucer
 			mExternalKicker = 0
 		End If
 
-		If mSw Then Controller.Switch(mSw) = True
+		If mSw Then
+			mSwcopy = mSw
+			Controller.Switch(mSwcopy) = True
+		End If
 		PlaySound mSounds.Item("add")
     End Sub
 
@@ -1292,6 +1315,7 @@ Class cvpmSaucer
     Public Sub ExitAltSol_On : KickOut 1 : End Sub
 
     Private Sub KickOut(kickIndex)
+        Dim mSwcopy
         If HasBall Then
             Dim kDir, kForce, kZForce
 
@@ -1309,7 +1333,10 @@ Class cvpmSaucer
             End If
 
             mKicker.Kick kDir, kForce, kZForce
-            If mSw Then Controller.Switch(mSw) = False
+            If mSw Then
+                mSwcopy = mSw
+                Controller.Switch(mSwcopy) = False
+            End If
             PlaySound mSounds.Item("exitBall")
         Else
             PlaySound mSounds.Item("exit")
@@ -1345,7 +1372,13 @@ Class cvpmBallStack
 	Private Property Let NeedUpdate(aEnabled) : vpmTimer.EnableUpdate Me, False, aEnabled : End Property
 
 	Private Function SetSw(aNo, aStatus)
-		SetSw = False : If HasSw(aNo) Then Controller.Switch(mSw(aNo)) = aStatus : SetSw = True
+                Dim mSwcopy
+                SetSw = False
+                If HasSw(aNo) Then
+                    mSwcopy = mSw(aNo)
+                    Controller.Switch(mSwcopy) = aStatus
+                    SetSw = True
+                End If
 	End Function
 
 	Private Function HasSw(aNo)
@@ -1353,18 +1386,23 @@ Class cvpmBallStack
 	End Function
 
 	Public Sub Reset
+		Dim mSwcopy
 		Dim ii : If mBalls Then For ii = 1 to mBalls : SetSw mBallPos(ii), True : Next
-	      If mEntrySw And mBallIn > 0 Then Controller.Switch(mEntrySw) = True
+		If mEntrySw And mBallIn > 0 Then
+			mSwcopy = mEntrySw
+			Controller.Switch(mSwcopy) = True
+		End If
 	End Sub
 
 	Public Sub Update
-		Dim BallQue, ii
+		Dim BallQue, ii, mSwcopy
 		NeedUpdate = False : BallQue = 1
 		For ii = 1 To mBalls
 			If mBallpos(ii) > BallQue Then ' next slot available
 				NeedUpdate = True
 				If HasSw(mBallPos(ii)) Then ' has switch
-					If Controller.Switch(mSw(mBallPos(ii))) Then
+					mSwcopy = mSw(mBallPos(ii))
+					If Controller.Switch(mSwcopy) Then
 						SetSw mBallPos(ii), False
 					Else
 						mBallPos(ii) = mBallPos(ii) - 1
@@ -1381,6 +1419,7 @@ Class cvpmBallStack
 	End Sub
 
 	Public Sub AddBall(aKicker)
+		Dim mSwcopy
 		If isObject(aKicker) Then
 			If mSaucer Then
 				If aKicker Is mExitKicker Then
@@ -1395,7 +1434,8 @@ Class cvpmBallStack
 			mExitKicker.Enabled = False : mInitKicker = 0
 		End If
 		If mEntrySw Then
-			Controller.Switch(mEntrySw) = True : mBallIn = mBallIn + 1
+			mSwcopy = mEntrySw
+			Controller.Switch(mSwcopy) = True : mBallIn = mBallIn + 1
 		Else
 			mBalls = mBalls + 1 : mBallPos(mBalls) = conStackSw + 1 : NeedUpdate = True
 		End If
@@ -1411,9 +1451,13 @@ Class cvpmBallStack
 	Public Sub ExitAltSol_On : KickOut True  : End Sub
 
 	Private Sub KickIn
+		Dim mSwcopy
 		If mBallIn Then PlaySound mEntrySndBall Else PlaySound mEntrySnd : Exit Sub
 		mBalls = mBalls + 1 : mBallIn = mBallIn - 1 : mBallPos(mBalls) = conStackSw + 1 : NeedUpdate = True
-		If mEntrySw And mBallIn = 0 Then Controller.Switch(mEntrySw) = False
+		If mEntrySw And mBallIn = 0 Then
+			mSwcopy = mEntrySw
+			Controller.Switch(mSwcopy) = False
+		End If
 	End Sub
 
 	Private Sub KickOut(aAltSol)
@@ -1618,8 +1662,15 @@ Class cvpmDropTarget
 	End Sub
 
 	Public Sub SetAllDn(aStatus)
-		If mSwAllDn Then Controller.Switch(mSwAllDn) = aStatus
-		If mSwAnyUp Then Controller.Switch(mSwAnyUp) = Not aStatus
+		Dim mSwcopy
+		If mSwAllDn Then
+			mSwcopy = mSwAllDn
+			Controller.Switch(mSwcopy) = aStatus
+		End If
+		If mSwAnyUp Then
+			mSwcopy = mSwAnyUp
+			Controller.Switch(mSwcopy) = Not aStatus
+		End If
 	End Sub
 
 	Public Sub InitDrop(aWalls, aSw)
@@ -1669,7 +1720,12 @@ Class cvpmDropTarget
 		Next
 	End Sub
 
-	Public Property Let AnyUpSw(aSwAnyUp)   : mSwAnyUp = aSwAnyUp : Controller.Switch(mSwAnyUp) = True : End Property
+	Public Property Let AnyUpSw(aSwAnyUp)
+		Dim mSwcopy
+		mSwAnyUp = aSwAnyUp
+		mSwcopy = mSwAnyUp
+		Controller.Switch(mSwcopy) = True
+	End Property
 	Public Property Let AllDownSw(aSwAllDn) : mSwAllDn = aSwAllDn : End Property
 	Public Property Get AllDown : AllDown = mAllDn : End Property
 	Public Sub InitSnd(aDrop, aRaise) : mDropSnd = aDrop : mRaiseSnd = aRaise : End Sub
@@ -1678,11 +1734,13 @@ Class cvpmDropTarget
 	End Property
 
 	Public Sub Hit(aNo)
-		Dim ii
+		Dim ii, mSwcopy
 		vpmSolWall mDropObj(aNo-1), mDropSnd, True
-		Controller.Switch(mDropSw(aNo-1)) = True
+		mSwcopy = mDropSw(aNo-1)
+		Controller.Switch(mSwcopy) = True
 		For Each ii In mDropSw
-			If Not Controller.Switch(ii) Then Exit Sub
+			mSwcopy = ii
+			If Not Controller.Switch(mSwcopy) Then Exit Sub
 		Next
 		mAllDn = True : CheckAllDn True
 	End Sub
@@ -1690,25 +1748,29 @@ Class cvpmDropTarget
 	Public Sub SolHit(aNo, aEnabled) : If aEnabled Then Hit aNo : End If : End Sub
 
 	Public Sub SolUnhit(aNo, aEnabled)
+		Dim mSwcopy
 		Dim ii : If Not aEnabled Then Exit Sub
 		PlaySound mRaiseSnd : vpmSolWall mDropObj(aNo-1), False, False
-		Controller.Switch(mDropSw(aNo-1)) = False
+		mSwcopy = mDropSw(aNo-1)
+		Controller.Switch(mSwcopy) = False
 		mAllDn = False : CheckAllDn False
 	End Sub
 
 	Public Sub SolDropDown(aEnabled)
+		Dim mSwcopy
 		Dim ii : If Not aEnabled Then Exit Sub
 		PlaySound mDropSnd
 		For Each ii In mDropObj : vpmSolWall ii, False, True : Next
-		For Each ii In mDropSw  : Controller.Switch(ii) = True : Next
+		For Each ii In mDropSw  : mSwcopy = ii : Controller.Switch(mSwcopy) = True : Next
 		mAllDn = True : CheckAllDn True
 	End Sub
 
 	Public Sub SolDropUp(aEnabled)
+		Dim mSwcopy
 		Dim ii : If Not aEnabled Then Exit Sub
 		PlaySound mRaiseSnd
 		For Each ii In mDropObj : vpmSolWall ii, False, False : Next
-		For Each ii In mDropSw  : Controller.Switch(ii) = False : Next
+		For Each ii In mDropSw  : mSwcopy = ii : Controller.Switch(mSwcopy) = False : Next
 		mAllDn = False : CheckAllDn False
 	End Sub
 
@@ -1989,18 +2051,28 @@ Class cvpmCaptiveBall
 	End Sub
 
 	Public Sub Start
+		Dim mSwcopy
 		vpmCreateBall mKickers(mKickNo + (mKickNo <> NailedBalls))
-		If RestSwitch Then Controller.Switch(RestSwitch) = True
+		If RestSwitch Then
+			mSwcopy = RestSwitch
+			Controller.Switch(mSwcopy) = True
+		End If
 	End Sub
 
 	Public Sub TrigHit(aBall)
 		mTrigHit = IsObject(aBall) : If mTrigHit Then mVelX = aBall.VelX : mVelY = aBall.VelY
 	End Sub
 
-	Public Sub Reset : If RestSwitch Then Controller.Switch(RestSwitch) = True : End If : End Sub
+	Public Sub Reset
+		Dim mSwcopy
+		If RestSwitch Then
+			mSwcopy = RestSwitch
+			Controller.Switch(mSwcopy) = True
+		End If
+	End Sub
 
 	Public Sub BallHit(aBall)
-		Dim dX, dY, force
+		Dim dX, dY, force, mSwcopy
 		If mBallKicked Then Exit Sub ' Ball is not here
 		If mTrigHit Then mTrigHit = False Else mVelX = aBall.VelX : mVelY = aBall.VelY
 		dX = aBall.X - mKickers(0).X : dY = aBall.Y - mKickers(0).Y
@@ -2012,13 +2084,20 @@ Class cvpmCaptiveBall
 			mKickers(mKickNo-1).DestroyBall
 		End If
 		mKickers(mKickNo).Kick mBallDir, force : mBallKicked = True
-		If RestSwitch Then Controller.Switch(RestSwitch) = False
+		If RestSwitch Then
+			mSwcopy = RestSwitch
+			Controller.Switch(mSwcopy) = False
+		End If
 	End Sub
 
 	Public Sub BallReturn(aKicker)
+		Dim mSwcopy
 		If mKickNo <> NailedBalls Then vpmCreateBall mKickers(mKickNo-1) : aKicker.DestroyBall
 		mBallKicked = False
-		If RestSwitch Then Controller.Switch(RestSwitch) = True
+		If RestSwitch Then
+			mSwcopy = RestSwitch
+			Controller.Switch(mSwcopy) = True
+		End If
 	End Sub
 
 	Public Sub CreateEvents(aName)
@@ -2074,12 +2153,16 @@ Class cvpmVLock
 	End Sub
 
 	Public Sub SolExit(aEnabled)
-		Dim ii
+		Dim ii, mSwcopy
 		mGateOpen = aEnabled
 		If Not aEnabled Then Exit Sub
 		If mBalls > 0 Then PlaySound mBallSnd : Else PlaySound mNoBallSnd : Exit Sub
 		For ii = 0 To mBalls-1
-			mKick(ii).Enabled = False : If mSw(ii) Then Controller.Switch(mSw(ii)) = False
+			mKick(ii).Enabled = False
+			If mSw(ii) Then
+				mSwcopy = mSw(ii)
+				Controller.Switch(mSwcopy) = False
+			End If
 		Next
 		If ExitForce > 0 Then ' Up
 			mRealForce = ExitForce + (Rnd - 0.5)*KickForceVar : mKick(mBalls-1).Kick ExitDir, mRealForce
@@ -2089,34 +2172,50 @@ Class cvpmVLock
 	End Sub
 
 	Public Sub Reset
+		Dim mSwcopy
 		Dim ii : If mBalls = 0 Then Exit Sub
 		For ii = 0 To mBalls-1
-			If mSw(ii) Then Controller.Switch(mSw(ii)) = True
+			If mSw(ii) Then
+				mSwcopy = mSw(ii)
+				Controller.Switch(mSwcopy) = True
+			End If
 		Next
 	End Sub
 
 	Public Property Get Balls : Balls = mBalls : End Property
 
 	Public Property Let Balls(aBalls)
+		Dim mSwcopy
 		Dim ii : mBalls = aBalls
 		For ii = 0 To mSize
+			mSwcopy = mSw(ii)
 			If ii >= aBalls Then
-				mKick(ii).DestroyBall : If mSw(ii) Then Controller.Switch(mSw(ii)) = False
+				mKick(ii).DestroyBall : If mSwcopy Then Controller.Switch(mSwcopy) = False
 			Else
-				vpmCreateBall mKick(ii) : If mSw(ii) Then Controller.Switch(mSw(ii)) = True
+				vpmCreateBall mKick(ii) : If mSwcopy Then Controller.Switch(mSwcopy) = True
 			End If
 		Next
 	End Property
 
 	Public Sub TrigHit(aBall, aNo)
-		aNo = aNo - 1 : If mSw(aNo) Then Controller.Switch(mSw(aNo)) = True
+		Dim mSwcopy
+		aNo = aNo - 1
+		If mSw(aNo) Then
+			mSwcopy = mSw(aNo)
+			Controller.Switch(mSwcopy) = True
+		End If
 		If aBall.VelY < -1 Then Exit Sub ' Allow small upwards speed
 		If aNo = mSize Then mBalls = mBalls + 1
 		If mBalls > aNo Then mKick(aNo).Enabled = Not mGateOpen
 	End Sub
 
 	Public Sub TrigUnhit(aBall, aNo)
-		aNo = aNo - 1 : If mSw(aNo) Then Controller.Switch(mSw(aNo)) = False
+		Dim mSwcopy
+		aNo = aNo - 1
+		If mSw(aNo) Then
+			mSwcopy = mSw(aNo)
+			Controller.Switch(mSwcopy) = False
+		End If
 		If aBall.VelY > -1 Then
 			If aNo = 0 Then mBalls = mBalls - 1
 			If aNo < mSize Then mKick(aNo+1).Kick 0, 0
@@ -2266,19 +2365,27 @@ Class cvpmImpulseP
 	End Property
 
 	Public Sub AddBall(aBall)
+		Dim mSwcopy
 		With mBalls
 			If .Exists(aBall) Then .Item(aBall) = .Item(aBall) + 1 Else .Add aBall, 1 : NeedUpdate = True
 		End With
-		If SwitchOn = True Then	controller.switch(SwitchNum) = 1
+		If SwitchOn = True Then
+			mSwcopy = SwitchNum
+			Controller.Switch(mSwcopy) = 1
+		End If
 		BallOn = 1
 	End Sub
 
 	Public Sub RemoveBall(aBall)
+		Dim mSwcopy
 		With mBalls
 			If .Exists(aBall) Then .Item(aBall) = .Item(aBall) - 1 : If .Item(aBall) <= 0 Then .Remove aBall
 			NeedUpdate = (.Count > 0)
 		End With
-		If SwitchOn = True Then	controller.switch(SwitchNum) = 0
+		If SwitchOn = True Then
+			mSwcopy = SwitchNum
+			Controller.Switch(mSwcopy) = 0
+		End If
 		BallOn = 0
 	End Sub
 
@@ -2510,12 +2617,13 @@ Private Sub vpmPlaySound(aEnabled, aSound)
 End Sub
 
 Private Sub vpmToggleObj(aObj, aEnabled)
+	Dim mSwcopy
 	Select Case TypeName(aObj)
 		Case "Wall"                        aObj.IsDropped = aEnabled
 		Case "Bumper", "Light"             aObj.State     = Abs(aEnabled)
 		Case "Kicker", "Trigger", "Timer"  aObj.Enabled   = aEnabled
 		Case "Gate"                        aObj.Open      = aEnabled
-		Case "Integer"                     Controller.Switch(aObj) = aEnabled
+		Case "Integer"                     mSwcopy = aObj : Controller.Switch(mSwcopy) = aEnabled
 		Case Else MsgBox "vpmToggleObj: Unhadled Object " & TypeName(aObj)
 	End Select
 End Sub
