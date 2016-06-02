@@ -1,4 +1,4 @@
-'Last Updated in VBS v3.36
+'Last Updated in VBS v3.50
 
 Option Explicit
 LoadCore
