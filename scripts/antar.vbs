@@ -1,5 +1,5 @@
 'Last Updated in VBS v3.50
-'Based on Peyper.vbs, but different switches
+'Similar to Play2.vbs, except for enabled keys down/up/enter
 
 Option Explicit
 LoadCore
@@ -16,42 +16,25 @@ Private Sub LoadCore
 End Sub
 
 '-------------------------
-' Peyper / Sonic Data
+' Playmatic System 2 Data
 '-------------------------
 ' Cabinet switches
-Const swStartButton    = 37 'ok
-Const swCoin1          = 38 'ok
-Const swCoin2          = 39 'ok
-Const swCoin3          = 38 'avoid missing Coin Switch mappings 
-Const swTilt           = 36 'ok 
-'Const swSlamDoorHit    = 
-Const swLRFlip         = 82 'ok 34
-Const swLLFlip         = 84 'ok 35
+Const swSelfTest            = 6  'enters software-setup
+Const swTilt                     = 7 'playfield tilt switch
+'Const swSlamTilt           =    'clears all credits and resets machine
+Const swCoin3                = 3 'defaults to 1 coin per credit
+Const swCoin2                = 2 'defaults to 2 coins per credit
+Const swCoin1                = 1 'defaults to 1 coin for 3 credits
+Const swStartButton     = 4  'starts game
+Const swLRFlip              = 102
+Const swLLFlip              = 104
 
 ' Help Window
-vpmSystemHelp = "Atari keys:" & vbNewLine &_
+  vpmSystemHelp = "Playmatic System 2 keys:" & vbNewLine &_
   vpmKeyName(keyInsertCoin1) & vbTab & "Insert Coin #1"   & vbNewLine &_
   vpmKeyName(keyInsertCoin2) & vbTab & "Insert Coin #2"   & vbNewLine &_
   vpmKeyName(keyInsertCoin3) & vbTab & "Insert Coin #3"   & vbNewLine &_
-  vpmKeyName(keySlamDoorHit) & vbTab & "Slam Tilt"
-
-' Dip Switch / Options Menu
-Private Sub peyperShowDips
-	If Not IsObject(vpmDips) Then ' First time
-		Set vpmDips = New cvpmDips
-		With vpmDips
-			.AddForm 200,300,"Peyper / Sonic switches"
-			.AddFrame 0,0,80,"DIP switches",0,_
-			  Array("Dip 0",&H00000800,"Dip 1",&H00000400,"Dip 2",&H00000200,"Dip 3",&H00000100,_
-			        "Dip 4",32768,     "Dip 5",&H00004000,"Dip 6",&H00002000,"Dip 7",&H00001000,_
-				"Dip 8",&H00000008,"Dip 9",&H00000004,"Dip10",&H00000002,"Dip11",&H00000001,_
-			        "Dip12",&H00000080,"Dip13",&H00000040,"Dip14",&H00000020,"Dip15",&H00000010)
-		End With
-	End If
-	vpmDips.ViewDips
-End Sub
-Set vpmShowDips = GetRef("peyperShowDips")
-Private vpmDips
+  vpmKeyName(keySelfTest)    & vbTab & "Adjustments"
 
 ' Keyboard handlers
 Function vpmKeyDown(ByVal keycode)
@@ -65,7 +48,11 @@ Function vpmKeyDown(ByVal keycode)
 			Case keyInsertCoin2  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin2'" : Playsound SCoin
 			Case keyInsertCoin3  vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCoin3'" : Playsound SCoin
 			Case StartGameKey    .Switch(swStartButton) = True
-			Case keySlamDoorHit  .Switch(swSlamDoorHit) = True
+			Case keySelfTest     .Switch(swSelfTest)    = True
+			Case keySlamDoorHit  .Switch(swSlamTilt)    = True
+			Case keyDown         .Switch(swReplay1)     = True
+			Case keyUp           .Switch(swReplay2)     = True
+			Case keyEnter        .Switch(swReplay3)     = True
 			Case keyBangBack     vpmNudge.DoNudge   0, 6
 			Case LeftTiltKey     vpmNudge.DoNudge  75, 2
 			Case RightTiltKey    vpmNudge.DoNudge 285, 2
@@ -85,7 +72,11 @@ Function vpmKeyUp(ByVal keycode)
 		If keycode = LeftFlipperKey  Then .Switch(swLLFlip) = False
 		Select Case keycode
 			Case StartGameKey    .Switch(swStartButton) = False
-			Case keySlamDoorHit  .Switch(swSlamDoorHit) = False
+			Case keySelfTest     .Switch(swSelfTest)    = False
+			Case keySlamDoorHit  .Switch(swSlamTilt)    = False
+			Case keyDown         .Switch(swReplay1)     = False
+			Case keyUp           .Switch(swReplay2)     = False
+			Case keyEnter        .Switch(swReplay3)     = False
 			Case keyShowOpts     .Pause = True : .ShowOptsDialog GetPlayerHWnd : .Pause = False
 			Case keyShowKeys     .Pause = True : vpmShowHelp : .Pause = False
 			Case keyAddBall      .Pause = True : vpmAddBall  : .Pause = False
@@ -97,3 +88,4 @@ Function vpmKeyUp(ByVal keycode)
 		End Select
 	End With
 End Function
+

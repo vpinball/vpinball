@@ -4,7 +4,7 @@ Const VPinMAMEDriverVer = 3.50
 ' VPinMAME driver core.
 '=======================
 ' New in 3.50
-' - Added MAC.vbs & IronBalls.vbs
+' - Added MAC.vbs & IronBalls.vbs & Lancelot.vbs & Antar.vbs
 ' - Increased NVOffset limit from 10 to 32
 '
 ' New in 3.49 (Update by Arngrim)
