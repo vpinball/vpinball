@@ -169,6 +169,7 @@ public:
 
    virtual void UpdatePropertyPanes();
    virtual void SetDefaultPhysics(bool fromMouseClick);
+   virtual void ExportMesh(FILE *f);
 
    void GenerateMesh(Vertex3D_NoTex2 *buf);
    void TransformVertices();
