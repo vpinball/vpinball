@@ -58,6 +58,10 @@
 '
 '  LoadEM
 '
+'For PROC tables, in the table_init, call:
+'
+'  LoadPROC
+'
 'Finally, all calls to the B2S.Server Controller properties must be surrounded by a B2SOn check, so for example:
 '
 '  If B2SOn Then Controller.B2SSetGameOver 1
