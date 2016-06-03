@@ -3,6 +3,7 @@
 //////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h" 
+#include "objloader.h"
 #include "meshes/dropTargetT2Mesh.h"
 #include "meshes/dropTargetT3Mesh.h"
 #include "meshes/dropTargetT4Mesh.h"
@@ -475,6 +476,34 @@ void HitTarget::TransformVertices()
       vertices[i].z = vert.z*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + (m_d.m_vPosition.z + m_ptable->m_tableheight);
    }
 }
+
+void HitTarget::ExportMesh( FILE *f )
+{
+    char name[MAX_PATH];
+    char subObjName[MAX_PATH];
+    WideCharToMultiByte( CP_ACP, 0, m_wzName, -1, name, MAX_PATH, NULL, NULL );
+
+
+    SetMeshType( m_d.m_targetType );
+
+    if ( transformedVertices )
+        delete[] transformedVertices;
+    transformedVertices = new Vertex3D_NoTex2[m_numVertices];
+
+    strcpy_s( subObjName, name );
+    WaveFrontObj_WriteObjectName( f, subObjName );
+
+    GenerateMesh( transformedVertices );
+
+    WaveFrontObj_WriteVertexInfo( f, transformedVertices, m_numVertices );
+    const Material * mat = m_ptable->GetMaterial( m_d.m_szMaterial );
+    WaveFrontObj_WriteMaterial( m_d.m_szMaterial, NULL, mat );
+    WaveFrontObj_UseTexture( f, m_d.m_szMaterial );
+    WaveFrontObj_WriteFaceInfoList( f, m_indices, m_numIndices );
+    WaveFrontObj_UpdateFaceOffset( m_numVertices );
+
+}
+
 
 //////////////////////////////
 // Rendering
