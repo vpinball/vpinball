@@ -3,9 +3,11 @@ Const VPinMAMEDriverVer = 3.50
 '=======================
 ' VPinMAME driver core.
 '=======================
-' New in 3.50
+' New in 3.50 (Update by Toxie & mfuegemann & Arngrim)
 ' - Added MAC.vbs & IronBalls.vbs & Lancelot.vbs & Antar.vbs
 ' - Increased NVOffset limit from 10 to 32
+' - Use temporary variables for Switch() calls to workaround current PROC issues
+' - Controller.vbs user folder detection fix and add simple PROC usage via LoadPROC
 '
 ' New in 3.49 (Update by Arngrim)
 ' - Add new Controller.vbs to abstract DOF, B2S, VPM and EM controller loading, usage and sound/effect handling,
