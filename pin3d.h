@@ -101,7 +101,6 @@ public:
 
    Texture* m_envTexture;
    BaseTexture* m_envRadianceTexture;
-   D3DTexture* m_device_envRadianceTexture;
 
    PinProjection m_proj;
 

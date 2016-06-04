@@ -217,7 +217,7 @@ void Textbox::PostRenderStatic(RenderDevice* pd3dDevice)
 
    const bool dmd = (m_d.m_IsDMD || strstr(m_d.sztext, "DMD") != NULL); //!! second part is VP10.0 legacy
 
-   if (!m_d.m_fVisible || (dmd && !g_pplayer->m_device_texdmd))
+   if (!m_d.m_fVisible || (dmd && !g_pplayer->m_texdmd))
       return;
 
    if (g_pplayer->m_ptable->m_tblMirrorEnabled^g_pplayer->m_ptable->m_fReflectionEnabled)

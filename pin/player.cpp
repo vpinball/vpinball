@@ -451,7 +451,6 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
    m_dmdx = 0;
    m_dmdy = 0;
    m_texdmd = NULL;
-   m_device_texdmd = NULL;
    backdropSettingActive = 0;
 
    m_ScreenOffset = Vertex2D(0, 0);
@@ -561,7 +560,6 @@ void Player::Shutdown()
       delete m_texdmd;
       m_texdmd = NULL;
    }
-   m_device_texdmd = NULL;
 
 #ifdef LOG
    if (m_flog)
@@ -989,11 +987,11 @@ void Player::InitShader()
 
    m_pin3d.m_pd3dDevice->basicShader->SetBool("hdrEnvTextures", (m_pin3d.m_envTexture ? m_pin3d.m_envTexture : &m_pin3d.envTexture)->IsHDR());
    m_pin3d.m_pd3dDevice->basicShader->SetTexture("Texture1", m_pin3d.m_envTexture ? m_pin3d.m_envTexture : &m_pin3d.envTexture);
-   m_pin3d.m_pd3dDevice->basicShader->SetTexture("Texture2", m_pin3d.m_device_envRadianceTexture);
+   m_pin3d.m_pd3dDevice->basicShader->SetTexture("Texture2", m_pin3d.m_pd3dDevice->m_texMan.LoadTexture(m_pin3d.m_envRadianceTexture));
 #ifdef SEPARATE_CLASSICLIGHTSHADER
    m_pin3d.m_pd3dDevice->classicLightShader->SetBool("hdrEnvTextures", (m_pin3d.m_envTexture ? m_pin3d.m_envTexture : &m_pin3d.envTexture)->IsHDR());
    m_pin3d.m_pd3dDevice->classicLightShader->SetTexture("Texture1", m_pin3d.m_envTexture ? m_pin3d.m_envTexture : &m_pin3d.envTexture);
-   m_pin3d.m_pd3dDevice->classicLightShader->SetTexture("Texture2", m_pin3d.m_device_envRadianceTexture);
+   m_pin3d.m_pd3dDevice->classicLightShader->SetTexture("Texture2", m_pd3dDevice->m_texMan.LoadTexture(m_envRadianceTexture));
 #endif
    const D3DXVECTOR4 st(m_ptable->m_envEmissionScale*m_globalEmissionScale, m_pin3d.m_envTexture ? (float)m_pin3d.m_envTexture->m_height/*+m_pin3d.m_envTexture->m_width)*0.5f*/ : (float)m_pin3d.envTexture.m_height/*+m_pin3d.envTexture.m_width)*0.5f*/, 0.f, 0.f);
    m_pin3d.m_pd3dDevice->basicShader->SetVector("fenvEmissionScale_TexWidth", &st);
@@ -1097,7 +1095,7 @@ void Player::InitBallShader()
    if (playfield)
       ballShader->SetTexture("Texture1", playfield);
 
-   ballShader->SetTexture("Texture2", m_pin3d.m_device_envRadianceTexture);
+   ballShader->SetTexture("Texture2", m_pin3d.m_pd3dDevice->m_texMan.LoadTexture(m_pin3d.m_envRadianceTexture));
 
    assert(ballIndexBuffer == NULL);
    const bool lowDetailBall = m_ptable->GetDetailLevel() < 10;
@@ -3025,7 +3023,7 @@ void Player::UpdatePhysics()
 
 void Player::DMDdraw(const float DMDposx, const float DMDposy, const float DMDwidth, const float DMDheight, const COLORREF DMDcolor, const float intensity)
 {
-   if (m_device_texdmd)
+   if (m_texdmd)
    {
       float DMDVerts[4 * 5] =
       {
@@ -3057,7 +3055,7 @@ void Player::DMDdraw(const float DMDposx, const float DMDposy, const float DMDwi
 #endif
       m_pin3d.m_pd3dDevice->DMDShader->SetVector("vRes", &r);
 
-      m_pin3d.m_pd3dDevice->DMDShader->SetTexture("Texture0", m_device_texdmd);
+      m_pin3d.m_pd3dDevice->DMDShader->SetTexture("Texture0", m_pin3d.m_pd3dDevice->m_texMan.LoadTexture(m_texdmd));
 
       m_pin3d.m_pd3dDevice->DMDShader->Begin(0);
       m_pin3d.m_pd3dDevice->DrawTexturedQuad((Vertex3D_TexelOnly*)DMDVerts);

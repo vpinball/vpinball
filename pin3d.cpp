@@ -14,7 +14,6 @@ Pin3D::Pin3D()
    m_pddsStatic = NULL;
    m_pddsStaticZ = NULL;
    m_envRadianceTexture = NULL;
-   m_device_envRadianceTexture = NULL;
    tableVBuffer = NULL;
    tableIBuffer = NULL;
 }
@@ -34,7 +33,6 @@ Pin3D::~Pin3D()
       delete m_envRadianceTexture;
       m_envRadianceTexture = NULL;
    }
-   m_device_envRadianceTexture = NULL;
 
    if (tableVBuffer)
       tableVBuffer->release();
@@ -254,7 +252,6 @@ HRESULT Pin3D::InitPin3D(const HWND hwnd, const bool fullScreen, const int width
    EnvmapPrecalc(envTex->m_pdsBuffer->data(), envTex->m_pdsBuffer->width(), envTex->m_pdsBuffer->height(),
                  m_envRadianceTexture->data(), envTexWidth, envTexHeight, envTex->IsHDR());
 
-   m_device_envRadianceTexture = m_pd3dDevice->m_texMan.LoadTexture(m_envRadianceTexture);
    m_pd3dDevice->m_texMan.SetDirty(m_envRadianceTexture);
 
    //
