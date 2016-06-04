@@ -373,7 +373,6 @@ public:
    int m_dmdx;
    int m_dmdy;
    BaseTexture* m_texdmd;
-   D3DTexture* m_device_texdmd; //!! remove?
 
    unsigned int m_current_renderstage; // currently only used for bulb lights
 

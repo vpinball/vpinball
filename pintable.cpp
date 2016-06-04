@@ -967,7 +967,6 @@ STDMETHODIMP ScriptGlobalTable::put_DMDPixels(VARIANT pVal) //!! use 64bit inste
       if (g_pplayer->m_scaleFX_DMD)
          upscale(data, g_pplayer->m_dmdx, g_pplayer->m_dmdy, true);
 
-      g_pplayer->m_device_texdmd = g_pplayer->m_pin3d.m_pd3dDevice->m_texMan.LoadTexture(g_pplayer->m_texdmd);
       g_pplayer->m_pin3d.m_pd3dDevice->m_texMan.SetDirty(g_pplayer->m_texdmd);
    }
 
@@ -1015,7 +1014,6 @@ STDMETHODIMP ScriptGlobalTable::put_DMDColoredPixels(VARIANT pVal) //!! use 64bi
         if (g_pplayer->m_scaleFX_DMD)
             upscale(data, g_pplayer->m_dmdx, g_pplayer->m_dmdy, false);
 
-		g_pplayer->m_device_texdmd = g_pplayer->m_pin3d.m_pd3dDevice->m_texMan.LoadTexture(g_pplayer->m_texdmd);
 		g_pplayer->m_pin3d.m_pd3dDevice->m_texMan.SetDirty(g_pplayer->m_texdmd);
 	}
 

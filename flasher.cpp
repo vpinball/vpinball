@@ -1300,8 +1300,9 @@ STDMETHODIMP Flasher::put_ImageAlignment(RampImageAlignment newVal)
 void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
 {
    TRACE_FUNCTION();
+
    // Don't render if invisible (or DMD connection not set)
-   if (!m_d.m_IsVisible || dynamicVertexBuffer == NULL || m_ptable->m_fReflectionEnabled || (m_d.m_IsDMD && !g_pplayer->m_device_texdmd))
+   if (!m_d.m_IsVisible || dynamicVertexBuffer == NULL || m_ptable->m_fReflectionEnabled || (m_d.m_IsDMD && !g_pplayer->m_texdmd))
       return;
 
    const D3DXVECTOR4 color = convertColor(m_d.m_color, (float)m_d.m_fAlpha*m_d.m_intensity_scale / 100.0f);
@@ -1336,7 +1337,7 @@ void Flasher::PostRenderStatic(RenderDevice* pd3dDevice)
 #endif
        pd3dDevice->DMDShader->SetVector("vRes", &r);
 
-       pd3dDevice->DMDShader->SetTexture("Texture0", g_pplayer->m_device_texdmd);
+       pd3dDevice->DMDShader->SetTexture("Texture0", g_pplayer->m_pin3d.m_pd3dDevice->m_texMan.LoadTexture(g_pplayer->m_texdmd));
 
        pd3dDevice->DMDShader->Begin(0);
        pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_TEX, dynamicVertexBuffer, 0, numVertices, dynamicIndexBuffer, 0, numPolys * 3);

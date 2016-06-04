@@ -862,7 +862,7 @@ void PinInput::button_exit(const U32 msecs, const U32 curr_time_msec)
       return;
 
    // Check if we can exit.
-   if (m_exit_stamp &&							   // Initialized.
+   if (m_exit_stamp &&                         // Initialized.
       (curr_time_msec - m_exit_stamp > msecs)) // Held exit button for number of mseconds.
    {
       if (uShockType == USHOCKTYPE_ULTRACADE)
