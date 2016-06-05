@@ -5,9 +5,13 @@ Const VPinMAMEDriverVer = 3.50
 '=======================
 ' New in 3.50 (Update by Toxie & mfuegemann & Arngrim)
 ' - Added MAC.vbs & IronBalls.vbs & Lancelot.vbs & Antar.vbs
-' - Increased NVOffset limit from 10 to 32
-' - Use temporary variables for Switch() calls to workaround current PROC issues
-' - Controller.vbs user folder detection fix and add simple PROC usage via LoadPROC
+' - (Core changes)
+'   - Increased NVOffset limit from 10 to 32
+'   - Use temporary variables for Switch() calls to workaround current PROC issues
+'   - Controller.vbs user-folder detection fix, and add simple PROC usage via LoadPROC (see Controller.vbs for details)
+'   - Add UseVPMNVRAM = true to the table script (place before LoadVPM, or otherwise calling core.vbs)
+'     to make changed content of NVRAM available (since last update) via the NVRAMCallback (delivers a three dimensional array with: location, new value, old value)
+'     (requires VPM 2.7 or newer)
 '
 ' New in 3.49 (Update by Arngrim)
 ' - Add new Controller.vbs to abstract DOF, B2S, VPM and EM controller loading, usage and sound/effect handling,
@@ -348,6 +352,8 @@ Dim BSize:If IsEmpty(Eval("BallSize"))=true Then BSize=25 Else BSize = BallSize/
 Dim BMass:If IsEmpty(Eval("BallMass"))=true Then BMass=1 Else BMass = BallMass
 Dim UseDMD:If IsEmpty(Eval("UseVPMDMD"))=true Then UseDMD=false Else UseDMD = UseVPMDMD
 Dim UseColoredDMD:If IsEmpty(Eval("UseVPMColoredDMD"))=true Then UseColoredDMD=false Else UseColoredDMD = UseVPMColoredDMD
+Dim UseNVRAM:If IsEmpty(Eval("UseVPMNVRAM"))=true Then UseNVRAM=false Else UseNVRAM = UseVPMNVRAM
+Dim NVRAMCallback
 
 ' Assign Null Default Sub so script won't error if only one is defined in a script (should redefine in your script)
 Set GICallback = GetRef("NullSub")
@@ -2553,7 +2559,8 @@ End Sub
 Sub PinMAMETimer_Timer
 	Dim ChgLamp,ChgSol,ChgGI, ii, tmp, idx
 	Dim DMDp
-	
+	Dim ChgNVRAM
+
 	Me.Enabled = False
 	On Error Resume Next
 		If UseDMD Then
@@ -2571,9 +2578,15 @@ Sub PinMAMETimer_Timer
 				DMDColoredPixels = DMDp
 			End If
 		End If
+		If UseNVRAM Then
+			If isObject(NVRAMCallback) Then
+				ChgNVRAM = Controller.ChangedNVRAM 'Controller.NVRAM would deliver everything of the NVRAM all the time as 1D array
+				If(Not IsEmpty(ChgNVRAM)) Then NVRAMCallback ChgNVRAM
+			End If
+		End If
 		If UseLamps Then ChgLamp = Controller.ChangedLamps Else LampCallback
 		If UseSolenoids Then ChgSol = Controller.ChangedSolenoids
-		If isObject(GICallback) or isObject (GICallback2) Then ChgGI = Controller.ChangedGIStrings
+		If isObject(GICallback) or isObject(GICallback2) Then ChgGI = Controller.ChangedGIStrings
 		MotorCallback
 	On Error Goto 0
 	If Not IsEmpty(ChgLamp) Then
