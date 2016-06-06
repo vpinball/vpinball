@@ -1,9 +1,7 @@
-DX9 renderer known issues:
+Renderer known issues:
 
 *) textboxes don't work
 *) text decals don't work
-*) kickers cut the ball in half
-*) stereo 3D and AO only works on NVIDIA so far (depth buffer read issues)
 *) stereo 3D is only working soso since the tweaks to the depth buffer range
 *) 4xMSAA flickers, thus disabled
 *) textures aren't preloaded, can lead to stutter in some cases
@@ -12,5 +10,4 @@ DX9 renderer known issues:
 
 Not relevant anymore:
 
-*) "real" full screen mode doesn't work with VPM/B2S. Instead, use "Windowed fullscreen" mode.
 *) lost devices aren't handled properly (real fullscreen issue only)
