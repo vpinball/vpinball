@@ -302,6 +302,15 @@ Function SoundFXDOF (Sound, DOFevent, State, Effect)
 	End If
 End Function
 
+Function SoundFXDOFALT (Sound, DOFevent, State, Effect)
+	If DOFeffects(Effect)=1 Then
+		SoundFXDOFALT = ""
+		DOFALT DOFevent, State
+	Else
+		SoundFXDOFALT = Sound
+	End If
+End Function
+
 'Pure method that makes it easier to call just a DOF Event.
 'Example DOF 123, DOFOn
 'Where 123 refers to E123 in a line in the DOF ini.
