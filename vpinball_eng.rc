@@ -251,12 +251,12 @@ FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,173,279,50,14
     PUSHBUTTON      "Web Site",IDC_WEBSITE,156,255,67,14
-    PUSHBUTTON      "Translator's Web Site Name",IDC_TRANSLATEWEBSITE,130,44,93,14,NOT WS_VISIBLE | WS_DISABLED
+    PUSHBUTTON      "Translator's Web Site Name",IDC_TRANSLATEWEBSITE,151,44,72,14,NOT WS_VISIBLE | WS_DISABLED
     EDITTEXT        IDC_CHANGELOG,7,171,216,79,ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY | ES_WANTRETURN | WS_VSCROLL
     CTEXT           "This application uses Visual Basic Scripting Edition by Microsoft",IDC_STATIC,0,279,150,17
     CONTROL         IDC_RIGHTFLIPPERBUTTON,IDC_STATIC,"Static",SS_BITMAP,7,7,94,27
     LTEXT           "A Randy Davis Production",IDC_STATIC,13,35,94,8
-    LTEXT           "Version 10.0.0",IDC_ABOUT_VERSION,13,45,121,10
+    LTEXT           "Version 10.1.0 Final",IDC_ABOUT_VERSION,13,45,135,10
     GROUPBOX        "Credits",IDC_STATIC,7,57,216,108
     LTEXT           "Original VP8/VP9 Team",IDC_STATIC,68,65,88,9
     LTEXT           "Randy Davis - designer, developer",IDC_STATIC,13,77,115,9
