@@ -173,7 +173,7 @@ Sub LoadController(TableType)
 		PopupMessage = "A new file, " & ControllerFile & ", has been created in your User folder within your VP Directory. It defines the controller type that VP will use (value 0 is default). "
 		PopupMessage = PopupMessage & "This will select B2S for loading, or the VPinMAME.Controller (if B2S fails), or no controller (for EM tables). "
 		PopupMessage = PopupMessage & "Changing the value of ForceDisableB2S to 1 in this file will force loading the VPinMAME.Controller, or no controller (for EM tables). "
-		ISDOF = msgBox("Are you using DOF?." & vbCrLf & vbCrLf & "This is a question situation with Yes or No only",4+32, "Question?")
+		ISDOF = msgBox("Are you using DOF?" & vbCrLf & vbCrLf & "(If unsure say No)" & vbCrLf & vbCrLf & "This is a question situation with Yes or No only",4+32, "Question?")
 		Select Case ISDOF
 		Case 6		
 			YesNoPrompt "Are you using contactors?", 1
