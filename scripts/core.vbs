@@ -1,8 +1,10 @@
 Option Explicit
-Const VPinMAMEDriverVer = 3.50
+Const VPinMAMEDriverVer = 3.51
 '=======================
 ' VPinMAME driver core.
 '=======================
+' New in 3.51
+'
 ' New in 3.50 (Update by Toxie & mfuegemann & Arngrim)
 ' - Added MAC.vbs & IronBalls.vbs & Lancelot.vbs & Antar.vbs
 ' - (Core changes)
