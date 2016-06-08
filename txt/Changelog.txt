@@ -1,3 +1,9 @@
+VP 10.2.0 Changelog
+------------------------
+
+- DirectX 8 port for input handling (currently disabled)
+- texture size limit/downscale now respects aspect ratio (currently disabled)
+
 VP 10.1.0 Changelog
 ------------------------
 
@@ -44,9 +50,6 @@ VP 10.1.0 Changelog
 - new core scripts by mfuegemann and PROC controller modifications by arngrim
 
 - hotkeys.txt added, containing all editor shortcuts
-
-- DirectX 8 port for input handling (currently disabled)
-- texture size limit/downscale now respects aspect ratio (currently disabled)
 
 VP 10.0.0 Changelog
 ------------------------
