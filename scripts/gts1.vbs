@@ -1,4 +1,4 @@
-'Last Updated in VBS v3.36
+'Last Updated in VBS v3.51
 
 Option Explicit
 LoadCore
@@ -50,6 +50,7 @@ Private Sub GTS1ShowDips
 			        "DIP 21",&H00100000,"DIP 22",&H00200000,"DIP 23",&H00400000,"DIP 24",&H00800000)
 		End With
 	End If
+	vpmDips.ViewDips
 End Sub
 Set vpmShowDips = GetRef("GTS1ShowDips")
 Private vpmDips
