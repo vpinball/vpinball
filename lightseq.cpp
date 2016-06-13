@@ -180,7 +180,7 @@ void LightSeq::RenderOutline(Sur * const psur)
 //
 // We don't want this on the blue print as it is non-essensial
 //
-void LightSeq::RenderBlueprint(Sur *psur)
+void LightSeq::RenderBlueprint(Sur *psur, const bool solid)
 {
 }
 

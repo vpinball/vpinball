@@ -5,6 +5,8 @@ class Collection;
 
 class IScriptable;
 
+#define BLUEPRINT_SOLID_COLOR RGB(0,0,0)
+
 class IFireEvents
 {
 public:
@@ -181,7 +183,7 @@ public:
 
    virtual void PreRender(Sur * const psur) = 0;
    virtual void Render(Sur * const psur) = 0;
-   virtual void RenderBlueprint(Sur *psur);
+   virtual void RenderBlueprint(Sur *psur, const bool solid=false);
    virtual void ExportMesh(FILE *f) {}
 
    virtual ULONG STDMETHODCALLTYPE AddRef() = 0;

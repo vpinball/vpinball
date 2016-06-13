@@ -79,7 +79,7 @@ public:
       virtual void GetPointDialogPanes(Vector<PropertyPane> *pvproppane);
       virtual void ClearForOverwrite();
 
-      virtual void RenderBlueprint(Sur *psur);
+      virtual void RenderBlueprint(Sur *psur, const bool solid=false);
 
       virtual void FlipY(Vertex2D * const pvCenter);
       virtual void FlipX(Vertex2D * const pvCenter);

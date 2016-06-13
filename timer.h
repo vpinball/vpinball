@@ -69,7 +69,7 @@ public:
    virtual void GetCenter(Vertex2D * const pv) const;
    virtual void PutCenter(const Vertex2D * const pv);
 
-   virtual void RenderBlueprint(Sur *psur);
+   virtual void RenderBlueprint(Sur *psur, const bool solid=false);
 
    void WriteRegDefaults();
 

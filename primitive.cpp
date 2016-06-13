@@ -625,6 +625,84 @@ void Primitive::Render(Sur * const psur)
    psur->Line(m_d.m_vPosition.x, m_d.m_vPosition.y - 10.0f, m_d.m_vPosition.x, m_d.m_vPosition.y + 10.0f);
 }
 
+void Primitive::RenderBlueprint(Sur *psur, const bool solid)
+{
+   if (solid)
+      psur->SetFillColor(BLUEPRINT_SOLID_COLOR);
+   else
+      psur->SetFillColor(-1);
+
+   psur->SetLineColor(RGB(0, 0, 0), false, 1);
+   psur->SetObject(this);
+
+   if ((m_d.m_edgeFactorUI <= 0.0f) || (m_d.m_edgeFactorUI >= 1.0f) || !m_d.m_use3DMesh)
+   {
+      if (!m_d.m_use3DMesh || (m_d.m_edgeFactorUI >= 1.0f) || (m_mesh.NumVertices() <= 100)) // small mesh: draw all triangles
+      {
+         for (unsigned i = 0; i < m_mesh.NumIndices(); i += 3)
+         {
+            const Vertex3Ds * const A = &vertices[m_mesh.m_indices[i]];
+            const Vertex3Ds * const B = &vertices[m_mesh.m_indices[i + 1]];
+            const Vertex3Ds * const C = &vertices[m_mesh.m_indices[i + 2]];
+            psur->Line(A->x, A->y, B->x, B->y);
+            psur->Line(B->x, B->y, C->x, C->y);
+            psur->Line(C->x, C->y, A->x, A->y);
+         }
+      }
+      else // large mesh: draw a simplified mesh for performance reasons, does not approximate the shape well
+      {
+         if (m_mesh.NumIndices() > 0)
+         {
+            const size_t numPts = m_mesh.NumIndices() / 3 + 1;
+            std::vector<Vertex2D> drawVertices(numPts);
+
+            const Vertex3Ds& A = vertices[m_mesh.m_indices[0]];
+            drawVertices[0] = Vertex2D(A.x, A.y);
+
+            unsigned int o = 1;
+            for (size_t i = 0; i < m_mesh.NumIndices(); i += 3, ++o)
+            {
+               const Vertex3Ds& B = vertices[m_mesh.m_indices[i + 1]];
+               drawVertices[o] = Vertex2D(B.x, B.y);
+            }
+
+            psur->Polyline(&drawVertices[0], (int)drawVertices.size());
+         }
+      }
+   }
+   else
+   {
+      std::vector<Vertex2D> drawVertices;
+      for (unsigned i = 0; i < m_mesh.NumIndices(); i += 3)
+      {
+         const Vertex3Ds * const A = &vertices[m_mesh.m_indices[i]];
+         const Vertex3Ds * const B = &vertices[m_mesh.m_indices[i + 1]];
+         const Vertex3Ds * const C = &vertices[m_mesh.m_indices[i + 2]];
+         const float An = normals[m_mesh.m_indices[i]];
+         const float Bn = normals[m_mesh.m_indices[i + 1]];
+         const float Cn = normals[m_mesh.m_indices[i + 2]];
+         if (fabsf(An + Bn) < m_d.m_edgeFactorUI)
+         {
+            drawVertices.push_back(Vertex2D(A->x, A->y));
+            drawVertices.push_back(Vertex2D(B->x, B->y));
+         }
+         if (fabsf(Bn + Cn) < m_d.m_edgeFactorUI)
+         {
+            drawVertices.push_back(Vertex2D(B->x, B->y));
+            drawVertices.push_back(Vertex2D(C->x, C->y));
+         }
+         if (fabsf(Cn + An) < m_d.m_edgeFactorUI)
+         {
+            drawVertices.push_back(Vertex2D(C->x, C->y));
+            drawVertices.push_back(Vertex2D(A->x, A->y));
+         }
+      }
+
+      if (drawVertices.size() > 0)
+         psur->Lines(&drawVertices[0], (int)(drawVertices.size() / 2));
+   }
+}
+
 void Primitive::CalculateBuiltinOriginal()
 {
    // this recalculates the Original Vertices -> should be only called, when sides are altered.

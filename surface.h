@@ -89,7 +89,7 @@ public:
 
       // IEditable
       virtual void WriteRegDefaults();
-      virtual void RenderBlueprint(Sur *psur);
+      virtual void RenderBlueprint(Sur *psur, const bool solid=false);
 
       virtual void GetBoundingVertices(std::vector<Vertex3Ds>& pvvertex3D);
       virtual void ClearForOverwrite();

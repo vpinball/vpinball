@@ -248,9 +248,13 @@ void Ramp::Render(Sur * const psur)
    }
 }
 
-void Ramp::RenderOutline(Sur * const psur)
+void Ramp::RenderOutline(Sur * const psur, const bool solid)
 {
-   psur->SetFillColor(-1);
+   if ( solid )
+      psur->SetFillColor(BLUEPRINT_SOLID_COLOR);
+   else
+      psur->SetFillColor(-1);
+
    psur->SetBorderColor(RGB(0, 0, 0), false, 0);
    psur->SetLineColor(RGB(0, 0, 0), false, 0);
    psur->SetObject(this);
@@ -286,9 +290,10 @@ void Ramp::RenderOutline(Sur * const psur)
    delete[] middlePoints;
 }
 
-void Ramp::RenderBlueprint(Sur *psur)
+
+void Ramp::RenderBlueprint(Sur *psur, const bool solid)
 {
-   RenderOutline(psur);
+   RenderOutline(psur, solid);
 }
 
 void Ramp::GetBoundingVertices(std::vector<Vertex3Ds>& pvvertex3D)

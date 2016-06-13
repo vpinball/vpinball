@@ -36,6 +36,7 @@ using namespace std::tr1;
 #define	PROT_CIPHER_LENGTH		PROT_PASSWORD_LENGTH+8
 #define	PROT_KEYVERSION			0
 
+
 struct LightSource {
    COLORREF emission;
    Vertex3Ds pos;

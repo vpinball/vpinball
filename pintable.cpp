@@ -5375,6 +5375,7 @@ void PinTable::DoLDoubleClick(int x, int y)
 void PinTable::ExportBlueprint()
 {
    BOOL fSaveAs = fTrue;
+   bool solid = false;
 
    if (fSaveAs)
    {
@@ -5397,6 +5398,9 @@ void PinTable::ExportBlueprint()
       if (ret == 0)
          return;// S_FALSE;
    }
+   const int result = MessageBox(g_pvp->m_hwnd, "Do you want a solid blueprint?", "Export As Solid?", MB_YESNO);
+   if (result == IDYES)
+      solid = true;
 
    HANDLE hfile = CreateFile(m_szBlueprintFileName, GENERIC_WRITE, FILE_SHARE_READ, NULL,
       CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN, NULL);
@@ -5473,7 +5477,7 @@ void PinTable::ExportBlueprint()
       IEditable *ptr = m_vedit.ElementAt(i);
       if (ptr->m_isVisible && ptr->m_fBackglass == g_pvp->m_fBackglassView)
       {
-         ptr->RenderBlueprint(psur);
+         ptr->RenderBlueprint(psur, solid);
       }
    }
 
@@ -5503,6 +5507,7 @@ void PinTable::ExportBlueprint()
    DeleteObject(hdib);
 
    CloseHandle(hfile);
+   MessageBox(NULL, "Export finished!", "Info", MB_OK | MB_ICONEXCLAMATION);
 }
 
 void PinTable::ExportMesh(FILE *f)

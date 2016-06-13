@@ -90,6 +90,8 @@ public:
       virtual void UpdatePropertyPanes();
       virtual void SetDefaultPhysics(bool fromMouseClick);
       virtual void ExportMesh(FILE *f);
+      virtual void RenderBlueprint(Sur *psur, const bool solid = false);
+
 
 	  virtual unsigned long long GetMaterialID()
 	  {

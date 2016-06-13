@@ -87,8 +87,8 @@ public:
 
    virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
 
-   void RenderOutline(Sur * const psur);
-   virtual void RenderBlueprint(Sur *psur);
+   void RenderOutline(Sur * const psur, const bool solid=false);
+   virtual void RenderBlueprint(Sur *psur, const bool solid = false);
 
    virtual void ClearForOverwrite();
 
