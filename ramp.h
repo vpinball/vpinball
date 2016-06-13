@@ -30,7 +30,7 @@ public:
    float m_wireDistanceX;
    float m_wireDistanceY;
 
-   float m_depthBias;      // for determining depth sorting (alpha ramps only)
+   float m_depthBias;      // for determining depth sorting
 
    bool m_fCollidable;
    bool m_fVisible;
@@ -132,7 +132,6 @@ public:
    RampData m_d;
 
 private:
-   int splinePoints;
    int rampVertex;
    Vertex2D *rgvInit;    // just for setup/static drawing
    float *rgheightInit;
@@ -180,7 +179,7 @@ private:
 
    void GenerateVertexBuffer(RenderDevice* pd3dDevice);
 
-   void AddLine(Vector<HitObject> * const pvho, const Vertex2D * const pv1, const Vertex2D * const pv2, const Vertex2D * const pv3, const float height1, const float height2);
+   void AddLine(Vector<HitObject> * const pvho, const Vertex2D &pv1, const Vertex2D &pv2, const bool pv3_exists, const float height1, const float height2);
    void SetupHitObject(Vector<HitObject> * pvho, HitObject * obj);
 
    void RenderRamp(RenderDevice *pd3dDevice, const Material * const mat);
