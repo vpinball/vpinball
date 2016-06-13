@@ -461,11 +461,10 @@ void Trigger::CurvesToShapes(Vector<HitObject> * const pvho)
 #if 1	
    for (int i = 0; i < count; i++)
    {
-      RenderVertex * const pv1 = &rgv[i];
-      RenderVertex * const pv2 = &rgv[(i < count - 1) ? (i + 1) : 0];
-      RenderVertex * const pv3 = &rgv[(i < count - 2) ? (i + 2) : (i + 2 - count)];
+      const RenderVertex &pv2 = rgv[(i < count - 1) ? (i + 1) : 0];
+      const RenderVertex &pv3 = rgv[(i < count - 2) ? (i + 2) : (i + 2 - count)];
 
-      AddLine(pvho, pv2, pv3, pv1, height);
+      AddLine(pvho, pv2, pv3, height);
    }
 #endif
 
@@ -482,7 +481,7 @@ void Trigger::CurvesToShapes(Vector<HitObject> * const pvho)
    delete[] rgv;
 }
 
-void Trigger::AddLine(Vector<HitObject> * const pvho, const RenderVertex * const pv1, const RenderVertex * const pv2, const RenderVertex * const pv3, const float height)
+void Trigger::AddLine(Vector<HitObject> * const pvho, const RenderVertex &pv1, const RenderVertex &pv2, const float height)
 {
    TriggerLineSeg * const plineseg = new TriggerLineSeg();
 
@@ -493,10 +492,10 @@ void Trigger::AddLine(Vector<HitObject> * const pvho, const RenderVertex * const
    plineseg->m_rcHitRect.zlow = height;
    plineseg->m_rcHitRect.zhigh = height + max(m_d.m_hit_height - 8.0f, 0.f); //adjust for same hit height as circular
 
-   plineseg->v1.x = pv1->x;
-   plineseg->v1.y = pv1->y;
-   plineseg->v2.x = pv2->x;
-   plineseg->v2.y = pv2->y;
+   plineseg->v1.x = pv1.x;
+   plineseg->v1.y = pv1.y;
+   plineseg->v2.x = pv2.x;
+   plineseg->v2.y = pv2.y;
 
    pvho->AddElement(plineseg);
 

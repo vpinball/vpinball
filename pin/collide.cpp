@@ -133,10 +133,10 @@ float LineSeg::HitTestBasic(const Ball * pball, const float dtime, CollisionEven
       coll.hitvelocity.x = bUnHit ? 1.0f : 0.0f;			  // UnHit signal is receding from outside target
 
    const float ballr = pball->m_radius;
-   const float hitz = pball->m_pos.z - ballr + pball->m_vel.z*hittime;  // check too high or low relative to ball rolling point at hittime
+   const float hitz = pball->m_pos.z + pball->m_vel.z*hittime;  // check too high or low relative to ball rolling point at hittime
 
-   if (hitz + ballr * 1.5f < m_rcHitRect.zlow				  // check limits of object's height and depth  
-       || hitz + ballr * 0.5f > m_rcHitRect.zhigh)
+   if (hitz + ballr * 0.5f < m_rcHitRect.zlow				  // check limits of object's height and depth  
+       || hitz - ballr * 0.5f > m_rcHitRect.zhigh)
    {
        return -1.0f;
    }

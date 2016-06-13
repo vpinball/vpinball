@@ -403,10 +403,10 @@ void Surface::CurvesToShapes(Vector<HitObject> * const pvho)
          rgv3Db[count - 1 - i].z = bottom;
       }
 
-      const RenderVertex * const pv2 = &vvertex[(i + 1) % count];
-      const RenderVertex * const pv3 = &vvertex[(i + 2) % count];
+      const RenderVertex &pv2 = vvertex[(i + 1) % count];
+      const RenderVertex &pv3 = vvertex[(i + 2) % count];
 
-      AddLine(pvho, pv2, pv3, pv2->fSlingshot);
+      AddLine(pvho, pv2, pv3);
    }
 
    Hit3DPoly * const ph3dpolyt = new Hit3DPoly(rgv3Dt, count);
@@ -438,20 +438,19 @@ void Surface::SetupHitObject(Vector<HitObject> * pvho, HitObject * obj)
       m_vhoDrop.push_back(obj);
 }
 
-void Surface::AddLine(Vector<HitObject> * const pvho, const RenderVertex * const pv1, const RenderVertex * const pv2, const bool fSlingshot)
+void Surface::AddLine(Vector<HitObject> * const pvho, const RenderVertex &pv1, const RenderVertex &pv2)
 {
-   LineSeg *plineseg;
-
    const float bottom = m_d.m_heightbottom + m_ptable->m_tableheight;
    const float top = m_d.m_heighttop + m_ptable->m_tableheight;
 
-   if (!fSlingshot)
+   LineSeg *plineseg;
+   if (!pv1.fSlingshot)
    {
-      plineseg = new LineSeg(*pv1, *pv2, bottom, top);
+      plineseg = new LineSeg(pv1, pv2, bottom, top);
    }
    else
    {
-      LineSegSlingshot * const plinesling = new LineSegSlingshot(*pv1, *pv2, bottom, top);
+      LineSegSlingshot * const plinesling = new LineSegSlingshot(pv1, pv2, bottom, top);
       plineseg = (LineSeg *)plinesling;
 
       plinesling->m_force = m_d.m_slingshotforce;
@@ -462,35 +461,26 @@ void Surface::AddLine(Vector<HitObject> * const pvho, const RenderVertex * const
 
    SetupHitObject(pvho, plineseg);
 
-   if (fSlingshot)  // slingshots always have hit events
+   if (pv1.fSlingshot)  // slingshots always have hit events
    {
       plineseg->m_pfe = (IFireEvents *)this;
       plineseg->m_threshold = m_d.m_threshold;
    }
 
    if (m_d.m_heightbottom != 0.f)
-   {
       // add lower edge as a line
-      Vertex3Ds v1(pv1->x, pv1->y, bottom);
-      Vertex3Ds v2(pv2->x, pv2->y, bottom);
-      SetupHitObject(pvho, new HitLine3D(v1, v2));
-   }
-   {
-      // add upper edge as a line
-      Vertex3Ds v1(pv1->x, pv1->y, top);
-      Vertex3Ds v2(pv2->x, pv2->y, top);
-      SetupHitObject(pvho, new HitLine3D(v1, v2));
-   }
+      SetupHitObject(pvho, new HitLine3D(Vertex3Ds(pv1.x, pv1.y, bottom), Vertex3Ds(pv2.x, pv2.y, bottom)));
+
+   // add upper edge as a line
+   SetupHitObject(pvho, new HitLine3D(Vertex3Ds(pv1.x, pv1.y, top), Vertex3Ds(pv2.x, pv2.y, top)));
 
    // create vertical joint between the two line segments
-   {
-      SetupHitObject(pvho, new HitLineZ(*pv1, bottom, top));
+   SetupHitObject(pvho, new HitLineZ(pv1, bottom, top));
 
-      // add upper and lower end points of line
-      if (m_d.m_heightbottom != 0)
-         SetupHitObject(pvho, new HitPoint(Vertex3Ds(pv1->x, pv1->y, bottom)));
-      SetupHitObject(pvho, new HitPoint(Vertex3Ds(pv1->x, pv1->y, top)));
-   }
+   // add upper and lower end points of line
+   if (m_d.m_heightbottom != 0.f)
+      SetupHitObject(pvho, new HitPoint(Vertex3Ds(pv1.x, pv1.y, bottom)));
+   SetupHitObject(pvho, new HitPoint(Vertex3Ds(pv1.x, pv1.y, top)));
 }
 
 void Surface::GetBoundingVertices(std::vector<Vertex3Ds>& pvvertex3D)

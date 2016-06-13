@@ -618,19 +618,17 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
    {
       for (int i = 0; i < (cvertex - 1); i++)
       {
-         const Vertex2D * const pv1 = (i > 0) ? &rgvLocal[i - 1] : NULL;
-         const Vertex2D * const pv2 = &rgvLocal[i];
-         const Vertex2D * const pv3 = &rgvLocal[i + 1];
-         const Vertex2D * const pv4 = (i < (cvertex - 2)) ? &rgvLocal[i + 2] : NULL;
+         const Vertex2D &pv2 = rgvLocal[i];
+         const Vertex2D &pv3 = rgvLocal[i + 1];
 
-         AddLine(pvho, pv2, pv3, pv1, rgheight1[i], rgheight1[i + 1] + wallheightright);
-         AddLine(pvho, pv3, pv2, pv4, rgheight1[i], rgheight1[i + 1] + wallheightright);
+         AddLine(pvho, pv2, pv3, (i > 0), rgheight1[i], rgheight1[i + 1] + wallheightright);
+         AddLine(pvho, pv3, pv2, (i < (cvertex - 2)), rgheight1[i], rgheight1[i + 1] + wallheightright);
 
          // add joints at start and end of right wall
          if (i == 0)
-            AddJoint2D(pvho, *pv2, rgheight1[0], rgheight1[0] + wallheightright);
+            AddJoint2D(pvho, pv2, rgheight1[0], rgheight1[0] + wallheightright);
          else if (i == cvertex - 2)
-            AddJoint2D(pvho, *pv3, rgheight1[cvertex - 1], rgheight1[cvertex - 1] + wallheightright);
+            AddJoint2D(pvho, pv3, rgheight1[cvertex - 1], rgheight1[cvertex - 1] + wallheightright);
       }
    }
 
@@ -639,19 +637,17 @@ void Ramp::GetHitShapes(Vector<HitObject> * const pvho)
    {
       for (int i = 0; i < (cvertex - 1); i++)
       {
-         const Vertex2D * const pv1 = (i > 0) ? &rgvLocal[cvertex + i - 1] : NULL;
-         const Vertex2D * const pv2 = &rgvLocal[cvertex + i];
-         const Vertex2D * const pv3 = &rgvLocal[cvertex + i + 1];
-         const Vertex2D * const pv4 = (i < (cvertex - 2)) ? &rgvLocal[cvertex + i + 2] : NULL;
+         const Vertex2D &pv2 = rgvLocal[cvertex + i];
+         const Vertex2D &pv3 = rgvLocal[cvertex + i + 1];
 
-         AddLine(pvho, pv2, pv3, pv1, rgheight1[cvertex - i - 2], rgheight1[cvertex - i - 1] + wallheightleft);
-         AddLine(pvho, pv3, pv2, pv4, rgheight1[cvertex - i - 2], rgheight1[cvertex - i - 1] + wallheightleft);
+         AddLine(pvho, pv2, pv3, (i > 0), rgheight1[cvertex - i - 2], rgheight1[cvertex - i - 1] + wallheightleft);
+         AddLine(pvho, pv3, pv2, (i < (cvertex - 2)), rgheight1[cvertex - i - 2], rgheight1[cvertex - i - 1] + wallheightleft);
 
          // add joints at start and end of left wall
          if (i == 0)
-            AddJoint2D(pvho, *pv2, rgheight1[cvertex - 1], rgheight1[cvertex - 1] + wallheightleft);
+            AddJoint2D(pvho, pv2, rgheight1[cvertex - 1], rgheight1[cvertex - 1] + wallheightleft);
          else if (i == cvertex - 2)
-            AddJoint2D(pvho, *pv3, rgheight1[0], rgheight1[0] + wallheightleft);
+            AddJoint2D(pvho, pv3, rgheight1[0], rgheight1[0] + wallheightleft);
       }
    }
 
@@ -817,14 +813,14 @@ void Ramp::AddJoint2D(Vector<HitObject> * pvho, const Vertex2D& p, const float z
 }
 
 
-void Ramp::AddLine(Vector<HitObject> * const pvho, const Vertex2D * const pv1, const Vertex2D * const pv2, const Vertex2D * const pv3, const float height1, const float height2)
+void Ramp::AddLine(Vector<HitObject> * const pvho, const Vertex2D &pv1, const Vertex2D &pv2, const bool pv3_exists, const float height1, const float height2)
 {
-   LineSeg * const plineseg = new LineSeg(*pv1, *pv2, height1, height2);
+   LineSeg * const plineseg = new LineSeg(pv1, pv2, height1, height2);
 
    SetupHitObject(pvho, plineseg);
 
-   if (pv3)
-      AddJoint2D(pvho, *pv1, height1, height2);
+   if (pv3_exists)
+      AddJoint2D(pvho, pv1, height1, height2);
 }
 
 void Ramp::SetupHitObject(Vector<HitObject> * pvho, HitObject * obj)
@@ -1046,6 +1042,7 @@ void Ramp::GenerateWireMesh(Vertex3D_NoTex2 **meshBuf1, Vertex3D_NoTex2 **meshBu
 
    if(rgheightInit)
        delete [] rgheightInit;
+   int splinePoints;
    const Vertex2D * const rgvLocal = GetRampVertex(splinePoints, &rgheightInit, NULL, NULL, (m_d.m_type != RampType1Wire) ? NULL : &middlePoints, -1, true, false);
 
    const int numRings = splinePoints;
