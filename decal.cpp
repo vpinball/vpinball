@@ -520,7 +520,7 @@ void Decal::RenderSetup(RenderDevice* pd3dDevice)
 float Decal::GetDepth(const Vertex3Ds& viewDir)
 {
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
-   return !m_fBackglass ? viewDir.z*height : 0.f;
+   return !m_fBackglass ? (viewDir.x * m_d.m_vCenter.x + viewDir.y * m_d.m_vCenter.y + viewDir.z*height) : 0.f;
 }
 
 bool Decal::IsTransparent()
