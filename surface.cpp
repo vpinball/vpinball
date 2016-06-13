@@ -335,10 +335,13 @@ void Surface::Render(Sur * const psur)
    }
 }
 
-void Surface::RenderBlueprint(Sur *psur)
+void Surface::RenderBlueprint(Sur *psur, const bool solid)
 {
    // Don't render dragpoints for blueprint
-   psur->SetFillColor(-1);
+   if ( solid )
+      psur->SetFillColor(BLUEPRINT_SOLID_COLOR);
+   else
+      psur->SetFillColor(-1);
    psur->SetBorderColor(RGB(0, 0, 0), false, 0);
    psur->SetObject(this); // For selected formatting
    psur->SetObject(NULL);

@@ -141,7 +141,7 @@ void IEditable::EndPlay()
    }
 }
 
-void IEditable::RenderBlueprint(Sur *psur)
+void IEditable::RenderBlueprint(Sur *psur, const bool solid)
 {
    Render(psur);
 }

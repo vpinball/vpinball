@@ -252,6 +252,28 @@ void Bumper::Render(Sur * const psur)
    }
 }
 
+void Bumper::RenderBlueprint(Sur *psur, const bool solid)
+{
+   if (solid)
+      psur->SetFillColor(BLUEPRINT_SOLID_COLOR);
+   else
+      psur->SetFillColor(-1);
+   psur->SetBorderColor(RGB(0, 0, 0), false, 0);
+   psur->SetObject(this);
+   psur->SetObject(NULL);
+   const float radangle = ANGTORAD(m_d.m_orientation - 90.f);
+   const float sn = sinf(radangle);
+   const float cs = cosf(radangle);
+
+   float x1 = m_d.m_vCenter.x - cs*(m_d.m_radius + 10.f);
+   float y1 = m_d.m_vCenter.y - sn*(m_d.m_radius + 10.f);
+   float x2 = m_d.m_vCenter.x + cs*(m_d.m_radius + 10.f);
+   float y2 = m_d.m_vCenter.y + sn*(m_d.m_radius + 10.f);
+   psur->Ellipse(x1, y1, 10.0f);
+   psur->Ellipse(x2, y2, 10.0f);
+   psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius*1.5f);
+   psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius);
+}
 void Bumper::GetTimers(Vector<HitTimer> * const pvht)
 {
    IEditable::BeginPlay();

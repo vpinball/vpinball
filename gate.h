@@ -92,7 +92,7 @@ public:
    void PrepareMovers(RenderDevice* pd3dDevice);
    virtual void SetDefaultPhysics(bool fromMouseClick);
 
-   virtual void RenderBlueprint(Sur *psur);
+   virtual void RenderBlueprint(Sur *psur, const bool solid=false);
    virtual void ExportMesh(FILE *f);
 
    virtual unsigned long long GetMaterialID() { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }

@@ -432,7 +432,7 @@ void Light::RenderOutline(Sur * const psur)
    }
 }
 
-void Light::RenderBlueprint(Sur *psur)
+void Light::RenderBlueprint(Sur *psur, const bool solid)
 {
    RenderOutline(psur);
 }

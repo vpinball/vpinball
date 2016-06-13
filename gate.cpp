@@ -333,7 +333,7 @@ void Gate::SetDefaultPhysics(bool fromMouseClick)
       m_d.m_scatter = 0;
 }
 
-void Gate::RenderBlueprint(Sur *psur)
+void Gate::RenderBlueprint(Sur *psur, const bool solid)
 {
 }
 

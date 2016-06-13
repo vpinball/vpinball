@@ -99,7 +99,7 @@ void Timer::Render(Sur * const psur)
 
 }
 
-void Timer::RenderBlueprint(Sur *psur)
+void Timer::RenderBlueprint(Sur *psur, const bool solid)
 {
 }
 

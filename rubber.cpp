@@ -247,9 +247,13 @@ void Rubber::Render(Sur * const psur)
    }
 }
 
-void Rubber::RenderOutline(Sur * const psur)
+void Rubber::RenderOutline(Sur * const psur, const bool solid)
 {
-   psur->SetFillColor(-1);
+   if (solid)
+      psur->SetFillColor(BLUEPRINT_SOLID_COLOR);
+   else
+      psur->SetFillColor(-1);
+
    psur->SetBorderColor(RGB(0, 0, 0), false, 0);
    psur->SetLineColor(RGB(0, 0, 0), false, 0);
    psur->SetObject(this);
@@ -275,9 +279,9 @@ void Rubber::RenderOutline(Sur * const psur)
    }
 }
 
-void Rubber::RenderBlueprint(Sur *psur)
+void Rubber::RenderBlueprint(Sur *psur, const bool solid)
 {
-   RenderOutline(psur);
+   RenderOutline(psur, solid);
 }
 
 void Rubber::GetBoundingVertices(std::vector<Vertex3Ds>& pvvertex3D)

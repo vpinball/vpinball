@@ -311,7 +311,7 @@ void Flasher::Render(Sur * const psur)
 }
 
 
-void Flasher::RenderBlueprint(Sur *psur)
+void Flasher::RenderBlueprint(Sur *psur, const bool solid)
 {
 }
 

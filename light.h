@@ -156,7 +156,7 @@ public:
    virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
 
    void RenderOutline(Sur * const psur);
-   virtual void RenderBlueprint(Sur *psur);
+   virtual void RenderBlueprint(Sur *psur, const bool solid=false);
 
    virtual void MoveOffset(const float dx, const float dy);
    virtual void SetObjectPos();
