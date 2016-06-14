@@ -187,24 +187,17 @@ void Kicker::GetHitShapes(Vector<HitObject> * const pvho)
 {
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
-   KickerHitCircle * const phitcircle = new KickerHitCircle();
+   KickerHitCircle * const phitcircle = new KickerHitCircle(m_d.m_vCenter, m_d.m_radius *
+      (m_d.m_legacyMode ? (m_d.m_fFallThrough ? 0.75f :
+                                                0.6f) // reduce the hit circle radius because only the inner circle of the kicker should start a hit event
+                                              : 1.f),
+      height, height+m_d.m_hit_height); // height of kicker hit cylinder
 
    phitcircle->m_pfe = NULL;
 
-   phitcircle->center.x = m_d.m_vCenter.x;
-   phitcircle->center.y = m_d.m_vCenter.y;
-   if (m_d.m_legacyMode)
+   if (!m_d.m_legacyMode)
    {
-      if (m_d.m_fFallThrough)
-         phitcircle->radius = m_d.m_radius * 0.75f;
-      else
-         phitcircle->radius = m_d.m_radius * 0.6f; // reduce the hit circle radius because only the inner circle of the 
-      // kicker should start a hit event
-   }
-   else
-   {
-      phitcircle->radius = m_d.m_radius;
-      const float rad = m_d.m_radius * 0.8f;
+      const float rad = phitcircle->radius * 0.8f;
       hitMesh.resize(kickerHitNumVertices);
       for (unsigned int t = 0; t < kickerHitNumVertices; t++)
       {
@@ -216,8 +209,6 @@ void Kicker::GetHitShapes(Vector<HitObject> * const pvho)
          hitMesh[t] = vpos;
       }
    }
-   phitcircle->zlow = height;
-   phitcircle->zhigh = height + m_d.m_hit_height;	// height of kicker hit cylinder  //!! 50 = ball diameter
 
    phitcircle->m_fEnabled = m_d.m_fEnabled;
 
@@ -1137,13 +1128,6 @@ STDMETHODIMP Kicker::get_LastCapturedBall(IBall **pVal)
     return S_OK;
 }
 
-KickerHitCircle::KickerHitCircle()
-{
-   m_pball = NULL;
-   m_lastCapturedBall = NULL;
-   m_pkicker = NULL;
-}
-
 float KickerHitCircle::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 {
    return HitTestBasicRadius(pball, dtime, coll, false, false, false); //any face, not-lateral, non-rigid
@@ -1231,7 +1215,7 @@ void KickerHitCircle::DoCollide(Ball * const pball, const Vertex3Ds& hitnormal, 
       if (i < 0)	//entering Kickers volume
       {
          bool hitEvent;
-         const float grabHeight = (zlow + pball->m_radius) * m_pkicker->m_d.m_hitAccuracy;
+         const float grabHeight = (m_rcHitRect.zlow + pball->m_radius) * m_pkicker->m_d.m_hitAccuracy;
 
          if (pball->m_pos.z < grabHeight || m_pkicker->m_d.m_legacyMode || newBall)
          {
@@ -1289,9 +1273,9 @@ void KickerHitCircle::DoCollide(Ball * const pball, const Vertex3Ds& hitnormal, 
                pball->m_dynamic = 0;
 #endif
                if (m_pkicker->m_d.m_fFallThrough)
-                  pball->m_pos.z = zlow - pball->m_radius - 5.0f;
+                  pball->m_pos.z = m_rcHitRect.zlow - pball->m_radius - 5.0f;
                else
-                  pball->m_pos.z = zlow + pball->m_radius/**pball->m_radius/radius*/;
+                  pball->m_pos.z = m_rcHitRect.zlow + pball->m_radius/**pball->m_radius/radius*/;
 
             }
             else m_pball = NULL;		// make sure

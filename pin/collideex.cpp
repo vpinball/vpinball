@@ -9,7 +9,7 @@ void BumperHitCircle::Collide(CollisionEvent* coll)
 
    const float dot = hitnormal.x * pball->m_vel.x + hitnormal.y * pball->m_vel.y;
 
-   pball->Collide2DWall(hitnormal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter);	//reflect ball from wall
+   pball->Collide3DWall(hitnormal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter);	//reflect ball from wall
 
    if ((m_pbumper->m_d.m_fHitEvent) && (dot <= -m_pbumper->m_d.m_threshold)) // if velocity greater than threshold level
    {
@@ -60,7 +60,7 @@ void LineSegSlingshot::Collide(CollisionEvent* coll)
       pball->m_vel.y -= hitnormal.y * force;	// allow CollideWall to handle the remainder
    }
 
-   pball->Collide2DWall(hitnormal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter);
+   pball->Collide3DWall(hitnormal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter);
 
    if (m_pfe && !m_psurface->m_fDisabled && threshold)
    {
@@ -99,9 +99,9 @@ HitGate::HitGate(Gate * const pgate, const float height)
     const float cs = cosf(radangle);
 
     m_lineseg[0].m_rcHitRect.zlow = height;
-    m_lineseg[0].m_rcHitRect.zhigh = height + 50.0f;
+    m_lineseg[0].m_rcHitRect.zhigh = height + (float)(2.0*PHYS_SKIN);
     m_lineseg[1].m_rcHitRect.zlow = height;
-    m_lineseg[1].m_rcHitRect.zhigh = height + 50.0f;
+    m_lineseg[1].m_rcHitRect.zhigh = height + (float)(2.0*PHYS_SKIN);
 
     m_lineseg[0].m_pfe = NULL;
     m_lineseg[1].m_pfe = NULL;
@@ -261,7 +261,7 @@ void GateAnimObject::UpdateVelocities()
 {
    if (!m_fOpen)
    {
-      if (fabsf(m_angle) < (m_angleMin+0.01f) && fabsf(m_anglespeed)<0.01f)
+      if (fabsf(m_angle) < (m_angleMin+0.01f) && fabsf(m_anglespeed) < 0.01f)
       {
          // stop a bit earlier to prevent a nearly endless animation (especially for slow balls)
          m_angle = m_angleMin;
@@ -286,9 +286,9 @@ HitSpinner::HitSpinner(Spinner * const pspinner, const float height)
    const float cs = cosf(radangle);
 
    m_lineseg[0].m_rcHitRect.zlow = height;
-   m_lineseg[0].m_rcHitRect.zhigh = height + 50.0f;
+   m_lineseg[0].m_rcHitRect.zhigh = height + (float)(2.0*PHYS_SKIN);
    m_lineseg[1].m_rcHitRect.zlow = height;
-   m_lineseg[1].m_rcHitRect.zhigh = height + 50.0f;
+   m_lineseg[1].m_rcHitRect.zhigh = height + (float)(2.0*PHYS_SKIN);
 
    m_lineseg[0].m_pfe = NULL;
    m_lineseg[1].m_pfe = NULL;
@@ -969,11 +969,17 @@ float HitLine3D::HitTest(const Ball * pball_, float dtime, CollisionEvent& coll)
    const Vertex3Ds old_vel = pball->m_vel;
    pball->m_pos = matTrans * pball->m_pos;
    pball->m_vel = matTrans * pball->m_vel;
+   // and update z of LineZ with transformed coordinates
+   const Vertex2D oldz(m_rcHitRect.zlow, m_rcHitRect.zhigh);
+   m_rcHitRect.zlow = m_zlow;
+   m_rcHitRect.zhigh = m_zhigh;
 
    const float hittime = HitLineZ::HitTest(pball, dtime, coll);
 
    pball->m_pos = old_pos; // see above
    pball->m_vel = old_vel;
+   m_rcHitRect.zlow = oldz.x;
+   m_rcHitRect.zhigh = oldz.y;
 
    if (hittime >= 0.f)       // transform hit normal back to world coordinate system
       coll.hitnormal = matTrans.MultiplyVectorT(coll.hitnormal);

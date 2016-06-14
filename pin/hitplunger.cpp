@@ -68,14 +68,14 @@ HitPlunger::HitPlunger(const float x, const float y, const float x2, const float
    m_plungeranim.m_linesegEnd.m_rcHitRect.zlow = zheight;
    m_plungeranim.m_linesegEnd.m_rcHitRect.zhigh = zheight + PLUNGERHEIGHT;
 
-   m_plungeranim.m_jointBase[0].m_zlow = zheight;
-   m_plungeranim.m_jointBase[0].m_zhigh = zheight + PLUNGERHEIGHT;
-   m_plungeranim.m_jointBase[1].m_zlow = zheight;
-   m_plungeranim.m_jointBase[1].m_zhigh = zheight + PLUNGERHEIGHT;
-   m_plungeranim.m_jointEnd[0].m_zlow = zheight;
-   m_plungeranim.m_jointEnd[0].m_zhigh = zheight + PLUNGERHEIGHT;
-   m_plungeranim.m_jointEnd[1].m_zlow = zheight;
-   m_plungeranim.m_jointEnd[1].m_zhigh = zheight + PLUNGERHEIGHT;
+   m_plungeranim.m_jointBase[0].m_rcHitRect.zlow = zheight;
+   m_plungeranim.m_jointBase[0].m_rcHitRect.zhigh = zheight + PLUNGERHEIGHT;
+   m_plungeranim.m_jointBase[1].m_rcHitRect.zlow = zheight;
+   m_plungeranim.m_jointBase[1].m_rcHitRect.zhigh = zheight + PLUNGERHEIGHT;
+   m_plungeranim.m_jointEnd[0].m_rcHitRect.zlow = zheight;
+   m_plungeranim.m_jointEnd[0].m_rcHitRect.zhigh = zheight + PLUNGERHEIGHT;
+   m_plungeranim.m_jointEnd[1].m_rcHitRect.zlow = zheight;
+   m_plungeranim.m_jointEnd[1].m_rcHitRect.zhigh = zheight + PLUNGERHEIGHT;
 
    m_plungeranim.SetObjects(m_plungeranim.m_pos);
 }
@@ -87,9 +87,8 @@ void HitPlunger::CalcHitRect()
    m_rcHitRect.right = m_plungeranim.m_x2 + 0.1f;
    m_rcHitRect.top = m_plungeranim.m_frameEnd - 0.1f;
    m_rcHitRect.bottom = m_plungeranim.m_y + 0.1f;
-   // z stuff gets set in constructor
-   //m_rcHitRect.zlow = 0;
-   //m_rcHitRect.zhigh = 50;
+
+   // zlow & zhigh gets set in constructor
 }
 
 void PlungerAnimObject::SetObjects(const float len)

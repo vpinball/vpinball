@@ -130,15 +130,16 @@ public:
    virtual void Animate() {}
 };
 
+// 2D 'Wall' (a simple 2D line with additional height limitation)
 class LineSeg : public HitObject
 {
 public:
    LineSeg() { }
-   LineSeg(const Vertex2D& p1, const Vertex2D& p2, const float _zlow, const float _zhigh)
+   LineSeg(const Vertex2D& p1, const Vertex2D& p2, const float zlow, const float zhigh)
        : v1(p1), v2(p2)
    {
-      m_rcHitRect.zlow = _zlow;
-      m_rcHitRect.zhigh = _zhigh;
+      m_rcHitRect.zlow = zlow;
+      m_rcHitRect.zhigh = zhigh;
       CalcNormal();
    }
 
@@ -160,7 +161,11 @@ class HitCircle : public HitObject
 {
 public:
    HitCircle() { }
-   HitCircle(const Vertex2D& c, float r, float _zlow, float _zhigh) : center(c), radius(r), zlow(_zlow), zhigh(_zhigh) { }
+   HitCircle(const Vertex2D& c, float r, float zlow, float zhigh) : center(c), radius(r)
+   {
+      m_rcHitRect.zlow = zlow;
+      m_rcHitRect.zhigh = zhigh;
+   }
 
    virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
 
@@ -176,8 +181,6 @@ public:
 
    Vertex2D center;
    float radius;
-   float zlow;
-   float zhigh;
 };
 
 
@@ -186,7 +189,11 @@ class HitLineZ : public HitObject
 {
 public:
    HitLineZ() { }
-   HitLineZ(const Vertex2D& xy, float zlow, float zhigh) : m_xy(xy), m_zlow(zlow), m_zhigh(zhigh) { }
+   HitLineZ(const Vertex2D& xy, float zlow, float zhigh) : m_xy(xy)
+   {
+      m_rcHitRect.zlow = zlow;
+      m_rcHitRect.zhigh = zhigh;
+   }
 
    virtual void CalcHitRect();
    virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
@@ -195,7 +202,6 @@ public:
    virtual void Contact(CollisionEvent& coll, float dtime);
 
    Vertex2D m_xy;
-   float m_zlow, m_zhigh;
 };
 
 

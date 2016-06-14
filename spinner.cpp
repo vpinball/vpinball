@@ -210,30 +210,19 @@ void Spinner::GetHitShapes(Vector<HitObject> * const pvho)
 
    if (m_d.m_fShowBracket)
    {
-       /*add a hit shape for the bracket if shown, just in case if the bracket spinner height is low enough so the ball can hit it*/
-      float halflength = m_d.m_length * 0.5f;
+      /*add a hit shape for the bracket if shown, just in case if the bracket spinner height is low enough so the ball can hit it*/
+      const float halflength = m_d.m_length * 0.5f + (m_d.m_length*0.1875f);
       const float radangle = ANGTORAD(m_d.m_rotation);
       const float sn = sinf(radangle);
       const float cs = cosf(radangle);
 
-      halflength += (m_d.m_length*0.1875f);
       HitCircle *phitcircle;
-      phitcircle = new HitCircle();
+      phitcircle = new HitCircle(Vertex2D(m_d.m_vCenter.x + cs*halflength, m_d.m_vCenter.y + sn*halflength), m_d.m_length*0.075f, height + m_d.m_height, height + h);
       phitcircle->m_pfe = NULL;
-      phitcircle->center.x = m_d.m_vCenter.x + cs*halflength;
-      phitcircle->center.y = m_d.m_vCenter.y + sn*halflength;
-      phitcircle->radius = m_d.m_length*0.075f;
-      phitcircle->zlow = height + m_d.m_height;
-      phitcircle->zhigh = height + h;
       pvho->AddElement(phitcircle);
 
-      phitcircle = new HitCircle();
+      phitcircle = new HitCircle(Vertex2D(m_d.m_vCenter.x - cs*halflength, m_d.m_vCenter.y - sn*halflength), m_d.m_length*0.075f, height + m_d.m_height, height + h);
       phitcircle->m_pfe = NULL;
-      phitcircle->center.x = m_d.m_vCenter.x - cs*halflength;
-      phitcircle->center.y = m_d.m_vCenter.y - sn*halflength;
-      phitcircle->radius = m_d.m_length*0.075f;
-      phitcircle->zlow = height + m_d.m_height;
-      phitcircle->zhigh = height + h;
       pvho->AddElement(phitcircle);
    }
 }
