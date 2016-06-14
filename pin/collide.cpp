@@ -42,8 +42,7 @@ void LineSeg::CalcHitRect()
    m_rcHitRect.top = min(v1.y, v2.y);
    m_rcHitRect.bottom = max(v1.y, v2.y);
 
-   //m_rcHitRect.zlow = 0; //!!?
-   //m_rcHitRect.zhigh = 50;
+   // zlow and zhigh were already set in ctor
 }
 
 float LineSeg::HitTestBasic(const Ball * pball, const float dtime, CollisionEvent& coll, const bool direction, const bool lateral, const bool rigid)
@@ -95,7 +94,7 @@ float LineSeg::HitTestBasic(const Ball * pball, const float dtime, CollisionEven
 #endif
       }
       else if (fabsf(bnv) > C_LOWNORMVEL) 					// not velocity low ????
-         hittime = bnd / (-bnv);								// rate ok for safe divide 
+         hittime = bnd / -bnv;								// rate ok for safe divide 
       else
          return -1.0f;										// wait for touching
    }
@@ -103,7 +102,7 @@ float LineSeg::HitTestBasic(const Ball * pball, const float dtime, CollisionEven
    {
       if (bnv * bnd >= 0.f)									// outside-receding || inside-approaching
       {
-          if ((m_ObjType != eTrigger) ||						// no a trigger
+          if ((m_ObjType != eTrigger) ||						// not a trigger
               (!pball->m_vpVolObjs) ||
               (fabsf(bnd) >= pball->m_radius*0.5f) ||		    // not too close ... nor too far away
               (inside != (pball->m_vpVolObjs->IndexOf(m_pObj) < 0))) // ...ball outside and hit set or ball inside and no hit set
@@ -114,7 +113,7 @@ float LineSeg::HitTestBasic(const Ball * pball, const float dtime, CollisionEven
          bUnHit = !inside;	// ball on outside is UnHit, otherwise it's a Hit
       }
       else
-         hittime = bnd / (-bnv);
+         hittime = bnd / -bnv;
    }
 
    if (infNaN(hittime) || hittime < 0.f || hittime > dtime)
@@ -165,7 +164,7 @@ float LineSeg::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 void LineSeg::Collide(CollisionEvent *coll)
 {
    const float dot = coll->hitnormal.x * coll->ball->m_vel.x + coll->hitnormal.y * coll->ball->m_vel.y;
-   coll->ball->Collide2DWall(coll->hitnormal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter);
+   coll->ball->Collide3DWall(coll->hitnormal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter);
 
    if (dot <= -m_threshold)
       FireHitEvent(coll->ball);
@@ -190,7 +189,7 @@ void LineSeg::Contact(CollisionEvent& coll, float dtime)
 ////////////////////////////////////////////////////////////////////////////////
 
 float HitCircle::HitTestBasicRadius(const Ball * pball, float dtime, CollisionEvent& coll,
-   bool direction, bool lateral, bool rigid)
+   const bool direction, const bool lateral, const bool rigid)
 {
    if (!m_fEnabled || pball->m_frozen) return -1.0f;
 
@@ -201,14 +200,14 @@ float HitCircle::HitTestBasicRadius(const Ball * pball, float dtime, CollisionEv
    float targetRadius;
    bool capsule3D;
 
-   if (!lateral && pball->m_pos.z > zhigh)
+   if (!lateral && pball->m_pos.z > m_rcHitRect.zhigh)
    {
       capsule3D = true;										// handle ball over target? 
       //const float hcap = radius*(float)(1.0/5.0);			// cap height to hit-circle radius ratio
       //targetRadius = radius*radius/(hcap*2.0f) + hcap*0.5f;	// c = (r^2+h^2)/(2*h)
       targetRadius = radius*(float)(13.0 / 5.0);				// optimized version of above code
       //c.z = zhigh - (targetRadius - hcap);					// b = c - h
-      c.z = zhigh - radius*(float)(12.0 / 5.0);					// optimized version of above code
+      c.z = m_rcHitRect.zhigh - radius*(float)(12.0 / 5.0);		// optimized version of above code
       dist.z = pball->m_pos.z - c.z;							// ball rolling point - capsule center height 			
    }
    else
@@ -286,11 +285,11 @@ float HitCircle::HitTestBasicRadius(const Ball * pball, float dtime, CollisionEv
 
    if (infNaN(hittime) || hittime < 0.f || hittime > dtime)
       return -1.0f; // contact out of physics frame
-   const float hitz = pball->m_pos.z - pball->m_radius + pball->m_vel.z * hittime; // rolling point
+   const float hitz = pball->m_pos.z + pball->m_vel.z * hittime; // rolling point
 
-   if (((hitz + pball->m_radius *1.5f) < zlow) ||
-      (!capsule3D && (hitz + pball->m_radius*0.5f) > zhigh) ||
-      (capsule3D && (pball->m_pos.z + pball->m_vel.z * hittime) < zhigh)) return -1.0f;
+   if (((hitz + pball->m_radius*0.5f) < m_rcHitRect.zlow) ||
+      (!capsule3D && (hitz - pball->m_radius*0.5f) > m_rcHitRect.zhigh) ||
+      (capsule3D && (pball->m_pos.z + pball->m_vel.z * hittime) < m_rcHitRect.zhigh)) return -1.0f;
 
    const float hitx = pball->m_pos.x + pball->m_vel.x*hittime;
    const float hity = pball->m_pos.y + pball->m_vel.y*hittime;
@@ -331,8 +330,8 @@ void HitCircle::CalcHitRect()
    m_rcHitRect.right = center.x + radius;
    m_rcHitRect.top = center.y - radius;
    m_rcHitRect.bottom = center.y + radius;
-   m_rcHitRect.zlow = zlow;
-   m_rcHitRect.zhigh = zhigh;
+
+   // zlow & zhigh already set in ctor
 }
 
 float HitCircle::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
@@ -343,7 +342,7 @@ float HitCircle::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 
 void HitCircle::Collide(CollisionEvent *coll)
 {
-   coll->ball->Collide2DWall(coll->hitnormal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter);
+   coll->ball->Collide3DWall(coll->hitnormal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter);
 }
 
 void HitCircle::Contact(CollisionEvent& coll, float dtime)
@@ -409,7 +408,7 @@ float HitLineZ::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 
    const float hitz = pball->m_pos.z + hittime * pball->m_vel.z;   // ball z position at hit time
 
-   if (hitz < m_zlow || hitz > m_zhigh)    // check z coordinate
+   if (hitz < m_rcHitRect.zlow || hitz > m_rcHitRect.zhigh)    // check z coordinate
       return -1.0f;
 
    const float hitx = pball->m_pos.x + hittime * pball->m_vel.x;   // ball x position at hit time
@@ -431,7 +430,12 @@ float HitLineZ::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 
 void HitLineZ::CalcHitRect()
 {
-   m_rcHitRect = FRect3D(m_xy.x, m_xy.x, m_xy.y, m_xy.y, m_zlow, m_zhigh);
+   m_rcHitRect.left = m_xy.x;
+   m_rcHitRect.right = m_xy.x;
+   m_rcHitRect.top = m_xy.y;
+   m_rcHitRect.bottom = m_xy.y;
+
+   // zlow and zhigh set in ctor
 }
 
 void HitLineZ::Collide(CollisionEvent *coll)

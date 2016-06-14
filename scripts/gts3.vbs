@@ -102,5 +102,3 @@ Function vpmKeyUp(ByVal keycode)
 	End With
 	On Error Goto 0
 End Function
-
-

@@ -225,9 +225,9 @@ void Gate::Render(Sur * const psur)
    psur->SetLineColor(RGB(0, 0, 0), false, 2);
    psur->SetObject(this);
 
-   float halflength = m_d.m_length * 0.5f;
-   float len1 = halflength *0.5f;
-   float len2 = len1*0.5f;
+   const float halflength = m_d.m_length * 0.5f;
+   const float len1 = halflength *0.5f;
+   const float len2 = len1 * 0.5f;
    Vertex2D tmp;
 
    {
@@ -359,7 +359,7 @@ void Gate::GetHitShapes(Vector<HitObject> * const pvho)
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
    const float h = m_d.m_height;		//relative height of the gate 
 
-   float halflength = m_d.m_length * 0.5f;
+   const float halflength = m_d.m_length * 0.5f;
 
    const float angleMin = min(m_d.m_angleMin, m_d.m_angleMax); // correct angle inversions
    const float angleMax = max(m_d.m_angleMin, m_d.m_angleMax);
@@ -397,13 +397,11 @@ void Gate::GetHitShapes(Vector<HitObject> * const pvho)
 
    if (m_d.m_fShowBracket)
    {
-      {
-         HitCircle * const phitcircle = new HitCircle(m_d.m_vCenter + halflength * tangent, 0.01f, height, height + h);
-         phitcircle->m_pfe = NULL;
-         pvho->AddElement(phitcircle);
-      }
+      HitCircle *phitcircle = new HitCircle(m_d.m_vCenter + halflength * tangent, 0.01f, height, height + h);
+      phitcircle->m_pfe = NULL;
+      pvho->AddElement(phitcircle);
 
-      HitCircle * const phitcircle = new HitCircle(m_d.m_vCenter - halflength * tangent, 0.01f, height, height + h);
+      phitcircle = new HitCircle(m_d.m_vCenter - halflength * tangent, 0.01f, height, height + h);
       phitcircle->m_pfe = NULL;
       pvho->AddElement(phitcircle);
    }

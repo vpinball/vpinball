@@ -35,12 +35,6 @@ public:
    virtual void CalcHitRect();
    virtual AnimObject *GetAnimObject() { return &m_ballanim; }
 
-   //semi-generic collide methods
-   void Collide2DWall(const Vertex3Ds& hitNormal, float elasticity, float elastFalloff, float friction, float scatter_angle)
-   {
-      Collide3DWall(Vertex3Ds(hitNormal.x, hitNormal.y, 0), elasticity, elastFalloff, friction, scatter_angle);
-   }
-
    void Collide3DWall(const Vertex3Ds& hitNormal, float elasticity, float elastFalloff, float friction, float scatter_angle);
 
    void ApplyFriction(const Vertex3Ds& hitnormal, const float dtime, const float fricCoeff);
@@ -76,7 +70,7 @@ public:
    BallAnimObject m_ballanim;
 
    Vertex3Ds m_pos;
-   float m_defaultZ;   //normal height of the ball //!! remove
+   float m_defaultZ;   //normal height of the ball //!! remove?
 
    Vertex3Ds m_oldpos[MAX_BALL_TRAIL_POS]; // for the optional ball trails
    unsigned int m_ringcounter_oldpos;

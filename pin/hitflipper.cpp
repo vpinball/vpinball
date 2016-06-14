@@ -7,8 +7,8 @@ FlipperAnimObject::FlipperAnimObject(const Vertex2D& center, float baser, float 
 
    m_hitcircleBase.m_pfe = NULL;
 
-   m_hitcircleBase.zlow = zlow;
-   m_hitcircleBase.zhigh = zhigh;
+   m_hitcircleBase.m_rcHitRect.zlow = zlow;
+   m_hitcircleBase.m_rcHitRect.zhigh = zhigh;
 
    m_hitcircleBase.center = center;
 
@@ -123,8 +123,8 @@ void HitFlipper::CalcHitRect()
    m_rcHitRect.right = m_flipperanim.m_hitcircleBase.center.x + m_flipperanim.m_flipperradius + m_flipperanim.m_endradius + 0.1f;
    m_rcHitRect.top = m_flipperanim.m_hitcircleBase.center.y - m_flipperanim.m_flipperradius - m_flipperanim.m_endradius - 0.1f;
    m_rcHitRect.bottom = m_flipperanim.m_hitcircleBase.center.y + m_flipperanim.m_flipperradius + m_flipperanim.m_endradius + 0.1f;
-   m_rcHitRect.zlow = m_flipperanim.m_hitcircleBase.zlow;
-   m_rcHitRect.zhigh = m_flipperanim.m_hitcircleBase.zhigh;
+   m_rcHitRect.zlow = m_flipperanim.m_hitcircleBase.m_rcHitRect.zlow;
+   m_rcHitRect.zhigh = m_flipperanim.m_hitcircleBase.m_rcHitRect.zhigh;
 }
 
 void FlipperAnimObject::SetStartAngle(const float r)
@@ -497,10 +497,10 @@ float HitFlipper::HitTestFlipperEnd(const Ball * pball, const float dtime, Colli
 
    // here ball and flipper end are in contact .. well in most cases, near and embedded solutions need calculations	
 
-   const float hitz = pball->m_pos.z - ballr + pball->m_vel.z*t; // check for a hole, relative to ball rolling point at hittime
+   const float hitz = pball->m_pos.z + pball->m_vel.z*t; // check for a hole, relative to ball rolling point at hittime
 
-   if ((hitz + (ballr * 1.5f)) < m_rcHitRect.zlow		//check limits of object's height and depth
-      || (hitz + (ballr * 0.5f)) > m_rcHitRect.zhigh)
+   if ((hitz + ballr * 0.5f) < m_rcHitRect.zlow		//check limits of object's height and depth
+      || (hitz - ballr * 0.5f) > m_rcHitRect.zhigh)
       return -1.0f;
 
    // ok we have a confirmed contact, calc the stats, remember there are "near" solution, so all
@@ -667,10 +667,10 @@ float HitFlipper::HitTestFlipperFace(const Ball * pball, const float dtime, Coll
    const float len = m_flipperanim.m_faceLength; // face segment length ... i.g same on either face									
    if (bfftd < -C_TOL_ENDPNTS || bfftd > len + C_TOL_ENDPNTS) return -1.0f;	// not in range of touching
 
-   const float hitz = pball->m_pos.z - ballr + pball->m_vel.z*t;	// check for a hole, relative to ball rolling point at hittime
+   const float hitz = pball->m_pos.z + pball->m_vel.z*t;	// check for a hole, relative to ball rolling point at hittime
 
-   if ((hitz + (ballr * 1.5f)) < m_rcHitRect.zlow			//check limits of object's height and depth 
-      || (hitz + (ballr * 0.5f)) > m_rcHitRect.zhigh)
+   if ((hitz + ballr * 0.5f) < m_rcHitRect.zlow			//check limits of object's height and depth 
+      || (hitz - ballr * 0.5f) > m_rcHitRect.zhigh)
       return -1.0f;
 
    // ok we have a confirmed contact, calc the stats, remember there are "near" solution, so all

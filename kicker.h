@@ -152,7 +152,13 @@ public:
 class KickerHitCircle : public HitCircle
 {
 public:
-   KickerHitCircle();
+   KickerHitCircle(const Vertex2D& c, float r, float zlow, float zhigh)
+      : HitCircle(c,r,zlow,zhigh)
+   {
+      m_pball = NULL;
+      m_lastCapturedBall = NULL;
+      m_pkicker = NULL;
+   }
 
    virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
    void DoChangeBallVelocity(Ball * const pball, const Vertex3Ds& hitnormal);

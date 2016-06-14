@@ -16,7 +16,7 @@ Bumper::Bumper()
    capIndexBuffer = NULL;
    socketIndexBuffer = NULL;
    socketVertexBuffer = NULL;
-   ringMaterial.m_cBase = 0xFFFFFFFF;
+   ringMaterial.m_cBase = 0xFFFFFFFF; //!! set properly
    ringMaterial.m_cGlossy = 0;
    ringAnimate = false;
    m_propVisual = NULL;
@@ -199,10 +199,10 @@ void Bumper::PreRender(Sur * const psur)
    const float sn = sinf(radangle);
    const float cs = cosf(radangle);
 
-   float x1 = m_d.m_vCenter.x - cs*(m_d.m_radius + 10.f);
-   float y1 = m_d.m_vCenter.y - sn*(m_d.m_radius + 10.f);
-   float x2 = m_d.m_vCenter.x + cs*(m_d.m_radius + 10.f);
-   float y2 = m_d.m_vCenter.y + sn*(m_d.m_radius + 10.f);
+   const float x1 = m_d.m_vCenter.x - cs*(m_d.m_radius + 10.f);
+   const float y1 = m_d.m_vCenter.y - sn*(m_d.m_radius + 10.f);
+   const float x2 = m_d.m_vCenter.x + cs*(m_d.m_radius + 10.f);
+   const float y2 = m_d.m_vCenter.y + sn*(m_d.m_radius + 10.f);
    psur->Ellipse(x1, y1, 10.0f);
    psur->Ellipse(x2, y2, 10.0f);
 
@@ -236,10 +236,10 @@ void Bumper::Render(Sur * const psur)
    const float sn = sinf(radangle);
    const float cs = cosf(radangle);
 
-   float x1 = m_d.m_vCenter.x - cs*(m_d.m_radius + 10.f);
-   float y1 = m_d.m_vCenter.y - sn*(m_d.m_radius + 10.f);
-   float x2 = m_d.m_vCenter.x + cs*(m_d.m_radius + 10.f);
-   float y2 = m_d.m_vCenter.y + sn*(m_d.m_radius + 10.f);
+   const float x1 = m_d.m_vCenter.x - cs*(m_d.m_radius + 10.f);
+   const float y1 = m_d.m_vCenter.y - sn*(m_d.m_radius + 10.f);
+   const float x2 = m_d.m_vCenter.x + cs*(m_d.m_radius + 10.f);
+   const float y2 = m_d.m_vCenter.y + sn*(m_d.m_radius + 10.f);
    psur->Ellipse(x1, y1, 10.0f);
    psur->Ellipse(x2, y2, 10.0f);
    psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius*1.5f);
@@ -265,15 +265,16 @@ void Bumper::RenderBlueprint(Sur *psur, const bool solid)
    const float sn = sinf(radangle);
    const float cs = cosf(radangle);
 
-   float x1 = m_d.m_vCenter.x - cs*(m_d.m_radius + 10.f);
-   float y1 = m_d.m_vCenter.y - sn*(m_d.m_radius + 10.f);
-   float x2 = m_d.m_vCenter.x + cs*(m_d.m_radius + 10.f);
-   float y2 = m_d.m_vCenter.y + sn*(m_d.m_radius + 10.f);
+   const float x1 = m_d.m_vCenter.x - cs*(m_d.m_radius + 10.f);
+   const float y1 = m_d.m_vCenter.y - sn*(m_d.m_radius + 10.f);
+   const float x2 = m_d.m_vCenter.x + cs*(m_d.m_radius + 10.f);
+   const float y2 = m_d.m_vCenter.y + sn*(m_d.m_radius + 10.f);
    psur->Ellipse(x1, y1, 10.0f);
    psur->Ellipse(x2, y2, 10.0f);
    psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius*1.5f);
    psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius);
 }
+
 void Bumper::GetTimers(Vector<HitTimer> * const pvht)
 {
    IEditable::BeginPlay();
@@ -293,17 +294,11 @@ void Bumper::GetHitShapes(Vector<HitObject> * const pvho)
 {
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
-   BumperHitCircle * const phitcircle = new BumperHitCircle();
+   BumperHitCircle * const phitcircle = new BumperHitCircle(m_d.m_vCenter,m_d.m_radius,height,height+m_d.m_heightScale);
 
    phitcircle->m_pfe = NULL;
    phitcircle->m_bumperanim.m_fHitEvent = m_d.m_fHitEvent;
    phitcircle->m_fEnabled = m_d.m_fCollidable;
-
-   phitcircle->center.x = m_d.m_vCenter.x;
-   phitcircle->center.y = m_d.m_vCenter.y;
-   phitcircle->radius = m_d.m_radius;
-   phitcircle->zlow = height;
-   phitcircle->zhigh = height + m_d.m_heightScale;
 
    phitcircle->m_pbumper = this;
 

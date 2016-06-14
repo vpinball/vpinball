@@ -377,19 +377,13 @@ void Trigger::GetHitShapes(Vector<HitObject> * const pvho)
    {
       const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
-      m_ptriggerhitcircle = new TriggerHitCircle();
+      m_ptriggerhitcircle = new TriggerHitCircle(m_d.m_vCenter, m_d.m_radius, height, height + m_d.m_hit_height);
 
       m_ptriggerhitcircle->m_fEnabled = m_d.m_fEnabled;
       m_ptriggerhitcircle->m_ObjType = eTrigger;
       m_ptriggerhitcircle->m_pObj = (void*) this;
 
       m_ptriggerhitcircle->m_pfe = NULL;
-
-      m_ptriggerhitcircle->center.x = m_d.m_vCenter.x;
-      m_ptriggerhitcircle->center.y = m_d.m_vCenter.y;
-      m_ptriggerhitcircle->radius = m_d.m_radius;
-      m_ptriggerhitcircle->zlow = height;
-      m_ptriggerhitcircle->zhigh = height + m_d.m_hit_height;
 
       m_ptriggerhitcircle->m_ptrigger = this;
 

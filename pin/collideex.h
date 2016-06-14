@@ -16,7 +16,8 @@ public:
 class BumperHitCircle : public HitCircle
 {
 public:
-   BumperHitCircle()
+   BumperHitCircle(const Vertex2D& c, float r, float zlow, float zhigh)
+      : HitCircle(c,r,zlow,zhigh)
    {
       m_bumperanim.m_fHitEvent = true;
       m_bumperanim.m_ringAnimOffset = 0.0f;
@@ -224,6 +225,8 @@ public:
 class TriggerHitCircle : public HitCircle
 {
 public:
+   TriggerHitCircle(const Vertex2D& c, float r, float zlow, float zhigh)
+     : HitCircle(c,r,zlow,zhigh) {}
    virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
    virtual void Collide(CollisionEvent* coll);
 
@@ -251,6 +254,7 @@ public:
 
 private:
    Matrix3 matTrans;
+   float m_zlow, m_zhigh;
 };
 
 class DispReelAnimObject : public AnimObject
