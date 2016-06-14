@@ -214,23 +214,23 @@ void Ball::Collide3DWall(const Vertex3Ds& hitNormal, float elasticity, float ela
 
 float Ball::HitTest(const Ball * pball_, float dtime, CollisionEvent& coll)
 {
-   Ball * pball = const_cast<Ball*>(pball_);   // HACK; needed below
+   Ball * const pball = const_cast<Ball*>(pball_); // HACK; needed below
 
-   Vertex3Ds d = m_pos - pball->m_pos;     // delta position
+   Vertex3Ds d = m_pos - pball->m_pos;  // delta position
 
-   Vertex3Ds dv = m_vel - pball->m_vel;    // delta velocity
+   Vertex3Ds dv = m_vel - pball->m_vel; // delta velocity
 
-   float bcddsq = d.LengthSquared();       // square of ball center's delta distance
-   float bcdd = sqrtf(bcddsq);				// length of delta
+   float bcddsq = d.LengthSquared();    // square of ball center's delta distance
+   float bcdd = sqrtf(bcddsq);          // length of delta
 
-   if (bcdd < 1.0e-8f)						// two balls center-over-center embedded
+   if (bcdd < 1.0e-8f)                  // two balls center-over-center embedded
    { //return -1;
-      d.z = -1.0f;						// patch up
-      pball->m_pos.z -= d.z;				// lift up
+      d.z = -1.0f;                      // patch up
+      pball->m_pos.z -= d.z;            // lift up
 
-      bcdd = 1.0f;						// patch up
-      bcddsq = 1.0f;						// patch up
-      dv.z = 0.1f;						// small speed difference
+      bcdd = 1.0f;                      // patch up
+      bcddsq = 1.0f;                    // patch up
+      dv.z = 0.1f;                      // small speed difference
       pball->m_vel.z -= dv.z;
    }
 

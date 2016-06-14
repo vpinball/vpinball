@@ -533,7 +533,7 @@ void PlungerAnimObject::UpdateVelocities()
 
 float HitPlunger::HitTest(const Ball * pball_, float dtime, CollisionEvent& coll)
 {
-   Ball * pball = const_cast<Ball*>(pball_);   // HACK; needed below // evil cast to non-const, but not so expensive as constructor for full copy (and avoids screwing with the ball IDs)
+   Ball * const pball = const_cast<Ball*>(pball_);   // HACK; needed below // evil cast to non-const, but not so expensive as constructor for full copy (and avoids screwing with the ball IDs)
 
    float hittime = dtime; //start time
    bool fHit = false;
@@ -738,8 +738,7 @@ void HitPlunger::Collide(CollisionEvent *coll)
       {
          hdist = C_DISP_LIMIT;
       }                                         // crossing ramps, delta noise
-      pball->m_pos.x += hdist * coll->hitnormal.x;    // push along norm, back to free area
-      pball->m_pos.y += hdist * coll->hitnormal.y;    // use the norm, but is not correct
+      pball->m_pos += hdist * coll->hitnormal;    // push along norm, back to free area (use the norm, but is not correct)
    }
 #endif
 
@@ -780,10 +779,9 @@ void HitPlunger::Collide(CollisionEvent *coll)
    }
 
    // update the ball speed for the impulse
-   pball->m_vel.x += impulse * coll->hitnormal.x;
-   pball->m_vel.y += impulse * coll->hitnormal.y;
+   pball->m_vel += impulse * coll->hitnormal;
 
-   pball->m_vel *= 0.999f;           //friction all axiz     // TODO: fix this
+   pball->m_vel *= 0.999f;           //friction all axiz     //!! TODO: fix this
 
    const float scatter_vel = m_plungeranim.m_scatterVelocity * g_pplayer->m_ptable->m_globalDifficulty;// apply dificulty weighting
 

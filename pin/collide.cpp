@@ -163,7 +163,7 @@ float LineSeg::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 
 void LineSeg::Collide(CollisionEvent *coll)
 {
-   const float dot = coll->hitnormal.x * coll->ball->m_vel.x + coll->hitnormal.y * coll->ball->m_vel.y;
+   const float dot = coll->hitnormal.Dot(coll->ball->m_vel);
    coll->ball->Collide3DWall(coll->hitnormal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter);
 
    if (dot <= -m_threshold)
@@ -198,21 +198,20 @@ float HitCircle::HitTestBasicRadius(const Ball * pball, float dtime, CollisionEv
    Vertex3Ds dv = pball->m_vel;
 
    float targetRadius;
-   bool capsule3D;
+   const bool capsule3D = (!lateral && pball->m_pos.z > m_rcHitRect.zhigh);
 
-   if (!lateral && pball->m_pos.z > m_rcHitRect.zhigh)
+   if (capsule3D)
    {
-      capsule3D = true;										// handle ball over target? 
-      //const float hcap = radius*(float)(1.0/5.0);			// cap height to hit-circle radius ratio
-      //targetRadius = radius*radius/(hcap*2.0f) + hcap*0.5f;	// c = (r^2+h^2)/(2*h)
-      targetRadius = radius*(float)(13.0 / 5.0);				// optimized version of above code
-      //c.z = zhigh - (targetRadius - hcap);					// b = c - h
-      c.z = m_rcHitRect.zhigh - radius*(float)(12.0 / 5.0);		// optimized version of above code
-      dist.z = pball->m_pos.z - c.z;							// ball rolling point - capsule center height 			
+      // handle ball over target?
+      //const float hcap = radius*(float)(1.0/5.0);           // cap height to hit-circle radius ratio
+      //targetRadius = radius*radius/(hcap*2.0f) + hcap*0.5f; // c = (r^2+h^2)/(2*h)
+      targetRadius = radius*(float)(13.0 / 5.0);              // optimized version of above code
+      //c.z = m_rcHitRect.zhigh - (targetRadius - hcap);      // b = c - h
+      c.z = m_rcHitRect.zhigh - radius*(float)(12.0 / 5.0);   // optimized version of above code
+      dist.z = pball->m_pos.z - c.z;                          // ball rolling point - capsule center height 			
    }
    else
    {
-      capsule3D = false;
       targetRadius = radius;
       if (lateral)
          targetRadius += pball->m_radius;
@@ -250,7 +249,6 @@ float HitCircle::HitTestBasicRadius(const Ball * pball, float dtime, CollisionEv
       else if (fabsf(bnv) <= C_CONTACTVEL)
       {
          isContact = true;
-         hittime = 0;
       }
       else
          hittime = /*std::max(0.0f,*/ -bnd / bnv /*)*/;   // estimate based on distance and speed along distance
@@ -266,7 +264,6 @@ float HitCircle::HitTestBasicRadius(const Ball * pball, float dtime, CollisionEv
       }												// this will add the ball to the trigger space without a Hit
       else
       {
-         hittime = 0;
          fUnhit = (bnd > 0.f);	// ball on outside is UnHit, otherwise it's a Hit
       }
    }
