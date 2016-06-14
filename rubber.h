@@ -114,10 +114,7 @@ public:
    virtual void ExportMesh(FILE *f);
 
    void WriteRegDefaults();
-
-   void AddJoint2D(Vector<HitObject> * pvho, const Vertex2D& p, const float zlow, const float zhigh);
-   void AddLine(Vector<HitObject> * const pvho, const Vertex2D &pv1, const Vertex2D &pv2, const bool pv3_exists, const float height1, const float height2);
-
+   void AddHitEdge(Vector<HitObject> * pvho, std::set< std::pair<unsigned, unsigned> >& addedEdges, const unsigned i, const unsigned j);
    void SetupHitObject(Vector<HitObject> * pvho, HitObject * obj);
 
    // IHaveDragPoints
@@ -156,7 +153,7 @@ private:
 
    void RenderObject(RenderDevice * const pd3dDevice);
    void UpdateRubber(RenderDevice * const pd3dDevice, const bool updateVB, const float height);
-   void GenerateMesh(const int _accuracy = -1);
+   void GenerateMesh(const int _accuracy = -1, const bool createHitShape = false);
    void DrawRubberMesh(Sur * const psur);
 
    // IRamp

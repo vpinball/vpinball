@@ -518,72 +518,50 @@ void Rubber::GetTimers(Vector<HitTimer> * const pvht)
       pvht->AddElement(pht);
 }
 
-void Rubber::AddJoint2D(Vector<HitObject> * pvho, const Vertex2D& p, const float zlow, const float zhigh)
-{
-   SetupHitObject(pvho, new HitLineZ(p, zlow, zhigh));
-}
-
-void Rubber::AddLine(Vector<HitObject> * const pvho, const Vertex2D &pv1, const Vertex2D &pv2, const bool pv3_exists, const float height1, const float height2)
-{
-   LineSeg * const plineseg = new LineSeg(pv1, pv2, height1, height2);
-
-   SetupHitObject(pvho, plineseg);
-
-   if (pv3_exists)
-      AddJoint2D(pvho, pv1, height1, height2);
-}
-
 void Rubber::GetHitShapes(Vector<HitObject> * const pvho)
 {
-   Vertex2D * middlePoints = 0;
-   int cvertex;
-   const Vertex2D * const rgvLocal = GetSplineVertex(cvertex, NULL, &middlePoints);
-   const float height = m_d.m_hitHeight + m_ptable->m_tableheight;
-   const float zlow = height - ((float)m_d.m_thickness*0.5f);
-   const float zhigh = height + ((float)m_d.m_thickness*0.5f);
+   std::set< std::pair<unsigned, unsigned> > addedEdges;
 
-   Vertex3Ds prevB;
-   for (int i = 0; i < (cvertex - 1); i++)
+   GenerateMesh(6, true); //!! adapt hacky code in the function if changing the "6" here
+   UpdateRubber(NULL, false, m_d.m_hitHeight);
+
+   // add collision triangles and edges
+   for (unsigned i = 0; i < ringIndices.size(); i += 3)
    {
-      const Vertex2D &pv2 = rgvLocal[i];
-      const Vertex2D &pv3 = rgvLocal[i + 1];
+      Vertex3Ds rgv3D[3];
+      // NB: HitTriangle wants CCW vertices, but for rendering we have them in CW order
+      Vertex3D_NoTex2 *v = &m_vertices[ringIndices[i]];
+      rgv3D[0] = Vertex3Ds(v->x, v->y, v->z);
+      v = &m_vertices[ringIndices[i + 2]];
+      rgv3D[1] = Vertex3Ds(v->x, v->y, v->z);
+      v = &m_vertices[ringIndices[i + 1]];
+      rgv3D[2] = Vertex3Ds(v->x, v->y, v->z);
+      SetupHitObject(pvho, new HitTriangle(rgv3D));
 
-      const int i2 = (i == cvertex - 2) ? 0 : i + 1;
+      AddHitEdge(pvho, addedEdges, ringIndices[i], ringIndices[i + 2]);
+      AddHitEdge(pvho, addedEdges, ringIndices[i + 2], ringIndices[i + 1]);
+      AddHitEdge(pvho, addedEdges, ringIndices[i + 1], ringIndices[i]);
+   }
 
-      const Vertex3Ds tangent(middlePoints[i2].x - middlePoints[i].x, middlePoints[i2].y - middlePoints[i].y, 0.0f);
+   // add collision vertices
+   for (unsigned i = 0; i < m_vertices.size(); ++i)
+   {
+      Vertex3Ds v = Vertex3Ds(m_vertices[i].x, m_vertices[i].y, m_vertices[i].z);
+      SetupHitObject(pvho, new HitPoint(v));
+   }
+}
 
-      Vertex3Ds binorm;
-      Vertex3Ds normal;
-      if (i == 0)
-      {
-         const Vertex3Ds up(middlePoints[i2].x + middlePoints[i].x, middlePoints[i2].y + middlePoints[i].y, height*2.f);
-         normal = Vertex3Ds(tangent.y * up.z, - tangent.x * up.z, tangent.x * up.y - tangent.y * up.x); // = CrossProduct(tangent, up)
-         binorm = Vertex3Ds(tangent.y * normal.z, - tangent.x * normal.z, tangent.x * normal.y - tangent.y * normal.x); // = CrossProduct(tangent, normal)
-      }
-      else
-      {
-         normal = CrossProduct(prevB, tangent);
-         binorm = CrossProduct(tangent, normal);
-      }
-      binorm.Normalize();
-      normal.Normalize();
-      prevB = binorm;
-      Vertex2D tmp = Vertex2D(normal.x,normal.y) * ((float)m_d.m_thickness*0.5f);
+void Rubber::AddHitEdge(Vector<HitObject> * pvho, std::set< std::pair<unsigned, unsigned> >& addedEdges, const unsigned i, const unsigned j)
+{
+   // create pair uniquely identifying the edge (i,j)
+   std::pair<unsigned, unsigned> p(std::min(i, j), std::max(i, j));
 
-      for(unsigned int j = 0; j < 2; ++j) // add inside and outside of rubber
-      {
-         if(j == 1) // flip on second iteration
-             tmp = -tmp;
-
-         AddLine(pvho, pv2+tmp, pv3+tmp, (i > 0), zlow, zhigh);
-         AddLine(pvho, pv3+tmp, pv2+tmp, (i < (cvertex - 2)), zlow, zhigh);
-
-         // add joints at start and end of rubber
-         if (i == 0)
-             AddJoint2D(pvho, pv2+tmp, zlow, zhigh);
-         else if (i == cvertex - 2)
-             AddJoint2D(pvho, pv3+tmp, zlow, zhigh);
-      }
+   if (addedEdges.count(p) == 0)   // edge not yet added?
+   {
+      addedEdges.insert(p);
+      const Vertex3Ds v1(m_vertices[i].x, m_vertices[i].y, m_vertices[i].z);
+      const Vertex3Ds v2(m_vertices[j].x, m_vertices[j].y, m_vertices[j].z);
+      SetupHitObject(pvho, new HitLine3D(v1, v2));
    }
 }
 
@@ -594,6 +572,8 @@ void Rubber::SetupHitObject(Vector<HitObject> * pvho, HitObject * obj)
    obj->SetFriction(m_d.m_friction);
    obj->m_scatter = ANGTORAD(m_d.m_scatter);
    obj->m_fEnabled = m_d.m_fCollidable;
+   // the rubber is of type ePrimitive for triggering the event in HitTriangle::Collide()
+   obj->m_ObjType = ePrimitive;
    // hard coded threshold for now
    obj->m_threshold = 2.0f;
    if (m_d.m_fHitEvent)
@@ -602,7 +582,7 @@ void Rubber::SetupHitObject(Vector<HitObject> * pvho, HitObject * obj)
       obj->m_pfe = NULL;
 
    pvho->AddElement(obj);
-   m_vhoCollidable.push_back(obj);	//remember hit components
+   m_vhoCollidable.push_back(obj);	//remember hit components of primitive
 }
 
 void Rubber::GetHitShapesDebug(Vector<HitObject> * const pvho)
@@ -1420,7 +1400,7 @@ void Rubber::ExportMesh(FILE *f)
    }
 }
 
-void Rubber::GenerateMesh(const int _accuracy)
+void Rubber::GenerateMesh(const int _accuracy, const bool createHitShape)
 {
    int accuracy;
    if (m_ptable->GetDetailLevel() < 5)
@@ -1482,6 +1462,11 @@ void Rubber::GenerateMesh(const int _accuracy)
          Vertex3Ds tmp = GetRotatedAxis((float)j*(360.0f * invNS), tangent, normal) * ((float)m_d.m_thickness*0.5f);
          m_vertices[index].x = middlePoints[i].x + tmp.x;
          m_vertices[index].y = middlePoints[i].y + tmp.y;
+         if (createHitShape && (j==0 || j==3)) //!! hack, adapt if changing detail level for hitshape
+         {
+             // for a hit shape create a more rectangle mesh and not a smooth one
+             tmp.z *= 0.6f;
+         }
          m_vertices[index].z = height + tmp.z;
          //texel
          m_vertices[index].tu = u;
