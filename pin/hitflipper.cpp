@@ -885,14 +885,14 @@ void HitFlipper::Collide(CollisionEvent *coll)
 
 void HitFlipper::Contact(CollisionEvent& coll, float dtime)
 {
-   Ball * pball = coll.ball;
+   Ball * const pball = coll.ball;
+
+   const Vertex3Ds normal = coll.hitnormal;
 
 #ifdef C_EMBEDDED
    if (coll.hitdistance < -C_EMBEDDED)
-      pball->m_vel += coll.hitnormal*0.1f; //!! magic to avoid balls being pushed by each other through resting flippers!
+      pball->m_vel += normal*0.1f; //!! magic to avoid balls being pushed by each other through resting flippers!
 #endif
-
-   const Vertex3Ds normal = coll.hitnormal;
 
    const Vertex3Ds rB = -pball->m_radius * normal;
    const Vertex3Ds hitPos = pball->m_pos + rB;

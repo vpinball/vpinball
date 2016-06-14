@@ -4,17 +4,16 @@ void BumperHitCircle::Collide(CollisionEvent* coll)
 {
    if (!m_fEnabled) return;
 
-   Ball *pball = coll->ball;
+   Ball * const pball = coll->ball;
    const Vertex3Ds& hitnormal = coll->hitnormal;
 
-   const float dot = hitnormal.x * pball->m_vel.x + hitnormal.y * pball->m_vel.y;
+   const float dot = coll->hitnormal.Dot(coll->ball->m_vel);
 
    pball->Collide3DWall(hitnormal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter);	//reflect ball from wall
 
    if ((m_pbumper->m_d.m_fHitEvent) && (dot <= -m_pbumper->m_d.m_threshold)) // if velocity greater than threshold level
    {
-      pball->m_vel.x += hitnormal.x * m_pbumper->m_d.m_force; // add a chunk of velocity to drive ball away
-      pball->m_vel.y += hitnormal.y * m_pbumper->m_d.m_force;
+      pball->m_vel += hitnormal * m_pbumper->m_d.m_force; // add a chunk of velocity to drive ball away
 
       m_bumperanim.m_fHitEvent = true;
 
@@ -33,10 +32,10 @@ float LineSegSlingshot::HitTest(const Ball * pball, float dtime, CollisionEvent&
 
 void LineSegSlingshot::Collide(CollisionEvent* coll)
 {
-   Ball *pball = coll->ball;
+   Ball * const pball = coll->ball;
    const Vertex3Ds& hitnormal = coll->hitnormal;
 
-   const float dot = pball->m_vel.x * hitnormal.x + pball->m_vel.y * hitnormal.y; // normal velocity to slingshot
+   const float dot = coll->hitnormal.Dot(coll->ball->m_vel); // normal velocity to slingshot
 
    const bool threshold = (dot <= -m_psurface->m_d.m_slingshot_threshold);  // normal greater than threshold?
 
@@ -51,13 +50,12 @@ void LineSegSlingshot::Collide(CollisionEvent* coll)
       // Calculate this distance from the center of the slingshot to get force
 
       const float btd = (vhitpoint.x - v1.x)*hitnormal.y - (vhitpoint.y - v1.y)*hitnormal.x; // distance to vhit from V1
-      float force = (len != 0.0f) ? ((btd + btd) / len - 1.0f) : -1.0f;	// -1..+1
+      float force = (fabsf(len) > 1.0e-6f) ? ((btd + btd) / len - 1.0f) : -1.0f;	// -1..+1
       force = 0.5f *(1.0f - force*force);	//!! maximum value 0.5 ...I think this should have been 1.0...oh well
       // will match the previous physics
       force *= m_force;//-80;
 
-      pball->m_vel.x -= hitnormal.x * force;	// boost velocity, drive into slingshot (counter normal)
-      pball->m_vel.y -= hitnormal.y * force;	// allow CollideWall to handle the remainder
+      pball->m_vel -= hitnormal * force;	// boost velocity, drive into slingshot (counter normal), allow CollideWall to handle the remainder
    }
 
    pball->Collide3DWall(hitnormal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter);
@@ -65,10 +63,10 @@ void LineSegSlingshot::Collide(CollisionEvent* coll)
    if (m_pfe && !m_psurface->m_fDisabled && threshold)
    {
       // is this the same place as last event? if same then ignore it
-       const Vertex3Ds dist = pball->m_Event_Pos - pball->m_pos;
+       const float dist_ls = (pball->m_Event_Pos - pball->m_pos).LengthSquared();
        pball->m_Event_Pos = pball->m_pos; //remember last collide position
 
-       if (dist.LengthSquared() > 0.25f) // must be a new place if only by a little
+       if (dist_ls > 0.25f) // must be a new place if only by a little
        {
            m_pfe->FireGroupEvent(DISPID_SurfaceEvents_Slingshot);
            m_slingshotanim.m_TimeReset = g_pplayer->m_time_msec + 100;
@@ -141,31 +139,27 @@ float HitGate::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 {
    if (!m_fEnabled) return -1.0f;
 
+   for(unsigned int i = 0; i < 2; ++i)
    {
-      const float hittime = m_lineseg[0].HitTestBasic(pball, dtime, coll, false, true, false);// any face, lateral, non-rigid
+      const float hittime = m_lineseg[i].HitTestBasic(pball, dtime, coll, false, true, false);// any face, lateral, non-rigid
       if (hittime >= 0.f)
       {
-         // signal the Collide() function that the hit is on the front side
-         coll.hitvelocity.x = 0.0f;
+         // signal the Collide() function that the hit is on the front or back side
+         coll.hitvelocity.x = (float)i;
 
          return hittime;
       }
    }
 
-   const float hittime = m_lineseg[1].HitTestBasic(pball, dtime, coll, false, true, false);// any face, lateral, non-rigid
-   if (hittime >= 0.f)
-      // signal the Collide() function that the hit is on the back side
-      coll.hitvelocity.x = 1.0f;
-
-   return hittime;
+   return -1.0f;
 }
 
 void HitGate::Collide(CollisionEvent* coll)
 {
-   Ball *pball = coll->ball;
+   Ball * const pball = coll->ball;
    const Vertex3Ds& hitnormal = coll->hitnormal;
    
-   const float dot = pball->m_vel.x * hitnormal.x + pball->m_vel.y * hitnormal.y;
+   const float dot = coll->hitnormal.Dot(coll->ball->m_vel);
 
    if (coll->hitvelocity.x == 0.0f && !m_twoWay)
       return;	//hit from back doesn't count if not two-way
@@ -183,6 +177,7 @@ void HitGate::Collide(CollisionEvent* coll)
    // We encoded which side of the spinner the ball hit
    if (coll->hitvelocity.x == 0.0f && m_twoWay)
        m_gateanim.m_anglespeed = -m_gateanim.m_anglespeed;
+
    FireHitEvent(pball);
 }
 
@@ -323,31 +318,30 @@ float HitSpinner::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
 {
    if (!m_fEnabled) return -1.0f;
 
+   for(unsigned int i = 0; i < 2; ++i)
    {
-      const float hittime = m_lineseg[0].HitTestBasic(pball, dtime, coll, false, true, false);// any face, lateral, non-rigid
+      const float hittime = m_lineseg[i].HitTestBasic(pball, dtime, coll, false, true, false);// any face, lateral, non-rigid
       if (hittime >= 0.f)
       {
-         coll.hitvelocity.x = 1.0f;
+         coll.hitvelocity.x = (float)(i^1);
 
          return hittime;
       }
    }
 
-   const float hittime = m_lineseg[1].HitTestBasic(pball, dtime, coll, false, true, false);// any face, lateral, non-rigid
-   if (hittime >= 0.f)
-      coll.hitvelocity.x = 0.0f;
-
-   return hittime;
+   return -1.0f;
 }
 
 void HitSpinner::Collide(CollisionEvent* coll)
 {
    Ball * const pball = coll->ball;
    const Vertex3Ds& hitnormal = coll->hitnormal;
-   const float dot = pball->m_vel.x * hitnormal.x + pball->m_vel.y * hitnormal.y;
+
+   const float dot = coll->hitnormal.Dot(coll->ball->m_vel);
+
    if (dot < 0.f) return;	//hit from back doesn't count
 
-   float h = m_spinneranim.m_pspinner->m_d.m_height*0.5f;
+   const float h = m_spinneranim.m_pspinner->m_d.m_height*0.5f;
    //linear speed = ball speed
    //angular speed = linear/radius (height of hit)
 
@@ -361,6 +355,7 @@ void HitSpinner::Collide(CollisionEvent* coll)
    if (fabsf(h) > 1.0f)			// avoid divide by zero
       m_spinneranim.m_anglespeed /= h;
    m_spinneranim.m_anglespeed *= m_spinneranim.m_damping;
+
    // We encoded which side of the spinner the ball hit
    if (coll->hitvelocity.x != 0.0f)
       m_spinneranim.m_anglespeed = -m_spinneranim.m_anglespeed;
@@ -936,18 +931,18 @@ HitLine3D::HitLine3D(const Vertex3Ds& v1, const Vertex3Ds& v2)
    // Angle to rotate the line into the z-axis
    const float dot = vLine.z; //vLine.Dot(&vup);
 
-   const float transangle = acosf(dot);
-
-   matTrans.RotationAroundAxis(transaxis, -transangle);
+   //const float transangle = acosf(dot);
+   //matTrans.RotationAroundAxis(transaxis, -transangle);
+   matTrans.RotationAroundAxis(transaxis,-sqrtf(1.f-dot*dot),dot);
 
    const Vertex3Ds vtrans1 = matTrans * v1;
-   const Vertex3Ds vtrans2 = matTrans * v2;
+   const float vtrans2z = (matTrans * v2).z;
 
    // set up HitLineZ parameters
    m_xy.x = vtrans1.x;
    m_xy.y = vtrans1.y;
-   m_zlow = min(vtrans1.z, vtrans2.z);
-   m_zhigh = max(vtrans1.z, vtrans2.z);
+   m_zlow = min(vtrans1.z, vtrans2z);
+   m_zhigh = max(vtrans1.z, vtrans2z);
 
    m_rcHitRect.left = min(v1.x, v2.x);
    m_rcHitRect.right = max(v1.x, v2.x);
@@ -962,14 +957,14 @@ float HitLine3D::HitTest(const Ball * pball_, float dtime, CollisionEvent& coll)
    if (!m_fEnabled)
       return -1.0f;
 
-   Ball * pball = const_cast<Ball*>(pball_);   // HACK; needed below // evil cast to non-const, but not so expensive as constructor for full copy (and avoids screwing with the ball IDs)
+   Ball * const pball = const_cast<Ball*>(pball_);   // HACK; needed below // evil cast to non-const, but not so expensive as constructor for full copy (and avoids screwing with the ball IDs)
 
    // transform ball to cylinder coordinate system
    const Vertex3Ds old_pos = pball->m_pos;
    const Vertex3Ds old_vel = pball->m_vel;
    pball->m_pos = matTrans * pball->m_pos;
    pball->m_vel = matTrans * pball->m_vel;
-   // and update z of LineZ with transformed coordinates
+   // and update z bounds of LineZ with transformed coordinates
    const Vertex2D oldz(m_rcHitRect.zlow, m_rcHitRect.zhigh);
    m_rcHitRect.zlow = m_zlow;
    m_rcHitRect.zhigh = m_zhigh;
@@ -989,7 +984,7 @@ float HitLine3D::HitTest(const Ball * pball_, float dtime, CollisionEvent& coll)
 
 void HitLine3D::Collide(CollisionEvent* coll)
 {
-   Ball *pball = coll->ball;
+   Ball *const pball = coll->ball;
    const Vertex3Ds& hitnormal = coll->hitnormal;
 
    const float dot = hitnormal.Dot(pball->m_vel);
