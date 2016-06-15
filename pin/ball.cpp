@@ -212,7 +212,7 @@ void Ball::Collide3DWall(const Vertex3Ds& hitNormal, float elasticity, float ela
    }
 }
 
-float Ball::HitTest(const Ball * pball_, float dtime, CollisionEvent& coll)
+float Ball::HitTest(const Ball * pball_, const float dtime, CollisionEvent& coll)
 {
    Ball * const pball = const_cast<Ball*>(pball_); // HACK; needed below
 
@@ -311,9 +311,9 @@ float Ball::HitTest(const Ball * pball_, float dtime, CollisionEvent& coll)
    return hittime;
 }
 
-void Ball::Collide(CollisionEvent *coll)
+void Ball::Collide(CollisionEvent& coll)
 {
-   Ball * const pball = coll->ball;
+   Ball * const pball = coll.ball;
 
    // make sure we process each ball/ball collision only once
    // (but if we are frozen, there won't be a second collision event, so deal with it now!)
@@ -324,7 +324,7 @@ void Ball::Collide(CollisionEvent *coll)
 
    // target ball to object ball delta velocity
    const Vertex3Ds vrel = pball->m_vel - m_vel;
-   const Vertex3Ds vnormal = coll->hitnormal;
+   const Vertex3Ds vnormal = coll.hitnormal;
    float dot = vrel.Dot(vnormal);
 
    // correct displacements, mostly from low velocity, alternative to true acceleration processing
@@ -332,7 +332,7 @@ void Ball::Collide(CollisionEvent *coll)
    {														// otherwise if clearly approaching .. process the collision
       if (dot > C_LOWNORMVEL) return;						// is this velocity clearly receding (i.e must > a minimum)		
 #ifdef C_EMBEDDED
-      if (coll->hitdistance < -C_EMBEDDED)
+      if (coll.hitdistance < -C_EMBEDDED)
          dot = -C_EMBEDSHOT;		// has ball become embedded???, give it a kick
       else return;
 #endif
@@ -345,7 +345,7 @@ void Ball::Collide(CollisionEvent *coll)
    }
 
 #ifdef C_DISP_GAIN
-   float edist = -C_DISP_GAIN * coll->hitdistance;
+   float edist = -C_DISP_GAIN * coll.hitdistance;
    if (edist > 1.0e-4f)
    {
       if (edist > C_DISP_LIMIT)

@@ -235,22 +235,17 @@ class HitPlunger :
    public HitObject
 {
 public:
-
    HitPlunger(const float x, const float y, const float x2,
       const float zheight,
       const float frameTop, const float frameBottom,
       Plunger * const pPlunger);
    ~HitPlunger() {}
 
-   virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
-
+   virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll);
    virtual int GetType() const { return ePlunger; }
-
-   virtual void Collide(CollisionEvent *coll);
-   virtual void Contact(CollisionEvent& coll, float dtime);
-
+   virtual void Collide(CollisionEvent& coll);
+   virtual void Contact(CollisionEvent& coll, const float dtime);
    virtual void CalcHitRect();
-
    virtual AnimObject *GetAnimObject() { return &m_plungeranim; }
 
    PlungerAnimObject m_plungeranim;

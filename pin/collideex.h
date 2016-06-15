@@ -16,7 +16,7 @@ public:
 class BumperHitCircle : public HitCircle
 {
 public:
-   BumperHitCircle(const Vertex2D& c, float r, float zlow, float zhigh)
+   BumperHitCircle(const Vertex2D& c, const float r, const float zlow, const float zhigh)
       : HitCircle(c,r,zlow,zhigh)
    {
       m_bumperanim.m_fHitEvent = true;
@@ -28,7 +28,7 @@ public:
       m_pbumper = NULL;
    }
 
-   virtual void Collide(CollisionEvent* coll);
+   virtual void Collide(CollisionEvent& coll);
 
    virtual AnimObject *GetAnimObject() { return &m_bumperanim; }
 
@@ -64,8 +64,8 @@ public:
       m_psurface = NULL;
    }
 
-   virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
-   virtual void Collide(CollisionEvent* coll);
+   virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll);
+   virtual void Collide(CollisionEvent& coll);
 
    virtual AnimObject *GetAnimObject() { return &m_slingshotanim; }
 
@@ -82,10 +82,10 @@ class Hit3DPoly : public HitObject
 public:
    Hit3DPoly(Vertex3Ds * const rgv, const int count);
    virtual ~Hit3DPoly();
-   virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
+   virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll);
    virtual int GetType() const { return e3DPoly; }
-   virtual void Collide(CollisionEvent *coll);
-   virtual void Contact(CollisionEvent& coll, float dtime);
+   virtual void Collide(CollisionEvent& coll);
+   virtual void Contact(CollisionEvent& coll, const float dtime);
    virtual void CalcHitRect();
 
    Vertex3Ds *m_rgv;
@@ -98,10 +98,10 @@ class HitTriangle : public HitObject
 public:
    HitTriangle(const Vertex3Ds rgv[3]);    // vertices in counterclockwise order
    virtual ~HitTriangle() {}
-   virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
+   virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll);
    virtual int GetType() const { return eTriangle; }
-   virtual void Collide(CollisionEvent* coll);
-   virtual void Contact(CollisionEvent& coll, float dtime);
+   virtual void Collide(CollisionEvent& coll);
+   virtual void Contact(CollisionEvent& coll, const float dtime);
    virtual void CalcHitRect();
 
    bool IsDegenerate() const       { return normal.IsZero(); }
@@ -121,10 +121,10 @@ public:
       m_elasticity = 0.2f;
    }
 
-   virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
+   virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll);
    virtual int GetType() const { return ePlane; }
-   virtual void Collide(CollisionEvent* coll);
-   virtual void Contact(CollisionEvent& coll, float dtime);
+   virtual void Collide(CollisionEvent& coll);
+   virtual void Contact(CollisionEvent& coll, const float dtime);
    virtual void CalcHitRect() {}  // TODO: this is needed if we want to put it in the quadtree
 
    Vertex3Ds normal;
@@ -158,9 +158,9 @@ public:
 
    virtual int GetType() const { return eSpinner; }
 
-   virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
+   virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll);
 
-   virtual void Collide(CollisionEvent* coll);
+   virtual void Collide(CollisionEvent& coll);
 
    virtual void CalcHitRect();
 
@@ -198,9 +198,9 @@ public:
 
    virtual int GetType() const { return eGate; }
 
-   virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
+   virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll);
 
-   virtual void Collide(CollisionEvent* coll);
+   virtual void Collide(CollisionEvent& coll);
    virtual void CalcHitRect();
 
    virtual AnimObject *GetAnimObject() { return &m_gateanim; }
@@ -214,8 +214,8 @@ public:
 class TriggerLineSeg : public LineSeg
 {
 public:
-   virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
-   virtual void Collide(CollisionEvent* coll);
+   virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll);
+   virtual void Collide(CollisionEvent& coll);
 
    virtual int GetType() const { return eTrigger; }
 
@@ -227,8 +227,8 @@ class TriggerHitCircle : public HitCircle
 public:
    TriggerHitCircle(const Vertex2D& c, float r, float zlow, float zhigh)
      : HitCircle(c,r,zlow,zhigh) {}
-   virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
-   virtual void Collide(CollisionEvent* coll);
+   virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll);
+   virtual void Collide(CollisionEvent& coll);
 
    virtual int GetType() const { return eTrigger; }
 
@@ -245,8 +245,8 @@ class HitLine3D : public HitLineZ
 public:
    HitLine3D(const Vertex3Ds& v1, const Vertex3Ds& v2);
 
-   virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
-   virtual void Collide(CollisionEvent* coll);
+   virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll);
+   virtual void Collide(CollisionEvent& coll);
 
    virtual void CalcHitRect();
 

@@ -2712,8 +2712,8 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
 #ifdef _DEBUGPHYSICS
             c_collisioncnt++;
 #endif
-            pho->Collide(&pball->m_coll);        //!!!!! 3) collision on active ball
-            pball->m_coll.obj = NULL;            // remove trial hit object pointer
+            pho->Collide(pball->m_coll);               //!!!!! 3) collision on active ball
+            pball->m_coll.obj = NULL;                  // remove trial hit object pointer
 
             // Collide may have changed the velocity of the ball, 
             // and therefore the bounding box for the next hit cycle

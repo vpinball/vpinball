@@ -29,9 +29,9 @@ public:
    virtual void UpdateVelocities();
 
    // From HitObject
-   virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
+   virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll);
    virtual int GetType() const { return eBall; }
-   virtual void Collide(CollisionEvent *coll);
+   virtual void Collide(CollisionEvent& coll);
    virtual void CalcHitRect();
    virtual AnimObject *GetAnimObject() { return &m_ballanim; }
 

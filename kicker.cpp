@@ -1128,12 +1128,12 @@ STDMETHODIMP Kicker::get_LastCapturedBall(IBall **pVal)
     return S_OK;
 }
 
-float KickerHitCircle::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
+float KickerHitCircle::HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll)
 {
    return HitTestBasicRadius(pball, dtime, coll, false, false, false); //any face, not-lateral, non-rigid
 }
 
-void KickerHitCircle::DoChangeBallVelocity(Ball *const pball, const Vertex3Ds& hitnormal)
+void KickerHitCircle::DoChangeBallVelocity(Ball * const pball, const Vertex3Ds& hitnormal)
 {
     float minDist_sqr = FLT_MAX;
     unsigned int idx = ~0u;

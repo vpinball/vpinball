@@ -350,15 +350,10 @@ float FlipperAnimObject::GetHitTime() const
       return hittime;
 }
 
-float HitFlipper::GetHitTime() const
-{
-   return m_flipperanim.GetHitTime();
-}
-
 #define LeftFace 1
 #define RightFace 0
 
-float HitFlipper::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
+float HitFlipper::HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll)
 {
    if (!m_flipperanim.m_fEnabled) return -1;
 
@@ -401,7 +396,7 @@ float HitFlipper::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
       return -1.0f;	// no hits
 }
 
-float HitFlipper::HitTestFlipperEnd(const Ball * pball, const float dtime, CollisionEvent& coll) // replacement
+float HitFlipper::HitTestFlipperEnd(const Ball * const pball, const float dtime, CollisionEvent& coll) // replacement
 {
    const float angleCur = m_flipperanim.m_angleCur;
    float anglespeed = m_flipperanim.m_anglespeed;		// rotation rate
@@ -551,7 +546,7 @@ float HitFlipper::HitTestFlipperEnd(const Ball * pball, const float dtime, Colli
 }
 
 
-float HitFlipper::HitTestFlipperFace(const Ball * pball, const float dtime, CollisionEvent& coll, const bool face)
+float HitFlipper::HitTestFlipperFace(const Ball * const pball, const float dtime, CollisionEvent& coll, const bool face)
 {
    const float angleCur = m_flipperanim.m_angleCur;
    float anglespeed = m_flipperanim.m_anglespeed;				// rotation rate
@@ -720,10 +715,10 @@ float HitFlipper::HitTestFlipperFace(const Ball * pball, const float dtime, Coll
 }
 
 
-void HitFlipper::Collide(CollisionEvent *coll)
+void HitFlipper::Collide(CollisionEvent& coll)
 {
-   Ball *pball = coll->ball;
-   const Vertex3Ds normal = coll->hitnormal;
+   Ball * const pball = coll.ball;
+   const Vertex3Ds normal = coll.hitnormal;
 
    const Vertex3Ds rB = -pball->m_radius * normal;
    const Vertex3Ds hitPos = pball->m_pos + rB;
@@ -751,7 +746,7 @@ void HitFlipper::Collide(CollisionEvent *coll)
    {													// otherwise if clearly approaching .. process the collision
       if (bnv > C_LOWNORMVEL) return;					//is this velocity clearly receding (i.e must > a minimum)		
 #ifdef C_EMBEDDED
-      if (coll->hitdistance < -C_EMBEDDED)
+      if (coll.hitdistance < -C_EMBEDDED)
          bnv = -C_EMBEDSHOT;							// has ball become embedded???, give it a kick
       else return;
 #endif
@@ -759,13 +754,12 @@ void HitFlipper::Collide(CollisionEvent *coll)
 
 #ifdef C_DISP_GAIN 
    // correct displacements, mostly from low velocity blindness, an alternative to true acceleration processing
-   float hdist = -C_DISP_GAIN * coll->hitdistance;		// distance found in hit detection
+   float hdist = -C_DISP_GAIN * coll.hitdistance;		// distance found in hit detection
    if (hdist > 1.0e-4f)
    {
       if (hdist > C_DISP_LIMIT)
          hdist = C_DISP_LIMIT;	// crossing ramps, delta noise
-      pball->m_pos.x += hdist * coll->hitnormal.x;	// push along norm, back to free area
-      pball->m_pos.y += hdist * coll->hitnormal.y;	// use the norm, but is not correct
+      pball->m_pos += hdist * coll.hitnormal;	// push along norm, back to free area; use the norm, but is not correct
    }
 #endif
 
@@ -866,8 +860,8 @@ void HitFlipper::Collide(CollisionEvent *coll)
 
    if ((bnv < -0.25f) && (g_pplayer->m_time_msec - m_last_hittime) > 250) // limit rate to 250 milliseconds per event
    {
-      //!! unused const float distance = coll->hitmoment;                     // moment .... and the flipper response
-      const float flipperHit = /*(distance == 0.0f)*/ coll->hitmoment_bit ? -1.0f : -bnv; // move event processing to end of collision handler...
+      //!! unused const float distance = coll.hitmoment;                     // moment .... and the flipper response
+      const float flipperHit = /*(distance == 0.0f)*/ coll.hitmoment_bit ? -1.0f : -bnv; // move event processing to end of collision handler...
       if (flipperHit < 0.f)
          m_pflipper->FireGroupEvent(DISPID_HitEvents_Hit);        // simple hit event
       else
@@ -883,7 +877,7 @@ void HitFlipper::Collide(CollisionEvent *coll)
 #endif
 }
 
-void HitFlipper::Contact(CollisionEvent& coll, float dtime)
+void HitFlipper::Contact(CollisionEvent& coll, const float dtime)
 {
    Ball * const pball = coll.ball;
 

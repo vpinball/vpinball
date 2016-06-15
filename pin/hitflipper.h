@@ -84,27 +84,23 @@ class HitFlipper :
    public HitObject
 {
 public:
-   Vertex2D v;
-
    HitFlipper(const Vertex2D& center, float baser, float endr, float flipr, float angleStart, float angleEnd,
       float zlow, float zhigh, float strength, float mass, float returnRatio);
    ~HitFlipper();
 
-   virtual float HitTestFlipperFace(const Ball * pball, const float dtime, CollisionEvent& coll, const bool face1);
-
-   virtual float HitTestFlipperEnd(const Ball * pball, const float dtime, CollisionEvent& coll);
-
-   float GetHitTime() const;
-   virtual float HitTest(const Ball * pball, float dtime, CollisionEvent& coll);
-
+   virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll);
    virtual int GetType() const { return eFlipper; }
-
-   virtual void Collide(CollisionEvent *coll);
-   void Contact(CollisionEvent& coll, float dtime);
-
+   virtual void Collide(CollisionEvent& coll);
+   virtual void CalcHitRect();
    virtual AnimObject *GetAnimObject() { return &m_flipperanim; }
 
-   virtual void CalcHitRect();
+   float HitTestFlipperFace(const Ball * const pball, const float dtime, CollisionEvent& coll, const bool face1);
+   float HitTestFlipperEnd(const Ball * const pball, const float dtime, CollisionEvent& coll);
+
+   float GetHitTime() const { return m_flipperanim.GetHitTime(); }
+   void Contact(CollisionEvent& coll, const float dtime);
+
+   Vertex2D v;
 
    Flipper *m_pflipper;
 
