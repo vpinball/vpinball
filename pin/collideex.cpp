@@ -1,13 +1,13 @@
 #include "stdafx.h"
 
-void BumperHitCircle::Collide(CollisionEvent* coll)
+void BumperHitCircle::Collide(CollisionEvent& coll)
 {
    if (!m_fEnabled) return;
 
-   Ball * const pball = coll->ball;
-   const Vertex3Ds& hitnormal = coll->hitnormal;
+   Ball * const pball = coll.ball;
+   const Vertex3Ds& hitnormal = coll.hitnormal;
 
-   const float dot = coll->hitnormal.Dot(coll->ball->m_vel);
+   const float dot = coll.hitnormal.Dot(coll.ball->m_vel);
 
    pball->Collide3DWall(hitnormal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter);	//reflect ball from wall
 
@@ -23,19 +23,19 @@ void BumperHitCircle::Collide(CollisionEvent* coll)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-float LineSegSlingshot::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
+float LineSegSlingshot::HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll)
 {
    if (!m_fEnabled) return -1.0f;
 
-   return this->HitTestBasic(pball, dtime, coll, true, true, true);
+   return HitTestBasic(pball, dtime, coll, true, true, true);
 }
 
-void LineSegSlingshot::Collide(CollisionEvent* coll)
+void LineSegSlingshot::Collide(CollisionEvent& coll)
 {
-   Ball * const pball = coll->ball;
-   const Vertex3Ds& hitnormal = coll->hitnormal;
+   Ball * const pball = coll.ball;
+   const Vertex3Ds& hitnormal = coll.hitnormal;
 
-   const float dot = coll->hitnormal.Dot(coll->ball->m_vel); // normal velocity to slingshot
+   const float dot = coll.hitnormal.Dot(coll.ball->m_vel); // normal velocity to slingshot
 
    const bool threshold = (dot <= -m_psurface->m_d.m_slingshot_threshold);  // normal greater than threshold?
 
@@ -135,7 +135,7 @@ HitGate::HitGate(Gate * const pgate, const float height)
    m_twoWay = false;
 }
 
-float HitGate::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
+float HitGate::HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll)
 {
    if (!m_fEnabled) return -1.0f;
 
@@ -154,14 +154,14 @@ float HitGate::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
    return -1.0f;
 }
 
-void HitGate::Collide(CollisionEvent* coll)
+void HitGate::Collide(CollisionEvent& coll)
 {
-   Ball * const pball = coll->ball;
-   const Vertex3Ds& hitnormal = coll->hitnormal;
+   Ball * const pball = coll.ball;
+   const Vertex3Ds& hitnormal = coll.hitnormal;
    
-   const float dot = coll->hitnormal.Dot(coll->ball->m_vel);
+   const float dot = coll.hitnormal.Dot(coll.ball->m_vel);
 
-   if (coll->hitvelocity.x == 0.0f && !m_twoWay)
+   if (coll.hitvelocity.x == 0.0f && !m_twoWay)
       return;	//hit from back doesn't count if not two-way
    const float h = m_pgate->m_d.m_height*0.5f;
 
@@ -175,7 +175,7 @@ void HitGate::Collide(CollisionEvent* coll)
   m_gateanim.m_anglespeed = speed;
 
    // We encoded which side of the spinner the ball hit
-   if (coll->hitvelocity.x == 0.0f && m_twoWay)
+   if (coll.hitvelocity.x == 0.0f && m_twoWay)
        m_gateanim.m_anglespeed = -m_gateanim.m_anglespeed;
 
    FireHitEvent(pball);
@@ -201,7 +201,7 @@ void GateAnimObject::UpdateDisplacements(const float dtime)
          m_pgate->FireVoidEventParm(DISPID_LimitEvents_EOS, fabsf(RADTOANG(m_anglespeed)));	// send EOS event
          if (!m_forcedMove)
          {
-            m_anglespeed *= -1.0f;
+            m_anglespeed = -m_anglespeed;
             m_anglespeed *= m_damping * 0.8f; //just some extra damping to reduce the anglespeed a bit faster
          }
          else if (m_anglespeed>0.0f)
@@ -215,7 +215,7 @@ void GateAnimObject::UpdateDisplacements(const float dtime)
             m_angle = m_angleMin;
          if (!m_forcedMove)
          {
-            m_anglespeed *= -1.0f;
+            m_anglespeed = -m_anglespeed;
             m_anglespeed *= m_damping * 0.8f; //just some extra damping to reduce the anglespeed a bit faster
          }
          else if (m_anglespeed<0.0f)
@@ -230,7 +230,7 @@ void GateAnimObject::UpdateDisplacements(const float dtime)
          m_pgate->FireVoidEventParm(DISPID_LimitEvents_EOS, fabsf(RADTOANG(m_anglespeed)));	// send EOS event
          if (!m_forcedMove)
          {
-            m_anglespeed *= -1.0f;
+            m_anglespeed = -m_anglespeed;
             m_anglespeed *= m_damping * 0.8f; //just some extra damping to reduce the anglespeed a bit faster
          }
          else if (m_anglespeed > 0.0f)
@@ -242,7 +242,7 @@ void GateAnimObject::UpdateDisplacements(const float dtime)
          m_pgate->FireVoidEventParm(DISPID_LimitEvents_BOS, fabsf(RADTOANG(m_anglespeed)));	// send Park event
          if (!m_forcedMove)
          {
-            m_anglespeed *= -1.0f;
+            m_anglespeed = -m_anglespeed;
             m_anglespeed *= m_damping * 0.8f; //just some extra damping to reduce the anglespeed a bit faster
          }
          else if (m_anglespeed<0.0f)
@@ -314,7 +314,7 @@ HitSpinner::HitSpinner(Spinner * const pspinner, const float height)
    m_spinneranim.m_fVisible = pspinner->m_d.m_fVisible;
 }
 
-float HitSpinner::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
+float HitSpinner::HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll)
 {
    if (!m_fEnabled) return -1.0f;
 
@@ -332,12 +332,12 @@ float HitSpinner::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
    return -1.0f;
 }
 
-void HitSpinner::Collide(CollisionEvent* coll)
+void HitSpinner::Collide(CollisionEvent& coll)
 {
-   Ball * const pball = coll->ball;
-   const Vertex3Ds& hitnormal = coll->hitnormal;
+   Ball * const pball = coll.ball;
+   const Vertex3Ds& hitnormal = coll.hitnormal;
 
-   const float dot = coll->hitnormal.Dot(coll->ball->m_vel);
+   const float dot = coll.hitnormal.Dot(coll.ball->m_vel);
 
    if (dot < 0.f) return;	//hit from back doesn't count
 
@@ -357,7 +357,7 @@ void HitSpinner::Collide(CollisionEvent* coll)
    m_spinneranim.m_anglespeed *= m_spinneranim.m_damping;
 
    // We encoded which side of the spinner the ball hit
-   if (coll->hitvelocity.x != 0.0f)
+   if (coll.hitvelocity.x != 0.0f)
       m_spinneranim.m_anglespeed = -m_spinneranim.m_anglespeed;
 }
 
@@ -458,7 +458,7 @@ Hit3DPoly::~Hit3DPoly()
    delete[] m_rgv;
 }
 
-float Hit3DPoly::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
+float Hit3DPoly::HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll)
 {
    if (!m_fEnabled) return -1.0f;
 
@@ -598,10 +598,10 @@ float Hit3DPoly::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
    return -1.0f;
 }
 
-void Hit3DPoly::Collide(CollisionEvent *coll)
+void Hit3DPoly::Collide(CollisionEvent& coll)
 {
-   Ball *pball = coll->ball;
-   const Vertex3Ds& hitnormal = coll->hitnormal;
+   Ball * const pball = coll.ball;
+   const Vertex3Ds& hitnormal = coll.hitnormal;
 
    if (m_ObjType != eTrigger)
    {
@@ -626,7 +626,7 @@ void Hit3DPoly::Collide(CollisionEvent *coll)
 
       const int i = pball->m_vpVolObjs->IndexOf(m_pObj); // if -1 then not in objects volume set (i.e not already hit)
 
-      if ((coll->hitvelocity.x != 1.0f) == (i < 0))	   // Hit == NotAlreadyHit
+      if ((coll.hitvelocity.x != 1.0f) == (i < 0))	   // Hit == NotAlreadyHit
       {
          pball->m_pos += STATICTIME * pball->m_vel;     //move ball slightly forward
 
@@ -644,7 +644,7 @@ void Hit3DPoly::Collide(CollisionEvent *coll)
    }
 }
 
-void Hit3DPoly::Contact(CollisionEvent& coll, float dtime)
+void Hit3DPoly::Contact(CollisionEvent& coll, const float dtime)
 {
    coll.ball->HandleStaticContact(coll, m_friction, dtime);
 }
@@ -689,7 +689,7 @@ HitTriangle::HitTriangle(const Vertex3Ds rgv[3])
    m_scatter = 0.f;
 }
 
-float HitTriangle::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
+float HitTriangle::HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll)
 {
    if (!m_fEnabled) return -1.0f;
 
@@ -772,10 +772,10 @@ float HitTriangle::HitTest(const Ball * pball, float dtime, CollisionEvent& coll
       return -1.0f;
 }
 
-void HitTriangle::Collide(CollisionEvent* coll)
+void HitTriangle::Collide(CollisionEvent& coll)
 {
-   Ball *pball = coll->ball;
-   const Vertex3Ds& hitnormal = coll->hitnormal;
+   Ball * const pball = coll.ball;
+   const Vertex3Ds& hitnormal = coll.hitnormal;
 
    const float dot = hitnormal.Dot(pball->m_vel);
 
@@ -793,7 +793,7 @@ void HitTriangle::Collide(CollisionEvent* coll)
    }
 }
 
-void HitTriangle::Contact(CollisionEvent& coll, float dtime)
+void HitTriangle::Contact(CollisionEvent& coll, const float dtime)
 {
    coll.ball->HandleStaticContact(coll, m_friction, dtime);
 }
@@ -812,7 +812,7 @@ void HitTriangle::CalcHitRect()
 ////////////////////////////////////////////////////////////////////////////////
 
 
-float HitPlane::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
+float HitPlane::HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll)
 {
    if (!m_fEnabled) return -1.0f;
 
@@ -887,22 +887,22 @@ float HitPlane::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
    return hittime;
 }
 
-void HitPlane::Collide(CollisionEvent* coll)
+void HitPlane::Collide(CollisionEvent& coll)
 {
    //slintf("Playfield COLLISION - (%f %f %f) - (%f %f %f)\n",
-   //        coll->ball->m_pos.x, coll->ball->m_pos.y, coll->ball->m_pos.z,
-   //        coll->ball->m_vel.x, coll->ball->m_vel.y, coll->ball->m_vel.z);
-   coll->ball->Collide3DWall(coll->hitnormal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter);
+   //        coll.ball->m_pos.x, coll.ball->m_pos.y, coll.ball->m_pos.z,
+   //        coll.ball->m_vel.x, coll.ball->m_vel.y, coll.ball->m_vel.z);
+   coll.ball->Collide3DWall(coll.hitnormal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter);
 
 #ifdef C_EMBEDSHOT_PLANE
    // if ball has penetrated, push it out of the plane
-   const float bnd = normal.Dot(coll->ball->m_pos) - coll->ball->m_radius - d; // distance from plane to ball surface
+   const float bnd = normal.Dot(coll.ball->m_pos) - coll.ball->m_radius - d; // distance from plane to ball surface
    if (bnd < 0.f)
-      coll->ball->m_pos -= bnd * normal;
+      coll.ball->m_pos -= bnd * normal;
 #endif
 }
 
-void HitPlane::Contact(CollisionEvent& coll, float dtime)
+void HitPlane::Contact(CollisionEvent& coll, const float dtime)
 {
    coll.ball->HandleStaticContact(coll, m_friction, dtime);
 }
@@ -923,10 +923,11 @@ HitLine3D::HitLine3D(const Vertex3Ds& v1, const Vertex3Ds& v2)
    transaxis.y = -vLine.x;
    transaxis.z = 0.0f;
 
-   if (transaxis.LengthSquared() <= 1e-6f)     // line already points in z axis?
+   const float l = transaxis.LengthSquared();
+   if (l <= 1e-6f)     // line already points in z axis?
       transaxis.Set(1.f, 0.f, 0.f);            // choose arbitrary rotation vector
    else
-      transaxis.Normalize();
+      transaxis /= sqrtf(l);
 
    // Angle to rotate the line into the z-axis
    const float dot = vLine.z; //vLine.Dot(&vup);
@@ -952,7 +953,7 @@ HitLine3D::HitLine3D(const Vertex3Ds& v1, const Vertex3Ds& v2)
    m_rcHitRect.zhigh = max(v1.z, v2.z);
 }
 
-float HitLine3D::HitTest(const Ball * pball_, float dtime, CollisionEvent& coll)
+float HitLine3D::HitTest(const Ball * pball_, const float dtime, CollisionEvent& coll)
 {
    if (!m_fEnabled)
       return -1.0f;
@@ -982,10 +983,10 @@ float HitLine3D::HitTest(const Ball * pball_, float dtime, CollisionEvent& coll)
    return hittime;
 }
 
-void HitLine3D::Collide(CollisionEvent* coll)
+void HitLine3D::Collide(CollisionEvent& coll)
 {
-   Ball *const pball = coll->ball;
-   const Vertex3Ds& hitnormal = coll->hitnormal;
+   Ball *const pball = coll.ball;
+   const Vertex3Ds& hitnormal = coll.hitnormal;
 
    const float dot = hitnormal.Dot(pball->m_vel);
    pball->Collide3DWall(hitnormal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter);
@@ -1025,24 +1026,24 @@ void LightSeqAnimObject::Animate()
 }
 
 
-float TriggerLineSeg::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
+float TriggerLineSeg::HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll)
 {
    if (!m_ptrigger->m_hitEnabled) return -1.0f;
 
    // approach either face, not lateral-rolling point (assume center), not a rigid body contact
-   return this->HitTestBasic(pball, dtime, coll, false, false, false);
+   return HitTestBasic(pball, dtime, coll, false, false, false);
 }
 
-void TriggerLineSeg::Collide(CollisionEvent* coll)
+void TriggerLineSeg::Collide(CollisionEvent& coll)
 {
-   Ball *pball = coll->ball;
+   Ball * const pball = coll.ball;
 
    if ((m_ObjType != eTrigger) ||
       (!pball->m_vpVolObjs)) return;
 
    const int i = pball->m_vpVolObjs->IndexOf(m_pObj); // if -1 then not in objects volume set (i.e not already hit)
 
-   if ((coll->hitvelocity.x != 1.0f) == (i < 0))	   // Hit == NotAlreadyHit
+   if ((coll.hitvelocity.x != 1.0f) == (i < 0))	   // Hit == NotAlreadyHit
    {
       pball->m_pos += STATICTIME * pball->m_vel;     // move ball slightly forward
 
@@ -1062,21 +1063,21 @@ void TriggerLineSeg::Collide(CollisionEvent* coll)
 }
 
 
-float TriggerHitCircle::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
+float TriggerHitCircle::HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll)
 {
    return HitTestBasicRadius(pball, dtime, coll, false, false, false); //any face, not-lateral, non-rigid
 }
 
-void TriggerHitCircle::Collide(CollisionEvent* coll)
+void TriggerHitCircle::Collide(CollisionEvent& coll)
 {
-   Ball *pball = coll->ball;
+   Ball * const pball = coll.ball;
 
    if ((m_ObjType < eTrigger) || // triggers and kickers
       (!pball->m_vpVolObjs)) return;
 
    const int i = pball->m_vpVolObjs->IndexOf(m_pObj); // if -1 then not in objects volume set (i.e not already hit)
 
-   if ((coll->hitvelocity.x != 1.0f) == (i < 0))	   // Hit == NotAlreadyHit
+   if ((coll.hitvelocity.x != 1.0f) == (i < 0))	   // Hit == NotAlreadyHit
    {
       pball->m_pos += STATICTIME * pball->m_vel;	   //move ball slightly forward
 

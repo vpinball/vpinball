@@ -531,7 +531,7 @@ void PlungerAnimObject::UpdateVelocities()
    }
 }
 
-float HitPlunger::HitTest(const Ball * pball_, float dtime, CollisionEvent& coll)
+float HitPlunger::HitTest(const Ball * pball_, const float dtime, CollisionEvent& coll)
 {
    Ball * const pball = const_cast<Ball*>(pball_);   // HACK; needed below // evil cast to non-const, but not so expensive as constructor for full copy (and avoids screwing with the ball IDs)
 
@@ -712,17 +712,17 @@ float HitPlunger::HitTest(const Ball * pball_, float dtime, CollisionEvent& coll
    }
 }
 
-void HitPlunger::Collide(CollisionEvent *coll)
+void HitPlunger::Collide(CollisionEvent& coll)
 {
-   Ball *pball = coll->ball;
+   Ball * const pball = coll.ball;
 
-   float dot = (pball->m_vel.x - coll->hitvelocity.x)* coll->hitnormal.x + (pball->m_vel.y - coll->hitvelocity.y) * coll->hitnormal.y;
+   float dot = (pball->m_vel.x - coll.hitvelocity.x)* coll.hitnormal.x + (pball->m_vel.y - coll.hitvelocity.y) * coll.hitnormal.y;
 
    if (dot >= -C_LOWNORMVEL)                                                              // nearly receding ... make sure of conditions
    {                                                                                                       // otherwise if clearly approaching .. process the collision
       if (dot > C_LOWNORMVEL) return;                                         // is this velocity clearly receding (i.e must > a minimum)             
 #ifdef C_EMBEDDED
-      if (coll->hitdistance < -C_EMBEDDED)
+      if (coll.hitdistance < -C_EMBEDDED)
          dot = -C_EMBEDSHOT;             // has ball become embedded???, give it a kick
       else
          return;
@@ -731,17 +731,16 @@ void HitPlunger::Collide(CollisionEvent *coll)
 
 #ifdef C_DISP_GAIN 
    // correct displacements, mostly from low velocity blidness, an alternative to true acceleration processing     
-   float hdist = -C_DISP_GAIN * coll->hitdistance;         // distance found in hit detection
+   float hdist = -C_DISP_GAIN * coll.hitdistance;         // distance found in hit detection
    if (hdist > 1.0e-4f)
    {                                                                                               // magnitude of jump
       if (hdist > C_DISP_LIMIT)
       {
          hdist = C_DISP_LIMIT;
       }                                         // crossing ramps, delta noise
-      pball->m_pos += hdist * coll->hitnormal;    // push along norm, back to free area (use the norm, but is not correct)
+      pball->m_pos += hdist * coll.hitnormal;    // push along norm, back to free area (use the norm, but is not correct)
    }
 #endif
-
 
    // figure the basic impulse
    const float impulse = dot * -1.45f / (1.0f + 1.0f / m_plungeranim.m_mass);
@@ -754,7 +753,7 @@ void HitPlunger::Collide(CollisionEvent *coll)
 
    // Check for a downward collision with the tip.  This is the moving
    // part of the plunger, so it has some special handling.
-   if (coll->hitvelocity.y != 0.0f)
+   if (coll.hitvelocity.y != 0.0f)
    {
       // The tip hit the ball (or vice versa).
       //
@@ -779,7 +778,7 @@ void HitPlunger::Collide(CollisionEvent *coll)
    }
 
    // update the ball speed for the impulse
-   pball->m_vel += impulse * coll->hitnormal;
+   pball->m_vel += impulse * coll.hitnormal;
 
    pball->m_vel *= 0.999f;           //friction all axiz     //!! TODO: fix this
 
@@ -797,7 +796,7 @@ void HitPlunger::Collide(CollisionEvent *coll)
 #endif
 }
 
-void HitPlunger::Contact(CollisionEvent& coll, float dtime)
+void HitPlunger::Contact(CollisionEvent& coll, const float dtime)
 {
    coll.ball->HandleStaticContact(coll, m_friction, dtime);
 }

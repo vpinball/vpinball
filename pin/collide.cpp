@@ -21,14 +21,14 @@ HitObject *CreateCircularHitPoly(const float x, const float y, const float z, co
    return new Hit3DPoly(rgv3d, sections);
 }
 
-void HitObject::FireHitEvent(Ball* pball)
+void HitObject::FireHitEvent(Ball * const pball)
 {
    if (m_pfe && m_fEnabled)
    {
       // is this the same place as last event? if same then ignore it
-      const Vertex3Ds dist = pball->m_Event_Pos - pball->m_pos;
+      const float dist_ls = (pball->m_Event_Pos - pball->m_pos).LengthSquared();
       pball->m_Event_Pos = pball->m_pos;    //remember last collide position
-      if (dist.LengthSquared() > 0.25f) // must be a new place if only by a little //!! magic distance
+      if (dist_ls > 0.25f) // must be a new place if only by a little //!! magic distance
          m_pfe->FireGroupEvent(DISPID_HitEvents_Hit);
    }
 }
@@ -45,7 +45,7 @@ void LineSeg::CalcHitRect()
    // zlow and zhigh were already set in ctor
 }
 
-float LineSeg::HitTestBasic(const Ball * pball, const float dtime, CollisionEvent& coll, const bool direction, const bool lateral, const bool rigid)
+float LineSeg::HitTestBasic(const Ball * const pball, const float dtime, CollisionEvent& coll, const bool direction, const bool lateral, const bool rigid)
 {
    if (!m_fEnabled || pball->m_frozen) return -1.0f;
 
@@ -156,18 +156,18 @@ float LineSeg::HitTestBasic(const Ball * pball, const float dtime, CollisionEven
    return hittime;
 }
 
-float LineSeg::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
+float LineSeg::HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll)
 {
    return HitTestBasic(pball, dtime, coll, true, true, true); // normal face, lateral, rigid
 }
 
-void LineSeg::Collide(CollisionEvent *coll)
+void LineSeg::Collide(CollisionEvent& coll)
 {
-   const float dot = coll->hitnormal.Dot(coll->ball->m_vel);
-   coll->ball->Collide3DWall(coll->hitnormal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter);
+   const float dot = coll.hitnormal.Dot(coll.ball->m_vel);
+   coll.ball->Collide3DWall(coll.hitnormal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter);
 
    if (dot <= -m_threshold)
-      FireHitEvent(coll->ball);
+      FireHitEvent(coll.ball);
 }
 
 void LineSeg::CalcNormal()
@@ -181,14 +181,14 @@ void LineSeg::CalcNormal()
    normal.y = -vT.x * inv_length;
 }
 
-void LineSeg::Contact(CollisionEvent& coll, float dtime)
+void LineSeg::Contact(CollisionEvent& coll, const float dtime)
 {
    coll.ball->HandleStaticContact(coll, m_friction, dtime);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-float HitCircle::HitTestBasicRadius(const Ball * pball, float dtime, CollisionEvent& coll,
+float HitCircle::HitTestBasicRadius(const Ball * const pball, const float dtime, CollisionEvent& coll,
    const bool direction, const bool lateral, const bool rigid)
 {
    if (!m_fEnabled || pball->m_frozen) return -1.0f;
@@ -331,18 +331,18 @@ void HitCircle::CalcHitRect()
    // zlow & zhigh already set in ctor
 }
 
-float HitCircle::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
+float HitCircle::HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll)
 {
 	//normal face, lateral, rigid
 	return HitTestBasicRadius(pball, dtime, coll, true, true, true);
 }
 
-void HitCircle::Collide(CollisionEvent *coll)
+void HitCircle::Collide(CollisionEvent& coll)
 {
-   coll->ball->Collide3DWall(coll->hitnormal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter);
+   coll.ball->Collide3DWall(coll.hitnormal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter);
 }
 
-void HitCircle::Contact(CollisionEvent& coll, float dtime)
+void HitCircle::Contact(CollisionEvent& coll, const float dtime)
 {
    coll.ball->HandleStaticContact(coll, m_friction, dtime);
 }
@@ -351,7 +351,7 @@ void HitCircle::Contact(CollisionEvent& coll, float dtime)
 ///////////////////////////////////////////////////////////////////////////////
 
 
-float HitLineZ::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
+float HitLineZ::HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll)
 {
    if (!m_fEnabled)
       return -1.0f;
@@ -435,16 +435,16 @@ void HitLineZ::CalcHitRect()
    // zlow and zhigh set in ctor
 }
 
-void HitLineZ::Collide(CollisionEvent *coll)
+void HitLineZ::Collide(CollisionEvent& coll)
 {
-   const float dot = coll->hitnormal.Dot(coll->ball->m_vel);
-   coll->ball->Collide3DWall(coll->hitnormal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter);
+   const float dot = coll.hitnormal.Dot(coll.ball->m_vel);
+   coll.ball->Collide3DWall(coll.hitnormal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter);
 
    if (dot <= -m_threshold)
-      FireHitEvent(coll->ball);
+      FireHitEvent(coll.ball);
 }
 
-void HitLineZ::Contact(CollisionEvent& coll, float dtime)
+void HitLineZ::Contact(CollisionEvent& coll, const float dtime)
 {
    coll.ball->HandleStaticContact(coll, m_friction, dtime);
 }
@@ -453,7 +453,7 @@ void HitLineZ::Contact(CollisionEvent& coll, float dtime)
 ///////////////////////////////////////////////////////////////////////////////
 
 
-float HitPoint::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
+float HitPoint::HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll)
 {
    if (!m_fEnabled)
       return -1.0f;
@@ -526,16 +526,16 @@ void HitPoint::CalcHitRect()
    m_rcHitRect = FRect3D(m_p.x, m_p.x, m_p.y, m_p.y, m_p.z, m_p.z);
 }
 
-void HitPoint::Collide(CollisionEvent *coll)
+void HitPoint::Collide(CollisionEvent& coll)
 {
-   const float dot = coll->hitnormal.Dot(coll->ball->m_vel);
-   coll->ball->Collide3DWall(coll->hitnormal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter);
+   const float dot = coll.hitnormal.Dot(coll.ball->m_vel);
+   coll.ball->Collide3DWall(coll.hitnormal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter);
 
    if (dot <= -m_threshold)
-      FireHitEvent(coll->ball);
+      FireHitEvent(coll.ball);
 }
 
-void HitPoint::Contact(CollisionEvent& coll, float dtime)
+void HitPoint::Contact(CollisionEvent& coll, const float dtime)
 {
    coll.ball->HandleStaticContact(coll, m_friction, dtime);
 }
