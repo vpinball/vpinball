@@ -49,7 +49,7 @@ inline float ElasticityWithFalloff(const float elasticity, const float falloff, 
 
 struct CollisionEvent
 {
-   CollisionEvent() : ball(0), obj(0), isContact(false), hittime(0.0f), hitdistance(0.0f), /*hitmoment(0.0f)*/ hitmoment_bit(true) /*, hitRigid(false)*/ {}
+   CollisionEvent() : ball(0), obj(0), isContact(false), hittime(0.0f), hitdistance(0.0f), /*hitmoment(0.0f)*/ hitmoment_bit(true), hitflag(false) /*, hitRigid(false)*/ {}
 
    Ball* ball;         // the ball that collided with smth
    HitObject* obj;     // what the ball collided with
@@ -59,7 +59,7 @@ struct CollisionEvent
 
    // additional collision information
    Vertex3Ds hitnormal;
-   Vertex2D  hitvelocity; //!! x is usually abused (e.g. x = UnHit signal (0 or 1 then) or side of hit (spinner, 0 or 1)), otherwise only "correctly" used by plunger and flipper (both x and y)
+   Vertex2D  hitvel; // only "correctly" used by plunger and flipper
    float hit_org_normalvelocity; // only set if isContact is true
 
    //float hitangularrate; //!! angular rate is only assigned but never used
@@ -67,9 +67,11 @@ struct CollisionEvent
    //float hitmoment; //!! currently only one bit is used (hitmoment == 0 or not)
    bool hitmoment_bit;
 
-   //bool hitRigid;      // rigid body collision? //!! this is almost never ever triggered (as 99.999999% true when actually handled), and if then only once while rolling over a trigger, etc, with a very minimalistic special handling afterwards (if false), so for now removed
+   bool hitflag; // UnHit signal/direction of hit/side of hit (spinner/gate)
 
-   bool isContact;     // set to true if impact velocity is 0
+   //bool hitRigid; // rigid body collision? //!! this is almost never ever triggered (as 99.999999% true when actually handled), and if then only once while rolling over a trigger, etc, with a very minimalistic special handling afterwards (if false), so for now removed
+
+   bool isContact; // set to true if impact velocity is ~0
 };
 
 
@@ -187,11 +189,11 @@ public:
       m_rcHitRect.zhigh = zhigh;
    }
 
-   virtual void CalcHitRect();
    virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll);
    virtual int GetType() const { return eJoint; }
    virtual void Collide(CollisionEvent& coll);
    virtual void Contact(CollisionEvent& coll, const float dtime);
+   virtual void CalcHitRect();
 
    Vertex2D m_xy;
 };
@@ -203,11 +205,11 @@ public:
    HitPoint(const Vertex3Ds& p) : m_p(p) {}
    HitPoint(const float x, const float y, const float z) : m_p(Vertex3Ds(x,y,z)) {}
 
-   virtual void CalcHitRect();
    virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll);
    virtual int GetType() const { return ePoint; }
    virtual void Collide(CollisionEvent& coll);
    virtual void Contact(CollisionEvent& coll, const float dtime);
+   virtual void CalcHitRect();
 
    Vertex3Ds m_p;
 };

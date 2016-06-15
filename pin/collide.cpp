@@ -129,7 +129,7 @@ float LineSeg::HitTestBasic(const Ball * const pball, const float dtime, Collisi
        return -1.0f;
    }
    if (!rigid)												  // non rigid body collision? return direction
-      coll.hitvelocity.x = bUnHit ? 1.0f : 0.0f;			  // UnHit signal is receding from outside target
+      coll.hitflag = bUnHit;			  // UnHit signal is receding from outside target
 
    const float ballr = pball->m_radius;
    const float hitz = pball->m_pos.z + pball->m_vel.z*hittime;  // check too high or low relative to ball rolling point at hittime
@@ -197,9 +197,9 @@ float HitCircle::HitTestBasicRadius(const Ball * const pball, const float dtime,
    Vertex3Ds dist = pball->m_pos - c;    // relative ball position
    Vertex3Ds dv = pball->m_vel;
 
-   float targetRadius;
    const bool capsule3D = (!lateral && pball->m_pos.z > m_rcHitRect.zhigh);
 
+   float targetRadius;
    if (capsule3D)
    {
       // handle ball over target?
@@ -234,7 +234,7 @@ float HitCircle::HitTestBasicRadius(const Ball * const pball, const float dtime,
    const float a = dv.LengthSquared();
 
    float hittime = 0;
-   bool fUnhit = false;
+   bool bUnhit = false;
    bool isContact = false;
    // Kicker is special.. handle ball stalled on kicker, commonly hit while receding, knocking back into kicker pocket
    if (m_ObjType == eKicker && bnd <= 0 && bnd >= -radius && a < C_CONTACTVEL*C_CONTACTVEL)
@@ -264,7 +264,7 @@ float HitCircle::HitTestBasicRadius(const Ball * const pball, const float dtime,
       }												// this will add the ball to the trigger space without a Hit
       else
       {
-         fUnhit = (bnd > 0.f);	// ball on outside is UnHit, otherwise it's a Hit
+         bUnhit = (bnd > 0.f);	// ball on outside is UnHit, otherwise it's a Hit
       }
    }
    else
@@ -276,17 +276,18 @@ float HitCircle::HitTestBasicRadius(const Ball * const pball, const float dtime,
       if (!SolveQuadraticEq(a, 2.0f*b, bcddsq - targetRadius*targetRadius, time1, time2))
          return -1.0f;
 
-      fUnhit = (time1*time2 < 0.f);
-      hittime = fUnhit ? max(time1, time2) : min(time1, time2); // ball is inside the circle
+      bUnhit = (time1*time2 < 0.f);
+      hittime = bUnhit ? max(time1, time2) : min(time1, time2); // ball is inside the circle
    }
 
    if (infNaN(hittime) || hittime < 0.f || hittime > dtime)
       return -1.0f; // contact out of physics frame
+
    const float hitz = pball->m_pos.z + pball->m_vel.z * hittime; // rolling point
 
    if (((hitz + pball->m_radius*0.5f) < m_rcHitRect.zlow) ||
       (!capsule3D && (hitz - pball->m_radius*0.5f) > m_rcHitRect.zhigh) ||
-      (capsule3D && (pball->m_pos.z + pball->m_vel.z * hittime) < m_rcHitRect.zhigh)) return -1.0f;
+      (capsule3D && hitz < m_rcHitRect.zhigh)) return -1.0f;
 
    const float hitx = pball->m_pos.x + pball->m_vel.x*hittime;
    const float hity = pball->m_pos.y + pball->m_vel.y*hittime;
@@ -307,15 +308,15 @@ float HitCircle::HitTestBasicRadius(const Ball * const pball, const float dtime,
       coll.hitnormal.z = 0.0f;
    }
 
-   if (!rigid)											// non rigid body collision? return direction
-      coll.hitvelocity.x = fUnhit ? 1.0f : 0.0f;		// UnHit signal	is receding from target
+   if (!rigid)                 // non rigid body collision? return direction
+      coll.hitflag = bUnhit;   // UnHit signal	is receding from target
 
    coll.isContact = isContact;
    if (isContact)
       coll.hit_org_normalvelocity = bnv;
 
-   coll.hitdistance = bnd;				//actual contact distance ... 
-   //coll.hitRigid = rigid;			// collision type
+   coll.hitdistance = bnd;     //actual contact distance ... 
+   //coll.hitRigid = rigid;    // collision type
 
    return hittime;
 }

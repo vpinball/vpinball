@@ -145,7 +145,7 @@ float HitGate::HitTest(const Ball * const pball, const float dtime, CollisionEve
       if (hittime >= 0.f)
       {
          // signal the Collide() function that the hit is on the front or back side
-         coll.hitvelocity.x = (float)i;
+         coll.hitflag = !!i;
 
          return hittime;
       }
@@ -161,7 +161,7 @@ void HitGate::Collide(CollisionEvent& coll)
    
    const float dot = coll.hitnormal.Dot(coll.ball->m_vel);
 
-   if (coll.hitvelocity.x == 0.0f && !m_twoWay)
+   if (!coll.hitflag && !m_twoWay)
       return;	//hit from back doesn't count if not two-way
    const float h = m_pgate->m_d.m_height*0.5f;
 
@@ -175,7 +175,7 @@ void HitGate::Collide(CollisionEvent& coll)
   m_gateanim.m_anglespeed = speed;
 
    // We encoded which side of the spinner the ball hit
-   if (coll.hitvelocity.x == 0.0f && m_twoWay)
+   if (!coll.hitflag && m_twoWay)
        m_gateanim.m_anglespeed = -m_gateanim.m_anglespeed;
 
    FireHitEvent(pball);
@@ -323,7 +323,7 @@ float HitSpinner::HitTest(const Ball * const pball, const float dtime, Collision
       const float hittime = m_lineseg[i].HitTestBasic(pball, dtime, coll, false, true, false);// any face, lateral, non-rigid
       if (hittime >= 0.f)
       {
-         coll.hitvelocity.x = (float)(i^1);
+         coll.hitflag = !i;
 
          return hittime;
       }
@@ -357,7 +357,7 @@ void HitSpinner::Collide(CollisionEvent& coll)
    m_spinneranim.m_anglespeed *= m_spinneranim.m_damping;
 
    // We encoded which side of the spinner the ball hit
-   if (coll.hitvelocity.x != 0.0f)
+   if (coll.hitflag)
       m_spinneranim.m_anglespeed = -m_spinneranim.m_anglespeed;
 }
 
@@ -581,7 +581,7 @@ float Hit3DPoly::HitTest(const Ball * const pball, const float dtime, CollisionE
       coll.hitnormal = normal;
 
       if (!rigid)								// non rigid body collision? return direction
-         coll.hitvelocity.x = bUnHit ? 1.0f : 0.0f;	// UnHit signal	is receding from outside target
+         coll.hitflag = bUnHit;	// UnHit signal	is receding from outside target
 
       coll.hitdistance = bnd;				// 3dhit actual contact distance ... 
       //coll.hitRigid = rigid;				// collision type
@@ -626,7 +626,7 @@ void Hit3DPoly::Collide(CollisionEvent& coll)
 
       const int i = pball->m_vpVolObjs->IndexOf(m_pObj); // if -1 then not in objects volume set (i.e not already hit)
 
-      if ((coll.hitvelocity.x != 1.0f) == (i < 0))	   // Hit == NotAlreadyHit
+      if ((!coll.hitflag) == (i < 0))	   // Hit == NotAlreadyHit
       {
          pball->m_pos += STATICTIME * pball->m_vel;     //move ball slightly forward
 
@@ -1043,7 +1043,7 @@ void TriggerLineSeg::Collide(CollisionEvent& coll)
 
    const int i = pball->m_vpVolObjs->IndexOf(m_pObj); // if -1 then not in objects volume set (i.e not already hit)
 
-   if ((coll.hitvelocity.x != 1.0f) == (i < 0))	   // Hit == NotAlreadyHit
+   if ((!coll.hitflag) == (i < 0))	   // Hit == NotAlreadyHit
    {
       pball->m_pos += STATICTIME * pball->m_vel;     // move ball slightly forward
 
@@ -1077,7 +1077,7 @@ void TriggerHitCircle::Collide(CollisionEvent& coll)
 
    const int i = pball->m_vpVolObjs->IndexOf(m_pObj); // if -1 then not in objects volume set (i.e not already hit)
 
-   if ((coll.hitvelocity.x != 1.0f) == (i < 0))	   // Hit == NotAlreadyHit
+   if ((!coll.hitflag) == (i < 0))	   // Hit == NotAlreadyHit
    {
       pball->m_pos += STATICTIME * pball->m_vel;	   //move ball slightly forward
 

@@ -161,11 +161,11 @@ public:
    }
 
    virtual float HitTest(const Ball * const pball, const float dtime, CollisionEvent& coll);
-   void DoChangeBallVelocity(Ball * const pball, const Vertex3Ds& hitnormal);
-   void DoCollide(Ball * const pball, const Vertex3Ds& phitnormal, const Vertex2D& phitvelocity, const bool newBall);
-   virtual void Collide(CollisionEvent& coll)  { DoCollide(coll.ball, coll.hitnormal, coll.hitvelocity, false); }
-
    virtual int GetType() const { return eTrigger; }
+   virtual void Collide(CollisionEvent& coll)  { DoCollide(coll.ball, coll.hitnormal, coll.hitflag, false); }
+
+   void DoChangeBallVelocity(Ball * const pball, const Vertex3Ds& hitnormal);
+   void DoCollide(Ball * const pball, const Vertex3Ds& hitnormal, const bool hitflag, const bool newBall);
 
    Kicker *m_pkicker;
    Ball *m_pball;  //The ball inside this kicker

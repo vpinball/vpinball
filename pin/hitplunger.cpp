@@ -557,8 +557,8 @@ float HitPlunger::HitTest(const Ball * pball_, const float dtime, CollisionEvent
       fHit = true;
       hittime = newtime;
       coll = hit;
-      coll.hitvelocity.x = 0.f;
-      coll.hitvelocity.y = 0.f;
+      coll.hitvel.x = 0.f;
+      coll.hitvel.y = 0.f;
    }
 
    for (int i = 0; i < 2; i++)
@@ -569,8 +569,8 @@ float HitPlunger::HitTest(const Ball * pball_, const float dtime, CollisionEvent
          fHit = true;
          hittime = newtime;
          coll = hit;
-         coll.hitvelocity.x = 0.f;
-         coll.hitvelocity.y = 0.f;
+         coll.hitvel.x = 0.f;
+         coll.hitvel.y = 0.f;
       }
 
       newtime = m_plungeranim.m_jointBase[i].HitTest(pball, hittime, hit);
@@ -579,8 +579,8 @@ float HitPlunger::HitTest(const Ball * pball_, const float dtime, CollisionEvent
          fHit = true;
          hittime = newtime;
          coll = hit;
-         coll.hitvelocity.x = 0.f;
-         coll.hitvelocity.y = 0.f;
+         coll.hitvel.x = 0.f;
+         coll.hitvel.y = 0.f;
       }
    }
 
@@ -641,8 +641,8 @@ float HitPlunger::HitTest(const Ball * pball_, const float dtime, CollisionEvent
       fHit = true;
       hittime = newtime;
       coll = hit;
-      coll.hitvelocity.x = 0.f;
-      coll.hitvelocity.y = deltay;
+      coll.hitvel.x = 0.f;
+      coll.hitvel.y = deltay;
    }
 
    for (int i = 0; i < 2; i++)
@@ -653,8 +653,8 @@ float HitPlunger::HitTest(const Ball * pball_, const float dtime, CollisionEvent
          fHit = true;
          hittime = newtime;
          coll = hit;
-         coll.hitvelocity.x = 0.f;
-         coll.hitvelocity.y = deltay;
+         coll.hitvel.x = 0.f;
+         coll.hitvel.y = deltay;
       }
    }
 
@@ -698,9 +698,9 @@ float HitPlunger::HitTest(const Ball * pball_, const float dtime, CollisionEvent
       // overlapping.  Make certain that we give the ball enough
       // of an impulse to get it not to overlap.
       if (coll.hitdistance <= 0.0f
-         && coll.hitvelocity.y == deltay
+         && coll.hitvel.y == deltay
          && fabsf(deltay) < fabsf(coll.hitdistance))
-         coll.hitvelocity.y = -fabsf(coll.hitdistance);
+         coll.hitvel.y = -fabsf(coll.hitdistance);
 
       // return the collision time delta
       return hittime;
@@ -716,7 +716,7 @@ void HitPlunger::Collide(CollisionEvent& coll)
 {
    Ball * const pball = coll.ball;
 
-   float dot = (pball->m_vel.x - coll.hitvelocity.x)* coll.hitnormal.x + (pball->m_vel.y - coll.hitvelocity.y) * coll.hitnormal.y;
+   float dot = (pball->m_vel.x - coll.hitvel.x)* coll.hitnormal.x + (pball->m_vel.y - coll.hitvel.y) * coll.hitnormal.y;
 
    if (dot >= -C_LOWNORMVEL)                                                              // nearly receding ... make sure of conditions
    {                                                                                                       // otherwise if clearly approaching .. process the collision
@@ -753,7 +753,7 @@ void HitPlunger::Collide(CollisionEvent& coll)
 
    // Check for a downward collision with the tip.  This is the moving
    // part of the plunger, so it has some special handling.
-   if (coll.hitvelocity.y != 0.0f)
+   if (coll.hitvel.y != 0.0f)
    {
       // The tip hit the ball (or vice versa).
       //
