@@ -995,7 +995,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
                      Ball * const pBall = g_pplayer->m_vball[i];
                      const float dx = fabsf(vertex.x - pBall->m_pos.x);
                      const float dy = fabsf(vertex.y - pBall->m_pos.y);
-                     if (dx < 50.f && dy < 50.f)
+                     if (dx < pBall->m_radius*2.f && dy < pBall->m_radius*2.f)
                      {
                         POINT newPoint;
                         GetCursorPos(&newPoint);
@@ -1014,10 +1014,8 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
                }
                if (!ballGrabbed)
                {
-                  float z = g_pplayer->m_ptable->m_tableheight;
-                  if (input->dwData == 3)
-                     z = g_pplayer->m_ptable->m_glassheight;
-                  Ball * const pball = g_pplayer->CreateBall(vertex.x, vertex.y, z, vx, vy, 0, (float)g_pplayer->m_DebugBallSize/2.0f);
+                  const float z = (input->dwData == 3) ? g_pplayer->m_ptable->m_glassheight : g_pplayer->m_ptable->m_tableheight;
+                  Ball * const pball = g_pplayer->CreateBall(vertex.x, vertex.y, z, vx, vy, 0, (float)g_pplayer->m_DebugBallSize*0.5f);
                   pball->m_pballex->AddRef();
                }
             }
@@ -1032,7 +1030,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
                   Ball * const pBall = g_pplayer->m_vball[i];
                   const float dx = fabsf(vertex.x - pBall->m_pos.x);
                   const float dy = fabsf(vertex.y - pBall->m_pos.y);
-                  if (dx < 50.f && dy < 50.f)
+                  if (dx < pBall->m_radius*2.f && dy < pBall->m_radius*2.f)
                   {
                      g_pplayer->DestroyBall(pBall);
                      break;

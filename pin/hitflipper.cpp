@@ -383,8 +383,8 @@ float HitFlipper::HitTest(const Ball * const pball, const float dtime, Collision
    hittime = m_flipperanim.m_hitcircleBase.HitTest(pball, dtime, coll);
    if (hittime >= 0.f)
    {
-      coll.hitvelocity.x = 0;		//Tangent velocity of contact point (rotate Normal right)
-      coll.hitvelocity.y = 0;		//units: rad*d/t (Radians*diameter/time
+      coll.hitvel.x = 0;		//Tangent velocity of contact point (rotate Normal right)
+      coll.hitvel.y = 0;		//units: rad*d/t (Radians*diameter/time
 
       //!! unused coll.hitmoment = 0;			//moment is zero ... only friction
       coll.hitmoment_bit = true;
@@ -516,8 +516,8 @@ float HitFlipper::HitTestFlipperEnd(const Ball * const pball, const float dtime,
       anglespeed = 0.f;							// rotation stopped
 
    const float inv_distance = 1.0f / distance;
-   coll.hitvelocity.x = -dist.y*inv_distance; //Unit Tangent vector velocity of contact point(rotate normal right)
-   coll.hitvelocity.y = dist.x*inv_distance;
+   coll.hitvel.x = -dist.y*inv_distance; //Unit Tangent vector velocity of contact point(rotate normal right)
+   coll.hitvel.y = dist.x*inv_distance;
 
    //!! unused coll.hitmoment = distance;				//moment arm diameter
    coll.hitmoment_bit = (distance == 0.f);
@@ -525,8 +525,8 @@ float HitFlipper::HitTestFlipperEnd(const Ball * const pball, const float dtime,
 
    //recheck using actual contact angle of velocity direction
    const Vertex2D dv(
-      ballvx - coll.hitvelocity.x *anglespeed*distance,
-      ballvy - coll.hitvelocity.y *anglespeed*distance); //delta velocity ball to face
+      ballvx - coll.hitvel.x *anglespeed*distance,
+      ballvy - coll.hitvel.y *anglespeed*distance); //delta velocity ball to face
 
    const float bnv = dv.x*coll.hitnormal.x + dv.y*coll.hitnormal.y;  //dot Normal to delta v
 
@@ -682,8 +682,8 @@ float HitFlipper::HitTestFlipperFace(const Ball * const pball, const float dtime
    const float distance = sqrtf(dist.x*dist.x + dist.y*dist.y);	// distance from base center to contact point
 
    const float inv_dist = 1.0f / distance;
-   coll.hitvelocity.x = -dist.y*inv_dist;		//Unit Tangent velocity of contact point(rotate Normal clockwise)
-   coll.hitvelocity.y = dist.x*inv_dist;
+   coll.hitvel.x = -dist.y*inv_dist;		//Unit Tangent velocity of contact point(rotate Normal clockwise)
+   coll.hitvel.y = dist.x*inv_dist;
 
    //coll.hitvelocity.z = 0.0f; // used as normal velocity so far, only if isContact is set, see below
 
@@ -695,8 +695,8 @@ float HitFlipper::HitTestFlipperFace(const Ball * const pball, const float dtime
    //!! unused coll.hitangularrate = anglespeed;		//radians/time at collison
 
    const Vertex2D dv(
-      ballvx - coll.hitvelocity.x *anglespeed*distance,
-      ballvy - coll.hitvelocity.y *anglespeed*distance); //delta velocity ball to face
+      ballvx - coll.hitvel.x *anglespeed*distance,
+      ballvy - coll.hitvel.y *anglespeed*distance); //delta velocity ball to face
 
    const float bnv = dv.x*coll.hitnormal.x + dv.y*coll.hitnormal.y;  //dot Normal to delta v
 
