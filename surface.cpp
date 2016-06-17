@@ -19,6 +19,8 @@ Surface::Surface()
    memset(m_d.m_szSideMaterial, 0, 32);
    memset(m_d.m_szTopMaterial, 0, 32);
    memset(m_d.m_szSlingShotMaterial, 0, 32);
+   memset(m_d.m_szPhysicsMaterial,0,32);
+   m_d.m_fOverwritePhysics = true;
 }
 
 Surface::~Surface()
@@ -424,10 +426,20 @@ void Surface::CurvesToShapes(Vector<HitObject> * const pvho)
 
 void Surface::SetupHitObject(Vector<HitObject> * pvho, HitObject * obj)
 {
-   obj->m_elasticity = m_d.m_elasticity;
-   obj->SetFriction(m_d.m_friction);
-   obj->m_scatter = ANGTORAD(m_d.m_scatter);
-   obj->m_fEnabled = m_d.m_fCollidable;
+   Material *mat = m_ptable->GetMaterial(m_d.m_szPhysicsMaterial);
+   if( mat!=NULL && !m_d.m_fOverwritePhysics)
+   {
+       obj->m_elasticity = mat->m_fElasticity;
+       obj->SetFriction( mat->m_fFriction );
+       obj->m_scatter = ANGTORAD( mat->m_fScatterAngle );
+   }
+   else
+   {
+       obj->m_elasticity = m_d.m_elasticity;
+       obj->SetFriction( m_d.m_friction );
+       obj->m_scatter = ANGTORAD( m_d.m_scatter );
+       obj->m_fEnabled = m_d.m_fCollidable;
+   }
 
    if (m_d.m_fHitEvent)
    {
@@ -1253,6 +1265,8 @@ HRESULT Surface::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
    bw.WriteBool(FID(SVBL), m_d.m_fSideVisible);
    bw.WriteBool(FID(DILI), m_d.m_fDisableLighting);
    bw.WriteBool(FID(REEN), m_d.m_fReflectionEnabled);
+   bw.WriteString( FID( MAPH ), m_d.m_szPhysicsMaterial );
+   bw.WriteBool( FID( OVPH ), m_d.m_fOverwritePhysics );
 
    ISelect::SaveData(pstm, hcrypthash, hcryptkey);
 
@@ -1417,6 +1431,10 @@ BOOL Surface::LoadToken(int id, BiffReader *pbr)
    {
       pbr->GetString(m_d.m_szTopMaterial);
    }
+   else if ( id == FID( MAPH ) )
+   {
+       pbr->GetString( m_d.m_szPhysicsMaterial );
+   }
    else if (id == FID(SLMA))
    {
       pbr->GetString(m_d.m_szSlingShotMaterial);
@@ -1465,6 +1483,10 @@ BOOL Surface::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(VSBL))
    {
       pbr->GetBool(&m_d.m_fTopBottomVisible);
+   }
+   else if ( id == FID( OVPH ) )
+   {
+       pbr->GetBool( &m_d.m_fOverwritePhysics );
    }
    else if (id == FID(SLGA))
    {
@@ -1671,6 +1693,45 @@ STDMETHODIMP Surface::put_TopMaterial(BSTR newVal)
    STOPUNDO
 
    return S_OK;
+}
+
+STDMETHODIMP Surface::get_PhysicsMaterial( BSTR *pVal )
+{
+    WCHAR wz[512];
+
+    MultiByteToWideChar( CP_ACP, 0, m_d.m_szPhysicsMaterial, -1, wz, 32 );
+    *pVal = SysAllocString( wz );
+
+    return S_OK;
+}
+
+STDMETHODIMP Surface::put_PhysicsMaterial( BSTR newVal )
+{
+    STARTUNDO
+
+        WideCharToMultiByte( CP_ACP, 0, newVal, -1, m_d.m_szPhysicsMaterial, 32, NULL, NULL );
+
+    STOPUNDO
+
+        return S_OK;
+}
+
+STDMETHODIMP Surface::get_OverwritePhysics( VARIANT_BOOL *pVal )
+{
+    *pVal = (VARIANT_BOOL)FTOVB( m_d.m_fOverwritePhysics );
+
+    return S_OK;
+}
+
+STDMETHODIMP Surface::put_OverwritePhysics( VARIANT_BOOL newVal )
+{
+    STARTUNDO
+
+        m_d.m_fOverwritePhysics = VBTOF( newVal );
+
+    STOPUNDO
+
+        return S_OK;
 }
 
 void Surface::GetDialogPanes(Vector<PropertyPane> *pvproppane)
@@ -2099,6 +2160,8 @@ void Surface::UpdatePropertyPanes()
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 114), FALSE);
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 115), FALSE);
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 116), FALSE);
+      EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, IDC_MATERIAL_COMBO4 ), FALSE );
+      EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, IDC_OVERWRITE_MATERIAL_SETTINGS ), FALSE );
    }
    else
    {
@@ -2110,11 +2173,24 @@ void Surface::UpdatePropertyPanes()
 
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 14), TRUE);
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 111), TRUE);
-      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 15), TRUE);
-      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 114), TRUE);
-      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 115), TRUE);
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 116), TRUE);
+      if ( !m_d.m_fOverwritePhysics )
+      {
+         EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, IDC_MATERIAL_COMBO4 ), TRUE );
+         EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, 15 ), FALSE );
+         EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, 114 ), FALSE );
+         EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, 115 ), FALSE );
+      }
+      else
+      {
+          EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, IDC_MATERIAL_COMBO4 ), FALSE );
+          EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, 15 ), TRUE );
+          EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, 114 ), TRUE );
+          EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, 115 ), TRUE );
+      }
+      EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, IDC_OVERWRITE_MATERIAL_SETTINGS ), TRUE );
    }
+
 }
 
 void Surface::SetDefaultPhysics(bool fromMouseClick)

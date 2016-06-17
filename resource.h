@@ -651,6 +651,7 @@
 #define IDC_TRIGGER_REFLECT_ENABLED_CHECK 431
 #define IDC_CVP_CHKBOX_SHOWAUTOCOMPLETE 431
 #define IDC_USE_NVIDIA_API_CHECK        431
+#define IDC_OVERWRITE_MATERIAL_SETTINGS 432
 #define IDC_TARGET_ISDROPPED_CHECK      432
 #define IDC_LIGHT_FALLOFF_POWER         432
 #define IDC_TARGET_LEGACY_MODE_CHECK    433
@@ -857,8 +858,8 @@
 #define IDC_CVP_EDIT_MOUSEDWELL         729
 #define IDC_MAT_ELASTICITY              731
 #define IDC_MAT_FRICTION                732
-#define IDC_EDIT5                       733
 #define IDC_MAT_SCATTER_ANGLE           733
+#define IDC_MATERIAL_COMBO4             734
 #define DISPID_Gate_Height1             1142
 #define DISPID_Image                    1500
 #define DISPID_Image2                   1501
@@ -1003,7 +1004,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        620
 #define _APS_NEXT_COMMAND_VALUE         4008
-#define _APS_NEXT_CONTROL_VALUE         734
+#define _APS_NEXT_CONTROL_VALUE         735
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif
