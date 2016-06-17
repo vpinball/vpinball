@@ -374,6 +374,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     </ClCompile>
     <ClCompile Include="inc\progmesh.cpp" />
     <ClCompile Include="math\math.cpp" />
+    <ClCompile Include="MaterialDialog.cpp" />
     <ClCompile Include="MemoryStatus.cpp" />
     <ClCompile Include="rubber.cpp" />
     <ClCompile Include="hash.cpp" />
