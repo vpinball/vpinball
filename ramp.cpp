@@ -20,7 +20,9 @@ Ramp::Ramp()
    m_propPosition = NULL;
    m_propPhysics = NULL;
    memset(m_d.m_szImage, 0, MAXTOKEN);
-   memset(m_d.m_szMaterial, 0, 32);
+   memset( m_d.m_szMaterial, 0, 32 );
+   memset( m_d.m_szPhysicsMaterial, 0, 32 );
+   m_d.m_fOverwritePhysics=true;
    rgheightInit = NULL;
 }
 
@@ -830,9 +832,19 @@ void Ramp::AddLine(Vector<HitObject> * const pvho, const Vertex2D &pv1, const Ve
 
 void Ramp::SetupHitObject(Vector<HitObject> * pvho, HitObject * obj)
 {
-   obj->m_elasticity = m_d.m_elasticity;
-   obj->SetFriction(m_d.m_friction);
-   obj->m_scatter = ANGTORAD(m_d.m_scatter);
+   Material *mat = m_ptable->GetMaterial( m_d.m_szPhysicsMaterial );
+   if ( mat != NULL && !m_d.m_fOverwritePhysics )
+   {
+      obj->m_elasticity = mat->m_fElasticity;
+      obj->SetFriction( mat->m_fFriction );
+      obj->m_scatter = ANGTORAD( mat->m_fScatterAngle );
+   }
+   else
+   {
+      obj->m_elasticity = m_d.m_elasticity;
+      obj->SetFriction( m_d.m_friction );
+      obj->m_scatter = ANGTORAD( m_d.m_scatter );
+   }
    obj->m_fEnabled = m_d.m_fCollidable;
 
    pvho->AddElement(obj);
@@ -1283,6 +1295,8 @@ HRESULT Ramp::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey
    bw.WriteFloat(FID(RADX), m_d.m_wireDistanceX);
    bw.WriteFloat(FID(RADY), m_d.m_wireDistanceY);
    bw.WriteBool(FID(REEN), m_d.m_fReflectionEnabled);
+   bw.WriteString( FID( MAPH ), m_d.m_szPhysicsMaterial );
+   bw.WriteBool( FID( OVPH ), m_d.m_fOverwritePhysics );
 
    ISelect::SaveData(pstm, hcrypthash, hcryptkey);
 
@@ -1417,6 +1431,14 @@ BOOL Ramp::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(RADY))
    {
       pbr->GetFloat(&m_d.m_wireDistanceY);
+   }
+   else if ( id == FID( MAPH ) )
+   {
+       pbr->GetString( m_d.m_szPhysicsMaterial);
+   }
+   else if ( id == FID( OVPH ) )
+   {
+       pbr->GetBool( &m_d.m_fOverwritePhysics );
    }
    else
    {
@@ -2071,6 +2093,46 @@ STDMETHODIMP Ramp::put_WireDistanceY(float newVal)
    return S_OK;
 }
 
+STDMETHODIMP Ramp::get_PhysicsMaterial( BSTR *pVal )
+{
+    WCHAR wz[512];
+
+    MultiByteToWideChar( CP_ACP, 0, m_d.m_szPhysicsMaterial, -1, wz, 32 );
+    *pVal = SysAllocString( wz );
+
+    return S_OK;
+}
+
+STDMETHODIMP Ramp::put_PhysicsMaterial( BSTR newVal )
+{
+    STARTUNDO
+
+        WideCharToMultiByte( CP_ACP, 0, newVal, -1, m_d.m_szPhysicsMaterial, 32, NULL, NULL );
+
+    STOPUNDO
+
+        return S_OK;
+}
+
+STDMETHODIMP Ramp::get_OverwritePhysics( VARIANT_BOOL *pVal )
+{
+    *pVal = (VARIANT_BOOL)FTOVB( m_d.m_fOverwritePhysics );
+
+    return S_OK;
+}
+
+STDMETHODIMP Ramp::put_OverwritePhysics( VARIANT_BOOL newVal )
+{
+    STARTUNDO
+
+        m_d.m_fOverwritePhysics = VBTOF( newVal );
+
+    STOPUNDO
+
+        return S_OK;
+}
+
+
 void Ramp::ExportMesh(FILE *f)
 {
    char name[MAX_PATH];
@@ -2594,14 +2656,28 @@ void Ramp::UpdatePropertyPanes()
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 110), FALSE);
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 114), FALSE);
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 115), FALSE);
+      EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, IDC_MATERIAL_COMBO4 ), FALSE );
+      EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, IDC_OVERWRITE_MATERIAL_SETTINGS ), FALSE );
    }
    else
    {
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 10), TRUE);
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 11), TRUE);
-      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 110), TRUE);
-      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 114), TRUE);
-      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 115), TRUE);
+      EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, IDC_OVERWRITE_MATERIAL_SETTINGS ), TRUE );
+      if( m_d.m_fOverwritePhysics)
+      {
+          EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, IDC_MATERIAL_COMBO4 ), FALSE );
+          EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, 110 ), TRUE );
+          EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, 114 ), TRUE );
+          EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, 115 ), TRUE );
+      }
+      else
+      {
+          EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, IDC_MATERIAL_COMBO4 ), TRUE );
+          EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, 110 ), FALSE );
+          EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, 114 ), FALSE );
+          EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, 115 ), FALSE );
+      }
    }
 }
 
