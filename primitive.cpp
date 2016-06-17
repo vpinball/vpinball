@@ -97,7 +97,9 @@ Primitive::Primitive()
    m_propVisual = NULL;
    memset(m_d.m_szImage, 0, MAXTOKEN);
    memset(m_d.m_szNormalMap, 0, MAXTOKEN);
-   memset(m_d.m_szMaterial, 0, 32);
+   memset( m_d.m_szMaterial, 0, 32 );
+   memset( m_d.m_szPhysicsMaterial, 0, 32 );
+   m_d.m_fOverwritePhysics=true;
 }
 
 Primitive::~Primitive()
@@ -448,10 +450,22 @@ void Primitive::AddHitEdge(Vector<HitObject> * pvho, std::set< std::pair<unsigne
 
 void Primitive::SetupHitObject(Vector<HitObject> * pvho, HitObject * obj)
 {
-   obj->m_elasticity = m_d.m_elasticity;
-   obj->m_elasticityFalloff = m_d.m_elasticityFalloff;
-   obj->SetFriction(m_d.m_friction);
-   obj->m_scatter = ANGTORAD(m_d.m_scatter);
+   Material *mat = m_ptable->GetMaterial( m_d.m_szPhysicsMaterial );
+   if ( mat != NULL && !m_d.m_fOverwritePhysics )
+   {
+      obj->m_elasticity = mat->m_fElasticity;
+      obj->m_elasticityFalloff = mat->m_fElasticityFalloff;
+      obj->SetFriction( mat->m_fFriction );
+      obj->m_scatter = ANGTORAD( mat->m_fScatterAngle );
+   }
+   else
+   {
+      obj->m_elasticity = m_d.m_elasticity;
+      obj->m_elasticityFalloff = m_d.m_elasticityFalloff;
+      obj->SetFriction( m_d.m_friction );
+      obj->m_scatter = ANGTORAD( m_d.m_scatter );
+   }
+
    obj->m_threshold = m_d.m_threshold;
    obj->m_ObjType = ePrimitive;
    obj->m_fEnabled = m_d.m_fCollidable;
@@ -1121,6 +1135,9 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcry
    bw.WriteBool(FID(STRE), m_d.m_staticRendering);
    bw.WriteBool(FID(DILI), m_d.m_fDisableLighting);
    bw.WriteBool(FID(REEN), m_d.m_fReflectionEnabled);
+   bw.WriteString( FID( MAPH ), m_d.m_szPhysicsMaterial );
+   bw.WriteBool( FID( OVPH ), m_d.m_fOverwritePhysics );
+
    if (m_d.m_use3DMesh)
    {
       bw.WriteString(FID(M3DN), m_d.m_meshFileName);
@@ -1342,6 +1359,14 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(ISTO))
    {
       pbr->GetBool(&m_d.m_fToy);
+   }
+   else if ( id == FID( MAPH ) )
+   {
+       pbr->GetString( m_d.m_szPhysicsMaterial );
+   }
+   else if ( id == FID( OVPH ) )
+   {
+       pbr->GetBool( &m_d.m_fOverwritePhysics );
    }
    else if (id == FID(STRE))
    {
@@ -2630,6 +2655,45 @@ STDMETHODIMP Primitive::put_ReflectionEnabled(VARIANT_BOOL newVal)
       return S_OK;
 }
 
+STDMETHODIMP Primitive::get_PhysicsMaterial( BSTR *pVal )
+{
+    WCHAR wz[512];
+
+    MultiByteToWideChar( CP_ACP, 0, m_d.m_szPhysicsMaterial, -1, wz, 32 );
+    *pVal = SysAllocString( wz );
+
+    return S_OK;
+}
+
+STDMETHODIMP Primitive::put_PhysicsMaterial( BSTR newVal )
+{
+    STARTUNDO
+
+        WideCharToMultiByte( CP_ACP, 0, newVal, -1, m_d.m_szPhysicsMaterial, 32, NULL, NULL );
+
+    STOPUNDO
+
+        return S_OK;
+}
+
+STDMETHODIMP Primitive::get_OverwritePhysics( VARIANT_BOOL *pVal )
+{
+    *pVal = (VARIANT_BOOL)FTOVB( m_d.m_fOverwritePhysics );
+
+    return S_OK;
+}
+
+STDMETHODIMP Primitive::put_OverwritePhysics( VARIANT_BOOL newVal )
+{
+    STARTUNDO
+
+        m_d.m_fOverwritePhysics = VBTOF( newVal );
+
+    STOPUNDO
+
+        return S_OK;
+}
+
 void Primitive::GetDialogPanes(Vector<PropertyPane> *pvproppane)
 {
    PropertyPane *pproppane;
@@ -2680,9 +2744,12 @@ void Primitive::UpdatePropertyPanes()
 
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 114), FALSE);
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 115), FALSE);
+      EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, IDC_MATERIAL_COMBO4 ), FALSE );
+      EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, IDC_OVERWRITE_MATERIAL_SETTINGS ), FALSE );
    }
    else if (!m_d.m_fToy && m_d.m_fCollidable)
    {
+      EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, IDC_OVERWRITE_MATERIAL_SETTINGS ), TRUE );
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 34), TRUE);
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 111), TRUE);
       EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 481), TRUE);
@@ -2691,10 +2758,22 @@ void Primitive::UpdatePropertyPanes()
       else
          EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 33), FALSE);
 
-      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 110), TRUE);
-      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 112), TRUE);
-      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 114), TRUE);
-      EnableWindow(GetDlgItem(m_propPhysics->dialogHwnd, 115), TRUE);
+      if ( m_d.m_fOverwritePhysics )
+      {
+          EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, 110 ), TRUE );
+          EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, 112 ), TRUE );
+          EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, 114 ), TRUE );
+          EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, 115 ), TRUE );
+          EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, IDC_MATERIAL_COMBO4 ), FALSE );
+      }
+      else
+      {
+          EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, 110 ), FALSE );
+          EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, 112 ), FALSE );
+          EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, 114 ), FALSE );
+          EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, 115 ), FALSE );
+          EnableWindow( GetDlgItem( m_propPhysics->dialogHwnd, IDC_MATERIAL_COMBO4 ), TRUE );
+      }
    }
 
 }

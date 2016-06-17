@@ -1831,26 +1831,30 @@ BEGIN
     LTEXT           "RotX",IDC_STATIC,7,51,17,8
 END
 
-IDD_PROPPRIMITIVE_PHYSICS DIALOGEX 0, 0, 125, 130
+IDD_PROPPRIMITIVE_PHYSICS DIALOGEX 0, 0, 125, 161
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    CONTROL         "Has &Hit Event",34,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,60,10
-    EDITTEXT        33,78,19,40,12,ES_AUTOHSCROLL
-    EDITTEXT        110,78,32,40,12,ES_AUTOHSCROLL
-    EDITTEXT        112,78,45,40,12,ES_AUTOHSCROLL
-    EDITTEXT        114,78,58,40,12,ES_AUTOHSCROLL
-    EDITTEXT        115,78,71,40,12,ES_AUTOHSCROLL
-    LTEXT           "Hit Threshol&d",-1,7,21,70,8
-    LTEXT           "&Elasticity",-1,7,34,63,8
-    LTEXT           "Elasticity Falloff",-1,7,47,63,8
-    LTEXT           "&Friction",-1,7,60,63,8
-    LTEXT           "&Scatter Angle",-1,7,73,63,8
-    CONTROL         "Collidable (switchable in script)",111,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,86,115,10
+    CONTROL         "Has &Hit Event",34,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,2,60,10
+    EDITTEXT        33,78,10,40,12,ES_AUTOHSCROLL
+    EDITTEXT        110,78,62,40,12,ES_AUTOHSCROLL
+    EDITTEXT        112,78,75,40,12,ES_AUTOHSCROLL
+    EDITTEXT        114,78,88,40,12,ES_AUTOHSCROLL
+    EDITTEXT        115,78,101,40,12,ES_AUTOHSCROLL
+    LTEXT           "Hit Threshol&d",IDC_STATIC,7,12,70,8
+    LTEXT           "&Elasticity",IDC_STATIC,7,64,63,8
+    LTEXT           "Elasticity Falloff",IDC_STATIC,7,77,63,8
+    LTEXT           "&Friction",IDC_STATIC,7,90,63,8
+    LTEXT           "&Scatter Angle",IDC_STATIC,7,103,63,8
+    CONTROL         "Collidable (switchable in script)",111,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,115,115,10
     CONTROL         "Toy (never collidable,much faster)",IDC_PRIMITIVE_IS_TOY,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,99,115,10
-    LTEXT           "If not a Toy, reduce polygons by (0..1)",-1,7,112,63,16
-    EDITTEXT        IDC_COLLISION_REDUCTION_FACTOR,78,114,40,12,ES_AUTOHSCROLL
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,128,115,10
+    LTEXT           "If not a Toy, reduce polygons by (0..1)",IDC_STATIC,7,140,63,16
+    EDITTEXT        IDC_COLLISION_REDUCTION_FACTOR,78,142,40,12,ES_AUTOHSCROLL
+    COMBOBOX        IDC_MATERIAL_COMBO4,6,34,111,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Overwrite Material Settings",IDC_OVERWRITE_MATERIAL_SETTINGS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,48,100,10
+    LTEXT           "Physics Material",IDC_STATIC,6,24,52,8
 END
 
 IDD_PROPRUBBER_PHYSICS DIALOGEX 0, 0, 125, 94
@@ -2317,6 +2321,11 @@ BEGIN
 
     IDD_PROPFLASHER_POSITION, DIALOG
     BEGIN
+    END
+
+    IDD_PROPPRIMITIVE_PHYSICS, DIALOG
+    BEGIN
+        BOTTOMMARGIN, 130
     END
 
     IDD_PROPRUBBER_PHYSICS, DIALOG
