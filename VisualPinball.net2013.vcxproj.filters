@@ -91,6 +91,7 @@
     <ClCompile Include="inc\miniz.c">
       <Filter>inc</Filter>
     </ClCompile>
+    <ClCompile Include="MaterialDialog.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="vpinball.rc" />

@@ -17,6 +17,15 @@ struct SaveMaterial
    unsigned char bOpacityActive_fEdgeAlpha; // lowest bit = on/off, upper 7bits = edge weight for fresnel (0(no opacity change)..1(full fresnel)), stupid encoding because of legacy loading/saving
 };
 
+struct SavePhysicsMaterial
+{
+    char szName[32];
+    float fElasticity;
+    float fElasticityFallOff;
+    float fFriction;
+    float fScatterAngle;
+};
+
 class Material
 {
 public:
@@ -33,6 +42,11 @@ public:
       m_cClearcoat = 0;
       m_bIsMetal = false;
       m_bOpacityActive = false;
+
+      m_fElasticity = 0.0f;
+      m_fElasticityFalloff = 0.0f;
+      m_fFriction = 0.0f;
+      m_fScatterAngle = 0.0f;
 
       memset(m_szName, 0, 32);
       strcat_s(m_szName, "dummyMaterial");
@@ -87,4 +101,9 @@ public:
    COLORREF m_cClearcoat;
    bool m_bIsMetal;
    bool m_bOpacityActive;
+   //physics
+   float m_fElasticity;
+   float m_fElasticityFalloff;
+   float m_fFriction;
+   float m_fScatterAngle;
 };

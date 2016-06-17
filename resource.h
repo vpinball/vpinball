@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
-// Von Microsoft Visual C++ generierte Includedatei.
-// Verwendet durch vpinball_eng.rc
+// Microsoft Visual C++ generated include file.
+// Used by vpinball_eng.rc
 //
 #define DISPID_Textbox_BackColor        1
 #define DISPID_Textbox_FontColor        2
@@ -684,6 +684,7 @@
 #define IDC_CORRECTION_X                460
 #define IDC_EDIT3                       461
 #define IDC_CORRECTION_Y                461
+#define IDC_MAT_ELASTICITY_FALLOFF      461
 #define IDC_FXAACB                      462
 #define IDC_ABOUT_VERSION               463
 #define DISPID_PluFrames                464
@@ -854,6 +855,10 @@
 #define IDC_STATIC_BULB_MESH            727
 #define IDC_CVP_EDIT_AUTOCHARS          728
 #define IDC_CVP_EDIT_MOUSEDWELL         729
+#define IDC_MAT_ELASTICITY              731
+#define IDC_MAT_FRICTION                732
+#define IDC_EDIT5                       733
+#define IDC_MAT_SCATTER_ANGLE           733
 #define DISPID_Gate_Height1             1142
 #define DISPID_Image                    1500
 #define DISPID_Image2                   1501
@@ -998,7 +1003,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        620
 #define _APS_NEXT_COMMAND_VALUE         4008
-#define _APS_NEXT_CONTROL_VALUE         728
+#define _APS_NEXT_CONTROL_VALUE         734
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif

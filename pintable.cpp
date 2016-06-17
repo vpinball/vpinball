@@ -3332,7 +3332,19 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryp
          strcpy_s(mats[i].szName, m->m_szName);
       }
       bw.WriteStruct(FID(MATE), mats, (int)sizeof(SaveMaterial)*m_materials.Size());
+      SavePhysicsMaterial *phymats = (SavePhysicsMaterial*)malloc(sizeof(SavePhysicsMaterial)*m_materials.Size());
+      for ( int i = 0; i < m_materials.Size(); i++ )
+      {
+          const Material* const m = m_materials.ElementAt( i );
+          strcpy_s( phymats[i].szName, m->m_szName );
+          phymats[i].fElasticity = m->m_fElasticity;
+          phymats[i].fElasticityFallOff = m->m_fElasticityFalloff;
+          phymats[i].fFriction = m->m_fFriction;
+          phymats[i].fScatterAngle = m->m_fScatterAngle;
+      }
+      bw.WriteStruct( FID( PHMA ), phymats, (int)sizeof( SavePhysicsMaterial )*m_materials.Size() );
       free(mats);
+      free(phymats);
    }
    // HACK!!!! - Don't save special values when copying for undo.  For instance, don't reset the code.
    // Someday save these values into there own stream, used only when saving to file.
@@ -4234,6 +4246,30 @@ BOOL PinTable::LoadToken(int id, BiffReader *pbr)
       }
       free(mats);
    }
+   else if(id==FID(PHMA))
+   {
+       SavePhysicsMaterial *mats = (SavePhysicsMaterial*)malloc( sizeof( SavePhysicsMaterial )*m_numMaterials );
+       pbr->GetStruct( mats, (int)sizeof( SavePhysicsMaterial )*m_numMaterials );
+
+       for ( int i = 0; i < m_numMaterials; i++ )
+       {
+           bool found=true;
+           Material *pmat = GetMaterial(mats[i].szName);
+           if( pmat==NULL )
+           {
+               pmat = new Material();
+               found=false;
+           }
+           pmat->m_fElasticity = mats[i].fElasticity;
+           pmat->m_fElasticityFalloff = mats[i].fElasticityFallOff;
+           pmat->m_fFriction = mats[i].fFriction;
+           pmat->m_fScatterAngle = mats[i].fScatterAngle;
+           if( !found )
+              m_materials.AddElement( pmat );
+       }
+       free( mats );
+   }
+
    return fTrue;
 }
 
