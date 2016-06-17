@@ -205,6 +205,16 @@ INT_PTR CALLBACK AboutProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 INT_PTR CALLBACK SearchSelectProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 INT_PTR CALLBACK DrawingOrderProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
+typedef struct _tagSORTDATA
+{
+    HWND hwndList;
+    int subItemIndex;
+    int sortUpDown;
+}SORTDATA;
+
+SORTDATA SortData;
+int columnSortOrder[4] = { 0 };
+
 void AddToolTip(char *text, HWND parentHwnd, HWND toolTipHwnd, HWND controlHwnd)
 {
     TOOLINFO toolInfo = { 0 };
@@ -2416,15 +2426,6 @@ void VPinball::Quit()
       PostMessage(m_hwnd, WM_CLOSE, 0, 0);
 }
 
-typedef struct _tagSORTDATA
-{
-   HWND hwndList;
-   int subItemIndex;
-   int sortUpDown;
-}SORTDATA;
-
-SORTDATA SortData;
-static int columnSortOrder[4] = { 0 };
 
 int CALLBACK MyCompProc(LPARAM lSortParam1, LPARAM lSortParam2, LPARAM lSortOption)
 {
@@ -3511,34 +3512,10 @@ INT_PTR CALLBACK ImageManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
    return FALSE;
 }
 
-void DisableAllMaterialDialogItems(HWND hwndDlg)
-{   
-   EnableWindow(GetDlgItem(hwndDlg, IDC_DIFFUSE_CHECK), FALSE);
-   EnableWindow(GetDlgItem(hwndDlg, IDC_DIFFUSE_EDIT), FALSE);
-   EnableWindow(GetDlgItem(hwndDlg, IDC_GLOSSY_EDIT), FALSE);
-   EnableWindow(GetDlgItem(hwndDlg, IDC_SPECULAR_EDIT), FALSE);
-   EnableWindow(GetDlgItem(hwndDlg, IDC_OPACITY_EDIT), FALSE);
-   EnableWindow(GetDlgItem(hwndDlg, IDC_OPACITY_CHECK), FALSE);
-   EnableWindow(GetDlgItem(hwndDlg, IDC_EDGEALPHA_EDIT), FALSE);
-   EnableWindow(GetDlgItem(hwndDlg, IDC_CLONE_BUTTON), FALSE);
-   EnableWindow(GetDlgItem(hwndDlg, IDC_RENAME), FALSE);
-   EnableWindow(GetDlgItem(hwndDlg, IDC_IMPORT), FALSE);
-}
 
-void EnableAllMaterialDialogItems(HWND hwndDlg)
-{
-   EnableWindow(GetDlgItem(hwndDlg, IDC_DIFFUSE_CHECK), TRUE);
-   EnableWindow(GetDlgItem(hwndDlg, IDC_DIFFUSE_EDIT), TRUE);
-   EnableWindow(GetDlgItem(hwndDlg, IDC_GLOSSY_EDIT), TRUE);
-   EnableWindow(GetDlgItem(hwndDlg, IDC_SPECULAR_EDIT), TRUE);
-   EnableWindow(GetDlgItem(hwndDlg, IDC_OPACITY_EDIT), TRUE);
-   EnableWindow(GetDlgItem(hwndDlg, IDC_OPACITY_CHECK), TRUE);
-   EnableWindow(GetDlgItem(hwndDlg, IDC_EDGEALPHA_EDIT), TRUE);
-   EnableWindow(GetDlgItem(hwndDlg, IDC_CLONE_BUTTON), TRUE);
-   EnableWindow(GetDlgItem(hwndDlg, IDC_RENAME), TRUE);
-   EnableWindow(GetDlgItem(hwndDlg, IDC_IMPORT), TRUE);
-}
+extern INT_PTR CALLBACK MaterialManagerProc( HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam );
 
+/*
 INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
    CCO(PinTable) *pt = (CCO(PinTable) *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
@@ -4101,7 +4078,7 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
             if (count > 0)
             {
                LocalString ls(IDS_REMOVEMATERIAL);
-               const int ans = MessageBox(hwndDlg, ls.m_szbuffer/*"Are you sure you want to remove this material?"*/, "Visual Pinball", MB_YESNO | MB_DEFBUTTON2);
+               const int ans = MessageBox(hwndDlg, ls.m_szbuffer/ *"Are you sure you want to remove this material?"* /, "Visual Pinball", MB_YESNO | MB_DEFBUTTON2);
                if (ans == IDYES)
                {
                   pt = (CCO(PinTable) *)GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
@@ -4136,6 +4113,7 @@ INT_PTR CALLBACK MaterialManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPA
 
    return FALSE;
 }
+*/
 
 
 INT_PTR CALLBACK AboutProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
