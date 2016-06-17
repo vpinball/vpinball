@@ -11,6 +11,7 @@ class RampData
 {
 public:
    char m_szMaterial[32];
+   char m_szPhysicsMaterial[32];
    TimerDataRoot m_tdr;
    float m_heightbottom;
    float m_heighttop;
@@ -36,6 +37,7 @@ public:
    bool m_fVisible;
    bool m_fImageWalls;
    bool m_fReflectionEnabled;
+   bool m_fOverwritePhysics;
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -238,6 +240,10 @@ public:
    STDMETHOD(put_WireDistanceX)(/*[in]*/ float newVal);
    STDMETHOD(get_WireDistanceY)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_WireDistanceY)(/*[in]*/ float newVal);
+   STDMETHOD( get_PhysicsMaterial )(/*[out, retval]*/ BSTR *pVal);
+   STDMETHOD( put_PhysicsMaterial )(/*[in]*/ BSTR newVal);
+   STDMETHOD( get_OverwritePhysics )(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   STDMETHOD( put_OverwritePhysics )(/*[in]*/ VARIANT_BOOL newVal);
 };
 
 #endif // !defined(AFX_RAMP_H__5EFEDEFB_5504_430A_B000_9B6D1903E3FC__INCLUDED_)
