@@ -48,6 +48,8 @@ public:
 
    char m_szMaterial[32];
    COLORREF m_SideColor;
+   char m_szPhysicsMaterial[32];
+   bool m_fOverwritePhysics;
 
    TimerDataRoot m_tdr;
 
@@ -194,6 +196,10 @@ public:
    STDMETHOD(put_DisableLighting)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_ReflectionEnabled)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_ReflectionEnabled)(/*[in]*/ VARIANT_BOOL newVal);
+   STDMETHOD( get_PhysicsMaterial )(/*[out, retval]*/ BSTR *pVal);
+   STDMETHOD( put_PhysicsMaterial )(/*[in]*/ BSTR newVal);
+   STDMETHOD( get_OverwritePhysics )(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   STDMETHOD( put_OverwritePhysics )(/*[in]*/ VARIANT_BOOL newVal);
 
    Primitive();
    virtual ~Primitive();
