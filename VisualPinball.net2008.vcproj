@@ -10163,6 +10163,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="MaterialDialog.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\math\math.cpp"
 				>
 			</File>
