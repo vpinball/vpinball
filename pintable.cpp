@@ -7626,6 +7626,7 @@ STDMETHODIMP PinTable::GetPredefinedStrings(DISPID dispID, CALPOLESTR *pcaString
    case IDC_MATERIAL_COMBO:
    case IDC_MATERIAL_COMBO2:
    case IDC_MATERIAL_COMBO3:
+   case IDC_MATERIAL_COMBO4:
    {
       cvar = m_materials.Size();
       rgstr = (WCHAR **)CoTaskMemAlloc((cvar + 1) * sizeof(WCHAR *));
@@ -7843,6 +7844,7 @@ STDMETHODIMP PinTable::GetPredefinedValue(DISPID dispID, DWORD dwCookie, VARIANT
    case IDC_MATERIAL_COMBO:
    case IDC_MATERIAL_COMBO2:
    case IDC_MATERIAL_COMBO3:
+   case IDC_MATERIAL_COMBO4:
    {
       if (dwCookie == -1)
       {

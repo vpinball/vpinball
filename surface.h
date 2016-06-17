@@ -18,6 +18,7 @@ public:
    char m_szTopMaterial[32];
    char m_szSideMaterial[32];
    char m_szSlingShotMaterial[32];
+   char m_szPhysicsMaterial[32];
    float m_heightbottom;
    float m_heighttop;
    float m_slingshotforce;
@@ -36,7 +37,7 @@ public:
    bool m_fTopBottomVisible;
    bool m_fHitEvent;
    bool m_fReflectionEnabled;
-
+   bool m_fOverwritePhysics;
    bool m_fInner; //!! Deprecated, do not use! Always true after loading! (was: Inside or outside wall)
 };
 
@@ -231,8 +232,12 @@ public:
    STDMETHOD(put_SlingshotThreshold)(/*[in]*/ float newVal);
    STDMETHOD(get_SlingshotAnimation)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_SlingshotAnimation)(/*[in]*/ VARIANT_BOOL newVal);
-   STDMETHOD(get_SlingshotMaterial)(/*[out, retval]*/ BSTR *pVal);
-   STDMETHOD(put_SlingshotMaterial)(/*[in]*/ BSTR newVal);
+   STDMETHOD( get_SlingshotMaterial )(/*[out, retval]*/ BSTR *pVal);
+   STDMETHOD( put_SlingshotMaterial )(/*[in]*/ BSTR newVal);
+   STDMETHOD( get_PhysicsMaterial )(/*[out, retval]*/ BSTR *pVal);
+   STDMETHOD( put_PhysicsMaterial )(/*[in]*/ BSTR newVal);
+   STDMETHOD( get_OverwritePhysics)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   STDMETHOD( put_OverwritePhysics )(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHODIMP PlaySlingshotHit();
 };
 

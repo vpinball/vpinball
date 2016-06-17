@@ -910,26 +910,30 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,185,76,10
 END
 
-IDD_PROPWALL_PHYSICS DIALOGEX 0, 0, 125, 131
+IDD_PROPWALL_PHYSICS DIALOGEX 0, 0, 125, 163
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    CONTROL         "Has &Hit Event",3,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,60,10
-    EDITTEXT        4,78,17,40,12,ES_AUTOHSCROLL
-    EDITTEXT        14,78,32,40,12,ES_AUTOHSCROLL
-    EDITTEXT        111,78,46,40,12,ES_AUTOHSCROLL
-    EDITTEXT        15,78,61,40,12,ES_AUTOHSCROLL
-    EDITTEXT        114,78,75,40,12,ES_AUTOHSCROLL
-    EDITTEXT        115,78,88,40,12,ES_AUTOHSCROLL
-    CONTROL         "Can &Drop",11,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,103,53,10
-    CONTROL         "Collidable",110,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,78,103,42,10
-    CONTROL         "Is Bottom Collidable",116,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,116,83,10
-    LTEXT           "Hit Threshol&d",-1,7,19,70,8
-    LTEXT           "Slingshot &Force",-1,7,34,69,8
-    LTEXT           "&Elasticity",-1,7,63,69,8
-    LTEXT           "Slingshot Threshold",-1,7,48,70,8
-    LTEXT           "&Friction",-1,7,77,69,8
-    LTEXT           "&Scatter Angle",-1,7,90,69,8
+    CONTROL         "Has &Hit Event",3,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,4,60,10
+    EDITTEXT        4,78,15,40,12,ES_AUTOHSCROLL
+    EDITTEXT        14,78,30,40,12,ES_AUTOHSCROLL
+    EDITTEXT        111,78,44,40,12,ES_AUTOHSCROLL
+    EDITTEXT        15,78,98,40,12,ES_AUTOHSCROLL
+    EDITTEXT        114,78,112,40,12,ES_AUTOHSCROLL
+    EDITTEXT        115,78,125,40,12,ES_AUTOHSCROLL
+    CONTROL         "Can &Drop",11,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,140,53,10
+    CONTROL         "Collidable",110,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,77,140,42,10
+    CONTROL         "Is Bottom Collidable",116,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,151,83,10
+    LTEXT           "Hit Threshol&d",IDC_STATIC,7,17,70,8
+    LTEXT           "Slingshot &Force",IDC_STATIC,7,32,69,8
+    LTEXT           "&Elasticity",IDC_STATIC,7,100,69,8
+    LTEXT           "Slingshot Threshold",IDC_STATIC,7,46,70,8
+    LTEXT           "&Friction",IDC_STATIC,7,114,69,8
+    LTEXT           "&Scatter Angle",IDC_STATIC,7,127,69,8
+    COMBOBOX        IDC_MATERIAL_COMBO4,6,70,111,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Overwrite Material Settings",IDC_OVERWRITE_MATERIAL_SETTINGS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,85,100,10
+    LTEXT           "Physics Material",IDC_STATIC,6,60,52,8
 END
 
 IDD_PROPWALL_POSITION DIALOGEX 0, 0, 125, 43
