@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Visual C++ generated include file.
-// Used by vpinball_eng.rc
+// Von Microsoft Visual C++ generierte Includedatei.
+// Verwendet durch vpinball_eng.rc
 //
 #define DISPID_Textbox_BackColor        1
 #define DISPID_Textbox_FontColor        2
@@ -652,11 +652,12 @@
 #define IDC_CVP_CHKBOX_SHOWAUTOCOMPLETE 431
 #define IDC_USE_NVIDIA_API_CHECK        431
 #define IDC_OVERWRITE_MATERIAL_SETTINGS 432
-#define IDC_TARGET_ISDROPPED_CHECK      432
 #define IDC_LIGHT_FALLOFF_POWER         432
 #define IDC_TARGET_LEGACY_MODE_CHECK    433
 #define IDC_MODULATE_VS_ADD             433
 #define IDC_INTENSITY_SCALE_LIGHT       434
+#define IDC_TARGET_ISDROPPED_CHECK      435
+#define IDC_OVERWRITE_MATERIAL_SETTINGS2 434
 #define IDC_INTENSITY_SCALE_FLASHER     435
 #define IDC_DAYNIGHT_SLIDER             436
 #define IDC_FADE_SPEED_DOWN             437
