@@ -1780,6 +1780,9 @@ void VPinball::SetEnableMenuItems()
       EnableMenuItem(hmenu, IDM_SAVEAS, flags);
       EnableMenuItem(hmenu, IDM_SAVEASPROTECTED, flags);
       EnableMenuItem(hmenu, ID_FILE_EXPORT_BLUEPRINT, flags);
+      EnableMenuItem(hmenu, ID_EXPORT_TABLEMESH, flags);
+      EnableMenuItem(hmenu, ID_EXPORT_BACKDROPPOV, flags);
+      EnableMenuItem(hmenu, ID_IMPORT_BACKDROPPOV, flags);
 
       // if we can do a normal save but not a protected save then disable 'save as protected'
       // (if we cant do any saves it is already disabled)
@@ -1835,6 +1838,9 @@ void VPinball::SetEnableMenuItems()
       EnableMenuItem(hmenu, IDM_SAVEASPROTECTED, MF_BYCOMMAND | MF_GRAYED);
       EnableMenuItem(hmenu, IDM_UNLOCKPROTECTED, MF_BYCOMMAND | MF_GRAYED);
       EnableMenuItem(hmenu, ID_FILE_EXPORT_BLUEPRINT, MF_BYCOMMAND | MF_GRAYED);
+      EnableMenuItem(hmenu, ID_EXPORT_TABLEMESH, MF_BYCOMMAND | MF_GRAYED);
+      EnableMenuItem(hmenu, ID_EXPORT_BACKDROPPOV, MF_BYCOMMAND | MF_GRAYED);
+      EnableMenuItem(hmenu, ID_IMPORT_BACKDROPPOV, MF_BYCOMMAND | MF_GRAYED);
 
       EnableMenuItem(hmenu, ID_EDIT_UNDO, MF_BYCOMMAND | MF_GRAYED);
       EnableMenuItem(hmenu, IDC_COPY, MF_BYCOMMAND | MF_GRAYED);
