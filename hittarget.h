@@ -28,6 +28,7 @@ public:
    char m_szImage[MAXTOKEN];
    TargetType m_targetType;
    char m_szMaterial[32];
+   char m_szPhysicsMaterial[32];
 
    TimerDataRoot m_tdr;
 
@@ -49,6 +50,7 @@ public:
    bool m_fReflectionEnabled;
    bool m_legacy;
    bool m_isDropped;
+   bool m_fOverwritePhysics;
 };
 
 class HitTarget :
@@ -148,6 +150,10 @@ public:
    STDMETHOD(put_DrawStyle)(/*[in]*/ TargetType newVal);
    STDMETHOD(get_RaiseDelay)(/*[out, retval]*/ long *pVal);
    STDMETHOD(put_RaiseDelay)(/*[in]*/ long newVal);
+   STDMETHOD(get_PhysicsMaterial)(/*[out, retval]*/ BSTR *pVal);
+   STDMETHOD(put_PhysicsMaterial)(/*[in]*/ BSTR newVal);
+   STDMETHOD(get_OverwritePhysics)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   STDMETHOD(put_OverwritePhysics)(/*[in]*/ VARIANT_BOOL newVal);
 
 
    virtual void MoveOffset(const float dx, const float dy);

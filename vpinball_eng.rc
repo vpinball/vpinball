@@ -14,7 +14,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (United States) resources
+// Englisch (USA) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
@@ -2062,24 +2062,28 @@ BEGIN
     GROUPBOX        "Position / Scale",-1,7,3,111,53
 END
 
-IDD_PROPHITTARGET_PHYSICS DIALOGEX 0, 0, 125, 116
+IDD_PROPHITTARGET_PHYSICS DIALOGEX 0, 0, 125, 148
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    CONTROL         "Has &Hit Event",34,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,60,10
-    EDITTEXT        33,78,19,40,12,ES_AUTOHSCROLL
-    EDITTEXT        110,78,32,40,12,ES_AUTOHSCROLL
-    EDITTEXT        112,78,45,40,12,ES_AUTOHSCROLL
-    EDITTEXT        114,78,58,40,12,ES_AUTOHSCROLL
-    EDITTEXT        115,78,71,40,12,ES_AUTOHSCROLL
-    LTEXT           "Hit Threshol&d",-1,7,21,70,8
-    LTEXT           "&Elasticity",-1,7,34,63,8
-    LTEXT           "Elasticity Falloff",-1,7,47,63,8
-    LTEXT           "&Friction",-1,7,60,63,8
-    LTEXT           "&Scatter Angle",-1,7,73,63,8
-    CONTROL         "Collidable (switchable in script)",111,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,96,115,10
-    CONTROL         "IsDropped",IDC_TARGET_ISDROPPED_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,106,49,10
-    CONTROL         "Legacy Mode",IDC_TARGET_LEGACY_MODE_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,86,59,10
+    CONTROL         "Has &Hit Event",34,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,2,60,10
+    EDITTEXT        33,78,11,40,12,ES_AUTOHSCROLL
+    EDITTEXT        110,78,64,40,12,ES_AUTOHSCROLL
+    EDITTEXT        112,78,77,40,12,ES_AUTOHSCROLL
+    EDITTEXT        114,78,90,40,12,ES_AUTOHSCROLL
+    EDITTEXT        115,78,103,40,12,ES_AUTOHSCROLL
+    LTEXT           "Hit Threshol&d",IDC_STATIC,7,13,70,8
+    LTEXT           "&Elasticity",IDC_STATIC,7,66,63,8
+    LTEXT           "Elasticity Falloff",IDC_STATIC,7,79,63,8
+    LTEXT           "&Friction",IDC_STATIC,7,92,63,8
+    LTEXT           "&Scatter Angle",IDC_STATIC,7,105,63,8
+    CONTROL         "Collidable (switchable in script)",111,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,128,115,10
+    CONTROL         "IsDropped",IDC_TARGET_ISDROPPED_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,138,49,10
+    CONTROL         "Legacy Mode",IDC_TARGET_LEGACY_MODE_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,118,59,10
+    COMBOBOX        IDC_MATERIAL_COMBO4,7,36,111,60,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Overwrite Material Settings",IDC_OVERWRITE_MATERIAL_SETTINGS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,51,100,10
+    LTEXT           "Physics Material",IDC_STATIC,7,26,52,8
 END
 
 
@@ -2971,7 +2975,7 @@ BEGIN
     IDS_STEP                "Step"
 END
 
-#endif    // English (United States) resources
+#endif    // Englisch (USA) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
