@@ -267,7 +267,6 @@ void HitTarget::GetHitShapes(Vector<HitObject> * const pvho)
     if (m_d.m_targetType == DropTargetBeveled || m_d.m_targetType == DropTargetFlatSimple || m_d.m_targetType == DropTargetSimple)
     {
        std::set< std::pair<unsigned, unsigned> > addedEdges;
-       Vertex3Ds rgv3D[16];
        Matrix3D fullMatrix, tempMatrix;
 
        fullMatrix.SetIdentity();
@@ -297,8 +296,10 @@ void HitTarget::GetHitShapes(Vector<HitObject> * const pvho)
        // add collision vertices
        for (unsigned i = 0; i < m_numVertices; ++i)
           SetupHitObject(pvho, new HitPoint(vertices[i]), m_d.m_legacy);
+
        if (!m_d.m_legacy)
        {
+          Vertex3Ds rgv3D[16];
           // now create a special hit shape with hit event enabled to prevent a hit event when hit from behind
           for (unsigned i = 0; i < 16; i++)
           {
@@ -335,7 +336,6 @@ void HitTarget::GetHitShapes(Vector<HitObject> * const pvho)
           for (unsigned i = 0; i < 16; ++i)
              SetupHitObject(pvho, new HitPoint(rgv3D[i]));
        }
-
     }
     else
     {
@@ -436,8 +436,9 @@ void HitTarget::EndPlay()
 
 void HitTarget::GenerateMesh(Vertex3D_NoTex2 *buf)
 {
-   Matrix3D fullMatrix,tempMatrix;
    SetMeshType(m_d.m_targetType);
+
+   Matrix3D fullMatrix,tempMatrix;
    fullMatrix.SetIdentity();
    tempMatrix.SetIdentity();
    tempMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotZ));
@@ -454,6 +455,7 @@ void HitTarget::GenerateMesh(Vertex3D_NoTex2 *buf)
       buf[i].x = vert.x + m_d.m_vPosition.x;
       buf[i].y = vert.y + m_d.m_vPosition.y;
       buf[i].z = vert.z*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_d.m_vPosition.z + m_ptable->m_tableheight;
+
       vert = Vertex3Ds(m_vertices[i].nx, m_vertices[i].ny, m_vertices[i].nz);
       vert = fullMatrix.MultiplyVectorNoTranslate(vert);
       buf[i].nx = vert.x;
@@ -464,13 +466,13 @@ void HitTarget::GenerateMesh(Vertex3D_NoTex2 *buf)
    }
 }
 
-// recalculate vertices for editor display
+// recalculate vertices for editor display or hit shapes
 void HitTarget::TransformVertices()
 {
-   Matrix3D fullMatrix, tempMatrix;
-   
    SetMeshType(m_d.m_targetType);
-   vertices.resize(m_numIndices);
+
+   Matrix3D fullMatrix, tempMatrix;
+   vertices.resize(m_numVertices);
    fullMatrix.SetIdentity();
    tempMatrix.SetIdentity();
    tempMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotZ));
@@ -496,7 +498,6 @@ void HitTarget::ExportMesh( FILE *f )
     char subObjName[MAX_PATH];
     WideCharToMultiByte( CP_ACP, 0, m_wzName, -1, name, MAX_PATH, NULL, NULL );
 
-
     SetMeshType( m_d.m_targetType );
 
     if ( transformedVertices )
@@ -514,7 +515,6 @@ void HitTarget::ExportMesh( FILE *f )
     WaveFrontObj_UseTexture( f, m_d.m_szMaterial );
     WaveFrontObj_WriteFaceInfoList( f, m_indices, m_numIndices );
     WaveFrontObj_UpdateFaceOffset( m_numVertices );
-
 }
 
 
