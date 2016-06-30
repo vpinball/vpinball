@@ -3578,10 +3578,36 @@ void Player::UpdateHUD()
 		DebugPrint(m_width/2-210, m_height/2-5, szFoo, len2);
 	}
 
-	if (m_fCloseDown) // print table blurb and description in pause mode
+	if (m_fCloseDown) // print table name,author,version and blurb and description in pause mode
 	{
 		char szFoo[256];
+		szFoo[0] = 0;
+
 		int line = 0;
+
+		if (m_ptable->m_szTableName && strlen(m_ptable->m_szTableName) > 0)
+			strcat_s(szFoo, m_ptable->m_szTableName);
+		else
+			strcat_s(szFoo, "Table");
+		if (m_ptable->m_szAuthor && strlen(m_ptable->m_szAuthor) > 0)
+		{
+			strcat_s(szFoo, " by ");
+			strcat_s(szFoo, m_ptable->m_szAuthor);
+		}
+		if (m_ptable->m_szVersion && strlen(m_ptable->m_szVersion) > 0)
+		{
+			strcat_s(szFoo, " (");
+			strcat_s(szFoo, m_ptable->m_szVersion);
+			strcat_s(szFoo, ")");
+		}
+		if (strlen(szFoo) > 0)
+		{
+			DebugPrint(m_width / 2 - 320, line * 20 + 10, szFoo, strlen(szFoo), true);
+			line += 2;
+			DebugPrint(m_width / 2 - 320, line * 20 + 10, "========================================", 40, true);
+			line += 2;
+		}
+
 		for (unsigned int i2 = 0; i2 < 2; ++i2)
 		{
 			const char * const s = (i2 == 0) ? m_ptable->m_szBlurb : m_ptable->m_szDescription;
