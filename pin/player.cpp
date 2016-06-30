@@ -1140,7 +1140,7 @@ void Player::CreateDebugFont()
 
 }
 
-void Player::DebugPrint(int x, int y, LPCSTR text, int stringLen)
+void Player::DebugPrint(int x, int y, LPCSTR text, int stringLen, bool shadow)
 {
 //     HDC hdcNull = GetDC(NULL);
 //     TextOut(hdcNull, x, y, text, stringLen);
@@ -1148,6 +1148,13 @@ void Player::DebugPrint(int x, int y, LPCSTR text, int stringLen)
     RECT fontRect;
     if (m_pFont)
     {
+        if (shadow)
+            for (unsigned int i = 0; i < 4; ++i)
+            {
+                SetRect(&fontRect, x + ((i == 0) ? -1 : (i == 1) ? 1 : 0), y + ((i == 2) ? -1 : (i == 3) ? 1 : 0), 0, 0);
+                m_pFont->DrawText(NULL, text, -1, &fontRect, DT_NOCLIP, 0xFF000000);
+            }
+
         SetRect(&fontRect, x, y, 0, 0);
         m_pFont->DrawText(NULL, text, -1, &fontRect, DT_NOCLIP, 0xFFFFFFFF);
     }
@@ -3591,7 +3598,7 @@ void Player::UpdateHUD()
 
 				szFoo[o] = 0;
 
-				DebugPrint(m_width / 2 - 320, line * 20 + 10, szFoo, o);
+				DebugPrint(m_width / 2 - 320, line * 20 + 10, szFoo, o, true);
 
 				if (o < 100)
 					o++;
@@ -3604,7 +3611,7 @@ void Player::UpdateHUD()
 			if (i2 == 0 && s && strlen(s) > 0)
 			{
 				line++;
-				DebugPrint(m_width / 2 - 320, line * 20 + 10, "========================================", 40);
+				DebugPrint(m_width / 2 - 320, line * 20 + 10, "========================================", 40, true);
 				line+=2;
 			}
 		}
