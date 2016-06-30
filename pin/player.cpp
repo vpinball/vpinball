@@ -3570,6 +3570,45 @@ void Player::UpdateHUD()
 		int len2 = sprintf_s(szFoo, "Press 'Enter' to continue, Hold ESC to quit");
 		DebugPrint(m_width/2-210, m_height/2-5, szFoo, len2);
 	}
+
+	if (m_fCloseDown) // print table blurb and description in pause mode
+	{
+		char szFoo[256];
+		int line = 0;
+		for (unsigned int i2 = 0; i2 < 2; ++i2)
+		{
+			const char * const s = (i2 == 0) ? m_ptable->m_szBlurb : m_ptable->m_szDescription;
+			int length = s ? strlen(s) : 0;
+			const char *desc = s;
+			while (length > 0)
+			{
+				unsigned int o = 0;
+				for (unsigned int i = 0; i < 100; ++i, ++o)
+					if (desc[i] != '\n' && desc[i] != 0)
+						szFoo[o] = desc[i];
+					else
+						break;
+
+				szFoo[o] = 0;
+
+				DebugPrint(m_width / 2 - 320, line * 20 + 10, szFoo, o);
+
+				if (o < 100)
+					o++;
+				length -= o;
+				desc += o;
+
+				line++;
+			}
+
+			if (i2 == 0 && s && strlen(s) > 0)
+			{
+				line++;
+				DebugPrint(m_width / 2 - 320, line * 20 + 10, "========================================", 40);
+				line+=2;
+			}
+		}
+	}
 }
 
 void Player::FlipVideoBuffersNormal(const bool vsync)
