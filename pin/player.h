@@ -155,7 +155,7 @@ public:
    void RenderMirrorOverlay();
    void InitBallShader();
    void CreateDebugFont();
-   void DebugPrint(int x, int y, LPCSTR text, int stringLen);
+   void DebugPrint(int x, int y, LPCSTR text, int stringLen, bool shadow = false);
    void InitWindow();
    void InitKeys();
    void InitRegValues();
