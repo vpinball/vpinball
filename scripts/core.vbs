@@ -3,7 +3,8 @@ Const VPinMAMEDriverVer = 3.51
 '=======================
 ' VPinMAME driver core.
 '=======================
-' New in 3.51
+' New in 3.51 (Update by mfuegemann)
+' - gts1.vbs dip fix
 '
 ' New in 3.50 (Update by Toxie & mfuegemann & Arngrim)
 ' - Added MAC.vbs & IronBalls.vbs & Lancelot.vbs & Antar.vbs
