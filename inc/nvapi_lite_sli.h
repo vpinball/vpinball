@@ -56,10 +56,26 @@ typedef struct
     NvU32 previousFrameAFRIndex;      //!< [OUT] The AFR group index that was used for the previous frame (~0 if more than one frame has not been rendered yet)
     NvU32 bIsCurAFRGroupNew;          //!< [OUT] Boolean: Is this frame the first time running on the current AFR group
 
-} NV_GET_CURRENT_SLI_STATE;
+} NV_GET_CURRENT_SLI_STATE_V1;
+
+typedef struct
+{
+    NvU32 version;                    //!< Structure version
+    NvU32 maxNumAFRGroups;            //!< [OUT] The maximum possible value of numAFRGroups
+    NvU32 numAFRGroups;               //!< [OUT] The number of AFR groups enabled in the system
+    NvU32 currentAFRIndex;            //!< [OUT] The AFR group index for the frame currently being rendered
+    NvU32 nextFrameAFRIndex;          //!< [OUT] What the AFR group index will be for the next frame (i.e. after calling Present)
+    NvU32 previousFrameAFRIndex;      //!< [OUT] The AFR group index that was used for the previous frame (~0 if more than one frame has not been rendered yet)
+    NvU32 bIsCurAFRGroupNew;          //!< [OUT] Boolean: Is this frame the first time running on the current AFR group
+    NvU32 numVRSLIGpus;               //!< [OUT] The number of GPUs used in VR-SLI. If it is 0 VR-SLI is not active
+
+} NV_GET_CURRENT_SLI_STATE_V2;
 
 //! \ingroup dx
-#define NV_GET_CURRENT_SLI_STATE_VER  MAKE_NVAPI_VERSION(NV_GET_CURRENT_SLI_STATE,1)
+#define NV_GET_CURRENT_SLI_STATE_VER1  MAKE_NVAPI_VERSION(NV_GET_CURRENT_SLI_STATE_V1,1)
+#define NV_GET_CURRENT_SLI_STATE_VER2  MAKE_NVAPI_VERSION(NV_GET_CURRENT_SLI_STATE_V2,1)
+#define NV_GET_CURRENT_SLI_STATE_VER NV_GET_CURRENT_SLI_STATE_VER2
+#define NV_GET_CURRENT_SLI_STATE     NV_GET_CURRENT_SLI_STATE_V2
 #if defined(_D3D9_H_) || defined(__d3d10_h__) || defined(__d3d11_h__)
 
 ///////////////////////////////////////////////////////////////////////////////

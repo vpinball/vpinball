@@ -357,7 +357,8 @@ typedef enum _NvAPI_Status
     NVAPI_TIMING_NOT_SUPPORTED                  = -204,    //!< Provided timing is not supported.
     NVAPI_HDCP_ENCRYPTION_FAILED                = -205,    //!< HDCP Encryption Failed for the device. Would be applicable when the device is HDCP Capable.
     NVAPI_PCLK_LIMITATION_FAILED                = -206,    //!< Provided mode is over sink device pclk limitation.
-    NVAPI_NO_CONNECTOR_FOUND                    = -207,    //!< No connector on GPU found.
+    NVAPI_NO_CONNECTOR_FOUND                    = -207,    //!< No connector on GPU found. 
+    NVAPI_HDCP_DISABLED                         = -208,    //!< When a non-HDCP capable HMD is connected, we would inform user by this code.
 } NvAPI_Status;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -447,6 +448,7 @@ typedef NV_DISPLAY_DRIVER_MEMORY_INFO_V3 NV_DISPLAY_DRIVER_MEMORY_INFO;
 // FUNCTION NAME: NvAPI_GPU_GetMemoryInfo
 //
 //!   DESCRIPTION: This function retrieves the available driver memory footprint for the specified GPU. 
+//!                If the GPU is in TCC Mode, only dedicatedVideoMemory will be returned in pMemoryInfo (NV_DISPLAY_DRIVER_MEMORY_INFO).
 //!
 //! SUPPORTED OS:  Windows XP and higher
 //!
