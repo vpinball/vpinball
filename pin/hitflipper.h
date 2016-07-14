@@ -15,7 +15,7 @@ public:
 
    virtual void Animate() { }
 
-   void SetSolenoidState(bool s);
+   void SetSolenoidState(const bool s);
    float GetStrokeRatio() const;
 
    void SetStartAngle(const float r);

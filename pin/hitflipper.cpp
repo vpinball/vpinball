@@ -239,15 +239,16 @@ void FlipperAnimObject::UpdateVelocities()
    //const float solForce = m_solState ? m_force : 0.0f;
    //float force = m_dir * (solForce + springForce);
 
-   float desiredTorque;
-   if (m_solState)
+   float desiredTorque = m_force;
+   if (!m_solState) // m_solState: true = button pressed, false = released
+      desiredTorque *= -m_returnRatio;
+
+   const float HOLD_ANGLE = (float)(3.0 * M_PI/180.0);
+   if (fabsf(m_angleCur - m_angleEnd) <= HOLD_ANGLE)
    {
-      desiredTorque = m_force;
-      if (fabsf(m_angleCur - m_angleEnd) <= (float)(3.0*M_PI / 180.0))
-         desiredTorque *= m_torqueDamping; // hold coil is weaker
+      const float lerp = fabsf(m_angleCur - m_angleEnd) / HOLD_ANGLE; // fade in/out damping, depending on angle to end
+      desiredTorque *= lerp + m_torqueDamping * (1.0f - lerp); // hold coil is weaker
    }
-   else
-      desiredTorque = -m_returnRatio * m_force;
 
    desiredTorque *= (float)m_dir;
 
@@ -293,7 +294,7 @@ void FlipperAnimObject::ApplyImpulse(const Vertex3Ds& rotI)
 }
 
 
-void FlipperAnimObject::SetSolenoidState(bool s)
+void FlipperAnimObject::SetSolenoidState(const bool s) // true = button pressed, false = released
 {
    m_solState = s;
 #ifdef DEBUG_FLIPPERS

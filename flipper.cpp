@@ -331,7 +331,7 @@ void Flipper::GetHitShapes(Vector<HitObject> * const pvho)
 
    phf->m_flipperanim.m_EnableRotateEvent = 0;
    phf->m_pfe = NULL;
-   phf->m_flipperanim.m_torqueDamping=m_d.m_torqueDamping;
+   phf->m_flipperanim.m_torqueDamping = m_d.m_torqueDamping;
 
    phf->m_flipperanim.m_fEnabled = m_d.m_fEnabled;
    phf->m_flipperanim.m_fVisible = m_d.m_fVisible;
@@ -620,7 +620,7 @@ STDMETHODIMP Flipper::InterfaceSupportsErrorInfo(REFIID riid)
    return S_FALSE;
 }
 
-STDMETHODIMP Flipper::RotateToEnd() //power stroke to hit ball
+STDMETHODIMP Flipper::RotateToEnd() // power stroke to hit ball, key/button down/pressed
 {
    if (m_phitflipper)
    {
@@ -632,7 +632,7 @@ STDMETHODIMP Flipper::RotateToEnd() //power stroke to hit ball
    return S_OK;
 }
 
-STDMETHODIMP Flipper::RotateToStart() // return to park 
+STDMETHODIMP Flipper::RotateToStart() // return to park, key/button up/released
 {
    if (m_phitflipper)
    {
