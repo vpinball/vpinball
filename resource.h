@@ -201,6 +201,7 @@
 #define IDS_TB_PRIMITIVE                186
 #define IDS_VISUALS2                    187
 #define IDS_POSITION_TRANSLATION        188
+#define IDC_FLIPPER_EOS_T_D_A           189
 #define IDS_DRAWING_ORDER_SELECT        200
 #define IDR_APPMENU                     201
 #define IDC_SOUNDLIST                   201

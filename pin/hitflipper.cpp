@@ -243,11 +243,12 @@ void FlipperAnimObject::UpdateVelocities()
    if (!m_solState) // m_solState: true = button pressed, false = released
       desiredTorque *= -m_returnRatio;
 
-   const float HOLD_ANGLE = (float)(3.0 * M_PI/180.0);
-   if (fabsf(m_angleCur - m_angleEnd) <= HOLD_ANGLE)
+   // hold coil is weaker
+   const float EOS_angle = m_torqueDampingAngle * (float)(M_PI/180.0);
+   if (fabsf(m_angleCur - m_angleEnd) < EOS_angle)
    {
-      const float lerp = fabsf(m_angleCur - m_angleEnd) / HOLD_ANGLE; // fade in/out damping, depending on angle to end
-      desiredTorque *= lerp + m_torqueDamping * (1.0f - lerp); // hold coil is weaker
+      const float lerp = sqrf(sqrf(fabsf(m_angleCur - m_angleEnd) / EOS_angle)); // fade in/out damping, depending on angle to end
+      desiredTorque *= lerp + m_torqueDamping * (1.0f - lerp);
    }
 
    desiredTorque *= (float)m_dir;
