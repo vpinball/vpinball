@@ -88,16 +88,12 @@ public:
    // Multi-object manipulation
    virtual void GetCenter(Vertex2D * const pv) const;
    virtual void PutCenter(const Vertex2D * const pv);
-   void PrepareStatic(RenderDevice* pd3dDevice);
-   void PrepareMovers(RenderDevice* pd3dDevice);
    virtual void SetDefaultPhysics(bool fromMouseClick);
 
    virtual void RenderBlueprint(Sur *psur, const bool solid=false);
    virtual void ExportMesh(FILE *f);
 
    virtual unsigned long long GetMaterialID() { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
-
-   int angleToFrame(float angle) const;
 
    void WriteRegDefaults();
    void UpdateWire(RenderDevice *pd3dDevice);
@@ -113,8 +109,6 @@ private:
    LineSeg *m_plineseg;
    HitGate *m_phitgate;
 
-   float m_posZ;        // z coordinate for rendering
-
    VertexBuffer *wireVertexBuffer;
    IndexBuffer *wireIndexBuffer;
    float m_vertexbuffer_angle;
@@ -124,8 +118,8 @@ private:
 
    const Vertex3D_NoTex2 *m_vertices;
    const WORD            *m_indices;
-   unsigned int     m_numVertices;
-   unsigned int     m_numIndices;
+   unsigned int m_numVertices;
+   unsigned int m_numIndices;
 
    float baseHeight;
 
@@ -134,7 +128,6 @@ public:
    STDMETHOD(get_Elasticity)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_Elasticity)(/*[in]*/ float newVal);
    STDMETHOD(get_Open)(/*[out, retval]*/ VARIANT_BOOL *pVal);
-   //STDMETHOD(put_Open)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(put_Open)(/*[in]*/ VARIANT_BOOL newVal);
 
    STDMETHOD(get_Surface)(/*[out, retval]*/ BSTR *pVal);
