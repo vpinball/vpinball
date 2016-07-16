@@ -9520,7 +9520,7 @@ STDMETHODIMP PinTable::ImportPhysics()
       return S_OK;
 
    xml_document<> xmlDoc;
-   float FlipperPhysicsMass, FlipperPhysicsStrength, FlipperPhysicsElasticity, FlipperPhysicsScatter, FlipperPhysicsTorqueDamping, FlipperPhysicsReturnStrength, FlipperPhysicsElasticityFalloff, FlipperPhysicsFriction, FlipperPhysicsCoilRampUp;
+   float FlipperPhysicsMass, FlipperPhysicsStrength, FlipperPhysicsElasticity, FlipperPhysicsScatter, FlipperPhysicsTorqueDamping, FlipperPhysicsTorqueDampingAngle, FlipperPhysicsReturnStrength, FlipperPhysicsElasticityFalloff, FlipperPhysicsFriction, FlipperPhysicsCoilRampUp;
    try
    {
       std::stringstream buffer;
@@ -9575,6 +9575,9 @@ STDMETHODIMP PinTable::ImportPhysics()
       strcpy_s(str, physFlip->first_node("eosTorque")->value());
       sscanf_s(str, "%f", &FlipperPhysicsTorqueDamping);
 
+      strcpy_s(str, physFlip->first_node("eosTorqueAngle")->value());
+      sscanf_s(str, "%f", &FlipperPhysicsTorqueDampingAngle);
+
       strcpy_s(str, physFlip->first_node("returnStrength")->value());
       sscanf_s(str, "%f", &FlipperPhysicsReturnStrength);
 
@@ -9606,6 +9609,7 @@ STDMETHODIMP PinTable::ImportPhysics()
          flipper->put_RampUp(FlipperPhysicsCoilRampUp);
          flipper->put_Scatter(FlipperPhysicsScatter);
          flipper->put_EOSTorque(FlipperPhysicsTorqueDamping);
+         flipper->put_EOSTorqueAngle(FlipperPhysicsTorqueDampingAngle);
       }
 
    return S_OK;
@@ -9676,7 +9680,7 @@ STDMETHODIMP PinTable::ExportPhysics()
    xml_node<>*physTab = xmlDoc.allocate_node(node_element, "table");
 
    float val;
-   char fspeed[16], fstrength[16], felasticity[16], fscatter[16], ftorquedamping[16], freturn[16], felasticityFalloff[16], fFriction[16], fRampup[16];
+   char fspeed[16], fstrength[16], felasticity[16], fscatter[16], ftorquedamping[16], ftorquedampingangle[16], freturn[16], felasticityFalloff[16], fFriction[16], fRampup[16];
 
    flipper->get_Mass(&val); // was speed
    sprintf_s(fspeed, "%f", val);
@@ -9702,6 +9706,11 @@ STDMETHODIMP PinTable::ExportPhysics()
    sprintf_s(ftorquedamping, "%f", val);
    xml_node<>*flipTorqueDamping = xmlDoc.allocate_node(node_element, "eosTorque", ftorquedamping);
    physFlip->append_node(flipTorqueDamping);
+
+   flipper->get_EOSTorqueAngle(&val);
+   sprintf_s(ftorquedampingangle, "%f", val);
+   xml_node<>*flipTorqueDampingAngle = xmlDoc.allocate_node(node_element, "eosTorqueAngle", ftorquedampingangle);
+   physFlip->append_node(flipTorqueDampingAngle);
 
    flipper->get_Return(&val);
    sprintf_s(freturn, "%f", val);

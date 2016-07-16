@@ -577,45 +577,47 @@ STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Global Physics Options"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    GROUPBOX        "Flipper Settings",IDC_STATIC,5,10,127,149
-    LTEXT           "Mass",IDC_STATIC,11,23,66,8
-    EDITTEXT        DISPID_Flipper_Speed,83,21,40,12,ES_AUTOHSCROLL
-    LTEXT           "Strength",IDC_STATIC,11,38,66,8
-    EDITTEXT        19,83,36,40,12,ES_AUTOHSCROLL
-    LTEXT           "Elasticity",IDC_STATIC,11,53,66,8
-    EDITTEXT        21,83,51,40,12,ES_AUTOHSCROLL
-    LTEXT           "Elasticity Falloff",IDC_STATIC,11,68,66,8
-    EDITTEXT        22,83,66,40,12,ES_AUTOHSCROLL
-    LTEXT           "Friction",IDC_STATIC,11,83,66,8
-    EDITTEXT        109,83,81,40,12,ES_AUTOHSCROLL
-    LTEXT           "Return Strength Ratio",IDC_STATIC,11,98,66,8
-    EDITTEXT        23,83,96,40,12,ES_AUTOHSCROLL
-    LTEXT           "Coil Ramp Up",IDC_STATIC,11,113,66,8
-    EDITTEXT        110,83,111,40,12,ES_AUTOHSCROLL
-    LTEXT           "Scatter Angle",IDC_STATIC,11,128,66,8
-    EDITTEXT        112,83,126,40,12,ES_AUTOHSCROLL
-    LTEXT           "EOS Torque",IDC_STATIC,11,143,66,8
-    EDITTEXT        113,83,141,40,12,ES_AUTOHSCROLL
-    GROUPBOX        "Playfield Settings",IDC_STATIC,5,160,127,105
-    LTEXT           "Gravity Constant",IDC_STATIC,11,175,69,8
-    EDITTEXT        1100,83,173,40,12,ES_AUTOHSCROLL
-    LTEXT           "Friction",IDC_STATIC,11,190,69,8
-    EDITTEXT        1101,83,187,40,12,ES_AUTOHSCROLL
-    LTEXT           "Elasticity",IDC_STATIC,11,205,69,8
-    EDITTEXT        1708,83,202,40,12,ES_AUTOHSCROLL
-    LTEXT           "Elasticity Falloff",IDC_STATIC,11,220,69,8
-    EDITTEXT        1709,83,217,40,12,ES_AUTOHSCROLL
-    LTEXT           "Playfield Scatter",IDC_STATIC,11,235,69,8
-    EDITTEXT        1710,83,232,40,12,ES_AUTOHSCROLL
-    LTEXT           "Default Elements Scatter Angle",IDC_STATIC,11,250,92,8
-    EDITTEXT        1102,83,247,40,12,ES_AUTOHSCROLL
-    LTEXT           "Set Name",IDC_STATIC,5,278,35,8
-    EDITTEXT        1110,43,276,80,12,ES_AUTOHSCROLL
+    GROUPBOX        "Flipper Settings",IDC_STATIC,5,6,127,163
+    LTEXT           "Mass",IDC_STATIC,11,19,66,8
+    EDITTEXT        DISPID_Flipper_Speed,88,17,40,12,ES_AUTOHSCROLL
+    LTEXT           "Strength",IDC_STATIC,11,34,66,8
+    EDITTEXT        19,88,32,40,12,ES_AUTOHSCROLL
+    LTEXT           "Elasticity",IDC_STATIC,11,49,66,8
+    EDITTEXT        21,88,47,40,12,ES_AUTOHSCROLL
+    LTEXT           "Elasticity Falloff",IDC_STATIC,11,64,66,8
+    EDITTEXT        22,88,62,40,12,ES_AUTOHSCROLL
+    LTEXT           "Friction",IDC_STATIC,11,79,66,8
+    EDITTEXT        109,88,77,40,12,ES_AUTOHSCROLL
+    LTEXT           "Return Strength Ratio",IDC_STATIC,11,94,66,8
+    EDITTEXT        23,88,92,40,12,ES_AUTOHSCROLL
+    LTEXT           "Coil Ramp Up",IDC_STATIC,11,109,66,8
+    EDITTEXT        110,88,107,40,12,ES_AUTOHSCROLL
+    LTEXT           "Scatter Angle",IDC_STATIC,11,124,66,8
+    EDITTEXT        112,88,122,40,12,ES_AUTOHSCROLL
+    LTEXT           "EOS Torque",IDC_STATIC,11,139,66,8
+    EDITTEXT        113,88,137,40,12,ES_AUTOHSCROLL
+    LTEXT           "EOS Torque Angle",IDC_STATIC,11,154,66,8
+    EDITTEXT        189,88,152,40,12,ES_AUTOHSCROLL
+    GROUPBOX        "Playfield Settings",IDC_STATIC,5,171,127,103
+    LTEXT           "Gravity Constant",IDC_STATIC,11,185,69,8
+    EDITTEXT        1100,88,183,40,12,ES_AUTOHSCROLL
+    LTEXT           "Friction",IDC_STATIC,11,200,69,8
+    EDITTEXT        1101,88,197,40,12,ES_AUTOHSCROLL
+    LTEXT           "Elasticity",IDC_STATIC,11,215,69,8
+    EDITTEXT        1708,88,212,40,12,ES_AUTOHSCROLL
+    LTEXT           "Elasticity Falloff",IDC_STATIC,11,230,69,8
+    EDITTEXT        1709,88,227,40,12,ES_AUTOHSCROLL
+    LTEXT           "Playfield Scatter",IDC_STATIC,11,245,69,8
+    EDITTEXT        1710,88,242,40,12,ES_AUTOHSCROLL
+    LTEXT           "Default Ele. Scatter Angle",IDC_STATIC,11,260,92,8
+    EDITTEXT        1102,88,257,40,12,ES_AUTOHSCROLL
+    LTEXT           "Set Name",IDC_STATIC,5,279,35,8
+    EDITTEXT        1110,48,277,80,12,ES_AUTOHSCROLL
     LISTBOX         IDC_PhysicsList,5,292,188,35,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
     DEFPUSHBUTTON   "&OK",IDOK,144,10,50,14
     PUSHBUTTON      "&Cancel",IDCANCEL,144,28,50,14
-    PUSHBUTTON      "&Import Set",1111,144,232,50,14
-    PUSHBUTTON      "&Export Set",1112,144,250,50,14
+    PUSHBUTTON      "&Import Set",1111,144,241,50,14
+    PUSHBUTTON      "&Export Set",1112,144,259,50,14
 END
 
 IDD_GAMEPAUSE DIALOGEX 0, 0, 78, 80
@@ -1054,7 +1056,7 @@ BEGIN
     LTEXT           "Max.Difficulty Length",-1,7,113,68,8
 END
 
-IDD_PROPFLIPPER_PHYSICS DIALOGEX 0, 0, 125, 156
+IDD_PROPFLIPPER_PHYSICS DIALOGEX 0, 0, 125, 174
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
@@ -1064,20 +1066,22 @@ BEGIN
     EDITTEXT        28,76,52,40,12,ES_AUTOHSCROLL
     EDITTEXT        26,76,67,40,12,ES_AUTOHSCROLL
     EDITTEXT        23,76,82,40,12,ES_AUTOHSCROLL
-    EDITTEXT        27,76,96,40,12,ES_AUTOHSCROLL
-    EDITTEXT        112,76,111,40,12,ES_AUTOHSCROLL
-    EDITTEXT        113,76,125,40,12,ES_AUTOHSCROLL
-    LTEXT           "Overwrite Physics by Global Set",-1,7,138,60,16
-    COMBOBOX        1044,71,141,50,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        27,76,97,40,12,ES_AUTOHSCROLL
+    EDITTEXT        112,76,112,40,12,ES_AUTOHSCROLL
+    EDITTEXT        113,76,127,40,12,ES_AUTOHSCROLL
+    EDITTEXT        189,76,142,40,12,ES_AUTOHSCROLL
+    LTEXT           "Overwrite Physics by Global Set",-1,7,155,60,16
+    COMBOBOX        1044,71,157,50,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Mass",-1,7,9,66,8
     LTEXT           "Strength",-1,7,24,66,8
     LTEXT           "Elasticity",-1,7,39,66,8
     LTEXT           "Elasticity Falloff",-1,7,54,66,8
     LTEXT           "Friction",-1,7,69,66,8
     LTEXT           "Return Strength Ratio",-1,7,84,66,8
-    LTEXT           "Coil Ramp Up",-1,7,98,66,8
-    LTEXT           "Scatter Angle",-1,7,113,66,8
-    LTEXT           "EOS Torque",-1,7,126,66,8
+    LTEXT           "Coil Ramp Up",-1,7,99,66,8
+    LTEXT           "Scatter Angle",-1,7,114,66,8
+    LTEXT           "EOS Torque",-1,7,129,66,8
+    LTEXT           "EOS Torque Angle",-1,7,144,66,8
 END
 
 IDD_PROPPLUNGER_PHYSICS DIALOGEX 0, 0, 125, 125

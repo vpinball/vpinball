@@ -1,6 +1,9 @@
 VP 10.2.0 Changelog
 ------------------------
 
+- extend the EOSTorque effect to both entering and leaving the EOS zone and add additional EOS Torque Angle to make this range configurable
+  This allows for more flipper tricks without having to dial in unrealistic flipper settings
+
 - DirectX 8 port for input handling (currently disabled)
 - texture size limit/downscale now respects aspect ratio (currently disabled)
 
@@ -9,7 +12,7 @@ VP 10.1.0 Changelog
 
 - add (tangent space-)normal mapping support to primitive
 
-- add EOSTorque to the flipper physics settings. This value/factor effects the way how long a flipper arm stays in the up/raised position even when you depressed the flipper button.
+- add EOSTorque to the flipper physics settings. This value/factor effects the way how long a flipper arm stays in the up/raised position even when you released the flipper button.
   On real pinballs it will take some time until the flipper solenoid loses it's power until the flipper drops down or is forced to move by a hitting ball.
 
 - add DefaultBulbIntensityScale also to the table ball property to scale/dampen the intensity of the bulb lights on the ball
