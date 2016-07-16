@@ -524,7 +524,7 @@ void Gate::ExportMesh(FILE *f)
 {
    char name[MAX_PATH];
    char subName[MAX_PATH];
-   Vertex3D_NoTex2 *buf = NULL;
+   Vertex3D_NoTex2 *buf;
 
    WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, MAX_PATH, NULL, NULL);
    baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
@@ -545,20 +545,22 @@ void Gate::ExportMesh(FILE *f)
       delete[] buf;
    }
 
-   buf = new Vertex3D_NoTex2[gateWireNumVertices];
+   SetGateType(m_d.m_type);
+
+   buf = new Vertex3D_NoTex2[m_numVertices];
    strcpy_s(subName, name);
    strcat_s(subName, "Wire");
    WaveFrontObj_WriteObjectName(f, subName);
    GenerateWireMesh(buf);
-   WaveFrontObj_WriteVertexInfo(f, buf, gateWireNumVertices);
+   WaveFrontObj_WriteVertexInfo(f, buf, m_numVertices);
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szMaterial);
    WaveFrontObj_WriteMaterial(m_d.m_szMaterial, NULL, mat);
    WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
-   WaveFrontObj_WriteFaceInfoList(f, gateWireIndices, gateWireNumIndices);
-   WaveFrontObj_UpdateFaceOffset(gateWireNumVertices);
+   WaveFrontObj_WriteFaceInfoList(f, m_indices, m_numIndices);
+   WaveFrontObj_UpdateFaceOffset(m_numVertices);
    delete[] buf;
-
 }
+
 void Gate::GenerateBracketMesh(Vertex3D_NoTex2 *buf)
 {
    Matrix3D fullMatrix;
@@ -606,7 +608,6 @@ void Gate::GenerateWireMesh(Vertex3D_NoTex2 *buf)
 
 void Gate::RenderSetup(RenderDevice* pd3dDevice)
 {
-
    if (bracketIndexBuffer)
       bracketIndexBuffer->release();
    bracketIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(gateBracketNumIndices, gateBracketIndices);
@@ -623,7 +624,6 @@ void Gate::RenderSetup(RenderDevice* pd3dDevice)
    bracketVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
    GenerateBracketMesh(buf);
    bracketVertexBuffer->unlock();
-
 
    if (wireIndexBuffer)
       wireIndexBuffer->release();
