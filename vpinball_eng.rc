@@ -1919,7 +1919,7 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,80,76,10
 END
 
-IDD_MATERIALDIALOG DIALOGEX 0, 0, 527, 293
+IDD_MATERIALDIALOG DIALOGEX 0, 0, 526, 294
 STYLE DS_SETFONT | DS_MODALFRAME | WS_MINIMIZEBOX | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_APPWINDOW
 CAPTION "Material Manager"
@@ -1939,7 +1939,7 @@ BEGIN
     PUSHBUTTON      "&Export",IDC_EXPORT,469,156,50,14
     PUSHBUTTON      "&Rename",IDC_RENAME,469,172,50,14
     PUSHBUTTON      "&Delete",IDC_DELETE_MATERIAL,469,188,50,14
-    DEFPUSHBUTTON   "&OK",IDOK,469,252,50,14
+    DEFPUSHBUTTON   "&OK",IDOK,469,257,50,14
     CONTROL         "Custom2",IDC_COLOR2,"ColorControl",WS_TABSTOP,220,75,40,19
     CONTROL         "Custom2",IDC_COLOR3,"ColorControl",WS_TABSTOP,220,153,40,19
     GROUPBOX        "Glossy Layer",IDC_STATIC,214,62,192,43
@@ -1958,7 +1958,7 @@ BEGIN
     LTEXT           "Sets from very dull (Shininess low) to perfect/mirror-like (Shininess high) reflections (for glossy layer or metal only)",IDC_STATIC,313,107,92,32
     LTEXT           "Add subtle reflections on non-metal materials (leave at non-black for most natural behavior)",IDC_STATIC,313,69,85,32
     LTEXT           "Add an additional thin clearcoat layer on top of the material",IDC_STATIC,313,148,75,26
-    PUSHBUTTON      "&Cancel",IDCANCEL,469,268,50,14
+    PUSHBUTTON      "&Cancel",IDCANCEL,469,273,50,14
     GROUPBOX        "Base Color (can be modulated by Image on Object)",IDC_STATIC,214,19,192,43
     LTEXT           "Steers the basic Color of an Object. Wrap allows for light even if object is only lit from behind (0=natural)",IDC_STATIC,313,28,85,32
     EDITTEXT        IDC_DIFFUSE_EDIT,290,31,21,14,ES_AUTOHSCROLL
@@ -2364,8 +2364,8 @@ BEGIN
 
     IDD_MATERIALDIALOG, DIALOG
     BEGIN
-        RIGHTMARGIN, 524
-        BOTTOMMARGIN, 290
+        RIGHTMARGIN, 523
+        BOTTOMMARGIN, 291
     END
 
     IDD_CODEVIEW_PREFS, DIALOG
