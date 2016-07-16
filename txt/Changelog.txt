@@ -1,8 +1,12 @@
 VP 10.2.0 Changelog
 ------------------------
 
+- add physics settings per material to the material manager
+
 - extend the EOSTorque effect to both entering and leaving the EOS zone and add additional EOS Torque Angle to make this range configurable
   This allows for more flipper tricks without having to dial in unrealistic flipper settings
+
+- output table information if paused
 
 - DirectX 8 port for input handling (currently disabled)
 - texture size limit/downscale now respects aspect ratio (currently disabled)
