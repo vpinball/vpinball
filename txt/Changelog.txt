@@ -11,6 +11,8 @@ VP 10.2.0 Changelog
 
 - output table information if paused
 
+- new core scripts by mfuegemann and controller modifications by arngrim (see core.vbs for changelog)
+
 - DirectX 8 port for input handling (currently disabled)
 - texture size limit/downscale now respects aspect ratio (currently disabled)
 
