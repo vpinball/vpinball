@@ -19,6 +19,8 @@
 'UseDOFGear=1
 'UseDOFShaker=1
 '
+'Note that the value can be 0,1 or 2 (0 enables only digital sound, 1 only DOF and 2 both)
+'
 'If B2S.Server is setup but one doesn't want to use it, one should change the first line to ForceDisableB2S=1
 '
 '
@@ -297,6 +299,9 @@ Function SoundFXDOF (Sound, DOFevent, State, Effect)
 	If DOFeffects(Effect)=1 Then
 		SoundFXDOF = ""
 		DOF DOFevent, State
+	ElseIf DOFeffects(Effect)=2 Then
+		SoundFXDOF = Sound
+		DOF DOFevent, State
 	Else
 		SoundFXDOF = Sound
 	End If
@@ -305,6 +310,9 @@ End Function
 Function SoundFXDOFALT (Sound, DOFevent, State, Effect)
 	If DOFeffects(Effect)=1 Then
 		SoundFXDOFALT = ""
+		DOFALT DOFevent, State
+	ElseIf DOFeffects(Effect)=2 Then
+		SoundFXDOFALT = Sound
 		DOFALT DOFevent, State
 	Else
 		SoundFXDOFALT = Sound
