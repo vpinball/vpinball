@@ -15,7 +15,7 @@ HitPlunger::HitPlunger(const float x, const float y, const float x2, const float
 
    m_plungeranim.m_frameEnd = frameTop;
    m_plungeranim.m_frameStart = frameBottom;
-   float frameLen = m_plungeranim.m_frameLen = frameBottom - frameTop;
+   const float frameLen = m_plungeranim.m_frameLen = frameBottom - frameTop;
 
    m_plungeranim.m_pullForce = 0.0f;
    m_plungeranim.m_reverseImpulse = 0.0f;
@@ -29,19 +29,13 @@ HitPlunger::HitPlunger(const float x, const float y, const float x2, const float
 
    // For consistency with past versions, some behavior varies
    // according to whether or not "mech enabled" is set.
-   float restPos;
-   if (pPlunger->m_d.m_mechPlunger)
-   {
+   const float restPos = (pPlunger->m_d.m_mechPlunger) ?
       // Mech Enabled.  The rest position is taken from
       // the "park position" property.
-      restPos = pPlunger->m_d.m_parkPosition;
-   }
-   else
-   {
+      pPlunger->m_d.m_parkPosition :
       // Non-Mech Enabled.  The rest position is the forward
       // limit (0.0f in relative coordinates).
-      restPos = 0.0f;
-   }
+      0.0f;
 
    // start at the rest position
    m_plungeranim.m_restPos = restPos;
@@ -133,7 +127,7 @@ void PlungerAnimObject::SetObjects(const float len)
 void PlungerAnimObject::UpdateDisplacements(const float dtime)
 {
    // figure the travel distance
-   float dx = dtime * m_speed;
+   const float dx = dtime * m_speed;
 
    // figure the position change
    m_pos += dx;
@@ -143,8 +137,8 @@ void PlungerAnimObject::UpdateDisplacements(const float dtime)
       m_pos = m_travelLimit;
 
    // if we're in firing mode and we've crossed the bounce position, reverse course
-   float relPos = (m_pos - m_frameEnd) / m_frameLen;
-   float bouncePos = m_restPos + m_fireBounce;
+   const float relPos = (m_pos - m_frameEnd) / m_frameLen;
+   const float bouncePos = m_restPos + m_fireBounce;
    if (m_fireTimer != 0 && dtime != 0.0f
       && ((m_fireSpeed < 0.0f ? relPos <= bouncePos : relPos >= bouncePos)))
    {
@@ -231,8 +225,8 @@ void PlungerAnimObject::Fire(float startPos)
    // fire speed property, linearly proportional to the
    // starting distance.  Note that the release motion
    // is upwards, so the speed is negative.
-   float dx = startPos - m_restPos;
-   float normalize = g_pplayer->m_ptable->m_plungerNormalize / 13.0f / 100.0f;
+   const float dx = startPos - m_restPos;
+   const float normalize = g_pplayer->m_ptable->m_plungerNormalize / 13.0f / 100.0f;
    m_fireSpeed = -m_plunger->m_d.m_speedFire
       * dx * m_frameLen / m_mass
       * normalize;
@@ -244,7 +238,7 @@ void PlungerAnimObject::Fire(float startPos)
    // limit, position 0.0) if the pull position is
    // more than about halfway.
    const float maxPull = .5f;
-   float bounceDist = (dx < maxPull ? dx / maxPull : 1.0f);
+   const float bounceDist = (dx < maxPull ? dx / maxPull : 1.0f);
 
    // the initial bounce will be negative, since we're moving upwards,
    // and we calculated it as a fraction of the forward travel distance
