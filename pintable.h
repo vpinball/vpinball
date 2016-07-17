@@ -52,6 +52,8 @@ typedef struct {
    int				spare2;
 } _protectionData;
 
+class ScriptGlobalTable;
+
 class PinTable :
    public CComObjectRootEx<CComSingleThreadModel>,
    public IDispatchImpl<ITable, &IID_ITable, &LIBID_VPinballLib>,
@@ -535,6 +537,7 @@ public:
    BEGIN_CONNECTION_POINT_MAP(PinTable)
       CONNECTION_POINT_ENTRY(DIID_ITableEvents)
    END_CONNECTION_POINT_MAP()
+
    void ListMaterials(HWND hwndListView);
    int AddListMaterial(HWND hwndListView, Material *pmat);
    void RemoveMaterial(Material *pmat);
@@ -758,6 +761,87 @@ public:
 private:
    std::tr1::unordered_map<const char*, Texture*, StringHashFunctor, StringComparator> m_textureMap;      // hash table to speed up texture lookup by name
    std::tr1::unordered_map<const char*, Material*, StringHashFunctor, StringComparator> m_materialMap;    // hash table to speed up material lookup by name
+};
+
+class ScriptGlobalTable :
+   public CComObjectRootEx<CComSingleThreadModel>,
+   public IDispatchImpl<ITableGlobal, &IID_ITableGlobal, &LIBID_VPinballLib>,
+   public IScriptable
+{
+public:
+   // Headers to support communication between the game and the script.
+   STDMETHOD(EndModal)();
+   STDMETHOD(BeginModal)();
+   STDMETHOD(GetTextFile)(BSTR FileName, /*[out, retval]*/ BSTR *pContents);
+   STDMETHOD(get_GameTime)(/*[out, retval]*/ long *pVal);
+   STDMETHOD(get_AddCreditKey)(/*[out, retval]*/ long *pVal);
+   STDMETHOD(get_AddCreditKey2)(/*[out, retval]*/ long *pVal);
+   STDMETHOD(get_ActiveBall)(/*[out, retval]*/ IBall **pVal);
+   STDMETHOD(LoadValue)(BSTR TableName, BSTR ValueName, /*[out, retval]*/ VARIANT *Value);
+   STDMETHOD(SaveValue)(BSTR TableName, BSTR ValueName, VARIANT Value);
+   STDMETHOD(StopSound)(BSTR Sound);
+   STDMETHOD(AddObject)(BSTR Name, IDispatch *pdisp);
+#ifdef _WIN64
+   STDMETHOD(get_GetPlayerHWnd)(/*[out, retval]*/ SIZE_T *pVal);
+#else
+   STDMETHOD(get_GetPlayerHWnd)(/*[out, retval]*/ long *pVal);
+#endif
+   STDMETHOD(get_UserDirectory)(/*[out, retval]*/ BSTR *pVal);
+   STDMETHOD(get_StartGameKey)(/*[out, retval]*/ long *pVal);
+   STDMETHOD(EndMusic)();
+   STDMETHOD(PlayMusic)(BSTR str);
+   STDMETHOD(get_PlungerKey)(/*[out, retval]*/ long *pVal);
+   STDMETHOD(get_CenterTiltKey)(/*[out, retval]*/ long *pVal);
+   STDMETHOD(get_RightTiltKey)(/*[out, retval]*/ long *pVal);
+   STDMETHOD(get_LeftTiltKey)(/*[out, retval]*/ long *pVal);
+   STDMETHOD(get_RightFlipperKey)(/*[out, retval]*/ long *pVal);
+   STDMETHOD(get_LeftFlipperKey)(/*[out, retval]*/ long *pVal);
+   STDMETHOD(get_VPBuildVersion)(/*[out, retval]*/ long *pVal);
+
+   STDMETHOD(put_DMDWidth)(/*[in]*/ int pVal);
+   STDMETHOD(put_DMDHeight)(/*[in]*/ int pVal);
+   STDMETHOD(put_DMDPixels)(/*[in]*/ VARIANT pVal);
+   STDMETHOD(put_DMDColoredPixels)(/*[in]*/ VARIANT pVal);
+
+   STDMETHOD(get_NightDay)(/*[out, retval]*/ int *pVal);
+   //STDMETHOD(put_NightDay)(/*[in]*/ int newVal);
+
+   STDMETHOD(get_ShowDT)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   //STDMETHOD(put_ShowDT)(/*[in]*/ VARIANT_BOOL newVal);
+
+   STDMETHOD(PlaySound)(BSTR bstr, long LoopCount, float volume, float pan, float randompitch, long pitch, VARIANT_BOOL usesame, VARIANT_BOOL restart);
+   STDMETHOD(FireKnocker)(/*[in]*/ int Count);
+   STDMETHOD(QuitPlayer)(/*[in]*/ int CloseType);
+
+   STDMETHOD(Nudge)(float Angle, float Force);
+   STDMETHOD(get_Name)(BSTR *pVal);
+   STDMETHOD(get_MechanicalTilt)(/*[out, retval]*/ long *pVal);
+   STDMETHOD(get_LeftMagnaSave)(/*[out, retval]*/ long *pVal);
+   STDMETHOD(get_RightMagnaSave)(/*[out, retval]*/ long *pVal);
+   STDMETHOD(get_ExitGame)(/*[out, retval]*/ long *pVal);
+
+   STDMETHOD(VersionMajor)(/*[out, retval]*/ int *pVal);
+   STDMETHOD(VersionMinor)(/*[out, retval]*/ int *pVal);
+   STDMETHOD(VersionRevision)(/*[out, retval]*/ int *pVal);
+
+   STDMETHOD(GetBalls)(/*[out, retval]*/ LPSAFEARRAY *pVal);
+   STDMETHOD(GetElements)(/*[out, retval]*/ LPSAFEARRAY *pVal);
+   STDMETHOD(GetElementByName)(/*[in]*/ BSTR name, /*[out, retval]*/ IDispatch* *pVal);
+
+   void Init(PinTable *pt);
+
+   virtual IDispatch *GetDispatch();
+
+   virtual ISelect *GetISelect() { return NULL; }
+
+   BOOL GetTextFileFromDirectory(char *szfilename, char *dirname, BSTR *pContents);
+
+   BEGIN_COM_MAP(ScriptGlobalTable)
+      COM_INTERFACE_ENTRY(ITableGlobal)
+      COM_INTERFACE_ENTRY(IDispatch)
+   END_COM_MAP()
+
+   PinTable *m_pt;
 };
 
 #endif // !defined(AFX_PINTABLE_H__D14A2DAB_2984_4FE7_A102_D0283ECE31B4__INCLUDED_)
