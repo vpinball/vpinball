@@ -88,7 +88,6 @@ class PinBinary;
 #include "PinBinary.h"
 
 #include "VPinball.h"
-#include "TableGlobal.h"
 #include "PinTable.h"
 
 #include "Mesh.h"
