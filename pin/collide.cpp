@@ -20,15 +20,19 @@ HitObject *CreateCircularHitPoly(const float x, const float y, const float z, co
 
    return new Hit3DPoly(rgv3d, sections);
 }
-
 void HitObject::FireHitEvent(Ball * const pball)
 {
    if (m_pfe && m_fEnabled)
    {
+      float normalDist = 0.25f;
       // is this the same place as last event? if same then ignore it
       const float dist_ls = (pball->m_Event_Pos - pball->m_pos).LengthSquared();
       pball->m_Event_Pos = pball->m_pos;    //remember last collide position
-      if (dist_ls > 0.25f) // must be a new place if only by a little //!! magic distance
+      
+      if (m_ObjType == eHitTarget) // hit targets when used with a captured ball have always a too small distance 
+         normalDist = 0.0f;
+      
+      if (dist_ls > normalDist) // must be a new place if only by a little //!! magic distance
          m_pfe->FireGroupEvent(DISPID_HitEvents_Hit);
    }
 }
