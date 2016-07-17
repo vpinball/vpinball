@@ -149,7 +149,6 @@ set(SOURCES
   slintf.cpp
   spinner.cpp
   surface.cpp
-  tableglobal.cpp
   textbox.cpp
   Texture.cpp
   timer.cpp
@@ -226,7 +225,6 @@ set(HEADERS
   stdafx.h
   sur.h
   surface.h
-  tableglobal.h
   textbox.h
   timer.h
   trigger.h
