@@ -174,9 +174,6 @@
     <ClCompile Include="surface.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="tableglobal.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="textbox.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -763,9 +760,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="surface.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="tableglobal.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="textbox.h">

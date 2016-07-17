@@ -58,7 +58,6 @@
     <ClCompile Include="spinner.cpp" />
     <ClCompile Include="stdafx.cpp" />
     <ClCompile Include="surface.cpp" />
-    <ClCompile Include="tableglobal.cpp" />
     <ClCompile Include="textbox.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="timer.cpp" />
@@ -577,9 +576,6 @@
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="surface.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="tableglobal.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="textbox.h">
