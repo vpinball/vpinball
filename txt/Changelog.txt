@@ -1,7 +1,10 @@
 VP 10.2.0 Changelog
 ------------------------
 
-- add physics settings per material to the material manager
+- add physics settings per material to the material manager.
+  Settings are: Friction, elasticity, elasticity falloff and scatter angle.
+  This allows for tweaking all physics settings in the material manager for all 'similar' table elements (with the same material) at once.
+  (If you like you can still overwrite the settings for each element separatly though)
 
 - extend the EOSTorque effect to both entering and leaving the EOS zone and add additional EOS Torque Angle to make this range configurable
   This allows for more flipper tricks without having to dial in unrealistic flipper settings
