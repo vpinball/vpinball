@@ -177,7 +177,7 @@ public:
    virtual void SetDefaultPhysics(bool fromMouseClick);
    virtual void ExportMesh(FILE *f);
 
-   void GenerateMesh(Vertex3D_NoTex2 *buf);
+   void GenerateMesh(std::vector<Vertex3D_NoTex2> &buf);
    void TransformVertices();
    void SetMeshType(const TargetType type);
 
@@ -186,8 +186,8 @@ public:
    PinTable        *m_ptable;
 
    HitTargetData    m_d;
-   const Vertex3D_NoTex2 *m_vertices;
-   const WORD      *m_indices;
+   const Vertex3D_NoTex2 *m_vertices; // pointer just to the existing hittargets hardcoded in arrays
+   const WORD      *m_indices;        // dto.
    unsigned int     m_numVertices;
    unsigned int     m_numIndices;
    bool             m_hitEvent;
@@ -212,9 +212,9 @@ private:        // private member functions
    VertexBuffer *vertexBuffer;
    IndexBuffer *indexBuffer;
 
-   // Vertices for editor display
+   // Vertices for editor display & hit shape
    std::vector<Vertex3Ds> vertices;
-   Vertex3D_NoTex2 *transformedVertices;
+   std::vector<Vertex3D_NoTex2> transformedVertices;
    U32   m_timeStamp;
    float m_moveAnimationOffset;
    bool  m_moveAnimation;

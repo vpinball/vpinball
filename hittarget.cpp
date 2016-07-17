@@ -40,8 +40,6 @@ HitTarget::HitTarget()
    m_moveDown = true;
    m_moveAnimationOffset = 0.0f;
    m_hitEvent = false;
-
-   transformedVertices = NULL;
 }
 
 HitTarget::~HitTarget()
@@ -50,9 +48,6 @@ HitTarget::~HitTarget()
       vertexBuffer->release();
    if (indexBuffer)
       indexBuffer->release();
-
-   if(transformedVertices)
-       delete [] transformedVertices;
 }
 
 void HitTarget::SetMeshType(const TargetType type)
@@ -267,8 +262,8 @@ void HitTarget::GetHitShapes(Vector<HitObject> * const pvho)
     if (m_d.m_targetType == DropTargetBeveled || m_d.m_targetType == DropTargetFlatSimple || m_d.m_targetType == DropTargetSimple)
     {
        std::set< std::pair<unsigned, unsigned> > addedEdges;
-       Matrix3D fullMatrix, tempMatrix;
 
+       Matrix3D fullMatrix, tempMatrix;
        fullMatrix.SetIdentity();
        tempMatrix.SetIdentity();
        tempMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotZ));
@@ -281,11 +276,11 @@ void HitTarget::GetHitShapes(Vector<HitObject> * const pvho)
           const unsigned int i1 = m_indices[i + 1];
           const unsigned int i2 = m_indices[i + 2];
 
-          Vertex3Ds rgv3D[3];
+          const Vertex3Ds rgv3D[3] = {
           // NB: HitTriangle wants CCW vertices, but for rendering we have them in CW order
-          rgv3D[0] = vertices[i0];
-          rgv3D[1] = vertices[i2];
-          rgv3D[2] = vertices[i1];
+             Vertex3Ds(vertices[i0].x, vertices[i0].y, vertices[i0].z),
+             Vertex3Ds(vertices[i2].x, vertices[i2].y, vertices[i2].z),
+             Vertex3Ds(vertices[i1].x, vertices[i1].y, vertices[i1].z)};
           SetupHitObject(pvho, new HitTriangle(rgv3D), m_d.m_legacy);
 
           AddHitEdge(pvho, addedEdges, i0, i1, rgv3D[0], rgv3D[2], m_d.m_legacy);
@@ -320,11 +315,11 @@ void HitTarget::GetHitShapes(Vector<HitObject> * const pvho)
              const unsigned int i1 = dropTargetHitPlaneIndices[i + 1];
              const unsigned int i2 = dropTargetHitPlaneIndices[i + 2];
 
-             Vertex3Ds rgv3D2[3];
+             const Vertex3Ds rgv3D2[3] = {
              // NB: HitTriangle wants CCW vertices, but for rendering we have them in CW order
-             rgv3D2[0] = rgv3D[i0];
-             rgv3D2[1] = rgv3D[i2];
-             rgv3D2[2] = rgv3D[i1];
+                 rgv3D[i0],
+                 rgv3D[i2],
+                 rgv3D[i1]};
              SetupHitObject(pvho, new HitTriangle(rgv3D2));
 
              AddHitEdge(pvho, addedEdges, i0, i1, rgv3D2[0], rgv3D2[2]);
@@ -347,11 +342,11 @@ void HitTarget::GetHitShapes(Vector<HitObject> * const pvho)
           const unsigned int i1 = m_indices[i + 1];
           const unsigned int i2 = m_indices[i + 2];
 
-          Vertex3Ds rgv3D[3];
+          const Vertex3Ds rgv3D[3] = {
           // NB: HitTriangle wants CCW vertices, but for rendering we have them in CW order
-          rgv3D[0] = vertices[i0];
-          rgv3D[1] = vertices[i2];
-          rgv3D[2] = vertices[i1];
+              Vertex3Ds(vertices[i0].x, vertices[i0].y, vertices[i0].z),
+              Vertex3Ds(vertices[i2].x, vertices[i2].y, vertices[i2].z),
+              Vertex3Ds(vertices[i1].x, vertices[i1].y, vertices[i1].z)};
           SetupHitObject(pvho, new HitTriangle(rgv3D));
 
           AddHitEdge(pvho, addedEdges, i0, i1, rgv3D[0], rgv3D[2]);
@@ -434,7 +429,7 @@ void HitTarget::EndPlay()
 // Calculation
 //////////////////////////////
 
-void HitTarget::GenerateMesh(Vertex3D_NoTex2 *buf)
+void HitTarget::GenerateMesh(std::vector<Vertex3D_NoTex2> &buf)
 {
    SetMeshType(m_d.m_targetType);
 
@@ -500,16 +495,14 @@ void HitTarget::ExportMesh( FILE *f )
 
     SetMeshType( m_d.m_targetType );
 
-    if ( transformedVertices )
-        delete[] transformedVertices;
-    transformedVertices = new Vertex3D_NoTex2[m_numVertices];
+    transformedVertices.resize(m_numVertices);
 
     strcpy_s( subObjName, name );
     WaveFrontObj_WriteObjectName( f, subObjName );
 
     GenerateMesh( transformedVertices );
 
-    WaveFrontObj_WriteVertexInfo( f, transformedVertices, m_numVertices );
+    WaveFrontObj_WriteVertexInfo( f, &transformedVertices[0], m_numVertices );
     const Material * mat = m_ptable->GetMaterial( m_d.m_szMaterial );
     WaveFrontObj_WriteMaterial( m_d.m_szMaterial, NULL, mat );
     WaveFrontObj_UseTexture( f, m_d.m_szMaterial );
@@ -806,9 +799,7 @@ void HitTarget::RenderSetup(RenderDevice* pd3dDevice)
       indexBuffer->release();
    indexBuffer = pd3dDevice->CreateAndFillIndexBuffer(m_numIndices, m_indices);
 
-   if(transformedVertices)
-       delete [] transformedVertices;
-   transformedVertices = new Vertex3D_NoTex2[m_numVertices];
+   transformedVertices.resize(m_numVertices);
 
    GenerateMesh(transformedVertices);
    m_moveAnimationOffset = 0.0f;
@@ -824,7 +815,7 @@ void HitTarget::RenderSetup(RenderDevice* pd3dDevice)
    }
    Vertex3D_NoTex2 *buf;
    vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
-   memcpy(buf, transformedVertices, m_numVertices*sizeof(Vertex3D_NoTex2));
+   memcpy(buf, &transformedVertices[0], m_numVertices*sizeof(Vertex3D_NoTex2));
    vertexBuffer->unlock();
    m_d.m_time_msec = g_pplayer->m_time_msec;
 }
