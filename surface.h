@@ -67,74 +67,74 @@ public:
 
    STANDARD_EDITABLE_DECLARES(Surface, eItemSurface, WALL, 1)
 
-      BEGIN_COM_MAP(Surface)
-         COM_INTERFACE_ENTRY(IWall)
-         COM_INTERFACE_ENTRY(IDispatch)
-         COM_INTERFACE_ENTRY_IMPL(IConnectionPointContainer)
-         COM_INTERFACE_ENTRY(IPerPropertyBrowsing)
-         COM_INTERFACE_ENTRY(IProvideClassInfo)
-         COM_INTERFACE_ENTRY(IProvideClassInfo2)
-      END_COM_MAP()
+   BEGIN_COM_MAP(Surface)
+      COM_INTERFACE_ENTRY(IWall)
+      COM_INTERFACE_ENTRY(IDispatch)
+      COM_INTERFACE_ENTRY_IMPL(IConnectionPointContainer)
+      COM_INTERFACE_ENTRY(IPerPropertyBrowsing)
+      COM_INTERFACE_ENTRY(IProvideClassInfo)
+      COM_INTERFACE_ENTRY(IProvideClassInfo2)
+   END_COM_MAP()
 
-      DECLARE_REGISTRY_RESOURCEID(IDR_SURFACE)
+   DECLARE_REGISTRY_RESOURCEID(IDR_SURFACE)
 
-      DECLARE_PROTECT_FINAL_CONSTRUCT()
+   DECLARE_PROTECT_FINAL_CONSTRUCT()
 
-      BEGIN_CONNECTION_POINT_MAP(Surface)
-         CONNECTION_POINT_ENTRY(DIID_IWallEvents)
-      END_CONNECTION_POINT_MAP()
+   BEGIN_CONNECTION_POINT_MAP(Surface)
+      CONNECTION_POINT_ENTRY(DIID_IWallEvents)
+   END_CONNECTION_POINT_MAP()
 
-      // IHaveDragPoints
-      virtual void GetPointDialogPanes(Vector<PropertyPane> *pvproppane);
-      // end IHaveDragPoints
+   // IHaveDragPoints
+   virtual void GetPointDialogPanes(Vector<PropertyPane> *pvproppane);
+   // end IHaveDragPoints
 
-      // IEditable
-      virtual void WriteRegDefaults();
-      virtual void RenderBlueprint(Sur *psur, const bool solid=false);
+   // IEditable
+   virtual void WriteRegDefaults();
+   virtual void RenderBlueprint(Sur *psur, const bool solid=false);
 
-      virtual void GetBoundingVertices(std::vector<Vertex3Ds>& pvvertex3D);
-      virtual void ClearForOverwrite();
-      // end IEditable
+   virtual void GetBoundingVertices(std::vector<Vertex3Ds>& pvvertex3D);
+   virtual void ClearForOverwrite();
+   // end IEditable
 
-      // ISelect
-      virtual void FlipY(Vertex2D * const pvCenter);
-      virtual void FlipX(Vertex2D * const pvCenter);
-      virtual void Rotate(float ang, Vertex2D *pvCenter);
-      virtual void Scale(float scalex, float scaley, Vertex2D *pvCenter);
-      virtual void Translate(Vertex2D *pvOffset);
-      virtual void MoveOffset(const float dx, const float dy);
+   // ISelect
+   virtual void FlipY(Vertex2D * const pvCenter);
+   virtual void FlipX(Vertex2D * const pvCenter);
+   virtual void Rotate(float ang, Vertex2D *pvCenter);
+   virtual void Scale(float scalex, float scaley, Vertex2D *pvCenter);
+   virtual void Translate(Vertex2D *pvOffset);
+   virtual void MoveOffset(const float dx, const float dy);
 
-      virtual void GetCenter(Vertex2D * const pv) const { GetPointCenter(pv); }
-      virtual void PutCenter(const Vertex2D * const pv) { PutPointCenter(pv); }
+   virtual void GetCenter(Vertex2D * const pv) const { GetPointCenter(pv); }
+   virtual void PutCenter(const Vertex2D * const pv) { PutPointCenter(pv); }
 
-      virtual void DoCommand(int icmd, int x, int y);
+   virtual void DoCommand(int icmd, int x, int y);
 
-      virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
-      // end ISelect
+   virtual void GetDialogPanes(Vector<PropertyPane> *pvproppane);
+   // end ISelect
 
-      virtual float GetDepth(const Vertex3Ds& viewDir) { return viewDir.z * m_d.m_heighttop; }
-      virtual unsigned long long GetMaterialID()
-      {
-         unsigned long long h = 0;
-         if (m_d.m_fSideVisible)
-            h = m_ptable->GetMaterial(m_d.m_szSideMaterial)->hash();
-         if (m_d.m_fTopBottomVisible)
-            h = m_ptable->GetMaterial(m_d.m_szTopMaterial)->hash();
-         return h;
-      }
-	  virtual unsigned long long GetImageID()
-	  {
-		  Texture* tex = NULL;
-		  if (m_d.m_fSideVisible)
-			  tex = m_ptable->GetImage(m_d.m_szSideImage);
-		  if (m_d.m_fTopBottomVisible)
-			  tex = m_ptable->GetImage(m_d.m_szImage);
-		  return (unsigned long long)tex;
-	  }
-	  virtual bool IsTransparent();
-      virtual void UpdatePropertyPanes();
-      virtual void SetDefaultPhysics(bool fromMouseClick);
-      virtual void ExportMesh(FILE *f);
+   virtual float GetDepth(const Vertex3Ds& viewDir) { return viewDir.z * m_d.m_heighttop; }
+   virtual unsigned long long GetMaterialID()
+   {
+      unsigned long long h = 0;
+      if (m_d.m_fSideVisible)
+         h = m_ptable->GetMaterial(m_d.m_szSideMaterial)->hash();
+      if (m_d.m_fTopBottomVisible)
+         h = m_ptable->GetMaterial(m_d.m_szTopMaterial)->hash();
+      return h;
+   }
+   virtual unsigned long long GetImageID()
+   {
+      Texture* tex = NULL;
+      if (m_d.m_fSideVisible)
+         tex = m_ptable->GetImage(m_d.m_szSideImage);
+      if (m_d.m_fTopBottomVisible)
+         tex = m_ptable->GetImage(m_d.m_szImage);
+      return (unsigned long long)tex;
+   }
+   virtual bool IsTransparent();
+   virtual void UpdatePropertyPanes();
+   virtual void SetDefaultPhysics(bool fromMouseClick);
+   virtual void ExportMesh(FILE *f);
 
 private:
    void CurvesToShapes(Vector<HitObject> * const pvho);
@@ -149,13 +149,6 @@ private:
 
    void FreeBuffers();
 
-public:
-   SurfaceData m_d;
-
-   bool m_fIsDropped;
-   bool m_fDisabled;
-
-private:
    PinTable *m_ptable;
    BSTR m_bstrName;
 
@@ -174,9 +167,13 @@ private:
 
    bool m_isWall;
    bool m_isDynamic;
+   bool m_fIsDropped;
 
    // ISurface
 public:
+   bool m_fDisabled;
+   SurfaceData m_d;
+
    STDMETHOD(get_SideVisible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_SideVisible)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_SideImage)(/*[out, retval]*/ BSTR *pVal);
