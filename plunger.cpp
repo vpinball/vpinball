@@ -348,7 +348,7 @@ void Plunger::SetDefaultPhysics(bool fromMouseClick)
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_parkPosition = fTmp;
    else
-      m_d.m_parkPosition = (float)(0.5 / 3.0);  // typical mechanical plunger has 3 inch stroke and 0.5 inch rest position
+      m_d.m_parkPosition = 0.01f; // according to forum, better than old: (float)(0.5 / 3.0); // typical mechanical plunger has 3 inch stroke and 0.5 inch rest position
    hr = GetRegStringAsFloat("DefaultProps\\Plunger", "ScatterVelocity", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_scatterVelocity = fTmp;
