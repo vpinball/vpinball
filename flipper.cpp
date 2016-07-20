@@ -606,8 +606,6 @@ void Flipper::SetDefaultPhysics(bool fromMouseClick)
    
    m_d.m_scatter = GetRegStringAsFloatWithDefault( "DefaultProps\\Flipper", "Scatter", 0.0f );
    
-   m_d.m_scatter = GetRegStringAsFloatWithDefault( "DefaultProps\\Flipper", "Scatter", 0.0f );
-
    m_d.m_torqueDamping = GetRegStringAsFloatWithDefault( "DefaultProps\\Flipper", "EOSTorque", 0.75f );
    m_d.m_torqueDampingAngle = GetRegStringAsFloatWithDefault("DefaultProps\\Flipper", "EOSTorqueAngle", 6.f);
 }
