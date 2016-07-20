@@ -914,7 +914,7 @@ void upscale(DWORD * const data, const unsigned int xres, const unsigned int yre
                 for (unsigned int i2 = 0; i2 < 3; ++i2,++o2)
                 {
                     // determine subpixel
-                    unsigned int sp;
+                    unsigned int sp=0;
                     switch (o2)
                     {
                     case 0: sp = crn_x; break;
@@ -929,7 +929,7 @@ void upscale(DWORD * const data, const unsigned int xres, const unsigned int yre
                     }
 
                     // output coordinate - 0 = E, 1 = D, 2 = D0, 3 = F, 4 = F0, 5 = B, 6 = B0, 7 = H, 8 = H0
-                    unsigned int res;
+                    unsigned int res=0;
                     switch (sp)
                     {
                     case 0: res = 0; break;
@@ -5920,7 +5920,7 @@ void PinTable::CheckDirty()
    {
       if (sdsNewDirtyState > eSaveClean)
       {
-         char szWindowName[1024 + 1];
+         char szWindowName[MAX_LINE_LENGTH + 1];
          lstrcpy(szWindowName, m_szTitle);
          lstrcat(szWindowName, "*");
 
