@@ -2764,7 +2764,7 @@ INT_PTR CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
                         }
                      }
 
-                     if( begin>MAX_PATH )
+                     if( begin>=MAX_PATH )
                          begin=MAX_PATH-1;
 
                      memcpy(pathName, ofn.lpstrFile, begin);
