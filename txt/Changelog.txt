@@ -1,5 +1,6 @@
 VP 10.2.0 Changelog
 ------------------------
+- add one-way trigger mesh (TriggerWireC type)
 
 - add physics settings per material to the material manager.
   Settings are: Friction, elasticity, elasticity falloff and scatter angle.
