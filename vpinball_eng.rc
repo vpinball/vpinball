@@ -14,7 +14,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (United States) resources
+// Englisch (USA) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
@@ -2566,7 +2566,7 @@ BEGIN
     POPUP "&Table"
     BEGIN
         MENUITEM "&Play\tF5",                   ID_TABLE_PLAY
-        MENUITEM "Camera/Light M&ode",          ID_TABLE_CAMERAMODE
+        MENUITEM "Camera/Light M&ode\tF6",      ID_TABLE_CAMERAMODE
         MENUITEM SEPARATOR
         MENUITEM "&Table Info...",              ID_TABLE_TABLEINFO
         MENUITEM "&Sound Manager...\tF2",       ID_TABLE_SOUNDMANAGER
@@ -2735,6 +2735,7 @@ BEGIN
     "M",            ID_INSERT_TIMER,        VIRTKEY, CONTROL, NOINVERT
     "T",            ID_INSERT_TRIGGER,      VIRTKEY, CONTROL, NOINVERT
     "W",            ID_INSERT_WALL,         VIRTKEY, CONTROL, NOINVERT
+    "L",            ID_LOCK,                VIRTKEY, SHIFT, CONTROL, NOINVERT
     VK_F5,          ID_TABLE_PLAY,          VIRTKEY, NOINVERT
     "C",            IDC_COPY,               VIRTKEY, CONTROL, NOINVERT
     "V",            IDC_PASTE,              VIRTKEY, CONTROL, NOINVERT
@@ -2747,7 +2748,7 @@ BEGIN
     "O",            IDM_OPEN,               VIRTKEY, CONTROL, NOINVERT
     "S",            IDM_SAVE,               VIRTKEY, CONTROL, NOINVERT
     VK_F2,          IDM_SOUND_EDITOR,       VIRTKEY, NOINVERT
-    "L",            ID_LOCK,                VIRTKEY, SHIFT, CONTROL, NOINVERT
+    VK_F6,          ID_TABLE_CAMERAMODE,    VIRTKEY, NOINVERT
 END
 
 IDR_CODEVIEWACCEL ACCELERATORS
@@ -2979,7 +2980,7 @@ BEGIN
     IDS_STEP                "Step"
 END
 
-#endif    // English (United States) resources
+#endif    // Englisch (USA) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
