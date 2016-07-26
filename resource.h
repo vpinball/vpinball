@@ -627,6 +627,7 @@
 #define IDC_MATERIAL_COMBO3             426
 #define IDC_GLOBAL_3DSTEREO             427
 #define IDC_TWO_WAY_CHECK               427
+#define IDC_MATERIAL_COMBO5             427
 #define IDC_3D_STEREO_MS                428
 #define IDC_3D_STEREO_ZPD               429
 #define IDC_HALO_EDIT                   429

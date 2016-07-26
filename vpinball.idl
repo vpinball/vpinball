@@ -1234,6 +1234,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propput, id(DISPID_Timer_Interval), helpstring("property TimerInterval")] HRESULT TimerInterval([in] long newVal);
                 [propget, id(340), helpstring("property CapMaterial")] HRESULT CapMaterial([out, retval] BSTR *pVal);
                 [propput, id(340), helpstring("property CapMaterial")] HRESULT CapMaterial([in] BSTR newVal);
+                [propget, id(734), helpstring("property RingMaterial")] HRESULT RingMaterial([out, retval] BSTR *pVal);
+                [propput, id(734), helpstring("property RingMaterial")] HRESULT RingMaterial([in] BSTR newVal);
                 [propget, id(24), helpstring("property HeightScale")] HRESULT HeightScale([out, retval] float *pVal);
                 [propput, id(24), helpstring("property HeightScale")] HRESULT HeightScale([in] float newVal);
                 [propget, id(25), helpstring("property Orientation")] HRESULT Orientation([out, retval] float *pVal);
