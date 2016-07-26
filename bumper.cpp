@@ -409,7 +409,7 @@ void Bumper::RenderBase(RenderDevice *pd3dDevice, const Material * const baseMat
 void Bumper::RenderSocket(RenderDevice *pd3dDevice, const Material * const socketMaterial)
 {
    pd3dDevice->basicShader->SetMaterial(socketMaterial);
-   pd3dDevice->basicShader->SetTexture("Texture0", &m_socketTexture);
+   //pd3dDevice->basicShader->SetTexture("Texture0", &m_socketTexture);
    g_pplayer->m_pin3d.EnableAlphaBlend(false);
    pd3dDevice->basicShader->SetAlphaTestValue((float)(1.0 / 255.0));
 
@@ -490,9 +490,14 @@ void Bumper::PostRenderStatic(RenderDevice* pd3dDevice)
 
       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 
-      pd3dDevice->basicShader->SetTechnique(m_ringMaterial->m_bIsMetal ? "basic_with_texture_isMetal" : "basic_with_texture_isNotMetal");
+      if (m_ringMaterial->m_bIsMetal)
+      {
+         pd3dDevice->basicShader->SetTechnique(m_ringMaterial->m_bIsMetal ? "basic_with_texture_isMetal" : "basic_with_texture_isNotMetal");
+         pd3dDevice->basicShader->SetTexture("Texture0", &m_ringTexture);
+      }
+      else
+         pd3dDevice->basicShader->SetTechnique(m_ringMaterial->m_bIsMetal ? "basic_without_texture_isMetal" : "basic_without_texture_isNotMetal");
       pd3dDevice->basicShader->SetMaterial(m_ringMaterial);
-      pd3dDevice->basicShader->SetTexture("Texture0", &m_ringTexture);
       pd3dDevice->basicShader->SetAlphaTestValue(-1.0f);
       // render ring
       pd3dDevice->basicShader->Begin(0);
@@ -710,6 +715,7 @@ void Bumper::RenderSetup(RenderDevice* pd3dDevice)
          m_ringMaterial = new Material();
          m_ringMaterial->m_cBase = 0xFFFFFFFF; //!! set properly
          m_ringMaterial->m_cGlossy = 0;
+         m_ringMaterial->m_bIsMetal = true;
       }
 
       if (m_baseIndexBuffer)
@@ -792,7 +798,7 @@ void Bumper::RenderStatic(RenderDevice* pd3dDevice)
       mat = m_ptable->GetMaterial(m_d.m_szBaseMaterial);
       if (!mat->m_bOpacityActive)
       {
-         pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_with_texture_isMetal" : "basic_with_texture_isNotMetal");
+         pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_without_texture_isMetal" : "basic_without_texture_isNotMetal");
          RenderBase(pd3dDevice, mat);
       }
    }
