@@ -16,7 +16,6 @@ Bumper::Bumper()
    m_capIndexBuffer = NULL;
    m_socketIndexBuffer = NULL;
    m_socketVertexBuffer = NULL;
-   m_ringMaterial = NULL;
    m_ringAnimate = false;
    m_propVisual = NULL;
    memset(m_d.m_szBaseMaterial, 0, 32);
@@ -28,9 +27,6 @@ Bumper::Bumper()
 
 Bumper::~Bumper()
 {
-   if (m_ringMaterial)
-      delete(m_ringMaterial);
-
    if (m_baseVertexBuffer)
    {
       m_baseVertexBuffer->release();
@@ -490,14 +486,14 @@ void Bumper::PostRenderStatic(RenderDevice* pd3dDevice)
 
       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 
-      if (m_ringMaterial->m_bIsMetal)
+      if (m_ringMaterial.m_bIsMetal)
       {
-         pd3dDevice->basicShader->SetTechnique(m_ringMaterial->m_bIsMetal ? "basic_with_texture_isMetal" : "basic_with_texture_isNotMetal");
+         pd3dDevice->basicShader->SetTechnique(m_ringMaterial.m_bIsMetal ? "basic_with_texture_isMetal" : "basic_with_texture_isNotMetal");
          pd3dDevice->basicShader->SetTexture("Texture0", &m_ringTexture);
       }
       else
-         pd3dDevice->basicShader->SetTechnique(m_ringMaterial->m_bIsMetal ? "basic_without_texture_isMetal" : "basic_without_texture_isNotMetal");
-      pd3dDevice->basicShader->SetMaterial(m_ringMaterial);
+         pd3dDevice->basicShader->SetTechnique(m_ringMaterial.m_bIsMetal ? "basic_without_texture_isMetal" : "basic_without_texture_isNotMetal");
+      pd3dDevice->basicShader->SetMaterial(&m_ringMaterial);
       pd3dDevice->basicShader->SetAlphaTestValue(-1.0f);
       // render ring
       pd3dDevice->basicShader->Begin(0);
@@ -699,23 +695,21 @@ void Bumper::RenderSetup(RenderDevice* pd3dDevice)
 
    if (m_d.m_fBaseVisible)
    {
-      Material *mat;
-
       m_baseTexture.CreateFromResource(IDB_BUMPERBASE);
       m_socketTexture.CreateFromResource(IDB_BUMPERSOCKET);
       m_ringTexture.CreateFromResource(IDB_RINGENVMAP);
 
       if (m_d.m_szRingMaterial[0]!='\0')
       {
-         mat = m_ptable->GetMaterial(m_d.m_szRingMaterial);
-         m_ringMaterial = mat;
+         m_ringMaterial = *(m_ptable->GetMaterial(m_d.m_szRingMaterial));
       }
       else
       {
-         m_ringMaterial = new Material();
-         m_ringMaterial->m_cBase = 0xFFFFFFFF; //!! set properly
-         m_ringMaterial->m_cGlossy = 0;
-         m_ringMaterial->m_bIsMetal = true;
+         Material default_material;
+         m_ringMaterial = default_material;
+         m_ringMaterial.m_cBase = 0xFFFFFFFF; //!! set properly
+         m_ringMaterial.m_cGlossy = 0;
+         m_ringMaterial.m_bIsMetal = true;
       }
 
       if (m_baseIndexBuffer)

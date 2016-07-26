@@ -147,7 +147,7 @@ private:
    Texture m_ringTexture;
    Texture m_capTexture;
    Texture m_socketTexture;
-   Material *m_ringMaterial;
+   Material m_ringMaterial;
 
    PropertyPane *m_propVisual;
 
