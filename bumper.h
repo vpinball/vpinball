@@ -22,6 +22,7 @@ public:
    char m_szCapMaterial[32];
    char m_szBaseMaterial[32];
    char m_szSkirtMaterial[32];
+   char m_szRingMaterial[32];
    char m_szSurface[MAXTOKEN];
    bool m_fCapVisible;
    bool m_fBaseVisible;
@@ -103,7 +104,7 @@ public:
 	  virtual unsigned long long GetImageID()
 	  {
 		  if (!m_d.m_fBaseVisible && m_d.m_fCapVisible)
-			  return (unsigned long long)&capTexture; //!! meh
+			  return (unsigned long long)&m_capTexture; //!! meh
 		  else
 			  return NULL;
 	  }
@@ -127,32 +128,32 @@ private:
    void GenerateRingMesh(Vertex3D_NoTex2 *buf);
    void GenerateCapMesh(Vertex3D_NoTex2 *buf);
 
-   VertexBuffer *baseVertexBuffer;
-   IndexBuffer *baseIndexBuffer;
+   VertexBuffer *m_baseVertexBuffer;
+   IndexBuffer *m_baseIndexBuffer;
 
-   VertexBuffer *socketVertexBuffer;
-   IndexBuffer *socketIndexBuffer;
+   VertexBuffer *m_socketVertexBuffer;
+   IndexBuffer *m_socketIndexBuffer;
 
-   VertexBuffer *ringVertexBuffer;
-   IndexBuffer *ringIndexBuffer;
+   VertexBuffer *m_ringVertexBuffer;
+   IndexBuffer *m_ringIndexBuffer;
 
-   VertexBuffer *capVertexBuffer;
-   IndexBuffer *capIndexBuffer;
+   VertexBuffer *m_capVertexBuffer;
+   IndexBuffer *m_capIndexBuffer;
 
-   Matrix3D fullMatrix;
+   Matrix3D m_fullMatrix;
 
-   Vertex3D_NoTex2 *ringVertices;
-   Texture baseTexture;
-   Texture ringTexture;
-   Texture capTexture;
-   Texture socketTexture;
-   Material ringMaterial;
+   Vertex3D_NoTex2 *m_ringVertices;
+   Texture m_baseTexture;
+   Texture m_ringTexture;
+   Texture m_capTexture;
+   Texture m_socketTexture;
+   Material *m_ringMaterial;
 
    PropertyPane *m_propVisual;
 
-   float   baseHeight;
-   bool    ringDown;
-   bool    ringAnimate;
+   float   m_baseHeight;
+   bool    m_ringDown;
+   bool    m_ringAnimate;
 
    // IBumper
 public:
@@ -168,6 +169,8 @@ public:
    STDMETHOD(put_X)(/*[in]*/ float newVal);
    STDMETHOD(get_CapMaterial)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(put_CapMaterial)(/*[in]*/ BSTR newVal);
+   STDMETHOD(get_RingMaterial)(/*[out, retval]*/ BSTR *pVal);
+   STDMETHOD(put_RingMaterial)(/*[in]*/ BSTR newVal);
    STDMETHOD(get_Threshold)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_Threshold)(/*[in]*/ float newVal);
    STDMETHOD(get_Force)(/*[out, retval]*/ float *pVal);
