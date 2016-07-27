@@ -2146,7 +2146,6 @@ BEGIN
 
     IDD_PROPBUMPER_VISUALS, DIALOG
     BEGIN
-        BOTTOMMARGIN, 157
     END
 
     IDD_CODEVIEW, DIALOG
@@ -2701,10 +2700,8 @@ IDB_BALL                BITMAP                  "res\\ball.bmp"
 IDB_ENV                 BITMAP                  "res\\envmap.bmp"
 IDB_LOGO                BITMAP                  "res\\logo.bmp"
 IDB_CHEVRON             BITMAP                  "res\\chevron.bmp"
-IDB_BUMPERBASE          BITMAP                  "res\\bumperbase.bmp"
 IDB_RINGENVMAP          BITMAP                  "res\\ringenvmap.bmp"
 IDB_BUMPERCAP           BITMAP                  "res\\bumperCap.bmp"
-IDB_BUMPERSOCKET        BITMAP                  "res\\bumperSocket.bmp"
 IDB_KICKER_HOLE_WOOD    BITMAP                  "res\\kickerHoleWood.bmp"
 IDB_KICKER_CUP          BITMAP                  "res\\kickerCup.bmp"
 
