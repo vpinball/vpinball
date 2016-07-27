@@ -1,5 +1,9 @@
 VP 10.2.0 Changelog
 ------------------------
+- bumper cap, base, ring, skirt can be set to invisible separately
+
+- separate material can be applied to the bumper ring
+
 - add one-way trigger mesh (TriggerWireC type)
 
 - add physics settings per material to the material manager.

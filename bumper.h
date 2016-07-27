@@ -26,6 +26,8 @@ public:
    char m_szSurface[MAXTOKEN];
    bool m_fCapVisible;
    bool m_fBaseVisible;
+   bool m_fRingVisible;
+   bool m_fSkirtVisible;
    bool m_fReflectionEnabled;
    bool m_fHitEvent;
    bool m_fCollidable;
@@ -189,6 +191,10 @@ public:
    STDMETHOD(put_CapVisible)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_BaseVisible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_BaseVisible)(/*[in]*/ VARIANT_BOOL newVal);
+   STDMETHOD(get_RingVisible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   STDMETHOD(put_RingVisible)(/*[in]*/ VARIANT_BOOL newVal);
+   STDMETHOD(get_SkirtVisible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
+   STDMETHOD(put_SkirtVisible)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_ReflectionEnabled)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_ReflectionEnabled)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(PlayHit)();
