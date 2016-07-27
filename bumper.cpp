@@ -608,7 +608,7 @@ void Bumper::ExportMesh(FILE *f)
 
 void Bumper::GenerateBaseMesh(Vertex3D_NoTex2 *buf)
 {
-   const float scalexy = m_d.m_radius*2.0f;
+   const float scalexy = m_d.m_radius*1.7f;
    for (int i = 0; i < bumperBaseNumVertices; i++)
    {
       Vertex3Ds vert(bumperBase[i].x, bumperBase[i].y, bumperBase[i].z);
@@ -652,7 +652,7 @@ void Bumper::GenerateSocketMesh(Vertex3D_NoTex2 *buf)
 
 void Bumper::GenerateRingMesh(Vertex3D_NoTex2 *buf)
 {
-   const float scalexy = m_d.m_radius*2.0f;
+   const float scalexy = m_d.m_radius*2.1f;
 
    for (int i = 0; i < bumperRingNumVertices; i++)
    {
@@ -1418,15 +1418,19 @@ void Bumper::UpdatePropertyPanes()
       EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_MATERIAL_COMBO), TRUE);
 
    if (!m_d.m_fBaseVisible)
-   {
       EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_MATERIAL_COMBO2), FALSE);
-      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_MATERIAL_COMBO3), FALSE);
-   }
    else
-   {
       EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_MATERIAL_COMBO2), TRUE);
+
+   if (!m_d.m_fSkirtVisible)
+      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_MATERIAL_COMBO3), FALSE);
+   else
       EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_MATERIAL_COMBO3), TRUE);
-   }
+
+   if (!m_d.m_fRingVisible)
+      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_MATERIAL_COMBO4), FALSE);
+   else
+      EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_MATERIAL_COMBO4), TRUE);
 }
 
 void Bumper::SetDefaultPhysics(bool fromMouseClick)
