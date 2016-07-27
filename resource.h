@@ -627,7 +627,6 @@
 #define IDC_MATERIAL_COMBO3             426
 #define IDC_GLOBAL_3DSTEREO             427
 #define IDC_TWO_WAY_CHECK               427
-#define IDC_MATERIAL_COMBO5             427
 #define IDC_3D_STEREO_MS                428
 #define IDC_3D_STEREO_ZPD               429
 #define IDC_HALO_EDIT                   429
@@ -806,11 +805,9 @@
 #define IDD_PROPRUBBER_VISUALS          604
 #define IDD_MATERIALDIALOG              605
 #define IDB_BITMAP1                     608
-#define IDB_BUMPERBASE                  608
 #define IDB_RINGENVMAP                  609
 #define IDB_BITMAP2                     610
 #define IDB_BUMPERCAP                   610
-#define IDB_BUMPERSOCKET                611
 #define IDB_KICKER_HOLE_WOOD            612
 #define IDB_BITMAP3                     613
 #define IDB_KICKER_CUP                  613
