@@ -36,7 +36,6 @@ Bumper::~Bumper()
    {
       m_baseIndexBuffer->release();
       m_baseIndexBuffer = 0;
-      m_baseTexture.FreeStuff();
    }
    if (m_ringVertexBuffer)
    {
@@ -66,7 +65,6 @@ Bumper::~Bumper()
    {
       m_socketIndexBuffer->release();
       m_socketIndexBuffer = 0;
-      m_socketTexture.FreeStuff();
    }
    if (m_socketVertexBuffer)
    {
@@ -331,7 +329,6 @@ void Bumper::EndPlay()
    {
       m_baseIndexBuffer->release();
       m_baseIndexBuffer = 0;
-      m_baseTexture.FreeStuff();
    }
    if (m_ringVertexBuffer)
    {
@@ -361,7 +358,6 @@ void Bumper::EndPlay()
    {
       m_socketIndexBuffer->release();
       m_socketIndexBuffer = 0;
-      m_socketTexture.FreeStuff();
    }
    if (m_socketVertexBuffer)
    {
@@ -391,29 +387,23 @@ void Bumper::UpdateRing(RenderDevice *pd3dDevice)
 void Bumper::RenderBase(RenderDevice *pd3dDevice, const Material * const baseMaterial)
 {
    pd3dDevice->basicShader->SetMaterial(baseMaterial);
-   pd3dDevice->basicShader->SetTexture("Texture0", &m_baseTexture);
    g_pplayer->m_pin3d.EnableAlphaBlend(false);
    pd3dDevice->basicShader->SetAlphaTestValue((float)(1.0 / 255.0));
 
    pd3dDevice->basicShader->Begin(0);
    pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_baseVertexBuffer, 0, bumperBaseNumVertices, m_baseIndexBuffer, 0, bumperBaseNumFaces);
    pd3dDevice->basicShader->End();
-
-   //g_pplayer->m_pin3d.DisableAlphaBlend(); //!! not necessary anymore
 }
 
 void Bumper::RenderSocket(RenderDevice *pd3dDevice, const Material * const socketMaterial)
 {
    pd3dDevice->basicShader->SetMaterial(socketMaterial);
-   //pd3dDevice->basicShader->SetTexture("Texture0", &m_socketTexture);
    g_pplayer->m_pin3d.EnableAlphaBlend(false);
    pd3dDevice->basicShader->SetAlphaTestValue((float)(1.0 / 255.0));
 
    pd3dDevice->basicShader->Begin(0);
    pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_socketVertexBuffer, 0, bumperSocketNumVertices, m_socketIndexBuffer, 0, bumperSocketNumFaces);
    pd3dDevice->basicShader->End();
-
-   //g_pplayer->m_pin3d.DisableAlphaBlend(); //!! not necessary anymore
 }
 
 void Bumper::RenderCap(RenderDevice *pd3dDevice, const Material * const capMaterial)
@@ -426,8 +416,6 @@ void Bumper::RenderCap(RenderDevice *pd3dDevice, const Material * const capMater
    pd3dDevice->basicShader->Begin(0);
    pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_capVertexBuffer, 0, bumperCapNumVertices, m_capIndexBuffer, 0, bumperCapNumFaces);
    pd3dDevice->basicShader->End();
-
-   //g_pplayer->m_pin3d.DisableAlphaBlend(); //!! not necessary anymore
 }
 
 void Bumper::PostRenderStatic(RenderDevice* pd3dDevice)
@@ -629,7 +617,8 @@ void Bumper::GenerateSocketMesh(Vertex3D_NoTex2 *buf)
       vert = m_fullMatrix.MultiplyVector(vert);
       buf[i].x = vert.x*scalexy + m_d.m_vCenter.x;
       buf[i].y = vert.y*scalexy + m_d.m_vCenter.y;
-      buf[i].z = (vert.z*m_d.m_heightScale)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_baseHeight;
+      // scale z by 0.6 to make the skirt a bit more flat
+      buf[i].z = (0.6f*vert.z*m_d.m_heightScale)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_baseHeight;
 
       vert = Vertex3Ds(bumperSocket[i].nx, bumperSocket[i].ny, bumperSocket[i].nz);
       vert = m_fullMatrix.MultiplyVectorNoTranslate(vert);
@@ -695,8 +684,6 @@ void Bumper::RenderSetup(RenderDevice* pd3dDevice)
 
    if (m_d.m_fBaseVisible)
    {
-      m_baseTexture.CreateFromResource(IDB_BUMPERBASE);
-      m_socketTexture.CreateFromResource(IDB_BUMPERSOCKET);
       m_ringTexture.CreateFromResource(IDB_RINGENVMAP);
 
       if (m_d.m_szRingMaterial[0]!='\0')
@@ -785,7 +772,7 @@ void Bumper::RenderStatic(RenderDevice* pd3dDevice)
       const Material *mat = m_ptable->GetMaterial(m_d.m_szSkirtMaterial);
       if (!mat->m_bOpacityActive)
       {
-         pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_with_texture_isMetal" : "basic_with_texture_isNotMetal");
+         pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_without_texture_isMetal" : "basic_without_texture_isNotMetal");
          RenderSocket(pd3dDevice, mat);
       }
 
