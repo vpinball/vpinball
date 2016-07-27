@@ -135,6 +135,18 @@ void Bumper::SetDefaults(bool fromMouseClick)
    else
       m_d.m_fBaseVisible = true;
 
+   hr = GetRegInt("DefaultProps\\Bumper", "RingVisible", &iTmp);
+   if ((hr == S_OK) && fromMouseClick)
+      m_d.m_fRingVisible = iTmp == 0 ? false : true;
+   else
+      m_d.m_fRingVisible = true;
+
+   hr = GetRegInt("DefaultProps\\Bumper", "SkirtVisible", &iTmp);
+   if ((hr == S_OK) && fromMouseClick)
+      m_d.m_fSkirtVisible = iTmp == 0 ? false : true;
+   else
+      m_d.m_fSkirtVisible = true;
+
    hr = GetRegInt("DefaultProps\\Bumper", "ReflectionEnabled", &iTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_fReflectionEnabled = iTmp == 0 ? false : true;
@@ -434,8 +446,9 @@ void Bumper::PostRenderStatic(RenderDevice* pd3dDevice)
 
    pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
+   pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 
-   if (m_d.m_fBaseVisible)
+   if (m_d.m_fRingVisible)
    {
       const int state = m_pbumperhitcircle->m_bumperanim.m_fHitEvent ? 1 : 0;    // 0 = not hit, 1 = hit
 
@@ -472,8 +485,6 @@ void Bumper::PostRenderStatic(RenderDevice* pd3dDevice)
          UpdateRing(pd3dDevice);
       }
 
-      pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
-
       if (m_ringMaterial.m_bIsMetal)
       {
          pd3dDevice->basicShader->SetTechnique(m_ringMaterial.m_bIsMetal ? "basic_with_texture_isMetal" : "basic_with_texture_isNotMetal");
@@ -487,7 +498,9 @@ void Bumper::PostRenderStatic(RenderDevice* pd3dDevice)
       pd3dDevice->basicShader->Begin(0);
       pd3dDevice->DrawIndexedPrimitiveVB(D3DPT_TRIANGLELIST, MY_D3DFVF_NOTEX2_VERTEX, m_ringVertexBuffer, 0, bumperRingNumVertices, m_ringIndexBuffer, 0, bumperRingNumFaces);
       pd3dDevice->basicShader->End();
-
+   }
+   if (m_d.m_fSkirtVisible)
+   {
       const Material *mat = m_ptable->GetMaterial(m_d.m_szSkirtMaterial);
       if (mat->m_bOpacityActive)
       {
@@ -495,8 +508,11 @@ void Bumper::PostRenderStatic(RenderDevice* pd3dDevice)
          pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
          RenderSocket(pd3dDevice, mat);
       }
+   }
 
-      mat = m_ptable->GetMaterial(m_d.m_szBaseMaterial);
+   if (m_d.m_fBaseVisible)
+   {
+      const Material *mat = m_ptable->GetMaterial(m_d.m_szBaseMaterial);
       if (mat->m_bOpacityActive)
       {
          pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_with_texture_isMetal" : "basic_with_texture_isNotMetal");
@@ -542,7 +558,9 @@ void Bumper::ExportMesh(FILE *f)
       WaveFrontObj_WriteFaceInfoList(f, bumperBaseIndices, bumperBaseNumFaces);
       WaveFrontObj_UpdateFaceOffset(bumperBaseNumVertices);
       delete[] base;
-
+   }
+   if (m_d.m_fRingVisible)
+   {
       Vertex3D_NoTex2 *ring = new Vertex3D_NoTex2[bumperRingNumVertices];
       strcpy_s(subObjName, name);
       strcat_s(subObjName, "Ring");
@@ -553,7 +571,9 @@ void Bumper::ExportMesh(FILE *f)
       WaveFrontObj_WriteFaceInfoList(f, bumperRingIndices, bumperRingNumFaces);
       WaveFrontObj_UpdateFaceOffset(bumperRingNumVertices);
       delete[] ring;
-
+   }
+   if (m_d.m_fSkirtVisible)
+   {
       Vertex3D_NoTex2 *socket = new Vertex3D_NoTex2[bumperSocketNumVertices];
       strcpy_s(subObjName, name);
       strcat_s(subObjName, "Socket");
@@ -561,7 +581,7 @@ void Bumper::ExportMesh(FILE *f)
 
       GenerateSocketMesh(socket);
       WaveFrontObj_WriteVertexInfo(f, socket, bumperSocketNumVertices);
-      mat = m_ptable->GetMaterial(m_d.m_szSkirtMaterial);
+      const Material * mat = m_ptable->GetMaterial(m_d.m_szSkirtMaterial);
       WaveFrontObj_WriteMaterial(m_d.m_szSkirtMaterial, NULL, mat);
       WaveFrontObj_UseTexture(f, m_d.m_szSkirtMaterial);
       WaveFrontObj_WriteFaceInfoList(f, bumperSocketIndices, bumperSocketNumFaces);
@@ -682,11 +702,45 @@ void Bumper::RenderSetup(RenderDevice* pd3dDevice)
 
    const float scalez = m_d.m_radius*m_d.m_heightScale*2.0f*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
+   m_fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_orientation));
    if (m_d.m_fBaseVisible)
+   {
+      if (m_baseIndexBuffer)
+         m_baseIndexBuffer->release();
+      m_baseIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(bumperBaseNumFaces, bumperBaseIndices);
+
+      if (m_baseVertexBuffer)
+         m_baseVertexBuffer->release();
+      pd3dDevice->CreateVertexBuffer(bumperBaseNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_baseVertexBuffer);
+
+
+      Vertex3D_NoTex2 *buf;
+      m_baseVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
+      GenerateBaseMesh(buf);
+      m_baseVertexBuffer->unlock();
+   }
+
+   if (m_d.m_fSkirtVisible)
+   {
+      if (m_socketIndexBuffer)
+         m_socketIndexBuffer->release();
+      m_socketIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(bumperSocketNumFaces, bumperSocketIndices);
+
+      if (m_socketVertexBuffer)
+         m_socketVertexBuffer->release();
+      pd3dDevice->CreateVertexBuffer(bumperSocketNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_socketVertexBuffer);
+
+      Vertex3D_NoTex2 *buf;
+      m_socketVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
+      GenerateSocketMesh(buf);
+      m_socketVertexBuffer->unlock();
+   }
+
+   if (m_d.m_fRingVisible)
    {
       m_ringTexture.CreateFromResource(IDB_RINGENVMAP);
 
-      if (m_d.m_szRingMaterial[0]!='\0')
+      if (m_d.m_szRingMaterial[0] != '\0')
       {
          m_ringMaterial = *(m_ptable->GetMaterial(m_d.m_szRingMaterial));
       }
@@ -699,33 +753,6 @@ void Bumper::RenderSetup(RenderDevice* pd3dDevice)
          m_ringMaterial.m_bIsMetal = true;
       }
 
-      if (m_baseIndexBuffer)
-         m_baseIndexBuffer->release();
-      m_baseIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(bumperBaseNumFaces, bumperBaseIndices);
-
-      if (m_baseVertexBuffer)
-         m_baseVertexBuffer->release();
-      pd3dDevice->CreateVertexBuffer(bumperBaseNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_baseVertexBuffer);
-
-      m_fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_orientation));
-
-      Vertex3D_NoTex2 *buf;
-      m_baseVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
-      GenerateBaseMesh(buf);
-      m_baseVertexBuffer->unlock();
-
-      if (m_socketIndexBuffer)
-         m_socketIndexBuffer->release();
-      m_socketIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(bumperSocketNumFaces, bumperSocketIndices);
-
-      if (m_socketVertexBuffer)
-         m_socketVertexBuffer->release();
-      pd3dDevice->CreateVertexBuffer(bumperSocketNumVertices, 0, MY_D3DFVF_NOTEX2_VERTEX, &m_socketVertexBuffer);
-
-      m_socketVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
-      GenerateSocketMesh(buf);
-      m_socketVertexBuffer->unlock();
-
       if (m_ringIndexBuffer)
          m_ringIndexBuffer->release();
       m_ringIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(bumperRingNumFaces, bumperRingIndices);
@@ -737,6 +764,7 @@ void Bumper::RenderSetup(RenderDevice* pd3dDevice)
       m_ringVertices = new Vertex3D_NoTex2[bumperRingNumVertices];
       GenerateRingMesh(m_ringVertices);
 
+      Vertex3D_NoTex2 *buf;
       m_ringVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
       memcpy(buf, m_ringVertices, bumperRingNumVertices*sizeof(Vertex3D_NoTex2));
       m_ringVertexBuffer->unlock();
@@ -769,20 +797,25 @@ void Bumper::RenderStatic(RenderDevice* pd3dDevice)
 
    if (m_d.m_fBaseVisible)
    {
-      const Material *mat = m_ptable->GetMaterial(m_d.m_szSkirtMaterial);
-      if (!mat->m_bOpacityActive)
-      {
-         pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_without_texture_isMetal" : "basic_without_texture_isNotMetal");
-         RenderSocket(pd3dDevice, mat);
-      }
 
-      mat = m_ptable->GetMaterial(m_d.m_szBaseMaterial);
+      const Material *mat = m_ptable->GetMaterial(m_d.m_szBaseMaterial);
       if (!mat->m_bOpacityActive)
       {
          pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_without_texture_isMetal" : "basic_without_texture_isNotMetal");
          RenderBase(pd3dDevice, mat);
       }
    }
+
+   if (m_d.m_fSkirtVisible)
+   {
+      const Material *mat = m_ptable->GetMaterial(m_d.m_szSkirtMaterial);
+      if (!mat->m_bOpacityActive)
+      {
+         pd3dDevice->basicShader->SetTechnique(mat->m_bIsMetal ? "basic_without_texture_isMetal" : "basic_without_texture_isNotMetal");
+         RenderSocket(pd3dDevice, mat);
+      }
+   }
+
    if (m_d.m_fCapVisible)
    {
       const Material * const mat = m_ptable->GetMaterial(m_d.m_szCapMaterial);
@@ -841,6 +874,8 @@ HRESULT Bumper::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptk
 
    bw.WriteBool(FID(CAVI), m_d.m_fCapVisible);
    bw.WriteBool(FID(BSVS), m_d.m_fBaseVisible);
+   bw.WriteBool(FID(RIVS), m_d.m_fRingVisible);
+   bw.WriteBool(FID(SKVS), m_d.m_fSkirtVisible);
    bw.WriteBool(FID(HAHE), m_d.m_fHitEvent);
    bw.WriteBool(FID(COLI), m_d.m_fCollidable);
    bw.WriteBool(FID(REEN), m_d.m_fReflectionEnabled);
@@ -954,6 +989,14 @@ BOOL Bumper::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(BSVS))
    {
       pbr->GetBool(&m_d.m_fBaseVisible);
+   }
+   else if (id == FID(RIVS))
+   {
+      pbr->GetBool(&m_d.m_fRingVisible);
+   }
+   else if (id == FID(SKVS))
+   {
+      pbr->GetBool(&m_d.m_fSkirtVisible);
    }
    else if (id == FID(REEN))
    {
@@ -1304,6 +1347,38 @@ STDMETHODIMP Bumper::put_BaseVisible(VARIANT_BOOL newVal)
 {
    STARTUNDO
       m_d.m_fBaseVisible = VBTOF(newVal);
+   STOPUNDO
+
+      return S_OK;
+}
+
+STDMETHODIMP Bumper::get_RingVisible(VARIANT_BOOL *pVal)
+{
+   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fRingVisible);
+
+   return S_OK;
+}
+
+STDMETHODIMP Bumper::put_RingVisible(VARIANT_BOOL newVal)
+{
+   STARTUNDO
+      m_d.m_fRingVisible = VBTOF(newVal);
+   STOPUNDO
+
+      return S_OK;
+}
+
+STDMETHODIMP Bumper::get_SkirtVisible(VARIANT_BOOL *pVal)
+{
+   *pVal = (VARIANT_BOOL)FTOVB(m_d.m_fSkirtVisible);
+
+   return S_OK;
+}
+
+STDMETHODIMP Bumper::put_SkirtVisible(VARIANT_BOOL newVal)
+{
+   STARTUNDO
+      m_d.m_fSkirtVisible = VBTOF(newVal);
    STOPUNDO
 
       return S_OK;

@@ -69,6 +69,7 @@
 #define IDS_LAYER2                      110
 #define ID_INSERT_FLIPPER               111
 #define IDS_LAYER3                      111
+#define IDS                             111
 #define IDS_TIMER_DESC                  112
 #define IDR_TIMER                       113
 #define IDS_LAYER4                      113
@@ -860,6 +861,8 @@
 #define IDC_MAT_FRICTION                732
 #define IDC_MAT_SCATTER_ANGLE           733
 #define IDC_MATERIAL_COMBO4             734
+#define IDC_RING_VISIBLE                735
+#define IDC_SKIRT_VISIBLE               736
 #define DISPID_Gate_Height1             1142
 #define DISPID_Image                    1500
 #define DISPID_Image2                   1501
