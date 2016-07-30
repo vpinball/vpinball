@@ -12,16 +12,28 @@ class Mesh
 {
 public:
    Vertex3Ds middlePoint;
+   struct VertData
+   {
+      float x, y, z;
+      float nx, ny, nz;
+   };
+   struct FrameData
+   {
+      std::vector<VertData> m_frameVerts;
+   };
+
+   std::vector<FrameData> m_animationFrames;
    std::vector<Vertex3D_NoTex2> m_vertices;
    std::vector<unsigned int> m_indices;
    Mesh(){ middlePoint.x = 0.0f; middlePoint.y = 0.0f; middlePoint.z = 0.0f; }
    void Clear();
    bool LoadWavefrontObj(const char *fname, const bool flipTV, const bool convertToLeftHanded);
    void SaveWavefrontObj(const char *fname, const char *description = NULL);
+   bool LoadAnimation(const char *fname, const bool flipTV, const bool convertToLeftHanded);
 
    size_t NumVertices() const    { return m_vertices.size(); }
    size_t NumIndices() const     { return m_indices.size(); }
-   void UploadToVB(VertexBuffer * vb) const;
+   void UploadToVB(VertexBuffer * vb, int frame=-1);
 };
 
 // Indices for RotAndTra:
@@ -76,6 +88,7 @@ public:
    bool m_fSkipRendering;
    bool m_fGroupdRendering;
    bool m_fReflectionEnabled;
+   int  m_FrameAmount;
 };
 
 class Primitive :
@@ -200,6 +213,11 @@ public:
    STDMETHOD( put_PhysicsMaterial )(/*[in]*/ BSTR newVal);
    STDMETHOD( get_OverwritePhysics )(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD( put_OverwritePhysics )(/*[in]*/ VARIANT_BOOL newVal);
+   STDMETHOD(PlayAnim)(int startFrame);
+   STDMETHOD(PlayAnimEndless)();
+   STDMETHOD(StopAnim)();
+   STDMETHOD(ContinueAnim)();
+   STDMETHOD(ShowFrame)(int frame);
 
    Primitive();
    virtual ~Primitive();
@@ -269,6 +287,9 @@ public:
    Matrix3D fullMatrix;
    int m_numGroupVertices;
    int m_numGroupIndices;
+   bool m_DoAnimation;
+   bool m_Endless;
+   int m_currentFrame;
 
 private:        // private member functions
 
@@ -277,6 +298,7 @@ private:        // private member functions
 #ifdef COMPRESS_MESHES
    int compressedIndices;  // only used during loading
    int compressedVertices; // only used during loading
+   int compressedAnimationVertices; // only used during loading
 #endif
 
    void UpdateEditorView();

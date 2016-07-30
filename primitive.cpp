@@ -20,9 +20,64 @@ void Mesh::Clear()
 {
    m_vertices.clear();
    m_indices.clear();
+   for (unsigned int i = 0; i < m_animationFrames.size(); i++)
+      m_animationFrames[i].m_frameVerts.clear();
+   m_animationFrames.clear();
    middlePoint.x = 0.0f;
    middlePoint.y = 0.0f;
    middlePoint.z = 0.0f;
+}
+
+bool Mesh::LoadAnimation(const char *fname, const bool flipTV, const bool convertToLeftHanded)
+{
+   WIN32_FIND_DATA data;
+   HANDLE h;
+   string name(fname);
+   int frameCounter = 0;
+   size_t idx = name.find_last_of("_");
+   if (idx == string::npos)
+   {
+      ShowError("Can't find sequence of obj files! The file name of the sequence must be <meshname>_x.obj where x is the frame number!");
+      return false;
+   }
+   idx++;
+   name = name.substr(0,idx);
+   string sname = name + "*.obj";
+   h = FindFirstFile(sname.c_str(), &data);
+   if (h != INVALID_HANDLE_VALUE)
+   {
+      do
+      {
+         frameCounter++;
+      } while (FindNextFile(h, &data));
+   }
+   m_animationFrames.resize(frameCounter);
+   for (int i = 0; i < frameCounter; i++)
+   {
+      sname = name + to_string(i) + ".obj";
+      if (WaveFrontObj_Load(sname.c_str(), flipTV, convertToLeftHanded))
+      {
+         std::vector<Vertex3D_NoTex2> verts;
+         WaveFrontObj_GetVertices(verts);
+         for (unsigned int t = 0; t < verts.size(); t++)
+         {
+            VertData vd;
+            vd.x = verts[t].x; vd.y = verts[t].y; vd.z = verts[t].z;
+            vd.nx = verts[t].nx; vd.ny = verts[t].ny; vd.nz = verts[t].nz;
+            m_animationFrames[i].m_frameVerts.push_back(vd);
+         }
+      }
+      else
+      {
+         name = "Unable to load file " + sname;
+         ShowError((char*)name.c_str());
+         return false;
+      }
+
+   }
+   sname = to_string(frameCounter)+" frames imported!";
+   MessageBox(NULL, sname.c_str(), "Info", MB_OK | MB_ICONEXCLAMATION);
+   return true;
 }
 
 bool Mesh::LoadWavefrontObj(const char *fname, const bool flipTV, const bool convertToLeftHanded)
@@ -49,6 +104,7 @@ bool Mesh::LoadWavefrontObj(const char *fname, const bool flipTV, const bool con
       middlePoint.x = (maxX + minX)*0.5f;
       middlePoint.y = (maxY + minY)*0.5f;
       middlePoint.z = (maxZ + minZ)*0.5f;
+
       return true;
    }
    else
@@ -63,11 +119,25 @@ void Mesh::SaveWavefrontObj(const char *fname, const char *description)
    WaveFrontObj_Save(fname, description, *this);
 }
 
-void Mesh::UploadToVB(VertexBuffer * vb) const
+void Mesh::UploadToVB(VertexBuffer * vb, int frame) 
 {
    Vertex3D_NoTex2 *buf;
    vb->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
-   memcpy(buf, &m_vertices[0], sizeof(Vertex3D_NoTex2)*m_vertices.size());
+   if ( frame==-1 )
+      memcpy(buf, &m_vertices[0], sizeof(Vertex3D_NoTex2)*m_vertices.size());
+   else
+   {
+      for (unsigned int i = 0; i < m_vertices.size(); i++)
+      {
+         m_vertices[i].x = m_animationFrames[frame].m_frameVerts[i].x;
+         m_vertices[i].y = m_animationFrames[frame].m_frameVerts[i].y;
+         m_vertices[i].z = m_animationFrames[frame].m_frameVerts[i].z;
+         m_vertices[i].nx = m_animationFrames[frame].m_frameVerts[i].nx;
+         m_vertices[i].ny = m_animationFrames[frame].m_frameVerts[i].ny;
+         m_vertices[i].nz = m_animationFrames[frame].m_frameVerts[i].nz;
+         memcpy(buf, &m_vertices[0], sizeof(Vertex3D_NoTex2)*m_vertices.size());
+      }
+   }
    vb->unlock();
 }
 
@@ -935,8 +1005,23 @@ void Primitive::RenderObject(RenderDevice *pd3dDevice)
 
       if (vertexBufferRegenerate)
       {
-         m_mesh.UploadToVB(vertexBuffer);
-         vertexBufferRegenerate = false;
+         m_mesh.UploadToVB(vertexBuffer, m_currentFrame);
+         if (m_currentFrame != -1 && m_DoAnimation)
+         {
+            m_currentFrame++;
+            if (m_currentFrame >= m_mesh.m_animationFrames.size())
+            {
+               if (m_Endless)
+                  m_currentFrame = 0;
+               else
+               {
+                  m_currentFrame = m_mesh.m_animationFrames.size() - 1;
+                  vertexBufferRegenerate = false;
+               }
+            }
+         }
+         else
+            vertexBufferRegenerate = false;
       }
    }
 
@@ -1034,6 +1119,8 @@ void Primitive::RenderSetup(RenderDevice* pd3dDevice)
 {
    if (m_d.m_fGroupdRendering || m_d.m_fSkipRendering)
       return;
+
+   m_currentFrame = -1;
 
    if (vertexBuffer)
       vertexBuffer->release();
@@ -1200,6 +1287,22 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcry
          bw.WriteStruct(FID(M3CI), c, clen);
          free(c);
 #endif
+      }
+      
+      if (m_mesh.m_animationFrames.size() > 0)
+      {
+         const mz_ulong slen = (mz_ulong)(sizeof(Mesh::VertData)*m_mesh.NumVertices());
+         for (unsigned int i = 0; i < m_mesh.m_animationFrames.size(); i++)
+         {
+            mz_ulong clen = compressBound(slen);
+            mz_uint8 * c = (mz_uint8 *)malloc(clen);
+            if (compress2(c, &clen, (const unsigned char *)&m_mesh.m_animationFrames[i].m_frameVerts[0], slen, MZ_BEST_COMPRESSION) != Z_OK)
+               ShowError("Could not compress primitive animation vertex data");
+            bw.WriteInt(FID(M3AY), (int)clen);
+            bw.WriteStruct(FID(M3AX), c, clen);
+            free(c);
+         }
+
       }
    }
    bw.WriteFloat(FID(PIDB), m_d.m_depthBias);
@@ -1395,6 +1498,31 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
       pbr->GetStruct(&m_mesh.m_vertices[0], (int)sizeof(Vertex3D_NoTex2)*numVertices);
    }
 #ifdef COMPRESS_MESHES
+   else if (id == FID(M3AY))
+   {
+      pbr->GetInt(&compressedAnimationVertices);
+   }
+   else if (id == FID(M3AX))
+   {
+      Mesh::FrameData frameData;
+      frameData.m_frameVerts.clear();
+      frameData.m_frameVerts.resize(numVertices);
+
+      /*LZWReader lzwreader(pbr->m_pistream, (int *)&m_mesh.m_vertices[0], sizeof(Vertex3D_NoTex2)*numVertices, 1, sizeof(Vertex3D_NoTex2)*numVertices);
+      lzwreader.Decoder();*/
+      mz_ulong uclen = (mz_ulong)(sizeof(Mesh::VertData)*m_mesh.NumVertices());
+      mz_uint8 * c = (mz_uint8 *)malloc(compressedAnimationVertices);
+      pbr->GetStruct(c, compressedAnimationVertices);
+      const int error = uncompress((unsigned char *)&frameData.m_frameVerts[0], &uclen, c, compressedAnimationVertices);
+      if (error != Z_OK)
+      {
+         char err[128];
+         sprintf_s(err, "Could not uncompress primitive animation vertex data, error %d", error);
+         ShowError(err);
+      }
+      free(c);
+      m_mesh.m_animationFrames.push_back(frameData);
+   }
    else if (id == FID(M3CY))
    {
       pbr->GetInt(&compressedVertices);
@@ -1556,6 +1684,7 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
             bool importAbsolutePosition = IsDlgButtonChecked(hwndDlg, IDC_ABS_POSITION_RADIO) == BST_CHECKED;
             bool centerMesh = IsDlgButtonChecked(hwndDlg, IDC_CENTER_MESH) == BST_CHECKED;
             bool importMaterial = IsDlgButtonChecked(hwndDlg, IDC_IMPORT_MATERIAL) == BST_CHECKED;
+            bool importAnimation = IsDlgButtonChecked(hwndDlg, IDC_IMPORT_ANIM_SEQUENCE) == BST_CHECKED;
             if (importMaterial)
             {
                string filename(szFileName);
@@ -1593,6 +1722,24 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
                      prim->m_d.m_vSize.x = 1.0f;
                      prim->m_d.m_vSize.y = 1.0f;
                      prim->m_d.m_vSize.z = 1.0f;
+                  }
+               }
+               if (importAnimation)
+               {
+                  if (prim->m_mesh.LoadAnimation(szFileName, flipTV, convertToLeftHanded))
+                  {
+                     if (centerMesh)
+                     {
+                        for (unsigned int t = 0; t < prim->m_mesh.m_animationFrames.size(); t++)
+                        {
+                           for (unsigned int i = 0; i < prim->m_mesh.m_vertices.size(); i++)
+                           {
+                              prim->m_mesh.m_animationFrames[t].m_frameVerts[i].x -= prim->m_mesh.middlePoint.x;
+                              prim->m_mesh.m_animationFrames[t].m_frameVerts[i].y -= prim->m_mesh.middlePoint.y;
+                              prim->m_mesh.m_animationFrames[t].m_frameVerts[i].z -= prim->m_mesh.middlePoint.z;
+                           }
+                        }
+                     }
                   }
                }
                prim->m_d.m_use3DMesh = true;
@@ -2692,6 +2839,54 @@ STDMETHODIMP Primitive::put_OverwritePhysics( VARIANT_BOOL newVal )
     STOPUNDO
 
         return S_OK;
+}
+
+STDMETHODIMP Primitive::PlayAnim(int startFrame)
+{
+   if (m_mesh.m_animationFrames.size() > 0)
+   {
+      m_currentFrame = startFrame;
+      m_DoAnimation = true;
+      m_Endless = false;
+      vertexBufferRegenerate = true;
+   }
+   return S_OK;
+}
+
+STDMETHODIMP Primitive::PlayAnimEndless()
+{
+   if (m_mesh.m_animationFrames.size() > 0)
+   {
+      m_currentFrame = 0;
+      m_DoAnimation = true;
+      m_Endless = true;
+      vertexBufferRegenerate = true;
+   }
+   return S_OK;
+}
+STDMETHODIMP Primitive::StopAnim()
+{
+   m_DoAnimation = false;
+   vertexBufferRegenerate = false;
+   return S_OK;
+}
+
+STDMETHODIMP Primitive::ContinueAnim()
+{
+   if (m_currentFrame > 0)
+   {
+      m_DoAnimation = true;
+      vertexBufferRegenerate = true;
+   }
+   return S_OK;
+}
+
+STDMETHODIMP Primitive::ShowFrame(int frame)
+{
+   m_DoAnimation = false;
+   m_currentFrame = frame;
+   vertexBufferRegenerate = true;
+   return S_OK;
 }
 
 void Primitive::GetDialogPanes(Vector<PropertyPane> *pvproppane)

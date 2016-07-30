@@ -505,6 +505,13 @@ Scatter(float)
                and are just there for the 'looks'.
 *ReflectionEnabled(bool) - default=true
 
+The following only applies to mesh primitives with an animation sequence
+------------------------------------------------------------------------
+PlayAnim(int startFrame) - start playing the sequence from 'startFrame' till the end
+PlayAnimEndless()        - start playing the sequence in a loop
+StopAnim()               - stop the animation
+ContinueAnim()           - continue a stopped animation
+ShowFrame(int frameNr)   - show the mesh of the frame 'frameNr'
 
 RAMP
 ==============================================================================================================================================
