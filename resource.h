@@ -855,6 +855,7 @@
 #define IDC_CVP_BUT_COL_BACKGROUND      727
 #define IDC_CHECK2                      727
 #define IDC_STATIC_BULB_MESH            727
+#define IDC_IMPORT_ANIM_SEQUENCE        727
 #define IDC_CVP_EDIT_AUTOCHARS          728
 #define IDC_CVP_EDIT_MOUSEDWELL         729
 #define IDC_MAT_ELASTICITY              731
