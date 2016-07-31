@@ -1555,11 +1555,11 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
         {
                 //[propget, id(DISPID_Name), helpstring("property Name")] HRESULT Name([out, retval] BSTR *pVal);
                 //[propput, id(DISPID_Name), helpstring("property Name")] HRESULT Name([in] BSTR newVal);
-                [id(1), helpstring("method PlayAnim")] HRESULT PlayAnim(int startFrame);
-                [id(2), helpstring("method PlayAnimEndless")] HRESULT PlayAnimEndless();
+                [id(1), helpstring("method PlayAnim")] HRESULT PlayAnim([in]float startFrame, [in]float speed);
+                [id(2), helpstring("method PlayAnimEndless")] HRESULT PlayAnimEndless([in]float speed);
                 [id(18), helpstring("method StopAnim")] HRESULT StopAnim();
-                [id(19), helpstring("method ShowFrame")] HRESULT ShowFrame(int frame);
-                [id(35), helpstring("method ContinueAnim")] HRESULT ContinueAnim();
+                [id(19), helpstring("method ShowFrame")] HRESULT ShowFrame([in]float frame);
+                [id(35), helpstring("method ContinueAnim")] HRESULT ContinueAnim([in]float speed);
                 
                 [propget, id(101), helpstring("property Sides")] HRESULT Sides([out, retval] int *pVal);
                 [propput, id(101), helpstring("property Sides")] HRESULT Sides([in] int newVal);

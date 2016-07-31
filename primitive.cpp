@@ -119,9 +119,15 @@ void Mesh::SaveWavefrontObj(const char *fname, const char *description)
    WaveFrontObj_Save(fname, description, *this);
 }
 
-void Mesh::UploadToVB(VertexBuffer * vb, int frame) 
+void Mesh::UploadToVB(VertexBuffer * vb, float frame) 
 {
    Vertex3D_NoTex2 *buf;
+   double intPart, fractpart;
+   int iFrame;
+   fractpart = modf(frame, &intPart);
+
+   iFrame = (int)intPart;
+
    vb->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
    if ( frame==-1 )
       memcpy(buf, &m_vertices[0], sizeof(Vertex3D_NoTex2)*m_vertices.size());
@@ -129,12 +135,24 @@ void Mesh::UploadToVB(VertexBuffer * vb, int frame)
    {
       for (unsigned int i = 0; i < m_vertices.size(); i++)
       {
-         m_vertices[i].x = m_animationFrames[frame].m_frameVerts[i].x;
-         m_vertices[i].y = m_animationFrames[frame].m_frameVerts[i].y;
-         m_vertices[i].z = m_animationFrames[frame].m_frameVerts[i].z;
-         m_vertices[i].nx = m_animationFrames[frame].m_frameVerts[i].nx;
-         m_vertices[i].ny = m_animationFrames[frame].m_frameVerts[i].ny;
-         m_vertices[i].nz = m_animationFrames[frame].m_frameVerts[i].nz;
+         float dx=0.0f, dy=0.0f, dz=0.0f;
+         float ndx=0.0f, ndy=0.0f, ndz=0.0f;
+
+         if (iFrame + 1 < (int)m_animationFrames.size())
+         {
+            dx = (float)((m_animationFrames[iFrame + 1].m_frameVerts[i].x - m_animationFrames[iFrame].m_frameVerts[i].x)*fractpart);
+            dy = (float)((m_animationFrames[iFrame + 1].m_frameVerts[i].y - m_animationFrames[iFrame].m_frameVerts[i].y)*fractpart);
+            dz = (float)((m_animationFrames[iFrame + 1].m_frameVerts[i].z - m_animationFrames[iFrame].m_frameVerts[i].z)*fractpart);
+            ndx = (float)((m_animationFrames[iFrame + 1].m_frameVerts[i].nx - m_animationFrames[iFrame].m_frameVerts[i].nx)*fractpart);
+            ndy = (float)((m_animationFrames[iFrame + 1].m_frameVerts[i].ny - m_animationFrames[iFrame].m_frameVerts[i].ny)*fractpart);
+            ndz = (float)((m_animationFrames[iFrame + 1].m_frameVerts[i].nz - m_animationFrames[iFrame].m_frameVerts[i].nz)*fractpart);
+         }
+         m_vertices[i].x = m_animationFrames[iFrame].m_frameVerts[i].x+dx;
+         m_vertices[i].y = m_animationFrames[iFrame].m_frameVerts[i].y+dy;
+         m_vertices[i].z = m_animationFrames[iFrame].m_frameVerts[i].z+dz;
+         m_vertices[i].nx = m_animationFrames[iFrame].m_frameVerts[i].nx+ndx;
+         m_vertices[i].ny = m_animationFrames[iFrame].m_frameVerts[i].ny+ndy;
+         m_vertices[i].nz = m_animationFrames[iFrame].m_frameVerts[i].nz+ndz;
          memcpy(buf, &m_vertices[0], sizeof(Vertex3D_NoTex2)*m_vertices.size());
       }
    }
@@ -1006,16 +1024,17 @@ void Primitive::RenderObject(RenderDevice *pd3dDevice)
       if (vertexBufferRegenerate)
       {
          m_mesh.UploadToVB(vertexBuffer, m_currentFrame);
-         if (m_currentFrame != -1 && m_DoAnimation)
+         if (m_currentFrame != -1.0f && m_DoAnimation)
          {
-            m_currentFrame++;
-            if (m_currentFrame >= m_mesh.m_animationFrames.size())
+            m_currentFrame+=m_speed;
+            if (m_currentFrame >= (float)m_mesh.m_animationFrames.size())
             {
                if (m_Endless)
-                  m_currentFrame = 0;
+                  m_currentFrame = 0.0f;
                else
                {
-                  m_currentFrame = m_mesh.m_animationFrames.size() - 1;
+                  m_currentFrame = (float)(m_mesh.m_animationFrames.size() - 1);
+                  m_DoAnimation = false;
                   vertexBufferRegenerate = false;
                }
             }
@@ -1490,6 +1509,12 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(M3VN))
    {
       pbr->GetInt(&numVertices);
+      if (m_mesh.m_animationFrames.size() > 0)
+      {
+         for (unsigned int i = 0; i < m_mesh.m_animationFrames.size(); i++)
+            m_mesh.m_animationFrames[i].m_frameVerts.clear();
+         m_mesh.m_animationFrames.clear();
+      }
    }
    else if (id == FID(M3DX))
    {
@@ -2841,11 +2866,19 @@ STDMETHODIMP Primitive::put_OverwritePhysics( VARIANT_BOOL newVal )
         return S_OK;
 }
 
-STDMETHODIMP Primitive::PlayAnim(int startFrame)
+STDMETHODIMP Primitive::PlayAnim(float startFrame, float speed)
 {
-   if (m_mesh.m_animationFrames.size() > 0)
+   int iFrame = (int)startFrame;
+   if (m_mesh.m_animationFrames.size() > 0 )
    {
+      if (startFrame >= m_mesh.m_animationFrames.size())
+         startFrame = 0.0f;
+      if (startFrame < 0.0f)
+         startFrame *= 1.0f;
+
       m_currentFrame = startFrame;
+      if (speed < 0.0f) speed *= -1.0f;
+      m_speed = speed;
       m_DoAnimation = true;
       m_Endless = false;
       vertexBufferRegenerate = true;
@@ -2853,11 +2886,13 @@ STDMETHODIMP Primitive::PlayAnim(int startFrame)
    return S_OK;
 }
 
-STDMETHODIMP Primitive::PlayAnimEndless()
+STDMETHODIMP Primitive::PlayAnimEndless(float speed)
 {
    if (m_mesh.m_animationFrames.size() > 0)
    {
-      m_currentFrame = 0;
+      m_currentFrame = 0.0f;
+      if (speed < 0.0f) speed *= -1.0f;
+      m_speed = speed;
       m_DoAnimation = true;
       m_Endless = true;
       vertexBufferRegenerate = true;
@@ -2871,19 +2906,24 @@ STDMETHODIMP Primitive::StopAnim()
    return S_OK;
 }
 
-STDMETHODIMP Primitive::ContinueAnim()
+STDMETHODIMP Primitive::ContinueAnim(float speed)
 {
-   if (m_currentFrame > 0)
+   if (m_currentFrame > 0.0f)
    {
+      if (speed < 0.0f) speed *= -1.0f;
+      m_speed = speed;
       m_DoAnimation = true;
       vertexBufferRegenerate = true;
    }
    return S_OK;
 }
 
-STDMETHODIMP Primitive::ShowFrame(int frame)
+STDMETHODIMP Primitive::ShowFrame(float frame)
 {
+   int iFrame = (int)frame;
    m_DoAnimation = false;
+   if (iFrame >= (int)m_mesh.m_animationFrames.size())
+      frame = (float)(m_mesh.m_animationFrames.size() - 1);
    m_currentFrame = frame;
    vertexBufferRegenerate = true;
    return S_OK;
