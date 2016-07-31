@@ -33,7 +33,7 @@ public:
 
    size_t NumVertices() const    { return m_vertices.size(); }
    size_t NumIndices() const     { return m_indices.size(); }
-   void UploadToVB(VertexBuffer * vb, int frame=-1);
+   void UploadToVB(VertexBuffer * vb, float frame=-1.0f);
 };
 
 // Indices for RotAndTra:
@@ -213,11 +213,11 @@ public:
    STDMETHOD( put_PhysicsMaterial )(/*[in]*/ BSTR newVal);
    STDMETHOD( get_OverwritePhysics )(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD( put_OverwritePhysics )(/*[in]*/ VARIANT_BOOL newVal);
-   STDMETHOD(PlayAnim)(int startFrame);
-   STDMETHOD(PlayAnimEndless)();
+   STDMETHOD(PlayAnim)(float startFrame, float speed);
+   STDMETHOD(PlayAnimEndless)(float speed);
    STDMETHOD(StopAnim)();
-   STDMETHOD(ContinueAnim)();
-   STDMETHOD(ShowFrame)(int frame);
+   STDMETHOD(ContinueAnim)(float speed);
+   STDMETHOD(ShowFrame)(float frame);
 
    Primitive();
    virtual ~Primitive();
@@ -289,7 +289,8 @@ public:
    int m_numGroupIndices;
    bool m_DoAnimation;
    bool m_Endless;
-   int m_currentFrame;
+   float m_currentFrame;
+   float m_speed;
 
 private:        // private member functions
 

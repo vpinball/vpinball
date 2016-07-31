@@ -507,11 +507,11 @@ Scatter(float)
 
 The following only applies to mesh primitives with an animation sequence
 ------------------------------------------------------------------------
-PlayAnim(int startFrame) - start playing the sequence from 'startFrame' till the end
-PlayAnimEndless()        - start playing the sequence in a loop
-StopAnim()               - stop the animation
-ContinueAnim()           - continue a stopped animation
-ShowFrame(int frameNr)   - show the mesh of the frame 'frameNr'
+PlayAnim(float startFrame, float speed) - start playing the sequence from 'startFrame' till the end with frame rate 'speed'
+PlayAnimEndless(float speed)            - start playing the sequence in a loop with frame rate 'speed'
+StopAnim()                              - stop the animation
+ContinueAnim(float speed)               - continue a stopped animation with frame rate 'speed'
+ShowFrame(float frameNr)                - show the mesh of the frame 'frameNr'. 'frameNr' can also be a fractional frame number like 1.23. VP will interpolate between subframes.
 
 RAMP
 ==============================================================================================================================================
