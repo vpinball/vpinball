@@ -6291,6 +6291,14 @@ void PinTable::AddMultiSel(ISelect *psel, bool fAdd, bool fUpdate, bool fContext
    piSelect = m_vmultisel.ElementAt(0);
    if (piSelect && piSelect->GetIEditable() && piSelect->GetIEditable()->GetScriptable())
    {
+      string info = string("Layer ") + to_string(piSelect->layerIndex+1);
+      if (piSelect->GetItemType() == eItemPrimitive)
+      {
+         Primitive *prim = (Primitive*)piSelect;
+         if (prim->m_mesh.m_animationFrames.size() > 0)
+            info = info + " (animated " + to_string(prim->m_mesh.m_animationFrames.size() - 1) + " frames)";
+      }
+      g_pvp->SetStatusBarElementInfo(info.c_str());
       m_pcv->SelectItem(piSelect->GetIEditable()->GetScriptable());
    }
 }
