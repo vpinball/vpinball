@@ -404,14 +404,14 @@ void VPinball::Init()
 
    CreateMDIClient();								// Create MDI Child
 
-   int foo[4] = { 120, 240, 400, 600 };
+   int foo[5] = { 120, 240, 400, 600, 800 };
 
    m_hwndStatusBar = CreateStatusWindow(WS_CHILD | WS_VISIBLE,
       "",
       m_hwnd,
       1);				// Create Status Line at the bottom
 
-   SendMessage(m_hwndStatusBar, SB_SETPARTS, 4, (size_t)foo);	// Initialise Status bar with 4 empty cells
+   SendMessage(m_hwndStatusBar, SB_SETPARTS, 5, (size_t)foo);	// Initialize Status bar with 5 empty cells
 
    InitRegValues();									// get default values from registry
 
@@ -748,6 +748,11 @@ void VPinball::SetCursorCur(HINSTANCE hInstance, LPCTSTR lpCursorName)
 void VPinball::SetActionCur(char *szaction)
 {
    SendMessage(m_hwndStatusBar, SB_SETTEXT, 3 | 0, (size_t)szaction);
+}
+
+void VPinball::SetStatusBarElementInfo(const char *info)
+{
+   SendMessage(m_hwndStatusBar, SB_SETTEXT, 4 | 0, (size_t)info);
 }
 
 void VPinball::SetPosCur(float x, float y)

@@ -146,7 +146,7 @@ public:
    static bool m_open_minimized;
 
    HMENU GetMainMenu(int id);
-
+   void SetStatusBarElementInfo(const char *info);
    bool m_fPropertiesFloating;
    Material dummyMaterial;
 
