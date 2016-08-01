@@ -121,38 +121,36 @@ void Mesh::SaveWavefrontObj(const char *fname, const char *description)
 
 void Mesh::UploadToVB(VertexBuffer * vb, float frame) 
 {
+   float intPart;
+   const float fractpart = modf(frame, &intPart);
+   const int iFrame = (int)intPart;
+
    Vertex3D_NoTex2 *buf;
-   double intPart, fractpart;
-   int iFrame;
-   fractpart = modf(frame, &intPart);
-
-   iFrame = (int)intPart;
-
    vb->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
+
    if ( frame==-1 )
       memcpy(buf, &m_vertices[0], sizeof(Vertex3D_NoTex2)*m_vertices.size());
    else
    {
       for (unsigned int i = 0; i < m_vertices.size(); i++)
       {
-         float dx=0.0f, dy=0.0f, dz=0.0f;
-         float ndx=0.0f, ndy=0.0f, ndz=0.0f;
+         m_vertices[i].x  = m_animationFrames[iFrame].m_frameVerts[i].x;
+         m_vertices[i].y  = m_animationFrames[iFrame].m_frameVerts[i].y;
+         m_vertices[i].z  = m_animationFrames[iFrame].m_frameVerts[i].z;
+         m_vertices[i].nx = m_animationFrames[iFrame].m_frameVerts[i].nx;
+         m_vertices[i].ny = m_animationFrames[iFrame].m_frameVerts[i].ny;
+         m_vertices[i].nz = m_animationFrames[iFrame].m_frameVerts[i].nz;
 
          if (iFrame + 1 < (int)m_animationFrames.size())
          {
-            dx = (float)((m_animationFrames[iFrame + 1].m_frameVerts[i].x - m_animationFrames[iFrame].m_frameVerts[i].x)*fractpart);
-            dy = (float)((m_animationFrames[iFrame + 1].m_frameVerts[i].y - m_animationFrames[iFrame].m_frameVerts[i].y)*fractpart);
-            dz = (float)((m_animationFrames[iFrame + 1].m_frameVerts[i].z - m_animationFrames[iFrame].m_frameVerts[i].z)*fractpart);
-            ndx = (float)((m_animationFrames[iFrame + 1].m_frameVerts[i].nx - m_animationFrames[iFrame].m_frameVerts[i].nx)*fractpart);
-            ndy = (float)((m_animationFrames[iFrame + 1].m_frameVerts[i].ny - m_animationFrames[iFrame].m_frameVerts[i].ny)*fractpart);
-            ndz = (float)((m_animationFrames[iFrame + 1].m_frameVerts[i].nz - m_animationFrames[iFrame].m_frameVerts[i].nz)*fractpart);
+            m_vertices[i].x  += (m_animationFrames[iFrame + 1].m_frameVerts[i].x  - m_vertices[i].x)*fractpart;
+            m_vertices[i].y  += (m_animationFrames[iFrame + 1].m_frameVerts[i].y  - m_vertices[i].y)*fractpart;
+            m_vertices[i].z  += (m_animationFrames[iFrame + 1].m_frameVerts[i].z  - m_vertices[i].z)*fractpart;
+            m_vertices[i].nx += (m_animationFrames[iFrame + 1].m_frameVerts[i].nx - m_vertices[i].nx)*fractpart;
+            m_vertices[i].ny += (m_animationFrames[iFrame + 1].m_frameVerts[i].ny - m_vertices[i].ny)*fractpart;
+            m_vertices[i].nz += (m_animationFrames[iFrame + 1].m_frameVerts[i].nz - m_vertices[i].nz)*fractpart;
          }
-         m_vertices[i].x = m_animationFrames[iFrame].m_frameVerts[i].x+dx;
-         m_vertices[i].y = m_animationFrames[iFrame].m_frameVerts[i].y+dy;
-         m_vertices[i].z = m_animationFrames[iFrame].m_frameVerts[i].z+dz;
-         m_vertices[i].nx = m_animationFrames[iFrame].m_frameVerts[i].nx+ndx;
-         m_vertices[i].ny = m_animationFrames[iFrame].m_frameVerts[i].ny+ndy;
-         m_vertices[i].nz = m_animationFrames[iFrame].m_frameVerts[i].nz+ndz;
+
          memcpy(buf, &m_vertices[0], sizeof(Vertex3D_NoTex2)*m_vertices.size());
       }
    }
