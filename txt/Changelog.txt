@@ -1,15 +1,16 @@
 VP 10.2.0 Changelog
 ------------------------
-- animation support for mesh primitives added: The animation sequence is based on multiple .obj files for each frame. Let's say we have an animation of 100 single frames then you have to export
-  each frame into a separate .obj file with the nameing format <meshname>_x.obj where x is the frame number. When importing a mesh check the "Import Animation sequence" in the import dialog and
-  select the .obj file of the first frame. VP will then load all other frames and when done with it will show you a short message box how many frames were imported.
-  Check the CommandReference.txt for the extra animation functions.
+
+- animation support for mesh primitives added: The animation sequence is based on multiple .obj files for each frame. Let's say we have an animation of 100 single frames, then you have to export
+  each frame into a separate .obj file with the nameing format <meshname>_x.obj where x is the frame number. When importing a mesh, check the "Import Animation sequence" in the import dialog and
+  select the .obj file of the first frame. VP will then load all other frames and, when done, will show you a short message box how many frames were imported.
+  Check the CommandReference.txt for the new primitive animation script functions.
 
 - bumper cap, base, ring, skirt can be set to invisible separately
 
-- separate material can be applied to the bumper ring
-
 - add one-way trigger mesh (TriggerWireC type)
+
+- changes to bumper material: add separate bumper ring material and don't use a built-in texture for the bumper base and skirt anymore
 
 - add physics settings per material to the material manager.
   Settings are: Friction, elasticity, elasticity falloff and scatter angle.
@@ -21,10 +22,14 @@ VP 10.2.0 Changelog
 
 - output table information if paused
 
+- start camera mode with 'F6'
+
+- texture size limit/downscale now respects aspect ratio.
+  Also delete outdated 512 max limit and introduce a new 3072 max limit.
+
 - new core scripts by mfuegemann and controller modifications by arngrim (see core.vbs for changelog)
 
 - DirectX 8 port for input handling (currently disabled)
-- texture size limit/downscale now respects aspect ratio (currently disabled)
 
 VP 10.1.0 Changelog
 ------------------------

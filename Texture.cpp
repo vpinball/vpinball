@@ -23,14 +23,12 @@ BaseTexture* BaseTexture::CreateFromFreeImage(FIBITMAP* dib)
       int newWidth = max(min(pictureWidth, maxTexDim), MIN_TEXTURE_SIZE);
       int newHeight = max(min(pictureHeight, maxTexDim), MIN_TEXTURE_SIZE);
       /*
-       * The following code tries to maintain the aspect ratio while resizing. This is
-       * however not really necessary and makes playfield textures more blurry than they
-       * need to be, so it's disabled for now.
+       * The following code tries to maintain the aspect ratio while resizing.
        */
-      //if (pictureWidth - newWidth > pictureHeight - newHeight)
-      //    newHeight = min(pictureHeight * newWidth / pictureWidth, maxTexDim);
-      //else
-      //    newWidth = min(pictureWidth * newHeight / pictureHeight, maxTexDim);
+      if (pictureWidth - newWidth > pictureHeight - newHeight)
+          newHeight = min(pictureHeight * newWidth / pictureWidth, maxTexDim);
+      else
+          newWidth = min(pictureWidth * newHeight / pictureHeight, maxTexDim);
       dibResized = FreeImage_Rescale(dib, newWidth, newHeight, FILTER_BILINEAR);
    }
    else if (pictureWidth < MIN_TEXTURE_SIZE || pictureHeight < MIN_TEXTURE_SIZE)

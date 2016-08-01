@@ -4304,7 +4304,7 @@ void ResetVideoPreferences(const HWND hwndDlg)
 
     hwndCheck = GetDlgItem(hwndDlg, IDC_10BIT_VIDEO);
     SendMessage(hwndCheck, BM_SETCHECK, false ? BST_CHECKED : BST_UNCHECKED, 0);
-    SendMessage(GetDlgItem(hwndDlg, IDC_Tex512), BM_SETCHECK, BST_UNCHECKED, 0);
+    SendMessage(GetDlgItem(hwndDlg, IDC_Tex3072), BM_SETCHECK, BST_UNCHECKED, 0);
     SendMessage(GetDlgItem(hwndDlg, IDC_Tex1024), BM_SETCHECK, BST_UNCHECKED, 0);
     SendMessage(GetDlgItem(hwndDlg, IDC_Tex2048), BM_SETCHECK, BST_UNCHECKED, 0);
     SendMessage(GetDlgItem(hwndDlg, IDC_TexUnlimited), BM_SETCHECK, BST_CHECKED, 0);
@@ -4454,8 +4454,9 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
          maxTexDim = 0; // default: Don't resize textures
       switch (maxTexDim)
       {
-      case 512:	SendMessage(GetDlgItem(hwndDlg, IDC_Tex512), BM_SETCHECK, BST_CHECKED, 0);
+      case 3072:SendMessage(GetDlgItem(hwndDlg, IDC_Tex3072), BM_SETCHECK, BST_CHECKED, 0);
          break;
+      case 512: // legacy, map to 1024 now
       case 1024:SendMessage(GetDlgItem(hwndDlg, IDC_Tex1024), BM_SETCHECK, BST_CHECKED, 0);
          break;
       case 2048:SendMessage(GetDlgItem(hwndDlg, IDC_Tex2048), BM_SETCHECK, BST_CHECKED, 0);
@@ -4780,13 +4781,13 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
             size_t video10bit = SendMessage(hwnd10bit, BM_GETCHECK, 0, 0);
             SetRegValue("Player", "Render10Bit", REG_DWORD, &video10bit, 4);
 
-            HWND maxTexDim512 = GetDlgItem(hwndDlg, IDC_Tex512);
+            HWND maxTexDim3072 = GetDlgItem(hwndDlg, IDC_Tex3072);
             HWND maxTexDim1024 = GetDlgItem(hwndDlg, IDC_Tex1024);
             HWND maxTexDim2048 = GetDlgItem(hwndDlg, IDC_Tex2048);
             //HWND maxTexDimUnlimited = GetDlgItem(hwndDlg, IDC_TexUnlimited);
             int maxTexDim = 0;
-            if (SendMessage(maxTexDim512, BM_GETCHECK, 0, 0) == BST_CHECKED)
-               maxTexDim = 512;
+            if (SendMessage(maxTexDim3072, BM_GETCHECK, 0, 0) == BST_CHECKED)
+               maxTexDim = 3072;
             if (SendMessage(maxTexDim1024, BM_GETCHECK, 0, 0) == BST_CHECKED)
                maxTexDim = 1024;
             if (SendMessage(maxTexDim2048, BM_GETCHECK, 0, 0) == BST_CHECKED)
