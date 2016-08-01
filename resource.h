@@ -504,7 +504,7 @@
 #define IDI_PAUSE                       370
 #define IDI_STEP                        371
 #define IDC_JOYDEADZONESLIDER           371
-#define IDC_Tex512                      373
+#define IDC_Tex3072                     373
 #define IDC_Tex1024                     374
 #define IDC_Tex2048                     375
 #define IDC_RADIO4                      376

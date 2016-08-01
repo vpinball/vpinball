@@ -3,8 +3,9 @@ Const VPinMAMEDriverVer = 3.51
 '=======================
 ' VPinMAME driver core.
 '=======================
-' New in 3.51 (Update by mfuegemann)
+' New in 3.51 (Update by mfuegemann & Arngrim)
 ' - gts1.vbs dip fix
+' - Controller.vbs now allows to have each toy to be set to 0 (sound effect), 1 (DOF) or 2 (both)
 '
 ' New in 3.50 (Update by Toxie & mfuegemann & Arngrim)
 ' - Added MAC.vbs & IronBalls.vbs & Lancelot.vbs & Antar.vbs
