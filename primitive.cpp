@@ -35,6 +35,7 @@ bool Mesh::LoadAnimation(const char *fname, const bool flipTV, const bool conver
    string name(fname);
    int frameCounter = 0;
    size_t idx = name.find_last_of("_");
+   std::vector<string> allFiles;
    if (idx == string::npos)
    {
       ShowError("Can't find sequence of obj files! The file name of the sequence must be <meshname>_x.obj where x is the frame number!");
@@ -48,13 +49,14 @@ bool Mesh::LoadAnimation(const char *fname, const bool flipTV, const bool conver
    {
       do
       {
+         allFiles.push_back(string(data.cFileName));
          frameCounter++;
       } while (FindNextFile(h, &data));
    }
    m_animationFrames.resize(frameCounter);
-   for (int i = 0; i < frameCounter; i++)
+   for (unsigned int i = 0; i < allFiles.size(); i++)
    {
-      sname = name + to_string(i) + ".obj";
+      sname = allFiles[i];
       if (WaveFrontObj_Load(sname.c_str(), flipTV, convertToLeftHanded))
       {
          std::vector<Vertex3D_NoTex2> verts;
