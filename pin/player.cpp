@@ -3855,46 +3855,55 @@ void Player::UpdateBackdropSettings(const bool up)
    case 0:
    {
       m_ptable->m_BG_inclination[m_ptable->m_BG_current_set] += thesign;
+      m_ptable->SetNonUndoableDirty(eSaveDirty);
       break;
    }
    case 1:
    {
       m_ptable->m_BG_FOV[m_ptable->m_BG_current_set] += thesign;
+      m_ptable->SetNonUndoableDirty(eSaveDirty);
       break;
    }
    case 2:
    {
       m_ptable->m_BG_layback[m_ptable->m_BG_current_set] += thesign;
+      m_ptable->SetNonUndoableDirty(eSaveDirty);
       break;
    }
    case 3:
    {
       m_ptable->m_BG_scalex[m_ptable->m_BG_current_set] += 0.01f*thesign;
+      m_ptable->SetNonUndoableDirty(eSaveDirty);
       break;
    }
    case 4:
    {
       m_ptable->m_BG_scaley[m_ptable->m_BG_current_set] += 0.01f*thesign;
+      m_ptable->SetNonUndoableDirty(eSaveDirty);
       break;
    }
    case 5:
    {
       m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] += 0.01f*thesign;
+      m_ptable->SetNonUndoableDirty(eSaveDirty);
       break;
    }
    case 6:
    {
       m_ptable->m_BG_xlatex[m_ptable->m_BG_current_set] += thesign;
+      m_ptable->SetNonUndoableDirty(eSaveDirty);
       break;
    }
    case 7:
    {
       m_ptable->m_BG_xlatey[m_ptable->m_BG_current_set] += thesign;
+      m_ptable->SetNonUndoableDirty(eSaveDirty);
       break;
    }
    case 8:
    {
       m_ptable->m_BG_xlatez[m_ptable->m_BG_current_set] += thesign;
+      m_ptable->SetNonUndoableDirty(eSaveDirty);
       break;
    }
    case 9:
@@ -3902,6 +3911,7 @@ void Player::UpdateBackdropSettings(const bool up)
       m_ptable->m_lightEmissionScale += thesign*100000.f;
       if (m_ptable->m_lightEmissionScale < 0.f)
          m_ptable->m_lightEmissionScale = 0.f;
+      m_ptable->SetNonUndoableDirty(eSaveDirty);
       break;
    }
    case 10:
@@ -3909,6 +3919,7 @@ void Player::UpdateBackdropSettings(const bool up)
       m_ptable->m_lightRange += thesign*1000.f;
       if (m_ptable->m_lightRange < 0.f)
          m_ptable->m_lightRange = 0.f;
+      m_ptable->SetNonUndoableDirty(eSaveDirty);
       break;
    }
    case 11:
@@ -3916,6 +3927,7 @@ void Player::UpdateBackdropSettings(const bool up)
       m_ptable->m_lightHeight += thesign*100.f;
       if (m_ptable->m_lightHeight < 100.f)
          m_ptable->m_lightHeight = 100.f;
+      m_ptable->SetNonUndoableDirty(eSaveDirty);
       break;
    }
    case 12:
@@ -3923,6 +3935,7 @@ void Player::UpdateBackdropSettings(const bool up)
       m_ptable->m_envEmissionScale += thesign;
       if (m_ptable->m_envEmissionScale < 0.f)
          m_ptable->m_envEmissionScale = 0.f;
+      m_ptable->SetNonUndoableDirty(eSaveDirty);
       break;
    }
    }
