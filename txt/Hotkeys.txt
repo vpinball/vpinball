@@ -4,6 +4,8 @@ Sound Manager               F2
 Image Manager               F3
 Material Manager            F4
 Play Table                  F5
+Play Table (with exchanged
+  DT/FS camera parameters)  Hold Shift/LeftFlipperButton during Table Start
 Collection Manager          F8
 New Table                   Ctrl + N
 Load Table                  Ctrl + L
@@ -40,3 +42,5 @@ Lock Element                Ctrl + Shift + L
 Function during Play        Key Combination
 ----------------------------------------------
 Toggle Stereo 3D            F10
+Toggle Engine Statistics    F11
+Immediate Exit to Windows   Hold 'ESC'

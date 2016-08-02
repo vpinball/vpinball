@@ -23,6 +23,7 @@ VP 10.2.0 Changelog
 - output table information if paused
 
 - start camera mode with 'F6'
+- for a quick Desktop(DT) vs Cabinet(FS) camera view testing: hold 'shift' or left flipper button during the table start to change between the default DT or FS camera
 
 - texture size limit/downscale now respects aspect ratio.
   Also delete outdated 512 max limit and introduce a new 3072 max limit.
