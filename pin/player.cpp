@@ -141,6 +141,8 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
    m_fNoTimeCorrect = false;
    m_firstFrame = true;
 
+   m_toogle_DTFS = false;
+
    m_fThrowBalls = false;
 #ifdef PLAYBACK
    m_fPlayback = fFalse;
@@ -485,6 +487,9 @@ Player::~Player()
 
 void Player::Shutdown()
 {
+   if(m_toogle_DTFS)
+       m_ptable->m_BG_current_set ^= 1;
+
    m_pininput.UnInit();
 
    SAFE_RELEASE(ballVertexBuffer);
@@ -1251,6 +1256,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
    //
    const unsigned int lflip = get_vk(m_rgKeys[eLeftFlipperKey]);
    const unsigned int rflip = get_vk(m_rgKeys[eRightFlipperKey]);
+
    if (((GetAsyncKeyState(VK_LSHIFT) & 0x8000) && (GetAsyncKeyState(VK_RSHIFT) & 0x8000))
       || ((lflip != ~0u) && (rflip != ~0u) && (GetAsyncKeyState(lflip) & 0x8000) && (GetAsyncKeyState(rflip) & 0x8000)))
    {
@@ -1267,6 +1273,17 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
    }
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE); // re-init/thrash cache entry due to the hacky nature of the table mirroring
    m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
+
+   // if left flipper or shift hold during load, then swap DT/FS view (for quick testing)
+   if (!m_ptable->m_tblMirrorEnabled &&
+       ((GetAsyncKeyState(VK_LSHIFT) & 0x8000)
+       || ((lflip != ~0u) && (GetAsyncKeyState(lflip) & 0x8000))))
+   {
+       m_toogle_DTFS = true;
+       m_ptable->m_BG_current_set ^= 1;
+   }
+   else
+       m_toogle_DTFS = false;
 
    //
 

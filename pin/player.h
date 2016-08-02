@@ -480,6 +480,8 @@ public:
 
    bool m_scaleFX_DMD;
 
+   bool m_toogle_DTFS;
+
    bool m_fStereo3DY;
    bool m_fOverwriteBallImages;
    Texture *m_ballImage;
