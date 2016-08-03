@@ -577,13 +577,49 @@ void WaveFrontObj_Save(const char *filename, const char *description, const Mesh
    fclose(f);
    return;
    */
-   f = WaveFrontObj_ExportStart(filename);
-   if (!f)
-      return;
-   fprintf_s(f, "# Visual Pinball OBJ file\n");
-   fprintf_s(f, "# numVerts: %u numFaces: %u\n", mesh.NumVertices(), mesh.NumIndices());
-   WaveFrontObj_WriteObjectName(f, description);
-   WaveFrontObj_WriteVertexInfo(f, mesh.m_vertices.data(), (unsigned int)mesh.m_vertices.size());
-   WaveFrontObj_WriteFaceInfoLong(f, mesh.m_indices);
-   WaveFrontObj_ExportEnd(f);
+   if(mesh.m_animationFrames.size() == 0)
+   {
+       f = WaveFrontObj_ExportStart( filename );
+       if(!f)
+           return;
+       fprintf_s( f, "# Visual Pinball OBJ file\n" );
+       fprintf_s( f, "# numVerts: %u numFaces: %u\n", mesh.NumVertices(), mesh.NumIndices() );
+       WaveFrontObj_WriteObjectName( f, description );
+       WaveFrontObj_WriteVertexInfo( f, mesh.m_vertices.data(), (unsigned int)mesh.m_vertices.size() );
+       WaveFrontObj_WriteFaceInfoLong( f, mesh.m_indices );
+       WaveFrontObj_ExportEnd( f );
+   }
+   else
+   {
+       string fname( filename );
+       std::size_t pos = fname.find_last_of( "." );
+       string name = fname.substr( 0, pos );
+       char number[32] = { 0 };
+       for(unsigned int i = 0; i < mesh.m_animationFrames.size(); i++)
+       {
+           std::vector<Vertex3D_NoTex2> verts = mesh.m_vertices;
+
+           for(unsigned int t = 0; t < mesh.NumVertices(); t++)
+           {
+               verts[t].x = mesh.m_animationFrames[i].m_frameVerts[t].x;
+               verts[t].y = mesh.m_animationFrames[i].m_frameVerts[t].y;
+               verts[t].z = mesh.m_animationFrames[i].m_frameVerts[t].z;
+               verts[t].nx = mesh.m_animationFrames[i].m_frameVerts[t].nx;
+               verts[t].ny = mesh.m_animationFrames[i].m_frameVerts[t].ny;
+               verts[t].nz = mesh.m_animationFrames[i].m_frameVerts[t].nz;
+           }
+           sprintf_s( number, "%05d", i );
+           fname = name + "_" + string(number)+".obj";
+           f = WaveFrontObj_ExportStart( fname.c_str() );
+           if(!f)
+               return;
+           fprintf_s( f, "# Visual Pinball OBJ file\n" );
+           fprintf_s( f, "# numVerts: %u numFaces: %u\n", mesh.NumVertices(), mesh.NumIndices() );
+           WaveFrontObj_WriteObjectName( f, description );
+           WaveFrontObj_WriteVertexInfo( f, verts.data(), (unsigned int)mesh.m_vertices.size() );
+           WaveFrontObj_WriteFaceInfoLong( f, mesh.m_indices );
+           WaveFrontObj_ExportEnd( f );
+
+       }
+   }
 }
