@@ -813,6 +813,7 @@
 #define IDB_BITMAP3                     613
 #define IDB_KICKER_CUP                  613
 #define IDR_POINTMENU_SMOOTH            614
+#define IDB_AO_DITHER                   615
 #define IDC_TRANSMISSION_SCALE          617
 #define IDC_EDGEALPHA_EDIT              618
 #define IDD_MESH_IMPORT_DIALOG          619
