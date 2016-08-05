@@ -1890,6 +1890,7 @@ void Player::InitStatic(HWND hwndProgress)
       m_pin3d.m_pd3dDevice->Clear(0, NULL, D3DCLEAR_TARGET, 0, 1.0f, 0L);
 
       m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture3", m_pin3d.m_pdds3DZBuffer);
+      m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture4", &m_pin3d.aoDitherTexture);
       const D3DXVECTOR4 ao_s_tb(m_ptable->m_AOScale, 0.1f, 0.f,0.f);
       m_pin3d.m_pd3dDevice->FBShader->SetVector("AO_scale_timeblur", &ao_s_tb);
       m_pin3d.m_pd3dDevice->FBShader->SetTechnique("AO");
@@ -3780,6 +3781,7 @@ void Player::FlipVideoBuffersAO(const bool vsync)
 
    m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture0", m_pin3d.m_pddsAOBackBuffer);
    //m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture1", m_pin3d.m_pd3dDevice->GetBackBufferTmpTexture()); // temporary normals
+   m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture4", &m_pin3d.aoDitherTexture);
    m_pin3d.m_pd3dDevice->FBShader->SetTexture("Texture3", m_pin3d.m_pdds3DZBuffer);
 
    const D3DXVECTOR4 w_h_height((float)(1.0 / (double)m_width), (float)(1.0 / (double)m_height),
