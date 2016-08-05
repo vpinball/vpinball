@@ -1,6 +1,7 @@
 //!! add reflection direction occlusion, so that that will be used for blocking reflection/envmap?
 //!! opt.?
 
+#if 0
 float2 hash(const float2 gridcell)
 {
 	/*const float3 o = float3(26.0, 161.0, 26.0);
@@ -15,6 +16,7 @@ float2 hash(const float2 gridcell)
 	return frac(float2(sin(dot(gridcell, float2(12.9898, 78.233) * 2.0)),
 	                   sin(dot(gridcell, float2(12.9898, 78.233)      ))) * 43758.5453);
 }
+#endif
 
 float3 get_nonunit_normal(const float depth0, const float2 u) // use neighboring pixels // quite some tex access by this
 {
@@ -138,7 +140,8 @@ float4 ps_main_ao(in VS_OUTPUT_2D IN) : COLOR
 	[branch] if((depth0 == 1.0) || (depth0 == 0.0)) //!! early out if depth too large (=BG) or too small (=DMD,etc -> retweak render options (depth write on), otherwise also screwup with stereo)
 		return float4(1.0, 0.,0.,0.);
 
-	const float2 ushift = hash(IN.tex0) + w_h_height.zw; // jitter samples via hash of position on screen and then jitter samples by time //!! see below for non-shifted variant
+	const float2 ushift = /*hash(IN.tex0) + w_h_height.zw*/ // jitter samples via hash of position on screen and then jitter samples by time //!! see below for non-shifted variant
+	                      tex2Dlod(texSamplerAOdither, float4(IN.tex0/(0.25*192.0*w_h_height.xy) + w_h_height.zw, 0.,0.)).xy; // use dither texture instead nowadays // 192 is the hardcoded dither texture size //!! 0.25 should not be there at all, why is this needed to scale to the texel???
 	//const float base = 0.0;
 	const float area = 0.06; //!!
 	const float falloff = 0.0002; //!!

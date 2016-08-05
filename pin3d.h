@@ -98,6 +98,7 @@ public:
 
    Texture pinballEnvTexture; // loaded from Resources
    Texture envTexture; // loaded from Resources
+   Texture aoDitherTexture; // loaded from Resources
 
    Texture* m_envTexture;
    BaseTexture* m_envRadianceTexture;

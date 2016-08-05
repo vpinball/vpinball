@@ -27,6 +27,8 @@ Pin3D::~Pin3D()
 
    envTexture.FreeStuff();
 
+   aoDitherTexture.FreeStuff();
+
    if (m_envRadianceTexture)
    {
       m_pd3dDevice->m_texMan.UnloadTexture(m_envRadianceTexture);
@@ -238,6 +240,8 @@ HRESULT Pin3D::InitPin3D(const HWND hwnd, const bool fullScreen, const int width
    pinballEnvTexture.CreateFromResource(IDB_BALL);
 
    //
+
+   aoDitherTexture.CreateFromResource(IDB_AO_DITHER);
 
    m_envTexture = g_pplayer->m_ptable->GetImage(g_pplayer->m_ptable->m_szEnvImage);
    envTexture.CreateFromResource(IDB_ENV);

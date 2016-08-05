@@ -11,7 +11,7 @@ float mirrorFactor;
 texture Texture0; // FB
 texture Texture1; // Bloom
 texture Texture3; // AO Result & DepthBuffer
-texture Texture4; // Color grade
+texture Texture4; // AO Dither & Color grade
 
 sampler2D texSampler3 : TEXUNIT2 = sampler_state // AO Result
 {
@@ -61,6 +61,16 @@ sampler2D texSampler6 : TEXUNIT2 = sampler_state // Color grade LUT
     MINFILTER = LINEAR;
 	ADDRESSU  = Clamp;
 	ADDRESSV  = Clamp;
+};
+
+sampler2D texSamplerAOdither : TEXUNIT3 = sampler_state // AO dither
+{
+	Texture = (Texture4);
+	MIPFILTER = NONE;
+	MAGFILTER = POINT;
+	MINFILTER = POINT;
+	ADDRESSU = Wrap;
+	ADDRESSV = Wrap;
 };
 
 sampler2D texSamplerBloom : TEXUNIT1 = sampler_state // Bloom
