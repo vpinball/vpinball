@@ -140,13 +140,13 @@ float4 ps_main_ao(in VS_OUTPUT_2D IN) : COLOR
 	[branch] if((depth0 == 1.0) || (depth0 == 0.0)) //!! early out if depth too large (=BG) or too small (=DMD,etc -> retweak render options (depth write on), otherwise also screwup with stereo)
 		return float4(1.0, 0.,0.,0.);
 
-	const float2 ushift = /*hash(IN.tex0) + w_h_height.zw*/ // jitter samples via hash of position on screen and then jitter samples by time //!! see below for non-shifted variant
-	                      tex2Dlod(texSamplerAOdither, float4(IN.tex0/(0.25*192.0*w_h_height.xy) + w_h_height.zw, 0.,0.)).xy; // use dither texture instead nowadays // 192 is the hardcoded dither texture size //!! 0.25 should not be there at all, why is this needed to scale to the texel???
+	const float3 ushift = /*hash(IN.tex0) + w_h_height.zw*/ // jitter samples via hash of position on screen and then jitter samples by time //!! see below for non-shifted variant
+	                      tex2Dlod(texSamplerAOdither, float4(IN.tex0/((0.25*192.0)*w_h_height.xy) + w_h_height.zw, 0.,0.)).xyz; // use dither texture instead nowadays // 192 is the hardcoded dither texture size //!! 0.25 should not be there at all, why is this needed to scale to the texel???
 	//const float base = 0.0;
 	const float area = 0.06; //!!
 	const float falloff = 0.0002; //!!
 	const int samples = 9; //4,8,9,13,21,25 korobov,fibonacci
-	const float radius = 0.001+frac(ushift.x+w_h_height.z*(float)(samples-1))*0.009; //!! sample radius (fully correlated with ushift obviously, meh!)
+	const float radius = 0.001+frac(ushift.z+w_h_height.z*(float)(samples-1))*0.009; // sample radius //!! w_h_height.z reused, but should not be that bad
 	const float depth_threshold_normal = 0.005;
 	const float total_strength = AO_scale_timeblur.x * (/*1.0 for uniform*/0.5 / samples);
 	const float3 normal = normalize(get_nonunit_normal(depth0, u));
@@ -156,8 +156,8 @@ float4 ps_main_ao(in VS_OUTPUT_2D IN) : COLOR
 	float occlusion = 0.0;
 	[unroll] for(int i=0; i < samples; ++i) {
 		const float2 r = float2(i*(1.0 / samples), i*(2.0 / samples)); //1,5,2,8,13,7 korobov,fibonacci //!! could also use progressive/extensible lattice via rad_inv(i)*(1501825329, 359975893) (check precision though as this should be done in double or uint64)
-		//const float3 ray = sphere_sample(frac(r+ushift)); // shift lattice // uniform variant
-		const float2 ray = rotate_to_vector_upper(cos_hemisphere_sample(frac(r+ushift)), normal).xy; // shift lattice
+		//const float3 ray = sphere_sample(frac(r+ushift.xy)); // shift lattice // uniform variant
+		const float2 ray = rotate_to_vector_upper(cos_hemisphere_sample(frac(r+ushift.xy)), normal).xy; // shift lattice
 		//const float rdotn = dot(ray,normal);
 		const float2 hemi_ray = u + (radius_depth /** sign(rdotn) for uniform*/) * ray.xy;
 		const float occ_depth = tex2Dlod(texSamplerDepth, float4(hemi_ray, 0.,0.)).x;
