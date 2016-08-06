@@ -6,18 +6,18 @@
 'It will also try to load the B2S.Server and if it is not present (or forced off),
 'just the standard VPinMAME.Controller is loaded for SS generation games, or no controller for EM ones.
 '
-'At the first launch of a table using Controller.vbs, it will launch a popup window to setup whether to use DOF, and if selected,
-'there will be additional options if one uses a certain type of toy, and to determine whether the sounds will be replaced by DOF calls (mostly for EM tables).
-'
-'Controller.vbs will also create a Controller.txt inside the user folder of VP, here an example of its content:
-'
-'ForceDisableB2S=0
-'UseDOFcontactors=1
-'UseDOFKnocker=1
-'UseDOFChimes=0
-'UseDOFBell=1
-'UseDOFGear=1
-'UseDOFShaker=1
+'At the first launch of a table using Controller.vbs, it will write into the registry with these default values
+'ForceDisableB2S = 0
+'DOFContactors   = 2
+'DOFKnocker      = 2
+'DOFChimes       = 2
+'DOFBell         = 2
+'DOFGear         = 2
+'DOFShaker       = 2
+'DOFFlippers     = 2
+'DOFTargets      = 2
+'DOFDropTargets  = 2
+
 '
 'Note that the value can be 0,1 or 2 (0 enables only digital sound, 1 only DOF and 2 both)
 '
@@ -101,8 +101,8 @@
 '  DOF(DOFevent, State)
 '
 
-
-Const ControllerFile = "Controller.txt"
+Const directory = "HKEY_CURRENT_USER\SOFTWARE\Visual Pinball\Controller\"
+Dim objShell
 Dim PopupMessage
 Dim B2SController
 Dim Controller
@@ -112,12 +112,14 @@ Const DOFChimes = 3
 Const DOFBell = 4
 Const DOFGear = 5
 Const DOFShaker = 6
-
+Const DOFFlippers = 7
+Const DOFTargets = 8
+Const DOFDropTargets = 9
 Const DOFOff = 0
 Const DOFOn = 1
 Const DOFPulse = 2
 
-Dim DOFeffects(6)
+Dim DOFeffects(7)
 Dim B2SOn
 Dim B2SOnALT
 
@@ -158,7 +160,7 @@ Sub LoadController(TableType)
 	Dim FileObj
 	Dim DOFConfig
 	Dim TextStr2
-	Dim tempc
+	Dim tempC
 	Dim count
 	Dim ISDOF
 	Dim Answer
@@ -166,58 +168,34 @@ Sub LoadController(TableType)
 	B2SOn = False
 	B2SOnALT = False
 	tempC = 0
-	
-    Set FileObj=CreateObject("Scripting.FileSystemObject")
-        If Not FileObj.FolderExists(UserDirectory) Then
-                FileObj.CreateFolder(UserDirectory)
-        End If
-	If Not FileObj.FileExists(UserDirectory & ControllerFile) Then
-		PopupMessage = "A new file, " & ControllerFile & ", has been created in your User folder within your VP Directory. It defines the controller type that VP will use (value 0 is default). "
-		PopupMessage = PopupMessage & "This will select B2S for loading, or the VPinMAME.Controller (if B2S fails), or no controller (for EM tables). "
-		PopupMessage = PopupMessage & "Changing the value of ForceDisableB2S to 1 in this file will force loading the VPinMAME.Controller, or no controller (for EM tables). "
-		ISDOF = msgBox("Are you using DOF?" & vbCrLf & vbCrLf & "(If unsure say No)" & vbCrLf & vbCrLf & "This is a question situation with Yes or No only",4+32, "Question?")
-		Select Case ISDOF
-		Case 6		
-			YesNoPrompt "Are you using contactors?", 1
-			YesNoPrompt "Are you using a knocker?", 2
-			YesNoPrompt "Are you using chimes?", 3
-			YesNoPrompt "Are you using a bell?", 4
-			YesNoPrompt "Are you using a gear?", 5
-			YesNoPrompt "Are you using a shaker?", 6
-			PopupMessage = PopupMessage & "DOF lines added based on your answers, a 0 plays the respective sound, a 1 only uses the DOF toy instead. "
-        Case 7
-			DOFeffects(1) = 0 'contactors
-			DOFeffects(2) = 0 'knocker
-			DOFeffects(3) = 0 'chimes
-			DOFeffects(4) = 0 'bell
-			DOFeffects(5) = 0 'gear
-			DOFeffects(6) = 0 'shaker
-		End Select
-		Set DOFConfig=FileObj.CreateTextFile(UserDirectory & ControllerFile)
-		DOFConfig.WriteLine "ForceDisableB2S=" & tempC
-		DOFConfig.WriteLine "UseDOFcontactors=" & DOFeffects(1)
-		DOFConfig.WriteLine "UseDOFKnocker=" & DOFeffects(2)
-		DOFConfig.WriteLine "UseDOFChimes=" & DOFeffects(3)
-		DOFConfig.WriteLine "UseDOFBell=" & DOFeffects(4)
-		DOFConfig.WriteLine "UseDOFGear=" & DOFeffects(5)
-		DOFConfig.WriteLine "UseDOFShaker=" & DOFeffects(6)
-		DOFConfig.Close
+	on error resume next
+	Set objShell = CreateObject("WScript.Shell")
+	objShell.RegRead(directory & "ForceDisableB2S")
+	If Err.number <> 0 Then
+		PopupMessage = "This latest version of Controller.vbs stores the values in the registry. To adjust the values, you must use VP 10.2, and go to the Controller Menu on the Preferences Tab of the VP editor"
+		objShell.RegWrite directory & "ForceDisableB2S",0, "REG_DWORD"
+		objShell.RegWrite directory & "DOFContactors",2, "REG_DWORD"
+		objShell.RegWrite directory & "DOFKnocker",2, "REG_DWORD"
+		objShell.RegWrite directory & "DOFChimes",2, "REG_DWORD"
+		objShell.RegWrite directory & "DOFBell",2, "REG_DWORD"
+		objShell.RegWrite directory & "DOFGear",2, "REG_DWORD"
+		objShell.RegWrite directory & "DOFShaker",2, "REG_DWORD"
+		objShell.RegWrite directory & "DOFFlippers",2, "REG_DWORD"
+		objShell.RegWrite directory & "DOFTargets",2, "REG_DWORD"
+		objShell.RegWrite directory & "DOFDropTargets",2, "REG_DWORD"
 		MsgBox PopupMessage
-	Else
-		Set DOFConfig=FileObj.GetFile(UserDirectory & ControllerFile)
-		Set TextStr2=DOFConfig.OpenAsTextStream(1,0)
-		If (TextStr2.AtEndOfStream=False) Then
-			count = 0
-			Do Until TextStr2.AtEndOfStream
-				If count=0 Then
-					tempC=(right(TextStr2.ReadLine,1))
-				Else
-					DOFeffects(count)=(right(TextStr2.ReadLine,1))
-				End If
-				count = count + 1
-			Loop
-		End If
 	End If
+	tempC = objShell.RegRead(directory & "ForceDisableB2S")
+	DOFeffects(1)=objShell.RegRead(directory & "DOFContactors")
+	DOFeffects(2)=objShell.RegRead(directory & "DOFKnocker")
+	DOFeffects(3)=objShell.RegRead(directory & "DOFChimes")
+	DOFeffects(4)=objShell.RegRead(directory & "DOFBell")
+	DOFeffects(5)=objShell.RegRead(directory & "DOFGear")
+	DOFeffects(6)=objShell.RegRead(directory & "DOFShaker")
+	DOFeffects(7)=objShell.RegRead(directory & "DOFFlippers")
+	DOFeffects(8)=objShell.RegRead(directory & "DOFTargets")
+	DOFeffects(9)=objShell.RegRead(directory & "DOFDropTargets")
+	Set objShell = nothing
 
 	If TableType = "PROC" Then
 		Set Controller = CreateObject("VPROC.Controller")
