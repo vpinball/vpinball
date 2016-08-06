@@ -5,8 +5,11 @@ Const VPinMAMEDriverVer = 3.51
 '=======================
 ' New in 3.51 (Update by mfuegemann & Arngrim)
 ' - gts1.vbs dip fix
-' - Controller.vbs now allows to have each toy to be set to 0 (sound effect), 1 (DOF) or 2 (both)
 ' - Add comments to cvpmDropTarget.CreateEvents: do not use this anymore in VP10 and above, as drop targets have an animation time nowadays
+' - (Controller.vbs changes)
+'   - now its allowed to have each toy to be set to 0 (sound effect), 1 (DOF) or 2 (both)
+'   - new DOF types: DOFFlippers, DOFTargets, DOFDropTargets
+'   - all values are now stored in the registry (HKEY_CURRENT_USER\SOFTWARE\Visual Pinball\Controller\)
 '
 ' New in 3.50 (Update by Toxie & mfuegemann & Arngrim)
 ' - Added MAC.vbs & IronBalls.vbs & Lancelot.vbs & Antar.vbs
