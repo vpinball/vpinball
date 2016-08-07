@@ -1,4 +1,5 @@
 #include "StdAfx.h"
+#include "objloader.h"
 #include "meshes/spinnerBracketMesh.h"
 #include "meshes/spinnerPlateMesh.h"
 
@@ -258,10 +259,75 @@ void Spinner::EndPlay()
    }
 }
 
-void Spinner::UpdatePlate(RenderDevice *pd3dDevice)
+void Spinner::ExportMesh(FILE *f)
+{
+   char name[MAX_PATH];
+   char subObjName[MAX_PATH];
+   WideCharToMultiByte(CP_ACP, 0, m_wzName, -1, name, MAX_PATH, NULL, NULL);
+   std::vector<Vertex3D_NoTex2> transformedVertices;
+   Vector<HitObject> dummyHitObj;
+
+   const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y)*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+   m_posZ = height + m_d.m_height;
+
+   GetHitShapes(&dummyHitObj);
+
+   if (m_d.m_fShowBracket)
+   {
+      strcpy_s(subObjName, name);
+      strcat_s(subObjName, "Bracket");
+      WaveFrontObj_WriteObjectName(f, subObjName);
+
+      fullMatrix.RotateZMatrix(ANGTORAD(m_d.m_rotation));
+
+      transformedVertices.resize(spinnerBracketNumVertices);
+
+      for (int i = 0; i < spinnerBracketNumVertices; i++)
+      {
+         Vertex3Ds vert(spinnerBracket[i].x, spinnerBracket[i].y, spinnerBracket[i].z);
+         vert = fullMatrix.MultiplyVector(vert);
+         transformedVertices[i].x = vert.x*m_d.m_length + m_d.m_vCenter.x;
+         transformedVertices[i].y = vert.y*m_d.m_length + m_d.m_vCenter.y;
+         transformedVertices[i].z = vert.z*m_d.m_length*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_posZ;
+
+         vert = Vertex3Ds(spinnerBracket[i].nx, spinnerBracket[i].ny, spinnerBracket[i].nz);
+         vert = fullMatrix.MultiplyVectorNoTranslate(vert);
+         transformedVertices[i].nx = vert.x;
+         transformedVertices[i].ny = vert.y;
+         transformedVertices[i].nz = vert.z;
+
+         transformedVertices[i].tu = spinnerBracket[i].tu;
+         transformedVertices[i].tv = spinnerBracket[i].tv;
+      }
+      WaveFrontObj_WriteVertexInfo(f, &transformedVertices[0], spinnerBracketNumVertices);
+
+      const Material * mat = m_ptable->GetMaterial(m_d.m_szMaterial);
+      WaveFrontObj_WriteMaterial(m_d.m_szMaterial, NULL, mat);
+      WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
+      WaveFrontObj_WriteFaceInfoList(f, spinnerBracketIndices, spinnerBracketNumFaces);
+      WaveFrontObj_UpdateFaceOffset(spinnerBracketNumVertices);
+
+      transformedVertices.clear();
+   }
+
+   transformedVertices.resize(spinnerPlateNumVertices);
+   vertexBuffer_spinneranimangle = -FLT_MAX;
+   UpdatePlate(NULL, &transformedVertices[0]);
+
+   strcpy_s(subObjName, name);
+   strcat_s(subObjName, "Plate");
+   WaveFrontObj_WriteObjectName(f, subObjName);
+
+   WaveFrontObj_WriteVertexInfo(f, &transformedVertices[0], spinnerPlateNumVertices);
+   WaveFrontObj_WriteFaceInfoList(f, &spinnerPlateIndices[0], spinnerPlateNumFaces);
+   WaveFrontObj_UpdateFaceOffset(spinnerPlateNumVertices);
+   transformedVertices.clear();
+}
+
+void Spinner::UpdatePlate(RenderDevice *pd3dDevice, Vertex3D_NoTex2 *vertBuffer)
 {
    // early out in case still same rotation
-   if(m_phitspinner->m_spinneranim.m_angle == vertexBuffer_spinneranimangle)
+   if( m_phitspinner->m_spinneranim.m_angle == vertexBuffer_spinneranimangle)
        return;
 
    vertexBuffer_spinneranimangle = m_phitspinner->m_spinneranim.m_angle;
@@ -276,7 +342,11 @@ void Spinner::UpdatePlate(RenderDevice *pd3dDevice)
    rotzMat.Multiply(_fullMatrix, _fullMatrix);
 
    Vertex3D_NoTex2 *buf;
-   plateVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
+   if (pd3dDevice != NULL && vertBuffer == NULL)
+      plateVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
+   else
+      buf = vertBuffer;
+
    for (int i = 0; i < spinnerPlateNumVertices; i++)
    {
       Vertex3Ds vert(spinnerPlate[i].x, spinnerPlate[i].y, spinnerPlate[i].z);
@@ -294,7 +364,8 @@ void Spinner::UpdatePlate(RenderDevice *pd3dDevice)
       buf[i].tu = spinnerPlate[i].tu;
       buf[i].tv = spinnerPlate[i].tv;
    }
-   plateVertexBuffer->unlock();
+   if ( pd3dDevice!=NULL && vertBuffer==NULL)
+      plateVertexBuffer->unlock();
 }
 
 void Spinner::PostRenderStatic(RenderDevice* pd3dDevice)
