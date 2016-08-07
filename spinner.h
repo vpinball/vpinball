@@ -86,9 +86,10 @@ public:
 
    virtual unsigned long long GetMaterialID() { return m_ptable->GetMaterial(m_d.m_szMaterial)->hash(); }
    virtual unsigned long long GetImageID() { return (unsigned long long)(m_ptable->GetImage(m_d.m_szImage)); }
+   virtual void ExportMesh(FILE *f);
 
    void WriteRegDefaults();
-   void UpdatePlate(RenderDevice *pd3dDevice);
+   void UpdatePlate(RenderDevice *pd3dDevice, Vertex3D_NoTex2 *vertBuffer=NULL);
 
    PinTable *m_ptable;
 
