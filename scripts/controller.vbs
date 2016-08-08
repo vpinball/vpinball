@@ -118,7 +118,7 @@ Const DOFOff = 0
 Const DOFOn = 1
 Const DOFPulse = 2
 
-Dim DOFeffects(7)
+Dim DOFeffects(10)
 Dim B2SOn
 Dim B2SOnALT
 
