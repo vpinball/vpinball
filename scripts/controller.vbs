@@ -1,4 +1,4 @@
-'***Controller.vbs version 1.0***'
+'***Controller.vbs version 1.1***'
 '
 'by arngrim
 '
@@ -20,7 +20,7 @@
 '
 'Note that the value can be 0,1 or 2 (0 enables only digital sound, 1 only DOF and 2 both)
 '
-'If B2S.Server is setup but one doesn't want to use it, one should change the first line to ForceDisableB2S=1
+'If B2S.Server is setup but one doesn't want to use it, one should change the registry entry for ForceDisableB2S to 1
 '
 '
 'Table script usage:
@@ -151,9 +151,8 @@ Sub LoadVPinMAME
 	On Error Goto 0
 End Sub
 
-'Check if Controller.txt exists, if not it creates it and adds ForceDisableB2S= with value 0,
-'e.g. try to load b2s.server and if not possible, load VPinMAME.Controller instead.
-'The user can put a value of 1, which will force to load VPinMAME or no controller for EM tables.
+'Try to load b2s.server and if not possible, load VPinMAME.Controller instead.
+'The user can put a value of 1 for ForceDisableB2S, which will force to load VPinMAME or no controller for EM tables.
 'Also defines the array of toy categories that will either play the sound or trigger the DOF effect.
 Sub LoadController(TableType)
 	Dim FileObj
@@ -242,15 +241,6 @@ Sub LoadController(TableType)
 		Set FileObj=Nothing
 	End If
 End sub
-
-Sub YesNoPrompt(question,count)
-	Answer = MsgBox(question,vbYesNo, "Confirm")
-	If Answer = vbYes Then	
-		DOFeffects(count) = 1
-	Else 
-		DOFeffects(count) = 0
-	End If
-End Sub
 
 'Additional DOF sound vs toy/effect helpers:
 
