@@ -28,6 +28,7 @@ VP 10.2.0 Changelog
 - texture size limit/downscale now respects aspect ratio.
   Also delete outdated 512 max limit and introduce a new 3072 max limit.
 
+- add DOF controller configuration also to the VP keys dialog
 - new core scripts by mfuegemann and controller modifications by arngrim (see core.vbs for changelog)
 
 - DirectX 8 port for input handling (currently disabled)
