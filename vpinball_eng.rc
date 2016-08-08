@@ -14,7 +14,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Englisch (USA) resources
+// English (United States) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
@@ -357,10 +357,10 @@ BEGIN
     CONTROL         "Force exclusive Fullscreen Mode (less compatible)",IDC_FULLSCREEN,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,252,177,10
     CONTROL         "Force 10Bit-Monitor support",IDC_10BIT_VIDEO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,262,127,10
-    CONTROL         "Unlimited", IDC_TexUnlimited, "Button", BS_AUTORADIOBUTTON, 166, 290, 45, 10
-    CONTROL         "3072", IDC_Tex3072, "Button", BS_AUTORADIOBUTTON | WS_GROUP, 215, 290, 28, 10
-    CONTROL         "2048", IDC_Tex2048, "Button", BS_AUTORADIOBUTTON, 255, 290, 32, 10
-    CONTROL         "1024", IDC_Tex1024, "Button", BS_AUTORADIOBUTTON, 294, 290, 32, 10
+    CONTROL         "Unlimited",IDC_TexUnlimited,"Button",BS_AUTORADIOBUTTON,166,290,45,10
+    CONTROL         "3072",IDC_Tex3072,"Button",BS_AUTORADIOBUTTON | WS_GROUP,215,290,28,10
+    CONTROL         "2048",IDC_Tex2048,"Button",BS_AUTORADIOBUTTON,255,290,32,10
+    CONTROL         "1024",IDC_Tex1024,"Button",BS_AUTORADIOBUTTON,294,290,32,10
     CONTROL         "",IDC_ARASlider,"msctls_trackbar32",TBS_AUTOTICKS | TBS_TOP | WS_TABSTOP,155,323,191,20
     PUSHBUTTON      "Reset to Defaults",IDC_DEFAULTS,154,360,63,14
     DEFPUSHBUTTON   "OK",IDOK,240,360,50,14
@@ -392,9 +392,9 @@ BEGIN
     PUSHBUTTON      "&Rename",IDC_RENAME,259,97,50,14,WS_DISABLED
 END
 
-IDD_KEYS DIALOGEX 0, 0, 502, 268
+IDD_KEYS DIALOGEX 0, 0, 627, 270
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Keys"
+CAPTION "Keys, Nudge and DOF"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     GROUPBOX        "Button Assignments",IDC_STATIC,7,7,242,254
@@ -532,8 +532,8 @@ BEGIN
     EDITTEXT        IDC_GLOBALTILT,314,206,20,13,ES_RIGHT | ES_AUTOHSCROLL
     CONTROL         "Accelerometer Rotation",IDC_CBGLOBALROTATION,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,380,207,90,10
     EDITTEXT        IDC_GLOBALROTATION,470,206,20,13,ES_RIGHT | ES_AUTOHSCROLL
-    PUSHBUTTON      "OK",IDOK,412,246,40,14
-    PUSHBUTTON      "Cancel",IDCANCEL,455,246,40,14
+    PUSHBUTTON      "OK",IDOK,536,246,40,14
+    PUSHBUTTON      "Cancel",IDCANCEL,579,246,40,14
     CONTROL         "Disable ESC key",IDC_DisableESC_CB,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,113,215,68,10
     GROUPBOX        "",IDC_STATIC,262,106,128,21
     GROUPBOX        "",IDC_STATIC,262,124,128,21
@@ -541,6 +541,25 @@ BEGIN
     LTEXT           "* To assign Custom Keys to Gamepad Buttons, click on the button and select desired key, then choose desired gamepad button from dropdown box.",IDC_STATIC,13,230,168,25
     CONTROL         "Enable Mouse during Play",IDC_ENABLE_MOUSE_PLAYER,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,257,227,100,10
+    GROUPBOX        "DOF Controller Options",IDC_STATIC,500,7,120,191
+    CTEXT           "Contactors",IDC_STATIC,505,17,50,14,0,WS_EX_DLGMODALFRAME
+    COMBOBOX        IDC_DOF_CONTACTORS,505,32,50,100,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
+    CTEXT           "Knocker",IDC_STATIC,565,17,50,14,0,WS_EX_DLGMODALFRAME
+    COMBOBOX        IDC_DOF_KNOCKER,565,32,50,100,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
+    CTEXT           "Chimes",IDC_STATIC,505,54,50,14,0,WS_EX_DLGMODALFRAME
+    COMBOBOX        IDC_DOF_CHIMES,505,69,50,100,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
+    CTEXT           "Bell",IDC_STATIC,565,54,50,14,0,WS_EX_DLGMODALFRAME
+    COMBOBOX        IDC_DOF_BELL,565,69,50,100,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
+    CTEXT           "Gear",IDC_STATIC,505,91,50,14,0,WS_EX_DLGMODALFRAME
+    COMBOBOX        IDC_DOF_GEAR,505,106,50,100,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
+    CTEXT           "Shaker",IDC_STATIC,565,91,50,14,0,WS_EX_DLGMODALFRAME
+    COMBOBOX        IDC_DOF_SHAKER,565,106,50,100,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
+    CTEXT           "Flippers",IDC_STATIC,505,128,50,14,0,WS_EX_DLGMODALFRAME
+    COMBOBOX        IDC_DOF_FLIPPERS,505,142,50,100,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
+    CTEXT           "Targets",IDC_STATIC,565,128,50,14,0,WS_EX_DLGMODALFRAME
+    COMBOBOX        IDC_DOF_TARGETS,565,142,50,100,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
+    CTEXT           "Drop Targets",IDC_STATIC,505,165,50,14,0,WS_EX_DLGMODALFRAME
+    COMBOBOX        IDC_DOF_DROPTARGETS,505,180,50,100,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
 END
 
 IDD_TRANSLATE DIALOGEX 0, 0, 186, 97
@@ -2174,6 +2193,7 @@ BEGIN
 
     IDD_KEYS, DIALOG
     BEGIN
+        BOTTOMMARGIN, 269
     END
 
     IDD_TRANSLATE, DIALOG
@@ -2603,7 +2623,7 @@ BEGIN
     BEGIN
         MENUITEM "&Audio Options...",           ID_EDIT_AUDIOOPTIONS
         MENUITEM "&Editor Options...",          ID_EDIT_EDITOROPTIONS
-        MENUITEM "&Keys...",                    ID_EDIT_KEYS
+        MENUITEM "&Keys, Nudge and DOF...",     ID_EDIT_KEYS
         MENUITEM "&Security Options...",        ID_PREFERENCES_SECURITYOPTIONS
         MENUITEM "&Video Options...",           ID_EDIT_VIDEOOPTIONS
         MENUITEM "&Physics Options...",         ID_EDIT_PHYSICSOPTIONS
@@ -2709,6 +2729,7 @@ IDB_RINGENVMAP          BITMAP                  "res\\ringenvmap.bmp"
 IDB_BUMPERCAP           BITMAP                  "res\\bumperCap.bmp"
 IDB_KICKER_HOLE_WOOD    BITMAP                  "res\\kickerHoleWood.bmp"
 IDB_KICKER_CUP          BITMAP                  "res\\kickerCup.bmp"
+IDB_AO_DITHER           BITMAP                  "res\\AOdither.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -2985,7 +3006,7 @@ BEGIN
     IDS_STEP                "Step"
 END
 
-#endif    // Englisch (USA) resources
+#endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

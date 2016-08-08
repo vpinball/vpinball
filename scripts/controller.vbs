@@ -17,7 +17,6 @@
 'DOFFlippers     = 2
 'DOFTargets      = 2
 'DOFDropTargets  = 2
-
 '
 'Note that the value can be 0,1 or 2 (0 enables only digital sound, 1 only DOF and 2 both)
 '

@@ -1,6 +1,7 @@
 #include "StdAfx.h"
 
-#define VP_REGKEY  "Software\\Visual Pinball\\VP10\\"
+#define VP_REGKEY_GENERAL "Software\\Visual Pinball\\"
+#define VP_REGKEY "Software\\Visual Pinball\\VP10\\"
 
 HRESULT GetRegString(const char *szKey, const char *szValue, void *szbuffer, DWORD size)
 {
@@ -98,7 +99,10 @@ bool GetRegBoolWithDefault(const char *szKey, const char *szValue, bool def)
 HRESULT SetRegValue(const char *szKey, const char *szValue, DWORD type, const void *pvalue, DWORD size)
 {
    char szPath[1024];
-   lstrcpy(szPath, VP_REGKEY);
+   if (strcmp(szKey, "Controller") == 0)
+      lstrcpy(szPath, VP_REGKEY_GENERAL);
+   else
+      lstrcpy(szPath, VP_REGKEY);
    lstrcat(szPath, szKey);
 
    HKEY hk;
