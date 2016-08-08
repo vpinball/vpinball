@@ -6522,41 +6522,116 @@ INT_PTR CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
          if (hr != S_OK)
             selected = 0; // assume no assignment as standard
 
-         SendMessage(GetDlgItem(hwndDlg, item), CB_ADDSTRING, 0, (LPARAM)" (none)");
-         SendMessage(GetDlgItem(hwndDlg, item), CB_ADDSTRING, 0, (LPARAM)"Button 1");
-         SendMessage(GetDlgItem(hwndDlg, item), CB_ADDSTRING, 0, (LPARAM)"Button 2");
-         SendMessage(GetDlgItem(hwndDlg, item), CB_ADDSTRING, 0, (LPARAM)"Button 3");
-         SendMessage(GetDlgItem(hwndDlg, item), CB_ADDSTRING, 0, (LPARAM)"Button 4");
-         SendMessage(GetDlgItem(hwndDlg, item), CB_ADDSTRING, 0, (LPARAM)"Button 5");
-         SendMessage(GetDlgItem(hwndDlg, item), CB_ADDSTRING, 0, (LPARAM)"Button 6");
-         SendMessage(GetDlgItem(hwndDlg, item), CB_ADDSTRING, 0, (LPARAM)"Button 7");
-         SendMessage(GetDlgItem(hwndDlg, item), CB_ADDSTRING, 0, (LPARAM)"Button 8");
-         SendMessage(GetDlgItem(hwndDlg, item), CB_ADDSTRING, 0, (LPARAM)"Button 9");
-         SendMessage(GetDlgItem(hwndDlg, item), CB_ADDSTRING, 0, (LPARAM)"Button 10");
-         SendMessage(GetDlgItem(hwndDlg, item), CB_ADDSTRING, 0, (LPARAM)"Button 11");
-         SendMessage(GetDlgItem(hwndDlg, item), CB_ADDSTRING, 0, (LPARAM)"Button 12");
-         SendMessage(GetDlgItem(hwndDlg, item), CB_ADDSTRING, 0, (LPARAM)"Button 13");
-         SendMessage(GetDlgItem(hwndDlg, item), CB_ADDSTRING, 0, (LPARAM)"Button 14");
-         SendMessage(GetDlgItem(hwndDlg, item), CB_ADDSTRING, 0, (LPARAM)"Button 15");
-         SendMessage(GetDlgItem(hwndDlg, item), CB_ADDSTRING, 0, (LPARAM)"Button 16");
-         SendMessage(GetDlgItem(hwndDlg, item), CB_ADDSTRING, 0, (LPARAM)"Button 17");
-         SendMessage(GetDlgItem(hwndDlg, item), CB_ADDSTRING, 0, (LPARAM)"Button 18");
-         SendMessage(GetDlgItem(hwndDlg, item), CB_ADDSTRING, 0, (LPARAM)"Button 19");
-         SendMessage(GetDlgItem(hwndDlg, item), CB_ADDSTRING, 0, (LPARAM)"Button 20");
-         SendMessage(GetDlgItem(hwndDlg, item), CB_ADDSTRING, 0, (LPARAM)"Button 21");
-         SendMessage(GetDlgItem(hwndDlg, item), CB_ADDSTRING, 0, (LPARAM)"Button 22");
-         SendMessage(GetDlgItem(hwndDlg, item), CB_ADDSTRING, 0, (LPARAM)"Button 23");
-         SendMessage(GetDlgItem(hwndDlg, item), CB_ADDSTRING, 0, (LPARAM)"Button 24");
+		 const HWND hwnd = GetDlgItem(hwndDlg, item);
+         SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)" (none)");
+		 SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Button 1");
+		 SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Button 2");
+		 SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Button 3");
+		 SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Button 4");
+		 SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Button 5");
+		 SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Button 6");
+		 SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Button 7");
+		 SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Button 8");
+		 SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Button 9");
+		 SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Button 10");
+		 SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Button 11");
+		 SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Button 12");
+		 SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Button 13");
+		 SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Button 14");
+		 SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Button 15");
+		 SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Button 16");
+		 SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Button 17");
+		 SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Button 18");
+		 SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Button 19");
+		 SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Button 20");
+		 SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Button 21");
+		 SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Button 22");
+		 SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Button 23");
+		 SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Button 24");
          if (item == IDC_JOYLFLIPCOMBO || item == IDC_JOYRFLIPCOMBO || item == IDC_JOYPLUNGERCOMBO)
          {
-            SendMessage(GetDlgItem(hwndDlg, item), CB_ADDSTRING, 0, (LPARAM)"Left Mouse");
-            SendMessage(GetDlgItem(hwndDlg, item), CB_ADDSTRING, 0, (LPARAM)"Right Mouse");
-            SendMessage(GetDlgItem(hwndDlg, item), CB_ADDSTRING, 0, (LPARAM)"Middle Mouse");
+			 SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Left Mouse");
+			 SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Right Mouse");
+			 SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Middle Mouse");
          }
-         SendMessage(GetDlgItem(hwndDlg, item), CB_SETCURSEL, selected, 0);
+		 SendMessage(hwnd, CB_SETCURSEL, selected, 0);
       }
 
       //
+
+	  hr = GetRegInt("Controller", "DOFContactors", &selected);
+	  if (hr != S_OK)
+		  selected = 2; // assume both as standard
+	  SendMessage(GetDlgItem(hwndDlg, IDC_DOF_CONTACTORS), CB_ADDSTRING, 0, (LPARAM)"Sound FX");
+	  SendMessage(GetDlgItem(hwndDlg, IDC_DOF_CONTACTORS), CB_ADDSTRING, 0, (LPARAM)"DOF");
+	  SendMessage(GetDlgItem(hwndDlg, IDC_DOF_CONTACTORS), CB_ADDSTRING, 0, (LPARAM)"Both");
+	  SendMessage(GetDlgItem(hwndDlg, IDC_DOF_CONTACTORS), CB_SETCURSEL, selected, 0);
+
+	  hr = GetRegInt("Controller", "DOFKnocker", &selected);
+	  if (hr != S_OK)
+		  selected = 2; // assume both as standard
+	  SendMessage(GetDlgItem(hwndDlg, IDC_DOF_KNOCKER), CB_ADDSTRING, 0, (LPARAM)"Sound FX");
+	  SendMessage(GetDlgItem(hwndDlg, IDC_DOF_KNOCKER), CB_ADDSTRING, 0, (LPARAM)"DOF");
+	  SendMessage(GetDlgItem(hwndDlg, IDC_DOF_KNOCKER), CB_ADDSTRING, 0, (LPARAM)"Both");
+	  SendMessage(GetDlgItem(hwndDlg, IDC_DOF_KNOCKER), CB_SETCURSEL, selected, 0);
+
+	  hr = GetRegInt("Controller", "DOFChimes", &selected);
+	  if (hr != S_OK)
+		  selected = 2; // assume both as standard
+	  SendMessage(GetDlgItem(hwndDlg, IDC_DOF_CHIMES), CB_ADDSTRING, 0, (LPARAM)"Sound FX");
+	  SendMessage(GetDlgItem(hwndDlg, IDC_DOF_CHIMES), CB_ADDSTRING, 0, (LPARAM)"DOF");
+	  SendMessage(GetDlgItem(hwndDlg, IDC_DOF_CHIMES), CB_ADDSTRING, 0, (LPARAM)"Both");
+	  SendMessage(GetDlgItem(hwndDlg, IDC_DOF_CHIMES), CB_SETCURSEL, selected, 0);
+
+	  hr = GetRegInt("Controller", "DOFBell", &selected);
+	  if (hr != S_OK)
+		  selected = 2; // assume both as standard
+	  SendMessage(GetDlgItem(hwndDlg, IDC_DOF_BELL), CB_ADDSTRING, 0, (LPARAM)"Sound FX");
+	  SendMessage(GetDlgItem(hwndDlg, IDC_DOF_BELL), CB_ADDSTRING, 0, (LPARAM)"DOF");
+	  SendMessage(GetDlgItem(hwndDlg, IDC_DOF_BELL), CB_ADDSTRING, 0, (LPARAM)"Both");
+	  SendMessage(GetDlgItem(hwndDlg, IDC_DOF_BELL), CB_SETCURSEL, selected, 0);
+
+	  hr = GetRegInt("Controller", "DOFGear", &selected);
+	  if (hr != S_OK)
+		  selected = 2; // assume both as standard
+	  SendMessage(GetDlgItem(hwndDlg, IDC_DOF_GEAR), CB_ADDSTRING, 0, (LPARAM)"Sound FX");
+	  SendMessage(GetDlgItem(hwndDlg, IDC_DOF_GEAR), CB_ADDSTRING, 0, (LPARAM)"DOF");
+	  SendMessage(GetDlgItem(hwndDlg, IDC_DOF_GEAR), CB_ADDSTRING, 0, (LPARAM)"Both");
+	  SendMessage(GetDlgItem(hwndDlg, IDC_DOF_GEAR), CB_SETCURSEL, selected, 0);
+
+	  hr = GetRegInt("Controller", "DOFShaker", &selected);
+	  if (hr != S_OK)
+		  selected = 2; // assume both as standard
+	  SendMessage(GetDlgItem(hwndDlg, IDC_DOF_SHAKER), CB_ADDSTRING, 0, (LPARAM)"Sound FX");
+	  SendMessage(GetDlgItem(hwndDlg, IDC_DOF_SHAKER), CB_ADDSTRING, 0, (LPARAM)"DOF");
+	  SendMessage(GetDlgItem(hwndDlg, IDC_DOF_SHAKER), CB_ADDSTRING, 0, (LPARAM)"Both");
+	  SendMessage(GetDlgItem(hwndDlg, IDC_DOF_SHAKER), CB_SETCURSEL, selected, 0);
+
+	  hr = GetRegInt("Controller", "DOFFlippers", &selected);
+	  if (hr != S_OK)
+		  selected = 2; // assume both as standard
+	  SendMessage(GetDlgItem(hwndDlg, IDC_DOF_FLIPPERS), CB_ADDSTRING, 0, (LPARAM)"Sound FX");
+	  SendMessage(GetDlgItem(hwndDlg, IDC_DOF_FLIPPERS), CB_ADDSTRING, 0, (LPARAM)"DOF");
+	  SendMessage(GetDlgItem(hwndDlg, IDC_DOF_FLIPPERS), CB_ADDSTRING, 0, (LPARAM)"Both");
+	  SendMessage(GetDlgItem(hwndDlg, IDC_DOF_FLIPPERS), CB_SETCURSEL, selected, 0);
+
+	  hr = GetRegInt("Controller", "DOFTargets", &selected);
+	  if (hr != S_OK)
+		  selected = 2; // assume both as standard
+	  SendMessage(GetDlgItem(hwndDlg, IDC_DOF_TARGETS), CB_ADDSTRING, 0, (LPARAM)"Sound FX");
+	  SendMessage(GetDlgItem(hwndDlg, IDC_DOF_TARGETS), CB_ADDSTRING, 0, (LPARAM)"DOF");
+	  SendMessage(GetDlgItem(hwndDlg, IDC_DOF_TARGETS), CB_ADDSTRING, 0, (LPARAM)"Both");
+	  SendMessage(GetDlgItem(hwndDlg, IDC_DOF_TARGETS), CB_SETCURSEL, selected, 0);
+
+	  hr = GetRegInt("Controller", "DOFDropTargets", &selected);
+	  if (hr != S_OK)
+		  selected = 2; // assume both as standard
+	  SendMessage(GetDlgItem(hwndDlg, IDC_DOF_DROPTARGETS), CB_ADDSTRING, 0, (LPARAM)"Sound FX");
+	  SendMessage(GetDlgItem(hwndDlg, IDC_DOF_DROPTARGETS), CB_ADDSTRING, 0, (LPARAM)"DOF");
+	  SendMessage(GetDlgItem(hwndDlg, IDC_DOF_DROPTARGETS), CB_ADDSTRING, 0, (LPARAM)"Both");
+	  SendMessage(GetDlgItem(hwndDlg, IDC_DOF_DROPTARGETS), CB_SETCURSEL, selected, 0);
+
+	  //
 
       hr = GetRegInt("Player", "PlungerAxis", &selected);
       if (hr != S_OK)
@@ -7390,6 +7465,60 @@ INT_PTR CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
             hwndControl = GetDlgItem(hwndDlg, IDC_ENABLE_NUDGE_FILTER);
             selected = SendMessage(hwndControl, BM_GETCHECK, 0, 0);
             SetRegValue("Player", "EnableNudgeFilter", REG_DWORD, &selected, 4);
+
+			hwndControl = GetDlgItem(hwndDlg, IDC_DOF_CONTACTORS);
+			selected = SendMessage(hwndControl, CB_GETCURSEL, 0, 0);
+			if (selected == LB_ERR)
+				selected = 2; // assume both as standard
+			SetRegValue("Controller", "DOFContactors", REG_DWORD, &selected, 4);
+
+			hwndControl = GetDlgItem(hwndDlg, IDC_DOF_KNOCKER);
+			selected = SendMessage(hwndControl, CB_GETCURSEL, 0, 0);
+			if (selected == LB_ERR)
+				selected = 2; // assume both as standard
+			SetRegValue("Controller", "DOFKnocker", REG_DWORD, &selected, 4);
+
+			hwndControl = GetDlgItem(hwndDlg, IDC_DOF_CHIMES);
+			selected = SendMessage(hwndControl, CB_GETCURSEL, 0, 0);
+			if (selected == LB_ERR)
+				selected = 2; // assume both as standard
+			SetRegValue("Controller", "DOFChimes", REG_DWORD, &selected, 4);
+
+			hwndControl = GetDlgItem(hwndDlg, IDC_DOF_BELL);
+			selected = SendMessage(hwndControl, CB_GETCURSEL, 0, 0);
+			if (selected == LB_ERR)
+				selected = 2; // assume both as standard
+			SetRegValue("Controller", "DOFBell", REG_DWORD, &selected, 4);
+
+			hwndControl = GetDlgItem(hwndDlg, IDC_DOF_GEAR);
+			selected = SendMessage(hwndControl, CB_GETCURSEL, 0, 0);
+			if (selected == LB_ERR)
+				selected = 2; // assume both as standard
+			SetRegValue("Controller", "DOFGear", REG_DWORD, &selected, 4);
+
+			hwndControl = GetDlgItem(hwndDlg, IDC_DOF_SHAKER);
+			selected = SendMessage(hwndControl, CB_GETCURSEL, 0, 0);
+			if (selected == LB_ERR)
+				selected = 2; // assume both as standard
+			SetRegValue("Controller", "DOFShaker", REG_DWORD, &selected, 4);
+
+			hwndControl = GetDlgItem(hwndDlg, IDC_DOF_FLIPPERS);
+			selected = SendMessage(hwndControl, CB_GETCURSEL, 0, 0);
+			if (selected == LB_ERR)
+				selected = 2; // assume both as standard
+			SetRegValue("Controller", "DOFFlippers", REG_DWORD, &selected, 4);
+
+			hwndControl = GetDlgItem(hwndDlg, IDC_DOF_TARGETS);
+			selected = SendMessage(hwndControl, CB_GETCURSEL, 0, 0);
+			if (selected == LB_ERR)
+				selected = 2; // assume both as standard
+			SetRegValue("Controller", "DOFTargets", REG_DWORD, &selected, 4);
+
+			hwndControl = GetDlgItem(hwndDlg, IDC_DOF_DROPTARGETS);
+			selected = SendMessage(hwndControl, CB_GETCURSEL, 0, 0);
+			if (selected == LB_ERR)
+				selected = 2; // assume both as standard
+			SetRegValue("Controller", "DOFDropTargets", REG_DWORD, &selected, 4);
 
             EndDialog(hwndDlg, TRUE);
          }
