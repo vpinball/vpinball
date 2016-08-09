@@ -5,6 +5,7 @@ static unsigned int sTimerInit = 0;
 static LARGE_INTEGER TimerFreq;
 static LARGE_INTEGER sTimerStart;
 
+// call before 1st use of msec,usec or uSleep
 void wintimer_init()
 {
    sTimerInit = 1;
@@ -34,18 +35,24 @@ U32 msec()
    return (U32)((unsigned long long)cur_tick * 1000ull / (unsigned long long)TimerFreq.QuadPart);
 }
 
+// needs timeBeginPeriod(1) before calling 1st time to make the Sleep(1) in here behave more or less accurately (and timeEndPeriod(1) after not needing that precision anymore)
 void uSleep(const unsigned long long u)
 {
    if (sTimerInit == 0) return;
 
-   LARGE_INTEGER TimerEnd;
-   QueryPerformanceCounter(&TimerEnd);
-   TimerEnd.QuadPart += (u * TimerFreq.QuadPart) / 1000000ull - sTimerStart.QuadPart;
-
    LARGE_INTEGER TimerNow;
+   QueryPerformanceCounter(&TimerNow);
+   LARGE_INTEGER TimerEndSleep;
+   TimerEndSleep.QuadPart = TimerNow.QuadPart + (((u - 2000ull) * TimerFreq.QuadPart) / 1000000ull - sTimerStart.QuadPart);
+   LARGE_INTEGER TimerEnd;
+   TimerEnd.QuadPart = TimerNow.QuadPart + ((u * TimerFreq.QuadPart) / 1000000ull - sTimerStart.QuadPart);
+
    do
    {
-      SwitchToThread();
+      if((u > 2000ull) && (TimerNow.QuadPart - sTimerStart.QuadPart < TimerEndSleep.QuadPart))
+          Sleep(1); // really pause thread for 1-2ms (depending on OS)
+      else
+          SwitchToThread(); // let other threads on same core run
 
       QueryPerformanceCounter(&TimerNow);
    } while (TimerNow.QuadPart - sTimerStart.QuadPart < TimerEnd.QuadPart);

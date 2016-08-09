@@ -89,8 +89,6 @@ void operator delete[](void *address)
 }
 #endif
 
-const DWORD dwPause = 1000; // time to wait for threads to finish up
-
 CComModule _Module;
 
 BEGIN_OBJECT_MAP(ObjectMap)
@@ -361,7 +359,7 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
       DestroyAcceleratorTable(g_haccel);
 
       _Module.RevokeClassObjects();
-      Sleep(dwPause); //wait for any threads to finish
+      Sleep(THREADS_PAUSE); //wait for any threads to finish
    }
 
    _Module.Term();

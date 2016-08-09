@@ -487,6 +487,10 @@ Player::~Player()
 
 void Player::Shutdown()
 {
+   const int localvsync = (m_ptable->m_TableAdaptiveVSync == -1) ? m_fVSync : m_ptable->m_TableAdaptiveVSync;
+   if (localvsync > m_refreshrate)
+      timeEndPeriod(1); // after last precise uSleep()
+
    if(m_toogle_DTFS)
        m_ptable->m_BG_current_set ^= 1;
 
@@ -1539,6 +1543,10 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
    if (m_fPlayback)
       m_fplaylog = fopen("c:\\badlog.txt", "r");
 #endif
+
+   const int localvsync = (m_ptable->m_TableAdaptiveVSync == -1) ? m_fVSync : m_ptable->m_TableAdaptiveVSync;
+   if (localvsync > m_refreshrate)
+      timeBeginPeriod(1); // for uSleep() to work more precise
 
    wintimer_init();
 

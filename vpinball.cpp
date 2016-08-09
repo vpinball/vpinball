@@ -2121,7 +2121,7 @@ LRESULT CALLBACK VPWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
       if (ptable)
       {
          while (ptable->m_savingActive)
-            Sleep(1000);
+            Sleep(THREADS_PAUSE);
       }
       if (g_pplayer)
          SendMessage(g_pplayer->m_hwnd, WM_CLOSE, 0, 0);
