@@ -141,7 +141,7 @@ float4 ps_main_ao(in VS_OUTPUT_2D IN) : COLOR
 		return float4(1.0, 0.,0.,0.);
 
 	const float3 ushift = /*hash(IN.tex0) + w_h_height.zw*/ // jitter samples via hash of position on screen and then jitter samples by time //!! see below for non-shifted variant
-	                      tex2Dlod(texSamplerAOdither, float4(IN.tex0/((0.25*192.0)*w_h_height.xy) + w_h_height.zw, 0.,0.)).xyz; // use dither texture instead nowadays // 192 is the hardcoded dither texture size //!! 0.25 should not be there at all, why is this needed to scale to the texel???
+	                      tex2Dlod(texSamplerAOdither, float4(IN.tex0/(64.0*w_h_height.xy) + w_h_height.zw, 0.,0.)).xyz; // use dither texture instead nowadays // 64 is the hardcoded dither texture size for AOdither.bmp
 	//const float base = 0.0;
 	const float area = 0.06; //!!
 	const float falloff = 0.0002; //!!
