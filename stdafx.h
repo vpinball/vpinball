@@ -29,6 +29,8 @@
 
 #define BASEDEPTHBIAS 5e-5f
 
+#define THREADS_PAUSE 1000 // msecs/time to wait for threads to finish up
+
 #include "physconst.h"
 
 //
