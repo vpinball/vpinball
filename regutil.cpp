@@ -55,7 +55,10 @@ HRESULT GetRegInt(const char *szKey, const char *szValue, int *pint)
 HRESULT GetRegValue(const char *szKey, const char *szValue, DWORD *ptype, void *pvalue, DWORD size)
 {
    char szPath[1024];
-   lstrcpy(szPath, VP_REGKEY);
+   if (strcmp(szKey, "Controller") == 0)
+      lstrcpy(szPath, VP_REGKEY_GENERAL);
+   else
+      lstrcpy(szPath, VP_REGKEY);
    lstrcat(szPath, szKey);
 
    HKEY hk;
