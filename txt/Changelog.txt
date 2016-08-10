@@ -1,6 +1,8 @@
 VP 10.2.0 Changelog
 ------------------------
 
+- Hotkey for adding normal and smooth control points for walls, ramps and lights. Select a wall,ramp or light and press F10 for a normal unsmoothed control point and F11 for a smoothed one.
+
 - animation support for mesh primitives added: The animation sequence is based on multiple .obj files for each frame. Let's say we have an animation of 100 single frames, then you have to export
   each frame into a separate .obj file with the nameing format <meshname>_x.obj where x is the frame number. When importing a mesh, check the "Import Animation sequence" in the import dialog and
   select the .obj file of the first frame. VP will then load all other frames and, when done, will show you a short message box how many frames were imported.

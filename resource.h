@@ -865,15 +865,15 @@
 #define IDC_MATERIAL_COMBO4             734
 #define IDC_RING_VISIBLE                735
 #define IDC_SKIRT_VISIBLE               736
-#define IDC_DOF_CONTACTORS				737
-#define IDC_DOF_KNOCKER					738
-#define IDC_DOF_CHIMES					739
-#define IDC_DOF_BELL					740
-#define IDC_DOF_GEAR					741
-#define IDC_DOF_SHAKER					742
-#define IDC_DOF_FLIPPERS				743
-#define IDC_DOF_TARGETS					744
-#define IDC_DOF_DROPTARGETS				745
+#define IDC_DOF_CONTACTORS              737
+#define IDC_DOF_KNOCKER                 738
+#define IDC_DOF_CHIMES                  739
+#define IDC_DOF_BELL                    740
+#define IDC_DOF_GEAR                    741
+#define IDC_DOF_SHAKER                  742
+#define IDC_DOF_FLIPPERS                743
+#define IDC_DOF_TARGETS                 744
+#define IDC_DOF_DROPTARGETS             745
 #define DISPID_Gate_Height1             1142
 #define DISPID_Image                    1500
 #define DISPID_Image2                   1501
@@ -1009,6 +1009,8 @@
 #define ID_EDIT_SETDEFAULTPHYSICS       32998
 #define ID_EDIT_LOCK                    32999
 #define ID_EXPORT_TABLEMESH             33002
+#define ID_ADD_CTRL_POINT               33003
+#define ID_ADD_SMOOTH_CTRL_POINT        33004
 #define DZVALUE                         65535
 #define DZName                          65535
 
@@ -1017,7 +1019,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        620
-#define _APS_NEXT_COMMAND_VALUE         4009
+#define _APS_NEXT_COMMAND_VALUE         4012
 #define _APS_NEXT_CONTROL_VALUE         746
 #define _APS_NEXT_SYMED_VALUE           188
 #endif

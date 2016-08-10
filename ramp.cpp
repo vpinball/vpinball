@@ -1454,6 +1454,43 @@ HRESULT Ramp::InitPostLoad()
    return S_OK;
 }
 
+void Ramp::AddPoint(int x, int y, const bool smooth)
+{
+   STARTUNDO
+      const Vertex2D v = m_ptable->TransformPoint(x, y);
+
+   std::vector<RenderVertex3D> vvertex;
+   GetCentralCurve(vvertex);
+
+   int iSeg;
+   Vertex2D vOut;
+   ClosestPointOnPolygon(vvertex, v, &vOut, &iSeg, false);
+
+   // Go through vertices (including iSeg itself) counting control points until iSeg
+   int icp = 0;
+   for (int i = 0; i < (iSeg + 1); i++)
+      if (vvertex[i].fControlPoint)
+         icp++;
+
+   //if (icp == 0) // need to add point after the last point
+   //icp = m_vdpoint.Size();
+
+   CComObject<DragPoint> *pdp;
+   CComObject<DragPoint>::CreateInstance(&pdp);
+   if (pdp)
+   {
+      pdp->AddRef();
+      pdp->Init(this, vOut.x, vOut.y, (vvertex[max(iSeg - 1, 0)].z + vvertex[min(iSeg + 1, (int)vvertex.size() - 1)].z)*0.5f);
+      pdp->m_calcHeight = 0.0f;
+      pdp->m_fSmooth = smooth; // Ramps are usually always smooth
+      m_vdpoint.InsertElementAt(pdp, icp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
+   }
+
+   SetDirtyDraw();
+
+   STOPUNDO
+}
+
 void Ramp::DoCommand(int icmd, int x, int y)
 {
    ISelect::DoCommand(icmd, x, y);
@@ -1490,39 +1527,7 @@ void Ramp::DoCommand(int icmd, int x, int y)
 
    case ID_WALLMENU_ADDPOINT:
    {
-      STARTUNDO
-         const Vertex2D v = m_ptable->TransformPoint(x, y);
-
-      std::vector<RenderVertex3D> vvertex;
-      GetCentralCurve(vvertex);
-
-      int iSeg;
-      Vertex2D vOut;
-      ClosestPointOnPolygon(vvertex, v, &vOut, &iSeg, false);
-
-      // Go through vertices (including iSeg itself) counting control points until iSeg
-      int icp = 0;
-      for (int i = 0; i < (iSeg + 1); i++)
-         if (vvertex[i].fControlPoint)
-            icp++;
-
-      //if (icp == 0) // need to add point after the last point
-      //icp = m_vdpoint.Size();
-
-      CComObject<DragPoint> *pdp;
-      CComObject<DragPoint>::CreateInstance(&pdp);
-      if (pdp)
-      {
-         pdp->AddRef();
-         pdp->Init(this, vOut.x, vOut.y, (vvertex[max(iSeg - 1, 0)].z + vvertex[min(iSeg + 1, (int)vvertex.size() - 1)].z)*0.5f);
-         pdp->m_calcHeight = 0.0f;
-         pdp->m_fSmooth = true; // Ramps are usually always smooth
-         m_vdpoint.InsertElementAt(pdp, icp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
-      }
-
-      SetDirtyDraw();
-
-      STOPUNDO
+      AddPoint(x, y, true);
    }
    break;
    }
