@@ -350,8 +350,6 @@ void Kicker::RenderSetup(RenderDevice* pd3dDevice)
 
    if (m_d.m_kickertype == KickerCup || m_d.m_kickertype == KickerHole)
    {
-      const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
-
       Vertex3D_NoTex2 *buf = new Vertex3D_NoTex2[kickerPlateNumVertices];
       const float rad = m_d.m_radius * ((m_d.m_kickertype == KickerCup) ? 1.0f : 0.82f);
 
@@ -359,7 +357,7 @@ void Kicker::RenderSetup(RenderDevice* pd3dDevice)
       {
          buf[i].x = kickerPlate[i].x*rad + m_d.m_vCenter.x;
          buf[i].y = kickerPlate[i].y*rad + m_d.m_vCenter.y;
-         buf[i].z = kickerPlate[i].z*rad*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + height;
+         buf[i].z = kickerPlate[i].z*rad*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set] + m_baseHeight;
          buf[i].nx = kickerPlate[i].nx;
          buf[i].ny = kickerPlate[i].ny;
          buf[i].nz = kickerPlate[i].nz;

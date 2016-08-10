@@ -14,7 +14,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (United States) resources
+// Englisch (USA) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
@@ -2739,6 +2739,8 @@ IDB_AO_DITHER           BITMAP                  "res\\AOdither.bmp"
 
 IDR_VPACCEL ACCELERATORS
 BEGIN
+    VK_F10,         ID_ADD_CTRL_POINT,      VIRTKEY, NOINVERT
+    VK_F11,         ID_ADD_SMOOTH_CTRL_POINT, VIRTKEY, NOINVERT
     VK_DELETE,      ID_DELETE,              VIRTKEY, NOINVERT
     "D",            ID_EDIT_DRAWINGORDER_HIT, VIRTKEY, SHIFT, CONTROL, NOINVERT
     "S",            ID_EDIT_DRAWINGORDER_SELECT, VIRTKEY, SHIFT, CONTROL, NOINVERT
@@ -2763,6 +2765,7 @@ BEGIN
     "T",            ID_INSERT_TRIGGER,      VIRTKEY, CONTROL, NOINVERT
     "W",            ID_INSERT_WALL,         VIRTKEY, CONTROL, NOINVERT
     "L",            ID_LOCK,                VIRTKEY, SHIFT, CONTROL, NOINVERT
+    VK_F6,          ID_TABLE_CAMERAMODE,    VIRTKEY, NOINVERT
     VK_F5,          ID_TABLE_PLAY,          VIRTKEY, NOINVERT
     "C",            IDC_COPY,               VIRTKEY, CONTROL, NOINVERT
     "V",            IDC_PASTE,              VIRTKEY, CONTROL, NOINVERT
@@ -2775,7 +2778,6 @@ BEGIN
     "O",            IDM_OPEN,               VIRTKEY, CONTROL, NOINVERT
     "S",            IDM_SAVE,               VIRTKEY, CONTROL, NOINVERT
     VK_F2,          IDM_SOUND_EDITOR,       VIRTKEY, NOINVERT
-    VK_F6,          ID_TABLE_CAMERAMODE,    VIRTKEY, NOINVERT
 END
 
 IDR_CODEVIEWACCEL ACCELERATORS
@@ -3007,7 +3009,7 @@ BEGIN
     IDS_STEP                "Step"
 END
 
-#endif    // English (United States) resources
+#endif    // Englisch (USA) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

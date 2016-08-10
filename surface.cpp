@@ -1138,6 +1138,40 @@ void Surface::RenderWallsAtHeight(RenderDevice* pd3dDevice, const bool fDrop)
       pd3dDevice->basicShader->SetDisableLighting(false);
 }
 
+void Surface::AddPoint(int x, int y, const bool smooth)
+{
+   STARTUNDO
+
+      const Vertex2D v = m_ptable->TransformPoint(x, y);
+
+   std::vector<RenderVertex> vvertex;
+   GetRgVertex(vvertex);
+
+   Vertex2D vOut;
+   int iSeg;
+   ClosestPointOnPolygon(vvertex, v, &vOut, &iSeg, true);
+
+   // Go through vertices (including iSeg itself) counting control points until iSeg
+   int icp = 0;
+   for (int i = 0; i < (iSeg + 1); i++)
+      if (vvertex[i].fControlPoint)
+         icp++;
+
+   CComObject<DragPoint> *pdp;
+   CComObject<DragPoint>::CreateInstance(&pdp);
+   if (pdp)
+   {
+      pdp->AddRef();
+      pdp->Init(this, vOut.x, vOut.y);
+      pdp->m_fSmooth = smooth;
+      m_vdpoint.InsertElementAt(pdp, icp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
+   }
+
+   SetDirtyDraw();
+
+   STOPUNDO
+}
+
 void Surface::DoCommand(int icmd, int x, int y)
 {
    ISelect::DoCommand(icmd, x, y);
@@ -1174,35 +1208,7 @@ void Surface::DoCommand(int icmd, int x, int y)
 
    case ID_WALLMENU_ADDPOINT:
    {
-      STARTUNDO
-
-         const Vertex2D v = m_ptable->TransformPoint(x, y);
-
-      std::vector<RenderVertex> vvertex;
-      GetRgVertex(vvertex);
-
-      Vertex2D vOut;
-      int iSeg;
-      ClosestPointOnPolygon(vvertex, v, &vOut, &iSeg, true);
-
-      // Go through vertices (including iSeg itself) counting control points until iSeg
-      int icp = 0;
-      for (int i = 0; i < (iSeg + 1); i++)
-         if (vvertex[i].fControlPoint)
-            icp++;
-
-      CComObject<DragPoint> *pdp;
-      CComObject<DragPoint>::CreateInstance(&pdp);
-      if (pdp)
-      {
-         pdp->AddRef();
-         pdp->Init(this, vOut.x, vOut.y);
-         m_vdpoint.InsertElementAt(pdp, icp); // push the second point forward, and replace it with this one.  Should work when index2 wraps.
-      }
-
-      SetDirtyDraw();
-
-      STOPUNDO
+      AddPoint(x, y);
    }
    break;
    }

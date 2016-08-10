@@ -117,6 +117,7 @@ public:
    virtual bool LoadMesh(){ return false; }
    virtual void ExportMesh(){};
    virtual void UpdatePropertyPanes(){};
+   virtual void AddPoint(int x, int y, const bool smooth=false){};
 
    POINT m_ptLast;
 

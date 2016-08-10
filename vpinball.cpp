@@ -1032,8 +1032,93 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
          GetCursorPos(&pt);
          SetCursorPos(pt.x, pt.y);
       }
+      break;
    }
-   break;
+
+   case ID_ADD_CTRL_POINT:
+   {
+      ptCur = GetActiveTable();
+      if (ptCur == NULL)
+         break;
+   
+      if (ptCur->m_vmultisel.Size() > 0)
+      {
+         ISelect *psel = ptCur->m_vmultisel.ElementAt(0);
+         if (psel != NULL)
+         {
+            POINT pt;
+            GetCursorPos(&pt);
+            ScreenToClient(ptCur->m_hwnd, &pt);
+
+            switch (psel->GetItemType())
+            {
+            case eItemRamp:
+            {
+               Ramp *pRamp = (Ramp*)psel;
+               pRamp->AddPoint(pt.x, pt.y, false);
+               break;
+            }
+            case eItemLight:
+            {
+               Light *pLight = (Light*)psel;
+               pLight->AddPoint(pt.x, pt.y, false);
+               break;
+            }
+            case eItemSurface:
+            {
+               Surface *pSurf = (Surface*)psel;
+               pSurf->AddPoint(pt.x, pt.y, false);
+               break;
+            }
+            default:
+               break;
+            }
+         }//if (psel != NULL)
+      }
+      break;
+   }
+
+   case ID_ADD_SMOOTH_CTRL_POINT:
+   {
+      ptCur = GetActiveTable();
+      if (ptCur == NULL)
+         break;
+
+      if (ptCur->m_vmultisel.Size() > 0)
+      {
+         ISelect *psel = ptCur->m_vmultisel.ElementAt(0);
+         if (psel != NULL)
+         {
+            POINT pt;
+            GetCursorPos(&pt);
+            ScreenToClient(ptCur->m_hwnd, &pt);
+            switch (psel->GetItemType())
+            {
+            case eItemRamp:
+            {
+               Ramp *pRamp = (Ramp*)psel;
+               pRamp->AddPoint(pt.x, pt.y,true);
+               break;
+            }
+            case eItemLight:
+            {
+               Light *pLight = (Light*)psel;
+               pLight->AddPoint(pt.x, pt.y,true);
+               break;
+            }
+            case eItemSurface:
+            {
+               Surface *pSurf = (Surface*)psel;
+               pSurf->AddPoint(pt.x, pt.y,true);
+               break;
+            }
+            default:
+               break;
+            }
+         }
+      }
+      break;
+   }
 
    case IDM_SAVE:
    {
