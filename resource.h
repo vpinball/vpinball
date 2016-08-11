@@ -874,6 +874,7 @@
 #define IDC_DOF_FLIPPERS                743
 #define IDC_DOF_TARGETS                 744
 #define IDC_DOF_DROPTARGETS             745
+#define IDC_DOF_FORCEDISABLE            746
 #define DISPID_Gate_Height1             1142
 #define DISPID_Image                    1500
 #define DISPID_Image2                   1501
@@ -1020,7 +1021,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        620
 #define _APS_NEXT_COMMAND_VALUE         4012
-#define _APS_NEXT_CONTROL_VALUE         746
+#define _APS_NEXT_CONTROL_VALUE         747
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif
