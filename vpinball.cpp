@@ -6658,17 +6658,7 @@ INT_PTR CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	  hr = GetRegInt("Controller", "ForceDisableB2S", &selected);
 	  if (hr != S_OK)
 		  selected = 0;
-	  SendMessage(GetDlgItem(hwndDlg, IDC_DOF_FORCEDISABLE), BM_SETCHECK, !selected ? BST_CHECKED : BST_UNCHECKED, 0);
-
-      EnableWindow(GetDlgItem(hwndDlg, IDC_DOF_CONTACTORS), !selected);
-      EnableWindow(GetDlgItem(hwndDlg, IDC_DOF_KNOCKER), !selected);
-      EnableWindow(GetDlgItem(hwndDlg, IDC_DOF_CHIMES), !selected);
-      EnableWindow(GetDlgItem(hwndDlg, IDC_DOF_BELL), !selected);
-      EnableWindow(GetDlgItem(hwndDlg, IDC_DOF_SHAKER), !selected);
-      EnableWindow(GetDlgItem(hwndDlg, IDC_DOF_GEAR), !selected);
-      EnableWindow(GetDlgItem(hwndDlg, IDC_DOF_FLIPPERS), !selected);
-      EnableWindow(GetDlgItem(hwndDlg, IDC_DOF_TARGETS), !selected);
-      EnableWindow(GetDlgItem(hwndDlg, IDC_DOF_DROPTARGETS), !selected);
+	  SendMessage(GetDlgItem(hwndDlg, IDC_DOF_FORCEDISABLE), BM_SETCHECK, selected ? BST_CHECKED : BST_UNCHECKED, 0);
 
 	  hr = GetRegInt("Controller", "DOFContactors", &selected);
 	  if (hr != S_OK)
@@ -7212,22 +7202,6 @@ INT_PTR CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
          } //add
          break;
 
-         case IDC_DOF_FORCEDISABLE:
-         {
-            HWND hwndControl = GetDlgItem(hwndDlg, IDC_DOF_FORCEDISABLE);
-            size_t selected = !SendMessage(hwndControl, BM_GETCHECK, 0, 0);
-            EnableWindow(GetDlgItem(hwndDlg, IDC_DOF_CONTACTORS), !selected);
-            EnableWindow(GetDlgItem(hwndDlg, IDC_DOF_KNOCKER), !selected);
-            EnableWindow(GetDlgItem(hwndDlg, IDC_DOF_CHIMES), !selected);
-            EnableWindow(GetDlgItem(hwndDlg, IDC_DOF_BELL), !selected);
-            EnableWindow(GetDlgItem(hwndDlg, IDC_DOF_SHAKER), !selected);
-            EnableWindow(GetDlgItem(hwndDlg, IDC_DOF_GEAR), !selected);
-            EnableWindow(GetDlgItem(hwndDlg, IDC_DOF_FLIPPERS), !selected);
-            EnableWindow(GetDlgItem(hwndDlg, IDC_DOF_TARGETS), !selected);
-            EnableWindow(GetDlgItem(hwndDlg, IDC_DOF_DROPTARGETS), !selected);
-         }
-         break;
-
          case IDOK:
          {
             HWND hwndControl;
@@ -7594,7 +7568,7 @@ INT_PTR CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
             SetRegValue("Player", "EnableNudgeFilter", REG_DWORD, &selected, 4);
 
 			hwndControl = GetDlgItem(hwndDlg, IDC_DOF_FORCEDISABLE);
-			selected = !SendMessage(hwndControl, BM_GETCHECK, 0, 0);
+			selected = SendMessage(hwndControl, BM_GETCHECK, 0, 0);
 			SetRegValue("Controller", "ForceDisableB2S", REG_DWORD, &selected, 4);
 
 			hwndControl = GetDlgItem(hwndDlg, IDC_DOF_CONTACTORS);

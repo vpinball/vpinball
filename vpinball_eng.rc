@@ -14,7 +14,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Englisch (USA) resources
+// English (United States) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
@@ -376,8 +376,9 @@ BEGIN
     LTEXT           "(Cabinet/Rotated Screen usage)",IDC_STATIC,24,127,121,8
     LTEXT           "(post-processed Anti-Aliasing)",IDC_STATIC,24,198,101,8
     GROUPBOX        "Fullscreen",IDC_STATIC,159,232,183,54
-    LTEXT           "Wait time FS switch in ms",IDC_STATIC,206,264,81,8
-    EDITTEXT        IDC_FS_SWITCH_TIME,290,262,40,14,ES_AUTOHSCROLL
+    LTEXT           "Bring VP back into focus after waiting for",IDC_STATIC,196,263,92,8
+    EDITTEXT        IDC_FS_SWITCH_TIME,287,262,40,12,ES_AUTOHSCROLL
+    LTEXT           "ms",IDC_STATIC,329,263,11,8
 END
 
 IDD_FONTDIALOG DIALOG 0, 0, 316, 167
@@ -543,8 +544,8 @@ BEGIN
     LTEXT           "* To assign Custom Keys to Gamepad Buttons, click on the button and select desired key, then choose desired gamepad button from dropdown box.",IDC_STATIC,13,230,168,25
     CONTROL         "Enable Mouse during Play",IDC_ENABLE_MOUSE_PLAYER,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,257,251,100,10
-    GROUPBOX        "",IDC_STATIC,500,7,120,191
-    CONTROL         "DOF Controller Options",IDC_DOF_FORCEDISABLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,506,6,86,10
+    GROUPBOX        "DOF Controller Options",IDC_STATIC,500,7,120,191
+    CONTROL         "Disable B2S",IDC_DOF_FORCEDISABLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,505,202,86,10
     CTEXT           "Contactors",IDC_STATIC,505,17,50,14,0,WS_EX_DLGMODALFRAME
     COMBOBOX        IDC_DOF_CONTACTORS,505,32,50,100,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
     CTEXT           "Knocker",IDC_STATIC,565,17,50,14,0,WS_EX_DLGMODALFRAME
@@ -3012,7 +3013,7 @@ BEGIN
     IDS_STEP                "Step"
 END
 
-#endif    // Englisch (USA) resources
+#endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

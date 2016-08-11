@@ -875,7 +875,6 @@
 #define IDC_DOF_TARGETS                 744
 #define IDC_DOF_DROPTARGETS             745
 #define IDC_DOF_FORCEDISABLE            746
-#define IDC_EDIT2                       747
 #define IDC_FS_SWITCH_TIME              747
 #define DISPID_Gate_Height1             1142
 #define DISPID_Image                    1500
