@@ -542,7 +542,7 @@ BEGIN
     CONTROL         "Enable Mouse during Play",IDC_ENABLE_MOUSE_PLAYER,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,257,251,100,10
     GROUPBOX        "",IDC_STATIC,500,7,120,191
-    CONTROL         "DOF Controller Options",IDC_DOF_FORCEDISABLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,506,6,80,10
+    CONTROL         "DOF Controller Options",IDC_DOF_FORCEDISABLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,506,6,86,10
     CTEXT           "Contactors",IDC_STATIC,505,17,50,14,0,WS_EX_DLGMODALFRAME
     COMBOBOX        IDC_DOF_CONTACTORS,505,32,50,100,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
     CTEXT           "Knocker",IDC_STATIC,565,17,50,14,0,WS_EX_DLGMODALFRAME
@@ -561,7 +561,7 @@ BEGIN
     COMBOBOX        IDC_DOF_TARGETS,565,142,50,100,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
     CTEXT           "Drop Targets",IDC_STATIC,505,165,50,14,0,WS_EX_DLGMODALFRAME
     COMBOBOX        IDC_DOF_DROPTARGETS,505,180,50,100,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "* This will only apply to tables that are using the Controller.vbs in their script code",IDC_STATIC,566,156,51,40
+    LTEXT           "* This will only apply to tables that are using the Controller.vbs in their script code",IDC_STATIC,563,156,55,40
 END
 
 IDD_TRANSLATE DIALOGEX 0, 0, 186, 97

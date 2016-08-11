@@ -840,7 +840,7 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
       DoPlay(true);
       break;
    case ID_TABLE_PLAY:
-      DoPlay();
+      DoPlay(false);
       break;
 
    case ID_SCRIPT_SHOWIDE:
@@ -6649,6 +6649,16 @@ INT_PTR CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		  selected = 0;
 	  SendMessage(GetDlgItem(hwndDlg, IDC_DOF_FORCEDISABLE), BM_SETCHECK, !selected ? BST_CHECKED : BST_UNCHECKED, 0);
 
+      EnableWindow(GetDlgItem(hwndDlg, IDC_DOF_CONTACTORS), !selected);
+      EnableWindow(GetDlgItem(hwndDlg, IDC_DOF_KNOCKER), !selected);
+      EnableWindow(GetDlgItem(hwndDlg, IDC_DOF_CHIMES), !selected);
+      EnableWindow(GetDlgItem(hwndDlg, IDC_DOF_BELL), !selected);
+      EnableWindow(GetDlgItem(hwndDlg, IDC_DOF_SHAKER), !selected);
+      EnableWindow(GetDlgItem(hwndDlg, IDC_DOF_GEAR), !selected);
+      EnableWindow(GetDlgItem(hwndDlg, IDC_DOF_FLIPPERS), !selected);
+      EnableWindow(GetDlgItem(hwndDlg, IDC_DOF_TARGETS), !selected);
+      EnableWindow(GetDlgItem(hwndDlg, IDC_DOF_DROPTARGETS), !selected);
+
 	  hr = GetRegInt("Controller", "DOFContactors", &selected);
 	  if (hr != S_OK)
 		  selected = 2; // assume both as standard
@@ -7189,6 +7199,22 @@ INT_PTR CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
                }
             }
          } //add
+         break;
+
+         case IDC_DOF_FORCEDISABLE:
+         {
+            HWND hwndControl = GetDlgItem(hwndDlg, IDC_DOF_FORCEDISABLE);
+            size_t selected = !SendMessage(hwndControl, BM_GETCHECK, 0, 0);
+            EnableWindow(GetDlgItem(hwndDlg, IDC_DOF_CONTACTORS), !selected);
+            EnableWindow(GetDlgItem(hwndDlg, IDC_DOF_KNOCKER), !selected);
+            EnableWindow(GetDlgItem(hwndDlg, IDC_DOF_CHIMES), !selected);
+            EnableWindow(GetDlgItem(hwndDlg, IDC_DOF_BELL), !selected);
+            EnableWindow(GetDlgItem(hwndDlg, IDC_DOF_SHAKER), !selected);
+            EnableWindow(GetDlgItem(hwndDlg, IDC_DOF_GEAR), !selected);
+            EnableWindow(GetDlgItem(hwndDlg, IDC_DOF_FLIPPERS), !selected);
+            EnableWindow(GetDlgItem(hwndDlg, IDC_DOF_TARGETS), !selected);
+            EnableWindow(GetDlgItem(hwndDlg, IDC_DOF_DROPTARGETS), !selected);
+         }
          break;
 
          case IDOK:
