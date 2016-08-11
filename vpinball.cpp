@@ -4531,6 +4531,8 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
           AddToolTip("Enables brute-force 4x Anti-Aliasing.\r\nThis delivers very good quality, but slows down performance significantly.", hwndDlg, toolTipHwnd, controlHwnd);
           controlHwnd = GetDlgItem(hwndDlg, IDC_OVERWRITE_BALL_IMAGE_CHECK);
           AddToolTip("When checked it overwrites the ball image/decal image(s) for every table.", hwndDlg, toolTipHwnd, controlHwnd);
+          controlHwnd = GetDlgItem(hwndDlg, IDC_FS_SWITCH_TIME);
+          AddToolTip("Defines the waiting time in milliseconds until VP will do a task switch to show the player again in exclusive fullscreen mode. (0=off)", hwndDlg, toolTipHwnd, controlHwnd);
       }
 
       SetWindowPos(hwndDlg, NULL,
@@ -4579,6 +4581,12 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
       if (hr != S_OK)
          maxPrerenderedFrames = 0;
       SetDlgItemInt(hwndDlg, IDC_MAX_PRE_FRAMES, maxPrerenderedFrames, FALSE);
+
+      int waittime;
+      hr = GetRegInt("Player", "FsWaitTime", &waittime);
+      if (hr != S_OK)
+         waittime = 0;
+      SetDlgItemInt(hwndDlg, IDC_FS_SWITCH_TIME, waittime, FALSE);
 
       float ballAspecRatioOffsetX;
       hr = GetRegStringAsFloat("Player", "BallCorrectionX", &ballAspecRatioOffsetX);
@@ -4897,6 +4905,9 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
 
             int maxPrerenderedFrames = GetDlgItemInt(hwndDlg, IDC_MAX_PRE_FRAMES, NULL, TRUE);
             SetRegValue("Player", "MaxPrerenderedFrames", REG_DWORD, &maxPrerenderedFrames, 4);
+
+            int waittime = GetDlgItemInt(hwndDlg, IDC_FS_SWITCH_TIME, NULL, TRUE);
+            SetRegValue("Player", "FsWaitTime", REG_DWORD, &waittime, 4);
 
             char strTmp[256];
 
