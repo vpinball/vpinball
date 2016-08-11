@@ -6644,6 +6644,11 @@ INT_PTR CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
       //
 
+	  hr = GetRegInt("Controller", "ForceDisableB2S", &selected);
+	  if (hr != S_OK)
+		  selected = 0;
+	  SendMessage(GetDlgItem(hwndDlg, IDC_DOF_FORCEDISABLE), BM_SETCHECK, !selected ? BST_CHECKED : BST_UNCHECKED, 0);
+
 	  hr = GetRegInt("Controller", "DOFContactors", &selected);
 	  if (hr != S_OK)
 		  selected = 2; // assume both as standard
@@ -7550,6 +7555,10 @@ INT_PTR CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
             hwndControl = GetDlgItem(hwndDlg, IDC_ENABLE_NUDGE_FILTER);
             selected = SendMessage(hwndControl, BM_GETCHECK, 0, 0);
             SetRegValue("Player", "EnableNudgeFilter", REG_DWORD, &selected, 4);
+
+			hwndControl = GetDlgItem(hwndDlg, IDC_DOF_FORCEDISABLE);
+			selected = !SendMessage(hwndControl, BM_GETCHECK, 0, 0);
+			SetRegValue("Controller", "ForceDisableB2S", REG_DWORD, &selected, 4);
 
 			hwndControl = GetDlgItem(hwndDlg, IDC_DOF_CONTACTORS);
 			selected = SendMessage(hwndControl, CB_GETCURSEL, 0, 0);

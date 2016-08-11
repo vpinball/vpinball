@@ -14,7 +14,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Englisch (USA) resources
+// English (United States) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
@@ -541,7 +541,8 @@ BEGIN
     LTEXT           "* To assign Custom Keys to Gamepad Buttons, click on the button and select desired key, then choose desired gamepad button from dropdown box.",IDC_STATIC,13,230,168,25
     CONTROL         "Enable Mouse during Play",IDC_ENABLE_MOUSE_PLAYER,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,257,251,100,10
-    GROUPBOX        "DOF Controller Options",IDC_STATIC,500,7,120,191
+    GROUPBOX        "",IDC_STATIC,500,7,120,191
+    CONTROL         "DOF Controller Options",IDC_DOF_FORCEDISABLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,506,6,80,10
     CTEXT           "Contactors",IDC_STATIC,505,17,50,14,0,WS_EX_DLGMODALFRAME
     COMBOBOX        IDC_DOF_CONTACTORS,505,32,50,100,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
     CTEXT           "Knocker",IDC_STATIC,565,17,50,14,0,WS_EX_DLGMODALFRAME
@@ -3009,7 +3010,7 @@ BEGIN
     IDS_STEP                "Step"
 END
 
-#endif    // Englisch (USA) resources
+#endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
