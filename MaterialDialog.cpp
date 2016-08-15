@@ -359,11 +359,11 @@ INT_PTR CALLBACK MaterialManagerProc( HWND hwndDlg, UINT uMsg, WPARAM wParam, LP
                             ListView_GetItem( GetDlgItem( hwndDlg, IDC_MATERIAL_LIST ), &lvitem );
                             Material * const pmat = (Material*)lvitem.lParam;
                             if ( hwndcolor1 == (HWND)lParam )
-                                pmat->m_cBase = color;
+                                pmat->m_cBase = (COLORREF)color;
                             else if ( hwndcolor2 == (HWND)lParam )
-                                pmat->m_cGlossy = color;
+                                pmat->m_cGlossy = (COLORREF)color;
                             else if ( hwndcolor3 == (HWND)lParam )
-                                pmat->m_cClearcoat = color;
+                                pmat->m_cClearcoat = (COLORREF)color;
 
                             // The previous selection is now deleted, so look again from the top of the list
                             sel = ListView_GetNextItem( GetDlgItem( hwndDlg, IDC_MATERIAL_LIST ), sel, LVNI_SELECTED );

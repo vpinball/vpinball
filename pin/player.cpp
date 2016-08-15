@@ -3712,7 +3712,7 @@ void Player::UpdateHUD()
 		}
 		if (strlen(szFoo) > 0)
 		{
-			DebugPrint(m_width / 2 - 320, line * 20 + 10, szFoo, strlen(szFoo), true);
+			DebugPrint(m_width / 2 - 320, line * 20 + 10, szFoo, (int)strlen(szFoo), true);
 			line += 2;
 			DebugPrint(m_width / 2 - 320, line * 20 + 10, "========================================", 40, true);
 			line += 2;
@@ -3721,7 +3721,7 @@ void Player::UpdateHUD()
 		for (unsigned int i2 = 0; i2 < 2; ++i2)
 		{
 			const char * const s = (i2 == 0) ? m_ptable->m_szBlurb : m_ptable->m_szDescription;
-			int length = s ? strlen(s) : 0;
+			int length = s ? (int)strlen(s) : 0;
 			const char *desc = s;
 			while (length > 0)
 			{
