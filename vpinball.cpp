@@ -5174,10 +5174,10 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
       EnumerateDisplayModes(0, allVideoModes);
 
       VideoMode curSelMode;
-      curSelMode.width = wParam >> 16;
-      curSelMode.height = lParam >> 16;
-      curSelMode.depth = lParam & 0xffff;
-      curSelMode.refreshrate = wParam & 0xffff;
+      curSelMode.width = (int)wParam >> 16;
+      curSelMode.height = (int)lParam >> 16;
+      curSelMode.depth = (int)lParam & 0xffff;
+      curSelMode.refreshrate = (int)wParam & 0xffff;
 
       FillVideoModesList(hwndList, allVideoModes, &curSelMode);
 
@@ -8471,7 +8471,7 @@ INT_PTR CALLBACK EditorOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARA
       case COLOR_CHANGED:
       {
          const size_t color = GetWindowLongPtr((HWND)lParam, GWLP_USERDATA);
-         g_pvp->dummyMaterial.m_cBase = color;
+         g_pvp->dummyMaterial.m_cBase = (COLORREF)color;
          break;
       }
       case BN_CLICKED:

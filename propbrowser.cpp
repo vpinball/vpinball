@@ -1252,7 +1252,7 @@ LRESULT CALLBACK ColorProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
    case CHANGE_COLOR:
    {
-      int color = lParam;
+      size_t color = lParam;
       if (wParam == 1)
          color |= 0x80000000;
       SetWindowLongPtr(hwnd, GWLP_USERDATA, color);
@@ -1303,11 +1303,11 @@ LRESULT CALLBACK ColorProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
       DrawFrameControl(hdc, &pdis->rcItem, DFC_BUTTON, state);
 
-      const int color = GetWindowLongPtr(hwnd, GWLP_USERDATA);
+      const size_t color = GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
       if (!(color & 0x80000000)) // normal color, not ninched
       {
-         const int oldcolor = GetWindowLongPtr(hwnd, GWLP_USERDATA) & 0xffffff; // have to AND it to get rid of ninch bit
+         const COLORREF oldcolor = (COLORREF)color & 0xffffff; // have to AND it to get rid of ninch bit
          HBRUSH hbrush = CreateSolidBrush(oldcolor);
 
          HBRUSH hbrushOld = (HBRUSH)SelectObject(hdc, hbrush);
@@ -1334,7 +1334,7 @@ LRESULT CALLBACK ColorProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
          cc.lStructSize = sizeof(CHOOSECOLOR);
          cc.hwndOwner = hwnd;
          cc.hInstance = NULL;
-         cc.rgbResult = GetWindowLongPtr(hwnd, GWLP_USERDATA);
+         cc.rgbResult = (COLORREF)GetWindowLongPtr(hwnd, GWLP_USERDATA);
          SendMessage(hwndDlg, GET_COLOR_TABLE, 0, (size_t)&cc.lpCustColors);
          //cc.lpCustColors = (unsigned long *)SendMessage(hwndDlg, GET_COLOR_TABLE, 0, 0);//psb->m_pisel->GetPTable()->m_rgcolorcustom;//cr;
          cc.Flags = CC_ANYCOLOR | CC_FULLOPEN | CC_RGBINIT;
