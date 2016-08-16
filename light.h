@@ -196,7 +196,7 @@ public:
    void		unLockLight();
    void		setLightStateBypass(const LightState newVal);
    void		setLightState(const LightState newVal);
-   void        RenderBulbMesh(RenderDevice *pd3dDevice, COLORREF color, bool isOn);
+   void        RenderBulbMesh(RenderDevice *pd3dDevice, COLORREF color);
 
    PinTable *m_ptable;
 

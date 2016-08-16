@@ -545,7 +545,7 @@ void Light::ClearForOverwrite()
    ClearPointsForOverwrite();
 }
 
-void Light::RenderBulbMesh(RenderDevice *pd3dDevice, COLORREF color, bool isOn)
+void Light::RenderBulbMesh(RenderDevice *pd3dDevice, COLORREF color)
 {
    Material mat;
    mat.m_cBase = 0x181818;
@@ -595,6 +595,9 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
 
    if (m_fBackglass && !GetPTable()->GetDecalsEnabled())
       return;
+
+   if (m_d.m_BulbLight && m_d.m_showBulbMesh && !m_d.m_staticBulbMesh)
+      RenderBulbMesh(pd3dDevice, 0);
 
    const U32 old_time_msec = (m_d.m_time_msec < g_pplayer->m_time_msec) ? m_d.m_time_msec : g_pplayer->m_time_msec;
    m_d.m_time_msec = g_pplayer->m_time_msec;
@@ -931,7 +934,7 @@ void Light::RenderSetup(RenderDevice* pd3dDevice)
 void Light::RenderStatic(RenderDevice* pd3dDevice)
 {
    if (m_d.m_BulbLight && m_d.m_showBulbMesh && m_d.m_staticBulbMesh)
-      RenderBulbMesh(pd3dDevice, 0, false);
+      RenderBulbMesh(pd3dDevice, 0);
 }
 
 void Light::SetObjectPos()
