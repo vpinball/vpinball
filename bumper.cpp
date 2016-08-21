@@ -973,6 +973,8 @@ BOOL Bumper::LoadToken(int id, BiffReader *pbr)
       pbr->GetBool(&value);
       m_d.m_fCapVisible = value;
       m_d.m_fBaseVisible = value;
+      m_d.m_fRingVisible = value;
+      m_d.m_fSkirtVisible = value;
    }
    else if (id == FID(CAVI))
    {
@@ -989,6 +991,9 @@ BOOL Bumper::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(BSVS))
    {
       pbr->GetBool(&m_d.m_fBaseVisible);
+      // backwards compatibilty with pre 10.2 tables
+      m_d.m_fRingVisible = m_d.m_fBaseVisible;
+      m_d.m_fSkirtVisible = m_d.m_fBaseVisible;
    }
    else if (id == FID(RIVS))
    {
