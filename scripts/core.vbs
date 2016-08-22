@@ -6,7 +6,6 @@ Const VPinMAMEDriverVer = 3.51
 ' New in 3.51 (Update by mfuegemann & Arngrim)
 ' - gts1.vbs dip fix
 ' - Add comments to cvpmDropTarget.CreateEvents: do not use this anymore in VP10 and above, as drop targets have an animation time nowadays
-' - Change default interval of the PinMAME timer to 10 if VP10 (and up) is running
 ' - (Controller.vbs changes)
 '   - now its allowed to have each toy to be set to 0 (sound effect), 1 (DOF) or 2 (both)
 '   - new DOF types: DOFFlippers, DOFTargets, DOFDropTargets
@@ -624,7 +623,7 @@ Dim vpmShowDips     ' Show DIPs function
 ' vpmTimer      - Timer class for PulseSwitch etc
 ' vpmNudge      - Class for table nudge handling
 '-----------------------------------------------------
-Private Const PinMAMEInterval = if(VPBuildVersion >= 10000, 10, 1) ' as old timers pretended to run at 1000Hz but actually did at 100Hz, so do the same for VP10+
+Private Const PinMAMEInterval = 1 'if(VPBuildVersion >= 10000, 10, 1) ' as old timers pretended to run at 1000Hz but actually did at 100Hz, so do the same for VP10+
 
 Private Const conStackSw    = 8  ' Stack switches
 Private Const conMaxBalls   = 13 ' Because of Apollo 13
