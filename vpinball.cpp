@@ -9168,21 +9168,24 @@ INT_PTR CALLBACK SearchSelectProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
             const size_t count = ListView_GetSelectedCount(listBox);
 
             PinTable *pint = g_pvp->GetActiveTable();
-            pint->ClearMultiSel();
-            int iItem = -1;
-            LVITEM lv;
-            for (size_t i = 0; i < count; i++)
+            if(pint)
             {
-               iItem = ListView_GetNextItem(listBox, iItem, LVNI_SELECTED);
-               lv.iItem = iItem;
-               lv.mask = LVIF_PARAM;
-               if (ListView_GetItem(listBox, &lv) == TRUE)
-               {
-                  IScriptable *pscript = (IScriptable*)lv.lParam;
-                  ISelect *const pisel = pscript->GetISelect();
-                  if (pisel)
-                     pint->AddMultiSel(pisel, true);
-               }
+                pint->ClearMultiSel();
+                int iItem = -1;
+                LVITEM lv;
+                for(size_t i = 0; i < count; i++)
+                {
+                    iItem = ListView_GetNextItem( listBox, iItem, LVNI_SELECTED );
+                    lv.iItem = iItem;
+                    lv.mask = LVIF_PARAM;
+                    if(ListView_GetItem( listBox, &lv ) == TRUE)
+                    {
+                        IScriptable *pscript = (IScriptable*)lv.lParam;
+                        ISelect *const pisel = pscript->GetISelect();
+                        if(pisel)
+                            pint->AddMultiSel( pisel, true );
+                    }
+                }
             }
          }
          break;
