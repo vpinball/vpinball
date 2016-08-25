@@ -9,6 +9,7 @@
 #include <windows.h>
 #include <dbghelp.h>
 #include <cassert>
+#include "svn_version.h"
 
 namespace
 {
@@ -82,7 +83,7 @@ namespace
 
    void WriteHeader(FILE* f)
    {
-      fprintf(f, "Crash report\n============\n");
+      fprintf(f, "Crash report VPX rev%i\n============\n",SVN_REVISION);
    }
 
    const char* GetExceptionString(DWORD exc)
