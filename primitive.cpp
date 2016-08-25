@@ -1719,7 +1719,11 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
                   Material *mat = new Material();
                   if (WaveFrontObjLoadMaterial(szMatName, mat))
                   {
-                     g_pvp->GetActiveTable()->AddMaterial(mat);
+                     PinTable *pActiveTable = g_pvp->GetActiveTable();
+                     if(pActiveTable)
+                     {
+                         pActiveTable->AddMaterial( mat );
+                     }
                      strcpy_s(prim->m_d.m_szMaterial, mat->m_szName);
                      g_pvp->m_sb.PopulateDropdowns(); // May need to update list of images
                      g_pvp->m_sb.RefreshProperties();

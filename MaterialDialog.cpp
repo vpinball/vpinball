@@ -669,6 +669,8 @@ INT_PTR CALLBACK MaterialManagerProc( HWND hwndDlg, UINT uMsg, WPARAM wParam, LP
                                         mat.fOpacity = pmat->m_fOpacity;
                                         mat.bOpacityActive_fEdgeAlpha = pmat->m_bOpacityActive ? 1 : 0;
                                         mat.bOpacityActive_fEdgeAlpha |= ((unsigned char)(clamp( pmat->m_fEdgeAlpha, 0.f, 1.f )*127.f)) << 1;
+                                        mat.bUnused1 = 0;
+                                        mat.bUnused2 = 0;
                                         memcpy( mat.szName, pmat->m_szName, 32 );
                                         fwrite( &mat, 1, sizeof( SaveMaterial ), f );
                                         fwrite( &pmat->m_fElasticity, 1, sizeof( float ), f );

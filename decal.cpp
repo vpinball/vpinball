@@ -301,7 +301,7 @@ void Decal::RenderText()
    if (m_d.m_decaltype != DecalText)
       return;
 
-   RECT rcOut;
+   RECT rcOut = { 0 };
    const int len = lstrlen(m_d.m_sztext);
    HFONT hFont, hFontOld;
    hFont = GetFont();

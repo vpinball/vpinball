@@ -773,6 +773,7 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
       char *szT = MakeChar(ei.bstrDescription);
       AddToDebugOutput(szT);
       delete[] szT;
+      SysFreeString( bstr );
       return S_OK;
    }
 
