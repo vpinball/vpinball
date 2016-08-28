@@ -2529,7 +2529,7 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 				pcv->StopErrorDisplay = true; ///stop Error reporting WIP
 				pcv->ParseForFunction();
 			}
-			pcv->StopErrorDisplay = false;
+			//pcv->StopErrorDisplay = false;
 		}
    }
    break;
