@@ -2444,7 +2444,7 @@ void CodeViewer::ParseVPCore()
 	//intalise Parent child
 ///////////////////////
 	int ParentLevel = 0; //root
-	StopErrorDisplay = false;/// WIP BRANDREW
+	StopErrorDisplay = true;/// WIP BRANDREW (was set to false)
 	ParentTreeInvalid = false;
 	int linecount = 0;
 	while (!feof(fCore))
