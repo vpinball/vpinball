@@ -131,12 +131,15 @@ void ISelect::DoCommand(int icmd, int x, int y)
       g_pvp->ShowDrawingOrderDialog(true);
       break;
    case ID_DRAWINFRONT:
-      GetPTable()->m_vedit.RemoveElement(piedit);
-      GetPTable()->m_vedit.AddElement(piedit);
-      GetPTable()->m_layer[layerIndex].RemoveElement(piedit);
-      GetPTable()->m_layer[layerIndex].AddElement(piedit);
-      GetPTable()->SetDirtyDraw();
+   {
+      PinTable *ptable = GetPTable();
+      ptable->m_vedit.RemoveElement(piedit);
+      ptable->m_vedit.AddElement(piedit);
+      ptable->m_layer[layerIndex].RemoveElement(piedit);
+      ptable->m_layer[layerIndex].AddElement(piedit);
+      ptable->SetDirtyDraw();
       break;
+   }
    case ID_DRAWINBACK:
       GetPTable()->m_vedit.RemoveElement(piedit);
       GetPTable()->m_vedit.InsertElementAt(piedit, 0);

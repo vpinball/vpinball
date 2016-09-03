@@ -486,14 +486,15 @@ void DragPoint::Uncreate()
 
 void DragPoint::DoCommand(int icmd, int x, int y)
 {
+   int index2;
    ISelect::DoCommand(icmd, x, y);
    switch (icmd)
    {
    case ID_POINTMENU_SMOOTH:
-      int index2;
-
-      m_pihdp->GetIEditable()->BeginUndo();
-      m_pihdp->GetIEditable()->MarkForUndo();
+   {
+      IEditable *pedit = m_pihdp->GetIEditable();
+      pedit->BeginUndo();
+      pedit->MarkForUndo();
 
       m_fSmooth = !m_fSmooth;
       index2 = (m_pihdp->m_vdpoint.IndexOf(this) - 1 + m_pihdp->m_vdpoint.Size()) % m_pihdp->m_vdpoint.Size();
@@ -506,14 +507,15 @@ void DragPoint::DoCommand(int icmd, int x, int y)
          m_pihdp->m_vdpoint.ElementAt(index2)->m_fSlingshot = false;
       }
 
-      m_pihdp->GetIEditable()->EndUndo();
-      m_pihdp->GetIEditable()->SetDirtyDraw();
+      pedit->EndUndo();
+      pedit->SetDirtyDraw();
       break;
-
+   }
    case ID_POINTMENU_SLINGSHOT:
-
-      m_pihdp->GetIEditable()->BeginUndo();
-      m_pihdp->GetIEditable()->MarkForUndo();
+   {
+      IEditable *pedit = m_pihdp->GetIEditable();
+      pedit->BeginUndo();
+      pedit->MarkForUndo();
 
       m_fSlingshot = !m_fSlingshot;
       if (m_fSlingshot)
@@ -523,9 +525,10 @@ void DragPoint::DoCommand(int icmd, int x, int y)
          m_pihdp->m_vdpoint.ElementAt(index2)->m_fSmooth = false;
       }
 
-      m_pihdp->GetIEditable()->EndUndo();
-      m_pihdp->GetIEditable()->SetDirtyDraw();
+      pedit->EndUndo();
+      pedit->SetDirtyDraw();
       break;
+   }
    }
 }
 

@@ -163,6 +163,7 @@ public:
 
    virtual void ClearForOverwrite();
 
+   void UpdateLightShapeHeight();
    void PrepareMoversCustom();
 
    virtual void EditMenu(HMENU hmenu);
@@ -202,8 +203,11 @@ public:
 
    LightData m_d;
    LightState m_realState;
+   std::vector<RenderVertex> m_vvertex;
 
+   float m_initSurfaceHeight;
    float m_surfaceHeight;
+   bool  m_updateLightShape;
 
    // Run-time
 private:
