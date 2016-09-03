@@ -141,6 +141,7 @@ Sub LoadVBSFiles(VPMver, VBSfile, VBSver)
 	If ScriptEngineMajorVersion < 5 Then MsgBox "VB Script Engine 5.0 or higher required"
 	ExecuteGlobal GetTextFile(VBSfile)
 	If Err Then MsgBox "Unable to open " & VBSfile & ". Ensure that it is in the same folder as this table. " & vbNewLine & Err.Description	
+	InitializeOptions
 End Sub
 
 Sub LoadVPinMAME

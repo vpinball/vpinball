@@ -11,6 +11,7 @@ Const VPinMAMEDriverVer = 3.51
 '   - now its allowed to have each toy to be set to 0 (sound effect), 1 (DOF) or 2 (both)
 '   - new DOF types: DOFFlippers, DOFTargets, DOFDropTargets
 '   - all values are now stored in the registry (HKEY_CURRENT_USER\SOFTWARE\Visual Pinball\Controller\), and can also be changed from within VP10.2 and above
+'   - InitializeOptions call added to the controller init, for tables that want to use this functionality during gameplay (options menu via F6)
 '
 ' New in 3.50 (Update by Toxie & mfuegemann & Arngrim)
 ' - Added MAC.vbs & IronBalls.vbs & Lancelot.vbs & Antar.vbs
