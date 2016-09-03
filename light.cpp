@@ -81,6 +81,7 @@ Light::Light() : m_lightcenter(this)
    m_d.m_fVisible = true;
    m_roundLight = false;
    m_propVisual = NULL;
+   m_updateLightShape = false;
    memset(m_d.m_szOffImage, 0, MAXTOKEN);
    memset(m_d.m_szSurface, 0, MAXTOKEN);
 }
@@ -531,6 +532,8 @@ void Light::EndPlay()
    // ensure not locked just in case the player exits during a LS sequence
    m_fLockedByLS = false;			//>>> added by chris
 
+   m_vvertex.clear();
+
    IEditable::EndPlay();
    FreeBuffers();
 }
@@ -720,6 +723,9 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
    }
 
    // render light shape
+   if (m_updateLightShape)
+      UpdateLightShapeHeight();
+
    lightColor_intensity.w = m_d.m_currentIntensity;
    if (!m_d.m_BulbLight)
    {
@@ -758,11 +764,34 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
    //	pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_CCW);
 }
 
+void Light::UpdateLightShapeHeight()
+{
+   Vertex3D_NoTex2 *buf;
+
+   float height = m_initSurfaceHeight;
+   if (m_d.m_BulbLight)
+   {
+      height += m_d.m_bulbHaloHeight*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+      m_surfaceHeight = height;
+   }
+
+   customMoverVBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
+   for (int t = 0; t < customMoverVertexNum; t++)
+   {
+      const RenderVertex * const pv0 = &m_vvertex[t];
+      if (!m_fBackglass)
+      {
+         buf[t].z = height + 0.1f;
+      }
+   }
+   customMoverVBuffer->unlock();
+   m_updateLightShape = false;
+}
+
 void Light::PrepareMoversCustom()
 {
-   std::vector<RenderVertex> vvertex;
-   GetRgVertex(vvertex);
-   const unsigned int cvertex = (unsigned int)vvertex.size();
+   GetRgVertex(m_vvertex);
+   const unsigned int cvertex = (unsigned int)m_vvertex.size();
 
    if (cvertex == 0)
       return;
@@ -776,19 +805,16 @@ void Light::PrepareMoversCustom()
    {
       vpoly[i] = i;
 
-      const float dx = vvertex[i].x - m_d.m_vCenter.x;
-      const float dy = vvertex[i].y - m_d.m_vCenter.y;
+      const float dx = m_vvertex[i].x - m_d.m_vCenter.x;
+      const float dy = m_vvertex[i].y - m_d.m_vCenter.y;
       const float dist = dx*dx + dy*dy;
       if (dist > maxdist)
          maxdist = dist;
    }
 
-   PolygonToTriangles(vvertex, vpoly, vtri);
+   PolygonToTriangles(m_vvertex, vpoly, vtri);
    }
 
-   const float inv_maxdist = (maxdist > 0.0f) ? 0.5f / sqrtf(maxdist) : 0.0f;
-   const float inv_tablewidth = 1.0f / (m_ptable->m_right - m_ptable->m_left);
-   const float inv_tableheight = 1.0f / (m_ptable->m_bottom - m_ptable->m_top);
 
    float height = m_surfaceHeight;
    if (m_d.m_BulbLight)
@@ -819,18 +845,22 @@ void Light::PrepareMoversCustom()
    memcpy(bufi, &vtri[0], vtri.size()*sizeof(WORD));
    customMoverIBuffer->unlock();
 
-   customMoverVertexNum = (int)vvertex.size();
+   customMoverVertexNum = (int)m_vvertex.size();
    const DWORD vertexType = (!m_fBackglass) ? MY_D3DFVF_NOTEX2_VERTEX : MY_D3DTRANSFORMED_NOTEX2_VERTEX;
    g_pplayer->m_pin3d.m_pd3dDevice->CreateVertexBuffer(customMoverVertexNum, 0, vertexType, &customMoverVBuffer);
 
    Pin3D * const ppin3d = &g_pplayer->m_pin3d;
    Texture* pin = m_ptable->GetImage(m_d.m_szOffImage);
 
+   const float inv_maxdist = (maxdist > 0.0f) ? 0.5f / sqrtf(maxdist) : 0.0f;
+   const float inv_tablewidth = 1.0f / (m_ptable->m_right - m_ptable->m_left);
+   const float inv_tableheight = 1.0f / (m_ptable->m_bottom - m_ptable->m_top);
+
    Vertex3D_NoTex2 *buf;
    customMoverVBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
    for (int t = 0; t < customMoverVertexNum; t++)
    {
-      const RenderVertex * const pv0 = &vvertex[t];
+      const RenderVertex * const pv0 = &m_vvertex[t];
 
       buf[t].x = pv0->x;
       buf[t].y = pv0->y;
@@ -866,11 +896,13 @@ void Light::RenderSetup(RenderDevice* pd3dDevice)
 {
    m_iblinkframe = 0;
    m_d.m_time_msec = g_pplayer->m_time_msec;
+   m_updateLightShape = false;
 
-   m_surfaceHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
+   m_initSurfaceHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y) * m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
    m_surfaceMaterial = m_ptable->GetSurfaceMaterial(m_d.m_szSurface);
    m_surfaceTexture = m_ptable->GetSurfaceImage(m_d.m_szSurface);
 
+   m_surfaceHeight = m_initSurfaceHeight;
    if (m_realState == LightStateBlinking)
       RestartBlinker(g_pplayer->m_time_msec);
 
@@ -1815,6 +1847,7 @@ STDMETHODIMP Light::put_BulbHaloHeight(float newVal)
    STARTUNDO
 
       m_d.m_bulbHaloHeight = newVal;
+      m_updateLightShape = true;
 
    STOPUNDO
 
