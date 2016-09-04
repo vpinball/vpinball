@@ -27,15 +27,7 @@ HitPlunger::HitPlunger(const float x, const float y, const float x2, const float
    m_plungeranim.m_travelLimit = frameTop;
    m_plungeranim.m_scatterVelocity = pPlunger->m_d.m_scatterVelocity;
 
-   // For consistency with past versions, some behavior varies
-   // according to whether or not "mech enabled" is set.
-   const float restPos = (pPlunger->m_d.m_mechPlunger) ?
-      // Mech Enabled.  The rest position is taken from
-      // the "park position" property.
-      pPlunger->m_d.m_parkPosition :
-      // Non-Mech Enabled.  The rest position is the forward
-      // limit (0.0f in relative coordinates).
-      0.0f;
+   const float restPos = pPlunger->m_d.m_parkPosition; // The rest position is taken from the "park position" property
 
    // start at the rest position
    m_plungeranim.m_restPos = restPos;
@@ -254,14 +246,14 @@ void PlungerAnimObject::UpdateVelocities()
    // figure our current position in relative coordinates (0.0-1.0,
    // where 0.0 is the maximum forward position and 1.0 is the
    // maximum retracted position)
-   float pos = (m_pos - m_frameEnd) / m_frameLen;
+   const float pos = (m_pos - m_frameEnd) / m_frameLen;
 
    // If "mech plunger" is enabled, read the mechanical plunger
    // position; otherwise treat it as fixed at 0.
-   float mech = (m_plunger->m_d.m_mechPlunger ? mechPlunger() : 0.0f);
+   const float mech = m_plunger->m_d.m_mechPlunger ? mechPlunger() : 0.0f;
 
    // calculate the delta from the last reading
-   float dmech = m_mech0 - mech;
+   const float dmech = m_mech0 - mech;
 
    // Frame-to-frame mech movement threshold for detecting a release
    // motion.  1.0 is the full range of travel, which corresponds
@@ -283,7 +275,7 @@ void PlungerAnimObject::UpdateVelocities()
    const float ReleaseThreshold = 0.2f;
 
    // note if we're acting as an auto plunger
-   int autoPlunger = m_plunger->m_d.m_autoPlunger;
+   const int autoPlunger = m_plunger->m_d.m_autoPlunger;
 
    // check which forces are acting on us
    if (m_fireTimer > 0)
@@ -468,10 +460,10 @@ void PlungerAnimObject::UpdateVelocities()
 
       // for a normal plunger, sync to the mech plunger; otherwise
       // just go to the rest position
-      float target = autoPlunger ? m_restPos : mech;
+      const float target = autoPlunger ? m_restPos : mech;
 
       // figure the current difference in positions
-      float error = target - pos;
+      const float error = target - pos;
 
       // Model the software plunger as though it were connected to the
       // mechanical plunger by a spring with spring constant 'mech
