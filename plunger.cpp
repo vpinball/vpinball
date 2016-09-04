@@ -241,9 +241,9 @@ void Plunger::Render(Sur * const psur)
       m_d.m_v.x + m_d.m_width, m_d.m_v.y + m_d.m_height);
 
    // draw a dotted line at the park position, if appropriate
-   if (m_d.m_mechPlunger && m_d.m_parkPosition > 0.0f && m_d.m_parkPosition < 1.0f)
+   if (m_d.m_parkPosition > 0.0f && m_d.m_parkPosition < 1.0f)
    {
-      float park = m_d.m_parkPosition * m_d.m_stroke;
+      const float park = m_d.m_parkPosition * m_d.m_stroke;
       psur->SetLineColor(RGB(0x80, 0x80, 0x80), true, 1);
       psur->Line(m_d.m_v.x - m_d.m_width, m_d.m_v.y - m_d.m_stroke + park,
          m_d.m_v.x + m_d.m_width, m_d.m_v.y - m_d.m_stroke + park);
@@ -348,7 +348,7 @@ void Plunger::SetDefaultPhysics(bool fromMouseClick)
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_parkPosition = fTmp;
    else
-      m_d.m_parkPosition = 0.01f; // according to forum, better than old: (float)(0.5 / 3.0); // typical mechanical plunger has 3 inch stroke and 0.5 inch rest position
+      m_d.m_parkPosition = (float)(0.5 / 3.0); // typical mechanical plunger has 3 inch stroke and 0.5 inch rest position //!! 0.01f better for some HW-plungers, but this seems to be rather a firmware/config issue
    hr = GetRegStringAsFloat("DefaultProps\\Plunger", "ScatterVelocity", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_scatterVelocity = fTmp;
