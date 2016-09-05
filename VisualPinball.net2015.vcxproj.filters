@@ -83,6 +83,7 @@
       <Filter>inc</Filter>
     </ClCompile>
     <ClCompile Include="MaterialDialog.cpp" />
+    <ClCompile Include="ImageDialog.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="vpinball.rc" />
