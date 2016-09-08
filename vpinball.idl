@@ -2079,6 +2079,10 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propput, id(32996), helpstring("property Filter")] HRESULT Filter([in] BSTR newVal);
                 [propget, id(379), helpstring("property Amount")] HRESULT Amount([out, retval] long *pVal);
                 [propput, id(379), helpstring("property Amount")] HRESULT Amount([in] long newVal);
+                [propget, id(DISPID_Timer_Enabled), helpstring("property TimerEnabled")] HRESULT TimerEnabled([out, retval] VARIANT_BOOL *pVal);
+                [propput, id(DISPID_Timer_Enabled), helpstring("property TimerEnabled")] HRESULT TimerEnabled([in] VARIANT_BOOL newVal);
+                [propget, id(DISPID_Timer_Interval), helpstring("property TimerInterval")] HRESULT TimerInterval([out, retval] long *pVal);
+                [propput, id(DISPID_Timer_Interval), helpstring("property TimerInterval")] HRESULT TimerInterval([in] long newVal);
         };
 
         /////////////////////////////////////////////
@@ -2226,7 +2230,7 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
         properties:
         methods:
                 [id(DISPID_GameEvents_Init)]  void Init();
-                //[id(DISPID_TimerEvents_Timer)]  void Timer();
+                [id(DISPID_TimerEvents_Timer)]  void Timer();
         }
 
         [
