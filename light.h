@@ -87,8 +87,10 @@ class IBlink
 public:
    char m_rgblinkpattern[33];
    int m_blinkinterval;
+   int m_duration;
 
    int m_timenextblink;
+   int m_timerEndBlinkTime;
    int m_iblinkframe;
 
    void UpdateBlinker(const int time_msec)
@@ -107,6 +109,8 @@ public:
    {
       m_iblinkframe = 0;
       m_timenextblink = cur_time_msec + m_blinkinterval;
+      if(m_duration > 0)
+          m_timerEndBlinkTime = cur_time_msec + m_duration;
    }
 };
 
@@ -245,6 +249,8 @@ public:
    STDMETHOD(put_IntensityScale)(/*[in]*/ float newVal);
    STDMETHOD(get_BlinkInterval)(/*[out, retval]*/ long *pVal);
    STDMETHOD(put_BlinkInterval)(/*[in]*/ long newVal);
+   STDMETHOD(get_Duration)(/*[out, retval]*/ long *pVal);
+   STDMETHOD(put_Duration)(/*[in]*/ long newVal);
    STDMETHOD(get_BlinkPattern)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(put_BlinkPattern)(/*[in]*/ BSTR newVal);
    STDMETHOD(get_Y)(/*[out, retval]*/ float *pVal);
