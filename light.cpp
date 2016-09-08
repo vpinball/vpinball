@@ -202,6 +202,12 @@ void Light::SetDefaults(bool fromMouseClick)
    else
       m_blinkinterval = 125;
 
+   hr = GetRegInt( "DefaultProps\\Light", "BlinkDuration", &iTmp );
+   if((hr == S_OK) && fromMouseClick)
+       m_duration = iTmp;
+   else
+       m_duration = 0;
+
    hr = GetRegStringAsFloat("DefaultProps\\Light", "Intensity", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_intensity = fTmp;
@@ -298,7 +304,8 @@ void Light::WriteRegDefaults()
    SetRegValue("DefaultProps\\Light", "ColorFull", REG_DWORD, &m_d.m_color2, 4);
    SetRegValue("DefaultProps\\Light", "OffImage", REG_SZ, &m_d.m_szOffImage, lstrlen(m_d.m_szOffImage));
    SetRegValue("DefaultProps\\Light", "BlinkPattern", REG_SZ, &m_rgblinkpattern, lstrlen(m_rgblinkpattern));
-   SetRegValue("DefaultProps\\Light", "BlinkInterval", REG_DWORD, &m_blinkinterval, 4);
+   SetRegValue( "DefaultProps\\Light", "BlinkInterval", REG_DWORD, &m_blinkinterval, 4 );
+   SetRegValue( "DefaultProps\\Light", "BlinkDuration", REG_DWORD, &m_duration, 4 );
    //SetRegValue("DefaultProps\\Light","BorderColor", REG_DWORD, &m_d.m_bordercolor,4);
    SetRegValue("DefaultProps\\Light", "Surface", REG_SZ, &m_d.m_szSurface, lstrlen(m_d.m_szSurface));
    SetRegValueFloat("DefaultProps\\Light", "FadeSpeedUp", m_d.m_fadeSpeedUp);
@@ -606,6 +613,9 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
    m_d.m_time_msec = g_pplayer->m_time_msec;
    const float diff_time_msec = (float)(g_pplayer->m_time_msec - old_time_msec);
 
+   if(m_duration > 0 && m_timerEndBlinkTime < m_d.m_time_msec)
+       m_realState = LightStateOff;
+
    if (m_realState == LightStateBlinking)
       UpdateBlinker(g_pplayer->m_time_msec);
 
@@ -903,8 +913,13 @@ void Light::RenderSetup(RenderDevice* pd3dDevice)
    m_surfaceTexture = m_ptable->GetSurfaceImage(m_d.m_szSurface);
 
    m_surfaceHeight = m_initSurfaceHeight;
+
    if (m_realState == LightStateBlinking)
       RestartBlinker(g_pplayer->m_time_msec);
+   else if(m_duration > 0 && m_realState==LightStateOn)
+   {
+       m_timerEndBlinkTime = g_pplayer->m_time_msec + m_duration;
+   }
 
    const bool isOn = (m_realState == LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : !!m_realState;
    if (isOn)
@@ -1004,7 +1019,8 @@ HRESULT Light::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptke
    bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
    bw.WriteString(FID(BPAT), m_rgblinkpattern);
    bw.WriteString(FID(IMG1), m_d.m_szOffImage);
-   bw.WriteInt(FID(BINT), m_blinkinterval);
+   bw.WriteInt( FID( BINT ), m_blinkinterval );
+   bw.WriteInt( FID( BDUR ), m_duration );
    //bw.WriteInt(FID(BCOL), m_d.m_bordercolor);
    bw.WriteFloat(FID(BWTH), m_d.m_intensity);
    bw.WriteFloat(FID(TRMS), m_d.m_transmissionScale);
@@ -1120,6 +1136,10 @@ BOOL Light::LoadToken(int id, BiffReader *pbr)
    else if (id == FID(BINT))
    {
       pbr->GetInt(&m_blinkinterval);
+   }
+   else if(id == FID( BDUR ))
+   {
+       pbr->GetInt( &m_duration );
    }
    /*else if (id == FID(BCOL))
    {
@@ -1554,6 +1574,26 @@ STDMETHODIMP Light::put_BlinkInterval(long newVal)
       return S_OK;
 }
 
+STDMETHODIMP Light::get_Duration( long *pVal )
+{
+    *pVal = m_duration;
+    return S_OK;
+}
+
+STDMETHODIMP Light::put_Duration( long newVal )
+{
+    STARTUNDO
+
+        m_duration = newVal;
+    if(g_pplayer && (m_realState == LightStateBlinking || m_realState==LightStateOn))
+        m_timerEndBlinkTime = g_pplayer->m_time_msec + m_duration;
+
+    STOPUNDO
+
+        return S_OK;
+}
+
+
 STDMETHODIMP Light::get_Intensity(float *pVal)
 {
    *pVal = m_d.m_intensity;
@@ -1902,6 +1942,9 @@ void Light::setLightState(const LightState newVal)
          if (m_realState == LightStateBlinking)
          {
             m_timenextblink = g_pplayer->m_time_msec; // Start pattern right away // + m_d.m_blinkinterval;
+            if(m_duration > 0)
+                m_timerEndBlinkTime = m_timenextblink+m_duration;
+
             m_iblinkframe = 0; // reset pattern
          }
       }

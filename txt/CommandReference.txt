@@ -395,6 +395,7 @@ TimerEnabled(bool)
 TimerInterval(int)
 BlinkPattern(string)
 BlinkInterval(int)
+Duration(int) - if the light state is set 1=on or 2=blinking the duration defines (in ms) until the light will switch off. Set the duration to 0 for beeing on/blinking forever(default)
 *Surface(string)
 UserValue(any) - can store any user defined value for re-use later-on
 *Image(string)
