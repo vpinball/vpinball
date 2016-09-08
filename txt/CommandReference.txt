@@ -1,8 +1,30 @@
-Visual Pinball 10 command Reference v0.9
+Visual Pinball 10 command Reference v0.91
 by Fuzzel
 
 This is a quick overview of all commands/variables VP knows. A lot of them haven't an effect from the script because they have an impact on the pre-rendering only.
 Variables starting with a (*) can't be changed by the script (most can be read though) or don't have an effect.
+
+
+Changelog:
+10.2:
+- add Duration and BulbHaloHeight property to the light element
+- add PlayAnim,PlayAnimEndless,StopAnim,ContinueAnim & ShowFrame to the primitive element for animation use
+- add EOSTorqueAngle to the flipper element
+- fix TimerEnabled and TimerInterval calls for the flasher element
+10.1:
+- add DefaultBulbIntensityScale to the ball element
+- fix TimerEnabled and TimerInterval calls for the rubber element
+- change RubberThickness,RubberHeight,RubberWidth to take floats instead of just integers for the rubber element
+- add HitHeight property to the rubber element
+- rename TorqueDamping to EOSTorque for the flipper element
+- add Scatter to the flipper element
+- add NormalMap to the primitive element
+- add StaticBulbMesh to the light element
+- add HasHitEvent and Collidable to the bumper element
+- add Dropped/Raised for drop target element
+- add RaiseDelay to target element
+- change BallTrailStrength,GlobalDifficultyLevel and PlayfieldReflectionStrength to range 0..100
+- add DMD to the textbox and flasher element
 
 
 TABLE
@@ -395,7 +417,7 @@ TimerEnabled(bool)
 TimerInterval(int)
 BlinkPattern(string) - off/on pattern for the light to use while the interval is going: 1 is ON, 0 is OFF, for example 111000111000101010101
 BlinkInterval(int)
-Duration(int) - if the light state is set 1=on or 2=blinking the duration defines (in ms) until the light will switch off. Set the duration to 0 for beeing on/blinking forever(default)
+Duration(int) - if the light state is set 1=on or 2=blinking, the duration defines the number of milliseconds until the light will switch off. Set the duration to 0 for beeing on/blinking forever (default)
 *Surface(string)
 UserValue(any) - can store any user defined value for re-use later-on
 *Image(string)
