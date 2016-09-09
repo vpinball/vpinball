@@ -417,7 +417,6 @@ TimerEnabled(bool)
 TimerInterval(int)
 BlinkPattern(string) - off/on pattern for the light to use while the interval is going: 1 is ON, 0 is OFF, for example 111000111000101010101
 BlinkInterval(int)
-Duration(int) - if the light state is set 1=on or 2=blinking, the duration defines the number of milliseconds until the light will switch off. Set the duration to 0 for beeing on/blinking forever (default)
 *Surface(string)
 UserValue(any) - can store any user defined value for re-use later-on
 *Image(string)
@@ -434,6 +433,12 @@ BulbModulateVsAdd(float) - blends between modulating and additive when bulb is e
 BulbHaloHeight(float) - sets the halo height of a bulb light
 Visible(bool)
 
+Methods
+-------
+Duration(int durationTime, int finalState) - if a light is set to ON or BLINKING you can define a duration time until the light switches to the state defined by finalState
+                                             e.g.: 
+                                             light1.State=2 (light starts to blink)
+                                             light1.Duration 1000, 1 (light will blink for 1000ms and then switches to ON)
 
 PLUNGER
 ==============================================================================================================================================
