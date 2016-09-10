@@ -293,7 +293,11 @@ public:
    STDMETHOD(get_EnvironmentImage)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(put_EnvironmentImage)(/*[in]*/ BSTR newVal);
 
-   STDMETHOD(Version)(/*[out, retval]*/ int *pVal);
+   STDMETHOD(get_Version)(/*[out, retval]*/ int *pVal);
+   STDMETHOD(get_VPBuildVersion)(/*[out, retval]*/ int *pVal);
+   STDMETHOD(get_VersionMajor)(/*[out, retval]*/ int *pVal);
+   STDMETHOD(get_VersionMinor)(/*[out, retval]*/ int *pVal);
+   STDMETHOD(get_VersionRevision)(/*[out, retval]*/ int *pVal);
 
    /////////////////////////////////////////////
 
@@ -796,7 +800,6 @@ public:
    STDMETHOD(get_LeftTiltKey)(/*[out, retval]*/ long *pVal);
    STDMETHOD(get_RightFlipperKey)(/*[out, retval]*/ long *pVal);
    STDMETHOD(get_LeftFlipperKey)(/*[out, retval]*/ long *pVal);
-   STDMETHOD(get_VPBuildVersion)(/*[out, retval]*/ long *pVal);
 
    STDMETHOD(put_DMDWidth)(/*[in]*/ int pVal);
    STDMETHOD(put_DMDHeight)(/*[in]*/ int pVal);
@@ -819,10 +822,6 @@ public:
    STDMETHOD(get_LeftMagnaSave)(/*[out, retval]*/ long *pVal);
    STDMETHOD(get_RightMagnaSave)(/*[out, retval]*/ long *pVal);
    STDMETHOD(get_ExitGame)(/*[out, retval]*/ long *pVal);
-
-   STDMETHOD(VersionMajor)(/*[out, retval]*/ int *pVal);
-   STDMETHOD(VersionMinor)(/*[out, retval]*/ int *pVal);
-   STDMETHOD(VersionRevision)(/*[out, retval]*/ int *pVal);
 
    STDMETHOD(GetBalls)(/*[out, retval]*/ LPSAFEARRAY *pVal);
    STDMETHOD(GetElements)(/*[out, retval]*/ LPSAFEARRAY *pVal);
