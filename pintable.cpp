@@ -1104,6 +1104,36 @@ STDMETHODIMP ScriptGlobalTable::GetElementByName(BSTR name, IDispatch* *pVal)
    return S_OK;
 }
 
+STDMETHODIMP ScriptGlobalTable::get_Version(int *pVal)
+{
+	*pVal = VP_VERSION_MAJOR * 1000 + VP_VERSION_MINOR * 100 + VP_VERSION_REV;
+	return S_OK;
+}
+
+STDMETHODIMP ScriptGlobalTable::get_VPBuildVersion(int *pVal)
+{
+	*pVal = VP_VERSION_MAJOR * 1000 + VP_VERSION_MINOR * 100 + VP_VERSION_REV;
+	return S_OK;
+}
+
+STDMETHODIMP ScriptGlobalTable::get_VersionMajor(int *pVal)
+{
+	*pVal = VP_VERSION_MAJOR;
+	return S_OK;
+}
+
+STDMETHODIMP ScriptGlobalTable::get_VersionMinor(int *pVal)
+{
+	*pVal = VP_VERSION_MINOR;
+	return S_OK;
+}
+
+STDMETHODIMP ScriptGlobalTable::get_VersionRevision(int *pVal)
+{
+	*pVal = VP_VERSION_REV;
+	return S_OK;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 

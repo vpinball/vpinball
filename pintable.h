@@ -827,6 +827,12 @@ public:
    STDMETHOD(GetElements)(/*[out, retval]*/ LPSAFEARRAY *pVal);
    STDMETHOD(GetElementByName)(/*[in]*/ BSTR name, /*[out, retval]*/ IDispatch* *pVal);
 
+   STDMETHOD(get_Version)(/*[out, retval]*/ int *pVal);
+   STDMETHOD(get_VPBuildVersion)(/*[out, retval]*/ int *pVal);
+   STDMETHOD(get_VersionMajor)(/*[out, retval]*/ int *pVal);
+   STDMETHOD(get_VersionMinor)(/*[out, retval]*/ int *pVal);
+   STDMETHOD(get_VersionRevision)(/*[out, retval]*/ int *pVal);
+
    void Init(PinTable *pt);
 
    virtual IDispatch *GetDispatch();

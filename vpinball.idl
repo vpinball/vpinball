@@ -740,6 +740,12 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propput, id(45), helpstring("method DMDHeight")] HRESULT DMDHeight([in] int pVal);
                 [propput, id(46), helpstring("method DMDPixels")] HRESULT DMDPixels([in] VARIANT pVal);
 				[propput, id(47), helpstring("method DMDColoredPixels")] HRESULT DMDColoredPixels([in] VARIANT pVal);
+
+				[propget, id(219), helpstring("property Version")] HRESULT Version([out, retval] int *pVal);
+				[propget, id(38), helpstring("property VersionMajor")] HRESULT VersionMajor([out, retval] int *pVal);
+				[propget, id(39), helpstring("property VersionMinor")] HRESULT VersionMinor([out, retval] int *pVal);
+				[propget, id(40), helpstring("property VersionRevision")] HRESULT VersionRevision([out, retval] int *pVal);
+				[propget, id(24), helpstring("property VPBuildVersion")] HRESULT VPBuildVersion([out, retval] int *pVal);
 		}
 
         [
