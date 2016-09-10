@@ -1,7 +1,7 @@
 Visual Pinball 10 command Reference v0.91
 by Fuzzel
 
-This is a quick overview of all commands/variables VP knows. A lot of them haven't an effect from the script because they have an impact on the pre-rendering only.
+This is a quick overview of all commands/variables VP knows. A lot of them do not have an effect when called from the script because they have an impact on the pre-rendering only.
 Variables starting with a (*) can't be changed by the script (most can be read though) or don't have an effect.
 
 
@@ -11,7 +11,7 @@ Changelog:
 - add PlayAnim,PlayAnimEndless,StopAnim,ContinueAnim & ShowFrame to the primitive element for animation use
 - add EOSTorqueAngle to the flipper element
 - fix TimerEnabled and TimerInterval calls for the flasher element
-- add Version and fix VersionMajor/Minor/Revision for the table element
+- add Version, VersionMajor/Minor/Revision for the table element
 10.1:
 - add DefaultBulbIntensityScale to the ball element
 - fix TimerEnabled and TimerInterval calls for the rubber element
@@ -102,7 +102,7 @@ BallDecalMode(bool) - switch between using the ball decal as ball logo or ball '
 
 *EnableAntialiasing(bool) - enables AA for this table if you have set 'Enable AntiAliasing' in the video options. default=false
 *EnableFXAA(bool) - enables FXAA for this table if you have set 'Enable FXAA' in the video options. default=false
-*RenderEMReels(bool) - default=true						
+*RenderEMReels(bool) - default=true
 *RenderDecals(bool) - default=true
 *TableAdaptiveVSync(int) - sets adaptive vsync option for this table (-1=use global setting, 0=off, 1=automatic, any other number is refresh rate in Hz)
 *BallReflection - enable ball reflection on table. depending on the global video setting 'Reflect Ball on Playfield' this is on or off. Or it is defined specific for this table.
@@ -771,5 +771,5 @@ Scatter(float)
 DropSpeed(float)            - the speed how fast the drop or hit target will move 
 RaiseDelay(int)             - defines a delay in milliseconds after the dropped target will start to raise to it's normal position
 IsDropped(bool)             - can only be used for drop targets if the drop target is raised or dropped
-TimerEnabled(bool)			- each target has a build-in timer which can be enabled by setting this to 1
-TimerInterval(int)			- the time in milliseconds when the timer expires
+TimerEnabled(bool)          - each target has a build-in timer which can be enabled by setting this to 1
+TimerInterval(int)          - the time in milliseconds when the timer expires
