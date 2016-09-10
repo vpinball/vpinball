@@ -677,8 +677,12 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propput, id(398), helpstring("property OverwriteAlphaAcc")] HRESULT GlobalAlphaAcc([in] VARIANT_BOOL newVal);
 				[propget, id(588), helpstring("property OverwriteDayNight")] HRESULT GlobalDayNight([out, retval] VARIANT_BOOL *pVal);
 				[propput, id(588), helpstring("property OverwriteDayNight")] HRESULT GlobalDayNight([in] VARIANT_BOOL newVal);
-				[id(219), helpstring("method Version")] HRESULT Version([out, retval] int *pVal);
-                }
+				[propget, id(219), helpstring("property Version")] HRESULT Version([out, retval] int *pVal);
+				[propget, id(38), helpstring("property VersionMajor")] HRESULT VersionMajor([out, retval] int *pVal);
+				[propget, id(39), helpstring("property VersionMinor")] HRESULT VersionMinor([out, retval] int *pVal);
+				[propget, id(40), helpstring("property VersionRevision")] HRESULT VersionRevision([out, retval] int *pVal);
+				[propget, id(24), helpstring("property VPBuildVersion")] HRESULT VPBuildVersion([out, retval] int *pVal);
+				}
 
         // Interface exposed globally to script
         [
@@ -713,7 +717,6 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propget, id(67), helpstring("property AddCreditKey2")] HRESULT AddCreditKey2([out, retval] long *pVal);
                 [propget, id(22), helpstring("property GameTime")] HRESULT GameTime([out, retval] long *pVal);
                 [id(23), helpstring("method GetTextFile")] HRESULT GetTextFile(BSTR FileName, [out, retval] BSTR *pContents);
-                [propget, id(24), helpstring("property VPBuildVersion")] HRESULT VPBuildVersion([out, retval] long *pVal);
                 [id(25), helpstring("method BeginModal")] HRESULT BeginModal();
                 [id(26), helpstring("method EndModal")] HRESULT EndModal();
                 [id(DISPID_Table_Nudge), helpstring("method Nudge")] HRESULT Nudge([in] float Angle, [in] float Force);
@@ -724,10 +727,6 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propget, id(34), helpstring("property ExitGame")] HRESULT ExitGame([out, retval] long *pVal);
                 [id(33), helpstring("method FireKnocker")] HRESULT FireKnocker([defaultvalue(1)] int Count);
                 [id(37), helpstring("method QuitPlayer")] HRESULT QuitPlayer([defaultvalue(0)] int CloseType);
-
-                [id(38), helpstring("method VersionMajor")] HRESULT VersionMajor([out, retval] int *pVal);
-                [id(39), helpstring("method VersionMinor")] HRESULT VersionMinor([out, retval] int *pVal);
-                [id(40), helpstring("method VersionRevision")] HRESULT VersionRevision([out, retval] int *pVal);
 
                 [propget, id(13434), helpstring("property ShowDT")] HRESULT ShowDT([out, retval] VARIANT_BOOL *pVal);
 

@@ -54,25 +54,6 @@ STDMETHODIMP ScriptGlobalTable::EndModal()
    return S_OK;
 }
 
-STDMETHODIMP ScriptGlobalTable::VersionMajor(int *pVal)
-{
-   *pVal = VP_VERSION_MAJOR;
-   return S_OK;
-}
-
-STDMETHODIMP ScriptGlobalTable::VersionMinor(int *pVal)
-{
-   *pVal = VP_VERSION_MINOR;
-   return S_OK;
-}
-
-STDMETHODIMP ScriptGlobalTable::VersionRevision(int *pVal)
-{
-   *pVal = VP_VERSION_REV;
-   return S_OK;
-}
-
-
 STDMETHODIMP ScriptGlobalTable::Nudge(float Angle, float Force)
 {
    if (g_pplayer)
@@ -546,12 +527,6 @@ STDMETHODIMP ScriptGlobalTable::get_GameTime(long *pVal)
 
    *pVal = g_pplayer->m_time_msec;
 
-   return S_OK;
-}
-
-STDMETHODIMP ScriptGlobalTable::get_VPBuildVersion(long *pVal)
-{
-   *pVal = VP_VERSION_MAJOR * 1000 + VP_VERSION_MINOR * 100 + VP_VERSION_REV;
    return S_OK;
 }
 
@@ -10099,10 +10074,34 @@ STDMETHODIMP PinTable::QuitPlayer(int CloseType)
    return S_OK;
 }
 
-STDMETHODIMP PinTable::Version(int *pVal)
+STDMETHODIMP PinTable::get_Version(int *pVal)
 {
    *pVal = VP_VERSION_MAJOR * 1000 + VP_VERSION_MINOR * 100 + VP_VERSION_REV;
    return S_OK;
+}
+
+STDMETHODIMP PinTable::get_VPBuildVersion(int *pVal)
+{
+	*pVal = VP_VERSION_MAJOR * 1000 + VP_VERSION_MINOR * 100 + VP_VERSION_REV;
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::get_VersionMajor(int *pVal)
+{
+	*pVal = VP_VERSION_MAJOR;
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::get_VersionMinor(int *pVal)
+{
+	*pVal = VP_VERSION_MINOR;
+	return S_OK;
+}
+
+STDMETHODIMP PinTable::get_VersionRevision(int *pVal)
+{
+	*pVal = VP_VERSION_REV;
+	return S_OK;
 }
 
 void PinTable::InvokeBallBallCollisionCallback(Ball *b1, Ball *b2, float hitVelocity)

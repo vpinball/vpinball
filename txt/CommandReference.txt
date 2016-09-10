@@ -11,6 +11,7 @@ Changelog:
 - add PlayAnim,PlayAnimEndless,StopAnim,ContinueAnim & ShowFrame to the primitive element for animation use
 - add EOSTorqueAngle to the flipper element
 - fix TimerEnabled and TimerInterval calls for the flasher element
+- add Version and fix VersionMajor/Minor/Revision for the table element
 10.1:
 - add DefaultBulbIntensityScale to the ball element
 - fix TimerEnabled and TimerInterval calls for the rubber element
@@ -149,7 +150,8 @@ Nudge(float Angle, float Force)
 PlaySound(string, int loopcount, float volume, float pan, float randompitch, int pitch, bool usesame, bool restart)
 FireKnocker(int Count)
 QuitPlayer(int CloseType)
-VPBuildVersion - deprecated
+Version - returns VP_VERSION_MAJOR * 1000 + VP_VERSION_MINOR * 100 + VP_VERSION_REVISION
+VPBuildVersion - same, deprecated
 VersionMajor - major VP version number
 VersionMinor - minor VP version number
 VersionRevision - VP version revision
