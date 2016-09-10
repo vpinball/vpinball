@@ -40,6 +40,7 @@ Insert Timer                Ctrl + M
 Insert Trigger              Ctrl + T
 Insert Wall                 Ctrl + W
 Lock Element                Ctrl + Shift + L
+Pan Table View              Middle Mouse Button
 
 
 Function during Play        Key Combination
