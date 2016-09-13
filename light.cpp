@@ -1570,7 +1570,7 @@ STDMETHODIMP Light::Duration( long newVal, long state )
 
         m_duration = newVal;
         m_finalState = state;
-    if(g_pplayer && (m_realState == LightStateBlinking || m_realState==LightStateOn))
+    if(g_pplayer)
         m_timerEndBlinkTime = g_pplayer->m_time_msec + m_duration;
 
     STOPUNDO
@@ -1927,11 +1927,10 @@ void Light::setLightState(const LightState newVal)
          if (m_realState == LightStateBlinking)
          {
             m_timenextblink = g_pplayer->m_time_msec; // Start pattern right away // + m_d.m_blinkinterval;
-            if(m_duration > 0)
-                m_timerEndBlinkTime = m_timenextblink+m_duration;
-
             m_iblinkframe = 0; // reset pattern
          }
+         if(m_duration > 0)
+             m_timerEndBlinkTime = m_timenextblink + m_duration;
       }
    }
 }
