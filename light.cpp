@@ -1369,7 +1369,10 @@ STDMETHODIMP Light::put_FalloffPower(float newVal)
 
 STDMETHODIMP Light::get_State(LightState *pVal)
 {
-   *pVal = m_d.m_state;
+    if(g_pplayer)
+        *pVal = m_realState;
+    else
+    *pVal = m_d.m_state;
 
    return S_OK;
 }
