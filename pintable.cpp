@@ -6699,18 +6699,12 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
       {
          // panning feature starts here...if the user holds the middle mouse button and moves the mouse 
          // everything is moved in the direction of the mouse was moved
-         int factorX = 300;
-         int factorY = 300;
-         SCROLLINFO si;
-         ZeroMemory(&si, sizeof(SCROLLINFO));
-         si.cbSize = sizeof(SCROLLINFO);
-         si.fMask = SIF_ALL;
-         GetScrollInfo(hwnd, SB_HORZ, &si);
-          if (pt->m_oldMousePosX > x)  pt->m_offset.x += si.nPage / factorX;
-          if (pt->m_oldMousePosX < x)  pt->m_offset.x -= si.nPage / factorX;
-         GetScrollInfo(hwnd, SB_VERT, &si);
-         if (pt->m_oldMousePosY > y)  pt->m_offset.y += si.nPage / factorY;
-         if (pt->m_oldMousePosY < y)  pt->m_offset.y -= si.nPage / factorY;
+         int dx = abs(pt->m_oldMousePosX - x);
+         int dy = abs(pt->m_oldMousePosY - y);
+         if(pt->m_oldMousePosX > x)  pt->m_offset.x += dx; 
+         if(pt->m_oldMousePosX < x)  pt->m_offset.x -= dx; 
+         if(pt->m_oldMousePosY > y)  pt->m_offset.y += dy; 
+         if(pt->m_oldMousePosY < y)  pt->m_offset.y -= dy; 
          pt->SetDirtyDraw();
          pt->SetMyScrollInfo();
          pt->m_oldMousePosX = x;
