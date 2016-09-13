@@ -292,7 +292,7 @@ public:
    STDMETHOD(put_ShowReflectionOnBall)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_Visible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_Visible)(/*[in]*/ VARIANT_BOOL newVal);
-   STDMETHOD( Duration )(/*[in]*/long newVal, /*[in]*/long state);
+   STDMETHOD( Duration )(/*[in]*/long startState, /*[in]*/long newVal, /*[in]*/long endState);
 };
 
 #endif // !defined(AFX_LIGHT_H__7445FDB1_1FBE_4975_9AB6_367E6D16098F__INCLUDED_)

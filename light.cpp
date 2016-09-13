@@ -1564,12 +1564,13 @@ STDMETHODIMP Light::put_BlinkInterval(long newVal)
 }
 
 
-STDMETHODIMP Light::Duration( long newVal, long state )
+STDMETHODIMP Light::Duration( long startState, long newVal, long endState )
 {
     STARTUNDO
 
+        m_realState = (LightState)startState;
         m_duration = newVal;
-        m_finalState = state;
+        m_finalState = endState;
     if(g_pplayer)
         m_timerEndBlinkTime = g_pplayer->m_time_msec + m_duration;
 
