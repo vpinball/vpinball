@@ -437,10 +437,9 @@ Visible(bool)
 
 Methods
 -------
-Duration(int durationTime, int finalState) - if a light is set to ON or BLINKING you can define a duration time until the light switches to the state defined by finalState
-                                             e.g.: 
-                                             light1.State=2 (light starts to blink)
-                                             light1.Duration 1000, 1 (light will blink for 1000ms and then switches to ON)
+Duration(int startState, int durationTime, int endState) - starts a light in startState and leaves it into that state for the amount of milliseconds defined by durationTime until the light switches to the endState
+                                                           e.g.: 
+                                                           light1.Duration 2, 1000, 1 (light starts to blink for 1000ms and then switches to ON)
 
 PLUNGER
 ==============================================================================================================================================
