@@ -91,7 +91,7 @@ public:
    int m_finalState;
 
    int m_timenextblink;
-   int m_timerEndBlinkTime;
+   int m_timerDurationEndTime;
    int m_iblinkframe;
 
    void UpdateBlinker(const int time_msec)
@@ -110,8 +110,7 @@ public:
    {
       m_iblinkframe = 0;
       m_timenextblink = cur_time_msec + m_blinkinterval;
-      if(m_duration > 0)
-          m_timerEndBlinkTime = cur_time_msec + m_duration;
+      m_timerDurationEndTime = cur_time_msec + m_duration;
    }
 };
 

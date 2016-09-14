@@ -145,6 +145,7 @@ void Light::SetDefaults(bool fromMouseClick)
    int iTmp;
 
    m_duration = 0;
+   m_finalState = 0;
    hr = GetRegStringAsFloat("DefaultProps\\Light", "Falloff", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
       m_d.m_falloff = fTmp;
@@ -607,9 +608,13 @@ void Light::PostRenderStatic(RenderDevice* pd3dDevice)
    m_d.m_time_msec = g_pplayer->m_time_msec;
    const float diff_time_msec = (float)(g_pplayer->m_time_msec - old_time_msec);
 
-   if((m_duration > 0) && ((U32)m_timerEndBlinkTime < m_d.m_time_msec))
+   if((m_duration > 0) && ((U32)m_timerDurationEndTime < m_d.m_time_msec))
+   {
        m_realState = (LightState)m_finalState;
-
+       m_duration = 0;
+       if(m_realState == LightStateBlinking)
+           RestartBlinker( g_pplayer->m_time_msec );
+   }
    if (m_realState == LightStateBlinking)
       UpdateBlinker(g_pplayer->m_time_msec);
 
@@ -912,7 +917,7 @@ void Light::RenderSetup(RenderDevice* pd3dDevice)
       RestartBlinker(g_pplayer->m_time_msec);
    else if(m_duration > 0 && m_realState==LightStateOn)
    {
-       m_timerEndBlinkTime = g_pplayer->m_time_msec + m_duration;
+       m_timerDurationEndTime = g_pplayer->m_time_msec + m_duration;
    }
 
    const bool isOn = (m_realState == LightStateBlinking) ? (m_rgblinkpattern[m_iblinkframe] == '1') : !!m_realState;
@@ -1575,7 +1580,7 @@ STDMETHODIMP Light::Duration( long startState, long newVal, long endState )
         m_duration = newVal;
         m_finalState = endState;
     if(g_pplayer)
-        m_timerEndBlinkTime = g_pplayer->m_time_msec + m_duration;
+        m_timerDurationEndTime = g_pplayer->m_time_msec + m_duration;
 
     STOPUNDO
 
@@ -1934,7 +1939,7 @@ void Light::setLightState(const LightState newVal)
             m_iblinkframe = 0; // reset pattern
          }
          if(m_duration > 0)
-             m_timerEndBlinkTime = m_timenextblink + m_duration;
+             m_duration = 0;    //disable duration if a state was set this way
       }
    }
 }
