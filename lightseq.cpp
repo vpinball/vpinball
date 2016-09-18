@@ -699,9 +699,9 @@ STDMETHODIMP LightSeq::StopPlay()
          if (type == eItemLight)
          {
             Light * const pLight = (Light *)m_pcollection->m_visel.ElementAt(i);
-            pLight->unLockLight();
             LightState state;
             pLight->get_State(&state);
+            pLight->unLockLight();
             pLight->put_State(state);
          }
       }

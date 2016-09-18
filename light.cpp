@@ -1374,10 +1374,10 @@ STDMETHODIMP Light::put_FalloffPower(float newVal)
 
 STDMETHODIMP Light::get_State(LightState *pVal)
 {
-    if(g_pplayer)
-        *pVal = m_realState;
+    if(g_pplayer && !m_fLockedByLS)
+        *pVal = m_realState; 
     else
-    *pVal = m_d.m_state;
+    *pVal = m_d.m_state; //the LS needs the old m_d.m_state and not the current one, m_fLockedByLS is true if under the light is under control of the LS
 
    return S_OK;
 }
