@@ -49,7 +49,7 @@ class cvpmNudge2
 		ReDim mForce(vpmSetArray(mSlingBump, aSlingBump))
 		For ii = 0 To UBound(mForce)
 			If TypeName(mSlingBump(ii)) = "Bumper" Then mForce(ii) = mSlingBump(ii).Threshold
-			If TypeName(mSlingBump(ii)) = "Wall" Then mForce(ii) = mSlingBump(ii).SlingshotThreshold
+			If vpmVPVer >= 90 and TypeName(mSlingBump(ii)) = "Wall" Then mForce(ii) = mSlingBump(ii).SlingshotThreshold
 		Next
 	End Property
 
@@ -94,13 +94,13 @@ class cvpmNudge2
 			ii = 0
 			For Each obj In mSlingBump
 				If TypeName(obj) = "Bumper" Then obj.Threshold = mForce(ii) 
-				If TypeName(obj) = "Wall" Then obj.SlingshotThreshold = mForce(ii)
+				If vpmVPVer >= 90 and TypeName(obj) = "Wall" Then obj.SlingshotThreshold = mForce(ii)
 				ii = ii + 1
 			Next
 		Else
 			For Each obj In mSlingBump
 				If TypeName(obj) = "Bumper" Then obj.Threshold = 100
-				If TypeName(obj) = "Wall" Then obj.SlingshotThreshold = 100
+				If vpmVPVer >= 90 and TypeName(obj) = "Wall" Then obj.SlingshotThreshold = 100
 			Next
 		End If
 	End Sub
