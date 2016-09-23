@@ -3,10 +3,11 @@ Const VPinMAMEDriverVer = 3.51
 '=======================
 ' VPinMAME driver core.
 '=======================
-' New in 3.51 (Update by mfuegemann & Arngrim)
+' New in 3.51 (Update by mfuegemann & Arngrim & Toxie)
 ' - gts1.vbs dip fix
 ' - Add comments to cvpmDropTarget.CreateEvents: do not use this anymore in VP10 and above, as drop targets have an animation time nowadays
 ' - Change default interval of the PinMAME timer to 10 if VP10 (or newer) is running, and leave it at 1 for everything else
+' - Fix missing SlingshotThreshold() when using VP8.X
 ' - (Controller.vbs changes)
 '   - now its allowed to have each toy to be set to 0 (sound effect), 1 (DOF) or 2 (both)
 '   - new DOF types: DOFFlippers, DOFTargets, DOFDropTargets
@@ -1616,7 +1617,7 @@ class cvpmNudge
 		ReDim mForce(vpmSetArray(mSlingBump, aSlingBump))
 		For ii = 0 To UBound(mForce)
 			If TypeName(mSlingBump(ii)) = "Bumper" Then mForce(ii) = mSlingBump(ii).Threshold
-			If TypeName(mSlingBump(ii)) = "Wall" Then mForce(ii) = mSlingBump(ii).SlingshotThreshold
+			If vpmVPVer >= 90 and TypeName(mSlingBump(ii)) = "Wall" Then mForce(ii) = mSlingBump(ii).SlingshotThreshold
 		Next
 	End Property
 
@@ -1652,13 +1653,13 @@ class cvpmNudge
 			ii = 0
 			For Each obj In mSlingBump
 				If TypeName(obj) = "Bumper" Then obj.Threshold = mForce(ii) 
-				If TypeName(obj) = "Wall" Then obj.SlingshotThreshold = mForce(ii)
+				If vpmVPVer >= 90 and TypeName(obj) = "Wall" Then obj.SlingshotThreshold = mForce(ii)
 				ii = ii + 1
 			Next
 		Else
 			For Each obj In mSlingBump
 				If TypeName(obj) = "Bumper" Then obj.Threshold = 100
-				If TypeName(obj) = "Wall" Then obj.SlingshotThreshold = 100
+				If vpmVPVer >= 90 and TypeName(obj) = "Wall" Then obj.SlingshotThreshold = 100
 			Next
 		End If
 	End Sub
