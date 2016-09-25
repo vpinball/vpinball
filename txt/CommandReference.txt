@@ -7,6 +7,7 @@ Variables starting with a (*) can't be changed by the script (most can be read t
 
 Changelog:
 10.2:
+- extend PlayMusic with optional volume (0..1) and better document PlaySound
 - add Duration and BulbHaloHeight property to the light element
 - add PlayAnim,PlayAnimEndless,StopAnim,ContinueAnim & ShowFrame to the primitive element for animation use
 - add EOSTorqueAngle to the flipper element
@@ -147,7 +148,19 @@ Methods
 -------
 
 Nudge(float Angle, float Force)
-PlaySound(string, int loopcount, float volume, float pan, float randompitch, int pitch, bool usesame, bool restart)
+PlaySound(string, int loopcount, float volume, float pan, float randompitch, int pitch, bool useexisting, bool restart)
+ - also allows to increase/decrease the frequency of an already playing samples, and in general to apply all the settings to an already playing sample, and to choose if to restart this playing sample from the beginning or not
+   loopcound chooses the amount of loops
+   volume is in 0..1
+   pan ranges from -1.0 (left) over 0.0 (both) to 1.0 (right)
+   randompitch ranges from 0.0 (no randomization) to 1.0 (vary between half speed to double speed)
+   pitch can be positive or negative and directly adds onto the standard sample frequency
+   useexisting is 0 or 1 (if no existing/playing copy of the sound is found, then a new one is created)
+   restart is 0 or 1 (only useful if useexisting is 1)
+ - so f.e. PlaySound "FlipperUp",0,0.5,-1.0,1.0 would play the sound not looped (0), at half the volume (0.5), only on left speaker (-1.0), with varying pitch (1.0)
+StopSound(string)
+PlayMusic(string, float volume) - volume 0..1
+EndMusic()
 FireKnocker(int Count)
 QuitPlayer(int CloseType)
 Version - returns VP_VERSION_MAJOR * 1000 + VP_VERSION_MINOR * 100 + VP_VERSION_REVISION

@@ -699,7 +699,7 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propget, id(7), helpstring("property RightTiltKey")] HRESULT RightTiltKey([out, retval] long *pVal);
                 [propget, id(8), helpstring("property CenterTiltKey")] HRESULT CenterTiltKey([out, retval] long *pVal);
                 [propget, id(9), helpstring("property PlungerKey")] HRESULT PlungerKey([out, retval] long *pVal);
-                [id(10), helpstring("method PlayMusic")] HRESULT PlayMusic(BSTR str);
+                [id(10), helpstring("method PlayMusic")] HRESULT PlayMusic(BSTR str, [defaultvalue(1)] float Volume);
                 [id(11), helpstring("method EndMusic")] HRESULT EndMusic();
                 [propget, id(12), helpstring("property StartGameKey")] HRESULT StartGameKey([out, retval] long *pVal);
                 [propget, id(13), helpstring("property UserDirectory")] HRESULT UserDirectory([out, retval] BSTR *pVal);
