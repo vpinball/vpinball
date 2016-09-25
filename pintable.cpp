@@ -97,7 +97,7 @@ STDMETHODIMP ScriptGlobalTable::StopSound(BSTR Sound)
    return S_OK;
 }
 
-STDMETHODIMP ScriptGlobalTable::PlayMusic(BSTR str)
+STDMETHODIMP ScriptGlobalTable::PlayMusic(BSTR str, float volume)
 {
    if (g_pplayer && g_pplayer->m_fPlayMusic)
    {
@@ -124,7 +124,7 @@ STDMETHODIMP ScriptGlobalTable::PlayMusic(BSTR str)
 
       g_pplayer->m_pxap = new XAudPlayer();
 
-      const float MusicVolumef = max(min((float)g_pplayer->m_MusicVolume*m_pt->m_TableMusicVolume, 100.0f), 0.0f);
+      const float MusicVolumef = max(min((float)g_pplayer->m_MusicVolume*m_pt->m_TableMusicVolume*volume, 100.0f), 0.0f);
       const int MusicVolume = (MusicVolumef == 0.0f) ? DSBVOLUME_MIN : (int)(logf(MusicVolumef)*(float)(1000.0 / log(10.0)) - 2000.0f); // 10 volume = -10Db
 
       if (!g_pplayer->m_pxap->Init(szPath, MusicVolume))
