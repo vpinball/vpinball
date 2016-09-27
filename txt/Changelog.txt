@@ -39,6 +39,8 @@ VP 10.2.0 Changelog
 
 - remove some debugging script editor output messages
 
+- fixed that the ball size was not updated in the pause debugging menu
+
 - see CommandReference.txt for the changelog of the scripting properties/interface
 
 - add DOF controller configuration also to the VP keys dialog

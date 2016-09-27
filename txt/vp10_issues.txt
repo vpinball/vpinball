@@ -1,7 +1,7 @@
 Renderer known issues:
 
-*) textboxes don't work
-*) text decals don't work
+*) textboxes don't work?
+*) text decals don't work?
 *) stereo 3D is only working soso since the tweaks to the depth buffer range
 *) 4xMSAA flickers, thus disabled
 *) textures aren't preloaded, can lead to stutter in some cases
