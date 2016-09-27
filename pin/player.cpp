@@ -5357,6 +5357,13 @@ INT_PTR CALLBACK DebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
          }
          }
       }
+      default:
+          switch (LOWORD(wParam))
+          {
+          case IDC_THROW_BALL_SIZE_EDIT2:
+              g_pplayer->m_DebugBallSize = GetDlgItemInt(hwndDlg, IDC_THROW_BALL_SIZE_EDIT2, NULL, FALSE);
+              break;
+          }
       break;
    }
 
