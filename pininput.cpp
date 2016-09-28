@@ -66,7 +66,8 @@ PinInput::PinInput()
    m_joycustom2 = 0;
    m_joycustom3 = 0;
    m_joycustom4 = 0;
-   m_joydebug = 0;
+   m_joydebugballs = 0;
+   m_joydebugger = 0;
    m_joymechtilt = 0;
 
    m_firedautostart = 0;
@@ -200,9 +201,12 @@ PinInput::PinInput()
    if (hr == S_OK) m_joymechtilt = tmp;
 
    hr = GetRegInt("Player", "JoyDebugKey", &tmp);
-   if (hr == S_OK) m_joydebug = tmp;
+   if (hr == S_OK) m_joydebugballs = tmp;
 
-   hr = GetRegInt("Player", "EnableMouseInPlayer", &tmp);
+   hr = GetRegInt( "Player", "JoyDebuggerKey", &tmp );
+   if(hr == S_OK) m_joydebugger = tmp;
+
+   hr = GetRegInt( "Player", "EnableMouseInPlayer", &tmp );
    if (hr == S_OK) m_enableMouseInPlayer = (tmp == fTrue);
 
    hr = GetRegInt("Player", "EnableNudgeFilter", &tmp);
@@ -917,8 +921,9 @@ void PinInput::Joy(const unsigned int n, const int updown, const bool start)
    if (m_joycentertilt == n) FireKeyEvent(updown, g_pplayer->m_rgKeys[eCenterTiltKey]);
    if (m_joyrighttilt == n) FireKeyEvent(updown, g_pplayer->m_rgKeys[eRightTiltKey]);
    if (m_joymechtilt == n) FireKeyEvent(updown, g_pplayer->m_rgKeys[eMechanicalTilt]);
-   if (m_joydebug == n) FireKeyEvent(updown, g_pplayer->m_rgKeys[eDBGBalls]);
-   if (m_joycustom1 == n) FireKeyEvent(updown, m_joycustom1key);
+   if(m_joydebugballs == n) FireKeyEvent( updown, g_pplayer->m_rgKeys[eDBGBalls] );
+   if(m_joydebugger == n) FireKeyEvent( updown, g_pplayer->m_rgKeys[eDebugger] );
+   if(m_joycustom1 == n) FireKeyEvent( updown, m_joycustom1key );
    if (m_joycustom2 == n) FireKeyEvent(updown, m_joycustom2key);
    if (m_joycustom3 == n) FireKeyEvent(updown, m_joycustom3key);
    if (m_joycustom4 == n) FireKeyEvent(updown, m_joycustom4key);
@@ -1079,7 +1084,24 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
                g_pplayer->m_ToggleDebugBalls = true;
             }
          }
-         else if (((input->dwOfs == DIK_ESCAPE) && (m_disable_esc == 0)) || (input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eExitGame]))
+         else if(input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eDebugger])
+         {
+             if(started() || !m_ptable->m_tblAutoStartEnabled)
+             {
+                 if(input->dwData & 0x80)
+                 { //on key down only
+                     m_first_stamp = curr_time_msec;
+                     m_exit_stamp = curr_time_msec;
+                 }
+
+                 if((input->dwData & 0x80) == 0)
+                 { //on key up only
+                     m_exit_stamp = 0;
+                     g_pplayer->m_fShowDebugger = true;
+                 }
+             }
+         }
+         else if(((input->dwOfs == DIK_ESCAPE) && (m_disable_esc == 0)) || (input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eExitGame]))
          {
             // Check if we have started a game yet.
             if (started() || !m_ptable->m_tblAutoStartEnabled)

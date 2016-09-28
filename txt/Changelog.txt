@@ -1,5 +1,7 @@
 VP 10.2.0 Changelog
 ------------------------
+- Add show debugger hot key option to the keys preferences. If hot key is pressed it opens the debugger window without showing the pause menu.
+
 - Duration function added to the light commands. See CommandReference.txt for more details.
 
 - under Video Preferences you can define a waiting time after which VP will do a alt+tab simulation for bringing the VP player back into exclusive fullscreen mode.

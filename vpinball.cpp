@@ -5361,7 +5361,7 @@ INT_PTR CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
          key = fFalse;
       SendMessage(hwndCheck, BM_SETCHECK, key ? BST_CHECKED : BST_UNCHECKED, 0);
 
-      for (unsigned int i = 0; i <= 28; ++i)
+      for (unsigned int i = 0; i <= 29; ++i)
       {
          int item;
          switch (i)
@@ -5382,19 +5382,20 @@ INT_PTR CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
          case 13:hr = GetRegInt("Player", "JoyCTiltKey", &selected); item = IDC_JOYCTILTCOMBO; break;
          case 14:hr = GetRegInt("Player", "JoyRTiltKey", &selected); item = IDC_JOYRTILTCOMBO; break;
          case 15:hr = GetRegInt("Player", "JoyMechTiltKey", &selected); item = IDC_JOYMECHTILTCOMBO; break;
-         case 16:hr = GetRegInt("Player", "JoyDebugKey", &selected); item = IDC_JOYDEBUGCOMBO; break;
-         case 17:hr = GetRegInt("Player", "JoyCustom1", &selected); item = IDC_JOYCUSTOM1COMBO; break;
-         case 18:hr = GetRegInt("Player", "JoyCustom2", &selected); item = IDC_JOYCUSTOM2COMBO; break;
-         case 19:hr = GetRegInt("Player", "JoyCustom3", &selected); item = IDC_JOYCUSTOM3COMBO; break;
-         case 20:hr = GetRegInt("Player", "JoyCustom4", &selected); item = IDC_JOYCUSTOM4COMBO; break;
-         case 21:hr = GetRegInt("Player", "JoyPMBuyIn", &selected); item = IDC_JOYPMBUYIN; break;
-         case 22:hr = GetRegInt("Player", "JoyPMCoin3", &selected); item = IDC_JOYPMCOIN3; break;
-         case 23:hr = GetRegInt("Player", "JoyPMCoin4", &selected); item = IDC_JOYPMCOIN4; break;
-         case 24:hr = GetRegInt("Player", "JoyPMCoinDoor", &selected); item = IDC_JOYPMCOINDOOR; break;
-         case 25:hr = GetRegInt("Player", "JoyPMCancel", &selected); item = IDC_JOYPMCANCEL; break;
-         case 26:hr = GetRegInt("Player", "JoyPMDown", &selected); item = IDC_JOYPMDOWN; break;
-         case 27:hr = GetRegInt("Player", "JoyPMUp", &selected); item = IDC_JOYPMUP; break;
-         case 28:hr = GetRegInt("Player", "JoyPMEnter", &selected); item = IDC_JOYPMENTER; break;
+         case 16:hr = GetRegInt( "Player", "JoyDebugKey", &selected ); item = IDC_JOYDEBUGCOMBO; break;
+         case 17:hr = GetRegInt( "Player", "JoyDebuggerKey", &selected ); item = IDC_JOYDEBUGGERCOMBO; break;
+         case 18:hr = GetRegInt( "Player", "JoyCustom1", &selected ); item = IDC_JOYCUSTOM1COMBO; break;
+         case 19:hr = GetRegInt("Player", "JoyCustom2", &selected); item = IDC_JOYCUSTOM2COMBO; break;
+         case 20:hr = GetRegInt("Player", "JoyCustom3", &selected); item = IDC_JOYCUSTOM3COMBO; break;
+         case 21:hr = GetRegInt("Player", "JoyCustom4", &selected); item = IDC_JOYCUSTOM4COMBO; break;
+         case 22:hr = GetRegInt("Player", "JoyPMBuyIn", &selected); item = IDC_JOYPMBUYIN; break;
+         case 23:hr = GetRegInt("Player", "JoyPMCoin3", &selected); item = IDC_JOYPMCOIN3; break;
+         case 24:hr = GetRegInt("Player", "JoyPMCoin4", &selected); item = IDC_JOYPMCOIN4; break;
+         case 25:hr = GetRegInt("Player", "JoyPMCoinDoor", &selected); item = IDC_JOYPMCOINDOOR; break;
+         case 26:hr = GetRegInt("Player", "JoyPMCancel", &selected); item = IDC_JOYPMCANCEL; break;
+         case 27:hr = GetRegInt("Player", "JoyPMDown", &selected); item = IDC_JOYPMDOWN; break;
+         case 28:hr = GetRegInt("Player", "JoyPMUp", &selected); item = IDC_JOYPMUP; break;
+         case 29:hr = GetRegInt("Player", "JoyPMEnter", &selected); item = IDC_JOYPMENTER; break;
          }
 
          if (hr != S_OK)
@@ -5656,6 +5657,13 @@ INT_PTR CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
       SetWindowText(hwndControl, rgszKeyName[key]);
       SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
 
+      hr = GetRegInt( "Player", "Debugger", &key );
+      if(hr != S_OK || key > 0xdd)
+          key = DIK_D;
+      hwndControl = GetDlgItem( hwndDlg, IDC_DEBUGGER );
+      SetWindowText( hwndControl, rgszKeyName[key] );
+      SetWindowLongPtr( hwndControl, GWLP_USERDATA, key );
+      
       hr = GetRegInt("Player", "RMagnaSave", &key);
       if (hr != S_OK || key > 0xdd)
          //key = DIK_BACKSPACE;
@@ -5773,6 +5781,10 @@ INT_PTR CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
       SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc);
       SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
 
+      hwndButton = GetDlgItem( hwndDlg, IDC_DEBUGGERBUTTON );
+      SetWindowLongPtr( hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc );
+      SetWindowLongPtr( hwndButton, GWLP_USERDATA, (size_t)pksw );
+
       hwndButton = GetDlgItem(hwndDlg, IDC_RMAGSAVEBUTTON);
       SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc);
       SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
@@ -5863,6 +5875,7 @@ INT_PTR CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
          case IDC_EXITGAMEBUTTON:
          case IDC_FRAMECOUNTBUTTON:
          case IDC_DEBUGBALLSBUTTON:
+         case IDC_DEBUGGERBUTTON:
          case IDC_VOLUPBUTTON:
          case IDC_VOLDOWNBUTTON:
          case IDC_RMAGSAVEBUTTON:
@@ -5933,6 +5946,10 @@ INT_PTR CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
                case IDC_DEBUGBALLSBUTTON:
                   hwndKeyWindow = GetDlgItem(hwndDlg, IDC_DEBUGBALL);
                   break;
+
+               case IDC_DEBUGGERBUTTON:
+                   hwndKeyWindow = GetDlgItem( hwndDlg, IDC_DEBUGGER );
+                   break;
 
                case IDC_RMAGSAVEBUTTON:
                   hwndKeyWindow = GetDlgItem(hwndDlg, IDC_RMAGSAVE);
@@ -6165,6 +6182,12 @@ INT_PTR CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
                selected = 0; // assume no assignment as standard
             SetRegValue("Player", "JoyDebugKey", REG_DWORD, &selected, 4);
 
+            hwndControl = GetDlgItem( hwndDlg, IDC_JOYDEBUGGERCOMBO );
+            selected = SendMessage( hwndControl, CB_GETCURSEL, 0, 0 );
+            if(selected == LB_ERR)
+                selected = 0; // assume no assignment as standard
+            SetRegValue( "Player", "JoyDebuggerKey", REG_DWORD, &selected, 4 );
+
             hwndControl = GetDlgItem(hwndDlg, IDC_PLUNGERAXIS);
             selected = SendMessage(hwndControl, CB_GETCURSEL, 0, 0);
             if (selected == LB_ERR)
@@ -6313,7 +6336,11 @@ INT_PTR CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
             key = GetWindowLongPtr(hwndControl, GWLP_USERDATA);
             SetRegValue("Player", "DebugBalls", REG_DWORD, &key, 4);
 
-            hwndControl = GetDlgItem(hwndDlg, IDC_RMAGSAVE);
+            hwndControl = GetDlgItem( hwndDlg, IDC_DEBUGGER );
+            key = GetWindowLongPtr( hwndControl, GWLP_USERDATA );
+            SetRegValue( "Player", "Debugger", REG_DWORD, &key, 4 );
+
+            hwndControl = GetDlgItem( hwndDlg, IDC_RMAGSAVE );
             key = GetWindowLongPtr(hwndControl, GWLP_USERDATA);
             SetRegValue("Player", "RMagnaSave", REG_DWORD, &key, 4);
 
