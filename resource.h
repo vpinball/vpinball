@@ -621,8 +621,12 @@
 #define IDC_ALPHA_SLIDER                420
 #define IDC_GLOBAL_TRAIL_CHECK          421
 #define IDC_VP_WIDTH                    421
+#define IDC_DEBUGGERBUTTON              421
 #define IDC_VP_HEIGHT                   422
+#define IDC_DEBUGBALL2                  422
+#define IDC_DEBUGGER                    422
 #define IDC_TABLE_DIM_LIST              423
+#define IDC_JOYDEBUGGERCOMBO            423
 #define IDC_DYNAMIC_AO                  424
 #define IDC_FORCE_ANISO                 425
 #define IDC_WIRE_DISTY                  425

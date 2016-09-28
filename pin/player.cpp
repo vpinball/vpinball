@@ -398,6 +398,7 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
 
    m_fCloseDown = false;
    m_fCloseType = 0;
+   m_fShowDebugger = false;
 
    m_DebugBalls = false;
    m_ToggleDebugBalls = false;
@@ -789,6 +790,13 @@ void Player::InitKeys()
       key = DIK_O;
    }
    m_rgKeys[eDBGBalls] = (EnumAssignKeys)key;
+
+   hr = GetRegInt( "Player", "Debugger", &key );
+   if(hr != S_OK || key > 0xdd)
+   {
+       key = DIK_D;
+   }
+   m_rgKeys[eDebugger] = (EnumAssignKeys)key;
 
    hr = GetRegInt("Player", "MechTilt", &key);
    if (hr != S_OK || key > 0xdd)
@@ -4316,6 +4324,22 @@ void Player::Render()
               } while(hmod != NULL && FreeLibrary(hmod));*/
          }
       }
+      else if(m_fShowDebugger && !VPinball::m_open_minimized)
+      {
+          g_pplayer->m_fDebugMode = true;
+          if(g_pplayer->m_hwndDebugger)
+          {
+              ShowWindow( g_pplayer->m_hwndDebugger, SW_SHOW );
+              SetActiveWindow( g_pplayer->m_hwndDebugger );
+          }
+          else
+          {
+              g_pplayer->m_hwndDebugger = CreateDialogParam( g_hinst, MAKEINTRESOURCE( IDD_DEBUGGER ), g_pplayer->m_hwnd, DebuggerProc, NULL );
+          }
+          EndDialog( g_pvp->m_hwnd, ID_DEBUGWINDOW );
+
+      }
+
    }
    ///// Don't put anything here - the ID_QUIT check must be the last thing done
    ///// in this function
@@ -5270,6 +5294,7 @@ INT_PTR CALLBACK DebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
       g_pplayer->RecomputePseudoPauseState();
       g_pplayer->m_DebugBallSize = GetDlgItemInt(hwndDlg, IDC_THROW_BALL_SIZE_EDIT2, NULL, FALSE);
       g_pplayer->m_fDebugMode = false;
+      g_pplayer->m_fShowDebugger = false;
       ShowWindow(hwndDlg, SW_HIDE);
       break;
 
