@@ -4330,7 +4330,6 @@ void Player::Render()
           if(g_pplayer->m_hwndDebugger)
           {
               ShowWindow( g_pplayer->m_hwndDebugger, SW_SHOW );
-              SetActiveWindow( g_pplayer->m_hwndDebugger );
           }
           else
           {
