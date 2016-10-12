@@ -1,4 +1,4 @@
-'***Controller.vbs version 1.1***'
+'***Controller.vbs version 1.2***'
 '
 'by arngrim
 '
@@ -54,6 +54,10 @@
 '    If VPinMAMEDriverVer <VBSver Or Err Then MsgBox VBSFile & " ver " & VBSver & " or higher required."
 '    On Error Goto 0
 '  End Sub
+'
+'For SS tables with bad/outdated support by B2S Server (unsupported solenoids, lamps) one can call:
+'
+'  LoadVPMALT
 '
 'For EM tables, in the table_init, call:
 '
@@ -136,6 +140,14 @@ Sub LoadVPM(VPMver, VBSfile, VBSver)
 	LoadController("VPM")
 End Sub
 
+'This is used for tables that need 2 controllers to be launched, one for VPM and the second one for B2S.Server
+'Because B2S.Server can't handle certain solenoid or lamps, we use this workaround to communicate to B2S.Server and DOF
+'By scripting the effects using DOFAlT and SoundFXDOFALT and B2SController
+Sub LoadVPMALT(VPMver, VBSfile, VBSver)
+	LoadVBSFiles VPMver, VBSfile, VBSver
+	LoadController("VPMALT")
+End Sub
+
 Sub LoadVBSFiles(VPMver, VBSfile, VBSver)
 	On Error Resume Next
 	If ScriptEngineMajorVersion < 5 Then MsgBox "VB Script Engine 5.0 or higher required"
@@ -196,9 +208,13 @@ Sub LoadController(TableType)
 	DOFeffects(9)=objShell.RegRead(directory & "DOFDropTargets")
 	Set objShell = nothing
 
-	If TableType = "PROC" Then
-		Set Controller = CreateObject("VPROC.Controller")
-		If Err Then MsgBox "Can't load PROC"
+	If TableType = "PROC" or TableType = "VPMALT" Then
+		If TableType = "PROC" Then
+			Set Controller = CreateObject("VPROC.Controller")
+			If Err Then MsgBox "Can't load PROC"
+		Else
+			LoadVPinMAME
+		End If		
 		If tempC = 0 Then
 			On Error Resume Next
 			If Controller is Nothing Then
@@ -275,6 +291,7 @@ Function SoundFXDOF (Sound, DOFevent, State, Effect)
 	End If
 End Function
 
+'Method used to communicate to B2SController instead of the usual Controller
 Function SoundFXDOFALT (Sound, DOFevent, State, Effect)
 	If DOFeffects(Effect)=1 Then
 		SoundFXDOFALT = ""
@@ -300,7 +317,7 @@ Sub DOF(DOFevent, State)
 	End If
 End Sub
 
-'If PROC Controller is used, we need to pass B2S events to the B2SController instead of the usual Controller
+'If PROC or B2SController is used, we need to pass B2S events to the B2SController instead of the usual Controller
 'Use this method to pass information to DOF instead of the Sub DOF
 Sub DOFALT(DOFevent, State)
 	If B2SOnALT Then
