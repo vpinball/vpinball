@@ -407,6 +407,7 @@ public:
    virtual PinTable *GetPTable() { return this; }
    char *GetElementName(IEditable *pedit);
 
+   IEditable *GetElementByName(const char *name);
    void OnDelete();
 
    void DoLButtonDown(int x, int y, bool zoomIn = true);

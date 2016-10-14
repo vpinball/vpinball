@@ -2102,6 +2102,9 @@ HRESULT VPinball::ApcHost_OnTranslateMessage(MSG* pmsg, BOOL* pfConsumed)
       {
          if (IsDialogMessage(g_pplayer->m_hwndDebugger, pmsg))
             *pfConsumed = TRUE;
+
+         if (g_pplayer->m_hwndLightDebugger && IsDialogMessage(g_pplayer->m_hwndLightDebugger, pmsg))
+               *pfConsumed = TRUE;
       }
    }
 

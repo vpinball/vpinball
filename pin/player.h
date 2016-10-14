@@ -271,6 +271,7 @@ public:
 
    HWND m_hwndDebugOutput;
    HWND m_hwndDebugger;
+   HWND m_hwndLightDebugger;
 
    Vector<CLSID> m_controlclsidsafe; // ActiveX control types which have already been okayed as being safe
 
