@@ -331,7 +331,7 @@ void Flipper::GetHitShapes(Vector<HitObject> * const pvho)
    if (coil_ramp_up <= 0.f)
       phf->m_flipperanim.m_torqueRampupSpeed = 1e6f; // set very high for instant coil response
    else
-      phf->m_flipperanim.m_torqueRampupSpeed = strength / coil_ramp_up;
+      phf->m_flipperanim.m_torqueRampupSpeed = min(strength / coil_ramp_up, 1e6f);
 
    phf->m_flipperanim.m_EnableRotateEvent = 0;
    phf->m_pfe = NULL;
@@ -629,7 +629,6 @@ STDMETHODIMP Flipper::RotateToEnd() // power stroke to hit ball, key/button down
 {
    if (m_phitflipper)
    {
-      const float endAng = ANGTORAD(m_d.m_EndAngle);
       m_phitflipper->m_flipperanim.m_EnableRotateEvent = 1;
       m_phitflipper->m_flipperanim.SetSolenoidState(true);
    }
@@ -641,7 +640,6 @@ STDMETHODIMP Flipper::RotateToStart() // return to park, key/button up/released
 {
    if (m_phitflipper)
    {
-      const float startAng = ANGTORAD(m_d.m_StartAngle);
       m_phitflipper->m_flipperanim.m_EnableRotateEvent = -1;
       m_phitflipper->m_flipperanim.SetSolenoidState(false);
    }
