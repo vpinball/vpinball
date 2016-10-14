@@ -641,8 +641,9 @@ Private Const conTimerPulse = 40 ' Timer runs at 25Hz
 Private Const conFastTicks  = 4  ' Fast is 4 times per timer pulse
 Private Const conMaxSwHit   = 5  ' Don't stack up more than 5 events for each switch
 
+' DEPRECATED Flipper constants:
 Private Const conFlipRetStrength = 0.01  ' Flipper return strength
-Private Const conFlipRetSpeed    = 0.137 ' Flipper return strength
+Private Const conFlipRetSpeed    = 0.137 ' Flipper return speed
 
 Function CheckScript(file) 'Checks Tables and Scripts directories for specified vbs file, and if it exitst, will load it.
 	CheckScript = False
@@ -2762,23 +2763,25 @@ Sub vpmSolFlipper(aFlip1, aFlip2, aEnabled)
 		PlaySound SFlipperOn : aFlip1.RotateToEnd : If Not aFlip2 Is Nothing Then aFlip2.RotateToEnd
 	Else
 		PlaySound SFlipperOff
-		oldStrength = aFlip1.Strength : aFlip1.Strength = conFlipRetStrength
-                If VPBuildVersion < 10000 Then
-                        oldSpeed = aFlip1.Speed : aFlip1.Speed = conFlipRetSpeed
-                End If
-		aFlip1.RotateToStart : aFlip1.Strength = oldStrength
-                If VPBuildVersion < 10000 Then
-                        aFlip1.Speed = oldSpeed
-                End If
+        If VPBuildVersion < 10000 Then
+			oldStrength = aFlip1.Strength : aFlip1.Strength = conFlipRetStrength
+            oldSpeed = aFlip1.Speed : aFlip1.Speed = conFlipRetSpeed
+        End If
+		aFlip1.RotateToStart
+        If VPBuildVersion < 10000 Then
+		    aFlip1.Strength = oldStrength
+            aFlip1.Speed = oldSpeed
+        End If
 		If Not aFlip2 Is Nothing Then
-			oldStrength = aFlip2.Strength : aFlip2.Strength = conFlipRetStrength
-                        If VPBuildVersion < 10000 Then
-                                oldSpeed = aFlip2.Speed : aFlip2.Speed = conFlipRetSpeed
-                        End If
-			aFlip2.RotateToStart : aFlip2.Strength = oldStrength
-                        If VPBuildVersion < 10000 Then
-                                aFlip2.Speed = oldSpeed
-                        End If
+            If VPBuildVersion < 10000 Then
+				oldStrength = aFlip2.Strength : aFlip2.Strength = conFlipRetStrength
+                oldSpeed = aFlip2.Speed : aFlip2.Speed = conFlipRetSpeed
+            End If
+			aFlip2.RotateToStart
+            If VPBuildVersion < 10000 Then
+			    aFlip2.Strength = oldStrength
+                aFlip2.Speed = oldSpeed
+            End If
 		End If
 	End If
 End Sub
