@@ -367,6 +367,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="BlackBox.cpp" />
     <ClCompile Include="codeviewedit.cpp" />
     <ClCompile Include="CrashHandler.cpp" />
+    <ClCompile Include="Debugger.cpp" />
     <ClCompile Include="flasher.cpp" />
     <ClCompile Include="hittarget.cpp" />
     <ClCompile Include="ImageDialog.cpp" />

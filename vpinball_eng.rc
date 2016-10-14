@@ -14,7 +14,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (United States) resources
+// Englisch (USA) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
@@ -1677,13 +1677,14 @@ BEGIN
     CONTROL         "Check2",IDC_STEP,"Button",BS_AUTOCHECKBOX | BS_ICON | BS_PUSHLIKE | WS_TABSTOP,43,7,18,17
     CONTROL         ">",IDC_EXPAND,"Button",BS_AUTOCHECKBOX | BS_PUSHLIKE | WS_TABSTOP,110,7,14,17
     LTEXT           "Static",IDC_GUIDE2,320,190,25,8,NOT WS_VISIBLE
-    LTEXT           "Static",IDC_EDITSIZE,9,65,332,144,NOT WS_VISIBLE | WS_BORDER
     LTEXT           "Immediate Window",IDC_STATIC,7,53,63,9
     LTEXT           "",IDC_TOOLBARSIZE,155,16,54,24
     CONTROL         "Throw Balls in Player",IDC_BALL_THROWING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,27,81,10
     LTEXT           "Ball Size",IDC_STATIC,8,40,28,8
     EDITTEXT        IDC_THROW_BALL_SIZE_EDIT2,36,38,25,12,ES_AUTOHSCROLL
     LTEXT           "Static",IDC_GUIDE1,109,27,23,10,NOT WS_VISIBLE
+    PUSHBUTTON      "&Lights",IDC_DBGLIGHTSBUTTON,69,37,29,14
+    LTEXT           "Static",IDC_EDITSIZE,9,65,332,144,NOT WS_VISIBLE | WS_BORDER
 END
 
 IDD_COMLIST DIALOG 0, 0, 287, 190
@@ -2124,6 +2125,40 @@ BEGIN
     LTEXT           "Physics Material",IDC_STATIC,7,26,52,8
 END
 
+IDD_DBGLIGHTDIALOG DIALOGEX 0, 0, 137, 201
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_TOOLWINDOW
+CAPTION "Debug Lights"
+FONT 8, "Microsoft Sans Serif", 400, 0, 0x0
+BEGIN
+    DEFPUSHBUTTON   "&Apply",IDOK,7,182,50,14
+    PUSHBUTTON      "&Close",IDCANCEL,79,182,50,14
+    EDITTEXT        IDC_DBG_LIGHT_FALLOFF_POWER,58,98,40,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_DBG_LIGHT_INTENSITY,58,112,40,12,ES_AUTOHSCROLL
+    LTEXT           "Falloff",IDC_STATIC,7,86,43,8
+    LTEXT           "Falloff Power",IDC_STATIC,7,100,43,8
+    LTEXT           "Intensity",IDC_STATIC,7,114,34,8
+    LTEXT           "Color",IDC_STATIC,7,135,43,8
+    LTEXT           "Full",IDC_STATIC,95,125,12,8
+    EDITTEXT        IDC_BULB_MODULATE_VS_ADD,58,149,40,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_TRANSMISSION_SCALE,58,163,40,12,ES_AUTOHSCROLL
+    LTEXT           "Modulate (0..1)",IDC_STATIC,7,153,48,8
+    LTEXT           "Transmit (0..1)",IDC_STATIC,7,166,48,8
+    COMBOBOX        IDC_LIGHTSCOMBO,7,18,124,87,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_DBG_LIGHT_FALLOFF,58,84,40,12,ES_AUTOHSCROLL
+    CONTROL         "Custom2",IDC_COLOR,"ColorControl",WS_TABSTOP,58,133,31,12
+    CONTROL         "Custom2",IDC_COLOR2,"ColorControl",WS_TABSTOP,95,133,31,12
+    LTEXT           "Light",IDC_STATIC,7,9,16,8
+    CONTROL         "&On",IDC_DBG_LIGHT_ON_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,38,25,10
+    CONTROL         "O&ff",IDC_DBG_LIGHT_OFF_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,46,38,25,10
+    CONTROL         "&Blinking",IDC_DBG_LIGHT_BLINKING_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,90,38,37,10
+    LTEXT           "Fade Speed",IDC_STATIC,7,65,40,8
+    LTEXT           "Up",IDC_STATIC,53,55,10,8
+    LTEXT           "Down",IDC_STATIC,90,55,20,8
+    EDITTEXT        IDC_DBG_LIGHT_FADE_UP_EDIT,52,63,34,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_DBG_LIGHT_FADE_DOWN_EDIT,90,63,34,14,ES_AUTOHSCROLL
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -2252,6 +2287,10 @@ BEGIN
         BOTTOMMARGIN, 221
     END
 
+    IDD_PROPLIGHT_POSITION, DIALOG
+    BEGIN
+    END
+
     IDD_PROPLIGHT_STATE, DIALOG
     BEGIN
         BOTTOMMARGIN, 55
@@ -2328,6 +2367,14 @@ BEGIN
     END
 
     IDD_PROPKICKER_VISUALS, DIALOG
+    BEGIN
+    END
+
+    IDD_PROPLIGHTSEQ_POSITION, DIALOG
+    BEGIN
+    END
+
+    IDD_PROPLIGHTSEQ_STATE, DIALOG
     BEGIN
     END
 
@@ -2428,6 +2475,13 @@ BEGIN
 
     IDD_PROPHITTARGET_PHYSICS, DIALOG
     BEGIN
+    END
+
+    IDD_DBGLIGHTDIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 131
+        BOTTOMMARGIN, 196
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -3022,7 +3076,7 @@ BEGIN
     IDS_STEP                "Step"
 END
 
-#endif    // English (United States) resources
+#endif    // Englisch (USA) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

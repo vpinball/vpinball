@@ -5054,6 +5054,17 @@ char *PinTable::GetElementName(IEditable *pedit)
    return NULL;
 }
 
+IEditable *PinTable::GetElementByName(const char *name)
+{
+   for (int i = 0; i < m_vedit.Size(); i++)
+   {
+      IEditable *pedit = m_vedit.ElementAt(i);
+      if (strcmp(name, GetElementName(pedit)) == 0)
+         return pedit;
+   }
+   return NULL;
+}
+
 bool PinTable::FMutilSelLocked()
 {
    bool fLocked = false;

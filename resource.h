@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Visual C++ generated include file.
-// Used by vpinball_eng.rc
+// Von Microsoft Visual C++ generierte Includedatei.
+// Verwendet durch vpinball_eng.rc
 //
 #define DISPID_Textbox_BackColor        1
 #define DISPID_Textbox_FontColor        2
@@ -27,6 +27,7 @@
 #define DISPID_Light_BlinkDuration      11
 #define DISPID_Decal_Font               12
 #define DISPID_ROTRA1                   12
+#define IDC_DBG_LIGHT_INTENSITY         12
 #define DISPID_ROTRA2                   13
 #define DISPID_TOPCOLOR                 14
 #define DISPID_ROTRA3                   14
@@ -324,6 +325,7 @@
 #define IDR_HITTARGET                   280
 #define IDC_BROWSE_BALL_IMAGE           280
 #define IDC_UPDATE_ALL_BUTTON           280
+#define IDC_DBGLIGHTSBUTTON             280
 #define IDC_ITEMLIST                    281
 #define IDC_OUT                         281
 #define IDC_SENDMAIL                    281
@@ -430,6 +432,7 @@
 #define IDC_FUNCTIONLIST                340
 #define IDC_LIGHT_TYPE_CHECKBOX         340
 #define IDC_MATERIAL_COMBO              340
+#define IDC_LIGHTSCOMBO                 340
 #define IDC_COMBO2                      341
 #define IDD_PROPSPINNER_VISUALS         341
 #define IDS_DEBUGNOCONVERT              341
@@ -527,6 +530,7 @@
 #define IDC_TARGET_MOVE_SPEED_EDIT      377
 #define IDC_THROW_BALLS_SIZE_EDIT       377
 #define IDC_THROW_BALL_SIZE_EDIT2       377
+#define IDC_DBG_LIGHT_FADE_UP_EDIT      377
 #define IDC_HEIGHT_EDIT                 378
 #define IDD_COMLIST                     378
 #define IDC_RADIO1                      378
@@ -717,12 +721,14 @@
 #define IDC_RUBBER_REFLECT_ENABLED_CHECK 479
 #define IDC_CVP_CHKBOX_HELPWITHDWELL    479
 #define IDC_OVERWRITE_BALL_IMAGE_CHECK  479
+#define IDC_DBG_LIGHT_OFF_CHECK         479
 #define IDC_IMPORT_MATERIAL             480
 #define IDC_COLLISION_REDUCTION_FACTOR  481
 #define IDC_DEFAULTS                    482
 #define IDC_PRIM_REFLECT_ENABLE_CHECK   483
 #define IDC_WALL_REFLECT_ENABLED_CHECK  484
 #define IDC_CHECK5                      488
+#define IDC_DBG_LIGHT_BLINKING_CHECK    488
 #define IDC_DYNAMIC_DN                  489
 #define IDC_DN_LONGITUDE                490
 #define IDC_DN_LATITUDE                 491
@@ -826,6 +832,7 @@
 #define IDD_PROPHITTARGET_VISUALS       620
 #define IDD_PROPHITTARGET_POSITION      621
 #define IDD_PROPHITTARGET_PHYSICS       622
+#define IDD_DBGLIGHTDIALOG              623
 #define IDC_CVP_BUT_CANCEL              701
 #define IDC_CVP_BUT_OK                  702
 #define IDC_CVP_BUT_COL_COMPS           703
@@ -863,6 +870,7 @@
 #define IDC_CHECK2                      727
 #define IDC_STATIC_BULB_MESH            727
 #define IDC_IMPORT_ANIM_SEQUENCE        727
+#define IDC_DBG_LIGHT_ON_CHECK          727
 #define IDC_CVP_EDIT_AUTOCHARS          728
 #define IDC_CVP_EDIT_MOUSEDWELL         729
 #define IDC_MAT_ELASTICITY              731
@@ -882,6 +890,10 @@
 #define IDC_DOF_DROPTARGETS             745
 #define IDC_DOF_FORCEDISABLE            746
 #define IDC_FS_SWITCH_TIME              747
+#define IDC_DBG_LIGHT_FALLOFF           748
+#define IDC_DBG_LIGHT_FALLOFF_POWER     749
+#define IDC_EDIT2                       754
+#define IDC_DBG_LIGHT_FADE_DOWN_EDIT    754
 #define DISPID_Gate_Height1             1142
 #define DISPID_Image                    1500
 #define DISPID_Image2                   1501
@@ -1026,9 +1038,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        620
+#define _APS_NEXT_RESOURCE_VALUE        624
 #define _APS_NEXT_COMMAND_VALUE         4012
-#define _APS_NEXT_CONTROL_VALUE         748
+#define _APS_NEXT_CONTROL_VALUE         755
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif

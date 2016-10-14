@@ -84,6 +84,7 @@
     </ClCompile>
     <ClCompile Include="MaterialDialog.cpp" />
     <ClCompile Include="ImageDialog.cpp" />
+    <ClCompile Include="Debugger.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="vpinball.rc" />
