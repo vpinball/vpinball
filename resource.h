@@ -699,6 +699,7 @@
 #define IDC_EDIT3                       461
 #define IDC_CORRECTION_Y                461
 #define IDC_MAT_ELASTICITY_FALLOFF      461
+#define IDC_ASPECT_RATIO_EDIT           461
 #define IDC_FXAACB                      462
 #define IDC_ABOUT_VERSION               463
 #define DISPID_PluFrames                464
@@ -894,6 +895,8 @@
 #define IDC_DBG_LIGHT_FALLOFF_POWER     749
 #define IDC_EDIT2                       754
 #define IDC_DBG_LIGHT_FADE_DOWN_EDIT    754
+#define IDC_ASPECT_RATIO_STATIC         755
+#define IDC_ASPECT_RATIO_GROUP          756
 #define DISPID_Gate_Height1             1142
 #define DISPID_Image                    1500
 #define DISPID_Image2                   1501
@@ -1040,7 +1043,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        624
 #define _APS_NEXT_COMMAND_VALUE         4012
-#define _APS_NEXT_CONTROL_VALUE         755
+#define _APS_NEXT_CONTROL_VALUE         757
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif

@@ -8430,6 +8430,14 @@ INT_PTR CALLBACK DimensionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lP
       LVCOLUMN lvc;
       LVITEM lv;
 
+      HWND toolTipHwnd = CreateWindowEx(NULL, TOOLTIPS_CLASS, NULL, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, hwndDlg, NULL, g_hinst, NULL);
+      if (toolTipHwnd)
+      {
+         SendMessage(toolTipHwnd, TTM_SETMAXTIPWIDTH, 0, 180);
+         HWND controlHwnd = GetDlgItem(hwndDlg, IDC_ASPECT_RATIO_EDIT);
+         AddToolTip("For best camera views in fullscreen it should be near 1.7777 (16:9) if your playfield screen is a 16:9 screen. Ratios >2.1 are much harder to fit on screen.", hwndDlg, toolTipHwnd, controlHwnd);
+      }
+
       ListView_SetExtendedListViewStyle(listHwnd, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
       memset(&lvc, 0, sizeof(LVCOLUMN));
       lvc.mask = LVCF_TEXT | LVCF_WIDTH | LVCF_FMT;
@@ -8488,6 +8496,9 @@ INT_PTR CALLBACK DimensionProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lP
          SetDlgItemText(hwndDlg, IDC_SIZE_WIDTH, textBuf);
          sprintf_s(textBuf, "%.03f", dimTable[idx].height);
          SetDlgItemText(hwndDlg, IDC_SIZE_HEIGHT, textBuf);
+         float ratio = (float)height / width;
+         sprintf_s(textBuf, "%.04f", ratio);
+         SetDlgItemText(hwndDlg, IDC_ASPECT_RATIO_EDIT, textBuf);
          break;
       }
       }
