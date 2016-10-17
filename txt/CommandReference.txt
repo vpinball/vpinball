@@ -7,6 +7,7 @@ Variables starting with a (*) can't be changed by the script (most can be read t
 
 Changelog:
 10.2:
+- add MaterialColor for the table element
 - extend PlayMusic with optional volume (0..1) and better document PlaySound
 - add Duration and BulbHaloHeight property to the light element
 - add PlayAnim,PlayAnimEndless,StopAnim,ContinueAnim & ShowFrame to the primitive element for animation use
@@ -171,6 +172,7 @@ VersionRevision - VP version revision
 GetBalls(Ball) - returns all Balls on the table
 GetElements(Editable) - returns all Elements on the table
 GetElementByName(string) - returns a certain Element, based on the name
+MaterialColor(string,OLE_COLOR) - change base color of a material
 
 Callback
 --------

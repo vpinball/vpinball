@@ -101,6 +101,7 @@ public:
    COLORREF m_cClearcoat;
    bool m_bIsMetal;
    bool m_bOpacityActive;
+
    //physics
    float m_fElasticity;
    float m_fElasticityFalloff;

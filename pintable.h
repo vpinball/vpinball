@@ -834,6 +834,8 @@ public:
    STDMETHOD(get_VersionMinor)(/*[out, retval]*/ int *pVal);
    STDMETHOD(get_VersionRevision)(/*[out, retval]*/ int *pVal);
 
+   STDMETHOD(MaterialColor)(BSTR pVal, OLE_COLOR newVal);
+
    void Init(PinTable *pt);
 
    virtual IDispatch *GetDispatch();
