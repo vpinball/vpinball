@@ -746,6 +746,8 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 				[propget, id(39), helpstring("property VersionMinor")] HRESULT VersionMinor([out, retval] int *pVal);
 				[propget, id(40), helpstring("property VersionRevision")] HRESULT VersionRevision([out, retval] int *pVal);
 				[propget, id(24), helpstring("property VPBuildVersion")] HRESULT VPBuildVersion([out, retval] int *pVal);
+
+				[id(224), helpstring("method MaterialColor")] HRESULT MaterialColor(BSTR name, OLE_COLOR newVal);
 		}
 
         [

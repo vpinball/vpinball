@@ -558,6 +558,22 @@ STDMETHODIMP ScriptGlobalTable::get_ShowDT(VARIANT_BOOL *pVal)
    return S_OK;
 }
 
+STDMETHODIMP ScriptGlobalTable::MaterialColor(BSTR pVal, OLE_COLOR newVal)
+{
+	if (!g_pplayer)
+		return E_POINTER;
+
+	PinTable *pt = g_pplayer->m_ptable;
+
+	char Name[MAX_PATH];
+	WideCharToMultiByte(CP_ACP, 0, pVal, -1, Name, MAX_PATH, NULL, NULL);
+
+	Material *tmp = pt->GetMaterial(Name);
+	tmp->m_cBase = newVal;
+
+	return S_OK;
+}
+
 STDMETHODIMP ScriptGlobalTable::put_DMDWidth(int pVal)
 {
    if (g_pplayer)
