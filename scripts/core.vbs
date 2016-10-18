@@ -1,8 +1,16 @@
 Option Explicit
-Const VPinMAMEDriverVer = 3.51
+Const VPinMAMEDriverVer = 3.52
 '=======================
 ' VPinMAME driver core.
 '=======================
+' New in 3.52 (Update by DJRobX)
+' - Add modulated solenoids to support ROM controlled fading flashers
+' - Add "UseVPMModSol=True" to the table script
+' - Use SolModCallback instead of SolCalback to receive level changes as input.  It will be a level from 0 to 255
+' - Continue to use SolCallback if you only care about boolean values, only fires if level changes from on to off
+' - Note vpmTableInit MUST BE CALLED or VPM will not switch modes.  If you are only getting 1 from SolModCallback that may be the issue
+' - TODO: When VPM is released that implements this change, add version check
+'
 ' New in 3.51 (Update by mfuegemann & Arngrim & Toxie)
 ' - gts1.vbs dip fix
 ' - Add comments to cvpmDropTarget.CreateEvents: do not use this anymore in VP10 and above, as drop targets have an animation time nowadays
@@ -354,6 +362,8 @@ Private gNextMechNo : gNextMechNo = 0 ' keep track of created mech handlers (wou
 
 ' Callbacks
 Dim SolCallback(64) ' Solenoids (parsed at Runtime)
+Dim SolModCallback(64) ' Solenoid modulated callbacks (parsed at Runtime) 
+Dim SolPrevState(64) ' When modulating solenoids are in use, needed to keep positive value levels from changing boolean state
 Dim LampCallback    ' Called after lamps are updated
 Dim GICallback      ' Called for each changed GI String
 Dim GICallback2     ' Called for each changed GI String
@@ -362,6 +372,7 @@ Dim vpmCreateBall   ' Called whenever a vpm class needs to create a ball
 Dim BSize:If IsEmpty(Eval("BallSize"))=true Then BSize=25 Else BSize = BallSize/2
 Dim BMass:If IsEmpty(Eval("BallMass"))=true Then BMass=1 Else BMass = BallMass
 Dim UseDMD:If IsEmpty(Eval("UseVPMDMD"))=true Then UseDMD=false Else UseDMD = UseVPMDMD
+Dim UseModSol:If IsEmpty(Eval("UseVPMModSol"))=true Then UseModSol=false Else UseModSol = UseVPMModSol
 Dim UseColoredDMD:If IsEmpty(Eval("UseVPMColoredDMD"))=true Then UseColoredDMD=false Else UseColoredDMD = UseVPMColoredDMD
 Dim UseNVRAM:If IsEmpty(Eval("UseVPMNVRAM"))=true Then UseNVRAM=false Else UseNVRAM = UseVPMNVRAM
 Dim NVRAMCallback
@@ -2521,6 +2532,9 @@ Public Sub vpmInit(aTable)
 		If Not IsObject(GetRef(aTable.name & "_UnPaused")) Or Err Then Err.Clear : vpmBuildEvent aTable, "UnPaused", "Controller.Pause = False"
 		If Not IsObject(GetRef(aTable.name & "_Exit")) Or Err Then Err.Clear : vpmBuildEvent aTable, "Exit", "Controller.Pause = False:Controller.Stop"
 	End If
+	if UseModSol Then
+		Controller.SolMask(2)=1
+	End If
 End Sub
 
 ' Exit function called in Table_Exit event
@@ -2575,7 +2589,7 @@ Sub vpmDoLampUpdate(aNo, aEnabled)
 End Sub
 
 Sub PinMAMETimer_Timer
-	Dim ChgLamp,ChgSol,ChgGI, ii, tmp, idx
+	Dim ChgLamp,ChgSol,ChgGI, ii, tmp, idx, nsol, solon
 	Dim DMDp
 	Dim ChgNVRAM
 
@@ -2625,8 +2639,20 @@ Sub PinMAMETimer_Timer
 	End If
 	If Not IsEmpty(ChgSol) Then
 		For ii = 0 To UBound(ChgSol)
-			tmp = SolCallback(ChgSol(ii, 0))
-			If tmp <> "" Then Execute tmp & vpmTrueFalse(ChgSol(ii, 1)+1)
+			nsol = ChgSol(ii, 0)
+			tmp = SolCallback(nsol)
+			solon = ChgSol(ii, 1)
+			If solon > 1 Then solon = 1
+			If UseModSol Then
+				If solon <> SolPrevState(nsol) Then
+					SolPrevState(nsol) = solon
+					If tmp <> "" Then Execute tmp & vpmTrueFalse(solon+1)
+				End If
+				tmp = SolModCallback(nsol)			
+				If tmp <> "" Then Execute tmp & " " & ChgSol(ii, 1)
+			Else
+				If tmp <> "" Then Execute tmp & vpmTrueFalse(solon+1)
+			End If
 		Next
 	End If
 	If Not IsEmpty(ChgGI) Then
