@@ -53,7 +53,7 @@ VP 10.2.0 Changelog
 - see CommandReference.txt for the changelog of the scripting properties/interface
 
 - add DOF controller configuration also to the VP keys dialog
-- new core scripts by mfuegemann and controller modifications by arngrim (see core.vbs for changelog)
+- new core scripts by mfuegemann and controller modifications by arngrim, plus solenoid modulation by DJRobX (see core.vbs for changelog (3.51 and 3.52))
 
 - DirectX 8 port for input handling (currently disabled)
 
