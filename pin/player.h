@@ -30,6 +30,8 @@ enum EnumAssignKeys
    eCKeys
 };
 
+// Note: Nowadays the original code seems to be counter-productive, so we use the official
+// pre-rendered frame mechanism instead where possible (e.g. all windows versions except for XP)
 /*
  * Class to limit the length of the GPU command buffer queue to at most 'numFrames' frames.
  * Excessive buffering of GPU commands creates high latency and can create stuttery overlong
@@ -54,8 +56,16 @@ enum EnumAssignKeys
 class FrameQueueLimiter
 {
 public:
-   void Init(int numFrames)
+   void Init(RenderDevice *pd3dDevice, int numFrames)
    {
+      // if available, use the official RenderDevice mechanism
+      if (pd3dDevice->SetMaximumPreRenderedFrames(numFrames))
+      {
+          m_buffers.resize(0);
+          return;
+      }
+
+      // if not, fallback to cheating the driver
       m_buffers.resize(numFrames, NULL);
       m_curIdx = 0;
    }
