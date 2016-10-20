@@ -361,9 +361,9 @@ Dim vpmMultiLights() : ReDim vpmMultiLights(0)
 Private gNextMechNo : gNextMechNo = 0 ' keep track of created mech handlers (would be nice with static members)
 
 ' Callbacks
-Dim SolCallback(64) ' Solenoids (parsed at Runtime)
-Dim SolModCallback(64) ' Solenoid modulated callbacks (parsed at Runtime) 
-Dim SolPrevState(64) ' When modulating solenoids are in use, needed to keep positive value levels from changing boolean state
+Dim SolCallback(68) ' Solenoids (parsed at Runtime)
+Dim SolModCallback(68) ' Solenoid modulated callbacks (parsed at Runtime) 
+Dim SolPrevState(68) ' When modulating solenoids are in use, needed to keep positive value levels from changing boolean state
 Dim LampCallback    ' Called after lamps are updated
 Dim GICallback      ' Called for each changed GI String
 Dim GICallback2     ' Called for each changed GI String
