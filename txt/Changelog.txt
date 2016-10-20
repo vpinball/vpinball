@@ -1,7 +1,8 @@
 VP 10.2.0 Changelog
 ------------------------
+- disable visual touch/pen feedback to save one frame of input latency/lag
 
-- Replace old 'Maximum pre-rendered frames' implementation with official DX mechanism on non-XP systems,
+- replace old 'Maximum pre-rendered frames' implementation with official DX mechanism on non-XP systems,
   so it could be worth to experiment again with this setting by using 1 or 2 to reduce lag at the price of a bit of performance
 
 - Add aspect ratio to dimension manager
