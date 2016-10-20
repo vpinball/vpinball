@@ -1,3 +1,7 @@
+VP 9.9.3 Changelog
+------------------------
+- disable visual touch/pen feedback to save one frame of input latency/lag
+
 VP 9.9.2 Changelog
 ------------------------
 - new plunger code (see Plunger pdf)
