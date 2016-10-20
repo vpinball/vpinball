@@ -55,6 +55,31 @@ typedef enum _POINTER_BUTTON_CHANGE_TYPE {
   POINTER_CHANGE_FIFTHBUTTON_UP 
 } POINTER_BUTTON_CHANGE_TYPE;
 
+typedef enum tagFEEDBACK_TYPE {
+	FEEDBACK_TOUCH_CONTACTVISUALIZATION = 1,
+	FEEDBACK_PEN_BARRELVISUALIZATION = 2,
+	FEEDBACK_PEN_TAP = 3,
+	FEEDBACK_PEN_DOUBLETAP = 4,
+	FEEDBACK_PEN_PRESSANDHOLD = 5,
+	FEEDBACK_PEN_RIGHTTAP = 6,
+	FEEDBACK_TOUCH_TAP = 7,
+	FEEDBACK_TOUCH_DOUBLETAP = 8,
+	FEEDBACK_TOUCH_PRESSANDHOLD = 9,
+	FEEDBACK_TOUCH_RIGHTTAP = 10,
+	FEEDBACK_GESTURE_PRESSANDTAP = 11,
+	FEEDBACK_MAX = 0xFFFFFFFF
+} FEEDBACK_TYPE;
+
+typedef BOOL(WINAPI *pSWFS)(
+	HWND          hwnd,
+	FEEDBACK_TYPE feedback,
+	DWORD         dwFlags,
+	UINT32        size,
+	const VOID    *configuration
+	);
+
+static pSWFS SetWindowFeedbackSetting = NULL;
+
 typedef struct tagPOINTER_INFO {
   POINTER_INPUT_TYPE         pointerType;
   UINT32                     pointerId;
@@ -1315,6 +1340,29 @@ void Player::InitWindow()
 
         m_hwnd = ::CreateWindowEx(windowflagsex, "VPPlayer", "Visual Pinball Player", windowflags, x, y, m_width, m_height, NULL, NULL, g_hinst, 0);
 
+   // Disable visual feedback for touch, this saves one frame of latency on touchdisplays
+   if (!SetWindowFeedbackSetting)
+	   SetWindowFeedbackSetting = (pSWFS)GetProcAddress(GetModuleHandle(TEXT("user32.dll")),
+	   "SetWindowFeedbackSetting");
+   if (SetWindowFeedbackSetting)
+   {
+	   const BOOL fEnabled = FALSE;
+
+	   SetWindowFeedbackSetting(m_hwnd, FEEDBACK_TOUCH_CONTACTVISUALIZATION, 0, sizeof(fEnabled), &fEnabled);
+	   SetWindowFeedbackSetting(m_hwnd, FEEDBACK_TOUCH_TAP, 0, sizeof(fEnabled), &fEnabled);
+	   SetWindowFeedbackSetting(m_hwnd, FEEDBACK_TOUCH_DOUBLETAP, 0, sizeof(fEnabled), &fEnabled);
+	   SetWindowFeedbackSetting(m_hwnd, FEEDBACK_TOUCH_PRESSANDHOLD, 0, sizeof(fEnabled), &fEnabled);
+	   SetWindowFeedbackSetting(m_hwnd, FEEDBACK_TOUCH_RIGHTTAP, 0, sizeof(fEnabled), &fEnabled);
+
+	   SetWindowFeedbackSetting(m_hwnd, FEEDBACK_PEN_BARRELVISUALIZATION, 0, sizeof(fEnabled), &fEnabled);
+	   SetWindowFeedbackSetting(m_hwnd, FEEDBACK_PEN_TAP, 0, sizeof(fEnabled), &fEnabled);
+	   SetWindowFeedbackSetting(m_hwnd, FEEDBACK_PEN_DOUBLETAP, 0, sizeof(fEnabled), &fEnabled);
+	   SetWindowFeedbackSetting(m_hwnd, FEEDBACK_PEN_PRESSANDHOLD, 0, sizeof(fEnabled), &fEnabled);
+	   SetWindowFeedbackSetting(m_hwnd, FEEDBACK_PEN_RIGHTTAP, 0, sizeof(fEnabled), &fEnabled);
+
+	   SetWindowFeedbackSetting(m_hwnd, FEEDBACK_GESTURE_PRESSANDTAP, 0, sizeof(fEnabled), &fEnabled);
+   }
+		
     mixer_init( m_hwnd );
     hid_init();
 
