@@ -1,6 +1,9 @@
 VP 10.2.0 Changelog
 ------------------------
 
+- Replace old 'Maximum pre-rendered frames' implementation with official DX mechanism on non-XP systems,
+  so it could be worth to experiment again with this setting by using 1 or 2 to reduce lag at the price of a bit of performance
+
 - Add aspect ratio to dimension manager
 
 - Lights can be debugged in the debugger. Open the debugger, click on the "Light" button and a new dialog will appear where all dynamic values are editable. Properties like blinking/on/off are

@@ -1679,7 +1679,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
       g_pvp->PostWorkToWorkerThread(HANG_SNOOP_START, NULL);
 
    // 0 means disable limiting of draw-ahead queue
-   m_limiter.Init(m_fMaxPrerenderedFrames);
+   m_limiter.Init(m_pin3d.m_pd3dDevice, m_fMaxPrerenderedFrames);
 
    stats_drawn_static_triangles = m_pin3d.m_pd3dDevice->m_stats_drawn_triangles;
 

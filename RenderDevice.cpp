@@ -822,6 +822,19 @@ static void FlushGPUCommandBuffer(IDirect3DDevice9* pd3dDevice)
    }
 }
 
+bool RenderDevice::SetMaximumPreRenderedFrames(const DWORD frames)
+{
+#ifdef USE_D3D9EX
+	if (m_pD3DEx && frames > 0)
+	{
+		CHECKD3D(m_pD3DDeviceEx->SetMaximumFrameLatency(frames));
+		return true;
+	}
+	else
+#endif
+	return false;
+}
+
 void RenderDevice::Flip(const bool vsync)
 {
    BOOL dwm = 0;
