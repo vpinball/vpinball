@@ -2330,7 +2330,6 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="buildnum.h" />
     <ClInclude Include="buildnumber.h" />
     <ClInclude Include="DongleAPI.h" />
     <ClInclude Include="flasher.h" />
@@ -2338,6 +2337,21 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="hidpi.h" />
     <ClInclude Include="hidsdi.h" />
     <ClInclude Include="hidusage.h" />
+    <ClInclude Include="inc\activdbg.h" />
+    <ClInclude Include="inc\activscp.h" />
+    <ClInclude Include="inc\dbghelp.h" />
+    <ClInclude Include="inc\dbgprop.h" />
+    <ClInclude Include="inc\nvapi.h" />
+    <ClInclude Include="inc\nvapi_lite_common.h" />
+    <ClInclude Include="inc\nvapi_lite_d3dext.h" />
+    <ClInclude Include="inc\nvapi_lite_salend.h" />
+    <ClInclude Include="inc\nvapi_lite_salstart.h" />
+    <ClInclude Include="inc\nvapi_lite_sli.h" />
+    <ClInclude Include="inc\nvapi_lite_stereo.h" />
+    <ClInclude Include="inc\nvapi_lite_surround.h" />
+    <ClInclude Include="inc\scilexer.h" />
+    <ClInclude Include="inc\scintilla.h" />
+    <ClInclude Include="inc\Sci_Position.h" />
     <ClInclude Include="kdtree.h" />
     <ClInclude Include="Material.h" />
     <ClInclude Include="physconst.h" />

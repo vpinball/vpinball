@@ -2330,7 +2330,6 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="buildnum.h" />
     <ClInclude Include="buildnumber.h" />
     <ClInclude Include="DongleAPI.h" />
     <ClInclude Include="flasher.h" />
