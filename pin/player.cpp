@@ -433,6 +433,8 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
    m_fDebugMode = false;
    m_hwndDebugger = NULL;
    m_hwndLightDebugger = NULL;
+   m_hwndMaterialDebugger = NULL;
+
    m_PauseTimeTarget = 0;
    m_pactiveballDebug = NULL;
 
@@ -4372,7 +4374,7 @@ void Player::Render()
           g_pplayer->m_fDebugMode = true;
           if(g_pplayer->m_hwndDebugger )
           {
-             if (!IsWindowVisible(m_hwndDebugger) && !IsWindowVisible(m_hwndLightDebugger))
+             if (!IsWindowVisible(m_hwndDebugger) && !IsWindowVisible(m_hwndLightDebugger) && !IsWindowVisible(m_hwndMaterialDebugger))
                ShowWindow(g_pplayer->m_hwndDebugger, SW_SHOW);
           }
           else
