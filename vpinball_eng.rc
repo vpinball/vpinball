@@ -1677,16 +1677,17 @@ BEGIN
     CONTROL         "Check2",IDC_PLAY,"Button",BS_AUTOCHECKBOX | BS_ICON | BS_PUSHLIKE | WS_TABSTOP,7,7,18,17
     CONTROL         "Check2",IDC_PAUSE,"Button",BS_AUTOCHECKBOX | BS_ICON | BS_PUSHLIKE | WS_TABSTOP,25,7,18,17
     CONTROL         "Check2",IDC_STEP,"Button",BS_AUTOCHECKBOX | BS_ICON | BS_PUSHLIKE | WS_TABSTOP,43,7,18,17
-    CONTROL         ">",IDC_EXPAND,"Button",BS_AUTOCHECKBOX | BS_PUSHLIKE | WS_TABSTOP,110,7,14,17
+    CONTROL         ">",IDC_EXPAND,"Button",BS_AUTOCHECKBOX | BS_PUSHLIKE | WS_TABSTOP,118,7,14,17
     LTEXT           "Static",IDC_GUIDE2,320,190,25,8,NOT WS_VISIBLE
     LTEXT           "Immediate Window",IDC_STATIC,7,53,63,9
     LTEXT           "",IDC_TOOLBARSIZE,155,16,54,24
     CONTROL         "Throw Balls in Player",IDC_BALL_THROWING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,27,81,10
     LTEXT           "Ball Size",IDC_STATIC,8,40,28,8
     EDITTEXT        IDC_THROW_BALL_SIZE_EDIT2,36,38,25,12,ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_GUIDE1,109,27,23,10,NOT WS_VISIBLE
-    PUSHBUTTON      "&Lights",IDC_DBGLIGHTSBUTTON,69,37,29,14
+    LTEXT           "Static",IDC_GUIDE1,117,27,23,10,NOT WS_VISIBLE
+    PUSHBUTTON      "&Lights",IDC_DBGLIGHTSBUTTON,66,37,34,14
     LTEXT           "Static",IDC_EDITSIZE,9,65,332,144,NOT WS_VISIBLE | WS_BORDER
+    PUSHBUTTON      "&Materials",IDC_DBG_MATERIALS_BUTTON,102,37,34,14
 END
 
 IDD_COMLIST DIALOG 0, 0, 287, 190
@@ -1980,16 +1981,12 @@ BEGIN
     CONTROL         "Custom2",IDC_COLOR2,"ColorControl",WS_TABSTOP,220,75,40,19
     CONTROL         "Custom2",IDC_COLOR3,"ColorControl",WS_TABSTOP,220,153,40,19
     GROUPBOX        "Glossy Layer",IDC_STATIC,214,62,192,43
-    LTEXT           "Shininess",IDC_STATIC,220,115,68,8
-    LTEXT           "(0..1)",IDC_STATIC,222,123,25,8
+    LTEXT           "Shininess\n(0..1)",IDC_STATIC,220,115,37,19
     GROUPBOX        "Clearcoat Layer",IDC_STATIC,214,139,191,40
-    LTEXT           "Edge Brightness",IDC_STATIC,220,193,52,8
-    LTEXT           "(0..1)",IDC_STATIC,222,202,17,8
+    LTEXT           "Edge Brightness\n(0..1)",IDC_STATIC,220,193,56,20
     GROUPBOX        "Opacity (can be modulated by Image on Object)",IDC_STATIC,214,223,192,64
-    LTEXT           "Amount",IDC_STATIC,220,235,25,8
-    LTEXT           "(0..1)",IDC_STATIC,222,244,23,8
-    LTEXT           "Edge Opacity",IDC_STATIC,220,263,52,8
-    LTEXT           "(0..1)",IDC_STATIC,222,272,17,8
+    LTEXT           "Amount\n(0..1)",IDC_STATIC,220,235,30,16
+    LTEXT           "Edge Opacity\n(0..1)",IDC_STATIC,220,263,48,18
     LTEXT           "Increases the opacity on the silhouette (1=natural, 0=no change)",IDC_STATIC,313,258,81,24
     LTEXT           "Dims the silhouette ""glow"" when using Glossy or Clearcoat Layers (1=natural, 0=dark)",IDC_STATIC,313,183,85,34
     LTEXT           "Sets from very dull (Shininess low) to perfect/mirror-like (Shininess high) reflections (for glossy layer or metal only)",IDC_STATIC,313,107,92,32
@@ -1999,8 +1996,7 @@ BEGIN
     GROUPBOX        "Base Color (can be modulated by Image on Object)",IDC_STATIC,214,19,192,43
     LTEXT           "Steers the basic Color of an Object. Wrap allows for light even if object is only lit from behind (0=natural)",IDC_STATIC,313,28,85,32
     EDITTEXT        IDC_DIFFUSE_EDIT,290,31,21,14,ES_AUTOHSCROLL
-    LTEXT           "Wrap",IDC_STATIC,268,33,21,8
-    LTEXT           "(0..1)",IDC_STATIC,270,41,17,8
+    LTEXT           "Wrap\n(0..1)",IDC_STATIC,268,33,21,18
     CONTROL         "Custom2",IDC_COLOR,"ColorControl",WS_TABSTOP,220,30,40,19
     GROUPBOX        "Physics",IDC_STATIC,414,19,105,86
     LTEXT           "Elasticity",IDC_STATIC,441,33,28,8
@@ -2125,6 +2121,37 @@ BEGIN
     CONTROL         "Overwrite Material Settings",IDC_OVERWRITE_MATERIAL_SETTINGS,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,51,100,10
     LTEXT           "Physics Material",IDC_STATIC,7,26,52,8
+END
+
+IDD_DBGMATERIALDIALOG DIALOGEX 0, 0, 137, 249
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_TOOLWINDOW
+CAPTION "Debug Materials"
+FONT 8, "Microsoft Sans Serif", 400, 0, 0x0
+BEGIN
+    DEFPUSHBUTTON   "&Apply",IDOK,7,230,50,14
+    PUSHBUTTON      "&Close",IDCANCEL,79,230,50,14
+    COMBOBOX        IDC_DBG_MATERIALCOMBO,7,18,124,87,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Material",IDC_STATIC,7,9,26,8
+    CONTROL         "&Metal Material",IDC_DBG_METAL_MATERIAL_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,36,60,10
+    CONTROL         "Custom2",IDC_COLOR,"ColorControl",WS_TABSTOP,9,63,40,19
+    GROUPBOX        "Base Color",IDC_STATIC,7,49,124,40
+    LTEXT           "Wrap\n(0..1)",IDC_STATIC,53,64,19,16
+    EDITTEXT        IDC_DBG_MATERIAL_BASE_WRAP_EDIT,79,65,40,14,ES_AUTOHSCROLL
+    CONTROL         "Custom2",IDC_COLOR2,"ColorControl",WS_TABSTOP,9,103,40,19
+    LTEXT           "Shininess\n(0..1)",IDC_STATIC,13,128,32,16
+    EDITTEXT        IDC_DBG_MATERAIL_SHININESS_EDIT,79,127,40,14,ES_AUTOHSCROLL
+    LTEXT           "Edge Brightness\n(0..1)",IDC_STATIC,13,149,56,20
+    LTEXT           "Glossy",IDC_STATIC,9,93,22,8
+    CONTROL         "Custom2",IDC_COLOR3,"ColorControl",WS_TABSTOP,79,103,40,19
+    LTEXT           "Clearcoat",IDC_STATIC,79,93,31,8
+    EDITTEXT        IDC_DBG_MATERIAL_EDGE_EDIT,79,149,40,14,ES_AUTOHSCROLL
+    GROUPBOX        "Opacity",IDC_STATIC,7,168,124,57
+    LTEXT           "Amount\n(0..1)",IDC_STATIC,13,180,30,16
+    EDITTEXT        IDC_DBG_MATERIAL_OPACITY_AMOUNT_EDIT,45,181,22,14,ES_AUTOHSCROLL
+    CONTROL         "Active",IDC_DBG_MATERIAL_OPACITY_ACTIVE_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,79,182,36,10
+    LTEXT           "Edge Opacity\n(0..1)",IDC_STATIC,13,202,48,18
+    EDITTEXT        DBG_MATERIAL_OPACITY_EDGE_EDIT,79,202,40,14,ES_AUTOHSCROLL
 END
 
 IDD_DBGLIGHTDIALOG DIALOGEX 0, 0, 137, 201
@@ -2477,6 +2504,13 @@ BEGIN
 
     IDD_PROPHITTARGET_PHYSICS, DIALOG
     BEGIN
+    END
+
+    IDD_DBGMATERIALDIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 131
+        BOTTOMMARGIN, 244
     END
 
     IDD_DBGLIGHTDIALOG, DIALOG

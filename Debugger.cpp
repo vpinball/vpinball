@@ -58,6 +58,167 @@ void SetCheckButtonState(HWND hwndDlg, Light *plight)
       Button_SetCheck(GetDlgItem(hwndDlg, IDC_DBG_LIGHT_BLINKING_CHECK), BST_CHECKED);
    }
 }
+INT_PTR CALLBACK MaterialDebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+   PinTable *ptable = g_pplayer->m_ptable;
+   HWND hCombo = GetDlgItem(hwndDlg, IDC_DBG_MATERIALCOMBO);
+   switch (uMsg)
+   {
+      case WM_INITDIALOG:
+      {
+         vector<string> matNames;
+         SetWindowLongPtr(hwndDlg, GWLP_USERDATA, lParam);
+         for (int i = 0; i < ptable->m_materials.Size(); i++)
+         {
+            matNames.push_back(ptable->m_materials.ElementAt(i)->m_szName);
+         }
+         std::sort(matNames.begin(), matNames.end());
+         for (unsigned int i = 0; i < matNames.size(); i++)
+            ComboBox_AddString(hCombo, matNames[i].c_str());
+
+         ShowWindow(g_pplayer->m_hwndDebugger, SW_HIDE);
+         ComboBox_SetCurSel(hCombo, 0);
+         SendMessage(hwndDlg, WM_COMMAND, MAKEWPARAM(IDC_DBG_MATERIALCOMBO, CBN_SELCHANGE), 0);
+         return TRUE;
+      }
+      case WM_CLOSE:
+      {
+         ShowWindow(g_pplayer->m_hwndDebugger, SW_SHOW);
+         EndDialog(hwndDlg, FALSE);
+         break;
+      }
+      case GET_COLOR_TABLE:
+      {
+         *((unsigned long **)lParam) = ptable->m_rgcolorcustom;
+         return TRUE;
+      }
+      case WM_ACTIVATE:
+      {
+         g_pplayer->m_fDebugWindowActive = (wParam != WA_INACTIVE);
+         g_pplayer->RecomputePauseState();
+         g_pplayer->RecomputePseudoPauseState();
+         break;
+      }
+      case WM_COMMAND:
+      {
+         switch (HIWORD(wParam))
+         {
+            case COLOR_CHANGED:
+            {
+               int idx_row;
+               char strText[255] = { 0 };
+               const size_t color = GetWindowLongPtr((HWND)lParam, GWLP_USERDATA);
+               HWND hwndcolor1 = GetDlgItem(hwndDlg, IDC_COLOR);
+               HWND hwndcolor2 = GetDlgItem(hwndDlg, IDC_COLOR2);
+               HWND hwndcolor3 = GetDlgItem(hwndDlg, IDC_COLOR3);
+
+               idx_row = SendMessage(hCombo, CB_GETCURSEL, 0, 0);
+               SendMessage(hCombo, CB_GETLBTEXT, idx_row, (LPARAM)strText);
+               Material *pMat = ptable->GetMaterial(strText);
+               if (pMat != NULL)
+               {
+                  if (hwndcolor1 == (HWND)lParam)
+                     pMat->m_cBase = (COLORREF)color;
+                  else if (hwndcolor2 == (HWND)lParam)
+                     pMat->m_cGlossy = (COLORREF)color;
+                  else if (hwndcolor3 == (HWND)lParam)
+                     pMat->m_cClearcoat = (COLORREF)color;
+               }
+               break;
+            }
+            case BN_CLICKED:
+            {
+               switch (LOWORD(wParam))
+               {
+               case IDOK:
+               {
+                  int idx_row;
+                  char strText[255] = { 0 };
+                  idx_row = ComboBox_GetCurSel(hCombo);
+                  ComboBox_GetLBText(hCombo, idx_row, strText);
+
+                  Material *pMat = ptable->GetMaterial(strText);
+                  if (pMat != NULL)
+                  {
+                     char value[256];
+                     GetDlgItemText(hwndDlg, IDC_DBG_MATERIAL_BASE_WRAP_EDIT, value, 31);
+                     pMat->m_fWrapLighting = sz2f(value);
+                     GetDlgItemText(hwndDlg, IDC_DBG_MATERAIL_SHININESS_EDIT, value, 31);
+                     pMat->m_fRoughness = sz2f(value);
+                     GetDlgItemText(hwndDlg, IDC_DBG_MATERIAL_EDGE_EDIT, value, 31);
+                     pMat->m_fEdge = sz2f(value);
+                     GetDlgItemText(hwndDlg, IDC_DBG_MATERIAL_OPACITY_AMOUNT_EDIT, value, 31);
+                     pMat->m_fOpacity = sz2f(value);
+                     GetDlgItemText(hwndDlg, DBG_MATERIAL_OPACITY_EDGE_EDIT, value, 31);
+                     pMat->m_fEdgeAlpha = sz2f(value);
+                     size_t checked = SendDlgItemMessage(hwndDlg, IDC_DBG_METAL_MATERIAL_CHECK, BM_GETCHECK, 0, 0);
+                     pMat->m_bIsMetal = (checked == 1);
+                     checked = SendDlgItemMessage(hwndDlg, IDC_DBG_MATERIAL_OPACITY_ACTIVE_CHECK, BM_GETCHECK, 0, 0);
+                     pMat->m_bOpacityActive = (checked == 1);
+                  }
+                  break;
+               }
+               case IDCANCEL:
+               {
+
+                  ShowWindow(g_pplayer->m_hwndDebugger, SW_SHOW);
+                  EndDialog(hwndDlg, FALSE);
+                  return TRUE;
+               }
+               }
+               break;
+            }
+         }
+         switch (LOWORD(wParam))
+         {
+            case IDC_DBG_MATERIAL_OPACITY_ACTIVE_CHECK:
+            case IDC_DBG_METAL_MATERIAL_CHECK:
+            {
+               SendMessage(hwndDlg, WM_COMMAND, MAKEWPARAM(IDOK, BN_CLICKED), 0);
+               break;
+            }
+            case IDC_DBG_MATERIALCOMBO:
+            {
+               switch (HIWORD(wParam))
+               {
+                  case CBN_SELCHANGE:
+                  {
+                     int idx_row;
+                     char strText[255] = { 0 };
+                     idx_row = ComboBox_GetCurSel(hCombo);
+                     ComboBox_GetLBText(hCombo, idx_row, strText);
+
+                     Material *pMat = ptable->GetMaterial(strText);
+                     if (pMat != NULL)
+                     {
+                        char value[256];
+                        f2sz(pMat->m_fWrapLighting, value);
+                        SetDlgItemText(hwndDlg, IDC_DBG_MATERIAL_BASE_WRAP_EDIT, value);
+                        f2sz(pMat->m_fRoughness, value);
+                        SetDlgItemText(hwndDlg, IDC_DBG_MATERAIL_SHININESS_EDIT, value);
+                        f2sz(pMat->m_fEdge, value);
+                        SetDlgItemText(hwndDlg, IDC_DBG_MATERIAL_EDGE_EDIT, value);
+                        f2sz(pMat->m_fOpacity, value);
+                        SetDlgItemText(hwndDlg, IDC_DBG_MATERIAL_OPACITY_AMOUNT_EDIT, value);
+                        f2sz(pMat->m_fEdgeAlpha, value);
+                        SetDlgItemText(hwndDlg, DBG_MATERIAL_OPACITY_EDGE_EDIT, value);
+                        SendMessage(GetDlgItem(hwndDlg, IDC_DBG_METAL_MATERIAL_CHECK), BM_SETCHECK, pMat->m_bIsMetal ? BST_CHECKED : BST_UNCHECKED, 0);
+                        SendMessage(GetDlgItem(hwndDlg, IDC_DBG_MATERIAL_OPACITY_ACTIVE_CHECK), BM_SETCHECK, pMat->m_bOpacityActive ? BST_CHECKED : BST_UNCHECKED, 0);
+                        SendMessage(GetDlgItem(hwndDlg, IDC_COLOR), CHANGE_COLOR, 0, pMat->m_cBase);
+                        SendMessage(GetDlgItem(hwndDlg, IDC_COLOR2), CHANGE_COLOR, 0, pMat->m_cGlossy);
+                        SendMessage(GetDlgItem(hwndDlg, IDC_COLOR3), CHANGE_COLOR, 0, pMat->m_cClearcoat);
+                     }
+                     break;
+                  }
+               }
+               break;
+            }
+         }
+         break;
+      }
+   }
+   return FALSE;
+}
 
 INT_PTR CALLBACK LightDebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -499,6 +660,11 @@ INT_PTR CALLBACK DebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
                   case IDC_DBGLIGHTSBUTTON:
                   {
                      g_pplayer->m_hwndLightDebugger = CreateDialogParam(g_hinst, MAKEINTRESOURCE(IDD_DBGLIGHTDIALOG), hwndDlg, LightDebuggerProc, NULL);
+                     break;
+                  }
+                  case IDC_DBG_MATERIALS_BUTTON:
+                  {
+                     g_pplayer->m_hwndLightDebugger = CreateDialogParam(g_hinst, MAKEINTRESOURCE(IDD_DBGMATERIALDIALOG), hwndDlg, MaterialDebuggerProc, NULL);
                      break;
                   }
                }
