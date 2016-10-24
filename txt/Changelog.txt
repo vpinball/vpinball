@@ -1,5 +1,10 @@
 VP 10.2.0 Changelog
 ------------------------
+- Materials can be debugged in the debugger. Open the debugger, click on the "Materials" button and a new dialog will appear where all properties are editable except the physics values. 
+  By hitting enter or the "Apply" button the changes are updated. Every dynamic element on the table will show the changes immediately. The opacity active flag is an exception: this flag
+  defines if an element is rendered dynamically or not (e.g. walls or ramps). So if the opacity isn't active when starting the player you won't see changes on these static elements.
+  And as for the lights debugger all changes are temporarily and will be lost when you quit the player.
+
 - disable visual touch/pen feedback to save one frame of input latency/lag
 
 - replace old 'Maximum pre-rendered frames' implementation with official DX mechanism on non-XP systems,
@@ -7,7 +12,7 @@ VP 10.2.0 Changelog
 
 - Add aspect ratio to dimension manager
 
-- Lights can be debugged in the debugger. Open the debugger, click on the "Light" button and a new dialog will appear where all dynamic values are editable. Properties like blinking/on/off are
+- Lights can be debugged in the debugger. Open the debugger, click on the "Lights" button and a new dialog will appear where all dynamic values are editable. Properties like blinking/on/off are
   based on the timing of the player but the timing is stopped while debugging. You have to click in the player window to see the changes. And beware that all light properties can be changed by 
   the script, so these might be overwritten by the script even if you try to set them in the debugger.
 
