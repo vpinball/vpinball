@@ -197,6 +197,7 @@ void FlipperAnimObject::UpdateDisplacements(const float dtime)
    //    slintf("Ang.speed: %f\n", m_anglespeed);
 
    bool handle_event = false;
+   bool hmax = false;
 
    if (m_angleCur == m_angleMax)        // hit stop?
    {
@@ -212,6 +213,7 @@ void FlipperAnimObject::UpdateDisplacements(const float dtime)
          }
 #endif
          handle_event = true;
+         hmax = true;
       }
    }
    else if (m_angleCur == m_angleMin)
@@ -223,7 +225,7 @@ void FlipperAnimObject::UpdateDisplacements(const float dtime)
    if(handle_event)
    {
       const float anglespd = fabsf(RADTOANG(m_anglespeed));
-      m_angularMomentum *= -0.3f;
+      m_angularMomentum *= !hmax ? -0.01f : -0.3f;
       m_anglespeed = m_angularMomentum / m_inertia;
 
       if (m_EnableRotateEvent > 0) m_pflipper->FireVoidEventParm(DISPID_LimitEvents_EOS, anglespd);      // send EOS event
