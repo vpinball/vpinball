@@ -225,8 +225,17 @@ void FlipperAnimObject::UpdateDisplacements(const float dtime)
    if(handle_event)
    {
       const float anglespd = fabsf(RADTOANG(m_anglespeed));
-      m_angularMomentum *= !hmax ? -0.01f : -0.3f;
-      m_anglespeed = m_angularMomentum / m_inertia;
+
+      if (!hmax) // special case to directly trigger the "resolve contacts with stoppers" case in UpdateVelocities() in the next physics cycle, so that there is no delay in the flip
+      {
+          m_angularMomentum = 0.f;
+          m_anglespeed = FLT_MIN;
+      }
+      else
+      {
+          m_angularMomentum *= -0.3f;
+          m_anglespeed = m_angularMomentum / m_inertia;
+      }
 
       if (m_EnableRotateEvent > 0) m_pflipper->FireVoidEventParm(DISPID_LimitEvents_EOS, anglespd);      // send EOS event
       else if (m_EnableRotateEvent < 0) m_pflipper->FireVoidEventParm(DISPID_LimitEvents_BOS, anglespd); // send Beginning of Stroke/Park event
