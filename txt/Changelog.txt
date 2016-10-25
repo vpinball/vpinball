@@ -1,5 +1,8 @@
 VP 10.2.0 Changelog
 ------------------------
+
+- tweak park position handling of flippers for better response time/less lag when flipping
+
 - Materials can be debugged in the debugger. Open the debugger, click on the "Materials" button and a new dialog will appear where all properties are editable except the physics values. 
   By hitting enter or the "Apply" button the changes are updated. Every dynamic element on the table will show the changes immediately. The opacity active flag is an exception: this flag
   defines if an element is rendered dynamically or not (e.g. walls or ramps). So if the opacity isn't active when starting the player you won't see changes on these static elements.
@@ -59,7 +62,7 @@ VP 10.2.0 Changelog
 
 - fixed that the ball size was not updated in the pause debugging menu
 
-- see CommandReference.txt for the changelog of the scripting properties/interface
+- see CommandReference.txt for the changelog of all the scripting properties/interface changes
 
 - add DOF controller configuration also to the VP keys dialog
 - new core scripts by mfuegemann and controller modifications by arngrim, plus solenoid modulation by DJRobX (see core.vbs for changelog (3.51 and 3.52))
