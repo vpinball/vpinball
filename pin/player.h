@@ -31,7 +31,8 @@ enum EnumAssignKeys
 };
 
 // Note: Nowadays the original code seems to be counter-productive, so we use the official
-// pre-rendered frame mechanism instead where possible (e.g. all windows versions except for XP)
+// pre-rendered frame mechanism instead where possible
+// (e.g. all windows versions except for XP and no "EnableLegacyMaximumPreRenderedFrames" set in the registry)
 /*
  * Class to limit the length of the GPU command buffer queue to at most 'numFrames' frames.
  * Excessive buffering of GPU commands creates high latency and can create stuttery overlong
@@ -58,8 +59,11 @@ class FrameQueueLimiter
 public:
    void Init(RenderDevice *pd3dDevice, int numFrames)
    {
+      int EnableLegacyMaximumPreRenderedFrames = 0;
+      GetRegInt("Player", "EnableLegacyMaximumPreRenderedFrames", &EnableLegacyMaximumPreRenderedFrames);
+
       // if available, use the official RenderDevice mechanism
-      if (pd3dDevice->SetMaximumPreRenderedFrames(numFrames))
+      if (!EnableLegacyMaximumPreRenderedFrames && pd3dDevice->SetMaximumPreRenderedFrames(numFrames))
       {
           m_buffers.resize(0);
           return;
