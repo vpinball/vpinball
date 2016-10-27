@@ -41,7 +41,7 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Date: May 9, 2016 
+// Date: Sep 19, 2016 
 // File: nvapi.h
 //
 // NvAPI provides an interface to NVIDIA devices. This file contains the 
@@ -126,6 +126,7 @@ NVAPI_INTERFACE NvAPI_Initialize();
 //!
 //! \retval ::NVAPI_ERROR            One or more resources are locked and hence cannot unload NVAPI library
 //! \retval ::NVAPI_OK               NVAPI library unloaded
+//! \retval ::NVAPI_API_IN_USE       Atleast an API is still being called hence cannot unload NVAPI library from process
 //!
 //! \ingroup nvapifunctions
 ///////////////////////////////////////////////////////////////////////////////
@@ -268,7 +269,6 @@ typedef enum _NV_DP_BPC
 //! \retval    NVAPI_DATA_NOT_FOUND                The requested display does not contain an EDID.
 //
 ///////////////////////////////////////////////////////////////////////////////
-
 
 //! \ingroup gpu
 //! @{
@@ -669,35 +669,6 @@ __nvapi_deprecated_function("Do not use this function - it is deprecated in rele
 NVAPI_INTERFACE NvAPI_SetView(NvDisplayHandle hNvDisplay, NV_VIEW_TARGET_INFO *pTargetInfo, NV_TARGET_VIEW_MODE targetView);
 
 
-///////////////////////////////////////////////////////////////////////////////
-//
-// FUNCTION NAME:   NvAPI_SetViewEx
-//
-//!  \fn NvAPI_SetViewEx(NvDisplayHandle hNvDisplay, NV_DISPLAY_PATH_INFO *pPathInfo, NV_TARGET_VIEW_MODE displayView)
-//!  This function lets caller to modify the display arrangement for selected source display handle in any of the nview modes.
-//!  It also allows to modify or extend the source display in dualview mode.
-//!   \note Maps the selected source to the associated target Ids.
-//!   \note Display PATH with this API is limited to single GPU. DUALVIEW across GPUs cannot be enabled with this API. 
-//!
-//! \deprecated  Do not use this function - it is deprecated in release 290. Instead, use NvAPI_DISP_SetDisplayConfig.
-//! SUPPORTED OS:  Windows Vista and higher
-//!
-//!
-//! \since Release: 95
-//!
-//! \param [in]  hNvDisplay   NVIDIA Display selection. #NVAPI_DEFAULT_HANDLE is not allowed, it has to be a handle enumerated with 
-//!                           NvAPI_EnumNVidiaDisplayHandle().
-//! \param [in]  pPathInfo    Pointer to array of NV_VIEW_PATH_INFO, specifying device properties in this view.
-//!                           The first device entry in the array is the physical primary.
-//!                           The device entry with the lowest source id is the desktop primary.
-//! \param [in]  pathCount    Count of paths specified in pPathInfo.
-//! \param [in]  displayView  Display view selected from NV_TARGET_VIEW_MODE.
-//!
-//! \retval  NVAPI_OK                Completed request
-//! \retval  NVAPI_ERROR             Miscellaneous error occurred
-//! \retval  NVAPI_INVALID_ARGUMENT  Invalid input parameter.
-//
-///////////////////////////////////////////////////////////////////////////////
 
 //! \ingroup dispcontrol
 #define NVAPI_MAX_DISPLAY_PATH  NVAPI_MAX_VIEW_TARGET
@@ -773,7 +744,35 @@ typedef struct
 #define NV_DISPLAY_PATH_INFO_VER2 MAKE_NVAPI_VERSION(NV_DISPLAY_PATH_INFO,2)
 #define NV_DISPLAY_PATH_INFO_VER1 MAKE_NVAPI_VERSION(NV_DISPLAY_PATH_INFO,1)
 //! @}
-
+///////////////////////////////////////////////////////////////////////////////
+//
+// FUNCTION NAME:   NvAPI_SetViewEx
+//
+//!  \fn NvAPI_SetViewEx(NvDisplayHandle hNvDisplay, NV_DISPLAY_PATH_INFO *pPathInfo, NV_TARGET_VIEW_MODE displayView)
+//!  This function lets caller to modify the display arrangement for selected source display handle in any of the nview modes.
+//!  It also allows to modify or extend the source display in dualview mode.
+//!   \note Maps the selected source to the associated target Ids.
+//!   \note Display PATH with this API is limited to single GPU. DUALVIEW across GPUs cannot be enabled with this API. 
+//!
+//! \deprecated  Do not use this function - it is deprecated in release 290. Instead, use NvAPI_DISP_SetDisplayConfig.
+//! SUPPORTED OS:  Windows Vista and higher
+//!
+//!
+//! \since Release: 95
+//!
+//! \param [in]  hNvDisplay   NVIDIA Display selection. #NVAPI_DEFAULT_HANDLE is not allowed, it has to be a handle enumerated with 
+//!                           NvAPI_EnumNVidiaDisplayHandle().
+//! \param [in]  pPathInfo    Pointer to array of NV_VIEW_PATH_INFO, specifying device properties in this view.
+//!                           The first device entry in the array is the physical primary.
+//!                           The device entry with the lowest source id is the desktop primary.
+//! \param [in]  pathCount    Count of paths specified in pPathInfo.
+//! \param [in]  displayView  Display view selected from NV_TARGET_VIEW_MODE.
+//!
+//! \retval  NVAPI_OK                Completed request
+//! \retval  NVAPI_ERROR             Miscellaneous error occurred
+//! \retval  NVAPI_INVALID_ARGUMENT  Invalid input parameter.
+//
+///////////////////////////////////////////////////////////////////////////////
 
 //! \ingroup dispcontrol
 __nvapi_deprecated_function("Do not use this function - it is deprecated in release 290. Instead, use NvAPI_DISP_SetDisplayConfig.")
@@ -1368,6 +1367,28 @@ NVAPI_INTERFACE NvAPI_GetPhysicalGPUsFromLogicalGPU(NvLogicalGpuHandle hLogicalG
    
 ///////////////////////////////////////////////////////////////////////////////
 //
+// FUNCTION NAME: NvAPI_GPU_GetShaderSubPipeCount
+//
+//!   DESCRIPTION: This function retrieves the number of Shader SubPipes on the GPU
+//!                On newer architectures, this corresponds to the number of SM units
+//!
+//! SUPPORTED OS:  Windows XP and higher
+//!
+//!
+//! \since Release: 170
+//!
+//! RETURN STATUS: NVAPI_INVALID_ARGUMENT: pCount is NULL
+//!                NVAPI_OK: *pCount is set
+//!                NVAPI_NVIDIA_DEVICE_NOT_FOUND: no NVIDIA GPU driving a display was found
+//!                NVAPI_EXPECTED_PHYSICAL_GPU_HANDLE: hPhysicalGpu was not a physical GPU handle
+//!
+//! \ingroup   gpu  
+///////////////////////////////////////////////////////////////////////////////
+NVAPI_INTERFACE NvAPI_GPU_GetShaderSubPipeCount(NvPhysicalGpuHandle hPhysicalGpu,NvU32 *pCount);
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
 // FUNCTION NAME: NvAPI_GPU_GetGpuCoreCount
 //
 //!   DESCRIPTION: Retrieves the total number of cores defined for a GPU.
@@ -1463,7 +1484,6 @@ NVAPI_INTERFACE NvAPI_GPU_GetConnectedSLIOutputs(NvPhysicalGpuHandle hPhysicalGp
 
 
 
-
 //! \ingroup gpu
 typedef enum
 {
@@ -1517,6 +1537,7 @@ typedef struct _NV_GPU_DISPLAYIDS
 #define NV_GPU_DISPLAYIDS_VER2          MAKE_NVAPI_VERSION(NV_GPU_DISPLAYIDS,3)
 
 #define NV_GPU_DISPLAYIDS_VER NV_GPU_DISPLAYIDS_VER2
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -1740,14 +1761,15 @@ NVAPI_INTERFACE NvAPI_GPU_SetEDID(NvPhysicalGpuHandle hPhysicalGpu, NvU32 displa
 // FUNCTION NAME: NvAPI_GPU_GetOutputType
 //
 //! \fn NvAPI_GPU_GetOutputType(NvPhysicalGpuHandle hPhysicalGpu, NvU32 outputId, NV_GPU_OUTPUT_TYPE *pOutputType)
-//!  This function returns the output type for a specific physical GPU handle and outputId (exactly 1 bit set - see \ref handles).
+//!  This function returns the output type. User can either specify both 'physical GPU handle and outputId (exactly 1 bit set - see \ref handles)' or
+//!  a valid displayId in the outputId parameter.
 //!
 //! SUPPORTED OS:  Windows XP and higher
 //!
 //!
 //! \Version Earliest supported ForceWare version: 82.61
 //!
-//! \retval     NVAPI_INVALID_ARGUMENT              hPhysicalGpu, outputId, or pOutputsMask is NULL; or outputId has > 1 bit set
+//! \retval     NVAPI_INVALID_ARGUMENT              outputId, pOutputType is NULL; or if outputId parameter is not displayId and either it has > 1 bit set or hPhysicalGpu is NULL.
 //! \retval     NVAPI_OK                           *pOutputType contains a NvGpuOutputType value
 //! \retval     NVAPI_NVIDIA_DEVICE_NOT_FOUND       No NVIDIA GPU driving a display was found
 //! \retval     NVAPI_EXPECTED_PHYSICAL_GPU_HANDLE  hPhysicalGpu was not a physical GPU handle
@@ -5190,7 +5212,8 @@ typedef struct _NV_HDR_CAPABILITIES
     NvU32 isEdrSupported                        :1;                 //!< Extended Dynamic Range on SDR displays. Boolean: 0 = not supported, 1 = supported;
     NvU32 driverExpandDefaultHdrParameters      :1;                 //!< If set, driver will expand default (=zero) HDR capabilities parameters contained in display's EDID. 
                                                                     //!< Boolean: 0 = report actual HDR parameters, 1 = expand default HDR parameters;
-    NvU32 reserved                              :28;
+    NvU32 isTraditionalSdrGammaSupported        :1;                 //!< HDMI2.0a traditional SDR gamma (CEA861.3). Boolean: 0 = not supported, 1 = supported;
+    NvU32 reserved                              :27;
  
     NV_STATIC_METADATA_DESCRIPTOR_ID static_metadata_descriptor_id; //!< Static Metadata Descriptor Id (0 for static metadata type 1)
 
@@ -5221,7 +5244,6 @@ NVAPI_INTERFACE NvAPI_Disp_GetHdrCapabilities(__in NvU32 displayId, __inout NV_H
 
 //! @}
 
-
 //! \ingroup dispcontrol
 //! @{
  ///////////////////////////////////////////////////////////////////////////////
@@ -5249,10 +5271,11 @@ typedef enum
 
 typedef enum
 {
-    NV_HDR_MODE_OFF    = 0,                         //!< HDR off - standard Low Dynamic Range output
+    NV_HDR_MODE_OFF    = 0,                         //!< HDR off - Turn Off any of HDR/SDR mode
     NV_HDR_MODE_UHDA   = 2,                         //!< UHDA HDR (a.k.a HDR10) output: RGB/YCC 10/12bpc ST2084(PQ) EOTF (0..10000 nits luminance range), Rec2020 color primaries, ST2086 static HDR metadata.
     NV_HDR_MODE_UHDBD  = 2,                         //!< UHD BD HDR == UHDA HDR. UHD BD HDR baseline mandatory output: YCbCr4:2:0 10bpc ST2084(PQ) EOTF, Rec2020 color primaries, ST2086 static HDR metadata.
     NV_HDR_MODE_EDR    = 3,                         //!< EDR (Extended Dynamic Range) output - HDR content is tonemaped and gamut mapped to SDR display capabilties. SDR display is set to max luminance (~300 nits).
+    NV_HDR_MODE_SDR    = 4,                         //!< SDR (Standard Dynamic Range) output - SDR display is expected to max luminance (~100 nits).
 } NV_HDR_MODE;
 
 typedef struct _NV_HDR_COLOR_DATA
@@ -7319,6 +7342,7 @@ NVAPI_INTERFACE NvAPI_GSync_GetStatusParameters(NvGSyncDeviceHandle hNvGSyncDevi
 
 
 
+
 #if defined(_D3D9_H_)
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -7337,6 +7361,7 @@ NVAPI_INTERFACE NvAPI_GSync_GetStatusParameters(NvGSyncDeviceHandle hNvGSyncDevi
 ///////////////////////////////////////////////////////////////////////////////
 NVAPI_INTERFACE NvAPI_D3D9_RegisterResource(IDirect3DResource9* pResource);
 #endif //defined(_D3D9_H_)
+
 #if defined(_D3D9_H_)
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -7356,6 +7381,7 @@ NVAPI_INTERFACE NvAPI_D3D9_RegisterResource(IDirect3DResource9* pResource);
 NVAPI_INTERFACE NvAPI_D3D9_UnregisterResource(IDirect3DResource9* pResource);
 
 #endif //defined(_D3D9_H_)
+
 
 
 
@@ -7408,6 +7434,7 @@ NVAPI_INTERFACE NvAPI_D3D9_AliasSurfaceAsTexture(IDirect3DDevice9* pDev,
                                                  IDirect3DTexture9 **ppTexture,
                                                  DWORD dwFlag);
 #endif //defined(_D3D9_H_)
+
 #if defined(_D3D9_H_)
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -7448,6 +7475,7 @@ NVAPI_INTERFACE NvAPI_D3D9_StretchRectEx(IDirect3DDevice9 * pDevice,
                                          D3DTEXTUREFILTERTYPE Filter);
 
 #endif //defined(_D3D9_H_)
+
 #if defined(_D3D9_H_)
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -7586,6 +7614,7 @@ NVAPI_INTERFACE NvAPI_D3D9_VideoSetStereoInfo(IDirect3DDevice9 *pDev,
 
 
 #if defined (__cplusplus) && (defined(__d3d11_h__) || defined(__d3d11_1_h__))
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // FUNCTION NAME: NvAPI_D3D11_IsNvShaderExtnOpCodeSupported
@@ -7615,6 +7644,7 @@ NVAPI_INTERFACE NvAPI_D3D11_IsNvShaderExtnOpCodeSupported(__in  IUnknown *pDev,
 #endif //defined (__cplusplus) && (defined(__d3d11_h__) || defined(__d3d11_1_h__))
 
 #if defined (__cplusplus) && (defined(__d3d11_h__) || defined(__d3d11_1_h__))
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // FUNCTION NAME: NvAPI_D3D11_SetNvShaderExtnSlot
@@ -7650,6 +7680,7 @@ NVAPI_INTERFACE NvAPI_D3D11_SetNvShaderExtnSlot(__in IUnknown *pDev,
 
 
 #if defined (__cplusplus) && (defined(__d3d11_h__) || defined(__d3d11_1_h__))
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // FUNCTION NAME: NvAPI_D3D11_BeginUAVOverlapEx
@@ -7681,6 +7712,7 @@ NVAPI_INTERFACE NvAPI_D3D11_BeginUAVOverlapEx(__in  IUnknown *pDeviceOrContext, 
 #endif //defined (__cplusplus) && (defined(__d3d11_h__) || defined(__d3d11_1_h__))
 
 #if defined (__cplusplus) && (defined(__d3d11_h__) || defined(__d3d11_1_h__))
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // FUNCTION NAME: NvAPI_D3D11_BeginUAVOverlap
@@ -7704,6 +7736,7 @@ NVAPI_INTERFACE NvAPI_D3D11_BeginUAVOverlap(__in  IUnknown *pDeviceOrContext);
 #endif //defined (__cplusplus) && (defined(__d3d11_h__) || defined(__d3d11_1_h__))
 
 #if defined (__cplusplus) && (defined(__d3d11_h__) || defined(__d3d11_1_h__))
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // FUNCTION NAME: NvAPI_D3D11_EndUAVOverlap
@@ -7881,7 +7914,6 @@ NVAPI_INTERFACE NvAPI_D3D_ConfigureAnsel(__in IUnknown *pDevice,
                                          __in NVAPI_ANSEL_CONFIGURATION_STRUCT *pNLSConfig);
 
 #endif //defined (__cplusplus) && (defined(__d3d11_h__) || defined(__d3d11_1_h__))
-
 
 //! SUPPORTED OS:  Windows Vista and higher
 //!
@@ -8719,29 +8751,6 @@ NVAPI_INTERFACE NvAPI_D3D1x_DisableShaderDiskCache(IUnknown *pDevice);
 
 //! SUPPORTED OS:  Windows Vista and higher
 //!
-#if defined (__cplusplus) && ( defined(__d3d10_h__) || defined(__d3d10_1_h__) ||defined(__d3d11_h__) ) 
-///////////////////////////////////////////////////////////////////////////////
-//
-// FUNCTION NAME: NvAPI_D3D1x_HintCreateLowLatencyDevice
-//
-//! DESCRIPTION: Hint driver what type of D3D1x device has to be created
-//!
-//! \param [in]    bool                  true  - Next CreateDevice call has to create low latency device.
-//!										 false - Next CreateDevice call has to create normal device.
-//!												 Caller has explicitely change state of the hint from true to false     
-//!												 after low latency device is created.
-//!												 Default hint state is false.
-//! \retval ::NVAPI_OK                   Hint is set.
-//! \retval ::NVAPI_ERROR                Hint was not set.
-//! \ingroup dx
-///////////////////////////////////////////////////////////////////////////////
-NVAPI_INTERFACE NvAPI_D3D1x_HintCreateLowLatencyDevice(bool bCreateLowLatencyDevice);
-
-#endif //defined(__cplusplus) && ( defined(__d3d10_h__) || defined(__d3d10_1_h__) ||defined(__d3d11_h__) )
-
-
-//! SUPPORTED OS:  Windows Vista and higher
-//!
 #if defined (__cplusplus) && defined(__d3d11_h__) 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -9201,35 +9210,6 @@ typedef enum _IMPLICIT_SLI_CONTROL
 NVAPI_INTERFACE NvAPI_D3D_ImplicitSLIControl(__in IMPLICIT_SLI_CONTROL implicitSLIControl);
 
 #endif //defined (__cplusplus) && ( defined(_D3D9_H_) || defined(__d3d10_h__) || defined(__d3d10_1_h__) ||defined(__d3d11_h__) )
-
-//! SUPPORTED OS:  Windows Vista and higher
-//!
-#if defined(__cplusplus) && ( defined(__d3d10_h__) || defined(__d3d10_1_h__) || defined(__d3d11_h__) )
-///////////////////////////////////////////////////////////////////////////////
-//
-// FUNCTION NAME: NvAPI_D3D1x_GetLowLatencySupport
-//
-//!   DESCRIPTION: Query support for low latency nodes
-//!
-//!
-//! \param [in]  adapterId                      The adapter ID that specifies the GPU to query.
-//! \param [out] pIsLowLatencySupported         Returns true if and only if low latency nodes are supported.
-//!                
-//! \retval  NVAPI_OK                           Call succeeded.
-//! \retval  NVAPI_ERROR                        Call failed.
-//! \retval  NVAPI_INVALID_ARGUMENT             One or more arguments are invalid.
-//! \retval  NVAPI_INVALID_POINTER              A NULL pointer was passed
-//!
-//! \ingroup dx 
-/////////////////////////////////////////////////////////////////////////////// 
-NVAPI_INTERFACE NvAPI_D3D1x_GetLowLatencySupport(__in LUID pAdapterId, 
-                                                 __out BOOL *pIsLowLatencySupported);
-
-#endif //defined(__cplusplus) && ( defined(__d3d10_h__) || defined(__d3d10_1_h__) || defined(__d3d11_h__) )
-
-/////////////////////////////////////////////////////////////////////////
-// Video Input Output (VIO) API
-/////////////////////////////////////////////////////////////////////////
 
 
 
@@ -11411,7 +11391,7 @@ NVAPI_INTERFACE NvAPI_D3D1x_CreateSwapChain(StereoHandle hStereoHandle,
 #endif //if defined(__d3d10_h__) || defined(__d3d10_1_h__) || defined(__d3d11_h__)
 
 
-#if defined(_D3D9_H_)
+#if defined(_D3D9_H_) //NvAPI_D3D9_CreateSwapChain
 ///////////////////////////////////////////////////////////////////////////////
 //
 // FUNCTION NAME: NvAPI_D3D9_CreateSwapChain
@@ -11444,7 +11424,7 @@ NVAPI_INTERFACE NvAPI_D3D9_CreateSwapChain(StereoHandle hStereoHandle,
                                            D3DPRESENT_PARAMETERS *pPresentationParameters,
                                            IDirect3DSwapChain9 **ppSwapChain,
                                            NV_STEREO_SWAPCHAIN_MODE mode);
-#endif //if defined(_D3D9_H_)
+#endif //if defined(_D3D9_H_) //NvAPI_D3D9_CreateSwapChain
 
 
 
