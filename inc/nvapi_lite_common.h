@@ -359,6 +359,7 @@ typedef enum _NvAPI_Status
     NVAPI_PCLK_LIMITATION_FAILED                = -206,    //!< Provided mode is over sink device pclk limitation.
     NVAPI_NO_CONNECTOR_FOUND                    = -207,    //!< No connector on GPU found. 
     NVAPI_HDCP_DISABLED                         = -208,    //!< When a non-HDCP capable HMD is connected, we would inform user by this code.
+    NVAPI_API_IN_USE                            = -209,    //!< Atleast an API is still being called
 } NvAPI_Status;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -508,6 +509,7 @@ static const NVDX_ObjectHandle NVDX_OBJECT_NONE = 0;
 
 #endif //if defined(_D3D9_H_) || defined(__d3d10_h__) || defined(__d3d11_h__)
 #if defined(_D3D9_H_) || defined(__d3d10_h__) || defined(__d3d11_h__)
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // FUNCTION NAME: NvAPI_D3D_GetObjectHandleForResource
