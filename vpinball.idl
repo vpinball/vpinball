@@ -79,6 +79,7 @@ typedef [uuid(28F7715B-E800-49B6-B86E-A0C55898297E)]
 				TriggerWireB = 3,
 				TriggerButton = 4,
 				TriggerWireC = 5,
+				TriggerWireD = 6,
                 }
                 TriggerShape;
 
