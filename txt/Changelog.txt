@@ -23,8 +23,6 @@ VP 10.2.0 Changelog
 
 - Duration function added to the light commands. See CommandReference.txt for more details.
 
-- under Video Preferences you can define a waiting time after which VP will do a alt+tab simulation for bringing the VP player back into exclusive fullscreen mode.
-
 - hotkey for adding normal and smooth control points for walls, ramps and lights. Select a wall,ramp or light and press F10 for a normal unsmoothed control point and F11 for a smoothed one.
 
 - animation support for mesh primitives added: The animation sequence is based on multiple .obj files for each frame. Let's say we have an animation of 100 single frames, then you have to export

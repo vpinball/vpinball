@@ -873,7 +873,6 @@
 #define IDC_DOF_TARGETS                 744
 #define IDC_DOF_DROPTARGETS             745
 #define IDC_DOF_FORCEDISABLE            746
-#define IDC_FS_SWITCH_TIME              747
 #define IDC_DBG_LIGHT_FALLOFF           748
 #define IDC_DBG_LIGHT_FALLOFF_POWER     749
 #define IDC_DBG_LIGHT_FADE_DOWN_EDIT    754
