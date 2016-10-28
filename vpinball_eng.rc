@@ -14,7 +14,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Englisch (USA) resources
+// English (United States) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
@@ -358,29 +358,26 @@ BEGIN
     CONTROL         "Disable Desktop Composition",IDC_DISABLE_DWM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,242,127,10
     CONTROL         "Force exclusive Fullscreen Mode (less compatible)",IDC_FULLSCREEN,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,252,177,10
-    CONTROL         "Force 10Bit-Monitor support",IDC_10BIT_VIDEO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,273,127,10
-    CONTROL         "Unlimited",IDC_TexUnlimited,"Button",BS_AUTORADIOBUTTON,166,304,45,10
-    CONTROL         "3072",IDC_Tex3072,"Button",BS_AUTORADIOBUTTON | WS_GROUP,215,304,28,10
-    CONTROL         "2048",IDC_Tex2048,"Button",BS_AUTORADIOBUTTON,255,304,32,10
-    CONTROL         "1024",IDC_Tex1024,"Button",BS_AUTORADIOBUTTON,294,304,32,10
-    CONTROL         "",IDC_ARASlider,"msctls_trackbar32",TBS_AUTOTICKS | TBS_TOP | WS_TABSTOP,155,335,191,20
+    CONTROL         "Force 10Bit-Monitor support",IDC_10BIT_VIDEO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,262,127,10
+    CONTROL         "Unlimited",IDC_TexUnlimited,"Button",BS_AUTORADIOBUTTON,166,290,45,10
+    CONTROL         "3072",IDC_Tex3072,"Button",BS_AUTORADIOBUTTON | WS_GROUP,215,290,28,10
+    CONTROL         "2048",IDC_Tex2048,"Button",BS_AUTORADIOBUTTON,255,290,32,10
+    CONTROL         "1024",IDC_Tex1024,"Button",BS_AUTORADIOBUTTON,294,290,32,10
+    CONTROL         "",IDC_ARASlider,"msctls_trackbar32",TBS_AUTOTICKS | TBS_TOP | WS_TABSTOP,155,323,191,20
     PUSHBUTTON      "Reset to Defaults",IDC_DEFAULTS,154,360,63,14
     DEFPUSHBUTTON   "OK",IDOK,240,360,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,297,360,50,14
     GROUPBOX        "Display",IDC_STATIC,7,7,142,367
     GROUPBOX        "Ball Rendering",IDC_STATIC,154,7,94,92
     GROUPBOX        "3D Stereo Output",IDC_STATIC,12,289,132,80
-    GROUPBOX        "Performance and Troubleshooting",IDC_STATIC,154,148,193,208
-    GROUPBOX        "Max Texture Dimension (for low-end gfx boards)",IDC_STATIC,159,294,183,25
-    LTEXT           "Elements Detail Level (decrease = performance)",IDC_STATIC,163,323,156,8
+    GROUPBOX        "Performance and Troubleshooting",IDC_STATIC,154,148,193,196
+    GROUPBOX        "Max Texture Dimension (for low-end gfx boards)",IDC_STATIC,159,280,183,25
+    LTEXT           "Elements Detail Level (decrease = performance)",IDC_STATIC,163,311,156,8
     GROUPBOX        "Ball aspect ratio for stretched Tables",IDC_STATIC,12,211,132,75
     GROUPBOX        "Automatic Night->Day cycle",IDC_STATIC,154,104,193,39
     LTEXT           "(Cabinet/Rotated Screen usage)",IDC_STATIC,24,127,121,8
     LTEXT           "(post-processed Anti-Aliasing)",IDC_STATIC,24,198,101,8
-    GROUPBOX        "Fullscreen",IDC_STATIC,159,232,183,54
-    LTEXT           "Bring VP back into focus after waiting for",IDC_STATIC,196,263,92,8
-    EDITTEXT        IDC_FS_SWITCH_TIME,287,262,40,12,ES_AUTOHSCROLL
-    LTEXT           "ms",IDC_STATIC,329,263,11,8
+    GROUPBOX        "Fullscreen",IDC_STATIC,159,232,183,43
 END
 
 IDD_FONTDIALOG DIALOG 0, 0, 316, 167
@@ -3112,7 +3109,7 @@ BEGIN
     IDS_STEP                "Step"
 END
 
-#endif    // Englisch (USA) resources
+#endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

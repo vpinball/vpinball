@@ -1205,79 +1205,6 @@ void Player::DebugPrint(int x, int y, LPCSTR text, int stringLen, bool shadow)
     }
 }
 
-// bloody exclusive fullscreen hack: 
-// because B2S/VPM also accesses the frame buffer that is actually reserved for VP the gfx driver
-// seems to steal the frame buffer from VP but leaves the window focus on the VP player window
-// only a forced double alt+tab key press seems to reinitialize DX and shows the VP player again
-void sendKey( WORD scanCode, bool downUp, bool extended = false )
-{
-    INPUT input = { 0 };
-    input.type = INPUT_KEYBOARD;
-    input.ki.wScan = scanCode;
-    input.ki.dwFlags = KEYEVENTF_SCANCODE;
-    if(!downUp) input.ki.dwFlags |= KEYEVENTF_KEYUP;
-    if(extended) input.ki.dwFlags |= KEYEVENTF_EXTENDEDKEY;
-    SendInput( 1, &input, sizeof( input ) );
-}
-
-void keyDown( WORD scanCode, bool extended = false )
-{
-    sendKey( scanCode, true, extended );
-}
-
-void keyUp( WORD scanCode, bool extended = false )
-{
-    sendKey( scanCode, false, extended );
-}
-static const WORD TAB_SCANCODE = 0x0F;
-static const WORD LEFT_ALT_SCANCODE = 0x38;
-static int bringToTopWaitTime = 10000;
-void BringToTopThread(void *dummy)
-{
-   unsigned int startTime = GetTickCount();
-
-   while (1)
-   {
-      if (GetTickCount() - startTime > (unsigned int)bringToTopWaitTime)
-      {
-         // do alt+tab to switch to another process
-          keyDown( LEFT_ALT_SCANCODE );
-          Sleep( 100 );
-          keyDown( TAB_SCANCODE );
-          Sleep( 100 );
-          keyUp( TAB_SCANCODE );
-          Sleep( 100 );
-          keyUp( LEFT_ALT_SCANCODE );
-          /*
-         keybd_event(VK_MENU, 0xB8, 0, 0);  //alt press
-         keybd_event(VK_TAB, 0x8F, 0, 0);   //tab press
-         keybd_event(VK_MENU, 0x8F, KEYEVENTF_KEYUP, 0);    //alt release
-         keybd_event(VK_TAB, 0xB8, KEYEVENTF_KEYUP, 0);     //tab release
-*/
-
-         Sleep(800);
-
-         // do another alt+tab to switch back to VP
-         keyDown( LEFT_ALT_SCANCODE );
-         Sleep( 100 );
-         keyDown( TAB_SCANCODE );
-         Sleep( 100 );
-         keyUp( TAB_SCANCODE );
-         Sleep( 100 );
-         keyUp( LEFT_ALT_SCANCODE );
-         /*
-         keybd_event( VK_MENU, 0xB8, 0, 0 );  //alt press
-         keybd_event( VK_TAB, 0x8F, 0, 0 );   //tab press
-         keybd_event( VK_MENU, 0x8F, KEYEVENTF_KEYUP, 0 );    //alt release
-         keybd_event( VK_TAB, 0xB8, KEYEVENTF_KEYUP, 0 );     //tab release
-*/
-         break;
-      }
-      Sleep(500);
-   }
-   _endthread();
-}
-
 HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWND hwndProgressName)
 {
    TRACE_FUNCTION();
@@ -1637,17 +1564,6 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
    assert(m_ballTrailVertexBuffer == NULL);
    m_pin3d.m_pd3dDevice->CreateVertexBuffer((MAX_BALL_TRAIL_POS-2)*2+4, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &m_ballTrailVertexBuffer);
 
-
-   if (m_fFullScreen)
-   {
-      //#### start task switcher for exclusive FS mode ###
-      hr = GetRegInt("Player", "FsWaitTime", &bringToTopWaitTime);
-      if (hr != S_OK)
-         bringToTopWaitTime = 0;
-
-      if (bringToTopWaitTime > 0)
-         _beginthread(BringToTopThread, 0, NULL);
-   }
    m_ptable->m_pcv->Start(); // Hook up to events and start cranking script
 
    SetWindowText(hwndProgressName, "Starting Game Scripts...");
