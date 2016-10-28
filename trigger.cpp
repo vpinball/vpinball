@@ -3,6 +3,7 @@
 #include "meshes/triggerSimpleMesh.h"
 #include "meshes/triggerStarMesh.h"
 #include "meshes/triggerButtonMesh.h"
+#include "meshes/triggerWireDMesh.h"
 
 Trigger::Trigger()
 {
@@ -54,6 +55,13 @@ void Trigger::UpdateEditorView()
          m_numIndices = triggerSimpleNumIndices;
          faceIndices = triggerSimpleIndices;
          meshVertices = triggerSimple;
+      }
+      else if(m_d.m_shape == TriggerWireD)
+      {
+          m_numVertices = triggerDWireNumVertices;
+          m_numIndices = triggerDWireNumIndices;
+          faceIndices = triggerDWireIndices;
+          meshVertices = triggerDWireMesh;
       }
       else if (m_d.m_shape == TriggerButton)
       {
@@ -320,7 +328,7 @@ void Trigger::Render(Sur * const psur)
       psur->Line(m_d.m_vCenter.x - r2, m_d.m_vCenter.y + r2, m_d.m_vCenter.x + r2, m_d.m_vCenter.y - r2);
    }
 
-   if (m_d.m_shape == TriggerWireA || m_d.m_shape == TriggerWireB || m_d.m_shape == TriggerWireC)
+   if (m_d.m_shape == TriggerWireA || m_d.m_shape == TriggerWireB || m_d.m_shape == TriggerWireC || m_d.m_shape == TriggerWireD)
    {
       if (m_numIndices > 0)
       {
@@ -414,6 +422,7 @@ void Trigger::GetHitShapesDebug(Vector<HitObject> * const pvho)
    case TriggerWireA:
    case TriggerWireB:
    case TriggerWireC:
+   case TriggerWireD:
    {
       std::vector<RenderVertex> vvertex;
       GetRgVertex(vvertex);
@@ -543,6 +552,8 @@ void Trigger::UpdateAnimation(RenderDevice *pd3dDevice)
       animLimit = m_d.m_radius * (float)(1.0/10.0);
    if (m_d.m_shape == TriggerWireC)
       animLimit = 60.0f;
+   if(m_d.m_shape == TriggerWireD)
+       animLimit = 25.0f;
 
    const float limit = animLimit*m_ptable->m_BG_scalez[m_ptable->m_BG_current_set];
 
@@ -598,7 +609,7 @@ void Trigger::UpdateAnimation(RenderDevice *pd3dDevice)
           vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
           for (int i = 0; i < m_numVertices; i++)
           {
-              if (m_d.m_shape == TriggerWireA || m_d.m_shape == TriggerWireB || m_d.m_shape == TriggerWireC)
+              if(m_d.m_shape == TriggerWireA || m_d.m_shape == TriggerWireB || m_d.m_shape == TriggerWireC || m_d.m_shape == TriggerWireD)
               {
                   buf[i].x = triggerVertices[i].x + triggerVertices[i].nx*m_d.m_wireThickness;
                   buf[i].y = triggerVertices[i].y + triggerVertices[i].ny*m_d.m_wireThickness;                 
@@ -636,7 +647,7 @@ void Trigger::PostRenderStatic(RenderDevice* pd3dDevice)
 
    pd3dDevice->SetRenderState(RenderDevice::DEPTHBIAS, 0);
    pd3dDevice->SetRenderState(RenderDevice::ZWRITEENABLE, TRUE);
-   if (m_d.m_shape == TriggerWireA || m_d.m_shape == TriggerWireB || m_d.m_shape == TriggerWireC)
+   if(m_d.m_shape == TriggerWireA || m_d.m_shape == TriggerWireB || m_d.m_shape == TriggerWireC || m_d.m_shape == TriggerWireD)
       pd3dDevice->SetRenderState(RenderDevice::CULLMODE, D3DCULL_NONE);
 
    pd3dDevice->basicShader->Begin(0);
@@ -660,6 +671,8 @@ void Trigger::ExportMesh(FILE *f)
    WaveFrontObj_UseTexture(f, m_d.m_szMaterial);
    if (m_d.m_shape == TriggerWireA || m_d.m_shape == TriggerWireB || m_d.m_shape == TriggerWireC)
       WaveFrontObj_WriteFaceInfoList(f, triggerSimpleIndices, m_numIndices);
+   else if(m_d.m_shape == TriggerWireD)
+       WaveFrontObj_WriteFaceInfoList( f, triggerDWireIndices, m_numIndices );
    else if ( m_d.m_shape==TriggerButton)
       WaveFrontObj_WriteFaceInfoList(f, triggerButtonIndices, m_numIndices);
    else if (m_d.m_shape==TriggerStar )
@@ -682,6 +695,15 @@ void Trigger::GenerateMesh()
       if (triggerVertices)
          delete[] triggerVertices;
       triggerVertices = new Vertex3D_NoTex2[m_numVertices];
+   }
+   else if(m_d.m_shape == TriggerWireD)
+   {
+       m_numVertices = triggerDWireNumVertices;
+       m_numIndices = triggerDWireNumIndices;
+       verts = triggerDWireMesh;
+       if(triggerVertices)
+           delete[] triggerVertices;
+       triggerVertices = new Vertex3D_NoTex2[m_numVertices];
    }
    else if (m_d.m_shape == TriggerButton)
    {
@@ -768,6 +790,11 @@ void Trigger::RenderSetup(RenderDevice* pd3dDevice)
       m_numVertices = triggerSimpleNumVertices;
       m_numIndices = triggerSimpleNumIndices;
    }
+   else if(m_d.m_shape == TriggerWireD)
+   {
+       m_numVertices = triggerDWireNumVertices;
+       m_numIndices = triggerDWireNumIndices;
+   }
    else if (m_d.m_shape == TriggerButton)
    {
       m_numVertices = triggerButtonNumVertices;
@@ -783,7 +810,9 @@ void Trigger::RenderSetup(RenderDevice* pd3dDevice)
       triggerIndexBuffer->release();
    if (m_d.m_shape == TriggerWireA || m_d.m_shape == TriggerWireB || m_d.m_shape == TriggerWireC)
       triggerIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(m_numIndices, triggerSimpleIndices);
-   else if ( m_d.m_shape==TriggerStar )
+   else if(m_d.m_shape == TriggerWireD)
+       triggerIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer( m_numIndices, triggerDWireIndices );
+   else if(m_d.m_shape == TriggerStar)
       triggerIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(m_numIndices, triggerStarIndices);
    else if ( m_d.m_shape==TriggerButton )
       triggerIndexBuffer = pd3dDevice->CreateAndFillIndexBuffer(m_numIndices, triggerButtonIndices);
@@ -795,7 +824,7 @@ void Trigger::RenderSetup(RenderDevice* pd3dDevice)
    GenerateMesh();
    Vertex3D_NoTex2 *buf;
    vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
-   if (m_d.m_shape == TriggerWireA || m_d.m_shape == TriggerWireB || m_d.m_shape == TriggerWireC)
+   if(m_d.m_shape == TriggerWireA || m_d.m_shape == TriggerWireB || m_d.m_shape == TriggerWireC || m_d.m_shape == TriggerWireD)
    {
       Vertex3D_NoTex2 *tmp = new Vertex3D_NoTex2[m_numVertices];
       for (int i = 0; i < m_numVertices; i++)
@@ -1491,7 +1520,7 @@ void Trigger::UpdatePropertyPanes()
       EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_RINGSPEED_EDIT), TRUE);
       EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_STAR_THICKNESS_EDIT), FALSE);
    }
-   else if (m_d.m_shape == TriggerWireA || m_d.m_shape == TriggerWireB || m_d.m_shape == TriggerWireC)
+   else if (m_d.m_shape == TriggerWireA || m_d.m_shape == TriggerWireB || m_d.m_shape == TriggerWireC || m_d.m_shape==TriggerWireD)
    {
       EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_STAR_RADIUS_EDIT), FALSE);
       EnableWindow(GetDlgItem(m_propVisual->dialogHwnd, IDC_STAR_THICKNESS_EDIT), TRUE);
