@@ -2227,6 +2227,9 @@ void Player::InitWindow()
    CalcBallAspectRatio();
    m_hwnd = ::CreateWindowEx(windowflagsex, "VPPlayer", "Visual Pinball Player", windowflags, x, y, m_width, m_height, NULL, NULL, g_hinst, 0);
 
+   if (m_fFullScreen) // blocks processes from taking focus away from our exclusive fullscreen app
+	   ::LockSetForegroundWindow(LSFW_LOCK);
+
    // Disable visual feedback for touch, this saves one frame of latency on touchdisplays
    if (!SetWindowFeedbackSetting)
 	   SetWindowFeedbackSetting = (pSWFS)GetProcAddress(GetModuleHandle(TEXT("user32.dll")),
