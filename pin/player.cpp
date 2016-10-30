@@ -419,7 +419,7 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
    m_DebugBallSize = GetRegIntWithDefault("Editor", "ThrowBallSize", 50);
 
    m_fShowFPS = false;
-   m_staticOnly = false;
+   m_staticOnly = 0;
 
    m_fCloseDown = false;
    m_fCloseType = 0;
@@ -624,7 +624,7 @@ void Player::Shutdown()
 void Player::ToggleFPS()
 {
    if (m_fShowFPS)
-      m_staticOnly = !m_staticOnly;
+      m_staticOnly = (m_staticOnly+1)%3;
    m_fShowFPS = !m_fShowFPS;
    m_lastfpstime = m_time_msec;
    m_cframes = 0;
@@ -1383,7 +1383,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 #ifdef FPS
    ToggleFPS();
    m_fShowFPS = false;
-   m_staticOnly = false;
+   m_staticOnly = 0;
 #endif
 
    for (int i = 0; i < m_ptable->m_vedit.Size(); i++)
@@ -3571,7 +3571,7 @@ void Player::UpdateHUD()
 
 		// Draw the framerate.
 		const float fpsAvg = (m_fpsCount == 0) ? 0.0f : m_fpsAvg / m_fpsCount;
-		int len2 = sprintf_s(szFoo, "FPS: %.1f (%.1f avg)  Display %s Objects (%uk/%uk Triangles)  DayNight %d%%", m_fps, fpsAvg, m_staticOnly ? "only static" : "all", (m_pin3d.m_pd3dDevice->m_stats_drawn_triangles + 999) / 1000, (stats_drawn_static_triangles + m_pin3d.m_pd3dDevice->m_stats_drawn_triangles + 999) / 1000, (int)(m_globalEmissionScale*100.f));
+		int len2 = sprintf_s(szFoo, "FPS: %.1f (%.1f avg)  Display %s Objects (%uk/%uk Triangles)  DayNight %d%%", m_fps+0.01f, fpsAvg+0.01f, m_staticOnly == 1 ? "only static" : "all", (m_pin3d.m_pd3dDevice->m_stats_drawn_triangles + 999) / 1000, (stats_drawn_static_triangles + m_pin3d.m_pd3dDevice->m_stats_drawn_triangles + 999) / 1000, (int)(m_globalEmissionScale*100.f));
 		DebugPrint(10, 10, szFoo, len2);
 
 		const U32 period = m_lastFrameDuration;
@@ -3902,7 +3902,8 @@ void Player::FlipVideoBuffersAO(const bool vsync)
 
    const D3DXVECTOR4 fb_inv_resolution_05((float)(0.5 / (double)m_width), (float)(0.5 / (double)m_height), 1.0f, 1.0f);
    m_pin3d.m_pd3dDevice->FBShader->SetVector("w_h_height", &fb_inv_resolution_05);
-   m_pin3d.m_pd3dDevice->FBShader->SetTechnique(useAA ? "fb_tonemap_AO" : "fb_tonemap_AO_no_filter");
+   m_pin3d.m_pd3dDevice->FBShader->SetTechnique(m_fShowFPS && (m_staticOnly == 2) ? "fb_AO" :
+                                                (useAA ? "fb_tonemap_AO" : "fb_tonemap_AO_no_filter"));
 
    m_pin3d.m_pd3dDevice->FBShader->Begin(0);
    m_pin3d.m_pd3dDevice->DrawTexturedQuad((Vertex3D_TexelOnly*)shiftedVerts);
@@ -4166,7 +4167,7 @@ void Player::Render()
    m_pin3d.m_pd3dDevice->m_stats_drawn_triangles = 0;
 
    CopyStaticAndAnimate();
-   if(!m_fShowFPS || !m_staticOnly)
+   if(!m_fShowFPS || m_staticOnly != 1)
       RenderDynamics();
 
    // Check if we should turn animate the plunger light.
