@@ -494,7 +494,7 @@ public:
 
    bool m_firstFrame;
    bool m_fShowFPS;
-   bool m_staticOnly;
+   unsigned int m_staticOnly;
 
    bool m_scaleFX_DMD;
 
