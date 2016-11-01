@@ -1368,6 +1368,8 @@ PinTable::PinTable()
    m_3DOffset = 0.0f;
    m_overwriteGlobalStereo3D = false;
 
+   dbgChangedMaterials.clear();
+
 #ifdef UNUSED_TILT
    if ( FAILED(GetRegInt("Player", "JoltAmount", &m_jolt_amount) )
       m_jolt_amount = 500;
@@ -2441,7 +2443,6 @@ void PinTable::StopPlaying()
    ClearOldSounds();
 
    m_pcv->EndSession();
-
    m_textureMap.clear();
    m_materialMap.clear();
 
@@ -2476,6 +2477,7 @@ void PinTable::StopPlaying()
    g_fKeepUndoRecords = fTrue;
 
    ShowWindow(g_pvp->m_hwndWork, SW_SHOW);
+   UpdateDbgMaterial();
 
    BeginAutoSaveCounter();
 }
@@ -7510,6 +7512,84 @@ void PinTable::AddMaterial(Material *pmat)
    }
 
    m_materials.AddElement(pmat);
+}
+
+void PinTable::AddDbgMaterial(Material *pmat)
+{
+   bool alreadyIn = false;
+   unsigned int i;
+
+   for (i = 0; i < dbgChangedMaterials.size(); i++)
+   {
+      if (strcmp(pmat->m_szName, dbgChangedMaterials[i]->m_szName) == 0)
+      {
+         alreadyIn = true;
+         break;
+      }
+   }
+      
+   if (alreadyIn)
+   {
+      dbgChangedMaterials[i]->m_bIsMetal = pmat->m_bIsMetal;
+      dbgChangedMaterials[i]->m_bOpacityActive = pmat->m_bOpacityActive;
+      dbgChangedMaterials[i]->m_cBase = pmat->m_cBase;
+      dbgChangedMaterials[i]->m_cClearcoat = pmat->m_cClearcoat;
+      dbgChangedMaterials[i]->m_cGlossy = pmat->m_cGlossy;
+      dbgChangedMaterials[i]->m_fEdge = pmat->m_fEdge;
+      dbgChangedMaterials[i]->m_fEdgeAlpha = pmat->m_fEdgeAlpha;
+      dbgChangedMaterials[i]->m_fOpacity = pmat->m_fOpacity;
+      dbgChangedMaterials[i]->m_fRoughness = pmat->m_fRoughness;
+      dbgChangedMaterials[i]->m_fWrapLighting = pmat->m_fWrapLighting;
+   }
+   else
+   {
+      Material *newMat = new Material();
+      newMat->m_bIsMetal = pmat->m_bIsMetal;
+      newMat->m_bOpacityActive = pmat->m_bOpacityActive;
+      newMat->m_cBase = pmat->m_cBase;
+      newMat->m_cClearcoat = pmat->m_cClearcoat;
+      newMat->m_cGlossy = pmat->m_cGlossy;
+      newMat->m_fEdge = pmat->m_fEdge;
+      newMat->m_fEdgeAlpha = pmat->m_fEdgeAlpha;
+      newMat->m_fOpacity = pmat->m_fOpacity;
+      newMat->m_fRoughness = pmat->m_fRoughness;
+      newMat->m_fWrapLighting = pmat->m_fWrapLighting;
+      strcpy_s(newMat->m_szName, pmat->m_szName);
+      dbgChangedMaterials.push_back(newMat);
+   }
+}
+
+void PinTable::UpdateDbgMaterial(void)
+{
+   bool somethingChanged = false;
+   for (unsigned int i = 0; i < dbgChangedMaterials.size();i++)
+   {
+      Material *pmat = dbgChangedMaterials[i];
+      for (int t = 0; t < m_materials.Size(); t++)
+      {
+         if (strcmp(pmat->m_szName, m_materials.ElementAt(t)->m_szName) == 0)
+         {
+            Material *mat = m_materials.ElementAt(t);
+            mat->m_bIsMetal = pmat->m_bIsMetal;
+            mat->m_bOpacityActive = pmat->m_bOpacityActive;
+            mat->m_cBase = pmat->m_cBase;
+            mat->m_cClearcoat = pmat->m_cClearcoat;
+            mat->m_cGlossy = pmat->m_cGlossy;
+            mat->m_fEdge = pmat->m_fEdge;
+            mat->m_fEdgeAlpha = pmat->m_fEdgeAlpha;
+            mat->m_fOpacity = pmat->m_fOpacity;
+            mat->m_fRoughness = pmat->m_fRoughness;
+            mat->m_fWrapLighting = pmat->m_fWrapLighting;
+            somethingChanged = true;
+            break;
+         }
+      }
+   }
+   dbgChangedMaterials.clear();
+   if (somethingChanged)
+   {
+      SetNonUndoableDirty(eSaveDirty);
+   }
 }
 
 int PinTable::AddListMaterial(HWND hwndListView, Material *pmat)
