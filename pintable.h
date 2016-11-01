@@ -547,6 +547,8 @@ public:
    int AddListMaterial(HWND hwndListView, Material *pmat);
    void RemoveMaterial(Material *pmat);
    void AddMaterial(Material *pmat);
+   void AddDbgMaterial(Material *pmat);
+   void UpdateDbgMaterial(void);
    bool IsMaterialNameUnique(char *name);
    Material* GetMaterial(char * const szName) const;
    Material* GetSurfaceMaterial(char *szName);
@@ -755,6 +757,8 @@ public:
    bool  m_overwriteGlobalStereo3D;
    bool  m_fReflectElementsOnPlayfield;
    bool  m_fReflectionEnabled;
+
+   vector<Material*> dbgChangedMaterials;
 
 #ifdef UNUSED_TILT //!! currently unused (see NudgeGetTilt())
    int   m_jolt_amount;

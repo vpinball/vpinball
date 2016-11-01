@@ -124,6 +124,7 @@ INT_PTR CALLBACK MaterialDebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LP
                   else if (hwndcolor3 == (HWND)lParam)
                      pMat->m_cClearcoat = (COLORREF)color;
                }
+               ptable->AddDbgMaterial(pMat);
                break;
             }
             case BN_CLICKED:
@@ -155,6 +156,7 @@ INT_PTR CALLBACK MaterialDebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LP
                      pMat->m_bIsMetal = (checked == 1);
                      checked = SendDlgItemMessage(hwndDlg, IDC_DBG_MATERIAL_OPACITY_ACTIVE_CHECK, BM_GETCHECK, 0, 0);
                      pMat->m_bOpacityActive = (checked == 1);
+                     ptable->AddDbgMaterial(pMat);
                   }
                   break;
                }
