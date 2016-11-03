@@ -327,6 +327,7 @@ INT_PTR CALLBACK LightDebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARA
                         GetDlgItemText(hwndDlg, IDC_DBG_LIGHT_FADE_DOWN_EDIT, value, 31);
                         fv = sz2f(value);
                         plight->put_FadeSpeedDown(fv);
+                        ptable->AddDbgLight( plight );
                      };
                      break;
                   }
@@ -344,6 +345,7 @@ INT_PTR CALLBACK LightDebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARA
                      {
                         plight->put_State(LightStateOn);
                         SetCheckButtonState(hwndDlg, plight);
+                        ptable->AddDbgLight( plight );
                      }
                      break;
                   }
@@ -354,6 +356,7 @@ INT_PTR CALLBACK LightDebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARA
                      {
                         plight->put_State(LightStateOff);
                         SetCheckButtonState(hwndDlg, plight);
+                        ptable->AddDbgLight( plight );
                      }
                      break;
                   }
@@ -364,6 +367,7 @@ INT_PTR CALLBACK LightDebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARA
                      {
                         plight->put_State(LightStateBlinking);
                         SetCheckButtonState(hwndDlg, plight);
+                        ptable->AddDbgLight( plight );
                      }
                      break;
                   }

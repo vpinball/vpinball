@@ -14,7 +14,7 @@ VP 10.2.0 Changelog
 
 - Lights can be debugged in the debugger. Open the debugger, click on the "Lights" button and a new dialog will appear where all dynamic values are editable. Properties like blinking/on/off are
   based on the timing of the player but the timing is stopped while debugging. You have to click in the player window to see the changes. And beware that all light properties can be changed by 
-  the script, so these might be overwritten by the script even if you try to set them in the debugger.
+  the script, so these might be overwritten by the script even if you try to set them in the debugger. The changes will also effect the lights in the editor once you quit the player.
   
 - Materials can also be debugged in the debugger. Open the debugger, click on the "Materials" button and a new dialog will appear where all properties are editable except for the physics values. 
   By hitting enter or the "Apply" button the changes are updated. Every dynamic element on the table will show the changes immediately. The opacity active flag is an exception: This flag

@@ -546,7 +546,9 @@ public:
    void ListMaterials(HWND hwndListView);
    int AddListMaterial(HWND hwndListView, Material *pmat);
    void RemoveMaterial(Material *pmat);
-   void AddMaterial(Material *pmat);
+   void AddDbgLight( Light *plight );
+   void UpdateDbgLight( void );
+   void AddMaterial( Material *pmat );
    void AddDbgMaterial(Material *pmat);
    void UpdateDbgMaterial(void);
    bool IsMaterialNameUnique(char *name);
@@ -759,6 +761,24 @@ public:
    bool  m_fReflectionEnabled;
 
    vector<Material*> dbgChangedMaterials;
+
+
+   typedef struct DebugLightData
+   {
+       char name[MAX_PATH];
+       float falloff;
+       float falloffPower;
+       float intensity;
+       float bulbModulateVsAdd;
+       float transmissionScale;
+       float  fadeSpeedUp;
+       float  fadeSpeedDown;
+       COLORREF color1;
+       COLORREF color2;
+       LightState lightstate;
+   };
+
+   vector<DebugLightData*> dbgChangedLights;
 
 #ifdef UNUSED_TILT //!! currently unused (see NudgeGetTilt())
    int   m_jolt_amount;
