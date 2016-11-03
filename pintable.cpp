@@ -1369,6 +1369,7 @@ PinTable::PinTable()
    m_overwriteGlobalStereo3D = false;
 
    dbgChangedMaterials.clear();
+   dbgChangedLights.clear();
 
 #ifdef UNUSED_TILT
    if ( FAILED(GetRegInt("Player", "JoltAmount", &m_jolt_amount) )
@@ -2478,6 +2479,7 @@ void PinTable::StopPlaying()
 
    ShowWindow(g_pvp->m_hwndWork, SW_SHOW);
    UpdateDbgMaterial();
+   UpdateDbgLight();
 
    BeginAutoSaveCounter();
 }
@@ -7610,6 +7612,88 @@ void PinTable::RemoveMaterial(Material *pmat)
    m_materials.RemoveElement(pmat);
    delete pmat;
 }
+
+void PinTable::AddDbgLight( Light *plight )
+{
+    bool alreadyIn = false;
+    unsigned int i;
+    char *lightName = GetElementName( plight );
+
+    for(i = 0; i < dbgChangedMaterials.size(); i++)
+    {
+        if(strcmp( lightName, dbgChangedLights[i]->name) == 0)
+        {
+            alreadyIn = true;
+            break;
+        }
+    }
+    if(alreadyIn)
+    {
+        dbgChangedLights[i]->color1 = plight->m_d.m_color;
+        dbgChangedLights[i]->color2 = plight->m_d.m_color2;
+        plight->get_BulbModulateVsAdd( &dbgChangedLights[i]->bulbModulateVsAdd );
+        plight->get_FadeSpeedDown( &dbgChangedLights[i]->fadeSpeedDown );
+        plight->get_FadeSpeedUp( &dbgChangedLights[i]->fadeSpeedUp );
+        plight->get_State( &dbgChangedLights[i]->lightstate );
+        plight->get_Falloff( &dbgChangedLights[i]->falloff );
+        plight->get_FalloffPower( &dbgChangedLights[i]->falloffPower );
+        plight->get_Intensity( &dbgChangedLights[i]->intensity );
+        plight->get_TransmissionScale( &dbgChangedLights[i]->transmissionScale );
+    }
+    else
+    {
+        DebugLightData *data = new DebugLightData;
+        data->color1 = plight->m_d.m_color;
+        data->color2 = plight->m_d.m_color2;
+        plight->get_BulbModulateVsAdd( &data->bulbModulateVsAdd );
+        plight->get_FadeSpeedDown( &data->fadeSpeedDown );
+        plight->get_FadeSpeedUp( &data->fadeSpeedUp );
+        plight->get_State( &data->lightstate );
+        plight->get_Falloff( &data->falloff );
+        plight->get_FalloffPower( &data->falloffPower );
+        plight->get_Intensity( &data->intensity );
+        plight->get_TransmissionScale( &data->transmissionScale );
+        strcpy_s( data->name, lightName );
+        dbgChangedLights.push_back( data );
+    }
+}
+
+void PinTable::UpdateDbgLight( void )
+{
+    bool somethingChanged = false;
+    for(unsigned int i = 0; i < dbgChangedLights.size(); i++)
+    {
+        DebugLightData *data = dbgChangedLights[i];
+        for(int t = 0; t < m_vedit.Size(); t++)
+        {
+            if(m_vedit.ElementAt( t )->GetItemType() == eItemLight)
+            {
+                Light *plight = (Light*)m_vedit.ElementAt( t );
+                if(strcmp( data->name, GetElementName( plight ) ) == 0)
+                {
+                    plight->m_d.m_color = data->color1;
+                    plight->m_d.m_color2 = data->color2;
+                    plight->m_d.m_fadeSpeedDown = data->fadeSpeedDown;
+                    plight->m_d.m_fadeSpeedUp = data->fadeSpeedUp;
+                    plight->m_d.m_falloff = data->falloff;
+                    plight->m_d.m_falloff_power = data->falloffPower;
+                    plight->m_d.m_intensity = data->intensity;
+                    plight->m_d.m_modulate_vs_add = data->bulbModulateVsAdd;
+                    plight->m_d.m_transmissionScale = data->transmissionScale;
+                    plight->m_d.m_state = data->lightstate;
+                    somethingChanged = true;
+                    break;
+                }
+            }
+        }
+    }
+    dbgChangedLights.clear();
+    if(somethingChanged)
+    {
+        SetNonUndoableDirty( eSaveDirty );
+    }
+}
+
 
 int PinTable::GetImageLink(Texture *ppi)
 {
