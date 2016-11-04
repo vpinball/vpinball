@@ -4,17 +4,17 @@ Const VPinMAMEDriverVer = 3.52
 ' VPinMAME driver core.
 '=======================
 ' New in 3.52 (Update by DJRobX)
-' - Add modulated solenoids to support ROM controlled fading flashers
-' - Add "UseVPMModSol=True" to the table script
-' - Use SolModCallback instead of SolCalback to receive level changes as input.  It will be a level from 0 to 255
-' - Continue to use SolCallback if you only care about boolean values, only fires if level changes from on to off
-' - Note vpmTableInit MUST BE CALLED or VPM will not switch modes.  If you are only getting 1 from SolModCallback that may be the issue
-' - TODO: When VPM is released that implements this change, add version check
+' - Add modulated solenoids to support ROM controlled fading flashers:
+'   To use, add "UseVPMModSol=True" to the table script
+' - Use SolModCallback instead of SolCallback to receive level changes as input.  It will be a level from 0 to 255,
+'   continue to use SolCallback if you only care about boolean values, it only fires if level changes from on to off
+' - Note: vpmTableInit MUST BE CALLED or VPM will not switch modes (if you are only getting 1 from SolModCallback then that may be the issue)
+' - TODO: When a VPM is released that implements this change, add version check!
 '
 ' New in 3.51 (Update by mfuegemann & Arngrim & Toxie)
 ' - gts1.vbs dip fix
 ' - Add comments to cvpmDropTarget.CreateEvents: do not use this anymore in VP10 and above, as drop targets have an animation time nowadays
-' - Change default interval of the PinMAME timer to 10 if VP10 (or newer) is running, and leave it at 1 for everything else
+' - Change default interval of the PinMAME timer to 5 if VP10 (or newer) is running, and leave it at 1 for everything else
 ' - Fix missing SlingshotThreshold() when using VP8.X
 ' - (Controller.vbs changes)
 '   - now its allowed to have each toy to be set to 0 (sound effect), 1 (DOF) or 2 (both)
@@ -639,7 +639,7 @@ Dim vpmShowDips     ' Show DIPs function
 '-----------------------------------------------------
 Private Function PinMAMEInterval
         If VPBuildVersion >= 10000 Then
-                PinMAMEInterval = 10 ' as old VP9 timers pretended to run at 1000Hz but actually did only a max of 100Hz, we do the same for VP10+ by default
+                PinMAMEInterval = 5 ' as old VP9 timers pretended to run at 1000Hz but actually did only a max of 100Hz (e.g. corresponding nowadays to interval=10), we do something inbetween for VP10+ by default
         Else
                 PinMAMEInterval = 1
         End If
@@ -2648,7 +2648,7 @@ Sub PinMAMETimer_Timer
 					SolPrevState(nsol) = solon
 					If tmp <> "" Then Execute tmp & vpmTrueFalse(solon+1)
 				End If
-				tmp = SolModCallback(nsol)			
+				tmp = SolModCallback(nsol)
 				If tmp <> "" Then Execute tmp & " " & ChgSol(ii, 1)
 			Else
 				If tmp <> "" Then Execute tmp & vpmTrueFalse(solon+1)
