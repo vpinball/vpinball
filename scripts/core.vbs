@@ -3,7 +3,8 @@ Const VPinMAMEDriverVer = 3.52
 '=======================
 ' VPinMAME driver core.
 '=======================
-' New in 3.52 (Update by DJRobX)
+' New in 3.52 (Update by DJRobX & Toxie)
+' - Change default interval of the PinMAME timer to -1 (frame-sync'ed) if VP10.2 (or newer) is running
 ' - Add modulated solenoids to support ROM controlled fading flashers:
 '   To use, add "UseVPMModSol=True" to the table script
 ' - Use SolModCallback instead of SolCallback to receive level changes as input.  It will be a level from 0 to 255,
@@ -638,10 +639,14 @@ Dim vpmShowDips     ' Show DIPs function
 ' vpmNudge      - Class for table nudge handling
 '-----------------------------------------------------
 Private Function PinMAMEInterval
-        If VPBuildVersion >= 10000 Then
-                PinMAMEInterval = 3 ' as old VP9 timers pretended to run at 1000Hz but actually did only a max of 100Hz (e.g. corresponding nowadays to interval=10), we do something inbetween for VP10+ by default
+        If VPBuildVersion >= 10200 Then
+                PinMAMEInterval = -1 ' VP10.2 introduced special frame-sync'ed timers
         Else
+            If VPBuildVersion >= 10000 Then
+                PinMAMEInterval = 3  ' as old VP9 timers pretended to run at 1000Hz but actually did only a max of 100Hz (e.g. corresponding nowadays to interval=10), we do something inbetween for VP10+ by default
+            Else
                 PinMAMEInterval = 1
+            End If
         End If
 End Function
 

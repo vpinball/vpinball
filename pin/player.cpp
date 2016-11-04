@@ -3009,6 +3009,7 @@ void Player::UpdatePhysics()
 {
    const U64 initial_time_usec = usec();
    U64 cur_time_usec;
+   bool first_cycle = true;
 
    while (m_curPhysicsFrameTime < (cur_time_usec=usec())) // loop here until current (real) time matches the physics (simulated) time
    {
@@ -3051,6 +3052,7 @@ void Player::UpdatePhysics()
       plumb_update(/*sim_msec*/cur_time_msec, GetNudgeX(), GetNudgeY());
 
 #ifdef ACCURATETIMERS
+      Ball * const old_pactiveball = m_pactiveball;
       m_pactiveball = NULL; // No ball is the active ball for timers/key events
 
       if(m_script_period <= 1000*MAX_TIMERS_MSEC_OVERALL) // if overall script time per frame exceeded, skip
@@ -3060,7 +3062,7 @@ void Player::UpdatePhysics()
          for (int i = 0; i < m_vht.Size(); i++)
          {
             HitTimer * const pht = m_vht.ElementAt(i);
-            if (pht->m_nextfire <= p_timeCur)
+            if ((pht->m_interval >= 0 && pht->m_nextfire <= p_timeCur) || (pht->m_interval < 0 && first_cycle))
             {
                pht->m_pfe->FireGroupEvent(DISPID_TimerEvents_Timer);
                pht->m_nextfire += pht->m_interval;
@@ -3069,8 +3071,11 @@ void Player::UpdatePhysics()
 
          m_script_period += (unsigned int)(usec() - cur_time_usec);
       }
+
+      m_pactiveball = old_pactiveball;
 #endif
-      NudgeUpdate();           // physics_diff_time is the balance of time to move from the graphic frame position to the next
+
+      NudgeUpdate();       // physics_diff_time is the balance of time to move from the graphic frame position to the next
       mechPlungerUpdate(); // integral physics frame. So the previous graphics frame was (1.0 - physics_diff_time) before 
       // this integral physics frame. Accelerations and inputs are always physics frame aligned
       {
@@ -3097,10 +3102,10 @@ void Player::UpdatePhysics()
          FilterNudge();
 
       for (unsigned i = 0; i < m_vmover.size(); i++)
-         m_vmover[i]->UpdateVelocities();        // always on integral physics frame boundary (spinner, gate, flipper, plunger, ball)
+         m_vmover[i]->UpdateVelocities();      // always on integral physics frame boundary (spinner, gate, flipper, plunger, ball)
 
       //primary physics loop
-      PhysicsSimulateCycle(physics_diff_time);    // main simulator call
+      PhysicsSimulateCycle(physics_diff_time); // main simulator call
 
       //ball trail, keep old pos of balls
       for (unsigned i = 0; i < m_vball.size(); i++)
@@ -3115,9 +3120,34 @@ void Player::UpdatePhysics()
 
       //slintf( "PT: %f %f %u %u %u\n", physics_diff_time, physics_to_graphic_diff_time, (U32)(m_curPhysicsFrameTime/1000), (U32)(initial_time_usec/1000), cur_time_msec );
 
-      m_curPhysicsFrameTime = m_nextPhysicsFrameTime;                          // new cycle, on physics frame boundary
-      m_nextPhysicsFrameTime += PHYSICS_STEPTIME;                                      // advance physics position
+      m_curPhysicsFrameTime = m_nextPhysicsFrameTime; // new cycle, on physics frame boundary
+      m_nextPhysicsFrameTime += PHYSICS_STEPTIME;     // advance physics position
+
+      first_cycle = false;
    } // end while (m_curPhysicsFrameTime < cur_time_usec)
+
+   // do a last round of timers/keys, but only those that want to be frame-sync'ed (interval < 0)
+#ifdef ACCURATETIMERS
+   const U32 cur_time_msec = (U32)(cur_time_usec / 1000);
+   m_pininput.ProcessKeys(m_ptable/*, sim_msec*/, cur_time_msec);
+
+   Ball * const old_pactiveball = m_pactiveball;
+   m_pactiveball = NULL; // No ball is the active ball for timers/key events
+
+   if (m_script_period <= 1000 * MAX_TIMERS_MSEC_OVERALL) // if overall script time per frame exceeded, skip
+   {
+       for (int i = 0; i < m_vht.Size(); i++)
+       {
+           HitTimer * const pht = m_vht.ElementAt(i);
+           if (pht->m_interval < 0)
+              pht->m_pfe->FireGroupEvent(DISPID_TimerEvents_Timer);
+       }
+
+       m_script_period += (unsigned int)(usec() - cur_time_usec);
+   }
+
+   m_pactiveball = old_pactiveball;
+#endif
 
 #ifdef FPS
    m_phys_period += (U32)(usec() - initial_time_usec);
@@ -4212,17 +4242,20 @@ void Player::Render()
       FlipVideoBuffersNormal(vsync);
 
 #ifndef ACCURATETIMERS
+   Ball * const old_pactiveball = m_pactiveball;
    m_pactiveball = NULL;  // No ball is the active ball for timers/key events
 
    for (int i=0;i<m_vht.Size();i++)
    {
       HitTimer * const pht = m_vht.ElementAt(i);
-      if (pht->m_nextfire <= m_time_msec)
+      if ((pht->m_interval >= 0 && pht->m_nextfire <= m_time_msec) || pht->m_interval < 0) 
       {
          pht->m_pfe->FireGroupEvent(DISPID_TimerEvents_Timer);
          pht->m_nextfire += pht->m_interval;
       }
    }
+
+   m_pactiveball = old_pactiveball;
 #endif
 
    // Update music stream

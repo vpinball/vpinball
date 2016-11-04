@@ -237,7 +237,7 @@ void Flipper::GetTimers(Vector<HitTimer> * const pvht)
    IEditable::BeginPlay();
 
    HitTimer * const pht = new HitTimer();
-   pht->m_interval = max(m_d.m_tdr.m_TimerInterval,MAX_TIMER_MSEC_INTERVAL);
+   pht->m_interval = m_d.m_tdr.m_TimerInterval >= 0 ? max(m_d.m_tdr.m_TimerInterval, MAX_TIMER_MSEC_INTERVAL) : -1;
    pht->m_nextfire = pht->m_interval;
    pht->m_pfe = (IFireEvents *)this;
 

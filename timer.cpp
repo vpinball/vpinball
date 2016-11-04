@@ -108,7 +108,7 @@ void Timer::GetTimers(Vector<HitTimer> * const pvht)
    IEditable::BeginPlay();
 
    HitTimer * const pht = new HitTimer();
-   pht->m_interval = max(m_d.m_tdr.m_TimerInterval,MAX_TIMER_MSEC_INTERVAL);
+   pht->m_interval = m_d.m_tdr.m_TimerInterval >= 0 ? max(m_d.m_tdr.m_TimerInterval, MAX_TIMER_MSEC_INTERVAL) : -1;
    pht->m_nextfire = pht->m_interval;
 
    pht->m_pfe = (IFireEvents *)this;
@@ -208,17 +208,17 @@ STDMETHODIMP Timer::put_Interval(long newVal)
 {
    STARTUNDO
 
-      m_d.m_tdr.m_TimerInterval = newVal;
+   m_d.m_tdr.m_TimerInterval = newVal;
 
    if (m_phittimer)
    {
-      m_phittimer->m_interval = max(m_d.m_tdr.m_TimerInterval,MAX_TIMER_MSEC_INTERVAL);
+      m_phittimer->m_interval = m_d.m_tdr.m_TimerInterval >= 0 ? max(m_d.m_tdr.m_TimerInterval, MAX_TIMER_MSEC_INTERVAL) : -1;
       m_phittimer->m_nextfire = g_pplayer->m_time_msec + m_phittimer->m_interval;
    }
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 HRESULT Timer::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)

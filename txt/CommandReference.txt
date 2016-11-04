@@ -7,6 +7,7 @@ Variables starting with a (*) can't be changed by the script (most can be read t
 
 Changelog:
 10.2:
+- extend TimerInterval of each element by -1 which makes it dependent on the FPS that a user can reach
 - add MaterialColor for the table element
 - extend PlayMusic with optional volume (0..1) and better document PlaySound
 - add Duration and BulbHaloHeight property to the light element
@@ -210,7 +211,7 @@ RingSpeed(float)
 Force(float)
 Threshold(float)
 TimerEnabled(bool)
-TimerInterval(int)
+TimerInterval(int) - set interval for triggering the timer (1 equals 1000 timer calls per second, 1000 equals 1 timer call per second, -1 makes it dependent on the FPS that a user can reach)
 UserValue(any) - can store any user defined value for re-use later-on
 *CapVisible(bool) - default=true
 *BaseVisible(bool) - default=true
@@ -257,7 +258,7 @@ Height(float)
 Alignment
 IsTransparent
 TimerEnabled
-TimerInterval
+TimerInterval(int) - set interval for triggering the timer (1 equals 1000 timer calls per second, 1000 equals 1 timer call per second, -1 makes it dependent on the FPS that a user can reach)
 X(float)
 Y(float)
 Name(string)
@@ -287,7 +288,7 @@ IsTransparent(bool)
 Sound(string)
 Steps(float)
 TimerEnabled(bool)
-TimerInterval(int)
+TimerInterval(int) - set interval for triggering the timer (1 equals 1000 timer calls per second, 1000 equals 1 timer call per second, -1 makes it dependent on the FPS that a user can reach)
 UpdateInterval(int)
 UserValue(any) - can store any user defined value for re-use later-on
 *UserImageGrid(bool)
@@ -335,7 +336,7 @@ OverridePhysics(int) - overrides the flipper physics settings with pre defined s
                        You can define up to 8 different physics settings for the table and the flippers. Save them to one of the 8 slots and
                        by assigning the slot number to this OverridePhysics it overrides these settings. default=0 (means use table settings)
 TimerEnabled(bool)
-TimerInterval(int)
+TimerInterval(int) - set interval for triggering the timer (1 equals 1000 timer calls per second, 1000 equals 1 timer call per second, -1 makes it dependent on the FPS that a user can reach)
 *Color(OLE_COLOR)
 *RubberColor(OLE_COLOR)
 *RubberThickness(float)
@@ -365,7 +366,7 @@ Variables
 *Height(float)
 *Rotation(float)
 TimerEnabled(bool)
-TimerInterval(int)
+TimerInterval(int) - set interval for triggering the timer (1 equals 1000 timer calls per second, 1000 equals 1 timer call per second, -1 makes it dependent on the FPS that a user can reach)
 Open(bool)
 *Material(string)
 Elasticity(float)
@@ -395,7 +396,7 @@ Variables
 *X(float)
 *Y(float)
 TimerEnabled(bool)
-TimerInterval(int)
+TimerInterval(int) - set interval for triggering the timer (1 equals 1000 timer calls per second, 1000 equals 1 timer call per second, -1 makes it dependent on the FPS that a user can reach)
 Enabled(bool)
 *DrawStyle(KickerType) - 0=Hidden, 1=Hole, 2=Cup, 3=Invisible
 *Color(OLE_COLOR)
@@ -441,7 +442,7 @@ Intensity(float) - sets the lights brightness/emission
 IntensityScale(float) - sets the lights brightness/emission scale, so that one can fade in/out all affected lights with the same scaling factor
 TransmissionScale(float) - sets the light scale for transmission, f.e. through playfield plastics or transparent ramps that are placed above the bulb light
 TimerEnabled(bool)
-TimerInterval(int)
+TimerInterval(int) - set interval for triggering the timer (1 equals 1000 timer calls per second, 1000 equals 1 timer call per second, -1 makes it dependent on the FPS that a user can reach)
 BlinkPattern(string) - off/on pattern for the light to use while the interval is going: 1 is ON, 0 is OFF, for example 111000111000101010101
 BlinkInterval(int)
 *Surface(string)
@@ -606,7 +607,7 @@ Variables
 *X(float)
 *Y(float)
 TimerEnabled(bool)
-TimerInterval(int)
+TimerInterval(int) - set interval for triggering the timer (1 equals 1000 timer calls per second, 1000 equals 1 timer call per second, -1 makes it dependent on the FPS that a user can reach)
 *Length(float)
 *Rotation(float)
 *Height(float)
@@ -635,7 +636,7 @@ Variables
 *Y(float)
 *Radius(float)
 TimerEnabled(bool)
-TimerInterval(int)
+TimerInterval(int) - set interval for triggering the timer (1 equals 1000 timer calls per second, 1000 equals 1 timer call per second, -1 makes it dependent on the FPS that a user can reach)
 *Enabled(bool)
 *Visible(bool)
 *TriggerShape(Shape) - 0=None, 1=Wire, 2=Star
@@ -661,7 +662,7 @@ Variables
 
 *Name(string)
 TimerEnabled(bool)
-TimerInterval(int)
+TimerInterval(int) - set interval for triggering the timer (1 equals 1000 timer calls per second, 1000 equals 1 timer call per second, -1 makes it dependent on the FPS that a user can reach)
 *HasHitEvent(bool)
 Threshold(float)
 *Image(string) - texture name
@@ -702,7 +703,7 @@ Variables
 
 *Name(string)
 TimerEnabled(bool)
-TimerInterval(int)
+TimerInterval(int) - set interval for triggering the timer (1 equals 1000 timer calls per second, 1000 equals 1 timer call per second, -1 makes it dependent on the FPS that a user can reach)
 ImageA(string) - texture name for image A
 ImageB(string) - texture name for image B
 Filter(string) - use one of the following filters to blend ImageA > ImageB: 'None', 'Additive', 'Multiply', 'Overlay', 'Screen' (filter names are case sensitive!)
@@ -751,7 +752,7 @@ Variables
 ---------
 *Name(string)
 TimerEnabled(bool)
-TimerInterval(int)
+TimerInterval(int) - set interval for triggering the timer (1 equals 1000 timer calls per second, 1000 equals 1 timer call per second, -1 makes it dependent on the FPS that a user can reach)
 *HasHitEvent(bool)
 *Thickness(int)
 *Collidable(bool)
@@ -796,4 +797,4 @@ DropSpeed(float)            - the speed how fast the drop or hit target will mov
 RaiseDelay(int)             - defines a delay in milliseconds after the dropped target will start to raise to it's normal position
 IsDropped(bool)             - can only be used for drop targets if the drop target is raised or dropped
 TimerEnabled(bool)          - each target has a build-in timer which can be enabled by setting this to 1
-TimerInterval(int)          - the time in milliseconds when the timer expires
+TimerInterval(int)          - set interval for triggering the timer (1 equals 1000 timer calls per second, 1000 equals 1 timer call per second, -1 makes it dependent on the FPS that a user can reach)
