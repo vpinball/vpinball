@@ -803,6 +803,7 @@ public:
    STDMETHOD(BeginModal)();
    STDMETHOD(GetTextFile)(BSTR FileName, /*[out, retval]*/ BSTR *pContents);
    STDMETHOD(get_GameTime)(/*[out, retval]*/ long *pVal);
+   STDMETHOD(get_SystemTime)(/*[out, retval]*/ long *pVal);
    STDMETHOD(get_AddCreditKey)(/*[out, retval]*/ long *pVal);
    STDMETHOD(get_AddCreditKey2)(/*[out, retval]*/ long *pVal);
    STDMETHOD(get_ActiveBall)(/*[out, retval]*/ IBall **pVal);
