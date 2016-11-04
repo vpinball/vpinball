@@ -181,12 +181,13 @@ public:
 
    void InitStatic(HWND hwndProgress);
 
+   void UpdatePerFrame();
+
    void UpdatePhysics();
    void Render();
    void RenderDynamics();
 
    void DrawBalls();
-   void CopyStaticAndAnimate();
 
    void SetClipPlanePlayfield(const bool clip_orientation);
 

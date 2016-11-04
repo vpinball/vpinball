@@ -2910,7 +2910,7 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
    } // end physics loop
 }
 
-void Player::UpdatePhysics()
+void Player::UpdatePerFrame()
 {
    const U64 initial_time_usec = usec();
 
@@ -2958,9 +2958,6 @@ void Player::UpdatePhysics()
    }
 #endif
 
-   // Get time in milliseconds for timers
-   m_time_msec = (U32)((initial_time_usec - m_StartTime_usec) / 1000);
-
    m_phys_iterations = 0;
 
    m_overall_frames++;
@@ -2983,6 +2980,8 @@ void Player::UpdatePhysics()
          m_cframes = 0;
       }
    }
+
+   m_phys_period = 0;
 #endif
 
 #ifdef LOG
@@ -3004,9 +3003,18 @@ void Player::UpdatePhysics()
    fprintf(m_flog, "Frame Time %.20f %u %u %u %u\n", frametime, initial_time_usec>>32, initial_time_usec, m_nextPhysicsFrameTime>>32, m_nextPhysicsFrameTime);
    fprintf(m_flog, "End Frame\n");
 #endif
+}
 
-   while (m_curPhysicsFrameTime < initial_time_usec) // loop here until current (real) time matches the physics (simulated) time
+void Player::UpdatePhysics()
+{
+   const U64 initial_time_usec = usec();
+   U64 cur_time_usec;
+
+   while (m_curPhysicsFrameTime < (cur_time_usec=usec())) // loop here until current (real) time matches the physics (simulated) time
    {
+      // Get time in milliseconds for timers
+      m_time_msec = (U32)((m_curPhysicsFrameTime - m_StartTime_usec) / 1000);
+
       m_phys_iterations++;
 
       // Get the time until the next physics tick is done, and get the time
@@ -3015,7 +3023,7 @@ void Player::UpdatePhysics()
       // point next update acceleration, and continue loop
 
       const float physics_diff_time = (float)((double)(m_nextPhysicsFrameTime - m_curPhysicsFrameTime)*(1.0 / DEFAULT_STEPTIME));
-      const float physics_to_graphic_diff_time = (float)((double)(initial_time_usec - m_curPhysicsFrameTime)*(1.0 / DEFAULT_STEPTIME));
+      //const float physics_to_graphic_diff_time = (float)((double)(initial_time_usec - m_curPhysicsFrameTime)*(1.0 / DEFAULT_STEPTIME));
 
       //if (physics_to_graphic_diff_time < physics_diff_time)          // is graphic frame time next???
       //{
@@ -3024,12 +3032,12 @@ void Player::UpdatePhysics()
       //      break;  //this is the common exit from the loop                  // exit skipping accelerate
       //}                     // some rare cases will exit from while()
 
-      const U64 cur_time_usec = usec();
-      if ((cur_time_usec - initial_time_usec > 200000) || (m_phys_iterations > ((m_ptable->m_PhysicsMaxLoops == 0) || (m_ptable->m_PhysicsMaxLoops == 0xFFFFFFFFu) ? 0xFFFFFFFFu : (m_ptable->m_PhysicsMaxLoops*(10000 / PHYSICS_STEPTIME))/*2*/))) // hung in the physics loop over 200 milliseconds or the number of physics iterations to catch up on is high (i.e. very low/unplayable FPS)
-      {                                                                                                                        // can not keep up to real time
-         m_curPhysicsFrameTime = initial_time_usec;                               // skip physics forward ... slip-cycles -> 'slowed' down physics
-         m_nextPhysicsFrameTime = initial_time_usec + PHYSICS_STEPTIME;
-         break;                                                                                                   // go draw frame
+      // hung in the physics loop over 200 milliseconds or the number of physics iterations to catch up on is high (i.e. very low/unplayable FPS)
+      if ((cur_time_usec - initial_time_usec > 200000) || (m_phys_iterations > ((m_ptable->m_PhysicsMaxLoops == 0) || (m_ptable->m_PhysicsMaxLoops == 0xFFFFFFFFu) ? 0xFFFFFFFFu : (m_ptable->m_PhysicsMaxLoops*(10000 / PHYSICS_STEPTIME))/*2*/)))
+      {                                                             // can not keep up to real time
+         m_curPhysicsFrameTime = cur_time_usec;                     // skip physics forward ... slip-cycles -> 'slowed' down physics
+         m_nextPhysicsFrameTime = cur_time_usec + PHYSICS_STEPTIME;
+         break;                                                     // go draw frame
       }
 
       //update keys, hid, plumb, nudge, timers, etc
@@ -3109,10 +3117,10 @@ void Player::UpdatePhysics()
 
       m_curPhysicsFrameTime = m_nextPhysicsFrameTime;                          // new cycle, on physics frame boundary
       m_nextPhysicsFrameTime += PHYSICS_STEPTIME;                                      // advance physics position
-   } // end while (m_curPhysicsFrameTime < initial_time_usec)
+   } // end while (m_curPhysicsFrameTime < cur_time_usec)
 
 #ifdef FPS
-   m_phys_period = (U32)(usec() - initial_time_usec - m_script_period);
+   m_phys_period += (U32)(usec() - initial_time_usec);
 #endif
 }
 
@@ -3426,19 +3434,6 @@ void Player::SetClipPlanePlayfield(const bool clip_orientation)
 	m_pin3d.m_pd3dDevice->GetCoreDevice()->SetClipPlane(0, clipSpacePlane);
 }
 
-void Player::CopyStaticAndAnimate()
-{
-   //
-   // copy static buffers to back buffer and z buffer
-   //
-   m_pin3d.m_pd3dDevice->CopySurface(m_pin3d.m_pddsBackBuffer, m_pin3d.m_pddsStatic);
-   m_pin3d.m_pd3dDevice->CopySurface(m_pin3d.m_pddsZBuffer, m_pin3d.m_pddsStaticZ); // cannot be called inside BeginScene -> EndScene cycle
-
-   // Process all AnimObjects (currently only DispReel, LightSeq and Slingshot)
-   for (int l = 0; l < m_vanimate.Size(); ++l)
-      m_vanimate.ElementAt(l)->Animate();
-}
-
 void Player::Bloom()
 {
    if (m_ptable->m_bloom_strength <= 0.0f)
@@ -3580,10 +3575,10 @@ void Player::UpdateHUD()
 		if (period > m_max_total && period < 100000)
 			m_max_total = period;
 
-		if (m_phys_period > m_phys_max || m_time_msec - m_lastMaxChangeTime > 1000)
-			m_phys_max = m_phys_period;
-		if (m_phys_period > m_phys_max_total)
-			m_phys_max_total = m_phys_period;
+		if (m_phys_period-m_script_period > m_phys_max || m_time_msec - m_lastMaxChangeTime > 1000)
+			m_phys_max = m_phys_period-m_script_period;
+		if (m_phys_period-m_script_period > m_phys_max_total)
+			m_phys_max_total = m_phys_period-m_script_period;
 		if (m_phys_iterations > m_phys_max_iterations || m_time_msec - m_lastMaxChangeTime > 1000)
 			m_phys_max_iterations = m_phys_iterations;
 
@@ -3598,7 +3593,7 @@ void Player::UpdateHUD()
 		if (m_count == 0)
 		{
 			m_total = period;
-			m_phys_total = m_phys_period;
+			m_phys_total = m_phys_period-m_script_period;
 			m_phys_total_iterations = m_phys_iterations;
 			m_script_total = m_script_period;
 			m_count = 1;
@@ -3606,7 +3601,7 @@ void Player::UpdateHUD()
 		else
 		{
 			m_total += period;
-			m_phys_total += m_phys_period;
+			m_phys_total += m_phys_period-m_script_period;
 			m_phys_total_iterations += m_phys_iterations;
 			m_script_total += m_script_period;
 			m_count++;
@@ -3616,7 +3611,7 @@ void Player::UpdateHUD()
 			float(1e-3*period), float(1e-3 * (double)m_total / (double)m_count), float(1e-3*m_max), float(1e-3*m_max_total));
 		DebugPrint(10, 30, szFoo, len);
 		len = sprintf_s(szFoo, "%.1f%% Physics: %.1f ms (%.1f (%.1f %.1f%%) avg %.1f max)",
-			float(m_phys_period*100.0 / period), float(1e-3*m_phys_period),
+			float((m_phys_period-m_script_period)*100.0 / period), float(1e-3*(m_phys_period-m_script_period)),
 			float(1e-3 * (double)m_phys_total / (double)m_count), float(1e-3*m_phys_max), float((double)m_phys_total*100.0 / (double)m_total), float(1e-3*m_phys_max_total));
 		DebugPrint(10, 50, szFoo, len);
 		len = sprintf_s(szFoo, "%.1f%% Scripts: %.1f ms (%.1f (%.1f %.1f%%) avg %.1f max)",
@@ -4156,19 +4151,34 @@ void Player::Render()
    c_deepTested = 0;
 #endif
 
-   ///+++++++++++++++++++++++++++++++++++++++++++++++++++++
-   //if ( !cameraMode )
-   {
-      UpdatePhysics();
-   }
+   UpdatePerFrame();
 
    m_LastKnownGoodCounter++;
 
    m_pin3d.m_pd3dDevice->m_stats_drawn_triangles = 0;
 
-   CopyStaticAndAnimate();
+   // copy static buffers to back buffer and z buffer
+   m_pin3d.m_pd3dDevice->CopySurface(m_pin3d.m_pddsBackBuffer, m_pin3d.m_pddsStatic);
+   m_pin3d.m_pd3dDevice->CopySurface(m_pin3d.m_pddsZBuffer, m_pin3d.m_pddsStaticZ); // cannot be called inside BeginScene -> EndScene cycle
+
+   // First round of physics updates, especially key input and animation triggers
+   //if ( !cameraMode )
+   {
+      UpdatePhysics();
+   }
+
+   // Process all AnimObjects (currently only DispReel, LightSeq and Slingshot)
+   for (int l = 0; l < m_vanimate.Size(); ++l)
+      m_vanimate.ElementAt(l)->Animate();
+
    if(!m_fShowFPS || m_staticOnly != 1)
       RenderDynamics();
+
+   // Second round of physics, and especially timer/VPM updates, as everything that is frame specific has already been rendered
+   //if ( !cameraMode )
+   {
+      UpdatePhysics();
+   }
 
    // Check if we should turn animate the plunger light.
    hid_set_output(HID_OUTPUT_PLUNGER, ((m_time_msec - m_LastPlungerHit) < 512) && ((m_time_msec & 512) > 0));
