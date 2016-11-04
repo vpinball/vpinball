@@ -107,5 +107,5 @@ public:
    Flipper *m_pflipper;
 
    FlipperAnimObject m_flipperanim;
-   int m_last_hittime;
+   U32 m_last_hittime;
 };
