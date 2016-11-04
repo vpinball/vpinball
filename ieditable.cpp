@@ -54,7 +54,7 @@ HRESULT IEditable::put_TimerEnabled(VARIANT_BOOL newVal, BOOL *pte)
 {
    STARTUNDO
 
-      const BOOL fNew = VBTOF(newVal);
+   const BOOL fNew = VBTOF(newVal);
 
    if (fNew != *pte)
    {
@@ -74,24 +74,24 @@ HRESULT IEditable::put_TimerEnabled(VARIANT_BOOL newVal, BOOL *pte)
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 HRESULT IEditable::put_TimerInterval(long newVal, int *pti)
 {
    STARTUNDO
 
-      *pti = newVal;
+   *pti = newVal;
 
    if (m_phittimer)
    {
-      m_phittimer->m_interval = max(newVal,MAX_TIMER_MSEC_INTERVAL);
+      m_phittimer->m_interval = newVal >= 0 ? max(newVal, MAX_TIMER_MSEC_INTERVAL) : -1;
       m_phittimer->m_nextfire = g_pplayer->m_time_msec + m_phittimer->m_interval;
    }
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 HRESULT IEditable::get_UserValue(VARIANT *pVal)

@@ -304,7 +304,7 @@ BOOL CALLBACK EnumObjectsCallback(const DIDEVICEOBJECTINSTANCE* pdidoi,
 // Callback for enumerating joysticks (gamepads)
 BOOL CALLBACK DIEnumJoystickCallback(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef)
 {
-    DIPROPSTRING dstr = { 0 };
+   DIPROPSTRING dstr = { 0 };
    dstr.diph.dwSize = sizeof(DIPROPSTRING);
    dstr.diph.dwHeaderSize = sizeof(DIPROPHEADER);
    dstr.diph.dwObj = 0;

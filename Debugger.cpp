@@ -275,7 +275,7 @@ INT_PTR CALLBACK LightDebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARA
          {
             case COLOR_CHANGED:
             {
-               int idx_row;
+               LRESULT idx_row;
                char strText[255] = { 0 };
                const size_t color = GetWindowLongPtr((HWND)lParam, GWLP_USERDATA);
                HWND hwndcolor1 = GetDlgItem(hwndDlg, IDC_COLOR);
@@ -693,4 +693,3 @@ INT_PTR CALLBACK DebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
 
    return FALSE;
 }
-

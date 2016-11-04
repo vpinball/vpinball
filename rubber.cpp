@@ -510,7 +510,7 @@ void Rubber::GetTimers(Vector<HitTimer> * const pvht)
    IEditable::BeginPlay();
 
    HitTimer * const pht = new HitTimer();
-   pht->m_interval = max(m_d.m_tdr.m_TimerInterval,MAX_TIMER_MSEC_INTERVAL);
+   pht->m_interval = m_d.m_tdr.m_TimerInterval >= 0 ? max(m_d.m_tdr.m_TimerInterval, MAX_TIMER_MSEC_INTERVAL) : -1;
    pht->m_nextfire = pht->m_interval;
    pht->m_pfe = (IFireEvents *)this;
 
@@ -708,7 +708,7 @@ HRESULT Rubber::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptk
 HRESULT Rubber::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
 {
    SetDefaults(false);
-   m_d.m_hitHeight = -1.0;
+   m_d.m_hitHeight = -1.0f;
    BiffReader br(pstm, this, pid, version, hcrypthash, hcryptkey);
 
    m_ptable = ptable;
