@@ -530,6 +530,16 @@ STDMETHODIMP ScriptGlobalTable::get_GameTime(long *pVal)
    return S_OK;
 }
 
+STDMETHODIMP ScriptGlobalTable::get_SystemTime(long *pVal)
+{
+   if (!g_pplayer)
+      return E_POINTER;
+
+   *pVal = msec();
+
+   return S_OK;
+}
+
 /*STDMETHODIMP ScriptGlobalTable::put_NightDay(int pVal)
 {
 if(g_pplayer)

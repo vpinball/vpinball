@@ -30,6 +30,16 @@ Changelog:
 - add DMD to the textbox and flasher element
 
 
+GLOBALS
+==============================================================================================================================================
+
+Variables
+---------
+
+*GameTime(int) - gets the current internal game time in milliseconds
+*SystemTime(int) - gets the current system time in milliseconds
+
+
 TABLE
 ==============================================================================================================================================
 
