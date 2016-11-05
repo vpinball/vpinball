@@ -619,6 +619,8 @@ void Player::Shutdown()
    for (int i = 0; i < m_controlclsidsafe.Size(); i++)
       delete m_controlclsidsafe.ElementAt(i);
    m_controlclsidsafe.RemoveAllElements();
+
+   m_changed_vht.clear();
 }
 
 void Player::ToggleFPS()
@@ -3052,6 +3054,20 @@ void Player::UpdatePhysics()
       plumb_update(/*sim_msec*/cur_time_msec, GetNudgeX(), GetNudgeY());
 
 #ifdef ACCURATETIMERS
+      // do the en/disable changes for the timers that piled up
+      for(size_t i = 0; i < m_changed_vht.size(); ++i)
+          if (m_changed_vht[i].enabled) // add the timer?
+          {
+              if (m_vht.IndexOf(m_changed_vht[i].m_timer) < 0)
+                  m_vht.AddElement(m_changed_vht[i].m_timer);
+          }
+          else // delete the timer?
+          {
+              const int idx = m_vht.IndexOf(m_changed_vht[i].m_timer);
+              if (idx >= 0)
+                  m_vht.RemoveElementAt(idx);
+          }
+
       Ball * const old_pactiveball = m_pactiveball;
       m_pactiveball = NULL; // No ball is the active ball for timers/key events
 
@@ -3128,6 +3144,20 @@ void Player::UpdatePhysics()
 
    // do a last round of timers/keys, but only those that want to be frame-sync'ed (interval < 0)
 #ifdef ACCURATETIMERS
+   // do the en/disable changes for the timers that piled up
+   for (size_t i = 0; i < m_changed_vht.size(); ++i)
+       if (m_changed_vht[i].enabled) // add the timer?
+       {
+           if (m_vht.IndexOf(m_changed_vht[i].m_timer) < 0)
+               m_vht.AddElement(m_changed_vht[i].m_timer);
+       }
+       else // delete the timer?
+       {
+           const int idx = m_vht.IndexOf(m_changed_vht[i].m_timer);
+           if (idx >= 0)
+               m_vht.RemoveElementAt(idx);
+       }
+
    const U32 cur_time_msec = (U32)(cur_time_usec / 1000);
    m_pininput.ProcessKeys(m_ptable/*, sim_msec*/, cur_time_msec);
 
@@ -4242,6 +4272,20 @@ void Player::Render()
       FlipVideoBuffersNormal(vsync);
 
 #ifndef ACCURATETIMERS
+   // do the en/disable changes for the timers that piled up
+   for (size_t i = 0; i < m_changed_vht.size(); ++i)
+       if (m_changed_vht[i].enabled) // add the timer?
+       {
+           if (m_vht.IndexOf(m_changed_vht[i].m_timer) < 0)
+               m_vht.AddElement(m_changed_vht[i].m_timer);
+       }
+       else // delete the timer?
+       {
+           const int idx = m_vht.IndexOf(m_changed_vht[i].m_timer);
+           if (idx >= 0)
+               m_vht.RemoveElementAt(idx);
+       }
+
    Ball * const old_pactiveball = m_pactiveball;
    m_pactiveball = NULL;  // No ball is the active ball for timers/key events
 

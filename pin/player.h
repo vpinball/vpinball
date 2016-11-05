@@ -158,6 +158,12 @@ class NudgeFilterY : public NudgeFilter
 
 ////////////////////////////////////////////////////////////////////////////////
 
+struct TimerOnOff
+{
+   HitTimer* m_timer;
+   bool enabled;
+};
+
 class Player
 {
 public:
@@ -262,7 +268,9 @@ public:
    std::vector<HitFlipper*> m_vFlippers;
 
    Vector<AnimObject> m_vanimate;
+
    Vector<HitTimer> m_vht;
+   std::vector<TimerOnOff> m_changed_vht; // stores all en/disable changes to the m_vht timer list, to avoid problems with timers dis/enabling themselves
 
    Vertex3Ds m_gravity;
 

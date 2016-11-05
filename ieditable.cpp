@@ -58,16 +58,26 @@ HRESULT IEditable::put_TimerEnabled(VARIANT_BOOL newVal, BOOL *pte)
 
    if (fNew != *pte && m_phittimer)
    {
-         const int idx = g_pplayer->m_vht.IndexOf(m_phittimer);
+       // to avoid problems with timers dis/enabling themselves, store all the changes in a list
+       bool found = false;
+       for (size_t i = 0; i < g_pplayer->m_changed_vht.size(); ++i)
+           if (g_pplayer->m_changed_vht[i].m_timer == m_phittimer)
+           {
+               g_pplayer->m_changed_vht[i].enabled = !!fNew;
+               found = true;
+               break;
+           }
+
+       if (!found)
+       {
+         TimerOnOff too;
+         too.enabled = !!fNew;
+         too.m_timer = m_phittimer;
+         g_pplayer->m_changed_vht.push_back(too);
+
          if (fNew)
-         {
             m_phittimer->m_nextfire = g_pplayer->m_time_msec + m_phittimer->m_interval;
-            if (idx < 0)
-               g_pplayer->m_vht.AddElement(m_phittimer);
-         }
-         else
-            if (idx >= 0)
-               g_pplayer->m_vht.RemoveElementAt(idx);
+       }
    }
 
    *pte = fNew;
