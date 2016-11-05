@@ -91,7 +91,7 @@ void Timer::Render(Sur * const psur)
       const float angle = (float)(M_PI*2.0 / 12.0)*(float)i;
       const float sn = sinf(angle);
       const float cs = cosf(angle);
-      psur->Line(m_d.m_v.x + sn*9.0f, m_d.m_v.y - cs*9.0f, m_d.m_v.x + sn * 15, m_d.m_v.y - cs*15.0f);
+      psur->Line(m_d.m_v.x + sn*9.0f, m_d.m_v.y - cs*9.0f, m_d.m_v.x + sn * 15.0f, m_d.m_v.y - cs*15.0f);
    }
 
    //angle = ((PI*2)/24) * 3;
@@ -172,29 +172,29 @@ STDMETHODIMP Timer::put_Enabled(VARIANT_BOOL newVal)
 {
    STARTUNDO
 
-      const bool fNew = VBTOF(newVal);
+   const bool fNew = VBTOF(newVal);
 
-   if (fNew != m_d.m_tdr.m_fTimerEnabled)
+   if (fNew != m_d.m_tdr.m_fTimerEnabled && m_phittimer)
    {
-      if (m_phittimer)
-      {
+         const int idx = g_pplayer->m_vht.IndexOf(m_phittimer);
          if (fNew)
          {
             m_phittimer->m_nextfire = g_pplayer->m_time_msec + m_phittimer->m_interval;
-            g_pplayer->m_vht.AddElement(m_phittimer);
+            if(idx < 0)
+                g_pplayer->m_vht.AddElement(m_phittimer);
          }
          else
          {
-            g_pplayer->m_vht.RemoveElement(m_phittimer);
+            if(idx >= 0)
+                g_pplayer->m_vht.RemoveElementAt(idx);
          }
-      }
    }
 
    m_d.m_tdr.m_fTimerEnabled = fNew;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Timer::get_Interval(long *pVal)

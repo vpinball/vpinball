@@ -56,18 +56,18 @@ HRESULT IEditable::put_TimerEnabled(VARIANT_BOOL newVal, BOOL *pte)
 
    const BOOL fNew = VBTOF(newVal);
 
-   if (fNew != *pte)
+   if (fNew != *pte && m_phittimer)
    {
-      if (m_phittimer)
-      {
+         const int idx = g_pplayer->m_vht.IndexOf(m_phittimer);
          if (fNew)
          {
             m_phittimer->m_nextfire = g_pplayer->m_time_msec + m_phittimer->m_interval;
-            g_pplayer->m_vht.AddElement(m_phittimer);
+            if (idx < 0)
+               g_pplayer->m_vht.AddElement(m_phittimer);
          }
          else
-            g_pplayer->m_vht.RemoveElement(m_phittimer);
-      }
+            if (idx >= 0)
+               g_pplayer->m_vht.RemoveElementAt(idx);
    }
 
    *pte = fNew;
