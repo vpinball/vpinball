@@ -2598,7 +2598,8 @@ Sub PinMAMETimer_Timer
 	Dim DMDp
 	Dim ChgNVRAM
 
-	Me.Enabled = False
+	'Me.Enabled = False 'this was supposed to be some kind of weird mutex, disable it
+
 	On Error Resume Next
 		If UseDMD Then
 			DMDp = Controller.RawDmdPixels
@@ -2666,7 +2667,8 @@ Sub PinMAMETimer_Timer
 			GICallback2 ChgGI(ii, 0), ChgGI(ii, 1)
 		Next
 	End If
-	Me.Enabled = True
+
+	'Me.Enabled = True 'this was supposed to be some kind of weird mutex, disable it
 End Sub
 
 '
