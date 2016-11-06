@@ -5,8 +5,6 @@ VP 10.2.0 Changelog
   In addition there is now a special mode (setting the interval to -1) that triggers the timer multiple times per frame (e.g. dependent on the FPS).
 - fix timers that dis/enable themselves in the script
 
-- tweak park position handling of flippers for better response time/less lag when flipping
-
 - disable visual touch/pen feedback to save one frame of input latency/lag
 
 - replace old 'Maximum pre-rendered frames' implementation with official DX mechanism on non-XP systems,

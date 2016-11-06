@@ -629,6 +629,8 @@ STDMETHODIMP Flipper::RotateToEnd() // power stroke to hit ball, key/button down
 {
    if (m_phitflipper)
    {
+      g_pplayer->m_pininput.m_leftkey_down_usec_rotate_to_end = usec(); // debug only
+
       m_phitflipper->m_flipperanim.m_EnableRotateEvent = 1;
       m_phitflipper->m_flipperanim.SetSolenoidState(true);
    }
