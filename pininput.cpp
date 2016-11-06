@@ -776,6 +776,9 @@ void PinInput::FireKeyEvent(const int dispid, const int key)
    // Get only the bits that have changed (on to off, or off to on).
    m_ChangedKeys |= (tmp ^ m_PreviousKeys);
 
+   if ((m_ChangedKeys & PININ_LEFT) && dispid == DISPID_GameEvents_KeyDown) // debug only
+      m_leftkey_down_usec = usec();
+
    // Save the keys so we can detect changes.
    m_PreviousKeys = tmp;
    if (g_pplayer->cameraMode)

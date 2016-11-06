@@ -3713,6 +3713,10 @@ void Player::UpdateHUD()
 			c_kDObjects, c_kDNextlevels, c_quadObjects, c_quadNextlevels, c_traversed, c_tested, c_deepTested);
 		DebugPrint(10, 240, szFoo, len);
 #endif
+		len = sprintf_s(szFoo, "Left Flipper keypress to rotate: %.1f ms to eos: %.1f",
+			(INT64)(m_pininput.m_leftkey_down_usec_rotate_to_end - m_pininput.m_leftkey_down_usec) < 0 ? int_as_float(0x7FC00000) : (double)(m_pininput.m_leftkey_down_usec_rotate_to_end - m_pininput.m_leftkey_down_usec) / 1000.,
+			(INT64)(m_pininput.m_leftkey_down_usec_EOS - m_pininput.m_leftkey_down_usec) < 0 ? int_as_float(0x7FC00000) : (double)(m_pininput.m_leftkey_down_usec_EOS - m_pininput.m_leftkey_down_usec) / 1000.);
+		DebugPrint(10, 260, szFoo, len);
 	}
 #endif /*FPS*/
 

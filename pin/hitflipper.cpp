@@ -225,19 +225,14 @@ void FlipperAnimObject::UpdateDisplacements(const float dtime)
    if(handle_event)
    {
       const float anglespd = fabsf(RADTOANG(m_anglespeed));
+      m_angularMomentum *= -0.3f; //!! make configurable?
+      m_anglespeed = m_angularMomentum / m_inertia;
 
-      if (!hmax) // special case to directly trigger the "resolve contacts with stoppers" case in UpdateVelocities() in the next physics cycle, so that there is no delay in the flip
+      if (m_EnableRotateEvent > 0)
       {
-          m_angularMomentum = 0.f;
-          m_anglespeed = FLT_MIN;
+          m_pflipper->FireVoidEventParm(DISPID_LimitEvents_EOS, anglespd); // send EOS event
+          g_pplayer->m_pininput.m_leftkey_down_usec_EOS = usec(); // debug only
       }
-      else
-      {
-          m_angularMomentum *= -0.3f;
-          m_anglespeed = m_angularMomentum / m_inertia;
-      }
-
-      if (m_EnableRotateEvent > 0) m_pflipper->FireVoidEventParm(DISPID_LimitEvents_EOS, anglespd);      // send EOS event
       else if (m_EnableRotateEvent < 0) m_pflipper->FireVoidEventParm(DISPID_LimitEvents_BOS, anglespd); // send Beginning of Stroke/Park event
       m_EnableRotateEvent = 0;
    }
@@ -323,7 +318,7 @@ float FlipperAnimObject::GetStrokeRatio() const
 // compute the cross product (0,0,rz) x v
 static inline Vertex3Ds CrossZ(float rz, const Vertex3Ds& v)
 {
-   return Vertex3Ds(-rz * v.y, rz * v.x, 0);
+   return Vertex3Ds(-rz * v.y, rz * v.x, 0.f);
 }
 
 Vertex3Ds FlipperAnimObject::SurfaceVelocity(const Vertex3Ds& surfP) const
@@ -341,23 +336,23 @@ Vertex3Ds FlipperAnimObject::SurfaceAcceleration(const Vertex3Ds& surfP) const
 
    // centripetal acceleration = (0,0,omega) x ( (0,0,omega) x surfP )
    const float av2 = m_anglespeed * m_anglespeed;
-   const Vertex3Ds centrAcc(-av2 * surfP.x, -av2 * surfP.y, 0);
+   const Vertex3Ds centrAcc(-av2 * surfP.x, -av2 * surfP.y, 0.f);
 
    return tangAcc + centrAcc;
 }
 
 float FlipperAnimObject::GetHitTime() const
 {
-   if (m_anglespeed == 0)
+   if (m_anglespeed == 0.f)
       return -1.0f;
 
-   const float dist = (m_anglespeed > 0)
+   const float dist = (m_anglespeed > 0.f)
       ? m_angleMax - m_angleCur       // >= 0
       : m_angleMin - m_angleCur;      // <= 0
 
    const float hittime = dist / m_anglespeed;
 
-   if (infNaN(hittime) || hittime < 0)
+   if (infNaN(hittime) || hittime < 0.f)
       return -1.0f;
    else
       return hittime;
