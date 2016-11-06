@@ -3,6 +3,7 @@ VP 10.2.0 Changelog
 
 - change behavior of timers: these are now a bit better sync'ed to the 'real' time.
   In addition there is now a special mode (setting the interval to -1) that triggers the timer multiple times per frame (e.g. dependent on the FPS).
+- fix timers that dis/enable themselves in the script
 
 - tweak park position handling of flippers for better response time/less lag when flipping
 
