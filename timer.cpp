@@ -192,10 +192,12 @@ STDMETHODIMP Timer::put_Enabled(VARIANT_BOOL newVal)
          too.enabled = fNew;
          too.m_timer = m_phittimer;
          g_pplayer->m_changed_vht.push_back(too);
-
-         if (fNew)
-            m_phittimer->m_nextfire = g_pplayer->m_time_msec + m_phittimer->m_interval;
        }
+
+       if (fNew)
+           m_phittimer->m_nextfire = g_pplayer->m_time_msec + m_phittimer->m_interval;
+       else
+           m_phittimer->m_nextfire = 0xFFFFFFFF; // fakes the disabling of the timer, until it will be catched by the cleanup via m_changed_vht
    }
 
    m_d.m_tdr.m_fTimerEnabled = fNew;

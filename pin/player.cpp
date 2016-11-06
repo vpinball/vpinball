@@ -3067,6 +3067,7 @@ void Player::UpdatePhysics()
               if (idx >= 0)
                   m_vht.RemoveElementAt(idx);
           }
+      m_changed_vht.clear();
 
       Ball * const old_pactiveball = m_pactiveball;
       m_pactiveball = NULL; // No ball is the active ball for timers/key events
@@ -3157,6 +3158,7 @@ void Player::UpdatePhysics()
            if (idx >= 0)
                m_vht.RemoveElementAt(idx);
        }
+   m_changed_vht.clear();
 
    const U32 cur_time_msec = (U32)(cur_time_usec / 1000);
    m_pininput.ProcessKeys(m_ptable/*, sim_msec*/, cur_time_msec);
@@ -4285,6 +4287,7 @@ void Player::Render()
            if (idx >= 0)
                m_vht.RemoveElementAt(idx);
        }
+   m_changed_vht.clear();
 
    Ball * const old_pactiveball = m_pactiveball;
    m_pactiveball = NULL;  // No ball is the active ball for timers/key events
