@@ -172,31 +172,41 @@ STDMETHODIMP Timer::get_Enabled(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Timer::put_Enabled(VARIANT_BOOL newVal)
 {
-	STARTUNDO
+   STARTUNDO
 
-	const BOOL fNew = VBTOF(newVal);
+   const BOOL fNew = VBTOF(newVal);
 
-	if (fNew != m_d.m_tdr.m_fTimerEnabled)
-		{
-		if (m_phittimer)
-			{
-			if (fNew)
-				{
-				m_phittimer->m_nextfire = g_pplayer->m_time_msec + m_phittimer->m_interval;
-				g_pplayer->m_vht.AddElement(m_phittimer);
-				}
-			else
-				{
-				g_pplayer->m_vht.RemoveElement(m_phittimer);
-				}
-			}
-		}
+   if (fNew != m_d.m_tdr.m_fTimerEnabled && m_phittimer)
+   {
+       // to avoid problems with timers dis/enabling themselves, store all the changes in a list
+       bool found = false;
+       for (size_t i = 0; i < g_pplayer->m_changed_vht.size(); ++i)
+           if (g_pplayer->m_changed_vht[i].m_timer == m_phittimer)
+           {
+               g_pplayer->m_changed_vht[i].enabled = !!fNew;
+               found = true;
+               break;
+           }
 
-	m_d.m_tdr.m_fTimerEnabled = fNew;
+       if (!found)
+       {
+         TimerOnOff too;
+         too.enabled = !!fNew;
+         too.m_timer = m_phittimer;
+         g_pplayer->m_changed_vht.push_back(too);
+       }
 
-	STOPUNDO
+       if (fNew)
+           m_phittimer->m_nextfire = g_pplayer->m_time_msec + m_phittimer->m_interval;
+       else
+           m_phittimer->m_nextfire = 0xFFFFFFFF; // fakes the disabling of the timer, until it will be catched by the cleanup via m_changed_vht
+   }
 
-	return S_OK;
+   m_d.m_tdr.m_fTimerEnabled = fNew;
+
+   STOPUNDO
+
+   return S_OK;
 }
 
 STDMETHODIMP Timer::get_Interval(long *pVal)

@@ -75,31 +75,43 @@ void IEditable::Uncreate()
 	}
 
 HRESULT IEditable::put_TimerEnabled(VARIANT_BOOL newVal, BOOL *pte)
-	{
-	STARTUNDO
+{
+   STARTUNDO
 
-	BOOL fNew = VBTOF(newVal);
+   const BOOL fNew = VBTOF(newVal);
 
-	if (fNew != *pte)
-		{
-		if (m_phittimer)
-			{
-			if (fNew)
-				{
-				m_phittimer->m_nextfire = g_pplayer->m_time_msec + m_phittimer->m_interval;
-				g_pplayer->m_vht.AddElement(m_phittimer);
-				}
-			else
-				g_pplayer->m_vht.RemoveElement(m_phittimer);
-			}
-		}
+   if (fNew != *pte && m_phittimer)
+   {
+       // to avoid problems with timers dis/enabling themselves, store all the changes in a list
+       bool found = false;
+       for (size_t i = 0; i < g_pplayer->m_changed_vht.size(); ++i)
+           if (g_pplayer->m_changed_vht[i].m_timer == m_phittimer)
+           {
+               g_pplayer->m_changed_vht[i].enabled = !!fNew;
+               found = true;
+               break;
+           }
 
-	*pte = fNew;
+       if (!found)
+       {
+         TimerOnOff too;
+         too.enabled = !!fNew;
+         too.m_timer = m_phittimer;
+         g_pplayer->m_changed_vht.push_back(too);
+       }
 
-	STOPUNDO
+       if (fNew)
+           m_phittimer->m_nextfire = g_pplayer->m_time_msec + m_phittimer->m_interval;
+       else
+           m_phittimer->m_nextfire = 0xFFFFFFFF; // fakes the disabling of the timer, until it will be catched by the cleanup via m_changed_vht
+   }
 
-	return S_OK;
-	}
+   *pte = fNew;
+
+   STOPUNDO
+
+   return S_OK;
+}
 
 HRESULT IEditable::put_TimerInterval(long newVal, int *pti)
 	{

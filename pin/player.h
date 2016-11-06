@@ -139,6 +139,12 @@ class NudgeFilterY: public NudgeFilter
 
 ////////////////////////////////////////////////////////////////////////////////
 
+struct TimerOnOff
+{
+   HitTimer* m_timer;
+   bool enabled;
+};
+
 class Player
 {
 public:
@@ -224,7 +230,9 @@ public:
 
     std::vector<Ball*> m_vball;
 	Vector<AnimObject> m_vscreenupdate;
+
 	Vector<HitTimer> m_vht;
+	std::vector<TimerOnOff> m_changed_vht; // stores all en/disable changes to the m_vht timer list, to avoid problems with timers dis/enabling themselves
 
     bool m_fThrowBalls;
 	BOOL m_fAccelerometer;		//true if electronic Accelerometer enabled
