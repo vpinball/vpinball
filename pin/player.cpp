@@ -164,7 +164,6 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
    m_fPseudoPause = false;
    m_pauseRefCount = 0;
    m_fNoTimeCorrect = false;
-   m_firstFrame = true;
 
    m_toogle_DTFS = false;
 
@@ -2962,8 +2961,6 @@ void Player::UpdatePerFrame()
 
    m_phys_iterations = 0;
 
-   m_overall_frames++;
-
 #ifdef FPS
    //if (m_fShowFPS)
    {
@@ -3713,9 +3710,11 @@ void Player::UpdateHUD()
 			c_kDObjects, c_kDNextlevels, c_quadObjects, c_quadNextlevels, c_traversed, c_tested, c_deepTested);
 		DebugPrint(10, 240, szFoo, len);
 #endif
-		len = sprintf_s(szFoo, "Left Flipper keypress to rotate: %.1f ms to eos: %.1f",
+		len = sprintf_s(szFoo, "Left Flipper keypress to rotate: %.1f ms (%d f) to eos: %.1f ms (%d f)",
 			(INT64)(m_pininput.m_leftkey_down_usec_rotate_to_end - m_pininput.m_leftkey_down_usec) < 0 ? int_as_float(0x7FC00000) : (double)(m_pininput.m_leftkey_down_usec_rotate_to_end - m_pininput.m_leftkey_down_usec) / 1000.,
-			(INT64)(m_pininput.m_leftkey_down_usec_EOS - m_pininput.m_leftkey_down_usec) < 0 ? int_as_float(0x7FC00000) : (double)(m_pininput.m_leftkey_down_usec_EOS - m_pininput.m_leftkey_down_usec) / 1000.);
+			(int)(m_pininput.m_leftkey_down_frame_rotate_to_end - m_pininput.m_leftkey_down_frame) < 0 ? -1 : m_pininput.m_leftkey_down_frame_rotate_to_end - m_pininput.m_leftkey_down_frame,
+			(INT64)(m_pininput.m_leftkey_down_usec_EOS - m_pininput.m_leftkey_down_usec) < 0 ? int_as_float(0x7FC00000) : (double)(m_pininput.m_leftkey_down_usec_EOS - m_pininput.m_leftkey_down_usec) / 1000.,
+			(int)(m_pininput.m_leftkey_down_frame_EOS - m_pininput.m_leftkey_down_frame) < 0 ? -1 : m_pininput.m_leftkey_down_frame_EOS - m_pininput.m_leftkey_down_frame);
 		DebugPrint(10, 260, szFoo, len);
 	}
 #endif /*FPS*/
@@ -4184,7 +4183,7 @@ void Player::Render()
 {
    U64 timeforframe = usec();
 
-   if (m_firstFrame)
+   if (m_overall_frames < 10)
    {
       const HWND hVPMWnd = FindWindow("MAME", NULL);
       if (hVPMWnd != NULL)
@@ -4232,6 +4231,8 @@ void Player::Render()
    {
       UpdatePhysics();
    }
+
+   m_overall_frames++;
 
    // Process all AnimObjects (currently only DispReel, LightSeq and Slingshot)
    for (int l = 0; l < m_vanimate.Size(); ++l)
@@ -4328,8 +4329,6 @@ void Player::Render()
    }
 
    m_vballDelete.clear();
-
-   m_firstFrame = false;
 
    if ((m_PauseTimeTarget > 0) && (m_PauseTimeTarget <= m_time_msec))
    {

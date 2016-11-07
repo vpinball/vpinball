@@ -403,6 +403,8 @@ public:
 
    unsigned int m_current_renderstage; // currently only used for bulb lights
 
+   int m_overall_frames; // amount of rendered frames since start
+
 private:
    Vector<HitObject> m_vho;
    std::vector< AnimObject* > m_vmover;    // moving objects for physics simulation
@@ -456,8 +458,6 @@ private:
    int m_timestamp;
 #endif
 
-   int m_overall_frames;
-
    U32 m_phys_iterations;
 
 #ifdef FPS
@@ -501,7 +501,6 @@ public:
    bool m_fStep;
 #endif
 
-   bool m_firstFrame;
    bool m_fShowFPS;
    unsigned int m_staticOnly;
 

@@ -76,8 +76,11 @@ public:
    HWND m_hwnd;
 
    UINT64 m_leftkey_down_usec;
+   unsigned int m_leftkey_down_frame;
    UINT64 m_leftkey_down_usec_rotate_to_end;
+   unsigned int m_leftkey_down_frame_rotate_to_end;
    UINT64 m_leftkey_down_usec_EOS;
+   unsigned int m_leftkey_down_frame_EOS;
 
    int e_JoyCnt;
    int uShockDevice;	// only one uShock device

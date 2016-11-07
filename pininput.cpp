@@ -777,7 +777,10 @@ void PinInput::FireKeyEvent(const int dispid, const int key)
    m_ChangedKeys |= (tmp ^ m_PreviousKeys);
 
    if ((m_ChangedKeys & PININ_LEFT) && dispid == DISPID_GameEvents_KeyDown) // debug only
+   {
       m_leftkey_down_usec = usec();
+      m_leftkey_down_frame = g_pplayer->m_overall_frames;
+   }
 
    // Save the keys so we can detect changes.
    m_PreviousKeys = tmp;
