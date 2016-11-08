@@ -2144,35 +2144,39 @@ void Player::InitWindow()
    CalcBallAspectRatio();
    m_hwnd = ::CreateWindowEx(windowflagsex, "VPPlayer", "Visual Pinball Player", windowflags, x, y, m_width, m_height, NULL, NULL, g_hinst, 0);
 
-   if (m_fFullScreen) // blocks processes from taking focus away from our exclusive fullscreen app
-	   ::LockSetForegroundWindow(LSFW_LOCK);
+   if (m_fFullScreen) // blocks processes from taking focus away from our exclusive fullscreen app and disables mouse cursor
+   {
+      ::LockSetForegroundWindow(LSFW_LOCK);
+      ::ShowCursor(FALSE);
+   }
 
    // Disable visual feedback for touch, this saves one frame of latency on touchdisplays
    if (!SetWindowFeedbackSetting)
-	   SetWindowFeedbackSetting = (pSWFS)GetProcAddress(GetModuleHandle(TEXT("user32.dll")),
-	   "SetWindowFeedbackSetting");
+      SetWindowFeedbackSetting = (pSWFS)GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "SetWindowFeedbackSetting");
    if (SetWindowFeedbackSetting)
    {
-	   const BOOL fEnabled = FALSE;
+      const BOOL fEnabled = FALSE;
 
-	   SetWindowFeedbackSetting(m_hwnd, FEEDBACK_TOUCH_CONTACTVISUALIZATION, 0, sizeof(fEnabled), &fEnabled);
-	   SetWindowFeedbackSetting(m_hwnd, FEEDBACK_TOUCH_TAP, 0, sizeof(fEnabled), &fEnabled);
-	   SetWindowFeedbackSetting(m_hwnd, FEEDBACK_TOUCH_DOUBLETAP, 0, sizeof(fEnabled), &fEnabled);
-	   SetWindowFeedbackSetting(m_hwnd, FEEDBACK_TOUCH_PRESSANDHOLD, 0, sizeof(fEnabled), &fEnabled);
-	   SetWindowFeedbackSetting(m_hwnd, FEEDBACK_TOUCH_RIGHTTAP, 0, sizeof(fEnabled), &fEnabled);
+      SetWindowFeedbackSetting(m_hwnd, FEEDBACK_TOUCH_CONTACTVISUALIZATION, 0, sizeof(fEnabled), &fEnabled);
+      SetWindowFeedbackSetting(m_hwnd, FEEDBACK_TOUCH_TAP, 0, sizeof(fEnabled), &fEnabled);
+      SetWindowFeedbackSetting(m_hwnd, FEEDBACK_TOUCH_DOUBLETAP, 0, sizeof(fEnabled), &fEnabled);
+      SetWindowFeedbackSetting(m_hwnd, FEEDBACK_TOUCH_PRESSANDHOLD, 0, sizeof(fEnabled), &fEnabled);
+      SetWindowFeedbackSetting(m_hwnd, FEEDBACK_TOUCH_RIGHTTAP, 0, sizeof(fEnabled), &fEnabled);
 
-	   SetWindowFeedbackSetting(m_hwnd, FEEDBACK_PEN_BARRELVISUALIZATION, 0, sizeof(fEnabled), &fEnabled);
-	   SetWindowFeedbackSetting(m_hwnd, FEEDBACK_PEN_TAP, 0, sizeof(fEnabled), &fEnabled);
-	   SetWindowFeedbackSetting(m_hwnd, FEEDBACK_PEN_DOUBLETAP, 0, sizeof(fEnabled), &fEnabled);
-	   SetWindowFeedbackSetting(m_hwnd, FEEDBACK_PEN_PRESSANDHOLD, 0, sizeof(fEnabled), &fEnabled);
-	   SetWindowFeedbackSetting(m_hwnd, FEEDBACK_PEN_RIGHTTAP, 0, sizeof(fEnabled), &fEnabled);
+      SetWindowFeedbackSetting(m_hwnd, FEEDBACK_PEN_BARRELVISUALIZATION, 0, sizeof(fEnabled), &fEnabled);
+      SetWindowFeedbackSetting(m_hwnd, FEEDBACK_PEN_TAP, 0, sizeof(fEnabled), &fEnabled);
+      SetWindowFeedbackSetting(m_hwnd, FEEDBACK_PEN_DOUBLETAP, 0, sizeof(fEnabled), &fEnabled);
+      SetWindowFeedbackSetting(m_hwnd, FEEDBACK_PEN_PRESSANDHOLD, 0, sizeof(fEnabled), &fEnabled);
+      SetWindowFeedbackSetting(m_hwnd, FEEDBACK_PEN_RIGHTTAP, 0, sizeof(fEnabled), &fEnabled);
 
-	   SetWindowFeedbackSetting(m_hwnd, FEEDBACK_GESTURE_PRESSANDTAP, 0, sizeof(fEnabled), &fEnabled);
+      SetWindowFeedbackSetting(m_hwnd, FEEDBACK_GESTURE_PRESSANDTAP, 0, sizeof(fEnabled), &fEnabled);
    }
 
    mixer_init(m_hwnd);
    hid_init();
-   SetCursorPos(400, 999999); // ShowCursor(false)?
+
+   if (!m_fFullScreen) // see above
+      SetCursorPos(400, 999999);
 }
 
 void Player::CalcBallAspectRatio()
@@ -5059,6 +5063,13 @@ LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
       hid_shutdown();
       // modification to m_vedit of each table after playing them must be done here, otherwise VP will crash (WTF?!)
       playedTable->RestoreLayers();
+
+      if (g_pplayer->m_fFullScreen) // restore special tweaks of exclusive fullscreen app
+      {
+          ::LockSetForegroundWindow(LSFW_UNLOCK);
+          ::ShowCursor(TRUE);
+      }
+
       SetForegroundWindow(g_pvp->m_hwnd);
       break;
    }
