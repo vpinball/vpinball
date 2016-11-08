@@ -620,6 +620,12 @@ void Player::Shutdown()
    m_controlclsidsafe.RemoveAllElements();
 
    m_changed_vht.clear();
+
+   if (m_fFullScreen) // revert special tweaks of exclusive fullscreen app
+   {
+       ::LockSetForegroundWindow(LSFW_UNLOCK);
+       ::ShowCursor(TRUE);
+   }
 }
 
 void Player::ToggleFPS()
@@ -5063,12 +5069,6 @@ LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
       hid_shutdown();
       // modification to m_vedit of each table after playing them must be done here, otherwise VP will crash (WTF?!)
       playedTable->RestoreLayers();
-
-      if (g_pplayer->m_fFullScreen) // restore special tweaks of exclusive fullscreen app
-      {
-          ::LockSetForegroundWindow(LSFW_UNLOCK);
-          ::ShowCursor(TRUE);
-      }
 
       SetForegroundWindow(g_pvp->m_hwnd);
       break;
