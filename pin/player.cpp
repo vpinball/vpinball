@@ -3150,44 +3150,6 @@ void Player::UpdatePhysics()
       first_cycle = false;
    } // end while (m_curPhysicsFrameTime < cur_time_usec)
 
-   // do a last round of timers/keys, but only those that want to be frame-sync'ed (interval < 0)
-#ifdef ACCURATETIMERS
-   // do the en/disable changes for the timers that piled up
-   for (size_t i = 0; i < m_changed_vht.size(); ++i)
-       if (m_changed_vht[i].enabled) // add the timer?
-       {
-           if (m_vht.IndexOf(m_changed_vht[i].m_timer) < 0)
-               m_vht.AddElement(m_changed_vht[i].m_timer);
-       }
-       else // delete the timer?
-       {
-           const int idx = m_vht.IndexOf(m_changed_vht[i].m_timer);
-           if (idx >= 0)
-               m_vht.RemoveElementAt(idx);
-       }
-   m_changed_vht.clear();
-
-   const U32 cur_time_msec = (U32)(cur_time_usec / 1000);
-   m_pininput.ProcessKeys(m_ptable/*, sim_msec*/, cur_time_msec);
-
-   Ball * const old_pactiveball = m_pactiveball;
-   m_pactiveball = NULL; // No ball is the active ball for timers/key events
-
-   if (m_script_period <= 1000 * MAX_TIMERS_MSEC_OVERALL) // if overall script time per frame exceeded, skip
-   {
-       for (int i = 0; i < m_vht.Size(); i++)
-       {
-           HitTimer * const pht = m_vht.ElementAt(i);
-           if (pht->m_interval < 0)
-              pht->m_pfe->FireGroupEvent(DISPID_TimerEvents_Timer);
-       }
-
-       m_script_period += (unsigned int)(usec() - cur_time_usec);
-   }
-
-   m_pactiveball = old_pactiveball;
-#endif
-
 #ifdef FPS
    m_phys_period += (U32)(usec() - initial_time_usec);
 #endif
@@ -4193,6 +4155,8 @@ void Player::Render()
 {
    U64 timeforframe = usec();
 
+   m_pininput.ProcessKeys(m_ptable/*, sim_msec*/, (U32)timeforframe/1000); // trigger key events mainly for VPM<->VP rountrip
+
    if (m_overall_frames < 10)
    {
       const HWND hVPMWnd = FindWindow("MAME", NULL);
@@ -4207,6 +4171,8 @@ void Player::Render()
    {
       Sleep(m_sleeptime - 1);
    }
+
+   m_pininput.ProcessKeys(m_ptable/*, sim_msec*/, (U32)timeforframe / 1000); // trigger key events mainly for VPM<->VP rountrip
 
 #ifdef _DEBUGPHYSICS
    c_hitcnts = 0;
@@ -4236,7 +4202,7 @@ void Player::Render()
    m_pin3d.m_pd3dDevice->CopySurface(m_pin3d.m_pddsBackBuffer, m_pin3d.m_pddsStatic);
    m_pin3d.m_pd3dDevice->CopySurface(m_pin3d.m_pddsZBuffer, m_pin3d.m_pddsStaticZ); // cannot be called inside BeginScene -> EndScene cycle
 
-   // First round of physics updates, especially key input and animation triggers
+   // Physics/Timer updates, done at the last moment, especially to handle key input (VP<->VPM rountrip) and animation triggers
    //if ( !cameraMode )
    {
       UpdatePhysics();
@@ -4251,11 +4217,7 @@ void Player::Render()
    if(!m_fShowFPS || m_staticOnly != 1)
       RenderDynamics();
 
-   // Second round of physics, and especially timer/VPM updates, as everything that is frame specific has already been rendered
-   //if ( !cameraMode )
-   {
-      UpdatePhysics();
-   }
+   m_pininput.ProcessKeys(m_ptable/*, sim_msec*/, (U32)timeforframe / 1000); // trigger key events mainly for VPM<->VP rountrip
 
    // Check if we should turn animate the plunger light.
    hid_set_output(HID_OUTPUT_PLUNGER, ((m_time_msec - m_LastPlungerHit) < 512) && ((m_time_msec & 512) > 0));
@@ -4318,6 +4280,8 @@ void Player::Render()
    }
 
    m_pactiveball = old_pactiveball;
+#else
+   m_pininput.ProcessKeys(m_ptable/*, sim_msec*/, (U32)timeforframe / 1000); // trigger key events mainly for VPM<->VP rountrip
 #endif
 
    // Update music stream
