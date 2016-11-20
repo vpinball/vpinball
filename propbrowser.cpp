@@ -351,8 +351,12 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, Vector<ISelect> *pvsel)
 
    if (m_pvsel)
    {
-       for (int i = 0; i < m_pvsel->Size(); i++)
-           m_pvsel->ElementAt(i)->UpdatePropertyPanes();
+      for (int i = 0; i < m_pvsel->Size(); i++)
+      {
+         ISelect *pisel = m_pvsel->ElementAt(i);
+         if ( pisel )
+            pisel->UpdatePropertyPanes();
+      }
    }
 
 }

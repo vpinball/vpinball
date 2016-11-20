@@ -1478,7 +1478,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
       {
          // search for a primitive in the group, if found try to create a grouped render element
          ISelect *pisel = pcol->m_visel.ElementAt(t);
-         if (pisel->GetItemType() == eItemPrimitive)
+         if (pisel !=NULL && pisel->GetItemType() == eItemPrimitive)
          {
             Primitive *prim = (Primitive*)pisel;
             prim->CreateRenderGroup(pcol, m_pin3d.m_pd3dDevice);
