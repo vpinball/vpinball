@@ -421,6 +421,7 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
    m_staticOnly = 0;
 
    m_fCloseDown = false;
+   m_fCloseDownDelay = true;
    m_fCloseType = 0;
    m_fShowDebugger = false;
 
@@ -515,6 +516,7 @@ Player::~Player()
 
 void Player::Shutdown()
 {
+   // if limit framerate if requested by user (vsync Hz higher than refreshrate of gfxcard/monitor), restore timeEndPeriod
    const int localvsync = (m_ptable->m_TableAdaptiveVSync == -1) ? m_fVSync : m_ptable->m_TableAdaptiveVSync;
    if (localvsync > m_refreshrate)
       timeEndPeriod(1); // after last precise uSleep()
@@ -1587,6 +1589,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
       m_fplaylog = fopen("c:\\badlog.txt", "r");
 #endif
 
+   // if limit framerate if requested by user (vsync Hz higher than refreshrate of gfxcard/monitor), set timeBeginPeriod
    const int localvsync = (m_ptable->m_TableAdaptiveVSync == -1) ? m_fVSync : m_ptable->m_TableAdaptiveVSync;
    if (localvsync > m_refreshrate)
       timeBeginPeriod(1); // for uSleep() to work more precise
@@ -3051,7 +3054,7 @@ void Player::UpdatePhysics()
       }
 
       //update keys, hid, plumb, nudge, timers, etc
-      //const U32 sim_msec = (U32)(m_curPhysicsFrameTime/1000);
+      //const U32 sim_msec = (U32)(m_curPhysicsFrameTime / 1000);
       const U32 cur_time_msec = (U32)(cur_time_usec / 1000);
 
       m_pininput.ProcessKeys(m_ptable/*, sim_msec*/, cur_time_msec);
@@ -3694,7 +3697,7 @@ void Player::UpdateHUD()
 	if (m_fFullScreen && m_fCloseDown) // currently cannot use dialog boxes in fullscreen, so necessary
 	{
 		char szFoo[256];
-		int len2 = sprintf_s(szFoo, "Press 'Enter' to continue, Hold ESC to quit");
+		int len2 = sprintf_s(szFoo, "Press 'Enter' to continue or Press 'Q' to exit");
 		DebugPrint(m_width/2-210, m_height/2-5, szFoo, len2);
 	}
 
@@ -4155,7 +4158,7 @@ void Player::Render()
 {
    U64 timeforframe = usec();
 
-   m_pininput.ProcessKeys(m_ptable/*, sim_msec*/, (U32)timeforframe/1000); // trigger key events mainly for VPM<->VP rountrip
+   m_pininput.ProcessKeys(m_ptable/*, sim_msec*/, -(int)(timeforframe / 1000)); // trigger key events mainly for VPM<->VP rountrip
 
    if (m_overall_frames < 10)
    {
@@ -4172,7 +4175,7 @@ void Player::Render()
       Sleep(m_sleeptime - 1);
    }
 
-   m_pininput.ProcessKeys(m_ptable/*, sim_msec*/, (U32)timeforframe / 1000); // trigger key events mainly for VPM<->VP rountrip
+   m_pininput.ProcessKeys(m_ptable/*, sim_msec*/, -(int)(timeforframe / 1000)); // trigger key events mainly for VPM<->VP rountrip
 
 #ifdef _DEBUGPHYSICS
    c_hitcnts = 0;
@@ -4217,7 +4220,7 @@ void Player::Render()
    if(!m_fShowFPS || m_staticOnly != 1)
       RenderDynamics();
 
-   m_pininput.ProcessKeys(m_ptable/*, sim_msec*/, (U32)timeforframe / 1000); // trigger key events mainly for VPM<->VP rountrip
+   m_pininput.ProcessKeys(m_ptable/*, sim_msec*/, -(int)(timeforframe / 1000)); // trigger key events mainly for VPM<->VP rountrip
 
    // Check if we should turn animate the plunger light.
    hid_set_output(HID_OUTPUT_PLUNGER, ((m_time_msec - m_LastPlungerHit) < 512) && ((m_time_msec & 512) > 0));
@@ -4231,12 +4234,7 @@ void Player::Render()
    bool vsync = false;
    if (localvsync > 0)
    {
-      if (localvsync == 1) // legacy auto-detection
-      {
-         //if(m_fps > m_refreshrate*ADAPT_VSYNC_FACTOR) // do nothing, as already enforced during device set
-         //    vsync = true;
-      }
-      else
+      if (localvsync != 1) // do nothing for 1, as already enforced during device set
          if (m_fps > localvsync*ADAPT_VSYNC_FACTOR)
             vsync = true;
    }
@@ -4281,7 +4279,7 @@ void Player::Render()
 
    m_pactiveball = old_pactiveball;
 #else
-   m_pininput.ProcessKeys(m_ptable/*, sim_msec*/, (U32)timeforframe / 1000); // trigger key events mainly for VPM<->VP rountrip
+   m_pininput.ProcessKeys(m_ptable/*, sim_msec*/, -(int)(timeforframe / 1000)); // trigger key events mainly for VPM<->VP rountrip
 #endif
 
    // Update music stream
@@ -4328,7 +4326,9 @@ void Player::Render()
    }
    else
    {
-      if (m_fCloseDown)
+      if (m_fCloseDown && m_fCloseDownDelay) // wait for one frame to stop game, to be able to display the additional text (table info, etc)
+         m_fCloseDownDelay = false;
+      else if (m_fCloseDown)
       {
          PauseMusic();
 
@@ -4349,6 +4349,7 @@ void Player::Render()
          }
 
          m_fCloseDown = false;
+         m_fCloseDownDelay = true;
          m_fNoTimeCorrect = true; // Skip the time we were in the dialog
          UnpauseMusic();
          if (option == ID_QUIT)
@@ -4369,9 +4370,7 @@ void Player::Render()
               g_pplayer->m_hwndDebugger = CreateDialogParam( g_hinst, MAKEINTRESOURCE( IDD_DEBUGGER ), m_hwnd, DebuggerProc, NULL );
           }
           EndDialog( g_pvp->m_hwnd, ID_DEBUGWINDOW );
-
       }
-
    }
    ///// Don't put anything here - the ID_QUIT check must be the last thing done
    ///// in this function
