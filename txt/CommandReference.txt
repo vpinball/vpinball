@@ -7,7 +7,8 @@ Variables starting with a (*) can't be changed by the script (most can be read t
 
 Changelog:
 10.2:
-- extend TimerInterval of each element by -1 which makes it dependent on the FPS that a user can reach
+- add GameTime and SystemTime to get the exact time in millisecond resolution
+- extend TimerInterval of each element by a special '-1' value which makes it dependent on the FPS that a user can reach, so the timer is only triggered exactly once per frame
 - add MaterialColor for the table element
 - extend PlayMusic with optional volume (0..1) and better document PlaySound
 - add Duration and BulbHaloHeight property to the light element
