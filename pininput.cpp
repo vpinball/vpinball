@@ -943,15 +943,15 @@ void PinInput::Joy(const unsigned int n, const int updown, const bool start)
    if (m_joypmenter == n) FireKeyEvent(updown, DIK_0);
 }
 
-void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/, const U32 curr_time_msec)
+void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/, int curr_time_msec) // last one is negative if only key events should be fired
 {
    m_ptable = ptable;
 
    m_ChangedKeys = 0;
 
-   if (!g_pplayer) return;	//only when player running
+   if (!g_pplayer || !m_ptable) return;	//only when player running
 
-   if (m_ptable)
+   if (curr_time_msec >= 0)
    {
       // Check if autostart is enabled.
       if (m_ptable->m_tblAutoStartEnabled)
@@ -964,7 +964,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
       tilt_update();
    }
    else
-      return;
+      curr_time_msec = -curr_time_msec;
 
    // Check if we've been initialized.
    if (m_firedautostart == 0)

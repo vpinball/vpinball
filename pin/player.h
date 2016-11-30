@@ -331,6 +331,7 @@ public:
 
    int m_fCloseType;			// if 0 exit player and close application if started minimized, if 1 close application always, 2 is brute force exit
    bool m_fCloseDown;			// Whether to shut down the player at the end of this frame
+   bool m_fCloseDownDelay;
    bool m_fShowDebugger;
 
    bool m_fReflectionForBalls;

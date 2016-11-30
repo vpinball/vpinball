@@ -51,7 +51,7 @@ public:
 
    void tilt_update();
 
-   void ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/, const U32 curr_time_msec);
+   void ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/, int curr_time_msec);
 
    int GetNextKey();
 

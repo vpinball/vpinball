@@ -317,8 +317,6 @@ INT_PTR CALLBACK LightDebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARA
                         plight->put_Intensity(fv);
                         GetDlgItemText( hwndDlg, IDC_DBG_BULB_MODULATE_VS_ADD, value, 31 );
                         fv = sz2f(value);
-                        if(fv == 0.0)
-                            ShowError( "mööp" );
                         plight->put_BulbModulateVsAdd(fv);
                         GetDlgItemText(hwndDlg, IDC_DBG_TRANSMISSION_SCALE, value, 31);
                         fv = sz2f(value);
@@ -400,8 +398,6 @@ INT_PTR CALLBACK LightDebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARA
                         f2sz(v, value);
                         SetDlgItemText(hwndDlg, IDC_DBG_LIGHT_INTENSITY, value);
                         plight->get_BulbModulateVsAdd(&v);
-                        if(v == 0.0)
-                            ShowError( "plop" );
                         f2sz(v, value);
                         SetDlgItemText( hwndDlg, IDC_DBG_BULB_MODULATE_VS_ADD, value );
                         plight->get_TransmissionScale(&v);
