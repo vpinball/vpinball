@@ -38,7 +38,7 @@ public:
    CComObject<PinTable> *GetActiveTable();
    void InitTools();
    void InitRegValues();			//>>> added by Chris
-   void LoadFile();
+   bool LoadFile();
    void LoadFileName(char *szFileName);
    void SetClipboard(Vector<IStream> *pvstm);
 
