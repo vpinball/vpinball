@@ -209,6 +209,17 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
    TCHAR szTableFileName[_MAX_PATH] = { 0 };
    int nRet = 0;
 
+   // Start VP with file dialog open and then also playing that one?
+   int stos;
+   HRESULT hr = GetRegInt("Editor", "SelectTableOnStart", &stos);
+   if (hr != S_OK)
+      stos = 1; // The default = on
+   if (stos)
+   {
+      fFile = true;
+      fPlay = true;
+   }
+
    int nArgs;
    LPSTR *szArglist = CommandLineToArgvA(GetCommandLine(), &nArgs);
 
@@ -345,9 +356,13 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
 
       if (fFile)
       {
-         g_pvp->LoadFileName(szTableFileName);
+         bool lf = true;
+         if (szTableFileName[0] != '\0')
+            g_pvp->LoadFileName(szTableFileName);
+         else
+            lf = g_pvp->LoadFile();
 
-         if (fPlay)
+         if (fPlay && lf)
             g_pvp->DoPlay();
       }
 

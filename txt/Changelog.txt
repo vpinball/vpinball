@@ -1,6 +1,8 @@
 VP 10.2.0 Changelog
 ------------------------
 
+- by default open file dialog to directly select and play a table (can be changed in preferences->editor options)
+
 - timers now feature a special mode (setting the interval to -1) that triggers a timer exactly once per frame (e.g. dependent on the FPS).
   this can also be interpreted as being a callback done once per frame to update everything that is only rendering-related (e.g. reduce overhead caused by things that will never be seen by the player in the end)
 - fix timers that dis/enable themselves in the script

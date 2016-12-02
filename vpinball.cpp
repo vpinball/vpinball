@@ -867,11 +867,11 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
       {
       case 0: fShow = !fShow; //!!?
          break;
-      case 1: fShow = fTrue;   //set
+      case 1: fShow = fTrue;  //set
          break;
-      case 2:				  //re-display 
+      case 2:                 //re-display 
          break;
-      default: fShow = !fShow; //toggle
+      default: fShow = !fShow;//toggle
          break;
       }
 
@@ -1684,7 +1684,7 @@ void VPinball::DoPlay(bool _cameraMode)
       ptCur->Play(_cameraMode);
 }
 
-void VPinball::LoadFile()
+bool VPinball::LoadFile()
 {
    char szFileName[1024];
    char szInitialDir[1024];
@@ -1718,9 +1718,11 @@ void VPinball::LoadFile()
    const int ret = GetOpenFileName(&ofn);
 
    if (ret == 0)
-      return;
+      return false;
 
    LoadFileName(szFileName);
+
+   return true;
 }
 
 void VPinball::LoadFileName(char *szFileName)
@@ -7255,6 +7257,9 @@ INT_PTR CALLBACK EditorOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARA
 
       int throwBallSize = GetRegIntWithDefault("Editor", "ThrowBallSize", 50);
       SetDlgItemInt(hwndDlg, IDC_THROW_BALLS_SIZE_EDIT, throwBallSize, FALSE);
+
+      int startVPfileDialog = GetRegIntWithDefault("Editor", "SelectTableOnStart", 1);
+      SendDlgItemMessage(hwndDlg, IDC_START_VP_FILE_DIALOG, BM_SETCHECK, startVPfileDialog ? BST_CHECKED : BST_UNCHECKED, 0);
    }
 
    return TRUE;
@@ -7317,6 +7322,9 @@ INT_PTR CALLBACK EditorOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARA
 
             SetRegValue("Editor", "DefaultMaterialColor", REG_DWORD, &g_pvp->dummyMaterial.m_cBase, 4);
             EndDialog(hwndDlg, TRUE);
+
+            checked = (SendDlgItemMessage(hwndDlg, IDC_START_VP_FILE_DIALOG, BM_GETCHECK, 0, 0) == BST_CHECKED);
+            SetRegValueBool("Editor", "SelectTableOnStart", checked);
          }
          break;
 
