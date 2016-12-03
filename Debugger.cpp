@@ -317,10 +317,10 @@ INT_PTR CALLBACK LightDebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARA
                         plight->put_Intensity(fv);
                         GetDlgItemText( hwndDlg, IDC_DBG_BULB_MODULATE_VS_ADD, value, 31 );
                         fv = sz2f(value);
-                        plight->put_BulbModulateVsAdd(fv);
+                        plight->m_d.m_modulate_vs_add=fv;
                         GetDlgItemText(hwndDlg, IDC_DBG_TRANSMISSION_SCALE, value, 31);
                         fv = sz2f(value);
-                        plight->put_TransmissionScale(fv);
+                        plight->m_d.m_transmissionScale=fv;
                         GetDlgItemText(hwndDlg, IDC_DBG_LIGHT_FADE_UP_EDIT, value, 31);
                         fv = sz2f(value);
                         plight->put_FadeSpeedUp(fv);
@@ -397,10 +397,10 @@ INT_PTR CALLBACK LightDebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARA
                         plight->get_Intensity(&v);
                         f2sz(v, value);
                         SetDlgItemText(hwndDlg, IDC_DBG_LIGHT_INTENSITY, value);
-                        plight->get_BulbModulateVsAdd(&v);
+                        v=plight->m_d.m_modulate_vs_add;
                         f2sz(v, value);
                         SetDlgItemText( hwndDlg, IDC_DBG_BULB_MODULATE_VS_ADD, value );
-                        plight->get_TransmissionScale(&v);
+                        v=plight->m_d.m_transmissionScale;
                         f2sz(v, value);
                         SetDlgItemText( hwndDlg, IDC_DBG_TRANSMISSION_SCALE, value );
                         plight->get_FadeSpeedUp(&v);
