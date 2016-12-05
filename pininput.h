@@ -27,6 +27,8 @@
 #define APP_JOYSTICKMX (APP_JOYSTICKMN + PININ_JOYMXCNT -1)
 #define APP_JOYSTICK(n) (APP_JOYSTICKMN + n)
 
+#define USE_DINPUT_FOR_KEYBOARD //!! otherwise: F11 not working and flipper sound on default table triggered multiple times
+
 class PinInput
 {
 public:
@@ -104,10 +106,14 @@ private:
    //int InputControlRun;
 
 #ifdef VP10
+#ifdef USE_DINPUT_FOR_KEYBOARD
    LPDIRECTINPUTDEVICE8 m_pKeyboard;
+#endif
    LPDIRECTINPUTDEVICE8 m_pMouse;
 #else
+#ifdef USE_DINPUT_FOR_KEYBOARD
    LPDIRECTINPUTDEVICE m_pKeyboard;
+#endif
    LPDIRECTINPUTDEVICE m_pMouse;
 #endif
 
@@ -175,15 +181,20 @@ private:
 #define PININ_ANY            0xffffffff
 // - end input routines added by AMH
 
-static const unsigned char VK_TO_DIK[][2] =
+#define VK_TO_DIK_SIZE 105
+static const unsigned char VK_TO_DIK[VK_TO_DIK_SIZE][2] =
 {
    { VK_BACK, DIK_BACK },
    { VK_TAB, DIK_TAB },
-   { VK_CLEAR, DIK_NUMPAD5 },      /* Num Lock off */
+   //{ VK_CLEAR, DIK_NUMPAD5 },      /* Num Lock off */
+   { VK_RETURN, DIK_RETURN },
    { VK_RETURN, DIK_NUMPADENTER },
-   { VK_SHIFT, DIK_LSHIFT },
-   { VK_CONTROL, DIK_LCONTROL },
-   { VK_MENU, DIK_LMENU },
+   { VK_LSHIFT, DIK_LSHIFT },
+   { VK_RSHIFT, DIK_RSHIFT },
+   { VK_LCONTROL, DIK_LCONTROL },
+   { VK_RCONTROL, DIK_RCONTROL },
+   { VK_LMENU, DIK_LMENU },
+   { VK_RMENU, DIK_RMENU },
    { VK_CAPITAL, DIK_CAPITAL },
    { VK_ESCAPE, DIK_ESCAPE },
    { VK_SPACE, DIK_SPACE },
@@ -263,6 +274,9 @@ static const unsigned char VK_TO_DIK[][2] =
    { VK_F10, DIK_F10 },
    { VK_F11, DIK_F11 },
    { VK_F12, DIK_F12 },
+   { VK_F13, DIK_F13 },
+   { VK_F14, DIK_F14 },
+   { VK_F15, DIK_F15 },
    { VK_NUMLOCK, DIK_NUMLOCK },
    { VK_SCROLL, DIK_SCROLL },
    { VK_OEM_1, DIK_SEMICOLON },
@@ -280,9 +294,18 @@ static const unsigned char VK_TO_DIK[][2] =
 
 inline unsigned int get_vk(const unsigned int dik)
 {
-   for (unsigned int i = 0; i < (sizeof(VK_TO_DIK) / sizeof(VK_TO_DIK[0])); ++i)
+   for (unsigned int i = 0; i < VK_TO_DIK_SIZE; ++i)
       if (VK_TO_DIK[i][1] == dik)
          return VK_TO_DIK[i][0];
+
+   return ~0u;
+}
+
+inline unsigned int get_dik(const unsigned int vk)
+{
+   for (unsigned int i = 0; i < VK_TO_DIK_SIZE; ++i)
+      if (VK_TO_DIK[i][0] == vk)
+         return VK_TO_DIK[i][1];
 
    return ~0u;
 }

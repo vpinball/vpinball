@@ -9,7 +9,9 @@ PinInput::PinInput()
    //InputControlRun = 0;
 
    m_pDI = NULL;
+#ifdef USE_DINPUT_FOR_KEYBOARD
    m_pKeyboard = NULL;
+#endif
    m_pMouse = NULL;
 
    leftMouseButtonDown = false;
@@ -432,6 +434,7 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
 {
    DIDEVICEOBJECTDATA didod[INPUT_BUFFER_SIZE];  // Receives buffered data 
 
+#ifdef USE_DINPUT_FOR_KEYBOARD
    // keyboard
 #ifdef VP10
    const LPDIRECTINPUTDEVICE8 pkyb = m_pKeyboard;
@@ -454,6 +457,33 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
          }
       }
    }
+#else
+   // cache to avoid double key triggers
+   static bool oldKeyStates[eCKeys + NUM_STATIC_RGKEYS] = { false };
+
+   unsigned int i2 = 0;
+   for (unsigned int i = 0; i < eCKeys + NUM_STATIC_RGKEYS; ++i)
+   {
+      const unsigned int rgk = (i < eCKeys) ? (unsigned int)g_pplayer->m_rgKeys[i] : m_static_rgKeys[i - eCKeys][0];
+      const unsigned int vk = get_vk(rgk);
+      if (vk == ~0u)
+         continue;
+
+      const SHORT keyState = GetAsyncKeyState(vk);
+      const bool keyDown = !!((1 << 16) & keyState);
+
+      if (oldKeyStates[i] == keyDown)
+         continue;
+      oldKeyStates[i] = keyDown;
+
+      didod[i2].dwOfs = rgk;
+      didod[i2].dwData = keyDown ? 0x80 : 0;
+      //didod[i2].dwTimeStamp = curr_time_msec;
+      didod[i2].dwSequence = APP_KEYBOARD;
+      PushQueue(&didod[i2], APP_KEYBOARD/*, curr_time_msec*/);
+      ++i2;
+   }
+#endif
 
    // mouse
    if (m_pMouse && m_enableMouseInPlayer)
@@ -580,6 +610,7 @@ void PinInput::Init(const HWND hwnd)
    hr = DirectInputCreate(g_hinst, DIRECTINPUT_VERSION, &m_pDI, NULL);
 #endif
 
+#ifdef USE_DINPUT_FOR_KEYBOARD
    // Create keyboard device
    hr = m_pDI->CreateDevice(GUID_SysKeyboard, &m_pKeyboard, NULL); //Standard Keyboard device
 
@@ -595,6 +626,7 @@ void PinInput::Init(const HWND hwnd)
    dipdw.dwData = INPUT_BUFFER_SIZE;
 
    hr = m_pKeyboard->SetProperty(DIPROP_BUFFERSIZE, &dipdw.diph);
+#endif
 
    if (m_enableMouseInPlayer)
    {
@@ -604,13 +636,14 @@ void PinInput::Init(const HWND hwnd)
          hr = m_pMouse->SetDataFormat(&c_dfDIMouse2);
 
          //hr = m_pMouse->SetCooperativeLevel(hwnd, DISCL_NONEXCLUSIVE | DISCL_FOREGROUND);
-         dipdw.diph.dwSize = sizeof(DIPROPDWORD);
-         dipdw.diph.dwHeaderSize = sizeof(DIPROPHEADER);
-         dipdw.diph.dwObj = 0;
-         dipdw.diph.dwHow = DIPH_DEVICE;
-         dipdw.dwData = INPUT_BUFFER_SIZE;
+         DIPROPDWORD dipdwm;
+         dipdwm.diph.dwSize = sizeof(DIPROPDWORD);
+         dipdwm.diph.dwHeaderSize = sizeof(DIPROPHEADER);
+         dipdwm.diph.dwObj = 0;
+         dipdwm.diph.dwHow = DIPH_DEVICE;
+         dipdwm.dwData = INPUT_BUFFER_SIZE;
 
-         hr = m_pMouse->SetProperty(DIPROP_BUFFERSIZE, &dipdw.diph);
+         hr = m_pMouse->SetProperty(DIPROP_BUFFERSIZE, &dipdwm.diph);
       }
       else
          m_pMouse = NULL;
@@ -653,6 +686,7 @@ void PinInput::UnInit()
    //if (!InputControlRun)	//0 == stalled, 1==run,  0 < shutting down, 2==terminated
    //{exit (-1500);}
 
+#ifdef USE_DINPUT_FOR_KEYBOARD
    if (m_pKeyboard)
    {
       // Unacquire the device one last time just in case 
@@ -661,6 +695,7 @@ void PinInput::UnInit()
       m_pKeyboard->Release();
       m_pKeyboard = NULL;
    }
+#endif
 
    if (m_pMouse)
    {
@@ -699,7 +734,6 @@ void PinInput::UnInit()
 void PinInput::FireKeyEvent(const int dispid, const int key)
 {
    U32 val = 0;
-   U32 tmp = m_PreviousKeys;
 
    // Initialize.
    int mkey = key;
@@ -708,58 +742,45 @@ void PinInput::FireKeyEvent(const int dispid, const int key)
    if (g_pplayer->m_ptable->m_tblMirrorEnabled)
    {
       // Swap left & right input.
-      if (mkey == g_pplayer->m_rgKeys[eLeftFlipperKey]) { mkey = g_pplayer->m_rgKeys[eRightFlipperKey];		val |= PININ_RIGHT; }
-      else if (mkey == g_pplayer->m_rgKeys[eRightFlipperKey]) { mkey = g_pplayer->m_rgKeys[eLeftFlipperKey];		val |= PININ_LEFT; }
-      else if (mkey == g_pplayer->m_rgKeys[eLeftMagnaSave]) { mkey = g_pplayer->m_rgKeys[eRightMagnaSave];		val |= PININ_RIGHT2; }
-      else if (mkey == g_pplayer->m_rgKeys[eRightMagnaSave]) { mkey = g_pplayer->m_rgKeys[eLeftMagnaSave];		val |= PININ_LEFT2; }
-      else if (mkey == DIK_LSHIFT) { mkey = DIK_RSHIFT;	val |= PININ_RIGHT; }
-      else if (mkey == DIK_RSHIFT) { mkey = DIK_LSHIFT;	val |= PININ_LEFT; }
-      else if (mkey == DIK_LEFT) { mkey = DIK_RIGHT;	val |= PININ_RIGHT; }
-      else if (mkey == DIK_RIGHT) { mkey = DIK_LEFT;		val |= PININ_LEFT; }
+      if (mkey == g_pplayer->m_rgKeys[eLeftFlipperKey]) { mkey = g_pplayer->m_rgKeys[eRightFlipperKey];		 val = PININ_RIGHT; }
+      else if (mkey == g_pplayer->m_rgKeys[eRightFlipperKey]) { mkey = g_pplayer->m_rgKeys[eLeftFlipperKey]; val = PININ_LEFT; }
+      else if (mkey == g_pplayer->m_rgKeys[eLeftMagnaSave]) { mkey = g_pplayer->m_rgKeys[eRightMagnaSave];	 val = PININ_RIGHT2; }
+      else if (mkey == g_pplayer->m_rgKeys[eRightMagnaSave]) { mkey = g_pplayer->m_rgKeys[eLeftMagnaSave];	 val = PININ_LEFT2; }
+      else if (mkey == DIK_LSHIFT) { mkey = DIK_RSHIFT;	val = PININ_RIGHT; }
+      else if (mkey == DIK_RSHIFT) { mkey = DIK_LSHIFT;	val = PININ_LEFT; }
+      else if (mkey == DIK_LEFT)   { mkey = DIK_RIGHT;	val = PININ_RIGHT; }
+      else if (mkey == DIK_RIGHT)  { mkey = DIK_LEFT;	val = PININ_LEFT; }
    }
    else
    {
       // Normal left & right input.
-      if (mkey == g_pplayer->m_rgKeys[eLeftFlipperKey]) val |= PININ_LEFT;
-      else if (mkey == g_pplayer->m_rgKeys[eRightFlipperKey]) val |= PININ_RIGHT;
-      else if (mkey == g_pplayer->m_rgKeys[eLeftMagnaSave]) val |= PININ_LEFT2;
-      else if (mkey == g_pplayer->m_rgKeys[eRightMagnaSave]) val |= PININ_RIGHT2;
-      else if (mkey == DIK_LSHIFT) val |= PININ_LEFT;
-      else if (mkey == DIK_RSHIFT) val |= PININ_RIGHT;
-      else if (mkey == DIK_LEFT) val |= PININ_LEFT;
-      else if (mkey == DIK_RIGHT) val |= PININ_RIGHT;
+      if (mkey == g_pplayer->m_rgKeys[eLeftFlipperKey])       val = PININ_LEFT;
+      else if (mkey == g_pplayer->m_rgKeys[eRightFlipperKey]) val = PININ_RIGHT;
+      else if (mkey == g_pplayer->m_rgKeys[eLeftMagnaSave])   val = PININ_LEFT2;
+      else if (mkey == g_pplayer->m_rgKeys[eRightMagnaSave])  val = PININ_RIGHT2;
+      else if (mkey == DIK_LSHIFT) val = PININ_LEFT;
+      else if (mkey == DIK_RSHIFT) val = PININ_RIGHT;
+      else if (mkey == DIK_LEFT)   val = PININ_LEFT;
+      else if (mkey == DIK_RIGHT)  val = PININ_RIGHT;
    }
 
-   if (mkey == g_pplayer->m_rgKeys[ePlungerKey]) val |= PININ_PLUNGE;
-   else if (mkey == g_pplayer->m_rgKeys[eAddCreditKey]) val |= PININ_COIN1;
-   else if (mkey == g_pplayer->m_rgKeys[eAddCreditKey2]) val |= PININ_COIN2;
-   else if (mkey == g_pplayer->m_rgKeys[eStartGameKey]) val |= PININ_START;
-   else if (mkey == g_pplayer->m_rgKeys[eVolumeUp]) val |= PININ_VOL_UP;
-   else if (mkey == g_pplayer->m_rgKeys[eVolumeDown]) val |= PININ_VOL_DOWN;
-   else if (mkey == g_pplayer->m_rgKeys[eExitGame]) val |= PININ_EXITGAME;
-   else if (mkey == g_pplayer->m_rgKeys[eEnable3D]) val |= PININ_ENABLE3D;
+   if (mkey == g_pplayer->m_rgKeys[ePlungerKey])         val = PININ_PLUNGE;
+   else if (mkey == g_pplayer->m_rgKeys[eAddCreditKey])  val = PININ_COIN1;
+   else if (mkey == g_pplayer->m_rgKeys[eAddCreditKey2]) val = PININ_COIN2;
+   else if (mkey == g_pplayer->m_rgKeys[eStartGameKey])  val = PININ_START;
+   else if (mkey == g_pplayer->m_rgKeys[eVolumeUp])      val = PININ_VOL_UP;
+   else if (mkey == g_pplayer->m_rgKeys[eVolumeDown])    val = PININ_VOL_DOWN;
+   else if (mkey == g_pplayer->m_rgKeys[eExitGame])      val = PININ_EXITGAME;
+   else if (mkey == g_pplayer->m_rgKeys[eEnable3D])      val = PININ_ENABLE3D;
+   else
+   for (unsigned int i = 4; i < NUM_STATIC_RGKEYS; ++i) // start at 4 to avoid rereading l/rshift and left/right
+      if (mkey == m_static_rgKeys[i][0])
+      {
+         val = m_static_rgKeys[i][1];
+         break;
+      }
 
-   else if (mkey == DIK_ESCAPE) val |= PININ_EXITGAME;
-   else if (mkey == DIK_UP) val |= PININ_START;
-   else if (mkey == DIK_DOWN) val |= PININ_PLUNGE;
-   else if (mkey == DIK_1) val |= PININ_START;
-   else if (mkey == DIK_2) val |= PININ_BUYIN;
-   else if (mkey == DIK_3) val |= PININ_COIN1;
-   else if (mkey == DIK_4) val |= PININ_COIN2;
-   else if (mkey == DIK_5) val |= PININ_COIN3;
-   else if (mkey == DIK_6) val |= PININ_COIN4;
-   else if (mkey == DIK_7) val |= PININ_SERVICECANCEL;
-   else if (mkey == DIK_8) val |= PININ_SERVICE1;
-   else if (mkey == DIK_9) val |= PININ_SERVICE2;
-   else if (mkey == DIK_0) val |= PININ_SERVICEENTER;
-   else if (mkey == DIK_END) val |= PININ_COINDOOR;
-   //	else if( mkey == DIK_EQUALS	) val |= PININ_VOL_UP;
-   //	else if( mkey == DIK_MINUS	) val |= PININ_VOL_DOWN;
-   else if (mkey == DIK_Z) val |= PININ_LTILT;
-   else if (mkey == DIK_SPACE) val |= PININ_CTILT;
-   else if (mkey == DIK_SLASH) val |= PININ_RTILT;
-   else if (mkey == DIK_T) val |= PININ_MTILT;
-   else if (mkey == DIK_F11) val |= PININ_FRAMES;
+   U32 tmp = m_PreviousKeys;
 
    // Check if the mkey is down.
    if (dispid == DISPID_GameEvents_KeyDown)
@@ -776,27 +797,26 @@ void PinInput::FireKeyEvent(const int dispid, const int key)
    // Get only the bits that have changed (on to off, or off to on).
    m_ChangedKeys |= (tmp ^ m_PreviousKeys);
 
-   if ((m_ChangedKeys & PININ_LEFT) && dispid == DISPID_GameEvents_KeyDown) // debug only
-   {
-      m_leftkey_down_usec = usec();
-      m_leftkey_down_frame = g_pplayer->m_overall_frames;
-   }
-
    // Save the keys so we can detect changes.
    m_PreviousKeys = tmp;
+
+   // Only trigger each key once per key process
+   if (!(m_ChangedKeys & val))
+      return;
+
    if (g_pplayer->cameraMode)
    {
-      if (mkey == g_pplayer->m_rgKeys[eLeftFlipperKey] && dispid == DISPID_GameEvents_KeyDown)
+      if (val == PININ_LEFT && dispid == DISPID_GameEvents_KeyDown)
          g_pplayer->UpdateBackdropSettings(false);
-      else if (mkey == g_pplayer->m_rgKeys[eRightFlipperKey] && dispid == DISPID_GameEvents_KeyDown)
+      else if (val == PININ_RIGHT && dispid == DISPID_GameEvents_KeyDown)
          g_pplayer->UpdateBackdropSettings(true);
-      else if (mkey == g_pplayer->m_rgKeys[eRightMagnaSave] && dispid == DISPID_GameEvents_KeyDown)
+      else if (val == PININ_RIGHT2 && dispid == DISPID_GameEvents_KeyDown)
       {
          g_pplayer->backdropSettingActive++;
          if (g_pplayer->backdropSettingActive == 13)
             g_pplayer->backdropSettingActive = 0;
       }
-      else if (mkey == g_pplayer->m_rgKeys[eLeftMagnaSave] && dispid == DISPID_GameEvents_KeyDown)
+      else if (val == PININ_LEFT2 && dispid == DISPID_GameEvents_KeyDown)
       {
          g_pplayer->backdropSettingActive--;
          if (g_pplayer->backdropSettingActive == -1)
@@ -804,7 +824,16 @@ void PinInput::FireKeyEvent(const int dispid, const int key)
       }
    }
    else
+   {
+      // Debug only, for testing parts of the left flipper input lag
+      if (val == PININ_LEFT && dispid == DISPID_GameEvents_KeyDown)
+      {
+         m_leftkey_down_usec = usec();
+         m_leftkey_down_frame = g_pplayer->m_overall_frames;
+      }
+
       m_ptable->FireKeyEvent(dispid, mkey);
+   }
 }
 
 // Returns true if the table has started at least 1 player.
@@ -834,9 +863,9 @@ void PinInput::autostart(const U32 msecs, const U32 retry_msecs, const U32 curr_
       started())
       return;
 
-   if ((m_firedautostart > 0) &&				// Initialized.
-      (m_as_down == 1) &&						// Start button is down.
-      ((curr_time_msec - m_firedautostart) > 100))	// Start button has been down for at least 0.10 seconds.
+   if ((m_firedautostart > 0) &&				   // Initialized.
+      (m_as_down == 1) &&						   // Start button is down.
+      ((curr_time_msec - m_firedautostart) > 100)) // Start button has been down for at least 0.10 seconds.
    {
       // Release start.
       m_firedautostart = curr_time_msec;
@@ -849,9 +878,9 @@ void PinInput::autostart(const U32 msecs, const U32 retry_msecs, const U32 curr_
    }
 
    // Logic to do "autostart"
-   if ((m_as_down == 0) &&																			 // Start button is up.
+   if ((m_as_down == 0) &&																			  // Start button is up.
       (((m_as_didonce == 1) && !started() && ((curr_time_msec - m_firedautostart) > retry_msecs))) || // Not started and last attempt was at least AutoStartRetry seconds ago.
-      ((m_as_didonce == 0) && ((curr_time_msec - m_firedautostart) > msecs)))						 // Never attempted and autostart time has elapsed.
+      ((m_as_didonce == 0) && ((curr_time_msec - m_firedautostart) > msecs)))						  // Never attempted and autostart time has elapsed.
    {
       // Press start.
       m_firedautostart = curr_time_msec;
@@ -927,9 +956,9 @@ void PinInput::Joy(const unsigned int n, const int updown, const bool start)
    if (m_joycentertilt == n) FireKeyEvent(updown, g_pplayer->m_rgKeys[eCenterTiltKey]);
    if (m_joyrighttilt == n) FireKeyEvent(updown, g_pplayer->m_rgKeys[eRightTiltKey]);
    if (m_joymechtilt == n) FireKeyEvent(updown, g_pplayer->m_rgKeys[eMechanicalTilt]);
-   if(m_joydebugballs == n) FireKeyEvent( updown, g_pplayer->m_rgKeys[eDBGBalls] );
-   if(m_joydebugger == n) FireKeyEvent( updown, g_pplayer->m_rgKeys[eDebugger] );
-   if(m_joycustom1 == n) FireKeyEvent( updown, m_joycustom1key );
+   if (m_joydebugballs == n) FireKeyEvent(updown, g_pplayer->m_rgKeys[eDBGBalls]);
+   if (m_joydebugger == n) FireKeyEvent(updown, g_pplayer->m_rgKeys[eDebugger]);
+   if (m_joycustom1 == n) FireKeyEvent(updown, m_joycustom1key);
    if (m_joycustom2 == n) FireKeyEvent(updown, m_joycustom2key);
    if (m_joycustom3 == n) FireKeyEvent(updown, m_joycustom3key);
    if (m_joycustom4 == n) FireKeyEvent(updown, m_joycustom4key);
@@ -1557,6 +1586,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 
 int PinInput::GetNextKey() // return last valid keyboard key 
 {
+#ifdef USE_DINPUT_FOR_KEYBOARD
    if (m_pKeyboard != NULL)
    {
       DIDEVICEOBJECTDATA didod[1];  // Receives buffered data
@@ -1581,6 +1611,18 @@ int PinInput::GetNextKey() // return last valid keyboard key
       if ((hr == S_OK || hr == DI_BUFFEROVERFLOW) && dwElements != 0)
          return didod[0].dwOfs;
    }
+#else
+   for (unsigned int i = 0; i < 0xFF; ++i)
+   {
+      const SHORT keyState = GetAsyncKeyState(i);
+      if (keyState & 1)
+      {
+         const unsigned int dik = get_dik(i);
+         if (dik != ~0u)
+            return dik;
+      }
+   }
+#endif
 
    return 0;
 }
