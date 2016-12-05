@@ -3,29 +3,30 @@ VP 10.2.0 Changelog
 
 - by default open file dialog to directly select and play a table (can be changed in preferences->editor options)
 
-- timers now feature a special mode (setting the interval to -1) that triggers a timer exactly once per frame (e.g. dependent on the FPS).
-  this can also be interpreted as being a callback done once per frame to update everything that is only rendering-related (e.g. reduce overhead caused by things that will never be seen by the player in the end)
+- timers now feature a special mode (setting the interval to -1) that triggers a timer exactly once per frame (e.g. dependent on the FPS that a user gets for a table).
+  this can also be interpreted as being a callback done once per frame to update everything that is only rendering-related (e.g. to reduce overhead caused by things that will never be seen by the player in the end).
+  note that all purely script-driven animations that use a timer with its interval set to -1 should use the new script function GameTime to calculate the time passed between the previous and current frame to make animations time dependent again.
 - fix timers that dis/enable themselves in the script
 
-- disable visual touch/pen feedback to save one frame of input latency/lag
+- disable visual touch/pen feedback to save one frame of input latency/lag (on tablets/phones)
 
-- replace old 'Maximum pre-rendered frames' implementation with official DX mechanism on non-XP systems,
+- replace old 'Maximum pre-rendered frames' video preference implementation with the official DirectX mechanism on non-XP systems,
   so it could be worth to experiment again with this setting by using 1 or 2 to reduce lag at the price of a bit of performance
 
 - add aspect ratio to dimension manager
 
 - add show debugger hot key option to the keys preferences. If hot key is pressed it opens the debugger window without showing the pause menu.
 
-- Lights can be debugged in the debugger. Open the debugger, click on the "Lights" button and a new dialog will appear where all dynamic values are editable. Properties like blinking/on/off are
+- Lights can be debugged (and also live tweaked) in the debugger. Open the debugger, click on the "Lights" button and a new dialog will appear where all dynamic values are editable. Properties like blinking/on/off are
   based on the timing of the player but the timing is stopped while debugging. You have to click in the player window to see the changes. And beware that all light properties can be changed by 
   the script, so these might be overwritten by the script even if you try to set them in the debugger. The changes will also affect the lights in the editor once you quit the player.
 
-- Materials can also be debugged in the debugger. Open the debugger, click on the "Materials" button and a new dialog will appear where all properties are editable except for the physics values. 
+- Materials can also be debugged (and also live tweaked) in the debugger. Open the debugger, click on the "Materials" button and a new dialog will appear where all properties are editable except for the physics values. 
   By hitting enter or the "Apply" button the changes are updated. Every dynamic element on the table will show the changes immediately. The opacity active flag is an exception: This flag
   also defines if an element is rendered dynamically or not (e.g. for walls or ramps). So if the opacity isn't already active when starting the player you won't see changes on these static elements.
   The changes will also affect the materials in the editor once you quit the player.
 
-- hotkey for adding normal and smooth control points for walls, ramps and lights. Select a wall,ramp or light and press F10 for a normal unsmoothed control point and F11 for a smoothed one.
+- hotkey for adding normal and smooth control points for walls, ramps and lights. Select a wall, ramp or light and press F10 for a normal unsmoothed control point and F11 for a smoothed one.
 
 - animation support for mesh primitives added: The animation sequence is based on multiple .obj files for each frame. Let's say we have an animation of 100 single frames, then you have to export
   each frame into a separate .obj file with the nameing format <meshname>_x.obj where x is the frame number. When importing a mesh, check the "Import Animation sequence" in the import dialog and
@@ -38,7 +39,7 @@ VP 10.2.0 Changelog
 
 - changes to bumper material: add separate bumper ring material and don't use a built-in texture for the bumper base and skirt anymore
 
-- add physics settings per material to the material manager.
+- add a physics setting per material to the material manager.
   Settings are: Friction, elasticity, elasticity falloff and scatter angle.
   This allows for tweaking all physics settings in the material manager for all 'similar' table elements (with the same material) at once.
   (If you like you can still overwrite the settings for each element separatly though)
@@ -48,8 +49,8 @@ VP 10.2.0 Changelog
 
 - output table information if paused
 
-- start camera mode with 'F6'
-- for a quick Desktop(DT) vs Cabinet(FS) camera view testing: hold 'shift' or left flipper button during the table start to change between the default DT or FS camera
+- start camera/light tweaking mode with 'F6'
+- for a quick Desktop(DT) vs Cabinet(FS) camera view testing: hold 'shift' or left flipper button during the table start to choose between the default DT or FS camera
 
 - texture size limit/downscale now respects aspect ratio.
   Also delete outdated 512 max limit and introduce a new 3072 max limit.
