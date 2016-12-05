@@ -689,7 +689,8 @@ INT_PTR CALLBACK MaterialManagerProc( HWND hwndDlg, UINT uMsg, WPARAM wParam, LP
 
                         case IDC_DELETE_MATERIAL:
                         {
-                            const int count = ListView_GetSelectedCount( GetDlgItem( hwndDlg, IDC_MATERIAL_LIST ) );
+                            HWND listHwnd = GetDlgItem( hwndDlg, IDC_MATERIAL_LIST );
+                            const int count = ListView_GetSelectedCount( listHwnd );
                             if ( count > 0 )
                             {
                                 LocalString ls( IDS_REMOVEMATERIAL );
@@ -697,19 +698,32 @@ INT_PTR CALLBACK MaterialManagerProc( HWND hwndDlg, UINT uMsg, WPARAM wParam, LP
                                 if ( ans == IDYES )
                                 {
                                     pt = (CCO( PinTable ) *)GetWindowLongPtr( hwndDlg, GWLP_USERDATA );
-                                    int sel = ListView_GetNextItem( GetDlgItem( hwndDlg, IDC_MATERIAL_LIST ), -1, LVNI_SELECTED );
+                                    int sel = ListView_GetNextItem( listHwnd, -1, LVNI_SELECTED );
                                     while ( sel != -1 )
                                     {
                                         LVITEM lvitem;
                                         lvitem.mask = LVIF_PARAM;
                                         lvitem.iItem = sel;
                                         lvitem.iSubItem = 0;
-                                        ListView_GetItem( GetDlgItem( hwndDlg, IDC_MATERIAL_LIST ), &lvitem );
-                                        ListView_DeleteItem( GetDlgItem( hwndDlg, IDC_MATERIAL_LIST ), sel );
+                                        ListView_GetItem( listHwnd, &lvitem );
                                         Material * const pmat = (Material*)lvitem.lParam;
+                                        ListView_DeleteItem( listHwnd, sel );
+
                                         pt->RemoveMaterial( pmat );
-                                        // The previous selection is now deleted, so look again from the top of the list
-                                        sel = ListView_GetNextItem( GetDlgItem( hwndDlg, IDC_MATERIAL_LIST ), -1, LVNI_SELECTED );
+
+                                        int newCount = ListView_GetItemCount( listHwnd );
+                                        int selectedCount = ListView_GetSelectedCount( listHwnd );
+                                        if(newCount > 0 && selectedCount==0)
+                                        {
+                                            if(sel >= newCount) sel = 0;
+                                            // The previous selection is now deleted, so look again from the top of the list
+                                            ListView_SetItemState( listHwnd, sel, LVIS_FOCUSED | LVIS_SELECTED, 0x00F );
+                                            sel = -1;
+                                        }
+                                        else
+                                        {
+                                            sel = ListView_GetNextItem( listHwnd, -1, LVNI_SELECTED );
+                                        }
                                     }
                                 }
                                 pt->SetNonUndoableDirty( eSaveDirty );
