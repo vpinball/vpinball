@@ -6,10 +6,12 @@ Material Manager            F4
 Play Table                  F5
 Play Table (with exchanged
   DT/FS camera parameters)  Hold Shift/LeftFlipperButton during Table Start
+Start in Camera/Light
+  Tweaking Mode             F6
 Collection Manager          F8
 Add unsmoothed/smoothed     F10/F11
- control points to walls,
- ramps or lights
+  control points to walls,
+  ramps or lights
 New Table                   Ctrl + N
 Load Table                  Ctrl + L
 Save Table                  Ctrl + S
