@@ -1,6 +1,8 @@
 VP 10.2.0 Changelog
 ------------------------
 
+- add -Help (displays all command line parameters) and -DisableTrueFullscreen (force disables/overrides the true fullscreen video preference) to command line
+
 - by default open file dialog to directly select and play a table (can be changed in preferences->editor options)
 
 - timers now feature a special mode (setting the interval to -1) that triggers a timer exactly once per frame (e.g. dependent on the FPS that a user gets for a table).

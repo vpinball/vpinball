@@ -131,6 +131,8 @@ EnumAssignKeys touchkeymap[8] = {
 static unsigned int material_flips = 0;
 static unsigned int stats_drawn_static_triangles = 0;
 
+extern bool disableTrueFullscreen; // set via command line
+
 //
 
 #define RECOMPUTEBUTTONCHECK WM_USER+100
@@ -2103,6 +2105,10 @@ void Player::InitWindow()
       m_fFullScreen = false;
    else
       m_fFullScreen = (fullscreen == 1);
+
+   // command line override
+   if (disableTrueFullscreen)
+      m_fFullScreen = false;
 
    if (m_fFullScreen)
    {
