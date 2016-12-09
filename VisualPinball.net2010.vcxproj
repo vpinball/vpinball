@@ -1761,6 +1761,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     <ClCompile Include="flasher.cpp" />
     <ClCompile Include="MaterialDialog.cpp" />
     <ClCompile Include="Debugger.cpp" />
+    <ClCompile Include="ImageDialog.cpp" />
     <ClCompile Include="math\math.cpp" />
     <ClCompile Include="MemoryStatus.cpp" />
     <ClCompile Include="rubber.cpp" />

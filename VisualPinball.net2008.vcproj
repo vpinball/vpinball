@@ -10167,6 +10167,14 @@
 				>
 			</File>
 			<File
+				RelativePath="Debugger.cpp"
+				>
+			</File>
+			<File
+				RelativePath="ImageDialog.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\math\math.cpp"
 				>
 			</File>
