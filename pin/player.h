@@ -327,6 +327,7 @@ public:
    HWND m_hwndDebugger;
    HWND m_hwndLightDebugger;
    HWND m_hwndMaterialDebugger;
+   HWND m_hwndDebugInfo;
 
    Vector<CLSID> m_controlclsidsafe; // ActiveX control types which have already been okayed as being safe
 
@@ -516,7 +517,8 @@ private:
 
 public:
    void ToggleFPS();
-   void UpdateBasicShaderMatrix(const Matrix3D& objectTrafo = Matrix3D(1.0f));
+   void InitFPS();
+   void UpdateBasicShaderMatrix( const Matrix3D& objectTrafo = Matrix3D( 1.0f ) );
    void InitShader();
    void UpdateCameraModeDisplay();
    void UpdateBackdropSettings(const bool up);
@@ -546,4 +548,6 @@ public:
    Texture *m_decalImage;
 
    ID3DXFont *m_pFont;
+   int  m_debugInfoWinX;
+   int  m_debugInfoWinY;
 };
