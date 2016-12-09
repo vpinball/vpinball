@@ -93,7 +93,7 @@ bool WaveFrontObjLoadMaterial(const char *filename, Material *mat)
    while (1)
    {
       char lineHeader[256];
-      int res = fscanf_s(f, "\n%s", lineHeader, 256);
+      const int res = fscanf_s(f, "\n%s", lineHeader, 256);
       if (res == EOF)
       {
          fclose(f);
@@ -107,7 +107,7 @@ bool WaveFrontObjLoadMaterial(const char *filename, Material *mat)
       {
          float tmp;
          fscanf_s(f, "%f\n", &tmp);
-         int d = (int)(tmp*100.f);
+         const int d = (int)(tmp*100.f);
          tmp = d / 100.0f;
          // normally a wavefront material specular exponent ranges from 0..1000.
          // but our shininess calculation differs from the way how e.g. Blender is calculating the specular exponent
@@ -127,21 +127,19 @@ bool WaveFrontObjLoadMaterial(const char *filename, Material *mat)
       else if (strcmp(lineHeader, "Kd") == 0)
       {
          Vertex3Ds tmp;
-         DWORD r, g, b;
          fscanf_s(f, "%f %f %f\n", &tmp.x, &tmp.y, &tmp.z);
-         r = (DWORD)(tmp.x * 255.f);
-         g = (DWORD)(tmp.y * 255.f);
-         b = (DWORD)(tmp.z * 255.f);
+         const DWORD r = (DWORD)(tmp.x * 255.f);
+         const DWORD g = (DWORD)(tmp.y * 255.f);
+         const DWORD b = (DWORD)(tmp.z * 255.f);
          mat->m_cBase = RGB(r, g, b);
       }
       else if (strcmp(lineHeader, "Ks") == 0)
       {
          Vertex3Ds tmp;
-         DWORD r, g, b;
          fscanf_s(f, "%f %f %f\n", &tmp.x, &tmp.y, &tmp.z);
-         r = (DWORD)(tmp.x * 255.f);
-         g = (DWORD)(tmp.y * 255.f);
-         b = (DWORD)(tmp.z * 255.f);
+         const DWORD r = (DWORD)(tmp.x * 255.f);
+         const DWORD g = (DWORD)(tmp.y * 255.f);
+         const DWORD b = (DWORD)(tmp.z * 255.f);
          mat->m_cGlossy = RGB(r, g, b);
       }
       else if (strcmp(lineHeader, "Ni") == 0)
@@ -183,7 +181,7 @@ bool WaveFrontObj_Load(const char *filename, const bool flipTv, const bool conve
    while (1)
    {
       char lineHeader[256];
-      int res = fscanf_s(f, "\n%s", lineHeader, 256);
+      const int res = fscanf_s(f, "\n%s", lineHeader, 256);
       if (res == EOF)
       {
          fclose(f);
@@ -583,7 +581,7 @@ void WaveFrontObj_Save(const char *filename, const char *description, const Mesh
        if(!f)
            return;
        fprintf_s( f, "# Visual Pinball OBJ file\n" );
-       fprintf_s( f, "# numVerts: %u numFaces: %u\n", mesh.NumVertices(), mesh.NumIndices() );
+       fprintf_s( f, "# numVerts: %u numFaces: %u\n", (unsigned int)mesh.NumVertices(), (unsigned int)mesh.NumIndices() );
        WaveFrontObj_WriteObjectName( f, description );
        WaveFrontObj_WriteVertexInfo( f, mesh.m_vertices.data(), (unsigned int)mesh.m_vertices.size() );
        WaveFrontObj_WriteFaceInfoLong( f, mesh.m_indices );
@@ -614,7 +612,7 @@ void WaveFrontObj_Save(const char *filename, const char *description, const Mesh
            if(!f)
                return;
            fprintf_s( f, "# Visual Pinball OBJ file\n" );
-           fprintf_s( f, "# numVerts: %u numFaces: %u\n", mesh.NumVertices(), mesh.NumIndices() );
+           fprintf_s( f, "# numVerts: %u numFaces: %u\n", (unsigned int)mesh.NumVertices(), (unsigned int)mesh.NumIndices() );
            WaveFrontObj_WriteObjectName( f, description );
            WaveFrontObj_WriteVertexInfo( f, verts.data(), (unsigned int)mesh.m_vertices.size() );
            WaveFrontObj_WriteFaceInfoLong( f, mesh.m_indices );

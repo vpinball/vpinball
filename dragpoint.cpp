@@ -375,7 +375,7 @@ HRESULT IHaveDragPoints::SavePointData(IStream *pstm, HCRYPTHASH hcrypthash, HCR
       bw.WriteBool(FID(ATEX), pdp->m_fAutoTexture);
       bw.WriteFloat(FID(TEXC), pdp->m_texturecoord);
 
-      (ISelect *)pdp->SaveData(pstm, hcrypthash, hcryptkey);
+      ((ISelect *)pdp)->SaveData(pstm, hcrypthash, hcryptkey);
 
       bw.WriteTag(FID(ENDB));
    }

@@ -334,7 +334,6 @@ float HitSpinner::HitTest(const Ball * const pball, const float dtime, Collision
 
 void HitSpinner::Collide(CollisionEvent& coll)
 {
-   Ball * const pball = coll.ball;
    const Vertex3Ds& hitnormal = coll.hitnormal;
 
    const float dot = coll.hitnormal.Dot(coll.ball->m_vel);
@@ -347,7 +346,7 @@ void HitSpinner::Collide(CollisionEvent& coll)
 
    // h is the height of the spinner axis;
    // Since the spinner has no mass in our equation, the spot
-   // h -pball->m_radius will be moving a at linear rate of
+   // h -coll.m_radius will be moving a at linear rate of
    // 'speed'.  We can calculate the angular speed from that.
 
    m_spinneranim.m_anglespeed = fabsf(dot);		// use this until a better value comes along

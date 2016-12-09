@@ -947,11 +947,11 @@ void upscale(DWORD * const data, const unsigned int xres, const unsigned int yre
 #ifdef DMD_UPSCALE
                     data[offs + j2*(xres*3) + i2] = (res == 0xdeadbeef) ? ((g_or[o].xyzw & 0xFEFEFEFE)>>1) : g_or[o+res].xyzw; // borders = half black/half border pixel
 #else
-                    const unsigned int tmp = (res == 0xdeadbeef) ? ((g_or[o].xyzw & 0xFEFEFEFE) >> 1) : g_or[o+res].xyzw;
-                    r += tmp & 255;
-                    g += (tmp>>8) & 255;
-                    b += (tmp>>16) & 255;
-                    a += tmp>>24;
+                    const unsigned int tmp2 = (res == 0xdeadbeef) ? ((g_or[o].xyzw & 0xFEFEFEFE) >> 1) : g_or[o+res].xyzw;
+                    r +=  tmp2      & 255;
+                    g += (tmp2>>8)  & 255;
+                    b += (tmp2>>16) & 255;
+                    a +=  tmp2>>24;
 #endif
                 }
 
@@ -4810,9 +4810,9 @@ void PinTable::DoLButtonDown(int x, int y, bool zoomIn)
 
       for (int i = 0; i < m_vmultisel.Size(); i++)
       {
-         ISelect *pisel = m_vmultisel.ElementAt(i);
-         if ( pisel )
-            pisel->OnLButtonDown(x, y);
+         ISelect *pisel2 = m_vmultisel.ElementAt(i);
+         if ( pisel2 )
+            pisel2->OnLButtonDown(x, y);
       }
    }
 }

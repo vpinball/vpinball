@@ -2658,9 +2658,9 @@ INT_PTR CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
 
          case IDC_IMPORT:
          {
-            char szFileName[10240];
-            char szInitialDir[10240];
-            char szT[10240];
+            char szFileName[4096];
+            char szInitialDir[4096];
+            char szT[4096];
 
             szFileName[0] = '\0';
 
@@ -2672,11 +2672,11 @@ INT_PTR CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
             // TEXT
             ofn.lpstrFilter = "Sound Files (*.wav)\0*.wav\0";
             ofn.lpstrFile = szFileName;
-            ofn.nMaxFile = 10240;
+            ofn.nMaxFile = 4096;
             ofn.lpstrDefExt = "wav";
             ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY | OFN_EXPLORER | OFN_ALLOWMULTISELECT;
 
-            HRESULT hr = GetRegString("RecentDir", "SoundDir", szInitialDir, 1024);
+            HRESULT hr = GetRegString("RecentDir", "SoundDir", szInitialDir, 4096);
             ofn.lpstrInitialDir = (hr == S_OK) ? szInitialDir : NULL;
 
             const int ret = GetOpenFileName(&ofn);

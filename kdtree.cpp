@@ -311,7 +311,7 @@ void HitKDNode::CreateNextLevel(const unsigned int level, unsigned int level_emp
    {
       for (unsigned int i = m_start; i < m_start + org_items; ++i)
       {
-         HitObject * const pho = m_hitoct->GetItemAt(i);
+         const HitObject * const pho = m_hitoct->GetItemAt(i);
 
          if (pho->m_rcHitRect.right < vcenter.x)
             m_hitoct->tmp[m_children[0].m_start + (m_children[0].m_items++)] = m_hitoct->m_org_idx[i];
@@ -325,7 +325,7 @@ void HitKDNode::CreateNextLevel(const unsigned int level, unsigned int level_emp
    {
       for (unsigned int i = m_start; i < m_start + org_items; ++i)
       {
-         HitObject * const pho = m_hitoct->GetItemAt(i);
+         const HitObject * const pho = m_hitoct->GetItemAt(i);
 
          if (pho->m_rcHitRect.bottom < vcenter.y)
             m_hitoct->tmp[m_children[0].m_start + (m_children[0].m_items++)] = m_hitoct->m_org_idx[i];
@@ -339,7 +339,7 @@ void HitKDNode::CreateNextLevel(const unsigned int level, unsigned int level_emp
    {
       for (unsigned int i = m_start; i < m_start + org_items; ++i)
       {
-         HitObject * const pho = m_hitoct->GetItemAt(i);
+         const HitObject * const pho = m_hitoct->GetItemAt(i);
 
          if (pho->m_rcHitRect.zhigh < vcenter.z)
             m_hitoct->tmp[m_children[0].m_start + (m_children[0].m_items++)] = m_hitoct->m_org_idx[i];
@@ -480,7 +480,7 @@ void HitKDNode::HitTestBallSse(Ball * const pball, CollisionEvent& coll) const
    const __m128 rsqr = _mm_set1_ps(pball->m_rcHitRadiusSqr);
 
    const bool traversal_order = (rand_mt_01() < 0.5f); // swaps test order in leafs randomly
-   const unsigned int d = traversal_order ? 1 : -1;
+   const unsigned int dt = traversal_order ? 1 : -1;
 
    do
    {
@@ -492,7 +492,7 @@ void HitKDNode::HitTestBallSse(Ball * const pball, CollisionEvent& coll) const
       const unsigned int size = (current->m_start + org_items + 3) / 4;
       const unsigned int start = traversal_order ? current->m_start / 4 : (size - 1);
       const unsigned int end = traversal_order ? size : (current->m_start / 4 - 1);
-      for (unsigned int i = start; i != end; i += d)
+      for (unsigned int i = start; i != end; i += dt)
       {
 #ifdef _DEBUGPHYSICS
          g_pplayer->c_tested++; //!! +=4? or is this more fair?
@@ -602,7 +602,7 @@ void HitKDNode::HitTestBallSse(Ball * const pball, CollisionEvent& coll) const
 }
 #endif
 
-void HitKDNode::HitTestXRay(Ball * const pball, Vector<HitObject> * const pvhoHit, CollisionEvent& coll) const
+void HitKDNode::HitTestXRay(const Ball * const pball, Vector<HitObject> * const pvhoHit, CollisionEvent& coll) const
 {
    const unsigned int org_items = (m_items & 0x3FFFFFFF);
    const unsigned int axis = (m_items >> 30);

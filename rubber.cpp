@@ -63,15 +63,13 @@ void Rubber::SetDefaults(bool fromMouseClick)
 {
    static const char strKeyName[] = "DefaultProps\\Rubber";
 
-   HRESULT hr;
-
    m_d.m_height = fromMouseClick ? GetRegStringAsFloatWithDefault(strKeyName, "Height", 25.0f) : 25.0f;
    m_d.m_thickness = fromMouseClick ? GetRegIntWithDefault(strKeyName, "Thickness", 8) : 8;
 
    m_d.m_tdr.m_fTimerEnabled = fromMouseClick ? GetRegBoolWithDefault(strKeyName, "TimerEnabled", false) : false;
    m_d.m_tdr.m_TimerInterval = fromMouseClick ? GetRegIntWithDefault(strKeyName, "TimerInterval", 100) : 100;
 
-   hr = GetRegString(strKeyName, "Image", m_d.m_szImage, MAXTOKEN);
+   const HRESULT hr = GetRegString(strKeyName, "Image", m_d.m_szImage, MAXTOKEN);
    if ((hr != S_OK) || !fromMouseClick)
       m_d.m_szImage[0] = 0;
 
@@ -569,7 +567,7 @@ void Rubber::AddHitEdge(Vector<HitObject> * pvho, std::set< std::pair<unsigned, 
 
 void Rubber::SetupHitObject(Vector<HitObject> * pvho, HitObject * obj)
 {
-   Material *mat = m_ptable->GetMaterial( m_d.m_szPhysicsMaterial );
+   const Material *const mat = m_ptable->GetMaterial( m_d.m_szPhysicsMaterial );
    if ( mat != NULL && !m_d.m_fOverwritePhysics )
    {
       obj->m_elasticity = mat->m_fElasticity;
@@ -1190,7 +1188,7 @@ STDMETHODIMP Rubber::get_Collidable(VARIANT_BOOL *pVal)
 
 STDMETHODIMP Rubber::put_Collidable(VARIANT_BOOL newVal)
 {
-   BOOL fNewVal = VBTOF(newVal);
+   const BOOL fNewVal = VBTOF(newVal);
    if (!g_pplayer)
    {
       STARTUNDO

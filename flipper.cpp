@@ -730,6 +730,7 @@ void Flipper::ExportMesh(FILE *f)
    Vertex3D_NoTex2 *flipper = new Vertex3D_NoTex2[flipperBaseVertices * 2];
    GenerateBaseMesh(flipper);
 
+   {
    Vertex3D_NoTex2 *buf = flipper;
    for (int i = 0; i < flipperBaseVertices; i++)
    {
@@ -744,6 +745,7 @@ void Flipper::ExportMesh(FILE *f)
       buf[i].nx = vert.x;
       buf[i].ny = vert.y;
       buf[i].nz = vert.z;
+   }
    }
 
    strcpy_s(subObjName, name);
