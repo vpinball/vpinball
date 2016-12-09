@@ -1104,7 +1104,7 @@ D3DTexture* RenderDevice::CreateSystemTexture(BaseTexture* surf)
    const int texheight = surf->height();
    const BaseTexture::Format basetexformat = surf->m_format;
 
-   const D3DFORMAT texformat = (m_compress_textures && ((texwidth & 3) == 0) && ((texheight & 3) == 0) && (basetexformat != BaseTexture::RGB_FP)) ? D3DFMT_DXT5 : ((basetexformat == BaseTexture::RGB_FP) ? D3DFMT_A32B32G32R32F : D3DFMT_A8R8G8B8);
+   const D3DFORMAT texformat = (m_compress_textures && ((texwidth & 3) == 0) && ((texheight & 3) == 0) && (texwidth > 256) && (texheight > 256) && (basetexformat != BaseTexture::RGB_FP)) ? D3DFMT_DXT5 : ((basetexformat == BaseTexture::RGB_FP) ? D3DFMT_A32B32G32R32F : D3DFMT_A8R8G8B8);
 
    IDirect3DTexture9 *sysTex;
    HRESULT hr;
@@ -1171,7 +1171,7 @@ D3DTexture* RenderDevice::UploadTexture(BaseTexture* surf, int *pTexWidth, int *
 
    sysTex = CreateSystemTexture(surf);
 
-   const D3DFORMAT texformat = (m_compress_textures && ((texwidth & 3) == 0) && ((texheight & 3) == 0) && (basetexformat != BaseTexture::RGB_FP)) ? D3DFMT_DXT5 : ((basetexformat == BaseTexture::RGB_FP) ? D3DFMT_A32B32G32R32F : D3DFMT_A8R8G8B8);
+   const D3DFORMAT texformat = (m_compress_textures && ((texwidth & 3) == 0) && ((texheight & 3) == 0) && (texwidth > 256) && (texheight > 256) && (basetexformat != BaseTexture::RGB_FP)) ? D3DFMT_DXT5 : ((basetexformat == BaseTexture::RGB_FP) ? D3DFMT_A32B32G32R32F : D3DFMT_A8R8G8B8);
 
    hr = m_pD3DDevice->CreateTexture(texwidth, texheight, (texformat != D3DFMT_DXT5 && m_autogen_mipmap) ? 0 : sysTex->GetLevelCount(), (texformat != D3DFMT_DXT5 && m_autogen_mipmap) ? D3DUSAGE_AUTOGENMIPMAP : 0, texformat, D3DPOOL_DEFAULT, &tex, NULL);
    if (FAILED(hr))
