@@ -763,7 +763,7 @@ public:
    vector<Material*> dbgChangedMaterials;
 
 
-   typedef struct DebugLightData
+   struct DebugLightData
    {
        char name[MAX_PATH];
        float falloff;

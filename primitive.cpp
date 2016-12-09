@@ -20,7 +20,7 @@ void Mesh::Clear()
 {
    m_vertices.clear();
    m_indices.clear();
-   for (unsigned int i = 0; i < m_animationFrames.size(); i++)
+   for (size_t i = 0; i < m_animationFrames.size(); i++)
       m_animationFrames[i].m_frameVerts.clear();
    m_animationFrames.clear();
    middlePoint.x = 0.0f;
@@ -54,14 +54,14 @@ bool Mesh::LoadAnimation(const char *fname, const bool flipTV, const bool conver
       } while (FindNextFile(h, &data));
    }
    m_animationFrames.resize(frameCounter);
-   for (unsigned int i = 0; i < allFiles.size(); i++)
+   for (size_t i = 0; i < allFiles.size(); i++)
    {
       sname = allFiles[i];
       if (WaveFrontObj_Load(sname.c_str(), flipTV, convertToLeftHanded))
       {
          std::vector<Vertex3D_NoTex2> verts;
          WaveFrontObj_GetVertices(verts);
-         for (unsigned int t = 0; t < verts.size(); t++)
+         for (size_t t = 0; t < verts.size(); t++)
          {
             VertData vd;
             vd.x = verts[t].x; vd.y = verts[t].y; vd.z = verts[t].z;
@@ -94,7 +94,7 @@ bool Mesh::LoadWavefrontObj(const char *fname, const bool flipTV, const bool con
       float maxY = FLT_MIN, minY = FLT_MAX;
       float maxZ = FLT_MIN, minZ = FLT_MAX;
 
-      for (unsigned int i = 0; i < m_vertices.size(); i++)
+      for (size_t i = 0; i < m_vertices.size(); i++)
       {
          if (m_vertices[i].x > maxX) maxX = m_vertices[i].x;
          if (m_vertices[i].x < minX) minX = m_vertices[i].x;
@@ -129,7 +129,7 @@ void Mesh::UploadToVB(VertexBuffer * vb, float frame)
 
    if (frame != -1)
    {
-      for (unsigned int i = 0; i < m_vertices.size(); i++)
+      for (size_t i = 0; i < m_vertices.size(); i++)
       {
          m_vertices[i].x = m_animationFrames[iFrame].m_frameVerts[i].x;
          m_vertices[i].y = m_animationFrames[iFrame].m_frameVerts[i].y;
@@ -1254,6 +1254,7 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcry
       LZWWriter lzwwriter(pstm, (int *)&m_mesh.m_vertices[0], sizeof(Vertex3D_NoTex2)*m_mesh.NumVertices(), 1, sizeof(Vertex3D_NoTex2)*m_mesh.NumVertices());
       lzwwriter.CompressBits(8 + 1);
       }*/
+      {
       const mz_ulong slen = (mz_ulong)(sizeof(Vertex3D_NoTex2)*m_mesh.NumVertices());
       mz_ulong clen = compressBound(slen);
       mz_uint8 * c = (mz_uint8 *)malloc(clen);
@@ -1262,6 +1263,7 @@ HRESULT Primitive::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcry
       bw.WriteInt(FID(M3CY), (int)clen);
       bw.WriteStruct(FID(M3CX), c, clen);
       free(c);
+      }
 #endif
 
       bw.WriteInt(FID(M3FN), (int)m_mesh.NumIndices());

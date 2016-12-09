@@ -544,17 +544,18 @@ void HitTarget::Render(Sur * const psur)
     const float len2 = len1*0.5f;
     Vertex2D tmp;
     {
-       const float sn = sinf(radangle);
-       const float cs = cosf(radangle);
-
        // Draw Arrow
        psur->SetLineColor(RGB(255, 0, 0), false, 1);
 
+       {
+       const float sn = sinf(radangle);
+       const float cs = cosf(radangle);
+
        tmp.x = m_d.m_vPosition.x + sn*len1;
        tmp.y = m_d.m_vPosition.y - cs*len1;
+       }
 
-       psur->Line(tmp.x, tmp.y,
-          m_d.m_vPosition.x, m_d.m_vPosition.y);
+       psur->Line(tmp.x, tmp.y, m_d.m_vPosition.x, m_d.m_vPosition.y);
        {
           const float arrowang = radangle + 0.6f;
           const float sn = sinf(arrowang);
@@ -562,15 +563,14 @@ void HitTarget::Render(Sur * const psur)
 
           psur->Line(tmp.x, tmp.y,  m_d.m_vPosition.x + sn*len2, m_d.m_vPosition.y - cs*len2);
        }
-      {
+       {
          const float arrowang = ANGTORAD(m_d.m_rotZ-180.0f) - 0.6f;
          const float sn = sinf(arrowang);
          const float cs = cosf(arrowang);
 
          psur->Line(tmp.x, tmp.y,
             m_d.m_vPosition.x + sn*len2, m_d.m_vPosition.y - cs*len2);
-      }
-
+       }
     }
    // draw center marker
 //    psur->SetLineColor(RGB(128, 128, 128), false, 1);

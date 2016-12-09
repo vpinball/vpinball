@@ -140,10 +140,10 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, Vector<ISelect> *pvsel)
       // If not, we can't edit their collective properties
       for (int i = 1; i < pvsel->Size(); i++)
       {
-         ISelect *pisel = pvsel->ElementAt(i);
-         if (pisel)
+         ISelect *pisel3 = pvsel->ElementAt(i);
+         if (pisel3)
          {
-            if (pisel->GetItemType() != maintype)
+            if (pisel3->GetItemType() != maintype)
             {
                PropertyPane *pproppane = new PropertyPane(IDD_PROPMULTI, NULL);
                m_vproppane.AddElement(pproppane);
@@ -159,9 +159,9 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, Vector<ISelect> *pvsel)
                   for (int k = 0; k < pcol->m_visel.Size(); k++)
                   {
                      ISelect *pisel2 = pcol->m_visel.ElementAt(k);
-                     if ((col == NULL) && (pisel2!=NULL) && (pisel2 == pisel))
+                     if ((col == NULL) && (pisel2!=NULL) && (pisel2 == pisel3))
                         col = pcol;
-                     else if ((col != NULL) && (col == pcol) && (pisel2 != NULL) && (pisel2 == pisel))
+                     else if ((col != NULL) && (col == pcol) && (pisel2 != NULL) && (pisel2 == pisel3))
                      {
                         // user selected one or more elements from a collection and some elements aren't in the collection
                         endLoop = true;
@@ -353,9 +353,9 @@ void SmartBrowser::CreateFromDispatch(HWND hwndParent, Vector<ISelect> *pvsel)
    {
       for (int i = 0; i < m_pvsel->Size(); i++)
       {
-         ISelect *pisel = m_pvsel->ElementAt(i);
-         if ( pisel )
-            pisel->UpdatePropertyPanes();
+         ISelect *pisel2 = m_pvsel->ElementAt(i);
+         if ( pisel2 )
+            pisel2->UpdatePropertyPanes();
       }
    }
 

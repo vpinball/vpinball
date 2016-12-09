@@ -13,7 +13,7 @@ private:
    void Reset() { m_children = NULL; m_hitoct = NULL; m_start = 0; m_items = 0; }
 
    void HitTestBall(Ball * const pball, CollisionEvent& coll) const;
-   void HitTestXRay(Ball * const pball, Vector<HitObject> * const pvhoHit, CollisionEvent& coll) const;
+   void HitTestXRay(const Ball * const pball, Vector<HitObject> * const pvhoHit, CollisionEvent& coll) const;
 
    void CreateNextLevel(const unsigned int level, unsigned int level_empty);
 

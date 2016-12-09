@@ -290,9 +290,9 @@ INT_PTR CALLBACK ImageManagerProc( HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARA
 
                 case IDC_IMPORT:
                 {
-                    char szFileName[10240];
-                    char szInitialDir[10240];
-                    char szT[10240];
+                    char szFileName[4096];
+                    char szInitialDir[4096];
+                    char szT[4096];
                     szFileName[0] = '\0';
 
                     OPENFILENAME ofn;
@@ -303,11 +303,11 @@ INT_PTR CALLBACK ImageManagerProc( HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARA
 
                     ofn.lpstrFilter = "Bitmap, JPEG, PNG, EXR, HDR Files (.bmp/.jpg/.png/.exr/.hdr)\0*.bmp;*.jpg;*.jpeg;*.png;*.exr;*.hdr\0";
                     ofn.lpstrFile = szFileName;
-                    ofn.nMaxFile = 10240;
+                    ofn.nMaxFile = 4096;
                     ofn.lpstrDefExt = "png";
                     ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY | OFN_EXPLORER | OFN_ALLOWMULTISELECT;
 
-                    HRESULT hr = GetRegString( "RecentDir", "ImageDir", szInitialDir, 1024 );
+                    HRESULT hr = GetRegString( "RecentDir", "ImageDir", szInitialDir, 4096);
                     ofn.lpstrInitialDir = (hr == S_OK) ? szInitialDir : NULL;
 
                     const int ret = GetOpenFileName( &ofn );

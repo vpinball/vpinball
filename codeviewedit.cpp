@@ -65,7 +65,7 @@ int UserData::FindUD(vector<UserData>* ListIn, string &strIn, vector<UserData>::
 	if (strIn.size() == 0 || (!ListIn) ) return -2;
 
 	Pos = -1;
-	int KeyResult = FindUDbyKey(ListIn, strIn, UDiterOut, Pos);
+	const int KeyResult = FindUDbyKey(ListIn, strIn, UDiterOut, Pos);
 	//If it's a top level construct it will have no parents and therefore have a unique key.
 	if (KeyResult == 0) return 0;
 
@@ -128,8 +128,8 @@ int UserData::FindClosestUD(vector<UserData>* ListIn, const int CurrentLine, con
 	int Delta = - (INT_MAX - 1);
 	while (true)
 	{
-		int NewLineNum = ListIn->at(iNewPos).LineNum;
-		int NewDelta = NewLineNum - CurrentLine;
+		const int NewLineNum = ListIn->at(iNewPos).LineNum;
+		const int NewDelta = NewLineNum - CurrentLine;
 		if (NewDelta >= Delta && NewLineNum <= CurrentLine)
 		{
 			if (lowerCase(ListIn->at(iNewPos).KeyName).compare(strSearchData) == 0)
@@ -302,7 +302,7 @@ size_t UserData::FindOrInsertUD(vector<UserData>* ListIn, UserData &udIn)
 	if (KeyFound == 0)
 	{
 		//Same name, different parents.
-		int ParentResult = udIn.UniqueParent.compare(iterFound->UniqueParent);
+		const int ParentResult = udIn.UniqueParent.compare(iterFound->UniqueParent);
 		if (ParentResult == -1)
 		{
 			ListIn->insert(iterFound, udIn);
@@ -412,7 +412,7 @@ CVPrefrence::CVPrefrence()
 		rgb = 0;
 		Highlight = false;
 		szRegName = nullptr;
-		SciKeywordID = 0;	
+		SciKeywordID = 0;
 }
 
 CVPrefrence* CVPrefrence::FillCVPreference( \
@@ -518,7 +518,7 @@ void CVPrefrence::SetPrefsToReg()
 
 void CVPrefrence::SetDefaultFont(const HWND &hwndDlg)
 {
-	LOGFONT* plfont = &this->LogFont;
+	LOGFONT* const plfont = &this->LogFont;
 	memset(&this->LogFont, 0, sizeof(LOGFONT) );
 	HFONT hFont = (HFONT) GetStockObject(ANSI_FIXED_FONT);
 	if (hFont == NULL)
@@ -531,7 +531,7 @@ void CVPrefrence::SetDefaultFont(const HWND &hwndDlg)
 int CVPrefrence::GetHeightFromPointSize(const HWND &hwndDlg)
 {
 	const HDC hdc = GetDC(hwndDlg);
-	int Height = -MulDiv(this->PointSize, GetDeviceCaps(hdc, LOGPIXELSY), 72);
+	const int Height = -MulDiv(this->PointSize, GetDeviceCaps(hdc, LOGPIXELSY), 72);
 	ReleaseDC(hwndDlg,hdc);
 	return Height;
 }

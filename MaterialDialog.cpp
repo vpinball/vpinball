@@ -20,7 +20,7 @@ extern SORTDATA SortData;
 extern int columnSortOrder[4];
 extern int CALLBACK MyCompProc( LPARAM lSortParam1, LPARAM lSortParam2, LPARAM lSortOption );
 
-void DisableAllMaterialDialogItems( HWND hwndDlg )
+void DisableAllMaterialDialogItems( const HWND hwndDlg )
 {
     EnableWindow( GetDlgItem( hwndDlg, IDC_DIFFUSE_CHECK ), FALSE );
     EnableWindow( GetDlgItem( hwndDlg, IDC_DIFFUSE_EDIT ), FALSE );
@@ -34,7 +34,7 @@ void DisableAllMaterialDialogItems( HWND hwndDlg )
     EnableWindow( GetDlgItem( hwndDlg, IDC_IMPORT ), FALSE );
 }
 
-void EnableAllMaterialDialogItems( HWND hwndDlg )
+void EnableAllMaterialDialogItems( const HWND hwndDlg )
 {
     EnableWindow( GetDlgItem( hwndDlg, IDC_DIFFUSE_CHECK ), TRUE );
     EnableWindow( GetDlgItem( hwndDlg, IDC_DIFFUSE_EDIT ), TRUE );
@@ -521,8 +521,8 @@ INT_PTR CALLBACK MaterialManagerProc( HWND hwndDlg, UINT uMsg, WPARAM wParam, LP
                         }
                         case IDC_IMPORT:
                         {
-                            char szFileName[10240];
-                            char szInitialDir[10240];
+                            char szFileName[4096];
+                            char szInitialDir[4096];
                             szFileName[0] = '\0';
 
                             OPENFILENAME ofn;
@@ -533,11 +533,11 @@ INT_PTR CALLBACK MaterialManagerProc( HWND hwndDlg, UINT uMsg, WPARAM wParam, LP
 
                             ofn.lpstrFilter = "Material Files (.mat)\0*.mat\0";
                             ofn.lpstrFile = szFileName;
-                            ofn.nMaxFile = 10240;
+                            ofn.nMaxFile = 4096;
                             ofn.lpstrDefExt = "mat";
                             ofn.Flags = OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY | OFN_EXPLORER;
 
-                            HRESULT hr = GetRegString( "RecentDir", "MaterialDir", szInitialDir, 1024 );
+                            HRESULT hr = GetRegString( "RecentDir", "MaterialDir", szInitialDir, 4096);
                             ofn.lpstrInitialDir = (hr == S_OK) ? szInitialDir : NULL;
 
                             const int ret = GetOpenFileName( &ofn );
@@ -614,8 +614,8 @@ INT_PTR CALLBACK MaterialManagerProc( HWND hwndDlg, UINT uMsg, WPARAM wParam, LP
                         {
                             if ( ListView_GetSelectedCount( GetDlgItem( hwndDlg, IDC_MATERIAL_LIST ) ) )	// if some items are selected???
                             {
-                                char szFileName[10240];
-                                char szInitialDir[2096];
+                                char szFileName[4096];
+                                char szInitialDir[4096];
                                 int sel = ListView_GetNextItem( GetDlgItem( hwndDlg, IDC_MATERIAL_LIST ), -1, LVNI_SELECTED );
                                 int selCount = ListView_GetSelectedCount( GetDlgItem( hwndDlg, IDC_MATERIAL_LIST ) );
                                 if ( sel == -1 )
@@ -630,10 +630,10 @@ INT_PTR CALLBACK MaterialManagerProc( HWND hwndDlg, UINT uMsg, WPARAM wParam, LP
                                 ofn.lpstrFile = szFileName;
                                 //TEXT
                                 ofn.lpstrFilter = "Material Files (.mat)\0*.mat\0";
-                                ofn.nMaxFile = 2096;
+                                ofn.nMaxFile = 4096;
                                 ofn.lpstrDefExt = "mat";
 
-                                const HRESULT hr = GetRegString( "RecentDir", "MaterialDir", szInitialDir, 2096 );
+                                const HRESULT hr = GetRegString( "RecentDir", "MaterialDir", szInitialDir, 4096);
 
                                 if ( hr == S_OK )ofn.lpstrInitialDir = szInitialDir;
                                 else ofn.lpstrInitialDir = NULL;

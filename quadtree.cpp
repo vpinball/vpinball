@@ -258,7 +258,7 @@ void HitQuadtree::HitTestBallSse(Ball * const pball, CollisionEvent& coll) const
    const __m128 rsqr = _mm_set1_ps(pball->m_rcHitRadiusSqr);
 
    const bool traversal_order = (rand_mt_01() < 0.5f); // swaps test order in leafs randomly
-   const size_t d = traversal_order ? 1 : -1;
+   const size_t dt = traversal_order ? 1 : -1;
 
    do
    {
@@ -278,7 +278,7 @@ void HitQuadtree::HitTestBallSse(Ball * const pball, CollisionEvent& coll) const
             const size_t size = (current->m_vho.size() + 3) / 4;
             const size_t start = traversal_order ? 0 : (size - 1);
             const size_t end = traversal_order ? size : -1;
-            for (size_t i = start; i != end; i += d)
+            for (size_t i = start; i != end; i += dt)
             {
 #ifdef _DEBUGPHYSICS
                g_pplayer->c_tested++; //!! +=4? or is this more fair?

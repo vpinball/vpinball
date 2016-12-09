@@ -127,6 +127,10 @@ EnumAssignKeys touchkeymap[8] = {
    eRightFlipperKey,
    ePlungerKey };
 
+#if !(_WIN32_WINNT >= 0x0500)
+ #define KEYEVENTF_SCANCODE    0x0008
+#endif /* _WIN32_WINNT >= 0x0500 */
+
 //
 
 static unsigned int material_flips = 0;
@@ -660,11 +664,15 @@ void Player::Shutdown()
 
    m_changed_vht.clear();
 
+#if(_WIN32_WINNT >= 0x0500)
    if (m_fFullScreen) // revert special tweaks of exclusive fullscreen app
    {
        ::LockSetForegroundWindow(LSFW_UNLOCK);
        ::ShowCursor(TRUE);
    }
+#else
+   #pragma message ( "Warning: Missing LockSetForegroundWindow()" )
+#endif
 }
 
 void Player::InitFPS()
@@ -1257,7 +1265,7 @@ void Player::DebugPrint(int x, int y, LPCSTR text, int stringLen, bool shadow)
     {
         HWND editHwnd = GetDlgItem( m_hwndDebugInfo, IDC_DEBUG_INFO_EDIT );
         char buf[512];
-        sprintf( buf, "%s\r\n", text );
+        sprintf_s( buf, "%s\r\n", text );
         int textLength = Edit_GetTextLength( editHwnd );
         Edit_SetSel( editHwnd, textLength, textLength );
         Edit_ReplaceSel( editHwnd, buf );
@@ -2234,11 +2242,15 @@ void Player::InitWindow()
    CalcBallAspectRatio();
    m_hwnd = ::CreateWindowEx(windowflagsex, "VPPlayer", "Visual Pinball Player", windowflags, x, y, m_width, m_height, NULL, NULL, g_hinst, 0);
 
+#if(_WIN32_WINNT >= 0x0500)
    if (m_fFullScreen) // blocks processes from taking focus away from our exclusive fullscreen app and disables mouse cursor
    {
       ::LockSetForegroundWindow(LSFW_LOCK);
       ::ShowCursor(FALSE);
    }
+#else
+   #pragma message ( "Warning: Missing LockSetForegroundWindow()" )
+#endif
 
    // Disable visual feedback for touch, this saves one frame of latency on touchdisplays
    if (!SetWindowFeedbackSetting)
@@ -3744,7 +3756,7 @@ void Player::UpdateHUD()
 		DebugPrint(10, 135, szFoo, len);
 		len = sprintf_s(szFoo, "Parameter changes: %u (%u Material ID changes)", m_pin3d.m_pd3dDevice->Perf_GetNumParameterChanges(), material_flips);
 		DebugPrint(10, 155, szFoo, len);
-		len = sprintf_s(szFoo, "Objects: %u Transparent, %u Solid", m_vHitTrans.size(), m_vHitNonTrans.size());
+		len = sprintf_s(szFoo, "Objects: %u Transparent, %u Solid", (unsigned int)m_vHitTrans.size(), (unsigned int)m_vHitNonTrans.size());
 		DebugPrint(10, 175, szFoo, len);
 
 #ifdef _DEBUGPHYSICS

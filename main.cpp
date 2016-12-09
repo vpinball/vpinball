@@ -307,7 +307,7 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
       if (SUCCEEDED(LoadTypeLib(wszFileName, &ptl)))
       {
          // first try to register system-wide (if running as admin)
-         HRESULT hr = RegisterTypeLib(ptl, wszFileName, NULL);
+         hr = RegisterTypeLib(ptl, wszFileName, NULL);
          if (!SUCCEEDED(hr))
          {
             // if failed, register only for current user

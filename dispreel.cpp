@@ -288,16 +288,16 @@ void DispReel::PostRenderStatic(RenderDevice* pd3dDevice)
    pd3dDevice->DMDShader->SetTexture("Texture0", pin);
    
    pd3dDevice->DMDShader->Begin(0);
-   for (int i = 0; i < m_d.m_reelcount; ++i) //!! optimize by doing all in one
+   for (int r = 0; r < m_d.m_reelcount; ++r) //!! optimize by doing all in one
    {
-       const float posx = ReelInfo[i].position.left;
-       const float posy = ReelInfo[i].position.top;
-       const float width = ReelInfo[i].position.right;
-       const float height = ReelInfo[i].position.bottom;
-       const float u0 = m_digitTexCoords[ReelInfo[i].currentValue].u_min;
-       const float v0 = m_digitTexCoords[ReelInfo[i].currentValue].v_min;
-       const float u1 = m_digitTexCoords[ReelInfo[i].currentValue].u_max;
-       const float v1 = m_digitTexCoords[ReelInfo[i].currentValue].v_max;       
+       const float posx = ReelInfo[r].position.left;
+       const float posy = ReelInfo[r].position.top;
+       const float width = ReelInfo[r].position.right;
+       const float height = ReelInfo[r].position.bottom;
+       const float u0 = m_digitTexCoords[ReelInfo[r].currentValue].u_min;
+       const float v0 = m_digitTexCoords[ReelInfo[r].currentValue].v_min;
+       const float u1 = m_digitTexCoords[ReelInfo[r].currentValue].u_max;
+       const float v1 = m_digitTexCoords[ReelInfo[r].currentValue].v_max;
 
        float Verts[4 * 5] =
        {
