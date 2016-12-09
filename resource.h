@@ -818,6 +818,7 @@
 #define IDD_PROPHITTARGET_PHYSICS       622
 #define IDD_DBGLIGHTDIALOG              623
 #define IDD_DBGMATERIALDIALOG           624
+#define IDD_DEBUGINFO                   625
 #define IDC_CVP_BUT_CANCEL              701
 #define IDC_CVP_BUT_OK                  702
 #define IDC_CVP_BUT_COL_COMPS           703
@@ -890,6 +891,8 @@
 #define IDC_DBG_MATERIALS_BUTTON        765
 #define IDC_DBG_BULB_MODULATE_VS_ADD    766
 #define IDC_DBG_TRANSMISSION_SCALE      767
+#define IDC_EDIT1                       769
+#define IDC_DEBUG_INFO_EDIT             769
 #define DISPID_Gate_Height1             1142
 #define DISPID_Image                    1500
 #define DISPID_Image2                   1501
@@ -1034,9 +1037,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        624
+#define _APS_NEXT_RESOURCE_VALUE        626
 #define _APS_NEXT_COMMAND_VALUE         4012
-#define _APS_NEXT_CONTROL_VALUE         768
+#define _APS_NEXT_CONTROL_VALUE         770
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif
