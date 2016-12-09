@@ -17,7 +17,7 @@ Changelog:
 - fix TimerEnabled and TimerInterval calls for the flasher element
 - add Version, VersionMajor/Minor/Revision for the table element
 10.1:
-- add DefaultBulbIntensityScale to the ball element
+- add DefaultBulbIntensityScale to the table element
 - fix TimerEnabled and TimerInterval calls for the rubber element
 - change RubberThickness,RubberHeight,RubberWidth to take floats instead of just integers for the rubber element
 - add HitHeight property to the rubber element
@@ -319,14 +319,14 @@ Variables
 *StartAngle(float)
 *EndAngle(float)
 *FlipperRadiusMin(float)
-*EOSTorque(float) - This value/factor effects the way how long a flipper arm stays in the up/raised position even when you released the flipper button. 
+*EOSTorque(float) - This value/factor affects the way how long a flipper arm stays in the up/raised position even when you released the flipper button.
                     On real pinballs it will take some time until the flipper solenoid loses it's power until the flipper drops down or is forced to move by a hitting ball.
                     The default value is 0.75. For fine tuning you can change that but not higher than 1 or lower than 0.5 or the result will be totally unrealistic.
 *EOSTorqueAngle(float) - This configures the range where the EOS Torque will be applied
 CurrentAngle(float) - only readable
 
 Friction(float)
-RampUp(float)
+RampUp(float) - Coil ramp up speed. Set to 0 for fastest flipper response.
 Elasticity(float)
 ElasticityFalloff(float)
 Return(float)
