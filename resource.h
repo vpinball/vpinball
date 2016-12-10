@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Visual C++ generated include file.
-// Used by vpinball_eng.rc
+// Von Microsoft Visual C++ generierte Includedatei.
+// Verwendet durch vpinball_eng.rc
 //
 #define DISPID_Textbox_BackColor        1
 #define DISPID_Textbox_FontColor        2
@@ -818,7 +818,6 @@
 #define IDD_PROPHITTARGET_PHYSICS       622
 #define IDD_DBGLIGHTDIALOG              623
 #define IDD_DBGMATERIALDIALOG           624
-#define IDD_DEBUGINFO                   625
 #define IDC_CVP_BUT_CANCEL              701
 #define IDC_CVP_BUT_OK                  702
 #define IDC_CVP_BUT_COL_COMPS           703
@@ -892,7 +891,6 @@
 #define IDC_DBG_BULB_MODULATE_VS_ADD    766
 #define IDC_DBG_TRANSMISSION_SCALE      767
 #define IDC_EDIT1                       769
-#define IDC_DEBUG_INFO_EDIT             769
 #define DISPID_Gate_Height1             1142
 #define DISPID_Image                    1500
 #define DISPID_Image2                   1501
