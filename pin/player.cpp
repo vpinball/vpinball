@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include <algorithm>
 #include <time.h>
-#include <windowsx.h>
 #include "../meshes/ballMesh.h"
 #include "BallShader.h"
 
@@ -200,7 +199,6 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
    m_curPlunger = JOYRANGEMN - 1;
 
    m_current_renderstage = 0;
-   m_hwndDebugInfo=NULL;
    HRESULT hr;
 
    int vsync;
@@ -503,32 +501,6 @@ Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
 
 }
 
-INT_PTR CALLBACK DebugInfoProc( HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam )
-{
-    switch(uMsg)
-    {
-        case WM_DESTROY:
-        {
-            RECT rect;
-            GetWindowRect( hwndDlg, &rect );
-            SetRegValueInt( "Player", "DebugInfoWindowX", rect.left );
-            SetRegValueInt( "Player", "DebugInfoWindowY", rect.top );
-            break;
-        }
-        case WM_CLOSE:
-        {
-            DestroyWindow( hwndDlg );
-            g_pplayer->m_hwndDebugInfo = NULL;
-            break;
-        }
-        default:
-            return FALSE;
-    }
-    return TRUE;
-}
-
-
-
 Player::~Player()
 {
     if (m_pFont)
@@ -560,11 +532,6 @@ void Player::Shutdown()
    if(m_toogle_DTFS)
        m_ptable->m_BG_current_set ^= 1;
 
-   if(m_hwndDebugInfo)
-   {
-       DestroyWindow( m_hwndDebugInfo );
-       m_hwndDebugInfo=NULL;
-   }
    m_pininput.UnInit();
 
    SAFE_RELEASE(ballVertexBuffer);
@@ -705,22 +672,6 @@ void Player::ToggleFPS()
    if (m_fShowFPS)
        m_staticOnly = (m_staticOnly + 1) % 3;
    m_fShowFPS = !m_fShowFPS;
-   if(m_fShowFPS)
-   {
-       if(m_hwndDebugInfo)
-           ShowWindow( m_hwndDebugInfo, SW_SHOW );
-       else
-       {
-           m_hwndDebugInfo = CreateDialogParam( g_hinst, MAKEINTRESOURCE( IDD_DEBUGINFO ), m_hwnd, DebugInfoProc, NULL );
-           ShowWindow( m_hwndDebugInfo, SW_SHOW );
-       }
-       SetWindowPos( m_hwndDebugInfo, NULL, m_debugInfoWinX, m_debugInfoWinY, 500, 400, 0 );
-       SetForegroundWindow( m_hwnd );
-   }
-   else if(m_hwndDebugInfo)
-   {
-       ShowWindow( m_hwndDebugInfo, SW_HIDE );
-   }
 }
 
 void Player::RecomputePauseState()
@@ -1261,31 +1212,19 @@ void Player::CreateDebugFont()
 
 void Player::DebugPrint(int x, int y, LPCSTR text, int stringLen, bool shadow)
 {
-    if(m_hwndDebugInfo && m_fShowFPS)
-    {
-        HWND editHwnd = GetDlgItem( m_hwndDebugInfo, IDC_DEBUG_INFO_EDIT );
-        char buf[512];
-        sprintf_s( buf, "%s\r\n", text );
-        int textLength = Edit_GetTextLength( editHwnd );
-        Edit_SetSel( editHwnd, textLength, textLength );
-        Edit_ReplaceSel( editHwnd, buf );
-    }
-    else
-    {
-        RECT fontRect;
-        if(m_pFont)
-        {
-            if(shadow)
-                for(unsigned int i = 0; i < 4; ++i)
-                {
-                    SetRect( &fontRect, x + ((i == 0) ? -1 : (i == 1) ? 1 : 0), y + ((i == 2) ? -1 : (i == 3) ? 1 : 0), 0, 0 );
-                    m_pFont->DrawText( NULL, text, -1, &fontRect, DT_NOCLIP, 0xFF000000 );
-                }
+   RECT fontRect;
+   if(m_pFont)
+   {
+      if(shadow)
+            for(unsigned int i = 0; i < 4; ++i)
+            {
+               SetRect( &fontRect, x + ((i == 0) ? -1 : (i == 1) ? 1 : 0), y + ((i == 2) ? -1 : (i == 3) ? 1 : 0), 0, 0 );
+               m_pFont->DrawText( NULL, text, -1, &fontRect, DT_NOCLIP, 0xFF000000 );
+            }
 
-            SetRect( &fontRect, x, y, 0, 0 );
-            m_pFont->DrawText( NULL, text, -1, &fontRect, DT_NOCLIP, 0xFFFFFFFF );
-        }
-    }
+      SetRect( &fontRect, x, y, 0, 0 );
+      m_pFont->DrawText( NULL, text, -1, &fontRect, DT_NOCLIP, 0xFFFFFFFF );
+   }
 }
 
 HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWND hwndProgressName)
@@ -1313,17 +1252,6 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
    else
        dynamicDayNight = (DN == 1);
 
-
-   hr = GetRegInt( "Player", "DebugInfoWindowX", &DN );
-   if(hr != S_OK)
-       m_debugInfoWinX=0;
-   else
-       m_debugInfoWinX=DN;
-   hr = GetRegInt( "Player", "DebugInfoWindowY", &DN );
-   if(hr != S_OK)
-       m_debugInfoWinY=0;
-   else
-       m_debugInfoWinY=DN;
 
    if(dynamicDayNight && !m_ptable->m_overwriteGlobalDayNight)
    {
@@ -3692,7 +3620,6 @@ void Player::UpdateHUD()
 		// TextOut(hdcNull, 10, 30, szFoo, len);
 
 		// Draw the framerate.
-        Edit_SetText( GetDlgItem( m_hwndDebugInfo, IDC_DEBUG_INFO_EDIT ), "" );
 		const float fpsAvg = (m_fpsCount == 0) ? 0.0f : m_fpsAvg / m_fpsCount;
 		int len2 = sprintf_s(szFoo, "FPS: %.1f (%.1f avg)  Display %s Objects (%uk/%uk Triangles)  DayNight %d%%", m_fps+0.01f, fpsAvg+0.01f, m_staticOnly == 1 ? "only static" : "all", (m_pin3d.m_pd3dDevice->m_stats_drawn_triangles + 999) / 1000, (stats_drawn_static_triangles + m_pin3d.m_pd3dDevice->m_stats_drawn_triangles + 999) / 1000, (int)(m_globalEmissionScale*100.f));
 		DebugPrint(10, 10, szFoo, len2);

@@ -14,7 +14,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (United States) resources
+// Englisch (USA) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
@@ -2187,15 +2187,6 @@ BEGIN
     EDITTEXT        IDC_DBG_LIGHT_FADE_DOWN_EDIT,90,63,34,14,ES_AUTOHSCROLL
 END
 
-IDD_DEBUGINFO DIALOGEX 0, 0, 347, 214
-STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
-EXSTYLE WS_EX_TOPMOST | WS_EX_TOOLWINDOW
-CAPTION "Debug Info"
-FONT 8, "MS Sans Serif", 0, 0, 0x1
-BEGIN
-    EDITTEXT        IDC_DEBUG_INFO_EDIT,0,0,346,214,ES_MULTILINE | ES_AUTOHSCROLL
-END
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -2527,11 +2518,6 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 131
         BOTTOMMARGIN, 196
-    END
-
-    IDD_DEBUGINFO, DIALOG
-    BEGIN
-        RIGHTMARGIN, 346
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -3126,7 +3112,7 @@ BEGIN
     IDS_STEP                "Step"
 END
 
-#endif    // English (United States) resources
+#endif    // Englisch (USA) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
