@@ -780,6 +780,9 @@ void PinInput::FireKeyEvent(const int dispid, const int key)
          break;
       }
 
+   if ((mkey >= DIK_F1) || (mkey <= DIK_F10))
+      val = PININ_ANY;
+
    U32 tmp = m_PreviousKeys;
 
    // Check if the mkey is down.
