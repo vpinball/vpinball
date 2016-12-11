@@ -825,7 +825,7 @@ static void FlushGPUCommandBuffer(IDirect3DDevice9* pd3dDevice)
 bool RenderDevice::SetMaximumPreRenderedFrames(const DWORD frames)
 {
 #ifdef USE_D3D9EX
-	if (m_pD3DEx && frames > 0)
+	if (m_pD3DEx && frames > 0 && frames <= 20) // frames can range from 1 to 20, 0 resets to default DX
 	{
 		CHECKD3D(m_pD3DDeviceEx->SetMaximumFrameLatency(frames));
 		return true;
