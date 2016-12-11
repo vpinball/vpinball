@@ -304,9 +304,11 @@ XAudPlayer::XAudPlayer()
    if (!bass_init)
    {
       int DSidx = -1;
-      GetRegInt("Player", "SoundDeviceBG", &DSidx);
-      if (DSidx != -1)
+      const HRESULT hr = GetRegInt("Player", "SoundDeviceBG", &DSidx);
+      if (hr == S_OK && DSidx != -1)
          DSidx++; // as 0 is nosound //!! mapping is otherwise the same or not?!
+      else
+         DSidx = -1;
       if (!BASS_Init(DSidx, 44100, 0, g_pvp->m_hwnd, NULL))
       {
          char bla[128];
