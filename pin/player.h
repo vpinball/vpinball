@@ -57,10 +57,12 @@ enum EnumAssignKeys
 class FrameQueueLimiter
 {
 public:
-   void Init(RenderDevice *pd3dDevice, int numFrames)
+   void Init(RenderDevice * const pd3dDevice, const int numFrames)
    {
       int EnableLegacyMaximumPreRenderedFrames = 0;
-      GetRegInt("Player", "EnableLegacyMaximumPreRenderedFrames", &EnableLegacyMaximumPreRenderedFrames);
+      const HRESULT hr = GetRegInt("Player", "EnableLegacyMaximumPreRenderedFrames", &EnableLegacyMaximumPreRenderedFrames);
+      if (hr != S_OK)
+          EnableLegacyMaximumPreRenderedFrames = 0;
 
       // if available, use the official RenderDevice mechanism
       if (!EnableLegacyMaximumPreRenderedFrames && pd3dDevice->SetMaximumPreRenderedFrames(numFrames))
@@ -83,7 +85,7 @@ public:
       }
    }
 
-   void Execute(RenderDevice *pd3dDevice)
+   void Execute(RenderDevice * const pd3dDevice)
    {
       if (m_buffers.empty())
          return;
