@@ -287,8 +287,8 @@ BOOL CALLBACK EnumObjectsCallback(const DIDEVICEOBJECTINSTANCE* pdidoi,
 
 #ifdef _DEBUG
    if (pdidoi->guidType == GUID_XAxis)			{ ++nAxis; }
-   else if (pdidoi->guidType == GUID_YAxis)	{ ++nAxis; }
-   else if (pdidoi->guidType == GUID_ZAxis)	{ ++nAxis; }
+   else if (pdidoi->guidType == GUID_YAxis)		{ ++nAxis; }
+   else if (pdidoi->guidType == GUID_ZAxis)		{ ++nAxis; }
    else if (pdidoi->guidType == GUID_RxAxis)	{ ++nAxis; }
    else if (pdidoi->guidType == GUID_RyAxis)	{ ++nAxis; }
    else if (pdidoi->guidType == GUID_RzAxis)	{ ++nAxis; }
@@ -800,8 +800,8 @@ void PinInput::FireKeyEvent(const int dispid, const int key)
    // Save the keys so we can detect changes.
    m_PreviousKeys = tmp;
 
-   // Only trigger each key once per key process
-   if (!(m_ChangedKeys & val) && ( mkey<DIK_F1) && (mkey>DIK_F10))
+   // Only trigger each VP-key once per full key process
+   if (!(m_ChangedKeys & val) && (val != 0)) // not all keys are coded into val, but just wired through to FireKeyEvent()
       return;
 
    if (g_pplayer->cameraMode)
