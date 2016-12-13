@@ -1207,7 +1207,6 @@ void Player::CreateDebugFont()
         ShowError("unable to create debug font!");
         m_pFont = NULL;
     }
-
 }
 
 void Player::DebugPrint(int x, int y, LPCSTR text, int stringLen, bool shadow)
@@ -2347,7 +2346,6 @@ void Player::CalcBallAspectRatio()
       }
       break;
    }
-
 }
 
 void Player::NudgeX(const int x, const int j)
@@ -2945,16 +2943,16 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
    } // end physics loop
 }
 
-void Player::UpdatePerFrame()
+void Player::UpdatePhysics()
 {
    const U64 initial_time_usec = usec();
 
    if (m_fNoTimeCorrect) // After debugging script
    {
       // Shift whole game foward in time
-      m_StartTime_usec += initial_time_usec - m_curPhysicsFrameTime;
+      m_StartTime_usec       += initial_time_usec - m_curPhysicsFrameTime;
       m_nextPhysicsFrameTime += initial_time_usec - m_curPhysicsFrameTime;
-      m_curPhysicsFrameTime = initial_time_usec; // 0 time frame
+      m_curPhysicsFrameTime   = initial_time_usec; // 0 time frame
       m_fNoTimeCorrect = false;
    }
 
@@ -2965,7 +2963,7 @@ void Player::UpdatePerFrame()
    if (m_fDebugWindowActive || m_fUserDebugPaused)
    {
       // Shift whole game foward in time
-      m_StartTime_usec += initial_time_usec - m_curPhysicsFrameTime;
+      m_StartTime_usec       += initial_time_usec - m_curPhysicsFrameTime;
       m_nextPhysicsFrameTime += initial_time_usec - m_curPhysicsFrameTime;
       if (m_fStep)
       {
@@ -2974,9 +2972,7 @@ void Player::UpdatePerFrame()
          m_fStep = false;
       }
       else
-      {
          m_curPhysicsFrameTime = initial_time_usec; // 0 time frame
-      }
    }
 #endif
 #endif
@@ -2988,9 +2984,7 @@ void Player::UpdatePerFrame()
       m_fStep = false;
    }
    else
-   {
       initial_time_usec = m_curPhysicsFrameTime;
-   }
 #endif
 
    m_phys_iterations = 0;
@@ -3006,15 +3000,13 @@ void Player::UpdatePerFrame()
       m_cframes++;
       if ((m_time_msec - m_lastfpstime) > 1000)
       {
-         m_fps = m_cframes * 1000.0f / (m_time_msec - m_lastfpstime);
+         m_fps = (float)((double)m_cframes * 1000.0 / (m_time_msec - m_lastfpstime));
          m_lastfpstime = m_time_msec;
          m_fpsAvg += m_fps;
          m_fpsCount++;
          m_cframes = 0;
       }
    }
-
-   m_phys_period = 0;
 #endif
 
 #ifdef LOG
@@ -3036,15 +3028,11 @@ void Player::UpdatePerFrame()
    fprintf(m_flog, "Frame Time %.20f %u %u %u %u\n", frametime, initial_time_usec>>32, initial_time_usec, m_nextPhysicsFrameTime>>32, m_nextPhysicsFrameTime);
    fprintf(m_flog, "End Frame\n");
 #endif
-}
 
-void Player::UpdatePhysics()
-{
-   const U64 initial_time_usec = usec();
-   U64 cur_time_usec;
+   U64 cur_time_usec = initial_time_usec;
    bool first_cycle = true;
 
-   while (m_curPhysicsFrameTime < (cur_time_usec=usec())) // loop here until current (real) time matches the physics (simulated) time
+   while (m_curPhysicsFrameTime < cur_time_usec) // loop here until current (real) time matches the physics (simulated) time
    {
       // Get time in milliseconds for timers
       m_time_msec = (U32)((m_curPhysicsFrameTime - m_StartTime_usec) / 1000);
@@ -3062,14 +3050,14 @@ void Player::UpdatePhysics()
       //if (physics_to_graphic_diff_time < physics_diff_time)          // is graphic frame time next???
       //{
       //      PhysicsSimulateCycle(physics_to_graphic_diff_time);      // advance physics to this time
-      //      m_curPhysicsFrameTime = initial_time_usec;                               // now current to the wall clock
-      //      break;  //this is the common exit from the loop                  // exit skipping accelerate
+      //      m_curPhysicsFrameTime = initial_time_usec;               // now current to the wall clock
+      //      break;  //this is the common exit from the loop          // exit skipping accelerate
       //}                     // some rare cases will exit from while()
 
       // hung in the physics loop over 200 milliseconds or the number of physics iterations to catch up on is high (i.e. very low/unplayable FPS)
       if ((cur_time_usec - initial_time_usec > 200000) || (m_phys_iterations > ((m_ptable->m_PhysicsMaxLoops == 0) || (m_ptable->m_PhysicsMaxLoops == 0xFFFFFFFFu) ? 0xFFFFFFFFu : (m_ptable->m_PhysicsMaxLoops*(10000 / PHYSICS_STEPTIME))/*2*/)))
       {                                                             // can not keep up to real time
-         m_curPhysicsFrameTime = cur_time_usec;                     // skip physics forward ... slip-cycles -> 'slowed' down physics
+         m_curPhysicsFrameTime  = cur_time_usec;                    // skip physics forward ... slip-cycles -> 'slowed' down physics
          m_nextPhysicsFrameTime = cur_time_usec + PHYSICS_STEPTIME;
          break;                                                     // go draw frame
       }
@@ -3126,24 +3114,21 @@ void Player::UpdatePhysics()
       NudgeUpdate();       // physics_diff_time is the balance of time to move from the graphic frame position to the next
       mechPlungerUpdate(); // integral physics frame. So the previous graphics frame was (1.0 - physics_diff_time) before 
       // this integral physics frame. Accelerations and inputs are always physics frame aligned
+
+      // table movement is modeled as a mass-spring-damper system
+      //   u'' = -k u - c u'
+      // with a spring constant k and a damping coefficient c
+      const Vertex3Ds force = -m_nudgeSpring * m_tableDisplacement - m_nudgeDamping * m_tableVel;
+      m_tableVel += (float)PHYS_FACTOR * force;
+      m_tableDisplacement += (float)PHYS_FACTOR * m_tableVel;
+      if (m_NudgeShake > 0.0f)
       {
-         // table movement is modeled as a mass-spring-damper system
-         //   u'' = -k u - c u'
-         // with a spring constant k and a damping coefficient c
-         const Vertex3Ds force = -m_nudgeSpring * m_tableDisplacement - m_nudgeDamping * m_tableVel;
-         m_tableVel += (float)PHYS_FACTOR * force;
-         m_tableDisplacement += (float)PHYS_FACTOR * m_tableVel;
-
-         if (m_NudgeShake > 0.0f)
-         {
-            // NB: in table coordinates, +Y points down, but in screen coordinates, it points up,
-            // so we have to flip the y component
-            SetScreenOffset(m_NudgeShake * m_tableDisplacement.x, -m_NudgeShake * m_tableDisplacement.y);
-         }
-
-         m_tableVelDelta = m_tableVel - m_tableVelOld;
-         m_tableVelOld = m_tableVel;
+         // NB: in table coordinates, +Y points down, but in screen coordinates, it points up,
+         // so we have to flip the y component
+         SetScreenOffset(m_NudgeShake * m_tableDisplacement.x, -m_NudgeShake * m_tableDisplacement.y);
       }
+      m_tableVelDelta = m_tableVel - m_tableVelOld;
+      m_tableVelOld = m_tableVel;
 
       // Apply our filter to the nudge data
       if (m_pininput.m_enable_nudge_filter)
@@ -3172,10 +3157,12 @@ void Player::UpdatePhysics()
       m_nextPhysicsFrameTime += PHYSICS_STEPTIME;     // advance physics position
 
       first_cycle = false;
+
+      cur_time_usec = usec();
    } // end while (m_curPhysicsFrameTime < cur_time_usec)
 
 #ifdef FPS
-   m_phys_period += (U32)(usec() - initial_time_usec);
+   m_phys_period = (U32)(usec() - initial_time_usec);
 #endif
 }
 
@@ -4216,8 +4203,6 @@ void Player::Render()
    c_deepTested = 0;
 #endif
 
-   UpdatePerFrame();
-
    m_LastKnownGoodCounter++;
 
    m_pin3d.m_pd3dDevice->m_stats_drawn_triangles = 0;
@@ -4228,9 +4213,7 @@ void Player::Render()
 
    // Physics/Timer updates, done at the last moment, especially to handle key input (VP<->VPM rountrip) and animation triggers
    //if ( !cameraMode )
-   {
       UpdatePhysics();
-   }
 
    m_overall_frames++;
 
