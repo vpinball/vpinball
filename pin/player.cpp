@@ -148,7 +148,6 @@ LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 INT_PTR CALLBACK PauseProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 extern INT_PTR CALLBACK DebuggerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-INT_PTR CALLBACK DebugInfoProc( HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam );
 
 Player::Player(bool _cameraMode) : cameraMode(_cameraMode)
 {
@@ -1138,7 +1137,7 @@ void Player::InitBallShader()
 
    //ballShader->SetBool("decalMode", m_ptable->m_BallDecalMode);
    const float rotation = fmodf(m_ptable->m_BG_rotation[m_ptable->m_BG_current_set], 360.f);
-   m_fCabinetMode = rotation != 0.f;
+   m_fCabinetMode = (rotation != 0.f);
 
    if (m_fCabinetMode && !m_ptable->m_BallDecalMode)
       strcpy_s(m_ballShaderTechnique, MAX_PATH, "RenderBall_CabMode");
@@ -1168,7 +1167,7 @@ void Player::InitBallShader()
    ballShader->SetTexture("Texture2", m_pin3d.m_pd3dDevice->m_texMan.LoadTexture(m_pin3d.m_envRadianceTexture));
 
    assert(ballIndexBuffer == NULL);
-   const bool lowDetailBall = m_ptable->GetDetailLevel() < 10;
+   const bool lowDetailBall = (m_ptable->GetDetailLevel() < 10);
    ballIndexBuffer = m_pin3d.m_pd3dDevice->CreateAndFillIndexBuffer(lowDetailBall ? basicBallLoNumFaces : basicBallMidNumFaces, lowDetailBall ? basicBallLoIndices : basicBallMidIndices);
 
    // VB for normal ball
@@ -1355,7 +1354,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
       * ptable->m_globalDifficulty;
 
    m_gravity.x = 0;
-   m_gravity.y = sinf(ANGTORAD(slope))*(ptable->m_fOverridePhysics ? ptable->m_fOverrideGravityConstant : ptable->m_Gravity);
+   m_gravity.y =  sinf(ANGTORAD(slope))*(ptable->m_fOverridePhysics ? ptable->m_fOverrideGravityConstant : ptable->m_Gravity);
    m_gravity.z = -cosf(ANGTORAD(slope))*(ptable->m_fOverridePhysics ? ptable->m_fOverrideGravityConstant : ptable->m_Gravity);
 
    m_NudgeX = 0;
@@ -1369,34 +1368,33 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
    SendMessage(hwndProgress, PBM_SETPOS, 30, 0);
    SetWindowText(hwndProgressName, "Initializing Physics...");
 
-   {
-      // Initialize new nudging.
-      m_tableVel.SetZero();
-      m_tableDisplacement.SetZero();
-      m_tableVelOld.SetZero();
-      m_tableVelDelta.SetZero();
+   // Initialize new nudging.
+   m_tableVel.SetZero();
+   m_tableDisplacement.SetZero();
+   m_tableVelOld.SetZero();
+   m_tableVelDelta.SetZero();
 
-      // Table movement (displacement u) is modeled as a mass-spring-damper system
-      //   u'' = -k u - c u'
-      // with a spring constant k and a damping coefficient c.
-      // See http://en.wikipedia.org/wiki/Damping#Linear_damping
+   // Table movement (displacement u) is modeled as a mass-spring-damper system
+   //   u'' = -k u - c u'
+   // with a spring constant k and a damping coefficient c.
+   // See http://en.wikipedia.org/wiki/Damping#Linear_damping
 
-      const float nudgeTime = m_ptable->m_nudgeTime;      // T
-      const float dampingRatio = 0.5f;                    // zeta
+   const float nudgeTime = m_ptable->m_nudgeTime;      // T
+   const float dampingRatio = 0.5f;                    // zeta
 
-      // time for one half period (one swing and swing back):
-      //   T = pi / omega_d,
-      // where
-      //   omega_d = omega_0 * sqrt(1 - zeta^2)       (damped frequency)
-      //   omega_0 = sqrt(k)                          (undamped frequency)
-      // Solving for the spring constant k, we get
-      m_nudgeSpring = (float)(M_PI*M_PI) / (nudgeTime*nudgeTime * (1.0f - dampingRatio*dampingRatio));
+   // time for one half period (one swing and swing back):
+   //   T = pi / omega_d,
+   // where
+   //   omega_d = omega_0 * sqrt(1 - zeta^2)       (damped frequency)
+   //   omega_0 = sqrt(k)                          (undamped frequency)
+   // Solving for the spring constant k, we get
+   m_nudgeSpring = (float)(M_PI*M_PI) / (nudgeTime*nudgeTime * (1.0f - dampingRatio*dampingRatio));
 
-      // The formula for the damping ratio is
-      //   zeta = c / (2 sqrt(k)).
-      // Solving for the damping coefficient c, we get
-      m_nudgeDamping = dampingRatio * 2.0f * sqrtf(m_nudgeSpring);
-   }
+   // The formula for the damping ratio is
+   //   zeta = c / (2 sqrt(k)).
+   // Solving for the damping coefficient c, we get
+   m_nudgeDamping = dampingRatio * 2.0f * sqrtf(m_nudgeSpring);
+
 
    // Need to set timecur here, for init functions that set timers
    m_time_msec = 0;
@@ -1582,6 +1580,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
       m_ballDebugPoints->unlock();
    }
 #endif
+
    assert(m_ballTrailVertexBuffer == NULL);
    m_pin3d.m_pd3dDevice->CreateVertexBuffer((MAX_BALL_TRAIL_POS-2)*2+4, USAGE_DYNAMIC, MY_D3DFVF_NOTEX2_VERTEX, &m_ballTrailVertexBuffer);
 
@@ -1836,7 +1835,7 @@ void Player::InitStatic(HWND hwndProgress)
    TRACE_FUNCTION();
 
    // Start the frame.
-   for (unsigned i = 0; i < m_vhitables.size(); ++i)
+   for (size_t i = 0; i < m_vhitables.size(); ++i)
    {
       Hitable * const ph = m_vhitables[i];
       ph->RenderSetup(m_pin3d.m_pd3dDevice);
@@ -1850,7 +1849,7 @@ void Player::InitStatic(HWND hwndProgress)
    m_pin3d.DrawBackground();
 
    // perform render setup and give elements a chance to render before the playfield
-   for (unsigned i = 0; i < m_vhitables.size(); ++i)
+   for (size_t i = 0; i < m_vhitables.size(); ++i)
    {
       Hitable * const ph = m_vhitables[i];
       ph->PreRenderStatic(m_pin3d.m_pd3dDevice);
@@ -2743,7 +2742,7 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
       hittime = dtime;        // begin time search from now ...  until delta ends
 
       // find earliest time where a flipper collides with its stop
-      for (unsigned i = 0; i < m_vFlippers.size(); ++i)
+      for (size_t i = 0; i < m_vFlippers.size(); ++i)
       {
          const float fliphit = m_vFlippers[i]->GetHitTime();
          if (fliphit > 0.f && fliphit < hittime) //!! >= 0.f causes infinite loop
@@ -2753,7 +2752,7 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
       m_fRecordContacts = true;
       m_contacts.clear();
 
-      for (unsigned i = 0; i < m_vball.size(); i++)
+      for (size_t i = 0; i < m_vball.size(); i++)
       {
          Ball * const pball = m_vball[i];
 
@@ -2819,12 +2818,12 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
 
       if (hittime > STATICTIME) StaticCnts = STATICCNTS; // allow more zeros next round
 
-      for (unsigned i = 0; i < m_vmover.size(); i++)
+      for (size_t i = 0; i < m_vmover.size(); i++)
          m_vmover[i]->UpdateDisplacements(hittime); // step 2: move the objects about according to velocities (spinner, gate, flipper, plunger, ball)
 
       // find balls that need to be collided and script'ed (generally there will be one, but more are possible)
 
-      for (unsigned i = 0; i < m_vball.size(); i++) // use m_vball.size(), in case script deletes a ball
+      for (size_t i = 0; i < m_vball.size(); i++) // use m_vball.size(), in case script deletes a ball
       {
          Ball * const pball = m_vball[i];
 
@@ -2901,7 +2900,7 @@ void Player::PhysicsSimulateCycle(float dtime) // move physics forward to this t
 
 #ifdef C_BALL_SPIN_HACK
       // hacky killing of ball spin on resting balls (very low and very high spinning)
-      for (unsigned i = 0; i < m_vball.size(); i++)
+      for (size_t i = 0; i < m_vball.size(); i++)
       {
          Ball * const pball = m_vball[i];
 
@@ -2956,8 +2955,6 @@ void Player::UpdatePhysics()
       m_fNoTimeCorrect = false;
    }
 
-   m_script_period = 0;
-
 #ifdef STEPPING
 #ifndef EVENTIME
    if (m_fDebugWindowActive || m_fUserDebugPaused)
@@ -2986,8 +2983,6 @@ void Player::UpdatePhysics()
    else
       initial_time_usec = m_curPhysicsFrameTime;
 #endif
-
-   m_phys_iterations = 0;
 
 #ifdef FPS
    //if (m_fShowFPS)
@@ -3028,6 +3023,9 @@ void Player::UpdatePhysics()
    fprintf(m_flog, "Frame Time %.20f %u %u %u %u\n", frametime, initial_time_usec>>32, initial_time_usec, m_nextPhysicsFrameTime>>32, m_nextPhysicsFrameTime);
    fprintf(m_flog, "End Frame\n");
 #endif
+
+   m_script_period = 0;
+   m_phys_iterations = 0;
 
    U64 cur_time_usec = initial_time_usec;
    bool first_cycle = true;
@@ -3119,7 +3117,7 @@ void Player::UpdatePhysics()
       //   u'' = -k u - c u'
       // with a spring constant k and a damping coefficient c
       const Vertex3Ds force = -m_nudgeSpring * m_tableDisplacement - m_nudgeDamping * m_tableVel;
-      m_tableVel += (float)PHYS_FACTOR * force;
+      m_tableVel          += (float)PHYS_FACTOR * force;
       m_tableDisplacement += (float)PHYS_FACTOR * m_tableVel;
       if (m_NudgeShake > 0.0f)
       {
@@ -3134,14 +3132,14 @@ void Player::UpdatePhysics()
       if (m_pininput.m_enable_nudge_filter)
          FilterNudge();
 
-      for (unsigned i = 0; i < m_vmover.size(); i++)
+      for (size_t i = 0; i < m_vmover.size(); i++)
          m_vmover[i]->UpdateVelocities();      // always on integral physics frame boundary (spinner, gate, flipper, plunger, ball)
 
       //primary physics loop
       PhysicsSimulateCycle(physics_diff_time); // main simulator call
 
       //ball trail, keep old pos of balls
-      for (unsigned i = 0; i < m_vball.size(); i++)
+      for (size_t i = 0; i < m_vball.size(); i++)
       {
          Ball * const pball = m_vball[i];
          pball->m_oldpos[pball->m_ringcounter_oldpos / (10000 / PHYSICS_STEPTIME)] = pball->m_pos;
@@ -3291,7 +3289,7 @@ void Player::DrawBulbLightBuffer()
       m_pin3d.m_pd3dDevice->SetRenderState(RenderDevice::ZENABLE, FALSE); // disable all z-tests as zbuffer is in different resolution
 
       // Draw bulb lights with transmission scale only
-      for (unsigned int i = 0; i < m_vHitTrans.size(); ++i)
+      for (size_t i = 0; i < m_vHitTrans.size(); ++i)
          if (m_vHitTrans[i]->RenderToLightBuffer())
             m_vHitTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
 
@@ -3432,7 +3430,7 @@ void Player::RenderDynamics()
    }
 
    // Draw non-transparent objects.
-   for (unsigned int i = 0; i < m_vHitNonTrans.size(); ++i)
+   for (size_t i = 0; i < m_vHitNonTrans.size(); ++i)
       m_vHitNonTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
 
    DrawBalls();
@@ -3442,7 +3440,7 @@ void Player::RenderDynamics()
    DrawBulbLightBuffer();
 
    // Draw transparent objects.
-   for (unsigned int i = 0; i < m_vHitTrans.size(); ++i)
+   for (size_t i = 0; i < m_vHitTrans.size(); ++i)
       m_vHitTrans[i]->PostRenderStatic(m_pin3d.m_pd3dDevice);
 
    m_pin3d.m_pd3dDevice->basicShader->SetTexture("Texture3", (D3DTexture*)NULL); // need to reset the bulb light texture, as its used as render target for bloom again
@@ -3490,11 +3488,11 @@ void Player::Bloom()
       return;
    }
 
-   float shiftedVerts[4 * 5] =
+   const float shiftedVerts[4 * 5] =
    {
-      1.0f, 1.0f, 0.0f, 1.0f + (float)(1.0 / (double)m_width), 0.0f + (float)(1.0 / (double)m_height),
-      -1.0f, 1.0f, 0.0f, 0.0f + (float)(1.0 / (double)m_width), 0.0f + (float)(1.0 / (double)m_height),
-      1.0f, -1.0f, 0.0f, 1.0f + (float)(1.0 / (double)m_width), 1.0f + (float)(1.0 / (double)m_height),
+       1.0f,  1.0f, 0.0f, 1.0f + (float)(1.0 / (double)m_width), 0.0f + (float)(1.0 / (double)m_height),
+      -1.0f,  1.0f, 0.0f, 0.0f + (float)(1.0 / (double)m_width), 0.0f + (float)(1.0 / (double)m_height),
+       1.0f, -1.0f, 0.0f, 1.0f + (float)(1.0 / (double)m_width), 1.0f + (float)(1.0 / (double)m_height),
       -1.0f, -1.0f, 0.0f, 0.0f + (float)(1.0 / (double)m_width), 1.0f + (float)(1.0 / (double)m_height)
    };
 
@@ -3608,7 +3606,7 @@ void Player::UpdateHUD()
 
 		// Draw the framerate.
 		const float fpsAvg = (m_fpsCount == 0) ? 0.0f : m_fpsAvg / m_fpsCount;
-		int len2 = sprintf_s(szFoo, "FPS: %.1f (%.1f avg)  Display %s Objects (%uk/%uk Triangles)  DayNight %d%%", m_fps+0.01f, fpsAvg+0.01f, m_staticOnly == 1 ? "only static" : "all", (m_pin3d.m_pd3dDevice->m_stats_drawn_triangles + 999) / 1000, (stats_drawn_static_triangles + m_pin3d.m_pd3dDevice->m_stats_drawn_triangles + 999) / 1000, (int)(m_globalEmissionScale*100.f));
+		const int len2 = sprintf_s(szFoo, "FPS: %.1f (%.1f avg)  Display %s Objects (%uk/%uk Triangles)  DayNight %d%%", m_fps+0.01f, fpsAvg+0.01f, m_staticOnly == 1 ? "only static" : "all", (m_pin3d.m_pd3dDevice->m_stats_drawn_triangles + 999) / 1000, (stats_drawn_static_triangles + m_pin3d.m_pd3dDevice->m_stats_drawn_triangles + 999) / 1000, (int)(m_globalEmissionScale*100.f));
 		DebugPrint(10, 10, szFoo, len2);
 
 		const U32 period = m_lastFrameDuration;
@@ -3705,7 +3703,7 @@ void Player::UpdateHUD()
 	if (m_fFullScreen && m_fCloseDown) // currently cannot use dialog boxes in fullscreen, so necessary
 	{
 		char szFoo[256];
-		int len2 = sprintf_s(szFoo, "Press 'Enter' to continue or Press 'Q' to exit");
+		const int len2 = sprintf_s(szFoo, "Press 'Enter' to continue or Press 'Q' to exit");
 		DebugPrint(m_width/2-210, m_height/2-5, szFoo, len2);
 	}
 
@@ -3786,11 +3784,11 @@ void Player::FlipVideoBuffersNormal(const bool vsync)
    if (stereo)
       m_pin3d.m_pd3dDevice->CopyDepth(m_pin3d.m_pdds3DZBuffer, m_pin3d.m_pddsZBuffer); // do not put inside BeginScene/EndScene Block
 
-   float shiftedVerts[4 * 5] =
+   const float shiftedVerts[4 * 5] =
    {
-      1.0f + m_ScreenOffset.x, 1.0f + m_ScreenOffset.y, 0.0f, 1.0f + (float)(1.0 / (double)m_width), 0.0f + (float)(1.0 / (double)m_height),
-      -1.0f + m_ScreenOffset.x, 1.0f + m_ScreenOffset.y, 0.0f, 0.0f + (float)(1.0 / (double)m_width), 0.0f + (float)(1.0 / (double)m_height),
-      1.0f + m_ScreenOffset.x, -1.0f + m_ScreenOffset.y, 0.0f, 1.0f + (float)(1.0 / (double)m_width), 1.0f + (float)(1.0 / (double)m_height),
+       1.0f + m_ScreenOffset.x,  1.0f + m_ScreenOffset.y, 0.0f, 1.0f + (float)(1.0 / (double)m_width), 0.0f + (float)(1.0 / (double)m_height),
+      -1.0f + m_ScreenOffset.x,  1.0f + m_ScreenOffset.y, 0.0f, 0.0f + (float)(1.0 / (double)m_width), 0.0f + (float)(1.0 / (double)m_height),
+       1.0f + m_ScreenOffset.x, -1.0f + m_ScreenOffset.y, 0.0f, 1.0f + (float)(1.0 / (double)m_width), 1.0f + (float)(1.0 / (double)m_height),
       -1.0f + m_ScreenOffset.x, -1.0f + m_ScreenOffset.y, 0.0f, 0.0f + (float)(1.0 / (double)m_width), 1.0f + (float)(1.0 / (double)m_height)
    };
 
@@ -3926,11 +3924,11 @@ void Player::FlipVideoBuffersAO(const bool vsync)
       SAFE_RELEASE_NO_RCC(tmpSurface); //!!
    }
 
-   float shiftedVerts[4 * 5] =
+   const float shiftedVerts[4 * 5] =
    {
-      1.0f + m_ScreenOffset.x, 1.0f + m_ScreenOffset.y, 0.0f, 1.0f + (float)(1.0 / (double)m_width), 0.0f + (float)(1.0 / (double)m_height),
-      -1.0f + m_ScreenOffset.x, 1.0f + m_ScreenOffset.y, 0.0f, 0.0f + (float)(1.0 / (double)m_width), 0.0f + (float)(1.0 / (double)m_height),
-      1.0f + m_ScreenOffset.x, -1.0f + m_ScreenOffset.y, 0.0f, 1.0f + (float)(1.0 / (double)m_width), 1.0f + (float)(1.0 / (double)m_height),
+       1.0f + m_ScreenOffset.x,  1.0f + m_ScreenOffset.y, 0.0f, 1.0f + (float)(1.0 / (double)m_width), 0.0f + (float)(1.0 / (double)m_height),
+      -1.0f + m_ScreenOffset.x,  1.0f + m_ScreenOffset.y, 0.0f, 0.0f + (float)(1.0 / (double)m_width), 0.0f + (float)(1.0 / (double)m_height),
+       1.0f + m_ScreenOffset.x, -1.0f + m_ScreenOffset.y, 0.0f, 1.0f + (float)(1.0 / (double)m_width), 1.0f + (float)(1.0 / (double)m_height),
       -1.0f + m_ScreenOffset.x, -1.0f + m_ScreenOffset.y, 0.0f, 0.0f + (float)(1.0 / (double)m_width), 1.0f + (float)(1.0 / (double)m_height)
    };
 
@@ -3976,7 +3974,7 @@ void Player::SetScreenOffset(float x, float y)
 {
    const float rotation = fmodf(m_ptable->m_BG_rotation[m_ptable->m_BG_current_set], 360.f);
    m_ScreenOffset.x = (rotation != 0.0f ? -y : x);
-   m_ScreenOffset.y = (rotation != 0.0f ? x : y);
+   m_ScreenOffset.y = (rotation != 0.0f ?  x : y);
 }
 
 void Player::UpdateBackdropSettings(const bool up)
@@ -4162,6 +4160,7 @@ void Player::UpdateCameraModeDisplay()
 }
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 void Player::Render()
 {
    U64 timeforframe = usec();
@@ -4179,9 +4178,7 @@ void Player::Render()
    }
 
    if (m_sleeptime > 0)
-   {
       Sleep(m_sleeptime - 1);
-   }
 
    m_pininput.ProcessKeys(m_ptable/*, sim_msec*/, -(int)(timeforframe / 1000)); // trigger key events mainly for VPM<->VP rountrip
 
@@ -4237,14 +4234,12 @@ void Player::Render()
 
    bool vsync = false;
    if (localvsync > 0)
-   {
       if (localvsync != 1) // do nothing for 1, as already enforced during device set
          if (m_fps > localvsync*ADAPT_VSYNC_FACTOR)
             vsync = true;
-   }
 
    if (cameraMode)
-       UpdateCameraModeDisplay();
+      UpdateCameraModeDisplay();
 
    const bool useAO = ((m_dynamicAO && (m_ptable->m_useAO == -1)) || (m_ptable->m_useAO == 1)) && m_pin3d.m_pd3dDevice->DepthBufferReadBackAvailable() && (m_ptable->m_AOScale > 0.f);
    if (useAO && !m_disableAO)
@@ -4357,9 +4352,7 @@ void Player::Render()
          m_fNoTimeCorrect = true; // Skip the time we were in the dialog
          UnpauseMusic();
          if (option == ID_QUIT)
-         {
             SendMessage(m_hwnd, WM_CLOSE, 0, 0); // This line returns to the editor after exiting a table
-         }
       }
       else if(m_fShowDebugger && !VPinball::m_open_minimized)
       {
@@ -4370,9 +4363,8 @@ void Player::Render()
                ShowWindow(g_pplayer->m_hwndDebugger, SW_SHOW);
           }
           else
-          {
-              g_pplayer->m_hwndDebugger = CreateDialogParam( g_hinst, MAKEINTRESOURCE( IDD_DEBUGGER ), m_hwnd, DebuggerProc, NULL );
-          }
+             g_pplayer->m_hwndDebugger = CreateDialogParam( g_hinst, MAKEINTRESOURCE( IDD_DEBUGGER ), m_hwnd, DebuggerProc, NULL );
+
           EndDialog( g_pvp->m_hwnd, ID_DEBUGWINDOW );
       }
    }
@@ -4885,16 +4877,10 @@ void Player::DoDebugObjectMenu(int x, int y)
    //const float xhit = v3d.x - (v3d.z*slopex);
 
    Vector<HitObject> vhoHit;
-   Vector<IFireEvents> vpfe;
 
    m_hitoctree_dynamic.HitTestXRay(&ballT, &vhoHit, ballT.m_coll);
    m_hitoctree.HitTestXRay(&ballT, &vhoHit, ballT.m_coll);
    m_debugoctree.HitTestXRay(&ballT, &vhoHit, ballT.m_coll);
-
-   std::vector<HMENU> vsubmenu;
-   HMENU hmenu = CreatePopupMenu();
-
-   std::vector< std::vector<int>* > vvdispid;
 
    if (vhoHit.Size() == 0)
    {
@@ -4904,6 +4890,11 @@ void Player::DoDebugObjectMenu(int x, int y)
 
    PauseMusic();
 
+   const HMENU hmenu = CreatePopupMenu();
+
+   Vector<IFireEvents> vpfe;
+   std::vector<HMENU> vsubmenu;
+   std::vector< std::vector<int>* > vvdispid;
    for (int i = 0; i < vhoHit.Size(); i++)
    {
       HitObject * const pho = vhoHit.ElementAt(i);
@@ -4918,13 +4909,13 @@ void Player::DoDebugObjectMenu(int x, int y)
             0,
             0
          };
-         HRESULT hr = pho->m_pfedebug->GetDispatch()->Invoke(
+         const HRESULT hr = pho->m_pfedebug->GetDispatch()->Invoke(
             0x80010000, IID_NULL,
             LOCALE_USER_DEFAULT,
             DISPATCH_PROPERTYGET,
             &dispparams, &var, NULL, NULL);
 
-         HMENU submenu = CreatePopupMenu();
+         const HMENU submenu = CreatePopupMenu();
          vsubmenu.push_back(submenu);
          if (hr == S_OK)
          {
@@ -4990,9 +4981,7 @@ void Player::DoDebugObjectMenu(int x, int y)
 
    DestroyMenu(hmenu);
    for (unsigned i = 0; i < vsubmenu.size(); i++)
-   {
       DestroyMenu(vsubmenu[i]);
-   }
 
    for (unsigned i = 0; i < vvdispid.size(); i++)
       delete vvdispid[i];
@@ -5014,15 +5003,13 @@ LRESULT CALLBACK PlayerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPara
    case WM_DESTROY:
    {
       if (g_pplayer->m_pxap)
-      {
          g_pplayer->m_pxap->Pause();
-      }
+
       // signal the script that the game is now exit to allow any cleanup
       g_pplayer->m_ptable->FireVoidEvent(DISPID_GameEvents_Exit);
       if (g_pplayer->m_fDetectScriptHang)
-      {
          g_pvp->PostWorkToWorkerThread(HANG_SNOOP_STOP, NULL);
-      }
+
       PinTable * const playedTable = g_pplayer->m_ptable;
 
       g_pplayer->m_ptable->StopPlaying();
