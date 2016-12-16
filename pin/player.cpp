@@ -3027,10 +3027,9 @@ void Player::UpdatePhysics()
    m_script_period = 0;
    m_phys_iterations = 0;
 
-   U64 cur_time_usec = initial_time_usec;
    bool first_cycle = true;
 
-   while (m_curPhysicsFrameTime < cur_time_usec) // loop here until current (real) time matches the physics (simulated) time
+   while (m_curPhysicsFrameTime < initial_time_usec) // loop here until current (real) time matches the physics (simulated) time
    {
       // Get time in milliseconds for timers
       m_time_msec = (U32)((m_curPhysicsFrameTime - m_StartTime_usec) / 1000);
@@ -3052,11 +3051,12 @@ void Player::UpdatePhysics()
       //      break;  //this is the common exit from the loop          // exit skipping accelerate
       //}                     // some rare cases will exit from while()
 
+      const U64 cur_time_usec = usec(); //!! one could also do this directly in the while loop condition instead (so that the while loop will really match with the currentcurrent time), but that leads to some stuttering on some heavy frames
       // hung in the physics loop over 200 milliseconds or the number of physics iterations to catch up on is high (i.e. very low/unplayable FPS)
       if ((cur_time_usec - initial_time_usec > 200000) || (m_phys_iterations > ((m_ptable->m_PhysicsMaxLoops == 0) || (m_ptable->m_PhysicsMaxLoops == 0xFFFFFFFFu) ? 0xFFFFFFFFu : (m_ptable->m_PhysicsMaxLoops*(10000 / PHYSICS_STEPTIME))/*2*/)))
       {                                                             // can not keep up to real time
-         m_curPhysicsFrameTime  = cur_time_usec;                    // skip physics forward ... slip-cycles -> 'slowed' down physics
-         m_nextPhysicsFrameTime = cur_time_usec + PHYSICS_STEPTIME;
+         m_curPhysicsFrameTime  = initial_time_usec;                // skip physics forward ... slip-cycles -> 'slowed' down physics
+         m_nextPhysicsFrameTime = initial_time_usec + PHYSICS_STEPTIME;
          break;                                                     // go draw frame
       }
 
@@ -3155,9 +3155,7 @@ void Player::UpdatePhysics()
       m_nextPhysicsFrameTime += PHYSICS_STEPTIME;     // advance physics position
 
       first_cycle = false;
-
-      cur_time_usec = usec();
-   } // end while (m_curPhysicsFrameTime < cur_time_usec)
+   } // end while (m_curPhysicsFrameTime < initial_time_usec)
 
 #ifdef FPS
    m_phys_period = (U32)(usec() - initial_time_usec);
