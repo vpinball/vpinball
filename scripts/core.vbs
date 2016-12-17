@@ -7,10 +7,9 @@ Const VPinMAMEDriverVer = 3.52
 ' - Change default interval of the PinMAME timer to -1 (frame-sync'ed) if VP10.2 (or newer) is running
 ' - Add modulated solenoids to support ROM controlled fading flashers:
 '   To use, add "UseVPMModSol=True" to the table script
-' - Use SolModCallback instead of SolCallback to receive level changes as input.  It will be a level from 0 to 255,
-'   continue to use SolCallback if you only care about boolean values, it only fires if level changes from on to off
-' - Note: vpmTableInit MUST BE CALLED or VPM will not switch modes (if you are only getting 1 from SolModCallback then that may be the issue)
-' - TODO: When a VPM is released that implements this change, add version check!
+'   Also use SolModCallback instead of SolCallback to receive level changes as input: It will be a level from 0 to 255.
+'   Just continue to use SolCallback if you only care about boolean values though, as it will only fire if level changes from on to off.
+'   Note: vpmInit MUST BE CALLED or VPM will not switch modes (if you are only getting 0 and 1 from SolModCallback then that may be the issue)
 '
 ' New in 3.51 (Update by mfuegemann & Arngrim & Toxie)
 ' - gts1.vbs dip fix
@@ -2523,7 +2522,7 @@ Private vpmVPVer : vpmVPVer = vpmCheckVPVer()
 '--------------------
 ' Initialise timers
 '--------------------
-Sub PulseTimer_Init  : vpmTimer.InitTimer Me, False : End Sub
+Sub PulseTimer_Init   : vpmTimer.InitTimer Me, False : End Sub
 Sub PinMAMETimer_Init : Me.Interval = PinMAMEInterval : Me.Enabled = True : End Sub
 
 '---------------------------------------------
@@ -2533,12 +2532,16 @@ Public Sub vpmInit(aTable)
 	Set vpmTable = aTable
 	If vpmVPVer >= 60 Then
 	  On Error Resume Next
-		If Not IsObject(GetRef(aTable.name & "_Paused")) Or Err Then Err.Clear : vpmBuildEvent aTable, "Paused",   "Controller.Pause = True"
+		If Not IsObject(GetRef(aTable.name & "_Paused")) Or Err Then Err.Clear : vpmBuildEvent aTable, "Paused", "Controller.Pause = True"
 		If Not IsObject(GetRef(aTable.name & "_UnPaused")) Or Err Then Err.Clear : vpmBuildEvent aTable, "UnPaused", "Controller.Pause = False"
 		If Not IsObject(GetRef(aTable.name & "_Exit")) Or Err Then Err.Clear : vpmBuildEvent aTable, "Exit", "Controller.Pause = False:Controller.Stop"
 	End If
 	if UseModSol Then
-		Controller.SolMask(2)=1
+		If Controller.Version >= 02080000 Then
+		  Controller.SolMask(2)=1
+		Else
+		  MsgBox "Modulated Flashers/Solenoids not supported with this Visual PinMAME version (2.8 or newer is required)"
+		End If
 	End If
 End Sub
 
@@ -2690,7 +2693,7 @@ Private Sub vpmToggleObj(aObj, aEnabled)
 		Case "Kicker", "Trigger", "Timer"  aObj.Enabled   = aEnabled
 		Case "Gate"                        aObj.Open      = aEnabled
 		Case "Integer"                     mSwcopy = aObj : Controller.Switch(mSwcopy) = aEnabled
-		Case Else MsgBox "vpmToggleObj: Unhadled Object " & TypeName(aObj)
+		Case Else MsgBox "vpmToggleObj: Unhandled Object " & TypeName(aObj)
 	End Select
 End Sub
 
@@ -2780,7 +2783,7 @@ End Function
 Sub vpmAddBall
 Dim Answer
 	If IsObject(vpmTrough) Then
-			Answer=MsgBox("Click YES to Add A ball to the Trough, No Removes a ball from the Trough",vbYesNoCancel + vbQuestion)
+			Answer=MsgBox("Click YES to Add a ball to the Trough, NO Removes a ball from the Trough",vbYesNoCancel + vbQuestion)
 		If Answer = vbYes Then vpmTrough.AddBall 0
 		If Answer = vbNo Then vpmTrough.Balls=vpmTrough.Balls-1
 	End If
@@ -3089,9 +3092,9 @@ Sub VPMVol
 	If VolPMNew = "" Then Exit Sub
 	If VolPMNew <=0 and VolPMNew >= -32 Then
 		Controller.Games(controller.GameName).Settings.Value("volume")= round(VolPMNew)
-		msgbox "The VPinMame Global Volume is now set to " & round(VolPMNew) & "db." & VbNewLine & VbNewLine & "Please reset VPinMame (F3) to apply."
+		msgbox "The Visual PinMAME Global Volume is now set to " & round(VolPMNew) & "db." & VbNewLine & VbNewLine & "Please reset Visual PinMAME (F3) to apply."
 	Else
-		msgbox "Entered value is out of range. Entry must be in the range of negative 32 to 0." & VbNewLine & VbNewLine & "VPinMame Global Volume will remain set at " & VolPM & "."
+		msgbox "Entered value is out of range. Entry must be in the range of negative 32 to 0." & VbNewLine & VbNewLine & "Visual PinMAME Global Volume will remain set at " & VolPM & "."
 	End If
 End Sub
 
