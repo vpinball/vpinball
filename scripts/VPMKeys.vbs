@@ -1,6 +1,68 @@
 'Last Updated in VBS v3.13
 ' - Fixed Labeling Errors
 
+'Key codes that can be used in the mappings below:
+'0          11      L CONTROL       29
+'1          2       LEFT ARROW      203
+'2          3       L SHIFT         42
+'3          4       L WIN           219
+'4          5       M               50
+'5          6       MINUS           12
+'6          7       MULTIPLY        55
+'7          8       N               49
+'8          9       NUM LOCK        69
+'9          10      NUMPAD 0        82
+'A          30      NUMPAD 1        79
+'ADD        78      NUMPAD 2        80
+'APOSTROPHE 40      NUMPAD 3        81
+'AT         145     NUMPAD 4        75
+'AX         150     NUMPAD 5        76
+'B          48      NUMPAD 6        77
+'BACK       14      NUMPAD 7        71
+'BACKSLASH  43      NUMPAD 8        72
+'BACKSPACE  14      NUMPAD 9        73
+'C          46      NUMPAD COMMA    179
+'CALCULATOR 161     NUMPAD ENTER    156
+'CAPS LOCK  58      NUMPAD EQUALS   141
+'COLON      146     NUMPAD MINUS    74
+'COMMA      51      NUMPAD PERIOD   83
+'D          32      NUMPAD PLUS     78
+'DECIMAL    83      NUMPAD SLASH    181
+'DELETE     211     NUMPAD ASTERISK 55
+'DIVIDE     181     O               24
+'DOWN       208     P               25
+'DOWN ARROW 208     PAUSE           197
+'E          18      PERIOD          52
+'END        207     PAGE DOWN       209
+'EQUALS     13      PAGE UP         201
+'ESCAPE     1       Q               16
+'F          33      R               19
+'F1         59      R ALT           184
+'F2         60      R BRACKET       27
+'F3         61      R CTRL          157
+'F4         62      RETURN          28
+'F5         63      RIGHT           205
+'F6         64      RIGHT ARROW     205
+'F7         65      R MENU          184
+'F8         66      R SHIFT         54
+'F9         67      R WIN           220
+'F10        68      S               31
+'F11        87      SCROLL          70
+'F12        88      SEMICOLO        39
+'F13        100     SLASH           53
+'F14        101     SPACE           57
+'F15        102     STOP            149
+'G          34      T               20
+'H          35      TAB             15
+'HOME       199     U               22
+'I          23      UNDERLINE       147
+'INSERT     210     UP ARROW        200
+'J          36      V               47
+'K          37      W               17
+'L          38      X               45
+'L ALT      56      Y               21
+'L BRACKET  26      Z               44
+
 Option Explicit
 Dim toggleKeyCoinDoor,inverseKeyCoinDoor
 Dim keyShowOpts,keyShowKeys,keyReset,keyFrame,keyDoubleSize,keyShowDips,keyAddBall
