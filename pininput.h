@@ -59,15 +59,7 @@ public:
 
    void GetInputDeviceData(/*const U32 curr_time_msec*/);
 
-#if 0
-   U32 Pressed ( const U32 mask ) const;
-   U32 Released( const U32 mask ) const;
-   U32 Held    ( const U32 mask ) const;
-   U32 Changed ( const U32 mask ) const;
-#endif
-   U32 Down(const U32 mask) const; //!! only still used by mixer
-
-#ifdef VP10
+#ifdef USE_DINPUT8
    LPDIRECTINPUT8       m_pDI;
    LPDIRECTINPUTDEVICE8 m_pJoystick[PININ_JOYMXCNT];
 #else
@@ -105,7 +97,7 @@ private:
 
    //int InputControlRun;
 
-#ifdef VP10
+#ifdef USE_DINPUT8
 #ifdef USE_DINPUT_FOR_KEYBOARD
    LPDIRECTINPUTDEVICE8 m_pKeyboard;
 #endif
@@ -116,9 +108,6 @@ private:
 #endif
    LPDIRECTINPUTDEVICE m_pMouse;
 #endif
-
-   U32 m_PreviousKeys;	// Masks of PININ_* inputs used by ultracade - AMH
-   U32 m_ChangedKeys;
 
    U32 m_firedautostart;
 
@@ -150,35 +139,6 @@ private:
    int m_deadz;
    bool m_enableMouseInPlayer;
 };
-
-// - Added by AMH --modified by Koadic (not sure if necessary, but doesn't hurt anything)
-#define PININ_LEFT           0x00000001
-#define PININ_RIGHT          0x00000002
-#define PININ_LEFT2          0x00000004
-#define PININ_RIGHT2         0x00000008
-#define PININ_PLUNGE         0x00000010
-#define PININ_START          0x00000020
-#define PININ_BUYIN          0x00000040
-#define PININ_COIN1          0x00000080
-#define PININ_COIN2		     0x00000100
-#define PININ_COIN3          0x00000200
-#define PININ_COIN4          0x00000400
-#define PININ_SERVICECANCEL  0x00000800
-#define PININ_SERVICE1       0x00001000
-#define PININ_SERVICE2       0x00002000
-#define PININ_SERVICEENTER   0x00004000
-#define PININ_COINDOOR       0x00008000
-#define PININ_VOL_UP         0x00010000
-#define PININ_VOL_DOWN       0x00020000
-#define PININ_EXITGAME       0x00040000
-#define PININ_LTILT          0x00080000
-#define PININ_CTILT          0x00100000
-#define PININ_RTILT          0x00200000
-#define PININ_MTILT          0x00400000
-#define PININ_FRAMES         0x00800000
-#define PININ_ENABLE3D       0x01000000
-#define PININ_ANY            0xffffffff
-// - end input routines added by AMH
 
 #define VK_TO_DIK_SIZE 105
 static const unsigned char VK_TO_DIK[VK_TO_DIK_SIZE][2] =

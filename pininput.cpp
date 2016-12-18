@@ -2,6 +2,10 @@
 
 #define INPUT_BUFFER_SIZE 32
 
+extern F32 gMixerVolume;
+extern F32 new_gMixerVolume;
+extern U32 gMixerVolumeStamp;
+
 PinInput::PinInput()
 {
    ZeroMemory(this, sizeof(PinInput));
@@ -19,8 +23,6 @@ PinInput::PinInput()
    middleMouseButtonDown = false;
 
    m_head = m_tail = 0;
-   m_PreviousKeys = 0;
-   m_ChangedKeys = 0;
    m_ptable = NULL;
 
    ZeroMemory(m_diq, sizeof(m_diq));
@@ -436,7 +438,7 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
 
 #ifdef USE_DINPUT_FOR_KEYBOARD
    // keyboard
-#ifdef VP10
+#ifdef USE_DINPUT8
    const LPDIRECTINPUTDEVICE8 pkyb = m_pKeyboard;
 #else
    const LPDIRECTINPUTDEVICE pkyb = m_pKeyboard;
@@ -458,13 +460,42 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
       }
    }
 #else
+   #define NUM_STATIC_RGKEYS 23
+   static const unsigned int m_static_rgKeys[NUM_STATIC_RGKEYS] = {
+	   DIK_LSHIFT,
+	   DIK_RSHIFT,
+	   DIK_LEFT,
+	   DIK_RIGHT,
+	   DIK_ESCAPE,
+	   DIK_UP,
+	   DIK_DOWN,
+	   DIK_1,
+	   DIK_2,
+	   DIK_3,
+	   DIK_4,
+	   DIK_5,
+	   DIK_6,
+	   DIK_7,
+	   DIK_8,
+	   DIK_9,
+	   DIK_0,
+	   DIK_END,
+	   //DIK_EQUALS,
+	   //DIK_MINUS,
+	   DIK_Z,
+	   DIK_SPACE,
+	   DIK_SLASH,
+	   DIK_T,
+	   DIK_F11
+   };
+
    // cache to avoid double key triggers
    static bool oldKeyStates[eCKeys + NUM_STATIC_RGKEYS] = { false };
 
    unsigned int i2 = 0;
    for (unsigned int i = 0; i < eCKeys + NUM_STATIC_RGKEYS; ++i)
    {
-      const unsigned int rgk = (i < eCKeys) ? (unsigned int)g_pplayer->m_rgKeys[i] : m_static_rgKeys[i - eCKeys][0];
+      const unsigned int rgk = (i < eCKeys) ? (unsigned int)g_pplayer->m_rgKeys[i] : m_static_rgKeys[i - eCKeys];
       const unsigned int vk = get_vk(rgk);
       if (vk == ~0u)
          continue;
@@ -575,7 +606,7 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
    // same for joysticks 
    for (int k = 0; k < e_JoyCnt; ++k)
    {
-#ifdef VP10
+#ifdef USE_DINPUT8
       const LPDIRECTINPUTDEVICE8 pjoy = m_pJoystick[k];
 #else
       const LPDIRECTINPUTDEVICE pjoy = m_pJoystick[k];
@@ -604,7 +635,7 @@ void PinInput::Init(const HWND hwnd)
    m_hwnd = hwnd;
 
    HRESULT hr;
-#ifdef VP10
+#ifdef USE_DINPUT8
    hr = DirectInput8Create(g_hinst, DIRECTINPUT_VERSION, IID_IDirectInput8, (void **)&m_pDI, NULL);
 #else
    hr = DirectInputCreate(g_hinst, DIRECTINPUT_VERSION, &m_pDI, NULL);
@@ -664,7 +695,7 @@ void PinInput::Init(const HWND hwnd)
 
    uShockDevice = -1;
    uShockType = 0;
-#ifdef VP10
+#ifdef USE_DINPUT8
    m_pDI->EnumDevices(DI8DEVCLASS_GAMECTRL, DIEnumJoystickCallback, this, DIEDFL_ATTACHEDONLY);//enum Joysticks
 #else
    m_pDI->EnumDevices(DIDEVTYPE_JOYSTICK, DIEnumJoystickCallback, this, DIEDFL_ATTACHEDONLY);//enum Joysticks
@@ -733,8 +764,6 @@ void PinInput::UnInit()
 
 void PinInput::FireKeyEvent(const int dispid, const int key)
 {
-   U32 val = 0;
-
    // Initialize.
    int mkey = key;
 
@@ -742,81 +771,29 @@ void PinInput::FireKeyEvent(const int dispid, const int key)
    if (g_pplayer->m_ptable->m_tblMirrorEnabled)
    {
       // Swap left & right input.
-      if (mkey == g_pplayer->m_rgKeys[eLeftFlipperKey]) { mkey = g_pplayer->m_rgKeys[eRightFlipperKey];		 val = PININ_RIGHT; }
-      else if (mkey == g_pplayer->m_rgKeys[eRightFlipperKey]) { mkey = g_pplayer->m_rgKeys[eLeftFlipperKey]; val = PININ_LEFT; }
-      else if (mkey == g_pplayer->m_rgKeys[eLeftMagnaSave]) { mkey = g_pplayer->m_rgKeys[eRightMagnaSave];	 val = PININ_RIGHT2; }
-      else if (mkey == g_pplayer->m_rgKeys[eRightMagnaSave]) { mkey = g_pplayer->m_rgKeys[eLeftMagnaSave];	 val = PININ_LEFT2; }
-      else if (mkey == DIK_LSHIFT) { mkey = DIK_RSHIFT;	val = PININ_RIGHT; }
-      else if (mkey == DIK_RSHIFT) { mkey = DIK_LSHIFT;	val = PININ_LEFT; }
-      else if (mkey == DIK_LEFT)   { mkey = DIK_RIGHT;	val = PININ_RIGHT; }
-      else if (mkey == DIK_RIGHT)  { mkey = DIK_LEFT;	val = PININ_LEFT; }
+      if (mkey == g_pplayer->m_rgKeys[eLeftFlipperKey]) mkey = g_pplayer->m_rgKeys[eRightFlipperKey];
+      else if (mkey == g_pplayer->m_rgKeys[eRightFlipperKey]) mkey = g_pplayer->m_rgKeys[eLeftFlipperKey];
+      else if (mkey == g_pplayer->m_rgKeys[eLeftMagnaSave]) mkey = g_pplayer->m_rgKeys[eRightMagnaSave];
+      else if (mkey == g_pplayer->m_rgKeys[eRightMagnaSave]) mkey = g_pplayer->m_rgKeys[eLeftMagnaSave];
+      else if (mkey == DIK_LSHIFT) mkey = DIK_RSHIFT;
+      else if (mkey == DIK_RSHIFT) mkey = DIK_LSHIFT;
+      else if (mkey == DIK_LEFT)   mkey = DIK_RIGHT;
+      else if (mkey == DIK_RIGHT)  mkey = DIK_LEFT;
    }
-   else
-   {
-      // Normal left & right input.
-      if (mkey == g_pplayer->m_rgKeys[eLeftFlipperKey])       val = PININ_LEFT;
-      else if (mkey == g_pplayer->m_rgKeys[eRightFlipperKey]) val = PININ_RIGHT;
-      else if (mkey == g_pplayer->m_rgKeys[eLeftMagnaSave])   val = PININ_LEFT2;
-      else if (mkey == g_pplayer->m_rgKeys[eRightMagnaSave])  val = PININ_RIGHT2;
-      else if (mkey == DIK_LSHIFT) val = PININ_LEFT;
-      else if (mkey == DIK_RSHIFT) val = PININ_RIGHT;
-      else if (mkey == DIK_LEFT)   val = PININ_LEFT;
-      else if (mkey == DIK_RIGHT)  val = PININ_RIGHT;
-   }
-
-   if (mkey == g_pplayer->m_rgKeys[ePlungerKey])         val = PININ_PLUNGE;
-   else if (mkey == g_pplayer->m_rgKeys[eAddCreditKey])  val = PININ_COIN1;
-   else if (mkey == g_pplayer->m_rgKeys[eAddCreditKey2]) val = PININ_COIN2;
-   else if (mkey == g_pplayer->m_rgKeys[eStartGameKey])  val = PININ_START;
-   else if (mkey == g_pplayer->m_rgKeys[eVolumeUp])      val = PININ_VOL_UP;
-   else if (mkey == g_pplayer->m_rgKeys[eVolumeDown])    val = PININ_VOL_DOWN;
-   else if (mkey == g_pplayer->m_rgKeys[eExitGame])      val = PININ_EXITGAME;
-   else if (mkey == g_pplayer->m_rgKeys[eEnable3D])      val = PININ_ENABLE3D;
-   else
-   for (unsigned int i = 4; i < NUM_STATIC_RGKEYS; ++i) // start at 4 to avoid rereading l/rshift and left/right
-      if (mkey == m_static_rgKeys[i][0])
-      {
-         val = m_static_rgKeys[i][1];
-         break;
-      }
-
-   U32 tmp = m_PreviousKeys;
-
-   // Check if the mkey is down.
-   if (dispid == DISPID_GameEvents_KeyDown)
-   {
-      // Turn the bit on.
-      tmp |= val;
-   }
-   else
-   {
-      // Turn the bit off.
-      tmp &= (~val);
-   }
-
-   // Get only the bits that have changed (on to off, or off to on).
-   m_ChangedKeys |= (tmp ^ m_PreviousKeys);
-
-   // Save the keys so we can detect changes.
-   m_PreviousKeys = tmp;
-
-   // Only trigger each VP-key once per full key process
-   if (!(m_ChangedKeys & val) && (val != 0)) // not all keys are coded into val, but just wired through to FireKeyEvent()
-      return;
 
    if (g_pplayer->cameraMode)
    {
-      if (val == PININ_LEFT && dispid == DISPID_GameEvents_KeyDown)
+      if (mkey == g_pplayer->m_rgKeys[eLeftFlipperKey] && dispid == DISPID_GameEvents_KeyDown)
          g_pplayer->UpdateBackdropSettings(false);
-      else if (val == PININ_RIGHT && dispid == DISPID_GameEvents_KeyDown)
+      else if (mkey == g_pplayer->m_rgKeys[eRightFlipperKey] && dispid == DISPID_GameEvents_KeyDown)
          g_pplayer->UpdateBackdropSettings(true);
-      else if (val == PININ_RIGHT2 && dispid == DISPID_GameEvents_KeyDown)
+      else if (mkey == g_pplayer->m_rgKeys[eRightMagnaSave] && dispid == DISPID_GameEvents_KeyDown)
       {
          g_pplayer->backdropSettingActive++;
          if (g_pplayer->backdropSettingActive == 13)
             g_pplayer->backdropSettingActive = 0;
       }
-      else if (val == PININ_LEFT2 && dispid == DISPID_GameEvents_KeyDown)
+      else if (mkey == g_pplayer->m_rgKeys[eLeftMagnaSave] && dispid == DISPID_GameEvents_KeyDown)
       {
          g_pplayer->backdropSettingActive--;
          if (g_pplayer->backdropSettingActive == -1)
@@ -826,11 +803,24 @@ void PinInput::FireKeyEvent(const int dispid, const int key)
    else
    {
       // Debug only, for testing parts of the left flipper input lag
-      if (val == PININ_LEFT && dispid == DISPID_GameEvents_KeyDown)
+      if (mkey == g_pplayer->m_rgKeys[eLeftFlipperKey] && dispid == DISPID_GameEvents_KeyDown)
       {
          m_leftkey_down_usec = usec();
          m_leftkey_down_frame = g_pplayer->m_overall_frames;
       }
+
+      // mixer volume
+      if ((mkey == g_pplayer->m_rgKeys[eVolumeDown] || mkey == g_pplayer->m_rgKeys[eVolumeUp]) && dispid == DISPID_GameEvents_KeyDown)
+      {
+          const F32 delta = (F32)(1.0 / 500.0);
+          new_gMixerVolume = gMixerVolume + ((mkey == g_pplayer->m_rgKeys[eVolumeDown]) ? -delta : delta);
+
+          if (new_gMixerVolume < 0.01f) new_gMixerVolume = 0.01f; //hardcap minimum
+          if (new_gMixerVolume > 1.0f) new_gMixerVolume = 1.0f;   //hardcap maximum
+
+          gMixerVolumeStamp = g_pplayer->m_time_msec;
+      }
+      //
 
       m_ptable->FireKeyEvent(dispid, mkey);
    }
@@ -975,8 +965,6 @@ void PinInput::Joy(const unsigned int n, const int updown, const bool start)
 void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/, int curr_time_msec) // last one is negative if only key events should be fired
 {
    m_ptable = ptable;
-
-   m_ChangedKeys = 0;
 
    if (!g_pplayer || !m_ptable) return;	//only when player running
 
@@ -1592,7 +1580,7 @@ int PinInput::GetNextKey() // return last valid keyboard key
       DIDEVICEOBJECTDATA didod[1];  // Receives buffered data
       DWORD dwElements;
       HRESULT hr;
-#ifdef VP10
+#ifdef USE_DINPUT8
       LPDIRECTINPUTDEVICE8 pkyb = m_pKeyboard;
 #else
       LPDIRECTINPUTDEVICE pkyb = m_pKeyboard;
@@ -1625,36 +1613,4 @@ int PinInput::GetNextKey() // return last valid keyboard key
 #endif
 
    return 0;
-}
-
-#if 0
-// Returns non-zero if the key was pressed.
-U32 PinInput::Pressed( const U32 val ) const
-{
-   return m_ChangedKeys & ( m_PreviousKeys & val );
-}
-
-// Returns non-zero if the key was released.
-U32 PinInput::Released( const U32 val ) const
-{
-   return m_ChangedKeys & (~m_PreviousKeys);
-}
-
-// Returns non-zero if the key is held down.
-U32 PinInput::Held( const U32 val ) const
-{
-   return m_PreviousKeys & val;
-}
-
-// Returns non-zero if the key was changed.
-U32 PinInput::Changed( const U32 val ) const
-{
-   return m_ChangedKeys & val;
-}
-#endif
-
-// Returns non-zero if the key is held down.
-U32 PinInput::Down(const U32 val) const
-{
-   return m_PreviousKeys & val;
 }

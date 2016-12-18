@@ -166,37 +166,6 @@ struct TimerOnOff
    bool enabled;
 };
 
-#define NUM_STATIC_RGKEYS 23
-static const unsigned int m_static_rgKeys[NUM_STATIC_RGKEYS][2] = {
-	//leave these 4 upfront, as pininput code relies on that
-	{ DIK_LSHIFT, PININ_LEFT },
-	{ DIK_RSHIFT, PININ_RIGHT },
-	{ DIK_LEFT, PININ_LEFT },
-	{ DIK_RIGHT, PININ_RIGHT },
-
-	{ DIK_ESCAPE, PININ_EXITGAME },
-	{ DIK_UP, PININ_START },
-	{ DIK_DOWN, PININ_PLUNGE },
-	{ DIK_1, PININ_START },
-	{ DIK_2, PININ_BUYIN },
-	{ DIK_3, PININ_COIN1 },
-	{ DIK_4, PININ_COIN2 },
-	{ DIK_5, PININ_COIN3 },
-	{ DIK_6, PININ_COIN4 },
-	{ DIK_7, PININ_SERVICECANCEL },
-	{ DIK_8, PININ_SERVICE1 },
-	{ DIK_9, PININ_SERVICE2 },
-	{ DIK_0, PININ_SERVICEENTER },
-	{ DIK_END, PININ_COINDOOR },
-	//{ DIK_EQUALS, PININ_VOL_UP },
-	//{ DIK_MINUS, PININ_VOL_DOWN },
-	{ DIK_Z, PININ_LTILT },
-	{ DIK_SPACE, PININ_CTILT },
-	{ DIK_SLASH, PININ_RTILT },
-	{ DIK_T, PININ_MTILT },
-	{ DIK_F11, PININ_FRAMES }
-};
-
 class Player
 {
 public:
