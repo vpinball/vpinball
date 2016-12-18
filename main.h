@@ -13,7 +13,7 @@
 
 #include "commctrl.h"
 
-#ifdef VP10
+#ifdef USE_DINPUT8
 #define DIRECTINPUT_VERSION 0x0800
 #else
 #define DIRECTINPUT_VERSION 0x0700

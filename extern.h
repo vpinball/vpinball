@@ -6,5 +6,5 @@ extern Player *g_pplayer; // Game currently being played
 extern HACCEL g_haccel; // Accelerator keys
 extern BOOL g_fKeepUndoRecords;
 
-void ShowError(char *sz);
+void ShowError(const char * const sz);
 void ExitApp();
