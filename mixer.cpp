@@ -6,10 +6,11 @@ static DWORD m_dwMinimum;
 static DWORD m_dwMaximum;
 static DWORD m_dwVolumeControlID;
 static int nmixers;
-// used as externals in pininput:
-F32 gMixerVolume;
-F32 new_gMixerVolume;
-U32 gMixerVolumeStamp = 0;
+static F32 gMixerVolume;
+static U32 gMixerVolumeStamp = 0;
+// used extern in pininput:
+bool gMixerKeyDown;
+bool gMixerKeyUp;
 
 const F32 volume_adjustment_bar_pos[2] = { (float)(15.0 / 1000.0), (float)(500.0 / 1000.0) };
 const F32 volume_adjustment_bar_big_size[2] = { (float)(20.0 / 1000.0), (float)(4.0 / 1000.0) };
@@ -128,8 +129,6 @@ void mixer_get_volume()
       gMixerVolume /= g_pplayer->m_ptable->m_tblVolmod;
    else
       gMixerVolume = 0.01f; // mute is impossible
-
-   new_gMixerVolume = gMixerVolume;
 }
 
 void mixer_update()
@@ -137,10 +136,25 @@ void mixer_update()
    if (!nmixers || !m_hMixer)
       return;
 
-   if (new_gMixerVolume == gMixerVolume)
-      return;
+   const F32 delta = (F32)(1.0 / 500.0);
 
-   gMixerVolume = new_gMixerVolume;
+   float vol;
+   if (gMixerKeyDown)
+       vol = gMixerVolume - delta;
+   else if (gMixerKeyUp)
+       vol = gMixerVolume + delta;
+   else
+       return;
+
+   if (vol < 0.01f) vol = 0.01f; //hardcap minimum
+   if (vol > 1.0f) vol = 1.0f;   //hardcap maximum
+
+   gMixerVolumeStamp = g_pplayer->m_time_msec;
+
+   if (vol == gMixerVolume)
+       return;
+
+   gMixerVolume = vol;
 
    F32 modded_volume = gMixerVolume * g_pplayer->m_ptable->m_tblVolmod;
 

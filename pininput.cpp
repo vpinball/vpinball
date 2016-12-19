@@ -1,10 +1,9 @@
 #include "StdAfx.h"
 
-#define INPUT_BUFFER_SIZE 32
+#define INPUT_BUFFER_SIZE MAX_KEYQUEUE_SIZE
 
-extern F32 gMixerVolume;
-extern F32 new_gMixerVolume;
-extern U32 gMixerVolumeStamp;
+extern bool gMixerKeyDown;
+extern bool gMixerKeyUp;
 
 PinInput::PinInput()
 {
@@ -231,10 +230,9 @@ PinInput::PinInput()
    m_tilt_updown = DISPID_GameEvents_KeyUp;
 
    m_linearPlunger = false;
-}
 
-PinInput::~PinInput()
-{
+   gMixerKeyDown = false;
+   gMixerKeyUp = false;
 }
 
 //-----------------------------------------------------------------------------
@@ -246,7 +244,6 @@ PinInput::~PinInput()
 BOOL CALLBACK EnumObjectsCallback(const DIDEVICEOBJECTINSTANCE* pdidoi,
    VOID* pContext)
 {
-   //HWND hDlg = (HWND)pContext;
    PinInput * const ppinput = (PinInput *)pContext;
 
 #ifdef _DEBUG
@@ -326,7 +323,6 @@ BOOL CALLBACK DIEnumJoystickCallback(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef)
    }
 
    hr = ppinput->m_pJoystick[ppinput->e_JoyCnt]->GetProperty(DIPROP_PRODUCTNAME, &dstr.diph);
-
    if (hr == S_OK)
    {
       if (!WzSzStrCmp(dstr.wsz, "PinballWizard"))
@@ -380,61 +376,45 @@ BOOL CALLBACK DIEnumJoystickCallback(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef)
    // values property for discovered axes.
    hr = ppinput->m_pJoystick[ppinput->e_JoyCnt]->EnumObjects(EnumObjectsCallback, (VOID*)pvRef, DIDFT_ALL);
 
-   if (++(ppinput->e_JoyCnt) < PININ_JOYMXCNT) return DIENUM_CONTINUE;
-
-   return DIENUM_STOP;			//allocation for only PININ_JOYMXCNT joysticks, ignore any others
-}
-
-int PinInput::QueueFull() const
-{
-   return (((m_head + 1) % MAX_KEYQUEUE_SIZE) == m_tail);
-}
-
-int PinInput::QueueEmpty() const
-{
-   return m_head == m_tail;
-}
-
-void PinInput::AdvanceHead()
-{
-   m_head = (m_head + 1) % MAX_KEYQUEUE_SIZE;
-}
-
-void PinInput::AdvanceTail()
-{
-   m_tail = (m_tail + 1) % MAX_KEYQUEUE_SIZE;
+   if (++(ppinput->e_JoyCnt) < PININ_JOYMXCNT)
+       return DIENUM_CONTINUE;
+   else
+       return DIENUM_STOP;			//allocation for only PININ_JOYMXCNT joysticks, ignore any others
 }
 
 void PinInput::PushQueue(DIDEVICEOBJECTDATA * const data, const unsigned int app_data/*, const U32 curr_time_msec*/)
 {
-   if ((!data) || QueueFull()) return;
+   if ((!data) ||
+       (((m_head + 1) % MAX_KEYQUEUE_SIZE) == m_tail)) // queue full?
+       return;
 
    m_diq[m_head] = *data;
-   //m_diq[m_head].dwTimeStamp = curr_time_msec;		//rewrite time from game start
+   //m_diq[m_head].dwTimeStamp = curr_time_msec; //rewrite time from game start
    m_diq[m_head].dwSequence = app_data;
 
-   AdvanceHead();
+   m_head = (m_head + 1) % MAX_KEYQUEUE_SIZE; // advance head of queue
 }
 
-const DIDEVICEOBJECTDATA *PinInput::GetTail( /*const U32 curr_sim_msec*/)
+const DIDEVICEOBJECTDATA *PinInput::GetTail(/*const U32 curr_sim_msec*/)
 {
-   if (QueueEmpty()) return NULL;
+   if (m_head == m_tail)
+      return NULL; // queue empty?
 
    const DIDEVICEOBJECTDATA * const ptr = &m_diq[m_tail];
 
    // If we've simulated to or beyond the timestamp of when this control was received then process the control into the system
-   //if( curr_sim_msec >= ptr->dwTimeStamp ) //!! disabled to save a bit of lag
+   //if( curr_sim_msec >= ptr->dwTimeStamp ) //!! time stamp disabled to save a bit of lag
    {
-      AdvanceTail();
+      m_tail = (m_tail + 1) % MAX_KEYQUEUE_SIZE; // advance tail of queue
 
       return ptr;
    }
-   //return NULL;
+   //else return NULL;
 }
 
 void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
 {
-   DIDEVICEOBJECTDATA didod[INPUT_BUFFER_SIZE];  // Receives buffered data 
+   DIDEVICEOBJECTDATA didod[INPUT_BUFFER_SIZE]; // Receives buffered data 
 
 #ifdef USE_DINPUT_FOR_KEYBOARD
    // keyboard
@@ -445,7 +425,7 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
 #endif
    if (pkyb)
    {
-      HRESULT hr = pkyb->Acquire();				// try to Acquire keyboard input
+      HRESULT hr = pkyb->Acquire();				// try to acquire keyboard input
       if (hr == S_OK || hr == S_FALSE)
       {
          DWORD dwElements = INPUT_BUFFER_SIZE;
@@ -519,7 +499,7 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
    // mouse
    if (m_pMouse && m_enableMouseInPlayer)
    {
-      HRESULT hr = m_pMouse->Acquire();	// try to Acquire mouse input
+      HRESULT hr = m_pMouse->Acquire();	// try to acquire mouse input
       if (hr == S_OK || hr == S_FALSE)
       {
          DIMOUSESTATE2 mouseState;
@@ -613,7 +593,7 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
 #endif
       if (pjoy)
       {
-         HRESULT hr = pjoy->Acquire();							// try to acquire joystick input
+         HRESULT hr = pjoy->Acquire();		// try to acquire joystick input
          if (hr == S_OK || hr == S_FALSE)
          {
             DWORD dwElements = INPUT_BUFFER_SIZE;
@@ -701,7 +681,10 @@ void PinInput::Init(const HWND hwnd)
    m_pDI->EnumDevices(DIDEVTYPE_JOYSTICK, DIEnumJoystickCallback, this, DIEDFL_ATTACHEDONLY);//enum Joysticks
 #endif
 
-   //InputControlRun = 1;	//0== stalled, 1==run,  0 < shutting down, 2==terminated
+   gMixerKeyDown = false;
+   gMixerKeyUp = false;
+
+   //InputControlRun = 1; //0==stalled, 1==run,  0 < shutting down, 2==terminated
    //_beginthread( InputControlProcess, 0, NULL );
 }
 
@@ -809,18 +792,9 @@ void PinInput::FireKeyEvent(const int dispid, const int key)
          m_leftkey_down_frame = g_pplayer->m_overall_frames;
       }
 
-      // mixer volume
-      if ((mkey == g_pplayer->m_rgKeys[eVolumeDown] || mkey == g_pplayer->m_rgKeys[eVolumeUp]) && dispid == DISPID_GameEvents_KeyDown)
-      {
-          const F32 delta = (F32)(1.0 / 500.0);
-          new_gMixerVolume = gMixerVolume + ((mkey == g_pplayer->m_rgKeys[eVolumeDown]) ? -delta : delta);
-
-          if (new_gMixerVolume < 0.01f) new_gMixerVolume = 0.01f; //hardcap minimum
-          if (new_gMixerVolume > 1.0f) new_gMixerVolume = 1.0f;   //hardcap maximum
-
-          gMixerVolumeStamp = g_pplayer->m_time_msec;
-      }
-      //
+      // Mixer volume only
+      gMixerKeyDown = (mkey == g_pplayer->m_rgKeys[eVolumeDown] && dispid == DISPID_GameEvents_KeyDown);
+      gMixerKeyUp   = (mkey == g_pplayer->m_rgKeys[eVolumeUp]   && dispid == DISPID_GameEvents_KeyDown);
 
       m_ptable->FireKeyEvent(dispid, mkey);
    }
@@ -981,7 +955,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
       tilt_update();
    }
    else
-      curr_time_msec = -curr_time_msec;
+      curr_time_msec = -curr_time_msec; // due to special encoding to not do the stuff above
 
    // Check if we've been initialized.
    if (m_firedautostart == 0)
@@ -990,7 +964,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
    GetInputDeviceData(/*curr_time_msec*/);
 
    const DIDEVICEOBJECTDATA * __restrict input;
-   while (input = GetTail( /*curr_sim_msec*/))
+   while (input = GetTail(/*curr_sim_msec*/))
    {
       if (input->dwSequence == APP_MOUSE)
       {
@@ -1053,7 +1027,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
                ScreenToClient(m_hwnd, &point);
                const Vertex3Ds vertex = g_pplayer->m_pin3d.Get3DPointFrom2D(point);
 
-               for (unsigned i = 0; i < g_pplayer->m_vball.size(); i++)
+               for (size_t i = 0; i < g_pplayer->m_vball.size(); i++)
                {
                   Ball * const pBall = g_pplayer->m_vball[i];
                   const float dx = fabsf(vertex.x - pBall->m_pos.x);
@@ -1116,8 +1090,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
                      m_first_stamp = curr_time_msec;
                      m_exit_stamp = curr_time_msec;
                  }
-
-                 if((input->dwData & 0x80) == 0)
+                 else
                  { //on key up only
                      m_exit_stamp = 0;
                      g_pplayer->m_fShowDebugger = true;
@@ -1133,8 +1106,8 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
                   m_first_stamp = curr_time_msec;
                   m_exit_stamp = curr_time_msec;
                }
-
-               if ((input->dwData & 0x80) == 0) { //on key up only
+               else
+               { //on key up only
                   m_exit_stamp = 0;
                   g_pplayer->m_fCloseDown = true;
                }
@@ -1441,15 +1414,15 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
                      g_pplayer->mechPlungerIn((int)input->dwData);
                   if (((m_plunger_axis != 6) && (m_plunger_axis != 0)) || (m_override_default_buttons == 0))
                   {											// with the ability to use rZ for plunger, checks to see if
-                     if (uShockType == USHOCKTYPE_PBWIZARD) 	// the override is used and if so, if Plunger is set to Rz or
+                     if (uShockType == USHOCKTYPE_PBWIZARD) // the override is used and if so, if Plunger is set to Rz or
                      {										// disabled. If override isn't used, uses default assignment
-                        g_pplayer->mechPlungerIn(-(int)input->dwData);		// of the Z axis.
+                        g_pplayer->mechPlungerIn(-(int)input->dwData); // of the Z axis.
                      }
                   }
                   if ((uShockType == USHOCKTYPE_VIRTUAPIN) && (m_plunger_axis != 0))
                      g_pplayer->mechPlungerIn(-(int)input->dwData);
                   if (((m_lr_axis == 3) || (m_ud_axis == 3)) && (uShockType == USHOCKTYPE_GENERIC))
-                  { // For the sake of priority, Check if L/R Axis or U/D Axis IS selected, and a Generic Gamepad IS being used...
+                  {  // For the sake of priority, Check if L/R Axis or U/D Axis IS selected, and a Generic Gamepad IS being used...
                      // Axis Deadzone
                      if (m_lr_axis == 3)
                         g_pplayer->NudgeX((m_lr_axis_reverse == 0) ? -deadu : deadu, joyk);
@@ -1468,7 +1441,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
                if (g_pplayer)
                {
                   if (((m_lr_axis == 4) || (m_ud_axis == 4)) && (uShockType == USHOCKTYPE_GENERIC))
-                  { // For the sake of priority, Check if L/R Axis or U/D Axis IS selected, and a Generic Gamepad IS being used...
+                  {  // For the sake of priority, Check if L/R Axis or U/D Axis IS selected, and a Generic Gamepad IS being used...
                      // Axis Deadzone
                      if (m_lr_axis == 4)
                         g_pplayer->NudgeX((m_lr_axis_reverse == 0) ? -deadu : deadu, joyk);
@@ -1487,7 +1460,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
                if (g_pplayer)
                {
                   if (((m_lr_axis == 5) || (m_ud_axis == 5)) && (uShockType == USHOCKTYPE_GENERIC))
-                  { // For the sake of priority, Check if L/R Axis or U/D Axis IS selected, and a Generic Gamepad IS being used...
+                  {  // For the sake of priority, Check if L/R Axis or U/D Axis IS selected, and a Generic Gamepad IS being used...
                      // Axis Deadzone
                      if (m_lr_axis == 5)
                         g_pplayer->NudgeX((m_lr_axis_reverse == 0) ? -deadu : deadu, joyk);
@@ -1508,7 +1481,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
                   if ((uShockType == USHOCKTYPE_PBWIZARD) && (m_override_default_buttons == 1) && (m_plunger_axis == 6))
                      g_pplayer->mechPlungerIn((int)input->dwData);
                   if (((m_lr_axis == 6) || (m_ud_axis == 6)) && (uShockType == USHOCKTYPE_GENERIC))
-                  { // For the sake of priority, Check if L/R Axis or U/D Axis IS selected, and a Generic Gamepad IS being used...
+                  {  // For the sake of priority, Check if L/R Axis or U/D Axis IS selected, and a Generic Gamepad IS being used...
                      // Axis Deadzone
                      if (m_lr_axis == 6)
                         g_pplayer->NudgeX((m_lr_axis_reverse == 0) ? -deadu : deadu, joyk);
@@ -1529,7 +1502,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
                   if (uShockType == USHOCKTYPE_SIDEWINDER)
                      g_pplayer->mechPlungerIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData);
                   if (((m_lr_axis == 7) || (m_ud_axis == 7)) && (uShockType == USHOCKTYPE_GENERIC))
-                  { // For the sake of priority, Check if L/R Axis or U/D Axis IS selected, and a Generic Gamepad IS being used...
+                  {  // For the sake of priority, Check if L/R Axis or U/D Axis IS selected, and a Generic Gamepad IS being used...
                      // Axis Deadzone
                      if (m_lr_axis == 7)
                         g_pplayer->NudgeX((m_lr_axis_reverse == 0) ? -deadu : deadu, joyk);
@@ -1548,7 +1521,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
                if (g_pplayer)
                {
                   if (((m_lr_axis == 8) || (m_ud_axis == 8)) && (uShockType == USHOCKTYPE_GENERIC))
-                  { // For the sake of priority, Check if L/R Axis or U/D Axis IS selected, and a Generic Gamepad IS being used...
+                  {  // For the sake of priority, Check if L/R Axis or U/D Axis IS selected, and a Generic Gamepad IS being used...
                      // Axis Deadzone
                      if (m_lr_axis == 8)
                         g_pplayer->NudgeX((m_lr_axis_reverse == 0) ? -deadu : deadu, joyk);
