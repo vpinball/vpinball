@@ -6769,6 +6769,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     </CustomBuildStep>
   </ItemGroup>
   <ItemGroup>
+    <None Include="res\AOdither.bmp" />
     <None Include="res\ball.rgs" />
     <None Include="res\ball.bmp" />
     <None Include="bin00001.bin" />

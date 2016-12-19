@@ -1037,6 +1037,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <None Include="shader\Material.fxh" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="res\AOdither.bmp" />
     <Image Include="res\ball.bmp" />
     <Image Include="res\bumperbase.bmp" />
     <Image Include="res\bumperCap.bmp" />
