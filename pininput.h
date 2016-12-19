@@ -33,17 +33,13 @@ class PinInput
 {
 public:
    PinInput();
-   ~PinInput();
+   ~PinInput() {}
 
    void Init(const HWND hwnd);
    void UnInit();
 
    // implicitly sync'd with visuals as each keystroke is applied to the sim
    void FireKeyEvent(const int dispid, const int keycode);
-   int  QueueFull() const;
-   int  QueueEmpty() const;
-   void AdvanceHead();
-   void AdvanceTail();
 
    void PushQueue(DIDEVICEOBJECTDATA * const data, const unsigned int app_data/*, const U32 curr_time_msec*/);
    const DIDEVICEOBJECTDATA *GetTail( /*const U32 curr_sim_msec*/);
