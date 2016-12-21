@@ -3051,7 +3051,7 @@ void Player::UpdatePhysics()
       //      break;  //this is the common exit from the loop          // exit skipping accelerate
       //}                     // some rare cases will exit from while()
 
-      const U64 cur_time_usec = usec(); //!! one could also do this directly in the while loop condition instead (so that the while loop will really match with the currentcurrent time), but that leads to some stuttering on some heavy frames
+      const U64 cur_time_usec = usec(); //!! one could also do this directly in the while loop condition instead (so that the while loop will really match with the current time), but that leads to some stuttering on some heavy frames
       // hung in the physics loop over 200 milliseconds or the number of physics iterations to catch up on is high (i.e. very low/unplayable FPS)
       if ((cur_time_usec - initial_time_usec > 200000) || (m_phys_iterations > ((m_ptable->m_PhysicsMaxLoops == 0) || (m_ptable->m_PhysicsMaxLoops == 0xFFFFFFFFu) ? 0xFFFFFFFFu : (m_ptable->m_PhysicsMaxLoops*(10000 / PHYSICS_STEPTIME))/*2*/)))
       {                                                             // can not keep up to real time

@@ -1579,9 +1579,15 @@ STDMETHODIMP Light::Duration( long startState, long newVal, long endState )
         m_realState = (LightState)startState;
         m_duration = newVal;
         m_finalState = endState;
-    if(g_pplayer)
-        m_timerDurationEndTime = g_pplayer->m_time_msec + m_duration;
-
+        if (g_pplayer)
+        {
+           m_timerDurationEndTime = g_pplayer->m_time_msec + m_duration;
+           if (m_realState == LightStateBlinking)
+           {
+              m_iblinkframe = 0;
+              m_timenextblink = g_pplayer->m_time_msec + m_blinkinterval;
+           }
+        }
     STOPUNDO
 
         return S_OK;
