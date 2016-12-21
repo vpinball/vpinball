@@ -359,8 +359,8 @@ BEGIN
     CONTROL         "Force exclusive Fullscreen Mode (less compatible)",IDC_FULLSCREEN,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,252,177,10
     CONTROL         "Force 10Bit-Monitor support",IDC_10BIT_VIDEO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,162,262,127,10
-    CONTROL         "Unlimited",IDC_TexUnlimited,"Button",BS_AUTORADIOBUTTON,166,290,45,10
-    CONTROL         "3072",IDC_Tex3072,"Button",BS_AUTORADIOBUTTON | WS_GROUP,215,290,28,10
+    CONTROL         "Unlimited",IDC_TexUnlimited,"Button",BS_AUTORADIOBUTTON | WS_GROUP,166,290,45,10
+    CONTROL         "3072",IDC_Tex3072,"Button",BS_AUTORADIOBUTTON,215,290,28,10
     CONTROL         "2048",IDC_Tex2048,"Button",BS_AUTORADIOBUTTON,255,290,32,10
     CONTROL         "1024",IDC_Tex1024,"Button",BS_AUTORADIOBUTTON,294,290,32,10
     CONTROL         "",IDC_ARASlider,"msctls_trackbar32",TBS_AUTOTICKS | TBS_TOP | WS_TABSTOP,155,323,191,20
