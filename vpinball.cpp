@@ -3020,7 +3020,7 @@ INT_PTR CALLBACK AboutProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 
       HWND hVersion = GetDlgItem(hwndDlg, IDC_ABOUT_VERSION);
       char versionString[256];
-      sprintf_s(versionString, "Version %i.%i.%i (Revision %i, %ubit)", VP_VERSION_MAJOR,VP_VERSION_MINOR,VP_VERSION_REV, SVN_REVISION,
+      sprintf_s(versionString, "Version %i.%i.%i Final (Revision %i, %ubit)", VP_VERSION_MAJOR,VP_VERSION_MINOR,VP_VERSION_REV, SVN_REVISION,
 #ifdef _WIN64
          64
 #else
@@ -3340,6 +3340,7 @@ INT_PTR CALLBACK VideoOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
       case 2048:SendMessage(GetDlgItem(hwndDlg, IDC_Tex2048), BM_SETCHECK, BST_CHECKED, 0);
          break;
       default:	SendMessage(GetDlgItem(hwndDlg, IDC_TexUnlimited), BM_SETCHECK, BST_CHECKED, 0);
+         break;
       }
 
       HWND hwndCheck = GetDlgItem(hwndDlg, IDC_GLOBAL_REFLECTION_CHECK);
