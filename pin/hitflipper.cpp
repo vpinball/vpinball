@@ -1,3 +1,25 @@
+// Measurements,etc. by Paul Stevens:
+// I can, however, measure the time from a real flipper coil energizing to when it's EOS switch activates:
+//  That is about 15uS (0.015mS) on a Gottlieb System 80 Black Hole.
+//  Measuring directly across the coil itself, I measured the pulse width of when there is high voltage across the flipper coil to when the high voltage is cut off - EOS switch opened.  I can see switch bounce, but clearly and consistently the EOS is definitely opened by 15uS and the hold coil is engaged.
+// WPC-95 Monster Bash, Right Flipper: Time from coil - energized to EOS active(upswing): 19mS - 24mS (19mS when I see EOS first closure, 24mS when it is done bouncing and solidly closed.)
+//                                     Time from when coil DE-energizes to EOS open(flipper released, downswing) 89mS
+//                                     Latency from when the flipper opto board opto goes low(cabinet button pressed) to when the flipper solenoid drive signal goes low(flipper coil becomes energized): Range of time : 0.46mS - 4.14mS. Both of those measurements are one - offs that I caught when repeatedly pressing the flipper button looking for outliers.
+//                                      Several were slightly less than 1mS and others were slightly less than 4mS, but the vast majority were in the 2.54mS - 3.34mS range.
+// Flicking the flipper button to simulate a tap pass on Monster Bash (all times in milliseconds):
+//  Button press to Flipper Energized      1.6        2.0   0.3   3.5   4.1    3.3  0.5        3.8   2.3   1.6   3.9  0.5  1.8   2.6   1.1   2.9        0.4
+//  Button press to Button Release         2.2        8.8  10.3  10.4   9.0   11.9  0.9       12.9  22.9  11.6  13.6  2.6  2.4  10.1  12.5  10.3        1.8
+//  Button press to Flipper de-energized   5.3/7.5*  10.1  12.4  15.6  11.8   15.1  4.6/8.5*  16.1  26.5  13.9  16.1  4.2  5.8  11.0  13.6  11.1/12.3*  4.4/7.1*
+//  Observations:
+//   - as before, WPC introduces different "lags" between button press and when it fires the flipper. It would seem to depend on when WPC samples the button press and then the CPU delays internally before the solenoid drive is activated
+//   - could do a button press and release in under 1mS. This is the time from when the button press interrupts the opto on the flipper opto board to when the button is released, and the opto path is no longer interrupted by the button mechanism
+//   - the bottom row shows that WPC delays are evident on de-energizing the flipper as well. It depends on when WPC samples the button released, and then some CPU delay later WPC turns off the flipper solenoid drive signal
+//   - the "hard" flip case (22.9mS button press) was still not a full-on power flip but hard enough to smack the coil stop pretty loudly
+//   - in some instances, instead of the flipper de-energizing completely, it went to around half power (35V or so) for a few milliseconds before de-energizing completely
+// Take aways are:
+//   - flipper button presses for tricks, tap passes, etc, have to be very short. As such, for a true simulation, the button press has to be sampled at as high a rate as possible (1mS = 1000Hz, or faster) to detect the press and, very shortly after, the release
+//   - flipper button press to coil drive is even shorter - again suggesting a faster sample rate of the button is better
+
 #include "stdafx.h"
 
 FlipperAnimObject::FlipperAnimObject(const Vertex2D& center, float baser, float endr, float flipr, float angleStart, float angleEnd,
