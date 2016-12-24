@@ -5555,133 +5555,15 @@ INT_PTR CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
       SendMessage(GetDlgItem(hwndDlg, IDC_UDAXISCOMBO), CB_ADDSTRING, 0, (LPARAM)"Slider 2");
       SendMessage(GetDlgItem(hwndDlg, IDC_UDAXISCOMBO), CB_SETCURSEL, selected, 0);
 
-      hr = GetRegInt("Player", "LFlipKey", &key);
-      if (hr != S_OK || key > 0xdd)
-         key = DIK_LSHIFT;
-      hwndControl = GetDlgItem(hwndDlg, IDC_LEFTFLIPPER);
-      SetWindowText(hwndControl, rgszKeyName[key]);
-      SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
-
-      hr = GetRegInt("Player", "RFlipKey", &key);
-      if (hr != S_OK || key > 0xdd)
-         key = DIK_RSHIFT;
-      hwndControl = GetDlgItem(hwndDlg, IDC_RIGHTFLIPPER);
-      SetWindowText(hwndControl, rgszKeyName[key]);
-      SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
-
-      hr = GetRegInt("Player", "LTiltKey", &key);
-      if (hr != S_OK || key > 0xdd)
-         key = DIK_Z;
-      hwndControl = GetDlgItem(hwndDlg, IDC_LEFTTILT);
-      SetWindowText(hwndControl, rgszKeyName[key]);
-      SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
-
-      hr = GetRegInt("Player", "RTiltKey", &key);
-      if (hr != S_OK || key > 0xdd)
-         key = DIK_SLASH;
-      hwndControl = GetDlgItem(hwndDlg, IDC_RIGHTTILT);
-      SetWindowText(hwndControl, rgszKeyName[key]);
-      SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
-
-      hr = GetRegInt("Player", "CTiltKey", &key);
-      if (hr != S_OK || key > 0xdd)
-         key = DIK_SPACE;
-      hwndControl = GetDlgItem(hwndDlg, IDC_CENTERTILT);
-      SetWindowText(hwndControl, rgszKeyName[key]);
-      SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
-
-      hr = GetRegInt("Player", "PlungerKey", &key);
-      if (hr != S_OK || key > 0xdd)
-         key = DIK_RETURN;
-      hwndControl = GetDlgItem(hwndDlg, IDC_PLUNGER_TEXT);
-      SetWindowText(hwndControl, rgszKeyName[key]);
-      SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
-
-      hr = GetRegInt("Player", "AddCreditKey", &key);
-      if (hr != S_OK || key > 0xdd)
-         key = DIK_5;
-      hwndControl = GetDlgItem(hwndDlg, IDC_ADDCREDIT);
-      SetWindowText(hwndControl, rgszKeyName[key]);
-      SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
-
-      hr = GetRegInt("Player", "AddCreditKey2", &key);
-      if (hr != S_OK || key > 0xdd)
-         key = DIK_4;
-      hwndControl = GetDlgItem(hwndDlg, IDC_ADDCREDITKEY2);
-      SetWindowText(hwndControl, rgszKeyName[key]);
-      SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
-
-      hr = GetRegInt("Player", "StartGameKey", &key);
-      if (hr != S_OK || key > 0xdd)
-         key = DIK_1;
-      hwndControl = GetDlgItem(hwndDlg, IDC_STARTGAME);
-      SetWindowText(hwndControl, rgszKeyName[key]);
-      SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
-
-      hr = GetRegInt("Player", "ExitGameKey", &key);
-      if (hr != S_OK || key > 0xdd)
-         key = DIK_Q;
-      hwndControl = GetDlgItem(hwndDlg, IDC_EXITGAME);
-      SetWindowText(hwndControl, rgszKeyName[key]);
-      SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
-
-      hr = GetRegInt("Player", "FrameCount", &key);
-      if (hr != S_OK || key > 0xdd)
-         key = DIK_F11;
-      hwndControl = GetDlgItem(hwndDlg, IDC_FRAMECOUNT);
-      SetWindowText(hwndControl, rgszKeyName[key]);
-      SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
-
-      hr = GetRegInt("Player", "VolumeUp", &key);
-      if (hr != S_OK || key > 0xdd)
-         key = DIK_MINUS;
-      hwndControl = GetDlgItem(hwndDlg, IDC_VOLUMEUP);
-      SetWindowText(hwndControl, rgszKeyName[key]);
-      SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
-
-      hr = GetRegInt("Player", "VolumeDown", &key);
-      if (hr != S_OK || key > 0xdd)
-         key = DIK_EQUALS;
-      hwndControl = GetDlgItem(hwndDlg, IDC_VOLUMEDN);
-      SetWindowText(hwndControl, rgszKeyName[key]);
-      SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
-
-      hr = GetRegInt("Player", "DebugBalls", &key);
-      if (hr != S_OK || key > 0xdd)
-         key = DIK_O;
-      hwndControl = GetDlgItem(hwndDlg, IDC_DEBUGBALL);
-      SetWindowText(hwndControl, rgszKeyName[key]);
-      SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
-
-      hr = GetRegInt( "Player", "Debugger", &key );
-      if(hr != S_OK || key > 0xdd)
-          key = DIK_D;
-      hwndControl = GetDlgItem( hwndDlg, IDC_DEBUGGER );
-      SetWindowText( hwndControl, rgszKeyName[key] );
-      SetWindowLongPtr( hwndControl, GWLP_USERDATA, key );
-      
-      hr = GetRegInt("Player", "RMagnaSave", &key);
-      if (hr != S_OK || key > 0xdd)
-         //key = DIK_BACKSPACE;
-         key = DIK_RCONTROL;		//157 (0x9D) DIK_RCONTROL 
-      hwndControl = GetDlgItem(hwndDlg, IDC_RMAGSAVE);
-      SetWindowText(hwndControl, rgszKeyName[key]);
-      SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
-
-      hr = GetRegInt("Player", "LMagnaSave", &key);
-      if (hr != S_OK || key > 0xdd)
-         //key = DIK_APOSTROPHE;
-         key = DIK_LCONTROL; //29 (0x1D)
-      hwndControl = GetDlgItem(hwndDlg, IDC_LMAGSAVE);
-      SetWindowText(hwndControl, rgszKeyName[key]);
-      SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
-
-      hr = GetRegInt("Player", "MechTilt", &key);
-      if (hr != S_OK || key > 0xdd)
-         key = DIK_T;
-      hwndControl = GetDlgItem(hwndDlg, IDC_MECHTILT);
-      SetWindowText(hwndControl, rgszKeyName[key]);
-      SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
+      for (unsigned int i = 0; i < eCKeys; ++i) if (regkey_idc[i] != -1)
+      {
+         hr = GetRegInt("Player", regkey_string[i], &key);
+         if (hr != S_OK || key > 0xdd)
+            key = regkey_defdik[i];
+         hwndControl = GetDlgItem(hwndDlg, regkey_idc[i]);
+         SetWindowText(hwndControl, rgszKeyName[key]);
+         SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);
+      }
 
       hr = GetRegInt("Player", "JoyCustom1Key", &key);
       if (hr != S_OK || key > 0xdd)
@@ -5833,7 +5715,12 @@ INT_PTR CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
       {
          if (key < 0xDD)	// Key mapping
          {
-            if (key == DIK_ESCAPE)
+            int key_esc;
+            const HRESULT hr = GetRegInt("Player", "EscapeKey", &key_esc);
+            if (hr != S_OK || key_esc > 0xdd)
+               key_esc = DIK_ESCAPE;
+
+            if (key == key_esc)
             {
                // reset key to old value
                const size_t oldkey = GetWindowLongPtr(pksw->hwndKeyControl, GWLP_USERDATA);
@@ -6276,77 +6163,12 @@ INT_PTR CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
                RegCloseKey(hkey);
             }
 
-            hwndControl = GetDlgItem(hwndDlg, IDC_LEFTFLIPPER);
-            key = GetWindowLongPtr(hwndControl, GWLP_USERDATA);
-            SetRegValue("Player", "LFlipKey", REG_DWORD, &key, 4);
-
-            hwndControl = GetDlgItem(hwndDlg, IDC_RIGHTFLIPPER);
-            key = GetWindowLongPtr(hwndControl, GWLP_USERDATA);
-            SetRegValue("Player", "RFlipKey", REG_DWORD, &key, 4);
-
-            hwndControl = GetDlgItem(hwndDlg, IDC_LEFTTILT);
-            key = GetWindowLongPtr(hwndControl, GWLP_USERDATA);
-            SetRegValue("Player", "LTiltKey", REG_DWORD, &key, 4);
-
-            hwndControl = GetDlgItem(hwndDlg, IDC_RIGHTTILT);
-            key = GetWindowLongPtr(hwndControl, GWLP_USERDATA);
-            SetRegValue("Player", "RTiltKey", REG_DWORD, &key, 4);
-
-            hwndControl = GetDlgItem(hwndDlg, IDC_CENTERTILT);
-            key = GetWindowLongPtr(hwndControl, GWLP_USERDATA);
-            SetRegValue("Player", "CTiltKey", REG_DWORD, &key, 4);
-
-            hwndControl = GetDlgItem(hwndDlg, IDC_PLUNGER_TEXT);
-            key = GetWindowLongPtr(hwndControl, GWLP_USERDATA);
-            SetRegValue("Player", "PlungerKey", REG_DWORD, &key, 4);
-
-            hwndControl = GetDlgItem(hwndDlg, IDC_ADDCREDIT);
-            key = GetWindowLongPtr(hwndControl, GWLP_USERDATA);
-            SetRegValue("Player", "AddCreditKey", REG_DWORD, &key, 4);
-
-            hwndControl = GetDlgItem(hwndDlg, IDC_ADDCREDITKEY2);
-            key = GetWindowLongPtr(hwndControl, GWLP_USERDATA);
-            SetRegValue("Player", "AddCreditKey2", REG_DWORD, &key, 4);
-
-            hwndControl = GetDlgItem(hwndDlg, IDC_STARTGAME);
-            key = GetWindowLongPtr(hwndControl, GWLP_USERDATA);
-            SetRegValue("Player", "StartGameKey", REG_DWORD, &key, 4);
-
-            hwndControl = GetDlgItem(hwndDlg, IDC_EXITGAME);
-            key = GetWindowLongPtr(hwndControl, GWLP_USERDATA);
-            SetRegValue("Player", "ExitGameKey", REG_DWORD, &key, 4);
-
-            hwndControl = GetDlgItem(hwndDlg, IDC_FRAMECOUNT);
-            key = GetWindowLongPtr(hwndControl, GWLP_USERDATA);
-            SetRegValue("Player", "FrameCount", REG_DWORD, &key, 4);
-
-            hwndControl = GetDlgItem(hwndDlg, IDC_VOLUMEUP);
-            key = GetWindowLongPtr(hwndControl, GWLP_USERDATA);
-            SetRegValue("Player", "VolumeUp", REG_DWORD, &key, 4);
-
-            hwndControl = GetDlgItem(hwndDlg, IDC_VOLUMEDN);
-            key = GetWindowLongPtr(hwndControl, GWLP_USERDATA);
-            SetRegValue("Player", "VolumeDown", REG_DWORD, &key, 4);
-
-            hwndControl = GetDlgItem(hwndDlg, IDC_DEBUGBALL);
-            key = GetWindowLongPtr(hwndControl, GWLP_USERDATA);
-            SetRegValue("Player", "DebugBalls", REG_DWORD, &key, 4);
-
-            hwndControl = GetDlgItem( hwndDlg, IDC_DEBUGGER );
-            key = GetWindowLongPtr( hwndControl, GWLP_USERDATA );
-            SetRegValue( "Player", "Debugger", REG_DWORD, &key, 4 );
-
-            hwndControl = GetDlgItem( hwndDlg, IDC_RMAGSAVE );
-            key = GetWindowLongPtr(hwndControl, GWLP_USERDATA);
-            SetRegValue("Player", "RMagnaSave", REG_DWORD, &key, 4);
-
-            hwndControl = GetDlgItem(hwndDlg, IDC_LMAGSAVE);
-            key = GetWindowLongPtr(hwndControl, GWLP_USERDATA);
-            SetRegValue("Player", "LMagnaSave", REG_DWORD, &key, 4);
-
-            hwndControl = GetDlgItem(hwndDlg, IDC_MECHTILT);
-            key = GetWindowLongPtr(hwndControl, GWLP_USERDATA);
-            SetRegValue("Player", "MechTilt", REG_DWORD, &key, 4);
+            for (unsigned int i = 0; i < eCKeys; ++i) if (regkey_idc[i] != -1)
+            {
+               hwndControl = GetDlgItem(hwndDlg, regkey_idc[i]);
+               key = GetWindowLongPtr(hwndControl, GWLP_USERDATA);
+               SetRegValue("Player", regkey_string[i], REG_DWORD, &key, 4);
+            }
 
             hwndControl = GetDlgItem(hwndDlg, IDC_JOYCUSTOM1);
             key = GetWindowLongPtr(hwndControl, GWLP_USERDATA);

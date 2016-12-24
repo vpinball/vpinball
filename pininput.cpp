@@ -440,42 +440,13 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
       }
    }
 #else
-   #define NUM_STATIC_RGKEYS 23
-   static const unsigned int m_static_rgKeys[NUM_STATIC_RGKEYS] = {
-	   DIK_LSHIFT,
-	   DIK_RSHIFT,
-	   DIK_LEFT,
-	   DIK_RIGHT,
-	   DIK_ESCAPE,
-	   DIK_UP,
-	   DIK_DOWN,
-	   DIK_1,
-	   DIK_2,
-	   DIK_3,
-	   DIK_4,
-	   DIK_5,
-	   DIK_6,
-	   DIK_7,
-	   DIK_8,
-	   DIK_9,
-	   DIK_0,
-	   DIK_END,
-	   //DIK_EQUALS,
-	   //DIK_MINUS,
-	   DIK_Z,
-	   DIK_SPACE,
-	   DIK_SLASH,
-	   DIK_T,
-	   DIK_F11
-   };
-
    // cache to avoid double key triggers
-   static bool oldKeyStates[eCKeys + NUM_STATIC_RGKEYS] = { false };
+   static bool oldKeyStates[eCKeys] = { false };
 
    unsigned int i2 = 0;
-   for (unsigned int i = 0; i < eCKeys + NUM_STATIC_RGKEYS; ++i)
+   for (unsigned int i = 0; i < eCKeys; ++i)
    {
-      const unsigned int rgk = (i < eCKeys) ? (unsigned int)g_pplayer->m_rgKeys[i] : m_static_rgKeys[i - eCKeys];
+      const unsigned int rgk = (unsigned int)g_pplayer->m_rgKeys[i];
       const unsigned int vk = get_vk(rgk);
       if (vk == ~0u)
          continue;
@@ -1097,7 +1068,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
                  }
              }
          }
-         else if(((input->dwOfs == DIK_ESCAPE) && (m_disable_esc == 0)) || (input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eExitGame]))
+         else if(((input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eEscape]) && (m_disable_esc == 0)) || (input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eExitGame]))
          {
             // Check if we have started a game yet.
             if (started() || !m_ptable->m_tblAutoStartEnabled)

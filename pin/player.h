@@ -6,6 +6,7 @@
 
 #define DEFAULT_PLAYER_WIDTH 1024
 
+// NOTE that the following four definitions need to be in sync in their order!
 enum EnumAssignKeys
 {
    eLeftFlipperKey,
@@ -27,7 +28,75 @@ enum EnumAssignKeys
    eVolumeUp,
    eVolumeDown,
    eEnable3D,
+   eEscape,
    eCKeys
+};
+static const char* regkey_string[eCKeys] = {
+	"LFlipKey",
+	"RFlipKey",
+	"LTiltKey",
+	"RTiltKey",
+	"CTiltKey",
+	"PlungerKey",
+	"FrameCount",
+	"DebugBalls",
+	"Debugger",
+	"AddCreditKey",
+	"AddCreditKey2",
+	"StartGameKey",
+	"MechTilt",
+	"RMagnaSave",
+	"LMagnaSave",
+	"ExitGameKey",
+	"VolumeUp",
+	"VolumeDown",
+	"Enable3DKey",
+	"EscapeKey"
+};
+static const int regkey_defdik[eCKeys] = {
+	DIK_LSHIFT,
+	DIK_RSHIFT,
+	DIK_Z,
+	DIK_SLASH,
+	DIK_SPACE,
+	DIK_RETURN,
+	DIK_F11,
+	DIK_O,
+	DIK_D,
+	DIK_5,
+	DIK_4,
+	DIK_1,
+	DIK_T,
+	DIK_RCONTROL,
+	DIK_LCONTROL,
+	DIK_Q,
+	DIK_EQUALS,
+	DIK_MINUS,
+	DIK_F10,
+	DIK_ESCAPE
+};
+static const int regkey_idc[eCKeys] = {
+	IDC_LEFTFLIPPER,
+	IDC_RIGHTFLIPPER,
+	IDC_LEFTTILT,
+	IDC_RIGHTTILT,
+	IDC_CENTERTILT,
+	IDC_PLUNGER_TEXT,
+	IDC_FRAMECOUNT,
+	IDC_DEBUGBALL,
+	IDC_DEBUGGER,
+	IDC_ADDCREDIT,
+	IDC_ADDCREDITKEY2,
+	IDC_STARTGAME,
+	IDC_MECHTILT,
+	IDC_RMAGSAVE,
+	IDC_LMAGSAVE,
+	IDC_EXITGAME,
+	IDC_VOLUMEUP,
+	IDC_VOLUMEDN,
+
+	-1, //!! missing in key dialog!
+	-1
 };
 
 // Note: Nowadays the original code seems to be counter-productive, so we use the official
