@@ -27,7 +27,7 @@
 #define APP_JOYSTICKMX (APP_JOYSTICKMN + PININ_JOYMXCNT -1)
 #define APP_JOYSTICK(n) (APP_JOYSTICKMN + n)
 
-#define USE_DINPUT_FOR_KEYBOARD //!! otherwise: F11 not working and flipper sound on default table triggered multiple times
+#define USE_DINPUT_FOR_KEYBOARD // can lead to less input lag maybe on some systems if disabled, but can miss input if key is only pressed very very quickly and/or FPS are low
 
 class PinInput
 {
@@ -42,7 +42,7 @@ public:
    void FireKeyEvent(const int dispid, const int keycode);
 
    void PushQueue(DIDEVICEOBJECTDATA * const data, const unsigned int app_data/*, const U32 curr_time_msec*/);
-   const DIDEVICEOBJECTDATA *GetTail( /*const U32 curr_sim_msec*/);
+   const DIDEVICEOBJECTDATA *GetTail(/*const U32 curr_sim_msec*/);
 
    void autostart(const U32 msecs, const U32 retry_msecs, const U32 curr_time_msec);
    void button_exit(const U32 msecs, const U32 curr_time_msec);

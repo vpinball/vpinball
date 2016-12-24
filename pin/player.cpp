@@ -743,140 +743,14 @@ void Player::CreateBoundingHitShapes(Vector<HitObject> *pvho)
 
 void Player::InitKeys()
 {
-   HRESULT hr;
-   int key;
-   hr = GetRegInt("Player", "LFlipKey", &key);
-   if (hr != S_OK || key > 0xdd)
+   for(unsigned int i = 0; i < eCKeys; ++i)
    {
-      key = DIK_LSHIFT;
+      int key;
+      const HRESULT hr = GetRegInt("Player", regkey_string[i], &key);
+      if (hr != S_OK || key > 0xdd)
+          key = regkey_defdik[i];
+      m_rgKeys[i] = (EnumAssignKeys)key;
    }
-   m_rgKeys[eLeftFlipperKey] = (EnumAssignKeys)key;
-
-   hr = GetRegInt("Player", "RFlipKey", &key);
-   if (hr != S_OK || key > 0xdd)
-   {
-      key = DIK_RSHIFT;
-   }
-   m_rgKeys[eRightFlipperKey] = (EnumAssignKeys)key;
-
-   hr = GetRegInt("Player", "LTiltKey", &key);
-   if (hr != S_OK || key > 0xdd)
-   {
-      key = DIK_Z;
-   }
-   m_rgKeys[eLeftTiltKey] = (EnumAssignKeys)key;
-
-   hr = GetRegInt("Player", "RTiltKey", &key);
-   if (hr != S_OK || key > 0xdd)
-   {
-      key = DIK_SLASH;
-   }
-   m_rgKeys[eRightTiltKey] = (EnumAssignKeys)key;
-
-   hr = GetRegInt("Player", "CTiltKey", &key);
-   if (hr != S_OK || key > 0xdd)
-   {
-      key = DIK_SPACE;
-   }
-   m_rgKeys[eCenterTiltKey] = (EnumAssignKeys)key;
-
-   hr = GetRegInt("Player", "PlungerKey", &key);
-   if (hr != S_OK || key > 0xdd)
-   {
-      key = DIK_RETURN;
-   }
-   m_rgKeys[ePlungerKey] = (EnumAssignKeys)key;
-
-   hr = GetRegInt("Player", "AddCreditKey", &key);
-   if (hr != S_OK || key > 0xdd)
-   {
-      key = DIK_5;
-   }
-   m_rgKeys[eAddCreditKey] = (EnumAssignKeys)key;
-
-   hr = GetRegInt("Player", "AddCreditKey2", &key);
-   if (hr != S_OK || key > 0xdd)
-   {
-      key = DIK_4;
-   }
-   m_rgKeys[eAddCreditKey2] = (EnumAssignKeys)key;
-
-   hr = GetRegInt("Player", "StartGameKey", &key);
-   if (hr != S_OK || key > 0xdd)
-   {
-      key = DIK_1;
-   }
-   m_rgKeys[eStartGameKey] = (EnumAssignKeys)key;
-
-   hr = GetRegInt("Player", "ExitGameKey", &key);
-   if (hr != S_OK || key > 0xdd)
-   {
-      key = DIK_Q;
-   }
-   m_rgKeys[eExitGame] = (EnumAssignKeys)key;
-
-   hr = GetRegInt("Player", "FrameCount", &key);
-   if (hr != S_OK || key > 0xdd)
-   {
-      key = DIK_F11;
-   }
-   m_rgKeys[eFrameCount] = (EnumAssignKeys)key;
-
-   hr = GetRegInt("Player", "VolumeUp", &key);
-   if (hr != S_OK || key > 0xdd)
-   {
-      key = DIK_EQUALS;
-   }
-   m_rgKeys[eVolumeUp] = (EnumAssignKeys)key;
-
-   hr = GetRegInt("Player", "VolumeDown", &key);
-   if (hr != S_OK || key > 0xdd)
-   {
-      key = DIK_MINUS;
-   }
-   m_rgKeys[eVolumeDown] = (EnumAssignKeys)key;
-
-   hr = GetRegInt("Player", "DebugBalls", &key);
-   if (hr != S_OK || key > 0xdd)
-   {
-      key = DIK_O;
-   }
-   m_rgKeys[eDBGBalls] = (EnumAssignKeys)key;
-
-   hr = GetRegInt( "Player", "Debugger", &key );
-   if(hr != S_OK || key > 0xdd)
-   {
-       key = DIK_D;
-   }
-   m_rgKeys[eDebugger] = (EnumAssignKeys)key;
-
-   hr = GetRegInt("Player", "MechTilt", &key);
-   if (hr != S_OK || key > 0xdd)
-   {
-      key = DIK_T;
-   }
-   m_rgKeys[eMechanicalTilt] = (EnumAssignKeys)key;
-
-   hr = GetRegInt("Player", "RMagnaSave", &key);
-   if (hr != S_OK || key > 0xdd)
-   {
-      key = DIK_RCONTROL;             //157 (0x9D) DIK_RCONTROL        0x9D
-   }
-   m_rgKeys[eRightMagnaSave] = (EnumAssignKeys)key;
-
-   hr = GetRegInt("Player", "LMagnaSave", &key);
-   if (hr != S_OK || key > 0xdd)
-   {
-      key = DIK_LCONTROL; //29 (0x1D)
-   }
-   m_rgKeys[eLeftMagnaSave] = (EnumAssignKeys)key;
-
-   hr = GetRegInt("Player", "Enable3DKey", &key);
-   if (hr != S_OK || key > 0xdd)
-   {
-      key = DIK_F10;
-   }
-   m_rgKeys[eEnable3D] = (EnumAssignKeys)key;
 }
 
 void Player::InitRegValues()
