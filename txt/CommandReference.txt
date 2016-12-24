@@ -1,4 +1,4 @@
-Visual Pinball 10 command Reference v0.91
+Visual Pinball 10 command Reference v0.92
 by Fuzzel
 
 This is a quick overview of all commands/variables VP knows. A lot of them do not have an effect when called from the script because they have an impact on the pre-rendering only.
@@ -6,6 +6,8 @@ Variables starting with a (*) can't be changed by the script (most can be read t
 
 
 Changelog:
+10.3:
+- 
 10.2:
 - add GameTime and SystemTime to get the exact time in millisecond resolution
 - extend TimerInterval of each element by a special '-1' value which makes it dependent on the FPS that a user can reach, so the timer is only triggered exactly once per frame
