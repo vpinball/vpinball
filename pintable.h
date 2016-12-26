@@ -818,8 +818,9 @@ public:
 #endif
    STDMETHOD(get_UserDirectory)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(get_StartGameKey)(/*[out, retval]*/ long *pVal);
-   STDMETHOD(EndMusic)();
    STDMETHOD(PlayMusic)(BSTR str, float volume);
+   STDMETHOD(put_MusicVolume)(float volume);
+   STDMETHOD(EndMusic)();
    STDMETHOD(get_PlungerKey)(/*[out, retval]*/ long *pVal);
    STDMETHOD(get_CenterTiltKey)(/*[out, retval]*/ long *pVal);
    STDMETHOD(get_RightTiltKey)(/*[out, retval]*/ long *pVal);

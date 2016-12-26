@@ -15,7 +15,7 @@ public:
    XAudPlayer();
    ~XAudPlayer();
 
-   int Init(char * const szFileName, const int volume);
+   int Init(char * const szFileName, const float volume);
 
    int Tick();
 
@@ -23,6 +23,8 @@ public:
 
    void Pause();
    void Unpause();
+
+   void Volume(const float volume);
 
 private:
 

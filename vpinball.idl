@@ -701,6 +701,7 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propget, id(8), helpstring("property CenterTiltKey")] HRESULT CenterTiltKey([out, retval] long *pVal);
                 [propget, id(9), helpstring("property PlungerKey")] HRESULT PlungerKey([out, retval] long *pVal);
                 [id(10), helpstring("method PlayMusic")] HRESULT PlayMusic(BSTR str, [defaultvalue(1)] float Volume);
+                [propput, id(15), helpstring("property MusicVolume")] HRESULT MusicVolume(float Volume);
                 [id(11), helpstring("method EndMusic")] HRESULT EndMusic();
                 [propget, id(12), helpstring("property StartGameKey")] HRESULT StartGameKey([out, retval] long *pVal);
                 [propget, id(13), helpstring("property UserDirectory")] HRESULT UserDirectory([out, retval] BSTR *pVal);
@@ -709,7 +710,7 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 #else
                 [propget, id(14), helpstring("property GetPlayerHWnd")] HRESULT GetPlayerHWnd([out, retval] long *pVal);
 #endif
-                //[id(15), helpstring("method AddObject")] HRESULT AddObject(BSTR Name, IDispatch *pdisp);
+                //[id(XX), helpstring("method AddObject")] HRESULT AddObject(BSTR Name, IDispatch *pdisp);
                 [id(16), helpstring("method StopSound")] HRESULT StopSound(BSTR Sound);
                 [id(17), helpstring("method SaveValue")] HRESULT SaveValue(BSTR TableName, BSTR ValueName, VARIANT Value);
                 [id(18), helpstring("method LoadValue")] HRESULT LoadValue(BSTR TableName, BSTR ValueName, [out, retval] VARIANT *Value);

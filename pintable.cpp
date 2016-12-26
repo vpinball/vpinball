@@ -125,7 +125,11 @@ STDMETHODIMP ScriptGlobalTable::PlayMusic(BSTR str, float volume)
       g_pplayer->m_pxap = new XAudPlayer();
 
       const float MusicVolumef = max(min((float)g_pplayer->m_MusicVolume*m_pt->m_TableMusicVolume*volume, 100.0f), 0.0f);
+#ifdef NO_XAUDIO
+      const float MusicVolume = MusicVolumef;
+#else
       const int MusicVolume = (MusicVolumef == 0.0f) ? DSBVOLUME_MIN : (int)(logf(MusicVolumef)*(float)(1000.0 / log(10.0)) - 2000.0f); // 10 volume = -10Db
+#endif
 
       if (!g_pplayer->m_pxap->Init(szPath, MusicVolume))
       {
@@ -150,6 +154,22 @@ STDMETHODIMP ScriptGlobalTable::EndMusic()
    }
 
    return S_OK;
+}
+
+STDMETHODIMP ScriptGlobalTable::put_MusicVolume(float volume)
+{
+	if (g_pplayer && g_pplayer->m_fPlayMusic)
+	{
+		const float MusicVolumef = max(min((float)g_pplayer->m_MusicVolume*m_pt->m_TableMusicVolume*volume, 100.0f), 0.0f);
+#ifdef NO_XAUDIO
+		const float MusicVolume = MusicVolumef;
+#else
+		const int MusicVolume = (MusicVolumef == 0.0f) ? DSBVOLUME_MIN : (int)(logf(MusicVolumef)*(float)(1000.0 / log(10.0)) - 2000.0f); // 10 volume = -10Db
+#endif
+		g_pplayer->m_pxap->Volume(MusicVolume);
+	}
+
+	return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_Name(BSTR *pVal)
@@ -8828,11 +8848,11 @@ STDMETHODIMP PinTable::put_BallDecalMode(VARIANT_BOOL newVal)
 {
    STARTUNDO
 
-      m_BallDecalMode = !!newVal;
+   m_BallDecalMode = !!newVal;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_TableMusicVolume(int *pVal)
@@ -8846,11 +8866,11 @@ STDMETHODIMP PinTable::put_TableMusicVolume(int newVal)
 {
    STARTUNDO
 
-      m_TableMusicVolume = (float)newVal / 100.0f;
+   m_TableMusicVolume = (float)newVal / 100.0f;
 
    STOPUNDO
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_TableAdaptiveVSync(int *pVal)

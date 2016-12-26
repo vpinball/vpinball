@@ -7,6 +7,7 @@ Variables starting with a (*) can't be changed by the script (most can be read t
 
 Changelog:
 10.3:
+- add MusicVolume to the table element
 - add Damping to the gate element
 - change Friction to Damping (which was actually AntiFriction before, but never mentioned) for the spinner element (which also changes the input range from 0..100 to 0..1, and is inverse to before, e.g. "1-OldFriction/100")
 10.2:
@@ -176,6 +177,7 @@ PlaySound(string, int loopcount, float volume, float pan, float randompitch, int
  - so f.e. PlaySound "FlipperUp",0,0.5,-1.0,1.0 would play the sound not looped (0), at half the volume (0.5), only on left speaker (-1.0), with varying pitch (1.0)
 StopSound(string)
 PlayMusic(string, float volume) - volume 0..1
+MusicVolume(float volume) - 0..1
 EndMusic()
 FireKnocker(int Count)
 QuitPlayer(int CloseType)
