@@ -35,27 +35,47 @@ U32 msec()
    return (U32)((unsigned long long)cur_tick * 1000ull / (unsigned long long)TimerFreq.QuadPart);
 }
 
+// tries(!) to be as exact as possible at the cost of potentially causing trouble with other threads/cores due to OS madness
 // needs timeBeginPeriod(1) before calling 1st time to make the Sleep(1) in here behave more or less accurately (and timeEndPeriod(1) after not needing that precision anymore)
+// but VP code does this already
 void uSleep(const unsigned long long u)
 {
    if (sTimerInit == 0) return;
 
    LARGE_INTEGER TimerNow;
    QueryPerformanceCounter(&TimerNow);
-   LARGE_INTEGER TimerEndSleep;
-   TimerEndSleep.QuadPart = TimerNow.QuadPart + (((u - 2000ull) * TimerFreq.QuadPart) / 1000000ull - sTimerStart.QuadPart);
    LARGE_INTEGER TimerEnd;
-   TimerEnd.QuadPart = TimerNow.QuadPart + ((u * TimerFreq.QuadPart) / 1000000ull - sTimerStart.QuadPart);
+   TimerEnd.QuadPart = TimerNow.QuadPart + ((u * TimerFreq.QuadPart) / 1000000ull);
+   const LONGLONG TwoMSTimerTicks = (2000 * TimerFreq.QuadPart) / 1000000ull;
 
-   do
+   while (TimerNow.QuadPart < TimerEnd.QuadPart)
    {
-      if((u > 2000ull) && (TimerNow.QuadPart - sTimerStart.QuadPart < TimerEndSleep.QuadPart))
-          Sleep(1); // really pause thread for 1-2ms (depending on OS)
+      if ((TimerEnd.QuadPart - TimerNow.QuadPart) > TwoMSTimerTicks)
+         Sleep(1); // really pause thread for 1-2ms (depending on OS)
       else
-          SwitchToThread(); // let other threads on same core run
+         SwitchToThread(); // let other threads on same core run //!! could also try Sleep(0) or __mm_pause() here
 
       QueryPerformanceCounter(&TimerNow);
-   } while (TimerNow.QuadPart - sTimerStart.QuadPart < TimerEnd.QuadPart);
+   }
+}
+
+// can sleep too long by 1000 to 2000 (=1 to 2ms)
+// needs timeBeginPeriod(1) before calling 1st time to make the Sleep(1) in here behave more or less accurately (and timeEndPeriod(1) after not needing that precision anymore)
+// but VP code does this already
+void uOverSleep(const unsigned long long u)
+{
+   if (sTimerInit == 0) return;
+
+   LARGE_INTEGER TimerNow;
+   QueryPerformanceCounter(&TimerNow);
+   LARGE_INTEGER TimerEnd;
+   TimerEnd.QuadPart = TimerNow.QuadPart + ((u * TimerFreq.QuadPart) / 1000000ull);
+
+   while (TimerNow.QuadPart < TimerEnd.QuadPart)
+   {
+      Sleep(1); // really pause thread for 1-2ms (depending on OS)
+      QueryPerformanceCounter(&TimerNow);
+   }
 }
 
 //
