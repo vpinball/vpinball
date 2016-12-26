@@ -1197,8 +1197,7 @@ STDMETHODIMP Gate::get_Friction(float *pVal)
 
 STDMETHODIMP Gate::put_Friction(float newVal)
 {
-   if (newVal < 0) newVal = 0;
-   else if (newVal > 1.0f) newVal = 1.0f;
+   newVal = clamp(newVal, 0.f,1.f);
 
    if (g_pplayer)
    {
@@ -1208,7 +1207,7 @@ STDMETHODIMP Gate::put_Friction(float newVal)
    {
       STARTUNDO
 
-         m_d.m_friction = newVal;
+      m_d.m_friction = newVal;
 
       STOPUNDO
    }
@@ -1218,20 +1217,26 @@ STDMETHODIMP Gate::put_Friction(float newVal)
 
 STDMETHODIMP Gate::get_AntiFriction(float *pVal)
 {
-   *pVal = (1.0f - m_d.m_antifriction)*100.0f;
+   *pVal = (1.0f - (!g_pplayer ? m_d.m_antifriction : powf(m_phitgate->m_gateanim.m_damping,(float)(1.0/PHYS_FACTOR))))*100.0f;
 
    return S_OK;
 }
 
 STDMETHODIMP Gate::put_AntiFriction(float newVal)
 {
-   STARTUNDO
+   const float tmp = clamp(1.0f - newVal*(float)(1.0 / 100.0), 0.0f, 1.0f);
+   if (g_pplayer)
+      m_phitgate->m_gateanim.m_damping = powf(tmp, (float)PHYS_FACTOR); //0.996f;
+   else
+   {
+      STARTUNDO
 
-      m_d.m_antifriction = clamp(1.0f - newVal*(float)(1.0 / 100.0), 0.0f, 1.0f);
+      m_d.m_antifriction = tmp;
 
-   STOPUNDO
+      STOPUNDO
+   }
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Gate::get_Visible(VARIANT_BOOL *pVal)

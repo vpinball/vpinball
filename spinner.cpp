@@ -720,22 +720,28 @@ STDMETHODIMP Spinner::put_Height(float newVal)
       return S_OK;
 }
 
-STDMETHODIMP Spinner::get_Friction(float *pVal)
+STDMETHODIMP Spinner::get_AntiFriction(float *pVal)
 {
-   *pVal = (1.0f - m_d.m_antifriction)*100.0f;
+   *pVal = (1.0f - (!g_pplayer ? m_d.m_antifriction : powf(m_phitspinner->m_spinneranim.m_damping,(float)(1.0/PHYS_FACTOR))))*100.0f;
 
    return S_OK;
 }
 
-STDMETHODIMP Spinner::put_Friction(float newVal)
+STDMETHODIMP Spinner::put_AntiFriction(float newVal)
 {
-   STARTUNDO
+   const float tmp = clamp(1.0f - newVal*(float)(1.0 / 100.0), 0.0f, 1.0f);
+   if (g_pplayer)
+      m_phitspinner->m_spinneranim.m_damping = powf(tmp, (float)PHYS_FACTOR);
+   else
+   {
+      STARTUNDO
 
-      m_d.m_antifriction = clamp(1.0f - newVal*(float)(1.0 / 100.0), 0.0f, 1.0f);
+      m_d.m_antifriction = tmp;
 
-   STOPUNDO
+      STOPUNDO
+   }
 
-      return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Spinner::get_Material(BSTR *pVal)
