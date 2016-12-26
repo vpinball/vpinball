@@ -351,7 +351,7 @@ void XAudPlayer::End()
       BASS_ChannelPause(m_stream); //!! ?
 }
 
-int XAudPlayer::Init(char * const szFileName, const int volume)
+int XAudPlayer::Init(char * const szFileName, const float volume)
 {
    m_stream = BASS_StreamCreateFile(FALSE, szFileName, 0, 0, /*BASS_SAMPLE_LOOP*/0); //!! ?
    if (m_stream == NULL)
@@ -362,12 +362,17 @@ int XAudPlayer::Init(char * const szFileName, const int volume)
       return 0;
    }
 
-   const float volf = (float)(volume - DSBVOLUME_MIN)*(float)(1.0 / (DSBVOLUME_MAX - DSBVOLUME_MIN)); //!!
-   BASS_ChannelSetAttribute(m_stream, BASS_ATTRIB_VOL, volf);
+   BASS_ChannelSetAttribute(m_stream, BASS_ATTRIB_VOL, volume*(float)(1.0/100.0));
 
    BASS_ChannelPlay(m_stream, 0);
 
    return 1;
+}
+
+void XAudPlayer::Volume(const float volume)
+{
+   if (m_stream)
+      BASS_ChannelSetAttribute(m_stream, BASS_ATTRIB_VOL, volume*(float)(1.0/100.0));
 }
 
 #endif // NO_XAUDIO
