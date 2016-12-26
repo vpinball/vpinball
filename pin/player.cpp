@@ -4187,7 +4187,7 @@ void Player::Render()
    {
       timeforframe = usec() - timeforframe;
       if (timeforframe < 1000000ull / localvsync)
-         uSleep(1000000ull / localvsync - timeforframe);
+         uOverSleep(1000000ull / localvsync - timeforframe); // sleeps too long
    }
 
    if (m_ptable->m_pcv->m_fScriptError)
