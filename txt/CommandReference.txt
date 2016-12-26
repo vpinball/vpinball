@@ -7,8 +7,8 @@ Variables starting with a (*) can't be changed by the script (most can be read t
 
 Changelog:
 10.3:
-- add AntiFriction to the gate element
-- change Friction to AntiFriction (which was always the case before, but never mentioned) for the spinner element
+- add Damping to the gate element
+- change Friction to Damping (which was actually AntiFriction before, but never mentioned) for the spinner element (which also changes the input range from 0..100 to 0..1, and is inverse to before, e.g. "1-OldFriction/100")
 10.2:
 - add GameTime and SystemTime to get the exact time in millisecond resolution
 - extend TimerInterval of each element by a special '-1' value which makes it dependent on the FPS that a user can reach, so the timer is only triggered exactly once per frame
@@ -380,7 +380,7 @@ UserValue(any) - can store any user defined value for re-use later-on
 *OpenAngle(float)
 Collidable(bool)
 Friction(float) - 0..1
-AntiFriction(float) - inverse damping factor, 0..100
+Damping(float) - 0..1
 *Visible(bool)
 ShowBracket(bool)
 CurrentAngle(float) - only readable, it returns the current open angle
@@ -616,7 +616,7 @@ TimerInterval(int) - set interval for triggering the timer (1 equals 1000 timer 
 *Length(float)
 *Rotation(float)
 *Height(float)
-AntiFriction(float) - inverse damping factor, 0..100
+Damping(float) - 0..1
 Image(string)
 *Material(string)
 *Surface(float)

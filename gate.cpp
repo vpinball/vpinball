@@ -322,9 +322,9 @@ void Gate::SetDefaultPhysics(bool fromMouseClick)
 
    hr = GetRegStringAsFloat("DefaultProps\\Gate", "AntiFriction", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
-      m_d.m_antifriction = fTmp;
+      m_d.m_damping = fTmp;
    else
-      m_d.m_antifriction = 0.985f;
+      m_d.m_damping = 0.985f;
 
    hr = GetRegStringAsFloat("DefaultProps\\Gate", "Scatter", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
@@ -685,7 +685,7 @@ HRESULT Gate::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey
    bw.WriteFloat(FID(GAMAX), m_d.m_angleMax);
    bw.WriteFloat(FID(GAMIN), m_d.m_angleMin);
    bw.WriteFloat(FID(GFRCT), m_d.m_friction);
-   bw.WriteFloat(FID(AFRC), m_d.m_antifriction);
+   bw.WriteFloat(FID(AFRC), m_d.m_damping);
    bw.WriteBool(FID(GVSBL), m_d.m_fVisible);
    bw.WriteWideString(FID(NAME), (WCHAR *)m_wzName);
    bw.WriteBool(FID(TWWA), m_d.m_twoWay);
@@ -795,7 +795,7 @@ BOOL Gate::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(AFRC))
    {
-      pbr->GetFloat(&m_d.m_antifriction);
+      pbr->GetFloat(&m_d.m_damping);
    }
    else
    {
@@ -1215,23 +1215,23 @@ STDMETHODIMP Gate::put_Friction(float newVal)
    return S_OK;
 }
 
-STDMETHODIMP Gate::get_AntiFriction(float *pVal)
+STDMETHODIMP Gate::get_Damping(float *pVal)
 {
-   *pVal = (1.0f - (!g_pplayer ? m_d.m_antifriction : powf(m_phitgate->m_gateanim.m_damping,(float)(1.0/PHYS_FACTOR))))*100.0f;
+   *pVal = !g_pplayer ? m_d.m_damping : powf(m_phitgate->m_gateanim.m_damping,(float)(1.0/PHYS_FACTOR));
 
    return S_OK;
 }
 
-STDMETHODIMP Gate::put_AntiFriction(float newVal)
+STDMETHODIMP Gate::put_Damping(float newVal)
 {
-   const float tmp = clamp(1.0f - newVal*(float)(1.0 / 100.0), 0.0f, 1.0f);
+   const float tmp = clamp(newVal, 0.0f, 1.0f);
    if (g_pplayer)
       m_phitgate->m_gateanim.m_damping = powf(tmp, (float)PHYS_FACTOR); //0.996f;
    else
    {
       STARTUNDO
 
-      m_d.m_antifriction = tmp;
+      m_d.m_damping = tmp;
 
       STOPUNDO
    }

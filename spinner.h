@@ -16,7 +16,7 @@ public:
    char m_szMaterial[32];
    TimerDataRoot m_tdr;
    float m_height;
-   float m_antifriction;
+   float m_damping;
    float m_angleMax;
    float m_angleMin;
    float m_elasticity;
@@ -119,8 +119,8 @@ public:
    STDMETHOD(put_Material)(/*[in]*/ BSTR newVal);
    STDMETHOD(get_Image)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(put_Image)(/*[in]*/ BSTR newVal);
-   STDMETHOD(get_AntiFriction)(/*[out, retval]*/ float *pVal);
-   STDMETHOD(put_AntiFriction)(/*[in]*/ float newVal);
+   STDMETHOD(get_Damping)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_Damping)(/*[in]*/ float newVal);
    STDMETHOD(get_Height)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_Height)(/*[in]*/ float newVal);
    STDMETHOD(get_Rotation)(/*[out, retval]*/ float *pVal);

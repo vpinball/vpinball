@@ -21,7 +21,7 @@ public:
    TimerDataRoot m_tdr;
    float m_elasticity;
    float m_friction;
-   float m_antifriction;
+   float m_damping;
    float m_scatter;
    char m_szSurface[MAXTOKEN];
    float m_angleMin;
@@ -158,8 +158,8 @@ public:
 
    STDMETHOD(get_Friction)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_Friction)(/*[in]*/ float newVal);
-   STDMETHOD(get_AntiFriction)(/*[out, retval]*/ float *pVal);
-   STDMETHOD(put_AntiFriction)(/*[in]*/ float newVal);
+   STDMETHOD(get_Damping)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_Damping)(/*[in]*/ float newVal);
    STDMETHOD(get_Visible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_Visible)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_TwoWay)(/*[out, retval]*/ VARIANT_BOOL *pVal);
