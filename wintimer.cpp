@@ -53,7 +53,7 @@ void uSleep(const unsigned long long u)
       if ((TimerEnd.QuadPart - TimerNow.QuadPart) > TwoMSTimerTicks)
          Sleep(1); // really pause thread for 1-2ms (depending on OS)
       else
-         SwitchToThread(); // let other threads on same core run //!! could also try Sleep(0) or __mm_pause() here
+         YieldProcessor(); // was: "SwitchToThread() let other threads on same core run" //!! could also try Sleep(0) or directly use _mm_pause() instead of YieldProcessor() here
 
       QueryPerformanceCounter(&TimerNow);
    }
