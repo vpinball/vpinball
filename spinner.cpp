@@ -64,7 +64,7 @@ void Spinner::WriteRegDefaults()
    SetRegValueFloat("DefaultProps\\Spinner", "AngleMax", m_d.m_angleMax);
    SetRegValueFloat("DefaultProps\\Spinner", "AngleMin", m_d.m_angleMin);
    SetRegValueFloat("DefaultProps\\Spinner", "Elasticity", m_d.m_elasticity);
-   SetRegValueFloat("DefaultProps\\Spinner","AntiFriction", m_d.m_antifriction);
+   SetRegValueFloat("DefaultProps\\Spinner","AntiFriction", m_d.m_damping);
    SetRegValueFloat("DefaultProps\\Spinner", "Scatter", m_d.m_scatter);
    SetRegValue("DefaultProps\\Spinner", "Visible", REG_DWORD, &m_d.m_fVisible, 4);
    SetRegValueBool("DefaultProps\\Spinner", "TimerEnabled", m_d.m_tdr.m_fTimerEnabled);
@@ -522,9 +522,9 @@ void Spinner::SetDefaultPhysics(bool fromMouseClick)
       m_d.m_elasticity = 0.3f;
    hr = GetRegStringAsFloat("DefaultProps\\Spinner", "AntiFriction", &fTmp);
    if ((hr == S_OK) && fromMouseClick)
-      m_d.m_antifriction = fTmp;
+      m_d.m_damping = fTmp;
    else
-      m_d.m_antifriction = 0.9879f;
+      m_d.m_damping = 0.9879f;
 }
 
 HRESULT Spinner::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey)
@@ -537,7 +537,7 @@ HRESULT Spinner::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, HCRYPTKEY hcrypt
    bw.WriteInt(FID(TMIN), m_d.m_tdr.m_TimerInterval);
    bw.WriteFloat(FID(HIGH), m_d.m_height);
    bw.WriteFloat(FID(LGTH), m_d.m_length);
-   bw.WriteFloat(FID(AFRC), m_d.m_antifriction);
+   bw.WriteFloat(FID(AFRC), m_d.m_damping);
 
    bw.WriteFloat(FID(SMAX), m_d.m_angleMax);
    bw.WriteFloat(FID(SMIN), m_d.m_angleMin);
@@ -608,7 +608,7 @@ BOOL Spinner::LoadToken(int id, BiffReader *pbr)
    }
    else if (id == FID(AFRC))
    {
-      pbr->GetFloat(&m_d.m_antifriction);
+      pbr->GetFloat(&m_d.m_damping);
    }
    else if (id == FID(SMAX))
    {
@@ -720,23 +720,23 @@ STDMETHODIMP Spinner::put_Height(float newVal)
       return S_OK;
 }
 
-STDMETHODIMP Spinner::get_AntiFriction(float *pVal)
+STDMETHODIMP Spinner::get_Damping(float *pVal)
 {
-   *pVal = (1.0f - (!g_pplayer ? m_d.m_antifriction : powf(m_phitspinner->m_spinneranim.m_damping,(float)(1.0/PHYS_FACTOR))))*100.0f;
+   *pVal = !g_pplayer ? m_d.m_damping : powf(m_phitspinner->m_spinneranim.m_damping,(float)(1.0/PHYS_FACTOR));
 
    return S_OK;
 }
 
-STDMETHODIMP Spinner::put_AntiFriction(float newVal)
+STDMETHODIMP Spinner::put_Damping(float newVal)
 {
-   const float tmp = clamp(1.0f - newVal*(float)(1.0 / 100.0), 0.0f, 1.0f);
+   const float tmp = clamp(newVal, 0.0f, 1.0f);
    if (g_pplayer)
       m_phitspinner->m_spinneranim.m_damping = powf(tmp, (float)PHYS_FACTOR);
    else
    {
       STARTUNDO
 
-      m_d.m_antifriction = tmp;
+      m_d.m_damping = tmp;
 
       STOPUNDO
    }

@@ -127,7 +127,7 @@ HitGate::HitGate(Gate * const pgate, const float height)
 
    m_gateanim.m_angle = m_gateanim.m_angleMin;
    m_gateanim.m_anglespeed = 0.0f;
-   m_gateanim.m_damping = powf(pgate->m_d.m_antifriction, (float)PHYS_FACTOR); //0.996f;
+   m_gateanim.m_damping = powf(pgate->m_d.m_damping, (float)PHYS_FACTOR); //0.996f;
 
    m_gateanim.m_pgate = pgate;
    m_gateanim.m_fOpen = false;
@@ -308,7 +308,7 @@ HitSpinner::HitSpinner(Spinner * const pspinner, const float height)
    m_spinneranim.m_angle = clamp(0.0f, m_spinneranim.m_angleMin, m_spinneranim.m_angleMax);
    m_spinneranim.m_anglespeed = 0;
    // compute proper damping factor for physics framerate
-   m_spinneranim.m_damping = powf(pspinner->m_d.m_antifriction, (float)PHYS_FACTOR);
+   m_spinneranim.m_damping = powf(pspinner->m_d.m_damping, (float)PHYS_FACTOR);
 
    m_spinneranim.m_elasticity = pspinner->m_d.m_elasticity;
    m_spinneranim.m_fVisible = pspinner->m_d.m_fVisible;
