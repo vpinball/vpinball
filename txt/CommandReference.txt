@@ -7,11 +7,12 @@ Variables starting with a (*) can't be changed by the script (most can be read t
 
 Changelog:
 10.3:
-- 
+- add AntiFriction to the gate element
+- change Friction to AntiFriction (which was always the case before, but never mentioned) for the spinner element
 10.2:
 - add GameTime and SystemTime to get the exact time in millisecond resolution
 - extend TimerInterval of each element by a special '-1' value which makes it dependent on the FPS that a user can reach, so the timer is only triggered exactly once per frame
-- add MaterialColor for the table element
+- add MaterialColor to the table element
 - extend PlayMusic with optional volume (0..1) and better document PlaySound
 - add Duration and BulbHaloHeight property to the light element
 - add PlayAnim,PlayAnimEndless,StopAnim,ContinueAnim & ShowFrame to the primitive element for animation use
@@ -327,7 +328,7 @@ Variables
 *EOSTorqueAngle(float) - This configures the range where the EOS Torque will be applied
 CurrentAngle(float) - only readable
 
-Friction(float)
+Friction(float) - 0..1
 RampUp(float) - Coil ramp up speed. Set to 0 for fastest flipper response.
 Elasticity(float)
 ElasticityFalloff(float)
@@ -378,7 +379,8 @@ UserValue(any) - can store any user defined value for re-use later-on
 *CloseAngle(float)
 *OpenAngle(float)
 Collidable(bool)
-Friction(float)
+Friction(float) - 0..1
+AntiFriction(float) - inverse damping factor, 0..100
 *Visible(bool)
 ShowBracket(bool)
 CurrentAngle(float) - only readable, it returns the current open angle
@@ -556,7 +558,7 @@ Threshold(float) - hit threshold for firing the hit event
 Collidable(bool) - enables/disables collision detection, this can be used from within the script.
 Elasticity(float)
 ElasticityFalloff(float)
-Friction(float) 
+Friction(float) - 0..1 
 Scatter(float)
 *IsToy(bool) - disables collision handling and all physics preprocessing completely.
                It overwrites the Collidable-flag and can't be used from within the script.
@@ -595,7 +597,7 @@ VisibleRightWallHeight(float)
 Elasticity(float)
 Collidable(bool)
 Visible(bool)
-Friction(float)
+Friction(float) - 0..1
 Scatter(float)
 *ReflectionEnabled(bool) - default=true
 
@@ -614,7 +616,7 @@ TimerInterval(int) - set interval for triggering the timer (1 equals 1000 timer 
 *Length(float)
 *Rotation(float)
 *Height(float)
-Friction(float)
+AntiFriction(float) - inverse damping factor, 0..100
 Image(string)
 *Material(string)
 *Surface(float)
@@ -688,7 +690,7 @@ UserValue(any) - can store any user defined value for re-use later-on
 SlingshotThreshold(float)
 *SlingshotAnimation(bool)
 *FlipbookAnimation(bool)
-Friction(float)
+Friction(float) - 0..1
 Scatter(float)
 *ReflectionEnabled(bool) - default=true
 
@@ -767,7 +769,7 @@ Visible(bool)
 Image(string) - texture name
 Elasticity(float)
 ElasticityFalloff(float)
-Friction(float)
+Friction(float) - 0..1
 Scatter(float)
 RotX(float)                 - angle to rotate the whole rubber around the X axis 
 RotY(float)                 - angle to rotate the whole rubber around the Y axis 
@@ -792,7 +794,7 @@ Material(string)
 Image(string) - texture name
 Elasticity(float)
 ElasticityFalloff(float)
-Friction(float)
+Friction(float) - 0..1
 Scatter(float)
 *Orientation(float)         - angle to rotate the whole target around the Z axis 
 *ReflectionEnabled(bool)    - default=true

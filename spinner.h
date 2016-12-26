@@ -119,8 +119,8 @@ public:
    STDMETHOD(put_Material)(/*[in]*/ BSTR newVal);
    STDMETHOD(get_Image)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(put_Image)(/*[in]*/ BSTR newVal);
-   STDMETHOD(get_Friction)(/*[out, retval]*/ float *pVal);
-   STDMETHOD(put_Friction)(/*[in]*/ float newVal);
+   STDMETHOD(get_AntiFriction)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(put_AntiFriction)(/*[in]*/ float newVal);
    STDMETHOD(get_Height)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_Height)(/*[in]*/ float newVal);
    STDMETHOD(get_Rotation)(/*[out, retval]*/ float *pVal);
