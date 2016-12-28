@@ -264,7 +264,7 @@ BEGIN
     CTEXT           "This application uses Visual Basic Scripting Edition by Microsoft",IDC_STATIC,0,279,150,17
     CONTROL         IDC_RIGHTFLIPPERBUTTON,IDC_STATIC,"Static",SS_BITMAP,7,7,94,27
     LTEXT           "A Randy Davis Production",IDC_STATIC,13,35,94,8
-    LTEXT           "Version 10.2.0 Final",IDC_ABOUT_VERSION,13,45,135,10
+    LTEXT           "Version 10.2.1 Final",IDC_ABOUT_VERSION,13,45,135,10
     GROUPBOX        "Credits",IDC_STATIC,7,57,216,108
     LTEXT           "Original VP8/VP9 Team",IDC_STATIC,68,65,88,9
     LTEXT           "Randy Davis - designer, developer",IDC_STATIC,13,77,115,9
