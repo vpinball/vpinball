@@ -2493,6 +2493,10 @@ void PinTable::StopPlaying()
    float xscale = m_BG_scalex[m_BG_current_set];
    float yscale = m_BG_scaley[m_BG_current_set];
    float zscale = m_BG_scalez[m_BG_current_set];
+   float lightEmissionScale = m_lightEmissionScale;
+   float lightRange = m_lightRange;
+   float lightHeight = m_lightHeight;
+   float envEmissionScale = m_envEmissionScale;
 
    RestoreBackup();
 
@@ -2505,6 +2509,11 @@ void PinTable::StopPlaying()
    m_BG_scalex[m_BG_current_set] = xscale;
    m_BG_scaley[m_BG_current_set] = yscale;
    m_BG_scalez[m_BG_current_set] = zscale;
+   m_lightRange = lightRange;
+   m_lightHeight = lightHeight;
+   m_lightEmissionScale = lightEmissionScale;
+   m_envEmissionScale = envEmissionScale;
+
    g_fKeepUndoRecords = fTrue;
 
    ShowWindow(g_pvp->m_hwndWork, SW_SHOW);
