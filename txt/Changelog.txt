@@ -1,3 +1,8 @@
+VP 10.2.1 Changelog
+------------------------
+
+- fix for camera/light tweaking mode not updating lighting parameters
+
 VP 10.2.0 Changelog
 ------------------------
 
