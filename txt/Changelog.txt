@@ -6,6 +6,11 @@ VP 10.3.0 Changelog
 
 - DirectX 8 port for input handling (currently disabled)
 
+VP 10.2.1 Changelog
+------------------------
+
+- fix for camera/light tweaking mode not updating lighting parameters
+
 VP 10.2.0 Changelog
 ------------------------
 
