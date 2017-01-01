@@ -415,12 +415,9 @@ void Light::RenderOutline(Sur * const psur)
    {
       std::vector<RenderVertex> vvertex;
       GetRgVertex(vvertex);
-      if (m_selectstate != eNotSelected)
-      {
-         psur->SetBorderColor(RGB(255, 0, 0), false, 0);
-         psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_falloff /*+ m_d.m_borderwidth*/);
-         psur->SetBorderColor(RGB(0, 0, 0), false, 0);
-      }
+      psur->SetBorderColor(RGB(255, 0, 0), false, 0);
+      psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_falloff /*+ m_d.m_borderwidth*/);
+      psur->SetBorderColor(RGB(0, 0, 0), false, 0);
       psur->Polygon(vvertex);
 
       psur->SetObject((ISelect *)&m_lightcenter);
