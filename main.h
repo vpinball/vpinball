@@ -3,12 +3,10 @@
 #include <Windows.h>
 
 #include "Richedit.h"
-
 #include <atlcom.h>
 #include <atlbase.h>
 #include <atlhost.h>
 #include <atlctl.h>
-
 #include <assert.h>
 
 #include "commctrl.h"
@@ -145,3 +143,4 @@ class PinBinary;
 #include "extern.h"
 
 #include "editablereg.h"
+

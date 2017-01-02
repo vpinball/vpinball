@@ -9,6 +9,7 @@
 #include <rapidxml_print.hpp>
 #include <fstream>
 #include <sstream>
+#include "AboutDialog.h"
 #include "svn_version.h"
 
 using namespace rapidxml;
@@ -357,9 +358,12 @@ void VPinball::Init()
    if (strstr(lpCmdLine, "minimized"))
       SetOpenMinimized();
 
-   m_hwnd = ::CreateWindowEx(WS_EX_OVERLAPPEDWINDOW, "VPinball", szName,
+//    m_hwnd = ::CreateWindowEx(WS_EX_OVERLAPPEDWINDOW, "VPinball", szName,
+//       (m_open_minimized ? WS_MINIMIZE : 0) | WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_SIZEBOX | WS_MINIMIZEBOX | WS_MAXIMIZEBOX,
+//       x, y, width, height, NULL, NULL, g_hinst, 0);				// get handle to and create main Window
+   m_hwnd = CreateEx(WS_EX_OVERLAPPEDWINDOW, "VPinball", szName,
       (m_open_minimized ? WS_MINIMIZE : 0) | WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_SIZEBOX | WS_MINIMIZEBOX | WS_MAXIMIZEBOX,
-      x, y, width, height, NULL, NULL, g_hinst, 0);				// get handle to and create main Window
+      x, y, width, height, NULL, NULL);				// get handle to and create main Window
 
    // See if we have previous window size information
    {
@@ -378,7 +382,7 @@ void VPinball::Init()
          WINDOWPLACEMENT winpl;
          winpl.length = sizeof(winpl);
 
-         GetWindowPlacement(m_hwnd, &winpl);
+         ::GetWindowPlacement(m_hwnd, &winpl);
 
          winpl.rcNormalPosition.left = left;
          winpl.rcNormalPosition.top = top;
@@ -390,13 +394,13 @@ void VPinball::Init()
          else if (hrmax == S_OK && fMaximized)
             winpl.showCmd |= SW_MAXIMIZE;
 
-         SetWindowPlacement(m_hwnd, &winpl);
+         ::SetWindowPlacement(m_hwnd, &winpl);
       }
    }
 
-   ShowWindow(m_hwnd, SW_SHOW);
+   ::ShowWindow(m_hwnd, SW_SHOW);
 
-   SetWindowLongPtr(m_hwnd, GWLP_USERDATA, (size_t)this);	// set this class (vpinball) as callback for MDI Child / has to be confirmed
+   ::SetWindowLongPtr(m_hwnd, GWLP_USERDATA, (size_t)this);	// set this class (vpinball) as callback for MDI Child / has to be confirmed
    // can be a problem for 64 bit compatibility.
    // maybe use SetWindowLongPtr instead
 
@@ -411,13 +415,13 @@ void VPinball::Init()
       m_hwnd,
       1);				// Create Status Line at the bottom
 
-   SendMessage(m_hwndStatusBar, SB_SETPARTS, 5, (size_t)foo);	// Initialize Status bar with 5 empty cells
+   ::SendMessage(m_hwndStatusBar, SB_SETPARTS, 5, (size_t)foo);	// Initialize Status bar with 5 empty cells
 
    InitRegValues();									// get default values from registry
 
    m_sb.Init(m_hwnd);								// initialize smartbrowser (Property bar on the right) - see propbrowser.cpp
 
-   SendMessage(m_hwnd, WM_SIZE, 0, 0);				// Make our window relay itself out
+   ::SendMessage(m_hwnd, WM_SIZE, 0, 0);				// Make our window relay itself out
 
    InitTools();
    int DSidx1 = 0, DSidx2 = 0;
@@ -443,7 +447,7 @@ void VPinball::Init()
 
    wintimer_init();								    // calibrate the timer routines
    if (m_fPropertiesFloating)
-      SetForegroundWindow(m_hwnd);
+      ::SetForegroundWindow(m_hwnd);
 
 #ifdef SLINTF
    // see slintf.cpp
@@ -606,7 +610,7 @@ void VPinball::RegisterClasses()
 void VPinball::CreateSideBar()
 {
    RECT rc;
-   GetWindowRect(m_hwnd, &rc);
+   ::GetWindowRect(m_hwnd, &rc);
 
    m_hwndSideBar = ::CreateWindowEx(/*WS_EX_WINDOWEDGE*/0, "VPStaticChild", "", WS_VISIBLE | WS_CHILD | WS_BORDER,
       0, 0, TOOLBAR_WIDTH + SCROLL_WIDTH, rc.bottom - rc.top, m_hwnd, NULL, g_hinst, 0);
@@ -630,7 +634,7 @@ HWND VPinball::CreateLayerToolbar(HWND hwndParent)
       1, TBCOUNTLAYERS, g_hinst, IDB_TOOLBAR, g_tbbuttonLayers, TBCOUNTLAYERS, 24, 24, 24, 24,
       sizeof(TBBUTTON));
 
-   SendMessage(hwnd, TB_SETEXTENDEDSTYLE, 0, TBSTYLE_EX_DRAWDDARROWS);
+   ::SendMessage(hwnd, TB_SETEXTENDEDSTYLE, 0, TBSTYLE_EX_DRAWDDARROWS);
 
 #ifdef IMSPANISH
    SendMessage(m_hwnd, TB_SETBUTTONWIDTH, 0,
@@ -718,10 +722,10 @@ HWND VPinball::CreateToolbar(TBBUTTON *p_tbbutton, int count, HWND hwndParent)
 void VPinball::CreateMDIClient()
 {
    RECT rc;
-   GetWindowRect(m_hwnd, &rc);
+   ::GetWindowRect(m_hwnd, &rc);
 
    CLIENTCREATESTRUCT ccs;
-   ccs.hWindowMenu = GetSubMenu(GetMenu(g_pvp->m_hwnd), WINDOWMENU); // Window menu is third from the left
+   ccs.hWindowMenu = ::GetSubMenu(::GetMenu(g_pvp->m_hwnd), WINDOWMENU); // Window menu is third from the left
    ccs.idFirstChild = 4000;//129;
 
    m_hwndWork = ::CreateWindowEx(0, "MDICLIENT", "", WS_VISIBLE | WS_CHILD | WS_CLIPCHILDREN | WS_VSCROLL | WS_HSCROLL,
@@ -781,7 +785,7 @@ void VPinball::SetPropSel(Vector<ISelect> *pvsel)
 
 HMENU VPinball::GetMainMenu(int id)
 {
-   HMENU hmenu = GetMenu(m_hwnd);
+   HMENU hmenu = ::GetMenu(m_hwnd);
    const int count = GetMenuItemCount(hmenu);
    return GetSubMenu(hmenu, id + ((count > NUM_MENUS) ? 1 : 0)); // MDI has added its stuff (table icon for first menu item)
 }
@@ -951,12 +955,12 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
                char windowName[256];
                strcpy_s(windowName, "Search/Select Element - ");
                strncat_s(windowName, ptCur->m_szFileName, 255);
-               SetWindowText(ptCur->m_hSearchSelectDialog, windowName);
-               ShowWindow(ptCur->m_hSearchSelectDialog, SW_SHOW);
+               ::SetWindowText(ptCur->m_hSearchSelectDialog, windowName);
+               ::ShowWindow(ptCur->m_hSearchSelectDialog, SW_SHOW);
             }
          }
          else
-            SetForegroundWindow(ptCur->m_hSearchSelectDialog);
+            ::SetForegroundWindow(ptCur->m_hSearchSelectDialog);
       }
       break;
    }
@@ -966,7 +970,7 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
       if (ptCur)
       {
          LocalString ls(IDS_DEFAULTPHYSICS);
-         const int answ = MessageBox(m_hwnd, ls.m_szbuffer, "Continue?", MB_YESNO | MB_ICONWARNING);
+         const int answ = ::MessageBox(m_hwnd, ls.m_szbuffer, "Continue?", MB_YESNO | MB_ICONWARNING);
          if (answ == IDYES)
          {
             ptCur->BeginUndo();
@@ -1048,7 +1052,7 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
          {
             POINT pt;
             GetCursorPos(&pt);
-            ScreenToClient(ptCur->m_hwnd, &pt);
+            ::ScreenToClient(ptCur->m_hwnd, &pt);
 
             switch (psel->GetItemType())
             {
@@ -1091,7 +1095,7 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
          {
             POINT pt;
             GetCursorPos(&pt);
-            ScreenToClient(ptCur->m_hwnd, &pt);
+            ::ScreenToClient(ptCur->m_hwnd, &pt);
             switch (psel->GetItemType())
             {
             case eItemRamp:
@@ -1172,7 +1176,7 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
                HRESULT foo2 = ptCur->SaveAs();
                if (foo2 == S_OK)
                {
-                  // if the save was succesfull then the permissions take effect immediatly
+                  // if the save was successful then the permissions take effect immediatly
                   SetEnableToolbar();			// disable any tool bars
                   ptCur->SetDirtyDraw();		// redraw the screen (incase hiding elements)
                   UpdateRecentFileList(ptCur->m_szFileName);
@@ -1262,7 +1266,7 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
       {
          POINT ptCursor;
          GetCursorPos(&ptCursor);
-         ScreenToClient(ptCur->m_hwnd, &ptCursor);
+         ::ScreenToClient(ptCur->m_hwnd, &ptCursor);
          ptCur->Paste(fTrue, ptCursor.x, ptCursor.y);
       }
    }
@@ -1545,7 +1549,7 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
    {
       ptCur = GetActiveTable();
       if (!ptCur) break;
-      HMENU hmenu = GetMenu(m_hwnd);
+      HMENU hmenu = ::GetMenu(m_hwnd);
       ptCur->MergeAllLayers();
       for (int i = 0; i < 8; i++) ptCur->m_activeLayers[i] = false;
       for (int i = 0; i < 8; i++) setLayerStatus(i);
@@ -1555,7 +1559,7 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
    {
       ptCur = GetActiveTable();
       if (!ptCur) break;
-      HMENU hmenu = GetMenu(m_hwnd);
+      HMENU hmenu = ::GetMenu(m_hwnd);
       for (int i = 0; i < 8; i++) ptCur->m_activeLayers[i] = !ptCur->m_toggleAllLayers;
       for (int i = 0; i < 8; i++) setLayerStatus(i);
       ptCur->m_toggleAllLayers ^= true;
@@ -1563,7 +1567,8 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
    }
    case ID_HELP_ABOUT:
    {
-      DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_ABOUT), m_hwnd, AboutProc, 0);
+      AboutDialog *aboutDlg = new AboutDialog(IDD_ABOUT);
+      aboutDlg->DoModal();
       break;
    }
    case ID_WINDOW_CASCADE:
@@ -1771,7 +1776,7 @@ CComObject<PinTable> *VPinball::GetActiveTable()
 
    if (hwndT)
    {
-      CComObject<PinTable> *pt = (CComObject<PinTable> *)GetWindowLongPtr(hwndT, GWLP_USERDATA);
+      CComObject<PinTable> *pt = (CComObject<PinTable> *)::GetWindowLongPtr(hwndT, GWLP_USERDATA);
       return pt;
    }
    else
@@ -1803,7 +1808,7 @@ BOOL VPinball::CloseTable(PinTable *ppt)
       lstrcat(szText, ppt->m_szTitle);
       lstrcat(szText, ls2.m_szbuffer);
       // TEXT
-      const int result = MessageBox(m_hwnd, szText, "Visual Pinball", MB_YESNOCANCEL | MB_DEFBUTTON3 | MB_ICONWARNING);
+      const int result = ::MessageBox(m_hwnd, szText, "Visual Pinball", MB_YESNOCANCEL | MB_DEFBUTTON3 | MB_ICONWARNING);
       delete[] szText;
       if (result == IDCANCEL)
          return fFalse;
@@ -1813,7 +1818,7 @@ BOOL VPinball::CloseTable(PinTable *ppt)
          if (ppt->TableSave() != S_OK)
          {
             LocalString ls3(IDS_SAVEERROR);
-            MessageBox(m_hwnd, ls3.m_szbuffer, "Visual Pinball", MB_ICONERROR);
+            ::MessageBox(m_hwnd, ls3.m_szbuffer, "Visual Pinball", MB_ICONERROR);
             return fFalse;
          }
       }
@@ -1841,7 +1846,7 @@ BOOL VPinball::CloseTable(PinTable *ppt)
 void VPinball::ShowPermissionError()
 {
    LocalString ls(IDS_PERMISSION_ERROR);
-   MessageBox(m_hwnd, ls.m_szbuffer, "Visual Pinball", MB_ICONWARNING);
+   ::MessageBox(m_hwnd, ls.m_szbuffer, "Visual Pinball", MB_ICONWARNING);
 }
 
 void VPinball::SetEnableMenuItems()
@@ -1849,7 +1854,7 @@ void VPinball::SetEnableMenuItems()
    CComObject<PinTable> * const ptCur = GetActiveTable();
 
    // Set menu item to the correct state
-   HMENU hmenu = GetMenu(m_hwnd);
+   HMENU hmenu = ::GetMenu(m_hwnd);
 
    CheckMenuItem(hmenu, ID_EDIT_PROPERTIES, MF_BYCOMMAND | (m_sb.GetVisible() ? MF_CHECKED : MF_UNCHECKED));
    CheckMenuItem(hmenu, ID_EDIT_BACKGLASSVIEW, MF_BYCOMMAND | (m_fBackglassView ? MF_CHECKED : MF_UNCHECKED));
@@ -2047,7 +2052,7 @@ void VPinball::UpdateRecentFileList(char *szfilename)
       InsertMenuItem(hmenuFile, count, TRUE, &menuInfo);
 
       // update the menu bar
-      DrawMenuBar(m_hwnd);
+      ::DrawMenuBar(m_hwnd);
    }
 }
 
@@ -2059,7 +2064,7 @@ HRESULT VPinball::ApcHost_OnTranslateMessage(MSG* pmsg, BOOL* pfConsumed)
    {
       for (unsigned i = 0; i < m_sb.m_vhwndDialog.size(); i++)
       {
-         if (IsDialogMessage(m_sb.m_vhwndDialog[i], pmsg))
+         if (::IsDialogMessage(m_sb.m_vhwndDialog[i], pmsg))
             *pfConsumed = TRUE;
       }
       if (m_pcv && m_pcv->m_hwndMain)
@@ -2068,14 +2073,14 @@ HRESULT VPinball::ApcHost_OnTranslateMessage(MSG* pmsg, BOOL* pfConsumed)
          {
             int fTranslated = fFalse;
 
-            if ((pmsg->hwnd == m_pcv->m_hwndMain) || IsChild(m_pcv->m_hwndMain, pmsg->hwnd))
+            if ((pmsg->hwnd == m_pcv->m_hwndMain) || ::IsChild(m_pcv->m_hwndMain, pmsg->hwnd))
                fTranslated = TranslateAccelerator(m_pcv->m_hwndMain, m_pcv->m_haccel, pmsg);
 
             if (fTranslated)
                *pfConsumed = TRUE;
             else
             {
-               if (IsDialogMessage(m_pcv->m_hwndMain, pmsg))
+               if (::IsDialogMessage(m_pcv->m_hwndMain, pmsg))
                   *pfConsumed = TRUE;
             }
          }
@@ -2083,7 +2088,7 @@ HRESULT VPinball::ApcHost_OnTranslateMessage(MSG* pmsg, BOOL* pfConsumed)
 
       if (m_pcv && m_pcv->m_hwndFind)
       {
-         if (IsDialogMessage(m_pcv->m_hwndFind, pmsg))
+         if (::IsDialogMessage(m_pcv->m_hwndFind, pmsg))
             *pfConsumed = TRUE;
       }
 
@@ -2102,11 +2107,11 @@ HRESULT VPinball::ApcHost_OnTranslateMessage(MSG* pmsg, BOOL* pfConsumed)
    {
       if (g_pplayer->m_fDebugMode)
       {
-         if (IsDialogMessage(g_pplayer->m_hwndDebugger, pmsg))
+         if (::IsDialogMessage(g_pplayer->m_hwndDebugger, pmsg))
             *pfConsumed = TRUE;
-         else if (IsDialogMessage(g_pplayer->m_hwndLightDebugger, pmsg))
+         else if (::IsDialogMessage(g_pplayer->m_hwndLightDebugger, pmsg))
                *pfConsumed = TRUE;
-         else if (IsDialogMessage(g_pplayer->m_hwndMaterialDebugger, pmsg))
+         else if (::IsDialogMessage(g_pplayer->m_hwndMaterialDebugger, pmsg))
             *pfConsumed = TRUE;
       }
    }
@@ -3000,150 +3005,6 @@ INT_PTR CALLBACK SoundManagerProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM
 
 extern INT_PTR CALLBACK MaterialManagerProc( HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam );
 extern INT_PTR CALLBACK ImageManagerProc( HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam );
-
-INT_PTR CALLBACK AboutProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-   switch (uMsg)
-   {
-   case WM_INITDIALOG:
-   {
-      HWND hwndParent = GetParent(hwndDlg);
-      RECT rcDlg;
-      RECT rcMain;
-      GetWindowRect(hwndParent, &rcMain);
-      GetWindowRect(hwndDlg, &rcDlg);
-
-      SetWindowPos(hwndDlg, NULL,
-         (rcMain.right + rcMain.left) / 2 - (rcDlg.right - rcDlg.left) / 2,
-         (rcMain.bottom + rcMain.top) / 2 - (rcDlg.bottom - rcDlg.top) / 2,
-         0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE/* | SWP_NOMOVE*/);
-
-      HWND hVersion = GetDlgItem(hwndDlg, IDC_ABOUT_VERSION);
-      char versionString[256];
-      sprintf_s(versionString, "Version %i.%i.%i (Revision %i, %ubit)", VP_VERSION_MAJOR,VP_VERSION_MINOR,VP_VERSION_REV, SVN_REVISION,
-#ifdef _WIN64
-         64
-#else
-         32
-#endif
-      );
-      SetWindowText(hVersion, versionString);
-
-      {
-      const string sPath = string(g_pvp->m_szMyPath) + "Changelog.txt";
-      std::ifstream file(sPath);
-      std::string line;
-      std::string text;
-      while (std::getline(file, line))
-      {
-          line += "\r\n";
-          text += line;
-      }
-      SetDlgItemText(hwndDlg, IDC_CHANGELOG, text.c_str());
-
-      HWND hChangelog = GetDlgItem(hwndDlg, IDC_CHANGELOG);
-
-      HFONT hFont = CreateFont(14, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_OUTLINE_PRECIS,
-          CLIP_DEFAULT_PRECIS, ANTIALIASED_QUALITY, VARIABLE_PITCH, TEXT("Courier New"));
-
-      SendMessage(hChangelog,
-          WM_SETFONT,
-          (WPARAM)hFont,
-          MAKELPARAM(TRUE, 0) // Redraw text
-          );
-      }
-
-#if !(defined(IMSPANISH) | defined(IMGERMAN) | defined(IMFRENCH))
-      HWND hwndTransName = GetDlgItem(hwndDlg, IDC_TRANSNAME);
-      ShowWindow(hwndTransName, SW_HIDE);
-#endif
-
-#if !(defined(IMSPANISH))
-      HWND hwndTransSite = GetDlgItem(hwndDlg, IDC_TRANSLATEWEBSITE);
-      ShowWindow(hwndTransSite, SW_HIDE);
-#endif
-   }
-
-   return TRUE;
-   break;
-
-   case WM_COMMAND:
-   {
-      switch (HIWORD(wParam))
-      {
-      case BN_CLICKED:
-         switch (LOWORD(wParam))
-         {
-         case IDOK:
-            EndDialog(hwndDlg, TRUE);
-            break;
-
-         case IDC_WEBSITE:
-         case IDC_TRANSSITE:
-         {
-            HRESULT hr;
-            if (LOWORD(wParam) == IDC_WEBSITE)
-               hr = OpenURL("http://www.vpforums.org");
-            else
-            {
-               HWND hwndTransURL = GetDlgItem(hwndDlg, IDC_TRANSWEBSITE);
-               char szSite[MAX_PATH];
-               GetWindowText(hwndTransURL, szSite, MAX_PATH);
-               hr = OpenURL(szSite);
-            }
-            /*IUniformResourceLocator* pURL;
-
-            HRESULT hres = CoCreateInstance(CLSID_InternetShortcut, NULL, CLSCTX_INPROC_SERVER, IID_IUniformResourceLocator, (void**) &pURL);
-            if (!SUCCEEDED(hres))
-            {
-            return FALSE;
-            }
-
-            if (LOWORD(wParam) == IDC_WEBSITE)
-            {
-            hres = pURL->SetURL("http://www.visualpinball.com", IURL_SETURL_FL_GUESS_PROTOCOL);
-            }
-            else
-            {
-            HWND hwndTransURL = GetDlgItem(hwndDlg, IDC_TRANSWEBSITE);
-            char szSite[MAX_PATH];
-            GetWindowText(hwndTransURL, szSite, MAX_PATH);
-
-            // "http://perso.wanadoo.es/tecnopinball/"
-            hres = pURL->SetURL(szSite, IURL_SETURL_FL_GUESS_PROTOCOL);
-            }
-
-            if (!SUCCEEDED(hres))
-            {
-            pURL->Release();
-            return FALSE;
-            }
-
-            //Open the URL by calling InvokeCommand
-            URLINVOKECOMMANDINFO ivci;
-            ivci.dwcbSize = sizeof(URLINVOKECOMMANDINFO);
-            ivci.dwFlags = IURL_INVOKECOMMAND_FL_ALLOW_UI;
-            ivci.hwndParent = g_pvp->m_hwnd;
-            ivci.pcszVerb = "open";
-            hres = pURL->InvokeCommand(&ivci);
-            pURL->Release();
-            return (SUCCEEDED(hres));*/
-            return (SUCCEEDED(hr));
-         }
-         break;
-         }
-      }
-   }
-   break;
-
-   case WM_CLOSE:
-      EndDialog(hwndDlg, TRUE);
-      break;
-   }
-
-   return FALSE;
-}
-
 
 void FillVideoModesList(HWND hwnd, const std::vector<VideoMode>& modes, const VideoMode* curSelMode = 0)
 {
