@@ -14,7 +14,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Englisch (USA) resources
+// English (United States) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
@@ -115,7 +115,7 @@ STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Image Manager"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,457,180,50,14
+    DEFPUSHBUTTON   "OK",IDC_OK,457,180,50,14
     CONTROL         "List1",201,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | LVS_SORTASCENDING | LVS_EDITLABELS | WS_BORDER | WS_TABSTOP,7,7,338,190
     PUSHBUTTON      "&Import",IDC_IMPORT,457,7,50,14
     PUSHBUTTON      "&Reimport",IDC_REIMPORT,457,26,50,14
@@ -2219,7 +2219,7 @@ BEGIN
     IDD_IMAGEDIALOG, DIALOG
     BEGIN
         RIGHTMARGIN, 514
-        BOTTOMMARGIN, 186
+        BOTTOMMARGIN, 197
     END
 
     IDD_ROTATE, DIALOG
@@ -3112,7 +3112,7 @@ BEGIN
     IDS_STEP                "Step"
 END
 
-#endif    // Englisch (USA) resources
+#endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

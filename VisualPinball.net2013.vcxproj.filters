@@ -931,6 +931,7 @@
     <ClInclude Include="inc\win32xx\include\wxx_wincore0.h">
       <Filter>inc\Win32xx\include</Filter>
     </ClInclude>
+    <ClInclude Include="ImageDialog.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="shader\BallShader.fx">

@@ -80,8 +80,6 @@ INT_PTR AboutDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 BOOL AboutDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 {
    UNREFERENCED_PARAMETER(lParam);
-
-
    switch (LOWORD(wParam))
    {
       case IDC_WEBSITE:
