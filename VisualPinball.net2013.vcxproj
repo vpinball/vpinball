@@ -1082,6 +1082,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="hittarget.h" />
     <ClInclude Include="idebug.h" />
     <ClInclude Include="ieditable.h" />
+    <ClInclude Include="ImageDialog.h" />
     <ClInclude Include="inc\bass.h" />
     <ClInclude Include="inc\forsyth.h" />
     <ClInclude Include="inc\freeimage.h" />

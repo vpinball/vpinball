@@ -10,6 +10,7 @@
 #include <fstream>
 #include <sstream>
 #include "AboutDialog.h"
+#include "ImageDialog.h"
 #include "svn_version.h"
 
 using namespace rapidxml;
@@ -1413,7 +1414,9 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
             ShowPermissionError();
          else
          {
-            /*const DWORD foo =*/ DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_IMAGEDIALOG), m_hwnd, ImageManagerProc, (size_t)ptCur);
+            ImageDialog *imageDlg = new ImageDialog(IDD_IMAGEDIALOG);
+            imageDlg->DoModal();
+
             m_sb.PopulateDropdowns(); // May need to update list of images
             m_sb.RefreshProperties();
          }
