@@ -1,5 +1,6 @@
 VP 10.3.0 Changelog
 ------------------------
+- add Win32++ framework to simplify UI handling (more infos under https://sourceforge.net/projects/win32-framework )
 
 - change AntiFriction to Damping for the gate and spinner elements (which also changes the input range from 0..100 to 0..1, and is inverse to before, e.g. Damping="1-AntiFriction/100")
   (old tables will still load/save exactly the same though, as it was always used like this internally anyway)

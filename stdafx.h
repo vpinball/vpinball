@@ -101,6 +101,40 @@
 
 #include "main.h"
 
+#include <wxx_appcore.h>		// Add CCriticalSection, CObject, CWinThread, CWinApp
+#include <wxx_archive.h>		// Add CArchive
+#include <wxx_commondlg.h>		// Add CCommonDialog, CColorDialog, CFileDialog, CFindReplace, CFontDialog 
+#include <wxx_controls.h>		// Add CAnimation, CComboBox, CComboBoxEx, CDateTime, CHeader, CHotKey, CIPAddress, CProgressBar, CSpinButton, CScrollBar, CSlider, CToolTip
+#include <wxx_cstring.h>		// Add CString, CStringA, CStringW
+#include <wxx_ddx.h>			// Add CDataExchange
+#include <wxx_dialog.h>			// Add CDialog, CResizer
+#include <wxx_dockframe.h>		// Add CDockFrame, CMDIDockFrame
+#include <wxx_docking.h>		// Add CDocker, CDockContainer
+#include <wxx_exception.h>		// Add CException, CFileException, CNotSupportedException, CResourceException, CUserException, CWinException
+#include <wxx_file.h>			// Add CFile
+#include <wxx_frame.h>			// Add CFrame
+#include <wxx_gdi.h>			// Add CDC, CGDIObject, CBitmap, CBrush, CFont, CPalatte, CPen, CRgn
+#include <wxx_imagelist.h>		// Add CImageList
+#include <wxx_listview.h>		// Add CListView
+#include <wxx_mdi.h>			// Add CMDIChild, CMDIFrame, CDockMDIFrame
+#include <wxx_printdialogs.h>	// Add CPageSetupDialog, CPrintSetupDialog
+#include <wxx_propertysheet.h>	// Add CPropertyPage, CPropertySheet
+#include <wxx_rebar.h>			// Add CRebar
+#include <wxx_regkey.h>			// Add CRegKey
+//#include <wxx_ribbon.h>		// Add CRibbon, CRibbonFrame
+#include <wxx_richedit.h>		// Add CRichEdit
+#include <wxx_shared_ptr.h>		// Add Shared_Ptr
+#include <wxx_socket.h>			// Add CSocket
+#include <wxx_statusbar.h>		// Add CStatusBar
+#include <wxx_stdcontrols.h>	// Add CButton, CEdit, CListBox
+#include <wxx_tab.h>			// Add CTab, CTabbedMDI
+//#include <wxx_taskdialog.h>	// Add CTaskDialog
+#include <wxx_time.h>			// Add CTime
+#include <wxx_toolbar.h>		// Add CToolBar
+#include <wxx_treeview.h>		// Add CTreeView
+#include <wxx_webbrowser.h>		// Add CAXWindow, CWebBrowser
+#include "wxx_wincore.h"
+
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.
 

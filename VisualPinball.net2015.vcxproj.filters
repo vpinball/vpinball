@@ -85,6 +85,7 @@
     <ClCompile Include="MaterialDialog.cpp" />
     <ClCompile Include="ImageDialog.cpp" />
     <ClCompile Include="Debugger.cpp" />
+    <ClCompile Include="AboutDialog.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="vpinball.rc" />
@@ -309,7 +310,13 @@
       <UniqueIdentifier>{67a3c1e1-f7b5-45a4-ba1a-453f61d1e6d9}</UniqueIdentifier>
     </Filter>
     <Filter Include="meshes">
-      <UniqueIdentifier>{b39805e8-e924-4cf4-95aa-738c843b1afe}</UniqueIdentifier>
+      <UniqueIdentifier>{23b51dec-131c-4ac3-8f28-4e8fd6a3b646}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="inc\Win32xx">
+      <UniqueIdentifier>{4a732b2b-cffd-4023-a3ff-69e331d25eb2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="inc\Win32xx\include">
+      <UniqueIdentifier>{79f0d9fe-5f96-4893-a95c-5c2f5ef53016}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -786,6 +793,136 @@
     </ClInclude>
     <ClInclude Include="meshes\hitTargetT2SlimMesh.h">
       <Filter>meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="AboutDialog.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_appcore.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_appcore0.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_archive.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_commondlg.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_controls.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_cstring.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_ddx.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_dialog.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_dockframe.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_docking.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_exception.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_file.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_frame.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_gdi.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_imagelist.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_listview.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_mdi.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_menu.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_menubar.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_metafile.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_printdialogs.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_propertysheet.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_rebar.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_rect.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_regkey.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_ribbon.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_richedit.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_shared_ptr.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_socket.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_statusbar.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_stdcontrols.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_tab.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_taskdialog.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_textconv.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_themes.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_time.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_toolbar.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_treeview.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_wceframe.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_wcestddef.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_webbrowser.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_wincore.h">
+      <Filter>inc\Win32xx\include</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_wincore0.h">
+      <Filter>inc\Win32xx\include</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

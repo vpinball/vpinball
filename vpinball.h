@@ -4,9 +4,8 @@
 #pragma once
 #if !defined(AFX_VPINBALL_H__4D32616D_55B5_4FE0_87D9_3D4CB0BE3C76__INCLUDED_)
 #define AFX_VPINBALL_H__4D32616D_55B5_4FE0_87D9_3D4CB0BE3C76__INCLUDED_
-
+#include "wxx_mdi.h"
 #include "RenderDevice.h"
-
 #define CURRENT_FILE_FORMAT_VERSION 1021
 
 #define DEFAULT_SECURITY_LEVEL 0
@@ -15,9 +14,7 @@
 
 
 class PinTable;
-
-class VPinball //:// public IVPinball, public COleAuto,
-   //public IDispatchImpl<IVPinball, &IID_IVPinball, &LIBID_VPinballLib>
+class VPinball : public Win32xx::CWnd 
 {
 public:
    VPinball();

@@ -112,7 +112,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)\Include;shader;inc;pin;media;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(DXSDK_DIR)\Include;shader;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>COR_ENABLE_PROFILING;WIN32;_DEBUG;_WINDOWS;MYDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -134,6 +134,7 @@
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>inc\win32xx\include</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;bass.lib;imm32.lib;setupapi.lib;hid.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -178,7 +179,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)\Include;shader;inc;pin;media;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(DXSDK_DIR)\Include;shader;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>COR_ENABLE_PROFILING;WIN32;_DEBUG;_WINDOWS;MYDEBUG;_DEBUGPHYSICS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -195,6 +196,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>inc\win32xx\include</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;bass.lib;imm32.lib;setupapi.lib;hid.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -351,6 +353,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AboutDialog.cpp" />
     <ClCompile Include="BlackBox.cpp" />
     <ClCompile Include="codeviewedit.cpp" />
     <ClCompile Include="CrashHandler.cpp" />
@@ -1057,6 +1060,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <Image Include="res\toolbar.bmp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AboutDialog.h" />
     <ClInclude Include="ballex.h" />
     <ClInclude Include="BlackBox.h" />
     <ClInclude Include="bumper.h" />
@@ -1102,6 +1106,49 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="inc\scilexer.h" />
     <ClInclude Include="inc\scintilla.h" />
     <ClInclude Include="inc\Sci_Position.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_appcore.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_appcore0.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_archive.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_commondlg.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_controls.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_cstring.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_ddx.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_dialog.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_dockframe.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_docking.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_exception.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_file.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_frame.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_gdi.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_imagelist.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_listview.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_mdi.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_menu.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_menubar.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_metafile.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_printdialogs.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_propertysheet.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_rebar.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_rect.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_regkey.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_ribbon.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_richedit.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_shared_ptr.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_socket.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_statusbar.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_stdcontrols.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_tab.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_taskdialog.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_textconv.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_themes.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_time.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_toolbar.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_treeview.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_wceframe.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_wcestddef.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_webbrowser.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_wincore.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_wincore0.h" />
     <ClInclude Include="inc\xaudio\aac_codec.h" />
     <ClInclude Include="inc\xaudio\audio_output.h" />
     <ClInclude Include="inc\xaudio\control.h" />
