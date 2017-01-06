@@ -1,5 +1,7 @@
 VP 10.3.0 Changelog
 ------------------------
+- sound manager, image manager and script editor save and restore window position and size
+
 - Image Manager: new column added to show if an image is in use
 
 - add Win32++ framework to simplify UI handling (more infos under https://sourceforge.net/projects/win32-framework )
