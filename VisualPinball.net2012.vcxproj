@@ -813,6 +813,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     </ClCompile>
     <ClCompile Include="RenderDevice.cpp" />
     <ClCompile Include="slintf.cpp" />
+    <ClCompile Include="SoundDialog.cpp" />
     <ClCompile Include="spinner.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
@@ -1074,6 +1075,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <Image Include="res\white.bmp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AboutDialog.h" />
     <ClInclude Include="ballex.h" />
     <ClInclude Include="BlackBox.h" />
     <ClInclude Include="bumper.h" />
@@ -1100,8 +1102,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="hittarget.h" />
     <ClInclude Include="idebug.h" />
     <ClInclude Include="ieditable.h" />
-    <ClInclude Include="inc\activdbg.h" />
-    <ClInclude Include="inc\activscp.h" />
+    <ClInclude Include="ImageDialog.h" />
     <ClInclude Include="inc\bass.h" />
     <ClInclude Include="inc\dbghelp.h" />
     <ClInclude Include="inc\dbgprop.h" />
@@ -1261,6 +1262,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="resource.h" />
     <ClInclude Include="rubber.h" />
     <ClInclude Include="slintf.h" />
+    <ClInclude Include="SoundDialog.h" />
     <ClInclude Include="spinner.h" />
     <ClInclude Include="StackTrace.h" />
     <ClInclude Include="stdafx.h" />

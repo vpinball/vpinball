@@ -29,17 +29,17 @@ void ImageDialog::OnDestroy()
 
 void ImageDialog::OnClose()
 {
+   SavePosition();
    CDialog::OnClose();
 }
 
 BOOL ImageDialog::OnInitDialog()
 {
-   return TRUE;
+    return TRUE;
 }
 
 INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-
    HWND hwndDlg = GetHwnd();
    CCO(PinTable) *pt = (CCO(PinTable) *)g_pvp->GetActiveTable();
 
@@ -49,7 +49,7 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
       {
          LVCOLUMN lvcol;
          HWND hListView = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
-
+         LoadPosition();
          ListView_SetExtendedListViewStyle(hListView, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
 
          lvcol.mask = LVCF_TEXT | LVCF_WIDTH;
@@ -326,6 +326,7 @@ BOOL ImageDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             }
             SetFocus();
          }
+         SavePosition();
          CDialog::OnOK();
       }
    }
@@ -339,7 +340,8 @@ void ImageDialog::OnOK()
 
 void ImageDialog::OnCancel()
 {
-   CDialog::OnCancel();
+    SavePosition();
+    CDialog::OnCancel();
 }
 
 void ImageDialog::Import()
@@ -683,5 +685,27 @@ void ImageDialog::ReimportFrom()
       }
    }
    SetFocus();
+}
+
+void ImageDialog::LoadPosition()
+{
+    int x, y;
+    HRESULT hr;
+
+    hr = GetRegInt( "Editor", "ImageMngPosX", &x );
+    if(hr != S_OK)
+        x=0;
+    hr = GetRegInt( "Editor", "ImageMngPosY", &y );
+    if(hr != S_OK)
+        y=0;
+
+    SetWindowPos( NULL, x, y, 0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE );
+}
+
+void ImageDialog::SavePosition()
+{
+    CRect rect = GetWindowRect();
+    (void)SetRegValue( "Editor", "ImageMngPosX", REG_DWORD, &rect.left, 4 );
+    (void)SetRegValue( "Editor", "ImageMngPosY", REG_DWORD, &rect.top, 4 );
 }
 

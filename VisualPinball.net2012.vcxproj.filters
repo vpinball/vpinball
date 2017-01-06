@@ -83,8 +83,10 @@
       <Filter>inc</Filter>
     </ClCompile>
     <ClCompile Include="MaterialDialog.cpp" />
+    <ClCompile Include="ImageDialog.cpp" />
     <ClCompile Include="Debugger.cpp" />
     <ClCompile Include="AboutDialog.cpp" />
+    <ClCompile Include="SoundDialog.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="vpinball.rc" />
@@ -967,6 +969,8 @@
     <ClInclude Include="inc\win32xx\include\wxx_wincore0.h">
       <Filter>inc\Win32xx\include</Filter>
     </ClInclude>
+    <ClInclude Include="ImageDialog.h" />
+    <ClInclude Include="SoundDialog.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="shader\BallShader.fx">

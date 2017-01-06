@@ -23,5 +23,7 @@ private:
    void Reimport();
    void UpdateAll();
    void ReimportFrom();
+   void LoadPosition();
+   void SavePosition();
 };
 #endif // !H_IMAGE_DIALOG
