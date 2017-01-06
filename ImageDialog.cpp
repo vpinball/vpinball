@@ -68,7 +68,12 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          lvcol.cx = 100;
          ListView_InsertColumn(hListView, 2, &lvcol);
 
-         if (pt)
+         LocalString ls4( IDS_USED_IN_TABLE );
+         lvcol.pszText = ls4.m_szbuffer; // = "In use";
+         lvcol.cx = 50;
+         ListView_InsertColumn( hListView, 3, &lvcol );
+
+         if(pt)
             pt->ListImages(hListView);
 
          char textBuf[16];

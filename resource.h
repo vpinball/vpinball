@@ -192,6 +192,8 @@
 #define IDS_UNSECURECONTROL2            173
 #define IDS_COLLECTION                  174
 #define IDS_DEFAULTPHYSICS              175
+#define IDS_IMAGE_USED                  176
+#define IDS_USED_IN_TABLE               176
 #define IDS_LOCK                        177
 #define IDS_MISC                        178
 #define ID_LOCK                         179

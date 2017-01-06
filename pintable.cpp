@@ -7464,6 +7464,8 @@ void PinTable::ListImages(HWND hwndListView)
 int PinTable::AddListImage(HWND hwndListView, Texture *ppi)
 {
    char sizeString[MAXTOKEN] = { 0 };
+   char *usedStringYes="X";
+   char *usedStringNo=" ";
 
    LVITEM lvitem;
    lvitem.mask = LVIF_DI_SETITEM | LVIF_TEXT | LVIF_PARAM;
@@ -7477,7 +7479,122 @@ int PinTable::AddListImage(HWND hwndListView, Texture *ppi)
 
    ListView_SetItemText(hwndListView, index, 1, ppi->m_szPath);
    ListView_SetItemText(hwndListView, index, 2, sizeString);
+   ListView_SetItemText( hwndListView, index, 3, usedStringNo );
 
+   if(    (_stricmp( m_szImage, ppi->m_szName)==0) 
+       || (_stricmp( m_szBallImage, ppi->m_szName ) == 0) 
+       || (_stricmp( m_szBallImageFront, ppi->m_szName)==0 )
+       || (_stricmp( m_szEnvImage, ppi->m_szName ) == 0))
+   {
+       ListView_SetItemText( hwndListView, index, 3, usedStringYes );
+   }
+   else
+   {
+       for(int i=0; i < m_vedit.Size(); i++)
+       {
+           bool inUse=false;
+           IEditable *pEdit=m_vedit.ElementAt( i );
+           if(pEdit == NULL)
+               continue;
+
+           switch(pEdit->GetItemType())
+           {
+               case eItemDispReel:
+               {
+                   DispReel *pReel = (DispReel*)pEdit;
+                   if(_stricmp( pReel->m_d.m_szImage, ppi->m_szName ) == 0)
+                       inUse=true;
+                   break;
+               }
+               case eItemPrimitive:
+               {
+                   Primitive *pPrim = (Primitive*)pEdit;
+                   if((_stricmp( pPrim->m_d.m_szImage, ppi->m_szName ) == 0) || (_stricmp( pPrim->m_d.m_szNormalMap, ppi->m_szName ) == 0))
+                       inUse=true;
+                   break;
+               }
+               case eItemRamp:
+               {
+                   Ramp *pRamp = (Ramp*)pEdit;
+                   if(_stricmp( pRamp->m_d.m_szImage, ppi->m_szName ) == 0)
+                       inUse=true;
+                   break;
+               }
+               case eItemSurface:
+               {
+                   Surface *pSurf = (Surface*)pEdit;
+                   if((_stricmp( pSurf->m_d.m_szImage, ppi->m_szName ) == 0) || (_stricmp( pSurf->m_d.m_szSideImage, ppi->m_szName ) == 0))
+                       inUse=true;
+                   break;
+               }
+               case eItemDecal:
+               {
+                   Decal *pDecal = (Decal*)pEdit;
+                   if(_stricmp( pDecal->m_d.m_szImage, ppi->m_szName ) == 0)
+                       inUse=true;
+                   break;
+               }
+               case eItemFlasher:
+               {
+                   Flasher *pFlash = (Flasher*)pEdit;
+                   if((_stricmp( pFlash->m_d.m_szImageA, ppi->m_szName ) == 0) || (_stricmp( pFlash->m_d.m_szImageB, ppi->m_szName ) == 0))
+                       inUse=true;
+                   break;
+               }
+               case eItemFlipper:
+               {
+                   Flipper *pFlip = (Flipper*)pEdit;
+                   if(_stricmp( pFlip->m_d.m_szImage, ppi->m_szName ) == 0)
+                       inUse=true;
+                   break;
+               }
+               case eItemHitTarget:
+               {
+                   HitTarget *pHit = (HitTarget*)pEdit;
+                   if(_stricmp( pHit->m_d.m_szImage, ppi->m_szName ) == 0)
+                       inUse=true;
+                   break;
+               }
+               case eItemLight:
+               {
+                   Light *pLight = (Light*)pEdit;
+                   if(_stricmp( pLight->m_d.m_szOffImage, ppi->m_szName ) == 0)
+                       inUse=true;
+                   break;
+               }
+               case eItemPlunger:
+               {
+                   Plunger *pPlung = (Plunger*)pEdit;
+                   if(_stricmp( pPlung->m_d.m_szImage, ppi->m_szName ) == 0)
+                       inUse=true;
+                   break;
+               }
+               case eItemRubber:
+               {
+                   Rubber *pRub = (Rubber*)pEdit;
+                   if(_stricmp( pRub->m_d.m_szImage, ppi->m_szName ) == 0)
+                       inUse=true;
+                   break;
+               }
+               case eItemSpinner:
+               {
+                   Spinner *pSpin = (Spinner*)pEdit;
+                   if(_stricmp( pSpin->m_d.m_szImage, ppi->m_szName ) == 0)
+                       inUse=true;
+                   break;
+               }
+               default:
+               {
+                   break;
+               }
+           }
+           if(inUse)
+           {
+               ListView_SetItemText( hwndListView, index, 3, usedStringYes );
+               break;
+           }
+       }//for
+   }//else
    return index;
 }
 

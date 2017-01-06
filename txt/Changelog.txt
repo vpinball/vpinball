@@ -1,5 +1,7 @@
 VP 10.3.0 Changelog
 ------------------------
+- Image Manager: new column added to show if an image is in use
+
 - add Win32++ framework to simplify UI handling (more infos under https://sourceforge.net/projects/win32-framework )
 
 - change AntiFriction to Damping for the gate and spinner elements (which also changes the input range from 0..100 to 0..1, and is inverse to before, e.g. Damping="1-AntiFriction/100")
