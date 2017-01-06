@@ -13,7 +13,7 @@ typedef struct _tagSORTDATA
 extern SORTDATA SortData;
 extern int columnSortOrder[4];
 extern int CALLBACK MyCompProc( LPARAM lSortParam1, LPARAM lSortParam2, LPARAM lSortOption );
-ImageDialog::ImageDialog(UINT hResID) : CDialog(hResID)
+ImageDialog::ImageDialog() : CDialog(IDD_IMAGEDIALOG)
 {
 }
 
@@ -128,7 +128,8 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                   strncpy_s(ppi->m_szName, pinfo->item.pszText, MAXTOKEN);
                   strncpy_s(ppi->m_szInternalName, pinfo->item.pszText, MAXTOKEN);
                   CharLowerBuff(ppi->m_szInternalName, lstrlen(ppi->m_szInternalName));
-                  pt->SetNonUndoableDirty(eSaveDirty);
+                  if (pt)
+                     pt->SetNonUndoableDirty(eSaveDirty);
                }
                return TRUE;
          }
@@ -328,6 +329,7 @@ BOOL ImageDialog::OnCommand(WPARAM wParam, LPARAM lParam)
          }
          SavePosition();
          CDialog::OnOK();
+         break;
       }
    }
    return FALSE;
@@ -346,12 +348,12 @@ void ImageDialog::OnCancel()
 
 void ImageDialog::Import()
 {
+   HWND hSoundList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
+   CCO(PinTable) *pt = (CCO(PinTable) *)g_pvp->GetActiveTable();
    char szFileName[4096];
    char szInitialDir[4096];
    char szT[4096];
    szFileName[0] = '\0';
-   HWND hSoundList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
-   CCO(PinTable) *pt = (CCO(PinTable) *)g_pvp->GetActiveTable();
 
    OPENFILENAME ofn;
    ZeroMemory(&ofn, sizeof(OPENFILENAME));
@@ -515,8 +517,8 @@ void ImageDialog::DeleteImage()
 {
    HWND hSoundList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
    CCO(PinTable) *pt = (CCO(PinTable) *)g_pvp->GetActiveTable();
-   const int count = ListView_GetSelectedCount(hSoundList);
 
+   const int count = ListView_GetSelectedCount(hSoundList);
    if (count > 0)
    {
       LocalString ls(IDS_REMOVEIMAGE);
@@ -552,6 +554,7 @@ void ImageDialog::Reimport()
 {
    HWND hSoundList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
    CCO(PinTable) *pt = (CCO(PinTable) *)g_pvp->GetActiveTable();
+
    const int count = ListView_GetSelectedCount(hSoundList);
 
    if (count > 0)
@@ -595,6 +598,7 @@ void ImageDialog::UpdateAll()
 {
    HWND hSoundList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
    CCO(PinTable) *pt = (CCO(PinTable) *)g_pvp->GetActiveTable();
+
    const int count = ListView_GetSelectedCount(hSoundList);
    bool  errorOccurred = false;;
 
