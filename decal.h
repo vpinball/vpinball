@@ -88,6 +88,7 @@ public:
    void EnsureSize();
    HFONT GetFont();
    void GetTextSize(int * const px, int * const py);
+   DecalData m_d;
 
 private:
    void RenderText();
@@ -97,7 +98,6 @@ private:
 
    PinTable *m_ptable;
 
-   DecalData m_d;
 
    BaseTexture *m_textImg;
    float m_leading, m_descent;

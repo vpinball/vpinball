@@ -2973,6 +2973,7 @@ END
 
 STRINGTABLE
 BEGIN
+    IDS_USED_IN_TABLE       "In use"
     IDS_LOCK                "&Lock"
     IDS_MISC                "Misc"
     IDS_IMAGESIZE           "Image Size"
