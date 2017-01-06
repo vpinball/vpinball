@@ -342,12 +342,26 @@ STDMETHODIMP CodeViewer::CleanUpScriptEngine()
 
 void CodeViewer::SetVisible(const BOOL fVisible)
 {
+
+   if(!fVisible)
+   {
+       RECT rc;
+       int w, h;
+       GetWindowRect( m_hwndMain, &rc );
+       SetRegValue( "Editor", "CodeViewPosX", REG_DWORD, &rc.left, 4 );
+       SetRegValue( "Editor", "CodeViewPosY", REG_DWORD, &rc.top, 4 );
+       w = rc.right - rc.left;
+       SetRegValue( "Editor", "CodeViewPosWidth", REG_DWORD, &w, 4 );
+       h= rc.bottom - rc.top;
+       SetRegValue( "Editor", "CodeViewPosHeight", REG_DWORD, &h, 4 );
+   }
+
    if (m_hwndFind && !fVisible)
    {
       DestroyWindow(m_hwndFind);
       m_hwndFind = NULL;
    }
-
+   
    if (IsIconic(m_hwndMain))
    {
       // SW_RESTORE usually works in all cases, but if the window
@@ -361,12 +375,11 @@ void CodeViewer::SetVisible(const BOOL fVisible)
    if(fVisible)
    {
        int h, w,x,y;
-       x = GetRegIntWithDefault( "Editor", "CodeViewerPosX", 0 );
-       y = GetRegIntWithDefault( "Editor", "CodeViewerPosY", 0 );
+       x = GetRegIntWithDefault( "Editor", "CodeViewPosX", 0 );
+       y = GetRegIntWithDefault( "Editor", "CodeViewPosY", 0 );
        w = GetRegIntWithDefault( "Editor", "CodeViewPosWidth", 640 );
-       h = GetRegIntWithDefault( "Editor", "CodeViewPosHeight", 400 );
+       h = GetRegIntWithDefault( "Editor", "CodeViewPosHeight", 490 );
        SetWindowPos( m_hwndMain, HWND_TOP, x, y, w, h, SWP_NOMOVE | SWP_NOSIZE );
-
    }
 }
 
@@ -474,18 +487,23 @@ void CodeViewer::Create()
    wcex.lpszMenuName = MAKEINTRESOURCE(IDR_SCRIPTMENU);//NULL;
    wcex.hbrBackground = (HBRUSH)(COLOR_BTNFACE + 1);
    RegisterClassEx(&wcex);
+
+   int h, w, x, y;
+   x = GetRegIntWithDefault( "Editor", "CodeViewPosX", 0 );
+   y = GetRegIntWithDefault( "Editor", "CodeViewPosY", 0 );
+   w = GetRegIntWithDefault( "Editor", "CodeViewPosWidth", 640 );
+   h = GetRegIntWithDefault( "Editor", "CodeViewPosHeight", 490 );
+
    m_hwndMain = CreateWindowEx(0, "CVFrame", "Script",
       WS_POPUP | WS_SIZEBOX | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX,
-      10, 10, 300, 300, m_hwndMain, NULL, g_hinst, 0);
+      x, y, w, h, m_hwndMain, NULL, g_hinst, 0);
 
    SetWindowLongPtr(m_hwndMain, GWLP_USERDATA, (size_t)this);
 
-   SetWindowPos(m_hwndMain, NULL,
-      0, 0, 640, 490, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
 
    m_hwndScintilla = CreateWindowEx(0, "Scintilla", "",
       WS_CHILD | ES_NOHIDESEL | WS_VISIBLE | ES_SUNKEN | WS_HSCROLL | WS_VSCROLL | ES_MULTILINE | ES_WANTRETURN,
-      0, 10 + 32, 300, 290, m_hwndMain, NULL, g_hinst, 0);
+      0, 10 + 32, w, h-10, m_hwndMain, NULL, g_hinst, 0);
 
 	//if still using old dll load VB lexer insted
 	//use SCI_SETLEXERLANGUAGE as SCI_GETLEXER doesn't return the correct value with SCI_SETLEXER
@@ -663,7 +681,9 @@ void CodeViewer::Create()
    SendMessage(m_hwndFunctionText, WM_SETFONT, (size_t)GetStockObject(DEFAULT_GUI_FONT), 0);
 	ParseVPCore();
 	UpdateScinFromPrefs();
-	SendMessage(m_hwndMain, WM_SIZE, 0, 0); // Make our window relay itself out
+
+    SendMessage( m_hwndMain, WM_SIZE, 0, 0 ); // Make our window relay itself out
+
 }
 
 void CodeViewer::Destroy()
@@ -2542,17 +2562,8 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 
    case WM_CLOSE:
    {
-      CodeViewer * const pcv = GetCodeViewerPtr(hwndDlg);
-      pcv->SetVisible(fFalse);
-      RECT rc;
-      int w, h;
-      GetClientRect( hwndDlg, &rc );
-      SetRegValue( "Editor", "CodeViewPosX", REG_DWORD, &rc.left, 4 );
-      SetRegValue( "Editor", "CodeViewPosY", REG_DWORD, &rc.top, 4 );
-      w = rc.right - rc.left;
-      SetRegValue( "Editor", "CodeViewPosWidth", REG_DWORD, &w, 4 );
-      h= rc.bottom - rc.top;
-      SetRegValue( "Editor", "CodeViewPosHeight", REG_DWORD, &h, 4 );
+      CodeViewer * const pcv = GetCodeViewerPtr(hwndDlg);    
+      pcv->SetVisible( fFalse );
       return 0;
    }
    break;
