@@ -358,9 +358,16 @@ void CodeViewer::SetVisible(const BOOL fVisible)
    else
       ShowWindow(m_hwndMain, fVisible ? SW_SHOW : SW_HIDE);
 
-   if (fVisible)
-      SetWindowPos(m_hwndMain, HWND_TOP,
-      0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+   if(fVisible)
+   {
+       int h, w,x,y;
+       x = GetRegIntWithDefault( "Editor", "CodeViewerPosX", 0 );
+       y = GetRegIntWithDefault( "Editor", "CodeViewerPosY", 0 );
+       w = GetRegIntWithDefault( "Editor", "CodeViewPosWidth", 640 );
+       h = GetRegIntWithDefault( "Editor", "CodeViewPosHeight", 400 );
+       SetWindowPos( m_hwndMain, HWND_TOP, x, y, w, h, SWP_NOMOVE | SWP_NOSIZE );
+
+   }
 }
 
 void CodeViewer::SetEnabled(const BOOL fEnabled)
@@ -2516,7 +2523,6 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
    {
    }
    break;
-
    case WM_ACTIVATE:
    {
       if (LOWORD(wParam) != WA_INACTIVE)
@@ -2538,6 +2544,15 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
    {
       CodeViewer * const pcv = GetCodeViewerPtr(hwndDlg);
       pcv->SetVisible(fFalse);
+      RECT rc;
+      int w, h;
+      GetClientRect( hwndDlg, &rc );
+      SetRegValue( "Editor", "CodeViewPosX", REG_DWORD, &rc.left, 4 );
+      SetRegValue( "Editor", "CodeViewPosY", REG_DWORD, &rc.top, 4 );
+      w = rc.right - rc.left;
+      SetRegValue( "Editor", "CodeViewPosWidth", REG_DWORD, &w, 4 );
+      h= rc.bottom - rc.top;
+      SetRegValue( "Editor", "CodeViewPosHeight", REG_DWORD, &h, 4 );
       return 0;
    }
    break;
