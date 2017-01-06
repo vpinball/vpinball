@@ -4,7 +4,7 @@
 class ImageDialog : public CDialog
 {
 public:
-   ImageDialog(UINT hResID);
+   ImageDialog();
    virtual ~ImageDialog();
 
 protected:

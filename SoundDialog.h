@@ -4,7 +4,7 @@
 class SoundDialog : public CDialog
 {
 public:
-    SoundDialog( UINT nResID );
+    SoundDialog();
     virtual ~SoundDialog();
 
 protected:

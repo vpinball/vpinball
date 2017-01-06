@@ -6,6 +6,9 @@
 #define AFX_VPINBALL_H__4D32616D_55B5_4FE0_87D9_3D4CB0BE3C76__INCLUDED_
 #include "wxx_mdi.h"
 #include "RenderDevice.h"
+#include "ImageDialog.h"
+#include "SoundDialog.h"
+
 #define CURRENT_FILE_FORMAT_VERSION 1021
 
 #define DEFAULT_SECURITY_LEVEL 0
@@ -88,6 +91,8 @@ public:
    static void SetOpenMinimized();
    void ShowDrawingOrderDialog(bool select);
 
+   void CloseAllDialogs();
+
    ULONG m_cref;
    ITypeInfo *m_ptinfoCls;
    ITypeInfo *m_ptinfoInt;
@@ -154,6 +159,8 @@ private:
    unsigned int m_workerthreadid;
 
    HMODULE m_scintillaDll;
+   ImageDialog m_imageMngDlg;
+   SoundDialog m_soundMngDlg;
 };
 
 #endif // !defined(AFX_VPINBALL_H__4D32616D_55B5_4FE0_87D9_3D4CB0BE3C76__INCLUDED_)

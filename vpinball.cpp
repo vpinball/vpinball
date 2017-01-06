@@ -10,7 +10,6 @@
 #include <fstream>
 #include <sstream>
 #include "AboutDialog.h"
-#include "ImageDialog.h"
 #include "SoundDialog.h"
 #include "svn_version.h"
 
@@ -1397,9 +1396,13 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
             ShowPermissionError();
          else
          {
-            //DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_SOUNDDIALOG), m_hwnd, SoundManagerProc, (size_t)ptCur);
-             SoundDialog *soundDlg = new SoundDialog( IDD_SOUNDDIALOG );
-             soundDlg->DoModal();
+            if (!m_soundMngDlg.IsWindow())
+            {
+               m_soundMngDlg.Create(m_hwnd);
+               m_soundMngDlg.ShowWindow();
+            }
+            else
+               m_soundMngDlg.SetForegroundWindow();
          }
       }
    }
@@ -1415,8 +1418,13 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
             ShowPermissionError();
          else
          {
-            ImageDialog *imageDlg = new ImageDialog(IDD_IMAGEDIALOG);
-            imageDlg->DoModal();
+            if (!m_imageMngDlg.IsWindow())
+            {
+               m_imageMngDlg.Create(m_hwnd);
+               m_imageMngDlg.ShowWindow();
+            }
+            else
+               m_imageMngDlg.SetForegroundWindow();
 
             m_sb.PopulateDropdowns(); // May need to update list of images
             m_sb.RefreshProperties();
@@ -1737,6 +1745,7 @@ bool VPinball::LoadFile()
 void VPinball::LoadFileName(char *szFileName)
 {
    PathFromFilename(szFileName, m_currentTablePath);
+   CloseAllDialogs();
 
    CComObject<PinTable> *ppt;
    CComObject<PinTable>::CreateInstance(&ppt);
@@ -1830,10 +1839,10 @@ BOOL VPinball::CloseTable(PinTable *ppt)
 
    if (ppt->m_hSearchSelectDialog)
       DestroyWindow(ppt->m_hSearchSelectDialog);
-//    if (ppt->m_hMaterialManager)
-//       DestroyWindow(ppt->m_hMaterialManager);
 
-   /*const BOOL fSafe =*/ ppt->FVerifySaveToClose();
+   CloseAllDialogs();
+
+   ppt->FVerifySaveToClose();
 
    if (m_sb.GetBaseISel() && (ppt == m_sb.GetBaseISel()->GetPTable()))
       SetPropSel(NULL);
@@ -7261,6 +7270,14 @@ void VPinball::ShowDrawingOrderDialog(bool select)
 {
    drawing_order_select = select; //!! meh
    DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_DRAWING_ORDER), m_hwnd, DrawingOrderProc, 0);
+}
+
+void VPinball::CloseAllDialogs()
+{
+   if (m_imageMngDlg.IsWindow())
+      m_imageMngDlg.Destroy();
+   if (m_soundMngDlg.IsWindow())
+      m_soundMngDlg.Destroy();
 }
 
 void UpdateDrawingOrder(HWND hwndDlg, IEditable *ptr, bool up)

@@ -13,7 +13,7 @@ extern SORTDATA SortData;
 extern int columnSortOrder[4];
 extern int CALLBACK MyCompProc( LPARAM lSortParam1, LPARAM lSortParam2, LPARAM lSortOption );
 
-SoundDialog::SoundDialog( UINT nResID ) : CDialog( nResID )
+SoundDialog::SoundDialog() : CDialog( IDD_SOUNDDIALOG )
 {
 }
 
@@ -52,8 +52,8 @@ BOOL SoundDialog::OnInitDialog()
     lvcol.pszText = ls2.m_szbuffer; // = "Import Path";
     lvcol.cx = 200;
     ListView_InsertColumn( hSoundList, 1, &lvcol );
-
-    pt->ListSounds( hSoundList );
+    if ( pt )
+      pt->ListSounds( hSoundList );
     return TRUE;
 }
 
@@ -100,7 +100,8 @@ INT_PTR SoundDialog::DialogProc( UINT uMsg, WPARAM wParam, LPARAM lParam )
                     strncpy_s( pps->m_szName, pinfo->item.pszText, MAXTOKEN );
                     strncpy_s( pps->m_szInternalName, pinfo->item.pszText, MAXTOKEN );
                     CharLowerBuff( pps->m_szInternalName, lstrlen( pps->m_szInternalName ) );
-                    pt->SetNonUndoableDirty( eSaveDirty );
+                    if (pt)
+                        pt->SetNonUndoableDirty( eSaveDirty );
                     return TRUE;
                 }
                 break;
@@ -124,7 +125,6 @@ INT_PTR SoundDialog::DialogProc( UINT uMsg, WPARAM wParam, LPARAM lParam )
 BOOL SoundDialog::OnCommand( WPARAM wParam, LPARAM lParam )
 {
     UNREFERENCED_PARAMETER( lParam );
-    CCO( PinTable ) *pt = (CCO( PinTable ) *)g_pvp->GetActiveTable();
 
     switch(LOWORD( wParam ))
     {
@@ -137,7 +137,8 @@ BOOL SoundDialog::OnCommand( WPARAM wParam, LPARAM lParam )
         case IDC_OK: SavePosition(); CDialog::OnOK(); break;
         case IDC_PLAY:
         {
-            const int sel = ListView_GetNextItem( hSoundList, -1, LVNI_SELECTED );
+           CCO(PinTable) *pt = (CCO(PinTable) *)g_pvp->GetActiveTable();
+           const int sel = ListView_GetNextItem(hSoundList, -1, LVNI_SELECTED);
             if(sel != -1)
             {
                 LVITEM lvitem;
@@ -231,7 +232,8 @@ void SoundDialog::Import()
             pt->ImportSound( hSoundList, szFileName, fTrue );
         }
         SetRegValue( "RecentDir", "SoundDir", REG_SZ, szInitialDir, lstrlen( szInitialDir ) );
-        pt->SetNonUndoableDirty( eSaveDirty );
+        if (pt)
+            pt->SetNonUndoableDirty( eSaveDirty );
     }
     SetFocus();
 }
@@ -240,7 +242,6 @@ void SoundDialog::ReImport()
 {
     CCO( PinTable ) *pt = (CCO( PinTable ) *)g_pvp->GetActiveTable();
     const int count = ListView_GetSelectedCount( hSoundList );
-
     if(count > 0)
     {
         LocalString ls( IDS_REPLACESOUND );
@@ -263,6 +264,7 @@ void SoundDialog::ReImport()
                 if(hFile != INVALID_HANDLE_VALUE)
                 {
                     CloseHandle( hFile );
+
                     pt->ReImportSound( hSoundList, pps, pps->m_szPath, count == 1 );
                     pt->SetNonUndoableDirty( eSaveDirty );
                 }
