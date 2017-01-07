@@ -155,7 +155,7 @@ void Rubber::DrawRubberMesh(Sur * const psur)
       }
    }
    if (drawVertices.size() > 0)
-      psur->Lines(&drawVertices[0], (int)(drawVertices.size() / 2));
+      psur->Lines(drawVertices.data(), (int)(drawVertices.size() / 2));
 
 }
 
@@ -1573,7 +1573,7 @@ void Rubber::GenerateMesh(const int _accuracy, const bool createHitShape)
       }
    }
 
-   ComputeNormals(&m_vertices[0], m_numVertices, &ringIndices[0], m_numIndices);
+   ComputeNormals(m_vertices.data(), m_numVertices, ringIndices.data(), m_numIndices);
 
    float maxx = FLT_MIN;
    float minx = FLT_MAX;
@@ -1595,10 +1595,10 @@ void Rubber::GenerateMesh(const int _accuracy, const bool createHitShape)
    middlePoint.z = (maxz + minz)*0.5f;
 
    // not necessary to reorder
-   /*WORD* tmp = reorderForsyth(&ringIndices[0], ringIndices.size() / 3, m_numVertices);
+   /*WORD* tmp = reorderForsyth(ringIndices.data(), ringIndices.size() / 3, m_numVertices);
    if (tmp != NULL)
    {
-   memcpy(&ringIndices[0], tmp, ringIndices.size()*sizeof(WORD));
+   memcpy(ringIndices.data(), tmp, ringIndices.size()*sizeof(WORD));
    delete[] tmp;
    }*/
 
@@ -1619,7 +1619,7 @@ void Rubber::GenerateVertexBuffer(RenderDevice* pd3dDevice)
    // Draw the floor of the ramp.
    Vertex3D_NoTex2 *buf;
    dynamicVertexBuffer->lock(0, 0, (void**)&buf, m_d.m_staticRendering ? VertexBuffer::WRITEONLY : VertexBuffer::DISCARDCONTENTS);
-   memcpy(&buf[0], &m_vertices[0], sizeof(Vertex3D_NoTex2)*m_numVertices);
+   memcpy(buf, m_vertices.data(), sizeof(Vertex3D_NoTex2)*m_numVertices);
    dynamicVertexBuffer->unlock();
 
    if (dynamicIndexBuffer)

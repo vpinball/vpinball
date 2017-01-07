@@ -100,10 +100,10 @@ void Decal::SetDefaults(bool fromMouseClick)
          fd.lpstrName = L"Arial Black";
       else
       {
-         int len = lstrlen(&tmp[0]) + 1;
+         int len = lstrlen(tmp) + 1;
          fd.lpstrName = (LPOLESTR)malloc(len*sizeof(WCHAR));
          memset(fd.lpstrName, 0, len*sizeof(WCHAR));
-         UNICODE_FROM_ANSI(fd.lpstrName, &tmp[0], len);
+         UNICODE_FROM_ANSI(fd.lpstrName, tmp, len);
       }
 
       hr = GetRegInt("DefaultProps\\Decal", "FontWeight", &iTmp);

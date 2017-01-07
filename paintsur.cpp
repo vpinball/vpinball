@@ -102,7 +102,7 @@ void PaintSur::Polygon(const Vertex2D * const rgv, const int count)
    SelectObject(m_hdc, m_hbr);
    SelectObject(m_hdc, m_hpnOutline);
 
-   ::Polygon(m_hdc, &rgpt[0], count);
+   ::Polygon(m_hdc, rgpt.data(), count);
 }
 
 // copy-pasted from above
@@ -119,7 +119,7 @@ void PaintSur::Polygon(const std::vector<RenderVertex> &rgv)
    SelectObject(m_hdc, m_hbr);
    SelectObject(m_hdc, m_hpnOutline);
 
-   ::Polygon(m_hdc, &rgpt[0], (int)rgv.size());
+   ::Polygon(m_hdc, rgpt.data(), (int)rgv.size());
 }
 
 void PaintSur::PolygonImage(const std::vector<RenderVertex> &rgv, HBITMAP hbm, const float left, const float top, const float right, const float bottom, const int bitmapwidth, const int bitmapheight)
@@ -146,7 +146,7 @@ void PaintSur::PolygonImage(const std::vector<RenderVertex> &rgv, HBITMAP hbm, c
       rgpt[i].y = SCALEYf(rgv[i].y);
    }
 
-   ::Polygon(m_hdc, &rgpt[0], (int)rgv.size());
+   ::Polygon(m_hdc, rgpt.data(), (int)rgv.size());
 
    SetStretchBltMode(m_hdc, HALFTONE); // somehow enables filtering
    StretchBlt(m_hdc, ix, iy, ix2 - ix, iy2 - iy, hdcNew, 0, 0, bitmapwidth, bitmapheight, SRCINVERT);
@@ -175,7 +175,7 @@ void PaintSur::Polyline(const Vertex2D * const rgv, const int count)
          m_ptCache[i2].y = SCALEYf(rgv[i + i2].y);
       }
 
-      ::Polyline(m_hdc, &m_ptCache[0], batchSize);
+      ::Polyline(m_hdc, m_ptCache, batchSize);
    }
 }
 
@@ -200,7 +200,7 @@ void PaintSur::Lines(const Vertex2D * const rgv, const int count)
          m_ptCache[i2].y = SCALEYf(rgv[i * 2 + i2].y);
       }
 
-      ::PolyPolyline(m_hdc, &m_ptCache[0], &m_ptCache_idx[0], batchSize);
+      ::PolyPolyline(m_hdc, m_ptCache, m_ptCache_idx.data(), batchSize);
    }
 }
 

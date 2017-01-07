@@ -427,7 +427,7 @@ void Flasher::RenderSetup(RenderDevice* pd3dDevice)
 
    WORD* bufi;
    dynamicIndexBuffer->lock(0, 0, (void**)&bufi, 0);
-   memcpy(bufi, &vtri[0], vtri.size()*sizeof(WORD));
+   memcpy(bufi, vtri.data(), vtri.size()*sizeof(WORD));
    dynamicIndexBuffer->unlock();
 
    if (dynamicVertexBuffer)

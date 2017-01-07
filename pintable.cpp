@@ -1474,7 +1474,7 @@ BOOL PinTable::FVerifySaveToClose()
 {
    if (m_vAsyncHandles.size() > 0)
    {
-      /*const DWORD wait =*/ WaitForMultipleObjects((DWORD)m_vAsyncHandles.size(), &m_vAsyncHandles[0], TRUE, INFINITE);
+      /*const DWORD wait =*/ WaitForMultipleObjects((DWORD)m_vAsyncHandles.size(), m_vAsyncHandles.data(), TRUE, INFINITE);
       //MessageBox(NULL, "Async work items not done", NULL, 0);
 
       // Close the remaining handles here, since the window messages will never be processed

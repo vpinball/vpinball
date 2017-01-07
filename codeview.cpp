@@ -1628,7 +1628,7 @@ void CodeViewer::ShowAutoComplete(SCNotification *pSCN)
 	char KeyPressed = pSCN->ch;
 	if (KeyPressed != '.')
 	{
-		WordUnderCaret.lpstrText = &CaretTextBuff[0];
+		WordUnderCaret.lpstrText = CaretTextBuff;
 		GetWordUnderCaret();
 		const size_t intWordLen = strlen(WordUnderCaret.lpstrText);
 		if ((int)intWordLen > DisplayAutoCompleteLength && intWordLen < MAX_FIND_LENGTH)
@@ -2779,7 +2779,7 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 
 			case SCN_DOUBLECLICK:
 			{
-				pcv->WordUnderCaret.lpstrText = &CaretTextBuff[0];
+				pcv->WordUnderCaret.lpstrText = CaretTextBuff;
 				memset(CaretTextBuff, 0, MAX_FIND_LENGTH);
 				pcv->GetWordUnderCaret();
 				pcv->szLower(pcv->WordUnderCaret.lpstrText);
@@ -2953,7 +2953,7 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 					cc.lStructSize = sizeof(CHOOSECOLOR);
 					cc.hwndOwner = hwndDlg;
 					cc.rgbResult = pcv->crBackColor;
-					cc.lpCustColors = &pcv->g_PrefCols[0]; 
+					cc.lpCustColors = pcv->g_PrefCols;
 					cc.Flags = CC_ANYCOLOR | CC_FULLOPEN | CC_RGBINIT;
 					if (ChooseColor(&cc))
 					{
@@ -2971,7 +2971,7 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 					cc.lStructSize = sizeof(CHOOSECOLOR);
 					cc.hwndOwner = hwndDlg;
 					cc.rgbResult = pcv->prefEverythingElse->rgb;
-					cc.lpCustColors = &pcv->g_PrefCols[0]; 
+					cc.lpCustColors = pcv->g_PrefCols; 
 					cc.Flags = CC_ANYCOLOR | CC_FULLOPEN | CC_RGBINIT;
 					if (ChooseColor(&cc))
 					{
@@ -3021,7 +3021,7 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 							cc.lStructSize = sizeof(CHOOSECOLOR);
 							cc.hwndOwner = hwndDlg;
 							cc.rgbResult = Pref->rgb;
-							cc.lpCustColors = &pcv->g_PrefCols[0];
+							cc.lpCustColors = pcv->g_PrefCols;
 							cc.Flags = CC_ANYCOLOR | CC_FULLOPEN | CC_RGBINIT;
 							if (ChooseColor(&cc))
 							{

@@ -848,7 +848,7 @@ void Light::PrepareMoversCustom()
 
    WORD* bufi;
    customMoverIBuffer->lock(0, 0, (void**)&bufi, 0);
-   memcpy(bufi, &vtri[0], vtri.size()*sizeof(WORD));
+   memcpy(bufi, vtri.data(), vtri.size()*sizeof(WORD));
    customMoverIBuffer->unlock();
 
    customMoverVertexNum = (int)m_vvertex.size();
