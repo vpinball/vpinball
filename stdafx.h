@@ -99,6 +99,11 @@
 
 #include <atlbase.h>
 
+#if(_WIN32_WINNT < 0x0500) // for Win32++ and old compilers
+ #define WM_MENURBUTTONUP                0x0122
+ #define WM_UNINITMENUPOPUP              0x0125
+#endif
+
 #include "main.h"
 
 #include <wxx_appcore.h>		// Add CCriticalSection, CObject, CWinThread, CWinApp
