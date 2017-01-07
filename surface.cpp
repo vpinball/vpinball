@@ -591,8 +591,8 @@ void Surface::GenerateMesh(std::vector<Vertex3D_NoTex2> &topBuf, std::vector<Ver
    }
 
    sideBuf.resize(numVertices * 4);
-   memset(&sideBuf[0], 0, sizeof(Vertex3D_NoTex2)*numVertices * 4);
-   Vertex3D_NoTex2 *verts = &sideBuf[0];
+   memset(sideBuf.data(), 0, sizeof(Vertex3D_NoTex2)*numVertices * 4);
+   Vertex3D_NoTex2 *verts = sideBuf.data();
 
    const float bottom = m_d.m_heightbottom + m_ptable->m_tableheight;
    const float top = m_d.m_heighttop + m_ptable->m_tableheight;
@@ -687,10 +687,10 @@ void Surface::GenerateMesh(std::vector<Vertex3D_NoTex2> &topBuf, std::vector<Ver
       }
 
       // not necessary to reorder
-      /*WORD* tmp = reorderForsyth(&sideIndices[0], sideIndices.size() / 3, numVertices * 4);
+      /*WORD* tmp = reorderForsyth(sideIndices.data(), sideIndices.size() / 3, numVertices * 4);
       if (tmp != NULL)
       {
-      memcpy(&sideIndices[0], tmp, sideIndices.size()*sizeof(WORD));
+      memcpy(sideIndices.data(), tmp, sideIndices.size()*sizeof(WORD));
       delete[] tmp;
       }*/
    }
@@ -781,7 +781,7 @@ void Surface::ExportMesh(FILE *f)
    if (topBuf.size() > 0 && m_d.m_fTopBottomVisible && !m_d.m_fSideVisible)
    {
       WaveFrontObj_WriteObjectName(f, name);
-      WaveFrontObj_WriteVertexInfo(f, &topBuf[0], numVertices);
+      WaveFrontObj_WriteVertexInfo(f, topBuf.data(), numVertices);
       const Texture * const tex = m_ptable->GetImage(m_d.m_szImage);
       const Material * const mat = m_ptable->GetMaterial(m_d.m_szTopMaterial);
       if (tex)
@@ -800,8 +800,8 @@ void Surface::ExportMesh(FILE *f)
    else if (topBuf.size() > 0 && m_d.m_fTopBottomVisible && m_d.m_fSideVisible)
    {
       Vertex3D_NoTex2 *tmp = new Vertex3D_NoTex2[numVertices * 5];
-      memcpy(tmp, &sideBuf[0], sizeof(Vertex3D_NoTex2) * numVertices * 4);
-      memcpy(&tmp[numVertices * 4], &topBuf[0], sizeof(Vertex3D_NoTex2)*numVertices);
+      memcpy(tmp, sideBuf.data(), sizeof(Vertex3D_NoTex2) * numVertices * 4);
+      memcpy(&tmp[numVertices * 4], topBuf.data(), sizeof(Vertex3D_NoTex2)*numVertices);
       WaveFrontObj_WriteObjectName(f, name);
       WaveFrontObj_WriteVertexInfo(f, tmp, numVertices * 5);
       delete[] tmp;
@@ -820,7 +820,7 @@ void Surface::ExportMesh(FILE *f)
    else if (!m_d.m_fTopBottomVisible && m_d.m_fSideVisible)
    {
       WaveFrontObj_WriteObjectName(f, name);
-      WaveFrontObj_WriteVertexInfo(f, &sideBuf[0], numVertices * 4);
+      WaveFrontObj_WriteVertexInfo(f, sideBuf.data(), numVertices * 4);
       const Material * const mat = m_ptable->GetMaterial(m_d.m_szSideMaterial);
       WaveFrontObj_WriteMaterial(m_d.m_szSideMaterial, NULL, mat);
       WaveFrontObj_UseTexture(f, m_d.m_szSideMaterial);
@@ -846,12 +846,12 @@ void Surface::PrepareWallsAtHeight(RenderDevice* pd3dDevice)
 
    Vertex3D_NoTex2 *verts;
    VBuffer->lock(0, 0, (void**)&verts, VertexBuffer::WRITEONLY);
-   memcpy(verts, &sideBuf[0], sizeof(Vertex3D_NoTex2)*numVertices * 4);
+   memcpy(verts, sideBuf.data(), sizeof(Vertex3D_NoTex2)*numVertices * 4);
 
    if (topBottomBuf.size() > 0)
       //if (m_d.m_fVisible) // Visible could still be set later if rendered dynamically
       {
-         memcpy(verts+numVertices * 4, &topBottomBuf[0], sizeof(Vertex3D_NoTex2)*numVertices * 3);
+         memcpy(verts+numVertices * 4, topBottomBuf.data(), sizeof(Vertex3D_NoTex2)*numVertices * 3);
       }
 
    VBuffer->unlock();
@@ -862,9 +862,9 @@ void Surface::PrepareWallsAtHeight(RenderDevice* pd3dDevice)
 
    WORD* buf;
    IBuffer->lock(0, 0, (void**)&buf, 0);
-   memcpy(buf, &sideIndices[0], sideIndices.size() * sizeof(WORD));
+   memcpy(buf, sideIndices.data(), sideIndices.size() * sizeof(WORD));
    if (topBottomIndices.size() > 0)
-	   memcpy(buf + sideIndices.size(), &topBottomIndices[0], topBottomIndices.size() * sizeof(WORD));
+	   memcpy(buf + sideIndices.size(), topBottomIndices.data(), topBottomIndices.size() * sizeof(WORD));
    IBuffer->unlock();
 }
 

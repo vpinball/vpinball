@@ -23,7 +23,7 @@ public:
    int width() const   { return m_width; }
    int height() const  { return m_height; }
    int pitch() const   { return (m_format == RGBA ? 4 : 3*4) * m_width; } // pitch in bytes
-   BYTE* data()        { return &m_data[0]; }
+   BYTE* data()        { return m_data.data(); }
 
    int m_width;
    int m_height;
@@ -44,9 +44,9 @@ public:
         for (int j = 0; j < m_height; ++j)
 			  for (int i = 0; i < m_width; ++i, ++o)
 			  {
-				  const float r = ((float*)&m_data[0])[o * 3];
-				  const float g = ((float*)&m_data[0])[o * 3 + 1];
-				  const float b = ((float*)&m_data[0])[o * 3 + 2];
+				  const float r = ((float*)m_data.data())[o * 3];
+				  const float g = ((float*)m_data.data())[o * 3 + 1];
+				  const float b = ((float*)m_data.data())[o * 3 + 2];
 				  const float l = r*0.176204f + g*0.812985f + b*0.0108109f;
 				  const float n = (l*0.25f + 1.0f) / (l + 1.0f); // overflow is handled by clamp
 				  bits[o * 4    ] = (BYTE)(clamp(b*n, 0.f, 1.f) * 255.f);
@@ -71,7 +71,7 @@ public:
 					  bits[o * 4 + 3] = alpha;
 				  }
 				  else
-					  ((DWORD*)bits)[o] = ((DWORD*)&m_data[0])[o];
+					  ((DWORD*)bits)[o] = ((DWORD*)m_data.data())[o];
 			  }
 	  }
    }

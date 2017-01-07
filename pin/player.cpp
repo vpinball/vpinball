@@ -1450,7 +1450,7 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
       m_pin3d.m_pd3dDevice->CreateVertexBuffer((unsigned int)ballDbgVtx.size(), 0, MY_D3DFVF_TEX, &m_ballDebugPoints);
       void *buf;
       m_ballDebugPoints->lock(0, 0, &buf, VertexBuffer::WRITEONLY);
-      memcpy(buf, &ballDbgVtx[0], ballDbgVtx.size() * sizeof(ballDbgVtx[0]));
+      memcpy(buf, ballDbgVtx.data(), ballDbgVtx.size() * sizeof(ballDbgVtx[0]));
       m_ballDebugPoints->unlock();
    }
 #endif

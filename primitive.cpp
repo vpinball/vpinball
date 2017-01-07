@@ -152,7 +152,7 @@ void Mesh::UploadToVB(VertexBuffer * vb, float frame)
 
    Vertex3D_NoTex2 *buf;
    vb->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
-   memcpy(buf, &m_vertices[0], sizeof(Vertex3D_NoTex2)*m_vertices.size());
+   memcpy(buf, m_vertices.data(), sizeof(Vertex3D_NoTex2)*m_vertices.size());
    vb->unlock();
 }
 
@@ -231,7 +231,7 @@ void Primitive::CreateRenderGroup(Collection *collection, RenderDevice *pd3dDevi
    m_numGroupIndices = (int)prims[0]->m_mesh.NumIndices();
    prims[0]->m_d.m_fGroupdRendering = true;
    vector<unsigned int> indices(overall_size);
-   memcpy(&indices[0], &prims[0]->m_mesh.m_indices[0], prims[0]->m_mesh.NumIndices());
+   memcpy(indices.data(), prims[0]->m_mesh.m_indices.data(), prims[0]->m_mesh.NumIndices());
 
    for (size_t i = 1; i < prims.size(); i++)
    {
@@ -1344,10 +1344,10 @@ HRESULT Primitive::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int versi
    if (!m_d.m_use3DMesh)
       CalculateBuiltinOriginal();
 
-   unsigned int* tmp = reorderForsyth(&m_mesh.m_indices[0], (int)(m_mesh.NumIndices() / 3), (int)m_mesh.NumVertices());
+   unsigned int* tmp = reorderForsyth(m_mesh.m_indices.data(), (int)(m_mesh.NumIndices() / 3), (int)m_mesh.NumVertices());
    if (tmp != NULL)
    {
-      memcpy(&m_mesh.m_indices[0], tmp, m_mesh.NumIndices()*sizeof(unsigned int));
+      memcpy(m_mesh.m_indices.data(), tmp, m_mesh.NumIndices()*sizeof(unsigned int));
       delete[] tmp;
    }
 
@@ -1519,7 +1519,7 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
    {
       m_mesh.m_vertices.clear();
       m_mesh.m_vertices.resize(numVertices);
-      pbr->GetStruct(&m_mesh.m_vertices[0], (int)sizeof(Vertex3D_NoTex2)*numVertices);
+      pbr->GetStruct(m_mesh.m_vertices.data(), (int)sizeof(Vertex3D_NoTex2)*numVertices);
    }
 #ifdef COMPRESS_MESHES
    else if (id == FID(M3AY))
@@ -1532,12 +1532,12 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
       frameData.m_frameVerts.clear();
       frameData.m_frameVerts.resize(numVertices);
 
-      /*LZWReader lzwreader(pbr->m_pistream, (int *)&m_mesh.m_vertices[0], sizeof(Vertex3D_NoTex2)*numVertices, 1, sizeof(Vertex3D_NoTex2)*numVertices);
+      /*LZWReader lzwreader(pbr->m_pistream, (int *)m_mesh.m_vertices.data(), sizeof(Vertex3D_NoTex2)*numVertices, 1, sizeof(Vertex3D_NoTex2)*numVertices);
       lzwreader.Decoder();*/
       mz_ulong uclen = (mz_ulong)(sizeof(Mesh::VertData)*m_mesh.NumVertices());
       mz_uint8 * c = (mz_uint8 *)malloc(compressedAnimationVertices);
       pbr->GetStruct(c, compressedAnimationVertices);
-      const int error = uncompress((unsigned char *)&frameData.m_frameVerts[0], &uclen, c, compressedAnimationVertices);
+      const int error = uncompress((unsigned char *)frameData.m_frameVerts.data(), &uclen, c, compressedAnimationVertices);
       if (error != Z_OK)
       {
          char err[128];
@@ -1555,12 +1555,12 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
    {
       m_mesh.m_vertices.clear();
       m_mesh.m_vertices.resize(numVertices);
-      /*LZWReader lzwreader(pbr->m_pistream, (int *)&m_mesh.m_vertices[0], sizeof(Vertex3D_NoTex2)*numVertices, 1, sizeof(Vertex3D_NoTex2)*numVertices);
+      /*LZWReader lzwreader(pbr->m_pistream, (int *)m_mesh.m_vertices.data(), sizeof(Vertex3D_NoTex2)*numVertices, 1, sizeof(Vertex3D_NoTex2)*numVertices);
        lzwreader.Decoder();*/
       mz_ulong uclen = (mz_ulong)(sizeof(Vertex3D_NoTex2)*m_mesh.NumVertices());
       mz_uint8 * c = (mz_uint8 *)malloc(compressedVertices);
       pbr->GetStruct(c, compressedVertices);
-      const int error = uncompress((unsigned char *)&m_mesh.m_vertices[0], &uclen, c, compressedVertices);
+      const int error = uncompress((unsigned char *)m_mesh.m_vertices.data(), &uclen, c, compressedVertices);
       if (error != Z_OK)
       {
          char err[128];
@@ -1578,11 +1578,11 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
    {
       m_mesh.m_indices.resize(numIndices);
       if (numVertices > 65535)
-         pbr->GetStruct(&m_mesh.m_indices[0], (int)sizeof(unsigned int)*numIndices);
+         pbr->GetStruct(m_mesh.m_indices.data(), (int)sizeof(unsigned int)*numIndices);
       else
       {
          std::vector<WORD> tmp(numIndices);
-         pbr->GetStruct(&tmp[0], (int)sizeof(WORD)*numIndices);
+         pbr->GetStruct(tmp.data(), (int)sizeof(WORD)*numIndices);
          for (int i = 0; i < numIndices; ++i)
             m_mesh.m_indices[i] = tmp[i];
       }
@@ -1597,12 +1597,12 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
       m_mesh.m_indices.resize(numIndices);
       if (numVertices > 65535)
       {
-         //LZWReader lzwreader(pbr->m_pistream, (int *)&m_mesh.m_indices[0], sizeof(unsigned int)*numIndices, 1, sizeof(unsigned int)*numIndices);
+         //LZWReader lzwreader(pbr->m_pistream, (int *)m_mesh.m_indices.data(), sizeof(unsigned int)*numIndices, 1, sizeof(unsigned int)*numIndices);
          //lzwreader.Decoder();
          mz_ulong uclen = (mz_ulong)(sizeof(unsigned int)*m_mesh.NumIndices());
          mz_uint8 * c = (mz_uint8 *)malloc(compressedIndices);
          pbr->GetStruct(c, compressedIndices);
-         const int error = uncompress((unsigned char *)&m_mesh.m_indices[0], &uclen, c, compressedIndices);
+         const int error = uncompress((unsigned char *)m_mesh.m_indices.data(), &uclen, c, compressedIndices);
          if (error != Z_OK)
          {
             char err[128];
@@ -1615,12 +1615,12 @@ BOOL Primitive::LoadToken(int id, BiffReader *pbr)
       {
          std::vector<WORD> tmp(numIndices);
 
-         //LZWReader lzwreader(pbr->m_pistream, (int *)&tmp[0], sizeof(WORD)*numIndices, 1, sizeof(WORD)*numIndices);
+         //LZWReader lzwreader(pbr->m_pistream, (int *)tmp.data(), sizeof(WORD)*numIndices, 1, sizeof(WORD)*numIndices);
          //lzwreader.Decoder();
          mz_ulong uclen = (mz_ulong)(sizeof(WORD)*m_mesh.NumIndices());
          mz_uint8 * c = (mz_uint8 *)malloc(compressedIndices);
          pbr->GetStruct(c, compressedIndices);
-         const int error = uncompress((unsigned char *)&tmp[0], &uclen, c, compressedIndices);
+         const int error = uncompress((unsigned char *)tmp.data(), &uclen, c, compressedIndices);
          if (error != Z_OK)
          {
             char err[128];

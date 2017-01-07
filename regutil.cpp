@@ -18,7 +18,7 @@ HRESULT GetRegStringAsFloat(const char *szKey, const char *szValue, float *pfloa
 {
    DWORD type = REG_NONE;
    char szbuffer[16];
-   const HRESULT hr = GetRegValue(szKey, szValue, &type, &szbuffer[0], 16);
+   const HRESULT hr = GetRegValue(szKey, szValue, &type, szbuffer, 16);
 
    if (type != REG_SZ)
       return E_FAIL;

@@ -495,7 +495,7 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
                   mouseDX = curPos.x - mouseX;
                   mouseDY = curPos.y - mouseY;
                   didod[0].dwData = 1;
-                  PushQueue(&didod[0], APP_MOUSE);
+                  PushQueue(didod, APP_MOUSE);
                   leftMouseButtonDown = false;
                }
                if ((mouseState.rgbButtons[1] & 0x80) && !rightMouseButtonDown && !leftMouseButtonDown && !middleMouseButtonDown)
@@ -513,7 +513,7 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
                   mouseDX = curPos.x - mouseX;
                   mouseDY = curPos.y - mouseY;
                   didod[0].dwData = 2;
-                  PushQueue(&didod[0], APP_MOUSE);
+                  PushQueue(didod, APP_MOUSE);
                   rightMouseButtonDown = false;
                }
                if ((mouseState.rgbButtons[2] & 0x80) && !rightMouseButtonDown && !leftMouseButtonDown && !middleMouseButtonDown)
@@ -531,7 +531,7 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
                   mouseDX = curPos.x - mouseX;
                   mouseDY = curPos.y - mouseY;
                   didod[0].dwData = 3;
-                  PushQueue(&didod[0], APP_MOUSE);
+                  PushQueue(didod, APP_MOUSE);
                   middleMouseButtonDown = false;
                }
             } //if (g_pplayer->m_fThrowBalls)

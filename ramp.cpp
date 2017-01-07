@@ -1135,19 +1135,19 @@ void Ramp::GenerateWireMesh(Vertex3D_NoTex2 **meshBuf1, Vertex3D_NoTex2 **meshBu
       }
    }
 
-   memcpy(&buf1[0], &m_vertBuffer[0], sizeof(Vertex3D_NoTex2)*m_numVertices);
+   memcpy(buf1, m_vertBuffer, sizeof(Vertex3D_NoTex2)*m_numVertices);
 
    if (m_d.m_type != RampType1Wire)
    {
       Vertex3D_NoTex2 *buf2 = *meshBuf2;
-      memcpy(&buf2[0], &m_vertBuffer2[0], sizeof(Vertex3D_NoTex2)*m_numVertices);
+      memcpy(buf2, m_vertBuffer2, sizeof(Vertex3D_NoTex2)*m_numVertices);
    }
 
    // not necessary to reorder
-   /*WORD* tmp = reorderForsyth(&m_meshIndices[0], m_meshIndices.size() / 3, m_numVertices);
+   /*WORD* tmp = reorderForsyth(m_meshIndices.data(), m_meshIndices.size() / 3, m_numVertices);
    if (tmp != NULL)
    {
-   memcpy(&m_meshIndices[0], tmp, m_meshIndices.size()*sizeof(WORD));
+   memcpy(m_meshIndices.data(), tmp, m_meshIndices.size()*sizeof(WORD));
    delete[] tmp;
    }*/
 
@@ -1177,13 +1177,13 @@ void Ramp::prepareHabitrail(RenderDevice* pd3dDevice)
    Vertex3D_NoTex2 *buf;
    Vertex3D_NoTex2 *buf2;
    dynamicVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
-   memcpy(&buf[0], &tmpBuf1[0], sizeof(Vertex3D_NoTex2)*m_numVertices);
+   memcpy(buf, tmpBuf1, sizeof(Vertex3D_NoTex2)*m_numVertices);
    dynamicVertexBuffer->unlock();
 
    if (m_d.m_type != RampType1Wire)
    {
       dynamicVertexBuffer2->lock(0, 0, (void**)&buf2, VertexBuffer::WRITEONLY);
-      memcpy(&buf2[0], &tmpBuf2[0], sizeof(Vertex3D_NoTex2)*m_numVertices);
+      memcpy(buf2, tmpBuf2, sizeof(Vertex3D_NoTex2)*m_numVertices);
       dynamicVertexBuffer2->unlock();
    }
 
@@ -2497,7 +2497,7 @@ void Ramp::GenerateRampMesh(Vertex3D_NoTex2 **meshBuf)
       m_meshIndices[offs + 4] = i * 2 + m_numVertices * 2 + 3;
       m_meshIndices[offs + 5] = i * 2 + m_numVertices * 2 + 2;
    }
-   ComputeNormals(m_vertBuffer, m_numVertices, &m_meshIndices[0], (rampVertex - 1) * 6);
+   ComputeNormals(m_vertBuffer, m_numVertices, m_meshIndices.data(), (rampVertex - 1) * 6);
 
    // Flip Normals if pointing downwards instead of upwards, not necessary anymore //!! hacky, do it correct somehow else
    /*for (int i = 0; i < rampVertex; i++)
@@ -2508,7 +2508,7 @@ void Ramp::GenerateRampMesh(Vertex3D_NoTex2 **meshBuf)
        }*/
 
    unsigned int offset = 0;
-   memcpy(&buf[offset], &m_vertBuffer[0], sizeof(Vertex3D_NoTex2)*m_numVertices);
+   memcpy(&buf[offset], m_vertBuffer, sizeof(Vertex3D_NoTex2)*m_numVertices);
    offset += m_numVertices;
 
    // only calculate vertices if one or both sides are visible (!=0)
@@ -2546,8 +2546,8 @@ void Ramp::GenerateRampMesh(Vertex3D_NoTex2 **meshBuf)
             rgv3D[1].tv = 0.0f;
          }
       }
-      ComputeNormals(m_vertBuffer, m_numVertices, &m_meshIndices[0], (rampVertex - 1) * 6);
-      memcpy(&buf[offset], &m_vertBuffer[0], sizeof(Vertex3D_NoTex2)*m_numVertices);
+      ComputeNormals(m_vertBuffer, m_numVertices, m_meshIndices.data(), (rampVertex - 1) * 6);
+      memcpy(&buf[offset], m_vertBuffer, sizeof(Vertex3D_NoTex2)*m_numVertices);
       offset += m_numVertices;
 
       for (int i = 0; i < rampVertex; i++)
@@ -2585,8 +2585,8 @@ void Ramp::GenerateRampMesh(Vertex3D_NoTex2 **meshBuf)
             rgv3D[1].tv = 0.0f;
          }
       }
-      ComputeNormals(m_vertBuffer, m_numVertices, &m_meshIndices[0], (rampVertex - 1) * 6);
-      memcpy(&buf[offset], &m_vertBuffer[0], sizeof(Vertex3D_NoTex2)*m_numVertices);
+      ComputeNormals(m_vertBuffer, m_numVertices, m_meshIndices.data(), (rampVertex - 1) * 6);
+      memcpy(&buf[offset], m_vertBuffer, sizeof(Vertex3D_NoTex2)*m_numVertices);
    }
 
    delete[] m_vertBuffer;
@@ -2610,14 +2610,14 @@ void Ramp::GenerateVertexBuffer(RenderDevice* pd3dDevice)
 
    Vertex3D_NoTex2 *buf;
    dynamicVertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::WRITEONLY);
-   memcpy(&buf[0], &tmpBuffer[0], sizeof(Vertex3D_NoTex2)*m_numVertices * 3);
+   memcpy(buf, tmpBuffer, sizeof(Vertex3D_NoTex2)*m_numVertices * 3);
    dynamicVertexBuffer->unlock();
 
    // not necessary to reorder //!! also potentially unsafe, as walls can be disabled, so order is important!
-   /*WORD* const tmp = reorderForsyth(&m_meshIndices[0], m_meshIndices.size() / 3, m_numVertices * 3);
+   /*WORD* const tmp = reorderForsyth(m_meshIndices.data(), m_meshIndices.size() / 3, m_numVertices * 3);
    if (tmp != NULL)
    {
-   memcpy(&m_meshIndices[0], tmp, m_meshIndices.size()*sizeof(WORD));
+   memcpy(m_meshIndices.data(), tmp, m_meshIndices.size()*sizeof(WORD));
    delete[] tmp;
    }*/
 

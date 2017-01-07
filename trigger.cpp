@@ -345,7 +345,7 @@ void Trigger::Render(Sur * const psur)
             drawVertices[o] = Vertex2D(B.x, B.y);
          }
 
-         psur->Polyline(&drawVertices[0], (int)drawVertices.size());
+         psur->Polyline(drawVertices.data(), (int)drawVertices.size());
       }
    }
 }

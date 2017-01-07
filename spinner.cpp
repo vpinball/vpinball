@@ -299,7 +299,7 @@ void Spinner::ExportMesh(FILE *f)
          transformedVertices[i].tu = spinnerBracket[i].tu;
          transformedVertices[i].tv = spinnerBracket[i].tv;
       }
-      WaveFrontObj_WriteVertexInfo(f, &transformedVertices[0], spinnerBracketNumVertices);
+      WaveFrontObj_WriteVertexInfo(f, transformedVertices.data(), spinnerBracketNumVertices);
 
       const Material * mat = m_ptable->GetMaterial(m_d.m_szMaterial);
       WaveFrontObj_WriteMaterial(m_d.m_szMaterial, NULL, mat);
@@ -312,14 +312,14 @@ void Spinner::ExportMesh(FILE *f)
 
    transformedVertices.resize(spinnerPlateNumVertices);
    vertexBuffer_spinneranimangle = -FLT_MAX;
-   UpdatePlate(NULL, &transformedVertices[0]);
+   UpdatePlate(NULL, transformedVertices.data());
 
    strcpy_s(subObjName, name);
    strcat_s(subObjName, "Plate");
    WaveFrontObj_WriteObjectName(f, subObjName);
 
-   WaveFrontObj_WriteVertexInfo(f, &transformedVertices[0], spinnerPlateNumVertices);
-   WaveFrontObj_WriteFaceInfoList(f, &spinnerPlateIndices[0], spinnerPlateNumFaces);
+   WaveFrontObj_WriteVertexInfo(f, transformedVertices.data(), spinnerPlateNumVertices);
+   WaveFrontObj_WriteFaceInfoList(f, spinnerPlateIndices, spinnerPlateNumFaces);
    WaveFrontObj_UpdateFaceOffset(spinnerPlateNumVertices);
    transformedVertices.clear();
 }

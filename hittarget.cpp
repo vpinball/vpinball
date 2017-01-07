@@ -502,7 +502,7 @@ void HitTarget::ExportMesh( FILE *f )
 
     GenerateMesh( transformedVertices );
 
-    WaveFrontObj_WriteVertexInfo( f, &transformedVertices[0], m_numVertices );
+    WaveFrontObj_WriteVertexInfo( f, transformedVertices.data(), m_numVertices );
     const Material * mat = m_ptable->GetMaterial( m_d.m_szMaterial );
     WaveFrontObj_WriteMaterial( m_d.m_szMaterial, NULL, mat );
     WaveFrontObj_UseTexture( f, m_d.m_szMaterial );
@@ -815,7 +815,7 @@ void HitTarget::RenderSetup(RenderDevice* pd3dDevice)
    }
    Vertex3D_NoTex2 *buf;
    vertexBuffer->lock(0, 0, (void**)&buf, VertexBuffer::DISCARDCONTENTS);
-   memcpy(buf, &transformedVertices[0], m_numVertices*sizeof(Vertex3D_NoTex2));
+   memcpy(buf, transformedVertices.data(), m_numVertices*sizeof(Vertex3D_NoTex2));
    vertexBuffer->unlock();
    m_d.m_time_msec = g_pplayer->m_time_msec;
 }
