@@ -13,6 +13,7 @@ using namespace std::tr1;
 #endif
 
 #include "hash.h"
+#include "SearchSelectDialog.h"
 
 #define VIEW_PLAYFIELD 1
 #define VIEW_BACKGLASS 2
@@ -742,7 +743,7 @@ public:
    float m_bloom_strength;
 
    HWND  m_hMaterialManager;
-   HWND  m_hSearchSelectDialog;
+   SearchSelectDialog m_searchSelectDlg;
 
    bool  m_fDirtyDraw; // Whether our background bitmap is up to date
 

@@ -1280,7 +1280,6 @@ PinTable::PinTable()
    memset(m_szImage, 0, MAXTOKEN);
    memset(m_szEnvImage, 0, MAXTOKEN);
    m_hMaterialManager = NULL;
-   m_hSearchSelectDialog = NULL;
 
    m_numMaterials = 0;
    HRESULT hr;
@@ -6030,10 +6029,9 @@ void PinTable::Undo()
    m_undo.Undo();
 
    SetDirtyDraw();
-   if (m_hSearchSelectDialog != NULL)
+   if (m_searchSelectDlg.IsWindow())
    {
-      CComObject<PinTable> *ptCur = g_pvp->GetActiveTable();
-      SendMessage(m_hSearchSelectDialog, WM_INITDIALOG, 0, (size_t)ptCur);
+      m_searchSelectDlg.Update();
    }
    g_pvp->m_sb.RefreshProperties();
 }
@@ -6397,11 +6395,8 @@ void PinTable::OnDelete()
    }
    // update properties to show the properties of the table
    g_pvp->SetPropSel(&m_vmultisel);
-   if (m_hSearchSelectDialog != NULL)
-   {
-      CComObject<PinTable> *ptCur = g_pvp->GetActiveTable();
-      SendMessage(m_hSearchSelectDialog, WM_INITDIALOG, 0, (size_t)ptCur);
-   }
+   if (m_searchSelectDlg.IsWindow())
+      m_searchSelectDlg.Update();
    SetDirtyDraw();
 }
 
@@ -6475,11 +6470,8 @@ void PinTable::UseTool(int x, int y, int tool)
       pie->m_fBackglass = g_pvp->m_fBackglassView;
       m_vedit.AddElement(pie);
       AddMultiSel(pie->GetISelect(), false);
-      if (m_hSearchSelectDialog != NULL)
-      {
-         CComObject<PinTable> *ptCur = g_pvp->GetActiveTable();
-         SendMessage(m_hSearchSelectDialog, WM_INITDIALOG, 0, (size_t)ptCur);
-      }
+      if (m_searchSelectDlg.IsWindow())
+         m_searchSelectDlg.Update();
       BeginUndo();
       m_undo.MarkForCreate(pie);
       EndUndo();

@@ -806,6 +806,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|x64'">MinSpace</Optimization>
     </ClCompile>
     <ClCompile Include="RenderDevice.cpp" />
+    <ClCompile Include="SearchSelectDialog.cpp" />
     <ClCompile Include="slintf.cpp" />
     <ClCompile Include="SoundDialog.cpp" />
     <ClCompile Include="spinner.cpp">
@@ -1241,6 +1242,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="RenderDevice.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="rubber.h" />
+    <ClInclude Include="SearchSelectDialog.h" />
     <ClInclude Include="slintf.h" />
     <ClInclude Include="SoundDialog.h" />
     <ClInclude Include="spinner.h" />
