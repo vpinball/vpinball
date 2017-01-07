@@ -371,6 +371,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="codeviewedit.cpp" />
     <ClCompile Include="CrashHandler.cpp" />
     <ClCompile Include="Debugger.cpp" />
+    <ClCompile Include="DrawingOrderDialog.cpp" />
     <ClCompile Include="flasher.cpp" />
     <ClCompile Include="hittarget.cpp" />
     <ClCompile Include="ImageDialog.cpp" />
@@ -1069,6 +1070,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="dispreel.h" />
     <ClInclude Include="disputil.h" />
     <ClInclude Include="dragpoint.h" />
+    <ClInclude Include="DrawingOrderDialog.h" />
     <ClInclude Include="editablereg.h" />
     <ClInclude Include="eventproxy.h" />
     <ClInclude Include="extern.h" />

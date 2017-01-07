@@ -370,6 +370,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="BlackBox.cpp" />
     <ClCompile Include="codeviewedit.cpp" />
     <ClCompile Include="CrashHandler.cpp" />
+    <ClCompile Include="DrawingOrderDialog.cpp" />
     <ClCompile Include="flasher.cpp" />
     <ClCompile Include="inc\miniz.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
@@ -1088,6 +1089,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="dispreel.h" />
     <ClInclude Include="disputil.h" />
     <ClInclude Include="dragpoint.h" />
+    <ClInclude Include="DrawingOrderDialog.h" />
     <ClInclude Include="editablereg.h" />
     <ClInclude Include="eventproxy.h" />
     <ClInclude Include="extern.h" />
