@@ -2,8 +2,6 @@
 #ifndef _OBJLOADER_H
 #define _OBJLOADER_H
 
-#include "stdafx.h"
-
 FILE* WaveFrontObj_ExportStart(const char *filename);
 void WaveFrontObj_ExportEnd(FILE *f);
 void WaveFrontObj_UpdateFaceOffset(unsigned int numVertices);
