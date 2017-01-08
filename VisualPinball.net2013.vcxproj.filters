@@ -112,6 +112,9 @@
     <ClCompile Include="Dialogs\ImageDialog.cpp">
       <Filter>dialogs</Filter>
     </ClCompile>
+    <ClCompile Include="dialogs\DimensionDialog.cpp">
+      <Filter>dialogs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="vpinball.rc" />
@@ -967,6 +970,9 @@
       <Filter>dialogs</Filter>
     </ClInclude>
     <ClInclude Include="Dialogs\ImageDialog.h">
+      <Filter>dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="dialogs\DimensionDialog.h">
       <Filter>dialogs</Filter>
     </ClInclude>
   </ItemGroup>
