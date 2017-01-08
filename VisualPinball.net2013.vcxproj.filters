@@ -90,14 +90,28 @@
     <ClCompile Include="inc\miniz.c">
       <Filter>inc</Filter>
     </ClCompile>
-    <ClCompile Include="MaterialDialog.cpp" />
-    <ClCompile Include="ImageDialog.cpp" />
     <ClCompile Include="Debugger.cpp" />
-    <ClCompile Include="AboutDialog.cpp" />
-    <ClCompile Include="SoundDialog.cpp" />
-    <ClCompile Include="DrawingOrderDialog.cpp" />
-    <ClCompile Include="SearchSelectDialog.cpp" />
-    <ClCompile Include="TableInfoDialog.cpp" />
+    <ClCompile Include="Dialogs\AboutDialog.cpp">
+      <Filter>dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Dialogs\DrawingOrderDialog.cpp">
+      <Filter>dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Dialogs\MaterialDialog.cpp">
+      <Filter>dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Dialogs\SearchSelectDialog.cpp">
+      <Filter>dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Dialogs\SoundDialog.cpp">
+      <Filter>dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Dialogs\TableInfoDialog.cpp">
+      <Filter>dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Dialogs\ImageDialog.cpp">
+      <Filter>dialogs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="vpinball.rc" />
@@ -328,6 +342,9 @@
     </Filter>
     <Filter Include="inc\Win32xx\include">
       <UniqueIdentifier>{79f0d9fe-5f96-4893-a95c-5c2f5ef53016}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="dialogs">
+      <UniqueIdentifier>{c610444d-c6a8-4d86-8f67-259b27ea5f25}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -805,7 +822,6 @@
     <ClInclude Include="meshes\hitTargetT2SlimMesh.h">
       <Filter>meshes</Filter>
     </ClInclude>
-    <ClInclude Include="AboutDialog.h" />
     <ClInclude Include="inc\win32xx\include\wxx_appcore.h">
       <Filter>inc\Win32xx\include</Filter>
     </ClInclude>
@@ -935,11 +951,24 @@
     <ClInclude Include="inc\win32xx\include\wxx_wincore0.h">
       <Filter>inc\Win32xx\include</Filter>
     </ClInclude>
-    <ClInclude Include="ImageDialog.h" />
-    <ClInclude Include="SoundDialog.h" />
-    <ClInclude Include="DrawingOrderDialog.h" />
-    <ClInclude Include="SearchSelectDialog.h" />
-    <ClInclude Include="TableInfoDialog.h" />
+    <ClInclude Include="Dialogs\AboutDialog.h">
+      <Filter>dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="Dialogs\DrawingOrderDialog.h">
+      <Filter>dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="Dialogs\SearchSelectDialog.h">
+      <Filter>dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="Dialogs\SoundDialog.h">
+      <Filter>dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="Dialogs\TableInfoDialog.h">
+      <Filter>dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="Dialogs\ImageDialog.h">
+      <Filter>dialogs</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="shader\BallShader.fx">
