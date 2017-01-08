@@ -849,6 +849,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|x64'">MinSpace</Optimization>
     </ClCompile>
+    <ClCompile Include="TableInfoDialog.cpp" />
     <ClCompile Include="textbox.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
@@ -1255,6 +1256,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="sur.h" />
     <ClInclude Include="surface.h" />
+    <ClInclude Include="TableInfoDialog.h" />
     <ClInclude Include="textbox.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="timer.h" />
