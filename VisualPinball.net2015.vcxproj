@@ -112,7 +112,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)\Include;shader;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;$(DXSDK_DIR)\Include;dialogs;shader;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>COR_ENABLE_PROFILING;WIN32;_DEBUG;_WINDOWS;MYDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -235,7 +235,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)\Include;shader;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;$(DXSDK_DIR)\Include;dialogs;shader;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>false</ExceptionHandling>
@@ -353,13 +353,19 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="AboutDialog.cpp" />
     <ClCompile Include="BlackBox.cpp" />
     <ClCompile Include="codeviewedit.cpp" />
     <ClCompile Include="CrashHandler.cpp" />
-    <ClCompile Include="DrawingOrderDialog.cpp" />
+    <ClCompile Include="Debugger.cpp" />
+    <ClCompile Include="Dialogs\AboutDialog.cpp" />
+    <ClCompile Include="Dialogs\DrawingOrderDialog.cpp" />
+    <ClCompile Include="Dialogs\ImageDialog.cpp" />
+    <ClCompile Include="Dialogs\MaterialDialog.cpp" />
+    <ClCompile Include="Dialogs\SearchSelectDialog.cpp" />
+    <ClCompile Include="Dialogs\SoundDialog.cpp" />
+    <ClCompile Include="Dialogs\TableInfoDialog.cpp" />
     <ClCompile Include="flasher.cpp" />
-    <ClCompile Include="ImageDialog.cpp" />
+    <ClCompile Include="hittarget.cpp" />
     <ClCompile Include="inc\miniz.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
@@ -367,7 +373,6 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="inc\progmesh.cpp" />
-    <ClCompile Include="MaterialDialog.cpp" />
     <ClCompile Include="math\math.cpp" />
     <ClCompile Include="MemoryStatus.cpp" />
     <ClCompile Include="rubber.cpp" />
@@ -811,9 +816,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|x64'">MinSpace</Optimization>
     </ClCompile>
     <ClCompile Include="RenderDevice.cpp" />
-    <ClCompile Include="SearchSelectDialog.cpp" />
     <ClCompile Include="slintf.cpp" />
-    <ClCompile Include="SoundDialog.cpp" />
     <ClCompile Include="spinner.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
@@ -849,7 +852,6 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MinSpace</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|x64'">MinSpace</Optimization>
     </ClCompile>
-    <ClCompile Include="TableInfoDialog.cpp" />
     <ClCompile Include="textbox.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
@@ -1064,7 +1066,6 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <Image Include="res\toolbar.bmp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="AboutDialog.h" />
     <ClInclude Include="ballex.h" />
     <ClInclude Include="BlackBox.h" />
     <ClInclude Include="bumper.h" />
@@ -1073,11 +1074,16 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="CrashHandler.h" />
     <ClInclude Include="decal.h" />
     <ClInclude Include="def.h" />
+    <ClInclude Include="Dialogs\AboutDialog.h" />
+    <ClInclude Include="Dialogs\DrawingOrderDialog.h" />
+    <ClInclude Include="Dialogs\ImageDialog.h" />
+    <ClInclude Include="Dialogs\SearchSelectDialog.h" />
+    <ClInclude Include="Dialogs\SoundDialog.h" />
+    <ClInclude Include="Dialogs\TableInfoDialog.h" />
     <ClInclude Include="dispid.h" />
     <ClInclude Include="dispreel.h" />
     <ClInclude Include="disputil.h" />
     <ClInclude Include="dragpoint.h" />
-    <ClInclude Include="DrawingOrderDialog.h" />
     <ClInclude Include="editablereg.h" />
     <ClInclude Include="eventproxy.h" />
     <ClInclude Include="extern.h" />
@@ -1092,7 +1098,6 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="hittarget.h" />
     <ClInclude Include="idebug.h" />
     <ClInclude Include="ieditable.h" />
-    <ClInclude Include="ImageDialog.h" />
     <ClInclude Include="inc\bass.h" />
     <ClInclude Include="inc\forsyth.h" />
     <ClInclude Include="inc\freeimage.h" />
@@ -1248,15 +1253,12 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="RenderDevice.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="rubber.h" />
-    <ClInclude Include="SearchSelectDialog.h" />
     <ClInclude Include="slintf.h" />
-    <ClInclude Include="SoundDialog.h" />
     <ClInclude Include="spinner.h" />
     <ClInclude Include="StackTrace.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="sur.h" />
     <ClInclude Include="surface.h" />
-    <ClInclude Include="TableInfoDialog.h" />
     <ClInclude Include="textbox.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="timer.h" />
