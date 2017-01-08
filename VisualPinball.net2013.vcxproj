@@ -371,6 +371,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="CrashHandler.cpp" />
     <ClCompile Include="Debugger.cpp" />
     <ClCompile Include="Dialogs\AboutDialog.cpp" />
+    <ClCompile Include="dialogs\DimensionDialog.cpp" />
     <ClCompile Include="Dialogs\DrawingOrderDialog.cpp" />
     <ClCompile Include="Dialogs\ImageDialog.cpp" />
     <ClCompile Include="Dialogs\MaterialDialog.cpp" />
@@ -1068,6 +1069,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="decal.h" />
     <ClInclude Include="def.h" />
     <ClInclude Include="Dialogs\AboutDialog.h" />
+    <ClInclude Include="dialogs\DimensionDialog.h" />
     <ClInclude Include="Dialogs\DrawingOrderDialog.h" />
     <ClInclude Include="Dialogs\ImageDialog.h" />
     <ClInclude Include="Dialogs\SearchSelectDialog.h" />
