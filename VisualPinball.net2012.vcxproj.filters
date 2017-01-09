@@ -82,33 +82,15 @@
     <ClCompile Include="inc\miniz.c">
       <Filter>inc</Filter>
     </ClCompile>
-    <ClCompile Include="MaterialDialog.cpp" />
-    <ClCompile Include="ImageDialog.cpp" />
     <ClCompile Include="Debugger.cpp" />
-    <ClCompile Include="Dialogs\AboutDialog.cpp">
-      <Filter>dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="Dialogs\DrawingOrderDialog.cpp">
-      <Filter>dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="Dialogs\MaterialDialog.cpp">
-      <Filter>dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="Dialogs\SearchSelectDialog.cpp">
-      <Filter>dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="Dialogs\SoundDialog.cpp">
-      <Filter>dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="Dialogs\TableInfoDialog.cpp">
-      <Filter>dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="Dialogs\ImageDialog.cpp">
-      <Filter>dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="dialogs\DimensionDialog.cpp">
-      <Filter>dialogs</Filter>
-    </ClCompile>
+    <ClCompile Include="Dialogs\AboutDialog.cpp" />
+    <ClCompile Include="dialogs\DimensionDialog.cpp" />
+    <ClCompile Include="Dialogs\DrawingOrderDialog.cpp" />
+    <ClCompile Include="Dialogs\ImageDialog.cpp" />
+    <ClCompile Include="Dialogs\MaterialDialog.cpp" />
+    <ClCompile Include="Dialogs\SearchSelectDialog.cpp" />
+    <ClCompile Include="Dialogs\SoundDialog.cpp" />
+    <ClCompile Include="Dialogs\TableInfoDialog.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="vpinball.rc" />
@@ -372,12 +354,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="inc\activdbg.h">
-      <Filter>inc</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\activscp.h">
-      <Filter>inc</Filter>
-    </ClInclude>
     <ClInclude Include="inc\dbghelp.h">
       <Filter>inc</Filter>
     </ClInclude>
@@ -861,157 +837,56 @@
     <ClInclude Include="meshes\hitTargetT2SlimMesh.h">
       <Filter>meshes</Filter>
     </ClInclude>
-    <ClInclude Include="AboutDialog.h" />
-    <ClInclude Include="inc\win32xx\include\wxx_appcore.h">
-      <Filter>inc\Win32xx\include</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_appcore0.h">
-      <Filter>inc\Win32xx\include</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_archive.h">
-      <Filter>inc\Win32xx\include</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_commondlg.h">
-      <Filter>inc\Win32xx\include</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_controls.h">
-      <Filter>inc\Win32xx\include</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_cstring.h">
-      <Filter>inc\Win32xx\include</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_ddx.h">
-      <Filter>inc\Win32xx\include</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_dialog.h">
-      <Filter>inc\Win32xx\include</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_dockframe.h">
-      <Filter>inc\Win32xx\include</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_docking.h">
-      <Filter>inc\Win32xx\include</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_exception.h">
-      <Filter>inc\Win32xx\include</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_file.h">
-      <Filter>inc\Win32xx\include</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_frame.h">
-      <Filter>inc\Win32xx\include</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_gdi.h">
-      <Filter>inc\Win32xx\include</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_imagelist.h">
-      <Filter>inc\Win32xx\include</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_listview.h">
-      <Filter>inc\Win32xx\include</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_mdi.h">
-      <Filter>inc\Win32xx\include</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_menu.h">
-      <Filter>inc\Win32xx\include</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_menubar.h">
-      <Filter>inc\Win32xx\include</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_metafile.h">
-      <Filter>inc\Win32xx\include</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_printdialogs.h">
-      <Filter>inc\Win32xx\include</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_propertysheet.h">
-      <Filter>inc\Win32xx\include</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_rebar.h">
-      <Filter>inc\Win32xx\include</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_rect.h">
-      <Filter>inc\Win32xx\include</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_regkey.h">
-      <Filter>inc\Win32xx\include</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_ribbon.h">
-      <Filter>inc\Win32xx\include</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_richedit.h">
-      <Filter>inc\Win32xx\include</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_shared_ptr.h">
-      <Filter>inc\Win32xx\include</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_socket.h">
-      <Filter>inc\Win32xx\include</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_statusbar.h">
-      <Filter>inc\Win32xx\include</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_stdcontrols.h">
-      <Filter>inc\Win32xx\include</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_tab.h">
-      <Filter>inc\Win32xx\include</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_taskdialog.h">
-      <Filter>inc\Win32xx\include</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_textconv.h">
-      <Filter>inc\Win32xx\include</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_themes.h">
-      <Filter>inc\Win32xx\include</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_time.h">
-      <Filter>inc\Win32xx\include</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_toolbar.h">
-      <Filter>inc\Win32xx\include</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_treeview.h">
-      <Filter>inc\Win32xx\include</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_wceframe.h">
-      <Filter>inc\Win32xx\include</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_wcestddef.h">
-      <Filter>inc\Win32xx\include</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_webbrowser.h">
-      <Filter>inc\Win32xx\include</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_wincore.h">
-      <Filter>inc\Win32xx\include</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\win32xx\include\wxx_wincore0.h">
-      <Filter>inc\Win32xx\include</Filter>
-    </ClInclude>
-    <ClInclude Include="Dialogs\AboutDialog.h">
-      <Filter>dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="Dialogs\DrawingOrderDialog.h">
-      <Filter>dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="Dialogs\SearchSelectDialog.h">
-      <Filter>dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="Dialogs\SoundDialog.h">
-      <Filter>dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="Dialogs\TableInfoDialog.h">
-      <Filter>dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="Dialogs\ImageDialog.h">
-      <Filter>dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="dialogs\DimensionDialog.h">
-      <Filter>dialogs</Filter>
-    </ClInclude>
+    <ClInclude Include="inc\win32xx\include\wxx_appcore.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_appcore0.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_archive.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_commondlg.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_controls.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_cstring.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_ddx.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_dialog.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_dockframe.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_docking.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_exception.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_file.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_frame.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_gdi.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_imagelist.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_listview.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_mdi.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_menu.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_menubar.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_metafile.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_printdialogs.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_propertysheet.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_rebar.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_rect.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_regkey.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_ribbon.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_richedit.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_shared_ptr.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_socket.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_statusbar.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_stdcontrols.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_tab.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_taskdialog.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_textconv.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_themes.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_time.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_toolbar.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_treeview.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_wceframe.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_wcestddef.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_webbrowser.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_wincore.h" />
+    <ClInclude Include="inc\win32xx\include\wxx_wincore0.h" />
+    <ClInclude Include="Dialogs\AboutDialog.h" />
+    <ClInclude Include="dialogs\DimensionDialog.h" />
+    <ClInclude Include="Dialogs\DrawingOrderDialog.h" />
+    <ClInclude Include="Dialogs\ImageDialog.h" />
+    <ClInclude Include="Dialogs\SearchSelectDialog.h" />
+    <ClInclude Include="Dialogs\SoundDialog.h" />
+    <ClInclude Include="Dialogs\TableInfoDialog.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="shader\BallShader.fx">
