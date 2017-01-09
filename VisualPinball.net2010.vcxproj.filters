@@ -249,13 +249,37 @@
     <ClCompile Include="StackTrace.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MaterialDialog.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Debugger.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ImageDialog.cpp">
+    <ClCompile Include="dialogs\AboutDialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="dialogs\DimensionDialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="dialogs\DrawingOrderDialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="dialogs\ImageDialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="dialogs\MaterialDialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="dialogs\SearchSelectDialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="dialogs\SoundDialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="dialogs\TableInfoDialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="codeviewedit.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="hittarget.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -829,6 +853,27 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="inc\forsyth.h">
+      <Filter>Header Files\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\progmesh.h">
+      <Filter>Header Files\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\progmesh_vecmatquat_minimal.h">
+      <Filter>Header Files\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\rapidxml.hpp">
+      <Filter>Header Files\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\rapidxml_iterators.hpp">
+      <Filter>Header Files\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\rapidxml_print.hpp">
+      <Filter>Header Files\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\rapidxml_utils.hpp">
+      <Filter>Header Files\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\Sci_Position.h">
       <Filter>Header Files\inc</Filter>
     </ClInclude>
   </ItemGroup>

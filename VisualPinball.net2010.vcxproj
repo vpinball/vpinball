@@ -571,7 +571,7 @@
     <ClCompile>
       <Optimization>MinSpace</Optimization>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)\Include;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;$(DXSDK_DIR)\Include;dialogs;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -610,7 +610,7 @@
     <ClCompile>
       <Optimization>MinSpace</Optimization>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)\Include;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;$(DXSDK_DIR)\Include;dialogs;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -648,7 +648,7 @@
     <ClCompile>
       <Optimization>MinSpace</Optimization>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)\Include;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;$(DXSDK_DIR)\Include;dialogs;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -698,7 +698,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     <ClCompile>
       <Optimization>MinSpace</Optimization>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)\Include;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;$(DXSDK_DIR)\Include;dialogs;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -747,7 +747,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     <ClCompile>
       <Optimization>MinSpace</Optimization>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)\Include;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;$(DXSDK_DIR)\Include;dialogs;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;IMSPANISH;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -788,7 +788,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     <ClCompile>
       <Optimization>MinSpace</Optimization>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)\Include;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;$(DXSDK_DIR)\Include;dialogs;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;IMSPANISH;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -828,7 +828,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     <ClCompile>
       <Optimization>MinSpace</Optimization>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)\Include;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;$(DXSDK_DIR)\Include;dialogs;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -867,7 +867,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     <ClCompile>
       <Optimization>MinSpace</Optimization>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)\Include;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;$(DXSDK_DIR)\Include;dialogs;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -905,7 +905,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     <ClCompile>
       <Optimization>MinSpace</Optimization>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)\Include;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;$(DXSDK_DIR)\Include;dialogs;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -946,7 +946,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     <ClCompile>
       <Optimization>MinSpace</Optimization>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)\Include;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;$(DXSDK_DIR)\Include;dialogs;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -986,7 +986,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     <ClCompile>
       <Optimization>MinSpace</Optimization>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)\Include;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;$(DXSDK_DIR)\Include;dialogs;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -1026,7 +1026,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     <ClCompile>
       <Optimization>MinSpace</Optimization>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)\Include;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;$(DXSDK_DIR)\Include;dialogs;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -1064,7 +1064,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)\Include;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;$(DXSDK_DIR)\Include;dialogs;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -1103,7 +1103,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)\Include;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;$(DXSDK_DIR)\Include;dialogs;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -1142,7 +1142,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     <ClCompile>
       <Optimization>MinSpace</Optimization>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)\Include;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;$(DXSDK_DIR)\Include;dialogs;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;IMGERMAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -1183,7 +1183,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     <ClCompile>
       <Optimization>MinSpace</Optimization>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)\Include;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;$(DXSDK_DIR)\Include;dialogs;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;IMGERMAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -1223,7 +1223,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     <ClCompile>
       <Optimization>MinSpace</Optimization>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)\Include;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;$(DXSDK_DIR)\Include;dialogs;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;IMFRENCH;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -1264,7 +1264,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     <ClCompile>
       <Optimization>MinSpace</Optimization>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)\Include;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;$(DXSDK_DIR)\Include;dialogs;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;IMFRENCH;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -1305,7 +1305,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
       <Optimization>Full</Optimization>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)\Include;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;$(DXSDK_DIR)\Include;dialogs;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -1357,7 +1357,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
       <Optimization>Full</Optimization>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)\Include;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;$(DXSDK_DIR)\Include;dialogs;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -1406,7 +1406,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)\lib;$(DXSDK_DIR)\Include;inc;pin;media;inc\win32xx\include;shader;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;$(DXSDK_DIR)\lib;$(DXSDK_DIR)\Include;dialogs;inc;pin;media;inc\win32xx\include;shader;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>COR_ENABLE_PROFILING;WIN32;_DEBUG;_WINDOWS;MYDEBUG;_DEBUGPHYSICS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -1463,7 +1463,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)\lib;$(DXSDK_DIR)\Include;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;$(DXSDK_DIR)\lib;$(DXSDK_DIR)\Include;dialogs;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>COR_ENABLE_PROFILING;WIN32;_DEBUG;_WINDOWS;MYDEBUG;_DEBUGPHYSICS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -1522,7 +1522,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)\Include;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;$(DXSDK_DIR)\Include;dialogs;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -1578,7 +1578,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)\Include;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;$(DXSDK_DIR)\Include;dialogs;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -1633,7 +1633,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)\Include;inc;pin;media;inc\win32xx\include;shader;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;$(DXSDK_DIR)\Include;dialogs;inc;pin;media;inc\win32xx\include;shader;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;DEBUG_BALL_SPIN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>false</ExceptionHandling>
@@ -1695,7 +1695,7 @@ copy "$(TargetPath)" "%VPIN_DIR%"
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>$(DXSDK_DIR)\Include;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;$(DXSDK_DIR)\Include;dialogs;inc;pin;media;inc\win32xx\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>false</ExceptionHandling>
@@ -1757,11 +1757,19 @@ copy "$(TargetPath)" "%VPIN_DIR%"
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="BlackBox.cpp" />
+    <ClCompile Include="codeviewedit.cpp" />
     <ClCompile Include="CrashHandler.cpp" />
+    <ClCompile Include="dialogs\AboutDialog.cpp" />
+    <ClCompile Include="dialogs\DimensionDialog.cpp" />
+    <ClCompile Include="dialogs\DrawingOrderDialog.cpp" />
+    <ClCompile Include="dialogs\ImageDialog.cpp" />
+    <ClCompile Include="dialogs\MaterialDialog.cpp" />
+    <ClCompile Include="dialogs\SearchSelectDialog.cpp" />
+    <ClCompile Include="dialogs\SoundDialog.cpp" />
+    <ClCompile Include="dialogs\TableInfoDialog.cpp" />
     <ClCompile Include="flasher.cpp" />
-    <ClCompile Include="MaterialDialog.cpp" />
     <ClCompile Include="Debugger.cpp" />
-    <ClCompile Include="ImageDialog.cpp" />
+    <ClCompile Include="hittarget.cpp" />
     <ClCompile Include="math\math.cpp" />
     <ClCompile Include="MemoryStatus.cpp" />
     <ClCompile Include="rubber.cpp" />
@@ -6945,8 +6953,15 @@ copy "$(TargetPath)" "%VPIN_DIR%"
     <ClInclude Include="inc\nvapi_lite_sli.h" />
     <ClInclude Include="inc\nvapi_lite_stereo.h" />
     <ClInclude Include="inc\nvapi_lite_surround.h" />
+    <ClInclude Include="inc\progmesh.h" />
+    <ClInclude Include="inc\progmesh_vecmatquat_minimal.h" />
+    <ClInclude Include="inc\rapidxml.hpp" />
+    <ClInclude Include="inc\rapidxml_iterators.hpp" />
+    <ClInclude Include="inc\rapidxml_print.hpp" />
+    <ClInclude Include="inc\rapidxml_utils.hpp" />
     <ClInclude Include="inc\scilexer.h" />
     <ClInclude Include="inc\scintilla.h" />
+    <ClInclude Include="inc\Sci_Position.h" />
     <ClInclude Include="inc\xaudio\aac_codec.h" />
     <ClInclude Include="inc\xaudio\audio_output.h" />
     <ClInclude Include="inc\xaudio\control.h" />
