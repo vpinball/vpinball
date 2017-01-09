@@ -1586,6 +1586,7 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
    {
       AboutDialog *aboutDlg = new AboutDialog(IDD_ABOUT);
       aboutDlg->DoModal();
+      delete aboutDlg;
       break;
    }
    case ID_WINDOW_CASCADE:
