@@ -35,7 +35,7 @@ void HitKD::Init(Vector<HitObject> *vho, const unsigned int num_items)
       m_max_items = m_num_items;
 
       m_org_idx.clear();
-      m_org_idx.reserve(m_num_items);
+      m_org_idx.resize(m_num_items);
 
       tmp.clear();
       tmp.resize(m_num_items);
@@ -109,10 +109,10 @@ void HitKD::FillFromVector(Vector<HitObject>& vho)
 {
    Init(&vho, vho.Size());
 
+   m_rootNode.m_rectbounds.Clear();
+
    m_rootNode.m_start = 0;
    m_rootNode.m_items = vho.Size();
-
-   m_rootNode.m_rectbounds.Clear();
 
    for (unsigned i = 0; i < m_rootNode.m_items; ++i)
    {
@@ -120,7 +120,7 @@ void HitKD::FillFromVector(Vector<HitObject>& vho)
       pho->CalcHitRect(); //!! omit, as already calced?!
       m_rootNode.m_rectbounds.Extend(pho->m_rcHitRect);
 
-      m_org_idx.push_back(i);
+      m_org_idx[i] = i;
    }
 
 #ifdef _DEBUGPHYSICS
