@@ -346,13 +346,12 @@ void CodeViewer::SetVisible(const BOOL fVisible)
    if(!fVisible)
    {
        RECT rc;
-       int w, h;
        GetWindowRect( m_hwndMain, &rc );
        SetRegValue( "Editor", "CodeViewPosX", REG_DWORD, &rc.left, 4 );
        SetRegValue( "Editor", "CodeViewPosY", REG_DWORD, &rc.top, 4 );
-       w = rc.right - rc.left;
+       const int w = rc.right - rc.left;
        SetRegValue( "Editor", "CodeViewPosWidth", REG_DWORD, &w, 4 );
-       h= rc.bottom - rc.top;
+       const int h = rc.bottom - rc.top;
        SetRegValue( "Editor", "CodeViewPosHeight", REG_DWORD, &h, 4 );
    }
 
@@ -361,7 +360,7 @@ void CodeViewer::SetVisible(const BOOL fVisible)
       DestroyWindow(m_hwndFind);
       m_hwndFind = NULL;
    }
-   
+
    if (IsIconic(m_hwndMain))
    {
       // SW_RESTORE usually works in all cases, but if the window
@@ -374,11 +373,10 @@ void CodeViewer::SetVisible(const BOOL fVisible)
 
    if(fVisible)
    {
-       int h, w,x,y;
-       x = GetRegIntWithDefault( "Editor", "CodeViewPosX", 0 );
-       y = GetRegIntWithDefault( "Editor", "CodeViewPosY", 0 );
-       w = GetRegIntWithDefault( "Editor", "CodeViewPosWidth", 640 );
-       h = GetRegIntWithDefault( "Editor", "CodeViewPosHeight", 490 );
+       const int x = GetRegIntWithDefault( "Editor", "CodeViewPosX", 0 );
+       const int y = GetRegIntWithDefault( "Editor", "CodeViewPosY", 0 );
+       const int w = GetRegIntWithDefault( "Editor", "CodeViewPosWidth", 640 );
+       const int h = GetRegIntWithDefault( "Editor", "CodeViewPosHeight", 490 );
        SetWindowPos( m_hwndMain, HWND_TOP, x, y, w, h, SWP_NOMOVE | SWP_NOSIZE );
    }
 }
@@ -488,11 +486,10 @@ void CodeViewer::Create()
    wcex.hbrBackground = (HBRUSH)(COLOR_BTNFACE + 1);
    RegisterClassEx(&wcex);
 
-   int h, w, x, y;
-   x = GetRegIntWithDefault( "Editor", "CodeViewPosX", 0 );
-   y = GetRegIntWithDefault( "Editor", "CodeViewPosY", 0 );
-   w = GetRegIntWithDefault( "Editor", "CodeViewPosWidth", 640 );
-   h = GetRegIntWithDefault( "Editor", "CodeViewPosHeight", 490 );
+   const int x = GetRegIntWithDefault( "Editor", "CodeViewPosX", 0 );
+   const int y = GetRegIntWithDefault( "Editor", "CodeViewPosY", 0 );
+   const int w = GetRegIntWithDefault( "Editor", "CodeViewPosWidth", 640 );
+   const int h = GetRegIntWithDefault( "Editor", "CodeViewPosHeight", 490 );
 
    m_hwndMain = CreateWindowEx(0, "CVFrame", "Script",
       WS_POPUP | WS_SIZEBOX | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX,
@@ -682,7 +679,7 @@ void CodeViewer::Create()
 	ParseVPCore();
 	UpdateScinFromPrefs();
 
-    SendMessage( m_hwndMain, WM_SIZE, 0, 0 ); // Make our window relay itself out
+	SendMessage(m_hwndMain, WM_SIZE, 0, 0); // Make our window relay itself out
 
 }
 
@@ -1744,7 +1741,7 @@ bool CodeViewer::ShowTooltip(SCNotification *pSCN)
 				idx = FindClosestUD(PageConstructsDict, CurrentLineNo, idx);
 				const UserData* const Word = &PageConstructsDict->at(idx);
 				string ptemp = Word->Description;
-				ptemp += " (Line:" + to_string(Word->LineNum + 1) + ")";
+				ptemp += " (Line:" + to_string((long long)Word->LineNum + 1) + ")";
 				if ( (Word->Comment.length() > 1) && DwellHelp )
 				{
 					ptemp += "\n" +  PageConstructsDict->at(idx).Comment;
@@ -2562,8 +2559,8 @@ LRESULT CALLBACK CodeViewWndProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM 
 
    case WM_CLOSE:
    {
-      CodeViewer * const pcv = GetCodeViewerPtr(hwndDlg);    
-      pcv->SetVisible( fFalse );
+      CodeViewer * const pcv = GetCodeViewerPtr(hwndDlg);
+      pcv->SetVisible(fFalse);
       return 0;
    }
    break;

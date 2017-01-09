@@ -4,7 +4,7 @@
 #pragma once
 #if !defined(AFX_VPINBALL_H__4D32616D_55B5_4FE0_87D9_3D4CB0BE3C76__INCLUDED_)
 #define AFX_VPINBALL_H__4D32616D_55B5_4FE0_87D9_3D4CB0BE3C76__INCLUDED_
-#include "wxx_mdi.h"
+#include <wxx_mdi.h>
 #include "RenderDevice.h"
 #include "ImageDialog.h"
 #include "SoundDialog.h"
