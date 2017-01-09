@@ -1135,11 +1135,11 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
        float lat;
        hr = GetRegStringAsFloat("Player", "Latitude", &lat);
        if (hr != S_OK)
-           lat = 52.52;
+           lat = 52.52f;
        float lon;
        hr = GetRegStringAsFloat("Player", "Longitude", &lon);
        if (hr != S_OK)
-           lon = 13.37;
+           lon = 13.37f;
 
        const double rlat = lat * (M_PI / 180.);
        const double rlong = lon * (M_PI / 180.);

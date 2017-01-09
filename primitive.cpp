@@ -77,7 +77,7 @@ bool Mesh::LoadAnimation(const char *fname, const bool flipTV, const bool conver
       }
 
    }
-   sname = to_string(frameCounter)+" frames imported!";
+   sname = to_string((long long)frameCounter)+" frames imported!";
    MessageBox(NULL, sname.c_str(), "Info", MB_OK | MB_ICONEXCLAMATION);
    return true;
 }

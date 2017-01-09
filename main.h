@@ -143,4 +143,3 @@ class PinBinary;
 #include "extern.h"
 
 #include "editablereg.h"
-

@@ -2,7 +2,7 @@
 //  stdafx.pch will be the pre-compiled header
 //  stdafx.obj will contain the pre-compiled type information
 
-#include "StdAfx.h"
+#include "stdafx.h"
 
 #ifdef _ATL_STATIC_REGISTRY
  #include <statreg.h>
@@ -22,4 +22,3 @@
 #include "BallEx.h"
 #include "DispReel.h"
 #include "LightSeq.h"
-

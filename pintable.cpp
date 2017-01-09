@@ -6364,12 +6364,12 @@ void PinTable::AddMultiSel(ISelect *psel, bool fAdd, bool fUpdate, bool fContext
    piSelect = m_vmultisel.ElementAt(0);
    if (piSelect && piSelect->GetIEditable() && piSelect->GetIEditable()->GetScriptable())
    {
-      string info = string("Layer ") + to_string(piSelect->layerIndex+1);
+      string info = string("Layer ") + to_string((long long)piSelect->layerIndex+1);
       if (piSelect->GetItemType() == eItemPrimitive)
       {
          Primitive *prim = (Primitive*)piSelect;
          if (prim->m_mesh.m_animationFrames.size() > 0)
-            info = info + " (animated " + to_string(prim->m_mesh.m_animationFrames.size() - 1) + " frames)";
+            info = info + " (animated " + to_string((unsigned long long)prim->m_mesh.m_animationFrames.size() - 1) + " frames)";
       }
       g_pvp->SetStatusBarElementInfo(info.c_str());
       m_pcv->SelectItem(piSelect->GetIEditable()->GetScriptable());
@@ -7456,8 +7456,8 @@ void PinTable::ListImages(HWND hwndListView)
 int PinTable::AddListImage(HWND hwndListView, Texture *ppi)
 {
    char sizeString[MAXTOKEN] = { 0 };
-   char *usedStringYes="X";
-   char *usedStringNo=" ";
+   char * const usedStringYes="X";
+   char * const usedStringNo=" ";
 
    LVITEM lvitem;
    lvitem.mask = LVIF_DI_SETITEM | LVIF_TEXT | LVIF_PARAM;
