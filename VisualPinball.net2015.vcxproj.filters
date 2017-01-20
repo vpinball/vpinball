@@ -86,7 +86,13 @@
     <ClCompile Include="Dialogs\AboutDialog.cpp">
       <Filter>dialogs</Filter>
     </ClCompile>
+    <ClCompile Include="dialogs\DimensionDialog.cpp">
+      <Filter>dialogs</Filter>
+    </ClCompile>
     <ClCompile Include="Dialogs\DrawingOrderDialog.cpp">
+      <Filter>dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Dialogs\ImageDialog.cpp">
       <Filter>dialogs</Filter>
     </ClCompile>
     <ClCompile Include="Dialogs\MaterialDialog.cpp">
@@ -101,10 +107,7 @@
     <ClCompile Include="Dialogs\TableInfoDialog.cpp">
       <Filter>dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="Dialogs\ImageDialog.cpp">
-      <Filter>dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="dialogs\DimensionDialog.cpp">
+    <ClCompile Include="dialogs\EditorOptionsDialog.cpp">
       <Filter>dialogs</Filter>
     </ClCompile>
   </ItemGroup>
@@ -338,6 +341,9 @@
     </Filter>
     <Filter Include="inc\Win32xx\include">
       <UniqueIdentifier>{79f0d9fe-5f96-4893-a95c-5c2f5ef53016}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="dialogs">
+      <UniqueIdentifier>{2890089b-1408-4cfb-a6ce-93c682c026da}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -947,7 +953,13 @@
     <ClInclude Include="Dialogs\AboutDialog.h">
       <Filter>dialogs</Filter>
     </ClInclude>
+    <ClInclude Include="dialogs\DimensionDialog.h">
+      <Filter>dialogs</Filter>
+    </ClInclude>
     <ClInclude Include="Dialogs\DrawingOrderDialog.h">
+      <Filter>dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="Dialogs\ImageDialog.h">
       <Filter>dialogs</Filter>
     </ClInclude>
     <ClInclude Include="Dialogs\SearchSelectDialog.h">
@@ -959,10 +971,7 @@
     <ClInclude Include="Dialogs\TableInfoDialog.h">
       <Filter>dialogs</Filter>
     </ClInclude>
-    <ClInclude Include="Dialogs\ImageDialog.h">
-      <Filter>dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="dialogs\DimensionDialog.h">
+    <ClInclude Include="dialogs\EditorOptionsDialog.h">
       <Filter>dialogs</Filter>
     </ClInclude>
   </ItemGroup>

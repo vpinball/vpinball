@@ -14,6 +14,7 @@
 #include "DrawingOrderDialog.h"
 #include "TableInfoDialog.h"
 #include "DimensionDialog.h"
+#include "EditorOptionsDialog.h"
 #include "svn_version.h"
 
 using namespace rapidxml;
@@ -1349,7 +1350,9 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
 
    case ID_EDIT_EDITOROPTIONS:
    {
-      DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_EDITOR_OPTIONS), m_hwnd, EditorOptionsProc, 0);
+       EditorOptionsDialog *editorOptionsDlg=new EditorOptionsDialog();
+       editorOptionsDlg->DoModal();
+
       // refresh editor options from the registry
       InitRegValues();
       // force a screen refresh (it an active table is loaded)
@@ -6198,151 +6201,6 @@ INT_PTR CALLBACK PhysicsOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPAR
       SendMessage(hwndList, LB_RESETCONTENT, 0, 0);
    }
    break;
-   }
-
-   return FALSE;
-}
-
-INT_PTR CALLBACK EditorOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-   switch (uMsg)
-   {
-   case WM_INITDIALOG:
-   {
-      HWND hwndParent = GetParent(hwndDlg);
-      RECT rcDlg;
-      RECT rcMain;
-      GetWindowRect(hwndParent, &rcMain);
-      GetWindowRect(hwndDlg, &rcDlg);
-
-      SetWindowPos(hwndDlg, NULL,
-         (rcMain.right + rcMain.left) / 2 - (rcDlg.right - rcDlg.left) / 2,
-         (rcMain.bottom + rcMain.top) / 2 - (rcDlg.bottom - rcDlg.top) / 2,
-         0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE/* | SWP_NOMOVE*/);
-
-      HWND toolTipHwnd = CreateWindowEx(NULL, TOOLTIPS_CLASS, NULL, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, hwndDlg, NULL, g_hinst, NULL);
-      if (toolTipHwnd)
-      {
-          SendMessage(toolTipHwnd, TTM_SETMAXTIPWIDTH, 0, 180);
-          HWND controlHwnd = GetDlgItem(hwndDlg, IDC_THROW_BALLS_ALWAYS_ON_CHECK);
-          AddToolTip("If checked, the 'Throw Balls in Player' option is always active. You don't need to activate it in the debug menu again.", hwndDlg, toolTipHwnd, controlHwnd);
-          controlHwnd = GetDlgItem(hwndDlg, IDC_THROW_BALLS_SIZE_EDIT);
-          AddToolTip("Defines the default size of the ball when dropped onto the table.", hwndDlg, toolTipHwnd, controlHwnd);
-      }
-      HWND hwndControl;
-
-      // drag points
-      int fdrawpoints = GetRegIntWithDefault("Editor", "ShowDragPoints", 0);
-      hwndControl = GetDlgItem(hwndDlg, IDC_DRAW_DRAGPOINTS);
-      SendMessage(hwndControl, BM_SETCHECK, fdrawpoints ? BST_CHECKED : BST_UNCHECKED, 0);
-
-      HWND hwndColor = GetDlgItem(hwndDlg, IDC_COLOR);
-      SendMessage(hwndColor, CHANGE_COLOR, 0, g_pvp->dummyMaterial.m_cBase);
-
-      // light centers
-      int fdrawcenters = GetRegIntWithDefault("Editor", "DrawLightCenters", 0);
-      hwndControl = GetDlgItem(hwndDlg, IDC_DRAW_LIGHTCENTERS);
-      SendMessage(hwndControl, BM_SETCHECK, fdrawcenters ? BST_CHECKED : BST_UNCHECKED, 0);
-
-      int fautosave = GetRegIntWithDefault("Editor", "AutoSaveOn", 1);
-      SendDlgItemMessage(hwndDlg, IDC_AUTOSAVE, BM_SETCHECK, fautosave ? BST_CHECKED : BST_UNCHECKED, 0);
-
-      int propFloating = GetRegIntWithDefault("Editor", "PropertiesFloating", 1);
-      SendDlgItemMessage(hwndDlg, IDC_PROP_FLOAT_CHECK, BM_SETCHECK, propFloating ? BST_CHECKED : BST_UNCHECKED, 0);
-
-      int fautosavetime = GetRegIntWithDefault("Editor", "AutoSaveTime", AUTOSAVE_DEFAULT_TIME);
-      SetDlgItemInt(hwndDlg, IDC_AUTOSAVE_MINUTES, fautosavetime, FALSE);
-
-      int gridsize = GetRegIntWithDefault("Editor", "GridSize", 50);
-      SetDlgItemInt(hwndDlg, IDC_GRID_SIZE, gridsize, FALSE);
-
-      int throwBallsAlwaysOn = GetRegIntWithDefault("Editor", "ThrowBallsAlwaysOn", 0);
-      SendDlgItemMessage(hwndDlg, IDC_THROW_BALLS_ALWAYS_ON_CHECK, BM_SETCHECK, throwBallsAlwaysOn ? BST_CHECKED : BST_UNCHECKED, 0);
-
-      int throwBallSize = GetRegIntWithDefault("Editor", "ThrowBallSize", 50);
-      SetDlgItemInt(hwndDlg, IDC_THROW_BALLS_SIZE_EDIT, throwBallSize, FALSE);
-
-      int startVPfileDialog = GetRegIntWithDefault("Editor", "SelectTableOnStart", 1);
-      SendDlgItemMessage(hwndDlg, IDC_START_VP_FILE_DIALOG, BM_SETCHECK, startVPfileDialog ? BST_CHECKED : BST_UNCHECKED, 0);
-   }
-
-   return TRUE;
-   break;
-
-   case GET_COLOR_TABLE:
-   {
-      *((unsigned long **)lParam) = &g_pvp->dummyMaterial.m_cBase;
-      return TRUE;
-   }
-
-   case WM_COMMAND:
-   {
-      switch (HIWORD(wParam))
-      {
-      case COLOR_CHANGED:
-      {
-         const size_t color = GetWindowLongPtr((HWND)lParam, GWLP_USERDATA);
-         g_pvp->dummyMaterial.m_cBase = (COLORREF)color;
-         break;
-      }
-      case BN_CLICKED:
-         switch (LOWORD(wParam))
-         {
-         case IDOK:
-         {
-            bool checked;
-
-            // drag points
-            checked = (SendDlgItemMessage(hwndDlg, IDC_DRAW_DRAGPOINTS, BM_GETCHECK, 0, 0) == BST_CHECKED);
-            SetRegValueBool("Editor", "ShowDragPoints", checked);
-
-            // light centers
-            checked = (SendDlgItemMessage(hwndDlg, IDC_DRAW_LIGHTCENTERS, BM_GETCHECK, 0, 0) == BST_CHECKED);
-            SetRegValueBool("Editor", "DrawLightCenters", checked);
-
-            // auto save
-            checked = (SendDlgItemMessage(hwndDlg, IDC_AUTOSAVE, BM_GETCHECK, 0, 0) == BST_CHECKED);
-            SetRegValueBool("Editor", "AutoSaveOn", checked);
-
-            checked = (SendDlgItemMessage(hwndDlg, IDC_PROP_FLOAT_CHECK, BM_GETCHECK, 0, 0) == BST_CHECKED);
-            SetRegValueBool("Editor", "PropertiesFloating", checked);
-
-            int autosavetime = GetDlgItemInt(hwndDlg, IDC_AUTOSAVE_MINUTES, NULL, FALSE);
-            SetRegValueInt("Editor", "AutoSaveTime", autosavetime);
-
-            int gridsize = GetDlgItemInt(hwndDlg, IDC_GRID_SIZE, NULL, FALSE);
-            SetRegValueInt("Editor", "GridSize", gridsize);
-
-            checked = (SendDlgItemMessage(hwndDlg, IDC_THROW_BALLS_ALWAYS_ON_CHECK, BM_GETCHECK, 0, 0) == BST_CHECKED);
-            SetRegValueBool("Editor", "ThrowBallsAlwaysOn", checked);
-
-            int ballSize = GetDlgItemInt(hwndDlg, IDC_THROW_BALLS_SIZE_EDIT, NULL, FALSE);
-            SetRegValueInt("Editor", "ThrowBallSize", ballSize);
-
-            // Go through and reset the autosave time on all the tables
-            g_pvp->SetAutoSaveMinutes(autosavetime);
-            for (int i = 0; i < g_pvp->m_vtable.Size(); i++)
-               g_pvp->m_vtable.ElementAt(i)->BeginAutoSaveCounter();
-
-            SetRegValue("Editor", "DefaultMaterialColor", REG_DWORD, &g_pvp->dummyMaterial.m_cBase, 4);
-            EndDialog(hwndDlg, TRUE);
-
-            checked = (SendDlgItemMessage(hwndDlg, IDC_START_VP_FILE_DIALOG, BM_GETCHECK, 0, 0) == BST_CHECKED);
-            SetRegValueBool("Editor", "SelectTableOnStart", checked);
-         }
-         break;
-
-         case IDCANCEL:
-            EndDialog(hwndDlg, FALSE);
-            break;
-         }
-      }
-   }
-   break;
-
-   case WM_CLOSE:
-      EndDialog(hwndDlg, FALSE);
-      break;
    }
 
    return FALSE;
