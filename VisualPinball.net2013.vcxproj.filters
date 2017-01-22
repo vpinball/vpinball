@@ -184,7 +184,9 @@
     <Image Include="res\ringenvmap.bmp">
       <Filter>res</Filter>
     </Image>
-    <Image Include="res\AOdither.bmp" />
+    <Image Include="res\AOdither.bmp">
+      <Filter>res</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="vpinball.idl" />
