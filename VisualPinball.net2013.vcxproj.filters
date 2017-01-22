@@ -118,6 +118,9 @@
     <ClCompile Include="dialogs\EditorOptionsDialog.cpp">
       <Filter>dialogs</Filter>
     </ClCompile>
+    <ClCompile Include="dialogs\VideoOptionsDialog.cpp">
+      <Filter>dialogs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="vpinball.rc" />
@@ -979,6 +982,9 @@
       <Filter>dialogs</Filter>
     </ClInclude>
     <ClInclude Include="dialogs\EditorOptionsDialog.h">
+      <Filter>dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="dialogs\VideoOptionsDialog.h">
       <Filter>dialogs</Filter>
     </ClInclude>
   </ItemGroup>
