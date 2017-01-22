@@ -152,6 +152,9 @@ public:
    bool m_fPropertiesFloating;
    Material dummyMaterial;
 
+protected:
+   virtual void OnClose();
+
 private:
    char m_szRecentTableList[LAST_OPENED_TABLE_COUNT + 1][MAX_PATH];
 

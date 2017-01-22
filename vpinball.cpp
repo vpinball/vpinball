@@ -2229,43 +2229,41 @@ STDMETHODIMP_(ULONG) VPinball::Release()
    return m_cref;
 }
 
+void VPinball::OnClose()
+{
+   PinTable *ptable = g_pvp->GetActiveTable();
+   if (ptable)
+   {
+      while (ptable->m_savingActive)
+         Sleep(THREADS_PAUSE);
+   }
+   if (g_pplayer)
+      SendMessage(g_pplayer->m_hwnd, WM_CLOSE, 0, 0);
+
+   BOOL fCanClose = g_pvp->FCanClose();
+   if (fCanClose)
+   {
+      WINDOWPLACEMENT winpl;
+      winpl.length = sizeof(winpl);
+
+      if (::GetWindowPlacement(m_hwnd, &winpl))
+      {
+         SetRegValue("Editor", "WindowLeft", REG_DWORD, &winpl.rcNormalPosition.left, 4);
+         SetRegValue("Editor", "WindowTop", REG_DWORD, &winpl.rcNormalPosition.top, 4);
+         SetRegValue("Editor", "WindowRight", REG_DWORD, &winpl.rcNormalPosition.right, 4);
+         SetRegValue("Editor", "WindowBottom", REG_DWORD, &winpl.rcNormalPosition.bottom, 4);
+
+         BOOL fMaximized = ::IsZoomed(m_hwnd);
+         SetRegValue("Editor", "WindowMaximized", REG_DWORD, &fMaximized, 4);
+      }
+      CWnd::OnClose();
+   }
+}
+
 LRESULT CALLBACK VPWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
    switch (uMsg)
    {
-   case WM_CLOSE:
-   {
-      PinTable *ptable = g_pvp->GetActiveTable();
-      if (ptable)
-      {
-         while (ptable->m_savingActive)
-            Sleep(THREADS_PAUSE);
-      }
-      if (g_pplayer)
-         SendMessage(g_pplayer->m_hwnd, WM_CLOSE, 0, 0);
-
-      BOOL fCanClose = g_pvp->FCanClose();
-      if (fCanClose)
-      {
-         WINDOWPLACEMENT winpl;
-         winpl.length = sizeof(winpl);
-
-         if (GetWindowPlacement(hwnd, &winpl))
-         {
-            SetRegValue("Editor", "WindowLeft", REG_DWORD, &winpl.rcNormalPosition.left, 4);
-            SetRegValue("Editor", "WindowTop", REG_DWORD, &winpl.rcNormalPosition.top, 4);
-            SetRegValue("Editor", "WindowRight", REG_DWORD, &winpl.rcNormalPosition.right, 4);
-            SetRegValue("Editor", "WindowBottom", REG_DWORD, &winpl.rcNormalPosition.bottom, 4);
-
-            BOOL fMaximized = IsZoomed(hwnd);
-            SetRegValue("Editor", "WindowMaximized", REG_DWORD, &fMaximized, 4);
-         }
-
-         DestroyWindow(hwnd);
-      }
-      return 0;
-   }
-   break;
 
    case WM_DESTROY:
       PostMessage(hwnd, WM_QUIT, 0, 0);
