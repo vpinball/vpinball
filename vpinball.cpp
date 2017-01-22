@@ -16,6 +16,7 @@
 #include "DimensionDialog.h"
 #include "EditorOptionsDialog.h"
 #include "VideoOptionsDialog.h"
+#include "AudioOptionsDialog.h"
 #include "svn_version.h"
 
 using namespace rapidxml;
@@ -33,8 +34,6 @@ using namespace rapidxml;
 #define MAIN_WINDOW_WIDTH		800
 #define MAIN_WINDOW_HEIGHT		550
 
-#define GET_SOUNDDEVICES		WM_USER+103
-#define RESET_SoundList_CONTENT	WM_USER+104
 
 #define	RECENT_FIRST_MENU_IDM	5000	// ID of the first recent file list filename
 #define	RECENT_LAST_MENU_IDM	RECENT_FIRST_MENU_IDM+LAST_OPENED_TABLE_COUNT
@@ -1335,7 +1334,8 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
 
    case ID_EDIT_AUDIOOPTIONS:
    {
-      DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_AUDIO_OPTIONS), m_hwnd, AudioOptionsProc, 0);
+      AudioOptionsDialog *audioDlg = new AudioOptionsDialog();
+      audioDlg->DoModal();
    }
    break;
 
@@ -4608,213 +4608,6 @@ INT_PTR CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
    case WM_CLOSE:
       EndDialog(hwndDlg, FALSE);
-      break;
-   }
-
-   return FALSE;
-}
-
-INT_PTR CALLBACK AudioOptionsProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-   switch (uMsg)
-   {
-   case WM_INITDIALOG:
-   {
-      HWND hwndParent = GetParent(hwndDlg);
-      RECT rcDlg;
-      RECT rcMain;
-      GetWindowRect(hwndParent, &rcMain);
-      GetWindowRect(hwndDlg, &rcDlg);
-
-      SetWindowPos(hwndDlg, NULL,
-         (rcMain.right + rcMain.left) / 2 - (rcDlg.right - rcDlg.left) / 2,
-         (rcMain.bottom + rcMain.top) / 2 - (rcDlg.bottom - rcDlg.top) / 2,
-         0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE/* | SWP_NOMOVE*/);
-
-      int fmusic = 0;
-      HRESULT hr;
-      HWND hwndControl;
-      hr = GetRegInt("Player", "PlayMusic", &fmusic);
-      if (hr != S_OK)
-         fmusic = 1;
-
-      hwndControl = GetDlgItem(hwndDlg, IDC_PLAY_MUSIC);
-      SendMessage(hwndControl, BM_SETCHECK, fmusic ? BST_CHECKED : BST_UNCHECKED, 0);
-      if (!fmusic)
-      {
-         HWND hwndSlider = GetDlgItem(hwndDlg, IDC_MUSIC_SLIDER);
-         HWND hwndText = GetDlgItem(hwndDlg, IDC_STATIC_MUSIC);
-         EnableWindow(hwndSlider, FALSE);
-         EnableWindow(hwndText, FALSE);
-      }
-
-      hr = GetRegInt("Player", "PlaySound", &fmusic);
-      if (hr != S_OK)
-         fmusic = 1;
-
-      hwndControl = GetDlgItem(hwndDlg, IDC_PLAY_SOUND);
-      SendMessage(hwndControl, BM_SETCHECK, fmusic ? BST_CHECKED : BST_UNCHECKED, 0);
-      if (!fmusic)
-      {
-         HWND hwndSlider = GetDlgItem(hwndDlg, IDC_SOUND_SLIDER);
-         HWND hwndText = GetDlgItem(hwndDlg, IDC_STATIC_SOUND);
-         EnableWindow(hwndSlider, FALSE);
-         EnableWindow(hwndText, FALSE);
-      }
-
-      hr = GetRegInt("Player", "MusicVolume", &fmusic);
-      if (hr != S_OK)
-         fmusic = 100;
-      hwndControl = GetDlgItem(hwndDlg, IDC_MUSIC_SLIDER);
-      ::SendMessage(hwndControl, TBM_SETRANGE, fTrue, MAKELONG(0, 100));
-      ::SendMessage(hwndControl, TBM_SETTICFREQ, 10, 0);
-      ::SendMessage(hwndControl, TBM_SETLINESIZE, 0, 1);
-      ::SendMessage(hwndControl, TBM_SETPAGESIZE, 0, 10);
-      ::SendMessage(hwndControl, TBM_SETTHUMBLENGTH, 10, 0);
-      ::SendMessage(hwndControl, TBM_SETPOS, TRUE, fmusic);
-
-      hr = GetRegInt("Player", "SoundVolume", &fmusic);
-      if (hr != S_OK)
-         fmusic = 100;
-      hwndControl = GetDlgItem(hwndDlg, IDC_SOUND_SLIDER);
-      ::SendMessage(hwndControl, TBM_SETRANGE, fTrue, MAKELONG(0, 100));
-      ::SendMessage(hwndControl, TBM_SETTICFREQ, 10, 0);
-      ::SendMessage(hwndControl, TBM_SETLINESIZE, 0, 1);
-      ::SendMessage(hwndControl, TBM_SETPAGESIZE, 0, 10);
-      ::SendMessage(hwndControl, TBM_SETTHUMBLENGTH, 10, 0);
-      ::SendMessage(hwndControl, TBM_SETPOS, TRUE, fmusic);
-
-      int sd, sdbg;
-      hr = GetRegInt("Player", "SoundDevice", &sd);
-      if (hr != S_OK)
-         sd = 0;
-      hr = GetRegInt("Player", "SoundDeviceBG", &sdbg);
-      if (hr != S_OK)
-      {
-         sdbg = 0; // The default
-      }
-      SendMessage(hwndDlg, GET_SOUNDDEVICES, sd, sdbg);
-
-      return TRUE;
-   }
-   break;
-
-   case WM_COMMAND:
-   {
-      switch (HIWORD(wParam))
-      {
-      case BN_CLICKED:
-         switch (LOWORD(wParam))
-         {
-         case IDOK:
-         {
-            HWND hwndControl;
-            size_t checked;
-            int fmusic;
-            size_t volume;
-
-            hwndControl = GetDlgItem(hwndDlg, IDC_PLAY_MUSIC);
-            checked = SendMessage(hwndControl, BM_GETCHECK, 0, 0);
-            fmusic = (checked == BST_CHECKED) ? 1 : 0;
-            SetRegValue("Player", "PlayMusic", REG_DWORD, &fmusic, 4);
-
-            hwndControl = GetDlgItem(hwndDlg, IDC_PLAY_SOUND);
-            checked = SendMessage(hwndControl, BM_GETCHECK, 0, 0);
-            fmusic = (checked == BST_CHECKED) ? 1 : 0;
-            SetRegValue("Player", "PlaySound", REG_DWORD, &fmusic, 4);
-
-            hwndControl = GetDlgItem(hwndDlg, IDC_MUSIC_SLIDER);
-            volume = SendMessage(hwndControl, TBM_GETPOS, 0, 0);
-            SetRegValue("Player", "MusicVolume", REG_DWORD, &volume, 4);
-
-            hwndControl = GetDlgItem(hwndDlg, IDC_SOUND_SLIDER);
-            volume = SendMessage(hwndControl, TBM_GETPOS, 0, 0);
-            SetRegValue("Player", "SoundVolume", REG_DWORD, &volume, 4);
-
-            HWND hwndSoundList = GetDlgItem(hwndDlg, IDC_SoundList);
-            size_t soundindex = SendMessage(hwndSoundList, LB_GETCURSEL, 0, 0);
-            size_t sd = SendMessage(hwndSoundList, LB_GETITEMDATA, soundindex, 0);
-            SetRegValue("Player", "SoundDevice", REG_DWORD, &sd, 4);
-            hwndSoundList = GetDlgItem(hwndDlg, IDC_SoundListBG);
-            soundindex = SendMessage(hwndSoundList, LB_GETCURSEL, 0, 0);
-            sd = SendMessage(hwndSoundList, LB_GETITEMDATA, soundindex, 0);
-            SetRegValue("Player", "SoundDeviceBG", REG_DWORD, &sd, 4);
-
-            EndDialog(hwndDlg, TRUE);
-         }
-         break;
-
-         case IDCANCEL:
-            EndDialog(hwndDlg, FALSE);
-            break;
-
-         case IDC_PLAY_MUSIC:
-         {
-            const size_t checked = SendDlgItemMessage(hwndDlg, IDC_PLAY_MUSIC, BM_GETCHECK, 0, 0);
-            HWND hwndSlider = GetDlgItem(hwndDlg, IDC_MUSIC_SLIDER);
-            HWND hwndText = GetDlgItem(hwndDlg, IDC_STATIC_MUSIC);
-
-            EnableWindow(hwndSlider, (checked == BST_CHECKED));
-            EnableWindow(hwndText, (checked == BST_CHECKED));
-         }
-         break;
-
-         case IDC_PLAY_SOUND:
-         {
-            const size_t checked = SendDlgItemMessage(hwndDlg, IDC_PLAY_SOUND, BM_GETCHECK, 0, 0);
-            HWND hwndSlider = GetDlgItem(hwndDlg, IDC_SOUND_SLIDER);
-            HWND hwndText = GetDlgItem(hwndDlg, IDC_STATIC_SOUND);
-
-            EnableWindow(hwndSlider, (checked == BST_CHECKED));
-            EnableWindow(hwndText, (checked == BST_CHECKED));
-         }
-         break;
-         }
-      }
-   }
-   break;
-
-   case GET_SOUNDDEVICES:
-   {
-      SendMessage(hwndDlg, RESET_SoundList_CONTENT, 0, 0);
-      HWND hwndList = GetDlgItem(hwndDlg, IDC_SoundList);
-      HWND hwndListBG = GetDlgItem(hwndDlg, IDC_SoundListBG);
-
-
-      DSAudioDevices DSads;
-      if (!FAILED(DirectSoundEnumerate(DSEnumCallBack, &DSads)))
-      {
-         for (size_t i = 0; i < DSads.size(); i++)
-         {
-            const size_t index = SendMessage(hwndList, LB_ADDSTRING, 0, (size_t)DSads[i]->description.c_str());
-            SendMessage(hwndList, LB_SETITEMDATA, index, (LPARAM)i);
-            const size_t indexbg = SendMessage(hwndListBG, LB_ADDSTRING, 0, (size_t)DSads[i]->description.c_str());
-            SendMessage(hwndListBG, LB_SETITEMDATA, index, (LPARAM)i);
-            delete DSads[i];
-         }
-      }
-
-      SendMessage(hwndList, LB_SETCURSEL, (wParam < DSads.size()) ? wParam : 0, 0);
-      SendMessage(hwndListBG, LB_SETCURSEL, (wParam < DSads.size()) ? lParam : 0, 0);
-
-   }
-   break;
-
-   case RESET_SoundList_CONTENT:
-   {
-      HWND hwndList = GetDlgItem(hwndDlg, IDC_SoundList);
-      HWND hwndListBG = GetDlgItem(hwndDlg, IDC_SoundListBG);
-      SendMessage(hwndList, LB_RESETCONTENT, 0, 0);
-      SendMessage(hwndListBG, LB_RESETCONTENT, 0, 0);
-   }
-   break;
-
-   case WM_CLOSE:
-      EndDialog(hwndDlg, FALSE);
-      break;
-
-   case WM_DESTROY:
-      SendMessage(hwndDlg, RESET_SoundList_CONTENT, 0, 0);
       break;
    }
 
