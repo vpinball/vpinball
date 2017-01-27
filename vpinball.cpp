@@ -573,6 +573,10 @@ void VPinball::InitRegValues()
    if (FAILED(hr))
       g_pvp->m_backgroundColor = 0x00ffffff;
 
+   hr = GetRegValue("Editor", "FillColor", &type, &g_pvp->m_fillColor, 4);
+   if (FAILED(hr))
+      g_pvp->m_fillColor = 0x00c0c0c0;
+
    if (m_securitylevel < eSecurityNone || m_securitylevel > eSecurityNoControls)
       m_securitylevel = eSecurityNoControls;
 

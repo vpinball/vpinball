@@ -162,7 +162,7 @@ void Ramp::GetPointDialogPanes(Vector<PropertyPane> *pvproppane)
 void Ramp::PreRender(Sur * const psur)
 {
    //make 1 wire ramps look unique in editor - uses ramp color
-   psur->SetFillColor(m_ptable->RenderSolid() ? RGB(192, 192, 192) : -1);
+   psur->SetFillColor(m_ptable->RenderSolid() ? g_pvp->m_fillColor : -1);
    psur->SetBorderColor(-1, false, 0);
    psur->SetObject(this);
 
