@@ -1,5 +1,7 @@
 VP 10.3.0 Changelog
 ------------------------
+- The user can now define his own colors for locked/unlocked selected elements, element fill color and editor table background in the editor preferences
+
 - sound manager, image manager and script editor save and restore window position and size
 
 - Image Manager: new column added to show if an image is in use
