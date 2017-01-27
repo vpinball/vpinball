@@ -151,6 +151,9 @@ public:
    void SetStatusBarElementInfo(const char *info);
    bool m_fPropertiesFloating;
    Material dummyMaterial;
+   COLORREF m_elemSelectColor;
+   COLORREF m_elemSelectLockedColor;
+   COLORREF m_backgroundColor;
 
 protected:
    virtual void OnClose();

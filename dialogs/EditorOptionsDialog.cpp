@@ -47,6 +47,12 @@ BOOL EditorOptionsDialog::OnInitDialog()
     HWND hwndColor = GetDlgItem(IDC_COLOR).GetHwnd();
     SendMessage(hwndColor, CHANGE_COLOR, 0, g_pvp->dummyMaterial.m_cBase);
 
+    hwndColor = GetDlgItem(IDC_COLOR2).GetHwnd();
+    SendMessage(hwndColor, CHANGE_COLOR, 0, g_pvp->m_elemSelectColor);
+
+    hwndColor = GetDlgItem(IDC_COLOR3).GetHwnd();
+    SendMessage(hwndColor, CHANGE_COLOR, 0, g_pvp->m_elemSelectLockedColor);
+
     // light centers
     int fdrawcenters = GetRegIntWithDefault("Editor", "DrawLightCenters", 0);
     hwndControl = GetDlgItem(IDC_DRAW_LIGHTCENTERS).GetHwnd();
@@ -84,7 +90,17 @@ BOOL EditorOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         case COLOR_CHANGED:
         {
             const size_t color = ::GetWindowLongPtr((HWND)lParam, GWLP_USERDATA);
-            g_pvp->dummyMaterial.m_cBase = (COLORREF)color;
+            HWND hwndEvent = (HWND)lParam;
+            HWND hwndcolor1 = GetDlgItem(IDC_COLOR).GetHwnd();
+            HWND hwndcolor2 = GetDlgItem(IDC_COLOR2).GetHwnd();
+            HWND hwndcolor3 = GetDlgItem(IDC_COLOR3).GetHwnd();
+            if (hwndEvent == hwndcolor1)
+               g_pvp->dummyMaterial.m_cBase = (COLORREF)color;
+            else if (hwndEvent == hwndcolor2)
+               g_pvp->m_elemSelectColor = (COLORREF)color;
+            else if (hwndEvent == hwndcolor3)
+               g_pvp->m_elemSelectLockedColor = (COLORREF)color;
+
             return TRUE;
         }
     }
@@ -143,6 +159,8 @@ void EditorOptionsDialog::OnOK()
         g_pvp->m_vtable.ElementAt(i)->BeginAutoSaveCounter();
 
     SetRegValue("Editor", "DefaultMaterialColor", REG_DWORD, &g_pvp->dummyMaterial.m_cBase, 4);
+    SetRegValue("Editor", "ElementSelectColor", REG_DWORD, &g_pvp->m_elemSelectColor, 4);
+    SetRegValue("Editor", "ElementSelectLockedColor", REG_DWORD, &g_pvp->m_elemSelectLockedColor, 4);
 
     checked = (SendDlgItemMessage(IDC_START_VP_FILE_DIALOG, BM_GETCHECK, 0, 0) == BST_CHECKED);
     SetRegValueBool("Editor", "SelectTableOnStart", checked);
