@@ -40,7 +40,9 @@
 #define DISPID_ROTRA6                   17
 #define IDC_COLOR3                      17
 #define DISPID_SIDECOLOR                18
+#define IDC_COLOR4                      18
 #define DISPID_SIDEVISIBLE              19
+#define IDC_COLOR5                      19
 #define DISPID_SMOOTHNORMALS            21
 #define DISPID_ROTRA7                   21
 #define DISPID_DRAWINSIDE               22
@@ -328,6 +330,7 @@
 #define IDC_BROWSE_BALL_IMAGE           280
 #define IDC_UPDATE_ALL_BUTTON           280
 #define IDC_DBGLIGHTSBUTTON             280
+#define IDC_DEFAULT_COLORS_BUTTON       280
 #define IDC_ITEMLIST                    281
 #define IDC_OUT                         281
 #define IDC_SENDMAIL                    281

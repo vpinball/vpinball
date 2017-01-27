@@ -53,6 +53,11 @@ BOOL EditorOptionsDialog::OnInitDialog()
     hwndColor = GetDlgItem(IDC_COLOR3).GetHwnd();
     SendMessage(hwndColor, CHANGE_COLOR, 0, g_pvp->m_elemSelectLockedColor);
 
+    hwndColor = GetDlgItem(IDC_COLOR4).GetHwnd();
+    SendMessage(hwndColor, CHANGE_COLOR, 0, g_pvp->m_fillColor);
+
+    hwndColor = GetDlgItem(IDC_COLOR5).GetHwnd();
+    SendMessage(hwndColor, CHANGE_COLOR, 0, g_pvp->m_backgroundColor);
     // light centers
     int fdrawcenters = GetRegIntWithDefault("Editor", "DrawLightCenters", 0);
     hwndControl = GetDlgItem(IDC_DRAW_LIGHTCENTERS).GetHwnd();
@@ -94,15 +99,47 @@ BOOL EditorOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             HWND hwndcolor1 = GetDlgItem(IDC_COLOR).GetHwnd();
             HWND hwndcolor2 = GetDlgItem(IDC_COLOR2).GetHwnd();
             HWND hwndcolor3 = GetDlgItem(IDC_COLOR3).GetHwnd();
+            HWND hwndcolor4 = GetDlgItem(IDC_COLOR4).GetHwnd();
+            HWND hwndcolor5 = GetDlgItem(IDC_COLOR5).GetHwnd();
             if (hwndEvent == hwndcolor1)
                g_pvp->dummyMaterial.m_cBase = (COLORREF)color;
             else if (hwndEvent == hwndcolor2)
                g_pvp->m_elemSelectColor = (COLORREF)color;
             else if (hwndEvent == hwndcolor3)
                g_pvp->m_elemSelectLockedColor = (COLORREF)color;
+            else if (hwndEvent == hwndcolor4)
+               g_pvp->m_fillColor = (COLORREF)color;
+            else if (hwndEvent == hwndcolor5)
+               g_pvp->m_backgroundColor = (COLORREF)color;
 
             return TRUE;
         }
+    }
+    switch (LOWORD(wParam))
+    {
+       case IDC_DEFAULT_COLORS_BUTTON:
+       {
+          g_pvp->dummyMaterial.m_cBase = 0xB469FF;
+          HWND hwndColor = GetDlgItem(IDC_COLOR).GetHwnd();
+          SendMessage(hwndColor, CHANGE_COLOR, 0, g_pvp->dummyMaterial.m_cBase);
+
+          g_pvp->m_elemSelectColor = 0x00ff0000;
+          hwndColor = GetDlgItem(IDC_COLOR2).GetHwnd();
+          SendMessage(hwndColor, CHANGE_COLOR, 0, g_pvp->m_elemSelectColor);
+
+          g_pvp->m_elemSelectLockedColor = 0x00a0a0a0;
+          hwndColor = GetDlgItem(IDC_COLOR3).GetHwnd();
+          SendMessage(hwndColor, CHANGE_COLOR, 0, g_pvp->m_elemSelectLockedColor);
+
+          g_pvp->m_fillColor = 0x00c0c0c0;
+          hwndColor = GetDlgItem(IDC_COLOR4).GetHwnd();
+          SendMessage(hwndColor, CHANGE_COLOR, 0, g_pvp->m_fillColor);
+
+          g_pvp->m_backgroundColor = 0x00ffffff;
+          hwndColor = GetDlgItem(IDC_COLOR5).GetHwnd();
+          SendMessage(hwndColor, CHANGE_COLOR, 0, g_pvp->m_backgroundColor);
+          return TRUE;
+       }
     }
 
     return FALSE;
@@ -161,6 +198,8 @@ void EditorOptionsDialog::OnOK()
     SetRegValue("Editor", "DefaultMaterialColor", REG_DWORD, &g_pvp->dummyMaterial.m_cBase, 4);
     SetRegValue("Editor", "ElementSelectColor", REG_DWORD, &g_pvp->m_elemSelectColor, 4);
     SetRegValue("Editor", "ElementSelectLockedColor", REG_DWORD, &g_pvp->m_elemSelectLockedColor, 4);
+    SetRegValue("Editor", "BackgroundColor", REG_DWORD, &g_pvp->m_backgroundColor, 4);
+    SetRegValue("Editor", "FillColor", REG_DWORD, &g_pvp->m_fillColor, 4);
 
     checked = (SendDlgItemMessage(IDC_START_VP_FILE_DIALOG, BM_GETCHECK, 0, 0) == BST_CHECKED);
     SetRegValueBool("Editor", "SelectTableOnStart", checked);

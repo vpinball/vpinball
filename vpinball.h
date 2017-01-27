@@ -154,6 +154,7 @@ public:
    COLORREF m_elemSelectColor;
    COLORREF m_elemSelectLockedColor;
    COLORREF m_backgroundColor;
+   COLORREF m_fillColor;
 
 protected:
    virtual void OnClose();

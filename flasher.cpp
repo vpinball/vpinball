@@ -222,7 +222,7 @@ void Flasher::PreRender(Sur * const psur)
    if (m_vdpoint.Size() == 0)
       InitShape();
 
-   psur->SetFillColor(m_ptable->RenderSolid() ? RGB(192, 192, 192) : -1);
+   psur->SetFillColor(m_ptable->RenderSolid() ? g_pvp->m_fillColor: -1);
    psur->SetObject(this);
    // Don't want border color to be over-ridden when selected - that will be drawn later
    psur->SetBorderColor(-1, false, 0);
