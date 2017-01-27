@@ -561,6 +561,18 @@ void VPinball::InitRegValues()
    if (FAILED(hr))
       g_pvp->dummyMaterial.m_cBase = 0xB469FF;
 
+   hr = GetRegValue("Editor", "ElementSelectColor", &type, &g_pvp->m_elemSelectColor, 4);
+   if (FAILED(hr))
+      g_pvp->m_elemSelectColor = 0x00ff0000;
+
+   hr = GetRegValue("Editor", "ElementSelectLockedColor", &type, &g_pvp->m_elemSelectLockedColor, 4);
+   if (FAILED(hr))
+      g_pvp->m_elemSelectLockedColor = 0x00a0a0a0;
+
+   hr = GetRegValue("Editor", "BackgroundColor", &type, &g_pvp->m_backgroundColor, 4);
+   if (FAILED(hr))
+      g_pvp->m_backgroundColor = 0x00ffffff;
+
    if (m_securitylevel < eSecurityNone || m_securitylevel > eSecurityNoControls)
       m_securitylevel = eSecurityNoControls;
 

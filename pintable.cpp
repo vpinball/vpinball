@@ -1993,7 +1993,7 @@ void PinTable::Render(Sur * const psur)
 {
    RECT rc;
    GetClientRect(m_hwnd, &rc);
-   psur->SetFillColor(RGB(255, 255, 255));
+   psur->SetFillColor(g_pvp->m_backgroundColor);
    psur->SetBorderColor(-1, false, 0);
 
    FRect frect;
@@ -6644,7 +6644,6 @@ LRESULT CALLBACK TableWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 
       return 0;	// destroy the WM_CLOSE message
    }
-
    case WM_TIMER:
    {
       pt = (CComObject<PinTable> *)GetWindowLongPtr(hwnd, GWLP_USERDATA);

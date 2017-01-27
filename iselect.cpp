@@ -208,19 +208,15 @@ void ISelect::DoCommand(int icmd, int x, int y)
 
 void ISelect::SetSelectFormat(Sur *psur)
 {
-   //psur->SetFillColor(RGB(150,200,255));
-   //psur->SetFillColor(RGB(128,0,0));
-
    DWORD color;
 
    if (m_fLocked)
    {
-      //color = GetSysColor(COLOR_GRAYTEXT);
-      color = COLOR_LOCKED;
+      color = g_pvp->m_elemSelectLockedColor;
    }
    else
    {
-      color = GetSysColor(COLOR_HIGHLIGHT);
+      color = g_pvp->m_elemSelectColor;//GetSysColor(COLOR_HIGHLIGHT);
    }
 
    psur->SetBorderColor(color, false, 4);
@@ -233,11 +229,11 @@ void ISelect::SetMultiSelectFormat(Sur *psur)
 
    if (m_fLocked)
    {
-      color = COLOR_LOCKED;
+      color = g_pvp->m_elemSelectLockedColor;
    }
    else
    {
-      color = GetSysColor(COLOR_HIGHLIGHT);
+      color = g_pvp->m_elemSelectColor;//GetSysColor(COLOR_HIGHLIGHT);
    }
 
    psur->SetBorderColor(color, false, 3);
@@ -246,8 +242,8 @@ void ISelect::SetMultiSelectFormat(Sur *psur)
 
 void ISelect::SetLockedFormat(Sur *psur)
 {
-   psur->SetBorderColor(COLOR_LOCKED, false, 1);
-   psur->SetLineColor(COLOR_LOCKED, false, 1);
+   psur->SetBorderColor(g_pvp->m_elemSelectLockedColor , false, 1);
+   psur->SetLineColor(g_pvp->m_elemSelectLockedColor, false, 1);
 }
 
 void ISelect::FlipY(Vertex2D * const pvCenter)
