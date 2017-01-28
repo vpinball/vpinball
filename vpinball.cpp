@@ -17,6 +17,7 @@
 #include "EditorOptionsDialog.h"
 #include "VideoOptionsDialog.h"
 #include "AudioOptionsDialog.h"
+#include "MaterialDialog.h"
 #include "svn_version.h"
 
 using namespace rapidxml;
@@ -1464,7 +1465,9 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
             ShowPermissionError();
          else
          {
-            DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_MATERIALDIALOG), m_hwnd, MaterialManagerProc, (size_t)ptCur);
+            MaterialDialog *matDlg = new MaterialDialog();
+            matDlg->DoModal();
+
 /*            if (ptCur->m_hMaterialManager == NULL)
             {
                ptCur->m_hMaterialManager = CreateDialogParam(g_hinst, MAKEINTRESOURCE(IDD_MATERIALDIALOG), m_hwnd, MaterialManagerProc, (size_t)ptCur);
@@ -2591,8 +2594,6 @@ int CALLBACK MyCompProc(LPARAM lSortParam1, LPARAM lSortParam2, LPARAM lSortOpti
    else
       return(_stricmp(buf1, buf2) * -1);
 }
-
-extern INT_PTR CALLBACK MaterialManagerProc( HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam );
 
 const int rgDlgIDFromSecurityLevel[] = { IDC_ACTIVEX0, IDC_ACTIVEX1, IDC_ACTIVEX2, IDC_ACTIVEX3, IDC_ACTIVEX4 };
 

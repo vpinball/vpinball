@@ -1077,6 +1077,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="Dialogs\DrawingOrderDialog.h" />
     <ClInclude Include="dialogs\EditorOptionsDialog.h" />
     <ClInclude Include="Dialogs\ImageDialog.h" />
+    <ClInclude Include="dialogs\MaterialDialog.h" />
     <ClInclude Include="Dialogs\SearchSelectDialog.h" />
     <ClInclude Include="Dialogs\SoundDialog.h" />
     <ClInclude Include="Dialogs\TableInfoDialog.h" />

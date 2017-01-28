@@ -995,6 +995,9 @@
     <ClInclude Include="dialogs\AudioOptionsDialog.h">
       <Filter>dialogs</Filter>
     </ClInclude>
+    <ClInclude Include="dialogs\MaterialDialog.h">
+      <Filter>dialogs</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="shader\BallShader.fx">
