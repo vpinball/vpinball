@@ -763,7 +763,6 @@ public:
 
    vector<Material*> dbgChangedMaterials;
 
-
    struct DebugLightData
    {
        char name[MAX_PATH];
@@ -787,6 +786,8 @@ public:
    int   m_jolt_trigger_time;
    int   m_tilt_trigger_time;
 #endif
+   
+   virtual LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 private:
    std::tr1::unordered_map<const char*, Texture*, StringHashFunctor, StringComparator> m_textureMap;      // hash table to speed up texture lookup by name

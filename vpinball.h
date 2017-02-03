@@ -4,7 +4,7 @@
 #pragma once
 #if !defined(AFX_VPINBALL_H__4D32616D_55B5_4FE0_87D9_3D4CB0BE3C76__INCLUDED_)
 #define AFX_VPINBALL_H__4D32616D_55B5_4FE0_87D9_3D4CB0BE3C76__INCLUDED_
-#include <wxx_mdi.h>
+#include <wxx_dockframe.h>
 #include "RenderDevice.h"
 #include "ImageDialog.h"
 #include "SoundDialog.h"
@@ -17,7 +17,7 @@
 
 
 class PinTable;
-class VPinball : public Win32xx::CWnd 
+class VPinball : public CWnd
 {
 public:
    VPinball();
@@ -158,6 +158,10 @@ public:
 
 protected:
    virtual void OnClose();
+#if 0
+   virtual int  OnCreate(CREATESTRUCT& cs);
+   virtual LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
+#endif 
 
 private:
    char m_szRecentTableList[LAST_OPENED_TABLE_COUNT + 1][MAX_PATH];

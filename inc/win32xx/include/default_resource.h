@@ -3,10 +3,10 @@
 
 // The resource ID for MENU, ICON, ToolBar Bitmap, Accelerator,
 //  and Window Caption
-#define IDW_MAIN                         41
+#define IDW_MAIN                         201
 
 // Resource ID for the About dialog
-#define IDW_ABOUT                        42
+#define IDW_ABOUT                        32802
 
 // Resource IDs for menu items
 #define IDW_VIEW_TOOLBAR                 43
@@ -23,7 +23,7 @@
 #define IDW_TOOLBAR                      50
 
 // Resource ID for the Accelerator key
-#define IDW_QUIT                         51
+#define IDW_QUIT                         32822
 
 // Resource IDs for MDI menu items
 #define IDW_MDI_CASCADE                  52
