@@ -2276,126 +2276,254 @@ void VPinball::OnClose()
       CWnd::OnClose();
    }
 }
+#if 0
+int VPinball::OnCreate(CREATESTRUCT& cs)
+{
+    // OnCreate controls the way the frame is created.
+    // Overriding CFrame::OnCreate is optional.
+    // Uncomment the lines below to change frame options.
+
+    SetUseIndicatorStatus(FALSE);	// Don't show keyboard indicators in the StatusBar
+    SetUseMenuStatus(FALSE);			// Don't show menu descriptions in the StatusBar
+    SetUseReBar(FALSE);				// Don't use a ReBar
+    SetUseThemes(FALSE);				// Don't use themes
+    SetUseToolBar(FALSE);			// Don't use a ToolBar
+
+
+    // call the base class function
+    return CMDIDockFrame::OnCreate(cs);
+}
+
+LRESULT VPinball::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+    HWND hwnd = GetHwnd();
+    switch(uMsg)
+    {
+
+        case WM_DESTROY:
+        PostMessage(hwnd, WM_QUIT, 0, 0);
+        break;
+
+        case WM_PAINT:
+        {
+            PAINTSTRUCT ps;
+            HDC hdc = ::BeginPaint(hwnd, &ps);
+            RECT rc;
+            ::GetClientRect(hwnd, &rc);
+            SelectObject(hdc, GetStockObject(WHITE_BRUSH));
+            PatBlt(hdc, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, PATCOPY);
+            ::EndPaint(hwnd, &ps);
+        }
+        break;
+
+        case WM_SIZE:
+        if(g_pvp && g_pvp->m_hwndSideBar)
+        {
+            RECT rc;
+            ::GetClientRect(hwnd, &rc);
+
+            SendMessage(g_pvp->m_hwndStatusBar, WM_SIZE, wParam, lParam);
+
+            RECT rcStatus;
+            ::GetWindowRect(g_pvp->m_hwndStatusBar, &rcStatus);
+            const int statheight = rcStatus.bottom - rcStatus.top;
+
+            //const int scrollwindowtop = 48*(TBCOUNTMAIN/2);
+            const int scrollwindowtop = 48 * (TBCOUNTMAIN / 2) + 28 * (TBCOUNTLAYERS / 2);
+            const int scrollwindowheight = rc.bottom - rc.top - statheight - scrollwindowtop;
+            ::SetWindowPos(g_pvp->m_hwndSideBarScroll, NULL, 0, scrollwindowtop, TOOLBAR_WIDTH + SCROLL_WIDTH, scrollwindowheight, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+
+            HWND hwndSB = g_pvp->m_sb.GetHWnd();
+            int SBwidth = g_pvp->m_sb.m_maxdialogwidth;
+
+            if(g_pvp->m_fPropertiesFloating)
+                SBwidth = 0;
+            else
+            {
+                if(g_pvp->m_sb.GetVisible())
+                {
+                    ::SetWindowPos(hwndSB, NULL, rc.right - rc.left - SBwidth, 0, SBwidth, rc.bottom - rc.top - statheight, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+                }
+                else
+                    SBwidth = 0;
+            }
+
+            // Set scroll info for the palette scrollbar
+            SCROLLINFO si;
+            const size_t padding = SendMessage(g_pvp->m_hwndToolbarPalette, TB_GETPADDING, 0, 0);
+            const size_t buttonsize = SendMessage(g_pvp->m_hwndToolbarPalette, TB_GETBUTTONSIZE, 0, 0);
+            const int vertpadding = HIWORD(padding);
+            const int vertbutsize = HIWORD(buttonsize);
+            ZeroMemory(&si, sizeof(SCROLLINFO));
+            si.cbSize = sizeof(si);
+            si.fMask = SIF_ALL;
+            si.nMin = 0;
+            si.nMax = ((vertbutsize + vertpadding) * (TBCOUNTPALETTE / 2)) + 4; // Add 4 padding
+            si.nPage = scrollwindowheight;
+            si.nPos = g_pvp->m_palettescroll;
+
+            ::SetScrollInfo(g_pvp->m_hwndSideBarScroll, SB_VERT, &si, TRUE);
+
+            // check if we have any blank space at the bottom and fill it in by moving the scrollbar up
+            if((int)(si.nPos + si.nPage) > si.nMax)
+            {
+                g_pvp->m_palettescroll = si.nMax - si.nPage;
+                if(g_pvp->m_palettescroll < 0)
+                    g_pvp->m_palettescroll = 0;
+
+                ::SetScrollPos(hwnd, SB_VERT, g_pvp->m_palettescroll, TRUE);
+
+                ::SetWindowPos(g_pvp->m_hwndToolbarPalette, NULL, 0, -g_pvp->m_palettescroll, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+            }
+
+            int sidebarwidth = TOOLBAR_WIDTH;
+            if(scrollwindowheight < si.nMax)
+                sidebarwidth += SCROLL_WIDTH;
+
+            if(g_pvp->m_fPropertiesFloating && hwndSB)
+            {
+                RECT smartRect;
+                ::GetWindowRect(hwndSB, &smartRect);
+
+                int sbHeight = smartRect.bottom - smartRect.top;//(rc.bottom - rc.top) - 100;
+                int smartWidth = smartRect.right - smartRect.left;
+                int sbX = rc.right - eSmartBrowserWidth - 20;
+
+                ::SetWindowPos(hwndSB, NULL, sbX, 40, smartWidth, sbHeight, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+            }
+            ::SetWindowPos(g_pvp->m_hwndSideBar, NULL, 0, 0, sidebarwidth, rc.bottom - rc.top - statheight, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+
+            ::SetWindowPos(g_pvp->m_hwndWork, NULL, sidebarwidth, 0, rc.right - rc.left - (sidebarwidth)-SBwidth, rc.bottom - rc.top - statheight, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+            return 0;
+        }
+        break;
+
+        case WM_COMMAND:
+        g_pvp->ParseCommand(LOWORD(wParam), (HWND)lParam, HIWORD(wParam));
+        break;
+
+        case WM_INITMENUPOPUP:
+        g_pvp->SetEnableMenuItems();
+        break;
+
+    }
+    return WndProcDefault(uMsg, wParam, lParam);
+}
+#endif 
 
 LRESULT CALLBACK VPWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-   switch (uMsg)
-   {
+    switch(uMsg)
+    {
 
-   case WM_DESTROY:
-      PostMessage(hwnd, WM_QUIT, 0, 0);
-      break;
+        case WM_DESTROY:
+        PostMessage(hwnd, WM_QUIT, 0, 0);
+        break;
 
-   case WM_PAINT:
-   {
-      PAINTSTRUCT ps;
-      HDC hdc = BeginPaint(hwnd, &ps);
-      RECT rc;
-      GetClientRect(hwnd, &rc);
-      SelectObject(hdc, GetStockObject(WHITE_BRUSH));
-      PatBlt(hdc, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, PATCOPY);
-      EndPaint(hwnd, &ps);
-   }
-   break;
+        case WM_PAINT:
+        {
+            PAINTSTRUCT ps;
+            HDC hdc = ::BeginPaint(hwnd, &ps);
+            RECT rc;
+            ::GetClientRect(hwnd, &rc);
+            SelectObject(hdc, GetStockObject(WHITE_BRUSH));
+            PatBlt(hdc, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, PATCOPY);
+            ::EndPaint(hwnd, &ps);
+        }
+        break;
 
-   case WM_SIZE:
-      if (g_pvp && g_pvp->m_hwndSideBar)
-      {
-         RECT rc;
-         GetClientRect(hwnd, &rc);
+        case WM_SIZE:
+        if(g_pvp && g_pvp->m_hwndSideBar)
+        {
+            RECT rc;
+            ::GetClientRect(hwnd, &rc);
 
-         SendMessage(g_pvp->m_hwndStatusBar, WM_SIZE, wParam, lParam);
+            SendMessage(g_pvp->m_hwndStatusBar, WM_SIZE, wParam, lParam);
 
-         RECT rcStatus;
-         GetWindowRect(g_pvp->m_hwndStatusBar, &rcStatus);
-         const int statheight = rcStatus.bottom - rcStatus.top;
+            RECT rcStatus;
+            ::GetWindowRect(g_pvp->m_hwndStatusBar, &rcStatus);
+            const int statheight = rcStatus.bottom - rcStatus.top;
 
-         //const int scrollwindowtop = 48*(TBCOUNTMAIN/2);
-         const int scrollwindowtop = 48 * (TBCOUNTMAIN / 2) + 28 * (TBCOUNTLAYERS / 2);
-         const int scrollwindowheight = rc.bottom - rc.top - statheight - scrollwindowtop;
-         SetWindowPos(g_pvp->m_hwndSideBarScroll, NULL,
-            0, scrollwindowtop, TOOLBAR_WIDTH + SCROLL_WIDTH, scrollwindowheight, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+            //const int scrollwindowtop = 48*(TBCOUNTMAIN/2);
+            const int scrollwindowtop = 48 * (TBCOUNTMAIN / 2) + 28 * (TBCOUNTLAYERS / 2);
+            const int scrollwindowheight = rc.bottom - rc.top - statheight - scrollwindowtop;
+            ::SetWindowPos(g_pvp->m_hwndSideBarScroll, NULL, 0, scrollwindowtop, TOOLBAR_WIDTH + SCROLL_WIDTH, scrollwindowheight, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
 
-         HWND hwndSB = g_pvp->m_sb.GetHWnd();
-         int SBwidth = g_pvp->m_sb.m_maxdialogwidth;
+            HWND hwndSB = g_pvp->m_sb.GetHWnd();
+            int SBwidth = g_pvp->m_sb.m_maxdialogwidth;
 
-         if (g_pvp->m_fPropertiesFloating)
-            SBwidth = 0;
-         else
-         {
-            if (g_pvp->m_sb.GetVisible())
-            {
-               SetWindowPos(hwndSB, NULL,
-                  rc.right - rc.left - SBwidth, 0, SBwidth, rc.bottom - rc.top - statheight, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER);
-            }
+            if(g_pvp->m_fPropertiesFloating)
+                SBwidth = 0;
             else
-               SBwidth = 0;
-         }
+            {
+                if(g_pvp->m_sb.GetVisible())
+                {
+                    ::SetWindowPos(hwndSB, NULL, rc.right - rc.left - SBwidth, 0, SBwidth, rc.bottom - rc.top - statheight, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+                }
+                else
+                    SBwidth = 0;
+            }
 
-         // Set scroll info for the palette scrollbar
-         SCROLLINFO si;
-         const size_t padding = SendMessage(g_pvp->m_hwndToolbarPalette, TB_GETPADDING, 0, 0);
-         const size_t buttonsize = SendMessage(g_pvp->m_hwndToolbarPalette, TB_GETBUTTONSIZE, 0, 0);
-         const int vertpadding = HIWORD(padding);
-         const int vertbutsize = HIWORD(buttonsize);
-         ZeroMemory(&si, sizeof(SCROLLINFO));
-         si.cbSize = sizeof(si);
-         si.fMask = SIF_ALL;
-         si.nMin = 0;
-         si.nMax = ((vertbutsize + vertpadding) * (TBCOUNTPALETTE / 2)) + 4; // Add 4 padding
-         si.nPage = scrollwindowheight;
-         si.nPos = g_pvp->m_palettescroll;
+            // Set scroll info for the palette scrollbar
+            SCROLLINFO si;
+            const size_t padding = SendMessage(g_pvp->m_hwndToolbarPalette, TB_GETPADDING, 0, 0);
+            const size_t buttonsize = SendMessage(g_pvp->m_hwndToolbarPalette, TB_GETBUTTONSIZE, 0, 0);
+            const int vertpadding = HIWORD(padding);
+            const int vertbutsize = HIWORD(buttonsize);
+            ZeroMemory(&si, sizeof(SCROLLINFO));
+            si.cbSize = sizeof(si);
+            si.fMask = SIF_ALL;
+            si.nMin = 0;
+            si.nMax = ((vertbutsize + vertpadding) * (TBCOUNTPALETTE / 2)) + 4; // Add 4 padding
+            si.nPage = scrollwindowheight;
+            si.nPos = g_pvp->m_palettescroll;
 
-         SetScrollInfo(g_pvp->m_hwndSideBarScroll, SB_VERT, &si, TRUE);
+            ::SetScrollInfo(g_pvp->m_hwndSideBarScroll, SB_VERT, &si, TRUE);
 
-         // check if we have any blank space at the bottom and fill it in by moving the scrollbar up
-         if ((int)(si.nPos + si.nPage) > si.nMax)
-         {
-            g_pvp->m_palettescroll = si.nMax - si.nPage;
-            if (g_pvp->m_palettescroll < 0)
-               g_pvp->m_palettescroll = 0;
+            // check if we have any blank space at the bottom and fill it in by moving the scrollbar up
+            if((int)(si.nPos + si.nPage) > si.nMax)
+            {
+                g_pvp->m_palettescroll = si.nMax - si.nPage;
+                if(g_pvp->m_palettescroll < 0)
+                    g_pvp->m_palettescroll = 0;
 
-            SetScrollPos(hwnd, SB_VERT, g_pvp->m_palettescroll, TRUE);
+                ::SetScrollPos(hwnd, SB_VERT, g_pvp->m_palettescroll, TRUE);
 
-            SetWindowPos(g_pvp->m_hwndToolbarPalette, NULL,
-               0, -g_pvp->m_palettescroll, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOOWNERZORDER | SWP_NOZORDER);
-         }
+                ::SetWindowPos(g_pvp->m_hwndToolbarPalette, NULL, 0, -g_pvp->m_palettescroll, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+            }
 
-         int sidebarwidth = TOOLBAR_WIDTH;
-         if (scrollwindowheight < si.nMax)
-            sidebarwidth += SCROLL_WIDTH;
+            int sidebarwidth = TOOLBAR_WIDTH;
+            if(scrollwindowheight < si.nMax)
+                sidebarwidth += SCROLL_WIDTH;
 
-         if (g_pvp->m_fPropertiesFloating && hwndSB)
-         {
-            RECT smartRect;
-            GetWindowRect(hwndSB, &smartRect);
+            if(g_pvp->m_fPropertiesFloating && hwndSB)
+            {
+                RECT smartRect;
+                ::GetWindowRect(hwndSB, &smartRect);
 
-            int sbHeight = smartRect.bottom - smartRect.top;//(rc.bottom - rc.top) - 100;
-            int smartWidth = smartRect.right - smartRect.left;
-            int sbX = rc.right - eSmartBrowserWidth - 20;
+                int sbHeight = smartRect.bottom - smartRect.top;//(rc.bottom - rc.top) - 100;
+                int smartWidth = smartRect.right - smartRect.left;
+                int sbX = rc.right - eSmartBrowserWidth - 20;
 
-            SetWindowPos(hwndSB, NULL, sbX, 40, smartWidth, sbHeight, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
-         }
-         SetWindowPos(g_pvp->m_hwndSideBar, NULL,
-            0, 0, sidebarwidth, rc.bottom - rc.top - statheight, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+                ::SetWindowPos(hwndSB, NULL, sbX, 40, smartWidth, sbHeight, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+            }
+            ::SetWindowPos(g_pvp->m_hwndSideBar, NULL, 0, 0, sidebarwidth, rc.bottom - rc.top - statheight, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
 
-         SetWindowPos(g_pvp->m_hwndWork, NULL,
-            sidebarwidth, 0, rc.right - rc.left - (sidebarwidth)-SBwidth, rc.bottom - rc.top - statheight, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER);
-         return 0;
-      }
-      break;
+            ::SetWindowPos(g_pvp->m_hwndWork, NULL, sidebarwidth, 0, rc.right - rc.left - (sidebarwidth)-SBwidth, rc.bottom - rc.top - statheight, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+            return 0;
+        }
+        break;
 
-   case WM_COMMAND:
-      g_pvp->ParseCommand(LOWORD(wParam), (HWND)lParam, HIWORD(wParam));
-      break;
+        case WM_COMMAND:
+        g_pvp->ParseCommand(LOWORD(wParam), (HWND)lParam, HIWORD(wParam));
+        break;
 
-   case WM_INITMENUPOPUP:
-      g_pvp->SetEnableMenuItems();
-      break;
+        case WM_INITMENUPOPUP:
+        g_pvp->SetEnableMenuItems();
+        break;
 
-   }
-
-   return g_pvp ? DefFrameProc(hwnd, g_pvp->m_hwndWork, uMsg, wParam, lParam) : 0;
+    }
+    return g_pvp ? DefFrameProc(hwnd, g_pvp->m_hwndWork, uMsg, wParam, lParam) : 0;
 }
 
 
