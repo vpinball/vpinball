@@ -192,7 +192,7 @@ private:
 public:
    VPApp(HINSTANCE hInstance)
    {
-      theInstance = hInstance;
+       theInstance = GetInstanceHandle();
    }
    
    virtual ~VPApp() 
