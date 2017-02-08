@@ -564,19 +564,19 @@ void VPinball::InitRegValues()
 
    hr = GetRegValue("Editor", "ElementSelectColor", &type, &g_pvp->m_elemSelectColor, 4);
    if (FAILED(hr))
-      g_pvp->m_elemSelectColor = 0x00ff0000;
+      g_pvp->m_elemSelectColor = 0x00FF0000;
 
    hr = GetRegValue("Editor", "ElementSelectLockedColor", &type, &g_pvp->m_elemSelectLockedColor, 4);
    if (FAILED(hr))
-      g_pvp->m_elemSelectLockedColor = 0x00a0a0a0;
+      g_pvp->m_elemSelectLockedColor = 0x00A7726D;
 
    hr = GetRegValue("Editor", "BackgroundColor", &type, &g_pvp->m_backgroundColor, 4);
    if (FAILED(hr))
-      g_pvp->m_backgroundColor = 0x00ffffff;
+      g_pvp->m_backgroundColor = 0x008D8D8D;
 
    hr = GetRegValue("Editor", "FillColor", &type, &g_pvp->m_fillColor, 4);
    if (FAILED(hr))
-      g_pvp->m_fillColor = 0x00c0c0c0;
+      g_pvp->m_fillColor = 0x00B1CFB3;
 
    if (m_securitylevel < eSecurityNone || m_securitylevel > eSecurityNoControls)
       m_securitylevel = eSecurityNoControls;

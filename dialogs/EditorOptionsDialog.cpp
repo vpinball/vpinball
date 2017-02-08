@@ -123,19 +123,19 @@ BOOL EditorOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
           HWND hwndColor = GetDlgItem(IDC_COLOR).GetHwnd();
           SendMessage(hwndColor, CHANGE_COLOR, 0, g_pvp->dummyMaterial.m_cBase);
 
-          g_pvp->m_elemSelectColor = 0x00ff0000;
+          g_pvp->m_elemSelectColor = 0x00FF0000;
           hwndColor = GetDlgItem(IDC_COLOR2).GetHwnd();
           SendMessage(hwndColor, CHANGE_COLOR, 0, g_pvp->m_elemSelectColor);
 
-          g_pvp->m_elemSelectLockedColor = 0x00a0a0a0;
+          g_pvp->m_elemSelectLockedColor = 0x00A7726D;
           hwndColor = GetDlgItem(IDC_COLOR3).GetHwnd();
           SendMessage(hwndColor, CHANGE_COLOR, 0, g_pvp->m_elemSelectLockedColor);
 
-          g_pvp->m_fillColor = 0x00c0c0c0;
+          g_pvp->m_fillColor = 0x00B1CFB3;
           hwndColor = GetDlgItem(IDC_COLOR4).GetHwnd();
           SendMessage(hwndColor, CHANGE_COLOR, 0, g_pvp->m_fillColor);
 
-          g_pvp->m_backgroundColor = 0x00ffffff;
+          g_pvp->m_backgroundColor = 0x008D8D8D;
           hwndColor = GetDlgItem(IDC_COLOR5).GetHwnd();
           SendMessage(hwndColor, CHANGE_COLOR, 0, g_pvp->m_backgroundColor);
           return TRUE;

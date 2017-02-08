@@ -1453,7 +1453,7 @@ PinTable::~PinTable()
    if (::IsWindow(m_hwnd))
    {
       //DestroyWindow(m_hwnd);
-      SendMessage(g_pvp->m_hwndWork, WM_MDIDESTROY, (size_t)m_hwnd, 0);
+      ::SendMessage(g_pvp->m_hwndWork, WM_MDIDESTROY, (size_t)m_hwnd, 0);
    }
 
    if (m_hbmOffScreen)
@@ -2343,7 +2343,7 @@ void PinTable::Play(bool _cameraMode)
    HWND hwndProgressBar = ::GetDlgItem(hwndProgressDialog, IDC_PROGRESS2);
    HWND hwndStatusName = ::GetDlgItem(hwndProgressDialog, IDC_STATUSNAME);
 
-   SendMessage(hwndProgressBar, PBM_SETPOS, 1, 0);
+   ::SendMessage(hwndProgressBar, PBM_SETPOS, 1, 0);
    ::SetWindowText(hwndStatusName, "Backing Up Table State...");
    BackupForPlay();
 
@@ -2430,7 +2430,7 @@ void PinTable::Play(bool _cameraMode)
          }
          else
          {
-            SendMessage(g_pplayer->m_hwnd, WM_CLOSE, 0, 0);
+            ::SendMessage(g_pplayer->m_hwnd, WM_CLOSE, 0, 0);
          }
       }
    }
@@ -2758,7 +2758,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
 
    m_savingActive = true;
    RECT rc;
-   SendMessage(g_pvp->m_hwndStatusBar, SB_GETRECT, 2, (size_t)&rc);
+   ::SendMessage(g_pvp->m_hwndStatusBar, SB_GETRECT, 2, (size_t)&rc);
 
    HWND hwndProgressBar = CreateWindowEx(0, PROGRESS_CLASS, (LPSTR)NULL,
       WS_CHILD | WS_VISIBLE, rc.left,
@@ -2766,7 +2766,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
       rc.right - rc.left, rc.bottom - rc.top,
       g_pvp->m_hwndStatusBar, (HMENU)0, g_hinst, NULL);
 
-   SendMessage(hwndProgressBar, PBM_SETPOS, 1, 0);
+   ::SendMessage(hwndProgressBar, PBM_SETPOS, 1, 0);
 
    //////////////// Begin Encryption
    HCRYPTPROV hcp;
@@ -2814,7 +2814,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
    int ctotalitems = (int)(m_vedit.Size() + m_vsound.Size() + m_vimage.size() + m_vfont.Size() + m_vcollection.Size());
    int csaveditems = 0;
 
-   SendMessage(hwndProgressBar, PBM_SETRANGE, 0, MAKELPARAM(0, ctotalitems));
+   ::SendMessage(hwndProgressBar, PBM_SETRANGE, 0, MAKELPARAM(0, ctotalitems));
 
    //first save our own data
    HRESULT hr;
@@ -2871,7 +2871,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
                }
 
                csaveditems++;
-               SendMessage(hwndProgressBar, PBM_SETPOS, csaveditems, 0);
+               ::SendMessage(hwndProgressBar, PBM_SETPOS, csaveditems, 0);
             }
 
             for (int i = 0; i < m_vsound.Size(); i++)
@@ -2890,7 +2890,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
                }
 
                csaveditems++;
-               SendMessage(hwndProgressBar, PBM_SETPOS, csaveditems, 0);
+               ::SendMessage(hwndProgressBar, PBM_SETPOS, csaveditems, 0);
             }
 
             for (unsigned i = 0; i < m_vimage.size(); i++)
@@ -2909,7 +2909,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
                }
 
                csaveditems++;
-               SendMessage(hwndProgressBar, PBM_SETPOS, csaveditems, 0);
+               ::SendMessage(hwndProgressBar, PBM_SETPOS, csaveditems, 0);
             }
 
             for (int i = 0; i < m_vfont.Size(); i++)
@@ -2928,7 +2928,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
                }
 
                csaveditems++;
-               SendMessage(hwndProgressBar, PBM_SETPOS, csaveditems, 0);
+               ::SendMessage(hwndProgressBar, PBM_SETPOS, csaveditems, 0);
             }
 
             for (int i = 0; i < m_vcollection.Size(); i++)
@@ -2947,7 +2947,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
                }
 
                csaveditems++;
-               SendMessage(hwndProgressBar, PBM_SETPOS, csaveditems, 0);
+               ::SendMessage(hwndProgressBar, PBM_SETPOS, csaveditems, 0);
             }
          }
          pstmGame->Release();
@@ -3513,7 +3513,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
    int cloadeditems;
 
    RECT rc;
-   SendMessage(g_pvp->m_hwndStatusBar, SB_GETRECT, 2, (size_t)&rc);
+   ::SendMessage(g_pvp->m_hwndStatusBar, SB_GETRECT, 2, (size_t)&rc);
 
    HWND hwndProgressBar = CreateWindowEx(0, PROGRESS_CLASS, (LPSTR)NULL,
       WS_CHILD | WS_VISIBLE, rc.left,
@@ -3521,7 +3521,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
       rc.right - rc.left, rc.bottom - rc.top,
       g_pvp->m_hwndStatusBar, (HMENU)0, g_hinst, NULL);
 
-   SendMessage(hwndProgressBar, PBM_SETPOS, 1, 0);
+   ::SendMessage(hwndProgressBar, PBM_SETPOS, 1, 0);
 
    LocalString ls(IDS_LOADING);
    g_pvp->SetActionCur(ls.m_szbuffer);
@@ -3616,7 +3616,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
 
             ctotalitems = csubobj + csounds + ctextures + cfonts;
             cloadeditems = 0;
-            SendMessage(hwndProgressBar, PBM_SETRANGE, 0, MAKELPARAM(0, ctotalitems));
+            ::SendMessage(hwndProgressBar, PBM_SETRANGE, 0, MAKELPARAM(0, ctotalitems));
 
             for (int i = 0; i < csubobj; i++)
             {
@@ -3648,7 +3648,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
                   //hr = piedit->InitPostLoad();
                }
                cloadeditems++;
-               SendMessage(hwndProgressBar, PBM_SETPOS, cloadeditems, 0);
+               ::SendMessage(hwndProgressBar, PBM_SETPOS, cloadeditems, 0);
             }
 
             for (int i = 0; i < csounds; i++)
@@ -3667,7 +3667,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
                   pstmItem = NULL;
                }
                cloadeditems++;
-               SendMessage(hwndProgressBar, PBM_SETPOS, cloadeditems, 0);
+               ::SendMessage(hwndProgressBar, PBM_SETPOS, cloadeditems, 0);
             }
 
             for (int i = 0; i < ctextures; i++)
@@ -3686,7 +3686,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
                   pstmItem = NULL;
                }
                cloadeditems++;
-               SendMessage(hwndProgressBar, PBM_SETPOS, cloadeditems, 0);
+               ::SendMessage(hwndProgressBar, PBM_SETPOS, cloadeditems, 0);
             }
 
             for (int i = 0; i < cfonts; i++)
@@ -3709,7 +3709,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
                   pstmItem = NULL;
                }
                cloadeditems++;
-               SendMessage(hwndProgressBar, PBM_SETPOS, cloadeditems, 0);
+               ::SendMessage(hwndProgressBar, PBM_SETPOS, cloadeditems, 0);
             }
 
             for (int i = 0; i < ccollection; i++)
@@ -3733,7 +3733,7 @@ HRESULT PinTable::LoadGameFromStorage(IStorage *pstgRoot)
                   pstmItem = NULL;
                }
                cloadeditems++;
-               SendMessage(hwndProgressBar, PBM_SETPOS, cloadeditems, 0);
+               ::SendMessage(hwndProgressBar, PBM_SETPOS, cloadeditems, 0);
             }
 
             for (int i = 0; i < m_vedit.Size(); i++)
@@ -5843,7 +5843,7 @@ void PinTable::DoMouseMove(int x, int y)
 void PinTable::DoLDoubleClick(int x, int y)
 {
    //g_pvp->m_sb.SetVisible(fTrue);
-   //SendMessage(g_pvp->m_hwnd, WM_SIZE, 0, 0);
+   //::SendMessage(g_pvp->m_hwnd, WM_SIZE, 0, 0);
 }
 
 void PinTable::ExportBlueprint()
