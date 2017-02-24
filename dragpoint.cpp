@@ -156,8 +156,10 @@ void IHaveDragPoints::ScalePoints(float scalex, float scaley, Vertex2D *pvCenter
    GetIEditable()->BeginUndo();
    GetIEditable()->MarkForUndo();
 
-   const float centerx = pvCenter->x;
-   const float centery = pvCenter->y;
+   /* Don't use the pvCenter anymore! pvCenter is the mouse position when scaling is activated.
+      Because the mouse position (scaling center) isn't shown in the editor use the element's center returned by GetPointCenter() */
+   const float centerx = newcenter.x;
+   const float centery = newcenter.y;
 
    for (int i = 0; i < m_vdpoint.Size(); i++)
    {
@@ -166,16 +168,6 @@ void IHaveDragPoints::ScalePoints(float scalex, float scaley, Vertex2D *pvCenter
       const float dy = (pdp1->m_v.y - centery) * scaley;
       pdp1->m_v.x = centerx + dx;
       pdp1->m_v.y = centery + dy;
-   }
-
-   // Move object center as well (if scaling from object center,
-   // this will have no effect)
-   {
-      const float dx = (newcenter.x - centerx) * scalex;
-      const float dy = (newcenter.y - centery) * scaley;
-      newcenter.x = centerx + dx;
-      newcenter.y = centery + dy;
-      PutPointCenter(&newcenter);
    }
 
    GetIEditable()->EndUndo();
