@@ -114,8 +114,10 @@ void IHaveDragPoints::RotatePoints(float ang, Vertex2D *pvCenter)
    GetIEditable()->BeginUndo();
    GetIEditable()->MarkForUndo();
 
-   const float centerx = pvCenter->x;
-   const float centery = pvCenter->y;
+   /* Don't use the pvCenter anymore! pvCenter is the mouse position when rotating is activated.
+   Because the mouse position (rotation center) isn't shown in the editor use the element's center returned by GetPointCenter() */
+   const float centerx = newcenter.x;
+   const float centery = newcenter.y;
 
    const float sn = sinf(ANGTORAD(ang));
    const float cs = cosf(ANGTORAD(ang));
@@ -129,18 +131,6 @@ void IHaveDragPoints::RotatePoints(float ang, Vertex2D *pvCenter)
       const float dy2 = cs*dy + sn*dx;
       pdp1->m_v.x = centerx + dx2;
       pdp1->m_v.y = centery + dy2;
-   }
-
-   // Move object center as well (if rotating around object center,
-   // this will have no effect)
-   {
-      const float dx = newcenter.x - centerx;
-      const float dy = newcenter.y - centery;
-      const float dx2 = cs*dx - sn*dy;
-      const float dy2 = cs*dy + sn*dx;
-      newcenter.x = centerx + dx2;
-      newcenter.y = centery + dy2;
-      PutPointCenter(&newcenter);
    }
 
    GetIEditable()->EndUndo();
