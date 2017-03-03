@@ -119,6 +119,9 @@
     <ClCompile Include="dialogs\CollectionManagerDialog.cpp">
       <Filter>dialogs</Filter>
     </ClCompile>
+    <ClCompile Include="dialogs\PhysicsOptionsDialog.cpp">
+      <Filter>dialogs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="vpinball.rc" />
@@ -990,6 +993,9 @@
       <Filter>dialogs</Filter>
     </ClInclude>
     <ClInclude Include="dialogs\CollectionManagerDialog.h">
+      <Filter>dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="dialogs\PhysicsOptionsDialog.h">
       <Filter>dialogs</Filter>
     </ClInclude>
   </ItemGroup>
