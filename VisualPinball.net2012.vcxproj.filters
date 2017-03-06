@@ -91,6 +91,11 @@
     <ClCompile Include="Dialogs\SearchSelectDialog.cpp" />
     <ClCompile Include="Dialogs\SoundDialog.cpp" />
     <ClCompile Include="Dialogs\TableInfoDialog.cpp" />
+    <ClCompile Include="dialogs\AudioOptionsDialog.cpp" />
+    <ClCompile Include="dialogs\EditorOptionsDialog.cpp" />
+    <ClCompile Include="dialogs\VideoOptionsDialog.cpp" />
+    <ClCompile Include="dialogs\CollectionManagerDialog.cpp" />
+    <ClCompile Include="dialogs\PhysicsOptionsDialog.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="vpinball.rc" />
@@ -887,6 +892,12 @@
     <ClInclude Include="Dialogs\SearchSelectDialog.h" />
     <ClInclude Include="Dialogs\SoundDialog.h" />
     <ClInclude Include="Dialogs\TableInfoDialog.h" />
+    <ClInclude Include="dialogs\AudioOptionsDialog.h" />
+    <ClInclude Include="dialogs\EditorOptionsDialog.h" />
+    <ClInclude Include="dialogs\MaterialDialog.h" />
+    <ClInclude Include="dialogs\VideoOptionsDialog.h" />
+    <ClInclude Include="dialogs\CollectionManagerDialog.h" />
+    <ClInclude Include="dialogs\PhysicsOptionsDialog.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="shader\BallShader.fx">
