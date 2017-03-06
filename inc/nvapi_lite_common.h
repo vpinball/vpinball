@@ -93,7 +93,6 @@ typedef NvU8 NvBool;
 #define NV_TRUE           ((NvBool)(0 == 0))
 #define NV_FALSE          ((NvBool)(0 != 0))
 
-
 typedef struct _NV_RECT
 {
     NvU32    left;
@@ -101,7 +100,6 @@ typedef struct _NV_RECT
     NvU32    right;
     NvU32    bottom;
 } NV_RECT;
-
 
 
 #define NV_DECLARE_HANDLE(name) struct name##__ { int unused; }; typedef struct name##__ *name
@@ -115,11 +113,11 @@ typedef struct _NV_RECT
 //!                 reconfiguration (going into or out of SLI modes) occurs.  If NVAPI_HANDLE_INVALIDATED
 //!                 is received by an app, it should discard all handles, and re-enumerate them.
 //! @{  
+NV_DECLARE_HANDLE(NvLogicalGpuHandle);             //!< One or more physical GPUs acting in concert (SLI)
+NV_DECLARE_HANDLE(NvPhysicalGpuHandle);            //!< A single physical GPU
 NV_DECLARE_HANDLE(NvDisplayHandle);                //!< Display Device driven by NVIDIA GPU(s) (an attached display)
 NV_DECLARE_HANDLE(NvMonitorHandle);                //!< Monitor handle
 NV_DECLARE_HANDLE(NvUnAttachedDisplayHandle);      //!< Unattached Display Device driven by NVIDIA GPU(s)
-NV_DECLARE_HANDLE(NvLogicalGpuHandle);             //!< One or more physical GPUs acting in concert (SLI)
-NV_DECLARE_HANDLE(NvPhysicalGpuHandle);            //!< A single physical GPU
 NV_DECLARE_HANDLE(NvEventHandle);                  //!< A handle to an event registration instance
 NV_DECLARE_HANDLE(NvVisualComputingDeviceHandle);  //!< A handle to a Visual Computing Device
 NV_DECLARE_HANDLE(NvHICHandle);                    //!< A handle to a Host Interface Card
@@ -153,7 +151,6 @@ static const NVDX_SwapChainHandle NVDX_SWAPCHAIN_NONE = 0;
 #define NVAPI_LONG_STRING_MAX       256
 #define NVAPI_SHORT_STRING_MAX      64
 
-
 typedef struct 
 {
     NvS32   sX;
@@ -173,10 +170,13 @@ typedef struct
     NvU8  data4[8];
 } NvGUID, NvLUID;
 
+
 #endif //#ifndef NvGUID_Defined
 
 
 #define NVAPI_MAX_PHYSICAL_GPUS             64
+
+
 #define NVAPI_MAX_PHYSICAL_BRIDGES          100
 #define NVAPI_PHYSICAL_GPUS                 32
 #define NVAPI_MAX_LOGICAL_GPUS              64
@@ -351,7 +351,7 @@ typedef enum _NvAPI_Status
     NVAPI_ECID_KEY_VERIFICATION_FAILED          = -198,    //!< The encrypted public key verification has failed.
     NVAPI_FIRMWARE_OUT_OF_DATE                  = -199,    //!< The device's firmware is out of date.
     NVAPI_FIRMWARE_REVISION_NOT_SUPPORTED       = -200,    //!< The device's firmware is not supported.
-    NVAPI_LICENSE_CALLER_AUTHENTICATION_FAILED  = -201,    //!< The caller is not authorized to modify the License.		
+    NVAPI_LICENSE_CALLER_AUTHENTICATION_FAILED  = -201,    //!< The caller is not authorized to modify the License.
     NVAPI_D3D_DEVICE_NOT_REGISTERED             = -202,    //!< The user tried to use a deferred context without registering the device first 	 
     NVAPI_RESOURCE_NOT_ACQUIRED                 = -203,    //!< Head or SourceId was not reserved for the VR Display before doing the Modeset.
     NVAPI_TIMING_NOT_SUPPORTED                  = -204,    //!< Provided timing is not supported.
@@ -361,6 +361,12 @@ typedef enum _NvAPI_Status
     NVAPI_HDCP_DISABLED                         = -208,    //!< When a non-HDCP capable HMD is connected, we would inform user by this code.
     NVAPI_API_IN_USE                            = -209,    //!< Atleast an API is still being called
     NVAPI_NVIDIA_DISPLAY_NOT_FOUND              = -210,    //!< No display found on Nvidia GPU(s).
+    NVAPI_PRIV_SEC_VIOLATION                    = -211,    //!< Priv security violation, improper access to a secured register.
+    NVAPI_INCORRECT_VENDOR                      = -212,    //!< NVAPI cannot be called by this vendor
+    NVAPI_DISPLAY_IN_USE                        = -213,    //!< DirectMode Display is already in use
+    NVAPI_UNSUPPORTED_CONFIG_NON_HDCP_HMD       = -214,    //!< The Config is having Non-NVidia GPU with Non-HDCP HMD connected
+    NVAPI_MAX_DISPLAY_LIMIT_REACHED             = -215,    //!< GPU's Max Display Limit has Reached
+    NVAPI_INVALID_DIRECT_MODE_DISPLAY           = -216,    //!< DirectMode not Enabled on the Display
 } NvAPI_Status;
 
 ///////////////////////////////////////////////////////////////////////////////

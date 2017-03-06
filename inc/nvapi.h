@@ -41,7 +41,7 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Date: Nov 10, 2016 
+// Date: Feb 1, 2017 
 // File: nvapi.h
 //
 // NvAPI provides an interface to NVIDIA devices. This file contains the 
@@ -669,6 +669,35 @@ __nvapi_deprecated_function("Do not use this function - it is deprecated in rele
 NVAPI_INTERFACE NvAPI_SetView(NvDisplayHandle hNvDisplay, NV_VIEW_TARGET_INFO *pTargetInfo, NV_TARGET_VIEW_MODE targetView);
 
 
+///////////////////////////////////////////////////////////////////////////////
+//
+// FUNCTION NAME:   NvAPI_SetViewEx
+//
+//!  \fn NvAPI_SetViewEx(NvDisplayHandle hNvDisplay, NV_DISPLAY_PATH_INFO *pPathInfo, NV_TARGET_VIEW_MODE displayView)
+//!  This function lets caller to modify the display arrangement for selected source display handle in any of the nview modes.
+//!  It also allows to modify or extend the source display in dualview mode.
+//!   \note Maps the selected source to the associated target Ids.
+//!   \note Display PATH with this API is limited to single GPU. DUALVIEW across GPUs cannot be enabled with this API. 
+//!
+//! \deprecated  Do not use this function - it is deprecated in release 290. Instead, use NvAPI_DISP_SetDisplayConfig.
+//! SUPPORTED OS:  Windows Vista and higher
+//!
+//!
+//! \since Release: 95
+//!
+//! \param [in]  hNvDisplay   NVIDIA Display selection. #NVAPI_DEFAULT_HANDLE is not allowed, it has to be a handle enumerated with 
+//!                           NvAPI_EnumNVidiaDisplayHandle().
+//! \param [in]  pPathInfo    Pointer to array of NV_VIEW_PATH_INFO, specifying device properties in this view.
+//!                           The first device entry in the array is the physical primary.
+//!                           The device entry with the lowest source id is the desktop primary.
+//! \param [in]  pathCount    Count of paths specified in pPathInfo.
+//! \param [in]  displayView  Display view selected from NV_TARGET_VIEW_MODE.
+//!
+//! \retval  NVAPI_OK                Completed request
+//! \retval  NVAPI_ERROR             Miscellaneous error occurred
+//! \retval  NVAPI_INVALID_ARGUMENT  Invalid input parameter.
+//
+///////////////////////////////////////////////////////////////////////////////
 
 //! \ingroup dispcontrol
 #define NVAPI_MAX_DISPLAY_PATH  NVAPI_MAX_VIEW_TARGET
@@ -4367,11 +4396,13 @@ typedef struct _NV_DISPLAY_PORT_INFO_V1
     NvU32               is10BPCSupported                    : 1;  //!< If 10 bpc is supported
     NvU32               is12BPCSupported                    : 1;  //!< If 12 bpc is supported        
     NvU32               is16BPCSupported                    : 1;  //!< If 16 bpc is supported
+    NvU32               isYCrCb420Supported                 : 1;  //!< If YCrCb420 is supported
     NvU32               isYCrCb422Supported                 : 1;  //!< If YCrCb422 is supported                                                  
     NvU32               isYCrCb444Supported                 : 1;  //!< If YCrCb444 is supported
     NvU32               isRgb444SupportedOnCurrentMode      : 1;  //!< If Rgb444 is supported on the current mode
     NvU32               isYCbCr444SupportedOnCurrentMode    : 1;  //!< If YCbCr444 is supported on the current mode
-    NvU32               isYCbCr422SupportedOnCurrentMode    : 1;  //!< If YCbCr422 is support on the current mode
+    NvU32               isYCbCr422SupportedOnCurrentMode    : 1;  //!< If YCbCr422 is supported on the current mode
+    NvU32               isYCbCr420SupportedOnCurrentMode    : 1;  //!< If YCbCr420 is supported on the current mode
     NvU32               is6BPCSupportedOnCurrentMode        : 1;  // if 6 bpc is supported On Current Mode
     NvU32               is8BPCSupportedOnCurrentMode        : 1;  // if 8 bpc is supported On Current Mode
     NvU32               is10BPCSupportedOnCurrentMode       : 1;  // if 10 bpc is supported On Current Mode
@@ -4386,7 +4417,7 @@ typedef struct _NV_DISPLAY_PORT_INFO_V1
     NvU32               isMonBT2020YCCCapable               : 1;  // if BT2020 Y'CbCr extended colorimetry is supported
     NvU32               isMonBT2020cYCCCapable              : 1;  // if BT2020 cYCbCr (constant luminance) extended colorimetry is supported
     
-    NvU32               reserved                            : 6;  //!< reserved  
+    NvU32               reserved                            : 4;  //!< reserved  
  } NV_DISPLAY_PORT_INFO_V1; 
 
  typedef NV_DISPLAY_PORT_INFO_V1 NV_DISPLAY_PORT_INFO;
@@ -5341,13 +5372,13 @@ typedef struct _NV_TIMING_INPUT
 {
     NvU32 version;                      //!< (IN)     structure version
     
-    NvU32 width;						//!< Visible horizontal size
-    NvU32 height;						//!< Visible vertical size 
-    float rr;							//!< Timing refresh rate
+    NvU32 width;                        //!< Visible horizontal size
+    NvU32 height;                       //!< Visible vertical size 
+    float rr;                           //!< Timing refresh rate
         
-    NV_TIMING_FLAG flag;				//!< Flag containing additional info for timing calculation.
+    NV_TIMING_FLAG flag;                //!< Flag containing additional info for timing calculation.
     
-    NV_TIMING_OVERRIDE type;			//!< Timing type(formula) to use for calculating the timing
+    NV_TIMING_OVERRIDE type;            //!< Timing type(formula) to use for calculating the timing
 }NV_TIMING_INPUT;
 
 #define NV_TIMING_INPUT_VER   MAKE_NVAPI_VERSION(NV_TIMING_INPUT,1)
@@ -5363,7 +5394,7 @@ typedef struct _NV_TIMING_INPUT
 //! \since Release: 313  
 //!
 //!
-//! \param [in]   displayId		Display ID of the display.
+//! \param [in]   displayId     Display ID of the display.
 //! \param [in]   timingInput   Inputs used for calculating the timing.
 //! \param [out]  pTiming       Pointer to the NV_TIMING structure. 
 //!
@@ -5578,8 +5609,8 @@ typedef struct
 ///////////////////////////////////////////////////////////////////////////////
 // FUNCTION NAME:   NvAPI_DISP_EnumCustomDisplay
 //
-//! DESCRIPTION:   This API enumerates the custom timing specified by the enum index. 
-//!				   The client should keep enumerating until it returns NVAPI_END_ENUMERATION.
+//! DESCRIPTION:    This API enumerates the custom timing specified by the enum index. 
+//!                 The client should keep enumerating until it returns NVAPI_END_ENUMERATION.
 //!
 //! SUPPORTED OS:  Windows XP and higher
 //!
@@ -5641,9 +5672,9 @@ NVAPI_INTERFACE NvAPI_DISP_TryCustomDisplay( __in_ecount(count) NvU32 *pDisplayI
 //! \since Release: 313 
 //!
 //!
-//! \param [in]     pDisplayIds    Array of Dispaly IDs on which custom display configuration is to be saved.
-//! \param [in]     count          Total number of the incoming Dispaly IDs. This is for the multi-head support.
-//!	\param [in]     pCustDisp	   Pointer to the NV_CUSTOM_DISPLAY structure
+//! \param [in]     pDisplayIds     Array of Dispaly IDs on which custom display configuration is to be saved.
+//! \param [in]     count           Total number of the incoming Dispaly IDs. This is for the multi-head support.
+//! \param [in]     pCustDisp       Pointer to the NV_CUSTOM_DISPLAY structure
 //!
 //! \return        This API can return any of the error codes enumerated in #NvAPI_Status. If there are return error codes with 
 //!                specific meaning for this API, they are listed below.
@@ -5674,7 +5705,7 @@ NVAPI_INTERFACE NvAPI_DISP_DeleteCustomDisplay( __in_ecount(count) NvU32 *pDispl
 //!
 //! \return        This API can return any of the error codes enumerated in #NvAPI_Status. If there are return error codes with 
 //!                specific meaning for this API, they are listed below.
-//! \retval 	   NVAPI_INVALID_DISPLAY_ID:   Custom Timing is not supported on the Display, whose display id is passed
+//! \retval        NVAPI_INVALID_DISPLAY_ID:   Custom Timing is not supported on the Display, whose display id is passed
 //!
 //! \ingroup dispcontrol
 ///////////////////////////////////////////////////////////////////////////////
@@ -7152,7 +7183,8 @@ typedef struct _NV_GSYNC_CONTROL_PARAMS
     NvU32                       interval;           //!< Number of pulses to wait between framelock signal generation
     NVAPI_GSYNC_SYNC_SOURCE     source;             //!< VSync/House sync
     NvU32                       interlaceMode:1;    //!< interlace mode for a Sync device
-    NvU32                       syncSourceIsOutput:1; //!< Set if house sync is output; valid only when NVAPI_GSYNC_SYNC_SOURCE is NVAPI_GSYNC_SYNC_SOURCE_HOUSESYNC on p2061 boards; don't care for p2060 or when source is set to NVAPI_GSYNC_SYNC_SOURCE_VSYNC.
+    NvU32                       syncSourceIsOutput:1; //!< Set this to make house sync as an output; valid only when NV_GSYNC_CONTROL_PARAMS::source is NVAPI_GSYNC_SYNC_SOURCE_VSYNC on P2061 boards. 
+                                                      //!< syncSourceIsOutput should always be NVAPI_GSYNC_SYNC_SOURCE_HOUSESYNC i.e. 0 on P2060 boards or when NV_GSYNC_CONTROL_PARAMS::source is set to NVAPI_GSYNC_SYNC_SOURCE_HOUSESYNC.
     NvU32                       reserved:30;        //!< should be set zero
 	NV_GSYNC_DELAY              syncSkew;           //!< The time delay between the frame sync signal and the GPUs signal. 
     NV_GSYNC_DELAY              startupDelay;       //!< Sync start delay for master. 
@@ -7627,6 +7659,9 @@ NVAPI_INTERFACE NvAPI_D3D9_VideoSetStereoInfo(IDirect3DDevice9 *pDev,
 //!                supported on current hardware. List of opcodes is in nvShaderExtnEnums.h
 //!                To use Nvidia HLSL extensions the application must include nvHLSLExtns.h 
 //!                in the hlsl shader code. See nvHLSLExtns.h for more details on supported opcodes.
+//!
+//!                This function can be called from a different thread than the one calling immediate device setstate functions.  
+//!
 //! SUPPORTED OS:  Windows Vista and higher
 //!
 //!
@@ -7663,6 +7698,8 @@ NVAPI_INTERFACE NvAPI_D3D11_IsNvShaderExtnOpCodeSupported(__in  IUnknown *pDev,
 //!                e.g, 128 or 0xFFFFFFFF.
 //!                To use Nvidia HLSL extensions the application must include nvHLSLExtns.h 
 //!                in the hlsl shader code. See nvHLSLExtns.h for more details.
+//!
+//!                This function can be called from a different thread than the one calling immediate device setstate functions.  
 //!
 //! SUPPORTED OS:  Windows Vista and higher
 //!
@@ -7837,6 +7874,9 @@ typedef struct NvAPI_D3D11_RASTERIZER_DESC_EX
 //! \code
 //!   DESCRIPTION: This function is an extension of ID3D11Device::CreateRasterizerState with additional raster states
 //!
+//!                This function is  free-threaded create compatible i.e. it can be called from a different thread 
+//!                than the one calling immediate device setstate functions.   
+//!
 //!         \param [in]        pDevice             current d3d device
 //!         \param [in]        pRasterizerDesc     Rasterizer state description of type NVAPI_D3D11_RASTERIZER_DESC_EX
 //!         \param [out]       ppRasterizerState   ID3D11RasterizerState 
@@ -7919,6 +7959,220 @@ NVAPI_INTERFACE NvAPI_D3D_ConfigureAnsel(__in IUnknown *pDevice,
 
 #endif //defined (__cplusplus) && (defined(__d3d11_h__) || defined(__d3d11_1_h__))
 
+//! SUPPORTED OS:  Windows 8 and higher
+//!
+
+#if defined (__cplusplus) && defined(__d3d11_2_h__)
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// FUNCTION NAME: NvAPI_D3D11_CreateTiledTexture2DArray
+//
+//! \since Release: 375
+//
+//! \code
+//!   DESCRIPTION: Tiled resource is supported for Texture2D Array, however, but only when mip packing is not triggered.
+//!                So any mip level cannot be smaller than a single tile size(64KB).
+//!                This set of API is an extension of D3D11 support for tiled resource to allow a tiled texture2D array with mip packing.
+//!                If any of API from this set is used, using all of them is highly recommended.
+//!                It includes NvAPI_D3D11_CreateTiledTexture2DArray, NvAPI_D3D11_TiledTexture2DArrayGetDesc,
+//!                NvAPI_D3D11_UpdateTileMappings, NvAPI_D3D11_CopyTileMappings, NvAPI_D3D11_TiledResourceBarrier.
+//!                Reminder: all API in this set other than NvAPI_D3D11_CreateTiledTexture2DArray won't has D3D Debug Layer information.
+//!
+//!                NvAPI_D3D11_CreateTiledTexture2DArray is an extension of ID3D11Device::CreateTexutre2D.
+//!                Use this function to create a tiled Texture2D array with mip packing.
+//!                Runtime doesn't know the created resource is actually a tiled resource.
+//!                Any other D3D11 API where runtime will check whether resource is tiled or not has a corresponding NVAPI version and they should be used.
+//!                Different from DX12 implementation, this API should only be called when creating a tiled texture2D array with mip packing.
+//!                Other normal tiled resource following D3D spec must use the standard ID3D11Device::CreateTexutre2D to create.
+//!
+//!         \param [in]        pDevice             current d3d device
+//!         \param [in]        pDesc               The Texture2D Array descriptor, ArraySize > 1 && (pDesc->MiscFlags&D3D11_RESOURCE_MISC_TILED)
+//!         \param [in]        pInitialData        A pointer to an array of D3D11_SUBRESOURCE_DATA structures that describe subresources for the 2D texture resource.
+//!         \param [out]       ppTexture2D         A pointer to a buffer that receives a pointer to a ID3D11Texture2D interface for the created texture.
+
+//!
+//!
+//! \return  This API can return any of the error codes enumerated in
+//!          #NvAPI_Status.  If there are return error codes with specific
+//!          meaning for this API, they are listed below.
+//!
+//! \endcode
+//! \ingroup dx
+///////////////////////////////////////////////////////////////////////////////
+NVAPI_INTERFACE NvAPI_D3D11_CreateTiledTexture2DArray(__in       ID3D11Device           *pDevice,
+                                                      __in const D3D11_TEXTURE2D_DESC   *pDesc,
+                                                      __in const D3D11_SUBRESOURCE_DATA *pInitialData,
+                                                      __out      ID3D11Texture2D        **ppTexture2D);
+
+#endif //defined(__cplusplus) && defined(__d3d11_2_h__)
+
+//! SUPPORTED OS:  Windows 8 and higher
+//!
+
+#if defined (__cplusplus) && defined(__d3d11_2_h__)
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// FUNCTION NAME: NvAPI_D3D11_TiledTexture2DArrayGetDesc
+//
+//! \since Release: 375
+//
+//! \code
+//!   DESCRIPTION: NvAPI_D3D11_TiledTexture2DArrayGetDesc is an simple wrapper of ID3D11Texture2D::GetDesc 
+//!                when pTiledTexture2DArray is created with NvAPI_D3D11_CreateTiledTexture2DArray.
+//!                Runtime doesn't know the created resource is actually a tiled resource.
+//!                So calling ID3D11Texture2D::GetDesc will get a desc without D3D11_RESOURCE_MISC_TILED in MiscFlags.
+//!                This wrapper API just adds D3D11_RESOURCE_MISC_TILED back.
+//!
+//!         \param [in]        pTiledTexture2DArray  Pointer of tiled texture2D array to get resource desc from.
+//!         \param [out]       pDesc                 Pointer to a resource description.
+
+//!
+//!
+//! \return  This API can return any of the error codes enumerated in
+//!          #NvAPI_Status.  If there are return error codes with specific
+//!          meaning for this API, they are listed below.
+//!
+//! \endcode
+//! \ingroup dx
+///////////////////////////////////////////////////////////////////////////////
+NVAPI_INTERFACE NvAPI_D3D11_TiledTexture2DArrayGetDesc(__in  ID3D11Texture2D      *pTiledTexture2DArray,
+                                                       __out D3D11_TEXTURE2D_DESC *pDesc);
+
+#endif //defined(__cplusplus) && defined(__d3d11_2_h__)
+
+//! SUPPORTED OS:  Windows 8 and higher
+//!
+
+#if defined (__cplusplus) && defined(__d3d11_2_h__)
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// FUNCTION NAME: NvAPI_D3D11_UpdateTileMappings
+//
+//! \since Release: 375
+//
+//! \code
+//!   DESCRIPTION: NvAPI_D3D11_UpdateTileMappings is an extension of ID3D11DeviceContext2::UpdateTileMappings.
+//!                It allows pTiledResource to be a resource created with NvAPI_D3D11_CreateTiledTexture2DArray, and should be used only in such case.
+//!
+//!         \param [in]        pDeviceContext                       Must be Immediate DeviceContext.
+//!         \param [in]        pTiledResource                       A pointer to the tiled texture 2D array resource created by NvAPI_D3D11_CreateTiledTexture2DArray.
+//!         \param [in]        NumTiledResourceRegions              The number of tiled resource regions.
+//!         \param [in]        pTiledResourceRegionStartCoordinates An array of D3D11_TILED_RESOURCE_COORDINATE structures that describe the starting coordinates of the tiled resource regions. Cannot be NULL.
+//!         \param [in]        pTiledResourceRegionSizes            An array of D3D11_TILE_REGION_SIZE structures that describe the sizes of the tiled resource regions. Cannot be NULL.
+//!         \param [in]        pTilePool                            A pointer to the tile pool. This resource should be created by standard API.
+//!         \param [in]        NumRanges                            The number of tile-pool ranges.
+//!         \param [in]        pRangeFlags                          An array of D3D11_TILE_RANGE_FLAG values that describe each tile-pool range.
+//!         \param [in]        pTilePoolStartOffsets                An array of offsets into the tile pool. These are 0-based tile offsets, counting in tiles (not bytes).
+//!         \param [in]        pRangeTileCounts                     An array of values that specify the number of tiles in each tile-pool range.
+//!         \param [in]        Flags                                A combination of D3D11_TILE_MAPPING_FLAGS values that are combined by using a bitwise OR operation.
+
+//!
+//!
+//! \return  This API can return any of the error codes enumerated in
+//!          #NvAPI_Status.  If there are return error codes with specific
+//!          meaning for this API, they are listed below.
+//!
+//! \endcode
+//! \ingroup dx
+///////////////////////////////////////////////////////////////////////////////
+NVAPI_INTERFACE NvAPI_D3D11_UpdateTileMappings(
+    __in       ID3D11DeviceContext2            *pDeviceContext,
+    __in       ID3D11Resource                  *pTiledResource,
+    __in       UINT                             NumTiledResourceRegions,
+    __in const D3D11_TILED_RESOURCE_COORDINATE *pTiledResourceRegionStartCoordinates,
+    __in const D3D11_TILE_REGION_SIZE          *pTiledResourceRegionSizes,
+    __in       ID3D11Buffer                    *pTilePool,
+    __in       UINT                             NumRanges,
+    __in const UINT                            *pRangeFlags,
+    __in const UINT                            *pTilePoolStartOffsets,
+    __in const UINT                            *pRangeTileCounts,
+    __in       UINT                             Flags);
+
+#endif //defined(__cplusplus) && defined(__d3d11_2_h__)
+
+//! SUPPORTED OS:  Windows 8 and higher
+//!
+
+#if defined (__cplusplus) && defined(__d3d11_2_h__)
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// FUNCTION NAME: NvAPI_D3D11_CopyTileMappings
+//
+//! \since Release: 375
+//
+//! \code
+//!   DESCRIPTION: NvAPI_D3D11_CopyTileMappings is an extension of ID3D11DeviceContext2::CopyTileMappings 
+//!                It allows pDestTiledResource or pSourceTiledResource or both to be created with NvAPI_D3D11_CreateTiledTexture2DArray.
+//!                It should be used only in such case.
+//!
+//!         \param [in]        pDeviceContext                       Must be Immediate DeviceContext.
+//!         \param [in]        pDestTiledResource                   Tiled resource created by NvAPI_D3D11_CreateTiledTexture2DArray to copy tile mappings into.
+//!         \param [in]        pDestRegionStartCoordinate           A pointer to a D3D11_TILED_RESOURCE_COORDINATE structure that describes the starting coordinates of the destination tiled resource.
+//!         \param [in]        pSourceTiledResource                 Tiled resource created by NvAPI_D3D11_CreateTiledTexture2DArray to copy tile mappings from.
+//!         \param [in]        pSourceRegionStartCoordinate         A pointer to a D3D11_TILED_RESOURCE_COORDINATE structure that describes the starting coordinates of the source tiled resource.
+//!         \param [in]        pTileRegionSize                      A pointer to a D3D11_TILE_REGION_SIZE structure that describes the size of the tiled region.
+//!         \param [in]        Flags                                A combination of D3D11_TILE_MAPPING_FLAGS values that are combined by using a bitwise OR operation.
+
+//!
+//!
+//! \return  This API can return any of the error codes enumerated in
+//!          #NvAPI_Status.  If there are return error codes with specific
+//!          meaning for this API, they are listed below.
+//!
+//! \endcode
+//! \ingroup dx
+///////////////////////////////////////////////////////////////////////////////
+NVAPI_INTERFACE NvAPI_D3D11_CopyTileMappings(
+    __in       ID3D11DeviceContext             *pDeviceContext,
+    __in       ID3D11Resource                  *pDestTiledResource,
+    __in const D3D11_TILED_RESOURCE_COORDINATE *pDestRegionStartCoordinate,
+    __in       ID3D11Resource                  *pSourceTiledResource,
+    __in const D3D11_TILED_RESOURCE_COORDINATE *pSourceRegionStartCoordinate,
+    __in const D3D11_TILE_REGION_SIZE          *pTileRegionSize,
+    __in       UINT                             Flags);
+
+#endif //defined(__cplusplus) && defined(__d3d11_2_h__)
+
+//! SUPPORTED OS:  Windows 8 and higher
+//!
+
+#if defined (__cplusplus) && defined(__d3d11_2_h__)
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// FUNCTION NAME: NvAPI_D3D11_TiledResourceBarrier
+//
+//! \since Release: 375
+//
+//! \code
+//!   DESCRIPTION: NvAPI_D3D11_TiledResourceBarrier is an extension of ID3D11DeviceContext2::TiledResourceBarrier, but only works on ID3D11Resource(no support for ID3D11View).
+//!                If pTiledResourceAccessBeforeBarrier or pTiledResourceAccessAfterBarrier or both are created by NvAPI_D3D11_CreateTiledTexture2DArray, 
+//!                NvAPI_D3D11_TiledResourceBarrier must be used instead of ID3D11DeviceContext2::TiledResourceBarrier.
+//!
+//!         \param [in]        pDeviceContext                          Must be Immediate DeviceContext.
+//!         \param [in]        pTiledResourceAccessBeforeBarrier       Access operations on this resource must complete before the access operations on the object that pTiledResourceAccessAfterBarrier specifies.
+//!         \param [in]        pTiledResourceAccessAfterBarrier        Access operations on this resource must begin after the access operations on the object that pTiledResourceAccessBeforeBarrier specifies.
+
+//!
+//!
+//! \return  This API can return any of the error codes enumerated in
+//!          #NvAPI_Status.  If there are return error codes with specific
+//!          meaning for this API, they are listed below.
+//!
+//! \endcode
+//! \ingroup dx
+///////////////////////////////////////////////////////////////////////////////
+NVAPI_INTERFACE NvAPI_D3D11_TiledResourceBarrier(
+    __in       ID3D11DeviceContext             *pDeviceContext,
+    __in       ID3D11Resource                  *pTiledResourceAccessBeforeBarrier,
+    __in       ID3D11Resource                  *pTiledResourceAccessAfterBarrier);
+
+#endif //defined(__cplusplus) && defined(__d3d11_2_h__)
+
 //! SUPPORTED OS:  Windows Vista and higher
 //!
 
@@ -7936,6 +8190,9 @@ NVAPI_INTERFACE NvAPI_D3D_ConfigureAnsel(__in IUnknown *pDevice,
 //!                For 8X MSAA: OutTex.Width = InputTex.Width * 4, outTex.Height = InputTex.Height * 2
 //!                Only textures SampleQuality = 0 can be aliased as Non MSAA
 //!                The app should ensure that original texture is released only after the aliased copy is released.
+//!
+//!                This function is  free-threaded create compatible i.e. it can be called from a different thread 
+//!                than the one calling immediate device setstate functions.   
 //!
 //!         \param [in]        pDevice             current d3d device
 //!         \param [in]        pInputTex           The MultiSampled Texture2D resource that is being aliased
@@ -8051,9 +8308,9 @@ typedef NvAPI_D3D11_CREATE_GEOMETRY_SHADER_EX_V5        NvAPI_D3D11_CREATE_GEOME
 //!                This can be used for example in conjunction with the setting of coordinates swizzling (see XXX_NVAPI function)
 //!                to generates multiple adjacent views of the same primitive in a more efficient fashion 
 //!                (outputting the primitive only once).
-//!                ! Warning these functions are NOT free-threaded create compatible. 
-//!                So Don't call them from a different thread than the one calling immediate device setstate functions
-//!                And make sure no other thread is calling into another (even unrelated) free threaded function !
+//!                
+//!                This function is  free-threaded create compatible i.e. it can be called from a different 
+//!                thread than the one calling immediate device setstate functions.
 //!                
 //! \since Release: 
 //!                
@@ -8139,9 +8396,9 @@ typedef NvAPI_D3D11_CREATE_VERTEX_SHADER_EX_V3          NvAPI_D3D11_CREATE_VERTE
 //!                
 //!                The new parameter are custom semantics which allow setting of custom semantic variables
 //!                in the shader
-//!                ! Warning these functions are NOT free-threaded create compatible. 
-//!                So Don't call them from a different thread than the one calling immediate device setstate functions
-//!                And make sure no other thread is calling into another (even unrelated) free threaded function !
+//!
+//!                This function is  free-threaded create compatible i.e. it can be called from a different thread 
+//!                than the one calling immediate device setstate functions.  
 //!                
 //! \since Release: 
 //!                
@@ -8211,9 +8468,9 @@ typedef NvAPI_D3D11_CREATE_HULL_SHADER_EX_V2          NvAPI_D3D11_CREATE_HULL_SH
 //!                
 //!                The new parameter are custom semantics which allow setting of custom semantic variables
 //!                in the shader
-//!                ! Warning these functions are NOT free-threaded create compatible. 
-//!                So Don't call them from a different thread than the one calling immediate device setstate functions
-//!                And make sure no other thread is calling into another (even unrelated) free threaded function !
+//!                
+//!                This function is  free-threaded create compatible i.e. it can be called from a different thread 
+//!                than the one calling immediate device setstate functions.  
 //!                
 //! \since Release: 
 //!                
@@ -8292,9 +8549,9 @@ typedef NvAPI_D3D11_CREATE_DOMAIN_SHADER_EX_V3          NvAPI_D3D11_CREATE_DOMAI
 //!                
 //!                The new parameter are custom semantics which allow setting of custom semantic variables
 //!                in the shader
-//!                ! Warning these functions are NOT free-threaded create compatible. 
-//!                So Don't call them from a different thread than the one calling immediate device setstate functions
-//!                And make sure no other thread is calling into another (even unrelated) free threaded function !
+//!                
+//!                This function is  free-threaded create compatible i.e. it can be called from a different thread 
+//!                than the one calling immediate device setstate functions.  
 //!                
 //! \since Release: 
 //!                
@@ -8391,6 +8648,9 @@ typedef NvAPI_D3D11_CREATE_FASTGS_EXPLICIT_DESC_V1 NvAPI_D3D11_CREATE_FASTGS_EXP
 //!                The first four parameters are identical to ID3D11Device::CreateGeometryShader(),
 //!                so please refer to its documentation for their usage.
 //!
+//!                This function is  free-threaded create compatible i.e. it can be called from a different thread 
+//!                than the one calling immediate device setstate functions.   
+//!
 //! \since Release:
 //!
 //!   \param [in]  pDevice               The device pointer
@@ -8433,6 +8693,9 @@ NVAPI_INTERFACE NvAPI_D3D11_CreateFastGeometryShaderExplicit(__in ID3D11Device *
 //!                If the shader is too complex or is not in adequate form to be converted to fast GS
 //!                this function will simply fail. You should then call ID3D11Device::CreateGeometryShader() 
 //!                to create the regular geometry shader.
+//!                
+//!                This function is  free-threaded create compatible i.e. it can be called from a different thread 
+//!                than the one calling immediate device setstate functions.  
 //!                
 //! \since Release: 
 //!                
@@ -8769,6 +9032,259 @@ NVAPI_INTERFACE NvAPI_D3D12_SetDepthBoundsTestValues(__in ID3D12GraphicsCommandL
 #if defined (__cplusplus) && defined(__d3d12_h__)
 ///////////////////////////////////////////////////////////////////////////////
 //
+// FUNCTION NAME: NvAPI_D3D12_CreateReservedResource
+//
+//! \since Release: 375
+//
+//! \code
+//!   DESCRIPTION: Tiled resource is supported for Texture2D Array, however, but only when mip packing is not triggered.
+//!                So any mip level cannot be smaller than a single tile size(64KB).
+//!                This set of API is an extension of D3D12 support for tiled resource to allow a tiled texture2D array with mip packing.
+//!                If any of API from this set is used, using all of them is highly recommended.
+//!                It includes NvAPI_D3D12_CreateReservedResource, NvAPI_D3D12_CreateHeap, NvAPI_D3D12_ReservedResourceGetDesc,
+//!                NvAPI_D3D12_UpdateTileMappings, NvAPI_D3D12_CopyTileMappings, NvAPI_D3D12_ResourceAliasingBarrier.
+//!                Reminder: all API in this set other than NvAPI_D3D12_CreateReservedResource won't has D3D Debug Layer information.
+//!
+//!                NvAPI_D3D12_CreateReservedResource is an extension of ID3D12Device::CreateReservedResource.
+//!                Use this function to create a tiled Texture2D array with mip packing.
+//!                Runtime doesn't know the created resource is actually a tiled resource.
+//!                Any other D3D12 API where runtime will check whether resource is tiled or not, has a corresponding NVAPI version and they should be used.
+//!                Different from DX11 implementation, we highly recommend replace all ID3D12Device::CreateReservedResource with NvAPI_D3D12_CreateReservedResource, 
+//!                and use bTexture2DArrayMipPack to control which creation to use.
+//!                Otherwise, NvAPI_D3D12_ResourceAliasingBarrier will fail if any resource is not created by NvAPI_D3D12_CreateReservedResource.
+//!                DX11 implementation doesn't have this restriction and resource created by NVAPI and D3D API can be used together.
+//!                pHeap is necessary when bTexture2DArrayMipPack is true. pHeap can be any heap and this API doens't change anything to it.
+//!
+//!         \param [in]        pDevice                A pointer to D3D12 device.
+//!         \param [in]        pDesc                  A pointer to a D3D12_RESOURCE_DESC structure that describes the resource.
+//!         \param [in]        InitialState           The initial state of the resource, as a bitwise-OR'd combination of D3D12_RESOURCE_STATES enumeration constants.
+//!         \param [in]        pOptimizedClearValue   Specifies a D3D12_CLEAR_VALUE that describes the default value for a clear color.
+//!         \param [in]        riid                   The globally unique identifier (GUID) for the resource interface.
+//!         \param [out]       ppvResource            A pointer to a memory block that receives a pointer to the resource. Cannot be NULL.
+//!         \param [in]        bTexture2DArrayMipPack Whether pDesc indicates it's a texture2D array resource with mip packing.
+//!                                                   TRUE:  Use NVAPI to create. Will check pHeap to be not NULL.
+//!                                                   FALSE: Standard D3D12 API will be used, use DebugDevice to check any runtime ERROR. Won't check pHeap
+//!         \param [in]        pHeap                  A pointer to ID3D12Heap. Cannot be NULL when bTexture2DArrayMipPack is true.
+//!
+//! SUPPORTED OS:  Windows 10
+//!
+//! \return  This API can return any of the error codes enumerated in
+//!          #NvAPI_Status.  If there are return error codes with specific
+//!          meaning for this API, they are listed below.
+//!
+//! \endcode
+//! \ingroup dx
+///////////////////////////////////////////////////////////////////////////////
+
+NVAPI_INTERFACE NvAPI_D3D12_CreateReservedResource(__in       ID3D12Device           *pDevice,
+                                                   __in const D3D12_RESOURCE_DESC    *pDesc,
+                                                   __in       D3D12_RESOURCE_STATES   InitialState,
+                                                   __in const D3D12_CLEAR_VALUE      *pOptimizedClearValue,
+                                                   __in       REFIID                  riid,
+                                                   __out      void                  **ppvResource,
+                                                   __in       bool                    bTexture2DArrayMipPack,
+                                                   __in       ID3D12Heap             *pHeap);
+
+#endif //defined(__cplusplus) && defined(__d3d12_h__)
+
+
+#if defined (__cplusplus) && defined(__d3d12_h__)
+///////////////////////////////////////////////////////////////////////////////
+//
+// FUNCTION NAME: NvAPI_D3D12_CreateHeap
+//
+//! \since Release: 375
+//
+//! \code
+//!   DESCRIPTION: NvAPI_D3D12_CreateHeap is a safe replacement of ID3D12Device::CreateHeap with no functionality change and overhead.
+//!                In NvAPI_D3D12_UpdateTileMappings, pTilePool must be created with NvAPI_D3D12_CreateHeap and otherwise NvAPI_D3D12_UpdateTileMappings will fail.
+//!                In other word, any tile pool used in NvAPI_D3D12_UpdateTileMappings must be created by NvAPI_D3D12_CreateHeap.
+//!
+//!         \param [in]        pDevice                A pointer to D3D12 device.
+//!         \param [in]        pDesc                  A pointer to a D3D12_HEAP_DESC structure that describes the heap.
+//!         \param [in]        riid                   The globally unique identifier (GUID) for the resource interface.
+//!         \param [out]       ppvHeap                A pointer to a memory block that receives a pointer to the heap. Cannot be NULL.
+//!
+//! SUPPORTED OS:  Windows 10
+//!
+//! \return  This API can return any of the error codes enumerated in
+//!          #NvAPI_Status.  If there are return error codes with specific
+//!          meaning for this API, they are listed below.
+//!
+//! \endcode
+//! \ingroup dx
+///////////////////////////////////////////////////////////////////////////////
+
+NVAPI_INTERFACE NvAPI_D3D12_CreateHeap(__in       ID3D12Device     *pDevice,
+                                       __in const D3D12_HEAP_DESC  *pDesc,
+                                       __in       REFIID            riid,
+                                       __out      void            **ppvHeap);
+
+#endif //defined(__cplusplus) && defined(__d3d12_h__)
+
+
+#if defined (__cplusplus) && defined(__d3d12_h__)
+///////////////////////////////////////////////////////////////////////////////
+//
+// FUNCTION NAME: NvAPI_D3D12_ReservedResourceGetDesc
+//
+//! \since Release: 375
+//
+//! \code
+//!   DESCRIPTION: NvAPI_D3D12_ReservedResourceGetDesc is an simple wrapper of ID3D12Resource::GetDesc when pReservedResource is created by NvAPI_D3D12_CreateReservedResource.
+//!                Runtime doesn't know the created resource is actually a tiled resource if bTexture2DArrayMipPack = true in NvAPI_D3D12_CreateReservedResource.
+//!                So calling ID3D12Resource::GetDesc on such resource will get a desc with D3D12_TEXTURE_LAYOUT_UNKNOWN in Layout instead of D3D12_TEXTURE_LAYOUT_64KB_UNDEFINED_SWIZZLE.
+//!                This wrapper API just set Layout to D3D12_TEXTURE_LAYOUT_64KB_UNDEFINED_SWIZZLE if Layout is D3D12_TEXTURE_LAYOUT_UNKNOWN.
+//!
+//!         \param [in]        pReservedResource  Pointer of reserved resource to get resource desc from.
+//!         \param [out]       pDesc              Pointer to a resource description.
+//! SUPPORTED OS:  Windows 10
+//!
+//!
+//!
+//! \return  This API can return any of the error codes enumerated in
+//!          #NvAPI_Status.  If there are return error codes with specific
+//!          meaning for this API, they are listed below.
+//!
+//! \endcode
+//! \ingroup dx
+///////////////////////////////////////////////////////////////////////////////
+NVAPI_INTERFACE NvAPI_D3D12_ReservedResourceGetDesc(__in  ID3D12Resource      *pReservedResource,
+                                                    __out D3D12_RESOURCE_DESC *pDesc);
+
+#endif //defined(__cplusplus) && defined(__d3d12_h__)
+
+
+#if defined (__cplusplus) && defined(__d3d12_h__)
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// FUNCTION NAME: NvAPI_D3D12_UpdateTileMappings
+//
+//! \since Release: 375
+//
+//! \code
+//!   DESCRIPTION: NvAPI_D3D12_UpdateTileMappings is an extension of ID3D12CommandQueue::UpdateTileMappings.
+//!                pTiledResource must be created by NvAPI_D3D12_CreateReservedResource.
+//!                pTilePool must be created by NvAPI_D3D12_CreateHeap.
+//!
+//!         \param [in]        pCommandQueue                        A pointer to ID3D12CommandQueue.
+//!         \param [in]        pTiledResource                       A pointer to the tiled resource created by NvAPI_D3D12_CreateReservedResource.
+//!         \param [in]        NumTiledResourceRegions              The number of tiled resource regions.
+//!         \param [in]        pTiledResourceRegionStartCoordinates An array of D3D12_TILED_RESOURCE_COORDINATE structures that describe the starting coordinates of the tiled resource regions. Cannot be NULL.
+//!         \param [in]        pTiledResourceRegionSizes            An array of D3D12_TILE_REGION_SIZE structures that describe the sizes of the tiled resource regions. Cannot be NULL.
+//!         \param [in]        pTilePool                            A pointer to the resource heap created by NvAPI_D3D12_CreateHeap.
+//!         \param [in]        NumRanges                            The number of tile-pool ranges.
+//!         \param [in]        pRangeFlags                          A pointer to an array of D3D12_TILE_RANGE_FLAGS values that describes each tile range. 
+//!         \param [in]        pTilePoolStartOffsets                An array of offsets into the tile pool. These are 0-based tile offsets, counting in tiles (not bytes).
+//!         \param [in]        pRangeTileCounts                     An array of values that specify the number of tiles in each tile-pool range.
+//!         \param [in]        Flags                                A combination of D3D12_TILE_MAPPING_FLAGS values that are combined by using a bitwise OR operation.
+//! SUPPORTED OS:  Windows 10
+//!
+//!
+//!
+//! \return  This API can return any of the error codes enumerated in
+//!          #NvAPI_Status.  If there are return error codes with specific
+//!          meaning for this API, they are listed below.
+//!
+//! \endcode
+//! \ingroup dx
+///////////////////////////////////////////////////////////////////////////////
+NVAPI_INTERFACE NvAPI_D3D12_UpdateTileMappings(
+    __in       ID3D12CommandQueue              *pCommandQueue,
+    __in       ID3D12Resource                  *pResource,
+    __in       UINT                             NumResourceRegions,
+    __in const D3D12_TILED_RESOURCE_COORDINATE *pResourceRegionStartCoordinates,
+    __in const D3D12_TILE_REGION_SIZE          *pResourceRegionSizes,
+    __in       ID3D12Heap                      *pHeap,
+    __in       UINT                             NumRanges,
+    __in const D3D12_TILE_RANGE_FLAGS          *pRangeFlags,
+    __in const UINT                            *pHeapRangeStartOffsets,
+    __in const UINT                            *pRangeTileCounts,
+    __in       D3D12_TILE_MAPPING_FLAGS         Flags);
+
+#endif //defined(__cplusplus) && defined(__d3d12_h__)
+
+
+#if defined (__cplusplus) && defined(__d3d12_h__)
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// FUNCTION NAME: NvAPI_D3D12_CopyTileMappings
+//
+//! \since Release: 375
+//
+//! \code
+//!   DESCRIPTION: NvAPI_D3D12_CopyTileMappings is an extension of ID3D12CommandQueue::CopyTileMappings
+//!                pDstResource and pSrcResource must be created by NvAPI_D3D12_CreateReservedResource.
+//!
+//!         \param [in]        pCommandQueue                        A pointer to ID3D12CommandQueue.
+//!         \param [in]        pDstResource                         Tiled resource created by NvAPI_D3D12_CreateReservedResource to copy tile mappings into.
+//!         \param [in]        pDstRegionStartCoordinate            A pointer to a D3D12_TILED_RESOURCE_COORDINATE structure that describes the starting coordinates of the destination reserved resource.
+//!         \param [in]        pSrcResource                         Tiled resource created by NvAPI_D3D12_CreateReservedResource to copy tile mappings from.
+//!         \param [in]        pSourceRegionStartCoordinate         A pointer to a D3D12_TILED_RESOURCE_COORDINATE structure that describes the starting coordinates of the source reserved resource.
+//!         \param [in]        pTileRegionSize                      A pointer to a D3D12_TILE_REGION_SIZE structure that describes the size of the reserved region.
+//!         \param [in]        Flags                                One member of D3D12_TILE_MAPPING_FLAGS.
+//! SUPPORTED OS:  Windows 10
+//!
+//!
+//!
+//! \return  This API can return any of the error codes enumerated in
+//!          #NvAPI_Status.  If there are return error codes with specific
+//!          meaning for this API, they are listed below.
+//!
+//! \endcode
+//! \ingroup dx
+///////////////////////////////////////////////////////////////////////////////
+NVAPI_INTERFACE NvAPI_D3D12_CopyTileMappings(
+    __in       ID3D12CommandQueue              *pCommandQueue,
+    __in       ID3D12Resource                  *pDstResource,
+    __in const D3D12_TILED_RESOURCE_COORDINATE *pDstRegionStartCoordinate,
+    __in       ID3D12Resource                  *pSrcResource,
+    __in const D3D12_TILED_RESOURCE_COORDINATE *pSrcRegionStartCoordinate,
+    __in const D3D12_TILE_REGION_SIZE          *pRegionSize,
+    __in       D3D12_TILE_MAPPING_FLAGS         Flags);
+
+#endif //defined(__cplusplus) && defined(__d3d12_h__)
+
+
+#if defined (__cplusplus) && defined(__d3d12_h__)
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// FUNCTION NAME: NvAPI_D3D12_ResourceAliasingBarrier
+//
+//! \since Release: 375
+//
+//! \code
+//!   DESCRIPTION: NvAPI_D3D12_ResourceAliasingBarrier is an extension of ID3D12GraphicsCommandList::ResourceBarrier, but only for D3D12_RESOURCE_ALIASING_BARRIER.
+//!                Both resource in pBarriers must be created by NvAPI_D3D12_CreateReservedTexture2DArray.
+//!
+//!         \param [in]        pCommandList                            A pointer to ID3D12GraphicsCommandList.
+//!         \param [in]        NumBarriers                             The number of submitted barrier descriptions.
+//!         \param [in]        pBarriers                               Pointer to an array of barrier descriptions with D3D12_RESOURCE_ALIASING_BARRIER type only.
+//! SUPPORTED OS:  Windows 10
+//!
+//!
+//!
+//! \return  This API can return any of the error codes enumerated in
+//!          #NvAPI_Status.  If there are return error codes with specific
+//!          meaning for this API, they are listed below.
+//!
+//! \endcode
+//! \ingroup dx
+///////////////////////////////////////////////////////////////////////////////
+NVAPI_INTERFACE NvAPI_D3D12_ResourceAliasingBarrier(
+    __in       ID3D12GraphicsCommandList *pCommandList,
+    __in       UINT                       NumBarriers,
+    __in const D3D12_RESOURCE_BARRIER    *pBarriers);
+
+#endif //defined(__cplusplus) && defined(__d3d12_h__)
+
+
+#if defined (__cplusplus) && defined(__d3d12_h__)
+///////////////////////////////////////////////////////////////////////////////
+//
 // FUNCTION NAME: NvAPI_D3D12_IsNvShaderExtnOpCodeSupported
 //
 //!   DESCRIPTION: This function checks if a nv HLSL shader extension opcode is 
@@ -9017,6 +9533,37 @@ DECLARE_INTERFACE(ID3D11MultiGPUDevice_V1)
 	STDMETHOD_(NvAPI_Status,SetContextGPUMask)(THIS_ __in ID3D11DeviceContext *pContext, __in UINT GPUMask) PURE;
 	STDMETHOD_(NvAPI_Status,GetVideoBridgeStatus)(THIS_ __in IUnknown *pSwapChain, __in UINT* pVideoBridgeStatus) PURE;
 //////////////////////////////   end of VER2 methods   //////////////////////////////////////////
+
+//////////////////////////////   Methods added in VER3 //////////////////////////////////////////
+    STDMETHOD_(NvAPI_Status,CreateMultiGPUConstantBuffer)(THIS_ __in const D3D11_BUFFER_DESC *pDesc, __in_opt const D3D11_SUBRESOURCE_DATA **ppInitialData, __out ID3D11Buffer **ppBuffer) PURE;
+    STDMETHOD_(NvAPI_Status,ReleaseMultiGPUConstantBuffer)(THIS_ __in ID3D11Buffer *pBuffer) PURE;
+    
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Following XXSetMGPUConstantBuffers work the same way as DX XXSetConstantBuffers
+    // The difference is that 
+    // 1. They are setting constant buffers on GPUs that are defined by 
+    //    current GPU mask that is set via SetGPUMask.
+    // 2. For constant buffer created via CreateMultiGPUConstantBuffer these calls set GPU specific constant buffer.
+    // 3. For regular constant buffers these calls set the same constant buffer on all GPUs defined by 1.
+    // 4. If these functions are called in deferred context then GPUs are defined as GlobalGPUmask&LocalGPUMask
+    //      where GlobalGPUmask is GPUMask set before CL execution
+    //      and  LocalGPUMask is current GPUMask set in  CL.
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    STDMETHOD_(NvAPI_Status,VSSetMGPUConstantBuffers)(THIS_ __in ID3D11DeviceContext *pContext, __in UINT StartSlot, 
+                                                 __in UINT NumBuffers, __in ID3D11Buffer *const *ppConstantBuffers) PURE;
+    STDMETHOD_(NvAPI_Status,PSSetMGPUConstantBuffers)(THIS_ __in ID3D11DeviceContext *pContext, __in UINT StartSlot, 
+                                                 __in UINT NumBuffers, __in ID3D11Buffer *const *ppConstantBuffers) PURE;
+    STDMETHOD_(NvAPI_Status,GSSetMGPUConstantBuffers)(THIS_ __in ID3D11DeviceContext *pContext, __in UINT StartSlot, 
+                                                 __in UINT NumBuffers, __in ID3D11Buffer *const *ppConstantBuffers) PURE;
+    STDMETHOD_(NvAPI_Status,DSSetMGPUConstantBuffers)(THIS_ __in ID3D11DeviceContext *pContext, __in UINT StartSlot, 
+                                                 __in UINT NumBuffers, __in ID3D11Buffer *const *ppConstantBuffers) PURE;
+    STDMETHOD_(NvAPI_Status,HSSetMGPUConstantBuffers)(THIS_ __in ID3D11DeviceContext *pContext, __in UINT StartSlot, 
+                                                 __in UINT NumBuffers, __in ID3D11Buffer *const *ppConstantBuffers) PURE;
+    STDMETHOD_(NvAPI_Status,CSSetMGPUConstantBuffers)(THIS_ __in ID3D11DeviceContext *pContext, __in UINT StartSlot, 
+                                                 __in UINT NumBuffers, __in ID3D11Buffer *const *ppConstantBuffers) PURE;
+    
+    STDMETHOD_(NvAPI_Status,UpdateConstantBuffer)(__in ID3D11DeviceContext *pContext, __in ID3D11Buffer *pBuffer, __in const void *pSrcData, __in_opt UINT GPUMask = 0) PURE;
+ //////////////////////////////   end of VER3 methods   //////////////////////////////////////////
 };
 
 //! Synchronization macros based on fences.
@@ -9045,7 +9592,8 @@ typedef ID3D11MultiGPUDevice_V1     ID3D11MultiGPUDevice;
 
 #define ID3D11MultiGPUDevice_VER1   MAKE_NVAPI_VERSION(ID3D11MultiGPUDevice_V1, 1)
 #define ID3D11MultiGPUDevice_VER2   MAKE_NVAPI_VERSION(ID3D11MultiGPUDevice_V1, 2)
-#define ID3D11MultiGPUDevice_VER    ID3D11MultiGPUDevice_VER2
+#define ID3D11MultiGPUDevice_VER3   MAKE_NVAPI_VERSION(ID3D11MultiGPUDevice_V1, 3)
+#define ID3D11MultiGPUDevice_VER    ID3D11MultiGPUDevice_VER3
 
 #define ALL_GPUS 0
 
