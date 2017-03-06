@@ -1350,6 +1350,7 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
    {
       AudioOptionsDialog *audioDlg = new AudioOptionsDialog();
       audioDlg->DoModal();
+      delete audioDlg;
       break;
    }
 
@@ -1357,13 +1358,15 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
    {
        PhysicsOptionsDialog *phyDlg = new PhysicsOptionsDialog();
        phyDlg->DoModal();
+       delete phyDlg;
        break;
    }
 
    case ID_EDIT_EDITOROPTIONS:
    {
-       EditorOptionsDialog *editorOptionsDlg=new EditorOptionsDialog();
-       editorOptionsDlg->DoModal();
+      EditorOptionsDialog *editorOptionsDlg = new EditorOptionsDialog();
+      editorOptionsDlg->DoModal();
+      delete editorOptionsDlg;
 
       // refresh editor options from the registry
       InitRegValues();
@@ -1378,6 +1381,7 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
    {
       VideoOptionsDialog *videoDlg = new VideoOptionsDialog();
       videoDlg->DoModal();
+      delete videoDlg;
    }
    break;
 
@@ -1403,6 +1407,7 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
       {
          TableInfoDialog *tableInfoDlg = new TableInfoDialog();
          tableInfoDlg->DoModal();
+         delete tableInfoDlg;
       }
    }
    break;
@@ -1465,6 +1470,7 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
          {
             MaterialDialog *matDlg = new MaterialDialog();
             matDlg->DoModal();
+            delete matDlg;
 
 /*            if (ptCur->m_hMaterialManager == NULL)
             {
@@ -1518,6 +1524,7 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
       }
       DimensionDialog *dimDlg = new DimensionDialog();
       dimDlg->DoModal();
+      delete dimDlg;
    }
    break;
 
@@ -1532,8 +1539,9 @@ void VPinball::ParseCommand(size_t code, HWND hwnd, size_t notify)
          else
          {
             /*DialogBoxParam(g_hinst, MAKEINTRESOURCE(IDD_COLLECTDIALOG), m_hwnd, CollectManagerProc, (size_t)ptCur);*/
-             CollectionManagerDialog *colManDlg = new CollectionManagerDialog();
-             colManDlg->DoModal();
+            CollectionManagerDialog *colManDlg = new CollectionManagerDialog();
+            colManDlg->DoModal();
+            delete colManDlg;
 
             m_sb.PopulateDropdowns(); // May need to update list of collections
             m_sb.RefreshProperties();
@@ -4554,6 +4562,7 @@ void VPinball::ShowDrawingOrderDialog(bool select)
 {
    DrawingOrderDialog *orderDlg = new DrawingOrderDialog(select);
    orderDlg->DoModal();
+   delete orderDlg;
 }
 
 void VPinball::CloseAllDialogs()
