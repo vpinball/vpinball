@@ -1912,6 +1912,7 @@ void VPinball::SetEnableMenuItems()
       EnableMenuItem(hmenu, ID_EDIT_UNDO, MF_BYCOMMAND | MF_ENABLED);
       EnableMenuItem(hmenu, ID_EDIT_BACKGLASSVIEW, MF_BYCOMMAND | MF_ENABLED);
       EnableMenuItem(hmenu, ID_TABLE_PLAY, MF_BYCOMMAND | MF_ENABLED);
+      EnableMenuItem(hmenu, ID_TABLE_CAMERAMODE, MF_BYCOMMAND | MF_ENABLED);
       EnableMenuItem(hmenu, ID_TABLE_MAGNIFY, MF_BYCOMMAND | MF_ENABLED);
       EnableMenuItem(hmenu, ID_TABLE_TABLEINFO, MF_BYCOMMAND | MF_ENABLED);
       EnableMenuItem(hmenu, ID_EDIT_SEARCH, MF_BYCOMMAND | MF_ENABLED);
@@ -1941,7 +1942,8 @@ void VPinball::SetEnableMenuItems()
       flags = MF_BYCOMMAND | (ptCur->CheckPermissions(DISABLE_OPEN_MANAGERS) ? MF_GRAYED : MF_ENABLED);
       EnableMenuItem(hmenu, ID_TABLE_SOUNDMANAGER, flags);
       EnableMenuItem(hmenu, ID_TABLE_IMAGEMANAGER, flags);
-      //EnableMenuItem(hmenu, ID_TABLE_FONTMANAGER, flags);
+      EnableMenuItem(hmenu, ID_TABLE_FONTMANAGER, flags);
+      EnableMenuItem(hmenu, ID_TABLE_MATERIALMANAGER, flags);
       EnableMenuItem(hmenu, ID_TABLE_COLLECTIONMANAGER, flags);
 
       // enable/disable editing options
@@ -1994,9 +1996,11 @@ void VPinball::SetEnableMenuItems()
       EnableMenuItem(hmenu, ID_EDIT_BACKGLASSVIEW, MF_BYCOMMAND | MF_GRAYED);
 
       EnableMenuItem(hmenu, ID_TABLE_PLAY, MF_BYCOMMAND | MF_GRAYED);
+      EnableMenuItem(hmenu, ID_TABLE_CAMERAMODE, MF_BYCOMMAND | MF_GRAYED);
       EnableMenuItem(hmenu, ID_TABLE_SOUNDMANAGER, MF_BYCOMMAND | MF_GRAYED);
       EnableMenuItem(hmenu, ID_TABLE_IMAGEMANAGER, MF_BYCOMMAND | MF_GRAYED);
-      //EnableMenuItem(hmenu, ID_TABLE_FONTMANAGER, MF_BYCOMMAND | MF_GRAYED);
+      EnableMenuItem(hmenu, ID_TABLE_FONTMANAGER, MF_BYCOMMAND | MF_GRAYED);
+      EnableMenuItem(hmenu, ID_TABLE_MATERIALMANAGER, MF_BYCOMMAND | MF_GRAYED);
       EnableMenuItem(hmenu, ID_TABLE_COLLECTIONMANAGER, MF_BYCOMMAND | MF_GRAYED);
       EnableMenuItem(hmenu, ID_TABLE_TABLEINFO, MF_BYCOMMAND | MF_GRAYED);
       EnableMenuItem(hmenu, ID_TABLE_MAGNIFY, MF_BYCOMMAND | MF_GRAYED);
