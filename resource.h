@@ -488,7 +488,6 @@
 #define IDC_AUTOSAVE_MINUTES            361
 #define IDC_TOOLBARSIZE                 361
 #define IDD_PROPBACKGLASS_VISUALS       362
-#define IDC_LIST                        362
 #define IDC_ELEMENT_LIST                362
 #define IDC_DRAWING_ORDER_LIST          362
 #define IDD_PROPPOINT_POSITION          363
@@ -525,7 +524,6 @@
 #define IDC_THROW_BALL_SIZE_EDIT2       377
 #define IDC_DBG_LIGHT_FADE_UP_EDIT      377
 #define IDC_HEIGHT_EDIT                 378
-#define IDD_COMLIST                     378
 #define DISPID_SIDES                    378
 #define IDC_GLOSSY_EDIT                 378
 #define IDC_ALPHA_EDIT2                 378
