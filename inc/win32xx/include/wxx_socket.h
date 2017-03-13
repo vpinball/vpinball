@@ -1,12 +1,12 @@
 // Win32++   Version 8.4
-// Release Date: TBA
+// Release Date: 10th March 2017
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2016  David Nash
+// Copyright (c) 2005-2017  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -136,34 +136,34 @@ namespace Win32xx
 		virtual ~CSocket();
 
 		// Operations
-		virtual void Accept(CSocket& rClientSock, struct sockaddr* addr, int* addrlen);
-		virtual int  Bind(LPCTSTR addr, UINT port);
-		virtual int  Bind(const struct sockaddr* name, int namelen);
-		virtual int  Connect(LPCTSTR addr, UINT port);
-		virtual int  Connect(const struct sockaddr* name, int namelen);
+		virtual void Accept(CSocket& rClientSock, struct sockaddr* addr, int* addrlen) const;
+		virtual int  Bind(LPCTSTR addr, UINT port) const;
+		virtual int  Bind(const struct sockaddr* name, int namelen) const;
+		virtual int  Connect(LPCTSTR addr, UINT port) const;
+		virtual int  Connect(const struct sockaddr* name, int namelen) const;
 		virtual bool Create( int family, int type, int protocol = IPPROTO_IP);
 		virtual void Disconnect();
-		virtual void FreeAddrInfo( struct addrinfo* ai );
-		virtual int  GetAddrInfo( LPCTSTR nodename, LPCTSTR servname, const struct addrinfo* hints, struct addrinfo** res);
+		virtual void FreeAddrInfo( struct addrinfo* ai ) const;
+		virtual int  GetAddrInfo( LPCTSTR nodename, LPCTSTR servname, const struct addrinfo* hints, struct addrinfo** res) const;
 		virtual LPCTSTR GetLastError();
-		virtual int  ioCtlSocket(long cmd, u_long* argp);
-		virtual bool IsIPV6Supported();
-		virtual int  Listen(int backlog = SOMAXCONN);
-		virtual int  Receive(char* buf, int len, int flags);
-		virtual int  ReceiveFrom(char* buf, int len, int flags, struct sockaddr* from, int* fromlen);
-		virtual int  Send(const char* buf, int len, int flags);
-		virtual int  SendTo(const char* send, int len, int flags, LPCTSTR addr, UINT port);
-		virtual int  SendTo(const char* buf, int len, int flags, const struct sockaddr* to, int tolen);
+		virtual int  ioCtlSocket(long cmd, u_long* argp) const;
+		virtual bool IsIPV6Supported() const;
+		virtual int  Listen(int backlog = SOMAXCONN) const;
+		virtual int  Receive(char* buf, int len, int flags) const;
+		virtual int  ReceiveFrom(char* buf, int len, int flags, struct sockaddr* from, int* fromlen) const;
+		virtual int  Send(const char* buf, int len, int flags) const;
+		virtual int  SendTo(const char* send, int len, int flags, LPCTSTR addr, UINT port) const;
+		virtual int  SendTo(const char* buf, int len, int flags, const struct sockaddr* to, int tolen) const;
 
 		virtual void StartEvents();
 		virtual void StopEvents();
 
 		// Attributes
-		virtual int  GetPeerName(struct sockaddr* name, int* namelen);
-		virtual int  GetSockName(struct sockaddr* name, int* namelen);
+		virtual int  GetPeerName(struct sockaddr* name, int* namelen) const;
+		virtual int  GetSockName(struct sockaddr* name, int* namelen) const;
 		SOCKET& GetSocket() { return m_Socket; }
-		virtual int  GetSockOpt(int level, int optname, char* optval, int* optlen);
-		virtual int  SetSockOpt(int level, int optname, const char* optval, int optlen);
+		virtual int  GetSockOpt(int level, int optname, char* optval, int* optlen) const;
+		virtual int  SetSockOpt(int level, int optname, const char* optval, int optlen) const;
 
 		// Override these functions to monitor events
 		virtual void OnAccept()		{}
@@ -239,7 +239,7 @@ namespace Win32xx
 		::FreeLibrary(m_hWS2_32);
 	}
 
-	inline void CSocket::Accept(CSocket& rClientSock, struct sockaddr* addr, int* addrlen)
+	inline void CSocket::Accept(CSocket& rClientSock, struct sockaddr* addr, int* addrlen) const
 	{
 		// The accept function permits an incoming connection attempt on the socket.
 
@@ -248,7 +248,7 @@ namespace Win32xx
 			TRACE("Accept failed\n");
 	}
 
-	inline int CSocket::Bind(LPCTSTR addr, UINT port)
+	inline int CSocket::Bind(LPCTSTR addr, UINT port) const
 	// The bind function associates a local address with the socket.
 	{
 		int RetVal = 0;
@@ -301,7 +301,7 @@ namespace Win32xx
 		return RetVal;
 	}
 
-	inline int CSocket::Bind(const struct sockaddr* name, int namelen)
+	inline int CSocket::Bind(const struct sockaddr* name, int namelen) const
 	{
 		// The bind function associates a local address with the socket.
 
@@ -311,7 +311,7 @@ namespace Win32xx
 		return Result;
 	}
 
-	inline int CSocket::Connect(LPCTSTR addr, UINT port)
+	inline int CSocket::Connect(LPCTSTR addr, UINT port) const
 	// The Connect function establishes a connection to the socket.
 	{
 		int RetVal = 0;
@@ -364,7 +364,7 @@ namespace Win32xx
 		return RetVal;
 	}
 
-	inline int CSocket::Connect(const struct sockaddr* name, int namelen)
+	inline int CSocket::Connect(const struct sockaddr* name, int namelen) const
 	{
 		// The Connect function establishes a connection to the socket.
 
@@ -507,7 +507,7 @@ namespace Win32xx
 		}
 	}
 
-	inline int CSocket::GetAddrInfo( LPCTSTR nodename, LPCTSTR servname, const struct addrinfo* hints, struct addrinfo** res)
+	inline int CSocket::GetAddrInfo( LPCTSTR nodename, LPCTSTR servname, const struct addrinfo* hints, struct addrinfo** res) const
 	{
 
 #ifdef GetAddrInfo
@@ -549,7 +549,7 @@ namespace Win32xx
 		return m_ErrorMessage;
 	}
 
-	inline int  CSocket::GetPeerName(struct sockaddr* name, int* namelen)
+	inline int  CSocket::GetPeerName(struct sockaddr* name, int* namelen) const
 	{
 		int Result = ::getpeername(m_Socket, name, namelen);
 		if (Result != 0)
@@ -558,7 +558,7 @@ namespace Win32xx
 		return Result;
 	}
 
-	inline int  CSocket::GetSockName(struct sockaddr* name, int* namelen)
+	inline int  CSocket::GetSockName(struct sockaddr* name, int* namelen) const
 	{
 		int Result = ::getsockname(m_Socket, name, namelen);
 		if (Result != 0)
@@ -567,7 +567,7 @@ namespace Win32xx
 		return Result;
 	}
 
-	inline int  CSocket::GetSockOpt(int level, int optname, char* optval, int* optlen)
+	inline int  CSocket::GetSockOpt(int level, int optname, char* optval, int* optlen) const
 	{
 		int Result = ::getsockopt(m_Socket, level, optname, optval, optlen);
 		if (Result != 0)
@@ -576,7 +576,7 @@ namespace Win32xx
 		return Result;
 	}
 
-	inline void CSocket::FreeAddrInfo( struct addrinfo* ai )
+	inline void CSocket::FreeAddrInfo( struct addrinfo* ai ) const
 	{
 
 #ifdef GetAddrInfo
@@ -591,7 +591,7 @@ namespace Win32xx
 
 	}
 
-	inline int CSocket::ioCtlSocket(long cmd, u_long* argp)
+	inline int CSocket::ioCtlSocket(long cmd, u_long* argp) const
 	{
 		int Result = ::ioctlsocket(m_Socket, cmd, argp);
 		if (Result != 0)
@@ -600,7 +600,7 @@ namespace Win32xx
 		return Result;
 	}
 
-	inline bool CSocket::IsIPV6Supported()
+	inline bool CSocket::IsIPV6Supported() const
 	{
 		bool IsIPV6Supported = FALSE;
 
@@ -614,7 +614,7 @@ namespace Win32xx
 		return IsIPV6Supported;
 	}
 
-	inline int CSocket::Listen(int backlog /*= SOMAXCONN*/)
+	inline int CSocket::Listen(int backlog /*= SOMAXCONN*/) const
 	{
 		int Result = ::listen(m_Socket, backlog);
 		if (Result != 0)
@@ -623,7 +623,7 @@ namespace Win32xx
 		return Result;
 	}
 
-	inline int CSocket::Receive(char* buf, int len, int flags)
+	inline int CSocket::Receive(char* buf, int len, int flags) const
 	{
 		int Result = ::recv(m_Socket, buf, len, flags);
 		if (SOCKET_ERROR == Result)
@@ -631,7 +631,7 @@ namespace Win32xx
 		return Result;
 	}
 
-	inline int CSocket::ReceiveFrom(char* buf, int len, int flags, struct sockaddr* from, int* fromlen)
+	inline int CSocket::ReceiveFrom(char* buf, int len, int flags, struct sockaddr* from, int* fromlen) const
 	{
 		int Result = ::recvfrom(m_Socket, buf, len, flags, from, fromlen);
 		if (SOCKET_ERROR == Result)
@@ -639,7 +639,7 @@ namespace Win32xx
 		return Result;
 	}
 
-	inline int CSocket::Send(const char* buf, int len, int flags)
+	inline int CSocket::Send(const char* buf, int len, int flags) const
 	{
 		int Result = ::send(m_Socket, buf, len, flags);
 		if (SOCKET_ERROR == Result)
@@ -647,7 +647,7 @@ namespace Win32xx
 		return Result;
 	}
 
-	inline int CSocket::SendTo(const char* buf, int len, int flags, const struct sockaddr* to, int tolen)
+	inline int CSocket::SendTo(const char* buf, int len, int flags, const struct sockaddr* to, int tolen) const
 	{
 		int Result =  ::sendto(m_Socket, buf, len, flags, to, tolen);
 		if (SOCKET_ERROR == Result)
@@ -655,7 +655,7 @@ namespace Win32xx
 		return Result;
 	}
 
-	inline int CSocket::SendTo(const char* send, int len, int flags, LPCTSTR addr, UINT port)
+	inline int CSocket::SendTo(const char* send, int len, int flags, LPCTSTR addr, UINT port) const
 	// The sendto function sends data to a specific destination.
 	{
 		int RetVal = 0;
@@ -707,7 +707,7 @@ namespace Win32xx
 		return RetVal;
 	}
 
-	inline int CSocket::SetSockOpt(int level, int optname, const char* optval, int optlen)
+	inline int CSocket::SetSockOpt(int level, int optname, const char* optval, int optlen) const
 	{
 		int Result = ::setsockopt(m_Socket, level, optname, optval, optlen);
 		if (Result != 0)

@@ -1,12 +1,12 @@
 // Win32++   Version 8.4
-// Release Date: TBA
+// Release Date: 10th March 2017
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2016  David Nash
+// Copyright (c) 2005-2017  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -98,7 +98,7 @@ namespace Win32xx
 		PROPSHEETPAGE GetPSP() const {return m_PSP;}
 		BOOL IsButtonEnabled(int iButton) const;
 		LRESULT QuerySiblings(WPARAM wParam, LPARAM lParam) const;
-		void SetModified(BOOL bChanged) const;
+		void SetModified(BOOL IsChanged) const;
 		void SetTitle(LPCTSTR szTitle);
 		void SetWizardButtons(DWORD dwFlags) const;
 
@@ -143,7 +143,7 @@ namespace Win32xx
 		virtual BOOL SetActivePage(CPropertyPage* pPage);
 		virtual void SetIcon(UINT idIcon);
 		virtual void SetTitle(LPCTSTR szTitle);
-		virtual void SetWizardMode(BOOL bWizard);
+		virtual void SetWizardMode(BOOL IsWizard);
 
 	protected:
 		virtual BOOL PreTranslateMessage(MSG& Msg);
@@ -430,13 +430,13 @@ namespace Win32xx
 		return GetParent().SendMessage(PSM_QUERYSIBLINGS, wParam, lParam);
 	}
 
-	inline void CPropertyPage::SetModified(BOOL bChanged) const
+	inline void CPropertyPage::SetModified(BOOL IsChanged) const
 	{
-		// The property sheet will enable the Apply button if bChanged is TRUE.
+		// The property sheet will enable the Apply button if IsChanged is TRUE.
 
 		assert(IsWindow());
 
-		if (bChanged)
+		if (IsChanged)
 			GetParent().SendMessage(PSM_CHANGED, (WPARAM)GetHwnd(), 0L);
 		else
 			GetParent().SendMessage(PSM_UNCHANGED, (WPARAM)GetHwnd(), 0L);
@@ -835,11 +835,11 @@ namespace Win32xx
 		m_PSH.pszCaption = m_Title;
 	}
 
-	inline void CPropertySheet::SetWizardMode(BOOL bWizard)
+	inline void CPropertySheet::SetWizardMode(BOOL IsWizard)
 	// A Wizard is a form of property sheet that displays the pages in sequence.
 	// This function enables or disables Wizard mode for the property sheet.
 	{
-		if (bWizard)
+		if (IsWizard)
 			m_PSH.dwFlags |= PSH_WIZARD;
 		else
 			m_PSH.dwFlags &= ~PSH_WIZARD;

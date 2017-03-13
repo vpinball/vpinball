@@ -1,12 +1,12 @@
 // Win32++   Version 8.4
-// Release Date: TBA
+// Release Date: 10th March 2017
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2016  David Nash
+// Copyright (c) 2005-2017  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -98,11 +98,12 @@ namespace Win32xx
 		COLORREF clrPressed2;	// Colour 2 for pressed button
 		COLORREF clrOutline;	// Colour for border outline
 	};
-	
-	
+
+
   #ifndef _WIN32_WCE		// for Win32/64 operating systems, not WinCE
 	
 	inline BOOL IsAeroThemed()
+	// Returns TRUE if Aero themes are being used.
 	{
 		BOOL IsAeroThemed = FALSE;
 
@@ -129,8 +130,9 @@ namespace Win32xx
 
 		return IsAeroThemed;
 	}
-	
+
 	inline BOOL IsXPThemed()
+	// Returns TRUE if XP themes are being used.
 	{
 		BOOL IsXPThemed = FALSE;
 
@@ -158,10 +160,10 @@ namespace Win32xx
 
 		return IsXPThemed;
 	}
-	
+
   #endif // #ifndef _WIN32_WCE	
-	
-	
+
+
 } // namespace Win32xx
 
 #endif // _WIN32XX_THEMES_H_

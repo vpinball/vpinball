@@ -34,6 +34,7 @@ Win32++ supports the following:
 * CodeBlocks
 * Dev-C++
 * MinGW GCC Compiler
+* MinGW GCC x64 Compiler
 * Visual Studio 6
 * Visual Studio.net 2003
 * Visual C++ Toolkit 2003
@@ -50,6 +51,8 @@ Win32++ supports the following:
 * Visual Studio.net 2013 Community
 * Visual Studio.net 2015
 * Visual Studio.net 2015 Community
+* Visual Studio.net 2017
+* Visual Studio.net 2017 Community
 
 CodeBlocks is an IDE. The project files are configured for the following 
 compilers:

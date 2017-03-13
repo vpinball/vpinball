@@ -1,12 +1,12 @@
 // Win32++   Version 8.4
-// Release Date: TBA
+// Release Date: 10th March 2017
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2016  David Nash
+// Copyright (c) 2005-2017  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -84,14 +84,14 @@ namespace Win32xx
 	public:
 		CCmdBar();
 		virtual ~CCmdBar();
-		virtual BOOL AddAdornments(DWORD dwFlags);
-		virtual int  AddBitmap(int idBitmap, int iNumImages, int iImageWidth, int iImageHeight);
-		virtual BOOL AddButtons(int nButtons, TBBUTTON* pTBButton);
+		virtual BOOL AddAdornments(DWORD dwFlags) const;
+		virtual int  AddBitmap(int idBitmap, int iNumImages, int iImageWidth, int iImageHeight) const;
+		virtual BOOL AddButtons(int nButtons, TBBUTTON* pTBButton) const;
 		virtual HWND Create(HWND hwndParent);
 		virtual int  GetHeight() const;
-		virtual HWND InsertComboBox(int iWidth, UINT dwStyle, WORD idComboBox, WORD iButton);
-		virtual BOOL IsVisible();
-		virtual BOOL Show(BOOL fShow);
+		virtual HWND InsertComboBox(int iWidth, UINT dwStyle, WORD idComboBox, WORD iButton) const;
+		virtual BOOL IsVisible() const;
+		virtual BOOL Show(BOOL fShow) const;
 
 	private:
 
@@ -147,14 +147,14 @@ namespace Win32xx
 			::CommandBar_Destroy(*this);
 	}
 
-	inline BOOL CCmdBar::AddAdornments(DWORD dwFlags)
+	inline BOOL CCmdBar::AddAdornments(DWORD dwFlags) const
 	// Adds a button, and optionally, Help and OK buttons, to the command bar.
 	{
 		assert(IsWindow());
 		return CommandBar_AddAdornments(*this, dwFlags, 0);
 	}
 
-	inline int CCmdBar::AddBitmap(int idBitmap, int iNumImages, int iImageWidth, int iImageHeight)
+	inline int CCmdBar::AddBitmap(int idBitmap, int iNumImages, int iImageWidth, int iImageHeight) const
 	// Adds one or more images to the list of button images available in the command bar.
 	{
 		assert(IsWindow());
@@ -162,7 +162,7 @@ namespace Win32xx
 		return 	CommandBar_AddBitmap(*this, hInst, idBitmap, iNumImages, iImageWidth, iImageHeight);
 	}
 
-	inline BOOL CCmdBar::AddButtons(int nButtons, TBBUTTON* pTBButton)
+	inline BOOL CCmdBar::AddButtons(int nButtons, TBBUTTON* pTBButton) const
 	// Adds one or more toolbar buttons to a command bar control.
 	{
 		assert(IsWindow());
@@ -205,21 +205,21 @@ namespace Win32xx
 		return CommandBar_Height(*this);
 	}
 
-	inline HWND CCmdBar::InsertComboBox(int iWidth, UINT dwStyle, WORD idComboBox, WORD iButton)
+	inline HWND CCmdBar::InsertComboBox(int iWidth, UINT dwStyle, WORD idComboBox, WORD iButton) const
 	// Inserts a combo box into the command bar.
 	{
 		HINSTANCE hInst = GetApp().GetInstanceHandle();
 		return CommandBar_InsertComboBox(*this, hInst, iWidth, dwStyle, idComboBox, iButton);
 	}
 
-	inline BOOL CCmdBar::IsVisible()
+	inline BOOL CCmdBar::IsVisible() const
 	// Retrieves the visibility state of the command bar.
 	{
 		assert(IsWindow());
 		return ::CommandBar_IsVisible(*this);
 	}
 
-	inline BOOL CCmdBar::Show(BOOL fShow)
+	inline BOOL CCmdBar::Show(BOOL fShow) const
 	// Shows or hides the command bar.
 	{
 		assert(IsWindow());

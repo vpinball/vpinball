@@ -1,12 +1,12 @@
 // Win32++   Version 8.4
-// Release Date: TBA
+// Release Date: 10th March 2017
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2016  David Nash
+// Copyright (c) 2005-2017  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -35,35 +35,36 @@
 ////////////////////////////////////////////////////////
 
 
+////////////////////////////////////////////////////////
+// A metafile is a collection of structures that store a picture in a 
+// device-independent format. Device independence is the one feature that sets
+// metafiles apart from bitmaps. Unlike a bitmap, a metafile guarantees device
+// independence. There is a drawback to metafiles however, they are generally
+// drawn more slowly than bitmaps.
+//
+// In 1993, the 32-bit version of Win32/GDI introduced the Enhanced Metafile
+// (EMF), a newer version with additional commands. EMF is also used as a
+// graphics language for printer drivers. Microsoft recommends that
+// "Windows-format" (WMF) functions only "rarely" be used and "enhanced-format"
+// (EMF) functions be used instead.
+//
+////////////////////////////////////////////////////////
+
+
 #ifndef _WIN32XX_METAFILE_H_
 #define _WIN32XX_METAFILE_H_
 
 namespace Win32xx
 {
 
-	struct CMetaFile_Data	// A structure that contains the data members for CMetaFile
-	{
-		// Constructor
-		CMetaFile_Data() : hMetaFile(0), Count(1L)  {}
+#ifndef _WIN32_WCE
 
-		HMETAFILE hMetaFile;
-		long	Count;
-	};
-
-	struct CEnhMetaFile_Data	// A structure that contains the data members for CEnhMetaFile
-	{
-		// Constructor
-		CEnhMetaFile_Data() : hEnhMetaFile(0), Count(1L) {}
-
-		HENHMETAFILE hEnhMetaFile;
-		long	Count;
-	};
 
 	/////////////////////////////////////////////////////
 	// Declaration of the the CMetaFile class
 	//
 	// CMetaFile wraps a HMETAFILE. CMetaFile can be used anywhere a HMETAFILE can
-	// be used. CMetatFile objects are reference counted, so they can be safely
+	// be used. CMetaFile objects are reference counted, so they can be safely
 	// copied. CMetatFile automatically deletes the HMETAFILE when the last copy of
 	// the CMetaFile object goes out of scope. The CMetaFileDC::Close function
 	// returns a CMetaFile object.
@@ -78,10 +79,20 @@ namespace Win32xx
 		CMetaFile& operator = (const CMetaFile& rhs);
 		void operator = (const HMETAFILE hMetaFile);
 		operator HMETAFILE() { return m_pData->hMetaFile; }
-		void Attach(HMETAFILE hMetaFile);
-		void Release();
 
 	private:
+		struct CMetaFile_Data	// A structure that contains the data members for CMetaFile
+		{
+			// Constructor
+			CMetaFile_Data() : hMetaFile(0), Count(1L)  {}
+
+			HMETAFILE hMetaFile;
+			long	Count;
+		};
+		
+		void Attach(HMETAFILE hMetaFile);
+		void Release();
+		
 		CMetaFile_Data* m_pData;
 	};
 
@@ -107,13 +118,24 @@ namespace Win32xx
 		void operator = (const HENHMETAFILE hEnhMetaFile);
 		operator HENHMETAFILE() { return m_pData->hEnhMetaFile; }
 
+	private:
+		struct CEnhMetaFile_Data	// A structure that contains the data members for CEnhMetaFile
+		{
+			// Constructor
+			CEnhMetaFile_Data() : hEnhMetaFile(0), Count(1L) {}
+
+			HENHMETAFILE hEnhMetaFile;
+			long	Count;
+		};
+	
 		void Attach(HENHMETAFILE hEnhMetaFile);
 		void Release();
 
-
-	private:
 		CEnhMetaFile_Data* m_pData;
 	};
+
+#endif // _WIN32_WCE
+
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -121,7 +143,7 @@ namespace Win32xx
 
 namespace Win32xx
 {
-
+#ifndef _WIN32_WCE
 	/////////////////////////////////////////////////////
 	// Definitions for the the CMetaFile class
 	//
@@ -277,6 +299,8 @@ namespace Win32xx
 		}
 	}
 
+#endif // _WIN32_WCE
+
 }  // namespace Win32xx
 
-#endif
+#endif // _WIN32XX_METAFILE_H_

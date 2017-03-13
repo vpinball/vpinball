@@ -1,12 +1,12 @@
 // Win32++   Version 8.4
-// Release Date: TBA
+// Release Date: 10th March 2017
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2016  David Nash
+// Copyright (c) 2005-2017  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -73,7 +73,7 @@ namespace Win32xx
 		DWORD_PTR GetItemData(HTREEITEM hItem) const;
 		int		GetItemHeight() const;
 		BOOL	GetItemImage(HTREEITEM hItem, int& nImage, int& nSelectedImage ) const;
-		BOOL	GetItemRect(HTREEITEM hItem, CRect& rc, BOOL bTextOnly) const;
+		BOOL	GetItemRect(HTREEITEM hItem, CRect& rc, BOOL IsTextOnly) const;
 		CString GetItemText(HTREEITEM hItem, UINT nTextMax /* = 260 */) const;
 		HTREEITEM GetLastVisible() const;
 		HTREEITEM GetNextItem(HTREEITEM hItem, UINT nCode) const;
@@ -92,7 +92,7 @@ namespace Win32xx
 		COLORREF SetBkColor(COLORREF clrBk) const;
 		CImageList SetImageList(HIMAGELIST himlNew, int nType) const;
 		void	SetIndent(int indent) const;
-		BOOL	SetInsertMark(HTREEITEM hItem, BOOL fAfter = TRUE) const;
+		BOOL	SetInsertMark(HTREEITEM hItem, BOOL After = TRUE) const;
 		COLORREF SetInsertMarkColor(COLORREF clrInsertMark) const;
 		BOOL	SetItem(TVITEM& Item) const;
 		BOOL	SetItem(HTREEITEM hItem, UINT nMask, LPCTSTR szText, int nImage, int nSelectedImage, UINT nState, UINT nStateMask, LPARAM lParam) const;
@@ -118,8 +118,8 @@ namespace Win32xx
 		BOOL	SelectDropTarget(HTREEITEM hItem) const;
 		BOOL	SelectItem(HTREEITEM hItem) const;
 		BOOL	SelectSetFirstVisible(HTREEITEM hItem) const;
-		BOOL	SortChildren(HTREEITEM hItem, BOOL fRecurse) const;
-		BOOL	SortChildrenCB(TVSORTCB& sort, BOOL fRecurse) const;
+		BOOL	SortChildren(HTREEITEM hItem, BOOL Recurse) const;
+		BOOL	SortChildrenCB(TVSORTCB& sort, BOOL Recurse) const;
 
 	private:
 		CTreeView(const CTreeView&);				// Disable copy construction
@@ -241,17 +241,17 @@ namespace Win32xx
 		ZeroMemory(&tvi, sizeof(TVITEM));
 		tvi.mask = TVIF_IMAGE | TVIF_SELECTEDIMAGE;
 		tvi.hItem = hItem;
-		BOOL bResult = TreeView_GetItem( *this, &tvi );
+		BOOL Succeeded = TreeView_GetItem( *this, &tvi );
 		nImage = tvi.iImage;
 		nSelectedImage = tvi.iSelectedImage;
-		return bResult;
+		return Succeeded;
 	}
 
-	inline BOOL CTreeView::GetItemRect(HTREEITEM hItem, CRect& rc, BOOL bTextOnly) const
+	inline BOOL CTreeView::GetItemRect(HTREEITEM hItem, CRect& rc, BOOL IsTextOnly) const
 	// Retrieves the bounding rectangle for a tree-view item and indicates whether the item is visible.
 	{
 		assert(IsWindow());
-		return TreeView_GetItemRect( *this, hItem, &rc, bTextOnly );
+		return TreeView_GetItemRect( *this, hItem, &rc, IsTextOnly );
 	}
 
 	inline CString CTreeView::GetItemText(HTREEITEM hItem, UINT nTextMax /* = 260 */) const
@@ -403,11 +403,11 @@ namespace Win32xx
 		TreeView_SetIndent( *this, indent );
 	}
 
-	inline BOOL CTreeView::SetInsertMark(HTREEITEM hItem, BOOL fAfter/* = TRUE*/) const
+	inline BOOL CTreeView::SetInsertMark(HTREEITEM hItem, BOOL After/* = TRUE*/) const
 	// Sets the insertion mark in a tree-view control.
 	{
 		assert(IsWindow());
-		return TreeView_SetInsertMark( *this, hItem, fAfter );
+		return TreeView_SetInsertMark( *this, hItem, After );
 	}
 
 	inline COLORREF CTreeView::SetInsertMarkColor(COLORREF clrInsertMark) const
@@ -613,18 +613,18 @@ namespace Win32xx
 		return TreeView_SelectSetFirstVisible(*this, hItem);
 	}
 
-	inline BOOL CTreeView::SortChildren(HTREEITEM hItem, BOOL fRecurse) const
+	inline BOOL CTreeView::SortChildren(HTREEITEM hItem, BOOL Recurse) const
 	// Sorts the child items of the specified parent item in a tree-view control.
 	{
 		assert(IsWindow());
-		return TreeView_SortChildren( *this, hItem, fRecurse );
+		return TreeView_SortChildren( *this, hItem, Recurse );
 	}
 
-	inline BOOL CTreeView::SortChildrenCB(TVSORTCB& sort, BOOL fRecurse) const
+	inline BOOL CTreeView::SortChildrenCB(TVSORTCB& sort, BOOL Recurse) const
 	// Sorts tree-view items using an application-defined callback function that compares the items.
 	{
 		assert(IsWindow());
-		return TreeView_SortChildrenCB( *this, &sort, fRecurse );
+		return TreeView_SortChildrenCB( *this, &sort, Recurse );
 	}
 
 

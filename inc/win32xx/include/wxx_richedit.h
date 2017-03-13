@@ -1,12 +1,12 @@
 // Win32++   Version 8.4
-// Release Date: TBA
+// Release Date: 10th March 2017
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2016  David Nash
+// Copyright (c) 2005-2017  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -86,8 +86,8 @@ namespace Win32xx
 		void 	EmptyUndoBuffer() const;
 		long 	FindText(DWORD dwFlags, const FINDTEXTEX& FindTextEx) const;
 		DWORD 	FindWordBreak(UINT nCode, DWORD nStart) const;
-		long  	FormatRange(const FORMATRANGE& fr, BOOL bDisplay = TRUE) const;
-		long	FormatRange(BOOL bDisplay = FALSE) const;
+		long  	FormatRange(const FORMATRANGE& fr, BOOL Display = TRUE) const;
+		long	FormatRange(BOOL Display = FALSE) const;
 		CPoint 	GetCharPos(long lChar) const;
 		DWORD 	GetDefaultCharFormat(CHARFORMAT& cf) const;
 		DWORD 	GetDefaultCharFormat(CHARFORMAT2& cf) const;
@@ -117,7 +117,7 @@ namespace Win32xx
 		UINT 	GetTextMode() const;
 		CString GetTextRange(int nFirst, int nLast) const;
 		UNDONAMEID GetUndoName() const;
-		void	 HideSelection(BOOL bHide, BOOL bPerm) const;
+		void	 HideSelection(BOOL Hide, BOOL IsPermanent) const;
 		void 	LimitText(long nChars = 0) const;
 		long 	LineFromChar(long nIndex) const;
 		int 	LineIndex(int nLine = -1) const;
@@ -127,20 +127,20 @@ namespace Win32xx
 		void 	PasteSpecial(UINT nClipFormat, DWORD dwAspect = 0, HMETAFILE hMF = 0) const;
 		CPoint 	PosFromChar(UINT nChar) const;
 		BOOL 	Redo() const;
-		void 	ReplaceSel(LPCTSTR lpszNewText, BOOL bCanUndo = FALSE) const;
+		void 	ReplaceSel(LPCTSTR lpszNewText, BOOL CanUndo = FALSE) const;
 		void 	RequestResize() const;
-		BOOL 	SetAutoURLDetect(BOOL bEnable = TRUE) const;
-		COLORREF SetBackgroundColor(BOOL bSysColor, COLORREF cr) const;
+		BOOL 	SetAutoURLDetect(BOOL Enable = TRUE) const;
+		COLORREF SetBackgroundColor(BOOL IsSysColor, COLORREF cr) const;
 		BOOL 	SetDefaultCharFormat(CHARFORMAT& cf) const;
 		BOOL 	SetDefaultCharFormat(CHARFORMAT2& cf) const;
 		DWORD 	SetEventMask(DWORD dwEventMask) const;
-		void 	SetModify(BOOL bModified = TRUE) const;
+		void 	SetModify(BOOL IsModified = TRUE) const;
 		BOOL 	SetOLECallback(IRichEditOleCallback* pCallback) const;
 		void 	SetOptions(WORD wOp, DWORD dwFlags) const;
 		BOOL 	SetParaFormat(PARAFORMAT& pf) const;
 		BOOL 	SetParaFormat(PARAFORMAT2& pf) const;
 		BOOL 	SetPunctuation(UINT fType, const PUNCTUATION& Punc) const;
-		BOOL 	SetReadOnly(BOOL bReadOnly = TRUE) const;
+		BOOL 	SetReadOnly(BOOL IsReadOnly = TRUE) const;
 		void 	SetRect(const RECT& rc) const;
 		void 	SetSel(long nStartChar, long nEndChar) const;
 		void 	SetSel(CHARRANGE& cr) const;
@@ -293,18 +293,18 @@ namespace Win32xx
 		return static_cast<DWORD>(SendMessage(EM_FINDWORDBREAK, (WPARAM)nCode, (LPARAM)nStart));
 	}
 
-	inline long CRichEdit::FormatRange(const FORMATRANGE& fr, BOOL bDisplay /* = TRUE */) const
+	inline long CRichEdit::FormatRange(const FORMATRANGE& fr, BOOL Display /* = TRUE */) const
 	// Formats a range of text in a rich edit control for a specific device (e.g. printer).
 	{
 		assert(IsWindow());
-		return static_cast<long>(SendMessage(EM_FORMATRANGE, (WPARAM)bDisplay, (LPARAM)&fr));
+		return static_cast<long>(SendMessage(EM_FORMATRANGE, (WPARAM)Display, (LPARAM)&fr));
 	}
 
-	inline long CRichEdit::FormatRange(BOOL bDisplay /* = FALSE */) const
+	inline long CRichEdit::FormatRange(BOOL Display /* = FALSE */) const
 	// Free format information cached by the control.
 	{
 		assert(IsWindow());
-		return static_cast<long>(SendMessage(EM_FORMATRANGE, (WPARAM)bDisplay, 0));
+		return static_cast<long>(SendMessage(EM_FORMATRANGE, (WPARAM)Display, 0));
 	}
 
 	inline CPoint CRichEdit::GetCharPos(long lChar) const
@@ -545,16 +545,16 @@ namespace Win32xx
 		return static_cast<UNDONAMEID>(SendMessage(EM_GETREDONAME, 0L, 0L));
 	}
 
-	inline void CRichEdit::HideSelection(BOOL bHide, BOOL bPerm) const
+	inline void CRichEdit::HideSelection(BOOL Hide, BOOL IsPermanent) const
 	// Shows or hides the current selection.
 	{
 		assert(IsWindow());
-		if (bPerm)
+		if (IsPermanent)
 		{
 			SetOptions(ECOOP_SET, ECO_NOHIDESEL);
 		}
 
-		SendMessage(EM_HIDESELECTION, (WPARAM)bHide, 0L);
+		SendMessage(EM_HIDESELECTION, (WPARAM)Hide, 0L);
 	}
 
 	inline void CRichEdit::LimitText(long nChars /* = 0 */) const
@@ -625,11 +625,11 @@ namespace Win32xx
 		return (0 != SendMessage(EM_REDO, 0L, 0L));
 	}
 
-	inline void CRichEdit::ReplaceSel(LPCTSTR lpszNewText, BOOL bCanUndo /* = FALSE */) const
+	inline void CRichEdit::ReplaceSel(LPCTSTR lpszNewText, BOOL CanUndo /* = FALSE */) const
 	// Replaces the current selection with specified text.
 	{
 		assert(IsWindow());
-		SendMessage(EM_REPLACESEL, (WPARAM)bCanUndo, (LPARAM)lpszNewText);
+		SendMessage(EM_REPLACESEL, (WPARAM)CanUndo, (LPARAM)lpszNewText);
 	}
 
 	inline void CRichEdit::RequestResize() const
@@ -639,18 +639,18 @@ namespace Win32xx
 		SendMessage(EM_REQUESTRESIZE, 0L, 0L);
 	}
 
-	inline BOOL CRichEdit::SetAutoURLDetect(BOOL bEnable /* = TRUE */) const
+	inline BOOL CRichEdit::SetAutoURLDetect(BOOL Enable /* = TRUE */) const
 	// Indicates if the auto URL detection is active.
 	{
 		assert(IsWindow());
-		return (0 != SendMessage(EM_AUTOURLDETECT, (WPARAM)bEnable, 0L));
+		return (0 != SendMessage(EM_AUTOURLDETECT, (WPARAM)Enable, 0L));
 	}
 
-	inline COLORREF CRichEdit::SetBackgroundColor(BOOL bSysColor, COLORREF cr) const
+	inline COLORREF CRichEdit::SetBackgroundColor(BOOL IsSysColor, COLORREF cr) const
 	// Sets the background color.
 	{
 		assert(IsWindow());
-		return static_cast<COLORREF>(SendMessage(EM_SETBKGNDCOLOR, (WPARAM)bSysColor, (LPARAM)cr));
+		return static_cast<COLORREF>(SendMessage(EM_SETBKGNDCOLOR, (WPARAM)IsSysColor, (LPARAM)cr));
 	}
 
 	inline BOOL CRichEdit::SetDefaultCharFormat(CHARFORMAT& cf) const
@@ -674,11 +674,11 @@ namespace Win32xx
 		return static_cast<DWORD>(SendMessage(EM_SETEVENTMASK, 0L, (LPARAM)dwEventMask));
 	}
 
-	inline void CRichEdit::SetModify(BOOL bModified /* = TRUE */) const
+	inline void CRichEdit::SetModify(BOOL IsModified /* = TRUE */) const
 	// Sets or clears the modification flag. The modification flag indicates whether the text has been modified.
 	{
 		assert(IsWindow());
-		SendMessage(EM_SETMODIFY, (WPARAM)bModified, 0L);
+		SendMessage(EM_SETMODIFY, (WPARAM)IsModified, 0L);
 	}
 
 	inline BOOL CRichEdit::SetOLECallback(IRichEditOleCallback* pCallback) const
@@ -720,11 +720,11 @@ namespace Win32xx
 		return (0 != SendMessage(EM_SETPUNCTUATION, (WPARAM)fType, (LPARAM)&Punc));
 	}
 
-	inline BOOL CRichEdit::SetReadOnly(BOOL bReadOnly /* = TRUE*/) const
+	inline BOOL CRichEdit::SetReadOnly(BOOL IsReadOnly /* = TRUE*/) const
 	// Sets or removes the read-only style.
 	{
 		assert(IsWindow());
-		return (0 != SendMessage(EM_SETREADONLY, (WPARAM)bReadOnly, 0L));
+		return (0 != SendMessage(EM_SETREADONLY, (WPARAM)IsReadOnly, 0L));
 	}
 
 	inline void CRichEdit::SetRect(const RECT& rc) const

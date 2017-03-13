@@ -1,12 +1,12 @@
 // Win32++   Version 8.4
-// Release Date: TBA
+// Release Date: 10th March 2017
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2016  David Nash
+// Copyright (c) 2005-2017  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -181,7 +181,7 @@ namespace Win32xx
 
 	protected:
 		void	Release();
-		void SetManaged(bool IsManaged) { m_pData->IsManagedObject = IsManaged; }
+		void SetManaged(bool IsManaged) const { m_pData->IsManagedObject = IsManaged; }
 
 	private:
 		void	AddToMap();
@@ -208,8 +208,8 @@ namespace Win32xx
 		// Create and load methods
 		BOOL LoadBitmap(LPCTSTR lpszName);
 		BOOL LoadBitmap(int nID);
-		BOOL LoadImage(LPCTSTR lpszName, int cxDesired, int cyDesired, UINT fuLoad);
-		BOOL LoadImage(UINT nID, int cxDesired, int cyDesired, UINT fuLoad);
+		BOOL LoadImage(LPCTSTR lpszName, UINT fuLoad);
+		BOOL LoadImage(UINT nID, UINT fuLoad);
 		BOOL LoadOEMBitmap(UINT nIDBitmap);
 		HBITMAP CreateBitmap(int nWidth, int nHeight, UINT nPlanes, UINT nBitsPerPixel, LPCVOID pBits);
 		HBITMAP CreateCompatibleBitmap(HDC hdc, int nWidth, int nHeight);
@@ -222,9 +222,9 @@ namespace Win32xx
 		void GrayScaleBitmap();
 		void TintBitmap (int cRed, int cGreen, int cBlue);
 		int GetDIBits(HDC hdc, UINT uStartScan, UINT cScanLines,  LPVOID pBits, LPBITMAPINFO pbmi, UINT uColorUse) const;
-		int SetDIBits(HDC hdc, UINT uStartScan, UINT cScanLines, LPCVOID pBits, const LPBITMAPINFO pbmi, UINT uColorUse);
+		int SetDIBits(HDC hdc, UINT uStartScan, UINT cScanLines, LPCVOID pBits, const LPBITMAPINFO pbmi, UINT uColorUse) const;
 		CSize GetBitmapDimensionEx() const;
-		CSize SetBitmapDimensionEx(int nWidth, int nHeight);
+		CSize SetBitmapDimensionEx(int nWidth, int nHeight) const;
 #endif // !_WIN32_WCE
 
 		// Attributes
@@ -272,7 +272,7 @@ namespace Win32xx
 
 		// Create methods
 		HFONT CreateFontIndirect(const LOGFONT& LogFont);
-		HFONT CreatePointFont(int nPointSize, LPCTSTR lpszFaceName, HDC hdc = NULL, BOOL bBold = FALSE, BOOL bItalic = FALSE);
+		HFONT CreatePointFont(int nPointSize, LPCTSTR lpszFaceName, HDC hdc = NULL, BOOL IsBold = FALSE, BOOL IsItalic = FALSE);
 		HFONT CreatePointFontIndirect(const LOGFONT& LogFont, HDC hdc = NULL);
 
 #ifndef _WIN32_WCE
@@ -309,12 +309,12 @@ namespace Win32xx
 		// Attributes
 		int GetEntryCount() const;
 		UINT GetPaletteEntries(UINT nStartIndex, UINT nNumEntries, LPPALETTEENTRY lpPaletteColors) const;
-		UINT SetPaletteEntries(UINT nStartIndex, UINT nNumEntries, LPPALETTEENTRY lpPaletteColors);
+		UINT SetPaletteEntries(UINT nStartIndex, UINT nNumEntries, LPPALETTEENTRY lpPaletteColors) const;
 
 		// Operations
 #ifndef _WIN32_WCE
-		BOOL ResizePalette(UINT nNumEntries);
-		void AnimatePalette(UINT nStartIndex, UINT nNumEntries, LPPALETTEENTRY lpPaletteColors);
+		BOOL ResizePalette(UINT nNumEntries) const;
+		void AnimatePalette(UINT nStartIndex, UINT nNumEntries, LPPALETTEENTRY lpPaletteColors) const;
 #endif // !_WIN32_WCE
 
 		UINT GetNearestPaletteIndex (COLORREF crColor) const;
@@ -342,7 +342,7 @@ namespace Win32xx
 		LOGPEN GetLogPen() const;
 
 #ifndef _WIN32_WCE
-		HPEN ExtCreatePen(int nPenStyle, int nWidth, const LOGBRUSH& LogBrush, int nStyleCount = 0, const DWORD* lpStyle = NULL);
+		HPEN ExtCreatePen(int nPenStyle, int nWidth, const LOGBRUSH& LogBrush, int nStyleCount = 0, const DWORD* lpStyle = NULL) ;
 		EXTLOGPEN GetExtLogPen() const;
 #endif // !_WIN32_WCE
 
@@ -375,14 +375,14 @@ namespace Win32xx
 #endif // !_WIN32_WCE
 
 		// Operations
-		void SetRectRgn(int x1, int y1, int x2, int y2);
-		void SetRectRgn(const RECT& rc);
-		int CombineRgn(HRGN hrgnSrc1, HRGN hrgnSrc2, int nCombineMode);
-		int CombineRgn(HRGN hrgnSrc, int nCombineMode);
-		int CopyRgn(HRGN hrgnSrc);
+		void SetRectRgn(int x1, int y1, int x2, int y2) const;
+		void SetRectRgn(const RECT& rc) const;
+		int CombineRgn(HRGN hrgnSrc1, HRGN hrgnSrc2, int nCombineMode) const;
+		int CombineRgn(HRGN hrgnSrc, int nCombineMode) const;
+		int CopyRgn(HRGN hrgnSrc) const;
 		BOOL EqualRgn(HRGN hRgn) const;
-		int OffsetRgn(int x, int y);
-		int OffsetRgn(POINT& pt);
+		int OffsetRgn(int x, int y) const;
+		int OffsetRgn(POINT& pt) const;
 		int GetRgnBox(RECT& rc) const;
 		BOOL PtInRegion(int x, int y) const;
 		BOOL PtInRegion(POINT& pt) const;
@@ -461,8 +461,8 @@ namespace Win32xx
 		HBITMAP GetCurrentBitmap() const;
 		BOOL LoadBitmap(UINT nID);
 		BOOL LoadBitmap(LPCTSTR lpszName);
-		BOOL LoadImage(UINT nID, int cxDesired, int cyDesired, UINT fuLoad);
-		BOOL LoadImage(LPCTSTR lpszName, int cxDesired, int cyDesired, UINT fuLoad);
+		BOOL LoadImage(UINT nID, UINT fuLoad);
+		BOOL LoadImage(LPCTSTR lpszName, UINT fuLoad);
 		BOOL LoadOEMBitmap(UINT nIDBitmap); // for OBM_/OCR_/OIC
 
 #ifndef _WIN32_WCE
@@ -498,11 +498,11 @@ namespace Win32xx
 #endif
 
 		// Create and select Palettes
-		void CreatePalette(LPLOGPALETTE pLogPalette, BOOL bForceBkgnd);
-		HPALETTE SelectPalette(HPALETTE hPalette, BOOL bForceBkgnd);
+		void CreatePalette(LPLOGPALETTE pLogPalette, BOOL ForceBkgnd);
+		HPALETTE SelectPalette(HPALETTE hPalette, BOOL ForceBkgnd);
 
 #ifndef _WIN32_WCE
-		void CreateHalftonePalette(BOOL bForceBkgnd);
+		void CreateHalftonePalette(BOOL ForceBkgnd);
 #endif
 
 		// Create Pens
@@ -513,7 +513,7 @@ namespace Win32xx
 
 		// Retrieve and Select Stock Objects
 		HGDIOBJ GetStockObject(int nIndex) const;
-		HGDIOBJ SelectStockObject(int nIndex);
+		HGDIOBJ SelectStockObject(int nIndex) const;
 
 		// Create Regions
 		int CreateRectRgn(int left, int top, int right, int bottom);
@@ -590,7 +590,7 @@ namespace Win32xx
 		BOOL DrawFrameControl(const RECT& rc, UINT nType, UINT nState) const;
 		BOOL FillRect(const RECT& rc, HBRUSH hBrush) const;
 		BOOL FillRgn(HRGN hRgn, HBRUSH hBrush) const;
-		void GradientFill(COLORREF Color1, COLORREF Color2, const RECT& rc, BOOL bVertical) const;
+		void GradientFill(COLORREF Color1, COLORREF Color2, const RECT& rc, BOOL IsVertical) const;
 		BOOL InvertRect(const RECT& rc) const;
 		void SolidFill(COLORREF Color, const RECT& rc) const;
 
@@ -732,8 +732,10 @@ namespace Win32xx
 #endif
 
 		// MetaFile Functions
+#ifndef _WIN32_WCE
 		BOOL PlayMetaFile(HMETAFILE hMF) const;
 		BOOL PlayMetaFile(HENHMETAFILE hEnhMetaFile, const RECT& rcBounds) const;
+#endif
 
 		// Printer Functions
 		int StartDoc(LPDOCINFO lpDocInfo) const;
@@ -1294,18 +1296,18 @@ namespace Win32xx
 		return (0 != hBitmap);	// boolean expression
 	}
 
-	inline BOOL CBitmap::LoadImage(UINT nID, int cxDesired, int cyDesired, UINT fuLoad)
+	inline BOOL CBitmap::LoadImage(UINT nID, UINT fuLoad)
 	// Loads a bitmap from a resource using the resource ID.
 	{
-		return LoadImage(MAKEINTRESOURCE(nID), cxDesired, cyDesired, fuLoad);
+		return LoadImage(MAKEINTRESOURCE(nID), fuLoad);
 	}
 
-	inline BOOL CBitmap::LoadImage(LPCTSTR lpszName, int cxDesired, int cyDesired, UINT fuLoad)
+	inline BOOL CBitmap::LoadImage(LPCTSTR lpszName, UINT fuLoad)
 	// Loads a bitmap from a resource using the resource string.
 	{
 		assert( &GetApp() );
 
-		HBITMAP hBitmap = (HBITMAP)::LoadImage(GetApp().GetResourceHandle(), lpszName, IMAGE_BITMAP, cxDesired, cyDesired, fuLoad);
+		HBITMAP hBitmap = (HBITMAP)::LoadImage(GetApp().GetResourceHandle(), lpszName, IMAGE_BITMAP, 0, 0, fuLoad);
 		if (hBitmap != 0)
 		{
 			Attach(hBitmap);
@@ -1406,7 +1408,7 @@ namespace Win32xx
 			return Size;
 		}
 
-		inline CSize CBitmap::SetBitmapDimensionEx(int nWidth, int nHeight)
+		inline CSize CBitmap::SetBitmapDimensionEx(int nWidth, int nHeight) const
 		// The SetBitmapDimensionEx function assigns preferred dimensions to a bitmap.
 		// These dimensions can be used by applications; however, they are not used by the system.
 		{
@@ -1577,7 +1579,7 @@ namespace Win32xx
 			return ::GetDIBits(hdc, (HBITMAP)GetHandle(), uStartScan, cScanLines,  pBits, pbmi, uColorUse);
 		}
 
-		inline int CBitmap::SetDIBits(HDC hdc, UINT uStartScan, UINT cScanLines, LPCVOID pBits, const LPBITMAPINFO pbmi, UINT uColorUse)
+		inline int CBitmap::SetDIBits(HDC hdc, UINT uStartScan, UINT cScanLines, LPCVOID pBits, const LPBITMAPINFO pbmi, UINT uColorUse) const
 		// Sets the pixels in a compatible bitmap (DDB) using the color data found in the specified DIB.
 		// A CBitmapInfoPtr object can be used for the LPBITMAPINFO parameter.
 		{
@@ -1756,7 +1758,7 @@ namespace Win32xx
 		return hFont;
 	}
 
-	inline HFONT CFont::CreatePointFont(int nPointSize, LPCTSTR lpszFaceName, HDC hdc /*= NULL*/, BOOL bBold /*= FALSE*/, BOOL bItalic /*= FALSE*/)
+	inline HFONT CFont::CreatePointFont(int nPointSize, LPCTSTR lpszFaceName, HDC hdc /*= NULL*/, BOOL IsBold /*= FALSE*/, BOOL IsItalic /*= FALSE*/)
 	// Creates a font of a specified typeface and point size.
 	{
 		LOGFONT logFont;
@@ -1766,9 +1768,9 @@ namespace Win32xx
 
 		lstrcpyn(logFont.lfFaceName, lpszFaceName, LF_FACESIZE);
 
-		if (bBold)
+		if (IsBold)
 			logFont.lfWeight = FW_BOLD;
-		if (bItalic)
+		if (IsItalic)
 			logFont.lfItalic = (BYTE)TRUE;
 
 		return CreatePointFontIndirect(logFont, hdc);
@@ -1899,7 +1901,7 @@ namespace Win32xx
 		return ::GetPaletteEntries((HPALETTE)GetHandle(), nStartIndex, nNumEntries, lpPaletteColors);
 	}
 
-	inline UINT CPalette::SetPaletteEntries(UINT nStartIndex, UINT nNumEntries, LPPALETTEENTRY lpPaletteColors)
+	inline UINT CPalette::SetPaletteEntries(UINT nStartIndex, UINT nNumEntries, LPPALETTEENTRY lpPaletteColors) const
 	// Sets RGB (red, green, blue) color values and flags in a range of entries in the palette.
 	{
 		assert(GetHandle() != NULL);
@@ -1907,14 +1909,14 @@ namespace Win32xx
 	}
 
 #ifndef _WIN32_WCE
-	inline void CPalette::AnimatePalette(UINT nStartIndex, UINT nNumEntries, LPPALETTEENTRY lpPaletteColors)
+	inline void CPalette::AnimatePalette(UINT nStartIndex, UINT nNumEntries, LPPALETTEENTRY lpPaletteColors) const
 	// Replaces entries in the palette.
 	{
 		assert(GetHandle() != NULL);
 		::AnimatePalette((HPALETTE)GetHandle(), nStartIndex, nNumEntries, lpPaletteColors);
 	}
 
-	inline BOOL CPalette::ResizePalette(UINT nNumEntries)
+	inline BOOL CPalette::ResizePalette(UINT nNumEntries) const
 	//  Increases or decreases the size of the palette based on the specified value.
 	{
 		assert(GetHandle() != NULL);
@@ -2168,35 +2170,35 @@ namespace Win32xx
 		return hRgn;
 	}
 
-	inline void CRgn::SetRectRgn(int x1, int y1, int x2, int y2)
+	inline void CRgn::SetRectRgn(int x1, int y1, int x2, int y2) const
 	// converts the region into a rectangular region with the specified coordinates.
 	{
 		assert(GetHandle() != NULL);
 		::SetRectRgn((HRGN)GetHandle(), x1, y1, x2, y2);
 	}
 
-	inline void CRgn::SetRectRgn(const RECT& rc)
+	inline void CRgn::SetRectRgn(const RECT& rc) const
 	// converts the region into a rectangular region with the specified coordinates.
 	{
 		assert(GetHandle() != NULL);
 		::SetRectRgn((HRGN)GetHandle(), rc.left, rc.top, rc.right, rc.bottom);
 	}
 
-	inline int CRgn::CombineRgn(HRGN hrgnSrc1, HRGN hrgnSrc2, int nCombineMode)
+	inline int CRgn::CombineRgn(HRGN hrgnSrc1, HRGN hrgnSrc2, int nCombineMode) const
 	// Combines two specified regions and stores the result.
 	{
 		assert(GetHandle() != NULL);
 		return ::CombineRgn((HRGN)GetHandle(), hrgnSrc1, hrgnSrc2, nCombineMode);
 	}
 
-	inline int CRgn::CombineRgn(HRGN hrgnSrc, int nCombineMode)
+	inline int CRgn::CombineRgn(HRGN hrgnSrc, int nCombineMode) const
 	// Combines the specified region with the current region.
 	{
 		assert(GetHandle() != NULL);
 		return ::CombineRgn((HRGN)GetHandle(), (HRGN)GetHandle(), hrgnSrc, nCombineMode);
 	}
 
-	inline int CRgn::CopyRgn(HRGN hrgnSrc)
+	inline int CRgn::CopyRgn(HRGN hrgnSrc) const
 	// Assigns the specified region to the current region.
 	{
 		assert(GetHandle() != NULL);
@@ -2211,14 +2213,14 @@ namespace Win32xx
 		return ::EqualRgn((HRGN)GetHandle(), hRgn);
 	}
 
-	inline int CRgn::OffsetRgn(int x, int y)
+	inline int CRgn::OffsetRgn(int x, int y) const
 	// Moves a region by the specified offsets.
 	{
 		assert(GetHandle() != NULL);
 		return ::OffsetRgn((HRGN)GetHandle(), x, y);
 	}
 
-	inline int CRgn::OffsetRgn(POINT& pt)
+	inline int CRgn::OffsetRgn(POINT& pt) const
 	// Moves a region by the specified offsets.
 	{
 		assert(GetHandle() != NULL);
@@ -2480,7 +2482,7 @@ inline CDC::CDC(HDC hDC, HWND hWnd /*= 0*/)
 		BitBlt(x, y, cx, cy, dcImage, 0, 0, SRCINVERT);
 	}
 
-	inline void CDC::GradientFill(COLORREF Color1, COLORREF Color2, const RECT& rc, BOOL bVertical) const
+	inline void CDC::GradientFill(COLORREF Color1, COLORREF Color2, const RECT& rc, BOOL IsVertical) const
 	// An efficient color gradient filler compatible with all Windows operating systems
 	{
 		int Width = rc.right - rc.left;
@@ -2496,7 +2498,7 @@ inline CDC::CDC(HDC hDC, HWND hWnd /*= 0*/)
 
 		COLORREF OldBkColor = GetBkColor();
 
-		if (bVertical)
+		if (IsVertical)
 		{
 			for(int i=0; i < Width; ++i)
 			{
@@ -2734,7 +2736,7 @@ inline CDC::CDC(HDC hDC, HWND hWnd /*= 0*/)
 	}
 
 	inline HBITMAP CDC::GetCurrentBitmap() const
-	// Retrieves a pointer to the currently selected bitmap object
+	// Retrieves the handle of the currently selected bitmap
 	{
 		assert(m_pData->hDC);
 		return static_cast<HBITMAP>(::GetCurrentObject(m_pData->hDC, OBJ_BITMAP));
@@ -2754,40 +2756,44 @@ inline CDC::CDC(HDC hDC, HWND hWnd /*= 0*/)
 		assert(m_pData->hDC);
 
 		CBitmap bitmap;
-		BOOL bResult = bitmap.LoadBitmap(lpszName);
+		BOOL IsLoaded = bitmap.LoadBitmap(lpszName);
 
-		if (bResult)
+		if (IsLoaded)
 		{
 			SelectObject(bitmap);
 			m_pData->Bitmap = bitmap;
 		}
 
-		return bResult;
+		return IsLoaded;
 	}
 
-	inline BOOL CDC::LoadImage(UINT nID, int cxDesired, int cyDesired, UINT fuLoad)
-	// Loads a bitmap from the resource and selects it into the device context
+	inline BOOL CDC::LoadImage(UINT nID, UINT fuLoad)
+	// Loads a bitmap from the resource and selects it into the device context.
+	// The fuLoad parameter can be one of  LR_DEFAULTCOLOR, LR_CREATEDIBSECTION, 
+	//	LR_LOADFROMFILE, LR_LOADTRANSPARENT, LR_MONOCHROME, LR_SHARED and LR_VGACOLOR.
 	// Returns TRUE if successful
 	{
-		return LoadImage(nID, cxDesired, cyDesired, fuLoad);
+		return LoadImage(nID, fuLoad);
 	}
 
-	inline BOOL CDC::LoadImage(LPCTSTR lpszName, int cxDesired, int cyDesired, UINT fuLoad)
-	// Loads a bitmap from the resource and selects it into the device context
+	inline BOOL CDC::LoadImage(LPCTSTR lpszName, UINT fuLoad)
+	// Loads a bitmap from the resource and selects it into the device context.
+	// The fuLoad parameter can be one of  LR_DEFAULTCOLOR, LR_CREATEDIBSECTION, 
+	//	LR_LOADFROMFILE, LR_LOADTRANSPARENT, LR_MONOCHROME, LR_SHARED and LR_VGACOLOR.
 	// Returns TRUE if successful
 	{
 		assert(m_pData->hDC);
 
 		CBitmap bitmap;
-		BOOL bResult = bitmap.LoadImage(lpszName, cxDesired, cyDesired, fuLoad);
+		BOOL IsLoaded = bitmap.LoadImage(lpszName, fuLoad);
 
-		if (bResult)
+		if (IsLoaded)
 		{
 			SelectObject(bitmap);
 			m_pData->Bitmap = bitmap;
 		}
 
-		return bResult;
+		return IsLoaded;
 	}
 
 	inline BOOL CDC::LoadOEMBitmap(UINT nIDBitmap) // for OBM_/OCR_/OIC_
@@ -2797,15 +2803,15 @@ inline CDC::CDC(HDC hDC, HWND hWnd /*= 0*/)
 		assert(m_pData->hDC);
 
 		CBitmap bitmap;
-		BOOL bResult = bitmap.LoadOEMBitmap(nIDBitmap);
+		BOOL IsLoaded = bitmap.LoadOEMBitmap(nIDBitmap);
 
-		if (bResult)
+		if (IsLoaded)
 		{
 			SelectObject(bitmap);
 			m_pData->Bitmap = bitmap;
 		}
 
-		return bResult;
+		return IsLoaded;
 	}
 
 #ifndef _WIN32_WCE
@@ -2847,7 +2853,7 @@ inline CDC::CDC(HDC hDC, HWND hWnd /*= 0*/)
 	}
 
 	inline HBRUSH CDC::GetCurrentBrush() const
-	// Retrieves a pointer to the currently selected brush object
+	// Retrieves the handle of the currently selected brush object
 	{
 		assert(m_pData->hDC);
 		return static_cast<HBRUSH>(::GetCurrentObject(m_pData->hDC, OBJ_BRUSH));
@@ -2925,7 +2931,7 @@ inline CDC::CDC(HDC hDC, HWND hWnd /*= 0*/)
 	}
 
 	inline HFONT CDC::GetCurrentFont() const
-	// Retrieves a pointer to the current font object
+	// Retrieves the handle to the current font object
 	{
 		assert(m_pData->hDC);
 		return static_cast<HFONT>(::GetCurrentObject(m_pData->hDC, OBJ_FONT));
@@ -2976,20 +2982,20 @@ inline CDC::CDC(HDC hDC, HWND hWnd /*= 0*/)
 #endif
 
 	// Palette functions
-	inline void CDC::CreatePalette(LPLOGPALETTE pLogPalette, BOOL bForceBkgnd)
+	inline void CDC::CreatePalette(LPLOGPALETTE pLogPalette, BOOL ForceBkgnd)
 	// Creates and selects a palette
 	{
 		assert(m_pData->hDC);
 
 		CPalette palette;
 		palette.CreatePalette(pLogPalette);
-		SelectPalette(palette, bForceBkgnd);
+		SelectPalette(palette, ForceBkgnd);
 		m_pData->Palette = palette;
 		RealizePalette();
 	}
 
 	inline HPALETTE CDC::GetCurrentPalette() const
-	// Retrieves a pointer to the currently selected palette
+	// Retrieves the handle to the currently selected palette
 	{
 		assert(m_pData->hDC);
 		return static_cast<HPALETTE>(::GetCurrentObject(m_pData->hDC, OBJ_PAL));
@@ -3003,11 +3009,11 @@ inline CDC::CDC(HDC hDC, HWND hWnd /*= 0*/)
 		return GetNearestColor(crColor);
 	}
 
-	inline HPALETTE CDC::SelectPalette(const HPALETTE hPalette, BOOL bForceBkgnd)
+	inline HPALETTE CDC::SelectPalette(const HPALETTE hPalette, BOOL ForceBkgnd)
 	// Use this to attach an existing palette.
 	{
 		assert(m_pData->hDC);
-		return static_cast<HPALETTE>(::SelectPalette(m_pData->hDC, hPalette, bForceBkgnd));
+		return static_cast<HPALETTE>(::SelectPalette(m_pData->hDC, hPalette, ForceBkgnd));
 	}
 
 	inline void CDC::RealizePalette() const
@@ -3019,14 +3025,14 @@ inline CDC::CDC(HDC hDC, HWND hWnd /*= 0*/)
 
 #ifndef _WIN32_WCE
 
-	inline void CDC::CreateHalftonePalette(BOOL bForceBkgnd)
+	inline void CDC::CreateHalftonePalette(BOOL ForceBkgnd)
 	// Creates and selects halftone palette
 	{
 		assert(m_pData->hDC);
 
 		CPalette palette;
 		palette.CreateHalftonePalette(*this);
-		::SelectPalette(m_pData->hDC, palette, bForceBkgnd);
+		::SelectPalette(m_pData->hDC, palette, ForceBkgnd);
 		m_pData->Palette = palette;
 		::RealizePalette(m_pData->hDC);
 	}
@@ -3079,7 +3085,7 @@ inline CDC::CDC(HDC hDC, HWND hWnd /*= 0*/)
 	}
 
 	inline HPEN CDC::GetCurrentPen() const
-	// Retrieves a pointer to the currently selected pen
+	// Retrieves the handle to the currently selected pen
 	{
 		assert(m_pData->hDC);
 		return static_cast<HPEN>(::GetCurrentObject(m_pData->hDC, OBJ_PEN));
@@ -3107,7 +3113,7 @@ inline CDC::CDC(HDC hDC, HWND hWnd /*= 0*/)
 		return ::GetStockObject(nIndex);
 	}
 
-	inline HGDIOBJ CDC::SelectStockObject(int nIndex)
+	inline HGDIOBJ CDC::SelectStockObject(int nIndex) const
 	// Selects a stock brush, pen, or font into the device context.
 	// nIndex values: BLACK_BRUSH, DKGRAY_BRUSH, DC_BRUSH, HOLLOW_BRUSH, LTGRAY_BRUSH, NULL_BRUSH,
 	//                WHITE_BRUSH, BLACK_PEN, DC_PEN, ANSI_FIXED_FONT, ANSI_VAR_FONT, DEVICE_DEFAULT_FONT,
@@ -4134,7 +4140,6 @@ inline CDC::CDC(HDC hDC, HWND hWnd /*= 0*/)
 		assert(m_pData->hDC);
 		return ::ScaleWindowExtEx(m_pData->hDC, xNum, xDenom, yNum, yDenom, lpSize);
 	}
-#endif
 
 	// MetaFile Functions
 	inline BOOL CDC::PlayMetaFile(HMETAFILE hMF) const
@@ -4150,6 +4155,8 @@ inline CDC::CDC(HDC hDC, HWND hWnd /*= 0*/)
 		assert(m_pData->hDC);
 		return ::PlayEnhMetaFile(m_pData->hDC, hEnhMetaFile, &rcBounds);
 	}
+
+#endif // _WIN32_WCE
 
 	// Printer Functions
 	inline int CDC::StartDoc(LPDOCINFO lpDocInfo) const

@@ -1,12 +1,12 @@
 // Win32++   Version 8.4
-// Release Date: TBA
+// Release Date: 10th March 2017
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2016  David Nash
+// Copyright (c) 2005-2017  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -57,7 +57,7 @@ namespace Win32xx
 
 		// Operations
 		virtual int  AddBitmap(UINT ToolBarID);
-		virtual BOOL AddButton(UINT nID, BOOL bEnabled = TRUE, int iImage = -1);
+		virtual BOOL AddButton(UINT nID, BOOL IsEnabled = TRUE, int iImage = -1);
 		virtual void Destroy();
 		virtual BOOL ReplaceBitmap(UINT NewToolBarID);
 		virtual BOOL SetBitmap(UINT nID);
@@ -68,7 +68,7 @@ namespace Win32xx
 		int   AddString(UINT nStringID) const;
 		int   AddStrings(LPCTSTR lpszStrings) const;
 		void  Autosize() const;
-		void  CheckButton(int idButton, BOOL fCheck) const;
+		void  CheckButton(int idButton, BOOL Checked) const;
 		int   CommandToIndex(int idButton) const;
 		void  Customize() const;
 		BOOL  DeleteButton(int iButton) const;
@@ -93,7 +93,7 @@ namespace Win32xx
 		int   GetTextRows() const;
 		HWND  GetToolTips() const;
 		BOOL  HasText() const;
-		BOOL  HideButton(int idButton, BOOL fShow) const;
+		BOOL  HideButton(int idButton, BOOL Show) const;
 		int   HitTest() const;
 		BOOL  Indeterminate(int idButton, BOOL fIndeterminate) const;
 		BOOL  InsertButton(int iButton, TBBUTTON& Button) const;
@@ -102,10 +102,10 @@ namespace Win32xx
 		BOOL  IsButtonIndeterminate(int idButton) const;
 		BOOL  IsButtonPressed(int idButton) const;
 		int   MapAccelerator(TCHAR chAccel) const;
-		BOOL  MarkButton(int idButton, BOOL fHighlight = TRUE ) const;
+		BOOL  MarkButton(int idButton, BOOL Highlight = TRUE ) const;
 		BOOL  MoveButton(UINT uOldPos, UINT uNewPos) const;
-		BOOL  PressButton(int idButton, BOOL fPress) const;
-		void  SaveRestore(BOOL fSave, TBSAVEPARAMS* ptbsp) const;
+		BOOL  PressButton(int idButton, BOOL Press) const;
+		void  SaveRestore(BOOL Save, TBSAVEPARAMS* ptbsp) const;
 		void  SetButtonInfo(int idButton, int idButtonNew, int iImage, BYTE Style = 0, BYTE State = 0) const;
 		BOOL  SetBitmapSize(int cx, int cy) const;
 		BOOL  SetButtonSize(int cx, int cy) const;
@@ -191,7 +191,7 @@ namespace Win32xx
 		return iResult;
 	}
 
-	inline BOOL CToolBar::AddButton(UINT nID, BOOL bEnabled /* = TRUE */, int iImage /* = -1 */)
+	inline BOOL CToolBar::AddButton(UINT nID, BOOL IsEnabled /* = TRUE */, int iImage /* = -1 */)
 	// Adds buttons to the Toolbar. It provides a convenient alternative to AddButtons.
 	// A resource ID of 0 is a separator.  iImage is the index of the image in the ImageList.
 	// The default is -1 in which case the image based on the button's position is chosen.
@@ -227,7 +227,7 @@ namespace Win32xx
 		{
 			tbb.iBitmap = nImages;
 			tbb.idCommand = nID;
-			tbb.fsState = bEnabled? TBSTATE_ENABLED : 0;
+			tbb.fsState = IsEnabled? TBSTATE_ENABLED : 0;
 			tbb.fsStyle = TBSTYLE_BUTTON;
 		}
 
@@ -264,12 +264,12 @@ namespace Win32xx
 		SendMessage(TB_AUTOSIZE, 0L, 0L);
 	}
 
-	inline void CToolBar::CheckButton(int idButton, BOOL fCheck) const
+	inline void CToolBar::CheckButton(int idButton, BOOL Checked) const
 	// Checks or unchecks a given button in a ToolBar.
 	// When a button is checked, it is displayed in the pressed state.
 	{
 		assert(IsWindow());
-		SendMessage(TB_CHECKBUTTON, (WPARAM)idButton, (LPARAM)MAKELONG(fCheck, 0));
+		SendMessage(TB_CHECKBUTTON, (WPARAM)idButton, (LPARAM)MAKELONG(Checked, 0));
 	}
 
 	inline int CToolBar::CommandToIndex(int idButton) const
@@ -516,23 +516,23 @@ namespace Win32xx
 	inline BOOL CToolBar::HasText() const
 	{
 		assert(IsWindow());
-		BOOL bReturn = FALSE;
+		BOOL Succeeded = FALSE;
 
 		for (int i = 0 ; i < GetButtonCount(); ++i)
 		{
 			if (SendMessage(TB_GETBUTTONTEXT, (WPARAM)GetCommandID(i), 0L) != -1)
-				bReturn = TRUE;
+				Succeeded = TRUE;
 		}
 
 		// return TRUE if any button has text
-		return bReturn;
+		return Succeeded;
 	}
 
-	inline BOOL CToolBar::HideButton(int idButton, BOOL fShow) const
+	inline BOOL CToolBar::HideButton(int idButton, BOOL Show) const
 	//Hides or shows the specified button in a ToolBar.
 	{
 		assert(IsWindow());
-		return static_cast<BOOL>(SendMessage(TB_HIDEBUTTON, (WPARAM)idButton, (LPARAM)MAKELONG (fShow, 0)));
+		return static_cast<BOOL>(SendMessage(TB_HIDEBUTTON, (WPARAM)idButton, (LPARAM)MAKELONG (Show, 0)));
 	}
 
 	inline int CToolBar::HitTest() const
@@ -614,11 +614,11 @@ namespace Win32xx
 		return idButton;
 	}
 
-	inline BOOL CToolBar::MarkButton(int idButton, BOOL fHighlight /*= TRUE*/ ) const
+	inline BOOL CToolBar::MarkButton(int idButton, BOOL Highlight /*= TRUE*/ ) const
 	// Sets the highlight state of a given button in a ToolBar control.
 	{
 		assert(IsWindow());
-		return static_cast<BOOL>(SendMessage(TB_MARKBUTTON, (WPARAM)idButton, (LPARAM)fHighlight));
+		return static_cast<BOOL>(SendMessage(TB_MARKBUTTON, (WPARAM)idButton, (LPARAM)Highlight));
 	}
 
 	inline BOOL CToolBar::MoveButton(UINT uOldPos, UINT uNewPos) const
@@ -669,11 +669,11 @@ namespace Win32xx
 		wc.lpszClassName =  TOOLBARCLASSNAME;
 	}
 
-	inline BOOL CToolBar::PressButton(int idButton, BOOL fPress) const
+	inline BOOL CToolBar::PressButton(int idButton, BOOL Press) const
 	// Presses or releases the specified button in a ToolBar.
 	{
 		assert(IsWindow());
-		return static_cast<BOOL>(SendMessage(TB_PRESSBUTTON, (WPARAM)idButton, (LPARAM)MAKELONG(fPress, 0)));
+		return static_cast<BOOL>(SendMessage(TB_PRESSBUTTON, (WPARAM)idButton, (LPARAM)MAKELONG(Press, 0)));
 	}
 
 	inline BOOL CToolBar::ReplaceBitmap(UINT NewToolBarID)
@@ -698,18 +698,18 @@ namespace Win32xx
 		tbrb.nIDOld = m_OldToolBarID;
 		tbrb.nButtons  = iImages;
 
-		BOOL bResult = static_cast<BOOL>(SendMessage(TB_REPLACEBITMAP, (WPARAM)iImages, (LPARAM)&tbrb));
-		if (bResult)
+		BOOL Succeeded = static_cast<BOOL>(SendMessage(TB_REPLACEBITMAP, (WPARAM)iImages, (LPARAM)&tbrb));
+		if (Succeeded)
 			m_OldToolBarID = NewToolBarID;
 
-		return bResult;
+		return Succeeded;
 	}
 
-	inline void CToolBar::SaveRestore(BOOL fSave, TBSAVEPARAMS* ptbsp) const
+	inline void CToolBar::SaveRestore(BOOL Save, TBSAVEPARAMS* ptbsp) const
 	// Presses or releases the specified button in a ToolBar.
 	{
 		assert(IsWindow());
-		SendMessage(TB_PRESSBUTTON, (WPARAM)fSave, (LPARAM)ptbsp);
+		SendMessage(TB_PRESSBUTTON, (WPARAM)Save, (LPARAM)ptbsp);
 	}
 
 	inline BOOL CToolBar::SetBitmap(UINT nID)
@@ -727,13 +727,13 @@ namespace Win32xx
 		// Set the bitmap size first
 		SetBitmapSize(iImageWidth, iImageHeight);
 
-		BOOL bResult = FALSE;
+		BOOL Succeeded = FALSE;
 		if (m_OldToolBarID)
-			bResult = ReplaceBitmap(nID);
+			Succeeded = ReplaceBitmap(nID);
 		else
-			bResult = (BOOL)AddBitmap(nID);
+			Succeeded = (BOOL)AddBitmap(nID);
 
-		return bResult;
+		return Succeeded;
 	}
 
 	inline BOOL CToolBar::SetBitmapSize(int cx, int cy) const
@@ -760,10 +760,10 @@ namespace Win32xx
 		// Retrieve existing state and style
 		TBBUTTON tb;
 		ZeroMemory(&tb, sizeof(TBBUTTON));
-		BOOL bSucceeded = GetButton(CommandToIndex(idButton), tb);
-		assert(bSucceeded);
+		BOOL Succeeded = GetButton(CommandToIndex(idButton), tb);
+		assert(Succeeded);
 
-        if (bSucceeded)
+        if (Succeeded)
         {
             TBBUTTONINFO tbbi;
 			ZeroMemory(&tbbi, sizeof(TBBUTTONINFO));
@@ -907,13 +907,13 @@ namespace Win32xx
 		tbbi.cbSize = sizeof(TBBUTTONINFO);
 		tbbi.dwMask = TBIF_SIZE;
 		tbbi.cx = static_cast<WORD>(nWidth);
-		BOOL bResult = static_cast<BOOL>(SendMessage(TB_SETBUTTONINFO, (WPARAM)idButton, (LPARAM)&tbbi));
+		BOOL Succeeded = static_cast<BOOL>(SendMessage(TB_SETBUTTONINFO, (WPARAM)idButton, (LPARAM)&tbbi));
 
 		// Send a changed message to the parent (used by the ReBar)
 		SIZE MaxSize = GetMaxSize();
 		GetParent().SendMessage(UWM_TBRESIZE, (WPARAM)GetHwnd(), (LPARAM)&MaxSize);
 
-		return bResult;
+		return Succeeded;
 	}
 
 	inline BOOL CToolBar::SetCommandID(int iIndex, int idButton) const

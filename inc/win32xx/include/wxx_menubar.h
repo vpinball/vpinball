@@ -1,12 +1,12 @@
 // Win32++   Version 8.4
-// Release Date: TBA
+// Release Date: 10th March 2017
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2016  David Nash
+// Copyright (c) 2005-2017  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -42,6 +42,16 @@
 #include "wxx_gdi.h"
 #include "wxx_controls.h"
 #include "wxx_toolbar.h"
+
+
+#ifndef WM_UNINITMENUPOPUP
+  #define WM_UNINITMENUPOPUP		0x0125
+#endif
+
+#ifndef WM_MENURBUTTONUP
+  #define WM_MENURBUTTONUP		0x0122
+#endif
+
 
 namespace Win32xx
 {
@@ -365,11 +375,11 @@ namespace Win32xx
 
 	inline BOOL CMenuBar::IsMDIChildMaxed() const
 	{
-		BOOL bMaxed = FALSE;
+		BOOL IsMaxed = FALSE;
 		if (GetMDIClient())
-			GetMDIClient()->SendMessage(WM_MDIGETACTIVE, 0L, (LPARAM)&bMaxed);
+			GetMDIClient()->SendMessage(WM_MDIGETACTIVE, 0L, (LPARAM)&IsMaxed);
 
-		return bMaxed;
+		return IsMaxed;
 	}
 
 	inline BOOL CMenuBar::IsMDIFrame() const
@@ -847,13 +857,13 @@ namespace Win32xx
 		pTLSData->hMsgHook = ::SetWindowsHookEx(WH_MSGFILTER, (HOOKPROC)StaticMsgHook, NULL, ::GetCurrentThreadId());
 
 		// Display the shortcut menu
-		BOOL bRightToLeft = FALSE;
+		BOOL IsRightToLeft = FALSE;
 
 #if (WINVER >= 0x0500)
-		bRightToLeft = ((GetAncestor().GetWindowLongPtr(GWL_EXSTYLE)) & WS_EX_LAYOUTRTL);
+		IsRightToLeft = ((GetAncestor().GetWindowLongPtr(GWL_EXSTYLE)) & WS_EX_LAYOUTRTL);
 #endif
 
-		int xPos = bRightToLeft? rc.right : rc.left;
+		int xPos = IsRightToLeft? rc.right : rc.left;
 		UINT nID = ::TrackPopupMenuEx(m_hPopupMenu, TPM_LEFTALIGN | TPM_LEFTBUTTON | TPM_VERTICAL,
 			xPos, rc.bottom, *this, &tpm);
 

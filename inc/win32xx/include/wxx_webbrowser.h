@@ -1,12 +1,12 @@
 // Win32++   Version 8.4
-// Release Date: TBA
+// Release Date: 10th March 2017
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
 //      url: https://sourceforge.net/projects/win32-framework
 //
 //
-// Copyright (c) 2005-2016  David Nash
+// Copyright (c) 2005-2017  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -60,7 +60,7 @@ namespace Win32xx
 		virtual void Remove();
 		virtual void SetParent(HWND hWndParent);
 		virtual void SetLocation(int x, int y, int width, int height);
-		virtual void SetVisible(BOOL fVisible);
+		virtual void SetVisible(BOOL IsVisible);
 		virtual void SetStatusWindow(HWND hWndStatus);
 		virtual void TranslateKey(MSG msg);
 		IDispatch* GetDispatch();
@@ -76,12 +76,12 @@ namespace Win32xx
 		STDMETHODIMP GetMoniker(DWORD dwAssign, DWORD dwWhichMoniker, LPMONIKER* ppMk);
 		STDMETHODIMP GetContainer(LPOLECONTAINER* ppContainer);
 		STDMETHODIMP ShowObject();
-		STDMETHODIMP OnShowWindow(BOOL fShow);
+		STDMETHODIMP OnShowWindow(BOOL Show);
 		STDMETHODIMP RequestNewObjectLayout();
 
 		// IOleWindow Methods
 		STDMETHODIMP GetWindow(HWND* phwnd);
-		STDMETHODIMP ContextSensitiveHelp(BOOL fEnterMode);
+		STDMETHODIMP ContextSensitiveHelp(BOOL EnterMode);
 
 		// IOleInPlaceSite Methods
 		STDMETHODIMP CanInPlaceActivate();
@@ -106,12 +106,12 @@ namespace Win32xx
 		STDMETHODIMP SetMenu(HMENU hmenuShared, HOLEMENU holemenu, HWND hwndActiveObject);
 		STDMETHODIMP RemoveMenus(HMENU hmenuShared);
 		STDMETHODIMP SetStatusText(LPCOLESTR pszStatusText);
-		STDMETHODIMP EnableModeless(BOOL fEnable);
+		STDMETHODIMP EnableModeless(BOOL Enable);
 		STDMETHODIMP TranslateAccelerator(LPMSG lpmsg, WORD wID);
 
 		// IOleControlSite Methods
 		STDMETHODIMP OnControlInfoChanged();
-		STDMETHODIMP LockInPlaceActive(BOOL fLock);
+		STDMETHODIMP LockInPlaceActive(BOOL Lock);
 		STDMETHODIMP GetExtendedControl(IDispatch** ppDisp);
 		STDMETHODIMP TransformCoords(POINTL* pptlHimetric, POINTF* pptfContainer, DWORD dwFlags);
 		STDMETHODIMP TranslateAccelerator(LPMSG pMsg, DWORD grfModifiers);
@@ -164,15 +164,15 @@ namespace Win32xx
 		CString GetType() const;
 		BOOL GetVisible() const;
 		long GetWidth() const;
-		void SetFullScreen(BOOL bNewValue);
-		void SetHeight(long nNewValue);
-		void SetLeft(long nNewValue);
-		void SetOffline(BOOL bNewValue);
-		void SetRegisterAsBrowser(BOOL bNewValue);
-		void SetTheaterMode(BOOL bNewValue);
-		void SetTop(long nNewValue);
-		void SetVisible(BOOL bNewValue);
-		void SetWidth(long nNewValue);
+		void SetFullScreen(BOOL IsFullScreen);
+		void SetHeight(long Height);
+		void SetLeft(long LeftEdge);
+		void SetOffline(BOOL IsOffline);
+		void SetRegisterAsBrowser(BOOL IsBrowser);
+		void SetTheaterMode(BOOL IsTheaterMode);
+		void SetTop(long TopEdge);
+		void SetVisible(BOOL IsVisible);
+		void SetWidth(long Width);
 
 		// Operations
 		void AddWebBrowserControl();
@@ -292,9 +292,9 @@ namespace Win32xx
 		return S_OK;
 	}
 
-	inline STDMETHODIMP CAXWindow::ContextSensitiveHelp(BOOL fEnterMode)
+	inline STDMETHODIMP CAXWindow::ContextSensitiveHelp(BOOL EnterMode)
 	{
-		UNREFERENCED_PARAMETER(fEnterMode);
+		UNREFERENCED_PARAMETER(EnterMode);
 		return E_NOTIMPL;
 	}
 
@@ -308,9 +308,9 @@ namespace Win32xx
 		return E_NOTIMPL;
 	}
 
-	inline STDMETHODIMP CAXWindow::EnableModeless(BOOL fEnable)
+	inline STDMETHODIMP CAXWindow::EnableModeless(BOOL Enable)
 	{
-		UNREFERENCED_PARAMETER(fEnable);
+		UNREFERENCED_PARAMETER(Enable);
 		return E_NOTIMPL;
 	}
 
@@ -444,9 +444,9 @@ namespace Win32xx
 		return DISP_E_MEMBERNOTFOUND;
 	}
 
-	inline STDMETHODIMP CAXWindow::LockInPlaceActive(BOOL fLock)
+	inline STDMETHODIMP CAXWindow::LockInPlaceActive(BOOL Lock)
 	{
-		UNREFERENCED_PARAMETER(fLock);
+		UNREFERENCED_PARAMETER(Lock);
 		return E_NOTIMPL;
 	}
 
@@ -477,9 +477,9 @@ namespace Win32xx
 		return S_OK;
 	}
 
-	inline STDMETHODIMP CAXWindow::OnShowWindow(BOOL fShow)
+	inline STDMETHODIMP CAXWindow::OnShowWindow(BOOL Show)
 	{
-		UNREFERENCED_PARAMETER(fShow);
+		UNREFERENCED_PARAMETER(Show);
 		return S_OK;
 	}
 
@@ -650,7 +650,7 @@ namespace Win32xx
 		m_hWndStatus = hWndStatus;
 	}
 
-	inline void CAXWindow::SetVisible(BOOL fVisible)
+	inline void CAXWindow::SetVisible(BOOL IsVisible)
 	{
 		if (!m_pUnk)
 			return;
@@ -660,7 +660,7 @@ namespace Win32xx
 		if (FAILED(hr))
 			return;
 
-		if (fVisible)
+		if (IsVisible)
 		{
 			pioo->DoVerb(OLEIVERB_INPLACEACTIVATE, NULL, this, 0, m_hWndAX, &m_rcControl);
 			pioo->DoVerb(OLEIVERB_SHOW, NULL, this, 0, m_hWndAX, &m_rcControl);
@@ -806,9 +806,9 @@ namespace Win32xx
 	inline BOOL CWebBrowser::GetBusy() const
 	// Retrieves a value that indicates whether the object is engaged in a navigation or downloading operation.
 	{
-		VARIANT_BOOL bValue = VARIANT_FALSE;
-		GetIWebBrowser2()->get_Busy(&bValue);
-		return static_cast<BOOL>(bValue);
+		VARIANT_BOOL Value = VARIANT_FALSE;
+		GetIWebBrowser2()->get_Busy(&Value);
+		return static_cast<BOOL>(Value);
 	}
 
 	inline LPDISPATCH CWebBrowser::GetContainer() const
@@ -822,9 +822,9 @@ namespace Win32xx
 	inline BOOL CWebBrowser::GetFullScreen() const
 	// Retrieves a value that indicates whether Internet Explorer is in full-screen mode or normal window mode.
 	{
-		VARIANT_BOOL bValue = VARIANT_FALSE;
-		GetIWebBrowser2()->get_FullScreen(&bValue);
-		return static_cast<BOOL>(bValue);
+		VARIANT_BOOL Value = VARIANT_FALSE;
+		GetIWebBrowser2()->get_FullScreen(&Value);
+		return static_cast<BOOL>(Value);
 	}
 
 	inline long CWebBrowser::GetHeight() const
@@ -883,9 +883,9 @@ namespace Win32xx
 	inline BOOL CWebBrowser::GetOffline() const
 	// Retrieves a value that indicates whether the object is operating in offline mode.
 	{
-		VARIANT_BOOL bValue = VARIANT_FALSE;
-		GetIWebBrowser2()->get_Offline(&bValue);
-		return static_cast<BOOL>(bValue);
+		VARIANT_BOOL Value = VARIANT_FALSE;
+		GetIWebBrowser2()->get_Offline(&Value);
+		return static_cast<BOOL>(Value);
 	}
 
 	inline READYSTATE CWebBrowser::GetReadyState() const
@@ -899,19 +899,19 @@ namespace Win32xx
 	inline BOOL CWebBrowser::GetRegisterAsBrowser() const
 	// Retrieves a value that indicates whether the object is registered as a top-level browser window.
 	{
-		VARIANT_BOOL bValue = VARIANT_FALSE;
+		VARIANT_BOOL Value = VARIANT_FALSE;
 #if defined(__BORLANDC__) && (__BORLANDC__ < 0x600)
-		GetIWebBrowser2()->get_RegisterAsBrowser(&bValue);
+		GetIWebBrowser2()->get_RegisterAsBrowser(&Value);
 #endif
-		return static_cast<BOOL>(bValue);
+		return static_cast<BOOL>(Value);
 	}
 
 	inline BOOL CWebBrowser::GetTheaterMode() const
 	// Retrieves the theater mode state of the object.
 	{
-		VARIANT_BOOL bValue = VARIANT_FALSE;
-		GetIWebBrowser2()->get_TheaterMode(&bValue);
-		return static_cast<BOOL>(bValue);
+		VARIANT_BOOL Value = VARIANT_FALSE;
+		GetIWebBrowser2()->get_TheaterMode(&Value);
+		return static_cast<BOOL>(Value);
 	}
 
 	inline long CWebBrowser::GetTop() const
@@ -925,9 +925,9 @@ namespace Win32xx
 	inline BOOL CWebBrowser::GetTopLevelContainer() const
 	//Retrieves a value that indicates whether the object is a top-level container.
 	{
-		VARIANT_BOOL bValue = VARIANT_FALSE;
-		GetIWebBrowser2()->get_TopLevelContainer(&bValue);
-		return static_cast<BOOL>(bValue);
+		VARIANT_BOOL Value = VARIANT_FALSE;
+		GetIWebBrowser2()->get_TopLevelContainer(&Value);
+		return static_cast<BOOL>(Value);
 	}
 
 	inline CString CWebBrowser::GetType() const
@@ -943,9 +943,9 @@ namespace Win32xx
 	inline BOOL CWebBrowser::GetVisible() const
 	// Retrieves a value that indicates whether the object is visible or hidden.
 	{
-		VARIANT_BOOL bValue = VARIANT_FALSE;
-		GetIWebBrowser2()->get_Visible(&bValue);
-		return static_cast<BOOL>(bValue);
+		VARIANT_BOOL Value = VARIANT_FALSE;
+		GetIWebBrowser2()->get_Visible(&Value);
+		return static_cast<BOOL>(Value);
 	}
 
 	inline long CWebBrowser::GetWidth() const
@@ -956,63 +956,63 @@ namespace Win32xx
 		return lValue;
 	}
 
-	inline void CWebBrowser::SetFullScreen(BOOL bNewValue)
+	inline void CWebBrowser::SetFullScreen(BOOL IsFullScreen)
 	// Sets a value that indicates whether Internet Explorer is in full-screen mode or normal window mode.
 	{
-		VARIANT_BOOL vBool = bNewValue? VARIANT_TRUE : VARIANT_FALSE;
+		VARIANT_BOOL vBool = IsFullScreen ? VARIANT_TRUE : VARIANT_FALSE;
 		GetIWebBrowser2()->put_FullScreen(vBool);
 	}
 
-	inline void CWebBrowser::SetHeight(long nNewValue)
+	inline void CWebBrowser::SetHeight(long Height)
 	// Sets the height of the object.
 	{
-		GetIWebBrowser2()->put_Height(nNewValue);
+		GetIWebBrowser2()->put_Height(Height);
 	}
 
-	inline void CWebBrowser::SetLeft(long nNewValue)
+	inline void CWebBrowser::SetLeft(long LeftEdge)
 	// Sets the coordinate of the left edge of the object.
 	{
-		GetIWebBrowser2()->put_Left(nNewValue);
+		GetIWebBrowser2()->put_Left(LeftEdge);
 	}
 
-	inline void CWebBrowser::SetOffline(BOOL bNewValue)
+	inline void CWebBrowser::SetOffline(BOOL IsOffline)
 	// Sets a value that indicates whether the object is operating in offline mode.
 	{
-		VARIANT_BOOL vBool = bNewValue? VARIANT_TRUE : VARIANT_FALSE;
+		VARIANT_BOOL vBool = IsOffline ? VARIANT_TRUE : VARIANT_FALSE;
 		GetIWebBrowser2()->put_Offline(vBool);
 	}
 
-	inline void CWebBrowser::SetRegisterAsBrowser(BOOL bNewValue)
+	inline void CWebBrowser::SetRegisterAsBrowser(BOOL IsBrowser)
 	// Sets a value that indicates whether the object is registered as a top-level browser window.
 	{
-		VARIANT_BOOL vBool = bNewValue? VARIANT_TRUE : VARIANT_FALSE;
+		VARIANT_BOOL vBool = IsBrowser ? VARIANT_TRUE : VARIANT_FALSE;
 		GetIWebBrowser2()->put_RegisterAsBrowser(vBool);
 	}
 
-	inline void CWebBrowser::SetTheaterMode(BOOL bNewValue)
+	inline void CWebBrowser::SetTheaterMode(BOOL IsTheaterMode)
 	// Sets the theatre mode state of the object.
 	{
-		VARIANT_BOOL vBool = bNewValue? VARIANT_TRUE : VARIANT_FALSE;
+		VARIANT_BOOL vBool = IsTheaterMode ? VARIANT_TRUE : VARIANT_FALSE;
 		GetIWebBrowser2()->put_TheaterMode(vBool);
 	}
 
-	inline void CWebBrowser::SetTop(long nNewValue)
+	inline void CWebBrowser::SetTop(long TopEdge)
 	// Sets the coordinate of the top edge of the object.
 	{
-		GetIWebBrowser2()->put_Top(nNewValue);
+		GetIWebBrowser2()->put_Top(TopEdge);
 	}
 
-	inline void CWebBrowser::SetVisible(BOOL bNewValue)
+	inline void CWebBrowser::SetVisible(BOOL IsVisible)
 	// Sets a value that indicates whether the object is visible or hidden.
 	{
-		VARIANT_BOOL vBool = bNewValue? VARIANT_TRUE : VARIANT_FALSE;
+		VARIANT_BOOL vBool = IsVisible ? VARIANT_TRUE : VARIANT_FALSE;
 		GetIWebBrowser2()->put_Visible(vBool);
 	}
 
-	inline void CWebBrowser::SetWidth(long nNewValue)
+	inline void CWebBrowser::SetWidth(long Width)
 	// Sets the width of the object.
 	{
-		GetIWebBrowser2()->put_Width(nNewValue);
+		GetIWebBrowser2()->put_Width(Width);
 	}
 
 	inline void CWebBrowser::ExecWB(OLECMDID cmdID, OLECMDEXECOPT cmdexecopt, VARIANT* pvaIn, VARIANT* pvaOut)
