@@ -3,23 +3,14 @@
 /* this ALWAYS GENERATED file contains the definitions for the interfaces */
 
 
- /* File created by MIDL compiler version 7.00.0555 */
-/* Compiler settings for activdbg.idl:
-    Oicf, W1, Zp8, env=Win32 (32b run), target_arch=X86 7.00.0555 
-    protocol : dce , ms_ext, c_ext, robust
-    error checks: allocation ref bounds_check enum stub_data 
-    VC __declspec() decoration level: 
-         __declspec(uuid()), __declspec(selectany), __declspec(novtable)
-         DECLSPEC_UUID(), MIDL_INTERFACE()
-*/
+ /* File created by MIDL compiler version 8.01.0618 */
 /* @@MIDL_FILE_HEADING(  ) */
 
-#pragma warning( disable: 4049 )  /* more than 64k source lines */
 
 
 /* verify that the <rpcndr.h> version is high enough to compile this file*/
 #ifndef __REQUIRED_RPCNDR_H_VERSION__
-#define __REQUIRED_RPCNDR_H_VERSION__ 475
+#define __REQUIRED_RPCNDR_H_VERSION__ 500
 #endif
 
 /* verify that the <rpcsal.h> version is high enough to compile this file*/
@@ -32,7 +23,7 @@
 
 #ifndef __RPCNDR_H_VERSION__
 #error this stub requires an updated version of <rpcndr.h>
-#endif // __RPCNDR_H_VERSION__
+#endif /* __RPCNDR_H_VERSION__ */
 
 #ifndef COM_NO_WINDOWS_H
 #include "windows.h"
@@ -51,708 +42,826 @@
 #ifndef __IActiveScriptDebug32_FWD_DEFINED__
 #define __IActiveScriptDebug32_FWD_DEFINED__
 typedef interface IActiveScriptDebug32 IActiveScriptDebug32;
+
 #endif 	/* __IActiveScriptDebug32_FWD_DEFINED__ */
 
 
 #ifndef __IActiveScriptDebug64_FWD_DEFINED__
 #define __IActiveScriptDebug64_FWD_DEFINED__
 typedef interface IActiveScriptDebug64 IActiveScriptDebug64;
+
 #endif 	/* __IActiveScriptDebug64_FWD_DEFINED__ */
 
 
 #ifndef __IActiveScriptSiteDebug32_FWD_DEFINED__
 #define __IActiveScriptSiteDebug32_FWD_DEFINED__
 typedef interface IActiveScriptSiteDebug32 IActiveScriptSiteDebug32;
+
 #endif 	/* __IActiveScriptSiteDebug32_FWD_DEFINED__ */
 
 
 #ifndef __IActiveScriptSiteDebug64_FWD_DEFINED__
 #define __IActiveScriptSiteDebug64_FWD_DEFINED__
 typedef interface IActiveScriptSiteDebug64 IActiveScriptSiteDebug64;
+
 #endif 	/* __IActiveScriptSiteDebug64_FWD_DEFINED__ */
 
 
 #ifndef __IActiveScriptSiteDebugEx_FWD_DEFINED__
 #define __IActiveScriptSiteDebugEx_FWD_DEFINED__
 typedef interface IActiveScriptSiteDebugEx IActiveScriptSiteDebugEx;
+
 #endif 	/* __IActiveScriptSiteDebugEx_FWD_DEFINED__ */
 
 
 #ifndef __IActiveScriptErrorDebug_FWD_DEFINED__
 #define __IActiveScriptErrorDebug_FWD_DEFINED__
 typedef interface IActiveScriptErrorDebug IActiveScriptErrorDebug;
+
 #endif 	/* __IActiveScriptErrorDebug_FWD_DEFINED__ */
 
 
 #ifndef __IDebugCodeContext_FWD_DEFINED__
 #define __IDebugCodeContext_FWD_DEFINED__
 typedef interface IDebugCodeContext IDebugCodeContext;
+
 #endif 	/* __IDebugCodeContext_FWD_DEFINED__ */
 
 
 #ifndef __IDebugExpression_FWD_DEFINED__
 #define __IDebugExpression_FWD_DEFINED__
 typedef interface IDebugExpression IDebugExpression;
+
 #endif 	/* __IDebugExpression_FWD_DEFINED__ */
 
 
 #ifndef __IDebugExpressionContext_FWD_DEFINED__
 #define __IDebugExpressionContext_FWD_DEFINED__
 typedef interface IDebugExpressionContext IDebugExpressionContext;
+
 #endif 	/* __IDebugExpressionContext_FWD_DEFINED__ */
 
 
 #ifndef __IDebugExpressionCallBack_FWD_DEFINED__
 #define __IDebugExpressionCallBack_FWD_DEFINED__
 typedef interface IDebugExpressionCallBack IDebugExpressionCallBack;
+
 #endif 	/* __IDebugExpressionCallBack_FWD_DEFINED__ */
 
 
 #ifndef __IDebugStackFrame_FWD_DEFINED__
 #define __IDebugStackFrame_FWD_DEFINED__
 typedef interface IDebugStackFrame IDebugStackFrame;
+
 #endif 	/* __IDebugStackFrame_FWD_DEFINED__ */
 
 
 #ifndef __IDebugStackFrameSniffer_FWD_DEFINED__
 #define __IDebugStackFrameSniffer_FWD_DEFINED__
 typedef interface IDebugStackFrameSniffer IDebugStackFrameSniffer;
+
 #endif 	/* __IDebugStackFrameSniffer_FWD_DEFINED__ */
 
 
 #ifndef __IDebugStackFrameSnifferEx32_FWD_DEFINED__
 #define __IDebugStackFrameSnifferEx32_FWD_DEFINED__
 typedef interface IDebugStackFrameSnifferEx32 IDebugStackFrameSnifferEx32;
+
 #endif 	/* __IDebugStackFrameSnifferEx32_FWD_DEFINED__ */
 
 
 #ifndef __IDebugStackFrameSnifferEx64_FWD_DEFINED__
 #define __IDebugStackFrameSnifferEx64_FWD_DEFINED__
 typedef interface IDebugStackFrameSnifferEx64 IDebugStackFrameSnifferEx64;
+
 #endif 	/* __IDebugStackFrameSnifferEx64_FWD_DEFINED__ */
 
 
 #ifndef __IDebugSyncOperation_FWD_DEFINED__
 #define __IDebugSyncOperation_FWD_DEFINED__
 typedef interface IDebugSyncOperation IDebugSyncOperation;
+
 #endif 	/* __IDebugSyncOperation_FWD_DEFINED__ */
 
 
 #ifndef __IDebugAsyncOperation_FWD_DEFINED__
 #define __IDebugAsyncOperation_FWD_DEFINED__
 typedef interface IDebugAsyncOperation IDebugAsyncOperation;
+
 #endif 	/* __IDebugAsyncOperation_FWD_DEFINED__ */
 
 
 #ifndef __IDebugAsyncOperationCallBack_FWD_DEFINED__
 #define __IDebugAsyncOperationCallBack_FWD_DEFINED__
 typedef interface IDebugAsyncOperationCallBack IDebugAsyncOperationCallBack;
+
 #endif 	/* __IDebugAsyncOperationCallBack_FWD_DEFINED__ */
 
 
 #ifndef __IEnumDebugCodeContexts_FWD_DEFINED__
 #define __IEnumDebugCodeContexts_FWD_DEFINED__
 typedef interface IEnumDebugCodeContexts IEnumDebugCodeContexts;
+
 #endif 	/* __IEnumDebugCodeContexts_FWD_DEFINED__ */
 
 
 #ifndef __IEnumDebugStackFrames_FWD_DEFINED__
 #define __IEnumDebugStackFrames_FWD_DEFINED__
 typedef interface IEnumDebugStackFrames IEnumDebugStackFrames;
+
 #endif 	/* __IEnumDebugStackFrames_FWD_DEFINED__ */
 
 
 #ifndef __IEnumDebugStackFrames64_FWD_DEFINED__
 #define __IEnumDebugStackFrames64_FWD_DEFINED__
 typedef interface IEnumDebugStackFrames64 IEnumDebugStackFrames64;
+
 #endif 	/* __IEnumDebugStackFrames64_FWD_DEFINED__ */
 
 
 #ifndef __IDebugDocumentInfo_FWD_DEFINED__
 #define __IDebugDocumentInfo_FWD_DEFINED__
 typedef interface IDebugDocumentInfo IDebugDocumentInfo;
+
 #endif 	/* __IDebugDocumentInfo_FWD_DEFINED__ */
 
 
 #ifndef __IDebugDocumentProvider_FWD_DEFINED__
 #define __IDebugDocumentProvider_FWD_DEFINED__
 typedef interface IDebugDocumentProvider IDebugDocumentProvider;
+
 #endif 	/* __IDebugDocumentProvider_FWD_DEFINED__ */
 
 
 #ifndef __IDebugDocument_FWD_DEFINED__
 #define __IDebugDocument_FWD_DEFINED__
 typedef interface IDebugDocument IDebugDocument;
+
 #endif 	/* __IDebugDocument_FWD_DEFINED__ */
 
 
 #ifndef __IDebugDocumentText_FWD_DEFINED__
 #define __IDebugDocumentText_FWD_DEFINED__
 typedef interface IDebugDocumentText IDebugDocumentText;
+
 #endif 	/* __IDebugDocumentText_FWD_DEFINED__ */
 
 
 #ifndef __IDebugDocumentTextEvents_FWD_DEFINED__
 #define __IDebugDocumentTextEvents_FWD_DEFINED__
 typedef interface IDebugDocumentTextEvents IDebugDocumentTextEvents;
+
 #endif 	/* __IDebugDocumentTextEvents_FWD_DEFINED__ */
 
 
 #ifndef __IDebugDocumentTextAuthor_FWD_DEFINED__
 #define __IDebugDocumentTextAuthor_FWD_DEFINED__
 typedef interface IDebugDocumentTextAuthor IDebugDocumentTextAuthor;
+
 #endif 	/* __IDebugDocumentTextAuthor_FWD_DEFINED__ */
 
 
 #ifndef __IDebugDocumentTextExternalAuthor_FWD_DEFINED__
 #define __IDebugDocumentTextExternalAuthor_FWD_DEFINED__
 typedef interface IDebugDocumentTextExternalAuthor IDebugDocumentTextExternalAuthor;
+
 #endif 	/* __IDebugDocumentTextExternalAuthor_FWD_DEFINED__ */
 
 
 #ifndef __IDebugDocumentHelper32_FWD_DEFINED__
 #define __IDebugDocumentHelper32_FWD_DEFINED__
 typedef interface IDebugDocumentHelper32 IDebugDocumentHelper32;
+
 #endif 	/* __IDebugDocumentHelper32_FWD_DEFINED__ */
 
 
 #ifndef __IDebugDocumentHelper64_FWD_DEFINED__
 #define __IDebugDocumentHelper64_FWD_DEFINED__
 typedef interface IDebugDocumentHelper64 IDebugDocumentHelper64;
+
 #endif 	/* __IDebugDocumentHelper64_FWD_DEFINED__ */
 
 
 #ifndef __IDebugDocumentHost_FWD_DEFINED__
 #define __IDebugDocumentHost_FWD_DEFINED__
 typedef interface IDebugDocumentHost IDebugDocumentHost;
+
 #endif 	/* __IDebugDocumentHost_FWD_DEFINED__ */
 
 
 #ifndef __IDebugDocumentContext_FWD_DEFINED__
 #define __IDebugDocumentContext_FWD_DEFINED__
 typedef interface IDebugDocumentContext IDebugDocumentContext;
+
 #endif 	/* __IDebugDocumentContext_FWD_DEFINED__ */
 
 
 #ifndef __IDebugSessionProvider_FWD_DEFINED__
 #define __IDebugSessionProvider_FWD_DEFINED__
 typedef interface IDebugSessionProvider IDebugSessionProvider;
+
 #endif 	/* __IDebugSessionProvider_FWD_DEFINED__ */
 
 
 #ifndef __IApplicationDebugger_FWD_DEFINED__
 #define __IApplicationDebugger_FWD_DEFINED__
 typedef interface IApplicationDebugger IApplicationDebugger;
+
 #endif 	/* __IApplicationDebugger_FWD_DEFINED__ */
 
 
 #ifndef __IApplicationDebuggerUI_FWD_DEFINED__
 #define __IApplicationDebuggerUI_FWD_DEFINED__
 typedef interface IApplicationDebuggerUI IApplicationDebuggerUI;
+
 #endif 	/* __IApplicationDebuggerUI_FWD_DEFINED__ */
 
 
 #ifndef __IMachineDebugManager_FWD_DEFINED__
 #define __IMachineDebugManager_FWD_DEFINED__
 typedef interface IMachineDebugManager IMachineDebugManager;
+
 #endif 	/* __IMachineDebugManager_FWD_DEFINED__ */
 
 
 #ifndef __IMachineDebugManagerCookie_FWD_DEFINED__
 #define __IMachineDebugManagerCookie_FWD_DEFINED__
 typedef interface IMachineDebugManagerCookie IMachineDebugManagerCookie;
+
 #endif 	/* __IMachineDebugManagerCookie_FWD_DEFINED__ */
 
 
 #ifndef __IMachineDebugManagerEvents_FWD_DEFINED__
 #define __IMachineDebugManagerEvents_FWD_DEFINED__
 typedef interface IMachineDebugManagerEvents IMachineDebugManagerEvents;
+
 #endif 	/* __IMachineDebugManagerEvents_FWD_DEFINED__ */
 
 
 #ifndef __IProcessDebugManager32_FWD_DEFINED__
 #define __IProcessDebugManager32_FWD_DEFINED__
 typedef interface IProcessDebugManager32 IProcessDebugManager32;
+
 #endif 	/* __IProcessDebugManager32_FWD_DEFINED__ */
 
 
 #ifndef __IProcessDebugManager64_FWD_DEFINED__
 #define __IProcessDebugManager64_FWD_DEFINED__
 typedef interface IProcessDebugManager64 IProcessDebugManager64;
+
 #endif 	/* __IProcessDebugManager64_FWD_DEFINED__ */
 
 
 #ifndef __IRemoteDebugApplication_FWD_DEFINED__
 #define __IRemoteDebugApplication_FWD_DEFINED__
 typedef interface IRemoteDebugApplication IRemoteDebugApplication;
+
 #endif 	/* __IRemoteDebugApplication_FWD_DEFINED__ */
 
 
 #ifndef __IDebugApplication32_FWD_DEFINED__
 #define __IDebugApplication32_FWD_DEFINED__
 typedef interface IDebugApplication32 IDebugApplication32;
+
 #endif 	/* __IDebugApplication32_FWD_DEFINED__ */
 
 
 #ifndef __IDebugApplication64_FWD_DEFINED__
 #define __IDebugApplication64_FWD_DEFINED__
 typedef interface IDebugApplication64 IDebugApplication64;
+
 #endif 	/* __IDebugApplication64_FWD_DEFINED__ */
 
 
 #ifndef __IRemoteDebugApplicationEvents_FWD_DEFINED__
 #define __IRemoteDebugApplicationEvents_FWD_DEFINED__
 typedef interface IRemoteDebugApplicationEvents IRemoteDebugApplicationEvents;
+
 #endif 	/* __IRemoteDebugApplicationEvents_FWD_DEFINED__ */
 
 
 #ifndef __IDebugApplicationNode_FWD_DEFINED__
 #define __IDebugApplicationNode_FWD_DEFINED__
 typedef interface IDebugApplicationNode IDebugApplicationNode;
+
 #endif 	/* __IDebugApplicationNode_FWD_DEFINED__ */
 
 
 #ifndef __IDebugApplicationNodeEvents_FWD_DEFINED__
 #define __IDebugApplicationNodeEvents_FWD_DEFINED__
 typedef interface IDebugApplicationNodeEvents IDebugApplicationNodeEvents;
+
 #endif 	/* __IDebugApplicationNodeEvents_FWD_DEFINED__ */
 
 
 #ifndef __AsyncIDebugApplicationNodeEvents_FWD_DEFINED__
 #define __AsyncIDebugApplicationNodeEvents_FWD_DEFINED__
 typedef interface AsyncIDebugApplicationNodeEvents AsyncIDebugApplicationNodeEvents;
+
 #endif 	/* __AsyncIDebugApplicationNodeEvents_FWD_DEFINED__ */
 
 
 #ifndef __IDebugThreadCall32_FWD_DEFINED__
 #define __IDebugThreadCall32_FWD_DEFINED__
 typedef interface IDebugThreadCall32 IDebugThreadCall32;
+
 #endif 	/* __IDebugThreadCall32_FWD_DEFINED__ */
 
 
 #ifndef __IDebugThreadCall64_FWD_DEFINED__
 #define __IDebugThreadCall64_FWD_DEFINED__
 typedef interface IDebugThreadCall64 IDebugThreadCall64;
+
 #endif 	/* __IDebugThreadCall64_FWD_DEFINED__ */
 
 
 #ifndef __IRemoteDebugApplicationThread_FWD_DEFINED__
 #define __IRemoteDebugApplicationThread_FWD_DEFINED__
 typedef interface IRemoteDebugApplicationThread IRemoteDebugApplicationThread;
+
 #endif 	/* __IRemoteDebugApplicationThread_FWD_DEFINED__ */
 
 
 #ifndef __IDebugApplicationThread_FWD_DEFINED__
 #define __IDebugApplicationThread_FWD_DEFINED__
 typedef interface IDebugApplicationThread IDebugApplicationThread;
+
 #endif 	/* __IDebugApplicationThread_FWD_DEFINED__ */
 
 
 #ifndef __IDebugApplicationThread64_FWD_DEFINED__
 #define __IDebugApplicationThread64_FWD_DEFINED__
 typedef interface IDebugApplicationThread64 IDebugApplicationThread64;
+
 #endif 	/* __IDebugApplicationThread64_FWD_DEFINED__ */
 
 
 #ifndef __IDebugCookie_FWD_DEFINED__
 #define __IDebugCookie_FWD_DEFINED__
 typedef interface IDebugCookie IDebugCookie;
+
 #endif 	/* __IDebugCookie_FWD_DEFINED__ */
 
 
 #ifndef __IEnumDebugApplicationNodes_FWD_DEFINED__
 #define __IEnumDebugApplicationNodes_FWD_DEFINED__
 typedef interface IEnumDebugApplicationNodes IEnumDebugApplicationNodes;
+
 #endif 	/* __IEnumDebugApplicationNodes_FWD_DEFINED__ */
 
 
 #ifndef __IEnumRemoteDebugApplications_FWD_DEFINED__
 #define __IEnumRemoteDebugApplications_FWD_DEFINED__
 typedef interface IEnumRemoteDebugApplications IEnumRemoteDebugApplications;
+
 #endif 	/* __IEnumRemoteDebugApplications_FWD_DEFINED__ */
 
 
 #ifndef __IEnumRemoteDebugApplicationThreads_FWD_DEFINED__
 #define __IEnumRemoteDebugApplicationThreads_FWD_DEFINED__
 typedef interface IEnumRemoteDebugApplicationThreads IEnumRemoteDebugApplicationThreads;
+
 #endif 	/* __IEnumRemoteDebugApplicationThreads_FWD_DEFINED__ */
 
 
 #ifndef __IDebugFormatter_FWD_DEFINED__
 #define __IDebugFormatter_FWD_DEFINED__
 typedef interface IDebugFormatter IDebugFormatter;
+
 #endif 	/* __IDebugFormatter_FWD_DEFINED__ */
 
 
 #ifndef __ISimpleConnectionPoint_FWD_DEFINED__
 #define __ISimpleConnectionPoint_FWD_DEFINED__
 typedef interface ISimpleConnectionPoint ISimpleConnectionPoint;
+
 #endif 	/* __ISimpleConnectionPoint_FWD_DEFINED__ */
 
 
 #ifndef __IDebugHelper_FWD_DEFINED__
 #define __IDebugHelper_FWD_DEFINED__
 typedef interface IDebugHelper IDebugHelper;
+
 #endif 	/* __IDebugHelper_FWD_DEFINED__ */
 
 
 #ifndef __IEnumDebugExpressionContexts_FWD_DEFINED__
 #define __IEnumDebugExpressionContexts_FWD_DEFINED__
 typedef interface IEnumDebugExpressionContexts IEnumDebugExpressionContexts;
+
 #endif 	/* __IEnumDebugExpressionContexts_FWD_DEFINED__ */
 
 
 #ifndef __IProvideExpressionContexts_FWD_DEFINED__
 #define __IProvideExpressionContexts_FWD_DEFINED__
 typedef interface IProvideExpressionContexts IProvideExpressionContexts;
+
 #endif 	/* __IProvideExpressionContexts_FWD_DEFINED__ */
 
 
 #ifndef __IActiveScriptDebug32_FWD_DEFINED__
 #define __IActiveScriptDebug32_FWD_DEFINED__
 typedef interface IActiveScriptDebug32 IActiveScriptDebug32;
+
 #endif 	/* __IActiveScriptDebug32_FWD_DEFINED__ */
 
 
 #ifndef __IActiveScriptDebug64_FWD_DEFINED__
 #define __IActiveScriptDebug64_FWD_DEFINED__
 typedef interface IActiveScriptDebug64 IActiveScriptDebug64;
+
 #endif 	/* __IActiveScriptDebug64_FWD_DEFINED__ */
 
 
 #ifndef __IActiveScriptErrorDebug_FWD_DEFINED__
 #define __IActiveScriptErrorDebug_FWD_DEFINED__
 typedef interface IActiveScriptErrorDebug IActiveScriptErrorDebug;
+
 #endif 	/* __IActiveScriptErrorDebug_FWD_DEFINED__ */
 
 
 #ifndef __IActiveScriptSiteDebug32_FWD_DEFINED__
 #define __IActiveScriptSiteDebug32_FWD_DEFINED__
 typedef interface IActiveScriptSiteDebug32 IActiveScriptSiteDebug32;
+
 #endif 	/* __IActiveScriptSiteDebug32_FWD_DEFINED__ */
 
 
 #ifndef __IActiveScriptSiteDebug64_FWD_DEFINED__
 #define __IActiveScriptSiteDebug64_FWD_DEFINED__
 typedef interface IActiveScriptSiteDebug64 IActiveScriptSiteDebug64;
+
 #endif 	/* __IActiveScriptSiteDebug64_FWD_DEFINED__ */
 
 
 #ifndef __IActiveScriptSiteDebugEx_FWD_DEFINED__
 #define __IActiveScriptSiteDebugEx_FWD_DEFINED__
 typedef interface IActiveScriptSiteDebugEx IActiveScriptSiteDebugEx;
+
 #endif 	/* __IActiveScriptSiteDebugEx_FWD_DEFINED__ */
 
 
 #ifndef __IApplicationDebugger_FWD_DEFINED__
 #define __IApplicationDebugger_FWD_DEFINED__
 typedef interface IApplicationDebugger IApplicationDebugger;
+
 #endif 	/* __IApplicationDebugger_FWD_DEFINED__ */
 
 
 #ifndef __IApplicationDebuggerUI_FWD_DEFINED__
 #define __IApplicationDebuggerUI_FWD_DEFINED__
 typedef interface IApplicationDebuggerUI IApplicationDebuggerUI;
+
 #endif 	/* __IApplicationDebuggerUI_FWD_DEFINED__ */
 
 
 #ifndef __IRemoteDebugApplication_FWD_DEFINED__
 #define __IRemoteDebugApplication_FWD_DEFINED__
 typedef interface IRemoteDebugApplication IRemoteDebugApplication;
+
 #endif 	/* __IRemoteDebugApplication_FWD_DEFINED__ */
 
 
 #ifndef __IDebugApplication32_FWD_DEFINED__
 #define __IDebugApplication32_FWD_DEFINED__
 typedef interface IDebugApplication32 IDebugApplication32;
+
 #endif 	/* __IDebugApplication32_FWD_DEFINED__ */
 
 
 #ifndef __IDebugApplication64_FWD_DEFINED__
 #define __IDebugApplication64_FWD_DEFINED__
 typedef interface IDebugApplication64 IDebugApplication64;
+
 #endif 	/* __IDebugApplication64_FWD_DEFINED__ */
 
 
 #ifndef __IDebugDocumentInfo_FWD_DEFINED__
 #define __IDebugDocumentInfo_FWD_DEFINED__
 typedef interface IDebugDocumentInfo IDebugDocumentInfo;
+
 #endif 	/* __IDebugDocumentInfo_FWD_DEFINED__ */
 
 
 #ifndef __IDebugDocumentProvider_FWD_DEFINED__
 #define __IDebugDocumentProvider_FWD_DEFINED__
 typedef interface IDebugDocumentProvider IDebugDocumentProvider;
+
 #endif 	/* __IDebugDocumentProvider_FWD_DEFINED__ */
 
 
 #ifndef __IDebugApplicationNode_FWD_DEFINED__
 #define __IDebugApplicationNode_FWD_DEFINED__
 typedef interface IDebugApplicationNode IDebugApplicationNode;
+
 #endif 	/* __IDebugApplicationNode_FWD_DEFINED__ */
 
 
 #ifndef __IDebugApplicationNodeEvents_FWD_DEFINED__
 #define __IDebugApplicationNodeEvents_FWD_DEFINED__
 typedef interface IDebugApplicationNodeEvents IDebugApplicationNodeEvents;
+
 #endif 	/* __IDebugApplicationNodeEvents_FWD_DEFINED__ */
 
 
 #ifndef __IRemoteDebugApplicationThread_FWD_DEFINED__
 #define __IRemoteDebugApplicationThread_FWD_DEFINED__
 typedef interface IRemoteDebugApplicationThread IRemoteDebugApplicationThread;
+
 #endif 	/* __IRemoteDebugApplicationThread_FWD_DEFINED__ */
 
 
 #ifndef __IDebugApplicationThread_FWD_DEFINED__
 #define __IDebugApplicationThread_FWD_DEFINED__
 typedef interface IDebugApplicationThread IDebugApplicationThread;
+
 #endif 	/* __IDebugApplicationThread_FWD_DEFINED__ */
 
 
 #ifndef __IDebugAsyncOperation_FWD_DEFINED__
 #define __IDebugAsyncOperation_FWD_DEFINED__
 typedef interface IDebugAsyncOperation IDebugAsyncOperation;
+
 #endif 	/* __IDebugAsyncOperation_FWD_DEFINED__ */
 
 
 #ifndef __IDebugAsyncOperationCallBack_FWD_DEFINED__
 #define __IDebugAsyncOperationCallBack_FWD_DEFINED__
 typedef interface IDebugAsyncOperationCallBack IDebugAsyncOperationCallBack;
+
 #endif 	/* __IDebugAsyncOperationCallBack_FWD_DEFINED__ */
 
 
 #ifndef __IDebugCodeContext_FWD_DEFINED__
 #define __IDebugCodeContext_FWD_DEFINED__
 typedef interface IDebugCodeContext IDebugCodeContext;
+
 #endif 	/* __IDebugCodeContext_FWD_DEFINED__ */
 
 
 #ifndef __IDebugCookie_FWD_DEFINED__
 #define __IDebugCookie_FWD_DEFINED__
 typedef interface IDebugCookie IDebugCookie;
+
 #endif 	/* __IDebugCookie_FWD_DEFINED__ */
 
 
 #ifndef __IDebugDocument_FWD_DEFINED__
 #define __IDebugDocument_FWD_DEFINED__
 typedef interface IDebugDocument IDebugDocument;
+
 #endif 	/* __IDebugDocument_FWD_DEFINED__ */
 
 
 #ifndef __IDebugDocumentContext_FWD_DEFINED__
 #define __IDebugDocumentContext_FWD_DEFINED__
 typedef interface IDebugDocumentContext IDebugDocumentContext;
+
 #endif 	/* __IDebugDocumentContext_FWD_DEFINED__ */
 
 
 #ifndef __IDebugDocumentHelper32_FWD_DEFINED__
 #define __IDebugDocumentHelper32_FWD_DEFINED__
 typedef interface IDebugDocumentHelper32 IDebugDocumentHelper32;
+
 #endif 	/* __IDebugDocumentHelper32_FWD_DEFINED__ */
 
 
 #ifndef __IDebugDocumentHelper64_FWD_DEFINED__
 #define __IDebugDocumentHelper64_FWD_DEFINED__
 typedef interface IDebugDocumentHelper64 IDebugDocumentHelper64;
+
 #endif 	/* __IDebugDocumentHelper64_FWD_DEFINED__ */
 
 
 #ifndef __IDebugDocumentHost_FWD_DEFINED__
 #define __IDebugDocumentHost_FWD_DEFINED__
 typedef interface IDebugDocumentHost IDebugDocumentHost;
+
 #endif 	/* __IDebugDocumentHost_FWD_DEFINED__ */
 
 
 #ifndef __IDebugDocumentText_FWD_DEFINED__
 #define __IDebugDocumentText_FWD_DEFINED__
 typedef interface IDebugDocumentText IDebugDocumentText;
+
 #endif 	/* __IDebugDocumentText_FWD_DEFINED__ */
 
 
 #ifndef __IDebugDocumentTextAuthor_FWD_DEFINED__
 #define __IDebugDocumentTextAuthor_FWD_DEFINED__
 typedef interface IDebugDocumentTextAuthor IDebugDocumentTextAuthor;
+
 #endif 	/* __IDebugDocumentTextAuthor_FWD_DEFINED__ */
 
 
 #ifndef __IDebugDocumentTextEvents_FWD_DEFINED__
 #define __IDebugDocumentTextEvents_FWD_DEFINED__
 typedef interface IDebugDocumentTextEvents IDebugDocumentTextEvents;
+
 #endif 	/* __IDebugDocumentTextEvents_FWD_DEFINED__ */
 
 
 #ifndef __IDebugDocumentTextExternalAuthor_FWD_DEFINED__
 #define __IDebugDocumentTextExternalAuthor_FWD_DEFINED__
 typedef interface IDebugDocumentTextExternalAuthor IDebugDocumentTextExternalAuthor;
+
 #endif 	/* __IDebugDocumentTextExternalAuthor_FWD_DEFINED__ */
 
 
 #ifndef __IDebugExpression_FWD_DEFINED__
 #define __IDebugExpression_FWD_DEFINED__
 typedef interface IDebugExpression IDebugExpression;
+
 #endif 	/* __IDebugExpression_FWD_DEFINED__ */
 
 
 #ifndef __IDebugExpressionCallBack_FWD_DEFINED__
 #define __IDebugExpressionCallBack_FWD_DEFINED__
 typedef interface IDebugExpressionCallBack IDebugExpressionCallBack;
+
 #endif 	/* __IDebugExpressionCallBack_FWD_DEFINED__ */
 
 
 #ifndef __IDebugExpressionContext_FWD_DEFINED__
 #define __IDebugExpressionContext_FWD_DEFINED__
 typedef interface IDebugExpressionContext IDebugExpressionContext;
+
 #endif 	/* __IDebugExpressionContext_FWD_DEFINED__ */
 
 
 #ifndef __IDebugFormatter_FWD_DEFINED__
 #define __IDebugFormatter_FWD_DEFINED__
 typedef interface IDebugFormatter IDebugFormatter;
+
 #endif 	/* __IDebugFormatter_FWD_DEFINED__ */
 
 
 #ifndef __IDebugHelper_FWD_DEFINED__
 #define __IDebugHelper_FWD_DEFINED__
 typedef interface IDebugHelper IDebugHelper;
+
 #endif 	/* __IDebugHelper_FWD_DEFINED__ */
 
 
 #ifndef __IDebugSessionProvider_FWD_DEFINED__
 #define __IDebugSessionProvider_FWD_DEFINED__
 typedef interface IDebugSessionProvider IDebugSessionProvider;
+
 #endif 	/* __IDebugSessionProvider_FWD_DEFINED__ */
 
 
 #ifndef __IDebugStackFrame_FWD_DEFINED__
 #define __IDebugStackFrame_FWD_DEFINED__
 typedef interface IDebugStackFrame IDebugStackFrame;
+
 #endif 	/* __IDebugStackFrame_FWD_DEFINED__ */
 
 
 #ifndef __IDebugStackFrameSniffer_FWD_DEFINED__
 #define __IDebugStackFrameSniffer_FWD_DEFINED__
 typedef interface IDebugStackFrameSniffer IDebugStackFrameSniffer;
+
 #endif 	/* __IDebugStackFrameSniffer_FWD_DEFINED__ */
 
 
 #ifndef __IDebugStackFrameSnifferEx32_FWD_DEFINED__
 #define __IDebugStackFrameSnifferEx32_FWD_DEFINED__
 typedef interface IDebugStackFrameSnifferEx32 IDebugStackFrameSnifferEx32;
+
 #endif 	/* __IDebugStackFrameSnifferEx32_FWD_DEFINED__ */
 
 
 #ifndef __IDebugStackFrameSnifferEx64_FWD_DEFINED__
 #define __IDebugStackFrameSnifferEx64_FWD_DEFINED__
 typedef interface IDebugStackFrameSnifferEx64 IDebugStackFrameSnifferEx64;
+
 #endif 	/* __IDebugStackFrameSnifferEx64_FWD_DEFINED__ */
 
 
 #ifndef __IDebugSyncOperation_FWD_DEFINED__
 #define __IDebugSyncOperation_FWD_DEFINED__
 typedef interface IDebugSyncOperation IDebugSyncOperation;
+
 #endif 	/* __IDebugSyncOperation_FWD_DEFINED__ */
 
 
 #ifndef __IDebugThreadCall32_FWD_DEFINED__
 #define __IDebugThreadCall32_FWD_DEFINED__
 typedef interface IDebugThreadCall32 IDebugThreadCall32;
+
 #endif 	/* __IDebugThreadCall32_FWD_DEFINED__ */
 
 
 #ifndef __IDebugThreadCall64_FWD_DEFINED__
 #define __IDebugThreadCall64_FWD_DEFINED__
 typedef interface IDebugThreadCall64 IDebugThreadCall64;
+
 #endif 	/* __IDebugThreadCall64_FWD_DEFINED__ */
 
 
 #ifndef __IEnumDebugApplicationNodes_FWD_DEFINED__
 #define __IEnumDebugApplicationNodes_FWD_DEFINED__
 typedef interface IEnumDebugApplicationNodes IEnumDebugApplicationNodes;
+
 #endif 	/* __IEnumDebugApplicationNodes_FWD_DEFINED__ */
 
 
 #ifndef __IEnumDebugCodeContexts_FWD_DEFINED__
 #define __IEnumDebugCodeContexts_FWD_DEFINED__
 typedef interface IEnumDebugCodeContexts IEnumDebugCodeContexts;
+
 #endif 	/* __IEnumDebugCodeContexts_FWD_DEFINED__ */
 
 
 #ifndef __IEnumDebugExpressionContexts_FWD_DEFINED__
 #define __IEnumDebugExpressionContexts_FWD_DEFINED__
 typedef interface IEnumDebugExpressionContexts IEnumDebugExpressionContexts;
+
 #endif 	/* __IEnumDebugExpressionContexts_FWD_DEFINED__ */
 
 
 #ifndef __IEnumDebugStackFrames_FWD_DEFINED__
 #define __IEnumDebugStackFrames_FWD_DEFINED__
 typedef interface IEnumDebugStackFrames IEnumDebugStackFrames;
+
 #endif 	/* __IEnumDebugStackFrames_FWD_DEFINED__ */
 
 
 #ifndef __IEnumDebugStackFrames64_FWD_DEFINED__
 #define __IEnumDebugStackFrames64_FWD_DEFINED__
 typedef interface IEnumDebugStackFrames64 IEnumDebugStackFrames64;
+
 #endif 	/* __IEnumDebugStackFrames64_FWD_DEFINED__ */
 
 
 #ifndef __IEnumRemoteDebugApplications_FWD_DEFINED__
 #define __IEnumRemoteDebugApplications_FWD_DEFINED__
 typedef interface IEnumRemoteDebugApplications IEnumRemoteDebugApplications;
+
 #endif 	/* __IEnumRemoteDebugApplications_FWD_DEFINED__ */
 
 
 #ifndef __IEnumRemoteDebugApplicationThreads_FWD_DEFINED__
 #define __IEnumRemoteDebugApplicationThreads_FWD_DEFINED__
 typedef interface IEnumRemoteDebugApplicationThreads IEnumRemoteDebugApplicationThreads;
+
 #endif 	/* __IEnumRemoteDebugApplicationThreads_FWD_DEFINED__ */
 
 
 #ifndef __IProcessDebugManager32_FWD_DEFINED__
 #define __IProcessDebugManager32_FWD_DEFINED__
 typedef interface IProcessDebugManager32 IProcessDebugManager32;
+
 #endif 	/* __IProcessDebugManager32_FWD_DEFINED__ */
 
 
 #ifndef __IProcessDebugManager64_FWD_DEFINED__
 #define __IProcessDebugManager64_FWD_DEFINED__
 typedef interface IProcessDebugManager64 IProcessDebugManager64;
+
 #endif 	/* __IProcessDebugManager64_FWD_DEFINED__ */
 
 
 #ifndef __IProvideExpressionContexts_FWD_DEFINED__
 #define __IProvideExpressionContexts_FWD_DEFINED__
 typedef interface IProvideExpressionContexts IProvideExpressionContexts;
+
 #endif 	/* __IProvideExpressionContexts_FWD_DEFINED__ */
 
 
 #ifndef __IMachineDebugManager_FWD_DEFINED__
 #define __IMachineDebugManager_FWD_DEFINED__
 typedef interface IMachineDebugManager IMachineDebugManager;
+
 #endif 	/* __IMachineDebugManager_FWD_DEFINED__ */
 
 
 #ifndef __IMachineDebugManagerCookie_FWD_DEFINED__
 #define __IMachineDebugManagerCookie_FWD_DEFINED__
 typedef interface IMachineDebugManagerCookie IMachineDebugManagerCookie;
+
 #endif 	/* __IMachineDebugManagerCookie_FWD_DEFINED__ */
 
 
 #ifndef __IMachineDebugManagerEvents_FWD_DEFINED__
 #define __IMachineDebugManagerEvents_FWD_DEFINED__
 typedef interface IMachineDebugManagerEvents IMachineDebugManagerEvents;
+
 #endif 	/* __IMachineDebugManagerEvents_FWD_DEFINED__ */
 
 
 #ifndef __IRemoteDebugApplicationEvents_FWD_DEFINED__
 #define __IRemoteDebugApplicationEvents_FWD_DEFINED__
 typedef interface IRemoteDebugApplicationEvents IRemoteDebugApplicationEvents;
+
 #endif 	/* __IRemoteDebugApplicationEvents_FWD_DEFINED__ */
 
 
 #ifndef __ISimpleConnectionPoint_FWD_DEFINED__
 #define __ISimpleConnectionPoint_FWD_DEFINED__
 typedef interface ISimpleConnectionPoint ISimpleConnectionPoint;
+
 #endif 	/* __ISimpleConnectionPoint_FWD_DEFINED__ */
 
 
@@ -852,6 +961,9 @@ extern "C"{
 // PARTICULAR PURPOSE.
 //=--------------------------------------------------------------------------=
 //
+#include <winapifamily.h>
+#pragma region Desktop Family
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 #pragma comment(lib,"uuid.lib")
 //
 // Declarations for ActiveX Scripting authoring/Debugging.
@@ -917,9 +1029,10 @@ extern "C"{
 
 typedef 
 enum tagBREAKPOINT_STATE
-    {	BREAKPOINT_DELETED	= 0,
-	BREAKPOINT_DISABLED	= 1,
-	BREAKPOINT_ENABLED	= 2
+    {
+        BREAKPOINT_DELETED	= 0,
+        BREAKPOINT_DISABLED	= 1,
+        BREAKPOINT_ENABLED	= 2
     } 	BREAKPOINT_STATE;
 
 typedef DWORD APPBREAKFLAGS;
@@ -944,39 +1057,47 @@ typedef DWORD APPBREAKFLAGS;
 
 typedef 
 enum tagBREAKREASON
-    {	BREAKREASON_STEP	= 0,
-	BREAKREASON_BREAKPOINT	= ( BREAKREASON_STEP + 1 ) ,
-	BREAKREASON_DEBUGGER_BLOCK	= ( BREAKREASON_BREAKPOINT + 1 ) ,
-	BREAKREASON_HOST_INITIATED	= ( BREAKREASON_DEBUGGER_BLOCK + 1 ) ,
-	BREAKREASON_LANGUAGE_INITIATED	= ( BREAKREASON_HOST_INITIATED + 1 ) ,
-	BREAKREASON_DEBUGGER_HALT	= ( BREAKREASON_LANGUAGE_INITIATED + 1 ) ,
-	BREAKREASON_ERROR	= ( BREAKREASON_DEBUGGER_HALT + 1 ) ,
-	BREAKREASON_JIT	= ( BREAKREASON_ERROR + 1 ) 
+    {
+        BREAKREASON_STEP	= 0,
+        BREAKREASON_BREAKPOINT	= ( BREAKREASON_STEP + 1 ) ,
+        BREAKREASON_DEBUGGER_BLOCK	= ( BREAKREASON_BREAKPOINT + 1 ) ,
+        BREAKREASON_HOST_INITIATED	= ( BREAKREASON_DEBUGGER_BLOCK + 1 ) ,
+        BREAKREASON_LANGUAGE_INITIATED	= ( BREAKREASON_HOST_INITIATED + 1 ) ,
+        BREAKREASON_DEBUGGER_HALT	= ( BREAKREASON_LANGUAGE_INITIATED + 1 ) ,
+        BREAKREASON_ERROR	= ( BREAKREASON_DEBUGGER_HALT + 1 ) ,
+        BREAKREASON_JIT	= ( BREAKREASON_ERROR + 1 ) ,
+        BREAKREASON_MUTATION_BREAKPOINT	= ( BREAKREASON_JIT + 1 ) 
     } 	BREAKREASON;
 
 typedef 
 enum tagBREAKRESUME_ACTION
-    {	BREAKRESUMEACTION_ABORT	= 0,
-	BREAKRESUMEACTION_CONTINUE	= ( BREAKRESUMEACTION_ABORT + 1 ) ,
-	BREAKRESUMEACTION_STEP_INTO	= ( BREAKRESUMEACTION_CONTINUE + 1 ) ,
-	BREAKRESUMEACTION_STEP_OVER	= ( BREAKRESUMEACTION_STEP_INTO + 1 ) ,
-	BREAKRESUMEACTION_STEP_OUT	= ( BREAKRESUMEACTION_STEP_OVER + 1 ) ,
-	BREAKRESUMEACTION_IGNORE	= ( BREAKRESUMEACTION_STEP_OUT + 1 ) 
+    {
+        BREAKRESUMEACTION_ABORT	= 0,
+        BREAKRESUMEACTION_CONTINUE	= ( BREAKRESUMEACTION_ABORT + 1 ) ,
+        BREAKRESUMEACTION_STEP_INTO	= ( BREAKRESUMEACTION_CONTINUE + 1 ) ,
+        BREAKRESUMEACTION_STEP_OVER	= ( BREAKRESUMEACTION_STEP_INTO + 1 ) ,
+        BREAKRESUMEACTION_STEP_OUT	= ( BREAKRESUMEACTION_STEP_OVER + 1 ) ,
+        BREAKRESUMEACTION_IGNORE	= ( BREAKRESUMEACTION_STEP_OUT + 1 ) ,
+        BREAKRESUMEACTION_STEP_DOCUMENT	= ( BREAKRESUMEACTION_IGNORE + 1 ) 
     } 	BREAKRESUMEACTION;
 
 typedef 
 enum tagERRORRESUMEACTION
-    {	ERRORRESUMEACTION_ReexecuteErrorStatement	= 0,
-	ERRORRESUMEACTION_AbortCallAndReturnErrorToCaller	= ( ERRORRESUMEACTION_ReexecuteErrorStatement + 1 ) ,
-	ERRORRESUMEACTION_SkipErrorStatement	= ( ERRORRESUMEACTION_AbortCallAndReturnErrorToCaller + 1 ) 
+    {
+        ERRORRESUMEACTION_ReexecuteErrorStatement	= 0,
+        ERRORRESUMEACTION_AbortCallAndReturnErrorToCaller	= ( ERRORRESUMEACTION_ReexecuteErrorStatement + 1 ) ,
+        ERRORRESUMEACTION_SkipErrorStatement	= ( ERRORRESUMEACTION_AbortCallAndReturnErrorToCaller + 1 ) 
     } 	ERRORRESUMEACTION;
 
 typedef 
 enum tagDOCUMENTNAMETYPE
-    {	DOCUMENTNAMETYPE_APPNODE	= 0,
-	DOCUMENTNAMETYPE_TITLE	= ( DOCUMENTNAMETYPE_APPNODE + 1 ) ,
-	DOCUMENTNAMETYPE_FILE_TAIL	= ( DOCUMENTNAMETYPE_TITLE + 1 ) ,
-	DOCUMENTNAMETYPE_URL	= ( DOCUMENTNAMETYPE_FILE_TAIL + 1 ) 
+    {
+        DOCUMENTNAMETYPE_APPNODE	= 0,
+        DOCUMENTNAMETYPE_TITLE	= ( DOCUMENTNAMETYPE_APPNODE + 1 ) ,
+        DOCUMENTNAMETYPE_FILE_TAIL	= ( DOCUMENTNAMETYPE_TITLE + 1 ) ,
+        DOCUMENTNAMETYPE_URL	= ( DOCUMENTNAMETYPE_FILE_TAIL + 1 ) ,
+        DOCUMENTNAMETYPE_UNIQUE_TITLE	= ( DOCUMENTNAMETYPE_URL + 1 ) ,
+        DOCUMENTNAMETYPE_SOURCE_MAP_URL	= ( DOCUMENTNAMETYPE_UNIQUE_TITLE + 1 ) 
     } 	DOCUMENTNAMETYPE;
 
 typedef WORD SOURCE_TEXT_ATTR;
@@ -999,6 +1120,12 @@ typedef DWORD TEXT_DOC_ATTR;
 
 #define	TEXT_DOC_ATTR_READONLY	( 0x1 )
 
+#define	TEXT_DOC_ATTR_TYPE_PRIMARY	( 0x2 )
+
+#define	TEXT_DOC_ATTR_TYPE_WORKER	( 0x4 )
+
+#define	TEXT_DOC_ATTR_TYPE_SCRIPT	( 0x8 )
+
 #define	DEBUG_TEXT_ISEXPRESSION	( 0x1 )
 
 #define	DEBUG_TEXT_RETURNVALUE	( 0x2 )
@@ -1010,6 +1137,8 @@ typedef DWORD TEXT_DOC_ATTR;
 #define	DEBUG_TEXT_ALLOWERRORREPORT	( 0x10 )
 
 #define	DEBUG_TEXT_EVALUATETOCODECONTEXT	( 0x20 )
+
+#define	DEBUG_TEXT_ISNONUSERCODE	( 0x40 )
 
 #ifndef DISABLE_ACTIVDBG_INTERFACE_WRAPPERS
 #ifdef _WIN64
@@ -1062,6 +1191,7 @@ EXTERN_C const IID IID_IActiveScriptDebug32;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IActiveScriptDebug32Vtbl
@@ -1072,7 +1202,7 @@ EXTERN_C const IID IID_IActiveScriptDebug32;
             __RPC__in IActiveScriptDebug32 * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IActiveScriptDebug32 * This);
@@ -1183,6 +1313,7 @@ EXTERN_C const IID IID_IActiveScriptDebug64;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IActiveScriptDebug64Vtbl
@@ -1193,7 +1324,7 @@ EXTERN_C const IID IID_IActiveScriptDebug64;
             __RPC__in IActiveScriptDebug64 * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IActiveScriptDebug64 * This);
@@ -1318,6 +1449,7 @@ EXTERN_C const IID IID_IActiveScriptSiteDebug32;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IActiveScriptSiteDebug32Vtbl
@@ -1328,7 +1460,7 @@ EXTERN_C const IID IID_IActiveScriptSiteDebug32;
             IActiveScriptSiteDebug32 * This,
             /* [in] */ REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             IActiveScriptSiteDebug32 * This);
@@ -1437,6 +1569,7 @@ EXTERN_C const IID IID_IActiveScriptSiteDebug64;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IActiveScriptSiteDebug64Vtbl
@@ -1447,7 +1580,7 @@ EXTERN_C const IID IID_IActiveScriptSiteDebug64;
             IActiveScriptSiteDebug64 * This,
             /* [in] */ REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             IActiveScriptSiteDebug64 * This);
@@ -1543,6 +1676,7 @@ EXTERN_C const IID IID_IActiveScriptSiteDebugEx;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IActiveScriptSiteDebugExVtbl
@@ -1553,7 +1687,7 @@ EXTERN_C const IID IID_IActiveScriptSiteDebugEx;
             IActiveScriptSiteDebugEx * This,
             /* [in] */ REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             IActiveScriptSiteDebugEx * This);
@@ -1626,6 +1760,7 @@ EXTERN_C const IID IID_IActiveScriptErrorDebug;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IActiveScriptErrorDebugVtbl
@@ -1636,7 +1771,7 @@ EXTERN_C const IID IID_IActiveScriptErrorDebug;
             __RPC__in IActiveScriptErrorDebug * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IActiveScriptErrorDebug * This);
@@ -1739,6 +1874,7 @@ EXTERN_C const IID IID_IDebugCodeContext;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IDebugCodeContextVtbl
@@ -1749,7 +1885,7 @@ EXTERN_C const IID IID_IDebugCodeContext;
             __RPC__in IDebugCodeContext * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IDebugCodeContext * This);
@@ -1837,6 +1973,7 @@ EXTERN_C const IID IID_IDebugExpression;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IDebugExpressionVtbl
@@ -1847,7 +1984,7 @@ EXTERN_C const IID IID_IDebugExpression;
             __RPC__in IDebugExpression * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IDebugExpression * This);
@@ -1952,6 +2089,7 @@ EXTERN_C const IID IID_IDebugExpressionContext;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IDebugExpressionContextVtbl
@@ -1962,7 +2100,7 @@ EXTERN_C const IID IID_IDebugExpressionContext;
             __RPC__in IDebugExpressionContext * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IDebugExpressionContext * This);
@@ -2042,6 +2180,7 @@ EXTERN_C const IID IID_IDebugExpressionCallBack;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IDebugExpressionCallBackVtbl
@@ -2052,7 +2191,7 @@ EXTERN_C const IID IID_IDebugExpressionCallBack;
             __RPC__in IDebugExpressionCallBack * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IDebugExpressionCallBack * This);
@@ -2134,6 +2273,7 @@ EXTERN_C const IID IID_IDebugStackFrame;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IDebugStackFrameVtbl
@@ -2144,7 +2284,7 @@ EXTERN_C const IID IID_IDebugStackFrame;
             __RPC__in IDebugStackFrame * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IDebugStackFrame * This);
@@ -2243,6 +2383,7 @@ EXTERN_C const IID IID_IDebugStackFrameSniffer;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IDebugStackFrameSnifferVtbl
@@ -2253,7 +2394,7 @@ EXTERN_C const IID IID_IDebugStackFrameSniffer;
             __RPC__in IDebugStackFrameSniffer * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IDebugStackFrameSniffer * This);
@@ -2342,6 +2483,7 @@ EXTERN_C const IID IID_IDebugStackFrameSnifferEx32;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IDebugStackFrameSnifferEx32Vtbl
@@ -2352,7 +2494,7 @@ EXTERN_C const IID IID_IDebugStackFrameSnifferEx32;
             __RPC__in IDebugStackFrameSnifferEx32 * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IDebugStackFrameSnifferEx32 * This);
@@ -2431,6 +2573,7 @@ EXTERN_C const IID IID_IDebugStackFrameSnifferEx64;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IDebugStackFrameSnifferEx64Vtbl
@@ -2441,7 +2584,7 @@ EXTERN_C const IID IID_IDebugStackFrameSnifferEx64;
             __RPC__in IDebugStackFrameSnifferEx64 * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IDebugStackFrameSnifferEx64 * This);
@@ -2524,6 +2667,7 @@ EXTERN_C const IID IID_IDebugSyncOperation;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IDebugSyncOperationVtbl
@@ -2534,7 +2678,7 @@ EXTERN_C const IID IID_IDebugSyncOperation;
             IDebugSyncOperation * This,
             /* [in] */ REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             IDebugSyncOperation * This);
@@ -2627,6 +2771,7 @@ EXTERN_C const IID IID_IDebugAsyncOperation;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IDebugAsyncOperationVtbl
@@ -2637,7 +2782,7 @@ EXTERN_C const IID IID_IDebugAsyncOperation;
             IDebugAsyncOperation * This,
             /* [in] */ REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             IDebugAsyncOperation * This);
@@ -2732,6 +2877,7 @@ EXTERN_C const IID IID_IDebugAsyncOperationCallBack;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IDebugAsyncOperationCallBackVtbl
@@ -2742,7 +2888,7 @@ EXTERN_C const IID IID_IDebugAsyncOperationCallBack;
             IDebugAsyncOperationCallBack * This,
             /* [in] */ REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             IDebugAsyncOperationCallBack * This);
@@ -2820,6 +2966,7 @@ EXTERN_C const IID IID_IEnumDebugCodeContexts;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IEnumDebugCodeContextsVtbl
@@ -2830,7 +2977,7 @@ EXTERN_C const IID IID_IEnumDebugCodeContexts;
             __RPC__in IEnumDebugCodeContexts * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IEnumDebugCodeContexts * This);
@@ -2971,6 +3118,7 @@ EXTERN_C const IID IID_IEnumDebugStackFrames;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IEnumDebugStackFramesVtbl
@@ -2981,7 +3129,7 @@ EXTERN_C const IID IID_IEnumDebugStackFrames;
             __RPC__in IEnumDebugStackFrames * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IEnumDebugStackFrames * This);
@@ -3088,6 +3236,7 @@ EXTERN_C const IID IID_IEnumDebugStackFrames64;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IEnumDebugStackFrames64Vtbl
@@ -3098,7 +3247,7 @@ EXTERN_C const IID IID_IEnumDebugStackFrames64;
             __RPC__in IEnumDebugStackFrames64 * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IEnumDebugStackFrames64 * This);
@@ -3217,6 +3366,7 @@ EXTERN_C const IID IID_IDebugDocumentInfo;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IDebugDocumentInfoVtbl
@@ -3227,7 +3377,7 @@ EXTERN_C const IID IID_IDebugDocumentInfo;
             __RPC__in IDebugDocumentInfo * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IDebugDocumentInfo * This);
@@ -3304,6 +3454,7 @@ EXTERN_C const IID IID_IDebugDocumentProvider;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IDebugDocumentProviderVtbl
@@ -3314,7 +3465,7 @@ EXTERN_C const IID IID_IDebugDocumentProvider;
             __RPC__in IDebugDocumentProvider * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IDebugDocumentProvider * This);
@@ -3396,6 +3547,7 @@ EXTERN_C const IID IID_IDebugDocument;
     public:
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IDebugDocumentVtbl
@@ -3406,7 +3558,7 @@ EXTERN_C const IID IID_IDebugDocument;
             __RPC__in IDebugDocument * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IDebugDocument * This);
@@ -3524,6 +3676,7 @@ EXTERN_C const IID IID_IDebugDocumentText;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IDebugDocumentTextVtbl
@@ -3534,7 +3687,7 @@ EXTERN_C const IID IID_IDebugDocumentText;
             __RPC__in IDebugDocumentText * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IDebugDocumentText * This);
@@ -3701,6 +3854,7 @@ EXTERN_C const IID IID_IDebugDocumentTextEvents;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IDebugDocumentTextEventsVtbl
@@ -3711,7 +3865,7 @@ EXTERN_C const IID IID_IDebugDocumentTextEvents;
             __RPC__in IDebugDocumentTextEvents * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IDebugDocumentTextEvents * This);
@@ -3839,6 +3993,7 @@ EXTERN_C const IID IID_IDebugDocumentTextAuthor;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IDebugDocumentTextAuthorVtbl
@@ -3849,7 +4004,7 @@ EXTERN_C const IID IID_IDebugDocumentTextAuthor;
             __RPC__in IDebugDocumentTextAuthor * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IDebugDocumentTextAuthor * This);
@@ -4031,6 +4186,7 @@ EXTERN_C const IID IID_IDebugDocumentTextExternalAuthor;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IDebugDocumentTextExternalAuthorVtbl
@@ -4041,7 +4197,7 @@ EXTERN_C const IID IID_IDebugDocumentTextExternalAuthor;
             __RPC__in IDebugDocumentTextExternalAuthor * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IDebugDocumentTextExternalAuthor * This);
@@ -4205,6 +4361,7 @@ EXTERN_C const IID IID_IDebugDocumentHelper32;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IDebugDocumentHelper32Vtbl
@@ -4215,7 +4372,7 @@ EXTERN_C const IID IID_IDebugDocumentHelper32;
             __RPC__in IDebugDocumentHelper32 * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IDebugDocumentHelper32 * This);
@@ -4480,6 +4637,7 @@ EXTERN_C const IID IID_IDebugDocumentHelper64;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IDebugDocumentHelper64Vtbl
@@ -4490,7 +4648,7 @@ EXTERN_C const IID IID_IDebugDocumentHelper64;
             __RPC__in IDebugDocumentHelper64 * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IDebugDocumentHelper64 * This);
@@ -4724,6 +4882,7 @@ EXTERN_C const IID IID_IDebugDocumentHost;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IDebugDocumentHostVtbl
@@ -4734,7 +4893,7 @@ EXTERN_C const IID IID_IDebugDocumentHost;
             __RPC__in IDebugDocumentHost * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IDebugDocumentHost * This);
@@ -4858,6 +5017,7 @@ EXTERN_C const IID IID_IDebugDocumentContext;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IDebugDocumentContextVtbl
@@ -4868,7 +5028,7 @@ EXTERN_C const IID IID_IDebugDocumentContext;
             __RPC__in IDebugDocumentContext * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IDebugDocumentContext * This);
@@ -4944,6 +5104,7 @@ EXTERN_C const IID IID_IDebugSessionProvider;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IDebugSessionProviderVtbl
@@ -4954,7 +5115,7 @@ EXTERN_C const IID IID_IDebugSessionProvider;
             __RPC__in IDebugSessionProvider * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IDebugSessionProvider * This);
@@ -5043,6 +5204,7 @@ EXTERN_C const IID IID_IApplicationDebugger;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IApplicationDebuggerVtbl
@@ -5053,7 +5215,7 @@ EXTERN_C const IID IID_IApplicationDebugger;
             __RPC__in IApplicationDebugger * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IApplicationDebugger * This);
@@ -5165,6 +5327,7 @@ EXTERN_C const IID IID_IApplicationDebuggerUI;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IApplicationDebuggerUIVtbl
@@ -5175,7 +5338,7 @@ EXTERN_C const IID IID_IApplicationDebuggerUI;
             __RPC__in IApplicationDebuggerUI * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IApplicationDebuggerUI * This);
@@ -5267,6 +5430,7 @@ EXTERN_C const IID IID_IMachineDebugManager;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IMachineDebugManagerVtbl
@@ -5277,7 +5441,7 @@ EXTERN_C const IID IID_IMachineDebugManager;
             __RPC__in IMachineDebugManager * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IMachineDebugManager * This);
@@ -5370,6 +5534,7 @@ EXTERN_C const IID IID_IMachineDebugManagerCookie;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IMachineDebugManagerCookieVtbl
@@ -5380,7 +5545,7 @@ EXTERN_C const IID IID_IMachineDebugManagerCookie;
             __RPC__in IMachineDebugManagerCookie * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IMachineDebugManagerCookie * This);
@@ -5471,6 +5636,7 @@ EXTERN_C const IID IID_IMachineDebugManagerEvents;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IMachineDebugManagerEventsVtbl
@@ -5481,7 +5647,7 @@ EXTERN_C const IID IID_IMachineDebugManagerEvents;
             __RPC__in IMachineDebugManagerEvents * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IMachineDebugManagerEvents * This);
@@ -5591,6 +5757,7 @@ EXTERN_C const IID IID_IProcessDebugManager32;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IProcessDebugManager32Vtbl
@@ -5601,7 +5768,7 @@ EXTERN_C const IID IID_IProcessDebugManager32;
             IProcessDebugManager32 * This,
             /* [in] */ REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             IProcessDebugManager32 * This);
@@ -5714,6 +5881,7 @@ EXTERN_C const IID IID_IProcessDebugManager64;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IProcessDebugManager64Vtbl
@@ -5724,7 +5892,7 @@ EXTERN_C const IID IID_IProcessDebugManager64;
             IProcessDebugManager64 * This,
             /* [in] */ REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             IProcessDebugManager64 * This);
@@ -5856,6 +6024,7 @@ EXTERN_C const IID IID_IRemoteDebugApplication;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IRemoteDebugApplicationVtbl
@@ -5866,7 +6035,7 @@ EXTERN_C const IID IID_IRemoteDebugApplication;
             __RPC__in IRemoteDebugApplication * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IRemoteDebugApplication * This);
@@ -6089,6 +6258,7 @@ EXTERN_C const IID IID_IDebugApplication32;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IDebugApplication32Vtbl
@@ -6099,7 +6269,7 @@ EXTERN_C const IID IID_IDebugApplication32;
             IDebugApplication32 * This,
             /* [in] */ REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             IDebugApplication32 * This);
@@ -6453,6 +6623,7 @@ EXTERN_C const IID IID_IDebugApplication64;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IDebugApplication64Vtbl
@@ -6463,7 +6634,7 @@ EXTERN_C const IID IID_IDebugApplication64;
             IDebugApplication64 * This,
             /* [in] */ REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             IDebugApplication64 * This);
@@ -6779,6 +6950,7 @@ EXTERN_C const IID IID_IRemoteDebugApplicationEvents;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IRemoteDebugApplicationEventsVtbl
@@ -6789,7 +6961,7 @@ EXTERN_C const IID IID_IRemoteDebugApplicationEvents;
             __RPC__in IRemoteDebugApplicationEvents * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IRemoteDebugApplicationEvents * This);
@@ -6933,6 +7105,7 @@ EXTERN_C const IID IID_IDebugApplicationNode;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IDebugApplicationNodeVtbl
@@ -6943,7 +7116,7 @@ EXTERN_C const IID IID_IDebugApplicationNode;
             __RPC__in IDebugApplicationNode * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IDebugApplicationNode * This);
@@ -7077,6 +7250,7 @@ EXTERN_C const IID IID_IDebugApplicationNodeEvents;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IDebugApplicationNodeEventsVtbl
@@ -7087,7 +7261,7 @@ EXTERN_C const IID IID_IDebugApplicationNodeEvents;
             __RPC__in IDebugApplicationNodeEvents * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IDebugApplicationNodeEvents * This);
@@ -7192,6 +7366,7 @@ EXTERN_C const IID IID_AsyncIDebugApplicationNodeEvents;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct AsyncIDebugApplicationNodeEventsVtbl
@@ -7202,7 +7377,7 @@ EXTERN_C const IID IID_AsyncIDebugApplicationNodeEvents;
             __RPC__in AsyncIDebugApplicationNodeEvents * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in AsyncIDebugApplicationNodeEvents * This);
@@ -7334,6 +7509,7 @@ EXTERN_C const IID IID_IDebugThreadCall32;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IDebugThreadCall32Vtbl
@@ -7344,7 +7520,7 @@ EXTERN_C const IID IID_IDebugThreadCall32;
             IDebugThreadCall32 * This,
             /* [in] */ REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             IDebugThreadCall32 * This);
@@ -7417,6 +7593,7 @@ EXTERN_C const IID IID_IDebugThreadCall64;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IDebugThreadCall64Vtbl
@@ -7427,7 +7604,7 @@ EXTERN_C const IID IID_IDebugThreadCall64;
             IDebugThreadCall64 * This,
             /* [in] */ REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             IDebugThreadCall64 * This);
@@ -7534,6 +7711,7 @@ EXTERN_C const IID IID_IRemoteDebugApplicationThread;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IRemoteDebugApplicationThreadVtbl
@@ -7544,7 +7722,7 @@ EXTERN_C const IID IID_IRemoteDebugApplicationThread;
             __RPC__in IRemoteDebugApplicationThread * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IRemoteDebugApplicationThread * This);
@@ -7699,6 +7877,7 @@ EXTERN_C const IID IID_IDebugApplicationThread;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IDebugApplicationThreadVtbl
@@ -7709,7 +7888,7 @@ EXTERN_C const IID IID_IDebugApplicationThread;
             IDebugApplicationThread * This,
             /* [in] */ REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             IDebugApplicationThread * This);
@@ -7876,6 +8055,7 @@ EXTERN_C const IID IID_IDebugApplicationThread64;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IDebugApplicationThread64Vtbl
@@ -7886,7 +8066,7 @@ EXTERN_C const IID IID_IDebugApplicationThread64;
             IDebugApplicationThread64 * This,
             /* [in] */ REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             IDebugApplicationThread64 * This);
@@ -8061,6 +8241,7 @@ EXTERN_C const IID IID_IDebugCookie;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IDebugCookieVtbl
@@ -8071,7 +8252,7 @@ EXTERN_C const IID IID_IDebugCookie;
             IDebugCookie * This,
             /* [in] */ REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             IDebugCookie * This);
@@ -8150,6 +8331,7 @@ EXTERN_C const IID IID_IEnumDebugApplicationNodes;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IEnumDebugApplicationNodesVtbl
@@ -8160,7 +8342,7 @@ EXTERN_C const IID IID_IEnumDebugApplicationNodes;
             __RPC__in IEnumDebugApplicationNodes * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IEnumDebugApplicationNodes * This);
@@ -8275,6 +8457,7 @@ EXTERN_C const IID IID_IEnumRemoteDebugApplications;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IEnumRemoteDebugApplicationsVtbl
@@ -8285,7 +8468,7 @@ EXTERN_C const IID IID_IEnumRemoteDebugApplications;
             __RPC__in IEnumRemoteDebugApplications * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IEnumRemoteDebugApplications * This);
@@ -8400,6 +8583,7 @@ EXTERN_C const IID IID_IEnumRemoteDebugApplicationThreads;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IEnumRemoteDebugApplicationThreadsVtbl
@@ -8410,7 +8594,7 @@ EXTERN_C const IID IID_IEnumRemoteDebugApplicationThreads;
             __RPC__in IEnumRemoteDebugApplicationThreads * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IEnumRemoteDebugApplicationThreads * This);
@@ -8526,6 +8710,7 @@ EXTERN_C const IID IID_IDebugFormatter;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IDebugFormatterVtbl
@@ -8536,7 +8721,7 @@ EXTERN_C const IID IID_IDebugFormatter;
             IDebugFormatter * This,
             /* [in] */ REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             IDebugFormatter * This);
@@ -8638,6 +8823,7 @@ EXTERN_C const IID IID_ISimpleConnectionPoint;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct ISimpleConnectionPointVtbl
@@ -8648,7 +8834,7 @@ EXTERN_C const IID IID_ISimpleConnectionPoint;
             ISimpleConnectionPoint * This,
             /* [in] */ REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             ISimpleConnectionPoint * This);
@@ -8766,6 +8952,7 @@ EXTERN_C const IID IID_IDebugHelper;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IDebugHelperVtbl
@@ -8776,7 +8963,7 @@ EXTERN_C const IID IID_IDebugHelper;
             IDebugHelper * This,
             /* [in] */ REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             IDebugHelper * This);
@@ -8877,6 +9064,7 @@ EXTERN_C const IID IID_IEnumDebugExpressionContexts;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IEnumDebugExpressionContextsVtbl
@@ -8887,7 +9075,7 @@ EXTERN_C const IID IID_IEnumDebugExpressionContexts;
             __RPC__in IEnumDebugExpressionContexts * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IEnumDebugExpressionContexts * This);
@@ -8992,6 +9180,7 @@ EXTERN_C const IID IID_IProvideExpressionContexts;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IProvideExpressionContextsVtbl
@@ -9002,7 +9191,7 @@ EXTERN_C const IID IID_IProvideExpressionContexts;
             __RPC__in IProvideExpressionContexts * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IProvideExpressionContexts * This);
@@ -9176,16 +9365,18 @@ DefaultDebugSessionProvider;
 #endif
 #endif /* __ProcessDebugManagerLib_LIBRARY_DEFINED__ */
 
-/* interface __MIDL_itf_activdbg_0000_0059 */
+/* interface __MIDL_itf_activdbg_0000_0060 */
 /* [local] */ 
 
 
 #endif  // __ActivDbg_h
 
+#endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP) */
+#pragma endregion
 
 
-extern RPC_IF_HANDLE __MIDL_itf_activdbg_0000_0059_v0_0_c_ifspec;
-extern RPC_IF_HANDLE __MIDL_itf_activdbg_0000_0059_v0_0_s_ifspec;
+extern RPC_IF_HANDLE __MIDL_itf_activdbg_0000_0060_v0_0_c_ifspec;
+extern RPC_IF_HANDLE __MIDL_itf_activdbg_0000_0060_v0_0_s_ifspec;
 
 /* Additional Prototypes for ALL interfaces */
 
@@ -9299,6 +9490,5 @@ void                      __RPC_USER  BSTR_UserFree64(     __RPC__in unsigned lo
 #endif
 
 #endif
-
 
 

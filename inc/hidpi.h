@@ -18,6 +18,14 @@ Environment:
 
 #ifndef   __HIDPI_H__
 #define   __HIDPI_H__
+#include <winapifamily.h>
+
+#pragma region Desktop Family
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #if _MSC_VER >= 1200
 #pragma warning(push)
@@ -298,12 +306,12 @@ typedef struct _HIDP_EXTENDED_ATTRIBUTES
     ULONG   Data [1]; // variableLength  DO NOT ACCESS THIS FIELD
 } HIDP_EXTENDED_ATTRIBUTES, *PHIDP_EXTENDED_ATTRIBUTES;
 
-__checkReturn
-__drv_maxIRQL(PASSIVE_LEVEL)
+_Must_inspect_result_
+_IRQL_requires_max_(PASSIVE_LEVEL)
 NTSTATUS __stdcall
 HidP_GetCaps (
-   __in      PHIDP_PREPARSED_DATA      PreparsedData,
-   __out     PHIDP_CAPS                Capabilities
+   _In_      PHIDP_PREPARSED_DATA      PreparsedData,
+   _Out_     PHIDP_CAPS                Capabilities
    );
 /*++
 Routine Description:
@@ -319,13 +327,13 @@ Return Value:
    HIDP_STATUS_INVALID_PREPARSED_DATA
 --*/
 
-__checkReturn
-__drv_maxIRQL(DISPATCH_LEVEL)
+_Must_inspect_result_
+_IRQL_requires_max_(DISPATCH_LEVEL)
 NTSTATUS __stdcall
 HidP_GetLinkCollectionNodes (
-   OUT       PHIDP_LINK_COLLECTION_NODE LinkCollectionNodes,
-   __inout   PULONG                     LinkCollectionNodesLength,
-   __in      PHIDP_PREPARSED_DATA       PreparsedData
+   _Out_writes_to_(*LinkCollectionNodesLength, *LinkCollectionNodesLength)     PHIDP_LINK_COLLECTION_NODE LinkCollectionNodes,
+   _Inout_   PULONG                     LinkCollectionNodesLength,
+   _In_      PHIDP_PREPARSED_DATA       PreparsedData
    );
 /*++
 Routine Description:
@@ -346,17 +354,17 @@ Arguments:
 
 --*/
 
-__checkReturn
-__drv_maxIRQL(PASSIVE_LEVEL)
+_Must_inspect_result_
+_IRQL_requires_max_(PASSIVE_LEVEL)
 NTSTATUS __stdcall
 HidP_GetSpecificButtonCaps (
-   __in       HIDP_REPORT_TYPE     ReportType,
-   __in       USAGE                UsagePage,      // Optional (0 => ignore)
-   __in       USHORT               LinkCollection, // Optional (0 => ignore)
-   __in       USAGE                Usage,          // Optional (0 => ignore)
-   OUT        PHIDP_BUTTON_CAPS    ButtonCaps,
-   __inout  PUSHORT              ButtonCapsLength,
-   __in       PHIDP_PREPARSED_DATA PreparsedData
+   _In_       HIDP_REPORT_TYPE     ReportType,
+   _In_opt_   USAGE                UsagePage,      // Optional (0 => ignore)
+   _In_opt_   USHORT               LinkCollection, // Optional (0 => ignore)
+   _In_opt_   USAGE                Usage,          // Optional (0 => ignore)
+   _Out_writes_to_(*ButtonCapsLength, *ButtonCapsLength) PHIDP_BUTTON_CAPS ButtonCaps,
+   _Inout_    PUSHORT              ButtonCapsLength,
+   _In_       PHIDP_PREPARSED_DATA PreparsedData
    );
 /*++
 Description:
@@ -379,17 +387,17 @@ Parameters:
                   to further limit the number of button caps structures
                   returned.
 
-   Usage      A usage value used to limit the button caps returned to those
+   Usage       A usage value used to limit the button caps returned to those
                with the specified usage value.  If set to 0, this parameter
                is ignored.  Can be used with LinkCollection and UsagePage
                parameters to further limit the number of button caps
                structures returned.
 
-   ButtonCaps A _HIDP_BUTTON_CAPS array containing information about all the
+   ButtonCaps  A _HIDP_BUTTON_CAPS array containing information about all the
                binary values in the given report.  This buffer is provided by
                the caller.
 
-   ButtonLength   As input, this parameter specifies the length of the
+   ButtonCapsLength   As input, this parameter specifies the length of the
                   ButtonCaps parameter (array) in number of array elements.
                   As output, this value is set to indicate how many of those
                   array elements were filled in by the function.  The maximum number of
@@ -409,27 +417,27 @@ HidP_GetSpecificButtonCaps returns the following error codes:
   HIDP_STATUS_BUFFER_TOO_SMALL (all given entries however have been filled in)
   HIDP_STATUS_USAGE_NOT_FOUND
 --*/
-__checkReturn
-__drv_maxIRQL(PASSIVE_LEVEL)
+_Must_inspect_result_
+_IRQL_requires_max_(PASSIVE_LEVEL)
 NTSTATUS __stdcall
 HidP_GetButtonCaps (
-   __in       HIDP_REPORT_TYPE     ReportType,
-   __out_ecount_part(*ButtonCapsLength, *ButtonCapsLength) PHIDP_BUTTON_CAPS ButtonCaps,
-   __inout    PUSHORT              ButtonCapsLength,
-   __in       PHIDP_PREPARSED_DATA PreparsedData
+   _In_       HIDP_REPORT_TYPE     ReportType,
+   _Out_writes_to_(*ButtonCapsLength, *ButtonCapsLength) PHIDP_BUTTON_CAPS ButtonCaps,
+   _Inout_    PUSHORT              ButtonCapsLength,
+   _In_       PHIDP_PREPARSED_DATA PreparsedData
 );
 
-__checkReturn
-__drv_maxIRQL(DISPATCH_LEVEL)
+_Must_inspect_result_
+_IRQL_requires_max_(DISPATCH_LEVEL)
 NTSTATUS __stdcall
 HidP_GetSpecificValueCaps (
-   __in       HIDP_REPORT_TYPE     ReportType,
-   __in       USAGE                UsagePage,      // Optional (0 => ignore)
-   __in       USHORT               LinkCollection, // Optional (0 => ignore)
-   __in       USAGE                Usage,          // Optional (0 => ignore)
-   OUT        PHIDP_VALUE_CAPS     ValueCaps,
-   __inout    PUSHORT              ValueCapsLength,
-   __in       PHIDP_PREPARSED_DATA PreparsedData
+   _In_       HIDP_REPORT_TYPE     ReportType,
+   _In_opt_   USAGE                UsagePage,      // Optional (0 => ignore)
+   _In_opt_   USHORT               LinkCollection, // Optional (0 => ignore)
+   _In_opt_   USAGE                Usage,          // Optional (0 => ignore)
+   _Out_writes_to_(*ValueCapsLength, *ValueCapsLength)      PHIDP_VALUE_CAPS     ValueCaps,
+   _Inout_    PUSHORT              ValueCapsLength,
+   _In_       PHIDP_PREPARSED_DATA PreparsedData
    );
 /*++
 Description:
@@ -484,25 +492,25 @@ HidP_GetValueCaps returns the following error codes:
 
 --*/
 
-__checkReturn
-__drv_maxIRQL(DISPATCH_LEVEL)
+_Must_inspect_result_
+_IRQL_requires_max_(DISPATCH_LEVEL)
 NTSTATUS __stdcall
 HidP_GetValueCaps (
-   __in       HIDP_REPORT_TYPE     ReportType,
-   __out_ecount_part(*ValueCapsLength, *ValueCapsLength) PHIDP_VALUE_CAPS ValueCaps,
-   __inout    PUSHORT              ValueCapsLength,
-   __in       PHIDP_PREPARSED_DATA PreparsedData
+   _In_       HIDP_REPORT_TYPE     ReportType,
+   _Out_writes_to_(*ValueCapsLength, *ValueCapsLength) PHIDP_VALUE_CAPS ValueCaps,
+   _Inout_    PUSHORT              ValueCapsLength,
+   _In_       PHIDP_PREPARSED_DATA PreparsedData
 );
 
-__checkReturn
-__drv_maxIRQL(DISPATCH_LEVEL)
+_Must_inspect_result_
+_IRQL_requires_max_(DISPATCH_LEVEL)
 NTSTATUS __stdcall
 HidP_GetExtendedAttributes (
-    __in      HIDP_REPORT_TYPE            ReportType,
-    __in      USHORT                      DataIndex,
-    __in      PHIDP_PREPARSED_DATA        PreparsedData,
-    __out_ecount_part(*LengthAttributes, *LengthAttributes) PHIDP_EXTENDED_ATTRIBUTES Attributes,
-    __inout   PULONG                      LengthAttributes
+    _In_      HIDP_REPORT_TYPE            ReportType,
+    _In_      USHORT                      DataIndex,
+    _In_      PHIDP_PREPARSED_DATA        PreparsedData,
+    _Out_writes_to_(*LengthAttributes, *LengthAttributes) PHIDP_EXTENDED_ATTRIBUTES Attributes,
+    _Inout_   PULONG                      LengthAttributes
     );
 /*++
 Description:
@@ -527,15 +535,15 @@ Return Value
     HIDP_STATUS_DATA_INDEX_NOT_FOUND
 --*/
 
-__checkReturn
-__drv_maxIRQL(DISPATCH_LEVEL)
+_Must_inspect_result_
+_IRQL_requires_max_(DISPATCH_LEVEL)
 NTSTATUS __stdcall
 HidP_InitializeReportForID (
-   __in HIDP_REPORT_TYPE ReportType,
-   __in UCHAR ReportID,
-   __in PHIDP_PREPARSED_DATA PreparsedData,
-   __out_bcount(ReportLength) PCHAR Report,
-   __in ULONG ReportLength
+   _In_ HIDP_REPORT_TYPE ReportType,
+   _In_ UCHAR ReportID,
+   _In_ PHIDP_PREPARSED_DATA PreparsedData,
+   _Out_writes_bytes_(ReportLength) PCHAR Report,
+   _In_ ULONG ReportLength
    );
 /*++
 
@@ -567,15 +575,15 @@ Return Value
 
 --*/
 
-__checkReturn
+_Must_inspect_result_
 NTSTATUS __stdcall
 HidP_SetData (
-    __in HIDP_REPORT_TYPE ReportType,
-    __inout_ecount_part(*DataLength,*DataLength) PHIDP_DATA DataList,
-    __inout PULONG DataLength,
-    __in PHIDP_PREPARSED_DATA PreparsedData,
-    __in_bcount(ReportLength) PCHAR Report,
-    __in ULONG ReportLength
+    _In_ HIDP_REPORT_TYPE ReportType,
+    _Inout_updates_to_(*DataLength,*DataLength) PHIDP_DATA DataList,
+    _Inout_ PULONG DataLength,
+    _In_ PHIDP_PREPARSED_DATA PreparsedData,
+    _In_reads_bytes_(ReportLength) PCHAR Report,
+    _In_ ULONG ReportLength
     );
 /*++
 
@@ -640,16 +648,16 @@ Return Value
                                         set
 --*/
 
-__checkReturn
-__drv_maxIRQL(DISPATCH_LEVEL)
+_Must_inspect_result_
+_IRQL_requires_max_(DISPATCH_LEVEL)
 NTSTATUS __stdcall
 HidP_GetData (
-    __in HIDP_REPORT_TYPE ReportType,
-    __out_ecount_part(*DataLength,*DataLength) PHIDP_DATA DataList,
-    __inout PULONG DataLength,
-    __in PHIDP_PREPARSED_DATA PreparsedData,
-    __out_bcount(ReportLength) PCHAR Report,
-    __in ULONG ReportLength
+    _In_ HIDP_REPORT_TYPE ReportType,
+    _Out_writes_to_(*DataLength,*DataLength) PHIDP_DATA DataList,
+    _Inout_ PULONG DataLength,
+    _In_ PHIDP_PREPARSED_DATA PreparsedData,
+    _Out_writes_bytes_(ReportLength) PCHAR Report,
+    _In_ ULONG ReportLength
     );
 /*++
 
@@ -669,7 +677,7 @@ Parameters:
                 set by HidP_GetData.  The maximum size necessary for DataList
                 can be determined by calling HidP_MaxDataListLength
 
-    PreparasedData  Preparsed data structure returned by HIDCLASS
+    PreparsedData  Preparsed data structure returned by HIDCLASS
 
     Report      Buffer which to set the data into.
 
@@ -696,11 +704,11 @@ Return Value
                                         required to hold all data
 --*/
 
-__drv_maxIRQL(DISPATCH_LEVEL) 
+_IRQL_requires_max_(DISPATCH_LEVEL) 
 ULONG __stdcall
 HidP_MaxDataListLength (
-   __in HIDP_REPORT_TYPE      ReportType,
-   __in PHIDP_PREPARSED_DATA  PreparsedData
+   _In_ HIDP_REPORT_TYPE      ReportType,
+   _In_ PHIDP_PREPARSED_DATA  PreparsedData
    );
 /*++
 Routine Description:
@@ -725,17 +733,17 @@ Return Value:
 #define HidP_SetButtons(Rty, Up, Lco, ULi, ULe, Ppd, Rep, Rle) \
         HidP_SetUsages(Rty, Up, Lco, ULi, ULe, Ppd, Rep, Rle)
 
-__checkReturn
+_Must_inspect_result_
 NTSTATUS __stdcall
 HidP_SetUsages (
-   __in HIDP_REPORT_TYPE    ReportType,
-   __in USAGE   UsagePage,
-   __in USHORT  LinkCollection,
-   __inout_ecount_part(*UsageLength,*UsageLength) PUSAGE  UsageList,
-   __inout  PULONG  UsageLength,
-   __in PHIDP_PREPARSED_DATA  PreparsedData,
-   __in_bcount(ReportLength) PCHAR   Report,
-   __in ULONG   ReportLength 
+   _In_ HIDP_REPORT_TYPE    ReportType,
+   _In_ USAGE   UsagePage,
+   _In_opt_ USHORT  LinkCollection,
+   _Inout_updates_to_(*UsageLength,*UsageLength) PUSAGE  UsageList,
+   _Inout_  PULONG  UsageLength,
+   _In_ PHIDP_PREPARSED_DATA  PreparsedData,
+   _In_reads_bytes_(ReportLength) PCHAR   Report,
+   _In_ ULONG   ReportLength 
    );
 /*++
 
@@ -819,17 +827,17 @@ Return Value
 #define HidP_UnsetButtons(Rty, Up, Lco, ULi, ULe, Ppd, Rep, Rle) \
         HidP_UnsetUsages(Rty, Up, Lco, ULi, ULe, Ppd, Rep, Rle)
 
-__checkReturn
+_Must_inspect_result_
 NTSTATUS __stdcall
 HidP_UnsetUsages (
-   __in HIDP_REPORT_TYPE      ReportType,
-   __in USAGE   UsagePage,
-   __in_opt USHORT  LinkCollection,
-   __inout_ecount_part(*UsageLength,*UsageLength) PUSAGE  UsageList,
-   __inout  PULONG  UsageLength,
-   __in PHIDP_PREPARSED_DATA  PreparsedData,
-   __in_bcount(ReportLength) PCHAR   Report,
-   __in ULONG   ReportLength
+   _In_ HIDP_REPORT_TYPE      ReportType,
+   _In_ USAGE   UsagePage,
+   _In_opt_ USHORT  LinkCollection,
+   _Inout_updates_to_(*UsageLength,*UsageLength) PUSAGE  UsageList,
+   _Inout_  PULONG  UsageLength,
+   _In_ PHIDP_PREPARSED_DATA  PreparsedData,
+   _In_reads_bytes_(ReportLength) PCHAR   Report,
+   _In_ ULONG   ReportLength
    );
 /*++
 
@@ -912,17 +920,17 @@ Return Value
 #define HidP_GetButtons(Rty, UPa, LCo, ULi, ULe, Ppd, Rep, RLe) \
         HidP_GetUsages(Rty, UPa, LCo, ULi, ULe, Ppd, Rep, RLe)
 
-__checkReturn
+_Must_inspect_result_
 NTSTATUS __stdcall
 HidP_GetUsages (
-   __in HIDP_REPORT_TYPE    ReportType,
-   __in USAGE   UsagePage,
-   __in USHORT  LinkCollection,
-   __out_ecount(UsageLength)  PUSAGE UsageList,
-   __inout    PULONG UsageLength,
-   __in PHIDP_PREPARSED_DATA PreparsedData,
-   __out_bcount(ReportLength)    PCHAR Report,
-   __in ULONG   ReportLength
+   _In_ HIDP_REPORT_TYPE    ReportType,
+   _In_ USAGE   UsagePage,
+   _In_opt_ USHORT  LinkCollection,
+   _Out_writes_to_(*UsageLength, *UsageLength)  PUSAGE UsageList,
+   _Inout_    PULONG UsageLength,
+   _In_ PHIDP_PREPARSED_DATA PreparsedData,
+   _Out_writes_bytes_(ReportLength)    PCHAR Report,
+   _In_ ULONG   ReportLength
    );
 /*++
 
@@ -998,17 +1006,17 @@ Return Value
 #define HidP_GetButtonsEx(Rty, LCo, BLi, ULe, Ppd, Rep, RLe)  \
          HidP_GetUsagesEx(Rty, LCo, BLi, ULe, Ppd, Rep, RLe)
 
-__checkReturn
-__drv_maxIRQL(DISPATCH_LEVEL)
+_Must_inspect_result_
+_IRQL_requires_max_(DISPATCH_LEVEL)
 NTSTATUS __stdcall
 HidP_GetUsagesEx (
-    __in    HIDP_REPORT_TYPE    ReportType,
-    __in    USHORT  LinkCollection, // Optional
-    __inout_ecount_part(*UsageLength,*UsageLength) PUSAGE_AND_PAGE  ButtonList,
-    __inout   ULONG * UsageLength,
-    __in PHIDP_PREPARSED_DATA PreparsedData,
-    __in_bcount(ReportLength)   PCHAR   Report,
-    __in ULONG  ReportLength
+    _In_    HIDP_REPORT_TYPE    ReportType,
+    _In_opt_  USHORT  LinkCollection, // Optional
+    _Inout_updates_to_(*UsageLength,*UsageLength) PUSAGE_AND_PAGE  ButtonList,
+    _Inout_   ULONG * UsageLength,
+    _In_ PHIDP_PREPARSED_DATA PreparsedData,
+    _In_reads_bytes_(ReportLength)   PCHAR   Report,
+    _In_ ULONG  ReportLength
    );
 
 /*++
@@ -1074,12 +1082,12 @@ Return Value
                                         match the LinkCollection parameter
 --*/
         
-__drv_maxIRQL(PASSIVE_LEVEL) 
+_IRQL_requires_max_(PASSIVE_LEVEL) 
 ULONG __stdcall
 HidP_MaxUsageListLength (
-   __in HIDP_REPORT_TYPE      ReportType,
-   __in USAGE                 UsagePage, // Optional
-   __in PHIDP_PREPARSED_DATA  PreparsedData
+   _In_ HIDP_REPORT_TYPE      ReportType,
+   _In_opt_ USAGE                 UsagePage, // Optional
+   _In_ PHIDP_PREPARSED_DATA  PreparsedData
    );
 /*++
 Routine Description:
@@ -1106,17 +1114,17 @@ Return Value:
     returns 0.
 --*/
 
-__checkReturn
+_Must_inspect_result_
 NTSTATUS __stdcall
 HidP_SetUsageValue (
-    __in HIDP_REPORT_TYPE ReportType,
-    __in USAGE UsagePage,
-    __in USHORT LinkCollection,
-    __in USAGE Usage,
-    __in ULONG UsageValue,
-    __in PHIDP_PREPARSED_DATA PreparsedData,
-    __inout_bcount(ReportLength) PCHAR Report,
-    __in ULONG ReportLength
+    _In_ HIDP_REPORT_TYPE ReportType,
+    _In_ USAGE UsagePage,
+    _In_opt_ USHORT LinkCollection,
+    _In_ USAGE Usage,
+    _In_ ULONG UsageValue,
+    _In_ PHIDP_PREPARSED_DATA PreparsedData,
+    _Inout_updates_bytes_(ReportLength) PCHAR Report,
+    _In_ ULONG ReportLength
     );
 /*++
 Description:
@@ -1186,17 +1194,17 @@ Return Value:
                                         collection combination does not exist
                                         in any reports for this ReportType
 --*/
-__checkReturn
+_Must_inspect_result_
 NTSTATUS __stdcall
 HidP_SetScaledUsageValue (
-    __in HIDP_REPORT_TYPE ReportType,
-    __in USAGE UsagePage,
-    __in USHORT LinkCollection,
-    __in USAGE Usage,
-    __in LONG UsageValue,
-    __in PHIDP_PREPARSED_DATA PreparsedData,
-    __inout_bcount(ReportLength) PCHAR Report,
-    __in ULONG ReportLength
+    _In_ HIDP_REPORT_TYPE ReportType,
+    _In_ USAGE UsagePage,
+    _In_opt_ USHORT LinkCollection,
+    _In_ USAGE Usage,
+    _In_ LONG UsageValue,
+    _In_ PHIDP_PREPARSED_DATA PreparsedData,
+    _Inout_updates_bytes_(ReportLength) PCHAR Report,
+    _In_ ULONG ReportLength
     );
 
 /*++
@@ -1280,18 +1288,18 @@ Return Value:
                                         collection combination does not exist
                                         in any reports for this ReportType
 --*/
-__checkReturn
+_Must_inspect_result_
 NTSTATUS __stdcall
 HidP_SetUsageValueArray (
-    __in HIDP_REPORT_TYPE ReportType,
-    __in USAGE UsagePage,
-    __in USHORT LinkCollection,
-    __in USAGE Usage,
-    __in_bcount(UsageValueByteLength) PCHAR UsageValue,
-    __in USHORT UsageValueByteLength,
-    __in PHIDP_PREPARSED_DATA PreparsedData,
-    __inout_bcount(ReportLength) PCHAR Report,
-    __in ULONG ReportLength
+    _In_ HIDP_REPORT_TYPE ReportType,
+    _In_ USAGE UsagePage,
+    _In_opt_ USHORT LinkCollection,
+    _In_ USAGE Usage,
+    _In_reads_bytes_(UsageValueByteLength) PCHAR UsageValue,
+    _In_ USHORT UsageValueByteLength,
+    _In_ PHIDP_PREPARSED_DATA PreparsedData,
+    _Inout_updates_bytes_(ReportLength) PCHAR Report,
+    _In_ ULONG ReportLength
     );
 
 /*++
@@ -1388,17 +1396,17 @@ Return Value:
                                         in any reports for this ReportType
 --*/
 
-__checkReturn
+_Must_inspect_result_
 NTSTATUS __stdcall
 HidP_GetUsageValue (
-    __in HIDP_REPORT_TYPE ReportType,
-    __in USAGE UsagePage,
-    __in USHORT LinkCollection,
-    __in USAGE Usage,
-    __out PULONG UsageValue,
-    __in PHIDP_PREPARSED_DATA PreparsedData,
-    __in_bcount(ReportLength) PCHAR Report,
-    __in ULONG ReportLength
+    _In_ HIDP_REPORT_TYPE ReportType,
+    _In_ USAGE UsagePage,
+    _In_opt_ USHORT LinkCollection,
+    _In_ USAGE Usage,
+    _Out_ PULONG UsageValue,
+    _In_ PHIDP_PREPARSED_DATA PreparsedData,
+    _In_reads_bytes_(ReportLength) PCHAR Report,
+    _In_ ULONG ReportLength
     );
 
 /*
@@ -1461,17 +1469,17 @@ Return Value:
                                         in any reports for this ReportType
 --*/
 
-__checkReturn
+_Must_inspect_result_
 NTSTATUS __stdcall
 HidP_GetScaledUsageValue (
-    __in HIDP_REPORT_TYPE ReportType,
-    __in USAGE UsagePage,
-    __in USHORT LinkCollection,
-    __in USAGE Usage,
-    __out PLONG UsageValue,
-    __in PHIDP_PREPARSED_DATA PreparsedData,
-    __in_bcount(ReportLength) PCHAR Report,
-    __in ULONG ReportLength
+    _In_ HIDP_REPORT_TYPE ReportType,
+    _In_ USAGE UsagePage,
+    _In_opt_ USHORT LinkCollection,
+    _In_ USAGE Usage,
+    _Out_ PLONG UsageValue,
+    _In_ PHIDP_PREPARSED_DATA PreparsedData,
+    _In_reads_bytes_(ReportLength) PCHAR Report,
+    _In_ ULONG ReportLength
     );
 
 /*++
@@ -1556,18 +1564,18 @@ Return Value:
                                         collection combination does not exist
                                         in any reports for this ReportType
 --*/
-__checkReturn
+_Must_inspect_result_
 NTSTATUS __stdcall
 HidP_GetUsageValueArray (
-    __in HIDP_REPORT_TYPE ReportType,
-    __in USAGE UsagePage,
-    __in USHORT LinkCollection,
-    __in USAGE Usage,
-    __inout_bcount(UsageValueByteLength) PCHAR UsageValue,
-    __in USHORT UsageValueByteLength,
-    __in PHIDP_PREPARSED_DATA PreparsedData,
-    __in_bcount(ReportLength) PCHAR Report,
-    __in ULONG ReportLength
+    _In_ HIDP_REPORT_TYPE ReportType,
+    _In_ USAGE UsagePage,
+    _In_opt_ USHORT LinkCollection,
+    _In_ USAGE Usage,
+    _Inout_updates_bytes_(UsageValueByteLength) PCHAR UsageValue,
+    _In_ USHORT UsageValueByteLength,
+    _In_ PHIDP_PREPARSED_DATA PreparsedData,
+    _In_reads_bytes_(ReportLength) PCHAR Report,
+    _In_ ULONG ReportLength
     );
 
 /*++
@@ -1660,15 +1668,15 @@ Return Value:
                                         in any reports for this ReportType
 --*/
 
-__checkReturn
-__drv_maxIRQL(PASSIVE_LEVEL)
+_Must_inspect_result_
+_IRQL_requires_max_(DISPATCH_LEVEL)
 NTSTATUS __stdcall
 HidP_UsageListDifference (
-   __in_ecount(UsageListLength) PUSAGE  PreviousUsageList,
-   __in_ecount(UsageListLength) PUSAGE  CurrentUsageList,
-   __out_ecount(UsageListLength) PUSAGE  BreakUsageList,
-   __out_ecount(UsageListLength) PUSAGE  MakeUsageList,
-   __in ULONG    UsageListLength
+   _In_reads_(UsageListLength) PUSAGE  PreviousUsageList,
+   _In_reads_(UsageListLength) PUSAGE  CurrentUsageList,
+   _Out_writes_(UsageListLength) PUSAGE  BreakUsageList,
+   _Out_writes_(UsageListLength) PUSAGE  MakeUsageList,
+   _In_ ULONG    UsageListLength
     );
 /*++
 Routine Description:
@@ -1693,15 +1701,15 @@ Parameters:
                         will be ignored.
 --*/
 
-__checkReturn
-__drv_maxIRQL(PASSIVE_LEVEL)
+_Must_inspect_result_
+_IRQL_requires_max_(DISPATCH_LEVEL)
 NTSTATUS __stdcall
 HidP_UsageAndPageListDifference (
-   __in_ecount(UsageListLength) PUSAGE_AND_PAGE PreviousUsageList,
-   __in_ecount(UsageListLength) PUSAGE_AND_PAGE CurrentUsageList,
-   __out_ecount(UsageListLength) PUSAGE_AND_PAGE BreakUsageList,
-   __out_ecount(UsageListLength) PUSAGE_AND_PAGE MakeUsageList,
-   __in ULONG           UsageListLength
+   _In_reads_(UsageListLength) PUSAGE_AND_PAGE PreviousUsageList,
+   _In_reads_(UsageListLength) PUSAGE_AND_PAGE CurrentUsageList,
+   _Out_writes_(UsageListLength) PUSAGE_AND_PAGE BreakUsageList,
+   _Out_writes_(UsageListLength) PUSAGE_AND_PAGE MakeUsageList,
+   _In_ ULONG           UsageListLength
    );
 
 //
@@ -1742,34 +1750,34 @@ typedef struct _HIDP_KEYBOARD_MODIFIER_STATE {
 // the below translation function.
 //
 typedef BOOLEAN (* PHIDP_INSERT_SCANCODES) (
-                  __in_opt PVOID Context,  // Some caller supplied context.
-                  __in_bcount(Length) PCHAR NewScanCodes, // A list of i8042 scan codes.
-                  __in ULONG Length // the length of the scan codes.
+                  _In_opt_ PVOID Context,  // Some caller supplied context.
+                  _In_reads_bytes_(Length) PCHAR NewScanCodes, // A list of i8042 scan codes.
+                  _In_ ULONG Length // the length of the scan codes.
                   );
 
-__checkReturn
+_Must_inspect_result_
 NTSTATUS __stdcall
 HidP_TranslateUsageAndPagesToI8042ScanCodes (
-    __in_ecount(UsageListLength)     PUSAGE_AND_PAGE ChangedUsageList,
-    __in     ULONG                         UsageListLength,
-    __in     HIDP_KEYBOARD_DIRECTION       KeyAction,
-    __inout  PHIDP_KEYBOARD_MODIFIER_STATE ModifierState,
-    __in     PHIDP_INSERT_SCANCODES        InsertCodesProcedure,
-    __in_opt PVOID                         InsertCodesContext
+    _In_reads_(UsageListLength)     PUSAGE_AND_PAGE ChangedUsageList,
+    _In_     ULONG                         UsageListLength,
+    _In_     HIDP_KEYBOARD_DIRECTION       KeyAction,
+    _Inout_  PHIDP_KEYBOARD_MODIFIER_STATE ModifierState,
+    _In_     PHIDP_INSERT_SCANCODES        InsertCodesProcedure,
+    _In_opt_ PVOID                         InsertCodesContext
     );
 /*++
 Routine Description:
 Parameters:
 --*/
-__checkReturn
+_Must_inspect_result_
 NTSTATUS __stdcall
 HidP_TranslateUsagesToI8042ScanCodes (
-    __in_ecount(UsageListLength)     PUSAGE ChangedUsageList,
-    __in     ULONG                         UsageListLength,
-    __in     HIDP_KEYBOARD_DIRECTION       KeyAction,
-    __inout  PHIDP_KEYBOARD_MODIFIER_STATE ModifierState,
-    __in     PHIDP_INSERT_SCANCODES        InsertCodesProcedure,
-    __in_opt PVOID                         InsertCodesContext
+    _In_reads_(UsageListLength)     PUSAGE ChangedUsageList,
+    _In_     ULONG                         UsageListLength,
+    _In_     HIDP_KEYBOARD_DIRECTION       KeyAction,
+    _Inout_  PHIDP_KEYBOARD_MODIFIER_STATE ModifierState,
+    _In_     PHIDP_INSERT_SCANCODES        InsertCodesProcedure,
+    _In_opt_ PVOID                         InsertCodesContext
     );
 /*++
 Routine Description:
@@ -1825,5 +1833,11 @@ Parameters:
 #pragma warning(default:4214)
 #endif
 
+#ifdef __cplusplus
+}
 #endif
 
+#endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP) */
+#pragma endregion
+
+#endif

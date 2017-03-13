@@ -3,23 +3,14 @@
 /* this ALWAYS GENERATED file contains the definitions for the interfaces */
 
 
- /* File created by MIDL compiler version 7.00.0555 */
-/* Compiler settings for activscp.idl:
-    Oicf, W1, Zp8, env=Win32 (32b run), target_arch=X86 7.00.0555 
-    protocol : dce , ms_ext, c_ext, robust
-    error checks: allocation ref bounds_check enum stub_data 
-    VC __declspec() decoration level: 
-         __declspec(uuid()), __declspec(selectany), __declspec(novtable)
-         DECLSPEC_UUID(), MIDL_INTERFACE()
-*/
+ /* File created by MIDL compiler version 8.01.0618 */
 /* @@MIDL_FILE_HEADING(  ) */
 
-#pragma warning( disable: 4049 )  /* more than 64k source lines */
 
 
 /* verify that the <rpcndr.h> version is high enough to compile this file*/
 #ifndef __REQUIRED_RPCNDR_H_VERSION__
-#define __REQUIRED_RPCNDR_H_VERSION__ 475
+#define __REQUIRED_RPCNDR_H_VERSION__ 500
 #endif
 
 /* verify that the <rpcsal.h> version is high enough to compile this file*/
@@ -32,7 +23,7 @@
 
 #ifndef __RPCNDR_H_VERSION__
 #error this stub requires an updated version of <rpcndr.h>
-#endif // __RPCNDR_H_VERSION__
+#endif /* __RPCNDR_H_VERSION__ */
 
 #ifndef COM_NO_WINDOWS_H
 #include "windows.h"
@@ -51,156 +42,182 @@
 #ifndef __IActiveScriptSite_FWD_DEFINED__
 #define __IActiveScriptSite_FWD_DEFINED__
 typedef interface IActiveScriptSite IActiveScriptSite;
+
 #endif 	/* __IActiveScriptSite_FWD_DEFINED__ */
 
 
 #ifndef __IActiveScriptError_FWD_DEFINED__
 #define __IActiveScriptError_FWD_DEFINED__
 typedef interface IActiveScriptError IActiveScriptError;
+
 #endif 	/* __IActiveScriptError_FWD_DEFINED__ */
 
 
 #ifndef __IActiveScriptError64_FWD_DEFINED__
 #define __IActiveScriptError64_FWD_DEFINED__
 typedef interface IActiveScriptError64 IActiveScriptError64;
+
 #endif 	/* __IActiveScriptError64_FWD_DEFINED__ */
 
 
 #ifndef __IActiveScriptSiteWindow_FWD_DEFINED__
 #define __IActiveScriptSiteWindow_FWD_DEFINED__
 typedef interface IActiveScriptSiteWindow IActiveScriptSiteWindow;
+
 #endif 	/* __IActiveScriptSiteWindow_FWD_DEFINED__ */
 
 
 #ifndef __IActiveScriptSiteUIControl_FWD_DEFINED__
 #define __IActiveScriptSiteUIControl_FWD_DEFINED__
 typedef interface IActiveScriptSiteUIControl IActiveScriptSiteUIControl;
+
 #endif 	/* __IActiveScriptSiteUIControl_FWD_DEFINED__ */
 
 
 #ifndef __IActiveScriptSiteInterruptPoll_FWD_DEFINED__
 #define __IActiveScriptSiteInterruptPoll_FWD_DEFINED__
 typedef interface IActiveScriptSiteInterruptPoll IActiveScriptSiteInterruptPoll;
+
 #endif 	/* __IActiveScriptSiteInterruptPoll_FWD_DEFINED__ */
 
 
 #ifndef __IActiveScript_FWD_DEFINED__
 #define __IActiveScript_FWD_DEFINED__
 typedef interface IActiveScript IActiveScript;
+
 #endif 	/* __IActiveScript_FWD_DEFINED__ */
 
 
 #ifndef __IActiveScriptParse32_FWD_DEFINED__
 #define __IActiveScriptParse32_FWD_DEFINED__
 typedef interface IActiveScriptParse32 IActiveScriptParse32;
+
 #endif 	/* __IActiveScriptParse32_FWD_DEFINED__ */
 
 
 #ifndef __IActiveScriptParse64_FWD_DEFINED__
 #define __IActiveScriptParse64_FWD_DEFINED__
 typedef interface IActiveScriptParse64 IActiveScriptParse64;
+
 #endif 	/* __IActiveScriptParse64_FWD_DEFINED__ */
 
 
 #ifndef __IActiveScriptParseProcedureOld32_FWD_DEFINED__
 #define __IActiveScriptParseProcedureOld32_FWD_DEFINED__
 typedef interface IActiveScriptParseProcedureOld32 IActiveScriptParseProcedureOld32;
+
 #endif 	/* __IActiveScriptParseProcedureOld32_FWD_DEFINED__ */
 
 
 #ifndef __IActiveScriptParseProcedureOld64_FWD_DEFINED__
 #define __IActiveScriptParseProcedureOld64_FWD_DEFINED__
 typedef interface IActiveScriptParseProcedureOld64 IActiveScriptParseProcedureOld64;
+
 #endif 	/* __IActiveScriptParseProcedureOld64_FWD_DEFINED__ */
 
 
 #ifndef __IActiveScriptParseProcedure32_FWD_DEFINED__
 #define __IActiveScriptParseProcedure32_FWD_DEFINED__
 typedef interface IActiveScriptParseProcedure32 IActiveScriptParseProcedure32;
+
 #endif 	/* __IActiveScriptParseProcedure32_FWD_DEFINED__ */
 
 
 #ifndef __IActiveScriptParseProcedure64_FWD_DEFINED__
 #define __IActiveScriptParseProcedure64_FWD_DEFINED__
 typedef interface IActiveScriptParseProcedure64 IActiveScriptParseProcedure64;
+
 #endif 	/* __IActiveScriptParseProcedure64_FWD_DEFINED__ */
 
 
 #ifndef __IActiveScriptParseProcedure2_32_FWD_DEFINED__
 #define __IActiveScriptParseProcedure2_32_FWD_DEFINED__
 typedef interface IActiveScriptParseProcedure2_32 IActiveScriptParseProcedure2_32;
+
 #endif 	/* __IActiveScriptParseProcedure2_32_FWD_DEFINED__ */
 
 
 #ifndef __IActiveScriptParseProcedure2_64_FWD_DEFINED__
 #define __IActiveScriptParseProcedure2_64_FWD_DEFINED__
 typedef interface IActiveScriptParseProcedure2_64 IActiveScriptParseProcedure2_64;
+
 #endif 	/* __IActiveScriptParseProcedure2_64_FWD_DEFINED__ */
 
 
 #ifndef __IActiveScriptEncode_FWD_DEFINED__
 #define __IActiveScriptEncode_FWD_DEFINED__
 typedef interface IActiveScriptEncode IActiveScriptEncode;
+
 #endif 	/* __IActiveScriptEncode_FWD_DEFINED__ */
 
 
 #ifndef __IActiveScriptHostEncode_FWD_DEFINED__
 #define __IActiveScriptHostEncode_FWD_DEFINED__
 typedef interface IActiveScriptHostEncode IActiveScriptHostEncode;
+
 #endif 	/* __IActiveScriptHostEncode_FWD_DEFINED__ */
 
 
 #ifndef __IBindEventHandler_FWD_DEFINED__
 #define __IBindEventHandler_FWD_DEFINED__
 typedef interface IBindEventHandler IBindEventHandler;
+
 #endif 	/* __IBindEventHandler_FWD_DEFINED__ */
 
 
 #ifndef __IActiveScriptStats_FWD_DEFINED__
 #define __IActiveScriptStats_FWD_DEFINED__
 typedef interface IActiveScriptStats IActiveScriptStats;
+
 #endif 	/* __IActiveScriptStats_FWD_DEFINED__ */
 
 
 #ifndef __IActiveScriptProperty_FWD_DEFINED__
 #define __IActiveScriptProperty_FWD_DEFINED__
 typedef interface IActiveScriptProperty IActiveScriptProperty;
+
 #endif 	/* __IActiveScriptProperty_FWD_DEFINED__ */
 
 
 #ifndef __ITridentEventSink_FWD_DEFINED__
 #define __ITridentEventSink_FWD_DEFINED__
 typedef interface ITridentEventSink ITridentEventSink;
+
 #endif 	/* __ITridentEventSink_FWD_DEFINED__ */
 
 
 #ifndef __IActiveScriptGarbageCollector_FWD_DEFINED__
 #define __IActiveScriptGarbageCollector_FWD_DEFINED__
 typedef interface IActiveScriptGarbageCollector IActiveScriptGarbageCollector;
+
 #endif 	/* __IActiveScriptGarbageCollector_FWD_DEFINED__ */
 
 
 #ifndef __IActiveScriptSIPInfo_FWD_DEFINED__
 #define __IActiveScriptSIPInfo_FWD_DEFINED__
 typedef interface IActiveScriptSIPInfo IActiveScriptSIPInfo;
+
 #endif 	/* __IActiveScriptSIPInfo_FWD_DEFINED__ */
 
 
 #ifndef __IActiveScriptSiteTraceInfo_FWD_DEFINED__
 #define __IActiveScriptSiteTraceInfo_FWD_DEFINED__
 typedef interface IActiveScriptSiteTraceInfo IActiveScriptSiteTraceInfo;
+
 #endif 	/* __IActiveScriptSiteTraceInfo_FWD_DEFINED__ */
 
 
 #ifndef __IActiveScriptTraceInfo_FWD_DEFINED__
 #define __IActiveScriptTraceInfo_FWD_DEFINED__
 typedef interface IActiveScriptTraceInfo IActiveScriptTraceInfo;
+
 #endif 	/* __IActiveScriptTraceInfo_FWD_DEFINED__ */
 
 
 #ifndef __IActiveScriptStringCompare_FWD_DEFINED__
 #define __IActiveScriptStringCompare_FWD_DEFINED__
 typedef interface IActiveScriptStringCompare IActiveScriptStringCompare;
+
 #endif 	/* __IActiveScriptStringCompare_FWD_DEFINED__ */
 
 
@@ -234,6 +251,10 @@ extern "C"{
 #ifndef __ActivScp_h
 #define __ActivScp_h
 
+#include <winapifamily.h>
+
+#pragma region Desktop Family
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 /* GUIDs
  ********/
 
@@ -364,12 +385,14 @@ DEFINE_GUID(IID_IActiveScriptStringCompare, 0x58562769, 0xED52, 0x42f7, 0x84, 0x
 #define SCRIPTTEXT_ISPERSISTENT         0x00000040
 #define SCRIPTTEXT_HOSTMANAGESSOURCE    0x00000080
 #define SCRIPTTEXT_ISXDOMAIN            0x00000100
+#define SCRIPTTEXT_ISNONUSERCODE        0x00000200
 #define SCRIPTTEXT_ALL_FLAGS            (SCRIPTTEXT_DELAYEXECUTION | \
                                          SCRIPTTEXT_ISVISIBLE | \
                                          SCRIPTTEXT_ISEXPRESSION | \
                                          SCRIPTTEXT_ISPERSISTENT | \
                                          SCRIPTTEXT_HOSTMANAGESSOURCE | \
-                                         SCRIPTTEXT_ISXDOMAIN)
+                                         SCRIPTTEXT_ISXDOMAIN | \
+                                         SCRIPTTEXT_ISNONUSERCODE)
 
 /* IActiveScriptParseProcedure::ParseProcedureText() input flags */
 
@@ -438,38 +461,51 @@ DEFINE_GUID(IID_IActiveScriptStringCompare, 0x58562769, 0xED52, 0x42f7, 0x84, 0x
 #define SCRIPTPROP_HACK_FIBERSUPPORT        0x70000000
 #define SCRIPTPROP_HACK_TRIDENTEVENTSINK    0x70000001
 #define SCRIPTPROP_ABBREVIATE_GLOBALNAME_RESOLUTION  0x70000002
+#define SCRIPTPROP_HOSTKEEPALIVE         0x70000004
 
+// An error has been recorded to be passed between script engine 
+// and host. The host needs to pass the error code to caller. 
+#define SCRIPT_E_RECORDED   0x86664004L
+// Script engine has reported an unhandled exception to the host via 
+// IActiveScriptSite::OnScriptError. Host can ignore this error
+#define SCRIPT_E_REPORTED   0x80020101L 
+// An script error is being propagated to the caller which might be in a different thread
+// host should pass the error code to the caller.
+#define SCRIPT_E_PROPAGATE  0x80020102L
 
 /* script language version values for SCRIPTPROP_INVOKEVERSIONING property */
 
 typedef 
 enum tagSCRIPTLANGUAGEVERSION
-    {	SCRIPTLANGUAGEVERSION_DEFAULT	= 0,
-	SCRIPTLANGUAGEVERSION_5_7	= 1,
-	SCRIPTLANGUAGEVERSION_5_8	= 2,
-	SCRIPTLANGUAGEVERSION_MAX	= 255
+    {
+        SCRIPTLANGUAGEVERSION_DEFAULT	= 0,
+        SCRIPTLANGUAGEVERSION_5_7	= 1,
+        SCRIPTLANGUAGEVERSION_5_8	= 2,
+        SCRIPTLANGUAGEVERSION_MAX	= 255
     } 	SCRIPTLANGUAGEVERSION;
 
 typedef 
 enum tagSCRIPTSTATE
-    {	SCRIPTSTATE_UNINITIALIZED	= 0,
-	SCRIPTSTATE_INITIALIZED	= 5,
-	SCRIPTSTATE_STARTED	= 1,
-	SCRIPTSTATE_CONNECTED	= 2,
-	SCRIPTSTATE_DISCONNECTED	= 3,
-	SCRIPTSTATE_CLOSED	= 4
+    {
+        SCRIPTSTATE_UNINITIALIZED	= 0,
+        SCRIPTSTATE_INITIALIZED	= 5,
+        SCRIPTSTATE_STARTED	= 1,
+        SCRIPTSTATE_CONNECTED	= 2,
+        SCRIPTSTATE_DISCONNECTED	= 3,
+        SCRIPTSTATE_CLOSED	= 4
     } 	SCRIPTSTATE;
 
 typedef 
 enum tagSCRIPTTRACEINFO
-    {	SCRIPTTRACEINFO_SCRIPTSTART	= 0,
-	SCRIPTTRACEINFO_SCRIPTEND	= 1,
-	SCRIPTTRACEINFO_COMCALLSTART	= 2,
-	SCRIPTTRACEINFO_COMCALLEND	= 3,
-	SCRIPTTRACEINFO_CREATEOBJSTART	= 4,
-	SCRIPTTRACEINFO_CREATEOBJEND	= 5,
-	SCRIPTTRACEINFO_GETOBJSTART	= 6,
-	SCRIPTTRACEINFO_GETOBJEND	= 7
+    {
+        SCRIPTTRACEINFO_SCRIPTSTART	= 0,
+        SCRIPTTRACEINFO_SCRIPTEND	= 1,
+        SCRIPTTRACEINFO_COMCALLSTART	= 2,
+        SCRIPTTRACEINFO_COMCALLEND	= 3,
+        SCRIPTTRACEINFO_CREATEOBJSTART	= 4,
+        SCRIPTTRACEINFO_CREATEOBJEND	= 5,
+        SCRIPTTRACEINFO_GETOBJSTART	= 6,
+        SCRIPTTRACEINFO_GETOBJEND	= 7
     } 	SCRIPTTRACEINFO;
 
 
@@ -477,8 +513,9 @@ enum tagSCRIPTTRACEINFO
 
 typedef 
 enum tagSCRIPTTHREADSTATE
-    {	SCRIPTTHREADSTATE_NOTINSCRIPT	= 0,
-	SCRIPTTHREADSTATE_RUNNING	= 1
+    {
+        SCRIPTTHREADSTATE_NOTINSCRIPT	= 0,
+        SCRIPTTHREADSTATE_RUNNING	= 1
     } 	SCRIPTTHREADSTATE;
 
 
@@ -486,8 +523,9 @@ enum tagSCRIPTTHREADSTATE
 
 typedef 
 enum tagSCRIPTGCTYPE
-    {	SCRIPTGCTYPE_NORMAL	= 0,
-	SCRIPTGCTYPE_EXHAUSTIVE	= 1
+    {
+        SCRIPTGCTYPE_NORMAL	= 0,
+        SCRIPTGCTYPE_EXHAUSTIVE	= 1
     } 	SCRIPTGCTYPE;
 
 
@@ -495,16 +533,18 @@ enum tagSCRIPTGCTYPE
 
 typedef 
 enum tagSCRIPTUICITEM
-    {	SCRIPTUICITEM_INPUTBOX	= 1,
-	SCRIPTUICITEM_MSGBOX	= 2
+    {
+        SCRIPTUICITEM_INPUTBOX	= 1,
+        SCRIPTUICITEM_MSGBOX	= 2
     } 	SCRIPTUICITEM;
 
 
 typedef 
 enum tagSCRIPTUICHANDLING
-    {	SCRIPTUICHANDLING_ALLOW	= 0,
-	SCRIPTUICHANDLING_NOUIERROR	= 1,
-	SCRIPTUICHANDLING_NOUIDEFAULT	= 2
+    {
+        SCRIPTUICHANDLING_ALLOW	= 0,
+        SCRIPTUICHANDLING_NOUIERROR	= 1,
+        SCRIPTUICHANDLING_NOUIDEFAULT	= 2
     } 	SCRIPTUICHANDLING;
 
 
@@ -595,6 +635,7 @@ EXTERN_C const IID IID_IActiveScriptSite;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IActiveScriptSiteVtbl
@@ -605,7 +646,7 @@ EXTERN_C const IID IID_IActiveScriptSite;
             __RPC__in IActiveScriptSite * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IActiveScriptSite * This);
@@ -733,6 +774,7 @@ EXTERN_C const IID IID_IActiveScriptError;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IActiveScriptErrorVtbl
@@ -743,7 +785,7 @@ EXTERN_C const IID IID_IActiveScriptError;
             __RPC__in IActiveScriptError * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IActiveScriptError * This);
@@ -842,6 +884,7 @@ EXTERN_C const IID IID_IActiveScriptError64;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IActiveScriptError64Vtbl
@@ -852,7 +895,7 @@ EXTERN_C const IID IID_IActiveScriptError64;
             __RPC__in IActiveScriptError64 * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IActiveScriptError64 * This);
@@ -950,6 +993,7 @@ EXTERN_C const IID IID_IActiveScriptSiteWindow;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IActiveScriptSiteWindowVtbl
@@ -960,7 +1004,7 @@ EXTERN_C const IID IID_IActiveScriptSiteWindow;
             __RPC__in IActiveScriptSiteWindow * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IActiveScriptSiteWindow * This);
@@ -1037,6 +1081,7 @@ EXTERN_C const IID IID_IActiveScriptSiteUIControl;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IActiveScriptSiteUIControlVtbl
@@ -1047,7 +1092,7 @@ EXTERN_C const IID IID_IActiveScriptSiteUIControl;
             __RPC__in IActiveScriptSiteUIControl * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IActiveScriptSiteUIControl * This);
@@ -1116,6 +1161,7 @@ EXTERN_C const IID IID_IActiveScriptSiteInterruptPoll;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IActiveScriptSiteInterruptPollVtbl
@@ -1126,7 +1172,7 @@ EXTERN_C const IID IID_IActiveScriptSiteInterruptPoll;
             __RPC__in IActiveScriptSiteInterruptPoll * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IActiveScriptSiteInterruptPoll * This);
@@ -1239,6 +1285,7 @@ EXTERN_C const IID IID_IActiveScript;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IActiveScriptVtbl
@@ -1249,7 +1296,7 @@ EXTERN_C const IID IID_IActiveScript;
             __RPC__in IActiveScript * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IActiveScript * This);
@@ -1434,6 +1481,7 @@ EXTERN_C const IID IID_IActiveScriptParse32;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IActiveScriptParse32Vtbl
@@ -1444,7 +1492,7 @@ EXTERN_C const IID IID_IActiveScriptParse32;
             __RPC__in IActiveScriptParse32 * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IActiveScriptParse32 * This);
@@ -1567,6 +1615,7 @@ EXTERN_C const IID IID_IActiveScriptParse64;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IActiveScriptParse64Vtbl
@@ -1577,7 +1626,7 @@ EXTERN_C const IID IID_IActiveScriptParse64;
             __RPC__in IActiveScriptParse64 * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IActiveScriptParse64 * This);
@@ -1702,6 +1751,7 @@ EXTERN_C const IID IID_IActiveScriptParseProcedureOld32;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IActiveScriptParseProcedureOld32Vtbl
@@ -1712,7 +1762,7 @@ EXTERN_C const IID IID_IActiveScriptParseProcedureOld32;
             __RPC__in IActiveScriptParseProcedureOld32 * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IActiveScriptParseProcedureOld32 * This);
@@ -1797,6 +1847,7 @@ EXTERN_C const IID IID_IActiveScriptParseProcedureOld64;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IActiveScriptParseProcedureOld64Vtbl
@@ -1807,7 +1858,7 @@ EXTERN_C const IID IID_IActiveScriptParseProcedureOld64;
             __RPC__in IActiveScriptParseProcedureOld64 * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IActiveScriptParseProcedureOld64 * This);
@@ -1909,6 +1960,7 @@ EXTERN_C const IID IID_IActiveScriptParseProcedure32;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IActiveScriptParseProcedure32Vtbl
@@ -1919,7 +1971,7 @@ EXTERN_C const IID IID_IActiveScriptParseProcedure32;
             __RPC__in IActiveScriptParseProcedure32 * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IActiveScriptParseProcedure32 * This);
@@ -2006,6 +2058,7 @@ EXTERN_C const IID IID_IActiveScriptParseProcedure64;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IActiveScriptParseProcedure64Vtbl
@@ -2016,7 +2069,7 @@ EXTERN_C const IID IID_IActiveScriptParseProcedure64;
             __RPC__in IActiveScriptParseProcedure64 * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IActiveScriptParseProcedure64 * This);
@@ -2107,6 +2160,7 @@ EXTERN_C const IID IID_IActiveScriptParseProcedure2_32;
     public:
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IActiveScriptParseProcedure2_32Vtbl
@@ -2117,7 +2171,7 @@ EXTERN_C const IID IID_IActiveScriptParseProcedure2_32;
             __RPC__in IActiveScriptParseProcedure2_32 * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IActiveScriptParseProcedure2_32 * This);
@@ -2193,6 +2247,7 @@ EXTERN_C const IID IID_IActiveScriptParseProcedure2_64;
     public:
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IActiveScriptParseProcedure2_64Vtbl
@@ -2203,7 +2258,7 @@ EXTERN_C const IID IID_IActiveScriptParseProcedure2_64;
             __RPC__in IActiveScriptParseProcedure2_64 * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IActiveScriptParseProcedure2_64 * This);
@@ -2312,6 +2367,7 @@ EXTERN_C const IID IID_IActiveScriptEncode;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IActiveScriptEncodeVtbl
@@ -2322,7 +2378,7 @@ EXTERN_C const IID IID_IActiveScriptEncode;
             __RPC__in IActiveScriptEncode * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IActiveScriptEncode * This);
@@ -2416,6 +2472,7 @@ EXTERN_C const IID IID_IActiveScriptHostEncode;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IActiveScriptHostEncodeVtbl
@@ -2426,7 +2483,7 @@ EXTERN_C const IID IID_IActiveScriptHostEncode;
             __RPC__in IActiveScriptHostEncode * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IActiveScriptHostEncode * This);
@@ -2499,6 +2556,7 @@ EXTERN_C const IID IID_IBindEventHandler;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IBindEventHandlerVtbl
@@ -2509,7 +2567,7 @@ EXTERN_C const IID IID_IBindEventHandler;
             __RPC__in IBindEventHandler * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IBindEventHandler * This);
@@ -2588,6 +2646,7 @@ EXTERN_C const IID IID_IActiveScriptStats;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IActiveScriptStatsVtbl
@@ -2598,7 +2657,7 @@ EXTERN_C const IID IID_IActiveScriptStats;
             __RPC__in IActiveScriptStats * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IActiveScriptStats * This);
@@ -2691,6 +2750,7 @@ EXTERN_C const IID IID_IActiveScriptProperty;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IActiveScriptPropertyVtbl
@@ -2701,7 +2761,7 @@ EXTERN_C const IID IID_IActiveScriptProperty;
             __RPC__in IActiveScriptProperty * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IActiveScriptProperty * This);
@@ -2784,6 +2844,7 @@ EXTERN_C const IID IID_ITridentEventSink;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct ITridentEventSinkVtbl
@@ -2794,7 +2855,7 @@ EXTERN_C const IID IID_ITridentEventSink;
             __RPC__in ITridentEventSink * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in ITridentEventSink * This);
@@ -2866,6 +2927,7 @@ EXTERN_C const IID IID_IActiveScriptGarbageCollector;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IActiveScriptGarbageCollectorVtbl
@@ -2876,7 +2938,7 @@ EXTERN_C const IID IID_IActiveScriptGarbageCollector;
             __RPC__in IActiveScriptGarbageCollector * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IActiveScriptGarbageCollector * This);
@@ -2945,6 +3007,7 @@ EXTERN_C const IID IID_IActiveScriptSIPInfo;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IActiveScriptSIPInfoVtbl
@@ -2955,7 +3018,7 @@ EXTERN_C const IID IID_IActiveScriptSIPInfo;
             __RPC__in IActiveScriptSIPInfo * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IActiveScriptSIPInfo * This);
@@ -3029,6 +3092,7 @@ EXTERN_C const IID IID_IActiveScriptSiteTraceInfo;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IActiveScriptSiteTraceInfoVtbl
@@ -3039,7 +3103,7 @@ EXTERN_C const IID IID_IActiveScriptSiteTraceInfo;
             __RPC__in IActiveScriptSiteTraceInfo * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IActiveScriptSiteTraceInfo * This);
@@ -3116,6 +3180,7 @@ EXTERN_C const IID IID_IActiveScriptTraceInfo;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IActiveScriptTraceInfoVtbl
@@ -3126,7 +3191,7 @@ EXTERN_C const IID IID_IActiveScriptTraceInfo;
             __RPC__in IActiveScriptTraceInfo * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IActiveScriptTraceInfo * This);
@@ -3204,6 +3269,7 @@ EXTERN_C const IID IID_IActiveScriptStringCompare;
         
     };
     
+    
 #else 	/* C style interface */
 
     typedef struct IActiveScriptStringCompareVtbl
@@ -3214,7 +3280,7 @@ EXTERN_C const IID IID_IActiveScriptStringCompare;
             __RPC__in IActiveScriptStringCompare * This,
             /* [in] */ __RPC__in REFIID riid,
             /* [annotation][iid_is][out] */ 
-            __RPC__deref_out  void **ppvObject);
+            _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             __RPC__in IActiveScriptStringCompare * This);
@@ -3268,6 +3334,8 @@ EXTERN_C const IID IID_IActiveScriptStringCompare;
 /* interface __MIDL_itf_activscp_0000_0026 */
 /* [local] */ 
 
+#endif /* WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP) */
+#pragma endregion
 
 #endif  // __ActivScp_h
 
@@ -3326,6 +3394,5 @@ void                      __RPC_USER  VARIANT_UserFree64(     __RPC__in unsigned
 #endif
 
 #endif
-
 
 
